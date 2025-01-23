@@ -4190,8 +4190,8 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
 	      && !DECL_P (instance_ptr)
 	      && !TREE_CONSTANT (instance_ptr)))
 	instance_ptr = instance_save_expr
-	  = force_target_expr (TREE_TYPE (instance_ptr), instance_ptr,
-			       complain);
+	  = save_expr (force_target_expr (TREE_TYPE (instance_ptr),
+					  instance_ptr, complain));
 
       /* See above comment.  */
       if (TREE_SIDE_EFFECTS (function)
@@ -4199,7 +4199,8 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
 	      && !DECL_P (function)
 	      && !TREE_CONSTANT (function)))
 	function
-	  = force_target_expr (TREE_TYPE (function), function, complain);
+	  = save_expr (force_target_expr (TREE_TYPE (function), function,
+					  complain));
 
       /* Start by extracting all the information from the PMF itself.  */
       e3 = pfn_from_ptrmemfunc (function);
@@ -4472,8 +4473,10 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
 
   /* Check for errors in format strings and inappropriately
      null parameters.  */
-  bool warned_p = check_function_arguments (input_location, fndecl, fntype,
-					    nargs, argarray, NULL);
+  bool warned_p
+    = ((complain & tf_warning)
+       && check_function_arguments (input_location, fndecl, fntype,
+				    nargs, argarray, NULL));
 
   ret = build_cxx_call (function, nargs, argarray, complain, orig_fndecl);
 
@@ -8170,6 +8173,8 @@ cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
       return rhs;
     }
 
+  rhs = resolve_nondeduced_context (rhs, complain);
+
   if (type_unknown_p (rhs))
     {
       if (complain & tf_error)
@@ -8177,7 +8182,7 @@ cp_build_compound_expr (tree lhs, tree rhs, tsubst_flags_t complain)
 		  "no context to resolve type of %qE", rhs);
       return error_mark_node;
     }
-  
+
   tree ret = build2 (COMPOUND_EXPR, TREE_TYPE (rhs), lhs, rhs);
   if (eptype)
     ret = build1 (EXCESS_PRECISION_EXPR, eptype, ret);

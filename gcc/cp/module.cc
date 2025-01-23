@@ -1883,13 +1883,23 @@ elf_in::begin (location_t loc)
 void
 elf_out::create_mapping (unsigned ext, bool extending)
 {
-#ifndef HAVE_POSIX_FALLOCATE
-#define posix_fallocate(fd,off,len) ftruncate (fd, off + len)
+  /* A wrapper around posix_fallocate, falling back to ftruncate
+     if the underlying filesystem does not support the operation.  */
+  auto allocate = [](int fd, off_t offset, off_t length)
+    {
+#ifdef HAVE_POSIX_FALLOCATE
+      int result = posix_fallocate (fd, offset, length);
+      if (result != EINVAL)
+	return result == 0;
+      /* Not supported by the underlying filesystem, fallback to ftruncate.  */
 #endif
+      return ftruncate (fd, offset + length) == 0;
+    };
+
   void *mapping = MAP_FAILED;
   if (extending && ext < 1024 * 1024)
     {
-      if (!posix_fallocate (fd, offset, ext * 2))
+      if (allocate (fd, offset, ext * 2))
 	mapping = mmap (NULL, ext * 2, PROT_READ | PROT_WRITE,
 			MAP_SHARED, fd, offset);
       if (mapping != MAP_FAILED)
@@ -1897,7 +1907,7 @@ elf_out::create_mapping (unsigned ext, bool extending)
     }
   if (mapping == MAP_FAILED)
     {
-      if (!extending || !posix_fallocate (fd, offset, ext))
+      if (!extending || allocate (fd, offset, ext))
 	mapping = mmap (NULL, ext, PROT_READ | PROT_WRITE,
 			MAP_SHARED, fd, offset);
       if (mapping == MAP_FAILED)
@@ -1907,7 +1917,6 @@ elf_out::create_mapping (unsigned ext, bool extending)
 	  ext = 0;
 	}
     }
-#undef posix_fallocate
   hdr.buffer = (char *)mapping;
   extent = ext;
 }
@@ -6804,11 +6813,23 @@ trees_in::core_vals (tree t)
 	       body) anyway.  */
 	    decl = maybe_duplicate (decl);
 
-	    if (!DECL_P (decl) || DECL_CHAIN (decl))
+	    if (!DECL_P (decl))
 	      {
 		set_overrun ();
 		break;
 	      }
+
+	    /* If DECL_CHAIN is already set then this was a backreference to a
+	       local type or enumerator from a previous read (PR c++/114630).
+	       Let's copy the node so we can keep building the chain for ODR
+	       checking later.  */
+	    if (DECL_CHAIN (decl))
+	      {
+		gcc_checking_assert (TREE_CODE (decl) == TYPE_DECL
+				     && find_duplicate (DECL_CONTEXT (decl)));
+		decl = copy_decl (decl);
+	      }
+
 	    *chain = decl;
 	    chain = &DECL_CHAIN (decl);
 	  }
@@ -11571,8 +11592,13 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	{
 	  dump (dumper::MERGE)
 	    && dump ("Propagating deduced return type to %N", existing);
+	  FNDECL_USED_AUTO (e_inner) = true;
+	  DECL_SAVED_AUTO_RETURN_TYPE (existing) = TREE_TYPE (e_type);
 	  TREE_TYPE (existing) = change_return_type (TREE_TYPE (d_type), e_type);
 	}
+      else if (type_uses_auto (d_ret)
+	       && !same_type_p (TREE_TYPE (d_type), TREE_TYPE (e_type)))
+	goto mismatch;
     }
   else if (is_typedef)
     {

@@ -258,10 +258,10 @@ create_tinfo_types (Module *mod)
 			  Identifier::idPool ("TypeInfo_Class"),
 			  array_type_node, array_type_node, array_type_node,
 			  array_type_node, ptr_type_node, ptr_type_node,
-			  ptr_type_node, d_uint_type, ptr_type_node,
-			  array_type_node, ptr_type_node, ptr_type_node,
-			  d_uint_type, d_uint_type, d_uint_type, d_uint_type,
-			  NULL);
+			  ptr_type_node, d_ushort_type, d_ushort_type,
+			  ptr_type_node, array_type_node, ptr_type_node,
+			  ptr_type_node, d_uint_type, d_uint_type, d_uint_type,
+			  d_uint_type, NULL);
 
   object_module = mod;
 }
@@ -813,6 +813,7 @@ public:
 	void *destructor;
 	void function(Object) classInvariant;
 	ClassFlags m_flags;
+	ushort depth;
 	void *deallocator;
 	OffsetTypeInfo[] m_offTi;
 	void function(Object) defaultConstructor;
@@ -918,7 +919,10 @@ public:
 	flags |= ClassFlags::noPointers;
 
     Lhaspointers:
-	this->layout_field (build_integer_cst (flags, d_uint_type));
+	this->layout_field (build_integer_cst (flags, d_ushort_type));
+
+	/* ushort depth;  (not implemented)  */
+	this->layout_field (build_zero_cst (d_ushort_type));
 
 	/* void *deallocator;  */
 	this->layout_field (null_pointer_node);
@@ -979,7 +983,10 @@ public:
 	if (cd->isCOMinterface ())
 	  flags |= ClassFlags::isCOMclass;
 
-	this->layout_field (build_integer_cst (flags, d_uint_type));
+	this->layout_field (build_integer_cst (flags, d_ushort_type));
+
+	/* ushort depth;  (not implemented)  */
+	this->layout_field (build_zero_cst (d_ushort_type));
 
 	/* void *deallocator;
 	   OffsetTypeInfo[] m_offTi;  (not implemented)

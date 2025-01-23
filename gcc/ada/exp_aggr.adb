@@ -5704,10 +5704,11 @@ package body Exp_Aggr is
          Comp_Type  : constant Entity_Id := Etype (N);
          Index_Id   : constant Entity_Id := Make_Temporary (Loc, 'I', N);
          Index_Type : constant Entity_Id := Etype (First_Index (Etype (N)));
+         Index_Base : constant Entity_Id := Base_Type (Index_Type);
          Size_Id    : constant Entity_Id := Make_Temporary (Loc, 'I', N);
          Size_Type  : constant Entity_Id :=
                         Integer_Type_For
-                          (Esize (Index_Type), Is_Unsigned_Type (Index_Type));
+                          (Esize (Index_Base), Is_Unsigned_Type (Index_Base));
          TmpE       : constant Entity_Id := Make_Temporary (Loc, 'A', N);
 
          Assoc    : Node_Id := First (Component_Associations (N));

@@ -1096,8 +1096,8 @@ and later.
 <section xml:id="api.rel_131"><info><title><constant>13</constant></title></info>
 
 <para>
-Tunables <variable>glibcxx.eh_pool.obj_count</variable> and
-<variable>glibcxx.eh_pool.obj_size</variable> were added.
+Tunables <varname>glibcxx.eh_pool.obj_count</varname> and
+<varname>glibcxx.eh_pool.obj_size</varname> were added.
 </para>
 
 <para>Static library <filename>libstdc++exp.a</filename> was added

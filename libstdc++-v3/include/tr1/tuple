@@ -419,7 +419,7 @@ namespace tr1
   namespace
   {
     _Swallow_assign ignore;
-  }; // anonymous namespace
+  } // anonymous namespace
 }
 
 _GLIBCXX_END_NAMESPACE_VERSION

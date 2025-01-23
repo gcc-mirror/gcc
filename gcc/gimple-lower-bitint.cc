@@ -2142,6 +2142,7 @@ bitint_large_huge::handle_stmt (gimple *stmt, tree idx)
 						idx),
 				gimple_assign_rhs2 (stmt), idx);
 	case SSA_NAME:
+	case PAREN_EXPR:
 	case INTEGER_CST:
 	  return handle_operand (gimple_assign_rhs1 (stmt), idx);
 	CASE_CONVERT:
@@ -5606,7 +5607,9 @@ bitint_large_huge::lower_stmt (gimple *stmt)
       || gimple_store_p (stmt)
       || gimple_assign_load_p (stmt)
       || eq_p
-      || mergeable_cast_p)
+      || mergeable_cast_p
+      || (is_gimple_assign (stmt)
+	  && gimple_assign_rhs_code (stmt) == PAREN_EXPR))
     {
       lhs = lower_mergeable_stmt (stmt, cmp_code, cmp_op1, cmp_op2);
       if (!eq_p)
@@ -6224,11 +6227,20 @@ gimple_lower_bitint (void)
 		  tree p = build_int_cst (TREE_TYPE (n),
 					  TYPE_PRECISION (type));
 		  if (TREE_CODE (n) == INTEGER_CST)
-		    m = fold_build2 (MINUS_EXPR, TREE_TYPE (n), p, n);
+		    {
+		      if (integer_zerop (n))
+			m = n;
+		      else
+			m = fold_build2 (MINUS_EXPR, TREE_TYPE (n), p, n);
+		    }
 		  else
 		    {
+		      tree tem = make_ssa_name (TREE_TYPE (n));
+		      g = gimple_build_assign (tem, MINUS_EXPR, p, n);
+		      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+		      gimple_set_location (g, loc);
 		      m = make_ssa_name (TREE_TYPE (n));
-		      g = gimple_build_assign (m, MINUS_EXPR, p, n);
+		      g = gimple_build_assign (m, TRUNC_MOD_EXPR, tem, p);
 		      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
 		      gimple_set_location (g, loc);
 		    }

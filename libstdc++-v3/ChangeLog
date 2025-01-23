@@ -1,3 +1,305 @@
+2025-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-01-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109849
+	* include/bits/vector.tcc (vector::_M_range_insert): Fix
+	reversed args in length calculation.
+
+2025-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/istream.tcc: Add diagnostic pragmas around uses
+	of long long and extern template.
+	* include/bits/locale_facets.h: Likewise.
+	* include/bits/locale_facets.tcc: Likewise.
+	* include/bits/locale_facets_nonio.tcc: Likewise.
+	* include/bits/ostream.tcc: Likewise.
+	* include/bits/stl_algobase.h: Likewise.
+	* include/c_global/cstdlib: Likewise.
+	* include/ext/pb_ds/detail/resize_policy/hash_prime_size_policy_imp.hpp:
+	Likewise.
+	* include/ext/pointer.h: Likewise.
+	* include/ext/stdio_sync_filebuf.h: Likewise.
+	* include/std/istream: Likewise.
+	* include/std/ostream: Likewise.
+	* include/tr1/cmath: Likewise.
+	* include/tr1/type_traits: Likewise.
+	* include/tr1/functional_hash.h: Likewise. Remove semi-colons
+	at namespace scope that aren't needed after macro expansion.
+	* include/tr1/tuple: Remove semi-colon at namespace scope.
+	* include/bits/vector.tcc: Change LL suffix to just L.
+
+2025-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90389
+	* include/bits/deque.tcc (_M_insert_aux): Rename variadic
+	overload to _M_emplace_aux.
+	* include/bits/stl_deque.h (_M_insert_aux): Define inline.
+	(_M_emplace_aux): Declare.
+	* testsuite/23_containers/deque/modifiers/emplace/90389.cc: New
+	test.
+
+2025-01-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2025-01-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* testsuite/27_io/print/1.cc: Allow both LF and CRLF in test.
+	* testsuite/27_io/print/3.cc: Likewise.
+
+2025-01-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2025-01-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* testsuite/29_atomics/atomic_float/compare_exchange_padding.cc:
+	Use effective-target libatomic_available.
+
+2025-01-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* include/bits/hashtable.h (find): Add inline keyword.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/memory_resource.h (polymoprhic_allocator): Use
+	feature test macro for P0339R6 features.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h: Improve doxygen docs for
+	allocator_traits specializations.
+	* include/bits/memory_resource.h: Likewise.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/memory_resource.h (polymorphic_allocator::destroy):
+	Remove deprecated attribute.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/89624
+	* include/bits/atomic_base.h (memory_order): Use int as
+	underlying type.
+	* testsuite/29_atomics/atomic/89624.cc: New test.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc: Fix typo in comment.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-12-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ostream (println): Pass stream's locale to
+	std::format, as per LWG 4088.
+	* testsuite/27_io/basic_ostream/print/1.cc: Check std::println
+	with custom locale. Remove unused brit_punc class.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/using_exceptions.xml: Fix typos and grammatical
+	errors.
+	* doc/html/manual/using_exceptions.html: Regenerate.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/strings.xml: Clarify that GCC 4.5 added
+	std::string::shrink_to_fit.
+	* doc/html/manual/strings.html: Regenerate.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (__glibcxx_assert): Remove useless
+	__builtin_expect from constexpr-only assertion. Improve
+	comments.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-12-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108236
+	* include/pstl/glue_numeric_impl.h (exclusive_scan): Pass __init
+	as rvalue.
+	* include/pstl/numeric_impl.h (__brick_transform_scan): Do not
+	write through __result until after reading through __first. Move
+	__init into return value.
+	(__pattern_transform_scan): Pass __init as rvalue.
+	* include/std/numeric (exclusive_scan): Move construct instead
+	of copy constructing.
+	* testsuite/26_numerics/exclusive_scan/2.cc: New test.
+	* testsuite/26_numerics/pstl/numeric_ops/108236.cc: New test.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117962
+	* include/debug/safe_container.h: Make allocator-extended move
+	constructor a no-op during constant evaluation.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-12-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/109517
+	PR libstdc++/109976
+	* include/debug/helper_functions.h (__valid_range_aux): Treat
+	all input iterator ranges as valid during constant evaluation.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-12-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106212
+	* include/std/array (operator==): Use std::__equal_aux1 instead
+	of std::equal.
+	* testsuite/23_containers/array/comparison_operators/106212.cc:
+	New test.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-12-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117966
+	* include/std/span (span(T (&)[N])): Do not delegate to
+	constructor that performs redundant checks.
+	(span(array<T, N>&), span(const array<T, N>&)): Likewise.
+	(span(Range&&), span(const span<T, N>&)): Likewise.
+	* testsuite/23_containers/span/117966.cc: New test.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118035
+	* include/bits/deque.tcc (_M_range_insert_aux): Return
+	immediately if inserting an empty range.
+	* testsuite/23_containers/deque/modifiers/insert/118035.cc: New
+	test.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-12-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/112349
+	* include/bits/ranges_algo.h (__min_fn::operator()): Turn local
+	object __tmp into a reference.
+	* include/bits/ranges_util.h (__max_fn::operator()): Likewise.
+	* testsuite/25_algorithms/max/constrained.cc (test04): New test.
+	* testsuite/25_algorithms/min/constrained.cc (test04): New test.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-11-14  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (keys_view): Adjust as per LWG 3563.
+	(values_view): Likewise.
+	* testsuite/std/ranges/adaptors/elements.cc (test08): New test.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2024-10-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/112641
+	* include/std/ranges (drop_view::begin): Reimplement const
+	overload so that it's O(1) always.
+	* testsuite/std/ranges/adaptors/drop.cc (test10): New test.
+
+2025-01-09  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Backported from master:
+	2024-08-17  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/abi.xml: Update reference to
+	gcc.gnu.org/onlinedocs.
+	* doc/xml/manual/concurrency_extensions.xml (interface): Ditto.
+	* doc/xml/manual/extensions.xml: Ditto.
+	* doc/xml/manual/parallel_mode.xml: Ditto.
+	* doc/xml/manual/shared_ptr.xml: Ditto.
+	* doc/xml/manual/using_exceptions.xml: Ditto. And change GNU GCC
+	to GCC.
+	* doc/html/index.html: Regenerate.
+	* doc/html/manual/abi.html: Ditto.
+	* doc/html/manual/ext_concurrency_impl.html: Ditto.
+	* doc/html/manual/ext_demangling.html: Ditto.
+	* doc/html/manual/memory.html: Ditto.
+	* doc/html/manual/parallel_mode_design.html: Ditto.
+	* doc/html/manual/parallel_mode_using.html: Ditto.
+	* doc/html/manual/using_exceptions.html: Ditto.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118093
+	* include/bits/atomic_futex.h (_M_load_and_test_until_impl):
+	Return false for times before the epoch.
+	* src/c++11/futex.cc (_M_futex_wait_until): Extend check for
+	negative times to check for subsecond times. Add unlikely
+	attribute.
+	(_M_futex_wait_until_steady): Likewise.
+	* testsuite/30_threads/future/members/118093.cc: New test.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/move.h (forward, move, move_if_noexcept, addressof):
+	Add @since to Doxygen comments.
+	(forward_like): Add Doxygen comment.
+
+2025-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/evolution.xml: Replace invalid <variable>
+	elements with <varname>.
+	* doc/html/*: Regenerate.
+
 2024-12-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

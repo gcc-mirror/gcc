@@ -1,5 +1,6 @@
 // { dg-do run { target c++20 } }
 // { dg-options "-O0" }
+// { dg-require-effective-target libatomic_available }
 // { dg-additional-options "[atomic_link_flags [get_multilibs]] -latomic" }
 
 #include <atomic>

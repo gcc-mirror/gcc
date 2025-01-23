@@ -52,7 +52,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace pmr
 {
-  /// Class memory_resource
+  /// Class `memory_resource`
   /**
    * @ingroup pmr
    * @headerfile memory_resource
@@ -168,7 +168,7 @@ namespace pmr
       __attribute__((__nonnull__))
       { _M_resource->deallocate(__p, __n * sizeof(_Tp), alignof(_Tp)); }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_polymorphic_allocator // >= C++20
       [[nodiscard]] void*
       allocate_bytes(size_t __nbytes,
 		     size_t __alignment = alignof(max_align_t))
@@ -218,9 +218,9 @@ namespace pmr
 	  __p->~_Up();
 	  deallocate_object(__p);
 	}
-#endif // C++2a
+#endif // C++20
 
-#if ! __glibcxx_make_obj_using_allocator
+#if ! __glibcxx_make_obj_using_allocator // >= C++20
       template<typename _Tp1, typename... _Args>
 	__attribute__((__nonnull__))
 	typename __not_pair<_Tp1>::type
@@ -305,7 +305,6 @@ namespace pmr
 #endif
 
       template<typename _Up>
-	_GLIBCXX20_DEPRECATED_SUGGEST("allocator_traits::destroy")
 	__attribute__((__nonnull__))
 	void
 	destroy(_Up* __p)
@@ -337,7 +336,7 @@ namespace pmr
 #endif
 
     private:
-#if ! __glibcxx_make_obj_using_allocator
+#if ! __glibcxx_make_obj_using_allocator // >= C++20
       using __uses_alloc1_ = __uses_alloc1<polymorphic_allocator>;
       using __uses_alloc2_ = __uses_alloc2<polymorphic_allocator>;
 
@@ -386,7 +385,12 @@ namespace pmr
 
   template<typename _Alloc> struct allocator_traits;
 
-  /// Partial specialization for std::pmr::polymorphic_allocator
+  /// Partial specialization for `std::pmr::polymorphic_allocator`
+  /**
+   * @ingroup pmr
+   * @headerfile memory_resource
+   * @since C++17
+   */
   template<typename _Tp>
     struct allocator_traits<pmr::polymorphic_allocator<_Tp>>
     {

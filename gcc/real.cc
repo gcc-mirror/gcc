@@ -5438,6 +5438,22 @@ void
 get_max_float (const struct real_format *fmt, char *buf, size_t len,
 	       bool norm_max)
 {
+  if (fmt->b == 10)
+    {
+      char *p = buf;
+      for (int i = fmt->p; i; i--)
+	{
+	  *p++ = '9';
+	  if (i == fmt->p)
+	    *p++ = '.';
+	}
+      /* fmt->p plus 1, to account for the decimal point and fmt->emax
+	 minus 1 because the digits are nines, not 1.0.  */
+      sprintf (buf + fmt->p + 1, "E%d", fmt->emax - 1);
+      gcc_assert (strlen (buf) < len);
+      return;
+    }
+
   int i, n;
   char *p;
   bool is_ibm_extended = fmt->pnan < fmt->p;

@@ -8602,16 +8602,12 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	    && TYPE_HAS_DEFAULT_CONSTRUCTOR (totype)
 	    && !processing_template_decl)
 	  {
-	    bool direct = CONSTRUCTOR_IS_DIRECT_INIT (expr);
 	    if (abstract_virtuals_error (NULL_TREE, totype, complain))
 	      return error_mark_node;
 	    expr = build_value_init (totype, complain);
 	    expr = get_target_expr (expr, complain);
 	    if (expr != error_mark_node)
-	      {
-		TARGET_EXPR_LIST_INIT_P (expr) = true;
-		TARGET_EXPR_DIRECT_INIT_P (expr) = direct;
-	      }
+	      TARGET_EXPR_LIST_INIT_P (expr) = true;
 	    return expr;
 	  }
 
@@ -13909,7 +13905,9 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
   init = cp_fully_fold (init);
   if (TREE_CONSTANT (init))
     {
-      if (literal_type_p (type) && CP_TYPE_CONST_NON_VOLATILE_P (type))
+      if (literal_type_p (type)
+	  && CP_TYPE_CONST_NON_VOLATILE_P (type)
+	  && !TYPE_HAS_MUTABLE_P (type))
 	{
 	  /* 5.19 says that a constant expression can include an
 	     lvalue-rvalue conversion applied to "a glvalue of literal type

@@ -17,6 +17,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 FRACTIONAL_INT_MODE (PSI, 24, 3);
+INT_N (PSI, 24);
 
 /* Make TA and UTA 64 bits wide.
    128 bit wide modes would be insane on a 8-bit machine.

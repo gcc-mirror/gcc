@@ -2107,7 +2107,40 @@ function_expander::add_input_operand (insn_code icode, rtx x)
       mode = GET_MODE (x);
     }
   else if (VALID_MVE_PRED_MODE (mode))
-    x = gen_lowpart (mode, x);
+    {
+      if (CONST_INT_P (x))
+	{
+	  if (mode == V8BImode || mode == V4BImode)
+	    {
+	      /* In V8BI or V4BI each element has 2 or 4 bits, if those bits
+		 aren't all the same, gen_lowpart might ICE.  Canonicalize all
+		 the 2 or 4 bits to all ones if any of them is non-zero.  V8BI
+		 and V4BI multi-bit masks are interpreted byte-by-byte at
+		 instruction level, but such constants should describe lanes,
+		 rather than bytes.  See the section on MVE intrinsics in the
+		 Arm ACLE specification.  */
+	      unsigned HOST_WIDE_INT xi = UINTVAL (x);
+	      xi |= ((xi & 0x5555) << 1) | ((xi & 0xaaaa) >> 1);
+	      if (mode == V4BImode)
+		xi |= ((xi & 0x3333) << 2) | ((xi & 0xcccc) >> 2);
+	      if (xi != UINTVAL (x))
+		warning_at (location, 0, "constant predicate argument %d"
+			    " (%wx) does not map to %d lane numbers,"
+			    " converted to %wx",
+			    opno, UINTVAL (x) & 0xffff,
+			    mode == V8BImode ? 8 : 4,
+			    xi & 0xffff);
+
+	      x = gen_int_mode (xi, HImode);
+	    }
+	  x = gen_lowpart (mode, x);
+	}
+      else
+	{
+	  auto byte = subreg_lowpart_offset (mode, GET_MODE (x));
+	  x = force_subreg (mode, x, GET_MODE (x), byte);
+	}
+    }
 
   m_ops.safe_grow (m_ops.length () + 1, true);
   create_input_operand (&m_ops.last (), x, mode);

@@ -1,3 +1,213 @@
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118509
+	* typeck.cc (get_member_function_from_ptrfunc): Wrap force_target_expr
+	with save_expr.
+
+2025-01-21  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-01-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118049
+	* module.cc (trees_in::is_matching_decl): Propagate
+	FNDECL_USED_AUTO as well.
+
+2025-01-19  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2025-01-17  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118255
+	* name-lookup.cc (pushdecl): Don't call check_template_shadow
+	for hidden bindings.
+
+2025-01-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-01-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118147
+	* parser.cc (cp_parser_cache_defarg): Don't error when
+	CPP_PRAGMA_EOL.
+
+2025-01-17  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2025-01-16  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117775
+	* decl.cc (fold_sizeof_expr): Make sure the folded result has
+	type size_type_node.
+
+2025-01-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114630
+	* module.cc (trees_in::core_vals) <BLOCK>: Chain a new node if
+	DECL_CHAIN already is set.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118060
+	* constraint.cc (tsubst_valid_expression_requirement): Don't
+	check convert_to_void during partial substitution.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117925
+	* constexpr.cc (potential_constant_expression_1) <case CAST_EXPR>:
+	Fix check for class conversion to literal type to properly look
+	through the TREE_LIST operand of a CAST_EXPR.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117925
+	* constexpr.cc (cxx_eval_constant_expression) <default>:
+	Relax ICE when encountering an unexpected tree code into a
+	checking ICE guarded by flag_checking.
+
+2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-01-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117792
+	* pt.cc (type_dependent_expression_p): Consider the dependence
+	of the address of each template argument of a function
+	template-id.
+
+2025-01-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-12-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117985
+	* init.cc (build_vec_init): Pop CLEANUP_FLAGS if we're not
+	generating the loop.
+
+2025-01-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-07-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115430
+	* typeck.cc (cp_build_compound_expr): Call resolve_nondeduced_context
+	on RHS.
+
+2025-01-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113108
+	* pt.cc (resolve_overloaded_unification): Call
+	maybe_instantiate_noexcept.
+
+2025-01-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102594
+	* init.cc (build_vec_init): Build up a CONSTRUCTOR to signal
+	direct-initialization rather than a TREE_LIST.
+
+2025-01-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116369
+	* call.cc (set_up_extended_ref_temp): Don't mark a temporary
+	TREE_READONLY if its type is TYPE_HAS_MUTABLE_P.
+
+2025-01-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-08-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115657
+	* decl.cc (build_enumerator): Call maybe_fold_non_dependent_expr
+	instead of fold_non_dependent_expr.
+
+2025-01-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-05-15  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114854
+	* call.cc (convert_like_internal) <case ck_user>: Don't set
+	TARGET_EXPR_DIRECT_INIT_P.
+
+2025-01-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109859
+	* parser.cc (cp_parser_lambda_declarator_opt): Temporarily clear
+	local_variables_forbidden_p.
+	(cp_parser_placeholder_type_specifier): Turn an assert into an
+	error.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117825
+	* typeck.cc (cp_build_function_call_vec): Don't call
+	check_function_arguments if complain doesn't have tf_warning bit set.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/116108
+	* decl.cc (grokdeclarator): Pass TYYPE_MAIN_VARIANT (type)
+	rather than type to same_type_p when checking if the non-static
+	data member doesn't have current class type.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117614
+	* constexpr.cc (cxx_eval_store_expression): For stores to
+	DECL_ANON_UNION_VAR_P vars just continue with DECL_VALUE_EXPR
+	of it, without setting evaluated to true or full
+	cxx_eval_constant_expression.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117317
+	* semantics.cc (emit_associated_thunks): Do nothing for
+	!DECL_INTERFACE_KNOWN && DECL_DEFER_OUTPUT fns.
+
+2025-01-03  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2024-12-29  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/100358
+	PR c++/115008
+	* module.cc (elf_out::create_mapping): Fallback to ftruncate if
+	posix_fallocate fails.
+
 2024-12-23  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

@@ -4919,7 +4919,13 @@ build_vec_init (tree base, tree maxindex, tree init,
 	      if (xvalue)
 		from = move (from);
 	      if (direct_init)
-		from = build_tree_list (NULL_TREE, from);
+		{
+		  /* Wrap the initializer in a CONSTRUCTOR so that
+		     build_vec_init recognizes it as direct-initialization.  */
+		  from = build_constructor_single (init_list_type_node,
+						   NULL_TREE, from);
+		  CONSTRUCTOR_IS_DIRECT_INIT (from) = true;
+		}
 	    }
 	  else
 	    from = NULL_TREE;
@@ -5056,6 +5062,15 @@ build_vec_init (tree base, tree maxindex, tree init,
     {
       if (!saw_non_const)
 	{
+	  /* If we're not generating the loop, we don't need to reset the
+	     iterator.  */
+	  if (cleanup_flags
+	      && !vec_safe_is_empty (*cleanup_flags))
+	    {
+	      auto l = (*cleanup_flags)->last ();
+	      gcc_assert (TREE_PURPOSE (l) == iterator);
+	      (*cleanup_flags)->pop ();
+	    }
 	  tree const_init = build_constructor (atype, const_vec);
 	  return build2 (INIT_EXPR, atype, obase, const_init);
 	}

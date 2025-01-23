@@ -1,3 +1,279 @@
+2025-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/117186
+	* rtl.h (simplify_context::simplify_logical_relational_operation): Add
+	an invert0_p parameter.
+	* simplify-rtx.cc (unsigned_comparison_to_mask): New function.
+	(mask_to_unsigned_comparison): Likewise.
+	(comparison_code_valid_for_mode): Delete.
+	(simplify_context::simplify_logical_relational_operation): Add
+	an invert0_p parameter.  Handle AND and XOR.  Handle unsigned
+	comparisons.  Handle always-false results.  Ignore the low bit
+	of the mask if the operands are always ordered and remove the
+	then-redundant check of comparison_code_valid_for_mode.  Check
+	for side-effects in the operands before simplifying them away.
+	(simplify_context::simplify_binary_operation_1): Remove
+	simplification of (compare (gt ...) (lt ...)) and instead...
+	(simplify_context::simplify_relational_operation_1): ...handle
+	comparisons of comparisons here.
+	(test_comparisons): New function.
+	(test_scalar_ops): Call it.
+
+2025-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118184
+	* config/aarch64/aarch64-early-ra.cc (allocno_assignment_is_rmw):
+	New function.
+	(early_ra::record_insn_defs): Mark the live range information as
+	untrustworthy if an assignment would change part of an allocno
+	but preserve the rest.
+
+2025-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2025-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movdi_internal): Reorder ISA attribute
+	by ascending alternative index.
+
+2025-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2024-12-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/118067
+	* config/i386/i386.md (*movdi_internal):
+	Disable alternatives from/to mask registers without AVX512BW.
+	(*movsi_internal): Ditto.
+
+2025-01-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-01-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118329
+	* config/avr/avr-modes.def: Add INT_N (PSI, 24).
+	* config/avr/avr.cc (avr_init_builtin_int24)
+	<__int24>: Remove definition.
+	<__uint24>: Adjust definition to INT_N interface.
+
+2025-01-17  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	Backported from master:
+	2025-01-16  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	PR gcov-profile/116743
+	* auto-profile.cc (afdo_annotate_cfg): Fix mismatch between the call graph node count
+	and the entry block count.
+
+2025-01-14  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2025-01-14  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/118140
+	* gimple-match-exports.cc (maybe_resimplify_conditional_op): Add
+	COND_EXPR when we simplified to a scalar gimple value but still
+	have an else value.
+
+2025-01-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Fix cortex-x4 parts
+	num.
+
+2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* multiple_target.cc
+	(redirect_to_specific_clone): Assert that "target" attribute is
+	used for FMV before checking it.
+	(ipa_target_clone): Skip redirect_to_specific_clone on some
+	targets.
+
+2025-01-10  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117912
+	* tree-ssa-sccvn.cc (copy_reference_ops_from_ref): For addresses
+	of zero-sized components do not set ->off if the object size pass
+	didn't run.
+	For OOB ARRAY_REF accesses in address expressions avoid setting
+	->off if the object size pass didn't run.
+	(valueize_refs_1): Likewise.
+
+2025-01-10  Sam James  <sam@gentoo.org>
+
+	* doc/cpp.texi (Common Predefined Macros): Fix syntax.
+
+2025-01-09  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2024-12-13  Christophe Lyon  <christophe.lyon@linaro.org>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/114801
+	* config/arm/arm-mve-builtins.cc
+	(function_expander::add_input_operand): Handle CONST_INT
+	predicates.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/118024
+	* gimple-ssa-warn-access.cc (matching_alloc_calls_p): Walk malloc
+	attributes of alloc_decl and dealloc_decl in separate loops rather
+	than in lock-step.  Use common_deallocs.contains rather than
+	common_deallocs.add in the second loop.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117095
+	* cse.cc (cse_extended_basic_block): Don't call record_jump_equiv
+	if multiple_sets (insn).
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/117960
+	* doc/invoke.texi (fsanitize=hwaddress): Clarify on which targets
+	it is supported.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/113994
+	PR rtl-optimization/116799
+	* loop-doloop.cc: Include targhooks.h.
+	(doloop_optimize): Also punt on intersection of modified
+	with df_get_live_in (desc->out_edge->dest).
+	(doloop_optimize_loops): Call df_analyze.  Use
+	LI_ONLY_INNERMOST or LI_FROM_INNERMOST instead of 0 as
+	second loops_list argument.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117847
+	* gimple-lower-bitint.cc (gimple_lower_bitint) <case LROTATE_EXPR>:
+	Use m = (p - n) % p instead of m = p - n for the other shift count.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/117851
+	* lto-wrapper.cc (find_crtoffloadtable): Add PIE_OR_SHARED argument,
+	search for crtoffloadtableS.o rather than crtoffloadtable.o if
+	true.
+	(run_gcc): Add pie_or_shared variable.  If OPT_pie or OPT_shared or
+	OPT_static_pie is seen, set pie_or_shared to true, if OPT_no_pie is
+	seen, set pie_or_shared to false.  Pass it to find_crtoffloadtable.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117642
+	* doc/extend.texi: Remove documentation of warning for unimplemented
+	__sync_* operations, such warning has never been implemented.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117802
+	* builtins.cc (fold_builtin_iseqsig): Handle BITINT_TYPE like
+	INTEGER_TYPE.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102674
+	* builtins.cc (fold_builtin_fpclassify): Use real_from_string3 rather
+	than real_from_string.  Use "1E%d" format string rather than "0x1p%d"
+	for decimal float minimum.  Formatting fixes.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43374
+	* real.cc (get_max_float): Handle decimal float.
+	* builtins.cc (fold_builtin_interclass_mathfn): Use
+	real_from_string3 rather than real_from_string.  Use
+	"1E%d" format string rather than "0x1p%d" for decimal
+	float minimum.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94589
+	PR tree-optimization/117612
+	* tree-ssa-phiopt.cc (spaceship_replacement): Fix up
+	a pasto in check when arg1 is 2.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117458
+	* expr.cc (expand_expr_real_1) <case VIEW_CONVERT_EXPR>: Don't
+	call extract_bit_field if op0 has complex mode and isn't a MEM,
+	instead first force op0 into memory and then call extract_bit_field.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117459
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_stmt,
+	bitint_large_huge::lower_stmt): Handle PAREN_EXPR.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117439
+	* gimple-ssa-store-merging.cc
+	(imm_store_chain_info::coalesce_immediate_stores): Punt if merging of
+	any of the additional overlapping stores would result in growing the
+	bitregion size over param_store_merging_max_size.
+	(pass_store_merging::process_store): Terminate all aliasing chains
+	for stores with bitregion larger than param_store_merging_max_size.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117439
+	* gimple-ssa-store-merging.cc (encode_tree_to_bitpos): For
+	empty_ctor_p use !sub_byte_op_p even if bitlen doesn't have an
+	integral mode.
+
 2024-12-23  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
