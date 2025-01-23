@@ -901,186 +901,186 @@ _mm_maskz_getexp_pbh (__mmask8 __U, __m128bh __A)
 					__U);
 }
 
-/* Intrinsics vrndscalepbf16.  */
+/* Intrinsics vrndscalebf16.  */
 #ifdef __OPTIMIZE__
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_roundscalene_pbh (__m256bh __A, int B)
+_mm256_roundscale_pbh (__m256bh __A, int B)
 {
   return (__m256bh)
-    __builtin_ia32_rndscalenepbf16256_mask (__A, B,
-					    (__v16bf) _mm256_setzero_si256 (),
-					    (__mmask16) -1);
+    __builtin_ia32_rndscalebf16256_mask (__A, B,
+					 (__v16bf) _mm256_setzero_si256 (),
+					 (__mmask16) -1);
 }
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_roundscalene_pbh (__m256bh __W, __mmask16 __U,
-			      __m256bh __A, int B)
+_mm256_mask_roundscale_pbh (__m256bh __W, __mmask16 __U,
+			    __m256bh __A, int B)
 {
   return (__m256bh)
-    __builtin_ia32_rndscalenepbf16256_mask (__A, B, __W, __U);
+    __builtin_ia32_rndscalebf16256_mask (__A, B, __W, __U);
 }
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_roundscalene_pbh (__mmask16 __U, __m256bh __A, int B)
+_mm256_maskz_roundscale_pbh (__mmask16 __U, __m256bh __A, int B)
 {
   return (__m256bh)
-    __builtin_ia32_rndscalenepbf16256_mask (__A, B,
-					    (__v16bf) _mm256_setzero_si256 (),
-					    __U);
+    __builtin_ia32_rndscalebf16256_mask (__A, B,
+					 (__v16bf) _mm256_setzero_si256 (),
+					 __U);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_roundscalene_pbh (__m128bh __A, int B)
+_mm_roundscale_pbh (__m128bh __A, int B)
 {
   return (__m128bh)
-    __builtin_ia32_rndscalenepbf16128_mask (__A, B,
-					    (__v8bf) _mm_setzero_si128 (),
-					    (__mmask8) -1);
+    __builtin_ia32_rndscalebf16128_mask (__A, B,
+					 (__v8bf) _mm_setzero_si128 (),
+					 (__mmask8) -1);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_roundscalene_pbh (__m128bh __W, __mmask8 __U,
-			   __m128bh __A, int B)
+_mm_mask_roundscale_pbh (__m128bh __W, __mmask8 __U,
+			 __m128bh __A, int B)
 {
   return (__m128bh)
-    __builtin_ia32_rndscalenepbf16128_mask (__A, B, __W, __U);
+    __builtin_ia32_rndscalebf16128_mask (__A, B, __W, __U);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_roundscalene_pbh (__mmask8 __U, __m128bh __A, int B)
+_mm_maskz_roundscale_pbh (__mmask8 __U, __m128bh __A, int B)
 {
   return (__m128bh)
-    __builtin_ia32_rndscalenepbf16128_mask (__A, B,
-					    (__v8bf) _mm_setzero_si128 (),
-					    __U);
+    __builtin_ia32_rndscalebf16128_mask (__A, B,
+					 (__v8bf) _mm_setzero_si128 (),
+					 __U);
 }
 
 #else
-#define _mm256_roundscalene_pbh(A, B)					      \
-  (__builtin_ia32_rndscalenepbf16256_mask ((A), (B),			      \
-					   (__v16bf) _mm256_setzero_si256 (), \
-					   (__mmask16) -1))
+#define _mm256_roundscale_pbh(A, B)					      \
+  (__builtin_ia32_rndscalebf16256_mask ((A), (B),			      \
+					(__v16bf) _mm256_setzero_si256 (),    \
+					(__mmask16) -1))
 
-#define _mm256_mask_roundscalene_pbh(A, B, C, D)	    		      \
-  (__builtin_ia32_rndscalenepbf16256_mask ((C), (D), (A), (B)))
+#define _mm256_mask_roundscale_pbh(A, B, C, D)	    		      \
+  (__builtin_ia32_rndscalebf16256_mask ((C), (D), (A), (B)))
 
-#define _mm256_maskz_roundscalene_pbh(A, B, C)				      \
-  (__builtin_ia32_rndscalenepbf16256_mask ((B), (C),			      \
-					   (__v16bf) _mm256_setzero_si256 (), \
-					   (A)))
+#define _mm256_maskz_roundscale_pbh(A, B, C)				      \
+  (__builtin_ia32_rndscalebf16256_mask ((B), (C),			      \
+					(__v16bf) _mm256_setzero_si256 (),    \
+					(A)))
 
-#define _mm_roundscalene_pbh(A, B)					      \
-  (__builtin_ia32_rndscalenepbf16128_mask ((A), (B),			      \
-					   (__v8bf) _mm_setzero_si128 (),     \
-					   (__mmask8) -1))
+#define _mm_roundscale_pbh(A, B)					      \
+  (__builtin_ia32_rndscalebf16128_mask ((A), (B),			      \
+					(__v8bf) _mm_setzero_si128 (),	      \
+					(__mmask8) -1))
 
-#define _mm_mask_roundscalene_pbh(A, B, C, D)				      \
-  (__builtin_ia32_rndscalenepbf16128_mask ((C), (D), (A), (B)))
+#define _mm_mask_roundscale_pbh(A, B, C, D)				      \
+  (__builtin_ia32_rndscalebf16128_mask ((C), (D), (A), (B)))
 
-#define _mm_maskz_roundscalene_pbh(A, B, C)				      \
-  (__builtin_ia32_rndscalenepbf16128_mask ((B), (C),			      \
-					   (__v8bf) _mm_setzero_si128 (),     \
-					   (A)))
+#define _mm_maskz_roundscale_pbh(A, B, C)				      \
+  (__builtin_ia32_rndscalebf16128_mask ((B), (C),			      \
+					(__v8bf) _mm_setzero_si128 (),	      \
+					(A)))
 
 #endif /* __OPTIMIZE__ */
 
-/* Intrinsics vreducepbf16.  */
+/* Intrinsics vreducebf16.  */
 #ifdef __OPTIMIZE__
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_reducene_pbh (__m256bh __A, int B)
+_mm256_reduce_pbh (__m256bh __A, int B)
 {
   return (__m256bh)
-    __builtin_ia32_reducenepbf16256_mask (__A, B,
-					  (__v16bf) _mm256_setzero_si256 (),
-					  (__mmask16) -1);
+    __builtin_ia32_reducebf16256_mask (__A, B,
+				       (__v16bf) _mm256_setzero_si256 (),
+				       (__mmask16) -1);
 }
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_reducene_pbh (__m256bh __W, __mmask16 __U,
-			  __m256bh __A, int B)
+_mm256_mask_reduce_pbh (__m256bh __W, __mmask16 __U,
+			__m256bh __A, int B)
 {
   return (__m256bh)
-    __builtin_ia32_reducenepbf16256_mask (__A, B, __W, __U);
+    __builtin_ia32_reducebf16256_mask (__A, B, __W, __U);
 }
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_reducene_pbh (__mmask16 __U, __m256bh __A, int B)
+_mm256_maskz_reduce_pbh (__mmask16 __U, __m256bh __A, int B)
 {
   return (__m256bh)
-    __builtin_ia32_reducenepbf16256_mask (__A, B,
-					  (__v16bf) _mm256_setzero_si256 (),
-					  __U);
+    __builtin_ia32_reducebf16256_mask (__A, B,
+				       (__v16bf) _mm256_setzero_si256 (),
+				       __U);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_reducene_pbh (__m128bh __A, int B)
+_mm_reduce_pbh (__m128bh __A, int B)
 {
   return (__m128bh)
-    __builtin_ia32_reducenepbf16128_mask (__A, B,
-					  (__v8bf) _mm_setzero_si128 (),
-					  (__mmask8) -1);
+    __builtin_ia32_reducebf16128_mask (__A, B,
+				       (__v8bf) _mm_setzero_si128 (),
+				       (__mmask8) -1);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_reducene_pbh (__m128bh __W, __mmask8 __U,
-		       __m128bh __A, int B)
+_mm_mask_reduce_pbh (__m128bh __W, __mmask8 __U,
+		     __m128bh __A, int B)
 {
   return (__m128bh)
-    __builtin_ia32_reducenepbf16128_mask (__A, B, __W, __U);
+    __builtin_ia32_reducebf16128_mask (__A, B, __W, __U);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_reducene_pbh (__mmask8 __U, __m128bh __A, int B)
+_mm_maskz_reduce_pbh (__mmask8 __U, __m128bh __A, int B)
 {
   return (__m128bh)
-    __builtin_ia32_reducenepbf16128_mask (__A, B,
-					  (__v8bf) _mm_setzero_si128 (),
-					  __U);
+    __builtin_ia32_reducebf16128_mask (__A, B,
+				       (__v8bf) _mm_setzero_si128 (),
+				       __U);
 }
 
 #else
-#define _mm256_reducene_pbh(A, B)					      \
-  (__builtin_ia32_reducenepbf16256_mask ((A), (B),			      \
-					 (__v16bf) _mm256_setzero_si256 (),   \
-					 (__mmask16) -1))
+#define _mm256_reduce_pbh(A, B)					      \
+  (__builtin_ia32_reducebf16256_mask ((A), (B),			      \
+				      (__v16bf) _mm256_setzero_si256 (),      \
+				      (__mmask16) -1))
 
-#define _mm256_mask_reducene_pbh(A, B, C, D)				      \
-  (__builtin_ia32_reducenepbf16256_mask ((C), (D), (A), (B)))
+#define _mm256_mask_reduce_pbh(A, B, C, D)				      \
+  (__builtin_ia32_reducebf16256_mask ((C), (D), (A), (B)))
 
-#define _mm256_maskz_reducene_pbh(A, B, C)				      \
-  (__builtin_ia32_reducenepbf16256_mask ((B), (C),			      \
-					 (__v16bf) _mm256_setzero_si256 (),   \
-					 (A)))
+#define _mm256_maskz_reduce_pbh(A, B, C)				      \
+  (__builtin_ia32_reducebf16256_mask ((B), (C),			      \
+				      (__v16bf) _mm256_setzero_si256 (),      \
+				      (A)))
 
-#define _mm_reducene_pbh(A, B)						      \
-  (__builtin_ia32_reducenepbf16128_mask ((A), (B),			      \
-					 (__v8bf) _mm_setzero_si128 (),       \
-					 (__mmask8) -1))
+#define _mm_reduce_pbh(A, B)						      \
+  (__builtin_ia32_reducebf16128_mask ((A), (B),			      \
+				      (__v8bf) _mm_setzero_si128 (),	      \
+				      (__mmask8) -1))
 
-#define _mm_mask_reducene_pbh(A, B, C, D)				      \
-  (__builtin_ia32_reducenepbf16128_mask ((C), (D), (A), (B)))
+#define _mm_mask_reduce_pbh(A, B, C, D)				      \
+  (__builtin_ia32_reducebf16128_mask ((C), (D), (A), (B)))
 
-#define _mm_maskz_reducene_pbh(A, B, C)					      \
-  (__builtin_ia32_reducenepbf16128_mask ((B), (C),			      \
-					 (__v8bf) _mm_setzero_si128 (),       \
-					 (A)))
+#define _mm_maskz_reduce_pbh(A, B, C)					      \
+  (__builtin_ia32_reducebf16128_mask ((B), (C),			      \
+				      (__v8bf) _mm_setzero_si128 (),	      \
+				      (A)))
 
 #endif /* __OPTIMIZE__ */
 
 
-/* Intrinsics vgetmantpbf16.  */
+/* Intrinsics vgetmantbf16.  */
 #ifdef __OPTIMIZE__
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -1088,9 +1088,9 @@ _mm256_getmant_pbh (__m256bh __A, _MM_MANTISSA_NORM_ENUM __B,
 		    _MM_MANTISSA_SIGN_ENUM __C)
 {
   return (__m256bh)
-    __builtin_ia32_getmantpbf16256_mask (__A, (int) (__C << 2) | __B,
-					 (__v16bf) _mm256_setzero_si256 (),
-					 (__mmask16) -1);
+    __builtin_ia32_getmantbf16256_mask (__A, (int) (__C << 2) | __B,
+					(__v16bf) _mm256_setzero_si256 (),
+					(__mmask16) -1);
 }
 
 extern __inline__ __m256bh
@@ -1100,8 +1100,8 @@ _mm256_mask_getmant_pbh (__m256bh __W, __mmask16 __U, __m256bh __A,
 			 _MM_MANTISSA_SIGN_ENUM __C)
 {
   return (__m256bh)
-    __builtin_ia32_getmantpbf16256_mask (__A, (int) (__C << 2) | __B,
-					 __W, __U);
+    __builtin_ia32_getmantbf16256_mask (__A, (int) (__C << 2) | __B,
+					__W, __U);
 }
 
 extern __inline__ __m256bh
@@ -1111,9 +1111,9 @@ _mm256_maskz_getmant_pbh (__mmask16 __U, __m256bh __A,
 			  _MM_MANTISSA_SIGN_ENUM __C)
 {
   return (__m256bh)
-    __builtin_ia32_getmantpbf16256_mask (__A, (int) (__C << 2) | __B,
-					 (__v16bf) _mm256_setzero_si256 (),
-					 __U);
+    __builtin_ia32_getmantbf16256_mask (__A, (int) (__C << 2) | __B,
+					(__v16bf) _mm256_setzero_si256 (),
+					__U);
 }
 
 extern __inline__ __m128bh
@@ -1122,9 +1122,9 @@ _mm_getmant_pbh (__m128bh __A, _MM_MANTISSA_NORM_ENUM __B,
 		 _MM_MANTISSA_SIGN_ENUM __C)
 {
   return (__m128bh)
-    __builtin_ia32_getmantpbf16128_mask (__A, (int) (__C << 2) | __B,
-					 (__v8bf) _mm_setzero_si128 (),
-					 (__mmask8) -1);
+    __builtin_ia32_getmantbf16128_mask (__A, (int) (__C << 2) | __B,
+					(__v8bf) _mm_setzero_si128 (),
+					(__mmask8) -1);
 }
 
 extern __inline__ __m128bh
@@ -1134,8 +1134,8 @@ _mm_mask_getmant_pbh (__m128bh __W, __mmask8 __U, __m128bh __A,
 		      _MM_MANTISSA_SIGN_ENUM __C)
 {
   return (__m128bh)
-    __builtin_ia32_getmantpbf16128_mask (__A, (int) (__C << 2) | __B,
-					 __W, __U);
+    __builtin_ia32_getmantbf16128_mask (__A, (int) (__C << 2) | __B,
+					__W, __U);
 }
 
 extern __inline__ __m128bh
@@ -1145,36 +1145,36 @@ _mm_maskz_getmant_pbh (__mmask8 __U, __m128bh __A,
 		       _MM_MANTISSA_SIGN_ENUM __C)
 {
   return (__m128bh)
-    __builtin_ia32_getmantpbf16128_mask (__A, (int) (__C << 2) | __B,
-					 (__v8bf) _mm_setzero_si128 (),
-					 __U);
+    __builtin_ia32_getmantbf16128_mask (__A, (int) (__C << 2) | __B,
+					(__v8bf) _mm_setzero_si128 (),
+					__U);
 }
 
 #else
 #define _mm256_getmant_pbh(A, B, C)					      \
-  (__builtin_ia32_getmantpbf16256_mask ((A), (int)(((C)<<2) | (B)),	      \
-					   (__v16bf) _mm256_setzero_si256 (), \
-					   (__mmask16) (-1)))
+  (__builtin_ia32_getmantbf16256_mask ((A), (int)(((C)<<2) | (B)),	      \
+				       (__v16bf) _mm256_setzero_si256 (),     \
+				       (__mmask16) (-1)))
 
 #define _mm256_mask_getmant_pbh(A, B, C, D, E)				      \
-  (__builtin_ia32_getmantpbf16256_mask ((C), (int)(((D)<<2) | (E)), (A), (B)))
+  (__builtin_ia32_getmantbf16256_mask ((C), (int)(((D)<<2) | (E)), (A), (B)))
 
 #define _mm256_maskz_getmant_pbh(A, B, C, D)				      \
-  (__builtin_ia32_getmantpbf16256_mask ((B), (int)(((C)<<2) | (D)),	      \
-					   (__v16bf) _mm256_setzero_si256 (), \
-					   (A)))
+  (__builtin_ia32_getmantbf16256_mask ((B), (int)(((C)<<2) | (D)),	      \
+				       (__v16bf) _mm256_setzero_si256 (),     \
+				       (A)))
 
 #define _mm_getmant_pbh(A, B, C)					      \
-  (__builtin_ia32_getmantpbf16128_mask ((A), (int)(((C)<<2) | (B)),	      \
-					(__v8bf) _mm_setzero_si128 (),	      \
-					(__mmask8) (-1)))
+  (__builtin_ia32_getmantbf16128_mask ((A), (int)(((C)<<2) | (B)),	      \
+				       (__v8bf) _mm_setzero_si128 (),	      \
+				       (__mmask8) (-1)))
 
 #define _mm_mask_getmant_pbh(A, B, C, D, E)				      \
-  (__builtin_ia32_getmantpbf16128_mask ((C), (int)(((D)<<2) | (E)), (A), (B)))
+  (__builtin_ia32_getmantbf16128_mask ((C), (int)(((D)<<2) | (E)), (A), (B)))
 
 #define _mm_maskz_getmant_pbh(A, B, C, D)				      \
-  (__builtin_ia32_getmantpbf16128_mask ((B), (int)(((C)<<2) | (D)),	      \
-					(__v8bf) _mm_setzero_si128 (), (A)))
+  (__builtin_ia32_getmantbf16128_mask ((B), (int)(((C)<<2) | (D)),	      \
+				       (__v8bf) _mm_setzero_si128 (), (A)))
 
 #endif /* __OPTIMIZE__ */
 

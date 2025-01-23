@@ -30,9 +30,9 @@ TEST (void)
       res_ref[i] = res_ref2[i] =  convert_fp32_to_bf16_ne (rndscale (x));
     }
 
-  res1.x = INTRINSIC (_roundscalene_pbh) (src1.x, 0x10);
-  res2.x = INTRINSIC (_mask_roundscalene_pbh) (res2.x, mask, src1.x, 0x10);
-  res3.x = INTRINSIC (_maskz_roundscalene_pbh) (mask, src1.x, 0x10);
+  res1.x = INTRINSIC (_roundscale_pbh) (src1.x, 0x10);
+  res2.x = INTRINSIC (_mask_roundscale_pbh) (res2.x, mask, src1.x, 0x10);
+  res3.x = INTRINSIC (_maskz_roundscale_pbh) (mask, src1.x, 0x10);
 
   if (UNION_CHECK (AVX512F_LEN, bf16_uw) (res1, res_ref))
     abort ();
