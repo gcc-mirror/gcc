@@ -1722,6 +1722,21 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	    sym->backend_decl = DECL_CHAIN (sym->backend_decl);
 	}
 
+      /* Automatic array indices in module procedures need the backend_decl
+	 to be extracted from the procedure formal arglist.  */
+      if (sym->attr.dummy && !sym->backend_decl)
+	{
+	  gfc_formal_arglist *f;
+	  for (f = sym->ns->proc_name->formal; f; f = f->next)
+	    {
+	      gfc_symbol *fsym = f->sym;
+	      if (strcmp (sym->name, fsym->name))
+		continue;
+	      sym->backend_decl = fsym->backend_decl;
+	      break;
+	     }
+	}
+
       /* Dummy variables should already have been created.  */
       gcc_assert (sym->backend_decl);
 

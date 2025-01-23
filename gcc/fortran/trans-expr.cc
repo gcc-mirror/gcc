@@ -5099,7 +5099,7 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
   /* TODO Find out why the condition on expr->symtree had to be moved into
      the loop rather than being outside it, as originally.  */
   for (sym = mapping->syms; sym; sym = sym->next)
-    if (expr->symtree && sym->old == expr->symtree->n.sym)
+    if (expr->symtree && !strcmp (sym->old->name, expr->symtree->n.sym->name))
       {
 	if (sym->new_sym->n.sym->backend_decl)
 	  expr->symtree = sym->new_sym;
