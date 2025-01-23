@@ -12816,8 +12816,8 @@ riscv_expand_ssadd (rtx dest, rtx x, rtx y)
   machine_mode mode = GET_MODE (dest);
   unsigned bitsize = GET_MODE_BITSIZE (mode).to_constant ();
   rtx shift_bits = GEN_INT (bitsize - 1);
-  rtx xmode_x = gen_lowpart (Xmode, x);
-  rtx xmode_y = gen_lowpart (Xmode, y);
+  rtx xmode_x = riscv_extend_to_xmode_reg (x, mode, SIGN_EXTEND);
+  rtx xmode_y = riscv_extend_to_xmode_reg (y, mode, SIGN_EXTEND);
   rtx xmode_sum = gen_reg_rtx (Xmode);
   rtx xmode_dest = gen_reg_rtx (Xmode);
   rtx xmode_xor_0 = gen_reg_rtx (Xmode);
