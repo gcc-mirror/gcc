@@ -1562,7 +1562,8 @@ enum cp_lambda_default_capture_mode_type {
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->locus)
 
 /* The mangling scope for the lambda: FUNCTION_DECL, PARM_DECL, VAR_DECL,
-   FIELD_DECL or NULL_TREE.  If this is NULL_TREE, we have no linkage.  */
+   FIELD_DECL, TYPE_DECL, or NULL_TREE.  If this is NULL_TREE, we have no
+   linkage.  */
 #define LAMBDA_EXPR_EXTRA_SCOPE(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->extra_scope)
 

@@ -12606,6 +12606,10 @@ instantiate_class_template (tree type)
   gcc_assert (!DECL_CLASS_SCOPE_P (TYPE_MAIN_DECL (pattern))
 	      || COMPLETE_OR_OPEN_TYPE_P (TYPE_CONTEXT (type)));
 
+  /* When instantiating nested lambdas, ensure that they get the mangling
+     scope of the new class type.  */
+  start_lambda_scope (TYPE_NAME (type));
+
   base_list = NULL_TREE;
   /* Defer access checking while we substitute into the types named in
      the base-clause.  */
@@ -12966,6 +12970,8 @@ instantiate_class_template (tree type)
   unreverse_member_declarations (type);
   finish_struct_1 (type);
   TYPE_BEING_DEFINED (type) = 0;
+
+  finish_lambda_scope ();
 
   /* Remember if instantiating this class ran into errors, so we can avoid
      instantiating member functions in limit_bad_template_recursion.  We set
