@@ -105,6 +105,7 @@ typedef enum omp_pause_resource_t
   omp_pause_hard = 2
 } omp_pause_resource_t;
 
+typedef __INTPTR_TYPE__ omp_intptr_t;
 typedef __UINTPTR_TYPE__ omp_uintptr_t;
 
 #if __cplusplus >= 201103L
@@ -191,13 +192,60 @@ enum
   omp_invalid_device = -4
 };
 
+typedef enum omp_interop_t __GOMP_UINTPTR_T_ENUM
+{
+  omp_interop_none = 0,
+  __omp_interop_t_max__ = __UINTPTR_MAX__
+} omp_interop_t;
+
+typedef enum omp_interop_fr_t
+{
+  omp_ifr_cuda = 1,
+  omp_ifr_cuda_driver = 2,
+  omp_ifr_opencl = 3,
+  omp_ifr_sycl = 4,
+  omp_ifr_hip = 5,
+  omp_ifr_level_zero = 6,
+  omp_ifr_hsa = 7,
+  omp_ifr_last = omp_ifr_hsa
+} omp_interop_fr_t;
+
+typedef enum omp_interop_property_t
+{
+  omp_ipr_fr_id = -1,
+  omp_ipr_fr_name = -2,
+  omp_ipr_vendor = -3,
+  omp_ipr_vendor_name = -4,
+  omp_ipr_device_num = -5,
+  omp_ipr_platform = -6,
+  omp_ipr_device = -7,
+  omp_ipr_device_context = -8,
+  omp_ipr_targetsync = -9,
+  omp_ipr_first = -9
+} omp_interop_property_t;
+
+
+typedef enum omp_interop_rc_t
+{
+  omp_irc_no_value = 1,
+  omp_irc_success = 0,
+  omp_irc_empty = -1,
+  omp_irc_out_of_range = -2,
+  omp_irc_type_int = -3,
+  omp_irc_type_ptr = -4,
+  omp_irc_type_str = -5,
+  omp_irc_other = -6
+} omp_interop_rc_t;
+
 #ifdef __cplusplus
 extern "C" {
 # define __GOMP_NOTHROW throw ()
 # define __GOMP_DEFAULT_NULL_ALLOCATOR = omp_null_allocator
+# define __GOMP_DEFAULT_NULL = __null
 #else
 # define __GOMP_NOTHROW __attribute__((__nothrow__))
 # define __GOMP_DEFAULT_NULL_ALLOCATOR
+# define __GOMP_DEFAULT_NULL
 #endif
 
 extern void omp_set_num_threads (int) __GOMP_NOTHROW;
@@ -282,7 +330,7 @@ extern int omp_target_memcpy (void *, const void *, __SIZE_TYPE__,
   __GOMP_NOTHROW;
 extern int omp_target_memcpy_async (void *, const void *, __SIZE_TYPE__,
 				    __SIZE_TYPE__, __SIZE_TYPE__, int, int,
-				    int, omp_depend_t *)
+				    int, omp_depend_t * __GOMP_DEFAULT_NULL)
   __GOMP_NOTHROW;
 extern int omp_target_memcpy_rect (void *, const void *, __SIZE_TYPE__, int,
 				   const __SIZE_TYPE__ *,
@@ -297,7 +345,7 @@ extern int omp_target_memcpy_rect_async (void *, const void *, __SIZE_TYPE__,
 					 const __SIZE_TYPE__ *,
 					 const __SIZE_TYPE__ *,
 					 const __SIZE_TYPE__ *, int, int, int,
-					 omp_depend_t *)
+					 omp_depend_t * __GOMP_DEFAULT_NULL)
   __GOMP_NOTHROW;
 extern int omp_target_associate_ptr (const void *, const void *, __SIZE_TYPE__,
 				     __SIZE_TYPE__, int) __GOMP_NOTHROW;
@@ -350,6 +398,32 @@ extern void *omp_realloc (void *, __SIZE_TYPE__,
   __GOMP_NOTHROW __attribute__((__malloc__ (omp_free), __alloc_size__ (2)));
 
 extern void omp_display_env (int) __GOMP_NOTHROW;
+
+extern int omp_get_num_interop_properties (const omp_interop_t) __GOMP_NOTHROW;
+
+extern omp_intptr_t omp_get_interop_int (const omp_interop_t,
+					 omp_interop_property_t,
+					 omp_interop_rc_t * __GOMP_DEFAULT_NULL)
+  __GOMP_NOTHROW;
+
+extern void *omp_get_interop_ptr (const omp_interop_t, omp_interop_property_t,
+				  omp_interop_rc_t * __GOMP_DEFAULT_NULL)
+  __GOMP_NOTHROW;
+
+extern const char *omp_get_interop_str (const omp_interop_t,
+					omp_interop_property_t,
+					omp_interop_rc_t * __GOMP_DEFAULT_NULL)
+  __GOMP_NOTHROW;
+
+extern const char *omp_get_interop_name (const omp_interop_t,
+					 omp_interop_property_t) __GOMP_NOTHROW;
+
+extern const char *omp_get_interop_type_desc (const omp_interop_t,
+					      omp_interop_property_t)
+  __GOMP_NOTHROW;
+
+extern const char *omp_get_interop_rc_desc (const omp_interop_t,
+					    omp_interop_rc_t) __GOMP_NOTHROW;
 
 #ifdef __cplusplus
 }

@@ -102,6 +102,10 @@ ialias_redirect (omp_set_default_allocator)
 ialias_redirect (omp_get_default_allocator)
 ialias_redirect (omp_display_env)
 ialias_redirect (omp_fulfill_event)
+ialias_redirect (omp_get_interop_str)
+ialias_redirect (omp_get_interop_name)
+ialias_redirect (omp_get_interop_type_desc)
+ialias_redirect (omp_get_interop_rc_desc)
 #endif
 
 #ifndef LIBGOMP_GNU_SYMBOL_VERSIONING
@@ -791,6 +795,43 @@ intptr_t
 omp_get_default_allocator_ ()
 {
   return (intptr_t) omp_get_default_allocator ();
+}
+
+void
+omp_get_interop_str_ (const char **res, size_t *res_len,
+		      const omp_interop_t interop,
+		      omp_interop_property_t property_id,
+		      omp_interop_rc_t *ret_code)
+{
+  *res = omp_get_interop_str (interop, property_id, ret_code);
+  *res_len = *res ? strlen (*res) : 0;
+}
+
+void
+omp_get_interop_name_ (const char **res, size_t *res_len,
+		       const omp_interop_t interop,
+		       omp_interop_property_t property_id)
+{
+  *res = omp_get_interop_name (interop, property_id);
+  *res_len = *res ? strlen (*res) : 0;
+}
+
+void
+omp_get_interop_type_desc_ (const char **res, size_t *res_len,
+			    const omp_interop_t interop,
+			    omp_interop_property_t property_id)
+{
+  *res = omp_get_interop_type_desc (interop, property_id);
+  *res_len = *res ? strlen (*res) : 0;
+}
+
+void
+omp_get_interop_rc_desc_ (const char **res, size_t *res_len,
+			  const omp_interop_t interop,
+			  omp_interop_rc_t ret_code)
+{
+  *res = omp_get_interop_rc_desc (interop, ret_code);
+  *res_len = *res ? strlen (*res) : 0;
 }
 
 #ifndef LIBGOMP_OFFLOADED_ONLY
