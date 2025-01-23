@@ -177,7 +177,9 @@ write_utf8_char4 (st_parameter_dt *dtp, gfc_char4_t *source,
       break;
     }
 
-  /* Now process the remaining characters, one at a time.  */
+  /* Now process the remaining characters, one at a time. We need to
+     adjust the src_len if the user has specified a field width.  */
+  src_len = w_len > 0 ? w_len : src_len;
   for (j = k; j < src_len; j++)
     {
       c = source[j];
