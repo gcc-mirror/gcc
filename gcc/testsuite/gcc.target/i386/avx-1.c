@@ -1085,14 +1085,14 @@
 #define __builtin_ia32_minmaxpd512_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxpd512_mask_round (A, B, 4, D, E, 4)
 #define __builtin_ia32_minmaxph512_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxph512_mask_round (A, B, 4, D, E, 4)
 #define __builtin_ia32_minmaxps512_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxps512_mask_round (A, B, 4, D, E, 4)
-#define __builtin_ia32_minmaxnepbf16512_mask(A, B, C, W, U) __builtin_ia32_minmaxnepbf16512_mask (A, B, 4, W, U)
+#define __builtin_ia32_minmaxbf16512_mask(A, B, C, W, U) __builtin_ia32_minmaxbf16512_mask (A, B, 4, W, U)
 
 /* avx10_2minmaxintrin.h  */
 #define __builtin_ia32_minmaxsd_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxsd_mask_round (A, B, 4, D, E, 4)
 #define __builtin_ia32_minmaxsh_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxsh_mask_round (A, B, 4, D, E, 4)
 #define __builtin_ia32_minmaxss_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxss_mask_round (A, B, 4, D, E, 4)
-#define __builtin_ia32_minmaxnepbf16128_mask(A, B, C, D, E) __builtin_ia32_minmaxnepbf16128_mask (A, B, 4, D, E)
-#define __builtin_ia32_minmaxnepbf16256_mask(A, B, C, D, E) __builtin_ia32_minmaxnepbf16256_mask (A, B, 4, D, E)
+#define __builtin_ia32_minmaxbf16128_mask(A, B, C, D, E) __builtin_ia32_minmaxbf16128_mask (A, B, 4, D, E)
+#define __builtin_ia32_minmaxbf16256_mask(A, B, C, D, E) __builtin_ia32_minmaxbf16256_mask (A, B, 4, D, E)
 #define __builtin_ia32_minmaxpd128_mask(A, B, C, D, E) __builtin_ia32_minmaxpd128_mask (A, B, 4, D, E)
 #define __builtin_ia32_minmaxpd256_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxpd256_mask_round (A, B, 4, D, E, 4)
 #define __builtin_ia32_minmaxph128_mask(A, B, C, D, E) __builtin_ia32_minmaxph128_mask (A, B, 4, D, E)

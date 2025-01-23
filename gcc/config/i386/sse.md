@@ -249,7 +249,7 @@
   UNSPEC_VCVTTPS2IUBS
   UNSPEC_SFIX_SATURATION
   UNSPEC_UFIX_SATURATION
-  UNSPEC_MINMAXNEPBF16
+  UNSPEC_MINMAXBF16
   UNSPEC_MINMAX
 
   ;; For MOVRS suppport
@@ -32627,15 +32627,15 @@
  (set_attr "prefix" "evex")
  (set_attr "mode" "<MODE>")])
 
-(define_insn "avx10_2_minmaxnepbf16_<mode><mask_name>"
+(define_insn "avx10_2_minmaxbf16_<mode><mask_name>"
   [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
     (unspec:VBF_AVX10_2
       [(match_operand:VBF_AVX10_2 1 "register_operand" "v")
        (match_operand:VBF_AVX10_2 2 "bcst_vector_operand" "vmBr")
        (match_operand:SI 3 "const_0_to_255_operand")]
-       UNSPEC_MINMAXNEPBF16))]
+       UNSPEC_MINMAXBF16))]
   "TARGET_AVX10_2_256"
-  "vminmaxnepbf16\t{%3, %2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2, %3}"
+  "vminmaxbf16\t{%3, %2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2, %3}"
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 

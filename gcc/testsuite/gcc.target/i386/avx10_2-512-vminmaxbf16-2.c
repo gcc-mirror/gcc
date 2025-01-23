@@ -27,10 +27,10 @@ TEST (void)
   MASK_TYPE mask = MASK_VALUE;
   __bf16 res_ref[SIZE];
 
-  UNIT_TEST(0, nepbh, bf16_bf, __bf16);
-  UNIT_TEST(1, nepbh, bf16_bf, __bf16);
-  UNIT_TEST(4, nepbh, bf16_bf, __bf16);
-  UNIT_TEST(5, nepbh, bf16_bf, __bf16);
-  UNIT_TEST(16, nepbh, bf16_bf, __bf16);
-  UNIT_TEST(17, nepbh, bf16_bf, __bf16);
+  UNIT_TEST(0, pbh, bf16_bf, __bf16);
+  UNIT_TEST(1, pbh, bf16_bf, __bf16);
+  UNIT_TEST(4, pbh, bf16_bf, __bf16);
+  UNIT_TEST(5, pbh, bf16_bf, __bf16);
+  UNIT_TEST(16, pbh, bf16_bf, __bf16);
+  UNIT_TEST(17, pbh, bf16_bf, __bf16);
 }
