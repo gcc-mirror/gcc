@@ -231,6 +231,7 @@ GRS_OBJS = \
     rust/rust-dir-owner.o \
     rust/rust-unicode.o \
     rust/rust-punycode.o \
+    rust/rust-unwrap-segment.o \
 	rust/rust-expand-format-args.o \
 	rust/rust-lang-item.o \
 	rust/rust-collect-lang-items.o \

@@ -13,7 +13,6 @@ expected_type_args2.rs
 feature_rust_attri0.rs
 format_args_basic_expansion.rs
 generic-default1.rs
-generics1.rs
 generics3.rs
 generics4.rs
 generics5.rs
@@ -37,7 +36,6 @@ issue-2330.rs
 issue-2479.rs
 issue-2723-1.rs
 issue-2723-2.rs
-issue-2772-2.rs
 issue-2775.rs
 issue-2782.rs
 issue-2812.rs
@@ -59,8 +57,6 @@ nested_macro_use1.rs
 nested_macro_use2.rs
 nested_macro_use3.rs
 not_find_value_in_scope.rs
-parse_complex_generic_application.rs
-path_as_generic_arg.rs
 pattern-struct.rs
 privacy4.rs
 privacy5.rs
@@ -80,7 +76,6 @@ struct-expr-parse.rs
 traits3.rs
 traits6.rs
 traits7.rs
-type-bindings1.rs
 undeclared_label.rs
 use_1.rs
 v0-mangle1.rs
