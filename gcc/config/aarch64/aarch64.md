@@ -1531,7 +1531,7 @@
      [w, r Z  ; neon_from_gp<q>, nosimd     ] fmov\t%s0, %w1
      [w, w    ; neon_dup       , simd       ] dup\t%<Vetype>0, %1.<v>[0]
      [w, w    ; neon_dup       , nosimd     ] fmov\t%s0, %s1
-     [Umv, r  ; mrs            , *          ] msr\t%0, %x1
+     [Umv, rZ ; mrs            , *          ] msr\t%0, %x1
      [r, Umv  ; mrs            , *          ] mrs\t%x0, %1
   }
 )
@@ -1595,7 +1595,7 @@
      [r  , w  ; f_mrc    , fp  , 4] fmov\t%w0, %s1
      [w  , w  ; fmov     , fp  , 4] fmov\t%s0, %s1
      [w  , Ds ; neon_move, simd, 4] << aarch64_output_scalar_simd_mov_immediate (operands[1], SImode);
-     [Umv, r  ; mrs      , *   , 4] msr\t%0, %x1
+     [Umv, rZ ; mrs      , *   , 4] msr\t%0, %x1
      [r, Umv  ; mrs      , *   , 4] mrs\t%x0, %1
   }
   "CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), SImode)
@@ -1613,30 +1613,30 @@
   "(register_operand (operands[0], DImode)
     || aarch64_reg_or_zero (operands[1], DImode))"
   {@ [cons: =0, 1; attrs: type, arch, length]
-     [w, Z  ; neon_move, simd, 4] movi\t%0.2d, #0
-     [r, r  ; mov_reg  , *   , 4] mov\t%x0, %x1
-     [k, r  ; mov_reg  , *   , 4] mov\t%0, %x1
-     [r, k  ; mov_reg  , *   , 4] mov\t%x0, %1
-     [r, O  ; mov_imm  , *   , 4] << aarch64_is_mov_xn_imm (INTVAL (operands[1])) ? "mov\t%x0, %1" : "mov\t%w0, %1";
-     [r, n  ; mov_imm  , *   ,16] #
+     [w, Z   ; neon_move, simd, 4] movi\t%0.2d, #0
+     [r, r   ; mov_reg  , *   , 4] mov\t%x0, %x1
+     [k, r   ; mov_reg  , *   , 4] mov\t%0, %x1
+     [r, k   ; mov_reg  , *   , 4] mov\t%x0, %1
+     [r, O   ; mov_imm  , *   , 4] << aarch64_is_mov_xn_imm (INTVAL (operands[1])) ? "mov\t%x0, %1" : "mov\t%w0, %1";
+     [r, n   ; mov_imm  , *   ,16] #
      /* The "mov_imm" type for CNT is just a placeholder.  */
-     [r, Usv; mov_imm  , sve , 4] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
-     [r, Usr; mov_imm  , sve,  4] << aarch64_output_sve_rdvl (operands[1]);
-     [r, UsR; mov_imm  , sme,  4] << aarch64_output_rdsvl (operands[1]);
-     [r, m  ; load_8   , *   , 4] ldr\t%x0, %1
-     [w, m  ; load_8   , fp  , 4] ldr\t%d0, %1
-     [m, r Z; store_8  , *   , 4] str\t%x1, %0
-     [m, w  ; store_8  , fp  , 4] str\t%d1, %0
-     [r, Usw; load_8   , *   , 8] << TARGET_ILP32 ? "adrp\t%0, %A1\;ldr\t%w0, [%0, %L1]" : "adrp\t%0, %A1\;ldr\t%0, [%0, %L1]";
-     [r, Usa; adr      , *   , 4] adr\t%x0, %c1
-     [r, Ush; adr      , *   , 4] adrp\t%x0, %A1
-     [w, r Z; f_mcr    , fp  , 4] fmov\t%d0, %x1
-     [r, w  ; f_mrc    , fp  , 4] fmov\t%x0, %d1
-     [w, w  ; fmov     , fp  , 4] fmov\t%d0, %d1
-     [w, Dd ; neon_move, simd, 4] << aarch64_output_scalar_simd_mov_immediate (operands[1], DImode);
-     [w, Dx ; neon_move, simd, 8] #
-     [Umv, r; mrs      , *   , 4] msr\t%0, %1
-     [r, Umv; mrs      , *   , 4] mrs\t%0, %1
+     [r, Usv ; mov_imm  , sve , 4] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
+     [r, Usr ; mov_imm  , sve,  4] << aarch64_output_sve_rdvl (operands[1]);
+     [r, UsR ; mov_imm  , sme,  4] << aarch64_output_rdsvl (operands[1]);
+     [r, m   ; load_8   , *   , 4] ldr\t%x0, %1
+     [w, m   ; load_8   , fp  , 4] ldr\t%d0, %1
+     [m, r Z ; store_8  , *   , 4] str\t%x1, %0
+     [m, w   ; store_8  , fp  , 4] str\t%d1, %0
+     [r, Usw ; load_8   , *   , 8] << TARGET_ILP32 ? "adrp\t%0, %A1\;ldr\t%w0, [%0, %L1]" : "adrp\t%0, %A1\;ldr\t%0, [%0, %L1]";
+     [r, Usa ; adr      , *   , 4] adr\t%x0, %c1
+     [r, Ush ; adr      , *   , 4] adrp\t%x0, %A1
+     [w, r Z ; f_mcr    , fp  , 4] fmov\t%d0, %x1
+     [r, w   ; f_mrc    , fp  , 4] fmov\t%x0, %d1
+     [w, w   ; fmov     , fp  , 4] fmov\t%d0, %d1
+     [w, Dd  ; neon_move, simd, 4] << aarch64_output_scalar_simd_mov_immediate (operands[1], DImode);
+     [w, Dx  ; neon_move, simd, 8] #
+     [Umv, rZ; mrs      , *   , 4] msr\t%0, %x1
+     [r, Umv ; mrs      , *   , 4] mrs\t%0, %1
   }
   "CONST_INT_P (operands[1])
    && REG_P (operands[0])
