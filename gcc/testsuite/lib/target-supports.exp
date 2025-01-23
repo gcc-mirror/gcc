@@ -10968,7 +10968,7 @@ proc check_effective_target_avx10_2 { } {
 	{
 	  __asm__ volatile ("vdpphps\t%ymm4, %ymm5, %ymm6");
 	  __asm__ volatile ("vcvthf82ph\t%xmm5, %ymm6");
-	  __asm__ volatile ("vaddnepbf16\t%ymm4, %ymm5, %ymm6");
+	  __asm__ volatile ("vaddbf16\t%ymm4, %ymm5, %ymm6");
 	  __asm__ volatile ("vcvtph2ibs\t%ymm5, %ymm6");
 	  __asm__ volatile ("vminmaxpd\t$123, %ymm4, %ymm5, %ymm6");
 	}
@@ -10983,7 +10983,7 @@ proc check_effective_target_avx10_2_512 { } {
 	{
 	  __asm__ volatile ("vdpphps\t%zmm4, %zmm5, %zmm6");
 	  __asm__ volatile ("vcvthf82ph\t%ymm5, %zmm6");
-	  __asm__ volatile ("vaddnepbf16\t%zmm4, %zmm5, %zmm6");
+	  __asm__ volatile ("vaddbf16\t%zmm4, %zmm5, %zmm6");
 	  __asm__ volatile ("vcvtph2ibs\t%zmm5, %zmm6");
 	  __asm__ volatile ("vminmaxpd\t$123, %zmm4, %zmm5, %zmm6");
 	}

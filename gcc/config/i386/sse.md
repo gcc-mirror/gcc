@@ -2867,8 +2867,8 @@
     {
       rtx op = gen_reg_rtx (<MODE>mode);
       operands[2] = force_reg (<MODE>mode, operands[2]);
-      emit_insn (gen_avx10_2_rcppbf16_<mode> (op, operands[2]));
-      emit_insn (gen_avx10_2_mulnepbf16_<mode> (operands[0], operands[1], op));
+      emit_insn (gen_avx10_2_rcpbf16_<mode> (op, operands[2]));
+      emit_insn (gen_avx10_2_mulbf16_<mode> (operands[0], operands[1], op));
       DONE;
     }
 })
@@ -32102,13 +32102,13 @@
    [(set_attr "prefix" "evex")
     (set_attr "mode" "<MODE>")])
 
-(define_insn "avx10_2_<insn>nepbf16_<mode><mask_name>"
+(define_insn "avx10_2_<insn>bf16_<mode><mask_name>"
    [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
       (plusminusmultdiv:VBF_AVX10_2
 	(match_operand:VBF_AVX10_2 1 "register_operand" "v")
 	(match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm")))]
    "TARGET_AVX10_2_256"
-   "v<insn>nepbf16\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+   "v<insn>bf16\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
    [(set_attr "prefix" "evex")])
 
 (define_expand "avx10_2_fmaddnepbf16_<mode>_maskz"
@@ -32388,13 +32388,13 @@
    "vsqrtnepbf16\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
    [(set_attr "prefix" "evex")])
 
-(define_insn "avx10_2_rcppbf16_<mode><mask_name>"
+(define_insn "avx10_2_rcpbf16_<mode><mask_name>"
    [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
 	 (unspec:VBF_AVX10_2
 	   [(match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "vm")]
 	  UNSPEC_RCP))]
    "TARGET_AVX10_2_256"
-   "vrcppbf16\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+   "vrcpbf16\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
    [(set_attr "prefix" "evex")])
 
 (define_insn "avx10_2_getexppbf16_<mode><mask_name>"

@@ -36,106 +36,106 @@
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_addne_pbh (__m512bh __A, __m512bh __B)
+_mm512_add_pbh (__m512bh __A, __m512bh __B)
 {
-  return (__m512bh) __builtin_ia32_addnepbf16512 (__A, __B);
+  return (__m512bh) __builtin_ia32_addbf16512 (__A, __B);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_addne_pbh (__m512bh __W, __mmask32 __U,
-		       __m512bh __A, __m512bh __B)
+_mm512_mask_add_pbh (__m512bh __W, __mmask32 __U,
+		     __m512bh __A, __m512bh __B)
 {
   return (__m512bh)
-    __builtin_ia32_addnepbf16512_mask (__A, __B, __W, __U);
+    __builtin_ia32_addbf16512_mask (__A, __B, __W, __U);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_addne_pbh (__mmask32 __U, __m512bh __A, __m512bh __B)
+_mm512_maskz_add_pbh (__mmask32 __U, __m512bh __A, __m512bh __B)
 {
   return (__m512bh)
-    __builtin_ia32_addnepbf16512_mask (__A, __B,
-				       (__v32bf) _mm512_setzero_si512 (),
-				        __U);
+    __builtin_ia32_addbf16512_mask (__A, __B,
+				    (__v32bf) _mm512_setzero_si512 (),
+				    __U);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_subne_pbh (__m512bh __A, __m512bh __B)
+_mm512_sub_pbh (__m512bh __A, __m512bh __B)
 {
-  return (__m512bh) __builtin_ia32_subnepbf16512 (__A, __B);
+  return (__m512bh) __builtin_ia32_subbf16512 (__A, __B);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_subne_pbh (__m512bh __W, __mmask32 __U,
-		       __m512bh __A, __m512bh __B)
-{
-  return (__m512bh)
-    __builtin_ia32_subnepbf16512_mask (__A, __B, __W, __U);
-}
-
-extern __inline__ __m512bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_subne_pbh (__mmask32 __U, __m512bh __A, __m512bh __B)
+_mm512_mask_sub_pbh (__m512bh __W, __mmask32 __U,
+		     __m512bh __A, __m512bh __B)
 {
   return (__m512bh)
-    __builtin_ia32_subnepbf16512_mask (__A, __B,
-				       (__v32bf) _mm512_setzero_si512 (),
-				        __U);
+    __builtin_ia32_subbf16512_mask (__A, __B, __W, __U);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mulne_pbh (__m512bh __A, __m512bh __B)
-{
-  return (__m512bh) __builtin_ia32_mulnepbf16512 (__A, __B);
-}
-
-extern __inline__ __m512bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_mulne_pbh (__m512bh __W, __mmask32 __U,
-		       __m512bh __A, __m512bh __B)
+_mm512_maskz_sub_pbh (__mmask32 __U, __m512bh __A, __m512bh __B)
 {
   return (__m512bh)
-    __builtin_ia32_mulnepbf16512_mask (__A, __B, __W, __U);
+    __builtin_ia32_subbf16512_mask (__A, __B,
+				    (__v32bf) _mm512_setzero_si512 (),
+				    __U);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_mulne_pbh (__mmask32 __U, __m512bh __A, __m512bh __B)
+_mm512_mul_pbh (__m512bh __A, __m512bh __B)
+{
+  return (__m512bh) __builtin_ia32_mulbf16512 (__A, __B);
+}
+
+extern __inline__ __m512bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_mul_pbh (__m512bh __W, __mmask32 __U,
+		     __m512bh __A, __m512bh __B)
 {
   return (__m512bh)
-    __builtin_ia32_mulnepbf16512_mask (__A, __B,
-				       (__v32bf) _mm512_setzero_si512 (),
-				        __U);
+    __builtin_ia32_mulbf16512_mask (__A, __B, __W, __U);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_divne_pbh (__m512bh __A, __m512bh __B)
-{
-  return (__m512bh) __builtin_ia32_divnepbf16512 (__A, __B);
-}
-
-extern __inline__ __m512bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_divne_pbh (__m512bh __W, __mmask32 __U,
-		       __m512bh __A, __m512bh __B)
+_mm512_maskz_mul_pbh (__mmask32 __U, __m512bh __A, __m512bh __B)
 {
   return (__m512bh)
-    __builtin_ia32_divnepbf16512_mask (__A, __B, __W, __U);
+    __builtin_ia32_mulbf16512_mask (__A, __B,
+				    (__v32bf) _mm512_setzero_si512 (),
+				    __U);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_divne_pbh (__mmask32 __U, __m512bh __A, __m512bh __B)
+_mm512_div_pbh (__m512bh __A, __m512bh __B)
+{
+  return (__m512bh) __builtin_ia32_divbf16512 (__A, __B);
+}
+
+extern __inline__ __m512bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_div_pbh (__m512bh __W, __mmask32 __U,
+		     __m512bh __A, __m512bh __B)
 {
   return (__m512bh)
-    __builtin_ia32_divnepbf16512_mask (__A, __B,
-				       (__v32bf) _mm512_setzero_si512 (),
-				        __U);
+    __builtin_ia32_divbf16512_mask (__A, __B, __W, __U);
+}
+
+extern __inline__ __m512bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_div_pbh (__mmask32 __U, __m512bh __A, __m512bh __B)
+{
+  return (__m512bh)
+    __builtin_ia32_divbf16512_mask (__A, __B,
+				    (__v32bf) _mm512_setzero_si512 (),
+				    __U);
 }
 
 extern __inline__ __m512bh
@@ -418,9 +418,9 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_rcp_pbh (__m512bh __A)
 {
   return (__m512bh)
-    __builtin_ia32_rcppbf16512_mask (__A,
-				     (__v32bf) _mm512_setzero_si512 (),
-				     (__mmask32) -1);
+    __builtin_ia32_rcpbf16512_mask (__A,
+				    (__v32bf) _mm512_setzero_si512 (),
+				    (__mmask32) -1);
 }
 
 extern __inline__ __m512bh
@@ -428,7 +428,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_rcp_pbh (__m512bh __W, __mmask32 __U, __m512bh __A)
 {
   return (__m512bh)
-    __builtin_ia32_rcppbf16512_mask (__A,  __W,  __U);
+    __builtin_ia32_rcpbf16512_mask (__A,  __W,  __U);
 }
 
 extern __inline__ __m512bh
@@ -436,9 +436,9 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_maskz_rcp_pbh (__mmask32 __U, __m512bh __A)
 {
   return (__m512bh)
-    __builtin_ia32_rcppbf16512_mask (__A,
-				     (__v32bf) _mm512_setzero_si512 (),
-				     __U);
+    __builtin_ia32_rcpbf16512_mask (__A,
+				    (__v32bf) _mm512_setzero_si512 (),
+				    __U);
 }
 
 extern __inline__ __m512bh

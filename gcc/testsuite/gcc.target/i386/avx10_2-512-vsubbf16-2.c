@@ -33,9 +33,9 @@ TEST (void)
       res_ref[i] = res_ref2[i] =  convert_fp32_to_bf16_ne (res);
     }
 
-  res1.x = INTRINSIC (_subne_pbh) (src1.x, src2.x);
-  res2.x = INTRINSIC (_mask_subne_pbh) (res2.x, mask, src1.x, src2.x);
-  res3.x = INTRINSIC (_maskz_subne_pbh) (mask, src1.x, src2.x);
+  res1.x = INTRINSIC (_sub_pbh) (src1.x, src2.x);
+  res2.x = INTRINSIC (_mask_sub_pbh) (res2.x, mask, src1.x, src2.x);
+  res3.x = INTRINSIC (_maskz_sub_pbh) (mask, src1.x, src2.x);
 
   if (UNION_CHECK (AVX512F_LEN, bf16_uw) (res1, res_ref))
     abort ();
