@@ -141,6 +141,9 @@ public:
     TRY_INTO_RESULT,
     TRY_FROM_ERROR,
     TRY_FROM_OK,
+
+    // NOTE: This is not a lang item in later versions of Rust
+    FROM_FROM,
   };
 
   static const BiMap<std::string, Kind> lang_items;
