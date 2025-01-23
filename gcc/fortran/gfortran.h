@@ -325,7 +325,7 @@ enum gfc_statement
   /* Note: gfc_match_omp_nothing returns ST_NONE. */
   ST_OMP_NOTHING, ST_NONE,
   ST_OMP_UNROLL, ST_OMP_END_UNROLL,
-  ST_OMP_TILE, ST_OMP_END_TILE
+  ST_OMP_TILE, ST_OMP_END_TILE, ST_OMP_INTEROP
 };
 
 /* Types of interfaces that we can have.  Assignment interfaces are
@@ -1390,6 +1390,13 @@ typedef struct gfc_omp_namelist
       struct gfc_symbol *memspace_sym;
       bool lastprivate_conditional;
       bool present_modifier;
+      struct
+	{
+	  char *str;
+	  int len;
+	  bool target;
+	  bool targetsync;
+	} init;
     } u;
   union
     {
@@ -1399,6 +1406,7 @@ typedef struct gfc_omp_namelist
       gfc_expr *allocator;
       struct gfc_symbol *traits_sym;
       struct gfc_omp_namelist *duplicate_of;
+      int *interop_int;
     } u2;
   struct gfc_omp_namelist *next;
   locus where;
@@ -1443,6 +1451,9 @@ enum
   OMP_LIST_HAS_DEVICE_ADDR,
   OMP_LIST_ENTER,
   OMP_LIST_USES_ALLOCATORS,
+  OMP_LIST_INIT,
+  OMP_LIST_USE,
+  OMP_LIST_DESTROY,
   OMP_LIST_NUM /* Must be the last.  */
 };
 
@@ -3103,7 +3114,7 @@ enum gfc_exec_op
   EXEC_OMP_TARGET_TEAMS_LOOP, EXEC_OMP_MASKED, EXEC_OMP_PARALLEL_MASKED,
   EXEC_OMP_PARALLEL_MASKED_TASKLOOP, EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD,
   EXEC_OMP_MASKED_TASKLOOP, EXEC_OMP_MASKED_TASKLOOP_SIMD, EXEC_OMP_SCOPE,
-  EXEC_OMP_UNROLL, EXEC_OMP_TILE, EXEC_OMP_METADIRECTIVE,
+  EXEC_OMP_UNROLL, EXEC_OMP_TILE, EXEC_OMP_METADIRECTIVE, EXEC_OMP_INTEROP,
   EXEC_OMP_ERROR, EXEC_OMP_ALLOCATE, EXEC_OMP_ALLOCATORS
 };
 

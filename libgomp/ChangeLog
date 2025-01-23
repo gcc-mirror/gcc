@@ -1,39 +1,3 @@
-2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
-
-	Backported from master:
-	2024-08-28  Tobias Burnus  <tburnus@baylibre.com>
-
-	* fortran.c (omp_get_interop_str_, omp_get_interop_name_,
-	omp_get_interop_type_desc_, omp_get_interop_rc_desc_): Add.
-	* libgomp.map (GOMP_5.1.3): New; add interop routines.
-	* omp.h.in: Add interop typedefs, enum and prototypes.
-	(__GOMP_DEFAULT_NULL): Define.
-	(omp_target_memcpy_async, omp_target_memcpy_rect_async):
-	Use it for the optional depend argument.
-	* omp_lib.f90.in: Add paramters and interfaces for interop.
-	* omp_lib.h.in: Likewise; move F90 '&' to column 81 for
-	-ffree-length-80.
-	* target.c (omp_get_num_interop_properties, omp_get_interop_int,
-	omp_get_interop_ptr, omp_get_interop_str, omp_get_interop_name,
-	omp_get_interop_type_desc, omp_get_interop_rc_desc): Add.
-	* config/gcn/target.c (omp_get_num_interop_properties,
-	omp_get_interop_int, omp_get_interop_ptr, omp_get_interop_str,
-	omp_get_interop_name, omp_get_interop_type_desc,
-	omp_get_interop_rc_desc): Add.
-	* config/nvptx/target.c (omp_get_num_interop_properties,
-	omp_get_interop_int, omp_get_interop_ptr, omp_get_interop_str,
-	omp_get_interop_name, omp_get_interop_type_desc,
-	omp_get_interop_rc_desc): Add.
-	* testsuite/libgomp.c-c++-common/interop-routines-1.c: New test.
-	* testsuite/libgomp.c-c++-common/interop-routines-2.c: New test.
-	* testsuite/libgomp.fortran/interop-routines-1.F90: New test.
-	* testsuite/libgomp.fortran/interop-routines-2.F90: New test.
-	* testsuite/libgomp.fortran/interop-routines-3.F: New test.
-	* testsuite/libgomp.fortran/interop-routines-4.F: New test.
-	* testsuite/libgomp.fortran/interop-routines-5.F: New test.
-	* testsuite/libgomp.fortran/interop-routines-6.F: New test.
-	* testsuite/libgomp.fortran/interop-routines-7.F90: New test.
-
 2024-08-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
