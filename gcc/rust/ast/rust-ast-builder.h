@@ -89,6 +89,10 @@ public:
 			       std::unique_ptr<Expr> &&tail_expr
 			       = nullptr) const;
 
+  /* Create an early return expression with an optional expression */
+  std::unique_ptr<Expr> return_expr (std::unique_ptr<Expr> &&to_return
+				     = nullptr);
+
   /* Create a let binding with an optional type and initializer (`let <name> :
    * <type> = <init>`) */
   std::unique_ptr<Stmt> let (std::unique_ptr<Pattern> pattern,
