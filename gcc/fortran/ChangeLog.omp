@@ -1,6 +1,15 @@
 2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2024-09-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parse.cc (decode_omp_directive): Set target-used bit of
+	omp_requires_mask when encountering the declare_target or interop
+	directive.
+
+2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-09-13  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/116661

@@ -1,3 +1,11 @@
+2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-09-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (cp_parser_omp_declare_target): Set target-used bit
+	in omp_requires_mask.
+
 2024-12-06  Andrew Stubbs  <ams@baylibre.com>
 	    Kwok Cheung Yeung  <kcyeung@baylibre.com>
 

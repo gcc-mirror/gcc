@@ -1,3 +1,11 @@
+2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-09-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_declare_target): Set target-used bit
+	in omp_requires_mask.
+
 2024-05-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.cc (c_finish_omp_clauses): Diagnose grainsize

@@ -17,7 +17,7 @@ module m
  integer (omp_interop_fr_kind), parameter :: omp_ifr_hsa = 7
 end module m
 
-subroutine sub1
+subroutine sub1  ! { dg-error "Program unit at .1. has OpenMP device constructs/routines but does not set !.OMP REQUIRES REVERSE_OFFLOAD but other program units do" }
   !$omp interop
   integer :: y ! { dg-error "Unexpected data declaration statement" }
 end subroutine sub1
