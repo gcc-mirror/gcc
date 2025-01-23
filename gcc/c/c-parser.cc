@@ -29069,7 +29069,7 @@ c_parser_omp_metadirective (c_parser *parser, bool *if_p)
 	  c_parser_skip_to_end_of_block_or_statement (parser, true);
 	  goto error;
 	}
-      if (!(strcmp (p, "when") == 0 || default_p))
+      if (!default_p && strcmp (p, "when") != 0)
 	{
 	  error_at (match_loc, "%qs is not valid for %qs",
 		    p, "metadirective");

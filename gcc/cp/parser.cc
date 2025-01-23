@@ -51340,7 +51340,7 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
 	  cp_parser_skip_to_end_of_block_or_statement (parser, true);
 	  goto fail;
 	}
-      if (!strcmp (p, "when") == 0 && !default_p)
+      if (!default_p && strcmp (p, "when") != 0)
 	{
 	  error_at (match_loc, "%qs is not valid for %qs",
 		    p, "metadirective");
