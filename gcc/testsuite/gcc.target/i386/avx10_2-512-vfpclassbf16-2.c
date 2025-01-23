@@ -40,6 +40,6 @@ TEST (void)
   res1 = INTRINSIC (_fpclass_pbh_mask) (src1.x, 0x01);
   res2 = INTRINSIC (_mask_fpclass_pbh_mask) (mask, src1.x, 1);
 
-  if (exp != res1 || exp != res2)
+  if (exp != res1 || (mask & exp) != res2)
     abort ();
 }

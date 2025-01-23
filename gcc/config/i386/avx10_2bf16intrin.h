@@ -850,9 +850,9 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_getexp_pbh (__m256bh __A)
 {
   return (__m256bh)
-    __builtin_ia32_getexppbf16256_mask (__A,
-					(__v16bf) _mm256_setzero_si256 (),
-					(__mmask16) -1);
+    __builtin_ia32_getexpbf16256_mask (__A,
+				       (__v16bf) _mm256_setzero_si256 (),
+				       (__mmask16) -1);
 }
 
 extern __inline__ __m256bh
@@ -860,7 +860,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_getexp_pbh (__m256bh __W, __mmask16 __U, __m256bh __A)
 {
   return (__m256bh)
-    __builtin_ia32_getexppbf16256_mask (__A, __W, __U);
+    __builtin_ia32_getexpbf16256_mask (__A, __W, __U);
 }
 
 extern __inline__ __m256bh
@@ -868,9 +868,9 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_getexp_pbh (__mmask16 __U, __m256bh __A)
 {
   return (__m256bh)
-    __builtin_ia32_getexppbf16256_mask (__A,
-					(__v16bf) _mm256_setzero_si256 (),
-					__U);
+    __builtin_ia32_getexpbf16256_mask (__A,
+				       (__v16bf) _mm256_setzero_si256 (),
+				       __U);
 }
 
 extern __inline__ __m128bh
@@ -878,9 +878,9 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_getexp_pbh (__m128bh __A)
 {
   return (__m128bh)
-    __builtin_ia32_getexppbf16128_mask (__A,
-				       	(__v8bf) _mm_setzero_si128 (),
-					(__mmask8) -1);
+    __builtin_ia32_getexpbf16128_mask (__A,
+				       (__v8bf) _mm_setzero_si128 (),
+				       (__mmask8) -1);
 }
 
 extern __inline__ __m128bh
@@ -888,7 +888,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_getexp_pbh (__m128bh __W, __mmask8 __U, __m128bh __A)
 {
   return (__m128bh)
-    __builtin_ia32_getexppbf16128_mask (__A, __W, __U);
+    __builtin_ia32_getexpbf16128_mask (__A, __W, __U);
 }
 
 extern __inline__ __m128bh
@@ -896,9 +896,9 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_maskz_getexp_pbh (__mmask8 __U, __m128bh __A)
 {
   return (__m128bh)
-    __builtin_ia32_getexppbf16128_mask (__A,
-					(__v8bf) _mm_setzero_si128 (),
-					__U);
+    __builtin_ia32_getexpbf16128_mask (__A,
+				       (__v8bf) _mm_setzero_si128 (),
+				       __U);
 }
 
 /* Intrinsics vrndscalebf16.  */
@@ -1178,15 +1178,15 @@ _mm_maskz_getmant_pbh (__mmask8 __U, __m128bh __A,
 
 #endif /* __OPTIMIZE__ */
 
-/* Intrinsics vfpclasspbf16.  */
+/* Intrinsics vfpclassbf16.  */
 #ifdef __OPTIMIZE__
 extern __inline __mmask16
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_fpclass_pbh_mask (__mmask16 __U, __m256bh __A,
-				const int __imm)
+			      const int __imm)
 {
   return (__mmask16)
-    __builtin_ia32_fpclasspbf16256_mask (__A, __imm, __U);
+    __builtin_ia32_fpclassbf16256_mask (__A, __imm, __U);
 }
 
 extern __inline __mmask16
@@ -1194,7 +1194,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_fpclass_pbh_mask (__m256bh __A, const int __imm)
 {
   return (__mmask16)
-    __builtin_ia32_fpclasspbf16256_mask (__A, __imm, (__mmask16) -1);
+    __builtin_ia32_fpclassbf16256_mask (__A, __imm, (__mmask16) -1);
 }
 
 extern __inline __mmask8
@@ -1202,7 +1202,7 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_fpclass_pbh_mask (__mmask8 __U, __m128bh __A, const int __imm)
 {
   return (__mmask8)
-    __builtin_ia32_fpclasspbf16128_mask (__A, __imm, __U);
+    __builtin_ia32_fpclassbf16128_mask (__A, __imm, __U);
 }
 
 extern __inline __mmask8
@@ -1210,23 +1210,23 @@ __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_fpclass_pbh_mask (__m128bh __A, const int __imm)
 {
   return (__mmask8)
-    __builtin_ia32_fpclasspbf16128_mask (__A, __imm, (__mmask8) -1);
+    __builtin_ia32_fpclassbf16128_mask (__A, __imm, (__mmask8) -1);
 }
 
 #else
 #define _mm256_mask_fpclass_pbh_mask(U, A, B)			      \
-  ((__mmask16) __builtin_ia32_fpclasspbf16256_mask ((A), (B), (U)))
+  ((__mmask16) __builtin_ia32_fpclassbf16256_mask ((A), (B), (U)))
 
 #define _mm256_fpclass_pbh_mask(A, B)				      \
-  ((__mmask16) __builtin_ia32_fpclasspbf16256_mask ((A), (B),	      \
-						    (__mmask16) (-1)))
+  ((__mmask16) __builtin_ia32_fpclassbf16256_mask ((A), (B),	      \
+						   (__mmask16) (-1)))
 
 #define _mm_mask_fpclass_pbh_mask(U, A, B)			      \
-  ((__mmask8) __builtin_ia32_fpclasspbf16128_mask ((A), (B), (U)))
+  ((__mmask8) __builtin_ia32_fpclassbf16128_mask ((A), (B), (U)))
 
 #define _mm_fpclass_pbh_mask(A, B)				      \
-  ((__mmask8) __builtin_ia32_fpclasspbf16128_mask ((A), (B),	      \
-						   (__mmask8) (-1)))
+  ((__mmask8) __builtin_ia32_fpclassbf16128_mask ((A), (B),	      \
+						  (__mmask8) (-1)))
 
 #endif /* __OPIMTIZE__ */
 
