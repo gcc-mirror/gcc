@@ -97,7 +97,7 @@ protected:
 
   ssa_lazy_cache m_path;   // Values found on path
   ssa_lazy_cache m_parms;  // Cumulative parameter value calculated
-  bitmap &m_parm_list;	   // Parameter ssa-names list.
+  bitmap m_parm_list;	   // Parameter ssa-names list.
   function *m_func;
 };
 
