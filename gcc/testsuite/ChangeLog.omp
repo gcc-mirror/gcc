@@ -1,6 +1,13 @@
 2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2024-10-31  Tobias Burnus  <tburnus@baylibre.com>
+
+	* g++.dg/gomp/declare-variant-9.C: New test.
+
+2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-09-25  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gfortran.dg/gomp/interop-1.f90: Add dg-error for missing
