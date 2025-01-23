@@ -222,9 +222,9 @@ public:
   {
     std::function<void (const S &, NodeId)> insert_segment_resolution
       = [this] (const S &seg, NodeId id) {
-	  if (resolved_nodes.find (Usage (seg.get_node_id ()))
-	      == resolved_nodes.end ())
-	    map_usage (Usage (seg.get_node_id ()), Definition (id));
+	  auto seg_id = unwrap_segment_node_id (seg);
+	  if (resolved_nodes.find (Usage (seg_id)) == resolved_nodes.end ())
+	    map_usage (Usage (seg_id), Definition (id));
 	};
     switch (ns)
       {

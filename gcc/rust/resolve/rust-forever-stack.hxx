@@ -21,6 +21,7 @@
 #include "rust-diagnostics.h"
 #include "rust-forever-stack.h"
 #include "rust-rib.h"
+#include "rust-unwrap-segment.h"
 #include "optional.h"
 
 namespace Rust {
@@ -389,7 +390,8 @@ ForeverStack<N>::find_starting_point (
 
   for (; !is_last (iterator, segments); iterator++)
     {
-      auto &seg = *iterator;
+      auto &outer_seg = *iterator;
+      auto &seg = unwrap_type_segment (outer_seg);
       auto is_self_or_crate
 	= seg.is_crate_path_seg () || seg.is_lower_self_seg ();
 
@@ -407,14 +409,14 @@ ForeverStack<N>::find_starting_point (
 	  NodeId current_crate
 	    = *mappings.crate_num_to_nodeid (mappings.get_current_crate ());
 
-	  insert_segment_resolution (seg, current_crate);
+	  insert_segment_resolution (outer_seg, current_crate);
 	  iterator++;
 	  break;
 	}
       if (seg.is_lower_self_seg ())
 	{
 	  // insert segment resolution and exit
-	  insert_segment_resolution (seg, starting_point.get ().id);
+	  insert_segment_resolution (outer_seg, starting_point.get ().id);
 	  iterator++;
 	  break;
 	}
@@ -430,7 +432,7 @@ ForeverStack<N>::find_starting_point (
 	  starting_point
 	    = find_closest_module (starting_point.get ().parent.value ());
 
-	  insert_segment_resolution (seg, starting_point.get ().id);
+	  insert_segment_resolution (outer_seg, starting_point.get ().id);
 	  continue;
 	}
 
@@ -454,7 +456,8 @@ ForeverStack<N>::resolve_segments (
   auto *current_node = &starting_point;
   for (; !is_last (iterator, segments); iterator++)
     {
-      auto &seg = *iterator;
+      auto &outer_seg = *iterator;
+      auto &seg = unwrap_type_segment (outer_seg);
       auto str = seg.as_string ();
       rust_debug ("[ARTHUR]: resolving segment part: %s", str.c_str ());
 
@@ -490,7 +493,7 @@ ForeverStack<N>::resolve_segments (
 	}
 
       current_node = &child.value ();
-      insert_segment_resolution (seg, current_node->id);
+      insert_segment_resolution (outer_seg, current_node->id);
     }
 
   return *current_node;
@@ -508,7 +511,7 @@ ForeverStack<N>::resolve_path (
   // if there's only one segment, we just use `get`
   if (segments.size () == 1)
     {
-      auto res = get (segments.back ().as_string ());
+      auto res = get (unwrap_type_segment (segments.back ()).as_string ());
       if (res && !res->is_ambiguous ())
 	insert_segment_resolution (segments.back (), res->get_node_id ());
       return res;
@@ -528,7 +531,8 @@ ForeverStack<N>::resolve_path (
       // leave resolution within impl blocks to type checker
       if (final_node.rib.kind == Rib::Kind::TraitOrImpl)
 	return tl::nullopt;
-      auto res = final_node.rib.get (segments.back ().as_string ());
+      auto res = final_node.rib.get (
+	unwrap_type_segment (segments.back ()).as_string ());
       if (res && !res->is_ambiguous ())
 	insert_segment_resolution (segments.back (), res->get_node_id ());
       return res;
