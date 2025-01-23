@@ -1,3 +1,10 @@
+2025-01-23  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* types.def (BT_FN_PTR_CONST_PTR_INT): Declare.
+
 2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

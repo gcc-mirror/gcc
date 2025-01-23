@@ -1,3 +1,24 @@
+2025-01-23  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2024-11-20  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* builtin-types.def (BT_FN_PTR_CONST_PTR_INT): New.
+	* omp-selectors.h (enum omp_ts_code): Add OMP_TRAIT_CONSTRUCT_DISPATCH.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_NOVARIANTS and
+	OMP_CLAUSE_NOCONTEXT.
+	* tree-pretty-print.cc (dump_omp_clause): Handle OMP_CLAUSE_NOVARIANTS
+	and OMP_CLAUSE_NOCONTEXT.
+	(dump_generic_node): Handle OMP_DISPATCH.
+	* tree.cc (omp_clause_num_ops): Add OMP_CLAUSE_NOVARIANTS and
+	OMP_CLAUSE_NOCONTEXT.
+	(omp_clause_code_name): Add "novariants" and "nocontext".
+	* tree.def (OMP_DISPATCH): New.
+	* tree.h (OMP_DISPATCH_BODY): New macro.
+	(OMP_DISPATCH_CLAUSES): New macro.
+	(OMP_CLAUSE_NOVARIANTS_EXPR): New macro.
+	(OMP_CLAUSE_NOCONTEXT_EXPR): New macro.
+
 2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
