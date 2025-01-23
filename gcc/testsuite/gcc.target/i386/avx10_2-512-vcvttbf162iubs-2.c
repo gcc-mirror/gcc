@@ -50,9 +50,9 @@ TEST (void)
   for (i = 0; i < SIZE; i++)
     res2.a[i] = DEFAULT_VALUE;
 
-  res1.x = INTRINSIC (_ipcvttnebf16_epu16) (s.x);
-  res2.x = INTRINSIC (_mask_ipcvttnebf16_epu16) (res2.x, mask, s.x);
-  res3.x = INTRINSIC (_maskz_ipcvttnebf16_epu16) (mask, s.x);
+  res1.x = INTRINSIC (_ipcvttbf16_epu16) (s.x);
+  res2.x = INTRINSIC (_mask_ipcvttbf16_epu16) (res2.x, mask, s.x);
+  res3.x = INTRINSIC (_maskz_ipcvttbf16_epu16) (mask, s.x);
 
   CALC (s.a, res_ref);
 

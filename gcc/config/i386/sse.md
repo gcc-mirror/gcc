@@ -234,14 +234,14 @@
   UNSPEC_VREDUCEBF16
   UNSPEC_VGETMANTBF16
   UNSPEC_VFPCLASSBF16
-  UNSPEC_VCVTNEBF162IBS
-  UNSPEC_VCVTNEBF162IUBS
+  UNSPEC_VCVTBF162IBS
+  UNSPEC_VCVTBF162IUBS
   UNSPEC_VCVTPH2IBS
   UNSPEC_VCVTPH2IUBS
   UNSPEC_VCVTPS2IBS
   UNSPEC_VCVTPS2IUBS
-  UNSPEC_VCVTTNEBF162IBS
-  UNSPEC_VCVTTNEBF162IUBS
+  UNSPEC_VCVTTBF162IBS
+  UNSPEC_VCVTTBF162IUBS
   UNSPEC_VCVTTPH2IBS
   UNSPEC_VCVTTPH2IUBS
   UNSPEC_VCVTTPS2IBS
@@ -32460,17 +32460,17 @@
    "vcmpbf16\t{%3, %2, %1, %0<mask_scalar_merge_operand4>|%0<mask_scalar_merge_operand4>, %1, %2, %3}"
    [(set_attr "prefix" "evex")])
 
-(define_int_iterator UNSPEC_CVTNE_BF16_IBS_ITER
-   [UNSPEC_VCVTNEBF162IBS
-    UNSPEC_VCVTNEBF162IUBS
-    UNSPEC_VCVTTNEBF162IBS
-    UNSPEC_VCVTTNEBF162IUBS])
+(define_int_iterator UNSPEC_CVT_BF16_IBS_ITER
+   [UNSPEC_VCVTBF162IBS
+    UNSPEC_VCVTBF162IUBS
+    UNSPEC_VCVTTBF162IBS
+    UNSPEC_VCVTTBF162IUBS])
 
 (define_int_attr sat_cvt_sign_prefix
-   [(UNSPEC_VCVTNEBF162IBS "")
-    (UNSPEC_VCVTNEBF162IUBS "u")
-    (UNSPEC_VCVTTNEBF162IBS "")
-    (UNSPEC_VCVTTNEBF162IUBS "u")
+   [(UNSPEC_VCVTBF162IBS "")
+    (UNSPEC_VCVTBF162IUBS "u")
+    (UNSPEC_VCVTTBF162IBS "")
+    (UNSPEC_VCVTTBF162IUBS "u")
     (UNSPEC_VCVTPH2IBS "")
     (UNSPEC_VCVTPH2IUBS "u")
     (UNSPEC_VCVTTPH2IBS "")
@@ -32483,18 +32483,18 @@
     (UNSPEC_UFIX_SATURATION "u")])
 
 (define_int_attr sat_cvt_trunc_prefix
-   [(UNSPEC_VCVTNEBF162IBS "")
-    (UNSPEC_VCVTNEBF162IUBS "")
-    (UNSPEC_VCVTTNEBF162IBS "t")
-    (UNSPEC_VCVTTNEBF162IUBS "t")])
+   [(UNSPEC_VCVTBF162IBS "")
+    (UNSPEC_VCVTBF162IUBS "")
+    (UNSPEC_VCVTTBF162IBS "t")
+    (UNSPEC_VCVTTBF162IUBS "t")])
 
-(define_insn "avx10_2_cvt<sat_cvt_trunc_prefix>nebf162i<sat_cvt_sign_prefix>bs<mode><mask_name>"
+(define_insn "avx10_2_cvt<sat_cvt_trunc_prefix>bf162i<sat_cvt_sign_prefix>bs<mode><mask_name>"
  [(set (match_operand:<sseintvecmode> 0 "register_operand" "=v")
        (unspec:<sseintvecmode>
 	  [(match_operand:VBF_AVX10_2 1 "vector_operand" "vm")]
-	  UNSPEC_CVTNE_BF16_IBS_ITER))]
+	  UNSPEC_CVT_BF16_IBS_ITER))]
  "TARGET_AVX10_2_256"
- "vcvt<sat_cvt_trunc_prefix>nebf162i<sat_cvt_sign_prefix>bs\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+ "vcvt<sat_cvt_trunc_prefix>bf162i<sat_cvt_sign_prefix>bs\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
  [(set_attr "type" "ssecvt")
   (set_attr "prefix" "evex")
   (set_attr "mode" "<sseinsnmode>")])

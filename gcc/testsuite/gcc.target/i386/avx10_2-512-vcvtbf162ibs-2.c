@@ -27,7 +27,7 @@ CALC (__bf16 *s, short *r)
       else if (s[i] < SCHAR_MIN)
 	tmp = SCHAR_MIN;
       else
-	tmp = s[i];
+	tmp = nearbyint(_mm_cvtsbh_ss(s[i]));
       r[i] = (unsigned short)tmp;
     }
 }
@@ -50,9 +50,9 @@ TEST (void)
   for (i = 0; i < SIZE; i++)
     res2.a[i] = DEFAULT_VALUE;
 
-  res1.x = INTRINSIC (_ipcvttnebf16_epi16) (s.x);
-  res2.x = INTRINSIC (_mask_ipcvttnebf16_epi16) (res2.x, mask, s.x);
-  res3.x = INTRINSIC (_maskz_ipcvttnebf16_epi16) (mask, s.x);
+  res1.x = INTRINSIC (_ipcvtbf16_epi16) (s.x);
+  res2.x = INTRINSIC (_mask_ipcvtbf16_epi16) (res2.x, mask, s.x);
+  res3.x = INTRINSIC (_maskz_ipcvtbf16_epi16) (mask, s.x);
 
   CALC (s.a, res_ref);
 

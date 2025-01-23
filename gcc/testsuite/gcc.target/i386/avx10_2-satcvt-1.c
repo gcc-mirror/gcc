@@ -24,18 +24,18 @@
 /* { dg-final { scan-assembler-times "vcvttps2iubs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vcvttps2iubs\[ \\t\]+\{sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vcvttps2iubs\[ \\t\]+\{sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtnebf162ibs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtnebf162ibs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtnebf162ibs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtnebf162iubs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtnebf162iubs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtnebf162iubs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttnebf162ibs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttnebf162ibs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttnebf162ibs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttnebf162iubs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttnebf162iubs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttnebf162iubs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvtbf162ibs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvtbf162ibs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvtbf162ibs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvtbf162iubs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvtbf162iubs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvtbf162iubs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttbf162ibs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttbf162ibs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttbf162ibs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttbf162iubs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttbf162iubs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttbf162iubs\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vcvtph2ibs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vcvtph2ibs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vcvtph2ibs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
@@ -60,18 +60,18 @@
 /* { dg-final { scan-assembler-times "vcvttps2iubs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vcvttps2iubs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vcvttps2iubs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtnebf162ibs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtnebf162ibs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtnebf162ibs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtnebf162iubs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtnebf162iubs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtnebf162iubs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttnebf162ibs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttnebf162ibs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttnebf162ibs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttnebf162iubs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttnebf162iubs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttnebf162iubs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvtbf162ibs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvtbf162ibs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvtbf162ibs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvtbf162iubs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvtbf162iubs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvtbf162iubs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttbf162ibs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttbf162ibs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttbf162ibs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttbf162iubs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttbf162iubs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\[^\{\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttbf162iubs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vcvttpd2dqsy\[ \\t\]+\{sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vcvttpd2dqsy\[ \\t\]+\{sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vcvttpd2dqsy\[ \\t\]+\{sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
@@ -183,21 +183,21 @@ avx10_2_test (void)
   xi = _mm256_mask_ipcvtt_roundps_epu32 (xi, m8, x, 8);
   xi = _mm256_maskz_ipcvtt_roundps_epu32 (m8, x, 8);
 
-  xi = _mm256_ipcvtnebf16_epi16 (xbh);
-  xi = _mm256_mask_ipcvtnebf16_epi16 (xi, m16, xbh);
-  xi = _mm256_maskz_ipcvtnebf16_epi16 (m16, xbh);
+  xi = _mm256_ipcvtbf16_epi16 (xbh);
+  xi = _mm256_mask_ipcvtbf16_epi16 (xi, m16, xbh);
+  xi = _mm256_maskz_ipcvtbf16_epi16 (m16, xbh);
 
-  xi = _mm256_ipcvtnebf16_epu16 (xbh);
-  xi = _mm256_mask_ipcvtnebf16_epu16 (xi, m16, xbh);
-  xi = _mm256_maskz_ipcvtnebf16_epu16 (m16, xbh);
+  xi = _mm256_ipcvtbf16_epu16 (xbh);
+  xi = _mm256_mask_ipcvtbf16_epu16 (xi, m16, xbh);
+  xi = _mm256_maskz_ipcvtbf16_epu16 (m16, xbh);
 
-  xi = _mm256_ipcvttnebf16_epi16 (xbh);
-  xi = _mm256_mask_ipcvttnebf16_epi16 (xi, m16, xbh);
-  xi = _mm256_maskz_ipcvttnebf16_epi16 (m16, xbh);
+  xi = _mm256_ipcvttbf16_epi16 (xbh);
+  xi = _mm256_mask_ipcvttbf16_epi16 (xi, m16, xbh);
+  xi = _mm256_maskz_ipcvttbf16_epi16 (m16, xbh);
 
-  xi = _mm256_ipcvttnebf16_epu16 (xbh);
-  xi = _mm256_mask_ipcvttnebf16_epu16 (xi, m16, xbh);
-  xi = _mm256_maskz_ipcvttnebf16_epu16 (m16, xbh);
+  xi = _mm256_ipcvttbf16_epu16 (xbh);
+  xi = _mm256_mask_ipcvttbf16_epu16 (xi, m16, xbh);
+  xi = _mm256_maskz_ipcvttbf16_epu16 (m16, xbh);
 
   hxi = _mm_ipcvtph_epi16 (hxh);
   hxi = _mm_mask_ipcvtph_epi16 (hxi, m8, hxh);
@@ -231,21 +231,21 @@ avx10_2_test (void)
   hxi = _mm_mask_ipcvttps_epu32 (hxi, m8, hx);
   hxi = _mm_maskz_ipcvttps_epu32 (m8, hx);
 
-  hxi = _mm_ipcvtnebf16_epi16 (hxbh);
-  hxi = _mm_mask_ipcvtnebf16_epi16 (hxi, m8, hxbh);
-  hxi = _mm_maskz_ipcvtnebf16_epi16 (m8, hxbh);
+  hxi = _mm_ipcvtbf16_epi16 (hxbh);
+  hxi = _mm_mask_ipcvtbf16_epi16 (hxi, m8, hxbh);
+  hxi = _mm_maskz_ipcvtbf16_epi16 (m8, hxbh);
 
-  hxi = _mm_ipcvtnebf16_epu16 (hxbh);
-  hxi = _mm_mask_ipcvtnebf16_epu16 (hxi, m8, hxbh);
-  hxi = _mm_maskz_ipcvtnebf16_epu16 (m8, hxbh);
+  hxi = _mm_ipcvtbf16_epu16 (hxbh);
+  hxi = _mm_mask_ipcvtbf16_epu16 (hxi, m8, hxbh);
+  hxi = _mm_maskz_ipcvtbf16_epu16 (m8, hxbh);
 
-  hxi = _mm_ipcvttnebf16_epi16 (hxbh);
-  hxi = _mm_mask_ipcvttnebf16_epi16 (hxi, m8, hxbh);
-  hxi = _mm_maskz_ipcvttnebf16_epi16 (m8, hxbh);
+  hxi = _mm_ipcvttbf16_epi16 (hxbh);
+  hxi = _mm_mask_ipcvttbf16_epi16 (hxi, m8, hxbh);
+  hxi = _mm_maskz_ipcvttbf16_epi16 (m8, hxbh);
 
-  hxi = _mm_ipcvttnebf16_epu16 (hxbh);
-  hxi = _mm_mask_ipcvttnebf16_epu16 (hxi, m8, hxbh);
-  hxi = _mm_maskz_ipcvttnebf16_epu16 (m8, hxbh);
+  hxi = _mm_ipcvttbf16_epu16 (hxbh);
+  hxi = _mm_mask_ipcvttbf16_epu16 (hxi, m8, hxbh);
+  hxi = _mm_maskz_ipcvttbf16_epu16 (m8, hxbh);
 
   hxi = _mm256_cvtts_roundpd_epi32 (xd, 8);
   hxi = _mm256_mask_cvtts_roundpd_epi32 (hxi, m8, xd, 8);
