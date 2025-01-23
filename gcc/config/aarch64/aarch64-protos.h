@@ -1260,6 +1260,7 @@ void aarch64_restore_za (rtx);
 void aarch64_expand_crc_using_pmull (scalar_mode, scalar_mode, rtx *);
 void aarch64_expand_reversed_crc_using_pmull (scalar_mode, scalar_mode, rtx *);
 
+void aarch64_expand_fp_spaceship (rtx, rtx, rtx, rtx);
 
 extern bool aarch64_gcs_enabled ();
 

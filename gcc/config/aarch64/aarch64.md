@@ -4392,6 +4392,49 @@
   [(set_attr "type" "alus_ext")]
 )
 
+;; <=> operator pattern (integer)
+;; (a == b) ? 0 : (a < b) ? -1 : 1.
+(define_expand "spaceship<mode>4"
+  [(match_operand:SI  0 "register_operand")
+   (match_operand:GPI 1 "register_operand")
+   (match_operand:GPI 2 "register_operand")
+   (match_operand:SI  3 "const_int_operand")]
+  ""
+  {
+    // 1 indicates unsigned comparison, -1 indicates signed.
+    gcc_assert (operands[3] == constm1_rtx || operands[3] == const1_rtx);
+
+    rtx cc_reg = aarch64_gen_compare_reg (EQ, operands[1], operands[2]);
+    RTX_CODE code_gt = operands[3] == const1_rtx ? GTU : GT;
+    RTX_CODE code_lt = operands[3] == const1_rtx ? LTU : LT;
+
+    rtx cc_gt = gen_rtx_fmt_ee (code_gt, VOIDmode, cc_reg, const0_rtx);
+    rtx cc_lt = gen_rtx_fmt_ee (code_lt, VOIDmode, cc_reg, const0_rtx);
+
+    rtx temp = gen_reg_rtx (SImode);
+    emit_insn (gen_rtx_SET (temp, gen_rtx_IF_THEN_ELSE (SImode, cc_gt,
+						const1_rtx, const0_rtx)));
+    emit_insn (gen_rtx_SET (operands[0], gen_rtx_IF_THEN_ELSE (SImode, cc_lt,
+						constm1_rtx, temp)));
+    DONE;
+  }
+)
+
+;; <=> operator pattern (floating-point)
+;; (a == b) ? 0 : (a < b) ? -1 : (a > b) ? 1 : UNORDERED.
+(define_expand "spaceship<mode>4"
+  [(match_operand:SI  0 "register_operand")
+   (match_operand:GPF 1 "register_operand")
+   (match_operand:GPF 2 "register_operand")
+   (match_operand:SI  3 "const_int_operand")]
+  "TARGET_FLOAT"
+  {
+    aarch64_expand_fp_spaceship (operands[0], operands[1], operands[2],
+				operands[3]);
+    DONE;
+  }
+)
+
 ;; -------------------------------------------------------------------
 ;; Store-flag and conditional select insns
 ;; -------------------------------------------------------------------

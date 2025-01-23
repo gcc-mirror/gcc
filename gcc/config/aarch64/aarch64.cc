@@ -31294,6 +31294,79 @@ aarch64_expand_reversed_crc_using_pmull (scalar_mode crc_mode,
     }
 }
 
+/* Expand the spaceship optab for floating-point operands.
+
+   If the result is compared against (-1, 0, 1 , 2), expand into
+   fcmpe + conditional branch insns.
+
+   Otherwise (the result is just stored as an integer), expand into
+   fcmpe + a sequence of conditional select/increment/invert insns.  */
+void
+aarch64_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx hint)
+{
+  rtx cc_reg = gen_rtx_REG (CCFPEmode, CC_REGNUM);
+  emit_set_insn (cc_reg, gen_rtx_COMPARE (CCFPEmode, op0, op1));
+
+  rtx cc_gt = gen_rtx_GT (VOIDmode, cc_reg, const0_rtx);
+  rtx cc_lt = gen_rtx_LT (VOIDmode, cc_reg, const0_rtx);
+  rtx cc_un = gen_rtx_UNORDERED (VOIDmode, cc_reg, const0_rtx);
+
+  if (hint == const0_rtx)
+    {
+      rtx un_label = gen_label_rtx ();
+      rtx lt_label = gen_label_rtx ();
+      rtx gt_label = gen_label_rtx ();
+      rtx end_label = gen_label_rtx ();
+
+      rtx temp = gen_rtx_IF_THEN_ELSE (VOIDmode, cc_un,
+			gen_rtx_LABEL_REF (Pmode, un_label), pc_rtx);
+      aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, temp));
+
+      temp = gen_rtx_IF_THEN_ELSE (VOIDmode, cc_lt,
+			gen_rtx_LABEL_REF (Pmode, lt_label), pc_rtx);
+      emit_jump_insn (gen_rtx_SET (pc_rtx, temp));
+
+      temp = gen_rtx_IF_THEN_ELSE (VOIDmode, cc_gt,
+			gen_rtx_LABEL_REF (Pmode, gt_label), pc_rtx);
+      emit_jump_insn (gen_rtx_SET (pc_rtx, temp));
+
+      /* Equality.  */
+      emit_move_insn (dest, const0_rtx);
+      emit_jump (end_label);
+
+      emit_label (un_label);
+      emit_move_insn (dest, const2_rtx);
+      emit_jump (end_label);
+
+      emit_label (gt_label);
+      emit_move_insn (dest, const1_rtx);
+      emit_jump (end_label);
+
+      emit_label (lt_label);
+      emit_move_insn (dest, constm1_rtx);
+
+      emit_label (end_label);
+    }
+  else
+    {
+      rtx temp0 = gen_reg_rtx (SImode);
+      rtx temp1 = gen_reg_rtx (SImode);
+      rtx cc_ungt = gen_rtx_UNGT (VOIDmode, cc_reg, const0_rtx);
+
+      /* The value of hint is stored if the operands are unordered.  */
+      rtx temp_un = gen_int_mode (UINTVAL (hint) - 1, SImode);
+      if (!aarch64_reg_zero_or_m1_or_1 (temp_un, SImode))
+	temp_un = force_reg (SImode, temp_un);
+
+      emit_set_insn (temp0, gen_rtx_IF_THEN_ELSE (SImode, cc_lt,
+			constm1_rtx, const0_rtx));
+      emit_set_insn (temp1, gen_rtx_IF_THEN_ELSE (SImode, cc_un,
+			temp_un, const0_rtx));
+      emit_set_insn (dest, gen_rtx_IF_THEN_ELSE (SImode, cc_ungt,
+			gen_rtx_PLUS (SImode, temp1, const1_rtx), temp0));
+    }
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
