@@ -400,281 +400,281 @@ _mm_maskz_scalef_pbh (__mmask8 __U, __m128bh __A, __m128bh __B)
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_fmaddne_pbh (__m256bh __A, __m256bh __B, __m256bh __C)
+_mm256_fmadd_pbh (__m256bh __A, __m256bh __B, __m256bh __C)
 {
   return (__m256bh)
-    __builtin_ia32_fmaddnepbf16256_mask (__A, __B, __C, (__mmask16) -1);
+    __builtin_ia32_fmaddbf16256_mask (__A, __B, __C, (__mmask16) -1);
 }
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_fmaddne_pbh (__m256bh __A, __mmask16 __U,
+_mm256_mask_fmadd_pbh (__m256bh __A, __mmask16 __U,
+		       __m256bh __B, __m256bh __C)
+{
+  return (__m256bh)
+    __builtin_ia32_fmaddbf16256_mask (__A, __B, __C, __U);
+}
+
+extern __inline__ __m256bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask3_fmadd_pbh (__m256bh __A, __m256bh __B,
+			__m256bh __C, __mmask16 __U)
+{
+  return (__m256bh)
+    __builtin_ia32_fmaddbf16256_mask3 (__A, __B, __C, __U);
+}
+
+extern __inline__ __m256bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_fmadd_pbh (__mmask16 __U, __m256bh __A,
+			__m256bh __B, __m256bh __C)
+{
+  return (__m256bh)
+    __builtin_ia32_fmaddbf16256_maskz (__A, __B, __C, __U);
+}
+
+extern __inline__ __m128bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_fmadd_pbh (__m128bh __A, __m128bh __B, __m128bh __C)
+{
+  return (__m128bh)
+    __builtin_ia32_fmaddbf16128_mask (__A, __B, __C, (__mmask8) -1);
+}
+
+extern __inline__ __m128bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fmadd_pbh (__m128bh __A, __mmask8 __U,
+		    __m128bh __B, __m128bh __C)
+{
+  return (__m128bh)
+    __builtin_ia32_fmaddbf16128_mask (__A, __B, __C, __U);
+}
+
+extern __inline__ __m128bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fmadd_pbh (__m128bh __A, __m128bh __B,
+		     __m128bh __C, __mmask8 __U)
+{
+  return (__m128bh)
+    __builtin_ia32_fmaddbf16128_mask3 (__A, __B, __C, __U);
+}
+
+extern __inline__ __m128bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fmadd_pbh (__mmask8 __U, __m128bh __A,
+		     __m128bh __B, __m128bh __C)
+{
+  return (__m128bh)
+    __builtin_ia32_fmaddbf16128_maskz (__A, __B, __C, __U);
+}
+
+extern __inline__ __m256bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_fmsub_pbh (__m256bh __A, __m256bh __B, __m256bh __C)
+{
+  return (__m256bh)
+    __builtin_ia32_fmsubbf16256_mask (__A, __B, __C, (__mmask16) -1);
+}
+
+extern __inline__ __m256bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_fmsub_pbh (__m256bh __A, __mmask16 __U,
+		       __m256bh __B, __m256bh __C)
+{
+  return (__m256bh) __builtin_ia32_fmsubbf16256_mask (__A, __B, __C, __U);
+}
+
+extern __inline__ __m256bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask3_fmsub_pbh (__m256bh __A, __m256bh __B,
+			__m256bh __C, __mmask16 __U)
+{
+  return (__m256bh)
+    __builtin_ia32_fmsubbf16256_mask3 (__A, __B, __C, __U);
+}
+
+extern __inline__ __m256bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_fmsub_pbh (__mmask16 __U, __m256bh __A,
+			__m256bh __B, __m256bh __C)
+{
+  return (__m256bh)
+    __builtin_ia32_fmsubbf16256_maskz (__A, __B, __C, __U);
+}
+
+extern __inline__ __m128bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_fmsub_pbh (__m128bh __A, __m128bh __B, __m128bh __C)
+{
+  return (__m128bh)
+    __builtin_ia32_fmsubbf16128_mask (__A, __B, __C, (__mmask8) -1);
+}
+
+extern __inline__ __m128bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_fmsub_pbh (__m128bh __A, __mmask8 __U,
+		    __m128bh __B, __m128bh __C)
+{
+  return (__m128bh)
+    __builtin_ia32_fmsubbf16128_mask (__A, __B, __C, __U);
+}
+
+extern __inline__ __m128bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fmsub_pbh (__m128bh __A, __m128bh __B,
+		     __m128bh __C, __mmask8 __U)
+{
+  return (__m128bh)
+    __builtin_ia32_fmsubbf16128_mask3 (__A, __B, __C, __U);
+}
+
+extern __inline__ __m128bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fmsub_pbh (__mmask8 __U, __m128bh __A,
+		     __m128bh __B, __m128bh __C)
+{
+  return (__m128bh)
+    __builtin_ia32_fmsubbf16128_maskz (__A, __B, __C, __U);
+}
+
+extern __inline__ __m256bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_fnmadd_pbh (__m256bh __A, __m256bh __B, __m256bh __C)
+{
+  return (__m256bh)
+    __builtin_ia32_fnmaddbf16256_mask (__A, __B, __C, (__mmask16) -1);
+}
+
+extern __inline__ __m256bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_fnmadd_pbh (__m256bh __A, __mmask16 __U,
+			__m256bh __B, __m256bh __C)
+{
+  return (__m256bh)
+    __builtin_ia32_fnmaddbf16256_mask (__A, __B, __C, __U);
+}
+
+extern __inline__ __m256bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask3_fnmadd_pbh (__m256bh __A, __m256bh __B,
+			 __m256bh __C, __mmask16 __U)
+{
+  return (__m256bh)
+    __builtin_ia32_fnmaddbf16256_mask3 (__A, __B, __C, __U);
+}
+
+extern __inline__ __m256bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_fnmadd_pbh (__mmask16 __U, __m256bh __A,
 			 __m256bh __B, __m256bh __C)
 {
   return (__m256bh)
-    __builtin_ia32_fmaddnepbf16256_mask (__A, __B, __C, __U);
-}
-
-extern __inline__ __m256bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask3_fmaddne_pbh (__m256bh __A, __m256bh __B,
-			  __m256bh __C, __mmask16 __U)
-{
-  return (__m256bh)
-    __builtin_ia32_fmaddnepbf16256_mask3 (__A, __B, __C, __U);
-}
-
-extern __inline__ __m256bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_fmaddne_pbh (__mmask16 __U, __m256bh __A,
-			  __m256bh __B, __m256bh __C)
-{
-  return (__m256bh)
-    __builtin_ia32_fmaddnepbf16256_maskz (__A, __B, __C, __U);
+    __builtin_ia32_fnmaddbf16256_maskz (__A, __B, __C, __U);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_fmaddne_pbh (__m128bh __A, __m128bh __B, __m128bh __C)
+_mm_fnmadd_pbh (__m128bh __A, __m128bh __B, __m128bh __C)
 {
   return (__m128bh)
-    __builtin_ia32_fmaddnepbf16128_mask (__A, __B, __C, (__mmask8) -1);
+    __builtin_ia32_fnmaddbf16128_mask (__A, __B, __C, (__mmask8) -1);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_fmaddne_pbh (__m128bh __A, __mmask8 __U,
+_mm_mask_fnmadd_pbh (__m128bh __A, __mmask8 __U,
+		     __m128bh __B, __m128bh __C)
+{
+  return (__m128bh)
+    __builtin_ia32_fnmaddbf16128_mask (__A, __B, __C, __U);
+}
+
+extern __inline__ __m128bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fnmadd_pbh (__m128bh __A, __m128bh __B,
+		      __m128bh __C, __mmask8 __U)
+{
+  return (__m128bh)
+    __builtin_ia32_fnmaddbf16128_mask3 (__A, __B, __C, __U);
+}
+
+extern __inline__ __m128bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fnmadd_pbh (__mmask8 __U, __m128bh __A,
 		      __m128bh __B, __m128bh __C)
 {
   return (__m128bh)
-    __builtin_ia32_fmaddnepbf16128_mask (__A, __B, __C, __U);
-}
-
-extern __inline__ __m128bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask3_fmaddne_pbh (__m128bh __A, __m128bh __B,
-		       __m128bh __C, __mmask8 __U)
-{
-  return (__m128bh)
-    __builtin_ia32_fmaddnepbf16128_mask3 (__A, __B, __C, __U);
-}
-
-extern __inline__ __m128bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_fmaddne_pbh (__mmask8 __U, __m128bh __A,
-		       __m128bh __B, __m128bh __C)
-{
-  return (__m128bh)
-    __builtin_ia32_fmaddnepbf16128_maskz (__A, __B, __C, __U);
+    __builtin_ia32_fnmaddbf16128_maskz (__A, __B, __C, __U);
 }
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_fmsubne_pbh (__m256bh __A, __m256bh __B, __m256bh __C)
+_mm256_fnmsub_pbh (__m256bh __A, __m256bh __B, __m256bh __C)
 {
   return (__m256bh)
-    __builtin_ia32_fmsubnepbf16256_mask (__A, __B, __C, (__mmask16) -1);
+    __builtin_ia32_fnmsubbf16256_mask (__A, __B, __C, (__mmask16) -1);
 }
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_fmsubne_pbh (__m256bh __A, __mmask16 __U,
+_mm256_mask_fnmsub_pbh (__m256bh __A, __mmask16 __U,
+			__m256bh __B, __m256bh __C)
+{
+  return (__m256bh)
+    __builtin_ia32_fnmsubbf16256_mask (__A, __B, __C, __U);
+}
+
+extern __inline__ __m256bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask3_fnmsub_pbh (__m256bh __A, __m256bh __B,
+			 __m256bh __C, __mmask16 __U)
+{
+  return (__m256bh)
+    __builtin_ia32_fnmsubbf16256_mask3 (__A, __B, __C, __U);
+}
+
+extern __inline__ __m256bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_fnmsub_pbh (__mmask16 __U, __m256bh __A,
 			 __m256bh __B, __m256bh __C)
 {
-  return (__m256bh) __builtin_ia32_fmsubnepbf16256_mask (__A, __B, __C, __U);
-}
-
-extern __inline__ __m256bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask3_fmsubne_pbh (__m256bh __A, __m256bh __B,
-			  __m256bh __C, __mmask16 __U)
-{
   return (__m256bh)
-    __builtin_ia32_fmsubnepbf16256_mask3 (__A, __B, __C, __U);
-}
-
-extern __inline__ __m256bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_fmsubne_pbh (__mmask16 __U, __m256bh __A,
-			  __m256bh __B, __m256bh __C)
-{
-  return (__m256bh)
-    __builtin_ia32_fmsubnepbf16256_maskz (__A, __B, __C, __U);
+    __builtin_ia32_fnmsubbf16256_maskz (__A, __B, __C, __U);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_fmsubne_pbh (__m128bh __A, __m128bh __B, __m128bh __C)
+_mm_fnmsub_pbh (__m128bh __A, __m128bh __B, __m128bh __C)
 {
   return (__m128bh)
-    __builtin_ia32_fmsubnepbf16128_mask (__A, __B, __C, (__mmask8) -1);
+    __builtin_ia32_fnmsubbf16128_mask (__A, __B, __C, (__mmask8) -1);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_fmsubne_pbh (__m128bh __A, __mmask8 __U,
+_mm_mask_fnmsub_pbh (__m128bh __A, __mmask8 __U,
+		     __m128bh __B, __m128bh __C)
+{
+  return (__m128bh)
+    __builtin_ia32_fnmsubbf16128_mask (__A, __B, __C, __U);
+}
+
+extern __inline__ __m128bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask3_fnmsub_pbh (__m128bh __A, __m128bh __B,
+		      __m128bh __C, __mmask8 __U)
+{
+  return (__m128bh)
+    __builtin_ia32_fnmsubbf16128_mask3 (__A, __B, __C, __U);
+}
+
+extern __inline__ __m128bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_fnmsub_pbh (__mmask8 __U, __m128bh __A,
 		      __m128bh __B, __m128bh __C)
 {
   return (__m128bh)
-    __builtin_ia32_fmsubnepbf16128_mask (__A, __B, __C, __U);
-}
-
-extern __inline__ __m128bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask3_fmsubne_pbh (__m128bh __A, __m128bh __B,
-		       __m128bh __C, __mmask8 __U)
-{
-  return (__m128bh)
-    __builtin_ia32_fmsubnepbf16128_mask3 (__A, __B, __C, __U);
-}
-
-extern __inline__ __m128bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_fmsubne_pbh (__mmask8 __U, __m128bh __A,
-		       __m128bh __B, __m128bh __C)
-{
-  return (__m128bh)
-    __builtin_ia32_fmsubnepbf16128_maskz (__A, __B, __C, __U);
-}
-
-extern __inline__ __m256bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_fnmaddne_pbh (__m256bh __A, __m256bh __B, __m256bh __C)
-{
-  return (__m256bh)
-    __builtin_ia32_fnmaddnepbf16256_mask (__A, __B, __C, (__mmask16) -1);
-}
-
-extern __inline__ __m256bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_fnmaddne_pbh (__m256bh __A, __mmask16 __U,
-			  __m256bh __B, __m256bh __C)
-{
-  return (__m256bh)
-    __builtin_ia32_fnmaddnepbf16256_mask (__A, __B, __C, __U);
-}
-
-extern __inline__ __m256bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask3_fnmaddne_pbh (__m256bh __A, __m256bh __B,
-			   __m256bh __C, __mmask16 __U)
-{
-  return (__m256bh)
-    __builtin_ia32_fnmaddnepbf16256_mask3 (__A, __B, __C, __U);
-}
-
-extern __inline__ __m256bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_fnmaddne_pbh (__mmask16 __U, __m256bh __A,
-			   __m256bh __B, __m256bh __C)
-{
-  return (__m256bh)
-    __builtin_ia32_fnmaddnepbf16256_maskz (__A, __B, __C, __U);
-}
-
-extern __inline__ __m128bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_fnmaddne_pbh (__m128bh __A, __m128bh __B, __m128bh __C)
-{
-  return (__m128bh)
-    __builtin_ia32_fnmaddnepbf16128_mask (__A, __B, __C, (__mmask8) -1);
-}
-
-extern __inline__ __m128bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_fnmaddne_pbh (__m128bh __A, __mmask8 __U,
-		       __m128bh __B, __m128bh __C)
-{
-  return (__m128bh)
-    __builtin_ia32_fnmaddnepbf16128_mask (__A, __B, __C, __U);
-}
-
-extern __inline__ __m128bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask3_fnmaddne_pbh (__m128bh __A, __m128bh __B,
-			__m128bh __C, __mmask8 __U)
-{
-  return (__m128bh)
-    __builtin_ia32_fnmaddnepbf16128_mask3 (__A, __B, __C, __U);
-}
-
-extern __inline__ __m128bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_fnmaddne_pbh (__mmask8 __U, __m128bh __A,
-			__m128bh __B, __m128bh __C)
-{
-  return (__m128bh)
-    __builtin_ia32_fnmaddnepbf16128_maskz (__A, __B, __C, __U);
-}
-
-extern __inline__ __m256bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_fnmsubne_pbh (__m256bh __A, __m256bh __B, __m256bh __C)
-{
-  return (__m256bh)
-    __builtin_ia32_fnmsubnepbf16256_mask (__A, __B, __C, (__mmask16) -1);
-}
-
-extern __inline__ __m256bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_fnmsubne_pbh (__m256bh __A, __mmask16 __U,
-			  __m256bh __B, __m256bh __C)
-{
-  return (__m256bh)
-    __builtin_ia32_fnmsubnepbf16256_mask (__A, __B, __C, __U);
-}
-
-extern __inline__ __m256bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask3_fnmsubne_pbh (__m256bh __A, __m256bh __B,
-			   __m256bh __C, __mmask16 __U)
-{
-  return (__m256bh)
-    __builtin_ia32_fnmsubnepbf16256_mask3 (__A, __B, __C, __U);
-}
-
-extern __inline__ __m256bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_fnmsubne_pbh (__mmask16 __U, __m256bh __A,
-			   __m256bh __B, __m256bh __C)
-{
-  return (__m256bh)
-    __builtin_ia32_fnmsubnepbf16256_maskz (__A, __B, __C, __U);
-}
-
-extern __inline__ __m128bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_fnmsubne_pbh (__m128bh __A, __m128bh __B, __m128bh __C)
-{
-  return (__m128bh)
-    __builtin_ia32_fnmsubnepbf16128_mask (__A, __B, __C, (__mmask8) -1);
-}
-
-extern __inline__ __m128bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_fnmsubne_pbh (__m128bh __A, __mmask8 __U,
-		       __m128bh __B, __m128bh __C)
-{
-  return (__m128bh)
-    __builtin_ia32_fnmsubnepbf16128_mask (__A, __B, __C, __U);
-}
-
-extern __inline__ __m128bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask3_fnmsubne_pbh (__m128bh __A, __m128bh __B,
-			__m128bh __C, __mmask8 __U)
-{
-  return (__m128bh)
-    __builtin_ia32_fnmsubnepbf16128_mask3 (__A, __B, __C, __U);
-}
-
-extern __inline__ __m128bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_fnmsubne_pbh (__mmask8 __U, __m128bh __A,
-			__m128bh __B, __m128bh __C)
-{
-  return (__m128bh)
-    __builtin_ia32_fnmsubnepbf16128_maskz (__A, __B, __C, __U);
+    __builtin_ia32_fnmsubbf16128_maskz (__A, __B, __C, __U);
 }
 
 extern __inline__ __m256bh

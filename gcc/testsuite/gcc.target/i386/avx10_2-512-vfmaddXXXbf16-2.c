@@ -8,7 +8,6 @@
 #define AVX10_512BIT
 #endif
 #include "avx10-helper.h"
-
 #define SIZE (AVX512F_LEN / 16)
 #include "avx512f-mask-type.h"
 
@@ -33,16 +32,16 @@ TEST (void)
       x16 = convert_bf16_to_fp32 (src1.a[i]);
       y16 = convert_bf16_to_fp32 (src2.a[i]);
       z16 = convert_bf16_to_fp32 (res1.a[i]);
-      m1 = -y16 + x16 * z16;
-      m2 = -z16 + x16 * y16;
+      m1 = y16 + x16 * z16;
+      m2 = z16 + x16 * y16;
       res_ref[i] = convert_fp32_to_bf16 (m1);
       res_ref2[i] = convert_fp32_to_bf16 (m2);
     }
 
   MASK_MERGE (bf16_uw) (res1.a, mask, SIZE);
   MASK_MERGE (bf16_uw) (res2.a, mask, SIZE);
-  res1.x = INTRINSIC (_mask_fmsubne_pbh) (res1.x, mask, src1.x, src2.x);
-  res2.x = INTRINSIC (_mask3_fmsubne_pbh) (src1.x, src2.x, res2.x, mask);
+  res1.x = INTRINSIC (_mask_fmadd_pbh) (res1.x, mask, src1.x, src2.x);
+  res2.x = INTRINSIC (_mask3_fmadd_pbh) (src1.x, src2.x, res2.x, mask);
   
   MASK_MERGE (bf16_uw) (res_ref, mask, SIZE);
   if (UNION_CHECK (AVX512F_LEN, bf16_uw) (res1, res_ref))

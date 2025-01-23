@@ -32111,7 +32111,7 @@
    "v<insn>bf16\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
    [(set_attr "prefix" "evex")])
 
-(define_expand "avx10_2_fmaddnepbf16_<mode>_maskz"
+(define_expand "avx10_2_fmaddbf16_<mode>_maskz"
   [(match_operand:VBF_AVX10_2 0 "register_operand")
    (match_operand:VBF_AVX10_2 1 "nonimmediate_operand")
    (match_operand:VBF_AVX10_2 2 "nonimmediate_operand")
@@ -32119,14 +32119,14 @@
    (match_operand:<avx512fmaskmode> 4 "register_operand")]
   "TARGET_AVX10_2_256"
   {
-    emit_insn (gen_avx10_2_fmaddnepbf16_<mode>_maskz_1 (operands[0], operands[1],
-						      operands[2], operands[3], 
-						      CONST0_RTX(<MODE>mode), 
-						      operands[4]));
+    emit_insn (gen_avx10_2_fmaddbf16_<mode>_maskz_1 (operands[0], operands[1],
+						     operands[2], operands[3],
+						     CONST0_RTX (<MODE>mode),
+						     operands[4]));
     DONE;
   })
 
-(define_insn "avx10_2_fmaddnepbf16_<mode><sd_maskz_name>"
+(define_insn "avx10_2_fmaddbf16_<mode><sd_maskz_name>"
   [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v,v,v")
 	  (fma:VBF_AVX10_2
 	    (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "%0,0,v")
@@ -32134,14 +32134,14 @@
 	    (match_operand:VBF_AVX10_2 3 "nonimmediate_operand" "v,vm,0")))]
   "TARGET_AVX10_2_256"
   "@
-   vfmadd132nepbf16\t{%2, %3, %0<sd_mask_op4>|%0<sd_mask_op4>, %3, %2}
-   vfmadd213nepbf16\t{%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3}
-   vfmadd231nepbf16\t{%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2}"
+   vfmadd132bf16\t{%2, %3, %0<sd_mask_op4>|%0<sd_mask_op4>, %3, %2}
+   vfmadd213bf16\t{%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3}
+   vfmadd231bf16\t{%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2}"
   [(set_attr "prefix" "evex")
    (set_attr "type" "ssemuladd")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx10_2_fmaddnepbf16_<mode>_mask"
+(define_insn "avx10_2_fmaddbf16_<mode>_mask"
   [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v,v")
 	(vec_merge:VBF_AVX10_2
 	  (fma:VBF_AVX10_2
@@ -32152,13 +32152,13 @@
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk,Yk")))]
   "TARGET_AVX10_2_256"
   "@
-   vfmadd132nepbf16\t{%2, %3, %0%{%4%}|%0%{%4%}, %3, %2}
-   vfmadd213nepbf16\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3}"
+   vfmadd132bf16\t{%2, %3, %0%{%4%}|%0%{%4%}, %3, %2}
+   vfmadd213bf16\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3}"
   [(set_attr "prefix" "evex")
    (set_attr "type" "ssemuladd")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx10_2_fmaddnepbf16_<mode>_mask3"
+(define_insn "avx10_2_fmaddbf16_<mode>_mask3"
   [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
 	(vec_merge:VBF_AVX10_2
 	  (fma:VBF_AVX10_2
@@ -32168,12 +32168,12 @@
 	  (match_dup 3)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
   "TARGET_AVX10_2_256"
-  "vfmadd231nepbf16\t{%2, %1, %0%{%4%}|%0%{%4%}, %1, %2}"
+  "vfmadd231bf16\t{%2, %1, %0%{%4%}|%0%{%4%}, %1, %2}"
   [(set_attr "prefix" "evex")
    (set_attr "type" "ssemuladd")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "avx10_2_fnmaddnepbf16_<mode>_maskz"
+(define_expand "avx10_2_fnmaddbf16_<mode>_maskz"
   [(match_operand:VBF_AVX10_2 0 "register_operand")
    (match_operand:VBF_AVX10_2 1 "nonimmediate_operand")
    (match_operand:VBF_AVX10_2 2 "nonimmediate_operand")
@@ -32181,34 +32181,34 @@
    (match_operand:<avx512fmaskmode> 4 "register_operand")]
   "TARGET_AVX10_2_256"
   {
-    emit_insn (gen_avx10_2_fnmaddnepbf16_<mode>_maskz_1 (operands[0], operands[1],
-						       operands[2], operands[3], 
-						       CONST0_RTX(<MODE>mode), 
-						       operands[4]));
+    emit_insn (gen_avx10_2_fnmaddbf16_<mode>_maskz_1 (operands[0], operands[1],
+						      operands[2], operands[3],
+						      CONST0_RTX (<MODE>mode),
+						      operands[4]));
     DONE;
   })
 
-(define_insn "avx10_2_fnmaddnepbf16_<mode><sd_maskz_name>"
+(define_insn "avx10_2_fnmaddbf16_<mode><sd_maskz_name>"
   [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v,v,v")
 	  (fma:VBF_AVX10_2
-            (neg:VBF_AVX10_2
+	    (neg:VBF_AVX10_2
 	      (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "%0,0,v"))
 	    (match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm,v,vm")
 	    (match_operand:VBF_AVX10_2 3 "nonimmediate_operand" "v,vm,0")))]
   "TARGET_AVX10_2_256"
   "@
-   vfnmadd132nepbf16\t{%2, %3, %0<sd_mask_op4>|%0<sd_mask_op4>, %3, %2}
-   vfnmadd213nepbf16\t{%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3}
-   vfnmadd231nepbf16\t{%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2}"
+   vfnmadd132bf16\t{%2, %3, %0<sd_mask_op4>|%0<sd_mask_op4>, %3, %2}
+   vfnmadd213bf16\t{%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3}
+   vfnmadd231bf16\t{%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2}"
   [(set_attr "prefix" "evex")
    (set_attr "type" "ssemuladd")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx10_2_fnmaddnepbf16_<mode>_mask"
+(define_insn "avx10_2_fnmaddbf16_<mode>_mask"
   [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v,v")
 	(vec_merge:VBF_AVX10_2
 	  (fma:VBF_AVX10_2
-            (neg:VBF_AVX10_2
+	    (neg:VBF_AVX10_2
 	      (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "0,0"))
 	    (match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm,v")
 	    (match_operand:VBF_AVX10_2 3 "nonimmediate_operand" "v,vm"))
@@ -32216,29 +32216,29 @@
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk,Yk")))]
   "TARGET_AVX10_2_256"
   "@
-   vfnmadd132nepbf16\t{%2, %3, %0%{%4%}|%0%{%4%}, %3, %2}
-   vfnmadd213nepbf16\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3}"
+   vfnmadd132bf16\t{%2, %3, %0%{%4%}|%0%{%4%}, %3, %2}
+   vfnmadd213bf16\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3}"
   [(set_attr "prefix" "evex")
    (set_attr "type" "ssemuladd")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx10_2_fnmaddnepbf16_<mode>_mask3"
+(define_insn "avx10_2_fnmaddbf16_<mode>_mask3"
   [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
 	(vec_merge:VBF_AVX10_2
 	  (fma:VBF_AVX10_2
-            (neg:VBF_AVX10_2
+	    (neg:VBF_AVX10_2
 	      (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "%v"))
 	    (match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm")
 	    (match_operand:VBF_AVX10_2 3 "nonimmediate_operand" "0"))
 	  (match_dup 3)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
   "TARGET_AVX10_2_256"
-  "vfnmadd231nepbf16\t{%2, %1, %0%{%4%}|%0%{%4%}, %1, %2}"
+  "vfnmadd231bf16\t{%2, %1, %0%{%4%}|%0%{%4%}, %1, %2}"
   [(set_attr "prefix" "evex")
    (set_attr "type" "ssemuladd")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "avx10_2_fmsubnepbf16_<mode>_maskz"
+(define_expand "avx10_2_fmsubbf16_<mode>_maskz"
   [(match_operand:VBF_AVX10_2 0 "register_operand")
    (match_operand:VBF_AVX10_2 1 "nonimmediate_operand")
    (match_operand:VBF_AVX10_2 2 "nonimmediate_operand")
@@ -32246,127 +32246,127 @@
    (match_operand:<avx512fmaskmode> 4 "register_operand")]
   "TARGET_AVX10_2_256"
   {
-    emit_insn (gen_avx10_2_fmsubnepbf16_<mode>_maskz_1 (operands[0], operands[1],
-						      operands[2], operands[3], 
-						      CONST0_RTX(<MODE>mode), 
-						      operands[4]));
+    emit_insn (gen_avx10_2_fmsubbf16_<mode>_maskz_1 (operands[0], operands[1],
+						     operands[2], operands[3],
+						     CONST0_RTX (<MODE>mode),
+						     operands[4]));
     DONE;
   })
 
-(define_insn "avx10_2_fmsubnepbf16_<mode><sd_maskz_name>"
+(define_insn "avx10_2_fmsubbf16_<mode><sd_maskz_name>"
   [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v,v,v")
 	  (fma:VBF_AVX10_2
 	    (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "%0,0,v")
 	    (match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm,v,vm")
-            (neg:VBF_AVX10_2
+	    (neg:VBF_AVX10_2
 	      (match_operand:VBF_AVX10_2 3 "nonimmediate_operand" "v,vm,0"))))]
   "TARGET_AVX10_2_256"
   "@
-   vfmsub132nepbf16\t{%2, %3, %0<sd_mask_op4>|%0<sd_mask_op4>, %3, %2}
-   vfmsub213nepbf16\t{%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3}
-   vfmsub231nepbf16\t{%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2}"
+   vfmsub132bf16\t{%2, %3, %0<sd_mask_op4>|%0<sd_mask_op4>, %3, %2}
+   vfmsub213bf16\t{%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3}
+   vfmsub231bf16\t{%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2}"
   [(set_attr "prefix" "evex")
    (set_attr "type" "ssemuladd")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx10_2_fmsubnepbf16_<mode>_mask"
+(define_insn "avx10_2_fmsubbf16_<mode>_mask"
   [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v,v")
 	(vec_merge:VBF_AVX10_2
 	  (fma:VBF_AVX10_2
-	     (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "0,0")
-	     (match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm,v")
-            (neg:VBF_AVX10_2
-	       (match_operand:VBF_AVX10_2 3 "nonimmediate_operand" "v,vm")))
-	  (match_dup 1)
-	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk,Yk")))]
-  "TARGET_AVX10_2_256"
-  "@
-   vfmsub132nepbf16\t{%2, %3, %0%{%4%}|%0%{%4%}, %3, %2}
-   vfmsub213nepbf16\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3}"
-  [(set_attr "prefix" "evex")
-   (set_attr "type" "ssemuladd")
-   (set_attr "mode" "<sseinsnmode>")])
-
-(define_insn "avx10_2_fmsubnepbf16_<mode>_mask3"
-  [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
-	(vec_merge:VBF_AVX10_2
-	  (fma:VBF_AVX10_2
-	     (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "%v")
-	     (match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm")
-             (neg:VBF_AVX10_2
-	       (match_operand:VBF_AVX10_2 3 "nonimmediate_operand" "0")))
-	  (match_dup 3)
-	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
-  "TARGET_AVX10_2_256"
-  "vfmsub231nepbf16\t{%2, %1, %0%{%4%}|%0%{%4%}, %1, %2}"
-  [(set_attr "prefix" "evex")
-   (set_attr "type" "ssemuladd")
-   (set_attr "mode" "<sseinsnmode>")])
-
-(define_expand "avx10_2_fnmsubnepbf16_<mode>_maskz"
-  [(match_operand:VBF_AVX10_2 0 "register_operand")
-   (match_operand:VBF_AVX10_2 1 "nonimmediate_operand")
-   (match_operand:VBF_AVX10_2 2 "nonimmediate_operand")
-   (match_operand:VBF_AVX10_2 3 "nonimmediate_operand")
-   (match_operand:<avx512fmaskmode> 4 "register_operand")]
-  "TARGET_AVX10_2_256"
-  {
-    emit_insn (gen_avx10_2_fnmsubnepbf16_<mode>_maskz_1 (operands[0], operands[1],
-						       operands[2], operands[3], 
-						       CONST0_RTX(<MODE>mode), 
-						       operands[4]));
-    DONE;
-  })
-
-(define_insn "avx10_2_fnmsubnepbf16_<mode><sd_maskz_name>"
-  [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v,v,v")
-	  (fma:VBF_AVX10_2
-            (neg:VBF_AVX10_2
-	      (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "%0,0,v"))
-	    (match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm,v,vm")
-            (neg:VBF_AVX10_2
-	      (match_operand:VBF_AVX10_2 3 "nonimmediate_operand" "v,vm,0"))))]
-  "TARGET_AVX10_2_256"
-  "@
-   vfnmsub132nepbf16\t{%2, %3, %0<sd_mask_op4>|%0<sd_mask_op4>, %3, %2}
-   vfnmsub213nepbf16\t{%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3}
-   vfnmsub231nepbf16\t{%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2}"
-  [(set_attr "prefix" "evex")
-   (set_attr "type" "ssemuladd")
-   (set_attr "mode" "<sseinsnmode>")])
-
-(define_insn "avx10_2_fnmsubnepbf16_<mode>_mask"
-  [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v,v")
-	(vec_merge:VBF_AVX10_2
-	  (fma:VBF_AVX10_2
-            (neg:VBF_AVX10_2
-	      (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "0,0"))
+	    (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "0,0")
 	    (match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm,v")
-            (neg:VBF_AVX10_2
+	    (neg:VBF_AVX10_2
 	      (match_operand:VBF_AVX10_2 3 "nonimmediate_operand" "v,vm")))
 	  (match_dup 1)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk,Yk")))]
   "TARGET_AVX10_2_256"
   "@
-   vfnmsub132nepbf16\t{%2, %3, %0%{%4%}|%0%{%4%}, %3, %2}
-   vfnmsub213nepbf16\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3}"
+   vfmsub132bf16\t{%2, %3, %0%{%4%}|%0%{%4%}, %3, %2}
+   vfmsub213bf16\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3}"
   [(set_attr "prefix" "evex")
    (set_attr "type" "ssemuladd")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx10_2_fnmsubnepbf16_<mode>_mask3"
+(define_insn "avx10_2_fmsubbf16_<mode>_mask3"
   [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
 	(vec_merge:VBF_AVX10_2
 	  (fma:VBF_AVX10_2
-            (neg:VBF_AVX10_2
-	      (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "%v"))
+	    (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "%v")
 	    (match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm")
-            (neg:VBF_AVX10_2
+	    (neg:VBF_AVX10_2
 	      (match_operand:VBF_AVX10_2 3 "nonimmediate_operand" "0")))
 	  (match_dup 3)
 	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
   "TARGET_AVX10_2_256"
-  "vfnmsub231nepbf16\t{%2, %1, %0%{%4%}|%0%{%4%}, %1, %2}"
+  "vfmsub231bf16\t{%2, %1, %0%{%4%}|%0%{%4%}, %1, %2}"
+  [(set_attr "prefix" "evex")
+   (set_attr "type" "ssemuladd")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_expand "avx10_2_fnmsubbf16_<mode>_maskz"
+  [(match_operand:VBF_AVX10_2 0 "register_operand")
+   (match_operand:VBF_AVX10_2 1 "nonimmediate_operand")
+   (match_operand:VBF_AVX10_2 2 "nonimmediate_operand")
+   (match_operand:VBF_AVX10_2 3 "nonimmediate_operand")
+   (match_operand:<avx512fmaskmode> 4 "register_operand")]
+  "TARGET_AVX10_2_256"
+  {
+    emit_insn (gen_avx10_2_fnmsubbf16_<mode>_maskz_1 (operands[0], operands[1],
+						      operands[2], operands[3],
+						      CONST0_RTX (<MODE>mode),
+						      operands[4]));
+    DONE;
+  })
+
+(define_insn "avx10_2_fnmsubbf16_<mode><sd_maskz_name>"
+  [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v,v,v")
+	  (fma:VBF_AVX10_2
+	    (neg:VBF_AVX10_2
+	      (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "%0,0,v"))
+	    (match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm,v,vm")
+	    (neg:VBF_AVX10_2
+	      (match_operand:VBF_AVX10_2 3 "nonimmediate_operand" "v,vm,0"))))]
+  "TARGET_AVX10_2_256"
+  "@
+   vfnmsub132bf16\t{%2, %3, %0<sd_mask_op4>|%0<sd_mask_op4>, %3, %2}
+   vfnmsub213bf16\t{%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3}
+   vfnmsub231bf16\t{%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2}"
+  [(set_attr "prefix" "evex")
+   (set_attr "type" "ssemuladd")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "avx10_2_fnmsubbf16_<mode>_mask"
+  [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v,v")
+	(vec_merge:VBF_AVX10_2
+	  (fma:VBF_AVX10_2
+	    (neg:VBF_AVX10_2
+	      (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "0,0"))
+	    (match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm,v")
+	    (neg:VBF_AVX10_2
+	      (match_operand:VBF_AVX10_2 3 "nonimmediate_operand" "v,vm")))
+	  (match_dup 1)
+	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk,Yk")))]
+  "TARGET_AVX10_2_256"
+  "@
+   vfnmsub132bf16\t{%2, %3, %0%{%4%}|%0%{%4%}, %3, %2}
+   vfnmsub213bf16\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3}"
+  [(set_attr "prefix" "evex")
+   (set_attr "type" "ssemuladd")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "avx10_2_fnmsubbf16_<mode>_mask3"
+  [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
+	(vec_merge:VBF_AVX10_2
+	  (fma:VBF_AVX10_2
+	    (neg:VBF_AVX10_2
+	      (match_operand:VBF_AVX10_2 1 "nonimmediate_operand" "%v"))
+	    (match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm")
+	    (neg:VBF_AVX10_2
+	      (match_operand:VBF_AVX10_2 3 "nonimmediate_operand" "0")))
+	  (match_dup 3)
+	  (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk")))]
+  "TARGET_AVX10_2_256"
+  "vfnmsub231bf16\t{%2, %1, %0%{%4%}|%0%{%4%}, %1, %2}"
   [(set_attr "prefix" "evex")
    (set_attr "type" "ssemuladd")
    (set_attr "mode" "<sseinsnmode>")])

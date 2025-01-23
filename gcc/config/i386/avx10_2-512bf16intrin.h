@@ -218,142 +218,142 @@ _mm512_maskz_scalef_pbh (__mmask32 __U, __m512bh __A, __m512bh __B)
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_fmaddne_pbh (__m512bh __A, __m512bh __B, __m512bh __C)
+_mm512_fmadd_pbh (__m512bh __A, __m512bh __B, __m512bh __C)
 {
   return (__m512bh)
-    __builtin_ia32_fmaddnepbf16512_mask (__A, __B, __C, (__mmask32) -1);
+    __builtin_ia32_fmaddbf16512_mask (__A, __B, __C, (__mmask32) -1);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_fmaddne_pbh (__m512bh __A, __mmask32 __U,
+_mm512_mask_fmadd_pbh (__m512bh __A, __mmask32 __U,
+		       __m512bh __B, __m512bh __C)
+{
+  return (__m512bh)
+    __builtin_ia32_fmaddbf16512_mask (__A, __B, __C, __U);
+}
+
+extern __inline__ __m512bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask3_fmadd_pbh (__m512bh __A, __m512bh __B,
+			__m512bh __C, __mmask32 __U)
+{
+  return (__m512bh)
+    __builtin_ia32_fmaddbf16512_mask3 (__A, __B, __C, __U);
+}
+
+extern __inline__ __m512bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_fmadd_pbh (__mmask32 __U, __m512bh __A,
+			  __m512bh __B, __m512bh __C)
+{
+  return (__m512bh)
+    __builtin_ia32_fmaddbf16512_maskz (__A, __B, __C, __U);
+}
+
+extern __inline__ __m512bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_fmsub_pbh (__m512bh __A, __m512bh __B, __m512bh __C)
+{
+  return (__m512bh)
+    __builtin_ia32_fmsubbf16512_mask (__A, __B, __C, (__mmask32) -1);
+}
+
+extern __inline__ __m512bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_fmsub_pbh (__m512bh __A, __mmask32 __U,
+		       __m512bh __B, __m512bh __C)
+{
+  return (__m512bh)
+    __builtin_ia32_fmsubbf16512_mask (__A, __B, __C, __U);
+}
+
+extern __inline__ __m512bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask3_fmsub_pbh (__m512bh __A, __m512bh __B,
+			__m512bh __C, __mmask32 __U)
+{
+  return (__m512bh)
+    __builtin_ia32_fmsubbf16512_mask3 (__A, __B, __C, __U);
+}
+
+extern __inline__ __m512bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_fmsub_pbh (__mmask32 __U, __m512bh __A,
+			__m512bh __B, __m512bh __C)
+{
+  return (__m512bh)
+    __builtin_ia32_fmsubbf16512_maskz (__A, __B, __C, __U);
+}
+
+extern __inline__ __m512bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_fnmadd_pbh (__m512bh __A, __m512bh __B, __m512bh __C)
+{
+  return (__m512bh)
+    __builtin_ia32_fnmaddbf16512_mask (__A, __B, __C, (__mmask32) -1);
+}
+
+extern __inline__ __m512bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_fnmadd_pbh (__m512bh __A, __mmask32 __U,
+			__m512bh __B, __m512bh __C)
+{
+  return (__m512bh)
+    __builtin_ia32_fnmaddbf16512_mask (__A, __B, __C, __U);
+}
+
+extern __inline__ __m512bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask3_fnmadd_pbh (__m512bh __A, __m512bh __B,
+			 __m512bh __C, __mmask32 __U)
+{
+  return (__m512bh)
+    __builtin_ia32_fnmaddbf16512_mask3 (__A, __B, __C, __U);
+}
+
+extern __inline__ __m512bh
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_fnmadd_pbh (__mmask32 __U, __m512bh __A,
 			 __m512bh __B, __m512bh __C)
 {
   return (__m512bh)
-    __builtin_ia32_fmaddnepbf16512_mask (__A, __B, __C, __U);
+    __builtin_ia32_fnmaddbf16512_maskz (__A, __B, __C, __U);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask3_fmaddne_pbh (__m512bh __A, __m512bh __B,
-			  __m512bh __C, __mmask32 __U)
+_mm512_fnmsub_pbh (__m512bh __A, __m512bh __B, __m512bh __C)
 {
   return (__m512bh)
-    __builtin_ia32_fmaddnepbf16512_mask3 (__A, __B, __C, __U);
+    __builtin_ia32_fnmsubbf16512_mask (__A, __B, __C, (__mmask32) -1);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_fmaddne_pbh (__mmask32 __U, __m512bh __A,
-			  __m512bh __B, __m512bh __C)
+_mm512_mask_fnmsub_pbh (__m512bh __A, __mmask32 __U,
+			__m512bh __B, __m512bh __C)
 {
   return (__m512bh)
-    __builtin_ia32_fmaddnepbf16512_maskz (__A, __B, __C, __U);
+    __builtin_ia32_fnmsubbf16512_mask (__A, __B, __C, __U);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_fmsubne_pbh (__m512bh __A, __m512bh __B, __m512bh __C)
+_mm512_mask3_fnmsub_pbh (__m512bh __A, __m512bh __B,
+			 __m512bh __C, __mmask32 __U)
 {
   return (__m512bh)
-    __builtin_ia32_fmsubnepbf16512_mask (__A, __B, __C, (__mmask32) -1);
+    __builtin_ia32_fnmsubbf16512_mask3 (__A, __B, __C, __U);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_fmsubne_pbh (__m512bh __A, __mmask32 __U,
+_mm512_maskz_fnmsub_pbh (__mmask32 __U, __m512bh __A,
 			 __m512bh __B, __m512bh __C)
 {
   return (__m512bh)
-    __builtin_ia32_fmsubnepbf16512_mask (__A, __B, __C, __U);
-}
-
-extern __inline__ __m512bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask3_fmsubne_pbh (__m512bh __A, __m512bh __B,
-			  __m512bh __C, __mmask32 __U)
-{
-  return (__m512bh)
-    __builtin_ia32_fmsubnepbf16512_mask3 (__A, __B, __C, __U);
-}
-
-extern __inline__ __m512bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_fmsubne_pbh (__mmask32 __U, __m512bh __A,
-			  __m512bh __B, __m512bh __C)
-{
-  return (__m512bh)
-    __builtin_ia32_fmsubnepbf16512_maskz (__A, __B, __C, __U);
-}
-
-extern __inline__ __m512bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_fnmaddne_pbh (__m512bh __A, __m512bh __B, __m512bh __C)
-{
-  return (__m512bh)
-    __builtin_ia32_fnmaddnepbf16512_mask (__A, __B, __C, (__mmask32) -1);
-}
-
-extern __inline__ __m512bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_fnmaddne_pbh (__m512bh __A, __mmask32 __U,
-			  __m512bh __B, __m512bh __C)
-{
-  return (__m512bh)
-    __builtin_ia32_fnmaddnepbf16512_mask (__A, __B, __C, __U);
-}
-
-extern __inline__ __m512bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask3_fnmaddne_pbh (__m512bh __A, __m512bh __B,
-			   __m512bh __C, __mmask32 __U)
-{
-  return (__m512bh)
-    __builtin_ia32_fnmaddnepbf16512_mask3 (__A, __B, __C, __U);
-}
-
-extern __inline__ __m512bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_fnmaddne_pbh (__mmask32 __U, __m512bh __A,
-			   __m512bh __B, __m512bh __C)
-{
-  return (__m512bh)
-    __builtin_ia32_fnmaddnepbf16512_maskz (__A, __B, __C, __U);
-}
-
-extern __inline__ __m512bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_fnmsubne_pbh (__m512bh __A, __m512bh __B, __m512bh __C)
-{
-  return (__m512bh)
-    __builtin_ia32_fnmsubnepbf16512_mask (__A, __B, __C, (__mmask32) -1);
-}
-
-extern __inline__ __m512bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_fnmsubne_pbh (__m512bh __A, __mmask32 __U,
-			  __m512bh __B, __m512bh __C)
-{
-  return (__m512bh)
-    __builtin_ia32_fnmsubnepbf16512_mask (__A, __B, __C, __U);
-}
-
-extern __inline__ __m512bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask3_fnmsubne_pbh (__m512bh __A, __m512bh __B,
-			   __m512bh __C, __mmask32 __U)
-{
-  return (__m512bh)
-    __builtin_ia32_fnmsubnepbf16512_mask3 (__A, __B, __C, __U);
-}
-
-extern __inline__ __m512bh
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_fnmsubne_pbh (__mmask32 __U, __m512bh __A,
-			   __m512bh __B, __m512bh __C)
-{
-  return (__m512bh)
-    __builtin_ia32_fnmsubnepbf16512_maskz (__A, __B, __C, __U);
+    __builtin_ia32_fnmsubbf16512_maskz (__A, __B, __C, __U);
 }
 
 extern __inline__ __m512bh
