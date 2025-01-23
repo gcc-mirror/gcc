@@ -1,3 +1,12 @@
+2025-01-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-09-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	* omp-general.cc (omp_runtime_api_procname): Add
+	omp_get_interop_{int,name,ptr,rc_desc,str,type_desc}
+	and omp_get_num_interop_properties.
+
 2024-12-19  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/65181
