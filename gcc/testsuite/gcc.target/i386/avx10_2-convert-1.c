@@ -132,49 +132,49 @@ avx10_2_test (void)
 void extern
 avx10_2_vcvtbiasph2bf8_test (void)
 {
-  x128i = _mm_cvtbiasph_pbf8 (x128i, x128h);
-  x128i = _mm_mask_cvtbiasph_pbf8 (x128i, m8, x128i, x128h);
-  x128i = _mm_maskz_cvtbiasph_pbf8 (m8, x128i, x128h);
+  x128i = _mm_cvtbiasph_bf8 (x128i, x128h);
+  x128i = _mm_mask_cvtbiasph_bf8 (x128i, m8, x128i, x128h);
+  x128i = _mm_maskz_cvtbiasph_bf8 (m8, x128i, x128h);
 
-  x128i = _mm256_cvtbiasph_pbf8 (x256i, x256h);
-  x128i = _mm256_mask_cvtbiasph_pbf8 (x128i, m16, x256i, x256h);
-  x128i = _mm256_maskz_cvtbiasph_pbf8 (m16, x256i, x256h);
+  x128i = _mm256_cvtbiasph_bf8 (x256i, x256h);
+  x128i = _mm256_mask_cvtbiasph_bf8 (x128i, m16, x256i, x256h);
+  x128i = _mm256_maskz_cvtbiasph_bf8 (m16, x256i, x256h);
 }
 
 void extern
 avx10_2_vcvtbiasph2bf8s_test (void)
 {
-  x128i = _mm_cvtbiassph_pbf8 (x128i, x128h);
-  x128i = _mm_mask_cvtbiassph_pbf8 (x128i, m8, x128i, x128h);
-  x128i = _mm_maskz_cvtbiassph_pbf8 (m8, x128i, x128h);
+  x128i = _mm_cvtbiassph_bf8 (x128i, x128h);
+  x128i = _mm_mask_cvtbiassph_bf8 (x128i, m8, x128i, x128h);
+  x128i = _mm_maskz_cvtbiassph_bf8 (m8, x128i, x128h);
 
-  x128i = _mm256_cvtbiassph_pbf8 (x256i, x256h);
-  x128i = _mm256_mask_cvtbiassph_pbf8 (x128i, m16, x256i, x256h);
-  x128i = _mm256_maskz_cvtbiassph_pbf8 (m16, x256i, x256h);
+  x128i = _mm256_cvtbiassph_bf8 (x256i, x256h);
+  x128i = _mm256_mask_cvtbiassph_bf8 (x128i, m16, x256i, x256h);
+  x128i = _mm256_maskz_cvtbiassph_bf8 (m16, x256i, x256h);
 }
 
 void extern
 avx10_2_vcvtbiasph2hf8_test (void)
 {
-  x128i = _mm_cvtbiasph_phf8 (x128i, x128h);
-  x128i = _mm_mask_cvtbiasph_phf8 (x128i, m8, x128i, x128h);
-  x128i = _mm_maskz_cvtbiasph_phf8 (m8, x128i, x128h);
+  x128i = _mm_cvtbiasph_hf8 (x128i, x128h);
+  x128i = _mm_mask_cvtbiasph_hf8 (x128i, m8, x128i, x128h);
+  x128i = _mm_maskz_cvtbiasph_hf8 (m8, x128i, x128h);
 
-  x128i = _mm256_cvtbiasph_phf8 (x256i, x256h);
-  x128i = _mm256_mask_cvtbiasph_phf8 (x128i, m16, x256i, x256h);
-  x128i = _mm256_maskz_cvtbiasph_phf8 (m16, x256i, x256h);
+  x128i = _mm256_cvtbiasph_hf8 (x256i, x256h);
+  x128i = _mm256_mask_cvtbiasph_hf8 (x128i, m16, x256i, x256h);
+  x128i = _mm256_maskz_cvtbiasph_hf8 (m16, x256i, x256h);
 }
 
 void extern
 avx10_2_vcvtbiasph2hf8s_test (void)
 {
-  x128i = _mm_cvtbiassph_phf8 (x128i, x128h);
-  x128i = _mm_mask_cvtbiassph_phf8 (x128i, m8, x128i, x128h);
-  x128i = _mm_maskz_cvtbiassph_phf8 (m8, x128i, x128h);
+  x128i = _mm_cvtbiassph_hf8 (x128i, x128h);
+  x128i = _mm_mask_cvtbiassph_hf8 (x128i, m8, x128i, x128h);
+  x128i = _mm_maskz_cvtbiassph_hf8 (m8, x128i, x128h);
 
-  x128i = _mm256_cvtbiassph_phf8 (x256i, x256h);
-  x128i = _mm256_mask_cvtbiassph_phf8 (x128i, m16, x256i, x256h);
-  x128i = _mm256_maskz_cvtbiassph_phf8 (m16, x256i, x256h);
+  x128i = _mm256_cvtbiassph_hf8 (x256i, x256h);
+  x128i = _mm256_mask_cvtbiassph_hf8 (x128i, m16, x256i, x256h);
+  x128i = _mm256_maskz_cvtbiassph_hf8 (m16, x256i, x256h);
 }
 
 void extern
@@ -284,11 +284,11 @@ avx10_2_vcvtph2hf8s_test (void)
 void extern
 avx10_2_cvtbf8_fp16_test (void)
 {
-  y = _mm_cvtpbf8_ph (z3);
-  y = _mm_mask_cvtpbf8_ph (z, m8, z3);
-  y = _mm_maskz_cvtpbf8_ph (m8, z3);
+  y = _mm_cvtbf8_ph (z3);
+  y = _mm_mask_cvtbf8_ph (z, m8, z3);
+  y = _mm_maskz_cvtbf8_ph (m8, z3);
 
-  y2 = _mm256_cvtpbf8_ph (z3);
-  y2 = _mm256_mask_cvtpbf8_ph (z2, m8, z3);
-  y2 = _mm256_maskz_cvtpbf8_ph (m8, z3);
+  y2 = _mm256_cvtbf8_ph (z3);
+  y2 = _mm256_mask_cvtbf8_ph (z2, m8, z3);
+  y2 = _mm256_maskz_cvtbf8_ph (m8, z3);
 }

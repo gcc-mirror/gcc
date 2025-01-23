@@ -166,7 +166,7 @@ _mm256_maskz_cvtx_round2ps_ph (__mmask16 __U, __m256 __A,
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cvtbiasph_pbf8 (__m128i __A, __m128h __B)
+_mm_cvtbiasph_bf8 (__m128i __A, __m128h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2bf8128 ((__v16qi) __A,
 						     (__v8hf) __B);
@@ -174,8 +174,8 @@ _mm_cvtbiasph_pbf8 (__m128i __A, __m128h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_cvtbiasph_pbf8 (__m128i __W, __mmask8 __U, __m128i __A,
-			     __m128h __B)
+_mm_mask_cvtbiasph_bf8 (__m128i __W, __mmask8 __U, __m128i __A,
+			__m128h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2bf8128_mask ((__v16qi) __A,
 							  (__v8hf) __B,
@@ -185,7 +185,7 @@ _mm_mask_cvtbiasph_pbf8 (__m128i __W, __mmask8 __U, __m128i __A,
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_cvtbiasph_pbf8 (__mmask8 __U, __m128i __A, __m128h __B)
+_mm_maskz_cvtbiasph_bf8 (__mmask8 __U, __m128i __A, __m128h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2bf8128_mask ((__v16qi) __A,
 							  (__v8hf) __B,
@@ -196,7 +196,7 @@ _mm_maskz_cvtbiasph_pbf8 (__mmask8 __U, __m128i __A, __m128h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_cvtbiasph_pbf8 (__m256i __A, __m256h __B)
+_mm256_cvtbiasph_bf8 (__m256i __A, __m256h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2bf8256_mask ((__v32qi) __A,
 							  (__v16hf) __B,
@@ -207,8 +207,8 @@ _mm256_cvtbiasph_pbf8 (__m256i __A, __m256h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_cvtbiasph_pbf8 (__m128i __W, __mmask16 __U, __m256i __A,
-				__m256h __B)
+_mm256_mask_cvtbiasph_bf8 (__m128i __W, __mmask16 __U, __m256i __A,
+			   __m256h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2bf8256_mask ((__v32qi) __A,
 							  (__v16hf) __B,
@@ -218,7 +218,7 @@ _mm256_mask_cvtbiasph_pbf8 (__m128i __W, __mmask16 __U, __m256i __A,
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_cvtbiasph_pbf8 (__mmask16 __U, __m256i __A, __m256h __B)
+_mm256_maskz_cvtbiasph_bf8 (__mmask16 __U, __m256i __A, __m256h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2bf8256_mask ((__v32qi) __A,
 							  (__v16hf) __B,
@@ -229,7 +229,7 @@ _mm256_maskz_cvtbiasph_pbf8 (__mmask16 __U, __m256i __A, __m256h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cvtbiassph_pbf8 (__m128i __A, __m128h __B)
+_mm_cvtbiassph_bf8 (__m128i __A, __m128h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2bf8s128 ((__v16qi) __A,
 						      (__v8hf) __B);
@@ -237,8 +237,8 @@ _mm_cvtbiassph_pbf8 (__m128i __A, __m128h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_cvtbiassph_pbf8 (__m128i __W, __mmask8 __U,
-			  __m128i __A, __m128h __B)
+_mm_mask_cvtbiassph_bf8 (__m128i __W, __mmask8 __U,
+			 __m128i __A, __m128h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2bf8s128_mask ((__v16qi) __A,
 							   (__v8hf) __B,
@@ -248,7 +248,7 @@ _mm_mask_cvtbiassph_pbf8 (__m128i __W, __mmask8 __U,
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_cvtbiassph_pbf8 (__mmask8 __U, __m128i __A, __m128h __B)
+_mm_maskz_cvtbiassph_bf8 (__mmask8 __U, __m128i __A, __m128h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2bf8s128_mask ((__v16qi) __A,
 							   (__v8hf) __B,
@@ -259,7 +259,7 @@ _mm_maskz_cvtbiassph_pbf8 (__mmask8 __U, __m128i __A, __m128h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_cvtbiassph_pbf8 (__m256i __A, __m256h __B)
+_mm256_cvtbiassph_bf8 (__m256i __A, __m256h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2bf8s256_mask ((__v32qi) __A,
 							   (__v16hf) __B,
@@ -270,8 +270,8 @@ _mm256_cvtbiassph_pbf8 (__m256i __A, __m256h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_cvtbiassph_pbf8 (__m128i __W, __mmask16 __U,
-			     __m256i __A, __m256h __B)
+_mm256_mask_cvtbiassph_bf8 (__m128i __W, __mmask16 __U,
+			    __m256i __A, __m256h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2bf8s256_mask ((__v32qi) __A,
 							   (__v16hf) __B,
@@ -281,7 +281,7 @@ _mm256_mask_cvtbiassph_pbf8 (__m128i __W, __mmask16 __U,
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_cvtbiassph_pbf8 (__mmask16 __U, __m256i __A, __m256h __B)
+_mm256_maskz_cvtbiassph_bf8 (__mmask16 __U, __m256i __A, __m256h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2bf8s256_mask ((__v32qi) __A,
 							   (__v16hf) __B,
@@ -292,7 +292,7 @@ _mm256_maskz_cvtbiassph_pbf8 (__mmask16 __U, __m256i __A, __m256h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cvtbiasph_phf8 (__m128i __A, __m128h __B)
+_mm_cvtbiasph_hf8 (__m128i __A, __m128h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2hf8128 ((__v16qi) __A,
 						     (__v8hf) __B);
@@ -300,8 +300,8 @@ _mm_cvtbiasph_phf8 (__m128i __A, __m128h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_cvtbiasph_phf8 (__m128i __W, __mmask8 __U, __m128i __A,
-			     __m128h __B)
+_mm_mask_cvtbiasph_hf8 (__m128i __W, __mmask8 __U, __m128i __A,
+			__m128h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2hf8128_mask ((__v16qi) __A,
 							  (__v8hf) __B,
@@ -311,7 +311,7 @@ _mm_mask_cvtbiasph_phf8 (__m128i __W, __mmask8 __U, __m128i __A,
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_cvtbiasph_phf8 (__mmask8 __U, __m128i __A, __m128h __B)
+_mm_maskz_cvtbiasph_hf8 (__mmask8 __U, __m128i __A, __m128h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2hf8128_mask ((__v16qi) __A,
 							  (__v8hf) __B,
@@ -322,7 +322,7 @@ _mm_maskz_cvtbiasph_phf8 (__mmask8 __U, __m128i __A, __m128h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_cvtbiasph_phf8 (__m256i __A, __m256h __B)
+_mm256_cvtbiasph_hf8 (__m256i __A, __m256h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2hf8256_mask ((__v32qi) __A,
 							  (__v16hf) __B,
@@ -333,8 +333,8 @@ _mm256_cvtbiasph_phf8 (__m256i __A, __m256h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_cvtbiasph_phf8 (__m128i __W, __mmask16 __U,
-			    __m256i __A, __m256h __B)
+_mm256_mask_cvtbiasph_hf8 (__m128i __W, __mmask16 __U,
+			   __m256i __A, __m256h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2hf8256_mask ((__v32qi) __A,
 							  (__v16hf) __B,
@@ -344,7 +344,7 @@ _mm256_mask_cvtbiasph_phf8 (__m128i __W, __mmask16 __U,
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_cvtbiasph_phf8 (__mmask16 __U, __m256i __A, __m256h __B)
+_mm256_maskz_cvtbiasph_hf8 (__mmask16 __U, __m256i __A, __m256h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2hf8256_mask ((__v32qi) __A,
 							  (__v16hf) __B,
@@ -355,7 +355,7 @@ _mm256_maskz_cvtbiasph_phf8 (__mmask16 __U, __m256i __A, __m256h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cvtbiassph_phf8 (__m128i __A, __m128h __B)
+_mm_cvtbiassph_hf8 (__m128i __A, __m128h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2hf8s128 ((__v16qi) __A,
 						      (__v8hf) __B);
@@ -363,8 +363,8 @@ _mm_cvtbiassph_phf8 (__m128i __A, __m128h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_cvtbiassph_phf8 (__m128i __W, __mmask8 __U,
-			  __m128i __A, __m128h __B)
+_mm_mask_cvtbiassph_hf8 (__m128i __W, __mmask8 __U,
+			 __m128i __A, __m128h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2hf8s128_mask ((__v16qi) __A,
 							   (__v8hf) __B,
@@ -374,7 +374,7 @@ _mm_mask_cvtbiassph_phf8 (__m128i __W, __mmask8 __U,
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_cvtbiassph_phf8 (__mmask8 __U, __m128i __A, __m128h __B)
+_mm_maskz_cvtbiassph_hf8 (__mmask8 __U, __m128i __A, __m128h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2hf8s128_mask ((__v16qi) __A,
 							   (__v8hf) __B,
@@ -385,7 +385,7 @@ _mm_maskz_cvtbiassph_phf8 (__mmask8 __U, __m128i __A, __m128h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_cvtbiassph_phf8 (__m256i __A, __m256h __B)
+_mm256_cvtbiassph_hf8 (__m256i __A, __m256h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2hf8s256_mask ((__v32qi) __A,
 							   (__v16hf) __B,
@@ -396,8 +396,8 @@ _mm256_cvtbiassph_phf8 (__m256i __A, __m256h __B)
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_cvtbiassph_phf8 (__m128i __W, __mmask16 __U,
-			     __m256i __A, __m256h __B)
+_mm256_mask_cvtbiassph_hf8 (__m128i __W, __mmask16 __U,
+			    __m256i __A, __m256h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2hf8s256_mask ((__v32qi) __A,
 							   (__v16hf) __B,
@@ -407,7 +407,7 @@ _mm256_mask_cvtbiassph_phf8 (__m128i __W, __mmask16 __U,
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_cvtbiassph_phf8 (__mmask16 __U, __m256i __A, __m256h __B)
+_mm256_maskz_cvtbiassph_hf8 (__mmask16 __U, __m256i __A, __m256h __B)
 {
   return (__m128i) __builtin_ia32_vcvtbiasph2hf8s256_mask ((__v32qi) __A,
 							   (__v16hf) __B,
@@ -972,7 +972,7 @@ _mm256_maskz_cvtsph_hf8 (__mmask16 __U, __m256h __A)
 
 extern __inline __m128h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_cvtpbf8_ph (__m128i __A)
+_mm_cvtbf8_ph (__m128i __A)
 {
   return (__m128h) _mm_castsi128_ph ((__m128i) _mm_slli_epi16 (
 	 (__m128i) _mm_cvtepi8_epi16 (__A), 8));
@@ -980,7 +980,7 @@ _mm_cvtpbf8_ph (__m128i __A)
 
 extern __inline __m128h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_cvtpbf8_ph (__m128h __S, __mmask8 __U, __m128i __A)
+_mm_mask_cvtbf8_ph (__m128h __S, __mmask8 __U, __m128i __A)
 {
   return (__m128h) _mm_castsi128_ph ((__m128i) _mm_mask_slli_epi16 (
 	 (__m128i) __S, __U, (__m128i) _mm_cvtepi8_epi16 (__A), 8));
@@ -988,7 +988,7 @@ _mm_mask_cvtpbf8_ph (__m128h __S, __mmask8 __U, __m128i __A)
 
 extern __inline __m128h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_cvtpbf8_ph (__mmask8 __U, __m128i __A)
+_mm_maskz_cvtbf8_ph (__mmask8 __U, __m128i __A)
 {
   return (__m128h) _mm_castsi128_ph ((__m128i) _mm_slli_epi16 (
 	 (__m128i) _mm_maskz_cvtepi8_epi16 (__U, __A), 8));
@@ -996,7 +996,7 @@ _mm_maskz_cvtpbf8_ph (__mmask8 __U, __m128i __A)
 
 extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_cvtpbf8_ph (__m128i __A)
+_mm256_cvtbf8_ph (__m128i __A)
 {
   return (__m256h) _mm256_castsi256_ph ((__m256i) _mm256_slli_epi16 (
 	 (__m256i) _mm256_cvtepi8_epi16 (__A), 8));
@@ -1004,7 +1004,7 @@ _mm256_cvtpbf8_ph (__m128i __A)
 
 extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_cvtpbf8_ph (__m256h __S, __mmask8 __U, __m128i __A)
+_mm256_mask_cvtbf8_ph (__m256h __S, __mmask8 __U, __m128i __A)
 {
   return (__m256h) _mm256_castsi256_ph ((__m256i) _mm256_mask_slli_epi16 (
 	 (__m256i) __S, __U, (__m256i) _mm256_cvtepi8_epi16 (__A), 8));
@@ -1012,7 +1012,7 @@ _mm256_mask_cvtpbf8_ph (__m256h __S, __mmask8 __U, __m128i __A)
 
 extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_cvtpbf8_ph (__mmask8 __U, __m128i __A)
+_mm256_maskz_cvtbf8_ph (__mmask8 __U, __m128i __A)
 {
   return (__m256h) _mm256_castsi256_ph ((__m256i) _mm256_slli_epi16 (
 	 (__m256i) _mm256_maskz_cvtepi8_epi16 (__U, __A), 8));

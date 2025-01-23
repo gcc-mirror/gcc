@@ -78,33 +78,33 @@ avx10_2_512_test (void)
 void extern
 avx10_2_512_vcvtbiasph2bf8_test (void)
 {
-  x256i = _mm512_cvtbiasph_pbf8 (x512i, x512h);
-  x256i = _mm512_mask_cvtbiasph_pbf8 (x256i, m32, x512i, x512h);
-  x256i = _mm512_maskz_cvtbiasph_pbf8 (m32, x512i, x512h);
+  x256i = _mm512_cvtbiasph_bf8 (x512i, x512h);
+  x256i = _mm512_mask_cvtbiasph_bf8 (x256i, m32, x512i, x512h);
+  x256i = _mm512_maskz_cvtbiasph_bf8 (m32, x512i, x512h);
 }
 
 void extern
 avx10_2_512_vcvtbiasph2bf8s_test (void)
 {
-  x256i = _mm512_cvtbiassph_pbf8 (x512i, x512h);
-  x256i = _mm512_mask_cvtbiassph_pbf8 (x256i, m32, x512i, x512h);
-  x256i = _mm512_maskz_cvtbiassph_pbf8 (m32, x512i, x512h);
+  x256i = _mm512_cvtbiassph_bf8 (x512i, x512h);
+  x256i = _mm512_mask_cvtbiassph_bf8 (x256i, m32, x512i, x512h);
+  x256i = _mm512_maskz_cvtbiassph_bf8 (m32, x512i, x512h);
 }
 
 void extern
 avx10_2_512_vcvtbiasph2hf8_test (void)
 {
-  x256i = _mm512_cvtbiasph_phf8 (x512i, x512h);
-  x256i = _mm512_mask_cvtbiasph_phf8 (x256i, m32, x512i, x512h);
-  x256i = _mm512_maskz_cvtbiasph_phf8 (m32, x512i, x512h);
+  x256i = _mm512_cvtbiasph_hf8 (x512i, x512h);
+  x256i = _mm512_mask_cvtbiasph_hf8 (x256i, m32, x512i, x512h);
+  x256i = _mm512_maskz_cvtbiasph_hf8 (m32, x512i, x512h);
 }
 
 void extern
 avx10_2_512_vcvtbiasph2hf8s_test (void)
 {
-  x256i = _mm512_cvtbiassph_phf8 (x512i, x512h);
-  x256i = _mm512_mask_cvtbiassph_phf8 (x256i, m32, x512i, x512h);
-  x256i = _mm512_maskz_cvtbiassph_phf8 (m32, x512i, x512h);
+  x256i = _mm512_cvtbiassph_hf8 (x512i, x512h);
+  x256i = _mm512_mask_cvtbiassph_hf8 (x256i, m32, x512i, x512h);
+  x256i = _mm512_maskz_cvtbiassph_hf8 (m32, x512i, x512h);
 }
 
 void extern
@@ -182,7 +182,7 @@ avx10_2_512_vcvtph2hf8s_test (void)
 void extern
 avx10_2_512_cvtbf8_fp16_test (void)
 {
-  y = _mm512_cvtpbf8_ph (z1);
-  y = _mm512_mask_cvtpbf8_ph (z, m16, z1);
-  y = _mm512_maskz_cvtpbf8_ph (m16, z1);
+  y = _mm512_cvtbf8_ph (z1);
+  y = _mm512_mask_cvtbf8_ph (z, m16, z1);
+  y = _mm512_maskz_cvtbf8_ph (m16, z1);
 }
