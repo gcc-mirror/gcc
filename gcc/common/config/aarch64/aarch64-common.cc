@@ -205,6 +205,78 @@ static constexpr aarch64_processor_info all_cores[] =
 };
 
 
+/* Print a list of CANDIDATES for an argument, and try to suggest a specific
+   close match.  */
+
+inline static void
+aarch64_print_hint_candidates (const char *str,
+			       const auto_vec<const char*> & candidates)
+{
+  char *s;
+  const char *hint = candidates_list_and_hint (str, s, candidates);
+  if (hint)
+    inform (input_location, "valid arguments are: %s;"
+			     " did you mean %qs?", s, hint);
+  else
+    inform (input_location, "valid arguments are: %s", s);
+
+  XDELETEVEC (s);
+}
+
+/* Append all architecture extension candidates to the CANDIDATES vector.  */
+
+void
+aarch64_get_all_extension_candidates (auto_vec<const char *> *candidates)
+{
+  const struct aarch64_extension_info *opt;
+  for (opt = all_extensions; opt->name != NULL; opt++)
+    candidates->safe_push (opt->name);
+}
+
+/* Print a hint with a suggestion for an extension name
+   that most closely resembles what the user passed in STR.  */
+
+void
+aarch64_print_hint_for_extensions (const char *str)
+{
+  auto_vec<const char *> candidates;
+  aarch64_get_all_extension_candidates (&candidates);
+  aarch64_print_hint_candidates (str, candidates);
+}
+
+/* Print a hint with a suggestion for an architecture name that most closely
+   resembles what the user passed in STR.  */
+
+void
+aarch64_print_hint_for_arch (const char *str)
+{
+  auto_vec<const char *> candidates;
+  const struct aarch64_arch_info *entry = all_architectures;
+  for (; entry->name != NULL; entry++)
+    candidates.safe_push (entry->name);
+
+#ifdef HAVE_LOCAL_CPU_DETECT
+  /* Add also "native" as possible value.  */
+  candidates.safe_push ("native");
+#endif
+
+  aarch64_print_hint_candidates (str, candidates);
+}
+
+/* Print a hint with a suggestion for a core name that most closely resembles
+   what the user passed in STR.  */
+
+void
+aarch64_print_hint_for_core (const char *str)
+{
+  auto_vec<const char *> candidates;
+  const struct aarch64_processor_info *entry = all_cores;
+  for (; entry->name != NULL; entry++)
+    candidates.safe_push (entry->name);
+  aarch64_print_hint_candidates (str, candidates);
+}
+
+
 /* Parse the architecture extension string STR and update ISA_FLAGS
    with the architecture features turned on or off.  Return a
    aarch_parse_opt_result describing the result.
@@ -275,15 +347,265 @@ aarch64_parse_extension (const char *str, aarch64_feature_flags *isa_flags,
   return AARCH_PARSE_OK;
 }
 
-/* Append all architecture extension candidates to the CANDIDATES vector.  */
+/* Parse the TO_PARSE string and put the architecture that it
+   selects into RES_ARCH and the architectural features into RES_FLAGS.
+   Return an aarch_parse_opt_result describing the parse result.
+   If there is an error parsing, RES_ARCH and RES_FLAGS are left unchanged.
+   When the TO_PARSE string contains an invalid extension,
+   a copy of the string is created and stored to INVALID_EXTENSION.  */
 
-void
-aarch64_get_all_extension_candidates (auto_vec<const char *> *candidates)
+enum aarch_parse_opt_result
+aarch64_parse_arch (const char *to_parse, aarch64_arch *res_arch,
+		    aarch64_feature_flags *res_flags,
+		    std::string *invalid_extension)
 {
-  const struct aarch64_extension_info *opt;
-  for (opt = all_extensions; opt->name != NULL; opt++)
-    candidates->safe_push (opt->name);
+  const char *ext;
+  const struct aarch64_arch_info *arch;
+  size_t len;
+
+  ext = strchr (to_parse, '+');
+
+  if (ext != NULL)
+    len = ext - to_parse;
+  else
+    len = strlen (to_parse);
+
+  if (len == 0)
+    return AARCH_PARSE_MISSING_ARG;
+
+
+  /* Loop through the list of supported ARCHes to find a match.  */
+  for (arch = all_architectures; arch->name != NULL; arch++)
+    {
+      if (strlen (arch->name) == len
+	  && strncmp (arch->name, to_parse, len) == 0)
+	{
+	  auto isa_flags = arch->flags;
+
+	  if (ext != NULL)
+	    {
+	      /* TO_PARSE string contains at least one extension.  */
+	      enum aarch_parse_opt_result ext_res
+		= aarch64_parse_extension (ext, &isa_flags, invalid_extension);
+
+	      if (ext_res != AARCH_PARSE_OK)
+		return ext_res;
+	    }
+	  /* Extension parsing was successful.  Confirm the result
+	     arch and ISA flags.  */
+	  *res_arch = arch->arch;
+	  *res_flags = isa_flags;
+	  return AARCH_PARSE_OK;
+	}
+    }
+
+  /* ARCH name not found in list.  */
+  return AARCH_PARSE_INVALID_ARG;
 }
+
+/* Parse the TO_PARSE string and put the result tuning in RES_CPU and the
+   architecture flags in RES_FLAGS.  Return an aarch_parse_opt_result
+   describing the parse result.  If there is an error parsing, RES_CPU and
+   RES_FLAGS are left unchanged.
+   When the TO_PARSE string contains an invalid extension,
+   a copy of the string is created and stored to INVALID_EXTENSION.  */
+
+enum aarch_parse_opt_result
+aarch64_parse_cpu (const char *to_parse, aarch64_cpu *res_cpu,
+		   aarch64_feature_flags *res_flags,
+		   std::string *invalid_extension)
+{
+  const char *ext;
+  const struct aarch64_processor_info *cpu;
+  size_t len;
+
+  ext = strchr (to_parse, '+');
+
+  if (ext != NULL)
+    len = ext - to_parse;
+  else
+    len = strlen (to_parse);
+
+  if (len == 0)
+    return AARCH_PARSE_MISSING_ARG;
+
+
+  /* Loop through the list of supported CPUs to find a match.  */
+  for (cpu = all_cores; cpu->name != NULL; cpu++)
+    {
+      if (strlen (cpu->name) == len && strncmp (cpu->name, to_parse, len) == 0)
+	{
+	  auto isa_flags = cpu->flags;
+
+	  if (ext != NULL)
+	    {
+	      /* TO_PARSE string contains at least one extension.  */
+	      enum aarch_parse_opt_result ext_res
+		= aarch64_parse_extension (ext, &isa_flags, invalid_extension);
+
+	      if (ext_res != AARCH_PARSE_OK)
+		return ext_res;
+	    }
+	  /* Extension parsing was successfull.  Confirm the result
+	     cpu and ISA flags.  */
+	  *res_cpu = cpu->processor;
+	  *res_flags = isa_flags;
+	  return AARCH_PARSE_OK;
+	}
+    }
+
+  /* CPU name not found in list.  */
+  return AARCH_PARSE_INVALID_ARG;
+}
+
+/* Parse the TO_PARSE string and put the cpu it selects into RES_CPU.
+   Return an aarch_parse_opt_result describing the parse result.
+   If the parsing fails then RES_CPU does not change.  */
+
+enum aarch_parse_opt_result
+aarch64_parse_tune (const char *to_parse, aarch64_cpu *res_cpu)
+{
+  const struct aarch64_processor_info *cpu;
+
+  /* Loop through the list of supported CPUs to find a match.  */
+  for (cpu = all_cores; cpu->name != NULL; cpu++)
+    {
+      if (strcmp (cpu->name, to_parse) == 0)
+	{
+	  *res_cpu = cpu->processor;
+	  return AARCH_PARSE_OK;
+	}
+    }
+
+  /* CPU name not found in list.  */
+  return AARCH_PARSE_INVALID_ARG;
+}
+
+
+/* Validate a command-line -march option.  Parse the arch and extensions
+   (if any) specified in STR and throw errors if appropriate.  Put the
+   results, if they are valid, in RES_ARCH and RES_FLAGS.  Return whether the
+   option is valid.  */
+
+bool
+aarch64_validate_march (const char *str, aarch64_arch *res_arch,
+			aarch64_feature_flags *res_flags)
+{
+  std::string invalid_extension;
+  enum aarch_parse_opt_result parse_res
+    = aarch64_parse_arch (str, res_arch, res_flags, &invalid_extension);
+
+  if (parse_res == AARCH_PARSE_OK)
+    return true;
+
+  switch (parse_res)
+    {
+      case AARCH_PARSE_MISSING_ARG:
+	error ("missing arch name in %<-march=%s%>", str);
+	break;
+      case AARCH_PARSE_INVALID_ARG:
+	{
+	  error ("unknown value %qs for %<-march%>", str);
+	  aarch64_print_hint_for_arch (str);
+	  /* A common user error is confusing -march and -mcpu.
+	     If the -march string matches a known CPU suggest -mcpu.  */
+	  aarch64_cpu temp_cpu;
+	  aarch64_feature_flags temp_flags;
+	  parse_res = aarch64_parse_cpu (str, &temp_cpu, &temp_flags,
+					 &invalid_extension);
+	  if (parse_res == AARCH_PARSE_OK)
+	    inform (input_location, "did you mean %<-mcpu=%s%>?", str);
+	  break;
+	}
+      case AARCH_PARSE_INVALID_FEATURE:
+	error ("invalid feature modifier %qs in %<-march=%s%>",
+	       invalid_extension.c_str (), str);
+	aarch64_print_hint_for_extensions (invalid_extension.c_str ());
+	break;
+      default:
+	gcc_unreachable ();
+    }
+
+  return false;
+}
+
+/* Validate a command-line -mcpu option.  Parse the cpu and extensions (if any)
+   specified in STR and throw errors if appropriate.  Put the results if
+   they are valid in RES_CPU and RES_FLAGS.  Return whether the option is
+   valid.  */
+
+bool
+aarch64_validate_mcpu (const char *str, aarch64_cpu *res_cpu,
+		       aarch64_feature_flags *res_flags)
+{
+  std::string invalid_extension;
+  enum aarch_parse_opt_result parse_res
+    = aarch64_parse_cpu (str, res_cpu, res_flags, &invalid_extension);
+
+  if (parse_res == AARCH_PARSE_OK)
+    return true;
+
+  switch (parse_res)
+    {
+      case AARCH_PARSE_MISSING_ARG:
+	error ("missing cpu name in %<-mcpu=%s%>", str);
+	break;
+      case AARCH_PARSE_INVALID_ARG:
+	{
+	  error ("unknown value %qs for %<-mcpu%>", str);
+	  aarch64_print_hint_for_core (str);
+	  /* A common user error is confusing -march and -mcpu.
+	     If the -mcpu string matches a known architecture then suggest
+	     -march=.  */
+	  aarch64_arch temp_arch;
+	  aarch64_feature_flags temp_flags;
+	  parse_res = aarch64_parse_arch (str, &temp_arch, &temp_flags,
+					  &invalid_extension);
+	  if (parse_res == AARCH_PARSE_OK)
+	    inform (input_location, "did you mean %<-march=%s%>?", str);
+	  break;
+	}
+      case AARCH_PARSE_INVALID_FEATURE:
+	error ("invalid feature modifier %qs in %<-mcpu=%s%>",
+	       invalid_extension.c_str (), str);
+	aarch64_print_hint_for_extensions (invalid_extension.c_str ());
+	break;
+      default:
+	gcc_unreachable ();
+    }
+
+  return false;
+}
+
+/* Validate a command-line -mtune option.  Parse the cpu
+   specified in STR and throw errors if appropriate.  Put the
+   result, if it is valid, in RES_CPU.  Return whether the option is
+   valid.  */
+
+bool
+aarch64_validate_mtune (const char *str, aarch64_cpu *res_cpu)
+{
+  enum aarch_parse_opt_result parse_res
+    = aarch64_parse_tune (str, res_cpu);
+
+  if (parse_res == AARCH_PARSE_OK)
+    return true;
+
+  switch (parse_res)
+    {
+      case AARCH_PARSE_MISSING_ARG:
+	error ("missing cpu name in %<-mtune=%s%>", str);
+	break;
+      case AARCH_PARSE_INVALID_ARG:
+	error ("unknown value %qs for %<-mtune%>", str);
+	aarch64_print_hint_for_core (str);
+	break;
+      default:
+	gcc_unreachable ();
+    }
+  return false;
+}
+
 
 /* Return a string representation of ISA_FLAGS.  DEFAULT_ARCH_FLAGS
    gives the default set of flags which are implied by whatever -march
