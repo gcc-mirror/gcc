@@ -10484,7 +10484,7 @@ gimple_fold_indirect_ref (tree t)
    integer types involves undefined behavior on overflow and the
    operation can be expressed with unsigned arithmetic.  */
 
-static bool
+bool
 arith_code_with_undefined_signed_overflow (tree_code code)
 {
   switch (code)

@@ -6562,6 +6562,20 @@ vectorizable_operation (vec_info *vinfo,
       vec_dest = vect_create_destination_var (scalar_dest, vectype);
       vec_cvt_dest = vect_create_destination_var (scalar_dest, vectype_out);
     }
+  /* For reduction operations with undefined overflow behavior make sure to
+     pun them to unsigned since we change the order of evaluation.
+     ???  Avoid for in-order reductions?  */
+  else if (arith_code_with_undefined_signed_overflow (orig_code)
+	   && ANY_INTEGRAL_TYPE_P (vectype)
+	   && TYPE_OVERFLOW_UNDEFINED (vectype)
+	   && STMT_VINFO_REDUC_IDX (stmt_info) != -1)
+    {
+      gcc_assert (orig_code == PLUS_EXPR || orig_code == MINUS_EXPR
+		  || orig_code == MULT_EXPR || orig_code == POINTER_PLUS_EXPR);
+      vec_cvt_dest = vect_create_destination_var (scalar_dest, vectype_out);
+      vectype = unsigned_type_for (vectype);
+      vec_dest = vect_create_destination_var (scalar_dest, vectype);
+    }
   /* Handle def.  */
   else
     vec_dest = vect_create_destination_var (scalar_dest, vectype_out);
@@ -6575,6 +6589,46 @@ vectorizable_operation (vec_info *vinfo,
       vop1 = ((op_type == binary_op || op_type == ternary_op)
 	      ? vec_oprnds1[i] : NULL_TREE);
       vop2 = ((op_type == ternary_op) ? vec_oprnds2[i] : NULL_TREE);
+
+      if (vec_cvt_dest
+	  && !useless_type_conversion_p (vectype, TREE_TYPE (vop0)))
+	{
+	  new_temp = build1 (VIEW_CONVERT_EXPR, vectype, vop0);
+	  new_stmt = gimple_build_assign (vec_dest, VIEW_CONVERT_EXPR,
+					  new_temp);
+	  new_temp = make_ssa_name (vec_dest, new_stmt);
+	  gimple_assign_set_lhs (new_stmt, new_temp);
+	  vect_finish_stmt_generation (vinfo, stmt_info,
+				       new_stmt, gsi);
+	  vop0 = new_temp;
+	}
+      if (vop1
+	  && vec_cvt_dest
+	  && !useless_type_conversion_p (vectype, TREE_TYPE (vop1)))
+	{
+	  new_temp = build1 (VIEW_CONVERT_EXPR, vectype, vop1);
+	  new_stmt = gimple_build_assign (vec_dest, VIEW_CONVERT_EXPR,
+					  new_temp);
+	  new_temp = make_ssa_name (vec_dest, new_stmt);
+	  gimple_assign_set_lhs (new_stmt, new_temp);
+	  vect_finish_stmt_generation (vinfo, stmt_info,
+				       new_stmt, gsi);
+	  vop1 = new_temp;
+	}
+      if (vop2
+	  && vec_cvt_dest
+	  && !useless_type_conversion_p (vectype, TREE_TYPE (vop2)))
+	{
+	  new_temp = build1 (VIEW_CONVERT_EXPR, vectype, vop2);
+	  new_stmt = gimple_build_assign (vec_dest, VIEW_CONVERT_EXPR,
+					  new_temp);
+	  new_temp = make_ssa_name (vec_dest, new_stmt);
+	  gimple_assign_set_lhs (new_stmt, new_temp);
+	  vect_finish_stmt_generation (vinfo, stmt_info,
+				       new_stmt, gsi);
+	  vop2 = new_temp;
+	}
+
       if (using_emulated_vectors_p)
 	{
 	  /* Lower the operation.  This follows vector lowering.  */
