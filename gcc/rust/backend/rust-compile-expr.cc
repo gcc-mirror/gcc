@@ -159,27 +159,28 @@ CompileExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
       return;
     }
 
-  if (ctx->in_fn () && !ctx->const_context_p ())
-    {
-      auto receiver_tmp = NULL_TREE;
-      auto receiver
-	= Backend::temporary_variable (ctx->peek_fn ().fndecl, NULL_TREE,
-				       TREE_TYPE (lhs), lhs, true,
-				       expr.get_locus (), &receiver_tmp);
-      auto check
-	= Backend::arithmetic_or_logical_expression_checked (op, lhs, rhs,
-							     expr.get_locus (),
-							     receiver);
-
-      ctx->add_statement (check);
-      translated = receiver->get_tree (expr.get_locus ());
-    }
-  else
+  bool can_generate_overflow_checks
+    = (ctx->in_fn () && !ctx->const_context_p ()) && flag_overflow_checks;
+  if (!can_generate_overflow_checks)
     {
       translated
 	= Backend::arithmetic_or_logical_expression (op, lhs, rhs,
 						     expr.get_locus ());
+      return;
     }
+
+  auto receiver_tmp = NULL_TREE;
+  auto receiver
+    = Backend::temporary_variable (ctx->peek_fn ().fndecl, NULL_TREE,
+				   TREE_TYPE (lhs), lhs, true,
+				   expr.get_locus (), &receiver_tmp);
+  auto check
+    = Backend::arithmetic_or_logical_expression_checked (op, lhs, rhs,
+							 expr.get_locus (),
+							 receiver);
+
+  ctx->add_statement (check);
+  translated = receiver->get_tree (expr.get_locus ());
 }
 
 void
