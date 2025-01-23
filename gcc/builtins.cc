@@ -9574,14 +9574,16 @@ fold_builtin_frexp (location_t loc, tree arg0, tree arg1, tree rettype)
       switch (value->cl)
       {
       case rvc_zero:
+      case rvc_nan:
+      case rvc_inf:
 	/* For +-0, return (*exp = 0, +-0).  */
+	/* For +-NaN or +-Inf, *exp is unspecified, but something should
+	   be stored there so that it isn't read from uninitialized object.
+	   As glibc and newlib store *exp = 0 for +-Inf/NaN, storing
+	   0 here as well is easiest.  */
 	exp = integer_zero_node;
 	frac = arg0;
 	break;
-      case rvc_nan:
-      case rvc_inf:
-	/* For +-NaN or +-Inf, *exp is unspecified, return arg0.  */
-	return omit_one_operand_loc (loc, rettype, arg0, arg1);
       case rvc_normal:
 	{
 	  /* Since the frexp function always expects base 2, and in
