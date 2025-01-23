@@ -1284,47 +1284,47 @@ _mm_cmp_pbh_mask (__m128bh __A, __m128bh __B, const int __imm)
 
 #endif /* __OPIMTIZE__ */
 
-/* Intrinsics vcomsbf16.  */
+/* Intrinsics vcomisbf16.  */
 extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_comeq_sbh (__m128bh __A, __m128bh __B)
+_mm_comieq_sbh (__m128bh __A, __m128bh __B)
 {
-  return __builtin_ia32_vcomsbf16eq (__A, __B);
+  return __builtin_ia32_vcomisbf16eq (__A, __B);
 }
 
 extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_comlt_sbh (__m128bh __A, __m128bh __B)
+_mm_comilt_sbh (__m128bh __A, __m128bh __B)
 {
-  return __builtin_ia32_vcomsbf16lt (__A, __B);
+  return __builtin_ia32_vcomisbf16lt (__A, __B);
 }
 
 extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_comle_sbh (__m128bh __A, __m128bh __B)
+_mm_comile_sbh (__m128bh __A, __m128bh __B)
 {
-  return __builtin_ia32_vcomsbf16le (__A, __B);
+  return __builtin_ia32_vcomisbf16le (__A, __B);
 }
 
 extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_comgt_sbh (__m128bh __A, __m128bh __B)
+_mm_comigt_sbh (__m128bh __A, __m128bh __B)
 {
-  return __builtin_ia32_vcomsbf16gt (__A, __B);
+  return __builtin_ia32_vcomisbf16gt (__A, __B);
 }
 
 extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_comge_sbh (__m128bh __A, __m128bh __B)
+_mm_comige_sbh (__m128bh __A, __m128bh __B)
 {
-  return __builtin_ia32_vcomsbf16ge (__A, __B);
+  return __builtin_ia32_vcomisbf16ge (__A, __B);
 }
 
 extern __inline int
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_comneq_sbh (__m128bh __A, __m128bh __B)
+_mm_comineq_sbh (__m128bh __A, __m128bh __B)
 {
-  return __builtin_ia32_vcomsbf16neq (__A, __B);
+  return __builtin_ia32_vcomisbf16neq (__A, __B);
 }
 
 #ifdef __DISABLE_AVX10_2_256__

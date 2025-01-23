@@ -2921,7 +2921,7 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1)
     {
     case IX86_FPCMP_COMI:
       tmp = gen_rtx_COMPARE (CCFPmode, op0, op1);
-      /* We only have vcomsbf16, No vcomubf16 nor vcomxbf16 */
+      /* We only have vcomisbf16, No vcomubf16 nor vcomxbf16 */
       if (GET_MODE (op0) != E_BFmode)
 	{
 	  if (TARGET_AVX10_2_256 && (code == EQ || code == NE))
@@ -15945,12 +15945,12 @@ rdseed_step:
 	  case IX86_BUILTIN_RDPID:
 	    return ix86_expand_special_args_builtin (bdesc_args + i, exp,
 						     target);
-	  case IX86_BUILTIN_VCOMSBF16EQ:
-	  case IX86_BUILTIN_VCOMSBF16NE:
-	  case IX86_BUILTIN_VCOMSBF16GT:
-	  case IX86_BUILTIN_VCOMSBF16GE:
-	  case IX86_BUILTIN_VCOMSBF16LT:
-	  case IX86_BUILTIN_VCOMSBF16LE:
+	  case IX86_BUILTIN_VCOMISBF16EQ:
+	  case IX86_BUILTIN_VCOMISBF16NE:
+	  case IX86_BUILTIN_VCOMISBF16GT:
+	  case IX86_BUILTIN_VCOMISBF16GE:
+	  case IX86_BUILTIN_VCOMISBF16LT:
+	  case IX86_BUILTIN_VCOMISBF16LE:
 	    return ix86_expand_sse_comi (bdesc_args + i, exp, target, false);
 	  case IX86_BUILTIN_FABSQ:
 	  case IX86_BUILTIN_COPYSIGNQ:

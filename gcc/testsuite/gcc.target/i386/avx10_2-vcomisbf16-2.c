@@ -9,7 +9,7 @@
 
 #define CMP(PRED, IMM) \
   exp = _mm_comi_round_ss (__A, __B, IMM, _MM_FROUND_NO_EXC); \
-  res1 = _mm_com##PRED##_sbh (src1.x, src2.x);		      \
+  res1 = _mm_comi##PRED##_sbh (src1.x, src2.x);		      \
   if (exp != res1)					      \
     abort ();
 

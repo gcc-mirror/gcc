@@ -234,7 +234,6 @@
   UNSPEC_VREDUCEBF16
   UNSPEC_VGETMANTBF16
   UNSPEC_VFPCLASSBF16
-  UNSPEC_VCOMSBF16
   UNSPEC_VCVTNEBF162IBS
   UNSPEC_VCVTNEBF162IUBS
   UNSPEC_VCVTPH2IBS
@@ -4876,6 +4875,20 @@
 		      (const_string "1")
 		      (const_string "0")))
    (set_attr "mode" "<MODE>")])
+
+(define_insn "avx10_2_comisbf16_v8bf"
+  [(set (reg:CCFP FLAGS_REG)
+	(compare:CCFP
+	  (vec_select:BF
+	    (match_operand:V8BF 0 "register_operand" "v")
+	    (parallel [(const_int 0)]))
+	  (vec_select:BF
+	    (match_operand:V8BF 1 "nonimmediate_operand" "vm")
+	    (parallel [(const_int 0)]))))]
+  "TARGET_AVX10_2_256"
+  "vcomisbf16\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "type" "ssecomi")])
 
 (define_expand "vec_cmp<mode><avx512fmaskmodelower>"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand")
@@ -32446,20 +32459,6 @@
    "TARGET_AVX10_2_256"
    "vcmpbf16\t{%3, %2, %1, %0<mask_scalar_merge_operand4>|%0<mask_scalar_merge_operand4>, %1, %2, %3}"
    [(set_attr "prefix" "evex")])
-
-(define_insn "avx10_2_comsbf16_v8bf"
-  [(set (reg:CCFP FLAGS_REG)
-	(unspec:CCFP
-	  [(vec_select:BF
-	     (match_operand:V8BF 0 "register_operand" "v")
-	     (parallel [(const_int 0)]))
-	   (vec_select:BF
-	     (match_operand:V8BF 1 "nonimmediate_operand" "vm")
-	     (parallel [(const_int 0)]))]
-	 UNSPEC_VCOMSBF16))]
-  "TARGET_AVX10_2_256"
-  "vcomsbf16\t{%1, %0|%0, %1}"
-  [(set_attr "prefix" "evex")])
 
 (define_int_iterator UNSPEC_CVTNE_BF16_IBS_ITER
    [UNSPEC_VCVTNEBF162IBS
