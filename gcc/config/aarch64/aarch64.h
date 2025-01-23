@@ -486,6 +486,11 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 /* fp8 instructions are enabled through +fp8.  */
 #define TARGET_FP8 AARCH64_HAVE_ISA (FP8)
 
+/* See the comment above the tuning flag for details.  */
+#define TARGET_CHEAP_FPMR_WRITE \
+  (bool (aarch64_tune_params.extra_tuning_flags \
+	 & AARCH64_EXTRA_TUNE_CHEAP_FPMR_WRITE))
+
 /* Combinatorial tests.  */
 
 #define TARGET_SVE2_OR_SME2 \

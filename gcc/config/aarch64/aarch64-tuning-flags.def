@@ -48,6 +48,21 @@ AARCH64_EXTRA_TUNING_OPTION ("fully_pipelined_fma", FULLY_PIPELINED_FMA)
    rather than re-use an input predicate register.  */
 AARCH64_EXTRA_TUNING_OPTION ("avoid_pred_rmw", AVOID_PRED_RMW)
 
+/* Whether writes to the FPMR are cheap enough that:
+
+       msr     fpmr, <value>
+
+   is better than:
+
+       mrs     tmp, fpmr
+       cmp     tmp, <value>
+       beq     1f
+       msr     fpmr, <value>
+     1:
+
+   even when the branch is predictably taken.  */
+AARCH64_EXTRA_TUNING_OPTION ("cheap_fpmr_write", CHEAP_FPMR_WRITE)
+
 /* Baseline tuning settings suitable for all modern cores.  */
 #define AARCH64_EXTRA_TUNE_BASE (AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND	\
 				 | AARCH64_EXTRA_TUNE_FULLY_PIPELINED_FMA)

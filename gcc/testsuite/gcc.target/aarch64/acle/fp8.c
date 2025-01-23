@@ -1,6 +1,6 @@
 /* Test the fp8 ACLE intrinsics family.  */
 /* { dg-do compile } */
-/* { dg-options "-O1 -march=armv8-a" } */
+/* { dg-options "-O1 -march=armv8-a -moverride=tune=cheap_fpmr_write" } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 #include <arm_acle.h>
