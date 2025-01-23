@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -mavx10.2-512" } */
+/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2-512" } */
 /* { dg-require-effective-target avx10_2_512 } */
 
 #define N 512
