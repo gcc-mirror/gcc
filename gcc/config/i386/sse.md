@@ -32092,13 +32092,13 @@
        (match_operand:VBF_AVX10_2 2 "nonimmediate_operand")))]
   "TARGET_AVX10_2_256")
 
-(define_insn "avx10_2_<code>pbf16_<mode><mask_name>"
+(define_insn "avx10_2_<code>bf16_<mode><mask_name>"
    [(set (match_operand:VBF_AVX10_2 0 "register_operand" "=v")
       (smaxmin:VBF_AVX10_2
 	 (match_operand:VBF_AVX10_2 1 "register_operand" "v")
 	 (match_operand:VBF_AVX10_2 2 "nonimmediate_operand" "vm")))]
    "TARGET_AVX10_2_256"
-   "v<maxmin_float>pbf16\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+   "v<maxmin_float>bf16\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
    [(set_attr "prefix" "evex")
     (set_attr "mode" "<MODE>")])
 
@@ -32436,7 +32436,7 @@
    "vfpclasspbf16<vecmemsuffix>\t{%2, %1, %0<mask_scalar_merge_operand3>|%0<mask_scalar_merge_operand3>, %1, %2}"
    [(set_attr "prefix" "evex")])
 
-(define_insn "avx10_2_cmppbf16_<mode><mask_scalar_merge_name>"
+(define_insn "avx10_2_cmpbf16_<mode><mask_scalar_merge_name>"
    [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
 	 (unspec:<avx512fmaskmode>
 	   [(match_operand:VBF_AVX10_2 1 "register_operand" "v")
@@ -32444,7 +32444,7 @@
 	    (match_operand 3 "const_0_to_31_operand" "n")]
 	  UNSPEC_PCMP))]
    "TARGET_AVX10_2_256"
-   "vcmppbf16\t{%3, %2, %1, %0<mask_scalar_merge_operand4>|%0<mask_scalar_merge_operand4>, %1, %2, %3}"
+   "vcmpbf16\t{%3, %2, %1, %0<mask_scalar_merge_operand4>|%0<mask_scalar_merge_operand4>, %1, %2, %3}"
    [(set_attr "prefix" "evex")])
 
 (define_insn "avx10_2_comsbf16_v8bf"

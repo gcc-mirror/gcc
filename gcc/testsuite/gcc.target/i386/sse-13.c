@@ -1029,7 +1029,7 @@
 #define __builtin_ia32_reducenepbf16512_mask(A, B, C, D) __builtin_ia32_reducenepbf16512_mask(A, 123, C, D)
 #define __builtin_ia32_getmantpbf16512_mask(A, B, C, D) __builtin_ia32_getmantpbf16512_mask(A, 1, C, D)
 #define __builtin_ia32_fpclasspbf16512_mask(A, B, C) __builtin_ia32_fpclasspbf16512_mask(A, 1, C)
-#define __builtin_ia32_cmppbf16512_mask(A, B, C, D) __builtin_ia32_cmppbf16512_mask(A, B, 1, D)
+#define __builtin_ia32_cmpbf16512_mask(A, B, C, D) __builtin_ia32_cmpbf16512_mask(A, B, 1, D)
 
 /* avx10_2bf16intrin.h */
 #define __builtin_ia32_rndscalenepbf16256_mask(A, B, C, D) __builtin_ia32_rndscalenepbf16256_mask(A, 123, C, D)
@@ -1040,8 +1040,8 @@
 #define __builtin_ia32_getmantpbf16128_mask(A, B, C, D) __builtin_ia32_getmantpbf16128_mask(A, 1, C, D)
 #define __builtin_ia32_fpclasspbf16256_mask(A, B, C) __builtin_ia32_fpclasspbf16256_mask(A, 1, C)
 #define __builtin_ia32_fpclasspbf16128_mask(A, B, C) __builtin_ia32_fpclasspbf16128_mask(A, 1, C)
-#define __builtin_ia32_cmppbf16256_mask(A, B, C, D) __builtin_ia32_cmppbf16256_mask(A, B, 1, D)
-#define __builtin_ia32_cmppbf16128_mask(A, B, C, D) __builtin_ia32_cmppbf16128_mask(A, B, 1, D)
+#define __builtin_ia32_cmpbf16256_mask(A, B, C, D) __builtin_ia32_cmpbf16256_mask(A, B, 1, D)
+#define __builtin_ia32_cmpbf16128_mask(A, B, C, D) __builtin_ia32_cmpbf16128_mask(A, B, 1, D)
 
 /* avx10_2-512satcvtintrin.h */
 #define __builtin_ia32_cvtph2ibs512_mask_round(A, B, C, D) __builtin_ia32_cvtph2ibs512_mask_round(A, B, C, 8)
