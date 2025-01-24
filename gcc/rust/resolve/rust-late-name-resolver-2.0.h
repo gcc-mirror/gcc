@@ -57,6 +57,7 @@ public:
   void visit (AST::GenericArgs &) override;
   void visit (AST::GenericArg &);
   void visit (AST::ClosureExprInner &) override;
+  void visit (AST::ClosureExprInnerTyped &) override;
 
 private:
   /* Setup Rust's builtin types (u8, i32, !...) in the resolver */
