@@ -7859,6 +7859,11 @@ make_bit_field_load (location_t loc, tree inner, tree orig_inner, tree type,
       gimple *new_stmt = gsi_stmt (i);
       if (gimple_has_mem_ops (new_stmt))
 	gimple_set_vuse (new_stmt, reaching_vuse);
+      gcc_checking_assert (! (gimple_assign_load_p (point)
+			      && gimple_assign_load_p (new_stmt))
+			   || (tree_could_trap_p (gimple_assign_rhs1 (point))
+			       == tree_could_trap_p (gimple_assign_rhs1
+						     (new_stmt))));
     }
 
   gimple_stmt_iterator gsi = gsi_for_stmt (point);

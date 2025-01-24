@@ -2646,6 +2646,29 @@ range_in_array_bounds_p (tree ref)
   return true;
 }
 
+/* Return true iff EXPR, a BIT_FIELD_REF, accesses a bit range that is known to
+   be in bounds for the referred operand type.  */
+
+static bool
+bit_field_ref_in_bounds_p (tree expr)
+{
+  tree size_tree;
+  poly_uint64 size_max, min, wid, max;
+
+  size_tree = TYPE_SIZE (TREE_TYPE (TREE_OPERAND (expr, 0)));
+  if (!size_tree || !poly_int_tree_p (size_tree, &size_max))
+    return false;
+
+  min = bit_field_offset (expr);
+  wid = bit_field_size (expr);
+  max = min + wid;
+  if (maybe_lt (max, min)
+      || maybe_lt (size_max, max))
+    return false;
+
+  return true;
+}
+
 /* Return true if EXPR can trap, as in dereferencing an invalid pointer
    location or floating point arithmetic.  C.f. the rtl version, may_trap_p.
    This routine expects only GIMPLE lhs or rhs input.  */
@@ -2688,10 +2711,14 @@ tree_could_trap_p (tree expr)
  restart:
   switch (code)
     {
+    case BIT_FIELD_REF:
+      if (DECL_P (TREE_OPERAND (expr, 0)) && !bit_field_ref_in_bounds_p (expr))
+	return true;
+      /* Fall through.  */
+
     case COMPONENT_REF:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-    case BIT_FIELD_REF:
     case VIEW_CONVERT_EXPR:
     case WITH_SIZE_EXPR:
       expr = TREE_OPERAND (expr, 0);
