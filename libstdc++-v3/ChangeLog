@@ -1,3 +1,9 @@
+2025-01-23  Jan Hubicka  <jh@suse.cz>
+
+	PR target/80813
+	* include/bits/stl_bvector.h (vector<bool, _Alloc>::operator []): Do
+	not use iterators.
+
 2025-01-20  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
 
 	PR libstdc++/118185

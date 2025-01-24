@@ -1,3 +1,9 @@
+2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118604
+	* c-parser.cc (c_parser_omp_metadirective): Rewrite
+	condition for clauses other than when, default and otherwise.
+
 2025-01-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.cc (names_builtin_p): Return 1 for RID_C23_VA_START and

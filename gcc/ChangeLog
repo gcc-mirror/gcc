@@ -1,3 +1,352 @@
+2025-01-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa32-regs.h (ADDITIONAL_REGISTER_NAMES): Change
+	register 86 name to "%fr31L".
+
+2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118628
+	* tree-vect-stmts.cc (vectorizable_store, vectorizable_load):
+	Initialize offvar to NULL_TREE.
+
+2025-01-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/118012
+	PR tree-optimization/118360
+	* config/avr/avr.opt (-mpr118012): New undocumented option.
+	* config/avr/avr-protos.h (avr_out_sextr)
+	(avr_emit_skip_pixop, avr_emit_skip_clear): New protos.
+	* config/avr/avr.cc (avr_adjust_insn_length)
+	[case ADJUST_LEN_SEXTR]: Handle case.
+	(avr_rtx_costs_1) [NEG]: Costs for NEG (ZERO_EXTEND (ZERO_EXTRACT)).
+	[MULT && avropt_pr118012]: Costs for MULT (x AND 1).
+	(avr_out_sextr, avr_emit_skip_pixop, avr_emit_skip_clear): New
+	functions.
+	* config/avr/avr.md [avropt_pr118012]: Add combine patterns with
+	that condition that try to work around PR118012.
+	(adjust_len) <sextr>: Add insn attr value.
+	(pixop): New code iterator.
+	(mulsi3) [avropt_pr118012 && !AVR_TINY]: Allow these in insn condition.
+
+2025-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/118562
+	* rtl-ssa/blocks.cc (function_info::replace_phi): When converting
+	to a degenerate phi, make sure to remove all uses of the previous
+	inputs.
+
+2025-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-tuning-flags.def
+	(AARCH64_EXTRA_TUNE_CHEAP_FPMR_WRITE): New tuning flag.
+	* config/aarch64/aarch64.h (TARGET_CHEAP_FPMR_WRITE): New macro.
+	* config/aarch64/aarch64.md: Split moves into FPMR into a test
+	and branch around.
+	(aarch64_write_fpmr): New pattern.
+
+2025-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_memory_move_cost): Account
+	for the cost of moving in and out of GENERAL_SYSREGS.
+
+2025-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (*mov<SHORT:mode>_aarch64)
+	(*movsi_aarch64, *movdi_aarch64): Allow the source of an MSR
+	to be zero.
+
+2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118605
+	* tree-assume.cc (assume_query::m_parm_list): Change type
+	from bitmap & to bitmap.
+
+2025-01-23  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* omp-low.cc (use_pointer_for_field): Use pointer if the OMP data
+	structure's field type is a poly-int.
+
+2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114877
+	* builtins.cc (fold_builtin_frexp): Handle rvc_nan and rvc_inf cases
+	like rvc_zero, return passed in arg and set *exp = 0.
+
+2025-01-23  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Document
+	'alarm'.
+
+2025-01-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/117726
+	* config/avr/avr.cc (avr_ld_regno_p): New function.
+	(ashlsi3_out) [case 25,26,27,28,29,30]: Handle and tweak.
+	(lshrsi3_out): Same.
+	(avr_rtx_costs_1) [SImode, ASHIFT, LSHIFTRT]: Adjust costs.
+	* config/avr/avr.md (ashlsi3, *ashlsi3, *ashlsi3_const):
+	Add "r,r,C4L" alternative.
+	(lshrsi3, *lshrsi3, *lshrsi3_const): Add "r,r,C4R" alternative.
+	* config/avr/constraints.md (C4R, C4L): New,
+
+2025-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118558
+	* tree-vectorizer.h (vect_known_alignment_in_bytes): Pass
+	through offset to dr_misalignment.
+	* tree-vect-stmts.cc (get_group_load_store_type): Compute
+	offset applied for negative stride and use it when querying
+	alignment of accesses.
+	(vectorizable_load): Likewise.
+
+2025-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/107741
+	* common.opt: Add -fabi-version=20.
+	* doc/invoke.texi: Likewise.
+
+2025-01-23  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/118501
+	* config/loongarch/loongarch.md (@xorsign<mode>3): Use
+	force_lowpart_subreg.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx10_2-512convertintrin.h:
+	Omit "p" for packed for FP8.
+	* config/i386/avx10_2convertintrin.h: Ditto.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* config/i386/avx10_2-512satcvtintrin.h: Change intrin and
+	builtin name according to new mnemonics.
+	* config/i386/avx10_2satcvtintrin.h: Ditto.
+	* config/i386/i386-builtin.def (BDESC): Ditto.
+	* config/i386/sse.md
+	(UNSPEC_VCVTBF162IBS): Rename from UNSPEC_VCVTNEBF162IBS.
+	(UNSPEC_VCVTBF162IUBS): Rename from UNSPEC_VCVTNEBF162IUBS.
+	(UNSPEC_VCVTTBF162IBS): Rename from UNSPEC_VCVTTNEBF162IBS.
+	(UNSPEC_VCVTTBF162IUBS): Rename from UNSPEC_VCVTTNEBF162IUBS.
+	(UNSPEC_CVTNE_BF16_IBS_ITER): Rename to...
+	(UNSPEC_CVT_BF16_IBS_ITER): ...this. Adjust UNSPEC name.
+	(sat_cvt_sign_prefix): Adjust UNSPEC name.
+	(sat_cvt_trunc_prefix): Ditto.
+	(avx10_2_cvt<sat_cvt_trunc_prefix>nebf162i<sat_cvt_sign_prefix>bs<mode><mask_name>):
+	Rename to...
+	(avx10_2_cvt<sat_cvt_trunc_prefix>bf162i<sat_cvt_sign_prefix>bs<mode><mask_name>):
+	...this. Change instruction name output.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* config/i386/avx10_2-512convertintrin.h: Change intrin and
+	builtin name according to new mnemonics.
+	* config/i386/avx10_2convertintrin.h: Ditto.
+	* config/i386/i386-builtin.def (BDESC): Ditto.
+	* config/i386/sse.md
+	(UNSPEC_VCVTPH2BF8): Rename from UNSPEC_VCVTNEPH2BF8.
+	(UNSPEC_VCVTPH2BF8S): Rename from UNSPEC_VCVTNEPH2BF8S.
+	(UNSPEC_VCVTPH2HF8): Rename from UNSPEC_VCVTNEPH2HF8.
+	(UNSPEC_VCVTPH2HF8S): Rename from UNSPEC_VCVTNEPH2HF8S.
+	(UNSPEC_CONVERTPH2FP8): Rename from UNSPEC_NECONVERTPH2FP8.
+	Adjust UNSPEC name.
+	(convertph2fp8): Rename from neconvertph2fp8. Adjust
+	iterator map.
+	(vcvt<neconvertph2fp8>v8hf): Rename to...
+	(vcvt<neconvertph2fp8>v8hf): ...this.
+	(*vcvt<neconvertph2fp8>v8hf): Rename to...
+	(*vcvt<neconvertph2fp8>v8hf): ...this.
+	(vcvt<neconvertph2fp8>v8hf_mask): Rename to...
+	(vcvt<neconvertph2fp8>v8hf_mask): ...this.
+	(*vcvt<neconvertph2fp8>v8hf_mask): Rename to...
+	(*vcvt<neconvertph2fp8>v8hf_mask): ...this.
+	(vcvt<neconvertph2fp8><mode><mask_name>): Rename to...
+	(vcvt<convertph2fp8><mode><mask_name>): ...this.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* config/i386/avx10_2-512convertintrin.h: Change intrin and
+	builtin name according to new mnemonics.
+	* config/i386/avx10_2convertintrin.h: Ditto.
+	* config/i386/i386-builtin.def (BDESC): Ditto.
+	* config/i386/sse.md
+	(UNSPEC_VCVT2PH2BF8): Rename from UNSPEC_VCVTNE2PH2BF8.
+	(UNSPEC_VCVT2PH2BF8S): Rename from UNSPEC_VCVTNE2PH2BF8S.
+	(UNSPEC_VCVT2PH2HF8): Rename from UNSPEC_VCVTNE2PH2HF8.
+	(UNSPEC_VCVT2PH2HF8S): Rename from UNSPEC_VCVTNE2PH2HF8S.
+	(UNSPEC_CONVERTFP8_PACK): Rename from UNSPEC_NECONVERTFP8_PACK.
+	Adjust UNSPEC name.
+	(convertfp8_pack): Rename from neconvertfp8_pack. Adjust
+	iterator map.
+	(vcvt<neconvertfp8_pack><mode><mask_name>): Rename to...
+	(vcvt<convertfp8_pack><mode><mask_name>): ...this.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* config/i386/avx10_2bf16intrin.h: Change intrin and builtin
+	name according to new mnemonics.
+	* config/i386/i386-builtin.def (BDESC): Ditto.
+	* config/i386/i386-expand.cc
+	(ix86_expand_fp_compare): Adjust comments.
+	(ix86_expand_builtin): Adjust switch case.
+	* config/i386/i386.md (cmpibf): Change instruction name output.
+	* config/i386/sse.md (UNSPEC_VCOMSBF16): Removed.
+	(avx10_2_comisbf16_v8bf): New.
+	(avx10_2_comsbf16_v8bf): Removed.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* config/i386/avx10_2-512bf16intrin.h: Change intrin and builtin
+	name according to new mnemonics.
+	* config/i386/avx10_2bf16intrin.h: Ditto.
+	* config/i386/i386-builtin.def (BDESC): Ditto.
+	* config/i386/sse.md
+	(UNSPEC_VFPCLASSBF16); Rename from UNSPEC_VFPCLASSPBF16.
+	(avx10_2_getexppbf16_<mode><mask_name>): Rename to...
+	(avx10_2_getexpbf16_<mode><mask_name>): ...this.
+	Change instruction name output.
+	(avx10_2_fpclasspbf16_<mode><mask_scalar_merge_name>):
+	Rename to...
+	(avx10_2_fpclassbf16_<mode><mask_scalar_merge_name>): ...this.
+	Change instruction name output.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* config/i386/avx10_2-512bf16intrin.h: Change intrin and builtin
+	name according to new mnemonics.
+	* config/i386/avx10_2bf16intrin.h: Ditto.
+	* config/i386/i386-builtin.def (BDESC): Ditto.
+	* config/i386/sse.md
+	(UNSPEC_VSCALEFBF16): Rename from UNSPEC_VSCALEFPBF16.
+	(avx10_2_scalefpbf16_<mode><mask_name>): Rename to...
+	(avx10_2_scalefbf16_<mode><mask_name>): ...this.
+	Change instruction name output.
+	(avx10_2_rsqrtpbf16_<mode><mask_name>): Rename to...
+	(avx10_2_rsqrtbf16_<mode><mask_name>): ...this.
+	Change instruction name output.
+	(avx10_2_sqrtnepbf16_<mode><mask_name>): Rename to...
+	(avx10_2_sqrtbf16_<mode><mask_name>): ...this.
+	Change instruction name output.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* config/i386/avx10_2-512bf16intrin.h: Change intrin and builtin
+	name according to new mnemonics.
+	* config/i386/avx10_2bf16intrin.h: Ditto.
+	* config/i386/i386-builtin.def (BDESC): Ditto.
+	* config/i386/sse.md
+	(UNSPEC_VRNDSCALEBF16): Rename from UNSPEC_VRNDSCALENEPBF16.
+	(UNSPEC_VREDUCEBF16): Rename from UNSPEC_VREDUCENEPBF16.
+	(UNSPEC_VGETMANTBF16): Rename from UNSPEC_VGETMANTPBF16.
+	(BF16IMMOP): Adjust iterator due to UNSPEC name change.
+	(bf16immop): Ditto.
+	(avx10_2_<bf16immop>pbf16_<mode><mask_name>): Rename to...
+	(avx10_2_<bf16immop>bf16_<mode><mask_name>): ...this. Change
+	instruction name output.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* config/i386/avx10_2-512minmaxintrin.h: Change intrin and
+	builtin name according to new mnemonics.
+	* config/i386/avx10_2minmaxintrin.h: Ditto.
+	* config/i386/i386-builtin.def (BDESC): Ditto.
+	* config/i386/sse.md
+	(UNSPEC_MINMAXBF16): Rename from UNSPEC_MINMAXNEPBF16.
+	(avx10_2_minmaxnepbf16_<mode><mask_name>): Rename to...
+	(avx10_2_minmaxbf16_<mode><mask_name>): ...this. Change
+	instruction name output.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* config/i386/avx10_2-512bf16intrin.h: Change intrin and builtin
+	name according to new mnemonics.
+	* config/i386/avx10_2bf16intrin.h: Ditto.
+	* config/i386/i386-builtin.def (BDESC): Ditto.
+	* config/i386/sse.md
+	(avx10_2_<code>pbf16_<mode><mask_name>): Rename to...
+	(avx10_2_<code>bf16_<mode><mask_name>): ...this.
+	Change instruction name output.
+	(avx10_2_cmppbf16_<mode><mask_scalar_merge_name>): Rename to...
+	(avx10_2_cmpbf16_<mode><mask_scalar_merge_name>): ...this.
+	Change instruction name output.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* config/i386/avx10_2-512bf16intrin.h: Change intrin and builtin
+	names according to new mnemonics.
+	* config/i386/avx10_2bf16intrin.h: Ditto.
+	* config/i386/i386-builtin.def (BDESC): Ditto.
+	* config/i386/sse.md
+	(avx10_2_fmaddnepbf16_<mode>_maskz): Rename to...
+	(avx10_2_fmaddbf16_<mode>_maskz): ...this. Adjust emit_insn.
+	(avx10_2_fmaddnepbf16_<mode><sd_maskz_name>): Rename to...
+	(avx10_2_fmaddbf16_<mode><sd_maskz_name>): ...this.
+	Change instruction name output.
+	(avx10_2_fmaddnepbf16_<mode>_mask): Rename to...
+	(avx10_2_fmaddbf16_<mode>_mask): ...this.
+	Change instruction name output.
+	(avx10_2_fmaddnepbf16_<mode>_mask3): Rename to...
+	(avx10_2_fmaddbf16_<mode>_mask3): ...this.
+	Change instruction name output.
+	(avx10_2_fnmaddnepbf16_<mode>_maskz): Rename to...
+	(avx10_2_fnmaddbf16_<mode>_maskz): ...this. Adjust emit_insn.
+	(avx10_2_fnmaddnepbf16_<mode><sd_maskz_name>): Rename to...
+	(avx10_2_fnmaddbf16_<mode><sd_maskz_name>): ...this.
+	Change instruction name output.
+	(avx10_2_fnmaddnepbf16_<mode>_mask): Rename to...
+	(avx10_2_fnmaddbf16_<mode>_mask): ...this.
+	Change instruction name output.
+	(avx10_2_fnmaddnepbf16_<mode>_mask3): Rename to...
+	(avx10_2_fnmaddbf16_<mode>_mask3): ...this.
+	Change instruction name output.
+	(avx10_2_fmsubnepbf16_<mode>_maskz): Rename to...
+	(avx10_2_fmsubbf16_<mode>_maskz): ...this. Adjust emit_insn.
+	(avx10_2_fmsubnepbf16_<mode><sd_maskz_name>): Rename to...
+	(avx10_2_fmsubbf16_<mode><sd_maskz_name>): ...this.
+	Change instruction name output.
+	(avx10_2_fmsubnepbf16_<mode>_mask): Rename to...
+	(avx10_2_fmsubbf16_<mode>_mask): ...this.
+	Change instruction name output.
+	(avx10_2_fmsubnepbf16_<mode>_mask3): Rename to...
+	(avx10_2_fmsubbf16_<mode>_mask3): ...this.
+	Change instruction name output.
+	(avx10_2_fnmsubnepbf16_<mode>_maskz): Rename to...
+	(avx10_2_fnmsubbf16_<mode>_maskz): ...this. Adjust emit_insn.
+	(avx10_2_fnmsubnepbf16_<mode><sd_maskz_name>): Rename to...
+	(avx10_2_fnmsubbf16_<mode><sd_maskz_name>): ...this.
+	Change instruction name output.
+	(avx10_2_fnmsubnepbf16_<mode>_mask): Rename to...
+	(avx10_2_fnmsubbf16_<mode>_mask): ...this.
+	Change instruction name output.
+	(avx10_2_fnmsubnepbf16_<mode>_mask3): Rename to...
+	(avx10_2_fnmsubbf16_<mode>_mask3): ...this.
+	Change instruction name output.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* config/i386/avx10_2-512bf16intrin.h: Change intrin and builtin
+	name according to new mnemonics.
+	* config/i386/avx10_2bf16intrin.h: Ditto.
+	* config/i386/i386-builtin.def (BDESC): Ditto.
+	* config/i386/sse.md (div<mode>3): Adjust emit_insn.
+	(avx10_2_<insn>nepbf16_<mode><mask_name>): Rename to...
+	(avx10_2_<insn>bf16_<mode><mask_name>): ...this. Change
+	instruction name output.
+	(avx10_2_rcppbf16_<mode><mask_name>): Rename to...
+	(avx10_2_rcpbf16_<mode><mask_name>):...this. Change
+	instruction name output.
+
 2025-01-22  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	* config/s390/s390.cc: Fix arch15 machine string which must not

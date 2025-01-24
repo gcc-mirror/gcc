@@ -1,3 +1,13 @@
+2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.cc (make_tree_vector_from_ctor): Only use make_tree_vector
+	for ctors with <= 16 elements.
+
+2025-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/107741
+	* c-opts.cc (c_common_post_options): Bump ABI version.
+
 2025-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h (append_ctor_to_tree_vector): Declare.

@@ -1,3 +1,22 @@
+2025-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118613
+	* trans-intrinsic.cc (gfc_conv_intrinsic_minmaxval): Adjust algorithm
+	for inlined version of MINLOC and MAXLOC so that arguments are only
+	evaluted once, and create temporaries where necessary.  Document
+	change of algorithm.
+
+2025-01-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96087
+	* trans-decl.cc (gfc_get_symbol_decl): If a dummy is missing a
+	backend decl, it is likely that it has come from a module proc
+	interface. Look for the formal symbol by name in the containing
+	proc and use its backend decl.
+	* trans-expr.cc (gfc_apply_interface_mapping_to_expr): For the
+	same reason, match the name, rather than the symbol address to
+	perform the mapping.
+
 2025-01-20  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/107122

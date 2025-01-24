@@ -1,3 +1,46 @@
+2025-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117602
+	* cp-tree.h (current_nonlambda_scope): Add a default argument.
+	* lambda.cc (current_nonlambda_scope): New bool parameter.  Use it.
+	* parser.cc (cp_parser_lambda_introducer): Use current_nonlambda_scope
+	to check if the lambda is non-local.
+
+2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118590
+	* typeck.cc (build_omp_array_section): If array_expr is type dependent
+	or a TYPE_DECL, build OMP_ARRAY_SECTION with NULL type.
+
+2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118604
+	* parser.cc (cp_parser_omp_metadirective): Test !default_p
+	first and use strcmp () != 0 rather than !strcmp () == 0.
+
+2025-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* mangle.cc (write_expression): Update mangling for lambdas.
+
+2025-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/107741
+	* cp-tree.h (start_initialized_static_member): Declare.
+	(finish_initialized_static_member): Declare.
+	* decl2.cc (start_initialized_static_member): New function.
+	(finish_initialized_static_member): New function.
+	* lambda.cc (record_lambda_scope): Support falling back to old
+	ABI (maybe with warning).
+	* parser.cc (cp_parser_member_declaration): Build decl early
+	when parsing an initialized static data member.
+
+2025-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118582
+	* module.cc (trees_out::decl_value): Always stream
+	imported_temploid_friends information.
+	(trees_in::decl_value): Likewise.
+
 2025-01-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/115769
