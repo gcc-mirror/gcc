@@ -4956,6 +4956,14 @@ package body Exp_Aggr is
       --  type using the computable sizes of the aggregate and its sub-
       --  aggregates.
 
+      function Build_Two_Pass_Aggr_Code
+        (Lhs      : Node_Id;
+         Aggr_Typ : out Entity_Id) return List_Id;
+      --  The aggregate consists only of iterated associations and Lhs is an
+      --  expression containing the location of the anonymous object, which
+      --  may be built in place. Returns the dynamic subtype of the aggregate
+      --  in Aggr_Typ and the list of statements needed to build it.
+
       procedure Check_Bounds (Aggr_Bounds_Node, Index_Bounds_Node : Node_Id);
       --  Checks that the bounds of Aggr_Bounds are within the bounds defined
       --  by Index_Bounds. For null array aggregate (Ada 2022) check that the
@@ -4983,7 +4991,7 @@ package body Exp_Aggr is
       --  built directly into the target of an assignment, the target must
       --  be free of side effects. N is the target of the assignment.
 
-      procedure Two_Pass_Aggregate_Expansion (N : Node_Id);
+      procedure Two_Pass_Aggregate_Expansion;
       --  If the aggregate consists only of iterated associations then the
       --  aggregate is constructed in two steps:
       --  a) Build an expression to compute the number of elements
@@ -5052,6 +5060,221 @@ package body Exp_Aggr is
          Set_Is_Itype (Agg_Type);
          Freeze_Itype (Agg_Type, N);
       end Build_Constrained_Type;
+
+      ------------------------------
+      -- Build_Two_Pass_Aggr_Code --
+      ------------------------------
+
+      function Build_Two_Pass_Aggr_Code
+        (Lhs      : Node_Id;
+         Aggr_Typ : out Entity_Id) return List_Id
+      is
+         Index_Id   : constant Entity_Id := Make_Temporary (Loc, 'I', N);
+         Index_Type : constant Entity_Id := Etype (First_Index (Typ));
+         Index_Base : constant Entity_Id := Base_Type (Index_Type);
+         Size_Id    : constant Entity_Id := Make_Temporary (Loc, 'I', N);
+         Size_Type  : constant Entity_Id :=
+                        Integer_Type_For
+                          (Esize (Index_Base), Is_Unsigned_Type (Index_Base));
+
+         Assoc    : Node_Id;
+         Incr     : Node_Id;
+         Iter     : Node_Id;
+         New_Comp : Node_Id;
+         One_Loop : Node_Id;
+         Iter_Id  : Entity_Id;
+
+         Aggr_Code      : List_Id;
+         Size_Expr_Code : List_Id;
+
+      begin
+         Size_Expr_Code := New_List (
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Size_Id,
+             Object_Definition   => New_Occurrence_Of (Size_Type, Loc),
+             Expression          => Make_Integer_Literal (Loc, 0)));
+
+         --  First pass: execute the iterators to count the number of elements
+         --  that will be generated.
+
+         Assoc := First (Component_Associations (N));
+         while Present (Assoc) loop
+            Iter    := Iterator_Specification (Assoc);
+            Iter_Id := Defining_Identifier (Iter);
+            Incr    :=
+              Make_Assignment_Statement (Loc,
+                Name       => New_Occurrence_Of (Size_Id, Loc),
+                Expression =>
+                  Make_Op_Add (Loc,
+                    Left_Opnd  => New_Occurrence_Of (Size_Id, Loc),
+                    Right_Opnd => Make_Integer_Literal (Loc, 1)));
+
+            --  Avoid using the same iterator definition in both loops by
+            --  creating a new iterator for each loop and mapping it over the
+            --  original iterator references.
+
+            One_Loop :=
+              Make_Implicit_Loop_Statement (N,
+                Iteration_Scheme =>
+                  Make_Iteration_Scheme (Loc,
+                    Iterator_Specification =>
+                      New_Copy_Tree (Iter,
+                        Map => New_Elmt_List (Iter_Id, New_Copy (Iter_Id)))),
+                Statements       => New_List (Incr));
+
+            Append (One_Loop, Size_Expr_Code);
+            Next (Assoc);
+         end loop;
+
+         Insert_Actions (N, Size_Expr_Code);
+
+         --  Build a constrained subtype with the bounds deduced from
+         --  the size computed above and declare the aggregate object.
+         --  The index type is some discrete type, so the bounds of the
+         --  constrained subtype are computed as T'Val (integer bounds).
+
+         declare
+            --  Pos_Lo := Index_Type'Pos (Index_Type'First)
+
+            Pos_Lo : constant Node_Id :=
+              Make_Attribute_Reference (Loc,
+                Prefix         => New_Occurrence_Of (Index_Type, Loc),
+                Attribute_Name => Name_Pos,
+                Expressions    => New_List (
+                  Make_Attribute_Reference (Loc,
+                    Prefix => New_Occurrence_Of (Index_Type, Loc),
+                    Attribute_Name => Name_First)));
+
+            --  Corresponding index value, i.e. Index_Type'First
+
+            Aggr_Lo : constant Node_Id :=
+               Make_Attribute_Reference (Loc,
+                 Prefix         => New_Occurrence_Of (Index_Type, Loc),
+                 Attribute_Name => Name_First);
+
+            --  Pos_Hi := Pos_Lo + Size - 1
+
+            Pos_Hi : constant Node_Id :=
+               Make_Op_Add (Loc,
+                 Left_Opnd  => Pos_Lo,
+                 Right_Opnd =>
+                   Make_Op_Subtract (Loc,
+                     Left_Opnd  => New_Occurrence_Of (Size_Id, Loc),
+                     Right_Opnd => Make_Integer_Literal (Loc, 1)));
+
+            --  Corresponding index value
+
+            Aggr_Hi : constant Node_Id :=
+               Make_Attribute_Reference (Loc,
+                 Prefix => New_Occurrence_Of (Index_Type, Loc),
+                 Attribute_Name => Name_Val,
+                 Expressions    => New_List (Pos_Hi));
+
+         begin
+            Aggr_Typ := Make_Temporary (Loc, 'T');
+
+            Insert_Action (N,
+              Make_Subtype_Declaration (Loc,
+                Defining_Identifier => Aggr_Typ,
+                Subtype_Indication  =>
+                  Make_Subtype_Indication (Loc,
+                    Subtype_Mark =>
+                      New_Occurrence_Of (Base_Type (Typ), Loc),
+                    Constraint =>
+                      Make_Index_Or_Discriminant_Constraint
+                        (Loc,
+                         Constraints =>
+                           New_List (Make_Range (Loc, Aggr_Lo, Aggr_Hi))))));
+         end;
+
+         --  Second pass: use the iterators to generate the elements of the
+         --  aggregate. We assume that the second evaluation of each iterator
+         --  generates the same number of elements as the first pass, and thus
+         --  consider that the execution is erroneous (even if the RM does not
+         --  state this explicitly) if the number of elements generated differs
+         --  between first and second pass.
+
+         Assoc := First (Component_Associations (N));
+
+         --  Initialize insertion position to first array component
+
+         Aggr_Code := New_List (
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Index_Id,
+             Object_Definition   =>
+               New_Occurrence_Of (Index_Type, Loc),
+             Expression =>
+               Make_Attribute_Reference (Loc,
+                 Prefix => New_Copy_Tree (Lhs),
+                 Attribute_Name => Name_First)));
+
+         while Present (Assoc) loop
+            Iter     := Iterator_Specification (Assoc);
+            Iter_Id  := Defining_Identifier (Iter);
+            New_Comp :=
+              Make_OK_Assignment_Statement (Loc,
+                Name       =>
+                  Make_Indexed_Component (Loc,
+                    Prefix => New_Copy_Tree (Lhs),
+                    Expressions =>
+                      New_List (New_Occurrence_Of (Index_Id, Loc))),
+                Expression => Copy_Separate_Tree (Expression (Assoc)));
+
+            --  Arrange for the component to be adjusted if need be (the call
+            --  will be generated by Make_Tag_Ctrl_Assignment).
+
+            if Needs_Finalization (Ctyp)
+              and then not Is_Inherently_Limited_Type (Ctyp)
+            then
+               Set_No_Finalize_Actions (New_Comp);
+            else
+               Set_No_Ctrl_Actions (New_Comp);
+            end if;
+
+            --  Advance index position for insertion
+
+            Incr :=
+              Make_Assignment_Statement (Loc,
+                Name       => New_Occurrence_Of (Index_Id, Loc),
+                Expression =>
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => New_Occurrence_Of (Index_Type, Loc),
+                    Attribute_Name => Name_Succ,
+                    Expressions    =>
+                      New_List (New_Occurrence_Of (Index_Id, Loc))));
+
+            --  Add guard to skip last increment when upper bound is reached
+
+            Incr :=
+              Make_If_Statement (Loc,
+                Condition       =>
+                  Make_Op_Ne (Loc,
+                  Left_Opnd  => New_Occurrence_Of (Index_Id, Loc),
+                  Right_Opnd =>
+                    Make_Attribute_Reference (Loc,
+                      Prefix         => New_Occurrence_Of (Index_Type, Loc),
+                      Attribute_Name => Name_Last)),
+                Then_Statements => New_List (Incr));
+
+            --  Avoid using the same iterator definition in both loops by
+            --  creating a new iterator for each loop and mapping it over
+            --  the original iterator references.
+
+            One_Loop :=
+              Make_Implicit_Loop_Statement (N,
+                Iteration_Scheme =>
+                  Make_Iteration_Scheme (Loc,
+                    Iterator_Specification =>
+                      New_Copy_Tree (Iter,
+                        Map => New_Elmt_List (Iter_Id, New_Copy (Iter_Id)))),
+                Statements       => New_List (New_Comp, Incr));
+
+            Append (One_Loop, Aggr_Code);
+            Next (Assoc);
+         end loop;
+
+         return Aggr_Code;
+      end Build_Two_Pass_Aggr_Code;
 
       ------------------
       -- Check_Bounds --
@@ -5596,214 +5819,98 @@ package body Exp_Aggr is
       -- Two_Pass_Aggregate_Expansion --
       ----------------------------------
 
-      procedure Two_Pass_Aggregate_Expansion (N : Node_Id) is
-         Loc        : constant Source_Ptr := Sloc (N);
-         Comp_Type  : constant Entity_Id := Etype (N);
-         Index_Id   : constant Entity_Id := Make_Temporary (Loc, 'I', N);
-         Index_Type : constant Entity_Id := Etype (First_Index (Etype (N)));
-         Index_Base : constant Entity_Id := Base_Type (Index_Type);
-         Size_Id    : constant Entity_Id := Make_Temporary (Loc, 'I', N);
-         Size_Type  : constant Entity_Id :=
-                        Integer_Type_For
-                          (Esize (Index_Base), Is_Unsigned_Type (Index_Base));
-         TmpE       : constant Entity_Id := Make_Temporary (Loc, 'A', N);
-
-         Assoc    : Node_Id := First (Component_Associations (N));
-         Incr     : Node_Id;
-         Iter     : Node_Id;
-         New_Comp : Node_Id;
-         One_Loop : Node_Id;
-         Iter_Id  : Entity_Id;
-
-         Size_Expr_Code : List_Id;
-         Insertion_Code : List_Id := New_List;
+      procedure Two_Pass_Aggregate_Expansion is
+         Aggr_Code : List_Id;
+         Aggr_Typ  : Entity_Id;
+         Lhs       : Node_Id;
+         Obj_Id    : Entity_Id;
+         Par       : Node_Id;
 
       begin
-         Size_Expr_Code := New_List (
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Size_Id,
-             Object_Definition   => New_Occurrence_Of (Size_Type, Loc),
-             Expression          => Make_Integer_Literal (Loc, 0)));
-
-         --  First pass: execute the iterators to count the number of elements
-         --  that will be generated.
-
-         while Present (Assoc) loop
-            Iter := Iterator_Specification (Assoc);
-            Iter_Id := Defining_Identifier (Iter);
-            Incr := Make_Assignment_Statement (Loc,
-                      Name => New_Occurrence_Of (Size_Id, Loc),
-                      Expression =>
-                        Make_Op_Add (Loc,
-                         Left_Opnd  => New_Occurrence_Of (Size_Id, Loc),
-                         Right_Opnd => Make_Integer_Literal (Loc, 1)));
-
-            --  Avoid using the same iterator definition in both loops by
-            --  creating a new iterator for each loop and mapping it over the
-            --  original iterator references.
-
-            One_Loop := Make_Implicit_Loop_Statement (N,
-              Iteration_Scheme =>
-                Make_Iteration_Scheme (Loc,
-                  Iterator_Specification =>
-                     New_Copy_Tree (Iter,
-                        Map => New_Elmt_List (Iter_Id, New_Copy (Iter_Id)))),
-                Statements => New_List (Incr));
-
-            Append (One_Loop, Size_Expr_Code);
-            Next (Assoc);
+         Par := Parent (N);
+         while Nkind (Par) = N_Qualified_Expression loop
+            Par := Parent (Par);
          end loop;
 
-         Insert_Actions (N, Size_Expr_Code);
+         --  If the aggregate is the initialization expression of an object
+         --  declaration, we always build the aggregate in place, although
+         --  this is required only for immutably limited types and types
+         --  that need finalization, see RM 7.6(17.2/3-17.3/3).
 
-         --  Build a constrained subtype with the bounds deduced from
-         --  the size computed above and declare the aggregate object.
-         --  The index type is some discrete type, so the bounds of the
-         --  constrained subtype are computed as T'Val (integer bounds).
+         if Nkind (Par) = N_Object_Declaration then
+            Obj_Id := Defining_Identifier (Par);
+            Lhs := New_Occurrence_Of (Obj_Id, Loc);
+            Set_Assignment_OK (Lhs);
+            Aggr_Code := Build_Two_Pass_Aggr_Code (Lhs, Aggr_Typ);
 
-         declare
-            --  Pos_Lo := Index_Type'Pos (Index_Type'First)
+            --  Save the last assignment statement associated with the
+            --  aggregate when building a controlled object. This last
+            --  assignment is used by the finalization machinery when
+            --  marking an object as successfully initialized.
 
-            Pos_Lo : constant Node_Id :=
-              Make_Attribute_Reference (Loc,
-                Prefix         => New_Occurrence_Of (Index_Type, Loc),
-                Attribute_Name => Name_Pos,
-                Expressions    => New_List (
-                  Make_Attribute_Reference (Loc,
-                    Prefix => New_Occurrence_Of (Index_Type, Loc),
-                    Attribute_Name => Name_First)));
+            if Needs_Finalization (Typ) then
+               Mutate_Ekind (Obj_Id, E_Variable);
+               Set_Last_Aggregate_Assignment (Obj_Id, Last (Aggr_Code));
+            end if;
 
-            --  Corresponding index value, i.e. Index_Type'First
+            --  If a transient scope has been created around the declaration,
+            --  we need to attach the code to it so that finalization actions
+            --  of the declaration will be inserted after it; otherwise, we
+            --  directly insert it after the declaration. In both cases, the
+            --  code will be analyzed after the declaration is processed, i.e.
+            --  once the actual subtype of the object is established.
 
-            Aggr_Lo : constant Node_Id :=
-               Make_Attribute_Reference (Loc,
-                 Prefix         => New_Occurrence_Of (Index_Type, Loc),
-                 Attribute_Name => Name_First);
+            if Scope_Is_Transient and then Par = Node_To_Be_Wrapped then
+               Store_After_Actions_In_Scope_Without_Analysis (Aggr_Code);
+            else
+               Insert_List_After (Par, Aggr_Code);
+            end if;
 
-            --  Pos_Hi := Pos_Lo + Size - 1
+            Set_Etype (N, Aggr_Typ);
+            Set_No_Initialization (Par);
 
-            Pos_Hi : constant Node_Id :=
-               Make_Op_Add (Loc,
-                 Left_Opnd  => Pos_Lo,
-                 Right_Opnd =>
-                   Make_Op_Subtract (Loc,
-                     Left_Opnd  => New_Occurrence_Of (Size_Id, Loc),
-                     Right_Opnd => Make_Integer_Literal (Loc, 1)));
+         --  Likewise if it is the qualified expression of an allocator but,
+         --  in this case, we wait until after Expand_Allocator_Expression
+         --  rewrites the allocator as the initialization expression of an
+         --  object declaration, so that we have the left-hand side.
 
-            --  Corresponding index value
+         elsif Nkind (Par) = N_Allocator then
+            if Nkind (Parent (Par)) = N_Object_Declaration
+              and then
+                not Comes_From_Source (Defining_Identifier (Parent (Par)))
+            then
+               Obj_Id := Defining_Identifier (Parent (Par));
+               Lhs :=
+                 Make_Explicit_Dereference (Loc,
+                   Prefix => New_Occurrence_Of (Obj_Id, Loc));
+               Set_Assignment_OK (Lhs);
+               Aggr_Code := Build_Two_Pass_Aggr_Code (Lhs, Aggr_Typ);
 
-            Aggr_Hi : constant Node_Id :=
-               Make_Attribute_Reference (Loc,
-                 Prefix => New_Occurrence_Of (Index_Type, Loc),
-                 Attribute_Name => Name_Val,
-                 Expressions    => New_List (Pos_Hi));
+               Insert_Actions_After (Parent (Par), Aggr_Code);
 
-            SubE : constant Entity_Id := Make_Temporary (Loc, 'T');
-            SubD : constant Node_Id :=
-              Make_Subtype_Declaration (Loc,
-                Defining_Identifier => SubE,
-                Subtype_Indication  =>
-                  Make_Subtype_Indication (Loc,
-                    Subtype_Mark =>
-                      New_Occurrence_Of (Etype (Comp_Type), Loc),
-                    Constraint =>
-                      Make_Index_Or_Discriminant_Constraint
-                        (Loc,
-                         Constraints =>
-                           New_List (Make_Range (Loc, Aggr_Lo, Aggr_Hi)))));
+               Set_Expression (Par, New_Occurrence_Of (Aggr_Typ, Loc));
+               Set_No_Initialization (Par);
+            end if;
 
-            --  Create a temporary array of the above subtype which
-            --  will be used to capture the aggregate assignments.
+         --  Otherwise we create a temporary for the anonymous object and
+         --  replace the aggregate with the temporary.
 
-            TmpD : constant Node_Id :=
+         else
+            Obj_Id := Make_Temporary (Loc, 'A', N);
+            Lhs := New_Occurrence_Of (Obj_Id, Loc);
+            Set_Assignment_OK (Lhs);
+
+            Aggr_Code := Build_Two_Pass_Aggr_Code (Lhs, Aggr_Typ);
+            Prepend_To (Aggr_Code,
               Make_Object_Declaration (Loc,
-                Defining_Identifier => TmpE,
-                Object_Definition   => New_Occurrence_Of (SubE, Loc));
+                Defining_Identifier => Obj_Id,
+                Object_Definition   => New_Occurrence_Of (Aggr_Typ, Loc)));
 
-         begin
-            Insert_Actions (N, New_List (SubD, TmpD));
-         end;
+            Insert_Actions (N, Aggr_Code);
 
-         --  Second pass: use the iterators to generate the elements of the
-         --  aggregate. Insertion index starts at Index_Type'First. We
-         --  assume that the second evaluation of each iterator generates
-         --  the same number of elements as the first pass, and consider
-         --  that the execution is erroneous (even if the RM does not state
-         --  this explicitly) if the number of elements generated differs
-         --  between first and second pass.
-
-         Assoc := First (Component_Associations (N));
-
-         --  Initialize insertion position to first array component.
-
-         Insertion_Code := New_List (
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Index_Id,
-             Object_Definition   =>
-               New_Occurrence_Of (Index_Type, Loc),
-             Expression =>
-               Make_Attribute_Reference (Loc,
-                 Prefix => New_Occurrence_Of (Index_Type, Loc),
-                 Attribute_Name => Name_First)));
-
-         while Present (Assoc) loop
-            Iter := Iterator_Specification (Assoc);
-            Iter_Id := Defining_Identifier (Iter);
-            New_Comp := Make_OK_Assignment_Statement (Loc,
-               Name =>
-                 Make_Indexed_Component (Loc,
-                    Prefix => New_Occurrence_Of (TmpE, Loc),
-                    Expressions =>
-                      New_List (New_Occurrence_Of (Index_Id, Loc))),
-               Expression => Copy_Separate_Tree (Expression (Assoc)));
-
-            --  Advance index position for insertion.
-
-            Incr := Make_Assignment_Statement (Loc,
-                      Name => New_Occurrence_Of (Index_Id, Loc),
-                      Expression =>
-                        Make_Attribute_Reference (Loc,
-                          Prefix =>
-                            New_Occurrence_Of (Index_Type, Loc),
-                          Attribute_Name => Name_Succ,
-                          Expressions =>
-                            New_List (New_Occurrence_Of (Index_Id, Loc))));
-
-            --  Add guard to skip last increment when upper bound is reached.
-
-            Incr := Make_If_Statement (Loc,
-               Condition =>
-                  Make_Op_Ne (Loc,
-                  Left_Opnd  => New_Occurrence_Of (Index_Id, Loc),
-                  Right_Opnd =>
-                    Make_Attribute_Reference (Loc,
-                      Prefix => New_Occurrence_Of (Index_Type, Loc),
-                      Attribute_Name => Name_Last)),
-               Then_Statements => New_List (Incr));
-
-            --  Avoid using the same iterator definition in both loops by
-            --  creating a new iterator for each loop and mapping it over the
-            --  original iterator references.
-
-            One_Loop := Make_Implicit_Loop_Statement (N,
-              Iteration_Scheme =>
-                Make_Iteration_Scheme (Loc,
-                  Iterator_Specification =>
-                     New_Copy_Tree (Iter,
-                        Map => New_Elmt_List (Iter_Id, New_Copy (Iter_Id)))),
-                Statements => New_List (New_Comp, Incr));
-
-            Append (One_Loop, Insertion_Code);
-            Next (Assoc);
-         end loop;
-
-         Insert_Actions (N, Insertion_Code);
-
-         --  Depending on context this may not work for build-in-place
-         --  arrays ???
-
-         Rewrite (N, New_Occurrence_Of (TmpE, Loc));
-
+            Rewrite (N, Lhs);
+            Analyze_And_Resolve (N, Aggr_Typ);
+         end if;
       end Two_Pass_Aggregate_Expansion;
 
       --  Local variables
@@ -5829,7 +5936,7 @@ package body Exp_Aggr is
       --  Aggregates that require a two-pass expansion are handled separately
 
       elsif Is_Two_Pass_Aggregate (N) then
-         Two_Pass_Aggregate_Expansion (N);
+         Two_Pass_Aggregate_Expansion;
          return;
 
       --  Do not attempt expansion if error already detected. We may reach this
@@ -6002,12 +6109,11 @@ package body Exp_Aggr is
          --  static type imposed by the context.
 
          declare
-            Itype      : constant Entity_Id := Etype (N);
             Index      : Node_Id;
             Needs_Type : Boolean := False;
 
          begin
-            Index := First_Index (Itype);
+            Index := First_Index (Typ);
             while Present (Index) loop
                if not Is_OK_Static_Subtype (Etype (Index)) then
                   Needs_Type := True;
@@ -6019,7 +6125,7 @@ package body Exp_Aggr is
 
             if Needs_Type then
                Build_Constrained_Type (Positional => True);
-               Rewrite (N, Unchecked_Convert_To (Itype, N));
+               Rewrite (N, Unchecked_Convert_To (Typ, N));
                Analyze (N);
             end if;
          end;
@@ -6147,7 +6253,7 @@ package body Exp_Aggr is
       then
          Tmp := Name (Parent_Node);
 
-         if Etype (Tmp) /= Etype (N) then
+         if Etype (Tmp) /= Typ then
             Apply_Length_Check (N, Etype (Tmp));
 
             if Nkind (N) = N_Raise_Constraint_Error then
@@ -7362,7 +7468,7 @@ package body Exp_Aggr is
       --  Likewise if the aggregate is the qualified expression of an allocator
       --  but, in this case, we wait until after Expand_Allocator_Expression
       --  rewrites the allocator as the initialization expression of an object
-      --  declaration to have the left hand side.
+      --  declaration, so that we have the left-hand side.
 
       elsif Nkind (Par) = N_Allocator then
          if Nkind (Parent (Par)) = N_Object_Declaration
