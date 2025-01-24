@@ -13307,19 +13307,17 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
 	      parens.require_close (parser);
 	      /* Build the contract.  */
-	      tree contract = grok_contract (cont_assert, NULL_TREE /*mode*/,
-					NULL_TREE /*result*/, condition, loc);
-	      if (contract != error_mark_node && !modifier.error_p)
-		{
-		  set_contract_mutable (contract, modifier.mutable_p);
-		  set_contract_const (contract, modifier.const_p);
-		}
+	      tree contract
+		= grok_contract (cont_assert, /*mode*/NULL_TREE,
+				 /*result*/NULL_TREE, condition, loc);
+	      if (contract != error_mark_node)
+		set_contract_const (contract, should_constify);
 
 	      std_attrs = finish_contract_attribute (cont_assert, contract);
 
 	      /* If there are errors in the contract, we do not create the
-	      attribute tree. This assumes no attributes on
-	      'contract_assert' */
+		 attribute tree. This assumes no attributes on
+		 'contract_assert'.  */
 	      if (std_attrs == error_mark_node)
 		 std_attrs = NULL_TREE;
 	      else if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
@@ -31564,18 +31562,29 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
   if (attr_mode || identifier)
     cp_parser_require (parser, CPP_COLON, RT_COLON);
 
-  /* Defer the parsing of pre/post contracts inside class definitions.  */
+  bool should_constify = false;
+  /* When we have P2900 semantics in force.
+     Do we have an override for const-ification?  This applies equally to
+     deferred or immediate parses.  */
+  if (flag_contracts_nonattr)
+    {
+      should_constify = !flag_contracts_nonattr_noconst;
+      if (!modifier.error_p
+	  && (modifier.mutable_p
+	      || (flag_contracts_nonattr_const_keyword && !modifier.const_p)))
+	should_constify = false;
+    }
+
   tree contract;
   if (!assertion_p &&
       current_class_type &&
       TYPE_BEING_DEFINED (current_class_type))
     {
-      /* Skip until we reach an unenclose ']'. If we ran into an unnested ']'
-	 that doesn't close the attribute, return an error and let the attribute
-	 handling code emit an error for missing ']]'.  */
+      /* Defer the parsing of pre/post contracts inside class definitions.  */
       cp_token *first = cp_lexer_peek_token (parser->lexer);
       if (attr_mode)
 	{
+	  /* Skip until we reach a closing token ].  */
 	  cp_parser_skip_to_closing_parenthesis_1 (parser,
 						   /*recovering=*/false,
 						   CPP_CLOSE_SQUARE,
@@ -31583,8 +31592,10 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 	  if (cp_lexer_peek_token (parser->lexer)->type != CPP_CLOSE_SQUARE
 	      || cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_CLOSE_SQUARE)
 	    return error_mark_node;
+	  /* Otherwise the closing ]] will be consumed by the caller.  */
 	}
       else
+	  /* Skip until we reach a closing token ).  */
 	  cp_parser_skip_to_closing_parenthesis_1 (parser,
 						   /*recovering=*/false,
 						   CPP_CLOSE_PAREN,
@@ -31618,19 +31629,13 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 	}
 
       bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
-
-      /* Do we have an override for const-ification?  */
-      bool should_constify = !flag_contracts_nonattr_noconst;
-      if (!modifier.error_p
-	   && (modifier.mutable_p
-	       || (flag_contracts_nonattr_const_keyword && !modifier.const_p)))
-	should_constify = false;
+      /* The should_constify value should account for all the mixed flags.  */
       flag_contracts_nonattr_noconst = !should_constify;
 
       /* If we have a current class object, see if we need to consider
 	 it const when processing the contract condition.  */
       tree current_class_ref_copy = current_class_ref;
-      if (flag_contracts_nonattr && should_constify && current_class_ref_copy)
+      if (should_constify && current_class_ref_copy)
 	current_class_ref = view_as_const (current_class_ref_copy);
 
       /* Parse the condition, ensuring that parameters or the return variable
@@ -31672,21 +31677,9 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       return error_mark_node;
     }
 
+  /* Save the decision about const-ification.  */
   if (contract != error_mark_node)
-    {
-      set_contract_mutable (contract, false);
-      set_contract_const (contract, false);
-      if (flag_contracts_nonattr && !attr_mode)
-	{
-	  if (!modifier.error_p)
-	    {
-	      set_contract_mutable (contract, modifier.mutable_p);
-	      set_contract_const (contract, modifier.const_p);
-	    }
-	  else
-	    set_contract_const (contract, !flag_contracts_nonattr_noconst);
-	}
-    }
+    set_contract_const (contract, should_constify);
 
   return finish_contract_attribute (attribute, contract);
 }
@@ -31727,15 +31720,7 @@ void cp_parser_late_contract_condition (cp_parser *parser,
       ++processing_template_decl;
     }
 
-  bool mutable_p = get_contract_mutable (contract);
-  bool const_p = get_contract_const (contract);
-  bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
-  if (flag_contracts_nonattr
-      && (mutable_p
-	  || (flag_contracts_nonattr_const_keyword && !const_p)))
-	flag_contracts_nonattr_noconst = true;
-  
-  /* In C++"0 contracts, 'this' is not allowed in preconditions of
+  /* In C++20 contracts, 'this' is not allowed in preconditions of
      constructors or in postconditions of destructors.  Note that the
      previous value of this variable is established by the calling function,
      so we need to save it here. P2900 contracts allow access to members
@@ -31756,9 +31741,7 @@ void cp_parser_late_contract_condition (cp_parser *parser,
 	}
     }
   else
-    {
-      contract_class_ptr = NULL_TREE;
-    }
+    contract_class_ptr = NULL_TREE;
 
   push_unparsed_function_queues (parser);
 
@@ -31766,12 +31749,13 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   cp_token_cache *tokens = DEFPARSE_TOKENS (condition);
   cp_parser_push_lexer_for_tokens (parser, tokens);
 
-  /* if we have a current class object, constify it before processing
-   *  the contract condition */
-  if (flag_contracts_nonattr
-      && !flag_contracts_nonattr_noconst
-      && current_class_ref)
-    current_class_ref = view_as_const (current_class_ref);
+  bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
+  bool should_constify = get_contract_const (contract);
+  /* If we have a current class object, see if we need to consider
+     it const when processing the contract condition.  */
+  tree current_class_ref_copy = current_class_ref;
+  if (should_constify && current_class_ref_copy)
+    current_class_ref = view_as_const (current_class_ref_copy);
 
   /* Parse the condition, ensuring that parameters or the return variable
      aren't flagged for use outside the body of a function.  */
