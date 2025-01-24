@@ -187,7 +187,7 @@
 
 ;; Main data type used by the insn
 (define_attr "mode" "unknown,none,QI,HI,SI,DI,TI,SF,DF,TF,FCC,
-  V2DI,V4SI,V8HI,V16QI,V2DF,V4SF,V4DI,V8SI,V16HI,V32QI,V4DF,V8SF"
+  V1TI,V2DI,V4SI,V8HI,V16QI,V2DF,V4SF,V2TI,V4DI,V8SI,V16HI,V32QI,V4DF,V8SF"
   (const_string "unknown"))
 
 ;; True if the main data type is twice the size of a word.

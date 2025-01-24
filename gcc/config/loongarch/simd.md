@@ -130,6 +130,48 @@
 ;; instruction here so we can avoid duplicating logics.
 ;; =======================================================================
 
+
+;; Move
+
+;; Some immediate values in V1TI or V2TI may be stored in LSX or LASX
+;; registers, thus we need to allow moving them for reload.
+(define_mode_iterator ALLVEC_TI [ALLVEC
+				 (V1TI "ISA_HAS_LSX")
+				 (V2TI "ISA_HAS_LASX")])
+
+(define_expand "mov<mode>"
+  [(set (match_operand:ALLVEC_TI 0)
+	(match_operand:ALLVEC_TI 1))]
+  ""
+{
+  if (loongarch_legitimize_move (<MODE>mode, operands[0], operands[1]))
+    DONE;
+})
+
+(define_expand "movmisalign<mode>"
+  [(set (match_operand:ALLVEC_TI 0)
+	(match_operand:ALLVEC_TI 1))]
+  ""
+{
+  if (loongarch_legitimize_move (<MODE>mode, operands[0], operands[1]))
+    DONE;
+})
+
+(define_insn_and_split "mov<mode>_simd"
+  [(set (match_operand:ALLVEC_TI 0 "nonimmediate_operand" "=f,f,R,*r,*f,*r")
+	(match_operand:ALLVEC_TI 1 "move_operand" "fYGYI,R,f,*f,*r,*r"))]
+  ""
+{ return loongarch_output_move (operands); }
+  "reload_completed && loongarch_split_move_p (operands[0], operands[1])"
+  [(const_int 0)]
+{
+  loongarch_split_move (operands[0], operands[1]);
+  DONE;
+}
+  [(set_attr "type" "simd_move,simd_load,simd_store,simd_copy,simd_insert,simd_copy")
+   (set_attr "mode" "<MODE>")])
+
+
 ;;
 ;; FP vector rounding instructions
 ;;

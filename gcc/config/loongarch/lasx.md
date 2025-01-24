@@ -699,46 +699,6 @@
   DONE;
 })
 
-(define_expand "mov<mode>"
-  [(set (match_operand:LASX 0)
-	(match_operand:LASX 1))]
-  "ISA_HAS_LASX"
-{
-  if (loongarch_legitimize_move (<MODE>mode, operands[0], operands[1]))
-    DONE;
-})
-
-
-(define_expand "movmisalign<mode>"
-  [(set (match_operand:LASX 0)
-	(match_operand:LASX 1))]
-  "ISA_HAS_LASX"
-{
-  if (loongarch_legitimize_move (<MODE>mode, operands[0], operands[1]))
-    DONE;
-})
-
-;; 256-bit LASX modes can only exist in LASX registers or memory.
-(define_insn "mov<mode>_lasx"
-  [(set (match_operand:LASX 0 "nonimmediate_operand" "=f,f,R,*r,*f")
-	(match_operand:LASX 1 "move_operand" "fYGYI,R,f,*f,*r"))]
-  "ISA_HAS_LASX"
-  { return loongarch_output_move (operands); }
-  [(set_attr "type" "simd_move,simd_load,simd_store,simd_copy,simd_insert")
-   (set_attr "mode" "<MODE>")
-   (set_attr "length" "8,4,4,4,4")])
-
-
-(define_split
-  [(set (match_operand:LASX 0 "nonimmediate_operand")
-	(match_operand:LASX 1 "move_operand"))]
-  "reload_completed && ISA_HAS_LASX
-   && loongarch_split_move_p (operands[0], operands[1])"
-  [(const_int 0)]
-{
-  loongarch_split_move (operands[0], operands[1]);
-  DONE;
-})
 
 ;; LASX
 (define_insn "add<mode>3"
