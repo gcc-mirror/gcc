@@ -390,8 +390,9 @@ Late::visit (AST::GenericArg &arg)
   DefaultResolver::visit (arg);
 }
 
-void
-Late::visit (AST::ClosureExprInner &closure)
+template <class Closure>
+static void
+add_captures (Closure &closure, NameResolutionContext &ctx)
 {
   auto vals = ctx.values.peek ().get_values ();
   for (auto &val : vals)
@@ -399,7 +400,19 @@ Late::visit (AST::ClosureExprInner &closure)
       ctx.mappings.add_capture (closure.get_node_id (),
 				val.second.get_node_id ());
     }
+}
 
+void
+Late::visit (AST::ClosureExprInner &closure)
+{
+  add_captures (closure, ctx);
+  DefaultResolver::visit (closure);
+}
+
+void
+Late::visit (AST::ClosureExprInnerTyped &closure)
+{
+  add_captures (closure, ctx);
   DefaultResolver::visit (closure);
 }
 
