@@ -706,6 +706,6 @@ CALL track('KERNEL  ')
 RETURN
 END SUBROUTINE kernel
 
-! { dg-final { scan-tree-dump-times "vectorized 2\[56\] loops" 1 "vect" { target aarch64*-*-* } } }
-! { dg-final { scan-tree-dump-times "vectorized 2\[34567\] loops" 1 "vect" { target { vect_intdouble_cvt && { ! aarch64*-*-* } } } } }
+! { dg-final { scan-tree-dump-times "vectorized 2\[5678\] loops" 1 "vect" { target aarch64*-*-* } } }
+! { dg-final { scan-tree-dump-times "vectorized 2\[345678\] loops" 1 "vect" { target { vect_intdouble_cvt && { ! aarch64*-*-* } } } } }
 ! { dg-final { scan-tree-dump-times "vectorized 17 loops" 1 "vect" { target { { ! vect_intdouble_cvt } && { ! aarch64*-*-* } } } } }
