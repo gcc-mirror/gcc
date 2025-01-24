@@ -8095,8 +8095,9 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
       return 0;
     }
 
-  /* Prepare to turn compares of signed quantities with zero into
-     sign-bit tests.  */
+  /* Prepare to turn compares of signed quantities with zero into sign-bit
+     tests.  We need not worry about *_reversep here for these compare
+     rewrites: loads will have already been reversed before compares.  */
   bool lsignbit = false, rsignbit = false;
   if ((lcode == LT_EXPR || lcode == GE_EXPR)
       && integer_zerop (lr_arg)
@@ -8203,10 +8204,11 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
      the rhs's.  If one is a load and the other isn't, we have to be
      conservative and avoid the optimization, otherwise we could get
      SRAed fields wrong.  */
-  if (volatilep || ll_reversep != rl_reversep)
+  if (volatilep)
     return 0;
 
-  if (! operand_equal_p (ll_inner, rl_inner, 0))
+  if (ll_reversep != rl_reversep
+      || ! operand_equal_p (ll_inner, rl_inner, 0))
     {
       /* Try swapping the operands.  */
       if (ll_reversep != rr_reversep
