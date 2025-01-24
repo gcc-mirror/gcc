@@ -3238,11 +3238,11 @@
 
 ; test data class
 
-(define_expand "signbittf2_vr"
+(define_expand "<tdc_insn>tf2_vr"
   [(parallel
     [(set (reg:CCRAW CC_REGNUM)
 	  (unspec:CCRAW [(match_operand:TF 1 "register_operand" "")
-			 (match_dup        2)]
+			 (const_int TDC_CLASS_BFP)]
 			UNSPEC_VEC_VFTCICC))
      (clobber (scratch:TI))])
    (set (match_operand:SI                  0 "register_operand" "")
@@ -3251,40 +3251,14 @@
 	(if_then_else:SI (eq (reg:CCRAW CC_REGNUM) (const_int 8))
 			 (const_int 1)
 			 (match_dup        0)))]
-  "TARGET_VXE"
-{
-  operands[2] = GEN_INT (S390_TDC_SIGNBIT_SET);
-})
+  "TARGET_VXE")
 
-(define_expand "signbittf2"
+(define_expand "<tdc_insn>tf2"
   [(match_operand:SI 0 "register_operand" "")
-   (match_operand:TF 1 "register_operand" "")]
-  "HAVE_TF (signbittf2)"
-  { EXPAND_TF (signbittf2, 2); })
-
-(define_expand "isinftf2_vr"
-  [(parallel
-    [(set (reg:CCRAW CC_REGNUM)
-	  (unspec:CCRAW [(match_operand:TF 1 "register_operand" "")
-			 (match_dup        2)]
-			UNSPEC_VEC_VFTCICC))
-     (clobber (scratch:TI))])
-   (set (match_operand:SI                  0 "register_operand" "")
-	(const_int 0))
-   (set (match_dup                         0)
-	(if_then_else:SI (eq (reg:CCRAW CC_REGNUM) (const_int 8))
-			 (const_int 1)
-			 (match_dup        0)))]
-  "TARGET_VXE"
-{
-  operands[2] = GEN_INT (S390_TDC_INFINITY);
-})
-
-(define_expand "isinftf2"
-  [(match_operand:SI 0 "register_operand" "")
-   (match_operand:TF 1 "register_operand" "")]
-  "HAVE_TF (isinftf2)"
-  { EXPAND_TF (isinftf2, 2); })
+   (match_operand:TF 1 "register_operand" "")
+   (const_int TDC_CLASS_BFP)]
+  "HAVE_TF (<tdc_insn>tf2)"
+  { EXPAND_TF (<tdc_insn>tf2, 2); })
 
 ;
 ; Vector byte swap patterns

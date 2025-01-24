@@ -305,37 +305,6 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
   "%{!mesa:%{!mzarch:%{m31:-mesa}%{m64:-mzarch}}}",		\
   "%{!march=*:-march=z900}"
 
-/* Constants needed to control the TEST DATA CLASS (TDC) instruction.  */
-#define S390_TDC_POSITIVE_ZERO                     (1 << 11)
-#define S390_TDC_NEGATIVE_ZERO                     (1 << 10)
-#define S390_TDC_POSITIVE_NORMALIZED_BFP_NUMBER    (1 << 9)
-#define S390_TDC_NEGATIVE_NORMALIZED_BFP_NUMBER    (1 << 8)
-#define S390_TDC_POSITIVE_DENORMALIZED_BFP_NUMBER  (1 << 7)
-#define S390_TDC_NEGATIVE_DENORMALIZED_BFP_NUMBER  (1 << 6)
-#define S390_TDC_POSITIVE_INFINITY                 (1 << 5)
-#define S390_TDC_NEGATIVE_INFINITY                 (1 << 4)
-#define S390_TDC_POSITIVE_QUIET_NAN                (1 << 3)
-#define S390_TDC_NEGATIVE_QUIET_NAN                (1 << 2)
-#define S390_TDC_POSITIVE_SIGNALING_NAN            (1 << 1)
-#define S390_TDC_NEGATIVE_SIGNALING_NAN            (1 << 0)
-
-/* The following values are different for DFP.  */
-#define S390_TDC_POSITIVE_DENORMALIZED_DFP_NUMBER (1 << 9)
-#define S390_TDC_NEGATIVE_DENORMALIZED_DFP_NUMBER (1 << 8)
-#define S390_TDC_POSITIVE_NORMALIZED_DFP_NUMBER   (1 << 7)
-#define S390_TDC_NEGATIVE_NORMALIZED_DFP_NUMBER   (1 << 6)
-
-/* For signbit, the BFP-DFP-difference makes no difference. */
-#define S390_TDC_SIGNBIT_SET (S390_TDC_NEGATIVE_ZERO \
-			  | S390_TDC_NEGATIVE_NORMALIZED_BFP_NUMBER \
-			  | S390_TDC_NEGATIVE_DENORMALIZED_BFP_NUMBER\
-			  | S390_TDC_NEGATIVE_INFINITY \
-			  | S390_TDC_NEGATIVE_QUIET_NAN \
-			  | S390_TDC_NEGATIVE_SIGNALING_NAN )
-
-#define S390_TDC_INFINITY (S390_TDC_POSITIVE_INFINITY \
-			  | S390_TDC_NEGATIVE_INFINITY )
-
 /* Target machine storage layout.  */
 
 /* Everything is big-endian.  */
