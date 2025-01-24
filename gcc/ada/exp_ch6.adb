@@ -9857,6 +9857,13 @@ package body Exp_Ch6 is
                   return Skip;
                end if;
 
+            --  Skip calls placed in unexpanded initialization expressions
+
+            when N_Object_Declaration =>
+               if No_Initialization (Nod) then
+                  return Skip;
+               end if;
+
             --  Skip calls placed in subprogram specifications since function
             --  calls initializing default parameter values will be processed
             --  when the call to the subprogram is found (if the default actual

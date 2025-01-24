@@ -5423,18 +5423,12 @@ package body Exp_Ch3 is
             --  with an initial value, its Init_Proc will never be called. The
             --  initial value itself may have been expanded into assignments,
             --  in which case the declaration has the No_Initialization flag.
-            --  The exception is when the initial value is a 2-pass aggregate,
-            --  because the special expansion used for it creates a temporary
-            --  that needs a fully-fledged initialization.
 
             if Is_Itype (Base)
               and then Nkind (Associated_Node_For_Itype (Base)) =
                                                     N_Object_Declaration
               and then
-                ((Present (Expression (Associated_Node_For_Itype (Base)))
-                    and then not
-                      Is_Two_Pass_Aggregate
-                        (Expression (Associated_Node_For_Itype (Base))))
+                (Present (Expression (Associated_Node_For_Itype (Base)))
                   or else No_Initialization (Associated_Node_For_Itype (Base)))
             then
                null;
@@ -8293,12 +8287,15 @@ package body Exp_Ch3 is
             --  where the object has been initialized by a call to a function
             --  returning on the primary stack (see Expand_Ctrl_Function_Call)
             --  since no copy occurred, given that the type is by-reference.
+            --  Likewise if it is initialized by a 2-pass aggregate, since the
+            --  actual initialization will only occur during the second pass.
             --  Similarly, no adjustment is needed if we are going to rewrite
             --  the object declaration into a renaming declaration.
 
             if Needs_Finalization (Typ)
               and then not Is_Inherently_Limited_Type (Typ)
               and then Nkind (Expr_Q) /= N_Function_Call
+              and then not Is_Two_Pass_Aggregate (Expr_Q)
               and then not Rewrite_As_Renaming
             then
                Adj_Call :=

@@ -4991,7 +4991,7 @@ package body Sem_Ch3 is
 
             if Is_Array_Type (T)
               and then No_Initialization (N)
-              and then Nkind (Original_Node (E)) = N_Aggregate
+              and then Nkind (Unqualify (Original_Node (E))) = N_Aggregate
             then
                Act_T := Etype (E);
 
@@ -5137,10 +5137,7 @@ package body Sem_Ch3 is
 
       elsif Is_Array_Type (T)
         and then No_Initialization (N)
-        and then (Nkind (Original_Node (E)) = N_Aggregate
-                   or else (Nkind (Original_Node (E)) = N_Qualified_Expression
-                             and then Nkind (Original_Node (Expression
-                                        (Original_Node (E)))) = N_Aggregate))
+        and then Nkind (Unqualify (Original_Node (E))) = N_Aggregate
       then
          if not Is_Entity_Name (Object_Definition (N)) then
             Act_T := Etype (E);
@@ -6633,8 +6630,6 @@ package body Sem_Ch3 is
          end;
       end if;
 
-      --  Constrained array case
-
       if No (T) then
          --  We might be creating more than one itype with the same Related_Id,
          --  e.g. for an array object definition and its initial value. Give
@@ -6643,6 +6638,8 @@ package body Sem_Ch3 is
 
          T := Create_Itype (E_Void, P, Related_Id, 'T', Suffix_Index => -1);
       end if;
+
+      --  Constrained array case
 
       if Nkind (Def) = N_Constrained_Array_Definition then
          Index := First (Discrete_Subtype_Definitions (Def));

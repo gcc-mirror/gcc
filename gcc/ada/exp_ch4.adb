@@ -769,7 +769,6 @@ package body Exp_Ch4 is
       --  Local variables
 
       Aggr_In_Place     : Boolean;
-      Container_Aggr    : Boolean;
       Delayed_Cond_Expr : Boolean;
 
       TagT : Entity_Id := Empty;
@@ -865,13 +864,15 @@ package body Exp_Ch4 is
 
       Aggr_In_Place     := Is_Delayed_Aggregate (Exp);
       Delayed_Cond_Expr := Is_Delayed_Conditional_Expression (Exp);
-      Container_Aggr    := Nkind (Exp) = N_Aggregate
-                             and then Has_Aspect (T, Aspect_Aggregate);
 
-      --  An allocator with a container aggregate as qualified expression must
-      --  be rewritten into the form expected by Expand_Container_Aggregate.
+      --  An allocator with a container aggregate, resp. a 2-pass aggregate,
+      --  as qualified expression must be rewritten into the form expected by
+      --  Expand_Container_Aggregate, resp. Two_Pass_Aggregate_Expansion.
 
-      if Container_Aggr then
+      if Nkind (Exp) = N_Aggregate
+        and then (Has_Aspect (T, Aspect_Aggregate)
+                   or else Is_Two_Pass_Aggregate (Exp))
+      then
          Temp := Make_Temporary (Loc, 'P', N);
          Set_Analyzed (Exp, False);
          Insert_Action (N,
