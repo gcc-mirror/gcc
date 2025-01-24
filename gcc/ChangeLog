@@ -1,3 +1,8 @@
+2025-01-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa32-regs.h (ADDITIONAL_REGISTER_NAMES): Change
+	register 86 name to "%fr31L".
+
 2025-01-21  Jan Hubicka  <jh@suse.cz>
 
 	Backported from master:
