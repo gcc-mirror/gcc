@@ -15,14 +15,14 @@ main ()
 }
 
 /* Before adjust_insn:
-   26: [--sp:DI]=bx:DI
-   29: bx:DI=[sp:DI++]
+   26: [--sp:DI]=b[px]:DI
+   29: b[px]:DI=[sp:DI++]
 
    after adjust_insn:
-   26: {[argp:DI-0x10]=bx:DI;sp:DI=argp:DI-0x10;}
-   29: {bx:DI=[argp:DI-0x10];sp:DI=argp:DI-0x8;} */
+   26: {[argp:DI-0x10]=b[px]:DI;sp:DI=argp:DI-0x10;}
+   29: {b[px]:DI=[argp:DI-0x10];sp:DI=argp:DI-0x8;} */
 
-/* { dg-final { scan-rtl-dump-times {[0-9][0-9]*: \{\[argp:DI-0x10\]=bx:DI;sp:DI=argp:DI-0x10;\}} 1 "vartrack" } } */
+/* { dg-final { scan-rtl-dump-times {[0-9][0-9]*: \{\[argp:DI-0x10\]=b[px]:DI;sp:DI=argp:DI-0x10;\}} 1 "vartrack" } } */
 
-/* { dg-final { scan-rtl-dump-times {[0-9][0-9]*: \{bx:DI=\[argp:DI-0x10\];sp:DI=argp:DI-0x8;\}} 1 "vartrack" } } */
+/* { dg-final { scan-rtl-dump-times {[0-9][0-9]*: \{b[px]:DI=\[argp:DI-0x10\];sp:DI=argp:DI-0x8;\}} 1 "vartrack" } } */
 
