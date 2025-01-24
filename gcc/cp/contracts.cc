@@ -3156,8 +3156,8 @@ finish_function_contracts (tree fndecl)
        postcondition checks are enabled on the caller side.   */
       bool copy_post
 	= (flag_contract_nonattr_client_check > 1)
-	  || ((DECL_IOBJ_MEMBER_FUNCTION_P (fndecl)
-	      && DECL_VIRTUAL_P (fndecl)));
+	   || ((DECL_IOBJ_MEMBER_FUNCTION_P (fndecl)
+	       && DECL_VIRTUAL_P (fndecl)));
 
       copy_and_remap_contracts (wrapdecl, fndecl, true, copy_post);
   }
@@ -3416,7 +3416,7 @@ maybe_contract_wrap_call (tree fndecl, tree call)
    postcondition checks are enabled on the caller side.   */
   bool check_post
     = (flag_contract_nonattr_client_check > 1)
-      || (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl) && DECL_VIRTUAL_P (fndecl));
+       || (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl) && DECL_VIRTUAL_P (fndecl));
 
   bool do_pre = has_active_preconditions (fndecl);
   bool do_post = has_active_postconditions (fndecl);
