@@ -8542,12 +8542,21 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
     {
       /* Before clipping upper bits of the right-hand operand of the compare,
 	 check that they're sign or zero extensions, depending on how the
-	 left-hand operand would be extended.  */
+	 left-hand operand would be extended.  If it is unsigned, or if there's
+	 a mask that zeroes out extension bits, whether because we've checked
+	 for upper bits in the mask and did not set ll_signbit, or because the
+	 sign bit itself is masked out, check that the right-hand operand is
+	 zero-extended.  */
       bool l_non_ext_bits = false;
       if (ll_bitsize < lr_bitsize)
 	{
 	  wide_int zext = wi::zext (l_const, ll_bitsize);
-	  if ((ll_unsignedp ? zext : wi::sext (l_const, ll_bitsize)) == l_const)
+	  if ((ll_unsignedp
+	       || (ll_and_mask.get_precision ()
+		   && (!ll_signbit
+		       || ((ll_and_mask & wi::mask (ll_bitsize - 1, true, ll_bitsize))
+			   == 0)))
+	       ? zext : wi::sext (l_const, ll_bitsize)) == l_const)
 	    l_const = zext;
 	  else
 	    l_non_ext_bits = true;
@@ -8573,7 +8582,12 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
       if (rl_bitsize < rr_bitsize)
 	{
 	  wide_int zext = wi::zext (r_const, rl_bitsize);
-	  if ((rl_unsignedp ? zext : wi::sext (r_const, rl_bitsize)) == r_const)
+	  if ((rl_unsignedp
+	       || (rl_and_mask.get_precision ()
+		   && (!rl_signbit
+		       || ((rl_and_mask & wi::mask (rl_bitsize - 1, true, rl_bitsize))
+			   == 0)))
+	       ? zext : wi::sext (r_const, rl_bitsize)) == r_const)
 	    r_const = zext;
 	  else
 	    r_non_ext_bits = true;
