@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_fp_dp_ok } */
-/* { dg-options "-O2 -ffp-contract=off" } */
+/* { dg-options "-Os -fno-math-errno -ffp-contract=off" } */
 /* { dg-add-options arm_fp_dp } */
 /* { dg-skip-if "need fp instructions" { *-*-* } { "-mfloat-abi=soft" } { "" } } */
 
