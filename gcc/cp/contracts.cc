@@ -5,6 +5,7 @@
 This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 3, or (at your option)
 any later version.
 
@@ -190,7 +191,7 @@ lookup_concrete_semantic (const char *name)
   return CCS_INVALID;
 }
 
-/* Compare role and name up to either the NULL terminator or the first
+/* Compare role and name up to either the NUL terminator or the first
    occurrence of colon.  */
 
 static bool
@@ -516,15 +517,15 @@ contract_config_to_mode (tree config)
       if (!role)
 	role = get_default_contract_role ();
 
-      contract_level level =
-	map_contract_level (IDENTIFIER_POINTER (TREE_VALUE (config)));
+      contract_level level
+	= map_contract_level (IDENTIFIER_POINTER (TREE_VALUE (config)));
       return contract_mode (level, role);
     }
 
   /* Literal semantic.  */
   gcc_assert (TREE_CODE (config) == IDENTIFIER_NODE);
-  contract_semantic semantic =
-    map_contract_semantic (IDENTIFIER_POINTER (config));
+  contract_semantic semantic
+    = map_contract_semantic (IDENTIFIER_POINTER (config));
   return contract_mode (semantic);
 }
 
@@ -586,8 +587,8 @@ all_attributes_are_contracts_p (tree attributes)
 tree
 invalidate_contract (tree contract)
 {
-  if (TREE_CODE (contract) == POSTCONDITION_STMT &&
-      POSTCONDITION_IDENTIFIER (contract))
+  if (TREE_CODE (contract) == POSTCONDITION_STMT
+      && POSTCONDITION_IDENTIFIER (contract))
     POSTCONDITION_IDENTIFIER (contract) = error_mark_node;
   CONTRACT_CONDITION (contract) = error_mark_node;
   CONTRACT_COMMENT (contract) = error_mark_node;
@@ -783,8 +784,8 @@ grok_contract (tree attribute, tree mode, tree result, cp_expr condition,
   contract_semantic semantic = compute_concrete_semantic (contract);
   if (flag_contracts_nonattr
       && OPTION_SET_P (flag_contract_evaluation_semantic))
-    semantic =
-	static_cast<contract_semantic>(flag_contract_evaluation_semantic);
+    semantic
+      = static_cast<contract_semantic>(flag_contract_evaluation_semantic);
   set_contract_semantic (contract, semantic);
 
   /* If the contract is deferred, don't do anything with the condition.  */
@@ -2641,8 +2642,8 @@ emit_assertion (tree attr)
 
   emit_contract_attr (attr);
 
-  contract_semantic semantic =
-      get_contract_semantic (CONTRACT_STATEMENT (attr));
+  contract_semantic semantic
+    = get_contract_semantic (CONTRACT_STATEMENT (attr));
 
   if (semantic == CCS_OBSERVE)
     {
@@ -2745,8 +2746,7 @@ constify_contract_access(tree decl)
 	  || (TREE_CODE (decl) == PARM_DECL)
 	  || (REFERENCE_REF_P (decl)
 	      && ((VAR_P (TREE_OPERAND (decl, 0))
-		  && decl_storage_duration
-		  (TREE_OPERAND (decl, 0)) == dk_auto)
+		   && decl_storage_duration(TREE_OPERAND (decl, 0)) == dk_auto)
 		  || (TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL)))))
   {
       decl = view_as_const (decl);
@@ -2837,8 +2837,8 @@ start_function_contracts (tree fndecl)
 
   /* If this is not a client side check and definition side checks are
      disabled, do nothing.  */
-  if (!flag_contracts_nonattr_definition_check &&
-      !DECL_CONTRACT_WRAPPER(fndecl))
+  if (!flag_contracts_nonattr_definition_check
+      && !DECL_CONTRACT_WRAPPER(fndecl))
     return;
 
   /* Check that the user did not try to shadow a function parameter with the
@@ -2959,8 +2959,8 @@ maybe_apply_function_contracts (tree fndecl)
 
   /* If this is not a client side check and definition side checks are
      disabled, do nothing.  */
-  if (!flag_contracts_nonattr_definition_check &&
-      !DECL_CONTRACT_WRAPPER(fndecl))
+  if (!flag_contracts_nonattr_definition_check
+      && !DECL_CONTRACT_WRAPPER(fndecl))
     return;
 
   bool do_pre = has_active_preconditions (fndecl);
@@ -3053,8 +3053,8 @@ copy_and_remap_contracts (tree dest, tree source, bool remap_result = true,
       a != NULL_TREE;
       a = CONTRACT_CHAIN (a))
     {
-      if (!remap_post &&
-	  (TREE_CODE (CONTRACT_STATEMENT (a)) == POSTCONDITION_STMT))
+      if (!remap_post
+	  && (TREE_CODE (CONTRACT_STATEMENT (a)) == POSTCONDITION_STMT))
 	continue;
 
       tree c = copy_node (a);
@@ -3064,16 +3064,16 @@ copy_and_remap_contracts (tree dest, tree source, bool remap_result = true,
       remap_contract (source, dest, CONTRACT_STATEMENT (c),
 		      /*duplicate_p=*/true);
 
-      if ( remap_result &&
-	  (TREE_CODE (CONTRACT_STATEMENT (c)) == POSTCONDITION_STMT))
+      if (remap_result
+	  && (TREE_CODE (CONTRACT_STATEMENT (c)) == POSTCONDITION_STMT))
 	{
 	  tree oldvar = POSTCONDITION_IDENTIFIER (CONTRACT_STATEMENT (c));
 	  if (oldvar)
 	      DECL_CONTEXT (oldvar) = dest;
 	}
 
-      CONTRACT_COMMENT (CONTRACT_STATEMENT (c)) =
-	copy_node (CONTRACT_COMMENT (CONTRACT_STATEMENT (c)));
+      CONTRACT_COMMENT (CONTRACT_STATEMENT (c))
+	= copy_node (CONTRACT_COMMENT (CONTRACT_STATEMENT (c)));
 
       chainon (last, c);
       last = c;
@@ -3102,8 +3102,8 @@ finish_function_contracts (tree fndecl)
 
   /* If this is not a client side check and definition side checks are
      disabled, do nothing.  */
-  if (!flag_contracts_nonattr_definition_check &&
-      !DECL_CONTRACT_WRAPPER(fndecl))
+  if (!flag_contracts_nonattr_definition_check
+      && !DECL_CONTRACT_WRAPPER(fndecl))
     return;
 
   for (tree ca = DECL_CONTRACTS (fndecl); ca; ca = CONTRACT_CHAIN (ca))
@@ -3154,8 +3154,10 @@ finish_function_contracts (tree fndecl)
   if (wrapdecl){
       /* we copy postconditions on virtual function wrapper calls or if
        postcondition checks are enabled on the caller side.   */
-      bool copy_post = (flag_contract_nonattr_client_check > 1) ||
-          ((DECL_IOBJ_MEMBER_FUNCTION_P (fndecl) && DECL_VIRTUAL_P (fndecl)));
+      bool copy_post
+	= (flag_contract_nonattr_client_check > 1)
+	  || ((DECL_IOBJ_MEMBER_FUNCTION_P (fndecl)
+	      && DECL_VIRTUAL_P (fndecl)));
 
       copy_and_remap_contracts (wrapdecl, fndecl, true, copy_post);
   }
@@ -3412,8 +3414,9 @@ maybe_contract_wrap_call (tree fndecl, tree call)
 
   /* we check postconditions on vitual function wrapper calls or if
    postcondition checks are enabled on the caller side.   */
-  bool check_post = (flag_contract_nonattr_client_check > 1) ||
-      (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl) && DECL_VIRTUAL_P (fndecl));
+  bool check_post
+    = (flag_contract_nonattr_client_check > 1)
+      || (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl) && DECL_VIRTUAL_P (fndecl));
 
   bool do_pre = has_active_preconditions (fndecl);
   bool do_post = has_active_postconditions (fndecl);
