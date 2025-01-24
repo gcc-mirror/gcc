@@ -344,6 +344,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-pr117886-write-reproducer.c.  */
+#define create_code create_code_pr117886_write_reproducer
+#define verify_code verify_code_pr117886_write_reproducer
+#include "test-pr117886-write-reproducer.c"
+#undef create_code
+#undef verify_code
+
 /* test-pure-attribute.c: This can't be in the testcases array as it needs
    the `-O3` flag.  */
 
@@ -603,6 +610,9 @@ const struct testcase testcases[] = {
   {"pr95314_rvalue_reuse",
    create_code_pr95314_rvalue_reuse,
    verify_code_pr95314_rvalue_reuse},
+  {"pr117886_write_reproducer",
+   create_code_pr117886_write_reproducer,
+   verify_code_pr117886_write_reproducer},
   {"reading_struct ",
    create_code_reading_struct ,
    verify_code_reading_struct },
