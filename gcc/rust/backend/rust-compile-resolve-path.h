@@ -61,6 +61,22 @@ public:
     : HIRCompileBase (ctx), resolved (error_mark_node)
   {}
 
+  /**
+   * Generic visitor for both PathInExpression and QualifiedPathInExpression
+   */
+  template <typename T> tree resolve_path_like (T &expr);
+
+  /**
+   * Inner implementation of `resolve` - resolution with an already known NodeId
+   */
+  tree resolve_with_node_id (const HIR::PathIdentSegment &final_segment,
+			     const Analysis::NodeMapping &mappings,
+			     location_t locus, bool is_qualified_path,
+			     NodeId resolved_node_id);
+  /**
+   * Resolve a mappings' NodeId and call into `resolve_with_node_id` which
+   * performs the rest of the path resolution
+   */
   tree resolve (const HIR::PathIdentSegment &final_segment,
 		const Analysis::NodeMapping &mappings, location_t locus,
 		bool is_qualified_path);

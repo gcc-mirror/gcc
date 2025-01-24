@@ -32,32 +32,37 @@
 namespace Rust {
 namespace Compile {
 
+template <typename T>
+tree
+ResolvePathRef::resolve_path_like (T &expr)
+{
+  if (expr.is_lang_item ())
+    {
+      auto lang_item
+	= Analysis::Mappings::get ().get_lang_item_node (expr.get_lang_item ());
+
+      // FIXME: Is that correct? :/
+      auto final_segment
+	= HIR::PathIdentSegment (LangItem::ToString (expr.get_lang_item ()));
+
+      return resolve_with_node_id (final_segment, expr.get_mappings (),
+				   expr.get_locus (), true, lang_item);
+    }
+
+  return resolve (expr.get_final_segment ().get_segment (),
+		  expr.get_mappings (), expr.get_locus (), true);
+}
+
 void
 ResolvePathRef::visit (HIR::QualifiedPathInExpression &expr)
 {
-  auto final_segment = HIR::PathIdentSegment::create_error ();
-  if (expr.is_lang_item ())
-    final_segment
-      = HIR::PathIdentSegment (LangItem::ToString (expr.get_lang_item ()));
-  else
-    final_segment = expr.get_final_segment ().get_segment ();
-
-  resolved
-    = resolve (final_segment, expr.get_mappings (), expr.get_locus (), true);
+  resolved = resolve_path_like (expr);
 }
 
 void
 ResolvePathRef::visit (HIR::PathInExpression &expr)
 {
-  auto final_segment = HIR::PathIdentSegment::create_error ();
-  if (expr.is_lang_item ())
-    final_segment
-      = HIR::PathIdentSegment (LangItem::ToString (expr.get_lang_item ()));
-  else
-    final_segment = expr.get_final_segment ().get_segment ();
-
-  resolved
-    = resolve (final_segment, expr.get_mappings (), expr.get_locus (), true);
+  resolved = resolve_path_like (expr);
 }
 
 tree
@@ -106,42 +111,17 @@ ResolvePathRef::attempt_constructor_expression_lookup (
 }
 
 tree
-ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
-			 const Analysis::NodeMapping &mappings,
-			 location_t expr_locus, bool is_qualified_path)
+ResolvePathRef::resolve_with_node_id (
+  const HIR::PathIdentSegment &final_segment,
+  const Analysis::NodeMapping &mappings, location_t expr_locus,
+  bool is_qualified_path, NodeId resolved_node_id)
 {
   TyTy::BaseType *lookup = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_type (mappings.get_hirid (), &lookup);
   rust_assert (ok);
 
-  // need to look up the reference for this identifier
-
-  // this can fail because it might be a Constructor for something
-  // in that case the caller should attempt ResolvePathType::Compile
-  NodeId ref_node_id = UNKNOWN_NODEID;
-  if (flag_name_resolution_2_0)
-    {
-      auto nr_ctx
-	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-
-      auto resolved = nr_ctx.lookup (mappings.get_nodeid ());
-
-      if (!resolved)
-	return attempt_constructor_expression_lookup (lookup, ctx, mappings,
-						      expr_locus);
-
-      ref_node_id = *resolved;
-    }
-  else
-    {
-      if (!ctx->get_resolver ()->lookup_resolved_name (mappings.get_nodeid (),
-						       &ref_node_id))
-	return attempt_constructor_expression_lookup (lookup, ctx, mappings,
-						      expr_locus);
-    }
-
   tl::optional<HirId> hid
-    = ctx->get_mappings ().lookup_node_to_hir (ref_node_id);
+    = ctx->get_mappings ().lookup_node_to_hir (resolved_node_id);
   if (!hid.has_value ())
     {
       rust_error_at (expr_locus, "reverse call path lookup failure");
@@ -207,7 +187,47 @@ ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
     {
       TREE_USED (resolved_item) = 1;
     }
+
   return resolved_item;
+}
+
+tree
+ResolvePathRef::resolve (const HIR::PathIdentSegment &final_segment,
+			 const Analysis::NodeMapping &mappings,
+			 location_t expr_locus, bool is_qualified_path)
+{
+  TyTy::BaseType *lookup = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_type (mappings.get_hirid (), &lookup);
+  rust_assert (ok);
+
+  // need to look up the reference for this identifier
+
+  // this can fail because it might be a Constructor for something
+  // in that case the caller should attempt ResolvePathType::Compile
+  NodeId ref_node_id = UNKNOWN_NODEID;
+  if (flag_name_resolution_2_0)
+    {
+      auto nr_ctx
+	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+
+      auto resolved = nr_ctx.lookup (mappings.get_nodeid ());
+
+      if (!resolved)
+	return attempt_constructor_expression_lookup (lookup, ctx, mappings,
+						      expr_locus);
+
+      ref_node_id = *resolved;
+    }
+  else
+    {
+      if (!ctx->get_resolver ()->lookup_resolved_name (mappings.get_nodeid (),
+						       &ref_node_id))
+	return attempt_constructor_expression_lookup (lookup, ctx, mappings,
+						      expr_locus);
+    }
+
+  return resolve_with_node_id (final_segment, mappings, expr_locus,
+			       is_qualified_path, ref_node_id);
 }
 
 tree
