@@ -4215,9 +4215,10 @@ libgdiagnostics.install-common: installdirs libgdiagnostics.install-headers
 endif
 endif
 
+SARIF_REPLAY_INSTALL_NAME := $(shell echo sarif-replay|sed '$(program_transform_name)')
 install-libgdiagnostics: libgdiagnostics.install-common sarif-replay
-	-rm -f $(DESTDIR)$(bindir)/sarif-replay
-	-$(INSTALL_PROGRAM) sarif-replay $(DESTDIR)$(bindir)/sarif-replay
+	-rm -f $(DESTDIR)$(bindir)/$(SARIF_REPLAY_INSTALL_NAME)$(exeext)
+	-$(INSTALL_PROGRAM) sarif-replay $(DESTDIR)$(bindir)/$(SARIF_REPLAY_INSTALL_NAME)$(exeext)
 
 # Install the info files.
 # $(INSTALL_DATA) might be a relative pathname, so we can't cd into srcdir
