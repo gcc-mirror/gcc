@@ -28,7 +28,7 @@ IMPLEMENTATION MODULE FileSystem ;
 
 FROM M2RTS IMPORT InstallTerminationProcedure ;
 FROM Storage IMPORT ALLOCATE ;
-FROM SYSTEM IMPORT ADR ;
+FROM SYSTEM IMPORT ADR, COFF_T ;
 IMPORT SFIO, libc, wrapc ;
 FROM DynamicStrings IMPORT InitString, ConCat, ConCatChar, KillString, string ;
 FROM FormatStrings IMPORT Sprintf2 ;
@@ -415,7 +415,7 @@ END Again ;
 
 PROCEDURE doModeChange (VAR f: File; mode: Flag) ;
 VAR
-   r: INTEGER ;
+   r: COFF_T ;
 BEGIN
    WITH f DO
       IF NOT (mode IN flags)
@@ -441,7 +441,7 @@ BEGIN
          END ;
          INCL (flags, opened) ;
          r := libc.lseek (fio,
-                          VAL (LONGINT, lowpos) + VAL (LONGINT, highpos) * VAL (LONGINT, MAX (CARDINAL)),
+                          VAL (COFF_T, lowpos) + VAL (COFF_T, highpos) * VAL (COFF_T, MAX (CARDINAL)),
                           SEEK_SET)
       END
    END
@@ -514,11 +514,11 @@ END Reset ;
 
 PROCEDURE SetPos (VAR f: File; high, low: CARDINAL) ;
 VAR
-   r: INTEGER ;
+   r: COFF_T ;
 BEGIN
    WITH f DO
-      r := libc.lseek(fio, VAL(LONGCARD, low) +
-                      (VAL(LONGCARD, MAX(CARDINAL)) * VAL(LONGCARD, high)),
+      r := libc.lseek(fio, VAL(COFF_T, low) +
+                      (VAL(COFF_T, MAX(CARDINAL)) * VAL(COFF_T, high)),
                       SEEK_SET) ;
       highpos := high ;
       lowpos := low ;

@@ -36,7 +36,7 @@ IMPLEMENTATION MODULE FIO ;
                  provides a simple buffered file input/output library.
 *)
 
-FROM SYSTEM IMPORT ADR, TSIZE, WORD, CSSIZE_T ;
+FROM SYSTEM IMPORT ADR, TSIZE, WORD, COFF_T ;
 FROM ASCII IMPORT nl, nul, tab ;
 FROM StrLib IMPORT StrLen, StrConCat, StrCopy ;
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
@@ -1446,7 +1446,7 @@ BEGIN
                      filled   := 0
                   END
                END ;
-               offset := lseek (unixfd, VAL (CSSIZE_T, pos), SeekSet ()) ;
+               offset := lseek (unixfd, VAL (COFF_T, pos), SeekSet ()) ;
                IF (offset>=0) AND (pos=offset)
                THEN
                   abspos := pos
@@ -1495,7 +1495,7 @@ BEGIN
                   filled   := 0
                END
             END ;
-            offset := lseek (unixfd, VAL (CSSIZE_T, pos), SeekEnd ()) ;
+            offset := lseek (unixfd, VAL (COFF_T, pos), SeekEnd ()) ;
             IF offset>=0
             THEN
                abspos := offset ;
