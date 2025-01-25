@@ -1,3 +1,20 @@
+2025-01-24  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2025-01-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.cc (rs6000_expand_builtin): Return
+	const0_rtx when there is an error.
+
+2025-01-24  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2025-01-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.cc (rs6000_expand_builtin): Use correct
+	array size for the loop limit.
+	* config/rs6000/rs6000-builtins.def: Fix field size for PMASK operand.
+
 2025-01-23  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa32-regs.h (ADDITIONAL_REGISTER_NAMES): Change

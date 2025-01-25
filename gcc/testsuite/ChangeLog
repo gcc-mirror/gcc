@@ -1,3 +1,43 @@
+2025-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2025-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/118571
+	* gfortran.dg/utf8_3.f03: New test.
+
+2025-01-24  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-01-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/81978
+	* gfortran.dg/pr81978.f90: New test.
+
+2025-01-24  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117153
+	* g++.dg/other/anon-union6.C: New test.
+	* g++.dg/other/anon-union7.C: New test.
+
+2025-01-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2025-01-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/116448
+	* gcc.target/arm/vfp-1.c: Use -Os -fno-math-errno.
+
+2025-01-24  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2025-01-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-error.c: New test.
+
 2025-01-22  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/117186
