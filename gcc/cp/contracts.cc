@@ -606,14 +606,16 @@ make_postcondition_variable (cp_expr id, tree type)
 {
   if (id == error_mark_node)
     return id;
+  gcc_checking_assert (scope_chain && scope_chain->bindings
+		       && scope_chain->bindings->kind == sk_contract);
 
   tree decl = build_lang_decl (PARM_DECL, id, type);
   DECL_ARTIFICIAL (decl) = true;
   DECL_SOURCE_LOCATION (decl) = id.get_location ();
 
-  // constify the postcondition variable
-  if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst)
-	TREE_READONLY(decl) = true;
+  /* Maybe constify the postcondition variable.  */
+  if (flag_contracts_nonattr && should_constify_contract)
+    TREE_READONLY(decl) = true;
 
   pushdecl (decl);
   return decl;
@@ -711,16 +713,24 @@ rebuild_postconditions (tree fndecl)
 	  t = TREE_CHAIN (t))
 	register_local_identity (t);
 
+      begin_scope (sk_contract, fndecl);
+      bool old_pc = processing_postcondition;
+      bool old_const = should_constify_contract;
+      processing_postcondition = true;
+      should_constify_contract = get_contract_const (contract);
       register_local_specialization (newvar, oldvar);
 
-      ++processing_contract_condition;
       condition = tsubst_expr (condition, make_tree_vec (0),
 			       tf_warning_or_error, fndecl);
-      --processing_contract_condition;
 
       /* Update the contract condition and result.  */
       POSTCONDITION_IDENTIFIER (contract) = newvar;
       CONTRACT_CONDITION (contract) = finish_contract_condition (condition);
+      processing_postcondition = old_pc;
+      should_constify_contract = old_const;
+      gcc_checking_assert (scope_chain && scope_chain->bindings
+			   && scope_chain->bindings->kind == sk_contract);
+      pop_bindings_and_leave_scope ();
     }
 }
 
@@ -2758,14 +2768,14 @@ constify_contract_access(tree decl)
 /* Do not allow non-const by-value params being used in postconditions.  */
 
 bool
-maybe_reject_param_in_postcondition(tree decl)
+maybe_reject_param_in_postcondition (tree decl)
 {
   if (flag_contracts_nonattr
-      && processing_contract_postcondition
-      && !dependent_type_p (TREE_TYPE (decl))
       && !TREE_READONLY (decl)
-      && !CP_TYPE_CONST_P (TREE_TYPE (decl))
       && TREE_CODE (decl) == PARM_DECL
+      && processing_postcondition
+      && !dependent_type_p (TREE_TYPE (decl))
+      && !CP_TYPE_CONST_P (TREE_TYPE (decl))
       && !(REFERENCE_REF_P (decl)
 	   && TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL))
     {

@@ -13277,16 +13277,12 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 						     0);
 
 	      /* Do we have an override for const-ification?  */
-	      bool old_flag_contracts_nonattr_noconst
-		= flag_contracts_nonattr_noconst;
-
 	      bool should_constify = !flag_contracts_nonattr_noconst;
 	      if (!modifier.error_p
 		  && (modifier.mutable_p
 		      || (flag_contracts_nonattr_const_keyword
 			  && !modifier.const_p)))
 		should_constify = false;
-	      flag_contracts_nonattr_noconst = !should_constify;
 
 	      /* If we have a current class object, see if we need to consider
 		 it const when processing the contract condition.  */
@@ -13295,28 +13291,30 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 		current_class_ref = view_as_const (current_class_ref_copy);
 
 	      /* Parse the condition.  */
+	      tree contract = error_mark_node;
 	      begin_scope (sk_contract, current_function_decl);
-	      ++processing_contract_condition;
+	      bool old_pc = processing_postcondition;
+	      bool old_const = should_constify_contract;
 	      processing_postcondition = false;
 	      should_constify_contract = should_constify;
 	      cp_expr condition = cp_parser_conditional_expression (parser);
-	      --processing_contract_condition;
+	      gcc_checking_assert (scope_chain && scope_chain->bindings
+				  && scope_chain->bindings->kind == sk_contract);
+	      /* Build the contract.  */
+	      contract
+		= grok_contract (cont_assert, /*mode*/NULL_TREE,
+				 /*result*/NULL_TREE, condition, loc);
+	      processing_postcondition = old_pc;
+	      should_constify_contract = old_const;
 	      pop_bindings_and_leave_scope ();
 
 	      /* Revert (any) constification of the current class object.  */
 	      current_class_ref = current_class_ref_copy;
 
-	      flag_contracts_nonattr_noconst
-		= old_flag_contracts_nonattr_noconst;
-
 	      parens.require_close (parser);
-	      /* Build the contract.  */
-	      tree contract
-		= grok_contract (cont_assert, /*mode*/NULL_TREE,
-				 /*result*/NULL_TREE, condition, loc);
+
 	      if (contract != error_mark_node)
 		set_contract_const (contract, should_constify);
-
 	      std_attrs = finish_contract_attribute (cont_assert, contract);
 
 	      /* If there are errors in the contract, we do not create the
@@ -31616,10 +31614,6 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       /* Enable location wrappers when parsing contracts.  */
       auto suppression = make_temp_override (suppress_location_wrappers, 0);
 
-      bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
-      /* The should_constify value should account for all the mixed flags.  */
-      flag_contracts_nonattr_noconst = !should_constify;
-
       /* If we have a current class object, see if we need to consider
 	 it const when processing the contract condition.  */
       tree current_class_ref_copy = current_class_ref;
@@ -31629,9 +31623,10 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       /* Parse the condition, ensuring that parameters or the return variable
 	 aren't flagged for use outside the body of a function.  */
       begin_scope (sk_contract, current_function_decl);
-      ++processing_contract_condition;
-      if (postcondition_p)
-	++processing_contract_postcondition;
+      bool old_pc = processing_postcondition;
+      bool old_const = should_constify_contract;
+      processing_postcondition = postcondition_p;
+      should_constify_contract = should_constify;
       tree result = NULL_TREE;
       if (identifier)
 	{
@@ -31639,21 +31634,19 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 	  result = make_postcondition_variable (identifier);
 	  ++processing_template_decl;
 	}
-      processing_postcondition = postcondition_p;
-      should_constify_contract = should_constify;
       cp_expr condition = cp_parser_conditional_expression (parser);
       /* Build the contract.  */
       contract = grok_contract (attribute, mode, result, condition, loc);
       if (identifier)
 	--processing_template_decl;
-      if (postcondition_p)
-	--processing_contract_postcondition;
-      --processing_contract_condition;
+      processing_postcondition = old_pc;
+      should_constify_contract = old_const;
+      gcc_checking_assert (scope_chain && scope_chain->bindings
+			   && scope_chain->bindings->kind == sk_contract);
       pop_bindings_and_leave_scope ();
 
       /* Revert (any) constification of the current class object.  */
       current_class_ref = current_class_ref_copy;
-      flag_contracts_nonattr_noconst = old_flag_contracts_nonattr_noconst;
 
 	/* For natural syntax, we eat the parens here. For the attribute
 	syntax, it will be done one level up, we just need to skip to it. */
@@ -31738,7 +31731,6 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   cp_token_cache *tokens = DEFPARSE_TOKENS (condition);
   cp_parser_push_lexer_for_tokens (parser, tokens);
 
-  bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
   bool should_constify = get_contract_const (contract);
   /* If we have a current class object, see if we need to consider
      it const when processing the contract condition.  */
@@ -31749,9 +31741,10 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   /* Parse the condition, ensuring that parameters or the return variable
      aren't flagged for use outside the body of a function.  */
   begin_scope (sk_contract, fn);
-  ++processing_contract_condition;
-  if (POSTCONDITION_P (contract))
-    ++processing_contract_postcondition;
+  bool old_pc = processing_postcondition;
+  bool old_const = should_constify_contract;
+  processing_postcondition = POSTCONDITION_P (contract);
+  should_constify_contract = should_constify;
   /* Build a fake variable for the result identifier.  */
   tree result = NULL_TREE;
   if (identifier)
@@ -31763,14 +31756,13 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   /* Commit to changes.  */
   update_late_contract (contract, result, condition);
   /* Leave our temporary scope for the postcondition result.  */
-  if (result)
+  if (identifier)
     --processing_template_decl;
-  if (POSTCONDITION_P (contract))
-    --processing_contract_postcondition;
-  --processing_contract_condition;
+  processing_postcondition = old_pc;
+  should_constify_contract = old_const;
+  gcc_checking_assert (scope_chain && scope_chain->bindings
+		       && scope_chain->bindings->kind == sk_contract);
   pop_bindings_and_leave_scope ();
-
-  flag_contracts_nonattr_noconst = old_flag_contracts_nonattr_noconst;
 
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
     error_at (input_location, "expected conditional-expression");
