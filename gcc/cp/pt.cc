@@ -12107,12 +12107,13 @@ tsubst_contract (tree decl, tree t, tree args, tsubst_flags_t complain,
 
   tree r = copy_node (t);
 
-  /* Rebuild the result variable.  */
+  /* Rebuild the result variable, if present.  */
+  tree oldvar = NULL_TREE;
+  tree newvar = NULL_TREE;
   if (type && POSTCONDITION_P (t) && POSTCONDITION_IDENTIFIER (t))
     {
-      tree oldvar = POSTCONDITION_IDENTIFIER (t);
-
-      tree newvar = copy_node (oldvar);
+      oldvar = POSTCONDITION_IDENTIFIER (t);
+      newvar = copy_node (oldvar);
       TREE_TYPE (newvar) = type;
       DECL_CONTEXT (newvar) = decl;
       POSTCONDITION_IDENTIFIER (r) = newvar;
@@ -12122,34 +12123,38 @@ tsubst_contract (tree decl, tree t, tree args, tsubst_flags_t complain,
       if (!auto_p)
 	if (!check_postcondition_result (decl, type, loc))
 	  return invalidate_contract (r);
-
-      /* Make the variable available for lookup.  */
-      register_local_specialization (newvar, oldvar);
     }
+
+  /* Should we const-ify this condition?  */
+  bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
+  bool const_p = get_contract_const (t);
+  flag_contracts_nonattr_noconst = !const_p;
 
   /* Instantiate the condition.  If the return type is undeduced, process
      the expression as if inside a template to avoid spurious type errors.  */
-  bool const_p = get_contract_const (t);
-  bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
-  flag_contracts_nonattr_noconst = !const_p;
-
+  begin_scope (sk_contract, decl);
+  ++processing_contract_condition;
   if (auto_p)
     ++processing_template_decl;
-  ++processing_contract_condition;
   if (POSTCONDITION_P (t))
     ++processing_contract_postcondition;
+  if (newvar)
+    /* Make the variable available for lookup.  */
+    register_local_specialization (newvar, oldvar);
 
   CONTRACT_CONDITION (r)
       = tsubst_expr (CONTRACT_CONDITION (t), args, complain, in_decl);
-  if (POSTCONDITION_P (t))
-    --processing_contract_postcondition;
-  --processing_contract_condition;
-  if (auto_p)
-    --processing_template_decl;
 
   /* And the comment.  */
   CONTRACT_COMMENT (r)
       = tsubst_expr (CONTRACT_COMMENT (r), args, complain, in_decl);
+
+  if (POSTCONDITION_P (t))
+    --processing_contract_postcondition;
+  if (auto_p)
+    --processing_template_decl;
+  --processing_contract_condition;
+  pop_bindings_and_leave_scope ();
   flag_contracts_nonattr_noconst = old_flag_contracts_nonattr_noconst;
 
   return r;
@@ -12202,14 +12207,12 @@ tsubst_contract_attribute (tree decl, tree t, tree args,
    as needed.  */
 
 void
-tsubst_contract_attributes (tree decl, tree args, tsubst_flags_t complain, tree in_decl)
+tsubst_contract_attributes (tree decl, tree args, tsubst_flags_t complain,
+			    tree in_decl)
 {
   tree list = copy_list (DECL_ATTRIBUTES (decl));
-  for (tree attr = list; attr; attr = CONTRACT_CHAIN (attr))
-    {
-      if (cxx_contract_attribute_p (attr))
-	tsubst_contract_attribute (decl, attr, args, complain, in_decl);
-    }
+  for (tree attr = find_contract (list); attr; attr = CONTRACT_CHAIN (attr))
+    tsubst_contract_attribute (decl, attr, args, complain, in_decl);
   DECL_ATTRIBUTES (decl) = list;
 }
 
