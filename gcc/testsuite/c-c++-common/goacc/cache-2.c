@@ -33,7 +33,7 @@ test ()
 #pragma acc cache () /* { dg-error "expected (identifier|unqualified-id) before '\\\)' token" } */
 #pragma acc cache (,) /* { dg-error "expected (identifier|unqualified-id) before '(,|\\\))' token" } */
 #pragma acc cache (a[0:N] /* { dg-error "expected '\\\)' before end of line" } */
-#pragma acc cache (a[0:N],) /* { dg-error "expected (identifier|unqualified-id) before '(,|\\\))' token" "" { xfail c } } */
+#pragma acc cache (a[0:N],) /* { dg-error "expected (identifier|unqualified-id) before '(,|\\\))' token" } */
 #pragma acc cache (a[0:N]) copyin (a[0:N]) /* { dg-error "expected end of line before 'copyin'" } */
 #pragma acc cache () /* { dg-error "expected (identifier|unqualified-id) before '\\\)' token" } */
 #pragma acc cache (a[0:N] b[0:N]) /* { dg-error "expected '\\\)' before 'b'" } */

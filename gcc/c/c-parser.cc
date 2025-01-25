@@ -16307,7 +16307,6 @@ c_parser_omp_variable_list (c_parser *parser,
   auto_vec<c_token> tokens;
   unsigned int tokens_avail = 0;
   c_token *saved_tokens = NULL;
-  bool first = true;
 
   while (1)
     {
@@ -16343,7 +16342,6 @@ c_parser_omp_variable_list (c_parser *parser,
 		break;
 
 	      c_parser_consume_token (parser);
-	      first = false;
 	      continue;
 	    }
 
@@ -16507,8 +16505,7 @@ c_parser_omp_variable_list (c_parser *parser,
 	t = c_parser_predefined_identifier (parser).value;
       else
 	{
-	  if (first)
-	    c_parser_error (parser, "expected identifier");
+	  c_parser_error (parser, "expected identifier");
 	  break;
 	}
 
@@ -16702,7 +16699,6 @@ c_parser_omp_variable_list (c_parser *parser,
 	break;
 
       c_parser_consume_token (parser);
-      first = false;
     }
 
   return list;
