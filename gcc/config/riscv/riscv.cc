@@ -12684,10 +12684,16 @@ riscv_gen_zero_extend_rtx (rtx x, machine_mode mode)
     emit_move_insn (xmode_reg, x);
   else
     {
-      rtx reg_x = gen_reg_rtx (mode);
+      /* Combine deliberately does not simplify extensions of constants
+	 (long story).  So try to generate the zero extended constant
+	 efficiently.
 
-      emit_move_insn (reg_x, x);
-      riscv_emit_unary (ZERO_EXTEND, xmode_reg, reg_x);
+	 First extract the constant and mask off all the bits not in MODE.  */
+      HOST_WIDE_INT val = INTVAL (x);
+      val &= GET_MODE_MASK (mode);
+
+      /* X may need synthesis, so do not blindly copy it.  */
+      xmode_reg = force_reg (Xmode, gen_int_mode (val, Xmode));
     }
 
   return xmode_reg;

@@ -2470,7 +2470,8 @@
         (match_operand:GPR 1 "splittable_const_int_operand" "i"))]
   "!ira_in_progress
    && !(p2m1_shift_operand (operands[1], <MODE>mode)
-        || high_mask_shift_operand (operands[1], <MODE>mode))"
+	|| high_mask_shift_operand (operands[1], <MODE>mode)
+	|| exact_log2 (INTVAL (operands[1])) >= 0)"
   "#"
   "&& 1"
   [(const_int 0)]
