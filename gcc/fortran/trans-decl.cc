@@ -8295,6 +8295,26 @@ gfc_generate_constructors (void)
 #endif
 }
 
+
+/* Helper function for checking of variables declared in a BLOCK DATA program
+   unit.  */
+
+static void
+check_block_data_decls (gfc_symbol * sym)
+{
+  if (warn_unused_variable
+      && sym->attr.flavor == FL_VARIABLE
+      && !sym->attr.in_common
+      && !sym->attr.artificial)
+    {
+      gfc_warning (OPT_Wunused_variable,
+		   "Symbol %qs at %L is declared in a BLOCK DATA "
+		   "program unit but is not in a COMMON block",
+		   sym->name, &sym->declared_at);
+    }
+}
+
+
 /* Translates a BLOCK DATA program unit. This means emitting the
    commons contained therein plus their initializations. We also emit
    a globally visible symbol to make sure that each BLOCK DATA program
@@ -8314,6 +8334,9 @@ gfc_generate_block_data (gfc_namespace * ns)
 
   /* Process the DATA statements.  */
   gfc_trans_common (ns);
+
+  /* Check for variables declared in BLOCK DATA but not used in COMMON.  */
+  gfc_traverse_ns (ns, check_block_data_decls);
 
   /* Create a global symbol with the mane of the block data.  This is to
      generate linker errors if the same name is used twice.  It is never
