@@ -1,3 +1,14 @@
+2025-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/117886
+	* jit-recording.cc (reproducer::get_identifier_as_rvalue): Handle
+	null memento.
+	(reproducer::get_identifier_as_lvalue): Likewise.
+	(reproducer::get_identifier_as_type): Likewise.
+	(recording::ctor::write_reproducer): Use get_identifier_as_rvalue
+	rather than get_identifier when writing out gcc_jit_rvalue *
+	expressions.
+
 2025-01-22  David Malcolm  <dmalcolm@redhat.com>
 
 	* dummy-frontend.cc (tree_type_to_jit_type): For POINTER_TYPE,

@@ -1,3 +1,267 @@
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-arches.def (V9_5A): Add CPA.
+	* config/aarch64/aarch64-option-extensions.def (CPA): New.
+	* doc/invoke.texi: Document +cpa.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* doc/invoke.texi: Add +wfxt and +xs to armv9.2-a
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-arches.def (V9_5A): New.
+	* doc/invoke.texi: Document armv9.5-a option.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc: Assert that CRYPTO
+	bit is not set.
+	* config/aarch64/aarch64-feature-deps.h
+	(info<FEAT>.explicit_on): Unset CRYPTO bit.
+	(cpu_##CORE_IDENT): Ditto.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(aarch64_rewrite_selected_cpu): Refactor and inline into...
+	(aarch64_rewrite_mcpu): this.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_rewrite_selected_cpu): Delete.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(aarch64_get_arch_string_for_assembler): New.
+	(aarch64_rewrite_march): New.
+	(aarch64_rewrite_selected_cpu): Call new function.
+	* config/aarch64/aarch64-elf.h (ASM_SPEC): Remove identity mapping.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_get_arch_string_for_assembler): New.
+	* config/aarch64/aarch64.cc
+	(aarch64_declare_function_name): Call new function.
+	(aarch64_start_file): Ditto.
+	* config/aarch64/aarch64.h
+	(EXTRA_SPEC_FUNCTIONS): Use new macro name.
+	(MCPU_TO_MARCH_SPEC): Rename to...
+	(MARCH_REWRITE_SPEC): ...this, and extend the spec rule.
+	(aarch64_rewrite_march): New declaration.
+	(MCPU_TO_MARCH_SPEC_FUNCTIONS): Rename to...
+	(AARCH64_BASE_SPEC_FUNCTIONS): ...this, and add new function.
+	(ASM_CPU_SPEC): Use new macro name.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(aarch64_get_all_extension_candidates): Inline into...
+	(aarch64_print_hint_for_extensions): ...this.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(aarch64_get_all_extension_candidates): Move within file.
+	(aarch64_print_hint_candidates): Move from aarch64.cc.
+	(aarch64_print_hint_for_extensions): Ditto.
+	(aarch64_print_hint_for_arch): Ditto.
+	(aarch64_print_hint_for_core): Ditto.
+	(enum aarch_parse_opt_result): Ditto.
+	(aarch64_parse_arch): Ditto.
+	(aarch64_parse_cpu): Ditto.
+	(aarch64_parse_tune): Ditto.
+	(aarch64_validate_march): Ditto.
+	(aarch64_validate_mcpu): Ditto.
+	(aarch64_validate_mtune): Ditto.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_rewrite_selected_cpu): Move within file.
+	(aarch64_print_hint_for_extensions): Share function prototype.
+	(aarch64_print_hint_for_arch): Ditto.
+	(aarch64_print_hint_for_core): Ditto.
+	(enum aarch_parse_opt_result): Ditto.
+	(aarch64_validate_march): Ditto.
+	(aarch64_validate_mcpu): Ditto.
+	(aarch64_validate_mtune): Ditto.
+	(aarch64_get_all_extension_candidates): Unshare prototype.
+	* config/aarch64/aarch64.cc
+	(aarch64_parse_arch): Move to aarch64-common.cc.
+	(aarch64_parse_cpu): Ditto.
+	(aarch64_parse_tune): Ditto.
+	(aarch64_print_hint_candidates): Ditto.
+	(aarch64_print_hint_for_core): Ditto.
+	(aarch64_print_hint_for_arch): Ditto.
+	(aarch64_print_hint_for_extensions): Ditto.
+	(aarch64_validate_mcpu): Ditto.
+	(aarch64_validate_march): Ditto.
+	(aarch64_validate_mtune): Ditto.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_print_hint_candidates): New helper function.
+	(aarch64_print_hint_for_core_or_arch): Inline into callers.
+	(aarch64_print_hint_for_core): Inline callee and use new helper.
+	(aarch64_print_hint_for_arch): Ditto.
+	(aarch64_print_hint_for_extensions): Use new helper.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_print_hint_for_extensions): Receive string as a char *.
+	(aarch64_parse_arch): Don't return a const struct processor *.
+	(aarch64_parse_cpu): Ditto.
+	(aarch64_parse_tune): Ditto.
+	(aarch64_validate_mtune): Ditto.
+	(aarch64_validate_mcpu): Ditto, and use temporary variables for
+	march/mcpu cross-check.
+	(aarch64_validate_march): Ditto.
+	(aarch64_override_options): Adjust for changed parameter types.
+	(aarch64_handle_attr_arch): Ditto.
+	(aarch64_handle_attr_cpu): Ditto.
+	(aarch64_handle_attr_tune): Ditto.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(struct aarch64_option_extension): Rename to..
+	(struct aarch64_extension_info): ...this.
+	(all_extensions): Update type name.
+	(struct arch_to_arch_name): Rename to...
+	(struct aarch64_arch_info): ...this, and rename name field.
+	(all_architectures): Update type names, and move before...
+	(struct processor_name_to_arch): ...this. Rename to...
+	(struct aarch64_processor_info): ...this, rename name field and
+	add cpu field.
+	(all_cores): Update type name, and set new field.
+	(aarch64_parse_extension): Update names.
+	(aarch64_get_all_extension_candidates): Ditto.
+	(aarch64_rewrite_selected_cpu): Ditto.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(all_cores): Remove explicit generic entry.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-opts.h
+	(enum aarch64_processor): Rename to...
+	(enum aarch64_cpu): ...this, and rename the entries.
+	* config/aarch64/aarch64.cc
+	(aarch64_type): Rename type and initial value.
+	(struct processor): Rename member types.
+	(all_architectures): Rename enum members.
+	(all_cores): Ditto.
+	(aarch64_get_tune_cpu): Rename type and enum member.
+	* config/aarch64/aarch64.h (enum target_cpus): Remove.
+	(TARGET_CPU_DEFAULT): Rename default value.
+	(aarch64_tune): Rename type.
+	* config/aarch64/aarch64.opt:
+	(selected_tune): Rename type and default value.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_override_options): Compare
+	returned feature masks directly.
+
+2025-01-24  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/118497
+	* ira-int.h (target_ira_int): Add x_ira_hard_regno_nrefs.
+	(ira_hard_regno_nrefs): New macro.
+	* ira.cc (setup_hard_regno_aclass): Remove unused code.  Modify
+	the comment.
+	(setup_hard_regno_nrefs): New function.
+	(ira): Call it.
+	* ira-color.cc (calculate_saved_nregs): Check
+	ira_hard_regno_nrefs.
+
+2025-01-24  yxj-github-437  <2457369732@qq.com>
+
+	* config/aarch64/aarch64.cc (aarch64_build_builtin_va_list): Mark
+	__builtin_va_list as TREE_PUBLIC.
+	* config/arm/arm.cc (arm_build_builtin_va_list): Likewise.
+
+2025-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/117670
+	* Makefile.in (SARIF_REPLAY_INSTALL_NAME): New.
+	(install-libgdiagnostics): Use it,and exeext, rather than just
+	sarif-replay.
+
+2025-01-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116010
+	* tree-data-ref.cc (contains_ssa_ref_p_1): New function.
+	(contains_ssa_ref_p): Likewise.
+	(dr_may_alias_p): Avoid treating unanalyzed base parts without
+	SSA reference conservatively.
+
+2025-01-24  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.h (S390_TDC_POSITIVE_ZERO): Remove.
+	(S390_TDC_NEGATIVE_ZERO): Remove.
+	(S390_TDC_POSITIVE_NORMALIZED_BFP_NUMBER): Remove.
+	(S390_TDC_NEGATIVE_NORMALIZED_BFP_NUMBER): Remove.
+	(S390_TDC_POSITIVE_DENORMALIZED_BFP_NUMBER): Remove.
+	(S390_TDC_NEGATIVE_DENORMALIZED_BFP_NUMBER): Remove.
+	(S390_TDC_POSITIVE_INFINITY): Remove.
+	(S390_TDC_NEGATIVE_INFINITY): Remove.
+	(S390_TDC_POSITIVE_QUIET_NAN): Remove.
+	(S390_TDC_NEGATIVE_QUIET_NAN): Remove.
+	(S390_TDC_POSITIVE_SIGNALING_NAN): Remove.
+	(S390_TDC_NEGATIVE_SIGNALING_NAN): Remove.
+	(S390_TDC_POSITIVE_DENORMALIZED_DFP_NUMBER): Remove.
+	(S390_TDC_NEGATIVE_DENORMALIZED_DFP_NUMBER): Remove.
+	(S390_TDC_POSITIVE_NORMALIZED_DFP_NUMBER): Remove.
+	(S390_TDC_NEGATIVE_NORMALIZED_DFP_NUMBER): Remove.
+	(S390_TDC_SIGNBIT_SET): Remove.
+	(S390_TDC_INFINITY): Remove.
+	* config/s390/s390.md (signbit<mode>2<tf_fpr>): Merge this one
+	(isinf<mode>2<tf_fpr>): and this one into
+	(<TDC_CLASS:tdc_insn><mode>2<tf_fpr>): new expander.
+	(isnormal<mode>2<tf_fpr>): New BFP expander.
+	(isnormal<mode>2): New DFP expander.
+	* config/s390/vector.md (signbittf2_vr): Merge this one
+	(isinftf2_vr): and this one into
+	(<tdc_insn>tf2_vr): new expander.
+	(signbittf2): Merge this one
+	(isinftf2): and this one into
+	(<tdc_insn>tf2): new expander.
+
+2025-01-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118634
+	* tree-ssa-loop-ivcanon.cc (try_unroll_loop_completely):
+	Dump the number of estimated eliminated insns.
+
+2025-01-24  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* config/aarch64/aarch64-sve2.md:
+	(*aarch64_pred_faminmax_fused): Fix to use the correct flags.
+	* config/aarch64/aarch64.h
+	(TARGET_SVE_FAMINMAX): Remove.
+	* config/aarch64/iterators.md: Fix iterators so that famax and
+	famin use correct flags.
+
+2025-01-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118572
+	* gimple-fold.cc (fold_truth_andor_for_ifcombine): Compare as
+	unsigned the variables whose extension bits are masked out.
+
+2025-01-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* gimple-fold.cc (fold_truth_andor_for_ifcombine): Document
+	reversep's absence of effects on range tests.  Don't reject
+	reversep mismatches before trying compare swapping.
+
+2025-01-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118514
+	* tree-eh.cc (bit_field_ref_in_bounds_p): New.
+	(tree_could_trap_p) <BIT_FIELD_REF>: Call it.
+	* gimple-fold.cc (make_bit_field_load): Check trapping status
+	of replacement load against original load.
+
 2025-01-23  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa32-regs.h (ADDITIONAL_REGISTER_NAMES): Change

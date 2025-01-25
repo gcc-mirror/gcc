@@ -1,3 +1,93 @@
+2025-01-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118589
+	* lib/gm2-dg.exp (gm2.exp): load_lib.
+	* gm2.dg/pim/fail/badopaque.mod: New test.
+	* gm2.dg/pim/fail/badopaque2.mod: New test.
+	* gm2.dg/pim/fail/dg-pim-fail.exp: New test.
+	* gm2.dg/pim/fail/opaquedefs.def: New test.
+	* gm2.dg/pim/fail/opaquedefs.mod: New test.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/simd/armv9p5.c: New test.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/crypto-alias-1.c: New test.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/target_attr_crypto_ice_1.c: Prune warning.
+	* gcc.target/aarch64/target_attr_crypto_ice_2.c: Ditto.
+
+2025-01-24  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/118497
+	* gcc.target/i386/pr118497.c: New.
+	* gcc.target/i386/vartrack-1.c: Modify the regexp.
+
+2025-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117153
+	* g++.dg/other/anon-union6.C: New test.
+	* g++.dg/other/anon-union7.C: New test.
+
+2025-01-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/thumb-bitfld1.c: Use -std=c17.
+
+2025-01-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/116448
+	* gcc.target/arm/vfp-1.c: Use -Os -fno-math-errno.
+
+2025-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/118571
+	* gfortran.dg/utf8_3.f03: New test.
+
+2025-01-24  yxj-github-437  <2457369732@qq.com>
+
+	* g++.dg/modules/builtin-8.C: New test.
+
+2025-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/117886
+	* jit.dg/all-non-failing-tests.h: Add
+	test-pr117886-write-reproducer.c.
+	* jit.dg/test-pr117886-write-reproducer.c: New test.
+
+2025-01-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116010
+	* gfortran.dg/vect/vect-8.f90: Adjust.
+
+2025-01-24  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/isfinite-isinf-isnormal-signbit-1.c: New test.
+	* gcc.target/s390/isfinite-isinf-isnormal-signbit-2.c: New test.
+	* gcc.target/s390/isfinite-isinf-isnormal-signbit-3.c: New test.
+	* gcc.target/s390/isfinite-isinf-isnormal-signbit.h: New test.
+
+2025-01-24  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* gcc.target/aarch64/sve/faminmax_1.c: Fix test to use the
+	correct flags.
+	* gcc.target/aarch64/sve/faminmax_2.c: Fix test to use the
+	correct flags.
+	* gcc.target/aarch64/sve/faminmax_3.c: New test.
+
+2025-01-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118572
+	* gcc.dg/field-merge-24.c: New.
+
+2025-01-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118514
+	* gcc.dg/field-merge-23.c: New.
+
 2025-01-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/117602

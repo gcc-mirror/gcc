@@ -1,3 +1,15 @@
+2025-01-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118589
+	* gm2-compiler/M2MetaError.mod (symDesc): Add opaque type
+	description.
+	* gm2-compiler/M2Quads.mod (BuildDesignatorPointerError): New
+	procedure.
+	(BuildDesignatorPointer): Reimplement.
+	* gm2-compiler/P3Build.bnf (SubDesignator): Tidy up error message.
+	Use MetaErrorT2 rather than WriteForma1 and use the token pos from
+	the quad stack.
+
 2025-01-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/116557
