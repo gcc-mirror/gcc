@@ -31623,15 +31623,6 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       /* Enable location wrappers when parsing contracts.  */
       auto suppression = make_temp_override (suppress_location_wrappers, 0);
 
-      /* Build a fake variable for the result identifier.  */
-      tree result = NULL_TREE;
-      if (identifier)
-	{
-	  begin_scope (sk_block, NULL_TREE);
-	  result = make_postcondition_variable (identifier);
-	  ++processing_template_decl;
-	}
-
       bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
       /* The should_constify value should account for all the mixed flags.  */
       flag_contracts_nonattr_noconst = !should_constify;
@@ -31648,13 +31639,25 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       ++processing_contract_condition;
       if (postcondition_p)
 	++processing_contract_postcondition;
+      tree result = NULL_TREE;
+      if (identifier)
+	{
+	  /* Build a fake variable for the result identifier.  */
+	  result = make_postcondition_variable (identifier);
+	  ++processing_template_decl;
+	}
       processing_postcondition = postcondition_p;
       should_constify_contract = should_constify;
       cp_expr condition = cp_parser_conditional_expression (parser);
+      /* Build the contract.  */
+      contract = grok_contract (attribute, mode, result, condition, loc);
+      if (identifier)
+	--processing_template_decl;
       if (postcondition_p)
 	--processing_contract_postcondition;
       --processing_contract_condition;
       pop_bindings_and_leave_scope ();
+
       /* Revert (any) constification of the current class object.  */
       current_class_ref = current_class_ref_copy;
       flag_contracts_nonattr_noconst = old_flag_contracts_nonattr_noconst;
@@ -31668,15 +31671,6 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 	 we need to search the condition for errors.  */
       else if (contains_error_p (condition))
 	cp_parser_skip_up_to_closing_square_bracket (parser);
-
-      /* Build the contract.  */
-      contract = grok_contract (attribute, mode, result, condition, loc);
-      /* Leave our temporary scope for the postcondition result.  */
-      if (result)
-	{
-	  --processing_template_decl;
-	  pop_bindings_and_leave_scope ();
-	}
     }
 
   if (!flag_contracts)
@@ -31710,22 +31704,16 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   if (TREE_CODE (contract) == POSTCONDITION_STMT)
     identifier = POSTCONDITION_IDENTIFIER (contract);
 
-  /* Build a fake variable for the result identifier.  */
-  tree result = NULL_TREE;
+  tree type = TREE_TYPE (TREE_TYPE (fn));
   if (identifier)
     {
       /* TODO: Can we guarantee that the identifier has a location? */
       location_t loc = cp_expr_location (contract);
-      tree type = TREE_TYPE (TREE_TYPE (fn));
       if (!check_postcondition_result (fn, type, loc))
 	{
 	  invalidate_contract (contract);
 	  return;
 	}
-
-      begin_scope (sk_block, NULL_TREE);
-      result = make_postcondition_variable (identifier, type);
-      ++processing_template_decl;
     }
 
   /* In C++20 contracts, 'this' is not allowed in preconditions of
@@ -31771,15 +31759,28 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   ++processing_contract_condition;
   if (POSTCONDITION_P (contract))
     ++processing_contract_postcondition;
+  /* Build a fake variable for the result identifier.  */
+  tree result = NULL_TREE;
+  if (identifier)
+    {
+      result = make_postcondition_variable (identifier, type);
+      ++processing_template_decl;
+    }
   condition = cp_parser_conditional_expression (parser);
+  /* Commit to changes.  */
+  update_late_contract (contract, result, condition);
+  /* Leave our temporary scope for the postcondition result.  */
+  if (result)
+    --processing_template_decl;
   if (POSTCONDITION_P (contract))
     --processing_contract_postcondition;
   --processing_contract_condition;
   pop_bindings_and_leave_scope ();
 
+  flag_contracts_nonattr_noconst = old_flag_contracts_nonattr_noconst;
+
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
-      error_at (input_location,
-		"expected conditional-expression");
+    error_at (input_location, "expected conditional-expression");
 
   /* Revert to the main lexer.  */
   cp_parser_pop_lexer (parser);
@@ -31790,17 +31791,6 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   current_class_ref = saved_ccr;
   current_class_ptr = saved_ccp;
   contract_class_ptr = saved_contract_ccp;
-
-  /* Commit to changes.  */
-  update_late_contract (contract, result, condition);
-  flag_contracts_nonattr_noconst = old_flag_contracts_nonattr_noconst;
-
-  /* Leave our temporary scope for the postcondition result.  */
-  if (result)
-    {
-      --processing_template_decl;
-      pop_bindings_and_leave_scope ();
-    }
 }
 
 static contract_modifier
