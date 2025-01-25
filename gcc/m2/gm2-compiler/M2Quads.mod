@@ -63,6 +63,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         GetScope, GetCurrentScope,
                         GetSubrange, SkipTypeAndSubrange,
                         GetModule, GetMainModule,
+                        GetModuleScope, GetCurrentModuleScope,
                         GetCurrentModule, GetFileModule, GetLocalSym,
                         GetStringLength, GetString,
                         GetArraySubscript, GetDimension,
@@ -115,7 +116,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         PutDeclared,
                         MakeComponentRecord, MakeComponentRef,
                         IsSubscript, IsComponent, IsConstStringKnown,
-                        IsTemporary,
+                        IsTemporary, IsHiddenType,
                         IsAModula2Type,
                         PutLeftValueFrontBackType,
                         PushSize, PushValue, PopValue,
@@ -11427,6 +11428,24 @@ BEGIN
 END BuildDesignatorError ;
 
 
+(*
+   BuildDesignatorPointerError - removes the designator from the stack and replaces
+                                 it with an error symbol.
+*)
+
+PROCEDURE BuildDesignatorPointerError (type, rw: CARDINAL; tokpos: CARDINAL;
+                                       message: ARRAY OF CHAR) ;
+VAR
+   error: CARDINAL ;
+BEGIN
+   error := MakeError (tokpos, MakeKey (message)) ;
+   IF GetSType (type) # NulSym
+   THEN
+      type := GetSType (type)
+   END ;
+   PushTFrwtok (error, type, rw, tokpos)
+END BuildDesignatorPointerError ;
+
 
 (*
    BuildDesignatorArray - Builds the array referencing.
@@ -11819,13 +11838,13 @@ END DebugLocation ;
 PROCEDURE BuildDesignatorPointer (ptrtok: CARDINAL) ;
 VAR
    combinedtok,
-   exprtok    : CARDINAL ;
+   destok    : CARDINAL ;
    rw,
    Sym1, Type1,
    Sym2, Type2: CARDINAL ;
 BEGIN
-   PopTFrwtok (Sym1, Type1, rw, exprtok) ;
-   DebugLocation (exprtok, "expression") ;
+   PopTFrwtok (Sym1, Type1, rw, destok) ;
+   DebugLocation (destok, "des ptr expression") ;
 
    Type1 := SkipType (Type1) ;
    IF Type1 = NulSym
@@ -11834,33 +11853,44 @@ BEGIN
    ELSIF IsUnknown (Sym1)
    THEN
       MetaError1 ('{%1EMad} is undefined and therefore {%1ad}^ cannot be resolved', Sym1)
-   ELSIF IsPointer (Type1)
-   THEN
-      Type2 := GetSType (Type1) ;
-      Sym2 := MakeTemporary (ptrtok, LeftValue) ;
-      (*
-         Ok must reference by address
-         - but we contain the type of the referenced entity
-      *)
-      MarkAsRead (rw) ;
-      PutVarPointerCheck (Sym1, TRUE) ;
-      CheckPointerThroughNil (ptrtok, Sym1) ;
-      IF GetMode (Sym1) = LeftValue
-      THEN
-         rw := NulSym ;
-         PutLeftValueFrontBackType (Sym2, Type2, Type1) ;
-         GenQuadO (ptrtok, IndrXOp, Sym2, Type1, Sym1, FALSE)    (* Sym2 := *Sym1 *)
-      ELSE
-         PutLeftValueFrontBackType (Sym2, Type2, NulSym) ;
-         GenQuadO (ptrtok, BecomesOp, Sym2, NulSym, Sym1, FALSE) (* Sym2 :=  Sym1 *)
-      END ;
-      PutVarPointerCheck (Sym2, TRUE) ;       (* we should check this for *)
-                                     (* Sym2 later on (pointer via NIL)   *)
-      combinedtok := MakeVirtualTok (exprtok, exprtok, ptrtok) ;
-      PushTFrwtok (Sym2, Type2, rw, combinedtok) ;
-      DebugLocation (combinedtok, "pointer expression")
    ELSE
-      MetaError2 ('{%1ad} is not a pointer type but a {%2d}', Sym1, Type1)
+      combinedtok := MakeVirtual2Tok (destok, ptrtok) ;
+      IF IsPointer (Type1)
+      THEN
+         Type2 := GetSType (Type1) ;
+         Sym2 := MakeTemporary (ptrtok, LeftValue) ;
+         (*
+          Ok must reference by address
+          - but we contain the type of the referenced entity
+         *)
+         MarkAsRead (rw) ;
+         PutVarPointerCheck (Sym1, TRUE) ;
+         CheckPointerThroughNil (ptrtok, Sym1) ;
+         IF GetMode (Sym1) = LeftValue
+         THEN
+            rw := NulSym ;
+            PutLeftValueFrontBackType (Sym2, Type2, Type1) ;
+            GenQuadO (ptrtok, IndrXOp, Sym2, Type1, Sym1, FALSE)    (* Sym2 := *Sym1.  *)
+         ELSE
+            PutLeftValueFrontBackType (Sym2, Type2, NulSym) ;
+            GenQuadO (ptrtok, BecomesOp, Sym2, NulSym, Sym1, FALSE) (* Sym2 :=  Sym1.  *)
+         END ;
+         (* We should check this for Sym2 later on (pointer via NIL).   *)
+         PutVarPointerCheck (Sym2, TRUE) ;
+         PushTFrwtok (Sym2, Type2, rw, combinedtok) ;
+         DebugLocation (combinedtok, "pointer expression")
+      ELSIF IsHiddenType (Type1) AND (GetModuleScope (Type1) # GetCurrentModuleScope ())
+      THEN
+         MetaErrorT1 (ptrtok,
+                      '{%1Ead} is declared with an opaque type from a different module and cannot be dereferenced',
+                      Sym1) ;
+         MarkAsRead (rw) ;
+         BuildDesignatorPointerError (Type1, rw, combinedtok, 'bad opaque pointer dereference')
+      ELSE
+         MetaError2 ('{%1Ead} is not a pointer type but a {%2d}', Sym1, Type1) ;
+         MarkAsRead (rw) ;
+         BuildDesignatorPointerError (Type1, rw, combinedtok, 'bad pointer dereference')
+      END
    END
 END BuildDesignatorPointer ;
 

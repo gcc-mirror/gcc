@@ -1611,7 +1611,12 @@ BEGIN
       END
    ELSIF IsType(sym)
    THEN
-      RETURN InitString('type')
+      IF IsHiddenType (sym)
+      THEN
+         RETURN InitString('opaque type')
+      ELSE
+         RETURN InitString('type')
+      END
    ELSIF IsRecord(sym)
    THEN
       RETURN InitString('record')

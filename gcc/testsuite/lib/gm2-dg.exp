@@ -15,6 +15,7 @@
 # <http://www.gnu.org/licenses/>.
 
 load_lib gcc-dg.exp
+load_lib gm2.exp
 
 # Define gm2 callbacks for dg.exp.
 
@@ -75,3 +76,4 @@ proc gm2-dg-runtest { testcases flags default-extra-flags } {
 	}
     }
 }
+
