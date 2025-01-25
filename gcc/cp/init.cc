@@ -3663,6 +3663,11 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
                 error ("parenthesized initializer in array new");
 	      return error_mark_node;
             }
+
+	  /* Collect flags for disabling subobject cleanups once the complete
+	     object is fully constructed.  */
+	  vec<tree, va_gc> *flags = make_tree_vector ();
+
 	  init_expr
 	    = build_vec_init (data_addr,
 			      cp_build_binary_op (input_location,
@@ -3672,7 +3677,28 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 			      vecinit,
 			      explicit_value_init_p,
 			      /*from_array=*/0,
-                              complain);
+			      complain,
+			      &flags);
+
+	  for (tree f : flags)
+	    {
+	      /* See maybe_push_temp_cleanup.  */
+	      tree d = f;
+	      tree i = boolean_false_node;
+	      if (TREE_CODE (f) == TREE_LIST)
+		{
+		  /* To disable a build_vec_init cleanup, set
+		     iterator = maxindex.  */
+		  d = TREE_PURPOSE (f);
+		  i = TREE_VALUE (f);
+		  ggc_free (f);
+		}
+	      tree cl = build2 (MODIFY_EXPR, TREE_TYPE (d), d, i);
+	      cl = convert_to_void (cl, ICV_STATEMENT, complain);
+	      init_expr = build2 (COMPOUND_EXPR, void_type_node,
+				  init_expr, cl);
+	    }
+	  release_tree_vector (flags);
 	}
       else
 	{
