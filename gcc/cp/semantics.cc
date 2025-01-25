@@ -5020,12 +5020,10 @@ finish_id_expression_1 (tree id_expression,
     }
 
   maybe_reject_param_in_postcondition (decl);
-
-  if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst
+  if (flag_contracts_nonattr && should_constify_contract
 	&& processing_contract_condition)
-    {
-       decl = constify_contract_access(decl);
-    }
+    decl = constify_contract_access(decl);
+
   return cp_expr (decl, location);
 }
 

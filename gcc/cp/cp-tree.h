@@ -1951,8 +1951,6 @@ struct GTY(()) saved_scope {
   int x_processing_template_decl;
   int x_processing_specialization;
   int x_processing_constraint;
-  int x_processing_contract_condition;
-  int x_processing_contract_postcondition;
   int suppress_location_wrappers;
   BOOL_BITFIELD x_processing_postcondition : 1;
   BOOL_BITFIELD x_should_constify_contract : 1;
@@ -2036,9 +2034,8 @@ extern GTY(()) struct saved_scope *scope_chain;
    condition. These expressions appear outside the parameter list (like a
    trailing return type), but are potentially evaluated.  */
 
-#define processing_contract_condition scope_chain->x_processing_contract_condition
-
-#define processing_contract_postcondition scope_chain->x_processing_contract_postcondition
+#define processing_contract_condition \
+  (scope_chain->bindings->kind == sk_contract)
 
 #define processing_postcondition scope_chain->x_processing_postcondition
 #define should_constify_contract scope_chain->x_should_constify_contract
