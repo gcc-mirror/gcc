@@ -29,7 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_StrIO_H)
 #   define _StrIO_H
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #   ifdef __cplusplus

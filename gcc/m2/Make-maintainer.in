@@ -620,6 +620,7 @@ BUILD-PGE-O = $(PPG-INTERFACE-C:%.c=m2/gm2-pge-boot/$(SRC_PREFIX)%.o) \
               $(PGE-SRC:%.mod=m2/gm2-pge-boot/$(SRC_PREFIX)%.o)
 
 BUILD-BOOT-PGE-H = $(BUILD-BOOT-H) $(PGE-DEF:%.def=m2/gm2-pge-boot/$(SRC_PREFIX)%.h)
+PGE-MC-OPTIONS = --gcc-config-system 
 
 m2/gm2-auto/pge.mod: m2/pg$(exeext)
 	-test -d m2/gm2-auto || $(mkinstalldirs) m2/gm2-auto
@@ -676,7 +677,7 @@ m2/gm2-pge-boot/$(SRC_PREFIX)errno.o:  $(srcdir)/m2/mc-boot-ch/Gerrno.cc
 
 m2/gm2-pge-boot/$(SRC_PREFIX)M2RTS.o: $(srcdir)/m2/gm2-libs/M2RTS.mod $(MCDEPS) $(BUILD-BOOT-PGE-H)
 	-test -d m2/gm2-pge-boot || $(mkinstalldirs) m2/gm2-pge-boot
-	$(MCC) --suppress-noreturn -o=m2/gm2-pge-boot/$(SRC_PREFIX)M2RTS.cc $(srcdir)/m2/gm2-libs/M2RTS.mod
+	$(MCC) $(PGE-MC-OPTIONS) --suppress-noreturn -o=m2/gm2-pge-boot/$(SRC_PREFIX)M2RTS.cc $(srcdir)/m2/gm2-libs/M2RTS.mod
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/pge-boot -I$(srcdir)/m2/mc-boot \
               -I$(srcdir)/m2/mc-boot-ch -Im2/gm2-libs-boot \
               $(INCLUDES) -g -c m2/gm2-pge-boot/$(SRC_PREFIX)M2RTS.cc -o $@
@@ -689,7 +690,7 @@ m2/gm2-pge-boot/$(SRC_PREFIX)SymbolKey.o: $(srcdir)/m2/gm2-compiler/SymbolKey.mo
                                           $(MCDEPS) $(BUILD-BOOT-PGE-H) \
                                           m2/gm2-pge-boot/$(SRC_PREFIX)SymbolKey.h
 	-test -d m2/gm2-pge-boot || $(mkinstalldirs) m2/gm2-pge-boot
-	$(MCC) --suppress-noreturn -o=m2/gm2-pge-boot/$(SRC_PREFIX)SymbolKey.cc $(srcdir)/m2/gm2-compiler/SymbolKey.mod
+	$(MCC) $(PGE-MC-OPTIONS) --suppress-noreturn -o=m2/gm2-pge-boot/$(SRC_PREFIX)SymbolKey.cc $(srcdir)/m2/gm2-compiler/SymbolKey.mod
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/pge-boot -I$(srcdir)/m2/mc-boot \
               -I$(srcdir)/m2/mc-boot-ch -Im2/gm2-libs-boot \
               $(INCLUDES) -g -c m2/gm2-pge-boot/$(SRC_PREFIX)SymbolKey.cc -o $@
@@ -702,7 +703,7 @@ m2/gm2-pge-boot/$(SRC_PREFIX)NameKey.o: $(srcdir)/m2/gm2-compiler/NameKey.mod \
                                         $(MCDEPS) $(BUILD-BOOT-PGE-H) \
                                         m2/gm2-pge-boot/$(SRC_PREFIX)NameKey.h
 	-test -d m2/gm2-pge-boot || $(mkinstalldirs) m2/gm2-pge-boot
-	$(MCC) --suppress-noreturn -o=m2/gm2-pge-boot/$(SRC_PREFIX)NameKey.cc $(srcdir)/m2/gm2-compiler/NameKey.mod
+	$(MCC) $(PGE-MC-OPTIONS) --suppress-noreturn -o=m2/gm2-pge-boot/$(SRC_PREFIX)NameKey.cc $(srcdir)/m2/gm2-compiler/NameKey.mod
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/pge-boot -I$(srcdir)/m2/mc-boot \
               -I$(srcdir)/m2/mc-boot-ch -Im2/gm2-libs-boot \
               $(INCLUDES) -g -c m2/gm2-pge-boot/$(SRC_PREFIX)NameKey.cc -o $@
@@ -715,7 +716,7 @@ m2/gm2-pge-boot/$(SRC_PREFIX)Lists.o: $(srcdir)/m2/gm2-compiler/Lists.mod \
                                       $(MCDEPS) $(BUILD-BOOT-PGE-H) \
                                       m2/gm2-pge-boot/$(SRC_PREFIX)Lists.h
 	-test -d m2/gm2-pge-boot || $(mkinstalldirs) m2/gm2-pge-boot
-	$(MCC) --suppress-noreturn -o=m2/gm2-pge-boot/$(SRC_PREFIX)Lists.cc $(srcdir)/m2/gm2-compiler/Lists.mod
+	$(MCC) $(PGE-MC-OPTIONS) --suppress-noreturn -o=m2/gm2-pge-boot/$(SRC_PREFIX)Lists.cc $(srcdir)/m2/gm2-compiler/Lists.mod
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/pge-boot -I$(srcdir)/m2/mc-boot \
               -I$(srcdir)/m2/mc-boot-ch -Im2/gm2-libs-boot \
               $(INCLUDES) -g -c m2/gm2-pge-boot/$(SRC_PREFIX)Lists.cc -o $@
@@ -728,7 +729,7 @@ m2/gm2-pge-boot/$(SRC_PREFIX)Output.o: $(srcdir)/m2/gm2-compiler/Output.mod \
                                       $(MCDEPS) $(BUILD-BOOT-PGE-H) \
                                       m2/gm2-pge-boot/$(SRC_PREFIX)Output.h
 	-test -d m2/gm2-pge-boot || $(mkinstalldirs) m2/gm2-pge-boot
-	$(MCC) --suppress-noreturn -o=m2/gm2-pge-boot/$(SRC_PREFIX)Output.cc $(srcdir)/m2/gm2-compiler/Output.mod
+	$(MCC) $(PGE-MC-OPTIONS) --suppress-noreturn -o=m2/gm2-pge-boot/$(SRC_PREFIX)Output.cc $(srcdir)/m2/gm2-compiler/Output.mod
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/pge-boot -I$(srcdir)/m2/mc-boot \
               -I$(srcdir)/m2/mc-boot-ch -Im2/gm2-libs-boot \
               $(INCLUDES) -g -c m2/gm2-pge-boot/$(SRC_PREFIX)Output.cc -o $@
@@ -741,7 +742,7 @@ m2/gm2-pge-boot/$(SRC_PREFIX)bnflex.o: $(srcdir)/m2/gm2-compiler/bnflex.mod \
                                       $(MCDEPS) $(BUILD-BOOT-PGE-H) \
                                       m2/gm2-pge-boot/$(SRC_PREFIX)bnflex.h
 	-test -d m2/gm2-pge-boot || $(mkinstalldirs) m2/gm2-pge-boot
-	$(MCC) --suppress-noreturn -o=m2/gm2-pge-boot/$(SRC_PREFIX)bnflex.cc $(srcdir)/m2/gm2-compiler/bnflex.mod
+	$(MCC) $(PGE-MC-OPTIONS) --suppress-noreturn -o=m2/gm2-pge-boot/$(SRC_PREFIX)bnflex.cc $(srcdir)/m2/gm2-compiler/bnflex.mod
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/pge-boot -I$(srcdir)/m2/mc-boot \
               -I$(srcdir)/m2/mc-boot-ch -Im2/gm2-libs-boot \
               $(INCLUDES) -g -c m2/gm2-pge-boot/$(SRC_PREFIX)bnflex.cc -o $@
@@ -764,28 +765,28 @@ m2/gm2-pge-boot/$(SRC_PREFIX)RTentity.o: $(srcdir)/m2/gm2-libs-iso/RTentity.mod 
                                       $(MCDEPS) $(BUILD-BOOT-PGE-H) \
                                       m2/gm2-pge-boot/$(SRC_PREFIX)RTentity.h
 	-test -d m2/gm2-pge-boot || $(mkinstalldirs) m2/gm2-pge-boot
-	$(MCC) --suppress-noreturn -o=m2/gm2-pge-boot/$(SRC_PREFIX)RTentity.cc $(srcdir)/m2/gm2-libs-iso/RTentity.mod
+	$(MCC) $(PGE-MC-OPTIONS) --suppress-noreturn -o=m2/gm2-pge-boot/$(SRC_PREFIX)RTentity.cc $(srcdir)/m2/gm2-libs-iso/RTentity.mod
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/pge-boot -I$(srcdir)/m2/mc-boot \
               -I$(srcdir)/m2/mc-boot-ch -Im2/gm2-libs-boot \
               $(INCLUDES) -g -c m2/gm2-pge-boot/$(SRC_PREFIX)RTentity.cc -o $@
 
 m2/gm2-pge-boot/$(SRC_PREFIX)%.o: $(srcdir)/m2/gm2-libs/%.mod $(MCDEPS) $(BUILD-BOOT-PGE-H)
 	-test -d m2/gm2-pge-boot || $(mkinstalldirs) m2/gm2-pge-boot
-	$(MCC) -o=m2/gm2-pge-boot/$(SRC_PREFIX)$*.cc $(srcdir)/m2/gm2-libs/$*.mod
+	$(MCC) $(PGE-MC-OPTIONS) -o=m2/gm2-pge-boot/$(SRC_PREFIX)$*.cc $(srcdir)/m2/gm2-libs/$*.mod
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/pge-boot -I$(srcdir)/m2/mc-boot \
               -I$(srcdir)/m2/mc-boot-ch -Im2/gm2-libs-boot \
               $(INCLUDES) -g -c m2/gm2-pge-boot/$(SRC_PREFIX)$*.cc -o $@
 
 m2/gm2-pge-boot/$(SRC_PREFIX)%.o: $(srcdir)/m2/gm2-compiler/%.mod $(MCDEPS) $(BUILD-BOOT-PGE-H)
 	-test -d m2/gm2-pge-boot || $(mkinstalldirs) m2/gm2-pge-boot
-	$(MCC) -o=m2/gm2-pge-boot/$(SRC_PREFIX)$*.cc $(srcdir)/m2/gm2-compiler/$*.mod
+	$(MCC) $(PGE-MC-OPTIONS) -o=m2/gm2-pge-boot/$(SRC_PREFIX)$*.cc $(srcdir)/m2/gm2-compiler/$*.mod
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/mc-boot -Im2/gm2-compiler-boot \
               -Im2/gm2-libs-boot -Im2/gm2-pge-boot \
               -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) -g -c m2/gm2-pge-boot/$(SRC_PREFIX)$*.cc -o $@
 
 m2/gm2-pge-boot/$(SRC_PREFIX)pge.o:  m2/gm2-auto/pge.mod $(MCDEPS) $(BUILD-BOOT-PGE-H)
 	-test -d m2/gm2-pge-boot || $(mkinstalldirs) m2/gm2-pge-boot
-	$(MCC) -o=m2/gm2-pge-boot/$(SRC_PREFIX)pge.cc m2/gm2-auto/pge.mod
+	$(MCC) $(PGE-MC-OPTIONS) -o=m2/gm2-pge-boot/$(SRC_PREFIX)pge.cc m2/gm2-auto/pge.mod
 	$(CXX) -I. -I$(srcdir)/../include -I$(srcdir) \
               -I$(srcdir)/m2/mc-boot -Im2/gm2-compiler-boot -Im2/gm2-libs-boot \
               -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) -g -c m2/gm2-pge-boot/$(SRC_PREFIX)pge.cc -o $@
@@ -829,12 +830,12 @@ $(objdir)/m2/gm2-pge-boot:
 
 m2/gm2-auto/pg.o: m2/gm2-auto/pg.mod $(MCDEPS)
 	-test -d m2/gm2-pge-boot || $(mkinstalldirs) m2/gm2-pge-boot
-	$(MC) --quiet -o=m2/gm2-auto/pg.c m2/gm2-auto/pg.mod
+	$(MC) $(PGE-MC-OPTIONS) --quiet -o=m2/gm2-auto/pg.c m2/gm2-auto/pg.mod
 	$(COMPILER) -c $(CFLAGS) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2 -Im2/gm2-libs-boot -Im2/gm2-compiler-boot -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) m2/gm2-auto/pg.c -o $@
 
 m2/gm2-auto/pge.o: m2/gm2-auto/pge.mod $(MCDEPS)
 	-test -d m2/gm2-auto || $(mkinstalldirs) m2/gm2-auto
-	$(MC) --quiet -o=m2/gm2-auto/pge.c m2/gm2-auto/pge.mod
+	$(MC) $(PGE-MC-OPTIONS) --quiet -o=m2/gm2-auto/pge.c m2/gm2-auto/pge.mod
 	$(COMPILER) -c $(CFLAGS) -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2 -Im2/gm2-libs-boot -Im2/gm2-compiler-boot -I$(srcdir)/m2/mc-boot-ch $(INCLUDES) m2/gm2-auto/pge.c -o $@
 
 pge-help: force
@@ -1061,8 +1062,8 @@ mc-autogen: mc-clean mc-devel \
             $(BUILD-MC-BOOT-H) $(BUILD-MC-BOOT-CC) \
             $(BUILD-MC-BOOT-AUTO-CC)
 	for i in m2/mc-boot-gen/*.cc ; do \
-           echo $(CXX) -g -c -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/mc-boot-ch -Im2/mc-boot-gen/ $$i -o m2/mc-boot-gen/`basename $$i .cc`.o ; \
-                $(CXX) -g -c -I. -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/mc-boot-ch -Im2/mc-boot-gen/ $$i -o m2/mc-boot-gen/`basename $$i .cc`.o ; done
+           echo $(CXX) -g -c -I. $(GMPINC) -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/mc-boot-ch -Im2/mc-boot-gen/ $$i -o m2/mc-boot-gen/`basename $$i .cc`.o ; \
+                $(CXX) -g -c -I. $(GMPINC) -I$(srcdir)/../include -I$(srcdir) -I$(srcdir)/m2/mc-boot-ch -Im2/mc-boot-gen/ $$i -o m2/mc-boot-gen/`basename $$i .cc`.o ; done
 	@echo -n "built "
 	@cd m2/mc-boot-gen ; ls *.o | wc -l
 	@echo -n "out of "
