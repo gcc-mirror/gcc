@@ -311,7 +311,7 @@ PROCEDURE creat (filename: ADDRESS; mode: CARDINAL) : INTEGER;
            off_t lseek(int fildes, off_t offset, int whence);
 *)
 
-PROCEDURE lseek (fd: INTEGER; offset: CSSIZE_T; whence: INTEGER) : [ COFF_T ] ;
+PROCEDURE lseek (fd: INTEGER; offset: COFF_T; whence: INTEGER) : [ COFF_T ] ;
 
 
 (*
