@@ -1,3 +1,19 @@
+2025-01-24  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117153
+	* g++.dg/other/anon-union6.C: New test.
+	* g++.dg/other/anon-union7.C: New test.
+
+2025-01-24  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2025-01-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-error.c: New test.
+
 2025-01-21  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
