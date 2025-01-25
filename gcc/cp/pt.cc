@@ -12118,19 +12118,16 @@ tsubst_contract (tree decl, tree t, tree args, tsubst_flags_t complain,
 	  return invalidate_contract (r);
     }
 
-  /* Should we const-ify this condition?  */
-  bool old_flag_contracts_nonattr_noconst = flag_contracts_nonattr_noconst;
-  bool const_p = get_contract_const (t);
-  flag_contracts_nonattr_noconst = !const_p;
-
   /* Instantiate the condition.  If the return type is undeduced, process
      the expression as if inside a template to avoid spurious type errors.  */
   begin_scope (sk_contract, decl);
-  ++processing_contract_condition;
+  bool old_pc = processing_postcondition;
+  bool old_const = should_constify_contract;
+  processing_postcondition = POSTCONDITION_P (t);
+  /* Should we const-ify this condition?  */
+  should_constify_contract =  get_contract_const (t);
   if (auto_p)
     ++processing_template_decl;
-  if (POSTCONDITION_P (t))
-    ++processing_contract_postcondition;
   if (newvar)
     /* Make the variable available for lookup.  */
     register_local_specialization (newvar, oldvar);
@@ -12142,13 +12139,13 @@ tsubst_contract (tree decl, tree t, tree args, tsubst_flags_t complain,
   CONTRACT_COMMENT (r)
       = tsubst_expr (CONTRACT_COMMENT (r), args, complain, in_decl);
 
-  if (POSTCONDITION_P (t))
-    --processing_contract_postcondition;
   if (auto_p)
     --processing_template_decl;
-  --processing_contract_condition;
+  processing_postcondition = old_pc;
+  should_constify_contract = old_const;
+  gcc_checking_assert (scope_chain && scope_chain->bindings
+		       && scope_chain->bindings->kind == sk_contract);
   pop_bindings_and_leave_scope ();
-  flag_contracts_nonattr_noconst = old_flag_contracts_nonattr_noconst;
 
   return r;
 }
@@ -22143,7 +22140,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		 declaration (such as in a late-specified return type).  Just
 		 make a dummy decl, since it's only used for its type.  */
 	      gcc_assert (cp_unevaluated_operand
-			  || processing_contract_postcondition);
+			  || processing_postcondition);
 	      r = tsubst_decl (t, args, complain);
 	      /* Give it the template pattern as its context; its true context
 		 hasn't been instantiated yet and this is good enough for
@@ -22557,7 +22554,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	maybe_reject_param_in_postcondition (op);
 
-	if (flag_contracts_nonattr && !flag_contracts_nonattr_noconst
+	if (flag_contracts_nonattr && should_constify_contract
 	    && processing_contract_condition)
 	    op = constify_contract_access(op);
 
