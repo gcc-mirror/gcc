@@ -1,5 +1,187 @@
 2025-01-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
+	PR modula2/117737
+	PR modula2/118010
+	* Make-maintainer.in (PGE-MC-OPTIONS): New macro.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)M2RTS.o): Use $(PGE-MC-OPTIONS).
+	(m2/gm2-pge-boot/$(SRC_PREFIX)SymbolKey.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)NameKey.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)Lists.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)Output.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)bnflex.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)RTentity.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)%.o): Ditto.
+	(m2/gm2-pge-boot/$(SRC_PREFIX)pge.o): Ditto.
+	(m2/gm2-auto/pg.o): Ditto.
+	(m2/gm2-auto/pge.o): Ditto.
+	(mc-autogen): Add include directory $(GMPINC) to $(CXX).
+	* mc/keyc.mod (checkGccConfigSystem): Remove
+	INCLUDE_MEMORY define.
+	* mc-boot/GASCII.cc (INCLUDE_MEMORY): Removed during rebuild.
+	* mc-boot/GASCII.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GArgs.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GArgs.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GAssertion.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GAssertion.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GBreak.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GBreak.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GCOROUTINES.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GCmdArgs.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GCmdArgs.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GDebug.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GDebug.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GDynamicStrings.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GDynamicStrings.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GEnvironment.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GEnvironment.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GFIO.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GFIO.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GFormatStrings.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GFormatStrings.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GFpuIO.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GFpuIO.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GIO.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GIO.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GIndexing.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GIndexing.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GM2Dependent.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GM2Dependent.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GM2EXCEPTION.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GM2EXCEPTION.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GM2RTS.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GM2RTS.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GMemUtils.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GMemUtils.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GNumberIO.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GNumberIO.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GPushBackInput.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GPushBackInput.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GRTExceptions.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GRTExceptions.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GRTco.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GRTentity.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GRTint.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GRTint.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GSArgs.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GSArgs.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GSFIO.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GSFIO.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GSYSTEM.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GSelective.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GStdIO.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GStdIO.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GStorage.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GStorage.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GStrCase.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GStrCase.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GStrIO.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GStrIO.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GStrLib.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GStrLib.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GStringConvert.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GStringConvert.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GSysExceptions.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GSysStorage.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GSysStorage.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GTimeString.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GTimeString.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GUnixArgs.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Galists.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Galists.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gdecl.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gdecl.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gdtoa.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gerrno.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gkeyc.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gkeyc.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gldtoa.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Glibc.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Glibm.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Glists.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Glists.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcComment.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcComment.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcComp.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcComp.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcDebug.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcDebug.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcError.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcError.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcFileName.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcFileName.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcLexBuf.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcLexBuf.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcMetaError.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcMetaError.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcOptions.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcOptions.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcPreprocess.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcPreprocess.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcPretty.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcPretty.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcPrintf.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcPrintf.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcQuiet.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcQuiet.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcReserved.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcReserved.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcSearch.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcSearch.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcStack.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcStack.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcStream.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GmcStream.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gmcflex.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gmcp1.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gmcp1.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gmcp2.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gmcp2.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gmcp3.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gmcp3.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gmcp4.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gmcp4.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gmcp5.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gmcp5.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GnameKey.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GnameKey.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GsymbolKey.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/GsymbolKey.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gtermios.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gtop.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gvarargs.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gvarargs.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gwlists.cc (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gwlists.h (INCLUDE_MEMORY): Ditto.
+	* mc-boot/Gwrapc.h (INCLUDE_MEMORY): Ditto.
+	* pge-boot/GIndexing.h (INCLUDE_MEMORY): Ditto.
+	* pge-boot/GSEnvironment.h (INCLUDE_MEMORY): Ditto.
+	* pge-boot/GScan.h (INCLUDE_MEMORY): Ditto.
+
+2025-01-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118010
+	* gm2-libs-log/FileSystem.mod (doModeChange): Replace
+	LONGINT with COFF_T.
+	(SetPos): Use COFF_T for the return value and offset type
+	when calling lseek.
+	* gm2-libs/FIO.mod (SetPositionFromBeginning): Convert pos
+	to COFF_T.
+	(SetPositionFromEnd): Ditto.
+	* mc-boot/GFIO.cc: Rebuild.
+	* mc-boot/Glibc.h: Ditto.
+	* pge-boot/GFIO.cc: Ditto.
+	* pge-boot/Glibc.h: Ditto.
+
+2025-01-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118010
+	* gm2-compiler/P2SymBuild.mod (Debug): Comment out unused
+	procedure.
+	* gm2-libs/libc.def (lseek): Declare second parameter offset
+	as COFF_T.
+
+2025-01-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
 	PR modula2/118589
 	* gm2-compiler/M2MetaError.mod (symDesc): Add opaque type
 	description.

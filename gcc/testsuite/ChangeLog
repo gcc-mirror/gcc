@@ -1,3 +1,47 @@
+2025-01-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/58857
+	* gfortran.dg/uncommon_block_data_2.f90: New test.
+
+2025-01-25  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118239
+	* g++.dg/cpp0x/constexpr-base8.C: New test.
+
+2025-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/118639
+	* c-c++-common/gomp/pr118639.c: New test.
+	* c-c++-common/goacc/cache-2.c: Remove one xfail for c.
+
+2025-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117827
+	* g++.dg/init/array66.C: New test.
+
+2025-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116568
+	* g++.dg/modules/lambda-8.h: New test.
+	* g++.dg/modules/lambda-8_a.H: New test.
+	* g++.dg/modules/lambda-8_b.C: New test.
+
+2025-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116568
+	* g++.dg/modules/internal-4_b.C: Remove XFAIL, add lambda alias
+	testcase.
+	* g++.dg/modules/lambda-9.h: New test.
+	* g++.dg/modules/lambda-9_a.H: New test.
+	* g++.dg/modules/lambda-9_b.C: New test.
+
+2025-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118245
+	* g++.dg/abi/lambda-ctx3.C: New test.
+	* g++.dg/cpp2a/lambda-uneval22.C: New test.
+	* g++.dg/cpp2a/lambda-uneval23.C: New test.
+
 2025-01-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/118589

@@ -1,3 +1,13 @@
+2025-01-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/58857
+	* class.cc (gfc_find_derived_vtab): Declare some frontend generated
+	variables and procedures (_vtab, _copy, _deallocate) as artificial.
+	(find_intrinsic_vtab): Likewise.
+	* trans-decl.cc (check_block_data_decls): New helper function.
+	(gfc_generate_block_data): Use it to emit warnings for variables
+	declared in a BLOCK DATA program unit but not in a COMMON block.
+
 2025-01-23  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/118613

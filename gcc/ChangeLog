@@ -1,3 +1,20 @@
+2025-01-25  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR preprocessor/118168
+	* input.cc (file_cache_slot::m_error): New field.
+	(file_cache_slot::create): Clear m_error.
+	(file_cache_slot::file_cache_slot): Clear m_error.
+	(file_cache_slot::read_data): Set m_error on error.
+	(file_cache_slot::get_next_line): Use m_error instead of ferror.
+
+2025-01-25  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116256
+	* config/riscv/riscv.md (mvconst_internal): Reject single bit
+	constants.
+	* config/riscv/riscv.cc (riscv_gen_zero_extend_rtx): Improve
+	handling constants.
+
 2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	* config/aarch64/aarch64-arches.def (V9_5A): Add CPA.

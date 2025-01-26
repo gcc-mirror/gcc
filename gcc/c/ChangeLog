@@ -1,3 +1,9 @@
+2025-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/118639
+	* c-parser.cc (c_parser_omp_variable_list): Remove first variable
+	and emit "expected identifier" error regardless of it.
+
 2025-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/118604

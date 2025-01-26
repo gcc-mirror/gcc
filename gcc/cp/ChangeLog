@@ -1,3 +1,46 @@
+2025-01-25  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118239
+	* constexpr.cc (cx_check_missing_mem_inits): Don't skip fields
+	with DECL_FIELD_IS_BASE.
+
+2025-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117827
+	* init.cc (build_new_1): Pass address of a make_tree_vector ()
+	initialized gc tree vector to build_vec_init and append
+	build_disable_temp_cleanup to init_expr from it.
+
+2025-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116568
+	* module.cc (trees_out::get_merge_kind): Treat all lambdas
+	without a mangling scope as un-mergeable.
+
+2025-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116568
+	* cp-tree.h (finish_concept_definition): Adjust parameters.
+	(start_concept_definition): Declare.
+	* module.cc (depset::hash::is_tu_local_entity): Use
+	LAMBDA_EXPR_EXTRA_SCOPE to detect TU-local lambdas.
+	* parser.cc (cp_parser_concept_definition): Start a lambda scope
+	for concept definitions.
+	* pt.cc (tsubst_lambda_expr): Namespace-scope lambdas may now
+	have extra scope.
+	(finish_concept_definition): Split into...
+	(start_concept_definition): ...this new function.
+
+2025-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118245
+	* cp-tree.h (LAMBDA_EXPR_EXTRA_SCOPE): Adjust comment.
+	* parser.cc (cp_parser_class_head): Start (and do not finish)
+	lambda scope for all valid types.
+	(cp_parser_class_specifier): Finish lambda scope after parsing
+	members instead.
+	* pt.cc (instantiate_class_template): Add lambda scoping.
+
 2025-01-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/117153
