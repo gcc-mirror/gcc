@@ -5741,6 +5741,9 @@ check_externals_procedure (gfc_symbol *sym, locus *loc,
   if (gsym->ns)
     gfc_find_symbol (sym->name, gsym->ns, 0, &def_sym);
 
+  if (gsym->bind_c && def_sym && def_sym->binding_label == NULL)
+    return 0;
+
   if (def_sym)
     {
       gfc_compare_actual_formal (&actual, def_sym->formal, 0, 0, 0, loc);
@@ -5837,6 +5840,10 @@ check_against_globals (gfc_symbol *sym)
 
   if (sym->binding_label)
     sym_name = sym->binding_label;
+  else if (sym->attr.use_rename
+	   && sym->ns->use_stmts->rename
+	   && sym->ns->use_stmts->rename->local_name[0] != '\0')
+    sym_name = sym->ns->use_stmts->rename->local_name;
   else
     sym_name = sym->name;
 
