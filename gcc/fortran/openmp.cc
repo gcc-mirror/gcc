@@ -109,8 +109,8 @@ static const struct gfc_omp_directive gfc_omp_directives[] = {
   {"task", GFC_OMP_DIR_EXECUTABLE, ST_OMP_TASK},
   {"teams", GFC_OMP_DIR_EXECUTABLE, ST_OMP_TEAMS},
   {"threadprivate", GFC_OMP_DIR_DECLARATIVE, ST_OMP_THREADPRIVATE},
-  /* {"tile", GFC_OMP_DIR_EXECUTABLE, ST_OMP_TILE}, */
-  /* {"unroll", GFC_OMP_DIR_EXECUTABLE, ST_OMP_UNROLL}, */
+  {"tile", GFC_OMP_DIR_EXECUTABLE, ST_OMP_TILE},
+  {"unroll", GFC_OMP_DIR_EXECUTABLE, ST_OMP_UNROLL},
   {"workshare", GFC_OMP_DIR_EXECUTABLE, ST_OMP_WORKSHARE},
 };
 
