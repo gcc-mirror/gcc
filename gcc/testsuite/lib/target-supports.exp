@@ -10968,7 +10968,7 @@ proc check_effective_target_avx10_2 { } {
 	{
 	  __asm__ volatile ("vdpphps\t%ymm4, %ymm5, %ymm6");
 	  __asm__ volatile ("vcvthf82ph\t%xmm5, %ymm6");
-	  __asm__ volatile ("vaddnepbf16\t%ymm4, %ymm5, %ymm6");
+	  __asm__ volatile ("vaddbf16\t%ymm4, %ymm5, %ymm6");
 	  __asm__ volatile ("vcvtph2ibs\t%ymm5, %ymm6");
 	  __asm__ volatile ("vminmaxpd\t$123, %ymm4, %ymm5, %ymm6");
 	}
@@ -10983,7 +10983,7 @@ proc check_effective_target_avx10_2_512 { } {
 	{
 	  __asm__ volatile ("vdpphps\t%zmm4, %zmm5, %zmm6");
 	  __asm__ volatile ("vcvthf82ph\t%ymm5, %zmm6");
-	  __asm__ volatile ("vaddnepbf16\t%zmm4, %zmm5, %zmm6");
+	  __asm__ volatile ("vaddbf16\t%zmm4, %zmm5, %zmm6");
 	  __asm__ volatile ("vcvtph2ibs\t%zmm5, %zmm6");
 	  __asm__ volatile ("vminmaxpd\t$123, %zmm4, %zmm5, %zmm6");
 	}
@@ -12304,7 +12304,7 @@ proc check_effective_target_aarch64_tiny { } {
 
 foreach { aarch64_ext } { "fp" "simd" "crypto" "crc" "lse" "dotprod" "sve"
 			  "i8mm" "f32mm" "f64mm" "bf16" "sb" "sve2" "ls64"
-			  "sme" "sme-i16i64" "sme2" "sve-b16b16"
+			  "lut" "sme" "sme-i16i64" "sme2" "sve-b16b16"
 			  "sme-b16b16" "sme-f16f16" "sme2p1" "fp8" "fp8fma"
 			  "ssve-fp8fma" "fp8dot2" "ssve-fp8dot2" "fp8dot4"
 			  "ssve-fp8dot4"} {
@@ -12957,6 +12957,22 @@ proc check_effective_target_s390_vxe2 { } {
 	    return 0;
 	}
     } "-march=arch13 -mzarch" ]
+}
+
+# Same as above but for the arch15 vector enhancement facility. Test
+# is performed with the vector divide instruction.
+proc check_effective_target_s390_vxe3 { } {
+    if ![istarget s390*-*-*] then {
+	return 0;
+    }
+
+    return [check_runtime s390_check_vxe3 {
+	int main (void)
+	{
+	    asm ("vd %%v24, %%v26, %%v28, 2, 0" : : : "v24", "v26", "v28");
+	    return 0;
+	}
+    } "-march=arch15 -mzarch" ]
 }
 
 # Same as above but for the arch14 NNPA facility.
@@ -14254,4 +14270,31 @@ proc add_options_for_nvptx_alloca_ptx { flags } {
     }
 
     return $flags
+}
+
+# Return true if alarm is supported on the target.
+
+proc check_effective_target_alarm { } {
+    if { ![check_effective_target_signal] } {
+	return 0
+    }
+
+    return [check_no_compiler_messages alarm executable {
+	#include <signal.h>
+	#include <stdlib.h>
+	#include <unistd.h>
+	void do_exit(int i) { exit (0); }
+	int main (void) { 
+	  struct sigaction s;
+	  sigemptyset (&s.sa_mask);
+	  s.sa_handler = exit;
+	  s.sa_flags = 0;
+	  sigaction (SIGALRM, &s, NULL);
+	  alarm (1);
+
+	  /* Infinite loop to simulate work...  */
+	  while (1);
+	  abort ();
+	}
+    }]
 }

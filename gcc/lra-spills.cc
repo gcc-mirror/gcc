@@ -386,7 +386,17 @@ assign_stack_slot_num_and_sort_pseudos (int *pseudo_regnos, int n)
 		&& ! (lra_intersected_live_ranges_p
 		      (slots[j].live_ranges,
 		       lra_reg_info[regno].live_ranges)))
-	      break;
+	      {
+		/* A slot without allocated memory can be shared.  */
+		if (slots[j].mem == NULL_RTX)
+		  break;
+
+		/* A slot with allocated memory can be shared only with equal
+		   or smaller register with equal or smaller alignment.  */
+		if (slots[j].align >= spill_slot_alignment (mode)
+		    && known_ge (slots[j].size, GET_MODE_SIZE (mode)))
+		  break;
+	      }
 	}
       if (j >= slots_num)
 	{
@@ -656,8 +666,7 @@ lra_spill (void)
       for (i = 0; i < slots_num; i++)
 	{
 	  fprintf (lra_dump_file, "  Slot %d regnos (width = ", i);
-	  print_dec (GET_MODE_SIZE (GET_MODE (slots[i].mem)),
-		     lra_dump_file, SIGNED);
+	  print_dec (slots[i].size, lra_dump_file, SIGNED);
 	  fprintf (lra_dump_file, "):");
 	  for (curr_regno = slots[i].regno;;
 	       curr_regno = pseudo_slots[curr_regno].next - pseudo_slots)

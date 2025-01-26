@@ -4261,8 +4261,7 @@ add_list_candidates (tree fns, tree first_arg,
   vec_alloc (new_args, nart + CONSTRUCTOR_NELTS (init_list));
   for (unsigned i = 0; i < nart; ++i)
     new_args->quick_push ((*args)[i]);
-  for (unsigned i = 0; i < CONSTRUCTOR_NELTS (init_list); ++i)
-    new_args->quick_push (CONSTRUCTOR_ELT (init_list, i)->value);
+  new_args = append_ctor_to_tree_vector (new_args, init_list);
 
   /* We aren't looking for list-ctors anymore.  */
   flags &= ~LOOKUP_LIST_ONLY;

@@ -1416,7 +1416,7 @@ find_reg_classes (void)
 
 
 
-/* Set up the array above.  */
+/* Set up array ira_hard_regno_allocno_class.  */
 static void
 setup_hard_regno_aclass (void)
 {
@@ -1424,25 +1424,10 @@ setup_hard_regno_aclass (void)
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-#if 1
       ira_hard_regno_allocno_class[i]
 	= (TEST_HARD_REG_BIT (no_unit_alloc_regs, i)
 	   ? NO_REGS
 	   : ira_allocno_class_translate[REGNO_REG_CLASS (i)]);
-#else
-      int j;
-      enum reg_class cl;
-      ira_hard_regno_allocno_class[i] = NO_REGS;
-      for (j = 0; j < ira_allocno_classes_num; j++)
- 	{
-	  cl = ira_allocno_classes[j];
- 	  if (ira_class_hard_reg_index[cl][i] >= 0)
- 	    {
-	      ira_hard_regno_allocno_class[i] = cl;
- 	      break;
- 	    }
- 	}
-#endif
     }
 }
 
@@ -5549,6 +5534,30 @@ static int saved_flag_ira_share_spill_slots;
 /* Set to true while in IRA.  */
 bool ira_in_progress = false;
 
+/* Set up array ira_hard_regno_nrefs.  */
+static void
+setup_hard_regno_nrefs (void)
+{
+  int i;
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      ira_hard_regno_nrefs[i] = 0;
+      for (df_ref use = DF_REG_USE_CHAIN (i);
+	   use != NULL;
+	   use = DF_REF_NEXT_REG (use))
+	if (DF_REF_CLASS (use) != DF_REF_ARTIFICIAL
+	    && !(DF_REF_INSN_INFO (use) && DEBUG_INSN_P (DF_REF_INSN (use))))
+	  ira_hard_regno_nrefs[i]++;
+      for (df_ref def = DF_REG_DEF_CHAIN (i);
+	   def != NULL;
+	   def = DF_REF_NEXT_REG (def))
+	if (DF_REF_CLASS (def) != DF_REF_ARTIFICIAL
+	    && !(DF_REF_INSN_INFO (def) && DEBUG_INSN_P (DF_REF_INSN (def))))
+	  ira_hard_regno_nrefs[i]++;
+    }
+}
+
 /* This is the main entry of IRA.  */
 static void
 ira (FILE *f)
@@ -5562,6 +5571,7 @@ ira (FILE *f)
   edge e;
   bool output_jump_reload_p = false;
 
+  setup_hard_regno_nrefs ();
   if (ira_use_lra_p)
     {
       /* First put potential jump output reloads on the output edges

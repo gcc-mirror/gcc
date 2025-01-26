@@ -54,7 +54,7 @@ FROM DynamicStrings IMPORT String, InitString, KillString, Mark, ConCat, ConCatC
 FROM M2Printf IMPORT printf0, printf1 ;
 FROM M2Debug IMPORT Assert ;
 FROM P2SymBuild IMPORT BuildString, BuildNumber ;
-FROM M2MetaError IMPORT MetaErrorT0 ;
+FROM M2MetaError IMPORT MetaErrorT0, MetaErrorT2 ;
 FROM M2CaseList IMPORT ElseCase ;
 
 FROM M2Reserved IMPORT tokToTok, toktype,
@@ -1085,15 +1085,14 @@ SubDesignator := "."                                                       % VAR
                                                                                 n1 := GetSymName(Sym) ;
                                                                                 IF IsModuleKnown(GetSymName(Sym))
                                                                                 THEN
-                                                                                   WriteFormat2('%a looks like a module which has not been globally imported (eg. suggest that you IMPORT %a ;)',
+                                                                                   WriteFormat2('%a looks like a module which has not been globally imported (eg. suggest that you IMPORT %a)',
                                                                                    n1, n1)
                                                                                 ELSE
                                                                                    WriteFormat1('%a is not a record variable', n1)
                                                                                 END
                                                                              ELSIF NOT IsRecord(Type)
                                                                              THEN
-                                                                                n1 := GetSymName(Type) ;
-                                                                                WriteFormat1('%a is not a record type', n1)
+                                                                                MetaErrorT2 (tok, "the type of {%1ad} is not a record (but {%2ad}) and therefore it has no field", Sym, Type) ;
                                                                              END ;
                                                                              StartScope(Type) %
                  Ident

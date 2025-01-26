@@ -25,7 +25,6 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <stdbool.h>
@@ -2088,7 +2087,7 @@ extern "C" void FIO_SetPositionFromBeginning (FIO_File f, long int pos)
                   fd->buffer->position = 0;
                   fd->buffer->filled = 0;
                 }
-              offset = static_cast<long int> (libc_lseek (fd->unixfd, (ssize_t ) (pos), wrapc_SeekSet ()));
+              offset = static_cast<long int> (libc_lseek (fd->unixfd, (off_t ) (pos), wrapc_SeekSet ()));
               if ((offset >= 0) && (pos == offset))
                 {
                   fd->abspos = pos;
@@ -2137,7 +2136,7 @@ extern "C" void FIO_SetPositionFromEnd (FIO_File f, long int pos)
               fd->buffer->position = 0;
               fd->buffer->filled = 0;
             }
-          offset = static_cast<long int> (libc_lseek (fd->unixfd, (ssize_t ) (pos), wrapc_SeekEnd ()));
+          offset = static_cast<long int> (libc_lseek (fd->unixfd, (off_t ) (pos), wrapc_SeekEnd ()));
           if (offset >= 0)
             {
               fd->abspos = offset;

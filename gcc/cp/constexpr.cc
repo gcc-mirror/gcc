@@ -839,9 +839,8 @@ cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
       if (i < nelts)
 	{
 	  index = CONSTRUCTOR_ELT (body, i)->index;
-	  /* Skip base and vtable inits.  */
-	  if (TREE_CODE (index) != FIELD_DECL
-	      || DECL_ARTIFICIAL (index))
+	  /* Skip vptr adjustment represented with a COMPONENT_REF.  */
+	  if (TREE_CODE (index) != FIELD_DECL)
 	    continue;
 	}
 
@@ -852,7 +851,8 @@ cx_check_missing_mem_inits (tree ctype, tree body, bool complain)
 	    continue;
 	  if (DECL_UNNAMED_BIT_FIELD (field))
 	    continue;
-	  if (DECL_ARTIFICIAL (field))
+	  /* Artificial fields can be ignored unless they're bases.  */
+	  if (DECL_ARTIFICIAL (field) && !DECL_FIELD_IS_BASE (field))
 	    continue;
 	  if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
 	    {
@@ -8987,6 +8987,11 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   r = cxx_eval_constant_expression (&ctx, r, vc_prvalue,
 				    &non_constant_p, &overflow_p);
 
+  /* If we got a non-simple TARGET_EXPR, the initializer was a sequence
+     of statements, and the result ought to be stored in ctx.ctor.  */
+  if (r == void_node && !constexpr_dtor && ctx.ctor)
+    r = ctx.ctor;
+
   if (!constexpr_dtor)
     verify_constant (r, allow_non_constant, &non_constant_p, &overflow_p);
   else
@@ -9093,6 +9098,16 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
     r = mark_non_constant (r);
   else if (non_constant_p)
     return t;
+
+  /* Check we are not trying to return the wrong type.  */
+  if (!same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (r)))
+    {
+      /* If so, this is not a constant expression.  */
+      if (!allow_non_constant)
+	error ("%qE is not a constant expression because it initializes "
+	       "a %qT rather than %qT", t, TREE_TYPE (t), type);
+      return t;
+    }
 
   if (should_unshare)
     r = unshare_expr (r);

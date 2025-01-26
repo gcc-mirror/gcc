@@ -2,7 +2,7 @@
 // { dg-do compile { target c++11 } }
 // { dg-options "" }
 // Override any default-'-fno-exceptions':
-// { dg-additional-options -fexceptions }
+// { dg-additional-options "-fexceptions -fno-implicit-constexpr" }
 
 struct A {};
 struct B { int size; };

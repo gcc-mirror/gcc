@@ -3,6 +3,7 @@
 
 export module bad;
 namespace global {}
+struct S { int x; };
 
 export static int x = 123;  // { dg-error "internal linkage" }
 export static void f();  // { dg-error "internal linkage" }
@@ -10,12 +11,17 @@ export static void g() {}  // { dg-error "internal linkage" }
 export template <typename T> static void t();  // { dg-error "internal linkage" }
 export template <typename T> static void u() {}  // { dg-error "internal linkage" }
 
+#if __cplusplus >= 202002L
+export static auto [d] = S{};  // { dg-error "internal linkage" "" { target c++20 } }
+#endif
+
 namespace {
   export int y = 456;  // { dg-error "internal linkage" }
   export void h();  // { dg-error "internal linkage" }
   export void i() {}  // { dg-error "internal linkage" }
   export template <typename T> void v(); // { dg-error "internal linkage" }
   export template <typename T> void w() {} // { dg-error "internal linkage" }
+  export auto [e] = S{};  // { dg-error "internal linkage" }
 
   export namespace ns {}  // { dg-error "internal linkage" }
   export namespace alias = global;  // { dg-error "internal linkage" }

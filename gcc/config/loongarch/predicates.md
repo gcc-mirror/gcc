@@ -405,7 +405,13 @@
        (match_test "low_bitmask_len (mode, \
 				     ~UINTVAL (op) | (~UINTVAL(op) - 1)) \
 		    > 0")
-       (not (match_operand 0 "const_uns_arith_operand"))))
+       (not (match_operand 0 "const_uns_arith_operand"))
+       (not (match_operand 0 "low_bitmask_operand"))))
+
+(define_predicate "and_operand"
+  (ior (match_operand 0 "uns_arith_operand")
+       (match_operand 0 "low_bitmask_operand")
+       (match_operand 0 "ins_zero_bitmask_operand")))
 
 (define_predicate "const_call_insn_operand"
   (match_code "const,symbol_ref,label_ref")

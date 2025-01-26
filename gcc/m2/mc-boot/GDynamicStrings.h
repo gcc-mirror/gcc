@@ -29,7 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_DynamicStrings_H)
 #   define _DynamicStrings_H
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #   ifdef __cplusplus

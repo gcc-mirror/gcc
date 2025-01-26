@@ -32,74 +32,75 @@
 #ifdef __OPTIMIZE__
 extern __inline __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_minmax_nepbh (__m128bh __A, __m128bh __B, const int __C)
+_mm_minmax_pbh (__m128bh __A, __m128bh __B, const int __C)
 {
-  return (__m128bh) __builtin_ia32_minmaxnepbf16128_mask ((__v8bf) __A,
-							  (__v8bf) __B,
-							  __C,
-							  (__v8bf)(__m128bh)
-							  _mm_setzero_si128 (),
-							  (__mmask8) -1);
+  return (__m128bh) __builtin_ia32_minmaxbf16128_mask ((__v8bf) __A,
+						       (__v8bf) __B,
+						       __C,
+						       (__v8bf)(__m128bh)
+						       _mm_setzero_si128 (),
+						       (__mmask8) -1);
 }
 
 extern __inline __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_minmax_nepbh (__m128bh __W, __mmask8 __U, __m128bh __A,
-		       __m128bh __B, const int __C)
+_mm_mask_minmax_pbh (__m128bh __W, __mmask8 __U, __m128bh __A,
+		     __m128bh __B, const int __C)
 {
-  return (__m128bh) __builtin_ia32_minmaxnepbf16128_mask ((__v8bf) __A,
-							  (__v8bf) __B,
-							  __C,
-							  (__v8bf) __W,
-							  (__mmask8) __U);
+  return (__m128bh) __builtin_ia32_minmaxbf16128_mask ((__v8bf) __A,
+						       (__v8bf) __B,
+						       __C,
+						       (__v8bf) __W,
+						       (__mmask8) __U);
 }
 
 extern __inline __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_minmax_nepbh (__mmask8 __U, __m128bh __A, __m128bh __B, const int __C)
+_mm_maskz_minmax_pbh (__mmask8 __U, __m128bh __A, __m128bh __B, const int __C)
 {
-  return (__m128bh) __builtin_ia32_minmaxnepbf16128_mask ((__v8bf) __A,
-							  (__v8bf) __B,
-							  __C,
-							  (__v8bf)(__m128bh)
-							  _mm_setzero_si128 (),
-							  (__mmask8) __U);
+  return (__m128bh) __builtin_ia32_minmaxbf16128_mask ((__v8bf) __A,
+						       (__v8bf) __B,
+						       __C,
+						       (__v8bf)(__m128bh)
+						       _mm_setzero_si128 (),
+						       (__mmask8) __U);
 }
 
 extern __inline __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_minmax_nepbh (__m256bh __A, __m256bh __B, const int __C)
+_mm256_minmax_pbh (__m256bh __A, __m256bh __B, const int __C)
 {
-  return (__m256bh) __builtin_ia32_minmaxnepbf16256_mask ((__v16bf) __A,
-							  (__v16bf) __B,
-							  __C,
-							  (__v16bf)(__m256bh)
-							  _mm256_setzero_si256 (),
-							  (__mmask16) -1);
+  return (__m256bh) __builtin_ia32_minmaxbf16256_mask ((__v16bf) __A,
+						       (__v16bf) __B,
+						       __C,
+						       (__v16bf)(__m256bh)
+						       _mm256_setzero_si256 (),
+						       (__mmask16) -1);
 }
 
 extern __inline __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_minmax_nepbh (__m256bh __W, __mmask16 __U, __m256bh __A, __m256bh __B,
-			    const int __C)
+_mm256_mask_minmax_pbh (__m256bh __W, __mmask16 __U, __m256bh __A,
+			__m256bh __B, const int __C)
 {
-  return (__m256bh) __builtin_ia32_minmaxnepbf16256_mask ((__v16bf) __A,
-							  (__v16bf) __B,
-							  __C,
-							  (__v16bf) __W,
-							  (__mmask16) __U);
+  return (__m256bh) __builtin_ia32_minmaxbf16256_mask ((__v16bf) __A,
+						       (__v16bf) __B,
+						       __C,
+						       (__v16bf) __W,
+						       (__mmask16) __U);
 }
 
 extern __inline __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_minmax_nepbh (__mmask16 __U, __m256bh __A, __m256bh __B, const int __C)
+_mm256_maskz_minmax_pbh (__mmask16 __U, __m256bh __A,
+			 __m256bh __B, const int __C)
 {
-  return (__m256bh) __builtin_ia32_minmaxnepbf16256_mask ((__v16bf) __A,
-							  (__v16bf) __B,
-							  __C,
-							  (__v16bf)(__m256bh)
-							  _mm256_setzero_si256 (),
-							  (__mmask16) __U);
+  return (__m256bh) __builtin_ia32_minmaxbf16256_mask ((__v16bf) __A,
+						       (__v16bf) __B,
+						       __C,
+						       (__v16bf)(__m256bh)
+						       _mm256_setzero_si256 (),
+						       (__mmask16) __U);
 }
 
 extern __inline __m128d
@@ -626,51 +627,51 @@ _mm_maskz_minmax_round_ss (__mmask8 __U, __m128 __A, __m128 __B,
 }
 
 #else
-#define _mm_minmax_nepbh(A, B, C)					      \
-  ((__m128bh) __builtin_ia32_minmaxnepbf16128_mask ((__v8bf) (A),	      \
-						    (__v8bf) (B), 	      \
-						    (int) (C),		      \
-						    (__v8bf) (__m128bh)	      \
-						    _mm_setzero_si128 (),     \
-						    (__mmask8) (-1)))
+#define _mm_minmax_pbh(A, B, C)						      \
+  ((__m128bh) __builtin_ia32_minmaxbf16128_mask ((__v8bf) (A),		      \
+						 (__v8bf) (B),		      \
+						 (int) (C),		      \
+						 (__v8bf) (__m128bh)	      \
+						 _mm_setzero_si128 (),	      \
+						 (__mmask8) (-1)))
 
-#define _mm_mask_minmax_nepbh(W, U, A, B, C)				      \
-  ((__m128bh) __builtin_ia32_minmaxnepbf16128_mask ((__v8bf) (A),	      \
-						    (__v8bf) (B),	      \
-						    (int) (C),		      \
-						    (__v8bf) (__m128bh) (W),  \
-						    (__mmask8) (U)))
+#define _mm_mask_minmax_pbh(W, U, A, B, C)				      \
+  ((__m128bh) __builtin_ia32_minmaxbf16128_mask ((__v8bf) (A),		      \
+						 (__v8bf) (B),		      \
+						 (int) (C),		      \
+						 (__v8bf) (__m128bh) (W),     \
+						 (__mmask8) (U)))
 
-#define _mm_maskz_minmax_nepbh(U, A, B, C)				      \
-  ((__m128bh) __builtin_ia32_minmaxnepbf16128_mask ((__v8bf) (A),	      \
-						    (__v8bf) (B),	      \
-						    (int) (C),		      \
-						    (__v8bf) (__m128bh)	      \
-						    _mm_setzero_si128 (),     \
-						    (__mmask8) (U)))
+#define _mm_maskz_minmax_pbh(U, A, B, C)				      \
+  ((__m128bh) __builtin_ia32_minmaxbf16128_mask ((__v8bf) (A),		      \
+						 (__v8bf) (B),		      \
+						 (int) (C),		      \
+						 (__v8bf) (__m128bh)	      \
+						 _mm_setzero_si128 (),	      \
+						 (__mmask8) (U)))
 
-#define _mm256_minmax_nepbh(A, B, C)					      \
-  ((__m256bh) __builtin_ia32_minmaxnepbf16256_mask ((__v16bf) (A),	      \
-						    (__v16bf) (B),	      \
-						    (int) (C),		      \
-						    (__v16bf) (__m256bh)      \
-						    _mm256_setzero_si256 (),  \
-						    (__mmask16) (-1)))
+#define _mm256_minmax_pbh(A, B, C)					      \
+  ((__m256bh) __builtin_ia32_minmaxbf16256_mask ((__v16bf) (A),		      \
+						 (__v16bf) (B),		      \
+						 (int) (C),		      \
+						 (__v16bf) (__m256bh)	      \
+						 _mm256_setzero_si256 (),     \
+						 (__mmask16) (-1)))
 
-#define _mm256_mask_minmax_nepbh(W, U, A, B, C)				      \
-  ((__m256bh) __builtin_ia32_minmaxnepbf16256_mask ((__v16bf) (A),	      \
-  						    (__v16bf) (B),	      \
-						    (int) (C),		      \
-						    (__v16bf) (__m256bh) (W), \
-						    (__mmask16) (U)))
+#define _mm256_mask_minmax_pbh(W, U, A, B, C)				      \
+  ((__m256bh) __builtin_ia32_minmaxbf16256_mask ((__v16bf) (A),		      \
+						 (__v16bf) (B),		      \
+						 (int) (C),		      \
+						 (__v16bf) (__m256bh) (W),    \
+						 (__mmask16) (U)))
 
-#define _mm256_maskz_minmax_nepbh(U, A, B, C)				      \
-  ((__m256bh) __builtin_ia32_minmaxnepbf16256_mask ((__v16bf) (A),	      \
-						    (__v16bf) (B),	      \
-						    (int) (C),		      \
-						    (__v16bf) (__m256bh)      \
-						    _mm256_setzero_si256 (),  \
-						    (__mmask16) (U)))
+#define _mm256_maskz_minmax_pbh(U, A, B, C)				      \
+  ((__m256bh) __builtin_ia32_minmaxbf16256_mask ((__v16bf) (A),		      \
+						 (__v16bf) (B),		      \
+						 (int) (C),		      \
+						 (__v16bf) (__m256bh)	      \
+						 _mm256_setzero_si256 (),     \
+						 (__mmask16) (U)))
 
 #define _mm_minmax_pd(A, B, C)						      \
   ((__m128d) __builtin_ia32_minmaxpd128_mask ((__v2df) (A),		      \

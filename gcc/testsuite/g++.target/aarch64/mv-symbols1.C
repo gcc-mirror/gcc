@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-ifunc "" } */
 /* { dg-options "-O0" } */
+/* { dg-additional-options "-Wno-experimental-fmv-target" } */
 
 int foo ()
 {

@@ -3922,6 +3922,7 @@ tree_invariant_p_1 (tree t)
   switch (TREE_CODE (t))
     {
     case SAVE_EXPR:
+    case TARGET_EXPR:
       return true;
 
     case ADDR_EXPR:

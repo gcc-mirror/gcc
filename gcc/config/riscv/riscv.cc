@@ -10375,7 +10375,7 @@ riscv_file_end ()
       fprintf (asm_out_file, "\t.long\t4f - 3f\n");
       fprintf (asm_out_file, "3:\n");
       /* zicfiss, zicfilp.  */
-      fprintf (asm_out_file, "\t.long\t%x\n", feature_1_and);
+      fprintf (asm_out_file, "\t.long\t%lx\n", feature_1_and);
       fprintf (asm_out_file, "4:\n");
       fprintf (asm_out_file, "\t.p2align\t%u\n", p2align);
       fprintf (asm_out_file, "5:\n");
@@ -11959,7 +11959,7 @@ riscv_subword_address (rtx mem, rtx *aligned_mem, rtx *shift, rtx *mask,
 /* Leftshift a subword within an SImode register.  */
 
 void
-riscv_lshift_subword (machine_mode mode, rtx value, rtx shift,
+riscv_lshift_subword (machine_mode mode ATTRIBUTE_UNUSED, rtx value, rtx shift,
 		      rtx *shifted_value)
 {
   rtx value_reg = gen_reg_rtx (SImode);
@@ -12684,10 +12684,16 @@ riscv_gen_zero_extend_rtx (rtx x, machine_mode mode)
     emit_move_insn (xmode_reg, x);
   else
     {
-      rtx reg_x = gen_reg_rtx (mode);
+      /* Combine deliberately does not simplify extensions of constants
+	 (long story).  So try to generate the zero extended constant
+	 efficiently.
 
-      emit_move_insn (reg_x, x);
-      riscv_emit_unary (ZERO_EXTEND, xmode_reg, reg_x);
+	 First extract the constant and mask off all the bits not in MODE.  */
+      HOST_WIDE_INT val = INTVAL (x);
+      val &= GET_MODE_MASK (mode);
+
+      /* X may need synthesis, so do not blindly copy it.  */
+      xmode_reg = force_reg (Xmode, gen_int_mode (val, Xmode));
     }
 
   return xmode_reg;

@@ -2470,7 +2470,8 @@
         (match_operand:GPR 1 "splittable_const_int_operand" "i"))]
   "!ira_in_progress
    && !(p2m1_shift_operand (operands[1], <MODE>mode)
-        || high_mask_shift_operand (operands[1], <MODE>mode))"
+	|| high_mask_shift_operand (operands[1], <MODE>mode)
+	|| exact_log2 (INTVAL (operands[1])) >= 0)"
   "#"
   "&& 1"
   [(const_int 0)]
@@ -4680,11 +4681,7 @@
 			    (match_operand 2 "const_int_operand" "n"))
 		 (match_operand 3 "const_int_operand" "n")))
    (clobber (match_scratch:DI 4 "=&r"))]
-  "(TARGET_64BIT
-    && riscv_const_insns (operands[3], false)
-    && ((riscv_const_insns (operands[3], false)
-	 < riscv_const_insns (GEN_INT (INTVAL (operands[3]) >> INTVAL (operands[2])), false))
-	|| riscv_const_insns (GEN_INT (INTVAL (operands[3]) >> INTVAL (operands[2])), false) == 0))"
+  "(TARGET_64BIT && riscv_const_insns (operands[3], false) == 1)"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (ashift:DI (match_dup 1) (match_dup 2)))
@@ -4700,11 +4697,7 @@
 				   (match_operand 2 "const_int_operand" "n"))
 				 (match_operand 3 "const_int_operand" "n"))))
    (clobber (match_scratch:DI 4 "=&r"))]
-  "(TARGET_64BIT
-    && riscv_const_insns (operands[3], false)
-    && ((riscv_const_insns (operands[3], false)
-	 < riscv_const_insns (GEN_INT (INTVAL (operands[3]) >> INTVAL (operands[2])), false))
-	|| riscv_const_insns (GEN_INT (INTVAL (operands[3]) >> INTVAL (operands[2])), false) == 0))"
+  "(TARGET_64BIT && riscv_const_insns (operands[3], false) == 1)"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (ashift:DI (match_dup 1) (match_dup 2)))

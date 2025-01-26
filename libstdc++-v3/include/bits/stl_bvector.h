@@ -1132,7 +1132,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator[](size_type __n)
       {
 	__glibcxx_requires_subscript(__n);
-	return begin()[__n];
+	return _Bit_reference (this->_M_impl._M_start._M_p
+			       + __n / int(_S_word_bit),
+			       1UL << __n % int(_S_word_bit));
       }
 
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR
@@ -1140,7 +1142,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator[](size_type __n) const
       {
 	__glibcxx_requires_subscript(__n);
-	return begin()[__n];
+	return _Bit_reference (this->_M_impl._M_start._M_p
+			       + __n / int(_S_word_bit),
+			       1UL << __n % int(_S_word_bit));
       }
 
     protected:

@@ -250,6 +250,8 @@ namespace aarch64_sve
     extern const function_base *const svzipq;
     extern const function_base *const svzipq1;
     extern const function_base *const svzipq2;
+    extern const function_base *const svluti2_lane;
+    extern const function_base *const svluti4_lane;
   }
 }
 

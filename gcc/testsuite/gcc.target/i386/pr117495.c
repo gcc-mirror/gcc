@@ -1,7 +1,7 @@
 /* PR target/117495 */
 /* { dg-do compile } */
 /* { dg-options "-march=x86-64-v3 -fno-trapping-math" } */
-/* { dg-final { scan-assembler-times "vcomsbf16" 2 } } */
+/* { dg-final { scan-assembler-times "vcomisbf16" 2 } } */
 
 __attribute__((target("avx10.2")))
 int foo (int b, int x)

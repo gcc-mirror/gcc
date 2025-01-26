@@ -47,6 +47,12 @@ loongarch-c.o: $(srcdir)/config/loongarch/loongarch-c.cc $(CONFIG_H) $(SYSTEM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(srcdir)/config/loongarch/loongarch-c.cc
 
+loongarch-target-attr.o: $(srcdir)/config/loongarch/loongarch-target-attr.cc \
+	$(CONFIG_H) $(SYSTEM_H) coretypes.h $(TARGET_H) $(TREE_H) $(TM_H) \
+	$(DIAGNOSTIC_CORE_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+	$(srcdir)/config/loongarch/loongarch-target-attr.cc
+
 loongarch-builtins.o: $(srcdir)/config/loongarch/loongarch-builtins.cc $(CONFIG_H) \
 	$(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) $(RECOG_H) langhooks.h \
 	$(DIAGNOSTIC_CORE_H) $(OPTABS_H) $(srcdir)/config/loongarch/loongarch-ftypes.def \

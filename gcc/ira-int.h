@@ -936,6 +936,9 @@ public:
 
   /* Flag of that the above array has been initialized.  */
   bool x_ira_prohibited_mode_move_regs_initialized_p;
+
+  /* Number of real occurences of hard regs before IRA.  */
+  size_t x_ira_hard_regno_nrefs[FIRST_PSEUDO_REGISTER];
 };
 
 extern class target_ira_int default_target_ira_int;
@@ -983,6 +986,8 @@ extern class target_ira_int *this_target_ira_int;
   (this_target_ira_int->x_ira_reg_class_superunion)
 #define ira_prohibited_mode_move_regs \
   (this_target_ira_int->x_ira_prohibited_mode_move_regs)
+#define ira_hard_regno_nrefs \
+  (this_target_ira_int->x_ira_hard_regno_nrefs)
 
 /* ira.cc: */
 

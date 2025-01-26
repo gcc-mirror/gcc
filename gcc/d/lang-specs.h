@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 {".dd", "@d", 0, 1, 0 },
 {".di", "@d", 0, 1, 0 },
 {"@d",
-  "%{!E:d21 %i %(cc1_options) %I %{nostdinc*} %{i*} %{I*} %{J*} \
+  "%{!E:d21 %i %(cc1_options) %I %{nostdinc} %{i*} %{I*} %{J*} \
     %{H} %{Hd*} %{Hf*} %{MD:-MD %b.deps} %{MMD:-MMD %b.deps} \
     %{M} %{MM} %{MF*} %{MG} %{MP} %{MQ*} %{MT*} \
     %{X:-Xf %b.json} %{Xf*} \

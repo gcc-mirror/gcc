@@ -1,5 +1,5 @@
-/* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O -fno-split-wide-types -mavx512f -mcpu=k8" } */
+/* { dg-do compile { target int128 } } */
+/* { dg-options "-O -fno-split-wide-types -mavx512f -mtune=k8" } */
 
 typedef unsigned short U __attribute__((__vector_size__(64)));
 typedef int V __attribute__((__vector_size__(64)));

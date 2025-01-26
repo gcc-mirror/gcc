@@ -123,7 +123,8 @@ fix_bb_placement (basic_block bb)
    invalidate the information about irreducible regions.  */
 
 static bool
-fix_loop_placement (class loop *loop, bool *irred_invalidated)
+fix_loop_placement (class loop *loop, bool *irred_invalidated,
+		    bitmap loop_closed_ssa_invalidated)
 {
   unsigned i;
   edge e;
@@ -153,6 +154,17 @@ fix_loop_placement (class loop *loop, bool *irred_invalidated)
 	  if (e->flags & EDGE_IRREDUCIBLE_LOOP)
 	    *irred_invalidated = true;
 	  rescan_loop_exit (e, false, false);
+	}
+      /* Any LC SSA PHIs on e->dest might now be on the wrong edge
+	 if their defs were in a former outer loop.  Also all uses
+	 in the original inner loop of defs in the outer loop(s) now
+	 require LC PHI nodes.  */
+      if (loop_closed_ssa_invalidated)
+	{
+	  basic_block *bbs = get_loop_body (loop);
+	  for (unsigned i = 0; i < loop->num_nodes; ++i)
+	    bitmap_set_bit (loop_closed_ssa_invalidated, bbs[i]->index);
+	  free (bbs);
 	}
 
       ret = true;
@@ -224,16 +236,10 @@ fix_bb_placements (basic_block from,
       if (from->loop_father->header == from)
 	{
 	  /* Subloop header, maybe move the loop upward.  */
-	  if (!fix_loop_placement (from->loop_father, irred_invalidated))
+	  if (!fix_loop_placement (from->loop_father, irred_invalidated,
+				   loop_closed_ssa_invalidated))
 	    continue;
 	  target_loop = loop_outer (from->loop_father);
-	  if (loop_closed_ssa_invalidated)
-	    {
-	      basic_block *bbs = get_loop_body (from->loop_father);
-	      for (unsigned i = 0; i < from->loop_father->num_nodes; ++i)
-		bitmap_set_bit (loop_closed_ssa_invalidated, bbs[i]->index);
-	      free (bbs);
-	    }
 	}
       else
 	{
@@ -1057,7 +1063,8 @@ fix_loop_placements (class loop *loop, bool *irred_invalidated,
   while (loop_outer (loop))
     {
       outer = loop_outer (loop);
-      if (!fix_loop_placement (loop, irred_invalidated))
+      if (!fix_loop_placement (loop, irred_invalidated,
+			       loop_closed_ssa_invalidated))
 	break;
 
       /* Changing the placement of a loop in the loop tree may alter the

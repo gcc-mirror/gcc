@@ -336,6 +336,14 @@ DEF_SVE_FUNCTION (svamax, binary_opt_single_n, all_float, mxz)
 DEF_SVE_FUNCTION (svamin, binary_opt_single_n, all_float, mxz)
 #undef REQUIRED_EXTENSIONS
 
+#define REQUIRED_EXTENSIONS \
+  sve_and_sme (AARCH64_FL_SVE2 | AARCH64_FL_LUT, \
+	       AARCH64_FL_SME2 | AARCH64_FL_LUT)
+DEF_SVE_FUNCTION (svluti2_lane, luti2, bh_data, none)
+DEF_SVE_FUNCTION (svluti4_lane, luti4, bh_data, none)
+DEF_SVE_FUNCTION_GS (svluti4_lane, luti4, h_data, x2, none)
+#undef REQUIRED_EXTENSIONS
+
 #define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME_F16F16)
 DEF_SVE_FUNCTION_GS (svcvt, unary_convertxn, cvt_f32_f16, x2, none)
 DEF_SVE_FUNCTION_GS (svcvtl, unary_convertxn, cvt_f32_f16, x2, none)

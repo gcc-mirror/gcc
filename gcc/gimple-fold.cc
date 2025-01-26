@@ -7859,6 +7859,11 @@ make_bit_field_load (location_t loc, tree inner, tree orig_inner, tree type,
       gimple *new_stmt = gsi_stmt (i);
       if (gimple_has_mem_ops (new_stmt))
 	gimple_set_vuse (new_stmt, reaching_vuse);
+      gcc_checking_assert (! (gimple_assign_load_p (point)
+			      && gimple_assign_load_p (new_stmt))
+			   || (tree_could_trap_p (gimple_assign_rhs1 (point))
+			       == tree_could_trap_p (gimple_assign_rhs1
+						     (new_stmt))));
     }
 
   gimple_stmt_iterator gsi = gsi_for_stmt (point);
@@ -8090,8 +8095,9 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
       return 0;
     }
 
-  /* Prepare to turn compares of signed quantities with zero into
-     sign-bit tests.  */
+  /* Prepare to turn compares of signed quantities with zero into sign-bit
+     tests.  We need not worry about *_reversep here for these compare
+     rewrites: loads will have already been reversed before compares.  */
   bool lsignbit = false, rsignbit = false;
   if ((lcode == LT_EXPR || lcode == GE_EXPR)
       && integer_zerop (lr_arg)
@@ -8198,10 +8204,11 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
      the rhs's.  If one is a load and the other isn't, we have to be
      conservative and avoid the optimization, otherwise we could get
      SRAed fields wrong.  */
-  if (volatilep || ll_reversep != rl_reversep)
+  if (volatilep)
     return 0;
 
-  if (! operand_equal_p (ll_inner, rl_inner, 0))
+  if (ll_reversep != rl_reversep
+      || ! operand_equal_p (ll_inner, rl_inner, 0))
     {
       /* Try swapping the operands.  */
       if (ll_reversep != rr_reversep
@@ -8535,12 +8542,21 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
     {
       /* Before clipping upper bits of the right-hand operand of the compare,
 	 check that they're sign or zero extensions, depending on how the
-	 left-hand operand would be extended.  */
+	 left-hand operand would be extended.  If it is unsigned, or if there's
+	 a mask that zeroes out extension bits, whether because we've checked
+	 for upper bits in the mask and did not set ll_signbit, or because the
+	 sign bit itself is masked out, check that the right-hand operand is
+	 zero-extended.  */
       bool l_non_ext_bits = false;
       if (ll_bitsize < lr_bitsize)
 	{
 	  wide_int zext = wi::zext (l_const, ll_bitsize);
-	  if ((ll_unsignedp ? zext : wi::sext (l_const, ll_bitsize)) == l_const)
+	  if ((ll_unsignedp
+	       || (ll_and_mask.get_precision ()
+		   && (!ll_signbit
+		       || ((ll_and_mask & wi::mask (ll_bitsize - 1, true, ll_bitsize))
+			   == 0)))
+	       ? zext : wi::sext (l_const, ll_bitsize)) == l_const)
 	    l_const = zext;
 	  else
 	    l_non_ext_bits = true;
@@ -8566,7 +8582,12 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
       if (rl_bitsize < rr_bitsize)
 	{
 	  wide_int zext = wi::zext (r_const, rl_bitsize);
-	  if ((rl_unsignedp ? zext : wi::sext (r_const, rl_bitsize)) == r_const)
+	  if ((rl_unsignedp
+	       || (rl_and_mask.get_precision ()
+		   && (!rl_signbit
+		       || ((rl_and_mask & wi::mask (rl_bitsize - 1, true, rl_bitsize))
+			   == 0)))
+	       ? zext : wi::sext (r_const, rl_bitsize)) == r_const)
 	    r_const = zext;
 	  else
 	    r_non_ext_bits = true;

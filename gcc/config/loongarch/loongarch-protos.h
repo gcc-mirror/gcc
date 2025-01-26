@@ -85,6 +85,8 @@ extern bool loongarch_split_move_p (rtx, rtx);
 extern void loongarch_split_move (rtx, rtx);
 extern bool loongarch_addu16i_imm12_operand_p (HOST_WIDE_INT, machine_mode);
 extern void loongarch_split_plus_constant (rtx *, machine_mode);
+extern rtx loongarch_reassoc_shift_bitwise (bool is_and, rtx shamt,
+					    rtx mask, machine_mode mode);
 extern void loongarch_split_vector_move (rtx, rtx);
 extern const char *loongarch_output_move (rtx *);
 #ifdef RTX_CODE
@@ -212,4 +214,9 @@ extern void loongarch_emit_swrsqrtsf (rtx, rtx, machine_mode, bool);
 extern void loongarch_emit_swdivsf (rtx, rtx, rtx, machine_mode);
 extern bool loongarch_explicit_relocs_p (enum loongarch_symbol_type);
 extern bool loongarch_symbol_extreme_p (enum loongarch_symbol_type);
+extern bool loongarch_option_valid_attribute_p (tree, tree, tree, int);
+extern void loongarch_option_override_internal (struct loongarch_target *, struct gcc_options *, struct gcc_options *);
+extern void loongarch_reset_previous_fndecl (void);
+extern void loongarch_save_restore_target_globals (tree new_tree);
+extern void loongarch_register_pragmas (void);
 #endif /* ! GCC_LOONGARCH_PROTOS_H */

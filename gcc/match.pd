@@ -6959,8 +6959,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* x != ~x -> true */
 (for cmp (eq ne)
  (simplify
-  (cmp:c @0 (bit_not @0))
-  { constant_boolean_node (cmp == NE_EXPR, type); }))
+  (cmp:c (convert? @0) (convert? (maybe_bit_not @1)))
+  (with { bool wascmp; }
+   (if (types_match (TREE_TYPE (@0), TREE_TYPE (@1))
+        && bitwise_inverted_equal_p (@0, @1, wascmp))
+    { constant_boolean_node (cmp == NE_EXPR, type); }))))
 
 /* Fold ~X op ~Y as Y op X.  */
 (for cmp (simple_comparison)

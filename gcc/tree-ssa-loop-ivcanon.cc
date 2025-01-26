@@ -855,8 +855,8 @@ try_unroll_loop_completely (class loop *loop,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "  Loop size: %d\n", (int) ninsns);
-	      fprintf (dump_file, "  Estimated size after unrolling: %d\n",
-		       (int) unr_insns);
+	      fprintf (dump_file, "  Estimated size after unrolling: %d-%d\n",
+		       (int) unr_insns, (int) est_eliminated);
 	    }
 
 	  /* If the code is going to shrink, we don't need to be extra

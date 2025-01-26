@@ -128,6 +128,7 @@
 ;; ---- Check for aliases between pointers
 ;; ---- Histogram processing
 ;; ---- String matching
+;; ---- Table lookup
 ;;
 ;; == Cryptographic extensions
 ;; ---- Optional AES extensions
@@ -2949,7 +2950,7 @@
 	      (match_operand:SVE_FULL_F 3 "register_operand")]
 	     UNSPEC_COND_FABS)]
 	  SVE_COND_SMAXMIN))]
-  "TARGET_SVE_FAMINMAX"
+  "TARGET_FAMINMAX && TARGET_SVE2_OR_SME2"
   {@ [ cons: =0 , 1   , 2  , 3 ; attrs: movprfx ]
      [ w        , Upl , %0 , w ; *              ] <faminmax_cond_uns_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
      [ ?&w      , Upl , w  , w ; yes            ] movprfx\t%0, %2\;<faminmax_cond_uns_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
@@ -4087,6 +4088,38 @@
     operands[6] = copy_rtx (operands[4]);
     operands[7] = operands[5];
   }
+)
+
+;; -------------------------------------------------------------------------
+;; ---- Table lookup
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - LUTI2
+;; - LUTI4
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_luti<LUTI_BITS><mode>"
+  [(set (match_operand:SVE_FULL_BH 0 "register_operand" "=w")
+	(unspec:SVE_FULL_BH
+	 [(match_operand:SVE_FULL_BH 1 "register_operand" "w")
+	  (match_operand:VNx16QI 2 "register_operand" "w")
+	  (match_operand:DI 3 "const_int_operand")
+	  (const_int LUTI_BITS)]
+	 UNSPEC_SVE_LUTI))]
+  "TARGET_LUT && TARGET_SVE2_OR_SME2"
+  "luti<LUTI_BITS>\t%0.<Vetype>, { %1.<Vetype> }, %2[%3]"
+)
+
+(define_insn "@aarch64_sve_luti<LUTI_BITS><mode>"
+  [(set (match_operand:<VSINGLE> 0 "register_operand" "=w")
+	(unspec:<VSINGLE>
+	 [(match_operand:SVE_FULL_Hx2 1 "register_operand" "w")
+	  (match_operand:VNx16QI 2 "register_operand" "w")
+	  (match_operand:DI 3 "const_int_operand")
+	  (const_int LUTI_BITS)]
+	  UNSPEC_SVE_LUTI))]
+  "TARGET_LUT && TARGET_SVE2_OR_SME2"
+  "luti<LUTI_BITS>\t%0.<Vetype>, %1, %2[%3]"
 )
 
 ;; =========================================================================

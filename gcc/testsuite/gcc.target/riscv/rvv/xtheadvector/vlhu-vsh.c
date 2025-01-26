@@ -5,7 +5,8 @@
 
 /*
 ** f1:
-**	th.vsetivli\tzero,4,e32,m1,tu,ma
+**	li\t[a-x0-9]+,4
+**	th.vsetvli\tzero,[a-x0-9]+,e32,m1
 **	th.vlhu\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	th.vlhu\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	th.vadd\.vi\tv[0-9]+,\s*v[0-9]+,\s*-16
@@ -24,9 +25,10 @@ void f1 (void * in, void *out, uint32_t x)
 
 /*
 ** f2:
-**	th.vsetvli\t[a-x0-9]+,zero,e8,mf4,ta,ma
-**	th.vlm.v\tv[0-9]+,0\([a-x0-9]+\)
-**	th.vsetivli\tzero,4,e32,m1,ta,ma
+**	th.vsetvli\tzero,zero,e8,m1
+**	th.vle.v\tv[0-9]+,0\([a-x0-9]+\)
+**	li\t[a-x0-9]+,4
+**	th.vsetvli\tzero,[a-x0-9]+,e32,m1
 **	th.vlhu.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
 **	th.vadd\.vi\tv[0-9]+,\s*v[0-9]+,\s*-16
 **	th.vadd\.vi\tv[1-9][0-9]?,\s*v[0-9]+,\s*-16,\s*v0.t
@@ -46,9 +48,10 @@ void f2 (void * in, void *out, uint32_t x)
 
 /*
 ** f3:
-**	th.vsetvli\t[a-x0-9]+,zero,e8,mf4,ta,ma
-**	th.vlm.v\tv[0-9]+,0\([a-x0-9]+\)
-**	th.vsetivli\tzero,4,e32,m1,tu,mu
+**	th.vsetvli\tzero,zero,e8,m1
+**	th.vle.v\tv[0-9]+,0\([a-x0-9]+\)
+**	li\t[a-x0-9]+,4
+**	th.vsetvli\tzero,[a-x0-9]+,e32,m1
 **	th.vlhu\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	th.vlhu.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
 **	th.vadd\.vi\tv[0-9]+,\s*v[0-9]+,\s*-16

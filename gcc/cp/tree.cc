@@ -6003,6 +6003,8 @@ decl_linkage (tree decl)
     {
       if (TREE_CODE (decl) == TYPE_DECL && !TYPE_ANON_P (TREE_TYPE (decl)))
 	/* This entity has a typedef name for linkage purposes.  */;
+      else if (DECL_DECOMPOSITION_P (decl) && DECL_DECOMP_IS_BASE (decl))
+	/* Namespace-scope structured bindings can have linkage.  */;
       else if (TREE_CODE (decl) == NAMESPACE_DECL && cxx_dialect >= cxx11)
 	/* An anonymous namespace has internal linkage since C++11.  */
 	return lk_internal;

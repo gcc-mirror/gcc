@@ -780,4 +780,20 @@
 		    "w" (z16), "w" (z22), "w" (z29));		\
   }
 
+#define TEST_1X2_NARROW(NAME, RTYPE, TTYPE, ZTYPE, CODE1, CODE2)	\
+  PROTO(NAME, void, ())							\
+  {									\
+    register RTYPE z0 __asm ("z0");					\
+    register TTYPE z5 __asm ("z5");					\
+    register TTYPE z6 __asm ("z6");					\
+    register TTYPE z16 __asm ("z16");					\
+    register ZTYPE z22 __asm ("z22");					\
+    register TTYPE z29 __asm ("z29");					\
+    register RTYPE z0_res __asm ("z0");					\
+    __asm volatile ("" : "=w" (z0), "=w" (z5), "=w" (z6),		\
+		    "=w" (z16), "=w" (z22), "=w" (z29));		\
+    INVOKE (CODE1, CODE2);						\
+    __asm volatile ("" :: "w" (z0_res), "w" (z5), "w" (z22));		\
+  }
+
 #endif

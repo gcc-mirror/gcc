@@ -424,14 +424,25 @@ function_info::replace_phi (phi_info *phi, set_info *new_value)
 	{
 	  // We need to keep the phi around for its local uses.
 	  // Turn it into a degenerate phi, if it isn't already.
-	  use_info *use = phi->input_use (0);
-	  if (use->def () != new_value)
-	    update_use (use);
+	  use_info *single_use = nullptr;
+	  for (auto *use : phi->inputs ())
+	    if (!single_use)
+	      single_use = use;
+	    else if (use->def () == new_value)
+	      {
+		remove_use (single_use);
+		single_use = use;
+	      }
+	    else
+	      remove_use (use);
+
+	  if (single_use->def () != new_value)
+	    update_use (single_use);
 
 	  if (phi->is_degenerate ())
 	    return;
 
-	  phi->make_degenerate (use);
+	  phi->make_degenerate (single_use);
 
 	  // Redirect all phi users to NEW_VALUE.
 	  while (use_info *phi_use = phi->last_phi_use ())

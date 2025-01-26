@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "target.h"
 #include "decl.h"
+#include "flags.h"
 
 /* Constructor for a lambda expression.  */
 
@@ -785,6 +786,12 @@ lambda_expr_this_capture (tree lambda, int add_capture_p)
   tree result;
 
   tree this_capture = LAMBDA_EXPR_THIS_CAPTURE (lambda);
+  if (this_capture)
+    if (tree spec = retrieve_local_specialization (this_capture))
+      {
+	gcc_checking_assert (generic_lambda_fn_p (lambda_function (lambda)));
+	this_capture = spec;
+      }
 
   /* In unevaluated context this isn't an odr-use, so don't capture.  */
   if (cp_unevaluated_operand)
@@ -1038,15 +1045,17 @@ nonlambda_method_basetype (void)
     }
 }
 
-/* Like current_scope, but looking through lambdas.  */
+/* Like current_scope, but looking through lambdas.  If ONLY_SKIP_CLOSURES_P,
+   only look through closure types.  */
 
 tree
-current_nonlambda_scope (void)
+current_nonlambda_scope (bool only_skip_closures_p/*=false*/)
 {
   tree scope = current_scope ();
   for (;;)
     {
-      if (TREE_CODE (scope) == FUNCTION_DECL
+      if (!only_skip_closures_p
+	  && TREE_CODE (scope) == FUNCTION_DECL
 	  && LAMBDA_FUNCTION_P (scope))
 	{
 	  scope = CP_TYPE_CONTEXT (DECL_CONTEXT (scope));
@@ -1540,13 +1549,35 @@ finish_lambda_scope (void)
 void
 record_lambda_scope (tree lambda)
 {
-  LAMBDA_EXPR_EXTRA_SCOPE (lambda) = lambda_scope.scope;
-  if (lambda_scope.scope)
+  tree closure = LAMBDA_EXPR_CLOSURE (lambda);
+  gcc_checking_assert (closure);
+
+  /* Before ABI v20, lambdas in static data member initializers did not
+     get a dedicated lambda scope.  */
+  tree scope = lambda_scope.scope;
+  if (scope
+      && VAR_P (scope)
+      && DECL_CLASS_SCOPE_P (scope)
+      && DECL_INITIALIZED_IN_CLASS_P (scope))
     {
-      tree closure = LAMBDA_EXPR_CLOSURE (lambda);
-      gcc_checking_assert (closure);
-      maybe_key_decl (lambda_scope.scope, TYPE_NAME (closure));
+      if (!abi_version_at_least (20))
+	scope = NULL_TREE;
+      if (warn_abi && abi_version_crosses (20) && !processing_template_decl)
+	{
+	  if (abi_version_at_least (20))
+	    warning_at (location_of (closure), OPT_Wabi,
+			"the mangled name of %qT changed in "
+			"%<-fabi-version=20%> (GCC 15.1)", closure);
+	  else
+	    warning_at (location_of (closure), OPT_Wabi,
+			"the mangled name of %qT changes in "
+			"%<-fabi-version=20%> (GCC 15.1)", closure);
+	}
     }
+
+  LAMBDA_EXPR_EXTRA_SCOPE (lambda) = scope;
+  if (scope)
+    maybe_key_decl (scope, TYPE_NAME (closure));
 }
 
 // Compare lambda template heads TMPL_A and TMPL_B, used for both

@@ -588,6 +588,7 @@ names_builtin_p (const char *name)
     case RID_BUILTIN_ASSOC_BARRIER:
     case RID_BUILTIN_BIT_CAST:
     case RID_OFFSETOF:
+    case RID_VA_ARG:
       return 1;
     case RID_BUILTIN_OPERATOR_NEW:
     case RID_BUILTIN_OPERATOR_DELETE:

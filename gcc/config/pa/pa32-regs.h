@@ -341,7 +341,7 @@ enum reg_class { NO_REGS, R1_REGS, GENERAL_REGS, FPUPPER_REGS, FP_REGS,
  {"%fr16L",56}, {"%fr17L",58}, {"%fr18L",60}, {"%fr19L",62},		\
  {"%fr20L",64}, {"%fr21L",66}, {"%fr22L",68}, {"%fr23L",70},		\
  {"%fr24L",72}, {"%fr25L",74}, {"%fr26L",76}, {"%fr27L",78},		\
- {"%fr28L",80}, {"%fr29L",82}, {"%fr30L",84}, {"%fr31R",86},		\
+ {"%fr28L",80}, {"%fr29L",82}, {"%fr30L",84}, {"%fr31L",86},		\
  {"%cr11",88}}
 
 #define FP_SAVED_REG_LAST 66

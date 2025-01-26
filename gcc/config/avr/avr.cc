@@ -418,6 +418,15 @@ avr_adiw_reg_p (rtx reg)
 }
 
 
+/* Return true iff REGNO is in R16...R31.  */
+
+static bool
+avr_ld_regno_p (int regno)
+{
+  return TEST_HARD_REG_CLASS (LD_REGS, regno);
+}
+
+
 static bool
 ra_in_progress ()
 {
@@ -563,11 +572,19 @@ avr_option_override (void)
 }
 
 
-int avr_optimize_size_level ()
+int
+avr_optimize_size_level ()
 {
   return cfun && cfun->decl
     ? opt_for_fn (cfun->decl, optimize_size)
     : optimize_size;
+}
+
+
+static bool
+avr_optimize_size_max_p ()
+{
+  return avr_optimize_size_level () == OPTIMIZE_SIZE_MAX;
 }
 
 
@@ -7048,6 +7065,26 @@ ashlqi3_out (rtx_insn *insn, rtx operands[], int *plen)
 }
 
 
+/* Output a 16-bit left shift  XOP[0] = XOP[1] << XOP[2]  using MUL.
+   XOP[3] is an upper 8-bit scratch register.  This function is currently
+   only used for offsets 5 and 6 but works for offsets 1...7 as well.  */
+
+static const char*
+avr_out_ashlhi3_mul (rtx *xop, bool scratch_p, int *plen)
+{
+  gcc_assert (scratch_p && AVR_HAVE_MUL);
+
+  // Takes 7 words and 9 cycles.
+  return avr_asm_len ("ldi %3,1<<%2" CR_TAB
+		      "mul %B1,%3"   CR_TAB
+		      "mov %B0,r0"   CR_TAB
+		      "mul %A1,%3"   CR_TAB
+		      "mov %A0,r0"   CR_TAB
+		      "or  %B0,r1"   CR_TAB
+		      "clr __zero_reg__", xop, plen, -7);
+}
+
+
 /* 16bit shift left ((short)x << i)   */
 
 const char *
@@ -7060,6 +7097,10 @@ ashlhi3_out (rtx_insn *insn, rtx operands[], int *plen)
 		      && REG_P (operands[3]));
       bool ldi_ok = test_hard_reg_class (LD_REGS, operands[0]);
       bool reg1_unused_after = reg_unused_after (insn, operands[1]);
+      int size;
+      int reg0 = REGNO (operands[0]);
+      int reg1 = REGNO (operands[1]);
+      bool use_mul_p = reg1 != reg0 || (scratch && AVR_HAVE_MUL);
 
       if (plen)
 	*plen = 0;
@@ -7073,7 +7114,7 @@ ashlhi3_out (rtx_insn *insn, rtx operands[], int *plen)
 	  return avr_asm_len ("clr %B0" CR_TAB
 			      "clr %A0", operands, plen, 2);
 	case 4:
-	  if (optimize_size && scratch)
+	  if (avr_optimize_size_max_p () && scratch)
 	    break;  /* 5 */
 	  if (ldi_ok)
 	    return avr_asm_len ("swap %A0"      CR_TAB
@@ -7093,6 +7134,23 @@ ashlhi3_out (rtx_insn *insn, rtx operands[], int *plen)
 	  break;  /* optimize_size ? 6 : 8 */
 
 	case 5:
+	  size = (scratch ? 5 : 6) + (reg1 != reg0) * (2 - AVR_HAVE_MOVW);
+	  if (avr_optimize_size_max_p () && (size < 7 || !use_mul_p))
+	    {
+	      if (reg0 != reg1)
+		{
+		  if (AVR_HAVE_MOVW)
+		    avr_asm_len ("movw %0,%1", operands, plen, 1);
+		  else
+		    avr_asm_len ("mov %A0,%A1" CR_TAB
+				 "mov %B0,%B1", operands, plen, 2);
+		}
+	      break;  // scratch ? 5 : 6
+	    }
+
+	  if (use_mul_p)
+	    return avr_out_ashlhi3_mul (operands, scratch, plen); // 7
+
 	  if (optimize_size)
 	    break;  /* scratch ? 5 : 6 */
 	  if (ldi_ok)
@@ -7117,6 +7175,23 @@ ashlhi3_out (rtx_insn *insn, rtx operands[], int *plen)
 	  break;  /* 10 */
 
 	case 6:
+	  size = (scratch ? 5 : 6) + (reg1 != reg0) * (2 - AVR_HAVE_MOVW);
+	  if (avr_optimize_size_max_p () && (size < 7 || !use_mul_p))
+	    {
+	      if (reg0 != reg1)
+		{
+		  if (AVR_HAVE_MOVW)
+		    avr_asm_len ("movw %0,%1", operands, plen, 1);
+		  else
+		    avr_asm_len ("mov %A0,%A1" CR_TAB
+				 "mov %B0,%B1", operands, plen, 2);
+		}
+	      break;  // scratch ? 5 : 6
+	    }
+
+	  if (use_mul_p)
+	    return avr_out_ashlhi3_mul (operands, scratch, plen); // 7
+
 	  if (optimize_size)
 	    break;  /* scratch ? 5 : 6 */
 	  return avr_asm_len ("clr __tmp_reg__" CR_TAB
@@ -7252,7 +7327,7 @@ ashlhi3_out (rtx_insn *insn, rtx operands[], int *plen)
     }
 
   out_shift_with_cnt ("lsl %A0" CR_TAB
-			  "rol %B0", insn, operands, plen, 2);
+		      "rol %B0", insn, operands, plen, 2);
   return "";
 }
 
@@ -7331,17 +7406,20 @@ ashlsi3_out (rtx_insn *insn, rtx operands[], int *plen)
 {
   if (CONST_INT_P (operands[2]))
     {
+      int off = INTVAL (operands[2]);
       int reg0 = true_regnum (operands[0]);
       int reg1 = true_regnum (operands[1]);
       bool reg1_unused_after = reg_unused_after (insn, operands[1]);
-
+      bool scratch_p = (GET_CODE (PATTERN (insn)) == PARALLEL
+			&& XVECLEN (PATTERN (insn), 0) == 3
+			&& REG_P (operands[3]));
       if (plen)
 	*plen = 0;
 
-      switch (INTVAL (operands[2]))
+      switch (off)
 	{
 	default:
-	  if (INTVAL (operands[2]) < 32)
+	  if (off < 32)
 	    break;
 
 	  return AVR_HAVE_MOVW
@@ -7395,11 +7473,58 @@ ashlsi3_out (rtx_insn *insn, rtx operands[], int *plen)
 			   "mov %D0,%B1"  CR_TAB
 			   "clr %B0"      CR_TAB
 			   "clr %A0", operands, plen, 4);
+	case 30:
+	  if (AVR_HAVE_MUL && scratch_p)
+	    return avr_asm_len ("ldi %3,1<<6"       CR_TAB
+				"mul %3,%A1"        CR_TAB
+				"mov %D0,r0"        CR_TAB
+				"clr __zero_reg__"  CR_TAB
+				"clr %C0"           CR_TAB
+				"clr %B0"           CR_TAB
+				"clr %A0", operands, plen, 7);
+	  // Fallthrough
+
+	case 28:
+	case 29:
+	  {
+	    const bool ld_reg0_p = avr_ld_regno_p (reg0 + 3); // %D0
+	    const bool ld_reg1_p = avr_ld_regno_p (reg1 + 0); // %A1
+	    if (ld_reg0_p
+		|| (ld_reg1_p && reg1_unused_after)
+		|| scratch_p)
+	      {
+		if (ld_reg0_p)
+		  avr_asm_len ("mov %D0,%A1"    CR_TAB
+			       "swap %D0"       CR_TAB
+			       "andi %D0,0xf0", operands, plen, 3);
+		else if (ld_reg1_p && reg1_unused_after)
+		  avr_asm_len ("swap %A1"       CR_TAB
+			       "andi %A1,0xf0"  CR_TAB
+			       "mov %D0,%A1", operands, plen, 3);
+		else
+		  avr_asm_len ("mov %D0,%A1"    CR_TAB
+			       "swap %D0"       CR_TAB
+			       "ldi %3,0xf0"    CR_TAB
+			       "and %D0,%3", operands, plen, 4);
+		for (int i = 28; i < off; ++i)
+		  avr_asm_len ("lsl %D0", operands, plen, 1);
+		return avr_asm_len ("clr %C0"  CR_TAB
+				    "clr %B0"  CR_TAB
+				    "clr %A0", operands, plen, 3);
+	      }
+	  }
+	  // Fallthrough
+
 	case 24:
-	  return avr_asm_len ("mov %D0,%A1"  CR_TAB
-			      "clr %C0"      CR_TAB
+	case 25:
+	case 26:
+	case 27:
+	  avr_asm_len ("mov %D0,%A1", operands, plen, 1);
+	  for (int i = 24; i < off; ++i)
+	    avr_asm_len ("lsl %D0", operands, plen, 1);
+	  return avr_asm_len ("clr %C0"      CR_TAB
 			      "clr %B0"      CR_TAB
-			      "clr %A0", operands, plen, 4);
+			      "clr %A0", operands, plen, 3);
 	case 31:
 	  return AVR_HAVE_MOVW
 	    ? avr_asm_len ("bst %A1,0"    CR_TAB
@@ -8232,17 +8357,20 @@ lshrsi3_out (rtx_insn *insn, rtx operands[], int *plen)
 {
   if (CONST_INT_P (operands[2]))
     {
+      int off = INTVAL (operands[2]);
       int reg0 = true_regnum (operands[0]);
       int reg1 = true_regnum (operands[1]);
       bool reg1_unused_after = reg_unused_after (insn, operands[1]);
-
+      bool scratch_p = (GET_CODE (PATTERN (insn)) == PARALLEL
+			&& XVECLEN (PATTERN (insn), 0) == 3
+			&& REG_P (operands[3]));
       if (plen)
 	*plen = 0;
 
-      switch (INTVAL (operands[2]))
+      switch (off)
 	{
 	default:
-	  if (INTVAL (operands[2]) < 32)
+	  if (off < 32)
 	    break;
 
 	  return AVR_HAVE_MOVW
@@ -8296,11 +8424,58 @@ lshrsi3_out (rtx_insn *insn, rtx operands[], int *plen)
 			   "mov %A0,%C1" CR_TAB
 			   "clr %C0"     CR_TAB
 			   "clr %D0", operands, plen, 4);
+	case 30:
+	  if (AVR_HAVE_MUL && scratch_p)
+	    return avr_asm_len ("ldi %3,1<<2"       CR_TAB
+				"mul %3,%D1"        CR_TAB
+				"mov %A0,r1"        CR_TAB
+				"clr __zero_reg__"  CR_TAB
+				"clr %B0"           CR_TAB
+				"clr %C0"           CR_TAB
+				"clr %D0", operands, plen, 7);
+	  // Fallthrough
+
+	case 29:
+	case 28:
+	  {
+	    const bool ld_reg0_p = avr_ld_regno_p (reg0 + 0); // %A0
+	    const bool ld_reg1_p = avr_ld_regno_p (reg1 + 3); // %D1
+	    if (ld_reg0_p
+		|| (ld_reg1_p && reg1_unused_after)
+		|| scratch_p)
+	      {
+		if (ld_reg0_p)
+		  avr_asm_len ("mov %A0,%D1"    CR_TAB
+			       "swap %A0"       CR_TAB
+			       "andi %A0,0x0f", operands, plen, 3);
+		else if (ld_reg1_p && reg1_unused_after)
+		  avr_asm_len ("swap %D1"       CR_TAB
+			       "andi %D1,0x0f"  CR_TAB
+			       "mov %A0,%D1", operands, plen, 3);
+		else
+		  avr_asm_len ("mov %A0,%D1"    CR_TAB
+			       "swap %A0"       CR_TAB
+			       "ldi %3,0x0f"    CR_TAB
+			       "and %A0,%3", operands, plen, 4);
+		for (int i = 28; i < off; ++i)
+		  avr_asm_len ("lsr %A0", operands, plen, 1);
+		return avr_asm_len ("clr %B0"  CR_TAB
+				    "clr %C0"  CR_TAB
+				    "clr %D0", operands, plen, 3);
+	      }
+	  }
+	  // Fallthrough
+
+	case 27:
+	case 26:
+	case 25:
 	case 24:
-	  return avr_asm_len ("mov %A0,%D1" CR_TAB
-			      "clr %B0"     CR_TAB
+	  avr_asm_len ("mov %A0,%D1", operands, plen, 1);
+	  for (int i = 24; i < off; ++i)
+	    avr_asm_len ("lsr %A0", operands, plen, 1);
+	  return avr_asm_len ("clr %B0"     CR_TAB
 			      "clr %C0"     CR_TAB
-			      "clr %D0", operands, plen, 4);
+			      "clr %D0", operands, plen, 3);
 	case 31:
 	  return AVR_HAVE_MOVW
 	    ? avr_asm_len ("bst %D1,7"    CR_TAB
@@ -10901,6 +11076,7 @@ avr_adjust_insn_length (rtx_insn *insn, int len)
     case ADJUST_LEN_XLOAD: avr_out_xload (insn, op, &len); break;
     case ADJUST_LEN_FLOAD: avr_out_fload (insn, op, &len); break;
     case ADJUST_LEN_SEXT: avr_out_sign_extend (insn, op, &len); break;
+    case ADJUST_LEN_SEXTR: avr_out_sextr (insn, op, &len); break;
 
     case ADJUST_LEN_SFRACT: avr_out_fract (insn, op, true, &len); break;
     case ADJUST_LEN_UFRACT: avr_out_fract (insn, op, false, &len); break;
@@ -12385,6 +12561,19 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     ? INTVAL (XEXP (x, 1))
     : -1;
 
+  if (avropt_pr118012)
+    {
+      if ((code == IOR || code == XOR || code == PLUS)
+	  && GET_CODE (XEXP (x, 0)) == ASHIFT
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTEND
+	  && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == AND
+	  && XEXP (XEXP (XEXP (XEXP (x, 0), 0), 0), 1) == const1_rtx)
+	{
+	  *total = COSTS_N_INSNS (2 + n_bytes);
+	  return true;
+	}
+    }
+
   switch (code)
     {
     case CONST_INT:
@@ -12402,6 +12591,20 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
       return true;
 
     case NEG:
+      if (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTRACT)
+	{
+	  // Just a sign_extract of bit 0?
+	  rtx y = XEXP (XEXP (x, 0), 0);
+	  if (XEXP (y, 1) == const1_rtx
+	      && XEXP (y, 2) == const0_rtx)
+	    {
+	      *total = COSTS_N_INSNS (1 + n_bytes
+				      - (AVR_HAVE_MOVW && n_bytes == 4));
+	      return true;
+	    }
+	}
+
       switch (mode)
 	{
 	case E_QImode:
@@ -12681,6 +12884,25 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
       return true;
 
     case MULT:
+      if (avropt_pr118012)
+	{
+	  if (GET_CODE (XEXP (x, 0)) == AND
+	      && XEXP (XEXP (x, 0), 1) == const1_rtx)
+	    {
+	      // Try to defeat PR118012.  The MUL variant is actually very
+	      // expensive, but combine is given a pattern to transform this
+	      // into something less toxic.  Though this might not work
+	      // for SImode, and we still have a completely ridiculous
+	      // 32-bit multiplication instead of a simple bit test on
+	      // devices that don't even have MUL.  This is because on
+	      // AVR_TINY, we'll get a libcall which we cannot undo.
+	      // (On other devices that don't have MUL, the libcall is
+	      // bypassed by providing mulsi3, cf. insn mulsi3_[call_]pr118012.
+	      *total = 0;
+	      return true;
+	    }
+	} // PR118012
+
       switch (mode)
 	{
 	case E_QImode:
@@ -12971,9 +13193,6 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      case 0:
 		*total = 0;
 		break;
-	      case 24:
-		*total = COSTS_N_INSNS (3);
-		break;
 	      case 1:
 	      case 8:
 		*total = COSTS_N_INSNS (4);
@@ -12983,6 +13202,19 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 		break;
 	      case 16:
 		*total = COSTS_N_INSNS (4 - AVR_HAVE_MOVW);
+		break;
+	      case 24:
+	      case 25:
+	      case 26:
+	      case 27:
+		*total = COSTS_N_INSNS (4 + val1 - 24);
+		break;
+	      case 28:
+	      case 29:
+		*total = COSTS_N_INSNS (6 + val1 - 28);
+		break;
+	      case 30:
+		*total = COSTS_N_INSNS (!speed && AVR_HAVE_MUL ? 7 : 8);
 		break;
 	      case 31:
 		*total = COSTS_N_INSNS (6);
@@ -13280,6 +13512,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 		*total = 0;
 		break;
 	      case 1:
+	      case 8:
 		*total = COSTS_N_INSNS (4);
 		break;
 	      case 2:
@@ -13291,9 +13524,18 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      case 16:
 		*total = COSTS_N_INSNS (4 - AVR_HAVE_MOVW);
 		break;
-	      case 8:
 	      case 24:
-		*total = COSTS_N_INSNS (4);
+	      case 25:
+	      case 26:
+	      case 27:
+		*total = COSTS_N_INSNS (4 + val1 - 24);
+		break;
+	      case 28:
+	      case 29:
+		*total = COSTS_N_INSNS (6 + val1 - 28);
+		break;
+	      case 30:
+		*total = COSTS_N_INSNS (!speed && AVR_HAVE_MUL ? 7 : 8);
 		break;
 	      case 31:
 		*total = COSTS_N_INSNS (6);
@@ -14185,6 +14427,132 @@ avr_out_sbxx_branch (rtx_insn *insn, rtx operands[])
     return "rjmp %x3";
 
   return "";
+}
+
+
+/* Output code for  XOP[0] = sign_extract (XOP[1].0)  and return "".
+   PLEN == 0: Output instructions.
+   PLEN != 0: Set *PLEN to the length of the sequence in words.  */
+
+const char *
+avr_out_sextr (rtx_insn *insn, rtx *xop, int *plen)
+{
+  rtx dest = xop[0];
+  rtx src = xop[1];
+  int bit = INTVAL (xop[2]);
+  int n_bytes = GET_MODE_SIZE (GET_MODE (dest));
+
+  gcc_assert (bit == 0);
+
+  if (reg_unused_after (insn, src))
+    avr_asm_len ("lsr %1", xop, plen, -1);
+  else
+    avr_asm_len ("mov %0,%1"  CR_TAB
+		 "lsr %0", xop, plen, -2);
+
+  for (int i = 0; i < n_bytes; ++i)
+    {
+      rtx b = avr_byte (dest, i);
+      avr_asm_len ("sbc %0,%0", &b, plen, 1);
+      if (i == 1 && n_bytes == 4 && AVR_HAVE_MOVW)
+	return avr_asm_len ("movw %C0,%A0", xop, plen, 1);
+    }
+
+  return "";
+}
+
+
+/*
+   if (bits.bitno <eqne> 0)
+     dest = op0;
+   else
+     dest = op0 <pix> op1;
+
+   Performed as:
+
+   dest = op0;
+   if (bits.bitno <eqne> 0)
+     goto LL;
+   dest o= op1;
+LL:;  */
+
+void
+avr_emit_skip_pixop (rtx_code pix, rtx dest, rtx op0, rtx op1,
+		     rtx_code eqne, rtx bits, int bitno)
+{
+  gcc_assert (eqne == EQ);
+
+  const machine_mode mode = GET_MODE (dest);
+
+  // Get rid of early-clobbers.
+
+  if (reg_overlap_mentioned_p (dest, bits))
+    bits = copy_to_mode_reg (GET_MODE (bits), bits);
+
+  if (reg_overlap_mentioned_p (dest, op1))
+    op1 = copy_to_mode_reg (mode, op1);
+
+  // xorqi3 has "register_operand" for op1.
+  if (mode == QImode && pix == XOR)
+    op1 = force_reg (QImode, op1);
+
+  emit_move_insn (dest, op0);
+
+  // Skip if bits.bitno <eqne> bitno.
+  rtx xlabel = gen_label_rtx ();
+  rtx zerox = gen_rtx_ZERO_EXTRACT (QImode, bits, const1_rtx, GEN_INT (bitno));
+  rtx cond = gen_rtx_fmt_ee (eqne, VOIDmode, zerox, const0_rtx);
+  emit (gen_sbrx_branchqi_split (cond, bits, const0_rtx, xlabel));
+
+  // Payload: plus, ior, xor for HI, PSI, SI have a scratch:QI;
+  // QI and plus:HI don't.
+  rtx src = gen_rtx_fmt_ee (pix, mode, dest, op1);
+  rtx set = gen_rtx_SET (dest, src);
+  rtx clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_SCRATCH (QImode));
+  bool no_scratch = mode == QImode || (mode == HImode && pix == PLUS);
+  emit (no_scratch
+	? set
+	: gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, clobber)));
+
+  emit_label (xlabel);
+}
+
+
+/*
+   if (bits.bitno <eqne> 0)
+     dest = src;
+   else
+     dest = 0;
+
+   Performed as:
+
+   dest = src;
+   if (bits.bitno <eqne> 0)
+     goto LL;
+   dest = 0;
+LL:;  */
+
+void
+avr_emit_skip_clear (rtx dest, rtx src, rtx_code eqne, rtx bits, int bitno)
+{
+  const machine_mode mode = GET_MODE (dest);
+
+  // Get rid of early-clobber.
+  if (reg_overlap_mentioned_p (dest, bits))
+    bits = copy_to_mode_reg (GET_MODE (bits), bits);
+
+  emit_move_insn (dest, src);
+
+  // Skip if bits.bitno <eqne> bitno.
+  rtx xlabel = gen_label_rtx ();
+  rtx zerox = gen_rtx_ZERO_EXTRACT (QImode, bits, const1_rtx, GEN_INT (bitno));
+  rtx cond = gen_rtx_fmt_ee (eqne, VOIDmode, zerox, const0_rtx);
+  emit (gen_sbrx_branchqi_split (cond, bits, const0_rtx, xlabel));
+
+  // Payload: dest = 0;
+  emit_move_insn (dest, CONST0_RTX (mode));
+
+  emit_label (xlabel);
 }
 
 

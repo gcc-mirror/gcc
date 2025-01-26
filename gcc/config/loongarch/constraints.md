@@ -292,6 +292,10 @@
    "@internal"
    (match_operand 0 "low_bitmask_operand"))
 
+(define_constraint "Yy"
+   "@internal"
+   (match_operand 0 "ins_zero_bitmask_operand"))
+
 (define_constraint "YI"
   "@internal
    A replicated vector const in which the replicated value is in the range

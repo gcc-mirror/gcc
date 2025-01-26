@@ -406,6 +406,8 @@ reproducer::get_identifier (recording::memento *m)
 const char *
 reproducer::get_identifier_as_rvalue (recording::rvalue *m)
 {
+  if (!m)
+    return "NULL";
   return m->access_as_rvalue (*this);
 }
 
@@ -415,6 +417,8 @@ reproducer::get_identifier_as_rvalue (recording::rvalue *m)
 const char *
 reproducer::get_identifier_as_lvalue (recording::lvalue *m)
 {
+  if (!m)
+    return "NULL";
   return m->access_as_lvalue (*this);
 }
 
@@ -424,6 +428,8 @@ reproducer::get_identifier_as_lvalue (recording::lvalue *m)
 const char *
 reproducer::get_identifier_as_type (recording::type *m)
 {
+  if (!m)
+    return "NULL";
   return m->access_as_type (*this);
 }
 
@@ -6041,7 +6047,7 @@ recording::ctor::write_reproducer (reproducer &r)
 	r.write ("    gcc_jit_rvalue *value = NULL;\n");
       else
 	r.write ("    gcc_jit_rvalue *value = %s;\n",
-		 r.get_identifier (m_values[0]));
+		 r.get_identifier_as_rvalue (m_values[0]));
 
       if (m_fields.length () == 0)
 	r.write ("    gcc_jit_field *field = NULL;\n");
@@ -6058,7 +6064,7 @@ recording::ctor::write_reproducer (reproducer &r)
 	{
 	  r.write ("    gcc_jit_rvalue *values[] = {\n");
 	  for (size_t i = 0; i < m_values.length (); i++)
-	    r.write ("        %s,\n", r.get_identifier (m_values[i]));
+	    r.write ("        %s,\n", r.get_identifier_as_rvalue (m_values[i]));
 	  r.write ("      };\n");
 	}
       /* Write the array of fields.  */

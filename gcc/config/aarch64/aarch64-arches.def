@@ -46,5 +46,6 @@ AARCH64_ARCH("armv9.1-a",     generic_armv9_a,   V9_1A,     9,  (V8_6A, V9A))
 AARCH64_ARCH("armv9.2-a",     generic_armv9_a,   V9_2A,     9,  (V8_7A, V9_1A))
 AARCH64_ARCH("armv9.3-a",     generic_armv9_a,   V9_3A,     9,  (V8_8A, V9_2A))
 AARCH64_ARCH("armv9.4-a",     generic_armv9_a,   V9_4A,     9,  (V8_9A, V9_3A))
+AARCH64_ARCH("armv9.5-a",     generic_armv9_a,   V9_5A,     9,  (V9_4A, CPA, FAMINMAX, LUT))
 
 #undef AARCH64_ARCH

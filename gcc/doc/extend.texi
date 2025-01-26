@@ -2642,6 +2642,7 @@ GCC plugins may provide their own attributes.
 * Epiphany Function Attributes::
 * H8/300 Function Attributes::
 * IA-64 Function Attributes::
+* LoongArch Function Attributes::
 * M32C Function Attributes::
 * M32R/D Function Attributes::
 * m68k Function Attributes::
@@ -5640,6 +5641,80 @@ extern int foo () __attribute__((version_id ("20040821")));
 
 @noindent
 Calls to @code{foo} are mapped to calls to @code{foo@{20040821@}}.
+@end table
+
+@node LoongArch Function Attributes
+@subsection LoongArch Function Attributes
+
+These function attributes are supported by the LoongArch end:
+
+@table @code
+@cindex @code{strict-align} function attribute, LoongArch
+@item strict-align
+@itemx no-strict-align
+@code{strict-align} indicates that the compiler should not assume that unaligned
+memory references are handled by the system.  To allow the compiler to assume
+that aligned memory references are handled by the system, the inverse attribute
+@code{no-strict-align} can be specified.  The behavior is same as for the
+command-line option @option{-mstrict-align} and @option{-mno-strict-align}.
+
+@cindex @code{cmodel=} function attribute, LoongArch
+@item cmodel=
+Indicates that code should be generated for a particular code model for
+this function.  The behavior and permissible arguments are the same as
+for the command-line option @option{-mcmodel=}.
+
+@cindex @code{arch=} function attribute, LoongArch
+@item arch=
+Specifies the architecture version and architectural extensions to use
+for this function.  The behavior and permissible arguments are the same as
+for the @option{-march=} command-line option.
+
+@cindex @code{tune=} function attribute, LoongArch
+@item tune=
+Specifies the core for which to tune the performance of this function.
+The behavior and permissible arguments are the same as for the @option{-mtune=}
+command-line option.
+
+@cindex @code{lsx} function attribute, LoongArch
+@item lsx
+@itemx no-lsx
+@code{lsx} indicates that vector instruction generation is allowed (not allowed)
+when compiling the function.  The behavior is same as for the command-line option
+@option{-mlsx} and @option{-mno-lsx}.
+
+@cindex @code{lasx} function attribute, LoongArch
+@item lasx
+@itemx no-lasx
+@code{lasx} indicates that lasx instruction generation is allowed (not allowed)
+when compiling the function.  The behavior is slightly different from the
+command-line option @option{-mno-lasx}.
+Example:
+
+@smallexample
+test.c:
+typedef int v4i32 __attribute__ ((vector_size(16), aligned(16)));
+
+v4i32 a, b, c;
+#ifdef WITH_ATTR
+__attribute__ ((target("no-lasx"))) void
+#else
+void
+#endif
+test ()
+@{
+  c = a + b;
+@}
+@end smallexample
+@smallexample
+$ gcc test.c -o test.s -O2 -mlasx -DWITH_ATTR
+@end smallexample
+Compiled as above, 128-bit vectorization is possible.
+But the following method cannot perform 128-bit vectorization.
+@smallexample
+$ gcc test.c -o test.s -O2 -mlasx -mno-lasx
+@end smallexample
+
 @end table
 
 @node M32C Function Attributes
@@ -28382,6 +28457,7 @@ option is specified.  @xref{OpenMP}, and @ref{OpenACC}.
 @menu
 * AArch64 Pragmas::
 * ARM Pragmas::
+* LoongArch Pragmas::
 * M32C Pragmas::
 * PRU Pragmas::
 * RS/6000 and PowerPC Pragmas::
@@ -28433,6 +28509,18 @@ Set all subsequent functions to have the @code{short_call} attribute.
 Do not affect the @code{long_call} or @code{short_call} attributes of
 subsequent functions.
 @end table
+
+@node LoongArch Pragmas
+@subsection LoongArch Pragmas
+
+The list of attributes supported by Pragma is the same as that of target
+function attributres.  @xref{LoongArch Function Attributes}.
+
+Example:
+
+@smallexample
+#pragma GCC target("strict-align")
+@end smallexample
 
 @node M32C Pragmas
 @subsection M32C Pragmas
@@ -29395,7 +29483,7 @@ architectures, including Unix and Microsoft Windows platforms.
 It consists of a set of compiler directives, library routines,
 and environment variables that influence run-time behavior.
 
-GCC implements all of the @uref{https://openmp.org/specifications/,
+GCC implements all of the @uref{https://www.openmp.org/specifications/,
 OpenMP Application Program Interface v4.5}, and many features from later
 versions of the OpenMP specification.
 @xref{OpenMP Implementation Status,,,libgomp,

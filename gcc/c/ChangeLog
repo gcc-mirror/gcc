@@ -1,3 +1,20 @@
+2025-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/118639
+	* c-parser.cc (c_parser_omp_variable_list): Remove first variable
+	and emit "expected identifier" error regardless of it.
+
+2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118604
+	* c-parser.cc (c_parser_omp_metadirective): Rewrite
+	condition for clauses other than when, default and otherwise.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.cc (names_builtin_p): Return 1 for RID_C23_VA_START and
+	RID_VA_ARG.
+
 2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* c-parser.cc (c_parser_omp_assumption_clauses): Give a more specific

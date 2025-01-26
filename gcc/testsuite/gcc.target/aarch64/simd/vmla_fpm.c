@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-O3 -march=armv9-a+fp8fma" } */
+/* { dg-additional-options "-O3 -march=armv9-a+fp8fma -moverride=tune=cheap_fpmr_write" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_neon.h"

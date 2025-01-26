@@ -655,6 +655,11 @@ split_nonconstant_init_1 (tree dest, tree init, bool last,
 			  && make_safe_copy_elision (sub, value))
 			goto build_init;
 
+		      if (TREE_CODE (value) == TARGET_EXPR)
+			/* We have to add this constructor, so we will not
+			   elide.  */
+			TARGET_EXPR_ELIDING_P (value) = false;
+
 		      tree name = (DECL_FIELD_IS_BASE (field_index)
 				   ? base_ctor_identifier
 				   : complete_ctor_identifier);

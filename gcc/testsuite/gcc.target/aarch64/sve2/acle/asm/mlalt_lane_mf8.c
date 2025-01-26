@@ -70,7 +70,7 @@ TEST_DUAL_Z (mlalt_lane_1_f16, svfloat16_t, svmfloat8_t,
 ** 	msr	fpmr, x0
 **	mov	(z[0-7])\.d, z8\.d
 **	fmlalt	z0\.h, z1\.b, \1\.b\[1\]
-**	ldr	d8, \[sp\], 32
+**	ldr	d8, \[sp\], 16
 **	ret
 */
 TEST_DUAL_LANE_REG (mlalt_lane_z8_f16, svfloat16_t, svmfloat8_t, z8,

@@ -356,6 +356,7 @@
     UNSPEC_UPDATE_FFRT
     UNSPEC_RDFFR
     UNSPEC_WRFFR
+    UNSPEC_WRITE_FPMR
     UNSPEC_SYSREG_RDI
     UNSPEC_SYSREG_RTI
     UNSPEC_SYSREG_WDI
@@ -659,7 +660,7 @@
 
 (define_insn "aarch64_write_sysregdi"
   [(unspec_volatile:DI [(match_operand 0 "aarch64_sysreg_string" "")
-			(match_operand:DI 1 "register_operand" "rZ")]
+			(match_operand:DI 1 "aarch64_reg_or_zero" "rZ")]
 		       UNSPEC_SYSREG_WDI)]
   ""
   "msr\t%0, %x1"
@@ -1531,7 +1532,7 @@
      [w, r Z  ; neon_from_gp<q>, nosimd     ] fmov\t%s0, %w1
      [w, w    ; neon_dup       , simd       ] dup\t%<Vetype>0, %1.<v>[0]
      [w, w    ; neon_dup       , nosimd     ] fmov\t%s0, %s1
-     [Umv, r  ; mrs            , *          ] msr\t%0, %x1
+     [Umv, rZ ; mrs            , *          ] msr\t%0, %x1
      [r, Umv  ; mrs            , *          ] mrs\t%x0, %1
   }
 )
@@ -1595,7 +1596,7 @@
      [r  , w  ; f_mrc    , fp  , 4] fmov\t%w0, %s1
      [w  , w  ; fmov     , fp  , 4] fmov\t%s0, %s1
      [w  , Ds ; neon_move, simd, 4] << aarch64_output_scalar_simd_mov_immediate (operands[1], SImode);
-     [Umv, r  ; mrs      , *   , 4] msr\t%0, %x1
+     [Umv, rZ ; mrs      , *   , 4] msr\t%0, %x1
      [r, Umv  ; mrs      , *   , 4] mrs\t%x0, %1
   }
   "CONST_INT_P (operands[1]) && !aarch64_move_imm (INTVAL (operands[1]), SImode)
@@ -1613,30 +1614,30 @@
   "(register_operand (operands[0], DImode)
     || aarch64_reg_or_zero (operands[1], DImode))"
   {@ [cons: =0, 1; attrs: type, arch, length]
-     [w, Z  ; neon_move, simd, 4] movi\t%0.2d, #0
-     [r, r  ; mov_reg  , *   , 4] mov\t%x0, %x1
-     [k, r  ; mov_reg  , *   , 4] mov\t%0, %x1
-     [r, k  ; mov_reg  , *   , 4] mov\t%x0, %1
-     [r, O  ; mov_imm  , *   , 4] << aarch64_is_mov_xn_imm (INTVAL (operands[1])) ? "mov\t%x0, %1" : "mov\t%w0, %1";
-     [r, n  ; mov_imm  , *   ,16] #
+     [w, Z   ; neon_move, simd, 4] movi\t%0.2d, #0
+     [r, r   ; mov_reg  , *   , 4] mov\t%x0, %x1
+     [k, r   ; mov_reg  , *   , 4] mov\t%0, %x1
+     [r, k   ; mov_reg  , *   , 4] mov\t%x0, %1
+     [r, O   ; mov_imm  , *   , 4] << aarch64_is_mov_xn_imm (INTVAL (operands[1])) ? "mov\t%x0, %1" : "mov\t%w0, %1";
+     [r, n   ; mov_imm  , *   ,16] #
      /* The "mov_imm" type for CNT is just a placeholder.  */
-     [r, Usv; mov_imm  , sve , 4] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
-     [r, Usr; mov_imm  , sve,  4] << aarch64_output_sve_rdvl (operands[1]);
-     [r, UsR; mov_imm  , sme,  4] << aarch64_output_rdsvl (operands[1]);
-     [r, m  ; load_8   , *   , 4] ldr\t%x0, %1
-     [w, m  ; load_8   , fp  , 4] ldr\t%d0, %1
-     [m, r Z; store_8  , *   , 4] str\t%x1, %0
-     [m, w  ; store_8  , fp  , 4] str\t%d1, %0
-     [r, Usw; load_8   , *   , 8] << TARGET_ILP32 ? "adrp\t%0, %A1\;ldr\t%w0, [%0, %L1]" : "adrp\t%0, %A1\;ldr\t%0, [%0, %L1]";
-     [r, Usa; adr      , *   , 4] adr\t%x0, %c1
-     [r, Ush; adr      , *   , 4] adrp\t%x0, %A1
-     [w, r Z; f_mcr    , fp  , 4] fmov\t%d0, %x1
-     [r, w  ; f_mrc    , fp  , 4] fmov\t%x0, %d1
-     [w, w  ; fmov     , fp  , 4] fmov\t%d0, %d1
-     [w, Dd ; neon_move, simd, 4] << aarch64_output_scalar_simd_mov_immediate (operands[1], DImode);
-     [w, Dx ; neon_move, simd, 8] #
-     [Umv, r; mrs      , *   , 4] msr\t%0, %1
-     [r, Umv; mrs      , *   , 4] mrs\t%0, %1
+     [r, Usv ; mov_imm  , sve , 4] << aarch64_output_sve_cnt_immediate ("cnt", "%x0", operands[1]);
+     [r, Usr ; mov_imm  , sve,  4] << aarch64_output_sve_rdvl (operands[1]);
+     [r, UsR ; mov_imm  , sme,  4] << aarch64_output_rdsvl (operands[1]);
+     [r, m   ; load_8   , *   , 4] ldr\t%x0, %1
+     [w, m   ; load_8   , fp  , 4] ldr\t%d0, %1
+     [m, r Z ; store_8  , *   , 4] str\t%x1, %0
+     [m, w   ; store_8  , fp  , 4] str\t%d1, %0
+     [r, Usw ; load_8   , *   , 8] << TARGET_ILP32 ? "adrp\t%0, %A1\;ldr\t%w0, [%0, %L1]" : "adrp\t%0, %A1\;ldr\t%0, [%0, %L1]";
+     [r, Usa ; adr      , *   , 4] adr\t%x0, %c1
+     [r, Ush ; adr      , *   , 4] adrp\t%x0, %A1
+     [w, r Z ; f_mcr    , fp  , 4] fmov\t%d0, %x1
+     [r, w   ; f_mrc    , fp  , 4] fmov\t%x0, %d1
+     [w, w   ; fmov     , fp  , 4] fmov\t%d0, %d1
+     [w, Dd  ; neon_move, simd, 4] << aarch64_output_scalar_simd_mov_immediate (operands[1], DImode);
+     [w, Dx  ; neon_move, simd, 8] #
+     [Umv, rZ; mrs      , *   , 4] msr\t%0, %x1
+     [r, Umv ; mrs      , *   , 4] mrs\t%0, %1
   }
   "CONST_INT_P (operands[1])
    && REG_P (operands[0])
@@ -1881,6 +1882,44 @@
     aarch64_split_128bit_move (operands[0], operands[1]);
     DONE;
   }
+)
+
+;; The preferred way of writing to the FPMR is to test whether it already
+;; has the desired value and branch around the write if so.  This reduces
+;; the number of redundant FPMR writes caused by ABI boundaries, such as in:
+;;
+;;    for (...)
+;;      fp8_kernel (..., fpmr_value);
+;;
+;; Without this optimization, fp8_kernel would set FPMR to fpmr_value each
+;; time that it is called.
+;;
+;; We do this as a split so that hardreg_pre can optimize the moves first.
+(define_split
+  [(set (reg:DI FPM_REGNUM)
+        (match_operand:DI 0 "aarch64_reg_or_zero"))]
+  "TARGET_FP8 && !TARGET_CHEAP_FPMR_WRITE && can_create_pseudo_p ()"
+  [(const_int 0)]
+  {
+    auto label = gen_label_rtx ();
+    rtx current = copy_to_reg (gen_rtx_REG (DImode, FPM_REGNUM));
+    rtx cond = gen_rtx_EQ (VOIDmode, current, operands[0]);
+    emit_jump_insn (gen_cbranchdi4 (cond, current, operands[0], label));
+    emit_insn (gen_aarch64_write_fpmr (operands[0]));
+    emit_label (label);
+    DONE;
+  }
+)
+
+;; A write to the FPMR that is already protected by a conditional branch.
+;; Since this instruction is introduced late, it shouldn't matter too much
+;; that we're using an unspec for a move.
+(define_insn "aarch64_write_fpmr"
+  [(set (reg:DI FPM_REGNUM)
+        (unspec:DI [(match_operand:DI 0 "aarch64_reg_or_zero" "rZ")]
+		   UNSPEC_WRITE_FPMR))]
+  "TARGET_FP8"
+  "msr\tfpmr, %x0"
 )
 
 (define_expand "aarch64_cpymemdi"
@@ -6361,7 +6400,8 @@
       return "ins\t%0.<bits_etype>[%1], %2.<bits_etype>[0]";
     return "ins\t%0.<bits_etype>[%1], %w2";
   }
-  [(set_attr "type" "bfm,neon_ins_q,neon_ins_q")]
+  [(set_attr "type" "bfm,neon_ins_q,neon_ins_q")
+   (set_attr "arch" "*,simd,simd")]
 )
 
 (define_insn "*insv_reg<mode>"
@@ -6394,7 +6434,8 @@
     operands[2] = lowpart_subreg (<GPI:MODE>mode, operands[2],
 				  <ALLX:MODE>mode);
   }
-  [(set_attr "type" "bfm,neon_ins_q,neon_ins_q")]
+  [(set_attr "type" "bfm,neon_ins_q,neon_ins_q")
+   (set_attr "arch" "*,simd,simd")]
 )
 
 (define_insn "*aarch64_bfi<GPI:mode><ALLX:mode>4"
@@ -6426,7 +6467,8 @@
   {
     operands[2] = lowpart_subreg (DImode, operands[3], <ALLX:MODE>mode);
   }
-  [(set_attr "type" "bfm,neon_ins_q,neon_ins_q")]
+  [(set_attr "type" "bfm,neon_ins_q,neon_ins_q")
+   (set_attr "arch" "*,simd,simd")]
 )
 
 ;;  Match a bfi instruction where the shift of OP3 means that we are
@@ -7473,8 +7515,8 @@
   "TARGET_SIMD"
 {
   rtx tmp = gen_reg_rtx (<VCONQ>mode);
-  rtx op1 = lowpart_subreg (<VCONQ>mode, operands[1], <MODE>mode);
-  rtx op2 = lowpart_subreg (<VCONQ>mode, operands[2], <MODE>mode);
+  rtx op1 = force_lowpart_subreg (<VCONQ>mode, operands[1], <MODE>mode);
+  rtx op2 = force_lowpart_subreg (<VCONQ>mode, operands[2], <MODE>mode);
   emit_insn (gen_xorsign3 (<VCONQ>mode, tmp, op1, op2));
   emit_move_insn (operands[0],
 		  lowpart_subreg (<MODE>mode, tmp, <VCONQ>mode));

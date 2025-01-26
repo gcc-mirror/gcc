@@ -2988,9 +2988,13 @@ namespace ranges
 					 std::__invoke(__proj, __hi),
 					 std::__invoke(__proj, __lo))));
 	auto&& __proj_val = std::__invoke(__proj, __val);
-	if (std::__invoke(__comp, __proj_val, std::__invoke(__proj, __lo)))
+	if (std::__invoke(__comp,
+			  std::forward<decltype(__proj_val)>(__proj_val),
+			  std::__invoke(__proj, __lo)))
 	  return __lo;
-	else if (std::__invoke(__comp, std::__invoke(__proj, __hi), __proj_val))
+	else if (std::__invoke(__comp,
+			       std::__invoke(__proj, __hi),
+			       std::forward<decltype(__proj_val)>(__proj_val)))
 	  return __hi;
 	else
 	  return __val;

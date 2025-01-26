@@ -2028,9 +2028,10 @@ known_alignment_for_access_p (dr_vec_info *dr_info, tree vectype)
    of DR_INFO is guaranteed to have.  */
 
 inline unsigned int
-vect_known_alignment_in_bytes (dr_vec_info *dr_info, tree vectype)
+vect_known_alignment_in_bytes (dr_vec_info *dr_info, tree vectype,
+			       poly_int64 offset = 0)
 {
-  int misalignment = dr_misalignment (dr_info, vectype);
+  int misalignment = dr_misalignment (dr_info, vectype, offset);
   if (misalignment == DR_MISALIGNMENT_UNKNOWN)
     return TYPE_ALIGN_UNIT (TREE_TYPE (DR_REF (dr_info->dr)));
   else if (misalignment == 0)

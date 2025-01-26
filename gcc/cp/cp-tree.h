@@ -1564,7 +1564,8 @@ enum cp_lambda_default_capture_mode_type {
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->locus)
 
 /* The mangling scope for the lambda: FUNCTION_DECL, PARM_DECL, VAR_DECL,
-   FIELD_DECL or NULL_TREE.  If this is NULL_TREE, we have no linkage.  */
+   FIELD_DECL, TYPE_DECL, or NULL_TREE.  If this is NULL_TREE, we have no
+   linkage.  */
 #define LAMBDA_EXPR_EXTRA_SCOPE(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->extra_scope)
 
@@ -7255,6 +7256,9 @@ extern tree grokfield (const cp_declarator *, cp_decl_specifier_seq *,
 		       tree, bool, tree, tree);
 extern tree grokbitfield (const cp_declarator *, cp_decl_specifier_seq *,
 			  tree, tree, tree);
+extern tree start_initialized_static_member	(const cp_declarator *,
+						 cp_decl_specifier_seq *, tree);
+extern void finish_initialized_static_member	(tree, tree, tree);
 extern tree splice_template_attributes		(tree *, tree);
 extern bool any_dependent_type_attributes_p	(tree);
 extern tree cp_reconstruct_complex_type		(tree, tree);
@@ -8117,7 +8121,7 @@ extern void maybe_generic_this_capture		(tree, tree);
 extern tree maybe_resolve_dummy			(tree, bool);
 extern tree current_nonlambda_function		(void);
 extern tree nonlambda_method_basetype		(void);
-extern tree current_nonlambda_scope		(void);
+extern tree current_nonlambda_scope		(bool = false);
 extern tree current_lambda_expr			(void);
 extern bool generic_lambda_fn_p			(tree);
 extern tree do_dependent_capture		(tree, bool = false);
@@ -8709,7 +8713,8 @@ struct diagnosing_failed_constraint
 extern cp_expr finish_constraint_or_expr	(location_t, cp_expr, cp_expr);
 extern cp_expr finish_constraint_and_expr	(location_t, cp_expr, cp_expr);
 extern cp_expr finish_constraint_primary_expr	(cp_expr);
-extern tree finish_concept_definition		(cp_expr, tree, tree);
+extern tree start_concept_definition		(cp_expr);
+extern tree finish_concept_definition		(tree, tree, tree);
 extern tree combine_constraint_expressions      (tree, tree);
 extern tree append_constraint			(tree, tree);
 extern tree get_constraints                     (const_tree);

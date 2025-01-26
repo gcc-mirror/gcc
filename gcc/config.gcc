@@ -494,7 +494,7 @@ loongarch*-*-*)
 	cpu_type=loongarch
 	d_target_objs="loongarch-d.o"
 	extra_headers="larchintrin.h lsxintrin.h lasxintrin.h"
-	extra_objs="loongarch-c.o loongarch-builtins.o loongarch-cpu.o loongarch-opts.o loongarch-def.o loongarch-evolution.o"
+	extra_objs="loongarch-c.o loongarch-builtins.o loongarch-cpu.o loongarch-opts.o loongarch-def.o loongarch-evolution.o loongarch-target-attr.o"
 	extra_gcc_objs="loongarch-driver.o loongarch-cpu.o loongarch-opts.o loongarch-def.o"
 	extra_options="${extra_options} g.opt fused-madd.opt"
 	;;
@@ -555,7 +555,7 @@ riscv*)
 	extra_objs="${extra_objs} riscv-vector-builtins.o riscv-vector-builtins-shapes.o riscv-vector-builtins-bases.o sifive-vector-builtins-bases.o"
 	extra_objs="${extra_objs} thead.o riscv-target-attr.o riscv-zicfilp.o"
 	d_target_objs="riscv-d.o"
-	extra_headers="riscv_vector.h riscv_crypto.h riscv_bitmanip.h riscv_th_vector.h riscv_cmo.h"
+	extra_headers="riscv_vector.h riscv_crypto.h riscv_bitmanip.h riscv_th_vector.h sifive_vector.h"
 	target_gtfiles="$target_gtfiles \$(srcdir)/config/riscv/riscv-vector-builtins.cc"
 	target_gtfiles="$target_gtfiles \$(srcdir)/config/riscv/riscv-vector-builtins.h"
 	;;
@@ -1210,7 +1210,7 @@ aarch64*-*-elf | aarch64*-*-fuchsia* | aarch64*-*-rtems*)
 	esac
 	aarch64_multilibs="${with_multilib_list}"
 	if test "$aarch64_multilibs" = "default"; then
-		aarch64_multilibs="lp64,ilp32"
+		aarch64_multilibs="lp64"
 	fi
 	aarch64_multilibs=`echo $aarch64_multilibs | sed -e 's/,/ /g'`
 	for aarch64_multilib in ${aarch64_multilibs}; do
@@ -5757,7 +5757,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | native | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | z14 | z15 | z16 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12 | arch13 | arch14 )
+			"" | native | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | z14 | z15 | z16 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12 | arch13 | arch14 | arch15 )
 				# OK
 				;;
 			*)

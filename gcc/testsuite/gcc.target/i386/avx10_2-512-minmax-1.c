@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=x86-64-v3 -mavx10.2-512" } */
-/* { dg-final { scan-assembler-times "vminmaxnepbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */
-/* { dg-final { scan-assembler-times "vminmaxnepbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
-/* { dg-final { scan-assembler-times "vminmaxnepbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vminmaxbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vminmaxbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vminmaxbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vminmaxph\[ \\t\]+\[^\{\n\]*\[^\}\]%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r\]*%zmm\[0-9\]+(?:\n|\[ \\t\]+#)"  2 } } */
 /* { dg-final { scan-assembler-times "vminmaxph\[ \\t\]+\[^\{\n\]*\[^\}\]%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r\]*%zmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  2 } } */
 /* { dg-final { scan-assembler-times "vminmaxph\[ \\t\]+\[^\{\n\]*\[^\}\]%zmm\[0-9\]+\[^\n\r]*%zmm\[0-9\]+\[^\n\r\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  2 } } */
@@ -27,9 +27,9 @@ volatile __mmask8 m8;
 void extern
 avx10_2_512_test (void)
 {
-  x1 = _mm512_minmax_nepbh (x1, x1, 100);
-  x1 = _mm512_mask_minmax_nepbh (x1, m32, x1, x1, 100);
-  x1 = _mm512_maskz_minmax_nepbh (m32, x1, x1, 100);
+  x1 = _mm512_minmax_pbh (x1, x1, 100);
+  x1 = _mm512_mask_minmax_pbh (x1, m32, x1, x1, 100);
+  x1 = _mm512_maskz_minmax_pbh (m32, x1, x1, 100);
   x2 = _mm512_minmax_ph (x2, x2, 1);
   x2 = _mm512_mask_minmax_ph (x2, m32, x2, x2, 1);
   x2 = _mm512_maskz_minmax_ph (m32, x2, x2, 1);

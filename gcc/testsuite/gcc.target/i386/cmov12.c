@@ -1,6 +1,6 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -mavx2 -mtune=sapphirerapids" } */                             
-/* { dg-final { scan-assembler-times "cmovg" 3 } } */
+/* { dg-final { scan-assembler-times "cmov(\[lq\]\.)?g" 3 } } */
 
 void foo(int *a, int n, int k)
 {

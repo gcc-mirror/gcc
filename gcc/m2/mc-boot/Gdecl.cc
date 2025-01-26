@@ -20,7 +20,6 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #include <stdbool.h>
@@ -22790,7 +22789,7 @@ static decl_node__opaque doDupExpr (decl_node__opaque n)
         break;
 
       case decl_length:
-        M2RTS_HALT (-1);  /* length should have been converted into unary.  */
+        M2RTS_HALT (-1);
         __builtin_unreachable ();
         break;
 

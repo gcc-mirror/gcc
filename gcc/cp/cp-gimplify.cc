@@ -3005,19 +3005,16 @@ cp_fold (tree x, fold_flags_t flags)
       loc = EXPR_LOCATION (x);
       op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops, flags);
 
-      if (code == CONVERT_EXPR
+      if (op0 == error_mark_node)
+	x = error_mark_node;
+      else if (code == CONVERT_EXPR
 	  && SCALAR_TYPE_P (TREE_TYPE (x))
 	  && op0 != void_node)
 	/* During parsing we used convert_to_*_nofold; re-convert now using the
 	   folding variants, since fold() doesn't do those transformations.  */
 	x = fold (convert (TREE_TYPE (x), op0));
       else if (op0 != TREE_OPERAND (x, 0))
-	{
-	  if (op0 == error_mark_node)
-	    x = error_mark_node;
-	  else
-	    x = fold_build1_loc (loc, code, TREE_TYPE (x), op0);
-	}
+	x = fold_build1_loc (loc, code, TREE_TYPE (x), op0);
       else
 	x = fold (x);
 
@@ -3087,20 +3084,17 @@ cp_fold (tree x, fold_flags_t flags)
       op0 = cp_fold_maybe_rvalue (TREE_OPERAND (x, 0), rval_ops, flags);
 
     finish_unary:
-      if (op0 != TREE_OPERAND (x, 0))
+      if (op0 == error_mark_node)
+	x = error_mark_node;
+      else if (op0 != TREE_OPERAND (x, 0))
 	{
-	  if (op0 == error_mark_node)
-	    x = error_mark_node;
-	  else
+	  x = fold_build1_loc (loc, code, TREE_TYPE (x), op0);
+	  if (code == INDIRECT_REF
+	      && (INDIRECT_REF_P (x) || TREE_CODE (x) == MEM_REF))
 	    {
-	      x = fold_build1_loc (loc, code, TREE_TYPE (x), op0);
-	      if (code == INDIRECT_REF
-		  && (INDIRECT_REF_P (x) || TREE_CODE (x) == MEM_REF))
-		{
-		  TREE_READONLY (x) = TREE_READONLY (org_x);
-		  TREE_SIDE_EFFECTS (x) = TREE_SIDE_EFFECTS (org_x);
-		  TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (org_x);
-		}
+	      TREE_READONLY (x) = TREE_READONLY (org_x);
+	      TREE_SIDE_EFFECTS (x) = TREE_SIDE_EFFECTS (org_x);
+	      TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (org_x);
 	    }
 	}
       else
@@ -3190,13 +3184,10 @@ cp_fold (tree x, fold_flags_t flags)
 					op0, op1);
 	}
 
-      if (op0 != TREE_OPERAND (x, 0) || op1 != TREE_OPERAND (x, 1))
-	{
-	  if (op0 == error_mark_node || op1 == error_mark_node)
-	    x = error_mark_node;
-	  else
-	    x = fold_build2_loc (loc, code, TREE_TYPE (x), op0, op1);
-	}
+      if (op0 == error_mark_node || op1 == error_mark_node)
+	x = error_mark_node;
+      else if (op0 != TREE_OPERAND (x, 0) || op1 != TREE_OPERAND (x, 1))
+	x = fold_build2_loc (loc, code, TREE_TYPE (x), op0, op1);
       else
 	x = fold (x);
 
@@ -3268,17 +3259,14 @@ cp_fold (tree x, fold_flags_t flags)
 	    }
 	}
 
-      if (op0 != TREE_OPERAND (x, 0)
-	  || op1 != TREE_OPERAND (x, 1)
-	  || op2 != TREE_OPERAND (x, 2))
-	{
-	  if (op0 == error_mark_node
-	      || op1 == error_mark_node
-	      || op2 == error_mark_node)
-	    x = error_mark_node;
-	  else
-	    x = fold_build3_loc (loc, code, TREE_TYPE (x), op0, op1, op2);
-	}
+      if (op0 == error_mark_node
+	  || op1 == error_mark_node
+	  || op2 == error_mark_node)
+	x = error_mark_node;
+      else if (op0 != TREE_OPERAND (x, 0)
+	       || op1 != TREE_OPERAND (x, 1)
+	       || op2 != TREE_OPERAND (x, 2))
+	x = fold_build3_loc (loc, code, TREE_TYPE (x), op0, op1, op2);
       else
 	x = fold (x);
 
@@ -3462,14 +3450,14 @@ cp_fold (tree x, fold_flags_t flags)
 	FOR_EACH_VEC_SAFE_ELT (elts, i, p)
 	  {
 	    tree op = cp_fold (p->value, flags);
-	    if (op != p->value)
+	    if (op == error_mark_node)
 	      {
-		if (op == error_mark_node)
-		  {
-		    x = error_mark_node;
-		    vec_free (nelts);
-		    break;
-		  }
+		x = error_mark_node;
+		vec_free (nelts);
+		break;
+	      }
+	    else if (op != p->value)
+	      {
 		if (nelts == NULL)
 		  nelts = elts->copy ();
 		(*nelts)[i].value = op;
@@ -3516,23 +3504,20 @@ cp_fold (tree x, fold_flags_t flags)
       op2 = cp_fold (TREE_OPERAND (x, 2), flags);
       op3 = cp_fold (TREE_OPERAND (x, 3), flags);
 
-      if (op0 != TREE_OPERAND (x, 0)
+      if (op0 == error_mark_node
+	  || op1 == error_mark_node
+	  || op2 == error_mark_node
+	  || op3 == error_mark_node)
+	x = error_mark_node;
+      else if (op0 != TREE_OPERAND (x, 0)
 	  || op1 != TREE_OPERAND (x, 1)
 	  || op2 != TREE_OPERAND (x, 2)
 	  || op3 != TREE_OPERAND (x, 3))
 	{
-	  if (op0 == error_mark_node
-	      || op1 == error_mark_node
-	      || op2 == error_mark_node
-	      || op3 == error_mark_node)
-	    x = error_mark_node;
-	  else
-	    {
-	      x = build4_loc (loc, code, TREE_TYPE (x), op0, op1, op2, op3);
-	      TREE_READONLY (x) = TREE_READONLY (org_x);
-	      TREE_SIDE_EFFECTS (x) = TREE_SIDE_EFFECTS (org_x);
-	      TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (org_x);
-	    }
+	  x = build4_loc (loc, code, TREE_TYPE (x), op0, op1, op2, op3);
+	  TREE_READONLY (x) = TREE_READONLY (org_x);
+	  TREE_SIDE_EFFECTS (x) = TREE_SIDE_EFFECTS (org_x);
+	  TREE_THIS_VOLATILE (x) = TREE_THIS_VOLATILE (org_x);
 	}
 
       x = fold (x);

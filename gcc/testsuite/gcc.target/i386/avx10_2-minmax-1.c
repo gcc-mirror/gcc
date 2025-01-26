@@ -1,11 +1,11 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=x86-64-v3 -mavx10.2" } */
-/* { dg-final { scan-assembler-times "vminmaxnepbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */
-/* { dg-final { scan-assembler-times "vminmaxnepbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r\]*%xmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
-/* { dg-final { scan-assembler-times "vminmaxnepbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 } } */
-/* { dg-final { scan-assembler-times "vminmaxnepbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */
-/* { dg-final { scan-assembler-times "vminmaxnepbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
-/* { dg-final { scan-assembler-times "vminmaxnepbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vminmaxbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vminmaxbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r\]*%xmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vminmaxbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vminmaxbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vminmaxbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
+/* { dg-final { scan-assembler-times "vminmaxbf16\[ \\t\]+\[^\{\n\]*\[^\}\]%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vminmaxph\[ \\t\]+\[^\{\n\]*\[^\}\]%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vminmaxph\[ \\t\]+\[^\{\n\]*\[^\}\]%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r\]*%xmm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vminmaxph\[ \\t\]+\[^\{\n\]*\[^\}\]%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\[^\n\r\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 } } */
@@ -68,12 +68,12 @@ volatile __mmask8 m8;
 void extern
 avx10_2_test (void)
 {
-  x1 = _mm_minmax_nepbh (x1, x1, 100);
-  x1 = _mm_mask_minmax_nepbh (x1, m8, x1, x1, 100);
-  x1 = _mm_maskz_minmax_nepbh (m8, x1, x1, 100);
-  y1_ = _mm256_minmax_nepbh (y1_, y1_, 100);
-  y1_ = _mm256_mask_minmax_nepbh (y1_, m16, y1_, y1_, 100);
-  y1_ = _mm256_maskz_minmax_nepbh (m16, y1_, y1_, 100);
+  x1 = _mm_minmax_pbh (x1, x1, 100);
+  x1 = _mm_mask_minmax_pbh (x1, m8, x1, x1, 100);
+  x1 = _mm_maskz_minmax_pbh (m8, x1, x1, 100);
+  y1_ = _mm256_minmax_pbh (y1_, y1_, 100);
+  y1_ = _mm256_mask_minmax_pbh (y1_, m16, y1_, y1_, 100);
+  y1_ = _mm256_maskz_minmax_pbh (m16, y1_, y1_, 100);
   x2 = _mm_minmax_ph (x2, x2, 100);
   x2 = _mm_mask_minmax_ph (x2, m8, x2, x2, 100);
   x2 = _mm_maskz_minmax_ph (m8, x2, x2, 100);

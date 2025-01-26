@@ -29,7 +29,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined (_libc_H)
 #   define _libc_H
 
-#define INCLUDE_MEMORY
 #include "config.h"
 #include "system.h"
 #   ifdef __cplusplus
@@ -204,7 +203,7 @@ EXTERN int libc_creat (void * filename, unsigned int mode);
            off_t lseek(int fildes, off_t offset, int whence);
 */
 
-EXTERN ssize_t libc_lseek (int fd, ssize_t offset, int whence);
+EXTERN off_t libc_lseek (int fd, off_t offset, int whence);
 
 /*
    perror - writes errno and string. (ARRAY OF CHAR is translated onto ADDRESS).

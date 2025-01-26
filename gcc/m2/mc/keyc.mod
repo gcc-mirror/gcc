@@ -95,7 +95,6 @@ BEGIN
       IF NOT initializedGCC
       THEN
          initializedGCC := TRUE ;
-         print (p, '#define INCLUDE_MEMORY\n');
          print (p, '#include "config.h"\n');
          print (p, '#include "system.h"\n');
          checkGccTypes (p)

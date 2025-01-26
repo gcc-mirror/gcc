@@ -37,7 +37,7 @@
  %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
  %{!S:%{!c:%e-c or -S required for Ada}}\
  gnat1 %{I*} %{k8:-gnatk8} %{!Q:-quiet}\
-    %{nostdinc*} %{nostdlib*}\
+    %{nostdinc} %{nostdlib}\
     %{fcompare-debug-second:-gnatd_A} \
     %{O*} %{W*} %{w} %{p} %{pg:-p} " ADA_DUMPS_OPTIONS " \
     %{coverage:-fprofile-arcs -ftest-coverage} "
@@ -55,7 +55,7 @@
    "\
  %{!c:%e-c required for gnat2why}\
  gnat1why %{I*} %{k8:-gnatk8} %{!Q:-quiet}\
-    %{nostdinc*} %{nostdlib*}\
+    %{nostdinc} %{nostdlib}\
     %{a} " ADA_DUMPS_OPTIONS " \
     %{gnatea:-gnatez} %{g*&m*&f*} \
     %1 %{o*:%w%*-gnatO} \
@@ -66,7 +66,7 @@
    "\
  %{!c:%e-c required for gnat2scil}\
  gnat1scil %{I*} %{k8:-gnatk8} %{!Q:-quiet}\
-    %{nostdinc*} %{nostdlib*}\
+    %{nostdinc} %{nostdlib}\
     %{a} " ADA_DUMPS_OPTIONS " \
     %{gnatea:-gnatez} %{g*&m*&f*} \
     %1 %{o*:%w%*-gnatO} \

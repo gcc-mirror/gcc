@@ -131,6 +131,9 @@ public:
 
   FILE *m_fp;
 
+  /* True when an read error happened.  */
+  bool m_error;
+
   /* This points to the content of the file that we've read so
      far.  */
   char *m_data;
@@ -396,6 +399,7 @@ file_cache_slot::evict ()
   m_file_path = NULL;
   if (m_fp)
     fclose (m_fp);
+  m_error = false;
   m_fp = NULL;
   m_nb_read = 0;
   m_line_start_idx = 0;
@@ -491,6 +495,7 @@ file_cache_slot::create (const file_cache::input_context &in_context,
   m_file_path = file_path;
   if (m_fp)
     fclose (m_fp);
+  m_error = false;
   m_fp = fp;
   if (m_alloc_offset)
     offset_buffer (-m_alloc_offset);
@@ -613,7 +618,7 @@ file_cache::lookup_or_add_file (const char *file_path)
    diagnostic.  */
 
 file_cache_slot::file_cache_slot ()
-: m_use_count (0), m_file_path (NULL), m_fp (NULL), m_data (0),
+: m_use_count (0), m_file_path (NULL), m_fp (NULL), m_error (false), m_data (0),
   m_alloc_offset (0), m_size (0), m_nb_read (0), m_line_start_idx (0),
   m_line_num (0), m_total_lines (0), m_missing_trailing_newline (true)
 {
@@ -728,7 +733,10 @@ file_cache_slot::read_data ()
   size_t nb_read = fread (from, 1, to_read, m_fp);
 
   if (ferror (m_fp))
-    return false;
+    {
+      m_error = true;
+      return false;
+    }
 
   m_nb_read += nb_read;
   return !!nb_read;
@@ -846,7 +854,7 @@ file_cache_slot::get_next_line (char **line, ssize_t *line_len)
       m_missing_trailing_newline = false;
     }
 
-  if (m_fp && ferror (m_fp))
+  if (m_error)
     return false;
 
   /* At this point, we've found the end of the of line.  It either points to

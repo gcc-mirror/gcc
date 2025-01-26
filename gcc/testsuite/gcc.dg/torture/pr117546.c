@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target int32plus } } */
 
 typedef struct {
   int a;
@@ -81,4 +81,6 @@ int main() {
   l.glyf.coords[4] = (e){2, 206};
   l.glyf.coords[6] = (e){0, 308, 5};
   w(&l);
+
+  return 0;
 }

@@ -182,6 +182,7 @@ PROCEDURE stop ; BEGIN END stop ;
    Debug - call stop if symbol name is name.
 *)
 
+(*
 PROCEDURE Debug (tok: CARDINAL; sym: CARDINAL; name: ARRAY OF CHAR) ;
 BEGIN
    IF MakeKey (name) = GetSymName (sym)
@@ -190,6 +191,7 @@ BEGIN
    END ;
    MetaErrorT1 (tok, 'procedure {%1Wa}', sym)
 END Debug ;
+*)
 
 
 (*

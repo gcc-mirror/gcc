@@ -203,7 +203,7 @@ EXTERN int libc_creat (void * filename, unsigned int mode);
            off_t lseek(int fildes, off_t offset, int whence);
 */
 
-EXTERN off_t libc_lseek (int fd, ssize_t offset, int whence);
+EXTERN off_t libc_lseek (int fd, off_t offset, int whence);
 
 /*
    perror - writes errno and string. (ARRAY OF CHAR is translated onto ADDRESS).

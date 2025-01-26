@@ -8171,7 +8171,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     gfc_error ("ORDERED clause parameter is less than COLLAPSE at %L",
 	       &code->loc);
   if (omp_clauses->order_concurrent && omp_clauses->ordered)
-    gfc_error ("ORDER clause must not be used together ORDERED at %L",
+    gfc_error ("ORDER clause must not be used together with ORDERED at %L",
 	       &code->loc);
   if (omp_clauses->if_expr)
     {

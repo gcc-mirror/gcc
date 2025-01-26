@@ -1,3 +1,198 @@
+2025-01-25  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118239
+	* constexpr.cc (cx_check_missing_mem_inits): Don't skip fields
+	with DECL_FIELD_IS_BASE.
+
+2025-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117827
+	* init.cc (build_new_1): Pass address of a make_tree_vector ()
+	initialized gc tree vector to build_vec_init and append
+	build_disable_temp_cleanup to init_expr from it.
+
+2025-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116568
+	* module.cc (trees_out::get_merge_kind): Treat all lambdas
+	without a mangling scope as un-mergeable.
+
+2025-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116568
+	* cp-tree.h (finish_concept_definition): Adjust parameters.
+	(start_concept_definition): Declare.
+	* module.cc (depset::hash::is_tu_local_entity): Use
+	LAMBDA_EXPR_EXTRA_SCOPE to detect TU-local lambdas.
+	* parser.cc (cp_parser_concept_definition): Start a lambda scope
+	for concept definitions.
+	* pt.cc (tsubst_lambda_expr): Namespace-scope lambdas may now
+	have extra scope.
+	(finish_concept_definition): Split into...
+	(start_concept_definition): ...this new function.
+
+2025-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118245
+	* cp-tree.h (LAMBDA_EXPR_EXTRA_SCOPE): Adjust comment.
+	* parser.cc (cp_parser_class_head): Start (and do not finish)
+	lambda scope for all valid types.
+	(cp_parser_class_specifier): Finish lambda scope after parsing
+	members instead.
+	* pt.cc (instantiate_class_template): Add lambda scoping.
+
+2025-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117153
+	* decl2.cc (build_anon_union_vars): Use FIELD for the second operand
+	of a COMPONENT_REF.
+
+2025-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117602
+	* cp-tree.h (current_nonlambda_scope): Add a default argument.
+	* lambda.cc (current_nonlambda_scope): New bool parameter.  Use it.
+	* parser.cc (cp_parser_lambda_introducer): Use current_nonlambda_scope
+	to check if the lambda is non-local.
+
+2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118590
+	* typeck.cc (build_omp_array_section): If array_expr is type dependent
+	or a TYPE_DECL, build OMP_ARRAY_SECTION with NULL type.
+
+2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118604
+	* parser.cc (cp_parser_omp_metadirective): Test !default_p
+	first and use strcmp () != 0 rather than !strcmp () == 0.
+
+2025-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* mangle.cc (write_expression): Update mangling for lambdas.
+
+2025-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/107741
+	* cp-tree.h (start_initialized_static_member): Declare.
+	(finish_initialized_static_member): Declare.
+	* decl2.cc (start_initialized_static_member): New function.
+	(finish_initialized_static_member): New function.
+	* lambda.cc (record_lambda_scope): Support falling back to old
+	ABI (maybe with warning).
+	* parser.cc (cp_parser_member_declaration): Build decl early
+	when parsing an initialized static data member.
+
+2025-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118582
+	* module.cc (trees_out::decl_value): Always stream
+	imported_temploid_friends information.
+	(trees_in::decl_value): Likewise.
+
+2025-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115769
+	* decl.cc: Partially implement CWG 2867 - Order of initialization
+	for structured bindings.
+	(cp_finish_decl): If need_decomp_init, for function scope structure
+	binding bases, temporarily clear stmts_are_full_exprs_p before
+	calling expand_static_init, after it call cp_finish_decomp and wrap
+	code emitted by both into maybe_cleanup_point_expr_void and ensure
+	cp_finish_decomp isn't called again.
+
+2025-01-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118396
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Add an error call
+	when !allow_non_constant.
+
+2025-01-22  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118199
+	* typeck2.cc (split_nonconstant_init_1): Clear
+	TARGET_EXPR_ELIDING_P if we need to use a copy constructor
+	because of __no_unique_address__.
+
+2025-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_objc_message_args): Use tree_cons with
+	nreverse at the end for both sel_args and addl_args, instead of
+	chainon with build_tree_list second argument.
+
+2025-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* call.cc (add_list_candidates): Use append_ctor_to_tree_vector.
+
+2025-01-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116756
+	* lambda.cc (lambda_expr_this_capture): Call
+	retrieve_local_specialization on the result of
+	LAMBDA_EXPR_THIS_CAPTURE for a generic lambda.
+	* parser.cc (cp_parser_lambda_expression): Don't clear
+	LAMBDA_EXPR_THIS_CAPTURE.
+	* pt.cc (tsubst_stmt) <case DECL_EXPR>: Don't overwrite
+	LAMBDA_EXPR_THIS_CAPTURE with the specialized capture.
+	(tsubst_lambda_expr): Don't clear LAMBDA_EXPR_THIS_CAPTURE
+	afterward.
+
+2025-01-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/118525
+	* cp-gimplify.cc (cp_fold): Check operands of unary, binary, cond/vec_cond
+	and array_ref for error_mark before checking if the operands had changed.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc++/118586
+	* parser.cc (cp_parser_objc_message_args): Handle CPP_EMBED.
+
+2025-01-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118396
+	PR c++/118523
+	* constexpr.cc (cxx_eval_outermost_constant_expr): For non-simple
+	TARGET_EXPRs, return ctx.ctor rather than the result of
+	cxx_eval_constant_expression.  If TYPE and the type of R don't
+	match, return the original expression.
+
+2025-01-21  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118225
+	* typeck.cc (build_class_member_access_expr): Let errors that
+	that have been reported go through.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_lexer_new_main): Attempt to optimize large sequences
+	of CPP_NUMBER with int type and values 0-255 separated by CPP_COMMA
+	into CPP_EMBED with RAW_DATA_CST u.value.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-objcp-common.cc (names_builtin_p): Return 1 for RID_VA_ARG.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118532
+	* call.cc (add_list_candidates): Handle RAW_DATA_CST among init_list
+	elts.
+	* error.cc (dump_expr_init_vec): Handle RAW_DATA_CST among v elts.
+
+2025-01-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* parser.cc (cp_parser_decomposition_declaration): Check linkage
+	of structured bindings in modules.
+	* tree.cc (decl_linkage): Structured bindings don't necessarily
+	have no linkage.
+
+2025-01-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118101
+	* module.cc (trees_in::decl_value): Use structural equality when
+	deduping partial specs with mismatching canonical types.
+
 2025-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/118513

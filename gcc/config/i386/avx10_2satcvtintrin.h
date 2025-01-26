@@ -36,124 +36,124 @@
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_ipcvtnebf16_epi16 (__m128bh __A)
+_mm_ipcvtbf16_epi16 (__m128bh __A)
 {
-  return (__m128i) __builtin_ia32_cvtnebf162ibs128_mask ((__v8bf) __A,
-							 (__v8hi)
-							 _mm_undefined_si128 (),
-							 (__mmask8) -1);
+  return (__m128i) __builtin_ia32_cvtbf162ibs128_mask ((__v8bf) __A,
+						       (__v8hi)
+						       _mm_undefined_si128 (),
+						       (__mmask8) -1);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_ipcvtnebf16_epi16 (__m128i __W, __mmask8 __U, __m128bh __A)
+_mm_mask_ipcvtbf16_epi16 (__m128i __W, __mmask8 __U, __m128bh __A)
 {
-  return (__m128i) __builtin_ia32_cvtnebf162ibs128_mask ((__v8bf) __A,
-							 (__v8hi) __W,
-							 (__mmask8) __U);
+  return (__m128i) __builtin_ia32_cvtbf162ibs128_mask ((__v8bf) __A,
+						       (__v8hi) __W,
+						       (__mmask8) __U);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_ipcvtnebf16_epi16 (__mmask8 __U, __m128bh __A)
+_mm_maskz_ipcvtbf16_epi16 (__mmask8 __U, __m128bh __A)
 {
-  return (__m128i) __builtin_ia32_cvtnebf162ibs128_mask ((__v8bf) __A,
-							 (__v8hi)
-							 _mm_setzero_si128 (),
-							 (__mmask8) __U);
+  return (__m128i) __builtin_ia32_cvtbf162ibs128_mask ((__v8bf) __A,
+						       (__v8hi)
+						       _mm_setzero_si128 (),
+						       (__mmask8) __U);
 }
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_ipcvtnebf16_epi16 (__m256bh __A)
+_mm256_ipcvtbf16_epi16 (__m256bh __A)
 {
   return
-    (__m256i) __builtin_ia32_cvtnebf162ibs256_mask ((__v16bf) __A,
-						    (__v16hi)
-						    _mm256_undefined_si256 (),
-						    (__mmask16) -1);
+    (__m256i) __builtin_ia32_cvtbf162ibs256_mask ((__v16bf) __A,
+						  (__v16hi)
+						  _mm256_undefined_si256 (),
+						  (__mmask16) -1);
 }
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_ipcvtnebf16_epi16 (__m256i __W, __mmask16 __U, __m256bh __A)
+_mm256_mask_ipcvtbf16_epi16 (__m256i __W, __mmask16 __U, __m256bh __A)
 {
-  return (__m256i) __builtin_ia32_cvtnebf162ibs256_mask ((__v16bf) __A,
-							 (__v16hi) __W,
-							 (__mmask16) __U);
+  return (__m256i) __builtin_ia32_cvtbf162ibs256_mask ((__v16bf) __A,
+						       (__v16hi) __W,
+						       (__mmask16) __U);
 }
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_ipcvtnebf16_epi16 (__mmask16 __U, __m256bh __A)
+_mm256_maskz_ipcvtbf16_epi16 (__mmask16 __U, __m256bh __A)
 {
   return
-    (__m256i) __builtin_ia32_cvtnebf162ibs256_mask ((__v16bf) __A,
-						    (__v16hi)
-						    _mm256_setzero_si256 (),
-						    (__mmask16) __U);
+    (__m256i) __builtin_ia32_cvtbf162ibs256_mask ((__v16bf) __A,
+						  (__v16hi)
+						  _mm256_setzero_si256 (),
+						  (__mmask16) __U);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_ipcvtnebf16_epu16 (__m128bh __A)
+_mm_ipcvtbf16_epu16 (__m128bh __A)
 {
   return
-    (__m128i) __builtin_ia32_cvtnebf162iubs128_mask ((__v8bf) __A,
-						     (__v8hi)
-						     _mm_undefined_si128 (),
-						     (__mmask8) -1);
+    (__m128i) __builtin_ia32_cvtbf162iubs128_mask ((__v8bf) __A,
+						   (__v8hi)
+						   _mm_undefined_si128 (),
+						   (__mmask8) -1);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_ipcvtnebf16_epu16 (__m128i __W, __mmask8 __U, __m128bh __A)
+_mm_mask_ipcvtbf16_epu16 (__m128i __W, __mmask8 __U, __m128bh __A)
 {
-  return (__m128i) __builtin_ia32_cvtnebf162iubs128_mask ((__v8bf) __A,
-							  (__v8hi) __W,
-							  (__mmask8) __U);
+  return (__m128i) __builtin_ia32_cvtbf162iubs128_mask ((__v8bf) __A,
+							(__v8hi) __W,
+							(__mmask8) __U);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_ipcvtnebf16_epu16 (__mmask8 __U, __m128bh __A)
+_mm_maskz_ipcvtbf16_epu16 (__mmask8 __U, __m128bh __A)
 {
   return
-    (__m128i) __builtin_ia32_cvtnebf162iubs128_mask ((__v8bf) __A,
-						     (__v8hi)
-						     _mm_setzero_si128 (),
-						     (__mmask8) __U);
+    (__m128i) __builtin_ia32_cvtbf162iubs128_mask ((__v8bf) __A,
+						   (__v8hi)
+						   _mm_setzero_si128 (),
+						   (__mmask8) __U);
 }
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_ipcvtnebf16_epu16 (__m256bh __A)
+_mm256_ipcvtbf16_epu16 (__m256bh __A)
 {
   return
-    (__m256i) __builtin_ia32_cvtnebf162iubs256_mask ((__v16bf) __A,
-						     (__v16hi)
-						     _mm256_undefined_si256 (),
-						     (__mmask16) -1);
+    (__m256i) __builtin_ia32_cvtbf162iubs256_mask ((__v16bf) __A,
+						   (__v16hi)
+						   _mm256_undefined_si256 (),
+						   (__mmask16) -1);
 }
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_ipcvtnebf16_epu16 (__m256i __W, __mmask16 __U, __m256bh __A)
+_mm256_mask_ipcvtbf16_epu16 (__m256i __W, __mmask16 __U, __m256bh __A)
 {
-  return (__m256i) __builtin_ia32_cvtnebf162iubs256_mask ((__v16bf) __A,
-							  (__v16hi) __W,
-							  (__mmask16) __U);
+  return (__m256i) __builtin_ia32_cvtbf162iubs256_mask ((__v16bf) __A,
+							(__v16hi) __W,
+							(__mmask16) __U);
 }
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_ipcvtnebf16_epu16 (__mmask16 __U, __m256bh __A)
+_mm256_maskz_ipcvtbf16_epu16 (__mmask16 __U, __m256bh __A)
 {
   return
-    (__m256i) __builtin_ia32_cvtnebf162iubs256_mask ((__v16bf) __A,
-						     (__v16hi)
-						     _mm256_setzero_si256 (),
-						     (__mmask16) __U);
+    (__m256i) __builtin_ia32_cvtbf162iubs256_mask ((__v16bf) __A,
+						   (__v16hi)
+						   _mm256_setzero_si256 (),
+						   (__mmask16) __U);
 }
 
 extern __inline __m128i
@@ -274,124 +274,120 @@ _mm_maskz_ipcvtps_epu32 (__mmask8 __U, __m128 __A)
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_ipcvttnebf16_epi16 (__m128bh __A)
+_mm_ipcvttbf16_epi16 (__m128bh __A)
 {
   return
-    (__m128i) __builtin_ia32_cvttnebf162ibs128_mask ((__v8bf) __A,
-						     (__v8hi)
-						     _mm_undefined_si128 (),
-						     (__mmask8) -1);
+    (__m128i) __builtin_ia32_cvttbf162ibs128_mask ((__v8bf) __A,
+						   (__v8hi)
+						   _mm_undefined_si128 (),
+						   (__mmask8) -1);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_ipcvttnebf16_epi16 (__m128i __W, __mmask8 __U, __m128bh __A)
+_mm_mask_ipcvttbf16_epi16 (__m128i __W, __mmask8 __U, __m128bh __A)
 {
-  return (__m128i) __builtin_ia32_cvttnebf162ibs128_mask ((__v8bf) __A,
-							  (__v8hi) __W,
-							  (__mmask8) __U);
+  return (__m128i) __builtin_ia32_cvttbf162ibs128_mask ((__v8bf) __A,
+							(__v8hi) __W,
+							(__mmask8) __U);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_ipcvttnebf16_epi16 (__mmask8 __U, __m128bh __A)
+_mm_maskz_ipcvttbf16_epi16 (__mmask8 __U, __m128bh __A)
 {
-  return (__m128i) __builtin_ia32_cvttnebf162ibs128_mask ((__v8bf) __A,
-							  (__v8hi)
-							  _mm_setzero_si128 (),
-							  (__mmask8) __U);
+  return (__m128i) __builtin_ia32_cvttbf162ibs128_mask ((__v8bf) __A,
+							(__v8hi)
+							_mm_setzero_si128 (),
+							(__mmask8) __U);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_ipcvttnebf16_epu16 (__m128bh __A)
+_mm_ipcvttbf16_epu16 (__m128bh __A)
 {
   return
-    (__m128i) __builtin_ia32_cvttnebf162iubs128_mask ((__v8bf) __A,
-						      (__v8hi)
-						      _mm_undefined_si128 (),
-						      (__mmask8) -1);
+    (__m128i) __builtin_ia32_cvttbf162iubs128_mask ((__v8bf) __A,
+						    (__v8hi)
+						    _mm_undefined_si128 (),
+						    (__mmask8) -1);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_ipcvttnebf16_epu16 (__m128i __W, __mmask8 __U, __m128bh __A)
+_mm_mask_ipcvttbf16_epu16 (__m128i __W, __mmask8 __U, __m128bh __A)
 {
-  return (__m128i) __builtin_ia32_cvttnebf162iubs128_mask ((__v8bf) __A,
-							   (__v8hi) __W,
-							   (__mmask8) __U);
+  return (__m128i) __builtin_ia32_cvttbf162iubs128_mask ((__v8bf) __A,
+							 (__v8hi) __W,
+							 (__mmask8) __U);
 }
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_ipcvttnebf16_epu16 (__mmask8 __U, __m128bh __A)
+_mm_maskz_ipcvttbf16_epu16 (__mmask8 __U, __m128bh __A)
 {
-  return (__m128i) __builtin_ia32_cvttnebf162iubs128_mask ((__v8bf) __A,
-							   (__v8hi)
-							   _mm_setzero_si128 (),
-							   (__mmask8) __U);
+  return (__m128i) __builtin_ia32_cvttbf162iubs128_mask ((__v8bf) __A,
+							 (__v8hi)
+							 _mm_setzero_si128 (),
+							 (__mmask8) __U);
 }
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_ipcvttnebf16_epi16 (__m256bh __A)
+_mm256_ipcvttbf16_epi16 (__m256bh __A)
 {
   return (__m256i)
-    __builtin_ia32_cvttnebf162ibs256_mask ((__v16bf) __A,
-					   (__v16hi)
-					   _mm256_undefined_si256 (),
-					   (__mmask16) -1);
+    __builtin_ia32_cvttbf162ibs256_mask ((__v16bf) __A,
+					 (__v16hi) _mm256_undefined_si256 (),
+					 (__mmask16) -1);
 }
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_ipcvttnebf16_epi16 (__m256i __W, __mmask16 __U, __m256bh __A)
+_mm256_mask_ipcvttbf16_epi16 (__m256i __W, __mmask16 __U, __m256bh __A)
 {
-  return (__m256i) __builtin_ia32_cvttnebf162ibs256_mask ((__v16bf) __A,
-							  (__v16hi) __W,
-							  (__mmask16) __U);
+  return (__m256i) __builtin_ia32_cvttbf162ibs256_mask ((__v16bf) __A,
+							(__v16hi) __W,
+							(__mmask16) __U);
 }
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_ipcvttnebf16_epi16 (__mmask16 __U, __m256bh __A)
-{
-  return (__m256i)
-    __builtin_ia32_cvttnebf162ibs256_mask ((__v16bf) __A,
-					   (__v16hi)
-					   _mm256_setzero_si256 (),
-					   (__mmask16) __U);
-}
-
-extern __inline __m256i
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_ipcvttnebf16_epu16 (__m256bh __A)
+_mm256_maskz_ipcvttbf16_epi16 (__mmask16 __U, __m256bh __A)
 {
   return (__m256i)
-    __builtin_ia32_cvttnebf162iubs256_mask ((__v16bf) __A,
-					    (__v16hi)
-					    _mm256_undefined_si256 (),
-					    (__mmask16) -1);
+    __builtin_ia32_cvttbf162ibs256_mask ((__v16bf) __A,
+					 (__v16hi) _mm256_setzero_si256 (),
+					 (__mmask16) __U);
 }
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_ipcvttnebf16_epu16 (__m256i __W, __mmask16 __U, __m256bh __A)
-{
-  return (__m256i) __builtin_ia32_cvttnebf162iubs256_mask ((__v16bf) __A,
-							   (__v16hi) __W,
-							   (__mmask16) __U);
-}
-
-extern __inline __m256i
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_ipcvttnebf16_epu16 (__mmask16 __U, __m256bh __A)
+_mm256_ipcvttbf16_epu16 (__m256bh __A)
 {
   return (__m256i)
-    __builtin_ia32_cvttnebf162iubs256_mask ((__v16bf) __A,
-					    (__v16hi)
-					    _mm256_setzero_si256 (),
-					    (__mmask16) __U);
+    __builtin_ia32_cvttbf162iubs256_mask ((__v16bf) __A,
+					  (__v16hi) _mm256_undefined_si256 (),
+					  (__mmask16) -1);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_ipcvttbf16_epu16 (__m256i __W, __mmask16 __U, __m256bh __A)
+{
+  return (__m256i) __builtin_ia32_cvttbf162iubs256_mask ((__v16bf) __A,
+							 (__v16hi) __W,
+							 (__mmask16) __U);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_ipcvttbf16_epu16 (__mmask16 __U, __m256bh __A)
+{
+  return (__m256i)
+    __builtin_ia32_cvttbf162iubs256_mask ((__v16bf) __A,
+					  (__v16hi) _mm256_setzero_si256 (),
+					  (__mmask16) __U);
 }
 
 extern __inline __m128i
@@ -1423,51 +1419,6 @@ _mm_cvtts_roundss_epu32 (__m128 __A, const int __R)
 					    (_mm256_setzero_si256 ()), \
 					    (__mmask8) (U), \
 					    (R)))
-
-
-#define _mm256_ipcvttne_roundbf16_epi16(A, R) \
-  ((__m256i) \
-   __builtin_ia32_cvttnebf162ibs256_mask_round ((__v16bf) (A), \
-						(__v16hi) \
-						(_mm256_undefined_si256 ()), \
-						(__mmask16) (-1), \
-						(R)))
-
-#define _mm256_mask_ipcvttne_roundbf16_epi16(W, U, A, R) \
-  ((__m256i) __builtin_ia32_cvttnebf162ibs256_mask_round ((__v16bf) (A), \
-							  (__v16hi) (W), \
-							  (__mmask16) (U), \
-							  (R)))
-
-#define _mm256_maskz_ipcvttne_roundbf16_epi16(U, A, R) \
-  ((__m256i) \
-   __builtin_ia32_cvttnebf162ibs256_mask_round ((__v16bf) (A), \
-						(__v16hi) \
-						(_mm256_setzero_si256 ()), \
-						(__mmask16) (U), \
-						(R)))
-
-#define _mm256_ipcvttne_roundbf16_epu16(A, R) \
-  ((__m256i) \
-   __builtin_ia32_cvttnebf162iubs256_mask_round ((__v16bf) (A), \
-						 (__v16hi) \
-						 (_mm256_undefined_si256 ()), \
-						 (__mmask16) (-1), \
-						 (R)))
-
-#define _mm256_mask_ipcvttne_roundbf16_epu16(W, U, A, R) \
-  ((__m256i) __builtin_ia32_cvttnebf162iubs256_mask_round ((__v16bf) (A), \
-							   (__v16hi) (W), \
-							   (__mmask16) (U), \
-							   (R)))
-
-#define _mm256_maskz_ipcvttne_roundbf16_epu16(U, A, R) \
-  ((__m256i) \
-   __builtin_ia32_cvttnebf162iubs256_mask_round ((__v16bf) (A), \
-						 (__v16hi) \
-						 (_mm256_setzero_si256 ()), \
-						 (__mmask16) (U), \
-						 (R)))
 
 #define _mm256_ipcvtt_roundph_epi16(A, R) \
   ((__m256i) \

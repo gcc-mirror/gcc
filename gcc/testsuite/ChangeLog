@@ -1,3 +1,1057 @@
+2025-01-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/58857
+	* gfortran.dg/uncommon_block_data_2.f90: New test.
+
+2025-01-25  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118239
+	* g++.dg/cpp0x/constexpr-base8.C: New test.
+
+2025-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/118639
+	* c-c++-common/gomp/pr118639.c: New test.
+	* c-c++-common/goacc/cache-2.c: Remove one xfail for c.
+
+2025-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117827
+	* g++.dg/init/array66.C: New test.
+
+2025-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116568
+	* g++.dg/modules/lambda-8.h: New test.
+	* g++.dg/modules/lambda-8_a.H: New test.
+	* g++.dg/modules/lambda-8_b.C: New test.
+
+2025-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/116568
+	* g++.dg/modules/internal-4_b.C: Remove XFAIL, add lambda alias
+	testcase.
+	* g++.dg/modules/lambda-9.h: New test.
+	* g++.dg/modules/lambda-9_a.H: New test.
+	* g++.dg/modules/lambda-9_b.C: New test.
+
+2025-01-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118245
+	* g++.dg/abi/lambda-ctx3.C: New test.
+	* g++.dg/cpp2a/lambda-uneval22.C: New test.
+	* g++.dg/cpp2a/lambda-uneval23.C: New test.
+
+2025-01-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118589
+	* lib/gm2-dg.exp (gm2.exp): load_lib.
+	* gm2.dg/pim/fail/badopaque.mod: New test.
+	* gm2.dg/pim/fail/badopaque2.mod: New test.
+	* gm2.dg/pim/fail/dg-pim-fail.exp: New test.
+	* gm2.dg/pim/fail/opaquedefs.def: New test.
+	* gm2.dg/pim/fail/opaquedefs.mod: New test.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/simd/armv9p5.c: New test.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/crypto-alias-1.c: New test.
+
+2025-01-24  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/target_attr_crypto_ice_1.c: Prune warning.
+	* gcc.target/aarch64/target_attr_crypto_ice_2.c: Ditto.
+
+2025-01-24  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/118497
+	* gcc.target/i386/pr118497.c: New.
+	* gcc.target/i386/vartrack-1.c: Modify the regexp.
+
+2025-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117153
+	* g++.dg/other/anon-union6.C: New test.
+	* g++.dg/other/anon-union7.C: New test.
+
+2025-01-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/thumb-bitfld1.c: Use -std=c17.
+
+2025-01-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/116448
+	* gcc.target/arm/vfp-1.c: Use -Os -fno-math-errno.
+
+2025-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/118571
+	* gfortran.dg/utf8_3.f03: New test.
+
+2025-01-24  yxj-github-437  <2457369732@qq.com>
+
+	* g++.dg/modules/builtin-8.C: New test.
+
+2025-01-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/117886
+	* jit.dg/all-non-failing-tests.h: Add
+	test-pr117886-write-reproducer.c.
+	* jit.dg/test-pr117886-write-reproducer.c: New test.
+
+2025-01-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116010
+	* gfortran.dg/vect/vect-8.f90: Adjust.
+
+2025-01-24  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/isfinite-isinf-isnormal-signbit-1.c: New test.
+	* gcc.target/s390/isfinite-isinf-isnormal-signbit-2.c: New test.
+	* gcc.target/s390/isfinite-isinf-isnormal-signbit-3.c: New test.
+	* gcc.target/s390/isfinite-isinf-isnormal-signbit.h: New test.
+
+2025-01-24  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* gcc.target/aarch64/sve/faminmax_1.c: Fix test to use the
+	correct flags.
+	* gcc.target/aarch64/sve/faminmax_2.c: Fix test to use the
+	correct flags.
+	* gcc.target/aarch64/sve/faminmax_3.c: New test.
+
+2025-01-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118572
+	* gcc.dg/field-merge-24.c: New.
+
+2025-01-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118514
+	* gcc.dg/field-merge-23.c: New.
+
+2025-01-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117602
+	* g++.dg/cpp2a/lambda-uneval21.C: New test.
+
+2025-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118613
+	* gfortran.dg/maxval_arg_eval_count.f90: New test.
+
+2025-01-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/118012
+	PR tree-optimization/118360
+	* gcc.target/avr/mmcu/pr118012-1.h: New file.
+	* gcc.target/avr/mmcu/pr118012-1-o2-m128.c: New test.
+	* gcc.target/avr/mmcu/pr118012-1-os-m128.c: New test.
+	* gcc.target/avr/mmcu/pr118012-1-o2-m103.c: New test.
+	* gcc.target/avr/mmcu/pr118012-1-os-m103.c: New test.
+	* gcc.target/avr/mmcu/pr118012-1-o2-t40.c: New test.
+	* gcc.target/avr/mmcu/pr118012-1-os-t40.c: New test.
+	* gcc.target/avr/mmcu/pr118360-1.h: New file.
+	* gcc.target/avr/mmcu/pr118360-1-o2-m128.c: New test.
+	* gcc.target/avr/mmcu/pr118360-1-os-m128.c: New test.
+	* gcc.target/avr/mmcu/pr118360-1-o2-m103.c: New test.
+	* gcc.target/avr/mmcu/pr118360-1-os-m103.c: New test.
+	* gcc.target/avr/mmcu/pr118360-1-o2-t40.c: New test.
+	* gcc.target/avr/mmcu/pr118360-1-os-t40.c: New test.
+
+2025-01-23  Jan Hubicka  <jh@suse.cz>
+
+	PR target/80813
+	* g++.dg/tree-ssa/bvector-3.C: New test.
+
+2025-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/118562
+	* gcc.dg/torture/pr118562.c: New test.
+
+2025-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve2/acle/aarch64-sve2-acle-asm.exp: Add
+	cheap_fpmr_write by default.
+	* gcc.target/aarch64/sve2/acle/aarch64-sve2-acle-asm.exp: Likewise.
+	* gcc.target/aarch64/acle/fp8.c: Add cheap_fpmr_write.
+	* gcc.target/aarch64/acle/fpmr-2.c: Likewise.
+	* gcc.target/aarch64/simd/vcvt_fpm.c: Likewise.
+	* gcc.target/aarch64/simd/vdot2_fpm.c: Likewise.
+	* gcc.target/aarch64/simd/vdot4_fpm.c: Likewise.
+	* gcc.target/aarch64/simd/vmla_fpm.c: Likewise.
+	* gcc.target/aarch64/acle/fpmr-6.c: New test.
+
+2025-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/acle/fpmr-5.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/dot_lane_mf8.c: Don't expect
+	a spill slot to be allocated.
+	* gcc.target/aarch64/sve2/acle/asm/mlalb_lane_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlallbb_lane_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlallbt_lane_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlalltb_lane_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlalltt_lane_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/mlalt_lane_mf8.c: Likewise.
+
+2025-01-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/acle/fp8.c: Add tests for moving zero into FPMR.
+
+2025-01-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/cmov12.c (scan-assembler-times): Allow for
+	cmovl.g etc.
+
+2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118590
+	* g++.dg/goacc/pr118590.C: New test.
+
+2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114877
+	* gcc.dg/torture/builtin-frexp-1.c: Add -Wmaybe-uninitialized as
+	dg-additional-options.
+	(bar): New function.
+	(TESTIT_FREXP2): Rework the macro so that it doesn't test whether
+	nothing has been stored to what the second argument points to, but
+	instead that something has been stored there, whatever it is.
+	(main): Temporarily don't enable the nan tests for -O0.
+
+2025-01-23  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.dg/pr78185.c: Remove dg-do and replace with
+	with dg-require-effective-target of signal and alarm.
+	* gcc.dg/pr116906-1.c: Likewise.
+	* gcc.dg/pr116906-2.c: Likewise.
+	* gcc.dg/vect/pr101145inf.c: Use effective-target alarm.
+	* gcc.dg/vect/pr101145inf_1.c: Likewise.
+	* lib/target-supports.exp(check_effective_target_alarm): New.
+
+2025-01-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/117726
+	* gcc.target/avr/torture/avr-torture.exp (AVR_TORTURE_OPTIONS):
+	Turn one option variant into -Oz.
+
+2025-01-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96087
+	* gfortran.dg/pr96087.f90: New test.
+
+2025-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118558
+	* gcc.dg/vect/pr118558.c: New testcase.
+
+2025-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/cpp2a/lambda-generic-mangle1.C: Update mangling.
+	* g++.dg/cpp2a/lambda-generic-mangle1a.C: Likewise.
+
+2025-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/107741
+	* g++.dg/abi/macro0.C: Bump ABI version.
+	* g++.dg/abi/mangle74.C: Remove XFAILs.
+	* g++.dg/other/fold1.C: Restore originally raised error.
+	* g++.dg/abi/lambda-ctx2-19.C: New test.
+	* g++.dg/abi/lambda-ctx2-19vs20.C: New test.
+	* g++.dg/abi/lambda-ctx2-20.C: New test.
+	* g++.dg/abi/lambda-ctx2.h: New test.
+	* g++.dg/cpp0x/static-member-init-1.C: New test.
+
+2025-01-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118582
+	* g++.dg/modules/pr118582_a.H: New test.
+	* g++.dg/modules/pr118582_b.H: New test.
+	* g++.dg/modules/pr118582_c.H: New test.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_2-512-convert-1.c: Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-convert-1.c: Ditto.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* gcc.target/i386/avx10_2-512-satcvt-1.c: Adjust output and
+	intrin call.
+	* gcc.target/i386/avx10_2-512-vcvtnebf162ibs-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vcvtbf162ibs-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vcvtnebf162iubs-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vcvtbf162iubs-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vcvttnebf162ibs-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vcvttbf162ibs-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vcvttnebf162iubs-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vcvttbf162iubs-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-satcvt-1.c: Adjust output and
+	intrin call.
+	* gcc.target/i386/avx10_2-vcvtnebf162ibs-2.c: Move to...
+	* gcc.target/i386/avx10_2-vcvtbf162ibs-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vcvtnebf162iubs-2.c: Move to...
+	* gcc.target/i386/avx10_2-vcvtbf162iubs-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vcvttnebf162ibs-2.c: Move to...
+	* gcc.target/i386/avx10_2-vcvttbf162ibs-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vcvttnebf162iubs-2.c: Move to...
+	* gcc.target/i386/avx10_2-vcvttbf162iubs-2.c: ...here.
+	Adjust intrin call.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* gcc.target/i386/avx10_2-512-convert-1.c: Adjust output
+	and intrin call.
+	* gcc.target/i386/avx10_2-512-vcvtneph2bf8-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vcvtph2bf8-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vcvtneph2bf8s-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vcvtph2bf8s-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vcvtneph2hf8-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vcvtph2hf8-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vcvtneph2hf8s-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vcvtph2hf8s-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-convert-1.c: Adjust output
+	and intrin call.
+	* gcc.target/i386/avx10_2-vcvtneph2bf8-2.c: Move to...
+	* gcc.target/i386/avx10_2-vcvtph2bf8-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vcvtneph2hf8-2.c: Move to...
+	* gcc.target/i386/avx10_2-vcvtph2bf8s-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vcvtneph2bf8s-2.c: Move to...
+	* gcc.target/i386/avx10_2-vcvtph2hf8-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vcvtneph2hf8s-2.c: Move to...
+	* gcc.target/i386/avx10_2-vcvtph2hf8s-2.c: ...here.
+	Adjust intrin call.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* gcc.target/i386/avx10_2-512-convert-1.c: Adjust output
+	and intrin call.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2bf8-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vcvt2ph2bf8-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2bf8s-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vcvt2ph2bf8s-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2hf8-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vcvt2ph2hf8-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vcvtne2ph2hf8s-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vcvt2ph2hf8s-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-convert-1.c: Adjust output
+	and intrin call.
+	* gcc.target/i386/avx10_2-vcvtne2ph2bf8-2.c: Move to...
+	* gcc.target/i386/avx10_2-vcvt2ph2bf8-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vcvtne2ph2hf8-2.c: Move to...
+	* gcc.target/i386/avx10_2-vcvt2ph2bf8s-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vcvtne2ph2bf8s-2.c: Move to...
+	* gcc.target/i386/avx10_2-vcvt2ph2hf8-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vcvtne2ph2hf8s-2.c: Move to...
+	* gcc.target/i386/avx10_2-vcvt2ph2hf8s-2.c: ...here.
+	Adjust intrin call.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* gcc.target/i386/avx10_2-comibf-1.c: Adjust asm check.
+	* gcc.target/i386/avx10_2-comibf-3.c: Ditto.
+	* gcc.target/i386/avx10_2-vcomsbf16-1.c: Move to...
+	* gcc.target/i386/avx10_2-vcomisbf16-1.c: ...here.
+	Adjust output and intrin call.
+	* gcc.target/i386/avx10_2-vcomsbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vcomisbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/pr117495.c: Adjust asm check.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* gcc.target/i386/avx10_2-512-bf16-1.c: Adjust output and
+	intrin call.
+	* gcc.target/i386/avx10_2-512-vfpclasspbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vfpclassbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vgetexppbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vgetexpbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-bf16-1.c: Adjust output and
+	intrin call.
+	* gcc.target/i386/avx10_2-vgetexppbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vgetexpbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vfpclasspbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vfpclassbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx-1.c: Adjust builtin call.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* gcc.target/i386/avx10_2-512-bf16-1.c: Adjust output and intrin
+	call.
+	* gcc.target/i386/avx10_2-512-vrsqrtpbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vrsqrtbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vscalefpbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vscalefbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vsqrtnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vsqrtbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-bf16-1.c: Adjust output and intrin
+	call.
+	* gcc.target/i386/avx10_2-vrsqrtpbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vrsqrtbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vscalefpbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vscalefbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vsqrtnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vsqrtbf16-2.c: ...here.
+	Adjust intrin call.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* gcc.target/i386/avx10_2-512-bf16-1.c: Adjust output and
+	intrin call.
+	* gcc.target/i386/avx10_2-512-vgetmantpbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vgetmantbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vreducenepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vreducebf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vrndscalenepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vrndscalebf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-bf16-1.c: Adjust output and intrin
+	call.
+	* gcc.target/i386/avx10_2-vgetmantpbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vgetmantbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vreducenepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vreducebf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vrndscalenepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vrndscalebf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx-1.c: Adjust builtin call.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Adjust intrin call.
+	* gcc.target/i386/sse-22.c: Ditto.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* gcc.target/i386/avx10_2-512-minmax-1.c: Adjust output and
+	intrin call.
+	* gcc.target/i386/avx10_2-512-vminmaxnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vminmaxbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-minmax-1.c: Adjust output and intrin
+	call.
+	* gcc.target/i386/avx10_2-vminmaxnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vminmaxbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx-1.c: Adjust builtin call.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Adjust intrin call.
+	* gcc.target/i386/sse-22.c: Ditto.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* gcc.target/i386/avx10_2-512-bf16-1.c: Adjust output and
+	intrin call.
+	* gcc.target/i386/avx10_2-512-bf-vector-cmpp-1.c: Move to...
+	* gcc.target/i386/avx10_2-512-bf16-vector-cmp-1.c: ...here.
+	Adjust asm check.
+	* gcc.target/i386/avx10_2-512-bf-vector-smaxmin-1.c: Move to...
+	* gcc.target/i386/avx10_2-512-bf16-vector-smaxmin-1.c: ...here.
+	Adjust asm check.
+	* gcc.target/i386/avx10_2-512-vcmppbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vcmpbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vmaxpbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vmaxbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vminpbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vminbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-bf16-1.c: Adjust output and
+	intrin call.
+	* gcc.target/i386/avx10_2-bf-vector-cmpp-1.c: Move to...
+	* gcc.target/i386/avx10_2-bf16-vector-cmp-1.c: ...here.
+	Adjust asm check.
+	* gcc.target/i386/avx10_2-bf-vector-smaxmin-1.c: Move to...
+	* gcc.target/i386/avx10_2-bf16-vector-smaxmin-1.c: ...here.
+	Adjust asm check.
+	* gcc.target/i386/avx10_2-partial-bf-vector-smaxmin-1.c: Move to...
+	* gcc.target/i386/avx10_2-partial-bf16-vector-smaxmin-1.c: ...here.
+	* gcc.target/i386/avx10_2-vcmppbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vcmpbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vmaxpbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vmaxbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vminpbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vminbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/part-vect-vec_cmpbf.c: Adjust asm check.
+	* gcc.target/i386/avx-1.c: Adjust builtin call.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* gcc.target/i386/avx10_2-512-bf16-1.c: Adjust output and
+	intrin call.
+	* gcc.target/i386/avx10_2-512-bf-vector-fma-1.c: Move to...
+	* gcc.target/i386/avx10_2-512-bf16-vector-fma-1.c: ...here.
+	Adjust asm check.
+	* gcc.target/i386/avx10_2-512-vfmaddXXXnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vfmaddXXXbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vfmsubXXXnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vfmsubXXXbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vfnmaddXXXnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vfnmaddXXXbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-512-vfnmsubXXXnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vfnmsubXXXbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-bf16-1.c: Adjust output and
+	intrin call.
+	* gcc.target/i386/avx10_2-bf-vector-fma-1.c: Move to...
+	* gcc.target/i386/avx10_2-bf16-vector-fma-1.c: ...here.
+	Adjust asm check.
+	* gcc.target/i386/avx10_2-partial-bf-vector-fma-1.c: Move to...
+	* gcc.target/i386/avx10_2-partial-bf16-vector-fma-1.c: ...here.
+	Adjust asm check.
+	* gcc.target/i386/avx10_2-vfmaddXXXnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vfmaddXXXbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vfmsubXXXnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vfmsubXXXbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vfnmaddXXXnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vfnmaddXXXbf16-2.c: ...here.
+	Adjust intrin call.
+	* gcc.target/i386/avx10_2-vfnmsubXXXnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vfnmsubXXXbf16-2.c: ...here.
+	Adjust intrin call.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	* gcc.target/i386/avx10_2-512-bf16-1.c: Adjust output and
+	intrin call.
+	* gcc.target/i386/avx10_2-512-bf-vector-operations-1.c: Move to ...
+	* gcc.target/i386/avx10_2-512-bf16-vector-operations-1.c: ...here.
+	Adjust asm check.
+	* gcc.target/i386/avx10_2-512-vaddnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vaddbf16-2.c: ...here. Adjust
+	intrin call.
+	* gcc.target/i386/avx10_2-512-vdivnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vdivbf16-2.c: ...here. Adjust
+	intrin call.
+	* gcc.target/i386/avx10_2-512-vmulnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vmulbf16-2.c: ...here. Adjust
+	intrin call.
+	* gcc.target/i386/avx10_2-512-vrcppbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vrcpbf16-2.c: ...here. Adjust
+	intrin call.
+	* gcc.target/i386/avx10_2-512-vsubnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-512-vsubbf16-2.c: ...here. Adjust
+	intrin call.
+	* gcc.target/i386/avx10_2-bf16-1.c: Adjust output and
+	intrin call.
+	* gcc.target/i386/avx10_2-bf-vector-operations-1.c: Move to ....
+	* gcc.target/i386/avx10_2-bf16-vector-operations-1.c: ...here.
+	Adjust asm check.
+	* gcc.target/i386/avx10_2-partial-bf-vector-fast-math-1.c: Move to...
+	* gcc.target/i386/avx10_2-partial-bf16-vector-fast-math-1.c: ...here.
+	Adjust asm check.
+	* gcc.target/i386/avx10_2-partial-bf-vector-operations-1.c: Move to...
+	* gcc.target/i386/avx10_2-partial-bf16-vector-operations-1.c: ...here.
+	Adjust asm check.
+	* gcc.target/i386/avx10_2-vaddnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vaddbf16-2.c: ...here. Adjust intrin call.
+	* gcc.target/i386/avx10_2-vdivnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vdivbf16-2.c: ...here. Adjust intrin call.
+	* gcc.target/i386/avx10_2-vmulnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vmulbf16-2.c: ...here. Adjust intrin call.
+	* gcc.target/i386/avx10_2-vrcppbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vrcpbf16-2.c: ...here. Adjust intrin call.
+	* gcc.target/i386/avx10_2-vsubnepbf16-2.c: Move to...
+	* gcc.target/i386/avx10_2-vsubbf16-2.c: ...here. Adjust intrin call.
+	* lib/target-supports.exp (check_effective_target_avx10_2):
+	Adjust asm usage.
+	(check_effective_target_avx10_2_512): Ditto.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118270
+	PR target/118609
+	* gcc.target/i386/amxmovrs-t2rpntlvw-2.c: Move to...
+	* gcc.target/i386/amxmovrs-2rpntlvwrs-2.c: ...here.
+	* gcc.target/i386/amxtranspose-2rpntlvw-2.c: Add "t1" hint test.
+
+2025-01-23  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/vnniint16-auto-vectorize-4.c: Append
+	-march=x86-64-v3.
+	* gcc.target/i386/vnniint8-auto-vectorize-4.c: Ditto.
+
+2025-01-22  Arsen Arsenović  <arsen@aarsen.me>
+
+	* gcc.dg/driver-nostdlibstar.c: New test.
+
+2025-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115769
+	* g++.dg/DRs/dr2867-3.C: New test.
+	* g++.dg/DRs/dr2867-4.C: New test.
+
+2025-01-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/acle/rwsr-4.c: New test.
+	* gcc.target/aarch64/acle/rwsr-armv8p9.c: Avoid read of uninitialized
+	variable.
+
+2025-01-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR rtl-optimization/118591
+	* gcc.target/avr/torture/pr118591-1.c: New test.
+	* gcc.target/avr/torture/pr118591-2.c: New test.
+
+2025-01-22  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118199
+	* g++.dg/init/no-elide3.C: New test.
+
+2025-01-22  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/bitwise-shift-reassoc-clobber.c: New
+	test.
+
+2025-01-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116756
+	* g++.dg/cpp1z/constexpr-if-lambda7.C: New test.
+
+2025-01-21  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2024-10-29  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/cmo-32.c: New test.
+	* gcc.target/riscv/cmo-64.c: New test.
+
+2025-01-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118483
+	* gcc.dg/tree-ssa/pr118483-1.c: New test.
+	* gcc.dg/tree-ssa/pr118483-2.c: New test.
+	* gcc.dg/tree-ssa/pr118483-3.c: New test.
+	* gcc.dg/tree-ssa/pr118483-4.c: New test.
+
+2025-01-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c++/118525
+	* g++.dg/cpp2a/consteval38.C: New test.
+
+2025-01-21  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/torture/pr117546.c: Require effective target int32plus.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR objc++/118586
+	* objc.dg/embed-1.m: New test.
+	* obj-c++.dg/embed-1.mm: New test.
+	* obj-c++.dg/va-meth-2.mm: New test.
+
+2025-01-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/116593
+	* g++.target/riscv/rvv/rvv.exp: Enable testsuite of XTheadVector.
+	* g++.target/riscv/rvv/xtheadvector/pr116593.C: New test.
+
+2025-01-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/rvv.exp: Enable testsuite of
+	XTheadVector.
+	* gcc.target/riscv/rvv/xtheadvector/pr114194.c: Adjust correctly.
+	* gcc.target/riscv/rvv/xtheadvector/prefix.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlb-vsb.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlbu-vsb.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlh-vsh.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlhu-vsh.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlw-vsw.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlwu-vsw.c: Likewise.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118560
+	* gcc.dg/dfp/pr118560.c: New test.
+
+2025-01-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118396
+	PR c++/118523
+	* g++.dg/cpp0x/constexpr-prvalue4.C: New test.
+	* g++.dg/cpp1y/constexpr-prvalue3.C: New test.
+
+2025-01-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR tree-optimization/118211
+	PR tree-optimization/116126
+	* gcc.dg/vect/vect-switch-search-line-fast.c: Update for GCN.
+
+2025-01-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118569
+	* gcc.dg/torture/pr118569.c: New testcase.
+
+2025-01-21  Vladimir Miloserdov  <vladimir.miloserdov@arm.com>
+
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h: New test
+	macro.
+	* lib/target-supports.exp: Add lut flag to the for loop.
+	* gcc.target/aarch64/sve/acle/general-c/lut_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/lut_2.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/lut_3.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/lut_4.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti2_bf16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti2_f16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti2_s16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti2_s8.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti2_u16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti2_u8.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_bf16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_bf16_x2.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_f16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_f16_x2.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_s16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_s16_x2.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_s8.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_u16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_u16_x2.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/luti4_u8.c: New test.
+
+2025-01-21  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118225
+	* g++.dg/cpp0x/constexpr-ice21.C: New test.
+
+2025-01-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/118273
+	* gcc.target/aarch64/vect-simd-clone-4.c: New test.
+
+2025-01-21  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/arch-func-attr-1.c: Add '#pragma'.
+	* gcc.target/loongarch/cmodel-func-attr-1.c: Likewise.
+	* gcc.target/loongarch/lasx-func-attr-1.c: Likewise.
+	* gcc.target/loongarch/lsx-func-attr-1.c: Likewise.
+	* gcc.target/loongarch/strict_align-func-attr-1.c: Likewise.
+	* gcc.target/loongarch/strict_align-func-attr-2.c: Likewise.
+	* gcc.target/loongarch/vector-func-attr-1.c: Likewise.
+	* gcc.target/loongarch/arch-pragma-attr-1.c: Likewise.
+	* gcc.target/loongarch/cmodel-pragma-attr-1.c: New test.
+	* gcc.target/loongarch/lasx-pragma-attr-1.c: New test.
+	* gcc.target/loongarch/lasx-pragma-attr-2.c: New test.
+	* gcc.target/loongarch/lsx-pragma-attr-1.c: New test.
+	* gcc.target/loongarch/lsx-pragma-attr-2.c: New test.
+	* gcc.target/loongarch/strict_align-pragma-attr-1.c: New test.
+	* gcc.target/loongarch/strict_align-pragma-attr-2.c: New test.
+	* gcc.target/loongarch/vector-pragma-attr-1.c: New test.
+	* gcc.target/loongarch/pragma-push-pop.c: New test.
+
+2025-01-21  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/arch-func-attr-1.c: New test.
+	* gcc.target/loongarch/cmodel-func-attr-1.c: New test.
+	* gcc.target/loongarch/lasx-func-attr-1.c: New test.
+	* gcc.target/loongarch/lasx-func-attr-2.c: New test.
+	* gcc.target/loongarch/lsx-func-attr-1.c: New test.
+	* gcc.target/loongarch/lsx-func-attr-2.c: New test.
+	* gcc.target/loongarch/strict_align-func-attr-1.c: New test.
+	* gcc.target/loongarch/strict_align-func-attr-2.c: New test.
+	* gcc.target/loongarch/vector-func-attr-1.c: New test.
+	* gcc.target/loongarch/attr-check-error-message.c: New test.
+
+2025-01-21  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118277
+	* g++.dg/cpp1z/constexpr-asm-5.C: Pass -fno-implicit-constexpr.
+
+2025-01-21  Alfie Richards  <alfie.richards@arm.com>
+
+	* g++.target/aarch64/mv-1.C: Add CLI flag.
+	* g++.target/aarch64/mv-symbols1.C: Add CLI flag.
+	* g++.target/aarch64/mv-symbols2.C: Add CLI flag.
+	* g++.target/aarch64/mv-symbols3.C: Add CLI flag.
+	* g++.target/aarch64/mv-symbols4.C: Add CLI flag.
+	* g++.target/aarch64/mv-symbols5.C: Add CLI flag.
+	* g++.target/aarch64/mv-warning1.C: New test.
+	* g++.target/aarch64/mvc-symbols1.C: Add CLI flag.
+	* g++.target/aarch64/mvc-symbols2.C: Add CLI flag.
+	* g++.target/aarch64/mvc-symbols3.C: Add CLI flag.
+	* g++.target/aarch64/mvc-symbols4.C: Add CLI flag.
+	* g++.target/aarch64/mv-pragma.C: Add CLI flag.
+	* g++.target/aarch64/mvc-warning1.C: New test.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/has-builtin-4.c: New test.
+
+2025-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118532
+	* g++.dg/cpp/embed-22.C: New test.
+	* g++.dg/cpp/embed-23.C: New test.
+	* g++.dg/cpp0x/pr118532.C: New test.
+	* g++.dg/cpp2a/explicit20.C: New test.
+
+2025-01-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/export-6.C: Add structured binding tests.
+	* g++.dg/modules/hdr-2.H: Likewise.
+
+2025-01-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118101
+	* g++.dg/modules/partial-7.h: New test.
+	* g++.dg/modules/partial-7_a.C: New test.
+	* g++.dg/modules/partial-7_b.C: New test.
+	* g++.dg/modules/partial-7_c.C: New test.
+
+2025-01-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116256
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-37.c: Update expected
+	output.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-15.c: Likewise.
+
+2025-01-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/114442
+	* gcc.target/riscv/pr114442.c: New test.
+
+2025-01-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107122
+	* gfortran.dg/gomp/order-8.f90: Adjust pattern.
+
+2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118348
+	* gcc.target/aarch64/pr118348_1.c: New test.
+	* gcc.target/aarch64/pr118348_2.c: Likewise.
+
+2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Revert:
+	2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118384
+	* gcc.target/aarch64/pr118384_1.c: New test.
+	* gcc.target/aarch64/pr118384_2.c: Likewise.
+
+2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118384
+	* gcc.target/aarch64/pr118384_1.c: New test.
+	* gcc.target/aarch64/pr118384_2.c: Likewise.
+
+2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118501
+	* gcc.c-torture/compile/pr118501.c: New test.
+
+2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/ins_bitfield_1a.c: New test.
+	* gcc.target/aarch64/ins_bitfield_3a.c: Likewise.
+	* gcc.target/aarch64/ins_bitfield_5a.c: Likewise.
+
+2025-01-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/81978
+	* gfortran.dg/pr81978.f90: New test.
+
+2025-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118528
+	* g++.dg/cpp/embed-21.C: New test.
+	* g++.dg/cpp2a/class-deduction-aggr16.C: New test.
+
+2025-01-20  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/xtheadcondmov-bug.c: New test.
+
+2025-01-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118077
+	PR tree-optimization/117668
+	* g++.dg/opt/devirt6.C: New test.
+
+2025-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-float.c: Use
+	arm_v8_3a_complex_neon.
+
+2025-01-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/vect/complex/complex-operations-run.c: Remove duplicate
+	dg-add-options arm_v8_3a_complex_neon.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-double.c:
+	Likewise.
+
+2025-01-20  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/115921
+	* gcc.target/loongarch/bstrpick_alsl_paired.c (scan-rtl-dump):
+	Scan for and_shift_reversedi instead of the removed
+	bstrpick_alsl_paired.
+	* gcc.target/loongarch/bitwise-shift-reassoc.c: New test.
+
+2025-01-20  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.c-torture/compile/pr116438.c: Rename to ...
+	* gcc.c-torture/compile/pr116348.c: ... this.
+
+2025-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118552
+	* gcc.dg/torture/pr118552.c: New testcase.
+
+2025-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118509
+	* g++.dg/expr/pmf-4.C: New test.
+
+2025-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118224
+	* gcc.dg/pr118224.c: New test.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/vec-shift-10.c: New test.
+	* gcc.target/s390/vector/vec-shift-11.c: New test.
+	* gcc.target/s390/vector/vec-shift-12.c: New test.
+	* gcc.target/s390/vector/vec-shift-3.c: New test.
+	* gcc.target/s390/vector/vec-shift-4.c: New test.
+	* gcc.target/s390/vector/vec-shift-5.c: New test.
+	* gcc.target/s390/vector/vec-shift-6.c: New test.
+	* gcc.target/s390/vector/vec-shift-7.c: New test.
+	* gcc.target/s390/vector/vec-shift-8.c: New test.
+	* gcc.target/s390/vector/vec-shift-9.c: New test.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/vec-max-emu.c: New test.
+	* gcc.target/s390/vector/vec-min-emu.c: New test.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/vec-abs-emu.c: New test.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vxe3/vd-1.c: New test.
+	* gcc.target/s390/vxe3/vd-2.c: New test.
+	* gcc.target/s390/vxe3/vdl-1.c: New test.
+	* gcc.target/s390/vxe3/vdl-2.c: New test.
+	* gcc.target/s390/vxe3/vr-1.c: New test.
+	* gcc.target/s390/vxe3/vr-2.c: New test.
+	* gcc.target/s390/vxe3/vrl-1.c: New test.
+	* gcc.target/s390/vxe3/vrl-2.c: New test.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vxe3/veval-1.c: New test.
+	* gcc.target/s390/vxe3/veval-2.c: New test.
+	* gcc.target/s390/vxe3/veval-3.c: New test.
+	* gcc.target/s390/vxe3/veval-4.c: New test.
+	* gcc.target/s390/vxe3/veval-5.c: New test.
+	* gcc.target/s390/vxe3/veval-6.c: New test.
+	* gcc.target/s390/vxe3/veval-7.c: New test.
+	* gcc.target/s390/vxe3/veval-8.c: New test.
+	* gcc.target/s390/vxe3/veval-9.c: New test.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/llxa-1.c: New test.
+	* gcc.target/s390/llxa-2.c: New test.
+	* gcc.target/s390/llxa-3.c: New test.
+	* gcc.target/s390/lxa-1.c: New test.
+	* gcc.target/s390/lxa-2.c: New test.
+	* gcc.target/s390/lxa-3.c: New test.
+	* gcc.target/s390/lxa-4.c: New test.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* lib/target-supports.exp: VXE3 effective target check.
+
+2025-01-20  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/s390.exp: Set compiler flags for the vxe3
+	subdirectory of the testsuite as done e.g. for vxe2.
+
+2025-01-20  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/118510
+	* gcc.target/i386/pr118510.c: New test.
+
+2025-01-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/118067
+	* gcc.target/i386/pr118067.c (dg-compile): Use target int128.
+	* gcc.target/i386/pr118067-2.c (dg-compile): Ditto.
+	(dg-options): Use -mtune= instead of deprecated -mcpu= option.
+
+2025-01-19  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/torture/pr117546.c: Require effective target int32.
+	(main): Add return statement.
+
 2025-01-18  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gdc.dg/asm3.d: Adjust test.

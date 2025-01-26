@@ -4530,6 +4530,41 @@ loongarch_split_plus_constant (rtx *op, machine_mode mode)
   op[2] = gen_int_mode (v, mode);
 }
 
+/* Test if reassociate (a << shamt) [&|^] mask to
+   (a [&|^] (mask >> shamt)) << shamt is possible and beneficial.
+   If true, return (mask >> shamt).  Return NULL_RTX otherwise.  */
+
+rtx
+loongarch_reassoc_shift_bitwise (bool is_and, rtx shamt, rtx mask,
+				 machine_mode mode)
+{
+  gcc_checking_assert (CONST_INT_P (shamt));
+  gcc_checking_assert (CONST_INT_P (mask));
+  gcc_checking_assert (mode == SImode || mode == DImode);
+
+  if (ctz_hwi (INTVAL (mask)) < INTVAL (shamt))
+    return NULL_RTX;
+
+  rtx new_mask = simplify_const_binary_operation (LSHIFTRT, mode, mask,
+						  shamt);
+  if (const_uns_arith_operand (new_mask, mode))
+    return new_mask;
+
+  if (!is_and)
+    return NULL_RTX;
+
+  if (low_bitmask_operand (new_mask, mode))
+    return new_mask;
+
+  /* Do an arithmetic shift for checking ins_zero_bitmask_operand:
+     ashiftrt (0xffffffff00000000, 2) is 0xffffffff60000000 which is an
+     ins_zero_bitmask_operand, but lshiftrt will produce
+     0x3fffffff60000000.  */
+  new_mask = simplify_const_binary_operation (ASHIFTRT, mode, mask,
+					      shamt);
+  return ins_zero_bitmask_operand (new_mask, mode) ? new_mask : NULL_RTX;
+}
+
 /* Implement TARGET_CONSTANT_ALIGNMENT.  */
 
 static HOST_WIDE_INT
@@ -6142,6 +6177,8 @@ loongarch_print_operand_reloc (FILE *file, rtx op, bool hi64_part,
    'i'	Print i if the operand is not a register.
    'L'  Print the low-part relocation associated with OP.
    'm'	Print one less than CONST_INT OP in decimal.
+   'M'	Print the indices of the lowest enabled bit and the highest
+	enabled bit in a mask (for bstr* instructions).
    'N'	Print the inverse of the integer branch condition for comparison OP.
    'Q'  Print R_LARCH_RELAX for TLS IE.
    'r'  Print address 12-31bit relocation associated with OP.
@@ -6264,6 +6301,16 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
     case 'm':
       if (CONST_INT_P (op))
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (op) - 1);
+      else
+	output_operand_lossage ("invalid use of '%%%c'", letter);
+      break;
+
+    case 'M':
+      if (CONST_INT_P (op))
+	{
+	  HOST_WIDE_INT mask = INTVAL (op);
+	  fprintf (file, "%d,%d", floor_log2 (mask), ctz_hwi (mask));
+	}
       else
 	output_operand_lossage ("invalid use of '%%%c'", letter);
       break;
@@ -7671,7 +7718,7 @@ loongarch_reg_init (void)
 	= loongarch_hard_regno_mode_ok_uncached (regno, (machine_mode) mode);
 }
 
-static void
+void
 loongarch_option_override_internal (struct loongarch_target *target,
 				    struct gcc_options *opts,
 				    struct gcc_options *opts_set)
@@ -7697,9 +7744,6 @@ loongarch_option_override_internal (struct loongarch_target *target,
   /* Override some options according to the resolved target.  */
   loongarch_target_option_override (target, opts, opts_set);
 
-  target_option_default_node = target_option_current_node
-    = build_target_option_node (opts, opts_set);
-
   loongarch_reg_init ();
 }
 
@@ -7707,11 +7751,17 @@ loongarch_option_override_internal (struct loongarch_target *target,
 
 static GTY(()) tree loongarch_previous_fndecl;
 
+void
+loongarch_reset_previous_fndecl (void)
+{
+  loongarch_previous_fndecl = NULL;
+}
+
 /* Restore or save the TREE_TARGET_GLOBALS from or to new_tree.
    Used by loongarch_set_current_function to
    make sure optab availability predicates are recomputed when necessary.  */
 
-static void
+void
 loongarch_save_restore_target_globals (tree new_tree)
 {
   if (TREE_TARGET_GLOBALS (new_tree))
@@ -7738,10 +7788,15 @@ loongarch_set_current_function (tree fndecl)
   else
     old_tree = target_option_default_node;
 
+  /* When the function is optimized, the pop_cfun will be called, and
+     the fndecl will be NULL.  */
   if (fndecl == NULL_TREE)
     {
       if (old_tree != target_option_current_node)
 	{
+	  /* When this function is set with special options, we need to
+	     restore the original global optimization options at the end
+	     of function optimization.  */
 	  loongarch_previous_fndecl = NULL_TREE;
 	  cl_target_option_restore (&global_options, &global_options_set,
 				    TREE_TARGET_OPTION
@@ -7751,17 +7806,24 @@ loongarch_set_current_function (tree fndecl)
     }
 
   tree new_tree = DECL_FUNCTION_SPECIFIC_TARGET (fndecl);
+
+  /* When no separate compilation parameters are set for the function,
+    new_tree is NULL.  */
   if (new_tree == NULL_TREE)
     new_tree = target_option_default_node;
 
   loongarch_previous_fndecl = fndecl;
 
-  if (new_tree == old_tree)
-    return;
+  if (new_tree != old_tree)
+    /* According to the settings of the functions attribute and pragma,
+       the options is corrected.  */
+    cl_target_option_restore (&global_options, &global_options_set,
+			      TREE_TARGET_OPTION (new_tree));
 
-  cl_target_option_restore (&global_options, &global_options_set,
-			    TREE_TARGET_OPTION (new_tree));
 
+  /* After correcting the value of options, we need to update the
+     rules for using the hardware registers to ensure that the
+     rules correspond to the options.  */
   loongarch_reg_init ();
 
   loongarch_save_restore_target_globals (new_tree);
@@ -7781,6 +7843,11 @@ loongarch_option_override (void)
   loongarch_option_override_internal (&la_target,
 				      &global_options,
 				      &global_options_set);
+
+  /* Save the initial options so that we can restore the initial option
+     settings later when processing attributes and pragmas.  */
+  target_option_default_node = target_option_current_node
+    = build_target_option_node (&global_options, &global_options_set);
 
 }
 
@@ -11350,6 +11417,9 @@ loongarch_asm_code_end (void)
 
 #undef TARGET_C_MODE_FOR_FLOATING_TYPE
 #define TARGET_C_MODE_FOR_FLOATING_TYPE loongarch_c_mode_for_floating_type
+
+#undef TARGET_OPTION_VALID_ATTRIBUTE_P
+#define TARGET_OPTION_VALID_ATTRIBUTE_P loongarch_option_valid_attribute_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

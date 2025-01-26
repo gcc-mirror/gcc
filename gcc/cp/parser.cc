@@ -735,6 +735,12 @@ cp_lexer_new_main (void)
   gcc_assert (!the_parser);
   the_parser = cp_parser_new (lexer);
 
+  unsigned raw_data_tokens = 0;
+  char *raw_data_buf = NULL;
+  const unsigned int raw_data_max_len
+    = 131072 - offsetof (struct tree_string, str) - 1;
+  const unsigned int raw_data_min_len = 128;
+
   /* Get the remaining tokens from the preprocessor.  */
   while (tok->type != CPP_EOF)
     {
@@ -743,6 +749,99 @@ cp_lexer_new_main (void)
 	module_token_lang (tok->type, tok->keyword, tok->u.value,
 			   tok->location, filter);
 
+      /* Attempt to optimize long lists of 0-255 integers
+	 separated by commas into CPP_EMBED.
+	 In particular, when we see
+	 CPP_NUMBER CPP_COMMA ( CPP_NUMBER CPP_COMMA ){n} CPP_NUMBER
+	 where n is in [raw_data_min_len, raw_data_max_len - 2]
+	 and all CPP_NUMBER tokens have int type and value in [0, UCHAR_MAX]
+	 it is changed into
+	 CPP_NUMBER CPP_COMMA CPP_EMBED CPP_COMMA CPP_NUMBER.  */
+    recheck:
+      if (tok->type == CPP_NUMBER
+	  && (raw_data_tokens & 1) == 0
+	  && TREE_CODE (tok->u.value) == INTEGER_CST
+	  && TREE_TYPE (tok->u.value) == integer_type_node
+	  && !wi::neg_p (wi::to_wide (tok->u.value))
+	  && wi::to_widest (tok->u.value) <= UCHAR_MAX
+	  && raw_data_tokens < raw_data_max_len * 2)
+	{
+	  raw_data_tokens++;
+	  /* * 2 comes from each byte in the middle represented by 2 tokens,
+	     CPP_NUMBER and CPP_COMMA, while + 3 stands for the
+	     CPP_NUMBER CPP_COMMA at the start and CPP_NUMBER at the end.  */
+	  if (raw_data_tokens >= raw_data_min_len * 2 + 3)
+	    {
+	      unsigned int len = lexer->buffer->length ();
+	      unsigned int new_len;
+	      if (raw_data_tokens == raw_data_min_len * 2 + 3)
+		{
+		  if (raw_data_buf == NULL)
+		    raw_data_buf = XNEWVEC (char, raw_data_max_len);
+		  for (unsigned i = len - raw_data_tokens, j = 0;
+		       i < len; i += 2, ++j)
+		    raw_data_buf[j]
+		      = (char) tree_to_uhwi ((*lexer->buffer)[i].u.value);
+		  /* + 5 stands for
+		     CPP_NUMBER CPP_COMMA CPP_EMBED CPP_COMMA CPP_NUMBER
+		     tokens that will replace the original raw_data_tokens
+		     tokens.  */
+		  new_len = len - raw_data_tokens + 5;
+		}
+	      else
+		{
+		  raw_data_buf[raw_data_tokens / 2]
+		    = (char) tree_to_uhwi (tok->u.value);
+		  new_len = len - 2;
+		}
+	      /* The last 2 tokens are always CPP_COMMA CPP_NUMBER.  */
+	      (*lexer->buffer)[new_len - 2] = (*lexer->buffer)[len - 2];
+	      (*lexer->buffer)[new_len - 1] = (*lexer->buffer)[len - 1];
+	      lexer->buffer->truncate (new_len);
+	    }
+	}
+      else if (tok->type == CPP_COMMA && (raw_data_tokens & 1) == 1)
+	raw_data_tokens++;
+      else if (raw_data_tokens >= raw_data_min_len * 2 + 3)
+	{
+	  unsigned last_number = (raw_data_tokens & 1);
+	  /* Index of the CPP_EMBED token.  From the above code, that
+	     future CPP_EMBED slot is followed by at least CPP_COMMA CPP_NUMBER
+	     tokens and if !last_number by another CPP_COMMA and then
+	     by the current token which is either not a CPP_NUMBER (e.g.
+	     often CPP_CLOSE_BRACE), or CPP_NUMBER with non-int type or with
+	     value not in [0, UCHAR_MAX], or reaching the raw_data_max_len
+	     limit.  So we need to substract 1 (to get at the current token
+	     index) plus 3 + !last_number to get at the CPP_EMBED index.  */
+	  unsigned int idx = lexer->buffer->length () - 4 - !last_number;
+	  if (!last_number)
+	    --raw_data_tokens;
+	  /* Number of bytes in the sequence, including the first and last
+	     CPP_NUMBER.  Those two bytes are included in the underlying
+	     STRING_CST but not in RAW_DATA_CST.  */
+	  raw_data_tokens = raw_data_tokens / 2 + 1;
+	  tree raw = make_node (RAW_DATA_CST);
+	  TREE_TYPE (raw) = integer_type_node;
+	  /* Minus the first and last bytes which have their own CPP_NUMBER
+	     tokens.  */
+	  RAW_DATA_LENGTH (raw) = raw_data_tokens - 2;
+	  tree owner = build_string (raw_data_tokens, raw_data_buf);
+	  TREE_TYPE (owner) = build_array_type_nelts (unsigned_char_type_node,
+						      raw_data_tokens);
+	  RAW_DATA_OWNER (raw) = owner;
+	  /* Skip over the first byte which has its own CPP_NUMBER token.  */
+	  RAW_DATA_POINTER (raw) = TREE_STRING_POINTER (owner) + 1;
+	  (*lexer->buffer)[idx].type = CPP_EMBED;
+	  (*lexer->buffer)[idx].u.value = raw;
+	  raw_data_tokens = 0;
+	  goto recheck;
+	}
+      else if (raw_data_tokens)
+	{
+	  raw_data_tokens = 0;
+	  goto recheck;
+	}
+
       /* Check for early pragmas that need to be handled now.  */
       if (tok->type == CPP_PRAGMA_EOL)
 	cp_lexer_handle_early_pragma (lexer);
@@ -750,6 +849,8 @@ cp_lexer_new_main (void)
       tok = vec_safe_push (lexer->buffer, cp_token ());
       cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
     }
+
+  XDELETEVEC (raw_data_buf);
 
   lexer->next_token = lexer->buffer->address ();
   lexer->last_token = lexer->next_token
@@ -11760,9 +11861,6 @@ cp_parser_lambda_expression (cp_parser* parser)
     parser->omp_array_section_p = saved_omp_array_section_p;
   }
 
-  /* This field is only used during parsing of the lambda.  */
-  LAMBDA_EXPR_THIS_CAPTURE (lambda_expr) = NULL_TREE;
-
   /* This lambda shouldn't have any proxies left at this point.  */
   gcc_assert (LAMBDA_EXPR_PENDING_PROXIES (lambda_expr) == NULL);
   /* And now that we're done, push proxies for an enclosing lambda.  */
@@ -11815,9 +11913,10 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
       cp_lexer_consume_token (parser->lexer);
       first = false;
 
-      if (!(at_function_scope_p ()
-	    || parsing_nsdmi ()
-	    || current_binding_level->kind == sk_contract))
+      tree scope = current_nonlambda_scope (/*only_skip_closures_p=*/true);
+      if (TREE_CODE (scope) != FUNCTION_DECL 
+	  && !parsing_nsdmi ()
+	  && current_binding_level->kind != sk_contract)
 	error ("non-local lambda expression cannot have a capture-default");
     }
 
@@ -16849,6 +16948,7 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 	  cp_finish_decl (decl, initializer, non_constant_p, NULL_TREE,
 			  (is_direct_init ? LOOKUP_NORMAL : LOOKUP_IMPLICIT),
 			  &decomp);
+	  check_module_decl_linkage (decl);
 	}
     }
   else if (decl != error_mark_node)
@@ -27499,6 +27599,8 @@ cp_parser_class_specifier (cp_parser* parser)
   if (!braces.require_open (parser))
     {
       pop_deferring_access_checks ();
+      if (type != error_mark_node)
+	finish_lambda_scope ();
       return error_mark_node;
     }
 
@@ -27563,7 +27665,10 @@ cp_parser_class_specifier (cp_parser* parser)
   if (cp_parser_allow_gnu_extensions_p (parser))
     attributes = cp_parser_gnu_attributes_opt (parser);
   if (type != error_mark_node)
-    type = finish_struct (type, attributes);
+    {
+      type = finish_struct (type, attributes);
+      finish_lambda_scope ();
+    }
   if (nested_name_specifier_p)
     pop_inner_scope (old_scope, scope);
 
@@ -28400,6 +28505,12 @@ cp_parser_class_head (cp_parser* parser,
   if (flag_concepts)
     type = associate_classtype_constraints (type);
 
+  /* Lambdas in bases and members must have the same mangling scope for ABI.
+     We open this scope now, and will close it in cp_parser_class_specifier
+     after parsing the member list.  */
+  if (type && type != error_mark_node)
+    start_lambda_scope (TYPE_NAME (type));
+
   /* We will have entered the scope containing the class; the names of
      base classes should be looked up in that context.  For example:
 
@@ -28414,16 +28525,10 @@ cp_parser_class_head (cp_parser* parser,
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
     {
       if (type)
-	{
-	  pushclass (type);
-	  start_lambda_scope (TYPE_NAME (type));
-	}
+	pushclass (type);
       bases = cp_parser_base_clause (parser);
       if (type)
-	{
-	  finish_lambda_scope ();
-	  popclass ();
-	}
+	popclass ();
     }
   else
     bases = NULL_TREE;
@@ -28920,6 +29025,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	  tree first_attribute;
 	  tree initializer;
 	  bool named_bitfld = false;
+	  bool decl_was_initialized_p = false;
 
 	  /* Peek at the next token.  */
 	  token = cp_lexer_peek_token (parser->lexer);
@@ -29089,9 +29195,8 @@ cp_parser_member_declaration (cp_parser* parser)
 		 pure-specifier.  It is not correct to parse the
 		 initializer before registering the member declaration
 		 since the member declaration should be in scope while
-		 its initializer is processed.  However, the rest of the
-		 front end does not yet provide an interface that allows
-		 us to handle this correctly.  */
+		 its initializer is processed.  As such we might build
+		 decl pre-emptively.  */
 	      if (cp_lexer_next_token_is (parser->lexer, CPP_EQ))
 		{
 		  /* In [class.mem]:
@@ -29118,18 +29223,31 @@ cp_parser_member_declaration (cp_parser* parser)
 		    initializer = cp_parser_pure_specifier (parser);
 		  else if (decl_specifiers.storage_class != sc_static)
 		    initializer = cp_parser_save_nsdmi (parser);
-		  else if (cxx_dialect >= cxx11)
-		    {
-		      /* Don't require a constant rvalue in C++11, since we
-			 might want a reference constant.  We'll enforce
-		         constancy later.  */
-		      cp_lexer_consume_token (parser->lexer);
-		      /* Parse the initializer.  */
-		      initializer = cp_parser_initializer_clause (parser);
-		    }
 		  else
-		    /* Parse the initializer.  */
-		    initializer = cp_parser_constant_initializer (parser);
+		    {
+		      decl = start_initialized_static_member (declarator,
+							      &decl_specifiers,
+							      attributes);
+		      start_lambda_scope (decl);
+
+		      if (cxx_dialect >= cxx11)
+			{
+			  /* Don't require a constant rvalue in C++11, since we
+			     might want a reference constant.  We'll enforce
+			     constancy later.  */
+			  cp_lexer_consume_token (parser->lexer);
+			  /* Parse the initializer.  */
+			  initializer = cp_parser_initializer_clause (parser);
+			}
+		      else
+			/* Parse the initializer.  */
+			initializer = cp_parser_constant_initializer (parser);
+
+		      finish_lambda_scope ();
+		      finish_initialized_static_member (decl, initializer,
+							asm_specification);
+		      decl_was_initialized_p = true;
+		    }
 		}
 	      else if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE)
 		       && !function_declarator_p (declarator))
@@ -29139,7 +29257,17 @@ cp_parser_member_declaration (cp_parser* parser)
 		  if (decl_specifiers.storage_class != sc_static)
 		    initializer = cp_parser_save_nsdmi (parser);
 		  else
-		    initializer = cp_parser_initializer (parser);
+		    {
+		      decl = start_initialized_static_member (declarator,
+							      &decl_specifiers,
+							      attributes);
+		      start_lambda_scope (decl);
+		      initializer = cp_parser_initializer (parser);
+		      finish_lambda_scope ();
+		      finish_initialized_static_member (decl, initializer,
+							asm_specification);
+		      decl_was_initialized_p = true;
+		    }
 		}
 	      /* Detect invalid bit-field cases such as
 
@@ -29214,16 +29342,19 @@ cp_parser_member_declaration (cp_parser* parser)
 		  declarator->id_loc = token->location;
 
 	      /* Create the declaration.  */
-	      decl = grokfield (declarator, &decl_specifiers,
-				initializer, /*init_const_expr_p=*/true,
-				asm_specification, attributes);
-
-	      if (parser->fully_implicit_function_template_p)
+	      if (!decl_was_initialized_p)
 		{
-		  if (friend_p)
-		    finish_fully_implicit_template (parser, 0);
-		  else
-		    decl = finish_fully_implicit_template (parser, decl);
+		  decl = grokfield (declarator, &decl_specifiers,
+				    initializer, /*init_const_expr_p=*/true,
+				    asm_specification, attributes);
+
+		  if (parser->fully_implicit_function_template_p)
+		    {
+		      if (friend_p)
+			finish_fully_implicit_template (parser, 0);
+		      else
+			decl = finish_fully_implicit_template (parser, decl);
+		    }
 		}
 	    }
 
@@ -29277,7 +29408,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	      assume_semicolon = true;
 	    }
 
-	  if (decl)
+	  if (decl && !decl_was_initialized_p)
 	    {
 	      /* Add DECL to the list of members.  */
 	      if (!friend_p
@@ -32114,8 +32245,20 @@ cp_parser_concept_definition (cp_parser *parser)
       return error_mark_node;
     }
 
+  tree decl = start_concept_definition (id);
+  if (decl == error_mark_node)
+    {
+      cp_parser_skip_to_end_of_statement (parser);
+      cp_parser_consume_semicolon_at_end_of_statement (parser);
+      return error_mark_node;
+    }
+
   processing_constraint_expression_sentinel parsing_constraint;
+
+  start_lambda_scope (decl);
   tree init = cp_parser_constraint_expression (parser);
+  finish_lambda_scope ();
+
   if (init == error_mark_node)
     cp_parser_skip_to_end_of_statement (parser);
 
@@ -32123,7 +32266,7 @@ cp_parser_concept_definition (cp_parser *parser)
      but continue as if it were.  */
   cp_parser_consume_semicolon_at_end_of_statement (parser);
 
-  return finish_concept_definition (id, init, attrs);
+  return finish_concept_definition (decl, init, attrs);
 }
 
 // -------------------------------------------------------------------------- //
@@ -37037,9 +37180,7 @@ cp_parser_objc_message_args (cp_parser* parser)
       cp_parser_require (parser, CPP_COLON, RT_COLON);
       arg = cp_parser_assignment_expression (parser);
 
-      sel_args
-	= chainon (sel_args,
-		   build_tree_list (selector, arg));
+      sel_args = tree_cons (selector, arg, sel_args);
 
       token = cp_lexer_peek_token (parser->lexer);
     }
@@ -37047,14 +37188,20 @@ cp_parser_objc_message_args (cp_parser* parser)
   /* Handle non-selector arguments, if any. */
   while (token->type == CPP_COMMA)
     {
-      tree arg;
-
       cp_lexer_consume_token (parser->lexer);
-      arg = cp_parser_assignment_expression (parser);
 
-      addl_args
-	= chainon (addl_args,
-		   build_tree_list (NULL_TREE, arg));
+      if (cp_lexer_next_token_is (parser->lexer, CPP_EMBED))
+	{
+	  tree raw_data = cp_lexer_peek_token (parser->lexer)->u.value;
+	  cp_lexer_consume_token (parser->lexer);
+	  for (tree argument : raw_data_range (raw_data))
+	    addl_args = tree_cons (NULL_TREE, argument, addl_args);
+	}
+      else
+	{
+	  tree arg = cp_parser_assignment_expression (parser);
+	  addl_args = tree_cons (NULL_TREE, arg, addl_args);
+	}
 
       token = cp_lexer_peek_token (parser->lexer);
     }
@@ -37065,7 +37212,7 @@ cp_parser_objc_message_args (cp_parser* parser)
       return build_tree_list (error_mark_node, error_mark_node);
     }
 
-  return build_tree_list (sel_args, addl_args);
+  return build_tree_list (nreverse (sel_args), nreverse (addl_args));
 }
 
 /* Parse an Objective-C encode expression.
@@ -51626,7 +51773,7 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
 	  cp_parser_skip_to_end_of_block_or_statement (parser, true);
 	  goto fail;
 	}
-      if (!strcmp (p, "when") == 0 && !default_p)
+      if (!default_p && strcmp (p, "when") != 0)
 	{
 	  error_at (match_loc, "%qs is not valid for %qs",
 		    p, "metadirective");

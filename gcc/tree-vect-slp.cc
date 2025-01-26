@@ -1522,7 +1522,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_comparison
 	      && rhs_code != VIEW_CONVERT_EXPR
 	      && rhs_code != CALL_EXPR
-	      && rhs_code != BIT_FIELD_REF)
+	      && rhs_code != BIT_FIELD_REF
+	      && rhs_code != SSA_NAME)
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

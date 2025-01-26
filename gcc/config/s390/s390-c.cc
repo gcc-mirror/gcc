@@ -174,6 +174,22 @@ s390_categorize_keyword (const cpp_token *tok)
 }
 
 
+/* Helper function to find out which RID_INT_N_* code is the one for
+   __int128, if any.  Returns RID_MAX+1 if none apply, which is safe
+   (for our purposes, since we always expect to have __int128) to
+   compare against.  */
+static inline int
+rid_int128 (void)
+{
+  for (int i = 0; i < NUM_INT_N_ENTS; ++i)
+    if (int_n_enabled_p[i]
+	&& int_n_data[i].bitsize == 128)
+      return RID_INT_N_0 + i;
+
+  return RID_MAX + 1;
+}
+
+
 /* Called to decide whether a conditional macro should be expanded.
    Since we have exactly one such macro (i.e, 'vector'), we do not
    need to examine the 'tok' parameter.  */
@@ -262,7 +278,8 @@ s390_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
       || rid_code == RID_SHORT || rid_code == RID_SIGNED
       || rid_code == RID_INT || rid_code == RID_CHAR
       || (rid_code == RID_FLOAT && TARGET_VXE)
-      || rid_code == RID_DOUBLE)
+      || rid_code == RID_DOUBLE
+      || rid_code == rid_int128 ())
     {
       expand_this = C_CPP_HASHNODE (__vector_keyword);
       /* If the next keyword is bool, it will need to be expanded as
@@ -341,7 +358,7 @@ s390_cpu_cpp_builtins_internal (cpp_reader *pfile,
   s390_def_or_undef_macro (pfile, target_flag_set_p (MASK_OPT_VX), old_opts,
 			   opts, "__VX__", "__VX__");
   s390_def_or_undef_macro (pfile, target_flag_set_p (MASK_ZVECTOR), old_opts,
-			   opts, "__VEC__=10304", "__VEC__");
+			   opts, "__VEC__=10305", "__VEC__");
   s390_def_or_undef_macro (pfile, target_flag_set_p (MASK_ZVECTOR), old_opts,
 			   opts, "__vector=__attribute__((vector_size(16)))",
 			   "__vector__");
@@ -689,6 +706,7 @@ s390_adjust_builtin_arglist (unsigned int ob_fcode, tree decl,
 	case S390_OVERLOADED_BUILTIN_s390_vec_sel:
 	case S390_OVERLOADED_BUILTIN_s390_vec_insert:
 	case S390_OVERLOADED_BUILTIN_s390_vec_load_len:
+	case S390_OVERLOADED_BUILTIN_s390_vec_load_len_r:
 	  /* Swap the first to arguments. It is better to do it here
 	     instead of the header file to avoid operand checking
 	     throwing error messages for a weird operand index.  */
@@ -701,6 +719,7 @@ s390_adjust_builtin_arglist (unsigned int ob_fcode, tree decl,
 	    }
 	  break;
 	case S390_OVERLOADED_BUILTIN_s390_vec_store_len:
+	case S390_OVERLOADED_BUILTIN_s390_vec_store_len_r:
 	  if (dest_arg_index == 1 || dest_arg_index == 2)
 	    {
 	      folded_args->quick_push (fully_fold_convert (TREE_VALUE (arg_chain),
@@ -941,6 +960,12 @@ s390_resolve_overloaded_builtin (location_t loc, tree ob_fndecl,
       return error_mark_node;
     }
 
+  if (!TARGET_VXE3 && (ob_flags & B_VXE3))
+    {
+      error_at (loc, "%qF requires arch15 or higher", ob_fndecl);
+      return error_mark_node;
+    }
+
   ob_fcode -= S390_BUILTIN_MAX;
 
   for (b_arg_chain = TYPE_ARG_TYPES (TREE_TYPE (ob_fndecl));
@@ -1024,6 +1049,14 @@ s390_resolve_overloaded_builtin (location_t loc, tree ob_fndecl,
       && bflags_overloaded_builtin_var[last_match_index] & B_VXE2)
     {
       error_at (loc, "%qs matching variant requires z15 or higher",
+		IDENTIFIER_POINTER (DECL_NAME (ob_fndecl)));
+      return error_mark_node;
+    }
+
+  if (!TARGET_VXE3
+      && bflags_overloaded_builtin_var[last_match_index] & B_VXE3)
+    {
+      error_at (loc, "%qs matching variant requires arch15 or higher",
 		IDENTIFIER_POINTER (DECL_NAME (ob_fndecl)));
       return error_mark_node;
     }

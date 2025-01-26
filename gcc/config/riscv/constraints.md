@@ -209,6 +209,12 @@
   (and (match_code "const_vector")
        (match_test "riscv_vector::const_vec_all_same_in_range_p (op, 0, 31)")))
 
+(define_constraint "vl"
+  "A uimm5 for Vector or zero for XTheadVector."
+  (and (match_code "const_int")
+       (ior (match_test "!TARGET_XTHEADVECTOR && satisfies_constraint_K (op)")
+	    (match_test "TARGET_XTHEADVECTOR && satisfies_constraint_J (op)"))))
+
 (define_constraint "Wc0"
   "@internal
  A constraint that matches a vector of immediate all zeros."

@@ -164,6 +164,8 @@ namespace aarch64_sve
     extern const function_shape *const load_gather64_vs_offset;
     extern const function_shape *const load_replicate;
     extern const function_shape *const load_za;
+    extern const function_shape *const luti2;
+    extern const function_shape *const luti4;
     extern const function_shape *const luti2_lane_zt;
     extern const function_shape *const luti4_lane_zt;
     extern const function_shape *const mmla;

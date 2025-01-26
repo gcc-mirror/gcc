@@ -32,39 +32,39 @@
 #ifdef __OPTIMIZE__
 extern __inline __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_minmax_nepbh (__m512bh __A, __m512bh __B, const int __C)
+_mm512_minmax_pbh (__m512bh __A, __m512bh __B, const int __C)
 {
-  return (__m512bh) __builtin_ia32_minmaxnepbf16512_mask ((__v32bf) __A,
-							  (__v32bf) __B,
-							  __C,
-							  (__v32bf)(__m512bh)
-							  _mm512_setzero_si512 (),
-							  (__mmask32) -1);
+  return (__m512bh) __builtin_ia32_minmaxbf16512_mask ((__v32bf) __A,
+						       (__v32bf) __B,
+						       __C,
+						       (__v32bf)(__m512bh)
+						       _mm512_setzero_si512 (),
+						       (__mmask32) -1);
 }
 
 extern __inline __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_minmax_nepbh (__m512bh __W, __mmask32 __U,
-			  __m512bh __A, __m512bh __B, const int __C)
+_mm512_mask_minmax_pbh (__m512bh __W, __mmask32 __U,
+			__m512bh __A, __m512bh __B, const int __C)
 {
-  return (__m512bh) __builtin_ia32_minmaxnepbf16512_mask ((__v32bf) __A,
-							  (__v32bf) __B,
-							  __C,
-							  (__v32bf) __W,
-							  (__mmask32) __U);
+  return (__m512bh) __builtin_ia32_minmaxbf16512_mask ((__v32bf) __A,
+						       (__v32bf) __B,
+						       __C,
+						       (__v32bf) __W,
+						       (__mmask32) __U);
 }
 
 extern __inline __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_minmax_nepbh (__mmask32 __U, __m512bh __A,
-			   __m512bh __B, const int __C)
+_mm512_maskz_minmax_pbh (__mmask32 __U, __m512bh __A,
+			 __m512bh __B, const int __C)
 {
-  return (__m512bh) __builtin_ia32_minmaxnepbf16512_mask ((__v32bf) __A,
-							  (__v32bf) __B,
-							  __C,
-							  (__v32bf)(__m512bh)
-							  _mm512_setzero_si512 (),
-							  (__mmask32) __U);
+  return (__m512bh) __builtin_ia32_minmaxbf16512_mask ((__v32bf) __A,
+						       (__v32bf) __B,
+						       __C,
+						       (__v32bf)(__m512bh)
+						       _mm512_setzero_si512 (),
+						       (__mmask32) __U);
 }
 
 extern __inline __m512d
@@ -300,28 +300,28 @@ _mm512_maskz_minmax_round_ps (__mmask16 __U, __m512 __A, __m512 __B,
 }
 
 #else
-#define _mm512_minmax_nepbh(A, B, C)					      \
-  ((__m512bh) __builtin_ia32_minmaxnepbf16512_mask ((__v32bf) (A),	      \
-						    (__v32bf) (B),	      \
-						    (int) (C),		      \
-						    (__v32bf) (__m512bh)      \
-						    _mm512_setzero_si512 (),  \
-						    (__mmask32) (-1)))
+#define _mm512_minmax_pbh(A, B, C)					      \
+  ((__m512bh) __builtin_ia32_minmaxbf16512_mask ((__v32bf) (A),		      \
+						 (__v32bf) (B),		      \
+						 (int) (C),		      \
+						 (__v32bf) (__m512bh)	      \
+						 _mm512_setzero_si512 (),     \
+						 (__mmask32) (-1)))
 
-#define _mm512_mask_minmax_nepbh(W, U, A, B, C)				      \
-  ((__m512bh) __builtin_ia32_minmaxnepbf16512_mask ((__v32bf) (A),	      \
-						    (__v32bf) (B), 	      \
-						    (int) (C),		      \
-						    (__v32bf) (__m512bh) (W), \
-						    (__mmask32) (U)))
+#define _mm512_mask_minmax_pbh(W, U, A, B, C)				      \
+  ((__m512bh) __builtin_ia32_minmaxbf16512_mask ((__v32bf) (A),		      \
+						 (__v32bf) (B), 	      \
+						 (int) (C),		      \
+						 (__v32bf) (__m512bh) (W),    \
+						 (__mmask32) (U)))
 
-#define _mm512_maskz_minmax_nepbh(U, A, B, C)				      \
-  ((__m512bh) __builtin_ia32_minmaxnepbf16512_mask ((__v32bf) (A),	      \
-						    (__v32bf) (B),	      \
-						    (int) (C),		      \
-						    (__v32bf) (__m512bh)      \
-						    _mm512_setzero_si512 (),  \
-						    (__mmask32) (U)))
+#define _mm512_maskz_minmax_pbh(U, A, B, C)				      \
+  ((__m512bh) __builtin_ia32_minmaxbf16512_mask ((__v32bf) (A),		      \
+						 (__v32bf) (B),		      \
+						 (int) (C),		      \
+						 (__v32bf) (__m512bh)	      \
+						 _mm512_setzero_si512 (),     \
+						 (__mmask32) (U)))
 
 #define _mm512_minmax_round_pd(A, B, C, R)				      \
   ((__m512d) __builtin_ia32_minmaxpd512_mask_round ((__v8df) (A),	      \

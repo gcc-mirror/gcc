@@ -26,6 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define SWITCHABLE_TARGET 1
 
+#define REGISTER_TARGET_PRAGMAS() loongarch_register_pragmas ()
+
 #define TARGET_SUPPORTS_WIDE_INT 1
 
 /* Macros to silence warnings about numbers being signed in traditional
