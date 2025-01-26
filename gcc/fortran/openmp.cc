@@ -10410,7 +10410,7 @@ resolve_omp_atomic (gfc_code *code)
       gfc_intrinsic_op alt_op = INTRINSIC_NONE;
 
       if (atomic_code->ext.omp_clauses->fail != OMP_MEMORDER_UNSET)
-	gfc_error ("!$OMP ATOMIC UPDATE at %L with FAIL clause requiries either"
+	gfc_error ("!$OMP ATOMIC UPDATE at %L with FAIL clause requires either"
 		   " the COMPARE clause or using the intrinsic MIN/MAX "
 		   "procedure", &atomic_code->loc);
       switch (op)
