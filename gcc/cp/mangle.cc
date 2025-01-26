@@ -821,9 +821,9 @@ write_mangled_name (const tree decl, bool top_level)
   /* If this is the pre/post function for a guarded function, append
      .pre/post, like something from create_virtual_clone.  */
   if (DECL_IS_PRE_FN_P (decl))
-    write_string (".pre");
+    write_string (JOIN_STR "pre");
   else if (DECL_IS_POST_FN_P (decl))
-    write_string (".post");
+    write_string (JOIN_STR "post");
 
   /* If this is a coroutine helper, then append an appropriate string to
      identify which.  */
