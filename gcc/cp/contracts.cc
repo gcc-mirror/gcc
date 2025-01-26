@@ -1566,7 +1566,7 @@ build_contract_condition_function (tree fndecl, bool pre)
 
   DECL_NAME (fn) = copy_node (DECL_NAME (fn));
   DECL_INITIAL (fn) = error_mark_node;
-  DECL_ABSTRACT_ORIGIN (fn) = fndecl;
+  CONTRACT_HELPER (fn) = pre ? ldf_contract_pre : ldf_contract_post;
 
   IDENTIFIER_VIRTUAL_P (DECL_NAME (fn)) = false;
   DECL_VIRTUAL_P (fn) = false;
@@ -1669,7 +1669,7 @@ handle_contracts_p (tree fndecl)
 {
   return (flag_contracts
 	  && !processing_template_decl
-	  && (DECL_ABSTRACT_ORIGIN (fndecl) == NULL_TREE)
+	  && (CONTRACT_HELPER (fndecl) == ldf_contract_none)
 	  && contract_any_active_p (DECL_CONTRACTS (fndecl)));
 }
 
