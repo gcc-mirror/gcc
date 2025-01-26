@@ -311,12 +311,13 @@ enum contract_matching_context
 
 /* True iff the FUNCTION_DECL is the pre function for a guarded function.  */
 #define DECL_IS_PRE_FN_P(NODE) \
-  (DECL_ABSTRACT_ORIGIN (NODE) && DECL_PRE_FN (DECL_ABSTRACT_ORIGIN (NODE)) == NODE)
+  (DECL_DECLARES_FUNCTION_P (NODE) && DECL_LANG_SPECIFIC (NODE) && \
+   CONTRACT_HELPER (NODE) == ldf_contract_pre)
 
 /* True iff the FUNCTION_DECL is the post function for a guarded function.  */
 #define DECL_IS_POST_FN_P(NODE) \
-  (DECL_ABSTRACT_ORIGIN (NODE) && DECL_POST_FN (DECL_ABSTRACT_ORIGIN (NODE)) == NODE)
-
+  (DECL_DECLARES_FUNCTION_P (NODE) && DECL_LANG_SPECIFIC (NODE) && \
+   CONTRACT_HELPER (NODE) == ldf_contract_post)
 
 extern void remove_contract_attributes		(tree);
 extern void copy_contract_attributes		(tree, tree);
