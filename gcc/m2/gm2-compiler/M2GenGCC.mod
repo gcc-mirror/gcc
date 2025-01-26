@@ -3228,19 +3228,11 @@ BEGIN
    IF IsConstSet(op3) OR ((SkipType(GetType(op3))#NulSym) AND
                           IsSet(SkipType(GetType(op3))))
    THEN
-      (* we have not checked set compatibility in
-         M2Quads.mod:BuildAssignmentTree so we do it here.
-      *)
-(*
-      IF (Iso AND (SkipType(GetType(op1))#SkipType(GetType(op3)))) OR
-         (Pim AND ((SkipType(GetType(op1))#SkipType(GetType(op3))) AND
-                   (SkipType(GetType(op1))#Bitset) AND
-                   (SkipType(GetType(op3))#Bitset)))
-*)
       IF SkipType(GetTypeMode(op1))#SkipType(GetTypeMode(op3))
       THEN
          DescribeTypeError (tokenno, op1, op3) ;
-         RETURN( Mod2Gcc (op1) ) (* we might crash if we execute the BuildAssignmentTree with op3 *)
+         (* Assigning an errant op3 might ICE, therefore it is safer to return op1.  *)         
+         RETURN( Mod2Gcc (op1) )
       END
    END ;
    location := TokenToLocation (tokenno) ;
@@ -3252,9 +3244,6 @@ BEGIN
       IF IsProcedure (op3)
       THEN
          RETURN t
-	 (*
-         t := BuildConvert(location, Mod2Gcc(GetType(op1)), BuildAddr(location, Mod2Gcc(op3), FALSE), TRUE)
-         *)
       ELSIF (NOT IsConstString (op3)) AND (NOT IsConstSet (op3)) AND
          (SkipType (GetType (op3)) # SkipType (GetType (op1)))
       THEN
