@@ -2301,6 +2301,48 @@ test_make_location_nonpure_range_endpoints (const line_table_case &case_)
   ASSERT_FALSE (IS_ADHOC_LOC (get_finish (not_aaa_eq_bbb)));
 }
 
+/* Verify reading of a specific line LINENUM in TMP, FC.  */
+
+static void check_line (temp_source_file &tmp, file_cache &fc, int linenum)
+{
+  char_span line = fc.get_source_line (tmp.get_filename (), linenum);
+  int n;
+  /* get_buffer is not null terminated, but the sscanf stops after a number.  */
+  ASSERT_TRUE (sscanf (line.get_buffer (), "%d", &n) == 1);
+  ASSERT_EQ (n, linenum);
+}
+
+/* Test file cache replacement.  */
+
+static void test_replacement ()
+{
+  const int maxline = 1000;
+
+  char *vec = XNEWVEC (char, maxline * 15);
+  char *p = vec;
+  int i;
+  for (i = 1; i <= maxline; i++)
+    p += sprintf (p, "%d\n", i);
+
+  temp_source_file tmp (SELFTEST_LOCATION, ".txt", vec);
+  free (vec);
+  file_cache fc;
+
+  for (i = 2; i <= maxline; i++)
+    {
+      check_line (tmp, fc, i);
+      check_line (tmp, fc, i - 1);
+      if (i >= 10)
+	check_line (tmp, fc, i - 9);
+      if (i >= 350) /* Exceed the look behind cache.  */
+	check_line (tmp, fc, i - 300);
+    }
+  for (i = 5; i <= maxline; i += 100)
+    check_line (tmp, fc, i);
+  for (i = 1; i <= maxline; i++)
+    check_line (tmp, fc, i);
+}
+
 /* Verify reading of input files (e.g. for caret-based diagnostics).  */
 
 static void
@@ -4251,6 +4293,7 @@ input_cc_tests ()
 
   test_reading_source_line ();
   test_reading_source_buffer ();
+  test_replacement ();
 
   test_line_offset_overflow ();
 
