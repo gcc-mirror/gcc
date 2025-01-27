@@ -5679,7 +5679,8 @@ enum cp_lvalue_kind_flags {
   clk_class = 4,    /* A prvalue of class or array type.  */
   clk_bitfield = 8, /* An lvalue for a bit-field.  */
   clk_packed = 16,  /* An lvalue for a packed field.  */
-  clk_implicit_rval = 1<<5 /* An lvalue being treated as an xvalue.  */
+  clk_implicit_rval = 1<<5, /* An lvalue being treated as an xvalue.  */
+  clk_mergeable = 1<<6
 };
 
 /* This type is used for parameters and variables which hold
@@ -8191,6 +8192,7 @@ extern bool glvalue_p				(const_tree);
 extern bool obvalue_p				(const_tree);
 extern bool xvalue_p	                        (const_tree);
 extern bool bitfield_p				(const_tree);
+extern bool non_mergeable_glvalue_p		(const_tree);
 extern tree cp_stabilize_reference		(tree);
 extern bool builtin_valid_in_constant_expr_p    (const_tree);
 extern tree build_min				(enum tree_code, tree, ...);

@@ -191,6 +191,8 @@ lvalue_kind (const_tree ref)
       return op1_lvalue_kind;
 
     case STRING_CST:
+      return clk_ordinary | clk_mergeable;
+
     case COMPOUND_LITERAL_EXPR:
       return clk_ordinary;
 
@@ -210,6 +212,10 @@ lvalue_kind (const_tree ref)
 	  && DECL_LANG_SPECIFIC (ref)
 	  && DECL_IN_AGGR_P (ref))
 	return clk_none;
+
+      if (DECL_MERGEABLE (ref))
+	return clk_ordinary | clk_mergeable;
+
       /* FALLTHRU */
     case INDIRECT_REF:
     case ARROW_EXPR:
@@ -405,6 +411,17 @@ bool
 bitfield_p (const_tree ref)
 {
   return (lvalue_kind (ref) & clk_bitfield);
+}
+
+/* True if REF is a glvalue with a unique address, excluding mergeable glvalues
+   such as string constants.  */
+
+bool
+non_mergeable_glvalue_p (const_tree ref)
+{
+  auto kind = lvalue_kind (ref);
+  return (kind != clk_none
+	  && !(kind & (clk_class|clk_mergeable)));
 }
 
 /* C++-specific version of stabilize_reference.  */
@@ -6495,11 +6512,11 @@ test_lvalue_kind ()
   tree string_lit = build_string (4, "foo");
   TREE_TYPE (string_lit) = char_array_type_node;
   string_lit = fix_string_type (string_lit);
-  ASSERT_EQ (clk_ordinary, lvalue_kind (string_lit));
+  ASSERT_EQ (clk_ordinary|clk_mergeable, lvalue_kind (string_lit));
 
   tree wrapped_string_lit = maybe_wrap_with_location (string_lit, loc);
   ASSERT_TRUE (location_wrapper_p (wrapped_string_lit));
-  ASSERT_EQ (clk_ordinary, lvalue_kind (wrapped_string_lit));
+  ASSERT_EQ (clk_ordinary|clk_mergeable, lvalue_kind (wrapped_string_lit));
 
   tree parm = build_decl (UNKNOWN_LOCATION, PARM_DECL,
 			  get_identifier ("some_parm"),
