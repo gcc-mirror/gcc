@@ -15036,10 +15036,11 @@ package body Exp_Ch4 is
 
       --  Handle entities from the limited view
 
-      Orig_Right_Type : constant Entity_Id := Available_View (Etype (Right));
+      Orig_Right_Type : constant Entity_Id :=
+        Base_Type (Available_View (Etype (Right)));
 
       Full_R_Typ   : Entity_Id;
-      Left_Type    : Entity_Id := Available_View (Etype (Left));
+      Left_Type    : Entity_Id := Base_Type (Available_View (Etype (Left)));
       Right_Type   : Entity_Id := Orig_Right_Type;
       Obj_Tag      : Node_Id;
 
