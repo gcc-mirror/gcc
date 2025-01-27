@@ -1,6 +1,15 @@
 2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2025-01-16  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118441
+	* trans-intrinsic.cc (gfc_get_symbol_for_expr): Use
+	gfc_new_charlen for character-returning functions.
+
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gfortran.h (gfc_omp_namelist): Cleanup interop internal
