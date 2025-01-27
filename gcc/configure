@@ -10637,7 +10637,7 @@ for ac_func in times clock kill getrlimit setrlimit atoq \
 	popen sysconf strsignal getrusage nl_langinfo \
 	gettimeofday mbstowcs wcswidth mmap posix_fallocate setlocale \
 	clearerr_unlocked feof_unlocked   ferror_unlocked fflush_unlocked fgetc_unlocked fgets_unlocked   fileno_unlocked fprintf_unlocked fputc_unlocked fputs_unlocked   fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked   putchar_unlocked putc_unlocked madvise mallinfo mallinfo2 fstatat getauxval \
-	clock_gettime
+	clock_gettime munmap msync
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_cxx_check_func "$LINENO" "$ac_func" "$as_ac_var"

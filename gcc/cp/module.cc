@@ -241,11 +241,11 @@ Classes used:
 #define MAPPED_READING 0
 #define MAPPED_WRITING 0
 #else
-#if HAVE_MMAP_FILE && _POSIX_MAPPED_FILES > 0
-/* mmap, munmap.  */
+#if HAVE_MMAP_FILE && HAVE_MUNMAP && HAVE_MSYNC
+/* mmap, munmap, msync.  */
 #define MAPPED_READING 1
 #if HAVE_SYSCONF && defined (_SC_PAGE_SIZE)
-/* msync, sysconf (_SC_PAGE_SIZE), ftruncate  */
+/* sysconf (_SC_PAGE_SIZE), ftruncate  */
 /* posix_fallocate used if available.  */
 #define MAPPED_WRITING 1
 #else
