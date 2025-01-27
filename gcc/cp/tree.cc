@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "flags.h"
 #include "selftest.h"
+#include "contracts.h"
 
 static tree bot_manip (tree *, int *, void *);
 static tree bot_replace (tree *, int *, void *);
@@ -6397,6 +6398,10 @@ cp_free_lang_data (tree t)
       DECL_EXTERNAL (t) = 1;
       TREE_STATIC (t) = 0;
     }
+
+  if (TREE_CODE (t) == FUNCTION_DECL)
+    remove_contract_attributes (t);
+
   if (TREE_CODE (t) == NAMESPACE_DECL)
     /* We do not need the leftover chaining of namespaces from the
        binding level.  */
