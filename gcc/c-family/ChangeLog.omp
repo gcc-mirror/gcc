@@ -3,6 +3,13 @@
 	Backported from master:
 	2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
 
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_INTEROP.
+
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
 	* c-common.h (enum c_omp_region_type): Add C_ORT_INTEROP
 	and C_ORT_OMP_INTEROP.
 	(c_omp_interop_t_p): New prototype.

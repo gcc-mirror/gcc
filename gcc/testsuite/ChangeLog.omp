@@ -3,6 +3,14 @@
 	Backported from master:
 	2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
 
+	* c-c++-common/gomp/dispatch-11.c: New test.
+	* c-c++-common/gomp/dispatch-12.c: New test.
+
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
 	* gfortran.dg/gomp/interop-1.f90: Update for parser changes,
 	spec changes and add new tests.
 	* gfortran.dg/gomp/interop-2.f90: Likewise.

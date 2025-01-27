@@ -3,6 +3,16 @@
 	Backported from master:
 	2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
 
+	* c-parser.cc (c_parser_omp_clause_interop): New.
+	(c_parser_omp_clause_name, c_parser_omp_all_clauses,
+	c_parser_omp_dispatch_body): Handle 'interop' clause.
+	* c-typeck.cc (c_finish_omp_clauses): Likewise.
+
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
 	* c-parser.cc (INCLUDE_STRING): Define.
 	(c_parser_pragma): Handle 'interop' directive.
 	(c_parser_omp_clause_name): Handle init, use, and destroy clauses.
