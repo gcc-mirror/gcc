@@ -1,6 +1,14 @@
 2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2025-01-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c++/118486
+	* g++.dg/gomp/declare-variant-11.C: New test.
+
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-12-13  Tobias Burnus  <tburnus@baylibre.com>
 
 	* g++.dg/gomp/pr108607.C: Update dg-error.
