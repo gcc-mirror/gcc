@@ -1,6 +1,13 @@
 2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2024-12-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	* omp-general.cc (vendor_properties): Add "nec".
+
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-12-12  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gimplify.cc (gimplify_call_expr): When handling OpenMP's dispatch,
