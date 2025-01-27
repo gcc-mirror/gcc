@@ -1,6 +1,15 @@
 2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2024-12-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	* g++.dg/gomp/pr108607.C: Update dg-error.
+	* g++.dg/gomp/pr79664.C: Update dg-error.
+	* g++.dg/gomp/omp-constexpr.C: New test.
+
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-12-12  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-c++-common/gomp/adjust-args-3.c: New test.
