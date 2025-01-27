@@ -8320,12 +8320,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     /* Simplify logN (x) CMP CST into x CMP expN (CST) */
     (simplify
     (cmp:c (logs:s @0) REAL_CST@1)
-     (cmp @0 (exps @1)))
+     (cmp @0 (exps! @1)))
 
     /* Simplify expN (x) CMP CST into x CMP logN (CST) */
     (simplify
     (cmp:c (exps:s @0) REAL_CST@1)
-     (cmp @0 (logs @1))))))
+     (cmp @0 (logs! @1))))))
 
  (for logs (LOG LOG2 LOG10 LOG10)
       exps (EXP EXP2 EXP10 POW10)
