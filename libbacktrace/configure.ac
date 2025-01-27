@@ -199,6 +199,16 @@ AC_CACHE_CHECK([__sync extensions],
 [if test -n "${with_target_subdir}"; then
    case "${host}" in
    hppa*-*-hpux*) libbacktrace_cv_sys_sync=no ;;
+   arm*-*-eabi*)
+     # Older versions of the Arm architecture lack the necessary instructions
+     # for these constructs, so check whether we can use them.
+     AC_LINK_IFELSE(
+       [AC_LANG_PROGRAM([int i;],
+                        [__sync_bool_compare_and_swap (&i, i, i);
+                         __sync_lock_test_and_set (&i, 1);
+                         __sync_lock_release (&i);])],
+       [libbacktrace_cv_sys_sync=yes],
+       [libbacktrace_cv_sys_sync=no]);;
    *) libbacktrace_cv_sys_sync=yes ;;
    esac
  else

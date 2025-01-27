@@ -12760,6 +12760,29 @@ else
   if test -n "${with_target_subdir}"; then
    case "${host}" in
    hppa*-*-hpux*) libbacktrace_cv_sys_sync=no ;;
+   arm*-*-eabi*)
+     # Older versions of the Arm architecture lack the necessary instructions
+     # for these constructs, so check whether we can use them.
+     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int i;
+int
+main ()
+{
+__sync_bool_compare_and_swap (&i, i, i);
+                         __sync_lock_test_and_set (&i, 1);
+                         __sync_lock_release (&i);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libbacktrace_cv_sys_sync=yes
+else
+  libbacktrace_cv_sys_sync=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext;;
    *) libbacktrace_cv_sys_sync=yes ;;
    esac
  else
