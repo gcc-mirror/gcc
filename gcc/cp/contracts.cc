@@ -2006,7 +2006,7 @@ static tree
 build_contracts_source_location (location_t loc)
 {
   tree impl_ = contracts_tu_local_named_var
-    (loc, "Lsrc_loc_impl.",
+    (loc, "Lsrc_loc_impl",
      get_contracts_source_location_impl_type (), /*is_const*/true);
 
   DECL_INITIAL (impl_) = build_contracts_source_location_impl (loc);
@@ -2262,7 +2262,7 @@ build_contract_violation_P2900 (tree contract, bool is_const)
   TREE_STATIC (ctor) = true;
 
   tree viol_ = contracts_tu_local_named_var
-    (EXPR_LOCATION (contract), "Lcontract_violation.",
+    (EXPR_LOCATION (contract), "Lcontract_violation",
      get_pseudo_contract_violation_type (), /*is_const*/true);
 
   TREE_CONSTANT (viol_) = is_const;
