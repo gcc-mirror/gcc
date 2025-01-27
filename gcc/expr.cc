@@ -11796,13 +11796,14 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		&& known_eq (GET_MODE_BITSIZE (DECL_MODE (base)), type_size))
 	      return expand_expr (build1 (VIEW_CONVERT_EXPR, type, base),
 				  target, tmode, modifier);
-	    if (TYPE_MODE (type) == BLKmode)
+	    if (TYPE_MODE (type) == BLKmode || maybe_lt (offset, 0))
 	      {
 		temp = assign_stack_temp (DECL_MODE (base),
 					  GET_MODE_SIZE (DECL_MODE (base)));
 		store_expr (base, temp, 0, false, false);
-		temp = adjust_address (temp, BLKmode, offset);
-		set_mem_size (temp, int_size_in_bytes (type));
+		temp = adjust_address (temp, TYPE_MODE (type), offset);
+		if (TYPE_MODE (type) == BLKmode)
+		  set_mem_size (temp, int_size_in_bytes (type));
 		return temp;
 	      }
 	    exp = build3 (BIT_FIELD_REF, type, base, TYPE_SIZE (type),
