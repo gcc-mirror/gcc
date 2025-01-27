@@ -4504,6 +4504,55 @@ one_static_initialization_or_destruction (bool initp, tree decl, tree init)
   DECL_STATIC_FUNCTION_P (current_function_decl) = 0;
 }
 
+/* Helper function for emit_partial_init_fini_fn and handle_tls_init.
+   For structured bindings, disable stmts_are_full_exprs_p ()
+   on STATIC_INIT_DECOMP_BASE_P nodes, reenable it on the
+   first STATIC_INIT_DECOMP_NONBASE_P node and emit all the
+   STATIC_INIT_DECOMP_BASE_P and STATIC_INIT_DECOMP_NONBASE_P
+   consecutive nodes in a single STATEMENT_LIST wrapped with
+   CLEANUP_POINT_EXPR.  */
+
+static inline tree
+decomp_handle_one_var (tree node, tree sl, bool *saw_nonbase,
+		       int save_stmts_are_full_exprs_p)
+{
+  if (sl && !*saw_nonbase && STATIC_INIT_DECOMP_NONBASE_P (node))
+    {
+      *saw_nonbase = true;
+      current_stmt_tree ()->stmts_are_full_exprs_p
+	= save_stmts_are_full_exprs_p;
+    }
+  else if (sl && *saw_nonbase && !STATIC_INIT_DECOMP_NONBASE_P (node))
+    {
+      sl = pop_stmt_list (sl);
+      sl = maybe_cleanup_point_expr_void (sl);
+      add_stmt (sl);
+      sl = NULL_TREE;
+    }
+  if (sl == NULL_TREE && STATIC_INIT_DECOMP_BASE_P (node))
+    {
+      sl = push_stmt_list ();
+      *saw_nonbase = false;
+      current_stmt_tree ()->stmts_are_full_exprs_p = 0;
+    }
+  return sl;
+}
+
+/* Similarly helper called when the whole var list is processed.  */
+
+static inline void
+decomp_finalize_var_list (tree sl, int save_stmts_are_full_exprs_p)
+{
+  if (sl)
+    {
+      current_stmt_tree ()->stmts_are_full_exprs_p
+	= save_stmts_are_full_exprs_p;
+      sl = pop_stmt_list (sl);
+      sl = maybe_cleanup_point_expr_void (sl);
+      add_stmt (sl);
+    }
+}
+
 /* Generate code to do the initialization or destruction of the decls in VARS,
    a TREE_LIST of VAR_DECL with static storage duration.
    Whether initialization or destruction is performed is specified by INITP.  */
@@ -4533,12 +4582,17 @@ emit_partial_init_fini_fn (bool initp, unsigned priority, tree vars,
       finish_if_stmt_cond (target_dev_p, nonhost_if_stmt);
     }
 
+  tree sl = NULL_TREE;
+  int save_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
+  bool saw_nonbase = false;
   for (tree node = vars; node; node = TREE_CHAIN (node))
     {
       tree decl = TREE_VALUE (node);
       tree init = TREE_PURPOSE (node);
-	/* We will emit 'init' twice, and it is modified in-place during
-	   gimplification.  Make a copy here.  */
+      sl = decomp_handle_one_var (node, sl, &saw_nonbase,
+				  save_stmts_are_full_exprs_p);
+      /* We will emit 'init' twice, and it is modified in-place during
+	 gimplification.  Make a copy here.  */
       if (omp_target)
 	{
 	  /* We've already emitted INIT in the host version of the ctor/dtor
@@ -4562,6 +4616,7 @@ emit_partial_init_fini_fn (bool initp, unsigned priority, tree vars,
       /* Do one initialization or destruction.  */
       one_static_initialization_or_destruction (initp, decl, init);
     }
+  decomp_finalize_var_list (sl, save_stmts_are_full_exprs_p);
 
   if (omp_target)
     {
@@ -4611,6 +4666,8 @@ prune_vars_needing_no_initialization (tree *vars)
 	 here.  */
       if (DECL_EXTERNAL (decl))
 	{
+	  gcc_checking_assert (!STATIC_INIT_DECOMP_BASE_P (t)
+			       && !STATIC_INIT_DECOMP_NONBASE_P (t));
 	  var = &TREE_CHAIN (t);
 	  continue;
 	}
@@ -4640,12 +4697,19 @@ prune_vars_needing_no_initialization (tree *vars)
 void
 partition_vars_for_init_fini (tree var_list, priority_map_t *(&parts)[4])
 {
+  unsigned priority = 0;
+  enum { none, base, nonbase } decomp_state = none;
   for (auto node = var_list; node; node = TREE_CHAIN (node))
     {
       tree decl = TREE_VALUE (node);
       tree init = TREE_PURPOSE (node);
       bool has_cleanup = !TYPE_HAS_TRIVIAL_DESTRUCTOR (TREE_TYPE (decl));
-      unsigned priority = DECL_EFFECTIVE_INIT_PRIORITY (decl);
+      if (decomp_state == base && STATIC_INIT_DECOMP_NONBASE_P (node))
+	decomp_state = nonbase;
+      else if (decomp_state == nonbase && !STATIC_INIT_DECOMP_NONBASE_P (node))
+	decomp_state = none;
+      if (decomp_state == none)
+	priority = DECL_EFFECTIVE_INIT_PRIORITY (decl);
 
       if (init || (flag_use_cxa_atexit && has_cleanup))
 	{
@@ -4654,6 +4718,34 @@ partition_vars_for_init_fini (tree var_list, priority_map_t *(&parts)[4])
 	    parts[true] = priority_map_t::create_ggc ();
 	  auto &slot = parts[true]->get_or_insert (priority);
 	  slot = tree_cons (init, decl, slot);
+	  if (init
+	      && STATIC_INIT_DECOMP_BASE_P (node)
+	      && decomp_state == none)
+	    {
+	      /* If one or more STATIC_INIT_DECOMP_BASE_P with at least
+		 one init is followed by at least one
+		 STATIC_INIT_DECOMP_NONBASE_P with init, mark it in the
+		 resulting chain as well.  */
+	      for (tree n = TREE_CHAIN (node); n; n = TREE_CHAIN (n))
+		if (STATIC_INIT_DECOMP_BASE_P (n))
+		  continue;
+		else if (STATIC_INIT_DECOMP_NONBASE_P (n))
+		  {
+		    if (TREE_PURPOSE (n))
+		      {
+			decomp_state = base;
+			break;
+		      }
+		    else
+		      continue;
+		  }
+		else
+		  break;
+	    }
+	  if (init && decomp_state == base)
+	    STATIC_INIT_DECOMP_BASE_P (slot) = 1;
+	  else if (decomp_state == nonbase)
+	    STATIC_INIT_DECOMP_NONBASE_P (slot) = 1;
 	}
 
       if (!flag_use_cxa_atexit && has_cleanup)
@@ -4666,7 +4758,7 @@ partition_vars_for_init_fini (tree var_list, priority_map_t *(&parts)[4])
 	}
 
       if (flag_openmp
-	   && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
+	  && lookup_attribute ("omp declare target", DECL_ATTRIBUTES (decl)))
 	{
 	  priority_map_t **omp_parts = parts + 2;
 
@@ -4677,6 +4769,10 @@ partition_vars_for_init_fini (tree var_list, priority_map_t *(&parts)[4])
 		omp_parts[true] = priority_map_t::create_ggc ();
 	      auto &slot = omp_parts[true]->get_or_insert (priority);
 	      slot = tree_cons (init, decl, slot);
+	      if (init && decomp_state == base)
+		STATIC_INIT_DECOMP_BASE_P (slot) = 1;
+	      else if (decomp_state == nonbase)
+		STATIC_INIT_DECOMP_NONBASE_P (slot) = 1;
 	    }
 
 	  if (!flag_use_cxa_atexit && has_cleanup)
@@ -5063,10 +5159,15 @@ handle_tls_init (void)
   finish_expr_stmt (cp_build_modify_expr (loc, guard, NOP_EXPR,
 					  boolean_true_node,
 					  tf_warning_or_error));
+  tree sl = NULL_TREE;
+  int save_stmts_are_full_exprs_p = stmts_are_full_exprs_p ();
+  bool saw_nonbase = false;
   for (; vars; vars = TREE_CHAIN (vars))
     {
       tree var = TREE_VALUE (vars);
       tree init = TREE_PURPOSE (vars);
+      sl = decomp_handle_one_var (vars, sl, &saw_nonbase,
+				  save_stmts_are_full_exprs_p);
       one_static_initialization_or_destruction (/*initp=*/true, var, init);
 
       /* Output init aliases even with -fno-extern-tls-init.  */
@@ -5081,6 +5182,7 @@ handle_tls_init (void)
 	  gcc_assert (alias != NULL);
 	}
     }
+  decomp_finalize_var_list (sl, save_stmts_are_full_exprs_p);
 
   finish_then_clause (if_stmt);
   finish_if_stmt (if_stmt);

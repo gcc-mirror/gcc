@@ -8742,6 +8742,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
   bool var_definition_p = false;
   tree auto_node;
   auto_vec<tree> extra_cleanups;
+  tree aggregates1 = NULL_TREE;
   struct decomp_cleanup {
     tree decl;
     cp_decomp *&decomp;
@@ -9129,7 +9130,16 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	}
 
       if (decomp)
-	cp_maybe_mangle_decomp (decl, decomp);
+	{
+	  cp_maybe_mangle_decomp (decl, decomp);
+	  if (TREE_STATIC (decl) && !DECL_FUNCTION_SCOPE_P (decl))
+	    {
+	      if (CP_DECL_THREAD_LOCAL_P (decl))
+		aggregates1 = tls_aggregates;
+	      else
+		aggregates1 = static_aggregates;
+	    }
+	}
 
       /* If this is a local variable that will need a mangled name,
 	 register it now.  We must do this before processing the
@@ -9466,6 +9476,32 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
   if (decomp_init)
     add_stmt (decomp_init);
+
+  if (decomp
+      && var_definition_p
+      && TREE_STATIC (decl)
+      && !DECL_FUNCTION_SCOPE_P (decl))
+    {
+      tree &aggregates3 = (CP_DECL_THREAD_LOCAL_P (decl)
+			   ? tls_aggregates : static_aggregates);
+      tree aggregates2 = aggregates3;
+      if (aggregates2 != aggregates1)
+	{
+	  cp_finish_decomp (decl, decomp);
+	  decomp = NULL;
+	  if (aggregates3 != aggregates2)
+	    {
+	      /* If there are dynamic initializers for the structured
+		 binding base or associated extended ref temps and also
+		 dynamic initializers for the structured binding non-base
+		 vars, mark them.  */
+	      for (tree t = aggregates3; t != aggregates2; t = TREE_CHAIN (t))
+		STATIC_INIT_DECOMP_NONBASE_P (t) = 1;
+	      for (tree t = aggregates2; t != aggregates1; t = TREE_CHAIN (t))
+		STATIC_INIT_DECOMP_BASE_P (t) = 1;
+	    }
+	}
+    }
 
   if (was_readonly)
     TREE_READONLY (decl) = 1;

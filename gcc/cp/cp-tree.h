@@ -472,6 +472,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (in BASELINK)
       BIND_EXPR_VEC_DTOR (in BIND_EXPR)
       ATOMIC_CONSTR_EXPR_FROM_CONCEPT_P (in ATOMIC_CONSTR)
+      STATIC_INIT_DECOMP_BASE_P (in the TREE_LIST for {static,tls}_aggregates)
    2: IDENTIFIER_KIND_BIT_2 (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -491,6 +492,8 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       IMPLICIT_CONV_EXPR_BRACED_INIT (in IMPLICIT_CONV_EXPR)
       PACK_EXPANSION_AUTO_P (in *_PACK_EXPANSION)
       contract_semantic (in ASSERTION_, PRECONDITION_, POSTCONDITION_STMT)
+      STATIC_INIT_DECOMP_NONBASE_P (in the TREE_LIST
+				    for {static,tls}_aggregates)
    3: IMPLICIT_RVALUE_P (in NON_LVALUE_EXPR or STATIC_CAST_EXPR)
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -6046,6 +6049,21 @@ extern bool defer_mangling_aliases;
 /* True if noexcept is part of the type (i.e. in C++17).  */
 
 extern bool flag_noexcept_type;
+
+/* True if this TREE_LIST in {static,tls}_aggregates is a for dynamic
+   initialization of namespace scope structured binding base or related
+   extended ref init temps.  Temporaries from the initialization of
+   STATIC_INIT_DECOMP_BASE_P dynamic initializers should be destroyed only
+   after the last STATIC_INIT_DECOMP_NONBASE_P dynamic initializer following
+   it.  */
+#define STATIC_INIT_DECOMP_BASE_P(NODE) \
+  TREE_LANG_FLAG_1 (TREE_LIST_CHECK (NODE))
+
+/* True if this TREE_LIST in {static,tls}_aggregates is a for dynamic
+   initialization of namespace scope structured binding non-base
+   variable using get.  */
+#define STATIC_INIT_DECOMP_NONBASE_P(NODE) \
+  TREE_LANG_FLAG_2 (TREE_LIST_CHECK (NODE))
 
 /* A list of namespace-scope objects which have constructors or
    destructors which reside in the global scope.  The decl is stored
