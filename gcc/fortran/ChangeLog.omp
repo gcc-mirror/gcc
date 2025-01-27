@@ -1,3 +1,22 @@
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.h (gfc_omp_namelist): Cleanup interop internal
+	representation.
+	* dump-parse-tree.cc (show_omp_namelist): Update for changed
+	internal representation.
+	* match.cc (gfc_free_omp_namelist): Likewise.
+	* openmp.cc (gfc_match_omp_prefer_type, gfc_match_omp_init):
+	Likewise; also handle some corner cases better and update for
+	newer 6.0 changes related to 'fr'.
+	(resolve_omp_clauses): Add type-check for interop variables.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle init, use
+	and destroy clauses.
+	(gfc_trans_openmp_interop): New.
+	(gfc_trans_omp_directive): Call it.
+
 2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:

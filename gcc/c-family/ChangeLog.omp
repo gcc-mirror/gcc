@@ -1,3 +1,18 @@
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-common.h (enum c_omp_region_type): Add C_ORT_INTEROP
+	and C_ORT_OMP_INTEROP.
+	(c_omp_interop_t_p): New prototype.
+	* c-omp.cc (c_omp_interop_t_p): Check whether the type is
+	omp_interop_t.
+	(c_omp_directives): Uncomment 'interop'.
+	* c-pragma.cc (omp_pragmas): Add 'interop'.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_INTEROP.
+	(enum pragma_omp_clause): Add init, use, and destroy clauses.
+
 2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:

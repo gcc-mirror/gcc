@@ -1,3 +1,19 @@
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (INCLUDE_STRING): Define.
+	(c_parser_pragma): Handle 'interop' directive.
+	(c_parser_omp_clause_name): Handle init, use, and destroy clauses.
+	(c_parser_omp_all_clauses): Likewise; use C_ORT_OMP_INTEROP, if
+	'use' is permitted, for c_finish_omp_clauses.
+	(c_parser_omp_clause_destroy, c_parser_omp_modifier_prefer_type,
+	c_parser_omp_clause_init, c_parser_omp_clause_use,
+	OMP_INTEROP_CLAUSE_MASK, c_parser_omp_interop): New.
+	* c-typeck.cc (c_finish_omp_clauses): Add missing OPT_Wopenmp to
+	a warning; handle new clauses.
+
 2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:

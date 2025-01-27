@@ -1,3 +1,19 @@
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/gomp/interop-1.f90: Update for parser changes,
+	spec changes and add new tests.
+	* gfortran.dg/gomp/interop-2.f90: Likewise.
+	* gfortran.dg/gomp/interop-3.f90: Likewise.
+	* c-c++-common/gomp/interop-1.c: New test.
+	* c-c++-common/gomp/interop-2.c: New test.
+	* c-c++-common/gomp/interop-3.c: New test.
+	* c-c++-common/gomp/interop-4.c: New test.
+	* g++.dg/gomp/interop-5.C: New test.
+	* gfortran.dg/gomp/interop-4.f90: New test.
+
 2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:

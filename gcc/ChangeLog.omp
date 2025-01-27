@@ -1,3 +1,28 @@
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_expr): Handle OMP_INTEROP by printing
+	"sorry, uninplemented".
+	* omp-api.h (omp_get_fr_id_from_name): Change return type to
+	'char'.
+	* omp-general.cc (omp_get_fr_id_from_name): Likewise; return
+	GOMP_INTEROP_IFR_UNKNOWN not 0 if not found.
+	(omp_get_name_from_fr_id): Return "<unknown>" not NULL
+	if not found (used for dumps).
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_DESTROY,
+	OMP_CLAUSE_USE, and OMP_CLAUSE_INIT.
+	* tree-pretty-print.cc (dump_omp_init_prefer_type): New.
+	(dump_omp_clause): Handle init, use and destroy clauses.
+	(dump_generic_node): Handle interop directive.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Add new
+	init/use/destroy clauses.
+	* tree.def (OACC_LOOP): Fix comment.
+	(OMP_INTEROP): Add.
+	* tree.h (OMP_INTEROP_CLAUSES, OMP_CLAUSE_INIT_TARGET,
+	OMP_CLAUSE_INIT_TARGETSYNC, OMP_CLAUSE_INIT_PREFER_TYPE): New.
+
 2025-01-27  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:

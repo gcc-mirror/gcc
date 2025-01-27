@@ -271,6 +271,9 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_DOACROSS  */
   3, /* OMP_CLAUSE__MAPPER_BINDING_  */
   2, /* OMP_CLAUSE__CACHE_  */
+  1, /* OMP_CLAUSE_DESTROY  */
+  2, /* OMP_CLAUSE_INIT  */
+  1, /* OMP_CLAUSE_USE  */
   2, /* OMP_CLAUSE_GANG  */
   1, /* OMP_CLAUSE_ASYNC  */
   1, /* OMP_CLAUSE_WAIT  */
@@ -372,6 +375,9 @@ const char * const omp_clause_code_name[] =
   "doacross",
   "_mapper_binding_",
   "_cache_",
+  "destroy",
+  "init",
+  "use",
   "gang",
   "async",
   "wait",

@@ -1393,7 +1393,6 @@ typedef struct gfc_omp_namelist
       bool present_modifier;
       struct
 	{
-	  char *attr;
 	  int len;
 	  bool target;
 	  bool targetsync;
@@ -1408,7 +1407,7 @@ typedef struct gfc_omp_namelist
       gfc_expr *allocator;
       struct gfc_symbol *traits_sym;
       struct gfc_omp_namelist *duplicate_of;
-      char *init_interop_fr;
+      char *init_interop;
     } u2;
   struct gfc_omp_namelist *next;
   locus where;

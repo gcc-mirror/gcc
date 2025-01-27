@@ -430,10 +430,11 @@ enum gomp_map_kind
 #define GOMP_REQUIRES_REVERSE_OFFLOAD       0x80
 #define GOMP_REQUIRES_TARGET_USED           0x200
 
-/* Interop foreign-runtime data.  */
+/* Interop foreign-runtime data;
+   OpenMP defines positive values; reserve 0 and negative for GCC.  */
 #define GOMP_INTEROP_IFR_LAST	7
-#define GOMP_INTEROP_IFR_SEPARATOR -1
-#define GOMP_INTEROP_IFR_NONE -2
+#define GOMP_INTEROP_IFR_SEPARATOR ((char)(-__INT8_MAX__-1))
+#define GOMP_INTEROP_IFR_UNKNOWN ((char)(-__INT8_MAX__))
 
 /* HSA specific data structures.  */
 

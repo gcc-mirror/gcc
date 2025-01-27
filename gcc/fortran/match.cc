@@ -5548,7 +5548,7 @@ gfc_free_omp_namelist (gfc_omp_namelist *name, int list)
   bool free_init = (list == OMP_LIST_INIT);
   gfc_omp_namelist *n;
   gfc_expr *last_allocator = NULL;
-  char *last_init_attr = NULL;
+  char *last_init_interop = NULL;
 
   for (; name; name = n)
     {
@@ -5572,11 +5572,10 @@ gfc_free_omp_namelist (gfc_omp_namelist *name, int list)
 	{ }  /* name->u2.traits_sym: shall not call gfc_free_symbol here. */
       else if (free_init)
 	{
-	  if (name->u.init.attr != last_init_attr)
+	  if (name->u2.init_interop != last_init_interop)
 	    {
-	      last_init_attr = name->u.init.attr;
-	      free (name->u.init.attr);
-	      free (name->u2.init_interop_fr);
+	      last_init_interop = name->u2.init_interop;
+	      free (name->u2.init_interop);
 	    }
 	}
       else if (free_mapper && name->u2.udm)
