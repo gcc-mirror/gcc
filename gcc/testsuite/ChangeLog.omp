@@ -1,6 +1,14 @@
 2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2024-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/adjust-args-3.c: New test.
+	* gcc.dg/gomp/adjust-args-2.c: New test.
+
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-c++-common/gomp/dispatch-11.c: New test.

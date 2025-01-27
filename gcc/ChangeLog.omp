@@ -1,6 +1,15 @@
 2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2024-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_call_expr): When handling OpenMP's dispatch,
+	add diagnostic when there is a ptr vs. addr mismatch between
+	need_device_{addr,ptr} and {is,has}_device_{ptr,addr}, respectively.
+
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gimplify.cc (gimplify_call_expr): Add initial support for

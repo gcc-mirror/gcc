@@ -1,6 +1,13 @@
 2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2024-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (OMP_DISPATCH_CLAUSE_MASK): Add has_device_addr clause.
+
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-11-22  Tobias Burnus  <tburnus@baylibre.com>
 
 	* parser.cc (cp_parser_omp_clause_name, cp_parser_omp_all_clauses,
