@@ -1,3 +1,4 @@
+/* { dg-do compile { target { c || c++11 } } } */
 /* { dg-additional-options "-fdump-tree-original" }  */
 
 /* The following definitions are in omp_lib, which cannot be included

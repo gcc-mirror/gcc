@@ -1,5 +1,10 @@
 2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
 
+	* c-c++-common/gomp/interop-4.c: For C++,
+	require '{ target c++11 }'.
+
+2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
 	Backported from master:
 	2025-01-16  Tobias Burnus  <tburnus@baylibre.com>
 
