@@ -4310,19 +4310,6 @@ resolve_operator (gfc_expr *e)
       return false;
 
     case INTRINSIC_POWER:
-
-      if (flag_unsigned)
-	{
-	  if (op1->ts.type == BT_UNSIGNED || op2->ts.type == BT_UNSIGNED)
-	    {
-	      CHECK_INTERFACES
-	      gfc_error ("Exponentiation not valid at %L for %s and %s",
-			 &e->where, gfc_typename (op1), gfc_typename (op2));
-	      return false;
-	    }
-	}
-      gcc_fallthrough ();
-
     case INTRINSIC_PLUS:
     case INTRINSIC_MINUS:
     case INTRINSIC_TIMES:

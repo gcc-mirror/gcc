@@ -2772,9 +2772,10 @@ end program main
 @noindent
 which outputs the number 18446744073709551583.
 
-Arithmetic operations work on unsigned integers, except for exponentiation,
-which is prohibited.  Unary minus is not permitted when @code{-pedantic}
-is in force; this prohibition is part of J3/24-116.txt.
+Arithmetic operations work on unsigned integers, also for
+exponentiation.  As an extension to J3/24-116.txt, unary minus
+and exponentiation of unsigned integers are permitted unless
+@code{-pedantic} is in force.
 
 In intrinsic procedures, unsigned arguments are typically permitted
 for arguments for the data to be processed, analogous to the

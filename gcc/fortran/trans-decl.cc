@@ -189,6 +189,8 @@ tree gfor_fndecl_caf_random_init;
    trans-intrinsic.cc.  */
 
 gfc_powdecl_list gfor_fndecl_math_powi[4][3];
+tree gfor_fndecl_unsigned_pow_list[5][5];
+
 tree gfor_fndecl_math_ishftc4;
 tree gfor_fndecl_math_ishftc8;
 tree gfor_fndecl_math_ishftc16;
@@ -3746,8 +3748,10 @@ gfc_build_intrinsic_function_decls (void)
     int rkind, ikind, jkind;
 #define NIKINDS 3
 #define NRKINDS 4
-    static int ikinds[NIKINDS] = {4, 8, 16};
-    static int rkinds[NRKINDS] = {4, 8, 10, 16};
+#define NUKINDS 5
+    static const int ikinds[NIKINDS] = {4, 8, 16};
+    static const int rkinds[NRKINDS] = {4, 8, 10, 16};
+    static const int ukinds[NUKINDS] = {1, 2, 4, 8, 16};
     char name[PREFIX_LEN + 12]; /* _gfortran_pow_?n_?n */
 
     for (ikind=0; ikind < NIKINDS; ikind++)
@@ -3797,9 +3801,29 @@ gfc_build_intrinsic_function_decls (void)
 		TREE_NOTHROW (gfor_fndecl_math_powi[rkind][ikind].cmplx) = 1;
 	      }
 	  }
+	/* For unsigned types, we have every power for every type.  */
+	for (int base = 0; base < NUKINDS; base++)
+	  {
+	    tree base_type = gfc_get_unsigned_type (ukinds[base]);
+	    for (int expon = 0; expon < NUKINDS; expon++)
+	      {
+		tree expon_type = gfc_get_unsigned_type (ukinds[base]);
+		if (base_type && expon_type)
+		  {
+		    sprintf (name, PREFIX("pow_m%d_m%d"), ukinds[base],
+			 ukinds[expon]);
+		    gfor_fndecl_unsigned_pow_list [base][expon] =
+		      gfc_build_library_function_decl (get_identifier (name),
+			 base_type, 2, base_type, expon_type);
+		    TREE_READONLY (gfor_fndecl_unsigned_pow_list[base][expon]) = 1;
+		    TREE_NOTHROW (gfor_fndecl_unsigned_pow_list[base][expon]) = 1;
+		  }
+	      }
+	  }
       }
 #undef NIKINDS
 #undef NRKINDS
+#undef NUKINDS
   }
 
   gfor_fndecl_math_ishftc4 = gfc_build_library_function_decl (
