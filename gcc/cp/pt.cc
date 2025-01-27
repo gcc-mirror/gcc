@@ -25099,15 +25099,6 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 			     ? tf_warning_or_error
 			     : tf_none);
 
-  /* I don't think this will do the right thing with respect to types.
-     But the only case I've seen it in so far has been array bounds, where
-     signedness is the only information lost, and I think that will be
-     okay.  VIEW_CONVERT_EXPR can appear with class NTTP, thanks to
-     finish_id_expression_1, and are also OK.  */
-  while (CONVERT_EXPR_P (parm) || TREE_CODE (parm) == VIEW_CONVERT_EXPR
-	 || TREE_CODE (parm) == IMPLICIT_CONV_EXPR)
-    parm = TREE_OPERAND (parm, 0);
-
   if (arg == error_mark_node)
     return unify_invalid (explain_p);
   if (arg == unknown_type_node
@@ -25119,11 +25110,16 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
   if (parm == any_targ_node || arg == any_targ_node)
     return unify_success (explain_p);
 
-  /* Stripping IMPLICIT_CONV_EXPR above can produce this mismatch
-     (g++.dg/abi/mangle57.C).  */
-  if (TREE_CODE (parm) == FUNCTION_DECL
-      && TREE_CODE (arg) == ADDR_EXPR)
-    arg = TREE_OPERAND (arg, 0);
+  /* Strip conversions that will interfere with NTTP deduction.
+     I don't think this will do the right thing with respect to types.
+     But the only case I've seen it in so far has been array bounds, where
+     signedness is the only information lost, and I think that will be
+     okay.  VIEW_CONVERT_EXPR can appear with class NTTP, thanks to
+     finish_id_expression_1, and are also OK.  */
+  if (deducible_expression (parm))
+    while (CONVERT_EXPR_P (parm) || TREE_CODE (parm) == VIEW_CONVERT_EXPR
+	   || TREE_CODE (parm) == IMPLICIT_CONV_EXPR)
+      parm = TREE_OPERAND (parm, 0);
 
   /* If PARM uses template parameters, then we can't bail out here,
      even if ARG == PARM, since we won't record unifications for the
