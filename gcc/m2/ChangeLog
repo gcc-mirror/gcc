@@ -1,3 +1,21 @@
+2025-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2GenGCC.mod (FoldConstBecomes): Remove
+	commented out code.
+	Improve early return comment.
+
+2025-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2GenGCC.mod (FoldStatementNote): Add header
+	comment.
+	(CodeStatementNote): Ditto.
+	(FoldRange): Tidy comment.
+	(CodeError): Ditto.
+	(CodeProcedureScope): Ditto.
+	(CheckConvertCoerceParameter): Replace op1 with nth.
+	Replace op2 with callee.
+	Replace op3 with actual.
+
 2025-01-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117737

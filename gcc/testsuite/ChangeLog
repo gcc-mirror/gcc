@@ -1,3 +1,14 @@
+2025-01-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* gfortran.dg/gomp/atomic-26.f90: Correct expected output after
+	fixing typo in error message.
+
+2025-01-26  Pan Li  <pan2.li@intel.com>
+
+	PR target/118103
+	* gcc.target/riscv/rvv/base/pr118103-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr118103-run-1.c: New test.
+
 2025-01-25  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/58857

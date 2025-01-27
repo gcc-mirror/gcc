@@ -1,3 +1,12 @@
+2025-01-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* openmp.cc (gfc_omp_directives): Uncomment unroll and tile lines
+	as the directives are by now implemented.
+
+2025-01-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* openmp.cc (resolve_omp_atomic): Fix typo in error message.
+
 2025-01-25  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/58857

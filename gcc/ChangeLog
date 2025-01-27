@@ -1,3 +1,14 @@
+2025-01-26  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* asan.cc (asan_emit_stack_protection): Always zero the flag
+	unless it is cleared by the __asan_stack_free_N() libcall.
+
+2025-01-26  Pan Li  <pan2.li@intel.com>
+
+	PR target/118103
+	* config/riscv/riscv.cc (riscv_conditional_register_usage): Add
+	the FRM as the global_regs.
+
 2025-01-25  Andi Kleen  <ak@gcc.gnu.org>
 
 	PR preprocessor/118168
