@@ -18727,6 +18727,65 @@ module_state::write_inits (elf_out *to, depset::hash &table, unsigned *crc_ptr)
       for (tree init = list; init; init = TREE_CHAIN (init))
 	if (TREE_LANG_FLAG_0 (init))
 	  {
+	    if (STATIC_INIT_DECOMP_BASE_P (init))
+	      {
+		/* Ensure that in the returned result chain if the
+		   STATIC_INIT_DECOMP_*BASE_P flags are set, there is
+		   always one or more STATIC_INIT_DECOMP_BASE_P TREE_LIST
+		   followed by one or more STATIC_INIT_DECOMP_NONBASE_P.  */
+		int phase = 0;
+		tree last = NULL_TREE;
+		for (tree init2 = TREE_CHAIN (init);
+		     init2; init2 = TREE_CHAIN (init2))
+		  {
+		    if (phase == 0 && STATIC_INIT_DECOMP_BASE_P (init2))
+		      ;
+		    else if (phase == 0
+			     && STATIC_INIT_DECOMP_NONBASE_P (init2))
+		      {
+			phase = TREE_LANG_FLAG_0 (init2) ? 2 : 1;
+			last = init2;
+		      }
+		    else if (IN_RANGE (phase, 1, 2)
+			     && STATIC_INIT_DECOMP_NONBASE_P (init2))
+		      {
+			if (TREE_LANG_FLAG_0 (init2))
+			  phase = 2;
+			last = init2;
+		      }
+		    else
+		      break;
+		  }
+		if (phase == 2)
+		  {
+		    /* In that case, add markers about it so that the
+		       STATIC_INIT_DECOMP_BASE_P and
+		       STATIC_INIT_DECOMP_NONBASE_P flags can be restored.  */
+		    sec.tree_node (build_int_cst (integer_type_node,
+						  2 * passes + 1));
+		    phase = 1;
+		    for (tree init2 = init; init2 != TREE_CHAIN (last);
+			 init2 = TREE_CHAIN (init2))
+		      if (TREE_LANG_FLAG_0 (init2))
+			{
+			  tree decl = TREE_VALUE (init2);
+			  if (phase == 1
+			      && STATIC_INIT_DECOMP_NONBASE_P (init2))
+			    {
+			      sec.tree_node (build_int_cst (integer_type_node,
+							    2 * passes + 2));
+			      phase = 2;
+			    }
+			  dump ("Initializer:%u for %N", count, decl);
+			  sec.tree_node (decl);
+			  ++count;
+			}
+		    sec.tree_node (integer_zero_node);
+		    init = last;
+		    continue;
+		  }
+	      }
+
 	    tree decl = TREE_VALUE (init);
 
 	    dump ("Initializer:%u for %N", count, decl);
@@ -18797,16 +18856,54 @@ module_state::read_inits (unsigned count)
   dump.indent ();
 
   lazy_snum = ~0u;
+  int decomp_phase = 0;
+  tree *aggrp = NULL;
   for (unsigned ix = 0; ix != count; ix++)
     {
+      tree last = NULL_TREE;
+      if (decomp_phase)
+	last = *aggrp;
       /* Merely referencing the decl causes its initializer to be read
 	 and added to the correct list.  */
       tree decl = sec.tree_node ();
+      /* module_state::write_inits can add special INTEGER_CST markers in
+	 between the decls.  1 means STATIC_INIT_DECOMP_BASE_P entries
+	 follow in static_aggregates, 2 means STATIC_INIT_DECOMP_NONBASE_P
+	 entries follow in static_aggregates, 3 means
+	 STATIC_INIT_DECOMP_BASE_P entries follow in tls_aggregates,
+	 4 means STATIC_INIT_DECOMP_NONBASE_P follow in tls_aggregates,
+	 0 means end of STATIC_INIT_DECOMP_{,NON}BASE_P sequence.  */
+      if (tree_fits_shwi_p (decl))
+	{
+	  if (sec.get_overrun ())
+	    break;
+	  decomp_phase = tree_to_shwi (decl);
+	  if (decomp_phase)
+	    {
+	      aggrp = decomp_phase > 2 ? &tls_aggregates : &static_aggregates;
+	      last = *aggrp;
+	    }
+	  decl = sec.tree_node ();
+	}
 
       if (sec.get_overrun ())
 	break;
       if (decl)
-	dump ("Initializer:%u for %N", count, decl);
+	dump ("Initializer:%u for %N", ix, decl);
+      if (decomp_phase)
+	{
+	  tree init = *aggrp;
+	  gcc_assert (TREE_VALUE (init) == decl && TREE_CHAIN (init) == last);
+	  if ((decomp_phase & 1) != 0)
+	    STATIC_INIT_DECOMP_BASE_P (init) = 1;
+	  else
+	    STATIC_INIT_DECOMP_NONBASE_P (init) = 1;
+	}
+    }
+  if (decomp_phase && !sec.get_overrun ())
+    {
+      tree decl = sec.tree_node ();
+      gcc_assert (integer_zerop (decl));
     }
   lazy_snum = 0;
   post_load_processing ();
