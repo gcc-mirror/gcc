@@ -1,6 +1,15 @@
 2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2025-01-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_call_expr): Disable variant function's
+	append_args in 'omp dispatch' when invoking the variant directly
+	and not through the base function.
+
+2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2024-12-18  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gimplify.cc (gimplify_call_expr): Update for OpenMP's
