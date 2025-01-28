@@ -203,6 +203,7 @@ is
 
    procedure Lemma_Not_In_Range_Big2xx32
    with
+     Ghost,
      Post => not In_Int32_Range (Big_2xx32)
        and then not In_Int32_Range (-Big_2xx32);
 
