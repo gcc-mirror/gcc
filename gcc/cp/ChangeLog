@@ -1,3 +1,50 @@
+2025-01-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118632
+	* pt.cc (unify): Only strip conversion if deducible_expression.
+
+2025-01-27  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/114292
+	* pt.cc (for_each_template_parm_r) <INTEGER_TYPE>: Remove case
+	now handled by cp_walk_subtrees.
+	* tree.cc (cp_walk_subtrees): Walk the type of DECL_EXPR
+	declarations, as well as the TYPE_{MIN,MAX}_VALUE of
+	INTEGER_TYPEs.
+
+2025-01-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* module.cc: Test HAVE_MUNMAP and HAVE_MSYNC instead of
+	_POSIX_MAPPED_FILES > 0.
+
+2025-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115769
+	* module.cc (module_state::write_inits): Verify
+	STATIC_INIT_DECOMP_{,NON}BASE_P flags and stream changes in those
+	out.
+	(module_state::read_inits): Stream those flags in.
+
+2025-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115769
+	* cp-tree.h (STATIC_INIT_DECOMP_BASE_P): Define.
+	(STATIC_INIT_DECOMP_NONBASE_P): Define.
+	* decl.cc (cp_finish_decl): Mark nodes in {static,tls}_aggregates
+	emitted for namespace scope structured bindings with
+	STATIC_INIT_DECOMP_{,NON}BASE_P flags when needed.
+	* decl2.cc (decomp_handle_one_var, decomp_finalize_var_list): New
+	functions.
+	(emit_partial_init_fini_fn): Use them.
+	(prune_vars_needing_no_initialization): Assert
+	STATIC_INIT_DECOMP_*BASE_P is not set on DECL_EXTERNAL vars to be
+	pruned out.
+	(partition_vars_for_init_fini): Use same priority for
+	consecutive STATIC_INIT_DECOMP_*BASE_P vars and propagate
+	those flags to new TREE_LISTs when possible.  Formatting fix.
+	(handle_tls_init): Use decomp_handle_one_var and
+	decomp_finalize_var_list functions.
+
 2025-01-25  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/118239

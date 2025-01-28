@@ -1,3 +1,117 @@
+2025-01-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118632
+	* g++.dg/cpp0x/nontype7.C: New test.
+
+2025-01-27  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/118646
+	* gfortran.target/riscv/rvv/pr118646.f90 (New Test).
+
+2025-01-27  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/114292
+	* g++.dg/cpp1y/lambda-ice4.C: New test.
+
+2025-01-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-8.c: Remove
+	VEC_SHL_INSERT check.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-9.c: Ditto.
+
+2025-01-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_64-12-zvbb.c:
+	Distinguish between zvfh and !zvfh.
+
+2025-01-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/117173
+	* gcc.dg/fold-perm-2.c: Run with two-source permutes.
+	* gcc.dg/pr54346.c: Ditto.
+
+2025-01-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110993
+	* gfortran.dg/use_rename_14.f90: New test.
+
+2025-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/modules/dr2867-1_a.H.jj1: Remove.
+	* g++.dg/modules/dr2867-1_b.C.jj1: Remove.
+	* g++.dg/modules/dr2867-2_a.H.jj1: Remove.
+	* g++.dg/modules/dr2867-2_b.C.jj1: Remove.
+	* g++.dg/modules/dr2867-3_a.H.jj1: Remove.
+	* g++.dg/modules/dr2867-3_b.C.jj1: Remove.
+	* g++.dg/modules/dr2867-4_a.H.jj1: Remove.
+	* g++.dg/modules/dr2867-4_b.C.jj1: Remove.
+
+2025-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115769
+	* g++.dg/modules/dr2867-1_a.H: New test.
+	* g++.dg/modules/dr2867-1_b.C: New test.
+	* g++.dg/modules/dr2867-2_a.H: New test.
+	* g++.dg/modules/dr2867-2_b.C: New test.
+	* g++.dg/modules/dr2867-3_a.H: New test.
+	* g++.dg/modules/dr2867-3_b.C: New test.
+	* g++.dg/modules/dr2867-4_a.H: New test.
+	* g++.dg/modules/dr2867-4_b.C: New test.
+	* g++.dg/modules/dr2867-1_a.H.jj1: New file.
+	* g++.dg/modules/dr2867-1_b.C.jj1: New file.
+	* g++.dg/modules/dr2867-2_a.H.jj1: New file.
+	* g++.dg/modules/dr2867-2_b.C.jj1: New file.
+	* g++.dg/modules/dr2867-3_a.H.jj1: New file.
+	* g++.dg/modules/dr2867-3_b.C.jj1: New file.
+	* g++.dg/modules/dr2867-4_a.H.jj1: New file.
+	* g++.dg/modules/dr2867-4_b.C.jj1: New file.
+
+2025-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115769
+	* g++.dg/DRs/dr2867-5.C: New test.
+	* g++.dg/DRs/dr2867-6.C: New test.
+	* g++.dg/DRs/dr2867-7.C: New test.
+	* g++.dg/DRs/dr2867-8.C: New test.
+
+2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118653
+	* gcc.dg/vect/pr118653.c: New testcase.
+
+2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/118662
+	* gcc.dg/torture/pr118662.c: New testcase.
+
+2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118643
+	* gcc.dg/pr118643.c: New testcase.
+
+2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112859
+	PR tree-optimization/115347
+	* gcc.dg/torture/pr112859.c: New testcase.
+	* gcc.dg/torture/pr115347.c: Likewise.
+
+2025-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/118640
+	* gfortran.dg/pr118640.f90: New test.
+
+2025-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118637
+	* gcc.dg/tree-ssa/pr118637.c: New test.
+
+2025-01-27  Soumya AR  <soumyaa@nvidia.com>
+
+	PR target/118490
+	* gcc.dg/pr118490.c: New test.
+	* gcc.dg/pr: New file.
+
 2025-01-26  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* gfortran.dg/gomp/atomic-26.f90: Correct expected output after

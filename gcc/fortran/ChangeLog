@@ -1,3 +1,18 @@
+2025-01-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110993
+	* frontend-passes.cc (check_externals_procedure): Do not compare
+	interfaces of a non-bind(C) procedure against a bind(C) global one.
+	(check_against_globals): Use local name from rename-on-use in the
+	search for interfaces.
+
+2025-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/118640
+	* resolve.cc (generate_component_assignments): Make sure that
+	the rhs temporary does not pick up the optional attribute from
+	the lhs.
+
 2025-01-26  Tobias Burnus  <tburnus@baylibre.com>
 
 	* openmp.cc (gfc_omp_directives): Uncomment unroll and tile lines

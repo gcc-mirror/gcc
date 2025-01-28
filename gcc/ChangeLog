@@ -1,3 +1,56 @@
+2025-01-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/117173
+	* config/riscv/riscv-v.cc (shuffle_generic_patterns): Only
+	support single-source permutes by default.
+	* config/riscv/riscv.opt: New param "riscv-two-source-permutes".
+
+2025-01-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR c++/116524
+	* configure.ac: Check for munmap and msync.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118653
+	* tree-vect-loop.cc (vectorizable_live_operation): Also allow
+	out-of-loop debug uses.
+
+2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/118662
+	* combine.cc (try_combine): When re-materializing a load
+	from an extended reg by a lowpart subreg make sure we're
+	not dealing with vector or complex modes.
+
+2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118643
+	* expr.cc (expand_expr_real_1): Avoid falling back to BIT_FIELD_REF
+	expansion for negative offset.
+
+2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112859
+	PR tree-optimization/115347
+	* tree-loop-distribution.cc
+	(loop_distribution::pg_add_dependence_edges): For a zero
+	distance vector still make sure to not have an inner
+	loop with zero distance.
+
+2025-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118637
+	* match.pd: Canonicalize unsigned division by power of two to
+	right shift.
+
+2025-01-27  Soumya AR  <soumyaa@nvidia.com>
+
+	PR target/118490
+	* match.pd: Added ! to verify that log/exp (CST) can be constant folded.
+
 2025-01-26  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* asan.cc (asan_emit_stack_protection): Always zero the flag

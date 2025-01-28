@@ -1,3 +1,12 @@
+2025-01-27  Andreas Schwab  <schwab@suse.de>
+
+	PR libstdc++/118563
+	* testsuite/util/testsuite_abi.cc (check_version): Add
+	CXXABI_1.3.16.
+	* config/abi/pre/gnu.ver (CXXABI_1.3.14) [__riscv]: Exclude
+	typeinfo for bfloat16_t.
+	(CXXABI_1.3.16) [__riscv]: Add it here.
+
 2025-01-23  Jan Hubicka  <jh@suse.cz>
 
 	PR target/80813
