@@ -1,6 +1,15 @@
 2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2025-01-16  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118321
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Honor hidden
+	arguments for append_arg's need_device_ptr.
+
+2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2025-01-11  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gfortran.h: Add OMP_LIST_INTEROP to the unnamed OMP_LIST_ enum.

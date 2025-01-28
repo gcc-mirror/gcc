@@ -1,3 +1,11 @@
+2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-01-16  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118321
+	* gfortran.dg/gomp/adjust-args-12.f90: New test.
+
 2025-01-28  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from master:
