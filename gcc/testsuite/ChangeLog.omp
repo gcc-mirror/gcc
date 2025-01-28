@@ -1,6 +1,17 @@
 2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2025-01-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/append-args-1.c: Update dg-*.
+	* c-c++-common/gomp/append-args-3.c: Extend testcase.
+	* c-c++-common/gomp/dispatch-11.c: Update dg-*.
+	* c-c++-common/gomp/dispatch-12.c: Update dg-*.
+	* g++.dg/gomp/append-args-1.C: Update dg-*.
+
+2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2025-01-08  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-c++-common/gomp/append-args-4.c: New test.

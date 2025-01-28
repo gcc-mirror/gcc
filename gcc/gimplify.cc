@@ -4353,7 +4353,6 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
       && EXPR_P (CALL_EXPR_FN (*expr_p))
       && DECL_P (TREE_OPERAND (CALL_EXPR_FN (*expr_p), 0)))
     {
-      tree fndecl = TREE_OPERAND (CALL_EXPR_FN (*expr_p), 0);
       if (variant_substituted_p)
 	dispatch_adjust_args_list
 	  = lookup_attribute ("omp declare variant variant args",
@@ -4386,8 +4385,9 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 	  error_at (OMP_CLAUSE_LOCATION (dispatch_interop),
 		    "unexpected %<interop%> clause as invoked procedure %qD is "
 		    "not variant substituted", fndecl);
-	      inform (DECL_SOURCE_LOCATION (fndecl),
-		      "%qD declared here", fndecl);
+	  inform (DECL_SOURCE_LOCATION (fndecl),
+		  "%qD declared here", fndecl);
+	  dispatch_interop = NULL_TREE;
 	}
       else if (dispatch_interop)
 	{
@@ -4407,9 +4407,15 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 		      "%<declare variant%> candidate %qD declared here",
 		      fndecl);
 	    }
-	  /* FIXME: obtain the device_number from 1st 'interop' clause item.  */
 	}
-      if (dispatch_append_args && (nappend != ninterop || !dispatch_device_num))
+      if (dispatch_interop && !dispatch_device_num)
+	{
+	  gcc_checking_assert (ninterop > 1);
+	  error_at (OMP_CLAUSE_LOCATION (dispatch_interop),
+		    "the %<device%> clause must be present if the %<interop%> "
+		    "clause has more than one list item");
+	}
+      if (dispatch_append_args && nappend != ninterop)
 	{
 	  sorry_at (OMP_CLAUSE_LOCATION (dispatch_append_args),
 		    "%<append_args%> clause not yet supported for %qD", fndecl);
@@ -4452,6 +4458,12 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 	  CALL_FROM_THUNK_P (*expr_p) = CALL_FROM_THUNK_P (call);
 	  SET_EXPR_LOCATION (*expr_p, EXPR_LOCATION (call));
 	  CALL_EXPR_VA_ARG_PACK (*expr_p) = CALL_EXPR_VA_ARG_PACK (call);
+	  ret = gimplify_expr (&CALL_EXPR_FN (*expr_p), pre_p, NULL,
+			       is_gimple_call_addr, fb_rvalue);
+	  if (ret == GS_ERROR)
+	    return GS_ERROR;
+	  nargs = call_expr_nargs (*expr_p);
+	  fndecl = get_callee_fndecl (*expr_p);
 
 	  /* Mark as already processed.  */
 	  if (dispatch_interop)
@@ -4462,9 +4474,6 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 	      TREE_CHAIN (t) = gimplify_omp_ctxp->clauses;
 	      gimplify_omp_ctxp->clauses = t;
 	    }
-
-	  /* Re-run.  */
-	  return GS_OK;
 	}
     }
 
@@ -4489,9 +4498,6 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 
 		  if (arg_types != NULL_TREE)
 		    {
-		      for (int param_idx = 0; param_idx < i; param_idx++)
-			arg_types = TREE_CHAIN (arg_types);
-
 		      bool need_device_ptr = false;
 		      bool need_device_addr = false;
 		      for (int need_addr = 0; need_addr <= 1; need_addr++)
@@ -19583,11 +19589,42 @@ gimplify_omp_dispatch (tree *expr_p, gimple_seq *pre_p)
   // If device clause, adjust ICV
   tree device
     = omp_find_clause (OMP_DISPATCH_CLAUSES (expr), OMP_CLAUSE_DEVICE);
+  // If no device clause exists but an interop clause with a single list
+  // item, use it to obtain the device number.
+  if (device)
+    device = OMP_CLAUSE_DEVICE_ID (device);
+  else
+    {
+      tree first_interop_obj
+	= omp_find_clause (OMP_DISPATCH_CLAUSES (expr), OMP_CLAUSE_INTEROP);
+      if (first_interop_obj)
+	for (tree c = TREE_CHAIN (first_interop_obj); c; c = TREE_CHAIN (c))
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_INTEROP)
+	    {
+	      first_interop_obj = NULL_TREE;
+	      break;
+	    }
+      if (first_interop_obj)
+	{
+	  device = create_tmp_var (integer_type_node);
+	  tree c = build_omp_clause (OMP_CLAUSE_LOCATION (first_interop_obj),
+				     OMP_CLAUSE_DEVICE);
+	  OMP_CLAUSE_DEVICE_ID (c) = device;
+	  TREE_CHAIN (c) = TREE_CHAIN (first_interop_obj);
+	  TREE_CHAIN (first_interop_obj) = c;
+	  first_interop_obj = OMP_CLAUSE_DECL (first_interop_obj);
+	  /* device = omp_get_interop_int (obj, omp_ipr_device_num, NULL);  */
+	  tree fn = builtin_decl_explicit (BUILT_IN_OMP_GET_INTEROP_INT);
+	  fn = build_call_expr (fn, 3, first_interop_obj,
+				build_int_cst (integer_type_node, -5),
+				null_pointer_node);
+	  gimplify_assign (device, fold_convert (integer_type_node, fn), &body);
+	}
+    }
   tree saved_device_icv = NULL_TREE;
   if (device
-      && (TREE_CODE (OMP_CLAUSE_DEVICE_ID (device)) != INTEGER_CST
-	  || !wi::eq_p (wi::to_wide (OMP_CLAUSE_DEVICE_ID (device)),
-			-1 /* omp_initial_device */)))
+      && (TREE_CODE (device) != INTEGER_CST
+	  || !wi::eq_p (wi::to_wide (device), -1 /* omp_initial_device */)))
     {
       // Save current default-device-var ICV
       saved_device_icv = create_tmp_var (integer_type_node);
@@ -19598,7 +19635,7 @@ gimplify_omp_dispatch (tree *expr_p, gimple_seq *pre_p)
 
       // Set default device
       fn = builtin_decl_explicit (BUILT_IN_OMP_SET_DEFAULT_DEVICE);
-      call = gimple_build_call (fn, 1, OMP_CLAUSE_DEVICE_ID (device));
+      call = gimple_build_call (fn, 1, device);
       gimplify_seq_add_stmt (&body, call);
     }
 

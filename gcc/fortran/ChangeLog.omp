@@ -1,6 +1,13 @@
 2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2025-01-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	* types.def (BT_FN_PTRMODE_PTR_INT_PTR): Add.
+
+2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2025-01-02  Tobias Burnus  <tburnus@baylibre.com>
 
 	* openmp.cc (OMP_DISPATCH_CLAUSES): Add OMP_CLAUSE_HAS_DEVICE_ADDR.

@@ -1,6 +1,19 @@
 2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2025-01-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	* builtin-types.def (BT_FN_PTRMODE_PTR_INT_PTR): Add.
+	* gimplify.cc (gimplify_call_expr): Add error for multiple
+	list items to the OpenMP interop clause if no device clause;
+	continue instead of restarting after append_args handling.
+	(gimplify_omp_dispatch): Extract device number from the
+	single interop-clause list item.
+	* omp-builtins.def (BUILT_IN_OMP_GET_INTEROP_INT): Add.
+
+2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2025-01-08  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gimplify.cc (gimplify_call_expr): Disable variant function's
