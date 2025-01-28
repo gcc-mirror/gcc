@@ -1,6 +1,16 @@
 2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2025-01-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-2.f: Update
+	xfail'ed 'dg-bogus' for the better 'declared here' location.
+	* gfortran.dg/gomp/dispatch-11.f90: New test.
+	* gfortran.dg/gomp/dispatch-12.f90: New test.
+
+2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2025-01-17  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/118321

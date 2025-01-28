@@ -1,6 +1,21 @@
 2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2025-01-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.h: Add OMP_LIST_INTEROP to the unnamed OMP_LIST_ enum.
+	* openmp.cc (gfc_match_omp_variable_list): Add reverse_order
+	boolean argument, defaulting to false.
+	(enum omp_mask2, OMP_DISPATCH_CLAUSES): Add OMP_CLAUSE_INTEROP.
+	(gfc_match_omp_clauses, resolve_omp_clauses): Handle dispatch's
+	'interop' clause.
+	* trans-decl.cc (gfc_get_extern_function_decl): Use sym->declared_at
+	instead input_location as DECL_SOURCE_LOCATION.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle OMP_LIST_INTEROP.
+
+2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2025-01-09  Tobias Burnus  <tburnus@baylibre.com>
 
 	* types.def (BT_FN_PTRMODE_PTR_INT_PTR): Add.

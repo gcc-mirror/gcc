@@ -2365,7 +2365,7 @@ module_sym:
 
   type = gfc_get_function_type (sym, actual_args, fnspec);
 
-  fndecl = build_decl (input_location,
+  fndecl = build_decl (gfc_get_location (&sym->declared_at),
 		       FUNCTION_DECL, name, type);
 
   /* Initialize DECL_EXTERNAL and TREE_PUBLIC before calling decl_attributes;
