@@ -12142,7 +12142,15 @@ tsubst_contract (tree decl, tree t, tree args, tsubst_flags_t complain,
   CONTRACT_CONDITION (r)
       = tsubst_expr (CONTRACT_CONDITION (t), args, complain, in_decl);
 
+  /* The condition is converted to bool.  */
+  CONTRACT_CONDITION (r) = finish_contract_condition (CONTRACT_CONDITION (r));
+
   /* And the comment.  */
+  /* TODO : this does not do anything at the moment. The CONTRACT_COMMENT is
+     (currently) a string literal, built from the string of the contract.
+     There is nothing to substitute. If we wanted to rebuild the
+     CONTRACT_COMMENT from the substituted contract tree, we would need to
+     modify how a CONTRACT_COMMENT is built.  */
   CONTRACT_COMMENT (r)
       = tsubst_expr (CONTRACT_COMMENT (r), args, complain, in_decl);
 
