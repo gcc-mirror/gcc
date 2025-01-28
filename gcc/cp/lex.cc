@@ -749,6 +749,9 @@ unqualified_name_lookup_error (tree name, location_t loc)
 
   if (IDENTIFIER_ANY_OP_P (name))
     error_at (loc, "%qD not defined", name);
+  else if (!flag_concepts && name == ridpointers[(int)RID_REQUIRES])
+    error_at (loc, "%<requires%> only available with %<-std=c++20%> or "
+	      "%<-fconcepts%>");
   else
     {
       if (!objc_diagnose_private_ivar (name))
