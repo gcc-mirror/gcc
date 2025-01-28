@@ -3635,7 +3635,8 @@ struct GTY(()) lang_decl {
    the DECL_FRIEND_CONTEXT for `f' will be `S'.  */
 #define DECL_FRIEND_CONTEXT(NODE)				\
   ((DECL_DECLARES_FUNCTION_P (NODE) && !DECL_VIRTUAL_P (NODE)	\
-    && !DECL_CONSTRUCTOR_P (NODE))				\
+    && !DECL_CONSTRUCTOR_P (NODE)				\
+    && (cxx_dialect < cxx23 || !deduction_guide_p (NODE)))	\
    ? LANG_DECL_FN_CHECK (NODE)->context				\
    : NULL_TREE)
 
