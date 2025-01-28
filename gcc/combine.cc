@@ -7629,7 +7629,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	 least significant (LEN - C) bits of X, giving an rtx
 	 whose mode is MODE, then multiply it by 2^C.  */
       const HOST_WIDE_INT shift_amt = exact_log2 (INTVAL (XEXP (inner, 1)));
-      if (IN_RANGE (shift_amt, 1, len - 1))
+      if (len > 1 && IN_RANGE (shift_amt, 1, len - 1))
 	{
 	  new_rtx = make_extraction (mode, XEXP (inner, 0),
 				     0, 0, len - shift_amt,
