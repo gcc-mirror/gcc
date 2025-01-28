@@ -5624,7 +5624,11 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	  if (init == void_node)
 	    /* Trivial default-init, don't do anything to the CONSTRUCTOR.  */
 	    return ctx->ctor;
-	  eltinit = cxx_eval_constant_expression (&new_ctx, init, lval,
+	  eltinit = init;
+	  if (CLASS_TYPE_P (elttype) && new_ctx.object)
+	    /* Clarify what object is being initialized (118285).  */
+	    eltinit = build2 (INIT_EXPR, elttype, new_ctx.object, eltinit);
+	  eltinit = cxx_eval_constant_expression (&new_ctx, eltinit, lval,
 						  non_constant_p, overflow_p);
 	  reuse = i == 0;
 	}
@@ -5637,6 +5641,9 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	  eltinit = (perform_implicit_conversion_flags
 		     (elttype, eltinit, complain,
 		      LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING));
+	  if (CLASS_TYPE_P (elttype) && new_ctx.object)
+	    /* Clarify what object is being initialized (118285).  */
+	    eltinit = build2 (INIT_EXPR, elttype, new_ctx.object, eltinit);
 	  eltinit = cxx_eval_constant_expression (&new_ctx, eltinit, lval,
 						  non_constant_p, overflow_p);
 	}
