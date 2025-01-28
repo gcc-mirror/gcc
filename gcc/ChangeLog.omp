@@ -1,3 +1,11 @@
+2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_call_expr): Update for OpenMP's
+	append_args; cleanup of OpenMP's dispatch clause handling.
+
 2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

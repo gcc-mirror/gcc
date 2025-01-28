@@ -11416,7 +11416,7 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 		    }
 
 		  DECL_ATTRIBUTES (variant) = tree_cons (
-		    get_identifier ("omp declare variant variant adjust_args"),
+		    get_identifier ("omp declare variant variant args"),
 		    build_tree_list (need_device_ptr_list,
 				     NULL_TREE /*need_device_addr */),
 		    DECL_ATTRIBUTES (variant));

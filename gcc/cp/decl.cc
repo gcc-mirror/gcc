@@ -8274,6 +8274,39 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
     else
       vec_safe_push (args, build_zero_cst (TREE_TYPE (parm)));
 
+  unsigned nappend_args = 0;
+  tree append_args_list = TREE_CHAIN (TREE_CHAIN (chain));
+  if (append_args_list)
+    {
+      append_args_list = TREE_VALUE (append_args_list);
+      if (append_args_list)
+	append_args_list = TREE_CHAIN (append_args_list);
+      for (tree t = append_args_list; t; t = TREE_CHAIN (t))
+	nappend_args++;
+      if (nappend_args)
+	{
+	  tree type;
+	  if ((type = lookup_qualified_name (current_scope (),
+					     "omp_interop_t",
+					     LOOK_want::NORMAL,
+					     /*complain*/false)) == NULL_TREE
+	      || !c_omp_interop_t_p (TREE_TYPE (type)))
+	    {
+	      variant = tree_strip_any_location_wrapper (variant);
+	      if (TREE_CODE (variant) == OVERLOAD && OVL_SINGLE_P (variant))
+		variant = OVL_FIRST (variant);
+	      error_at (EXPR_LOC_OR_LOC (variant, DECL_SOURCE_LOCATION (variant)),
+			"argument %d of %qE must be of %<omp_interop_t%>",
+			args->length () + 1, variant);
+	      inform (OMP_CLAUSE_LOCATION (append_args_list),
+			"%<append_args%> specified here");
+	      return true;
+	    }
+	  for (unsigned i = 0; i < nappend_args; i++)
+	    vec_safe_push (args, build_zero_cst (TREE_TYPE (type)));
+	}
+    }
+
   bool koenig_p = false;
   if (idk == CP_ID_KIND_UNQUALIFIED || idk == CP_ID_KIND_TEMPLATE_ID)
     {
@@ -8326,8 +8359,57 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 
   if (variant)
     {
+      bool fail;
       const char *varname = IDENTIFIER_POINTER (DECL_NAME (variant));
-      if (!comptypes (TREE_TYPE (decl), TREE_TYPE (variant), 0))
+      if (!nappend_args)
+	fail = !comptypes (TREE_TYPE (decl), TREE_TYPE (variant),
+			   COMPARE_STRICT);
+      else
+	{
+	  unsigned nbase_args = 0;
+	  for (tree t = TYPE_ARG_TYPES (TREE_TYPE (decl));
+	       t && TREE_VALUE (t) != void_type_node; t = TREE_CHAIN (t))
+	    nbase_args++;
+	  tree vargs, varg;
+	  vargs = varg = TYPE_ARG_TYPES (TREE_TYPE (variant));
+	  for (unsigned i = 0; i < nbase_args && varg;
+	       i++, varg = TREE_CHAIN (varg))
+	    vargs = varg;
+	  for (unsigned i = 0; i < nappend_args && varg; i++)
+	    varg = TREE_CHAIN (varg);
+	  tree saved_vargs;
+	  if (nbase_args)
+	    {
+	      saved_vargs = TREE_CHAIN (vargs);
+	      TREE_CHAIN (vargs) = varg;
+	    }
+	  else
+	    {
+	      saved_vargs = vargs;
+	      TYPE_ARG_TYPES (TREE_TYPE (variant)) = varg;
+	    }
+	  /* Skip assert check that TYPE_CANONICAL is the same.  */
+	  fail = !comptypes (TREE_TYPE (decl), TREE_TYPE (variant),
+			     COMPARE_STRUCTURAL);
+	  if (nbase_args)
+	    TREE_CHAIN (vargs) = saved_vargs;
+	  else
+	    TYPE_ARG_TYPES (TREE_TYPE (variant)) = saved_vargs;
+	  varg = saved_vargs;
+	  if (!fail && !processing_template_decl)
+	    for (unsigned i = 0; i < nappend_args;
+		 i++, varg = TREE_CHAIN (varg))
+	      if (!varg || !c_omp_interop_t_p (TREE_VALUE (varg)))
+		{
+		  error_at (DECL_SOURCE_LOCATION (variant),
+			    "argument %d of %qD must be of %<omp_interop_t%>",
+			    nbase_args + i + 1, variant);
+		  inform (OMP_CLAUSE_LOCATION (append_args_list),
+			  "%<append_args%> specified here");
+		  break;
+		}
+	}
+      if (fail)
 	{
 	  error_at (varid_loc, "variant %qD and base %qD have incompatible "
 			       "types", variant, decl);
@@ -8354,7 +8436,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	  tree adjust_args_list = TREE_CHAIN (TREE_CHAIN (chain));
 	  if (adjust_args_list != NULL_TREE)
 	    DECL_ATTRIBUTES (variant) = tree_cons (
-	      get_identifier ("omp declare variant variant adjust_args"),
+	      get_identifier ("omp declare variant variant args"),
 	      TREE_VALUE (adjust_args_list), DECL_ATTRIBUTES (variant));
 	}
     }

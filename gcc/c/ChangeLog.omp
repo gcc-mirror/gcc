@@ -1,3 +1,14 @@
+2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_clause_init_modifiers): New;
+	split of from ...
+	(c_parser_omp_clause_init): ... here; call it.
+	(c_finish_omp_declare_variant): Parse 'append_args' clause.
+	(c_parser_omp_clause_interop): Set tree used/read.
+
 2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

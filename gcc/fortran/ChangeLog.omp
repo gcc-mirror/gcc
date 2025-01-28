@@ -1,3 +1,13 @@
+2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Fix
+	1985a02ef74 omission to change the attribute to
+	"omp declare variant variant args" to also
+	accommodate append_args.
+
 2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

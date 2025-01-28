@@ -1,3 +1,23 @@
+2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2024-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* decl.cc (omp_declare_variant_finalize_one): Handle
+	append_args.
+	* parser.cc (cp_parser_omp_clause_init_modifiers): New;
+	split of from ...
+	(cp_parser_omp_clause_init):  ... here; call it.
+	(cp_parser_omp_all_clauses): Replace interop parsing by
+	a call to ...
+	(cp_parser_omp_clause_interop): ... this new function;
+	set tree used/read.
+	(cp_finish_omp_declare_variant): Parse 'append_args' clause.
+	(cp_parser_omp_declare): Update comment.
+	* pt.cc (tsubst_attribute, tsubst_omp_clauses): Handle template
+	substitution also for declare variant's append_args clause,
+	using for 'init' the same code as for interop's init clause.
+
 2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

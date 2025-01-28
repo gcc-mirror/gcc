@@ -28,26 +28,26 @@ test ()
 
   #pragma omp dispatch interop ( obj1, obj2, obj1 )  /* { dg-error "'obj2' must be of 'omp_interop_t'" }  */
     base1 ();
-  /* { dg-error "number of list items in 'interop' clause exceeds number of 'append_args' items for 'declare variant' candidate 'repl1'" "" { target c } .-2 } */
-  /* { dg-error "number of list items in 'interop' clause exceeds number of 'append_args' items for 'declare variant' candidate 'void repl1\\(\\)'" "" { target c++ } .-3 } */
+  /* { dg-error "number of list items in 'interop' clause \\(3\\) exceeds the number of 'append_args' items \\(0\\) for 'declare variant' candidate 'repl1'" "" { target c } .-2 } */
+  /* { dg-error "number of list items in 'interop' clause \\(3\\) exceeds the number of 'append_args' items \\(0\\) for 'declare variant' candidate 'void repl1\\(\\)'" "" { target c++ } .-3 } */
 
   #pragma omp dispatch interop ( obj3 )  /* { dg-error "'obj3' must be of 'omp_interop_t'" }  */
     base1 ();
-  /* { dg-error "number of list items in 'interop' clause exceeds number of 'append_args' items for 'declare variant' candidate 'repl1'" "" { target c } .-2 } */
-  /* { dg-error "number of list items in 'interop' clause exceeds number of 'append_args' items for 'declare variant' candidate 'void repl1\\(\\)'" "" { target c++ } .-3 } */
+  /* { dg-error "number of list items in 'interop' clause \\(1\\) exceeds the number of 'append_args' items \\(0\\) for 'declare variant' candidate 'repl1'" "" { target c } .-2 } */
+  /* { dg-error "number of list items in 'interop' clause \\(1\\) exceeds the number of 'append_args' items \\(0\\) for 'declare variant' candidate 'void repl1\\(\\)'" "" { target c++ } .-3 } */
 
   #pragma omp dispatch interop ( obj1 )
     base1 ();
-  /* { dg-error "number of list items in 'interop' clause exceeds number of 'append_args' items for 'declare variant' candidate 'repl1'" "" { target c } .-2 } */
-  /* { dg-error "number of list items in 'interop' clause exceeds number of 'append_args' items for 'declare variant' candidate 'void repl1\\(\\)'" "" { target c++ } .-3 } */
+  /* { dg-error "number of list items in 'interop' clause \\(1\\) exceeds the number of 'append_args' items \\(0\\) for 'declare variant' candidate 'repl1'" "" { target c } .-2 } */
+  /* { dg-error "number of list items in 'interop' clause \\(1\\) exceeds the number of 'append_args' items \\(0\\) for 'declare variant' candidate 'void repl1\\(\\)'" "" { target c++ } .-3 } */
 
   #pragma omp dispatch interop ( obj2 )  /* { dg-error "'obj2' must be of 'omp_interop_t'" }  */
     base1 ();
-  /* { dg-error "number of list items in 'interop' clause exceeds number of 'append_args' items for 'declare variant' candidate 'repl1'" "" { target c } .-2 } */
-  /* { dg-error "number of list items in 'interop' clause exceeds number of 'append_args' items for 'declare variant' candidate 'void repl1\\(\\)'" "" { target c++ } .-3 } */
+  /* { dg-error "number of list items in 'interop' clause \\(1\\) exceeds the number of 'append_args' items \\(0\\) for 'declare variant' candidate 'repl1'" "" { target c } .-2 } */
+  /* { dg-error "number of list items in 'interop' clause \\(1\\) exceeds the number of 'append_args' items \\(0\\) for 'declare variant' candidate 'void repl1\\(\\)'" "" { target c++ } .-3 } */
 
   #pragma omp dispatch interop ( x )  /* { dg-error "'x' must be of 'omp_interop_t'" }  */
     base1 ();
-  /* { dg-error "number of list items in 'interop' clause exceeds number of 'append_args' items for 'declare variant' candidate 'repl1'" "" { target c } .-2 } */
-  /* { dg-error "number of list items in 'interop' clause exceeds number of 'append_args' items for 'declare variant' candidate 'void repl1\\(\\)'" "" { target c++ } .-3 } */
+  /* { dg-error "number of list items in 'interop' clause \\(1\\) exceeds the number of 'append_args' items \\(0\\) for 'declare variant' candidate 'repl1'" "" { target c } .-2 } */
+  /* { dg-error "number of list items in 'interop' clause \\(1\\) exceeds the number of 'append_args' items \\(0\\) for 'declare variant' candidate 'void repl1\\(\\)'" "" { target c++ } .-3 } */
 }
