@@ -37,17 +37,6 @@
 
 2025-01-27  Jakub Jelinek  <jakub@redhat.com>
 
-	* g++.dg/modules/dr2867-1_a.H.jj1: Remove.
-	* g++.dg/modules/dr2867-1_b.C.jj1: Remove.
-	* g++.dg/modules/dr2867-2_a.H.jj1: Remove.
-	* g++.dg/modules/dr2867-2_b.C.jj1: Remove.
-	* g++.dg/modules/dr2867-3_a.H.jj1: Remove.
-	* g++.dg/modules/dr2867-3_b.C.jj1: Remove.
-	* g++.dg/modules/dr2867-4_a.H.jj1: Remove.
-	* g++.dg/modules/dr2867-4_b.C.jj1: Remove.
-
-2025-01-27  Jakub Jelinek  <jakub@redhat.com>
-
 	PR c++/115769
 	* g++.dg/modules/dr2867-1_a.H: New test.
 	* g++.dg/modules/dr2867-1_b.C: New test.
