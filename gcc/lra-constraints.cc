@@ -4138,8 +4138,10 @@ static bool invalid_mode_reg_p (enum machine_mode mode, rtx x)
   if (! REG_P (x))
     return false;
   enum reg_class rclass = get_reg_class (REGNO (x));
-  return hard_reg_set_subset_p (reg_class_contents[rclass],
-				ira_prohibited_class_mode_regs[rclass][mode]);
+  return (!hard_reg_set_empty_p (reg_class_contents[rclass])
+	  && hard_reg_set_subset_p
+	     (reg_class_contents[rclass],
+	      ira_prohibited_class_mode_regs[rclass][mode]));
 }
 
 /* Main entry point of the constraint code: search the body of the
