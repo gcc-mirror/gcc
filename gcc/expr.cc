@@ -12148,7 +12148,11 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	   and need be, put it there.  */
 	else if (CONSTANT_P (op0) || (!MEM_P (op0) && must_force_mem))
 	  {
-	    memloc = assign_temp (TREE_TYPE (tem), 1, 1);
+	    poly_int64 size;
+	    if (!poly_int_tree_p (TYPE_SIZE_UNIT (TREE_TYPE (tem)), &size))
+	      size = max_int_size_in_bytes (TREE_TYPE (tem));
+	    memloc = assign_stack_local (TYPE_MODE (TREE_TYPE (tem)), size,
+					 get_object_alignment (tem));
 	    emit_move_insn (memloc, op0);
 	    op0 = memloc;
 	    clear_mem_expr = true;
