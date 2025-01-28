@@ -2193,7 +2193,9 @@ loop_distribution::pg_add_dependence_edges (struct graph *rdg, int dir,
 		      this_dir = -this_dir;
 		    }
 		  /* When then dependence distance of the innermost common
-		     loop of the DRs is zero we have a conflict.  */
+		     loop of the DRs is zero we have a conflict.  This is
+		     due to wonky dependence analysis which sometimes
+		     ends up using a zero distance in place of unknown.  */
 		  auto l1 = gimple_bb (DR_STMT (dr1))->loop_father;
 		  auto l2 = gimple_bb (DR_STMT (dr2))->loop_father;
 		  int idx = index_in_loop_nest (find_common_loop (l1, l2)->num,
