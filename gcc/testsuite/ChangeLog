@@ -1,3 +1,11 @@
+2025-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-01-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107522
+	* g++.dg/cpp2a/concepts-explicit-spec7.C: New test.
+
 2025-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:
