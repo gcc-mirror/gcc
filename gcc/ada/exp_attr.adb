@@ -6304,7 +6304,7 @@ package body Exp_Attr is
                                     /= RTU_Entity (Interfaces_C))
             then
                Rewrite (N, Build_String_Put_Image_Call (N));
-               Analyze (N);
+               Analyze (N, Suppress => All_Checks);
                return;
 
             elsif Is_Array_Type (U_Type) then
