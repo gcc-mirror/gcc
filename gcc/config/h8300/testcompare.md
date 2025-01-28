@@ -4,7 +4,7 @@
 
 ;; (define_insn_and_split "*tst_extzv_1_n"
 ;;   [(set (cc0)
-;; 	(compare (zero_extract:SI (match_operand:QI 0 "general_operand_src" "r,U,mn>")
+;; 	(compare (zero_extract:SI (match_operand:QI 0 "general_operand_src" "r,rU,mn>")
 ;; 				  (const_int 1)
 ;; 				  (match_operand 1 "const_int_operand" "n,n,n"))
 ;; 		 (const_int 0)))

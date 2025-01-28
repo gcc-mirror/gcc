@@ -32,7 +32,7 @@
 ;; ----------------------------------------------------------------------
 
 (define_insn_and_split "*andqi3_2"
-  [(set (match_operand:QI 0 "bit_operand" "=U,rQ,r")
+  [(set (match_operand:QI 0 "bit_operand" "=rU,rQ,r")
 	(and:QI (match_operand:QI 1 "bit_operand" "%0,0,WU")
 		(match_operand:QI 2 "h8300_src_operand" "Y0,rQi,IP1>X")))]
   "TARGET_H8300SX"
@@ -42,7 +42,7 @@
 	      (clobber (reg:CC CC_REG))])])
 
 (define_insn "*andqi3_2_clobber_flags"
-  [(set (match_operand:QI 0 "bit_operand" "=U,rQ,r")
+  [(set (match_operand:QI 0 "bit_operand" "=rU,rQ,r")
 	(and:QI (match_operand:QI 1 "bit_operand" "%0,0,WU")
 		(match_operand:QI 2 "h8300_src_operand" "Y0,rQi,IP1>X")))
    (clobber (reg:CC CC_REG))]
@@ -55,7 +55,7 @@
    (set_attr "length_table" "*,logicb,*")])
 
 (define_insn_and_split "andqi3_1"
-  [(set (match_operand:QI 0 "bit_operand" "=U,r")
+  [(set (match_operand:QI 0 "bit_operand" "=rU,r")
 	(and:QI (match_operand:QI 1 "bit_operand" "%0,0")
 		(match_operand:QI 2 "h8300_src_operand" "Y0,rn")))]
   "register_operand (operands[0], QImode)
@@ -156,7 +156,7 @@
 ;; ----------------------------------------------------------------------
 
 (define_insn_and_split "<code>qi3_1"
-  [(set (match_operand:QI 0 "bit_operand" "=U,rQ")
+  [(set (match_operand:QI 0 "bit_operand" "=rU,rQ")
 	(ors:QI (match_operand:QI 1 "bit_operand" "%0,0")
 		(match_operand:QI 2 "h8300_src_operand" "Y2,rQi")))]
   "TARGET_H8300SX || register_operand (operands[0], QImode)
