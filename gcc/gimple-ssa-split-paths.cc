@@ -138,8 +138,7 @@ poor_ifcvt_candidate_code (enum tree_code code)
   return (code == MIN_EXPR
 	  || code == MAX_EXPR
 	  || code == ABS_EXPR
-	  || code == COND_EXPR
-	  || code == CALL_EXPR);
+	  || code == COND_EXPR);
 }
 
 /* Return TRUE if PRED of BB is an poor ifcvt candidate. */
