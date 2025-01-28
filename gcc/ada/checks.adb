@@ -8163,6 +8163,7 @@ package body Checks is
       end if;
 
       declare
+         Decl   : Node_Id;
          CE     : Node_Id;
          PV     : Node_Id;
          Var_Id : Entity_Id;
@@ -8215,12 +8216,20 @@ package body Checks is
             Mutate_Ekind (Var_Id, E_Variable);
             Set_Etype (Var_Id, Typ);
 
-            Insert_Action (Exp,
+            Decl :=
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Var_Id,
                 Object_Definition   => New_Occurrence_Of (Typ, Loc),
-                Expression          => New_Copy_Tree (Exp)),
-              Suppress => Validity_Check);
+                Expression          => New_Copy_Tree (Exp));
+
+            --  We might be validity-checking object whose type is declared as
+            --  limited but completion is a scalar type. We need to explicitly
+            --  flag its assignment as OK, as otherwise it would be rejected by
+            --  the language rules.
+
+            Set_Assignment_OK (Decl);
+
+            Insert_Action (Exp, Decl, Suppress => Validity_Check);
 
             Set_Validated_Object (Var_Id, New_Copy_Tree (Exp));
 
