@@ -1640,6 +1640,13 @@
   DONE;
 })
 
+(define_expand "exception_receiver"
+  [(const_int 0)]
+  ""
+{
+  sorry ("exception handling not supported");
+})
+
 (define_expand "nonlocal_goto"
   [(match_operand 0 "" "")
    (match_operand 1 "" "")
