@@ -1214,9 +1214,7 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
 	  && targetm.target_option.function_versions (newdecl, olddecl))
 	{
 	  if (record_versions)
-	    maybe_version_functions (newdecl, olddecl,
-				     (!DECL_FUNCTION_VERSIONED (newdecl)
-				      || !DECL_FUNCTION_VERSIONED (olddecl)));
+	    maybe_version_functions (newdecl, olddecl);
 	  return 0;
 	}
     }
@@ -1283,11 +1281,11 @@ maybe_mark_function_versioned (tree decl)
 }
 
 /* NEWDECL and OLDDECL have identical signatures.  If they are
-   different versions adjust them and return true.
-   If RECORD is set to true, record function versions.  */
+   different versions adjust them, record function versions, and return
+   true.  */
 
 bool
-maybe_version_functions (tree newdecl, tree olddecl, bool record)
+maybe_version_functions (tree newdecl, tree olddecl)
 {
   if (!targetm.target_option.function_versions (newdecl, olddecl))
     return false;
@@ -1310,16 +1308,13 @@ maybe_version_functions (tree newdecl, tree olddecl, bool record)
       maybe_mark_function_versioned (newdecl);
     }
 
-  if (record)
-    {
-      /* Add the new version to the function version structure.  */
-      cgraph_node *fn_node = cgraph_node::get_create (olddecl);
-      cgraph_function_version_info *fn_v = fn_node->function_version ();
-      if (!fn_v)
-	fn_v = fn_node->insert_new_function_version ();
+  /* Add the new version to the function version structure.  */
+  cgraph_node *fn_node = cgraph_node::get_create (olddecl);
+  cgraph_function_version_info *fn_v = fn_node->function_version ();
+  if (!fn_v)
+    fn_v = fn_node->insert_new_function_version ();
 
-      cgraph_node::add_function_version (fn_v, newdecl);
-    }
+  cgraph_node::add_function_version (fn_v, newdecl);
 
   return true;
 }
