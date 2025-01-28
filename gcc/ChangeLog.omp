@@ -3,6 +3,12 @@
 	Backported from trunk:
 	2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* config/gcn/gcn.md (exception_receiver): 'define_expand'.
+	* config/nvptx/nvptx.md (exception_receiver): Likewise.
+
+	Backported from trunk:
+	2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* doc/sourcebuild.texi (Effective-Target Keywords): Clarify that
 	effective-target 'exceptions' and 'exceptions_enabled' are
 	orthogonal.

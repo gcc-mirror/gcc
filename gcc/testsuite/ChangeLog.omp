@@ -3,6 +3,14 @@
 	Backported from trunk:
 	2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* lib/gcc-dg.exp (gcc-dg-prune): Turn
+	'sorry, unimplemented: exception handling not supported' into
+	UNSUPPORTED.
+	* gcc.dg/pr104464.c: Remove GCN XFAIL.
+
+	Backported from trunk:
+	2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* gcc.dg/cleanup-12.c: Don't 'dg-skip-if "" { ! nonlocal_goto }'.
 	* gcc.dg/cleanup-13.c: Likewise.
 	* gcc.dg/cleanup-5.c: Likewise.
