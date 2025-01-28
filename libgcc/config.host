@@ -292,7 +292,7 @@ case ${host} in
   # machine-specific sections may refine and add to this
   # configuration.
   tmake_file="$tmake_file t-freebsd t-crtstuff-pic t-libgcc-pic t-eh-dw2-dip t-slibgcc t-slibgcc-gld t-slibgcc-elf-ver"
-  extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
+  extra_parts="crtbegin.o crtend.o crtbeginS.o crtbeginT.o crtendS.o"
   case ${target_thread_file} in
     posix)
       tmake_file="${tmake_file} t-freebsd-thread"
