@@ -1,6 +1,14 @@
 2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2025-01-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118321
+	* g++.dg/gomp/adjust-args-4.C: New test.
+
+2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2025-01-09  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-c++-common/gomp/append-args-1.c: Update dg-*.
