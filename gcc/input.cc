@@ -665,10 +665,11 @@ file_cache_slot::dump (FILE *out, int indent) const
 	   indent, "", (int)m_missing_trailing_newline);
   fprintf (out, "%*sline records (%i):\n",
 	   indent, "", m_line_record.length ());
+  int idx = 0;
   for (auto &line : m_line_record)
-    fprintf (out, "%*sline %zi: byte offsets: %zi-%zi\n",
+    fprintf (out, "%*s[%i]: line %zi: byte offsets: %zi-%zi\n",
 	     indent + 2, "",
-	     line.line_num, line.start_pos, line.end_pos);
+	     idx++, line.line_num, line.start_pos, line.end_pos);
 }
 
 /* Returns TRUE iff the cache would need to be filled with data coming
