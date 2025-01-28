@@ -1,3 +1,11 @@
+2025-01-28  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from master:
+	2025-01-13  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-2.f:
+	Un-XFAIL 'dg-note's.
+
 2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
