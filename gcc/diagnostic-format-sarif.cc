@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #define INCLUDE_LIST
 #define INCLUDE_MAP
+#define INCLUDE_STRING
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
@@ -2821,6 +2822,38 @@ sarif_builder::maybe_make_kinds_array (diagnostic_event::meaning m) const
   return kinds_arr;
 }
 
+/* In "3.11.5 Messages with placeholders":
+   "Within both plain text and formatted message strings, the characters
+   "{" and "}" SHALL be represented by the character sequences
+   "{{" and "}}" respectively."  */
+
+static std::string
+escape_braces (const char *text)
+{
+  std::string result;
+  while (char ch = *text++)
+    switch (ch)
+      {
+      case '{':
+      case '}':
+	result += ch;
+	/* Fall through.  */
+      default:
+	result += ch;
+	break;
+      }
+  return result;
+}
+
+static void
+set_string_property_escaping_braces (json::object &obj,
+				     const char *property_name,
+				     const char *value)
+{
+  std::string escaped (escape_braces (value));
+  obj.set_string (property_name, escaped.c_str ());
+}
+
 /* Make a "message" object (SARIF v2.1.0 section 3.11) for MSG.  */
 
 std::unique_ptr<sarif_message>
@@ -2829,7 +2862,8 @@ sarif_builder::make_message_object (const char *msg) const
   auto message_obj = ::make_unique<sarif_message> ();
 
   /* "text" property (SARIF v2.1.0 section 3.11.8).  */
-  message_obj->set_string ("text", msg);
+  set_string_property_escaping_braces (*message_obj,
+				       "text", msg);
 
   return message_obj;
 }
@@ -2844,7 +2878,8 @@ sarif_builder::make_message_object_for_diagram (const diagnostic_diagram &diagra
   auto message_obj = ::make_unique<sarif_message> ();
 
   /* "text" property (SARIF v2.1.0 section 3.11.8).  */
-  message_obj->set_string ("text", diagram.get_alt_text ());
+  set_string_property_escaping_braces (*message_obj,
+				       "text", diagram.get_alt_text ());
 
   pretty_printer *const pp = m_printer;
   char *saved_prefix = pp_take_prefix (pp);
@@ -2857,7 +2892,8 @@ sarif_builder::make_message_object_for_diagram (const diagnostic_diagram &diagra
   pp_set_prefix (pp, saved_prefix);
 
   /* "markdown" property (SARIF v2.1.0 section 3.11.9).  */
-  message_obj->set_string ("markdown", pp_formatted_text (pp));
+  set_string_property_escaping_braces (*message_obj,
+				       "markdown", pp_formatted_text (pp));
 
   pp_clear_output_area (pp);
 
@@ -2873,7 +2909,8 @@ sarif_builder::make_multiformat_message_string (const char *msg) const
   auto message_obj = ::make_unique<sarif_multiformat_message_string> ();
 
   /* "text" property (SARIF v2.1.0 section 3.12.3).  */
-  message_obj->set_string ("text", msg);
+  set_string_property_escaping_braces (*message_obj,
+				       "text", msg);
 
   return message_obj;
 }
@@ -4341,6 +4378,28 @@ test_message_with_embedded_link (enum sarif_version version)
   }
 }
 
+/* Verify that braces in messages get escaped, as per
+   3.11.5 ("Messages with placeholders").  */
+
+static void
+test_message_with_braces (enum sarif_version version)
+{
+  auto_fix_quotes fix_quotes;
+  {
+    test_sarif_diagnostic_context dc ("test.c", version);
+    rich_location richloc (line_table, UNKNOWN_LOCATION);
+    dc.report (DK_ERROR, richloc, nullptr, 0,
+	       "open brace: %qs close brace: %qs",
+	       "{", "}");
+    std::unique_ptr<sarif_log> log = dc.flush_to_object ();
+
+    auto message_obj = get_message_from_log (log.get ());
+    ASSERT_JSON_STRING_PROPERTY_EQ
+      (message_obj, "text",
+       "open brace: `{{' close brace: `}}'");
+  }
+}
+
 static void
 test_buffering (enum sarif_version version)
 {
@@ -4457,6 +4516,7 @@ diagnostic_format_sarif_cc_tests ()
 
       test_simple_log (version);
       test_message_with_embedded_link (version);
+      test_message_with_braces (version);
       test_buffering (version);
     }
 

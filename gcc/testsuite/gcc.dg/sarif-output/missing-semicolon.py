@@ -43,7 +43,7 @@ def test_location_relationships(sarif):
     
     result = results[0]
     assert result['level'] == 'error'
-    assert result['message']['text'] == "expected ';' before '}' token"
+    assert result['message']['text'] == "expected ';' before '}}' token"
     locations = result['locations']
     assert len(locations) == 1
 

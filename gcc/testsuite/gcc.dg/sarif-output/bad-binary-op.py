@@ -45,7 +45,7 @@ def test_error_location(sarif):
     assert result['level'] == 'error'
 
     assert result['message']['text'] \
-        == "invalid operands to binary + (have 'S' {aka 'struct s'} and 'T' {aka 'struct t'})"
+        == "invalid operands to binary + (have 'S' {{aka 'struct s'}} and 'T' {{aka 'struct t'}})"
     locations = result['locations']
     assert len(locations) == 1
 
@@ -63,8 +63,8 @@ def test_error_location(sarif):
     assert annotations[0]['startLine'] == EXPECTED_LINE
     assert annotations[0]['startColumn'] == 10
     assert annotations[0]['endColumn'] == 22
-    assert annotations[0]['message']['text'] == "S {aka struct s}"
+    assert annotations[0]['message']['text'] == "S {{aka struct s}}"
     assert annotations[1]['startLine'] == EXPECTED_LINE
     assert annotations[1]['startColumn'] == 25
     assert annotations[1]['endColumn'] == 37
-    assert annotations[1]['message']['text'] == "T {aka struct t}"
+    assert annotations[1]['message']['text'] == "T {{aka struct t}}"
