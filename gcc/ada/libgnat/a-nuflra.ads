@@ -39,33 +39,49 @@
 with System.Random_Numbers;
 
 package Ada.Numerics.Float_Random with
-  SPARK_Mode => Off
+  SPARK_Mode => On,
+  Always_Terminates
 is
 
    --  Basic facilities
 
-   type Generator is limited private;
+   type Generator is limited private with Default_Initial_Condition;
 
    subtype Uniformly_Distributed is Float range 0.0 .. 1.0;
 
-   function Random (Gen : Generator) return Uniformly_Distributed;
+   function Random (Gen : Generator) return Uniformly_Distributed with
+     Global => null,
+     Side_Effects;
+   pragma Annotate (GNATprove, Mutable_In_Parameters, Generator);
+   procedure Reset (Gen : Generator) with
+     Global => null;
+   pragma Annotate (GNATprove, Mutable_In_Parameters, Generator);
 
-   procedure Reset (Gen : Generator);
-   procedure Reset (Gen : Generator; Initiator : Integer);
+   procedure Reset (Gen : Generator; Initiator : Integer) with
+     Global => null;
+   pragma Annotate (GNATprove, Mutable_In_Parameters, Generator);
 
    --  Advanced facilities
 
    type State is private;
 
-   procedure Save  (Gen : Generator; To_State   : out State);
-   procedure Reset (Gen : Generator; From_State : State);
+   procedure Save  (Gen : Generator; To_State   : out State) with
+     Global => null;
+   pragma Annotate (GNATprove, Mutable_In_Parameters, Generator);
+   procedure Reset (Gen : Generator; From_State : State) with
+     Global => null;
+   pragma Annotate (GNATprove, Mutable_In_Parameters, Generator);
 
    Max_Image_Width : constant := System.Random_Numbers.Max_Image_Width;
 
-   function Image (Of_State    : State)  return String;
-   function Value (Coded_State : String) return State;
+   function Image (Of_State    : State)  return String with
+     Global => null;
+   function Value (Coded_State : String) return State with
+     Global => null;
 
 private
+
+   pragma SPARK_Mode (Off);
 
    type Generator is new System.Random_Numbers.Generator;
 
