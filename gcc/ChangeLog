@@ -1,3 +1,30 @@
+2025-01-28  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-01-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/110901
+	* config/aarch64/aarch64.h (MCPU_TO_MARCH_SPEC): Don't override if
+	march is set.
+
+2025-01-28  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-01-16  Tamar Christina  <tamar.christina@arm.com>
+		    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113257
+	* config/aarch64/driver-aarch64.cc (get_cpu_from_id, DEFAULT_CPU): New.
+	(host_detect_local_cpu): Use it.
+
+2025-01-28  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	Backported from master:
+	2025-01-26  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* asan.cc (asan_emit_stack_protection): Always zero the flag
+	unless it is cleared by the __asan_stack_free_N() libcall.
+
 2025-01-24  Peter Bergner  <bergner@linux.ibm.com>
 
 	Backported from master:

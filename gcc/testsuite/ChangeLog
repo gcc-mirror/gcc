@@ -1,3 +1,23 @@
+2025-01-28  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-01-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/110901
+	* gcc.target/aarch64/options_set_29.c: New test.
+
+2025-01-28  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-01-16  Tamar Christina  <tamar.christina@arm.com>
+		    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113257
+	* gcc.target/aarch64/cpunative/info_34: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_34.c: New test.
+	* gcc.target/aarch64/cpunative/info_35: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_35.c: New test.
+
 2025-01-24  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
