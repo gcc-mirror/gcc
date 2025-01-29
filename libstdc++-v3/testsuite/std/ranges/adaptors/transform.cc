@@ -191,8 +191,10 @@ test09()
 #if __cpp_lib_ranges >= 202207L
   // P2494R2 Relaxing range adaptors to allow for move only types
   static_assert( requires { transform(x, move_only{}); } );
+  static_assert( requires { x | transform(move_only{}); } ); // PR libstdc++/118413
 #else
   static_assert( ! requires { transform(x, move_only{}); } );
+  static_assert( ! requires { x | transform(move_only{}); } );
 #endif
 }
 
