@@ -159,12 +159,31 @@ Builder::single_generic_type_path (LangItem::Kind lang_item,
 }
 
 TypePath
+Builder::type_path (std::vector<std::unique_ptr<TypePathSegment>> &&segments,
+		    bool opening_scope) const
+{
+  return TypePath (std::move (segments), loc, opening_scope);
+}
+
+TypePath
+Builder::type_path (std::vector<std::string> &&segments,
+		    bool opening_scope) const
+{
+  auto type_segments = std::vector<std::unique_ptr<TypePathSegment>> ();
+
+  for (auto &&segment : segments)
+    type_segments.emplace_back (type_path_segment (segment));
+
+  return TypePath (std::move (type_segments), loc, opening_scope);
+}
+
+TypePath
 Builder::type_path (std::unique_ptr<TypePathSegment> &&segment) const
 {
   auto segments = std::vector<std::unique_ptr<TypePathSegment>> ();
   segments.emplace_back (std::move (segment));
 
-  return TypePath (std::move (segments), loc);
+  return type_path (std::move (segments));
 }
 
 TypePath
