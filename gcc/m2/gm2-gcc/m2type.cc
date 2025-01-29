@@ -1077,7 +1077,6 @@ build_m2_specific_size_type (location_t location, enum tree_code base,
     {
       if (!float_mode_for_size (TYPE_PRECISION (c)).exists ())
         return NULL;
-      layout_type (c);
     }
   else if (base == SET_TYPE)
     return build_m2_size_set_type (location, precision);
@@ -1096,6 +1095,7 @@ build_m2_specific_size_type (location_t location, enum tree_code base,
           TYPE_UNSIGNED (c) = true;
         }
     }
+  layout_type (c);
   return c;
 }
 
@@ -1385,8 +1385,12 @@ static tree
 build_m2_offt_type_node (location_t location)
 {
   m2assert_AssertLocation (location);
+  int offt_size = M2Options_GetFileOffsetBits ();
+
+  if (offt_size == 0)
+    offt_size = TREE_INT_CST_LOW (TYPE_SIZE (ssizetype));
   return build_m2_specific_size_type (location, INTEGER_TYPE,
-				      M2Options_GetFileOffsetBits (), true);
+				      offt_size, true);
 }
 
 /* m2type_InitSystemTypes initialise loc and word derivatives.  */

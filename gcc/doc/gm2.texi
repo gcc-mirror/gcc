@@ -502,7 +502,8 @@ the previous forms could be:
 
 @item -fm2-file-offset-bits=
 force the type @code{SYSTEM.COFF_T} to be built using the specified
-number of bits.  If this option is not used then default is 64 bits.
+number of bits.  If this option is not used then default is
+@code{CSSIZE_T} bits.
 
 @item -fm2-g
 improve the debugging experience for new programmers at the expense
@@ -2895,10 +2896,13 @@ base module).  PIM-2 defined @code{SIZE} in the @code{SYSTEM} module
 GNU Modula-2 allows users to specify the dialect of Modula-2 by using
 the @code{-fiso} and @code{-fpim2} command line switches.
 
-The data types @code{CSIZE_T} and @code{CSSIZE_T} are also exported from
-the @code{SYSTEM} module.  The type @code{CSIZE_T} is unsigned and is
-mapped onto the target C data type @code{size_t} whereas the type
-@code{CSSIZE_T} is mapped onto the signed C data type @code{ssize_t}.
+The data types @code{CSIZE_T}, @code{CSSIZE_T} and @code{COFF_T} are
+also exported from the @code{SYSTEM} module.  The type @code{CSIZE_T}
+is unsigned and is mapped onto the target C data type @code{size_t}
+whereas the type @code{CSSIZE_T} is mapped onto the signed C data type
+@code{ssize_t}.  The default size for the signed type @code{COFF_T} is
+the same as @code{CSSIZE_T} and this can be overridden by the
+@code{-fm2-file-offset-bits=} command line option.
 
 It is anticipated that these should only be used to provide cross
 platform definition modules for C libraries.
