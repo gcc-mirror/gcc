@@ -4757,7 +4757,14 @@ maybe_lower_iteration_bound (class loop *loop)
           FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
 	      if (loop_exit_edge_p (loop, e)
-		  || e == loop_latch_edge (loop))
+		  || e == loop_latch_edge (loop)
+		  /* When exiting an inner loop, verify it is finite.  */
+		  || (!flow_bb_inside_loop_p (bb->loop_father, e->dest)
+		      && !finite_loop_p (bb->loop_father))
+		  /* When we enter an irreducible region and the entry
+		     does not contain a bounding stmt assume it might be
+		     infinite.  */
+		  || (bb->flags & BB_IRREDUCIBLE_LOOP))
 		{
 		  found_exit = true;
 		  break;
