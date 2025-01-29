@@ -6299,6 +6299,15 @@
   ""
   [(set_attr "isa" "*,*,mov,movw")])
 
+(define_insn "*negsi2.libgcc"
+  [(set (reg:SI REG_22)
+        (neg:SI (reg:SI REG_22)))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed
+   && optimize_size"
+  "%~call __negsi2"
+  [(set_attr "type" "xcall")])
+
 (define_insn "*negsi2"
   [(set (match_operand:SI 0 "register_operand"       "=!d,r,&r,&r")
         (neg:SI (match_operand:SI 1 "register_operand" "0,0,r ,r")))
