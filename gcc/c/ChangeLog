@@ -1,3 +1,9 @@
+2025-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/116357
+	* c-decl.cc (grokdeclarator): Use c_build_qualified_type with
+	TYPE_UNQUALIFIED instead of TYPE_MAIN_VARIANT.
+
 2025-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/118639

@@ -1,3 +1,79 @@
+2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118684
+	* expr.cc (expand_expr_real_1): When expanding a reference
+	based on a register and we end up needing a MEM make sure
+	that's aligned as the original reference required.
+
+2025-01-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.cc (file_cache_slot::dump): Show indices within
+	m_line_record when dumping entries.
+
+2025-01-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/118675
+	* diagnostic-format-sarif.cc: Define INCLUDE_STRING.
+	(escape_braces): New.
+	(set_string_property_escaping_braces): New.
+	(sarif_builder::make_message_object): Escape braces in the "text"
+	property.
+	(sarif_builder::make_message_object_for_diagram): Likewise, and
+	for the "markdown" property.
+	(sarif_builder::make_multiformat_message_string): Likewise for the
+	"text" property.
+	(xelftest::test_message_with_braces): New.
+	(selftest::diagnostic_format_sarif_cc_tests): Call it.
+
+2025-01-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/117270
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1): Make nperms
+	account for the number of times that each permutation will be used
+	during transformation.
+
+2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112859
+	* tree-loop-distribution.cc
+	(loop_distribution::pg_add_dependence_edges): Add comment.
+
+2025-01-28  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/118663
+	* lra-constraints.cc (invalid_mode_reg_p): Check empty
+	reg_class_contents.
+
+2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117424
+	* tree-eh.cc (tree_could_trap_p): Verify the base is
+	fully contained within a decl.
+
+2025-01-28  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* tree-pretty-print.cc (dump_omp_clause): Clarify
+	'OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P'.
+
+2025-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/118638
+	* combine.cc (make_extraction): Only optimize (mult x 2^n) if len is
+	larger than 1.
+
+2025-01-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1): Remove
+	extra newline from dump message.
+
+2025-01-28  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/114085
+	* config/h8300/constraints.md (U): No longer accept REGs.
+	* config/h8300/logical.md (andqi3_2): Use "rU" rather than "U".
+	(andqi3_2_clobber_flags, andqi3_1, <code>qi3_1): Likewise.
+	* config/h8300/testcompare.md (tst_extzv_1_n): Likewise.
+
 2025-01-27  Robin Dapp  <rdapp@ventanamicro.com>
 
 	PR target/117173

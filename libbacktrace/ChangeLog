@@ -1,3 +1,9 @@
+2025-01-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	* configure.ac: Always check if the compiler supports __sync
+	operations.
+	* configure: Regenerated.
+
 2024-12-14  Ian Lance Taylor  <iant@golang.org>
 
 	PR libbacktrace/117812

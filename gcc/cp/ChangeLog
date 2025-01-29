@@ -1,3 +1,24 @@
+2025-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118285
+	* constexpr.cc (cxx_eval_vec_init_1): Build INIT_EXPR for
+	initializing a class.
+
+2025-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118673
+	* call.cc (maybe_init_list_as_array): Check for lvalue
+	initializers.
+	* cp-tree.h (enum cp_lvalue_kind_flags): Add clk_mergeable.
+	* tree.cc (lvalue_kind): Return it.
+	(non_mergeable_glvalue_p): New.
+	(test_lvalue_kind): Adjust.
+
+2025-01-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117855
+	* cp-tree.h (DECL_FRIEND_CONTEXT): Exclude deduction guides.
+
 2025-01-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/118632

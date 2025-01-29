@@ -1,3 +1,71 @@
+2025-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118285
+	* g++.dg/cpp0x/initlist-opt7.C: New test.
+
+2025-01-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118673
+	* g++.dg/cpp0x/initlist-opt6.C: New test.
+
+2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118684
+	* gcc.dg/pr118684.c: New testcase.
+
+2025-01-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/118675
+	* gcc.dg/sarif-output/bad-binary-op.py: Update expected output for
+	escaping of braces in message text.
+	* gcc.dg/sarif-output/missing-semicolon.py: Likewise.
+	* gcc.dg/sarif-output/multiple-outputs.py: Likewise.
+
+2025-01-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117855
+	* g++.dg/cpp23/class-deduction-inherited7.C: New test.
+
+2025-01-28  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/118663
+	* gcc.target/powerpc/pr118663.c: New.
+
+2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117424
+	* gcc.dg/tree-ssa/ssa-lim-25.c: New testcase.
+
+2025-01-28  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* c-c++-common/gomp/defaultmap-4.c: Adjust.
+	* c-c++-common/gomp/defaultmap-5.c: Likewise.
+	* c-c++-common/gomp/target-implicit-map-1.c: Likewise.
+	* c-c++-common/gomp/target-implicit-map-2.c: Likewise.
+	* gfortran.dg/gomp/defaultmap-8.f90: Likewise.
+	* gfortran.dg/gomp/defaultmap-9.f90: Likewise.
+	* gfortran.dg/gomp/map-subarray.f90: Likewise.
+	* gfortran.dg/gomp/target-enter-exit-data.f90: Likewise.
+
+2025-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/118638
+	* gcc.c-torture/execute/pr118638.c: New test.
+
+2025-01-28  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* c-c++-common/goacc/implied-copy-1.c: New test.
+	* c-c++-common/goacc/implied-copy-2.c: New test.
+	* g++.dg/goacc/implied-copy.C: New test.
+	* gcc.dg/goacc/implied-copy.c: New test.
+	* gfortran.dg/goacc/implied-copy-1.f90: New test.
+	* gfortran.dg/goacc/implied-copy-2.f90: New test.
+
+2025-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/116357
+	* gcc.dg/pr116357.c: New test.
+
 2025-01-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/118632

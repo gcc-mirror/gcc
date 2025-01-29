@@ -1,3 +1,11 @@
+2025-01-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/118642
+	* config/arm/sync-none.specs (link): Only add the defsym if
+	libgcc will be used.
+	* config/arm/sync-dmb.specs: Likewise.
+	* config/arm/sync-cp15dmb.specs: Likewise.
+
 2025-01-17  Monk Chiang  <monk.chiang@sifive.com>
 
 	* config/riscv/crti.S: Add lpad instructions.
