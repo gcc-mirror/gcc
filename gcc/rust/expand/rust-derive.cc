@@ -19,6 +19,7 @@
 #include "rust-derive.h"
 #include "rust-derive-clone.h"
 #include "rust-derive-copy.h"
+#include "rust-derive-debug.h"
 
 namespace Rust {
 namespace AST {
@@ -38,6 +39,11 @@ DeriveVisitor::derive (Item &item, const Attribute &attr,
     case BuiltinMacro::Copy:
       return DeriveCopy (attr.get_locus ()).go (item);
     case BuiltinMacro::Debug:
+      rust_warning_at (
+	attr.get_locus (), 0,
+	"derive(Debug) is not fully implemented yet and has no effect - only a "
+	"stub implementation will be generated");
+      return DeriveDebug (attr.get_locus ()).go (item);
     case BuiltinMacro::Default:
     case BuiltinMacro::Eq:
     case BuiltinMacro::PartialEq:
