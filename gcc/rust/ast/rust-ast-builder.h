@@ -132,6 +132,10 @@ public:
   std::unique_ptr<Type> single_generic_type_path (LangItem::Kind lang_item,
 						  GenericArgs args) const;
 
+  TypePath type_path (std::vector<std::unique_ptr<TypePathSegment>> &&segment,
+		      bool opening_scope = false) const;
+  TypePath type_path (std::vector<std::string> &&segments,
+		      bool opening_scope = false) const;
   TypePath type_path (std::unique_ptr<TypePathSegment> &&segment) const;
   TypePath type_path (std::string type) const;
   TypePath type_path (LangItem::Kind lang_item) const;
