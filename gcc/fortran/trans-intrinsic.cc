@@ -1681,6 +1681,11 @@ conv_caf_func_index (stmtblock_t *block, gfc_namespace *ns, const char *pat,
   tree func_index_tree;
   stmtblock_t blk;
 
+  /* Need to get namespace where static variables are possible.  */
+  while (ns && ns->proc_name && ns->proc_name->attr.flavor == FL_LABEL)
+    ns = ns->parent;
+  gcc_assert (ns);
+
   name = xasprintf (pat, caf_call_cnt);
   gcc_assert (!gfc_get_sym_tree (name, ns, &index_st, false));
   free (name);
@@ -2006,6 +2011,198 @@ gfc_conv_intrinsic_caf_is_present_remote (gfc_se *se, gfc_expr *e)
 					 add_data_tree, add_data_size));
 }
 
+static tree
+conv_caf_send_to_remote (gfc_code *code)
+{
+  gfc_expr *lhs_expr, *rhs_expr, *lhs_hash, *receiver_fn_expr, *tmp_stat,
+    *tmp_team;
+  gfc_symbol *add_data_sym;
+  gfc_se lhs_se, rhs_se;
+  stmtblock_t block;
+  gfc_namespace *ns;
+  tree caf_decl, token, rhs_size, image_index, tmp, rhs_data;
+  tree lhs_stat, lhs_team, opt_lhs_charlen, opt_rhs_charlen;
+  tree opt_lhs_desc = NULL_TREE, opt_rhs_desc = NULL_TREE;
+  tree receiver_fn_index_tree, add_data_tree, add_data_size;
+
+  gcc_assert (flag_coarray == GFC_FCOARRAY_LIB);
+  gcc_assert (code->resolved_isym->id == GFC_ISYM_CAF_SEND);
+
+  lhs_expr = code->ext.actual->expr;
+  rhs_expr = code->ext.actual->next->expr;
+  lhs_hash = code->ext.actual->next->next->expr;
+  receiver_fn_expr = code->ext.actual->next->next->next->expr;
+  add_data_sym = receiver_fn_expr->symtree->n.sym->formal->sym;
+
+  ns = lhs_expr->expr_type == EXPR_VARIABLE
+	   && !lhs_expr->symtree->n.sym->attr.associate_var
+	 ? lhs_expr->symtree->n.sym->ns
+	 : gfc_current_ns;
+
+  gfc_init_block (&block);
+
+  lhs_stat = null_pointer_node;
+  lhs_team = null_pointer_node;
+
+  /* LHS.  */
+  gfc_init_se (&lhs_se, NULL);
+  caf_decl = gfc_get_tree_for_caf_expr (lhs_expr);
+  if (TREE_CODE (TREE_TYPE (caf_decl)) == REFERENCE_TYPE)
+    caf_decl = build_fold_indirect_ref_loc (input_location, caf_decl);
+  if (lhs_expr->rank == 0)
+    {
+      if (lhs_expr->ts.type == BT_CHARACTER)
+	{
+	  gfc_conv_string_length (lhs_expr->ts.u.cl, lhs_expr, &block);
+	  lhs_se.string_length = lhs_expr->ts.u.cl->backend_decl;
+	  opt_lhs_charlen = gfc_build_addr_expr (
+	    NULL_TREE, gfc_trans_force_lval (&block, lhs_se.string_length));
+	}
+      else
+	opt_lhs_charlen = build_zero_cst (build_pointer_type (size_type_node));
+      opt_lhs_desc = null_pointer_node;
+    }
+  else
+    {
+      gfc_conv_expr_descriptor (&lhs_se, lhs_expr);
+      gfc_add_block_to_block (&block, &lhs_se.pre);
+      opt_lhs_desc = lhs_se.expr;
+      if (lhs_expr->ts.type == BT_CHARACTER)
+	opt_lhs_charlen = gfc_build_addr_expr (
+	  NULL_TREE, gfc_trans_force_lval (&block, lhs_se.string_length));
+      else
+	opt_lhs_charlen = build_zero_cst (build_pointer_type (size_type_node));
+      if (!TYPE_LANG_SPECIFIC (TREE_TYPE (caf_decl))->rank
+	  || GFC_ARRAY_TYPE_P (TREE_TYPE (caf_decl)))
+	opt_lhs_desc = null_pointer_node;
+      else
+	opt_lhs_desc
+	  = gfc_build_addr_expr (NULL_TREE,
+				 gfc_trans_force_lval (&block, opt_lhs_desc));
+    }
+
+  /* Obtain token, offset and image index for the LHS.  */
+  image_index = gfc_caf_get_image_index (&block, lhs_expr, caf_decl);
+  gfc_get_caf_token_offset (&lhs_se, &token, NULL, caf_decl, NULL, lhs_expr);
+
+  /* RHS.  */
+  gfc_init_se (&rhs_se, NULL);
+  if (rhs_expr->rank == 0)
+    {
+      gfc_conv_expr (&rhs_se, rhs_expr);
+      gfc_add_block_to_block (&block, &rhs_se.pre);
+      opt_rhs_desc = null_pointer_node;
+      if (rhs_expr->ts.type == BT_CHARACTER)
+	{
+	  rhs_data
+	    = rhs_expr->expr_type == EXPR_CONSTANT
+		? gfc_build_addr_expr (NULL_TREE,
+				       gfc_trans_force_lval (&block,
+							     rhs_se.expr))
+		: rhs_se.expr;
+	  opt_rhs_charlen = gfc_build_addr_expr (
+	    NULL_TREE, gfc_trans_force_lval (&block, rhs_se.string_length));
+	  rhs_size = build_int_cstu (size_type_node, rhs_expr->ts.kind);
+	}
+      else
+	{
+	  rhs_data
+	    = gfc_build_addr_expr (NULL_TREE,
+				   gfc_trans_force_lval (&block, rhs_se.expr));
+	  opt_rhs_charlen
+	    = build_zero_cst (build_pointer_type (size_type_node));
+	  rhs_size = rhs_se.expr->typed.type->type_common.size_unit;
+	}
+    }
+  else
+    {
+      rhs_se.force_tmp = rhs_expr->shape == NULL
+			 || !gfc_is_simply_contiguous (rhs_expr, false, false);
+      gfc_conv_expr_descriptor (&rhs_se, rhs_expr);
+      gfc_add_block_to_block (&block, &rhs_se.pre);
+      opt_rhs_desc = rhs_se.expr;
+      if (rhs_expr->ts.type == BT_CHARACTER)
+	{
+	  opt_rhs_charlen = gfc_build_addr_expr (
+	    NULL_TREE, gfc_trans_force_lval (&block, rhs_se.string_length));
+	  rhs_size = build_int_cstu (size_type_node, rhs_expr->ts.kind);
+	}
+      else
+	{
+	  opt_rhs_charlen
+	    = build_zero_cst (build_pointer_type (size_type_node));
+	  rhs_size = fold_build2 (
+	    MULT_EXPR, size_type_node,
+	    fold_convert (size_type_node,
+			  rhs_expr->shape
+			    ? conv_shape_to_cst (rhs_expr)
+			    : gfc_conv_descriptor_size (rhs_se.expr,
+							rhs_expr->rank)),
+	    fold_convert (size_type_node,
+			  gfc_conv_descriptor_span_get (rhs_se.expr)));
+	}
+
+      rhs_data = gfc_build_addr_expr (
+	NULL_TREE, gfc_trans_force_lval (&block, gfc_conv_descriptor_data_get (
+						   opt_rhs_desc)));
+      opt_rhs_desc = gfc_build_addr_expr (NULL_TREE, opt_rhs_desc);
+    }
+  gfc_add_block_to_block (&block, &rhs_se.pre);
+
+  tmp_stat = gfc_find_stat_co (lhs_expr);
+
+  if (tmp_stat)
+    {
+      gfc_se stat_se;
+      gfc_init_se (&stat_se, NULL);
+      gfc_conv_expr_reference (&stat_se, tmp_stat);
+      lhs_stat = stat_se.expr;
+      gfc_add_block_to_block (&block, &stat_se.pre);
+      gfc_add_block_to_block (&block, &stat_se.post);
+    }
+
+  tmp_team = gfc_find_team_co (lhs_expr);
+
+  if (tmp_team)
+    {
+      gfc_se team_se;
+      gfc_init_se (&team_se, NULL);
+      gfc_conv_expr_reference (&team_se, tmp_team);
+      lhs_team = team_se.expr;
+      gfc_add_block_to_block (&block, &team_se.pre);
+      gfc_add_block_to_block (&block, &team_se.post);
+    }
+
+  receiver_fn_index_tree
+    = conv_caf_func_index (&block, ns, "__caf_send_to_remote_fn_index_%d",
+			   lhs_hash);
+  add_data_tree
+    = conv_caf_add_call_data (&block, ns, "__caf_send_to_remote_add_data_%d",
+			      add_data_sym, &add_data_size);
+  ++caf_call_cnt;
+
+  tmp
+    = build_call_expr_loc (input_location, gfor_fndecl_caf_send_to_remote, 14,
+			   token, opt_lhs_desc, opt_lhs_charlen, image_index,
+			   rhs_size, rhs_data, opt_rhs_charlen, opt_rhs_desc,
+			   receiver_fn_index_tree, add_data_tree, add_data_size,
+			   lhs_stat, lhs_team, null_pointer_node);
+
+  gfc_add_expr_to_block (&block, tmp);
+  gfc_add_block_to_block (&block, &lhs_se.post);
+  gfc_add_block_to_block (&block, &rhs_se.post);
+
+  /* It guarantees memory consistency within the same segment.  */
+  tmp = gfc_build_string_const (strlen ("memory") + 1, "memory");
+  tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
+		    gfc_build_string_const (1, ""), NULL_TREE, NULL_TREE,
+		    tree_cons (NULL_TREE, tmp, NULL_TREE), NULL_TREE);
+  ASM_VOLATILE_P (tmp) = 1;
+  gfc_add_expr_to_block (&block, tmp);
+
+  return gfc_finish_block (&block);
+}
+
 static bool
 has_ref_after_cafref (gfc_expr *expr)
 {
@@ -2015,10 +2212,11 @@ has_ref_after_cafref (gfc_expr *expr)
   return false;
 }
 
-/* Send data to a remote coarray.  */
+/* Send-get data to a remote coarray.  */
 
 static tree
-conv_caf_send (gfc_code *code) {
+conv_caf_sendget (gfc_code *code)
+{
   gfc_expr *lhs_expr, *rhs_expr, *tmp_stat, *tmp_team;
   gfc_se lhs_se, rhs_se;
   stmtblock_t block;
@@ -2460,7 +2658,6 @@ conv_caf_send (gfc_code *code) {
 
   return gfc_finish_block (&block);
 }
-
 
 static void
 trans_this_image (gfc_se * se, gfc_expr *expr)
@@ -13843,7 +14040,11 @@ gfc_conv_intrinsic_subroutine (gfc_code *code)
       break;
 
     case GFC_ISYM_CAF_SEND:
-      res = conv_caf_send (code);
+      res = conv_caf_send_to_remote (code);
+      break;
+
+    case GFC_ISYM_CAF_SENDGET:
+      res = conv_caf_sendget (code);
       break;
 
     case GFC_ISYM_CO_BROADCAST:

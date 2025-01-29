@@ -243,24 +243,124 @@ convert_coarray_class_to_derived_type (gfc_symbol *base, gfc_namespace *ns)
 }
 
 static void
+move_coarray_ref (gfc_ref **from, gfc_expr *expr)
+{
+  int i;
+  gfc_ref *to = expr->ref;
+  for (; to && to->next; to = to->next)
+    ;
+
+  if (!to)
+    {
+      expr->ref = gfc_get_ref ();
+      to = expr->ref;
+      to->type = REF_ARRAY;
+    }
+  gcc_assert (to->type == REF_ARRAY);
+  to->u.ar.as = gfc_copy_array_spec ((*from)->u.ar.as);
+  to->u.ar.codimen = (*from)->u.ar.codimen;
+  to->u.ar.dimen = (*from)->u.ar.dimen;
+  to->u.ar.type = AR_FULL;
+  to->u.ar.stat = (*from)->u.ar.stat;
+  (*from)->u.ar.stat = nullptr;
+  to->u.ar.team = (*from)->u.ar.team;
+  (*from)->u.ar.team = nullptr;
+  for (i = 0; i < to->u.ar.dimen; ++i)
+    {
+      to->u.ar.start[i] = nullptr;
+      to->u.ar.end[i] = nullptr;
+      to->u.ar.stride[i] = nullptr;
+    }
+  for (i = (*from)->u.ar.dimen; i < (*from)->u.ar.dimen + (*from)->u.ar.codimen;
+       ++i)
+    {
+      to->u.ar.dimen_type[i] = (*from)->u.ar.dimen_type[i];
+      to->u.ar.start[i] = (*from)->u.ar.start[i];
+      (*from)->u.ar.start[i] = nullptr;
+      to->u.ar.end[i] = (*from)->u.ar.end[i];
+      (*from)->u.ar.end[i] = nullptr;
+      to->u.ar.stride[i] = (*from)->u.ar.stride[i];
+      (*from)->u.ar.stride[i] = nullptr;
+    }
+  (*from)->u.ar.codimen = 0;
+  if ((*from)->u.ar.dimen == 0)
+    {
+      gfc_ref *nref = (*from)->next;
+      (*from)->next = nullptr;
+      gfc_free_ref_list (*from);
+      *from = nref;
+    }
+}
+
+static void
+fixup_comp_refs (gfc_expr *expr)
+{
+  gfc_symbol *type = expr->symtree->n.sym->ts.type == BT_DERIVED
+		       ? expr->symtree->n.sym->ts.u.derived
+		       : (expr->symtree->n.sym->ts.type == BT_CLASS
+			    ? CLASS_DATA (expr->symtree->n.sym)->ts.u.derived
+			    : nullptr);
+  if (!type)
+    return;
+  gfc_ref **pref = &(expr->ref);
+  for (gfc_ref *ref = expr->ref; ref && type;)
+    {
+      switch (ref->type)
+	{
+	case REF_COMPONENT:
+	  gfc_find_component (type, ref->u.c.component->name, false, true,
+			      pref);
+	  if (!*pref)
+	    {
+	      /* This happens when there were errors previously.  Just don't
+		 crash.  */
+	      ref = nullptr;
+	      break;
+	    }
+	  (*pref)->next = ref->next;
+	  ref->next = NULL;
+	  gfc_free_ref_list (ref);
+	  ref = (*pref)->next;
+	  type = (*pref)->u.c.component->ts.type == BT_DERIVED
+		   ? (*pref)->u.c.component->ts.u.derived
+		   : ((*pref)->u.c.component->ts.type == BT_CLASS
+			? CLASS_DATA ((*pref)->u.c.component)->ts.u.derived
+			: nullptr);
+	  pref = &(*pref)->next;
+	  break;
+	case REF_ARRAY:
+	  pref = &ref->next;
+	  ref = ref->next;
+	  break;
+	default:
+	  gcc_unreachable ();
+	  break;
+	}
+    }
+}
+
+static void
 split_expr_at_caf_ref (gfc_expr *expr, gfc_namespace *ns,
-		       gfc_expr **post_caf_ref_expr)
+		       gfc_expr **post_caf_ref_expr, bool for_send)
 {
   gfc_ref *caf_ref = NULL;
   gfc_symtree *st;
   gfc_symbol *base;
+  gfc_typespec *caf_ts;
   bool created;
 
   gcc_assert (expr->expr_type == EXPR_VARIABLE);
+  caf_ts = &expr->symtree->n.sym->ts;
   if (!expr->symtree->n.sym->attr.codimension)
     {
       /* The coarray is in some component.  Find it.  */
       caf_ref = expr->ref;
       while (caf_ref)
 	{
-	  if (caf_ref->type == REF_COMPONENT
-	      && caf_ref->u.c.component->attr.codimension)
+	  if (caf_ref->type == REF_ARRAY && caf_ref->u.ar.codimen != 0)
 	    break;
+	  if (caf_ref->type == REF_COMPONENT)
+	    caf_ts = &caf_ref->u.c.component->ts;
 	  caf_ref = caf_ref->next;
 	}
     }
@@ -271,7 +371,7 @@ split_expr_at_caf_ref (gfc_expr *expr, gfc_namespace *ns,
   st->n.sym->attr.flavor = FL_PARAMETER;
   st->n.sym->attr.dummy = 1;
   st->n.sym->attr.intent = INTENT_IN;
-  st->n.sym->ts = caf_ref ? caf_ref->u.c.sym->ts : expr->symtree->n.sym->ts;
+  st->n.sym->ts = *caf_ts;
 
   *post_caf_ref_expr = gfc_get_variable_expr (st);
   (*post_caf_ref_expr)->where = expr->where;
@@ -279,7 +379,12 @@ split_expr_at_caf_ref (gfc_expr *expr, gfc_namespace *ns,
 
   if (!caf_ref)
     {
-      (*post_caf_ref_expr)->ref = gfc_copy_ref (expr->ref);
+      (*post_caf_ref_expr)->ref = gfc_get_ref ();
+      *(*post_caf_ref_expr)->ref = *expr->ref;
+      expr->ref = nullptr;
+      move_coarray_ref (&(*post_caf_ref_expr)->ref, expr);
+      fixup_comp_refs (expr);
+
       if (expr->symtree->n.sym->attr.dimension)
 	{
 	  base->as = gfc_copy_array_spec (expr->symtree->n.sym->as);
@@ -292,34 +397,39 @@ split_expr_at_caf_ref (gfc_expr *expr, gfc_namespace *ns,
     }
   else
     {
-      (*post_caf_ref_expr)->ref = gfc_copy_ref (caf_ref->next);
-      if (caf_ref->u.c.component->attr.dimension)
+      (*post_caf_ref_expr)->ref = gfc_get_ref ();
+      *(*post_caf_ref_expr)->ref = *caf_ref;
+      caf_ref->next = nullptr;
+      move_coarray_ref (&(*post_caf_ref_expr)->ref, expr);
+      fixup_comp_refs (expr);
+
+      if (caf_ref && caf_ref->u.ar.dimen)
 	{
-	  base->as = gfc_copy_array_spec (caf_ref->u.c.component->as);
+	  base->as = gfc_copy_array_spec (caf_ref->u.ar.as);
 	  base->as->corank = 0;
 	  base->attr.dimension = 1;
-	  base->attr.allocatable = caf_ref->u.c.component->attr.allocatable;
-	  base->attr.pointer = caf_ref->u.c.component->attr.pointer;
+	  base->attr.allocatable = caf_ref->u.ar.as->type != AS_EXPLICIT;
 	}
-      base->ts = caf_ref->u.c.component->ts;
+      base->ts = *caf_ts;
     }
   (*post_caf_ref_expr)->ts = expr->ts;
   if (base->ts.type == BT_CHARACTER)
     {
       base->ts.u.cl = gfc_get_charlen ();
-      *base->ts.u.cl = *(caf_ref ? caf_ref->u.c.component->ts.u.cl
-				 : expr->symtree->n.sym->ts.u.cl);
+      *base->ts.u.cl = *(caf_ts->u.cl);
       base->ts.deferred = 1;
       base->ts.u.cl->length = nullptr;
     }
-
-  if (base->ts.type == BT_DERIVED)
+  else if (base->ts.type == BT_DERIVED)
     remove_coarray_from_derived_type (base, ns);
   else if (base->ts.type == BT_CLASS)
     convert_coarray_class_to_derived_type (base, ns);
 
-  gfc_expression_rank (expr);
   gfc_expression_rank (*post_caf_ref_expr);
+  if (for_send)
+    gfc_expression_rank (expr);
+  else
+    expr->rank = (*post_caf_ref_expr)->rank;
 }
 
 static void add_caf_get_from_remote (gfc_expr *e);
@@ -647,18 +757,16 @@ create_caf_add_data_parameter_type (gfc_expr *expr, gfc_namespace *ns,
 static void
 remove_caf_ref (gfc_expr *expr, const bool conv_to_this_image_cafref = false)
 {
-  gfc_ref *ref = expr->ref, **pref = &expr->ref;
+  gfc_ref *ref = expr->ref;
   while (ref && (ref->type != REF_ARRAY || ref->u.ar.codimen == 0))
     {
       ref = ref->next;
-      pref = &ref->next;
     }
   if (ref && ref->type == REF_ARRAY && ref->u.ar.codimen != 0)
     {
       if (ref->u.ar.dimen != 0)
 	{
 	  ref->u.ar.codimen = 0;
-	  pref = &ref->next;
 	  ref = ref->next;
 	}
       else
@@ -675,21 +783,10 @@ remove_caf_ref (gfc_expr *expr, const bool conv_to_this_image_cafref = false)
 	      ref->next = NULL;
 	      gfc_free_ref_list (ref);
 	      ref = expr->ref;
-	      pref = &expr->ref;
 	    }
 	}
     }
-  if (ref && ref->type == REF_COMPONENT)
-    {
-      gfc_find_component (expr->symtree->n.sym->ts.u.derived,
-			  ref->u.c.component->name, false, true, pref);
-      if (*pref && *pref != ref)
-	{
-	  (*pref)->next = ref->next;
-	  ref->next = NULL;
-	  gfc_free_ref_list (ref);
-	}
-    }
+  fixup_comp_refs (expr);
 }
 
 static gfc_expr *
@@ -719,7 +816,7 @@ create_get_callback (gfc_expr *expr)
     mname = expr->symtree->n.sym->module;
   else
     mname = "main";
-  name = xasprintf ("_caf_rget_%s_%s_%d", mname, tname, ++caf_sym_cnt);
+  name = xasprintf ("_caf_accessor_%s_%s_%d", mname, tname, ++caf_sym_cnt);
   gfc_get_symbol (name, ns, &extproc);
   extproc->declared_at = expr->where;
   gfc_set_sym_referenced (extproc);
@@ -744,7 +841,7 @@ create_get_callback (gfc_expr *expr)
   gfc_commit_symbol (proc);
   free (name);
 
-  split_expr_at_caf_ref (expr, sub_ns, &post_caf_ref_expr);
+  split_expr_at_caf_ref (expr, sub_ns, &post_caf_ref_expr, false);
 
   if (ns->proc_name->attr.flavor == FL_MODULE)
     proc->module = ns->proc_name->name;
@@ -809,8 +906,7 @@ create_get_callback (gfc_expr *expr)
     {
       buffer->ts.u.cl = gfc_get_charlen ();
       *buffer->ts.u.cl = *expr->ts.u.cl;
-      buffer->ts.deferred = 1;
-      buffer->ts.u.cl->length = nullptr;
+      buffer->ts.u.cl->length = gfc_copy_expr (expr->ts.u.cl->length);
     }
   gfc_commit_symbol (buffer);
 
@@ -857,7 +953,7 @@ create_get_callback (gfc_expr *expr)
   remove_caf_ref (post_caf_ref_expr);
   get_data->ts.u.derived
     = create_caf_add_data_parameter_type (code->expr2, ns, get_data);
-  if (code->expr2->rank == 0)
+  if (code->expr2->rank == 0 && code->expr2->ts.type != BT_CHARACTER)
     code->expr2 = gfc_build_intrinsic_call (ns, GFC_ISYM_C_LOC, "C_LOC",
 					    gfc_current_locus, 1, code->expr2);
 
@@ -994,7 +1090,7 @@ create_allocated_callback (gfc_expr *expr)
   free (name);
 
   split_expr_at_caf_ref (expr->value.function.actual->expr, sub_ns,
-			 &post_caf_ref_expr);
+			 &post_caf_ref_expr, true);
 
   if (ns->proc_name->attr.flavor == FL_MODULE)
     proc->module = ns->proc_name->name;
@@ -1086,8 +1182,196 @@ rewrite_caf_allocated (gfc_expr **e)
 				"caf_is_present_on_remote", (*e)->where, 3, *e,
 				present_hash_expr, present_fn_expr);
   gfc_add_caf_accessor (present_hash_expr, present_fn_expr);
-  wrapper->ts = (*e)->ts;
   *e = wrapper;
+}
+
+static gfc_expr *
+create_send_callback (gfc_expr *expr, gfc_expr *rhs)
+{
+  gfc_namespace *ns;
+  gfc_symbol *extproc, *proc, *buffer, *base, *send_data, *caller_image;
+  char tname[GFC_MAX_SYMBOL_LEN + 1];
+  char *name;
+  const char *mname;
+  gfc_expr *cb, *post_caf_ref_expr;
+  gfc_code *code;
+  gfc_code *backup_caf_accessor_prepend = caf_accessor_prepend;
+  caf_accessor_prepend = nullptr;
+
+  /* Find the top-level namespace.  */
+  for (ns = gfc_current_ns; ns->parent; ns = ns->parent)
+    ;
+
+  if (expr->expr_type == EXPR_VARIABLE)
+    strcpy (tname, expr->symtree->name);
+  else
+    strcpy (tname, "dummy");
+  if (expr->symtree->n.sym->module)
+    mname = expr->symtree->n.sym->module;
+  else
+    mname = "main";
+  name = xasprintf ("_caf_accessor_%s_%s_%d", mname, tname, ++caf_sym_cnt);
+  gfc_get_symbol (name, ns, &extproc);
+  extproc->declared_at = expr->where;
+  gfc_set_sym_referenced (extproc);
+  ++extproc->refs;
+  gfc_commit_symbol (extproc);
+
+  /* Set up namespace.  */
+  gfc_namespace *sub_ns = gfc_get_namespace (ns, 0);
+  sub_ns->sibling = ns->contained;
+  ns->contained = sub_ns;
+  sub_ns->resolved = 1;
+  /* Set up procedure symbol.  */
+  gfc_find_symbol (name, sub_ns, 1, &proc);
+  sub_ns->proc_name = proc;
+  proc->attr.if_source = IFSRC_DECL;
+  proc->attr.access = ACCESS_PUBLIC;
+  gfc_add_subroutine (&proc->attr, name, NULL);
+  proc->attr.host_assoc = 1;
+  proc->attr.always_explicit = 1;
+  ++proc->refs;
+  proc->declared_at = expr->where;
+  gfc_commit_symbol (proc);
+  free (name);
+
+  split_expr_at_caf_ref (expr, sub_ns, &post_caf_ref_expr, true);
+
+  if (ns->proc_name->attr.flavor == FL_MODULE)
+    proc->module = ns->proc_name->name;
+  gfc_set_sym_referenced (proc);
+  /* Set up formal arguments.  */
+  gfc_formal_arglist **argptr = &proc->formal;
+#define ADD_ARG(name, nsym, stype, skind, sintent)                             \
+  gfc_get_symbol (name, sub_ns, &nsym);                                        \
+  nsym->ts.type = stype;                                                       \
+  nsym->ts.kind = skind;                                                       \
+  nsym->attr.flavor = FL_PARAMETER;                                            \
+  nsym->attr.dummy = 1;                                                        \
+  nsym->attr.intent = sintent;                                                 \
+  nsym->declared_at = expr->where;                                             \
+  gfc_set_sym_referenced (nsym);                                               \
+  *argptr = gfc_get_formal_arglist ();                                         \
+  (*argptr)->sym = nsym;                                                       \
+  argptr = &(*argptr)->next
+
+  name = xasprintf ("add_send_data_%s_%s_%d", mname, tname, caf_sym_cnt);
+  ADD_ARG (name, send_data, BT_DERIVED, 0, INTENT_IN);
+  gfc_commit_symbol (send_data);
+  free (name);
+
+  ADD_ARG ("caller_image", caller_image, BT_INTEGER, gfc_default_integer_kind,
+	   INTENT_IN);
+  gfc_commit_symbol (caller_image);
+
+  // ADD_ARG (expr->symtree->name, base, BT_VOID, INTENT_IN);
+  base = post_caf_ref_expr->symtree->n.sym;
+  base->attr.intent = INTENT_INOUT;
+  gfc_set_sym_referenced (base);
+  gfc_commit_symbol (base);
+  *argptr = gfc_get_formal_arglist ();
+  (*argptr)->sym = base;
+  argptr = &(*argptr)->next;
+  gfc_commit_symbol (base);
+
+  ADD_ARG ("buffer", buffer, rhs->ts.type, rhs->ts.kind, INTENT_IN);
+  buffer->ts = rhs->ts;
+  if (rhs->rank)
+    {
+      buffer->as = gfc_get_array_spec ();
+      buffer->as->rank = rhs->rank;
+      buffer->as->type = AS_DEFERRED;
+      buffer->attr.allocatable = 1;
+      buffer->attr.dimension = 1;
+    }
+  if (buffer->ts.type == BT_CHARACTER)
+    {
+      buffer->ts.u.cl = gfc_get_charlen ();
+      *buffer->ts.u.cl = *rhs->ts.u.cl;
+      buffer->ts.deferred = 1;
+      buffer->ts.u.cl->length = gfc_copy_expr (rhs->ts.u.cl->length);
+    }
+  gfc_commit_symbol (buffer);
+#undef ADD_ARG
+
+  /* Set up code.  */
+  /* Code: base = buffer;  */
+  code = sub_ns->code = gfc_get_code (EXEC_ASSIGN);
+  code->loc = expr->where;
+  code->expr1 = post_caf_ref_expr;
+  if (code->expr1->ts.type == BT_CHARACTER
+      && code->expr1->ts.kind != buffer->ts.kind)
+    {
+      bool converted;
+      code->expr2 = gfc_lval_expr_from_sym (buffer);
+      converted = gfc_convert_chartype (code->expr2, &code->expr1->ts);
+      gcc_assert (converted);
+    }
+  else if (code->expr1->ts.type != buffer->ts.type)
+    {
+      bool converted;
+      code->expr2 = gfc_lval_expr_from_sym (buffer);
+      converted = gfc_convert_type_warn (code->expr2, &code->expr1->ts, 0, 0,
+					 buffer->attr.dimension);
+      gcc_assert (converted);
+    }
+  else
+    code->expr2 = gfc_lval_expr_from_sym (buffer);
+  remove_caf_ref (post_caf_ref_expr);
+  send_data->ts.u.derived
+    = create_caf_add_data_parameter_type (code->expr1, ns, send_data);
+
+  cb = gfc_lval_expr_from_sym (extproc);
+  cb->ts.interface = extproc;
+
+  if (caf_accessor_prepend)
+    {
+      gfc_code *c = caf_accessor_prepend;
+      /* Find last in chain.  */
+      for (; c->next; c = c->next)
+	;
+      c->next = sub_ns->code;
+      sub_ns->code = caf_accessor_prepend;
+    }
+  caf_accessor_prepend = backup_caf_accessor_prepend;
+  return cb;
+}
+
+static void
+rewrite_caf_send (gfc_code *c)
+{
+  gfc_expr *send_to_remote_expr, *send_to_remote_hash_expr, *lhs, *rhs;
+  gfc_actual_arglist *arg = c->ext.actual;
+
+  lhs = arg->expr;
+  arg = arg->next;
+  rhs = arg->expr;
+  /* Detect an already rewritten caf_send.  */
+  if (arg->next && arg->next->expr->expr_type == EXPR_CONSTANT
+      && arg->next->next && arg->next->next->expr->expr_type == EXPR_VARIABLE)
+    return;
+
+  if (gfc_is_coindexed (rhs))
+    {
+      c->resolved_isym->id = GFC_ISYM_CAF_SENDGET;
+      return;
+    }
+
+  send_to_remote_expr = create_send_callback (lhs, rhs);
+  send_to_remote_hash_expr = gfc_get_expr ();
+  send_to_remote_hash_expr->expr_type = EXPR_CONSTANT;
+  send_to_remote_hash_expr->ts.type = BT_INTEGER;
+  send_to_remote_hash_expr->ts.kind = gfc_default_integer_kind;
+  send_to_remote_hash_expr->where = lhs->where;
+  mpz_init_set_ui (send_to_remote_hash_expr->value.integer,
+		   gfc_hash_value (send_to_remote_expr->symtree->n.sym));
+  arg->next = gfc_get_actual_arglist ();
+  arg = arg->next;
+  arg->expr = send_to_remote_hash_expr;
+  arg->next = gfc_get_actual_arglist ();
+  arg = arg->next;
+  arg->expr = send_to_remote_expr;
+  gfc_add_caf_accessor (send_to_remote_hash_expr, send_to_remote_expr);
 }
 
 static int
@@ -1158,20 +1442,34 @@ coindexed_code_callback (gfc_code **c, int *walk_subtrees,
       *walk_subtrees = 0;
       break;
     case EXEC_CALL:
-      *walk_subtrees
-	= !((*c)->resolved_isym
-	    && ((*c)->resolved_isym->id == GFC_ISYM_CAF_SEND
-		|| (*c)->resolved_isym->id == GFC_ISYM_ATOMIC_ADD
-		|| (*c)->resolved_isym->id == GFC_ISYM_ATOMIC_AND
-		|| (*c)->resolved_isym->id == GFC_ISYM_ATOMIC_CAS
-		|| (*c)->resolved_isym->id == GFC_ISYM_ATOMIC_DEF
-		|| (*c)->resolved_isym->id == GFC_ISYM_ATOMIC_FETCH_ADD
-		|| (*c)->resolved_isym->id == GFC_ISYM_ATOMIC_FETCH_AND
-		|| (*c)->resolved_isym->id == GFC_ISYM_ATOMIC_FETCH_OR
-		|| (*c)->resolved_isym->id == GFC_ISYM_ATOMIC_FETCH_XOR
-		|| (*c)->resolved_isym->id == GFC_ISYM_ATOMIC_OR
-		|| (*c)->resolved_isym->id == GFC_ISYM_ATOMIC_REF
-		|| (*c)->resolved_isym->id == GFC_ISYM_ATOMIC_XOR));
+      *walk_subtrees = 1;
+      if ((*c)->resolved_isym)
+	switch ((*c)->resolved_isym->id)
+	  {
+	  case GFC_ISYM_CAF_SEND:
+	    rewrite_caf_send (*c);
+	    *walk_subtrees = 0;
+	    break;
+	  case GFC_ISYM_CAF_SENDGET:
+	    // rewrite_caf_sendget (*c);
+	    *walk_subtrees = 0;
+	    break;
+	  case GFC_ISYM_ATOMIC_ADD:
+	  case GFC_ISYM_ATOMIC_AND:
+	  case GFC_ISYM_ATOMIC_CAS:
+	  case GFC_ISYM_ATOMIC_DEF:
+	  case GFC_ISYM_ATOMIC_FETCH_ADD:
+	  case GFC_ISYM_ATOMIC_FETCH_AND:
+	  case GFC_ISYM_ATOMIC_FETCH_OR:
+	  case GFC_ISYM_ATOMIC_FETCH_XOR:
+	  case GFC_ISYM_ATOMIC_OR:
+	  case GFC_ISYM_ATOMIC_REF:
+	  case GFC_ISYM_ATOMIC_XOR:
+	    *walk_subtrees = 0;
+	    break;
+	  default:
+	    break;
+	  }
       break;
     default:
       *walk_subtrees = 1;

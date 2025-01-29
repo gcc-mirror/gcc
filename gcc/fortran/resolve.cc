@@ -13353,8 +13353,7 @@ start:
 	    break;
 
 	  if (flag_coarray == GFC_FCOARRAY_LIB
-	      && (gfc_is_coindexed (code->expr1)
-		  || caf_possible_reallocate (code->expr1)))
+	      && gfc_is_coindexed (code->expr1))
 	    {
 	      /* Insert a GFC_ISYM_CAF_SEND intrinsic, when the LHS is a
 		 coindexed variable.  */

@@ -39,16 +39,21 @@ program send_convert_char_array
 
   co_str_k1_arr(:)[this_image()] = str_k1_arr
   if (any(co_str_k1_arr /= ['abc  ', 'EFG  ', 'klm  ', 'NOP  '])) STOP 5
- 
-  co_str_k4_arr(:)[this_image()] = [4_'abc', 4_'EFG', 4_'klm', 4_'NOP']! str_k4_arr
-  if (any(co_str_k4_arr /= [4_'abc  ', 4_'EFG  ', 4_'klm  ', 4_'NOP  '])) STOP 6
 
+  co_str_k4_arr(:)[this_image()] = str_k4_arr
+  if (any(co_str_k4_arr /= [4_'abc  ', 4_'EFG  ', 4_'klm  ', 4_'NOP  '])) STOP 6
+ 
   co_str_k4_arr(:)[this_image()] = str_k1_arr
   if (any(co_str_k4_arr /= [ 4_'abc  ', 4_'EFG  ', 4_'klm  ', 4_'NOP  '])) STOP 7
 
   co_str_k1_arr(:)[this_image()] = str_k4_arr
   if (any(co_str_k1_arr /= ['abc  ', 'EFG  ', 'klm  ', 'NOP  '])) STOP 8
 
+  co_str_k1_arr(:)[this_image()] = ['abc', 'EFG', 'klm', 'NOP']
+  if (any(co_str_k1_arr /= ['abc  ', 'EFG  ', 'klm  ', 'NOP  '])) STOP 9
+
+  co_str_k4_arr(:)[this_image()] = [4_'abc', 4_'EFG', 4_'klm', 4_'NOP']
+  if (any(co_str_k4_arr /= [4_'abc  ', 4_'EFG  ', 4_'klm  ', 4_'NOP  '])) STOP 10
+
 end program send_convert_char_array
 
-! vim:ts=2:sts=2:sw=2:

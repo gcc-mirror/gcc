@@ -57,19 +57,22 @@ typedef struct caf_single_token *caf_single_token_t;
 /* Global variables.  */
 caf_static_t *caf_static_list = NULL;
 
-typedef void (*accessor_t) (void *, const int *, void **, int32_t *, void *,
-			    caf_token_t, const size_t, size_t *,
-			    const size_t *);
+typedef void (*getter_t) (void *, const int *, void **, int32_t *, void *,
+			  caf_token_t, const size_t, size_t *, const size_t *);
 typedef void (*is_present_t) (void *, const int *, int32_t *, void *,
 			      caf_single_token_t, const size_t);
+typedef void (*receiver_t) (void *, const int *, void *, const void *,
+			    caf_token_t, const size_t, const size_t *,
+			    const size_t *);
 struct accessor_hash_t
 {
   int hash;
   int pad;
   union
   {
-    accessor_t accessor;
+    getter_t getter;
     is_present_t is_present;
+    receiver_t receiver;
   } u;
 };
 
@@ -2862,7 +2865,7 @@ _gfortran_caf_sendget_by_ref (caf_token_t dst_token, int dst_image_index,
 }
 
 void
-_gfortran_caf_register_accessor (const int hash, accessor_t accessor)
+_gfortran_caf_register_accessor (const int hash, getter_t accessor)
 {
   if (accessor_hash_table_state == AHT_UNINITIALIZED)
     {
@@ -2881,7 +2884,7 @@ _gfortran_caf_register_accessor (const int hash, accessor_t accessor)
       accessor_hash_table_state = AHT_OPEN;
     }
   accessor_hash_table[aht_size].hash = hash;
-  accessor_hash_table[aht_size].u.accessor = accessor;
+  accessor_hash_table[aht_size].u.getter = accessor;
   ++aht_size;
 }
 
@@ -2929,8 +2932,8 @@ _gfortran_caf_get_from_remote (
   const size_t *opt_src_charlen, const int image_index,
   const size_t dst_size __attribute__ ((unused)), void **dst_data,
   size_t *opt_dst_charlen, gfc_descriptor_t *opt_dst_desc,
-  const bool may_realloc_dst, const int getter_index, void *get_data,
-  const size_t get_data_size __attribute__ ((unused)), int *stat,
+  const bool may_realloc_dst, const int getter_index, void *add_data,
+  const size_t add_data_size __attribute__ ((unused)), int *stat,
   caf_team_t *team __attribute__ ((unused)),
   int *team_number __attribute__ ((unused)))
 {
@@ -2940,7 +2943,7 @@ _gfortran_caf_get_from_remote (
   void *dst_ptr = opt_dst_desc ? (void *)opt_dst_desc : dst_data;
   void *old_dst_data_ptr = NULL;
   struct caf_single_token cb_token;
-  cb_token.memptr = get_data;
+  cb_token.memptr = add_data;
   cb_token.desc = NULL;
   cb_token.owning_memory = false;
 
@@ -2953,10 +2956,10 @@ _gfortran_caf_get_from_remote (
       opt_dst_desc->base_addr = NULL;
     }
 
-  accessor_hash_table[getter_index].u.accessor (get_data, &image_index, dst_ptr,
-						&free_buffer, src_ptr,
-						&cb_token, 0, opt_dst_charlen,
-						opt_src_charlen);
+  accessor_hash_table[getter_index].u.getter (add_data, &image_index, dst_ptr,
+					      &free_buffer, src_ptr, &cb_token,
+					      0, opt_dst_charlen,
+					      opt_src_charlen);
   if (opt_dst_desc && old_dst_data_ptr && !may_realloc_dst
       && opt_dst_desc->base_addr != old_dst_data_ptr)
     {
@@ -2990,6 +2993,34 @@ _gfortran_caf_is_present_on_remote (caf_token_t token, const int image_index,
 						   &cb_token, 0);
 
   return result;
+}
+
+void
+_gfortran_caf_send_to_remote (
+  caf_token_t token, gfc_descriptor_t *opt_dst_desc,
+  const size_t *opt_dst_charlen, const int image_index,
+  const size_t src_size __attribute__ ((unused)), const void *src_data,
+  const size_t *opt_src_charlen, const gfc_descriptor_t *opt_src_desc,
+  const int accessor_index, void *add_data,
+  const size_t add_data_size __attribute__ ((unused)), int *stat,
+  caf_team_t *team __attribute__ ((unused)),
+  int *team_number __attribute__ ((unused)))
+{
+  caf_single_token_t single_token = TOKEN (token);
+  void *dst_ptr = opt_dst_desc ? (void *) opt_dst_desc : single_token->memptr;
+  const void *src_ptr = opt_src_desc ? (void *) opt_src_desc : src_data;
+  struct caf_single_token cb_token;
+  cb_token.memptr = add_data;
+  cb_token.desc = NULL;
+  cb_token.owning_memory = false;
+
+  if (stat)
+    *stat = 0;
+
+  accessor_hash_table[accessor_index].u.receiver (add_data, &image_index,
+						  dst_ptr, src_ptr, &cb_token,
+						  0, opt_dst_charlen,
+						  opt_src_charlen);
 }
 
 void
