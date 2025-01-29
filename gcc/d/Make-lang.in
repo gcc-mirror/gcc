@@ -61,8 +61,8 @@ ALL_DFLAGS = $(DFLAGS-$@) $(GDCFLAGS) -fversion=IN_GCC $(CHECKING_DFLAGS) \
 	$(PICFLAG) $(ALIASING_FLAGS) $(COVERAGE_FLAGS) $(WARN_DFLAGS)
 
 DCOMPILE.base = $(GDC) $(NO_PIE_CFLAGS) -c $(ALL_DFLAGS) -o $@
-DCOMPILE = $(DCOMPILE.base) -MT $@ -MMD -MP -MF $(@D)/$(DEPDIR)/$(*F).TPo
-DPOSTCOMPILE = @mv $(@D)/$(DEPDIR)/$(*F).TPo $(@D)/$(DEPDIR)/$(*F).Po
+DCOMPILE = $(DCOMPILE.base) -MT $@ -MMD -MP -MF $(@D)/$(DEPDIR)/$(basename $(@F)).TPo
+DPOSTCOMPILE = @mv $(@D)/$(DEPDIR)/$(basename $(@F)).TPo $(@D)/$(DEPDIR)/$(basename $(@F)).Po
 DLINKER = $(GDC) $(NO_PIE_FLAG) -lstdc++
 
 # Like LINKER, but use a mutex for serializing front end links.
