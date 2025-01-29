@@ -13165,7 +13165,14 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
 		  || DERIVED_FROM_P (type1, type2)));
 
     case CPTK_IS_BOUNDED_ARRAY:
-      return type_code1 == ARRAY_TYPE && TYPE_DOMAIN (type1);
+      return (type_code1 == ARRAY_TYPE
+	      && TYPE_DOMAIN (type1)
+	      /* We don't want to report T[0] as being a bounded array type.
+		 This is for compatibility with an implementation of
+		 std::is_bounded_array by template argument deduction, because
+		 compute_array_index_type_loc rejects a zero-size array
+		 in SFINAE context.  */
+	      && !(TYPE_SIZE (type1) && integer_zerop (TYPE_SIZE (type1))));
 
     case CPTK_IS_CLASS:
       return NON_UNION_CLASS_TYPE_P (type1);
