@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target automatic_stack_alignment } } */
 /* { dg-options "-O2" } */
 
 typedef int v4si __attribute__((vector_size(16)));
