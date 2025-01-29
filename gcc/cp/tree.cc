@@ -213,7 +213,7 @@ lvalue_kind (const_tree ref)
 	  && DECL_IN_AGGR_P (ref))
 	return clk_none;
 
-      if (DECL_MERGEABLE (ref))
+      if (TREE_CODE (ref) == CONST_DECL || DECL_MERGEABLE (ref))
 	return clk_ordinary | clk_mergeable;
 
       /* FALLTHRU */
