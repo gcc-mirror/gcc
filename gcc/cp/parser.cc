@@ -24925,6 +24925,26 @@ cp_parser_late_return_type_opt (cp_parser* parser, cp_declarator *declarator,
       /* Consume the ->.  */
       cp_lexer_consume_token (parser->lexer);
 
+      /* We may be in the context of parsing a parameter declaration,
+	 namely, its declarator.  auto_is_implicit_function_template_parm_p
+	 will be disabled in that case.  But for code like
+
+	   int g (auto fp() -> auto);
+
+	 we have to re-enable the flag for the trailing auto.  However, that
+	 only applies for the outermost trailing auto in a parameter clause; in
+
+	   int f2 (auto fp(auto fp2() -> auto) -> auto);
+
+	 the inner -> auto should not be synthesized.  */
+      int i = 0;
+      for (cp_binding_level *b = current_binding_level;
+	   b->kind == sk_function_parms; b = b->level_chain)
+	++i;
+      auto cleanup = make_temp_override
+	(parser->auto_is_implicit_function_template_parm_p,
+	 (i == 2 && !current_function_decl));
+
       type = cp_parser_trailing_type_id (parser);
     }
 
@@ -25668,15 +25688,6 @@ cp_parser_parameter_declaration (cp_parser *parser,
 				&decl_specifiers,
 				&declares_class_or_enum);
 
-  /* [dcl.spec.auto.general]: "A placeholder-type-specifier of the form
-     type-constraint opt auto can be used as a decl-specifier of the
-     decl-specifier-seq of a parameter-declaration of a function declaration
-     or lambda-expression..." but we must not synthesize an implicit template
-     type parameter in its declarator.  That is, in "void f(auto[auto{10}]);"
-     we want to synthesize only the first auto.  */
-  auto cleanup = make_temp_override
-    (parser->auto_is_implicit_function_template_parm_p, false);
-
   /* Complain about missing 'typename' or other invalid type names.  */
   if (!decl_specifiers.any_type_specifiers_p
       && cp_parser_parse_and_diagnose_invalid_type_name (parser))
@@ -25689,6 +25700,16 @@ cp_parser_parameter_declaration (cp_parser *parser,
       parser->type_definition_forbidden_message = saved_message;
       return NULL;
     }
+
+  /* [dcl.spec.auto.general]: "A placeholder-type-specifier of the form
+     type-constraint opt auto can be used as a decl-specifier of the
+     decl-specifier-seq of a parameter-declaration of a function declaration
+     or lambda-expression..." but we must not synthesize an implicit template
+     type parameter in its declarator (except the trailing-return-type).
+     That is, in "void f(auto[auto{10}]);" we want to synthesize only the
+     first auto.  */
+  auto cleanup = make_temp_override
+    (parser->auto_is_implicit_function_template_parm_p, false);
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
