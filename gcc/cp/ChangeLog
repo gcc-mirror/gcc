@@ -1,3 +1,11 @@
+2025-01-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-01-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117855
+	* cp-tree.h (DECL_FRIEND_CONTEXT): Exclude deduction guides.
+
 2025-01-27  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
