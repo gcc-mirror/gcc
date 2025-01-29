@@ -11806,6 +11806,14 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		  set_mem_size (temp, int_size_in_bytes (type));
 		return temp;
 	      }
+	    /* When the access is fully outside of the underlying object
+	       expand the offset as zero.  This avoids out-of-bound
+	       BIT_FIELD_REFs and generates smaller code for these cases
+	       with UB.  */
+	    type_size = tree_to_poly_uint64 (TYPE_SIZE_UNIT (type));
+	    if (!ranges_maybe_overlap_p (offset, type_size, 0,
+					 GET_MODE_SIZE (DECL_MODE (base))))
+	      offset = 0;
 	    exp = build3 (BIT_FIELD_REF, type, base, TYPE_SIZE (type),
 			  bitsize_int (offset * BITS_PER_UNIT));
 	    REF_REVERSE_STORAGE_ORDER (exp) = reverse;
