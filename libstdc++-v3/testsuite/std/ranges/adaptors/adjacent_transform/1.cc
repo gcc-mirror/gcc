@@ -110,6 +110,7 @@ test04()
   };
   // P2494R2 Relaxing range adaptors to allow for move only types
   static_assert( requires { views::pairwise_transform(x, move_only{}); } );
+  static_assert( requires { x | views::pairwise_transform(move_only{}); } );
 }
 
 int
