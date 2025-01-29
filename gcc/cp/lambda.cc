@@ -58,7 +58,13 @@ build_lambda_object (tree lambda_expr)
   vec<constructor_elt, va_gc> *elts = NULL;
   tree node, expr, type;
 
-  if (processing_template_decl || lambda_expr == error_mark_node)
+  if (processing_template_decl && !in_template_context
+      && current_binding_level->requires_expression)
+    /* As in cp_parser_lambda_expression, don't get confused by
+       cp_parser_requires_expression setting processing_template_decl.  In that
+       case we want to return the result of finish_compound_literal, to avoid
+       tsubst_lambda_expr.  */;
+  else if (processing_template_decl || lambda_expr == error_mark_node)
     return lambda_expr;
 
   /* Make sure any error messages refer to the lambda-introducer.  */
