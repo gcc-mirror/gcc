@@ -62,6 +62,8 @@ const BiMap<std::string, BuiltinMacro> MacroBuiltin::builtins = {{
   {"concat_idents", BuiltinMacro::ConcatIdents},
   {"module_path", BuiltinMacro::ModulePath},
   {"asm", BuiltinMacro::Asm},
+  // FIXME: Is that okay
+  {"llvm_asm", BuiltinMacro::Asm},
   {"global_asm", BuiltinMacro::GlobalAsm},
   {"log_syntax", BuiltinMacro::LogSyntax},
   {"trace_macros", BuiltinMacro::TraceMacros},
@@ -119,6 +121,8 @@ std::unordered_map<std::string, AST::MacroTranscriberFunc>
     {"format_args", format_args_maker (AST::FormatArgs::Newline::No)},
     {"format_args_nl", format_args_maker (AST::FormatArgs::Newline::Yes)},
     {"asm", inline_asm_maker (AST::AsmKind::Inline)},
+    // FIXME: Is that okay?
+    {"llvm_asm", inline_asm_maker (AST::AsmKind::Inline)},
     {"global_asm", inline_asm_maker (AST::AsmKind::Global)},
     {"option_env", MacroBuiltin::option_env_handler},
     /* Unimplemented macro builtins */
