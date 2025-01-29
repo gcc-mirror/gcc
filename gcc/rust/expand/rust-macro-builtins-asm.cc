@@ -39,16 +39,28 @@ std::map<AST::InlineAsmOption, std::string> InlineAsmOptionMap{
 std::set<std::string> potentially_nonpromoted_keywords
   = {"in", "out", "lateout", "inout", "inlateout", "const", "sym", "label"};
 
+// Helper function strips the beginning and ending double quotes from a
+// string.
 std::string
 strip_double_quotes (const std::string &str)
 {
-  // Helper function strips the beginning and ending double quotes from a
-  // string.
   std::string result = str;
 
+  rust_assert (!str.empty ());
+
+  rust_assert (str.front () == '\"');
+  rust_assert (str.back () == '\"');
+
+  // we have to special case empty strings which just contain a set of quotes
+  // so, if the string is "\"\"", just return ""
+  if (result.size () == 2)
+    return "";
+
   rust_assert (result.size () >= 3);
+
   result.erase (0, 1);
   result.erase (result.size () - 1, 1);
+
   return result;
 }
 
@@ -240,12 +252,10 @@ parse_reg_operand (InlineAsmContext inline_asm_ctx)
   // Loop over and execute the parsing functions, if the parser successfullly
   // parses or if the parser fails to parse while it has committed to a token,
   // we propogate the result.
-  int count = 0;
   tl::expected<InlineAsmContext, InlineAsmParseError> parsing_operand (
     inline_asm_ctx);
   for (auto &parse_func : parse_funcs)
     {
-      count++;
       auto result = parsing_operand.and_then (parse_func);
 
       // Per rust's asm.rs's structure
@@ -323,14 +333,14 @@ parse_reg_operand_in (InlineAsmContext inline_asm_ctx)
 	  // We are sure to be failing a test here, based on asm.rs
 	  // https://github.com/rust-lang/rust/blob/a330e49593ee890f9197727a3a558b6e6b37f843/compiler/rustc_builtin_macros/src/asm.rs#L112
 	  rust_unreachable ();
-	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
+	  // return tl::unexpected<InlineAsmParseError> (COMMITTED);
 	}
 
       auto expr = parser.parse_expr ();
 
       // TODO: When we've succesfully parse an expr, remember to clone_expr()
       // instead of nullptr
-      struct AST::InlineAsmOperand::In in (reg, std::move (expr));
+      AST::InlineAsmOperand::In in (reg, std::move (expr));
       inline_asm_ctx.inline_asm.operands.emplace_back (in, locus);
       return inline_asm_ctx;
     }
@@ -354,7 +364,7 @@ parse_reg_operand_out (InlineAsmContext inline_asm_ctx)
 
       // TODO: When we've succesfully parse an expr, remember to clone_expr()
       // instead of nullptr
-      struct AST::InlineAsmOperand::Out out (reg, false, std::move (expr));
+      AST::InlineAsmOperand::Out out (reg, false, std::move (expr));
 
       inline_asm_ctx.inline_asm.operands.emplace_back (out, locus);
 
