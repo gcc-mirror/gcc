@@ -11361,11 +11361,11 @@ vect_remove_slp_scalar_calls (vec_info *vinfo,
     {
       if (!stmt_info)
 	continue;
+      if (!PURE_SLP_STMT (stmt_info))
+	continue;
+      stmt_info = vect_orig_stmt (stmt_info);
       gcall *stmt = dyn_cast <gcall *> (stmt_info->stmt);
       if (!stmt || gimple_bb (stmt) == NULL)
-	continue;
-      if (is_pattern_stmt_p (stmt_info)
-	  || !PURE_SLP_STMT (stmt_info))
 	continue;
       lhs = gimple_call_lhs (stmt);
       if (lhs)
