@@ -34,7 +34,6 @@
 #include <bits/c++config.h>
 #include <debug/assertions.h>
 #include <type_traits>
-#include <tuple>
 #include <bits/stl_function.h>
 #include <bits/functional_hash.h>
 #if __cplusplus >= 202002L
@@ -70,7 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       /// Default constructor
       constexpr default_delete() noexcept = default;
-
+      
       /** @brief Converting constructor.
        *
        * Allows conversion from a deleter for objects of another type, `_Up`,
@@ -80,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       typename = _Require<is_convertible<_Up*, _Tp*>>>
 	_GLIBCXX23_CONSTEXPR
         default_delete(const default_delete<_Up>&) noexcept { }
-
+	
       /// Calls `delete __ptr`
       _GLIBCXX23_CONSTEXPR
       void
@@ -93,7 +92,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	delete __ptr;
       }
     };
-
+    
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 740 - omit specialization for array objects with a compile time length
 
@@ -134,6 +133,125 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  delete [] __ptr;
 	}
     };
+
+  namespace __detail
+  {
+#if __has_cpp_attribute(__no_unique_address__)
+    template <typename _Tp, typename _Dp>
+    struct _Holder
+    {
+      [[__no_unique_address__]] _Tp __data0;
+      [[__no_unique_address__]] _Dp __data1;
+
+      _Holder() = default;
+
+      template <typename _TpFwd>
+      _Holder(_TpFwd&& __tpFwd)
+        : __data0(std::forward<_TpFwd>(__tpFwd))
+      {
+      }
+
+      template <typename _TpFwd, typename _DpFwd>
+      _Holder(_TpFwd&& __tpFwd, _DpFwd&& __dpFwd)
+        : __data0(std::forward<_TpFwd>(__tpFwd)),
+          __data1(std::forward<_DpFwd>(__dpFwd))
+      {
+      }
+
+      _Tp& _Fst() noexcept
+      {
+        return __data0;
+      }
+
+      const _Tp& _Fst() const noexcept
+      {
+        return __data0;
+      }
+
+      _Dp& _Dst() noexcept
+      {
+        return __data1;
+      }
+
+      const _Dp& _Dst() const noexcept
+      {
+        return __data1;
+      }
+    };
+#else
+    template <int _Ip, typename _Tp, typename = void>
+    struct _TaggedHolderBase
+    {
+      _Tp __data;
+
+      _TaggedHolderBase() = default;
+
+      template <typename _TpFwd>
+      _TaggedHolderBase(_TpFwd&& __tpFwd)
+        : __data(std::forward<_TpFwd>(__tpFwd))
+      {
+      }
+
+      _Tp& _Get() noexcept { return __data; }
+      const _Tp& _Get() const noexcept { return __data; }
+    };
+
+    template <int _Ip, typename _Tp>
+    struct _TaggedHolderBase<_Ip, _Tp, std::enable_if_t<std::is_class_v<_Tp>>> : _Tp
+    {
+      _TaggedHolderBase() = default;
+
+      template <typename _TpFwd>
+      _TaggedHolderBase(_TpFwd&& __tpFwd)
+        : _Tp(std::forward<_TpFwd>(__tpFwd))
+      {
+      }
+
+      _Tp& _Get() noexcept { return *this; }
+      const _Tp& _Get() const noexcept { return *this; }
+    };
+
+    template <typename _Tp, typename _Dp>
+    struct _Holder : _TaggedHolderBase<0, _Tp>, _TaggedHolderBase<1, _Dp>
+    {
+      using _TpBase = _TaggedHolderBase<0, _Tp>;
+      using _DpBase = _TaggedHolderBase<1, _Dp>;
+
+      template <typename _TpFwd>
+      _Holder(_TpFwd&& __tpFwd)
+        : _TpBase(std::forward<_TpFwd>(__tpFwd))
+      {
+      }
+
+      template <typename _TpFwd, typename _DpFwd>
+      _Holder(_TpFwd&& __tpFwd, _DpFwd&& __dpFwd)
+        : _TpBase(std::forward<_TpFwd>(__tpFwd)),
+          _DpBase(std::forward<_DpFwd>(__dpFwd))
+      {
+      }
+
+      _Tp& _Fst() noexcept
+      {
+        return static_cast<_TpBase&>(*this)._Get();
+      }
+
+      const _Tp& _Fst() const noexcept
+      {
+        return static_cast<const _TpBase&>(*this)._Get();
+      }
+
+      _Dp& _Dst() noexcept
+      {
+        return static_cast<_DpBase&>(*this)._Get();
+      }
+
+      const _Dp& _Dst() const noexcept
+      {
+        return static_cast<const _DpBase&>(*this)._Get();
+      }
+    };
+#endif
+  }
 
   /// @cond undocumented
 
@@ -188,13 +306,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       _GLIBCXX23_CONSTEXPR
-      pointer&   _M_ptr() noexcept { return std::get<0>(_M_t); }
+      pointer&   _M_ptr() noexcept { return _M_t._Fst(); }
       _GLIBCXX23_CONSTEXPR
-      pointer    _M_ptr() const noexcept { return std::get<0>(_M_t); }
+      pointer    _M_ptr() const noexcept { return _M_t._Fst(); }
       _GLIBCXX23_CONSTEXPR
-      _Dp&       _M_deleter() noexcept { return std::get<1>(_M_t); }
+      _Dp&       _M_deleter() noexcept { return _M_t._Dst(); }
       _GLIBCXX23_CONSTEXPR
-      const _Dp& _M_deleter() const noexcept { return std::get<1>(_M_t); }
+      const _Dp& _M_deleter() const noexcept { return _M_t._Dst(); }
 
       _GLIBCXX23_CONSTEXPR
       void reset(pointer __p) noexcept
@@ -223,7 +341,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     private:
-      tuple<pointer, _Dp> _M_t;
+      __detail::_Holder<pointer, _Dp> _M_t;
     };
 
   // Defines move construction + assignment as either defaulted or deleted.
