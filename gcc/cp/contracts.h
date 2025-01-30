@@ -334,7 +334,6 @@ extern void defer_guarded_contract_match	(tree, tree, tree);
 extern bool diagnose_misapplied_contracts	(tree);
 extern tree finish_contract_attribute		(tree, tree);
 extern tree invalidate_contract			(tree);
-extern void update_late_contract		(tree, tree, tree);
 extern tree splice_out_contracts		(tree);
 extern bool all_attributes_are_contracts_p	(tree);
 extern void copy_and_remap_contracts		(tree, tree, bool, bool);
