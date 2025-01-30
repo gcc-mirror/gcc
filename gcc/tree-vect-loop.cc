@@ -2934,7 +2934,7 @@ start_over:
 
   /* When we arrive here with SLP disabled and we are supposed
      to use SLP for everything fail vectorization.  */
-  if (!slp && param_vect_force_slp)
+  if (!slp)
     return opt_result::failure_at (vect_location,
 				   "may need non-SLP handling\n");
 

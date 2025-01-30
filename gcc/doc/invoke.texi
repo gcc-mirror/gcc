@@ -17225,9 +17225,6 @@ this parameter.  The default value of this parameter is 50.
 @item vect-induction-float
 Enable loop vectorization of floating point inductions.
 
-@item vect-force-slp
-Force the use of SLP when vectorizing, fail if not possible.
-
 @item vrp-block-limit
 Maximum number of basic blocks before VRP switches to a lower memory algorithm.
 
