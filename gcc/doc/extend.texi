@@ -17447,6 +17447,16 @@ points to.  Counting starts at @code{0}.
 If the address does not point to flash memory, return @code{-1}.
 @enddefbuiltin
 
+@defbuiltin{size_t __builtin_avr_strlen_flash (const __flash char*)}
+@defbuiltinx{size_t __builtin_avr_strlen_flashx (const __flashx char*)}
+@defbuiltinx{size_t __builtin_avr_strlen_memx (const __memx char*)}
+These built-ins return the length of a string located in
+named address-space @code{__flash}, @code{__flashx} or @code{__memx},
+respectively.  They are used to support functions like @code{strlen_F} from
+@w{@uref{https://avrdudes.github.io/avr-libc/avr-libc-user-manual/,AVR-LibC}}'s
+header @code{avr/flash.h}.
+@enddefbuiltin
+
 @noindent
 There are many more AVR-specific built-in functions that are used to
 implement the ISO/IEC TR 18037 ``Embedded C'' fixed-point functions of

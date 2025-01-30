@@ -15696,7 +15696,10 @@ avr_bdesc[AVR_BUILTIN_COUNT] =
 bool
 avr_builtin_supported_p (unsigned id)
 {
-  const bool uses_as = id == AVR_BUILTIN_FLASH_SEGMENT;
+  const bool uses_as = (id == AVR_BUILTIN_FLASH_SEGMENT
+			|| id == AVR_BUILTIN_STRLEN_FLASH
+			|| id == AVR_BUILTIN_STRLEN_FLASHX
+			|| id == AVR_BUILTIN_STRLEN_MEMX);
 
   // We don't support address-spaces on Reduced Tiny.
   if (AVR_TINY && uses_as)
@@ -15729,6 +15732,25 @@ avr_init_builtin_int24 (void)
 	lang_hooks.types.register_builtin_type (uint24_type, "__uint24");
 	break;
       }
+}
+
+
+/* Return a function signature type similar to strlen, but where
+   the address is qualified by named address-space AS.  */
+
+static tree
+avr_ftype_strlen (addr_space_t as)
+{
+  tree const_AS_char_node
+    = build_qualified_type (char_type_node,
+			    TYPE_QUAL_CONST | ENCODE_QUAL_ADDR_SPACE (as));
+  tree const_AS_ptr_type_node
+    = build_pointer_type_for_mode (const_AS_char_node,
+				   avr_addr_space_pointer_mode (as), false);
+  tree size_ftype_const_AS_char_ptr
+    = build_function_type_list (size_type_node, const_AS_ptr_type_node, NULL);
+
+  return size_ftype_const_AS_char_ptr;
 }
 
 
@@ -15788,6 +15810,10 @@ avr_init_builtins (void)
     = build_function_type_list (intQI_type_node,
 				const_memx_ptr_type_node,
 				NULL);
+
+  tree strlen_flash_node = avr_ftype_strlen (ADDR_SPACE_FLASH);
+  tree strlen_flashx_node = avr_ftype_strlen (ADDR_SPACE_FLASHX);
+  tree strlen_memx_node = avr_ftype_strlen (ADDR_SPACE_MEMX);
 
 #define ITYP(T)                                                         \
   lang_hooks.types.type_for_size (TYPE_PRECISION (T), TYPE_UNSIGNED (T))
@@ -16179,6 +16205,13 @@ avr_fold_builtin (tree fndecl, int /*n_args*/, tree *arg, bool /*ignore*/)
 	return fold_build2 (LROTATE_EXPR, val_type, arg[0],
 			    build_int_cst (val_type, 4));
       }
+
+    case AVR_BUILTIN_STRLEN_FLASH:
+    case AVR_BUILTIN_STRLEN_FLASHX:
+    case AVR_BUILTIN_STRLEN_MEMX:
+      if (tree len = c_strlen (arg[0], 0))
+	return len;
+      break;
 
     case AVR_BUILTIN_ABSHR:
     case AVR_BUILTIN_ABSR:

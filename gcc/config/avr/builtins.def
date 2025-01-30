@@ -65,6 +65,12 @@ DEF_BUILTIN (INSERT_BITS, 3, uintQI_ftype_uintSI_uintQI_uintQI, insert_bits, NUL
 
 DEF_BUILTIN (FLASH_SEGMENT, 1, intQI_ftype_const_memx_ptr, flash_segment, NULL, attr_const)
 
+/* strlen for ASes so that __builtin_constant_p can be used wthout raising
+   a diagnostic from -Waddr-space-convert in some AVR-LibC headers.  */
+DEF_BUILTIN (STRLEN_FLASH,  1, strlen_flash_node,  nothing, "__strlen_P", attr_const) // AVR-LibC
+DEF_BUILTIN (STRLEN_FLASHX, 1, strlen_flashx_node, nothing, "strlen_PF",  attr_const) // AVR-LibC
+DEF_BUILTIN (STRLEN_MEMX,   1, strlen_memx_node,   nothing, "__strlen_memx", NULL_TREE)
+
 /* ISO/IEC TR 18037 "Embedded C"
    The following builtins are undocumented and used by stdfix.h.  */
 
