@@ -82,12 +82,12 @@ public:
   std::unique_ptr<Expr> deref (std::unique_ptr<Expr> &&of) const;
 
   /* Create a block with an optional tail expression */
-  std::unique_ptr<Expr> block (std::vector<std::unique_ptr<Stmt>> &&stmts,
-			       std::unique_ptr<Expr> &&tail_expr
-			       = nullptr) const;
-  std::unique_ptr<Expr> block (std::unique_ptr<Stmt> &&stmt,
-			       std::unique_ptr<Expr> &&tail_expr
-			       = nullptr) const;
+  std::unique_ptr<BlockExpr> block (std::vector<std::unique_ptr<Stmt>> &&stmts,
+				    std::unique_ptr<Expr> &&tail_expr
+				    = nullptr) const;
+  std::unique_ptr<BlockExpr> block (tl::optional<std::unique_ptr<Stmt>> &&stmt,
+				    std::unique_ptr<Expr> &&tail_expr
+				    = nullptr) const;
 
   /* Create an early return expression with an optional expression */
   std::unique_ptr<Expr> return_expr (std::unique_ptr<Expr> &&to_return

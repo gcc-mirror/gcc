@@ -279,23 +279,25 @@ Builder::path_in_expression (LangItem::Kind lang_item) const
   return PathInExpression (lang_item, {}, loc);
 }
 
-std::unique_ptr<Expr>
-Builder::block (std::unique_ptr<Stmt> &&stmt,
+std::unique_ptr<BlockExpr>
+Builder::block (tl::optional<std::unique_ptr<Stmt>> &&stmt,
 		std::unique_ptr<Expr> &&tail_expr) const
 {
   auto stmts = std::vector<std::unique_ptr<Stmt>> ();
-  stmts.emplace_back (std::move (stmt));
+
+  if (stmt)
+    stmts.emplace_back (std::move (*stmt));
 
   return block (std::move (stmts), std::move (tail_expr));
 }
 
-std::unique_ptr<Expr>
+std::unique_ptr<BlockExpr>
 Builder::block (std::vector<std::unique_ptr<Stmt>> &&stmts,
 		std::unique_ptr<Expr> &&tail_expr) const
 {
-  return std::unique_ptr<Expr> (new BlockExpr (std::move (stmts),
-					       std::move (tail_expr), {}, {},
-					       LoopLabel::error (), loc, loc));
+  return std::unique_ptr<BlockExpr> (
+    new BlockExpr (std::move (stmts), std::move (tail_expr), {}, {},
+		   LoopLabel::error (), loc, loc));
 }
 
 std::unique_ptr<Expr>
@@ -421,11 +423,9 @@ Builder::match_case (std::unique_ptr<Pattern> &&pattern,
 std::unique_ptr<Expr>
 Builder::loop (std::vector<std::unique_ptr<Stmt>> &&stmts)
 {
-  auto block = std::unique_ptr<BlockExpr> (
-    new BlockExpr (std::move (stmts), nullptr, {}, {}, LoopLabel::error (), loc,
-		   loc));
+  auto block_expr = block (std::move (stmts), nullptr);
 
-  return std::unique_ptr<Expr> (new LoopExpr (std::move (block), loc));
+  return std::unique_ptr<Expr> (new LoopExpr (std::move (block_expr), loc));
 }
 
 std::unique_ptr<TypeParamBound>
