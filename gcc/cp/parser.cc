@@ -31618,6 +31618,8 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
       DEFPARSE_INSTANTIATIONS (condition) = NULL;
 
       /* And its corresponding contract.  */
+      if (identifier)
+	identifier.maybe_add_location_wrapper ();
       contract = grok_contract (attribute, mode, identifier, condition, loc);
     }
   else
@@ -31704,16 +31706,19 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   if (TREE_CODE (condition) != DEFERRED_PARSE)
     return;
 
-  tree identifier = NULL_TREE;
+  tree r_ident = NULL_TREE;
   if (TREE_CODE (contract) == POSTCONDITION_STMT)
-    identifier = POSTCONDITION_IDENTIFIER (contract);
+    r_ident = POSTCONDITION_IDENTIFIER (contract);
 
   tree type = TREE_TYPE (TREE_TYPE (fn));
-  if (identifier)
+  location_t r_loc = UNKNOWN_LOCATION;
+  if (r_ident)
     {
-      /* TODO: Can we guarantee that the identifier has a location? */
-      location_t loc = cp_expr_location (contract);
-      if (!check_postcondition_result (fn, type, loc))
+      r_loc = EXPR_LOCATION (r_ident);
+      r_ident = tree_strip_any_location_wrapper (r_ident);
+      if (r_loc == UNKNOWN_LOCATION)
+	r_loc = cp_expr_location (contract);
+      if (!check_postcondition_result (fn, type, r_loc))
 	{
 	  invalidate_contract (contract);
 	  return;
@@ -31765,16 +31770,17 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   should_constify_contract = should_constify;
   /* Build a fake variable for the result identifier.  */
   tree result = NULL_TREE;
-  if (identifier)
+  if (r_ident)
     {
-      result = make_postcondition_variable (identifier, type);
+      cp_expr result_id (r_ident, r_loc);
+      result = make_postcondition_variable (result_id, type);
       ++processing_template_decl;
     }
   cp_expr parsed_condition = cp_parser_conditional_expression (parser);
   /* Commit to changes.  */
   update_late_contract (contract, result, parsed_condition);
   /* Leave our temporary scope for the postcondition result.  */
-  if (identifier)
+  if (r_ident)
     --processing_template_decl;
   processing_postcondition = old_pc;
   should_constify_contract = old_const;
