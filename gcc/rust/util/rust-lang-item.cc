@@ -112,6 +112,9 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
   {"from_ok", Kind::TRY_FROM_OK},
 
   {"from", Kind::FROM_FROM},
+
+  {"structural_peq", Kind::STRUCTURAL_PEQ},
+  {"structural_teq", Kind::STRUCTURAL_TEQ},
 }};
 
 tl::optional<LangItem::Kind>
