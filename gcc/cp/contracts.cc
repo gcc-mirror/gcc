@@ -2708,18 +2708,26 @@ remap_and_emit_conditions (tree fn, tree condfn, tree_code code)
 tree
 finish_contract_condition (cp_expr condition)
 {
+  if (!condition || error_operand_p (condition))
+    return condition;
+
   /* Ensure we have the condition location saved in case we later need to
      emit a conversion error during template instantiation and wouldn't
-     otherwise have it.  */
-  if (!CAN_HAVE_LOCATION_P (condition) || EXCEPTIONAL_CLASS_P (condition))
+     otherwise have it.  This differs from maybe_wrap_with_location in that
+     it allows wrappers on EXCEPTIONAL_CLASS_P which includes CONSTRUCTORs.  */
+  if (!CAN_HAVE_LOCATION_P (condition)
+      && condition.get_location () != UNKNOWN_LOCATION)
     {
-      condition = build1_loc (condition.get_location (), VIEW_CONVERT_EXPR,
+      tree_code code
+	= (((CONSTANT_CLASS_P (condition) && TREE_CODE (condition) != STRING_CST)
+	    || (TREE_CODE (condition) == CONST_DECL && !TREE_STATIC (condition)))
+	  ? NON_LVALUE_EXPR : VIEW_CONVERT_EXPR);
+      condition = build1_loc (condition.get_location (), code,
 			      TREE_TYPE (condition), condition);
       EXPR_LOCATION_WRAPPER_P (condition) = true;
     }
 
-  if (condition == error_mark_node
-      || type_dependent_expression_p (condition))
+  if (type_dependent_expression_p (condition))
     return condition;
 
   return condition_conversion (condition);
