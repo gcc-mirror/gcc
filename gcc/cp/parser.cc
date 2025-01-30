@@ -50529,17 +50529,19 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
 							&targetsync,
 							&prefer_type_tree))
 		goto fail;
-	      tree t = build_omp_clause (loc, OMP_CLAUSE_INIT);
+	      tree t = build_tree_list (target ? boolean_true_node
+					       : boolean_false_node,
+					targetsync ? boolean_true_node
+						   : boolean_false_node);
+	      t = build1_loc (loc, NOP_EXPR, void_type_node, t);
+	      t = build_tree_list (t, prefer_type_tree);
 	      if (append_args_tree)
-		OMP_CLAUSE_CHAIN (append_args_last) = t;
+		{
+		  TREE_CHAIN (append_args_last) = t;
+		  append_args_last = t;
+		}
 	      else
 		append_args_tree = append_args_last = t;
-	      if (target)
-		OMP_CLAUSE_INIT_TARGET (t) = 1;
-	      if (targetsync)
-		OMP_CLAUSE_INIT_TARGETSYNC (t) = 1;
-	      if (prefer_type_tree)
-		OMP_CLAUSE_INIT_PREFER_TYPE (t) = prefer_type_tree;
 	      if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN))
 		{
 		  cp_parser_error (parser, "expected %<)%> or %<,%>");
@@ -50559,6 +50561,15 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
 	      cp_lexer_consume_token (parser->lexer); // ','
 	    }
 	  while (true);
+	  int nbase_args = 0;
+	  for (tree t = parms;
+	       t && TREE_VALUE (t) != void_type_node; t = TREE_CHAIN (t))
+	    nbase_args++;
+	  /* Store as purpose = arg number after which to append
+	     and value = list of interop items.  */
+	  append_args_tree = build_tree_list (build_int_cst (integer_type_node,
+							     nbase_args),
+					      append_args_tree);
 	}
   } while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL));
 

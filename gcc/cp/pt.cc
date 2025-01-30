@@ -12160,13 +12160,27 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
       location_t match_loc = cp_expr_loc_or_input_loc (TREE_PURPOSE (chain));
       tree ctx = copy_list (TREE_VALUE (val));
       tree append_args_list = TREE_CHAIN (TREE_CHAIN (chain));
-      if (append_args_list)
+      if (append_args_list && TREE_VALUE (append_args_list))
 	{
-	  append_args_list = TREE_VALUE (append_args_list);
-	  if (append_args_list)
-	    TREE_CHAIN (append_args_list)
-	      = tsubst_omp_clauses (TREE_CHAIN (append_args_list),
-				    C_ORT_OMP_DECLARE_SIMD, args, complain, in_decl);
+	  append_args_list = TREE_VALUE (TREE_VALUE (append_args_list));
+	  for (; append_args_list;
+	       append_args_list = TREE_CHAIN (append_args_list))
+	     {
+	      tree pref_list = TREE_VALUE (append_args_list);
+	      tree fr_list = TREE_VALUE (pref_list);
+	      int len = TREE_VEC_LENGTH (fr_list);
+	      for (int i = 0; i < len; i++)
+		{
+		  tree *fr_expr = &TREE_VEC_ELT (fr_list, i);
+		  /* Preserve NOP_EXPR to have a location.  */
+		  if (*fr_expr && TREE_CODE (*fr_expr) == NOP_EXPR)
+		    TREE_OPERAND (*fr_expr, 0)
+		      = tsubst_expr (TREE_OPERAND (*fr_expr, 0), args, complain,
+				     in_decl);
+		  else
+		    *fr_expr = tsubst_expr (*fr_expr, args, complain, in_decl);
+		}
+	    }
 	}
       for (tree tss = ctx; tss; tss = TREE_CHAIN (tss))
 	{
@@ -18015,7 +18029,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 			     complain, in_decl);
 	  break;
 	case OMP_CLAUSE_INIT:
-	  if ((ort == C_ORT_OMP_INTEROP  || ort == C_ORT_OMP_DECLARE_SIMD)
+	  if (ort == C_ORT_OMP_INTEROP
 	      && OMP_CLAUSE_INIT_PREFER_TYPE (nc)
 	      && TREE_CODE (OMP_CLAUSE_INIT_PREFER_TYPE (nc)) == TREE_LIST
 	      && (OMP_CLAUSE_CHAIN (nc)  == NULL_TREE

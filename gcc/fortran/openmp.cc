@@ -2112,33 +2112,51 @@ gfc_match_omp_prefer_type (char **type_str, int *type_str_len)
 }
 
 
-/* Match OpenMP 5.1's 'init' clause for 'interop' objects:
-   init([prefer_type(...)][,][<target|targetsync>, ...] :] interop-obj-list)  */
+/* Match OpenMP 5.1's 'init'-clause modifiers, used by the 'init' clause of
+   the 'interop' directive and the 'append_args' directive of 'declare variant'.
+     [prefer_type(...)][,][<target|targetsync>, ...])
+
+   If is_init_clause, there might be no modifiers but variables like 'target';
+   additionally, the modifier parsing ends with a ':'.
+   If not is_init_clause (i.e. append_args), there must be modifiers and the
+   parsing ends with ')'.  */
 
 static match
-gfc_match_omp_init (gfc_omp_namelist **list)
+gfc_parser_omp_clause_init_modifiers (bool &target, bool &targetsync,
+				      char **type_str, int &type_str_len,
+				      bool is_init_clause)
 {
-  bool target = false, targetsync = false;
-  char *type_str = NULL;
-  int type_str_len = 0;
+  target = false;
+  targetsync = false;
+  *type_str = NULL;
+  type_str_len = 0;
   match m;
   locus old_loc = gfc_current_locus;
   do {
        if (gfc_match ("prefer_type ( ") == MATCH_YES)
 	{
-	  if (type_str)
+	  if (*type_str)
 	    {
 	      gfc_error ("Duplicate %<prefer_type%> modifier at %C");
 	      return MATCH_ERROR;
 	    }
-	  m = gfc_match_omp_prefer_type (&type_str, &type_str_len);
+	  m = gfc_match_omp_prefer_type (type_str, &type_str_len);
 	  if (m != MATCH_YES)
 	    return m;
 	  if (gfc_match (", ") == MATCH_YES)
 	    continue;
-	  if (gfc_match (": ") == MATCH_YES)
-	    break;
-	  gfc_error ("Expected %<,%> or %<:%> at %C");
+	  if (is_init_clause)
+	    {
+	      if (gfc_match (": ") == MATCH_YES)
+		break;
+	      gfc_error ("Expected %<,%> or %<:%> at %C");
+	    }
+	  else
+	    {
+	      if (gfc_match (") ") == MATCH_YES)
+		break;
+	      gfc_error ("Expected %<,%> or %<)%> at %C");
+	    }
 	  return MATCH_ERROR;
 	}
        if (gfc_match ("targetsync ") == MATCH_YES)
@@ -2153,11 +2171,18 @@ gfc_match_omp_init (gfc_omp_namelist **list)
 	  targetsync = true;
 	  if (gfc_match (", ") == MATCH_YES)
 	    continue;
+	  if (!is_init_clause)
+	    {
+	      if (gfc_match (") ") == MATCH_YES)
+		break;
+	      gfc_error ("Expected %<,%> or %<)%> at %C");
+	      return MATCH_ERROR;
+	    }
 	  if (gfc_match (": ") == MATCH_YES)
 	    break;
 	  gfc_char_t c = gfc_peek_char ();
-	  if (!type_str && (c == ')' || (gfc_current_form != FORM_FREE
-					 && (c == '_' || ISALPHA (c)))))
+	  if (!*type_str && (c == ')' || (gfc_current_form != FORM_FREE
+					  && (c == '_' || ISALPHA (c)))))
 	    {
 	      gfc_current_locus = old_loc;
 	      break;
@@ -2175,11 +2200,18 @@ gfc_match_omp_init (gfc_omp_namelist **list)
 	  target = true;
 	  if (gfc_match (", ") == MATCH_YES)
 	    continue;
+	  if (!is_init_clause)
+	    {
+	      if (gfc_match (") ") == MATCH_YES)
+		break;
+	      gfc_error ("Expected %<,%> or %<)%> at %C");
+	      return MATCH_ERROR;
+	    }
 	  if (gfc_match (": ") == MATCH_YES)
 	    break;
 	  gfc_char_t c = gfc_peek_char ();
-	  if (!type_str && (c == ')' || (gfc_current_form != FORM_FREE
-					 && (c == '_' || ISALPHA (c)))))
+	  if (!*type_str && (c == ')' || (gfc_current_form != FORM_FREE
+					  && (c == '_' || ISALPHA (c)))))
 	    {
 	      gfc_current_locus = old_loc;
 	      break;
@@ -2187,7 +2219,7 @@ gfc_match_omp_init (gfc_omp_namelist **list)
 	  gfc_error ("Expected %<,%> or %<:%> at %C");
 	  return MATCH_ERROR;
 	}
-      if (type_str)
+      if (*type_str)
 	{
 	  gfc_error ("Expected %<target%> or %<targetsync%> at %C");
 	  return MATCH_ERROR;
@@ -2196,6 +2228,21 @@ gfc_match_omp_init (gfc_omp_namelist **list)
       break;
     }
   while (true);
+  return MATCH_YES;
+}
+
+/* Match OpenMP 5.1's 'init' clause for 'interop' objects:
+   init([prefer_type(...)][,][<target|targetsync>, ...] :] interop-obj-list)  */
+
+static match
+gfc_match_omp_init (gfc_omp_namelist **list)
+{
+  bool target, targetsync;
+  char *type_str = NULL;
+  int type_str_len;
+  if (gfc_parser_omp_clause_init_modifiers (target, targetsync, &type_str,
+					    type_str_len, true) == MATCH_ERROR)
+    return MATCH_ERROR;
 
  gfc_omp_namelist **head = NULL;
  if (gfc_match_omp_variable_list ("", list, false, NULL, &head) != MATCH_YES)
@@ -6616,32 +6663,39 @@ gfc_match_omp_declare_variant (void)
       return MATCH_ERROR;
     }
 
-  bool has_match = false, has_adjust_args = false, error_p = false;
+  bool has_match = false, has_adjust_args = false, has_append_args = false;
+  bool error_p = false;
   locus adjust_args_loc;
+  locus append_args_loc;
 
+  gfc_gobble_whitespace ();
+  gfc_match_char (',');
   for (;;)
     {
-      gfc_gobble_whitespace ();
-      gfc_match_char (',');
       gfc_gobble_whitespace ();
 
       enum clause
       {
 	match,
-	adjust_args
+	adjust_args,
+	append_args
       } ccode;
 
-      if (gfc_match (" match") == MATCH_YES)
+      if (gfc_match ("match") == MATCH_YES)
 	ccode = match;
-      else if (gfc_match (" adjust_args") == MATCH_YES)
+      else if (gfc_match ("adjust_args") == MATCH_YES)
 	{
 	  ccode = adjust_args;
 	  adjust_args_loc = gfc_current_locus;
 	}
+      else if (gfc_match ("append_args") == MATCH_YES)
+	{
+	  ccode = append_args;
+	  append_args_loc = gfc_current_locus;
+	}
       else
 	{
-	  if (gfc_match_omp_eos () != MATCH_YES)
-	    error_p = true;
+	  error_p = true;
 	  break;
 	}
 
@@ -6653,6 +6707,12 @@ gfc_match_omp_declare_variant (void)
 
       if (ccode == match)
 	{
+	  if (has_match)
+	    {
+	      gfc_error ("%qs clause at %L specified more than once",
+			 "match", &gfc_current_locus);
+	      return MATCH_ERROR;
+	    }
 	  has_match = true;
 	  if (gfc_match_omp_context_selector_specification (odv)
 	      != MATCH_YES)
@@ -6688,20 +6748,82 @@ gfc_match_omp_declare_variant (void)
 	    for (gfc_omp_namelist *n = *head; n != NULL; n = n->next)
 	      n->u.need_device_ptr = true;
 	}
+      else if (ccode == append_args)
+	{
+	  if (has_append_args)
+	    {
+	      gfc_error ("%qs clause at %L specified more than once",
+			 "append_args", &gfc_current_locus);
+	      return MATCH_ERROR;
+	    }
+	  has_append_args = true;
+	  gfc_omp_namelist *append_args_last = NULL;
+	  do
+	    {
+	      gfc_gobble_whitespace ();
+	      if (gfc_match ("interop ") != MATCH_YES)
+		{
+		  gfc_error ("expected %<interop%> at %C");
+		  return MATCH_ERROR;
+		}
+	      if (gfc_match ("( ") != MATCH_YES)
+		{
+		  gfc_error ("expected %<(%> at %C");
+		  return MATCH_ERROR;
+		}
+
+	      bool target, targetsync;
+	      char *type_str = NULL;
+	      int type_str_len;
+	      locus loc = gfc_current_locus;
+	      if (gfc_parser_omp_clause_init_modifiers (target, targetsync,
+							&type_str, type_str_len,
+							false) == MATCH_ERROR)
+		return MATCH_ERROR;
+
+	      gfc_omp_namelist *n = gfc_get_omp_namelist();
+	      n->where = loc;
+	      n->u.init.target = target;
+	      n->u.init.targetsync = targetsync;
+	      n->u.init.len = type_str_len;
+	      n->u2.init_interop = type_str;
+	      if (odv->append_args_list)
+		{
+		  append_args_last->next = n;
+		  append_args_last = n;
+		}
+	      else
+		append_args_last = odv->append_args_list = n;
+
+	      gfc_gobble_whitespace ();
+	      if (gfc_match_char (',') == MATCH_YES)
+		continue;
+	      if (gfc_match_char (')') == MATCH_YES)
+		break;
+	      gfc_error ("Expected %<,%> or %<)%> at %C");
+	      return MATCH_ERROR;
+	    }
+	  while (true);
+	}
+      gfc_gobble_whitespace ();
+      if (gfc_match_omp_eos () == MATCH_YES)
+	break;
+      gfc_match_char (',');
     }
 
-  if (error_p || (!has_match && !has_adjust_args))
+  if (error_p || (!has_match && !has_adjust_args && !has_append_args))
     {
-      gfc_error ("expected %<match%> or %<adjust_args%> at %C");
+      gfc_error ("expected %<match%>, %<adjust_args%> or %<append_args%> at %C");
       return MATCH_ERROR;
     }
 
-  if (has_adjust_args && !has_match)
+  if ((has_adjust_args || has_append_args) && !has_match)
     {
-      gfc_error ("an %<adjust_args%> clause at %L can only be specified if the "
+      gfc_error ("the %qs clause at %L can only be specified if the "
 		 "%<dispatch%> selector of the construct selector set appears "
 		 "in the %<match%> clause",
-		 &adjust_args_loc);
+		 has_adjust_args ? "adjust_args" : "append_args",
+		 has_adjust_args ?  &adjust_args_loc : &append_args_loc);
       return MATCH_ERROR;
     }
 

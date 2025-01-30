@@ -9,7 +9,7 @@ module main
 contains
   subroutine base2 (a)
     type(c_ptr), intent(inout) :: a
-    !$omp declare variant (variant2) match (construct={parallel}) adjust_args (need_device_ptr: a) ! { dg-error "an 'adjust_args' clause can only be specified if the 'dispatch' selector of the construct selector set appears in the 'match' clause at .1." }
+    !$omp declare variant (variant2) match (construct={parallel}) adjust_args (need_device_ptr: a) ! { dg-error "the 'adjust_args' clause can only be specified if the 'dispatch' selector of the construct selector set appears in the 'match' clause at .1." }
   end subroutine
   subroutine base3 (a)
     type(c_ptr), intent(inout) :: a

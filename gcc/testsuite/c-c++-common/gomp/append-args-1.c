@@ -23,32 +23,48 @@ float base0();
 float repl1(omp_interop_t, omp_interop_t);
 #pragma omp declare variant(repl1) match(construct={dispatch}) append_args(interop(target), interop(targetsync))
 float base1();
-/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'repl1'" "" { target c } .-2 }  */
-/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'float repl1\\(omp_interop_t, omp_interop_t\\)'" "" { target c++ } .-3 }  */
+/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'repl1', except when specifying all 2 objects in the 'interop' clause of the 'dispatch' directive" "" { target c } .-2 }  */
+/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'float repl1\\(omp_interop_t, omp_interop_t\\)', except when specifying all 2 objects in the 'interop' clause of the 'dispatch' directive" "" { target c++ } .-3 }  */
 
 void repl2(int *, int *, omp_interop_t, omp_interop_t);
 #pragma omp declare variant(repl2) match(construct={dispatch}) adjust_args(need_device_ptr : y) \
         append_args(interop(target, targetsync, prefer_type(1)), \
                     interop(prefer_type({fr(3), attr("ompx_nop")},{fr(2)},{attr("ompx_all")})))
 void base2(int *x, int *y);
-/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'repl2'" "" { target c } .-3 }  */
-/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'void repl2\\(int\\*, int\\*, omp_interop_t, omp_interop_t\\)'" "" { target c++ } .-4 }  */
+/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'repl2', except when specifying all 2 objects in the 'interop' clause of the 'dispatch' directive" "" { target c } .-3 }  */
+/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'void repl2\\(int\\*, int\\*, omp_interop_t, omp_interop_t\\)', except when specifying all 2 objects in the 'interop' clause of the 'dispatch' directive" "" { target c++ } .-4 }  */
 
 void repl3(int, omp_interop_t, ...);
 #pragma omp declare variant(repl3) match(construct={dispatch}) \
         append_args(interop(prefer_type("cuda", "hsa")))
 void base3(int, ...);
-/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'repl3'" "" { target c } .-2 }  */
-/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'void repl3\\(int, omp_interop_t, \\.\\.\\.\\)'" "" { target c++ } .-3 }  */
+/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'repl3', except when specifying all 1 objects in the 'interop' clause of the 'dispatch' directive" "" { target c } .-2 }  */
+/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'void repl3\\(int, omp_interop_t, \\.\\.\\.\\)', except when specifying all 1 objects in the 'interop' clause of the 'dispatch' directive" "" { target c++ } .-3 }  */
 /* { dg-note "'declare variant' candidate 'repl3' declared here" "" { target c } .-4 } */
 /* { dg-note "'declare variant' candidate 'void repl3\\(int, omp_interop_t, \\.\\.\\.\\)' declared here" "" { target c++ } .-5 } */
 
 float repl4(short, short, omp_interop_t, short);
 #pragma omp declare variant(repl4) match(construct={dispatch}) append_args(interop(target)) append_args(interop(targetsync))  /* { dg-error "too many 'append_args' clauses" } */
 float base4(short, short);
-/* { dg-error "argument 4 of 'repl4' must be of 'omp_interop_t'" "" { target c } .-3 }  */
-/* { dg-error "argument 4 of 'float repl4\\(short int, short int, omp_interop_t, short int\\)' must be of 'omp_interop_t'" "" { target c++ } .-4 }  */
+/* { dg-error "variant 'repl4' and base 'base4' have incompatible types" "" { target c } .-2 }  */
+/* { dg-error "too few arguments to function 'float repl4\\(short int, short int, omp_interop_t, short int\\)'" "" { target c++ } .-3 }  */
+/* { dg-note "declared here" "" { target c++ } .-5 } */
+
+
+float repl5(short, short, omp_interop_t, short);
+#pragma omp declare variant(repl5) match(construct={dispatch}) append_args(interop(target),interop(targetsync))
+float base5(short, short);
+/* { dg-error "argument 4 of 'repl5' must be of 'omp_interop_t'" "" { target c } .-3 }  */
+/* { dg-error "argument 4 of 'float repl5\\(short int, short int, omp_interop_t, short int\\)' must be of 'omp_interop_t'" "" { target c++ } .-4 }  */
 /* { dg-note "'append_args' specified here" "" { target *-*-* } .-4 } */
+
+
+float repl6(short, short, omp_interop_t, short);
+#pragma omp declare variant(repl6) match(construct={dispatch}) append_args(interop(target))
+float base6(short, short);
+/* { dg-error "variant 'repl6' and base 'base6' have incompatible types" "" { target c } .-2 }  */
+/* { dg-error "too few arguments to function 'float repl6\\(short int, short int, omp_interop_t, short int\\)'" "" { target c++ } .-3 }  */
+/* { dg-note "declared here" "" { target c++ } .-5 } */
 
 
 float

@@ -1749,6 +1749,7 @@ typedef struct gfc_omp_declare_variant
 
   gfc_omp_set_selector *set_selectors;
   gfc_omp_namelist *adjust_args_list;
+  gfc_omp_namelist *append_args_list;
 
   bool checked_p : 1; /* Set if previously checked for errors.  */
   bool error_p : 1; /* Set if error found in directive.  */

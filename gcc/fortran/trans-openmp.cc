@@ -8777,6 +8777,34 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 		   == NULL_TREE)
 	    {
 	      char err[256];
+	      gfc_formal_arglist *last_arg = NULL, *extra_arg = NULL;
+	      int nappend_args = 0;
+	      if (odv->append_args_list)
+		{
+		  gfc_formal_arglist *arg;
+		  int nargs = 0;
+		  for (arg = gfc_sym_get_dummy_args (ns->proc_name);
+		       arg; arg = arg->next)
+		    nargs++;
+
+		  last_arg = gfc_sym_get_dummy_args (variant_proc_sym);
+		  for (int i = 1 ; i < nargs && last_arg; i++)
+		    last_arg = last_arg->next;
+		  if (nargs == 0)
+		    {
+		      extra_arg = last_arg;
+		      last_arg = NULL;
+		      variant_proc_sym->formal = NULL;
+		    }
+		  else if (last_arg)
+		    {
+		      extra_arg = last_arg->next;
+		      last_arg->next = NULL;
+		    }
+		  for (gfc_omp_namelist *n = odv->append_args_list; n != NULL;
+		       n = n->next)
+		    nappend_args++;
+		}
 	      if (!gfc_compare_interfaces (ns->proc_name, variant_proc_sym,
 					   variant_proc_sym->name, 0, 1,
 					   err, sizeof (err), NULL, NULL))
@@ -8785,18 +8813,73 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 			     "incompatible types: %s",
 			     variant_proc_name, ns->proc_name->name,
 			     &odv->where, err);
+		  if (nappend_args)
+		    inform (gfc_get_location (&odv->append_args_list->where),
+			    "%<append_args%> clause implies that %qs has %d "
+			    "dummy arguments of integer type with "
+			    "%<omp_interop_kind%> kind", variant_proc_name,
+			    nappend_args);
+		  variant_proc_sym = NULL;
+		}
+	      if (last_arg)
+		last_arg->next = extra_arg;
+	      else if (extra_arg)
+		variant_proc_sym->formal = extra_arg;
+	      locus *loc = (odv->adjust_args_list
+			    ? &odv->append_args_list->where :  &odv->where);
+	      int nextra_arg = 0;
+	      for (; extra_arg; extra_arg = extra_arg->next)
+		{
+		  nextra_arg++;
+		  if (!variant_proc_sym)
+		    continue;
+		  if (extra_arg->sym->ts.type != BT_INTEGER
+		      || extra_arg->sym->ts.kind != gfc_index_integer_kind
+		      || extra_arg->sym->attr.dimension
+		      || extra_arg->sym->attr.codimension
+		      || extra_arg->sym->attr.pointer
+		      || extra_arg->sym->attr.allocatable
+		      || extra_arg->sym->attr.proc_pointer)
+		    {
+		      gfc_error ("%qs at %L must be a nonpointer, "
+				 "nonallocatable scalar integer dummy argument "
+				 "of %<omp_interop_kind%> kind as it utilized "
+				 "with the %<append_args%> clause at %L",
+				 extra_arg->sym->name,
+				 &extra_arg->sym->declared_at, loc);
+		      variant_proc_sym = NULL;
+		    }
+		  if (extra_arg->sym->attr.optional)
+		    {
+		      gfc_error ("%qs at %L with OPTIONAL attribute "
+				 "not support when utilized with the "
+				 "%<append_args%> clause at %L",
+				 extra_arg->sym->name,
+				 &extra_arg->sym->declared_at, loc);
+		      variant_proc_sym = NULL;
+		    }
+		}
+	      if (variant_proc_sym && nappend_args != nextra_arg)
+		{
+		  gfc_error ("%qs at %L has %d but requires %d "
+			     "%<omp_interop_kind%> kind dummy arguments as it "
+			     "is utilized with the %<append_args%> clause at "
+			     "%L", variant_proc_sym->name,
+			     &variant_proc_sym->declared_at, nextra_arg,
+			     nappend_args, loc);
 		  variant_proc_sym = NULL;
 		}
 	    }
-	  if (odv->adjust_args_list != NULL
+	  if ((odv->adjust_args_list != NULL || odv->append_args_list != NULL)
 	      && omp_get_context_selector (set_selectors,
 					   OMP_TRAIT_SET_CONSTRUCT,
 					   OMP_TRAIT_CONSTRUCT_DISPATCH)
 		   == NULL_TREE)
 	    {
-	      gfc_error ("an %<adjust_args%> clause can only be specified if "
+	      gfc_error ("the %qs clause can only be specified if "
 			 "the %<dispatch%> selector of the construct "
 			 "selector set appears in the %<match%> clause at %L",
+			 odv->adjust_args_list ? "adjust_args" : "append_args",
 			 &odv->where);
 	      variant_proc_sym = NULL;
 	    }
@@ -8812,15 +8895,13 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	      if (omp_context_selector_matches (set_selectors,
 						NULL_TREE, false))
 		{
+		  tree need_device_ptr_list = NULL_TREE;
+		  tree append_args_tree = NULL_TREE;
 		  tree id = get_identifier ("omp declare variant base");
 		  tree variant = gfc_get_symbol_decl (variant_proc_sym);
 		  DECL_ATTRIBUTES (base_fn_decl)
 		    = tree_cons (id, build_tree_list (variant, set_selectors),
 				 DECL_ATTRIBUTES (base_fn_decl));
-
-		  // Handle adjust_args
-		  tree need_device_ptr_list = make_node (TREE_LIST);
-		  vec<gfc_symbol *> adjust_args_list = vNULL;
 		  int arg_idx_offset = 0;
 		  if (gfc_return_by_reference (ns->proc_name))
 		    {
@@ -8828,6 +8909,56 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 		      if (ns->proc_name->ts.type == BT_CHARACTER)
 			arg_idx_offset++;
 		    }
+		  if (odv->append_args_list)
+		    {
+		      int append_arg_no = arg_idx_offset;
+		      gfc_formal_arglist *arg;
+		      for (arg = gfc_sym_get_dummy_args (ns->proc_name); arg;
+			   arg = arg->next)
+			append_arg_no++;
+		      tree last_arg = NULL_TREE;
+		      for (gfc_omp_namelist *n = odv->append_args_list;
+			   n != NULL; n = n->next)
+			{
+			  tree pref = NULL_TREE;
+			  if (n->u.init.len)
+			    {
+			      tree pref = build_string (n->u.init.len,
+							n->u2.init_interop);
+			      TREE_TYPE (pref) = build_array_type_nelts (
+						   unsigned_char_type_node,
+						   n->u.init.len);
+			    }
+			  /* Save location, (target + target sync) and
+			     prefer_type list in a tree list.  */
+			  tree t = build_tree_list (n->u.init.target
+						    ? boolean_true_node
+						    : boolean_false_node,
+						    n->u.init.targetsync
+						    ? boolean_true_node
+						    : boolean_false_node);
+			  t = build1_loc (gfc_get_location (&n->where),
+					  NOP_EXPR, void_type_node, t);
+			  t = build_tree_list (t, pref);
+			  if (append_args_tree)
+			    {
+			      TREE_CHAIN (last_arg) = t;
+			      last_arg = t;
+			    }
+			  else
+			    append_args_tree = last_arg = t;
+			}
+		      /* Store as (purpose = arg number to be used for inserting
+			 and value = list of interop items.  */
+		      append_args_tree = build_tree_list (
+					   build_int_cst (integer_type_node,
+							  append_arg_no),
+					   append_args_tree);
+		    }
+
+		  if (odv->adjust_args_list)
+		    need_device_ptr_list = make_node (TREE_LIST);
+		  vec<gfc_symbol *> adjust_args_list = vNULL;
 		  for (gfc_omp_namelist *arg_list = odv->adjust_args_list;
 		       arg_list != NULL; arg_list = arg_list->next)
 		    {
@@ -8865,12 +8996,16 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 				idx + arg_idx_offset)));
 			}
 		    }
-
-		  DECL_ATTRIBUTES (variant) = tree_cons (
-		    get_identifier ("omp declare variant variant args"),
-		    build_tree_list (need_device_ptr_list,
-				     NULL_TREE /*need_device_addr */),
-		    DECL_ATTRIBUTES (variant));
+		  tree t = NULL_TREE;
+		  if (need_device_ptr_list || append_args_tree)
+		    {
+		      t = build_tree_list (need_device_ptr_list,
+					   NULL_TREE /*need_device_addr */),
+		      TREE_CHAIN (t) = append_args_tree;
+		      DECL_ATTRIBUTES (variant) = tree_cons (
+			get_identifier ("omp declare variant variant args"), t,
+			DECL_ATTRIBUTES (variant));
+		    }
 		}
 	    }
 	}

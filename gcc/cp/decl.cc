@@ -8473,27 +8473,33 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
   if (append_args_list)
     {
       append_args_list = TREE_VALUE (append_args_list);
-      if (append_args_list)
-	append_args_list = TREE_CHAIN (append_args_list);
+      append_args_list = (append_args_list && TREE_CHAIN (append_args_list)
+			  ? TREE_VALUE (TREE_CHAIN (append_args_list))
+			  : NULL_TREE);
       for (tree t = append_args_list; t; t = TREE_CHAIN (t))
 	nappend_args++;
       if (nappend_args)
 	{
 	  tree type;
-	  if ((type = lookup_qualified_name (current_scope (),
+	  if ((type = lookup_qualified_name (global_namespace,
 					     "omp_interop_t",
 					     LOOK_want::NORMAL,
 					     /*complain*/false)) == NULL_TREE
 	      || !c_omp_interop_t_p (TREE_TYPE (type)))
 	    {
+	      location_t loc = input_location;
 	      variant = tree_strip_any_location_wrapper (variant);
-	      if (TREE_CODE (variant) == OVERLOAD && OVL_SINGLE_P (variant))
-		variant = OVL_FIRST (variant);
-	      error_at (EXPR_LOC_OR_LOC (variant, DECL_SOURCE_LOCATION (variant)),
-			"argument %d of %qE must be of %<omp_interop_t%>",
+	      if (!identifier_p (variant))
+		{
+		  if (TREE_CODE (variant) == OVERLOAD && OVL_SINGLE_P (variant))
+		    variant = OVL_FIRST (variant);
+		  loc = EXPR_LOC_OR_LOC (variant,
+					 DECL_SOURCE_LOCATION (variant));
+		}
+	      error_at (loc, "argument %d of %qE must be of %<omp_interop_t%>",
 			args->length () + 1, variant);
-	      inform (OMP_CLAUSE_LOCATION (append_args_list),
-			"%<append_args%> specified here");
+	      inform (EXPR_LOCATION (TREE_PURPOSE (append_args_list)),
+		      "%<append_args%> specified here");
 	      return true;
 	    }
 	  for (unsigned i = 0; i < nappend_args; i++)
@@ -8598,7 +8604,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 		  error_at (DECL_SOURCE_LOCATION (variant),
 			    "argument %d of %qD must be of %<omp_interop_t%>",
 			    nbase_args + i + 1, variant);
-		  inform (OMP_CLAUSE_LOCATION (append_args_list),
+		  inform (EXPR_LOCATION (TREE_PURPOSE (append_args_list)),
 			  "%<append_args%> specified here");
 		  break;
 		}
@@ -8640,6 +8646,15 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 		    TREE_VALUE (t)
 		      = build_int_cst (TREE_TYPE (t),
 				       tree_to_uhwi (TREE_VALUE (t)) + 1);
+		}
+	      if (DECL_NONSTATIC_MEMBER_P (variant) && append_args_list)
+		{
+		  /* Shift likewise the number of args after which the
+		     interop object should be added.  */
+		  tree nargs = TREE_CHAIN (TREE_VALUE (adjust_args_list));
+		  TREE_PURPOSE (nargs)
+		    = build_int_cst (TREE_TYPE (nargs),
+				     tree_to_uhwi (TREE_PURPOSE (nargs)) + 1);
 		}
 	      DECL_ATTRIBUTES (variant) = tree_cons (
 		get_identifier ("omp declare variant variant args"),

@@ -26,7 +26,7 @@ module main
       integer function f4 (a)
          import c_ptr
          type(c_ptr), intent(inout) :: a
-         !$omp declare variant (f0) adjust_args (nothing: a) ! { dg-error "an 'adjust_args' clause at .1. can only be specified if the 'dispatch' selector of the construct selector set appears in the 'match' clause" }
+         !$omp declare variant (f0) adjust_args (nothing: a) ! { dg-error "the 'adjust_args' clause at .1. can only be specified if the 'dispatch' selector of the construct selector set appears in the 'match' clause" }
       end function
       integer function f5 (i)
          integer, intent(inout) :: i
