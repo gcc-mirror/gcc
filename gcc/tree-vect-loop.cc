@@ -9600,8 +9600,7 @@ vectorizable_phi (vec_info *,
    vector PHI node and the permute since those together compute the
    vectorized value of the scalar PHI.  We do not yet have the
    backedge value to fill in there nor into the vec_perm.  Those
-   are filled in maybe_set_vectorized_backedge_value and
-   vect_schedule_scc.
+   are filled in vect_schedule_scc.
 
    TODO:  Since the scalar loop does not have a use of the recurrence
    outside of the loop the natural way to implement peeling via
@@ -11792,45 +11791,6 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
   return true;
 }
 
-/* Kill any debug uses outside LOOP of SSA names defined in STMT_INFO.  */
-
-static void
-vect_loop_kill_debug_uses (class loop *loop, stmt_vec_info stmt_info)
-{
-  ssa_op_iter op_iter;
-  imm_use_iterator imm_iter;
-  def_operand_p def_p;
-  gimple *ustmt;
-
-  FOR_EACH_PHI_OR_STMT_DEF (def_p, stmt_info->stmt, op_iter, SSA_OP_DEF)
-    {
-      FOR_EACH_IMM_USE_STMT (ustmt, imm_iter, DEF_FROM_PTR (def_p))
-	{
-	  basic_block bb;
-
-	  if (!is_gimple_debug (ustmt))
-	    continue;
-
-	  bb = gimple_bb (ustmt);
-
-	  if (!flow_bb_inside_loop_p (loop, bb))
-	    {
-	      if (gimple_debug_bind_p (ustmt))
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_NOTE, vect_location,
-                                     "killing debug use\n");
-
-		  gimple_debug_bind_reset_value (ustmt);
-		  update_stmt (ustmt);
-		}
-	      else
-		gcc_unreachable ();
-	    }
-	}
-    }
-}
-
 /* Given loop represented by LOOP_VINFO, return true if computation of
    LOOP_VINFO_NITERS (= LOOP_VINFO_NITERSM1 + 1) doesn't overflow, false
    otherwise.  */
@@ -12202,126 +12162,6 @@ scale_profile_for_vect_loop (class loop *loop, edge exit_e, unsigned vf, bool fl
 
   scale_loop_profile (loop, profile_probability::always () / vf,
 		      get_likely_max_loop_iterations_int (loop));
-}
-
-/* For a vectorized stmt DEF_STMT_INFO adjust all vectorized PHI
-   latch edge values originally defined by it.  */
-
-static void
-maybe_set_vectorized_backedge_value (loop_vec_info loop_vinfo,
-				     stmt_vec_info def_stmt_info)
-{
-  tree def = gimple_get_lhs (vect_orig_stmt (def_stmt_info)->stmt);
-  if (!def || TREE_CODE (def) != SSA_NAME)
-    return;
-  stmt_vec_info phi_info;
-  imm_use_iterator iter;
-  use_operand_p use_p;
-  FOR_EACH_IMM_USE_FAST (use_p, iter, def)
-    {
-      gphi *phi = dyn_cast <gphi *> (USE_STMT (use_p));
-      if (!phi)
-	continue;
-      if (!(gimple_bb (phi)->loop_father->header == gimple_bb (phi)
-	    && (phi_info = loop_vinfo->lookup_stmt (phi))
-	    && STMT_VINFO_RELEVANT_P (phi_info)))
-	continue;
-      loop_p loop = gimple_bb (phi)->loop_father;
-      edge e = loop_latch_edge (loop);
-      if (PHI_ARG_DEF_FROM_EDGE (phi, e) != def)
-	continue;
-
-      if (VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (phi_info))
-	  && STMT_VINFO_REDUC_TYPE (phi_info) != FOLD_LEFT_REDUCTION
-	  && STMT_VINFO_REDUC_TYPE (phi_info) != EXTRACT_LAST_REDUCTION)
-	{
-	  vec<gimple *> &phi_defs = STMT_VINFO_VEC_STMTS (phi_info);
-	  vec<gimple *> &latch_defs = STMT_VINFO_VEC_STMTS (def_stmt_info);
-	  gcc_assert (phi_defs.length () == latch_defs.length ());
-	  for (unsigned i = 0; i < phi_defs.length (); ++i)
-	    add_phi_arg (as_a <gphi *> (phi_defs[i]),
-			 gimple_get_lhs (latch_defs[i]), e,
-			 gimple_phi_arg_location (phi, e->dest_idx));
-	}
-      else if (STMT_VINFO_DEF_TYPE (phi_info) == vect_first_order_recurrence)
-	{
-	  /* For first order recurrences we have to update both uses of
-	     the latch definition, the one in the PHI node and the one
-	     in the generated VEC_PERM_EXPR.  */
-	  vec<gimple *> &phi_defs = STMT_VINFO_VEC_STMTS (phi_info);
-	  vec<gimple *> &latch_defs = STMT_VINFO_VEC_STMTS (def_stmt_info);
-	  gcc_assert (phi_defs.length () == latch_defs.length ());
-	  tree phidef = gimple_assign_rhs1 (phi_defs[0]);
-	  gphi *vphi = as_a <gphi *> (SSA_NAME_DEF_STMT (phidef));
-	  for (unsigned i = 0; i < phi_defs.length (); ++i)
-	    {
-	      gassign *perm = as_a <gassign *> (phi_defs[i]);
-	      if (i > 0)
-		gimple_assign_set_rhs1 (perm, gimple_get_lhs (latch_defs[i-1]));
-	      gimple_assign_set_rhs2 (perm, gimple_get_lhs (latch_defs[i]));
-	      update_stmt (perm);
-	    }
-	  add_phi_arg (vphi, gimple_get_lhs (latch_defs.last ()), e,
-		       gimple_phi_arg_location (phi, e->dest_idx));
-	}
-    }
-}
-
-/* Vectorize STMT_INFO if relevant, inserting any new instructions before GSI.
-   When vectorizing STMT_INFO as a store, set *SEEN_STORE to its
-   stmt_vec_info.  */
-
-static bool
-vect_transform_loop_stmt (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
-			  gimple_stmt_iterator *gsi, stmt_vec_info *seen_store)
-{
-  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "------>vectorizing statement: %G", stmt_info->stmt);
-
-  if (MAY_HAVE_DEBUG_BIND_STMTS && !STMT_VINFO_LIVE_P (stmt_info))
-    vect_loop_kill_debug_uses (loop, stmt_info);
-
-  if (!STMT_VINFO_RELEVANT_P (stmt_info)
-      && !STMT_VINFO_LIVE_P (stmt_info))
-    {
-      if (is_gimple_call (stmt_info->stmt)
-	  && gimple_call_internal_p (stmt_info->stmt, IFN_MASK_CALL))
-	{
-	  gcc_assert (!gimple_call_lhs (stmt_info->stmt));
-	  *seen_store = stmt_info;
-	  return false;
-	}
-      return false;
-    }
-
-  if (STMT_VINFO_VECTYPE (stmt_info))
-    {
-      poly_uint64 nunits
-	= TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
-      if (!STMT_SLP_TYPE (stmt_info)
-	  && maybe_ne (nunits, vf)
-	  && dump_enabled_p ())
-	/* For SLP VF is set according to unrolling factor, and not
-	   to vector size, hence for SLP this print is not valid.  */
-	dump_printf_loc (MSG_NOTE, vect_location, "multiple-types.\n");
-    }
-
-  /* Pure SLP statements have already been vectorized.  We still need
-     to apply loop vectorization to hybrid SLP statements.  */
-  if (PURE_SLP_STMT (stmt_info))
-    return false;
-
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "transform statement.\n");
-
-  if (vect_transform_stmt (loop_vinfo, stmt_info, gsi, NULL, NULL))
-    *seen_store = stmt_info;
-
-  return true;
 }
 
 /* Helper function to pass to simplify_replace_tree to enable replacing tree's
@@ -12749,8 +12589,7 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 	}
     }
 
-  /* Schedule the SLP instances first, then handle loop vectorization
-     below.  */
+  /* Schedule the SLP instances.  */
   if (!loop_vinfo->slp_instances.is_empty ())
     {
       DUMP_VECT_SCOPE ("scheduling SLP instances");
@@ -12769,134 +12608,14 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			     GSI_CONTINUE_LINKING);
     }
 
-  /* FORNOW: the vectorizer supports only loops which body consist
-     of one basic block (header + empty latch). When the vectorizer will
-     support more involved loop forms, the order by which the BBs are
-     traversed need to be reconsidered.  */
-
+  /* Stub out scalar statements that must not survive vectorization and
+     were not picked as relevant in any SLP instance.
+     Doing this here helps with grouped statements, or statements that
+     are involved in patterns.  */
   for (i = 0; i < nbbs; i++)
     {
       basic_block bb = bbs[i];
       stmt_vec_info stmt_info;
-
-      for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
-	   gsi_next (&si))
-	{
-	  gphi *phi = si.phi ();
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "------>vectorizing phi: %G", (gimple *) phi);
-	  stmt_info = loop_vinfo->lookup_stmt (phi);
-	  if (!stmt_info)
-	    continue;
-
-	  if (MAY_HAVE_DEBUG_BIND_STMTS && !STMT_VINFO_LIVE_P (stmt_info))
-	    vect_loop_kill_debug_uses (loop, stmt_info);
-
-	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
-	      && !STMT_VINFO_LIVE_P (stmt_info))
-	    continue;
-
-	  if (STMT_VINFO_VECTYPE (stmt_info)
-	      && (maybe_ne
-		  (TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info)), vf))
-	      && dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location, "multiple-types.\n");
-
-	  if ((STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def
-	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
-	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def
-	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle
-	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_first_order_recurrence
-	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def)
-	      && ! PURE_SLP_STMT (stmt_info))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location, "transform phi.\n");
-	      vect_transform_stmt (loop_vinfo, stmt_info, NULL, NULL, NULL);
-	    }
-	}
-
-      for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);
-	   gsi_next (&si))
-	{
-	  gphi *phi = si.phi ();
-	  stmt_info = loop_vinfo->lookup_stmt (phi);
-	  if (!stmt_info)
-	    continue;
-
-	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
-	      && !STMT_VINFO_LIVE_P (stmt_info))
-	    continue;
-
-	  if ((STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def
-	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
-	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def
-	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle
-	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def
-	       || STMT_VINFO_DEF_TYPE (stmt_info) == vect_first_order_recurrence)
-	      && ! PURE_SLP_STMT (stmt_info))
-	    maybe_set_vectorized_backedge_value (loop_vinfo, stmt_info);
-	}
-
-      for (gimple_stmt_iterator si = gsi_start_bb (bb);
-	   !gsi_end_p (si);)
-	{
-	  stmt = gsi_stmt (si);
-
-	  /* Ignore vector stmts created in the outer loop.  */
-	  stmt_info = loop_vinfo->lookup_stmt (stmt);
-
-	  /* vector stmts created in the outer-loop during vectorization of
-	     stmts in an inner-loop may not have a stmt_info, and do not
-	     need to be vectorized.  */
-	  stmt_vec_info seen_store = NULL;
-	  if (stmt_info)
-	    {
-	      if (STMT_VINFO_IN_PATTERN_P (stmt_info))
-		{
-		  gimple *def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
-		  for (gimple_stmt_iterator subsi = gsi_start (def_seq);
-		       !gsi_end_p (subsi); gsi_next (&subsi))
-		    {
-		      stmt_vec_info pat_stmt_info
-			= loop_vinfo->lookup_stmt (gsi_stmt (subsi));
-		      vect_transform_loop_stmt (loop_vinfo, pat_stmt_info,
-						&si, &seen_store);
-		    }
-		  stmt_vec_info pat_stmt_info
-		      = STMT_VINFO_RELATED_STMT (stmt_info);
-		  if (vect_transform_loop_stmt (loop_vinfo, pat_stmt_info,
-						&si, &seen_store))
-		    maybe_set_vectorized_backedge_value (loop_vinfo,
-							 pat_stmt_info);
-		}
-	      else
-		{
-		  if (vect_transform_loop_stmt (loop_vinfo, stmt_info, &si,
-						&seen_store))
-		    maybe_set_vectorized_backedge_value (loop_vinfo,
-							 stmt_info);
-		}
-	    }
-	  gsi_next (&si);
-	  if (seen_store)
-	    {
-	      if (STMT_VINFO_GROUPED_ACCESS (seen_store))
-		/* Interleaving.  If IS_STORE is TRUE, the
-		   vectorization of the interleaving chain was
-		   completed - free all the stores in the chain.  */
-		vect_remove_stores (loop_vinfo,
-				    DR_GROUP_FIRST_ELEMENT (seen_store));
-	      else
-		/* Free the attached stmt_vec_info and remove the stmt.  */
-		loop_vinfo->remove_stmt (stmt_info);
-	    }
-	}
-
-      /* Stub out scalar statements that must not survive vectorization.
-	 Doing this here helps with grouped statements, or statements that
-	 are involved in patterns.  */
       for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
 	   !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -12925,8 +12644,16 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 		  gsi_replace (&gsi, new_stmt, true);
 		}
 	    }
+	  else if (ifn == IFN_MASK_CALL
+		   && (stmt_info = loop_vinfo->lookup_stmt (call))
+		   && !STMT_VINFO_RELEVANT_P (stmt_info)
+		   && !STMT_VINFO_LIVE_P (stmt_info))
+	    {
+	      gcc_assert (!gimple_call_lhs (stmt_info->stmt));
+	      loop_vinfo->remove_stmt (stmt_info);
+	    }
 	}
-    }				/* BBs in loop */
+    }
 
   /* The vectorization factor is always > 1, so if we use an IV increment of 1.
      a zero NITERS becomes a nonzero NITERS_VECTOR.  */

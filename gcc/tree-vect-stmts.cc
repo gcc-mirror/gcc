@@ -14131,6 +14131,10 @@ vect_transform_stmt (vec_info *vinfo,
 
   gcc_assert (slp_node || !PURE_SLP_STMT (stmt_info));
 
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "------>vectorizing statement: %G", stmt_info->stmt);
+
   tree saved_vectype = STMT_VINFO_VECTYPE (stmt_info);
   if (slp_node)
     STMT_VINFO_VECTYPE (stmt_info) = SLP_TREE_VECTYPE (slp_node);
