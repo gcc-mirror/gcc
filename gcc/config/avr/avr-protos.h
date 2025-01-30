@@ -21,6 +21,7 @@
 
 extern bool avr_function_arg_regno_p (int r);
 extern void avr_cpu_cpp_builtins (cpp_reader * pfile);
+extern bool avr_builtin_supported_p (unsigned id);
 extern enum reg_class avr_regno_reg_class (int r);
 extern void asm_globalize_label (FILE *file, const char *name);
 extern void avr_adjust_reg_alloc_order (void);

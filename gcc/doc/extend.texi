@@ -17369,14 +17369,6 @@ might increase delay time. @var{ticks} must be a compile-time
 integer constant; delays with a variable number of cycles are not supported.
 @enddefbuiltin
 
-@defbuiltin{int8_t __builtin_avr_flash_segment (const __memx void*)}
-This built-in takes a byte address to the 24-bit
-@ref{AVR Named Address Spaces,address space} @code{__memx} and returns
-the number of the flash segment (the 64 KiB chunk) where the address
-points to.  Counting starts at @code{0}.
-If the address does not point to flash memory, return @code{-1}.
-@enddefbuiltin
-
 @defbuiltin{uint8_t __builtin_avr_insert_bits (uint32_t @var{map}, uint8_t @var{bits}, uint8_t @var{val})}
 Insert bits from @var{bits} into @var{val} and return the resulting
 value. The nibbles of @var{map} determine how the insertion is
@@ -17443,6 +17435,16 @@ The open coded C versions take at least @code{5 + 4 * @var{offs}} cycles
 @defbuiltin{void __builtin_avr_nops (uint16_t @var{count})}
 Insert @var{count} @code{NOP} instructions.
 The number of instructions must be a compile-time integer constant.
+@enddefbuiltin
+
+@b{All of the following built-in functions are only available for GNU-C}
+
+@defbuiltin{int8_t __builtin_avr_flash_segment (const __memx void*)}
+This built-in takes a byte address to the 24-bit
+@ref{AVR Named Address Spaces,named address space} @code{__memx} and returns
+the number of the flash segment (the 64 KiB chunk) where the address
+points to.  Counting starts at @code{0}.
+If the address does not point to flash memory, return @code{-1}.
 @enddefbuiltin
 
 @noindent

@@ -15689,6 +15689,24 @@ avr_bdesc[AVR_BUILTIN_COUNT] =
   };
 
 
+/* Some of our built-in function are available for GNU-C only:
+   - Built-ins that use named address-spaces.
+   - Built-ins that use fixed-point types.  */
+
+bool
+avr_builtin_supported_p (unsigned id)
+{
+  const bool uses_as = id == AVR_BUILTIN_FLASH_SEGMENT;
+
+  // We don't support address-spaces on Reduced Tiny.
+  if (AVR_TINY && uses_as)
+    return false;
+
+  return (lang_GNU_C ()
+	  || id < AVR_FIRST_C_ONLY_BUILTIN_ID);
+}
+
+
 /* Implement `TARGET_BUILTIN_DECL'.  */
 
 static tree
@@ -15891,9 +15909,10 @@ avr_init_builtins (void)
     char *name = (char *) alloca (1 + strlen (Name));			\
 									\
     gcc_assert (id < AVR_BUILTIN_COUNT);				\
-    avr_bdesc[id].fndecl						\
-      = add_builtin_function (avr_tolower (name, Name), TYPE, id,	\
-			      BUILT_IN_MD, LIBNAME, ATTRS);		\
+    avr_bdesc[id].fndecl = avr_builtin_supported_p (id)			\
+      ? add_builtin_function (avr_tolower (name, Name), TYPE, id,	\
+			      BUILT_IN_MD, LIBNAME, ATTRS)		\
+      : NULL_TREE;							\
   }
 #include "builtins.def"
 #undef DEF_BUILTIN
