@@ -1730,6 +1730,24 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
       input_uses[i] = remove_note_accesses (attempt, input_uses[i]);
     }
 
+  // Get the uses that the pair instruction would have, and punt if
+  // the unpaired instructions use different definitions of the same
+  // register.  That would normally be caught as a side-effect of
+  // hazard detection below, but this check also deals with cases
+  // in which one use is undefined and the other isn't.
+  auto new_uses = merge_access_arrays (attempt,
+				       drop_memory_access (input_uses[0]),
+				       drop_memory_access (input_uses[1]));
+  if (!new_uses.is_valid ())
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "  load pair: i%d and i%d use different definiitions of"
+		 " the same register\n",
+		 insns[0]->uid (), insns[1]->uid ());
+      return false;
+    }
+
   // Edge case: if the first insn is a writeback load and the
   // second insn is a non-writeback load which transfers into the base
   // register, then we should drop the writeback altogether as the
@@ -1852,11 +1870,7 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
 						   input_defs[1]);
       gcc_assert (pair_change->new_defs.is_valid ());
 
-      pair_change->new_uses
-	= merge_access_arrays (attempt,
-			       drop_memory_access (input_uses[0]),
-			       drop_memory_access (input_uses[1]));
-      gcc_assert (pair_change->new_uses.is_valid ());
+      pair_change->new_uses = new_uses;
       set_pair_pat (pair_change);
     }
   else
@@ -1877,9 +1891,7 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
 	    case Action::CHANGE:
 	    {
 	      set_pair_pat (change);
-	      change->new_uses = merge_access_arrays (attempt,
-						      input_uses[0],
-						      input_uses[1]);
+	      change->new_uses = new_uses;
 	      auto d1 = drop_memory_access (input_defs[0]);
 	      auto d2 = drop_memory_access (input_defs[1]);
 	      change->new_defs = merge_access_arrays (attempt, d1, d2);
@@ -1907,9 +1919,7 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
 	      auto new_insn = crtl->ssa->create_insn (attempt, INSN, pair_pat);
 	      change = make_change (new_insn);
 	      change->move_range = move_range;
-	      change->new_uses = merge_access_arrays (attempt,
-						      input_uses[0],
-						      input_uses[1]);
+	      change->new_uses = new_uses;
 	      gcc_assert (change->new_uses.is_valid ());
 
 	      auto d1 = drop_memory_access (input_defs[0]);
