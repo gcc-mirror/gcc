@@ -1005,9 +1005,11 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
       sprintf (LABEL, "*%s%ld", "lASAN", (long)(NUM));\
     else if (strcmp ("LTRAMP", PREFIX) == 0)	\
       sprintf (LABEL, "*%s%ld", "lTRAMP", (long)(NUM));\
-    else if (strcmp ("Lcontract_violation", PREFIX) == 0)	\
+    else if (strlen (PREFIX) == 19 \
+	     && strcmp ("Lcontract_violation", PREFIX) == 0)	\
       sprintf (LABEL, "*%s%ld", "lcontract_violation", (long)(NUM));\
-    else if (strcmp ("Lsrc_loc_impl.", PREFIX) == 0)	\
+    else if (strlen (PREFIX) == 13 \
+	     && strcmp ("Lsrc_loc_impl", PREFIX) == 0)	\
       sprintf (LABEL, "*%s%ld", "lsrc_loc_impl", (long)(NUM));\
     else						\
       sprintf (LABEL, "*%s%ld", PREFIX, (long)(NUM));	\
