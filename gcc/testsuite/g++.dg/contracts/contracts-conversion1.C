@@ -3,17 +3,17 @@
 // { dg-do compile }
 // { dg-options "-std=c++2a -fcontracts" }
 
+struct Z {};
 
 template<typename T>
-void fn()
-  [[ pre: T{} ]] // { dg-error "no match" }
+void fn(T t)
+[[ pre: t ]] // { dg-error "could not convert" }
 {
 }
 
-struct Z { };
 
 int main(int, char**) {
-  fn<int>();
-  fn<Z>();
+  fn(1);
+  fn(Z{});
   return 0;
 }
