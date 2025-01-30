@@ -1,3 +1,13 @@
+2025-01-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-01-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118047
+	PR c++/118355
+	* g++.dg/cpp0x/nsdmi-list10.C: New test.
+	* g++.dg/cpp0x/nsdmi-list9.C: New test.
+
 2025-01-28  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:
