@@ -1049,7 +1049,7 @@ resolve_common_vars (gfc_common_head *common_block, bool named_common)
 static void
 resolve_common_blocks (gfc_symtree *common_root)
 {
-  gfc_symbol *sym;
+  gfc_symbol *sym = NULL;
   gfc_gsymbol * gsym;
 
   if (common_root == NULL)
@@ -17693,6 +17693,12 @@ resolve_symbol (gfc_symbol *sym)
 	  && sym->attr.if_source == IFSRC_UNKNOWN
 	  && sym->ts.type == BT_UNKNOWN))
     {
+      /* A symbol in a common block might not have been resolved yet properly.
+	 Do not try to find an interface with the same name.  */
+      if (sym->attr.flavor == FL_UNKNOWN && !sym->attr.intrinsic
+	  && !sym->attr.generic && !sym->attr.external
+	  && sym->attr.in_common)
+	goto skip_interfaces;
 
     /* If we find that a flavorless symbol is an interface in one of the
        parent namespaces, find its symtree in this namespace, free the
@@ -17716,6 +17722,7 @@ resolve_symbol (gfc_symbol *sym)
 	    }
 	}
 
+skip_interfaces:
       /* Otherwise give it a flavor according to such attributes as
 	 it has.  */
       if (sym->attr.flavor == FL_UNKNOWN && sym->attr.external == 0
