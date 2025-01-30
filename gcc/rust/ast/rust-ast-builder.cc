@@ -65,6 +65,27 @@ Builder::array (std::vector<std::unique_ptr<Expr>> &&members) const
 }
 
 std::unique_ptr<Expr>
+Builder::qualified_path_in_expression (std::unique_ptr<Type> &&type,
+				       TypePath trait,
+				       PathExprSegment segment) const
+{
+  auto segments = {segment};
+
+  return qualified_path_in_expression (std::move (type), trait, segments);
+}
+
+std::unique_ptr<Expr>
+Builder::qualified_path_in_expression (
+  std::unique_ptr<Type> &&type, TypePath trait,
+  std::vector<PathExprSegment> &&segments) const
+{
+  auto qual_type = QualifiedPathType (std::move (type), loc, trait);
+
+  return std::unique_ptr<QualifiedPathInExpression> (
+    new QualifiedPathInExpression (qual_type, std::move (segments), {}, loc));
+}
+
+std::unique_ptr<Expr>
 Builder::identifier (std::string name) const
 {
   return std::unique_ptr<Expr> (new IdentifierExpr (name, {}, loc));
@@ -111,17 +132,18 @@ Builder::fn_qualifiers () const
   return FunctionQualifiers (loc, Async::No, Const::No, Unsafety::Normal);
 }
 
-Function
-Builder::function (Identifier function_name,
+std::unique_ptr<Function>
+Builder::function (std::string function_name,
 		   std::vector<std::unique_ptr<Param>> params,
 		   std::unique_ptr<Type> return_type,
 		   std::unique_ptr<BlockExpr> block,
 		   FunctionQualifiers qualifiers, WhereClause where_clause,
 		   Visibility visibility) const
 {
-  return Function (function_name, qualifiers, {}, std::move (params),
-		   std::move (return_type), where_clause, std::move (block),
-		   visibility, {}, loc);
+  return std::unique_ptr<Function> (
+    new Function (function_name, qualifiers, {}, std::move (params),
+		  std::move (return_type), where_clause, std::move (block),
+		  visibility, {}, loc));
 }
 
 PathExprSegment
