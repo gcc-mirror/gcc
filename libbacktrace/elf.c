@@ -1147,7 +1147,10 @@ elf_fetch_bits (const unsigned char **ppin, const unsigned char *pinend,
   next = __builtin_bswap32 (next);
 #endif
 #else
-  next = pin[0] | (pin[1] << 8) | (pin[2] << 16) | (pin[3] << 24);
+  next = ((uint32_t)pin[0]
+	  | ((uint32_t)pin[1] << 8)
+	  | ((uint32_t)pin[2] << 16)
+	  | ((uint32_t)pin[3] << 24));
 #endif
 
   val |= (uint64_t)next << bits;
@@ -1198,7 +1201,10 @@ elf_fetch_bits_backward (const unsigned char **ppin,
   next = __builtin_bswap32 (next);
 #endif
 #else
-  next = pin[0] | (pin[1] << 8) | (pin[2] << 16) | (pin[3] << 24);
+  next = ((uint32_t)pin[0]
+	  | ((uint32_t)pin[1] << 8)
+	  | ((uint32_t)pin[2] << 16)
+	  | ((uint32_t)pin[3] << 24));
 #endif
 
   val <<= 32;
@@ -5872,10 +5878,10 @@ elf_uncompress_lzma_block (const unsigned char *compressed,
 	  /* The byte at compressed[off] is ignored for some
 	     reason.  */
 
-	  code = ((compressed[off + 1] << 24)
-		  + (compressed[off + 2] << 16)
-		  + (compressed[off + 3] << 8)
-		  + compressed[off + 4]);
+	  code = ((uint32_t)(compressed[off + 1] << 24)
+		  + ((uint32_t)compressed[off + 2] << 16)
+		  + ((uint32_t)compressed[off + 3] << 8)
+		  + (uint32_t)compressed[off + 4]);
 	  off += 5;
 
 	  /* This is the main LZMA decode loop.  */
@@ -6198,10 +6204,10 @@ elf_uncompress_lzma_block (const unsigned char *compressed,
 	  return 0;
 	}
       computed_crc = elf_crc32 (0, uncompressed, uncompressed_offset);
-      stream_crc = (compressed[off]
-		    | (compressed[off + 1] << 8)
-		    | (compressed[off + 2] << 16)
-		    | (compressed[off + 3] << 24));
+      stream_crc = ((uint32_t)compressed[off]
+		    | ((uint32_t)compressed[off + 1] << 8)
+		    | ((uint32_t)compressed[off + 2] << 16)
+		    | ((uint32_t)compressed[off + 3] << 24));
       if (computed_crc != stream_crc)
 	{
 	  elf_uncompress_failed ();
@@ -6336,10 +6342,10 @@ elf_uncompress_lzma (struct backtrace_state *state,
 
   /* Before that is the size of the index field, which precedes the
      footer.  */
-  index_size = (compressed[offset - 4]
-		| (compressed[offset - 3] << 8)
-		| (compressed[offset - 2] << 16)
-		| (compressed[offset - 1] << 24));
+  index_size = ((size_t)compressed[offset - 4]
+		| ((size_t)compressed[offset - 3] << 8)
+		| ((size_t)compressed[offset - 2] << 16)
+		| ((size_t)compressed[offset - 1] << 24));
   index_size = (index_size + 1) * 4;
   offset -= 4;
 
