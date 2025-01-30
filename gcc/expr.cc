@@ -11796,6 +11796,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		&& known_eq (GET_MODE_BITSIZE (DECL_MODE (base)), type_size))
 	      return expand_expr (build1 (VIEW_CONVERT_EXPR, type, base),
 				  target, tmode, modifier);
+	    unsigned align;
 	    if (TYPE_MODE (type) == BLKmode || maybe_lt (offset, 0))
 	      {
 		temp = assign_stack_temp (DECL_MODE (base),
@@ -11804,6 +11805,17 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		temp = adjust_address (temp, TYPE_MODE (type), offset);
 		if (TYPE_MODE (type) == BLKmode)
 		  set_mem_size (temp, int_size_in_bytes (type));
+		/* When the original ref was misaligned so will be the
+		   access to the stack temporary.  Not all targets handle
+		   this correctly, some will ICE in sanity checking.
+		   Handle this by doing bitfield extraction when necessary.  */
+		else if ((align = get_object_alignment (exp))
+			 < GET_MODE_ALIGNMENT (TYPE_MODE (type)))
+		  temp
+		    = expand_misaligned_mem_ref (temp, TYPE_MODE (type),
+						 unsignedp, align,
+						 modifier == EXPAND_STACK_PARM
+						 ? NULL_RTX : target, NULL);
 		return temp;
 	      }
 	    /* When the access is fully outside of the underlying object
