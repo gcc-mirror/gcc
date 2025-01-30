@@ -1,3 +1,17 @@
+2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.h (gfc_omp_declare_variant): Add append_args_list.
+	* openmp.cc (gfc_parser_omp_clause_init_modifiers): New;
+	splitt of from ...
+	(gfc_match_omp_init): ... here; call it.
+	(gfc_match_omp_declare_variant): Update to handle append_args
+	clause; some syntax handling fixes.
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Handle
+	append_args clause; add some diagnostic.
+
 2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

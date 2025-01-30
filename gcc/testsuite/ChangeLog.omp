@@ -1,3 +1,28 @@
+2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/append-args-1.c: Update dg-*.
+	* c-c++-common/gomp/append-args-3.c: Likewise.
+	* g++.dg/gomp/append-args-1.C: Likewise.
+	* gfortran.dg/gomp/adjust-args-1.f90: Likewise.
+	* gfortran.dg/gomp/adjust-args-3.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-2.f90: Likewise.
+	* c-c++-common/gomp/append-args-6.c: New test.
+	* c-c++-common/gomp/append-args-7.c: New test.
+	* c-c++-common/gomp/append-args-8.c: New test.
+	* c-c++-common/gomp/append-args-9.c: New test.
+	* g++.dg/gomp/append-args-4.C: New test.
+	* g++.dg/gomp/append-args-5.C: New test.
+	* g++.dg/gomp/append-args-6.C: New test.
+	* g++.dg/gomp/append-args-7.C: New test.
+	* gcc.dg/gomp/append-args-1.c: New test.
+	* gfortran.dg/gomp/append_args-1.f90: New test.
+	* gfortran.dg/gomp/append_args-2.f90: New test.
+	* gfortran.dg/gomp/append_args-3.f90: New test.
+	* gfortran.dg/gomp/append_args-4.f90: New test.
+
 2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

@@ -1,3 +1,11 @@
+2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (Impl. Status): Update for accumpulated changes
+	related to 'dispatch' and interop.
+
 2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

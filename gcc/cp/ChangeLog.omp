@@ -1,3 +1,16 @@
+2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (cp_finish_omp_declare_variant): Modify how append_args
+	is saved internally.
+	* pt.cc (tsubst_attribute): Likewise.
+	(tsubst_omp_clauses): Remove C_ORT_OMP_DECLARE_SIMD from interop
+	handling as no longer called for it.
+	* decl.cc (omp_declare_variant_finalize_one): Update append_args
+	changes; fixes for ADL input.
+
 2025-01-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
