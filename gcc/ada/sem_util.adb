@@ -12425,8 +12425,13 @@ package body Sem_Util is
 
       while Present (Node) loop
          case Nkind (Node) is
-            when N_Null_Statement | N_Call_Marker | N_Raise_xxx_Error =>
+            when N_Null_Statement | N_Call_Marker =>
                null;
+
+            when N_Raise_xxx_Error =>
+               if Comes_From_Source (Node) then
+                  return False;
+               end if;
 
             when N_Object_Declaration =>
                if Present (Expression (Node))
