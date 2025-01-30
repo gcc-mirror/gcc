@@ -2171,6 +2171,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 		  if ((STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def
 		       || (STMT_VINFO_DEF_TYPE (stmt_info)
 			   == vect_double_reduction_def))
+		      && ! PURE_SLP_STMT (stmt_info)
 		      && !vectorizable_lc_phi (loop_vinfo,
 					       stmt_info, NULL, NULL))
 		    return opt_result::failure_at (phi, "unsupported phi\n");
@@ -7770,9 +7771,10 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	{
 	  /* For SLP we arrive here for both the inner loop LC PHI and
 	     the outer loop PHI.  The latter is what we want to analyze
-	     the reduction with.  */
+	     the reduction with.  The LC PHI is handled by
+	     vectorizable_lc_phi.  */
 	  gcc_assert (slp_node);
-	  return true;
+	  return gimple_phi_num_args (as_a <gphi *> (stmt_info->stmt)) == 2;
 	}
       use_operand_p use_p;
       gimple *use_stmt;
