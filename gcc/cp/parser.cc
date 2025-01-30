@@ -31761,9 +31761,9 @@ void cp_parser_late_contract_condition (cp_parser *parser,
       result = make_postcondition_variable (identifier, type);
       ++processing_template_decl;
     }
-  condition = cp_parser_conditional_expression (parser);
+  cp_expr parsed_condition = cp_parser_conditional_expression (parser);
   /* Commit to changes.  */
-  update_late_contract (contract, result, condition);
+  update_late_contract (contract, result, parsed_condition);
   /* Leave our temporary scope for the postcondition result.  */
   if (identifier)
     --processing_template_decl;

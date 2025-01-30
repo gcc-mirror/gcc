@@ -847,7 +847,7 @@ finish_contract_attribute (tree identifier, tree contract)
    if any.  */
 
 void
-update_late_contract (tree contract, tree result, tree condition)
+update_late_contract (tree contract, tree result, cp_expr condition)
 {
   if (TREE_CODE (contract) == POSTCONDITION_STMT)
     POSTCONDITION_IDENTIFIER (contract) = result;
