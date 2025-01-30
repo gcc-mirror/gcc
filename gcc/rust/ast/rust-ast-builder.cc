@@ -26,6 +26,7 @@
 #include "rust-path.h"
 #include "rust-system.h"
 #include "rust-token.h"
+#include <memory>
 
 namespace Rust {
 namespace AST {
@@ -83,10 +84,44 @@ Builder::tuple_idx (std::string receiver, int idx) const
     new TupleIndexExpr (identifier (receiver), idx, {}, loc));
 }
 
+std::unique_ptr<Expr>
+Builder::tuple (std::vector<std::unique_ptr<Expr>> &&values) const
+{
+  return std::unique_ptr<TupleExpr> (
+    new TupleExpr (std::move (values), {}, {}, loc));
+}
+
+std::unique_ptr<Param>
+Builder::self_ref_param (bool mutability) const
+{
+  return std::make_unique<SelfParam> (Lifetime::error (), mutability, loc);
+}
+
+std::unique_ptr<Param>
+Builder::function_param (std::unique_ptr<Pattern> &&pattern,
+			 std::unique_ptr<Type> &&type) const
+{
+  return std::unique_ptr<FunctionParam> (
+    new FunctionParam (std::move (pattern), std::move (type), {}, loc));
+}
+
 FunctionQualifiers
 Builder::fn_qualifiers () const
 {
   return FunctionQualifiers (loc, Async::No, Const::No, Unsafety::Normal);
+}
+
+Function
+Builder::function (Identifier function_name,
+		   std::vector<std::unique_ptr<Param>> params,
+		   std::unique_ptr<Type> return_type,
+		   std::unique_ptr<BlockExpr> block,
+		   FunctionQualifiers qualifiers, WhereClause where_clause,
+		   Visibility visibility) const
+{
+  return Function (function_name, qualifiers, {}, std::move (params),
+		   std::move (return_type), where_clause, std::move (block),
+		   visibility, {}, loc);
 }
 
 PathExprSegment
@@ -196,6 +231,14 @@ TypePath
 Builder::type_path (LangItem::Kind lang_item) const
 {
   return type_path (type_path_segment (lang_item));
+}
+
+std::unique_ptr<Type>
+Builder::reference_type (std::unique_ptr<TypeNoBounds> &&inner_type,
+			 bool mutability) const
+{
+  return std::make_unique<ReferenceType> (mutability, std::move (inner_type),
+					  loc);
 }
 
 PathInExpression
@@ -354,6 +397,25 @@ Builder::loop (std::vector<std::unique_ptr<Stmt>> &&stmts)
 		   loc));
 
   return std::unique_ptr<Expr> (new LoopExpr (std::move (block), loc));
+}
+
+std::unique_ptr<TypeParamBound>
+Builder::trait_bound (TypePath bound)
+{
+  return std::make_unique<TraitBound> (bound, loc);
+}
+
+std::unique_ptr<Item>
+Builder::trait_impl (TypePath trait_path, std::unique_ptr<Type> target,
+		     std::vector<std::unique_ptr<AssociatedItem>> trait_items,
+		     std::vector<std::unique_ptr<GenericParam>> generics,
+		     WhereClause where_clause, Visibility visibility) const
+{
+  return std::unique_ptr<Item> (
+    new TraitImpl (trait_path, /* unsafe */ false,
+		   /* exclam */ false, std::move (trait_items),
+		   std::move (generics), std::move (target), where_clause,
+		   visibility, {}, {}, loc));
 }
 
 std::unique_ptr<Type>

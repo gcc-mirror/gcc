@@ -70,6 +70,10 @@ public:
   /* Create a tuple index expression (`receiver.0`) */
   std::unique_ptr<Expr> tuple_idx (std::string receiver, int idx) const;
 
+  /* Create a tuple expression (`(a1, a2, a3)`) */
+  std::unique_ptr<Expr> tuple (std::vector<std::unique_ptr<Expr>> &&values
+			       = {}) const;
+
   /* Create a reference to an expression (`&of`) */
   std::unique_ptr<Expr> ref (std::unique_ptr<Expr> &&of,
 			     bool mut = false) const;
@@ -106,8 +110,24 @@ public:
   std::unique_ptr<Expr>
   array (std::vector<std::unique_ptr<Expr>> &&members) const;
 
+  /* Self parameter for a function definition (`&self`) */
+  std::unique_ptr<Param> self_ref_param (bool mutability = false) const;
+  /* A regular named function parameter for a definition (`a: type`) */
+  std::unique_ptr<Param> function_param (std::unique_ptr<Pattern> &&pattern,
+					 std::unique_ptr<Type> &&type) const;
+
   /* Empty function qualifiers, with no specific qualifiers */
   FunctionQualifiers fn_qualifiers () const;
+
+  Function
+  function (Identifier function_name,
+	    std::vector<std::unique_ptr<Param>> params,
+	    std::unique_ptr<Type> return_type, std::unique_ptr<BlockExpr> block,
+	    FunctionQualifiers qualifiers
+	    = FunctionQualifiers (UNKNOWN_LOCATION, Async::No, Const::No,
+				  Unsafety::Normal),
+	    WhereClause where_clause = WhereClause::create_empty (),
+	    Visibility visibility = Visibility::create_private ()) const;
 
   /* Create a single path segment from one string */
   PathExprSegment path_segment (std::string seg) const;
@@ -140,6 +160,10 @@ public:
   TypePath type_path (std::string type) const;
   TypePath type_path (LangItem::Kind lang_item) const;
 
+  std::unique_ptr<Type>
+  reference_type (std::unique_ptr<TypeNoBounds> &&inner_type,
+		  bool mutability = false) const;
+
   /**
    * Create a path in expression from multiple segments (`Clone::clone`). You
    * do not need to separate the segments using `::`, you can simply provide a
@@ -164,8 +188,8 @@ public:
 
   /**
    * Create an expression for struct instantiation with fields (`S { a, b: c }`)
-   * Tuple expressions are call expressions and can thus be constructed with
-   * `call`
+   * Named tuple expressions (`S(a, b, c)`) are call expressions and can thus be
+   * constructed with `call`
    */
   std::unique_ptr<Expr>
   struct_expr (std::string struct_name,
@@ -198,6 +222,14 @@ public:
 
   /* Create a loop expression */
   std::unique_ptr<Expr> loop (std::vector<std::unique_ptr<Stmt>> &&stmts);
+
+  std::unique_ptr<TypeParamBound> trait_bound (TypePath bound);
+  std::unique_ptr<Item>
+  trait_impl (TypePath trait_path, std::unique_ptr<Type> target,
+	      std::vector<std::unique_ptr<AssociatedItem>> trait_items = {},
+	      std::vector<std::unique_ptr<GenericParam>> generics = {},
+	      WhereClause where_clause = WhereClause::create_empty (),
+	      Visibility visibility = Visibility::create_private ()) const;
 
   static std::unique_ptr<Type> new_type (Type &type);
 
