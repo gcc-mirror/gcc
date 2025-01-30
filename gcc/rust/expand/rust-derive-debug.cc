@@ -77,10 +77,10 @@ DeriveDebug::stub_debug_fn ()
 
   auto params = vec (std::move (self), std::move (fmt));
 
-  auto function = builder.function ({"fmt"}, std::move (params),
+  auto function = builder.function ("fmt", std::move (params),
 				    std::move (return_type), std::move (block));
 
-  return ptrify (function);
+  return function;
 }
 
 std::unique_ptr<Item>

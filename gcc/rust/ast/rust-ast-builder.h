@@ -104,7 +104,8 @@ public:
    * arguments (`path(arg0, arg1, arg2)`)
    */
   std::unique_ptr<Expr> call (std::unique_ptr<Expr> &&path,
-			      std::vector<std::unique_ptr<Expr>> &&args) const;
+			      std::vector<std::unique_ptr<Expr>> &&args
+			      = {}) const;
   std::unique_ptr<Expr> call (std::unique_ptr<Expr> &&path,
 			      std::unique_ptr<Expr> &&arg) const;
 
@@ -113,6 +114,15 @@ public:
    */
   std::unique_ptr<Expr>
   array (std::vector<std::unique_ptr<Expr>> &&members) const;
+
+  /* Create a qualified path in expression (`<type as Trait>::seg::expr`) */
+  std::unique_ptr<Expr>
+  qualified_path_in_expression (std::unique_ptr<Type> &&type, TypePath trait,
+				PathExprSegment segment) const;
+  std::unique_ptr<Expr>
+  qualified_path_in_expression (std::unique_ptr<Type> &&type, TypePath trait,
+				std::vector<PathExprSegment> &&segments
+				= {}) const;
 
   /* Self parameter for a function definition (`&self`) */
   std::unique_ptr<Param> self_ref_param (bool mutability = false) const;
@@ -123,8 +133,8 @@ public:
   /* Empty function qualifiers, with no specific qualifiers */
   FunctionQualifiers fn_qualifiers () const;
 
-  Function
-  function (Identifier function_name,
+  std::unique_ptr<Function>
+  function (std::string function_name,
 	    std::vector<std::unique_ptr<Param>> params,
 	    std::unique_ptr<Type> return_type, std::unique_ptr<BlockExpr> block,
 	    FunctionQualifiers qualifiers
