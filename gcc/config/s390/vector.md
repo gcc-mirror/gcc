@@ -2166,7 +2166,7 @@
 	(vec_duplicate:V2DI
 	 (vec_select:DI
 	  (match_dup 4)
-	  (parallel [(const_int 1)]))))
+	  (parallel [(const_int 0)]))))
    (set (match_dup 0)
 	(subreg:<MODE> (match_dup 4) 0))]
 {
@@ -2198,7 +2198,7 @@
 	(vec_duplicate:V2DI
 	 (vec_select:DI
 	  (match_dup 4)
-	  (parallel [(const_int 1)]))))
+	  (parallel [(const_int 0)]))))
    (set (match_dup 0)
 	(subreg:<MODE> (match_dup 4) 0))]
 {
