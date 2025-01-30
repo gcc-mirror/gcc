@@ -2120,12 +2120,8 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
   int nbbs = loop->num_nodes;
   int i;
   stmt_vec_info stmt_info;
-  bool need_to_vectorize = false;
-  bool ok;
 
   DUMP_VECT_SCOPE ("vect_analyze_loop_operations");
-
-  auto_vec<stmt_info_for_cost> cost_vec;
 
   for (i = 0; i < nbbs; i++)
     {
@@ -2135,7 +2131,6 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 	   gsi_next (&si))
         {
           gphi *phi = si.phi ();
-          ok = true;
 
 	  stmt_info = loop_vinfo->lookup_stmt (phi);
           if (dump_enabled_p ())
@@ -2143,6 +2138,10 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 			     (gimple *) phi);
 	  if (virtual_operand_p (gimple_phi_result (phi)))
 	    continue;
+
+	  /* ???  All of the below unconditional FAILs should be in
+	     done earlier after analyzing cycles, possibly when
+	     determining stmt relevancy?  */
 
           /* Inner-loop loop-closed exit phi in outer-loop vectorization
              (i.e., a phi in the tail of the outer-loop).  */
@@ -2180,9 +2179,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 		  if ((STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def
 		       || (STMT_VINFO_DEF_TYPE (stmt_info)
 			   == vect_double_reduction_def))
-		      && ! PURE_SLP_STMT (stmt_info)
-		      && !vectorizable_lc_phi (loop_vinfo,
-					       stmt_info, NULL, NULL))
+		      && ! PURE_SLP_STMT (stmt_info))
 		    return opt_result::failure_at (phi, "unsupported phi\n");
                 }
 
@@ -2200,36 +2197,8 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 					   "not vectorized:"
 					   " scalar dependence cycle.\n");
 
-          if (STMT_VINFO_RELEVANT_P (stmt_info))
-            {
-              need_to_vectorize = true;
-              if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def
-		  && ! PURE_SLP_STMT (stmt_info))
-		ok = vectorizable_induction (loop_vinfo,
-					     stmt_info, NULL, NULL,
-					     &cost_vec);
-	      else if ((STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
-			|| (STMT_VINFO_DEF_TYPE (stmt_info)
-			    == vect_double_reduction_def)
-			|| STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle)
-		       && ! PURE_SLP_STMT (stmt_info))
-		ok = vectorizable_reduction (loop_vinfo,
-					     stmt_info, NULL, NULL, &cost_vec);
-	      else if ((STMT_VINFO_DEF_TYPE (stmt_info)
-			== vect_first_order_recurrence)
-		       && ! PURE_SLP_STMT (stmt_info))
-		ok = vectorizable_recurr (loop_vinfo, stmt_info, NULL, NULL,
-					   &cost_vec);
-            }
-
-	  /* SLP PHIs are tested by vect_slp_analyze_node_operations.  */
-	  if (ok
-	      && STMT_VINFO_LIVE_P (stmt_info)
-	      && !PURE_SLP_STMT (stmt_info))
-	    ok = vectorizable_live_operation (loop_vinfo, stmt_info, NULL, NULL,
-					      -1, false, &cost_vec);
-
-          if (!ok)
+	  if (STMT_VINFO_RELEVANT_P (stmt_info)
+	      && ! PURE_SLP_STMT (stmt_info))
 	    return opt_result::failure_at (phi,
 					   "not vectorized: relevant phi not "
 					   "supported: %G",
@@ -2243,33 +2212,17 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo)
 	  if (!gimple_clobber_p (stmt)
 	      && !is_gimple_debug (stmt))
 	    {
+	      bool need_to_vectorize = false;
 	      opt_result res
 		= vect_analyze_stmt (loop_vinfo,
 				     loop_vinfo->lookup_stmt (stmt),
 				     &need_to_vectorize,
-				     NULL, NULL, &cost_vec);
+				     NULL, NULL, NULL);
 	      if (!res)
 		return res;
 	    }
         }
     } /* bbs */
-
-  add_stmt_costs (loop_vinfo->vector_costs, &cost_vec);
-
-  /* All operations in the loop are either irrelevant (deal with loop
-     control, or dead), or only used outside the loop and can be moved
-     out of the loop (e.g. invariants, inductions).  The loop can be
-     optimized away by scalar optimizations.  We're better off not
-     touching this loop.  */
-  if (!need_to_vectorize)
-    {
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location,
-			 "All the computation can be taken out of the loop.\n");
-      return opt_result::failure_at
-	(vect_location,
-	 "not vectorized: redundant loop. no profit to vectorize.\n");
-    }
 
   return opt_result::success ();
 }
@@ -2899,44 +2852,36 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal,
   bool saved_can_use_partial_vectors_p
     = LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo);
 
-  /* This is the point where we can re-start analysis with SLP forced off.  */
+  /* This is the point where we can re-start analysis with single-lane
+     SLP forced.  */
 start_over:
 
-  if (slp)
+  /* Check the SLP opportunities in the loop, analyze and build
+     SLP trees.  */
+  ok = vect_analyze_slp (loop_vinfo, loop_vinfo->stmt_vec_infos.length (),
+			 slp == 1);
+  if (!ok)
+    return ok;
+
+  /* If there are any SLP instances mark them as pure_slp.  */
+  if (vect_make_slp_decision (loop_vinfo))
     {
-      /* Check the SLP opportunities in the loop, analyze and build
-	 SLP trees.  */
-      ok = vect_analyze_slp (loop_vinfo, loop_vinfo->stmt_vec_infos.length (),
-			     slp == 1);
-      if (!ok)
-	return ok;
+      /* Find stmts that need to be both vectorized and SLPed.  */
+      vect_detect_hybrid_slp (loop_vinfo);
 
-      /* If there are any SLP instances mark them as pure_slp.  */
-      if (vect_make_slp_decision (loop_vinfo))
-	{
-	  /* Find stmts that need to be both vectorized and SLPed.  */
-	  vect_detect_hybrid_slp (loop_vinfo);
+      /* Update the vectorization factor based on the SLP decision.  */
+      vect_update_vf_for_slp (loop_vinfo);
 
-	  /* Update the vectorization factor based on the SLP decision.  */
-	  vect_update_vf_for_slp (loop_vinfo);
+      /* Optimize the SLP graph with the vectorization factor fixed.  */
+      vect_optimize_slp (loop_vinfo);
 
-	  /* Optimize the SLP graph with the vectorization factor fixed.  */
-	  vect_optimize_slp (loop_vinfo);
-
-	  /* Gather the loads reachable from the SLP graph entries.  */
-	  vect_gather_slp_loads (loop_vinfo);
-	}
+      /* Gather the loads reachable from the SLP graph entries.  */
+      vect_gather_slp_loads (loop_vinfo);
     }
 
   /* We don't expect to have to roll back to anything other than an empty
      set of rgroups.  */
   gcc_assert (LOOP_VINFO_MASKS (loop_vinfo).is_empty ());
-
-  /* When we arrive here with SLP disabled and we are supposed
-     to use SLP for everything fail vectorization.  */
-  if (!slp)
-    return opt_result::failure_at (vect_location,
-				   "may need non-SLP handling\n");
 
   /* Apply the suggested unrolling factor, this was determined by the backend
      during finish_cost the first time we ran the analyzis for this
@@ -2992,24 +2937,21 @@ start_over:
   if (!ok)
     return ok;
 
-  if (slp)
+  /* Analyze operations in the SLP instances.  We can't simply
+     remove unsupported SLP instances as this makes the above
+     SLP kind detection invalid and might also affect the VF.  */
+  if (! vect_slp_analyze_operations (loop_vinfo))
     {
-      /* Analyze operations in the SLP instances.  We can't simply
-	 remove unsupported SLP instances as this makes the above
-	 SLP kind detection invalid and might also affect the VF.  */
-      if (! vect_slp_analyze_operations (loop_vinfo))
-	{
-	  ok = opt_result::failure_at (vect_location,
-				       "unsupported SLP instances\n");
-	  goto again;
-	}
+      ok = opt_result::failure_at (vect_location,
+				   "unsupported SLP instances\n");
+      goto again;
     }
 
   /* Dissolve SLP-only groups.  */
   vect_dissolve_slp_only_groups (loop_vinfo);
 
-  /* Scan all the remaining operations in the loop that are not subject
-     to SLP and make sure they are vectorizable.  */
+  /* Scan all the remaining operations in the loop that we did not catch
+     during SLP build and make sure we fail.  */
   ok = vect_analyze_loop_operations (loop_vinfo);
   if (!ok)
     {
@@ -3268,9 +3210,8 @@ again:
   /* Ensure that "ok" is false (with an opt_problem if dumping is enabled).  */
   gcc_assert (!ok);
 
-  /* Try again with SLP degraded but if we didn't do any SLP there is
-     no point in re-trying.  */
-  if (!slp)
+  /* Try again with single-lane SLP.  */
+  if (slp == 1)
     return ok;
 
   /* If we are applying suggested unroll factor, we don't need to
@@ -3322,18 +3263,11 @@ again:
 	}
     }
 
-  /* Roll back state appropriately.  Degrade SLP this time.  From multi-
-     to single-lane to disabled.  */
-  --slp;
+  /* Roll back state appropriately.  Force single-lane SLP this time.  */
+  slp = 1;
   if (dump_enabled_p ())
-    {
-      if (slp)
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "re-trying with single-lane SLP\n");
-      else
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "re-trying with SLP disabled\n");
-    }
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "re-trying with single-lane SLP\n");
 
   /* Restore vectorization factor as it were without SLP.  */
   LOOP_VINFO_VECT_FACTOR (loop_vinfo) = saved_vectorization_factor;
