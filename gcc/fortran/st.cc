@@ -306,6 +306,10 @@ gfc_free_statement (gfc_code *p)
     case EXEC_OMP_TASKYIELD:
       break;
 
+    case EXEC_OMP_METADIRECTIVE:
+      gfc_free_omp_variants (p->ext.omp_variants);
+      break;
+
     default:
       gfc_internal_error ("gfc_free_statement(): Bad statement");
     }

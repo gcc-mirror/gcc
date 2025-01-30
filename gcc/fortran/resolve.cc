@@ -13806,6 +13806,11 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	  gfc_resolve_forall (code, ns, forall_save);
 	  forall_flag = 2;
 	}
+      else if (code->op == EXEC_OMP_METADIRECTIVE)
+	for (gfc_omp_variant *variant
+	       = code->ext.omp_variants;
+	     variant; variant = variant->next)
+	  gfc_resolve_code (variant->code, ns);
       else if (code->block)
 	{
 	  omp_workshare_save = -1;
@@ -14379,6 +14384,7 @@ start:
 	case EXEC_OMP_MASKED:
 	case EXEC_OMP_MASKED_TASKLOOP:
 	case EXEC_OMP_MASKED_TASKLOOP_SIMD:
+	case EXEC_OMP_METADIRECTIVE:
 	case EXEC_OMP_ORDERED:
 	case EXEC_OMP_SCAN:
 	case EXEC_OMP_SCOPE:

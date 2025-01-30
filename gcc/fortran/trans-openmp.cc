@@ -8494,6 +8494,8 @@ gfc_trans_omp_directive (gfc_code *code)
     case EXEC_OMP_MASTER_TASKLOOP:
     case EXEC_OMP_MASTER_TASKLOOP_SIMD:
       return gfc_trans_omp_master_masked_taskloop (code, code->op);
+    case EXEC_OMP_METADIRECTIVE:
+      return gfc_trans_omp_metadirective (code);
     case EXEC_OMP_ORDERED:
       return gfc_trans_omp_ordered (code);
     case EXEC_OMP_PARALLEL:
@@ -8587,6 +8589,100 @@ gfc_trans_omp_declare_simd (gfc_namespace *ns)
     }
 }
 
+/* Translate the context selector list GFC_SELECTORS, using WHERE as the
+   locus for error messages.  */
+
+static tree
+gfc_trans_omp_set_selector (gfc_omp_set_selector *gfc_selectors, locus where)
+{
+  tree set_selectors = NULL_TREE;
+  gfc_omp_set_selector *oss;
+
+  for (oss = gfc_selectors; oss; oss = oss->next)
+    {
+      tree selectors = NULL_TREE;
+      gfc_omp_selector *os;
+      enum omp_tss_code set = oss->code;
+      gcc_assert (set != OMP_TRAIT_SET_INVALID);
+
+      for (os = oss->trait_selectors; os; os = os->next)
+	{
+	  tree scoreval = NULL_TREE;
+	  tree properties = NULL_TREE;
+	  gfc_omp_trait_property *otp;
+	  enum omp_ts_code sel = os->code;
+
+	  /* Per the spec, "Implementations can ignore specified
+	     selectors that are not those described in this section";
+	     however, we  must record such selectors because they
+	     cause match failures.  */
+	  if (sel == OMP_TRAIT_INVALID)
+	    {
+	      selectors = make_trait_selector (sel, NULL_TREE, NULL_TREE,
+					       selectors);
+	      continue;
+	    }
+
+	  for (otp = os->properties; otp; otp = otp->next)
+	    {
+	      switch (otp->property_kind)
+		{
+		case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
+		case OMP_TRAIT_PROPERTY_BOOL_EXPR:
+		  {
+		    tree expr = NULL_TREE;
+		    gfc_se se;
+		    gfc_init_se (&se, NULL);
+		    gfc_conv_expr (&se, otp->expr);
+		    expr = se.expr;
+		    properties = make_trait_property (NULL_TREE, expr,
+						      properties);
+		  }
+		  break;
+		case OMP_TRAIT_PROPERTY_ID:
+		  properties
+		    = make_trait_property (get_identifier (otp->name),
+					   NULL_TREE, properties);
+		  break;
+		case OMP_TRAIT_PROPERTY_NAME_LIST:
+		  {
+		    tree prop = OMP_TP_NAMELIST_NODE;
+		    tree value = NULL_TREE;
+		    if (otp->is_name)
+		      value = get_identifier (otp->name);
+		    else
+		      value = gfc_conv_constant_to_tree (otp->expr);
+
+		    properties = make_trait_property (prop, value,
+						      properties);
+		  }
+		  break;
+		case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
+		  properties = gfc_trans_omp_clauses (NULL, otp->clauses,
+						      where, true);
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
+	    }
+
+	  if (os->score)
+	    {
+	      gfc_se se;
+	      gfc_init_se (&se, NULL);
+	      gfc_conv_expr (&se, os->score);
+	      scoreval = se.expr;
+	    }
+
+	  selectors = make_trait_selector (sel, scoreval,
+					   properties, selectors);
+	}
+      set_selectors = make_trait_set_selector (set, selectors, set_selectors);
+    }
+  return set_selectors;
+}
+
+
 void
 gfc_trans_omp_declare_variant (gfc_namespace *ns)
 {
@@ -8662,90 +8758,8 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	      && strcmp (odv->base_proc_symtree->name, ns->proc_name->name)))
 	continue;
 
-      tree set_selectors = NULL_TREE;
-      gfc_omp_set_selector *oss;
-
-      for (oss = odv->set_selectors; oss; oss = oss->next)
-	{
-	  tree selectors = NULL_TREE;
-	  gfc_omp_selector *os;
-	  enum omp_tss_code set = oss->code;
-	  gcc_assert (set != OMP_TRAIT_SET_INVALID);
-
-	  for (os = oss->trait_selectors; os; os = os->next)
-	    {
-	      tree scoreval = NULL_TREE;
-	      tree properties = NULL_TREE;
-	      gfc_omp_trait_property *otp;
-	      enum omp_ts_code sel = os->code;
-
-	      /* Per the spec, "Implementations can ignore specified
-		 selectors that are not those described in this section";
-		 however, we  must record such selectors because they
-		 cause match failures.  */
-	      if (sel == OMP_TRAIT_INVALID)
-		{
-		  selectors = make_trait_selector (sel, NULL_TREE, NULL_TREE,
-						   selectors);
-		  continue;
-		}
-
-	      for (otp = os->properties; otp; otp = otp->next)
-		{
-		  switch (otp->property_kind)
-		    {
-		    case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
-		    case OMP_TRAIT_PROPERTY_BOOL_EXPR:
-		      {
-			gfc_se se;
-			gfc_init_se (&se, NULL);
-			gfc_conv_expr (&se, otp->expr);
-			properties = make_trait_property (NULL_TREE, se.expr,
-							  properties);
-		      }
-		      break;
-		    case OMP_TRAIT_PROPERTY_ID:
-		      properties
-			= make_trait_property (get_identifier (otp->name),
-					       NULL_TREE, properties);
-		      break;
-		    case OMP_TRAIT_PROPERTY_NAME_LIST:
-		      {
-			tree prop = OMP_TP_NAMELIST_NODE;
-			tree value = NULL_TREE;
-			if (otp->is_name)
-			  value = get_identifier (otp->name);
-			else
-			  value = gfc_conv_constant_to_tree (otp->expr);
-
-			properties = make_trait_property (prop, value,
-							  properties);
-		      }
-		      break;
-		    case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
-		      properties = gfc_trans_omp_clauses (NULL, otp->clauses,
-							  odv->where, true);
-		      break;
-		    default:
-		      gcc_unreachable ();
-		    }
-		}
-
-	      if (os->score)
-		{
-		  gfc_se se;
-		  gfc_init_se (&se, NULL);
-		  gfc_conv_expr (&se, os->score);
-		  scoreval = se.expr;
-		}
-
-	      selectors	= make_trait_selector (sel, scoreval,
-					       properties, selectors);
-	    }
-	  set_selectors = make_trait_set_selector (set, selectors,
-						   set_selectors);
-	}
-
+      tree set_selectors = gfc_trans_omp_set_selector (odv->set_selectors,
+						       odv->where);
       const char *variant_proc_name = odv->variant_proc_symtree->name;
       gfc_symbol *variant_proc_sym = odv->variant_proc_symtree->n.sym;
       if (variant_proc_sym == NULL || variant_proc_sym->attr.implicit_type)
@@ -9047,4 +9061,55 @@ gfc_omp_call_is_alloc (tree ptr)
       fn = build_fn_decl ("GOMP_is_alloc", fn);
     }
   return build_call_expr_loc (input_location, fn, 1, ptr);
+}
+
+tree
+gfc_trans_omp_metadirective (gfc_code *code)
+{
+  gfc_omp_variant *variant = code->ext.omp_variants;
+
+  tree metadirective_tree = make_node (OMP_METADIRECTIVE);
+  SET_EXPR_LOCATION (metadirective_tree, gfc_get_location (&code->loc));
+  TREE_TYPE (metadirective_tree) = void_type_node;
+  OMP_METADIRECTIVE_VARIANTS (metadirective_tree) = NULL_TREE;
+
+  tree tree_body = NULL_TREE;
+
+  while (variant)
+    {
+      tree ctx = gfc_trans_omp_set_selector (variant->selectors,
+					     variant->where);
+      ctx = omp_check_context_selector (gfc_get_location (&variant->where),
+					ctx, true);
+      if (ctx == error_mark_node)
+	return error_mark_node;
+
+      /* If the selector doesn't match, drop the whole variant.  */
+      if (!omp_context_selector_matches (ctx, NULL_TREE, false))
+	{
+	  variant = variant->next;
+	  continue;
+	}
+
+      gfc_code *next_code = variant->code->next;
+      if (next_code && tree_body == NULL_TREE)
+	tree_body = gfc_trans_code (next_code);
+
+      if (next_code)
+	variant->code->next = NULL;
+      tree directive = gfc_trans_code (variant->code);
+      if (next_code)
+	variant->code->next = next_code;
+
+      tree body = next_code ? tree_body : NULL_TREE;
+      tree omp_variant = make_omp_metadirective_variant (ctx, directive, body);
+      OMP_METADIRECTIVE_VARIANTS (metadirective_tree)
+	= chainon (OMP_METADIRECTIVE_VARIANTS (metadirective_tree),
+		   omp_variant);
+      variant = variant->next;
+    }
+
+  /* TODO: Resolve the metadirective here if possible.   */
+
+  return metadirective_tree;
 }

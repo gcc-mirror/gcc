@@ -318,6 +318,7 @@ enum gfc_statement
   ST_OMP_END_PARALLEL_MASKED_TASKLOOP_SIMD, ST_OMP_MASKED_TASKLOOP,
   ST_OMP_END_MASKED_TASKLOOP, ST_OMP_MASKED_TASKLOOP_SIMD,
   ST_OMP_END_MASKED_TASKLOOP_SIMD, ST_OMP_SCOPE, ST_OMP_END_SCOPE,
+  ST_OMP_METADIRECTIVE, ST_OMP_BEGIN_METADIRECTIVE, ST_OMP_END_METADIRECTIVE,
   ST_OMP_ERROR, ST_OMP_ASSUME, ST_OMP_END_ASSUME, ST_OMP_ASSUMES,
   ST_OMP_ALLOCATE, ST_OMP_ALLOCATE_EXEC,
   ST_OMP_ALLOCATORS, ST_OMP_END_ALLOCATORS,
@@ -1634,7 +1635,7 @@ typedef struct gfc_omp_clauses
   unsigned order_unconstrained:1, order_reproducible:1, capture:1;
   unsigned grainsize_strict:1, num_tasks_strict:1, compare:1, weak:1;
   unsigned non_rectangular:1, order_concurrent:1;
-  unsigned contains_teams_construct:1, target_first_st_is_teams:1;
+  unsigned contains_teams_construct:1, target_first_st_is_teams_or_meta:1;
   unsigned contained_in_target_construct:1, indirect:1;
   unsigned full:1, erroneous:1;
   ENUM_BITFIELD (gfc_omp_sched_kind) sched_kind:3;
@@ -1757,6 +1758,17 @@ typedef struct gfc_omp_declare_variant
 gfc_omp_declare_variant;
 #define gfc_get_omp_declare_variant() XCNEW (gfc_omp_declare_variant)
 
+typedef struct gfc_omp_variant
+{
+  struct gfc_omp_variant *next;
+  locus where; /* Where the metadirective clause occurred.  */
+
+  gfc_omp_set_selector *selectors;
+  enum gfc_statement stmt;
+  struct gfc_code *code;
+
+} gfc_omp_variant;
+#define gfc_get_omp_variant() XCNEW (gfc_omp_variant)
 
 typedef struct gfc_omp_udr
 {
@@ -1805,6 +1817,7 @@ typedef struct gfc_st_label
   locus where;
 
   gfc_namespace *ns;
+  int omp_region;
 }
 gfc_st_label;
 
@@ -3108,7 +3121,7 @@ enum gfc_exec_op
   EXEC_OMP_TARGET_TEAMS_LOOP, EXEC_OMP_MASKED, EXEC_OMP_PARALLEL_MASKED,
   EXEC_OMP_PARALLEL_MASKED_TASKLOOP, EXEC_OMP_PARALLEL_MASKED_TASKLOOP_SIMD,
   EXEC_OMP_MASKED_TASKLOOP, EXEC_OMP_MASKED_TASKLOOP_SIMD, EXEC_OMP_SCOPE,
-  EXEC_OMP_UNROLL, EXEC_OMP_TILE, EXEC_OMP_INTEROP,
+  EXEC_OMP_UNROLL, EXEC_OMP_TILE, EXEC_OMP_INTEROP, EXEC_OMP_METADIRECTIVE,
   EXEC_OMP_ERROR, EXEC_OMP_ALLOCATE, EXEC_OMP_ALLOCATORS, EXEC_OMP_DISPATCH
 };
 
@@ -3154,6 +3167,7 @@ typedef struct gfc_code
     gfc_omp_clauses *omp_clauses;
     const char *omp_name;
     gfc_omp_namelist *omp_namelist;
+    gfc_omp_variant *omp_variants;
     bool omp_bool;
     int stop_code;
 
@@ -3802,6 +3816,7 @@ void gfc_free_omp_declare_variant_list (gfc_omp_declare_variant *list);
 void gfc_free_omp_declare_simd (gfc_omp_declare_simd *);
 void gfc_free_omp_declare_simd_list (gfc_omp_declare_simd *);
 void gfc_free_omp_udr (gfc_omp_udr *);
+void gfc_free_omp_variants (gfc_omp_variant *);
 gfc_omp_udr *gfc_omp_udr_find (gfc_symtree *, gfc_typespec *);
 void gfc_resolve_omp_allocate (gfc_namespace *, gfc_omp_namelist *);
 void gfc_resolve_omp_assumptions (gfc_omp_assumptions *);
@@ -4089,6 +4104,8 @@ void debug (gfc_expr *);
 bool gfc_parse_file (void);
 void gfc_global_used (gfc_gsymbol *, locus *);
 gfc_namespace* gfc_build_block_ns (gfc_namespace *);
+gfc_statement match_omp_directive (void);
+bool is_omp_declarative_stmt (gfc_statement);
 
 /* dependency.cc */
 int gfc_dep_compare_functions (gfc_expr *, gfc_expr *, bool);

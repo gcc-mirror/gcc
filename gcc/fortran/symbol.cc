@@ -2697,10 +2697,13 @@ free_components (gfc_component *p)
 static int
 compare_st_labels (void *a1, void *b1)
 {
-  int a = ((gfc_st_label *) a1)->value;
-  int b = ((gfc_st_label *) b1)->value;
+  gfc_st_label *a = (gfc_st_label *) a1;
+  gfc_st_label *b = (gfc_st_label *) b1;
 
-  return (b - a);
+  if (a->omp_region == b->omp_region)
+    return b->value - a->value;
+  else
+    return b->omp_region - a->omp_region;
 }
 
 
@@ -2750,6 +2753,8 @@ gfc_get_st_label (int labelno)
 {
   gfc_st_label *lp;
   gfc_namespace *ns;
+  int omp_region = (gfc_in_omp_metadirective_body
+		    ? gfc_omp_metadirective_region_count : 0);
 
   if (gfc_current_state () == COMP_DERIVED)
     ns = gfc_current_block ()->f2k_derived;
@@ -2766,10 +2771,16 @@ gfc_get_st_label (int labelno)
   lp = ns->st_labels;
   while (lp)
     {
-      if (lp->value == labelno)
-	return lp;
-
-      if (lp->value < labelno)
+      if (lp->omp_region == omp_region)
+	{
+	  if (lp->value == labelno)
+	    return lp;
+	  if (lp->value < labelno)
+	    lp = lp->left;
+	  else
+	    lp = lp->right;
+	}
+      else if (lp->omp_region < omp_region)
 	lp = lp->left;
       else
 	lp = lp->right;
@@ -2781,6 +2792,7 @@ gfc_get_st_label (int labelno)
   lp->defined = ST_LABEL_UNKNOWN;
   lp->referenced = ST_LABEL_UNKNOWN;
   lp->ns = ns;
+  lp->omp_region = omp_region;
 
   gfc_insert_bbt (&ns->st_labels, lp, compare_st_labels);
 
