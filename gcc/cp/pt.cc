@@ -12132,11 +12132,19 @@ tsubst_contract (tree decl, tree t, tree args, tsubst_flags_t complain,
     /* Make the variable available for lookup.  */
     register_local_specialization (newvar, oldvar);
 
-  CONTRACT_CONDITION (r)
-      = tsubst_expr (CONTRACT_CONDITION (t), args, complain, in_decl);
+  /* Contract conditions have a wider application of location wrappers than
+     other trees which will not work with the generic handling in tsubst_expr,
+     remove the wrapper here...  */
+  location_t cond_l = EXPR_LOCATION (CONTRACT_CONDITION (t));
+  tree cond_t = tree_strip_any_location_wrapper (CONTRACT_CONDITION (t));
 
-  /* The condition is converted to bool.  */
-  CONTRACT_CONDITION (r) = finish_contract_condition (CONTRACT_CONDITION (r));
+  /* ... and substitute with the contained expression.  */
+  cond_t = tsubst_expr (cond_t, args, complain, in_decl);
+
+  /* Converted to bool, if possible, and then re-apply a location wrapper
+     when required.  */
+  cp_expr new_condition (cond_t, cond_l);
+  CONTRACT_CONDITION (r) = finish_contract_condition (new_condition);
 
   /* And the comment.  */
   /* TODO : this does not do anything at the moment. The CONTRACT_COMMENT is
