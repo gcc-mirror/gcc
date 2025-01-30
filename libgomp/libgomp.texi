@@ -192,9 +192,8 @@ The OpenMP 4.5 specification is fully supported.
 @item Array shaping @tab N @tab
 @item Array sections with non-unit strides in C and C++ @tab N @tab
 @item Iterators @tab Y @tab
-@item @code{metadirective} directive @tab N @tab
-@item @code{declare variant} directive
-      @tab P @tab @emph{simd} traits not handled correctly
+@item @code{metadirective} directive @tab Y @tab
+@item @code{declare variant} directive @tab Y @tab
 @item @var{target-offload-var} ICV and @code{OMP_TARGET_OFFLOAD}
       env variable @tab Y @tab
 @item Nested-parallel changes to @var{max-active-levels-var} ICV @tab Y @tab
@@ -289,8 +288,8 @@ The OpenMP 4.5 specification is fully supported.
 @headitem Description @tab Status @tab Comments
 @item OpenMP directive as C++ attribute specifiers @tab Y @tab
 @item @code{omp_all_memory} reserved locator @tab Y @tab
-@item @emph{target_device trait} in OpenMP Context @tab N @tab
-@item @code{target_device} selector set in context selectors @tab N @tab
+@item @emph{target_device trait} in OpenMP Context @tab Y
+@item @code{target_device} selector set in context selectors @tab Y @tab
 @item C/C++'s @code{declare variant} directive: elision support of
       preprocessed code @tab N @tab
 @item @code{declare variant}: new clauses @code{adjust_args} and
@@ -367,6 +366,13 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item @code{device_type(nohost)}/@code{device_type(host)} for variables @tab N @tab
 @item @code{present} modifier to the @code{map}, @code{to} and @code{from}
       clauses @tab Y @tab
+@item Changed interaction between @code{declare target} and OpenMP context
+      @tab Y @tab
+@item Dynamic selector support in @code{metadirective} @tab Y @tab
+@item Dynamic selector support in @code{declare variant} @tab P
+      @tab Fortran rejects non-constant expressions in dynamic selectors;
+      C/C++ reject expressions using argument variables.
+      (@uref{https://gcc.gnu.org/PR113904,PR113904})
 @end multitable
 
 
@@ -414,8 +420,10 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item Deprecation of traits array following the allocator_handle expression in
       @code{uses_allocators} @tab N @tab
 @item New @code{otherwise} clause as alias for @code{default} on metadirectives
-      @tab N @tab
-@item Deprecation of @code{default} clause on metadirectives @tab N @tab
+      @tab Y @tab
+@item Deprecation of @code{default} clause on metadirectives @tab N
+      @tab Both @code{otherwise} and @code{default} are accepted
+      without diagnostics.
 @item Deprecation of delimited form of @code{declare target} @tab N @tab
 @item Reproducible semantics changed for @code{order(concurrent)} @tab N @tab
 @item @code{allocate} and @code{firstprivate} clauses on @code{scope}
