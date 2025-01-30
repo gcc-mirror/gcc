@@ -98,6 +98,7 @@ GRS_OBJS = \
     rust/rust-derive-copy.o \
     rust/rust-derive-debug.o \
     rust/rust-derive-default.o \
+    rust/rust-derive-partial-eq.o \
     rust/rust-derive-eq.o \
     rust/rust-proc-macro.o \
     rust/rust-macro-invoc-lexer.o \

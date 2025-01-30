@@ -1,5 +1,6 @@
 mod core {
     mod cmp {
+        #[lang = "eq"]
         pub trait PartialEq<Rhs: ?Sized = Self> {
             fn eq(&self, other: &Rhs) -> bool;
 
@@ -14,11 +15,11 @@ mod core {
     }
 }
 
-// #[lang = "phantom_data"]
-// struct PhantomData<T>;
+#[lang = "phantom_data"]
+struct PhantomData<T>;
 
-// #[lang = "sized"]
-// trait Sized {}
+#[lang = "sized"]
+trait Sized {}
 
 #[derive(PartialEq)]
 struct NotEq;
