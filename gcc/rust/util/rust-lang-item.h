@@ -144,6 +144,9 @@ public:
 
     // NOTE: This is not a lang item in later versions of Rust
     FROM_FROM,
+
+    STRUCTURAL_PEQ,
+    STRUCTURAL_TEQ,
   };
 
   static const BiMap<std::string, Kind> lang_items;
