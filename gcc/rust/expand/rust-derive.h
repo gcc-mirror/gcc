@@ -43,6 +43,29 @@ protected:
   location_t loc;
   Builder builder;
 
+  struct ImplGenerics
+  {
+    /* The type we are deriving the impl for */
+    std::unique_ptr<Type> self_type;
+
+    /* Generics for the impl itself */
+    std::vector<std::unique_ptr<GenericParam>> impl;
+  };
+
+  /**
+   * Create the generic parameters for a derive impl block. Derived impl blocks
+   * will often share the same structure of reusing the exact same bounds as
+   * their original type, plus adding an extra one for the trait we are
+   * deriving. For example, when deriving `Clone` on `Foo<T>`, you want to make
+   * sure that you implement `Clone` only if `T: Clone` - so you add an extra
+   * `Clone` bound to all of your generics.
+   */
+  ImplGenerics setup_impl_generics (
+    const std::string &type_name,
+    const std::vector<std::unique_ptr<GenericParam>> &type_generics,
+    tl::optional<std::unique_ptr<TypeParamBound>> &&extra_bound
+    = tl::nullopt) const;
+
 private:
   // the 4 "allowed" visitors, which a derive-visitor can specify and override
   virtual void visit_struct (StructStruct &struct_item) = 0;
