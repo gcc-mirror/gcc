@@ -429,7 +429,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       LAMBDA_CAPTURE_EXPLICIT_P (in a TREE_LIST in LAMBDA_EXPR_CAPTURE_LIST)
       PARENTHESIZED_LIST_P (in the TREE_LIST for a parameter-declaration-list)
       CONSTRUCTOR_IS_DIRECT_INIT (in CONSTRUCTOR)
-      LAMBDA_EXPR_CAPTURES_THIS_P (in LAMBDA_EXPR)
       DECLTYPE_FOR_LAMBDA_CAPTURE (in DECLTYPE_TYPE)
       VEC_INIT_EXPR_IS_CONSTEXPR (in VEC_INIT_EXPR)
       DECL_OVERRIDE_P (in FUNCTION_DECL)
@@ -1542,10 +1541,6 @@ enum cp_lambda_default_capture_mode_type {
    capture proxy for that node.  */
 #define LAMBDA_EXPR_THIS_CAPTURE(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->this_capture)
-
-/* Predicate tracking whether `this' is in the effective capture set.  */
-#define LAMBDA_EXPR_CAPTURES_THIS_P(NODE) \
-  LAMBDA_EXPR_THIS_CAPTURE(NODE)
 
 /* True iff uses of a const variable capture were optimized away.  */
 #define LAMBDA_EXPR_CAPTURE_OPTIMIZED(NODE) \
