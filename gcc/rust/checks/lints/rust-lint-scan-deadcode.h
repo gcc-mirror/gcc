@@ -93,10 +93,11 @@ public:
 	  {
 	    HirId field_hir_id = field.get_mappings ().get_hirid ();
 	    if (should_warn (field_hir_id)
-		&& !field.get_visibility ().is_public ())
+		&& !field.get_visibility ().is_public ()
+		&& field.get_field_name ().as_string ().at (0) != '_')
 	      {
 		rust_warning_at (field.get_locus (), 0,
-				 "field is never read: %<%s%>",
+				 "field is never read: %qs",
 				 field.get_field_name ().as_string ().c_str ());
 	      }
 	  }
