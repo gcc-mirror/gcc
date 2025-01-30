@@ -1,3 +1,14 @@
+2025-01-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/118413
+	* include/std/ranges (views::__adaptor::_Partial): Adjust
+	constraints on the "simple" partial specializations to require
+	is_trivially_copy_constructible_v instead of
+	is_trivially_copyable_v.
+	* testsuite/std/ranges/adaptors/adjacent_transform/1.cc (test04):
+	Extend P2494R2 test.
+	* testsuite/std/ranges/adaptors/transform.cc (test09): Likewise.
+
 2025-01-27  Andreas Schwab  <schwab@suse.de>
 
 	PR libstdc++/118563

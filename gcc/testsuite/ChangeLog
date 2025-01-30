@@ -1,3 +1,77 @@
+2025-01-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118010
+	PR modula2/118183
+	PR modula2/116073
+	* gm2/pim/run/pass/printtypesize.mod: New test.
+
+2025-01-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/118429
+	* gcc.c-torture/compile/pr118429.c: New test.
+
+2025-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/57533
+	* g++.dg/eh/throw5.C: New test.
+
+2025-01-29  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR testsuite/118127
+	* lib/target-supports.exp
+	(check_effective_target_long_double_is_ibm128): New
+	procedure.
+	* gfortran.dg/default_format_2.f90: xfail for
+	long_double_is_ibm128.
+	* gfortran.dg/default_format_denormal_2.f90: Likewise.
+	* gfortran.dg/large_real_kind_form_io_2.f90: Likewise.
+
+2025-01-29  Martin Jambor  <mjambor@suse.cz>
+	    Michal Jireš  <mjires@suse.cz>
+
+	PR tree-optimization/117892
+	* gcc.dg/tree-ssa/pr117892.c: New test.
+	* gcc.dg/tree-ssa/pr118517.c: Likewise.
+
+2025-01-29  Pan Li  <pan2.li@intel.com>
+
+	PR target/117688
+	* gcc.target/riscv/pr117688.h: Add test helper macros.
+	* gcc.target/riscv/pr117688-trunc-run-1-s16-to-s8.c: New test.
+	* gcc.target/riscv/pr117688-trunc-run-1-s32-to-s16.c: New test.
+	* gcc.target/riscv/pr117688-trunc-run-1-s32-to-s8.c: New test.
+	* gcc.target/riscv/pr117688-trunc-run-1-s64-to-s16.c: New test.
+	* gcc.target/riscv/pr117688-trunc-run-1-s64-to-s32.c: New test.
+	* gcc.target/riscv/pr117688-trunc-run-1-s64-to-s8.c: New test.
+
+2025-01-29  Pan Li  <pan2.li@intel.com>
+
+	PR target/117688
+	* gcc.target/riscv/pr117688.h: Add test helper macro.
+	* gcc.target/riscv/pr117688-sub-run-1-s16.c: New test.
+	* gcc.target/riscv/pr117688-sub-run-1-s32.c: New test.
+	* gcc.target/riscv/pr117688-sub-run-1-s64.c: New test.
+	* gcc.target/riscv/pr117688-sub-run-1-s8.c: New test.
+
+2025-01-29  Pan Li  <pan2.li@intel.com>
+
+	PR target/117688
+	* gcc.target/riscv/pr117688-add-run-1-s16.c: New test.
+	* gcc.target/riscv/pr117688-add-run-1-s32.c: New test.
+	* gcc.target/riscv/pr117688-add-run-1-s64.c: New test.
+	* gcc.target/riscv/pr117688-add-run-1-s8.c: New test.
+	* gcc.target/riscv/pr117688.h: New test.
+
+2025-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118684
+	* gcc.dg/pr118684.c: Require automatic_stack_alignment.
+
+2025-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118655
+	* g++.dg/ext/is_bounded_array.C: Extend.
+
 2025-01-28  Jason Merrill  <jason@redhat.com>
 
 	PR c++/118285

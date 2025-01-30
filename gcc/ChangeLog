@@ -1,3 +1,83 @@
+2025-01-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118010
+	PR modula2/118183
+	PR modula2/116073
+	* doc/gm2.texi (-fm2-file-offset-bits=): Change the default size
+	description to CSSIZE_T.
+	Add COFF_T to the list of data types exported by SYSTEM.def.
+
+2025-01-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/118429
+	* pair-fusion.cc (latest_hazard_before): Add an extra parameter
+	to say whether the instruction is a load or a store.  If the
+	instruction is not a load or store and has memory side effects,
+	prevent it from being moved earlier.
+	(pair_fusion::find_trailing_add): Update call accordingly.
+	(pair_fusion_bb_info::fuse_pair): If the trailng addition had
+	a memory side-effect, use a tombstone to preserve it.
+
+2025-01-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (*negsi2.libgcc): New insn.
+
+2025-01-29  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* config/rx/constraints.md (Q): Also check that the address
+	passes rx_is_restricted_memory-address.
+
+2025-01-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118505
+	* gimple-ssa-split-paths.cc (poor_ifcvt_pred): Return
+	true for trapping statements.
+
+2025-01-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-ssa-split-paths.cc (poor_ifcvt_candidate_code): Remove CALL_EXPR handling.
+
+2025-01-29  Martin Jambor  <mjambor@suse.cz>
+	    Michal Jireš  <mjires@suse.cz>
+
+	PR tree-optimization/117892
+	* tree-ssa-dse.cc (dse_optimize_call): Leave control-altering
+	noreturn calls alone.
+
+2025-01-29  Pan Li  <pan2.li@intel.com>
+
+	PR target/117688
+	* config/riscv/riscv.cc (riscv_expand_sstrunc): Leverage the helper
+	riscv_extend_to_xmode_reg with SIGN_EXTEND.
+
+2025-01-29  Pan Li  <pan2.li@intel.com>
+
+	PR target/117688
+	* config/riscv/riscv.cc (riscv_expand_sssub): Leverage the helper
+	riscv_extend_to_xmode_reg with SIGN_EXTEND.
+
+2025-01-29  Pan Li  <pan2.li@intel.com>
+
+	PR target/117688
+	* config/riscv/riscv.cc (riscv_expand_ssadd): Leverage the helper
+	riscv_extend_to_xmode_reg with SIGN_EXTEND.
+
+2025-01-29  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_gen_zero_extend_rtx): Rename from ...
+	(riscv_extend_to_xmode_reg): Rename to and add rtx_code for
+	zero/sign extend if non-Xmode.
+	(riscv_expand_usadd): Leverage the renamed function with ZERO_EXTEND.
+	(riscv_expand_ussub): Ditto.
+
+2025-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118684
+	* expr.cc (expand_expr_real_1): When creating a stack local
+	during expansion of a handled component, when the base is
+	a SSA_NAME use its type alignment and avoid calling
+	get_object_alignment.
+
 2025-01-28  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/118684

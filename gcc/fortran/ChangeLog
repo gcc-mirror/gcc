@@ -1,3 +1,10 @@
+2025-01-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118683
+	* trans-expr.cc (gfc_conv_procedure_call): The bounds update for
+	passing to assumed-rank dummies shall also handle component
+	references besides inquiry references.
+
 2025-01-27  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/110993

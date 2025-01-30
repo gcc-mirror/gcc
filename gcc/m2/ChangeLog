@@ -1,3 +1,14 @@
+2025-01-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118010
+	PR modula2/118183
+	PR modula2/116073
+	* gm2-compiler/M2Options.mod (OffTBits): Assign to 0.
+	* gm2-gcc/m2type.cc (build_m2_specific_size_type): Ensure that
+	layout_type is called before returning c.
+	(build_m2_offt_type_node): If GetFileOffsetBits returns 0 then
+	use the type size of ssize_t.
+
 2025-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-compiler/M2GenGCC.mod (FoldConstBecomes): Remove
