@@ -22,6 +22,7 @@
 #include "rust-derive-debug.h"
 #include "rust-derive-default.h"
 #include "rust-derive-eq.h"
+#include "rust-derive-partial-eq.h"
 
 namespace Rust {
 namespace AST {
@@ -51,6 +52,7 @@ DeriveVisitor::derive (Item &item, const Attribute &attr,
     case BuiltinMacro::Eq:
       return DeriveEq (attr.get_locus ()).go (item);
     case BuiltinMacro::PartialEq:
+      return DerivePartialEq (attr.get_locus ()).go (item);
     case BuiltinMacro::Ord:
     case BuiltinMacro::PartialOrd:
     case BuiltinMacro::Hash:
