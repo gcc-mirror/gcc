@@ -20,6 +20,7 @@
 #include "rust-derive-clone.h"
 #include "rust-derive-copy.h"
 #include "rust-derive-debug.h"
+#include "rust-derive-default.h"
 
 namespace Rust {
 namespace AST {
@@ -45,6 +46,7 @@ DeriveVisitor::derive (Item &item, const Attribute &attr,
 	"stub implementation will be generated");
       return DeriveDebug (attr.get_locus ()).go (item);
     case BuiltinMacro::Default:
+      return DeriveDefault (attr.get_locus ()).go (item);
     case BuiltinMacro::Eq:
     case BuiltinMacro::PartialEq:
     case BuiltinMacro::Ord:
