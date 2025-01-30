@@ -2866,17 +2866,24 @@ start_function_contracts (tree fndecl)
       if (POSTCONDITION_P (CONTRACT_STATEMENT (ca)))
 	if (tree id = POSTCONDITION_IDENTIFIER (CONTRACT_STATEMENT (ca)))
 	  {
+	    tree r_name = tree_strip_any_location_wrapper (id);
 	    if (TREE_CODE (id) == PARM_DECL)
-	      id = DECL_NAME (id);
-	    gcc_checking_assert (id && TREE_CODE (id) == IDENTIFIER_NODE);
-	    tree seen = lookup_name (id);
+	      r_name = DECL_NAME (id);
+	    gcc_checking_assert (r_name && TREE_CODE (r_name) == IDENTIFIER_NODE);
+	    tree seen = lookup_name (r_name);
 	    if (seen
 		&& TREE_CODE (seen) == PARM_DECL
 		&& DECL_CONTEXT (seen)
 		&& DECL_CONTEXT (seen) == fndecl)
 	      {
 		auto_diagnostic_group d;
-		error_at (EXPR_LOCATION (CONTRACT_STATEMENT (ca)),
+		location_t id_l = location_wrapper_p (id)
+				  ? EXPR_LOCATION (id)
+				  : DECL_SOURCE_LOCATION (id);
+		location_t co_l = EXPR_LOCATION (CONTRACT_STATEMENT (ca));
+		if (id_l != UNKNOWN_LOCATION)
+		  co_l = make_location (id_l, get_start (co_l), get_finish (co_l));
+		error_at (co_l,
 			  "contract postcondition result names must not shadow"
 			  " function parameters");
 		inform (DECL_SOURCE_LOCATION (seen),
