@@ -31606,6 +31606,8 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 						   /*consume_paren=*/false);
 
       cp_token *last = cp_lexer_peek_token (parser->lexer);
+      location_t end = last->location;
+      loc = make_location (loc, loc, end);
 
       if (!attr_mode)
 	  parens.require_close (parser);
@@ -31656,6 +31658,13 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute,
 
       /* Revert (any) constification of the current class object.  */
       current_class_ref = current_class_ref_copy;
+
+      if (contract != error_mark_node)
+	{
+	  location_t end = cp_lexer_peek_token (parser->lexer)->location;
+	  loc = make_location (loc, loc, end);
+	  SET_EXPR_LOCATION (contract, loc);
+	}
 
 	/* For natural syntax, we eat the parens here. For the attribute
 	syntax, it will be done one level up, we just need to skip to it. */
