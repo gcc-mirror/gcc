@@ -570,6 +570,32 @@ clone_function_name (tree decl, const char *suffix)
   /* For consistency this needs to behave the same way as
      ASM_FORMAT_PRIVATE_NAME does, but without the final number
      suffix.  */
+  return clone_identifier (identifier, suffix);
+}
+
+/*  Return true if symbol is valid in assembler name.  */
+
+static bool
+is_valid_asm_symbol (char c)
+{
+  if ('a' <= c && c <= 'z')
+    return true;
+  if ('A' <= c && c <= 'Z')
+    return true;
+  if ('0' <= c && c <= '9')
+    return true;
+  if (c == '_')
+    return true;
+  return false;
+}
+
+/* Return a new clone of ID ending with the string SUFFIX.
+   If FILTER_SUFFIX is true, any illegal asm characters in the SUFFIX are
+   replaced with _.  */
+
+tree
+clone_identifier (tree id, const char *suffix, bool filter_suffix)
+{
   char *separator = XALLOCAVEC (char, 2);
   separator[0] = symbol_table::symbol_suffix_separator ();
   separator[1] = 0;
@@ -578,14 +604,32 @@ clone_function_name (tree decl, const char *suffix)
 #else
   const char *prefix = "";
 #endif
-  char *result = ACONCAT ((prefix,
-			   IDENTIFIER_POINTER (identifier),
-			   separator,
-			   suffix,
-			   (char*)0));
-  return get_identifier (result);
-}
+  if (!suffix)
+    suffix = "";
 
+  if (!filter_suffix)
+    {
+      char *result = ACONCAT (
+	(prefix, IDENTIFIER_POINTER (id), separator, suffix, (char *) 0));
+      return get_identifier (result);
+    }
+  else
+    {
+      /* Replace any illegal chars with _.  */
+      int suffix_len = strlen (suffix);
+      char *converted_suffix = XALLOCAVEC (char, suffix_len + 1);
+      for (int i = 0; i < suffix_len; i++)
+	if (!is_valid_asm_symbol (suffix[i]))
+	  converted_suffix[i] = '_';
+	else
+	  converted_suffix[i] = suffix[i];
+      converted_suffix[suffix_len] = '\0';
+
+      char *result = ACONCAT ((prefix, IDENTIFIER_POINTER (id), separator,
+			       converted_suffix, (char *) 0));
+      return get_identifier (result);
+    }
+}
 
 /* Create callgraph node clone with new declaration.  The actual body will be
    copied later at compilation stage.  The name of the new clone will be
