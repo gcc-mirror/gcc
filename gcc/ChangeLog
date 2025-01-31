@@ -1,3 +1,72 @@
+2025-01-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/builtins.def (STRLEN_FLASH, STRLEN_FLASHX)
+	(STRLEN_MEMX): New DEF_BUILTIN's.
+	* config/avr/avr.cc (avr_ftype_strlen): New static function.
+	(avr_builtin_supported_p): New built-ins are not for AVR_TINY.
+	(avr_init_builtins) <strlen_flash_node, strlen_flashx_node,
+	strlen_memx_node>: Provide new fntypes.
+	(avr_fold_builtin) [AVR_BUILTIN_STRLEN_FLASH]
+	[AVR_BUILTIN_STRLEN_FLASHX, AVR_BUILTIN_STRLEN_MEMX]: Fold if
+	possible.
+	* doc/extend.texi (AVR Built-in Functions): Document
+	__builtin_avr_strlen_flash, __builtin_avr_strlen_flashx,
+	__builtin_avr_strlen_memx.
+
+2025-01-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/builtins.def (AVR_FIRST_C_ONLY_BUILTIN_ID): New macro.
+	* config/avr/avr-protos.h (avr_builtin_supported_p): New.
+	* config/avr/avr.cc (avr_builtin_supported_p): New function.
+	(avr_init_builtins): Only provide a built-in when it is supported.
+	* config/avr/avr-c.cc (avr_cpu_cpp_builtins): Only define the
+	__BUILTIN_AVR_<NAME> build-in defines when the associated built-in
+	function is supported.
+	* doc/extend.texi (AVR Built-in Functions): Add a note that
+	following built-ins are supported for only for GNU-C.
+
+2025-01-30  Jakub Jelinek  <jakub@redhat.com>
+	    Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/118696
+	* config/s390/vector.md (*vec_cmpgt<mode><mode>_nocc_emu,
+	*vec_cmpgtu<mode><mode>_nocc_emu): Duplicate the first rather than
+	second V2DImode element.
+
+2025-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118695
+	* expr.cc (expand_expr_real_1): When expanding a MEM_REF
+	to a non-MEM by committing it to a stack temporary make
+	sure to handle misaligned accesses correctly.
+
+2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_call_expr): For OpenMP's append_args clause
+	processed by 'omp dispatch', update for internal-representation
+	changes; fix handling of hidden arguments, add some comments and
+	handle Fortran's value dummy and optional/pointer/allocatable actual
+	args.
+
+2025-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118692
+	* expr.cc (expand_expr_real_1): When expanding a MEM_REF
+	as BIT_FIELD_REF avoid large offsets for accesses not
+	overlapping the base object.
+
+2025-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114052
+	* tree-ssa-loop-niter.cc (maybe_lower_iteration_bound): Check
+	for infinite subloops we might not exit.
+
+2025-01-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/118320
+	* pair-fusion.cc (pair_fusion_bb_info::fuse_pair): Commonize
+	the merge of input_uses and return early if it fails.
+
 2025-01-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/118010

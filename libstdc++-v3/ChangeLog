@@ -1,3 +1,17 @@
+2025-01-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98749
+	* include/std/latch (latch::max()): Ensure the return value is
+	representable as the return type.
+	(latch::latch(ptrdiff_t)): Add assertion.
+	(latch::count_down): Fix copy & pasted duplicate assertion. Use
+	std::cmp_equal to compare __platform_wait_t and ptrdiff_t
+	values.
+	(latch::_M_a): Use defined constant for alignment.
+	* testsuite/30_threads/latch/1.cc: Check max(). Check constant
+	initialization works for values in the valid range. Check
+	alignment.
+
 2025-01-29  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/118413

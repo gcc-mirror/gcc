@@ -1,3 +1,102 @@
+2025-01-30  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Paul-Antoine Arras  <pa@codesourcery.com>
+
+	PR middle-end/112779
+	PR middle-end/113904
+	* decl.cc (gfc_match_end): Handle COMP_OMP_BEGIN_METADIRECTIVE and
+	COMP_OMP_METADIRECTIVE.
+	* dump-parse-tree.cc (show_omp_node): Handle EXEC_OMP_METADIRECTIVE.
+	(show_code_node): Likewise.
+	* gfortran.h (enum gfc_statement): Add ST_OMP_METADIRECTIVE,
+	ST_OMP_BEGIN_METADIRECTIVE, and ST_OMP_END_METADIRECTIVE.
+	(struct gfc_omp_clauses): Rename target_first_st_is_teams to
+	target_first_st_is_teams_or_meta.
+	(struct gfc_omp_variant): New.
+	(gfc_get_omp_variant): New.
+	(struct gfc_st_label): Add omp_region field.
+	(enum gfc_exec_op): Add EXEC_OMP_METADIRECTIVE.
+	(struct gfc_code): Add omp_variants fields.
+	(gfc_free_omp_variants): Declare.
+	(match_omp_directive): Declare.
+	(is_omp_declarative_stmt): Declare.
+	* io.cc (format_asterisk): Adjust initializer.
+	* match.h (gfc_match_omp_begin_metadirective): Declare.
+	(gfc_match_omp_metadirective): Declare.
+	* openmp.cc (gfc_omp_directives): Uncomment metadirective.
+	(gfc_match_omp_eos): Adjust to match context selectors.
+	(gfc_free_omp_variants): New.
+	(gfc_match_omp_clauses): Remove context_selector parameter and adjust
+	to use gfc_match_omp_eos instead.
+	(match_omp): Adjust call to gfc_match_omp_clauses.
+	(gfc_match_omp_context_selector): Add metadirective_p parameter and
+	adjust error-checking.  Adjust matching of simd clauses.
+	(gfc_match_omp_context_selector_specification): Adjust parameters
+	so it can be used for metadirective as well as declare variant.
+	(match_omp_metadirective): New.
+	(gfc_match_omp_begin_metadirective): New.
+	(gfc_match_omp_metadirective): New.
+	(resolve_omp_metadirective): New.
+	(resolve_omp_target): Handle metadirectives.
+	(gfc_resolve_omp_directive): Handle EXEC_OMP_METADIRECTIVE.
+	* parse.cc (gfc_matching_omp_context_selector): New.
+	(gfc_in_omp_metadirective_body): New.
+	(gfc_omp_region_count): New.
+	(decode_omp_directive): Handle ST_OMP_BEGIN_METADIRECTIVE and
+	ST_OMP_METADIRECTIVE.
+	(match_omp_directive): New.
+	(case_omp_structured_block): Define.
+	(case_omp_do): Define.
+	(gfc_ascii_statement): Handle ST_OMP_BEGIN_METADIRECTIVE,
+	ST_OMP_END_METADIRECTIVE, and ST_OMP_METADIRECTIVE.
+	(accept_statement):  Handle ST_OMP_METADIRECTIVE and
+	ST_OMP_BEGIN_METADIRECTIVE.
+	(gfc_omp_end_stmt): New, split from...
+	(parse_omp_do): ...here, and...
+	(parse_omp_structured_block): ...here.  Handle metadirectives,
+	plus "allocate", "atomic", and "dispatch" which were missing.
+	(parse_omp_oacc_atomic): Handle "end metadirective".
+	(parse_openmp_allocate_block): Likewise.
+	(parse_omp_dispatch): Likewise.
+	(parse_omp_metadirective_body): New.
+	(parse_executable): Handle metadirective.  Use new case macros
+	defined above.
+	(gfc_parse_file): Initialize metadirective state.
+	(is_omp_declarative_stmt): New.
+	* parse.h (enum gfc_compile_state): Add COMP_OMP_METADIRECTIVE
+	and COMP_OMP_BEGIN_METADIRECTIVE.
+	(gfc_omp_end_stmt): Declare.
+	(gfc_matching_omp_context_selector): Declare.
+	(gfc_in_omp_metadirective_body): Declare.
+	(gfc_omp_metadirective_region_count): Declare.
+	* resolve.cc (gfc_resolve_code): Handle EXEC_OMP_METADIRECTIVE.
+	* st.cc (gfc_free_statement): Likewise.
+	* symbol.cc (compare_st_labels): Handle labels within a metadirective
+	body.
+	(gfc_get_st_label): Likewise.
+	* trans-decl.cc (gfc_get_label_decl): Encode the metadirective region
+	in the label_name.
+	* trans-openmp.cc (gfc_trans_omp_directive): Handle
+	EXEC_OMP_METADIRECTIVE.
+	(gfc_trans_omp_set_selector): New, split/adapted from code....
+	(gfc_trans_omp_declare_variant): ...here.
+	(gfc_trans_omp_metadirective): New.
+	* trans-stmt.h 	(gfc_trans_omp_metadirective): Declare.
+	* trans.cc (trans_code): Handle EXEC_OMP_METADIRECTIVE.
+
+2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.h (gfc_omp_declare_variant): Add append_args_list.
+	* openmp.cc (gfc_parser_omp_clause_init_modifiers): New;
+	splitt of from ...
+	(gfc_match_omp_init): ... here; call it.
+	(gfc_match_omp_declare_variant): Update to handle append_args
+	clause; some syntax handling fixes.
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Handle
+	append_args clause; add some diagnostic.
+
 2025-01-29  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/118683

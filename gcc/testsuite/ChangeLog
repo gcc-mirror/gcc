@@ -1,3 +1,102 @@
+2025-01-30  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/113689
+	* gcc.target/i386/pr113689-1.c: Require profiling support.
+	* gcc.target/i386/pr113689-2.c: Likewise.
+	* gcc.target/i386/pr113689-3.c: Likewise.
+
+2025-01-30  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/vect/vect-ifcvt-18.c: Split -Ofast out of
+	avx_runtime.
+
+2025-01-30  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Paul-Antoine Arras  <pa@codesourcery.com>
+
+	PR middle-end/112779
+	PR middle-end/113904
+	* gfortran.dg/gomp/metadirective-1.f90: New.
+	* gfortran.dg/gomp/metadirective-10.f90: New.
+	* gfortran.dg/gomp/metadirective-11.f90: New.
+	* gfortran.dg/gomp/metadirective-12.f90: New.
+	* gfortran.dg/gomp/metadirective-13.f90: New.
+	* gfortran.dg/gomp/metadirective-2.f90: New.
+	* gfortran.dg/gomp/metadirective-3.f90: New.
+	* gfortran.dg/gomp/metadirective-4.f90: New.
+	* gfortran.dg/gomp/metadirective-5.f90: New.
+	* gfortran.dg/gomp/metadirective-6.f90: New.
+	* gfortran.dg/gomp/metadirective-7.f90: New.
+	* gfortran.dg/gomp/metadirective-8.f90: New.
+	* gfortran.dg/gomp/metadirective-9.f90: New.
+	* gfortran.dg/gomp/metadirective-construct.f90: New.
+	* gfortran.dg/gomp/metadirective-no-score.f90: New.
+	* gfortran.dg/gomp/pure-1.f90 (func_metadirective): New.
+	(func_metadirective_2): New.
+	(func_metadirective_3): New.
+	* gfortran.dg/gomp/pure-2.f90 (func_metadirective): Delete.
+
+2025-01-30  Jakub Jelinek  <jakub@redhat.com>
+	    Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/118696
+	* gcc.dg/pr118696.c: New test.
+	* gcc.target/s390/vector/pr118696.c: New test.
+	* gcc.target/s390/vector/vec-abs-emu.c: Expect vrepg with 0 as last
+	operand rather than 1.
+	* gcc.target/s390/vector/vec-max-emu.c: Likewise.
+	* gcc.target/s390/vector/vec-min-emu.c: Likewise.
+
+2025-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118695
+	* gcc.dg/pr118695.c: New testcase.
+
+2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/append-args-1.c: Update dg-*.
+	* c-c++-common/gomp/append-args-3.c: Likewise.
+	* g++.dg/gomp/append-args-1.C: Likewise.
+	* gfortran.dg/gomp/adjust-args-1.f90: Likewise.
+	* gfortran.dg/gomp/adjust-args-3.f90: Likewise.
+	* gfortran.dg/gomp/declare-variant-2.f90: Likewise.
+	* c-c++-common/gomp/append-args-6.c: New test.
+	* c-c++-common/gomp/append-args-7.c: New test.
+	* c-c++-common/gomp/append-args-8.c: New test.
+	* c-c++-common/gomp/append-args-9.c: New test.
+	* g++.dg/gomp/append-args-4.C: New test.
+	* g++.dg/gomp/append-args-5.C: New test.
+	* g++.dg/gomp/append-args-6.C: New test.
+	* g++.dg/gomp/append-args-7.C: New test.
+	* gcc.dg/gomp/append-args-1.c: New test.
+	* gfortran.dg/gomp/append_args-1.f90: New test.
+	* gfortran.dg/gomp/append_args-2.f90: New test.
+	* gfortran.dg/gomp/append_args-3.f90: New test.
+	* gfortran.dg/gomp/append_args-4.f90: New test.
+
+2025-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118692
+	* gcc.dg/pr118692.c: New testcase.
+
+2025-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114052
+	* gcc.dg/pr114052-1.c: New testcase.
+
+2025-01-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/118320
+	* g++.dg/torture/pr118320.C: New test.
+
+2025-01-30  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116860
+	* gcc.dg/tree-ssa/fold-xor-and-or.c: Set logical-op-non-short-circuit.
+	* gcc.dg/tree-ssa/fold-xor-or.c: Similarly.
+
 2025-01-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/118010

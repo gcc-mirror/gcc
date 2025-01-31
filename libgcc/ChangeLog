@@ -1,3 +1,8 @@
+2025-01-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _strlen_memx.
+	* config/avr/lib1funcs.S <L_strlen_memx, __strlen_memx>: Implement.
+
 2025-01-28  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/118642

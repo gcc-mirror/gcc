@@ -1,3 +1,23 @@
+2025-01-30  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (LAMBDA_EXPR_CAPTURES_THIS_P): Remove.
+
+2025-01-30  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/118673
+	* tree.cc (lvalue_kind): Mark CONST_DECLs as mergable
+	when they are also TREE_STATIC.
+
+2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (cp_finish_omp_declare_variant): Modify how append_args
+	is saved internally.
+	* pt.cc (tsubst_attribute): Likewise.
+	(tsubst_omp_clauses): Remove C_ORT_OMP_DECLARE_SIMD from interop
+	handling as no longer called for it.
+	* decl.cc (omp_declare_variant_finalize_one): Update append_args
+	changes; fixes for ADL input.
+
 2025-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/118655
