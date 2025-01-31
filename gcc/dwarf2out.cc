@@ -13678,8 +13678,7 @@ modified_type_die (tree type, int cv_quals, bool reverse,
   struct array_descr_info info;
   /* Only these cv-qualifiers are currently handled.  */
   const int cv_qual_mask = (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE
-			    | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC |
-			    ENCODE_QUAL_ADDR_SPACE(~0U));
+			    | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC);
   /* DW_AT_endianity is specified only for base types in the standard.  */
   const bool reverse_type
     = need_endianity_attribute_p (reverse)
