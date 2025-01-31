@@ -73,10 +73,12 @@ private:
   /**
    * Implementation of clone for all possible variants of an enum
    */
-  MatchCase clone_enum_identifier (Enum &item,
+  MatchCase clone_enum_identifier (PathInExpression variant_path,
 				   const std::unique_ptr<EnumItem> &variant);
-  MatchCase clone_enum_tuple (Enum &item, const EnumItemTuple &variant);
-  MatchCase clone_enum_struct (Enum &item, const EnumItemStruct &variant);
+  MatchCase clone_enum_tuple (PathInExpression variant_path,
+			      const EnumItemTuple &variant);
+  MatchCase clone_enum_struct (PathInExpression variant_path,
+			       const EnumItemStruct &variant);
 
   virtual void visit_struct (StructStruct &item);
   virtual void visit_tuple (TupleStruct &item);

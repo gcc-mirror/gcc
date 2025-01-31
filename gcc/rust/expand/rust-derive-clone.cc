@@ -18,7 +18,6 @@
 
 #include "rust-derive-clone.h"
 #include "rust-ast.h"
-#include "rust-ast-dump.h"
 #include "rust-expr.h"
 #include "rust-item.h"
 #include "rust-path.h"
@@ -169,21 +168,10 @@ DeriveClone::visit_struct (StructStruct &item)
 			 item.get_generic_params ());
 }
 
-PathInExpression
-DeriveClone::variant_match_path (Enum &item, const Identifier &variant)
-{
-  return PathInExpression ({builder.path_segment (
-			      item.get_identifier ().as_string ()),
-			    builder.path_segment (variant.as_string ())},
-			   {}, loc, false);
-}
-
 MatchCase
-DeriveClone::clone_enum_identifier (Enum &item,
+DeriveClone::clone_enum_identifier (PathInExpression variant_path,
 				    const std::unique_ptr<EnumItem> &variant)
 {
-  auto variant_path = variant_match_path (item, variant->get_identifier ());
-
   auto pattern = std::unique_ptr<Pattern> (new ReferencePattern (
     std::unique_ptr<Pattern> (new PathInExpression (variant_path)), false,
     false, loc));
@@ -193,10 +181,9 @@ DeriveClone::clone_enum_identifier (Enum &item,
 }
 
 MatchCase
-DeriveClone::clone_enum_tuple (Enum &item, const EnumItemTuple &variant)
+DeriveClone::clone_enum_tuple (PathInExpression variant_path,
+			       const EnumItemTuple &variant)
 {
-  auto variant_path = variant_match_path (item, variant.get_identifier ());
-
   auto patterns = std::vector<std::unique_ptr<Pattern>> ();
   auto cloned_patterns = std::vector<std::unique_ptr<Expr>> ();
 
@@ -232,10 +219,9 @@ DeriveClone::clone_enum_tuple (Enum &item, const EnumItemTuple &variant)
 }
 
 MatchCase
-DeriveClone::clone_enum_struct (Enum &item, const EnumItemStruct &variant)
+DeriveClone::clone_enum_struct (PathInExpression variant_path,
+				const EnumItemStruct &variant)
 {
-  auto variant_path = variant_match_path (item, variant.get_identifier ());
-
   auto field_patterns = std::vector<std::unique_ptr<StructPatternField>> ();
   auto cloned_fields = std::vector<std::unique_ptr<StructExprField>> ();
 
@@ -314,21 +300,25 @@ DeriveClone::visit_enum (Enum &item)
 
   for (const auto &variant : item.get_variants ())
     {
+      auto path
+	= builder.variant_path (item.get_identifier ().as_string (),
+				variant->get_identifier ().as_string ());
+
       switch (variant->get_enum_item_kind ())
 	{
 	// Identifiers and discriminated variants are the same for a clone - we
 	// just return the same variant
 	case EnumItem::Kind::Identifier:
 	case EnumItem::Kind::Discriminant:
-	  cases.emplace_back (clone_enum_identifier (item, variant));
+	  cases.emplace_back (clone_enum_identifier (path, variant));
 	  break;
 	case EnumItem::Kind::Tuple:
 	  cases.emplace_back (
-	    clone_enum_tuple (item, static_cast<EnumItemTuple &> (*variant)));
+	    clone_enum_tuple (path, static_cast<EnumItemTuple &> (*variant)));
 	  break;
 	case EnumItem::Kind::Struct:
 	  cases.emplace_back (
-	    clone_enum_struct (item, static_cast<EnumItemStruct &> (*variant)));
+	    clone_enum_struct (path, static_cast<EnumItemStruct &> (*variant)));
 	  break;
 	}
     }
