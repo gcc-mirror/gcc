@@ -847,7 +847,7 @@ finish_contract_attribute (tree identifier, tree contract)
    if any.  */
 
 void
-update_late_contract (tree contract, tree result, tree condition)
+update_late_contract (tree contract, tree result, cp_expr condition)
 {
   if (TREE_CODE (contract) == POSTCONDITION_STMT)
     POSTCONDITION_IDENTIFIER (contract) = result;
@@ -2691,18 +2691,26 @@ remap_and_emit_conditions (tree fn, tree condfn, tree_code code)
 tree
 finish_contract_condition (cp_expr condition)
 {
+  if (!condition || error_operand_p (condition))
+    return condition;
+
   /* Ensure we have the condition location saved in case we later need to
      emit a conversion error during template instantiation and wouldn't
-     otherwise have it.  */
-  if (!CAN_HAVE_LOCATION_P (condition) || EXCEPTIONAL_CLASS_P (condition))
+     otherwise have it.  This differs from maybe_wrap_with_location in that
+     it allows wrappers on EXCEPTIONAL_CLASS_P which includes CONSTRUCTORs.  */
+  if (!CAN_HAVE_LOCATION_P (condition)
+      && condition.get_location () != UNKNOWN_LOCATION)
     {
-      condition = build1_loc (condition.get_location (), VIEW_CONVERT_EXPR,
+      tree_code code
+	= (((CONSTANT_CLASS_P (condition) && TREE_CODE (condition) != STRING_CST)
+	    || (TREE_CODE (condition) == CONST_DECL && !TREE_STATIC (condition)))
+	  ? NON_LVALUE_EXPR : VIEW_CONVERT_EXPR);
+      condition = build1_loc (condition.get_location (), code,
 			      TREE_TYPE (condition), condition);
       EXPR_LOCATION_WRAPPER_P (condition) = true;
     }
 
-  if (condition == error_mark_node
-      || type_dependent_expression_p (condition))
+  if (type_dependent_expression_p (condition))
     return condition;
 
   return condition_conversion (condition);
@@ -2841,17 +2849,24 @@ start_function_contracts (tree fndecl)
       if (POSTCONDITION_P (CONTRACT_STATEMENT (ca)))
 	if (tree id = POSTCONDITION_IDENTIFIER (CONTRACT_STATEMENT (ca)))
 	  {
+	    tree r_name = tree_strip_any_location_wrapper (id);
 	    if (TREE_CODE (id) == PARM_DECL)
-	      id = DECL_NAME (id);
-	    gcc_checking_assert (id && TREE_CODE (id) == IDENTIFIER_NODE);
-	    tree seen = lookup_name (id);
+	      r_name = DECL_NAME (id);
+	    gcc_checking_assert (r_name && TREE_CODE (r_name) == IDENTIFIER_NODE);
+	    tree seen = lookup_name (r_name);
 	    if (seen
 		&& TREE_CODE (seen) == PARM_DECL
 		&& DECL_CONTEXT (seen)
 		&& DECL_CONTEXT (seen) == fndecl)
 	      {
 		auto_diagnostic_group d;
-		error_at (EXPR_LOCATION (CONTRACT_STATEMENT (ca)),
+		location_t id_l = location_wrapper_p (id)
+				  ? EXPR_LOCATION (id)
+				  : DECL_SOURCE_LOCATION (id);
+		location_t co_l = EXPR_LOCATION (CONTRACT_STATEMENT (ca));
+		if (id_l != UNKNOWN_LOCATION)
+		  co_l = make_location (id_l, get_start (co_l), get_finish (co_l));
+		error_at (co_l,
 			  "contract postcondition result names must not shadow"
 			  " function parameters");
 		inform (DECL_SOURCE_LOCATION (seen),
