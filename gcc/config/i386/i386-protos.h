@@ -371,6 +371,7 @@ extern int asm_preferred_eh_data_format (int, int);
 extern enum attr_cpu ix86_schedule;
 #endif
 
+extern bool ix86_nopic_noplt_attribute_p (rtx call_op);
 extern const char * ix86_output_call_insn (rtx_insn *insn, rtx call_op);
 extern const char * ix86_output_indirect_jmp (rtx call_op);
 extern const char * ix86_output_function_return (bool long_p);

@@ -670,7 +670,9 @@
   (match_code "symbol_ref")
 {
   if (ix86_cmodel == CM_LARGE || ix86_cmodel == CM_LARGE_PIC
-      || flag_force_indirect_call)
+      || flag_force_indirect_call
+      || (TARGET_INDIRECT_BRANCH_REGISTER
+          && ix86_nopic_noplt_attribute_p (op)))
     return false;
   if (TARGET_DLLIMPORT_DECL_ATTRIBUTES && SYMBOL_REF_DLLIMPORT_P (op))
     return false;

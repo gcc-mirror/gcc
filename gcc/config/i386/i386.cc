@@ -16724,7 +16724,7 @@ ix86_ifunc_ref_local_ok (void)
    This is currently used only with 64-bit or 32-bit GOT32X ELF targets
    to call the function marked "noplt" indirectly.  */
 
-static bool
+bool
 ix86_nopic_noplt_attribute_p (rtx call_op)
 {
   if (flag_pic || ix86_cmodel == CM_LARGE

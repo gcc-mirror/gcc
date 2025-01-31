@@ -10225,13 +10225,15 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
     fnaddr = gen_rtx_MEM (QImode, construct_plt_address (XEXP (fnaddr, 0)));
   /* Since x32 GOT slot is 64 bit with zero upper 32 bits, indirect
      branch via x32 GOT slot is OK.  */
-  else if (!(TARGET_X32
-	     && MEM_P (fnaddr)
-	     && GET_CODE (XEXP (fnaddr, 0)) == ZERO_EXTEND
-	     && GOT_memory_operand (XEXP (XEXP (fnaddr, 0), 0), Pmode))
-	   && (sibcall
-	       ? !sibcall_insn_operand (XEXP (fnaddr, 0), word_mode)
-	       : !call_insn_operand (XEXP (fnaddr, 0), word_mode)))
+  if (TARGET_X32
+      && MEM_P (fnaddr)
+      && GET_CODE (XEXP (fnaddr, 0)) == ZERO_EXTEND
+      && GOT_memory_operand (XEXP (XEXP (fnaddr, 0), 0), Pmode)
+      && !TARGET_INDIRECT_BRANCH_REGISTER)
+    ;
+  else if (sibcall
+	   ? !sibcall_insn_operand (XEXP (fnaddr, 0), word_mode)
+	   : !call_insn_operand (XEXP (fnaddr, 0), word_mode))
     {
       fnaddr = convert_to_mode (word_mode, XEXP (fnaddr, 0), 1);
       fnaddr = gen_rtx_MEM (QImode, copy_to_mode_reg (word_mode, fnaddr));
