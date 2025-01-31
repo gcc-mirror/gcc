@@ -23,6 +23,7 @@
 #include "rust-expr.h"
 #include "rust-ast.h"
 #include "rust-item.h"
+#include "rust-operators.h"
 
 namespace Rust {
 namespace AST {
@@ -62,6 +63,9 @@ public:
   /* Create a string literal expression ("content") */
   std::unique_ptr<Expr> literal_string (std::string &&content) const;
 
+  /* Create a boolean literal expression (true) */
+  std::unique_ptr<Expr> literal_bool (bool b) const;
+
   /* Create an identifier expression (`variable`) */
   std::unique_ptr<Expr> identifier (std::string name) const;
   std::unique_ptr<Pattern> identifier_pattern (std::string name,
@@ -80,6 +84,16 @@ public:
 
   /* Create a dereference of an expression (`*of`) */
   std::unique_ptr<Expr> deref (std::unique_ptr<Expr> &&of) const;
+
+  /* Build a comparison expression (`lhs == rhs`) */
+  std::unique_ptr<Expr> comparison_expr (std::unique_ptr<Expr> &&lhs,
+					 std::unique_ptr<Expr> &&rhs,
+					 ComparisonOperator op) const;
+
+  /* Build a lazy boolean operator expression (`lhs && rhs`) */
+  std::unique_ptr<Expr> boolean_operation (std::unique_ptr<Expr> &&lhs,
+					   std::unique_ptr<Expr> &&rhs,
+					   LazyBooleanOperator op) const;
 
   /* Create a block with an optional tail expression */
   std::unique_ptr<BlockExpr> block (std::vector<std::unique_ptr<Stmt>> &&stmts,
@@ -191,6 +205,10 @@ public:
    */
   PathInExpression path_in_expression (LangItem::Kind lang_item) const;
 
+  /* Create the path to an enum's variant (`Result::Ok`) */
+  PathInExpression variant_path (const std::string &enum_path,
+				 const std::string &variant) const;
+
   /* Create a new struct */
   std::unique_ptr<Stmt>
   struct_struct (std::string struct_name,
@@ -223,6 +241,8 @@ public:
 
   /* Create a wildcard pattern (`_`) */
   std::unique_ptr<Pattern> wildcard () const;
+  /* Create a reference pattern (`&pattern`) */
+  std::unique_ptr<Pattern> ref_pattern (std::unique_ptr<Pattern> &&inner) const;
 
   /* Create a lang item path usable as a general path */
   std::unique_ptr<Path> lang_item_path (LangItem::Kind) const;
