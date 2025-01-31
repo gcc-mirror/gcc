@@ -23617,6 +23617,10 @@ warn_about_ambiguous_parse (const cp_decl_specifier_seq *decl_specifiers,
 			(const_cast<cp_declarator *>(declarator))))
     return;
 
+  /* Don't warn for auto f () -> auto.  */
+  if (declarator->u.function.late_return_type)
+    return;
+
   /* Don't warn when the whole declarator (not just the declarator-id!)
      was parenthesized.  That is, don't warn for int(n()) but do warn
      for int(f)().  */
