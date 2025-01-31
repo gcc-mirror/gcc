@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-fmt.h"
+#include "rust-ast-builder.h"
 #include "rust-macro-builtins.h"
 #include "rust-macro-builtins-helpers.h"
 
@@ -224,6 +225,83 @@ MacroBuiltin::env_handler (location_t invoc_locus, AST::MacroInvocData &invoc,
     = make_token (Token::make_string (invoc_locus, std::move (env_value)));
 
   return AST::Fragment ({node}, std::move (tok));
+}
+
+/* Expand builtin macro option_env!(), which inspects an environment variable at
+   compile time. */
+tl::optional<AST::Fragment>
+MacroBuiltin::option_env_handler (location_t invoc_locus,
+				  AST::MacroInvocData &invoc,
+				  AST::InvocKind semicolon)
+{
+  auto invoc_token_tree = invoc.get_delim_tok_tree ();
+  MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
+  Parser<MacroInvocLexer> parser (lex);
+
+  auto last_token_id = macro_end_token (invoc_token_tree, parser);
+  std::unique_ptr<AST::LiteralExpr> lit_expr = nullptr;
+  bool has_error = false;
+
+  auto start = lex.get_offs ();
+  auto expanded_expr = try_expand_many_expr (parser, last_token_id,
+					     invoc.get_expander (), has_error);
+  auto end = lex.get_offs ();
+
+  auto tokens = lex.get_token_slice (start, end);
+
+  if (has_error)
+    return AST::Fragment::create_error ();
+
+  auto pending = check_for_eager_invocations (expanded_expr);
+  if (!pending.empty ())
+    return make_eager_builtin_invocation (BuiltinMacro::OptionEnv, invoc_locus,
+					  invoc_token_tree,
+					  std::move (pending));
+
+  if (expanded_expr.size () != 1)
+    {
+      rust_error_at (invoc_locus, "%<option_env!%> takes 1 argument");
+      return AST::Fragment::create_error ();
+    }
+
+  if (expanded_expr.size () > 0)
+    if (!(lit_expr
+	  = try_extract_string_literal_from_fragment (invoc_locus,
+						      expanded_expr[0])))
+      return AST::Fragment::create_error ();
+
+  parser.skip_token (last_token_id);
+
+  auto env_value = getenv (lit_expr->as_string ().c_str ());
+  AST::Builder b (invoc_locus);
+
+  if (env_value == nullptr)
+    {
+      auto none_expr = std::unique_ptr<AST::Expr> (
+	new AST::PathInExpression (LangItem::Kind::OPTION_NONE, {},
+				   invoc_locus));
+
+      auto node = AST::SingleASTNode (std::move (none_expr));
+      std::vector<AST::SingleASTNode> nodes;
+      nodes.push_back (node);
+
+      return AST::Fragment (nodes, std::vector<std::unique_ptr<AST::Token>> ());
+    }
+  std::vector<std::unique_ptr<AST::Expr>> args;
+  args.push_back (b.literal_string (env_value));
+
+  std::unique_ptr<AST::Expr> some_expr
+    = b.call (std::unique_ptr<AST::Expr> (
+		new AST::PathInExpression (LangItem::Kind::OPTION_SOME, {},
+					   invoc_locus)),
+	      std::move (args));
+
+  auto node = AST::SingleASTNode (std::move (some_expr));
+
+  std::vector<AST::SingleASTNode> nodes;
+  nodes.push_back (node);
+
+  return AST::Fragment (nodes, std::vector<std::unique_ptr<AST::Token>> ());
 }
 
 tl::optional<AST::Fragment>

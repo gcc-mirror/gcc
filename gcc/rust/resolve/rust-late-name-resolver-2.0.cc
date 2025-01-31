@@ -254,6 +254,8 @@ Late::visit (AST::PathInExpression &expr)
   // TODO: How do we have a nice error with `can't capture dynamic environment
   // in a function item` error here?
   // do we emit it in `get<Namespace::Labels>`?
+  if (expr.is_lang_item ())
+    return;
 
   auto resolved
     = ctx.values.resolve_path (expr.get_segments ()).or_else ([&] () {

@@ -120,8 +120,8 @@ std::unordered_map<std::string, AST::MacroTranscriberFunc>
     {"format_args_nl", format_args_maker (AST::FormatArgs::Newline::Yes)},
     {"asm", inline_asm_maker (AST::AsmKind::Inline)},
     {"global_asm", inline_asm_maker (AST::AsmKind::Global)},
+    {"option_env", MacroBuiltin::option_env_handler},
     /* Unimplemented macro builtins */
-    {"option_env", MacroBuiltin::sorry},
     {"concat_idents", MacroBuiltin::sorry},
     {"module_path", MacroBuiltin::sorry},
     {"log_syntax", MacroBuiltin::sorry},
