@@ -210,7 +210,7 @@ struct S22
     static int i;
 
     int a[];        // { dg-warning "in an otherwise empty" }
-  } s;
+  } s;		    // { dg-warning "invalid use" }
 };
 
 struct S23
