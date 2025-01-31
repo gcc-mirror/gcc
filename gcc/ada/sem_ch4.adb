@@ -308,8 +308,12 @@ package body Sem_Ch4 is
      (N      : Node_Id;
       Prefix : Node_Id;
       Exprs  : List_Id) return Boolean;
-   --  AI05-0139: Generalized indexing to support iterators over containers
-   --  ??? Need to provide a more detailed spec of what this function does
+   --  AI05-0139: Generalized indexing to support iterators over containers.
+   --  Given the N_Indexed_Component node N, with the given prefix and
+   --  expressions list, check if the generalized indexing is applicable;
+   --  if applicable then build its indexing function, link it to N through
+   --  attribute Generalized_Indexing, and return True; otherwise return
+   --  False.
 
    function Try_Indexed_Call
      (N          : Node_Id;
@@ -8513,21 +8517,29 @@ package body Sem_Ch4 is
       Prefix : Node_Id;
       Exprs  : List_Id) return Boolean
    is
-      Pref_Typ : Entity_Id := Etype (Prefix);
+      Heuristic : Boolean   := False;
+      Pref_Typ  : Entity_Id := Etype (Prefix);
 
       function Constant_Indexing_OK return Boolean;
-      --  Constant_Indexing is legal if there is no Variable_Indexing defined
-      --  for the type, or else node not a target of assignment, or an actual
-      --  for an IN OUT or OUT formal (RM 4.1.6 (11)).
+      --  Determines whether the Constant_Indexing aspect has been specified
+      --  for the type of the prefix and can be interpreted as constant
+      --  indexing; that is, there is no Variable_Indexing defined for the
+      --  type, or else the node is not a target of an assignment, or an
+      --  actual for an IN OUT or OUT formal, or the name in an object
+      --  renaming (RM 4.1.6 (12/3..15/3)).
+      --
+      --  Given that prefix notation calls have not yet been resolved, if the
+      --  type of the prefix has both aspects present (Constant_Indexing and
+      --  Variable_Indexing), and context analysis performed by this routine
+      --  identifies a potential prefix notation call (i.e., an N_Selected_
+      --  Component node), this function may rely on heuristics to decide
+      --  between constant or variable indexing. In such cases, if the
+      --  decision is later found to be incorrect, Try_Container_Indexing
+      --  will retry using the alternative indexing aspect.
 
-      function Expr_Matches_In_Formal
-        (Subp : Entity_Id;
-         Par  : Node_Id) return Boolean;
-      --  Find formal corresponding to given indexed component that is an
-      --  actual in a call. Note that the enclosing subprogram call has not
-      --  been analyzed yet, and the parameter list is not normalized, so
-      --  that if the argument is a parameter association we must match it
-      --  by name and not by position.
+      --  When heuristics are used to compute the result of this function
+      --  the behavior of Try_Container_Indexing might not be strictly
+      --  following the rules of the RM.
 
       function Indexing_Interpretations
         (T           : Entity_Id;
@@ -8535,59 +8547,429 @@ package body Sem_Ch4 is
       --  Return a set of interpretations reflecting all of the functions
       --  associated with an indexing aspect of type T of the given kind.
 
+      function Try_Indexing_Function
+        (Func_Name : Node_Id;
+         Assoc     : List_Id) return Entity_Id;
+      --  Build a call to the given indexing function name with the given
+      --  parameter associations; if there are several indexing functions
+      --  the call is analyzed for each of the interpretation; if there are
+      --  several successfull candidates, resolution is handled by result.
+      --  Return the Etype of the built function call.
+
       --------------------------
       -- Constant_Indexing_OK --
       --------------------------
 
       function Constant_Indexing_OK return Boolean is
-         Par : Node_Id;
+
+         function Expr_Matches_In_Formal
+           (Subp                    : Entity_Id;
+            Subp_Call               : Node_Id;
+            Param                   : Node_Id;
+            Skip_Controlling_Formal : Boolean := False) return Boolean;
+         --  Find formal corresponding to given indexed component that is an
+         --  actual in a call. Note that the enclosing subprogram call has not
+         --  been analyzed yet, and the parameter list is not normalized, so
+         --  that if the argument is a parameter association we must match it
+         --  by name and not by position. In the traversal up the tree done by
+         --  Constant_Indexing_OK, the previous node in the traversal (that is,
+         --  the actual parameter used to ascend to the subprogram call node),
+         --  is passed to this function in formal Param, and it is used to
+         --  determine wether the argument is passed by name or by position.
+         --  Skip_Controlling_Formal is set to True to skip the first formal
+         --  of Subp.
+
+         procedure Handle_Selected_Component
+           (Current_Node    : Node_Id;
+            Sel_Comp        : Node_Id;
+            Candidate       : out Entity_Id;
+            Is_Constant_Idx : out Boolean);
+         --  Current_Node is the current node climbing up the tree. Determine
+         --  if Sel_Comp is a candidate for a prefixed call using constant
+         --  indexing; if no candidate is found Candidate is returned Empty
+         --  and Is_Constant_Idx is returned False.
+
+         function Has_IN_Mode (Formal : Node_Id) return Boolean is
+           (Ekind (Formal) = E_In_Parameter);
+         --  Return True if the given formal has mode IN
+
+         ----------------------------
+         -- Expr_Matches_In_Formal --
+         ----------------------------
+
+         function Expr_Matches_In_Formal
+           (Subp                    : Entity_Id;
+            Subp_Call               : Node_Id;
+            Param                   : Node_Id;
+            Skip_Controlling_Formal : Boolean := False) return Boolean
+         is
+            pragma Assert (Nkind (Subp_Call) in N_Subprogram_Call);
+
+            Actual : Node_Id := First (Parameter_Associations (Subp_Call));
+            Formal : Node_Id := First_Formal (Subp);
+
+         begin
+            if Skip_Controlling_Formal then
+               Next_Formal (Formal);
+            end if;
+
+            --  Match by position
+
+            if Nkind (Param) /= N_Parameter_Association then
+               while Present (Actual) and then Present (Formal) loop
+                  exit when Actual = Param;
+                  Next (Actual);
+
+                  if Present (Formal) then
+                     Next_Formal (Formal);
+
+                  --  Otherwise this is a parameter mismatch, the error is
+                  --  reported elsewhere, or else variable indexing is implied.
+
+                  else
+                     return False;
+                  end if;
+               end loop;
+
+            --  Match by name
+
+            else
+               while Present (Formal) loop
+                  exit when Chars (Formal) = Chars (Selector_Name (Param));
+                  Next_Formal (Formal);
+
+                  if No (Formal) then
+                     return False;
+                  end if;
+               end loop;
+            end if;
+
+            return Present (Formal) and then Has_IN_Mode (Formal);
+         end Expr_Matches_In_Formal;
+
+         -------------------------------
+         -- Handle_Selected_Component --
+         -------------------------------
+
+         procedure Handle_Selected_Component
+           (Current_Node    : Node_Id;
+            Sel_Comp        : Node_Id;
+            Candidate       : out Entity_Id;
+            Is_Constant_Idx : out Boolean)
+         is
+            procedure Search_Constant_Interpretation
+              (Call        : Node_Id;
+               Target_Name : Node_Id;
+               Candidate   : out Entity_Id;
+               Is_Unique   : out Boolean;
+               Unique_Mode : out Boolean);
+            --  Given a subprogram call, search in the homonyms chain for
+            --  visible (or potentially visible) dispatching primitives that
+            --  have at least one formal. Candidate is the entity of the first
+            --  found candidate; Is_Unique is returned True when the mode of
+            --  the first formal of all the candidates match. If no candidate
+            --  is found the out parameter Candidate is returned Empty, and
+            --  Is_Unique is returned False.
+
+            procedure Search_Enclosing_Call
+              (Call_Node : out Node_Id;
+               Prev_Node : out Node_Id);
+            --  Climb up to the tree looking for an enclosing subprogram call
+            --  of a prefixed notation call. If found then the Call_Node and
+            --  its Prev_Node in such traversal are returned; otherwise
+            --  Call_Node and Prev_Node are returned Empty.
+
+            ------------------------------------
+            -- Search_Constant_Interpretation --
+            ------------------------------------
+
+            procedure Search_Constant_Interpretation
+              (Call        : Node_Id;
+               Target_Name : Node_Id;
+               Candidate   : out Entity_Id;
+               Is_Unique   : out Boolean;
+               Unique_Mode : out Boolean)
+            is
+               Constant_Idx : Boolean;
+               In_Proc_Call : constant Boolean :=
+                                Present (Call)
+                                  and then
+                                    Nkind (Call) = N_Procedure_Call_Statement;
+               Kind         : constant Entity_Kind :=
+                                (if In_Proc_Call then E_Procedure
+                                                 else E_Function);
+               Target_Subp  : constant Entity_Id :=
+                                Current_Entity (Target_Name);
+            begin
+               Candidate   := Empty;
+               Is_Unique   := False;
+               Unique_Mode := False;
+
+               if Present (Target_Subp) then
+                  declare
+                     Hom : Entity_Id := Target_Subp;
+
+                  begin
+                     while Present (Hom) loop
+                        if Is_Overloadable (Hom)
+                          and then Is_Dispatching_Operation (Hom)
+                          and then
+                            (Is_Immediately_Visible (Scope (Hom))
+                              or else
+                                Is_Potentially_Use_Visible (Scope (Hom)))
+                          and then Ekind (Hom) = Kind
+                          and then Present (First_Formal (Hom))
+                        then
+                           if No (Candidate) then
+                              Candidate    := Hom;
+                              Is_Unique    := True;
+                              Unique_Mode  := True;
+                              Constant_Idx :=
+                                Has_IN_Mode (First_Formal (Candidate));
+
+                           else
+                              Is_Unique := False;
+
+                              if Ekind (First_Formal (Hom))
+                                   /= Ekind (First_Formal (Candidate))
+                                or else Has_IN_Mode (First_Formal (Hom))
+                                          /= Constant_Idx
+                              then
+                                 Unique_Mode := False;
+                                 exit;
+                              end if;
+                           end if;
+                        end if;
+
+                        Hom := Homonym (Hom);
+                     end loop;
+                  end;
+               end if;
+            end Search_Constant_Interpretation;
+
+            ---------------------------
+            -- Search_Enclosing_Call --
+            ---------------------------
+
+            procedure Search_Enclosing_Call
+              (Call_Node : out Node_Id;
+               Prev_Node : out Node_Id)
+            is
+               Prev : Node_Id := Current_Node;
+               Par  : Node_Id := Parent (N);
+
+            begin
+               while Present (Par)
+                 and then Nkind (Par) not in N_Subprogram_Call
+                                      | N_Handled_Sequence_Of_Statements
+                                      | N_Assignment_Statement
+                                      | N_Iterator_Specification
+                                      | N_Object_Declaration
+                                      | N_Case_Statement
+                                      | N_Declaration
+                                      | N_Elsif_Part
+                                      | N_If_Statement
+                                      | N_Simple_Return_Statement
+               loop
+                  Prev := Par;
+                  Par := Parent (Par);
+               end loop;
+
+               if Present (Par)
+                 and then Nkind (Par) in N_Subprogram_Call
+                 and then Nkind (Name (Par)) = N_Selected_Component
+               then
+                  Call_Node := Par;
+                  Prev_Node := Prev;
+               else
+                  Call_Node := Empty;
+                  Prev_Node := Empty;
+               end if;
+            end Search_Enclosing_Call;
+
+            --  Local variables
+
+            Is_Unique   : Boolean;
+            Unique_Mode : Boolean;
+            Call_Node   : Node_Id;
+            Prev_Node   : Node_Id;
+
+         --  Start of processing for Handle_Selected_Component
+
+         begin
+            pragma Assert (Nkind (Sel_Comp) = N_Selected_Component);
+
+            --  Climb up the tree starting from Current_Node searching for the
+            --  enclosing subprogram call of a prefixed notation call.
+
+            Search_Enclosing_Call (Call_Node, Prev_Node);
+
+            --  Search for a candidate visible (or potentially visible)
+            --  dispatching primitive that has at least one formal, and may
+            --  be called using the prefix notation. This must be done even
+            --  if we did not found an enclosing call since the prefix notation
+            --  call has not been transformed yet into a subprogram call. The
+            --  found Call_Node (if any) is passed now to help identifying if
+            --  the prefix notation call corresponds with a procedure call or
+            --  a function call.
+
+            Search_Constant_Interpretation
+              (Call        => Call_Node,
+               Target_Name => Selector_Name (Sel_Comp),
+               Candidate   => Candidate,
+               Is_Unique   => Is_Unique,
+               Unique_Mode => Unique_Mode);
+
+            --  If there is no candidate to interpret this node as a prefixed
+            --  call to a subprogram we return no candidate, and the caller
+            --  will continue ascending in the tree.
+
+            if No (Candidate) then
+               Is_Constant_Idx := False;
+
+            --  If we found an unique candidate and also found the enclosing
+            --  call node, we differentiate two cases: either we climbed up
+            --  the tree through the first actual parameter of the call (that
+            --  is, the name of the selected component), or we climbed up the
+            --  tree though another actual parameter of the prefixed call and
+            --  we must skip the controlling formal of the call.
+
+            elsif Is_Unique
+              and then Present (Call_Node)
+            then
+               --  First actual parameter
+
+               if Name (Call_Node) = Prev_Node
+                 and then Nkind (Prev_Node) = N_Selected_Component
+                 and then Nkind (Selector_Name (Prev_Node)) in N_Has_Chars
+                 and then Chars (Selector_Name (Prev_Node)) = Chars (Candidate)
+               then
+                  Is_Constant_Idx := Has_IN_Mode (First_Formal (Candidate));
+
+               --  Any other actual parameter
+
+               else
+                  Is_Constant_Idx :=
+                    Expr_Matches_In_Formal (Candidate,
+                      Subp_Call               => Call_Node,
+                      Param                   => Prev_Node,
+                      Skip_Controlling_Formal => True);
+               end if;
+
+            --  The mode of the first formal of all the candidates match but,
+            --  given that we have several candidates, we cannot check if
+            --  indexing is used in the first actual parameter of the call
+            --  or in another actual parameter. Heuristically assume here
+            --  that indexing is used in the prefix of a call.
+
+            elsif Unique_Mode then
+               Heuristic := True;
+               Is_Constant_Idx := Has_IN_Mode (First_Formal (Candidate));
+
+            --  The target candidate subprogram has several possible
+            --  interpretations; we don't know what to do with an
+            --  N_Selected_Component node for a prefixed notation call
+            --  to AA.BB that has several candidate targets and it has
+            --  not yet been resolved. For now we maintain the
+            --  behavior that we have had so far; to be improved???
+
+            else
+               Heuristic := True;
+
+               if Nkind (Call_Node) = N_Procedure_Call_Statement then
+                  Is_Constant_Idx := False;
+
+               --  For function calls we rely on the mode of the
+               --  first formal of the first found candidate???
+
+               else
+                  Is_Constant_Idx := Has_IN_Mode (First_Formal (Candidate));
+               end if;
+            end if;
+         end Handle_Selected_Component;
+
+         --  Local variables
+
+         Asp_Constant : constant Node_Id :=
+                          Find_Value_Of_Aspect (Pref_Typ,
+                            Aspect_Constant_Indexing);
+         Asp_Variable : constant Node_Id :=
+                          Find_Value_Of_Aspect (Pref_Typ,
+                            Aspect_Variable_Indexing);
+         Par          : Node_Id;
+
+      --  Start of processing for Constant_Indexing_OK
 
       begin
-         if No (Find_Value_Of_Aspect (Pref_Typ, Aspect_Variable_Indexing)) then
+         if No (Asp_Constant) then
+            return False;
+
+         --  It is interpreted as constant indexing when the prefix has the
+         --  Constant_Indexing aspect and the Variable_Indexing aspect is not
+         --  specified for the type of the prefix.
+
+         elsif No (Asp_Variable) then
             return True;
+
+         --  It is interpreted as constant indexing when the prefix denotes
+         --  a constant.
 
          elsif not Is_Variable (Prefix) then
             return True;
          end if;
 
+         --  Both aspects are present
+
+         pragma Assert (Present (Asp_Constant) and Present (Asp_Variable));
+
+         --  The prefix must be interpreted as a constant indexing when it
+         --  is used within a primary where a name denoting a constant is
+         --  permitted.
+
          Par := N;
          while Present (Par) loop
-            if Nkind (Parent (Par)) = N_Assignment_Statement
-              and then Par = Name (Parent (Par))
+
+            --  Avoid climbing more than needed
+
+            exit when Nkind (Parent (Par)) in N_Iterator_Specification
+                                            | N_Handled_Sequence_Of_Statements;
+
+            if Nkind (Parent (Par)) in N_Case_Statement
+                                        | N_Declaration
+                                        | N_Elsif_Part
+                                        | N_If_Statement
+                                        | N_Simple_Return_Statement
             then
-               return False;
+               return True;
+
+            --  It is not interpreted as constant indexing for the variable
+            --  name in the LHS of an assignment.
+
+            elsif Nkind (Parent (Par)) = N_Assignment_Statement then
+               return Par /= Name (Parent (Par));
 
             --  The call may be overloaded, in which case we assume that its
             --  resolution does not depend on the type of the parameter that
-            --  includes the indexing operation.
+            --  includes the indexing operation because we cannot invoke
+            --  Preanalyze_And_Resolve (since it would cause a never-ending
+            --  loop).
 
             elsif Nkind (Parent (Par)) in N_Subprogram_Call then
 
-               if not Is_Entity_Name (Name (Parent (Par))) then
+               --  Regular subprogram call
 
-                  --  ??? We don't know what to do with an N_Selected_Component
-                  --  node for a prefixed-notation call to AA.BB where AA's
-                  --  type is known, but BB has not yet been resolved. In that
-                  --  case, the preceding Is_Entity_Name call returns False.
-                  --  Incorrectly returning False here will usually work
-                  --  better than incorrectly returning True, so that's what
-                  --  we do for now.
+               --  It is not interpreted as constant indexing for the name
+               --  used for an OUT or IN OUT parameter.
 
-                  return False;
-               end if;
+               --  We should look for an interpretation with the proper
+               --  number of formals, and determine whether it is an
+               --  In_Parameter, but for now we examine the formal that
+               --  corresponds to the indexing, and assume that variable
+               --  indexing is required if some interpretation has an
+               --  assignable formal at that position. Still does not
+               --  cover the most complex cases ???
 
-               declare
-                  Proc : Entity_Id;
-
-               begin
-                  --  We should look for an interpretation with the proper
-                  --  number of formals, and determine whether it is an
-                  --  In_Parameter, but for now we examine the formal that
-                  --  corresponds to the indexing, and assume that variable
-                  --  indexing is required if some interpretation has an
-                  --  assignable formal at that position. Still does not
-                  --  cover the most complex cases ???
-
+               if Is_Entity_Name (Name (Parent (Par))) then
                   if Is_Overloaded (Name (Parent (Par))) then
                      declare
                         Proc : constant Node_Id := Name (Parent (Par));
@@ -8597,57 +8979,103 @@ package body Sem_Ch4 is
                      begin
                         Get_First_Interp (Proc, I, It);
                         while Present (It.Nam) loop
-                           if not Expr_Matches_In_Formal (It.Nam, Par) then
+                           if not Expr_Matches_In_Formal
+                                    (Subp      => It.Nam,
+                                     Subp_Call => Parent (Par),
+                                     Param     => Par)
+                           then
                               return False;
                            end if;
 
                            Get_Next_Interp (I, It);
                         end loop;
+
+                        --  All interpretations have a matching in-mode formal
+
+                        return True;
                      end;
 
-                     --  All interpretations have a matching in-mode formal
-
-                     return True;
-
                   else
-                     Proc := Entity (Name (Parent (Par)));
+                     declare
+                        Proc : Entity_Id := Entity (Name (Parent (Par)));
 
-                     --  If this is an indirect call, get formals from
-                     --  designated type.
+                     begin
+                        --  If this is an indirect call, get formals from
+                        --  designated type.
 
-                     if Is_Access_Subprogram_Type (Etype (Proc)) then
-                        Proc := Designated_Type (Etype (Proc));
-                     end if;
+                        if Is_Access_Subprogram_Type (Etype (Proc)) then
+                           Proc := Designated_Type (Etype (Proc));
+                        end if;
+
+                        return Expr_Matches_In_Formal
+                                 (Subp      => Proc,
+                                  Subp_Call => Parent (Par),
+                                  Param     => Par);
+                     end;
                   end if;
 
-                  return Expr_Matches_In_Formal (Proc, Par);
-               end;
+               --  Continue climbing
+
+               elsif Nkind (Name (Parent (Par))) = N_Explicit_Dereference then
+                  null;
+
+               --  Not a regular call; we know that we are in a subprogram
+               --  call, we also know that the name of the call may be a
+               --  prefixed call, and we know the name of the target
+               --  subprogram. Search for an unique target candidate in the
+               --  homonym chain.
+
+               elsif Nkind (Name (Parent (Par))) = N_Selected_Component then
+                  declare
+                     Candidate       : Entity_Id;
+                     Is_Constant_Idx : Boolean;
+
+                  begin
+                     Handle_Selected_Component
+                       (Current_Node    => Par,
+                        Sel_Comp        => Name (Parent (Par)),
+                        Candidate       => Candidate,
+                        Is_Constant_Idx => Is_Constant_Idx);
+
+                     if Present (Candidate) then
+                        return Is_Constant_Idx;
+
+                     --  Continue climbing
+
+                     else
+                        null;
+                     end if;
+                  end;
+               end if;
+
+            --  It is not interpreted as constant indexing for the name in
+            --  an object renaming.
 
             elsif Nkind (Parent (Par)) = N_Object_Renaming_Declaration then
                return False;
 
-            --  If the indexed component is a prefix it may be the first actual
-            --  of a prefixed call. Retrieve the called entity, if any, and
-            --  check its first formal. Determine if the context is a procedure
-            --  or function call.
+            --  If the indexed component is a prefix it may be an actual of
+            --  of a prefixed call.
 
             elsif Nkind (Parent (Par)) = N_Selected_Component then
                declare
-                  Sel : constant Node_Id   := Selector_Name (Parent (Par));
-                  Nam : constant Entity_Id := Current_Entity (Sel);
+                  Candidate       : Entity_Id;
+                  Is_Constant_Idx : Boolean;
 
                begin
-                  if Present (Nam) and then Is_Overloadable (Nam) then
-                     if Nkind (Parent (Parent (Par))) =
-                          N_Procedure_Call_Statement
-                     then
-                        return False;
+                  Handle_Selected_Component
+                    (Current_Node    => Par,
+                     Sel_Comp        => Parent (Par),
+                     Candidate       => Candidate,
+                     Is_Constant_Idx => Is_Constant_Idx);
 
-                     elsif Ekind (Nam) = E_Function
-                       and then Present (First_Formal (Nam))
-                     then
-                        return Ekind (First_Formal (Nam)) = E_In_Parameter;
-                     end if;
+                  if Present (Candidate) then
+                     return Is_Constant_Idx;
+
+                  --  Continue climbing
+
+                  else
+                     null;
                   end if;
                end;
 
@@ -8658,60 +9086,11 @@ package body Sem_Ch4 is
             Par := Parent (Par);
          end loop;
 
-         --  In all other cases, constant indexing is legal
+         --  It is not interpreted as constant indexing when both aspects
+         --  are present (RM 4.1.6(13/3)).
 
-         return True;
+         return False;
       end Constant_Indexing_OK;
-
-      ----------------------------
-      -- Expr_Matches_In_Formal --
-      ----------------------------
-
-      function Expr_Matches_In_Formal
-        (Subp : Entity_Id;
-         Par  : Node_Id) return Boolean
-      is
-         Actual : Node_Id;
-         Formal : Node_Id;
-
-      begin
-         Formal := First_Formal (Subp);
-         Actual := First (Parameter_Associations ((Parent (Par))));
-
-         if Nkind (Par) /= N_Parameter_Association then
-
-            --  Match by position
-
-            while Present (Actual) and then Present (Formal) loop
-               exit when Actual = Par;
-               Next (Actual);
-
-               if Present (Formal) then
-                  Next_Formal (Formal);
-
-               --  Otherwise this is a parameter mismatch, the error is
-               --  reported elsewhere, or else variable indexing is implied.
-
-               else
-                  return False;
-               end if;
-            end loop;
-
-         else
-            --  Match by name
-
-            while Present (Formal) loop
-               exit when Chars (Formal) = Chars (Selector_Name (Par));
-               Next_Formal (Formal);
-
-               if No (Formal) then
-                  return False;
-               end if;
-            end loop;
-         end if;
-
-         return Present (Formal) and then Ekind (Formal) = E_In_Parameter;
-      end Expr_Matches_In_Formal;
 
       ------------------------------
       -- Indexing_Interpretations --
@@ -8762,14 +9141,127 @@ package body Sem_Ch4 is
          return Indexing_Func;
       end Indexing_Interpretations;
 
+      ---------------------------
+      -- Try_Indexing_Function --
+      ---------------------------
+
+      function Try_Indexing_Function
+        (Func_Name : Node_Id;
+         Assoc     : List_Id) return Entity_Id
+      is
+         Loc      : constant Source_Ptr := Sloc (N);
+         Func     : Entity_Id;
+         Indexing : Node_Id;
+
+      begin
+         if not Is_Overloaded (Func_Name) then
+            Func := Entity (Func_Name);
+
+            Indexing :=
+              Make_Function_Call (Loc,
+                Name                   => New_Occurrence_Of (Func, Loc),
+                Parameter_Associations => Assoc);
+
+            Set_Parent (Indexing, Parent (N));
+            Set_Generalized_Indexing (N, Indexing);
+            Analyze (Indexing);
+            Set_Etype (N, Etype (Indexing));
+
+            --  If the return type of the indexing function is a reference
+            --  type, add the dereference as a possible interpretation. Note
+            --  that the indexing aspect may be a function that returns the
+            --  element type with no intervening implicit dereference, and
+            --  that the reference discriminant is not the first discriminant.
+
+            if Has_Discriminants (Etype (Func)) then
+               Check_Implicit_Dereference (N, Etype (Func));
+            end if;
+
+         else
+            --  If there are multiple indexing functions, build a function
+            --  call and analyze it for each of the possible interpretations.
+
+            Indexing :=
+              Make_Function_Call (Loc,
+                Name                   =>
+                  Make_Identifier (Loc, Chars (Func_Name)),
+                Parameter_Associations => Assoc);
+            Set_Parent (Indexing, Parent (N));
+            Set_Generalized_Indexing (N, Indexing);
+            Set_Etype (N, Any_Type);
+            Set_Etype (Name (Indexing), Any_Type);
+
+            declare
+               I       : Interp_Index;
+               It      : Interp;
+               Success : Boolean;
+
+            begin
+               Get_First_Interp (Func_Name, I, It);
+               Set_Etype (Indexing, Any_Type);
+
+               --  Analyze each candidate function with the given actuals
+
+               while Present (It.Nam) loop
+                  Analyze_One_Call (Indexing, It.Nam, False, Success);
+                  Get_Next_Interp (I, It);
+               end loop;
+
+               --  If there are several successful candidates, resolution will
+               --  be by result. Mark the interpretations of the function name
+               --  itself.
+
+               if Is_Overloaded (Indexing) then
+                  Get_First_Interp (Indexing, I, It);
+
+                  while Present (It.Nam) loop
+                     Add_One_Interp (Name (Indexing), It.Nam, It.Typ);
+                     Get_Next_Interp (I, It);
+                  end loop;
+
+               else
+                  Set_Etype (Name (Indexing), Etype (Indexing));
+               end if;
+
+               --  Now add the candidate interpretations to the indexing node
+               --  itself, to be replaced later by the function call.
+
+               if Is_Overloaded (Name (Indexing)) then
+                  Get_First_Interp (Name (Indexing), I, It);
+
+                  while Present (It.Nam) loop
+                     Add_One_Interp (N, It.Nam, It.Typ);
+
+                     --  Add dereference interpretation if the result type has
+                     --  implicit reference discriminants.
+
+                     if Has_Discriminants (Etype (It.Nam)) then
+                        Check_Implicit_Dereference (N, Etype (It.Nam));
+                     end if;
+
+                     Get_Next_Interp (I, It);
+                  end loop;
+
+               else
+                  Set_Etype (N, Etype (Name (Indexing)));
+
+                  if Has_Discriminants (Etype (N)) then
+                     Check_Implicit_Dereference (N, Etype (N));
+                  end if;
+               end if;
+            end;
+         end if;
+
+         return Etype (Indexing);
+      end Try_Indexing_Function;
+
       --  Local variables
 
       Loc       : constant Source_Ptr := Sloc (N);
       Assoc     : List_Id;
       C_Type    : Entity_Id;
-      Func      : Entity_Id;
       Func_Name : Node_Id;
-      Indexing  : Node_Id;
+      Idx_Type  : Entity_Id;
 
    --  Start of processing for Try_Container_Indexing
 
@@ -8779,6 +9271,13 @@ package body Sem_Ch4 is
 
       if Present (Generalized_Indexing (N)) then
          return True;
+
+      --  Old language version or unknown type require no action
+
+      elsif Ada_Version < Ada_2012
+        or else Pref_Typ = Any_Type
+      then
+         return False;
       end if;
 
       --  An explicit dereference needs to be created in the case of a prefix
@@ -8813,8 +9312,8 @@ package body Sem_Ch4 is
 
       Func_Name := Empty;
 
-      --  The context is suitable for constant indexing, so obtain the name of
-      --  the indexing functions from aspect Constant_Indexing.
+      --  The context is suitable for constant indexing, so obtain the name
+      --  of the indexing functions from aspect Constant_Indexing.
 
       if Constant_Indexing_OK then
          Func_Name :=
@@ -8847,6 +9346,11 @@ package body Sem_Ch4 is
          else
             return False;
          end if;
+
+      --  Handle cascaded errors
+
+      elsif No (Entity (Func_Name)) then
+         return False;
       end if;
 
       Assoc := New_List (Relocate_Node (Prefix));
@@ -8887,110 +9391,54 @@ package body Sem_Ch4 is
          end loop;
       end;
 
-      if not Is_Overloaded (Func_Name) then
-         Func := Entity (Func_Name);
+      Idx_Type := Try_Indexing_Function (Func_Name, Assoc);
 
-         --  Can happen in case of e.g. cascaded errors
+      --  Last chance handling for heuristics: Given that prefix notation
+      --  calls have not yet been resolved, when the type of the prefix has
+      --  both operational aspects present (Constant_Indexing and Variable_
+      --  Indexing), and the analysis of the context identified a potential
+      --  prefix notation call (i.e. an N_Selected_Component node), the
+      --  evaluation of Constant_Indexing_OK is based on heuristics; in such
+      --  case, if the chosen indexing approach is noticed now to be wrong
+      --  we retry with the other alternative before leaving.
 
-         if No (Func) then
-            return False;
-         end if;
+      --  Retrying means that the heuristic decision taken when analyzing
+      --  the context failed in this case, and therefore we should adjust
+      --  the code of Handle_Selected_Component to improve identification
+      --  of prefix notation calls. This last chance handling handler is
+      --  left here for the purpose of improving such routine because it
+      --  proved to be usefull for identified such cases when the function
+      --  Handle_Selected_Component was added.
 
-         Indexing :=
-           Make_Function_Call (Loc,
-             Name                   => New_Occurrence_Of (Func, Loc),
-             Parameter_Associations => Assoc);
-
-         Set_Parent (Indexing, Parent (N));
-         Set_Generalized_Indexing (N, Indexing);
-         Analyze (Indexing);
-         Set_Etype (N, Etype (Indexing));
-
-         --  If the return type of the indexing function is a reference type,
-         --  add the dereference as a possible interpretation. Note that the
-         --  indexing aspect may be a function that returns the element type
-         --  with no intervening implicit dereference, and that the reference
-         --  discriminant is not the first discriminant.
-
-         if Has_Discriminants (Etype (Func)) then
-            Check_Implicit_Dereference (N, Etype (Func));
-         end if;
-
-      else
-         --  If there are multiple indexing functions, build a function call
-         --  and analyze it for each of the possible interpretations.
-
-         Indexing :=
-           Make_Function_Call (Loc,
-             Name                   =>
-               Make_Identifier (Loc, Chars (Func_Name)),
-             Parameter_Associations => Assoc);
-         Set_Parent (Indexing, Parent (N));
-         Set_Generalized_Indexing (N, Indexing);
-         Set_Etype (N, Any_Type);
-         Set_Etype (Name (Indexing), Any_Type);
-
+      if Idx_Type = Any_Type and then Heuristic then
          declare
-            I       : Interp_Index;
-            It      : Interp;
-            Success : Boolean;
+            Tried_Func_Name : constant Node_Id := Func_Name;
 
          begin
-            Get_First_Interp (Func_Name, I, It);
-            Set_Etype (Indexing, Any_Type);
+            Func_Name :=
+              Indexing_Interpretations (C_Type,
+                Aspect_Constant_Indexing);
 
-            --  Analyze each candidate function with the given actuals
-
-            while Present (It.Nam) loop
-               Analyze_One_Call (Indexing, It.Nam, False, Success);
-               Get_Next_Interp (I, It);
-            end loop;
-
-            --  If there are several successful candidates, resolution will
-            --  be by result. Mark the interpretations of the function name
-            --  itself.
-
-            if Is_Overloaded (Indexing) then
-               Get_First_Interp (Indexing, I, It);
-
-               while Present (It.Nam) loop
-                  Add_One_Interp (Name (Indexing), It.Nam, It.Typ);
-                  Get_Next_Interp (I, It);
-               end loop;
+            if Present (Func_Name)
+              and then Func_Name /= Tried_Func_Name
+            then
+               Idx_Type := Try_Indexing_Function (Func_Name, Assoc);
 
             else
-               Set_Etype (Name (Indexing), Etype (Indexing));
-            end if;
+               Func_Name :=
+                 Indexing_Interpretations (C_Type,
+                   Aspect_Variable_Indexing);
 
-            --  Now add the candidate interpretations to the indexing node
-            --  itself, to be replaced later by the function call.
-
-            if Is_Overloaded (Name (Indexing)) then
-               Get_First_Interp (Name (Indexing), I, It);
-
-               while Present (It.Nam) loop
-                  Add_One_Interp (N, It.Nam, It.Typ);
-
-                  --  Add dereference interpretation if the result type has
-                  --  implicit reference discriminants.
-
-                  if Has_Discriminants (Etype (It.Nam)) then
-                     Check_Implicit_Dereference (N, Etype (It.Nam));
-                  end if;
-
-                  Get_Next_Interp (I, It);
-               end loop;
-
-            else
-               Set_Etype (N, Etype (Name (Indexing)));
-               if Has_Discriminants (Etype (N)) then
-                  Check_Implicit_Dereference (N, Etype (N));
+               if Present (Func_Name)
+                 and then Func_Name /= Tried_Func_Name
+               then
+                  Idx_Type := Try_Indexing_Function (Func_Name, Assoc);
                end if;
             end if;
          end;
       end if;
 
-      if Etype (Indexing) = Any_Type then
+      if Idx_Type = Any_Type then
          Error_Msg_NE
            ("container cannot be indexed with&", N, Etype (First (Exprs)));
          Rewrite (N, New_Occurrence_Of (Any_Id, Loc));
