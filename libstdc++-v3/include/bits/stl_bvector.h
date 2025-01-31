@@ -1341,9 +1341,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		      std::copy_backward(__pos._M_const_cast(), end(),
 					 this->_M_impl._M_finish
 					   + difference_type(__n));
-		      auto __i = ranges::copy(__rg, __pos._M_const_cast()).out;
+		      ranges::copy(__rg, __pos._M_const_cast());
 		      this->_M_impl._M_finish += difference_type(__n);
-		      return __i;
+		      return __pos._M_const_cast();
 		    }
 		  else
 		    {
@@ -1355,9 +1355,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		      iterator __i = _M_copy_aligned(__begin,
 						     __pos._M_const_cast(),
 						     __start);
-		      __i = ranges::copy(__rg, __i).out;
+		      iterator __j = ranges::copy(__rg, __i).out;
 		      iterator __finish = std::copy(__pos._M_const_cast(),
-						    __end, __i);
+						    __end, __j);
 		      this->_M_deallocate();
 		      this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
 		      this->_M_impl._M_start = __start;

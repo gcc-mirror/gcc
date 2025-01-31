@@ -984,8 +984,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	if (__pos == cend())
 	  {
+	    const auto __ins_idx = size();
 	    append_range(std::forward<_Rg>(__rg));
-	    return end();
+	    return begin() + __ins_idx;
 	  }
 
 	if constexpr (ranges::forward_range<_Rg>)
