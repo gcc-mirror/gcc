@@ -2238,6 +2238,8 @@ build_cltz_expr (tree src, bool leading, bool define_at_zero)
 			      build_int_cst (integer_type_node, prec));
 	}
     }
+  else if (fn == NULL_TREE)
+    return NULL_TREE;
   else if (prec == 2 * lli_prec)
     {
       tree src1 = fold_convert (long_long_unsigned_type_node,
