@@ -303,6 +303,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (mult @0 integer_zerop@1)
  @1)
 
+#if GIMPLE
+/* When multiplying a value by a boolean involving the value, we may
+   be able to simplify further.
+     a * ((a || b) != 0) -> a
+     a * ((a || b) == 0) -> 0
+
+   There are also bit-and cases which don't show up in practice yet.
+     a * ((a && b) != 0) -> a * b
+     a * ((a && b) == 0) -> b != 0 ? a : b */
+(for neeq (ne eq)
+ (simplify
+  (mult:c (convert? (neeq (bit_ior:c @0 @1) integer_zerop@2)) @0)
+  (if (neeq == EQ_EXPR)
+   { build_zero_cst (type); }
+   @0)))
+#endif
+
 /* -x == x -> x == 0 */
 (for cmp (eq ne)
  (simplify
