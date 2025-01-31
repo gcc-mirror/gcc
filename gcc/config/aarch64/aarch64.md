@@ -707,11 +707,12 @@
 )
 
 (define_expand "cbranch<mode>4"
-  [(set (pc) (if_then_else (match_operator 0 "aarch64_comparison_operator"
-			    [(match_operand:GPF 1 "register_operand")
-			     (match_operand:GPF 2 "aarch64_fp_compare_operand")])
-			   (label_ref (match_operand 3 "" ""))
-			   (pc)))]
+  [(set (pc) (if_then_else
+		(match_operator 0 "aarch64_comparison_operator"
+		 [(match_operand:GPF_F16 1 "register_operand")
+		  (match_operand:GPF_F16 2 "aarch64_fp_compare_operand")])
+		(label_ref (match_operand 3 "" ""))
+		(pc)))]
   ""
   "
   operands[1] = aarch64_gen_compare_reg (GET_CODE (operands[0]), operands[1],
@@ -4337,26 +4338,28 @@
 
 (define_insn "fcmp<mode>"
   [(set (reg:CCFP CC_REGNUM)
-        (compare:CCFP (match_operand:GPF 0 "register_operand")
-		      (match_operand:GPF 1 "aarch64_fp_compare_operand")))]
+	(compare:CCFP
+	  (match_operand:GPF_F16 0 "register_operand")
+	  (match_operand:GPF_F16 1 "aarch64_fp_compare_operand")))]
    "TARGET_FLOAT"
    {@ [ cons: 0 , 1  ]
       [ w       , Y  ] fcmp\t%<s>0, #0.0
       [ w       , w  ] fcmp\t%<s>0, %<s>1
   }
-  [(set_attr "type" "fcmp<s>")]
+  [(set_attr "type" "fcmp<stype>")]
 )
 
 (define_insn "fcmpe<mode>"
   [(set (reg:CCFPE CC_REGNUM)
-        (compare:CCFPE (match_operand:GPF 0 "register_operand")
-		       (match_operand:GPF 1 "aarch64_fp_compare_operand")))]
+	(compare:CCFPE
+	  (match_operand:GPF_F16 0 "register_operand")
+	  (match_operand:GPF_F16 1 "aarch64_fp_compare_operand")))]
    "TARGET_FLOAT"
    {@ [ cons: 0 , 1  ]
       [ w       , Y  ] fcmpe\t%<s>0, #0.0
       [ w       , w  ] fcmpe\t%<s>0, %<s>1
   }
-  [(set_attr "type" "fcmp<s>")]
+  [(set_attr "type" "fcmp<stype>")]
 )
 
 (define_insn "*cmp_swp_<shift>_reg<mode>"
@@ -4467,8 +4470,8 @@
 (define_expand "cstore<mode>4"
   [(set (match_operand:SI 0 "register_operand")
 	(match_operator:SI 1 "aarch64_comparison_operator_mode"
-	 [(match_operand:GPF 2 "register_operand")
-	  (match_operand:GPF 3 "aarch64_fp_compare_operand")]))]
+	 [(match_operand:GPF_F16 2 "register_operand")
+	  (match_operand:GPF_F16 3 "aarch64_fp_compare_operand")]))]
   ""
   "
   operands[2] = aarch64_gen_compare_reg (GET_CODE (operands[1]), operands[2],
