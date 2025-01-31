@@ -882,16 +882,20 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
   if (!deferred_decl_context && !context)
     context = get_global_context ();
 
-  /* Functions imported in another function are not really nested.
-     For really nested functions mark them initially as needing
-     a static chain for uses of that flag before unnesting;
-     lower_nested_functions will then recompute it.  */
+  /* Mark functions really nested in another function, that is to say defined
+     there as opposed to imported from elsewhere, as initially needing a static
+     chain for the sake of uniformity (lower_nested_functions will recompute it
+     exacly later) and as private to the translation unit (the static chain may
+     be clobbered by calling conventions used across translation units).  */
   if (TREE_CODE (decl) == FUNCTION_DECL
-      && !TREE_PUBLIC (decl)
+      && !DECL_EXTERNAL (decl)
       && context
       && (TREE_CODE (context) == FUNCTION_DECL
 	  || decl_function_context (context)))
-    DECL_STATIC_CHAIN (decl) = 1;
+    {
+      DECL_STATIC_CHAIN (decl) = 1;
+      TREE_PUBLIC (decl) = 0;
+    }
 
   if (!deferred_decl_context)
     DECL_CONTEXT (decl) = context;
