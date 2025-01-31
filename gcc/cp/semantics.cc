@@ -1709,7 +1709,6 @@ finish_for_stmt (tree for_stmt)
     {
       tree stmt = pop_stmt_list (FOR_INIT_STMT (for_stmt));
       FOR_INIT_STMT (for_stmt) = NULL_TREE;
-      stmt = build_stmt (EXPR_LOCATION (for_stmt), EXPR_STMT, stmt);
       stmt = maybe_cleanup_point_expr_void (stmt);
       add_stmt (stmt);
     }
