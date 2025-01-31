@@ -1295,6 +1295,8 @@ start_initialized_static_member (const cp_declarator *declarator,
   gcc_checking_assert (VAR_P (value));
 
   DECL_CONTEXT (value) = current_class_type;
+  DECL_INITIALIZED_IN_CLASS_P (value) = true;
+
   if (processing_template_decl)
     {
       value = push_template_decl (value);
@@ -1305,10 +1307,35 @@ start_initialized_static_member (const cp_declarator *declarator,
   if (attrlist)
     cplus_decl_attributes (&value, attrlist, 0);
 
-  finish_member_declaration (value);
-  DECL_INITIALIZED_IN_CLASS_P (value) = true;
+  /* When defining a template we need to register the TEMPLATE_DECL.  */
+  tree maybe_template = value;
+  if (template_parm_scope_p ())
+    {
+      if (!DECL_TEMPLATE_SPECIALIZATION (value))
+	maybe_template = DECL_TI_TEMPLATE (value);
+      else
+	maybe_template = NULL_TREE;
+    }
+  if (maybe_template)
+    finish_member_declaration (maybe_template);
 
   return value;
+}
+
+/* Whether DECL is a static data member initialized at the point
+   of declaration within its class.  */
+
+bool
+is_static_data_member_initialized_in_class (tree decl)
+{
+  if (!decl || decl == error_mark_node)
+    return false;
+
+  tree inner = STRIP_TEMPLATE (decl);
+  return (inner
+	  && VAR_P (inner)
+	  && DECL_CLASS_SCOPE_P (inner)
+	  && DECL_INITIALIZED_IN_CLASS_P (inner));
 }
 
 /* Finish a declaration prepared with start_initialized_static_member.  */
@@ -1318,7 +1345,7 @@ finish_initialized_static_member (tree decl, tree init, tree asmspec)
 {
   if (decl == error_mark_node)
     return;
-  gcc_checking_assert (VAR_P (decl));
+  gcc_checking_assert (is_static_data_member_initialized_in_class (decl));
 
   int flags;
   if (init && DIRECT_LIST_INIT_P (init))

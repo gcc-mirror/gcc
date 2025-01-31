@@ -1555,10 +1555,7 @@ record_lambda_scope (tree lambda)
   /* Before ABI v20, lambdas in static data member initializers did not
      get a dedicated lambda scope.  */
   tree scope = lambda_scope.scope;
-  if (scope
-      && VAR_P (scope)
-      && DECL_CLASS_SCOPE_P (scope)
-      && DECL_INITIALIZED_IN_CLASS_P (scope))
+  if (is_static_data_member_initialized_in_class (scope))
     {
       if (!abi_version_at_least (20))
 	scope = NULL_TREE;

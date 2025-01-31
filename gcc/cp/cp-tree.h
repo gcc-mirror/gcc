@@ -7250,6 +7250,7 @@ extern tree grokbitfield (const cp_declarator *, cp_decl_specifier_seq *,
 			  tree, tree, tree);
 extern tree start_initialized_static_member	(const cp_declarator *,
 						 cp_decl_specifier_seq *, tree);
+extern bool is_static_data_member_initialized_in_class (tree decl);
 extern void finish_initialized_static_member	(tree, tree, tree);
 extern tree splice_template_attributes		(tree *, tree);
 extern bool any_dependent_type_attributes_p	(tree);
