@@ -105,6 +105,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __builtin_memcmp(&__a, &__b, sizeof(_Tp)) == 0;
       }
 
+    // lightweight std::optional<__platform_wait_t>
+    struct __wait_result_type
+    {
+      __platform_wait_t _M_val;
+      unsigned char _M_has_val : 1; // _M_val value was loaded before return.
+      unsigned char _M_timeout : 1; // Waiting function ended with timeout.
+      unsigned char _M_unused : 6;  // padding
+    };
+
     enum class __wait_flags : __UINT_LEAST32_TYPE__
     {
        __abi_version = 0,
@@ -166,21 +175,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _ValFn,
 	       typename _Tp = decay_t<decltype(std::declval<_ValFn&>()())>>
 	_Tp
-	_M_prep_for_wait_on(const void* __addr, _ValFn __vfn)
+	_M_setup_wait(const void* __addr, _ValFn __vfn,
+		      __wait_result_type __res = {})
 	{
 	  if constexpr (__platform_wait_uses_type<_Tp>)
 	    {
-	      _Tp __val = __vfn();
-	      // If the wait is not proxied, set the value that we're waiting
-	      // to change.
-	      _M_old = __builtin_bit_cast(__platform_wait_t, __val);
-	      return __val;
+	      // If the wait is not proxied, the value we check when waiting
+	      // is the value of the atomic variable itself.
+
+	      if (__res._M_has_val) // The previous wait loaded a recent value.
+		{
+		  _M_old = __res._M_val;
+		  return __builtin_bit_cast(_Tp, __res._M_val);
+		}
+	      else // Load the value from __vfn
+		{
+		  _Tp __val = __vfn();
+		  _M_old = __builtin_bit_cast(__platform_wait_t, __val);
+		  return __val;
+		}
 	    }
-	  else
+	  else // It's a proxy wait and the proxy's _M_ver is used.
 	    {
-	      // Otherwise, it's a proxy wait and the proxy's _M_ver is used.
-	      // This load must happen before the one done by __vfn().
-	      _M_load_proxy_wait_val(__addr);
+	      if (__res._M_has_val) // The previous wait loaded a recent value.
+		_M_old = __res._M_val;
+	      else // Load _M_ver from the proxy (must happen before __vfn()).
+		_M_load_proxy_wait_val(__addr);
 	      return __vfn();
 	    }
 	}
@@ -204,8 +224,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     };
 
-    using __wait_result_type = pair<bool, __platform_wait_t>;
-
     __wait_result_type
     __wait_impl(const void* __addr, __wait_args_base&);
 
@@ -222,11 +240,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  bool __bare_wait = false) noexcept
     {
       __detail::__wait_args __args{ __addr, __bare_wait };
-      _Tp __val = __args._M_prep_for_wait_on(__addr, __vfn);
+      _Tp __val = __args._M_setup_wait(__addr, __vfn);
       while (!__pred(__val))
 	{
-	  __detail::__wait_impl(__addr, __args);
-	  __val = __args._M_prep_for_wait_on(__addr, __vfn);
+	  auto __res = __detail::__wait_impl(__addr, __args);
+	  __val = __args._M_setup_wait(__addr, __vfn, __res);
 	}
       // C++26 will return __val
     }

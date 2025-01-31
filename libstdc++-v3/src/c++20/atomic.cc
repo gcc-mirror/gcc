@@ -48,6 +48,8 @@
 # endif
 #endif
 
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -208,21 +210,23 @@ namespace
   constexpr auto __atomic_spin_count_relax = 12;
   constexpr auto __atomic_spin_count = 16;
 
+  // This function always returns _M_has_val == true and _M_val == *__addr.
+  // _M_timeout == (*__addr == __args._M_old).
   __wait_result_type
   __spin_impl(const __platform_wait_t* __addr, const __wait_args_base& __args)
   {
-    __platform_wait_t __val;
+    __platform_wait_t __val{};
     for (auto __i = 0; __i < __atomic_spin_count; ++__i)
       {
 	__atomic_load(__addr, &__val, __args._M_order);
 	if (__val != __args._M_old)
-	  return { true, __val };
+	  return { ._M_val = __val, ._M_has_val = true, ._M_timeout = false };
 	if (__i < __atomic_spin_count_relax)
 	  __thread_relax();
 	else
 	  __thread_yield();
       }
-    return { false, __val };
+    return { ._M_val = __val, ._M_has_val = true, ._M_timeout = true };
   }
 
   inline __waitable_state*
@@ -263,7 +267,7 @@ __wait_impl(const void* __addr, __wait_args_base& __args)
   if (__args & __wait_flags::__do_spin)
     {
       auto __res = __detail::__spin_impl(__wait_addr, __args);
-      if (__res.first)
+      if (!__res._M_timeout)
 	return __res;
       if (__args & __wait_flags::__spin_only)
 	return __res;
@@ -271,17 +275,21 @@ __wait_impl(const void* __addr, __wait_args_base& __args)
 
 #ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
   if (__args & __wait_flags::__track_contention)
-    set_wait_state(__addr, __args);
+    set_wait_state(__addr, __args); // scoped_wait needs a __waitable_state
   scoped_wait s(__args);
   __platform_wait(__wait_addr, __args._M_old);
-  return { false, __args._M_old };
+  // We haven't loaded a new value so return false as first member:
+  return { ._M_val = __args._M_old, ._M_has_val = false, ._M_timeout = false };
 #else
   waiter_lock l(__args);
   __platform_wait_t __val;
   __atomic_load(__wait_addr, &__val, __args._M_order);
   if (__val == __args._M_old)
-    __state->_M_cv.wait(__state->_M_mtx);
-  return { false, __val };
+    {
+      __state->_M_cv.wait(__state->_M_mtx);
+      return { ._M_val = __val, ._M_has_val = false, ._M_timeout = false };
+    }
+  return { ._M_val = __val, ._M_has_val = true, ._M_timeout = false };
 #endif
 }
 
@@ -389,6 +397,7 @@ __cond_wait_until(__condvar& __cv, mutex& __mx,
 }
 #endif // ! HAVE_PLATFORM_TIMED_WAIT
 
+// Like __spin_impl, always returns _M_has_val == true.
 __wait_result_type
 __spin_until_impl(const __platform_wait_t* __addr,
 		  const __wait_args_base& __args,
@@ -411,14 +420,18 @@ __spin_until_impl(const __platform_wait_t* __addr,
 #endif
       if (__elapsed > 4us)
 	__thread_yield();
-      else if (auto __res = __detail::__spin_impl(__addr, __args); __res.first)
-	return __res;
+      else
+	{
+	  auto __res = __detail::__spin_impl(__addr, __args);
+	  if (!__res._M_timeout)
+	    return __res;
+	}
 
       __atomic_load(__addr, &__val, __args._M_order);
       if (__val != __args._M_old)
-	return { true, __val };
+	return { ._M_val = __val, ._M_has_val = true, ._M_timeout = false };
     }
-  return { false, __val };
+  return { ._M_val = __val, ._M_has_val = true, ._M_timeout = true };
 }
 } // namespace
 
@@ -437,7 +450,7 @@ __wait_until_impl(const void* __addr, __wait_args_base& __args,
   if (__args & __wait_flags::__do_spin)
     {
       auto __res = __detail::__spin_until_impl(__wait_addr, __args, __atime);
-      if (__res.first)
+      if (!__res._M_timeout)
 	return __res;
       if (__args & __wait_flags::__spin_only)
 	return __res;
@@ -448,17 +461,21 @@ __wait_until_impl(const void* __addr, __wait_args_base& __args,
     set_wait_state(__addr, __args);
   scoped_wait s(__args);
   if (__platform_wait_until(__wait_addr, __args._M_old, __atime))
-    return { true, __args._M_old };
+    return { ._M_val = __args._M_old, ._M_has_val = false, ._M_timeout = false };
   else
-    return { false, __args._M_old };
+    return { ._M_val = __args._M_old, ._M_has_val = false, ._M_timeout = true };
 #else
   waiter_lock l(__args);
   __platform_wait_t __val;
   __atomic_load(__wait_addr, &__val, __args._M_order);
-  if (__val == __args._M_old
-	&& __cond_wait_until(__state->_M_cv, __state->_M_mtx, __atime))
-    return { true, __val };
-  return { false, __val };
+  if (__val == __args._M_old)
+    {
+      if (__cond_wait_until(__state->_M_cv, __state->_M_mtx, __atime))
+	return { ._M_val = __val, ._M_has_val = false, ._M_timeout = false };
+      else
+	return { ._M_val = __val, ._M_has_val = false, ._M_timeout = true };
+    }
+  return { ._M_val = __val, ._M_has_val = true, ._M_timeout = false };
 #endif
 }
 

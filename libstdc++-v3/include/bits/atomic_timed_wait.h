@@ -98,18 +98,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						 __at.time_since_epoch());
 
 	if constexpr (!is_same_v<__wait_clock_t, _Clock>)
-	  if (!__res.first)
+	  if (__res._M_timeout)
 	    {
 	      // We got a timeout when measured against __clock_t but
 	      // we need to check against the caller-supplied clock
 	      // to tell whether we should return a timeout.
 	      if (_Clock::now() < __atime)
-		__res.first = true;
+		__res._M_timeout = false;
 	    }
 	return __res;
       }
 
-    // Returns {true, val} if wait ended before a timeout.
     template<typename _Rep, typename _Period>
       __wait_result_type
       __wait_for(const void* __addr, __wait_args_base& __args,
@@ -139,14 +138,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				bool __bare_wait = false) noexcept
     {
       __detail::__wait_args __args{ __addr, __bare_wait };
-      _Tp __val = __args._M_prep_for_wait_on(__addr, __vfn);
+      _Tp __val = __args._M_setup_wait(__addr, __vfn);
       while (!__pred(__val))
 	{
 	  auto __res = __detail::__wait_until(__addr, __args, __atime);
-	  if (!__res.first)
-	    // timed out
-	    return __res.first; // C++26 will also return last observed __val
-	  __val = __args._M_prep_for_wait_on(__addr, __vfn);
+	  if (__res._M_timeout)
+	    return false; // C++26 will also return last observed __val
+	  __val = __args._M_setup_wait(__addr, __vfn, __res);
 	}
       return true; // C++26 will also return last observed __val
     }
@@ -189,14 +187,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      bool __bare_wait = false) noexcept
     {
       __detail::__wait_args __args{ __addr, __bare_wait };
-      _Tp __val = __args._M_prep_for_wait_on(__addr, __vfn);
+      _Tp __val = __args._M_setup_wait(__addr, __vfn);
       while (!__pred(__val))
 	{
 	  auto __res = __detail::__wait_for(__addr, __args, __rtime);
-	  if (!__res.first)
-	    // timed out
-	    return __res.first; // C++26 will also return last observed __val
-	  __val = __args._M_prep_for_wait_on(__addr, __vfn);
+	  if (__res._M_timeout)
+	    return false; // C++26 will also return last observed __val
+	  __val = __args._M_setup_wait(__addr, __vfn);
 	}
       return true; // C++26 will also return last observed __val
     }
@@ -211,7 +208,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       __detail::__wait_args __args{ __addr, __old, __order, __bare_wait };
       auto __res = __detail::__wait_for(__addr, __args, __rtime);
-      return __res.first; // C++26 will also return last observed __Val
+      return !__res._M_timeout; // C++26 will also return last observed __val
     }
 
   template<typename _Tp, typename _ValFn,
