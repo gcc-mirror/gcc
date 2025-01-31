@@ -159,6 +159,10 @@ public:
 						  AST::MacroInvocData &invoc,
 						  AST::InvocKind semicolon);
 
+  static tl::optional<AST::Fragment>
+  option_env_handler (location_t invoc_locus, AST::MacroInvocData &invoc,
+		      AST::InvocKind semicolon);
+
   static tl::optional<AST::Fragment> cfg_handler (location_t invoc_locus,
 						  AST::MacroInvocData &invoc,
 						  AST::InvocKind semicolon);
