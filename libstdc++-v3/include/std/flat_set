@@ -475,7 +475,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<__detail::__container_compatible_range<value_type> _Rg>
 	void
 	insert_range(_Rg&& __rg)
-	{ insert(ranges::begin(__rg), ranges::end(__rg)); }
+	{
+	  auto __guard = _M_make_clear_guard();
+	  typename container_type::iterator __it;
+	  if constexpr (requires { _M_cont.insert_range(_M_cont.end(), __rg); })
+	    __it = _M_cont.insert_range(_M_cont.end(), __rg);
+	  else if constexpr (ranges::common_range<_Rg>)
+	    __it = _M_cont.insert(_M_cont.end(), ranges::begin(__rg), ranges::end(__rg));
+	  else
+	    {
+	      size_type __n = size();
+	      auto __first = ranges::begin(__rg);
+	      auto __last = ranges::end(__rg);
+	      for (; __first != __last; ++__first)
+		_M_cont.emplace_back(*__first);
+	      __it = _M_cont.begin() + __n;
+	    }
+	  std::sort(__it, _M_cont.end(), _M_comp);
+	  std::inplace_merge(_M_cont.begin(), __it, _M_cont.end(), _M_comp);
+	  if constexpr (!_Multi)
+	    _M_unique();
+	  __guard._M_disable();
+	}
 
       void
       insert(initializer_list<value_type> __il)
@@ -808,7 +829,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Impl::emplace;
       using _Impl::emplace_hint;
       using _Impl::insert;
-      // using _Impl::insert_range;
+      using _Impl::insert_range;
       using _Impl::extract;
       using _Impl::replace;
       using _Impl::erase;
@@ -947,7 +968,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Impl::emplace;
       using _Impl::emplace_hint;
       using _Impl::insert;
-      // using _Impl::insert_range;
+      using _Impl::insert_range;
       using _Impl::extract;
       using _Impl::replace;
       using _Impl::erase;

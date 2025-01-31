@@ -2,6 +2,7 @@
 
 #include <flat_set>
 #include <deque>
+#include <ranges>
 #include <vector>
 #include <testsuite_allocator.h>
 #include <testsuite_hooks.h>
@@ -128,6 +129,20 @@ test05()
   VERIFY( std::ranges::equal(m, (int[]){1, 2, 3, 3, 4, 5}) );
 }
 
+void
+test06()
+{
+  // PR libstdc++/118156 - flat_foo::insert_range cannot handle non-common ranges
+  std::flat_multiset<int> s;
+  auto r = std::views::iota(1) | std::views::take(5);
+  static_assert(!std::ranges::common_range<decltype(r)>);
+  s.insert_range(r);
+  VERIFY( std::ranges::equal(s, (int[]){1, 2, 3, 4, 5}) );
+  s.clear();
+  s.insert_range(r | std::views::reverse);
+  VERIFY( std::ranges::equal(s, (int[]){1, 2, 3, 4, 5}) );
+}
+
 int
 main()
 {
@@ -137,4 +152,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }
