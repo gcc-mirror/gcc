@@ -1561,6 +1561,11 @@ build_contract_condition_function (tree fndecl, bool pre)
   /* The handlers are void fns.  */
   TREE_TYPE (fn) = build_function_type (void_type_node, arg_types);
 
+  /* Disable warnings for all the parameters */
+  for (tree p = DECL_ARGUMENTS (fn); p && p!=void_list_node;
+      p = TREE_CHAIN (p))
+    suppress_warning (p);
+
   if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl))
     TREE_TYPE (fn) = build_method_type (class_type, TREE_TYPE (fn));
 
@@ -1598,7 +1603,7 @@ build_contract_condition_function (tree fndecl, bool pre)
   /* Update various inline related declaration properties.  */
   //DECL_DECLARED_INLINE_P (fn) = true;
   DECL_DISREGARD_INLINE_LIMITS (fn) = true;
-  TREE_NO_WARNING (fn) = true;
+  suppress_warning (fn);
 
   return fn;
 }
@@ -1939,6 +1944,7 @@ build_contract_wrapper_function (tree fndecl, bool is_cvh,
 	TREE_CHAIN (last) = void_list_node;
 	break;
       }
+      suppress_warning (p);
       last = TREE_CHAIN (last) = copy_decl (p);
       DECL_CONTEXT (last) = wrapdecl;
     }
@@ -1969,7 +1975,7 @@ build_contract_wrapper_function (tree fndecl, bool is_cvh,
   /* Update various inline related declaration properties.  */
   //DECL_DECLARED_INLINE_P (wrapdecl) = true;
   DECL_DISREGARD_INLINE_LIMITS (wrapdecl) = true;
-  TREE_NO_WARNING (wrapdecl) = true;
+  suppress_warning (wrapdecl);
 
   return wrapdecl;
 }
