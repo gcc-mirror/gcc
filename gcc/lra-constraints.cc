@@ -4144,6 +4144,24 @@ static bool invalid_mode_reg_p (enum machine_mode mode, rtx x)
 	      ira_prohibited_class_mode_regs[rclass][mode]));
 }
 
+/* Return TRUE if regno is referenced in more than one non-debug insn.  */
+static bool
+multiple_insn_refs_p (int regno)
+{
+  unsigned int uid;
+  bitmap_iterator bi;
+  int nrefs = 0;
+  EXECUTE_IF_SET_IN_BITMAP (&lra_reg_info[regno].insn_bitmap, 0, uid, bi)
+    {
+      if (!NONDEBUG_INSN_P (lra_insn_recog_data[uid]->insn))
+	continue;
+      if (nrefs == 1)
+	return true;
+      nrefs++;
+    }
+  return false;
+}
+
 /* Main entry point of the constraint code: search the body of the
    current insn to choose the best alternative.  It is mimicking insn
    alternative cost calculation model of former reload pass.  That is
@@ -4602,7 +4620,7 @@ curr_insn_transform (bool check_only_p)
 		 registers for other pseudos referenced in the insn.  The most
 		 common case of this is a scratch register which will be
 		 transformed to scratch back at the end of LRA.  */
-	      && bitmap_single_bit_set_p (&lra_reg_info[regno].insn_bitmap))
+	      && !multiple_insn_refs_p (regno))
 	    {
 	      if (lra_get_allocno_class (regno) != NO_REGS)
 		lra_change_class (regno, NO_REGS, "      Change to", true);
