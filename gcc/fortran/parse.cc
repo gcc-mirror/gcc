@@ -6408,7 +6408,10 @@ parse_omp_dispatch (void)
 
   st = next_statement ();
   if (st == ST_NONE)
-    return st;
+    {
+      pop_state ();
+      return st;
+    }
   if (st == ST_CALL || st == ST_ASSIGNMENT)
     accept_statement (st);
   else
