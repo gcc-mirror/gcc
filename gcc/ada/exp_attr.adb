@@ -284,8 +284,8 @@ package body Exp_Attr is
        (In_Same_Extended_Unit (Subp_Unit, Attr_Ref_Unit)
          --  If subp declared in unit body, then we don't want to refer
          --  to it from within unit spec so return False in that case.
-         and then not (Body_Required (Attr_Ref_Unit)
-                       and not Body_Required (Subp_Unit)));
+         and then not (not Is_Body (Unit (Attr_Ref_Unit))
+                       and Is_Body (Unit (Subp_Unit))));
    --  Returns True if it is ok to refer to a cached subprogram declared in
    --  Subp_Unit from the point of an attribute reference occurring in
    --  Attr_Ref_Unit. Both arguments are usually N_Compilation_Nodes,
