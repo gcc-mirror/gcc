@@ -5,7 +5,7 @@ struct S {
   using T = decltype([]{ return I; });
 
   template <int I>
-  decltype([]{ return I; }) f() { return {}; }
+  decltype([]{ return I; }) f();  // { dg-error "declared using local type" }
 };
 
 void a(S::T<0>*);  // { dg-error "declared using local type" }
@@ -18,4 +18,5 @@ int main() {
   b(nullptr);
   c(nullptr);
   d(nullptr);
+  S{}.f<2>()();
 }

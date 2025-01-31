@@ -1572,6 +1572,17 @@ record_lambda_scope (tree lambda)
 	}
     }
 
+  /* An otherwise unattached class-scope lambda in a member template
+     should not have a mangling scope, as the mangling scope will not
+     correctly inherit on instantiation.  */
+  tree ctx = TYPE_CONTEXT (closure);
+  if (scope
+      && ctx
+      && CLASS_TYPE_P (ctx)
+      && ctx == TREE_TYPE (scope)
+      && current_template_depth > template_class_depth (ctx))
+    scope = NULL_TREE;
+
   LAMBDA_EXPR_EXTRA_SCOPE (lambda) = scope;
   if (scope)
     maybe_key_decl (scope, TYPE_NAME (closure));
