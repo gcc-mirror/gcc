@@ -9632,6 +9632,15 @@ trees_out::has_tu_local_dep (tree decl) const
     decl = TYPE_NAME (DECL_CONTEXT (decl));
 
   depset *dep = dep_hash->find_dependency (decl);
+  if (!dep)
+    {
+      /* This might be the DECL_TEMPLATE_RESULT of a TEMPLATE_DECL
+	 which we found was TU-local and gave up early.  */
+      int use_tpl = -1;
+      if (tree ti = node_template_info (decl, use_tpl))
+	dep = dep_hash->find_dependency (TI_TEMPLATE (ti));
+    }
+
   return dep && dep->is_tu_local ();
 }
 
@@ -13504,19 +13513,31 @@ depset::hash::is_tu_local_entity (tree decl, bool explain/*=false*/)
 
      We consider types with names for linkage purposes as having names, since
      these aren't really TU-local.  */
-  if (TREE_CODE (decl) == TYPE_DECL
+  tree inner = STRIP_TEMPLATE (decl);
+  if (inner
+      && TREE_CODE (inner) == TYPE_DECL
       && TYPE_ANON_P (type)
-      && !DECL_SELF_REFERENCE_P (decl)
+      && !DECL_SELF_REFERENCE_P (inner)
       /* An enum with an enumerator name for linkage.  */
       && !(UNSCOPED_ENUM_P (type) && TYPE_VALUES (type)))
     {
       tree main_decl = TYPE_MAIN_DECL (type);
-      if (!DECL_CLASS_SCOPE_P (main_decl)
-	  && !decl_function_context (main_decl)
-	  /* LAMBDA_EXPR_EXTRA_SCOPE will be set for lambdas defined in
-	     contexts where they would not be TU-local.  */
-	  && !(LAMBDA_TYPE_P (type)
-	       && LAMBDA_TYPE_EXTRA_SCOPE (type)))
+      if (LAMBDA_TYPE_P (type))
+	{
+	  /* A lambda expression is, in practice, TU-local iff it has no
+	     mangling scope.  This currently doesn't line up exactly with
+	     the standard's definition due to some ABI issues, but it's
+	     pretty close, and avoids other issues down the line.  */
+	  if (!LAMBDA_TYPE_EXTRA_SCOPE (type))
+	    {
+	      if (explain)
+		inform (loc, "%qT has no name and cannot be differentiated "
+			"from similar lambdas in other TUs", type);
+	      return true;
+	    }
+	}
+      else if (!DECL_CLASS_SCOPE_P (main_decl)
+	       && !decl_function_context (main_decl))
 	{
 	  if (explain)
 	    inform (loc, "%qT has no name and is not defined within a class, "
@@ -13820,6 +13841,35 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
   return dep;
 }
 
+/* Whether REF is an exposure of a member type of SOURCE.
+
+   This comes up with exposures of class-scope lambdas, that we currently
+   treat as TU-local due to ABI reasons.  In such a case the type of the
+   lambda will be exposed in two places, first by the class type it is in
+   the TYPE_FIELDS list of, and second by the actual member declaring that
+   lambda.  We only want the second case to warn.  */
+
+static bool
+is_exposure_of_member_type (depset *source, depset *ref)
+{
+  gcc_checking_assert (source->refs_tu_local () && ref->is_tu_local ());
+  tree source_entity = STRIP_TEMPLATE (source->get_entity ());
+  tree ref_entity = STRIP_TEMPLATE (ref->get_entity ());
+
+  if (source_entity
+      && ref_entity
+      && DECL_IMPLICIT_TYPEDEF_P (source_entity)
+      && DECL_IMPLICIT_TYPEDEF_P (ref_entity)
+      && DECL_CLASS_SCOPE_P (ref_entity)
+      && DECL_CONTEXT (ref_entity) == TREE_TYPE (source_entity))
+    {
+      gcc_checking_assert (LAMBDA_TYPE_P (TREE_TYPE (ref_entity)));
+      return true;
+    }
+  else
+    return false;
+}
+
 /* DEP is a newly discovered dependency.  Append it to current's
    depset.  */
 
@@ -13832,7 +13882,7 @@ depset::hash::add_dependency (depset *dep)
   if (dep->is_tu_local ())
     {
       current->set_flag_bit<DB_REFS_TU_LOCAL_BIT> ();
-      if (!ignore_tu_local)
+      if (!ignore_tu_local && !is_exposure_of_member_type (current, dep))
 	current->set_flag_bit<DB_EXPOSURE_BIT> ();
     }
 
@@ -14705,7 +14755,9 @@ depset::hash::finalize_dependencies ()
 	  tree decl = dep->get_entity ();
 
 	  for (depset *rdep : dep->deps)
-	    if (!rdep->is_binding () && rdep->is_tu_local ())
+	    if (!rdep->is_binding ()
+		&& rdep->is_tu_local ()
+		&& !is_exposure_of_member_type (dep, rdep))
 	      {
 		// FIXME:QOI Better location information?  We're
 		// losing, so it doesn't matter about efficiency
