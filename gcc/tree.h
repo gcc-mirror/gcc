@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "tree-core.h"
 #include "options.h"
+#include "vec.h"
 
 /* Convert a target-independent built-in function code to a combined_fn.  */
 
@@ -7081,5 +7082,15 @@ extern unsigned fndecl_dealloc_argno (tree);
 extern tree get_attr_nonstring_decl (tree, tree * = NULL);
 
 extern int get_target_clone_attr_len (tree);
+
+/* Returns the version string for a decl with target_version attribute.
+   Returns an invalid string_slice if no attribute is present.  */
+extern string_slice get_target_version (const tree);
+/* Returns a vector of the version strings from a target_clones attribute on
+   a decl.  Can also record the number of default versions found.  */
+extern auto_vec<string_slice> get_clone_versions (const tree, int * = NULL);
+/* Returns a vector of the version strings from a target_clones attribute
+   directly.  */
+extern auto_vec<string_slice> get_clone_attr_versions (const tree, int *);
 
 #endif  /* GCC_TREE_H  */

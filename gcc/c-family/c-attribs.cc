@@ -6140,7 +6140,9 @@ handle_target_clones_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 	    }
 	}
 
-      if (get_target_clone_attr_len (args) == -1)
+      auto_vec<string_slice> versions = get_clone_attr_versions (args, NULL);
+
+      if (versions.length () == 1)
 	{
 	  warning (OPT_Wattributes,
 		   "single %<target_clones%> attribute is ignored");
