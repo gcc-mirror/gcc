@@ -1633,19 +1633,22 @@ get_pseudo_contract_violation_type ()
 	   signed char _M_continue;
 	 If this changes, also update the initializer in
 	 build_contract_violation.  */
-      const tree types[] = { const_string_type_node,
-			     const_string_type_node,
-			     const_string_type_node,
-			     const_string_type_node,
-			     const_string_type_node,
-			     uint_least32_type_node,
-			     signed_char_type_node };
+      struct field_info { tree type; const char* name; };
+      const field_info info[] = {
+	{ const_string_type_node, "_M_file" },
+	{ const_string_type_node, "_M_function" },
+	{ const_string_type_node, "_M_comment" },
+	{ const_string_type_node, "_M_level" },
+	{ const_string_type_node, "_M_role" },
+	{ uint_least32_type_node, "_M_line" },
+	{ signed_char_type_node, "_M_continue" }
+      };
       tree fields = NULL_TREE;
-      for (tree type : types)
+      for (const field_info& i : info)
 	{
 	  /* finish_builtin_struct wants fieldss chained in reverse.  */
 	  tree next = build_decl (BUILTINS_LOCATION, FIELD_DECL,
-				  NULL_TREE, type);
+				  get_identifier (i.name), i.type);
 	  DECL_CHAIN (next) = fields;
 	  fields = next;
 	}
@@ -1737,6 +1740,7 @@ declare_handle_contract_violation ()
       create_implicit_typedef (viol_name, violation);
       DECL_SOURCE_LOCATION (TYPE_NAME (violation)) = BUILTINS_LOCATION;
       DECL_CONTEXT (TYPE_NAME (violation)) = current_namespace;
+      TREE_PUBLIC (TYPE_NAME (violation)) = true;
       pushdecl_namespace_level (TYPE_NAME (violation), /*hidden*/true);
       pop_namespace ();
       pop_nested_namespace (std_node);
@@ -1761,6 +1765,11 @@ static void
 build_contract_handler_call (tree contract,
 			     contract_continuation cmode)
 {
+  /* We may need to declare new types, ensure they are not considered
+     attached to a named module.  */
+  auto module_kind_override = make_temp_override
+    (module_kind, module_kind & ~(MK_PURVIEW | MK_ATTACH | MK_EXPORTING));
+
   tree violation = build_contract_violation (contract, cmode);
   tree violation_fn = declare_handle_contract_violation ();
   tree call = build_call_n (violation_fn, 1, build_address (violation));
