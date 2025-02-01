@@ -96,7 +96,7 @@ static void record_key_method_defined (tree);
 static tree create_array_type_for_decl (tree, tree, tree, location_t);
 static tree get_atexit_node (void);
 static tree get_dso_handle_node (void);
-static tree start_cleanup_fn (bool);
+static tree start_cleanup_fn (tree, bool);
 static void end_cleanup_fn (void);
 static tree cp_make_fname_decl (location_t, tree, int);
 static void initialize_predefined_identifiers (void);
@@ -10373,23 +10373,23 @@ get_dso_handle_node (void)
 }
 
 /* Begin a new function with internal linkage whose job will be simply
-   to destroy some particular variable.  OB_PARM is true if object pointer
+   to destroy some particular DECL.  OB_PARM is true if object pointer
    is passed to the cleanup function, otherwise no argument is passed.  */
 
-static GTY(()) int start_cleanup_cnt;
-
 static tree
-start_cleanup_fn (bool ob_parm)
+start_cleanup_fn (tree decl, bool ob_parm)
 {
-  char name[32];
-
   push_to_top_level ();
 
   /* No need to mangle this.  */
   push_lang_context (lang_name_c);
 
   /* Build the name of the function.  */
-  sprintf (name, "__tcf_%d", start_cleanup_cnt++);
+  gcc_checking_assert (HAS_DECL_ASSEMBLER_NAME_P (decl));
+  const char *dname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  dname = targetm.strip_name_encoding (dname);
+  char *name = ACONCAT (("__tcf", dname, NULL));
+
   tree fntype = TREE_TYPE (ob_parm ? get_cxa_atexit_fn_ptr_type ()
 				   : get_atexit_fn_ptr_type ());
   /* Build the function declaration.  */
@@ -10482,7 +10482,7 @@ register_dtor_fn (tree decl)
       build_cleanup (decl);
 
       /* Now start the function.  */
-      cleanup = start_cleanup_fn (ob_parm);
+      cleanup = start_cleanup_fn (decl, ob_parm);
 
       /* Now, recompute the cleanup.  It may contain SAVE_EXPRs that refer
 	 to the original function, rather than the anonymous one.  That
