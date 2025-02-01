@@ -3047,6 +3047,14 @@ A target hook which can change allocno class for given pseudo from
   The default version of this target hook always returns given class.
 @end deftypefn
 
+@deftypefn {Target Hook} int TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE (int @var{hard_regno})
+A target hook which returns the callee-saved register @var{hard_regno}
+cost scale in epilogue and prologue used by IRA.
+
+The default version of this target hook returns 1 if optimizing for
+size, otherwise returns the entry block frequency.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_LRA_P (void)
 A target hook which returns true if we use LRA instead of reload pass.
 

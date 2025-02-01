@@ -20600,6 +20600,14 @@ ix86_class_likely_spilled_p (reg_class_t rclass)
   return false;
 }
 
+/* Implement TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE.  */
+
+static int
+ix86_ira_callee_saved_register_cost_scale (int)
+{
+  return 1;
+}
+
 /* Return true if a set of DST by the expression SRC should be allowed.
    This prevents complex sets of likely_spilled hard regs before split1.  */
 
@@ -27078,6 +27086,9 @@ ix86_libgcc_floating_mode_supported_p
 #define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS ix86_preferred_output_reload_class
 #undef TARGET_CLASS_LIKELY_SPILLED_P
 #define TARGET_CLASS_LIKELY_SPILLED_P ix86_class_likely_spilled_p
+#undef TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE
+#define TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE \
+  ix86_ira_callee_saved_register_cost_scale
 
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \

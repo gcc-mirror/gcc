@@ -5714,6 +5714,18 @@ DEFHOOK
  reg_class_t, (int, reg_class_t, reg_class_t),
  default_ira_change_pseudo_allocno_class)
 
+/* Scale of callee-saved register cost in epilogue and prologue used by
+   IRA.  */
+DEFHOOK
+(ira_callee_saved_register_cost_scale,
+ "A target hook which returns the callee-saved register @var{hard_regno}\n\
+cost scale in epilogue and prologue used by IRA.\n\
+\n\
+The default version of this target hook returns 1 if optimizing for\n\
+size, otherwise returns the entry block frequency.",
+ int, (int hard_regno),
+ default_ira_callee_saved_register_cost_scale)
+
 /* Return true if we use LRA instead of reload.  */
 DEFHOOK
 (lra_p,
