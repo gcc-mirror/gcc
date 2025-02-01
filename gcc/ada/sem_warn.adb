@@ -1257,6 +1257,10 @@ package body Sem_Warn is
                   UR := Unset_Reference (E1);
                end if;
 
+               --  Protect again small adjustments of reference
+
+               UR := Unqual_Conv (UR);
+
                --  Special processing for access types
 
                if Present (UR) and then Is_Access_Type (E1T) then
