@@ -1,0 +1,32 @@
+{
+    "version": "2.1.0",
+    "runs": [
+	{
+	    "tool": {
+		"driver": {
+		    "name": "placeholder"
+		}
+	    },
+	    "results": [
+		{
+		    "message": {"text": "placeholder"},
+		    "locations": [
+			{
+			    "logicalLocations": [
+				{
+				    "index": 42 // { dg-error "index value 42 is out of range for theRun.logicalLocations \\\[SARIF v2.1.0 §3.33.3\\\]" }
+				}
+			    ]
+			}
+		    ]
+		}
+	    ],
+	    "logicalLocations": []
+	}
+    ]
+}
+
+/* { dg-begin-multiline-output "" }
+   17 |                                     "index": 42
+      |                                              ^~
+   { dg-end-multiline-output "" } */

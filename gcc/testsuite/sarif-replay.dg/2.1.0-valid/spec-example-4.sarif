@@ -749,7 +749,7 @@
 /* { dg-begin-multiline-output "" }
 In function 'collections::list::add':
 collections/list.h:15:9: error: Variable "ptr" was used without being initialized. It was declared here. [C2001]
-  events 1-3
+  'add': events 1-3
 ......
    { dg-end-multiline-output "" } */
 /* { dg-begin-multiline-output "" }
