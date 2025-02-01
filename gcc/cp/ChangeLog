@@ -1,3 +1,24 @@
+2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117516
+	* class.cc (field_nonempty_p): Formatting fixes.  Use
+	integer_zerop instead of tree_int_cst_equal with size_zero_node.
+	(struct flexmems_t): Change type of first member from tree to bool.
+	(find_flexarrays): Add nested_p argument.  Change pun argument type
+	from tree to bool, adjust uses.  Formatting fixes.  If BASE_P or
+	NESTED_P and T is RECORD_TYPE, start looking only at the last
+	non-empty or array FIELD_DECL.  Adjust recursive call, set first
+	if it was a nested call and found an array.
+	(diagnose_invalid_flexarray, diagnose_flexarrays, check_flexarrays):
+	Formatting fixes.
+
+2025-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117501
+	* cp-gimplify.cc (cp_build_init_expr_for_ctor): New.
+	(cp_fold_immediate_r): Call it.
+	(cp_fold): Break out code into cp_build_init_expr_for_ctor.
+
 2025-01-30  Patrick Palka  <ppalka@redhat.com>
 
 	* cp-tree.h (LAMBDA_EXPR_CAPTURES_THIS_P): Remove.

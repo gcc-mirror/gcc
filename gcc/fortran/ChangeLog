@@ -1,3 +1,15 @@
+2025-01-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108454
+	* resolve.cc (resolve_common_blocks): Initialize variable.
+	(resolve_symbol): If a symbol is already registered with a COMMON
+	block, do not search for an interface with the same name.
+
+2025-01-31  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/118714
+	* parse.cc (parse_omp_dispatch): Add missing pop_state.
+
 2025-01-30  Sandra Loosemore  <sloosemore@baylibre.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>

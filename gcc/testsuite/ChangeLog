@@ -1,3 +1,58 @@
+2025-02-01  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR tree-optimization/114277
+	* gcc.target/i386/pr114277.c: New test.
+	* gcc.target/riscv/pr114277.c: Likewise.
+	Co-author:  Andrew Pinski <quic_apinski@quicinc.com>
+
+2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/117432
+	* gcc.c-torture/execute/pr117432.c: New test.
+	* gcc.target/i386/pr117432.c: New test.
+
+2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117516
+	* g++.dg/ext/flexary9.C: Expect different wording of one of the
+	warnings and at a different line.
+	* g++.dg/ext/flexary19.C: Likewise.
+	* g++.dg/ext/flexary42.C: New test.
+	* g++.dg/other/pr117516.C: New test.
+
+2025-01-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108454
+	* gfortran.dg/common_29.f90: New test.
+
+2025-01-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117501
+	* g++.dg/cpp2a/consteval39.C: New test.
+	* g++.dg/cpp2a/consteval40.C: New test.
+
+2025-01-31  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/116234
+	* gfortran.target/aarch64/aarch64.exp: New.
+	* gfortran.target/aarch64/pr116234.f: New.
+
+2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117498
+	* gcc.c-torture/execute/pr117498.c: New test.
+
+2025-01-31  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/115673
+	* gcc.target/i386/force-indirect-call-2.c: Allow indirect branch
+	via GOT.
+
+2025-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR debug/100530
+	* gcc.target/i386/pr100530.c: New testcase.
+
 2025-01-30  Alexandre Oliva  <oliva@adacore.com>
 
 	PR target/113689

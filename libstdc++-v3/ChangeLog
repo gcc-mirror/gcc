@@ -1,3 +1,32 @@
+2025-01-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/118156
+	* include/std/flat_map (_Flat_map_impl::_M_insert): Generalized
+	version of insert taking heterogenous iterator/sentinel pair.
+	(_Flat_map_impl::insert): Dispatch to _M_insert.
+	(_Flat_map_impl::insert_range): Likewise.
+	(flat_map): Export _Flat_map_impl::insert_range.
+	(flat_multimap): Likewise.
+	* include/std/flat_set (_Flat_set_impl::insert_range):
+	Reimplement directly, not in terms of insert.
+	(flat_set): Export _Flat_set_impl::insert_range.
+	(flat_multiset): Likewise.
+	* testsuite/23_containers/flat_map/1.cc (test06): New test.
+	* testsuite/23_containers/flat_multimap/1.cc (test06): New test.
+	* testsuite/23_containers/flat_multiset/1.cc (test06): New test.
+	* testsuite/23_containers/flat_set/1.cc (test06): New test.
+
+2025-01-31  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_bvector.h (vector<bool>::insert_range):
+	Consistently return an iterator pointing to the first element
+	inserted.
+	* include/bits/vector.tcc (vector::insert_range): Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/insert/insert_range.cc:
+	Verify insert_range return values.
+	* testsuite/23_containers/vector/modifiers/insert/insert_range.cc:
+	Likewise.
+
 2025-01-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/98749

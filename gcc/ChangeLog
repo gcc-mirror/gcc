@@ -1,3 +1,46 @@
+2025-02-01  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR tree-optimization/114277
+	* match.pd (a * (a || b) -> a): New pattern.
+	(a * !(a || b) -> 0): Likewise.
+
+2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/117432
+	* ipa-icf-gimple.cc (func_checker::compare_asm_inputs_outputs):
+	Also return_false if operands have incompatible types.
+	(func_checker::compare_gimple_call): Check fntype1 vs. fntype2
+	compatibility for all non-internal calls and assume fntype1 and
+	fntype2 are non-NULL for those.  For calls to non-prototyped
+	calls or for stdarg_p functions after the last named argument (if any)
+	check type compatibility of call arguments.
+
+2025-01-31  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/116234
+	* lra-constraints.cc (multiple_insn_refs_p): New function.
+	(curr_insn_transform): Use it.
+
+2025-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR debug/100530
+	* dwarf2out.cc (modified_type_die): Do not claim we handle
+	address-space qualification with dwarf_qual_info[].
+
+2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118689
+	PR modula2/115032
+	* tree-ssa-loop-niter.cc (build_cltz_expr): Return NULL_TREE if fn is
+	NULL and use_ifn is false.
+
+2025-01-31  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_loop_operations): Only
+	call vectorizable_lc_phi when not PURE_SLP.
+	(vectorizable_reduction): Do not claim having handled
+	the inner loop LC PHI for outer loop vectorization.
+
 2025-01-30  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/builtins.def (STRLEN_FLASH, STRLEN_FLASHX)
