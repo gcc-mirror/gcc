@@ -638,9 +638,8 @@ tl::optional<const Rib &>
 ForeverStack<N>::dfs_rib (const ForeverStack<N>::Node &starting_point,
 			  NodeId to_find) const
 {
-  return dfs_node (starting_point, to_find).map ([] (Node &x) -> Rib & {
-    return x.rib;
-  });
+  return dfs_node (starting_point, to_find)
+    .map ([] (const Node &x) -> const Rib & { return x.rib; });
 }
 
 template <Namespace N>
