@@ -10225,7 +10225,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
     fnaddr = gen_rtx_MEM (QImode, construct_plt_address (XEXP (fnaddr, 0)));
   /* Since x32 GOT slot is 64 bit with zero upper 32 bits, indirect
      branch via x32 GOT slot is OK.  */
-  if (TARGET_X32
+  else if (TARGET_X32
       && MEM_P (fnaddr)
       && GET_CODE (XEXP (fnaddr, 0)) == ZERO_EXTEND
       && GOT_memory_operand (XEXP (XEXP (fnaddr, 0), 0), Pmode)
