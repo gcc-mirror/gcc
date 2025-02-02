@@ -4010,6 +4010,11 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 		    &find_parameter_packs_r, ppd, ppd->visited);
       return NULL_TREE;
 
+    case TEMPLATE_PARM_INDEX:
+      if (parameter_pack_p)
+	WALK_SUBTREE (TREE_TYPE (t));
+      return NULL_TREE;
+
     case DECL_EXPR:
       {
 	tree decl = DECL_EXPR_DECL (t);
