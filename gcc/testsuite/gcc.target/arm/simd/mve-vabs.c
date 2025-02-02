@@ -1,7 +1,7 @@
 /* { dg-do assemble } */
 /* { dg-require-effective-target arm_v8_1m_mve_fp_ok } */
 /* { dg-add-options arm_v8_1m_mve_fp } */
-/* { dg-additional-options "-O3 -funsafe-math-optimizations" } */
+/* { dg-additional-options "-O3 -funsafe-math-optimizations -fdump-tree-optimized" } */
 
 #include <stdint.h>
 #include <arm_mve.h>
@@ -35,10 +35,10 @@ FUNC_FLOAT(f, float, 32, 4, vabs)
 FUNC(f, float, 16, 8, vabs)
 
 /* Taking the absolute value of an unsigned value is a no-op, so half of the
-   integer optimizations actually generate a call to memmove, the other ones a
+   integer optimizations actually generate a call to memcpy, the other ones a
    'vabs'.  */
 /* { dg-final { scan-assembler-times {vabs.s[0-9]+\tq[0-9]+, q[0-9]+} 3 } } */
 /* { dg-final { scan-assembler-times {vabs.f[0-9]+\tq[0-9]+, q[0-9]+} 2 } } */
 /* { dg-final { scan-assembler-times {vldr[bhw].[0-9]+\tq[0-9]+} 5 } } */
 /* { dg-final { scan-assembler-times {vstr[bhw].[0-9]+\tq[0-9]+} 5 } } */
-/* { dg-final { scan-assembler-times {memmove} 3 } } */
+/* { dg-final { scan-tree-dump-times "memcpy" 3 "optimized" } } */
