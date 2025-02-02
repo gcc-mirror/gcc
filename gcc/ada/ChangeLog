@@ -1,3 +1,9 @@
+2025-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/118712
+	* sem_warn.adb (Check_References): Deal with small adjustments of
+	references.
+
 2025-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_aggr.adb (Two_Pass_Aggregate_Expansion): Use the base type of
