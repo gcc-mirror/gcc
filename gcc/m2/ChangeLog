@@ -1,3 +1,21 @@
+2025-02-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118703
+	* gm2-gcc/m2builtins.cc (define_builtin_gcc): New function.
+	(m2builtins_init): Call define_builtin_gcc.
+	* gm2-libs/Builtins.def (clz): New procedure function.
+	(clzll): Ditto.
+	(ctz): Ditto.
+	(ctzll): Ditto.
+	* gm2-libs/Builtins.mod (clz): New procedure function.
+	(clzll): Ditto.
+	(ctz): Ditto.
+	(ctzll): Ditto.
+	* gm2-libs/cbuiltin.def (clz): New procedure function.
+	(clzll): Ditto.
+	(ctz): Ditto.
+	(ctzll): Ditto.
+
 2025-01-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/118010

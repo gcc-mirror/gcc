@@ -1,3 +1,46 @@
+2025-02-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/118713
+	* config/i386/i386-expand.cc (ix86_expand_call): Change "if
+	(TARGET_X32 ...)" back to "else if (TARGET_X32 ...)".
+
+2025-02-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/118713
+	* config/i386/constraints.md (Bs): Always disable if
+	TARGET_INDIRECT_BRANCH_REGISTER is true.
+	(Bw): Likewise.
+	* config/i386/i386-expand.cc (ix86_expand_call): Force indirect
+	call via register for x32 GOT slot call if
+	TARGET_INDIRECT_BRANCH_REGISTER is true.
+	* config/i386/i386-protos.h (ix86_nopic_noplt_attribute_p): New.
+	* config/i386/i386.cc (ix86_nopic_noplt_attribute_p): Make it
+	global.
+	* config/i386/i386.md (*call_got_x32): Disable indirect call via
+	memory for TARGET_INDIRECT_BRANCH_REGISTER.
+	(*call_value_got_x32): Likewise.
+	(*sibcall_value_pop_memory): Likewise.
+	* config/i386/predicates.md (constant_call_address_operand):
+	Return false if both TARGET_INDIRECT_BRANCH_REGISTER and
+	ix86_nopic_noplt_attribute_p are true.
+
+2025-02-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* libsarifreplay.cc (sarif_replayer::handle_run_obj): Pass run to
+	handle_result_obj.
+	(sarif_replayer::handle_result_obj): Add run_obj param and pass it
+	to handle_location_object and handle_thread_flow_object.
+	(sarif_replayer::handle_thread_flow_object): Add run_obj param and
+	pass it to handle_thread_flow_location_object.
+	(sarif_replayer::handle_thread_flow_location_object): Add run_obj
+	param and pass it to handle_location_object.
+	(sarif_replayer::handle_location_object): Add run_obj param and
+	pass it to handle_logical_location_object.
+	(sarif_replayer::handle_logical_location_object): Add run_obj
+	param.  If the run_obj is non-null and has "logicalLocations",
+	then use these "cached" logical locations if we see an "index"
+	property, as per §3.33.3
+
 2025-02-01  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR tree-optimization/114277

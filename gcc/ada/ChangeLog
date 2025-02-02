@@ -1,3 +1,9 @@
+2025-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/118712
+	* sem_warn.adb (Check_References): Deal with small adjustments of
+	references.
+
 2025-01-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.cc (gnat_pushdecl): Clear TREE_PUBLIC on

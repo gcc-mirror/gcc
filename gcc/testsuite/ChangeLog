@@ -1,3 +1,58 @@
+2025-02-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR rtl-optimization/111673
+	* gcc.target/i386/pr111673.c: New file.
+
+2025-02-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118703
+	* gm2/builtins/run/pass/testbitfns.mod: New test.
+
+2025-02-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/118713
+	* gcc.target/i386/pr118713-1-x32.c: New test.
+	* gcc.target/i386/pr118713-1.c: Likewise.
+	* gcc.target/i386/pr118713-2-x32.c: Likewise.
+	* gcc.target/i386/pr118713-2.c: Likewise.
+	* gcc.target/i386/pr118713-3-x32.c: Likewise.
+	* gcc.target/i386/pr118713-3.c: Likewise.
+	* gcc.target/i386/pr118713-4-x32.c: Likewise.
+	* gcc.target/i386/pr118713-4.c: Likewise.
+	* gcc.target/i386/pr118713-5-x32.c: Likewise.
+	* gcc.target/i386/pr118713-5.c: Likewise.
+	* gcc.target/i386/pr118713-6-x32.c: Likewise.
+	* gcc.target/i386/pr118713-6.c: Likewise.
+	* gcc.target/i386/pr118713-7-x32.c: Likewise.
+	* gcc.target/i386/pr118713-7.c: Likewise.
+	* gcc.target/i386/pr118713-8-x32.c: Likewise.
+	* gcc.target/i386/pr118713-8.c: Likewise.
+	* gcc.target/i386/pr118713-9-x32.c: Likewise.
+	* gcc.target/i386/pr118713-9.c: Likewise.
+	* gcc.target/i386/pr118713-10-x32.c: Likewise.
+	* gcc.target/i386/pr118713-10.c: Likewise.
+	* gcc.target/i386/pr118713-11-x32.c: Likewise.
+	* gcc.target/i386/pr118713-11.c: Likewise.
+	* gcc.target/i386/pr118713-12-x32.c: Likewise.
+	* gcc.target/i386/pr118713-12.c: Likewise.
+
+2025-02-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* sarif-replay.dg/2.1.0-invalid/3.33.3-index-out-of-range.sarif:
+	New test.
+	* sarif-replay.dg/2.1.0-valid/spec-example-4.sarif: Update expected
+	output to reflect that we now find the function name for the
+	events in the path.
+
+2025-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn33.adb: New test.
+	* gnat.dg/warn33_pkg.ads: New helper.
+
+2025-02-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/ssp-global.c: New file.
+
 2025-02-01  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR tree-optimization/114277
