@@ -1405,15 +1405,8 @@ vect_recog_sad_pattern (vec_info *vinfo,
       tree abd_oprnd0 = gimple_call_arg (abd_stmt, 0);
       tree abd_oprnd1 = gimple_call_arg (abd_stmt, 1);
 
-      if (gimple_call_internal_fn (abd_stmt) == IFN_ABD)
-	{
-	  if (!vect_look_through_possible_promotion (vinfo, abd_oprnd0,
-						     &unprom[0])
-	      || !vect_look_through_possible_promotion (vinfo, abd_oprnd1,
-							&unprom[1]))
-	    return NULL;
-	}
-      else if (gimple_call_internal_fn (abd_stmt) == IFN_VEC_WIDEN_ABD)
+      if (gimple_call_internal_fn (abd_stmt) == IFN_ABD
+	  || gimple_call_internal_fn (abd_stmt) == IFN_VEC_WIDEN_ABD)
 	{
 	  unprom[0].op = abd_oprnd0;
 	  unprom[0].type = TREE_TYPE (abd_oprnd0);
