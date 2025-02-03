@@ -781,22 +781,14 @@
   (ior (match_test "constant_call_address_operand
 		     (op, mode == VOIDmode ? mode : Pmode)")
        (match_operand 0 "call_register_operand")
-       (and (not (match_test "TARGET_INDIRECT_BRANCH_REGISTER"))
-	    (ior (and (not (match_test "TARGET_X32"))
-		      (match_operand 0 "memory_operand"))
-		 (and (match_test "TARGET_X32 && Pmode == DImode")
-		      (match_operand 0 "GOT_memory_operand"))))))
+       (match_test "satisfies_constraint_Bw (op)")))
 
 ;; Similarly, but for tail calls, in which we cannot allow memory references.
 (define_special_predicate "sibcall_insn_operand"
   (ior (match_test "constant_call_address_operand
 		     (op, mode == VOIDmode ? mode : Pmode)")
        (match_operand 0 "register_no_elim_operand")
-       (and (not (match_test "TARGET_INDIRECT_BRANCH_REGISTER"))
-	    (ior (and (not (match_test "TARGET_X32"))
-		      (match_operand 0 "sibcall_memory_operand"))
-		 (and (match_test "TARGET_X32 && Pmode == DImode")
-		      (match_operand 0 "GOT_memory_operand"))))))
+       (match_test "satisfies_constraint_Bs (op)")))
 
 ;; Return true if OP is a 32-bit GOT symbol operand.
 (define_predicate "GOT32_symbol_operand"
