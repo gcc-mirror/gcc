@@ -217,8 +217,10 @@ coercion_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
   rust_debug ("coerce_default_unify(a={%s}, b={%s})",
 	      receiver->debug_str ().c_str (), expected->debug_str ().c_str ());
   TyTy::BaseType *coerced
-    = unify_site (id, lhs, TyTy::TyWithLocation (receiver, rhs.get_locus ()),
-		  locus);
+    = unify_site_and (id, lhs,
+		      TyTy::TyWithLocation (receiver, rhs.get_locus ()), locus,
+		      true /*emit_error*/, true /*commit*/, true /*infer*/,
+		      true /*cleanup*/);
   context->insert_autoderef_mappings (id, std::move (result.adjustments));
   return coerced;
 }
