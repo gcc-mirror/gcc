@@ -19,6 +19,8 @@
 #include "rust-compile-item.h"
 #include "rust-compile-implitem.h"
 #include "rust-compile-extern.h"
+#include "rust-substitution-mapper.h"
+#include "rust-type-util.h"
 #include "rust-immutable-name-resolution-context.h"
 
 namespace Rust {
@@ -165,12 +167,33 @@ CompileItem::visit (HIR::Function &function)
       // is given
       if (concrete == nullptr)
 	return;
-      else
+
+      rust_assert (concrete->get_kind () == TyTy::TypeKind::FNDEF);
+      TyTy::FnType *concrete_fnty = static_cast<TyTy::FnType *> (concrete);
+      bool is_trait_item_concrete
+	= ctx->get_mappings ()
+	    .lookup_trait_item_defid (concrete_fnty->get_id ())
+	    .has_value ();
+      if (!is_trait_item_concrete)
 	{
 	  rust_assert (concrete->get_kind () == TyTy::TypeKind::FNDEF);
 	  fntype = static_cast<TyTy::FnType *> (concrete);
-	  fntype->monomorphize ();
 	}
+      else
+	{
+	  TyTy::BaseType *infer
+	    = Resolver::SubstMapper::InferSubst (fntype, function.get_locus ());
+	  TyTy::BaseType *resolved
+	    = Resolver::unify_site (function.get_mappings ().get_hirid (),
+				    TyTy::TyWithLocation (infer),
+				    TyTy::TyWithLocation (concrete),
+				    function.get_locus ());
+
+	  rust_assert (resolved->is<TyTy::FnType> ());
+	  fntype = resolved->as<TyTy::FnType> ();
+	}
+
+      fntype->monomorphize ();
     }
   else
     {

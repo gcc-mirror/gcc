@@ -1105,8 +1105,6 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
       return;
     }
 
-  context->insert_receiver (expr.get_mappings ().get_hirid (), receiver_tyty);
-
   rust_debug_loc (expr.get_locus (), "attempting to resolve method for %s",
 		  receiver_tyty->debug_str ().c_str ());
   auto candidates
@@ -1750,9 +1748,6 @@ TypeCheckExpr::resolve_operator_overload (
   context->insert_autoderef_mappings (expr.get_lvalue_mappings ().get_hirid (),
 				      std::move (candidate.adjustments));
 
-  // now its just like a method-call-expr
-  context->insert_receiver (expr.get_mappings ().get_hirid (), lhs);
-
   PathProbeCandidate &resolved_candidate = candidate.candidate;
   TyTy::BaseType *lookup_tyty = candidate.candidate.ty;
   NodeId resolved_node_id
@@ -1997,7 +1992,6 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
   HirId autoderef_mappings_id = fnexpr.get_mappings ().get_hirid ();
   context->insert_autoderef_mappings (autoderef_mappings_id,
 				      std::move (candidate.adjustments));
-  context->insert_receiver (expr.get_mappings ().get_hirid (), receiver_tyty);
 
   PathProbeCandidate &resolved_candidate = candidate.candidate;
   TyTy::BaseType *lookup_tyty = candidate.candidate.ty;

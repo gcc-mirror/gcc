@@ -202,9 +202,6 @@ public:
   void insert_trait_reference (DefId id, TraitReference &&ref);
   bool lookup_trait_reference (DefId id, TraitReference **ref);
 
-  void insert_receiver (HirId id, TyTy::BaseType *t);
-  bool lookup_receiver (HirId id, TyTy::BaseType **ref);
-
   void insert_associated_trait_impl (HirId id,
 				     AssociatedImplTrait &&associated);
   bool lookup_associated_trait_impl (HirId id,
@@ -282,7 +279,6 @@ private:
   std::vector<TyTy::BaseType *> loop_type_stack;
   StackedContexts<TypeCheckBlockContextItem> block_stack;
   std::map<DefId, TraitReference> trait_context;
-  std::map<HirId, TyTy::BaseType *> receiver_context;
   std::map<HirId, AssociatedImplTrait> associated_impl_traits;
 
   // trait-id -> list of < self-tyty:impl-id>
