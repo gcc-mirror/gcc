@@ -297,16 +297,20 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	    trait->get_mappings ().get_defid (), &trait_ref);
 	  rust_assert (ok);
 
-	  TyTy::BaseType *receiver = nullptr;
-	  ok = ctx->get_tyctx ()->lookup_receiver (mappings.get_hirid (),
-						   &receiver);
-	  rust_assert (ok);
-	  receiver = receiver->destructure ();
-
 	  // the type resolver can only resolve type bounds to their trait
 	  // item so its up to us to figure out if this path should resolve
 	  // to an trait-impl-block-item or if it can be defaulted to the
 	  // trait-impl-item's definition
+	  //
+	  // because we know this is resolved to a trait item we can actually
+	  // just grab the Self type parameter here for the receiver to match
+	  // the appropriate impl block
+
+	  rust_assert (lookup->is<TyTy::FnType> ());
+	  auto fn = lookup->as<TyTy::FnType> ();
+	  rust_assert (fn->get_num_type_params () > 0);
+	  auto &self = fn->get_substs ().at (0);
+	  auto receiver = self.get_param_ty ();
 	  auto candidates
 	    = Resolver::PathProbeImplTrait::Probe (receiver, final_segment,
 						   trait_ref);

@@ -255,23 +255,6 @@ TypeCheckContext::lookup_trait_reference (DefId id, TraitReference **ref)
 }
 
 void
-TypeCheckContext::insert_receiver (HirId id, TyTy::BaseType *t)
-{
-  receiver_context[id] = t;
-}
-
-bool
-TypeCheckContext::lookup_receiver (HirId id, TyTy::BaseType **ref)
-{
-  auto it = receiver_context.find (id);
-  if (it == receiver_context.end ())
-    return false;
-
-  *ref = it->second;
-  return true;
-}
-
-void
 TypeCheckContext::insert_associated_trait_impl (
   HirId id, AssociatedImplTrait &&associated)
 {

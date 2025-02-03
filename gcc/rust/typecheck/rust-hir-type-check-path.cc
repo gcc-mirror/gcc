@@ -171,7 +171,6 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
 	  resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
 					  root_resolved_node_id);
 	}
-      context->insert_receiver (expr.get_mappings ().get_hirid (), root);
       return;
     }
 
@@ -559,8 +558,6 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
     }
 
   rust_assert (resolved_node_id != UNKNOWN_NODEID);
-  context->insert_receiver (expr_mappings.get_hirid (), prev_segment);
-
   if (flag_name_resolution_2_0)
     {
       auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (

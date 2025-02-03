@@ -360,8 +360,6 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
 	  resolver->insert_resolved_type (path.get_mappings ().get_nodeid (),
 					  root_resolved_node_id);
 	}
-
-      context->insert_receiver (path.get_mappings ().get_hirid (), root);
       return;
     }
 
@@ -704,9 +702,7 @@ TypeCheckType::resolve_segments (
 	}
     }
 
-  context->insert_receiver (expr_mappings.get_hirid (), prev_segment);
   rust_assert (resolved_node_id != UNKNOWN_NODEID);
-
   if (flag_name_resolution_2_0)
     {
       auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (

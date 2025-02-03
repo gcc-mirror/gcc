@@ -1394,8 +1394,8 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
   TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup_fntype);
 
   TyTy::BaseType *receiver = nullptr;
-  ok = ctx->get_tyctx ()->lookup_receiver (expr.get_mappings ().get_hirid (),
-					   &receiver);
+  ok = ctx->get_tyctx ()->lookup_type (
+    expr.get_receiver ().get_mappings ().get_hirid (), &receiver);
   rust_assert (ok);
 
   bool is_dyn_dispatch
@@ -1532,8 +1532,8 @@ CompileExpr::resolve_operator_overload (
 
   TyTy::BaseType *receiver = nullptr;
   bool ok
-    = ctx->get_tyctx ()->lookup_receiver (expr.get_mappings ().get_hirid (),
-					  &receiver);
+    = ctx->get_tyctx ()->lookup_type (lhs_expr.get_mappings ().get_hirid (),
+				      &receiver);
   rust_assert (ok);
 
   bool is_generic_receiver = receiver->get_kind () == TyTy::TypeKind::PARAM;
