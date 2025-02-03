@@ -2226,12 +2226,24 @@ void
 ClosureType::setup_fn_once_output () const
 {
   // lookup the lang items
-  auto fn_once_lang_item = LangItem::Kind::FN_ONCE;
-  auto fn_once_output_lang_item = LangItem::Kind::FN_ONCE_OUTPUT;
+  auto fn_once_lookup = mappings.lookup_lang_item (LangItem::Kind::FN_ONCE);
+  auto fn_once_output_lookup
+    = mappings.lookup_lang_item (LangItem::Kind::FN_ONCE_OUTPUT);
+  if (!fn_once_lookup)
+    {
+      rust_fatal_error (UNKNOWN_LOCATION,
+			"Missing required %<fn_once%> lang item");
+      return;
+    }
+  if (!fn_once_output_lookup)
+    {
+      rust_fatal_error (UNKNOWN_LOCATION,
+			"Missing required %<fn_once_ouput%> lang item");
+      return;
+    }
 
-  DefId &trait_id = mappings.lookup_lang_item (fn_once_lang_item).value ();
-  DefId &trait_item_id
-    = mappings.lookup_lang_item (fn_once_output_lang_item).value ();
+  DefId &trait_id = fn_once_lookup.value ();
+  DefId &trait_item_id = fn_once_output_lookup.value ();
 
   // resolve to the trait
   HIR::Item *item = mappings.lookup_defid (trait_id).value ();
