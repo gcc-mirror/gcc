@@ -243,10 +243,12 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
 	   static_cast<const TyTy::TupleType *> (ty)->get_fields ())
 	recursive_check (param.get_tyty ());
       return;
-    case TyTy::PLACEHOLDER:
-      return recursive_check (
-	// FIXME: Can we use `resolve` here? Is that what we should do?
-	static_cast<const TyTy::PlaceholderType *> (ty)->resolve ());
+      case TyTy::PLACEHOLDER: {
+	const auto p = static_cast<const TyTy::PlaceholderType *> (ty);
+	if (!p->can_resolve ())
+	  return;
+	return recursive_check (p->resolve ());
+      }
     case TyTy::PROJECTION:
       return recursive_check (
 	static_cast<const TyTy::ProjectionType *> (ty)->get ());
