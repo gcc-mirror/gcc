@@ -90,8 +90,9 @@ package body Fname.UF is
      Table_Initial        => 10,
      Table_Increment      => 100,
      Table_Name           => "SFN_Patterns");
-   --  Table recording calls to Set_File_Name_Pattern. Note that the first two
-   --  entries are set to represent the standard GNAT rules for file naming.
+   --  Table recording calls to Set_File_Name_Pattern. Note that the last two
+   --  entries are set to represent the standard GNAT rules for file naming;
+   --  that invariant is maintained by Set_File_Name_Pattern.
 
    procedure Instantiate_SFN_Pattern
      (Pattern   : SFN_Pattern_Entry;
@@ -178,6 +179,8 @@ package body Fname.UF is
    ---------------------------
 
    function Get_Default_File_Name (Uname : Unit_Name_Type) return String is
+      L : constant Int := SFN_Patterns.Last;
+
       Buf : Bounded_String;
 
       Pattern : SFN_Pattern_Entry;
@@ -185,10 +188,10 @@ package body Fname.UF is
       Get_Unit_Name_String (Buf, Uname, False);
 
       if Is_Spec_Name (Uname) then
-         Pattern := SFN_Patterns.Table (1);
+         Pattern := SFN_Patterns.Table (L - 1);
       else
          pragma Assert (Is_Body_Name (Uname));
-         Pattern := SFN_Patterns.Table (2);
+         Pattern := SFN_Patterns.Table (L);
       end if;
 
       Instantiate_SFN_Pattern (Pattern, Buf);
