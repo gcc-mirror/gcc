@@ -24036,6 +24036,85 @@ aarch64_simd_make_constant (rtx vals)
     return NULL_RTX;
 }
 
+/* VALS is a PARALLEL rtx that contains element values for a vector of
+   mode MODE.  Return a constant that contains all the CONST_INT and
+   CONST_DOUBLE elements of VALS, using any convenient values for the
+   other elements.  */
+
+static rtx
+aarch64_choose_vector_init_constant (machine_mode mode, rtx vals)
+{
+  unsigned int n_elts = XVECLEN (vals, 0);
+
+  /* We really don't care what goes into the parts we will overwrite, but we're
+     more likely to be able to load the constant efficiently if it has fewer,
+     larger, repeating parts (see aarch64_simd_valid_imm).  */
+  rtvec copy = shallow_copy_rtvec (XVEC (vals, 0));
+  for (unsigned int i = 0; i < n_elts; ++i)
+    {
+      rtx x = RTVEC_ELT (copy, i);
+      if (CONST_INT_P (x) || CONST_DOUBLE_P (x))
+	continue;
+      /* This is effectively a bit-reversed increment, e.g.: 8, 4, 12,
+	 2, 10, 6, 12, ... for n_elts == 16.  The early break makes the
+	 outer "i" loop O(n_elts * log(n_elts)).  */
+      unsigned int j = 0;
+      for (;;)
+	{
+	  for (unsigned int bit = n_elts / 2; bit > 0; bit /= 2)
+	    {
+	      j ^= bit;
+	      if (j & bit)
+		break;
+	    }
+	  rtx test = XVECEXP (vals, 0, i ^ j);
+	  if (CONST_INT_P (test) || CONST_DOUBLE_P (test))
+	    {
+	      RTVEC_ELT (copy, i) = test;
+	      break;
+	    }
+	  gcc_assert (j != 0);
+	}
+    }
+
+  rtx c = gen_rtx_CONST_VECTOR (mode, copy);
+  if (aarch64_simd_valid_mov_imm (c))
+    return c;
+
+  /* Try generating a stepped sequence.  */
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
+    for (unsigned int i = 0; i < n_elts; ++i)
+      if (CONST_INT_P (XVECEXP (vals, 0, i)))
+	{
+	  auto base = UINTVAL (XVECEXP (vals, 0, i));
+	  for (unsigned int j = i + 1; j < n_elts; ++j)
+	    if (CONST_INT_P (XVECEXP (vals, 0, j)))
+	      {
+		/* It doesn't matter whether this division is exact.
+		   All that matters is whether the constant we produce
+		   is valid.  */
+		HOST_WIDE_INT diff = UINTVAL (XVECEXP (vals, 0, j)) - base;
+		unsigned HOST_WIDE_INT step = diff / int (j - i);
+		rtx_vector_builder builder (mode, n_elts, 1);
+		for (unsigned int k = 0; k < n_elts; ++k)
+		  {
+		    rtx x = XVECEXP (vals, 0, k);
+		    if (!CONST_INT_P (x))
+		      x = gen_int_mode (int (k - i) * step + base,
+					GET_MODE_INNER (mode));
+		    builder.quick_push (x);
+		  }
+		rtx step_c = builder.build ();
+		if (aarch64_simd_valid_mov_imm (step_c))
+		  return step_c;
+		break;
+	      }
+	  break;
+	}
+
+  return c;
+}
+
 /* A subroutine of aarch64_expand_vector_init, with the same interface.
    The caller has already tried a divide-and-conquer approach, so do
    not consider that case here.  */
@@ -24049,7 +24128,6 @@ aarch64_expand_vector_init_fallback (rtx target, rtx vals)
   int n_elts = XVECLEN (vals, 0);
   /* The number of vector elements which are not constant.  */
   int n_var = 0;
-  rtx any_const = NULL_RTX;
   /* The first element of vals.  */
   rtx v0 = XVECEXP (vals, 0, 0);
   bool all_same = true;
@@ -24075,8 +24153,6 @@ aarch64_expand_vector_init_fallback (rtx target, rtx vals)
       rtx x = XVECEXP (vals, 0, i);
       if (!(CONST_INT_P (x) || CONST_DOUBLE_P (x)))
 	++n_var;
-      else
-	any_const = x;
 
       all_same &= rtx_equal_p (x, v0);
     }
@@ -24220,31 +24296,9 @@ aarch64_expand_vector_init_fallback (rtx target, rtx vals)
      can.  */
   if (n_var != n_elts)
     {
-      rtx copy = copy_rtx (vals);
-
-      /* Load constant part of vector.  We really don't care what goes into the
-	 parts we will overwrite, but we're more likely to be able to load the
-	 constant efficiently if it has fewer, larger, repeating parts
-	 (see aarch64_simd_valid_imm).  */
-      for (int i = 0; i < n_elts; i++)
-	{
-	  rtx x = XVECEXP (vals, 0, i);
-	  if (CONST_INT_P (x) || CONST_DOUBLE_P (x))
-	    continue;
-	  rtx subst = any_const;
-	  for (int bit = n_elts / 2; bit > 0; bit /= 2)
-	    {
-	      /* Look in the copied vector, as more elements are const.  */
-	      rtx test = XVECEXP (copy, 0, i ^ bit);
-	      if (CONST_INT_P (test) || CONST_DOUBLE_P (test))
-		{
-		  subst = test;
-		  break;
-		}
-	    }
-	  XVECEXP (copy, 0, i) = subst;
-	}
-      aarch64_expand_vector_init_fallback (target, copy);
+      /* Load the constant part of the vector.  */
+      rtx constant = aarch64_choose_vector_init_constant (mode, vals);
+      emit_move_insn (target, constant);
     }
 
   /* Insert the variable lanes directly.  */
