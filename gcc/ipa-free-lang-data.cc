@@ -150,7 +150,12 @@ fld_type_variant (tree first, tree t, class free_lang_data_d *fld,
     return t;
   for (tree v = first; v; v = TYPE_NEXT_VARIANT (v))
     if (fld_type_variant_equal_p (t, v, inner_type))
-      return v;
+      {
+	if (flag_checking)
+	  for (tree v2 = TYPE_NEXT_VARIANT (v); v2; v2 = TYPE_NEXT_VARIANT (v2))
+	    gcc_assert (!fld_type_variant_equal_p (t, v2, inner_type));
+	return v;
+      }
   tree v = build_variant_type_copy (first);
   TYPE_READONLY (v) = TYPE_READONLY (t);
   TYPE_VOLATILE (v) = TYPE_VOLATILE (t);
