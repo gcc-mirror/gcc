@@ -508,6 +508,7 @@ is
 
    procedure Lemma_Not_In_Range_Big2xx64
    with
+     Ghost,
      Post => not In_Double_Int_Range (Big_2xxDouble)
        and then not In_Double_Int_Range (-Big_2xxDouble);
 
