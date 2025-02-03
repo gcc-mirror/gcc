@@ -1,3 +1,16 @@
+2025-02-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117411
+	* doc/gm2.texi (Exception handling): New section.
+	(The ISO system module): Add description of COFF_T.
+	(Assembler language): Tidy up last sentance.
+
+2025-02-02  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR middle-end/115913
+	* optc-save-gen.awk (cl_optimization_compare): Skip options with
+	CL_WARNING flag.
+
 2025-02-01  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/118713

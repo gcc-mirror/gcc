@@ -1,3 +1,14 @@
+2025-02-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117411
+	* gm2/iso/run/pass/except9.mod: New test.
+	* gm2/iso/run/pass/lazyunique.mod: New test.
+
+2025-02-02  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR middle-end/115913
+	* c-c++-common/cpp/pr115913.c: New test.
+
 2025-02-01  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR rtl-optimization/111673
