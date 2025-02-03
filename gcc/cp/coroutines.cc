@@ -1852,21 +1852,6 @@ coro_build_frame_access_expr (tree coro_ref, tree member_id, bool preserve_ref,
   return expr;
 }
 
-/* Helpers to build EXPR_STMT and void-cast EXPR_STMT, common ops.  */
-
-static tree
-coro_build_expr_stmt (tree expr, location_t loc)
-{
-  return maybe_cleanup_point_expr_void (build_stmt (loc, EXPR_STMT, expr));
-}
-
-static tree
-coro_build_cvt_void_expr_stmt (tree expr, location_t loc)
-{
-  tree t = build1 (CONVERT_EXPR, void_type_node, expr);
-  return coro_build_expr_stmt (t, loc);
-}
-
 /* Helpers to build an artificial var, with location LOC, NAME and TYPE, in
    CTX, and with initializer INIT.  */
 
@@ -2582,8 +2567,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   tree hfa = build_new_method_call (ash, hfa_m, &args, NULL_TREE, LOOKUP_NORMAL,
 				    NULL, tf_warning_or_error);
   r = cp_build_init_expr (ash, hfa);
-  r = coro_build_cvt_void_expr_stmt (r, loc);
-  add_stmt (r);
+  finish_expr_stmt (r);
   release_tree_vector (args);
 
   /* Now we know the real promise, and enough about the frame layout to
@@ -2678,8 +2662,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
      we must tail call them.  However, some targets do not support indirect
      tail calls to arbitrary callees.  See PR94359.  */
   CALL_EXPR_TAILCALL (resume) = true;
-  resume = coro_build_cvt_void_expr_stmt (resume, loc);
-  add_stmt (resume);
+  finish_expr_stmt (resume);
 
   r = build_stmt (loc, RETURN_EXPR, NULL);
   gcc_checking_assert (maybe_cleanup_point_expr_void (r) == r);
