@@ -34,6 +34,6 @@ main (void)
 
 /* { dg-final { scan-tree-dump {#pragma omp target enter data map\(alloc:array\[[^]]+\]\[0\] \[len: [0-9]+\]\)} "gimple" } } */
 
-/* { dg-final { scan-tree-dump {#pragma omp target num_teams.* firstprivate\(i\) map\(tofrom:array \[len: [0-9]+\]\[implicit\]\)} "gimple" } } */
+/* { dg-final { scan-tree-dump {#pragma omp target num_teams.* firstprivate\(i\) map\(tofrom:array \[len: [0-9]+\] \[runtime_implicit\]\)} "gimple" } } */
 
 /* { dg-final { scan-tree-dump {#pragma omp target exit data map\(from:array\[[^]]+\]\[0\] \[len: [0-9]+\]\)} "gimple" } } */

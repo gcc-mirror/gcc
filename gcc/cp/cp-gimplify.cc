@@ -1182,6 +1182,28 @@ taking_address_of_imm_fn_error (tree expr, tree decl)
   maybe_explain_promoted_consteval (loc, decl);
 }
 
+/* Build up an INIT_EXPR to initialize the object of a constructor call that
+   has been folded to a constant value.  CALL is the CALL_EXPR for the
+   constructor call; INIT is the value.  */
+
+static tree
+cp_build_init_expr_for_ctor (tree call, tree init)
+{
+  tree a = CALL_EXPR_ARG (call, 0);
+  if (is_dummy_object (a))
+    return init;
+  const bool return_this = targetm.cxx.cdtor_returns_this ();
+  const location_t loc = EXPR_LOCATION (call);
+  if (return_this)
+    a = cp_save_expr (a);
+  tree s = build_fold_indirect_ref_loc (loc, a);
+  init = cp_build_init_expr (s, init);
+  if (return_this)
+    init = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (call), init,
+		    fold_convert_loc (loc, TREE_TYPE (call), a));
+  return init;
+}
+
 /* A subroutine of cp_fold_r to handle immediate functions.  */
 
 static tree
@@ -1297,7 +1319,12 @@ cp_fold_immediate_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	}
       /* We've evaluated the consteval function call.  */
       if (call_p)
-	*stmt_p = e;
+	{
+	  if (code == CALL_EXPR && DECL_CONSTRUCTOR_P (decl))
+	    *stmt_p = cp_build_init_expr_for_ctor (stmt, e);
+	  else
+	    *stmt_p = e;
+	}
     }
   /* We've encountered a function call that may turn out to be consteval
      later.  Store its caller so that we can ensure that the call is
@@ -3422,18 +3449,7 @@ cp_fold (tree x, fold_flags_t flags)
         if (TREE_CODE (r) != CALL_EXPR)
 	  {
 	    if (DECL_CONSTRUCTOR_P (callee))
-	      {
-		loc = EXPR_LOCATION (x);
-		tree a = CALL_EXPR_ARG (x, 0);
-		bool return_this = targetm.cxx.cdtor_returns_this ();
-		if (return_this)
-		  a = cp_save_expr (a);
-		tree s = build_fold_indirect_ref_loc (loc, a);
-		r = cp_build_init_expr (s, r);
-		if (return_this)
-		  r = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (x), r,
-				  fold_convert_loc (loc, TREE_TYPE (x), a));
-	      }
+	      r = cp_build_init_expr_for_ctor (x, r);
 	    x = r;
 	    break;
 	  }

@@ -20,8 +20,8 @@ template<typename T>
 float base1(T);
 
 
-/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'float repl1\\(T, T2, T2\\) \\\[with T = omp_interop_t; T2 = omp_interop_t\\\]'" "" { target *-*-* } .-5 }  */
-/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'float repl1\\(T, T2, T2\\) \\\[with T = float; T2 = omp_interop_t\\\]'" "" { target *-*-* } .-6 }  */
+/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'float repl1\\(T, T2, T2\\) \\\[with T = omp_interop_t; T2 = omp_interop_t\\\]', except when specifying all 2 objects in the 'interop' clause of the 'dispatch' directive" "" { target *-*-* } .-5 }  */
+/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'float repl1\\(T, T2, T2\\) \\\[with T = float; T2 = omp_interop_t\\\]', except when specifying all 2 objects in the 'interop' clause of the 'dispatch' directive" "" { target *-*-* } .-6 }  */
 
 
 
@@ -45,7 +45,7 @@ void repl99(T);
         append_args(interop(target, targetsync, prefer_type("cuda")))
 void base99();
 
-/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'void repl99\\(T\\) \\\[with T = omp_interop_t\\\]'" "" { target *-*-* } .-3 }  */
+/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'void repl99\\(T\\) \\\[with T = omp_interop_t\\\]', except when specifying all 1 objects in the 'interop' clause of the 'dispatch' directive" "" { target *-*-* } .-3 }  */
 
 
 
@@ -57,8 +57,8 @@ void repl2(T, T2, T3, T3);
 template<typename T, typename T2>
 void base2(T x, T2 y);
 
-/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'void repl2\\(T, T2, T3, T3\\) \\\[with T = int\\*; T2 = int\\*; T3 = omp_interop_t\\\]'" "" { target *-*-* } .-5 }  */
-/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'void repl2\\(T, T2, T3, T3\\) \\\[with T = int\\*; T2 = omp_interop_t; T3 = omp_interop_t\\\]'" "" { target *-*-* } .-6 }  */
+/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'void repl2\\(T, T2, T3, T3\\) \\\[with T = int\\*; T2 = int\\*; T3 = omp_interop_t\\\]', except when specifying all 2 objects in the 'interop' clause of the 'dispatch' directive" "" { target *-*-* } .-5 }  */
+/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'void repl2\\(T, T2, T3, T3\\) \\\[with T = int\\*; T2 = omp_interop_t; T3 = omp_interop_t\\\]', except when specifying all 2 objects in the 'interop' clause of the 'dispatch' directive" "" { target *-*-* } .-6 }  */
 
 
 template<typename T,typename T3>
@@ -83,7 +83,7 @@ void repl3(T, T2, ...);
 template<typename T>
 void base3(T, ...);
 
-/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'void repl3\\(T, T2, \.\.\.\\) \\\[with T = int\\*; T2 = omp_interop_t\\\]'" "" { target *-*-* } .-4 }  */
+/* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'void repl3\\(T, T2, \.\.\.\\) \\\[with T = int\\*; T2 = omp_interop_t\\\]', except when specifying all 1 objects in the 'interop' clause of the 'dispatch' directive" "" { target *-*-* } .-4 }  */
 
 
 

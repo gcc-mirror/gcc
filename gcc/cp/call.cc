@@ -4374,6 +4374,15 @@ maybe_init_list_as_array (tree elttype, tree init)
     /* Let the normal code give the error.  */
     return NULL_TREE;
 
+  /* A glvalue initializer might be significant to a reference constructor
+     or conversion operator.  */
+  if (!DECL_CONSTRUCTOR_P (c->cand->fn)
+      || (TYPE_REF_P (TREE_VALUE
+		      (FUNCTION_FIRST_USER_PARMTYPE (c->cand->fn)))))
+    for (auto &ce : CONSTRUCTOR_ELTS (init))
+      if (non_mergeable_glvalue_p (ce.value))
+	return NULL_TREE;
+
   tree first = CONSTRUCTOR_ELT (init, 0)->value;
   conversion *fc = implicit_conversion (elttype, init_elttype, first, false,
 					LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING,

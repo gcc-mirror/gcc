@@ -12,5 +12,4 @@ add_loop (int *x, int n, int res)
   return res;
 }
 
-/* { dg-final { scan-tree-dump-times "VEC_SHL_INSERT" 1 "optimized" } } */
 /* { dg-final { scan-assembler-times {vslide1up\.vx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+} 1 } } */

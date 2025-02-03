@@ -203,21 +203,19 @@
 
 (define_constraint "Bs"
   "@internal Sibcall memory operand."
-  (ior (and (not (match_test "TARGET_INDIRECT_BRANCH_REGISTER"))
-	    (not (match_test "TARGET_X32"))
-	    (match_operand 0 "sibcall_memory_operand"))
-       (and (match_test "TARGET_X32")
-	    (match_test "Pmode == DImode")
-	    (match_operand 0 "GOT_memory_operand"))))
+  (and (not (match_test "TARGET_INDIRECT_BRANCH_REGISTER"))
+       (if_then_else (match_test "TARGET_X32")
+         (and (match_test "Pmode == DImode")
+              (match_operand 0 "GOT_memory_operand"))
+         (match_operand 0 "sibcall_memory_operand"))))
 
 (define_constraint "Bw"
   "@internal Call memory operand."
-  (ior (and (not (match_test "TARGET_INDIRECT_BRANCH_REGISTER"))
-	    (not (match_test "TARGET_X32"))
-	    (match_operand 0 "memory_operand"))
-       (and (match_test "TARGET_X32")
-	    (match_test "Pmode == DImode")
-	    (match_operand 0 "GOT_memory_operand"))))
+  (and (not (match_test "TARGET_INDIRECT_BRANCH_REGISTER"))
+       (if_then_else (match_test "TARGET_X32")
+         (and (match_test "Pmode == DImode")
+              (match_operand 0 "GOT_memory_operand"))
+         (match_operand 0 "memory_operand"))))
 
 (define_constraint "Bz"
   "@internal Constant call address operand."

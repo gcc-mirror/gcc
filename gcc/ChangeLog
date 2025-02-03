@@ -1,3 +1,391 @@
+2025-02-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117411
+	* doc/gm2.texi (Exception handling): New section.
+	(The ISO system module): Add description of COFF_T.
+	(Assembler language): Tidy up last sentance.
+
+2025-02-02  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR middle-end/115913
+	* optc-save-gen.awk (cl_optimization_compare): Skip options with
+	CL_WARNING flag.
+
+2025-02-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/118713
+	* config/i386/i386-expand.cc (ix86_expand_call): Change "if
+	(TARGET_X32 ...)" back to "else if (TARGET_X32 ...)".
+
+2025-02-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/118713
+	* config/i386/constraints.md (Bs): Always disable if
+	TARGET_INDIRECT_BRANCH_REGISTER is true.
+	(Bw): Likewise.
+	* config/i386/i386-expand.cc (ix86_expand_call): Force indirect
+	call via register for x32 GOT slot call if
+	TARGET_INDIRECT_BRANCH_REGISTER is true.
+	* config/i386/i386-protos.h (ix86_nopic_noplt_attribute_p): New.
+	* config/i386/i386.cc (ix86_nopic_noplt_attribute_p): Make it
+	global.
+	* config/i386/i386.md (*call_got_x32): Disable indirect call via
+	memory for TARGET_INDIRECT_BRANCH_REGISTER.
+	(*call_value_got_x32): Likewise.
+	(*sibcall_value_pop_memory): Likewise.
+	* config/i386/predicates.md (constant_call_address_operand):
+	Return false if both TARGET_INDIRECT_BRANCH_REGISTER and
+	ix86_nopic_noplt_attribute_p are true.
+
+2025-02-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* libsarifreplay.cc (sarif_replayer::handle_run_obj): Pass run to
+	handle_result_obj.
+	(sarif_replayer::handle_result_obj): Add run_obj param and pass it
+	to handle_location_object and handle_thread_flow_object.
+	(sarif_replayer::handle_thread_flow_object): Add run_obj param and
+	pass it to handle_thread_flow_location_object.
+	(sarif_replayer::handle_thread_flow_location_object): Add run_obj
+	param and pass it to handle_location_object.
+	(sarif_replayer::handle_location_object): Add run_obj param and
+	pass it to handle_logical_location_object.
+	(sarif_replayer::handle_logical_location_object): Add run_obj
+	param.  If the run_obj is non-null and has "logicalLocations",
+	then use these "cached" logical locations if we see an "index"
+	property, as per §3.33.3
+
+2025-02-01  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR tree-optimization/114277
+	* match.pd (a * (a || b) -> a): New pattern.
+	(a * !(a || b) -> 0): Likewise.
+
+2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/117432
+	* ipa-icf-gimple.cc (func_checker::compare_asm_inputs_outputs):
+	Also return_false if operands have incompatible types.
+	(func_checker::compare_gimple_call): Check fntype1 vs. fntype2
+	compatibility for all non-internal calls and assume fntype1 and
+	fntype2 are non-NULL for those.  For calls to non-prototyped
+	calls or for stdarg_p functions after the last named argument (if any)
+	check type compatibility of call arguments.
+
+2025-01-31  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/116234
+	* lra-constraints.cc (multiple_insn_refs_p): New function.
+	(curr_insn_transform): Use it.
+
+2025-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR debug/100530
+	* dwarf2out.cc (modified_type_die): Do not claim we handle
+	address-space qualification with dwarf_qual_info[].
+
+2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118689
+	PR modula2/115032
+	* tree-ssa-loop-niter.cc (build_cltz_expr): Return NULL_TREE if fn is
+	NULL and use_ifn is false.
+
+2025-01-31  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_loop_operations): Only
+	call vectorizable_lc_phi when not PURE_SLP.
+	(vectorizable_reduction): Do not claim having handled
+	the inner loop LC PHI for outer loop vectorization.
+
+2025-01-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/builtins.def (STRLEN_FLASH, STRLEN_FLASHX)
+	(STRLEN_MEMX): New DEF_BUILTIN's.
+	* config/avr/avr.cc (avr_ftype_strlen): New static function.
+	(avr_builtin_supported_p): New built-ins are not for AVR_TINY.
+	(avr_init_builtins) <strlen_flash_node, strlen_flashx_node,
+	strlen_memx_node>: Provide new fntypes.
+	(avr_fold_builtin) [AVR_BUILTIN_STRLEN_FLASH]
+	[AVR_BUILTIN_STRLEN_FLASHX, AVR_BUILTIN_STRLEN_MEMX]: Fold if
+	possible.
+	* doc/extend.texi (AVR Built-in Functions): Document
+	__builtin_avr_strlen_flash, __builtin_avr_strlen_flashx,
+	__builtin_avr_strlen_memx.
+
+2025-01-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/builtins.def (AVR_FIRST_C_ONLY_BUILTIN_ID): New macro.
+	* config/avr/avr-protos.h (avr_builtin_supported_p): New.
+	* config/avr/avr.cc (avr_builtin_supported_p): New function.
+	(avr_init_builtins): Only provide a built-in when it is supported.
+	* config/avr/avr-c.cc (avr_cpu_cpp_builtins): Only define the
+	__BUILTIN_AVR_<NAME> build-in defines when the associated built-in
+	function is supported.
+	* doc/extend.texi (AVR Built-in Functions): Add a note that
+	following built-ins are supported for only for GNU-C.
+
+2025-01-30  Jakub Jelinek  <jakub@redhat.com>
+	    Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/118696
+	* config/s390/vector.md (*vec_cmpgt<mode><mode>_nocc_emu,
+	*vec_cmpgtu<mode><mode>_nocc_emu): Duplicate the first rather than
+	second V2DImode element.
+
+2025-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118695
+	* expr.cc (expand_expr_real_1): When expanding a MEM_REF
+	to a non-MEM by committing it to a stack temporary make
+	sure to handle misaligned accesses correctly.
+
+2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_call_expr): For OpenMP's append_args clause
+	processed by 'omp dispatch', update for internal-representation
+	changes; fix handling of hidden arguments, add some comments and
+	handle Fortran's value dummy and optional/pointer/allocatable actual
+	args.
+
+2025-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118692
+	* expr.cc (expand_expr_real_1): When expanding a MEM_REF
+	as BIT_FIELD_REF avoid large offsets for accesses not
+	overlapping the base object.
+
+2025-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114052
+	* tree-ssa-loop-niter.cc (maybe_lower_iteration_bound): Check
+	for infinite subloops we might not exit.
+
+2025-01-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/118320
+	* pair-fusion.cc (pair_fusion_bb_info::fuse_pair): Commonize
+	the merge of input_uses and return early if it fails.
+
+2025-01-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118010
+	PR modula2/118183
+	PR modula2/116073
+	* doc/gm2.texi (-fm2-file-offset-bits=): Change the default size
+	description to CSSIZE_T.
+	Add COFF_T to the list of data types exported by SYSTEM.def.
+
+2025-01-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/118429
+	* pair-fusion.cc (latest_hazard_before): Add an extra parameter
+	to say whether the instruction is a load or a store.  If the
+	instruction is not a load or store and has memory side effects,
+	prevent it from being moved earlier.
+	(pair_fusion::find_trailing_add): Update call accordingly.
+	(pair_fusion_bb_info::fuse_pair): If the trailng addition had
+	a memory side-effect, use a tombstone to preserve it.
+
+2025-01-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (*negsi2.libgcc): New insn.
+
+2025-01-29  Yoshinori Sato  <ysato@users.sourceforge.jp>
+
+	* config/rx/constraints.md (Q): Also check that the address
+	passes rx_is_restricted_memory-address.
+
+2025-01-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118505
+	* gimple-ssa-split-paths.cc (poor_ifcvt_pred): Return
+	true for trapping statements.
+
+2025-01-29  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-ssa-split-paths.cc (poor_ifcvt_candidate_code): Remove CALL_EXPR handling.
+
+2025-01-29  Martin Jambor  <mjambor@suse.cz>
+	    Michal Jireš  <mjires@suse.cz>
+
+	PR tree-optimization/117892
+	* tree-ssa-dse.cc (dse_optimize_call): Leave control-altering
+	noreturn calls alone.
+
+2025-01-29  Pan Li  <pan2.li@intel.com>
+
+	PR target/117688
+	* config/riscv/riscv.cc (riscv_expand_sstrunc): Leverage the helper
+	riscv_extend_to_xmode_reg with SIGN_EXTEND.
+
+2025-01-29  Pan Li  <pan2.li@intel.com>
+
+	PR target/117688
+	* config/riscv/riscv.cc (riscv_expand_sssub): Leverage the helper
+	riscv_extend_to_xmode_reg with SIGN_EXTEND.
+
+2025-01-29  Pan Li  <pan2.li@intel.com>
+
+	PR target/117688
+	* config/riscv/riscv.cc (riscv_expand_ssadd): Leverage the helper
+	riscv_extend_to_xmode_reg with SIGN_EXTEND.
+
+2025-01-29  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_gen_zero_extend_rtx): Rename from ...
+	(riscv_extend_to_xmode_reg): Rename to and add rtx_code for
+	zero/sign extend if non-Xmode.
+	(riscv_expand_usadd): Leverage the renamed function with ZERO_EXTEND.
+	(riscv_expand_ussub): Ditto.
+
+2025-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118684
+	* expr.cc (expand_expr_real_1): When creating a stack local
+	during expansion of a handled component, when the base is
+	a SSA_NAME use its type alignment and avoid calling
+	get_object_alignment.
+
+2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118684
+	* expr.cc (expand_expr_real_1): When expanding a reference
+	based on a register and we end up needing a MEM make sure
+	that's aligned as the original reference required.
+
+2025-01-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* input.cc (file_cache_slot::dump): Show indices within
+	m_line_record when dumping entries.
+
+2025-01-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/118675
+	* diagnostic-format-sarif.cc: Define INCLUDE_STRING.
+	(escape_braces): New.
+	(set_string_property_escaping_braces): New.
+	(sarif_builder::make_message_object): Escape braces in the "text"
+	property.
+	(sarif_builder::make_message_object_for_diagram): Likewise, and
+	for the "markdown" property.
+	(sarif_builder::make_multiformat_message_string): Likewise for the
+	"text" property.
+	(xelftest::test_message_with_braces): New.
+	(selftest::diagnostic_format_sarif_cc_tests): Call it.
+
+2025-01-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/117270
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1): Make nperms
+	account for the number of times that each permutation will be used
+	during transformation.
+
+2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112859
+	* tree-loop-distribution.cc
+	(loop_distribution::pg_add_dependence_edges): Add comment.
+
+2025-01-28  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/118663
+	* lra-constraints.cc (invalid_mode_reg_p): Check empty
+	reg_class_contents.
+
+2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117424
+	* tree-eh.cc (tree_could_trap_p): Verify the base is
+	fully contained within a decl.
+
+2025-01-28  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* tree-pretty-print.cc (dump_omp_clause): Clarify
+	'OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P'.
+
+2025-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/118638
+	* combine.cc (make_extraction): Only optimize (mult x 2^n) if len is
+	larger than 1.
+
+2025-01-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1): Remove
+	extra newline from dump message.
+
+2025-01-28  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/114085
+	* config/h8300/constraints.md (U): No longer accept REGs.
+	* config/h8300/logical.md (andqi3_2): Use "rU" rather than "U".
+	(andqi3_2_clobber_flags, andqi3_1, <code>qi3_1): Likewise.
+	* config/h8300/testcompare.md (tst_extzv_1_n): Likewise.
+
+2025-01-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/117173
+	* config/riscv/riscv-v.cc (shuffle_generic_patterns): Only
+	support single-source permutes by default.
+	* config/riscv/riscv.opt: New param "riscv-two-source-permutes".
+
+2025-01-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR c++/116524
+	* configure.ac: Check for munmap and msync.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118653
+	* tree-vect-loop.cc (vectorizable_live_operation): Also allow
+	out-of-loop debug uses.
+
+2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/118662
+	* combine.cc (try_combine): When re-materializing a load
+	from an extended reg by a lowpart subreg make sure we're
+	not dealing with vector or complex modes.
+
+2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118643
+	* expr.cc (expand_expr_real_1): Avoid falling back to BIT_FIELD_REF
+	expansion for negative offset.
+
+2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112859
+	PR tree-optimization/115347
+	* tree-loop-distribution.cc
+	(loop_distribution::pg_add_dependence_edges): For a zero
+	distance vector still make sure to not have an inner
+	loop with zero distance.
+
+2025-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118637
+	* match.pd: Canonicalize unsigned division by power of two to
+	right shift.
+
+2025-01-27  Soumya AR  <soumyaa@nvidia.com>
+
+	PR target/118490
+	* match.pd: Added ! to verify that log/exp (CST) can be constant folded.
+
+2025-01-26  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* asan.cc (asan_emit_stack_protection): Always zero the flag
+	unless it is cleared by the __asan_stack_free_N() libcall.
+
+2025-01-26  Pan Li  <pan2.li@intel.com>
+
+	PR target/118103
+	* config/riscv/riscv.cc (riscv_conditional_register_usage): Add
+	the FRM as the global_regs.
+
 2025-01-25  Andi Kleen  <ak@gcc.gnu.org>
 
 	PR preprocessor/118168

@@ -500,7 +500,8 @@ avr_cpu_cpp_builtins (cpp_reader *pfile)
      not a specific builtin is available. */
 
 #define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME, ATTRS) \
-  cpp_define (pfile, "__BUILTIN_AVR_" #NAME);
+  if (avr_builtin_supported_p (AVR_BUILTIN_ ## NAME))	      \
+    cpp_define (pfile, "__BUILTIN_AVR_" #NAME);
 #include "builtins.def"
 #undef DEF_BUILTIN
 

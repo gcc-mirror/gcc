@@ -11796,15 +11796,36 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		&& known_eq (GET_MODE_BITSIZE (DECL_MODE (base)), type_size))
 	      return expand_expr (build1 (VIEW_CONVERT_EXPR, type, base),
 				  target, tmode, modifier);
-	    if (TYPE_MODE (type) == BLKmode)
+	    unsigned align;
+	    if (TYPE_MODE (type) == BLKmode || maybe_lt (offset, 0))
 	      {
 		temp = assign_stack_temp (DECL_MODE (base),
 					  GET_MODE_SIZE (DECL_MODE (base)));
 		store_expr (base, temp, 0, false, false);
-		temp = adjust_address (temp, BLKmode, offset);
-		set_mem_size (temp, int_size_in_bytes (type));
+		temp = adjust_address (temp, TYPE_MODE (type), offset);
+		if (TYPE_MODE (type) == BLKmode)
+		  set_mem_size (temp, int_size_in_bytes (type));
+		/* When the original ref was misaligned so will be the
+		   access to the stack temporary.  Not all targets handle
+		   this correctly, some will ICE in sanity checking.
+		   Handle this by doing bitfield extraction when necessary.  */
+		else if ((align = get_object_alignment (exp))
+			 < GET_MODE_ALIGNMENT (TYPE_MODE (type)))
+		  temp
+		    = expand_misaligned_mem_ref (temp, TYPE_MODE (type),
+						 unsignedp, align,
+						 modifier == EXPAND_STACK_PARM
+						 ? NULL_RTX : target, NULL);
 		return temp;
 	      }
+	    /* When the access is fully outside of the underlying object
+	       expand the offset as zero.  This avoids out-of-bound
+	       BIT_FIELD_REFs and generates smaller code for these cases
+	       with UB.  */
+	    type_size = tree_to_poly_uint64 (TYPE_SIZE_UNIT (type));
+	    if (!ranges_maybe_overlap_p (offset, type_size, 0,
+					 GET_MODE_SIZE (DECL_MODE (base))))
+	      offset = 0;
 	    exp = build3 (BIT_FIELD_REF, type, base, TYPE_SIZE (type),
 			  bitsize_int (offset * BITS_PER_UNIT));
 	    REF_REVERSE_STORAGE_ORDER (exp) = reverse;
@@ -12147,7 +12168,13 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	   and need be, put it there.  */
 	else if (CONSTANT_P (op0) || (!MEM_P (op0) && must_force_mem))
 	  {
-	    memloc = assign_temp (TREE_TYPE (tem), 1, 1);
+	    poly_int64 size;
+	    if (!poly_int_tree_p (TYPE_SIZE_UNIT (TREE_TYPE (tem)), &size))
+	      size = max_int_size_in_bytes (TREE_TYPE (tem));
+	    memloc = assign_stack_local (TYPE_MODE (TREE_TYPE (tem)), size,
+					 TREE_CODE (tem) == SSA_NAME
+					 ? TYPE_ALIGN (TREE_TYPE (tem))
+					 : get_object_alignment (tem));
 	    emit_move_insn (memloc, op0);
 	    op0 = memloc;
 	    clear_mem_expr = true;

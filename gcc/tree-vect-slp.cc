@@ -10846,7 +10846,7 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
       for (unsigned i = 0; i < perm.length (); ++i)
 	dump_printf (MSG_NOTE, " op%u[%u]", perm[i].first, perm[i].second);
       if (repeating_p)
-	dump_printf (MSG_NOTE, " (repeat %d)\n", SLP_TREE_LANES (node));
+	dump_printf (MSG_NOTE, " (repeat %d)", SLP_TREE_LANES (node));
       dump_printf (MSG_NOTE, "\n");
       dump_printf_loc (MSG_NOTE, vect_location, "as");
       for (unsigned i = 0; i < vperm.length (); ++i)
@@ -10884,9 +10884,15 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
      vectors to check during analysis, but we need to generate NOUTPUTS
      vectors during transformation.  */
   unsigned total_nelts = olanes;
-  if (repeating_p && gsi)
-    total_nelts = (total_nelts / unpack_factor) * noutputs;
-  for (unsigned i = 0; i < total_nelts; ++i)
+  unsigned process_nelts = olanes;
+  if (repeating_p)
+    {
+      total_nelts = (total_nelts / unpack_factor) * noutputs;
+      if (gsi)
+	process_nelts = total_nelts;
+    }
+  unsigned last_ei = (total_nelts - 1) % process_nelts;
+  for (unsigned i = 0; i < process_nelts; ++i)
     {
       /* VI is the input vector index when generating code for REPEATING_P.  */
       unsigned vi = i / olanes * (pack_p ? 2 : 1);
@@ -10960,7 +10966,7 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	    }
 
 	  if (!identity_p)
-	    nperms++;
+	    nperms += CEIL (total_nelts, process_nelts) - (ei > last_ei);
 	  if (gsi)
 	    {
 	      if (second_vec.first == -1U)

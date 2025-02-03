@@ -164,6 +164,22 @@ test05()
   VERIFY( std::ranges::equal(m | std::views::values, (int[]){-1, -2, -3, -4, -5}) );
 }
 
+void
+test06()
+{
+  // PR libstdc++/118156 - flat_foo::insert_range cannot handle non-common ranges
+  std::flat_map<int, int> m;
+  auto r = std::views::zip(std::views::iota(1), std::views::iota(2)) | std::views::take(5);
+  static_assert(!std::ranges::common_range<decltype(r)>);
+  m.insert_range(r);
+  VERIFY( std::ranges::equal(m | std::views::keys, (int[]){1, 2, 3, 4, 5}) );
+  VERIFY( std::ranges::equal(m | std::views::values, (int[]){2, 3, 4, 5, 6}) );
+  m.clear();
+  m.insert_range(r | std::views::reverse);
+  VERIFY( std::ranges::equal(m | std::views::keys, (int[]){1, 2, 3, 4, 5}) );
+  VERIFY( std::ranges::equal(m | std::views::values, (int[]){2, 3, 4, 5, 6}) );
+}
+
 int
 main()
 {
@@ -175,4 +191,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }

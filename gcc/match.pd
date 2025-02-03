@@ -303,6 +303,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (mult @0 integer_zerop@1)
  @1)
 
+#if GIMPLE
+/* When multiplying a value by a boolean involving the value, we may
+   be able to simplify further.
+     a * ((a || b) != 0) -> a
+     a * ((a || b) == 0) -> 0
+
+   There are also bit-and cases which don't show up in practice yet.
+     a * ((a && b) != 0) -> a * b
+     a * ((a && b) == 0) -> b != 0 ? a : b */
+(for neeq (ne eq)
+ (simplify
+  (mult:c (convert? (neeq (bit_ior:c @0 @1) integer_zerop@2)) @0)
+  (if (neeq == EQ_EXPR)
+   { build_zero_cst (type); }
+   @0)))
+#endif
+
 /* -x == x -> x == 0 */
 (for cmp (eq ne)
  (simplify
@@ -965,6 +982,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (bit_and @0 (negate @1))))
 
 (for div (trunc_div ceil_div floor_div round_div exact_div)
+#if GIMPLE
+ /* Canonicalize unsigned t / 4 to t >> 2.  */
+ (simplify
+  (div @0 integer_pow2p@1)
+  (if (INTEGRAL_TYPE_P (type)
+       && (TYPE_UNSIGNED (type) || tree_expr_nonnegative_p (@0)))
+   (rshift @0 { build_int_cst (integer_type_node,
+			       wi::exact_log2 (wi::to_wide (@1))); })))
+#endif
  /* Simplify (t * u) / u -> t.  */
  (simplify
   (div (mult:c @0 @1) @1)
@@ -8320,12 +8346,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     /* Simplify logN (x) CMP CST into x CMP expN (CST) */
     (simplify
     (cmp:c (logs:s @0) REAL_CST@1)
-     (cmp @0 (exps @1)))
+     (cmp @0 (exps! @1)))
 
     /* Simplify expN (x) CMP CST into x CMP logN (CST) */
     (simplify
     (cmp:c (exps:s @0) REAL_CST@1)
-     (cmp @0 (logs @1))))))
+     (cmp @0 (logs! @1))))))
 
  (for logs (LOG LOG2 LOG10 LOG10)
       exps (EXP EXP2 EXP10 POW10)

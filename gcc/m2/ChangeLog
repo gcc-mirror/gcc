@@ -1,3 +1,50 @@
+2025-02-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118703
+	* gm2-gcc/m2builtins.cc (define_builtin_gcc): New function.
+	(m2builtins_init): Call define_builtin_gcc.
+	* gm2-libs/Builtins.def (clz): New procedure function.
+	(clzll): Ditto.
+	(ctz): Ditto.
+	(ctzll): Ditto.
+	* gm2-libs/Builtins.mod (clz): New procedure function.
+	(clzll): Ditto.
+	(ctz): Ditto.
+	(ctzll): Ditto.
+	* gm2-libs/cbuiltin.def (clz): New procedure function.
+	(clzll): Ditto.
+	(ctz): Ditto.
+	(ctzll): Ditto.
+
+2025-01-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118010
+	PR modula2/118183
+	PR modula2/116073
+	* gm2-compiler/M2Options.mod (OffTBits): Assign to 0.
+	* gm2-gcc/m2type.cc (build_m2_specific_size_type): Ensure that
+	layout_type is called before returning c.
+	(build_m2_offt_type_node): If GetFileOffsetBits returns 0 then
+	use the type size of ssize_t.
+
+2025-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2GenGCC.mod (FoldConstBecomes): Remove
+	commented out code.
+	Improve early return comment.
+
+2025-01-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2GenGCC.mod (FoldStatementNote): Add header
+	comment.
+	(CodeStatementNote): Ditto.
+	(FoldRange): Tidy comment.
+	(CodeError): Ditto.
+	(CodeProcedureScope): Ditto.
+	(CheckConvertCoerceParameter): Replace op1 with nth.
+	Replace op2 with callee.
+	Replace op3 with actual.
+
 2025-01-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117737

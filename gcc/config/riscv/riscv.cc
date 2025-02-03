@@ -10885,7 +10885,9 @@ riscv_conditional_register_usage (void)
 	call_used_regs[r] = 1;
     }
 
-  if (!TARGET_HARD_FLOAT)
+  if (TARGET_HARD_FLOAT)
+    global_regs[FRM_REGNUM] = 1;
+  else
     {
       for (int regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
 	fixed_regs[regno] = call_used_regs[regno] = 1;
@@ -12642,14 +12644,27 @@ riscv_get_raw_result_mode (int regno)
 /* Generate a REG rtx of Xmode from the given rtx and mode.
    The rtx x can be REG (QI/HI/SI/DI) or const_int.
    The machine_mode mode is the original mode from define pattern.
+   The rtx_code can be ZERO_EXTEND or SIGN_EXTEND.
 
-   If rtx is REG and Xmode, the RTX x will be returned directly.
+   If rtx is REG:
 
-   If rtx is REG and non-Xmode, the zero extended to new REG of Xmode will be
-   returned.
+   1.  If rtx Xmode, the RTX x will be returned directly.
+   2.  If rtx non-Xmode, the value extended into a new REG of Xmode will be
+       returned.
 
-   If rtx is const_int, a new REG rtx will be created to hold the value of
-   const_int and then returned.
+   The scalar ALU like add don't support non-Xmode like QI/HI.  Then the
+   gen_lowpart will have problem here.  For example, when we would like
+   to add -1 (0xff if QImode) and 2 (0x2 if QImode).  The 0xff and 0x2 will
+   be loaded to register for adding.  Aka:
+
+   0xff + 0x2 = 0x101 instead of -1 + 2 = 1.
+
+   Thus we need to sign extend 0xff to 0xffffffffffffffff if Xmode is DImode
+   for correctness.  Similar the unsigned also need zero extend.
+
+   If rtx is const_int:
+
+   1.  A new REG rtx will be created to hold the value of const_int.
 
    According to the gccint doc, the constants generated for modes with fewer
    bits than in HOST_WIDE_INT must be sign extended to full width.  Thus there
@@ -12667,34 +12682,41 @@ riscv_get_raw_result_mode (int regno)
    the REG rtx of Xmode, instead of taking care of these in expand func.  */
 
 static rtx
-riscv_gen_zero_extend_rtx (rtx x, machine_mode mode)
+riscv_extend_to_xmode_reg (rtx x, machine_mode mode, enum rtx_code rcode)
 {
+  gcc_assert (rcode == ZERO_EXTEND || rcode == SIGN_EXTEND);
+
   rtx xmode_reg = gen_reg_rtx (Xmode);
 
-  if (!CONST_INT_P (x))
+  if (CONST_INT_P (x))
     {
       if (mode == Xmode)
-	return x;
+	emit_move_insn (xmode_reg, x);
+      else if (rcode == ZERO_EXTEND)
+	{
+	  /* Combine deliberately does not simplify extensions of constants
+	     (long story).  So try to generate the zero extended constant
+	     efficiently.
 
-      riscv_emit_unary (ZERO_EXTEND, xmode_reg, x);
-      return xmode_reg;
+	     First extract the constant and mask off all the bits not in
+	     MODE.  */
+	  HOST_WIDE_INT val = INTVAL (x);
+	  val &= GET_MODE_MASK (mode);
+
+	  /* X may need synthesis, so do not blindly copy it.  */
+	  xmode_reg = force_reg (Xmode, gen_int_mode (val, Xmode));
+	}
+      else /* SIGN_EXTEND.  */
+	{
+	  rtx x_reg = gen_reg_rtx (mode);
+	  emit_move_insn (x_reg, x);
+	  riscv_emit_unary (rcode, xmode_reg, x_reg);
+	}
     }
-
-  if (mode == Xmode)
-    emit_move_insn (xmode_reg, x);
+  else if (mode == Xmode)
+    return x;
   else
-    {
-      /* Combine deliberately does not simplify extensions of constants
-	 (long story).  So try to generate the zero extended constant
-	 efficiently.
-
-	 First extract the constant and mask off all the bits not in MODE.  */
-      HOST_WIDE_INT val = INTVAL (x);
-      val &= GET_MODE_MASK (mode);
-
-      /* X may need synthesis, so do not blindly copy it.  */
-      xmode_reg = force_reg (Xmode, gen_int_mode (val, Xmode));
-    }
+    riscv_emit_unary (rcode, xmode_reg, x);
 
   return xmode_reg;
 }
@@ -12715,8 +12737,8 @@ riscv_expand_usadd (rtx dest, rtx x, rtx y)
   machine_mode mode = GET_MODE (dest);
   rtx xmode_sum = gen_reg_rtx (Xmode);
   rtx xmode_lt = gen_reg_rtx (Xmode);
-  rtx xmode_x = riscv_gen_zero_extend_rtx (x, mode);
-  rtx xmode_y = riscv_gen_zero_extend_rtx (y, mode);
+  rtx xmode_x = riscv_extend_to_xmode_reg (x, mode, ZERO_EXTEND);
+  rtx xmode_y = riscv_extend_to_xmode_reg (y, mode, ZERO_EXTEND);
   rtx xmode_dest = gen_reg_rtx (Xmode);
 
   /* Step-1: sum = x + y  */
@@ -12794,8 +12816,8 @@ riscv_expand_ssadd (rtx dest, rtx x, rtx y)
   machine_mode mode = GET_MODE (dest);
   unsigned bitsize = GET_MODE_BITSIZE (mode).to_constant ();
   rtx shift_bits = GEN_INT (bitsize - 1);
-  rtx xmode_x = gen_lowpart (Xmode, x);
-  rtx xmode_y = gen_lowpart (Xmode, y);
+  rtx xmode_x = riscv_extend_to_xmode_reg (x, mode, SIGN_EXTEND);
+  rtx xmode_y = riscv_extend_to_xmode_reg (y, mode, SIGN_EXTEND);
   rtx xmode_sum = gen_reg_rtx (Xmode);
   rtx xmode_dest = gen_reg_rtx (Xmode);
   rtx xmode_xor_0 = gen_reg_rtx (Xmode);
@@ -12850,8 +12872,8 @@ void
 riscv_expand_ussub (rtx dest, rtx x, rtx y)
 {
   machine_mode mode = GET_MODE (dest);
-  rtx xmode_x = riscv_gen_zero_extend_rtx (x, mode);
-  rtx xmode_y = riscv_gen_zero_extend_rtx (y, mode);
+  rtx xmode_x = riscv_extend_to_xmode_reg (x, mode, ZERO_EXTEND);
+  rtx xmode_y = riscv_extend_to_xmode_reg (y, mode, ZERO_EXTEND);
   rtx xmode_lt = gen_reg_rtx (Xmode);
   rtx xmode_minus = gen_reg_rtx (Xmode);
   rtx xmode_dest = gen_reg_rtx (Xmode);
@@ -12898,8 +12920,8 @@ riscv_expand_sssub (rtx dest, rtx x, rtx y)
   machine_mode mode = GET_MODE (dest);
   unsigned bitsize = GET_MODE_BITSIZE (mode).to_constant ();
   rtx shift_bits = GEN_INT (bitsize - 1);
-  rtx xmode_x = gen_lowpart (Xmode, x);
-  rtx xmode_y = gen_lowpart (Xmode, y);
+  rtx xmode_x = riscv_extend_to_xmode_reg (x, mode, SIGN_EXTEND);
+  rtx xmode_y = riscv_extend_to_xmode_reg (y, mode, SIGN_EXTEND);
   rtx xmode_minus = gen_reg_rtx (Xmode);
   rtx xmode_xor_0 = gen_reg_rtx (Xmode);
   rtx xmode_xor_1 = gen_reg_rtx (Xmode);
@@ -13009,7 +13031,7 @@ riscv_expand_sstrunc (rtx dest, rtx src)
   rtx xmode_narrow_min = gen_reg_rtx (Xmode);
   rtx xmode_lt = gen_reg_rtx (Xmode);
   rtx xmode_gt = gen_reg_rtx (Xmode);
-  rtx xmode_src = gen_lowpart (Xmode, src);
+  rtx xmode_src = riscv_extend_to_xmode_reg (src, GET_MODE (src), SIGN_EXTEND);
   rtx xmode_dest = gen_reg_rtx (Xmode);
   rtx xmode_mask = gen_reg_rtx (Xmode);
   rtx xmode_sat = gen_reg_rtx (Xmode);

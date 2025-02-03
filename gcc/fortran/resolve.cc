@@ -1049,7 +1049,7 @@ resolve_common_vars (gfc_common_head *common_block, bool named_common)
 static void
 resolve_common_blocks (gfc_symtree *common_root)
 {
-  gfc_symbol *sym;
+  gfc_symbol *sym = NULL;
   gfc_gsymbol * gsym;
 
   if (common_root == NULL)
@@ -13383,7 +13383,12 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
       tmp_expr = get_temp_from_expr ((*code)->expr1, ns);
       if (tmp_expr->symtree->n.sym->attr.pointer)
 	{
+	  /* Use allocate on assignment for the sake of simplicity. The
+	     temporary must not take on the optional attribute. Assume
+	     that the assignment is guarded by a PRESENT condition if the
+	     lhs is optional.  */
 	  tmp_expr->symtree->n.sym->attr.pointer = 0;
+	  tmp_expr->symtree->n.sym->attr.optional = 0;
 	  tmp_expr->symtree->n.sym->attr.allocatable = 1;
 	}
       this_code = build_assignment (EXEC_ASSIGN,
@@ -13801,6 +13806,11 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	  gfc_resolve_forall (code, ns, forall_save);
 	  forall_flag = 2;
 	}
+      else if (code->op == EXEC_OMP_METADIRECTIVE)
+	for (gfc_omp_variant *variant
+	       = code->ext.omp_variants;
+	     variant; variant = variant->next)
+	  gfc_resolve_code (variant->code, ns);
       else if (code->block)
 	{
 	  omp_workshare_save = -1;
@@ -14374,6 +14384,7 @@ start:
 	case EXEC_OMP_MASKED:
 	case EXEC_OMP_MASKED_TASKLOOP:
 	case EXEC_OMP_MASKED_TASKLOOP_SIMD:
+	case EXEC_OMP_METADIRECTIVE:
 	case EXEC_OMP_ORDERED:
 	case EXEC_OMP_SCAN:
 	case EXEC_OMP_SCOPE:
@@ -17682,6 +17693,12 @@ resolve_symbol (gfc_symbol *sym)
 	  && sym->attr.if_source == IFSRC_UNKNOWN
 	  && sym->ts.type == BT_UNKNOWN))
     {
+      /* A symbol in a common block might not have been resolved yet properly.
+	 Do not try to find an interface with the same name.  */
+      if (sym->attr.flavor == FL_UNKNOWN && !sym->attr.intrinsic
+	  && !sym->attr.generic && !sym->attr.external
+	  && sym->attr.in_common)
+	goto skip_interfaces;
 
     /* If we find that a flavorless symbol is an interface in one of the
        parent namespaces, find its symtree in this namespace, free the
@@ -17705,6 +17722,7 @@ resolve_symbol (gfc_symbol *sym)
 	    }
 	}
 
+skip_interfaces:
       /* Otherwise give it a flavor according to such attributes as
 	 it has.  */
       if (sym->attr.flavor == FL_UNKNOWN && sym->attr.external == 0

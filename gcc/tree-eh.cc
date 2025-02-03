@@ -2762,11 +2762,16 @@ tree_could_trap_p (tree expr)
 	  if (TREE_CODE (base) == STRING_CST)
 	    return maybe_le (TREE_STRING_LENGTH (base), off);
 	  tree size = DECL_SIZE_UNIT (base);
+	  tree refsz = TYPE_SIZE_UNIT (TREE_TYPE (expr));
 	  if (size == NULL_TREE
+	      || refsz == NULL_TREE
 	      || !poly_int_tree_p (size)
-	      || maybe_le (wi::to_poly_offset (size), off))
+	      || !poly_int_tree_p (refsz)
+	      || maybe_le (wi::to_poly_offset (size), off)
+	      || maybe_gt (off + wi::to_poly_offset (refsz),
+			   wi::to_poly_offset (size)))
 	    return true;
-	  /* Now we are sure the first byte of the access is inside
+	  /* Now we are sure the whole base of the access is inside
 	     the object.  */
 	  return false;
 	}

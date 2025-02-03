@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-optimized" } */
+/* { dg-options "-O3 -fdump-tree-optimized --param logical-op-non-short-circuit=1" } */
 
 typedef unsigned long int uint64_t;
 

@@ -614,7 +614,7 @@ BEGIN
    GetQuad(q, op, op1, op2, op3) ;
    IF op=StatementNoteOp
    THEN
-      FoldStatementNote (op3)  (* will change CurrentQuadToken using op3  *)
+      FoldStatementNote (op3)  (* Will change CurrentQuadToken using op3.  *)
    ELSE
       CurrentQuadToken := QuadToTokenNo (q)
    END ;
@@ -701,7 +701,7 @@ BEGIN
 
    InlineOp           : CodeInline (q) |
    StatementNoteOp    : CodeStatementNote (op3) |
-   CodeOnOp           : |           (* the following make no sense with gcc *)
+   CodeOnOp           : |           (* The following make no sense with gcc.  *)
    CodeOffOp          : |
    ProfileOnOp        : |
    ProfileOffOp       : |
@@ -812,7 +812,7 @@ BEGIN
          LastForIteratorOp  : FoldLastForIterator (quad, p)
 
          ELSE
-            (* ignore quadruple as it is not associated with a constant expression *)
+            (* Ignore quadruple as it is not associated with a constant expression.  *)
          END ;
          quad := GetNextQuad (quad)
       END ;
@@ -969,12 +969,6 @@ BEGIN
                             str)
             END
          END ;
-(*
-         IF obj#NulSym
-         THEN
-            InternalError ('not expecting the object to be non null in the trash list')
-         END ;
-*)
          INC (i)
       UNTIL (str = NulSym) AND (obj = NulSym)
    END ;
@@ -1021,7 +1015,7 @@ END CodeInline ;
 
 
 (*
-   FoldStatementNote -
+   FoldStatementNote - set CurrentQuadToken to tokennno.
 *)
 
 PROCEDURE FoldStatementNote (tokenno: CARDINAL) ;
@@ -1031,7 +1025,8 @@ END FoldStatementNote ;
 
 
 (*
-   CodeStatementNote -
+   CodeStatementNote - set CurrentQuadToken to tokennno and
+                       add a statement note.
 *)
 
 PROCEDURE CodeStatementNote (tokenno: CARDINAL) ;
@@ -1043,7 +1038,7 @@ END CodeStatementNote ;
 
 (*
    FoldRange - attempts to fold the range test.
-               --fixme-- complete this
+               --fixme-- complete this.
 *)
 
 PROCEDURE FoldRange (tokenno: CARDINAL; (* p: WalkAction; *)
@@ -1073,7 +1068,7 @@ END CodeSaveException ;
 
 
 (*
-   CodeRestoreException - op1 := op3(op1)
+   CodeRestoreException - op1 := op3(op1).
 *)
 
 PROCEDURE CodeRestoreException (des, exceptionProcedure: CARDINAL) ;
@@ -1171,7 +1166,7 @@ END CodeRange ;
 
 PROCEDURE CodeError (errorId: CARDINAL) ;
 BEGIN
-   (* would like to test whether this position is in the same basicblock
+   (* We would like to test whether this position is in the same basicblock
       as any known entry point.  If so we could emit an error message.
    *)
    AddStatement (TokenToLocation (CurrentQuadToken),
@@ -1288,7 +1283,6 @@ VAR
 BEGIN
    IF CompilingMainModule OR WholeProgram
    THEN
-      (* SetFileNameAndLineNo (string (FileName), op1) ;  *)
       location := TokenToLocation (CurrentQuadToken) ;
       GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
       BuildStartFunctionCode (location, Mod2Gcc (init),
@@ -1312,11 +1306,6 @@ VAR
 BEGIN
    IF CompilingMainModule OR WholeProgram
    THEN
-      (*
-         SetFileNameAndLineNo(string(FileName), op1) ;
-         EmitLineNote(string(FileName), op1) ;
-      *)
-
       location := TokenToLocation (GetDeclaredMod (moduleSym)) ;
       GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
       finishFunctionDecl (location, Mod2Gcc (init)) ;
@@ -1340,7 +1329,6 @@ VAR
 BEGIN
    IF CompilingMainModule OR WholeProgram
    THEN
-      (* SetFileNameAndLineNo (string (FileName), op1) ;  *)
       location := TokenToLocation (CurrentQuadToken) ;
       GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
       BuildStartFunctionCode (location, Mod2Gcc (fini),
@@ -1366,11 +1354,6 @@ VAR
 BEGIN
    IF CompilingMainModule OR WholeProgram
    THEN
-      (*
-         SetFileNameAndLineNo(string(FileName), op1) ;
-         EmitLineNote(string(FileName), op1) ;
-      *)
-
       tokenpos := GetDeclaredMod (moduleSym) ;
       location := TokenToLocation (tokenpos) ;
       GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
@@ -1419,7 +1402,7 @@ BEGIN
    HighField := GetUnboundedHighOffset (UnboundedType, dim) ;
    IF HighField = NulSym
    THEN
-      (* it might be a dynamic array of static arrays,
+      (* It might be a dynamic array of static arrays,
          so lets see if there is an earlier dimension available.  *)
       accessibleDim := dim ;
       WHILE (HighField = NulSym) AND (accessibleDim > 1) DO
@@ -1476,7 +1459,7 @@ BEGIN
                               GetCardinalOne(location),
                               FALSE),
                      t, FALSE) ;
-      (* remember we must add one as HIGH(a) means we can legally reference a[HIGH(a)].  *)
+      (* Remember we must add one as a[HIGH(a)] is the last accessible element of the array.  *)
       INC(i)
    END ;
    RETURN( BuildConvert(location,
@@ -1574,7 +1557,7 @@ BEGIN
    NewArray := MaybeDebugBuiltinAlloca (location, tokenno, High) ;
    NewArray := MaybeDebugBuiltinMemcpy (location, NewArray, Addr, High) ;
 
-   (* now assign  param.Addr := ADR(NewArray) *)
+   (* Now assign  param.Addr := ADR(NewArray).  *)
 
    BuildAssignmentStatement (location,
                              BuildComponentRef (location,
@@ -1715,7 +1698,7 @@ VAR
 BEGIN
    location := TokenToLocation(tokenno) ;
    n := NoOfItemsInList(mustCheck) ;
-   (* want a sequence of if then elsif statements *)
+   (* We want a sequence of if then elsif statements.  *)
    IF n>0
    THEN
       INC(UnboundedLabelNo) ;
@@ -1813,8 +1796,8 @@ BEGIN
          paramTrashed := GetItemFromList(trashed, j) ;
          IF IsAssignmentCompatible(GetLowestType(param), GetLowestType(paramTrashed))
          THEN
-            (* we must check whether this unbounded parameter has the same
-               address as the trashed parameter *)
+            (* We must check whether this unbounded parameter has the same
+               address as the trashed parameter.  *)
             IF VerboseUnbounded
             THEN
                n1 := GetSymName(paramTrashed) ;
@@ -1832,7 +1815,7 @@ BEGIN
          END ;
          INC(j)
       END ;
-      (* now we build a sequence of if then { elsif then } end to check addresses *)
+      (* Now we build a sequence of if then { elsif then } end to check addresses.  *)
       BuildCascadedIfThenElsif (tokenno, mustCheck, proc, param) ;
       KillList(mustCheck)
    END
@@ -1851,7 +1834,7 @@ BEGIN
    END ;
    IF IsVar(sym)
    THEN
-      (* unbounded arrays will appear as vars *)
+      (* Unbounded arrays will appear as vars.  *)
       RETURN GetVarWritten(sym)
    END ;
    InternalError ('expecting IsVar to return TRUE')
@@ -1912,7 +1895,7 @@ BEGIN
       END ;
       INC(i)
    END ;
-   (* now see whether we need to copy any unbounded array parameters *)
+   (* Now see whether we need to copy any unbounded array parameters.  *)
    i := 1 ;
    p := NoOfParamAny (proc) ;
    WHILE i<=p DO
@@ -1939,7 +1922,7 @@ BEGIN
    THEN
       (* PrintSym (sym) ; *)
       type := SkipType (GetType (sym)) ;
-      (* the type SYSTEM.ADDRESS is a pointer type.  *)
+      (* The type SYSTEM.ADDRESS is a pointer type.  *)
       IF IsPointer (type)
       THEN
          BuildAssignmentStatement (location,
@@ -1968,7 +1951,7 @@ BEGIN
       i := 1 ;
       IF IsProcedure (scope)
       THEN
-         (* the parameters are stored as local variables.  *)
+         (* The parameters are stored as local variables.  *)
          INC (i, NoOfParamAny (scope))
       END ;
       WHILE i <= n DO
@@ -1988,7 +1971,7 @@ PROCEDURE CodeNewLocalVar (tokenno, CurrentProcedure: CARDINAL) ;
 VAR
    begin, end: CARDINAL ;
 BEGIN
-   (* callee saves non var unbounded parameter contents *)
+   (* Callee saves non var unbounded parameter contents.  *)
    SaveNonVarUnboundedParameters (tokenno, CurrentProcedure) ;
    BuildPushFunctionContext ;
    GetProcedureBeginEnd (CurrentProcedure, begin, end) ;
@@ -2032,7 +2015,7 @@ END CodeKillLocalVar ;
 
 
 (*
-   CodeProcedureScope -
+   CodeProcedureScope - start a procedure scope for CurrentProcedure.
 *)
 
 PROCEDURE CodeProcedureScope (CurrentProcedure: CARDINAL) ;
@@ -2072,7 +2055,7 @@ BEGIN
                 exprpos, nonepos, procpos) ;
    combinedpos := MakeVirtualTok (returnpos, returnpos, exprpos) ;
    location := TokenToLocation (combinedpos) ;
-   TryDeclareConstant (exprpos, expr) ;  (* checks to see whether it is a constant and declares it *)
+   TryDeclareConstant (exprpos, expr) ;  (* Checks to see whether it is a constant and declares it.  *)
    TryDeclareConstructor (exprpos, expr) ;
    IF IsConstString (expr) AND (SkipTypeAndSubrange (GetType (procedure)) # Char)
    THEN
@@ -2119,7 +2102,7 @@ BEGIN
       location := TokenToLocation (tokenno) ;
       AddStatement (location, callTree)
    ELSE
-      (* leave tree alone - as it will be picked up when processing FunctValue *)
+      (* Leave tree alone - as it will be picked up when processing FunctValue.  *)
    END
 END CodeCall ;
 
@@ -2199,7 +2182,7 @@ BEGIN
       ReturnType := tree(Mod2Gcc(GetType(proc)))
    END ;
 
-   (* now we dereference the lvalue if necessary *)
+   (* Now we dereference the lvalue if necessary.  *)
 
    IF GetMode(ProcVar)=LeftValue
    THEN
@@ -2239,7 +2222,7 @@ BEGIN
       THEN
          n := GetSymName(str) ;
          WriteFormat1("type incompatibility, attempting to use a string ('%a') when a CHAR is expected", n) ;
-         s := InitString('') ;  (* do something safe *)
+         s := InitString('') ;  (* Do something safe.  *)
          t := BuildCharConstant(location, s)
       END ;
       s := InitStringCharStar(KeyToCharStar(GetString(str))) ;
@@ -2322,54 +2305,54 @@ END IsConstant ;
 
 
 (*
-   CheckConvertCoerceParameter -
+   CheckConvertCoerceParameter - ensure that actual parameter is the same as the nth of callee.
 *)
 
-PROCEDURE CheckConvertCoerceParameter (tokenno: CARDINAL; op1, op2, op3: CARDINAL) : tree ;
+PROCEDURE CheckConvertCoerceParameter (tokenno: CARDINAL; nth, callee, actual: CARDINAL) : tree ;
 VAR
    OperandType,
    ParamType  : CARDINAL ;
    location   : location_t ;
 BEGIN
    location := TokenToLocation(tokenno) ;
-   IF GetNthParamAny (op2, op1)=NulSym
+   IF GetNthParamAny (callee, nth)=NulSym
    THEN
       (* We reach here if the argument is being passed to a C vararg function.  *)
-      RETURN( Mod2Gcc(op3) )
+      RETURN( Mod2Gcc(actual) )
    ELSE
-      OperandType := SkipType(GetType(op3)) ;
-      ParamType := SkipType(GetType(GetNthParamAny (op2, op1)))
+      OperandType := SkipType(GetType(actual)) ;
+      ParamType := SkipType(GetType(GetNthParamAny (callee, nth)))
    END ;
    IF IsProcType(ParamType)
    THEN
-      IF IsProcedure(op3) OR IsConstProcedure(op3) OR (OperandType = ParamType)
+      IF IsProcedure(actual) OR IsConstProcedure(actual) OR (OperandType = ParamType)
       THEN
-         RETURN( Mod2Gcc(op3) )
+         RETURN( Mod2Gcc(actual) )
       ELSE
-         RETURN( BuildConvert(location, Mod2Gcc(ParamType), Mod2Gcc(op3), FALSE) )
+         RETURN( BuildConvert(location, Mod2Gcc(ParamType), Mod2Gcc(actual), FALSE) )
       END
    ELSIF IsRealType(OperandType) AND IsRealType(ParamType) AND
       (ParamType#OperandType)
    THEN
-      (* SHORTREAL, LONGREAL and REAL conversion during parameter passing *)
+      (* SHORTREAL, LONGREAL and REAL conversion during parameter passing.  *)
       RETURN( BuildConvert(location, Mod2Gcc(ParamType),
-                           Mod2Gcc(op3), FALSE) )
-   ELSIF (OperandType#NulSym) AND IsSet(OperandType) AND IsConst(op3)
+                           Mod2Gcc(actual), FALSE) )
+   ELSIF (OperandType#NulSym) AND IsSet(OperandType) AND IsConst(actual)
    THEN
       RETURN( DeclareKnownConstant(location,
                                    Mod2Gcc(ParamType),
-                                   Mod2Gcc(op3)) )
-   ELSIF IsConst(op3) AND
+                                   Mod2Gcc(actual)) )
+   ELSIF IsConst(actual) AND
          (IsOrdinalType(ParamType) OR IsSystemType(ParamType))
    THEN
       RETURN( BuildConvert(location, Mod2Gcc(ParamType),
-                           StringToChar(Mod2Gcc(op3), ParamType, op3),
+                           StringToChar(Mod2Gcc(actual), ParamType, actual),
                            FALSE) )
-   ELSIF IsConstString(op3) OR ((OperandType#NulSym) AND IsCoerceableParameter(OperandType) AND (OperandType#ParamType))
+   ELSIF IsConstString(actual) OR ((OperandType#NulSym) AND IsCoerceableParameter(OperandType) AND (OperandType#ParamType))
    THEN
-      RETURN( BuildConvert(location, Mod2Gcc(ParamType), Mod2Gcc(op3), FALSE) )
+      RETURN( BuildConvert(location, Mod2Gcc(ParamType), Mod2Gcc(actual), FALSE) )
    ELSE
-      RETURN( Mod2Gcc(op3) )
+      RETURN( Mod2Gcc(actual) )
    END
 END CheckConvertCoerceParameter ;
 
@@ -2603,7 +2586,7 @@ BEGIN
       END ;
       IF (op=CallOp) AND (NOT IsProcedure(op3))
       THEN
-         (* cannot fold an indirect procedure function call *)
+         (* Cannot fold an indirect procedure function call.  *)
          resolved := FALSE
       END ;
       n := GetNextQuad(n) ;
@@ -2656,7 +2639,7 @@ PROCEDURE FoldBuiltinFunction (tokenno: CARDINAL; p: WalkAction;
 BEGIN
    IF op1=0
    THEN
-      (* must be a function as op1 is the return parameter *)
+      (* Must be a function as op1 is the return parameter.  *)
       IF op3=MakeAdr
       THEN
          FoldMakeAdr (tokenno, p, q, op1, op2, op3)
@@ -2881,7 +2864,7 @@ BEGIN
       END ;
       location := TokenToLocation (tokenno) ;
       type := SkipType (GetType (op3)) ;
-      DeclareConstant (tokenno, op3) ;  (* we might be asked to find the address of a constant string *)
+      DeclareConstant (tokenno, op3) ;  (* We might be asked to find the address of a constant string.  *)
       DeclareConstructor (tokenno, quad, op3) ;
       IF (IsConst (op3) AND (type=Char)) OR IsConstString (op3)
       THEN
@@ -3130,8 +3113,8 @@ END PerformFoldBecomes ;
 
 
 VAR
-   tryBlock: tree ;    (* this must be placed into gccgm2 and it must follow the
-                          current function scope - ie it needs work with nested procedures *)
+   tryBlock: tree ;    (* This must be placed into gccgm2 and it must follow the
+                          current function scope - ie it needs work with nested procedures.  *)
    handlerBlock: tree ;
 
 
@@ -3162,7 +3145,7 @@ BEGIN
    THEN
       AddStatement (location, BuildThrow (location, tree (NIL)))
    ELSE
-      DeclareConstant (CurrentQuadToken, value) ;  (* checks to see whether it is a constant and declares it *)
+      DeclareConstant (CurrentQuadToken, value) ;  (* Checks to see whether it is a constant and declares it.  *)
       AddStatement (location, BuildThrow (location, BuildConvert (location,
                                                                   GetIntegerType (),
                                                                   Mod2Gcc (value), FALSE)))
@@ -3245,19 +3228,11 @@ BEGIN
    IF IsConstSet(op3) OR ((SkipType(GetType(op3))#NulSym) AND
                           IsSet(SkipType(GetType(op3))))
    THEN
-      (* we have not checked set compatibility in
-         M2Quads.mod:BuildAssignmentTree so we do it here.
-      *)
-(*
-      IF (Iso AND (SkipType(GetType(op1))#SkipType(GetType(op3)))) OR
-         (Pim AND ((SkipType(GetType(op1))#SkipType(GetType(op3))) AND
-                   (SkipType(GetType(op1))#Bitset) AND
-                   (SkipType(GetType(op3))#Bitset)))
-*)
       IF SkipType(GetTypeMode(op1))#SkipType(GetTypeMode(op3))
       THEN
          DescribeTypeError (tokenno, op1, op3) ;
-         RETURN( Mod2Gcc (op1) ) (* we might crash if we execute the BuildAssignmentTree with op3 *)
+         (* Assigning an errant op3 might ICE, therefore it is safer to return op1.  *)         
+         RETURN( Mod2Gcc (op1) )
       END
    END ;
    location := TokenToLocation (tokenno) ;
@@ -3269,9 +3244,6 @@ BEGIN
       IF IsProcedure (op3)
       THEN
          RETURN t
-	 (*
-         t := BuildConvert(location, Mod2Gcc(GetType(op1)), BuildAddr(location, Mod2Gcc(op3), FALSE), TRUE)
-         *)
       ELSIF (NOT IsConstString (op3)) AND (NOT IsConstSet (op3)) AND
          (SkipType (GetType (op3)) # SkipType (GetType (op1)))
       THEN

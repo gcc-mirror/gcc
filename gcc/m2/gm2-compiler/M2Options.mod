@@ -2147,5 +2147,5 @@ BEGIN
    M2Dump                            := NIL ;
    M2DumpFilter                      := NIL ;
    EnableForward                     := TRUE ;
-   OffTBits                          := 64 ;  (* Default to 64bit OFF_T.  *)
+   OffTBits                          := 0 ;  (* Default to CSSIZE_T.  *)
 END M2Options.

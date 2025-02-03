@@ -429,7 +429,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       LAMBDA_CAPTURE_EXPLICIT_P (in a TREE_LIST in LAMBDA_EXPR_CAPTURE_LIST)
       PARENTHESIZED_LIST_P (in the TREE_LIST for a parameter-declaration-list)
       CONSTRUCTOR_IS_DIRECT_INIT (in CONSTRUCTOR)
-      LAMBDA_EXPR_CAPTURES_THIS_P (in LAMBDA_EXPR)
       DECLTYPE_FOR_LAMBDA_CAPTURE (in DECLTYPE_TYPE)
       VEC_INIT_EXPR_IS_CONSTEXPR (in VEC_INIT_EXPR)
       DECL_OVERRIDE_P (in FUNCTION_DECL)
@@ -472,6 +471,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (in BASELINK)
       BIND_EXPR_VEC_DTOR (in BIND_EXPR)
       ATOMIC_CONSTR_EXPR_FROM_CONCEPT_P (in ATOMIC_CONSTR)
+      STATIC_INIT_DECOMP_BASE_P (in the TREE_LIST for {static,tls}_aggregates)
    2: IDENTIFIER_KIND_BIT_2 (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -491,6 +491,8 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       IMPLICIT_CONV_EXPR_BRACED_INIT (in IMPLICIT_CONV_EXPR)
       PACK_EXPANSION_AUTO_P (in *_PACK_EXPANSION)
       contract_semantic (in ASSERTION_, PRECONDITION_, POSTCONDITION_STMT)
+      STATIC_INIT_DECOMP_NONBASE_P (in the TREE_LIST
+				    for {static,tls}_aggregates)
    3: IMPLICIT_RVALUE_P (in NON_LVALUE_EXPR or STATIC_CAST_EXPR)
       ICS_BAD_FLAG (in _CONV)
       FN_TRY_BLOCK_P (in TRY_BLOCK)
@@ -1541,10 +1543,6 @@ enum cp_lambda_default_capture_mode_type {
    capture proxy for that node.  */
 #define LAMBDA_EXPR_THIS_CAPTURE(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->this_capture)
-
-/* Predicate tracking whether `this' is in the effective capture set.  */
-#define LAMBDA_EXPR_CAPTURES_THIS_P(NODE) \
-  LAMBDA_EXPR_THIS_CAPTURE(NODE)
 
 /* True iff uses of a const variable capture were optimized away.  */
 #define LAMBDA_EXPR_CAPTURE_OPTIMIZED(NODE) \
@@ -3664,7 +3662,8 @@ struct GTY(()) lang_decl {
    the DECL_FRIEND_CONTEXT for `f' will be `S'.  */
 #define DECL_FRIEND_CONTEXT(NODE)				\
   ((DECL_DECLARES_FUNCTION_P (NODE) && !DECL_VIRTUAL_P (NODE)	\
-    && !DECL_CONSTRUCTOR_P (NODE))				\
+    && !DECL_CONSTRUCTOR_P (NODE)				\
+    && (cxx_dialect < cxx23 || !deduction_guide_p (NODE)))	\
    ? LANG_DECL_FN_CHECK (NODE)->context				\
    : NULL_TREE)
 
@@ -5707,7 +5706,8 @@ enum cp_lvalue_kind_flags {
   clk_class = 4,    /* A prvalue of class or array type.  */
   clk_bitfield = 8, /* An lvalue for a bit-field.  */
   clk_packed = 16,  /* An lvalue for a packed field.  */
-  clk_implicit_rval = 1<<5 /* An lvalue being treated as an xvalue.  */
+  clk_implicit_rval = 1<<5, /* An lvalue being treated as an xvalue.  */
+  clk_mergeable = 1<<6
 };
 
 /* This type is used for parameters and variables which hold
@@ -6078,6 +6078,21 @@ extern bool defer_mangling_aliases;
 /* True if noexcept is part of the type (i.e. in C++17).  */
 
 extern bool flag_noexcept_type;
+
+/* True if this TREE_LIST in {static,tls}_aggregates is a for dynamic
+   initialization of namespace scope structured binding base or related
+   extended ref init temps.  Temporaries from the initialization of
+   STATIC_INIT_DECOMP_BASE_P dynamic initializers should be destroyed only
+   after the last STATIC_INIT_DECOMP_NONBASE_P dynamic initializer following
+   it.  */
+#define STATIC_INIT_DECOMP_BASE_P(NODE) \
+  TREE_LANG_FLAG_1 (TREE_LIST_CHECK (NODE))
+
+/* True if this TREE_LIST in {static,tls}_aggregates is a for dynamic
+   initialization of namespace scope structured binding non-base
+   variable using get.  */
+#define STATIC_INIT_DECOMP_NONBASE_P(NODE) \
+  TREE_LANG_FLAG_2 (TREE_LIST_CHECK (NODE))
 
 /* A list of namespace-scope objects which have constructors or
    destructors which reside in the global scope.  The decl is stored
@@ -8206,6 +8221,7 @@ extern bool glvalue_p				(const_tree);
 extern bool obvalue_p				(const_tree);
 extern bool xvalue_p	                        (const_tree);
 extern bool bitfield_p				(const_tree);
+extern bool non_mergeable_glvalue_p		(const_tree);
 extern tree cp_stabilize_reference		(tree);
 extern bool builtin_valid_in_constant_expr_p    (const_tree);
 extern tree build_min				(enum tree_code, tree, ...);

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-fre1" } */
+/* { dg-additional-options "--param=riscv-two-source-permutes" { target riscv*-*-* } } */
 
 typedef int veci __attribute__ ((vector_size (4 * sizeof (int))));
 typedef unsigned int vecu __attribute__ ((vector_size (4 * sizeof (unsigned int))));

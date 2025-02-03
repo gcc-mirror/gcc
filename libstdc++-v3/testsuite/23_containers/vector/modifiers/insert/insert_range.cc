@@ -39,16 +39,22 @@ do_test()
   VERIFY( eq(v, a) );
   v.clear();
   v.shrink_to_fit();
-  v.insert_range(v.begin(), Range(a, a+3));
-  v.insert_range(v.end(), Range(a+6, a+9));
-  v.insert_range(v.begin()+3, Range(a+3, a+6));
+  auto it = v.insert_range(v.begin(), Range(a, a+3));
+  VERIFY( it == v.begin() );
+  it = v.insert_range(v.end(), Range(a+6, a+9));
+  VERIFY( it == v.begin()+3 );
+  it = v.insert_range(v.begin()+3, Range(a+3, a+6));
+  VERIFY( it == v.begin()+3 );
   VERIFY( eq(v, a) );
   v.resize(3);
-  v.insert_range(v.begin()+1, Range(a+4, a+9));
-  v.insert_range(v.begin()+1, Range(a+1, a+4));
+  it = v.insert_range(v.begin()+1, Range(a+4, a+9));
+  VERIFY( it == v.begin()+1 );
+  it = v.insert_range(v.begin()+1, Range(a+1, a+4));
+  VERIFY( it == v.begin()+1 );
   v.resize(9);
   VERIFY( eq(v, a) );
-  v.insert_range(v.begin() + 6, Range(a, a));
+  it = v.insert_range(v.begin() + 6, Range(a, a));
+  VERIFY( it == v.begin() + 6 );
   VERIFY( eq(v, a) );
 }
 

@@ -1484,6 +1484,11 @@ for (i = 0; i < n_opts; i++) {
 	if (name == "")
 		continue;
 
+	# We do not want to compare warning-related options, since they
+	# might have been modified by a #pragma GCC diagnostic.
+	if (flag_set_p("Warning", flags[i]))
+		continue;
+
 	if (name in checked_options)
 		continue;
 	checked_options[name]++

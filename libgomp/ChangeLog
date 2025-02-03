@@ -1,3 +1,33 @@
+2025-01-30  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* libgomp.texi (OpenMP 5.0): Mark metadirective and declare variant
+	as implemented.
+	(OpenMP 5.1): Mark target_device as supported.
+	Add changed interaction between declare target and OpenMP context
+	and dynamic selector support.
+	(OpenMP 5.2): Mark otherwise clause as supported, note that
+	default is also still accepted.
+
+2025-01-30  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Paul-Antoine Arras  <pa@codesourcery.com>
+
+	PR middle-end/112779
+	PR middle-end/113904
+	* testsuite/libgomp.fortran/metadirective-1.f90: New.
+	* testsuite/libgomp.fortran/metadirective-2.f90: New.
+	* testsuite/libgomp.fortran/metadirective-3.f90: New.
+	* testsuite/libgomp.fortran/metadirective-4.f90: New.
+	* testsuite/libgomp.fortran/metadirective-5.f90: New.
+	* testsuite/libgomp.fortran/metadirective-6.f90: New.
+
+2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (Impl. Status): Update for accumpulated changes
+	related to 'dispatch' and interop.
+
 2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
 	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>

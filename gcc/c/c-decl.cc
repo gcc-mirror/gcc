@@ -7058,7 +7058,7 @@ grokdeclarator (const struct c_declarator *declarator,
       && TYPE_QUALS (element_type))
     {
       orig_qual_type = type;
-      type = TYPE_MAIN_VARIANT (type);
+      type = c_build_qualified_type (type, TYPE_UNQUALIFIED);
     }
   type_quals = ((constp ? TYPE_QUAL_CONST : 0)
 		| (restrictp ? TYPE_QUAL_RESTRICT : 0)

@@ -34,6 +34,8 @@
    ATTRS:   Function attributes like "attr_const" for the `const' attribute
             or "NULL_TREE" for no attribute.  */
 
+#define AVR_FIRST_C_ONLY_BUILTIN_ID AVR_BUILTIN_FLASH_SEGMENT
+
 /* Mapped to respective instruction.  */
 
 DEF_BUILTIN (NOP,  -1, void_ftype_void, nothing, NULL, NULL_TREE)
@@ -56,7 +58,18 @@ DEF_BUILTIN (DELAY_CYCLES, -1, void_ftype_uintSI, nothing, NULL, NULL_TREE)
 DEF_BUILTIN (NOPS,         -1, void_ftype_uintSI, nothing, NULL, NULL_TREE)
 DEF_BUILTIN (MASK1,       2, uintQI_ftype_uintQI_uintQI, gen_mask1, NULL, attr_const)
 DEF_BUILTIN (INSERT_BITS, 3, uintQI_ftype_uintSI_uintQI_uintQI, insert_bits, NULL, attr_const)
+
+/* All following built-ins are C only, see avr.cc::avr_builtin_C_only_p()
+ * since they are using named address-spaces or fixed-point types, none
+ * of which are supported for C++.  */
+
 DEF_BUILTIN (FLASH_SEGMENT, 1, intQI_ftype_const_memx_ptr, flash_segment, NULL, attr_const)
+
+/* strlen for ASes so that __builtin_constant_p can be used wthout raising
+   a diagnostic from -Waddr-space-convert in some AVR-LibC headers.  */
+DEF_BUILTIN (STRLEN_FLASH,  1, strlen_flash_node,  nothing, "__strlen_P", attr_const) // AVR-LibC
+DEF_BUILTIN (STRLEN_FLASHX, 1, strlen_flashx_node, nothing, "strlen_PF",  attr_const) // AVR-LibC
+DEF_BUILTIN (STRLEN_MEMX,   1, strlen_memx_node,   nothing, "__strlen_memx", NULL_TREE)
 
 /* ISO/IEC TR 18037 "Embedded C"
    The following builtins are undocumented and used by stdfix.h.  */

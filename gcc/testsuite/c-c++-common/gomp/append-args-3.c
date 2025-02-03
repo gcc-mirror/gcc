@@ -52,9 +52,9 @@ void varvar1(int, int, omp_interop_t, ...);
 #pragma omp declare variant(varvar1) match(construct={dispatch}) append_args(interop(target,targetsync))
 void varbase1(int x, int y, ...);
 
-void varvar2(int, int *, omp_interop_t, ...);
+void varvar2(int, int *, omp_interop_t, ...) { }
 #pragma omp declare variant(varvar2) match(construct={dispatch}) append_args(interop(target,targetsync)) adjust_args(need_device_ptr: y)
-void varbase2(int x, int *y, ...);
+void varbase2(int x, int *y, ...) { }
 
 
 void bar()

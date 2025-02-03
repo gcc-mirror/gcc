@@ -2755,6 +2755,24 @@ ENDF __fload_4
 #endif /* L_fload_{1|2|3|4} */
 #endif /* if !defined (__AVR_TINY__) */
 
+
+#if !defined (__AVR_TINY__)
+#if defined (L_strlen_memx)
+DEFUN __strlen_memx
+#ifdef __AVR_ERRATA_SKIP_JMP_CALL__
+    tst     r24
+    brmi 1f
+#else
+    sbrs    r24, 7
+#endif
+    XJMP    strlen_PF           ; AVR-LibC
+1:  wmov    24, 22
+    XJMP    strlen              ; AVR-LibC
+ENDF __strlen_memx
+#endif /* L_strlen_memx */
+#endif /* if !defined (__AVR_TINY__) */
+
+
 #if !defined (__AVR_TINY__)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; memcopy from Address Space __memx to RAM

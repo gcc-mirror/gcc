@@ -192,9 +192,8 @@ The OpenMP 4.5 specification is fully supported.
 @item Array shaping @tab N @tab
 @item Array sections with non-unit strides in C and C++ @tab N @tab
 @item Iterators @tab Y @tab
-@item @code{metadirective} directive @tab N @tab
-@item @code{declare variant} directive
-      @tab P @tab @emph{simd} traits not handled correctly
+@item @code{metadirective} directive @tab Y @tab
+@item @code{declare variant} directive @tab Y @tab
 @item @var{target-offload-var} ICV and @code{OMP_TARGET_OFFLOAD}
       env variable @tab Y @tab
 @item Nested-parallel changes to @var{max-active-levels-var} ICV @tab Y @tab
@@ -289,12 +288,13 @@ The OpenMP 4.5 specification is fully supported.
 @headitem Description @tab Status @tab Comments
 @item OpenMP directive as C++ attribute specifiers @tab Y @tab
 @item @code{omp_all_memory} reserved locator @tab Y @tab
-@item @emph{target_device trait} in OpenMP Context @tab N @tab
-@item @code{target_device} selector set in context selectors @tab N @tab
+@item @emph{target_device trait} in OpenMP Context @tab Y
+@item @code{target_device} selector set in context selectors @tab Y @tab
 @item C/C++'s @code{declare variant} directive: elision support of
       preprocessed code @tab N @tab
 @item @code{declare variant}: new clauses @code{adjust_args} and
-      @code{append_args} @tab P @tab Only @code{adjust_args}
+      @code{append_args} @tab P @tab For @code{append_args}, all interop objects
+      must be specified in the @code{interop} clause of @code{dispatch}
 @item @code{dispatch} construct @tab Y @tab
 @item device-specific ICV settings with environment variables @tab Y @tab
 @item @code{assume} and @code{assumes} directives @tab Y @tab
@@ -315,7 +315,7 @@ The OpenMP 4.5 specification is fully supported.
 @item Indirect calls to the device version of a procedure or function in
       @code{target} regions @tab Y @tab
 @item @code{interop} directive @tab N @tab
-@item @code{omp_interop_t} object support in runtime routines @tab N @tab
+@item @code{omp_interop_t} object support in runtime routines @tab Y @tab
 @item @code{nowait} clause in @code{taskwait} directive @tab Y @tab
 @item Extensions to the @code{atomic} directive @tab Y @tab
 @item @code{seq_cst} clause on a @code{flush} construct @tab Y @tab
@@ -366,6 +366,13 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item @code{device_type(nohost)}/@code{device_type(host)} for variables @tab N @tab
 @item @code{present} modifier to the @code{map}, @code{to} and @code{from}
       clauses @tab Y @tab
+@item Changed interaction between @code{declare target} and OpenMP context
+      @tab Y @tab
+@item Dynamic selector support in @code{metadirective} @tab Y @tab
+@item Dynamic selector support in @code{declare variant} @tab P
+      @tab Fortran rejects non-constant expressions in dynamic selectors;
+      C/C++ reject expressions using argument variables.
+      (@uref{https://gcc.gnu.org/PR113904,PR113904})
 @end multitable
 
 
@@ -407,14 +414,16 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item New @code{allocators} directive for Fortran @tab Y @tab
 @item Deprecation of @code{allocate} directive for Fortran
       allocatables/pointers @tab N @tab
-@item Optional paired @code{end} directive with @code{dispatch} @tab N @tab
+@item Optional paired @code{end} directive with @code{dispatch} @tab Y @tab
 @item New @code{memspace} and @code{traits} modifiers for @code{uses_allocators}
       @tab N @tab
 @item Deprecation of traits array following the allocator_handle expression in
       @code{uses_allocators} @tab N @tab
 @item New @code{otherwise} clause as alias for @code{default} on metadirectives
-      @tab N @tab
-@item Deprecation of @code{default} clause on metadirectives @tab N @tab
+      @tab Y @tab
+@item Deprecation of @code{default} clause on metadirectives @tab N
+      @tab Both @code{otherwise} and @code{default} are accepted
+      without diagnostics.
 @item Deprecation of delimited form of @code{declare target} @tab N @tab
 @item Reproducible semantics changed for @code{order(concurrent)} @tab N @tab
 @item @code{allocate} and @code{firstprivate} clauses on @code{scope}
@@ -440,7 +449,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       @code{OMP_TARGET_OFFLOAD=mandatory} @tab Y @tab
 @item @code{all} as @emph{implicit-behavior} for @code{defaultmap} @tab Y @tab
 @item @emph{interop_types} in any position of the modifier list for the @code{init} clause
-      of the @code{interop} construct @tab N @tab
+      of the @code{interop} construct @tab Y @tab
 @item Invoke virtual member functions of C++ objects created on the host device
       on other devices @tab N @tab
 @item @code{mapper} as map-type modifier in @code{declare mapper} @tab N @tab
@@ -483,7 +492,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       @tab N @tab
 @item @emph{directive-name-modifier} accepted in all clauses @tab N @tab
 @item Extension of @code{interop} operation of @code{append_args}, allowing
-      all modifiers of the @code{init} clause @tab N @tab
+      all modifiers of the @code{init} clause @tab Y @tab
 @item New argument-free version of @code{depobj} with repeatable clauses and
       the @code{init} clause @tab N @tab
 @item Undeprecate omitting the argument to the @code{depend} clause of
@@ -575,7 +584,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item @code{target_data} as composite construct @tab N @tab
 @item @code{nowait} clause with reverse-offload @code{target} directives
       @tab N @tab
-@item Extended @emph{prefer-type} modifier to  @code{init} clause @tab N @tab
+@item Extended @emph{prefer-type} modifier to @code{init} clause @tab Y @tab
 @item Boolean argument to @code{nowait} and @code{nogroup} may be non constant
       @tab N @tab
 @item @code{memscope} clause to @code{atomic} and @code{flush} @tab N @tab
@@ -596,7 +605,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       @code{omp_set_device_teams_thread_limit} routines @tab N @tab
 @item @code{omp_target_memset} and @code{omp_target_memset_async} routines
       @tab N @tab
-@item Fortran version of the interop runtime routines @tab N @tab
+@item Fortran version of the interop runtime routines @tab Y @tab
 @item Routines for obtaining memory spaces/allocators for shared/device memory
       @tab N @tab
 @item @code{omp_get_memspace_num_resources} routine @tab N @tab

@@ -538,9 +538,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	insert(const_iterator __position, _Arg&& __x)
 	{ return emplace_hint(__position, std::forward<_Arg>(__x)); }
 
-      template<__has_input_iter_cat _InputIterator>
+    private:
+      template<typename _Iter, typename _Sent>
 	void
-	insert(_InputIterator __first, _InputIterator __last)
+	_M_insert(_Iter __first, _Sent __last)
 	{
 	  // FIXME: This implementation fails its complexity requirements.
 	  // We can't idiomatically implement an efficient version (as in the
@@ -574,6 +575,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	}
 
+    public:
+      template<__has_input_iter_cat _InputIterator>
+	void
+	insert(_InputIterator __first, _InputIterator __last)
+	{ _M_insert(std::move(__first), std::move(__last)); }
+
       template<__has_input_iter_cat _InputIterator>
 	void
 	insert(__sorted_t, _InputIterator __first, _InputIterator __last)
@@ -585,7 +592,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<__detail::__container_compatible_range<value_type> _Rg>
 	void
 	insert_range(_Rg&& __rg)
-	{ insert(ranges::begin(__rg), ranges::end(__rg)); }
+	{ _M_insert(ranges::begin(__rg), ranges::end(__rg)); }
 
       void
       insert(initializer_list<value_type> __il)
@@ -1181,7 +1188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Impl::emplace;
       using _Impl::emplace_hint;
       using _Impl::insert;
-      // using _Impl::insert_range;
+      using _Impl::insert_range;
       using _Impl::extract;
       using _Impl::replace;
       using _Impl::erase;
@@ -1460,7 +1467,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Impl::emplace;
       using _Impl::emplace_hint;
       using _Impl::insert;
-      // using _Impl::insert_range;
+      using _Impl::insert_range;
       using _Impl::extract;
       using _Impl::replace;
       using _Impl::erase;

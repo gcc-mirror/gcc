@@ -38,11 +38,11 @@ real function bar (y, e, f)
   v = d
   !$omp atomic fail(relaxed), write	! { dg-error "FAIL clause is incompatible with READ or WRITE" }
   d = v
-  !$omp atomic fail(relaxed) update	! { dg-error "FAIL clause requiries either the COMPARE clause or using the intrinsic MIN/MAX procedure" }
+  !$omp atomic fail(relaxed) update	! { dg-error "FAIL clause requires either the COMPARE clause or using the intrinsic MIN/MAX procedure" }
   d = d + 3.0
-  !$omp atomic fail(relaxed)	! { dg-error "FAIL clause requiries either the COMPARE clause or using the intrinsic MIN/MAX procedure" }
+  !$omp atomic fail(relaxed)	! { dg-error "FAIL clause requires either the COMPARE clause or using the intrinsic MIN/MAX procedure" }
   d = d + 3.0
-  !$omp atomic capture fail(relaxed)	! { dg-error "FAIL clause requiries either the COMPARE clause or using the intrinsic MIN/MAX procedure" }
+  !$omp atomic capture fail(relaxed)	! { dg-error "FAIL clause requires either the COMPARE clause or using the intrinsic MIN/MAX procedure" }
   v = d; d = d + 3.0
   !$omp atomic read weak		! { dg-error "WEAK clause requires COMPARE clause" }
   v = d

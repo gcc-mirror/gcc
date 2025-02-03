@@ -573,11 +573,13 @@ pair_fusion_bb_info::track_access (insn_info *insn, bool load_p, rtx mem)
 // If IGNORE_INSN is non-NULL, we should further ignore any hazards arising
 // from that insn.
 //
-// N.B. we ignore any defs/uses of memory here as we deal with that separately,
-// making use of alias disambiguation.
+// IS_LOAD_STORE is true if INSN is one of the loads or stores in the
+// candidate pair.  We ignore any defs/uses of memory in such instructions
+// as we deal with that separately, making use of alias disambiguation.
 static insn_info *
 latest_hazard_before (insn_info *insn, rtx *ignore,
-		      insn_info *ignore_insn = nullptr)
+		      insn_info *ignore_insn = nullptr,
+		      bool is_load_store = true)
 {
   insn_info *result = nullptr;
 
@@ -586,6 +588,10 @@ latest_hazard_before (insn_info *insn, rtx *ignore,
   // which will prevent moving the insn up.
   if (cfun->can_throw_non_call_exceptions
       && find_reg_note (insn->rtl (), REG_EH_REGION, NULL_RTX))
+    return insn->prev_nondebug_insn ();
+
+  if (!is_load_store
+      && accesses_include_memory (insn->defs ()))
     return insn->prev_nondebug_insn ();
 
   // Return true if we registered the hazard.
@@ -1238,7 +1244,7 @@ pair_fusion::find_trailing_add (insn_info *insns[2],
 		 insns[0]->uid (), insns[1]->uid ());
     };
 
-  insn_info *hazard = latest_hazard_before (cand, nullptr, insns[1]);
+  insn_info *hazard = latest_hazard_before (cand, nullptr, insns[1], false);
   if (!hazard || *hazard <= *pair_dst)
     {
       if (dump_file)
@@ -1633,7 +1639,7 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
   insn_info *insns[2] = { first, second };
 
   auto_vec<insn_change *> changes;
-  auto_vec<int, 2> tombstone_uids (2);
+  auto_vec<int, 3> tombstone_uids;
 
   rtx pats[2] = {
     PATTERN (first->rtl ()),
@@ -1722,6 +1728,24 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
 	continue;
 
       input_uses[i] = remove_note_accesses (attempt, input_uses[i]);
+    }
+
+  // Get the uses that the pair instruction would have, and punt if
+  // the unpaired instructions use different definitions of the same
+  // register.  That would normally be caught as a side-effect of
+  // hazard detection below, but this check also deals with cases
+  // in which one use is undefined and the other isn't.
+  auto new_uses = merge_access_arrays (attempt,
+				       drop_memory_access (input_uses[0]),
+				       drop_memory_access (input_uses[1]));
+  if (!new_uses.is_valid ())
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "  load pair: i%d and i%d use different definiitions of"
+		 " the same register\n",
+		 insns[0]->uid (), insns[1]->uid ());
+      return false;
     }
 
   // Edge case: if the first insn is a writeback load and the
@@ -1824,6 +1848,16 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
     validate_change (rti, &REG_NOTES (rti), reg_notes, true);
   };
 
+  // Turn CHANGE into a memory definition tombstone.
+  auto make_tombstone = [&](insn_change *change)
+    {
+      tombstone_uids.quick_push (change->insn ()->uid ());
+      rtx_insn *rti = change->insn ()->rtl ();
+      validate_change (rti, &PATTERN (rti), gen_tombstone (), true);
+      validate_change (rti, &REG_NOTES (rti), NULL_RTX, true);
+      change->new_uses = use_array ();
+    };
+
   if (load_p)
     {
       changes.safe_push (make_delete (first));
@@ -1836,11 +1870,7 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
 						   input_defs[1]);
       gcc_assert (pair_change->new_defs.is_valid ());
 
-      pair_change->new_uses
-	= merge_access_arrays (attempt,
-			       drop_memory_access (input_uses[0]),
-			       drop_memory_access (input_uses[1]));
-      gcc_assert (pair_change->new_uses.is_valid ());
+      pair_change->new_uses = new_uses;
       set_pair_pat (pair_change);
     }
   else
@@ -1861,9 +1891,7 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
 	    case Action::CHANGE:
 	    {
 	      set_pair_pat (change);
-	      change->new_uses = merge_access_arrays (attempt,
-						      input_uses[0],
-						      input_uses[1]);
+	      change->new_uses = new_uses;
 	      auto d1 = drop_memory_access (input_defs[0]);
 	      auto d2 = drop_memory_access (input_defs[1]);
 	      change->new_defs = merge_access_arrays (attempt, d1, d2);
@@ -1879,11 +1907,7 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
 	    }
 	    case Action::TOMBSTONE:
 	    {
-	      tombstone_uids.quick_push (change->insn ()->uid ());
-	      rtx_insn *rti = change->insn ()->rtl ();
-	      validate_change (rti, &PATTERN (rti), gen_tombstone (), true);
-	      validate_change (rti, &REG_NOTES (rti), NULL_RTX, true);
-	      change->new_uses = use_array (nullptr, 0);
+	      make_tombstone (change);
 	      break;
 	    }
 	    case Action::INSERT:
@@ -1895,9 +1919,7 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
 	      auto new_insn = crtl->ssa->create_insn (attempt, INSN, pair_pat);
 	      change = make_change (new_insn);
 	      change->move_range = move_range;
-	      change->new_uses = merge_access_arrays (attempt,
-						      input_uses[0],
-						      input_uses[1]);
+	      change->new_uses = new_uses;
 	      gcc_assert (change->new_uses.is_valid ());
 
 	      auto d1 = drop_memory_access (input_defs[0]);
@@ -1934,7 +1956,17 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
     }
 
   if (trailing_add)
-    changes.safe_push (make_delete (trailing_add));
+    {
+      if (auto *mem_def = memory_access (trailing_add->defs()))
+	{
+	  auto *change = make_change (trailing_add);
+	  change->new_defs = insert_access (attempt, mem_def, def_array ());
+	  make_tombstone (change);
+	  changes.safe_push (change);
+	}
+      else
+	changes.safe_push (make_delete (trailing_add));
+    }
   else if ((writeback & 2) && !writeback_effect)
     {
       // The second insn initially had writeback but now the pair does not,
@@ -1991,7 +2023,6 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
   confirm_change_group ();
   crtl->ssa->change_insns (changes);
 
-  gcc_checking_assert (tombstone_uids.length () <= 2);
   for (auto uid : tombstone_uids)
     track_tombstone (uid);
 

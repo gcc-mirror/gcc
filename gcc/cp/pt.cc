@@ -10822,11 +10822,6 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 	WALK_SUBTREE (TYPE_TI_ARGS (t));
       break;
 
-    case INTEGER_TYPE:
-      WALK_SUBTREE (TYPE_MIN_VALUE (t));
-      WALK_SUBTREE (TYPE_MAX_VALUE (t));
-      break;
-
     case METHOD_TYPE:
       /* Since we're not going to walk subtrees, we have to do this
 	 explicitly here.  */
@@ -12191,13 +12186,27 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
       location_t match_loc = cp_expr_loc_or_input_loc (TREE_PURPOSE (chain));
       tree ctx = copy_list (TREE_VALUE (val));
       tree append_args_list = TREE_CHAIN (TREE_CHAIN (chain));
-      if (append_args_list)
+      if (append_args_list && TREE_VALUE (append_args_list))
 	{
-	  append_args_list = TREE_VALUE (append_args_list);
-	  if (append_args_list)
-	    TREE_CHAIN (append_args_list)
-	      = tsubst_omp_clauses (TREE_CHAIN (append_args_list),
-				    C_ORT_OMP_DECLARE_SIMD, args, complain, in_decl);
+	  append_args_list = TREE_VALUE (TREE_VALUE (append_args_list));
+	  for (; append_args_list;
+	       append_args_list = TREE_CHAIN (append_args_list))
+	     {
+	      tree pref_list = TREE_VALUE (append_args_list);
+	      tree fr_list = TREE_VALUE (pref_list);
+	      int len = TREE_VEC_LENGTH (fr_list);
+	      for (int i = 0; i < len; i++)
+		{
+		  tree *fr_expr = &TREE_VEC_ELT (fr_list, i);
+		  /* Preserve NOP_EXPR to have a location.  */
+		  if (*fr_expr && TREE_CODE (*fr_expr) == NOP_EXPR)
+		    TREE_OPERAND (*fr_expr, 0)
+		      = tsubst_expr (TREE_OPERAND (*fr_expr, 0), args, complain,
+				     in_decl);
+		  else
+		    *fr_expr = tsubst_expr (*fr_expr, args, complain, in_decl);
+		}
+	    }
 	}
       for (tree tss = ctx; tss; tss = TREE_CHAIN (tss))
 	{
@@ -18046,7 +18055,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 			     complain, in_decl);
 	  break;
 	case OMP_CLAUSE_INIT:
-	  if ((ort == C_ORT_OMP_INTEROP  || ort == C_ORT_OMP_DECLARE_SIMD)
+	  if (ort == C_ORT_OMP_INTEROP
 	      && OMP_CLAUSE_INIT_PREFER_TYPE (nc)
 	      && TREE_CODE (OMP_CLAUSE_INIT_PREFER_TYPE (nc)) == TREE_LIST
 	      && (OMP_CLAUSE_CHAIN (nc)  == NULL_TREE
@@ -25138,15 +25147,6 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 			     ? tf_warning_or_error
 			     : tf_none);
 
-  /* I don't think this will do the right thing with respect to types.
-     But the only case I've seen it in so far has been array bounds, where
-     signedness is the only information lost, and I think that will be
-     okay.  VIEW_CONVERT_EXPR can appear with class NTTP, thanks to
-     finish_id_expression_1, and are also OK.  */
-  while (CONVERT_EXPR_P (parm) || TREE_CODE (parm) == VIEW_CONVERT_EXPR
-	 || TREE_CODE (parm) == IMPLICIT_CONV_EXPR)
-    parm = TREE_OPERAND (parm, 0);
-
   if (arg == error_mark_node)
     return unify_invalid (explain_p);
   if (arg == unknown_type_node
@@ -25158,11 +25158,16 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
   if (parm == any_targ_node || arg == any_targ_node)
     return unify_success (explain_p);
 
-  /* Stripping IMPLICIT_CONV_EXPR above can produce this mismatch
-     (g++.dg/abi/mangle57.C).  */
-  if (TREE_CODE (parm) == FUNCTION_DECL
-      && TREE_CODE (arg) == ADDR_EXPR)
-    arg = TREE_OPERAND (arg, 0);
+  /* Strip conversions that will interfere with NTTP deduction.
+     I don't think this will do the right thing with respect to types.
+     But the only case I've seen it in so far has been array bounds, where
+     signedness is the only information lost, and I think that will be
+     okay.  VIEW_CONVERT_EXPR can appear with class NTTP, thanks to
+     finish_id_expression_1, and are also OK.  */
+  if (deducible_expression (parm))
+    while (CONVERT_EXPR_P (parm) || TREE_CODE (parm) == VIEW_CONVERT_EXPR
+	   || TREE_CODE (parm) == IMPLICIT_CONV_EXPR)
+      parm = TREE_OPERAND (parm, 0);
 
   /* If PARM uses template parameters, then we can't bail out here,
      even if ARG == PARM, since we won't record unifications for the

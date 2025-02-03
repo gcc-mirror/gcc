@@ -234,6 +234,7 @@ such as the AVR and the ARM).
 * Extensions::            GNU Modula-2 language extensions.
 * Type compatibility::    Data type compatibility.
 * Unbounded by reference::Explanation of a language optimization.
+* Exception handling::    Example of exception handling.
 * Building a shared library:: How to build a shared library.
 * Interface for Python::  How to produce swig interface files.
 * Producing a Python module::  How to produce a Python module.
@@ -502,7 +503,8 @@ the previous forms could be:
 
 @item -fm2-file-offset-bits=
 force the type @code{SYSTEM.COFF_T} to be built using the specified
-number of bits.  If this option is not used then default is 64 bits.
+number of bits.  If this option is not used then default is
+@code{CSSIZE_T} bits.
 
 @item -fm2-g
 improve the debugging experience for new programmers at the expense
@@ -1836,7 +1838,7 @@ are all exported from the @code{SYSTEM} module.
 @xref{The PIM system module}.
 @xref{The ISO system module}.
 
-@node Type compatibility, Unbounded by reference, Extensions, Using
+@node Type compatibility, Exception handling, Extensions, Using
 @section Type compatibility
 
 This section discuss the issues surrounding assignment, expression
@@ -1984,7 +1986,148 @@ The types @code{BYTE}, @code{LOC}, @code{WORD} and @code{WORD}n
 derivatives are assignment and parameter compatible with any data type
 of the same size.
 
-@node Unbounded by reference, Building a shared library, Type compatibility, Using
+@node Exception handling, Unbounded by reference, Type compatibility, Using
+@section Exception handling
+
+This section gives an example of exception handling and briefly
+describes its runtime behavior.  The module below is written in the
+ISO dialect of Modula-2 and can be compiled with the command line:
+
+@example
+$ gm2 -g -fiso -fsoft-check-all lazyunique.mod
+@end example
+
+The option @samp{-fsoft-check-all} generates checks for @code{NIL}
+pointer access violation.  In turn this will call the exception handler.
+
+@example
+@group
+MODULE lazyunique ;  (*!m2iso+gm2*)
+
+FROM Storage IMPORT ALLOCATE ;
+FROM libc IMPORT printf, exit ;
+
+TYPE
+   List = POINTER TO RECORD
+                        next : List ;
+                        value: INTEGER ;
+                     END ;
+
+   Array = ARRAY [0..3] OF INTEGER ;
+
+CONST
+   Unsorted = Array @{0, 2, 1, 1@} ;
+
+VAR
+   head: List ;
+@end group   
+@end example
+
+@example
+@group
+PROCEDURE Display ;
+VAR
+   p: List ;
+BEGIN
+   p := head^.next ;
+   printf ("\nunique data\n");
+   printf ("===========\n");   
+   WHILE p # NIL DO
+      printf ("%d\n", p^.value);
+      p := p^.next
+   END
+END Display ;
+@end group   
+@end example
+
+@example
+@group
+PROCEDURE Add (VAR p: List; val: INTEGER) ;
+BEGIN
+   NEW (p) ;
+   WITH p^ DO
+      value := val ;
+      next := NIL
+   END
+END Add ;
+@end group   
+@end example
+
+@example
+@group
+PROCEDURE Unique (val: INTEGER) ;
+VAR
+   p: List ;
+BEGIN
+   printf ("new value %d\n", val);
+   p := head ;
+   (* The following line may cause an exception accessing next or
+      value.  *)
+   WHILE p^.next^.value # val DO
+      p := p^.next
+   END
+EXCEPT
+   (* Now fixup.  Determine the source of the exception and retry.  *)
+   IF head = NIL
+   THEN
+      printf ("list was empty, add sentinal\n");
+      Add (head, -1) ;
+      RETRY  (* Jump back to the begin statement.  *)      
+   ELSIF p^.next = NIL
+   THEN
+      printf ("growing the list\n");
+      Add (p^.next, val) ;
+      RETRY  (* Jump back to the begin statement.  *)
+   ELSE
+      printf ("should never reach here!\n");   
+   END
+END Unique ;
+@end group   
+@end example
+
+@example
+@group
+PROCEDURE unique ;
+VAR
+   i: CARDINAL ;
+BEGIN
+   FOR i := 0 TO HIGH (Unsorted) DO
+      Unique (Unsorted[i])
+   END ;
+   Display
+END unique ;
+
+BEGIN
+   head := NIL ;
+   unique
+END lazyunique.
+@end group   
+@end example
+
+@example
+@group
+new value 0
+list was empty, add sentinal
+new value 0
+growing the list
+new value 0
+new value 2
+growing the list
+new value 2
+new value 1
+growing the list
+new value 1
+new value 1
+
+unique data
+===========
+0
+2
+1
+@end group   
+@end example
+
+@node Unbounded by reference, Building a shared library, Exception handling, Using
 @section Unbounded by reference
 
 This section documents a GNU Modula-2 compiler switch which implements
@@ -2588,9 +2731,8 @@ END Example ;
 Both examples generate exactly the same code.  It is worth noting that
 the specifier ``rm'' indicates that the operand can be either a
 register or memory.  Of course you must choose an instruction which
-can take either, but this allows the compiler to take make more
-efficient choices depending upon the optimization level given to the
-compiler.
+can take either, but this allows the compiler to make more
+efficient choices depending upon the optimization level.
 
 @node Alignment, Packed, Assembly language, Using
 @section Data type alignment
@@ -2895,10 +3037,13 @@ base module).  PIM-2 defined @code{SIZE} in the @code{SYSTEM} module
 GNU Modula-2 allows users to specify the dialect of Modula-2 by using
 the @code{-fiso} and @code{-fpim2} command line switches.
 
-The data types @code{CSIZE_T} and @code{CSSIZE_T} are also exported from
-the @code{SYSTEM} module.  The type @code{CSIZE_T} is unsigned and is
-mapped onto the target C data type @code{size_t} whereas the type
-@code{CSSIZE_T} is mapped onto the signed C data type @code{ssize_t}.
+The data types @code{CSIZE_T}, @code{CSSIZE_T} and @code{COFF_T} are
+also exported from the @code{SYSTEM} module.  The type @code{CSIZE_T}
+is unsigned and is mapped onto the target C data type @code{size_t}
+whereas the type @code{CSSIZE_T} is mapped onto the signed C data type
+@code{ssize_t}.  The default size for the signed type @code{COFF_T} is
+the same as @code{CSSIZE_T} and this can be overridden by the
+@code{-fm2-file-offset-bits=} command line option.
 
 It is anticipated that these should only be used to provide cross
 platform definition modules for C libraries.
@@ -2912,10 +3057,13 @@ depend upon the target architecture.
 
 @include m2/SYSTEM-iso.texi
 
-The data types @code{CSIZE_T} and @code{CSSIZE_T} are also exported from
-the @code{SYSTEM} module.  The type @code{CSIZE_T} is unsigned and is
-mapped onto the target C data type @code{size_t} whereas the type
-@code{CSSIZE_T} is mapped onto the signed C data type @code{ssize_t}.
+The data types @code{CSIZE_T}, @code{CSSIZE_T} and @code{COFF_T} are
+also exported from the @code{SYSTEM} module.  The type @code{CSIZE_T}
+is unsigned and is mapped onto the target C data type @code{size_t}
+whereas the type @code{CSSIZE_T} is mapped onto the signed C data type
+@code{ssize_t}.  The default size for the signed type @code{COFF_T} is
+the same as @code{CSSIZE_T} and this can be overridden by the
+@code{-fm2-file-offset-bits=} command line option.
 
 It is anticipated that these should only be used to provide cross
 platform definition modules for C libraries.

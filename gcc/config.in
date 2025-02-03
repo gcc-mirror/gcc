@@ -1972,6 +1972,18 @@
 #endif
 
 
+/* Define to 1 if you have the `msync' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_MSYNC
+#endif
+
+
+/* Define to 1 if you have the `munmap' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_MUNMAP
+#endif
+
+
 /* Define if GCC has been configured with --enable-newlib-nano-formatted-io.
    */
 #ifndef USED_FOR_TARGET

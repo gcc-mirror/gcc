@@ -272,7 +272,7 @@ struct S_S_S_x {
   struct A {
     struct B {
       int a[0];             // { dg-warning "zero-size array" }
-    } b;
+    } b;		    // { dg-warning "invalid use" }
   } a;
 };
 

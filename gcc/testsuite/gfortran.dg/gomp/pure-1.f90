@@ -110,3 +110,32 @@ pure integer function func_tile(n)
   end do
   func_tile = r
 end
+
+pure logical function func_metadirective()
+  implicit none
+  !$omp metadirective
+  func_metadirective = .false.
+end
+
+! not 'parallel' not pure -> invalid in 5.2; + in general invalid in 5.1
+pure logical function func_metadirective_2 ()
+  implicit none
+  integer :: i, n
+  n = 0
+  !$omp metadirective when (device={arch("nvptx")} : parallel do)     ! { dg-error "OpenMP directive at .1. is not pure and thus may not appear in a PURE procedure" }
+  do i = 1, 5
+    n = n + i
+  end do
+end
+
+! unroll is supposed to be pure, so this case is OK
+pure logical function func_metadirective_3()
+  implicit none
+  integer :: i, n
+
+  n = 0
+  !$omp metadirective when(device={arch("nvptx")} : unroll full)
+  do i = 1, 5
+    n = n + i
+  end do
+end

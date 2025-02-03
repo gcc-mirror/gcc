@@ -622,6 +622,10 @@ Enum(vsetvl_strategy) String(optim-no-fusion) Value(VSETVL_OPT_NO_FUSION)
 Target Undocumented RejectNegative Joined Enum(vsetvl_strategy) Var(vsetvl_strategy) Init(VSETVL_OPT)
 -param=vsetvl-strategy=<string>	Set the optimization level of VSETVL insert pass.
 
+-param=riscv-two-source-permutes
+Target Undocumented Uinteger Var(riscv_two_source_permutes) Init(0)
+-param=riscv-two-source-permutes Enable permutes with two source vectors.
+
 Enum
 Name(stringop_strategy) Type(enum stringop_strategy_enum)
 Valid arguments to -mstringop-strategy=:

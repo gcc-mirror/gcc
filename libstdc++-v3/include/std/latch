@@ -41,6 +41,7 @@
 #ifdef __cpp_lib_latch // C++ >= 20 && atomic_wait
 #include <bits/atomic_base.h>
 #include <ext/numeric_traits.h>
+#include <utility> // cmp_equal, cmp_less_equal, etc.
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -51,24 +52,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   public:
     static constexpr ptrdiff_t
     max() noexcept
-    { return __gnu_cxx::__int_traits<__detail::__platform_wait_t>::__max; }
+    {
+      using __gnu_cxx::__int_traits;
+      constexpr auto __max = __int_traits<__detail::__platform_wait_t>::__max;
+      if constexpr (std::cmp_less(__max, __PTRDIFF_MAX__))
+	return __max;
+      return __PTRDIFF_MAX__;
+    }
 
-    constexpr explicit latch(ptrdiff_t __expected) noexcept
-      : _M_a(__expected) { }
+    constexpr explicit
+    latch(ptrdiff_t __expected) noexcept
+    : _M_a(__expected)
+    { __glibcxx_assert(__expected >= 0 && __expected <= max()); }
 
     ~latch() = default;
+
     latch(const latch&) = delete;
     latch& operator=(const latch&) = delete;
 
     _GLIBCXX_ALWAYS_INLINE void
     count_down(ptrdiff_t __update = 1)
     {
-      __glibcxx_assert(__update >= 0);
-      auto const __old = __atomic_impl::fetch_sub(&_M_a,
-				    __update, memory_order::release);
-      __glibcxx_assert(__update >= 0);
-      if (__old == static_cast<__detail::__platform_wait_t>(__update))
+      __glibcxx_assert(__update >= 0 && __update <= max());
+      auto const __old = __atomic_impl::fetch_sub(&_M_a, __update,
+						  memory_order::release);
+      if (std::cmp_equal(__old, __update))
 	__atomic_impl::notify_all(&_M_a);
+      else
+	__glibcxx_assert(std::cmp_less(__update, __old));
     }
 
     _GLIBCXX_ALWAYS_INLINE bool
@@ -90,9 +101,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   private:
-    // This alignas is not redundant, it increases the alignment for
-    // long long on x86.
-    alignas(__alignof__(__detail::__platform_wait_t)) __detail::__platform_wait_t _M_a;
+    alignas(__detail::__platform_wait_alignment)
+      __detail::__platform_wait_t _M_a;
   };
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

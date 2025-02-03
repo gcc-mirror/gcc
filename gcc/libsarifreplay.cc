@@ -277,6 +277,7 @@ private:
   // "result" object (§3.27)
   enum status
   handle_result_obj (const json::object &result_obj,
+		     const json::object &run_obj,
 		     const json::object &tool_obj);
   json::result<enum diagnostic_level, enum status>
   get_level_from_level_str (const json::string &level_str);
@@ -284,6 +285,7 @@ private:
   // "location" object (§3.28)
   enum status
   handle_location_object (const json::object &location_obj,
+			  const json::object &run_obj,
 			  libgdiagnostics::physical_location &out_physical_loc,
 			  libgdiagnostics::logical_location &out_logical_loc);
 
@@ -301,16 +303,19 @@ private:
   // "logicalLocation" object (§3.33)
   enum status
   handle_logical_location_object (const json::object &logical_loc_obj,
+				  const json::object *run_obj,
 				  libgdiagnostics::logical_location &out);
 
   // "threadFlow" object (§3.37)
   enum status
   handle_thread_flow_object (const json::object &thread_flow_obj,
+			     const json::object &run_obj,
 			     libgdiagnostics::execution_path &out);
 
   // "threadFlowLocation" object (§3.38)
   enum status
   handle_thread_flow_location_object (const json::object &tflow_loc_obj,
+				      const json::object &run_obj,
 				      libgdiagnostics::execution_path &out);
 
   // reportingDescriptor lookup (§3.52.3)
@@ -806,7 +811,9 @@ sarif_replayer::handle_run_obj (const json::object &run_obj)
 		= require_object_for_element (*element, prop_results);
 	      if (!result_obj)
 		return status::err_invalid_sarif;
-	      enum status s = handle_result_obj (*result_obj, *tool_obj);
+	      enum status s = handle_result_obj (*result_obj,
+						 run_obj,
+						 *tool_obj);
 	      if (s != status::ok)
 		return s;
 	    }
@@ -974,6 +981,7 @@ sarif_replayer::get_level_from_level_str (const json::string &level_str)
 
 enum status
 sarif_replayer::handle_result_obj (const json::object &result_obj,
+				   const json::object &run_obj,
 				   const json::object &tool_obj)
 {
   const json::object *rule_obj = nullptr;
@@ -1025,7 +1033,7 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
 	= require_object_for_element (*locations_arr->get (0), locations_prop);
       if (!location_obj)
 	return status::err_invalid_sarif;
-      enum status s = handle_location_object (*location_obj,
+      enum status s = handle_location_object (*location_obj, run_obj,
 					      physical_loc,
 					      logical_loc);
       if (s != status::ok)
@@ -1059,7 +1067,7 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
 						  prop_thread_flows);
 		  if (!thread_flow_obj)
 		    return status::err_invalid_sarif;
-		  handle_thread_flow_object (*thread_flow_obj, path);
+		  handle_thread_flow_object (*thread_flow_obj, run_obj, path);
 		}
 	    }
 	}
@@ -1104,7 +1112,7 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
 					  prop_related_locations);
 	  if (!location_obj)
 	    return status::err_invalid_sarif;
-	  enum status s = handle_location_object (*location_obj,
+	  enum status s = handle_location_object (*location_obj, run_obj,
 						  physical_loc,
 						  logical_loc);
 	  if (s != status::ok)
@@ -1438,6 +1446,7 @@ lookup_plain_text_within_result_message (const json::object *tool_component_obj,
 
 enum status
 sarif_replayer::handle_thread_flow_object (const json::object &thread_flow_obj,
+					   const json::object &run_obj,
 					   libgdiagnostics::execution_path &out)
 {
   const property_spec_ref locations ("threadFlow", "locations", "3.37.6");
@@ -1454,7 +1463,7 @@ sarif_replayer::handle_thread_flow_object (const json::object &thread_flow_obj,
 	= require_object_for_element (*location, locations);
       if (!tflow_loc_obj)
 	return status::err_invalid_sarif;
-      handle_thread_flow_location_object (*tflow_loc_obj, out);
+      handle_thread_flow_location_object (*tflow_loc_obj, run_obj, out);
     }
 
   return status::ok;
@@ -1466,6 +1475,7 @@ sarif_replayer::handle_thread_flow_object (const json::object &thread_flow_obj,
 enum status
 sarif_replayer::
 handle_thread_flow_location_object (const json::object &tflow_loc_obj,
+				    const json::object &run_obj,
 				    libgdiagnostics::execution_path &path)
 {
   libgdiagnostics::physical_location physical_loc;
@@ -1479,8 +1489,8 @@ handle_thread_flow_location_object (const json::object &tflow_loc_obj,
 							       location_prop))
     {
       /* location object (§3.28).  */
-      enum status s
-	= handle_location_object (*location_obj, physical_loc, logical_loc);
+      enum status s = handle_location_object (*location_obj, run_obj,
+					      physical_loc, logical_loc);
       if (s != status::ok)
 	return s;
 
@@ -1552,6 +1562,7 @@ handle_thread_flow_location_object (const json::object &tflow_loc_obj,
 enum status
 sarif_replayer::
 handle_location_object (const json::object &location_obj,
+			const json::object &run_obj,
 			libgdiagnostics::physical_location &out_physical_loc,
 			libgdiagnostics::logical_location &out_logical_loc)
 {
@@ -1586,6 +1597,7 @@ handle_location_object (const json::object &location_obj,
 	  if (!logical_loc_obj)
 	    return status::err_invalid_sarif;
 	  enum status s = handle_logical_location_object (*logical_loc_obj,
+							  &run_obj,
 							  out_logical_loc);
 	  if (s != status::ok)
 	    return s;
@@ -1743,6 +1755,10 @@ handle_region_object (const json::object &region_obj,
 }
 
 /* Handle a "logicalLocation" object (§3.33), using it to populate OUT.
+
+   If RUN_OBJ is non-null, and has "logicalLocations", then use it if we
+   see an "index" property.
+
    Known limitations:
    - doesn't yet handle "parentIndex" property (§3.33.8)
 */
@@ -1750,8 +1766,48 @@ handle_region_object (const json::object &region_obj,
 enum status
 sarif_replayer::
 handle_logical_location_object (const json::object &logical_loc_obj,
+				const json::object *run_obj,
 				libgdiagnostics::logical_location &out)
 {
+  if (run_obj)
+    {
+      const property_spec_ref name_prop ("logicalLocation", "index", "3.33.3");
+      if (auto index_js_int
+	    = get_optional_property<json::integer_number> (logical_loc_obj,
+							   name_prop))
+	{
+	  const long index = index_js_int->get ();
+	  /* If "index" is present, then there must be theRun.logicalLocations
+	     and it must have a cached object at that index.  */
+	  const property_spec_ref run_logical_locs_prop
+	    ("run", "logicalLocations", "3.14.17");
+	  if (auto logical_locs_arr
+		= get_required_property<json::array> (*run_obj,
+						      run_logical_locs_prop))
+	    {
+	      /* "index" must be in range */
+	      if (index < 0 || index >= (long)logical_locs_arr->length ())
+		return report_invalid_sarif (*index_js_int, name_prop,
+					     "index value %li is out of range"
+					     " for theRun.logicalLocations",
+					     index);
+
+	      json::value *element = logical_locs_arr->get (index);
+
+	      if (const json::object *obj
+		    = require_object (*element,run_logical_locs_prop))
+		{
+		  /* Use this "cached" object instead.
+		     Pass nullptr for the run object so that we
+		     don't recurse.  */
+		  return handle_logical_location_object (*obj, nullptr, out);
+		}
+	    }
+	}
+    }
+
+  // Otherwise use the properties from LOGICAL_LOC_OBJ.
+
   const property_spec_ref name_prop ("logicalLocation", "name", "3.33.4");
   const char *short_name = nullptr;
   if (auto name_jstr = get_optional_property<json::string> (logical_loc_obj,

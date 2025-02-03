@@ -8494,6 +8494,8 @@ gfc_trans_omp_directive (gfc_code *code)
     case EXEC_OMP_MASTER_TASKLOOP:
     case EXEC_OMP_MASTER_TASKLOOP_SIMD:
       return gfc_trans_omp_master_masked_taskloop (code, code->op);
+    case EXEC_OMP_METADIRECTIVE:
+      return gfc_trans_omp_metadirective (code);
     case EXEC_OMP_ORDERED:
       return gfc_trans_omp_ordered (code);
     case EXEC_OMP_PARALLEL:
@@ -8587,6 +8589,100 @@ gfc_trans_omp_declare_simd (gfc_namespace *ns)
     }
 }
 
+/* Translate the context selector list GFC_SELECTORS, using WHERE as the
+   locus for error messages.  */
+
+static tree
+gfc_trans_omp_set_selector (gfc_omp_set_selector *gfc_selectors, locus where)
+{
+  tree set_selectors = NULL_TREE;
+  gfc_omp_set_selector *oss;
+
+  for (oss = gfc_selectors; oss; oss = oss->next)
+    {
+      tree selectors = NULL_TREE;
+      gfc_omp_selector *os;
+      enum omp_tss_code set = oss->code;
+      gcc_assert (set != OMP_TRAIT_SET_INVALID);
+
+      for (os = oss->trait_selectors; os; os = os->next)
+	{
+	  tree scoreval = NULL_TREE;
+	  tree properties = NULL_TREE;
+	  gfc_omp_trait_property *otp;
+	  enum omp_ts_code sel = os->code;
+
+	  /* Per the spec, "Implementations can ignore specified
+	     selectors that are not those described in this section";
+	     however, we  must record such selectors because they
+	     cause match failures.  */
+	  if (sel == OMP_TRAIT_INVALID)
+	    {
+	      selectors = make_trait_selector (sel, NULL_TREE, NULL_TREE,
+					       selectors);
+	      continue;
+	    }
+
+	  for (otp = os->properties; otp; otp = otp->next)
+	    {
+	      switch (otp->property_kind)
+		{
+		case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
+		case OMP_TRAIT_PROPERTY_BOOL_EXPR:
+		  {
+		    tree expr = NULL_TREE;
+		    gfc_se se;
+		    gfc_init_se (&se, NULL);
+		    gfc_conv_expr (&se, otp->expr);
+		    expr = se.expr;
+		    properties = make_trait_property (NULL_TREE, expr,
+						      properties);
+		  }
+		  break;
+		case OMP_TRAIT_PROPERTY_ID:
+		  properties
+		    = make_trait_property (get_identifier (otp->name),
+					   NULL_TREE, properties);
+		  break;
+		case OMP_TRAIT_PROPERTY_NAME_LIST:
+		  {
+		    tree prop = OMP_TP_NAMELIST_NODE;
+		    tree value = NULL_TREE;
+		    if (otp->is_name)
+		      value = get_identifier (otp->name);
+		    else
+		      value = gfc_conv_constant_to_tree (otp->expr);
+
+		    properties = make_trait_property (prop, value,
+						      properties);
+		  }
+		  break;
+		case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
+		  properties = gfc_trans_omp_clauses (NULL, otp->clauses,
+						      where, true);
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
+	    }
+
+	  if (os->score)
+	    {
+	      gfc_se se;
+	      gfc_init_se (&se, NULL);
+	      gfc_conv_expr (&se, os->score);
+	      scoreval = se.expr;
+	    }
+
+	  selectors = make_trait_selector (sel, scoreval,
+					   properties, selectors);
+	}
+      set_selectors = make_trait_set_selector (set, selectors, set_selectors);
+    }
+  return set_selectors;
+}
+
+
 void
 gfc_trans_omp_declare_variant (gfc_namespace *ns)
 {
@@ -8662,90 +8758,8 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	      && strcmp (odv->base_proc_symtree->name, ns->proc_name->name)))
 	continue;
 
-      tree set_selectors = NULL_TREE;
-      gfc_omp_set_selector *oss;
-
-      for (oss = odv->set_selectors; oss; oss = oss->next)
-	{
-	  tree selectors = NULL_TREE;
-	  gfc_omp_selector *os;
-	  enum omp_tss_code set = oss->code;
-	  gcc_assert (set != OMP_TRAIT_SET_INVALID);
-
-	  for (os = oss->trait_selectors; os; os = os->next)
-	    {
-	      tree scoreval = NULL_TREE;
-	      tree properties = NULL_TREE;
-	      gfc_omp_trait_property *otp;
-	      enum omp_ts_code sel = os->code;
-
-	      /* Per the spec, "Implementations can ignore specified
-		 selectors that are not those described in this section";
-		 however, we  must record such selectors because they
-		 cause match failures.  */
-	      if (sel == OMP_TRAIT_INVALID)
-		{
-		  selectors = make_trait_selector (sel, NULL_TREE, NULL_TREE,
-						   selectors);
-		  continue;
-		}
-
-	      for (otp = os->properties; otp; otp = otp->next)
-		{
-		  switch (otp->property_kind)
-		    {
-		    case OMP_TRAIT_PROPERTY_DEV_NUM_EXPR:
-		    case OMP_TRAIT_PROPERTY_BOOL_EXPR:
-		      {
-			gfc_se se;
-			gfc_init_se (&se, NULL);
-			gfc_conv_expr (&se, otp->expr);
-			properties = make_trait_property (NULL_TREE, se.expr,
-							  properties);
-		      }
-		      break;
-		    case OMP_TRAIT_PROPERTY_ID:
-		      properties
-			= make_trait_property (get_identifier (otp->name),
-					       NULL_TREE, properties);
-		      break;
-		    case OMP_TRAIT_PROPERTY_NAME_LIST:
-		      {
-			tree prop = OMP_TP_NAMELIST_NODE;
-			tree value = NULL_TREE;
-			if (otp->is_name)
-			  value = get_identifier (otp->name);
-			else
-			  value = gfc_conv_constant_to_tree (otp->expr);
-
-			properties = make_trait_property (prop, value,
-							  properties);
-		      }
-		      break;
-		    case OMP_TRAIT_PROPERTY_CLAUSE_LIST:
-		      properties = gfc_trans_omp_clauses (NULL, otp->clauses,
-							  odv->where, true);
-		      break;
-		    default:
-		      gcc_unreachable ();
-		    }
-		}
-
-	      if (os->score)
-		{
-		  gfc_se se;
-		  gfc_init_se (&se, NULL);
-		  gfc_conv_expr (&se, os->score);
-		  scoreval = se.expr;
-		}
-
-	      selectors	= make_trait_selector (sel, scoreval,
-					       properties, selectors);
-	    }
-	  set_selectors = make_trait_set_selector (set, selectors,
-						   set_selectors);
-	}
-
+      tree set_selectors = gfc_trans_omp_set_selector (odv->set_selectors,
+						       odv->where);
       const char *variant_proc_name = odv->variant_proc_symtree->name;
       gfc_symbol *variant_proc_sym = odv->variant_proc_symtree->n.sym;
       if (variant_proc_sym == NULL || variant_proc_sym->attr.implicit_type)
@@ -8777,6 +8791,34 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 		   == NULL_TREE)
 	    {
 	      char err[256];
+	      gfc_formal_arglist *last_arg = NULL, *extra_arg = NULL;
+	      int nappend_args = 0;
+	      if (odv->append_args_list)
+		{
+		  gfc_formal_arglist *arg;
+		  int nargs = 0;
+		  for (arg = gfc_sym_get_dummy_args (ns->proc_name);
+		       arg; arg = arg->next)
+		    nargs++;
+
+		  last_arg = gfc_sym_get_dummy_args (variant_proc_sym);
+		  for (int i = 1 ; i < nargs && last_arg; i++)
+		    last_arg = last_arg->next;
+		  if (nargs == 0)
+		    {
+		      extra_arg = last_arg;
+		      last_arg = NULL;
+		      variant_proc_sym->formal = NULL;
+		    }
+		  else if (last_arg)
+		    {
+		      extra_arg = last_arg->next;
+		      last_arg->next = NULL;
+		    }
+		  for (gfc_omp_namelist *n = odv->append_args_list; n != NULL;
+		       n = n->next)
+		    nappend_args++;
+		}
 	      if (!gfc_compare_interfaces (ns->proc_name, variant_proc_sym,
 					   variant_proc_sym->name, 0, 1,
 					   err, sizeof (err), NULL, NULL))
@@ -8785,18 +8827,73 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 			     "incompatible types: %s",
 			     variant_proc_name, ns->proc_name->name,
 			     &odv->where, err);
+		  if (nappend_args)
+		    inform (gfc_get_location (&odv->append_args_list->where),
+			    "%<append_args%> clause implies that %qs has %d "
+			    "dummy arguments of integer type with "
+			    "%<omp_interop_kind%> kind", variant_proc_name,
+			    nappend_args);
+		  variant_proc_sym = NULL;
+		}
+	      if (last_arg)
+		last_arg->next = extra_arg;
+	      else if (extra_arg)
+		variant_proc_sym->formal = extra_arg;
+	      locus *loc = (odv->adjust_args_list
+			    ? &odv->append_args_list->where :  &odv->where);
+	      int nextra_arg = 0;
+	      for (; extra_arg; extra_arg = extra_arg->next)
+		{
+		  nextra_arg++;
+		  if (!variant_proc_sym)
+		    continue;
+		  if (extra_arg->sym->ts.type != BT_INTEGER
+		      || extra_arg->sym->ts.kind != gfc_index_integer_kind
+		      || extra_arg->sym->attr.dimension
+		      || extra_arg->sym->attr.codimension
+		      || extra_arg->sym->attr.pointer
+		      || extra_arg->sym->attr.allocatable
+		      || extra_arg->sym->attr.proc_pointer)
+		    {
+		      gfc_error ("%qs at %L must be a nonpointer, "
+				 "nonallocatable scalar integer dummy argument "
+				 "of %<omp_interop_kind%> kind as it utilized "
+				 "with the %<append_args%> clause at %L",
+				 extra_arg->sym->name,
+				 &extra_arg->sym->declared_at, loc);
+		      variant_proc_sym = NULL;
+		    }
+		  if (extra_arg->sym->attr.optional)
+		    {
+		      gfc_error ("%qs at %L with OPTIONAL attribute "
+				 "not support when utilized with the "
+				 "%<append_args%> clause at %L",
+				 extra_arg->sym->name,
+				 &extra_arg->sym->declared_at, loc);
+		      variant_proc_sym = NULL;
+		    }
+		}
+	      if (variant_proc_sym && nappend_args != nextra_arg)
+		{
+		  gfc_error ("%qs at %L has %d but requires %d "
+			     "%<omp_interop_kind%> kind dummy arguments as it "
+			     "is utilized with the %<append_args%> clause at "
+			     "%L", variant_proc_sym->name,
+			     &variant_proc_sym->declared_at, nextra_arg,
+			     nappend_args, loc);
 		  variant_proc_sym = NULL;
 		}
 	    }
-	  if (odv->adjust_args_list != NULL
+	  if ((odv->adjust_args_list != NULL || odv->append_args_list != NULL)
 	      && omp_get_context_selector (set_selectors,
 					   OMP_TRAIT_SET_CONSTRUCT,
 					   OMP_TRAIT_CONSTRUCT_DISPATCH)
 		   == NULL_TREE)
 	    {
-	      gfc_error ("an %<adjust_args%> clause can only be specified if "
+	      gfc_error ("the %qs clause can only be specified if "
 			 "the %<dispatch%> selector of the construct "
 			 "selector set appears in the %<match%> clause at %L",
+			 odv->adjust_args_list ? "adjust_args" : "append_args",
 			 &odv->where);
 	      variant_proc_sym = NULL;
 	    }
@@ -8812,15 +8909,13 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	      if (omp_context_selector_matches (set_selectors,
 						NULL_TREE, false))
 		{
+		  tree need_device_ptr_list = NULL_TREE;
+		  tree append_args_tree = NULL_TREE;
 		  tree id = get_identifier ("omp declare variant base");
 		  tree variant = gfc_get_symbol_decl (variant_proc_sym);
 		  DECL_ATTRIBUTES (base_fn_decl)
 		    = tree_cons (id, build_tree_list (variant, set_selectors),
 				 DECL_ATTRIBUTES (base_fn_decl));
-
-		  // Handle adjust_args
-		  tree need_device_ptr_list = make_node (TREE_LIST);
-		  vec<gfc_symbol *> adjust_args_list = vNULL;
 		  int arg_idx_offset = 0;
 		  if (gfc_return_by_reference (ns->proc_name))
 		    {
@@ -8828,6 +8923,56 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 		      if (ns->proc_name->ts.type == BT_CHARACTER)
 			arg_idx_offset++;
 		    }
+		  if (odv->append_args_list)
+		    {
+		      int append_arg_no = arg_idx_offset;
+		      gfc_formal_arglist *arg;
+		      for (arg = gfc_sym_get_dummy_args (ns->proc_name); arg;
+			   arg = arg->next)
+			append_arg_no++;
+		      tree last_arg = NULL_TREE;
+		      for (gfc_omp_namelist *n = odv->append_args_list;
+			   n != NULL; n = n->next)
+			{
+			  tree pref = NULL_TREE;
+			  if (n->u.init.len)
+			    {
+			      tree pref = build_string (n->u.init.len,
+							n->u2.init_interop);
+			      TREE_TYPE (pref) = build_array_type_nelts (
+						   unsigned_char_type_node,
+						   n->u.init.len);
+			    }
+			  /* Save location, (target + target sync) and
+			     prefer_type list in a tree list.  */
+			  tree t = build_tree_list (n->u.init.target
+						    ? boolean_true_node
+						    : boolean_false_node,
+						    n->u.init.targetsync
+						    ? boolean_true_node
+						    : boolean_false_node);
+			  t = build1_loc (gfc_get_location (&n->where),
+					  NOP_EXPR, void_type_node, t);
+			  t = build_tree_list (t, pref);
+			  if (append_args_tree)
+			    {
+			      TREE_CHAIN (last_arg) = t;
+			      last_arg = t;
+			    }
+			  else
+			    append_args_tree = last_arg = t;
+			}
+		      /* Store as (purpose = arg number to be used for inserting
+			 and value = list of interop items.  */
+		      append_args_tree = build_tree_list (
+					   build_int_cst (integer_type_node,
+							  append_arg_no),
+					   append_args_tree);
+		    }
+
+		  if (odv->adjust_args_list)
+		    need_device_ptr_list = make_node (TREE_LIST);
+		  vec<gfc_symbol *> adjust_args_list = vNULL;
 		  for (gfc_omp_namelist *arg_list = odv->adjust_args_list;
 		       arg_list != NULL; arg_list = arg_list->next)
 		    {
@@ -8865,12 +9010,16 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 				idx + arg_idx_offset)));
 			}
 		    }
-
-		  DECL_ATTRIBUTES (variant) = tree_cons (
-		    get_identifier ("omp declare variant variant args"),
-		    build_tree_list (need_device_ptr_list,
-				     NULL_TREE /*need_device_addr */),
-		    DECL_ATTRIBUTES (variant));
+		  tree t = NULL_TREE;
+		  if (need_device_ptr_list || append_args_tree)
+		    {
+		      t = build_tree_list (need_device_ptr_list,
+					   NULL_TREE /*need_device_addr */),
+		      TREE_CHAIN (t) = append_args_tree;
+		      DECL_ATTRIBUTES (variant) = tree_cons (
+			get_identifier ("omp declare variant variant args"), t,
+			DECL_ATTRIBUTES (variant));
+		    }
 		}
 	    }
 	}
@@ -8912,4 +9061,55 @@ gfc_omp_call_is_alloc (tree ptr)
       fn = build_fn_decl ("GOMP_is_alloc", fn);
     }
   return build_call_expr_loc (input_location, fn, 1, ptr);
+}
+
+tree
+gfc_trans_omp_metadirective (gfc_code *code)
+{
+  gfc_omp_variant *variant = code->ext.omp_variants;
+
+  tree metadirective_tree = make_node (OMP_METADIRECTIVE);
+  SET_EXPR_LOCATION (metadirective_tree, gfc_get_location (&code->loc));
+  TREE_TYPE (metadirective_tree) = void_type_node;
+  OMP_METADIRECTIVE_VARIANTS (metadirective_tree) = NULL_TREE;
+
+  tree tree_body = NULL_TREE;
+
+  while (variant)
+    {
+      tree ctx = gfc_trans_omp_set_selector (variant->selectors,
+					     variant->where);
+      ctx = omp_check_context_selector (gfc_get_location (&variant->where),
+					ctx, true);
+      if (ctx == error_mark_node)
+	return error_mark_node;
+
+      /* If the selector doesn't match, drop the whole variant.  */
+      if (!omp_context_selector_matches (ctx, NULL_TREE, false))
+	{
+	  variant = variant->next;
+	  continue;
+	}
+
+      gfc_code *next_code = variant->code->next;
+      if (next_code && tree_body == NULL_TREE)
+	tree_body = gfc_trans_code (next_code);
+
+      if (next_code)
+	variant->code->next = NULL;
+      tree directive = gfc_trans_code (variant->code);
+      if (next_code)
+	variant->code->next = next_code;
+
+      tree body = next_code ? tree_body : NULL_TREE;
+      tree omp_variant = make_omp_metadirective_variant (ctx, directive, body);
+      OMP_METADIRECTIVE_VARIANTS (metadirective_tree)
+	= chainon (OMP_METADIRECTIVE_VARIANTS (metadirective_tree),
+		   omp_variant);
+      variant = variant->next;
+    }
+
+  /* TODO: Resolve the metadirective here if possible.   */
+
+  return metadirective_tree;
 }

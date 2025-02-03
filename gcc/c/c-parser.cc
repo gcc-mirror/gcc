@@ -27090,7 +27090,10 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
       else if (ccode == append_args)
 	{
 	  if (append_args_tree)
-	    error_at (append_args_loc, "too many %qs clauses", "append_args");
+	    {
+	      error_at (append_args_loc, "too many %qs clauses", "append_args");
+	      append_args_tree = NULL_TREE;
+	    }
 	  do
 	    {
 	      location_t loc = c_parser_peek_token (parser)->location;
@@ -27115,17 +27118,19 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 		  || !c_parser_require (parser, CPP_CLOSE_PAREN,
 					"expected %<)%> or %<,%>"))
 		goto fail;
-	      tree t = build_omp_clause (loc, OMP_CLAUSE_INIT);
+	      tree t = build_tree_list (target ? boolean_true_node
+					       : boolean_false_node,
+					targetsync ? boolean_true_node
+						   : boolean_false_node);
+	      t = build1_loc (loc, NOP_EXPR, void_type_node, t);
+	      t = build_tree_list (t, prefer_type_tree);
 	      if (append_args_tree)
-		OMP_CLAUSE_CHAIN (append_args_last) = t;
+		{
+		  TREE_CHAIN (append_args_last) = t;
+		  append_args_last = t;
+		}
 	      else
 		append_args_tree = append_args_last = t;
-	      if (target)
-		OMP_CLAUSE_INIT_TARGET (t) = 1;
-	      if (targetsync)
-		OMP_CLAUSE_INIT_TARGETSYNC (t) = 1;
-	      if (prefer_type_tree)
-		OMP_CLAUSE_INIT_PREFER_TYPE (t) = prefer_type_tree;
 	      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 		break;
 	      if (!c_parser_require (parser, CPP_COMMA, "expected %<)%> or %<,%>"))
@@ -27143,9 +27148,7 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 				    OMP_TRAIT_CONSTRUCT_SIMD))
     {
       bool fail = false;
-      if (append_args_tree
-	  && TYPE_ARG_TYPES (TREE_TYPE (fndecl)) != NULL_TREE
-	  && TYPE_ARG_TYPES (TREE_TYPE (variant)) != NULL_TREE)
+      if (append_args_tree)
 	{
 	  int nappend_args = 0;
 	  int nbase_args = 0;
@@ -27155,6 +27158,11 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	  for (tree t = append_args_tree; t; t = TREE_CHAIN (t))
 	    nappend_args++;
 
+	  /* Store as purpose = arg number after which to append
+	     and value = list of interop items.  */
+	  append_args_tree = build_tree_list (build_int_cst (integer_type_node,
+							     nbase_args),
+					      append_args_tree);
 	  tree args, arg;
 	  args = arg = TYPE_ARG_TYPES (TREE_TYPE (variant));
 	  for (int j = 0; j < nbase_args && arg; j++, arg = TREE_CHAIN (arg))
@@ -27162,7 +27170,7 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	  for (int i = 0; i < nappend_args && arg; i++)
 	    arg = TREE_CHAIN (arg);
 	  tree saved_args;
-	  if (nbase_args)
+	  if (nbase_args && args)
 	    {
 	      saved_args = TREE_CHAIN (args);
 	      TREE_CHAIN (args) = arg;
@@ -27171,13 +27179,17 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	    {
 	      saved_args = args;
 	      TYPE_ARG_TYPES (TREE_TYPE (variant)) = arg;
+	      TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (variant)) = 1;
 	    }
 	  if (!comptypes (TREE_TYPE (fndecl), TREE_TYPE (variant)))
 	    fail = true;
-	  if (nbase_args)
+	  if (nbase_args && args)
 	    TREE_CHAIN (args) = saved_args;
 	  else
-	    TYPE_ARG_TYPES (TREE_TYPE (variant)) = saved_args;
+	    {
+	      TYPE_ARG_TYPES (TREE_TYPE (variant)) = saved_args;
+	      TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (variant)) = 0;
+	    }
 	  arg = saved_args;
 	  if (!fail)
 	    for (int i = 0; i < nappend_args; i++, arg = TREE_CHAIN (arg))

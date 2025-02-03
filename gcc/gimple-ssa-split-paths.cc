@@ -138,8 +138,7 @@ poor_ifcvt_candidate_code (enum tree_code code)
   return (code == MIN_EXPR
 	  || code == MAX_EXPR
 	  || code == ABS_EXPR
-	  || code == COND_EXPR
-	  || code == CALL_EXPR);
+	  || code == COND_EXPR);
 }
 
 /* Return TRUE if PRED of BB is an poor ifcvt candidate. */
@@ -161,6 +160,11 @@ poor_ifcvt_pred (basic_block pred, basic_block bb)
   gimple *stmt = last_and_only_stmt (pred);
   if (!stmt || gimple_code (stmt) != GIMPLE_ASSIGN)
     return true;
+
+  /* If the statement could trap, then this is a poor ifcvt candidate. */
+  if (gimple_could_trap_p (stmt))
+    return true;
+
   tree_code code = gimple_assign_rhs_code (stmt);
   if (poor_ifcvt_candidate_code (code))
     return true;

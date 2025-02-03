@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-dse1 -Wno-psabi" } */
+/* { dg-additional-options "--param=riscv-two-source-permutes" { target riscv*-*-* } } */
 
 typedef int veci __attribute__ ((vector_size (4 * sizeof (int))));
 
