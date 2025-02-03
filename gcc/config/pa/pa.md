@@ -5632,8 +5632,10 @@
    (set_attr "length" "4")])
 
 (define_insn ""
-  [(set (reg:SI 29) (mult:SI (reg:SI 26) (reg:SI 25)))
-   (clobber (match_operand:SI 0 "register_operand" "=a"))
+  [(set (reg:SI 29)
+	(mult:SI (match_operand:SI 1 "r26_operand" "")
+		 (match_operand:SI 0 "r25_operand" "")))
+   (clobber (match_operand:SI 2 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
@@ -5645,8 +5647,10 @@
 	      (symbol_ref "pa_attr_length_millicode_call (insn)")))])
 
 (define_insn ""
-  [(set (reg:SI 29) (mult:SI (reg:SI 26) (reg:SI 25)))
-   (clobber (match_operand:SI 0 "register_operand" "=a"))
+  [(set (reg:SI 29)
+	(mult:SI (match_operand:SI 1 "r26_operand" "")
+		 (match_operand:SI 0 "r25_operand" "")))
+   (clobber (match_operand:SI 2 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 2))]
@@ -5753,8 +5757,9 @@
 
 (define_insn ""
   [(set (reg:SI 29)
-	(div:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
-   (clobber (match_operand:SI 1 "register_operand" "=a"))
+	(div:SI (match_operand:SI 1 "r26_operand" "")
+		(match_operand:SI 0 "div_operand" "")))
+   (clobber (match_operand:SI 2 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
@@ -5768,8 +5773,9 @@
 
 (define_insn ""
   [(set (reg:SI 29)
-	(div:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
-   (clobber (match_operand:SI 1 "register_operand" "=a"))
+	(div:SI (match_operand:SI 1 "r26_operand" "")
+		(match_operand:SI 0 "div_operand" "")))
+   (clobber (match_operand:SI 2 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 2))]
@@ -5800,8 +5806,9 @@
 
 (define_insn ""
   [(set (reg:SI 29)
-	(udiv:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
-   (clobber (match_operand:SI 1 "register_operand" "=a"))
+	(udiv:SI (match_operand:SI 1 "r26_operand" "")
+		 (match_operand:SI 0 "div_operand" "")))
+   (clobber (match_operand:SI 2 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
@@ -5815,8 +5822,9 @@
 
 (define_insn ""
   [(set (reg:SI 29)
-	(udiv:SI (reg:SI 26) (match_operand:SI 0 "div_operand" "")))
-   (clobber (match_operand:SI 1 "register_operand" "=a"))
+	(udiv:SI (match_operand:SI 1 "r26_operand" "")
+		 (match_operand:SI 0 "div_operand" "")))
+   (clobber (match_operand:SI 2 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 2))]
@@ -5844,8 +5852,10 @@
 }")
 
 (define_insn ""
-  [(set (reg:SI 29) (mod:SI (reg:SI 26) (reg:SI 25)))
-   (clobber (match_operand:SI 0 "register_operand" "=a"))
+  [(set (reg:SI 29)
+	(mod:SI (match_operand:SI 1 "r26_operand" "")
+		(match_operand:SI 0 "r25_operand" "")))
+   (clobber (match_operand:SI 2 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
@@ -5858,8 +5868,10 @@
 	      (symbol_ref "pa_attr_length_millicode_call (insn)")))])
 
 (define_insn ""
-  [(set (reg:SI 29) (mod:SI (reg:SI 26) (reg:SI 25)))
-   (clobber (match_operand:SI 0 "register_operand" "=a"))
+  [(set (reg:SI 29)
+	(mod:SI (match_operand:SI 1 "r26_operand" "")
+		(match_operand:SI 0 "r25_operand" "")))
+   (clobber (match_operand:SI 2 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 2))]
@@ -5887,8 +5899,10 @@
 }")
 
 (define_insn ""
-  [(set (reg:SI 29) (umod:SI (reg:SI 26) (reg:SI 25)))
-   (clobber (match_operand:SI 0 "register_operand" "=a"))
+  [(set (reg:SI 29)
+	(umod:SI (match_operand:SI 1 "r26_operand" "")
+		 (match_operand:SI 0 "r25_operand" "")))
+   (clobber (match_operand:SI 2 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
@@ -5901,8 +5915,10 @@
 	      (symbol_ref "pa_attr_length_millicode_call (insn)")))])
 
 (define_insn ""
-  [(set (reg:SI 29) (umod:SI (reg:SI 26) (reg:SI 25)))
-   (clobber (match_operand:SI 0 "register_operand" "=a"))
+  [(set (reg:SI 29)
+	(umod:SI (match_operand:SI 1 "r26_operand" "")
+		 (match_operand:SI 0 "r25_operand" "")))
+   (clobber (match_operand:SI 2 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 2))]
