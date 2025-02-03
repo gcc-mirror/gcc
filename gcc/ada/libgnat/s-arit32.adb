@@ -96,7 +96,8 @@ is
    --  Convert absolute value of X to unsigned. Note that we can't just use
    --  the expression of the Else since it overflows for X = Int32'First.
 
-   function Lo (A : Uns64) return Uns32 is (Uns32 (A and (2 ** 32 - 1)));
+   function Lo (A : Uns64) return Uns32 is (Uns32 (A and (2 ** 32 - 1)))
+   with Ghost;
    --  Low order half of 64-bit value
 
    function Hi (A : Uns64) return Uns32 is (Uns32 (Shift_Right (A, 32)));
