@@ -436,9 +436,7 @@ free_lang_data_in_type (tree type, class free_lang_data_d *fld)
 	 different front ends.  */
       for (tree p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
 	{
-	  TREE_VALUE (p) = fld_simplified_type (TREE_VALUE (p), fld);
 	  tree arg_type = TREE_VALUE (p);
-
 	  if (TYPE_READONLY (arg_type) || TYPE_VOLATILE (arg_type))
 	    {
 	      int quals = TYPE_QUALS (arg_type)
@@ -448,6 +446,7 @@ free_lang_data_in_type (tree type, class free_lang_data_d *fld)
 	      if (!fld->pset.add (TREE_VALUE (p)))
 		free_lang_data_in_type (TREE_VALUE (p), fld);
 	    }
+	  TREE_VALUE (p) = fld_simplified_type (TREE_VALUE (p), fld);
 	  /* C++ FE uses TREE_PURPOSE to store initial values.  */
 	  TREE_PURPOSE (p) = NULL;
 	}
