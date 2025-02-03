@@ -212,8 +212,8 @@ PathProbeType::visit (HIR::TypeAlias &alias)
     {
       HirId tyid = alias.get_mappings ().get_hirid ();
       TyTy::BaseType *ty = nullptr;
-      bool ok = query_type (tyid, &ty);
-      rust_assert (ok);
+      if (!query_type (tyid, &ty))
+	return;
 
       PathProbeCandidate::ImplItemCandidate impl_item_candidate{&alias,
 								current_impl};
@@ -232,8 +232,8 @@ PathProbeType::visit (HIR::ConstantItem &constant)
     {
       HirId tyid = constant.get_mappings ().get_hirid ();
       TyTy::BaseType *ty = nullptr;
-      bool ok = query_type (tyid, &ty);
-      rust_assert (ok);
+      if (!query_type (tyid, &ty))
+	return;
 
       PathProbeCandidate::ImplItemCandidate impl_item_candidate{&constant,
 								current_impl};
@@ -252,8 +252,8 @@ PathProbeType::visit (HIR::Function &function)
     {
       HirId tyid = function.get_mappings ().get_hirid ();
       TyTy::BaseType *ty = nullptr;
-      bool ok = query_type (tyid, &ty);
-      rust_assert (ok);
+      if (!query_type (tyid, &ty))
+	return;
 
       PathProbeCandidate::ImplItemCandidate impl_item_candidate{&function,
 								current_impl};
