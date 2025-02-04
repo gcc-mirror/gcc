@@ -31,34 +31,34 @@ DeriveVisitor::DeriveVisitor (location_t loc)
   : loc (loc), builder (Builder (loc))
 {}
 
-std::unique_ptr<Item>
+std::vector<std::unique_ptr<Item>>
 DeriveVisitor::derive (Item &item, const Attribute &attr,
 		       BuiltinMacro to_derive)
 {
   switch (to_derive)
     {
     case BuiltinMacro::Clone:
-      return DeriveClone (attr.get_locus ()).go (item);
+      return vec (DeriveClone (attr.get_locus ()).go (item));
     case BuiltinMacro::Copy:
-      return DeriveCopy (attr.get_locus ()).go (item);
+      return vec (DeriveCopy (attr.get_locus ()).go (item));
     case BuiltinMacro::Debug:
       rust_warning_at (
 	attr.get_locus (), 0,
 	"derive(Debug) is not fully implemented yet and has no effect - only a "
 	"stub implementation will be generated");
-      return DeriveDebug (attr.get_locus ()).go (item);
+      return vec (DeriveDebug (attr.get_locus ()).go (item));
     case BuiltinMacro::Default:
-      return DeriveDefault (attr.get_locus ()).go (item);
+      return vec (DeriveDefault (attr.get_locus ()).go (item));
     case BuiltinMacro::Eq:
-      return DeriveEq (attr.get_locus ()).go (item);
+      return vec (DeriveEq (attr.get_locus ()).go (item));
     case BuiltinMacro::PartialEq:
-      return DerivePartialEq (attr.get_locus ()).go (item);
+      return vec (DerivePartialEq (attr.get_locus ()).go (item));
     case BuiltinMacro::Ord:
     case BuiltinMacro::PartialOrd:
     case BuiltinMacro::Hash:
     default:
       rust_sorry_at (attr.get_locus (), "unimplemented builtin derive macro");
-      return nullptr;
+      return {};
     };
 }
 

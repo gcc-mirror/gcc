@@ -34,8 +34,12 @@ namespace AST {
 class DeriveVisitor : public AST::ASTVisitor
 {
 public:
-  static std::unique_ptr<Item> derive (Item &item, const Attribute &derive,
-				       BuiltinMacro to_derive);
+  /**
+   * Expand a built-in derive macro on an item. This may generate multiple items
+   * which all need to be integrated to the existing AST
+   */
+  static std::vector<std::unique_ptr<Item>>
+  derive (Item &item, const Attribute &derive, BuiltinMacro to_derive);
 
 protected:
   DeriveVisitor (location_t loc);
