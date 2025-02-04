@@ -29,14 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Ghost code, loop invariants and assertions in this unit are meant for
---  analysis only, not for run-time checking, as it would be too costly
---  otherwise. This is enforced by setting the assertion policy to Ignore.
-
-pragma Assertion_Policy (Ghost          => Ignore,
-                         Loop_Invariant => Ignore,
-                         Assert         => Ignore);
-
 with System.Case_Util; use System.Case_Util;
 
 package body System.Val_Util
@@ -48,12 +40,11 @@ is
    ---------------
 
    procedure Bad_Value (S : String) is
-      pragma Annotate (GNATprove, Intentional, "exception might be raised",
-                       "Intentional exception from Bad_Value");
    begin
       --  Bad_Value might be called with very long strings allocated on the
       --  heap. Limit the size of the message so that we avoid creating a
       --  Storage_Error during error handling.
+
       if S'Length > 127 then
          raise Constraint_Error with "bad input for 'Value: """
          & S (S'First .. S'First + 127) & "...""";
@@ -69,8 +60,7 @@ is
    procedure Normalize_String
      (S             : in out String;
       F, L          : out Integer;
-      To_Upper_Case : Boolean)
-   is
+      To_Upper_Case : Boolean) is
    begin
       F := S'First;
       L := S'Last;
@@ -84,9 +74,6 @@ is
       --  Scan for leading spaces
 
       while F < L and then S (F) = ' ' loop
-         pragma Loop_Invariant (F in S'First .. L - 1);
-         pragma Loop_Invariant (for all J in S'First .. F => S (J) = ' ');
-         pragma Loop_Variant (Increases => F);
          F := F + 1;
       end loop;
 
@@ -101,9 +88,6 @@ is
       --  Scan for trailing spaces
 
       while S (L) = ' ' loop
-         pragma Loop_Invariant (L in F + 1 .. S'Last);
-         pragma Loop_Invariant (for all J in L .. S'Last => S (J) = ' ');
-         pragma Loop_Variant (Decreases => L);
          L := L - 1;
       end loop;
 
@@ -112,8 +96,6 @@ is
       if To_Upper_Case and then S (F) /= ''' then
          for J in F .. L loop
             S (J) := To_Upper (S (J));
-            pragma Loop_Invariant
-              (for all K in F .. J => S (K) = To_Upper (S'Loop_Entry (K)));
          end loop;
       end if;
    end Normalize_String;
@@ -185,40 +167,23 @@ is
 
       X := 0;
 
-      declare
-         Rest : constant String := Str (P .. Max) with Ghost;
-         Last : constant Natural := Sp.Last_Number_Ghost (Rest) with Ghost;
+      loop
+         pragma Assert (Str (P) in '0' .. '9');
 
-      begin
-         pragma Assert (Sp.Is_Natural_Format_Ghost (Rest));
+         if X < (Integer'Last / 10) then
+            X := X * 10 + (Character'Pos (Str (P)) - Character'Pos ('0'));
+         end if;
 
-         loop
-            pragma Assert (Str (P) in '0' .. '9');
+         P := P + 1;
 
-            if X < (Integer'Last / 10) then
-               X := X * 10 + (Character'Pos (Str (P)) - Character'Pos ('0'));
-            end if;
+         exit when P > Max;
 
-            pragma Loop_Invariant (X >= 0);
-            pragma Loop_Invariant (P in Rest'First .. Last);
-            pragma Loop_Invariant (Str (P) in '0' .. '9');
-            pragma Loop_Invariant
-              (Sp.Scan_Natural_Ghost (Rest, Rest'First, 0)
-               = Sp.Scan_Natural_Ghost (Rest, P + 1, X));
-
-            P := P + 1;
-
-            exit when P > Max;
-
-            if Str (P) = '_' then
-               Scan_Underscore (Str, P, Ptr, Max, False);
-            else
-               exit when Str (P) not in '0' .. '9';
-            end if;
-         end loop;
-
-         pragma Assert (P = Last + 1);
-      end;
+         if Str (P) = '_' then
+            Scan_Underscore (Str, P, Ptr, Max, False);
+         else
+            exit when Str (P) not in '0' .. '9';
+         end if;
+      end loop;
 
       if M then
          X := -X;
@@ -250,12 +215,6 @@ is
       while Str (P) = ' ' loop
          P := P + 1;
 
-         pragma Loop_Invariant (Ptr.all = Ptr.all'Loop_Entry);
-         pragma Loop_Invariant (P in Ptr.all .. Max);
-         pragma Loop_Invariant (for some J in P .. Max => Str (J) /= ' ');
-         pragma Loop_Invariant
-           (for all J in Ptr.all .. P - 1 => Str (J) = ' ');
-
          if P > Max then
             Ptr.all := P;
             Bad_Value (Str);
@@ -263,8 +222,6 @@ is
       end loop;
 
       Start := P;
-
-      pragma Assert (Start = Sp.First_Non_Space_Ghost (Str, Ptr.all, Max));
 
       --  Skip past an initial plus sign
 
@@ -292,7 +249,6 @@ is
       Start : out Positive)
    is
       P : Integer := Ptr.all;
-
    begin
       --  Deal with case of null string (all blanks). As per spec, we raise
       --  constraint error, with Ptr unchanged, and thus > Max.
@@ -306,12 +262,6 @@ is
       while Str (P) = ' ' loop
          P := P + 1;
 
-         pragma Loop_Invariant (Ptr.all = Ptr.all'Loop_Entry);
-         pragma Loop_Invariant (P in Ptr.all .. Max);
-         pragma Loop_Invariant (for some J in P .. Max => Str (J) /= ' ');
-         pragma Loop_Invariant
-           (for all J in Ptr.all .. P - 1 => Str (J) = ' ');
-
          if P > Max then
             Ptr.all := P;
             Bad_Value (Str);
@@ -319,8 +269,6 @@ is
       end loop;
 
       Start := P;
-
-      pragma Assert (Start = Sp.First_Non_Space_Ghost (Str, Ptr.all, Max));
 
       --  Remember an initial minus sign
 
@@ -361,8 +309,6 @@ is
          if Str (J) /= ' ' then
             Bad_Value (Str);
          end if;
-
-         pragma Loop_Invariant (for all K in P .. J => Str (K) = ' ');
       end loop;
    end Scan_Trailing_Blanks;
 
@@ -378,7 +324,6 @@ is
       Ext : Boolean)
    is
       C : Character;
-
    begin
       P := P + 1;
 

@@ -10871,11 +10871,10 @@ package body Exp_Util is
          --  operator on private type might not be visible and won't be
          --  resolved.
 
-         else pragma Assert (Is_RTE (Base_Type (Typ), RE_Big_Integer)
-                               or else
-                             Is_RTE (Base_Type (Typ), RO_GH_Big_Integer)
-                               or else
-                             Is_RTE (Base_Type (Typ), RO_SP_Big_Integer));
+         else
+            pragma Assert
+              (Is_RTE (Base_Type (Typ), RE_Big_Integer)
+               or else Is_RTE (Base_Type (Typ), RO_SP_Big_Integer));
             return
               Make_Function_Call (Loc,
                 Name                   =>

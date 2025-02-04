@@ -20975,15 +20975,12 @@ package body Sem_Prag is
                then
                   null;
 
-               --  Expression of a Big_Integer type (or its ghost variant) is
+               --  Expression of a Big_Integer type (or its SPARK variant) is
                --  only allowed in Decreases clause.
 
                elsif
                  Is_RTE (Base_Type (Etype (Expression (Variant))),
                          RE_Big_Integer)
-                   or else
-                 Is_RTE (Base_Type (Etype (Expression (Variant))),
-                         RO_GH_Big_Integer)
                    or else
                  Is_RTE (Base_Type (Etype (Expression (Variant))),
                          RO_SP_Big_Integer)
@@ -31485,12 +31482,8 @@ package body Sem_Prag is
          --  Expression of a Big_Integer type (or its ghost variant) is only
          --  allowed in Decreases clause.
 
-         elsif
-           Is_RTE (Base_Type (Etype (Expr)), RE_Big_Integer)
-             or else
-           Is_RTE (Base_Type (Etype (Expr)), RO_GH_Big_Integer)
-             or else
-           Is_RTE (Base_Type (Etype (Expr)), RO_SP_Big_Integer)
+         elsif Is_RTE (Base_Type (Etype (Expr)), RE_Big_Integer)
+           or else Is_RTE (Base_Type (Etype (Expr)), RO_SP_Big_Integer)
          then
             if Chars (Direction) = Name_Increases then
                Error_Msg_N

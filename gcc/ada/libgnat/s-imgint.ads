@@ -33,33 +33,12 @@
 --  and ``Ada.Text_IO.Integer_IO`` conversions routines for signed integer
 --  types up to Size ``Integer'Size``.
 
---  Preconditions in this unit are meant for analysis only, not for run-time
---  checking, so that the expected exceptions are raised. This is enforced by
---  setting the corresponding assertion policy to Ignore. Postconditions and
---  contract cases should not be executed at runtime as well, in order not to
---  slow down the execution of these functions.
-
-pragma Assertion_Policy (Pre                => Ignore,
-                         Post               => Ignore,
-                         Contract_Cases     => Ignore,
-                         Ghost              => Ignore,
-                         Subprogram_Variant => Ignore);
-
 with System.Image_I;
-with System.Unsigned_Types;
-with System.Vs_Int;
-with System.Vs_Uns;
 
 package System.Img_Int
   with SPARK_Mode
 is
-   subtype Unsigned is Unsigned_Types.Unsigned;
-
-   package Impl is new Image_I
-     (Int    => Integer,
-      Uns    => Unsigned,
-      U_Spec => System.Vs_Uns.Spec,
-      I_Spec => System.Vs_Int.Spec);
+   package Impl is new Image_I (Integer);
 
    procedure Image_Integer
      (V : Integer;

@@ -32,29 +32,8 @@
 --  This package contains routines for scanning modular Unsigned
 --  values for use in Text_IO.Modular_IO, and the Value attribute.
 
---  Preconditions in this unit are meant for analysis only, not for run-time
---  checking, so that the expected exceptions are raised. This is enforced by
---  setting the corresponding assertion policy to Ignore. Postconditions and
---  contract cases should not be executed at runtime as well, in order not to
---  slow down the execution of these functions.
-
-pragma Assertion_Policy (Pre                => Ignore,
-                         Post               => Ignore,
-                         Contract_Cases     => Ignore,
-                         Ghost              => Ignore,
-                         Subprogram_Variant => Ignore);
-
-with System.Value_U_Spec;
-with System.Val_Spec; use System.Val_Spec;
-
 generic
-
    type Uns is mod <>;
-
-   --  Additional parameters for ghost subprograms used inside contracts
-
-   with package Spec is new System.Value_U_Spec (Uns => Uns) with Ghost;
-
 package System.Value_U is
    pragma Preelaborate;
 
@@ -62,15 +41,7 @@ package System.Value_U is
      (Str : String;
       Ptr : not null access Integer;
       Max : Integer;
-      Res : out Uns)
-   with Pre => Str'Last /= Positive'Last
-     and then Ptr.all in Str'Range
-     and then Max in Ptr.all .. Str'Last
-     and then Spec.Is_Raw_Unsigned_Format_Ghost (Str (Ptr.all .. Max)),
-     Post => Spec.Raw_Unsigned_No_Overflow_Ghost (Str, Ptr.all'Old, Max)
-     and Res = Spec.Scan_Raw_Unsigned_Ghost (Str, Ptr.all'Old, Max)
-     and Ptr.all = Spec.Raw_Unsigned_Last_Ghost (Str, Ptr.all'Old, Max);
-
+      Res : out Uns);
    --  This function scans the string starting at Str (Ptr.all) for a valid
    --  integer according to the syntax described in (RM 3.5(43)). The substring
    --  scanned extends no further than Str (Max).  Note: this does not scan
@@ -145,45 +116,14 @@ package System.Value_U is
      (Str : String;
       Ptr : not null access Integer;
       Max : Integer;
-      Res : out Uns)
-   with Pre => Str'Last /= Positive'Last
-     and then Ptr.all in Str'Range
-     and then Max in Ptr.all .. Str'Last
-     and then not Only_Space_Ghost (Str, Ptr.all, Max)
-     and then
-       (declare
-          Non_Blank : constant Positive :=
-            First_Non_Space_Ghost (Str, Ptr.all, Max);
-          Fst_Num   : constant Positive :=
-            (if Str (Non_Blank) = '+' then Non_Blank + 1 else Non_Blank);
-        begin
-          Spec.Is_Raw_Unsigned_Format_Ghost (Str (Fst_Num .. Max))),
-     Post =>
-       (declare
-          Non_Blank : constant Positive :=
-            First_Non_Space_Ghost (Str, Ptr.all'Old, Max);
-          Fst_Num   : constant Positive :=
-            (if Str (Non_Blank) = '+' then Non_Blank + 1 else Non_Blank);
-        begin
-          Spec.Raw_Unsigned_No_Overflow_Ghost (Str, Fst_Num, Max)
-          and then Res = Spec.Scan_Raw_Unsigned_Ghost (Str, Fst_Num, Max)
-          and then Ptr.all = Spec.Raw_Unsigned_Last_Ghost (Str, Fst_Num, Max));
-
+      Res : out Uns);
    --  Same as Scan_Raw_Unsigned, except scans optional leading
    --  blanks, and an optional leading plus sign.
    --
    --  Note: if a minus sign is present, Constraint_Error will be raised.
    --  Note: trailing blanks are not scanned.
 
-   function Value_Unsigned
-     (Str : String) return Uns
-   with Pre => Str'Length /= Positive'Last
-     and then not Only_Space_Ghost (Str, Str'First, Str'Last)
-     and then Spec.Is_Unsigned_Ghost (Spec.Slide_If_Necessary (Str)),
-     Post =>
-         Spec.Is_Value_Unsigned_Ghost
-           (Spec.Slide_If_Necessary (Str), Value_Unsigned'Result),
-     Subprogram_Variant => (Decreases => Str'First);
+   function Value_Unsigned (Str : String) return Uns;
    --  Used in computing X'Value (Str) where X is a modular integer type whose
    --  modulus does not exceed the range of System.Unsigned_Types.Unsigned. Str
    --  is the string argument of the attribute. Constraint_Error is raised if

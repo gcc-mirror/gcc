@@ -29,15 +29,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  Ghost code, loop (in)variants and assertions in this unit are meant for
---  analysis only, not for run-time checking, as it would be too costly
---  otherwise. This is enforced by setting the assertion policy to Ignore.
-
-pragma Assertion_Policy (Ghost          => Ignore,
-                         Loop_Invariant => Ignore,
-                         Loop_Variant   => Ignore,
-                         Assert         => Ignore);
-
 with Ada.Strings.Maps; use Ada.Strings.Maps;
 
 package body Ada.Strings.Superbounded with SPARK_Mode is
@@ -1438,91 +1429,6 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
       Indx   : Natural;
       Ilen   : constant Natural := Item'Length;
 
-      --  Parts of the proof involving manipulations with the modulo operator
-      --  are complicated for the prover and can't be done automatically in
-      --  the global subprogram. That's why we isolate them in these two ghost
-      --  lemmas.
-
-      procedure Lemma_Mod (K : Natural; Q : Natural) with
-        Ghost,
-        Pre  => Ilen /= 0
-          and then Q mod Ilen = 0
-          and then K - Q in 0 .. Ilen - 1,
-        Post => K mod Ilen = K - Q;
-      --  Lemma_Mod is applied to an index considered in Lemma_Split to prove
-      --  that it has the right value modulo Item'Length.
-
-      procedure Lemma_Mod_Zero (X : Natural) with
-        Ghost,
-        Pre  => Ilen /= 0
-          and then X mod Ilen = 0
-          and then X <= Natural'Last - Ilen,
-        Post => (X + Ilen) mod Ilen = 0;
-      --  Lemma_Mod_Zero is applied to prove that the length of the range
-      --  of indexes considered in the loop, when dropping on the Left, is
-      --  a multiple of Item'Length.
-
-      procedure Lemma_Split (Going : Direction) with
-        Ghost,
-        Pre  =>
-          Ilen /= 0
-            and then Indx in 0 .. Max_Length - Ilen
-            and then
-              (if Going = Forward
-               then Indx mod Ilen = 0
-               else (Max_Length - Indx - Ilen) mod Ilen = 0)
-            and then Result.Data (Indx + 1 .. Indx + Ilen)'Initialized
-            and then String (Result.Data (Indx + 1 .. Indx + Ilen)) = Item,
-        Post =>
-          (if Going = Forward then
-             (for all J in Indx + 1 .. Indx + Ilen =>
-                Result.Data (J) = Item (Item'First + (J - 1) mod Ilen))
-           else
-             (for all J in Indx + 1 .. Indx + Ilen =>
-                Result.Data (J) =
-                  Item (Item'Last - (Max_Length - J) mod Ilen)));
-      --  Lemma_Split is used after Result.Data (Indx + 1 .. Indx + Ilen) is
-      --  updated to Item and concludes that the characters match for each
-      --  index when taken modulo Item'Length, as the considered slice starts
-      --  at index 1 (or ends at index Max_Length, if Going = Backward) modulo
-      --  Item'Length.
-
-      ---------------
-      -- Lemma_Mod --
-      ---------------
-
-      procedure Lemma_Mod (K : Natural; Q : Natural) is null;
-
-      --------------------
-      -- Lemma_Mod_Zero --
-      --------------------
-
-      procedure Lemma_Mod_Zero (X : Natural) is null;
-
-      -----------------
-      -- Lemma_Split --
-      -----------------
-
-      procedure Lemma_Split (Going : Direction) is
-      begin
-         if Going = Forward then
-            for K in Indx + 1 .. Indx + Ilen loop
-               Lemma_Mod (K - 1, Indx);
-               pragma Loop_Invariant
-                 (for all J in Indx + 1 .. K =>
-                    Result.Data (J) = Item (Item'First + (J - 1) mod Ilen));
-            end loop;
-         else
-            for K in Indx + 1 .. Indx + Ilen loop
-               Lemma_Mod (Max_Length - K, Max_Length - Indx - Ilen);
-               pragma Loop_Invariant
-                 (for all J in Indx + 1 .. K =>
-                    Result.Data (J) =
-                      Item (Item'Last - (Max_Length - J) mod Ilen));
-            end loop;
-         end if;
-      end Lemma_Split;
-
    begin
       if Count = 0 or else Ilen <= Max_Length / Count then
          if Count * Ilen > 0 then
@@ -1531,19 +1437,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
             for J in 1 .. Count loop
                Result.Data (Indx + 1 .. Indx + Ilen) :=
                  Super_String_Data (Item);
-               pragma Assert
-                 (for all K in 1 .. Ilen =>
-                    Result.Data (Indx + K) = Item (Item'First - 1 + K));
-               pragma Assert
-                 (String (Result.Data (Indx + 1 .. Indx + Ilen)) = Item);
-               Lemma_Split (Forward);
                Indx := Indx + Ilen;
-               pragma Loop_Invariant (Indx = J * Ilen);
-               pragma Loop_Invariant (Result.Data (1 .. Indx)'Initialized);
-               pragma Loop_Invariant
-                 (for all K in 1 .. Indx =>
-                    Result.Data (K) =
-                      Item (Item'First + (K - 1) mod Ilen));
             end loop;
          end if;
 
@@ -1557,36 +1451,11 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
                while Indx < Max_Length - Ilen loop
                   Result.Data (Indx + 1 .. Indx + Ilen) :=
                     Super_String_Data (Item);
-                  pragma Assert
-                    (for all K in 1 .. Ilen =>
-                       Result.Data (Indx + K) = Item (Item'First - 1 + K));
-                  pragma Assert
-                    (String (Result.Data (Indx + 1 .. Indx + Ilen)) = Item);
-                  Lemma_Split (Forward);
                   Indx := Indx + Ilen;
-                  pragma Loop_Invariant (Indx mod Ilen = 0);
-                  pragma Loop_Invariant (Indx in 0 .. Max_Length - 1);
-                  pragma Loop_Invariant (Result.Data (1 .. Indx)'Initialized);
-                  pragma Loop_Invariant
-                    (for all K in 1 .. Indx =>
-                       Result.Data (K) =
-                         Item (Item'First + (K - 1) mod Ilen));
-                  pragma Loop_Variant (Increases => Indx);
                end loop;
 
                Result.Data (Indx + 1 .. Max_Length) := Super_String_Data
                  (Item (Item'First .. Item'First + (Max_Length - Indx - 1)));
-               pragma Assert
-                 (for all J in Indx + 1 .. Max_Length =>
-                    Result.Data (J) = Item (Item'First - 1 - Indx + J));
-
-               for J in Indx + 1 .. Max_Length loop
-                  Lemma_Mod (J - 1, Indx);
-                  pragma Loop_Invariant
-                    (for all K in 1 .. J =>
-                       Result.Data (K) =
-                         Item (Item'First + (K - 1) mod Ilen));
-               end loop;
 
             when Strings.Left =>
                Indx := Max_Length;
@@ -1595,40 +1464,10 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
                   Indx := Indx - Ilen;
                   Result.Data (Indx + 1 .. Indx + Ilen) :=
                     Super_String_Data (Item);
-                  pragma Assert
-                    (for all K in 1 .. Ilen =>
-                       Result.Data (Indx + K) = Item (Item'First - 1 + K));
-                  pragma Assert
-                    (String (Result.Data (Indx + 1 .. Indx + Ilen)) = Item);
-                  Lemma_Split (Backward);
-                  Lemma_Mod_Zero (Max_Length - Indx - Ilen);
-                  pragma Loop_Invariant
-                    ((Max_Length - Indx) mod Ilen = 0);
-                  pragma Loop_Invariant (Indx in 1 .. Max_Length);
-                  pragma Loop_Invariant
-                    (Result.Data (Indx + 1 .. Max_Length)'Initialized);
-                  pragma Loop_Invariant
-                    (for all K in Indx + 1 .. Max_Length =>
-                       Result.Data (K) =
-                         Item (Item'Last - (Max_Length - K) mod Ilen));
-                  pragma Loop_Variant (Decreases => Indx);
                end loop;
 
                Result.Data (1 .. Indx) :=
                  Super_String_Data (Item (Item'Last - Indx + 1 .. Item'Last));
-               pragma Assert
-                 (for all J in 1 .. Indx =>
-                    Result.Data (J) = Item (Item'Last - Indx + J));
-
-               for J in reverse 1 .. Indx loop
-                  Lemma_Mod (Max_Length - J, Max_Length - Indx);
-                  pragma Loop_Invariant
-                    (for all K in J .. Max_Length =>
-                       Result.Data (K) =
-                         Item (Item'Last - (Max_Length - K) mod Ilen));
-               end loop;
-               pragma Assert
-                 (Result.Data (1 .. Max_Length)'Initialized);
 
             when Strings.Error =>
                raise Ada.Strings.Length_Error;
@@ -1643,8 +1482,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
    function Super_Replicate
      (Count : Natural;
       Item  : Super_String;
-      Drop  : Strings.Truncation := Strings.Error) return Super_String
-   is
+      Drop  : Strings.Truncation := Strings.Error) return Super_String is
    begin
       return
         Super_Replicate (Count, Super_To_String (Item), Drop, Item.Max_Length);
@@ -1820,14 +1658,9 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
       Mapping : Maps.Character_Mapping) return Super_String
    is
       Result : Super_String (Source.Max_Length);
-
    begin
       for J in 1 .. Source.Current_Length loop
          Result.Data (J) := Value (Mapping, Source.Data (J));
-         pragma Loop_Invariant (Result.Data (1 .. J)'Initialized);
-         pragma Loop_Invariant
-           (for all K in 1 .. J =>
-              Result.Data (K) = Value (Mapping, Source.Data (K)));
       end loop;
 
       Result.Current_Length := Source.Current_Length;
@@ -1836,14 +1669,10 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
 
    procedure Super_Translate
      (Source  : in out Super_String;
-      Mapping : Maps.Character_Mapping)
-   is
+      Mapping : Maps.Character_Mapping) is
    begin
       for J in 1 .. Source.Current_Length loop
          Source.Data (J) := Value (Mapping, Source.Data (J));
-         pragma Loop_Invariant
-           (for all K in 1 .. J =>
-              Source.Data (K) = Value (Mapping, Source'Loop_Entry.Data (K)));
       end loop;
    end Super_Translate;
 
@@ -1852,20 +1681,9 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
       Mapping : Maps.Character_Mapping_Function) return Super_String
    is
       Result : Super_String (Source.Max_Length);
-
    begin
       for J in 1 .. Source.Current_Length loop
          Result.Data (J) := Mapping.all (Source.Data (J));
-         pragma Annotate (GNATprove, False_Positive,
-                          "call via access-to-subprogram",
-                          "function Mapping must always terminate");
-         pragma Loop_Invariant (Result.Data (1 .. J)'Initialized);
-         pragma Loop_Invariant
-           (for all K in 1 .. J =>
-              Result.Data (K) = Mapping (Source.Data (K)));
-         pragma Annotate (GNATprove, False_Positive,
-                          "call via access-to-subprogram",
-                          "function Mapping must always terminate");
       end loop;
 
       Result.Current_Length := Source.Current_Length;
@@ -1874,20 +1692,10 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
 
    procedure Super_Translate
      (Source  : in out Super_String;
-      Mapping : Maps.Character_Mapping_Function)
-   is
+      Mapping : Maps.Character_Mapping_Function) is
    begin
       for J in 1 .. Source.Current_Length loop
          Source.Data (J) := Mapping.all (Source.Data (J));
-         pragma Annotate (GNATprove, False_Positive,
-                          "call via access-to-subprogram",
-                          "function Mapping must always terminate");
-         pragma Loop_Invariant
-           (for all K in 1 .. J =>
-              Source.Data (K) = Mapping (Source'Loop_Entry.Data (K)));
-         pragma Annotate (GNATprove, False_Positive,
-                          "call via access-to-subprogram",
-                          "function Mapping must always terminate");
       end loop;
    end Super_Translate;
 
@@ -1901,7 +1709,6 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
    is
       Result : Super_String (Source.Max_Length);
       Last   : constant Natural := Source.Current_Length;
-
    begin
       case Side is
          when Strings.Left =>
@@ -2101,13 +1908,9 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
    begin
       if Left > Max_Length then
          raise Ada.Strings.Length_Error;
-
       else
          for J in 1 .. Left loop
             Result.Data (J) := Right;
-            pragma Loop_Invariant (Result.Data (1 .. J)'Initialized);
-            pragma Loop_Invariant
-              (for all K in 1 .. J => Result.Data (K) = Right);
          end loop;
 
          Result.Current_Length := Left;
@@ -2126,80 +1929,15 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
       Rlen   : constant Natural := Right'Length;
       Nlen   : constant Natural := Left * Rlen;
 
-      --  Parts of the proof involving manipulations with the modulo operator
-      --  are complicated for the prover and can't be done automatically in
-      --  the global subprogram. That's why we isolate them in these two ghost
-      --  lemmas.
-
-      procedure Lemma_Mod (K : Integer) with
-        Ghost,
-        Pre =>
-          Rlen /= 0
-          and then Pos mod Rlen = 0
-          and then Pos in 0 .. Max_Length - Rlen
-          and then K in Pos .. Pos + Rlen - 1,
-        Post => K mod Rlen = K - Pos;
-      --  Lemma_Mod is applied to an index considered in Lemma_Split to prove
-      --  that it has the right value modulo Right'Length.
-
-      procedure Lemma_Split with
-        Ghost,
-        Pre  =>
-          Rlen /= 0
-            and then Pos mod Rlen = 0
-            and then Pos in 0 .. Max_Length - Rlen
-            and then Result.Data (1 .. Pos + Rlen)'Initialized
-            and then String (Result.Data (Pos + 1 .. Pos + Rlen)) = Right,
-        Post =>
-          (for all K in Pos + 1 .. Pos + Rlen =>
-            Result.Data (K) = Right (Right'First + (K - 1) mod Rlen));
-      --  Lemma_Split is used after Result.Data (Pos + 1 .. Pos + Rlen) is
-      --  updated to Right and concludes that the characters match for each
-      --  index when taken modulo Right'Length, as the considered slice starts
-      --  at index 1 modulo Right'Length.
-
-      ---------------
-      -- Lemma_Mod --
-      ---------------
-
-      procedure Lemma_Mod (K : Integer) is null;
-
-      -----------------
-      -- Lemma_Split --
-      -----------------
-
-      procedure Lemma_Split is
-      begin
-         for K in Pos + 1 .. Pos + Rlen loop
-            Lemma_Mod (K - 1);
-            pragma Loop_Invariant
-              (for all J in Pos + 1 .. K =>
-                 Result.Data (J) = Right (Right'First + (J - 1) mod Rlen));
-         end loop;
-      end Lemma_Split;
-
    begin
       if Nlen > Max_Length then
          raise Ada.Strings.Length_Error;
-
       else
          if Nlen > 0 then
             for J in 1 .. Left loop
                Result.Data (Pos + 1 .. Pos + Rlen) :=
                  Super_String_Data (Right);
-               pragma Assert
-                 (for all K in 1 .. Rlen => Result.Data (Pos + K) =
-                    Right (Right'First - 1 + K));
-               pragma Assert
-                 (String (Result.Data (Pos + 1 .. Pos + Rlen)) = Right);
-               Lemma_Split;
                Pos := Pos + Rlen;
-               pragma Loop_Invariant (Pos = J * Rlen);
-               pragma Loop_Invariant (Result.Data (1 .. Pos)'Initialized);
-               pragma Loop_Invariant
-                 (for all K in 1 .. Pos =>
-                    Result.Data (K) =
-                      Right (Right'First + (K - 1) mod Rlen));
             end loop;
          end if;
 
@@ -2221,19 +1959,12 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
    begin
       if Nlen > Right.Max_Length then
          raise Ada.Strings.Length_Error;
-
       else
          if Nlen > 0 then
             for J in 1 .. Left loop
                Result.Data (Pos + 1 .. Pos + Rlen) :=
                  Right.Data (1 .. Rlen);
                Pos := Pos + Rlen;
-               pragma Loop_Invariant (Pos = J * Rlen);
-               pragma Loop_Invariant (Result.Data (1 .. Pos)'Initialized);
-               pragma Loop_Invariant
-                 (for all K in 1 .. Pos =>
-                    Result.Data (K) =
-                      Right.Data (1 + (K - 1) mod Rlen));
             end loop;
          end if;
 
@@ -2259,7 +1990,6 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
       if Slen <= Max_Length then
          Result.Data (1 .. Slen) := Super_String_Data (Source);
          Result.Current_Length := Slen;
-
       else
          case Drop is
             when Strings.Right =>

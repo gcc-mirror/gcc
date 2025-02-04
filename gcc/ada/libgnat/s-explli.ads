@@ -31,23 +31,11 @@
 
 --  This package implements Long_Long_Integer exponentiation
 
---  Preconditions, postconditions, ghost code, loop invariants and assertions
---  in this unit are meant for analysis only, not for run-time checking, as it
---  would be too costly otherwise. This is enforced by setting the assertion
---  policy to Ignore.
-
-pragma Assertion_Policy (Pre            => Ignore,
-                         Post           => Ignore,
-                         Ghost          => Ignore,
-                         Loop_Invariant => Ignore,
-                         Assert         => Ignore);
-
 with System.Expont;
 
 package System.Exp_LLI
   with SPARK_Mode
 is
-
    package Expont_Integer is new Expont (Long_Long_Integer);
 
    function Exp_Long_Long_Integer

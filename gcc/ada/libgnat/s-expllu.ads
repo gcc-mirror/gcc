@@ -34,24 +34,12 @@
 --  is always full width, the caller must do a masking operation if the
 --  modulus is less than 2 ** (Long_Long_Unsigned'Size).
 
---  Note: preconditions in this unit are meant for analysis only, not for
---  run-time checking, so that the expected exceptions are raised. This is
---  enforced by setting the corresponding assertion policy to Ignore.
---  Postconditions and contract cases should not be executed at run-time as
---  well, in order not to slow down the execution of these functions.
-
-pragma Assertion_Policy (Pre            => Ignore,
-                         Post           => Ignore,
-                         Contract_Cases => Ignore,
-                         Ghost          => Ignore);
-
 with System.Exponu;
 with System.Unsigned_Types;
 
 package System.Exp_LLU
   with SPARK_Mode
 is
-
    subtype Long_Long_Unsigned is Unsigned_Types.Long_Long_Unsigned;
 
    function Exp_Long_Long_Unsigned is new Exponu (Long_Long_Unsigned);

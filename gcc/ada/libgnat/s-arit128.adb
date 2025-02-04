@@ -34,7 +34,6 @@ with System.Arith_Double;
 package body System.Arith_128
   with SPARK_Mode
 is
-
    subtype Uns128 is Interfaces.Unsigned_128;
    subtype Uns64  is Interfaces.Unsigned_64;
 

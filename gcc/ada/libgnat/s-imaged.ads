@@ -34,10 +34,7 @@
 --  types.
 
 generic
-
    type Int is range <>;
-   type Uns is mod <>;
-
 package System.Image_D is
 
    procedure Image_Decimal

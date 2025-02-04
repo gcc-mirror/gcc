@@ -32,23 +32,9 @@
 --  This package contains routines for scanning signed Long_Long_Long_Integer
 --  values for use in Text_IO.Integer_IO, and the Value attribute.
 
---  Preconditions in this unit are meant for analysis only, not for run-time
---  checking, so that the expected exceptions are raised. This is enforced by
---  setting the corresponding assertion policy to Ignore. Postconditions and
---  contract cases should not be executed at runtime as well, in order not to
---  slow down the execution of these functions.
-
-pragma Assertion_Policy (Pre                => Ignore,
-                         Post               => Ignore,
-                         Contract_Cases     => Ignore,
-                         Ghost              => Ignore,
-                         Subprogram_Variant => Ignore);
-
 with System.Unsigned_Types;
 with System.Val_LLLU;
 with System.Value_I;
-with System.Vs_LLLI;
-with System.Vs_LLLU;
 
 package System.Val_LLLI with SPARK_Mode is
    pragma Preelaborate;
@@ -58,9 +44,7 @@ package System.Val_LLLI with SPARK_Mode is
    package Impl is new Value_I
      (Int               => Long_Long_Long_Integer,
       Uns               => Long_Long_Long_Unsigned,
-      Scan_Raw_Unsigned => Val_LLLU.Scan_Raw_Long_Long_Long_Unsigned,
-      U_Spec            => System.Vs_LLLU.Spec,
-      Spec              => System.Vs_LLLI.Spec);
+      Scan_Raw_Unsigned => Val_LLLU.Scan_Raw_Long_Long_Long_Unsigned);
 
    procedure Scan_Long_Long_Long_Integer
      (Str  : String;
