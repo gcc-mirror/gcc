@@ -284,6 +284,8 @@ Late::visit (AST::PathInExpression &expr)
 
   ctx.map_usage (Usage (expr.get_node_id ()),
 		 Definition (resolved->get_node_id ()));
+
+  DefaultResolver::visit (expr);
 }
 
 void
