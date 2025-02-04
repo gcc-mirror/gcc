@@ -4786,7 +4786,8 @@ build_vec_init (tree base, tree maxindex, tree init,
       tree field, elt;
       /* If the constructor already has the array type, it's been through
 	 digest_init, so we shouldn't try to do anything more.  */
-      bool digested = same_type_p (atype, TREE_TYPE (init));
+      bool digested = (TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE
+		       && same_type_p (type, TREE_TYPE (TREE_TYPE (init))));
       from_array = 0;
 
       if (length_check)
