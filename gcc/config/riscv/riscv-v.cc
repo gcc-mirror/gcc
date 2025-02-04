@@ -1782,13 +1782,15 @@ get_vlmul (machine_mode mode)
       int inner_size = GET_MODE_BITSIZE (GET_MODE_INNER (mode));
       if (size < TARGET_MIN_VLEN)
 	{
+	  /* Follow rule LMUL >= SEW / ELEN.  */
+	  int elen = TARGET_VECTOR_ELEN_64 ? 1 : 2;
 	  int factor = TARGET_MIN_VLEN / size;
 	  if (inner_size == 8)
-	    factor = MIN (factor, 8);
+	    factor = MIN (factor, 8 / elen);
 	  else if (inner_size == 16)
-	    factor = MIN (factor, 4);
+	    factor = MIN (factor, 4 / elen);
 	  else if (inner_size == 32)
-	    factor = MIN (factor, 2);
+	    factor = MIN (factor, 2 / elen);
 	  else if (inner_size == 64)
 	    factor = MIN (factor, 1);
 	  else

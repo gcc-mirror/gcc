@@ -1,20 +1,20 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -march=rv32gc_zve32x_zvl64b -mabi=ilp32d" } */
 
-void f___rvv_int8mf8x2_t () {__rvv_int8mf8x2_t t;}
-void f___rvv_uint8mf8x2_t () {__rvv_uint8mf8x2_t t;}
-void f___rvv_int8mf8x3_t () {__rvv_int8mf8x3_t t;}
-void f___rvv_uint8mf8x3_t () {__rvv_uint8mf8x3_t t;}
-void f___rvv_int8mf8x4_t () {__rvv_int8mf8x4_t t;}
-void f___rvv_uint8mf8x4_t () {__rvv_uint8mf8x4_t t;} 
-void f___rvv_int8mf8x5_t () {__rvv_int8mf8x5_t t;}
-void f___rvv_uint8mf8x5_t () {__rvv_uint8mf8x5_t t;}
-void f___rvv_int8mf8x6_t () {__rvv_int8mf8x6_t t;}
-void f___rvv_uint8mf8x6_t () {__rvv_uint8mf8x6_t t;}
-void f___rvv_int8mf8x7_t () {__rvv_int8mf8x7_t t;}
-void f___rvv_uint8mf8x7_t () {__rvv_uint8mf8x7_t t;}
-void f___rvv_int8mf8x8_t () {__rvv_int8mf8x8_t t;}
-void f___rvv_uint8mf8x8_t () {__rvv_uint8mf8x8_t t;}
+void f___rvv_int8mf8x2_t () {__rvv_int8mf8x2_t t;} /* { dg-error {unknown type name '__rvv_int8mf8x2_t'} } */
+void f___rvv_uint8mf8x2_t () {__rvv_uint8mf8x2_t t;} /* { dg-error {unknown type name '__rvv_uint8mf8x2_t'} } */
+void f___rvv_int8mf8x3_t () {__rvv_int8mf8x3_t t;} /* { dg-error {unknown type name '__rvv_int8mf8x3_t'} } */
+void f___rvv_uint8mf8x3_t () {__rvv_uint8mf8x3_t t;} /* { dg-error {unknown type name '__rvv_uint8mf8x3_t'} } */
+void f___rvv_int8mf8x4_t () {__rvv_int8mf8x4_t t;} /* { dg-error {unknown type name '__rvv_int8mf8x4_t'} } */
+void f___rvv_uint8mf8x4_t () {__rvv_uint8mf8x4_t t;} /* { dg-error {unknown type name '__rvv_uint8mf8x4_t'} } */
+void f___rvv_int8mf8x5_t () {__rvv_int8mf8x5_t t;} /* { dg-error {unknown type name '__rvv_int8mf8x5_t'} } */
+void f___rvv_uint8mf8x5_t () {__rvv_uint8mf8x5_t t;} /* { dg-error {unknown type name '__rvv_uint8mf8x5_t'} } */
+void f___rvv_int8mf8x6_t () {__rvv_int8mf8x6_t t;} /* { dg-error {unknown type name '__rvv_int8mf8x6_t'} } */
+void f___rvv_uint8mf8x6_t () {__rvv_uint8mf8x6_t t;} /* { dg-error {unknown type name '__rvv_uint8mf8x6_t'} } */
+void f___rvv_int8mf8x7_t () {__rvv_int8mf8x7_t t;} /* { dg-error {unknown type name '__rvv_int8mf8x7_t'} } */
+void f___rvv_uint8mf8x7_t () {__rvv_uint8mf8x7_t t;} /* { dg-error {unknown type name '__rvv_uint8mf8x7_t'} } */
+void f___rvv_int8mf8x8_t () {__rvv_int8mf8x8_t t;} /* { dg-error {unknown type name '__rvv_int8mf8x8_t'} } */
+void f___rvv_uint8mf8x8_t () {__rvv_uint8mf8x8_t t;} /* { dg-error {unknown type name '__rvv_uint8mf8x8_t'} } */
 void f___rvv_int8mf4x2_t () {__rvv_int8mf4x2_t t;}
 void f___rvv_uint8mf4x2_t () {__rvv_uint8mf4x2_t t;}
 void f___rvv_int8mf4x3_t () {__rvv_int8mf4x3_t t;}
@@ -65,20 +65,20 @@ void f___rvv_int8m2x4_t () {__rvv_int8m2x4_t t;}
 void f___rvv_uint8m2x4_t () {__rvv_uint8m2x4_t t;}
 void f___rvv_int8m4x2_t () {__rvv_int8m4x2_t t;}
 void f___rvv_uint8m4x2_t () {__rvv_uint8m4x2_t t;}
-void f___rvv_int16mf4x2_t () {__rvv_int16mf4x2_t t;}
-void f___rvv_uint16mf4x2_t () {__rvv_uint16mf4x2_t t;}
-void f___rvv_int16mf4x3_t () {__rvv_int16mf4x3_t t;}
-void f___rvv_uint16mf4x3_t () {__rvv_uint16mf4x3_t t;}
-void f___rvv_int16mf4x4_t () {__rvv_int16mf4x4_t t;}
-void f___rvv_uint16mf4x4_t () {__rvv_uint16mf4x4_t t;}
-void f___rvv_int16mf4x5_t () {__rvv_int16mf4x5_t t;}
-void f___rvv_uint16mf4x5_t () {__rvv_uint16mf4x5_t t;}
-void f___rvv_int16mf4x6_t () {__rvv_int16mf4x6_t t;}
-void f___rvv_uint16mf4x6_t () {__rvv_uint16mf4x6_t t;}
-void f___rvv_int16mf4x7_t () {__rvv_int16mf4x7_t t;}
-void f___rvv_uint16mf4x7_t () {__rvv_uint16mf4x7_t t;}
-void f___rvv_int16mf4x8_t () {__rvv_int16mf4x8_t t;}
-void f___rvv_uint16mf4x8_t () {__rvv_uint16mf4x8_t t;}
+void f___rvv_int16mf4x2_t () {__rvv_int16mf4x2_t t;} /* { dg-error {unknown type name '__rvv_int16mf4x2_t'} } */
+void f___rvv_uint16mf4x2_t () {__rvv_uint16mf4x2_t t;} /* { dg-error {unknown type name '__rvv_uint16mf4x2_t'} } */
+void f___rvv_int16mf4x3_t () {__rvv_int16mf4x3_t t;} /* { dg-error {unknown type name '__rvv_int16mf4x3_t'} } */
+void f___rvv_uint16mf4x3_t () {__rvv_uint16mf4x3_t t;} /* { dg-error {unknown type name '__rvv_uint16mf4x3_t'} } */
+void f___rvv_int16mf4x4_t () {__rvv_int16mf4x4_t t;} /* { dg-error {unknown type name '__rvv_int16mf4x4_t'} } */
+void f___rvv_uint16mf4x4_t () {__rvv_uint16mf4x4_t t;} /* { dg-error {unknown type name '__rvv_uint16mf4x4_t'} } */
+void f___rvv_int16mf4x5_t () {__rvv_int16mf4x5_t t;} /* { dg-error {unknown type name '__rvv_int16mf4x5_t'} } */
+void f___rvv_uint16mf4x5_t () {__rvv_uint16mf4x5_t t;} /* { dg-error {unknown type name '__rvv_uint16mf4x5_t'} } */
+void f___rvv_int16mf4x6_t () {__rvv_int16mf4x6_t t;} /* { dg-error {unknown type name '__rvv_int16mf4x6_t'} } */
+void f___rvv_uint16mf4x6_t () {__rvv_uint16mf4x6_t t;} /* { dg-error {unknown type name '__rvv_uint16mf4x6_t'} } */
+void f___rvv_int16mf4x7_t () {__rvv_int16mf4x7_t t;} /* { dg-error {unknown type name '__rvv_int16mf4x7_t'} } */
+void f___rvv_uint16mf4x7_t () {__rvv_uint16mf4x7_t t;} /* { dg-error {unknown type name '__rvv_uint16mf4x7_t'} } */
+void f___rvv_int16mf4x8_t () {__rvv_int16mf4x8_t t;} /* { dg-error {unknown type name '__rvv_int16mf4x8_t'} } */
+void f___rvv_uint16mf4x8_t () {__rvv_uint16mf4x8_t t;} /* { dg-error {unknown type name '__rvv_uint16mf4x8_t'} } */
 void f___rvv_int16mf2x2_t () {__rvv_int16mf2x2_t t;}
 void f___rvv_uint16mf2x2_t () {__rvv_uint16mf2x2_t t;}
 void f___rvv_int16mf2x3_t () {__rvv_int16mf2x3_t t;}
@@ -115,20 +115,20 @@ void f___rvv_int16m2x4_t () {__rvv_int16m2x4_t t;}
 void f___rvv_uint16m2x4_t () {__rvv_uint16m2x4_t t;}
 void f___rvv_int16m4x2_t () {__rvv_int16m4x2_t t;}
 void f___rvv_uint16m4x2_t () {__rvv_uint16m4x2_t t;}
-void f___rvv_int32mf2x2_t () {__rvv_int32mf2x2_t t;}
-void f___rvv_uint32mf2x2_t () {__rvv_uint32mf2x2_t t;}
-void f___rvv_int32mf2x3_t () {__rvv_int32mf2x3_t t;}
-void f___rvv_uint32mf2x3_t () {__rvv_uint32mf2x3_t t;}
-void f___rvv_int32mf2x4_t () {__rvv_int32mf2x4_t t;}
-void f___rvv_uint32mf2x4_t () {__rvv_uint32mf2x4_t t;}
-void f___rvv_int32mf2x5_t () {__rvv_int32mf2x5_t t;}
-void f___rvv_uint32mf2x5_t () {__rvv_uint32mf2x5_t t;}
-void f___rvv_int32mf2x6_t () {__rvv_int32mf2x6_t t;}
-void f___rvv_uint32mf2x6_t () {__rvv_uint32mf2x6_t t;}
-void f___rvv_int32mf2x7_t () {__rvv_int32mf2x7_t t;}
-void f___rvv_uint32mf2x7_t () {__rvv_uint32mf2x7_t t;}
-void f___rvv_int32mf2x8_t () {__rvv_int32mf2x8_t t;}
-void f___rvv_uint32mf2x8_t () {__rvv_uint32mf2x8_t t;}
+void f___rvv_int32mf2x2_t () {__rvv_int32mf2x2_t t;} /* { dg-error {unknown type name '__rvv_int32mf2x2_t'} } */
+void f___rvv_uint32mf2x2_t () {__rvv_uint32mf2x2_t t;} /* { dg-error {unknown type name '__rvv_uint32mf2x2_t'} } */
+void f___rvv_int32mf2x3_t () {__rvv_int32mf2x3_t t;} /* { dg-error {unknown type name '__rvv_int32mf2x3_t'} } */
+void f___rvv_uint32mf2x3_t () {__rvv_uint32mf2x3_t t;} /* { dg-error {unknown type name '__rvv_uint32mf2x3_t'} } */
+void f___rvv_int32mf2x4_t () {__rvv_int32mf2x4_t t;} /* { dg-error {unknown type name '__rvv_int32mf2x4_t'} } */
+void f___rvv_uint32mf2x4_t () {__rvv_uint32mf2x4_t t;} /* { dg-error {unknown type name '__rvv_uint32mf2x4_t'} } */
+void f___rvv_int32mf2x5_t () {__rvv_int32mf2x5_t t;} /* { dg-error {unknown type name '__rvv_int32mf2x5_t'} } */
+void f___rvv_uint32mf2x5_t () {__rvv_uint32mf2x5_t t;} /* { dg-error {unknown type name '__rvv_uint32mf2x5_t'} } */
+void f___rvv_int32mf2x6_t () {__rvv_int32mf2x6_t t;} /* { dg-error {unknown type name '__rvv_int32mf2x6_t'} } */
+void f___rvv_uint32mf2x6_t () {__rvv_uint32mf2x6_t t;} /* { dg-error {unknown type name '__rvv_uint32mf2x6_t'} } */
+void f___rvv_int32mf2x7_t () {__rvv_int32mf2x7_t t;} /* { dg-error {unknown type name '__rvv_int32mf2x7_t'} } */
+void f___rvv_uint32mf2x7_t () {__rvv_uint32mf2x7_t t;} /* { dg-error {unknown type name '__rvv_uint32mf2x7_t'} } */
+void f___rvv_int32mf2x8_t () {__rvv_int32mf2x8_t t;} /* { dg-error {unknown type name '__rvv_int32mf2x8_t'} } */
+void f___rvv_uint32mf2x8_t () {__rvv_uint32mf2x8_t t;} /* { dg-error {unknown type name '__rvv_uint32mf2x8_t'} } */
 void f___rvv_int32m1x2_t () {__rvv_int32m1x2_t t;}
 void f___rvv_uint32m1x2_t () {__rvv_uint32m1x2_t t;}
 void f___rvv_int32m1x3_t () {__rvv_int32m1x3_t t;}
