@@ -381,13 +381,6 @@ ForeverStack<N>::find_starting_point (
 {
   auto iterator = segments.begin ();
 
-  // If we need to do path segment resolution, then we start
-  // at the closest module. In order to resolve something like `foo::bar!()`, we
-  // need to get back to the surrounding module, and look for a child module
-  // named `foo`.
-  if (segments.size () > 1)
-    starting_point = find_closest_module (starting_point);
-
   for (; !is_last (iterator, segments); iterator++)
     {
       auto &outer_seg = *iterator;
@@ -416,12 +409,14 @@ ForeverStack<N>::find_starting_point (
       if (seg.is_lower_self_seg ())
 	{
 	  // insert segment resolution and exit
+	  starting_point = find_closest_module (starting_point);
 	  insert_segment_resolution (outer_seg, starting_point.get ().id);
 	  iterator++;
 	  break;
 	}
       if (seg.is_super_path_seg ())
 	{
+	  starting_point = find_closest_module (starting_point);
 	  if (starting_point.get ().is_root ())
 	    {
 	      rust_error_at (seg.get_locus (), ErrorCode::E0433,
@@ -469,27 +464,48 @@ ForeverStack<N>::resolve_segments (
 
       tl::optional<typename ForeverStack<N>::Node &> child = tl::nullopt;
 
-      for (auto &kv : current_node->children)
+      while (true)
 	{
-	  auto &link = kv.first;
-
-	  if (link.path.map_or (
-		[&str] (Identifier path) {
-		  auto &path_str = path.as_string ();
-		  return str == path_str;
-		},
-		false))
+	  for (auto &kv : current_node->children)
 	    {
-	      child = kv.second;
+	      auto &link = kv.first;
+
+	      if (link.path.map_or (
+		    [&str] (Identifier path) {
+		      auto &path_str = path.as_string ();
+		      return str == path_str;
+		    },
+		    false))
+		{
+		  child = kv.second;
+		  break;
+		}
+	    }
+
+	  if (child.has_value ())
+	    {
 	      break;
 	    }
-	}
 
-      if (!child.has_value ())
-	{
-	  rust_error_at (seg.get_locus (), ErrorCode::E0433,
-			 "failed to resolve path segment %qs", str.c_str ());
-	  return tl::nullopt;
+	  if (N == Namespace::Types)
+	    {
+	      auto rib_lookup = current_node->rib.get (seg.as_string ());
+	      if (rib_lookup && !rib_lookup->is_ambiguous ())
+		{
+		  insert_segment_resolution (outer_seg,
+					     rib_lookup->get_node_id ());
+		  return tl::nullopt;
+		}
+	    }
+
+	  if (!is_start (iterator, segments)
+	      || current_node->rib.kind == Rib::Kind::Module
+	      || current_node->is_root ())
+	    {
+	      return tl::nullopt;
+	    }
+
+	  current_node = &current_node->parent.value ();
 	}
 
       current_node = &child.value ();
