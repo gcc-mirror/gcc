@@ -4989,27 +4989,41 @@ package body Sem_Eval is
          end if;
       end Check_Elab_Call;
 
-      Modulus, Val : Uint;
-
    begin
-      if Compile_Time_Known_Value (Left)
-        and then Compile_Time_Known_Value (Right)
+      if not (Compile_Time_Known_Value (Left)
+              and then Compile_Time_Known_Value (Right))
       then
-         pragma Assert (not Non_Binary_Modulus (Typ));
+         return;
+      end if;
 
+      pragma Assert (not Non_Binary_Modulus (Typ));
+      pragma Assert (Expr_Value (Right) >= Uint_0); -- Amount is always Natural
+
+      --  Shift by zero bits is a no-op
+
+      if Expr_Value (Right) = Uint_0 then
+         Fold_Uint (N, Expr_Value (Left), Static => Static);
+         return;
+      end if;
+
+      declare
+         Modulus : constant Uint :=
+           (if Is_Modular_Integer_Type (Typ) then Einfo.Entities.Modulus (Typ)
+            else Uint_2 ** RM_Size (Typ));
+         Amount : constant Uint := UI_Min (Expr_Value (Right), RM_Size (Typ));
+         --  Shift by an Amount greater than the size is all-zeros or all-ones.
+         --  Without this "min", we could use huge amounts of time and memory
+         --  below (e.g. 2**Amount, if Amount were a billion).
+
+         Val : Uint;
+      begin
          if Op = N_Op_Shift_Left then
             Check_Elab_Call;
-
-            if Is_Modular_Integer_Type (Typ) then
-               Modulus := Einfo.Entities.Modulus (Typ);
-            else
-               Modulus := Uint_2 ** RM_Size (Typ);
-            end if;
 
             --  Fold Shift_Left (X, Y) by computing
             --  (X * 2**Y) rem modulus [- Modulus]
 
-            Val := (Expr_Value (Left) * (Uint_2 ** Expr_Value (Right)))
+            Val := (Expr_Value (Left) * (Uint_2 ** Amount))
                      rem Modulus;
 
             if Is_Modular_Integer_Type (Typ)
@@ -5023,49 +5037,32 @@ package body Sem_Eval is
          elsif Op = N_Op_Shift_Right then
             Check_Elab_Call;
 
-            --  X >> 0 is a no-op
+            --  Fold X >> Y by computing (X [+ Modulus]) / 2**Y.
+            --  Note that after a Shift_Right operation (with Y > 0), the
+            --  result is always positive, even if the original operand was
+            --  negative.
 
-            if Expr_Value (Right) = Uint_0 then
-               Fold_Uint (N, Expr_Value (Left), Static => Static);
-            else
-               if Is_Modular_Integer_Type (Typ) then
-                  Modulus := Einfo.Entities.Modulus (Typ);
+            declare
+               M : Unat;
+            begin
+               if Expr_Value (Left) >= Uint_0 then
+                  M := Uint_0;
                else
-                  Modulus := Uint_2 ** RM_Size (Typ);
+                  M := Modulus;
                end if;
 
-               --  Fold X >> Y by computing (X [+ Modulus]) / 2**Y
-               --  Note that after a Shift_Right operation (with Y > 0), the
-               --  result is always positive, even if the original operand was
-               --  negative.
+               Fold_Uint
+                 (N,
+                  (Expr_Value (Left) + M) / (Uint_2 ** Amount),
+                  Static => Static);
+            end;
 
-               declare
-                  M : Unat;
-               begin
-                  if Expr_Value (Left) >= Uint_0 then
-                     M := Uint_0;
-                  else
-                     M := Modulus;
-                  end if;
-
-                  Fold_Uint
-                    (N,
-                     (Expr_Value (Left) + M) / (Uint_2 ** Expr_Value (Right)),
-                     Static => Static);
-               end;
-            end if;
          elsif Op = N_Op_Shift_Right_Arithmetic then
             Check_Elab_Call;
 
             declare
-               Two_Y : constant Uint := Uint_2 ** Expr_Value (Right);
+               Two_Y : constant Uint := Uint_2 ** Amount;
             begin
-               if Is_Modular_Integer_Type (Typ) then
-                  Modulus := Einfo.Entities.Modulus (Typ);
-               else
-                  Modulus := Uint_2 ** RM_Size (Typ);
-               end if;
-
                --  X / 2**Y if X if positive or a small enough modular integer
 
                if (Is_Modular_Integer_Type (Typ)
@@ -5096,7 +5093,7 @@ package body Sem_Eval is
                     (N,
                      (Expr_Value (Left)) / Two_Y
                         + (Two_Y - Uint_1)
-                          * Uint_2 ** (RM_Size (Typ) - Expr_Value (Right)),
+                          * Uint_2 ** (RM_Size (Typ) - Amount),
                      Static => Static);
 
                --  Negative signed integer, compute via multiple/divide the
@@ -5108,13 +5105,15 @@ package body Sem_Eval is
                     (N,
                      (Modulus + Expr_Value (Left)) / Two_Y
                         + (Two_Y - Uint_1)
-                          * Uint_2 ** (RM_Size (Typ) - Expr_Value (Right))
+                          * Uint_2 ** (RM_Size (Typ) - Amount)
                         - Modulus,
                      Static => Static);
                end if;
             end;
+         else
+            raise Program_Error;
          end if;
-      end if;
+      end;
    end Fold_Shift;
 
    --------------

@@ -342,41 +342,12 @@ package Sem_Eval is
    --  set of messages is all posted.
 
    procedure Fold_Str (N : Node_Id; Val : String_Id; Static : Boolean);
-   --  Rewrite N with a new N_String_Literal node as the result of the compile
-   --  time evaluation of the node N. Val is the resulting string value from
-   --  the folding operation. The Is_Static_Expression flag is set in the
-   --  result node. The result is fully analyzed and resolved. Static indicates
-   --  whether the result should be considered static or not (True = consider
-   --  static). The point here is that normally all string literals are static,
-   --  but if this was the result of some sequence of evaluation where values
-   --  were known at compile time but not static, then the result is not
-   --  static. The call has no effect if Raises_Constraint_Error (N) is True,
-   --  since there is no point in folding if we have an error.
-
    procedure Fold_Uint (N : Node_Id; Val : Uint; Static : Boolean);
-   --  Rewrite N with a (N_Integer_Literal, N_Identifier, N_Character_Literal)
-   --  node as the result of the compile time evaluation of the node N. Val is
-   --  the result in the integer case and is the position of the literal in the
-   --  literals list for the enumeration case. Is_Static_Expression is set True
-   --  in the result node. The result is fully analyzed/resolved. Static
-   --  indicates whether the result should be considered static or not (True =
-   --  consider static). The point here is that normally all integer literals
-   --  are static, but if this was the result of some sequence of evaluation
-   --  where values were known at compile time but not static, then the result
-   --  is not static. The call has no effect if Raises_Constraint_Error (N) is
-   --  True, since there is no point in folding if we have an error.
-
    procedure Fold_Ureal (N : Node_Id; Val : Ureal; Static : Boolean);
-   --  Rewrite N with a new N_Real_Literal node as the result of the compile
-   --  time evaluation of the node N. Val is the resulting real value from the
-   --  folding operation. The Is_Static_Expression flag is set in the result
-   --  node. The result is fully analyzed and result. Static indicates whether
-   --  the result should be considered static or not (True = consider static).
-   --  The point here is that normally all string literals are static, but if
-   --  this was the result of some sequence of evaluation where values were
-   --  known at compile time but not static, then the result is not static.
-   --  The call has no effect if Raises_Constraint_Error (N) is True, since
-   --  there is no point in folding if we have an error.
+   --  Rewrite N with a new literal node with compile-time-known value Val.
+   --  Is_Static_Expression is set to Static. This has no effect if
+   --  Raises_Constraint_Error (N) is True, since there is no point in
+   --  folding if we have an error.
 
    procedure Fold (N : Node_Id);
    --  Rewrite N with the relevant value if Compile_Time_Known_Value (N) is
