@@ -613,7 +613,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	    return error_mark_node;
 	}
 
-      if (cxx_dialect < cxx20)
+      if (cxx_dialect < cxx20 && !explicit_init_p)
 	{
 	  auto_diagnostic_group d;
 	  tree stripped_init = tree_strip_any_location_wrapper (initializer);
