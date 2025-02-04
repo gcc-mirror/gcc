@@ -31,10 +31,10 @@ class DeriveEq : DeriveVisitor
 public:
   DeriveEq (location_t loc);
 
-  std::unique_ptr<AST::Item> go (Item &item);
+  std::vector<std::unique_ptr<AST::Item>> go (Item &item);
 
 private:
-  std::unique_ptr<Item> expanded;
+  std::vector<std::unique_ptr<Item>> expanded;
 
   /**
    * Create the actual `assert_receiver_is_total_eq` function of the
@@ -52,9 +52,9 @@ private:
    * }
    *
    */
-  std::unique_ptr<Item>
-  eq_impl (std::unique_ptr<AssociatedItem> &&fn, std::string name,
-	   const std::vector<std::unique_ptr<GenericParam>> &type_generics);
+  std::vector<std::unique_ptr<Item>>
+  eq_impls (std::unique_ptr<AssociatedItem> &&fn, std::string name,
+	    const std::vector<std::unique_ptr<GenericParam>> &type_generics);
 
   /**
    * Generate the following structure definition

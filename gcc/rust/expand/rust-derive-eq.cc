@@ -27,6 +27,16 @@
 namespace Rust {
 namespace AST {
 
+DeriveEq::DeriveEq (location_t loc) : DeriveVisitor (loc) {}
+
+std::vector<std::unique_ptr<AST::Item>>
+DeriveEq::go (Item &item)
+{
+  item.accept_vis (*this);
+
+  return std::move (expanded);
+}
+
 std::unique_ptr<AssociatedItem>
 DeriveEq::assert_receiver_is_total_eq_fn (
   std::vector<std::unique_ptr<Type>> &&types)
@@ -98,33 +108,29 @@ DeriveEq::assert_type_is_eq (std::unique_ptr<Type> &&type)
   return builder.let (builder.wildcard (), std::move (full_path));
 }
 
-std::unique_ptr<Item>
-DeriveEq::eq_impl (
+std::vector<std::unique_ptr<Item>>
+DeriveEq::eq_impls (
   std::unique_ptr<AssociatedItem> &&fn, std::string name,
   const std::vector<std::unique_ptr<GenericParam>> &type_generics)
 {
   auto eq = builder.type_path ({"core", "cmp", "Eq"}, true);
+  auto steq = builder.type_path (LangItem::Kind::STRUCTURAL_TEQ);
 
   auto trait_items = vec (std::move (fn));
 
-  auto generics
+  auto eq_generics
     = setup_impl_generics (name, type_generics, builder.trait_bound (eq));
+  auto steq_generics = setup_impl_generics (name, type_generics);
 
-  return builder.trait_impl (eq, std::move (generics.self_type),
-			     std::move (trait_items),
-			     std::move (generics.impl));
-}
+  auto eq_impl = builder.trait_impl (eq, std::move (eq_generics.self_type),
+				     std::move (trait_items),
+				     std::move (eq_generics.impl));
+  auto steq_impl
+    = builder.trait_impl (steq, std::move (steq_generics.self_type),
+			  std::move (trait_items),
+			  std::move (steq_generics.impl));
 
-DeriveEq::DeriveEq (location_t loc) : DeriveVisitor (loc), expanded (nullptr) {}
-
-std::unique_ptr<AST::Item>
-DeriveEq::go (Item &item)
-{
-  item.accept_vis (*this);
-
-  rust_assert (expanded);
-
-  return std::move (expanded);
+  return vec (std::move (eq_impl), std::move (steq_impl));
 }
 
 void
@@ -135,9 +141,9 @@ DeriveEq::visit_tuple (TupleStruct &item)
   for (auto &field : item.get_fields ())
     types.emplace_back (field.get_field_type ().clone_type ());
 
-  expanded
-    = eq_impl (assert_receiver_is_total_eq_fn (std::move (types)),
-	       item.get_identifier ().as_string (), item.get_generic_params ());
+  expanded = eq_impls (assert_receiver_is_total_eq_fn (std::move (types)),
+		       item.get_identifier ().as_string (),
+		       item.get_generic_params ());
 }
 
 void
@@ -148,9 +154,9 @@ DeriveEq::visit_struct (StructStruct &item)
   for (auto &field : item.get_fields ())
     types.emplace_back (field.get_field_type ().clone_type ());
 
-  expanded
-    = eq_impl (assert_receiver_is_total_eq_fn (std::move (types)),
-	       item.get_identifier ().as_string (), item.get_generic_params ());
+  expanded = eq_impls (assert_receiver_is_total_eq_fn (std::move (types)),
+		       item.get_identifier ().as_string (),
+		       item.get_generic_params ());
 }
 
 void
@@ -167,7 +173,7 @@ DeriveEq::visit_enum (Enum &item)
 	  // nothing to do as they contain no inner types
 	  continue;
 	  case EnumItem::Kind::Tuple: {
-	    auto tuple = static_cast<EnumItemTuple &> (*variant);
+	    auto &tuple = static_cast<EnumItemTuple &> (*variant);
 
 	    for (auto &field : tuple.get_tuple_fields ())
 	      types.emplace_back (field.get_field_type ().clone_type ());
@@ -175,7 +181,7 @@ DeriveEq::visit_enum (Enum &item)
 	    break;
 	  }
 	  case EnumItem::Kind::Struct: {
-	    auto tuple = static_cast<EnumItemStruct &> (*variant);
+	    auto &tuple = static_cast<EnumItemStruct &> (*variant);
 
 	    for (auto &field : tuple.get_struct_fields ())
 	      types.emplace_back (field.get_field_type ().clone_type ());
@@ -185,9 +191,9 @@ DeriveEq::visit_enum (Enum &item)
 	}
     }
 
-  expanded
-    = eq_impl (assert_receiver_is_total_eq_fn (std::move (types)),
-	       item.get_identifier ().as_string (), item.get_generic_params ());
+  expanded = eq_impls (assert_receiver_is_total_eq_fn (std::move (types)),
+		       item.get_identifier ().as_string (),
+		       item.get_generic_params ());
 }
 
 void
@@ -198,9 +204,9 @@ DeriveEq::visit_union (Union &item)
   for (auto &field : item.get_variants ())
     types.emplace_back (field.get_field_type ().clone_type ());
 
-  expanded
-    = eq_impl (assert_receiver_is_total_eq_fn (std::move (types)),
-	       item.get_identifier ().as_string (), item.get_generic_params ());
+  expanded = eq_impls (assert_receiver_is_total_eq_fn (std::move (types)),
+		       item.get_identifier ().as_string (),
+		       item.get_generic_params ());
 }
 
 } // namespace AST
