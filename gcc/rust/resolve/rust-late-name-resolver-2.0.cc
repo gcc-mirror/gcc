@@ -294,6 +294,8 @@ Late::visit (AST::TypePath &type)
   // maybe we can overload `resolve_path<Namespace::Types>` to only do
   // typepath-like path resolution? that sounds good
 
+  DefaultResolver::visit (type);
+
   // take care of only simple cases
   // TODO: remove this?
   rust_assert (!type.has_opening_scope_resolution_op ());
@@ -302,14 +304,23 @@ Late::visit (AST::TypePath &type)
   // TODO: make sure typepath-like path resolution (?) is working
   auto resolved = ctx.resolve_path (type.get_segments (), Namespace::Types);
 
-  if (resolved.has_value ())
-    ctx.map_usage (Usage (type.get_node_id ()),
-		   Definition (resolved->get_node_id ()));
-  else
-    rust_error_at (type.get_locus (), "could not resolve type path %qs",
-		   type.as_string ().c_str ());
+  if (!resolved.has_value ())
+    {
+      if (!ctx.lookup (type.get_segments ().front ()->get_node_id ()))
+	rust_error_at (type.get_locus (), "could not resolve type path %qs",
+		       type.as_string ().c_str ());
+      return;
+    }
 
-  DefaultResolver::visit (type);
+  if (resolved->is_ambiguous ())
+    {
+      rust_error_at (type.get_locus (), ErrorCode::E0659, "%qs is ambiguous",
+		     type.as_string ().c_str ());
+      return;
+    }
+
+  ctx.map_usage (Usage (type.get_node_id ()),
+		 Definition (resolved->get_node_id ()));
 }
 
 void
