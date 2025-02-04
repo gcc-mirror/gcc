@@ -934,27 +934,8 @@ SubstitutionRef::monomorphize ()
 	  auto associated
 	    = Resolver::lookup_associated_impl_block (bound, binding,
 						      &ambigious);
-	  if (associated == nullptr && ambigious)
-	    {
-	      // go for the first one? or error out?
-	      auto &mappings = Analysis::Mappings::get ();
-	      const auto &type_param = subst.get_generic_param ();
-	      const auto *trait_ref = bound.get ();
-
-	      rich_location r (line_table, type_param.get_locus ());
-	      r.add_range (bound.get_locus ());
-	      r.add_range (mappings.lookup_location (binding->get_ref ()));
-
-	      rust_error_at (r, "ambiguous type bound for trait %s and type %s",
-			     trait_ref->get_name ().c_str (),
-			     binding->get_name ().c_str ());
-	      return false;
-	    }
-
 	  if (associated != nullptr)
-	    {
-	      associated->setup_associated_types (binding, bound);
-	    }
+	    associated->setup_associated_types (binding, bound);
 	}
     }
 
