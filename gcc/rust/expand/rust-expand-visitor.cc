@@ -43,7 +43,7 @@ ExpandVisitor::go (AST::Crate &crate)
   visit (crate);
 }
 
-static std::unique_ptr<AST::Item>
+static std::vector<std::unique_ptr<AST::Item>>
 builtin_derive_item (AST::Item &item, const AST::Attribute &derive,
 		     BuiltinMacro to_derive)
 {
@@ -189,11 +189,12 @@ ExpandVisitor::expand_inner_items (
 			to_derive.get ().as_string ());
 		      if (maybe_builtin.has_value ())
 			{
-			  auto new_item
+			  auto new_items
 			    = builtin_derive_item (item, current,
 						   maybe_builtin.value ());
 
-			  it = items.insert (it, std::move (new_item));
+			  for (auto &&new_item : new_items)
+			    it = items.insert (it, std::move (new_item));
 			}
 		      else
 			{
@@ -276,12 +277,14 @@ ExpandVisitor::expand_inner_stmts (AST::BlockExpr &expr)
 			to_derive.get ().as_string ());
 		      if (maybe_builtin.has_value ())
 			{
-			  auto new_item
+			  auto new_items
 			    = builtin_derive_item (item, current,
 						   maybe_builtin.value ());
+
 			  // this inserts the derive *before* the item - is it a
 			  // problem?
-			  it = stmts.insert (it, std::move (new_item));
+			  for (auto &&new_item : new_items)
+			    it = stmts.insert (it, std::move (new_item));
 			}
 		      else
 			{
