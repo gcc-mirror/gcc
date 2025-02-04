@@ -1,3 +1,9 @@
+2025-02-03  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR middle-end/115913
+	* optc-save-gen.awk (cl_optimization_compare): Skip options with
+	CL_WARNING flag.
+
 2025-01-28  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:

@@ -1,3 +1,8 @@
+2025-02-03  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR middle-end/115913
+	* c-c++-common/cpp/pr115913.c: New test.
+
 2025-02-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/warn33.adb: New test.
