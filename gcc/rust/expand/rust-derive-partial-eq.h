@@ -30,12 +30,16 @@ class DerivePartialEq : DeriveVisitor
 public:
   DerivePartialEq (location_t loc);
 
-  std::unique_ptr<AST::Item> go (Item &item);
+  std::vector<std::unique_ptr<AST::Item>> go (Item &item);
 
 private:
-  std::unique_ptr<Item> expanded;
+  std::vector<std::unique_ptr<Item>> expanded;
 
-  std::unique_ptr<Item> partial_eq_impl (
+  /**
+   * Generate both an implementation of `PartialEq` and `StructuralPartialEq`
+   * for the given type
+   */
+  std::vector<std::unique_ptr<Item>> partialeq_impls (
     std::unique_ptr<AssociatedItem> &&eq_fn, std::string name,
     const std::vector<std::unique_ptr<GenericParam>> &type_generics);
 
