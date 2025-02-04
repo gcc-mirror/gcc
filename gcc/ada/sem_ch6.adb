@@ -591,6 +591,11 @@ package body Sem_Ch6 is
             End_Scope;
          end if;
 
+         if Is_Incomplete_Type (Typ) then
+            Error_Msg_NE
+              ("premature usage of incomplete}", Expr, First_Subtype (Typ));
+         end if;
+
          --  In the case of an expression function marked with the aspect
          --  Static, we need to check the requirement that the function's
          --  expression is a potentially static expression. This is done
