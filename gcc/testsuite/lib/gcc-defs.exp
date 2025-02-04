@@ -172,6 +172,7 @@ if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \
      && [info procs gcc_parallelize_saved_runtest_file_p] == [list] } then {
     global gcc_runtest_parallelize_counter
     global gcc_runtest_parallelize_counter_minor
+    global gcc_runtest_parallelize_limit_minor
     global gcc_runtest_parallelize_enable
     global gcc_runtest_parallelize_dir
     global gcc_runtest_parallelize_last
@@ -212,6 +213,7 @@ if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \
     #    and investigate if they don't.
     set gcc_runtest_parallelize_counter 0
     set gcc_runtest_parallelize_counter_minor 0
+    set gcc_runtest_parallelize_limit_minor 10
     set gcc_runtest_parallelize_enable 1
     set gcc_runtest_parallelize_dir [getenv GCC_RUNTEST_PARALLELIZE_DIR]
     set gcc_runtest_parallelize_last 0
@@ -219,6 +221,7 @@ if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \
     proc gcc_parallel_test_run_p { testcase } {
 	global gcc_runtest_parallelize_counter
 	global gcc_runtest_parallelize_counter_minor
+	global gcc_runtest_parallelize_limit_minor
 	global gcc_runtest_parallelize_enable
 	global gcc_runtest_parallelize_dir
 	global gcc_runtest_parallelize_last
@@ -228,10 +231,10 @@ if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \
 	}
 
 	# Only test the filesystem every 10th iteration
-	incr gcc_runtest_parallelize_counter_minor
-	if { $gcc_runtest_parallelize_counter_minor == 10 } {
+	if { $gcc_runtest_parallelize_counter_minor >= $gcc_runtest_parallelize_limit_minor } {
 	    set gcc_runtest_parallelize_counter_minor 0
 	}
+	incr gcc_runtest_parallelize_counter_minor
 	if { $gcc_runtest_parallelize_counter_minor != 1 } {
 	    #verbose -log "gcc_parallel_test_run_p $testcase $gcc_runtest_parallelize_counter $gcc_runtest_parallelize_last"
 	    return $gcc_runtest_parallelize_last
