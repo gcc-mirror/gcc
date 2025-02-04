@@ -110,6 +110,8 @@ TopLevel::visit (AST::InherentImpl &impl)
     insert_or_error_out (Identifier ("Self", impl.get_type ().get_locus ()),
 			 impl.get_type (), Namespace::Types);
 
+    // We do want to visit with the default visitor instead of default resolver
+    // because we don't want to insert the scope twice.
     AST::DefaultASTVisitor::visit (impl);
   };
 
@@ -123,6 +125,8 @@ TopLevel::visit (AST::TraitImpl &impl)
     insert_or_error_out (Identifier ("Self", impl.get_type ().get_locus ()),
 			 impl.get_type (), Namespace::Types);
 
+    // We do want to visit using the default visitor instead of default resolver
+    // because we don't want to insert the scope twice.
     AST::DefaultASTVisitor::visit (impl);
   };
 
