@@ -25,6 +25,9 @@ pub trait PartialEq<Rhs: ?Sized = Self> {
     }
 }
 
+#[lang = "structural_peq"]
+trait StructuralPartialEq {}
+
 #[derive(PartialEq, Copy)] // { dg-warning "unused name" }
 struct Foo;
 

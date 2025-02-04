@@ -52,7 +52,7 @@ DeriveVisitor::derive (Item &item, const Attribute &attr,
     case BuiltinMacro::Eq:
       return vec (DeriveEq (attr.get_locus ()).go (item));
     case BuiltinMacro::PartialEq:
-      return vec (DerivePartialEq (attr.get_locus ()).go (item));
+      return DerivePartialEq (attr.get_locus ()).go (item);
     case BuiltinMacro::Ord:
     case BuiltinMacro::PartialOrd:
     case BuiltinMacro::Hash:

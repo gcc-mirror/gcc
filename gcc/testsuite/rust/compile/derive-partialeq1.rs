@@ -6,6 +6,9 @@ trait Sized {}
 #[lang = "copy"]
 trait Copy {}
 
+#[lang = "structural_peq"]
+trait StructuralPartialEq {}
+
 #[lang = "eq"]
 pub trait PartialEq<Rhs: ?Sized = Self> {
     /// This method tests for `self` and `other` values to be equal, and is used

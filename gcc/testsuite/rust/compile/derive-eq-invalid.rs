@@ -21,6 +21,12 @@ struct PhantomData<T>;
 #[lang = "sized"]
 trait Sized {}
 
+#[lang = "structural_peq"]
+trait StructuralPartialEq {}
+
+#[lang = "structural_teq"]
+trait StructuralEq {}
+
 #[derive(PartialEq)]
 struct NotEq;
 

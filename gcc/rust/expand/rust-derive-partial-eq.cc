@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2024 Free Software Foundation, Inc.
+// Copyright (C) 2025 Free Software Foundation, Inc.
 
 // This file is part of GCC.
 
@@ -27,35 +27,40 @@
 
 namespace Rust {
 namespace AST {
-DerivePartialEq::DerivePartialEq (location_t loc)
-  : DeriveVisitor (loc), expanded (nullptr)
-{}
+DerivePartialEq::DerivePartialEq (location_t loc) : DeriveVisitor (loc) {}
 
-std::unique_ptr<AST::Item>
+std::vector<std::unique_ptr<AST::Item>>
 DerivePartialEq::go (Item &item)
 {
   item.accept_vis (*this);
 
-  rust_assert (expanded);
-
   return std::move (expanded);
 }
 
-std::unique_ptr<Item>
-DerivePartialEq::partial_eq_impl (
+std::vector<std::unique_ptr<Item>>
+DerivePartialEq::partialeq_impls (
   std::unique_ptr<AssociatedItem> &&eq_fn, std::string name,
   const std::vector<std::unique_ptr<GenericParam>> &type_generics)
 {
   auto eq = builder.type_path (LangItem::Kind::EQ);
+  auto speq = builder.type_path (LangItem::Kind::STRUCTURAL_PEQ);
 
   auto trait_items = vec (std::move (eq_fn));
 
-  auto generics
+  // no extra bound on StructuralPeq
+  auto peq_generics
     = setup_impl_generics (name, type_generics, builder.trait_bound (eq));
+  auto speq_generics = setup_impl_generics (name, type_generics);
 
-  return builder.trait_impl (eq, std::move (generics.self_type),
-			     std::move (trait_items),
-			     std::move (generics.impl));
+  auto peq = builder.trait_impl (eq, std::move (peq_generics.self_type),
+				 std::move (trait_items),
+				 std::move (peq_generics.impl));
+
+  auto structural_peq
+    = builder.trait_impl (speq, std::move (speq_generics.self_type), {},
+			  std::move (speq_generics.impl));
+
+  return vec (std::move (peq), std::move (structural_peq));
 }
 
 std::unique_ptr<AssociatedItem>
@@ -137,7 +142,7 @@ DerivePartialEq::visit_tuple (TupleStruct &item)
   auto fn = eq_fn (build_eq_expression (std::move (fields)), type_name);
 
   expanded
-    = partial_eq_impl (std::move (fn), type_name, item.get_generic_params ());
+    = partialeq_impls (std::move (fn), type_name, item.get_generic_params ());
 }
 
 void
@@ -153,7 +158,7 @@ DerivePartialEq::visit_struct (StructStruct &item)
   auto fn = eq_fn (build_eq_expression (std::move (fields)), type_name);
 
   expanded
-    = partial_eq_impl (std::move (fn), type_name, item.get_generic_params ());
+    = partialeq_impls (std::move (fn), type_name, item.get_generic_params ());
 }
 
 MatchCase
@@ -250,11 +255,12 @@ void
 DerivePartialEq::visit_enum (Enum &item)
 {
   auto cases = std::vector<MatchCase> ();
+  auto type_name = item.get_identifier ().as_string ();
 
   for (auto &variant : item.get_variants ())
     {
       auto variant_path
-	= builder.variant_path (item.get_identifier ().as_string (),
+	= builder.variant_path (type_name,
 				variant->get_identifier ().as_string ());
 
       switch (variant->get_enum_item_kind ())
@@ -290,11 +296,10 @@ DerivePartialEq::visit_enum (Enum &item)
 					 builder.identifier ("other"))),
 		     std::move (cases));
 
-  auto fn = eq_fn (std::move (match), item.get_identifier ().as_string ());
+  auto fn = eq_fn (std::move (match), type_name);
 
   expanded
-    = partial_eq_impl (std::move (fn), item.get_identifier ().as_string (),
-		       item.get_generic_params ());
+    = partialeq_impls (std::move (fn), type_name, item.get_generic_params ());
 }
 
 void
