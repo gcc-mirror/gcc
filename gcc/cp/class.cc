@@ -3243,10 +3243,16 @@ warn_hidden (tree t)
 	  continue;
 
 	tree name = OVL_NAME (fns);
+	size_t num_fns = 0; /* The number of fndecls in fns.  */
 	auto_vec<tree, 20> base_fndecls;
 	tree base_binfo;
 	tree binfo;
 	unsigned j;
+	size_t num_overriders = 0;
+	hash_set<tree> overriden_base_fndecls;
+	/* base_fndecls that are hidden but not overriden. The "value"
+	   contains the last fndecl we saw that hides the "key".  */
+	hash_map<tree, tree> hidden_base_fndecls;
 
 	if (IDENTIFIER_CDTOR_P (name))
 	  continue;
@@ -3264,47 +3270,65 @@ warn_hidden (tree t)
 	if (base_fndecls.is_empty ())
 	  continue;
 
-	/* Remove any overridden functions.  */
-	bool seen_non_override = false;
+	/* Find all the base_fndecls that are overridden, as well as those
+	   that are hidden, in T.  */
 	for (tree fndecl : ovl_range (fns))
 	  {
-	    bool any_override = false;
-	    if (TREE_CODE (fndecl) == FUNCTION_DECL
-		&& DECL_VINDEX (fndecl))
+	    bool template_p = TREE_CODE (fndecl) == TEMPLATE_DECL;
+	    bool fndecl_overrides_p = false;
+	    fndecl = STRIP_TEMPLATE (fndecl);
+	    if (TREE_CODE (fndecl) != FUNCTION_DECL
+		|| fndecl == conv_op_marker)
+	      continue;
+	    num_fns++;
+	    for (size_t k = 0; k < base_fndecls.length (); k++)
 	      {
-		/* If the method from the base class has the same
-		   signature as the method from the derived class, it
-		   has been overridden.  Note that we can't move on
-		   after finding one match: fndecl might override
-		   multiple base fns.  */
-		for (size_t k = 0; k < base_fndecls.length (); k++)
-		  if (base_fndecls[k]
-		      && same_signature_p (fndecl, base_fndecls[k]))
-		    {
-		      base_fndecls[k] = NULL_TREE;
-		      any_override = true;
-		    }
+		if (!base_fndecls[k] || !DECL_VINDEX (base_fndecls[k]))
+		  continue;
+		if (IDENTIFIER_CONV_OP_P (name)
+		    && !same_type_p (DECL_CONV_FN_TYPE (fndecl),
+				     DECL_CONV_FN_TYPE (base_fndecls[k])))
+		  /* If base_fndecl[k] and fndecl are conversion operators
+		     to different types, they're unrelated.  */
+		  ;
+		else if (!template_p /* Template methods don't override.  */
+			 && same_signature_p (fndecl, base_fndecls[k]))
+		  {
+		    overriden_base_fndecls.add (base_fndecls[k]);
+		    fndecl_overrides_p = true;
+		  }
+		else
+		  {
+		    /* fndecl hides base_fndecls[k].  */
+		    hidden_base_fndecls.put (base_fndecls[k], fndecl);
+		  }
 	      }
-	    if (!any_override)
-	      seen_non_override = true;
+	    if (fndecl_overrides_p)
+	      ++num_overriders;
 	  }
 
-	if (!seen_non_override && warn_overloaded_virtual == 1)
-	  /* All the derived fns override base virtuals.  */
-	  return;
+	if (warn_overloaded_virtual == 1 && num_overriders == num_fns)
+	  /* All the fns override a base virtual.  */
+	  continue;
 
-	/* Now give a warning for all base functions without overriders,
-	   as they are hidden.  */
-	for (tree base_fndecl : base_fndecls)
-	  if (base_fndecl)
-	    {
-	      auto_diagnostic_group d;
-	      /* Here we know it is a hider, and no overrider exists.  */
-	      if (warning_at (location_of (base_fndecl),
-			      OPT_Woverloaded_virtual_,
-			      "%qD was hidden", base_fndecl))
-		inform (location_of (fns), "  by %qD", fns);
-	    }
+	/* Now give a warning for all hidden methods. Note that a method that
+	   is both in hidden_base_fndecls and overriden_base_fndecls is not
+	   hidden.  */
+	for (auto hidden_base_fndecl : hidden_base_fndecls)
+	  {
+	    tree hidden_fndecl = hidden_base_fndecl.first;
+	    if (!hidden_fndecl
+		|| overriden_base_fndecls.contains (hidden_fndecl))
+	      continue;
+	    auto_diagnostic_group d;
+	    if (warning_at (location_of (hidden_fndecl),
+			    OPT_Woverloaded_virtual_,
+			    "%qD was hidden", hidden_fndecl))
+	      {
+		tree hider = hidden_base_fndecl.second;
+		inform (location_of (hider), "  by %qD", hider);
+	      }
+	  }
       }
 }
 
