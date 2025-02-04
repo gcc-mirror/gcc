@@ -125,6 +125,39 @@ static tree c_parser_gimple_paren_condition (gimple_parser &);
 static void c_parser_gimple_expr_list (gimple_parser &, vec<tree> *);
 
 
+/* Much like parser_build_unary_op, but avoid applying default conversions.  */
+
+static c_expr
+gimple_parser_build_unary_op (location_t loc,
+			      enum tree_code code, struct c_expr arg)
+{
+  struct c_expr result;
+
+  result.original_code = code;
+  result.original_type = NULL;
+  result.m_decimal = 0;
+
+  if (reject_gcc_builtin (arg.value))
+    {
+      result.value = error_mark_node;
+    }
+  else
+    {
+      result.value = build_unary_op (loc, code, arg.value, true);
+
+      if (TREE_OVERFLOW_P (result.value) && !TREE_OVERFLOW_P (arg.value))
+	overflow_warning (loc, result.value, arg.value);
+    }
+
+  /* We are typically called when parsing a prefix token at LOC acting on
+     ARG.  Reflect this by updating the source range of the result to
+     start at LOC and end at the end of ARG.  */
+  set_c_expr_source_range (&result,
+			   loc, arg.get_finish ());
+
+  return result;
+}
+
 /* See if VAL is an identifier matching __BB<num> and return <num>
    in *INDEX.  */
 
@@ -1203,7 +1236,7 @@ c_parser_gimple_unary_expression (gimple_parser &parser)
       c_parser_consume_token (parser);
       op = c_parser_gimple_postfix_expression (parser);
       mark_exp_read (op.value);
-      return parser_build_unary_op (op_loc, ADDR_EXPR, op);
+      return gimple_parser_build_unary_op (op_loc, ADDR_EXPR, op);
     case CPP_MULT:
       {
 	c_parser_consume_token (parser);
@@ -1228,15 +1261,15 @@ c_parser_gimple_unary_expression (gimple_parser &parser)
     case CPP_PLUS:
       c_parser_consume_token (parser);
       op = c_parser_gimple_postfix_expression (parser);
-      return parser_build_unary_op (op_loc, CONVERT_EXPR, op);
+      return gimple_parser_build_unary_op (op_loc, CONVERT_EXPR, op);
     case CPP_MINUS:
       c_parser_consume_token (parser);
       op = c_parser_gimple_postfix_expression (parser);
-      return parser_build_unary_op (op_loc, NEGATE_EXPR, op);
+      return gimple_parser_build_unary_op (op_loc, NEGATE_EXPR, op);
     case CPP_COMPL:
       c_parser_consume_token (parser);
       op = c_parser_gimple_postfix_expression (parser);
-      return parser_build_unary_op (op_loc, BIT_NOT_EXPR, op);
+      return gimple_parser_build_unary_op (op_loc, BIT_NOT_EXPR, op);
     case CPP_NOT:
       c_parser_error (parser, "%<!%> not valid in GIMPLE");
       return ret;
@@ -1246,11 +1279,11 @@ c_parser_gimple_unary_expression (gimple_parser &parser)
 	case RID_REALPART:
 	  c_parser_consume_token (parser);
 	  op = c_parser_gimple_postfix_expression (parser);
-	  return parser_build_unary_op (op_loc, REALPART_EXPR, op);
+	  return gimple_parser_build_unary_op (op_loc, REALPART_EXPR, op);
 	case RID_IMAGPART:
 	  c_parser_consume_token (parser);
 	  op = c_parser_gimple_postfix_expression (parser);
-	  return parser_build_unary_op (op_loc, IMAGPART_EXPR, op);
+	  return gimple_parser_build_unary_op (op_loc, IMAGPART_EXPR, op);
 	default:
 	  return c_parser_gimple_postfix_expression (parser);
 	}
@@ -1261,13 +1294,13 @@ c_parser_gimple_unary_expression (gimple_parser &parser)
 	    {
 	      c_parser_consume_token (parser);
 	      op = c_parser_gimple_postfix_expression (parser);
-	      return parser_build_unary_op (op_loc, ABS_EXPR, op);
+	      return gimple_parser_build_unary_op (op_loc, ABS_EXPR, op);
 	    }
 	  else if (strcmp (IDENTIFIER_POINTER (id), "__ABSU") == 0)
 	    {
 	      c_parser_consume_token (parser);
 	      op = c_parser_gimple_postfix_expression (parser);
-	      return parser_build_unary_op (op_loc, ABSU_EXPR, op);
+	      return gimple_parser_build_unary_op (op_loc, ABSU_EXPR, op);
 	    }
 	  else if (strcmp (IDENTIFIER_POINTER (id), "__MIN") == 0)
 	    return c_parser_gimple_parentized_binary_expression (parser,
