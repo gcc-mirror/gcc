@@ -1,3 +1,9 @@
+2025-02-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93289
+	* decl.cc (gfc_set_constant_character_len): Downgrade different
+	string lengths in character array constructor to legacy extension.
+
 2025-01-31  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/108454

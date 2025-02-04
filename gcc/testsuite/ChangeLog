@@ -1,3 +1,40 @@
+2025-02-03  A J Ryan Solutions Ltd  <gcc.gnu.org@ajryansolutions.co.uk>
+
+	PR c++/118265
+	* g++.dg/cpp1z/variadic-nontype1.C: New file.
+
+2025-02-03  Iain Sandoe  <iains.gcc@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/116506
+	PR c++/116880
+	* g++.dg/coroutines/pr116506.C: New test.
+	* g++.dg/coroutines/pr116880.C: New test.
+
+2025-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116914
+	PR c++/117231
+	PR c++/118470
+	PR c++/118491
+	* g++.dg/coroutines/coro-range-for1.C: New test.
+
+2025-02-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93289
+	* gfortran.dg/unlimited_polymorphic_1.f03: Pad element in character
+	array constructor to correct length.
+	* gfortran.dg/char_array_constructor_5.f90: New test.
+
+2025-02-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/dupq_12.c: New test.
+
+2025-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118717
+	* gcc.dg/torture/pr118717.c: New testcase.
+
 2025-02-02  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117411

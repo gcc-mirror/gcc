@@ -1,3 +1,76 @@
+2025-02-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*sibcall_pop_memory):
+	Disable for TARGET_INDIRECT_BRANCH_REGISTER
+	* config/i386/predicates.md (call_insn_operand): Enable when
+	"satisfies_constraint_Bw (op)" is true, instead of open-coding
+	constraint here.
+	(sibcall_insn_operand): Ditto with "satisfies_constraint_Bs (op)"
+
+2025-02-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_choose_vector_init_constant):
+	New function, split out from...
+	(aarch64_expand_vector_init_fallback): ...here.  Use a bit-
+	reversed increment to find a constant index.  Add support for
+	stepped constants.
+
+2025-02-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR rtl-optimization/117248
+	* config/pa/predicates.md (r25_operand): New predicate.
+	(r26_operand): Likewise.
+	* config/pa/pa.md: Use match_operand for r25 and r26 hard
+	register operands in mult, div, udiv, mod and umod millicode
+	patterns.
+
+2025-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118717
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement_1):
+	Do not common stores referencing abnormal SSA names.
+	* tree-ssa-sink.cc (sink_common_stores_to_bb): Likewise.
+
+2025-02-03  Andi Kleen  <ak@gcc.gnu.org>
+
+	* input.cc (check_line): New.
+	(test_replacement): New function to test line caching.
+	(input_cc_tests): Call test_replacement
+
+2025-02-03  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR preprocessor/118168
+	* input.cc (file_cache_slot::get_next_line): Implement
+	dynamic sizing of m_line_record based on input length.
+	* params.opt: (param_file_cache_lines): Set to 0 to size
+	dynamically.
+
+2025-02-03  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR preprocessor/118168
+	* input.cc (total_lines_num): Remove.
+	(file_cache_slot::evict): Ditto.
+	(file_cache_slot::create): Ditto.
+	(file_cache_slot::set_content): Ditto.
+	(file_cache_slot::file_cache_slot): Ditto.
+	(file_cache_slot::dump): Ditto.
+
+2025-02-03  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR preprocessor/118168
+	* input.cc (file_cache_slot::get_next_line): Use new algorithm
+	to maintain
+	(file_cache_slot::read_line_num): Use binary search for lookup.
+
+2025-02-03  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR preprocessor/118168
+	* input.cc (file_cache::tune): New function.
+	* input.h (class file_cache): Make tunables non const.
+	* params.opt: Add new tunables.
+	* toplev.cc (toplev::main): Initialize input buffer context
+	tunables.
+
 2025-02-02  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117411

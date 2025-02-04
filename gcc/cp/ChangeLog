@@ -1,3 +1,34 @@
+2025-02-03  A J Ryan Solutions Ltd  <gcc.gnu.org@ajryansolutions.co.uk>
+
+	PR c++/118265
+	* pt.cc (find_parameter_packs_r) <case TEMPLATE_PARM_INDEX>:
+	Walk into the type of a parameter pack.
+
+2025-02-03  Iain Sandoe  <iains.gcc@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/116506
+	PR c++/116880
+	* coroutines.cc (build_co_await): Ensure that xvalues are
+	materialised.  Handle references/pointer values in awaiter
+	access expressions.
+	(is_stable_lvalue): New.
+	* decl.cc (cxx_maybe_build_cleanup): Handle null arg.
+
+2025-02-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116914
+	PR c++/117231
+	PR c++/118470
+	PR c++/118491
+	* semantics.cc (finish_for_stmt): Don't wrap the result of
+	pop_stmt_list in EXPR_STMT.
+
+2025-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR c++/79786
+	* rtti.cc (emit_tinfo_decl): Fix DATA_ABI_ALIGNMENT invocation.
+
 2025-01-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/117516
