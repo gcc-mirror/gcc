@@ -868,6 +868,67 @@ build_list_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 
   FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), i, val)
     {
+      if (TREE_CODE (val) == RAW_DATA_CST)
+	{
+	  tree elt
+	    = build_int_cst (TREE_TYPE (val), RAW_DATA_UCHAR_ELT (val, 0));
+	  conversion *sub
+	    = implicit_conversion (elttype, TREE_TYPE (val), elt,
+				   false, flags, complain);
+	  conversion *next;
+	  if (sub == NULL)
+	    return NULL;
+	  /* For conversion to initializer_list<unsigned char> or
+	     initializer_list<char> or initializer_list<signed char>
+	     we can optimize and keep RAW_DATA_CST with adjusted
+	     type if we report narrowing errors if needed.
+	     Use just one subconversion for that case.  */
+	  if (sub->kind == ck_std
+	      && sub->type
+	      && (TREE_CODE (sub->type) == INTEGER_TYPE
+		  || is_byte_access_type (sub->type))
+	      && TYPE_PRECISION (sub->type) == CHAR_BIT
+	      && (next = next_conversion (sub))
+	      && next->kind == ck_identity)
+	    {
+	      subconvs[i] = sub;
+	      continue;
+	    }
+	  /* Otherwise. build separate subconv for each RAW_DATA_CST
+	     byte.  Wrap those into an artificial ck_list which convert_like
+	     will then handle.  */
+	  conversion **subsubconvs = alloc_conversions (RAW_DATA_LENGTH (val));
+	  unsigned int j;
+	  subsubconvs[0] = sub;
+	  for (j = 1; j < (unsigned) RAW_DATA_LENGTH (val); ++j)
+	    {
+	      elt = build_int_cst (TREE_TYPE (val),
+				   RAW_DATA_UCHAR_ELT (val, j));
+	      sub = implicit_conversion (elttype, TREE_TYPE (val), elt,
+					 false, flags, complain);
+	      if (sub == NULL)
+		return NULL;
+	      subsubconvs[j] = sub;
+	    }
+
+	  t = alloc_conversion (ck_list);
+	  t->type = type;
+	  t->u.list = subsubconvs;
+	  t->rank = cr_exact;
+	  for (j = 0; j < (unsigned) RAW_DATA_LENGTH (val); ++j)
+	    {
+	      sub = subsubconvs[i];
+	      if (sub->rank > t->rank)
+		t->rank = sub->rank;
+	      if (sub->user_conv_p)
+		t->user_conv_p = true;
+	      if (sub->bad_p)
+		t->bad_p = true;
+	    }
+	  subconvs[i] = t;
+	  continue;
+	}
+
       conversion *sub
 	= implicit_conversion (elttype, TREE_TYPE (val), val,
 			       false, flags, complain);
@@ -8850,22 +8911,22 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	      {
 		if (TREE_CODE (val) == RAW_DATA_CST)
 		  {
-		    tree elt_type;
-		    conversion *next;
 		    /* For conversion to initializer_list<unsigned char> or
 		       initializer_list<char> or initializer_list<signed char>
 		       we can optimize and keep RAW_DATA_CST with adjusted
 		       type if we report narrowing errors if needed, for
 		       others this converts each element separately.  */
-		    if (convs->u.list[ix]->kind == ck_std
-			&& (elt_type = convs->u.list[ix]->type)
-			&& (TREE_CODE (elt_type) == INTEGER_TYPE
-			    || is_byte_access_type (elt_type))
-			&& TYPE_PRECISION (elt_type) == CHAR_BIT
-			&& (next = next_conversion (convs->u.list[ix]))
-			&& next->kind == ck_identity)
+		    if (convs->u.list[ix]->kind == ck_std)
 		      {
-			if (!TYPE_UNSIGNED (elt_type)
+			tree et = convs->u.list[ix]->type;
+			conversion *next = next_conversion (convs->u.list[ix]);
+			gcc_assert (et
+				    && (TREE_CODE (et) == INTEGER_TYPE
+					|| is_byte_access_type (et))
+				    && TYPE_PRECISION (et) == CHAR_BIT
+				    && next
+				    && next->kind == ck_identity);
+			if (!TYPE_UNSIGNED (et)
 			    /* For RAW_DATA_CST, TREE_TYPE (val) can be
 			       either integer_type_node (when it has been
 			       created by the lexer from CPP_EMBED) or
@@ -8891,7 +8952,7 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 						 "narrowing conversion of "
 						 "%qd from %qH to %qI",
 						 RAW_DATA_UCHAR_ELT (val, i),
-						 TREE_TYPE (val), elt_type);
+						 TREE_TYPE (val), et);
 				  if (errorcount != savederrorcount)
 				    return error_mark_node;
 				}
@@ -8899,19 +8960,21 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 				return error_mark_node;
 			    }
 			tree sub = copy_node (val);
-			TREE_TYPE (sub) = elt_type;
+			TREE_TYPE (sub) = et;
 			CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_ctor),
 						NULL_TREE, sub);
 		      }
 		    else
 		      {
+			conversion *conv = convs->u.list[ix];
+			gcc_assert (conv->kind == ck_list);
 			for (int i = 0; i < RAW_DATA_LENGTH (val); ++i)
 			  {
 			    tree elt
 			      = build_int_cst (TREE_TYPE (val),
 					       RAW_DATA_UCHAR_ELT (val, i));
 			    tree sub
-			      = convert_like (convs->u.list[ix], elt,
+			      = convert_like (conv->u.list[i], elt,
 					      fn, argnum, false, false,
 					      /*nested_p=*/true, complain);
 			    if (sub == error_mark_node)
