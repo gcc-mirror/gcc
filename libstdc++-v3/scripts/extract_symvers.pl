@@ -34,8 +34,18 @@ while (<PVS>) {
     # Remove trailing semicolon.
     s/;$//;
 
-    # shared object, dash, version, symbol, [size]
-    (undef, undef, $version, $symbol, $size) = split;
+    if (/\[WEAK\]/) {
+	# Allow for weak versions like
+	# libstdc++.so.6.0.34 -	CXXABI_1.3.16 [WEAK]: {CXXABI_1.3.15};
+	#
+	# shared object, dash, version "[WEAK]", symbol, [size]
+	(undef, undef, $version, undef, $symbol, $size) = split;
+    } else {
+	# libstdc++.so.6.0.34 -	CXXABI_1.3.16: {CXXABI_1.3.15};
+	#
+	# shared object, dash, version, symbol, [size]
+	(undef, undef, $version, $symbol, $size) = split;
+    }
 
     # Remove colon separator from version field.
     $version =~ s/:$//;
