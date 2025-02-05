@@ -1,9 +1,7 @@
 /* PR target/100056 */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-final { scan-assembler-not {\t[us]bfiz\tw[0-9]+, w[0-9]+, 11} { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\t[us]bfiz\tw[0-9]+, w[0-9]+, 11} 2 } } */
-/* { dg-final { scan-assembler-times {\tadd\tw[0-9]+, w[0-9]+, w[0-9]+, uxtb\n} 2 } } */
+/* { dg-final { scan-assembler-not {\t[us]bfiz\tw[0-9]+, w[0-9]+, 11} } } */
 
 int
 or_shift_u8 (unsigned char i)
