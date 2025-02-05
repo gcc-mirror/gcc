@@ -459,7 +459,8 @@ create_cands (void)
 	    if (insn2 != NULL
 		&& dst_regno >= FIRST_PSEUDO_REGISTER
 		&& reg_renumber[dst_regno] < 0
-		&& BLOCK_FOR_INSN (insn2) == BLOCK_FOR_INSN (insn))
+		&& BLOCK_FOR_INSN (insn2) == BLOCK_FOR_INSN (insn)
+		&& insn2 == prev_nonnote_insn (insn))
 	      {
 		create_cand (insn2, regno_potential_cand[src_regno].nop,
 			     dst_regno, insn);
@@ -473,9 +474,10 @@ create_cands (void)
 	    gcc_assert (REG_P (*id->operand_loc[nop]));
 	    int regno = REGNO (*id->operand_loc[nop]);
 	    gcc_assert (regno >= FIRST_PSEUDO_REGISTER);
-	    /* If we're setting an unrenumbered pseudo, make a candidate immediately.
-	       If it's an output reload register, save it for later; the code above
-	       looks for output reload insns later on.  */
+	    /* If we're setting an unrenumbered pseudo, make a candidate
+	       immediately.  If it's a potential output reload register, save
+	       it for later; the code above looks for output reload insns later
+	       on.  */
 	    if (reg_renumber[regno] < 0)
 	      create_cand (insn, nop, regno);
 	    else if (regno >= lra_constraint_new_regno_start)
