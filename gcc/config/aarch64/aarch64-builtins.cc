@@ -4722,6 +4722,30 @@ aarch64_fold_combine (gcall *stmt)
   return gimple_build_assign (gimple_call_lhs (stmt), ctor);
 }
 
+/* Fold a call to vaeseq_u8 and vaesdq_u8.
+   That is `vaeseq_u8 (x ^ y, 0)` gets folded
+   into `vaeseq_u8 (x, y)`.*/
+static gimple *
+aarch64_fold_aes_op (gcall *stmt)
+{
+  tree arg0 = gimple_call_arg (stmt, 0);
+  tree arg1 = gimple_call_arg (stmt, 1);
+  if (integer_zerop (arg0))
+    arg0 = arg1;
+  else if (!integer_zerop (arg1))
+    return nullptr;
+  if (TREE_CODE (arg0) != SSA_NAME)
+    return nullptr;
+  if (!has_single_use (arg0))
+    return nullptr;
+  auto *s = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (arg0));
+  if (!s || gimple_assign_rhs_code (s) != BIT_XOR_EXPR)
+    return nullptr;
+  gimple_call_set_arg (stmt, 0, gimple_assign_rhs1 (s));
+  gimple_call_set_arg (stmt, 1, gimple_assign_rhs2 (s));
+  return stmt;
+}
+
 /* Fold a call to vld1, given that it loads something of type TYPE.  */
 static gimple *
 aarch64_fold_load (gcall *stmt, tree type)
@@ -4981,6 +5005,11 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 	new_stmt = gimple_build_call_internal (IFN_REDUC_PLUS,
 					       1, args[0]);
 	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
+	break;
+
+      VAR1 (BINOPU, crypto_aese, 0, DEFAULT, v16qi)
+      VAR1 (BINOPU, crypto_aesd, 0, DEFAULT, v16qi)
+	new_stmt = aarch64_fold_aes_op (stmt);
 	break;
 
       /* Lower sqrt builtins to gimple/internal function sqrt. */
