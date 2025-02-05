@@ -2,7 +2,7 @@
 
 #include "arm_neon.h"
 
-#pragma GCC target "+fp8dot4+fp8dot2"
+#pragma GCC target "+fp8fma"
 
 void
 test(float16x4_t f16, float16x8_t f16q, float32x2_t f32,
