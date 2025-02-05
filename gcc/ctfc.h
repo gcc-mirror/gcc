@@ -52,6 +52,10 @@ struct ctf_dtdef;
 typedef struct ctf_dtdef ctf_dtdef_t;
 typedef ctf_dtdef_t * ctf_dtdef_ref;
 
+struct ctf_dvdef;
+typedef struct ctf_dvdef ctf_dvdef_t;
+typedef ctf_dvdef_t * ctf_dvdef_ref;
+
 /* CTF string table element (list node).  */
 
 typedef struct GTY ((chain_next ("%h.cts_next"))) ctf_string
@@ -155,6 +159,16 @@ typedef struct GTY (()) ctf_func_arg
 
 #define ctf_farg_list_next(elem) ((ctf_func_arg_t *)((elem)->farg_next))
 
+/* Declaration Tag.
+   May be used to annotate struct/union members, variable declarations,
+   function declarations, and function arguments.  */
+
+typedef struct GTY (()) ctf_decl_tag
+{
+  uint32_t component_idx;  /* Index of component to which tag applies.  */
+  ctf_dvdef_ref ref_var;   /* Non-null iff this tag applies to a variable.  */
+} ctf_decl_tag_t;
+
 /* Type definition for CTF generation.  */
 
 struct GTY ((for_user)) ctf_dtdef
@@ -184,6 +198,8 @@ struct GTY ((for_user)) ctf_dtdef
     ctf_func_arg_t * GTY ((tag ("CTF_DTU_D_ARGUMENTS"))) dtu_argv;
     /* slice.  */
     ctf_sliceinfo_t GTY ((tag ("CTF_DTU_D_SLICE"))) dtu_slice;
+    /* decl tag.  */
+    ctf_decl_tag_t GTY ((tag ("CTF_DTU_D_TAG"))) dtu_tag;
   } dtd_u;
 };
 
@@ -200,9 +216,6 @@ struct GTY ((for_user)) ctf_dvdef
   ctf_dtdef_ref dvd_type;	/* Type of variable.  */
   ctf_id_t dvd_id;		/* ID of this variable.  Only used for BTF.  */
 };
-
-typedef struct ctf_dvdef ctf_dvdef_t;
-typedef ctf_dvdef_t * ctf_dvdef_ref;
 
 /* Location information for CTF Types and CTF Variables.  */
 
@@ -222,7 +235,8 @@ enum ctf_dtu_d_union_enum {
   CTF_DTU_D_ARRAY,
   CTF_DTU_D_ENCODING,
   CTF_DTU_D_ARGUMENTS,
-  CTF_DTU_D_SLICE
+  CTF_DTU_D_SLICE,
+  CTF_DTU_D_TAG,
 };
 
 enum ctf_dtu_d_union_enum
@@ -286,6 +300,17 @@ typedef struct GTY (()) ctf_container
   hash_table <ctfc_dvd_hasher> * GTY (()) ctfc_vars;
   /* CTF variables to be ignored.  */
   hash_table <ctfc_dvd_hasher> * GTY (()) ctfc_ignore_vars;
+
+  /* BTF type and decl tags.  Not yet represented in CTF.  These tags also
+     uniquely have a one-to-many relation with DIEs, meaning a single DIE
+     may translate to multiple CTF/BTF records.  For both of these reasons,
+     they cannot be stored in the regular types table.  */
+  vec <ctf_dtdef_ref, va_gc> * GTY (()) ctfc_tags;
+  /* Type tags logically form part of the type chain similar to cv-quals.
+     Therefore references to types need to know if the referred-to type has
+     any type tags, and if so to refer to the outermost type tag.  This map
+     maps a type to the outermost type tag created for it, if any.  */
+  hash_map <ctf_dtdef_ref, ctf_dtdef_ref> * GTY (()) ctfc_type_tags_map;
 
   /* CTF string table.  */
   ctf_strtable_t ctfc_strtable;
@@ -440,15 +465,19 @@ extern ctf_dtdef_ref ctf_add_function (ctf_container_ref, uint32_t,
 				       dw_die_ref, bool, int);
 extern ctf_dtdef_ref ctf_add_sou (ctf_container_ref, uint32_t, const char *,
 				  uint32_t, unsigned HOST_WIDE_INT, dw_die_ref);
-
+extern ctf_dtdef_ref ctf_add_type_tag (ctf_container_ref, uint32_t,
+				       const char *, ctf_dtdef_ref);
+extern ctf_dtdef_ref ctf_add_decl_tag (ctf_container_ref, uint32_t,
+				       const char *, ctf_dtdef_ref, uint32_t);
 extern int ctf_add_enumerator (ctf_container_ref, ctf_dtdef_ref, const char *,
 			       HOST_WIDE_INT, dw_die_ref);
 extern int ctf_add_member_offset (ctf_container_ref, dw_die_ref, const char *,
 				  ctf_dtdef_ref, uint64_t);
 extern int ctf_add_function_arg (ctf_container_ref, dw_die_ref,
 				 const char *, ctf_dtdef_ref);
-extern int ctf_add_variable (ctf_container_ref, const char *, ctf_dtdef_ref,
-			     dw_die_ref, unsigned int, dw_die_ref);
+extern ctf_dvdef_ref ctf_add_variable (ctf_container_ref, const char *,
+				       ctf_dtdef_ref, dw_die_ref, unsigned int,
+				       dw_die_ref);
 
 extern ctf_dtdef_ref ctf_lookup_tree_type (ctf_container_ref, const tree);
 
