@@ -1,3 +1,11 @@
+2025-02-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-02-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118740
+	* gfortran.dg/gomp/append_args-2.f90: Update for line change.
+
 2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

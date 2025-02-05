@@ -3,6 +3,16 @@
 	Backported from master:
 	2025-02-05  Tobias Burnus  <tburnus@baylibre.com>
 
+	PR fortran/118740
+	* openmp.cc (gfc_match_omp_context_selector, match_omp_metadirective):
+	Change sorry to sorry_at and use gfc_current_locus as location.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Likewise, but use n->where.
+
+2025-02-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-02-05  Tobias Burnus  <tburnus@baylibre.com>
+
 	PR fortran/118745
 	* trans-openmp.cc (gfc_trans_omp_declare_variant): Use
 	append_args_list in the condition for the append_arg location.
