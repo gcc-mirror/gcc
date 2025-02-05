@@ -3696,6 +3696,33 @@ static bool frame_pointer_fb_offset_valid;
 
 static vec<dw_die_ref> base_types;
 
+/* A cached btf_type_tag or btf_decl_tag user annotation.  */
+struct GTY ((for_user)) annotation_node
+{
+  const char *name;
+  const char *value;
+  hashval_t hash;
+  dw_die_ref die;
+  struct annotation_node *next;
+};
+
+/* Hasher for btf_type_tag and btf_decl_tag annotation nodes.  */
+struct annotation_node_hasher : ggc_ptr_hash<annotation_node>
+{
+  typedef const struct annotation_node *compare_type;
+
+  static hashval_t hash (struct annotation_node *);
+  static bool equal (const struct annotation_node *,
+		     const struct annotation_node *);
+};
+
+/* A hash table of tag annotation nodes for btf_type_tag and btf_decl_tag C
+   attributes.  DIEs for these user annotations may be reused if they are
+   structurally equivalent; this hash table is used to ensure the DIEs are
+   reused wherever possible.  */
+static GTY (()) hash_table<annotation_node_hasher> *btf_tag_htab;
+
+
 /* Flags to represent a set of attribute classes for attributes that represent
    a scalar value (bounds, pointers, ...).  */
 enum dw_scalar_form
@@ -3840,7 +3867,7 @@ static void output_file_names (void);
 static bool is_base_type (tree);
 static dw_die_ref subrange_type_die (tree, tree, tree, tree, dw_die_ref);
 static int decl_quals (const_tree);
-static dw_die_ref modified_type_die (tree, int, bool, dw_die_ref);
+static dw_die_ref modified_type_die (tree, int, tree, bool, dw_die_ref);
 static dw_die_ref generic_parameter_die (tree, tree, bool, dw_die_ref);
 static dw_die_ref template_parameter_pack_die (tree, tree, dw_die_ref);
 static unsigned int debugger_reg_number (const_rtx);
@@ -13675,13 +13702,199 @@ long_double_as_float128 (tree type)
   return NULL_TREE;
 }
 
-/* Given a pointer to an arbitrary ..._TYPE tree node, return a debugging
-   entry that chains the modifiers specified by CV_QUALS in front of the
-   given type.  REVERSE is true if the type is to be interpreted in the
-   reverse storage order wrt the target order.  */
+/* Hash function for struct annotation_node.  The hash value is computed when
+   the annotation node is created based on the name, value and chain of any
+   further annotations on the same entity.  */
+
+hashval_t
+annotation_node_hasher::hash (struct annotation_node *node)
+{
+  return node->hash;
+}
+
+/* Return whether two annotation nodes represent the same annotation and
+   can therefore share a DIE.  Beware of hash value collisions.  */
+
+bool
+annotation_node_hasher::equal (const struct annotation_node *node1,
+			       const struct annotation_node *node2)
+{
+  return (node1->hash == node2->hash
+	  && (node1->name == node2->name
+	      || !strcmp (node1->name, node2->name))
+	  && (node1->value == node2->value
+	      || !strcmp (node1->value, node2->value))
+	  && node1->next == node2->next);
+}
+
+/* Return an appropriate entry in the btf tag hash table for a given btf tag.
+   If a structurally equivalent tag (one with the same name, value, and
+   subsequent chain of further tags) has already been processed, then the
+   existing entry for that tag is returned and should be reused.
+   Otherwise, a new entry is added to the hash table and returned.  */
+
+static struct annotation_node *
+hash_btf_tag (tree attr)
+{
+  if (attr == NULL_TREE || TREE_CODE (attr) != TREE_LIST)
+    return NULL;
+
+  if (!btf_tag_htab)
+    btf_tag_htab = hash_table<annotation_node_hasher>::create_ggc (10);
+
+  const char * name = IDENTIFIER_POINTER (get_attribute_name (attr));
+  const char * value = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr)));
+  tree chain = lookup_attribute (name, TREE_CHAIN (attr));
+
+  /* Hash for one tag depends on hash of next tag in the chain, because
+     the chain is part of structural equivalence.  */
+  struct annotation_node *chain_node = hash_btf_tag (chain);
+  gcc_checking_assert (chain == NULL_TREE || chain_node != NULL);
+
+  /* Skip any non-btf-tag attributes that might be in the chain.  */
+  if (strcmp (name, "btf_type_tag") != 0 && strcmp (name, "btf_decl_tag") != 0)
+    return chain_node;
+
+  /* Hash for a given tag is determined by the name, value, and chain of
+     further tags.  */
+  inchash::hash h;
+  h.merge_hash (htab_hash_string (name));
+  h.merge_hash (htab_hash_string (value));
+  h.merge_hash (chain_node ? chain_node->hash : 0);
+
+  struct annotation_node node;
+  node.name = name;
+  node.value = value;
+  node.hash = h.end ();
+  node.next = chain_node;
+
+  struct annotation_node **slot = btf_tag_htab->find_slot (&node, INSERT);
+  if (*slot == NULL)
+    {
+      /* Create new htab entry for this annotation.  */
+      struct annotation_node *new_slot
+	= ggc_cleared_alloc<struct annotation_node> ();
+      new_slot->name = name;
+      new_slot->value = value;
+      new_slot->hash = node.hash;
+      new_slot->next = chain_node;
+
+      *slot = new_slot;
+      return new_slot;
+    }
+  else
+    {
+      /* This node is already in the hash table.  */
+      return *slot;
+    }
+}
+
+/* Generate (or reuse) DW_TAG_GNU_annotation DIEs representing the btf_type_tag
+   or btf_decl_tag user annotations in ATTR, and update DIE to refer to them
+   via DW_AT_GNU_annotation.  If there are multiple type_tag or decl_tag
+   annotations in ATTR, they are all processed recursively by this function to
+   build a chain of annotation DIEs.
+   A single chain of annotation DIEs can be shared among all occurrences of
+   equivalent sets of attributes appearing on different types or declarations.
+   Return the first annotation DIE in the created (or reused) chain.  */
 
 static dw_die_ref
-modified_type_die (tree type, int cv_quals, bool reverse,
+gen_btf_tag_dies (tree attr, dw_die_ref die)
+{
+  if (attr == NULL_TREE)
+    return die;
+
+  const char * name = IDENTIFIER_POINTER (get_attribute_name (attr));
+  const char * value = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr)));
+
+  dw_die_ref tag_die, prev = NULL;
+
+  /* Multiple annotations on the same item form a singly-linked list of
+     annotation DIEs; generate recursively backward from the end so we can
+     chain each created DIE to the next, which has already been created.  */
+  tree rest = lookup_attribute (name, TREE_CHAIN (attr));
+  if (rest)
+    prev = gen_btf_tag_dies (rest, NULL);
+
+  /* Calculate a hash value for the tag based on its structure, find the
+     existing entry for it (if any) in the hash table, or create a new entry
+     which can be reused by structurally-equivalent tags.  */
+  struct annotation_node *entry = hash_btf_tag (attr);
+  if (!entry)
+    return die;
+
+  /* If the node already has an associated DIE, reuse it.
+     Otherwise, create the new annotation DIE, and associate it with
+     the hash table entry for future reuse.  Any structurally-equivalent
+     tag we process later will find and share the same DIE.  */
+  if (entry->die)
+    tag_die = entry->die;
+  else
+    {
+      tag_die = new_die (DW_TAG_GNU_annotation, comp_unit_die (), NULL);
+      add_name_attribute (tag_die, name);
+      add_AT_string (tag_die, DW_AT_const_value, value);
+      if (prev)
+	add_AT_die_ref (tag_die, DW_AT_GNU_annotation, prev);
+
+      entry->die = tag_die;
+    }
+
+  if (die)
+    {
+      /* Add AT_GNU_annotation referring to the annotation DIE.
+	 It may have already been added, some global declarations are processed
+	 twice, but if so it must be the same or we have a bug.  */
+      dw_die_ref existing = get_AT_ref (die, DW_AT_GNU_annotation);
+      if (existing)
+	gcc_checking_assert (existing == tag_die);
+      else
+	add_AT_die_ref (die, DW_AT_GNU_annotation, tag_die);
+    }
+
+  return tag_die;
+}
+
+/* Generate (or reuse) annotation DIEs representing the type_tags on T, if
+   any, and update DIE to refer to them as appropriate.  */
+
+static void
+maybe_gen_btf_type_tag_dies (tree t, dw_die_ref target)
+{
+  if (t == NULL_TREE || !TYPE_P (t) || !target)
+    return;
+
+  tree attr = lookup_attribute ("btf_type_tag", TYPE_ATTRIBUTES (t));
+  if (attr == NULL_TREE)
+    return;
+
+  gen_btf_tag_dies (attr, target);
+}
+
+/* Generate (or reuse) annotation DIEs representing any decl_tags in ATTR that
+   apply to TARGET.  */
+
+static void
+maybe_gen_btf_decl_tag_dies (tree t, dw_die_ref target)
+{
+  if (t == NULL_TREE || !DECL_P (t) || !target)
+    return;
+
+  tree attr = lookup_attribute ("btf_decl_tag", DECL_ATTRIBUTES (t));
+  if (attr == NULL_TREE)
+    return;
+
+  gen_btf_tag_dies (attr, target);
+}
+
+/* Given a pointer to an arbitrary ..._TYPE tree node, return a debugging
+   entry that chains the modifiers specified by CV_QUALS in front of the
+   given type.  Also handle any type attributes in TYPE_ATTRS which have
+   a representation in DWARF.  REVERSE is true if the type is to be interpreted
+   in the reverse storage order wrt the target order.  */
+
+static dw_die_ref
+modified_type_die (tree type, int cv_quals, tree type_attrs, bool reverse,
 		   dw_die_ref context_die)
 {
   enum tree_code code = TREE_CODE (type);
@@ -13690,6 +13903,7 @@ modified_type_die (tree type, int cv_quals, bool reverse,
   tree item_type = NULL;
   tree qualified_type;
   tree name, low, high;
+  tree btf_tags;
   dw_die_ref mod_scope;
   struct array_descr_info info;
   /* Only these cv-qualifiers are currently handled.  */
@@ -13709,7 +13923,8 @@ modified_type_die (tree type, int cv_quals, bool reverse,
       tree debug_type = lang_hooks.types.get_debug_type (type);
 
       if (debug_type != NULL_TREE && debug_type != type)
-	return modified_type_die (debug_type, cv_quals, reverse, context_die);
+	return modified_type_die (debug_type, cv_quals, type_attrs, reverse,
+				  context_die);
     }
 
   cv_quals &= cv_qual_mask;
@@ -13786,8 +14001,8 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	     type DIE (see gen_typedef_die), so fall back on the ultimate
 	     abstract origin instead.  */
 	  if (origin != NULL && origin != name)
-	    return modified_type_die (TREE_TYPE (origin), cv_quals, reverse,
-				      context_die);
+	    return modified_type_die (TREE_TYPE (origin), cv_quals, type_attrs,
+				      reverse, context_die);
 
 	  /* For a named type, use the typedef.  */
 	  gen_type_die (qualified_type, context_die);
@@ -13799,10 +14014,36 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	  dquals &= cv_qual_mask;
 	  if ((dquals & ~cv_quals) != TYPE_UNQUALIFIED
 	      || (cv_quals == dquals && DECL_ORIGINAL_TYPE (name) != type))
-	    /* cv-unqualified version of named type.  Just use
-	       the unnamed type to which it refers.  */
-	    return modified_type_die (DECL_ORIGINAL_TYPE (name), cv_quals,
-				      reverse, context_die);
+	    {
+	      tree tags = lookup_attribute ("btf_type_tag", type_attrs);
+	      tree dtags = lookup_attribute ("btf_type_tag",
+					     TYPE_ATTRIBUTES (dtype));
+	      if (tags && !attribute_list_equal (tags, dtags))
+		{
+		  /* Use of a typedef with additional btf_type_tags.
+		     Create a new typedef DIE to which we can attach the
+		     additional type_tag DIEs without disturbing other users of
+		     the underlying typedef.  */
+		  dw_die_ref mod_die
+		    = modified_type_die (dtype, cv_quals, NULL_TREE, reverse,
+					 context_die);
+
+		  mod_die = clone_die (mod_die);
+		  add_child_die (comp_unit_die (), mod_die);
+		  if (!lookup_type_die (type))
+		    equate_type_number_to_die (type, mod_die);
+
+		  /* Now generate the type_tag DIEs only for the new
+		     type_tags appearing in the use of the typedef, and
+		     attach them to the cloned typedef DIE.  */
+		  gen_btf_tag_dies (tags, mod_die);
+		  return mod_die;
+		}
+	      /* cv-unqualified version of named type.  Just use
+		 the unnamed type to which it refers.  */
+	      return modified_type_die (DECL_ORIGINAL_TYPE (name), cv_quals,
+					type_attrs, reverse, context_die);
+	    }
 	  /* Else cv-qualified version of named type; fall through.  */
 	}
     }
@@ -13836,7 +14077,8 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 		break;
 	      }
 	}
-      mod_type_die = modified_type_die (type, sub_quals, reverse, context_die);
+      mod_type_die = modified_type_die (type, sub_quals, type_attrs,
+					reverse, context_die);
       if (mod_scope && mod_type_die && mod_type_die->die_parent == mod_scope)
 	{
 	  /* As not all intermediate qualified DIEs have corresponding
@@ -13903,6 +14145,16 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	    first_quals |= dwarf_qual_info[i].q;
 	  }
     }
+  else if (type_attrs
+	   && (btf_tags = lookup_attribute ("btf_type_tag", type_attrs)))
+    {
+      /* First create a DIE for the type without any type_tag attribute.
+	 Then generate TAG_GNU_annotation DIEs for the type_tags.  */
+      dw_die_ref mod_die = modified_type_die (type, cv_quals, NULL_TREE,
+					      reverse, context_die);
+      gen_btf_tag_dies (btf_tags, mod_die);
+      return mod_die;
+    }
   else if (code == POINTER_TYPE || code == REFERENCE_TYPE)
     {
       dwarf_tag tag = DW_TAG_pointer_type;
@@ -13967,9 +14219,12 @@ modified_type_die (tree type, int cv_quals, bool reverse,
 	{
 	  dw_die_ref other_die;
 	  if (TYPE_NAME (other_type))
-	    other_die
-	      = modified_type_die (other_type, TYPE_UNQUALIFIED, reverse,
-				   context_die);
+	    {
+	      other_die
+		= modified_type_die (other_type, TYPE_UNQUALIFIED,
+				     TYPE_ATTRIBUTES (other_type),
+				     reverse, context_die);
+	    }
 	  else
 	    {
 	      other_die = base_type_die (type, reverse);
@@ -13987,8 +14242,8 @@ modified_type_die (tree type, int cv_quals, bool reverse,
       /* The DIE with DW_AT_endianity is placed right after the naked DIE.  */
       if (reverse_type)
 	{
-	  dw_die_ref after_die
-	    = modified_type_die (type, cv_quals, false, context_die);
+	  dw_die_ref after_die = modified_type_die (type, cv_quals, type_attrs,
+						    false, context_die);
 	  add_child_die_after (mod_scope, mod_type_die, after_die);
 	}
       else
@@ -14001,8 +14256,8 @@ modified_type_die (tree type, int cv_quals, bool reverse,
       /* The DIE with DW_AT_endianity is placed right after the naked DIE.  */
       if (reverse_type)
 	{
-	  dw_die_ref after_die
-	    = modified_type_die (type, cv_quals, false, context_die);
+	  dw_die_ref after_die = modified_type_die (type, cv_quals, type_attrs,
+						    false, context_die);
 	  gen_type_die (type, context_die, true);
 	  gcc_assert (after_die->die_sib
 		      && get_AT_unsigned (after_die->die_sib, DW_AT_endianity));
@@ -14092,8 +14347,8 @@ modified_type_die (tree type, int cv_quals, bool reverse,
        types are possible in Ada.  */
     sub_die = modified_type_die (item_type,
 				 TYPE_QUALS_NO_ADDR_SPACE (item_type),
-				 reverse,
-				 context_die);
+				 TYPE_ATTRIBUTES (item_type),
+				 reverse, context_die);
 
   if (sub_die != NULL)
     add_AT_die_ref (mod_type_die, DW_AT_type, sub_die);
@@ -15237,8 +15492,8 @@ base_type_for_mode (machine_mode mode, bool unsignedp)
     }
   type_die = lookup_type_die (type);
   if (!type_die)
-    type_die = modified_type_die (type, TYPE_UNQUALIFIED, false,
-				  comp_unit_die ());
+    type_die = modified_type_die (type, TYPE_UNQUALIFIED, NULL_TREE,
+				  false, comp_unit_die ());
   if (type_die == NULL || type_die->die_tag != DW_TAG_base_type)
     return NULL;
   return type_die;
@@ -22508,6 +22763,7 @@ add_type_attribute (dw_die_ref object_die, tree type, int cv_quals,
 
   type_die = modified_type_die (type,
 				cv_quals | TYPE_QUALS (type),
+				TYPE_ATTRIBUTES (type),
 				reverse,
 				context_die);
 
@@ -22786,6 +23042,7 @@ gen_array_type_die (tree type, dw_die_ref context_die)
     add_pubtype (type, array_die);
 
   add_alignment_attribute (array_die, type);
+  maybe_gen_btf_type_tag_dies (type, array_die);
 }
 
 /* This routine generates DIE for array with hidden descriptor, details
@@ -23156,6 +23413,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
 	  else
 	    {
 	      add_child_die (context_die, parm_die);
+	      maybe_gen_btf_decl_tag_dies (node_or_origin, parm_die);
 	      return parm_die;
 	    }
 	}
@@ -23223,6 +23481,8 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
     default:
       gcc_unreachable ();
     }
+
+  maybe_gen_btf_decl_tag_dies (node_or_origin, parm_die);
 
   return parm_die;
 }
@@ -24577,10 +24837,12 @@ override_type_for_decl_p (tree decl, dw_die_ref old_die,
   else
     cv_quals = decl_quals (decl);
 
-  dw_die_ref type_die = modified_type_die (type,
-					   cv_quals | TYPE_QUALS (type),
-					   false,
-					   context_die);
+  dw_die_ref type_die
+    = modified_type_die (type,
+			 cv_quals | TYPE_QUALS (type),
+			 TYPE_ATTRIBUTES (type),
+			 false,
+			 context_die);
 
   dw_die_ref old_type_die = get_AT_ref (old_die, DW_AT_type);
 
@@ -26448,6 +26710,10 @@ gen_tagged_type_die (tree type,
   else
     gen_struct_or_union_type_die (type, context_die, usage);
 
+  dw_die_ref die = lookup_type_die (type);
+  if (die)
+    maybe_gen_btf_type_tag_dies (type, die);
+
   /* Don't set TREE_ASM_WRITTEN on an incomplete struct; we want to fix
      it up if it is ever completed.  gen_*_type_die will set it for us
      when appropriate.  */
@@ -27081,6 +27347,7 @@ force_type_die (tree type)
       dw_die_ref context_die = get_context_die (TYPE_CONTEXT (type));
 
       type_die = modified_type_die (type, TYPE_QUALS_NO_ADDR_SPACE (type),
+				    TYPE_ATTRIBUTES (type),
 				    false, context_die);
       gcc_assert (type_die);
     }
@@ -27457,6 +27724,9 @@ gen_decl_die (tree decl, tree origin, struct vlr_context *ctx,
       gcc_assert ((int)TREE_CODE (decl) > NUM_TREE_CODES);
       break;
     }
+
+  maybe_gen_btf_decl_tag_dies (decl_or_origin,
+			       lookup_decl_die (decl_or_origin));
 
   return NULL;
 }
@@ -32504,6 +32774,9 @@ dwarf2out_finish (const char *filename)
   /* Flush out any latecomers to the limbo party.  */
   flush_limbo_die_list ();
 
+  if (btf_tag_htab)
+    btf_tag_htab->empty ();
+
   if (inline_entry_data_table)
     gcc_assert (inline_entry_data_table->is_empty ());
 
@@ -33574,6 +33847,7 @@ dwarf2out_cc_finalize (void)
   switch_text_ranges = NULL;
   switch_cold_ranges = NULL;
   current_unit_personality = NULL;
+  btf_tag_htab = NULL;
 
   early_dwarf = false;
   early_dwarf_finished = false;
