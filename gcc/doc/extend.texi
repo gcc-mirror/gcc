@@ -1976,6 +1976,13 @@ declares that @code{my_alloc1} returns 16-byte aligned pointers and
 that @code{my_alloc2} returns a pointer whose value modulo 32 is equal
 to 8.
 
+@cindex @code{btf_decl_tag} function attribute
+@item btf_decl_tag
+The @code{btf_decl_tag} attribute may be used to associate function
+declarations with arbitrary strings by recording those strings in DWARF
+and/or BTF information in the same way that it is used for variables.
+See @ref{Common Variable Attributes}.
+
 @cindex @code{cold} function attribute
 @item cold
 The @code{cold} attribute on functions is used to inform the compiler that
@@ -7172,6 +7179,41 @@ is given by the product of arguments 1 and 2, and similarly, that
 @code{malloc_ptr}, like the standard C function @code{malloc},
 returns an object whose size is given by argument 1 to the function.
 
+@cindex @code{btf_decl_tag} variable attribute
+@item btf_decl_tag (@var{argument})
+The @code{btf_decl_tag} attribute may be used to associate variable
+declarations, struct or union member declarations, function
+declarations, and function parameter declarations with arbitrary strings.
+These strings are not interpreted by the compiler in any way, and have
+no effect on code generation.  Instead, these user-provided strings
+are recorded in DWARF (via @code{DW_AT_GNU_annotation} and
+@code{DW_TAG_GNU_annotation} extensions) and BTF information (via
+@code{BTF_KIND_DECL_TAG} records), and associated to the attributed
+declaration.  If neither DWARF nor BTF information is generated, the
+attribute has no effect.
+
+The argument is treated as a null-terminated sequence of zero or more
+non-null bytes.  Wide character strings are not supported.
+
+The attribute may be supplied multiple times for a single declaration,
+in which case each distinct argument string will be recorded in a
+separate DIE or BTF record, each associated to the declaration.  For
+a single declaration with multiple @code{btf_decl_tag} attributes,
+the order of the @code{DW_TAG_GNU_annotation} DIEs produced is not
+guaranteed to maintain the order of attributes in the source code.
+
+For example:
+
+@smallexample
+int *foo __attribute__ ((btf_decl_tag ("__percpu")));
+@end smallexample
+
+@noindent
+when compiled with @option{-gbtf} results in an additional
+@code{BTF_KIND_DECL_TAG} BTF record to be emitted in the BTF info,
+associating the string @samp{__percpu} with the @code{BTF_KIND_VAR}
+record for the variable @code{foo}.
+
 @cindex @code{cleanup} variable attribute
 @item cleanup (@var{cleanup_function})
 The @code{cleanup} attribute runs a function when the variable goes
@@ -8360,6 +8402,43 @@ the standard C function @code{calloc}, returns an object whose size
 is given by the product of arguments 1 and 2, and that
 @code{malloc_type}, like the standard C function @code{malloc},
 returns an object whose size is given by argument 1 to the function.
+
+@cindex @code{btf_type_tag} type attribute
+@item btf_type_tag (@var{argument})
+The @code{btf_type_tag} attribute may be used to associate (to ``tag'')
+particular types with arbitrary string annotations.  These annotations
+are recorded in debugging info by supported debug formats, currently
+DWARF (via @code{DW_AT_GNU_annotation} and @code{DW_TAG_GNU_annotation}
+extensions) and BTF (via @code{BTF_KIND_TYPE_TAG} records).  These
+annotation strings are not interpreted by the compiler in any way, and
+have no effect on code generation.  If neither DWARF nor BTF
+information is generated, the attribute has no effect.
+
+The argument is treated as a null-terminated sequence of zero or more
+non-null bytes.  Wide character strings are not supported.
+
+The attribute may be supplied multiple times for a single type, in
+which case each distinct argument string will be recorded in a
+separate DIE or BTF record, each associated to the type.  For a single
+type with multiple @code{btf_type_tag} attributes, the order of the
+@code{DW_TAG_GNU_annotation} DIEs produced is not guaranteed to
+maintain the order of attributes in the source code.
+
+For example the following code:
+
+@smallexample
+int * __attribute__ ((btf_type_tag ("__user"))) foo;
+@end smallexample
+
+@noindent
+when compiled with @option{-gbtf} results in an additional
+@code{BTF_KIND_TYPE_TAG} BTF record to be emitted in the BTF info,
+associating the string @samp{__user} with the normal @code{BTF_KIND_PTR}
+record for the pointer-to-integer type used in the declaration.
+
+Note that the BTF format currently only has a representation for type
+tags associated with pointer types.  Type tags on non-pointer types
+may be silently skipped when generating BTF.
 
 @cindex @code{copy} type attribute
 @item copy
