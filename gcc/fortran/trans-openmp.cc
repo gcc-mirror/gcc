@@ -8839,7 +8839,7 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 		last_arg->next = extra_arg;
 	      else if (extra_arg)
 		variant_proc_sym->formal = extra_arg;
-	      locus *loc = (odv->adjust_args_list
+	      locus *loc = (odv->append_args_list
 			    ? &odv->append_args_list->where :  &odv->where);
 	      int nextra_arg = 0;
 	      for (; extra_arg; extra_arg = extra_arg->next)
