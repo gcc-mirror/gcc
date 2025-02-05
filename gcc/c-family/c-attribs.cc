@@ -189,6 +189,9 @@ static tree handle_fd_arg_attribute (tree *, tree, tree, int, bool *);
 static tree handle_flag_enum_attribute (tree *, tree, tree, int, bool *);
 static tree handle_null_terminated_string_arg_attribute (tree *, tree, tree, int, bool *);
 
+static tree handle_btf_decl_tag_attribute (tree *, tree, tree, int, bool *);
+static tree handle_btf_type_tag_attribute (tree *, tree, tree, int, bool *);
+
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
   { name, function, type, variable }
@@ -657,7 +660,11 @@ const struct attribute_spec c_common_gnu_attributes[] =
   { "flag_enum",	      0, 0, false, true, false, false,
 			      handle_flag_enum_attribute, NULL },
   { "null_terminated_string_arg", 1, 1, false, true, true, false,
-			      handle_null_terminated_string_arg_attribute, NULL}
+			      handle_null_terminated_string_arg_attribute, NULL},
+  { "btf_type_tag",	      1, 1, false, true, false, false,
+			      handle_btf_type_tag_attribute, NULL},
+  { "btf_decl_tag",	      1, 1, true, false, false, false,
+			      handle_btf_decl_tag_attribute, NULL}
 };
 
 const struct scoped_attribute_specs c_common_gnu_attribute_table =
@@ -5169,6 +5176,107 @@ handle_null_terminated_string_arg_attribute (tree *node, tree name, tree args,
     return NULL_TREE;
 
   *no_add_attrs = true;
+  return NULL_TREE;
+}
+
+/* Common argument checking for btf_type_tag and btf_decl_tag.
+   Return true if the ARGS are valid, otherwise emit an error and
+   return false.  */
+
+static bool
+btf_tag_args_ok (tree name, tree args)
+{
+  if (!args) /* Correct number of args (1) is checked for us.  */
+    return false;
+  else if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
+    {
+      error ("%qE attribute requires a string argument", name);
+      return false;
+    }
+
+  /* Only narrow character strings are accepted.  */
+  tree argtype = TREE_TYPE (TREE_TYPE (TREE_VALUE (args)));
+  if (!(argtype == char_type_node
+	|| argtype == char8_type_node
+	|| argtype == signed_char_type_node
+	|| argtype == unsigned_char_type_node))
+    {
+      error ("unsupported wide string type argument in %qE attribute", name);
+      return false;
+    }
+
+  return true;
+}
+
+/* Handle the "btf_decl_tag" attribute.  */
+
+static tree
+handle_btf_decl_tag_attribute (tree * ARG_UNUSED (node), tree name, tree args,
+			       int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  if (!btf_tag_args_ok (name, args))
+    *no_add_attrs = true;
+
+  return NULL_TREE;
+}
+
+/* Handle the "btf_type_tag" attribute.  */
+
+static tree
+handle_btf_type_tag_attribute (tree *node, tree name, tree args,
+			       int flags, bool *no_add_attrs)
+{
+  if (!btf_tag_args_ok (name, args))
+    {
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  if (TREE_CODE (*node) == FUNCTION_TYPE || TREE_CODE (*node) == METHOD_TYPE)
+    {
+      warning (OPT_Wattributes,
+	       "%qE attribute does not apply to functions", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* Ensure a variant type is always created to hold the type_tag,
+     unless ATTR_FLAG_IN_PLACE is set.  Same logic as in
+     common_handle_aligned_attribute.  */
+  tree decl = NULL_TREE;
+  tree *type = NULL;
+  bool is_type = false;
+
+  if (DECL_P (*node))
+    {
+      decl = *node;
+      type = &TREE_TYPE (decl);
+      is_type = TREE_CODE (*node) == TYPE_DECL;
+    }
+  else if (TYPE_P (*node))
+    type = node, is_type = true;
+
+  if (is_type)
+    {
+      if ((flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
+	/* OK, modify the type in place.  */;
+
+      /* If we have a TYPE_DECL, then copy the type, so that we
+	 don't accidentally modify a builtin type.  See pushdecl.  */
+      else if (decl && TREE_TYPE (decl) != error_mark_node
+	       && DECL_ORIGINAL_TYPE (decl) == NULL_TREE)
+	{
+	  tree tt = TREE_TYPE (decl);
+	  *type = build_variant_type_copy (*type);
+	  DECL_ORIGINAL_TYPE (decl) = tt;
+	  TYPE_NAME (*type) = decl;
+	  TREE_USED (*type) = TREE_USED (decl);
+	  TREE_TYPE (decl) = *type;
+	}
+      else
+	*type = build_variant_type_copy (*type);
+    }
+
   return NULL_TREE;
 }
 
