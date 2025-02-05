@@ -1709,6 +1709,17 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
       if (GET_MODE (op) == mode)
 	return op;
 
+      /* (zero_extend:SI (and:QI X (const))) -> (and:SI (lowpart:SI X) const)
+	 where const does not sign bit set. */
+      if (GET_CODE (op) == AND
+	  && CONST_INT_P (XEXP (op, 1))
+	  && INTVAL (XEXP (op, 1)) > 0)
+	{
+	  rtx tem = rtl_hooks.gen_lowpart_no_emit (mode, XEXP (op, 0));
+	  if (tem)
+	    return simplify_gen_binary (AND, mode, tem, XEXP (op, 1));
+	}
+
       /* Check for a zero extension of a subreg of a promoted
 	 variable, where the promotion is zero-extended, and the
 	 target mode is the same as the variable's promotion.  */
