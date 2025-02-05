@@ -3345,7 +3345,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  if (openacc && n->sym->ts.type == BT_CLASS)
 		    {
 		      if (n->sym->attr.optional)
-			sorry ("optional class parameter");
+			sorry_at (gfc_get_location (&n->where),
+				  "optional class parameter");
 		      tree ptr = gfc_class_data_get (decl);
 		      ptr = build_fold_indirect_ref (ptr);
 		      OMP_CLAUSE_DECL (node) = ptr;
@@ -3761,7 +3762,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			    gcc_assert (!ref->next);
 			}
 		      else
-			sorry ("unhandled expression type");
+			sorry_at (gfc_get_location (&n->where),
+				  "unhandled expression type");
 		    }
 
 		  tree inner = se.expr;
@@ -4041,7 +4043,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		    gcc_unreachable ();
 		}
 	      else
-		sorry ("unhandled expression");
+		sorry_at (gfc_get_location (&n->where), "unhandled expression");
 
 	      finalize_map_clause:
 

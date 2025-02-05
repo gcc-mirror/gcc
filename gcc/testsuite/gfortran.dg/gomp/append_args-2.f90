@@ -40,7 +40,7 @@ contains
   subroutine f5 ()
     !$omp declare variant (f1ox) match(user={condition(flag)}) & ! { dg-error "the 'append_args' clause can only be specified if the 'dispatch' selector of the construct selector set appears in the 'match' clause at .1." }
     !$omp&  append_args ( interop ( target , targetsync) )
-    ! { dg-error "'q' at .1. must be a nonpointer, nonallocatable scalar integer dummy argument of 'omp_interop_kind' kind as it utilized with the 'append_args' clause at .2." "" { target *-*-* } .-2 }
+    ! { dg-error "'q' at .1. must be a nonpointer, nonallocatable scalar integer dummy argument of 'omp_interop_kind' kind as it utilized with the 'append_args' clause at .2." "" { target *-*-* } .-1 }
   end subroutine
 
   subroutine f6 (x, y)

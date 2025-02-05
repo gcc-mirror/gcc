@@ -6536,7 +6536,8 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss,
 		    /* FIXME: The "requires" selector was added in OpenMP 5.1.
 		       Currently only the now-deprecated syntax
 		       from OpenMP 5.0 is supported.  */
-		    sorry ("%<requires%> selector is not supported yet");
+		    sorry_at (gfc_get_location (&gfc_current_locus),
+			      "%<requires%> selector is not supported yet");
 		    return MATCH_ERROR;
 		  }
 		else
@@ -6942,7 +6943,8 @@ match_omp_metadirective (bool begin_p)
       gfc_matching_omp_context_selector = false;
 
       if (is_omp_declarative_stmt (directive))
-	sorry ("declarative directive variants are not supported");
+	sorry_at (gfc_get_location (&gfc_current_locus),
+		  "declarative directive variants are not supported");
 
       if (gfc_error_flag_test ())
 	{
