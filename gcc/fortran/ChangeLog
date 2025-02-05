@@ -1,3 +1,19 @@
+2025-02-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* arith.cc (arith_power): Handle modular arithmetic for
+	BT_UNSIGNED.
+	(eval_intrinsic):  Error for unsigned exponentiation with
+	-pedantic.
+	* expr.cc (gfc_type_convert_binary): Use type of first
+	argument for unsigned exponentiation.
+	* gfortran.texi: Mention arithmetic exponentiation.
+	* resolve.cc (resolve_operator): Allow unsigned exponentiation.
+	* trans-decl.cc (gfc_build_intrinsic_function_decls): Build
+	declarations for unsigned exponentiation.
+	* trans-expr.cc (gfc_conv_cst_uint_power): New function.
+	(gfc_conv_power_op): Call it.  Handle unsigned exponentiation.
+	* trans.h (gfor_fndecl_unsigned_pow_list):  Add declaration.
+
 2025-02-03  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/93289

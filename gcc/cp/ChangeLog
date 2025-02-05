@@ -1,3 +1,68 @@
+2025-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118671
+	* call.cc (build_list_conv): For RAW_DATA_CST, call
+	implicit_conversion with INTEGER_CST representing first byte instead
+	of the whole RAW_DATA_CST.  If it is an optimizable trivial
+	conversion, just save that to subconvs, otherwise allocate an
+	artificial ck_list for all the RAW_DATA_CST bytes and create
+	subsubconv for each of them.
+	(convert_like_internal): For ck_list with RAW_DATA_CST, instead of
+	doing all the checks for optimizable conversion just check kind and
+	assert everything else, otherwise use subsubconversions instead of
+	the subconversion for each element.
+
+2025-02-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117778
+	* parser.cc (cp_parser_late_return_type_opt): Maybe override
+	auto_is_implicit_function_template_parm_p.
+	(cp_parser_parameter_declaration): Move a make_temp_override below.
+
+2025-02-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118718
+	* parser.cc (warn_about_ambiguous_parse): Don't warn when a trailing
+	return type is present.
+
+2025-02-04  Simon Martin  <simon@nasilyan.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/117114
+	PR c++/109918
+	* class.cc (warn_hidden): Keep track of overloaded and of hidden
+	base methods.
+	* error.cc (location_of): Skip over conv_op_marker.
+
+2025-02-04  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/114619
+	* init.cc (build_vec_init): Properly determine whether
+	digest_init has been called.
+
+2025-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118719
+	* lambda.cc (add_capture): Only pedwarn about capturing structured
+	binding if !explicit_init_p.
+
+2025-02-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/108205
+	* contracts.cc (get_pseudo_contract_violation_type): Give names
+	to generated FIELD_DECLs.
+	(declare_handle_contract_violation): Mark contract_violation
+	type as external linkage.
+	(build_contract_handler_call): Ensure any builtin declarations
+	created here aren't treated as attached to the current module.
+
+2025-02-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98893
+	* decl.cc (start_cleanup_fn): Make name from the mangled name of
+	the passed-in decl.
+	(register_dtor_fn): Pass decl to start_cleanup_fn.
+
 2025-02-03  A J Ryan Solutions Ltd  <gcc.gnu.org@ajryansolutions.co.uk>
 
 	PR c++/118265

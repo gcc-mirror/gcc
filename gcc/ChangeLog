@@ -1,3 +1,42 @@
+2025-02-04  Andi Kleen  <ak@gcc.gnu.org>
+
+	* doc/invoke.texi: Document file cache tunables.
+	* params.opt: Move auto tuning description to lines.
+
+2025-02-04  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.cc (print_operand): Remove the no longer
+	necessary 31-bit and weak symbol handling.
+	* config/s390/s390.md (*movdi_64): Do not use @PLT with larl.
+	(*movsi_larl): Likewise.
+	(main_base_64): Likewise.
+	(reload_base_64): Likewise.
+
+2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117113
+	* gimple-loop-jam.cc (unroll_jam_possible_p): Detect when
+	we cannot handle virtual SSA update.
+
+2025-02-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116926
+	* optabs-query.cc (find_widening_optab_handler_and_mode): Fix
+	limit for `vec-mode -> scalar-mode` case.
+
+2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/117611
+	* combine.cc (simplify_shift_const_1): Bail if not
+	scalar int mode.
+
+2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR lto/113207
+	* ipa-free-lang-data.cc (free_lang_data_in_type): First drop
+	const/volatile qualifiers from function argument types,
+	then build a simplified type.
+
 2025-02-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*sibcall_pop_memory):

@@ -1,3 +1,122 @@
+2025-02-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115112
+	* gm2/pim/run/pass/dectest.mod: New test.
+	* gm2/pim/run/pass/inctest.mod: New test.
+
+2025-02-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94100
+	* g++.dg/cpp0x/variadic188.C: New test.
+
+2025-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118671
+	* g++.dg/cpp/embed-25.C: New test.
+	* g++.dg/cpp0x/pr118671.C: New test.
+
+2025-02-04  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/riscv/pr118170.c: Ignore for E ABI.
+
+2025-02-04  Thiago Jung Bauermann  <thiago.bauermann@linaro.org>
+
+	PR target/116010
+	* gcc.target/arm/simd/mve-vabs.c: Test tree dump and adjust to new
+	code.
+
+2025-02-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117778
+	* g++.dg/cpp1y/lambda-generic-117778.C: New test.
+	* g++.dg/cpp2a/abbrev-fn2.C: New test.
+	* g++.dg/cpp2a/abbrev-fn3.C: New test.
+
+2025-02-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118718
+	* g++.dg/warn/Wvexing-parse10.C: New test.
+
+2025-02-04  kelefth  <konstantinos.eleftheriou@vrull.eu>
+
+	PR testsuite/116845
+	* gcc.dg/pr109393.c: XFAIL on ilp32 targets.
+
+2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR c/118742
+	* gcc.dg/gimplefe-56.c: New testcase.
+
+2025-02-04  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/call-z10-pic-nodatarel.c: Adjust
+	expectations.
+	* gcc.target/s390/call-z10-pic.c: Likewise.
+	* gcc.target/s390/call-z10.c: Likewise.
+	* gcc.target/s390/call-z9-pic-nodatarel.c: Likewise.
+	* gcc.target/s390/call-z9-pic.c: Likewise.
+	* gcc.target/s390/call-z9.c: Likewise.
+
+2025-02-04  Simon Martin  <simon@nasilyan.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/117114
+	PR c++/109918
+	* g++.dg/warn/Woverloaded-virt1.C: Check that no warning is
+	emitted for non virtual base methods.
+	* g++.dg/warn/Woverloaded-virt10.C: New test.
+	* g++.dg/warn/Woverloaded-virt11.C: New test.
+	* g++.dg/warn/Woverloaded-virt12.C: New test.
+	* g++.dg/warn/Woverloaded-virt13.C: New test.
+	* g++.dg/warn/Woverloaded-virt5.C: New test.
+	* g++.dg/warn/Woverloaded-virt6.C: New test.
+	* g++.dg/warn/Woverloaded-virt7.C: New test.
+	* g++.dg/warn/Woverloaded-virt8.C: New test.
+	* g++.dg/warn/Woverloaded-virt9.C: New test.
+
+2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117113
+	* gcc.dg/torture/pr117113.c: New testcase.
+
+2025-02-04  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/114619
+	* g++.dg/init/no-elide4.C: New test.
+
+2025-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118719
+	* g++.dg/cpp1z/decomp63.C: New test.
+
+2025-02-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/unsigned_15.f90: Adjust error messages.
+	* gfortran.dg/unsigned_43.f90: New test.
+	* gfortran.dg/unsigned_44.f90: New test.
+
+2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/117611
+	* gcc.dg/fixed-point/pr117611.c: New testcase.
+
+2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR lto/113207
+	* gcc.dg/pr113207.c: New testcase.
+
+2025-02-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/108205
+	* g++.dg/modules/contracts-5_a.C: New test.
+	* g++.dg/modules/contracts-5_b.C: New test.
+
+2025-02-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/98893
+	* g++.dg/modules/pr98893_a.H: New test.
+	* g++.dg/modules/pr98893_b.C: New test.
+
 2025-02-03  A J Ryan Solutions Ltd  <gcc.gnu.org@ajryansolutions.co.uk>
 
 	PR c++/118265

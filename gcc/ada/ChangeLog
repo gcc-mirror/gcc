@@ -1,3 +1,8 @@
+2025-02-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/118731
+	* sem_aggr.adb (Resolve_Iterated_Association): Add missing guard.
+
 2025-02-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/118712

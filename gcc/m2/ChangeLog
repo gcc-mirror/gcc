@@ -1,3 +1,15 @@
+2025-02-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115112
+	* gm2-compiler/M2Quads.mod (BuildPseudoProcedureCall): Pass
+	tokno to each build procedure.
+	(BuildThrowProcedure): New parameter functok.
+	(BuildIncProcedure): New parameter proctok.
+	Pass proctok on the quad stack during every push.
+	(BuildDecProcedure): Ditto.
+	(BuildInclProcedure): New parameter proctok.
+	(BuildExclProcedure): New parameter proctok.
+
 2025-02-01  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/118703

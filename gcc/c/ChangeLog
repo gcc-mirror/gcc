@@ -1,3 +1,10 @@
+2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR c/118742
+	* gimple-parser.cc (gimple_parser_build_unary_op): New
+	wrapper around build_unary_op.
+	(c_parser_gimple_unary_expression): Use it.
+
 2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-parser.cc (c_finish_omp_declare_variant): Modify how
