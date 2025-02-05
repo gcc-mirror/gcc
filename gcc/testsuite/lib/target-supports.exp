@@ -9708,8 +9708,7 @@ proc check_effective_target_vect_call_lrint { } {
 proc check_effective_target_vect_call_btrunc { } {
     return [check_cached_effective_target_indexed vect_call_btrunc {
       expr { [istarget aarch64*-*-*]
-	     || [istarget amdgcn-*-*]
-	     || [istarget loongarch*-*-*] }}]
+	     || [istarget amdgcn-*-*] }}]
 }
 
 # Return 1 if the target supports vector btruncf calls.
@@ -9717,8 +9716,7 @@ proc check_effective_target_vect_call_btrunc { } {
 proc check_effective_target_vect_call_btruncf { } {
     return [check_cached_effective_target_indexed vect_call_btruncf {
       expr { [istarget aarch64*-*-*]
-	     || [istarget amdgcn-*-*]
-	     || [istarget loongarch*-*-*] }}]
+	     || [istarget amdgcn-*-*] }}]
 }
 
 # Return 1 if the target supports vector ceil calls.
@@ -9726,8 +9724,7 @@ proc check_effective_target_vect_call_btruncf { } {
 proc check_effective_target_vect_call_ceil { } {
     return [check_cached_effective_target_indexed vect_call_ceil {
       expr { [istarget aarch64*-*-*]
-	     || [istarget amdgcn-*-*]
-	     || [istarget loongarch*-*-*] }}]
+	     || [istarget amdgcn-*-*] }}]
 }
 
 # Return 1 if the target supports vector ceilf calls.
@@ -9735,8 +9732,7 @@ proc check_effective_target_vect_call_ceil { } {
 proc check_effective_target_vect_call_ceilf { } {
     return [check_cached_effective_target_indexed vect_call_ceilf {
       expr { [istarget aarch64*-*-*]
-	     || [istarget amdgcn-*-*]
-	     || [istarget loongarch*-*-*] }}]
+	     || [istarget amdgcn-*-*] }}]
 }
 
 # Return 1 if the target supports vector floor calls.
@@ -9744,8 +9740,7 @@ proc check_effective_target_vect_call_ceilf { } {
 proc check_effective_target_vect_call_floor { } {
     return [check_cached_effective_target_indexed vect_call_floor {
       expr { [istarget aarch64*-*-*]
-	     || [istarget amdgcn-*-*]
-	     || [istarget loongarch*-*-*] }}]
+	     || [istarget amdgcn-*-*] }}]
 }
 
 # Return 1 if the target supports vector floorf calls.
@@ -9753,24 +9748,21 @@ proc check_effective_target_vect_call_floor { } {
 proc check_effective_target_vect_call_floorf { } {
     return [check_cached_effective_target_indexed vect_call_floorf {
       expr { [istarget aarch64*-*-*]
-	     || [istarget amdgcn-*-*]
-	     || [istarget loongarch*-*-*] }}]
+	     || [istarget amdgcn-*-*] }}]
 }
 
 # Return 1 if the target supports vector lceil calls.
 
 proc check_effective_target_vect_call_lceil { } {
     return [check_cached_effective_target_indexed vect_call_lceil {
-      expr { [istarget aarch64*-*-*]
-	     || [istarget loongarch*-*-*] }}]
+      expr { [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports vector lfloor calls.
 
 proc check_effective_target_vect_call_lfloor { } {
     return [check_cached_effective_target_indexed vect_call_lfloor {
-      expr { [istarget aarch64*-*-*]
-	     || [istarget loongarch*-*-*] }}]
+      expr { [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports vector nearbyint calls.
