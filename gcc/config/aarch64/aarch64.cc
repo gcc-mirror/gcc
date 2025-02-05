@@ -15889,7 +15889,24 @@ aarch64_insn_cost (rtx_insn *insn, bool speed)
 {
   if (rtx set = single_set (insn))
     return set_rtx_cost (set, speed);
-  return pattern_cost (PATTERN (insn), speed);
+
+  /* If the instruction does multiple sets in parallel, use the cost
+     of the most expensive set.  This copes with instructions that set
+     the flags to a useful value as a side effect.  */
+  rtx pat = PATTERN (insn);
+  if (GET_CODE (pat) == PARALLEL)
+    {
+      int max_cost = 0;
+      for (int i = 0; i < XVECLEN (pat, 0); ++i)
+	{
+	  rtx x = XVECEXP (pat, 0, i);
+	  if (GET_CODE (x) == SET)
+	    max_cost = std::max (max_cost, set_rtx_cost (x, speed));
+	}
+      return max_cost;
+    }
+
+  return pattern_cost (pat, speed);
 }
 
 /* Implement TARGET_INIT_BUILTINS.  */
