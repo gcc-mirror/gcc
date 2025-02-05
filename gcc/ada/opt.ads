@@ -1522,10 +1522,6 @@ package Opt is
    --  used for inconsistency error messages. A value of System_Location is
    --  used if the policy is set in package System.
 
-   Tasking_Used : Boolean := False;
-   --  Set True if any tasking construct is encountered. Used to activate the
-   --  output of the Q, L and T lines in ALI files.
-
    Time_Slice_Set : Boolean := False;
    --  GNATBIND
    --  Set True if a pragma Time_Slice is processed in the main unit, or

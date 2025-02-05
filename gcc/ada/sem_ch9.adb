@@ -753,8 +753,6 @@ package body Sem_Ch9 is
       T_Name : Node_Id;
 
    begin
-      Tasking_Used := True;
-
       T_Name := First (Names (N));
       while Present (T_Name) loop
          Analyze (T_Name);
@@ -790,8 +788,6 @@ package body Sem_Ch9 is
 
    procedure Analyze_Accept_Alternative (N : Node_Id) is
    begin
-      Tasking_Used := True;
-
       if Present (Pragmas_Before (N)) then
          Analyze_List (Pragmas_Before (N));
       end if;
@@ -823,8 +819,6 @@ package body Sem_Ch9 is
       Task_Nam  : Entity_Id := Empty;  -- initialize to prevent warning
 
    begin
-      Tasking_Used := True;
-
       --  Entry name is initialized to Any_Id. It should get reset to the
       --  matching entry entity. An error is signalled if it is not reset.
 
@@ -1064,7 +1058,6 @@ package body Sem_Ch9 is
       Trigger        : Node_Id;
 
    begin
-      Tasking_Used := True;
       Check_Restriction (Max_Asynchronous_Select_Nesting, N);
       Check_Restriction (No_Select_Statements, N);
 
@@ -1109,7 +1102,6 @@ package body Sem_Ch9 is
       Is_Disp_Select : Boolean := False;
 
    begin
-      Tasking_Used := True;
       Check_Restriction (No_Select_Statements, N);
 
       --  Ada 2005 (AI-345): The trigger may be a dispatching call
@@ -1154,7 +1146,6 @@ package body Sem_Ch9 is
       Typ  : Entity_Id;
 
    begin
-      Tasking_Used := True;
       Check_Restriction (No_Delay, N);
 
       if Present (Pragmas_Before (N)) then
@@ -1206,7 +1197,6 @@ package body Sem_Ch9 is
       E : constant Node_Id := Expression (N);
 
    begin
-      Tasking_Used := True;
       Check_Restriction (No_Relative_Delay, N);
       Check_Restriction (No_Delay, N);
       Check_Potentially_Blocking_Operation (N);
@@ -1231,7 +1221,6 @@ package body Sem_Ch9 is
       Typ : Entity_Id;
 
    begin
-      Tasking_Used := True;
       Check_Restriction (No_Delay, N);
       Check_Potentially_Blocking_Operation (N);
       Analyze_And_Resolve (E);
@@ -1265,8 +1254,6 @@ package body Sem_Ch9 is
       --  within the current protected body are available.
 
       Freeze_Previous_Contracts (N);
-
-      Tasking_Used := True;
 
       --  Entry_Name is initialized to Any_Id. It should get reset to the
       --  matching entry entity. An error is signalled if it is not reset.
@@ -1518,8 +1505,6 @@ package body Sem_Ch9 is
       Formals : constant List_Id   := Parameter_Specifications (N);
 
    begin
-      Tasking_Used := True;
-
       if Present (Index) then
          Analyze (Index);
 
@@ -1545,8 +1530,6 @@ package body Sem_Ch9 is
       Call : constant Node_Id := Entry_Call_Statement (N);
 
    begin
-      Tasking_Used := True;
-
       if Present (Pragmas_Before (N)) then
          Analyze_List (Pragmas_Before (N));
       end if;
@@ -1588,8 +1571,6 @@ package body Sem_Ch9 is
 
    begin
       Generate_Definition (Def_Id);
-
-      Tasking_Used := True;
 
       --  Case of no discrete subtype definition
 
@@ -1751,7 +1732,6 @@ package body Sem_Ch9 is
       Loop_Id : constant Entity_Id := Make_Temporary (Sloc (N), 'L');
 
    begin
-      Tasking_Used := True;
       Analyze (Def);
 
       --  There is no elaboration of the entry index specification. Therefore,
@@ -1848,7 +1828,6 @@ package body Sem_Ch9 is
 
       Freeze_Previous_Contracts (N);
 
-      Tasking_Used := True;
       Mutate_Ekind (Body_Id, E_Protected_Body);
       Set_Etype (Body_Id, Standard_Void_Type);
       Spec_Id := Find_Concurrent_Spec (Body_Id);
@@ -1991,7 +1970,6 @@ package body Sem_Ch9 is
    --  Start of processing for Analyze_Protected_Definition
 
    begin
-      Tasking_Used := True;
       Analyze_Declarations (Visible_Declarations (N));
 
       if not Is_Empty_List (Private_Declarations (N)) then
@@ -2047,7 +2025,6 @@ package body Sem_Ch9 is
          return;
       end if;
 
-      Tasking_Used := True;
       Check_Restriction (No_Protected_Types, N);
 
       T := Find_Type_Name (N);
@@ -2422,7 +2399,6 @@ package body Sem_Ch9 is
          Modes    => True,
          Warnings => True);
 
-      Tasking_Used := True;
       Check_Restriction (No_Requeue_Statements, N);
       Check_Unreachable_Code (N);
 
@@ -2754,7 +2730,6 @@ package body Sem_Ch9 is
       Alt_Count         : Uint    := Uint_0;
 
    begin
-      Tasking_Used := True;
       Check_Restriction (No_Select_Statements, N);
 
       --  Loop to analyze alternatives
@@ -2871,7 +2846,6 @@ package body Sem_Ch9 is
 
    begin
       Generate_Definition (Obj_Id);
-      Tasking_Used := True;
 
       --  A single protected declaration is transformed into a pair of an
       --  anonymous protected type and an object of that type. Generate:
@@ -2959,7 +2933,6 @@ package body Sem_Ch9 is
 
    begin
       Generate_Definition (Obj_Id);
-      Tasking_Used := True;
 
       --  A single task declaration is transformed into a pair of an anonymous
       --  task type and an object of that type. Generate:
@@ -3074,7 +3047,6 @@ package body Sem_Ch9 is
 
       Freeze_Previous_Contracts (N);
 
-      Tasking_Used := True;
       Set_Scope (Body_Id, Current_Scope);
       Mutate_Ekind (Body_Id, E_Task_Body);
       Set_Etype (Body_Id, Standard_Void_Type);
@@ -3219,8 +3191,6 @@ package body Sem_Ch9 is
       L : Entity_Id;
 
    begin
-      Tasking_Used := True;
-
       if Present (Visible_Declarations (N)) then
          Analyze_Declarations (Visible_Declarations (N));
       end if;
@@ -3264,8 +3234,6 @@ package body Sem_Ch9 is
       end if;
 
       --  Proceed ahead with analysis of task type declaration
-
-      Tasking_Used := True;
 
       --  The sequential partition elaboration policy is supported only in the
       --  restricted profile.
@@ -3448,8 +3416,6 @@ package body Sem_Ch9 is
 
    procedure Analyze_Terminate_Alternative (N : Node_Id) is
    begin
-      Tasking_Used := True;
-
       if Present (Pragmas_Before (N)) then
          Analyze_List (Pragmas_Before (N));
       end if;
@@ -3469,7 +3435,6 @@ package body Sem_Ch9 is
       Is_Disp_Select : Boolean := False;
 
    begin
-      Tasking_Used := True;
       Check_Restriction (No_Select_Statements, N);
 
       --  Ada 2005 (AI-345): The trigger may be a dispatching call
@@ -3504,8 +3469,6 @@ package body Sem_Ch9 is
       Trigger : constant Node_Id := Triggering_Statement (N);
 
    begin
-      Tasking_Used := True;
-
       if Present (Pragmas_Before (N)) then
          Analyze_List (Pragmas_Before (N));
       end if;
