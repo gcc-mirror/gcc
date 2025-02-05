@@ -11213,14 +11213,28 @@ grokfndecl (tree ctype,
      expression, that declaration shall be a definition..."  */
   if (friendp && !funcdef_flag)
     {
+      bool has_errored = false;
       for (tree t = FUNCTION_FIRST_USER_PARMTYPE (decl);
 	   t && t != void_list_node; t = TREE_CHAIN (t))
 	if (TREE_PURPOSE (t))
 	  {
-	    permerror (DECL_SOURCE_LOCATION (decl),
-		       "friend declaration of %qD specifies default "
-		       "arguments and isn%'t a definition", decl);
-	    break;
+	    diagnostic_t diag_kind = DK_PERMERROR;
+	    /* For templates, mark the default argument as erroneous and give a
+	       hard error.  */
+	    if (processing_template_decl)
+	      {
+		diag_kind = DK_ERROR;
+		TREE_PURPOSE (t) = error_mark_node;
+	      }
+	    if (!has_errored)
+	      {
+		has_errored = true;
+		emit_diagnostic (diag_kind,
+				 DECL_SOURCE_LOCATION (decl),
+				 /*diagnostic_option_id=*/0,
+				 "friend declaration of %qD specifies default "
+				 "arguments and isn%'t a definition", decl);
+	      }
 	  }
     }
 
