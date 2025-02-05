@@ -1,3 +1,12 @@
+2025-02-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-02-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118745
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Use
+	append_args_list in the condition for the append_arg location.
+
 2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
