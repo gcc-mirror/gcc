@@ -31,6 +31,7 @@ BEGIN {
     FS ="[(, \t]+"
     option[""] = ""
     comment = 1
+    cols_expected = -1
 
     dir_tiny = "tiny-stack"
     opt_tiny = "msp8"
@@ -136,10 +137,36 @@ BEGIN {
 ##################################################################
 
 /^AVR_MCU/ {
-    name = $2
-    gsub ("\"", "", name)
+    line = $0
+    gsub (/\(/, ",", line)
+    gsub (/[ \t")]/, "", line)
+    n_cols = split (line, col, ",")
 
-    if ($5 == "NULL")
+    # Now we have col[] something like:
+    # col[1] = AVR_MCU
+    # col[2] = avr2              # Device name
+    # col[3] = ARCH_AVR2         # Core
+    # col[4] = AVR_ERRATA_SKIP   # Device Attributes
+    # col[5] = NULL              # Device Macro like __AVR_ATtiny22__
+    # col[6] = 0x0060            # Tdata
+    # col[7] = 0x0               # Ttext
+    # col[8] = 0x60000           # Flash Size
+    # col[9] = 0                 # PM Offset
+
+    # Sanity check the number of columns.
+    if (cols_expected == -1)
+	cols_expected = n_cols
+    else if (n_cols != cols_expected)
+    {
+	msg = "genmultilib.awk: error: wrong number of columns"
+	print msg | "cat 1>&2"
+	print $0 | "cat 1>&2"
+	exit 1
+    }
+
+    name = col[2]
+
+    if (col[5] == "NULL")
     {
 	core = name
 
@@ -169,9 +196,9 @@ BEGIN {
     opts = option[core]
 
     # split device specific feature list
-    n = split($4,dev_attribute,"|")
+    n = split (col[4], dev_attribute, "|")
 
-    for (i=1; i <= n; i++)
+    for (i = 1; i <= n; i++)
     {
       if (dev_attribute[i] == "AVR_SHORT_SP")
         opts = opts "/" opt_tiny
