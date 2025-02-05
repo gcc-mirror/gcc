@@ -15,4 +15,4 @@
 VDIV_WITH_LMUL (1, 16)
 VDIV_WITH_LMUL (1, 32)
 
-/* { dg-final { scan-assembler-times {vneg\.v} 2 } } */
+/* { dg-final { scan-assembler-times {vrsub\.vi} 2 } } */

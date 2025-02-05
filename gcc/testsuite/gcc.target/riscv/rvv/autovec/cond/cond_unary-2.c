@@ -39,10 +39,10 @@
 
 TEST_ALL (DEF_LOOP)
 
-/* NOTE: int abs operator is converted to vneg.v + vmax.vv */
-/* { dg-final { scan-assembler-times {\tvneg\.v\tv[0-9]+,v[0-9]+} 8 } } */
+/* NOTE: int abs operator is converted to vneg.v (or vsrub.vi) + vmax.vv */
+/* { dg-final { scan-assembler-times {\tvrsub\.vi\tv[0-9]+,v[0-9]+} 8 } } */
 /* { dg-final { scan-assembler-times {\tvmax\.vv\tv[0-9]+,v[0-9]+,v[0-9]+} 4 } } */
-/* { dg-final { scan-assembler-times {\tvneg\.v\tv[0-9]+,v[0-9]+,v0\.t} 4 } } */
+/* { dg-final { scan-assembler-times {\tvrsub\.vi\tv[0-9]+,v[0-9]+,0,v0\.t} 4 } } */
 /* { dg-final { scan-assembler-times {\tvnot\.v\tv[0-9]+,v[0-9]+,v0\.t} 4 } } */
 /* { dg-final { scan-assembler-times {\tvfabs\.v\tv[0-9]+,v[0-9]+,v0\.t} 3 } } */
 /* { dg-final { scan-assembler-times {\tvfneg\.v\tv[0-9]+,v[0-9]+,v0\.t} 3 } } */

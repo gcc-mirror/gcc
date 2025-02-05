@@ -45,7 +45,7 @@ DEF_OP_V (neg, 128, int64_t, __builtin_abs)
 DEF_OP_V (neg, 256, int64_t, __builtin_abs)
 DEF_OP_V (neg, 512, int64_t, __builtin_abs)
 
-/* { dg-final { scan-assembler-times {vneg\.v} 38 } } */
+/* { dg-final { scan-assembler-times {vrsub\.vi} 38 } } */
 /* { dg-final { scan-assembler-times {vmax\.vv} 38 } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
 /* { dg-final { scan-tree-dump-not "1,1" "optimized" } } */

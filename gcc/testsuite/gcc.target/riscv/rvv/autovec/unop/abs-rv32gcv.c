@@ -4,6 +4,6 @@
 #include "abs-template.h"
 
 /* { dg-final { scan-assembler-times {\tvseti?vli\s+[a-z0-9,]+,ta,ma} 7 } } */
-/* { dg-final { scan-assembler-times {\tvneg\.v} 4 } } */
+/* { dg-final { scan-assembler-times {\tvrsub\.vi} 4 } } */
 /* { dg-final { scan-assembler-times {\tvmax\.vv\sv[0-9]+,v[0-9]+,v[0-9]+} 4 } } */
 /* { dg-final { scan-assembler-times {\tvfabs.v} 3 } } */

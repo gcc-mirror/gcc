@@ -53,5 +53,5 @@ DEF_OP_V (neg, 128, int64_t, -)
 DEF_OP_V (neg, 256, int64_t, -)
 DEF_OP_V (neg, 512, int64_t, -)
 
-/* { dg-final { scan-assembler-times {vneg\.v\s+v[0-9]+,\s*v[0-9]+} 42 } } */
+/* { dg-final { scan-assembler-times {vrsub\.vi\s+v[0-9]+,\s*v[0-9]+,\s*0} 42 } } */
 /* { dg-final { scan-assembler-not {csrr} } } */

@@ -20,7 +20,7 @@ DEF_CONVERT (fncvt, double, uint8_t, 256)
 DEF_CONVERT (fncvt, double, uint8_t, 512)
 
 /* { dg-final { scan-assembler-times {vfncvt\.rtz\.x\.f.w} 14 } } */
-/* { dg-final { scan-assembler-times {vncvt\.x\.x\.w} 28 } } */
+/* { dg-final { scan-assembler-times {vnsrl\.wi} 28 } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
 /* { dg-final { scan-tree-dump-not "1,1" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "2,2" "optimized" } } */
