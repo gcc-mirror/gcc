@@ -96,6 +96,8 @@ struct gfc_cpp_option_data
   int deps_skip_system;                 /* -MM */
   const char *deps_filename;            /* -M[M]D */
   const char *deps_filename_user;       /* -MF <arg> */
+  const char *deps_target_filename;     /* -MT / -MQ <arg> */
+  bool quote_deps_target_filename;      /* -MQ */
   int deps_missing_are_generated;       /* -MG */
   int deps_phony;                       /* -MP */
   int warn_date_time;                   /* -Wdate-time */
@@ -287,6 +289,8 @@ gfc_cpp_init_options (unsigned int decoded_options_count,
   gfc_cpp_option.deps_missing_are_generated = 0;
   gfc_cpp_option.deps_filename = NULL;
   gfc_cpp_option.deps_filename_user = NULL;
+  gfc_cpp_option.deps_target_filename = NULL;
+  gfc_cpp_option.quote_deps_target_filename = false;
 
   gfc_cpp_option.multilib = NULL;
   gfc_cpp_option.prefix = NULL;
@@ -439,9 +443,8 @@ gfc_cpp_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED
 
     case OPT_MQ:
     case OPT_MT:
-      gfc_cpp_option.deferred_opt[gfc_cpp_option.deferred_opt_count].code = code;
-      gfc_cpp_option.deferred_opt[gfc_cpp_option.deferred_opt_count].arg = arg;
-      gfc_cpp_option.deferred_opt_count++;
+      gfc_cpp_option.quote_deps_target_filename = (code == OPT_MQ);
+      gfc_cpp_option.deps_target_filename = arg;
       break;
 
     case OPT_P:
@@ -593,6 +596,12 @@ gfc_cpp_init_0 (void)
     }
 
   gcc_assert(cpp_in);
+
+  if (gfc_cpp_option.deps_target_filename)
+    if (mkdeps *deps = cpp_get_deps (cpp_in))
+      deps_add_target (deps, gfc_cpp_option.deps_target_filename,
+		       gfc_cpp_option.quote_deps_target_filename);
+
   if (!cpp_read_main_file (cpp_in, gfc_source_file))
     errorcount++;
 }
@@ -635,9 +644,6 @@ gfc_cpp_init (void)
 	  else
 	    cpp_assert (cpp_in, opt->arg);
 	}
-      else if (opt->code == OPT_MT || opt->code == OPT_MQ)
-	if (mkdeps *deps = cpp_get_deps (cpp_in))
-	  deps_add_target (deps, opt->arg, opt->code == OPT_MQ);
     }
 
   /* Pre-defined macros for non-required INTEGER kind types.  */
