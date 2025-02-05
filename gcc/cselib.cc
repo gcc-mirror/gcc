@@ -3394,7 +3394,7 @@ cselib_init (int record_what)
 #ifdef STACK_ADDRESS_OFFSET
 	  /* On SPARC take stack pointer bias into account as well.  */
 	  off += (STACK_ADDRESS_OFFSET
-		  - FIRST_PARM_OFFSET (current_function_decl)));
+		  - FIRST_PARM_OFFSET (current_function_decl));
 #endif
 	  callmem[1] = plus_constant (Pmode, stack_pointer_rtx, off);
 	}
