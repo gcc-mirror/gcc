@@ -5,6 +5,9 @@
 mcall-prologues
 UrlSuffix(gcc/AVR-Options.html#index-mcall-prologues)
 
+mcvt
+UrlSuffix(gcc/AVR-Options.html#index-mcvt)
+
 mmcu=
 UrlSuffix(gcc/AVR-Options.html#index-mmcu)
 
