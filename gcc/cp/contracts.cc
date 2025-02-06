@@ -2780,6 +2780,7 @@ maybe_reject_param_in_postcondition (tree decl)
   if (flag_contracts_nonattr
       && !TREE_READONLY (decl)
       && TREE_CODE (decl) == PARM_DECL
+      && should_constify_contract
       && processing_postcondition
       && !dependent_type_p (TREE_TYPE (decl))
       && !CP_TYPE_CONST_P (TREE_TYPE (decl))
