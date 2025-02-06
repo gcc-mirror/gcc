@@ -3,6 +3,15 @@
 	Backported from trunk:
 	2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* gcc.dg/cleanup-12.c: Don't 'dg-skip-if "" { ! nonlocal_goto }'.
+	* gcc.dg/cleanup-13.c: Likewise.
+	* gcc.dg/cleanup-5.c: Likewise.
+	* gcc.dg/gimplefe-44.c: Don't
+	'dg-require-effective-target nonlocal_goto'.
+
+	Backported from trunk:
+	2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* lib/target-supports.exp (check_effective_target_exceptions):
 	'return 0' for '[istarget nvptx-*-*]'.
 
