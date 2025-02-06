@@ -80,7 +80,7 @@ package body Sem_Disp is
    --  parameter); otherwise returns empty.
 
    function Find_Hidden_Overridden_Primitive (S : Entity_Id) return Entity_Id;
-   --  [Ada 2012:AI-0125] Find an inherited hidden primitive of the dispatching
+   --  [AI05-0125] Find an inherited hidden primitive of the dispatching
    --  type of S that has the same name of S, a type-conformant profile, an
    --  original corresponding operation O that is a primitive of a visible
    --  ancestor of the dispatching type of S and O is visible at the point of
@@ -91,7 +91,8 @@ package body Sem_Disp is
    --  This routine does not search for non-hidden primitives since they are
    --  covered by the normal Ada 2005 rules. Its name was motivated by an
    --  intermediate version of AI05-0125 where this term was proposed to
-   --  name these entities in the RM.
+   --  name these entities in the RM. FWIW, note that AI05-0125 was
+   --  not approved; it was voted "No Action".
 
    function Is_Inherited_Public_Operation (Op : Entity_Id) return Boolean;
    --  Check whether a primitive operation is inherited from an operation
@@ -1710,9 +1711,8 @@ package body Sem_Disp is
 
       Ovr_Subp := Old_Subp;
 
-      --  [Ada 2012:AI-0125]: Search for inherited hidden primitive that may be
-      --  overridden by Subp. This only applies to source subprograms, and
-      --  their declaration must carry an explicit overriding indicator.
+      --  Search for inherited hidden primitive that may be
+      --  overridden by Subp. This only applies to source subprograms.
 
       if No (Ovr_Subp)
         and then Ada_Version >= Ada_2012
@@ -1721,16 +1721,6 @@ package body Sem_Disp is
           Nkind (Unit_Declaration_Node (Subp)) = N_Subprogram_Declaration
       then
          Ovr_Subp := Find_Hidden_Overridden_Primitive (Subp);
-
-         --  Warn if the proper overriding indicator has not been supplied.
-
-         if Present (Ovr_Subp)
-           and then
-             not Must_Override (Specification (Unit_Declaration_Node (Subp)))
-           and then not In_Instance
-         then
-            Error_Msg_NE ("missing overriding indicator for&??", Subp, Subp);
-         end if;
       end if;
 
       --  Now it should be a correct primitive operation, put it in the list
