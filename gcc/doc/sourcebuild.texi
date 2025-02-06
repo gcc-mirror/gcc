@@ -2996,11 +2996,12 @@ Target uses @code{__cxa_atexit}.
 Target has packed layout of structure members by default.
 
 @item exceptions
-Target supports exceptions.
+Target supports exception handling.
+Note that this is orthogonal to effective-target @code{exceptions_enabled}.
 
 @item exceptions_enabled
-Target supports exceptions and they are enabled in the current
-testing configuration.
+Testing configuration has exception handling enabled.
+Note that this is orthogonal to effective-target @code{exceptions}.
 
 @item fgraphite
 Target supports Graphite optimizations.
