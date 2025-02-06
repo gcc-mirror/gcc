@@ -714,6 +714,7 @@ get_biv_step_1 (df_ref def, scalar_int_mode outer_mode, rtx reg,
 	  if (!simple_reg_p (op0) || !CONSTANT_P (op1))
 	    return false;
 
+	  op1 = simplify_gen_unary (code, outer_mode, op1, GET_MODE (rhs));
 	  prev_code = code;
 	  code = PLUS;
 	}
