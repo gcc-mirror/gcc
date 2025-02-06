@@ -1,6 +1,11 @@
 2025-02-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from trunk:
+	2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.dg/pr88870.c: Don't 'dg-require-effective-target nonlocal_goto'.
+
+	Backported from trunk:
 	2025-02-07  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* c-c++-common/goacc/pr92793-1.c: Remove

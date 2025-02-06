@@ -1,6 +1,5 @@
 /* PR rtl-optimization/88870 */
 /* { dg-do compile } */
-/* { dg-require-effective-target nonlocal_goto } */
 /* { dg-options "-O1 -fexceptions -fnon-call-exceptions -ftrapv -fno-tree-dominator-opts" } */
 
 int a, b;
