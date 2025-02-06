@@ -3,6 +3,13 @@
 	Backported from trunk:
 	2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	PR target/118772
+	* lib/target-supports.exp (check_effective_target_exceptions):
+	'return 0' for '[istarget bpf-*-*]'.
+
+	Backported from trunk:
+	2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* lib/gcc-dg.exp (gcc-dg-prune): Clarify effective-target
 	'exceptions_enabled'.
 	* lib/target-supports.exp
