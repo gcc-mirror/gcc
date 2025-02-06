@@ -158,6 +158,14 @@ AVR_ERRATA_SKIP
        http://www.atmel.com/dyn/resources/prod_documents/doc2494.pdf
        http://www.atmel.com/dyn/resources/prod_documents/doc1436.pdf
 
+AVR_CVT
+  The device supports a CVT (Compact Vector Table) which can be selected
+  with -mcvt, which links startup-code crt<mcu>-cvt.o instead of the
+  usual crt<mcu>.o.  This assumes that AVR-LibC implements Issue #1010.
+    https://github.com/avrdudes/avr-libc/issues/1010
+  crt<mcu>-cvt.o also pulls in __do_cvt_init from lib<mcu>.a which sets
+  bit CPUINT_CTRLA.CPUINT_CVT in order to activate the CVT.
+
 AVR_ISA_RCALL
   Always use RJMP / RCALL and assume JMP / CALL are not available.
   This affects multilib selection via specs generation and -mshort-calls.
@@ -198,14 +206,16 @@ AVR_ISA_FLMAP
 enum avr_device_specific_features
 {
   AVR_ISA_NONE,
-  AVR_ISA_RMW     = 0x1, /* device has RMW instructions. */
+  AVR_CVT         = 0x1, /* Device supports a "Compact Vector Table" (-mcvt)
+			    as configured in field CPUINT_CTRLA.CPUINT_CVT. */
   AVR_SHORT_SP    = 0x2, /* Stack Pointer has 8 bits width. */
-  AVR_ERRATA_SKIP = 0x4, /* device has a core erratum. */
-  AVR_ISA_LDS     = 0x8, /* whether LDS / STS is valid for all data in static
-			    storage.  Only useful for reduced Tiny.	 */
-  AVR_ISA_RCALL	  = 0x10, /* Use RJMP / RCALL even though JMP / CALL
+  AVR_ERRATA_SKIP = 0x4, /* Device has a core erratum. */
+  AVR_ISA_RMW     = 0x8, /* Device has RMW instructions. */
+  AVR_ISA_LDS     = 0x10, /* Whether LDS / STS is valid for all data in static
+			     storage.  Only useful for reduced Tiny.	 */
+  AVR_ISA_RCALL	  = 0x20, /* Use RJMP / RCALL even though JMP / CALL
 			     are available (-mshort-calls).	 */
-  AVR_ISA_FLMAP	  = 0x20  /* Has NVMCTRL_CTRLB.FLMAP to select which 32 KiB
+  AVR_ISA_FLMAP	  = 0x40  /* Has NVMCTRL_CTRLB.FLMAP to select which 32 KiB
 			     block of program memory is visible in the RAM
 			     address space.	 */
 };

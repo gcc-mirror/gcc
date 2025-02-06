@@ -905,7 +905,7 @@ Objective-C and Objective-C++ Dialects}.
 [+@var{bti}]|@var{bti}[+@var{pac-ret}[+@var{leaf}]]}
 
 @emph{AVR Options} (@ref{AVR Options})
-@gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args
+@gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args  -mcvt
 -mbranch-cost=@var{cost}  -mfuse-add=@var{level}  -mfuse-move=@var{level}
 -mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
 -mdouble=@var{bits}  -mlong-double=@var{bits}
@@ -24330,6 +24330,23 @@ integers. The default branch cost is 0.
 @item -mcall-prologues
 Functions prologues/epilogues are expanded as calls to appropriate
 subroutines.  Code size is smaller.
+
+@opindex mcvt
+@item -mcvt
+Use a @emph{compact vector table}.  Some devices support a CVT
+with only four entries: 0=Reset, 1=NMI, 2=Prio1 IRQ, 3=Prio0 IRQs.
+This option will link startup code from @code{crt@var{mcu}-cvt.o}
+instead of the usual @code{crt@var{mcu}.o}.
+Apart from providing a compact vector table, the startup code will set bit
+@code{CPUINT_CTRLA.CPUINT_CVT} which enables the CVT on the device.
+
+When you do not want the startup code to set @code{CPUINT_CTRLA.CPUINT_CVT},
+then you can satisfy symbol @code{__do_cvt_init} so that the respective
+code is no more pulled in from @code{lib@var{mcu}.a}.
+For example, you can link with @code{-Wl,--defsym,__do_cvt_init=0}.
+
+The CVT startup code is available since
+@w{@uref{https://github.com/avrdudes/avr-libc/issues/1010,AVR-LibC #1010}}.
 
 @opindex mfuse-add
 @item -mfuse-add

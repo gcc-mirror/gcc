@@ -11651,7 +11651,7 @@ avr_pgm_check_var_decl (tree node)
    attributes named NAME, where NAME is in { "signal", "interrupt" }.  */
 
 static void
-avr_handle_isr_attribute (tree, tree *attrs, const char *name)
+avr_handle_isr_attribute (tree node, tree *attrs, const char *name)
 {
   bool seen = false;
 
@@ -11661,9 +11661,14 @@ avr_handle_isr_attribute (tree, tree *attrs, const char *name)
       seen = true;
       for (tree v = TREE_VALUE (list); v; v = TREE_CHAIN (v))
 	{
-	  if (! avr_isr_number (TREE_VALUE (v)))
+	  int num = avr_isr_number (TREE_VALUE (v));
+	  if (! num)
 	    error ("attribute %qs expects a constant positive integer"
 		   " argument", name);
+	  if (TARGET_CVT
+	      && num >= 4)
+	    error ("vector number %d of %q+D is out of range 1%s3 for"
+		   " compact vector table", num, node, "...");
 	}
     }
 

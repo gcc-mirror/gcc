@@ -26,6 +26,10 @@ mcall-prologues
 Target Mask(CALL_PROLOGUES) Optimization
 Optimization. Use subroutines for function prologues and epilogues.
 
+mcvt
+Target Mask(CVT)
+Use a startup code with a compact vector table.
+
 mmcu=
 Target RejectNegative Joined Var(avropt_mmcu) MissingArgError(missing device or architecture after %qs)
 -mmcu=<MCU>	Select the target MCU.
