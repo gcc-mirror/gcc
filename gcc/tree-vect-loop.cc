@@ -10580,6 +10580,10 @@ vectorizable_induction (loop_vec_info loop_vinfo,
        [i2 + 2*S2, i0 + 3*S0, i1 + 3*S1, i2 + 3*S2].  */
   if (slp_node)
     {
+      gimple_stmt_iterator incr_si;
+      bool insert_after;
+      standard_iv_increment_position (iv_loop, &incr_si, &insert_after);
+
       /* The initial values are vectorized, but any lanes > group_size
 	 need adjustment.  */
       slp_tree init_node
@@ -10810,7 +10814,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	  vec_def = gimple_build (&stmts,
 				  PLUS_EXPR, step_vectype, vec_def, up);
 	  vec_def = gimple_convert (&stmts, vectype, vec_def);
-	  gsi_insert_seq_before (&si, stmts, GSI_SAME_STMT);
+	  insert_iv_increment (&incr_si, insert_after, stmts);
 	  add_phi_arg (induction_phi, vec_def, loop_latch_edge (iv_loop),
 		       UNKNOWN_LOCATION);
 

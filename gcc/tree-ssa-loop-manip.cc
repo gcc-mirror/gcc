@@ -47,6 +47,39 @@ along with GCC; see the file COPYING3.  If not see
    so that we can free them all at once.  */
 static bitmap_obstack loop_renamer_obstack;
 
+/* Insert IV increment statements STMTS before or after INCR_POS;
+   AFTER selects which.  INCR_POS and AFTER can be computed using
+   standard_iv_increment_position.  */
+
+void
+insert_iv_increment (gimple_stmt_iterator *incr_pos, bool after,
+		     gimple_seq stmts)
+{
+  /* Prevent the increment from inheriting a bogus location if it is not put
+     immediately after a statement whose location is known.  */
+  if (after)
+    {
+      gimple_stmt_iterator gsi = *incr_pos;
+      if (!gsi_end_p (gsi))
+	gsi_next_nondebug (&gsi);
+      if (gsi_end_p (gsi))
+	{
+	  edge e = single_succ_edge (gsi_bb (*incr_pos));
+	  gimple_seq_set_location (stmts, e->goto_locus);
+	}
+      gsi_insert_seq_after (incr_pos, stmts, GSI_NEW_STMT);
+    }
+  else
+    {
+      gimple_stmt_iterator gsi = *incr_pos;
+      if (!gsi_end_p (gsi) && is_gimple_debug (gsi_stmt (gsi)))
+	gsi_next_nondebug (&gsi);
+      if (!gsi_end_p (gsi))
+	gimple_seq_set_location (stmts, gimple_location (gsi_stmt (gsi)));
+      gsi_insert_seq_before (incr_pos, stmts, GSI_NEW_STMT);
+    }
+}
+
 /* Creates an induction variable with value BASE (+/-) STEP * iteration in LOOP.
    If INCR_OP is PLUS_EXPR, the induction variable is BASE + STEP * iteration.
    If INCR_OP is MINUS_EXPR, the induction variable is BASE - STEP * iteration.
@@ -63,7 +96,6 @@ create_iv (tree base, tree_code incr_op, tree step, tree var, class loop *loop,
 	   gimple_stmt_iterator *incr_pos, bool after, tree *var_before,
 	   tree *var_after)
 {
-  gassign *stmt;
   gphi *phi;
   tree initial, step1;
   gimple_seq stmts;
@@ -126,30 +158,10 @@ create_iv (tree base, tree_code incr_op, tree step, tree var, class loop *loop,
   if (stmts)
     gsi_insert_seq_on_edge_immediate (pe, stmts);
 
-  stmt = gimple_build_assign (va, incr_op, vb, step);
-  /* Prevent the increment from inheriting a bogus location if it is not put
-     immediately after a statement whose location is known.  */
-  if (after)
-    {
-      gimple_stmt_iterator gsi = *incr_pos;
-      if (!gsi_end_p (gsi))
-	gsi_next_nondebug (&gsi);
-      if (gsi_end_p (gsi))
-	{
-	  edge e = single_succ_edge (gsi_bb (*incr_pos));
-	  gimple_set_location (stmt, e->goto_locus);
-	}
-      gsi_insert_after (incr_pos, stmt, GSI_NEW_STMT);
-    }
-  else
-    {
-      gimple_stmt_iterator gsi = *incr_pos;
-      if (!gsi_end_p (gsi) && is_gimple_debug (gsi_stmt (gsi)))
-	gsi_next_nondebug (&gsi);
-      if (!gsi_end_p (gsi))
-	gimple_set_location (stmt, gimple_location (gsi_stmt (gsi)));
-      gsi_insert_before (incr_pos, stmt, GSI_NEW_STMT);
-    }
+  gimple_seq incr_stmts = nullptr;
+  gimple_seq_add_stmt (&incr_stmts,
+		       gimple_build_assign (va, incr_op, vb, step));
+  insert_iv_increment (incr_pos, after, incr_stmts);
 
   initial = force_gimple_operand (base, &stmts, true, var);
   if (stmts)
