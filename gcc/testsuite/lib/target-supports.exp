@@ -12563,7 +12563,8 @@ proc check_effective_target_fenv_exceptions_long_double {} {
 # Note that this is orthogonal to effective-target 'exceptions_enabled'.
 
 proc check_effective_target_exceptions {} {
-    if { [istarget amdgcn*-*-*] } {
+    if { [istarget amdgcn*-*-*]
+	 || [istarget bpf-*-*] } {
 	return 0
     }
     return 1
