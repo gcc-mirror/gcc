@@ -3,6 +3,12 @@
 	Backported from trunk:
 	2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* lib/target-supports.exp (check_effective_target_exceptions):
+	'return 0' for '[istarget nvptx-*-*]'.
+
+	Backported from trunk:
+	2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	PR target/118772
 	* lib/target-supports.exp (check_effective_target_exceptions):
 	'return 0' for '[istarget bpf-*-*]'.
