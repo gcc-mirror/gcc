@@ -99,6 +99,10 @@
   ;; CRC unspecs
   UNSPEC_CRC
   UNSPEC_CRC_REV
+
+  ;; Stack Smash Protector
+  UNSPEC_SSP_SET
+  UNSPEC_SSP_TEST
 ])
 
 (define_c_enum "unspecv" [
@@ -122,10 +126,6 @@
   UNSPECV_BLOCKAGE
   UNSPECV_FENCE
   UNSPECV_FENCE_I
-
-  ;; Stack Smash Protector
-  UNSPEC_SSP_SET
-  UNSPEC_SSP_TEST
 
   ;; CMO instructions.
   UNSPECV_CLEAN
