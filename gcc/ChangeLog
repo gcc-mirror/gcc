@@ -1,3 +1,10 @@
+2025-02-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	Backported from master:
+	2025-02-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/arm/t-rtems: Add Cortex-M33 multilib.
+
 2025-02-03  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR middle-end/115913
