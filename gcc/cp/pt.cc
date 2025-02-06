@@ -27453,7 +27453,8 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
     {
       static hash_set<tree>* fns = new hash_set<tree>;
       bool added = false;
-      if (DEFERRED_NOEXCEPT_PATTERN (noex) == NULL_TREE)
+      tree pattern = DEFERRED_NOEXCEPT_PATTERN (noex);
+      if (pattern == NULL_TREE)
 	{
 	  spec = get_defaulted_eh_spec (fn, complain);
 	  if (spec == error_mark_node)
@@ -27464,11 +27465,17 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
       else if (!(added = !fns->add (fn)))
 	{
 	  /* If hash_set::add returns true, the element was already there.  */
-	  location_t loc = cp_expr_loc_or_loc (DEFERRED_NOEXCEPT_PATTERN (noex),
-					    DECL_SOURCE_LOCATION (fn));
+	  location_t loc = cp_expr_loc_or_loc (pattern,
+					       DECL_SOURCE_LOCATION (fn));
 	  error_at (loc,
 		    "exception specification of %qD depends on itself",
 		    fn);
+	  spec = noexcept_false_spec;
+	}
+      else if (TREE_CODE (pattern) == DEFERRED_PARSE)
+	{
+	  error ("exception specification of %qD is not available "
+		 "until end of class definition", fn);
 	  spec = noexcept_false_spec;
 	}
       else if (push_tinst_level (fn))
@@ -27497,8 +27504,7 @@ maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 	    ++processing_template_decl;
 
 	  /* Do deferred instantiation of the noexcept-specifier.  */
-	  noex = tsubst_expr (DEFERRED_NOEXCEPT_PATTERN (noex),
-			      DEFERRED_NOEXCEPT_ARGS (noex),
+	  noex = tsubst_expr (pattern, DEFERRED_NOEXCEPT_ARGS (noex),
 			      tf_warning_or_error, fn);
 	  /* Build up the noexcept-specification.  */
 	  spec = build_noexcept_spec (noex, tf_warning_or_error);
