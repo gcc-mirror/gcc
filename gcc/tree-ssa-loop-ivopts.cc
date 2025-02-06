@@ -1149,34 +1149,6 @@ determine_base_object (struct ivopts_data *data, tree expr)
   return obj;
 }
 
-/* Return true if address expression with non-DECL_P operand appears
-   in EXPR.  */
-
-static bool
-contain_complex_addr_expr (tree expr)
-{
-  bool res = false;
-
-  STRIP_NOPS (expr);
-  switch (TREE_CODE (expr))
-    {
-    case POINTER_PLUS_EXPR:
-    case PLUS_EXPR:
-    case MINUS_EXPR:
-      res |= contain_complex_addr_expr (TREE_OPERAND (expr, 0));
-      res |= contain_complex_addr_expr (TREE_OPERAND (expr, 1));
-      break;
-
-    case ADDR_EXPR:
-      return (!DECL_P (TREE_OPERAND (expr, 0)));
-
-    default:
-      return false;
-    }
-
-  return res;
-}
-
 /* Allocates an induction variable with given initial value BASE and step STEP
    for loop LOOP.  NO_OVERFLOW implies the iv doesn't overflow.  */
 
