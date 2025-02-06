@@ -3407,6 +3407,9 @@ aarch64_split_move (rtx dst, rtx src, machine_mode single_mode)
 			    GET_MODE_SIZE (single_mode)).to_constant ();
   auto_vec<rtx, 4> dst_pieces, src_pieces;
 
+  /* There should be at least one piece. */
+  gcc_assert (npieces > 0);
+
   for (unsigned int i = 0; i < npieces; ++i)
     {
       auto off = i * GET_MODE_SIZE (single_mode);
