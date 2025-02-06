@@ -12564,7 +12564,8 @@ proc check_effective_target_fenv_exceptions_long_double {} {
 
 proc check_effective_target_exceptions {} {
     if { [istarget amdgcn*-*-*]
-	 || [istarget bpf-*-*] } {
+	 || [istarget bpf-*-*]
+	 || [istarget nvptx-*-*] } {
 	return 0
     }
     return 1
