@@ -1,3 +1,11 @@
+2025-02-05  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118319
+	* decl.cc (grokfndecl): Inspect all friend function parameters.
+	If it's not valid for them to have a default value and we're
+	processing a template, set the default value to error_mark_node
+	and give a hard error.
+
 2025-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/118671

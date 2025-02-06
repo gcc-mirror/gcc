@@ -1,3 +1,13 @@
+2025-02-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118701
+	* config/abi/pre/gnu.ver (CXXABI_1.3.16): Move __riscv guard
+	around version.
+	* scripts/extract_symvers.pl: Allow for weak versions.
+	* testsuite/util/testsuite_abi.cc (check_version): Wrap
+	CXXABI_1.3.16 in __riscv.
+
 2025-01-31  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/118156

@@ -1,3 +1,15 @@
+2025-02-05  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/118746
+	* go-gcc.cc (class Gcc_backend): Define builtin_cold,
+	builtin_leaf, builtin_nonnull.  Alphabetize constants.
+	(Gcc_backend::Gcc_backend): Update attributes for builtin
+	functions to match builtins.def.
+	(Gcc_backend::define_builtin): Split out attribute setting into
+	set_attribtues.
+	(Gcc_backend::set_attribtues): New method split out of
+	define_builtin.  Support new flag values.
+
 2025-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gccgo.texi: Bump @copyrights-go year.

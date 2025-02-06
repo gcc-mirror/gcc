@@ -1,3 +1,68 @@
+2025-02-05  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/bfin/bfin.md (abssi): Disable pattern.
+
+2025-02-05  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/115568
+	* lra-remat.cc (create_cands): Check that output reload insn is
+	adjacent to given insn.  Update a comment.
+
+2025-02-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_insn_cost): Give PARALLELs
+	the same cost as the costliest SET.
+
+2025-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117239
+	* cselib.cc (cselib_init): Remove spurious closing paren in
+	the #ifdef STACK_ADDRESS_OFFSET specific code.
+
+2025-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117239
+	* cselib.cc: Include predict.h.
+	(callmem): Change type from rtx to rtx[2].
+	(cselib_preserve_only_values): Use callmem[0] rather than callmem.
+	(cselib_invalidate_mem): Optimize and don't try to invalidate
+	for the mem_rtx == callmem[1] case MEMs which clearly can't be
+	below the stack pointer.
+	(cselib_process_insn): Use callmem[0] rather than callmem.
+	For const/pure calls also call cselib_invalidate_mem (callmem[1])
+	in !ACCUMULATE_OUTGOING_ARGS or cfun->calls_alloca functions.
+	(cselib_init): Initialize callmem[0] rather than callmem and also
+	initialize callmem[1].
+
+2025-02-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/118089
+	* config/arm/arm.cc (thumb2_expand_return): Use LDM SP!, {PC}
+	when optimizing for size, or when there's no performance benefit over
+	LDR PC, [SP], #4.
+	(arm_expand_epilogue): Likewise.
+
+2025-02-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (*pop_multiple_with_writeback_and_return): Remove
+	constraints.  Don't validate the first transfer register here.
+
+2025-02-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.cc (decompose_addr_for_ldm_stm): New function.
+	(ldm_stm_operation_p): Rework to clarify logic.  Allow single
+	registers to be pushed or popped using LDM/STM.
+
+2025-02-05  Xi Ruoyao  <xry111@xry111.site>
+
+	PR tree-optimization/118727
+	* tree-vect-patterns.cc (vect_recog_sad_pattern): Don't call
+	vect_look_through_possible_promotion on ABD inputs.
+
+2025-02-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/arm/t-rtems: Add Cortex-M33 multilib.
+
 2025-02-04  Andi Kleen  <ak@gcc.gnu.org>
 
 	* doc/invoke.texi: Document file cache tunables.

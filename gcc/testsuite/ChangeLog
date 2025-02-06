@@ -1,3 +1,40 @@
+2025-02-05  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118319
+	* g++.dg/parse/defarg18.C: New test.
+	* g++.dg/parse/defarg18a.C: New test.
+
+2025-02-05  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/115568
+	* gcc.target/i386/pr115568.c: New.
+
+2025-02-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118740
+	* gfortran.dg/gomp/append_args-2.f90: Update for line change.
+
+2025-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117239
+	* gcc.dg/pr117239.c: New test.
+
+2025-02-05  Xi Ruoyao  <xry111@xry111.site>
+
+	PR tree-optimization/118727
+	* gcc.dg/pr108692.c: Mention PR 118727 in the comment.
+	* gcc.dg/pr118727.c: New test case.
+
+2025-02-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/pr100056.c: Restore the original version of
+	the scan-assemblers.
+
+2025-02-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/47485
+	* gfortran.dg/dependency_generation_1.f90: New test.
+
 2025-02-04  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/115112
