@@ -429,8 +429,7 @@ proc gcc-dg-prune { system text } {
 	return "::unsupported::large return values"
     }
 
-    # If exceptions are disabled, mark tests expecting exceptions to be enabled
-    # as unsupported.
+    # If exception handling is disabled, expectant tests are UNSUPPORTED.
     if { ![check_effective_target_exceptions_enabled] } {
 	if [regexp "(^|\n)\[^\n\]*: error: exception handling disabled" $text] {
 	    return "::unsupported::exception handling disabled"

@@ -1,6 +1,13 @@
 2025-02-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Clarify that
+	effective-target 'exceptions' and 'exceptions_enabled' are
+	orthogonal.
+
+	Backported from trunk:
 	2024-05-22  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* except.cc (output_function_exception_table): Move call to

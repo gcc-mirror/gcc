@@ -3,6 +3,15 @@
 	Backported from trunk:
 	2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* lib/gcc-dg.exp (gcc-dg-prune): Clarify effective-target
+	'exceptions_enabled'.
+	* lib/target-supports.exp
+	(check_effective_target_exceptions_enabled): Don't consider
+	effective-target 'exceptions'.
+
+	Backported from trunk:
+	2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* gcc.dg/pr88870.c: Don't 'dg-require-effective-target nonlocal_goto'.
 
 	Backported from trunk:
