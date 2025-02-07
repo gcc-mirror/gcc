@@ -22563,7 +22563,8 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
 
   /* The parallel needs to hold num_regs SETs
      and one SET for the stack update.  */
-  par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num_regs + emit_update + offset_adj));
+  par = gen_rtx_PARALLEL (VOIDmode,
+			  rtvec_alloc (num_regs + emit_update + offset_adj));
 
   if (return_in_pc)
     XVECEXP (par, 0, 0) = ret_rtx;
@@ -22571,11 +22572,11 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
   if (emit_update)
     {
       /* Increment the stack pointer, based on there being
-         num_regs 4-byte registers to restore.  */
+	 num_regs 4-byte registers to restore.	*/
       tmp = gen_rtx_SET (stack_pointer_rtx,
-                         plus_constant (Pmode,
-                                        stack_pointer_rtx,
-                                        4 * num_regs));
+			 plus_constant (Pmode,
+					stack_pointer_rtx,
+					4 * num_regs));
       RTX_FRAME_RELATED_P (tmp) = 1;
       XVECEXP (par, 0, offset_adj) = tmp;
     }
@@ -22587,31 +22588,33 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
 	rtx dwarf_reg = reg = gen_rtx_REG (SImode, i);
 	if (arm_current_function_pac_enabled_p () && i == IP_REGNUM)
 	  dwarf_reg = gen_rtx_REG (SImode, RA_AUTH_CODE);
-        if ((num_regs == 1) && emit_update && !return_in_pc)
-          {
-            /* Emit single load with writeback.  */
-            tmp = gen_frame_mem (SImode,
-                                 gen_rtx_POST_INC (Pmode,
-                                                   stack_pointer_rtx));
-            tmp = emit_insn (gen_rtx_SET (reg, tmp));
+	if ((num_regs == 1) && emit_update && !return_in_pc)
+	  {
+	    /* Emit single load with writeback.	 */
+	    tmp = gen_frame_mem (SImode,
+				 gen_rtx_POST_INC (Pmode,
+						   stack_pointer_rtx));
+	    tmp = emit_insn (gen_rtx_SET (reg, tmp));
 	    REG_NOTES (tmp) = alloc_reg_note (REG_CFA_RESTORE, dwarf_reg,
 					      dwarf);
-            return;
-          }
+	    arm_add_cfa_adjust_cfa_note (tmp, UNITS_PER_WORD,
+					 stack_pointer_rtx, stack_pointer_rtx);
+	    return;
+	  }
 
-        tmp = gen_rtx_SET (reg,
-                           gen_frame_mem
-                           (SImode,
-                            plus_constant (Pmode, stack_pointer_rtx, 4 * j)));
-        RTX_FRAME_RELATED_P (tmp) = 1;
-        XVECEXP (par, 0, j + emit_update + offset_adj) = tmp;
+	tmp = gen_rtx_SET (reg,
+			   gen_frame_mem
+			   (SImode,
+			    plus_constant (Pmode, stack_pointer_rtx, 4 * j)));
+	RTX_FRAME_RELATED_P (tmp) = 1;
+	XVECEXP (par, 0, j + emit_update + offset_adj) = tmp;
 
-        /* We need to maintain a sequence for DWARF info too.  As dwarf info
-           should not have PC, skip PC.  */
-        if (i != PC_REGNUM)
+	/* We need to maintain a sequence for DWARF info too.  As dwarf info
+	   should not have PC, skip PC.	 */
+	if (i != PC_REGNUM)
 	  dwarf = alloc_reg_note (REG_CFA_RESTORE, dwarf_reg, dwarf);
 
-        j++;
+	j++;
       }
 
   if (return_in_pc)
