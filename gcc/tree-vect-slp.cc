@@ -10199,6 +10199,25 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
       SLP_TREE_VEC_DEFS (op_node).quick_push (vop);
 }
 
+/* Get the scalar definition of the Nth lane from SLP_NODE or NULL_TREE
+   if there is no definition for it in the scalar IL or it is not known.  */
+
+tree
+vect_get_slp_scalar_def (slp_tree slp_node, unsigned n)
+{
+  if (SLP_TREE_DEF_TYPE (slp_node) == vect_internal_def)
+    {
+      if (!SLP_TREE_SCALAR_STMTS (slp_node).exists ())
+	return NULL_TREE;
+      stmt_vec_info def = SLP_TREE_SCALAR_STMTS (slp_node)[n];
+      if (!def)
+	return NULL_TREE;
+      return gimple_get_lhs (STMT_VINFO_STMT (def));
+    }
+  else
+    return SLP_TREE_SCALAR_OPS (slp_node)[n];
+}
+
 /* Get the Ith vectorized definition from SLP_NODE.  */
 
 tree

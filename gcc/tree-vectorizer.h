@@ -2345,7 +2345,8 @@ extern bool supportable_narrowing_operation (code_helper, tree, tree,
 extern bool supportable_indirect_convert_operation (code_helper,
 						    tree, tree,
 						    vec<std::pair<tree, tree_code> > &,
-						    tree = NULL_TREE);
+						    tree = NULL_TREE,
+						    slp_tree = NULL);
 extern int compare_step_with_zero (vec_info *, stmt_vec_info);
 
 extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
@@ -2598,6 +2599,7 @@ extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
 extern void vect_optimize_slp (vec_info *);
 extern void vect_gather_slp_loads (vec_info *);
+extern tree vect_get_slp_scalar_def (slp_tree, unsigned);
 extern void vect_get_slp_defs (slp_tree, vec<tree> *);
 extern void vect_get_slp_defs (vec_info *, slp_tree, vec<vec<tree> > *,
 			       unsigned n = -1U);
