@@ -1,5 +1,19 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -fdump-rtl-pro_and_epilogue" } */
+/* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
+/* { dg-final { check-function-bodies "**" "" "" { target "*-*-*" } {^\t?\.}  } } */
+
+/*
+**advance:
+**.LFB0:
+**	.cfi_startproc
+**	testl	%edi, %edi
+**	jle	.L2
+**	imull	%edi, %edi
+**	leal	\(%rdi,%rdi\), %eax
+**	ret
+**...
+*/
 
 /* Verify there is an early return without the prolog and shrink-wrap
    the function. */
