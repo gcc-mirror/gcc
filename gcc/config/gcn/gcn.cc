@@ -101,7 +101,8 @@ static hash_map<tree, int> lds_allocs;
 /* Import all the data from gcn-devices.def.
    The PROCESSOR_GFXnnn should be indices for this table.  */
 const struct gcn_device_def gcn_devices[] = {
-#define GCN_DEVICE(name, NAME, ELF, ISA, XNACK, SRAMECC, WAVE64, CU, VGPRS, GEN_VER,ARCH_FAM) \
+#define GCN_DEVICE(name, NAME, ELF, ISA, XNACK, SRAMECC, WAVE64, CU, VGPRS, \
+		   GEN_VER, ARCH_FAM, ...) \
     {PROCESSOR_ ## NAME, #name, #NAME, ISA, XNACK, SRAMECC, WAVE64, CU, VGPRS, \
      GEN_VER, #ARCH_FAM},
 #include "gcn-devices.def"

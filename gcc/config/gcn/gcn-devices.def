@@ -91,7 +91,7 @@ GCN_DEVICE(gfx900, GFX900, 0x2c, ISA_GCN5,
 
 GCN_DEVICE(gfx906, GFX906, 0x2f, ISA_GCN5,
 	   /* XNACK default */ HSACO_ATTR_OFF,
-	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
+	   /* SRAM_ECC default */ HSACO_ATTR_ANY,
 	   /* WAVE64 mode */ HSACO_ATTR_UNSUPPORTED,
 	   /* CU mode */ HSACO_ATTR_UNSUPPORTED,
 	   /* Max ISA VGPRs */ 256,
