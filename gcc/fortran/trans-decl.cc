@@ -4551,7 +4551,6 @@ init_intent_out_dt (gfc_symbol * proc_sym, gfc_wrapped_block * block)
   tree tmp;
   tree present;
   gfc_symbol *s;
-  bool dealloc_with_value = false;
 
   gfc_init_block (&init);
   for (f = gfc_sym_get_dummy_args (proc_sym); f; f = f->next)
@@ -4582,12 +4581,9 @@ init_intent_out_dt (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	   by the caller.  */
 	if (tmp == NULL_TREE && !s->attr.allocatable
 	    && s->ts.u.derived->attr.alloc_comp)
-	  {
-	    tmp = gfc_deallocate_alloc_comp (s->ts.u.derived,
-					     s->backend_decl,
-					     s->as ? s->as->rank : 0);
-	    dealloc_with_value = s->value;
-	  }
+	  tmp = gfc_deallocate_alloc_comp (s->ts.u.derived,
+					   s->backend_decl,
+					   s->as ? s->as->rank : 0);
 
 	if (tmp != NULL_TREE && (s->attr.optional
 				 || s->ns->proc_name->attr.entry_master))
@@ -4597,14 +4593,9 @@ init_intent_out_dt (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 			      present, tmp, build_empty_stmt (input_location));
 	  }
 
-	if (tmp != NULL_TREE && !dealloc_with_value)
-	  gfc_add_expr_to_block (&init, tmp);
-	else if (s->value && !s->attr.allocatable)
-	  {
-	    gfc_add_expr_to_block (&init, tmp);
-	    gfc_init_default_dt (s, &init, false);
-	    dealloc_with_value = false;
-	  }
+	gfc_add_expr_to_block (&init, tmp);
+	if (s->value && !s->attr.allocatable)
+	  gfc_init_default_dt (s, &init, false);
       }
     else if (f->sym && f->sym->attr.intent == INTENT_OUT
 	     && f->sym->ts.type == BT_CLASS
