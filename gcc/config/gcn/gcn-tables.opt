@@ -28,10 +28,19 @@ EnumValue
 Enum(gpu_type) String(gfx900) Value(PROCESSOR_GFX900)
 
 EnumValue
+Enum(gpu_type) String(gfx902) Value(PROCESSOR_GFX902)
+
+EnumValue
+Enum(gpu_type) String(gfx904) Value(PROCESSOR_GFX904)
+
+EnumValue
 Enum(gpu_type) String(gfx906) Value(PROCESSOR_GFX906)
 
 EnumValue
 Enum(gpu_type) String(gfx908) Value(PROCESSOR_GFX908)
+
+EnumValue
+Enum(gpu_type) String(gfx909) Value(PROCESSOR_GFX909)
 
 EnumValue
 Enum(gpu_type) String(gfx90a) Value(PROCESSOR_GFX90A)
@@ -40,7 +49,25 @@ EnumValue
 Enum(gpu_type) String(gfx90c) Value(PROCESSOR_GFX90C)
 
 EnumValue
+Enum(gpu_type) String(gfx9-generic) Value(PROCESSOR_GFX9_GENERIC)
+
+EnumValue
 Enum(gpu_type) String(gfx1030) Value(PROCESSOR_GFX1030)
+
+EnumValue
+Enum(gpu_type) String(gfx1031) Value(PROCESSOR_GFX1031)
+
+EnumValue
+Enum(gpu_type) String(gfx1032) Value(PROCESSOR_GFX1032)
+
+EnumValue
+Enum(gpu_type) String(gfx1033) Value(PROCESSOR_GFX1033)
+
+EnumValue
+Enum(gpu_type) String(gfx1034) Value(PROCESSOR_GFX1034)
+
+EnumValue
+Enum(gpu_type) String(gfx1035) Value(PROCESSOR_GFX1035)
 
 EnumValue
 Enum(gpu_type) String(gfx1036) Value(PROCESSOR_GFX1036)
@@ -52,7 +79,25 @@ EnumValue
 Enum(gpu_type) String(gfx1100) Value(PROCESSOR_GFX1100)
 
 EnumValue
+Enum(gpu_type) String(gfx1101) Value(PROCESSOR_GFX1101)
+
+EnumValue
+Enum(gpu_type) String(gfx1102) Value(PROCESSOR_GFX1102)
+
+EnumValue
 Enum(gpu_type) String(gfx1103) Value(PROCESSOR_GFX1103)
+
+EnumValue
+Enum(gpu_type) String(gfx1150) Value(PROCESSOR_GFX1150)
+
+EnumValue
+Enum(gpu_type) String(gfx1151) Value(PROCESSOR_GFX1151)
+
+EnumValue
+Enum(gpu_type) String(gfx1152) Value(PROCESSOR_GFX1152)
+
+EnumValue
+Enum(gpu_type) String(gfx1153) Value(PROCESSOR_GFX1153)
 
 EnumValue
 Enum(gpu_type) String(gfx11-generic) Value(PROCESSOR_GFX11_GENERIC)

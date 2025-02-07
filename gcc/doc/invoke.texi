@@ -22289,11 +22289,20 @@ are
 @item gfx900
 Compile for GCN5 Vega 10 devices (gfx900).
 
+@item gfx902
+Compile for GCN5 Vega gfx902 devices. (Experimental)
+
+@item gfx904
+Compile for GCN5 Vega gfx904 devices. (Experimental)
+
 @item gfx906
 Compile for GCN5 Vega 20 devices (gfx906).
 
 @item gfx908
 Compile for CDNA1 Instinct MI100 series devices (gfx908).
+
+@item gfx909
+Compile for GCN5 Vega gfx909 devices. (Experimental)
 
 @item gfx90a
 Compile for CDNA2 Instinct MI200 series devices (gfx90a).
@@ -22301,18 +22310,62 @@ Compile for CDNA2 Instinct MI200 series devices (gfx90a).
 @item gfx90c
 Compile for GCN5 Vega 7 devices (gfx90c).
 
+@item gfx9-generic
+Compile generic code for Vega devices, executable on the following subset of
+GFX9 devices: gfx900, gfx902, gfx904, gfx906, gfx909 and gfx90c. (Experimental)
+
 @item gfx1030
 Compile for RDNA2 gfx1030 devices (GFX10 series).
+
+@item gfx1031
+Compile for RDNA2 gfx1031 devices (GFX10 series). (Experimental)
+
+@item gfx1032
+Compile for RDNA2 gfx1032 devices (GFX10 series). (Experimental)
+
+@item gfx1033
+Compile for RDNA2 gfx1033 devices (GFX10 series). (Experimental)
+
+@item gfx1034
+Compile for RDNA2 gfx1034 devices (GFX10 series). (Experimental)
+
+@item gfx1035
+Compile for RDNA2 gfx1035 devices (GFX10 series). (Experimental)
 
 @item gfx1036
 Compile for RDNA2 gfx1036 devices (GFX10 series).
 
+@item gfx10-3-generic
+Compile generic code for GFX10-3 devices, executable on gfx1030,
+gfx1031, gfx1032, gfx1033, gfx1034, gfx1035, and gfx1036. (Experimental)
+
 @item gfx1100
 Compile for RDNA3 gfx1100 devices (GFX11 series).
+
+@item gfx1101
+Compile for RDNA3 gfx1101 devices (GFX11 series). (Experimental)
+
+@item gfx1102
+Compile for RDNA3 gfx1102 devices (GFX11 series). (Experimental)
 
 @item gfx1103
 Compile for RDNA3 gfx1103 devices (GFX11 series).
 
+@item gfx1150
+Compile for RDNA3 gfx1150 devices (GFX11 series). (Experimental)
+
+@item gfx1151
+Compile for RDNA3 gfx1151 devices (GFX11 series). (Experimental)
+
+@item gfx1152
+Compile for RDNA3 gfx1152 devices (GFX11 series). (Experimental)
+
+@item gfx1153
+Compile for RDNA3 gfx1153 devices (GFX11 series). (Experimental)
+
+@item gfx11-generic
+Compile generic code for GFX11 devices, executable on gfx1100, gfx1101,
+gfx1102, gfx1103, gfx1150, gfx1151, gfx1152, and gfx1153. (Experimental)
 @end table
 
 @opindex msram-ecc
