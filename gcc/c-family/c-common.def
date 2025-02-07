@@ -58,13 +58,14 @@ DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", tcc_expression, 1)
 DEFTREECODE (PAREN_SIZEOF_EXPR, "paren_sizeof_expr", tcc_expression, 1)
 
 /* Used to represent a `for' statement. The operands are
-   FOR_INIT_STMT, FOR_COND, FOR_EXPR, FOR_BODY, and FOR_SCOPE,
-   respectively.  */
-DEFTREECODE (FOR_STMT, "for_stmt", tcc_statement, 5)
+   FOR_INIT_STMT, FOR_COND, FOR_EXPR, FOR_BODY, FOR_SCOPE,
+   FOR_COND_PREP and FOR_COND_CLEANUP, respectively.  */
+DEFTREECODE (FOR_STMT, "for_stmt", tcc_statement, 7)
 
-/* Used to represent a 'while' statement. The operands are WHILE_COND
-   and WHILE_BODY, respectively.  */
-DEFTREECODE (WHILE_STMT, "while_stmt", tcc_statement, 2)
+/* Used to represent a 'while' statement. The operands are WHILE_COND,
+   WHILE_BODY, WHILE_COND_PREP and WHILE_COND_CLEANUP,
+   respectively.  */
+DEFTREECODE (WHILE_STMT, "while_stmt", tcc_statement, 4)
 
 /* Used to represent a 'do' statement. The operands are DO_COND and
    DO_BODY, respectively.  */

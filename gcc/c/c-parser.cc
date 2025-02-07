@@ -8149,7 +8149,8 @@ c_parser_while_statement (c_parser *parser, bool ivdep, unsigned short unroll,
   location_t loc_after_labels;
   bool open_brace = c_parser_next_token_is (parser, CPP_OPEN_BRACE);
   body = c_parser_c99_block_statement (parser, if_p, &loc_after_labels);
-  add_stmt (build_stmt (loc, WHILE_STMT, cond, body));
+  add_stmt (build_stmt (loc, WHILE_STMT, cond, body, NULL_TREE,
+			NULL_TREE));
   add_stmt (c_end_compound_stmt (loc, block, flag_isoc99));
   c_parser_maybe_reclassify_token (parser);
 
@@ -8507,7 +8508,7 @@ c_parser_for_statement (c_parser *parser, bool ivdep, unsigned short unroll,
 			      objc_foreach_continue_label);
   else
     add_stmt (build_stmt (for_loc, FOR_STMT, NULL_TREE, cond, incr,
-			  body, NULL_TREE));
+			  body, NULL_TREE, NULL_TREE, NULL_TREE));
   add_stmt (c_end_compound_stmt (for_loc, block,
 				 flag_isoc99 || c_dialect_objc ()));
   c_parser_maybe_reclassify_token (parser);
