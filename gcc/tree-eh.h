@@ -36,6 +36,7 @@ extern void redirect_eh_dispatch_edge (geh_dispatch *, edge, basic_block);
 extern bool operation_could_trap_helper_p (enum tree_code, bool, bool, bool,
 					   bool, tree, bool *);
 extern bool operation_could_trap_p (enum tree_code, bool, bool, tree);
+extern bool access_in_bounds_of_type_p (tree, poly_uint64, poly_uint64);
 extern bool tree_could_trap_p (tree);
 extern tree rewrite_to_non_trapping_overflow (tree);
 extern bool stmt_could_throw_p (function *, gimple *);

@@ -7686,10 +7686,8 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
       || bs <= shiftrt
       || offset != 0
       || TREE_CODE (inner) == PLACEHOLDER_EXPR
-      /* Reject out-of-bound accesses (PR79731).  */
-      || (! AGGREGATE_TYPE_P (TREE_TYPE (inner))
-	  && compare_tree_int (TYPE_SIZE (TREE_TYPE (inner)),
-			       bp + bs) < 0)
+      /* Reject out-of-bound accesses (PR79731, PR118514).  */
+      || !access_in_bounds_of_type_p (TREE_TYPE (inner), bs, bp)
       || (INTEGRAL_TYPE_P (TREE_TYPE (inner))
 	  && !type_has_mode_precision_p (TREE_TYPE (inner))))
     return NULL_TREE;
@@ -7859,11 +7857,6 @@ make_bit_field_load (location_t loc, tree inner, tree orig_inner, tree type,
       gimple *new_stmt = gsi_stmt (i);
       if (gimple_has_mem_ops (new_stmt))
 	gimple_set_vuse (new_stmt, reaching_vuse);
-      gcc_checking_assert (! (gimple_assign_load_p (point)
-			      && gimple_assign_load_p (new_stmt))
-			   || (tree_could_trap_p (gimple_assign_rhs1 (point))
-			       == tree_could_trap_p (gimple_assign_rhs1
-						     (new_stmt))));
     }
 
   gimple_stmt_iterator gsi = gsi_for_stmt (point);

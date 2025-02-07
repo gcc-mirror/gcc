@@ -2646,24 +2646,22 @@ range_in_array_bounds_p (tree ref)
   return true;
 }
 
-/* Return true iff EXPR, a BIT_FIELD_REF, accesses a bit range that is known to
-   be in bounds for the referred operand type.  */
+/* Return true iff a BIT_FIELD_REF <(TYPE)???, SIZE, OFFSET> would access a bit
+   range that is known to be in bounds for TYPE.  */
 
-static bool
-bit_field_ref_in_bounds_p (tree expr)
+bool
+access_in_bounds_of_type_p (tree type, poly_uint64 size, poly_uint64 offset)
 {
-  tree size_tree;
-  poly_uint64 size_max, min, wid, max;
+  tree type_size_tree;
+  poly_uint64 type_size_max, min = offset, wid = size, max;
 
-  size_tree = TYPE_SIZE (TREE_TYPE (TREE_OPERAND (expr, 0)));
-  if (!size_tree || !poly_int_tree_p (size_tree, &size_max))
+  type_size_tree = TYPE_SIZE (type);
+  if (!type_size_tree || !poly_int_tree_p (type_size_tree, &type_size_max))
     return false;
 
-  min = bit_field_offset (expr);
-  wid = bit_field_size (expr);
   max = min + wid;
   if (maybe_lt (max, min)
-      || maybe_lt (size_max, max))
+      || maybe_lt (type_size_max, max))
     return false;
 
   return true;
@@ -2712,7 +2710,10 @@ tree_could_trap_p (tree expr)
   switch (code)
     {
     case BIT_FIELD_REF:
-      if (DECL_P (TREE_OPERAND (expr, 0)) && !bit_field_ref_in_bounds_p (expr))
+      if (DECL_P (TREE_OPERAND (expr, 0))
+	  && !access_in_bounds_of_type_p (TREE_TYPE (TREE_OPERAND (expr, 0)),
+					  bit_field_size (expr),
+					  bit_field_offset (expr)))
 	return true;
       /* Fall through.  */
 
