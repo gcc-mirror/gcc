@@ -694,7 +694,7 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 # endif
 #endif
 
-#if defined (ENABLE_PLUGIN) && defined (HAVE_DLFCN_H)
+#if defined (INCLUDE_DLFCN_H) && defined (HAVE_DLFCN_H)
 /* If plugin support is enabled, we could use libdl.  */
 #include <dlfcn.h>
 #endif
