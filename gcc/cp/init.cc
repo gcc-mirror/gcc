@@ -3842,7 +3842,6 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	  tree end, sentry, begin;
 
 	  begin = get_target_expr (boolean_true_node);
-	  CLEANUP_EH_ONLY (begin) = 1;
 
 	  sentry = TARGET_EXPR_SLOT (begin);
 
