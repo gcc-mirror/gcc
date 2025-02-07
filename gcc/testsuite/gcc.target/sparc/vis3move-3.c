@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O1 -mvis3" } */
+/* { dg-skip-if "prevents fsmuld" { *-*-* } { "-mfix-ut699" } { "" } } */
+/* { dg-options "-O1 -mvis3 -mcpu=ultrasparc" } */
 
 float fnegs (float a)
 {
