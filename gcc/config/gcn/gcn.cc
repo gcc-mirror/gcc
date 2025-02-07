@@ -6671,12 +6671,17 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
 
 #if 1
   /* The following is YAML embedded in assembler; tabs are not allowed.  */
-  fputs ("        .amdgpu_metadata\n"
-	 "        amdhsa.version:\n"
-	 "          - 1\n"
-	 "          - 0\n"
-	 "        amdhsa.kernels:\n"
-	 "          - .name: ", file);
+
+  /* 'amdhsa.version': code object V3 = 1.0, V4 = 1.1, V5/V6 = 1.2.  */
+  /* Keep in sync with 'amdhsa-code-object' in gen-gcn-device-macros.awk.  */
+  fprintf (file,
+	   "        .amdgpu_metadata\n"
+	   "        amdhsa.version:\n"
+	   "          - 1\n"
+	   "          - %d\n"
+	   "        amdhsa.kernels:\n"
+	   "          - .name: ",
+	   gcn_devices[gcn_arch].generic_version ? 2 /* V6 */ : 1 /* V4 */);
   assemble_name (file, name);
   fputs ("\n            .symbol: ", file);
   assemble_name (file, name);
