@@ -299,20 +299,19 @@ package Atree is
    --  This function allocates a new node, and then initializes it by copying
    --  the contents of the source node into it. The contents of the source node
    --  is not affected. The target node is always marked as not being in a list
-   --  (even if the source is a list member), and not overloaded. The new node
-   --  will have an extension if the source has an extension. New_Copy (Empty)
-   --  returns Empty, and New_Copy (Error) returns Error. Note that, unlike
-   --  Copy_Separate_Tree, New_Copy does not recursively copy any descendants,
-   --  so in general parent pointers are not set correctly for the descendants
-   --  of the copied node.
+   --  (even if the source is a list member), and not overloaded.
+   --  New_Copy (Empty) returns Empty, and New_Copy (Error) returns Error. Note
+   --  that, unlike Copy_Separate_Tree, New_Copy does not recursively copy any
+   --  descendants, so in general parent pointers are not set correctly for the
+   --  descendants of the copied node.
 
    function Relocate_Node (Source : Node_Id) return Node_Id;
    --  Source is a non-entity node that is to be relocated. A new node is
    --  allocated, and the contents of Source are copied to this node, using
    --  New_Copy. The parent pointers of descendants of the node are then
    --  adjusted to point to the relocated copy. The original node is not
-   --  modified, but the parent pointers of its descendants are no longer
-   --  valid. The new copy is always marked as not overloaded. This routine is
+   --  modified, but the parent pointers of its children no longer point back
+   --  at it. The new copy is always marked as not overloaded. This routine is
    --  used in conjunction with the tree rewrite routines (see descriptions of
    --  Replace/Rewrite).
    --
