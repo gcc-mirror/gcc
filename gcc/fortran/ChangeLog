@@ -1,3 +1,13 @@
+2025-02-06  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-01-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108454
+	* resolve.cc (resolve_common_blocks): Initialize variable.
+	(resolve_symbol): If a symbol is already registered with a COMMON
+	block, do not search for an interface with the same name.
+
 2025-02-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
