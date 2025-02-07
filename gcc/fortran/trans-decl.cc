@@ -135,22 +135,12 @@ tree gfor_fndecl_caf_this_image;
 tree gfor_fndecl_caf_num_images;
 tree gfor_fndecl_caf_register;
 tree gfor_fndecl_caf_deregister;
-
-// Deprecate start
-tree gfor_fndecl_caf_get;
-tree gfor_fndecl_caf_send;
-tree gfor_fndecl_caf_sendget;
-tree gfor_fndecl_caf_send_by_ref;
-tree gfor_fndecl_caf_sendget_by_ref;
-// Deprecate end
-
 tree gfor_fndecl_caf_register_accessor;
 tree gfor_fndecl_caf_register_accessors_finish;
 tree gfor_fndecl_caf_get_remote_function_index;
 tree gfor_fndecl_caf_get_from_remote;
 tree gfor_fndecl_caf_send_to_remote;
 tree gfor_fndecl_caf_transfer_between_remotes;
-
 tree gfor_fndecl_caf_sync_all;
 tree gfor_fndecl_caf_sync_memory;
 tree gfor_fndecl_caf_sync_images;
@@ -4072,45 +4062,6 @@ gfc_build_builtin_function_decls (void)
 	void_type_node, 5,
 	ppvoid_type_node, integer_type_node, pint_type, pchar_type_node,
 	size_type_node);
-
-      // Deprecate start
-      gfor_fndecl_caf_get = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_get")), ". r . . r r w . . . w ",
-	void_type_node, 10,
-	pvoid_type_node, size_type_node, integer_type_node, pvoid_type_node,
-	pvoid_type_node, pvoid_type_node, integer_type_node, integer_type_node,
-	boolean_type_node, pint_type);
-
-      gfor_fndecl_caf_send = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_send")), ". r . . w r r . . . w ",
-	void_type_node, 11,
-	pvoid_type_node, size_type_node, integer_type_node, pvoid_type_node,
-	pvoid_type_node, pvoid_type_node, integer_type_node, integer_type_node,
-	boolean_type_node, pint_type, pvoid_type_node);
-
-      gfor_fndecl_caf_sendget = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_sendget")), ". r . . w r r . . r r . . . w ",
-	void_type_node,	14, pvoid_type_node, size_type_node, integer_type_node,
-	pvoid_type_node, pvoid_type_node, pvoid_type_node, size_type_node,
-	integer_type_node, pvoid_type_node, pvoid_type_node, integer_type_node,
-	integer_type_node, boolean_type_node, integer_type_node);
-
-      gfor_fndecl_caf_send_by_ref = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_send_by_ref")), ". r . r r . . . . w . ",
-	void_type_node,	10, pvoid_type_node, integer_type_node, pvoid_type_node,
-	pvoid_type_node, integer_type_node, integer_type_node,
-	boolean_type_node, boolean_type_node, pint_type, integer_type_node);
-
-      gfor_fndecl_caf_sendget_by_ref
-	  = gfc_build_library_function_decl_with_spec (
-	    get_identifier (PREFIX("caf_sendget_by_ref")),
-	    ". r . r r . r . . . w w . . ",
-	    void_type_node, 13, pvoid_type_node, integer_type_node,
-	    pvoid_type_node, pvoid_type_node, integer_type_node,
-	    pvoid_type_node, integer_type_node, integer_type_node,
-	    boolean_type_node, pint_type, pint_type, integer_type_node,
-	    integer_type_node);
-      // Deprecate end
 
       gfor_fndecl_caf_register_accessor
 	= gfc_build_library_function_decl_with_spec (
