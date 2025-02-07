@@ -281,6 +281,11 @@ is
       Index : chars_ptr := Item + Offset;
 
    begin
+      --  Check for null pointer as mandated by the RM.
+      if Item = Null_Ptr then
+         raise Dereference_Error;
+      end if;
+
       if Check and then Offset + Chars'Length  > Strlen (Item) then
          raise Update_Error;
       end if;
