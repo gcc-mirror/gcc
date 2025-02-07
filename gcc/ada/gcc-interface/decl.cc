@@ -1228,6 +1228,24 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    gnu_expr = gnat_build_constructor (gnu_type, v);
 	  }
 
+	/* If we are allocating the anonymous object of a small aggregate on
+	   the stack, zero-initialize it so that the entire object is assigned
+	   and the subsequent assignments need not preserve unknown bits, but
+	   do it only when optimization is enabled for the sake of consistency
+	   with the gimplifier which does the same for CONSTRUCTORs.  */
+	else if (definition
+		 && !imported_p
+		 && !static_flag
+		 && !gnu_expr
+		 && TREE_CODE (gnu_type) == RECORD_TYPE
+		 && TREE_CODE (gnu_object_size) == INTEGER_CST
+		 && compare_tree_int (gnu_object_size, MAX_FIXED_MODE_SIZE) <= 0
+		 && Present (Related_Expression (gnat_entity))
+		 && Nkind (Original_Node (Related_Expression (gnat_entity)))
+		    == N_Aggregate
+		 && optimize)
+	    gnu_expr = build_constructor (gnu_type, NULL);
+
 	/* Convert the expression to the type of the object if need be.  */
 	if (gnu_expr && initial_value_needs_conversion (gnu_type, gnu_expr))
 	  gnu_expr = convert (gnu_type, gnu_expr);
@@ -5251,7 +5269,7 @@ inline_status_for_subprog (Entity_Id subprog)
 	  && Is_Record_Type (Etype (First_Formal (subprog)))
 	  && (gnu_type = gnat_to_gnu_type (Etype (First_Formal (subprog))))
 	  && !TYPE_IS_BY_REFERENCE_P (gnu_type)
-	  && tree_fits_uhwi_p (TYPE_SIZE (gnu_type))
+	  && TREE_CODE (TYPE_SIZE (gnu_type)) == INTEGER_CST
 	  && compare_tree_int (TYPE_SIZE (gnu_type), MAX_FIXED_MODE_SIZE) <= 0)
 	return is_prescribed;
 
