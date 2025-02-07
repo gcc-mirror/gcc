@@ -1,3 +1,55 @@
+2025-02-06  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/madd-split2-1.c: Update expected
+	output.
+
+2025-02-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/114618
+	* gfortran.dg/pr114618.f90: New test.
+
+2025-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/attr-no_unique_address1.C: New test.
+
+2025-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/attr-noreturn1.C: New test.
+
+2025-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110345
+	* g++.dg/cpp0x/attr-nodiscard1.C: New test.
+
+2025-02-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/118750
+	* gfortran.dg/associate_72.f90: New test.
+
+2025-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117506
+	* gcc.dg/pr117506.c: New test.
+	* gcc.target/riscv/pr117506.c: New test.
+
+2025-02-06  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/118561
+	* gcc.target/loongarch/pr118561.c: New test.
+
+2025-02-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/110449
+	* gcc.target/aarch64/pr110449.c: Expect an increment by 8.0,
+	but test that there is no MOV.
+
+2025-02-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118749
+	* gcc.dg/vect/pr118749.c: New testcase.
+
 2025-02-05  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/118319

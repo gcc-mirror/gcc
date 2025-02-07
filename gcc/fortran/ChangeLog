@@ -1,3 +1,11 @@
+2025-02-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/118750
+	* resolve.cc (resolve_assoc_var): If the target expression has
+	a rank, do not use gfc_expression_rank, since it will return 0
+	if the function is elemental. Resolution will have produced the
+	correct rank.
+
 2025-02-05  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/118740

@@ -1,3 +1,76 @@
+2025-02-06  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* config/riscv/riscv.md: Move UNSPEC_SSP_SET and UNSPEC_SSP_TEST
+	to unspec enum.
+
+2025-02-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt.urls: Add mcvt.
+
+2025-02-06  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/118756
+	* tree-ssa-loop-ivopts.cc (contain_complex_addr_expr): Remove.
+
+2025-02-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118764
+	* config/avr/avr.opt (-mcvt): New target option.
+	* config/avr/avr-arch.h (AVR_CVT): New enum value.
+	* config/avr/avr-mcus.def: Add AVR_CVT flag for devices that
+	support it.
+	* config/avr/avr.cc (avr_handle_isr_attribute) [TARGET_CVT]: Issue
+	an error when a vector number larger that 3 is used.
+	* config/avr/gen-avr-mmcu-specs.cc (McuInfo.have_cvt): New property.
+	(print_mcu) <*avrlibc_startfile>: Use crt<mcu>-cvt.o depending
+	on -mcvt (or issue an error when the device doesn't support a CVT).
+	* doc/invoke.texi (AVR Options): Document -mcvt.
+
+2025-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117506
+	* loop-iv.cc (get_biv_step_1): For {ZERO,SIGN}_EXTEND
+	of PLUS apply {ZERO,SIGN}_EXTEND to op1.
+
+2025-02-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118768
+	* config/avr/genmultilib.awk: Parse the AVR_MCU lines in
+	a more robust way w.r.t. white spaces.
+
+2025-02-06  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/118561
+	* config/loongarch/loongarch-builtins.cc
+	(loongarch_expand_builtin_lsx_test_branch):
+	NULL_RTX will not be returned when an error is detected.
+	(loongarch_expand_builtin): Likewise.
+
+2025-02-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/110449
+	* tree-ssa-loop-manip.h (insert_iv_increment): Declare.
+	* tree-ssa-loop-manip.cc (insert_iv_increment): New function,
+	split out from...
+	(create_iv): ...here and generalized to gimple_seqs.
+	* tree-vect-loop.cc (vectorizable_induction): Use
+	standard_iv_increment_position and insert_iv_increment
+	to insert the IV increment.
+
+2025-02-06  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/117922
+	* fold-mem-offsets.cc (pass_fold_mem_offsets::execute):
+	Do nothing for a highly connected CFG.
+
+2025-02-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118749
+	* tree-vect-data-refs.cc (vector_alignment_reachable_p): Pass
+	in the vectorization factor, when that cannot maintain
+	the DRs target alignment do not claim we can reach that
+	by peeling.
+
 2025-02-05  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/bfin/bfin.md (abssi): Disable pattern.

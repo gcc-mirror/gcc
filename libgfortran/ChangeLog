@@ -1,3 +1,11 @@
+2025-02-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/114618
+	* io/transfer.c (formatted_transfer_scalar_write): Change name
+	of vriable 'pos' to 'tab_pos' to improve clarity. Add new
+	variable next_pos when calculating the maximum position.
+	Update the calculation of pending spaces.
+
 2025-02-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* Makefile.am: Add files for unsigned exponentiation.
