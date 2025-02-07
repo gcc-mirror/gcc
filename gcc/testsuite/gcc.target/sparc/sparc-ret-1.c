@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "no register windows" { *-*-* } { "-mflat" } { "" } } */
+/* { dg-skip-if "prevents expected asm" { *-*-* } { "-mfix-ut699" } { "" } } */
 /* { dg-require-effective-target ilp32 } */
 /* { dg-options "-mcpu=ultrasparc -O" } */
 
