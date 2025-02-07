@@ -3272,7 +3272,8 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	break;
 
       /* Otherwise, the types should be pointers.  */
-      if (!TYPE_PTR_OR_PTRMEM_P (type1) || !TYPE_PTR_OR_PTRMEM_P (type2))
+      if (!((TYPE_PTR_OR_PTRMEM_P (type1) || null_ptr_cst_p (args[0]))
+	    && (TYPE_PTR_OR_PTRMEM_P (type2) || null_ptr_cst_p (args[1]))))
 	return;
 
       /* We don't check that the two types are the same; the logic
