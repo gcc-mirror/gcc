@@ -7387,6 +7387,13 @@ simplify_context::simplify_ternary_operation (rtx_code code, machine_mode mode,
 	      return gen_rtx_CONST_VECTOR (mode, v);
 	    }
 
+	  if (swap_commutative_operands_p (op0, op1)
+	      /* Two operands have same precedence, then first bit of mask
+		 select first operand.  */
+	      || (!swap_commutative_operands_p (op1, op0) && !(sel & 1)))
+	    return simplify_gen_ternary (code, mode, mode, op1, op0,
+					 GEN_INT (~sel & mask));
+
 	  /* Replace (vec_merge (vec_merge a b m) c n) with (vec_merge b c n)
 	     if no element from a appears in the result.  */
 	  if (GET_CODE (op0) == VEC_MERGE)

@@ -1055,6 +1055,7 @@ void aarch64_subvti_scratch_regs (rtx, rtx, rtx *,
 				  rtx *, rtx *, rtx *);
 void aarch64_expand_subvti (rtx, rtx, rtx,
 			    rtx, rtx, rtx, rtx, bool);
+int aarch64_exact_log2_inverse (unsigned int, rtx);
 
 
 /* Initialize builtins for SIMD intrinsics.  */

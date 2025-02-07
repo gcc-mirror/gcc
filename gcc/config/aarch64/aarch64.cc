@@ -23914,6 +23914,16 @@ aarch64_strided_registers_p (rtx *operands, unsigned int num_operands,
   return true;
 }
 
+/* Return the base 2 logarithm of the bit inverse of OP masked by the lowest
+   NELTS bits, if OP is a power of 2.  Otherwise, returns -1.  */
+
+int
+aarch64_exact_log2_inverse (unsigned int nelts, rtx op)
+{
+  return exact_log2 ((~INTVAL (op))
+		     & ((HOST_WIDE_INT_1U << nelts) - 1));
+}
+
 /* Bounds-check lanes.  Ensure OPERAND lies between LOW (inclusive) and
    HIGH (exclusive).  */
 void
