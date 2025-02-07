@@ -4985,7 +4985,8 @@ decl_maybe_constant_var_p (tree decl)
   tree type = TREE_TYPE (decl);
   if (!VAR_P (decl))
     return false;
-  if (DECL_DECLARED_CONSTEXPR_P (decl) && !TREE_THIS_VOLATILE (decl))
+  if (DECL_DECLARED_CONSTEXPR_P (decl)
+      && (!TREE_THIS_VOLATILE (decl) || NULLPTR_TYPE_P (type)))
     return true;
   if (DECL_HAS_VALUE_EXPR_P (decl))
     /* A proxy isn't constant.  */
