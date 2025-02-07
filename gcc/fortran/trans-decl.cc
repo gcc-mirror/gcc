@@ -149,6 +149,7 @@ tree gfor_fndecl_caf_register_accessors_finish;
 tree gfor_fndecl_caf_get_remote_function_index;
 tree gfor_fndecl_caf_get_from_remote;
 tree gfor_fndecl_caf_send_to_remote;
+tree gfor_fndecl_caf_transfer_between_remotes;
 
 tree gfor_fndecl_caf_sync_all;
 tree gfor_fndecl_caf_sync_memory;
@@ -4144,9 +4145,19 @@ gfc_build_builtin_function_decls (void)
 	  pvoid_type_node, size_type_node, pint_type, pvoid_type_node,
 	  pint_type);
 
+      gfor_fndecl_caf_transfer_between_remotes
+	= gfc_build_library_function_decl_with_spec (
+	  get_identifier (PREFIX ("caf_transfer_between_remotes")),
+	  ". r r r r r r r r r r r r r r r r w w r r ", void_type_node, 20,
+	  pvoid_type_node, pvoid_type_node, psize_type, integer_type_node,
+	  integer_type_node, pvoid_type_node, size_type_node, pvoid_type_node,
+	  pvoid_type_node, psize_type, integer_type_node, integer_type_node,
+	  pvoid_type_node, size_type_node, size_type_node, boolean_type_node,
+	  pint_type, pint_type, pvoid_type_node, pint_type);
+
       gfor_fndecl_caf_sync_all = gfc_build_library_function_decl_with_spec (
-	get_identifier (PREFIX("caf_sync_all")), ". w w . ", void_type_node,
-	3, pint_type, pchar_type_node, size_type_node);
+	get_identifier (PREFIX ("caf_sync_all")), ". w w . ", void_type_node, 3,
+	pint_type, pchar_type_node, size_type_node);
 
       gfor_fndecl_caf_sync_memory = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("caf_sync_memory")), ". w w . ", void_type_node,

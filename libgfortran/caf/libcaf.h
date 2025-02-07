@@ -261,6 +261,18 @@ void _gfortran_caf_send_to_remote (
   void *add_data, const size_t add_data_size, int *stat, caf_team_t *team,
   int *team_number);
 
+void _gfortran_caf_transfer_between_remotes (
+  caf_token_t dst_token, gfc_descriptor_t *opt_dst_desc,
+  size_t *opt_dst_charlen, const int dst_image_index,
+  const int dst_access_index, void *dst_add_data,
+  const size_t dst_add_data_size, caf_token_t src_token,
+  const gfc_descriptor_t *opt_src_desc, const size_t *opt_src_charlen,
+  const int src_image_index, const int src_access_index, void *src_add_data,
+  const size_t src_add_data_size, const size_t src_size,
+  const bool scalar_transfer, int *dst_stat, int *src_stat,
+  caf_team_t *dst_team, int *dst_team_number, caf_team_t *src_team,
+  int *src_team_number);
+
 void _gfortran_caf_atomic_define (caf_token_t, size_t, int, void *, int *,
 				  int, int);
 void _gfortran_caf_atomic_ref (caf_token_t, size_t, int, void *, int *,

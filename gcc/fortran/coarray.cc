@@ -1351,12 +1351,6 @@ rewrite_caf_send (gfc_code *c)
       && arg->next->next && arg->next->next->expr->expr_type == EXPR_VARIABLE)
     return;
 
-  if (gfc_is_coindexed (rhs))
-    {
-      c->resolved_isym->id = GFC_ISYM_CAF_SENDGET;
-      return;
-    }
-
   send_to_remote_expr = create_send_callback (lhs, rhs);
   send_to_remote_hash_expr = gfc_get_expr ();
   send_to_remote_hash_expr->expr_type = EXPR_CONSTANT;
@@ -1372,6 +1366,28 @@ rewrite_caf_send (gfc_code *c)
   arg = arg->next;
   arg->expr = send_to_remote_expr;
   gfc_add_caf_accessor (send_to_remote_hash_expr, send_to_remote_expr);
+
+  if (gfc_is_coindexed (rhs))
+    {
+      gfc_expr *get_from_remote_expr, *get_from_remote_hash_expr;
+
+      c->resolved_isym = gfc_intrinsic_subroutine_by_id (GFC_ISYM_CAF_SENDGET);
+      get_from_remote_expr = create_get_callback (rhs);
+      get_from_remote_hash_expr = gfc_get_expr ();
+      get_from_remote_hash_expr->expr_type = EXPR_CONSTANT;
+      get_from_remote_hash_expr->ts.type = BT_INTEGER;
+      get_from_remote_hash_expr->ts.kind = gfc_default_integer_kind;
+      get_from_remote_hash_expr->where = rhs->where;
+      mpz_init_set_ui (get_from_remote_hash_expr->value.integer,
+		       gfc_hash_value (get_from_remote_expr->symtree->n.sym));
+      arg->next = gfc_get_actual_arglist ();
+      arg = arg->next;
+      arg->expr = get_from_remote_hash_expr;
+      arg->next = gfc_get_actual_arglist ();
+      arg = arg->next;
+      arg->expr = get_from_remote_expr;
+      gfc_add_caf_accessor (get_from_remote_hash_expr, get_from_remote_expr);
+    }
 }
 
 static int
@@ -1451,7 +1467,9 @@ coindexed_code_callback (gfc_code **c, int *walk_subtrees,
 	    *walk_subtrees = 0;
 	    break;
 	  case GFC_ISYM_CAF_SENDGET:
-	    // rewrite_caf_sendget (*c);
+	    /* Seldomly this routine is called again with the symbol already
+	       changed to CAF_SENDGET.  Do not process the subtree again.  The
+	       rewrite has already been done by rewrite_caf_send ().  */
 	    *walk_subtrees = 0;
 	    break;
 	  case GFC_ISYM_ATOMIC_ADD:

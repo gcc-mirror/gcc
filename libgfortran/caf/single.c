@@ -3024,6 +3024,75 @@ _gfortran_caf_send_to_remote (
 }
 
 void
+_gfortran_caf_transfer_between_remotes (
+  caf_token_t dst_token, gfc_descriptor_t *opt_dst_desc,
+  size_t *opt_dst_charlen, const int dst_image_index,
+  const int dst_access_index, void *dst_add_data,
+  const size_t dst_add_data_size __attribute__ ((unused)),
+  caf_token_t src_token, const gfc_descriptor_t *opt_src_desc,
+  const size_t *opt_src_charlen, const int src_image_index,
+  const int src_access_index, void *src_add_data,
+  const size_t src_add_data_size __attribute__ ((unused)),
+  const size_t src_size, const bool scalar_transfer, int *dst_stat,
+  int *src_stat, caf_team_t *dst_team __attribute__ ((unused)),
+  int *dst_team_number __attribute__ ((unused)),
+  caf_team_t *src_team __attribute__ ((unused)),
+  int *src_team_number __attribute__ ((unused)))
+{
+  caf_single_token_t src_single_token = TOKEN (src_token),
+		     dst_single_token = TOKEN (dst_token);
+  void *src_ptr
+    = opt_src_desc ? (void *) opt_src_desc : src_single_token->memptr;
+  int32_t free_buffer;
+  void *dst_ptr
+    = opt_dst_desc ? (void *) opt_dst_desc : dst_single_token->memptr;
+  void *transfer_ptr, *buffer;
+  GFC_FULL_ARRAY_DESCRIPTOR (GFC_MAX_DIMENSIONS, void) *transfer_desc = NULL;
+  struct caf_single_token cb_token;
+  cb_token.memptr = src_add_data;
+  cb_token.desc = NULL;
+  cb_token.owning_memory = false;
+
+  if (src_stat)
+    *src_stat = 0;
+
+  if (!scalar_transfer)
+    {
+      const size_t desc_size = sizeof (*transfer_desc);
+      transfer_desc = alloca (desc_size);
+      memset (transfer_desc, 0, desc_size);
+      transfer_ptr = transfer_desc;
+    }
+  else if (opt_dst_charlen)
+    transfer_ptr = alloca (*opt_dst_charlen * src_size);
+  else
+    {
+      buffer = NULL;
+      transfer_ptr = &buffer;
+    }
+
+  accessor_hash_table[src_access_index].u.getter (
+    src_add_data, &src_image_index, transfer_ptr, &free_buffer, src_ptr,
+    &cb_token, 0, opt_dst_charlen, opt_src_charlen);
+
+  if (dst_stat)
+    *dst_stat = 0;
+
+  if (scalar_transfer)
+    transfer_ptr = *(void **) transfer_ptr;
+
+  cb_token.memptr = dst_add_data;
+  accessor_hash_table[dst_access_index].u.receiver (dst_add_data,
+						    &dst_image_index, dst_ptr,
+						    transfer_ptr, &cb_token, 0,
+						    opt_dst_charlen,
+						    opt_src_charlen);
+
+  if (free_buffer)
+    free (transfer_desc ? transfer_desc->base_addr : transfer_ptr);
+}
+
+void
 _gfortran_caf_atomic_define (caf_token_t token, size_t offset,
 			     int image_index __attribute__ ((unused)),
 			     void *value, int *stat,

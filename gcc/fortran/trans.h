@@ -897,6 +897,7 @@ extern GTY(()) tree gfor_fndecl_caf_register_accessors_finish;
 extern GTY(()) tree gfor_fndecl_caf_get_remote_function_index;
 extern GTY(()) tree gfor_fndecl_caf_get_from_remote;
 extern GTY(()) tree gfor_fndecl_caf_send_to_remote;
+extern GTY(()) tree gfor_fndecl_caf_transfer_between_remotes;
 
 extern GTY(()) tree gfor_fndecl_caf_sync_all;
 extern GTY(()) tree gfor_fndecl_caf_sync_memory;
