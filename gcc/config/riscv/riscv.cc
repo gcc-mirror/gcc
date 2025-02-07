@@ -10900,7 +10900,9 @@ riscv_conditional_register_usage (void)
 	call_used_regs[regno] = 1;
     }
 
-  if (!TARGET_VECTOR)
+  if (TARGET_VECTOR)
+    global_regs[VXRM_REGNUM] = 1;
+  else
     {
       for (int regno = V_REG_FIRST; regno <= V_REG_LAST; regno++)
 	fixed_regs[regno] = call_used_regs[regno] = 1;
