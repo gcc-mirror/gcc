@@ -22543,23 +22543,49 @@ static void
 arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
 {
   int num_regs = 0;
-  int i, j;
   rtx par;
   rtx dwarf = NULL_RTX;
   rtx tmp, reg;
   bool return_in_pc = saved_regs_mask & (1 << PC_REGNUM);
   int offset_adj;
   int emit_update;
+  unsigned long reg_bits;
 
   offset_adj = return_in_pc ? 1 : 0;
-  for (i = 0; i <= LAST_ARM_REGNUM; i++)
-    if (saved_regs_mask & (1 << i))
-      num_regs++;
+  for (reg_bits = saved_regs_mask; reg_bits;
+       reg_bits &= ~(reg_bits & -reg_bits))
+    num_regs++;
 
   gcc_assert (num_regs && num_regs <= 16);
 
   /* If SP is in reglist, then we don't emit SP update insn.  */
   emit_update = (saved_regs_mask & (1 << SP_REGNUM)) ? 0 : 1;
+
+  /* If popping just one register, use LDR reg, [SP], #4, unless
+     we're generating Thumb code and reg is a low reg.  */
+  if (num_regs == 1
+      && emit_update
+      && !return_in_pc
+      && (TARGET_ARM
+	  /* For Thumb we want to use POP for a single low register.  */
+	  || (saved_regs_mask & ~0xff)))
+    {
+      int i = exact_log2 (saved_regs_mask);
+
+      rtx dwarf_reg = reg = gen_rtx_REG (SImode, i);
+      if (arm_current_function_pac_enabled_p () && i == IP_REGNUM)
+	dwarf_reg = gen_rtx_REG (SImode, RA_AUTH_CODE);
+      /* Emit single load with writeback.	 */
+      tmp = gen_frame_mem (SImode,
+			   gen_rtx_POST_INC (Pmode,
+					     stack_pointer_rtx));
+      tmp = emit_insn (gen_rtx_SET (reg, tmp));
+      REG_NOTES (tmp) = alloc_reg_note (REG_CFA_RESTORE, dwarf_reg,
+					dwarf);
+      arm_add_cfa_adjust_cfa_note (tmp, UNITS_PER_WORD,
+				   stack_pointer_rtx, stack_pointer_rtx);
+      return;
+    }
 
   /* The parallel needs to hold num_regs SETs
      and one SET for the stack update.  */
@@ -22582,50 +22608,39 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
     }
 
   /* Now restore every reg, which may include PC.  */
-  for (j = 0, i = 0; j < num_regs; i++)
-    if (saved_regs_mask & (1 << i))
-      {
-	rtx dwarf_reg = reg = gen_rtx_REG (SImode, i);
-	if (arm_current_function_pac_enabled_p () && i == IP_REGNUM)
-	  dwarf_reg = gen_rtx_REG (SImode, RA_AUTH_CODE);
-	if ((num_regs == 1) && emit_update && !return_in_pc)
-	  {
-	    /* Emit single load with writeback.	 */
-	    tmp = gen_frame_mem (SImode,
-				 gen_rtx_POST_INC (Pmode,
-						   stack_pointer_rtx));
-	    tmp = emit_insn (gen_rtx_SET (reg, tmp));
-	    REG_NOTES (tmp) = alloc_reg_note (REG_CFA_RESTORE, dwarf_reg,
-					      dwarf);
-	    arm_add_cfa_adjust_cfa_note (tmp, UNITS_PER_WORD,
-					 stack_pointer_rtx, stack_pointer_rtx);
-	    return;
-	  }
+  int j = 0;
+  int elt = emit_update + offset_adj;
+  for (reg_bits = saved_regs_mask; reg_bits;
+       reg_bits &= ~(reg_bits & -reg_bits))
+    {
+      int i = exact_log2 (reg_bits & -reg_bits);
+      rtx dwarf_reg = reg = gen_rtx_REG (SImode, i);
 
-	tmp = gen_rtx_SET (reg,
-			   gen_frame_mem
-			   (SImode,
-			    plus_constant (Pmode, stack_pointer_rtx, 4 * j)));
-	RTX_FRAME_RELATED_P (tmp) = 1;
-	XVECEXP (par, 0, j + emit_update + offset_adj) = tmp;
+      if (i == IP_REGNUM && arm_current_function_pac_enabled_p ())
+	dwarf_reg = gen_rtx_REG (SImode, RA_AUTH_CODE);
+      tmp = gen_rtx_SET (reg,
+			 gen_frame_mem
+			 (SImode,
+			  plus_constant (Pmode, stack_pointer_rtx, 4 * j)));
+      RTX_FRAME_RELATED_P (tmp) = 1;
+      XVECEXP (par, 0, elt) = tmp;
 
-	/* We need to maintain a sequence for DWARF info too.  As dwarf info
-	   should not have PC, skip PC.	 */
-	if (i != PC_REGNUM)
-	  dwarf = alloc_reg_note (REG_CFA_RESTORE, dwarf_reg, dwarf);
+      /* We need to maintain a sequence for DWARF info too.  As dwarf info
+	 should not have PC, skip PC.	 */
+      if (i != PC_REGNUM)
+	dwarf = alloc_reg_note (REG_CFA_RESTORE, dwarf_reg, dwarf);
+      j++;
+      elt++;
+    }
 
-	j++;
-      }
-
-  if (return_in_pc)
-    par = emit_jump_insn (par);
-  else
-    par = emit_insn (par);
-
+  par = return_in_pc ? emit_jump_insn (par) : emit_insn (par);
   REG_NOTES (par) = dwarf;
-  if (!return_in_pc)
+
+  if (!return_in_pc && emit_update)
     arm_add_cfa_adjust_cfa_note (par, UNITS_PER_WORD * num_regs,
 				 stack_pointer_rtx, stack_pointer_rtx);
+  else if (!return_in_pc)
+    RTX_FRAME_RELATED_P (par) = 1;
 }
 
 /* Generate and emit an insn pattern that we will recognize as a pop_multi
