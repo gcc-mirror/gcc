@@ -7152,6 +7152,7 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
     }
 
   tree body, cond = NULL_TREE, expr = NULL_TREE;
+  tree cond_prep = NULL_TREE, cond_cleanup = NULL_TREE;
   int count = 0;
   switch (TREE_CODE (t))
     {
@@ -7165,6 +7166,8 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
     case WHILE_STMT:
       body = WHILE_BODY (t);
       cond = WHILE_COND (t);
+      cond_prep = WHILE_COND_PREP (t);
+      cond_cleanup = WHILE_COND_CLEANUP (t);
       count = -1;
       break;
     case FOR_STMT:
@@ -7176,11 +7179,25 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
       body = FOR_BODY (t);
       cond = FOR_COND (t);
       expr = FOR_EXPR (t);
+      cond_prep = FOR_COND_PREP (t);
+      cond_cleanup = FOR_COND_CLEANUP (t);
       count = -1;
       break;
     default:
       gcc_unreachable ();
     }
+  if (cond_prep)
+    gcc_assert (TREE_CODE (cond_prep) == BIND_EXPR);
+  auto cleanup_cond = [=] {
+    /* Clean up the condition variable after each iteration.  */
+    if (cond_cleanup && !*non_constant_p)
+      cxx_eval_constant_expression (ctx, cond_cleanup, vc_discard,
+				    non_constant_p, overflow_p);
+    if (cond_prep)
+      for (tree decl = BIND_EXPR_VARS (cond_prep);
+	   decl; decl = DECL_CHAIN (decl))
+	destroy_value_checked (ctx, decl, non_constant_p);
+  };
   do
     {
       if (count != -1)
@@ -7202,6 +7219,17 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
 	    cxx_eval_constant_expression (ctx, expr, vc_prvalue,
 					  non_constant_p, overflow_p,
 					  jump_target);
+	  cleanup_cond ();
+	}
+
+      if (cond_prep)
+	{
+	  for (tree decl = BIND_EXPR_VARS (cond_prep);
+	       decl; decl = DECL_CHAIN (decl))
+	    ctx->global->clear_value (decl);
+	  cxx_eval_constant_expression (ctx, BIND_EXPR_BODY (cond_prep),
+					vc_discard, non_constant_p,
+					overflow_p, jump_target);
 	}
 
       if (cond)
@@ -7238,6 +7266,8 @@ cxx_eval_loop_expr (const constexpr_ctx *ctx, tree t,
 	 && !continues (jump_target)
 	 && (!switches (jump_target) || count == 0)
 	 && !*non_constant_p);
+
+  cleanup_cond ();
 
   return NULL_TREE;
 }
@@ -9618,6 +9648,7 @@ check_for_return_continue (tree *tp, int *walk_subtrees, void *data)
 
     case WHILE_STMT:
       *walk_subtrees = 0;
+      RECUR (WHILE_COND_PREP (t));
       RECUR (WHILE_COND (t));
       s = d->continue_stmt;
       b = d->break_stmt;
@@ -9629,6 +9660,7 @@ check_for_return_continue (tree *tp, int *walk_subtrees, void *data)
     case FOR_STMT:
       *walk_subtrees = 0;
       RECUR (FOR_INIT_STMT (t));
+      RECUR (FOR_COND_PREP (t));
       RECUR (FOR_COND (t));
       RECUR (FOR_EXPR (t));
       s = d->continue_stmt;
@@ -10133,6 +10165,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case FOR_STMT:
       if (!RECUR (FOR_INIT_STMT (t), any))
 	return false;
+      if (!RECUR (FOR_COND_PREP (t), any))
+	return false;
       tmp = FOR_COND (t);
       if (!RECUR (tmp, rval))
 	return false;
@@ -10160,6 +10194,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	return false;
       if (!RECUR (FOR_BODY (t), any))
 	return false;
+      if (!RECUR (FOR_COND_CLEANUP (t), any))
+	return false;
       if (breaks (jump_target) || continues (jump_target))
 	*jump_target = NULL_TREE;
       return true;
@@ -10176,6 +10212,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return true;
 
     case WHILE_STMT:
+      if (!RECUR (WHILE_COND_PREP (t), any))
+	return false;
       tmp = WHILE_COND (t);
       if (!RECUR (tmp, rval))
 	return false;
@@ -10196,6 +10234,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	  return true;
 	}
       if (!RECUR (WHILE_BODY (t), any))
+	return false;
+      if (!RECUR (WHILE_COND_CLEANUP (t), any))
 	return false;
       if (breaks (jump_target) || continues (jump_target))
 	*jump_target = NULL_TREE;

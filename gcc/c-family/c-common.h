@@ -1517,10 +1517,13 @@ extern tree build_userdef_literal (tree suffix_id, tree value,
 
 
 /* WHILE_STMT accessors.  These give access to the condition of the
-   while statement, the body and name of the while statement, respectively.  */
+   while statement, the body, and name of the while statement, and
+   condition preparation statements and its cleanup, respectively.  */
 #define WHILE_COND(NODE)	TREE_OPERAND (WHILE_STMT_CHECK (NODE), 0)
 #define WHILE_BODY(NODE)	TREE_OPERAND (WHILE_STMT_CHECK (NODE), 1)
 #define WHILE_NAME(NODE)	TREE_OPERAND (WHILE_STMT_CHECK (NODE), 2)
+#define WHILE_COND_PREP(NODE)	TREE_OPERAND (WHILE_STMT_CHECK (NODE), 3)
+#define WHILE_COND_CLEANUP(NODE) TREE_OPERAND (WHILE_STMT_CHECK (NODE), 4)
 
 /* DO_STMT accessors.  These give access to the condition of the do
    statement, the body and name of the do statement, respectively.  */
@@ -1530,13 +1533,15 @@ extern tree build_userdef_literal (tree suffix_id, tree value,
 
 /* FOR_STMT accessors.  These give access to the init statement,
    condition, update expression, body and name of the for statement,
-   respectively.  */
+   and condition preparation statements and its cleanup, respectively.  */
 #define FOR_INIT_STMT(NODE)	TREE_OPERAND (FOR_STMT_CHECK (NODE), 0)
 #define FOR_COND(NODE)		TREE_OPERAND (FOR_STMT_CHECK (NODE), 1)
 #define FOR_EXPR(NODE)		TREE_OPERAND (FOR_STMT_CHECK (NODE), 2)
 #define FOR_BODY(NODE)		TREE_OPERAND (FOR_STMT_CHECK (NODE), 3)
 #define FOR_SCOPE(NODE)		TREE_OPERAND (FOR_STMT_CHECK (NODE), 4)
 #define FOR_NAME(NODE)		TREE_OPERAND (FOR_STMT_CHECK (NODE), 5)
+#define FOR_COND_PREP(NODE)	TREE_OPERAND (FOR_STMT_CHECK (NODE), 6)
+#define FOR_COND_CLEANUP(NODE)	TREE_OPERAND (FOR_STMT_CHECK (NODE), 7)
 
 /* BREAK_STMT accessors.  */
 #define BREAK_NAME(NODE)	TREE_OPERAND (BREAK_STMT_CHECK (NODE), 0)
