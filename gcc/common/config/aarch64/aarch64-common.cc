@@ -157,6 +157,8 @@ struct aarch64_extension_info
   aarch64_feature_flags flags_on;
   /* If this feature is turned off, these bits also need to be turned off.  */
   aarch64_feature_flags flags_off;
+  /* If this feature remains enabled, these bits must also remain enabled.  */
+  aarch64_feature_flags flags_required;
 };
 
 /* ISA extensions in AArch64.  */
@@ -164,9 +166,10 @@ static constexpr aarch64_extension_info all_extensions[] =
 {
 #define AARCH64_OPT_EXTENSION(NAME, IDENT, C, D, E, FEATURE_STRING) \
   {NAME, AARCH64_FL_##IDENT, feature_deps::IDENT ().explicit_on, \
-   feature_deps::get_flags_off (feature_deps::root_off_##IDENT)},
+   feature_deps::get_flags_off (feature_deps::root_off_##IDENT), \
+   feature_deps::IDENT ().enable},
 #include "config/aarch64/aarch64-option-extensions.def"
-  {NULL, 0, 0, 0}
+  {NULL, 0, 0, 0, 0}
 };
 
 struct aarch64_arch_info
@@ -204,6 +207,18 @@ static constexpr aarch64_processor_info all_cores[] =
   {NULL, aarch64_no_cpu, aarch64_no_arch, 0}
 };
 
+/* Return the set of feature flags that are required to be enabled when the
+   features in FLAGS are enabled.  */
+
+aarch64_feature_flags
+aarch64_get_required_features (aarch64_feature_flags flags)
+{
+  const struct aarch64_extension_info *opt;
+  for (opt = all_extensions; opt->name != NULL; opt++)
+    if (flags & opt->flag_canonical)
+      flags |= opt->flags_required;
+  return flags;
+}
 
 /* Print a list of CANDIDATES for an argument, and try to suggest a specific
    close match.  */

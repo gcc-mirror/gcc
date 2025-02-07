@@ -733,15 +733,17 @@ const unsigned int AARCH64_BUILTIN_CLASS = (1 << AARCH64_BUILTIN_SHIFT) - 1;
 
 /* RAII class for enabling enough features to define built-in types
    and implement the arm_neon.h pragma.  */
-class aarch64_simd_switcher
+class aarch64_target_switcher
 {
 public:
-  aarch64_simd_switcher (aarch64_feature_flags extra_flags = 0);
-  ~aarch64_simd_switcher ();
+  aarch64_target_switcher (aarch64_feature_flags flags = 0);
+  ~aarch64_target_switcher ();
 
 private:
   aarch64_feature_flags m_old_asm_isa_flags;
   bool m_old_general_regs_only;
+  tree m_old_target_pragma;
+  bool m_old_have_regs_of_mode[MAX_MACHINE_MODE];
 };
 
 /* Represents the ISA requirements of an intrinsic function, or of some
@@ -1190,6 +1192,7 @@ void aarch64_set_asm_isa_flags (aarch64_feature_flags);
 void aarch64_set_asm_isa_flags (gcc_options *, aarch64_feature_flags);
 bool aarch64_handle_option (struct gcc_options *, struct gcc_options *,
 			     const struct cl_decoded_option *, location_t);
+aarch64_feature_flags aarch64_get_required_features (aarch64_feature_flags);
 void aarch64_print_hint_for_extensions (const char *);
 void aarch64_print_hint_for_arch (const char *);
 void aarch64_print_hint_for_core (const char *);

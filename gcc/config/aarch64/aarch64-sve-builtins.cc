@@ -42,7 +42,6 @@
 #include "emit-rtl.h"
 #include "tree-vector-builder.h"
 #include "stor-layout.h"
-#include "regs.h"
 #include "alias.h"
 #include "gimple-fold.h"
 #include "langhooks.h"
@@ -1296,26 +1295,14 @@ registered_function_hasher::equal (value_type value, const compare_type &key)
   return value->instance == key;
 }
 
-sve_switcher::sve_switcher (aarch64_feature_flags flags)
-  : aarch64_simd_switcher (AARCH64_FL_F16 | AARCH64_FL_SVE | flags)
+sve_alignment_switcher::sve_alignment_switcher ()
 {
-  /* Changing the ISA flags and have_regs_of_mode should be enough here.
-     We shouldn't need to pay the compile-time cost of a full target
-     switch.  */
   m_old_maximum_field_alignment = maximum_field_alignment;
   maximum_field_alignment = 0;
-
-  memcpy (m_old_have_regs_of_mode, have_regs_of_mode,
-	  sizeof (have_regs_of_mode));
-  for (int i = 0; i < NUM_MACHINE_MODES; ++i)
-    if (aarch64_sve_mode_p ((machine_mode) i))
-      have_regs_of_mode[i] = true;
 }
 
-sve_switcher::~sve_switcher ()
+sve_alignment_switcher::~sve_alignment_switcher ()
 {
-  memcpy (have_regs_of_mode, m_old_have_regs_of_mode,
-	  sizeof (have_regs_of_mode));
   maximum_field_alignment = m_old_maximum_field_alignment;
 }
 
@@ -4652,6 +4639,8 @@ register_type_decl (tree type, const char *name)
 static void
 register_builtin_types ()
 {
+  sve_alignment_switcher switcher;
+
 #define DEF_SVE_TYPE(ACLE_NAME, NCHARS, ABI_NAME, SCALAR_TYPE) \
   scalar_types[VECTOR_TYPE_ ## ACLE_NAME] = SCALAR_TYPE;
 #include "aarch64-sve-builtins.def"
@@ -4726,7 +4715,7 @@ register_builtin_types ()
 void
 init_builtins ()
 {
-  sve_switcher sve;
+  aarch64_target_switcher switcher (AARCH64_FL_SVE);
   register_builtin_types ();
   if (in_lto_p)
     {
@@ -4842,7 +4831,8 @@ handle_arm_sve_h (bool function_nulls_p)
       return;
     }
 
-  sve_switcher sve;
+  aarch64_target_switcher switcher (AARCH64_FL_SVE);
+  sve_alignment_switcher alignment_switcher;
 
   /* Define the vector and tuple types.  */
   for (unsigned int type_i = 0; type_i < NUM_VECTOR_TYPES; ++type_i)
@@ -4873,6 +4863,8 @@ handle_arm_neon_sve_bridge_h (bool function_nulls_p)
   if (initial_indexes[arm_sme_handle] == 0)
     handle_arm_sme_h (true);
 
+  aarch64_target_switcher switcher;
+
   /* Define the functions.  */
   function_builder builder (arm_neon_sve_handle, function_nulls_p);
   for (unsigned int i = 0; i < ARRAY_SIZE (neon_sve_function_groups); ++i)
@@ -4900,7 +4892,7 @@ handle_arm_sme_h (bool function_nulls_p)
       return;
     }
 
-  sme_switcher sme;
+  aarch64_target_switcher switcher (AARCH64_FL_SME);
 
   function_builder builder (arm_sme_handle, function_nulls_p);
   for (unsigned int i = 0; i < ARRAY_SIZE (sme_function_groups); ++i)
