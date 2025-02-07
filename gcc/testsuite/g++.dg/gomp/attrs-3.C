@@ -32,10 +32,10 @@ foo ()
     i++;
   auto a = [] () [[omp::directive (threadprivate (t1))]] {};	// { dg-error "'omp::directive' not allowed to be specified in this context" }
   int [[omp::directive (threadprivate (t2))]] b;		// { dg-warning "attribute ignored" }
-  int *[[omp::directive (threadprivate (t3))]] c;		// { dg-warning "'omp::directive' scoped attribute directive ignored" }
-  int &[[omp::directive (threadprivate (t4))]] d = b;		// { dg-warning "'omp::directive' scoped attribute directive ignored" }
+  int *[[omp::directive (threadprivate (t3))]] c;		// { dg-error "'omp::directive' not allowed to be specified in this context" }
+  int &[[omp::directive (threadprivate (t4))]] d = b;		// { dg-error "'omp::directive' not allowed to be specified in this context" }
   typedef int T [[omp::directive (threadprivate (t5))]];	// { dg-error "'omp::directive' not allowed to be specified in this context" }
   int e [[omp::directive (threadprivate (t6))]] [10];		// { dg-error "'omp::directive' not allowed to be specified in this context" }
-  int f[10] [[omp::directive (threadprivate (t6))]];		// { dg-warning "'omp::directive' scoped attribute directive ignored" }
+  int f[10] [[omp::directive (threadprivate (t6))]];		// { dg-error "'omp::directive' not allowed to be specified in this context" }
   struct [[omp::directive (threadprivate (t7))]] S {};		// { dg-error "'omp::directive' not allowed to be specified in this context" }
 }

@@ -13846,7 +13846,7 @@ grokdeclarator (const cp_declarator *declarator,
 
 	       The optional attribute-specifier-seq appertains to the
 	       array type.  */
-	    decl_attributes (&type, declarator->std_attributes, 0);
+	    cplus_decl_attributes (&type, declarator->std_attributes, 0);
 	  break;
 
 	case cdk_function:
@@ -14522,8 +14522,7 @@ grokdeclarator (const cp_declarator *declarator,
 		 [the optional attribute-specifier-seq (7.6.1) appertains
 		  to the pointer and not to the object pointed to].  */
 	  if (declarator->std_attributes)
-	    decl_attributes (&type, declarator->std_attributes,
-			     0);
+	    cplus_decl_attributes (&type, declarator->std_attributes, 0);
 
 	  ctype = NULL_TREE;
 	  break;
