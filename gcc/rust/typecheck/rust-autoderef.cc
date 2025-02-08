@@ -113,7 +113,7 @@ Adjuster::try_unsize_type (TyTy::BaseType *ty)
   auto slice
     = new TyTy::SliceType (mappings.get_next_hir_id (), ty->get_ident ().locus,
 			   TyTy::TyVar (slice_elem->get_ref ()));
-  context->insert_implicit_type (slice);
+  context->insert_implicit_type (slice->get_ref (), slice);
 
   return Adjustment (Adjustment::AdjustmentType::UNSIZE, ty, slice);
 }
