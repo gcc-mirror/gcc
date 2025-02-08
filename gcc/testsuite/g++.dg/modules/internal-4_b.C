@@ -32,8 +32,8 @@ inline void expose_header_decl() {  // { dg-error "exposes TU-local entity" }
   header_f();
 }
 
-// We additionally consider a namespace with internal linkage as TU-local
-namespace expose_ns = internal_ns;  // { dg-error "exposes TU-local entity" }
+// A namespace with internal linkage is not inherently an exposure.
+namespace expose_ns = internal_ns;  // { dg-bogus "exposes TU-local entity" }
 
 // But we don't consider a weakref as being TU-local, despite being
 // marked static; this is to support uses of weakrefs in header files
@@ -56,9 +56,12 @@ static auto get_local_type() {
 static auto get_local_lambda() {
   return []{};
 }
-using T = decltype(get_local_ok());  // OK
-using U = decltype(get_local_type());  // { dg-error "exposes TU-local entity" }
-using V = decltype(get_local_lambda());  // { dg-error "exposes TU-local entity" }
+using T = decltype(get_local_ok());
+T* expose_t;   // OK
+using U = decltype(get_local_type());
+U* expose_u;  // { dg-error "exposes TU-local entity" }
+using V = decltype(get_local_lambda());
+V* expose_v;  // { dg-error "exposes TU-local entity" }
 
 static auto internal_lambda = []{ internal_f(); };  // OK
 auto expose_lambda = internal_lambda;  // { dg-error "exposes TU-local entity" }
@@ -73,7 +76,8 @@ int not_in_tu_local
 
 struct {} no_name;  // { dg-error "exposes TU-local entity" }
 enum {} e;  // { dg-error "exposes TU-local entity" }
-using not_an_initializer = class {};  // { dg-error "exposes TU-local entity" }
+using not_an_initializer = class {};
+not_an_initializer expose_nai;  // { dg-error "exposes TU-local entity" }
 
 class in_class_specifier { struct {} x; };  // OK
 void in_function_body() { struct {} x; }  // OK
@@ -81,7 +85,8 @@ auto in_initializer = []{};  // OK
 
 #if __cplusplus >= 202002L
 decltype([]{}) d_lambda;  // { dg-error "exposes TU-local entity" "" { target c++20 } }
-using alias_lambda = decltype([]{});  // { dg-error "exposes TU-local entity" "" { target c++20 } }
+using alias_lambda = decltype([]{});
+alias_lambda expose_lam;  // { dg-error "exposes TU-local entity" "" { target c++20 } }
 
 template <typename T>
 concept in_constraint_expression = requires {

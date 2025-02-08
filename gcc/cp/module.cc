@@ -13478,16 +13478,35 @@ bool
 depset::hash::is_tu_local_entity (tree decl, bool explain/*=false*/)
 {
   gcc_checking_assert (DECL_P (decl));
+  location_t loc = DECL_SOURCE_LOCATION (decl);
+  tree type = TREE_TYPE (decl);
 
-  /* An explicit type alias is not an entity, and so is never TU-local.
-     Neither are the built-in declarations of 'int' and such.  */
+  /* Only types, functions, variables, and template (specialisations)
+     can be TU-local.  */
+  if (TREE_CODE (decl) != TYPE_DECL
+      && TREE_CODE (decl) != FUNCTION_DECL
+      && TREE_CODE (decl) != VAR_DECL
+      && TREE_CODE (decl) != TEMPLATE_DECL)
+    return false;
+
+  /* An explicit type alias is not an entity; we don't want to stream
+     such aliases if they refer to TU-local entities, so propagate this
+     from the original type. The built-in declarations of 'int' and such
+     are never TU-local.  */
   if (TREE_CODE (decl) == TYPE_DECL
       && !DECL_SELF_REFERENCE_P (decl)
       && !DECL_IMPLICIT_TYPEDEF_P (decl))
-    return false;
-
-  location_t loc = DECL_SOURCE_LOCATION (decl);
-  tree type = TREE_TYPE (decl);
+    {
+      tree orig = DECL_ORIGINAL_TYPE (decl);
+      if (orig && TYPE_NAME (orig))
+	{
+	  if (explain)
+	    inform (loc, "%qD is an alias of TU-local type %qT", decl, orig);
+	  return is_tu_local_entity (TYPE_NAME (orig), explain);
+	}
+      else
+	return false;
+    }
 
   /* Check specializations first for slightly better explanations.  */
   int use_tpl = -1;
@@ -16623,8 +16642,9 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
       depset *b = spaces[ix];
       tree ns = b->get_entity ();
 
+      /* This could be an anonymous namespace even for a named module,
+	 since we can still emit no-linkage decls.  */
       gcc_checking_assert (TREE_CODE (ns) == NAMESPACE_DECL);
-      gcc_checking_assert (TREE_PUBLIC (ns) || header_module_p ());
 
       unsigned flags = 0;
       if (TREE_PUBLIC (ns))
@@ -20579,13 +20599,25 @@ check_module_decl_linkage (tree decl)
   /* An internal-linkage declaration cannot be generally be exported.
      But it's OK to export any declaration from a header unit, including
      internal linkage declarations.  */
-  if (!header_module_p ()
-      && DECL_MODULE_EXPORT_P (decl)
-      && decl_linkage (decl) == lk_internal)
+  if (!header_module_p () && DECL_MODULE_EXPORT_P (decl))
     {
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"exporting declaration %qD with internal linkage", decl);
-      DECL_MODULE_EXPORT_P (decl) = false;
+      /* Let's additionally treat any exported declaration within an
+	 internal namespace as exporting a declaration with internal
+	 linkage, as this would also implicitly export the internal
+	 linkage namespace.  */
+      if (decl_internal_context_p (decl))
+	{
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "exporting declaration %qD declared in unnamed namespace",
+		    decl);
+	  DECL_MODULE_EXPORT_P (decl) = false;
+	}
+      else if (decl_linkage (decl) == lk_internal)
+	{
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "exporting declaration %qD with internal linkage", decl);
+	  DECL_MODULE_EXPORT_P (decl) = false;
+	}
     }
 }
 
