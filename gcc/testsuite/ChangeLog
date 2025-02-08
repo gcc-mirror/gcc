@@ -1,3 +1,19 @@
+2025-02-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2025-02-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/118750
+	* gfortran.dg/associate_72.f90: New test.
+
+2025-02-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2025-01-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/108434
+	* gfortran.dg/pr108434.f90 : Add tests from comment 1.
+
 2025-02-06  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
