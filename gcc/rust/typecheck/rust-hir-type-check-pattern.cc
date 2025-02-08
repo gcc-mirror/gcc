@@ -653,7 +653,8 @@ ClosureParamInfer::Resolve (HIR::Pattern &pattern)
 
   if (resolver.infered->get_kind () != TyTy::TypeKind::ERROR)
     {
-      resolver.context->insert_implicit_type (resolver.infered);
+      resolver.context->insert_implicit_type (resolver.infered->get_ref (),
+					      resolver.infered);
       resolver.mappings.insert_location (resolver.infered->get_ref (),
 					 pattern.get_locus ());
     }

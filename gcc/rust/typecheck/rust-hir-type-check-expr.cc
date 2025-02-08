@@ -1576,7 +1576,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   TyTy::TupleType *closure_args
     = new TyTy::TupleType (implicit_args_id, expr.get_locus (),
 			   parameter_types);
-  context->insert_implicit_type (closure_args);
+  context->insert_implicit_type (closure_args->get_ref (), closure_args);
 
   location_t result_type_locus = expr.has_return_type ()
 				   ? expr.get_return_type ().get_locus ()
