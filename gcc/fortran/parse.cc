@@ -5804,9 +5804,20 @@ do_end:
 
   /* If handling a metadirective variant, treat 'omp end metadirective'
      as the expected end statement for the current construct.  */
-  if (st == ST_OMP_END_METADIRECTIVE
-      && gfc_state_stack->state == COMP_OMP_BEGIN_METADIRECTIVE)
-    st = omp_end_st;
+  if (gfc_state_stack->state == COMP_OMP_BEGIN_METADIRECTIVE)
+    {
+      if (st == ST_OMP_END_METADIRECTIVE)
+	st = omp_end_st;
+      else
+	{
+	  /* We have found some extra statements between the loop
+	     and the "end metadirective" which is required in a
+	     "begin metadirective" construct, or perhaps the
+	     "end metadirective" is missing entirely.  */
+	  gfc_error_now ("Expected OMP END METADIRECTIVE at %C");
+	  return st;
+	}
+    }
 
   if (st == omp_end_st)
     {
@@ -6294,6 +6305,14 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 	      accept_statement (st);
 	      st = next_statement ();
 	    }
+	  else if (omp_end_st == ST_OMP_END_METADIRECTIVE)
+	    {
+	      /* We have found some extra statements between the END BLOCK
+		 and the "end metadirective" which is required in a
+		 "begin metadirective" construct, or perhaps the
+		 "end metadirective" is missing entirely.  */
+	      gfc_error_now ("Expected OMP END METADIRECTIVE at %C");
+	    }
 	  return st;
 	}
       else if (st != omp_end_st || block_construct)
@@ -6409,10 +6428,12 @@ parse_omp_metadirective_body (gfc_statement omp_st)
   gfc_omp_variant *variant
     = new_st.ext.omp_variants;
   locus body_locus = gfc_current_locus;
+  bool saw_error = false;
 
   accept_statement (omp_st);
 
   gfc_statement next_st = ST_NONE;
+  locus next_loc;
 
   while (variant)
     {
@@ -6470,7 +6491,23 @@ parse_omp_metadirective_body (gfc_statement omp_st)
 	  reject_statement ();
 	  st = next_statement ();
 	}
+
     finish:
+
+      /* Sanity-check that each variant finishes parsing at the same place.  */
+      if (next_st == ST_NONE)
+	{
+	  next_st = st;
+	  next_loc = gfc_current_locus;
+	}
+      else if (st != next_st
+	       || next_loc.nextc != gfc_current_locus.nextc
+	       || next_loc.u.lb != gfc_current_locus.u.lb)
+	{
+	  saw_error = true;
+	  next_st = st;
+	  next_loc = gfc_current_locus;
+	}
 
       gfc_in_omp_metadirective_body = old_in_metadirective_body;
 
@@ -6483,13 +6520,20 @@ parse_omp_metadirective_body (gfc_statement omp_st)
       if (variant->next)
 	gfc_clear_new_st ();
 
-      /* Sanity-check that each variant finishes parsing at the same place.  */
-      if (next_st == ST_NONE)
-	next_st = st;
-      else
-	gcc_assert (st == next_st);
-
       variant = variant->next;
+    }
+
+  if (saw_error)
+    {
+      if (omp_st == ST_OMP_METADIRECTIVE)
+	gfc_error_now ("Variants in a metadirective at %L have "
+		       "different associations; "
+		       "consider using a BLOCK construct "
+		       "or BEGIN/END METADIRECTIVE", &body_locus);
+      else
+	gfc_error_now ("Variants in a metadirective at %L have "
+		       "different associations; "
+		       "consider using a BLOCK construct", &body_locus);
     }
 
   return next_st;
