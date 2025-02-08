@@ -1,3 +1,14 @@
+2025-02-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-gcn.c (ELFABIVERSION_AMDGPU_HSA_V6,
+	EF_AMDGPU_GENERIC_VERSION_V, EF_AMDGPU_GENERIC_VERSION_OFFSET,
+	GET_GENERIC_VERSION): New #define.
+	(elf_gcn_isa_is_generic): New.
+	(isa_matches_agent): Accept all generic code objects on the first
+	go; extend the diagnostic and handle runtime-failed case.
+	(create_and_finalize_hsa_program): Call it also after loading
+	the code failed, pass the status.
+
 2025-01-30  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* libgomp.texi (OpenMP 5.0): Mark metadirective and declare variant

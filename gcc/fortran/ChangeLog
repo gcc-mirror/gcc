@@ -1,3 +1,16 @@
+2025-02-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/59252
+	* trans-expr.cc (gfc_trans_subcomponent_assign): Initialize
+	allocatable non-deferred character with NULL properly.
+
+2025-02-07  Tomáš Trnka  <trnka@scm.com>
+
+	PR fortran/116829
+	* trans-decl.cc (init_intent_out_dt): Always call
+	gfc_init_default_dt() for BT_DERIVED to apply s->value if the
+	symbol isn't allocatable. Also simplify the logic a bit.
+
 2025-02-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/118750

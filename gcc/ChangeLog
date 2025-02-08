@@ -1,3 +1,139 @@
+2025-02-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/114522
+	* config/aarch64/aarch64-builtins.cc (aarch64_fold_aes_op): New function.
+	(aarch64_general_gimple_fold_builtin): Call aarch64_fold_aes_op for crypto_aese
+	and crypto_aesd.
+
+2025-02-07  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR preprocessor/118168
+	* input.cc (file_cache::m_line_recent,
+	m_line_recent_first, m_line_recent_last): Add.
+	(file_cache_slot::evict): Clear new fields.
+	(file_cache_slot::create): Clear new fields.
+	(file_cache_slot::file_cache_slot): Initialize new fields.
+	(file_cache_slot::~file_cache_slot): Release m_line_recent.
+	(file_cache_slot::get_next_line): Maintain ring buffer of lines
+	in m_line_recent.
+	(file_cache_slot::read_line_num): Use m_line_recent to look up
+	recent lines quickly.
+
+2025-02-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/118089
+	* config/arm/arm.cc (arm_emit_multi_reg_pop): Restructure.
+	Don't emit LDR on thumb2 when POP can be used for smaller code.
+	Don't add a CFA adjust note when SP is popped off the stack.
+
+2025-02-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/118089
+	* config/arm/arm.cc (arm_emit_multi_reg_pop): Add a CFA adjust
+	note to single-register POP instructions.
+
+2025-02-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/116244
+	* ira-build.cc (create_insn_allocnos): Do not restrict the check for
+	subreg uses to allocno creation time.  Do it for all uses.
+
+2025-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR jit/118780
+	* system.h: Check INCLUDE_DLFCN_H for including dlfcn.h instead
+	of ENABLE_PLUGIN.
+	* plugin.cc: Define INCLUDE_DLFCN_H.
+
+2025-02-07  Pan Li  <pan2.li@intel.com>
+
+	PR target/118103
+	* config/riscv/riscv.cc (riscv_conditional_register_usage): Add
+	the VXRM as the global_regs.
+
+2025-02-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/118771
+	* config/aarch64/aarch64.cc (aarch64_split_move): Assert that npieces is
+	greater than 0.
+
+2025-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115538
+	* tree-vectorizer.h (vect_get_slp_scalar_def): Declare.
+	* tree-vect-slp.cc (vect_get_slp_scalar_def): New helper.
+	* tree-vect-generic.cc (expand_vector_conversion): Adjust.
+	* tree-vect-stmts.cc (vectorizable_conversion): For SLP
+	correctly look at ranges of the scalar defs of the SLP operand.
+	(supportable_indirect_convert_operation): Likewise.
+
+2025-02-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_hsa_declare_function_name): Update
+	'amdhsa.version' output to match used code version.
+	* config/gcn/gen-gcn-device-macros.awk: Add a comment to
+	crosslink.
+
+2025-02-07  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md
+	(*sel<code><GPR:mode>_using_<GPR2:mode>): Rename to ...
+	(*sel<code><GPR:mode>_using_<X:mode>): ... here.
+	(GPR2): Remove as nothing uses it now.
+
+2025-02-07  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118514
+	PR tree-optimization/118706
+	* gimple-fold.cc (decode_field_reference): Refuse to consider
+	merging out-of-bounds BIT_FIELD_REFs.
+	(make_bit_field_load): Drop too-strict assert.
+	* tree-eh.cc (bit_field_ref_in_bounds_p): Rename to...
+	(access_in_bounds_of_type_p): ... this.  Change interface,
+	export.
+	(tree_could_trap_p): Adjust.
+	* tree-eh.h (access_in_bounds_of_type_p): Declare.
+
+2025-02-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-devices.def (GCN_DEVICE): Add gfx9-generic,
+	gfx902, gfx904, gfx909, gfx1031, gfx1032, gfx1033, gfx1034,
+	gfx1035, gfx1101, gfx1102, gfx1150, gfx1151, gfx1152, and gfx1153.
+	Add a currently unused column linking, a specific ISA to a generic
+	one (if it exists).
+	* config/gcn/gcn-tables.opt: Regenerate
+	* doc/invoke.texi (AMD GCN): Add the the new gfc... and the older
+	gfx{10-3,11}-generic to -march= as 'experimental'.
+
+2025-02-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-devices.def (GCN_DEVICE): Change sramecc for
+	gfx906 to 'any'.
+	* config/gcn/gcn.cc (GCN_DEVICE): Add tailing ... to #define.
+
+2025-02-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR rtl-optimization/111673
+	PR rtl-optimization/115932
+	PR rtl-optimization/116028
+	PR rtl-optimization/117081
+	PR rtl-optimization/117082
+	PR rtl-optimization/118497
+	* ira-color.cc (assign_hard_reg): Call the target hook for the
+	callee-saved register cost scale in epilogue and prologue.
+	* target.def (ira_callee_saved_register_cost_scale): New target
+	hook.
+	* targhooks.cc (default_ira_callee_saved_register_cost_scale):
+	New.
+	* targhooks.h (default_ira_callee_saved_register_cost_scale):
+	Likewise.
+	* config/i386/i386.cc (ix86_ira_callee_saved_register_cost_scale):
+	New.
+	(TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE): Likewise.
+	* doc/tm.texi: Regenerated.
+	* doc/tm.texi.in (TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE):
+	New.
+
 2025-02-06  Craig Blackmore  <craig.blackmore@embecosm.com>
 
 	* config/riscv/riscv.md: Move UNSPEC_SSP_SET and UNSPEC_SSP_TEST

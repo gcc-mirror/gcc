@@ -1,3 +1,33 @@
+2025-02-07  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	PR libstdc++/118160
+	PR libstdc++/100249
+	* include/bits/ranges_algo.h (__is_permutation_fn): Avoid a
+	dangling reference by storing the result of the iterator
+	dereference and the result of the projection in two distinct
+	variables, in order to lifetime-extend each one.
+	Forward the projected value to the predicate.
+	* testsuite/25_algorithms/is_permutation/constrained.cc: Add a
+	test with a range returning prvalues. Test it in a constexpr
+	context, in order to rely on the compiler to catch UB.
+
+2025-02-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ostream.h (basic_ostream::_Disable_exceptions):
+	RAII helper type.
+	(basic_ostream::sentry::~sentry): Use _Disable_exceptions. Add
+	try-catch block around call to pubsync.
+	* testsuite/27_io/basic_ostream/exceptions/char/lwg4188.cc: New
+	test.
+	* testsuite/27_io/basic_ostream/exceptions/wchar_t/lwg4188.cc:
+	New test.
+
+2025-02-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111050
+	* include/bits/hashtable_policy.h (_Hash_node_value_base): Add
+	comment about always_inline attributes.
+
 2025-02-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

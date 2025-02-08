@@ -1,3 +1,68 @@
+2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115586
+	* parser.cc (cp_parser_range_for): For name independent decls in
+	structured bindings, only push the name/binding once per
+	structured binding.
+
+2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/86769
+	* semantics.cc (set_one_cleanup_loc): New function.
+	(set_cleanup_locs): Use it.
+	(simplify_loop_decl_cond): Remove.
+	(adjust_loop_decl_cond): New function.
+	(begin_while_stmt): Add 2 further NULL_TREE operands to build_stmt.
+	(finish_while_stmt_cond): Call adjust_loop_decl_cond instead of
+	simplify_loop_decl_cond.
+	(finish_while_stmt): Call do_poplevel also on WHILE_COND_PREP if
+	non-NULL and also use pop_stmt_list rather than do_poplevel for
+	WHILE_BODY in that case.  Call set_one_cleanup_loc.
+	(begin_for_stmt): Add 2 further NULL_TREE operands to build_stmt.
+	(finish_for_cond): Call adjust_loop_decl_cond instead of
+	simplify_loop_decl_cond.
+	(finish_for_stmt): Call do_poplevel also on FOR_COND_PREP if non-NULL
+	and also use pop_stmt_list rather than do_poplevel for FOR_BODY in
+	that case.  Call set_one_cleanup_loc.
+	* constexpr.cc (cxx_eval_loop_expr): Handle
+	{WHILE,FOR}_COND_{PREP,CLEANUP}.
+	(check_for_return_continue): Handle {WHILE,FOR}_COND_PREP.
+	(potential_constant_expression_1): RECUR on
+	{WHILE,FOR}_COND_{PREP,CLEANUP}.
+
+2025-02-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117106
+	PR c++/118190
+	* pt.cc (maybe_instantiate_noexcept): Give an error if the noexcept
+	hasn't been parsed yet.
+
+2025-02-07  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118282
+	* call.cc (add_builtin_candidate): Also check for null_ptr_cst_p
+	operands.
+
+2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118763
+	* init.cc (build_new_1): Don't set CLEANUP_EH_ONLY.
+
+2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118773
+	* decl.cc (grokdeclarator): Use cplus_decl_attributes rather than
+	decl_attributes for std_attributes on pointer and array types.
+
+2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118661
+	* constexpr.cc (potential_constant_expression_1): Don't diagnose
+	lvalue-to-rvalue conversion of volatile lvalue if it has NULLPTR_TYPE.
+	* decl2.cc (decl_maybe_constant_var_p): Return true for constexpr
+	decls with NULLPTR_TYPE even if they are volatile.
+
 2025-02-05  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/118319

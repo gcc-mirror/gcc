@@ -1,3 +1,119 @@
+2025-02-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/59252
+	* gfortran.dg/allocatable_char_1.f90: New test.
+
+2025-02-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/118089
+	* gcc.target/arm/thumb2-pop-loreg.c: New test.
+
+2025-02-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/116244
+	* g++.target/m68k/m68k.exp: New test driver.
+	* g++.target/m68k/pr116244.C: New test.
+
+2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115586
+	* g++.dg/cpp26/name-independent-decl9.C: New test.
+	* g++.dg/cpp26/name-independent-decl10.C: New test.
+
+2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/86769
+	* g++.dg/diagnostic/redeclaration-7.C: New test.
+	* g++.dg/expr/for3.C: New test.
+	* g++.dg/expr/for4.C: New test.
+	* g++.dg/expr/for5.C: New test.
+	* g++.dg/expr/for6.C: New test.
+	* g++.dg/expr/for7.C: New test.
+	* g++.dg/expr/for8.C: New test.
+	* g++.dg/ext/stmtexpr27.C: New test.
+	* g++.dg/cpp2a/constexpr-86769.C: New test.
+	* g++.dg/cpp26/name-independent-decl7.C: New test.
+	* g++.dg/cpp26/name-independent-decl8.C: New test.
+
+2025-02-07  Pan Li  <pan2.li@intel.com>
+
+	PR target/118103
+	* gcc.target/riscv/rvv/base/pr118103-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr118103-run-2.c: New test.
+
+2025-02-07  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/108357
+	* gcc.dg/tree-ssa/pr108357.c: Tolerate later optimization.
+
+2025-02-07  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* c-c++-common/goacc/pr92793-1.c: Remove
+	'-fdump-tree-original-lineno' XFAILs.
+
+2025-02-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117106
+	PR c++/118190
+	* g++.dg/cpp0x/noexcept89.C: New test.
+	* g++.dg/cpp0x/noexcept90.C: New test.
+
+2025-02-07  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118282
+	* g++.dg/conversion/op8.C: New test.
+
+2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118763
+	* g++.dg/asan/pr118763.C: New test.
+
+2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118773
+	* g++.dg/cpp0x/gen-attrs-87.C: New test.
+	* g++.dg/gomp/attrs-3.C: Adjust expected diagnostics.
+
+2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118661
+	* g++.dg/cpp0x/constexpr-volatile4.C: New test.
+	* g++.dg/cpp0x/constexpr-union9.C: New test.
+
+2025-02-07  Tomáš Trnka  <trnka@scm.com>
+
+	PR fortran/116829
+	* gfortran.dg/derived_init_7.f90: New test.
+
+2025-02-07  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118514
+	PR tree-optimization/118706
+	* gcc.dg/field-merge-25.c: New.
+
+2025-02-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/sparc/vis3move-3.c: Select ultrasparc.  Skip with
+	-mfix-ut699.
+
+2025-02-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/sparc/tls-ld-int16.c: Skip when tls is emulated.
+	* gcc.target/sparc/tls-ld-int32.c: Likewise.
+	* gcc.target/sparc/tls-ld-int8.c: Likewise.
+	* gcc.target/sparc/tls-ld-uint16.c: Likewise.
+	* gcc.target/sparc/tls-ld-uint32.c: Likewise.
+	* gcc.target/sparc/tls-ld-uint8.c: Likewise.
+
+2025-02-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/sparc/sparc-ret-1.c: Skip on -mfix-ut699.
+
+2025-02-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/sparc/niagara7-align.c: Use -mtune.
+
 2025-02-06  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/riscv/rvv/autovec/madd-split2-1.c: Update expected

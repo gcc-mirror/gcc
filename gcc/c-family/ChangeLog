@@ -1,3 +1,31 @@
+2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/86769
+	* c-common.def (FOR_STMT): Add 2 operands and document them.
+	(WHILE_STMT): Likewise.
+	* c-common.h (WHILE_COND_PREP, WHILE_COND_CLEANUP): Define.
+	(FOR_COND_PREP, FOR_COND_CLEANUP): Define.
+	* c-gimplify.cc (genericize_c_loop): Add COND_PREP and COND_CLEANUP
+	arguments, handle them if they are non-NULL.
+	(genericize_for_stmt, genericize_while_stmt, genericize_do_stmt):
+	Adjust callers.
+
+2025-02-07  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* c-gimplify.cc (c_genericize): Pass 'local_dump_flags' to
+	'print_c_tree'.
+	* c-pretty-print.cc (c_pretty_printer::statement): Pass
+	'dump_flags' to 'dump_generic_node'.
+	(c_pretty_printer::c_pretty_printer): Initialize 'dump_flags'.
+	(print_c_tree): Add 'dump_flags_t' formal parameter.
+	(debug_c_tree): Adjust.
+	* c-pretty-print.h (c_pretty_printer): Add 'dump_flags_t
+	dump_flags'.
+	(c_pretty_printer::c_pretty_printer): Add 'dump_flags_t' formal
+	parameter.
+	(print_c_tree): Adjust.
+
 2025-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.cc (make_tree_vector_from_ctor): Only use make_tree_vector

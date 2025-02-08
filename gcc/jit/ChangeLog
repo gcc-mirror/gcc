@@ -1,3 +1,9 @@
+2025-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR jit/118780
+	* jit-playback.cc: Define INCLUDE_DLFCN_H.
+	* jit-result.cc: Likewise.
+
 2025-01-24  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/117886
