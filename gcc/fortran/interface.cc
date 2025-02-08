@@ -2423,6 +2423,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   gfc_component *ppc;
   bool codimension = false;
   gfc_array_spec *formal_as;
+  const char *actual_name;
 
   /* If the formal arg has type BT_VOID, it's to one of the iso_c_binding
      procs c_f_pointer or c_f_procpointer, and we need to accept most
@@ -2487,6 +2488,51 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	  return false;
 	}
 
+      /* The actual symbol may disagree with a global symbol.  If so, issue an
+	 error, but only if no previous error has been reported on the formal
+	 argument.  */
+      actual_name = act_sym->name;
+      if (!formal->error && actual_name)
+	{
+	  gfc_gsymbol *gsym;
+	  gsym = gfc_find_gsymbol (gfc_gsym_root, actual_name);
+	  if (gsym != NULL)
+	    {
+	      if (gsym->type == GSYM_SUBROUTINE && formal->attr.function)
+		{
+		  gfc_error ("Passing global subroutine %qs declared at %L "
+			     "as function at %L", actual_name, &gsym->where,
+			     &actual->where);
+		  return false;
+		}
+	      if (gsym->type == GSYM_FUNCTION && formal->attr.subroutine)
+		{
+		  gfc_error ("Passing global function %qs declared at %L "
+			     "as subroutine at %L", actual_name, &gsym->where,
+			     &actual->where);
+		  return false;
+		}
+	      if (gsym->type == GSYM_FUNCTION)
+		{
+		  gfc_symbol *global_asym;
+		  gfc_find_symbol (actual_name, gsym->ns, 0, &global_asym);
+		  if (global_asym != NULL)
+		    {
+		      gcc_assert (formal->attr.function);
+		      if (!gfc_compare_types (&global_asym->ts, &formal->ts))
+			{
+			  gfc_error ("Type mismatch passing global function %qs "
+				     "declared at %L at %L (%s/%s)",
+				     actual_name, &gsym->where, &actual->where,
+				     gfc_typename (&global_asym->ts),
+				     gfc_dummy_typename (&formal->ts));
+			  return false;
+			}
+		    }
+		}
+	    }
+	}
+
       if (formal->attr.function && !act_sym->attr.function)
 	{
 	  gfc_add_function (&act_sym->attr, act_sym->name,
@@ -2501,7 +2547,6 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
       return true;
     }
-
   ppc = gfc_get_proc_ptr_comp (actual);
   if (ppc && ppc->ts.interface)
     {
