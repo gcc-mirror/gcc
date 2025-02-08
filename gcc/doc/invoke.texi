@@ -24394,12 +24394,12 @@ Apart from providing a compact vector table, the startup code will set bit
 @code{CPUINT_CTRLA.CPUINT_CVT} which enables the CVT on the device.
 
 When you do not want the startup code to set @code{CPUINT_CTRLA.CPUINT_CVT},
-then you can satisfy symbol @code{__do_cvt_init} so that the respective
+then you can satisfy symbol @code{__init_cvt} so that the respective
 code is no more pulled in from @code{lib@var{mcu}.a}.
-For example, you can link with @code{-Wl,--defsym,__do_cvt_init=0}.
+For example, you can link with @code{-Wl,--defsym,__init_cvt=0}.
 
 The CVT startup code is available since
-@w{@uref{https://github.com/avrdudes/avr-libc/issues/1010,AVR-LibC #1010}}.
+@w{@uref{https://github.com/avrdudes/avr-libc/issues/1010,AVR-LibC v2.3}}.
 
 @opindex mfuse-add
 @item -mfuse-add
