@@ -99,4 +99,23 @@ unwrap_segment_node_id (const std::unique_ptr<T> &ptr)
   return unwrap_segment_node_id (*ptr);
 }
 
+/**
+ * Used to check if a path segment is associated with a lang item
+ */
+tl::optional<LangItem::Kind>
+unwrap_segment_get_lang_item (const AST::TypePathSegment &seg);
+
+tl::optional<LangItem::Kind>
+unwrap_segment_get_lang_item (const AST::SimplePathSegment &seg);
+
+tl::optional<LangItem::Kind>
+unwrap_segment_get_lang_item (const AST::PathExprSegment &seg);
+
+template <class T>
+tl::optional<LangItem::Kind>
+unwrap_segment_get_lang_item (const std::unique_ptr<T> &ptr)
+{
+  return unwrap_segment_get_lang_item (*ptr);
+}
+
 } // namespace Rust

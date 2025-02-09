@@ -384,6 +384,10 @@ ForeverStack<N>::find_starting_point (
   for (; !is_last (iterator, segments); iterator++)
     {
       auto &outer_seg = *iterator;
+
+      if (unwrap_segment_get_lang_item (outer_seg).has_value ())
+	break;
+
       auto &seg = unwrap_type_segment (outer_seg);
       auto is_self_or_crate
 	= seg.is_crate_path_seg () || seg.is_lower_self_seg ();
@@ -452,6 +456,17 @@ ForeverStack<N>::resolve_segments (
   for (; !is_last (iterator, segments); iterator++)
     {
       auto &outer_seg = *iterator;
+
+      if (auto lang_item = unwrap_segment_get_lang_item (outer_seg))
+	{
+	  NodeId seg_id = Analysis::Mappings::get ().get_lang_item_node (
+	    lang_item.value ());
+	  current_node = &dfs_node (root, seg_id).value ();
+
+	  insert_segment_resolution (outer_seg, seg_id);
+	  continue;
+	}
+
       auto &seg = unwrap_type_segment (outer_seg);
       auto str = seg.as_string ();
       rust_debug ("[ARTHUR]: resolving segment part: %s", str.c_str ());
@@ -538,6 +553,17 @@ ForeverStack<N>::resolve_path (
   // if there's only one segment, we just use `get`
   if (segments.size () == 1)
     {
+      auto &seg = segments.front ();
+      if (auto lang_item = unwrap_segment_get_lang_item (seg))
+	{
+	  NodeId seg_id = Analysis::Mappings::get ().get_lang_item_node (
+	    lang_item.value ());
+
+	  insert_segment_resolution (seg, seg_id);
+	  // TODO: does NonShadowable matter?
+	  return Rib::Definition::NonShadowable (seg_id);
+	}
+
       auto res = get (unwrap_type_segment (segments.back ()).as_string ());
       if (res && !res->is_ambiguous ())
 	insert_segment_resolution (segments.back (), res->get_node_id ());
@@ -558,6 +584,7 @@ ForeverStack<N>::resolve_path (
       // leave resolution within impl blocks to type checker
       if (final_node.rib.kind == Rib::Kind::TraitOrImpl)
 	return tl::nullopt;
+      // assuming this can't be a lang item segment
       auto res = final_node.rib.get (
 	unwrap_type_segment (segments.back ()).as_string ());
       if (res && !res->is_ambiguous ())
