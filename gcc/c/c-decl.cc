@@ -162,6 +162,9 @@ vec<c_omp_declare_target_attr, va_gc> *current_omp_declare_target_attribute;
    #pragma omp begin assumes ... #pragma omp end assumes regions
    we are in.  */
 vec<c_omp_begin_assumes_data, va_gc> *current_omp_begin_assumes;
+
+/* Vector of "omp begin/end declare variant" blocks we are in.  */
+vec<c_omp_declare_variant_attr, va_gc> *current_omp_declare_variant_attribute;
 
 /* Each c_binding structure describes one binding of an identifier to
    a decl.  All the decls in a scope - irrespective of namespace - are
