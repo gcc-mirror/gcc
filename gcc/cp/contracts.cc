@@ -1411,8 +1411,8 @@ static GTY(()) tree contracts_source_location_type;
 tree
 get_precondition_function (tree fndecl)
 {
-  hash_map_maybe_create<hm_ggc> (decl_pre_fn);
-  tree *result = decl_pre_fn->get (fndecl);
+  gcc_checking_assert (fndecl);
+  tree *result = hash_map_safe_get (decl_pre_fn, fndecl);
   return result ? *result : NULL_TREE;
 }
 
@@ -1421,8 +1421,8 @@ get_precondition_function (tree fndecl)
 tree
 get_postcondition_function (tree fndecl)
 {
-  hash_map_maybe_create<hm_ggc> (decl_post_fn);
-  tree *result = decl_post_fn->get (fndecl);
+  gcc_checking_assert (fndecl);
+  tree *result = hash_map_safe_get (decl_post_fn, fndecl);
   return result ? *result : NULL_TREE;
 }
 
@@ -1449,13 +1449,15 @@ set_postcondition_function (tree fndecl, tree post)
 }
 
 /* Set the PRE and POST functions for FNDECL.  Note that PRE and POST can
-   be null in this case. If so the functions are not recorded.  */
+   be null in this case. If so the functions are not recorded.  Used by the
+   modules code.  */
 
 void
 set_contract_functions (tree fndecl, tree pre, tree post)
 {
   if (pre)
     set_precondition_function (fndecl, pre);
+
   if (post)
     set_postcondition_function (fndecl, post);
 }
@@ -1557,6 +1559,7 @@ build_contract_condition_function (tree fndecl, bool pre)
   DECL_NAME (fn) = copy_node (DECL_NAME (fn));
   DECL_INITIAL (fn) = NULL_TREE;
   CONTRACT_HELPER (fn) = pre ? ldf_contract_pre : ldf_contract_post;
+  DECL_CONTRACT_WRAPPER (fn) = false;
 
   IDENTIFIER_VIRTUAL_P (DECL_NAME (fn)) = false;
   DECL_VIRTUAL_P (fn) = false;
@@ -1716,10 +1719,20 @@ build_contract_function_decls (tree fndecl)
   if (!outline_contracts_p (fndecl))
     return;
 
-  /* Build the pre/post functions (or not).  */
-  tree pre = build_precondition_function (fndecl);
-  tree post = build_postcondition_function (fndecl);
-  set_contract_functions (fndecl, pre, post);
+  if (!get_precondition_function (fndecl))
+    {
+      /* Build the pre/post functions (or not).  */
+      tree pre = build_precondition_function (fndecl);
+      if (pre)
+	set_precondition_function (fndecl, pre);
+    }
+
+  if (!get_postcondition_function (fndecl))
+    {
+      tree post = build_postcondition_function (fndecl);
+      if (post)
+	set_postcondition_function (fndecl, post);
+    }
 }
 
 /* Build a layout-compatible internal version of source location __impl
