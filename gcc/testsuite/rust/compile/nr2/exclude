@@ -4,7 +4,6 @@ cfg1.rs
 complex-path1.rs
 const_generics_3.rs
 const_generics_4.rs
-derive_macro1.rs
 feature_rust_attri0.rs
 generics9.rs
 issue-1483.rs
@@ -55,9 +54,6 @@ issue-266.rs
 derive_clone_enum1.rs
 derive_clone_enum2.rs
 derive_clone_enum3.rs
-derive_macro4.rs
-derive_macro6.rs
-issue-2987.rs
 issue-3139-1.rs
 issue-3139-3.rs
 derive-debug1.rs
@@ -67,6 +63,5 @@ for-loop1.rs
 for-loop2.rs
 issue-3403.rs
 derive-eq-invalid.rs
-derive-partialeq1.rs
 derive-hash1.rs
 # please don't delete the trailing newline

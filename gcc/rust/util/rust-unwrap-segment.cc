@@ -38,4 +38,24 @@ unwrap_segment_node_id (const AST::PathExprSegment &seg)
   return seg.get_node_id ();
 }
 
+tl::optional<LangItem::Kind>
+unwrap_segment_get_lang_item (const AST::TypePathSegment &seg)
+{
+  if (seg.is_lang_item ())
+    return seg.get_lang_item ();
+  return tl::nullopt;
+}
+
+tl::optional<LangItem::Kind>
+unwrap_segment_get_lang_item (const AST::SimplePathSegment &seg)
+{
+  return tl::nullopt;
+}
+
+tl::optional<LangItem::Kind>
+unwrap_segment_get_lang_item (const AST::PathExprSegment &seg)
+{
+  return tl::nullopt;
+}
+
 } // namespace Rust
