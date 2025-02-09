@@ -460,6 +460,11 @@ struct GTY(()) cp_parser {
 
   vec<tree> * GTY((skip)) metadirective_body_labels;
   unsigned metadirective_region_num;
+
+  /* TREE_LIST of "omp begin declare variant" functions when the base
+     function has not been seen "elsewhere" (per the OpenMP spec) yet;
+     used only when these functions are seen in a class definition.  */
+  tree omp_unregistered_variants;
 };
 
 /* In parser.cc  */
