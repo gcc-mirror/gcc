@@ -194,8 +194,12 @@ extern tree find_combined_omp_for (tree *, int *, void *);
 extern poly_uint64 omp_max_vf (bool);
 extern int omp_max_simt_vf (void);
 extern const char *omp_context_name_list_prop (tree);
+enum omp_ctx_directive
+  { OMP_CTX_DECLARE_VARIANT,
+    OMP_CTX_BEGIN_DECLARE_VARIANT,
+    OMP_CTX_METADIRECTIVE };
 extern tree omp_check_context_selector (location_t loc, tree ctx,
-					bool metadirective_p);
+					enum omp_ctx_directive directive);
 extern void omp_mark_declare_variant (location_t loc, tree variant,
 				      tree construct);
 extern int omp_context_selector_matches (tree, tree, bool);

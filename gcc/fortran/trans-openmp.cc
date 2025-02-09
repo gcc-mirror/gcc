@@ -8776,7 +8776,8 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	  continue;
 	}
       set_selectors = omp_check_context_selector
-	(gfc_get_location (&odv->where), set_selectors, false);
+	(gfc_get_location (&odv->where), set_selectors,
+	 OMP_CTX_DECLARE_VARIANT);
       if (set_selectors != error_mark_node)
 	{
 	  if (!variant_proc_sym->attr.implicit_type
@@ -9082,7 +9083,7 @@ gfc_trans_omp_metadirective (gfc_code *code)
       tree ctx = gfc_trans_omp_set_selector (variant->selectors,
 					     variant->where);
       ctx = omp_check_context_selector (gfc_get_location (&variant->where),
-					ctx, true);
+					ctx, OMP_CTX_METADIRECTIVE);
       if (ctx == error_mark_node)
 	return error_mark_node;
 
