@@ -283,6 +283,83 @@
   [(set_attr "type" "st,ld,alu,alu,alu,alu,alu,alu")
    (set_attr "length" "4,4,4,4,8,8,8,16")])
 
+; Break 64-bit register-to-register moves into 32-bit moves.
+; If only a subreg of the destination is used, this split would allow
+; for the other 32-bit subreg of the DI register to be eliminated.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(match_operand:DI 1 "register_operand"))]
+  "
+   /* TODO - LRA does not yet handle subregs efficiently.
+      So it is profitable to split only after register allocation is
+      complete.
+      Once https://gcc.gnu.org/pipermail/gcc-patches/2024-May/651366.html
+      is merged, this condition should be removed to allow splitting
+      before LRA.  */
+   reload_completed
+   /* Sign-extended paradoxical registers require expansion
+      of the proper pattern.  We can do only zero extension here.  */
+   && (SUBREG_P (operands[1]) && paradoxical_subreg_p (operands[1])
+	? SUBREG_PROMOTED_VAR_P (operands[1])
+	  && SUBREG_PROMOTED_UNSIGNED_P (operands[1]) > 0
+	: true)"
+  [(set (match_dup 0) (match_dup 1))
+   (set (match_dup 2) (match_dup 3))]
+  "
+  rtx dst_lo = simplify_gen_subreg (SImode, operands[0], DImode, 0);
+  rtx dst_hi = simplify_gen_subreg (SImode, operands[0], DImode, 4);
+  rtx src_lo = simplify_gen_subreg (SImode, operands[1], DImode, 0);
+  rtx src_hi = simplify_gen_subreg (SImode, operands[1], DImode, 4);
+
+  if (SUBREG_P (operands[1]) && paradoxical_subreg_p (operands[1]))
+    {
+      gcc_assert (SUBREG_PROMOTED_VAR_P (operands[1]));
+      gcc_assert (SUBREG_PROMOTED_UNSIGNED_P (operands[1]) > 0);
+
+      operands[0] = dst_lo;
+      operands[1] = src_lo;
+      operands[2] = dst_hi;
+      operands[3] = const0_rtx;
+    }
+  else if (!reg_overlap_mentioned_p (dst_lo, src_hi))
+    {
+      operands[0] = dst_lo;
+      operands[1] = src_lo;
+      operands[2] = dst_hi;
+      operands[3] = src_hi;
+    }
+  else
+    {
+      operands[0] = dst_hi;
+      operands[1] = src_hi;
+      operands[2] = dst_lo;
+      operands[3] = src_lo;
+    }
+  "
+)
+
+; Break loading of non-trivial 64-bit constant integers.  The split
+; will not generate better code sequence, but at least would allow
+; dropping a non-live 32-bit part of the destination, or better
+; constant propagation.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(match_operand:DI 1 "const_int_operand"))]
+  "reload_completed
+   && !satisfies_constraint_Z (operands[1])
+   && !satisfies_constraint_Um (operands[1])
+   && !satisfies_constraint_T (operands[1])"
+
+  [(set (match_dup 0) (match_dup 1))
+   (set (match_dup 2) (match_dup 3))]
+  "
+  operands[2] = simplify_gen_subreg (SImode, operands[0], DImode, 4);
+  operands[3] = simplify_gen_subreg (SImode, operands[1], DImode, 4);;
+  operands[0] = simplify_gen_subreg (SImode, operands[0], DImode, 0);
+  operands[1] = simplify_gen_subreg (SImode, operands[1], DImode, 0);
+  "
+)
+
 ;
 ; load_multiple pattern(s).
 ;
