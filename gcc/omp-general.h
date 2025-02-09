@@ -205,7 +205,7 @@ extern bool omp_check_for_duplicate_variant (location_t loc,
 					     tree base_decl, tree ctx);
 extern void omp_mark_declare_variant (location_t loc, tree variant,
 				      tree construct);
-extern int omp_context_selector_matches (tree, tree, bool);
+extern int omp_context_selector_matches (tree, tree, bool, bool = false);
 extern tree omp_merge_context_selectors (location_t, tree, tree,
 					 enum omp_ctx_directive);
 extern tree resolve_omp_target_device_matches (tree node);

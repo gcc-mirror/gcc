@@ -1755,13 +1755,19 @@ omp_construct_traits_match (tree selector_traits, tree context_traits,
    CONSTRUCT_CONTEXT is known to be complete and not missing constructs
    filled in later during compilation.
 
+   If DECLARE_VARIANT_ELISION_P is true, the function implements the test
+   for elision of preprocessed code in "begin declare variant" constructs,
+   and returns 0 only for failure to match traits in the device and
+   implementation sets.
+
    Dynamic properties (which are evaluated at run-time) should always
    return 1.  */
 
 int
 omp_context_selector_matches (tree ctx,
 			      tree construct_context,
-			      bool complete_p)
+			      bool complete_p,
+			      bool declare_variant_elision_p)
 {
   int ret = 1;
   bool maybe_offloaded = omp_maybe_offloaded (construct_context);
@@ -1773,9 +1779,12 @@ omp_context_selector_matches (tree ctx,
 
       /* Immediately reject the match if there are any ignored
 	 selectors present.  */
-      for (tree ts = selectors; ts; ts = TREE_CHAIN (ts))
-	if (OMP_TS_CODE (ts) == OMP_TRAIT_INVALID)
-	  return 0;
+      if (!declare_variant_elision_p
+	  || set == OMP_TRAIT_SET_DEVICE
+	  || set == OMP_TRAIT_SET_IMPLEMENTATION)
+	for (tree ts = selectors; ts; ts = TREE_CHAIN (ts))
+	  if (OMP_TS_CODE (ts) == OMP_TRAIT_INVALID)
+	    return 0;
 
       if (set == OMP_TRAIT_SET_CONSTRUCT)
 	{
@@ -2129,6 +2138,13 @@ omp_context_selector_matches (tree ctx,
 	      break;
 	    case OMP_TRAIT_USER_CONDITION:
 	      gcc_assert (set == OMP_TRAIT_SET_USER);
+	      /* The spec does not include the "user" set in the things that
+		 can trigger code elision in "begin declare variant".  */
+	      if (declare_variant_elision_p)
+		{
+		  ret = -1;
+		  break;
+		}
 	      for (tree p = OMP_TS_PROPERTIES (ts); p; p = TREE_CHAIN (p))
 		if (OMP_TP_NAME (p) == NULL_TREE)
 		  {
@@ -2143,6 +2159,10 @@ omp_context_selector_matches (tree ctx,
 		      break;
 		    ret = -1;
 		  }
+	      break;
+	    case OMP_TRAIT_INVALID:
+	      /* This is only for the declare_variant_elision_p case.  */
+	      ret = -1;
 	      break;
 	    default:
 	      break;
