@@ -68,8 +68,8 @@ ResolvePath::resolve_path (AST::PathInExpression &expr)
       if (in_middle_of_path && segment.is_lower_self_seg ())
 	{
 	  rust_error_at (segment.get_locus (), ErrorCode::E0433,
-			 "failed to resolve: %<%s%> in paths can only be used "
-			 "in start position",
+			 "leading path segment %qs can only be used at the "
+			 "beginning of a path",
 			 segment.as_string ().c_str ());
 	  return UNKNOWN_NODEID;
 	}

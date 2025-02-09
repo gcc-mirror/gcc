@@ -28,7 +28,6 @@ pub_restricted_2.rs
 pub_restricted_3.rs
 redef_error2.rs
 redef_error5.rs
-self-path2.rs
 sizeof-stray-infer-var-bug.rs
 struct-expr-parse.rs
 undeclared_label.rs
