@@ -1541,6 +1541,7 @@ build_contract_condition_function (tree fndecl, bool pre)
 	continue;
       }
       *last = build_tree_list (TREE_PURPOSE (arg_type), TREE_VALUE (arg_type));
+      last = &TREE_CHAIN (*last);
     }
 
   tree orig_fn_value_type = TREE_TYPE (TREE_TYPE (fn));
