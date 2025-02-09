@@ -2350,8 +2350,26 @@ omp_context_selector_props_compare (enum omp_tss_code set,
 		  if (set == OMP_TRAIT_SET_USER
 		      && sel == OMP_TRAIT_USER_CONDITION)
 		    {
-		      if (integer_zerop (OMP_TP_VALUE (p1))
-			  != integer_zerop (OMP_TP_VALUE (p2)))
+		      /* Recognize constants that have equal truth values,
+			 otherwise assume all expressions are unique.  */
+		      tree v1 = OMP_TP_VALUE (p1);
+		      tree v2 = OMP_TP_VALUE (p2);
+		      if (TREE_CODE (v1) != INTEGER_CST
+			  || TREE_CODE (v2) != INTEGER_CST
+			  || integer_zerop (v1) != integer_zerop (v2))
+			return 2;
+		      break;
+		    }
+		  if (set == OMP_TRAIT_SET_TARGET_DEVICE
+		      && sel == OMP_TRAIT_DEVICE_NUM)
+		    {
+		      /* Recognize constants that have equal values,
+			 otherwise assume all expressions are unique.  */
+		      tree v1 = OMP_TP_VALUE (p1);
+		      tree v2 = OMP_TP_VALUE (p2);
+		      if (TREE_CODE (v1) != INTEGER_CST
+			  || TREE_CODE (v2) != INTEGER_CST
+			  || tree_int_cst_compare (v1, v2) != 0)
 			return 2;
 		      break;
 		    }
@@ -2469,7 +2487,9 @@ omp_context_selector_set_compare (enum omp_tss_code set, tree ctx1, tree ctx2)
 	  {
 	    tree score1 = OMP_TS_SCORE (ts1);
 	    tree score2 = OMP_TS_SCORE (ts2);
-	    if (score1 && score2 && !simple_cst_equal (score1, score2))
+	    if ((score1 && score2 && !simple_cst_equal (score1, score2))
+		|| (score1 && !score2)
+		|| (!score1 && score2))
 	      return 2;
 
 	    int r = omp_context_selector_props_compare (set, OMP_TS_CODE (ts1),
