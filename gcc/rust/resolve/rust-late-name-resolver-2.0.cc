@@ -351,6 +351,10 @@ Late::visit (AST::StructStruct &s)
 void
 Late::visit (AST::StructExprStruct &s)
 {
+  visit_outer_attrs (s);
+  visit_inner_attrs (s);
+  DefaultResolver::visit (s.get_struct_name ());
+
   auto resolved
     = ctx.resolve_path (s.get_struct_name ().get_segments (), Namespace::Types);
 
@@ -361,24 +365,34 @@ Late::visit (AST::StructExprStruct &s)
 void
 Late::visit (AST::StructExprStructBase &s)
 {
+  visit_outer_attrs (s);
+  visit_inner_attrs (s);
+  DefaultResolver::visit (s.get_struct_name ());
+  visit (s.get_struct_base ());
+
   auto resolved
     = ctx.resolve_path (s.get_struct_name ().get_segments (), Namespace::Types);
 
   ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
 		 Definition (resolved->get_node_id ()));
-  DefaultResolver::visit (s);
 }
 
 void
 Late::visit (AST::StructExprStructFields &s)
 {
+  visit_outer_attrs (s);
+  visit_inner_attrs (s);
+  DefaultResolver::visit (s.get_struct_name ());
+  if (s.has_struct_base ())
+    visit (s.get_struct_base ());
+  for (auto &field : s.get_fields ())
+    visit (field);
+
   auto resolved
     = ctx.resolve_path (s.get_struct_name ().get_segments (), Namespace::Types);
 
   ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
 		 Definition (resolved->get_node_id ()));
-
-  DefaultResolver::visit (s);
 }
 
 // needed because Late::visit (AST::GenericArg &) is non-virtual
