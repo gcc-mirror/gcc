@@ -200,9 +200,14 @@ enum omp_ctx_directive
     OMP_CTX_METADIRECTIVE };
 extern tree omp_check_context_selector (location_t loc, tree ctx,
 					enum omp_ctx_directive directive);
+extern tree omp_mangle_variant_name (tree base_id, tree ctx, const char *sep);
+extern bool omp_check_for_duplicate_variant (location_t loc,
+					     tree base_decl, tree ctx);
 extern void omp_mark_declare_variant (location_t loc, tree variant,
 				      tree construct);
 extern int omp_context_selector_matches (tree, tree, bool);
+extern tree omp_merge_context_selectors (location_t, tree, tree,
+					 enum omp_ctx_directive);
 extern tree resolve_omp_target_device_matches (tree node);
 extern tree omp_get_context_selector (tree, enum omp_tss_code,
 				      enum omp_ts_code);
