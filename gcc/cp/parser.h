@@ -463,6 +463,11 @@ struct GTY(()) cp_parser {
      outside that file.  */
   struct omp_metadirective_parse_data * GTY((skip))
     omp_metadirective_state;
+
+  /* TREE_LIST of "omp begin declare variant" functions when the base
+     function has not been seen "elsewhere" (per the OpenMP spec) yet;
+     used only when these functions are seen in a class definition.  */
+  tree omp_unregistered_variants;
 };
 
 /* In parser.cc  */
