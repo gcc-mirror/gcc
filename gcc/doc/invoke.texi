@@ -908,7 +908,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args  -mcvt
 -mbranch-cost=@var{cost}  -mfuse-add=@var{level}  -mfuse-move=@var{level}
 -mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
--mdouble=@var{bits}  -mlong-double=@var{bits}
+-mdouble=@var{bits}  -mlong-double=@var{bits}  -mno-call-main
 -mn_flash=@var{size}  -mfract-convert-truncate  -mno-interrupts
 -mmain-is-OS_task  -mrelax  -mrmw  -mstrict-X  -mtiny-stack
 -mrodata-in-ram  -msplit-bit-shift  -msplit-ldst
@@ -24456,6 +24456,24 @@ Do not save registers in @code{main}.  The effect is the same like
 attaching attribute @ref{AVR Function Attributes,,@code{OS_task}}
 to @code{main}. It is activated per default if optimization is on.
 
+@opindex mno-call-main
+@opindex mcall-main
+@item -mno-call-main
+Don't run @code{main} by means of
+@example
+XCALL  main
+XJMP   exit
+@end example
+Instead, put @code{main} in section
+@w{@uref{https://avrdudes.github.io/avr-libc/avr-libc-user-manual/mem_sections.html#sec_dot_init,@code{.init9}}}
+so that no call is required.
+By setting this options the user asserts that @code{main} will not return.
+
+This option can be used for devices with very limited resources in order
+to save a few bytes of code and stack space.  It will work as expected since
+@w{@uref{https://github.com/avrdudes/avr-libc/issues/1012,AVR-LibC v2.3}}.
+With older versions, there will be no performance gain.
+
 @opindex mno-interrupts
 @item -mno-interrupts
 Generated code is not compatible with hardware interrupts.
@@ -24534,7 +24552,19 @@ Allow to use truncation instead of rounding towards zero for fractional fixed-po
 
 @opindex nodevicelib
 @item -nodevicelib
-Don't link against AVR-LibC's device specific library @code{lib<mcu>.a}.
+Don't link against AVR-LibC's device specific library @code{lib@var{mcu}.a}.
+
+Notice that since AVR-LibC v2.3, that library contains code that is
+essential for the correct functioning of a program.  In particular,
+it contains parts of the startup code like:
+@w{@uref{https://github.com/avrdudes/avr-libc/issues/1011,@code{__init_sp}}}
+to initialize the stack pointer with symbol @code{__stack},
+@w{@uref{https://github.com/avrdudes/avr-libc/issues/1010,@code{__init_cvt}}}
+to set up the hardware to use a compact vector table with @option{-mcvt},
+@w{@uref{https://github.com/avrdudes/avr-libc/issues/1012,@code{__call_main}}}
+to call @code{main} and @code{exit}, and
+@w{@uref{https://github.com/avrdudes/avr-libc/issues/931,@code{__do_flmap_init}}}
+to set up FLMAP according to symbol @code{__flmap}.
 
 @opindex nodevicespecs
 @item -nodevicespecs
