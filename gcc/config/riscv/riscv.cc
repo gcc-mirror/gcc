@@ -3587,6 +3587,9 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 	  nunits = nunits * 2;
 	}
 
+      /* This test can fail if (for example) we want a HF and Z[v]fh is
+	 not enabled.  In that case we just want to let the standard
+	 expansion path run.  */
       if (riscv_vector::get_vector_mode (smode, nunits).exists (&vmode))
 	{
 	  rtx v = gen_lowpart (vmode, SUBREG_REG (src));
@@ -3636,12 +3639,10 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 	    emit_move_insn (dest, gen_lowpart (GET_MODE (dest), int_reg));
 	  else
 	    emit_move_insn (dest, int_reg);
+	  return true;
 	}
-      else
-	gcc_unreachable ();
-
-      return true;
     }
+
   /* Expand
        (set (reg:QI target) (mem:QI (address)))
      to
