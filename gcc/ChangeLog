@@ -1,3 +1,30 @@
+2025-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118764
+	* doc/invoke.texi (AVR Options): Fix typos.
+
+2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/gcn/gcn.md (exception_receiver): 'define_expand'.
+	* config/nvptx/nvptx.md (exception_receiver): Likewise.
+
+2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Clarify that
+	effective-target 'exceptions' and 'exceptions_enabled' are
+	orthogonal.
+
+2025-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118776
+	* config/i386/sse.md (<code><mode>3_mask): Use VI1248_AVX512VLBW
+	iterator rather than VI48_AVX512VL.
+	(<mask_codefor><code><mode>3<mask_name>): Rename to ...
+	(*avx512bw_<code><mode>3<mask_name>): ... this.  Use
+	nonimmediate_operand rather than register_operand predicate and %v
+	rather than v constraint for operand 1 and adjust condition to reject
+	MEMs in both operand 1 and 2.
+
 2025-02-07  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR target/114522

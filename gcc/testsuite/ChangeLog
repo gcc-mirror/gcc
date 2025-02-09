@@ -1,3 +1,59 @@
+2025-02-08  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/107067
+	* gfortran.dg/gomp/metadirective-11.f90: Remove the dg-ice, update
+	for current behavior, and add more tests to exercise the new error
+	code.
+
+2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* lib/gcc-dg.exp (gcc-dg-prune): Turn
+	'sorry, unimplemented: exception handling not supported' into
+	UNSUPPORTED.
+	* gcc.dg/pr104464.c: Remove GCN XFAIL.
+
+2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.dg/cleanup-12.c: Don't 'dg-skip-if "" { ! nonlocal_goto }'.
+	* gcc.dg/cleanup-13.c: Likewise.
+	* gcc.dg/cleanup-5.c: Likewise.
+	* gcc.dg/gimplefe-44.c: Don't
+	'dg-require-effective-target nonlocal_goto'.
+
+2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* lib/target-supports.exp (check_effective_target_exceptions):
+	'return 0' for '[istarget nvptx-*-*]'.
+
+2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/118772
+	* lib/target-supports.exp (check_effective_target_exceptions):
+	'return 0' for '[istarget bpf-*-*]'.
+
+2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* lib/gcc-dg.exp (gcc-dg-prune): Clarify effective-target
+	'exceptions_enabled'.
+	* lib/target-supports.exp
+	(check_effective_target_exceptions_enabled): Don't consider
+	effective-target 'exceptions'.
+
+2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.dg/pr88870.c: Don't 'dg-require-effective-target nonlocal_goto'.
+
+2025-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118776
+	* gcc.target/i386/pr118776.c: New test.
+
+2025-02-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR rtl-optimization/111673
+	* gcc.target/i386/pr111673.c: Verify that PUSH/POP can be
+	skipped.
+
 2025-02-07  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/59252

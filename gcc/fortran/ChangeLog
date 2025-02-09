@@ -1,3 +1,13 @@
+2025-02-08  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/107067
+	* parse.cc (parse_omp_do): Diagnose missing "OMP END METADIRECTIVE"
+	after loop.
+	(parse_omp_structured_block): Likewise for strictly structured block.
+	(parse_omp_metadirective_body): Use better test for variants ending
+	at different places.  Issue a user diagnostic at the end if any
+	were inconsistent, instead of calling gcc_assert.
+
 2025-02-07  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/59252

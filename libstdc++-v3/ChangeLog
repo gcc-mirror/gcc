@@ -1,3 +1,14 @@
+2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Turn
+	'sorry, unimplemented: exception handling not supported' into
+	UNSUPPORTED.
+
+2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Clarify
+	effective-target 'exceptions_enabled'.
+
 2025-02-07  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
 
 	PR libstdc++/118160

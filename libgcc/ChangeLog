@@ -1,3 +1,8 @@
+2025-02-08  Dimitry Andric  <dimitry@andric.com>
+
+	PR target/118685
+	* config.host (*-*-freebsd*): Add crtbeginT.o to extra_parts.
+
 2025-02-07  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/117674
