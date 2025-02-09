@@ -392,6 +392,7 @@ DefaultASTVisitor::visit (AST::StructExprStructFields &expr)
 {
   visit_outer_attrs (expr);
   visit_inner_attrs (expr);
+  visit (expr.get_struct_name ());
   if (expr.has_struct_base ())
     visit (expr.get_struct_base ());
   for (auto &field : expr.get_fields ())
@@ -403,6 +404,7 @@ DefaultASTVisitor::visit (AST::StructExprStructBase &expr)
 {
   visit_outer_attrs (expr);
   visit_inner_attrs (expr);
+  visit (expr.get_struct_name ());
   visit (expr.get_struct_base ());
 }
 
