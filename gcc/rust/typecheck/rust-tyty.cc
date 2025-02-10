@@ -3483,20 +3483,20 @@ NeverType::clone () const
 
 // placeholder type
 
-PlaceholderType::PlaceholderType (std::string symbol, HirId ref,
+PlaceholderType::PlaceholderType (std::string symbol, DefId id, HirId ref,
 				  std::set<HirId> refs)
   : BaseType (ref, ref, KIND,
 	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
-    symbol (symbol)
+    symbol (symbol), defId (id)
 {}
 
-PlaceholderType::PlaceholderType (std::string symbol, HirId ref, HirId ty_ref,
-				  std::set<HirId> refs)
+PlaceholderType::PlaceholderType (std::string symbol, DefId id, HirId ref,
+				  HirId ty_ref, std::set<HirId> refs)
   : BaseType (ref, ty_ref, KIND,
 	      {Resolver::CanonicalPath::create_empty (), BUILTINS_LOCATION},
 	      refs),
-    symbol (symbol)
+    symbol (symbol), defId (id)
 {}
 
 std::string
@@ -3540,8 +3540,8 @@ PlaceholderType::can_eq (const BaseType *other, bool emit_errors) const
 BaseType *
 PlaceholderType::clone () const
 {
-  return new PlaceholderType (get_symbol (), get_ref (), get_ty_ref (),
-			      get_combined_refs ());
+  return new PlaceholderType (get_symbol (), get_def_id (), get_ref (),
+			      get_ty_ref (), get_combined_refs ());
 }
 
 void
@@ -3600,6 +3600,12 @@ PlaceholderType::is_equal (const BaseType &other) const
 
   auto other2 = static_cast<const PlaceholderType &> (other);
   return get_symbol ().compare (other2.get_symbol ()) == 0;
+}
+
+DefId
+PlaceholderType::get_def_id () const
+{
+  return defId;
 }
 
 // Projection type

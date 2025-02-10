@@ -337,6 +337,11 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
   if (enum_decl.has_generics ())
     resolve_generic_params (enum_decl.get_generic_params (), substitutions);
 
+  // Process #[repr(X)] attribute, if any
+  const AST::AttrVec &attrs = enum_decl.get_outer_attrs ();
+  TyTy::ADTType::ReprOptions repr
+    = parse_repr_options (attrs, enum_decl.get_locus ());
+
   std::vector<TyTy::VariantDef *> variants;
   int64_t discriminant_value = 0;
   for (auto &variant : enum_decl.get_variants ())
@@ -375,7 +380,7 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
 			 enum_decl.get_mappings ().get_hirid (),
 			 enum_decl.get_identifier ().as_string (), ident,
 			 TyTy::ADTType::ADTKind::ENUM, std::move (variants),
-			 std::move (substitutions));
+			 std::move (substitutions), repr);
 
   context->insert_type (enum_decl.get_mappings (), type);
   infered = type;

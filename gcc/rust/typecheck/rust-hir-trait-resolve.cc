@@ -359,6 +359,7 @@ TraitItemReference::resolve_item (HIR::TraitItemType &type)
 {
   TyTy::BaseType *ty
     = new TyTy::PlaceholderType (type.get_name ().as_string (),
+				 type.get_mappings ().get_defid (),
 				 type.get_mappings ().get_hirid ());
   context->insert_type (type.get_mappings (), ty);
 }
