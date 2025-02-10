@@ -53,6 +53,7 @@
 
 /* Extract the EF_AMDGPU_MACH_AMDGCN_GFXnnn from the def file.  */
 enum elf_arch_code {
+  EF_AMDGPU_MACH_AMDGCN_NONE = -1,  /* For generic handling.  */
 #define GCN_DEVICE(name, NAME, ELF_ARCH, ...) \
   EF_AMDGPU_MACH_AMDGCN_ ## NAME = ELF_ARCH,
 #include "gcn-devices.def"
@@ -135,9 +136,8 @@ static struct obstack files_to_cleanup;
 enum offload_abi offload_abi = OFFLOAD_ABI_UNSET;
 const char *offload_abi_host_opts = NULL;
 
-uint32_t elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX900;  // Default GPU architecture.
+enum elf_arch_code elf_arch = EF_AMDGPU_MACH_AMDGCN_GFX900;  // Default GPU architecture.
 uint32_t elf_flags = EF_AMDGPU_FEATURE_SRAMECC_UNSUPPORTED_V4;
-
 static int gcn_stack_size = 0;  /* Zero means use default.  */
 
 /* Delete tempfiles.  */
@@ -782,7 +782,7 @@ compile_native (const char *infile, const char *outfile, const char *compiler,
   obstack_ptr_grow (&argv_obstack, ".c");
   if (!offload_abi_host_opts)
     fatal_error (input_location,
-		 "%<-foffload-abi-host-opts%> not specified.");
+		 "%<-foffload-abi-host-opts%> not specified");
   obstack_ptr_grow (&argv_obstack, offload_abi_host_opts);
   obstack_ptr_grow (&argv_obstack, infile);
   obstack_ptr_grow (&argv_obstack, "-c");
@@ -796,16 +796,15 @@ compile_native (const char *infile, const char *outfile, const char *compiler,
   obstack_free (&argv_obstack, NULL);
 }
 
-static int
+static enum elf_arch_code
 get_arch (const char *str, const char *with_arch_str)
 {
   /* Use the def file to map the name to the elf_arch_code.  */
   if (!str) ;
 #define GCN_DEVICE(name, NAME, ELF, ...) \
   else if (strcmp (str, #name) == 0) \
-    return ELF;
+    return (enum elf_arch_code) ELF;
 #include "gcn-devices.def"
-#undef GCN_DEVICE
 
   /* else */
   error ("unrecognized argument in option %<-march=%s%>", str);
@@ -839,7 +838,91 @@ get_arch (const char *str, const char *with_arch_str)
 
   exit (FATAL_EXIT_CODE);
 
-  return 0;
+  return EF_AMDGPU_MACH_AMDGCN_NONE;
+}
+
+static const char*
+get_arch_name (enum elf_arch_code arch_code)
+{
+  switch (arch_code)
+    {
+#define GCN_DEVICE(name, NAME, ELF, ...) \
+    case EF_AMDGPU_MACH_AMDGCN_ ## NAME: \
+      return #name;
+#include "../../gcc/config/gcn/gcn-devices.def"
+    default: return NULL;
+    }
+}
+
+/* If an generic arch exists and for the chosen arch no (multi)lib is
+   available, print a fatal error - and suggest to compile for the generic
+   version instead.  */
+
+static void
+check_for_missing_lib (enum elf_arch_code elf_arch,
+		       enum elf_arch_code default_arch)
+{
+  enum elf_arch_code generic_arch;
+  switch (elf_arch)
+    {
+#define GCN_DEVICE(name, NAME, ELF, ISA, XNACK, SRAM, WAVE64, CU, \
+		   MAX_ISA_VGPRS, GEN_VER, ARCH_FAM, GEN_MACH, ...) \
+    case EF_AMDGPU_MACH_AMDGCN_ ## NAME: \
+      generic_arch = EF_AMDGPU_MACH_AMDGCN_ ## GEN_MACH; break;
+#include "../../gcc/config/gcn/gcn-devices.def"
+    default: generic_arch = EF_AMDGPU_MACH_AMDGCN_NONE;
+    }
+
+  /* If not generic or the default arch, the library version exists.  */
+  if (generic_arch == EF_AMDGPU_MACH_AMDGCN_NONE || elf_arch == default_arch)
+    return;
+
+  /* Search gcn_arch in the multilib config, which might look like
+     "march=gfx900/march=gfx906".  */
+  const char *p = multilib_options;
+  const char *q = NULL;
+  const char *isa_name = get_arch_name (elf_arch);
+  while ((q = strstr (p, isa_name)) != NULL)
+    {
+      if (multilib_options + strlen ("march=") <= q
+	  && startswith (&q[-strlen ("march=")], "march="))
+	{
+	  const char r = q[strlen (isa_name)];
+	  if (r != '\0' && r != '/')
+	    continue;
+	  break;
+	}
+      p++;
+    }
+
+  /* Specified -march= exists in the multilib.  */
+  if (q != NULL)
+    return;
+
+  /* If no lib, try to find one for the generic arch.  */
+  const char *gen_name = get_arch_name (generic_arch);
+  if (generic_arch != default_arch)
+    {
+      p = multilib_options;
+      while ((q = strstr (p, gen_name)) != NULL)
+	{
+	  if (multilib_options + strlen ("march=") <= q
+	      && startswith (&q[-strlen ("march=")], "march="))
+	    {
+	      const char r = q[strlen (gen_name)];
+	      if (r != '\0' && r != '/')
+		continue;
+	      break;
+	    }
+	  p++;
+	}
+      if (q == NULL)
+	return;
+    }
+  fatal_error (UNKNOWN_LOCATION,
+	       "GCC was built without library support for %<-march=%s%>; "
+	       "consider compiling for the associated generic architecture "
+	       "%<-march=%s%> instead", isa_name, gen_name);
 }
 
 int
@@ -864,6 +947,7 @@ main (int argc, char **argv)
 	elf_arch = get_arch (configure_default_options[0].value, NULL);
 	break;
       }
+  enum elf_arch_code default_arch = elf_arch;
 
   obstack_init (&files_to_cleanup);
   if (atexit (mkoffload_cleanup) != 0)
@@ -998,6 +1082,8 @@ main (int argc, char **argv)
 	}
     }
 
+  check_for_missing_lib (elf_arch, default_arch);
+
   if (!(fopenacc ^ fopenmp))
     fatal_error (input_location,
 		 "either %<-fopenacc%> or %<-fopenmp%> must be set");
@@ -1056,6 +1142,7 @@ main (int argc, char **argv)
     case ELF: if (GEN_VER) SET_GENERIC_VERSION (elf_flags, GEN_VER); break;
 #include "gcn-devices.def"
 #undef GCN_DEVICE
+    case EF_AMDGPU_MACH_AMDGCN_NONE: gcc_unreachable ();
     }
 
   /* Build arguments for compiler pass.  */
