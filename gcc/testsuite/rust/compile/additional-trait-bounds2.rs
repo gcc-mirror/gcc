@@ -6,4 +6,4 @@ pub unsafe auto trait Sync {}
 
 trait A {}
 
-impl dyn A + Send + Sync + NonExist {} // { dg-error "failed to resolve TypePath: NonExist in this scope" }
+impl dyn A + Send + Sync + NonExist {} // { dg-error "could not resolve type path .NonExist." }

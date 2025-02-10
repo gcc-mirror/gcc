@@ -12,5 +12,5 @@ fn main() {
 
     let b;
     b = a.test::<asfasfr>(false);
-    // { dg-error "failed to resolve TypePath: asfasfr" "" { target *-*-* } .-1 }
+    // { dg-error "could not resolve type path .asfasfr." "" { target *-*-* } .-1 }
 }
