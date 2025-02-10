@@ -72,6 +72,7 @@ run_test ()
 
   init_data (a, b, c, SIZE);
   test_citer (a, b, c);
+#pragma GCC novector
   for (i = 0; i < SIZE; i++)
     if (c[i] != a[i] + b[i])
       __builtin_abort ();
@@ -80,6 +81,7 @@ run_test ()
 
   init_data (a, b, c, SIZE);
   test_viter (a, b, c, SIZE);
+#pragma GCC novector
   for (i = 0; i < SIZE; i++)
     if (c[i] != a[i] + b[i])
       __builtin_abort ();
