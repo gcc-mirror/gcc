@@ -19478,18 +19478,6 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	RECUR (OMP_FOR_PRE_BODY (t));
 	pre_body = pop_stmt_list (pre_body);
 
-	tree sl = NULL_TREE;
-	if (flag_range_for_ext_temps
-	    && OMP_FOR_INIT (t) != NULL_TREE
-	    && !processing_template_decl)
-	  for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
-	    if (TREE_VEC_ELT (OMP_FOR_INIT (t), i)
-		&& TREE_VEC_ELT (OMP_FOR_COND (t), i) == global_namespace)
-	      {
-		sl = push_stmt_list ();
-		break;
-	      }
-
 	if (OMP_FOR_INIT (t) != NULL_TREE)
 	  for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
 	    {
@@ -19543,16 +19531,6 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    OMP_FOR_CLAUSES (t) = clauses;
 	    SET_EXPR_LOCATION (t, EXPR_LOCATION (t));
 	    add_stmt (t);
-	  }
-
-	if (sl)
-	  {
-	    /* P2718R0 - Add CLEANUP_POINT_EXPR so that temporaries in
-	       for-range-initializer whose lifetime is extended are destructed
-	       here.  */
-	    sl = pop_stmt_list (sl);
-	    sl = maybe_cleanup_point_expr_void (sl);
-	    add_stmt (sl);
 	  }
 
 	add_stmt (finish_omp_for_block (finish_omp_structured_block (stmt),

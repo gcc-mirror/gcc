@@ -14844,15 +14844,6 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
 	{
 	  range_temp = build_range_temp (range_expr);
 	  pushdecl (range_temp);
-	  if (flag_range_for_ext_temps)
-	    {
-	      /* P2718R0 - put the range_temp declaration and everything
-		 until end of the range for body into an extra STATEMENT_LIST
-		 which will have CLEANUP_POINT_EXPR around it, so that all
-		 temporaries are destroyed at the end of it.  */
-	      gcc_assert (FOR_INIT_STMT (statement) == NULL_TREE);
-	      FOR_INIT_STMT (statement) = push_stmt_list ();
-	    }
 	  cp_finish_decl (range_temp, range_expr,
 			  /*is_constant_init*/false, NULL_TREE,
 			  LOOKUP_ONLYCONVERTING);
@@ -46719,20 +46710,12 @@ cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
 
   /* Pop and remember the init block.  */
   if (sl)
-    {
-      sl = pop_stmt_list (sl);
-      /* P2718R0 - Add CLEANUP_POINT_EXPR so that temporaries in
-	 for-range-initializer whose lifetime is extended are destructed
-	 here.  */
-      if (flag_range_for_ext_temps
-	  && is_range_for
-	  && !processing_template_decl)
-	sl = maybe_cleanup_point_expr_void (sl);
-      add_stmt (sl);
-    }
+    add_stmt (pop_stmt_list (sl));
+
   tree range_for_decl[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
   if (is_range_for && !processing_template_decl)
     find_range_for_decls (range_for_decl);
+
   finish_compound_stmt (init_scope);
   init_block = pop_stmt_list (init_block);
   omp_for_parse_state->init_blockv[depth] = init_block;

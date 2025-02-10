@@ -8310,11 +8310,6 @@ initialize_local_var (tree decl, tree init, bool decomp)
 	     code emitted by cp_finish_decomp.  */
 	  if (decomp)
 	    current_stmt_tree ()->stmts_are_full_exprs_p = 0;
-	  /* P2718R0 - avoid CLEANUP_POINT_EXPR for range-for-initializer,
-	     temporaries from there should have lifetime extended.  */
-	  else if (DECL_NAME (decl) == for_range__identifier
-		   && flag_range_for_ext_temps)
-	    current_stmt_tree ()->stmts_are_full_exprs_p = 0;
 	  else
 	    current_stmt_tree ()->stmts_are_full_exprs_p = 1;
 	  finish_expr_stmt (init);

@@ -1736,19 +1736,6 @@ finish_for_stmt (tree for_stmt)
   tree range_for_decl[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
   find_range_for_decls (range_for_decl);
 
-  /* P2718R0 - Add CLEANUP_POINT_EXPR so that temporaries in
-     for-range-initializer whose lifetime is extended are destructed
-     here.  */
-  if (flag_range_for_ext_temps
-      && range_for_decl[0]
-      && FOR_INIT_STMT (for_stmt))
-    {
-      tree stmt = pop_stmt_list (FOR_INIT_STMT (for_stmt));
-      FOR_INIT_STMT (for_stmt) = NULL_TREE;
-      stmt = maybe_cleanup_point_expr_void (stmt);
-      add_stmt (stmt);
-    }
-
   add_stmt (do_poplevel (scope));
 
   /* If we're being called from build_vec_init, don't mess with the names of
