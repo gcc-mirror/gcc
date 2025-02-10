@@ -15,14 +15,17 @@ class X{};
 class Large { public: int arr[10]; };
 class Incomplete;
 
+/* Using `true_def` in order to account for the fact that if this target
+ * doesn't support __builtin_speculation_safe_value at all everything fails to
+ * substitute.  */
 #define SPECULATION_ASSERTS                                                    \
-  MAKE_SPECULATION_ASSERT (int, true)                                          \
+  MAKE_SPECULATION_ASSERT (int, true_def)                                      \
   MAKE_SPECULATION_ASSERT (float, false)                                       \
   MAKE_SPECULATION_ASSERT (X, false)                                           \
   MAKE_SPECULATION_ASSERT (Large, false)                                       \
   MAKE_SPECULATION_ASSERT (Incomplete, false)                                  \
-  MAKE_SPECULATION_ASSERT (int *, true)                                        \
-  MAKE_SPECULATION_ASSERT (long, true)
+  MAKE_SPECULATION_ASSERT (int *, true_def)                                    \
+  MAKE_SPECULATION_ASSERT (long, true_def)
 
 int main() {
     SPECULATION_ASSERTS

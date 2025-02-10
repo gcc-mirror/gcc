@@ -1,5 +1,7 @@
 /* Check that overloaded builtins can be used in templates with SFINAE.  */
 // { dg-do compile { target c++17 } }
+// { dg-additional-options "-Dtrue_def=true" { target speculation_barrier_defined } }
+// { dg-additional-options "-Dtrue_def=false" { target { ! speculation_barrier_defined } } }
 
 /* Checks performed here:
    Various types (some that work, some that don't).  */

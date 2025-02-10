@@ -14304,3 +14304,12 @@ proc check_effective_target_alarm { } {
 	}
     }]
 }
+
+# Return true if a speculation barrier is defined on the target.
+proc check_effective_target_speculation_barrier_defined { } {
+    return [check_no_compiler_messages speculation_barrier_defined assembly {
+	    int main (int argc, char **argv) {
+		return __builtin_speculation_safe_value (argc);
+	    }
+	}]
+}
