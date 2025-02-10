@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! Tests fix for PR29115, in which an ICE would be produced by 
+! Tests fix for PR29115, in which an ICE would be produced by
 ! non-pointer elements being supplied to the pointer components
 ! in a derived type constructor.
 !
@@ -9,7 +9,7 @@
     integer, pointer :: bart(:)
   end type homer
   type(homer) :: marge
-  integer :: duff_beer
+  integer :: duff_beer(1)
   marge = homer (duff_beer) ! { dg-error "should be a POINTER or a TARGET" }
 end
 
