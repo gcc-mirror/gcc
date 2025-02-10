@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-require-effective_target arm_thumb2_ok } */
+/* { dg-require-effective-target arm_thumb2_ok } */
 /* { dg-options "-Os" } */
 
 int __attribute__((noinline)) f (void)
