@@ -780,15 +780,20 @@ equiv_oracle::dump (FILE *f) const
 
 
 // --------------------------------------------------------------------------
-// Negate the current relation.
+
+// Adjust the relation by Swapping the operands and relation.
 
 void
-value_relation::negate ()
+value_relation::swap ()
 {
-  related = relation_negate (related);
+  related = relation_swap (related);
+  tree tmp = name1;
+  name1 = name2;
+  name2 = tmp;
 }
 
 // Perform an intersection between 2 relations. *this &&= p.
+// Return false if the relations cannot be intersected.
 
 bool
 value_relation::intersect (value_relation &p)
@@ -950,6 +955,79 @@ class relation_chain : public value_relation
 public:
   relation_chain *m_next;
 };
+
+// Given relation record PTR in block BB, return the next relation in the
+// list.  If PTR is NULL, retreive the first relation in BB.
+// If NAME is sprecified, return only relations which include NAME.
+// Return NULL when there are no relations left.
+
+relation_chain *
+dom_oracle::next_relation (basic_block bb, relation_chain *ptr,
+			   tree name) const
+{
+  relation_chain *p;
+  // No value_relation pointer is used to intialize the iterator.
+  if (!ptr)
+    {
+      int bbi = bb->index;
+      if (bbi >= (int)m_relations.length())
+	return NULL;
+      else
+	p = m_relations[bbi].m_head;
+    }
+  else
+    p = ptr->m_next;
+
+  if (name)
+    for ( ; p; p = p->m_next)
+      if (p->op1 () == name || p->op2 () == name)
+	break;
+  return p;
+}
+
+// Instatiate a block relation iterator to iterate over the relations
+// on exit from block BB in ORACLE.  Limit this to relations involving NAME
+// if specified.  Return the first such relation in VR if there is one.
+
+block_relation_iterator::block_relation_iterator (const relation_oracle *oracle,
+						  basic_block bb,
+						  value_relation &vr,
+						  tree name)
+{
+  m_oracle = oracle;
+  m_bb = bb;
+  m_name = name;
+  m_ptr = oracle->next_relation (bb, NULL, m_name);
+  if (m_ptr)
+    {
+      m_done = false;
+      vr = *m_ptr;
+    }
+  else
+    m_done = true;
+}
+
+// Retreive the next relation from the iterator and return it in VR.
+
+void
+block_relation_iterator::get_next_relation (value_relation &vr)
+{
+  m_ptr = m_oracle->next_relation (m_bb, m_ptr, m_name);
+  if (m_ptr)
+    {
+      vr = *m_ptr;
+      if (m_name)
+	{
+	  if (vr.op1 () != m_name)
+	    {
+	      gcc_checking_assert (vr.op2 () == m_name);
+	      vr.swap ();
+	    }
+	}
+    }
+  else
+    m_done = true;
+}
 
 // ------------------------------------------------------------------------
 
@@ -1441,11 +1519,11 @@ dom_oracle::dump (FILE *f, basic_block bb) const
   if (!m_relations[bb->index].m_names)
     return;
 
-  relation_chain *ptr = m_relations[bb->index].m_head;
-  for (; ptr; ptr = ptr->m_next)
+  value_relation vr;
+  FOR_EACH_RELATION_BB (this, bb, vr)
     {
       fprintf (f, "Relational : ");
-      ptr->dump (f);
+      vr.dump (f);
       fprintf (f, "\n");
     }
 }

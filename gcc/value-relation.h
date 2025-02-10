@@ -114,6 +114,11 @@ public:
   void debug () const;
 protected:
   friend class equiv_relation_iterator;
+  friend class block_relation_iterator;
+  virtual class relation_chain *next_relation (basic_block,
+					       relation_chain *,
+					       tree) const
+    { return NULL; }
   // Return equivalency set for an SSA name in a basic block.
   virtual const_bitmap equiv_set (tree, basic_block) { return NULL; }
   // Return partial equivalency record for an SSA name.
@@ -228,7 +233,9 @@ public:
 
   void dump (FILE *f, basic_block bb) const final override;
   void dump (FILE *f) const final override;
-private:
+protected:
+  virtual relation_chain *next_relation (basic_block, relation_chain *,
+					 tree) const;
   bool m_do_trans_p;
   bitmap m_tmp, m_tmp2;
   bitmap m_relation_set;  // Index by ssa-name. True if a relation exists
@@ -431,7 +438,7 @@ public:
   relation_trio create_trio (tree lhs, tree op1, tree op2);
   bool union_ (value_relation &p);
   bool intersect (value_relation &p);
-  void negate ();
+  void swap ();
   bool apply_transitive (const value_relation &rel);
 
   void dump (FILE *f) const;
@@ -469,6 +476,30 @@ value_relation::value_relation (relation_kind kind, tree n1, tree n2)
 {
   set_relation (kind, n1, n2);
 }
+
+
+class block_relation_iterator {
+public:
+  block_relation_iterator (const relation_oracle *oracle, basic_block bb,
+			   value_relation &, tree name = NULL);
+  void get_next_relation (value_relation &vr);
+  const relation_oracle *m_oracle;
+  basic_block m_bb;
+  relation_chain *m_ptr;
+  bool m_done;
+  tree m_name;
+};
+
+#define FOR_EACH_RELATION_BB(oracle, bb, vr)			\
+  for (block_relation_iterator iter (oracle, bb, vr);		\
+       !iter.m_done;						\
+       iter.get_next_relation (vr))
+
+#define FOR_EACH_RELATION_NAME(oracle, bb, name, vr)		\
+  for (block_relation_iterator iter (oracle, bb, vr, name);	\
+       !iter.m_done;						\
+       iter.get_next_relation (vr))
+
 
 // Return the number of bits associated with partial equivalency T.
 // Return 0 if this is not a supported partial equivalency relation.
