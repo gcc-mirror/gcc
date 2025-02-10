@@ -2521,9 +2521,9 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 		      gcc_assert (formal->attr.function);
 		      if (!gfc_compare_types (&global_asym->ts, &formal->ts))
 			{
-			  gfc_error ("Type mismatch passing global function %qs "
-				     "declared at %L at %L (%s/%s)",
-				     actual_name, &gsym->where, &actual->where,
+			  gfc_error ("Type mismatch at %L passing global "
+				     "function %qs declared at %L (%s/%s)",
+				     &actual->where, actual_name, &gsym->where,
 				     gfc_typename (&global_asym->ts),
 				     gfc_dummy_typename (&formal->ts));
 			  return false;

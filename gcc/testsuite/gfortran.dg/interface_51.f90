@@ -14,7 +14,7 @@ program memain
   
   call foo(subr) ! { dg-error "Passing global subroutine" }
   call bar(i4)   ! { dg-error "Passing global function" }
-  call baz(r4)   ! { dg-error "Type mismatch passing global function" }
+  call baz(r4)   ! { dg-error "Type mismatch" }
 end program memain
 
 subroutine foo(ifun)
@@ -39,7 +39,7 @@ integer(kind=4) function i4() ! { dg-error "Passing global function" }
   i4 = 42
 end function i4
 
-real(kind=4) function r4() ! { dg-error "Type mismatch passing global function" }
+real(kind=4) function r4() ! { dg-error "Type mismatch" }
   r4 = 1.0
 end function r4
   
