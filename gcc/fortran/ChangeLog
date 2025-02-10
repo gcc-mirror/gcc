@@ -1,3 +1,10 @@
+2025-02-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/24878
+	* interface.cc (compare_parameter): Check global subroutines
+	passed as actual arguments for subroutine / function and
+	function type.
+
 2025-02-08  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR middle-end/107067

@@ -1,3 +1,29 @@
+2025-02-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/115123
+	* gcc.target/riscv/rvv/base/pr114352-3.c: Adjust expected output.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-7.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/avl_multiple-8.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-66.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-82.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-83.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-86.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-88.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-90.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-91.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-92.c: Likewise.
+
+2025-02-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/24878
+	* gfortran.dg/interface_51.f90: New test.
+
+2025-02-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/118146
+	* gcc.target/riscv/pr118146-1.c: New test.
+	* gcc.target/riscv/pr118146-2.c: New test.
+
 2025-02-08  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR middle-end/107067
