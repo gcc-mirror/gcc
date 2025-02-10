@@ -17,7 +17,6 @@
 #include "rust-compile-intrinsic.h"
 #include "rust-compile-context.h"
 #include "rust-compile-type.h"
-#include "rust-compile-expr.h"
 #include "rust-compile-fnparam.h"
 #include "rust-builtins.h"
 #include "rust-diagnostics.h"
@@ -27,13 +26,9 @@
 #include "rust-tree.h"
 #include "tree-core.h"
 #include "rust-gcc.h"
-#include "print-tree.h"
 #include "fold-const.h"
 #include "langhooks.h"
-#include "rust-gcc.h"
 #include "rust-constexpr.h"
-
-#include "print-tree.h"
 
 // declaration taken from "stringpool.h"
 // the get_identifier macro causes compilation issues
@@ -93,6 +88,8 @@ static tree
 move_val_init_handler (Context *ctx, TyTy::FnType *fntype);
 static tree
 assume_handler (Context *ctx, TyTy::FnType *fntype);
+static tree
+discriminant_value_handler (Context *ctx, TyTy::FnType *fntype);
 
 enum class Prefetch
 {
@@ -217,45 +214,45 @@ sorry_handler (Context *ctx, TyTy::FnType *fntype)
 
 static const std::map<std::string,
 		      std::function<tree (Context *, TyTy::FnType *)>>
-  generic_intrinsics = {
-    {"offset", offset_handler},
-    {"size_of", sizeof_handler},
-    {"transmute", transmute_handler},
-    {"rotate_left", rotate_left_handler},
-    {"rotate_right", rotate_right_handler},
-    {"wrapping_add", wrapping_op_handler (PLUS_EXPR)},
-    {"wrapping_sub", wrapping_op_handler (MINUS_EXPR)},
-    {"wrapping_mul", wrapping_op_handler (MULT_EXPR)},
-    {"add_with_overflow", op_with_overflow (PLUS_EXPR)},
-    {"sub_with_overflow", op_with_overflow (MINUS_EXPR)},
-    {"mul_with_overflow", op_with_overflow (MULT_EXPR)},
-    {"copy", copy_handler (true)},
-    {"copy_nonoverlapping", copy_handler (false)},
-    {"prefetch_read_data", prefetch_read_data},
-    {"prefetch_write_data", prefetch_write_data},
-    {"atomic_store_seqcst", atomic_store_handler (__ATOMIC_SEQ_CST)},
-    {"atomic_store_release", atomic_store_handler (__ATOMIC_RELEASE)},
-    {"atomic_store_relaxed", atomic_store_handler (__ATOMIC_RELAXED)},
-    {"atomic_store_unordered", atomic_store_handler (__ATOMIC_RELAXED)},
-    {"atomic_load_seqcst", atomic_load_handler (__ATOMIC_SEQ_CST)},
-    {"atomic_load_acquire", atomic_load_handler (__ATOMIC_ACQUIRE)},
-    {"atomic_load_relaxed", atomic_load_handler (__ATOMIC_RELAXED)},
-    {"atomic_load_unordered", atomic_load_handler (__ATOMIC_RELAXED)},
-    {"unchecked_add", unchecked_op_handler (PLUS_EXPR)},
-    {"unchecked_sub", unchecked_op_handler (MINUS_EXPR)},
-    {"unchecked_mul", unchecked_op_handler (MULT_EXPR)},
-    {"unchecked_div", unchecked_op_handler (TRUNC_DIV_EXPR)},
-    {"unchecked_rem", unchecked_op_handler (TRUNC_MOD_EXPR)},
-    {"unchecked_shl", unchecked_op_handler (LSHIFT_EXPR)},
-    {"unchecked_shr", unchecked_op_handler (RSHIFT_EXPR)},
-    {"uninit", uninit_handler},
-    {"move_val_init", move_val_init_handler},
-    {"likely", expect_handler (true)},
-    {"unlikely", expect_handler (false)},
-    {"assume", assume_handler},
-    {"try", try_handler (false)},
-    {"catch_unwind", try_handler (true)},
-};
+  generic_intrinsics
+  = {{"offset", offset_handler},
+     {"size_of", sizeof_handler},
+     {"transmute", transmute_handler},
+     {"rotate_left", rotate_left_handler},
+     {"rotate_right", rotate_right_handler},
+     {"wrapping_add", wrapping_op_handler (PLUS_EXPR)},
+     {"wrapping_sub", wrapping_op_handler (MINUS_EXPR)},
+     {"wrapping_mul", wrapping_op_handler (MULT_EXPR)},
+     {"add_with_overflow", op_with_overflow (PLUS_EXPR)},
+     {"sub_with_overflow", op_with_overflow (MINUS_EXPR)},
+     {"mul_with_overflow", op_with_overflow (MULT_EXPR)},
+     {"copy", copy_handler (true)},
+     {"copy_nonoverlapping", copy_handler (false)},
+     {"prefetch_read_data", prefetch_read_data},
+     {"prefetch_write_data", prefetch_write_data},
+     {"atomic_store_seqcst", atomic_store_handler (__ATOMIC_SEQ_CST)},
+     {"atomic_store_release", atomic_store_handler (__ATOMIC_RELEASE)},
+     {"atomic_store_relaxed", atomic_store_handler (__ATOMIC_RELAXED)},
+     {"atomic_store_unordered", atomic_store_handler (__ATOMIC_RELAXED)},
+     {"atomic_load_seqcst", atomic_load_handler (__ATOMIC_SEQ_CST)},
+     {"atomic_load_acquire", atomic_load_handler (__ATOMIC_ACQUIRE)},
+     {"atomic_load_relaxed", atomic_load_handler (__ATOMIC_RELAXED)},
+     {"atomic_load_unordered", atomic_load_handler (__ATOMIC_RELAXED)},
+     {"unchecked_add", unchecked_op_handler (PLUS_EXPR)},
+     {"unchecked_sub", unchecked_op_handler (MINUS_EXPR)},
+     {"unchecked_mul", unchecked_op_handler (MULT_EXPR)},
+     {"unchecked_div", unchecked_op_handler (TRUNC_DIV_EXPR)},
+     {"unchecked_rem", unchecked_op_handler (TRUNC_MOD_EXPR)},
+     {"unchecked_shl", unchecked_op_handler (LSHIFT_EXPR)},
+     {"unchecked_shr", unchecked_op_handler (RSHIFT_EXPR)},
+     {"uninit", uninit_handler},
+     {"move_val_init", move_val_init_handler},
+     {"likely", expect_handler (true)},
+     {"unlikely", expect_handler (false)},
+     {"assume", assume_handler},
+     {"try", try_handler (false)},
+     {"catch_unwind", try_handler (true)},
+     {"discriminant_value", discriminant_value_handler}};
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
 
@@ -1370,6 +1367,70 @@ try_handler_inner (Context *ctx, TyTy::FnType *fntype, bool is_new_api)
 					    NULL_TREE, BUILTINS_LOCATION);
   ctx->add_statement (eh_construct);
   // BUILTIN try_handler FN BODY END
+  finalize_intrinsic_block (ctx, fndecl);
+
+  return fndecl;
+}
+
+static tree
+discriminant_value_handler (Context *ctx, TyTy::FnType *fntype)
+{
+  rust_assert (fntype->get_params ().size () == 1);
+  rust_assert (fntype->get_return_type ()->is<TyTy::PlaceholderType> ());
+  rust_assert (fntype->has_substitutions ());
+  rust_assert (fntype->get_num_type_params () == 1);
+  auto &mapping = fntype->get_substs ().at (0);
+  auto param_ty = mapping.get_param_ty ();
+  rust_assert (param_ty->can_resolve ());
+  auto resolved = param_ty->resolve ();
+  auto p = static_cast<TyTy::PlaceholderType *> (fntype->get_return_type ());
+
+  TyTy::BaseType *return_type = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_builtin ("isize", &return_type);
+  rust_assert (ok);
+
+  bool is_adt = resolved->is<TyTy::ADTType> ();
+  bool is_enum = false;
+  if (is_adt)
+    {
+      const auto &adt = *static_cast<TyTy::ADTType *> (resolved);
+      return_type = adt.get_repr_options ().repr;
+      rust_assert (return_type != nullptr);
+      is_enum = adt.is_enum ();
+    }
+
+  p->set_associated_type (return_type->get_ref ());
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  std::vector<Bvariable *> param_vars;
+  compile_fn_params (ctx, fntype, fndecl, &param_vars);
+
+  if (!Backend::function_set_parameters (fndecl, param_vars))
+    return error_mark_node;
+
+  enter_intrinsic_block (ctx, fndecl);
+
+  // BUILTIN disriminant_value FN BODY BEGIN
+
+  tree result = integer_zero_node;
+  if (is_enum)
+    {
+      tree val = Backend::var_expression (param_vars[0], UNDEF_LOCATION);
+      tree deref = build_fold_indirect_ref_loc (UNKNOWN_LOCATION, val);
+      result = Backend::struct_field_expression (deref, 0, UNKNOWN_LOCATION);
+    }
+
+  auto return_statement
+    = Backend::return_statement (fndecl, result, BUILTINS_LOCATION);
+  ctx->add_statement (return_statement);
+
+  // BUILTIN disriminant_value FN BODY END
+
   finalize_intrinsic_block (ctx, fndecl);
 
   return fndecl;

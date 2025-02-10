@@ -292,6 +292,10 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
   repr.pack = 0;
   repr.align = 0;
 
+  // FIXME handle repr types....
+  bool ok = context->lookup_builtin ("isize", &repr.repr);
+  rust_assert (ok);
+
   for (const auto &attr : attrs)
     {
       bool is_repr = attr.get_path ().as_string () == Values::Attributes::REPR;

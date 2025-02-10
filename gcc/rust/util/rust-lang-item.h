@@ -147,6 +147,9 @@ public:
 
     STRUCTURAL_PEQ,
     STRUCTURAL_TEQ,
+
+    DISCRIMINANT_TYPE,
+    DISCRIMINANT_KIND,
   };
 
   static const BiMap<std::string, Kind> lang_items;

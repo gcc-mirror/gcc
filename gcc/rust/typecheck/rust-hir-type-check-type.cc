@@ -218,14 +218,6 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
   if (trait_ref->is_error ())
     return;
 
-  // does this type actually implement this type-bound?
-  if (!TypeBoundsProbe::is_bound_satisfied_for_type (root, trait_ref))
-    {
-      rust_error_at (qual_path_type.get_locus (),
-		     "root does not satisfy specified trait-bound");
-      return;
-    }
-
   // get the predicate for the bound
   auto specified_bound = get_predicate_from_bound (qual_path_type.get_trait (),
 						   qual_path_type.get_type ());

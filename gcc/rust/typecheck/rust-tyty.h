@@ -648,6 +648,7 @@ public:
     // parsing the #[repr] attribute.
     unsigned char align = 0;
     unsigned char pack = 0;
+    BaseType *repr = nullptr;
   };
 
   ADTType (HirId ref, std::string identifier, RustIdent ident, ADTKind adt_kind,
@@ -1530,9 +1531,9 @@ class PlaceholderType : public BaseType
 public:
   static constexpr auto KIND = TypeKind::PLACEHOLDER;
 
-  PlaceholderType (std::string symbol, HirId ref,
+  PlaceholderType (std::string symbol, DefId id, HirId ref,
 		   std::set<HirId> refs = std::set<HirId> ());
-  PlaceholderType (std::string symbol, HirId ref, HirId ty_ref,
+  PlaceholderType (std::string symbol, DefId id, HirId ref, HirId ty_ref,
 		   std::set<HirId> refs = std::set<HirId> ());
 
   void accept_vis (TyVisitor &vis) override;
@@ -1558,8 +1559,11 @@ public:
 
   bool is_equal (const BaseType &other) const override;
 
+  DefId get_def_id () const;
+
 private:
   std::string symbol;
+  DefId defId;
 };
 
 class ProjectionType : public BaseType, public SubstitutionRef

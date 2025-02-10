@@ -235,6 +235,52 @@ TypeCheckExpr::visit (HIR::CallExpr &expr)
     }
 
   infered = TyTy::TypeCheckCallExpr::go (function_tyty, expr, variant, context);
+
+  auto discriminant_type_lookup
+    = mappings.lookup_lang_item (LangItem::Kind::DISCRIMINANT_TYPE);
+  if (infered->is<TyTy::PlaceholderType> () && discriminant_type_lookup)
+    {
+      const auto &p = *static_cast<const TyTy::PlaceholderType *> (infered);
+      if (p.get_def_id () == discriminant_type_lookup.value ())
+	{
+	  // this is a special case where this will actually return the repr of
+	  // the enum. We dont currently support repr on enum yet to change the
+	  // discriminant type but the default is always isize. We need to
+	  // assert this is a generic function with one param
+	  //
+	  // fn<BookFormat> (v & T=BookFormat{Paperback) -> <placeholder:>
+	  //
+	  // note the default is isize
+
+	  bool ok = context->lookup_builtin ("isize", &infered);
+	  rust_assert (ok);
+
+	  rust_assert (function_tyty->is<TyTy::FnType> ());
+	  auto &fn = *static_cast<TyTy::FnType *> (function_tyty);
+	  rust_assert (fn.has_substitutions ());
+	  rust_assert (fn.get_num_type_params () == 1);
+	  auto &mapping = fn.get_substs ().at (0);
+	  auto param_ty = mapping.get_param_ty ();
+
+	  if (!param_ty->can_resolve ())
+	    {
+	      // this could be a valid error need to test more weird cases and
+	      // look at rustc
+	      rust_internal_error_at (expr.get_locus (),
+				      "something wrong computing return type");
+	      return;
+	    }
+
+	  auto resolved = param_ty->resolve ();
+	  bool is_adt = resolved->is<TyTy::ADTType> ();
+	  if (is_adt)
+	    {
+	      const auto &adt = *static_cast<TyTy::ADTType *> (resolved);
+	      infered = adt.get_repr_options ().repr;
+	      rust_assert (infered != nullptr);
+	    }
+	}
+    }
 }
 
 void

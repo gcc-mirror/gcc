@@ -115,6 +115,9 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
 
   {"structural_peq", Kind::STRUCTURAL_PEQ},
   {"structural_teq", Kind::STRUCTURAL_TEQ},
+
+  {"discriminant_kind", Kind::DISCRIMINANT_KIND},
+  {"discriminant_type", Kind::DISCRIMINANT_TYPE},
 }};
 
 tl::optional<LangItem::Kind>
