@@ -1985,6 +1985,17 @@ reregister_specialization (tree spec, tree tinfo, tree new_spec)
       gcc_assert (entry->spec == spec || entry->spec == new_spec);
       gcc_assert (new_spec != NULL_TREE);
       entry->spec = new_spec;
+
+      /* We need to also remove SPEC from DECL_TEMPLATE_INSTANTIATIONS
+	 if it was placed there.  */
+      for (tree *inst = &DECL_TEMPLATE_INSTANTIATIONS (elt.tmpl);
+	   *inst; inst = &TREE_CHAIN (*inst))
+	if (TREE_VALUE (*inst) == spec)
+	  {
+	    *inst = TREE_CHAIN (*inst);
+	    break;
+	  }
+
       return 1;
     }
 
