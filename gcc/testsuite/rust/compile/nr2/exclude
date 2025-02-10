@@ -4,11 +4,8 @@ cfg1.rs
 complex-path1.rs
 const_generics_3.rs
 const_generics_4.rs
-const_generics_7.rs
 derive_macro1.rs
 feature_rust_attri0.rs
-generic-default1.rs
-generics5.rs
 generics9.rs
 issue-1483.rs
 issue-1786.rs
@@ -28,7 +25,6 @@ macros/mbe/macro43.rs
 macros/mbe/macro44.rs
 macros/mbe/macro6.rs
 macros/mbe/macro_use1.rs
-method2.rs
 multiple_bindings1.rs
 multiple_bindings2.rs
 nested_macro_use1.rs
@@ -58,9 +54,7 @@ issue-3033.rs
 issue-3009.rs
 issue-2953-2.rs
 issue-2905-2.rs
-issue-2423.rs
 issue-266.rs
-additional-trait-bounds2.rs
 derive_clone_enum1.rs
 derive_clone_enum2.rs
 derive_clone_enum3.rs

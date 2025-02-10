@@ -316,7 +316,7 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
       else if (is_first_segment)
 	{
 	  rust_error_at (segment->get_locus (), ErrorCode::E0412,
-			 "failed to resolve TypePath: %s in this scope",
+			 "could not resolve type path %qs",
 			 segment->as_string ().c_str ());
 	  return false;
 	}
