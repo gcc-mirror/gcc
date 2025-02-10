@@ -2711,6 +2711,7 @@ ix86_option_override_internal (bool main_args_p,
 			"using 512 as max vector size");
 	}
       else if (TARGET_AVX512F_P (opts->x_ix86_isa_flags)
+	       && (opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512F)
 	       && !(OPTION_MASK_ISA2_EVEX512
 		    & opts->x_ix86_isa_flags2_explicit))
 	warning (0, "Vector size conflicts between AVX10.1 and AVX512, using "
