@@ -237,6 +237,7 @@ CONFIGURED_OFILES = ./asprintf.$(objext) ./atexit.$(objext)		\
 INSTALLED_HEADERS =                                                     \
 	$(INCDIR)/ansidecl.h                                            \
 	$(INCDIR)/demangle.h                                            \
+	$(INCDIR)/doubly-linked-list.h                                  \
 	$(INCDIR)/dyn-string.h                                          \
 	$(INCDIR)/fibheap.h                                             \
 	$(INCDIR)/floatformat.h                                         \

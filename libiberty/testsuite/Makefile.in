@@ -45,7 +45,8 @@ all:
 check: @CHECK@
 
 really-check: check-cplus-dem check-d-demangle check-rust-demangle \
-		check-pexecute check-expandargv check-strtol
+		check-pexecute check-expandargv check-strtol \
+		check-doubly-linked-list
 
 # Run some tests of the demangler.
 check-cplus-dem: test-demangle $(srcdir)/demangle-expected
@@ -69,6 +70,10 @@ check-expandargv: test-expandargv
 check-strtol: test-strtol
 	./test-strtol
 
+# Check the linked list functionality
+check-doubly-linked-list: test-doubly-linked-list
+	./test-doubly-linked-list
+
 # Run the demangler fuzzer
 fuzz-demangler: demangler-fuzzer
 	./demangler-fuzzer
@@ -90,6 +95,10 @@ test-strtol: $(srcdir)/test-strtol.c ../libiberty.a
 	$(TEST_COMPILE) -DHAVE_CONFIG_H -I.. -o test-strtol \
 		$(srcdir)/test-strtol.c ../libiberty.a
 
+test-doubly-linked-list: $(srcdir)/test-doubly-linked-list.c
+	$(TEST_COMPILE) -DHAVE_CONFIG_H -I.. -o test-doubly-linked-list \
+		$(srcdir)/test-doubly-linked-list.c
+
 demangler-fuzzer: $(srcdir)/demangler-fuzzer.c ../libiberty.a
 	$(TEST_COMPILE) -o demangler-fuzzer \
 		$(srcdir)/demangler-fuzzer.c ../libiberty.a
@@ -104,6 +113,7 @@ mostlyclean:
 	rm -f test-pexecute
 	rm -f test-expandargv
 	rm -f test-strtol
+	rm -f test-doubly-linked-list
 	rm -f demangler-fuzzer
 	rm -f core
 clean: mostlyclean
