@@ -55,7 +55,7 @@ TyTyResolveCompile::compile (Context *ctx, const TyTy::BaseType *ty,
 // see: gcc/c/c-decl.cc:8230-8241
 // https://github.com/Rust-GCC/gccrs/blob/0024bc2f028369b871a65ceb11b2fddfb0f9c3aa/gcc/c/c-decl.c#L8229-L8241
 tree
-TyTyResolveCompile::get_implicit_enumeral_node_type ()
+TyTyResolveCompile::get_implicit_enumeral_node_type (TyTy::BaseType *repr)
 {
   // static tree enum_node = NULL_TREE;
   // if (enum_node == NULL_TREE)
@@ -77,15 +77,7 @@ TyTyResolveCompile::get_implicit_enumeral_node_type ()
   //   }
   // return enum_node;
 
-  static tree enum_node = NULL_TREE;
-  if (enum_node == NULL_TREE)
-    {
-      // equivalent to isize
-      enum_node = Backend::named_type (
-	"enumeral", Backend::integer_type (false, Backend::get_pointer_size ()),
-	BUILTINS_LOCATION);
-    }
-  return enum_node;
+  return compile (ctx, repr);
 }
 
 tree
@@ -384,8 +376,8 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 	= Backend::named_type ("payload", variants_union, locus);
 
       // create the overall struct
-      tree enumeral_type
-	= TyTyResolveCompile::get_implicit_enumeral_node_type ();
+      tree enumeral_type = TyTyResolveCompile::get_implicit_enumeral_node_type (
+	type.get_repr_options ().repr);
       Backend::typed_identifier discrim (RUST_ENUM_DISR_FIELD_NAME,
 					 enumeral_type, locus);
       Backend::typed_identifier variants_union_field ("payload",
