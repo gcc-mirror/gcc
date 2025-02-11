@@ -101,7 +101,8 @@ static void end_cleanup_fn (void);
 static tree cp_make_fname_decl (location_t, tree, int);
 static void initialize_predefined_identifiers (void);
 static tree check_special_function_return_type
-       (special_function_kind, tree, tree, int, const location_t*);
+       (special_function_kind, tree, tree, int, const cp_declarator**,
+	const location_t*);
 static tree push_cp_library_fn (enum tree_code, tree, int);
 static tree build_cp_library_fn (tree, enum tree_code, tree, int);
 static void store_parm_decls (tree);
@@ -12441,10 +12442,27 @@ smallest_type_location (const cp_decl_specifier_seq *declspecs)
   return smallest_type_location (type_quals, declspecs->locations);
 }
 
-/* Check that it's OK to declare a function with the indicated TYPE
-   and TYPE_QUALS.  SFK indicates the kind of special function (if any)
-   that this function is.  OPTYPE is the type given in a conversion
-   operator declaration, or the class type for a constructor/destructor.
+/* Returns whether DECLARATOR represented a pointer or a reference and if so,
+   strip out the pointer/reference declarator(s).  */
+
+static bool
+maybe_strip_indirect_ref (const cp_declarator** declarator)
+{
+  bool indirect_ref_p = false;
+  while (declarator && *declarator
+	 && ((*declarator)->kind == cdk_pointer
+	     || (*declarator)->kind == cdk_reference))
+    {
+      indirect_ref_p = true;
+      *declarator = (*declarator)->declarator;
+    }
+  return indirect_ref_p;
+}
+
+/* Check that it's OK to declare a function with the indicated TYPE, TYPE_QUALS
+   and DECLARATOR.  SFK indicates the kind of special function (if any) that
+   this function is.  OPTYPE is the type given in a conversion operator
+   declaration, or the class type for a constructor/destructor.
    Returns the actual return type of the function; that may be different
    than TYPE if an error occurs, or for certain special functions.  */
 
@@ -12453,13 +12471,18 @@ check_special_function_return_type (special_function_kind sfk,
 				    tree type,
 				    tree optype,
 				    int type_quals,
+				    const cp_declarator** declarator,
 				    const location_t* locations)
 {
+  gcc_assert (declarator);
+  location_t rettype_loc = (type
+			    ? smallest_type_location (type_quals, locations)
+			    : (*declarator)->id_loc);
   switch (sfk)
     {
     case sfk_constructor:
-      if (type)
-	error_at (smallest_type_location (type_quals, locations),
+      if (maybe_strip_indirect_ref (declarator) || type)
+	error_at (rettype_loc,
 		  "return type specification for constructor invalid");
       else if (type_quals != TYPE_UNQUALIFIED)
 	error_at (smallest_type_quals_location (type_quals, locations),
@@ -12472,8 +12495,8 @@ check_special_function_return_type (special_function_kind sfk,
       break;
 
     case sfk_destructor:
-      if (type)
-	error_at (smallest_type_location (type_quals, locations),
+      if (maybe_strip_indirect_ref (declarator) || type)
+	error_at (rettype_loc,
 		  "return type specification for destructor invalid");
       else if (type_quals != TYPE_UNQUALIFIED)
 	error_at (smallest_type_quals_location (type_quals, locations),
@@ -12488,8 +12511,8 @@ check_special_function_return_type (special_function_kind sfk,
       break;
 
     case sfk_conversion:
-      if (type)
-	error_at (smallest_type_location (type_quals, locations),
+      if (maybe_strip_indirect_ref (declarator) || type)
+	error_at (rettype_loc,
 		  "return type specified for %<operator %T%>", optype);
       else if (type_quals != TYPE_UNQUALIFIED)
 	error_at (smallest_type_quals_location (type_quals, locations),
@@ -12500,8 +12523,8 @@ check_special_function_return_type (special_function_kind sfk,
       break;
 
     case sfk_deduction_guide:
-      if (type)
-	error_at (smallest_type_location (type_quals, locations),
+      if (maybe_strip_indirect_ref (declarator) || type)
+	error_at (rettype_loc,
 		  "return type specified for deduction guide");
       else if (type_quals != TYPE_UNQUALIFIED)
 	error_at (smallest_type_quals_location (type_quals, locations),
@@ -13181,6 +13204,7 @@ grokdeclarator (const cp_declarator *declarator,
       type = check_special_function_return_type (sfk, type,
 						 ctor_return_type,
 						 type_quals,
+						 &declarator,
 						 declspecs->locations);
       type_quals = TYPE_UNQUALIFIED;
     }
