@@ -3,6 +3,21 @@
 	Backported from trunk:
 	2025-02-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	PR target/86660
+	* common/config/nvptx/nvptx-common.cc (nvptx_except_unwind_info):
+	'return UI_TARGET;'.
+	* config/nvptx/nvptx.cc (nvptx_assemble_integer): Handle
+	'exception_section'.
+	(nvptx_output_section_asm_op, nvptx_asm_init_sections): New
+	functions.
+	(TARGET_ASM_INIT_SECTIONS): '#define'.
+	* config/nvptx/nvptx.h (TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP):
+	Don't '#define'.
+	(ASM_OUTPUT_DWARF_DELTA): '#define'.
+
+	Backported from trunk:
+	2025-02-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* config/nvptx/nvptx.cc (init_frag): New 'bool active' member.
 	(output_init_frag, nvptx_assemble_value, nvptx_assemble_integer)
 	(nvptx_output_skip, nvptx_assemble_decl_begin)

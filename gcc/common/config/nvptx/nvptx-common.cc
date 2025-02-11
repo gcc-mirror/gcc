@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 enum unwind_info_type
 nvptx_except_unwind_info (struct gcc_options *opts ATTRIBUTE_UNUSED)
 {
-  return UI_NONE;
+  return UI_TARGET;
 }
 
 #undef TARGET_HAVE_NAMED_SECTIONS

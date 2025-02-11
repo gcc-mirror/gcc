@@ -2409,6 +2409,13 @@ nvptx_assemble_value (unsigned HOST_WIDE_INT val, unsigned size)
 static bool
 nvptx_assemble_integer (rtx x, unsigned int size, int ARG_UNUSED (aligned_p))
 {
+  if (in_section == exception_section)
+    {
+      gcc_checking_assert (!init_frag.active);
+      /* Just use the default machinery; it's not getting used, anyway.  */
+      return default_assemble_integer (x, size, aligned_p);
+    }
+
   gcc_checking_assert (init_frag.active);
 
   HOST_WIDE_INT val = 0;
@@ -6252,6 +6259,55 @@ nvptx_record_offload_symbol (tree decl)
     }
 }
 
+/* Fake "sections support", just for 'exception_section'.  */
+
+static void
+nvptx_output_section_asm_op (const char *directive)
+{
+  static char prev_section = '?';
+
+  gcc_checking_assert (directive[1] == '\0');
+  const char new_section = directive[0];
+  gcc_checking_assert (new_section != prev_section);
+  switch (new_section)
+    {
+    case 'T':
+    case 'D':
+      if (prev_section == 'E')
+	/* We're leaving the 'exception_section'.  End the comment block.  */
+	fprintf (asm_out_file, "\tEND '.gcc_except_table' */\n");
+      break;
+    case 'E':
+      /* We're entering the 'exception_section'.  Put into a comment block
+	 whatever GCC decides to emit.  We assume:
+           - No nested comment blocks.
+           - Going to leave 'exception_section' before end of file.
+	 Should any of these ever get violated, this will result in PTX-level
+	 syntax errors.  */
+      fprintf (asm_out_file, "\t/* BEGIN '.gcc_except_table'\n");
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  prev_section = new_section;
+}
+
+static void
+nvptx_asm_init_sections (void)
+{
+  /* Like '#define TEXT_SECTION_ASM_OP ""', just with different 'callback'.  */
+  text_section = get_unnamed_section (SECTION_CODE,
+				      nvptx_output_section_asm_op, "T");
+  /* Like '#define DATA_SECTION_ASM_OP ""', just with different 'callback'.  */
+  data_section = get_unnamed_section (SECTION_WRITE,
+				      nvptx_output_section_asm_op, "D");
+  /* In order to later be able to recognize the 'exception_section', we set it
+     up here, instead of letting 'gcc/except.cc:switch_to_exception_section'
+     pick the 'data_section'.  */
+  exception_section = get_unnamed_section (0,
+					   nvptx_output_section_asm_op, "E");
+}
+
 /* Implement TARGET_ASM_FILE_START.  Write the kinds of things ptxas expects
    at the start of a file.  */
 
@@ -8155,6 +8211,8 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name,
 #undef TARGET_END_CALL_ARGS
 #define TARGET_END_CALL_ARGS nvptx_end_call_args
 
+#undef TARGET_ASM_INIT_SECTIONS
+#define TARGET_ASM_INIT_SECTIONS nvptx_asm_init_sections
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START nvptx_file_start
 #undef TARGET_ASM_FILE_END
