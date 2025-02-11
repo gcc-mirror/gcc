@@ -26,12 +26,12 @@
 /* { dg-begin-multiline-output "" }
 /this/does/not/exist/test.bas:2:8: error: 'GOTO' is considered harmful
     2 |        GOTO label
-      |        ^~~~~~~~~~  
+      |        ^~~~~~~~~~ 
    { dg-end-multiline-output "" } */
 /* { dg-begin-multiline-output "" }
 /this/does/not/exist/test.bas:1:1: note: this is the target of the 'GOTO'
     1 | label: PRINT "hello world!"
-      | ^~~~~~
+      | ^~~~~
    { dg-end-multiline-output "" } */
 
 // TODO: trailing [error]

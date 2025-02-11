@@ -339,37 +339,37 @@
 In function 'callee_1':
 /not/a/real/path/malloc-vs-local-4.c:5:3: warning: dereference of possibly-NULL ‘ptr’ [-Wanalyzer-possible-null-dereference]
     5 |   *ptr = 42;
-      |   ^~~~~~~~~~
+      |   ^~~~~~~~~
   'test_1': events 1-5
     |
     |    8 | int test_1 (int i, int flag)
-    |      |     ^~~~~~~
+    |      |     ^~~~~~
     |      |     |
     |      |     (1) entry to ‘test_1’
     |......
     |   12 |   if (flag)
-    |      |      ~~
+    |      |      ~
     |      |      |
     |      |      (2) following ‘true’ branch (when ‘flag != 0’)...
     |   13 |     ptr = (int *)malloc (sizeof (int));
-    |      |                  ~~~~~~~~~~~~~~~~~~~~~~
+    |      |                  ~~~~~~~~~~~~~~~~~~~~~
     |      |                  |
     |      |                  (3) ...to here
     |      |                  (4) this call could return NULL
     |   14 |   callee_1 (ptr);
-    |      |   ~~~~~~~~~~~~~~~
+    |      |   ~~~~~~~~~~~~~~
     |      |   |
     |      |   (5) calling ‘callee_1’ from ‘test_1’
     |
     +--> 'callee_1': events 6-7
            |
            |    3 | void __attribute__((noinline)) callee_1 (int *ptr)
-           |      |                                ^~~~~~~~~
+           |      |                                ^~~~~~~~
            |      |                                |
            |      |                                (6) entry to ‘callee_1’
            |    4 | {
            |    5 |   *ptr = 42;
-           |      |   ~~~~~~~~~~                    
+           |      |   ~~~~~~~~~                     
            |      |   |
            |      |   (7) ‘ptr’ could be NULL: unchecked value from (4)
            |
@@ -378,24 +378,24 @@ In function 'callee_1':
 In function 'test_2':
 /not/a/real/path/malloc-vs-local-4.c:38:7: warning: double-‘free’ of ‘ptr’ [-Wanalyzer-double-free]
    38 |       free (ptr);
-      |       ^~~~~~~~~~~
+      |       ^~~~~~~~~~
   'test_2': events 1-5
    34 |   if (!flag)
-      |      ^~
+      |      ^
       |      |
       |      (1) following ‘true’ branch (when ‘flag == 0’)...
    35 |     {
    36 |       void *ptr = malloc (16);
-      |                   ~~~~~~~~~~~~
+      |                   ~~~~~~~~~~~
       |                   |
       |                   (2) ...to here
       |                   (3) allocated here
    37 |       free (ptr);
-      |       ~~~~~~~~~~~
+      |       ~~~~~~~~~~
       |       |
       |       (4) first ‘free’ here
    38 |       free (ptr);
-      |       ~~~~~~~~~~~
+      |       ~~~~~~~~~~
       |       |
       |       (5) second ‘free’ here; first ‘free’ was at (4)
    { dg-end-multiline-output "" } */

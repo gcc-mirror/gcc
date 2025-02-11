@@ -1739,7 +1739,7 @@ handle_region_object (const json::object &region_obj,
 	  /* SARIF's endColumn is 1 beyond the final column in the region,
 	     whereas GCC's end columns are inclusive.  */
 	  end = m_output_mgr.new_location_from_file_line_column
-	    (file, end_line, end_column_jnum->get ());
+	    (file, end_line, end_column_jnum->get () - 1);
 	}
       else
 	{
