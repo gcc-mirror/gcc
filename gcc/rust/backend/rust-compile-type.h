@@ -30,8 +30,6 @@ public:
   static tree compile (Context *ctx, const TyTy::BaseType *ty,
 		       bool trait_object_mode = false);
 
-  static tree get_implicit_enumeral_node_type ();
-
   static tree get_unit_type ();
 
   void visit (const TyTy::InferType &) override;
@@ -66,6 +64,7 @@ protected:
   tree create_slice_type_record (const TyTy::SliceType &type);
   tree create_str_type_record (const TyTy::StrType &type);
   tree create_dyn_obj_record (const TyTy::DynamicObjectType &type);
+  tree get_implicit_enumeral_node_type (TyTy::BaseType *repr);
 
 private:
   TyTyResolveCompile (Context *ctx, bool trait_object_mode);
