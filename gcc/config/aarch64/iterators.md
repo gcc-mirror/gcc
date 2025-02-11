@@ -2657,6 +2657,10 @@
 ;; Code iterator for logical operations
 (define_code_iterator LOGICAL [and ior xor])
 
+;; Code iterator for operations that are equivalent when the
+;; two input operands are known have disjoint bits set.
+(define_code_iterator any_or_plus [plus ior xor])
+
 ;; LOGICAL with plus, for when | gets converted to +.
 (define_code_iterator LOGICAL_OR_PLUS [and ior xor plus])
 
