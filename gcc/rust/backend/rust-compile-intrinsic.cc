@@ -90,6 +90,8 @@ static tree
 assume_handler (Context *ctx, TyTy::FnType *fntype);
 static tree
 discriminant_value_handler (Context *ctx, TyTy::FnType *fntype);
+static tree
+variant_count_handler (Context *ctx, TyTy::FnType *fntype);
 
 enum class Prefetch
 {
@@ -252,7 +254,8 @@ static const std::map<std::string,
      {"assume", assume_handler},
      {"try", try_handler (false)},
      {"catch_unwind", try_handler (true)},
-     {"discriminant_value", discriminant_value_handler}};
+     {"discriminant_value", discriminant_value_handler},
+     {"variant_count", variant_count_handler}};
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
 
@@ -1424,6 +1427,57 @@ discriminant_value_handler (Context *ctx, TyTy::FnType *fntype)
       tree deref = build_fold_indirect_ref_loc (UNKNOWN_LOCATION, val);
       result = Backend::struct_field_expression (deref, 0, UNKNOWN_LOCATION);
     }
+
+  auto return_statement
+    = Backend::return_statement (fndecl, result, BUILTINS_LOCATION);
+  ctx->add_statement (return_statement);
+
+  // BUILTIN disriminant_value FN BODY END
+
+  finalize_intrinsic_block (ctx, fndecl);
+
+  return fndecl;
+}
+
+static tree
+variant_count_handler (Context *ctx, TyTy::FnType *fntype)
+{
+  rust_assert (fntype->get_num_type_params () == 1);
+  auto &mapping = fntype->get_substs ().at (0);
+  auto param_ty = mapping.get_param_ty ();
+  rust_assert (param_ty->can_resolve ());
+  auto resolved = param_ty->resolve ();
+
+  size_t variant_count = 0;
+  bool is_adt = resolved->is<TyTy::ADTType> ();
+  if (is_adt)
+    {
+      const auto &adt = *static_cast<TyTy::ADTType *> (resolved);
+      variant_count = adt.number_of_variants ();
+    }
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  std::vector<Bvariable *> param_vars;
+  compile_fn_params (ctx, fntype, fndecl, &param_vars);
+
+  if (!Backend::function_set_parameters (fndecl, param_vars))
+    return error_mark_node;
+
+  enter_intrinsic_block (ctx, fndecl);
+
+  // BUILTIN disriminant_value FN BODY BEGIN
+  tree result_decl = DECL_RESULT (fndecl);
+  tree type = TREE_TYPE (result_decl);
+
+  mpz_t ival;
+  mpz_init_set_ui (ival, variant_count);
+  tree result = wide_int_to_tree (type, wi::from_mpz (type, ival, true));
+  mpz_clear (ival);
 
   auto return_statement
     = Backend::return_statement (fndecl, result, BUILTINS_LOCATION);
