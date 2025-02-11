@@ -3548,9 +3548,8 @@ easier, you can use @option{-fno-pretty-templates} to disable them.
 Enable lifetime extension of C++ range based for temporaries.
 With @option{-std=c++23} and above this is part of the language standard,
 so lifetime of the temporaries is extended until the end of the loop
-regardless of this option.  This option allows enabling that behavior also
-in earlier versions of the standard and is enabled by default in the
-GNU dialects, from @option{-std=gnu++11} until @option{-std=gnu++20}.
+by default.  This option allows enabling that behavior also
+in earlier versions of the standard.
 
 @opindex fno-rtti
 @opindex frtti
