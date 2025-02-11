@@ -6722,6 +6722,26 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
 	     oacc_get_fn_dim_size (cfun->decl, GOMP_DIM_VECTOR), name);
 }
 
+/* Implement TARGET_ASM_INIT_SECTIONS.  */
+
+static void
+gcn_asm_init_sections (void)
+{
+  /* With the default 'exception_section' (via
+     'gcc/except.cc:switch_to_exception_section'), the assembler fails:
+         /tmp/ccTYJljP.s:95:2: error: changed section flags for .gcc_except_table, expected: 0x2
+                 .section        .gcc_except_table,"aw",@progbits
+                 ^
+     The flags for '.gcc_except_table' don't match the pre-defined ones that
+     the assembler expects: 'SHF_ALLOC' ('a'), without 'SHF_WRITE' ('w').
+     As we're not actually implementing exception handling, keep things simple,
+     and allocate a "fake" section.  */
+  exception_section = get_section (".fake_gcc_except_table",
+				   SECTION_DEBUG /* '!SHF_ALLOC' */
+				   | SECTION_EXCLUDE /* 'SHF_EXCLUDE' */,
+				   NULL);
+}
+
 /* Implement TARGET_ASM_SELECT_SECTION.
 
    Return the section into which EXP should be placed.  */
@@ -7789,6 +7809,8 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_ARG_PARTIAL_BYTES gcn_arg_partial_bytes
 #undef  TARGET_ASM_ALIGNED_DI_OP
 #define TARGET_ASM_ALIGNED_DI_OP "\t.8byte\t"
+#undef  TARGET_ASM_INIT_SECTIONS
+#define TARGET_ASM_INIT_SECTIONS gcn_asm_init_sections
 #undef  TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START output_file_start
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
