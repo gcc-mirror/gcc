@@ -7600,20 +7600,17 @@ Enable/disable the generation of the USER_MSR instructions.
 Enable/disable the generation of the APX features, including
 EGPR, PUSH2POP2, NDD and PPX.
 
-@cindex @code{target("avx10.1")} function attribute, x86
-@item avx10.1
-@itemx no-avx10.1
-Enable/disable the generation of the AVX10.1 instructions.
-
 @cindex @code{target("avx10.1-256")} function attribute, x86
 @item avx10.1-256
 @itemx no-avx10.1-256
-Enable/disable the generation of the AVX10.1 instructions.
+Enable the generation of the AVX10.1 instructions with 256 bit support.
+Disable the generation of the AVX10.1 instructions.
 
 @cindex @code{target("avx10.1-512")} function attribute, x86
 @item avx10.1-512
 @itemx no-avx10.1-512
-Enable/disable the generation of the AVX10.1 512 bit instructions.
+Enable the generation of the AVX10.1 instructions with 512 bit support.
+Disable the generation of the AVX10.1 instructions.
 
 @cindex @code{target("avx10.2")} function attribute, x86
 @item avx10.2
