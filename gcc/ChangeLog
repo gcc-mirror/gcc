@@ -1,3 +1,96 @@
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118776
+	* config/i386/sse.md (<code><mode>3_mask): Use VI1248_AVX512VLBW
+	iterator rather than VI48_AVX512VL.
+	(<mask_codefor><code><mode>3<mask_name>): Rename to ...
+	(*avx512bw_<code><mode>3<mask_name>): ... this.  Use
+	nonimmediate_operand rather than register_operand predicate and %v
+	rather than v constraint for operand 1 and adjust condition to reject
+	MEMs in both operand 1 and 2.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117506
+	* loop-iv.cc (get_biv_step_1): For {ZERO,SIGN}_EXTEND
+	of PLUS apply {ZERO,SIGN}_EXTEND to op1.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/117432
+	* ipa-icf-gimple.cc (func_checker::compare_asm_inputs_outputs):
+	Also return_false if operands have incompatible types.
+	(func_checker::compare_gimple_call): Check fntype1 vs. fntype2
+	compatibility for all non-internal calls and assume fntype1 and
+	fntype2 are non-NULL for those.  For calls to non-prototyped
+	calls or for stdarg_p functions after the last named argument (if any)
+	check type compatibility of call arguments.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118689
+	PR modula2/115032
+	* tree-ssa-loop-niter.cc (build_cltz_expr): Return NULL_TREE if fn is
+	NULL and use_ifn is false.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/118638
+	* combine.cc (make_extraction): Only optimize (mult x 2^n) if len is
+	larger than 1.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118605
+	* tree-assume.cc (assume_query::m_parm_list): Change type
+	from bitmap & to bitmap.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114877
+	* builtins.cc (fold_builtin_frexp): Handle rvc_nan and rvc_inf cases
+	like rvc_zero, return passed in arg and set *exp = 0.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118522
+	* match.pd ((FTYPE) N CMP (FTYPE) M): Add convert, as in GENERIC
+	integral types with the same precision and sign might actually not
+	be compatible types.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/118400
+	* vec.h (vec<T, va_heap, vl_ptr>::release): Call m_vec->truncate (0)
+	instead of clearing m_vec->m_vecpfx.m_num.
+
 2025-02-06  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:

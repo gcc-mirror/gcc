@@ -1,3 +1,51 @@
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115586
+	* parser.cc (cp_parser_range_for): For name independent decls in
+	structured bindings, only push the name/binding once per
+	structured binding.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118763
+	* init.cc (build_new_1): Don't set CLEANUP_EH_ONLY.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118661
+	* constexpr.cc (potential_constant_expression_1): Don't diagnose
+	lvalue-to-rvalue conversion of volatile lvalue if it has NULLPTR_TYPE.
+	* decl2.cc (decl_maybe_constant_var_p): Return true for constexpr
+	decls with NULLPTR_TYPE even if they are volatile.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118655
+	* semantics.cc (trait_expr_value) <case CPTK_IS_BOUNDED_ARRAY>: Return
+	false for zero-sized arrays.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117827
+	* init.cc (build_new_1): Pass address of a make_tree_vector ()
+	initialized gc tree vector to build_vec_init and append
+	build_disable_temp_cleanup to init_expr from it.
+
 2025-01-29  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
