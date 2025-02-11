@@ -1081,10 +1081,12 @@ package body Exp_Util is
                 Make_Attribute_Reference (Loc,
                   Prefix         =>
                     (if Is_Allocate then
-                       Duplicate_Subexpr_No_Checks (Expression (Alloc_Expr))
+                       Duplicate_Subexpr_No_Checks
+                         (Expression (Alloc_Expr), New_Scope => Proc_Id)
                      else
                        Make_Explicit_Dereference (Loc,
-                         Duplicate_Subexpr_No_Checks (Expr))),
+                         Duplicate_Subexpr_No_Checks
+                           (Expr, New_Scope => Proc_Id))),
                   Attribute_Name => Name_Alignment)));
          end if;
 
@@ -1137,7 +1139,9 @@ package body Exp_Util is
                   if Is_RTE (Etype (Temp), RE_Tag_Ptr) then
                      Param :=
                        Make_Explicit_Dereference (Loc,
-                         Prefix => Duplicate_Subexpr_No_Checks (Temp));
+                         Prefix =>
+                           Duplicate_Subexpr_No_Checks
+                             (Temp, New_Scope => Proc_Id));
 
                   --  In the default case, obtain the tag of the object about
                   --  to be allocated / deallocated. Generate:
@@ -1157,7 +1161,9 @@ package body Exp_Util is
 
                      Param :=
                        Make_Attribute_Reference (Loc,
-                         Prefix         => Duplicate_Subexpr_No_Checks (Temp),
+                         Prefix         =>
+                           Duplicate_Subexpr_No_Checks
+                             (Temp, New_Scope => Proc_Id),
                          Attribute_Name => Name_Tag);
                   end if;
 
@@ -5062,12 +5068,13 @@ package body Exp_Util is
 
    function Duplicate_Subexpr
      (Exp          : Node_Id;
-      Name_Req     : Boolean := False;
-      Renaming_Req : Boolean := False) return Node_Id
+      New_Scope    : Entity_Id := Empty;
+      Name_Req     : Boolean   := False;
+      Renaming_Req : Boolean   := False) return Node_Id
    is
    begin
       Remove_Side_Effects (Exp, Name_Req, Renaming_Req);
-      return New_Copy_Tree (Exp);
+      return New_Copy_Tree (Exp, New_Scope => New_Scope);
    end Duplicate_Subexpr;
 
    ---------------------------------
@@ -5076,8 +5083,9 @@ package body Exp_Util is
 
    function Duplicate_Subexpr_No_Checks
      (Exp          : Node_Id;
-      Name_Req     : Boolean := False;
-      Renaming_Req : Boolean := False) return Node_Id
+      New_Scope    : Entity_Id := Empty;
+      Name_Req     : Boolean   := False;
+      Renaming_Req : Boolean   := False) return Node_Id
    is
       New_Exp : Node_Id;
 
@@ -5087,7 +5095,7 @@ package body Exp_Util is
          Name_Req     => Name_Req,
          Renaming_Req => Renaming_Req);
 
-      New_Exp := New_Copy_Tree (Exp);
+      New_Exp := New_Copy_Tree (Exp, New_Scope => New_Scope);
       Remove_Checks (New_Exp);
       return New_Exp;
    end Duplicate_Subexpr_No_Checks;
@@ -5098,14 +5106,15 @@ package body Exp_Util is
 
    function Duplicate_Subexpr_Move_Checks
      (Exp          : Node_Id;
-      Name_Req     : Boolean := False;
-      Renaming_Req : Boolean := False) return Node_Id
+      New_Scope    : Entity_Id := Empty;
+      Name_Req     : Boolean   := False;
+      Renaming_Req : Boolean   := False) return Node_Id
    is
       New_Exp : Node_Id;
 
    begin
       Remove_Side_Effects (Exp, Name_Req, Renaming_Req);
-      New_Exp := New_Copy_Tree (Exp);
+      New_Exp := New_Copy_Tree (Exp, New_Scope => New_Scope);
       Remove_Checks (Exp);
       return New_Exp;
    end Duplicate_Subexpr_Move_Checks;

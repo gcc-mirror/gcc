@@ -1039,7 +1039,8 @@ package body Exp_Ch5 is
                          Prefix =>
                            Make_Indexed_Component (Loc,
                              Prefix =>
-                               Duplicate_Subexpr_Move_Checks (Larray, True),
+                               Duplicate_Subexpr_Move_Checks
+                                 (Larray, Name_Req => True),
                              Expressions => New_List (
                                Make_Attribute_Reference (Loc,
                                  Prefix =>
@@ -1054,7 +1055,8 @@ package body Exp_Ch5 is
                          Prefix =>
                            Make_Indexed_Component (Loc,
                              Prefix =>
-                               Duplicate_Subexpr_Move_Checks (Rarray, True),
+                               Duplicate_Subexpr_Move_Checks
+                                 (Rarray, Name_Req => True),
                              Expressions => New_List (
                                Make_Attribute_Reference (Loc,
                                  Prefix =>
@@ -1396,7 +1398,7 @@ package body Exp_Ch5 is
           Prefix =>
             Make_Indexed_Component (Loc,
               Prefix =>
-                Duplicate_Subexpr (Larray, True),
+                Duplicate_Subexpr (Larray, Name_Req => True),
               Expressions => New_List (New_Copy_Tree (Left_Lo))),
           Attribute_Name => Name_Address);
 
@@ -1405,7 +1407,7 @@ package body Exp_Ch5 is
           Prefix =>
             Make_Indexed_Component (Loc,
               Prefix =>
-                Duplicate_Subexpr (Larray, True),
+                Duplicate_Subexpr (Larray, Name_Req => True),
               Expressions => New_List (New_Copy_Tree (Left_Lo))),
           Attribute_Name => Name_Bit);
 
@@ -1414,7 +1416,7 @@ package body Exp_Ch5 is
           Prefix =>
             Make_Indexed_Component (Loc,
               Prefix =>
-                Duplicate_Subexpr (Rarray, True),
+                Duplicate_Subexpr (Rarray, Name_Req => True),
               Expressions => New_List (New_Copy_Tree (Right_Lo))),
           Attribute_Name => Name_Address);
 
@@ -1423,7 +1425,7 @@ package body Exp_Ch5 is
           Prefix =>
             Make_Indexed_Component (Loc,
               Prefix =>
-                Duplicate_Subexpr (Rarray, True),
+                Duplicate_Subexpr (Rarray, Name_Req => True),
               Expressions => New_List (New_Copy_Tree (Right_Lo))),
           Attribute_Name => Name_Bit);
 
@@ -1439,11 +1441,11 @@ package body Exp_Ch5 is
         Make_Op_Multiply (Loc,
           Make_Attribute_Reference (Loc,
             Prefix =>
-              Duplicate_Subexpr (Name (N), True),
+              Duplicate_Subexpr (Name (N), Name_Req => True),
             Attribute_Name => Name_Length),
           Make_Attribute_Reference (Loc,
             Prefix =>
-              Duplicate_Subexpr (Name (N), True),
+              Duplicate_Subexpr (Name (N), Name_Req => True),
             Attribute_Name => Name_Component_Size));
 
    begin
@@ -1527,11 +1529,11 @@ package body Exp_Ch5 is
         Make_Op_Multiply (Loc,
           Make_Attribute_Reference (Loc,
             Prefix =>
-              Duplicate_Subexpr (Name (N), True),
+              Duplicate_Subexpr (Name (N), Name_Req => True),
             Attribute_Name => Name_Length),
           Make_Attribute_Reference (Loc,
             Prefix =>
-              Duplicate_Subexpr (Larray, True),
+              Duplicate_Subexpr (Larray, Name_Req => True),
             Attribute_Name => Name_Component_Size));
 
       L_Arg, R_Arg, Call : Node_Id;
@@ -1582,7 +1584,7 @@ package body Exp_Ch5 is
       end if;
 
       return Make_Assignment_Statement (Loc,
-        Name => Duplicate_Subexpr (Larray, True),
+        Name => Duplicate_Subexpr (Larray, Name_Req => True),
         Expression => Unchecked_Convert_To (L_Typ, Call));
    end Expand_Assign_Array_Bitfield_Fast;
 

@@ -8077,7 +8077,8 @@ package body Exp_Aggr is
                        Make_Selected_Component (Loc,
                          Prefix        =>
                            Unchecked_Convert_To (Typ,
-                             Duplicate_Subexpr (Parent_Expr, True)),
+                             Duplicate_Subexpr
+                               (Parent_Expr, Name_Req => True)),
                          Selector_Name => New_Occurrence_Of (Comp, Loc));
 
                      Append_To (Comps,
