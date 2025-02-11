@@ -2292,7 +2292,7 @@ canadian cross build.  The @option{--disable-nls} option disables NLS@.
 Note that this functionality requires either libintl (provided by GNU
 gettext) or C standard library that contains support for gettext (such
 as the GNU C Library).
-@xref{with-included-gettext,,--with-included-gettext} for more
+@xref{with-included-gettext,,--with-included-gettext}, for more
 information on the conditions required to get gettext support.
 
 @item --with-libintl-prefix=@var{dir}
