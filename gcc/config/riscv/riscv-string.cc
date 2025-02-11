@@ -969,7 +969,7 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in)
       machine_mode mask_mode = riscv_vector::get_vector_mode
 	(BImode, GET_MODE_NUNITS (vmode)).require ();
       rtx mask =  CONSTM1_RTX (mask_mode);
-      if (!satisfies_constraint_K (cnt))
+      if (!satisfies_constraint_vl (cnt))
 	cnt= force_reg (Pmode, cnt);
       rtx m_ops[] = {vec, mask, src};
       emit_nonvlmax_insn (code_for_pred_mov (vmode),

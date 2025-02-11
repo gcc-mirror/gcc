@@ -2075,7 +2075,7 @@ get_unknown_min_value (machine_mode mode)
 static rtx
 force_vector_length_operand (rtx vl)
 {
-  if (CONST_INT_P (vl) && !satisfies_constraint_K (vl))
+  if (CONST_INT_P (vl) && !satisfies_constraint_vl (vl))
     return force_reg (Pmode, vl);
   return vl;
 }
@@ -3864,7 +3864,7 @@ expand_load_store (rtx *ops, bool is_load)
     }
   else
     {
-      if (!satisfies_constraint_K (len))
+      if (!satisfies_constraint_vl (len))
 	len = force_reg (Pmode, len);
       if (is_load)
 	{
@@ -4309,7 +4309,7 @@ expand_lanes_load_store (rtx *ops, bool is_load)
     }
   else
     {
-      if (!satisfies_constraint_K (len))
+      if (!satisfies_constraint_vl (len))
 	len = force_reg (Pmode, len);
       if (is_load)
 	{
@@ -5108,7 +5108,7 @@ can_be_broadcasted_p (rtx op)
       && !satisfies_constraint_Wdm (op))
     return false;
 
-  if (satisfies_constraint_K (op) || register_operand (op, mode)
+  if (satisfies_constraint_vl (op) || register_operand (op, mode)
       || satisfies_constraint_Wdm (op) || rtx_equal_p (op, CONST0_RTX (mode)))
     return true;
 
