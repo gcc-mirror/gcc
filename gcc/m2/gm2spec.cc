@@ -576,6 +576,12 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 	  m2_path_name = decoded_options[i].arg;
 	  break;
+	case OPT__help:
+	case OPT__help_:
+	  /* Let gcc.cc handle this, as it has a really
+	     cool facility for handling --help and --verbose --help.  */
+	  *in_added_libraries = 0;
+	  return;
 	case OPT_I:
 	  args[i] |= SKIPOPT; /* We will add the option if it is needed.  */
 	  push_back_Ipath (decoded_options[i].arg);
