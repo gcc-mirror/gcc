@@ -2598,7 +2598,8 @@ vn_nary_build_or_lookup (gimple_match_op *res_op)
 }
 
 /* Try to simplify the expression RCODE OPS... of type TYPE and return
-   its value if present.  */
+   its value if present.  Update NARY with a simplified expression if
+   it fits.  */
 
 tree
 vn_nary_simplify (vn_nary_op_t nary)
@@ -2608,7 +2609,15 @@ vn_nary_simplify (vn_nary_op_t nary)
   gimple_match_op op (gimple_match_cond::UNCOND, nary->opcode,
 		      nary->type, nary->length);
   memcpy (op.ops, nary->op, sizeof (tree) * nary->length);
-  return vn_nary_build_or_lookup_1 (&op, false, true);
+  tree res = vn_nary_build_or_lookup_1 (&op, false, true);
+  if (op.code.is_tree_code () && op.num_ops <= nary->length)
+    {
+      nary->opcode = (tree_code) op.code;
+      nary->length = op.num_ops;
+      for (unsigned i = 0; i < op.num_ops; ++i)
+	nary->op[i] = op.ops[i];
+    }
+  return res;
 }
 
 /* Elimination engine.  */
