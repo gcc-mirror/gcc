@@ -3014,10 +3014,10 @@ Version 17, which first appeared in G++ 12, fixes layout of classes
 that inherit from aggregate classes with default member initializers
 in C++14 and up.
 
-Version 18, which first appeard in G++ 13, fixes manglings of lambdas
+Version 18, which first appeared in G++ 13, fixes manglings of lambdas
 that have additional context.
 
-Version 19, which first appeard in G++ 14, fixes manglings of structured
+Version 19, which first appeared in G++ 14, fixes manglings of structured
 bindings to include ABI tags.
 
 Version 20, which first appeared in G++ 15, fixes manglings of lambdas
@@ -10162,7 +10162,7 @@ old-style definition for older standards.
 @opindex Wdeprecated-non-prototype
 @opindex Wno-deprecated-non-prototype
 @item -Wdeprecated-non-prototype @r{(C and Objective-C only)}
-Warn if a function declarated with an empty parameter list @samp{()} is
+Warn if a function declared with an empty parameter list @samp{()} is
 called with one or more arguments, or if a function definition with one
 or more parameters is encountered after such a declaration.  Both cases
 are errors in C23 and later dialects  of C.
@@ -15158,12 +15158,12 @@ This option is enabled by @option{-fauto-profile}.
 @opindex fprofile-partial-training
 @item -fprofile-partial-training
 With @code{-fprofile-use} all portions of programs not executed during train
-run are optimized agressively for size rather than speed.  In some cases it is
+run are optimized aggressively for size rather than speed.  In some cases it is
 not practical to train all possible hot paths in the program. (For
 example, program may contain functions specific for a given hardware and
-trianing may not cover all hardware configurations program is run on.)  With
-@code{-fprofile-partial-training} profile feedback will be ignored for all
-functions not executed during the train run leading them to be optimized as if
+training may not cover all hardware configurations program is run on.)  With
+@code{-fprofile-partial-training} profile feedback is ignored for all
+functions not executed during the train run, leading them to be optimized as if
 they were compiled without profile feedback. This leads to better performance
 when train run is not representative but also leads to significantly bigger
 code.
@@ -15619,7 +15619,7 @@ Control whether @code{malloc} (and its variants such as @code{calloc} or
 @code{strdup}),  can be optimized away provided its return value is only used
 as a parameter of @code{free} call or compared with @code{NULL}.  If
 @option{-fmalloc-dce=1} is used, only calls to @code{free} are allowed while
-with @option{-fmalloc-dce=2} also comparsions with @code{NULL} pointer are
+with @option{-fmalloc-dce=2} also comparisons with @code{NULL} pointer are
 considered safe to remove.
 
 The default is @option{-fmalloc-dce=2}.  See also @option{-fallocation-dce}. 
@@ -15888,12 +15888,12 @@ by the compiler are investigated.  To those functions, a different
 be applied (@option{--param max-inline-insns-auto}).
 
 @item max-inline-insns-small
-This is bound applied to calls which are considered relevant with
+This is the bound applied to calls that are considered relevant with
 @option{-finline-small-functions}.
 
 @item max-inline-insns-size
-This is bound applied to calls which are optimized for size. Small growth
-may be desirable to anticipate optimization oppurtunities exposed by inlining.
+This is the bound applied to calls that are optimized for size. Small growth
+may be desirable to anticipate optimization opportunities exposed by inlining.
 
 @item uninlined-function-insns
 Number of instructions accounted by inliner for function overhead such as
@@ -15928,7 +15928,7 @@ to avoid extreme compilation time caused by non-linear algorithms used by the
 back end.
 
 @item large-function-growth
-Specifies maximal growth of large function caused by inlining in percents.
+Specifies maximal growth of large functions caused by inlining in percents.
 For example, parameter value 100 limits large function growth to 2.0 times
 the original size.
 
@@ -17276,12 +17276,12 @@ With @option{--param=openacc-privatization=noisy}, do diagnose.
 
 @item cycle-accurate-model
 Specifies whether GCC should assume that the scheduling description is mostly
-a cycle-accurate model of the target processor, where the code is intended to
+a cycle-accurate model of the target processor the code is intended to
 run on, in the absence of cache misses.  Nonzero means that the selected
 scheduling model is accurate and likely describes an in-order processor,
-and that scheduling will aggressively spill to try and fill any pipeline
-bubbles.  This is the current default.  Zero could mean scheduling descrption
-might not be available/accurate or perhaps not applicale at all such as for
+and that scheduling should aggressively spill to try and fill any pipeline
+bubbles.  This is the current default.  Zero means the scheduling description
+might not be available/accurate or perhaps not applicable at all, such as for
 modern out-of-order processors.
 
 @end table
@@ -17314,7 +17314,7 @@ approximation is enabled.  The default value is 1.
 
 @item aarch64-double-recp-precision
 The number of Newton iterations for calculating the reciprocal for double type.
-The precision of division is propotional to this param when division
+The precision of division is proportional to this param when division
 approximation is enabled.  The default value is 2.
 
 @item aarch64-autovec-preference
@@ -20084,7 +20084,7 @@ the implementation of the @file{libatomic} runtime library.
 
 @opindex fzero-init-padding-bits=@var{value}
 @item -fzero-init-padding-bits=@var{value}
-Guarantee zero initalization of padding bits in automatic variable
+Guarantee zero initialization of padding bits in automatic variable
 initializers.
 Certain languages guarantee zero initialization of padding bits in
 certain cases, e.g. C23 when using empty initializers (@code{@{@}}),
@@ -27646,7 +27646,7 @@ Incrementally adjust the scope of the SIMD extensions (none / LSX / LASX)
 that can be used by the compiler for code generation.  Enabling LASX with
 @option{mlasx} automatically enables LSX, and diabling LSX with @option{mno-lsx}
 automatically disables LASX.  These driver-only options act upon the final
-@option{msimd} configuration state and make incremental chagnes in the order
+@option{msimd} configuration state and make incremental changes in the order
 they appear on the GCC driver's command line, deriving the final / canonicalized
 @option{msimd} option that is passed to the compiler proper.
 
@@ -29345,11 +29345,11 @@ relocation operators.  This option has been superseded by
 @itemx -mexplicit-relocs=pcrel
 @itemx -mexplicit-relocs
 @itemx -mno-explicit-relocs
-These options control whether explicit relocs (such as %gp_rel) are used.
+These options control whether explicit relocs (such as @code{%gp_rel}) are used.
 The default value depends on the version of GAS when GCC itself was built.
 
-The @code{base} explicit-relocs support introdunced into GAS in 2001.
-The @code{pcrel} explicit-relocs support introdunced into GAS in 2014,
+The @code{base} explicit-relocs support was introduced into GAS in 2001.
+The @code{pcrel} explicit-relocs support was introduced into GAS in 2014,
 which supports @code{%pcrel_hi} and @code{%pcrel_lo}.
 
 @opindex mcheck-zero-division
@@ -29671,7 +29671,7 @@ If a compact branch instruction is not available (or pre-R6),
 a delay slot form of the branch will be used instead.
 
 If it is used for MIPS16/microMIPS targets, it will be just ignored now.
-The behaviour for MIPS16/microMIPS may change in future,
+The behavior for MIPS16/microMIPS may change in future,
 since they do have some compact branch instructions.
 
 The @option{-mcompact-branches=optimal} option will cause a delay slot
@@ -30016,27 +30016,27 @@ into GCC.  However, an external @samp{devices.csv} file can be used to
 extend device support beyond those that have been hard-coded.
 
 GCC searches for the @samp{devices.csv} file using the following methods in the
-given precedence order, where the first method takes precendence over the
+given precedence order, where the first method takes precedence over the
 second which takes precedence over the third.
 
 @table @asis
 @item Include path specified with @code{-I} and @code{-L}
-@samp{devices.csv} will be searched for in each of the directories specified by
+@samp{devices.csv} is searched for in each of the directories specified by
 include paths and linker library search paths.
 @item Path specified by the environment variable @samp{MSP430_GCC_INCLUDE_DIR}
 Define the value of the global environment variable
 @samp{MSP430_GCC_INCLUDE_DIR}
 to the full path to the directory containing devices.csv, and GCC will search
-this directory for devices.csv.  If devices.csv is found, this directory will
-also be registered as an include path, and linker library path.  Header files
+this directory for devices.csv.  If devices.csv is found, this directory is
+also registered as an include path and linker library path.  Header files
 and linker scripts in this directory can therefore be used without manually
 specifying @code{-I} and @code{-L} on the command line.
 @item The @samp{msp430-elf@{,bare@}/include/devices} directory
-Finally, GCC will examine @samp{msp430-elf@{,bare@}/include/devices} from the
+Finally, GCC examines @samp{msp430-elf@{,bare@}/include/devices} from the
 toolchain root directory.  This directory does not exist in a default
 installation, but if the user has created it and copied @samp{devices.csv}
-there, then the MCU data will be read.  As above, this directory will
-also be registered as an include path, and linker library path.
+there, then the MCU data is read.  As above, this directory is
+also registered as an include path and linker library path.
 
 @end table
 If none of the above search methods find @samp{devices.csv}, then the
@@ -30686,7 +30686,7 @@ is to use them if the specified architecture has these instructions.
 @itemx -mno-fence-tso
 Do or don't use the @samp{fence.tso} instruction, which is unimplemented on
 some processors (including those from T-Head).  If the @samp{fence.tso}
-instruction is not availiable then a stronger fence will be used instead.
+instruction is not available then a stronger fence is used instead.
 
 @opindex mdiv
 @item -mdiv

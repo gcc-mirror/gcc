@@ -1004,17 +1004,16 @@ The ISO C++14 library also defines the @samp{i} suffix, so C++14 code
 that includes the @samp{<complex>} header cannot use @samp{i} for the
 GNU extension.  The @samp{j} suffix still has the GNU meaning.
 
-GCC can handle both implicit and explicit casts between the @code{_Complex}
-types and other @code{_Complex} types as casting both the real and imaginary
-parts to the scalar type.
-GCC can handle implicit and explicit casts from a scalar type to a @code{_Complex}
-type and where the imaginary part will be considered zero.
-The C front-end can handle implicit and explicit casts from a @code{_Complex} type
-to a scalar type where the imaginary part will be ignored. In C++ code, this cast
-is considered illformed and G++ will error out.
+GCC handles both implicit and explicit casts between the
+@code{_Complex} types with different scalar base types by casting both
+the real and imaginary parts to the base type of the result.
+GCC also handles implicit and explicit casts from a scalar type to a
+@code{_Complex} type, by giving the imaginary part a zero value.
 
-GCC provides a built-in function @code{__builtin_complex} will can be used to
-construct a complex value.
+The C front end can handle implicit and explicit casts from a
+@code{_Complex} type to a scalar type, which uses the value of the
+real part and ignores the imaginary part.  In C++ code, this cast is
+considered ill-formed and G++ diagnoses it as an error.
 
 @cindex @code{__real__} keyword
 @cindex @code{__imag__} keyword
@@ -1023,7 +1022,7 @@ GCC has a few extensions which can be used to extract the real
 and the imaginary part of the complex-valued expression. Note
 these expressions are lvalues if the @var{exp} is an lvalue.
 These expressions operands have the type of a complex type
-which might get prompoted to a complex type from a scalar type.
+which might get promoted to a complex type from a scalar type.
 E.g. @code{__real__ (int)@var{x}} is the same as casting to
 @code{_Complex int} before @code{__real__} is done.
 
@@ -1035,7 +1034,7 @@ E.g. @code{__real__ (int)@var{x}} is the same as casting to
 @tab Extract the imaginary part of @var{exp}.
 @end multitable
 
-For values of floating point, you should use the ISO C99
+For values of floating-point type, you should use the ISO C99
 functions, declared in @code{<complex.h>} and also provided as
 built-in functions by GCC@.
 
@@ -1053,7 +1052,7 @@ with a complex type.  This is a GNU extension; for values of
 floating type, you should use the ISO C99 functions @code{conjf},
 @code{conj} and @code{conjl}, declared in @code{<complex.h>} and also
 provided as built-in functions by GCC@. Note unlike the @code{__real__}
-and @code{__imag__} operators, this operator will not do an implicit cast
+and @code{__imag__} operators, this operator does not do an implicit cast
 to the complex type because the @samp{~} is already a normal operator.
 
 GCC can allocate complex automatic variables in a noncontiguous
@@ -3526,7 +3525,7 @@ mismatched allocation and deallocation functions and diagnose them under
 the control of options such as @option{-Wmismatched-dealloc}.  It also
 makes it possible to diagnose attempts to deallocate objects that were not
 allocated dynamically, by @option{-Wfree-nonheap-object}.  To indicate
-that an allocation function both satisifies the nonaliasing property and
+that an allocation function both satisfies the nonaliasing property and
 has a deallocator associated with it, both the plain form of the attribute
 and the one with the @var{deallocator} argument must be used.  The same
 function can be both an allocator and a deallocator.  Since inlining one
@@ -3949,7 +3948,7 @@ caveats.
 If the pointer argument is also referred to by an @code{access} attribute on the
 function with @var{access-mode} either @code{read_only} or @code{read_write}
 and the latter attribute has the optional @var{size-index} argument
-referring to a size argument, this expressses the maximum size of the access.
+referring to a size argument, this expresses the maximum size of the access.
 For example, given:
 
 @smallexample
@@ -4378,7 +4377,7 @@ is a usage of a function with @code{target_clones} attribute.
 Note that any subsequent call of a function without @code{target_clone}
 from a @code{target_clone} caller will not lead to copying
 (target clone) of the called function.
-If you want to enforce such behaviour,
+If you want to enforce such behavior,
 we recommend declaring the calling function with the @code{flatten} attribute?
 
 @cindex @code{unavailable} function attribute
@@ -7624,7 +7623,7 @@ Enable/disable the generation of the AVX10.2 instructions.
 @cindex @code{target("avx10.2-256")} function attribute, x86
 @item avx10.2-256
 @itemx no-avx10.2-256
-Enable/disbale the generation of the AVX10.2 instructions.
+Enable/disable the generation of the AVX10.2 instructions.
 
 @cindex @code{target("avx10.2-512")} function attribute, x86
 @item avx10.2-512
@@ -8075,7 +8074,7 @@ negative integer value, the compiler treats the value as zero.
 
 An explicit @code{counted_by} annotation defines a relationship between
 two objects, @code{p->array} and @code{p->count}, and there are the
-following requirementthat on the relationship between this pair:
+following requirements on the relationship between this pair:
 
 @itemize @bullet
 @item
@@ -8088,12 +8087,12 @@ available all the time.  This relationship must hold even after any of
 these related objects are updated during the program.
 @end itemize
 
-It's the user's responsibility to make sure the above requirements to
-be kept all the time.  Otherwise the compiler reports warnings,
-at the same time, the results of the array bound sanitizer and the
-@code{__builtin_dynamic_object_size} is undefined.
+It's the programmer's responsibility to make sure the above requirements to
+be kept all the time.  Otherwise the compiler reports warnings and
+the results of the array bound sanitizer and the
+@code{__builtin_dynamic_object_size} built-in are undefined.
 
-One important feature of the attribute is, a reference to the flexible
+One important feature of the attribute is that a reference to the flexible
 array member field uses the latest value assigned to the field that
 represents the number of the elements before that reference.  For example,
 
@@ -8105,7 +8104,7 @@ represents the number of the elements before that reference.  For example,
 @end smallexample
 
 @noindent
-in the above, @code{ref1} uses @code{val1} as the number of the elements in
+In the above, @code{ref1} uses @code{val1} as the number of the elements in
 @code{p->array}, and @code{ref2} uses @code{val2} as the number of elements
 in @code{p->array}.
 
@@ -8339,7 +8338,7 @@ between processor resets.
 
 This attribute is specific to ELF targets and relies on the linker
 script to place the sections with the @code{.persistent} prefix in the
-right location.  Specifically, some type of non-volatile, writeable
+right location.  Specifically, some type of non-volatile, writable
 memory is required.
 
 @cindex @code{section} variable attribute
@@ -8397,7 +8396,7 @@ The @code{strict_flex_array} attribute should be attached to the trailing
 array field of a structure.  It controls when to treat the trailing array
 field of a structure as a flexible array member for the purposes of accessing
 the elements of such an array.
-@var{level} must be an integer betwen 0 to 3.
+@var{level} must be an integer between 0 to 3.
 
 @var{level}=0 is the least strict level, all trailing arrays of structures
 are treated as flexible array members. @var{level}=3 is the strictest level,
@@ -8486,7 +8485,7 @@ With the option @code{-ftrivial-auto-var-init}, all the automatic variables
 that do not have explicit initializers will be initialized by the compiler.
 These additional compiler initializations might incur run-time overhead,
 sometimes dramatically.  This attribute can be used to mark some variables
-to be excluded from such automatical initialization in order to reduce runtime
+to be excluded from such automatic initialization in order to reduce runtime
 overhead.
 
 This attribute has no effect when the option @code{-ftrivial-auto-var-init}
@@ -8581,7 +8580,7 @@ The @code{weak} attribute is described in
 @cindex @code{aux} variable attribute, ARC
 @item aux
 The @code{aux} attribute is used to directly access the ARC's
-auxiliary register space from C.  The auxilirary register number is
+auxiliary register space from C.  The auxiliary register number is
 given via attribute argument.
 
 @end table
@@ -9207,7 +9206,7 @@ argument of an integer type.  It indicates that the returned pointer
 points to an object whose size is given by the function argument at
 @var{position-1}, or by the product of the arguments at @var{position-1}
 and @var{position-2}.  Meaningful sizes are positive values less than
-@code{PTRDIFF_MAX}.  Other sizes are disagnosed when detected.  GCC uses
+@code{PTRDIFF_MAX}.  Other sizes are diagnosed when detected.  GCC uses
 this information to improve the results of @code{__builtin_object_size}.
 
 For instance, the following declarations
@@ -11628,7 +11627,7 @@ for @code{d} by specifying both constraints.
 
 Some targets have a special register that holds the ``flags'' for the
 result of an operation or comparison.  Normally, the contents of that
-register are either unmodifed by the asm, or the @code{asm} statement is
+register are either unmodified by the asm, or the @code{asm} statement is
 considered to clobber the contents.
 
 On some targets, a special form of output operand exists by which
@@ -12595,7 +12594,7 @@ instruction, depending on the mode.
 @item @code{p} @tab Print the value of 2, raised to the power of the given
 constant.  Used to select the specified bit position.
 @item @code{r} @tab Inverse of condition code, for signed comparisons.
-@item @code{x} @tab Equivialent to @code{X}, but only for pointers.
+@item @code{x} @tab Equivalent to @code{X}, but only for pointers.
 @end multitable
 
 @anchor{loongarchOperandmodifiers}
@@ -13509,7 +13508,7 @@ well as in assignments and some casts.  You can specify a vector type as
 a return type for a function.  Vector types can also be used as function
 arguments.  It is possible to cast from one vector type to another,
 provided they are of the same size (in fact, you can also cast vectors
-to and from other datatypes of the same size).
+to and from other data types of the same size).
 
 You cannot operate between vectors of different lengths or different
 signedness without a cast.
@@ -14202,7 +14201,7 @@ i.e.@: they add 3 unsigned values, set what the last argument
 points to to 1 if any of the two additions overflowed (otherwise 0)
 and return the sum of those 3 unsigned values.  Note, while all
 the first 3 arguments can have arbitrary values, better code will be
-emitted if one of them (preferrably the third one) has only values
+emitted if one of them (preferably the third one) has only values
 0 or 1 (i.e.@: carry-in).
 
 @enddefbuiltin
@@ -15546,7 +15545,7 @@ the pointer points to.  Inside of a union, the only cleared bits are
 bits that are padding bits for all the union members.
 
 This built-in-function is useful if the padding bits of an object might
-have intederminate values and the object representation needs to be
+have indeterminate values and the object representation needs to be
 bitwise compared to some other object, for example for atomic operations.
 
 For C++, @var{ptr} argument type should be pointer to trivially-copyable
@@ -18134,7 +18133,7 @@ The intrinsics provided are listed below:
     void __builtin_loongarch_break (imm0_32767)
 @end smallexample
 
-These instrisic functions are available by using @option{-mfrecipe}.
+These intrinsic functions are available by using @option{-mfrecipe}.
 @smallexample
     float __builtin_loongarch_frecipe_s (float);
     double  __builtin_loongarch_frecipe_d (double);
@@ -18214,7 +18213,7 @@ function you need to include @code{larchintrin.h}.
     void __break (imm0_32767)
 @end smallexample
 
-These instrisic functions are available by including @code{larchintrin.h} and
+These intrinsic functions are available by including @code{larchintrin.h} and
 using @option{-mfrecipe}.
 @smallexample
     float __frecipe_s (float);
@@ -19059,7 +19058,7 @@ __m128i __lsx_vxori_b (__m128i, imm0_255);
 __m128i __lsx_vxor_v (__m128i, __m128i);
 @end smallexample
 
-These instrisic functions are available by including @code{lsxintrin.h} and
+These intrinsic functions are available by including @code{lsxintrin.h} and
 using @option{-mfrecipe} and @option{-mlsx}.
 @smallexample
 __m128d __lsx_vfrecipe_d (__m128d);
@@ -19907,7 +19906,7 @@ __m256i __lasx_xvxori_b (__m256i, imm0_255);
 __m256i __lasx_xvxor_v (__m256i, __m256i);
 @end smallexample
 
-These instrisic functions are available by including @code{lasxintrin.h} and
+These intrinsic functions are available by including @code{lasxintrin.h} and
 using @option{-mfrecipe} and @option{-mlasx}.
 @smallexample
 __m256d __lasx_xvfrecipe_d (__m256d);
@@ -22123,7 +22122,7 @@ between @code{lo_1} and @code{hi_1} inclusive or the range bounded
 between @code{lo_2} and @code{hi_2} inclusive.
 
 The @code{__builtin_dfp_dtstsfi_lt} function returns a non-zero value
-if and only if the number of signficant digits of its @code{value} argument
+if and only if the number of significant digits of its @code{value} argument
 is less than its @code{comparison} argument.  The
 @code{__builtin_dfp_dtstsfi_lt_dd} and
 @code{__builtin_dfp_dtstsfi_lt_td} functions behave similarly, but
@@ -22131,7 +22130,7 @@ require that the type of the @code{value} argument be
 @code{__Decimal64} and @code{__Decimal128} respectively.
 
 The @code{__builtin_dfp_dtstsfi_gt} function returns a non-zero value
-if and only if the number of signficant digits of its @code{value} argument
+if and only if the number of significant digits of its @code{value} argument
 is greater than its @code{comparison} argument.  The
 @code{__builtin_dfp_dtstsfi_gt_dd} and
 @code{__builtin_dfp_dtstsfi_gt_td} functions behave similarly, but
@@ -22139,7 +22138,7 @@ require that the type of the @code{value} argument be
 @code{__Decimal64} and @code{__Decimal128} respectively.
 
 The @code{__builtin_dfp_dtstsfi_eq} function returns a non-zero value
-if and only if the number of signficant digits of its @code{value} argument
+if and only if the number of significant digits of its @code{value} argument
 equals its @code{comparison} argument.  The
 @code{__builtin_dfp_dtstsfi_eq_dd} and
 @code{__builtin_dfp_dtstsfi_eq_td} functions behave similarly, but
@@ -28526,7 +28525,7 @@ subsequent functions.
 @subsection LoongArch Pragmas
 
 The list of attributes supported by Pragma is the same as that of target
-function attributres.  @xref{LoongArch Function Attributes}.
+function attributes.  @xref{LoongArch Function Attributes}.
 
 Example:
 
@@ -29758,7 +29757,7 @@ user with a way of explicitly directing the compiler to emit entities
 with vague linkage (and debugging information) in a particular
 translation unit.
 
-@emph{Note:} These @code{#pragma}s have been superceded as of GCC 2.7.2
+@emph{Note:} These @code{#pragma}s have been superseded as of GCC 2.7.2
 by COMDAT support and the ``key method'' heuristic
 mentioned in @ref{Vague Linkage}.  Using them can actually cause your
 program to grow due to unnecessary out-of-line copies of inline
