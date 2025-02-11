@@ -2103,7 +2103,7 @@ get_unknown_min_value (machine_mode mode)
 static rtx
 force_vector_length_operand (rtx vl)
 {
-  if (CONST_INT_P (vl) && !satisfies_constraint_K (vl))
+  if (CONST_INT_P (vl) && !satisfies_constraint_vl (vl))
     return force_reg (Pmode, vl);
   return vl;
 }
@@ -4130,7 +4130,7 @@ expand_load_store (rtx *ops, bool is_load)
     }
   else
     {
-      if (!satisfies_constraint_K (len))
+      if (!satisfies_constraint_vl (len))
 	len = force_reg (Pmode, len);
       if (is_load)
 	{
@@ -4165,7 +4165,7 @@ expand_strided_load (machine_mode mode, rtx *ops)
     emit_vlmax_insn (icode, BINARY_OP_TAMA, emit_ops);
   else
     {
-      len = satisfies_constraint_K (len) ? len : force_reg (Pmode, len);
+      len = satisfies_constraint_vl (len) ? len : force_reg (Pmode, len);
       emit_nonvlmax_insn (icode, BINARY_OP_TAMA, emit_ops, len);
     }
 }
@@ -4191,7 +4191,7 @@ expand_strided_store (machine_mode mode, rtx *ops)
     }
   else
     {
-      len = satisfies_constraint_K (len) ? len : force_reg (Pmode, len);
+      len = satisfies_constraint_vl (len) ? len : force_reg (Pmode, len);
       vl_type = get_avl_type_rtx (NONVLMAX);
     }
 
@@ -4642,7 +4642,7 @@ expand_lanes_load_store (rtx *ops, bool is_load)
     }
   else
     {
-      if (!satisfies_constraint_K (len))
+      if (!satisfies_constraint_vl (len))
 	len = force_reg (Pmode, len);
       if (is_load)
 	{
