@@ -52,6 +52,16 @@ cpp_diagnostic_get_current_location (cpp_reader *pfile)
     }
 }
 
+/* Sometimes a diagnostic needs to be generated before libcpp has been able
+   to generate a valid location for the current token; in that case, the
+   non-zero location returned by this function is the preferred one to use.  */
+
+location_t
+cpp_get_diagnostic_override_loc (const cpp_reader *pfile)
+{
+  return pfile->diagnostic_override_loc;
+}
+
 /* Print a diagnostic at the given location.  */
 
 ATTRIBUTE_CPP_PPDIAG (5, 0)
