@@ -60,6 +60,7 @@ static tree ignore_attribute (tree *, tree, tree, int, bool *);
 static tree handle_format_attribute (tree *, tree, tree, int, bool *);
 static tree handle_fnspec_attribute (tree *, tree, tree, int, bool *);
 static tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
+static tree handle_cold_attribute (tree *, tree, tree, int, bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
@@ -128,6 +129,8 @@ static const attribute_spec lto_gnu_attributes[] =
 			      handle_sentinel_attribute, NULL },
   { "type generic",           0, 0, false, true, true, false,
 			      handle_type_generic_attribute, NULL },
+  { "cold",		      0, 0, false,  false, false, false,
+			      handle_cold_attribute, NULL },
   { "fn spec",	 	      1, 1, false, true, true, false,
 			      handle_fnspec_attribute, NULL },
   { "transaction_pure",	      0, 0, false, true, true, false,
@@ -595,6 +598,16 @@ handle_fnspec_attribute (tree *node ATTRIBUTE_UNUSED, tree ARG_UNUSED (name),
   gcc_assert (args
 	      && TREE_CODE (TREE_VALUE (args)) == STRING_CST
 	      && !TREE_CHAIN (args));
+  return NULL_TREE;
+}
+
+/* Handle a "cold" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_cold_attribute (tree *, tree, tree, int, bool *)
+{
+  /* Nothing to be done here.  */
   return NULL_TREE;
 }
 

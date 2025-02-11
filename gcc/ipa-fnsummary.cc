@@ -255,6 +255,9 @@ redirect_to_unreachable (struct cgraph_edge *e)
   struct cgraph_node *target
     = cgraph_node::get_create (builtin_decl_unreachable ());
 
+  gcc_checking_assert (lookup_attribute ("cold",
+					 DECL_ATTRIBUTES (target->decl)));
+
   if (e->speculative)
     e = cgraph_edge::resolve_speculation (e, target->decl);
   else if (!e->callee)
