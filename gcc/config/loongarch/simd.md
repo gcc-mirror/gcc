@@ -75,6 +75,14 @@
 			    (V8HI "V4HI") (V16HI "V8HI")
 			    (V16QI "V8QI") (V32QI "V16QI")])
 
+;; Modes with doubled length for intermediate values in RTX pattern.
+(define_mode_attr LVEC [(V2DF "V4DF") (V4DF "V8DF")
+			(V4SF "V8SF") (V8SF "V16SF")
+			(V2DI "V4DI") (V4DI "V8DI")
+			(V4SI "V8SI") (V8SI "V16SI")
+			(V8HI "V16HI") (V16HI "V32HI")
+			(V16QI "V32QI") (V32QI "V64QI")])
+
 ;; The elements are widen but the total size is unchanged
 ;; (i.e. the number of elements is halfed).
 (define_mode_attr WVEC_HALF [(V2DI "V1TI") (V4DI "V2TI")
@@ -121,10 +129,22 @@
 (define_mode_attr simdifmt_for_f [(V2DF "l") (V4DF "l")
 				  (V4SF "w") (V8SF "w")])
 
-;; Suffix for integer mode in LSX or LASX instructions to operating FP
+;; Suffix for integer mode in LSX or LASX instructions to operate FP
 ;; vectors using integer vector operations.
 (define_mode_attr simdfmt_as_i [(V2DF "d") (V4DF "d")
-				(V4SF "w") (V8SF "w")])
+				(V4SF "w") (V8SF "w")
+				(V2DI "d") (V4DI "d")
+				(V4SI "w") (V8SI "w")
+				(V8HI "h") (V16HI "h")
+				(V16QI "b") (V32QI "b")])
+
+;; "_f" for FP vectors, "" for integer vectors
+(define_mode_attr _f [(V2DF "_f") (V4DF "_f")
+		      (V4SF "_f") (V8SF "_f")
+		      (V2DI "") (V4DI "")
+		      (V4SI "") (V8SI "")
+		      (V8HI "") (V16HI "")
+		      (V16QI "") (V32QI "")])
 
 ;; Size of vector elements in bits.
 (define_mode_attr elmbits [(V2DI "64") (V4DI "64")

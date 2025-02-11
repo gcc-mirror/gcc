@@ -1624,125 +1624,33 @@
   [(set_attr "type" "simd_logic")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lsx_vpickev_b"
-[(set (match_operand:V16QI 0 "register_operand" "=f")
-      (vec_select:V16QI
-	(vec_concat:V32QI
-	  (match_operand:V16QI 1 "register_operand" "f")
-	  (match_operand:V16QI 2 "register_operand" "f"))
-	(parallel [(const_int 0) (const_int 2)
-		   (const_int 4) (const_int 6)
-		   (const_int 8) (const_int 10)
-		   (const_int 12) (const_int 14)
-		   (const_int 16) (const_int 18)
-		   (const_int 20) (const_int 22)
-		   (const_int 24) (const_int 26)
-		   (const_int 28) (const_int 30)])))]
-  "ISA_HAS_LSX"
-  "vpickev.b\t%w0,%w2,%w1"
+;; Picking even/odd elements.
+(define_insn "lsx_pick_evod_<mode>"
+  [(set (match_operand:LSX 0 "register_operand" "=f")
+	(vec_select:LSX
+	  (vec_concat:<LVEC>
+	    (match_operand:LSX 1 "register_operand" "f")
+	    (match_operand:LSX 2 "register_operand" "f"))
+	  (match_operand:<LVEC> 3 "vect_par_cnst_even_or_odd_half")))]
+  "GET_MODE_SIZE (<UNITMODE>mode) != 8" ;; Use vilvl.d instead
+  "vpick%O3.<simdfmt_as_i>\t%<wu>0,%<wu>2,%<wu>1"
   [(set_attr "type" "simd_permute")
-   (set_attr "mode" "V16QI")])
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "lsx_vpickev_h"
-[(set (match_operand:V8HI 0 "register_operand" "=f")
-      (vec_select:V8HI
-	(vec_concat:V16HI
-	  (match_operand:V8HI 1 "register_operand" "f")
-	  (match_operand:V8HI 2 "register_operand" "f"))
-	(parallel [(const_int 0) (const_int 2)
-		   (const_int 4) (const_int 6)
-		   (const_int 8) (const_int 10)
-		   (const_int 12) (const_int 14)])))]
-  "ISA_HAS_LSX"
-  "vpickev.h\t%w0,%w2,%w1"
-  [(set_attr "type" "simd_permute")
-   (set_attr "mode" "V8HI")])
-
-(define_insn "lsx_vpickev_w"
-[(set (match_operand:V4SI 0 "register_operand" "=f")
-      (vec_select:V4SI
-	(vec_concat:V8SI
-	  (match_operand:V4SI 1 "register_operand" "f")
-	  (match_operand:V4SI 2 "register_operand" "f"))
-	(parallel [(const_int 0) (const_int 2)
-		   (const_int 4) (const_int 6)])))]
-  "ISA_HAS_LSX"
-  "vpickev.w\t%w0,%w2,%w1"
-  [(set_attr "type" "simd_permute")
-   (set_attr "mode" "V4SI")])
-
-(define_insn "lsx_vpickev_w_f"
-[(set (match_operand:V4SF 0 "register_operand" "=f")
-      (vec_select:V4SF
-	(vec_concat:V8SF
-	  (match_operand:V4SF 1 "register_operand" "f")
-	  (match_operand:V4SF 2 "register_operand" "f"))
-	(parallel [(const_int 0) (const_int 2)
-		   (const_int 4) (const_int 6)])))]
-  "ISA_HAS_LSX"
-  "vpickev.w\t%w0,%w2,%w1"
-  [(set_attr "type" "simd_permute")
-   (set_attr "mode" "V4SF")])
-
-(define_insn "lsx_vpickod_b"
-[(set (match_operand:V16QI 0 "register_operand" "=f")
-      (vec_select:V16QI
-	(vec_concat:V32QI
-	  (match_operand:V16QI 1 "register_operand" "f")
-	  (match_operand:V16QI 2 "register_operand" "f"))
-	(parallel [(const_int 1) (const_int 3)
-		   (const_int 5) (const_int 7)
-		   (const_int 9) (const_int 11)
-		   (const_int 13) (const_int 15)
-		   (const_int 17) (const_int 19)
-		   (const_int 21) (const_int 23)
-		   (const_int 25) (const_int 27)
-		   (const_int 29) (const_int 31)])))]
-  "ISA_HAS_LSX"
-  "vpickod.b\t%w0,%w2,%w1"
-  [(set_attr "type" "simd_permute")
-   (set_attr "mode" "V16QI")])
-
-(define_insn "lsx_vpickod_h"
-[(set (match_operand:V8HI 0 "register_operand" "=f")
-      (vec_select:V8HI
-	(vec_concat:V16HI
-	  (match_operand:V8HI 1 "register_operand" "f")
-	  (match_operand:V8HI 2 "register_operand" "f"))
-	(parallel [(const_int 1) (const_int 3)
-		   (const_int 5) (const_int 7)
-		   (const_int 9) (const_int 11)
-		   (const_int 13) (const_int 15)])))]
-  "ISA_HAS_LSX"
-  "vpickod.h\t%w0,%w2,%w1"
-  [(set_attr "type" "simd_permute")
-   (set_attr "mode" "V8HI")])
-
-(define_insn "lsx_vpickod_w"
-[(set (match_operand:V4SI 0 "register_operand" "=f")
-      (vec_select:V4SI
-	(vec_concat:V8SI
-	  (match_operand:V4SI 1 "register_operand" "f")
-	  (match_operand:V4SI 2 "register_operand" "f"))
-	(parallel [(const_int 1) (const_int 3)
-		   (const_int 5) (const_int 7)])))]
-  "ISA_HAS_LSX"
-  "vpickod.w\t%w0,%w2,%w1"
-  [(set_attr "type" "simd_permute")
-   (set_attr "mode" "V4SI")])
-
-(define_insn "lsx_vpickod_w_f"
-[(set (match_operand:V4SF 0 "register_operand" "=f")
-      (vec_select:V4SF
-	(vec_concat:V8SF
-	  (match_operand:V4SF 1 "register_operand" "f")
-	  (match_operand:V4SF 2 "register_operand" "f"))
-	(parallel [(const_int 1) (const_int 3)
-		   (const_int 5) (const_int 7)])))]
-  "ISA_HAS_LSX"
-  "vpickod.w\t%w0,%w2,%w1"
-  [(set_attr "type" "simd_permute")
-   (set_attr "mode" "V4SF")])
+(define_expand "lsx_vpick<ev_od>_<simdfmt_as_i><_f>"
+  [(match_operand:LSX 0 "register_operand" "=f")
+   (match_operand:LSX 1 "register_operand" " f")
+   (match_operand:LSX 2 "register_operand" " f")
+   (const_int zero_one)]
+  "GET_MODE_SIZE (<UNITMODE>mode) != 8" ;; Use vilvl.d instead
+{
+  int nelts = GET_MODE_NUNITS (<MODE>mode);
+  rtx op3 = loongarch_gen_stepped_int_parallel (nelts, <zero_one>, 2);
+  rtx insn = gen_lsx_pick_evod_<mode> (operands[0], operands[1],
+				       operands[2], op3);
+  emit_insn (insn);
+  DONE;
+})
 
 (define_insn "popcount<mode>2"
   [(set (match_operand:ILSX 0 "register_operand" "=f")
