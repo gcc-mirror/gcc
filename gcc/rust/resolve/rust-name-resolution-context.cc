@@ -113,6 +113,7 @@ NameResolutionContext::scoped (Rib::Kind rib_kind, NodeId id,
 			       std::function<void (void)> lambda,
 			       tl::optional<Identifier> path)
 {
+  // NOTE: You must be at the root node when pushing the prelude rib.
   values.push (rib_kind, id, path);
   types.push (rib_kind, id, path);
   macros.push (rib_kind, id, path);
@@ -132,6 +133,9 @@ NameResolutionContext::scoped (Rib::Kind rib_kind, Namespace ns,
 			       std::function<void (void)> lambda,
 			       tl::optional<Identifier> path)
 {
+  // This could work... I'm not sure why you would want to do this though.
+  rust_assert (rib_kind != Rib::Kind::Prelude);
+
   switch (ns)
     {
     case Namespace::Values:

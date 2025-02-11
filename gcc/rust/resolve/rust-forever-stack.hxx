@@ -36,6 +36,13 @@ ForeverStack<N>::Node::is_root () const
 
 template <Namespace N>
 bool
+ForeverStack<N>::Node::is_prelude () const
+{
+  return rib.kind == Rib::Kind::Prelude;
+}
+
+template <Namespace N>
+bool
 ForeverStack<N>::Node::is_leaf () const
 {
   return children.empty ();
@@ -63,6 +70,16 @@ template <Namespace N>
 void
 ForeverStack<N>::push_inner (Rib rib, Link link)
 {
+  if (rib.kind == Rib::Kind::Prelude)
+    {
+      // If you push_inner into the prelude from outside the root, you will pop
+      // back into the root, which could screw up a traversal.
+      rust_assert (&cursor_reference.get () == &root);
+      // Prelude doesn't have an access path
+      rust_assert (!link.path);
+      update_cursor (this->prelude);
+      return;
+    }
   // If the link does not exist, we create it and emplace a new `Node` with the
   // current node as its parent. `unordered_map::emplace` returns a pair with
   // the iterator and a boolean. If the value already exists, the iterator
@@ -300,6 +317,20 @@ ForeverStack<N>::get (const Identifier &name)
   return resolved_definition;
 }
 
+template <Namespace N>
+tl::optional<Rib::Definition>
+ForeverStack<N>::get_prelude (const Identifier &name)
+{
+  return prelude.rib.get (name.as_string ());
+}
+
+template <Namespace N>
+tl::optional<Rib::Definition>
+ForeverStack<N>::get_prelude (const std::string &name)
+{
+  return prelude.rib.get (name);
+}
+
 template <>
 tl::optional<Rib::Definition> inline ForeverStack<Namespace::Labels>::get (
   const Identifier &name)
@@ -399,7 +430,7 @@ ForeverStack<N>::find_starting_point (
 	break;
 
       auto &seg = unwrap_type_segment (outer_seg);
-      auto is_self_or_crate
+      bool is_self_or_crate
 	= seg.is_crate_path_seg () || seg.is_lower_self_seg ();
 
       // if we're after the first path segment and meet `self` or `crate`, it's
@@ -457,7 +488,7 @@ ForeverStack<N>::resolve_segments (
   typename std::vector<S>::const_iterator iterator,
   std::function<void (const S &, NodeId)> insert_segment_resolution)
 {
-  auto *current_node = &starting_point;
+  Node *current_node = &starting_point;
   for (; !is_last (iterator, segments); iterator++)
     {
       auto &outer_seg = *iterator;
@@ -473,7 +504,7 @@ ForeverStack<N>::resolve_segments (
 	}
 
       auto &seg = unwrap_type_segment (outer_seg);
-      auto str = seg.as_string ();
+      std::string str = seg.as_string ();
       rust_debug ("[ARTHUR]: resolving segment part: %s", str.c_str ());
 
       // check that we don't encounter *any* leading keywords afterwards
@@ -488,10 +519,20 @@ ForeverStack<N>::resolve_segments (
        * On every iteration this loop either
        *
        * 1. terminates
-       * 2. decreases the depth of the node pointed to by current_node
        *
-       * This ensures termination
+       * 2. decreases the depth of the node pointed to by current_node until
+       *    current_node reaches the root
+       *
+       * 3. If the root node is reached, and we were not able to resolve the
+       *    segment, we search the prelude rib for the segment, by setting
+       *    current_node to point to the prelude, and toggling the
+       *    searched_prelude boolean to true. If current_node is the prelude
+       *    rib, and searched_prelude is true, we will exit.
+       *
+       * This ensures termination.
+       *
        */
+      bool searched_prelude = false;
       while (true)
 	{
 	  // may set the value of child
@@ -527,9 +568,16 @@ ForeverStack<N>::resolve_segments (
 		}
 	    }
 
+	  if (current_node->is_root () && !searched_prelude)
+	    {
+	      searched_prelude = true;
+	      current_node = &prelude;
+	      continue;
+	    }
+
 	  if (!is_start (iterator, segments)
 	      || current_node->rib.kind == Rib::Kind::Module
-	      || current_node->is_root ())
+	      || current_node->is_prelude ())
 	    {
 	      return tl::nullopt;
 	    }
@@ -569,7 +617,12 @@ ForeverStack<N>::resolve_path (
 	  return Rib::Definition::NonShadowable (seg_id);
 	}
 
-      auto res = get (unwrap_type_segment (segments.back ()).as_string ());
+      tl::optional<Rib::Definition> res
+	= get (unwrap_type_segment (segments.back ()).as_string ());
+
+      if (!res)
+	res = get_prelude (unwrap_type_segment (segments.back ()).as_string ());
+
       if (res && !res->is_ambiguous ())
 	insert_segment_resolution (segments.back (), res->get_node_id ());
       return res;
@@ -584,16 +637,25 @@ ForeverStack<N>::resolve_path (
       return resolve_segments (starting_point.get (), segments, iterator,
 			       insert_segment_resolution);
     })
-    .and_then ([&segments, &insert_segment_resolution] (
+    .and_then ([this, &segments, &insert_segment_resolution] (
 		 Node final_node) -> tl::optional<Rib::Definition> {
       // leave resolution within impl blocks to type checker
       if (final_node.rib.kind == Rib::Kind::TraitOrImpl)
 	return tl::nullopt;
+
+      std::string seg_name
+	= unwrap_type_segment (segments.back ()).as_string ();
+
       // assuming this can't be a lang item segment
-      auto res = final_node.rib.get (
-	unwrap_type_segment (segments.back ()).as_string ());
+      tl::optional<Rib::Definition> res = final_node.rib.get (seg_name);
+
+      // Ok we didn't find it in the rib, Lets try the prelude...
+      if (!res)
+	res = get_prelude (seg_name);
+
       if (res && !res->is_ambiguous ())
 	insert_segment_resolution (segments.back (), res->get_node_id ());
+
       return res;
     });
 }
