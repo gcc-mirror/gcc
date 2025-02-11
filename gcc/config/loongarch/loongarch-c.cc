@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "c-family/c-common.h"
 #include "cpplib.h"
+#include "c-family/c-pragma.h"
 #include "tm_p.h"
 
 #define preprocessing_asm_p() (cpp_get_options (pfile)->lang == CLK_ASM)
@@ -211,6 +212,19 @@ loongarch_pragma_target_parse (tree args, tree pop_target)
     = build_target_option_node (&global_options, &global_options_set);
 
   loongarch_reset_previous_fndecl ();
+
+  /* For the definitions, ensure all newly defined macros are considered
+     as used for -Wunused-macros.  There is no point warning about the
+     compiler predefined macros.  */
+  cpp_options *cpp_opts = cpp_get_options (parse_in);
+  unsigned char saved_warn_unused_macros = cpp_opts->warn_unused_macros;
+  cpp_opts->warn_unused_macros = 0;
+
+  cpp_force_token_locations (parse_in, BUILTINS_LOCATION);
+  loongarch_update_cpp_builtins (parse_in);
+  cpp_stop_forcing_token_locations (parse_in);
+
+  cpp_opts->warn_unused_macros = saved_warn_unused_macros;
 
   /* If we're popping or reseting make sure to update the globals so that
      the optab availability predicates get recomputed.  */
