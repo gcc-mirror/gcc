@@ -76,6 +76,7 @@
 #include "aarch-common.h"
 #include "aarch-common-protos.h"
 #include "machmode.h"
+#include "arm-builtins.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -2859,7 +2860,9 @@ arm_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   switch (code & ARM_BUILTIN_CLASS)
     {
     case ARM_BUILTIN_GENERAL:
+      new_stmt = arm_general_gimple_fold_builtin (subcode, stmt);
       break;
+
     case ARM_BUILTIN_MVE:
       new_stmt = arm_mve::gimple_fold_builtin (subcode, stmt);
     }
