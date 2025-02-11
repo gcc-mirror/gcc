@@ -9935,61 +9935,6 @@ complain_about_tu_local_entity (tree e)
   inform (TU_LOCAL_ENTITY_LOCATION (e), "declared here");
 }
 
-/* Checks if T contains a TU-local entity.  */
-
-static bool
-expr_contains_tu_local_entity (tree t)
-{
-  if (!modules_p ())
-    return false;
-
-  auto walker = [](tree *tp, int *walk_subtrees, void *) -> tree
-    {
-      if (TREE_CODE (*tp) == TU_LOCAL_ENTITY)
-	return *tp;
-      if (!EXPR_P (*tp))
-	*walk_subtrees = false;
-      return NULL_TREE;
-    };
-  return cp_walk_tree (&t, walker, nullptr, nullptr);
-}
-
-/* Errors and returns TRUE if X is a function that contains a TU-local
-   entity in its overload set.  */
-
-static bool
-function_contains_tu_local_entity (tree x)
-{
-  if (!modules_p ())
-    return false;
-
-  if (!x || x == error_mark_node)
-    return false;
-
-  if (TREE_CODE (x) == OFFSET_REF
-      || TREE_CODE (x) == COMPONENT_REF)
-    x = TREE_OPERAND (x, 1);
-  x = MAYBE_BASELINK_FUNCTIONS (x);
-  if (TREE_CODE (x) == TEMPLATE_ID_EXPR)
-    x = TREE_OPERAND (x, 0);
-
-  if (OVL_P (x))
-    for (tree ovl : lkp_range (x))
-      if (TREE_CODE (ovl) == TU_LOCAL_ENTITY)
-	{
-	  x = ovl;
-	  break;
-	}
-
-  if (TREE_CODE (x) == TU_LOCAL_ENTITY)
-    {
-      complain_about_tu_local_entity (x);
-      return true;
-    }
-
-  return false;
-}
-
 /* Return a TEMPLATE_ID_EXPR corresponding to the indicated FNS and
    ARGLIST.  Valid choices for FNS are given in the cp-tree.def
    documentation for TEMPLATE_ID_EXPR.  */
@@ -18814,11 +18759,6 @@ dependent_operand_p (tree t)
   while (TREE_CODE (t) == IMPLICIT_CONV_EXPR)
     t = TREE_OPERAND (t, 0);
 
-  /* If we contain a TU_LOCAL_ENTITY assume we're non-dependent; we'll error
-     later when instantiating.  */
-  if (expr_contains_tu_local_entity (t))
-    return false;
-
   ++processing_template_decl;
   bool r = (potential_constant_expression (t)
 	    ? value_dependent_expression_p (t)
@@ -20624,9 +20564,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	else
 	  object = NULL_TREE;
 
-	if (function_contains_tu_local_entity (templ))
-	  RETURN (error_mark_node);
-
 	tree tid = lookup_template_function (templ, targs);
 	protected_set_expr_location (tid, EXPR_LOCATION (t));
 
@@ -21318,9 +21255,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    if (BASELINK_P (function))
 	      qualified_p = true;
 	  }
-
-	if (function_contains_tu_local_entity (function))
-	  RETURN (error_mark_node);
 
 	nargs = call_expr_nargs (t);
 	releasing_vec call_args;
@@ -22117,7 +22051,16 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       RETURN (t);
 
     case NAMESPACE_DECL:
+      RETURN (t);
+
     case OVERLOAD:
+      if (modules_p ())
+	for (tree ovl : lkp_range (t))
+	  if (TREE_CODE (ovl) == TU_LOCAL_ENTITY)
+	    {
+	      complain_about_tu_local_entity (ovl);
+	      RETURN (error_mark_node);
+	    }
       RETURN (t);
 
     case TEMPLATE_DECL:
@@ -28984,6 +28927,11 @@ type_dependent_expression_p (tree expression)
   gcc_checking_assert (!TYPE_P (expression));
 
   STRIP_ANY_LOCATION_WRAPPER (expression);
+
+  /* Assume a TU-local entity is not dependent, we'll error later when
+     instantiating anyway.  */
+  if (TREE_CODE (expression) == TU_LOCAL_ENTITY)
+    return false;
 
   /* An unresolved name is always dependent.  */
   if (identifier_p (expression)

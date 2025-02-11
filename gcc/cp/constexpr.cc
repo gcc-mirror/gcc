@@ -10938,6 +10938,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case CO_RETURN_EXPR:
       return false;
 
+    /* Assume a TU-local entity is not constant, we'll error later when
+       instantiating.  */
+    case TU_LOCAL_ENTITY:
+      return false;
+
     case NONTYPE_ARGUMENT_PACK:
       {
 	tree args = ARGUMENT_PACK_ARGS (t);
