@@ -91,16 +91,18 @@ Late::setup_builtin_types ()
     // insert it in the type context...
   };
 
-  for (const auto &builtin : builtins)
-    {
-      // we should be able to use `insert_at_root` or `insert` here, since we're
-      // at the root :) hopefully!
-      auto ok = ctx.types.insert (builtin.name, builtin.node_id);
-      rust_assert (ok);
+  // There's a special Rib for putting prelude items, since prelude items need
+  // to satisfy certain special rules.
+  ctx.scoped (Rib::Kind::Prelude, 0, [this, &ty_ctx] (void) -> void {
+    for (const auto &builtin : builtins)
+      {
+	auto ok = ctx.types.insert (builtin.name, builtin.node_id);
+	rust_assert (ok);
 
-      ctx.mappings.insert_node_to_hir (builtin.node_id, builtin.hir_id);
-      ty_ctx.insert_builtin (builtin.hir_id, builtin.node_id, builtin.type);
-    }
+	ctx.mappings.insert_node_to_hir (builtin.node_id, builtin.hir_id);
+	ty_ctx.insert_builtin (builtin.hir_id, builtin.node_id, builtin.type);
+      }
+  });
 
   // ...here!
   auto *unit_type = TyTy::TupleType::get_unit_type ();
@@ -213,7 +215,6 @@ Late::visit (AST::IdentifierExpr &expr)
   // TODO: same thing as visit(PathInExpression) here?
 
   tl::optional<Rib::Definition> resolved = tl::nullopt;
-
   if (auto value = ctx.values.get (expr.get_ident ()))
     {
       resolved = value;
@@ -231,10 +232,12 @@ Late::visit (AST::IdentifierExpr &expr)
     }
   else
     {
-      rust_error_at (expr.get_locus (),
-		     "could not resolve identifier expression: %qs",
-		     expr.get_ident ().as_string ().c_str ());
-      return;
+      if (auto typ = ctx.types.get_prelude (expr.get_ident ()))
+	resolved = typ;
+      else
+	rust_error_at (expr.get_locus (),
+		       "could not resolve identifier expression: %qs",
+		       expr.get_ident ().as_string ().c_str ());
     }
 
   ctx.map_usage (Usage (expr.get_node_id ()),

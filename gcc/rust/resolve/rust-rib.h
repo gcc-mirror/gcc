@@ -183,6 +183,11 @@ public:
     ForwardTypeParamBan,
     /* Const generic, as in the following example: fn foo<T, const X: T>() {} */
     ConstParamType,
+    /* Prelude rib, used for both the language prelude (i32,usize,etc) and the
+     * (future) {std,core}::prelude::* import. A regular rib with the
+     * restriction that you cannot `use` items from the Prelude
+     */
+    Prelude,
   } kind;
 
   static std::string kind_to_string (Rib::Kind kind)
