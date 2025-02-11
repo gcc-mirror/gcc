@@ -10966,9 +10966,9 @@ proc check_effective_target_apxf { } {
     } "-mapxf" ]
 }
 
-# Return 1 if avx10.2 instructions can be compiled.
-proc check_effective_target_avx10_2 { } {
-    return [check_no_compiler_messages avx10.2 object {
+# Return 1 if avx10.2-256 instructions can be compiled.
+proc check_effective_target_avx10_2_256 { } {
+    return [check_no_compiler_messages avx10.2-256 object {
 	void
 	foo ()
 	{

@@ -7615,17 +7615,16 @@ Disable the generation of the AVX10.1 instructions.
 @cindex @code{target("avx10.2")} function attribute, x86
 @item avx10.2
 @itemx no-avx10.2
-Enable/disable the generation of the AVX10.2 instructions.
+Enable the generation of the AVX10.2 instructions with 512 bit support.
+Disable the generation of the AVX10.2 instructions.
 
 @cindex @code{target("avx10.2-256")} function attribute, x86
 @item avx10.2-256
-@itemx no-avx10.2-256
-Enable/disable the generation of the AVX10.2 instructions.
+Enable the generation of the AVX10.2 instructions with 256 bit support.
 
 @cindex @code{target("avx10.2-512")} function attribute, x86
 @item avx10.2-512
-@itemx no-avx10.2-512
-Enable/disable the generation of the AVX10.2 512 bit instructions.
+Enable the generation of the AVX10.2 instructions with 512 bit support.
 
 @cindex @code{target("amx-avx512")} function attribute, x86
 @item amx-avx512

@@ -194,7 +194,7 @@ main ()
   /* Check CPU support for SM4.  */
   if (__builtin_cpu_supports ("sm4")
 #ifdef AVX10_2
-      && __builtin_cpu_supports ("avx10.2")
+      && __builtin_cpu_supports ("avx10.2-256")
 #endif
 #ifdef AVX10_2_512
       && __builtin_cpu_supports ("avx10.2-512")

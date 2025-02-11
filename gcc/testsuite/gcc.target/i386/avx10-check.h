@@ -40,7 +40,7 @@ main ()
   /* Run AVX10 test only if host has ISA support.  */
   if (__builtin_cpu_supports ("avx10.1-256")
 #ifdef AVX10_2
-      && __builtin_cpu_supports ("avx10.2")
+      && __builtin_cpu_supports ("avx10.2-256")
 #endif
 #ifdef AVX10_2_512
       && __builtin_cpu_supports ("avx10.2-512")

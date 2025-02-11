@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fsignaling-nans -mfpmath=sse -O2 -march=x86-64-v3 -mavx10.2-512" } */
-/* { dg-require-effective-target avx10_2 } */
+/* { dg-require-effective-target avx10_2_512 } */
 
 #ifndef AVX10_2
 #define AVX10_2

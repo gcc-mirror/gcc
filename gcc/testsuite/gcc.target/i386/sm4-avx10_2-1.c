@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -march=x86-64-v3 -msm4 -mavx10.2" } */
+/* { dg-options "-O2 -march=x86-64-v3 -msm4 -mavx10.2-256" } */
 
 #include <immintrin.h>
 

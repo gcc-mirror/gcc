@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-march=x86-64-v3 -mavx10.2 -Ofast" } */
+/* { dg-options "-march=x86-64-v3 -mavx10.2-256 -Ofast" } */
 /* { dg-final { scan-assembler-times "vmaxbf16" 2 } } */
 /* { dg-final { scan-assembler-times "vminbf16" 2 } } */
 

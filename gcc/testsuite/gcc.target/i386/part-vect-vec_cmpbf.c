@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -mavx10.2" } */
+/* { dg-options "-O2 -mavx10.2-256" } */
 /* { dg-final { scan-assembler-times "vcmpbf16" 10 } } */
 
 typedef __bf16 __attribute__((__vector_size__ (4))) v2bf;
