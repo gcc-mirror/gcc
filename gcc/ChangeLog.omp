@@ -3,6 +3,15 @@
 	Backported from trunk:
 	2025-02-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	PR target/94282
+	PR target/113331
+	* common/config/gcn/gcn-common.cc (gcn_except_unwind_info): 'return UI_TARGET;'.
+	* config/gcn/gcn.cc (gcn_asm_init_sections): New function.
+	(TARGET_ASM_INIT_SECTIONS): '#define'.
+
+	Backported from trunk:
+	2025-02-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	PR target/86660
 	* common/config/nvptx/nvptx-common.cc (nvptx_except_unwind_info):
 	'return UI_TARGET;'.
