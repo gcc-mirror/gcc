@@ -1,3 +1,15 @@
+2025-02-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/24878
+	* interface.cc (compare_parameter): Better wording on
+	error message.
+
+2025-02-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/56423
+	* resolve.cc (resolve_structure_cons): Check rank of pointer target;
+	reject pointer target with vector subscripts.
+
 2025-02-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/24878

@@ -1,3 +1,52 @@
+2025-02-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/mkoffload.cc (enum elf_arch_code): Add
+	EF_AMDGPU_MACH_AMDGCN_NONE.
+	(elf_arch): Use enum elf_arch_code as type.
+	(tool_cleanup): Silence warning by removing tailing '.' from error.
+	(get_arch_name): Return enum elf_arch_code.
+	(check_for_missing_lib): New; print fatal error if the multilib
+	is not available but it is for the associate generic ISA.
+	(main): Call it.
+
+2025-02-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	* doc/install.texi (GCN): Update section about multilibs and
+	required LLVM version.
+
+2025-02-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118097
+	* ipa-cp.cc (ipa_get_jf_arith_result): Adjust comment.
+	(ipa_get_jf_pass_through_result): Removed.
+	(ipa_value_from_jfunc): Use directly ipa_get_jf_arith_result, do
+	not specify operation type but make sure we check and possibly
+	convert the result.
+	(get_val_across_arith_op): Remove the last parameter, always pass
+	NULL_TREE to ipa_get_jf_arith_result in its last argument.
+	(propagate_vals_across_arith_jfunc): Do not pass res_type to
+	get_val_across_arith_op.
+	(propagate_vals_across_pass_through): Add checking assert that
+	parm_type is not NULL.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118623
+	* config/i386/i386.md (*bt<mode>): Represent bt as
+	compare:CCC of const0_rtx and zero_extract rather than
+	zero_extract and const0_rtx.
+	(*bt<SWI48:mode>_mask): Likewise.
+	(*jcc_bt<mode>): Likewise.  Use LTU and GEU as flags test
+	instead of EQ and NE.
+	(*jcc_bt<mode>_mask): Likewise.
+	(*jcc_bt<SWI48:mode>_mask_1): Likewise.
+	(Help combine recognize bt followed by cmov splitter): Likewise.
+	(*bt<mode>_setcqi): Likewise.
+	(*bt<mode>_setncqi): Likewise.
+	(*bt<mode>_setnc<mode>): Likewise.
+	(*bt<mode>_setncqi_2): Likewise.
+	(*bt<mode>_setc<mode>_mask): Likewise.
+
 2025-02-09  Dario Gjorgjevski  <dario.gjorgjevski@gmail.com>
 
 	PR middle-end/117263

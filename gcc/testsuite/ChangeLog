@@ -1,3 +1,38 @@
+2025-02-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/24878
+	* gfortran.dg/interface_51.f90: Adjust expected error message.
+
+2025-02-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/56423
+	* gfortran.dg/derived_constructor_comps_2.f90: Adjust test.
+	* gfortran.dg/derived_constructor_comps_8.f90: New test.
+
+2025-02-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118097
+	* gcc.dg/ipa/pr118097.c: New test.
+	* gcc.dg/ipa/pr118535.c: Likewise.
+	* gcc.dg/ipa/ipa-notypes-1.c: Likewise.
+
+2025-02-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/118089
+	* gcc.target/arm/thumb2-pop-loreg.c (dg-require-effective-target): Fix
+	typo in directive.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118623
+	* gcc.c-torture/execute/pr118623.c: New test.
+
+2025-02-10  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/118754
+	* gcc.dg/vect/vect-tail-nomask-1.c: Add novector.
+	* gcc.target/i386/pr106010-8c.c: Likewise.
+
 2025-02-09  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/115123
