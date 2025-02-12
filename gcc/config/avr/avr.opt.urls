@@ -17,6 +17,9 @@ UrlSuffix(gcc/AVR-Options.html#index-mgas-isr-prologues)
 mn-flash=
 UrlSuffix(gcc/AVR-Options.html#index-mn-flash)
 
+mcall-main
+UrlSuffix(gcc/AVR-Options.html#index-mcall-main)
+
 mskip-bug
 UrlSuffix(gcc/AVR-Options.html#index-mskip-bug)
 
