@@ -3,3 +3,9 @@
 # to .eh_frame data from crtbeginT.o instead of the user-defined object
 # during static linking.
 CRTSTUFF_T_CFLAGS += -fno-omit-frame-pointer -fno-asynchronous-unwind-tables
+
+# As shown in the test case PR118844, when using lld for linking,
+# it fails due to B26 in crtbeginS.o causing the link to exceed the range.
+# Therefore, the issue was resolved by adding the compilation option
+# "-mcmodel=extreme" when compiling crtbeginS.o.
+CRTSTUFF_T_CFLAGS_S += -mcmodel=extreme
