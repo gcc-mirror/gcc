@@ -205,6 +205,7 @@ struct _vec_perm_simplify_seq
 typedef struct _vec_perm_simplify_seq *vec_perm_simplify_seq;
 
 static bool forward_propagate_addr_expr (tree, tree, bool);
+static void optimize_vector_load (gimple_stmt_iterator *);
 
 /* Set to true if we delete dead edges during the optimization.  */
 static bool cfg_changed;
@@ -2481,106 +2482,6 @@ simplify_count_trailing_zeroes (gimple_stmt_iterator *gsi)
 }
 
 
-/* Combine an element access with a shuffle.  Returns true if there were
-   any changes made, else it returns false.  */
-
-static bool
-simplify_bitfield_ref (gimple_stmt_iterator *gsi)
-{
-  gimple *stmt = gsi_stmt (*gsi);
-  gimple *def_stmt;
-  tree op, op0, op1;
-  tree elem_type, type;
-  tree p, m, tem;
-  unsigned HOST_WIDE_INT nelts, idx;
-  poly_uint64 size, elem_size;
-  enum tree_code code;
-
-  op = gimple_assign_rhs1 (stmt);
-  gcc_checking_assert (TREE_CODE (op) == BIT_FIELD_REF);
-
-  op0 = TREE_OPERAND (op, 0);
-  if (TREE_CODE (op0) != SSA_NAME
-      || TREE_CODE (TREE_TYPE (op0)) != VECTOR_TYPE)
-    return false;
-
-  def_stmt = get_prop_source_stmt (op0, false, NULL);
-  if (!def_stmt || !can_propagate_from (def_stmt))
-    return false;
-
-  op1 = TREE_OPERAND (op, 1);
-  code = gimple_assign_rhs_code (def_stmt);
-  elem_type = TREE_TYPE (TREE_TYPE (op0));
-  type = TREE_TYPE (op);
-  /* Also handle vector type.
-     .i.e.
-     _7 = VEC_PERM_EXPR <_1, _1, { 2, 3, 2, 3 }>;
-     _11 = BIT_FIELD_REF <_7, 64, 0>;
-
-     to
-
-     _11 = BIT_FIELD_REF <_1, 64, 64>.  */
-
-  size = tree_to_poly_uint64 (TYPE_SIZE (type));
-  if (maybe_ne (bit_field_size (op), size))
-    return false;
-
-  elem_size = tree_to_poly_uint64 (TYPE_SIZE (elem_type));
-  if (code != VEC_PERM_EXPR
-      || !constant_multiple_p (bit_field_offset (op), elem_size, &idx))
-    return false;
-
-  m = gimple_assign_rhs3 (def_stmt);
-  if (TREE_CODE (m) != VECTOR_CST
-      || !VECTOR_CST_NELTS (m).is_constant (&nelts))
-    return false;
-
-  /* One element.  */
-  if (known_eq (size, elem_size))
-    idx = TREE_INT_CST_LOW (VECTOR_CST_ELT (m, idx)) % (2 * nelts);
-  else
-    {
-      unsigned HOST_WIDE_INT nelts_op;
-      if (!constant_multiple_p (size, elem_size, &nelts_op)
-	  || !pow2p_hwi (nelts_op))
-	return false;
-      /* Clamp vec_perm_expr index.  */
-      unsigned start = TREE_INT_CST_LOW (vector_cst_elt (m, idx)) % (2 * nelts);
-      unsigned end = TREE_INT_CST_LOW (vector_cst_elt (m, idx + nelts_op - 1))
-		     % (2 * nelts);
-      /* Be in the same vector.  */
-      if ((start < nelts) != (end < nelts))
-	return false;
-      for (unsigned HOST_WIDE_INT i = 1; i != nelts_op; i++)
-	{
-	  /* Continuous area.  */
-	  if (TREE_INT_CST_LOW (vector_cst_elt (m, idx + i)) % (2 * nelts) - 1
-	      != TREE_INT_CST_LOW (vector_cst_elt (m, idx + i - 1))
-		 % (2 * nelts))
-	    return false;
-	}
-      /* Alignment not worse than before.  */
-      if (start % nelts_op)
-       return false;
-      idx = start;
-    }
-
-  if (idx < nelts)
-    p = gimple_assign_rhs1 (def_stmt);
-  else
-    {
-      p = gimple_assign_rhs2 (def_stmt);
-      idx -= nelts;
-    }
-
-  tem = build3 (BIT_FIELD_REF, TREE_TYPE (op),
-		p, op1, bitsize_int (idx * elem_size));
-  gimple_assign_set_rhs1 (stmt, tem);
-  fold_stmt (gsi);
-  update_stmt (gsi_stmt (*gsi));
-  return true;
-}
-
 /* Determine whether applying the 2 permutations (mask1 then mask2)
    gives back one of the input.  */
 
@@ -4677,8 +4578,6 @@ pass_forwprop::execute (function *fun)
 			  cfg_changed = true;
 			changed = did_something != 0;
 		      }
-		    else if (code == BIT_FIELD_REF)
-		      changed = simplify_bitfield_ref (&gsi);
 		    else if (code == CONSTRUCTOR
 			     && TREE_CODE (TREE_TYPE (rhs1)) == VECTOR_TYPE)
 		      changed = simplify_vector_constructor (&gsi);
