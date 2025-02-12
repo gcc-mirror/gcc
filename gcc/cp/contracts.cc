@@ -1466,6 +1466,8 @@ set_contract_functions (tree fndecl, tree pre, tree post)
 static tree
 copy_fn_decl (tree fndecl)
 {
+  gcc_checking_assert (!error_operand_p (fndecl));
+
   tree decl = copy_decl (fndecl);
   DECL_ATTRIBUTES (decl) = copy_list (DECL_ATTRIBUTES (fndecl));
 
@@ -1474,8 +1476,15 @@ copy_fn_decl (tree fndecl)
       DECL_RESULT (decl) = copy_decl (DECL_RESULT (fndecl));
       DECL_CONTEXT (DECL_RESULT (decl)) = decl;
     }
-  if (!DECL_ARGUMENTS (fndecl) || VOID_TYPE_P (DECL_ARGUMENTS (fndecl)))
+
+  if (!DECL_ARGUMENTS (fndecl))
     return decl;
+
+  if (VOID_TYPE_P (DECL_ARGUMENTS (fndecl)))
+    {
+      DECL_ARGUMENTS (decl) = void_list_node;
+      return decl;
+    }
 
   tree last = DECL_ARGUMENTS (decl) = copy_decl (DECL_ARGUMENTS (decl));
   DECL_CONTEXT (last) = decl;
