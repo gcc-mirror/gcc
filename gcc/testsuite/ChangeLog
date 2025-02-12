@@ -1,3 +1,95 @@
+2025-02-11  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/115478
+	* gcc.target/aarch64/bitint-args.c: Update expected output.
+
+2025-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/188574
+	* g++.dg/cpp23/range-for3.C: Use -frange-for-ext-temps.
+	* g++.dg/cpp23/range-for4.C: Adjust expected result.
+
+2025-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118574
+	PR c++/107637
+	* g++.dg/coroutines/range-for1.C: New test.
+
+2025-02-11  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_4.c: Adjust expected
+	defines.
+	* gcc.target/aarch64/simd/vmla_lane_indices_1.c: Modify target
+	pragmas.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_mfloat8_1.c:
+	Ditto.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_mfloat8_lane_group_selection_1.c:
+	Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/dot_lane_mf8.c: Ditto.
+	* gcc.target/aarch64/sve2/acle/asm/dot_mf8.c: Ditto.
+
+2025-02-11  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* lib/gcc-defs.exp
+	(gcc_runtest_parallelize_limit_minor): New global variable.
+	(gcc_parallel_test_run_p): Use new variable for batch size.
+
+2025-02-11  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118306
+	PR c++/118304
+	* g++.old-deja/g++.jason/operator.C: Adjust bogus test
+	expectation (char** vs char*).
+	* g++.dg/parse/constructor4.C: New test.
+	* g++.dg/parse/constructor5.C: New test.
+	* g++.dg/parse/conv_op2.C: New test.
+	* g++.dg/parse/default_to_int.C: New test.
+
+2025-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/118792
+	* sarif-replay.dg/2.1.0-valid/error-with-note.sarif: Update
+	expected output to reflect fix to off-by-one error in handling of
+	"endColumn" property.
+	* sarif-replay.dg/2.1.0-valid/malloc-vs-local-4.c.sarif: Likewise.
+	* sarif-replay.dg/2.1.0-valid/signal-1.c.moved.sarif: Likewise.
+	* sarif-replay.dg/2.1.0-valid/signal-1.c.sarif: Likewise.
+
+2025-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118817
+	* g++.dg/lto/pr118817_0.C: New testcase.
+
+2025-02-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/adl-5_a.c: Move to...
+	* g++.dg/modules/adl-5_a.C: ...here.
+	* g++.dg/modules/adl-5_d.C: Add errors.
+
+2025-02-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118807
+	* g++.dg/modules/pr118807.C: New test.
+
+2025-02-11  Jie Mei  <jie.mei@oss.cipunited.com>
+	    Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/mips/mips-class.c: New tests for MIPSr6
+	* gcc.target/mips/mips-minamaxa.c: Same as above.
+	* gcc.target/mips/mips-rint.c: Same as above.
+
+2025-02-11  Xi Ruoyao  <xry111@xry111.site>
+
+	* lib/target-supports.exp
+	(check_effective_target_vect_call_btrunc): Drop LoongArch.
+	(check_effective_target_vect_call_btruncf): Likewise.
+	(check_effective_target_vect_call_ceil): Likewise.
+	(check_effective_target_vect_call_ceilf): Likewise.
+	(check_effective_target_vect_call_floor): Likewise.
+	(check_effective_target_vect_call_floorf): Likewise.
+	(check_effective_target_vect_call_lfloor): Likewise.
+	(check_effective_target_vect_call_lfloorf): Likewise.
+
 2025-02-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/24878

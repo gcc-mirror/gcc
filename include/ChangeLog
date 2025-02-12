@@ -1,3 +1,7 @@
+2025-02-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* dwarf2.def (DW_CFA_AARCH64_negate_ra_state_with_pc): Define.
+
 2025-01-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2.h (enum dwarf_source_language): Fix comment pasto.

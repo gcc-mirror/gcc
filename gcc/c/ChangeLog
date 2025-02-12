@@ -1,3 +1,9 @@
+2025-02-11  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-parser.cc (c_finish_omp_declare_variant): Update call to
+	omp_check_context_selector.
+	(c_parser_omp_metadirective): Likewise.
+
 2025-02-07  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 

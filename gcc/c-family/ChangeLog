@@ -1,3 +1,9 @@
+2025-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/188574
+	* c-opts.cc (c_common_post_options): Only enable
+	-frange-for-ext-temps by default in C++23.
+
 2025-02-07  Jakub Jelinek  <jakub@redhat.com>
 	    Jason Merrill  <jason@redhat.com>
 

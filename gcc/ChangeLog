@@ -1,3 +1,106 @@
+2025-02-11  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/115478
+	* config/aarch64/iterators.md (any_or_plus): New code iterator.
+	* config/aarch64/aarch64.md (extr<mode>5_insn): Use any_or_plus.
+	(extr<mode>5_insn_alt, extrsi5_insn_uxtw): Likewise.
+	(extrsi5_insn_uxtw_alt, extrsi5_insn_di): Likewise.
+
+2025-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/188574
+	* doc/invoke.texi: Adjust -frange-for-ext-temps documentation.
+
+2025-02-11  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def
+	(SSVE_FP8FMA): Adjust formatting.
+	(FP8DOT4): Replace FP8FMA dependency with FP8.
+	(SSVE_FP8DOT4): Replace SSVE_FP8FMA dependency with SME2+FP8.
+	(FP8DOT2): Replace FP8DOT4 dependency with FP8.
+	(SSVE_FP8DOT2): Replace SSVE_FP8DOT4 dependency with SME2+FP8.
+
+2025-02-11  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* omp-general.cc (omp_check_context_selector): Change
+	metadirective_p argument to a 3-way flag.  Add extra check for
+	OMP_CTX_BEGIN_DECLARE_VARIANT.
+	* omp-general.h (enum omp_ctx_directive): New.
+	(omp_check_context_selector): Adjust declaration.
+
+2025-02-11  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* omp-general.cc (omp_context_selector_props_compare): Handle
+	arbitrary expressions in the "user" and "device_num" selectors.
+	(omp_context_selector_set_compare): Detect mismatch when one
+	selector specifies a score and the other doesn't.
+
+2025-02-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/118125
+	* ipa-fnsummary.cc (redirect_to_unreachable): Add checking assert
+	that the builtin_unreachable decl has attribute cold.
+
+2025-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/118792
+	* libsarifreplay.cc (sarif_replayer::handle_region_object): Fix
+	off-by-one in handling of endColumn property so that the code
+	matches the comment and the SARIF spec (§3.30.8).
+
+2025-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118817
+	* tree-ssa-pre.cc (fully_constant_expression): Fold into
+	the single caller.
+	(phi_translate_1): Refactor folded in fully_constant_expression.
+	* tree-ssa-sccvn.cc (vn_nary_simplify): Update the NARY with
+	the simplified expression.
+
+2025-02-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/118825
+	* config/i386/i386.h (ASM_OUTPUT_SYMBOL_REF): Replace x with
+	SYM.
+
+2025-02-11  YunQiang Su  <syq@debian.org>
+
+	* config.gcc: Add mips*64*-linux-muslabi64 triple support.
+
+2025-02-11  Jie Mei  <jie.mei@oss.cipunited.com>
+	    Xi Ruoyao  <xry111@xry111.site>
+
+	* config/mips/i6400.md (i6400_fpu_minmax): Include
+	fclass type.
+	(i6400_fpu_fadd): Include frint type.
+	* config/mips/mips.cc (AVAIL_NON_MIPS16): Add an entry
+	for __builtin_mipsr6_xxx.
+	(MIPSR6_BUILTIN_PURE): Same as above.
+	(CODE_FOR_mipsr6_min_a_s, CODE_FOR_mipsr6_min_a_d)
+	(CODE_FOR_mipsr6_max_a_s, CODE_FOR_mipsr6_max_a_d)
+	(CODE_FOR_mipsr6_class_s, CODE_FOR_mipsr6_class_d):
+	New code_aliasing macros.
+	(mips_builtins): Add mips32r6 min_a_s, min_a_d, max_a_s,
+	max_a_d, class_s, class_d builtins.
+	* config/mips/mips.h (ISA_HAS_FRINT): Define a new macro.
+	(ISA_HAS_FCLASS): Same as above.
+	* config/mips/mips.md (UNSPEC_FRINT): New unspec.
+	(UNSPEC_FCLASS): Same as above.
+	(type): Add frint and fclass.
+	(fmin_a_<mode>): Generates MINA.fmt instructions.
+	(fmax_a_<mode>): Generates MAXA.fmt instructions.
+	(rint<mode>2): Generates RINT.fmt instructions.
+	(fclass_<mode>): Generates CLASS.fmt instructions.
+	* config/mips/p6600.md (p6600_fpu_fadd): Include
+	frint type.
+	(p6600_fpu_fabs): Include fclass type.
+
+2025-02-11  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118813
+	* config/i386/avx512bwintrin.h: Fix wrong __OPTIMIZE__
+	wrap.
+
 2025-02-10  Tobias Burnus  <tburnus@baylibre.com>
 
 	* config/gcn/mkoffload.cc (enum elf_arch_code): Add

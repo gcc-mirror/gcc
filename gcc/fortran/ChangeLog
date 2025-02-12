@@ -1,3 +1,9 @@
+2025-02-11  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Update call to
+	omp_check_context_selector.
+	(gfc_trans_omp_metadirective): Likewise.
+
 2025-02-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/24878

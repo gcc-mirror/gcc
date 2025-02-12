@@ -1,3 +1,10 @@
+2025-02-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118761
+	* gm2spec.cc (lang_specific_driver): Add case clauses for
+	OPT__help, OPT__help_ set in_added_libraries to 0 and early
+	return.
+
 2025-02-04  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/115112

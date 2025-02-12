@@ -1,3 +1,8 @@
+2025-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/188574
+	* testsuite/libgomp.c++/range-for-4.C: Adjust expected result.
+
 2025-02-07  Tobias Burnus  <tburnus@baylibre.com>
 
 	* plugin/plugin-gcn.c (ELFABIVERSION_AMDGPU_HSA_V6,

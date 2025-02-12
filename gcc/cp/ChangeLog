@@ -1,3 +1,39 @@
+2025-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118574
+	PR c++/107637
+	* call.cc (struct extend_temps_data): New.
+	(extend_temps_r, extend_all_temps): New.
+	(set_up_extended_ref_temp): Handle tree walk case.
+	(extend_ref_init_temps): Cal extend_all_temps.
+	* decl.cc (initialize_local_var): Revert ext-temps change.
+	* parser.cc (cp_convert_range_for): Likewise.
+	(cp_parser_omp_loop_nest): Likewise.
+	* pt.cc (tsubst_stmt): Likewise.
+	* semantics.cc (finish_for_stmt): Likewise.
+
+2025-02-11  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* parser.cc (cp_finish_omp_declare_variant): Update call to
+	omp_check_context_selector.
+	(cp_parser_omp_metadirective): Likewise.
+
+2025-02-11  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/118306
+	PR c++/118304
+	* decl.cc (maybe_strip_indirect_ref): New.
+	(check_special_function_return_type): Take declarator as input.
+	Call maybe_strip_indirect_ref and error out if it returns true.
+	(grokdeclarator): Update call to
+	check_special_function_return_type.
+
+2025-02-11  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118807
+	* pt.cc (reregister_specialization): Remove spec from
+	DECL_TEMPLATE_INSTANTIATIONS.
+
 2025-02-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/115586
