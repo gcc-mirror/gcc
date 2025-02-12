@@ -8,6 +8,9 @@
    hooks provided by each test case.  */
 #define COMBINED_TEST
 
+/* test-abi.c: This can't be in the testcases array as it
+   is target-specific.  */
+
 /* test-accessing-bitfield.c */
 #define create_code create_code_accessing_bitfield
 #define verify_code verify_code_accessing_bitfield

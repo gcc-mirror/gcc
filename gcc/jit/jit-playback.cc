@@ -580,6 +580,38 @@ const char* fn_attribute_to_string (gcc_jit_fn_attribute attr)
       return "weak";
     case GCC_JIT_FN_ATTRIBUTE_NONNULL:
       return "nonnull";
+    case GCC_JIT_FN_ATTRIBUTE_ARM_CMSE_NONSECURE_CALL:
+      return "cmse_nonsecure_call";
+    case GCC_JIT_FN_ATTRIBUTE_ARM_CMSE_NONSECURE_ENTRY:
+      return "cmse_nonsecure_entry";
+    case GCC_JIT_FN_ATTRIBUTE_ARM_PCS:
+      return "pcs";
+    case GCC_JIT_FN_ATTRIBUTE_AVR_INTERRUPT:
+      return "interrupt";
+    case GCC_JIT_FN_ATTRIBUTE_AVR_NOBLOCK:
+      return "noblock";
+    case GCC_JIT_FN_ATTRIBUTE_AVR_SIGNAL:
+      return "signal";
+    case GCC_JIT_FN_ATTRIBUTE_GCN_AMDGPU_HSA_KERNEL:
+      return "amdgpu_hsa_kernel";
+    case GCC_JIT_FN_ATTRIBUTE_MSP430_INTERRUPT:
+      return "interrupt";
+    case GCC_JIT_FN_ATTRIBUTE_NVPTX_KERNEL:
+      return "kernel";
+    case GCC_JIT_FN_ATTRIBUTE_RISCV_INTERRUPT:
+      return "interrupt";
+    case GCC_JIT_FN_ATTRIBUTE_X86_FAST_CALL:
+      return "fastcall";
+    case GCC_JIT_FN_ATTRIBUTE_X86_INTERRUPT:
+      return "interrupt";
+    case GCC_JIT_FN_ATTRIBUTE_X86_MS_ABI:
+      return "ms_abi";
+    case GCC_JIT_FN_ATTRIBUTE_X86_STDCALL:
+      return "stdcall";
+    case GCC_JIT_FN_ATTRIBUTE_X86_SYSV_ABI:
+      return "sysv_abi";
+    case GCC_JIT_FN_ATTRIBUTE_X86_THIS_CALL:
+      return "thiscall";
     case GCC_JIT_FN_ATTRIBUTE_MAX:
       return NULL;
   }
