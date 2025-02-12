@@ -765,6 +765,26 @@ BEGIN
    RETURN 1
 END isinf_signl ;
 
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_clz)) clz (value: CARDINAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END clz ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_clzll)) clzll (value: LONGCARD) : INTEGER ;
+BEGIN
+   RETURN 1
+END clzll ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_ctz)) ctz (value: CARDINAL) : INTEGER ;
+BEGIN
+   RETURN 1
+END ctz ;
+
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_ctzll)) ctzll (value: LONGCARD) : INTEGER ;
+BEGIN
+   RETURN 1
+END ctzll ;
+
 PROCEDURE __ATTRIBUTE__  __BUILTIN__ ((__builtin_longjmp)) longjmp (env: ADDRESS; val: INTEGER) ;
 BEGIN
    (* Empty, replaced internally by gcc.  *)
