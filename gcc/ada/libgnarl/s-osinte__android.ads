@@ -258,6 +258,14 @@ package System.OS_Interface is
    function getpid return pid_t;
    pragma Import (C, getpid, "getpid");
 
+   PR_SET_NAME : constant := 15;
+   PR_GET_NAME : constant := 16;
+
+   function prctl
+     (option : int;
+      arg    : unsigned_long) return int;
+   pragma Import (C_Variadic_1, prctl, "prctl");
+
    -------------
    -- Threads --
    -------------
@@ -276,9 +284,11 @@ package System.OS_Interface is
      new Ada.Unchecked_Conversion (unsigned_long, pthread_t);
 
    subtype pthread_mutex_t   is System.OS_Locks.pthread_mutex_t;
+   type pthread_rwlock_t     is limited private;
    type pthread_cond_t       is limited private;
    type pthread_attr_t       is limited private;
    type pthread_mutexattr_t  is limited private;
+   type pthread_rwlockattr_t is limited private;
    type pthread_condattr_t   is limited private;
    type pthread_key_t        is private;
 
@@ -286,11 +296,6 @@ package System.OS_Interface is
 
    PTHREAD_SCOPE_PROCESS : constant := 1;
    PTHREAD_SCOPE_SYSTEM  : constant := 0;
-
-   --  Read/Write lock not supported on Android.
-
-   subtype pthread_rwlock_t     is pthread_mutex_t;
-   subtype pthread_rwlockattr_t is pthread_mutexattr_t;
 
    -----------
    -- Stack --
@@ -388,6 +393,43 @@ package System.OS_Interface is
 
    function pthread_mutex_unlock (mutex : access pthread_mutex_t) return int;
    pragma Import (C, pthread_mutex_unlock, "pthread_mutex_unlock");
+
+   function pthread_rwlockattr_init
+     (attr : access pthread_rwlockattr_t) return int;
+   pragma Import (C, pthread_rwlockattr_init, "pthread_rwlockattr_init");
+
+   function pthread_rwlockattr_destroy
+     (attr : access pthread_rwlockattr_t) return int;
+   pragma Import (C, pthread_rwlockattr_destroy, "pthread_rwlockattr_destroy");
+
+   PTHREAD_RWLOCK_PREFER_READER_NP              : constant := 0;
+   PTHREAD_RWLOCK_PREFER_WRITER_NONRECURSIVE_NP : constant := 1;
+
+   --  No PTHREAD_RWLOCK_PREFER_WRITER_NP in Android's pthread.h API level 29
+
+   function pthread_rwlockattr_setkind_np
+     (attr : access pthread_rwlockattr_t;
+      pref : int) return int;
+   pragma Import
+     (C, pthread_rwlockattr_setkind_np, "pthread_rwlockattr_setkind_np");
+
+   function pthread_rwlock_init
+     (mutex : access pthread_rwlock_t;
+      attr  : access pthread_rwlockattr_t) return int;
+   pragma Import (C, pthread_rwlock_init, "pthread_rwlock_init");
+
+   function pthread_rwlock_destroy
+     (mutex : access pthread_rwlock_t) return int;
+   pragma Import (C, pthread_rwlock_destroy, "pthread_rwlock_destroy");
+
+   function pthread_rwlock_rdlock (mutex : access pthread_rwlock_t) return int;
+   pragma Import (C, pthread_rwlock_rdlock, "pthread_rwlock_rdlock");
+
+   function pthread_rwlock_wrlock (mutex : access pthread_rwlock_t) return int;
+   pragma Import (C, pthread_rwlock_wrlock, "pthread_rwlock_wrlock");
+
+   function pthread_rwlock_unlock (mutex : access pthread_rwlock_t) return int;
+   pragma Import (C, pthread_rwlock_unlock, "pthread_rwlock_unlock");
 
    function pthread_condattr_init
      (attr : access pthread_condattr_t) return int;
@@ -631,6 +673,18 @@ private
    end record;
    pragma Convention (C, pthread_mutexattr_t);
    for pthread_mutexattr_t'Alignment use Interfaces.C.int'Alignment;
+
+   type pthread_rwlockattr_t is record
+      Data : char_array (1 .. OS_Constants.PTHREAD_RWLOCKATTR_SIZE);
+   end record;
+   pragma Convention (C, pthread_rwlockattr_t);
+   for pthread_rwlockattr_t'Alignment use Interfaces.C.unsigned_long'Alignment;
+
+   type pthread_rwlock_t is record
+      Data : char_array (1 .. OS_Constants.PTHREAD_RWLOCK_SIZE);
+   end record;
+   pragma Convention (C, pthread_rwlock_t);
+   for pthread_rwlock_t'Alignment use Interfaces.C.unsigned_long'Alignment;
 
    type pthread_cond_t is record
       Data : char_array (1 .. OS_Constants.PTHREAD_COND_SIZE);

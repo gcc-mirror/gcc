@@ -1407,24 +1407,32 @@ ifeq ($(SELECTED_PAIRS),PAIRS_NONE)
 ifeq ($(strip $(filter-out arm% aarch64 linux-android%,$(target_cpu) $(target_os))),)
 
   LIBGNAT_TARGET_PAIRS = \
+  a-exetim.adb<libgnarl/a-exetim__posix.adb \
+  a-exetim.ads<libgnarl/a-exetim__default.ads \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
+  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
+  a-synbar.adb<libgnarl/a-synbar__posix.adb \
+  a-synbar.ads<libgnarl/a-synbar__posix.ads \
+  s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__android.adb \
-  s-osinte.adb<libgnarl/s-osinte__android.adb \
   s-osinte.ads<libgnarl/s-osinte__android.ads \
+  s-osinte.adb<libgnarl/s-osinte__android.adb \
   s-oslock.ads<libgnat/s-oslock__posix.ads \
   s-osprim.adb<libgnat/s-osprim__posix.adb \
-  s-taprop.adb<libgnarl/s-taprop__posix.adb \
+  s-parame.adb<libgnat/s-parame__aarch64-linux.adb \
+  s-taprop.adb<libgnarl/s-taprop__linux.adb \
+  s-tasinf.ads<libgnarl/s-tasinf__linux.ads \
+  s-tasinf.adb<libgnarl/s-tasinf__linux.adb \
+  s-tpopsp.adb<libgnarl/s-tpopsp__tls.adb \
   s-taspri.ads<libgnarl/s-taspri__posix.ads \
-  s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
-  a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-arm.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
-  EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
+  EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
 
   # ARM and aarch64 rely on different unwinding mechanisms, and as
   # a 64bit target, aarch64 can also incorporate support for 128bit
