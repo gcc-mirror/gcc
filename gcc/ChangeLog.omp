@@ -3,6 +3,14 @@
 	Backported from trunk:
 	2025-02-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* config/nvptx/nvptx.cc (init_frag): New 'bool active' member.
+	(output_init_frag, nvptx_assemble_value, nvptx_assemble_integer)
+	(nvptx_output_skip, nvptx_assemble_decl_begin)
+	(nvptx_assemble_decl_end): Sanity-check its state.
+
+	Backported from trunk:
+	2025-02-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* config/nvptx/nvptx.cc (nvptx_output_skip): Clarify case of
 	no or incomplete initializer.
 
