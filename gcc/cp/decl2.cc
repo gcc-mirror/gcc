@@ -2813,6 +2813,19 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
   tree t = *tp;
   if (TREE_CODE (t) == PTRMEM_CST)
     t = PTRMEM_CST_MEMBER (t);
+
+  if (TREE_CODE (t) == TEMPLATE_DECL)
+    {
+      if (DECL_ALIAS_TEMPLATE_P (t) || concept_definition_p (t))
+	/* FIXME: We don't maintain TREE_PUBLIC / DECL_VISIBILITY for
+	   alias templates so we can't trust it here (PR107906).  Ditto
+	   for concepts.  */
+	return NULL_TREE;
+      t = DECL_TEMPLATE_RESULT (t);
+      if (!t)
+	return NULL_TREE;
+    }
+
   switch (TREE_CODE (t))
     {
     case CAST_EXPR:
@@ -2824,17 +2837,10 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
     case NEW_EXPR:
     case CONSTRUCTOR:
     case LAMBDA_EXPR:
+    case TYPE_DECL:
       tpvis = type_visibility (TREE_TYPE (t));
       break;
 
-    case TEMPLATE_DECL:
-      if (DECL_ALIAS_TEMPLATE_P (t) || concept_definition_p (t))
-	/* FIXME: We don't maintain TREE_PUBLIC / DECL_VISIBILITY for
-	   alias templates so we can't trust it here (PR107906).  Ditto
-	   for concepts.  */
-	break;
-      t = DECL_TEMPLATE_RESULT (t);
-      /* Fall through.  */
     case VAR_DECL:
     case FUNCTION_DECL:
       if (decl_constant_var_p (t))
