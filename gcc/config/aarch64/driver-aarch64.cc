@@ -60,7 +60,7 @@ struct aarch64_core_data
 #define ALL_VARIANTS ((unsigned)-1)
 /* Default architecture to use if -mcpu=native did not detect a known CPU.  */
 #define DEFAULT_ARCH "8A"
-#define DEFAULT_CPU "generic-armv8-a"
+#define DEFAULT_CPU "generic"
 
 #define AARCH64_CORE(CORE_NAME, CORE_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
   { CORE_NAME, #ARCH, IMP, PART, VARIANT, feature_deps::cpu_##CORE_IDENT },
@@ -68,6 +68,7 @@ struct aarch64_core_data
 static CONSTEXPR const aarch64_core_data aarch64_cpu_data[] =
 {
 #include "aarch64-cores.def"
+  { "generic", "armv8-a", 0, 0, ALL_VARIANTS, 0},
   { NULL, NULL, INVALID_IMP, INVALID_CORE, ALL_VARIANTS, 0 }
 };
 
