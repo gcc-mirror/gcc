@@ -21,7 +21,7 @@
 
 #ifdef _GLIBCXX_RELEASE
 // Conditional noexcept on these functions is a libstdc++ extension
-# define NOTHROW(F) noexcept(noexcept(c.F()))
+# define NOTHROW(F) noexcept(noexcept(F))
 #else
 # define NOTHROW(F)
 #endif
@@ -42,17 +42,17 @@ namespace std
 {
   template<class C>
     CONSTEXPR_17 auto
-    begin(C& c) NOTHROW(begin) -> decltype(c.begin());
+    begin(C& c) NOTHROW(c.begin()) -> decltype(c.begin());
   template<class C>
     CONSTEXPR_17 auto
-    begin(const C& c) NOTHROW(begin) -> decltype(c.begin());
+    begin(const C& c) NOTHROW(c.begin()) -> decltype(c.begin());
 
   template<class C>
     CONSTEXPR_17 auto
-    end(C& c) NOTHROW(end) -> decltype(c.end());
+    end(C& c) NOTHROW(c.end()) -> decltype(c.end());
   template<class C>
     CONSTEXPR_17 auto
-    end(const C& c) NOTHROW(end) -> decltype(c.end());
+    end(const C& c) NOTHROW(c.end()) -> decltype(c.end());
 
   template<class T, size_t N>
     CONSTEXPR_14 T*
@@ -71,17 +71,17 @@ namespace std
 
   template<class C>
     CONSTEXPR_17 auto
-    rbegin(C& c) -> decltype(c.rbegin());
+    rbegin(C& c) NOTHROW(c.rbegin()) -> decltype(c.rbegin());
   template<class C>
     CONSTEXPR_17 auto
-    rbegin(const C& c) -> decltype(c.rbegin());
+    rbegin(const C& c) NOTHROW(c.rbegin()) -> decltype(c.rbegin());
 
   template<class C>
     CONSTEXPR_17 auto
-    rend(C& c) -> decltype(c.rend());
+    rend(C& c) NOTHROW(c.rend()) -> decltype(c.rend());
   template<class C>
     CONSTEXPR_17 auto
-    rend(const C& c) -> decltype(c.rend());
+    rend(const C& c) NOTHROW(c.rend()) -> decltype(c.rend());
 
   template<class T, size_t N>
     CONSTEXPR_17 reverse_iterator<T*>
@@ -99,9 +99,9 @@ namespace std
 
   template<class C>
     CONSTEXPR_17 auto
-    crbegin(const C& c) -> decltype(std::rbegin(c));
+    crbegin(const C& c) NOTHROW(std::rbegin(c)) -> decltype(std::rbegin(c));
   template<class C>
     CONSTEXPR_17 auto
-    cend(const C& c) -> decltype(std::rend(c));
+    cend(const C& c) NOTHROW(std::rend(c)) -> decltype(std::rend(c));
 #endif // C++14
 }
