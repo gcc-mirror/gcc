@@ -1,3 +1,79 @@
+2025-02-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2025-02-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/118750
+	* resolve.cc (resolve_assoc_var): If the target expression has
+	a rank, do not use gfc_expression_rank, since it will return 0
+	if the function is elemental. Resolution will have produced the
+	correct rank.
+
+2025-02-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2025-01-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/108434
+	* class.cc (generate_finalization_wrapper): To avoid memory
+	leaks from callocs, return immediately if the derived type
+	error flag is set.
+	* decl.cc (build_struct): If the declaration of a derived type
+	or class component does not have a deferred arrayspec, correct,
+	set the error flag of the derived type and emit an immediate
+	error.
+
+2025-02-06  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-01-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108454
+	* resolve.cc (resolve_common_blocks): Initialize variable.
+	(resolve_symbol): If a symbol is already registered with a COMMON
+	block, do not search for an interface with the same name.
+
+2025-02-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-11-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117434
+	* interface.cc (gfc_compare_actual_formal): Skip 'Expected a
+	procedure pointer error' if the formal argument typespec has an
+	interface and the type of the actual arg is BT_PROCEDURE.
+
+2025-01-31  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-01-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110993
+	* frontend-passes.cc (check_externals_procedure): Do not compare
+	interfaces of a non-bind(C) procedure against a bind(C) global one.
+	(check_against_globals): Use local name from rename-on-use in the
+	search for interfaces.
+
+2025-01-29  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-01-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118683
+	* trans-expr.cc (gfc_conv_procedure_call): The bounds update for
+	passing to assumed-rank dummies shall also handle component
+	references besides inquiry references.
+
+2025-01-24  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-01-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/81978
+	* trans-array.cc (gfc_conv_array_parameter): Do not copy back data
+	if actual array parameter has the PARAMETER attribute.
+	* trans-expr.cc (gfc_conv_subref_array_arg): Likewise.
+
 2025-01-10  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

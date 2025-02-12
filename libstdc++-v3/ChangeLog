@@ -1,3 +1,28 @@
+2025-01-29  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-01-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/118413
+	* include/std/ranges (views::__adaptor::_Partial): Adjust
+	constraints on the "simple" partial specializations to require
+	is_trivially_copy_constructible_v instead of
+	is_trivially_copyable_v.
+	* testsuite/std/ranges/adaptors/adjacent_transform/1.cc (test04):
+	Extend P2494R2 test.
+	* testsuite/std/ranges/adaptors/transform.cc (test09): Likewise.
+
+2025-01-27  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	Backported from master:
+	2025-01-20  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	PR libstdc++/118185
+	PR libstdc++/100249
+	* include/bits/ranges_algo.h (__clamp_fn): Correctly forward the
+	projected value to the comparator.
+	* testsuite/25_algorithms/clamp/118185.cc: New test.
+
 2025-01-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

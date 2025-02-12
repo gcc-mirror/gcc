@@ -1,3 +1,12 @@
+2025-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2025-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/118571
+	* io/write.c (write_utf8_char4): Adjust the src_len to the
+	format width w_len when greater than zero.
+
 2024-12-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:

@@ -1,3 +1,262 @@
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118776
+	* gcc.target/i386/pr118776.c: New test.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/115586
+	* g++.dg/cpp26/name-independent-decl9.C: New test.
+	* g++.dg/cpp26/name-independent-decl10.C: New test.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118763
+	* g++.dg/asan/pr118763.C: New test.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118661
+	* g++.dg/cpp0x/constexpr-volatile4.C: New test.
+	* g++.dg/cpp0x/constexpr-union9.C: New test.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117506
+	* gcc.dg/pr117506.c: New test.
+	* gcc.target/riscv/pr117506.c: New test.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/117432
+	* gcc.c-torture/execute/pr117432.c: New test.
+	* gcc.target/i386/pr117432.c: New test.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118655
+	* g++.dg/ext/is_bounded_array.C: Extend.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/118638
+	* gcc.c-torture/execute/pr118638.c: New test.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117827
+	* g++.dg/init/array66.C: New test.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114877
+	* gcc.dg/torture/builtin-frexp-1.c: Add -Wmaybe-uninitialized as
+	dg-additional-options.
+	(bar): New function.
+	(TESTIT_FREXP2): Rework the macro so that it doesn't test whether
+	nothing has been stored to what the second argument points to, but
+	instead that something has been stored there, whatever it is.
+	(main): Temporarily don't enable the nan tests for -O0.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118522
+	* gcc.dg/bitint-120.c: New test.
+
+2025-02-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2025-02-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/118750
+	* gfortran.dg/associate_72.f90: New test.
+
+2025-02-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2025-01-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/108434
+	* gfortran.dg/pr108434.f90 : Add tests from comment 1.
+
+2025-02-06  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-01-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108454
+	* gfortran.dg/common_29.f90: New test.
+
+2025-02-06  Lulu Cheng  <chenglulu@loongson.cn>
+
+	Backported from master:
+	2025-02-06  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/118561
+	* gcc.target/loongarch/pr118561.c: New test.
+
+2025-02-04  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-11-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/117434
+	* gfortran.dg/proc_ptr_54.f90: New test. This is temporarily
+	compile-only until one one seven four five five is fixed.
+	* gfortran.dg/proc_ptr_55.f90: New test.
+	* gfortran.dg/proc_ptr_56.f90: New test.
+
+2025-02-03  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR middle-end/115913
+	* c-c++-common/cpp/pr115913.c: New test.
+
+2025-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn33.adb: New test.
+	* gnat.dg/warn33_pkg.ads: New helper.
+
+2025-01-31  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-01-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110993
+	* gfortran.dg/use_rename_14.f90: New test.
+
+2025-01-29  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2025-01-29  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR testsuite/118127
+	* lib/target-supports.exp
+	(check_effective_target_long_double_is_ibm128): New
+	procedure.
+	* gfortran.dg/default_format_2.f90: xfail for
+	long_double_is_ibm128.
+	* gfortran.dg/default_format_denormal_2.f90: Likewise.
+	* gfortran.dg/large_real_kind_form_io_2.f90: Likewise.
+
+2025-01-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-01-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118047
+	PR c++/118355
+	* g++.dg/cpp0x/nsdmi-list10.C: New test.
+	* g++.dg/cpp0x/nsdmi-list9.C: New test.
+
+2025-01-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-01-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117855
+	* g++.dg/cpp23/class-deduction-inherited7.C: New test.
+
+2025-01-28  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-01-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/110901
+	* gcc.target/aarch64/options_set_29.c: New test.
+
+2025-01-28  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-01-16  Tamar Christina  <tamar.christina@arm.com>
+		    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/113257
+	* gcc.target/aarch64/cpunative/info_34: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_34.c: New test.
+	* gcc.target/aarch64/cpunative/info_35: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_35.c: New test.
+
+2025-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-01-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/107522
+	* g++.dg/cpp2a/concepts-explicit-spec7.C: New test.
+
+2025-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2025-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/118571
+	* gfortran.dg/utf8_3.f03: New test.
+
+2025-01-24  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-01-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/81978
+	* gfortran.dg/pr81978.f90: New test.
+
+2025-01-24  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-01-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117153
+	* g++.dg/other/anon-union6.C: New test.
+	* g++.dg/other/anon-union7.C: New test.
+
+2025-01-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2025-01-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/116448
+	* gcc.target/arm/vfp-1.c: Use -Os -fno-math-errno.
+
+2025-01-24  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2025-01-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-error.c: New test.
+
 2025-01-22  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/117186
