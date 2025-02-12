@@ -2275,6 +2275,23 @@ package body Sem_Ch6 is
       end if;
 
       Formal := First_Formal (Spec_Id);
+
+      --  The first parameter of a borrowing traversal function might be an IN
+      --  or an IN OUT parameter.
+
+      if Present (Formal)
+        and then Ekind (Etype (Spec_Id)) = E_Anonymous_Access_Type
+        and then not Is_Access_Constant (Etype (Spec_Id))
+      then
+         if Ekind (Formal) = E_Out_Parameter then
+            Error_Msg_Code := GEC_Out_Parameter_In_Function;
+            Error_Msg_N
+              ("first parameter of traversal function cannot have mode `OUT` "
+               & "in SPARK '[[]']", Formal);
+         end if;
+         Next_Formal (Formal);
+      end if;
+
       while Present (Formal) loop
          if Ekind (Spec_Id) in E_Function | E_Generic_Function
            and then not Is_Function_With_Side_Effects (Spec_Id)
