@@ -85,9 +85,6 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
   else
     builtin_define ("__loongarch_frlen=0");
 
-  if (TARGET_HARD_FLOAT && ISA_HAS_FRECIPE)
-    builtin_define ("__loongarch_frecipe");
-
   if (ISA_HAS_LSX)
     {
       builtin_define ("__loongarch_simd");
@@ -107,7 +104,9 @@ loongarch_cpu_cpp_builtins (cpp_reader *pfile)
   int max_v_major = 1, max_v_minor = 0;
 
   for (int i = 0; i < N_EVO_FEATURES; i++)
-    if (la_target.isa.evolution & la_evo_feature_masks[i])
+    if (la_target.isa.evolution & la_evo_feature_masks[i]
+	&& (la_evo_feature_masks[i] != OPTION_MASK_ISA_FRECIPE
+	    || TARGET_HARD_FLOAT))
       {
 	builtin_define (la_evo_macro_name[i]);
 
