@@ -193,8 +193,10 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
     return;
 
   // get the predicate for the bound
-  auto specified_bound = get_predicate_from_bound (qual_path_type.get_trait (),
-						   qual_path_type.get_type ());
+  auto specified_bound
+    = get_predicate_from_bound (qual_path_type.get_trait (),
+				qual_path_type.get_type (),
+				BoundPolarity::RegularBound, true);
   if (specified_bound.is_error ())
     return;
 

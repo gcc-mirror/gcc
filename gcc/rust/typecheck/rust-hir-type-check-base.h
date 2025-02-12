@@ -40,7 +40,8 @@ protected:
   TyTy::TypeBoundPredicate get_predicate_from_bound (
     HIR::TypePath &path,
     tl::optional<std::reference_wrapper<HIR::Type>> associated_self,
-    BoundPolarity polarity = BoundPolarity::RegularBound);
+    BoundPolarity polarity = BoundPolarity::RegularBound,
+    bool is_qualified_type = false);
 
   bool check_for_unconstrained (
     const std::vector<TyTy::SubstitutionParamMapping> &params_to_constrain,

@@ -196,7 +196,7 @@ TyTy::TypeBoundPredicate
 TypeCheckBase::get_predicate_from_bound (
   HIR::TypePath &type_path,
   tl::optional<std::reference_wrapper<HIR::Type>> associated_self,
-  BoundPolarity polarity)
+  BoundPolarity polarity, bool is_qualified_type_path)
 {
   TyTy::TypeBoundPredicate lookup = TyTy::TypeBoundPredicate::error ();
   bool already_resolved
@@ -222,6 +222,21 @@ TypeCheckBase::get_predicate_from_bound (
 	if (final_generic_seg.has_generic_args ())
 	  {
 	    args = final_generic_seg.get_generic_args ();
+	    if (args.get_binding_args ().size () > 0
+		&& associated_self.has_value () && is_qualified_type_path)
+	      {
+		auto &binding_args = args.get_binding_args ();
+
+		rich_location r (line_table, args.get_locus ());
+		for (auto it = binding_args.begin (); it != binding_args.end ();
+		     it++)
+		  {
+		    auto &arg = *it;
+		    r.add_fixit_remove (arg.get_locus ());
+		  }
+		rust_error_at (r, ErrorCode::E0229,
+			       "associated type bindings are not allowed here");
+	      }
 	  }
       }
       break;
