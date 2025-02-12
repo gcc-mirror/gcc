@@ -14523,14 +14523,15 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 	  /* Otherwise, if this register is used by I3, then this register
 	     now dies here, so we must put a REG_DEAD note here unless there
 	     is one already.  */
-	  else if (reg_referenced_p (XEXP (note, 0), PATTERN (i3))
-		   && ! (REG_P (XEXP (note, 0))
-			 ? find_regno_note (i3, REG_DEAD,
-					    REGNO (XEXP (note, 0)))
-			 : find_reg_note (i3, REG_DEAD, XEXP (note, 0))))
+	  else if (reg_referenced_p (XEXP (note, 0), PATTERN (i3)))
 	    {
-	      PUT_REG_NOTE_KIND (note, REG_DEAD);
-	      place = i3;
+	      if (! (REG_P (XEXP (note, 0))
+		     ? find_regno_note (i3, REG_DEAD, REGNO (XEXP (note, 0)))
+		     : find_reg_note (i3, REG_DEAD, XEXP (note, 0))))
+		{
+		  PUT_REG_NOTE_KIND (note, REG_DEAD);
+		  place = i3;
+		}
 	    }
 
 	  /* A SET or CLOBBER of the REG_UNUSED reg has been removed,
