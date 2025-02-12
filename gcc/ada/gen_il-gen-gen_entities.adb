@@ -781,7 +781,8 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (No_Reordering, Flag, Impl_Base_Type_Only),
         Sm (Parent_Subtype, Node_Id, Base_Type_Only),
         Sm (Reverse_Bit_Order, Flag, Base_Type_Only),
-        Sm (Underlying_Record_View, Node_Id)));
+        Sm (Underlying_Record_View, Node_Id),
+        Sm (Is_Large_Unconstrained_Definite, Flag, Impl_Base_Type_Only)));
 
    Cc (E_Record_Subtype, Aggregate_Kind,
        --  A record subtype, created by a record subtype declaration

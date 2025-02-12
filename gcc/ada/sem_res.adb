@@ -757,14 +757,6 @@ package body Sem_Res is
                   goto No_Danger;
                end if;
 
-               --  If the enclosing type is limited, we allocate only the
-               --  default value, not the maximum, and there is no need for
-               --  a warning.
-
-               if Is_Limited_Type (Scope (Disc)) then
-                  goto No_Danger;
-               end if;
-
                --  Check that it is the high bound
 
                if N /= High_Bound (PN)
@@ -811,11 +803,9 @@ package body Sem_Res is
                   goto No_Danger;
                end if;
 
-               --  Warn about the danger
-
-               Error_Msg_N
-                 ("??creation of & object may raise Storage_Error!",
-                  Scope (Disc));
+               if Ekind (Scope (Disc)) = E_Record_Type then
+                  Set_Is_Large_Unconstrained_Definite (Scope (Disc));
+               end if;
 
                <<No_Danger>>
                   null;

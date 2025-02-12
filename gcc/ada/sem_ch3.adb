@@ -3553,6 +3553,13 @@ package body Sem_Ch3 is
             end;
          end if;
       end if;
+
+      if Ekind (T) = E_Record_Type
+        and then Is_Large_Unconstrained_Definite (T)
+        and then not Is_Limited_Type (T)
+      then
+         Error_Msg_N ("??creation of & object may raise Storage_Error!", T);
+      end if;
    end Analyze_Full_Type_Declaration;
 
    ----------------------------------

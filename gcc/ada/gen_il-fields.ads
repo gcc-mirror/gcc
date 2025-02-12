@@ -744,6 +744,7 @@ package Gen_IL.Fields is
       Is_Known_Non_Null,
       Is_Known_Null,
       Is_Known_Valid,
+      Is_Large_Unconstrained_Definite,
       Is_Limited_Composite,
       Is_Limited_Interface,
       Is_Limited_Record,

@@ -2967,6 +2967,11 @@ package Einfo is
 --       fully constructed, since it simply indicates the last state.
 --       Thus this flag has no meaning to the backend.
 
+--    Is_Large_Unconstrained_Definite
+--       Defined in record types. Used to detect types with default
+--       discriminant values that have exaggerated sizes and emit warnings
+--       about them.
+
 --    Is_Limited_Composite
 --       Defined in all entities. Set for composite types that have a limited
 --       component. Used to enforce the rule that operations on the composite
