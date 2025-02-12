@@ -129,9 +129,6 @@ loongarch_update_cpp_builtins (cpp_reader *pfile)
   else
     builtin_define ("__loongarch_frlen=0");
 
-  loongarch_def_or_undef (TARGET_HARD_FLOAT && ISA_HAS_FRECIPE,
-			  "__loongarch_frecipe", pfile);
-
   loongarch_def_or_undef (ISA_HAS_LSX, "__loongarch_simd", pfile);
   loongarch_def_or_undef (ISA_HAS_LSX, "__loongarch_sx", pfile);
   loongarch_def_or_undef (ISA_HAS_LASX, "__loongarch_asx", pfile);
@@ -149,17 +146,23 @@ loongarch_update_cpp_builtins (cpp_reader *pfile)
   int max_v_major = 1, max_v_minor = 0;
 
   for (int i = 0; i < N_EVO_FEATURES; i++)
-    if (la_target.isa.evolution & la_evo_feature_masks[i])
-      {
-	builtin_define (la_evo_macro_name[i]);
+    {
+      builtin_undef (la_evo_macro_name[i]);
 
-	int major = la_evo_version_major[i],
-	    minor = la_evo_version_minor[i];
+      if (la_target.isa.evolution & la_evo_feature_masks[i]
+	  && (la_evo_feature_masks[i] != OPTION_MASK_ISA_FRECIPE
+	      || TARGET_HARD_FLOAT))
+	{
+	  builtin_define (la_evo_macro_name[i]);
 
-	max_v_major = major > max_v_major ? major : max_v_major;
-	max_v_minor = major == max_v_major
-	  ? (minor > max_v_minor ? minor : max_v_minor) : max_v_minor;
-      }
+	  int major = la_evo_version_major[i],
+	  minor = la_evo_version_minor[i];
+
+	  max_v_major = major > max_v_major ? major : max_v_major;
+	  max_v_minor = major == max_v_major
+	    ? (minor > max_v_minor ? minor : max_v_minor) : max_v_minor;
+	}
+    }
 
   /* Find the minimum ISA version required to run the target program.  */
   builtin_undef ("__loongarch_version_major");
