@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-outof-ssa.h"
 #include "dojump.h"
 #include "internal-fn.h"
+#include "gimple-fold.h"
 
 /* FIXME: A lot of code here deals with expanding to RTL.  All that code
    should be in cfgexpand.cc.  */
@@ -1259,10 +1260,10 @@ insert_backedge_copies (void)
 		  if (gimple_nop_p (def)
 		      || gimple_code (def) == GIMPLE_PHI)
 		    continue;
-		  tree name = copy_ssa_name (result);
-		  gimple *stmt = gimple_build_assign (name, result);
 		  imm_use_iterator imm_iter;
 		  gimple *use_stmt;
+		  auto_vec<use_operand_p, 8> uses;
+		  int idx = -1;
 		  /* The following matches trivially_conflicts_p.  */
 		  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, result)
 		    {
@@ -1273,11 +1274,61 @@ insert_backedge_copies (void)
 			{
 			  use_operand_p use;
 			  FOR_EACH_IMM_USE_ON_STMT (use, imm_iter)
-			    SET_USE (use, name);
+			    {
+			      uses.safe_push (use);
+			      if (!is_gimple_debug (use_stmt))
+				{
+				  if (idx == -1)
+				    idx = uses.length () - 1;
+				  else
+				    idx = -2;
+				}
+			    }
 			}
 		    }
-		  gimple_stmt_iterator gsi = gsi_for_stmt (def);
-		  gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+		  /* When there is just a conflicting statement try to
+		     adjust that to refer to the new definition.
+		     In particular for now handle a conflict with the
+		     use in a (exit) condition with a NE compare,
+		     replacing a pre-IV-increment compare with a
+		     post-IV-increment one.  */
+		  if (idx >= 0
+		      && is_a <gcond *> (USE_STMT (uses[idx]))
+		      && (gimple_cond_code (USE_STMT (uses[idx])) == NE_EXPR
+			  || gimple_cond_code (USE_STMT (uses[idx])) == EQ_EXPR)
+		      && is_gimple_assign (def)
+		      && gimple_assign_rhs1 (def) == result
+		      && (gimple_assign_rhs_code (def) == PLUS_EXPR
+			  || gimple_assign_rhs_code (def) == MINUS_EXPR
+			  || gimple_assign_rhs_code (def) == POINTER_PLUS_EXPR)
+		      && TREE_CODE (gimple_assign_rhs2 (def)) == INTEGER_CST)
+		    {
+		      gcond *cond = as_a <gcond *> (USE_STMT (uses[idx]));
+		      tree *adj;
+		      if (gimple_cond_lhs (cond) == result)
+			adj = gimple_cond_rhs_ptr (cond);
+		      else
+			adj = gimple_cond_lhs_ptr (cond);
+		      gimple_stmt_iterator gsi = gsi_for_stmt (cond);
+		      tree newval
+			= gimple_build (&gsi, true, GSI_SAME_STMT,
+					UNKNOWN_LOCATION,
+					gimple_assign_rhs_code (def),
+					TREE_TYPE (*adj),
+					*adj, gimple_assign_rhs2 (def));
+		      *adj = newval;
+		      SET_USE (uses[idx], arg);
+		      update_stmt (cond);
+		    }
+		  else
+		    {
+		      tree name = copy_ssa_name (result);
+		      gimple *stmt = gimple_build_assign (name, result);
+		      gimple_stmt_iterator gsi = gsi_for_stmt (def);
+		      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+		      for (auto use : uses)
+			SET_USE (use, name);
+		    }
 		}
 	    }
 	}
