@@ -322,6 +322,7 @@ cgraph_node::insert_new_function_version (void)
   version_info_node = NULL;
   version_info_node = ggc_cleared_alloc<cgraph_function_version_info> ();
   version_info_node->this_node = this;
+  version_info_node->assembler_name = DECL_ASSEMBLER_NAME (this->decl);
 
   if (cgraph_fnver_htab == NULL)
     cgraph_fnver_htab = hash_table<function_version_hasher>::create_ggc (2);

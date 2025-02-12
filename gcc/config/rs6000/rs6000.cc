@@ -87,6 +87,7 @@
 extern tree rs6000_builtin_mask_for_load (void);
 extern tree rs6000_builtin_md_vectorized_function (tree, tree, tree);
 extern tree rs6000_builtin_reciprocal (tree);
+static tree rs6000_mangle_decl_assembler_name (tree, tree);
 
   /* Set -mabi=ieeelongdouble on some old targets.  In the future, power server
      systems will also set long double to be IEEE 128-bit.  AIX and Darwin
@@ -25366,20 +25367,9 @@ rs6000_get_function_versions_dispatcher (void *decl)
   if (targetm.has_ifunc_p ())
     {
       struct cgraph_function_version_info *it_v = NULL;
-      struct cgraph_node *dispatcher_node = NULL;
-      struct cgraph_function_version_info *dispatcher_version_info = NULL;
 
       /* Right now, the dispatching is done via ifunc.  */
       dispatch_decl = make_dispatcher_decl (default_node->decl);
-      TREE_NOTHROW (dispatch_decl) = TREE_NOTHROW (fn);
-
-      dispatcher_node = cgraph_node::get_create (dispatch_decl);
-      gcc_assert (dispatcher_node != NULL);
-      dispatcher_node->dispatcher_function = 1;
-      dispatcher_version_info
-	= dispatcher_node->insert_new_function_version ();
-      dispatcher_version_info->next = default_version_info;
-      dispatcher_node->definition = 1;
 
       /* Set the dispatcher for all the versions.  */
       it_v = default_version_info;
@@ -25412,13 +25402,24 @@ make_resolver_func (const tree default_decl,
 {
   /* Make the resolver function static.  The resolver function returns
      void *.  */
-  tree decl_name = clone_function_name (default_decl, "resolver");
-  const char *resolver_name = IDENTIFIER_POINTER (decl_name);
   tree type = build_function_type_list (ptr_type_node, NULL_TREE);
-  tree decl = build_fn_decl (resolver_name, type);
-  SET_DECL_ASSEMBLER_NAME (decl, decl_name);
+  tree decl = build_fn_decl (IDENTIFIER_POINTER (DECL_NAME (default_decl)),
+			     type);
 
-  DECL_NAME (decl) = decl_name;
+  cgraph_node *node = cgraph_node::get (default_decl);
+  gcc_assert (node && node->function_version ());
+
+  /* Set the assembler name to prevent cgraph_node attempting to mangle.  */
+  SET_DECL_ASSEMBLER_NAME (decl, DECL_ASSEMBLER_NAME (default_decl));
+
+  cgraph_node *resolver_node = cgraph_node::get_create (decl);
+  resolver_node->dispatcher_resolver_function = true;
+
+  tree id = rs6000_mangle_decl_assembler_name
+    (decl, node->function_version ()->assembler_name);
+  symtab->change_decl_assembler_name (decl, id);
+
+  DECL_NAME (decl) = DECL_NAME (default_decl);
   TREE_USED (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 0;
@@ -25464,7 +25465,8 @@ make_resolver_func (const tree default_decl,
 
   /* Mark dispatch_decl as "ifunc" with resolver as resolver_name.  */
   DECL_ATTRIBUTES (dispatch_decl)
-    = make_attribute ("ifunc", resolver_name, DECL_ATTRIBUTES (dispatch_decl));
+    = make_attribute ("ifunc", IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+		      DECL_ATTRIBUTES (dispatch_decl));
 
   cgraph_node::create_same_body_alias (dispatch_decl, decl);
 
@@ -28507,6 +28509,44 @@ complex_divide_builtin_code (machine_mode mode)
   return (built_in_function) func;
 }
 
+/* This function changes the assembler name for functions that are
+   versions.  If DECL is a function version and has a "target"
+   attribute, it appends the attribute string to its assembler name.  */
+
+static tree
+rs6000_mangle_function_version_assembler_name (tree decl, tree id)
+{
+  tree version_attr;
+  const char *version_string;
+  char *attr_str;
+
+  if (DECL_DECLARED_INLINE_P (decl)
+      && lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (decl)))
+    error_at (DECL_SOURCE_LOCATION (decl),
+	      "function versions cannot be marked as %<gnu_inline%>,"
+	      " bodies have to be generated");
+
+  if (DECL_VIRTUAL_P (decl) || DECL_VINDEX (decl))
+    sorry ("virtual function multiversioning not supported");
+
+  version_attr = lookup_attribute ("target", DECL_ATTRIBUTES (decl));
+
+  /* target attribute string cannot be NULL.  */
+  gcc_assert (version_attr != NULL_TREE);
+
+  version_string = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (version_attr)));
+
+  if (strcmp (version_string, "default") == 0)
+    return clone_identifier (id, "default");
+
+  attr_str = sorted_attr_string (TREE_VALUE (version_attr));
+
+  tree ret = clone_identifier (id, attr_str, true);
+
+  XDELETEVEC (attr_str);
+  return ret;
+}
+
 /* On 64-bit Linux and Freebsd systems, possibly switch the long double library
    function names from <foo>l to <foo>f128 if the default long double type is
    IEEE 128-bit.  Typically, with the C and C++ languages, the standard math.h
@@ -28692,6 +28732,14 @@ rs6000_mangle_decl_assembler_name (tree decl, tree id)
 	}
     }
 
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      cgraph_node *node = cgraph_node::get (decl);
+      if (node && node->dispatcher_resolver_function)
+	id = clone_identifier (id, "resolver");
+      else if (DECL_FUNCTION_VERSIONED (decl))
+	id = rs6000_mangle_function_version_assembler_name (decl, id);
+    }
   return id;
 }
 

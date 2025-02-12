@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "intl.h"
 #include "gcc-urlifier.h"
+#include "cgraph.h"
 
 /* Table of the tables of attributes (common, language, format, machine)
    searched.  */
@@ -1248,18 +1249,12 @@ common_function_versions (tree fn1, tree fn2)
 tree
 make_dispatcher_decl (const tree decl)
 {
-  tree func_decl;
-  char *func_name;
-  tree fn_type, func_type;
+  tree fn_type = TREE_TYPE (decl);
+  tree func_type = build_function_type (TREE_TYPE (fn_type),
+					TYPE_ARG_TYPES (fn_type));
+  tree func_decl = build_fn_decl (IDENTIFIER_POINTER (DECL_NAME (decl)),
+				  func_type);
 
-  func_name = xstrdup (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
-
-  fn_type = TREE_TYPE (decl);
-  func_type = build_function_type (TREE_TYPE (fn_type),
-				   TYPE_ARG_TYPES (fn_type));
-
-  func_decl = build_fn_decl (func_name, func_type);
-  XDELETEVEC (func_name);
   TREE_USED (func_decl) = 1;
   DECL_CONTEXT (func_decl) = NULL_TREE;
   DECL_INITIAL (func_decl) = error_mark_node;
@@ -1269,6 +1264,34 @@ make_dispatcher_decl (const tree decl)
   DECL_EXTERNAL (func_decl) = 1;
   /* This will be of type IFUNCs have to be externally visible.  */
   TREE_PUBLIC (func_decl) = 1;
+  TREE_NOTHROW (func_decl) = TREE_NOTHROW (decl);
+
+  /* Set the decl name to avoid graph_node re-mangling it.  */
+  SET_DECL_ASSEMBLER_NAME (func_decl, DECL_ASSEMBLER_NAME (decl));
+
+  cgraph_node *node = cgraph_node::get (decl);
+  gcc_assert (node);
+  cgraph_function_version_info *node_v = node->function_version ();
+  gcc_assert (node_v);
+
+  /* Set flags on the cgraph_node for the new decl.  */
+  cgraph_node *func_node = cgraph_node::get_create (func_decl);
+  func_node->dispatcher_function = true;
+  func_node->definition = true;
+
+  cgraph_function_version_info *func_v
+    = func_node->insert_new_function_version ();
+  func_v->next = node_v;
+  func_v->assembler_name = node_v->assembler_name;
+
+  /* If the default node is from a target_clone, mark the dispatcher as from
+     target_clone.  */
+  func_node->is_target_clone = node->is_target_clone;
+
+  /* Get the assembler name by mangling with the base assembler name.  */
+  tree id = targetm.mangle_decl_assembler_name
+    (func_decl, func_v->assembler_name);
+  symtab->change_decl_assembler_name (func_decl, id);
 
   return func_decl;
 }

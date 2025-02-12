@@ -1273,6 +1273,13 @@ maybe_mark_function_versioned (tree decl)
 {
   if (!DECL_FUNCTION_VERSIONED (decl))
     {
+      /* We need to insert function version now to make sure the correct
+	 pre-mangled assembler name is recorded.  */
+      cgraph_node *node = cgraph_node::get_create (decl);
+
+      if (!node->function_version ())
+	node->insert_new_function_version ();
+
       DECL_FUNCTION_VERSIONED (decl) = 1;
       /* If DECL_ASSEMBLER_NAME has already been set, re-mangle
 	 to include the version marker.  */

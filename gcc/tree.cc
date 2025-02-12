@@ -15424,32 +15424,6 @@ get_attr_nonstring_decl (tree expr, tree *ref)
   return NULL_TREE;
 }
 
-/* Return length of attribute names string,
-   if arglist chain > 1, -1 otherwise.  */
-
-int
-get_target_clone_attr_len (tree arglist)
-{
-  tree arg;
-  int str_len_sum = 0;
-  int argnum = 0;
-
-  for (arg = arglist; arg; arg = TREE_CHAIN (arg))
-    {
-      const char *str = TREE_STRING_POINTER (TREE_VALUE (arg));
-      size_t len = strlen (str);
-      str_len_sum += len + 1;
-      for (const char *p = strchr (str, TARGET_CLONES_ATTR_SEPARATOR);
-	   p;
-	   p = strchr (p + 1, TARGET_CLONES_ATTR_SEPARATOR))
-	argnum++;
-      argnum++;
-    }
-  if (argnum <= 1)
-    return -1;
-  return str_len_sum;
-}
-
 /* Returns an auto_vec of string_slices containing the version strings from
    ARGLIST.  DEFAULT_COUNT is incremented for each default version found.  */
 

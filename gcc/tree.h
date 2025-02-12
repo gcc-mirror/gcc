@@ -7101,8 +7101,6 @@ extern unsigned fndecl_dealloc_argno (tree);
    object or pointer.  Otherwise return null.  */
 extern tree get_attr_nonstring_decl (tree, tree * = NULL);
 
-extern int get_target_clone_attr_len (tree);
-
 /* Returns the version string for a decl with target_version attribute.
    Returns an invalid string_slice if no attribute is present.  */
 extern string_slice get_target_version (const tree);
