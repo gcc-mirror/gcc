@@ -133,6 +133,8 @@ namespace std::chrono
     // of this type gives them access to the private members of time_zone
     // and tzdb, without needing them declared in the <chrono> header.
 
+    // The tzdb_list singleton. This doesn't contain the actual linked list,
+    // but it has member functions that give access to it.
     static tzdb_list _S_the_list;
 
 #if USE_ATOMIC_SHARED_PTR
@@ -177,17 +179,7 @@ namespace std::chrono
   // Implementation of the private constructor used for the singleton object.
   constexpr tzdb_list::tzdb_list(nullptr_t) { }
 
-  // The tzdb_list singleton. This doesn't contain the actual linked list,
-  // but it has member functions that give access to it.
-  constinit tzdb_list tzdb_list::_Node::_S_the_list(nullptr);
-
-  // Shared pointer to the first Node in the list.
-  constinit tzdb_list::_Node::head_ptr tzdb_list::_Node::_S_head_owner{nullptr};
-
-#if USE_ATOMIC_LIST_HEAD
-  // Lock-free access to the first Node in the list.
-  constinit atomic<tzdb_list::_Node*> tzdb_list::_Node::_S_head_cache{nullptr};
-#endif
+#include "tzdb_globals.h"
 
   // The data structures defined in this file (Rule, on_day, at_time etc.)
   // are used to represent the information parsed from the tzdata.zi file
