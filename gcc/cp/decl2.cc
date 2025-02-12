@@ -2814,7 +2814,9 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
 	/* The ODR allows definitions in different TUs to refer to distinct
 	   constant variables with internal or no linkage, so such a reference
 	   shouldn't affect visibility (PR110323).  FIXME but only if the
-	   lvalue-rvalue conversion is applied.  */;
+	   lvalue-rvalue conversion is applied.  We still want to restrict
+	   visibility according to the type of the declaration however.  */
+	tpvis = type_visibility (TREE_TYPE (t));
       else if (! TREE_PUBLIC (t))
 	tpvis = VISIBILITY_ANON;
       else
