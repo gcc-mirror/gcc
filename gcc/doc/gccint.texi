@@ -87,8 +87,7 @@ Compiler Collection (GCC)}.
 This manual is mainly a reference manual rather than a tutorial.  It
 discusses how to contribute to GCC (@pxref{Contributing}), the
 characteristics of the machines supported by GCC as hosts and targets
-(@pxref{Portability}), how GCC relates to the ABIs on such systems
-(@pxref{Interface}), and the characteristics of the languages for
+(@pxref{Portability}), and the characteristics of the languages for
 which GCC front ends are written (@pxref{Languages}).  It then
 describes the GCC source tree structure and build system, some of the
 interfaces to GCC front ends, and how support for a target system is
@@ -100,7 +99,6 @@ Additional tutorial information is linked to from
 @menu
 * Contributing::    How to contribute to testing and developing GCC.
 * Portability::     Goals of GCC's portability features.
-* Interface::       Function-call interface of GCC output.
 * Libgcc::          Low-level runtime library used by GCC.
 * Languages::       Languages for which GCC front ends are written.
 * Source Tree::     GCC source tree structure and build system.
@@ -141,7 +139,6 @@ Additional tutorial information is linked to from
 
 @include contribute.texi
 @include portability.texi
-@include interface.texi
 @include libgcc.texi
 @include languages.texi
 @include sourcebuild.texi
