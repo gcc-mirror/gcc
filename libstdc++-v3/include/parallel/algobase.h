@@ -84,7 +84,7 @@ namespace __parallel
             __gnu_parallel::__find_template(__begin1, __end1, __begin2, __pred,
                                             __gnu_parallel::
                                             __mismatch_selector()).first;
-          return make_pair(__res , __begin2 + (__res - __begin1));
+          return std::make_pair(__res , __begin2 + (__res - __begin1));
         }
       else
         return _GLIBCXX_STD_A::mismatch(__begin1, __end1, __begin2, __pred);
@@ -165,7 +165,7 @@ namespace __parallel
             __gnu_parallel::__find_template(__begin1, __end1, __begin2, __pred,
                                             __gnu_parallel::
                                             __mismatch_selector()).first;
-          return make_pair(__res , __begin2 + (__res - __begin1));
+          return std::make_pair(__res , __begin2 + (__res - __begin1));
         }
       else
         return _GLIBCXX_STD_A::mismatch(__begin1, __end1,
