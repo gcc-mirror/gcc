@@ -8462,7 +8462,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
   if (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
     parm = DECL_CHAIN (parm);
   for (; parm; parm = DECL_CHAIN (parm))
-    vec_safe_push (args, build_stub_object (TREE_TYPE (parm)));
+    vec_safe_push (args, forward_parm (parm));
 
   unsigned nappend_args = 0;
   tree append_args_list = TREE_CHAIN (TREE_CHAIN (chain));
