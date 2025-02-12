@@ -1,3 +1,12 @@
+2025-02-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-02-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/118825
+	* config/i386/i386.h (ASM_OUTPUT_SYMBOL_REF): Replace x with
+	SYM.
+
 2025-02-04  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR middle-end/115913
