@@ -30,9 +30,9 @@ Two hoo[ 3 ] = {
     Two( 15, 16 )
 };
 
-Two coo[ 3 ] __attribute__((init_priority(1000)));
-
-Two koo[ 3 ] __attribute__((init_priority(1000))) = {
+Two coo[ 3 ] __attribute__((init_priority(10))); // { dg-warning "reserved" }
+#pragma GCC diagnostic ignored "-Wprio-ctor-dtor"
+Two koo[ 3 ] __attribute__((init_priority(10))) = {
     Two( 21, 22 ),
     Two( 23, 24 ),
     Two( 25, 26 )

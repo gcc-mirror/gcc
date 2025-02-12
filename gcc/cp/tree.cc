@@ -5335,7 +5335,8 @@ handle_init_priority_attribute (tree* node,
       && !in_system_header_at (input_location))
     {
       warning
-	(0, "requested %<init_priority%> %i is reserved for internal use",
+	(OPT_Wprio_ctor_dtor,
+	 "requested %<init_priority%> %i is reserved for internal use",
 	 pri);
     }
 
