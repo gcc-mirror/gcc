@@ -2255,6 +2255,7 @@ static struct
 					out.  */
   unsigned size;  /* Fragment size to accumulate.  */
   unsigned offset;  /* Offset within current fragment.  */
+  bool active; /* Whether this machinery is active.  */
   bool started;   /* Whether we've output any initializer.  */
 } init_frag;
 
@@ -2265,6 +2266,8 @@ static struct
 static void
 output_init_frag (rtx sym)
 {
+  gcc_checking_assert (init_frag.active);
+
   fprintf (asm_out_file, init_frag.started ? ", " : " = { ");
   unsigned HOST_WIDE_INT val = init_frag.val;
 
@@ -2296,6 +2299,8 @@ output_init_frag (rtx sym)
 static void
 nvptx_assemble_value (unsigned HOST_WIDE_INT val, unsigned size)
 {
+  gcc_checking_assert (init_frag.active);
+
   bool negative_p
     = val & (HOST_WIDE_INT_1U << (HOST_BITS_PER_WIDE_INT - 1));
 
@@ -2328,6 +2333,8 @@ nvptx_assemble_value (unsigned HOST_WIDE_INT val, unsigned size)
 static bool
 nvptx_assemble_integer (rtx x, unsigned int size, int ARG_UNUSED (aligned_p))
 {
+  gcc_checking_assert (init_frag.active);
+
   HOST_WIDE_INT val = 0;
 
   switch (GET_CODE (x))
@@ -2370,6 +2377,17 @@ nvptx_assemble_integer (rtx x, unsigned int size, int ARG_UNUSED (aligned_p))
 void
 nvptx_output_skip (FILE *, unsigned HOST_WIDE_INT size)
 {
+  gcc_checking_assert (in_section == data_section
+		       || in_section == text_section);
+
+  if (!init_frag.active)
+    /* We're in the 'data_section' or 'text_section', outside of an
+       initializer context ('init_frag').  There's nothing to do here:
+       in PTX, there's no concept of an assembler's "location counter",
+       "current address", "dot symbol" ('.') that might need padding or
+       aligning.  */
+    return;
+
   /* Finish the current fragment, if it's started.  */
   if (init_frag.offset)
     {
@@ -2446,6 +2464,8 @@ nvptx_assemble_decl_begin (FILE *file, const char *name, const char *section,
 			   const_tree type, HOST_WIDE_INT size, unsigned align,
 			   bool undefined = false)
 {
+  gcc_checking_assert (!init_frag.active);
+
   bool atype = (TREE_CODE (type) == ARRAY_TYPE)
     && (TYPE_DOMAIN (type) == NULL_TREE);
 
@@ -2472,6 +2492,8 @@ nvptx_assemble_decl_begin (FILE *file, const char *name, const char *section,
 
   elt_size |= GET_MODE_SIZE (elt_mode);
   elt_size &= -elt_size; /* Extract LSB set.  */
+
+  init_frag.active = true;
 
   init_frag.size = elt_size;
   /* Avoid undefined shift behavior by using '2'.  */
@@ -2504,10 +2526,14 @@ nvptx_assemble_decl_begin (FILE *file, const char *name, const char *section,
 static void
 nvptx_assemble_decl_end (void)
 {
+  gcc_checking_assert (init_frag.active);
+
   if (init_frag.offset)
     /* This can happen with a packed struct with trailing array member.  */
     nvptx_assemble_value (0, init_frag.size - init_frag.offset);
   fprintf (asm_out_file, init_frag.started ? " };\n" : ";\n");
+
+  init_frag.active = false;
 }
 
 /* Output an uninitialized common or file-scope variable.  */
