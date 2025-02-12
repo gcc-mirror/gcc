@@ -136,9 +136,7 @@ TypeCheckType::visit (HIR::TypePath &path)
   // remaining segments if possible
   bool wasBigSelf = false;
   size_t offset = 0;
-  NodeId resolved_node_id = UNKNOWN_NODEID;
-  TyTy::BaseType *root
-    = resolve_root_path (path, &offset, &resolved_node_id, &wasBigSelf);
+  TyTy::BaseType *root = resolve_root_path (path, &offset, &wasBigSelf);
   if (root->get_kind () == TyTy::TypeKind::ERROR)
     {
       rust_debug_loc (path.get_locus (), "failed to resolve type-path type");
@@ -159,9 +157,9 @@ TypeCheckType::visit (HIR::TypePath &path)
     }
 
   translated
-    = resolve_segments (resolved_node_id, path.get_mappings ().get_hirid (),
-			path.get_segments (), offset, path_type,
-			path.get_mappings (), path.get_locus (), wasBigSelf);
+    = resolve_segments (path.get_mappings ().get_hirid (), path.get_segments (),
+			offset, path_type, path.get_mappings (),
+			path.get_locus (), wasBigSelf);
 
   rust_debug_loc (path.get_locus (), "resolved type-path to: [%s]",
 		  translated->debug_str ().c_str ());
@@ -180,32 +178,8 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
 
   if (!qual_path_type.has_as_clause ())
     {
-      // then this is just a normal path-in-expression
-      NodeId root_resolved_node_id = UNKNOWN_NODEID;
-      bool ok = false;
-      if (flag_name_resolution_2_0)
-	{
-	  auto &nr_ctx
-	    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
-
-	  if (auto id = nr_ctx.lookup (
-		qual_path_type.get_type ().get_mappings ().get_nodeid ()))
-	    {
-	      root_resolved_node_id = *id;
-	      ok = true;
-	    }
-	}
-      else
-	{
-	  ok = resolver->lookup_resolved_type (
-	    qual_path_type.get_type ().get_mappings ().get_nodeid (),
-	    &root_resolved_node_id);
-	}
-      rust_assert (ok);
-
       translated
-	= resolve_segments (root_resolved_node_id,
-			    path.get_mappings ().get_hirid (),
+	= resolve_segments (path.get_mappings ().get_hirid (),
 			    path.get_segments (), 0, translated,
 			    path.get_mappings (), path.get_locus (), false);
 
@@ -278,7 +252,6 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
 	}
     }
 
-  NodeId root_resolved_node_id = UNKNOWN_NODEID;
   if (impl_item == nullptr)
     {
       // this may be valid as there could be a default trait implementation here
@@ -286,27 +259,19 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
       // not because this will have already been validated as part of the trait
       // impl block
       translated = item.get_tyty_for_receiver (root);
-      root_resolved_node_id
-	= item.get_raw_item ()->get_mappings ().get_nodeid ();
     }
   else
     {
       HirId impl_item_id = impl_item->get_impl_mappings ().get_hirid ();
       bool ok = query_type (impl_item_id, &translated);
       if (!ok)
-	{
-	  // FIXME
-	  // I think query_type should error if required here anyway
-	  return;
-	}
+	return;
 
       if (!args.is_error ())
 	{
 	  // apply the args
 	  translated = SubstMapperInternal::Resolve (translated, args);
 	}
-
-      root_resolved_node_id = impl_item->get_impl_mappings ().get_nodeid ();
     }
 
   // turbo-fish segment path::<ty>
@@ -337,34 +302,16 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
   // continue on as a path-in-expression
   bool fully_resolved = path.get_segments ().empty ();
   if (fully_resolved)
-    {
-      if (flag_name_resolution_2_0)
-	{
-	  auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
-	    Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
-
-	  nr_ctx.map_usage (Resolver2_0::Usage (
-			      path.get_mappings ().get_nodeid ()),
-			    Resolver2_0::Definition (root_resolved_node_id));
-	}
-      else
-	{
-	  resolver->insert_resolved_type (path.get_mappings ().get_nodeid (),
-					  root_resolved_node_id);
-	}
-      return;
-    }
+    return;
 
   translated
-    = resolve_segments (root_resolved_node_id,
-			path.get_mappings ().get_hirid (), path.get_segments (),
+    = resolve_segments (path.get_mappings ().get_hirid (), path.get_segments (),
 			0, translated, path.get_mappings (), path.get_locus (),
 			false);
 }
 
 TyTy::BaseType *
 TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
-				  NodeId *root_resolved_node_id,
 				  bool *wasBigSelf)
 {
   TyTy::BaseType *root_tyty = nullptr;
@@ -510,7 +457,6 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 				    context->regions_from_generic_args (empty));
 	}
 
-      *root_resolved_node_id = ref_node_id;
       *offset = *offset + 1;
       root_tyty = lookup;
 
@@ -570,12 +516,11 @@ TypeCheckType::resolve_associated_type (const std::string &search,
 
 TyTy::BaseType *
 TypeCheckType::resolve_segments (
-  NodeId root_resolved_node_id, HirId expr_id,
-  std::vector<std::unique_ptr<HIR::TypePathSegment>> &segments, size_t offset,
-  TyTy::BaseType *tyseg, const Analysis::NodeMapping &expr_mappings,
-  location_t expr_locus, bool tySegIsBigSelf)
+  HirId expr_id, std::vector<std::unique_ptr<HIR::TypePathSegment>> &segments,
+  size_t offset, TyTy::BaseType *tyseg,
+  const Analysis::NodeMapping &expr_mappings, location_t expr_locus,
+  bool tySegIsBigSelf)
 {
-  NodeId resolved_node_id = root_resolved_node_id;
   TyTy::BaseType *prev_segment = tyseg;
   for (size_t i = offset; i < segments.size (); i++)
     {
@@ -653,18 +598,6 @@ TypeCheckType::resolve_segments (
 			     variant->get_identifier ().c_str ());
 	      return new TyTy::ErrorType (expr_id);
 	    }
-
-	  if (candidate.is_impl_candidate ())
-	    {
-	      resolved_node_id
-		= candidate.item.impl.impl_item->get_impl_mappings ()
-		    .get_nodeid ();
-	    }
-	  else
-	    {
-	      resolved_node_id
-		= candidate.item.trait.item_ref->get_mappings ().get_nodeid ();
-	    }
 	}
 
       if (seg->is_generic_segment ())
@@ -691,57 +624,6 @@ TypeCheckType::resolve_segments (
 					regions);
 	  if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
 	    return new TyTy::ErrorType (expr_id);
-	}
-    }
-
-  rust_assert (resolved_node_id != UNKNOWN_NODEID);
-  if (flag_name_resolution_2_0)
-    {
-      auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
-	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
-
-      auto old = nr_ctx.lookup (expr_mappings.get_nodeid ());
-      if (old.has_value ())
-	{
-	  rust_assert (*old == resolved_node_id);
-	}
-      else
-	{
-	  nr_ctx.map_usage (Resolver2_0::Usage (expr_mappings.get_nodeid ()),
-			    Resolver2_0::Definition (resolved_node_id));
-	}
-    }
-  else
-    {
-      // lookup if the name resolver was able to canonically resolve this or not
-      NodeId path_resolved_id = UNKNOWN_NODEID;
-      if (resolver->lookup_resolved_name (expr_mappings.get_nodeid (),
-					  &path_resolved_id))
-	{
-	  rust_assert (path_resolved_id == resolved_node_id);
-	}
-      // check the type scope
-      else if (resolver->lookup_resolved_type (expr_mappings.get_nodeid (),
-					       &path_resolved_id))
-	{
-	  rust_assert (path_resolved_id == resolved_node_id);
-	}
-      else
-	{
-	  // name scope first
-	  if (resolver->get_name_scope ().decl_was_declared_here (
-		resolved_node_id))
-	    {
-	      resolver->insert_resolved_name (expr_mappings.get_nodeid (),
-					      resolved_node_id);
-	    }
-	  // check the type scope
-	  else if (resolver->get_type_scope ().decl_was_declared_here (
-		     resolved_node_id))
-	    {
-	      resolver->insert_resolved_type (expr_mappings.get_nodeid (),
-					      resolved_node_id);
-	    }
 	}
     }
 
