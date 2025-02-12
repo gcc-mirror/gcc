@@ -629,8 +629,6 @@ package body CStand is
             Decl := New_Node (N_Full_Type_Declaration, Stloc);
          end if;
 
-         Set_Is_Frozen (Standard_Entity (S));
-         Set_Is_Public (Standard_Entity (S));
          Set_Defining_Identifier (Decl, Standard_Entity (S));
          Append (Decl, Decl_S);
       end loop;
