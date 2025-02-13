@@ -4634,7 +4634,7 @@ template <template <int> class _Abi, int _Bytes, typename _Tp>
     static constexpr auto
     _S_choose()
     {
-      constexpr int _NextBytes = std::__bit_ceil(_Bytes) / 2;
+      constexpr int _NextBytes = std::__bit_ceil((unsigned)_Bytes) / 2;
       using _NextAbi = _Abi<_NextBytes>;
       if constexpr (_NextBytes < sizeof(_Tp) * 2) // break recursion
 	return _Abi<_Bytes>();

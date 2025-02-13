@@ -591,7 +591,8 @@ namespace pmr
     // The minimum size of a big block.
     // All big_block allocations will be a multiple of this value.
     // Use bit_ceil to get a power of two even for e.g. 20-bit size_t.
-    static constexpr size_t min = __bit_ceil(numeric_limits<size_t>::digits);
+    static constexpr size_t min
+      = __bit_ceil((unsigned)numeric_limits<size_t>::digits);
 
     constexpr
     big_block(size_t bytes, size_t alignment)
