@@ -333,8 +333,8 @@ cgraph_node::insert_new_function_version (void)
 }
 
 /* Remove the cgraph_function_version_info node given by DECL_V.  */
-static void
-delete_function_version (cgraph_function_version_info *decl_v)
+void
+cgraph_node::delete_function_version (cgraph_function_version_info *decl_v)
 {
   if (decl_v == NULL)
     return;

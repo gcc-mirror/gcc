@@ -8974,6 +8974,13 @@ resolve_address_of_overloaded_function (tree target_type,
 	if (!constraints_satisfied_p (fn))
 	  continue;
 
+	/* For target_version semantics, never resolve a non-default
+	   version.  */
+	if (!TARGET_HAS_FMV_TARGET_ATTRIBUTE
+	    && TREE_CODE (fn) == FUNCTION_DECL
+	    && !is_function_default_version (fn))
+	  continue;
+
 	if (undeduced_auto_decl (fn))
 	  {
 	    /* Force instantiation to do return type deduction.  */
@@ -9199,8 +9206,10 @@ resolve_address_of_overloaded_function (tree target_type,
   /* If a pointer to a function that is multi-versioned is requested, the
      pointer to the dispatcher function is returned instead.  This works
      well because indirectly calling the function will dispatch the right
-     function version at run-time.  */
-  if (DECL_FUNCTION_VERSIONED (fn))
+     function version at run-time.
+     This is done at multiple_target.cc for target_version semantics.  */
+
+  if (DECL_FUNCTION_VERSIONED (fn) && TARGET_HAS_FMV_TARGET_ATTRIBUTE)
     {
       fn = get_function_version_dispatcher (fn);
       if (fn == NULL)

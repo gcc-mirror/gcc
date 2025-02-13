@@ -2026,6 +2026,13 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 	    set_decl_tls_model (*decl, default_model);
 	}
     }
+
+  /* For target_version semantics, mark any annotated function as versioned
+     so that it gets mangled even when on its own in a TU.  */
+  if (!TARGET_HAS_FMV_TARGET_ATTRIBUTE
+      && TREE_CODE (*decl) == FUNCTION_DECL
+      && get_target_version (*decl).is_valid ())
+    maybe_mark_function_versioned (*decl);
 }
 
 /* Walks through the namespace- or function-scope anonymous union

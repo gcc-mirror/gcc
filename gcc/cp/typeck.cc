@@ -4495,6 +4495,16 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
 	return error_mark_node;
       fndecl = function;
 
+      /* For target_version semantics, the function set cannot be called
+	 if there is no default version in scope.  */
+      if (!TARGET_HAS_FMV_TARGET_ATTRIBUTE
+	   && !is_function_default_version (fndecl))
+	 {
+	   if (complain & tf_error)
+	    error ("no default version in scope");
+	   return error_mark_node;
+	 }
+
       /* Convert anything with function type to a pointer-to-function.  */
       if (DECL_MAIN_P (function))
 	{

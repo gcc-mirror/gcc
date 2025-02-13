@@ -29,10 +29,10 @@ int bar()
 /* { dg-final { scan-assembler-times "\n_Z3foov\.default:\n" 0 } } */
 /* { dg-final { scan-assembler-times "\n_Z3foov\._Mdotprod:\n" 0 } } */
 /* { dg-final { scan-assembler-times "\n_Z3foov\._MsveMsve2:\n" 0 } } */
-/* { dg-final { scan-assembler-times "\n_Z3foov\.resolver:\n" 1 } } */
+/* { dg-final { scan-assembler-times "\n_Z3foov\.resolver:\n" 0 } } */
 /* { dg-final { scan-assembler-times "\n\tbl\t_Z3foov\n" 1 } } */
-/* { dg-final { scan-assembler-times "\n\t\.type\t_Z3foov, %gnu_indirect_function\n" 1 } } */
-/* { dg-final { scan-assembler-times "\n\t\.set\t_Z3foov,_Z3foov\.resolver\n" 1 } } */
+/* { dg-final { scan-assembler-times "\n\t\.type\t_Z3foov, %gnu_indirect_function\n" 0 } } */
+/* { dg-final { scan-assembler-times "\n\t\.set\t_Z3foov,_Z3foov\.resolver\n" 0 } } */
 
 /* { dg-final { scan-assembler-times "\n_Z3fooi\.default:\n" 0 } } */
 /* { dg-final { scan-assembler-times "\n_Z3fooi\._Mdotprod:\n" 0 } } */

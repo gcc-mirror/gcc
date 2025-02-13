@@ -14623,42 +14623,29 @@ riscv_generate_version_dispatcher_body (void *node_p)
   return resolver_decl;
 }
 
-/* Make a dispatcher declaration for the multi-versioned function DECL.
-   Calls to DECL function will be replaced with calls to the dispatcher
-   by the front-end.  Returns the decl of the dispatcher function.  */
+/* Make a dispatcher declaration for the multi-versioned default function DECL.
+   Calls to DECL function will be replaced with calls to the dispatcher by
+   the target_clones pass.  Returns the decl of the dispatcher function.  */
 
 tree
 riscv_get_function_versions_dispatcher (void *decl)
 {
-  tree fn = (tree) decl;
-  struct cgraph_node *node = NULL;
-  struct cgraph_node *default_node = NULL;
-  struct cgraph_function_version_info *node_v = NULL;
-
+  tree default_decl = (tree) decl;
   tree dispatch_decl = NULL;
 
-  struct cgraph_function_version_info *default_version_info = NULL;
+  gcc_assert (decl != NULL
+	      && DECL_FUNCTION_VERSIONED (default_decl)
+	      && is_function_default_version (default_decl));
 
-  gcc_assert (fn != NULL && DECL_FUNCTION_VERSIONED (fn));
+  struct cgraph_node *default_node = cgraph_node::get (default_decl);
+  gcc_assert (default_node != NULL);
 
-  node = cgraph_node::get (fn);
-  gcc_assert (node != NULL);
+  struct cgraph_function_version_info *default_node_v
+    = default_node->function_version ();
+  gcc_assert (default_node_v != NULL && !default_node_v->prev);
 
-  node_v = node->function_version ();
-  gcc_assert (node_v != NULL);
-
-  if (node_v->dispatcher_resolver != NULL)
-    return node_v->dispatcher_resolver;
-
-  /* The default node is always the beginning of the chain.  */
-  default_version_info = node_v;
-  while (default_version_info->prev)
-    default_version_info = default_version_info->prev;
-  default_node = default_version_info->this_node;
-
-  /* If there is no default node, just return NULL.  */
-  if (!is_function_default_version (default_node->decl))
-    return NULL;
+  if (default_node_v->dispatcher_resolver != NULL)
+    return default_node_v->dispatcher_resolver;
 
   if (targetm.has_ifunc_p ())
     {
@@ -14668,7 +14655,7 @@ riscv_get_function_versions_dispatcher (void *decl)
       dispatch_decl = make_dispatcher_decl (default_node->decl);
 
       /* Set the dispatcher for all the versions.  */
-      it_v = default_version_info;
+      it_v = default_node_v;
       while (it_v != NULL)
 	{
 	  it_v->dispatcher_resolver = dispatch_decl;

@@ -1352,6 +1352,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
      DECL is a duplicate declaration.  */
   static void delete_function_version_by_decl (tree decl);
 
+  static void delete_function_version (cgraph_function_version_info *);
+
   /* Add the function FNDECL to the call graph.
      Unlike finalize_function, this function is intended to be used
      by middle end and allows insertion of new function at arbitrary point

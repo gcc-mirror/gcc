@@ -1268,7 +1268,7 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
 
 /* Mark DECL as versioned if it isn't already.  */
 
-static void
+void
 maybe_mark_function_versioned (tree decl)
 {
   if (!DECL_FUNCTION_VERSIONED (decl))

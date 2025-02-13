@@ -58,8 +58,15 @@ replace_function_decl (tree *op, int *walk_subtrees, void *data)
   return NULL;
 }
 
-/* If the call in NODE has multiple target attribute with multiple fields,
-   replace it with dispatcher call and create dispatcher (once).  */
+/* In target FMV attributes, if the call in NODE has multiple target attribute
+   with multiple fields, replace it with calls to the dispatched symbol and
+   create the dispatcher body (once).
+
+   In target_version semantics, if it is a lone annotated default, then
+   the dispatched symbol is changed to be an alias and no resolver is
+   required.  Otherwise, redirect all calls and references to the dispatched
+   symbol, but only create the resolver body if the default version is
+   implemented.  */
 
 static void
 create_dispatcher_calls (struct cgraph_node *node)
@@ -90,13 +97,48 @@ create_dispatcher_calls (struct cgraph_node *node)
 
   cgraph_node *inode = cgraph_node::get (idecl);
   gcc_assert (inode);
-  tree resolver_decl = targetm.generate_version_dispatcher_body (inode);
+  cgraph_function_version_info *inode_info = inode->function_version ();
+  gcc_assert (inode_info);
 
-  /* Update aliases.  */
-  inode->alias = true;
-  inode->alias_target = resolver_decl;
-  if (!inode->analyzed)
-    inode->resolve_alias (cgraph_node::get (resolver_decl));
+  tree resolver_decl = NULL;
+
+  /* For target_version semantics, if there is a lone default declaration
+     it needs to be mangled, with an alias from the dispatched symbol to the
+     default version.  */
+  if (!TARGET_HAS_FMV_TARGET_ATTRIBUTE
+      && TREE_STATIC (node->decl)
+      && inode_info->next
+      && !inode_info->next->next)
+    {
+      inode->alias = true;
+      inode->alias_target = inode_info->next->this_node->decl;
+      inode->externally_visible = true;
+      if (!inode->analyzed)
+	inode->resolve_alias
+	  (cgraph_node::get (inode_info->next->this_node->decl));
+
+      DECL_ATTRIBUTES (idecl)
+	= make_attribute ("alias",
+			  IDENTIFIER_POINTER
+			    (DECL_ASSEMBLER_NAME
+			       (inode_info->next->this_node->decl)),
+			  DECL_ATTRIBUTES (node->decl));
+      TREE_USED (idecl) = true;
+      DECL_EXTERNAL (idecl) = false;
+      TREE_STATIC (idecl) = true;
+      return;
+    }
+  /* In target_version semantics, only create the resolver if the
+     default node is implemented.  */
+  else if (TARGET_HAS_FMV_TARGET_ATTRIBUTE || TREE_STATIC (node->decl))
+    {
+      resolver_decl = targetm.generate_version_dispatcher_body (inode);
+      /* Update aliases.  */
+      inode->alias = true;
+      inode->alias_target = resolver_decl;
+      if (!inode->analyzed)
+	inode->resolve_alias (cgraph_node::get (resolver_decl));
+    }
 
   auto_vec<cgraph_edge *> edges_to_redirect;
   /* We need to capture the references by value rather than just pointers to them
@@ -299,19 +341,32 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   tree assembler_name = node_v->assembler_name;
 
   /* Change the current node into the default node.  */
-  gcc_assert (num_defaults == 1);
+  if (num_defaults == 1)
+    {
+      /* Setting new attribute to initial function.  */
+      tree attributes = make_attribute (new_attr_name, "default", attrs);
+      DECL_ATTRIBUTES (node->decl) = attributes;
+      DECL_FUNCTION_VERSIONED (node->decl) = true;
 
-  /* Setting new attribute to initial function.  */
-  tree attributes = make_attribute (new_attr_name, "default", attrs);
-  DECL_ATTRIBUTES (node->decl) = attributes;
-  DECL_FUNCTION_VERSIONED (node->decl) = true;
+      node->is_target_clone = true;
+      node->local = false;
 
-  node->is_target_clone = true;
-  node->local = false;
+      /* Remangle base node after new target version string set.  */
+      tree id = targetm.mangle_decl_assembler_name (node->decl, assembler_name);
+      symtab->change_decl_assembler_name (node->decl, id);
+    }
+  else
+    {
+      /* Target clones without a default are only allowed for target_version
+	 semantics where we can have target_clones/target_version mixing.  */
+      gcc_assert (!TARGET_HAS_FMV_TARGET_ATTRIBUTE);
 
-  /* Remangle base node after new target version string set.  */
-  tree id = targetm.mangle_decl_assembler_name (node->decl, assembler_name);
-  symtab->change_decl_assembler_name (node->decl, id);
+      /* If there isn't a default version, can safely remove this version.
+	 The node itself gets removed after the other versions are created.  */
+      cgraph_function_version_info *temp = node_v;
+      node_v = node_v->next ? node_v->next : node_v->prev;
+      cgraph_node::delete_function_version (temp);
+    }
 
   for (string_slice attr : attr_list)
     {
@@ -344,6 +399,10 @@ expand_target_clones (struct cgraph_node *node, bool definition)
       symtab->change_decl_assembler_name (new_node->decl, id);
     }
 
+  /* If there are no default versions in the target_clones, this node is not
+     reused, so can delete this node.  */
+  if (num_defaults == 0)
+    node->remove ();
 
   return true;
 }
@@ -406,15 +465,87 @@ redirect_to_specific_clone (cgraph_node *node)
     }
 }
 
+/* Checks if NODE is in the 'simple' target_clones case, which is where NODE
+   is a declaration annotated with target_clones containing the default, and it
+   is the sole function declaration in the FMV function set.  */
+
+static bool
+is_simple_target_clones_case (cgraph_node *node)
+{
+  /* target attribute semantics doesnt support the complex case,
+     so this is always true.  */
+  if (TARGET_HAS_FMV_TARGET_ATTRIBUTE)
+    return true;
+
+  int num_defaults = 0;
+  auto versions = get_clone_versions (node->decl, &num_defaults);
+  if (versions.is_empty () || num_defaults != 1)
+    return false;
+
+  cgraph_function_version_info *fv = node->function_version ();
+
+  if (fv && (fv->next || fv->prev))
+    return false;
+
+  return true;
+}
+
 static unsigned int
-ipa_target_clone (void)
+ipa_target_clone (bool early)
 {
   struct cgraph_node *node;
   auto_vec<cgraph_node *> to_dispatch;
 
+  /* Don't need to do anything early for target attribute semantics.  */
+  if (early && TARGET_HAS_FMV_TARGET_ATTRIBUTE)
+    return 0;
+
+  /* For target attribute semantics, this pass skips the early phase, and in
+     the later stage is only responsible for expanding and dispatching
+     target_clone declarations, as target annotated functions are dispatched
+     in the front end.
+
+     The expanding and dispatching can be done at the late stage as the
+     target_clone functions aren't allowed to be part of a larger FMV set, so
+     all versions will all have the same body, so early optimisations are safe
+     to treat a call to a target_clones set as a call to one function.
+
+     For target_version semantics, this pass is responsible for expanding
+     target_clones and dispatching all FMV function sets, including ones only
+     made up of target_version declarations.
+
+     Cases where there is more than one declaration must be expanded and
+     dispatched at the early stage, as the declarations may have different
+     bodies, and so the early optimisation passes would not be valid.
+
+     The late stage is only used for the expansion and dispatching of the simple
+     case where the FMV set is defined by a single target_clone attribute.  */
+
   FOR_EACH_FUNCTION (node)
-    if (expand_target_clones (node, node->definition))
-      to_dispatch.safe_push (node);
+    {
+      /* In the early stage, we need to expand any target clone that is not
+	 the simple case.  Simple cases are dispatched in the later stage.  */
+
+      if (early == !is_simple_target_clones_case (node))
+	if (expand_target_clones (node, node->definition)
+	    && TARGET_HAS_FMV_TARGET_ATTRIBUTE)
+	  /* In non target_version semantics, dispatch all target clones.  */
+	  to_dispatch.safe_push (node);
+    }
+
+  /* In target_version semantics dispatch all FMV function sets with a default
+     implementation in the early stage.
+     Also dispatch any default versions generated by expanding target_clones
+     in the late stage.  */
+
+  if (!TARGET_HAS_FMV_TARGET_ATTRIBUTE)
+    FOR_EACH_FUNCTION (node)
+      if (is_function_default_version (node->decl)
+	  && DECL_FUNCTION_VERSIONED (node->decl)
+	  /* Don't dispatch target clones, as they haven't been expanded so
+	     are simple.  */
+	  && !lookup_attribute ("target_clones", DECL_ATTRIBUTES (node->decl)))
+	to_dispatch.safe_push (node);
 
   for (unsigned i = 0; i < to_dispatch.length (); i++)
     create_dispatcher_calls (to_dispatch[i]);
@@ -445,14 +576,21 @@ class pass_target_clone : public simple_ipa_opt_pass
 {
 public:
   pass_target_clone (gcc::context *ctxt)
-    : simple_ipa_opt_pass (pass_data_target_clone, ctxt)
+    : simple_ipa_opt_pass (pass_data_target_clone, ctxt), early_p (false)
   {}
+  bool early_p;
 
+  void set_pass_param (unsigned int n, bool param) final override
+    {
+      gcc_assert (n == 0);
+      early_p = param;
+    }
   /* opt_pass methods: */
   bool gate (function *) final override;
+  opt_pass * clone () final override { return new pass_target_clone (m_ctxt); }
   unsigned int execute (function *) final override
   {
-    return ipa_target_clone ();
+    return ipa_target_clone (early_p);
   }
 };
 

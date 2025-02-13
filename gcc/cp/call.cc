@@ -6931,6 +6931,16 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	    continue;
 	}
 
+      /* Do not resolve any non-default function.  Only the default version
+	 is resolvable (for the target_version attribute semantics.)  */
+      if (!TARGET_HAS_FMV_TARGET_ATTRIBUTE
+	  && TREE_CODE (fn) == FUNCTION_DECL
+	  && !is_function_default_version (fn))
+	{
+	  add_ignored_candidate (candidates, fn);
+	  continue;
+	}
+
       if (TREE_CODE (fn) == TEMPLATE_DECL)
 	add_template_candidate (candidates,
 				fn,

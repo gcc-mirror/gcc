@@ -1264,6 +1264,15 @@ analyze_functions (bool first_time)
 	      if (!cnode->analyzed)
 		cnode->analyze ();
 
+	      /* A reference to a default node in a function set implies a
+		 reference to all versions in the set.  */
+	      cgraph_function_version_info *node_v = cnode->function_version ();
+	      if (node_v && is_function_default_version (node->decl))
+		for (cgraph_function_version_info *fvi = node_v->next;
+		     fvi;
+		     fvi = fvi->next)
+		  enqueue_node (fvi->this_node);
+
 	      for (edge = cnode->callees; edge; edge = edge->next_callee)
 		if (edge->callee->definition
 		    && (!DECL_EXTERNAL (edge->callee->decl)

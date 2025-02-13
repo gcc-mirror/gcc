@@ -7381,6 +7381,7 @@ extern tree build_explicit_specifier		(tree, tsubst_flags_t);
 extern bool use_eh_spec_block			(tree);
 extern void do_push_parm_decls			(tree, tree, tree *);
 extern tree do_aggregate_paren_init		(tree, tree);
+extern void maybe_mark_function_versioned	(tree);
 
 /* in decl2.cc */
 extern void record_mangling			(tree, bool);
