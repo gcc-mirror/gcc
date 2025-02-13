@@ -104,10 +104,8 @@ public:
     resolver->get_type_scope ().push (scope_node_id);
 
     if (struct_decl.has_generics ())
-      {
-	for (auto &generic : struct_decl.get_generic_params ())
-	  ResolveGenericParam::go (*generic, prefix, canonical_prefix);
-      }
+      ResolveGenericParams::go (struct_decl.get_generic_params (), prefix,
+				canonical_prefix);
 
     for (AST::TupleField &field : struct_decl.get_fields ())
       ResolveType::go (field.get_field_type ());
@@ -137,10 +135,8 @@ public:
     resolver->get_type_scope ().push (scope_node_id);
 
     if (enum_decl.has_generics ())
-      {
-	for (auto &generic : enum_decl.get_generic_params ())
-	  ResolveGenericParam::go (*generic, prefix, canonical_prefix);
-      }
+      ResolveGenericParams::go (enum_decl.get_generic_params (), prefix,
+				canonical_prefix);
 
     for (auto &variant : enum_decl.get_variants ())
       ResolveStmt::go (*variant, path, canonical_prefix, path);
@@ -262,10 +258,8 @@ public:
     resolver->get_type_scope ().push (scope_node_id);
 
     if (struct_decl.has_generics ())
-      {
-	for (auto &generic : struct_decl.get_generic_params ())
-	  ResolveGenericParam::go (*generic, prefix, canonical_prefix);
-      }
+      ResolveGenericParams::go (struct_decl.get_generic_params (), prefix,
+				canonical_prefix);
 
     for (AST::StructField &field : struct_decl.get_fields ())
       {
@@ -300,8 +294,8 @@ public:
     resolver->get_type_scope ().push (scope_node_id);
 
     if (union_decl.has_generics ())
-      for (auto &generic : union_decl.get_generic_params ())
-	ResolveGenericParam::go (*generic, prefix, canonical_prefix);
+      ResolveGenericParams::go (union_decl.get_generic_params (), prefix,
+				canonical_prefix);
 
     for (AST::StructField &field : union_decl.get_variants ())
       {
@@ -341,8 +335,8 @@ public:
     resolver->push_new_label_rib (resolver->get_label_scope ().peek ());
 
     if (function.has_generics ())
-      for (auto &generic : function.get_generic_params ())
-	ResolveGenericParam::go (*generic, prefix, canonical_prefix);
+      ResolveGenericParams::go (function.get_generic_params (), prefix,
+				canonical_prefix);
 
     if (function.has_return_type ())
       ResolveType::go (function.get_return_type ());

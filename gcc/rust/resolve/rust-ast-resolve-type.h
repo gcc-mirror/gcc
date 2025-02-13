@@ -142,66 +142,83 @@ private:
   ResolveTypeBound () : ResolverBase () {}
 };
 
-class ResolveGenericParam : public ResolverBase
+class ResolveGenericParams : public ResolverBase
 {
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static NodeId go (AST::GenericParam &param, const CanonicalPath &prefix,
-		    const CanonicalPath &canonical_prefix)
+  static void go (std::vector<std::unique_ptr<AST::GenericParam>> &params,
+		  const CanonicalPath &prefix,
+		  const CanonicalPath &canonical_prefix)
   {
-    ResolveGenericParam resolver (prefix, canonical_prefix);
+    ResolveGenericParams resolver (prefix, canonical_prefix);
+
+    // this needs to be done in two phases as they can be used and defined later
+    // in bounds
+    for (auto &param : params)
+      param->accept_vis (resolver);
+
+    resolver.first_pass = false;
+
+    for (auto &param : params)
+      param->accept_vis (resolver);
+  }
+
+  static void go_single (AST::GenericParam &param, const CanonicalPath &prefix,
+			 const CanonicalPath &canonical_prefix)
+  {
+    ResolveGenericParams resolver (prefix, canonical_prefix);
+
     param.accept_vis (resolver);
-    return resolver.resolved_node;
+    resolver.first_pass = false;
+    param.accept_vis (resolver);
   }
 
   void visit (AST::ConstGenericParam &param) override
   {
-    ResolveType::go (param.get_type ());
-
-    if (param.has_default_value ())
+    if (first_pass)
+      ResolveType::go (param.get_type ());
+    else if (param.has_default_value ())
       ResolveExpr::go (param.get_default_value ().get_expression (), prefix,
 		       canonical_prefix);
-
-    ok = true;
   }
 
   void visit (AST::TypeParam &param) override
   {
-    // if it has a type lets resolve it
-    if (param.has_type ())
-      ResolveType::go (param.get_type ());
+    if (first_pass)
+      {
+	// if it has a type lets resolve it
+	if (param.has_type ())
+	  ResolveType::go (param.get_type ());
 
-    if (param.has_type_param_bounds ())
+	auto seg = CanonicalPath::new_seg (
+	  param.get_node_id (), param.get_type_representation ().as_string ());
+	resolver->get_type_scope ().insert (
+	  seg, param.get_node_id (), param.get_locus (), false,
+	  Rib::ItemType::Type,
+	  [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
+	    rust_error_at (param.get_locus (),
+			   "generic param redefined multiple times");
+	    rust_error_at (locus, "was defined here");
+	  });
+
+	mappings.insert_canonical_path (param.get_node_id (), seg);
+      }
+    else if (param.has_type_param_bounds ())
       {
 	for (auto &bound : param.get_type_param_bounds ())
-	  {
-	    ResolveTypeBound::go (*bound);
-	  }
+	  ResolveTypeBound::go (*bound);
       }
-
-    auto seg
-      = CanonicalPath::new_seg (param.get_node_id (),
-				param.get_type_representation ().as_string ());
-    resolver->get_type_scope ().insert (
-      seg, param.get_node_id (), param.get_locus (), false, Rib::ItemType::Type,
-      [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
-	rust_error_at (param.get_locus (),
-		       "generic param redefined multiple times");
-	rust_error_at (locus, "was defined here");
-      });
-
-    mappings.insert_canonical_path (param.get_node_id (), seg);
   }
 
 private:
-  ResolveGenericParam (const CanonicalPath &prefix,
-		       const CanonicalPath &canonical_prefix)
-    : ResolverBase (), ok (false), prefix (prefix),
+  ResolveGenericParams (const CanonicalPath &prefix,
+			const CanonicalPath &canonical_prefix)
+    : ResolverBase (), first_pass (true), prefix (prefix),
       canonical_prefix (canonical_prefix)
   {}
 
-  bool ok;
+  bool first_pass;
   const CanonicalPath &prefix;
   const CanonicalPath &canonical_prefix;
 };
