@@ -174,6 +174,7 @@ public:
 
   bool has_substitutions_defined () const;
   bool needs_generic_substitutions () const;
+  const SubstitutionArgumentMappings &get_subst_argument_mappings () const;
 
   std::string mangle_string () const
   {

@@ -888,6 +888,48 @@ BaseType::needs_generic_substitutions () const
   return false;
 }
 
+const SubstitutionArgumentMappings &
+BaseType::get_subst_argument_mappings () const
+{
+  static auto empty = SubstitutionArgumentMappings::empty ();
+  const TyTy::BaseType *x = destructure ();
+  switch (x->get_kind ())
+    {
+      case PROJECTION: {
+	const auto &p = *static_cast<const ProjectionType *> (x);
+	const auto &ref = static_cast<const SubstitutionRef &> (p);
+	return ref.get_substitution_arguments ();
+      }
+      break;
+
+      case FNDEF: {
+	const auto &fn = *static_cast<const FnType *> (x);
+	const auto &ref = static_cast<const SubstitutionRef &> (fn);
+	return ref.get_substitution_arguments ();
+      }
+      break;
+
+      case ADT: {
+	const auto &adt = *static_cast<const ADTType *> (x);
+	const auto &ref = static_cast<const SubstitutionRef &> (adt);
+	return ref.get_substitution_arguments ();
+      }
+      break;
+
+      case CLOSURE: {
+	const auto &closure = *static_cast<const ClosureType *> (x);
+	const auto &ref = static_cast<const SubstitutionRef &> (closure);
+	return ref.get_substitution_arguments ();
+      }
+      break;
+
+    default:
+      return empty;
+    }
+
+  return empty;
+}
+
 // InferType
 
 InferType::InferType (HirId ref, InferTypeKind infer_kind, TypeHint hint,
