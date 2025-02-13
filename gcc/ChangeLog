@@ -1,3 +1,10 @@
+2025-02-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/118800
+	* config/aarch64/driver-aarch64.cc (DEFAULT_CPU): Use generic instead of
+	generic-armv8-a.
+	(aarch64_cpu_data): Add generic.
+
 2025-02-11  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

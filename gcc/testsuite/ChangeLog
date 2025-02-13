@@ -1,3 +1,8 @@
+2025-02-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/118800
+	* gcc.target/aarch64/cpunative/native_cpu_34.c: Update order.
+
 2025-02-03  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR middle-end/115913
