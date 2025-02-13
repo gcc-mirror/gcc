@@ -31,6 +31,26 @@ TypeCheckBase::TypeCheckBase ()
     context (TypeCheckContext::get ())
 {}
 
+static void
+walk_types_to_constrain (std::set<HirId> &constrained_symbols,
+			 const TyTy::SubstitutionArgumentMappings &constraints)
+{
+  for (const auto &c : constraints.get_mappings ())
+    {
+      const TyTy::BaseType *arg = c.get_tyty ();
+      if (arg != nullptr)
+	{
+	  const TyTy::BaseType *p = arg->get_root ();
+	  constrained_symbols.insert (p->get_ty_ref ());
+	  if (p->has_substitutions_defined ())
+	    {
+	      walk_types_to_constrain (constrained_symbols,
+				       p->get_subst_argument_mappings ());
+	    }
+	}
+    }
+}
+
 bool
 TypeCheckBase::check_for_unconstrained (
   const std::vector<TyTy::SubstitutionParamMapping> &params_to_constrain,
@@ -52,28 +72,14 @@ TypeCheckBase::check_for_unconstrained (
       HirId ref = p.get_param_ty ()->get_ref ();
       symbols_to_constrain.insert (ref);
       symbol_to_location.insert ({ref, p.get_param_locus ()});
+
+      rust_debug_loc (p.get_param_locus (), "XX constrain THIS");
     }
 
   // set up the set of constrained symbols
   std::set<HirId> constrained_symbols;
-  for (const auto &c : constraint_a.get_mappings ())
-    {
-      const TyTy::BaseType *arg = c.get_tyty ();
-      if (arg != nullptr)
-	{
-	  const TyTy::BaseType *p = arg->get_root ();
-	  constrained_symbols.insert (p->get_ty_ref ());
-	}
-    }
-  for (const auto &c : constraint_b.get_mappings ())
-    {
-      const TyTy::BaseType *arg = c.get_tyty ();
-      if (arg != nullptr)
-	{
-	  const TyTy::BaseType *p = arg->get_root ();
-	  constrained_symbols.insert (p->get_ty_ref ());
-	}
-    }
+  walk_types_to_constrain (constrained_symbols, constraint_a);
+  walk_types_to_constrain (constrained_symbols, constraint_b);
 
   const auto root = reference->get_root ();
   if (root->get_kind () == TyTy::TypeKind::PARAM)
