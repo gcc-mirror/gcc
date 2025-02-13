@@ -119,11 +119,6 @@ along with GCC; see the file COPYING3.  If not see
     TARGET_SUB_OS_CPP_BUILTINS();			\
   } while (0)
 
-#define SUBTARGET_OVERRIDE_OPTIONS			\
-  do {							\
-    solaris_override_options ();			\
-  } while (0)
-
 #if DEFAULT_ARCH32_P
 #define MULTILIB_DEFAULTS { "m32" }
 #else
