@@ -20,7 +20,7 @@ CONTAINS
     IMPLICIT NONE
     PROCEDURE(test2), POINTER :: procptr
 
-    CALL bar (test2) ! { dg-warning "Non-RECURSIVE" }
+    CALL bar2 (test2) ! { dg-warning "Non-RECURSIVE" }
     procptr => test2 ! { dg-warning "Non-RECURSIVE" }
 
     x = 1812
