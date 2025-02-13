@@ -1,3 +1,11 @@
+2025-02-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-02-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118703
+	* gm2/builtins/run/pass/testbitfns.mod: New test.
+
 2025-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
