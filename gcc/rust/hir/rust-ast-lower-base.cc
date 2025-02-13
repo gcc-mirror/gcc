@@ -666,6 +666,7 @@ ASTLoweringBase::lower_self (AST::Param &param)
   Analysis::NodeMapping mapping (crate_num, self.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
+  mappings.insert_location (mapping.get_hirid (), param.get_locus ());
 
   if (self.has_type ())
     {
