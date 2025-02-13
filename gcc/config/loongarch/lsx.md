@@ -44,9 +44,7 @@
   UNSPEC_LSX_VSAT_S
   UNSPEC_LSX_VSAT_U
   UNSPEC_LSX_VSRAR
-  UNSPEC_LSX_VSRARI
   UNSPEC_LSX_VSRLR
-  UNSPEC_LSX_VSRLRI
   UNSPEC_LSX_VSHUF
   UNSPEC_LSX_VEXTW_S
   UNSPEC_LSX_VEXTW_U
@@ -1710,16 +1708,6 @@
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lsx_vsrari_<lsxfmt>"
-  [(set (match_operand:ILSX 0 "register_operand" "=f")
-	(unspec:ILSX [(match_operand:ILSX 1 "register_operand" "f")
-		      (match_operand 2 "const_<bitimm>_operand" "")]
-		     UNSPEC_LSX_VSRARI))]
-  "ISA_HAS_LSX"
-  "vsrari.<lsxfmt>\t%w0,%w1,%2"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "<MODE>")])
-
 (define_insn "lsx_vsrlr_<lsxfmt>"
   [(set (match_operand:ILSX 0 "register_operand" "=f")
 	(unspec:ILSX [(match_operand:ILSX 1 "register_operand" "f")
@@ -1727,16 +1715,6 @@
 		     UNSPEC_LSX_VSRLR))]
   "ISA_HAS_LSX"
   "vsrlr.<lsxfmt>\t%w0,%w1,%w2"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lsx_vsrlri_<lsxfmt>"
-  [(set (match_operand:ILSX 0 "register_operand" "=f")
-	(unspec:ILSX [(match_operand:ILSX 1 "register_operand" "f")
-		      (match_operand 2 "const_<bitimm>_operand" "")]
-		     UNSPEC_LSX_VSRLRI))]
-  "ISA_HAS_LSX"
-  "vsrlri.<lsxfmt>\t%w0,%w1,%2"
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 

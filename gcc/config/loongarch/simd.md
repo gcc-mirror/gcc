@@ -932,6 +932,35 @@
   DONE;
 })
 
+;; Integer shift right with rounding.
+(define_insn "simd_<optab>_imm_round_<mode>"
+  [(set (match_operand:IVEC 0 "register_operand" "=f")
+	(any_shiftrt:IVEC
+	  (plus:IVEC
+	    (match_operand:IVEC 1 "register_operand" "f")
+	    (match_operand:IVEC 2 "const_vector_same_val_operand" "Uuvx"))
+	  (match_operand:SI 3 "const_<bitimm>_operand" "I")))]
+  "(HOST_WIDE_INT_1U << UINTVAL (operands[3]) >> 1)
+   == UINTVAL (CONST_VECTOR_ELT (operands[2], 0))"
+  "<x>v<insn>ri.<simdfmt>\t%<wu>0,%<wu>1,%d3"
+  [(set_attr "type" "simd_shift")
+   (set_attr "mode" "<MODE>")])
+
+(define_expand "<simd_isa>_<x>v<insn>ri_<simdfmt>"
+  [(match_operand:IVEC 0 "register_operand" "=f")
+   (match_operand:IVEC 1 "register_operand" " f")
+   (match_operand 2 "const_<bitimm>_operand")
+   (any_shiftrt (const_int 0) (const_int 0))]
+  ""
+{
+  auto addend = HOST_WIDE_INT_1U << UINTVAL (operands[2]) >> 1;
+  rtx addend_v = loongarch_gen_const_int_vector (<MODE>mode, addend);
+
+  emit_insn (gen_simd_<optab>_imm_round_<mode> (operands[0], operands[1],
+						addend_v, operands[2]));
+  DONE;
+})
+
 ; The LoongArch SX Instructions.
 (include "lsx.md")
 

@@ -43,9 +43,7 @@
   UNSPEC_LASX_XVSAT_U
   UNSPEC_LASX_XVREPL128VEI
   UNSPEC_LASX_XVSRAR
-  UNSPEC_LASX_XVSRARI
   UNSPEC_LASX_XVSRLR
-  UNSPEC_LASX_XVSRLRI
   UNSPEC_LASX_XVSHUF
   UNSPEC_LASX_XVSHUF_B
   UNSPEC_LASX_BRANCH
@@ -2035,16 +2033,6 @@
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lasx_xvsrari_<lasxfmt>"
-  [(set (match_operand:ILASX 0 "register_operand" "=f")
-	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand 2 "const_<bitimm256>_operand" "")]
-		      UNSPEC_LASX_XVSRARI))]
-  "ISA_HAS_LASX"
-  "xvsrari.<lasxfmt>\t%u0,%u1,%2"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "<MODE>")])
-
 (define_insn "lasx_xvsrlr_<lasxfmt>"
   [(set (match_operand:ILASX 0 "register_operand" "=f")
 	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
@@ -2052,16 +2040,6 @@
 		      UNSPEC_LASX_XVSRLR))]
   "ISA_HAS_LASX"
   "xvsrlr.<lasxfmt>\t%u0,%u1,%u2"
-  [(set_attr "type" "simd_shift")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lasx_xvsrlri_<lasxfmt>"
-  [(set (match_operand:ILASX 0 "register_operand" "=f")
-	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand 2 "const_<bitimm256>_operand" "")]
-		      UNSPEC_LASX_XVSRLRI))]
-  "ISA_HAS_LASX"
-  "xvsrlri.<lasxfmt>\t%u0,%u1,%2"
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
