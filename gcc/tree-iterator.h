@@ -138,6 +138,7 @@ extern void tsi_link_after (tree_stmt_iterator *, tree,
 			    enum tsi_iterator_update);
 
 extern void tsi_delink (tree_stmt_iterator *);
+extern tree tsi_split_stmt_list (location_t, tree_stmt_iterator);
 
 extern tree alloc_stmt_list (void);
 extern void free_stmt_list (tree);
