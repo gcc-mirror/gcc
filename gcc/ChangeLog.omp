@@ -1,6 +1,12 @@
 2025-02-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-02-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.cc (nvptx_output_skip): Clarify case of
+	no or incomplete initializer.
+
+	Backported from trunk:
 	2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* config/gcn/gcn.md (exception_receiver): 'define_expand'.

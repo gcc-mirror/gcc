@@ -2467,6 +2467,12 @@ nvptx_output_skip (FILE *, unsigned HOST_WIDE_INT size)
       if (size)
 	nvptx_assemble_value (0, size);
     }
+  else
+    /* Otherwise, we don't have to do anything: this skip terminates the
+       initializer; we skip either the full ('!init_frag.started' case) or the
+       remainder ('init_frag.started' case) of the initializer (that is, either
+       no or incomplete initializer).  */
+    gcc_checking_assert (size == init_frag.remaining * init_frag.size);
 }
 
 /* Output a string STR with length SIZE.  As in nvptx_output_skip we
