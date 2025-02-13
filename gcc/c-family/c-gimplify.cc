@@ -258,8 +258,10 @@ expr_loc_or_loc (const_tree expr, location_t or_loc)
    for C++ for/while loops with variable declaration as condition.  COND_PREP
    is a BIND_EXPR with the declaration and initialization of the condition
    variable, into which COND, BODY, continue label if needed and INCR if
-   non-NULL should be appended, and COND_CLEANUP are statements which should
-   be evaluated after that or if anything in COND, BODY or INCR throws.  */
+   non-NULL should be appended, and COND_CLEANUP is number of nested
+   CLEANUP_STMT -> TRY_FINALLY_EXPR statements at the end.  If non-NULL,
+   COND, BODY, continue label if needed and INCR if non-NULL should be
+   appended to the body of the COND_CLEANUP's nested TRY_FINALLY_EXPR.  */
 
 static void
 genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
@@ -278,7 +280,6 @@ genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
   walk_tree_1 (&cond_prep, func, data, NULL, lh);
   walk_tree_1 (&cond, func, data, NULL, lh);
   walk_tree_1 (&incr, func, data, NULL, lh);
-  walk_tree_1 (&cond_cleanup, func, data, NULL, lh);
 
   blab = begin_bc_block (bc_break, start_locus);
   clab = begin_bc_block (bc_continue, start_locus);
@@ -309,36 +310,24 @@ genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
 	 EXPR;
 	 goto top;
 
-	 or
-
-	 try {
-	   if (COND); else break;
-	   BODY;
-	   cont:
-	   EXPR;
-	 } finally {
-	   COND_CLEANUP
-	 }
-
-	 appended into COND_PREP body.  */
+	 appended into COND_PREP body or body of some TRY_FINALLY_EXPRs
+	 at the end of COND_PREP.  */
       gcc_assert (cond_is_first && TREE_CODE (cond_prep) == BIND_EXPR);
       tree top = build1 (LABEL_EXPR, void_type_node,
 			 create_artificial_label (start_locus));
       exit = build1 (GOTO_EXPR, void_type_node, LABEL_EXPR_LABEL (top));
       append_to_statement_list (top, &outer_stmt_list);
       append_to_statement_list (cond_prep, &outer_stmt_list);
-      stmt_list = BIND_EXPR_BODY (cond_prep);
-      BIND_EXPR_BODY (cond_prep) = NULL_TREE;
       stmt_list_p = &BIND_EXPR_BODY (cond_prep);
-      if (cond_cleanup && TREE_SIDE_EFFECTS (cond_cleanup))
-	{
-	  t = build2_loc (EXPR_LOCATION (cond_cleanup), TRY_FINALLY_EXPR,
-			  void_type_node, NULL_TREE, cond_cleanup);
-	  append_to_statement_list (t, &stmt_list);
-	  *stmt_list_p = stmt_list;
-	  stmt_list_p = &TREE_OPERAND (t, 0);
-	  stmt_list = NULL_TREE;
-	}
+      if (cond_cleanup)
+	for (unsigned depth = tree_to_uhwi (cond_cleanup); depth; --depth)
+	  {
+	    t = tsi_stmt (tsi_last (*stmt_list_p));
+	    gcc_assert (TREE_CODE (t) == TRY_FINALLY_EXPR);
+	    stmt_list_p = &TREE_OPERAND (t, 0);
+	  }
+      stmt_list = *stmt_list_p;
+      *stmt_list_p = NULL_TREE;
       tree after_cond = create_artificial_label (cond_locus);
       tree goto_after_cond = build1 (GOTO_EXPR, void_type_node, after_cond);
       t = build1 (GOTO_EXPR, void_type_node, get_bc_label (bc_break));

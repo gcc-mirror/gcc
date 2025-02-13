@@ -284,6 +284,28 @@ tsi_delink (tree_stmt_iterator *i)
   i->ptr = next;
 }
 
+/* Split a STATEMENT_LIST in I.contrainer into two, all statements
+   from the start until I.ptr inclusive will remain in the original
+   one, all statements after I.ptr are removed from that STATEMENT_LIST
+   and returned as a new STATEMENT_LIST.  If I is the last statement,
+   an empty statement with LOC location is returned.  */
+
+tree
+tsi_split_stmt_list (location_t loc, tree_stmt_iterator i)
+{
+  if (tsi_one_before_end_p (i))
+    return build_empty_stmt (loc);
+  tsi_next (&i);
+  tree ret = NULL_TREE;
+  while (!tsi_end_p (i))
+    {
+      tree t = tsi_stmt (i);
+      tsi_delink (&i);
+      append_to_statement_list_force (t, &ret);
+    }
+  return ret;
+}
+
 /* Return the first expression in a sequence of COMPOUND_EXPRs, or in
    a STATEMENT_LIST, disregarding DEBUG_BEGIN_STMTs, recursing into a
    STATEMENT_LIST if that's the first non-DEBUG_BEGIN_STMT.  */

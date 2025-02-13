@@ -790,8 +790,8 @@ finish_cond (tree *cond_p, tree expr)
 	    while (A x = 42) { }
 	    for (; A x = 42;) { }
    move the *BODY_P statements as a BIND_EXPR into {FOR,WHILE}_COND_PREP
-   and if there is any CLEANUP_STMT at the end, remove that and
-   put the cleanup into {FOR,WHILE}_COND_CLEANUP.
+   and if there are any CLEANUP_STMT at the end, remember their count in
+   {FOR,WHILE}_COND_CLEANUP.
    genericize_c_loop will then handle it appropriately.  In particular,
    the {FOR,WHILE}_COND, {FOR,WHILE}_BODY, if used continue label and
    FOR_EXPR will be appended into the {FOR,WHILE}_COND_PREP BIND_EXPR,
@@ -807,26 +807,88 @@ adjust_loop_decl_cond (tree *body_p, tree *prep_p, tree *cleanup_p)
     return;
 
   gcc_assert (!processing_template_decl);
-  if (*body_p != cur_stmt_list)
+  *prep_p = *body_p;
+  if (*prep_p != cur_stmt_list)
     {
-      /* There can be either no cleanup at all, if the condition
-	 declaration doesn't have non-trivial destructor, or a single
-	 one if it does.  In that case extract it into *CLEANUP_P.  */
-      gcc_assert (stmt_list_stack->length () > 1
-		  && (*stmt_list_stack)[stmt_list_stack->length ()
-					- 2] == *body_p);
-      tree_stmt_iterator last = tsi_last (*body_p);
-      gcc_assert (tsi_one_before_end_p (last)
-		  && TREE_CODE (tsi_stmt (last)) == CLEANUP_STMT
-		  && CLEANUP_BODY (tsi_stmt (last)) == cur_stmt_list
-		  && tsi_end_p (tsi_last (cur_stmt_list))
-		  && !CLEANUP_EH_ONLY (tsi_stmt (last)));
-      *cleanup_p = CLEANUP_EXPR (tsi_stmt (last));
-      tsi_delink (&last);
+      /* There can be just one CLEANUP_STMT, or there could be multiple
+	 nested CLEANUP_STMTs, e.g. for structured bindings used as
+	 condition.  */
+      gcc_assert (stmt_list_stack->length () > 1);
+      for (unsigned i = stmt_list_stack->length () - 2; ; --i)
+	{
+	  tree t = (*stmt_list_stack)[i];
+	  tree_stmt_iterator last = tsi_last (t);
+	  gcc_assert (tsi_one_before_end_p (last)
+		      && TREE_CODE (tsi_stmt (last)) == CLEANUP_STMT
+		      && (CLEANUP_BODY (tsi_stmt (last))
+			  == (*stmt_list_stack)[i + 1])
+		      && !CLEANUP_EH_ONLY (tsi_stmt (last)));
+	  if (t == *prep_p)
+	    {
+	      *cleanup_p = build_int_cst (long_unsigned_type_node,
+					  stmt_list_stack->length () - 1 - i);
+	      break;
+	    }
+	  gcc_assert (i >= 1);
+	}
     }
   current_binding_level->keep = true;
-  *prep_p = *body_p;
-  *body_p = push_stmt_list ();
+  tree_stmt_iterator iter = tsi_last (cur_stmt_list);
+  /* Temporarily store in {FOR,WHILE}_BODY the last statement of
+     the innnermost statement list or NULL if it has no statement.
+     This is used in finish_loop_cond_prep to find out the splitting
+     point and then {FOR,WHILE}_BODY will be changed to the actual
+     body.  */
+  if (tsi_end_p (iter))
+    *body_p = NULL_TREE;
+  else
+    *body_p = tsi_stmt (iter);
+}
+
+/* Finalize {FOR,WHILE}_{BODY,COND_PREP} after the loop body.
+   The above function initialized *BODY_P to the last statement
+   in *PREP_P at that point.
+   Call do_poplevel on *PREP_P and move everything after that
+   former last statement into *BODY_P.  genericize_c_loop
+   will later put those parts back together.
+   CLEANUP is {FOR,WHILE}_COND_CLEANUP.  */
+
+static void
+finish_loop_cond_prep (tree *body_p, tree *prep_p, tree cleanup)
+{
+  *prep_p = do_poplevel (*prep_p);
+  gcc_assert (TREE_CODE (*prep_p) == BIND_EXPR);
+  if (BIND_EXPR_BODY (*prep_p) == *body_p)
+    {
+      gcc_assert (cleanup == NULL_TREE);
+      *body_p = build_empty_stmt (input_location);
+      return;
+    }
+  tree stmt_list = BIND_EXPR_BODY (*prep_p);
+  gcc_assert (TREE_CODE (stmt_list) == STATEMENT_LIST);
+  if (cleanup)
+    {
+      tree_stmt_iterator iter = tsi_last (stmt_list);
+      gcc_assert (TREE_CODE (tsi_stmt (iter)) == CLEANUP_STMT);
+      for (unsigned depth = tree_to_uhwi (cleanup); depth > 1; --depth)
+	{
+	  gcc_assert (TREE_CODE (CLEANUP_BODY (tsi_stmt (iter)))
+		      == STATEMENT_LIST);
+	  iter = tsi_last (CLEANUP_BODY (tsi_stmt (iter)));
+	  gcc_assert (TREE_CODE (tsi_stmt (iter)) == CLEANUP_STMT);
+	}
+      if (*body_p == NULL_TREE)
+	{
+	  *body_p = CLEANUP_BODY (tsi_stmt (iter));
+	  CLEANUP_BODY (tsi_stmt (iter)) = build_empty_stmt (input_location);
+	  return;
+	}
+      stmt_list = CLEANUP_BODY (tsi_stmt (iter));
+    }
+  tree_stmt_iterator iter = tsi_start (stmt_list);
+  while (tsi_stmt (iter) != *body_p)
+    tsi_next (&iter);
+  *body_p = tsi_split_stmt_list (input_location, iter);
 }
 
 /* Finish a goto-statement.  */
@@ -1437,14 +1499,13 @@ void
 finish_while_stmt (tree while_stmt)
 {
   end_maybe_infinite_loop (boolean_true_node);
-  WHILE_BODY (while_stmt)
-    = (WHILE_COND_PREP (while_stmt)
-       ? pop_stmt_list (WHILE_BODY (while_stmt))
-       : do_poplevel (WHILE_BODY (while_stmt)));
-  finish_loop_cond (&WHILE_COND (while_stmt), WHILE_BODY (while_stmt));
   if (WHILE_COND_PREP (while_stmt))
-    WHILE_COND_PREP (while_stmt) = do_poplevel (WHILE_COND_PREP (while_stmt));
-  set_one_cleanup_loc (WHILE_COND_CLEANUP (while_stmt), input_location);
+    finish_loop_cond_prep (&WHILE_BODY (while_stmt),
+			   &WHILE_COND_PREP (while_stmt),
+			   WHILE_COND_CLEANUP (while_stmt));
+  else
+    WHILE_BODY (while_stmt) = do_poplevel (WHILE_BODY (while_stmt));
+  finish_loop_cond (&WHILE_COND (while_stmt), WHILE_BODY (while_stmt));
 }
 
 /* Begin a do-statement.  Returns a newly created DO_STMT if
@@ -1709,17 +1770,16 @@ finish_for_stmt (tree for_stmt)
     RANGE_FOR_BODY (for_stmt) = do_poplevel (RANGE_FOR_BODY (for_stmt));
   else
     {
-      FOR_BODY (for_stmt)
-	= (FOR_COND_PREP (for_stmt)
-	   ? pop_stmt_list (FOR_BODY (for_stmt))
-	   : do_poplevel (FOR_BODY (for_stmt)));
+      if (FOR_COND_PREP (for_stmt))
+	finish_loop_cond_prep (&FOR_BODY (for_stmt),
+			       &FOR_COND_PREP (for_stmt),
+			       FOR_COND_CLEANUP (for_stmt));
+      else
+	FOR_BODY (for_stmt) = do_poplevel (FOR_BODY (for_stmt));
       if (FOR_COND (for_stmt))
 	finish_loop_cond (&FOR_COND (for_stmt),
 			  FOR_EXPR (for_stmt) ? integer_one_node
 					      : FOR_BODY (for_stmt));
-      if (FOR_COND_PREP (for_stmt))
-	FOR_COND_PREP (for_stmt) = do_poplevel (FOR_COND_PREP (for_stmt));
-      set_one_cleanup_loc (FOR_COND_CLEANUP (for_stmt), input_location);
     }
 
   /* Pop the scope for the body of the loop.  */
