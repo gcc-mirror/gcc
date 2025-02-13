@@ -549,6 +549,12 @@ predicate is static or dynamic is controlled by the form of the
 expression. It is also separately controllable using pragma
 ``Assertion_Policy``.
 
+Aspect Program_Exit
+===================
+.. index:: Program_Exit
+
+This boolean aspect is equivalent to :ref:`pragma Program_Exit<Pragma-Program_Exit>`.
+
 Aspect Pure_Function
 ====================
 .. index:: Pure_Function

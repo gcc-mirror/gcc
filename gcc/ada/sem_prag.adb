@@ -216,10 +216,10 @@ package body Sem_Prag is
      (Prag    : Node_Id;
       Spec_Id : Entity_Id);
    --  Subsidiary to the analysis of pragmas Contract_Cases, Postcondition,
-   --  Precondition, Refined_Post, Subprogram_Variant, and Test_Case. Emit a
-   --  warning when pragma Prag is associated with subprogram Spec_Id subject
-   --  to Inline_Always, assertions are enabled and inling is done in the
-   --  frontend.
+   --  Precondition, Program_Exit, Refined_Post, Subprogram_Variant, and
+   --  Test_Case. Emit a warning when pragma Prag is associated with subprogram
+   --  Spec_Id subject to Inline_Always, assertions are enabled and inling is
+   --  done in the frontend.
 
    procedure Check_State_And_Constituent_Use
      (States   : Elist_Id;
@@ -234,9 +234,10 @@ package body Sem_Prag is
      (Contract_Id : Entity_Id;
       Freeze_Id   : Entity_Id);
    --  Subsidiary to the analysis of pragmas Contract_Cases, Exceptional_Cases,
-   --  Part_Of, Post, Pre and Subprogram_Variant. Emit a freezing-related error
-   --  message where Freeze_Id is the entity of a body which caused contract
-   --  freezing and Contract_Id denotes the entity of the affected contstruct.
+   --  Part_Of, Post, Pre, Program_Exit and Subprogram_Variant. Emit a
+   --  freezing-related error message where Freeze_Id is the entity of a body
+   --  which caused contract freezing and Contract_Id denotes the entity of the
+   --  affected contstruct.
 
    procedure Duplication_Error (Prag : Node_Id; Prev : Node_Id);
    --  Subsidiary to all Find_Related_xxx routines. Emit an error on pragma
@@ -23593,6 +23594,130 @@ package body Sem_Prag is
                end if;
             end;
 
+         ------------------
+         -- Program_Exit --
+         ------------------
+
+         --  pragma Program_Exit (Boolean_EXPRESSION);
+
+         --  Characteristics:
+
+         --    * Analysis - The annotation undergoes initial checks to verify
+         --    the legal placement and context. Secondary checks preanalyze the
+         --    expression in:
+
+         --       Analyze_Program_Exit_In_Decl_Part
+
+         --    * Expansion - The annotation is expanded during the expansion of
+         --    the related subprogram [body] contract as performed in:
+
+         --       Expand_Subprogram_Contract
+
+         --    * Template - The annotation utilizes the generic template of the
+         --    related subprogram [body] when it is:
+
+         --       aspect on subprogram declaration
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
+
+         --    The annotation must prepare its own template when it is:
+
+         --       pragma on subprogram declaration
+
+         --    * Globals - Capture of global references must occur after full
+         --    analysis.
+
+         --    * Instance - The annotation is instantiated automatically when
+         --    the related generic subprogram [body] is instantiated except for
+         --    the "pragma on subprogram declaration" case. In that scenario
+         --    the annotation must instantiate itself.
+
+         when Pragma_Program_Exit => Program_Exit : declare
+            Spec_Id   : Entity_Id;
+            Subp_Decl : Node_Id;
+            Subp_Spec : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+
+            --  Ensure the proper placement of the pragma. Program_Exit must be
+            --  associated with a subprogram declaration or a body that acts as
+            --  a spec.
+
+            Subp_Decl :=
+              Find_Related_Declaration_Or_Body (N, Do_Checks => True);
+
+            --  Generic subprogram
+
+            if Nkind (Subp_Decl) = N_Generic_Subprogram_Declaration then
+               null;
+
+            --  Body acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body
+              and then No (Corresponding_Spec (Subp_Decl))
+            then
+               null;
+
+            --  Body stub acts as spec
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Body_Stub
+              and then No (Corresponding_Spec_Of_Stub (Subp_Decl))
+            then
+               null;
+
+            --  Subprogram
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Declaration then
+               Subp_Spec := Specification (Subp_Decl);
+
+               --  Pragma Program_Exit is forbidden on null procedures, as this
+               --  may lead to potential ambiguities in behavior when interface
+               --  null procedures are involved. Also, it just wouldn't make
+               --  sense, because null procedure always exits.
+
+               if Nkind (Subp_Spec) = N_Procedure_Specification
+                 and then Null_Present (Subp_Spec)
+               then
+                  Error_Msg_N (Fix_Error
+                    ("pragma % cannot apply to null procedure"), N);
+                  return;
+               end if;
+
+            else
+               Pragma_Misplaced;
+            end if;
+
+            Spec_Id := Unique_Defining_Entity (Subp_Decl);
+
+            --  A pragma that applies to a Ghost entity becomes Ghost for the
+            --  purposes of legality checks and removal of ignored Ghost code.
+
+            Mark_Ghost_Pragma (N, Spec_Id);
+
+            --  Chain the pragma on the contract for further processing by
+            --  Analyze_Program_Exit.
+
+            Add_Contract_Item (N, Defining_Entity (Subp_Decl));
+
+            --  Fully analyze the pragma when it appears inside a subprogram
+            --  body because it cannot benefit from forward references.
+
+            if Nkind (Subp_Decl) in N_Subprogram_Body
+                                  | N_Subprogram_Body_Stub
+            then
+               --  The legality checks of pragma Program_Exit are affected by
+               --  the SPARK mode in effect and the volatility of the context.
+               --  Analyze all pragmas in a specific order.
+
+               Analyze_If_Present (Pragma_SPARK_Mode);
+               Analyze_If_Present (Pragma_Volatile_Function);
+               Analyze_Program_Exit_In_Decl_Part (N);
+            end if;
+         end Program_Exit;
+
          ----------------------
          -- Profile_Warnings --
          ----------------------
@@ -23960,7 +24085,7 @@ package body Sem_Prag is
             Analyze_If_Present (Pragma_Side_Effects);
 
             --  A function with side effects shall not have a Pure_Function
-            --  aspect or pragma (SPARK RM 6.1.11(5)).
+            --  aspect or pragma (SPARK RM 6.1.12(5)).
 
             if Is_Function_With_Side_Effects (E) then
                Error_Pragma
@@ -28273,6 +28398,99 @@ package body Sem_Prag is
 
       Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze_Pre_Post_Condition_In_Decl_Part;
+
+   ---------------------------------------
+   -- Analyze_Program_Exit_In_Decl_Part --
+   ---------------------------------------
+
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos which jump to the end of the routine and restore the
+   --  Ghost mode.
+
+   procedure Analyze_Program_Exit_In_Decl_Part
+     (N         : Node_Id;
+      Freeze_Id : Entity_Id := Empty)
+   is
+      Subp_Decl : constant Node_Id   := Find_Related_Declaration_Or_Body (N);
+      Spec_Id   : constant Entity_Id := Unique_Defining_Entity (Subp_Decl);
+
+      Expr : constant Node_Id := Expression (Get_Argument (N, Spec_Id));
+
+      Saved_GM  : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR : constant Node_Id         := Ignored_Ghost_Region;
+      --  Save the Ghost-related attributes to restore on exit
+
+      Errors        : Nat;
+      Restore_Scope : Boolean := False;
+
+   --  Start of processing for Analyze_Pre_Post_Condition_In_Decl_Part
+
+   begin
+      --  Do not analyze the pragma multiple times
+
+      if Is_Analyzed_Pragma (N) then
+         return;
+      end if;
+
+      if Ekind (Spec_Id) in E_Function | E_Generic_Function
+        and then not Is_Function_With_Side_Effects (Spec_Id)
+      then
+         Error_Msg_N
+           ("aspect Program_Exit is only allowed " &
+            "for subprograms with side effects", N);
+      end if;
+
+      --  Set the Ghost mode in effect from the pragma. Due to the delayed
+      --  analysis of the pragma, the Ghost mode at point of declaration and
+      --  point of analysis may not necessarily be the same. Use the mode in
+      --  effect at the point of declaration.
+
+      Set_Ghost_Mode (N);
+
+      --  Ensure that the subprogram and its formals are visible when analyzing
+      --  the expression of the pragma.
+
+      if not In_Open_Scopes (Spec_Id) then
+         Restore_Scope := True;
+
+         if Is_Generic_Subprogram (Spec_Id) then
+            Push_Scope (Spec_Id);
+            Install_Generic_Formals (Spec_Id);
+         else
+            Push_Scope (Spec_Id);
+            Install_Formals (Spec_Id);
+         end if;
+      end if;
+
+      Errors := Serious_Errors_Detected;
+
+      --  Preanalyze_And_Resolve_Assert_Expression enforcing the expression
+      --  type.
+
+      Preanalyze_And_Resolve_Assert_Expression (Expr, Any_Boolean);
+
+      --  Emit a clarification message when the expression contains at least
+      --  one undefined reference, possibly due to contract freezing.
+
+      if Errors /= Serious_Errors_Detected
+        and then Present (Freeze_Id)
+        and then Has_Undefined_Reference (Expr)
+      then
+         Contract_Freeze_Error (Spec_Id, Freeze_Id);
+      end if;
+
+      if Restore_Scope then
+         End_Scope;
+      end if;
+
+      --  Currently it is not possible to inline pre/postconditions on a
+      --  subprogram subject to pragma Inline_Always.
+
+      Check_Postcondition_Use_In_Inlined_Subprogram (N, Spec_Id);
+      Set_Is_Analyzed_Pragma (N);
+
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
+   end Analyze_Program_Exit_In_Decl_Part;
 
    ------------------------------------------
    -- Analyze_Refined_Depends_In_Decl_Part --
@@ -33648,6 +33866,7 @@ package body Sem_Prag is
       Pragma_Profile                        =>  0,
       Pragma_Profile_Warnings               =>  0,
       Pragma_Propagate_Exceptions           =>  0,
+      Pragma_Program_Exit                   => -1,
       Pragma_Provide_Shift_Operators        =>  0,
       Pragma_Psect_Object                   =>  0,
       Pragma_Pure                           =>  0,

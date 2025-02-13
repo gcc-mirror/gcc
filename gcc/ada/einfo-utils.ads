@@ -456,6 +456,7 @@ package Einfo.Utils is
    --    No_Caching
    --    Part_Of
    --    Precondition
+   --    Program_Exit
    --    Postcondition
    --    Refined_Depends
    --    Refined_Global

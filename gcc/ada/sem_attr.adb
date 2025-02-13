@@ -1462,6 +1462,13 @@ package body Sem_Attr is
             then
                null;
 
+            --  Attribute 'Old is allowed to appear in Program_Exit
+
+            elsif Prag_Nam = Name_Program_Exit
+                 and then Aname = Name_Old
+            then
+               null;
+
             elsif Prag_Nam = Name_Test_Case then
                Check_Placement_In_Test_Case (Prag);
 

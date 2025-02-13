@@ -20969,6 +20969,7 @@ package body Sem_Util is
         or else Nam = Name_Pre
         or else Nam = Name_Pre_Class
         or else Nam = Name_Precondition
+        or else Nam = Name_Program_Exit
         or else Nam = Name_Refined_Depends
         or else Nam = Name_Refined_Global
         or else Nam = Name_Refined_Post

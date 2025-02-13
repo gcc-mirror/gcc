@@ -4603,7 +4603,7 @@ package body Sem_Ch6 is
       Analyze_SPARK_Subprogram_Specification (Specification (N));
 
       --  A function with side effects shall not be an expression function
-      --  (SPARK RM 6.1.11(6)).
+      --  (SPARK RM 6.1.12(6)).
 
       if Present (Spec_Id)
         and then (Is_Expression_Function (Spec_Id)

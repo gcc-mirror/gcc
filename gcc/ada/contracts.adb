@@ -110,8 +110,8 @@ package body Contracts is
    --  Expand the contracts of a subprogram body and its correspoding spec (if
    --  any). This routine processes all [refined] pre- and postconditions as
    --  well as Always_Terminates, Contract_Cases, Exceptional_Cases,
-   --  Subprogram_Variant, invariants and predicates. Body_Id denotes the
-   --  entity of the subprogram body.
+   --  Program_Exit, Subprogram_Variant, invariants and predicates. Body_Id
+   --  denotes the entity of the subprogram body.
 
    procedure Preanalyze_Condition
      (Subp : Entity_Id;
@@ -235,6 +235,7 @@ package body Contracts is
       --    Interrupt_Handler
       --    Postcondition
       --    Precondition
+      --    Program_Exit
       --    Side_Effects
       --    Subprogram_Variant
       --    Test_Case
@@ -267,6 +268,7 @@ package body Contracts is
                          | Name_Contract_Cases
                          | Name_Exceptional_Cases
                          | Name_Exit_Cases
+                         | Name_Program_Exit
                          | Name_Subprogram_Variant
                          | Name_Test_Case
          then
@@ -647,9 +649,9 @@ package body Contracts is
       end if;
 
       --  Deal with preconditions, [refined] postconditions, Always_Terminates,
-      --  Contract_Cases, Exceptional_Cases, Subprogram_Variant, invariants and
-      --  predicates associated with body and its spec. Do not expand the
-      --  contract of subprogram body stubs.
+      --  Contract_Cases, Exceptional_Cases, Program_Exit, Subprogram_Variant,
+      --  invariants and predicates associated with body and its spec. Do not
+      --  expand the contract of subprogram body stubs.
 
       if Nkind (Body_Decl) = N_Subprogram_Body then
          Expand_Subprogram_Contract (Body_Id);
@@ -796,6 +798,9 @@ package body Contracts is
 
             elsif Prag_Nam = Name_Exceptional_Cases then
                Analyze_Exceptional_Cases_In_Decl_Part (Prag);
+
+            elsif Prag_Nam = Name_Program_Exit then
+               Analyze_Program_Exit_In_Decl_Part (Prag);
 
             elsif Prag_Nam = Name_Subprogram_Variant then
                Analyze_Subprogram_Variant_In_Decl_Part (Prag);
@@ -1413,6 +1418,7 @@ package body Contracts is
       --    Global
       --    Postcondition
       --    Precondition
+      --    Program_Exit
       --    Subprogram_Variant
       --    Test_Case
 
@@ -2761,6 +2767,9 @@ package body Contracts is
 
                      elsif Pragma_Name (Prag) = Name_Exit_Cases then
                         Expand_Pragma_Exit_Cases (Prag);
+
+                     elsif Pragma_Name (Prag) = Name_Program_Exit then
+                        Expand_Pragma_Program_Exit (Prag);
 
                      elsif Pragma_Name (Prag) = Name_Subprogram_Variant then
                         Expand_Pragma_Subprogram_Variant

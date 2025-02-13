@@ -660,6 +660,7 @@ package Snames is
    --  correctly recognize and process Priority. Priority is a standard Ada 95
    --  pragma.
 
+   Name_Program_Exit                   : constant Name_Id := N + $; -- GNAT
    Name_Provide_Shift_Operators        : constant Name_Id := N + $; -- GNAT
    Name_Psect_Object                   : constant Name_Id := N + $; -- GNAT
    Name_Pure                           : constant Name_Id := N + $;
@@ -1955,6 +1956,7 @@ package Snames is
       Pragma_Predicate_Failure,
       Pragma_Preelaborate,
       Pragma_Pre_Class,
+      Pragma_Program_Exit,
       Pragma_Provide_Shift_Operators,
       Pragma_Psect_Object,
       Pragma_Pure,

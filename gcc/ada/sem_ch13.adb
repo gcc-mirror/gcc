@@ -1621,6 +1621,7 @@ package body Sem_Ch13 is
       --    Part_Of
       --    Post
       --    Pre
+      --    Program_Exit
       --    Refined_Depends
       --    Refined_Global
       --    Refined_Post
@@ -1873,11 +1874,11 @@ package body Sem_Ch13 is
       --  analyzed right now.
 
       --  Note that there is a special handling for Pre, Post, Test_Case,
-      --  Contract_Cases, Always_Terminates, Exit_Cases, Exceptional_Cases and
-      --  Subprogram_Variant aspects. In these cases, we do not have to worry
-      --  about delay issues, since the pragmas themselves deal with delay of
-      --  visibility for the expression analysis. Thus, we just insert the
-      --  pragma after the node N.
+      --  Contract_Cases, Always_Terminates, Exit_Cases, Exceptional_Cases,
+      --  Program_Exit and Subprogram_Variant aspects. In these cases, we do
+      --  not have to worry about delay issues, since the pragmas themselves
+      --  deal with delay of visibility for the expression analysis. Thus, we
+      --  just insert the pragma after the node N.
 
       if No (L) then
          return;
@@ -4454,8 +4455,9 @@ package body Sem_Ch13 is
                --  Case 4: Aspects requiring special handling
 
                --  Pre/Post/Test_Case/Contract_Cases/Always_Terminates/
-               --  Exceptional_Cases/Exit_Cases and Subprogram_Variant whose
-               --  corresponding pragmas take care of the delay.
+               --  Exceptional_Cases/Exit_Cases/Program_Exit and
+               --  Subprogram_Variant whose corresponding pragmas take care of
+               --  the delay.
 
                --  Pre/Post
 
@@ -4656,6 +4658,19 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Exit_Cases);
+
+                  Decorate (Aspect, Aitem);
+                  Insert_Pragma (Aitem);
+                  goto Continue;
+
+               --  Program_Exit
+
+               when Aspect_Program_Exit =>
+                  Aitem := Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_Program_Exit);
 
                   Decorate (Aspect, Aitem);
                   Insert_Pragma (Aitem);
@@ -11421,6 +11436,7 @@ package body Sem_Ch13 is
             | Aspect_Postcondition
             | Aspect_Pre
             | Aspect_Precondition
+            | Aspect_Program_Exit
             | Aspect_Refined_Depends
             | Aspect_Refined_Global
             | Aspect_Refined_Post
