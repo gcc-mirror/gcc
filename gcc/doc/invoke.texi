@@ -22533,10 +22533,7 @@ vector-length agnostic code.
 @opindex Wexperimental-fmv-target
 @opindex Wno-experimental-fmv-target
 @item -Wexperimental-fmv-target
-Warn about use of experimental Function Multi Versioning.
-The Arm C Language Extension specification for Function Multi Versioning
-is beta and subject to change. Any usage of FMV is caveated that future
-behavior change and incompatibility is likely.
+This option is deprecated.
 @end table
 
 @subsubsection @option{-march} and @option{-mcpu} Feature Modifiers

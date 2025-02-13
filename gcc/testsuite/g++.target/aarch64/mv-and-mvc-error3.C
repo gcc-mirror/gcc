@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-ifunc "" } */
 /* { dg-options "-O0" } */
-/* { dg-additional-options "-Wno-experimental-fmv-target" } */
 
 float foo () { return 1; } /* { dg-message ".float foo\\(\\). previously defined here" } */
 

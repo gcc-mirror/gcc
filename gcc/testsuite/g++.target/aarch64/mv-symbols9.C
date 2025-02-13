@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O0" } */
-/* { dg-additional-options "-Wno-experimental-fmv-target" } */
 
 int
 foo ();

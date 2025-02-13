@@ -20460,15 +20460,6 @@ aarch64_parse_fmv_features (string_slice str, aarch64_feature_flags *isa_flags,
 static bool
 aarch64_process_target_version_attr (tree args)
 {
-  static bool issued_warning = false;
-  if (!issued_warning)
-    {
-      warning (OPT_Wexperimental_fmv_target,
-	       "Function Multi Versioning support is experimental, and the "
-	       "behavior is likely to change");
-      issued_warning = true;
-    }
-
   if (TREE_CODE (args) == TREE_LIST)
     {
       if (TREE_CHAIN (args))

@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-ifunc "" } */
 /* { dg-options "-O0" } */
-/* { dg-additional-options "-Wno-experimental-fmv-target" } */
 
 __attribute__ ((target_version ("test"))) float
 foo () { return 3; } /* { dg-error "invalid feature modifier .test. of value .test. in .target_version. attribute" } */

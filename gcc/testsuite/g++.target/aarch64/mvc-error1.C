@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-ifunc "" } */
 /* { dg-options "-O0" } */
-/* { dg-additional-options "-Wno-experimental-fmv-target" } */
 
 __attribute__ ((target_clones ("default, dotprod"))) float
 foo (); /* { dg-message "previous declaration of .float foo \\\[\\\[target_clones\\(.default., .dotprod.\\)\\\]\\\] \\(\\)." } */
