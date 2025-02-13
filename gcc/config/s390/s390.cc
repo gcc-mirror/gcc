@@ -3510,26 +3510,31 @@ s390_valid_shift_count (rtx op, HOST_WIDE_INT implicit_mask)
 
   /* Check for an and with proper constant.  */
   if (GET_CODE (op) == AND)
-  {
-    rtx op1 = XEXP (op, 0);
-    rtx imm = XEXP (op, 1);
+    {
+      rtx op1 = XEXP (op, 0);
+      rtx imm = XEXP (op, 1);
 
-    if (GET_CODE (op1) == SUBREG && subreg_lowpart_p (op1))
-      op1 = XEXP (op1, 0);
+      if (GET_CODE (op1) == SUBREG && subreg_lowpart_p (op1))
+	op1 = XEXP (op1, 0);
 
-    if (!(register_operand (op1, GET_MODE (op1)) || GET_CODE (op1) == PLUS))
-      return false;
+      if (!(register_operand (op1, GET_MODE (op1)) || GET_CODE (op1) == PLUS))
+	return false;
 
-    if (!immediate_operand (imm, GET_MODE (imm)))
-      return false;
+      /* Accept only CONST_INT as immediates, i.e., reject shift count operands
+	 which do not trivially fit the scheme of address operands.  Especially
+	 since strip_address_mutations() expects expressions of the form
+	 (and ... (const_int ...)) and fails for
+	 (and ... (const_wide_int ...)).  */
+      if (!const_int_operand (imm, GET_MODE (imm)))
+	return false;
 
-    HOST_WIDE_INT val = INTVAL (imm);
-    if (implicit_mask > 0
-	&& (val & implicit_mask) != implicit_mask)
-      return false;
+      HOST_WIDE_INT val = INTVAL (imm);
+      if (implicit_mask > 0
+	  && (val & implicit_mask) != implicit_mask)
+	return false;
 
-    op = op1;
-  }
+      op = op1;
+    }
 
   /* Check the rest.  */
   return s390_decompose_addrstyle_without_index (op, NULL, NULL);
