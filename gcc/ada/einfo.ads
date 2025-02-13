@@ -4388,11 +4388,6 @@ package Einfo is
 --       set, in which case this is the entity for the associated instance of
 --       System.Shared_Storage.Shared_Var_Procs. See Exp_Smem for full details.
 
---    Size_Check_Code
---       Defined in constants and variables. Normally Empty. Set if code is
---       generated to check the size of the object. This field is used to
---       suppress this code if a subsequent address clause is encountered.
-
 --    Size_Clause (synthesized)
 --       Applies to all entities. If a size or value size clause is present in
 --       the rep item chain for an entity then that attribute definition clause
@@ -5316,7 +5311,6 @@ package Einfo is
    --    Actual_Subtype
    --    Renamed_Object
    --    Renamed_Entity $$$
-   --    Size_Check_Code                       (constants only)
    --    Prival_Link                           (privals only)
    --    Interface_Name                        (constants only)
    --    Related_Type                          (constants only)
@@ -6202,7 +6196,6 @@ package Einfo is
    --    Renamed_Object
    --    Renamed_Entity $$$
    --    Discriminal_Link $$$
-   --    Size_Check_Code
    --    Prival_Link
    --    Interface_Name
    --    Shared_Var_Procs_Instance

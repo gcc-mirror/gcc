@@ -6278,11 +6278,6 @@ package body Sem_Ch13 is
                   then
                      Set_Check_Address_Alignment (N);
                   end if;
-
-                  --  Kill the size check code, since we are not allocating
-                  --  the variable, it is somewhere else.
-
-                  Kill_Size_Check_Code (U_Ent);
                end;
 
             --  Not a valid entity for an address clause

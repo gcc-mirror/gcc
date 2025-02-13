@@ -10029,7 +10029,6 @@ package body Sem_Prag is
             end if;
 
             Def_Id := Entity (Def_Id);
-            Kill_Size_Check_Code (Def_Id);
             if Ekind (Def_Id) /= E_Constant then
                Note_Possible_Modification
                  (Get_Pragma_Arg (Arg1), Sure => False);
@@ -10042,7 +10041,6 @@ package body Sem_Prag is
             --  purposes of legality checks and removal of ignored Ghost code.
 
             Mark_Ghost_Pragma (N, Def_Id);
-            Kill_Size_Check_Code (Def_Id);
             if Ekind (Def_Id) /= E_Constant then
                Note_Possible_Modification
                  (Get_Pragma_Arg (Arg2), Sure => False);
@@ -19946,7 +19944,6 @@ package body Sem_Prag is
             --  object to be imported.
 
             if Ekind (Def_Id) = E_Variable then
-               Kill_Size_Check_Code (Def_Id);
                Note_Possible_Modification (Id, Sure => False);
 
                --  Initialization is not allowed for imported variable

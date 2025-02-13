@@ -893,7 +893,6 @@ package Gen_IL.Fields is
       Scope_Depth_Value,
       Sec_Stack_Needed_For_Return,
       Shared_Var_Procs_Instance,
-      Size_Check_Code,
       Size_Depends_On_Discriminant,
       Size_Known_At_Compile_Time,
       Small_Value,

@@ -21959,20 +21959,6 @@ package body Sem_Util is
       end loop Scope_Loop;
    end Kill_Current_Values;
 
-   --------------------------
-   -- Kill_Size_Check_Code --
-   --------------------------
-
-   procedure Kill_Size_Check_Code (E : Entity_Id) is
-   begin
-      if (Ekind (E) = E_Constant or else Ekind (E) = E_Variable)
-        and then Present (Size_Check_Code (E))
-      then
-         Remove (Size_Check_Code (E));
-         Set_Size_Check_Code (E, Empty);
-      end if;
-   end Kill_Size_Check_Code;
-
    --------------------
    -- Known_Non_Null --
    --------------------

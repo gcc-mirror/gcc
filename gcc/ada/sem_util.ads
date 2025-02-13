@@ -2540,12 +2540,6 @@ package Sem_Util is
    --  if the entity Ent is not for an object. Last_Assignment_Only has the
    --  same meaning as for the call with no Ent.
 
-   procedure Kill_Size_Check_Code (E : Entity_Id);
-   --  Called when an address clause or pragma Import is applied to an entity.
-   --  If the entity is a variable or a constant, and size check code is
-   --  present, this size check code is killed, since the object will not be
-   --  allocated by the program.
-
    function Known_Non_Null (N : Node_Id) return Boolean;
    --  Given a node N for a subexpression of an access type, determines if
    --  this subexpression yields a value that is known at compile time to

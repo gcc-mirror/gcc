@@ -357,7 +357,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Prival_Link, Node_Id),
         Sm (Related_Type, Node_Id),
         Sm (Return_Statement, Node_Id),
-        Sm (Size_Check_Code, Node_Id),
         Sm (SPARK_Pragma, Node_Id),
         Sm (SPARK_Pragma_Inherited, Flag)));
 
