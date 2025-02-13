@@ -1,3 +1,56 @@
+2025-02-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/101740
+	* g++.dg/template/dtor12.C: New test.
+
+2025-02-12  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-rv32-1.c: Change
+	expected pattern.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-rv32-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-rv64-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_convert_int2int-rv64-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/cond/cond_unary-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vncvt-rv32gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/conversions/vncvt-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_trunc-1-u16.c: Ditto
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_trunc-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_trunc-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/abs-rv32gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/abs-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vneg-rv32gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/unop/vneg-rv64gcv.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/abs-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/cond_convert-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/cond_convert-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/cond_neg-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/cond_trunc-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/cond_trunc-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/cond_trunc-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/convert-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/convert-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/neg-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/trunc-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/trunc-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/trunc-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/simplify-vdiv.c: Ditto.
+	* gcc.target/riscv/rvv/base/unop_v_constraint-1.c: Ditto.
+
+2025-02-12  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/118601
+	* gcc.target/riscv/rvv/xtheadvector/pr114194.c: Move to...
+	* gcc.target/riscv/rvv/xtheadvector/pr114194-rv64.c: ...here.
+	* gcc.target/riscv/rvv/xtheadvector/pr114194-rv32.c: New test.
+	* gcc.target/riscv/rvv/xtheadvector/pr118601.c: New test.
+
 2025-02-11  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/115478

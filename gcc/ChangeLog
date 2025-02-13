@@ -1,3 +1,77 @@
+2025-02-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/102150
+	* loop-invariant.cc (find_invariant_insn): Treat inline-asm similar to
+	trapping instruction and only move them if always executed.
+
+2025-02-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/102150
+	* ifcvt.cc (cheap_bb_rtx_cost_p): Return false if the insn
+	has an inline-asm in it.
+
+2025-02-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt.urls: Add -mcall-main.
+
+2025-02-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118806
+	* config/avr/avr.opt (-mcall-main): New option and...
+	(avropt_call_main): ...variable.
+	* config/avr/avr.cc (avr_no_call_main_p): New variable.
+	(avr_insert_attributes) [-mno-call-main, main]: Add attributes
+	noreturn and section(".init9") to main.  Set avr_no_call_main_p.
+	(avr_file_end) [avr_no_call_main_p]: Define symbol __call_main.
+	* doc/invoke.texi (AVR Options) <-mno-call-main>: Document.
+	<-mnodevicelib>: Extend explanation.
+
+2025-02-12  Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/117790
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Set profile counts for {main,alt}_loop_exit_block.
+
+2025-02-12  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/vector.md: vncvt substitute vnsrl.
+	vnsrl with x0 replace with immediate 0.
+	vneg substitute vrsub.
+
+2025-02-12  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/118601
+	* config/riscv/riscv-string.cc (expand_block_move): Check with new
+	constraint 'vl' instead of 'K'.
+	(expand_vec_setmem): Likewise.
+	(expand_vec_cmpmem): Likewise.
+	* config/riscv/riscv-v.cc (force_vector_length_operand): Likewise.
+	(expand_load_store): Likewise.
+	(expand_strided_load): Likewise.
+	(expand_strided_store): Likewise.
+	(expand_lanes_load_store): Likewise.
+
+2025-02-12  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/install.texi: Add missing comma after @xref to fix warning.
+
+2025-02-12  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/extend.texi: Fix a bunch of typos and other writing bugs.
+	* doc/invoke.texi: Likewise.
+
+2025-02-12  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* Makefile.in (TEXI_GCCINT_FILES): Remove interface.texi.
+	* doc/gccint.texi (Top): Remove menu entry for the "interface" node,
+	and include of interface.texi.
+	* doc/interface.texi: Delete.
+
+2025-02-12  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/riscv/riscv-feature-bits.h (RISCV_VENDOR_FEATURE_BITS_LENGTH): Drop.
+	(struct riscv_vendor_feature_bits): Drop.
+
 2025-02-11  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/115478

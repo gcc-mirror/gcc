@@ -1,3 +1,8 @@
+2025-02-12  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/riscv/feature_bits.c (RISCV_VENDOR_FEATURE_BITS_LENGTH): Drop.
+	(__init_riscv_features_bits_linux): Drop.
+
 2025-02-08  Dimitry Andric  <dimitry@andric.com>
 
 	PR target/118685
