@@ -14154,18 +14154,6 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
   return pushdecl (var);
 }
 
-/* Data for extend_temps_r, mostly matching the parameters of
-   extend_ref_init_temps.  */
-
-struct extend_temps_data
-{
-  tree decl;
-  tree init;
-  vec<tree, va_gc> **cleanups;
-  tree* cond_guard;
-  hash_set<tree> *pset;
-};
-
 static tree extend_temps_r (tree *, int *, void *);
 
 /* EXPR is the initializer for a variable DECL of reference or
@@ -14177,7 +14165,7 @@ static tree extend_temps_r (tree *, int *, void *);
 static tree
 set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
 			  tree *initp, tree *cond_guard,
-			  extend_temps_data *walk_data)
+			  void *walk_data)
 {
   tree init;
   tree type;
@@ -14218,7 +14206,7 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
      maybe_constant_init because the extension might change its result.  */
   if (walk_data)
     cp_walk_tree (&TARGET_EXPR_INITIAL (expr), extend_temps_r,
-		  walk_data, walk_data->pset);
+		  walk_data, nullptr);
   else
     TARGET_EXPR_INITIAL (expr)
       = extend_ref_init_temps (decl, TARGET_EXPR_INITIAL (expr), cleanups,
@@ -14833,6 +14821,19 @@ extend_ref_init_temps_1 (tree decl, tree init, vec<tree, va_gc> **cleanups,
   return init;
 }
 
+/* Data for extend_temps_r, mostly matching the parameters of
+   extend_ref_init_temps.  */
+
+struct extend_temps_data
+{
+  tree decl;
+  tree init;
+  vec<tree, va_gc> **cleanups;
+  tree* cond_guard;
+  hash_set<tree> *pset;		 // For avoiding redundant walk_tree.
+  hash_map<tree, tree> *var_map; // For remapping extended temps.
+};
+
 /* Tree walk function for extend_all_temps.  Generally parallel to
    extend_ref_init_temps_1, but adapted for walk_tree.  */
 
@@ -14841,7 +14842,15 @@ extend_temps_r (tree *tp, int *walk_subtrees, void *data)
 {
   extend_temps_data *d = (extend_temps_data *)data;
 
-  if (TYPE_P (*tp) || TREE_CODE (*tp) == CLEANUP_POINT_EXPR)
+  if (TREE_CODE (*tp) == VAR_DECL)
+    {
+      if (tree *r = d->var_map->get (*tp))
+	*tp = *r;
+      return NULL_TREE;
+    }
+
+  if (TYPE_P (*tp) || TREE_CODE (*tp) == CLEANUP_POINT_EXPR
+      || d->pset->add (*tp))
     {
       *walk_subtrees = 0;
       return NULL_TREE;
@@ -14849,13 +14858,13 @@ extend_temps_r (tree *tp, int *walk_subtrees, void *data)
 
   if (TREE_CODE (*tp) == COND_EXPR)
     {
-      cp_walk_tree (&TREE_OPERAND (*tp, 0), extend_temps_r, d, d->pset);
+      cp_walk_tree (&TREE_OPERAND (*tp, 0), extend_temps_r, d, nullptr);
 
       auto walk_arm = [d](tree &op)
       {
 	tree cur_cond_guard = NULL_TREE;
 	auto ov = make_temp_override (d->cond_guard, &cur_cond_guard);
-	cp_walk_tree (&op, extend_temps_r, d, d->pset);
+	cp_walk_tree (&op, extend_temps_r, d, nullptr);
 	if (cur_cond_guard)
 	  {
 	    tree set = build2 (MODIFY_EXPR, boolean_type_node,
@@ -14870,29 +14879,25 @@ extend_temps_r (tree *tp, int *walk_subtrees, void *data)
       return NULL_TREE;
     }
 
-  if (TREE_CODE (*tp) == ADDR_EXPR
-      /* A discarded-value temporary.  */
-      || (TREE_CODE (*tp) == CONVERT_EXPR
-	  && VOID_TYPE_P (TREE_TYPE (*tp))))
-    {
-      tree *p;
-      for (p = &TREE_OPERAND (*tp, 0);
-	   TREE_CODE (*p) == COMPONENT_REF || TREE_CODE (*p) == ARRAY_REF; )
-	p = &TREE_OPERAND (*p, 0);
-      if (TREE_CODE (*p) == TARGET_EXPR)
-	{
-	  tree subinit = NULL_TREE;
-	  *p = set_up_extended_ref_temp (d->decl, *p, d->cleanups, &subinit,
-					 d->cond_guard, d);
-	  if (TREE_CODE (*tp) == ADDR_EXPR)
-	    recompute_tree_invariant_for_addr_expr (*tp);
-	  if (subinit)
-	    *tp = cp_build_compound_expr (subinit, *tp, tf_none);
-	}
-    }
+  tree *p = tp;
 
-  /* TARGET_EXPRs that aren't handled by the above are implementation details
-     that shouldn't be ref-extended, like the build_vec_init iterator.  */
+  if (TREE_CODE (*tp) == ADDR_EXPR)
+    for (p = &TREE_OPERAND (*tp, 0);
+	 TREE_CODE (*p) == COMPONENT_REF || TREE_CODE (*p) == ARRAY_REF; )
+      p = &TREE_OPERAND (*p, 0);
+
+  if (TREE_CODE (*p) == TARGET_EXPR)
+    {
+      tree subinit = NULL_TREE;
+      tree slot = TARGET_EXPR_SLOT (*p);
+      *p = set_up_extended_ref_temp (d->decl, *p, d->cleanups, &subinit,
+				     d->cond_guard, d);
+      if (TREE_CODE (*tp) == ADDR_EXPR)
+	recompute_tree_invariant_for_addr_expr (*tp);
+      if (subinit)
+	*tp = cp_build_compound_expr (subinit, *tp, tf_none);
+      d->var_map->put (slot, *p);
+    }
 
   return NULL_TREE;
 }
@@ -14903,8 +14908,10 @@ static tree
 extend_all_temps (tree decl, tree init, vec<tree, va_gc> **cleanups)
 {
   hash_set<tree> pset;
-  extend_temps_data d = { decl, init, cleanups, nullptr, &pset };
-  cp_walk_tree (&init, extend_temps_r, &d, &pset);
+  hash_map<tree, tree> map;
+  gcc_assert (!TREE_STATIC (decl));
+  extend_temps_data d = { decl, init, cleanups, nullptr, &pset, &map };
+  cp_walk_tree (&init, extend_temps_r, &d, nullptr);
   return init;
 }
 
