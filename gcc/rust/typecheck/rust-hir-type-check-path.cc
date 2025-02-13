@@ -312,6 +312,8 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
       auto seg_is_module = mappings.lookup_module (ref).has_value ();
       auto seg_is_crate = mappings.is_local_hirid_crate (ref);
       auto seg_is_pattern = mappings.lookup_hir_pattern (ref).has_value ();
+      auto seg_is_self = is_root && !have_more_segments
+			 && seg.get_segment ().as_string () == "self";
       if (seg_is_module || seg_is_crate)
 	{
 	  // A::B::C::this_is_a_module::D::E::F
@@ -388,7 +390,8 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 	  if (lookup->get_kind () == TyTy::TypeKind::ERROR)
 	    return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 	}
-      else if (lookup->needs_generic_substitutions () && !seg_is_pattern)
+      else if (lookup->needs_generic_substitutions () && !seg_is_pattern
+	       && !seg_is_self)
 	{
 	  lookup = SubstMapper::InferSubst (lookup, expr.get_locus ());
 	}
