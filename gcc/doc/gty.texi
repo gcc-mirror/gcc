@@ -313,6 +313,11 @@ Note that caches should generally use @code{deletable} instead;
 @code{cache} is only preferable if the value is impractical to
 recompute from the key when needed.
 
+The @code{cache} option can have an optional argument, name of the function
+which should be called before @samp{gt_cleare_cache}.  This can be useful
+if the hash table needs to be traversed and mark some pointers before
+@samp{gt_cleare_cache} could clear slots in it.
+
 @findex deletable
 @item deletable
 
