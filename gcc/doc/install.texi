@@ -4840,7 +4840,7 @@ Support for Solaris 10 has been removed in GCC 10.  Support for Solaris
 9 has been removed in GCC 5.  Support for Solaris 8 has been removed in
 GCC 4.8.  Support for Solaris 7 has been removed in GCC 4.6.
 
-Solaris 11.4 provides one or more of GCC 5, 7, 9, 10, 11, 12, and 13.
+Solaris 11.4 provides one or more of GCC 5, 7, 9, 10, 11, 12, 13, and 14.
 
 You need to install the @code{system/header}, @code{system/linker}, and
 @code{developer/assembler} packages.
@@ -4862,7 +4862,7 @@ conjunction with the Solaris linker.
 The GNU @command{as} versions included in Solaris 11.4, from GNU
 binutils 2.30.1 or newer (in @file{/usr/bin/gas} and
 @file{/usr/gnu/bin/as}), are known to work.  The version from GNU
-binutils 2.42 is known to work as well.  Recent versions of the Solaris
+binutils 2.44 is known to work as well.  Recent versions of the Solaris
 assembler in @file{/usr/bin/as} work almost as well, though.  To use GNU
 @command{as}, configure with the options @option{--with-gnu-as
 --with-as=@//usr/@/gnu/@/bin/@/as}.
@@ -4870,9 +4870,12 @@ assembler in @file{/usr/bin/as} work almost as well, though.  To use GNU
 For linking, the Solaris linker is preferred.  If you want to use the
 GNU linker instead, the version in Solaris 11.4, from GNU binutils
 2.30.1 or newer (in @file{/usr/gnu/bin/ld} and @file{/usr/bin/gld}),
-works, as does the version from GNU binutils 2.42.  However, it
+works.  However, it
 generally lacks platform specific features, so better stay with Solaris
-@command{ld}.  To use the LTO linker plugin
+@command{ld}.  When using the version from GNU binutils 2.44, there's
+an important caveat: binutils @emph{must} be configured with
+@code{CONFIG_SHELL=/bin/bash}, otherwise the linker's built-in linker
+scripts get corrupted on x86.  To use the LTO linker plugin
 (@option{-fuse-linker-plugin}) with GNU @command{ld}, GNU binutils
 @emph{must} be configured with @option{--enable-largefile}.  To use
 Solaris @command{ld}, we recommend to configure with
@@ -4894,7 +4897,7 @@ will be disabled if no appropriate version is found.  Solaris
 work.
 
 In order to build the GNU Ada compiler, GNAT, a working GNAT is needed.
-Since Solaris 11.4 SRU 39, GNAT 11, 12 or 13 is bundled in the
+Since Solaris 11.4 SRU 39, GNAT 11, 12, 13 or 14 is bundled in the
 @code{developer/gcc/gcc-gnat} package.
 
 In order to build the GNU D compiler, GDC, a working @samp{libphobos} is
