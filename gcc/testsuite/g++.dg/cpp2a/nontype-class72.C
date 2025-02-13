@@ -1,6 +1,7 @@
 // PR c++/113800
 // P2308R1 - Template parameter initialization
 // { dg-do compile { target c++20 } }
+// { dg-additional-options "-fno-implicit-constexpr" }
 // Invalid cases.
 
 namespace std {
