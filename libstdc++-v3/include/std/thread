@@ -123,13 +123,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @cond undocumented
 #ifndef __STRICT_ANSI__
+    // As an extension we support invoking a pointer-to-member-function that
+    // expects a stop_token as the first argument. See PR libstdc++/100612.
     template<typename _Callable, typename... _Args>
       constexpr bool __pmf_expects_stop_token = false;
 
     template<typename _Callable, typename _Obj, typename... _Args>
+      requires is_member_function_pointer_v<remove_reference_t<_Callable>>
       constexpr bool __pmf_expects_stop_token<_Callable, _Obj, _Args...>
-	= __and_<is_member_function_pointer<remove_reference_t<_Callable>>,
-		 is_invocable<_Callable, _Obj, stop_token, _Args...>>::value;
+	= is_invocable_v<_Callable, _Obj, stop_token, _Args...>;
 #endif
     /// @endcond
 
