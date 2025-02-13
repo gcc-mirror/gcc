@@ -7020,19 +7020,19 @@ BEGIN
       BuildDisposeProcedure (tokno)
    ELSIF ProcSym = Inc
    THEN
-      BuildIncProcedure
+      BuildIncProcedure (tokno)
    ELSIF ProcSym = Dec
    THEN
-      BuildDecProcedure
+      BuildDecProcedure (tokno)
    ELSIF ProcSym = Incl
    THEN
-      BuildInclProcedure
+      BuildInclProcedure (tokno)
    ELSIF ProcSym = Excl
    THEN
-      BuildExclProcedure
+      BuildExclProcedure (tokno)
    ELSIF ProcSym = Throw
    THEN
-      BuildThrowProcedure
+      BuildThrowProcedure (tokno)
    ELSE
       InternalError  ('pseudo procedure not implemented yet')
    END
@@ -7083,14 +7083,12 @@ END GetItemPointedTo ;
                          |----------------|
 *)
 
-PROCEDURE BuildThrowProcedure ;
+PROCEDURE BuildThrowProcedure (functok: CARDINAL) ;
 VAR
-   functok  : CARDINAL ;
    op       : CARDINAL ;
    NoOfParam: CARDINAL ;
 BEGIN
    PopT (NoOfParam) ;
-   functok  := OperandTtok (NoOfParam + 1) ;
    IF NoOfParam = 1
    THEN
       op := OperandT (NoOfParam) ;
@@ -7327,19 +7325,19 @@ BEGIN
    IF IsExpressionCompatible (dtype, etype)
    THEN
       (* the easy case simulate a straightforward macro *)
-      PushTF (des, dtype) ;
+      PushTFtok (des, dtype, tokenpos) ;
       PushT (tok) ;
-      PushTF (expr, etype) ;
+      PushTFtok (expr, etype, tokenpos) ;
       doBuildBinaryOp (FALSE, TRUE)
    ELSE
       IF (IsOrdinalType (dtype) OR (dtype = Address) OR IsPointer (dtype)) AND
          (IsOrdinalType (etype) OR (etype = Address) OR IsPointer (etype))
       THEN
-         PushTF (des, dtype) ;
+         PushTFtok (des, dtype, tokenpos) ;
          PushT (tok) ;
-         PushTF (Convert, NulSym) ;
-         PushT (dtype) ;
-         PushT (expr) ;
+         PushTFtok (Convert, NulSym, tokenpos) ;
+         PushTtok (dtype, tokenpos) ;
+         PushTtok (expr, tokenpos) ;
          PushT (2) ;          (* Two parameters *)
          BuildConvertFunction (Convert, FALSE) ;
          doBuildBinaryOp (FALSE, TRUE)
@@ -7386,9 +7384,8 @@ END CheckRangeIncDec ;
                        |----------------|
 *)
 
-PROCEDURE BuildIncProcedure ;
+PROCEDURE BuildIncProcedure (proctok: CARDINAL) ;
 VAR
-   proctok   : CARDINAL ;
    NoOfParam,
    dtype,
    OperandSym,
@@ -7396,26 +7393,25 @@ VAR
    TempSym   : CARDINAL ;
 BEGIN
    PopT (NoOfParam) ;
-   proctok := OperandTtok (NoOfParam + 1) ;
    IF (NoOfParam = 1) OR (NoOfParam = 2)
    THEN
-      VarSym := OperandT (NoOfParam) ;  (* bottom/first parameter *)
+      VarSym := OperandT (NoOfParam) ;  (* Bottom/first parameter.  *)
       IF IsVar (VarSym)
       THEN
          dtype := GetDType (VarSym) ;
          IF NoOfParam = 2
          THEN
-            OperandSym := DereferenceLValue (OperandTok (1), OperandT (1))
+            OperandSym := DereferenceLValue (proctok, OperandT (1))
          ELSE
             PushOne (proctok, dtype,
                      'the {%EkINC} will cause an overflow {%1ad}') ;
 	    PopT (OperandSym)
          END ;
 
-         PushT (VarSym) ;
-         TempSym := DereferenceLValue (OperandTok (NoOfParam), VarSym) ;
-         CheckRangeIncDec (proctok, TempSym, OperandSym, PlusTok) ;  (* TempSym + OperandSym *)
-         BuildAssignmentWithoutBounds (proctok, FALSE, TRUE)   (* VarSym := TempSym + OperandSym *)
+         PushTtok (VarSym, proctok) ;
+         TempSym := DereferenceLValue (proctok, VarSym) ;
+         CheckRangeIncDec (proctok, TempSym, OperandSym, PlusTok) ;  (* TempSym + OperandSym.  *)
+         BuildAssignmentWithoutBounds (proctok, FALSE, TRUE)   (* VarSym := TempSym + OperandSym.  *)
       ELSE
          MetaErrorT1 (proctok,
                       'base procedure {%EkINC} expects a variable as a parameter but was given {%1Ed}',
@@ -7459,9 +7455,8 @@ END BuildIncProcedure ;
                        |----------------|
 *)
 
-PROCEDURE BuildDecProcedure ;
+PROCEDURE BuildDecProcedure (proctok: CARDINAL) ;
 VAR
-   proctok,
    NoOfParam,
    dtype,
    OperandSym,
@@ -7469,26 +7464,25 @@ VAR
    TempSym   : CARDINAL ;
 BEGIN
    PopT (NoOfParam) ;
-   proctok := OperandTtok (NoOfParam + 1) ;
    IF (NoOfParam = 1) OR (NoOfParam = 2)
    THEN
-      VarSym := OperandT (NoOfParam) ;  (* bottom/first parameter *)
+      VarSym := OperandT (NoOfParam) ;  (* Bottom/first parameter.  *)
       IF IsVar (VarSym)
       THEN
          dtype := GetDType (VarSym) ;
          IF NoOfParam = 2
          THEN
-            OperandSym := DereferenceLValue (OperandTok (1), OperandT (1))
+            OperandSym := DereferenceLValue (proctok, OperandT (1))
          ELSE
             PushOne (proctok, dtype,
                      'the {%EkDEC} will cause an overflow {%1ad}') ;
 	    PopT (OperandSym)
          END ;
 
-         PushT (VarSym) ;
+         PushTtok (VarSym, proctok) ;
          TempSym := DereferenceLValue (OperandTok (NoOfParam), VarSym) ;
-         CheckRangeIncDec (proctok, TempSym, OperandSym, MinusTok) ;  (* TempSym - OperandSym *)
-         BuildAssignmentWithoutBounds (proctok, FALSE, TRUE)   (* VarSym := TempSym - OperandSym *)
+         CheckRangeIncDec (proctok, TempSym, OperandSym, MinusTok) ;  (* TempSym - OperandSym.  *)
+         BuildAssignmentWithoutBounds (proctok, FALSE, TRUE)   (* VarSym := TempSym - OperandSym.  *)
       ELSE
          MetaErrorT1 (proctok,
                       'base procedure {%EkDEC} expects a variable as a parameter but was given {%1Ed}',
@@ -7552,9 +7546,8 @@ END DereferenceLValue ;
                         |----------------|
 *)
 
-PROCEDURE BuildInclProcedure ;
+PROCEDURE BuildInclProcedure (proctok: CARDINAL) ;
 VAR
-   proctok,
    optok     : CARDINAL ;
    NoOfParam,
    DerefSym,
@@ -7562,7 +7555,6 @@ VAR
    VarSym    : CARDINAL ;
 BEGIN
    PopT (NoOfParam) ;
-   proctok := OperandTtok (NoOfParam + 1) ;
    IF NoOfParam = 2
    THEN
       VarSym := OperandT (2) ;
@@ -7618,9 +7610,8 @@ END BuildInclProcedure ;
                         |----------------|
 *)
 
-PROCEDURE BuildExclProcedure ;
+PROCEDURE BuildExclProcedure (proctok: CARDINAL) ;
 VAR
-   proctok,
    optok     : CARDINAL ;
    NoOfParam,
    DerefSym,
@@ -7628,7 +7619,6 @@ VAR
    VarSym    : CARDINAL ;
 BEGIN
    PopT (NoOfParam) ;
-   proctok := OperandTtok (NoOfParam + 1) ;
    IF NoOfParam=2
    THEN
       VarSym := OperandT (2) ;
