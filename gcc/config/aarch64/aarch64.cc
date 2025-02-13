@@ -6416,13 +6416,30 @@ aarch64_stack_protect_canary_mem (machine_mode mode, rtx decl_rtl,
 void
 aarch64_emit_sve_pred_move (rtx dest, rtx pred, rtx src)
 {
-  expand_operand ops[3];
   machine_mode mode = GET_MODE (dest);
-  create_output_operand (&ops[0], dest, mode);
-  create_input_operand (&ops[1], pred, GET_MODE(pred));
-  create_input_operand (&ops[2], src, mode);
-  temporary_volatile_ok v (true);
-  expand_insn (code_for_aarch64_pred_mov (mode), 3, ops);
+  if ((MEM_P (dest) || MEM_P (src))
+      && known_eq (GET_MODE_SIZE (mode), 16)
+      && aarch64_classify_vector_mode (mode) == VEC_SVE_DATA
+      && !BYTES_BIG_ENDIAN)
+    {
+      if (MEM_P (src))
+	{
+	  rtx tmp = force_reg (V16QImode, adjust_address (src, V16QImode, 0));
+	  emit_move_insn (dest, lowpart_subreg (mode, tmp, V16QImode));
+	}
+      else
+	emit_move_insn (adjust_address (dest, V16QImode, 0),
+			force_lowpart_subreg (V16QImode, src, mode));
+    }
+  else
+    {
+      expand_operand ops[3];
+      create_output_operand (&ops[0], dest, mode);
+      create_input_operand (&ops[1], pred, GET_MODE(pred));
+      create_input_operand (&ops[2], src, mode);
+      temporary_volatile_ok v (true);
+      expand_insn (code_for_aarch64_pred_mov (mode), 3, ops);
+    }
 }
 
 /* Expand a pre-RA SVE data move from SRC to DEST in which at least one
