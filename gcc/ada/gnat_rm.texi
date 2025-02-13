@@ -6942,7 +6942,7 @@ of error messages.
 Syntax:
 
 @example
-pragma Program_Exit (boolean_EXPRESSION);
+pragma Program_Exit [ (boolean_EXPRESSION) ];
 @end example
 
 For the semantics of this pragma, see the entry for aspect @code{Program_Exit}

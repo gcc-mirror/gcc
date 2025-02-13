@@ -5294,7 +5294,7 @@ Syntax:
 
 .. code-block:: ada
 
-  pragma Program_Exit (boolean_EXPRESSION);
+  pragma Program_Exit [ (boolean_EXPRESSION) ];
 
 For the semantics of this pragma, see the entry for aspect ``Program_Exit``
 in the SPARK 2014 Reference Manual, section 6.1.10.

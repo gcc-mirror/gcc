@@ -482,7 +482,7 @@ package Aspects is
       Aspect_Predicate                  => Expression,
       Aspect_Predicate_Failure          => Expression,
       Aspect_Priority                   => Expression,
-      Aspect_Program_Exit               => Expression,
+      Aspect_Program_Exit               => Optional_Expression,
       Aspect_Put_Image                  => Name,
       Aspect_Read                       => Name,
       Aspect_Real_Literal               => Name,
