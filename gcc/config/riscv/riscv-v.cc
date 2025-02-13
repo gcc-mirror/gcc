@@ -1265,7 +1265,16 @@ expand_const_vector (rtx target, rtx src)
 	       element. Use element width = 64 and broadcast a vector with
 	       all element equal to 0x0706050403020100.  */
 	  rtx ele = builder.get_merged_repeating_sequence ();
-	  rtx dup = expand_vector_broadcast (builder.new_mode (), ele);
+	  rtx dup;
+	  if (lra_in_progress)
+	    {
+	      dup = gen_reg_rtx (builder.new_mode ());
+	      rtx ops[] = {dup, ele};
+	      emit_vlmax_insn (code_for_pred_broadcast
+			       (builder.new_mode ()), UNARY_OP, ops);
+	    }
+	  else
+	    dup = expand_vector_broadcast (builder.new_mode (), ele);
 	  emit_move_insn (result, gen_lowpart (mode, dup));
 	}
       else
@@ -1523,10 +1532,20 @@ expand_const_vector (rtx target, rtx src)
 		  base2 = gen_int_mode (rtx_to_poly_int64 (base2), new_smode);
 		  expand_vec_series (tmp2, base2,
 				     gen_int_mode (step2, new_smode));
-		  rtx shifted_tmp2 = expand_simple_binop (
-		    new_mode, ASHIFT, tmp2,
-		    gen_int_mode (builder.inner_bits_size (), Pmode), NULL_RTX,
-		    false, OPTAB_DIRECT);
+		  rtx shifted_tmp2;
+		  rtx shift = gen_int_mode (builder.inner_bits_size (), Xmode);
+		  if (lra_in_progress)
+		    {
+		      shifted_tmp2 = gen_reg_rtx (new_mode);
+		      rtx shift_ops[] = {shifted_tmp2, tmp2, shift};
+		      emit_vlmax_insn (code_for_pred_scalar
+				       (ASHIFT, new_mode), BINARY_OP,
+				       shift_ops);
+		    }
+		  else
+		    shifted_tmp2 = expand_simple_binop (new_mode, ASHIFT, tmp2,
+							shift, NULL_RTX, false,
+							OPTAB_DIRECT);
 		  rtx tmp3 = gen_reg_rtx (new_mode);
 		  rtx ior_ops[] = {tmp3, tmp1, shifted_tmp2};
 		  emit_vlmax_insn (code_for_pred (IOR, new_mode), BINARY_OP,
@@ -1539,9 +1558,20 @@ expand_const_vector (rtx target, rtx src)
 	      rtx vid = gen_reg_rtx (mode);
 	      expand_vec_series (vid, const0_rtx, const1_rtx);
 	      /* Transform into { 0, 0, 1, 1, 2, 2, ... }.  */
-	      rtx shifted_vid
-		= expand_simple_binop (mode, LSHIFTRT, vid, const1_rtx,
-				       NULL_RTX, false, OPTAB_DIRECT);
+	      rtx shifted_vid;
+	      if (lra_in_progress)
+		{
+		  shifted_vid = gen_reg_rtx (mode);
+		  rtx shift = gen_int_mode (1, Xmode);
+		  rtx shift_ops[] = {shifted_vid, vid, shift};
+		  emit_vlmax_insn (code_for_pred_scalar
+				   (ASHIFT, mode), BINARY_OP,
+				   shift_ops);
+		}
+	      else
+		shifted_vid = expand_simple_binop (mode, LSHIFTRT, vid,
+						   const1_rtx, NULL_RTX,
+						   false, OPTAB_DIRECT);
 	      rtx tmp1 = gen_reg_rtx (mode);
 	      rtx tmp2 = gen_reg_rtx (mode);
 	      expand_vec_series (tmp1, base1,
