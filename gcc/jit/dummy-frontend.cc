@@ -1017,7 +1017,7 @@ public:
   }
 
   void on_report_diagnostic (const diagnostic_info &info,
-			     diagnostic_t orig_diag_kind)
+			     diagnostic_t orig_diag_kind) final override
   {
     JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());
 
