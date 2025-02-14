@@ -5031,15 +5031,33 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 	    vec<stmt_vec_info> stmts;
 	    vec<stmt_vec_info> roots = vNULL;
 	    vec<tree> remain = vNULL;
-	    gphi *lc_phi = as_a<gphi *> (STMT_VINFO_STMT (stmt_info));
-	    tree def = gimple_phi_arg_def_from_edge (lc_phi, latch_e);
-	    stmt_vec_info lc_info = loop_vinfo->lookup_def (def);
+	    gphi *phi = as_a<gphi *> (STMT_VINFO_STMT (stmt_info));
 	    stmts.create (1);
+	    tree def = gimple_phi_arg_def_from_edge (phi, latch_e);
+	    stmt_vec_info lc_info = loop_vinfo->lookup_def (def);
 	    stmts.quick_push (vect_stmt_to_vectorize (lc_info));
 	    vect_build_slp_instance (vinfo, slp_inst_kind_reduc_group,
 				     stmts, roots, remain,
 				     max_tree_size, &limit,
 				     bst_map, NULL, force_single_lane);
+	    /* When the latch def is from a different cycle this can only
+	       be a induction.  Build a simple instance for this.
+	       ???  We should be able to start discovery from the PHI
+	       for all inductions, but then there will be stray
+	       non-SLP stmts we choke on as needing non-SLP handling.  */
+	    auto_vec<stmt_vec_info, 1> tem;
+	    tem.quick_push (stmt_info);
+	    if (!bst_map->get (tem))
+	      {
+		gcc_assert (STMT_VINFO_DEF_TYPE (stmt_info)
+			    == vect_induction_def);
+		stmts.create (1);
+		stmts.quick_push (stmt_info);
+		vect_build_slp_instance (vinfo, slp_inst_kind_reduc_group,
+					 stmts, roots, remain,
+					 max_tree_size, &limit,
+					 bst_map, NULL, force_single_lane);
+	      }
 	  }
     }
 
