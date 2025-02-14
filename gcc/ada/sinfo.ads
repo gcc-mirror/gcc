@@ -737,14 +737,6 @@ package Sinfo is
    --  section describes the usage of the semantic fields, which are used to
    --  contain additional information determined during semantic analysis.
 
-   --  Accept_Handler_Records
-   --    This field is present only in an N_Accept_Alternative node. It is used
-   --    to temporarily hold the exception handler records from an accept
-   --    statement in a selective accept. These exception handlers will
-   --    eventually be placed in the Handler_Records list of the procedure
-   --    built for this accept (see Expand_N_Selective_Accept procedure in
-   --    Exp_Ch9 for further details).
-
    --  Access_Types_To_Process
    --    Present in N_Freeze_Entity nodes for Incomplete or private types.
    --    Contains the list of access types which may require specific treatment
@@ -6381,7 +6373,6 @@ package Sinfo is
       --  Condition from the guard (set to Empty if no guard present)
       --  Statements (set to Empty_List if no statements)
       --  Pragmas_Before pragmas before alt (set to No_List if none)
-      --  Accept_Handler_Records
 
       ------------------------------
       -- 9.7.1  Delay Alternative --

@@ -1030,8 +1030,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Accept_Statement, Node_Id),
         Sy (Condition, Node_Id, Default_Empty),
         Sy (Statements, List_Id, Default_Empty_List),
-        Sy (Pragmas_Before, List_Id, Default_No_List),
-        Sm (Accept_Handler_Records, List_Id)));
+        Sy (Pragmas_Before, List_Id, Default_No_List)));
 
    Cc (N_Delay_Alternative, Node_Kind,
        (Sy (Delay_Statement, Node_Id),

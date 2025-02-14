@@ -1194,8 +1194,6 @@ package body Exp_Ch11 is
                    Prefix         => New_Occurrence_Of (Id, Loc),
                    Attribute_Name => Name_Unrestricted_Access)))));
 
-         Set_Register_Exception_Call (Id, First (L));
-
          if not Is_Library_Level_Entity (Id) then
             Flag_Id :=
               Make_Defining_Identifier (Loc,

@@ -212,7 +212,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Low_Bound_Tested, Flag),
         Sm (Materialize_Entity, Flag),
         Sm (May_Inherit_Delayed_Rep_Aspects, Flag),
-        Sm (Needs_Activation_Record, Flag),
         Sm (Needs_Debug_Info, Flag),
         Sm (Never_Set_In_Source, Flag),
         Sm (Overlays_Constant, Flag),
@@ -288,7 +287,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Extra_Formal, Node_Id),
         Sm (Generic_Homonym, Node_Id),
         Sm (Generic_Renamings, Elist_Id),
-        Sm (Handler_Records, List_Id),
         Sm (Has_Static_Discriminants, Flag),
         Sm (Inner_Instances, Elist_Id),
         Sm (Interface_Name, Node_Id),
@@ -398,7 +396,6 @@ begin -- Gen_IL.Gen.Gen_Entities
        (Sm (Activation_Record_Component, Node_Id),
         Sm (Actual_Subtype, Node_Id),
         Sm (Alignment, Unat),
-        Sm (Default_Expr_Function, Node_Id),
         Sm (Default_Value, Node_Id),
         Sm (Entry_Component, Node_Id),
         Sm (Extra_Accessibility, Node_Id),
@@ -680,8 +677,7 @@ begin -- Gen_IL.Gen.Gen_Entities
    Cc (E_Access_Subprogram_Type, Access_Subprogram_Kind,
        --  An access-to-subprogram type, created by an access-to-subprogram
        --  declaration.
-       (Sm (Equivalent_Type, Node_Id),
-        Sm (Original_Access_Type, Node_Id)));
+       (Sm (Equivalent_Type, Node_Id)));
 
    Ab (Access_Protected_Kind, Access_Subprogram_Kind,
        (Sm (Equivalent_Type, Node_Id)));
@@ -1004,7 +1000,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (DTC_Entity, Node_Id),
         Sm (Extra_Accessibility_Of_Result, Node_Id),
         Sm (Generic_Renamings, Elist_Id),
-        Sm (Handler_Records, List_Id),
         Sm (Has_Missing_Return, Flag),
         Sm (Inner_Instances, Elist_Id),
         Sm (Is_Called, Flag),
@@ -1048,7 +1043,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (DTC_Entity, Node_Id),
         Sm (Entry_Parameters_Type, Node_Id),
         Sm (Generic_Renamings, Elist_Id),
-        Sm (Handler_Records, List_Id),
         Sm (Inner_Instances, Elist_Id),
         Sm (Is_Asynchronous, Flag),
         Sm (Is_Called, Flag),
@@ -1167,7 +1161,6 @@ begin -- Gen_IL.Gen.Gen_Entities
        (Sm (Alignment, Unat),
         Sm (Interface_Name, Node_Id),
         Sm (Is_Raised, Flag),
-        Sm (Register_Exception_Call, Node_Id),
         Sm (Renamed_Or_Alias, Node_Id)));
 
    Ab (Generic_Unit_Kind, Entity_Kind,
@@ -1256,8 +1249,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Body_Needed_For_SAL, Flag),
         Sm (Contract, Node_Id),
         Sm (Current_Use_Clause, Node_Id),
-        Sm (Dependent_Instances, Elist_Id,
-            Pre => "Is_Generic_Instance (N)"),
         Sm (Elaborate_Body_Desirable, Flag),
         Sm (Elaboration_Entity, Node_Id),
         Sm (Elaboration_Entity_Required, Flag),
@@ -1265,7 +1256,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (First_Entity, Node_Id),
         Sm (First_Private_Entity, Node_Id),
         Sm (Generic_Renamings, Elist_Id),
-        Sm (Handler_Records, List_Id),
         Sm (Has_RACW, Flag),
         Sm (Hidden_In_Formal_Instance, Elist_Id),
         Sm (Ignore_SPARK_Mode_Pragmas, Flag),
@@ -1297,7 +1287,6 @@ begin -- Gen_IL.Gen.Gen_Entities
        (Sm (Contract, Node_Id),
         Sm (Finalizer, Node_Id),
         Sm (First_Entity, Node_Id),
-        Sm (Handler_Records, List_Id),
         Sm (Ignore_SPARK_Mode_Pragmas, Flag),
         Sm (Last_Entity, Node_Id),
         Sm (Related_Instance, Node_Id),

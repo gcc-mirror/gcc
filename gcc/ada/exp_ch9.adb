@@ -5746,12 +5746,6 @@ package body Exp_Ch9 is
 
       Insert_Before_And_Analyze (N, Decl1);
 
-      --  Associate the access to subprogram with its original access to
-      --  protected subprogram type. Needed by the backend to know that this
-      --  type corresponds with an access to protected subprogram type.
-
-      Set_Original_Access_Type (D_T2, T);
-
       --  Create Equivalent_Type, a record with two components for an access to
       --  object and an access to subprogram.
 
@@ -10595,14 +10589,6 @@ package body Exp_Ch9 is
                   Build_Accept_Body (Accept_Statement (Alt)));
 
             Reset_Scopes_To (Proc_Body, PB_Ent);
-
-            --  During the analysis of the body of the accept statement, any
-            --  zero cost exception handler records were collected in the
-            --  Accept_Handler_Records field of the N_Accept_Alternative node.
-            --  This is where we move them to where they belong, namely the
-            --  newly created procedure.
-
-            Set_Handler_Records (PB_Ent, Accept_Handler_Records (Alt));
             Append (Proc_Body, Body_List);
 
          else

@@ -13034,10 +13034,6 @@ package body Sem_Ch12 is
            Make_Defining_Identifier (Sloc (Act_Decl_Id), Chars (Act_Decl_Id));
          Preserve_Comes_From_Source (Act_Body_Id, Act_Decl_Id);
 
-         --  Some attributes of spec entity are not inherited by body entity
-
-         Set_Handler_Records (Act_Body_Id, No_List);
-
          if Nkind (Defining_Unit_Name (Act_Spec)) =
                                            N_Defining_Program_Unit_Name
          then
