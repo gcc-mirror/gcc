@@ -1,3 +1,80 @@
+2025-02-13  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/118832
+	* config/riscv/riscv-v.cc (expand_const_vector):  Expand as
+	vlmax insn during lra.
+
+2025-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR driver/117739
+	* doc/invoke.texi: Tweak wording for -Whardened.
+	* gcc.cc (driver_handle_option): If -z lazy or -z norelro was
+	specified, don't enable linker hardening.
+	(process_command): Don't check warn_hardened.
+
+2025-02-13  Ed Catmur  <ed@catmur.uk>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/70536
+	* dwarf2out.cc (gen_formal_parameter_pack_die): Add name attr.
+
+2025-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/118790
+	* gengtype.cc (write_roots): Remove cache variable, instead break from
+	the loop on match and test o for NULL.  If the cache option has
+	non-empty string argument, call the specified function with v->name
+	as argument before calling gt_cleare_cache on it.
+	* tree.cc (gt_value_expr_mark_2, gt_value_expr_mark_1,
+	gt_value_expr_mark): New functions.
+	(value_expr_for_decl): Use GTY ((cache ("gt_value_expr_mark"))) rather
+	than just GTY ((cache)).
+	* doc/gty.texi (cache): Document optional argument of cache option.
+
+2025-02-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/114522
+	* config/arm/arm-builtins.cc (arm_fold_aes_op): New function.
+	(arm_general_gimple_fold_builtin): New function.
+	* config/arm/arm-builtins.h (arm_general_gimple_fold_builtin): New
+	prototype.
+	* config/arm/arm.cc (arm_gimple_fold_builtin): Call
+	arm_general_gimple_fold_builtin as needed.
+
+2025-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118822
+	PR c++/118833
+	* tree-iterator.h (tsi_split_stmt_list): Declare.
+	* tree-iterator.cc (tsi_split_stmt_list): New function.
+
+2025-02-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld_eh_frame_ciev3): Remove.
+	* configure, config.in: Regenerate.
+	* config/sol2.cc (solaris_override_options): Remove.
+	* config/sol2.h (SUBTARGET_OVERRIDE_OPTIONS): Remove.
+	* config/sol2-protos.h (solaris_override_options): Remove.
+
+2025-02-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, *-*-solaris2*): Updates for newer
+	Solaris 11.4 SRUs and binutils 2.44.
+
+2025-02-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/118835
+	* config/s390/s390.cc (s390_valid_shift_count): Reject shift
+	count operands which do not trivially fit the scheme of
+	address operands.
+
+2025-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118817
+	* tree-ssa-sccvn.cc (vn_nary_simplify): Do not process
+	CONSTRUCTOR NARY or update from CONSTRUCTOR simplified
+	gimple_match_op.
+
 2025-02-12  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR rtl-optimization/102150

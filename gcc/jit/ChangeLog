@@ -1,3 +1,10 @@
+2025-02-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116613
+	* dummy-frontend.cc
+	(jit_diagnostic_listener::on_report_diagnostic): Add
+	"final override".
+
 2025-02-07  Richard Biener  <rguenther@suse.de>
 
 	PR jit/118780

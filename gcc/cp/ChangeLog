@@ -1,3 +1,41 @@
+2025-02-13  Jason Merrill  <jason@redhat.com>
+
+	* tree.cc (handle_init_priority_attribute): Use OPT_prio_ctor_dtor.
+
+2025-02-13  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (omp_declare_variant_finalize_one): Use forward_parm.
+
+2025-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118856
+	* call.cc (struct extend_temps_data): Add var_map.
+	(extend_all_temps): Adjust.
+	(set_up_extended_ref_temp): Make walk_data void*.
+	(extend_temps_r): Remap variables.  Handle pset here.
+	Extend all TARGET_EXPRs.
+
+2025-02-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118849
+	* decl2.cc (min_vis_expr_r): Constrain visibility according to
+	the type of decl_constant_var_p decls.
+
+2025-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118822
+	PR c++/118833
+	* semantics.cc (adjust_loop_decl_cond): Allow multiple trailing
+	CLEANUP_STMT levels in *BODY_P.  Set *CLEANUP_P to the number
+	of levels rather than one particular cleanup, keep the cleanups
+	in *PREP_P.  Set *BODY_P to the last stmt in the cur_stmt_list
+	or NULL if *CLEANUP_P and the innermost cur_stmt_list is empty.
+	(finish_loop_cond_prep): New function.
+	(finish_while_stmt, finish_for_stmt): Use it.  Don't call
+	set_one_cleanup_loc.
+	* constexpr.cc (cxx_eval_loop_expr): Adjust handling of
+	{FOR,WHILE}_COND_{PREP,CLEANUP}.
+
 2025-02-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/118574

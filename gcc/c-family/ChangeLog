@@ -1,3 +1,13 @@
+2025-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118822
+	PR c++/118833
+	* c-common.h (WHILE_COND_CLEANUP): Change description in comment.
+	(FOR_COND_CLEANUP): Likewise.
+	* c-gimplify.cc (genericize_c_loop): Adjust for COND_CLEANUP
+	being CLEANUP_STMT/TRY_FINALLY_EXPR trailing nesting depth
+	instead of actual cleanup.
+
 2025-02-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/188574

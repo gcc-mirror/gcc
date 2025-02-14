@@ -1,3 +1,13 @@
+2025-02-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/118845
+	* interface.cc (compare_parameter): If the formal attribute has been
+	generated from an actual argument list, also output an pointer to
+	there in case of an error.
+	(gfc_get_formal_from_actual_arglist): Set function and subroutine
+	attributes and (if it is a function) the typespec from the actual
+	argument.
+
 2025-02-11  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* trans-openmp.cc (gfc_trans_omp_declare_variant): Update call to

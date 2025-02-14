@@ -1,3 +1,93 @@
+2025-02-13  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/118832
+	* gcc.target/riscv/rvv/autovec/pr118832.c: New test.
+
+2025-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR driver/117739
+	* c-c++-common/fhardened-16.c: New test.
+	* c-c++-common/fhardened-17.c: New test.
+	* c-c++-common/fhardened-18.c: New test.
+	* c-c++-common/fhardened-19.c: New test.
+	* c-c++-common/fhardened-20.c: New test.
+	* c-c++-common/fhardened-21.c: New test.
+
+2025-02-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/nontype-class72.C: Disable -fimplicit-constexpr.
+
+2025-02-13  Ed Catmur  <ed@catmur.uk>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/70536
+	* g++.dg/debug/dwarf2/template-func-params-7.C: Check for pack names.
+
+2025-02-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/special/initp1.C: Test disabling -Wprio-ctor-dtor.
+
+2025-02-13  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/gomp/declare-variant-3.C: Adjust diagnostic.
+	* g++.dg/gomp/declare-variant-5.C: Adjust diagnostic.
+
+2025-02-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/118845
+	* gfortran.dg/recursive_check_4.f03: Adjust call so types matche.
+	* gfortran.dg/recursive_check_6.f03: Likewise.
+	* gfortran.dg/specifics_2.f90: Adjust calls so types match.
+	* gfortran.dg/interface_52.f90: New test.
+	* gfortran.dg/interface_53.f90: New test.
+
+2025-02-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118856
+	* g++.dg/cpp23/range-for9.C: New test.
+
+2025-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/113800
+	DR 2450
+	* g++.dg/cpp26/pack-indexing15.C: New test.
+	* g++.dg/cpp2a/nontype-class68.C: New test.
+	* g++.dg/cpp2a/nontype-class69.C: New test.
+	* g++.dg/cpp2a/nontype-class70.C: New test.
+	* g++.dg/cpp2a/nontype-class71.C: New test.
+	* g++.dg/cpp2a/nontype-class72.C: New test.
+
+2025-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/118790
+	* gfortran.dg/gomp/pr118790.f90: New test.
+
+2025-02-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118849
+	* g++.dg/template/linkage6.C: New test.
+
+2025-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118574
+	* g++.dg/coroutines/range-for2.C: New test.
+
+2025-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118822
+	PR c++/118833
+	* g++.dg/expr/for9.C: New test.
+	* g++.dg/cpp26/decomp12.C: New test.
+
+2025-02-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/pr118835.c: New test.
+
+2025-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118817
+	* gcc.dg/pr118817.c: New testcase.
+
 2025-02-12  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/101740
