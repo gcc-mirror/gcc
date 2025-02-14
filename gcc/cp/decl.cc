@@ -10024,7 +10024,7 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 	      /* Wrap that value into a TARGET_EXPR, emit it right
 		 away and save for later uses in the cp_parse_condition
 		 or its instantiation.  */
-	      cond = get_target_expr (cond);
+	      cond = get_internal_target_expr (cond);
 	      add_stmt (cond);
 	      DECL_DECOMP_BASE (decl) = cond;
 	    }
@@ -10687,7 +10687,7 @@ expand_static_init (tree decl, tree init)
 			       inner_if_stmt);
 
 	  inner_then_clause = begin_compound_stmt (BCS_NO_SCOPE);
-	  begin = get_target_expr (boolean_false_node);
+	  begin = get_internal_target_expr (boolean_false_node);
 	  flag = TARGET_EXPR_SLOT (begin);
 
 	  TARGET_EXPR_CLEANUP (begin)

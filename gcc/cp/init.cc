@@ -3529,7 +3529,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	  && (INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (TREE_TYPE (placement)))
 	      || VOID_TYPE_P (TREE_TYPE (TREE_TYPE (placement)))))
 	{
-	  placement_expr = get_target_expr (placement_first);
+	  placement_expr = get_internal_target_expr (placement_first);
 	  CALL_EXPR_ARG (alloc_call, 1)
 	    = fold_convert (TREE_TYPE (placement), placement_expr);
 	}
@@ -3557,7 +3557,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 
   /* Store the result of the allocation call in a variable so that we can
      use it more than once.  */
-  alloc_expr = get_target_expr (alloc_expr);
+  alloc_expr = get_internal_target_expr (alloc_expr);
   alloc_node = TARGET_EXPR_SLOT (alloc_expr);
 
   /* Strip any COMPOUND_EXPRs from ALLOC_CALL.  */
@@ -3841,7 +3841,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	{
 	  tree end, sentry, begin;
 
-	  begin = get_target_expr (boolean_true_node);
+	  begin = get_internal_target_expr (boolean_true_node);
 
 	  sentry = TARGET_EXPR_SLOT (begin);
 
@@ -4679,7 +4679,7 @@ build_vec_init (tree base, tree maxindex, tree init,
   current_stmt_tree ()->stmts_are_full_exprs_p = 0;
   rval = get_temp_regvar (ptype, base);
   base = get_temp_regvar (ptype, rval);
-  tree iterator_targ = get_target_expr (maxindex);
+  tree iterator_targ = get_internal_target_expr (maxindex);
   add_stmt (iterator_targ);
   iterator = TARGET_EXPR_SLOT (iterator_targ);
 
@@ -5323,7 +5323,7 @@ build_delete (location_t loc, tree otype, tree addr,
   if (deleting)
     /* We will use ADDR multiple times so we must save it.  */
     {
-      addr_expr = get_target_expr (addr);
+      addr_expr = get_internal_target_expr (addr);
       addr = TARGET_EXPR_SLOT (addr_expr);
     }
 
@@ -5348,7 +5348,7 @@ build_delete (location_t loc, tree otype, tree addr,
      delete'.  */
   else if (use_global_delete)
     {
-      head = get_target_expr (build_headof (addr));
+      head = get_internal_target_expr (build_headof (addr));
       /* Delete the object.  */
       do_delete = build_op_delete_call (DELETE_EXPR,
 					head,
@@ -5582,7 +5582,7 @@ build_vec_delete (location_t loc, tree base, tree maxindex,
       base = mark_rvalue_use (base);
       if (TREE_SIDE_EFFECTS (base))
 	{
-	  base_init = get_target_expr (base);
+	  base_init = get_internal_target_expr (base);
 	  base = TARGET_EXPR_SLOT (base_init);
 	}
       type = strip_array_types (TREE_TYPE (type));
@@ -5603,7 +5603,7 @@ build_vec_delete (location_t loc, tree base, tree maxindex,
 	return error_mark_node;
       if (TREE_SIDE_EFFECTS (base))
 	{
-	  base_init = get_target_expr (base);
+	  base_init = get_internal_target_expr (base);
 	  base = TARGET_EXPR_SLOT (base_init);
 	}
     }

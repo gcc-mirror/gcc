@@ -14251,6 +14251,8 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
 	init = add_stmt_to_compound (init, register_dtor_fn (var));
       else
 	{
+	  /* ??? Instead of rebuilding the cleanup, we could replace the slot
+	     with var in TARGET_EXPR_CLEANUP (expr).  */
 	  tree cleanup = cxx_maybe_build_cleanup (var, tf_warning_or_error);
 	  if (cleanup)
 	    {
@@ -14268,6 +14270,37 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
 		    }
 		  cleanup = build3 (COND_EXPR, void_type_node,
 				    *cond_guard, cleanup, NULL_TREE);
+		}
+	      if (flag_exceptions && TREE_CODE (TREE_TYPE (var)) != ARRAY_TYPE)
+		{
+		  /* The normal cleanup for this extended variable isn't pushed
+		     until cp_finish_decl, so we need to retain a TARGET_EXPR
+		     to clean it up in case a later initializer throws
+		     (g++.dg/eh/ref-temp3.C).
+
+		     We don't do this for array temporaries because they have
+		     the array cleanup region from build_vec_init.
+
+		     Unlike maybe_push_temp_cleanup, we don't actually need a
+		     flag, but a TARGET_EXPR needs a TARGET_EXPR_SLOT.
+		     Perhaps this could use WITH_CLEANUP_EXPR instead, but
+		     gimplify.cc doesn't handle that, and front-end handling
+		     was removed in r8-1725 and r8-1818.
+
+		     Alternately it might be preferable to flatten an
+		     initialization with extended temps into a sequence of
+		     (non-full-expression) statements, so we could immediately
+		     push_cleanup here for only a single cleanup region, but we
+		     don't have a mechanism for that in the front-end, only the
+		     gimplifier.  */
+		  tree targ = get_internal_target_expr (boolean_true_node);
+		  TARGET_EXPR_CLEANUP (targ) = cleanup;
+		  CLEANUP_EH_ONLY (targ) = true;
+		  /* Don't actually initialize the bool.  */
+		  init = (!init ? void_node
+			  : convert_to_void (init, ICV_STATEMENT, tf_none));
+		  TARGET_EXPR_INITIAL (targ) = init;
+		  init = targ;
 		}
 	      vec_safe_push (*cleanups, cleanup);
 	    }
@@ -14886,7 +14919,12 @@ extend_temps_r (tree *tp, int *walk_subtrees, void *data)
 	 TREE_CODE (*p) == COMPONENT_REF || TREE_CODE (*p) == ARRAY_REF; )
       p = &TREE_OPERAND (*p, 0);
 
-  if (TREE_CODE (*p) == TARGET_EXPR)
+  if (TREE_CODE (*p) == TARGET_EXPR
+      /* An eliding TARGET_EXPR isn't a temporary at all.  */
+      && !TARGET_EXPR_ELIDING_P (*p)
+      /* A TARGET_EXPR with CLEANUP_EH_ONLY is an artificial variable used
+	 during initialization, and need not be extended.  */
+      && !CLEANUP_EH_ONLY (*p))
     {
       tree subinit = NULL_TREE;
       tree slot = TARGET_EXPR_SLOT (*p);
