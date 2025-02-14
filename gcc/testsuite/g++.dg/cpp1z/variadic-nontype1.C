@@ -1,4 +1,6 @@
+// PR c++/118265
 // { dg-do compile { target c++17 } }
+
 struct Class1
 {
     void apply_bool(bool){}
