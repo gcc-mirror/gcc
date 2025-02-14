@@ -6479,9 +6479,13 @@ riscv_fntype_abi (const_tree fntype)
   /* Implement the vector calling convention.  For more details please
      reference the below link.
      https://github.com/riscv-non-isa/riscv-elf-psabi-doc/pull/389  */
-  if (riscv_return_value_is_vector_type_p (fntype)
-	  || riscv_arguments_is_vector_type_p (fntype)
-	  || riscv_vector_cc_function_p (fntype))
+  bool validate_v_abi_p = false;
+
+  validate_v_abi_p |= riscv_return_value_is_vector_type_p (fntype);
+  validate_v_abi_p |= riscv_arguments_is_vector_type_p (fntype);
+  validate_v_abi_p |= riscv_vector_cc_function_p (fntype);
+
+  if (validate_v_abi_p)
     return riscv_v_abi ();
 
   return default_function_abi;
