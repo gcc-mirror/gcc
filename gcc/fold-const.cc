@@ -7246,6 +7246,12 @@ tree_swap_operands_p (const_tree arg0, const_tree arg1)
   if (TREE_CONSTANT (arg0))
     return true;
 
+  /* Put invariant address in arg1. */
+  if (is_gimple_invariant_address (arg1))
+    return false;
+  if (is_gimple_invariant_address (arg0))
+    return true;
+
   /* It is preferable to swap two SSA_NAME to ensure a canonical form
      for commutative and comparison operators.  Ensuring a canonical
      form allows the optimizers to find additional redundancies without
