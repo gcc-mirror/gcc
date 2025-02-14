@@ -8782,6 +8782,16 @@ avr_out_plus_1 (rtx insn, rtx *xop, int *plen, rtx_code code,
 
   if (REG_P (xop[2]))
     {
+      if (REGNO (xop[0]) != REGNO (xop[2])
+	  && reg_overlap_mentioned_p (xop[0], xop[2]))
+	{
+	  /* PR118878: Paradoxical SUBREGs may result in overlapping
+	     registers.  The assumption is that the overlapping part
+	     is unused garbage.  */
+	  gcc_assert (n_bytes <= 4);
+	  n_bytes = std::abs ((int) REGNO (xop[0]) - (int) REGNO (xop[2]));
+	}
+
       for (int i = 0; i < n_bytes; i++)
 	{
 	  /* We operate byte-wise on the destination.  */
@@ -8796,13 +8806,9 @@ avr_out_plus_1 (rtx insn, rtx *xop, int *plen, rtx_code code,
 			 op, plen, 1);
 	}
 
-      if (reg_overlap_mentioned_p (xop[0], xop[2]))
-	{
-	  gcc_assert (REGNO (xop[0]) == REGNO (xop[2]));
-
-	  if (MINUS == code)
-	    return;
-	}
+      if (MINUS == code
+	  && REGNO (xop[0]) == REGNO (xop[2]))
+	return;
 
       goto saturate;
     }
