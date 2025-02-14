@@ -211,6 +211,11 @@ struct cl_option_hasher : ggc_cache_ptr_hash<tree_node>
 
 static GTY ((cache)) hash_table<cl_option_hasher> *cl_option_hash_table;
 
+struct gt_value_expr_mark_data {
+  hash_set<tree> pset;
+  auto_vec<tree, 16> to_mark;
+};
+
 /* Callback called through walk_tree_1 to discover DECL_HAS_VALUE_EXPR_P
    VAR_DECLs which weren't marked yet, in that case marks them and
    walks their DECL_VALUE_EXPR expressions.  */
@@ -219,11 +224,12 @@ static tree
 gt_value_expr_mark_2 (tree *tp, int *, void *data)
 {
   tree t = *tp;
-  if (VAR_P (t) && DECL_HAS_VALUE_EXPR_P (t) && !ggc_set_mark (t))
+  if (VAR_P (t) && DECL_HAS_VALUE_EXPR_P (t) && !ggc_marked_p (t))
     {
       tree dve = DECL_VALUE_EXPR (t);
-      walk_tree_1 (&dve, gt_value_expr_mark_2, data,
-		   (hash_set<tree> *) data, NULL);
+      gt_value_expr_mark_data *d = (gt_value_expr_mark_data *) data;
+      walk_tree_1 (&dve, gt_value_expr_mark_2, data, &d->pset, NULL);
+      d->to_mark.safe_push (t);
     }
   return NULL_TREE;
 }
@@ -232,10 +238,10 @@ gt_value_expr_mark_2 (tree *tp, int *, void *data)
    value_expr_for_decl hash table.  */
 
 int
-gt_value_expr_mark_1 (tree_decl_map **e, hash_set<tree> *pset)
+gt_value_expr_mark_1 (tree_decl_map **e, gt_value_expr_mark_data *data)
 {
   if (ggc_marked_p ((*e)->base.from))
-    walk_tree_1 (&(*e)->to, gt_value_expr_mark_2, pset, pset, NULL);
+    walk_tree_1 (&(*e)->to, gt_value_expr_mark_2, data, &data->pset, NULL);
   return 1;
 }
 
@@ -255,8 +261,11 @@ gt_value_expr_mark (hash_table<tree_decl_map_cache_hasher> *h)
   if (!h)
     return;
 
-  hash_set<tree> pset;
-  h->traverse_noresize<hash_set<tree> *, gt_value_expr_mark_1> (&pset);
+  gt_value_expr_mark_data data;
+  h->traverse_noresize<gt_value_expr_mark_data *,
+		       gt_value_expr_mark_1> (&data);
+  for (auto v : data.to_mark)
+    gt_ggc_mx (v);
 }
 
 /* General tree->tree mapping  structure for use in hash tables.  */
