@@ -69,6 +69,19 @@
 			(V8HI "V8SI") (V16HI "V16SI")
 			(V16QI "V16HI") (V32QI "V32HI")])
 
+;; The element type is not changed but the number of elements is halved.
+(define_mode_attr VEC_HALF [(V2DI "V1DI") (V4DI "V2DI")
+			    (V4SI "V2SI") (V8SI "V4SI")
+			    (V8HI "V4HI") (V16HI "V8HI")
+			    (V16QI "V8QI") (V32QI "V16QI")])
+
+;; The elements are widen but the total size is unchanged
+;; (i.e. the number of elements is halfed).
+(define_mode_attr WVEC_HALF [(V2DI "V1TI") (V4DI "V2TI")
+			     (V4SI "V2DI") (V8SI "V4DI")
+			     (V8HI "V4SI") (V16HI "V8SI")
+			     (V16QI "V8HI") (V32QI "V16HI")])
+
 ;; Integer vector modes with the same length and unit size as a mode.
 (define_mode_attr VIMODE [(V2DI "V2DI") (V4SI "V4SI")
 			  (V8HI "V8HI") (V16QI "V16QI")
@@ -96,6 +109,12 @@
 			   (V4SI "w") (V8SI "w")
 			   (V8HI "h") (V16HI "h")
 			   (V16QI "b") (V32QI "b")])
+
+;; Suffix for widening LSX or LASX instructions.
+(define_mode_attr simdfmt_w [(V2DI "q") (V4DI "q")
+			     (V4SI "d") (V8SI "d")
+			     (V8HI "w") (V16HI "w")
+			     (V16QI "h") (V32QI "h")])
 
 ;; Suffix for integer mode in LSX or LASX instructions with FP input but
 ;; integer output.
@@ -585,6 +604,110 @@
     emit_jump_insn (gen_<simd_isa>_<x>bnz_v_b (operands[3], tmp, const0));
   else
     emit_jump_insn (gen_<simd_isa>_<x>bz_v_b (operands[3], tmp, const0));
+  DONE;
+})
+
+;; Operations on elements at even/odd indices.
+(define_int_iterator zero_one [0 1])
+(define_int_attr ev_od [(0 "ev") (1 "od")])
+
+;; Integer widening add/sub/mult.
+(define_insn "simd_<optab>w_evod_<mode>_<su>"
+  [(set (match_operand:<WVEC_HALF> 0 "register_operand" "=f")
+	(addsubmul:<WVEC_HALF>
+	  (any_extend:<WVEC_HALF>
+	    (vec_select:<VEC_HALF>
+	      (match_operand:IVEC 1 "register_operand" "f")
+	      (match_operand:IVEC 3 "vect_par_cnst_even_or_odd_half")))
+	  (any_extend:<WVEC_HALF>
+	    (vec_select:<VEC_HALF>
+	      (match_operand:IVEC 2 "register_operand" "f")
+	      (match_dup 3)))))]
+  ""
+  "<x>v<optab>w%O3.<simdfmt_w>.<simdfmt><u>\t%<wu>0,%<wu>1,%<wu>2"
+  [(set_attr "type" "simd_int_arith")
+   (set_attr "mode" "<WVEC_HALF>")])
+
+(define_expand "<simd_isa>_<x>v<optab>w<ev_od>_<simdfmt_w>_<simdfmt><u>"
+  [(match_operand:<WVEC_HALF> 0 "register_operand" "=f")
+   (match_operand:IVEC	      1 "register_operand" " f")
+   (match_operand:IVEC	      2 "register_operand" " f")
+   (any_extend (const_int 0))
+   (addsubmul (const_int 0) (const_int 0))
+   (const_int zero_one)]
+  ""
+{
+  int nelts = GET_MODE_NUNITS (<WVEC_HALF>mode);
+  rtx op3 = loongarch_gen_stepped_int_parallel (nelts, <zero_one>, 2);
+  rtx insn = gen_simd_<optab>w_evod_<mode>_<su> (operands[0], operands[1],
+						 operands[2], op3);
+  emit_insn (insn);
+  DONE;
+})
+
+(define_insn "simd_<optab>w_evod_<mode>_hetero"
+  [(set (match_operand:<WVEC_HALF> 0 "register_operand" "=f")
+	(addsubmul:<WVEC_HALF>
+	  (zero_extend:<WVEC_HALF>
+	    (vec_select:<VEC_HALF>
+	      (match_operand:IVEC 1 "register_operand" "f")
+	      (match_operand:IVEC 3 "vect_par_cnst_even_or_odd_half")))
+	  (sign_extend:<WVEC>
+	    (vec_select:<VEC_HALF>
+	      (match_operand:IVEC 2 "register_operand" "f")
+	      (match_dup 3)))))]
+  ""
+  "<x>v<optab>w%O3.<simdfmt_w>.<simdfmt>u.<simdfmt>\t%<wu>0,%<wu>1,%<wu>2"
+  [(set_attr "type" "simd_int_arith")
+   (set_attr "mode" "<WVEC_HALF>")])
+
+(define_expand "<simd_isa>_<x>v<optab>w<ev_od>_<simdfmt_w>_<simdfmt>u_<simdfmt>"
+  [(match_operand:<WVEC_HALF> 0 "register_operand" "=f")
+   (match_operand:IVEC	      1 "register_operand" " f")
+   (match_operand:IVEC	      2 "register_operand" " f")
+   (addmul (const_int 0) (const_int 0))
+   (const_int zero_one)]
+  ""
+{
+  int nelts = GET_MODE_NUNITS (<WVEC_HALF>mode);
+  rtx op3 = loongarch_gen_stepped_int_parallel (nelts, <zero_one>, 2);
+  rtx insn = gen_simd_<optab>w_evod_<mode>_hetero (operands[0], operands[1],
+						   operands[2], op3);
+  emit_insn (insn);
+  DONE;
+})
+
+; For "historical" reason we need a punned version of q_d variants.
+(define_mode_iterator DIVEC [(V2DI "ISA_HAS_LSX") (V4DI "ISA_HAS_LASX")])
+
+(define_expand "<simd_isa>_<optab>w<ev_od>_q_d<u>_punned"
+  [(match_operand:DIVEC 0 "register_operand" "=f")
+   (match_operand:DIVEC 1 "register_operand" " f")
+   (match_operand:DIVEC 2 "register_operand" " f")
+   (any_extend (const_int 0))
+   (addsubmul (const_int 0) (const_int 0))
+   (const_int zero_one)]
+  ""
+{
+  rtx t = gen_reg_rtx (<WVEC_HALF>mode);
+  emit_insn (gen_<simd_isa>_<x>v<optab>w<ev_od>_q_d<u> (t, operands[1],
+							operands[2]));
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, t));
+  DONE;
+})
+
+(define_expand "<simd_isa>_<optab>w<ev_od>_q_du_d_punned"
+  [(match_operand:DIVEC 0 "register_operand" "=f")
+   (match_operand:DIVEC 1 "register_operand" " f")
+   (match_operand:DIVEC 2 "register_operand" " f")
+   (addmul (const_int 0) (const_int 0))
+   (const_int zero_one)]
+  ""
+{
+  rtx t = gen_reg_rtx (<WVEC_HALF>mode);
+  emit_insn (gen_<simd_isa>_<x>v<optab>w<ev_od>_q_du_d (t, operands[1],
+							operands[2]));
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, t));
   DONE;
 })
 

@@ -6276,6 +6276,10 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
 	output_operand_lossage ("invalid use of '%%%c'", letter);
       break;
 
+    case 'O':
+      fprintf (file, "%s", INTVAL (XVECEXP (op, 0, 0)) ? "od" : "ev");
+      break;
+
     case 'F':
       loongarch_print_float_branch_condition (file, code, letter);
       break;
@@ -11109,6 +11113,18 @@ loongarch_builtin_support_vector_misalignment (machine_mode mode,
     }
   return default_builtin_support_vector_misalignment (mode, type, misalignment,
 						      is_packed);
+}
+
+/* Return a PARALLEL containing NELTS elements, with element I equal
+   to BASE + I * STEP.  */
+rtx
+loongarch_gen_stepped_int_parallel (unsigned int nelts, int base,
+				    int step)
+{
+  rtvec vec = rtvec_alloc (nelts);
+  for (unsigned int i = 0; i < nelts; i++)
+    RTVEC_ELT (vec, i) = GEN_INT (base + i * step);
+  return gen_rtx_PARALLEL (VOIDmode, vec);
 }
 
 /* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode or DFmode

@@ -672,3 +672,30 @@
 (define_predicate "reg_or_vector_same_uimm_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "const_vector_same_uimm_operand")))
+
+;; PARALLEL for a vec_select that selects all the even or all the odd
+;; elements of a vector of MODE.
+(define_special_predicate "vect_par_cnst_even_or_odd_half"
+  (match_code "parallel")
+{
+  int nunits = XVECLEN (op, 0);
+
+  if (!known_eq (GET_MODE_NUNITS (mode), nunits * 2))
+    return false;
+
+  rtx first = XVECEXP (op, 0, 0);
+  if (!CONST_INT_P (first))
+    return false;
+
+  if (INTVAL (first) != 0 && INTVAL (first) != 1)
+    return false;
+
+  for (int i = 1; i < nunits; i++)
+    {
+      rtx elem = XVECEXP (op, 0, i);
+      if (!CONST_INT_P (elem) || INTVAL (elem) != INTVAL (first) + i * 2)
+	return false;
+    }
+
+  return true;
+})
