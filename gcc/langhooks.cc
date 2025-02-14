@@ -653,7 +653,7 @@ lhd_omp_deep_mapping_p (const gimple *, tree)
 /* Returns number of additional mappings for a decl.  */
 
 tree
-lhd_omp_deep_mapping_cnt (const gimple *, tree, gimple_seq *)
+lhd_omp_deep_mapping_cnt (gimple *, tree, gimple_seq *)
 {
   return NULL_TREE;
 }
@@ -661,7 +661,7 @@ lhd_omp_deep_mapping_cnt (const gimple *, tree, gimple_seq *)
 /* Do the additional mappings.  */
 
 void
-lhd_omp_deep_mapping (const gimple *, tree, unsigned HOST_WIDE_INT, tree, tree,
+lhd_omp_deep_mapping (gimple *, tree, unsigned HOST_WIDE_INT, tree, tree,
 		      tree, tree, tree, gimple_seq *)
 {
 }

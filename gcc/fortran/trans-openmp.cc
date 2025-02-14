@@ -2375,7 +2375,8 @@ static void
 gfc_omp_deep_mapping_map (tree data, tree size, unsigned HOST_WIDE_INT tkind,
 			  location_t loc, tree data_array, tree sizes_array,
 			  tree kinds_array, tree offset_data, tree offset,
-			  gimple_seq *seq, const gimple *ctx)
+			  gimple_seq *seq, gimple *ctx,
+			  tree iterators, gimple_seq loops_pre_seq)
 {
   tree one = build_int_cst (size_type_node, 1);
 
@@ -2386,26 +2387,65 @@ gfc_omp_deep_mapping_map (tree data, tree size, unsigned HOST_WIDE_INT tkind,
       data = TREE_OPERAND (data, 0);
     }
 
+  gomp_target *target_stmt = as_a<gomp_target *> (ctx);
+  gimple_seq *loops_seq_p = gimple_omp_target_iterator_loops_ptr (target_stmt);
+
+  if (loops_pre_seq)
+    {
+      gimple_seq *loop_body_p
+	= enter_omp_iterator_loop_context (iterators, loops_seq_p);
+      gimple_seq_add_seq (loop_body_p, loops_pre_seq);
+      exit_omp_iterator_loop_context ();
+    }
+
+  tree data_expr = data;
+  tree data_iter = NULL_TREE;
+  if (iterators)
+    {
+      data_iter = add_new_omp_iterators_entry (iterators, loops_seq_p);
+      assign_to_iterator_elems_array (data_expr, data_iter, target_stmt);
+      data_expr = OMP_ITERATORS_ELEMS (data_iter);
+      if (TREE_CODE (TREE_TYPE (data_expr)) == ARRAY_TYPE)
+	data_expr = build_fold_addr_expr_with_type (data_expr, ptr_type_node);
+    }
   /* data_array[offset_data] = data; */
   tree tmp = build4 (ARRAY_REF, TREE_TYPE (TREE_TYPE (data_array)),
 		     unshare_expr (data_array), offset_data,
 		     NULL_TREE, NULL_TREE);
-  gimplify_assign (tmp, data, seq);
+  gimplify_assign (tmp, data_expr, seq);
 
   /* offset_data++ */
   tmp = build2_loc (loc, PLUS_EXPR, size_type_node, offset_data, one);
   gimplify_assign (offset_data, tmp, seq);
 
+  tree data_addr_expr = build_fold_addr_expr (data);
+  tree data_addr_iter = NULL_TREE;
+  if (iterators)
+    {
+      data_addr_iter = add_new_omp_iterators_entry (iterators, loops_seq_p);
+      assign_to_iterator_elems_array (data_addr_expr, data_addr_iter,
+				      target_stmt);
+      data_addr_expr = OMP_ITERATORS_ELEMS (data_addr_iter);
+      if (TREE_CODE (TREE_TYPE (data_addr_expr)) == ARRAY_TYPE)
+	data_addr_expr = build_fold_addr_expr_with_type (data_addr_expr,
+							 ptr_type_node);
+    }
   /* data_array[offset_data] = &data; */
   tmp = build4 (ARRAY_REF, TREE_TYPE (TREE_TYPE (data_array)),
 		unshare_expr (data_array),
 		offset_data, NULL_TREE, NULL_TREE);
-  gimplify_assign (tmp, build_fold_addr_expr (data), seq);
+  gimplify_assign (tmp, data_addr_expr, seq);
 
   /* offset_data++ */
   tmp = build2_loc (loc, PLUS_EXPR, size_type_node, offset_data, one);
   gimplify_assign (offset_data, tmp, seq);
 
+  tree size_expr = size;
+  if (iterators)
+  {
+    assign_to_iterator_elems_array (size_expr, data_iter, target_stmt, 1);
+    size_expr = size_int (SIZE_MAX);
+  }
   /* sizes_array[offset] = size */
   tmp = build2_loc (loc, MULT_EXPR, size_type_node,
 		    TYPE_SIZE_UNIT (size_type_node), offset);
@@ -2415,7 +2455,7 @@ gfc_omp_deep_mapping_map (tree data, tree size, unsigned HOST_WIDE_INT tkind,
   tmp = force_gimple_operand (tmp, &seq2, true, NULL_TREE);
   gimple_seq_add_seq (seq, seq2);
   tmp = build_fold_indirect_ref_loc (loc, tmp);
-  gimplify_assign (tmp, size, seq);
+  gimplify_assign (tmp, size_expr, seq);
 
   /* FIXME: tkind |= talign << talign_shift; */
   /* kinds_array[offset] = tkind. */
@@ -2433,6 +2473,12 @@ gfc_omp_deep_mapping_map (tree data, tree size, unsigned HOST_WIDE_INT tkind,
   tmp = build2_loc (loc, PLUS_EXPR, size_type_node, offset, one);
   gimplify_assign (offset, tmp, seq);
 
+  tree bias_expr = build_zero_cst (size_type_node);
+  if (iterators)
+  {
+    assign_to_iterator_elems_array (bias_expr, data_addr_iter, target_stmt, 1);
+    bias_expr = size_int (SIZE_MAX);
+  }
   /* sizes_array[offset] = bias (= 0).  */
   tmp = build2_loc (loc, MULT_EXPR, size_type_node,
 		    TYPE_SIZE_UNIT (size_type_node), offset);
@@ -2442,7 +2488,7 @@ gfc_omp_deep_mapping_map (tree data, tree size, unsigned HOST_WIDE_INT tkind,
   tmp = force_gimple_operand (tmp, &seq2, true, NULL_TREE);
   gimple_seq_add_seq (seq, seq2);
   tmp = build_fold_indirect_ref_loc (loc, tmp);
-  gimplify_assign (tmp, build_zero_cst (size_type_node), seq);
+  gimplify_assign (tmp, bias_expr, seq);
 
   gcc_assert (gimple_code (ctx) == GIMPLE_OMP_TARGET);
   tkind = (gimple_omp_target_kind (ctx) == GF_OMP_TARGET_KIND_EXIT_DATA
@@ -2467,7 +2513,7 @@ gfc_omp_deep_mapping_map (tree data, tree size, unsigned HOST_WIDE_INT tkind,
 static void gfc_omp_deep_mapping_item (bool, bool, bool, location_t, tree,
 				       tree *, unsigned HOST_WIDE_INT, tree,
 				       tree, tree, tree, tree, tree,
-				       gimple_seq *, const gimple *);
+				       gimple_seq *, gimple *, tree);
 
 /* Map allocatable components.  */
 static void
@@ -2475,7 +2521,7 @@ gfc_omp_deep_mapping_comps (bool is_cnt, location_t loc, tree decl,
 			    tree *token, unsigned HOST_WIDE_INT tkind,
 			    tree data_array, tree sizes_array, tree kinds_array,
 			    tree offset_data, tree offset, tree num,
-			    gimple_seq *seq, const gimple *ctx)
+			    gimple_seq *seq, gimple *ctx, tree iterators)
 {
   tree type = TREE_TYPE (decl);
   if (TREE_CODE (type) != RECORD_TYPE)
@@ -2493,7 +2539,7 @@ gfc_omp_deep_mapping_comps (bool is_cnt, location_t loc, tree decl,
 	  gfc_omp_deep_mapping_item (is_cnt, true, true, loc, tmp, token,
 				     tkind, data_array, sizes_array,
 				     kinds_array, offset_data, offset, num,
-				     seq, ctx);
+				     seq, ctx, iterators);
 	}
       else if (GFC_DECL_GET_SCALAR_POINTER (field)
 	       || GFC_DESCRIPTOR_TYPE_P (type))
@@ -2506,11 +2552,12 @@ gfc_omp_deep_mapping_comps (bool is_cnt, location_t loc, tree decl,
 	    gfc_omp_deep_mapping_item (is_cnt, false, false, loc, tmp,
 				       token, tkind, data_array, sizes_array,
 				       kinds_array, offset_data, offset, num,
-				       seq, ctx);
+				       seq, ctx, iterators);
 	  else
 	    gfc_omp_deep_mapping_comps (is_cnt, loc, tmp, token, tkind,
 					data_array, sizes_array, kinds_array,
-					offset_data, offset, num, seq, ctx);
+					offset_data, offset, num, seq, ctx,
+					iterators);
 	}
     }
 }
@@ -2652,7 +2699,7 @@ gfc_omp_deep_mapping_item (bool is_cnt, bool do_copy, bool do_alloc_check,
 			   unsigned HOST_WIDE_INT tkind, tree data_array,
 			   tree sizes_array, tree kinds_array, tree offset_data,
 			   tree offset, tree num, gimple_seq *seq,
-			   const gimple *ctx)
+			   gimple *ctx, tree iterators)
 {
   static tree map_fn = NULL_TREE;
   static tree cnt_fn = NULL_TREE;
@@ -2721,7 +2768,8 @@ gfc_omp_deep_mapping_item (bool is_cnt, bool do_copy, bool do_alloc_check,
       field = gfc_omp_get_token_flags (*token);
       tmp = build_int_cstu (short_unsigned_type_node, tkind);
       gimplify_assign (fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
-					*token, field, NULL_TREE), tmp, seq);
+					*token, field, NULL_TREE), tmp,
+					seq);
       /* token.detach = (ctx == EXIT_DATA)  */
       field = gfc_omp_get_token_detach (*token);
       gimplify_assign (fold_build3_loc (loc, COMPONENT_REF, TREE_TYPE (field),
@@ -2737,6 +2785,9 @@ gfc_omp_deep_mapping_item (bool is_cnt, bool do_copy, bool do_alloc_check,
       cnt_fn = build_fold_addr_expr (gfc_omp_gen_deep_map_fn (true));
       map_fn = build_fold_addr_expr (gfc_omp_gen_deep_map_fn (false));
     }
+
+  gimple_seq loops_pre_seq = NULL;
+  gimple_seq *loops_pre_seq_p = iterators ? &loops_pre_seq : seq;
 
   if (is_cnt && do_copy)
     {
@@ -2786,7 +2837,7 @@ gfc_omp_deep_mapping_item (bool is_cnt, bool do_copy, bool do_alloc_check,
       if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
 	{
 	  elem_len = bytesize;
-	  size = gfc_omp_get_array_size (loc, tmp, seq);
+	  size = gfc_omp_get_array_size (loc, tmp, loops_pre_seq_p);
 	  bytesize = fold_build2_loc (loc, MULT_EXPR, size_type_node,
 				      size, elem_len);
 	  tmp = gfc_conv_descriptor_data_get (tmp);
@@ -2802,7 +2853,7 @@ gfc_omp_deep_mapping_item (bool is_cnt, bool do_copy, bool do_alloc_check,
 	tkind2 = GOMP_MAP_TOFROM;
       gfc_omp_deep_mapping_map (tmp, bytesize, tkind2, loc, data_array,
 				sizes_array, kinds_array, offset_data,
-				offset, seq, ctx);
+				offset, seq, ctx, iterators, loops_pre_seq);
     }
   else if (do_copy)
     {
@@ -2815,7 +2866,7 @@ gfc_omp_deep_mapping_item (bool is_cnt, bool do_copy, bool do_alloc_check,
 	  elem_len = gfc_conv_descriptor_elem_len (decl);
 	  tmp = (POINTER_TYPE_P (TREE_TYPE (decl))
 		 ? build_fold_indirect_ref (decl) : decl);
-	  size = gfc_omp_get_array_size (loc, tmp, seq);
+	  size = gfc_omp_get_array_size (loc, tmp, loops_pre_seq_p);
 	  bytesize = fold_build2_loc (loc, MULT_EXPR, size_type_node,
 				      size, elem_len);
 	  tmp = gfc_conv_descriptor_data_get (decl);
@@ -2836,7 +2887,7 @@ gfc_omp_deep_mapping_item (bool is_cnt, bool do_copy, bool do_alloc_check,
 
       gfc_omp_deep_mapping_map (tmp, bytesize, tkind2, loc, data_array,
 				sizes_array, kinds_array, offset_data,
-				offset, seq, ctx);
+				offset, seq, ctx, iterators, loops_pre_seq);
     }
 
   /* Handle allocatable components. */
@@ -2929,7 +2980,8 @@ gfc_omp_deep_mapping_item (bool is_cnt, bool do_copy, bool do_alloc_check,
 	decl = build_fold_indirect_ref (decl);
       gfc_omp_deep_mapping_comps (is_cnt, loc, decl, token, tkind,
 				  data_array, sizes_array, kinds_array,
-				  offset_data, offset, num, seq, ctx);
+				  offset_data, offset, num, seq, ctx,
+				  iterators);
       gimple_seq_add_seq (seq, seq2);
     }
   if (end_label)
@@ -3079,7 +3131,7 @@ gfc_omp_deep_mapping_p (const gimple *ctx, tree clause)
 
 /* Handle gfc_omp_deep_mapping{,_cnt} */
 static tree
-gfc_omp_deep_mapping_do (bool is_cnt, const gimple *ctx, tree clause,
+gfc_omp_deep_mapping_do (bool is_cnt, gimple *ctx, tree clause,
 			 unsigned HOST_WIDE_INT tkind, tree data, tree sizes,
 			 tree kinds, tree offset_data, tree offset,
 			 gimple_seq *seq)
@@ -3173,13 +3225,15 @@ gfc_omp_deep_mapping_do (bool is_cnt, const gimple *ctx, tree clause,
       gimple_seq_add_stmt (seq, gimple_build_label (then_label));
       gfc_omp_deep_mapping_item (is_cnt, do_copy, do_alloc_check, loc, decl,
 				 &token, tkind, data, sizes, kinds,
-				 offset_data, offset, num, seq, ctx);
+				 offset_data, offset, num, seq, ctx,
+				 OMP_CLAUSE_ITERATORS (clause));
       gimple_seq_add_stmt (seq, gimple_build_label (end_label));
     }
   else
     gfc_omp_deep_mapping_item (is_cnt, do_copy, do_alloc_check, loc, decl,
 			       &token, tkind, data, sizes, kinds, offset_data,
-			       offset, num, seq, ctx);
+			       offset, num, seq, ctx,
+			       OMP_CLAUSE_ITERATORS (clause));
   /* Multiply by 2 as there are two mappings: data + pointer assign.  */
   if (is_cnt)
     gimplify_assign (num,
@@ -3192,7 +3246,7 @@ gfc_omp_deep_mapping_do (bool is_cnt, const gimple *ctx, tree clause,
 /* Return tree with a variable which contains the count of deep-mappyings
    (value depends, e.g., on allocation status)  */
 tree
-gfc_omp_deep_mapping_cnt (const gimple *ctx, tree clause, gimple_seq *seq)
+gfc_omp_deep_mapping_cnt (gimple *ctx, tree clause, gimple_seq *seq)
 {
   return gfc_omp_deep_mapping_do (true, ctx, clause, 0, NULL_TREE, NULL_TREE,
 				  NULL_TREE, NULL_TREE, NULL_TREE, seq);
@@ -3200,7 +3254,7 @@ gfc_omp_deep_mapping_cnt (const gimple *ctx, tree clause, gimple_seq *seq)
 
 /* Does the actual deep mapping. */
 void
-gfc_omp_deep_mapping (const gimple *ctx, tree clause,
+gfc_omp_deep_mapping (gimple *ctx, tree clause,
 		      unsigned HOST_WIDE_INT tkind, tree data,
 		      tree sizes, tree kinds, tree offset_data, tree offset,
 		      gimple_seq *seq)

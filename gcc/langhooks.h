@@ -319,11 +319,11 @@ struct lang_hooks_for_decls
 
   /* Additional language-specific mappings for a decl; returns the
      number of additional mappings needed.  */
-  tree (*omp_deep_mapping_cnt) (const gimple *ctx_stmt, tree clause,
+  tree (*omp_deep_mapping_cnt) (gimple *ctx_stmt, tree clause,
 				gimple_seq *seq);
 
   /* Do the actual additional language-specific mappings for a decl. */
-  void (*omp_deep_mapping) (const gimple *stmt, tree clause,
+  void (*omp_deep_mapping) (gimple *stmt, tree clause,
 			    unsigned HOST_WIDE_INT tkind,
 			    tree data, tree sizes, tree kinds,
 			    tree offset_data, tree offset, gimple_seq *seq);

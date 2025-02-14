@@ -1,5 +1,28 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* trans-openmp.cc (gfc_omp_deep_mapping_map): Remove const from ctx
+	argument.  Add arguments for iterators and the statement sequence to
+	go into the iterator loop.  Add statement sequence to iterator loop
+	body.  Generate iterator loop entries for generated maps, insert
+	the map decls and sizes into the iterator element arrays, replace
+	original decls with the address of the element arrays, and
+	sizes/biases with SIZE_INT.
+	(gfc_omp_deep_mapping_comps): Remove const from ctx. Add argument for
+	iterators.  Pass iterators to calls to gfc_omp_deep_mapping_item and
+	gfc_omp_deep_mapping_comps.
+	(gfc_omp_deep_mapping_item): Remove const from ctx. Add argument for
+	iterators.  Collect generated side-effect statements and pass to
+	gfc_omp_deep_mapping_map along with the iterators.  Pass iterators
+	to gfc_omp_deep_mapping_comps.
+	(gfc_omp_deep_mapping_do): Remove const from ctx.  Pass iterators to
+	gfc_omp_deep_mapping_item.
+	(gfc_omp_deep_mapping_cnt): Remove const from ctx.
+	(gfc_omp_deep_mapping): Likewise.
+	* trans.h (gfc_omp_deep_mapping_cnt): Likewise.
+	(gfc_omp_deep_mapping): Likewise.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* openmp.cc (gfc_omp_instantiate_mapper): Add argument for namespace.
 	Apply namespace to new clauses.  Propagate namespace to nested
 	mappers.

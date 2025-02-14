@@ -1,5 +1,31 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* gimplify.cc (enter_omp_iterator_loop_context): New function variant.
+	(enter_omp_iterator_loop_context): Delegate to new variant.
+	(exit_omp_iterator_loop_context): New function variant.
+	(exit_omp_iterator_loop_context): Delegate to new variant.
+	(assign_to_iterator_elems_array): New.
+	(add_new_omp_iterators_entry): New.
+	(add_new_omp_iterators_clause): Delegate to
+	add_new_omp_iterators_entry.
+	* gimplify.h (enter_omp_iterator_loop_context): New prototype.
+	(enter_omp_iterator_loop_context): Remove default argument.
+	(exit_omp_iterator_loop_context): Remove argument.
+	(assign_to_iterator_elems_array): New prototype.
+	(add_new_omp_iterators_entry): New prototype.
+	(add_new_omp_iterators_clause): New prototype.
+	* langhooks-def.h (lhd_omp_deep_mapping_cnt): Remove const from
+	argument.
+	(lhd_omp_deep_mapping): Likewise.
+	* langhooks.h (omp_deep_mapping_cnt): Likewise.
+	(omp_deep_mapping): Likewise.
+	* omp-low.cc (lower_omp_map_iterator_expr): Delegate to
+	assign_to_iterator_elems_array.
+	(lower_omp_map_iterator_size): Likewise.
+	(lower_omp_target): Remove sorry for deep mapping.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* gimplify.cc (add_new_omp_iterators_clause): New.
 	(build_omp_struct_comp_nodes): Add extra argument for loops sequence.
 	Call add_new_omp_iterators_clause on newly generated clauses.
