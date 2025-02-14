@@ -21713,7 +21713,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    r = finish_non_static_data_member (member, object, NULL_TREE,
 					       complain);
 	    if (REF_PARENTHESIZED_P (t))
-	      force_paren_expr (r);
+	      r = force_paren_expr (r);
 	    RETURN (r);
 	  }
 	else if (type_dependent_expression_p (object))
