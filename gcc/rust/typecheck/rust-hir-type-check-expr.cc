@@ -225,12 +225,17 @@ TypeCheckExpr::visit (HIR::CallExpr &expr)
   if (resolved_fn_trait_call)
     return;
 
-  bool valid_tyty = function_tyty->get_kind () == TyTy::TypeKind::FNDEF
-		    || function_tyty->get_kind () == TyTy::TypeKind::FNPTR;
+  bool valid_tyty
+    = function_tyty->is<TyTy::FnType> () || function_tyty->is<TyTy::FnPtr> ();
   if (!valid_tyty)
     {
-      rust_error_at (expr.get_locus (),
-		     "Failed to resolve expression of function call");
+      bool emit_error = !function_tyty->is<TyTy::ErrorType> ();
+      if (emit_error)
+	{
+	  rich_location r (line_table, expr.get_locus ());
+	  rust_error_at (r, ErrorCode::E0618, "expected function, found %<%s%>",
+			 function_tyty->get_name ().c_str ());
+	}
       return;
     }
 
