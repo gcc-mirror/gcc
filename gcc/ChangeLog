@@ -1,3 +1,14 @@
+2025-02-13  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR driver/117739
+	* doc/invoke.texi: Tweak wording for -Whardened.
+	* gcc.cc (driver_handle_option): If -z lazy or -z norelro was
+	specified, don't enable linker hardening.
+	(process_command): Don't check warn_hardened.
+
 2025-02-11  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

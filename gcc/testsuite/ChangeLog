@@ -1,3 +1,30 @@
+2025-02-13  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR driver/117739
+	* c-c++-common/fhardened-16.c: New test.
+	* c-c++-common/fhardened-17.c: New test.
+	* c-c++-common/fhardened-18.c: New test.
+	* c-c++-common/fhardened-19.c: New test.
+	* c-c++-common/fhardened-20.c: New test.
+	* c-c++-common/fhardened-21.c: New test.
+
+2025-02-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-02-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115112
+	* gm2/pim/run/pass/dectest.mod: New test.
+	* gm2/pim/run/pass/inctest.mod: New test.
+
+2025-02-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118849
+	* g++.dg/template/linkage6.C: New test.
+
 2025-02-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:

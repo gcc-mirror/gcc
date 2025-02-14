@@ -1,3 +1,9 @@
+2025-02-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118849
+	* decl2.cc (min_vis_expr_r): Constrain visibility according to
+	the type of decl_constant_var_p decls.
+
 2025-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
