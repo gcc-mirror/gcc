@@ -1093,7 +1093,7 @@ perform_member_init (tree member, tree init, hash_set<tree> &uninitialized)
     {
       /* With references and list-initialization, we need to deal with
 	 extending temporary lifetimes.  12.2p5: "A temporary bound to a
-	 reference member in a constructor’s ctor-initializer (12.6.2)
+	 reference member in a constructor's ctor-initializer (12.6.2)
 	 persists until the constructor exits."  */
       unsigned i; tree t;
       releasing_vec cleanups;
