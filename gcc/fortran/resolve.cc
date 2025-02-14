@@ -11824,8 +11824,8 @@ resolve_transfer (gfc_code *code)
          the component to be printed to help debugging.  */
       if (ts->u.derived->ts.f90_type == BT_VOID)
 	{
-	  if (!gfc_notify_std (GFC_STD_GNU, "Data transfer element at %L "
-			       "cannot have PRIVATE components", &code->loc))
+	  gfc_error ("Data transfer element at %L "
+		     "cannot have PRIVATE components", &code->loc);
 	    return;
 	}
       else if (derived_inaccessible (ts->u.derived) && dtio_sub == NULL)

@@ -19,9 +19,8 @@ program init_flag_17
 
   type(ty) :: t
 
-  print *, t%ptr
-  print *, t%fptr
-
+  print *, transfer(t%ptr, 0_C_INTPTR_T)
+  print *, transfer(t%fptr, 0_C_INTPTR_T)
 end program
 
 ! { dg-final { scan-tree-dump "\.ptr=0" "original" } }

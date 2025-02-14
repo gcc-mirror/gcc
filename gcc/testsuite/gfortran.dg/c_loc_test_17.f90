@@ -1,5 +1,4 @@
 ! { dg-do compile }
-! { dg-options "" }
 !
 ! PR fortran/56378
 ! PR fortran/52426
@@ -24,5 +23,6 @@ contains
 end module
 
 use iso_c_binding
-print *, c_loc([1]) ! { dg-error "Argument X at .1. to C_LOC shall have either the POINTER or the TARGET attribute" }
+type(c_ptr) :: i
+i = c_loc([1]) ! { dg-error "Argument X at .1. to C_LOC shall have either the POINTER or the TARGET attribute" }
 end
