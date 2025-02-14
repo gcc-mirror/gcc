@@ -3667,6 +3667,14 @@ aarch64_partial_ptrue_length (rtx_vector_builder &builder,
   if (builder.nelts_per_pattern () == 3)
     return 0;
 
+  /* It is conservatively correct to drop the element size to a lower value,
+     and we must do so if the predicate consists of a leading "foreground"
+     sequence that is smaller than the element size.  Without this,
+     we would test only one bit and so treat everything as either an
+     all-true or an all-false predicate.  */
+  if (builder.nelts_per_pattern () == 2)
+    elt_size = MIN (elt_size, builder.npatterns ());
+
   /* Skip over leading set bits.  */
   unsigned int nelts = builder.encoded_nelts ();
   unsigned int i = 0;
@@ -3696,6 +3704,24 @@ aarch64_partial_ptrue_length (rtx_vector_builder &builder,
       return 0;
 
   return vl;
+}
+
+/* Return:
+
+   * -1 if all bits of PRED are set
+   * N if PRED has N leading set bits followed by all clear bits
+   * 0 if PRED does not have any of these forms.  */
+
+int
+aarch64_partial_ptrue_length (rtx pred)
+{
+  rtx_vector_builder builder;
+  if (!aarch64_get_sve_pred_bits (builder, pred))
+    return 0;
+
+  auto elt_size = vector_element_size (GET_MODE_BITSIZE (GET_MODE (pred)),
+				       GET_MODE_NUNITS (GET_MODE (pred)));
+  return aarch64_partial_ptrue_length (builder, elt_size);
 }
 
 /* See if there is an svpattern that encodes an SVE predicate of mode
@@ -6410,8 +6436,32 @@ aarch64_stack_protect_canary_mem (machine_mode mode, rtx decl_rtl,
   return gen_rtx_MEM (mode, force_reg (Pmode, addr));
 }
 
-/* Emit an SVE predicated move from SRC to DEST.  PRED is a predicate
-   that is known to contain PTRUE.  */
+/* Emit a load/store from a subreg of SRC to a subreg of DEST.
+   The subregs have mode NEW_MODE. Use only for reg<->mem moves.  */
+void
+aarch64_emit_load_store_through_mode (rtx dest, rtx src, machine_mode new_mode)
+{
+  gcc_assert ((MEM_P (dest) && register_operand (src, VOIDmode))
+	      || (MEM_P (src) && register_operand (dest, VOIDmode)));
+  auto mode = GET_MODE (dest);
+  auto int_mode = aarch64_sve_int_mode (mode);
+  if (MEM_P (src))
+    {
+      rtx tmp = force_reg (new_mode, adjust_address (src, new_mode, 0));
+      tmp = force_lowpart_subreg (int_mode, tmp, new_mode);
+      emit_move_insn (dest, force_lowpart_subreg (mode, tmp, int_mode));
+    }
+  else
+    {
+      src = force_lowpart_subreg (int_mode, src, mode);
+      emit_move_insn (adjust_address (dest, new_mode, 0),
+		      force_lowpart_subreg (new_mode, src, int_mode));
+    }
+}
+
+/* PRED is a predicate that is known to contain PTRUE.
+   For 128-bit VLS loads/stores, emit LDR/STR.
+   Else, emit an SVE predicated move from SRC to DEST.  */
 
 void
 aarch64_emit_sve_pred_move (rtx dest, rtx pred, rtx src)
@@ -6421,16 +6471,7 @@ aarch64_emit_sve_pred_move (rtx dest, rtx pred, rtx src)
       && known_eq (GET_MODE_SIZE (mode), 16)
       && aarch64_classify_vector_mode (mode) == VEC_SVE_DATA
       && !BYTES_BIG_ENDIAN)
-    {
-      if (MEM_P (src))
-	{
-	  rtx tmp = force_reg (V16QImode, adjust_address (src, V16QImode, 0));
-	  emit_move_insn (dest, lowpart_subreg (mode, tmp, V16QImode));
-	}
-      else
-	emit_move_insn (adjust_address (dest, V16QImode, 0),
-			force_lowpart_subreg (V16QImode, src, mode));
-    }
+    aarch64_emit_load_store_through_mode (dest, src, V16QImode);
   else
     {
       expand_operand ops[3];
@@ -23523,6 +23564,39 @@ aarch64_simd_valid_imm (rtx op, simd_immediate_info *info,
 
   if (TARGET_SVE)
     return aarch64_sve_valid_immediate (ival, imode, info, which);
+  return false;
+}
+
+/* Try to optimize the expansion of a maskload or maskstore with
+   the operands in OPERANDS, given that the vector being loaded or
+   stored has mode MODE.  Return true on success or false if the normal
+   expansion should be used.  */
+
+bool
+aarch64_expand_maskloadstore (rtx *operands, machine_mode mode)
+{
+  /* If the predicate in operands[2] is a patterned SVE PTRUE predicate
+     with patterns VL1, VL2, VL4, VL8, or VL16 and at most the bottom
+     128 bits are loaded/stored, emit an ASIMD load/store.  */
+  int vl = aarch64_partial_ptrue_length (operands[2]);
+  int width = vl * GET_MODE_UNIT_BITSIZE (mode);
+  if (width <= 128
+      && pow2p_hwi (vl)
+      && (vl == 1
+	  || (!BYTES_BIG_ENDIAN
+	      && aarch64_classify_vector_mode (mode) == VEC_SVE_DATA)))
+    {
+      machine_mode new_mode;
+      if (known_eq (width, 128))
+	new_mode = V16QImode;
+      else if (known_eq (width, 64))
+	new_mode = V8QImode;
+      else
+	new_mode = int_mode_for_size (width, 0).require ();
+      aarch64_emit_load_store_through_mode (operands[0], operands[1],
+					    new_mode);
+      return true;
+    }
   return false;
 }
 

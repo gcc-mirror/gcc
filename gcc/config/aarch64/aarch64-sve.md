@@ -1286,7 +1286,24 @@
 ;; -------------------------------------------------------------------------
 
 ;; Predicated LD1 (single).
-(define_insn "maskload<mode><vpred>"
+(define_expand "maskload<mode><vpred>"
+  [(set (match_operand:SVE_ALL 0 "register_operand")
+	(unspec:SVE_ALL
+	  [(match_operand:<VPRED> 2 "nonmemory_operand")
+	   (match_operand:SVE_ALL 1 "memory_operand")
+	   (match_operand:SVE_ALL 3 "aarch64_maskload_else_operand")]
+	  UNSPEC_LD1_SVE))]
+  "TARGET_SVE"
+  {
+    if (aarch64_expand_maskloadstore (operands, <MODE>mode))
+      DONE;
+    if (CONSTANT_P (operands[2]))
+      operands[2] = force_reg (<VPRED>mode, operands[2]);
+  }
+)
+
+;; Predicated LD1 (single).
+(define_insn "*aarch64_maskload<mode><vpred>"
   [(set (match_operand:SVE_ALL 0 "register_operand" "=w")
 	(unspec:SVE_ALL
 	  [(match_operand:<VPRED> 2 "register_operand" "Upl")
@@ -2287,7 +2304,24 @@
 ;; -------------------------------------------------------------------------
 
 ;; Predicated ST1 (single).
-(define_insn "maskstore<mode><vpred>"
+(define_expand "maskstore<mode><vpred>"
+  [(set (match_operand:SVE_ALL 0 "memory_operand")
+	(unspec:SVE_ALL
+	  [(match_operand:<VPRED> 2 "nonmemory_operand")
+	   (match_operand:SVE_ALL 1 "register_operand")
+	   (match_dup 0)]
+	  UNSPEC_ST1_SVE))]
+  "TARGET_SVE"
+  {
+    if (aarch64_expand_maskloadstore (operands, <MODE>mode))
+      DONE;
+    if (CONSTANT_P (operands[2]))
+      operands[2] = force_reg (<VPRED>mode, operands[2]);
+  }
+)
+
+;; Predicated ST1 (single).
+(define_insn "*aarch64_maskstore<mode><vpred>"
   [(set (match_operand:SVE_ALL 0 "memory_operand" "+m")
 	(unspec:SVE_ALL
 	  [(match_operand:<VPRED> 2 "register_operand" "Upl")
