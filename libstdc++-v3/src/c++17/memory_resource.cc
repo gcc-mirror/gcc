@@ -149,7 +149,10 @@ namespace pmr
 #ifdef _GLIBCXX_ATOMIC_MEM_RES_CAN_BE_CONSTANT_INITIALIZED
     __constinit constant_init<atomic_mem_res> default_res{&newdel_res.obj};
 #else
-# include "default_resource.h"
+# pragma GCC diagnostic ignored "-Wprio-ctor-dtor"
+    struct {
+      atomic_mem_res obj = &newdel_res.obj;
+    } default_res __attribute__ ((init_priority (100)));
 #endif
   } // namespace
 
