@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #define LINK_SPEC "						\
   -melf" XLEN_SPEC DEFAULT_ENDIAN_SPEC "riscv			\
   %{p:%nconsider using `-pg' instead of `-p' with gprof (1)}	\
-  " FBSD_LINK_PG_NOTES "						\
+  " FBSD_LINK_PG_NOTE "						\
   %{v:-V}							\
   %{assert*} %{R*} %{rpath*} %{defsym*}				\
   -X								\
