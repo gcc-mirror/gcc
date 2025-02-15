@@ -346,6 +346,16 @@ private:
   lookup_rule_by_id_in_component (const char *rule_id,
 				  const json::object &tool_component_obj);
 
+  // "fix" object (§3.55)
+  enum status
+  handle_fix_object (libgdiagnostics::diagnostic &diag,
+		     const json::object &fix_obj);
+
+  // "artifactChange" object (§3.56)
+  enum status
+  handle_artifact_change_object (libgdiagnostics::diagnostic &diag,
+				 const json::object &change_obj);
+
   /* Support functions.  */
 
   /* Report an error to m_control_mgr about JV violating REF,
@@ -1012,7 +1022,6 @@ should_add_rule_p (const char *rule_id_str, const char *url)
    - doesn't yet handle "taxa" property (§3.27.8)
    - handling of "level" property (§3.27.10) doesn't yet support the
      full logic for when "level" is absent.
-   - doesn't yet handle "fixes" property (§3.27.30)
    - doesn't yet support multithreaded flows (§3.36.3)
 */
 
@@ -1200,6 +1209,17 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
 	}
     }
 
+  // §3.27.30 "fixes" property
+  const property_spec_ref prop_fixes ("result", "fixes", "3.27.30");
+  if (auto fixes_arr
+      = get_optional_property<json::array> (result_obj, prop_fixes))
+    {
+      // We only support a single fix
+      if (fixes_arr->length () == 1)
+	if (auto fix_obj = require_object (*fixes_arr->get (0), prop_fixes))
+	  handle_fix_object (err, *fix_obj);
+    }
+
   err.finish ("%s", text.get ());
 
   // Flush any notes
@@ -1211,7 +1231,6 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
     }
 
   return status::ok;
-
 }
 
 /*  If ITER_SRC starts with a placeholder as per §3.11.5, advance ITER_SRC
@@ -2047,6 +2066,100 @@ lookup_rule_by_id_in_component (const char *rule_id,
 
   /* Not found.  */
   return nullptr;
+}
+
+// "fix" object (§3.55)
+
+enum status
+sarif_replayer::handle_fix_object (libgdiagnostics::diagnostic &diag,
+				   const json::object &fix_obj)
+{
+  const property_spec_ref changes ("fix", "artifactChanges", "3.55.3");
+  auto changes_arr = get_required_property<json::array> (fix_obj, changes);
+  if (!changes_arr)
+    return status::err_invalid_sarif;
+
+  for (auto element : *changes_arr)
+    {
+      const json::object *change_obj
+	= require_object_for_element (*element, changes);
+      if (!change_obj)
+	return status::err_invalid_sarif;
+      enum status s = handle_artifact_change_object (diag, *change_obj);
+      if (s != status::ok)
+	return s;
+    }
+  return status::ok;
+}
+
+// "artifactChange" object (§3.56)
+
+enum status
+sarif_replayer::
+handle_artifact_change_object (libgdiagnostics::diagnostic &diag,
+			       const json::object &change_obj)
+{
+  const property_spec_ref location
+    ("artifactChange", "artifactLocation", "3.56.2");
+  auto artifact_loc_obj
+    = get_required_property<json::object> (change_obj, location);
+  if (!artifact_loc_obj)
+    return status::err_invalid_sarif;
+
+  libgdiagnostics::file file;
+  enum status s = handle_artifact_location_object (*artifact_loc_obj, file);
+  if (s != status::ok)
+    return s;
+
+  const property_spec_ref replacements
+    ("artifactChange", "replacements", "3.56.3");
+  auto replacements_arr
+    = get_required_property<json::array> (change_obj, replacements);
+  if (!replacements_arr)
+    return status::err_invalid_sarif;
+  for (auto element : *replacements_arr)
+    {
+      // 3.57 replacement object
+      const json::object *replacement_obj
+	= require_object_for_element (*element, replacements);
+      if (!replacement_obj)
+	return status::err_invalid_sarif;
+
+      // 3.57.3 deletedRegion property
+      const property_spec_ref deleted_region
+	("replacement", "deletedRegion", "3.57.3");
+      auto deleted_region_obj
+	= get_required_property<json::object> (*replacement_obj,
+					       deleted_region);
+      if (!deleted_region_obj)
+	return status::err_invalid_sarif;
+
+      libgdiagnostics::physical_location phys_loc;
+      enum status s = handle_region_object (*deleted_region_obj,
+					    file,
+					    phys_loc);
+      if (s != status::ok)
+	return s;
+
+      // 3.57.4 insertedContent property
+      const property_spec_ref inserted_content
+	("replacement", "insertedContent", "3.57.4");
+      const char *inserted_text = "";
+      if (auto inserted_content_obj
+	    = get_optional_property<json::object> (*replacement_obj,
+						   inserted_content))
+	{
+	  const property_spec_ref prop_text
+	    ("artifactContent", "text", "3.3.2");
+	  if (auto text_jstr
+	      = get_optional_property<json::string> (*inserted_content_obj,
+						     prop_text))
+	    inserted_text = text_jstr->get_string ();
+	}
+
+      diag.add_fix_it_hint_replace (phys_loc, inserted_text);
+    }
+  return status::ok;
 }
 
 } // anonymous namespace

@@ -1,0 +1,39 @@
+/* Example of GCC SARIF output for an insertion fix-it hint.  */
+
+{"$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+ "version": "2.1.0",
+ "runs": [{"tool": {"driver": {"name": "GNU C23",
+                               "fullName": "GNU C23 (GCC) version 15.0.1 20250203 (experimental) (x86_64-pc-linux-gnu)",
+                               "version": "15.0.1 20250203 (experimental)",
+                               "informationUri": "https://gcc.gnu.org/gcc-15/",
+                               "rules": []}},
+           "invocations": [{"executionSuccessful": false,
+                            "toolExecutionNotifications": []}],
+           "artifacts": [{"location": {"uri": "t.c",
+                                       "uriBaseId": "PWD"},
+                          "sourceLanguage": "c",
+                          "contents": {"text": "struct foo {};\n\nfoo *ptr;\n"},
+                          "roles": ["analysisTarget"]}],
+           "results": [{"ruleId": "error",
+                        "level": "error",
+                        "message": {"text": "unknown type name 'foo'; use 'struct' keyword to refer to the type"},
+                        "locations": [{"physicalLocation": {"artifactLocation": {"uri": "t.c",
+                                                                                 "uriBaseId": "PWD"},
+                                                            "region": {"startLine": 3,
+                                                                       "startColumn": 1,
+                                                                       "endColumn": 4},
+                                                            "contextRegion": {"startLine": 3,
+                                                                              "snippet": {"text": "foo *ptr;\n"}}}}],
+                        "fixes": [{"artifactChanges": [{"artifactLocation": {"uri": "t.c",
+                                                                             "uriBaseId": "PWD"},
+                                                        "replacements": [{"deletedRegion": {"startLine": 3,
+                                                                                            "startColumn": 1,
+                                                                                            "endColumn": 1},
+                                                                          "insertedContent": {"text": "struct "}}]}]}]}]}]}
+
+/* { dg-begin-multiline-output "" }
+t.c:3:1: error: unknown type name 'foo'; use 'struct' keyword to refer to the type
+    3 | foo *ptr;
+      | ^~~
+      | struct 
+   { dg-end-multiline-output "" } */

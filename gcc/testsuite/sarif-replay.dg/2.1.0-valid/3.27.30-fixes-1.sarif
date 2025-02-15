@@ -1,0 +1,55 @@
+/* Example of GCC SARIF output for a replacement fix-it hint.  */
+
+{"$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+ "version": "2.1.0",
+ "runs": [{"tool": {"driver": {"name": "GNU C23",
+                               "fullName": "GNU C23 (GCC) version 15.0.1 20250203 (experimental) (x86_64-pc-linux-gnu)",
+                               "version": "15.0.1 20250203 (experimental)",
+                               "informationUri": "https://gcc.gnu.org/gcc-15/",
+                               "rules": [{"id": "-Wformat=",
+                                          "helpUri": "https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wformat"}]}},
+           "invocations": [{"executionSuccessful": true,
+                            "toolExecutionNotifications": []}],
+           "originalUriBaseIds": {"PWD": {"uri": "file:///this/path/does/not/exist/"}},
+           "artifacts": [{"location": {"uri": "/this/path/does/not/exist/diagnostic-ranges.c",
+                                       "uriBaseId": "PWD"},
+                          "sourceLanguage": "c",
+                          "contents": {"text": "#include <stdio.h>\n\nvoid test_mismatching_types (const char *msg)\n{\n  printf(\"hello %i\", msg);\n}\n"},
+                          "roles": ["analysisTarget"]}],
+           "results": [{"ruleId": "-Wformat=",
+                        "level": "warning",
+                        "message": {"text": "format '%i' expects argument of type 'int', but argument 2 has type 'const char *'"},
+                        "locations": [{"physicalLocation": {"artifactLocation": {"uri": "/this/path/does/not/exist/diagnostic-ranges.c",
+                                                                                 "uriBaseId": "PWD"},
+                                                            "region": {"startLine": 5,
+                                                                       "startColumn": 17,
+                                                                       "endColumn": 19},
+                                                            "contextRegion": {"startLine": 5,
+                                                                              "snippet": {"text": "  printf(\"hello %i\", msg);\n"}}},
+                                       "logicalLocations": [{"name": "test_mismatching_types",
+                                                             "fullyQualifiedName": "test_mismatching_types",
+                                                             "decoratedName": "test_mismatching_types",
+                                                             "kind": "function"}],
+                                       "annotations": [{"startLine": 5,
+                                                        "startColumn": 17,
+                                                        "endColumn": 19,
+                                                        "message": {"text": "int"}},
+                                                       {"startLine": 5,
+                                                        "startColumn": 22,
+                                                        "endColumn": 25,
+                                                        "message": {"text": "const char *"}}]}],
+                        "fixes": [{"artifactChanges": [{"artifactLocation": {"uri": "/this/path/does/not/exist/diagnostic-ranges.c",
+                                                                             "uriBaseId": "PWD"},
+                                                        "replacements": [{"deletedRegion": {"startLine": 5,
+                                                                                            "startColumn": 17,
+                                                                                            "endColumn": 19},
+                                                                          "insertedContent": {"text": "%s"}}]}]}]}]}]}
+
+/* { dg-begin-multiline-output "" }
+/this/path/does/not/exist/diagnostic-ranges.c:5:17: warning: format '%i' expects argument of type 'int', but argument 2 has type 'const char *' [-Wformat=]
+    5 |   printf("hello %i", msg);
+      |                 ^~   ~~~
+      |                 |    |
+      |                 int  const char *
+      |                 %s
+   { dg-end-multiline-output "" } */

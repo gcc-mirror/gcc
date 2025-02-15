@@ -1,0 +1,39 @@
+/* Example of GCC SARIF output for a deletion fix-it hint.  */
+
+{"$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+ "version": "2.1.0",
+ "runs": [{"tool": {"driver": {"name": "GNU C++17",
+                               "fullName": "GNU C++17 (GCC) version 15.0.1 20250203 (experimental) (x86_64-pc-linux-gnu)",
+                               "version": "15.0.1 20250203 (experimental)",
+                               "informationUri": "https://gcc.gnu.org/gcc-15/",
+                               "rules": []}},
+           "invocations": [{"executionSuccessful": false,
+                            "toolExecutionNotifications": []}],
+           "artifacts": [{"location": {"uri": "t.cc",
+                                       "uriBaseId": "PWD"},
+                          "sourceLanguage": "cplusplus",
+                          "contents": {"text": "unsigned unsigned int i;\n"},
+                          "roles": ["analysisTarget"]}],
+           "results": [{"ruleId": "error",
+                        "level": "error",
+                        "message": {"text": "duplicate 'unsigned'"},
+                        "locations": [{"physicalLocation": {"artifactLocation": {"uri": "t.cc",
+                                                                                 "uriBaseId": "PWD"},
+                                                            "region": {"startLine": 1,
+                                                                       "startColumn": 10,
+                                                                       "endColumn": 18},
+                                                            "contextRegion": {"startLine": 1,
+                                                                              "snippet": {"text": "unsigned unsigned int i;\n"}}}}],
+                        "fixes": [{"artifactChanges": [{"artifactLocation": {"uri": "t.cc",
+                                                                             "uriBaseId": "PWD"},
+                                                        "replacements": [{"deletedRegion": {"startLine": 1,
+                                                                                            "startColumn": 10,
+                                                                                            "endColumn": 18},
+                                                                          "insertedContent": {"text": ""}}]}]}]}]}]}
+
+/* { dg-begin-multiline-output "" }
+t.cc:1:10: error: duplicate 'unsigned'
+    1 | unsigned unsigned int i;
+      |          ^~~~~~~~
+      |          --------
+   { dg-end-multiline-output "" } */
