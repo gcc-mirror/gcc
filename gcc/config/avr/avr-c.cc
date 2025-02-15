@@ -45,16 +45,52 @@ enum avr_builtin_id
   };
 
 
-/* Implement `TARGET_RESOLVE_OVERLOADED_PLUGIN'.  */
+/* Some of our built-in functions are available for GNU-C only:
+   - Built-ins that use named address-spaces.
+   - Built-ins that use fixed-point types.  */
+
+static bool
+avr_builtin_supported_p (location_t loc, avr_builtin_id bid)
+{
+  if (! lang_GNU_C () // Means "C" actually, not "GNU-C".
+      && bid >= AVR_FIRST_C_ONLY_BUILTIN_ID)
+    {
+      if (loc != UNKNOWN_LOCATION)
+	error_at (loc, "built-in function is only supported for GNU-C");
+      return false;
+    }
+
+  const bool uses_as = (bid == AVR_BUILTIN_FLASH_SEGMENT
+			|| bid == AVR_BUILTIN_STRLEN_FLASH
+			|| bid == AVR_BUILTIN_STRLEN_FLASHX
+			|| bid == AVR_BUILTIN_STRLEN_MEMX);
+  if (AVR_TINY && uses_as)
+    {
+      if (loc != UNKNOWN_LOCATION)
+	error_at (loc, "built-in function for named address-space is not"
+		  " supported for reduced Tiny devices");
+      return false;
+    }
+
+  return true;
+}
+
+
+/* Implement `TARGET_RESOLVE_OVERLOADED_BUILTIN'.  */
 
 static tree
 avr_resolve_overloaded_builtin (location_t loc, tree fndecl, void *vargs, bool)
 {
+  const avr_builtin_id bid = (avr_builtin_id) DECL_MD_FUNCTION_CODE (fndecl);
+
+  if (! avr_builtin_supported_p (loc, bid))
+    return error_mark_node;
+
   tree type0, type1, fold = NULL_TREE;
   avr_builtin_id id = AVR_BUILTIN_COUNT;
   vec<tree, va_gc> &args = * (vec<tree, va_gc> *) vargs;
 
-  switch (DECL_MD_FUNCTION_CODE (fndecl))
+  switch (bid)
     {
     default:
       break;
@@ -499,8 +535,8 @@ avr_cpu_cpp_builtins (cpp_reader *pfile)
   /* Define builtin macros so that the user can easily query whether or
      not a specific builtin is available. */
 
-#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME, ATTRS) \
-  if (avr_builtin_supported_p (AVR_BUILTIN_ ## NAME))	      \
+#define DEF_BUILTIN(NAME, N_ARGS, TYPE, CODE, LIBNAME, ATTRS)		\
+  if (avr_builtin_supported_p (UNKNOWN_LOCATION, AVR_BUILTIN_ ## NAME))	\
     cpp_define (pfile, "__BUILTIN_AVR_" #NAME);
 #include "builtins.def"
 #undef DEF_BUILTIN
