@@ -1,3 +1,98 @@
+2025-02-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/83144
+	* g++.dg/cpp0x/constexpr-83144.C: New test.
+
+2025-02-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118878
+	* gcc.target/avr/torture/pr118878.c: New test.
+
+2025-02-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/86933
+	* g++.dg/cpp1z/variadic-nontype1.C: Mention PR number.
+	* g++.dg/cpp1z/variadic-nontype2.C: New test.
+
+2025-02-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82936
+	* g++.dg/cpp0x/vt-82936.C: New test.
+
+2025-02-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82794
+	* g++.dg/cpp2a/concepts-pr82794.C: New test.
+
+2025-02-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/70037
+	* g++.dg/cpp2a/concepts-pr70037.C: New test.
+
+2025-02-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/66878
+	* g++.dg/lookup/using71.C: New test.
+
+2025-02-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/66519
+	* g++.dg/cpp0x/variadic-parm2.C: New test.
+
+2025-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118852
+	* gcc.dg/vect/pr118852.c: New testcase.
+
+2025-02-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118856
+	* g++.dg/eh/ref-temp3.C: New test.
+	* g++.dg/eh/ref-temp4.C: New test.
+
+2025-02-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116379
+	* g++.dg/cpp1y/decltype-auto9.C: New test.
+
+2025-02-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/const-double-zero-stx.c: Add
+	'-maddr-reg-reg-cost=1'.
+	* gcc.target/loongarch/stack-check-alloca-1.c: Likewise.
+
+2025-02-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/118843
+	* gcc.target/loongarch/pr118843.c: New test.
+
+2025-02-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/118828
+	* gcc.target/loongarch/pr118828.c: New test.
+	* gcc.target/loongarch/pr118828-2.c: New test.
+	* gcc.target/loongarch/pr118828-3.c: New test.
+	* gcc.target/loongarch/pr118828-4.c: New test.
+
+2025-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90579
+	* gcc.target/i386/pr90579.c: New testcase.
+
+2025-02-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/cpp2a/lambda-uneval22.C: Add check that the primary
+	specialisation of the lambda is TU-local.
+
+2025-02-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/107741
+	* g++.dg/abi/lambda-ctx2-19.C: Add tests for template members.
+	* g++.dg/abi/lambda-ctx2-19vs20.C: Likewise.
+	* g++.dg/abi/lambda-ctx2-20.C: Likewise.
+	* g++.dg/abi/lambda-ctx2.h: Likewise.
+	* g++.dg/cpp0x/static-member-init-1.C: Likewise.
+
 2025-02-13  Robin Dapp  <rdapp.gcc@gmail.com>
 
 	PR target/118832

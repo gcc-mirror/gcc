@@ -1,3 +1,52 @@
+2025-02-14  Marek Polacek  <polacek@redhat.com>
+
+	* pt.cc (tsubst_expr) <COMPONENT_REF>: Assign the result of
+	force_paren_expr.
+
+2025-02-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118856
+	* call.cc (set_up_extended_ref_temp): Retain a TARGET_EXPR for
+	cleanups if something later in initialization throws.
+	(extend_temps_r): Don't extend eliding or EH-only TARGET_EXPRs.
+	* cp-tree.h (get_internal_target_expr): Declare.
+	* tree.cc (get_internal_target_expr): New.
+	* decl.cc (cp_finish_decomp, expand_static_init): Use it.
+	* except.cc (build_throw): Likewise.
+	* init.cc (build_new_1, build_vec_init, build_delete): Likewise.
+	(build_vec_delete): Likewise.
+	* typeck2.cc (maybe_push_temp_cleanup): Likewise.
+
+2025-02-14  Jason Merrill  <jason@redhat.com>
+
+	* init.cc (perform_member_init): Remove unicode from comment.
+
+2025-02-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116379
+	* pt.cc (tsubst_expr) <COMPONENT_REF>: Use force_paren_expr to set
+	REF_PARENTHESIZED_P.
+
+2025-02-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* lambda.cc (record_lambda_scope): Clear mangling scope for
+	otherwise unattached lambdas in class member templates.
+
+2025-02-14  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/107741
+	* cp-tree.h (is_static_data_member_initialized_in_class):
+	Declare new predicate.
+	* decl2.cc (start_initialized_static_member): Push the
+	TEMPLATE_DECL when appropriate.
+	(is_static_data_member_initialized_in_class): New predicate.
+	(finish_initialized_static_member): Use it.
+	* lambda.cc (record_lambda_scope): Likewise.
+	* parser.cc (cp_parser_init_declarator): Start the member decl
+	early for static members so that lambda scope is set.
+	(cp_parser_template_declaration_after_parameters): Don't
+	register in-class initialized static members here.
+
 2025-02-13  Jason Merrill  <jason@redhat.com>
 
 	* tree.cc (handle_init_priority_attribute): Use OPT_prio_ctor_dtor.

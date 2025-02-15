@@ -1,3 +1,128 @@
+2025-02-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118878
+	* config/avr/avr.cc (avr_out_plus_1): Don't ICE on result of
+	paradoxical reg's register allocation.
+
+2025-02-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/94282
+	PR target/113331
+	* common/config/gcn/gcn-common.cc (gcn_except_unwind_info): 'return UI_TARGET;'.
+	* config/gcn/gcn.cc (gcn_asm_init_sections): New function.
+	(TARGET_ASM_INIT_SECTIONS): '#define'.
+
+2025-02-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/86660
+	* common/config/nvptx/nvptx-common.cc (nvptx_except_unwind_info):
+	'return UI_TARGET;'.
+	* config/nvptx/nvptx.cc (nvptx_assemble_integer): Handle
+	'exception_section'.
+	(nvptx_output_section_asm_op, nvptx_asm_init_sections): New
+	functions.
+	(TARGET_ASM_INIT_SECTIONS): '#define'.
+	* config/nvptx/nvptx.h (TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP):
+	Don't '#define'.
+	(ASM_OUTPUT_DWARF_DELTA): '#define'.
+
+2025-02-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.cc (init_frag): New 'bool active' member.
+	(output_init_frag, nvptx_assemble_value, nvptx_assemble_integer)
+	(nvptx_output_skip, nvptx_assemble_decl_begin)
+	(nvptx_assemble_decl_end): Sanity-check its state.
+
+2025-02-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.cc (nvptx_output_skip): Clarify case of
+	no or incomplete initializer.
+
+2025-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118852
+	* tree-vect-slp.cc (vect_analyze_slp): For early-break
+	forced-live IVs make sure we create an appropriate
+	entry into the SLP graph.
+
+2025-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/118790
+	* tree.cc (struct gt_value_expr_mark_data): New type.
+	(gt_value_expr_mark_2): Don't call ggc_set_mark, instead check
+	ggc_marked_p.  Treat data as gt_value_expr_mark_data * with pset
+	in it rather than address of the pset itself and push to be marked
+	VAR_DECLs into to_mark vec.
+	(gt_value_expr_mark_1): Change argument from hash_set<tree> *
+	to gt_value_expr_mark_data * and find pset in it.
+	(gt_value_expr_mark): Pass to traverse_noresize address of
+	gt_value_expr_mark_data object rather than hash_table<tree> and
+	for all entries in the to_mark vector after the traversal call
+	gt_ggc_mx.
+
+2025-02-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/genopts/loongarch.opt.in: Add
+	option '-maddr-reg-reg-cost='.
+	* config/loongarch/loongarch-def.cc
+	(loongarch_rtx_cost_data::loongarch_rtx_cost_data): Initialize
+	addr_reg_reg_cost to 3.
+	* config/loongarch/loongarch-opts.cc
+	(loongarch_target_option_override): If '-maddr-reg-reg-cost='
+	is not used, set it to the initial value.
+	* config/loongarch/loongarch-tune.h
+	(struct loongarch_rtx_cost_data): Add the member
+	addr_reg_reg_cost and its assignment function to the structure
+	loongarch_rtx_cost_data.
+	* config/loongarch/loongarch.cc (loongarch_address_insns):
+	Use la_addr_reg_reg_cost to set the cost of ADDRESS_REG_REG.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/loongarch.opt.urls: Regenerate.
+	* doc/invoke.texi: Add description of '-maddr-reg-reg-cost='.
+
+2025-02-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/118843
+	* config/loongarch/loongarch-c.cc
+	(loongarch_update_cpp_builtins): Fix macro definition issues.
+
+2025-02-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/118828
+	* config/loongarch/loongarch-c.cc (loongarch_pragma_target_parse):
+	Update the predefined macros.
+
+2025-02-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-c.cc (builtin_undef): New macro.
+	(loongarch_cpu_cpp_builtins): Split to loongarch_update_cpp_builtins
+	and loongarch_define_unconditional_macros.
+	(loongarch_def_or_undef): New functions.
+	(loongarch_define_unconditional_macros): Likewise.
+	(loongarch_update_cpp_builtins): Likewise.
+
+2025-02-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-target-attr.cc
+	(loongarch_pragma_target_parse): Move to ...
+	(loongarch_register_pragmas): Move to ...
+	* config/loongarch/loongarch-c.cc
+	(loongarch_pragma_target_parse): ... here.
+	(loongarch_register_pragmas): ... here.
+	* config/loongarch/loongarch-protos.h
+	(loongarch_process_target_attr): Function Declaration.
+
+2025-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90579
+	* tree-ssa-forwprop.cc (simplify_bitfield_ref): Move to
+	match.pd.
+	(pass_forwprop::execute): Adjust.
+	* match.pd (bit_field_ref (vec_perm ...)): New pattern
+	modeled after simplify_bitfield_ref.
+	* tree-vect-loop.cc (vect_expand_fold_left): Fold the
+	element extract stmt, combining it with the vector def.
+
 2025-02-13  Robin Dapp  <rdapp.gcc@gmail.com>
 
 	PR target/118832

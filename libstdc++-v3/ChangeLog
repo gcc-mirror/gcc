@@ -1,3 +1,34 @@
+2025-02-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR libstdc++/118865
+	* include/bits/stl_list.h (_M_initialize_dispatch): Add an
+	unreachable if the iterator was not empty that the list will
+	now be not empty.
+
+2025-02-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/parallel/algobase.h (__mismatch_switch): Qualify calls
+	to make_pair to avoid ADL.
+
+2025-02-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tree.h (_Rb_tree::_M_equal_range): Replace
+	unqualified call to make_pair with explicit construction of
+	std::pair.
+	* testsuite/23_containers/set/operations/equal_range_adl.cc:
+	New test.
+
+2025-02-14  Matthew Malcomson  <mmalcomson@nvidia.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (__atomic_fetch_addable): Define
+	new concept.
+	(__atomic_impl::__fetch_add_flt): Use new concept to make use of
+	__atomic_fetch_add when available.
+	(__atomic_fetch_subtractable, __fetch_sub_flt): Likewise.
+	(__atomic_add_fetchable, __add_fetch_flt): Likewise.
+	(__atomic_sub_fetchable, __sub_fetch_flt): Likewise.
+
 2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* testsuite/lib/prune.exp (libstdc++-dg-prune): Turn
