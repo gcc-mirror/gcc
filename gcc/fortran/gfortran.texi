@@ -3960,6 +3960,7 @@ passed by value.
 
 For @code{OPTIONAL} dummy arguments, an absent argument is denoted
 by a NULL pointer, except for scalar dummy arguments of intrinsic type
+or derived type (but not @code{CLASS}) and
 that have the @code{VALUE} attribute.  For those, a hidden Boolean
 argument (@code{logical(kind=C_bool),value}) is used to indicate
 whether the argument is present.
