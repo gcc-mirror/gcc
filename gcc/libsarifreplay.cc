@@ -992,6 +992,20 @@ add_any_annotations (libgdiagnostics::diagnostic &diag,
       diag.add_location (annotation.m_phys_loc);
 }
 
+static bool
+should_add_rule_p (const char *rule_id_str, const char *url)
+{
+  if (url)
+    return true;
+
+  /* GCC's sarif output uses "error" for "ruleId", which is already
+     captured in the "level", so don't add a rule for that.  */
+  if (!strcmp (rule_id_str, "error"))
+    return false;
+
+  return true;
+}
+
 /* Process a result object (SARIF v2.1.0 section 3.27).
    Known limitations:
    - doesn't yet handle "ruleIndex" property (§3.27.6)
@@ -1119,7 +1133,10 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
 								 prop_help_uri))
 	    url = url_val->get_string ();
 	}
-      err.add_rule (rule_id->get_string (), url);
+
+      const char *rule_id_str = rule_id->get_string ();
+      if (should_add_rule_p (rule_id_str, url))
+	err.add_rule (rule_id_str, url);
     }
   err.set_location (physical_loc);
   err.set_logical_location (logical_loc);

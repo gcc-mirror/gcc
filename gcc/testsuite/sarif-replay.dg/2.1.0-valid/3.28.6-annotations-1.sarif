@@ -37,11 +37,10 @@
 /* Verify that we underline and label the ranges for the
    "annotations" above.  */
 /* { dg-begin-multiline-output "" }
-bad-binary-ops-highlight-colors.c:19:23: error: invalid operands to binary + (have ‘S’ {aka ‘struct s’} and ‘T’ {aka ‘struct t’}) [error]
+bad-binary-ops-highlight-colors.c:19:23: error: invalid operands to binary + (have ‘S’ {aka ‘struct s’} and ‘T’ {aka ‘struct t’})
    19 |   return callee_4a () + callee_4b ();
       |          ~~~~~~~~~~~~ ^ ~~~~~~~~~~~~
       |          |              |
       |          |              T {aka struct t}
       |          S {aka struct s}
    { dg-end-multiline-output "" } */
-// TODO: trailing [error]

@@ -50,11 +50,10 @@
 /* Verify that we underline the "42" here.  */
 /* { dg-begin-multiline-output "" }
 In function 'test_known_fn':
-too-many-arguments.c:5:3: error: too many arguments to function 'fn_a'; expected 0, have 1 [error]
+too-many-arguments.c:5:3: error: too many arguments to function 'fn_a'; expected 0, have 1
     5 |   fn_a (42);
       |   ^~~~  ~~
 too-many-arguments.c:1:13: note: declared here
     1 | extern void fn_a ();
       |             ^~~~
    { dg-end-multiline-output "" } */
-// TODO: trailing [error]
