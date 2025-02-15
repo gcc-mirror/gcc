@@ -199,6 +199,23 @@ struct string_property_value
   ValueType m_value;
 };
 
+/* A class for recording annotations seen in locations (§3.28.6) that
+   should be emitted as secondary locations on diagnostics.  */
+
+class annotation
+{
+public:
+  annotation (libgdiagnostics::physical_location phys_loc,
+	      label_text label)
+  : m_phys_loc (phys_loc),
+    m_label (std::move (label))
+  {
+  }
+
+  libgdiagnostics::physical_location m_phys_loc;
+  label_text m_label;
+};
+
 class sarif_replayer
 {
 public:
@@ -287,7 +304,8 @@ private:
   handle_location_object (const json::object &location_obj,
 			  const json::object &run_obj,
 			  libgdiagnostics::physical_location &out_physical_loc,
-			  libgdiagnostics::logical_location &out_logical_loc);
+			  libgdiagnostics::logical_location &out_logical_loc,
+			  std::vector<annotation> *out_annotations);
 
   // "physicalLocation" object (§3.29)
   enum status
@@ -962,6 +980,18 @@ sarif_replayer::get_level_from_level_str (const json::string &level_str)
      level_values, ARRAY_SIZE (level_values));
 }
 
+static void
+add_any_annotations (libgdiagnostics::diagnostic &diag,
+		     const std::vector<annotation> &annotations)
+{
+  for (auto &annotation : annotations)
+    if (annotation.m_label.get ())
+      diag.add_location_with_label (annotation.m_phys_loc,
+				    annotation.m_label.get ());
+    else
+      diag.add_location (annotation.m_phys_loc);
+}
+
 /* Process a result object (SARIF v2.1.0 section 3.27).
    Known limitations:
    - doesn't yet handle "ruleIndex" property (§3.27.6)
@@ -1025,6 +1055,7 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
     = get_required_property<json::array> (result_obj, locations_prop);
   if (!locations_arr)
     return status::err_invalid_sarif;
+  std::vector<annotation> annotations;
   if (locations_arr->length () > 0)
     {
       /* Only look at the first, if there's more than one.  */
@@ -1035,7 +1066,8 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
 	return status::err_invalid_sarif;
       enum status s = handle_location_object (*location_obj, run_obj,
 					      physical_loc,
-					      logical_loc);
+					      logical_loc,
+					      &annotations);
       if (s != status::ok)
 	return s;
     }
@@ -1092,6 +1124,7 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
     }
   err.set_location (physical_loc);
   err.set_logical_location (logical_loc);
+  add_any_annotations (err, annotations);
   if (path.m_inner)
     err.take_execution_path (std::move (path));
   err.finish ("%s", text.get ());
@@ -1112,9 +1145,11 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
 					  prop_related_locations);
 	  if (!location_obj)
 	    return status::err_invalid_sarif;
+	  std::vector<annotation> annotations;
 	  enum status s = handle_location_object (*location_obj, run_obj,
 						  physical_loc,
-						  logical_loc);
+						  logical_loc,
+						  &annotations);
 	  if (s != status::ok)
 	    return s;
 
@@ -1136,6 +1171,7 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
 	      auto note (m_output_mgr.begin_diagnostic (DIAGNOSTIC_LEVEL_NOTE));
 	      note.set_location (physical_loc);
 	      note.set_logical_location (logical_loc);
+	      add_any_annotations (note, annotations);
 	      note.finish ("%s", text.get ());
 	    }
 	}
@@ -1490,7 +1526,8 @@ handle_thread_flow_location_object (const json::object &tflow_loc_obj,
     {
       /* location object (§3.28).  */
       enum status s = handle_location_object (*location_obj, run_obj,
-					      physical_loc, logical_loc);
+					      physical_loc, logical_loc,
+					      nullptr);
       if (s != status::ok)
 	return s;
 
@@ -1564,7 +1601,8 @@ sarif_replayer::
 handle_location_object (const json::object &location_obj,
 			const json::object &run_obj,
 			libgdiagnostics::physical_location &out_physical_loc,
-			libgdiagnostics::logical_location &out_logical_loc)
+			libgdiagnostics::logical_location &out_logical_loc,
+			std::vector<annotation> *out_annotations)
 {
   // §3.28.3 "physicalLocation" property
   {
@@ -1601,6 +1639,52 @@ handle_location_object (const json::object &location_obj,
 							  out_logical_loc);
 	  if (s != status::ok)
 	    return s;
+	}
+  }
+
+  // §3.28.6 "annotations" property
+  {
+    const property_spec_ref annotations_prop
+      ("location", "annotations", "3.28.6");
+    if (const json::array *annotations_arr
+	= get_optional_property<json::array> (location_obj,
+					      annotations_prop))
+      for (auto element : *annotations_arr)
+	{
+	  const json::object *annotation_obj
+	    = require_object_for_element (*element, annotations_prop);
+	  if (!annotation_obj)
+	    return status::err_invalid_sarif;
+	  libgdiagnostics::file file = out_physical_loc.get_file ();
+	  if (!file.m_inner)
+	    return report_invalid_sarif
+	      (*annotation_obj, annotations_prop,
+	       "cannot find artifact for %qs property",
+	       annotations_prop.get_property_name ());
+	  libgdiagnostics::physical_location phys_loc;
+	  enum status s = handle_region_object (*annotation_obj,
+						file,
+						phys_loc);
+	  if (s != status::ok)
+	    return s;
+
+	  label_text label;
+
+	  // §3.30.14 message property
+	  {
+	    const property_spec_ref message_prop
+	      ("region", "message", "3.30.14");
+
+	    if (const json::object *message_obj
+		  = get_optional_property<json::object> (*annotation_obj,
+							 message_prop))
+	      label = make_plain_text_within_result_message (nullptr,
+							     *message_obj,
+							     nullptr);
+	  }
+
+	  if (out_annotations)
+	    out_annotations->push_back ({phys_loc, std::move (label)});
 	}
   }
 

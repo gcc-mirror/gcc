@@ -147,6 +147,8 @@ struct diagnostic_physical_location
     m_inner (inner)
   {}
 
+  diagnostic_file *get_file () const;
+
   diagnostic_manager *m_mgr;
   location_t m_inner;
 };
@@ -443,6 +445,14 @@ public:
       = new diagnostic_file (*this, name, sarif_source_language);
     m_str_to_file_map.put (file->get_name (), file);
     return file;
+  }
+
+  diagnostic_file *
+  get_file_by_name (const char *name)
+  {
+    if (diagnostic_file **slot = m_str_to_file_map.get (name))
+      return *slot;
+    return nullptr;
   }
 
   const diagnostic_physical_location *
@@ -941,6 +951,18 @@ diagnostic_file::set_buffered_content (const char *buf, size_t sz)
   // Populate file_cache:
   file_cache &fc = m_mgr.get_dc ().get_file_cache ();
   fc.add_buffered_content (m_name.get_str (), buf, sz);
+}
+
+// struct diagnostic_physical_location
+
+diagnostic_file *
+diagnostic_physical_location::get_file () const
+{
+  m_mgr->set_line_table_global ();
+  const char *filename = LOCATION_FILE (m_inner);
+  if (!filename)
+    return nullptr;
+  return m_mgr->get_file_by_name (filename);
 }
 
 /* class impl_diagnostic_client_data_hooks.  */
@@ -1752,4 +1774,15 @@ diagnostic_finish_va (diagnostic *diag, const char *gmsgid, va_list *args)
   auto_diagnostic_group d;
   diag->get_manager ().emit (*diag, gmsgid, args);
   delete diag;
+}
+
+/* Public entrypoint.  */
+
+diagnostic_file *
+diagnostic_physical_location_get_file (const diagnostic_physical_location *physical_loc)
+{
+  if (!physical_loc)
+    return nullptr;
+
+  return physical_loc->get_file ();
 }
