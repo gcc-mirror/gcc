@@ -1,5 +1,6 @@
 // PR c++/118053
 // { dg-do compile { target c++14 } }
+// { dg-additional-options -O }
 
 template <typename _Tp> struct vector {
   _Tp * _M_finish;
