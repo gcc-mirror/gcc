@@ -142,7 +142,6 @@ public:
   virtual void visit (ImplTraitType &type) = 0;
   virtual void visit (TraitObjectType &type) = 0;
   virtual void visit (ParenthesisedType &type) = 0;
-  virtual void visit (ImplTraitTypeOneBound &type) = 0;
   virtual void visit (TupleType &type) = 0;
   virtual void visit (NeverType &type) = 0;
   virtual void visit (RawPointerType &type) = 0;
@@ -290,7 +289,6 @@ public:
   virtual void visit (ImplTraitType &) override {}
   virtual void visit (TraitObjectType &) override {}
   virtual void visit (ParenthesisedType &) override {}
-  virtual void visit (ImplTraitTypeOneBound &) override {}
   virtual void visit (TupleType &) override {}
   virtual void visit (NeverType &) override {}
   virtual void visit (RawPointerType &) override {}
@@ -354,7 +352,6 @@ public:
   virtual void visit (ImplTraitType &type) = 0;
   virtual void visit (TraitObjectType &type) = 0;
   virtual void visit (ParenthesisedType &type) = 0;
-  virtual void visit (ImplTraitTypeOneBound &type) = 0;
   virtual void visit (TupleType &type) = 0;
   virtual void visit (NeverType &type) = 0;
   virtual void visit (RawPointerType &type) = 0;

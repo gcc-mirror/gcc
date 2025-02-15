@@ -191,7 +191,6 @@ private:
   virtual void visit (ImplTraitType &type) override;
   virtual void visit (TraitObjectType &type) override;
   virtual void visit (ParenthesisedType &type) override;
-  virtual void visit (ImplTraitTypeOneBound &type) override;
   virtual void visit (TupleType &type) override;
   virtual void visit (NeverType &type) override;
   virtual void visit (RawPointerType &type) override;

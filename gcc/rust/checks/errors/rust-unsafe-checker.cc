@@ -957,10 +957,6 @@ UnsafeChecker::visit (ParenthesisedType &)
 {}
 
 void
-UnsafeChecker::visit (ImplTraitTypeOneBound &)
-{}
-
-void
 UnsafeChecker::visit (TupleType &)
 {}
 

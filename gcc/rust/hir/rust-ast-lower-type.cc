@@ -477,6 +477,42 @@ ASTLoweringType::visit (AST::ParenthesisedType &type)
 				  type.get_locus ());
 }
 
+void
+ASTLoweringType::visit (AST::ImplTraitType &type)
+{
+  std::vector<std::unique_ptr<HIR::TypeParamBound>> bounds;
+  for (auto &bound : type.get_type_param_bounds ())
+    {
+      auto b = ASTLoweringTypeBounds::translate (*bound.get ());
+      bounds.push_back (std::unique_ptr<HIR::TypeParamBound> (b));
+    }
+
+  auto crate_num = mappings.get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
+
+  translated
+    = new HIR::ImplTraitType (mapping, std::move (bounds), type.get_locus ());
+}
+
+void
+ASTLoweringType::visit (AST::ImplTraitTypeOneBound &type)
+{
+  std::vector<std::unique_ptr<HIR::TypeParamBound>> bounds;
+
+  auto b = ASTLoweringTypeBounds::translate (type.get_trait_bound ());
+  bounds.push_back (std::unique_ptr<HIR::TypeParamBound> (b));
+
+  auto crate_num = mappings.get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
+				 mappings.get_next_hir_id (crate_num),
+				 mappings.get_next_localdef_id (crate_num));
+
+  translated
+    = new HIR::ImplTraitType (mapping, std::move (bounds), type.get_locus ());
+}
+
 HIR::GenericParam *
 ASTLowerGenericParam::translate (AST::GenericParam &param)
 {

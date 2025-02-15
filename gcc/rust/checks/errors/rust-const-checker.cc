@@ -847,10 +847,6 @@ ConstChecker::visit (ParenthesisedType &)
 {}
 
 void
-ConstChecker::visit (ImplTraitTypeOneBound &)
-{}
-
-void
 ConstChecker::visit (TupleType &)
 {}
 

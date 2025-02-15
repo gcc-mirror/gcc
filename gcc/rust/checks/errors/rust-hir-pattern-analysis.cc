@@ -685,10 +685,6 @@ PatternChecker::visit (ParenthesisedType &)
 {}
 
 void
-PatternChecker::visit (ImplTraitTypeOneBound &)
-{}
-
-void
 PatternChecker::visit (TupleType &)
 {}
 

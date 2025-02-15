@@ -27,6 +27,49 @@ namespace Resolver {
 
 // rust-ast-resolve-type.h
 
+NodeId
+ResolveType::go (AST::Type &type)
+{
+  ResolveType resolver;
+  type.accept_vis (resolver);
+  return resolver.resolved_node;
+}
+
+void
+ResolveType::visit (AST::BareFunctionType &fntype)
+{
+  for (auto &param : fntype.get_function_params ())
+    ResolveType::go (param.get_type ());
+
+  if (fntype.has_return_type ())
+    ResolveType::go (fntype.get_return_type ());
+}
+
+void
+ResolveType::visit (AST::TupleType &tuple)
+{
+  if (tuple.is_unit_type ())
+    {
+      resolved_node = resolver->get_unit_type_node_id ();
+      return;
+    }
+
+  for (auto &elem : tuple.get_elems ())
+    ResolveType::go (*elem);
+}
+
+void
+ResolveType::visit (AST::TypePath &path)
+{
+  ResolveRelativeTypePath::go (path, resolved_node);
+}
+
+void
+ResolveType::visit (AST::QualifiedPathInType &path)
+{
+  ResolveRelativeQualTypePath::go (path);
+}
+
 void
 ResolveType::visit (AST::ArrayType &type)
 {
@@ -72,7 +115,7 @@ ResolveType::visit (AST::RawPointerType &type)
 void
 ResolveType::visit (AST::InferredType &)
 {
-  // FIXME
+  // nothing to do
 }
 
 void
@@ -85,6 +128,19 @@ void
 ResolveType::visit (AST::SliceType &type)
 {
   resolved_node = ResolveType::go (type.get_elem_type ());
+}
+
+void
+ResolveType::visit (AST::ImplTraitType &type)
+{
+  for (auto &bound : type.get_type_param_bounds ())
+    ResolveTypeBound::go (*bound);
+}
+
+void
+ResolveType::visit (AST::ImplTraitTypeOneBound &type)
+{
+  ResolveTypeBound::go (type.get_trait_bound ());
 }
 
 // resolve relative type-paths

@@ -2866,14 +2866,6 @@ BareFunctionType::as_string () const
 }
 
 std::string
-ImplTraitTypeOneBound::as_string () const
-{
-  std::string str ("ImplTraitTypeOneBound: \n TraitBound: ");
-
-  return str + trait_bound.as_string ();
-}
-
-std::string
 TypePathSegmentGeneric::as_string () const
 {
   return TypePathSegment::as_string () + "<" + generic_args.as_string () + ">";
@@ -4526,12 +4518,6 @@ ParenthesisedType::accept_vis (HIRFullVisitor &vis)
 }
 
 void
-ImplTraitTypeOneBound::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
 TupleType::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
@@ -4719,12 +4705,6 @@ SliceType::accept_vis (HIRTypeVisitor &vis)
 
 void
 ArrayType::accept_vis (HIRTypeVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-ImplTraitTypeOneBound::accept_vis (HIRTypeVisitor &vis)
 {
   vis.visit (*this);
 }
