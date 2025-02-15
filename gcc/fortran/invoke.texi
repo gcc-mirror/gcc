@@ -666,8 +666,7 @@ include code for these additional kind types: @code{__GFC_INT_1__},
 While CPP is the de facto standard for preprocessing Fortran code,
 Part 3 of the Fortran 95 standard (ISO/IEC 1539-3:1998) defines
 Conditional Compilation, which is not widely used and not directly
-supported by the GNU Fortran compiler.  You can use the program coco
-to preprocess such files (@uref{http://www.daniellnagle.com/coco.html}).
+supported by the GNU Fortran compiler.
 
 The following options control preprocessing of Fortran code:
 
