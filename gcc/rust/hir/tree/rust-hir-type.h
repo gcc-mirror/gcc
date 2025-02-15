@@ -164,38 +164,6 @@ public:
   void accept_vis (HIRTypeVisitor &vis) override;
 };
 
-// Impl trait with a single bound? Poor reference material here.
-class ImplTraitTypeOneBound : public TypeNoBounds
-{
-  TraitBound trait_bound;
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  ImplTraitTypeOneBound *clone_type_impl () const override
-  {
-    return new ImplTraitTypeOneBound (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  ImplTraitTypeOneBound *clone_type_no_bounds_impl () const override
-  {
-    return new ImplTraitTypeOneBound (*this);
-  }
-
-public:
-  ImplTraitTypeOneBound (Analysis::NodeMapping mappings, TraitBound trait_bound,
-			 location_t locus)
-    : TypeNoBounds (mappings, locus), trait_bound (std::move (trait_bound))
-  {}
-
-  std::string as_string () const override;
-  TraitBound &get_trait_bound () { return trait_bound; }
-  void accept_vis (HIRFullVisitor &vis) override;
-  void accept_vis (HIRTypeVisitor &vis) override;
-};
-
 /* A type consisting of the "product" of others (the tuple's elements) in a
  * specific order */
 class TupleType : public TypeNoBounds

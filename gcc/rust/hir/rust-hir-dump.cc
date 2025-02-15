@@ -2333,15 +2333,6 @@ Dump::visit (ParenthesisedType &e)
 }
 
 void
-Dump::visit (ImplTraitTypeOneBound &e)
-{
-  begin ("ImplTraitTypeOneBound");
-  do_type (e);
-  visit_field ("trait_bound", e.get_trait_bound ());
-  end ("ImplTraitTypeOneBound");
-}
-
-void
 Dump::visit (TupleType &e)
 {
   begin ("TupleType");

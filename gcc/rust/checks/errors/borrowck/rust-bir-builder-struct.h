@@ -250,10 +250,6 @@ protected:
   void visit (HIR::ImplTraitType &type) override { rust_unreachable (); }
   void visit (HIR::TraitObjectType &type) override { rust_unreachable (); }
   void visit (HIR::ParenthesisedType &type) override { rust_unreachable (); }
-  void visit (HIR::ImplTraitTypeOneBound &type) override
-  {
-    rust_unreachable ();
-  }
   void visit (HIR::TupleType &type) override { rust_unreachable (); }
   void visit (HIR::NeverType &type) override { rust_unreachable (); }
   void visit (HIR::RawPointerType &type) override { rust_unreachable (); }

@@ -180,7 +180,6 @@ public:
   void visit (HIR::ImplTraitType &type) override {}
   void visit (HIR::TraitObjectType &type) override {}
   void visit (HIR::ParenthesisedType &type) override {}
-  void visit (HIR::ImplTraitTypeOneBound &type) override {}
   void visit (HIR::TupleType &type) override {}
   void visit (HIR::NeverType &type) override {}
   void visit (HIR::RawPointerType &type) override {}

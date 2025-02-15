@@ -70,9 +70,6 @@ public:
   void visit (HIR::ImplTraitType &type) override
   { /* TODO */
   }
-  void visit (HIR::ImplTraitTypeOneBound &type) override
-  { /* TODO */
-  }
 
 private:
   TypeCheckType (HirId id)

@@ -211,7 +211,6 @@ class TraitBound;
 class ImplTraitType;
 class TraitObjectType;
 class ParenthesisedType;
-class ImplTraitTypeOneBound;
 class TupleType;
 class NeverType;
 class RawPointerType;

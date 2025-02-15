@@ -61,61 +61,23 @@ class ResolveType : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static NodeId go (AST::Type &type)
-  {
-    ResolveType resolver;
-    type.accept_vis (resolver);
-    return resolver.resolved_node;
-  }
+  static NodeId go (AST::Type &type);
 
-  void visit (AST::BareFunctionType &fntype) override
-  {
-    for (auto &param : fntype.get_function_params ())
-      ResolveType::go (param.get_type ());
-
-    if (fntype.has_return_type ())
-      ResolveType::go (fntype.get_return_type ());
-  }
-
-  void visit (AST::TupleType &tuple) override
-  {
-    if (tuple.is_unit_type ())
-      {
-	resolved_node = resolver->get_unit_type_node_id ();
-	return;
-      }
-
-    for (auto &elem : tuple.get_elems ())
-      ResolveType::go (*elem);
-  }
-
-  void visit (AST::TypePath &path) override
-  {
-    ResolveRelativeTypePath::go (path, resolved_node);
-  }
-
-  void visit (AST::QualifiedPathInType &path) override
-  {
-    ResolveRelativeQualTypePath::go (path);
-  }
-
+  void visit (AST::BareFunctionType &fntype) override;
+  void visit (AST::TupleType &tuple) override;
+  void visit (AST::TypePath &path) override;
+  void visit (AST::QualifiedPathInType &path) override;
   void visit (AST::ArrayType &type) override;
-
   void visit (AST::ReferenceType &type) override;
-
   void visit (AST::InferredType &type) override;
-
   void visit (AST::NeverType &type) override;
-
   void visit (AST::RawPointerType &type) override;
-
   void visit (AST::TraitObjectTypeOneBound &type) override;
-
   void visit (AST::TraitObjectType &type) override;
-
   void visit (AST::ParenthesisedType &type) override;
-
   void visit (AST::SliceType &type) override;
+  void visit (AST::ImplTraitType &type) override;
+  void visit (AST::ImplTraitTypeOneBound &type) override;
 
 private:
   ResolveType () : ResolverBase () {}

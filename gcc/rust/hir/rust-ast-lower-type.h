@@ -82,6 +82,9 @@ public:
   void visit (AST::TraitObjectType &type) override;
   void visit (AST::ParenthesisedType &type) override;
 
+  void visit (AST::ImplTraitType &type) override;
+  void visit (AST::ImplTraitTypeOneBound &type) override;
+
 private:
   ASTLoweringType (bool default_to_static_lifetime)
     : ASTLoweringBase (),
