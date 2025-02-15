@@ -998,7 +998,6 @@ add_any_annotations (libgdiagnostics::diagnostic &diag,
    - doesn't yet handle "taxa" property (§3.27.8)
    - handling of "level" property (§3.27.10) doesn't yet support the
      full logic for when "level" is absent.
-   - doesn't yet handle "relatedLocations" property (§3.27.22)
    - doesn't yet handle "fixes" property (§3.27.30)
    - doesn't yet support multithreaded flows (§3.36.3)
 */
@@ -1127,9 +1126,9 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
   add_any_annotations (err, annotations);
   if (path.m_inner)
     err.take_execution_path (std::move (path));
-  err.finish ("%s", text.get ());
 
   // §3.27.22 relatedLocations property
+  std::vector<std::pair<libgdiagnostics::diagnostic, label_text>> notes;
   const property_spec_ref prop_related_locations
     ("result", "relatedLocations", "3.27.22");
   if (auto related_locations_arr
@@ -1172,9 +1171,26 @@ sarif_replayer::handle_result_obj (const json::object &result_obj,
 	      note.set_location (physical_loc);
 	      note.set_logical_location (logical_loc);
 	      add_any_annotations (note, annotations);
-	      note.finish ("%s", text.get ());
+	      notes.push_back ({std::move (note), std::move (text)});
+	    }
+	  else
+	    {
+	      /* Treat related locations without a message as a secondary
+		 range.  */
+	      if (physical_loc.m_inner)
+		err.add_location (physical_loc);
 	    }
 	}
+    }
+
+  err.finish ("%s", text.get ());
+
+  // Flush any notes
+  for (auto &iter : notes)
+    {
+      auto &note = iter.first;
+      auto &text = iter.second;
+      note.finish ("%s", text.get ());
     }
 
   return status::ok;
