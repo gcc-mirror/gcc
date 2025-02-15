@@ -7683,18 +7683,19 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		 definition, so don't try to look at the closure.  But if the
 		 captured variable is constant, try to evaluate it directly. */
 	      r = DECL_CAPTURED_VARIABLE (t);
-	      tree type = TREE_TYPE (t);
-	      if (TYPE_REF_P (type) != TYPE_REF_P (TREE_TYPE (r)))
-		{
-		  /* Adjust r to match the reference-ness of t.  */
-		  if (TYPE_REF_P (type))
-		    r = build_address (r);
-		  else
-		    r = convert_from_reference (r);
-		}
 	    }
 	  else
 	    r = DECL_VALUE_EXPR (t);
+
+	  tree type = TREE_TYPE (t);
+	  if (TYPE_REF_P (type) != TYPE_REF_P (TREE_TYPE (r)))
+	    {
+	      /* Adjust r to match the reference-ness of t.  */
+	      if (TYPE_REF_P (type))
+		r = build_address (r);
+	      else
+		r = convert_from_reference (r);
+	    }
 	  return cxx_eval_constant_expression (ctx, r, lval, non_constant_p,
 					       overflow_p);
 	}
