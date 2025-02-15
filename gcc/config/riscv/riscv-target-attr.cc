@@ -100,6 +100,20 @@ riscv_target_attr_parser::parse_arch (const char *str)
   /* Check if it's setting full arch string.  */
   if (strncmp ("rv", str, strlen ("rv")) == 0)
     {
+      if (TARGET_64BIT && strncmp ("32", str + 2, strlen ("32")) == 0)
+	{
+	  error_at (m_loc, "unexpected arch for %<target()%> attribute: "
+		    "must start with rv64 but found %qs", str);
+	  goto fail;
+	}
+
+      if (!TARGET_64BIT && strncmp ("64", str + 2, strlen ("64")) == 0)
+	{
+	  error_at (m_loc, "unexpected arch for %<target()%> attribute: "
+		    "must start with rv32 but found %qs", str);
+	  goto fail;
+	}
+
       m_subset_list = riscv_subset_list::parse (str, m_loc);
 
       if (m_subset_list == nullptr)
