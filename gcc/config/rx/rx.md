@@ -2590,7 +2590,9 @@
    (clobber (reg:SI 3))
    (clobber (reg:CC CC_REG))]
   "rx_allow_string_insns"
-  "scmpu		; Perform the string comparison
+  "setpsw  z		; Set flags in case len is zero
+   setpsw  c
+   scmpu		; Perform the string comparison
    mov     #-1, %0      ; Set up -1 result (which cannot be created
                         ; by the SC insn)
    bnc	   ?+		; If Carry is not set skip over
