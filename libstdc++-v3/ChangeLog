@@ -1,3 +1,32 @@
+2025-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_base.h: Do not include <bit>.
+
+2025-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100612
+	* include/std/thread (__pmf_expects_stop_token): Constrain
+	variable template specialization with concept. Add comment.
+
+2025-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (rbegin, rend, crbegin, crend):
+	Add conditional noexcept, as per P3623R0.
+	* testsuite/24_iterators/headers/iterator/range_access.cc: Add
+	noexcept-specifier to rbegin, rend, crbegin and crend
+	declarations.
+
+2025-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/24_iterators/headers/iterator/range_access_c++11.cc:
+	Removed.
+	* testsuite/24_iterators/headers/iterator/range_access_c++14.cc:
+	Removed.
+	* testsuite/24_iterators/headers/iterator/range_access_c++17.cc:
+	Removed.
+	* testsuite/24_iterators/headers/iterator/range_access.cc:
+	New test.
+
 2025-02-14  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR libstdc++/118865

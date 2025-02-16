@@ -1,3 +1,82 @@
+2025-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98028
+	* gcc.dg/tree-ssa/pr98028.c: New test.
+
+2025-02-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118080
+	* gfortran.dg/value_optional_2.f90: New test.
+
+2025-02-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/117430
+	* gfortran.dg/c_loc_test_17.f90: Use an assignment rather than
+	PRINT.
+	* gfortran.dg/c_ptr_tests_10.f03: Use a transfer function.
+	* gfortran.dg/c_ptr_tests_16.f90: Use an assignment.
+	* gfortran.dg/c_ptr_tests_9.f03: Use a transfer function.
+	* gfortran.dg/init_flag_17.f90: Likewise.
+	* gfortran.dg/pr32601_1.f03: Use an assignment.
+
+2025-02-15  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* gcc.target/riscv/rvv/autovec/pr117722.c: Scan for vminu and
+	vmaxu.
+
+2025-02-15  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-8.c: Scan for add.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-9.c: Scan for fadd.
+
+2025-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* sarif-replay.dg/2.1.0-valid/3.27.30-fixes-1.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/3.27.30-fixes-2.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/3.27.30-fixes-3.sarif: New test.
+
+2025-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* sarif-replay.dg/2.1.0-valid/3.28.6-annotations-1.sarif: Update
+	expected output to remove trailing " [error]".
+	* sarif-replay.dg/2.1.0-valid/unlabelled-secondary-locations.sarif:
+	Likewise.
+
+2025-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* sarif-replay.dg/2.1.0-valid/unlabelled-secondary-locations.sarif:
+	New test.
+
+2025-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/118881
+	* sarif-replay.dg/2.1.0-valid/3.28.6-annotations-1.sarif: New test.
+
+2025-02-15  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118846
+	* g++.dg/modules/pr118846_a.C: New test.
+	* g++.dg/modules/pr118846_b.C: New test.
+
+2025-02-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118053
+	* g++.dg/cpp1y/constexpr-lambda1.C: Add -O.
+
+2025-02-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118053
+	* g++.dg/cpp1y/constexpr-lambda1.C: New test.
+
+2025-02-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/interface_54.f90: New test.
+
+2025-02-15  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/118872
+	* gcc.target/riscv/rvv/base/pr118872.c: New test.
+
 2025-02-14  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/83144

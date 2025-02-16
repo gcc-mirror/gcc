@@ -1,3 +1,74 @@
+2025-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98028
+	* vr-values.cc (check_for_binary_op_overflow): Try to use a known
+	relationship betwen op0/op1 to statically determine overflow state.
+
+2025-02-15  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* config/riscv/autovec-opt.md
+	(*single_widen_first_<any_widen_binop:optab><any_extend:su><mode>):
+	New combine "bridge" pattern.
+
+2025-02-15  Keith Packard  <keithp@keithp.com>
+
+	* config/rx/rx.md (rx_cmpstrn): Correctly handle len=0 case.
+
+2025-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* libsarifreplay.cc (sarif_replayer::handle_result_obj): Call
+	handle_fix_object if we see a single-element "fixes" array.
+	(sarif_replayer::handle_fix_object): New.
+	(sarif_replayer::handle_artifact_change_object): New.
+
+2025-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* libsarifreplay.cc (should_add_rule_p): New.
+	(sarif_replayer::handle_result_obj): Use it to filter out rules
+	that don't make sense.
+
+2025-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* libsarifreplay.cc (sarif_replayer::handle_result_obj): Treat any
+	relatedLocations without messages as secondary ranges within the
+	diagnostic.  Doing so requires stashing the notes until after
+	the diagnostic has been finished, so that relatedLocations can be
+	walked in one pass.
+
+2025-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/118881
+	* doc/libgdiagnostics/topics/physical-locations.rst: Add
+	diagnostic_physical_location_get_file.
+	* libgdiagnostics++.h (physical_location::get_file): New wrapper.
+	(diagnostic::add_location): Likewise.
+	* libgdiagnostics.cc (diagnostic_manager::get_file_by_name): New.
+	(diagnostic_physical_location::get_file): New.
+	(diagnostic_physical_location_get_file): New.
+	* libgdiagnostics.h (diagnostic_physical_location_get_file): New.
+	* libgdiagnostics.map (diagnostic_physical_location_get_file): New.
+	* libsarifreplay.cc (class annotation): New.
+	(add_any_annotations): New.
+	(sarif_replayer::handle_result_obj): Collect vectors of
+	annotations in the calls to handle_location_object and apply them
+	to "err" and to "note" as appropriate.
+	(sarif_replayer::handle_thread_flow_location_object): Pass nullptr
+	for annotations.
+	(sarif_replayer::handle_location_object): Handle §3.28.6
+	"annotations" property, using it to populate a new
+	"out_annotations" param.
+
+2025-02-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.cc (nvptx_record_needed_fndecl): Tag as
+	'static'.
+
+2025-02-15  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/118872
+	* config/riscv/riscv.cc (riscv_fntype_abi): Strengthen the logic
+	of the check to avoid missing the error report.
+
 2025-02-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/118878

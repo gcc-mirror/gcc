@@ -1,3 +1,36 @@
+2025-02-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118080
+	* gfortran.texi: Adjust documentation.
+	* trans-decl.cc (create_function_arglist): Adjust to pass hidden
+	presence flag also for derived type dummies with VALUE,OPTIONAL
+	attribute.
+	* trans-expr.cc (gfc_conv_expr_present): Expect hidden presence
+	flag also for derived type dummies with VALUE,OPTIONAL attribute.
+	(conv_cond_temp): Adjust to allow derived types.
+	(conv_dummy_value): Extend to handle derived type dummies with
+	VALUE,OPTIONAL attribute.
+	(gfc_conv_procedure_call): Adjust for actual arguments passed to
+	derived type dummies with VALUE,OPTIONAL attribute.
+	* trans-types.cc (gfc_get_function_type): Adjust fndecl for
+	hidden presence flag.
+
+2025-02-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/117430
+	* resolve.cc (resolve_transfer): Change gfc_notify_std to
+	gfc_error.
+
+2025-02-15  Andrew Pinski  <pinskia@gcc.gnu.org>
+
+	PR fortran/118159
+	* invoke.texi: Remove mention of defunct web site for Coco.
+
+2025-02-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.cc (check_externals_procedure): Copy
+	typespec from old to new symbol.
+
 2025-02-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/118845

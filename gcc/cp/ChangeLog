@@ -1,3 +1,16 @@
+2025-02-15  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118846
+	* cp-tree.h (WILDCARD_TYPE_P): Include UNBOUND_CLASS_TEMPLATE.
+	* decl2.cc (min_vis_expr_r): Don't assume a TEMPLATE_DECL will
+	be a function or variable.
+
+2025-02-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118053
+	* constexpr.cc (cxx_eval_constant_expression): Generalize
+	DECL_VALUE_EXPR invisiref handling.
+
 2025-02-14  Marek Polacek  <polacek@redhat.com>
 
 	* pt.cc (tsubst_expr) <COMPONENT_REF>: Assign the result of
