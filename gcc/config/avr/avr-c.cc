@@ -420,6 +420,9 @@ avr_cpu_cpp_builtins (cpp_reader *pfile)
   if (TARGET_RMW)
     cpp_define (pfile, "__AVR_ISA_RMW__");
 
+  if (TARGET_CVT)
+    cpp_define (pfile, "__AVR_CVT__");
+
   cpp_define_formatted (pfile, "__AVR_SFR_OFFSET__=0x%x",
 			avr_arch->sfr_offset);
 

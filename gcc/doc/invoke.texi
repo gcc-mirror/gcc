@@ -24468,7 +24468,7 @@ XJMP   exit
 Instead, put @code{main} in section
 @w{@uref{https://avrdudes.github.io/avr-libc/avr-libc-user-manual/mem_sections.html#sec_dot_init,@code{.init9}}}
 so that no call is required.
-By setting this options the user asserts that @code{main} will not return.
+By setting this option the user asserts that @code{main} will not return.
 
 This option can be used for devices with very limited resources in order
 to save a few bytes of code and stack space.  It will work as expected since
@@ -24833,6 +24833,10 @@ is defined to @code{atmega8}.
 
 If @var{device} is not a device but only a core architecture like
 @samp{avr51}, this macro is not defined.
+
+@item __AVR_CVT__
+The code is being compiled with option @code{-mcvt} to use a
+@emph{compact vector table}.
 
 @item __AVR_XMEGA__
 The device / architecture belongs to the XMEGA family of devices.
