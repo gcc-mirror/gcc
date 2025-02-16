@@ -3603,7 +3603,7 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
        if (bit_size(rhs) < bit_size(lhs))  ! Checked here.
 	 return lhs ** rhs;
 
-       mask = (1 < bit_size(a) - 1) / 2;
+       mask = 1 << (bit_size(a) - 1) / 2;
        return lhs ** (n & rhs);
      }
    if (rhs > bit_size(lhs))  ! Checked here.
@@ -3623,13 +3623,13 @@ gfc_conv_cst_uint_power (gfc_se * se, tree lhs, tree rhs)
   tree vartmp_odd[POWI_TABLE_SIZE], vartmp_even[POWI_TABLE_SIZE];
 
   /* Anything ** 0 is one.  */
-  if (tree_int_cst_sgn (rhs) == 0)
+  if (integer_zerop (rhs))
     {
       se->expr = build_int_cst (type, 1);
       return 1;
     }
 
-  if (!wi::fits_shwi_p (wrhs))
+  if (!wi::fits_uhwi_p (wrhs))
     return 0;
 
   n = wrhs.to_uhwi ();
@@ -3641,19 +3641,18 @@ gfc_conv_cst_uint_power (gfc_se * se, tree lhs, tree rhs)
 			    tmp, build_int_cst (type, 1));
 
   lhs_prec = TYPE_PRECISION (type);
-  rhs_prec = TYPE_PRECISION (TREE_TYPE(rhs));
+  rhs_prec = TYPE_PRECISION (TREE_TYPE (rhs));
 
-  if (rhs_prec >= lhs_prec)
+  if (rhs_prec >= lhs_prec && lhs_prec <= HOST_BITS_PER_WIDE_INT)
     {
-      unsigned HOST_WIDE_INT mask;
-      mask = (((unsigned HOST_WIDE_INT) 1) << (lhs_prec - 1)) - 1;
+      unsigned HOST_WIDE_INT mask = (HOST_WIDE_INT_1U << (lhs_prec - 1)) - 1;
       n_odd = n & mask;
     }
   else
     n_odd = n;
 
   memset (vartmp_odd, 0, sizeof (vartmp_odd));
-  vartmp_odd[0] = build_int_cst(type, 1);
+  vartmp_odd[0] = build_int_cst (type, 1);
   vartmp_odd[1] = lhs;
   odd_branch = gfc_conv_powi (se, n_odd, vartmp_odd);
   even_branch = NULL_TREE;
@@ -3665,7 +3664,7 @@ gfc_conv_cst_uint_power (gfc_se * se, tree lhs, tree rhs)
       if (n_odd != n)
 	{
 	  memset (vartmp_even, 0, sizeof (vartmp_even));
-	  vartmp_even[0] = build_int_cst(type, 1);
+	  vartmp_even[0] = build_int_cst (type, 1);
 	  vartmp_even[1] = lhs;
 	  even_branch = gfc_conv_powi (se, n, vartmp_even);
 	}
