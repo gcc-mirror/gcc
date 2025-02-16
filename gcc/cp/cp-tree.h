@@ -514,6 +514,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       OVL_LOOKUP_P (in OVERLOAD)
       LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE, NAMESPACE_DECL)
       FNDECL_MANIFESTLY_CONST_EVALUATED (in FUNCTION_DECL)
+      TARGET_EXPR_INTERNAL_P (in TARGET_EXPR)
    5: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
@@ -5607,6 +5608,11 @@ decl_template_parm_check (const_tree t, const char *f, int l, const char *fn)
    materialize as a temporary.  */
 #define TARGET_EXPR_ELIDING_P(NODE) \
   TREE_LANG_FLAG_3 (TARGET_EXPR_CHECK (NODE))
+
+/* True if this TARGET_EXPR is for holding an implementation detail like a
+   cleanup flag or loop index, and should be ignored by extend_all_temps.  */
+#define TARGET_EXPR_INTERNAL_P(NODE) \
+  TREE_LANG_FLAG_4 (TARGET_EXPR_CHECK (NODE))
 
 /* True if NODE is a TARGET_EXPR that just expresses a copy of its INITIAL; if
    the initializer has void type, it's doing something more complicated.  */

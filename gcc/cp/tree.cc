@@ -984,9 +984,7 @@ get_internal_target_expr (tree init)
   init = convert_bitfield_to_declared_type (init);
   tree t = build_target_expr_with_type (init, TREE_TYPE (init),
 					tf_warning_or_error);
-  /* No internal variable should have a cleanup on the normal path, and
-     extend_temps_r checks this flag to decide whether to extend.  */
-  CLEANUP_EH_ONLY (t) = true;
+  TARGET_EXPR_INTERNAL_P (t) = true;
   return t;
 }
 

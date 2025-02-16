@@ -14922,10 +14922,13 @@ extend_temps_r (tree *tp, int *walk_subtrees, void *data)
   if (TREE_CODE (*p) == TARGET_EXPR
       /* An eliding TARGET_EXPR isn't a temporary at all.  */
       && !TARGET_EXPR_ELIDING_P (*p)
-      /* A TARGET_EXPR with CLEANUP_EH_ONLY is an artificial variable used
-	 during initialization, and need not be extended.  */
-      && !CLEANUP_EH_ONLY (*p))
+      /* A TARGET_EXPR with TARGET_EXPR_INTERNAL_P is an artificial variable
+	 used during initialization that need not be extended.  */
+      && !TARGET_EXPR_INTERNAL_P (*p))
     {
+      /* A CLEANUP_EH_ONLY expr should also have TARGET_EXPR_INTERNAL_P.  */
+      gcc_checking_assert (!CLEANUP_EH_ONLY (*p));
+
       tree subinit = NULL_TREE;
       tree slot = TARGET_EXPR_SLOT (*p);
       *p = set_up_extended_ref_temp (d->decl, *p, d->cleanups, &subinit,

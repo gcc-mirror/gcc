@@ -459,7 +459,6 @@ maybe_push_temp_cleanup (tree sub, vec<tree,va_gc> **flags)
     {
       tree tx = get_internal_target_expr (boolean_true_node);
       tree flag = TARGET_EXPR_SLOT (tx);
-      CLEANUP_EH_ONLY (tx) = true;
       TARGET_EXPR_CLEANUP (tx) = build3 (COND_EXPR, void_type_node,
 					 flag, cleanup, void_node);
       add_stmt (tx);
