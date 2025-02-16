@@ -808,6 +808,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_bucket_index(__hash_code __c) const
       { return __hash_code_base::_M_bucket_index(__c, _M_bucket_count); }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+      // Get hash code for a node that comes from another _Hashtable.
+      // Reuse a cached hash code if the hash function is stateless,
+      // otherwise recalculate it using our own hash function.
+      __hash_code
+      _M_hash_code_ext(const __node_value_type& __from) const
+      {
+	if constexpr (__and_<__hash_cached, is_empty<_Hash>>::value)
+	  return __from._M_hash_code;
+	else
+	  return this->_M_hash_code(_ExtractKey{}(__from._M_v()));
+      }
+
+      // Like _M_bucket_index but when the node is coming from another
+      // container instance.
+      size_type
+      _M_bucket_index_ext(const __node_value_type& __from) const
+      { return _RangeHash{}(_M_hash_code_ext(__from), _M_bucket_count); }
+
+      void
+      _M_copy_code(__node_value_type& __to,
+		   const __node_value_type& __from) const
+      {
+	if constexpr (__hash_cached::value)
+	  __to._M_hash_code = _M_hash_code_ext(__from);
+      }
+
+      void
+      _M_store_code(__node_value_type& __to, __hash_code __code) const
+      {
+	if constexpr (__hash_cached::value)
+	  __to._M_hash_code = __code;
+      }
+#pragma GCC diagnostic pop
+
       // Find and insert helper functions and types
 
       // Find the node before the one matching the criteria.
@@ -1210,15 +1246,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // with a hash function that might not match this->hash_function().
       template<typename _H2>
 	__hash_code
-	_M_src_hash_code(const _H2&, const key_type& __k,
-			 const __node_value_type& __src_n) const
+	_M_src_hash_code(const _H2&, const __node_value_type& __src_n) const
 	{
-	  if constexpr (std::is_same_v<_H2, _Hash>)
-	    if constexpr (std::is_empty_v<_Hash>)
-	      // If the node has a cached hash code, it's OK to use it.
-	      return this->_M_hash_code(__src_n);
-
-	  return this->_M_hash_code(__k);
+	  if constexpr (__and_<__hash_cached,
+			is_same<_H2, _Hash>, is_empty<_Hash>>::value)
+	    // If the node has a cached hash code, it's OK to use it.
+	    return __src_n._M_hash_code;
+	  else
+	    return this->_M_hash_code(_ExtractKey{}(__src_n._M_v()));
 	}
 
     public:
@@ -1327,9 +1362,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	do
 	  {
 	    const auto& __node = static_cast<__node_type&>(*__prev->_M_nxt);
-	    const key_type& __k = _ExtractKey{}(__node._M_v());
-	    // Hash code from this->hash_function():
-	    auto __code = _M_src_hash_code(__src.hash_function(), __k, __node);
+	    // Hash code from this:
+	    auto __code = _M_hash_code_ext(__node);
 	    // Bucket index in __src, using code from __src.hash_function():
 	    size_type __src_bkt = __src._M_bucket_index(__node);
 	    auto __nh = __src._M_extract_node(__src_bkt, __prev);
@@ -1355,9 +1389,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  for (auto __i = __src.cbegin(), __end = __src.cend(); __i != __end;)
 	    {
 	      auto __pos = __i++;
-	      const key_type& __k = _ExtractKey{}(*__pos);
 	      __hash_code __code
-		= _M_src_hash_code(__src.hash_function(), __k, *__pos._M_cur);
+		= _M_src_hash_code(__src.hash_function(), *__pos._M_cur);
 	      auto __nh = __src.extract(__pos);
 	      __hint = _M_insert_multi_node(__hint, __code, __nh._M_ptr)._M_cur;
 	      __nh.release();
@@ -1587,7 +1620,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__node_ptr __ht_n = __ht._M_begin();
 	__node_ptr __this_n
 	  = __node_gen(static_cast<_FromVal>(__ht_n->_M_v()));
-	this->_M_copy_code(*__this_n, *__ht_n);
+	_M_copy_code(*__this_n, *__ht_n);
 	_M_update_bbegin(__this_n);
 
 	// Then deal with other nodes.
@@ -1596,7 +1629,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    __this_n = __node_gen(static_cast<_FromVal>(__ht_n->_M_v()));
 	    __prev_n->_M_nxt = __this_n;
-	    this->_M_copy_code(*__this_n, *__ht_n);
+	    _M_copy_code(*__this_n, *__ht_n);
 	    size_type __bkt = _M_bucket_index(*__this_n);
 	    if (!_M_buckets[__bkt])
 	      _M_buckets[__bkt] = __prev_n;
@@ -2437,7 +2470,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       __rehash_guard._M_guarded_obj = nullptr;
-      this->_M_store_code(*__node, __code);
+      _M_store_code(*__node, __code);
 
       // Always insert at the beginning of the bucket.
       _M_insert_bucket_begin(__bkt, __node);
@@ -2464,7 +2497,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_rehash(__do_rehash.second, false_type{});
 
       __rehash_guard._M_guarded_obj = nullptr;
-      this->_M_store_code(*__node, __code);
+      _M_store_code(*__node, __code);
       const key_type& __k = _ExtractKey{}(__node->_M_v());
       size_type __bkt = _M_bucket_index(__code);
 
@@ -2851,7 +2884,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if constexpr (__unique_keys::value)
 	for (auto __x_n = _M_begin(); __x_n; __x_n = __x_n->_M_next())
 	  {
-	    std::size_t __ybkt = __other._M_bucket_index(*__x_n);
+	    std::size_t __ybkt = __other._M_bucket_index_ext(*__x_n);
 	    auto __prev_n = __other._M_buckets[__ybkt];
 	    if (!__prev_n)
 	      return false;
@@ -2878,7 +2911,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 __x_n_end = __x_n_end->_M_next())
 	      ++__x_count;
 
-	    std::size_t __ybkt = __other._M_bucket_index(*__x_n);
+	    std::size_t __ybkt = __other._M_bucket_index_ext(*__x_n);
 	    auto __y_prev_n = __other._M_buckets[__ybkt];
 	    if (!__y_prev_n)
 	      return false;

@@ -417,6 +417,51 @@ test09()
   VERIFY( c2.size() == 3 );
 }
 
+struct slow_stateful_hash
+{
+  size_t seed = 0;
+
+  auto operator()(const int& i) const noexcept
+  { return std::hash<int>()(i) + seed; }
+};
+
+namespace std
+{
+  template<>
+    struct __is_fast_hash<slow_stateful_hash> : public std::false_type
+    { };
+}
+
+void
+test10()
+{
+  using map_type = std::unordered_map<int, int, slow_stateful_hash>;
+  map_type c1({ {1, 1}, {3, 3}, {5, 5} }, 0, slow_stateful_hash{1});
+  map_type c2({ {2, 2}, {4, 4}, {6, 6} }, 0, slow_stateful_hash{2});
+  const auto c3 = c2;
+
+  c1.merge(c2);
+  VERIFY( c1.size() == 6 );
+  VERIFY( c2.empty() );
+
+  c2 = c3;
+  c1.clear();
+  c1.merge(std::move(c2));
+  VERIFY( c1 == c3 );
+  VERIFY( c2.empty() );
+
+  c2.merge(std::move(c1));
+  VERIFY( c1.empty() );
+  VERIFY( c2 == c3 );
+
+  c2.merge(c1);
+  VERIFY( c1.empty() );
+  VERIFY( c2 == c3 );
+
+  c2.merge(c2);
+  VERIFY( c2 == c3 );
+}
+
 int
 main()
 {
@@ -429,4 +474,5 @@ main()
   test07();
   test08();
   test09();
+  test10();
 }
