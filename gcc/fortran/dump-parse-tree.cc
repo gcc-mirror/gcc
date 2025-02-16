@@ -1017,10 +1017,6 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" AUTOMATIC", dumpfile);
   if (attr->class_pointer)
     fputs (" CLASS-POINTER", dumpfile);
-  if (attr->save == SAVE_EXPLICIT)
-    fputs (" SAVE-EXPLICIT", dumpfile);
-  if (attr->save == SAVE_IMPLICIT)
-    fputs (" SAVE-IMPLICIT", dumpfile);
   if (attr->used_in_submodule)
     fputs (" USED-IN-SUBMODULE", dumpfile);
   if (attr->use_only)
