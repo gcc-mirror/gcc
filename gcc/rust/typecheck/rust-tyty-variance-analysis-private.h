@@ -168,6 +168,8 @@ public:
   {
     // TODO
   }
+
+  void visit (OpaqueType &type) override {}
 };
 
 /** Per crate context for generic type variance analysis. */

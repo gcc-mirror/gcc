@@ -485,6 +485,7 @@ private:
       case TyTy::PROJECTION: // TODO: DUNNO
       case TyTy::CLOSURE:    // TODO: DUNNO
       case TyTy::DYNAMIC:    // TODO: dunno
+      case TyTy::OPAQUE:
 	return false;
       }
     rust_unreachable ();

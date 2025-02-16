@@ -136,6 +136,7 @@ TypeBoundsProbe::assemble_sized_builtin ()
     case TyTy::NEVER:
     case TyTy::PLACEHOLDER:
     case TyTy::PROJECTION:
+    case TyTy::OPAQUE:
       assemble_builtin_candidate (LangItem::Kind::SIZED);
       break;
 
