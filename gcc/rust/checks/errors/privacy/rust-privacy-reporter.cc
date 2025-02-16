@@ -271,6 +271,8 @@ PrivacyReporter::check_base_type_privacy (Analysis::NodeMapping &node_mappings,
       // We shouldn't have inference types here, ever
     case TyTy::INFER:
       return;
+    case TyTy::OPAQUE:
+      return;
     case TyTy::ERROR:
       return;
     }

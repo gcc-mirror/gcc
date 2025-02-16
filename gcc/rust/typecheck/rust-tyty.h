@@ -73,6 +73,7 @@ enum TypeKind
   PROJECTION,
   DYNAMIC,
   CLOSURE,
+  OPAQUE,
   // there are more to add...
   ERROR
 };
@@ -406,6 +407,39 @@ private:
   bool is_trait_self;
   std::string symbol;
   HIR::GenericParam &param;
+};
+
+class OpaqueType : public BaseType
+{
+public:
+  static constexpr auto KIND = TypeKind::OPAQUE;
+
+  OpaqueType (location_t locus, HirId ref,
+	      std::vector<TypeBoundPredicate> specified_bounds,
+	      std::set<HirId> refs = std::set<HirId> ());
+
+  OpaqueType (location_t locus, HirId ref, HirId ty_ref,
+	      std::vector<TypeBoundPredicate> specified_bounds,
+	      std::set<HirId> refs = std::set<HirId> ());
+
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  std::string as_string () const override;
+
+  bool can_eq (const BaseType *other, bool emit_errors) const override final;
+
+  BaseType *clone () const final override;
+
+  bool can_resolve () const;
+
+  BaseType *resolve () const;
+
+  std::string get_name () const override final;
+
+  bool is_equal (const BaseType &other) const override;
+
+  OpaqueType *handle_substitions (SubstitutionArgumentMappings &mappings);
 };
 
 class StructFieldType

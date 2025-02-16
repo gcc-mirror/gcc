@@ -731,6 +731,12 @@ TyTyResolveCompile::visit (const TyTy::DynamicObjectType &type)
 				    type.get_ident ().locus);
 }
 
+void
+TyTyResolveCompile::visit (const TyTy::OpaqueType &type)
+{
+  translated = error_mark_node;
+}
+
 tree
 TyTyResolveCompile::create_dyn_obj_record (const TyTy::DynamicObjectType &type)
 {

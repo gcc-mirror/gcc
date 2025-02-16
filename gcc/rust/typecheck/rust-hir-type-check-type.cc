@@ -674,6 +674,8 @@ TypeCheckType::visit (HIR::TraitObjectType &type)
 void
 TypeCheckType::visit (HIR::ParenthesisedType &type)
 {
+  // I think this really needs to be a tuple.. but will sort that out when we
+  // fix the parser issue
   translated = TypeCheckType::Resolve (type.get_type_in_parens ());
 }
 
@@ -724,7 +726,7 @@ TypeCheckType::visit (HIR::ReferenceType &type)
   translated = new TyTy::ReferenceType (type.get_mappings ().get_hirid (),
 					TyTy::TyVar (base->get_ref ()),
 					type.get_mut (), region.value ());
-} // namespace Resolver
+}
 
 void
 TypeCheckType::visit (HIR::RawPointerType &type)
@@ -752,6 +754,39 @@ TypeCheckType::visit (HIR::NeverType &type)
   rust_assert (ok);
 
   translated = lookup->clone ();
+}
+
+void
+TypeCheckType::visit (HIR::ImplTraitType &type)
+{
+  std::vector<TyTy::TypeBoundPredicate> specified_bounds;
+  for (auto &bound : type.get_type_param_bounds ())
+    {
+      if (bound->get_bound_type ()
+	  != HIR::TypeParamBound::BoundType::TRAITBOUND)
+	continue;
+
+      HIR::TypeParamBound &b = *bound.get ();
+      HIR::TraitBound &trait_bound = static_cast<HIR::TraitBound &> (b);
+
+      auto binder_pin = context->push_lifetime_binder ();
+      for (auto &lifetime_param : trait_bound.get_for_lifetimes ())
+	{
+	  context->intern_and_insert_lifetime (lifetime_param.get_lifetime ());
+	}
+
+      TyTy::TypeBoundPredicate predicate = get_predicate_from_bound (
+	trait_bound.get_path (),
+	tl::nullopt /*this will setup a PLACEHOLDER for self*/);
+
+      if (!predicate.is_error ()
+	  && predicate.is_object_safe (true, type.get_locus ()))
+	specified_bounds.push_back (std::move (predicate));
+    }
+
+  translated = new TyTy::OpaqueType (type.get_locus (),
+				     type.get_mappings ().get_hirid (),
+				     specified_bounds);
 }
 
 TyTy::ParamType *

@@ -60,16 +60,11 @@ public:
   void visit (HIR::NeverType &type) override;
   void visit (HIR::TraitObjectType &type) override;
   void visit (HIR::ParenthesisedType &type) override;
+  void visit (HIR::ImplTraitType &type) override;
 
-  void visit (HIR::TypePathSegmentFunction &segment) override
-  { /* TODO */
-  }
-  void visit (HIR::TraitBound &bound) override
-  { /* TODO */
-  }
-  void visit (HIR::ImplTraitType &type) override
-  { /* TODO */
-  }
+  // These dont need to be implemented as they are segments or part of types
+  void visit (HIR::TypePathSegmentFunction &segment) override {}
+  void visit (HIR::TraitBound &bound) override {}
 
 private:
   TypeCheckType (HirId id)

@@ -61,6 +61,7 @@ public:
   void visit (ProjectionType &) override { rust_unreachable (); }
   void visit (DynamicObjectType &) override { rust_unreachable (); }
   void visit (ClosureType &type) override { rust_unreachable (); }
+  void visit (OpaqueType &type) override { rust_unreachable (); }
 
   // tuple-structs
   void visit (ADTType &type) override;
