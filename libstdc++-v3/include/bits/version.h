@@ -581,7 +581,12 @@
 #undef __glibcxx_want_gcd_lcm
 
 #if !defined(__cpp_lib_raw_memory_algorithms)
-# if (__cplusplus >= 201703L)
+# if (__cplusplus >  202302L) && (__cpp_constexpr >= 202406L)
+#  define __glibcxx_raw_memory_algorithms 202411L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_raw_memory_algorithms)
+#   define __cpp_lib_raw_memory_algorithms 202411L
+#  endif
+# elif (__cplusplus >= 201703L)
 #  define __glibcxx_raw_memory_algorithms 201606L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_raw_memory_algorithms)
 #   define __cpp_lib_raw_memory_algorithms 201606L

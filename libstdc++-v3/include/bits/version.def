@@ -522,6 +522,11 @@ ftms = {
 ftms = {
   name = raw_memory_algorithms;
   values = {
+    v = 202411;
+    cxxmin = 26;
+    extra_cond = "__cpp_constexpr >= 202406L";
+  };
+  values = {
     v = 201606;
     cxxmin = 17;
   };

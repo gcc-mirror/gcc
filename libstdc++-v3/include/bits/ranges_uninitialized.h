@@ -105,15 +105,18 @@ namespace ranges
 	const _Iter* _M_cur;
 
       public:
+	constexpr
 	explicit
 	_DestroyGuard(const _Iter& __iter)
 	  : _M_first(__iter), _M_cur(std::__addressof(__iter))
 	{ }
 
+	constexpr
 	void
 	release() noexcept
 	{ _M_cur = nullptr; }
 
+	constexpr
 	~_DestroyGuard()
 	{
 	  if (_M_cur != nullptr)
@@ -126,10 +129,12 @@ namespace ranges
 	&& is_trivially_destructible_v<iter_value_t<_Iter>>
       struct _DestroyGuard<_Iter>
       {
+	constexpr
 	explicit
 	_DestroyGuard(const _Iter&)
 	{ }
 
+	constexpr
 	void
 	release() noexcept
 	{ }
@@ -141,6 +146,7 @@ namespace ranges
     template<__detail::__nothrow_forward_iterator _Iter,
 	     __detail::__nothrow_sentinel<_Iter> _Sent>
       requires default_initializable<iter_value_t<_Iter>>
+      _GLIBCXX26_CONSTEXPR
       _Iter
       operator()(_Iter __first, _Sent __last) const
       {
@@ -159,6 +165,7 @@ namespace ranges
 
     template<__detail::__nothrow_forward_range _Range>
       requires default_initializable<range_value_t<_Range>>
+      _GLIBCXX26_CONSTEXPR
       borrowed_iterator_t<_Range>
       operator()(_Range&& __r) const
       {
@@ -173,6 +180,7 @@ namespace ranges
   {
     template<__detail::__nothrow_forward_iterator _Iter>
       requires default_initializable<iter_value_t<_Iter>>
+      _GLIBCXX26_CONSTEXPR
       _Iter
       operator()(_Iter __first, iter_difference_t<_Iter> __n) const
       {
@@ -198,6 +206,7 @@ namespace ranges
     template<__detail::__nothrow_forward_iterator _Iter,
 	     __detail::__nothrow_sentinel<_Iter> _Sent>
       requires default_initializable<iter_value_t<_Iter>>
+      _GLIBCXX26_CONSTEXPR
       _Iter
       operator()(_Iter __first, _Sent __last) const
       {
@@ -217,6 +226,7 @@ namespace ranges
 
     template<__detail::__nothrow_forward_range _Range>
       requires default_initializable<range_value_t<_Range>>
+      _GLIBCXX26_CONSTEXPR
       borrowed_iterator_t<_Range>
       operator()(_Range&& __r) const
       {
@@ -231,6 +241,7 @@ namespace ranges
   {
     template<__detail::__nothrow_forward_iterator _Iter>
       requires default_initializable<iter_value_t<_Iter>>
+      _GLIBCXX26_CONSTEXPR
       _Iter
       operator()(_Iter __first, iter_difference_t<_Iter> __n) const
       {
@@ -261,6 +272,7 @@ namespace ranges
 	     __detail::__nothrow_forward_iterator _Out,
 	     __detail::__nothrow_sentinel<_Out> _OSent>
       requires constructible_from<iter_value_t<_Out>, iter_reference_t<_Iter>>
+      _GLIBCXX26_CONSTEXPR
       uninitialized_copy_result<_Iter, _Out>
       operator()(_Iter __ifirst, _ISent __ilast,
 		 _Out __ofirst, _OSent __olast) const
@@ -292,6 +304,7 @@ namespace ranges
     template<input_range _IRange, __detail::__nothrow_forward_range _ORange>
       requires constructible_from<range_value_t<_ORange>,
 				  range_reference_t<_IRange>>
+      _GLIBCXX26_CONSTEXPR
       uninitialized_copy_result<borrowed_iterator_t<_IRange>,
 				borrowed_iterator_t<_ORange>>
       operator()(_IRange&& __inr, _ORange&& __outr) const
@@ -311,6 +324,7 @@ namespace ranges
     template<input_iterator _Iter, __detail::__nothrow_forward_iterator _Out,
 	     __detail::__nothrow_sentinel<_Out> _Sent>
       requires constructible_from<iter_value_t<_Out>, iter_reference_t<_Iter>>
+      _GLIBCXX26_CONSTEXPR
       uninitialized_copy_n_result<_Iter, _Out>
       operator()(_Iter __ifirst, iter_difference_t<_Iter> __n,
 		 _Out __ofirst, _Sent __olast) const
@@ -350,6 +364,7 @@ namespace ranges
 	     __detail::__nothrow_sentinel<_Out> _OSent>
       requires constructible_from<iter_value_t<_Out>,
 				  iter_rvalue_reference_t<_Iter>>
+      _GLIBCXX26_CONSTEXPR
       uninitialized_move_result<_Iter, _Out>
       operator()(_Iter __ifirst, _ISent __ilast,
 		 _Out __ofirst, _OSent __olast) const
@@ -384,6 +399,7 @@ namespace ranges
     template<input_range _IRange, __detail::__nothrow_forward_range _ORange>
       requires constructible_from<range_value_t<_ORange>,
 	       range_rvalue_reference_t<_IRange>>
+      _GLIBCXX26_CONSTEXPR
       uninitialized_move_result<borrowed_iterator_t<_IRange>,
 				borrowed_iterator_t<_ORange>>
       operator()(_IRange&& __inr, _ORange&& __outr) const
@@ -404,6 +420,7 @@ namespace ranges
       __detail::__nothrow_sentinel<_Out> _Sent>
 	requires constructible_from<iter_value_t<_Out>,
 				    iter_rvalue_reference_t<_Iter>>
+      _GLIBCXX26_CONSTEXPR
       uninitialized_move_n_result<_Iter, _Out>
       operator()(_Iter __ifirst, iter_difference_t<_Iter> __n,
 		 _Out __ofirst, _Sent __olast) const
@@ -441,6 +458,7 @@ namespace ranges
     template<__detail::__nothrow_forward_iterator _Iter,
 	     __detail::__nothrow_sentinel<_Iter> _Sent, typename _Tp>
       requires constructible_from<iter_value_t<_Iter>, const _Tp&>
+      _GLIBCXX26_CONSTEXPR
       _Iter
       operator()(_Iter __first, _Sent __last, const _Tp& __x) const
       {
@@ -460,6 +478,7 @@ namespace ranges
 
     template<__detail::__nothrow_forward_range _Range, typename _Tp>
       requires constructible_from<range_value_t<_Range>, const _Tp&>
+      _GLIBCXX26_CONSTEXPR
       borrowed_iterator_t<_Range>
       operator()(_Range&& __r, const _Tp& __x) const
       {
@@ -473,6 +492,7 @@ namespace ranges
   {
     template<__detail::__nothrow_forward_iterator _Iter, typename _Tp>
       requires constructible_from<iter_value_t<_Iter>, const _Tp&>
+      _GLIBCXX26_CONSTEXPR
       _Iter
       operator()(_Iter __first, iter_difference_t<_Iter> __n,
 		 const _Tp& __x) const
@@ -573,6 +593,7 @@ namespace ranges
 }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+
 #endif // concepts
 #endif // C++20
 #endif // _RANGES_UNINITIALIZED_H
