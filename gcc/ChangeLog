@@ -1,3 +1,41 @@
+2025-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118248
+	* config/riscv/riscv-string.cc (riscv_block_move_straight): Only
+	allocate REGS buffer if it will be needed.
+
+2025-02-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118764
+	* config/avr/avr-c.cc (avr_cpu_cpp_builtins)
+	[TARGET_CVT]: Define __AVR_CVT__.
+	* doc/invoke.texi (AVR Built-in Macros): Document __AVR_CVT__.
+
+2025-02-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_result_regno_unused_p): New static function.
+	(avr_out_bitop): Only output result bytes that are used.
+	(avr_out_plus_1): Same.
+
+2025-02-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-protos.h (avr_builtin_supported_p): Remove.
+	* config/avr/avr.cc (avr_init_builtins): Don't initialize
+	non-available built-ins with NULL_TREE.
+	(avr_builtin_supported_p): Move to...
+	* config/avr/avr-c.cc: ...here.
+	(avr_resolve_overloaded_builtin): Run avr_builtin_supported_p.
+
+2025-02-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/109780
+	PR target/109093
+	* config/i386/i386.cc (ix86_update_stack_alignment): New.
+	(ix86_find_all_reg_use_1): Likewise.
+	(ix86_find_all_reg_use): Likewise.
+	(ix86_find_max_used_stack_alignment): Also check memory accesses
+	from registers defined by stack or frame registers.
+
 2025-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/98028

@@ -1,3 +1,23 @@
+2025-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118248
+	* gcc.target/riscv/pr118248.c: New test.
+
+2025-02-16  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117324
+	* g++.dg/parse/defarg19.C: New test.
+
+2025-02-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/109780
+	PR target/109093
+	* g++.target/i386/pr109780-1.C: New test.
+	* gcc.target/i386/pr109093-1.c: Likewise.
+	* gcc.target/i386/pr109780-1.c: Likewise.
+	* gcc.target/i386/pr109780-2.c: Likewise.
+	* gcc.target/i386/pr109780-3.c: Likewise.
+
 2025-02-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/98028
