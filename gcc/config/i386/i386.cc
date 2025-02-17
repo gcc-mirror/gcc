@@ -8538,31 +8538,9 @@ ix86_find_all_reg_use (HARD_REG_SET &stack_slot_access,
       for (int i = 0; i < XVECLEN (pat, 0); i++)
 	{
 	  rtx exp = XVECEXP (pat, 0, i);
-	  switch (GET_CODE (exp))
-	    {
-	    case ASM_OPERANDS:
-	    case CLOBBER:
-	    case PREFETCH:
-	    case USE:
-	      break;
-	    case UNSPEC:
-	    case UNSPEC_VOLATILE:
-	      for (int j = XVECLEN (exp, 0) - 1; j >= 0; j--)
-		{
-		  rtx x = XVECEXP (exp, 0, j);
-		  if (GET_CODE (x) == SET)
-		    ix86_find_all_reg_use_1 (x, stack_slot_access,
-					     worklist);
-		}
-	      break;
-	    case SET:
-	      ix86_find_all_reg_use_1 (exp, stack_slot_access,
-				       worklist);
-	      break;
-	    default:
-	      gcc_unreachable ();
-	      break;
-	    }
+
+	  if (GET_CODE (exp) == SET)
+	    ix86_find_all_reg_use_1 (exp, stack_slot_access, worklist);
 	}
     }
 }
