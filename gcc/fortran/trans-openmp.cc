@@ -8913,6 +8913,7 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 						NULL_TREE, false))
 		{
 		  tree need_device_ptr_list = NULL_TREE;
+		  tree need_device_addr_list = NULL_TREE;
 		  tree append_args_tree = NULL_TREE;
 		  tree id = get_identifier ("omp declare variant base");
 		  tree variant = gfc_get_symbol_decl (variant_proc_sym);
@@ -8926,13 +8927,14 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 		      if (ns->proc_name->ts.type == BT_CHARACTER)
 			arg_idx_offset++;
 		    }
+		  int nargs = 0;
+		  for (gfc_formal_arglist *arg
+			= gfc_sym_get_dummy_args (ns->proc_name);
+		       arg; arg = arg->next)
+		    nargs++;
 		  if (odv->append_args_list)
 		    {
-		      int append_arg_no = arg_idx_offset;
-		      gfc_formal_arglist *arg;
-		      for (arg = gfc_sym_get_dummy_args (ns->proc_name); arg;
-			   arg = arg->next)
-			append_arg_no++;
+		      int append_arg_no = arg_idx_offset + nargs;
 		      tree last_arg = NULL_TREE;
 		      for (gfc_omp_namelist *n = odv->append_args_list;
 			   n != NULL; n = n->next)
@@ -8965,59 +8967,193 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 			  else
 			    append_args_tree = last_arg = t;
 			}
-		      /* Store as (purpose = arg number to be used for inserting
-			 and value = list of interop items.  */
+		      /* Store as 'purpose' = arg number to be used for inserting
+			 and 'value' = list of interop items.  */
 		      append_args_tree = build_tree_list (
 					   build_int_cst (integer_type_node,
 							  append_arg_no),
 					   append_args_tree);
 		    }
-
-		  if (odv->adjust_args_list)
-		    need_device_ptr_list = make_node (TREE_LIST);
 		  vec<gfc_symbol *> adjust_args_list = vNULL;
 		  for (gfc_omp_namelist *arg_list = odv->adjust_args_list;
 		       arg_list != NULL; arg_list = arg_list->next)
 		    {
-		      if (!arg_list->sym->attr.dummy)
+		      int from, to;
+		      if (arg_list->expr == NULL || arg_list->sym)
+			from = ((arg_list->u.adj_args.omp_num_args_minus
+				 || arg_list->u.adj_args.omp_num_args_plus)
+				? nargs : 1);
+		      else
 			{
-			  gfc_error (
-			    "list item %qs at %L is not a dummy argument",
-			    arg_list->sym->name, &arg_list->where);
-			  continue;
+			  if (arg_list->u.adj_args.omp_num_args_plus)
+			    mpz_add_ui (arg_list->expr->value.integer,
+					arg_list->expr->value.integer, nargs);
+			  if (arg_list->u.adj_args.omp_num_args_minus)
+			    mpz_ui_sub (arg_list->expr->value.integer, nargs,
+					arg_list->expr->value.integer);
+			  if (mpz_sgn (arg_list->expr->value.integer) <= 0)
+			    {
+			      gfc_warning (OPT_Wopenmp,
+					   "Expected positive argument index "
+					   "at %L", &arg_list->where);
+			      from = 1;
+			    }
+			  else
+			    from
+			      = (mpz_fits_sint_p (arg_list->expr->value.integer)
+				 ? mpz_get_si (arg_list->expr->value.integer)
+				 : INT_MAX);
+			  if (from > nargs)
+			    gfc_warning (OPT_Wopenmp,
+					 "Argument index at %L exceeds number "
+					 "of arguments %d", &arg_list->where,
+					 nargs);
 			}
-		      if (adjust_args_list.contains (arg_list->sym))
+		      locus loc = arg_list->where;
+		      if (!arg_list->u.adj_args.range_start)
+			to = from;
+		      else
 			{
-			  gfc_error ("%qs at %L is specified more than once",
-				     arg_list->sym->name, &arg_list->where);
-			  continue;
+			  loc = gfc_get_location_range (&arg_list->where, 0,
+							&arg_list->where, 0,
+							&arg_list->next->where);
+			  if (arg_list->next->expr == NULL)
+			    to = nargs;
+			  else
+			    {
+			      if (arg_list->next->u.adj_args.omp_num_args_plus)
+				mpz_add_ui (arg_list->next->expr->value.integer,
+					    arg_list->next->expr->value.integer,
+					    nargs);
+			      if (arg_list->next->u.adj_args.omp_num_args_minus)
+				mpz_ui_sub (arg_list->next->expr->value.integer,
+					    nargs,
+					    arg_list->next->expr->value.integer);
+			      if (mpz_sgn (arg_list->next->expr->value.integer)
+				  <= 0)
+				{
+				  gfc_warning (OPT_Wopenmp,
+					       "Expected positive argument "
+					       "index at %L", &loc);
+				  to = 0;
+				}
+			      else
+				to = mpz_get_si (
+				       arg_list->next->expr->value.integer);
+			    }
+			  if (from > to && to != 0)
+			    gfc_warning (OPT_Wopenmp,
+					 "Upper argument index smaller than "
+					 "lower one at %L", &loc);
+			  if (to > nargs)
+			    to = nargs;
+			  arg_list = arg_list->next;
 			}
-		      adjust_args_list.safe_push (arg_list->sym);
-		      if (arg_list->u.need_device_ptr)
+		      if (from > nargs)
+			continue;
+		      /* Change to zero based index.  */
+		      from--; to--;
+		      gfc_formal_arglist *arg = ns->proc_name->formal;
+		      if (!arg_list->sym && to >= from)
+			for (int idx = 0; idx < from; idx++)
+			  arg = arg->next;
+		      for (int idx = from; idx <= to; idx++)
 			{
-			  int idx;
-			  gfc_formal_arglist *arg;
-			  for (arg = ns->proc_name->formal, idx = 0;
-			       arg != NULL; arg = arg->next, idx++)
-			    if (arg->sym == arg_list->sym)
-			      break;
-			  gcc_assert (arg != NULL);
-			  // Store 0-based argument index,
-			  // as in gimplify_call_expr
-			  need_device_ptr_list = chainon (
-			    need_device_ptr_list,
-			    build_tree_list (
-			      NULL_TREE,
-			      build_int_cst (
-				integer_type_node,
-				idx + arg_idx_offset)));
+			  if (idx > from)
+			    arg = arg->next;
+			  if (arg_list->sym)
+			    {
+			      for (arg = ns->proc_name->formal, idx = 0;
+				   arg != NULL; arg = arg->next, idx++)
+				if (arg->sym == arg_list->sym)
+				  break;
+			      if (!arg || !arg_list->sym->attr.dummy)
+				{
+				  gfc_error ("List item %qs at %L, declared at "
+					     "%L, is not a dummy argument",
+					     arg_list->sym->name, &loc,
+					     &arg_list->sym->declared_at);
+				  continue;
+				}
+			    }
+			  if (arg_list->u.adj_args.need_ptr
+			      && (arg->sym->ts.f90_type != BT_VOID
+				  || !arg->sym->ts.u.derived->ts.is_iso_c
+				  || (arg->sym->ts.u.derived->intmod_sym_id
+				      != ISOCBINDING_PTR)
+				  || arg->sym->attr.dimension))
+			    {
+			      gfc_error ("Argument %qs at %L to list item in "
+					 "%<need_device_ptr%> at %L must be a "
+					 "scalar of TYPE(C_PTR)",
+					 arg->sym->name,
+					 &arg->sym->declared_at, &loc);
+			      if (!arg->sym->attr.value)
+				inform (gfc_get_location (&loc),
+					"Consider using %<need_device_addr%> "
+					"instead");
+			      continue;
+			    }
+			  if (arg_list->u.adj_args.need_addr
+			      && arg->sym->attr.value)
+			    {
+			      gfc_error ("Argument %qs at %L to list item in "
+					 "%<need_device_addr%> at %L must not "
+					 "have the VALUE attribute",
+					 arg->sym->name,
+					 &arg->sym->declared_at, &loc);
+			      continue;
+			    }
+			  if (adjust_args_list.contains (arg->sym))
+			    {
+			      gfc_error ("%qs at %L is specified more than "
+					 "once", arg->sym->name, &loc);
+			      continue;
+			    }
+			  adjust_args_list.safe_push (arg->sym);
+
+			  if (arg_list->u.adj_args.need_addr)
+			    {
+			      /* TODO: Has to to support OPTIONAL and array
+				 descriptors; should check for CLASS, coarrays?
+				 Reject "abc" and 123 as actual arguments (in
+				 gimplify.cc or in the FE? Reject noncontiguous
+				 actuals?  Cf. also PR C++/118859.
+				 Also check array-valued type(c_ptr).  */
+			      static bool warned = false;
+			      if (!warned)
+				sorry_at (gfc_get_location (&loc),
+					  "%<need_device_addr%> not yet "
+					  "supported");
+			      warned = true;
+			      continue;
+			    }
+			  if (arg_list->u.adj_args.need_ptr
+			      || arg_list->u.adj_args.need_addr)
+			    {
+			      // Store 0-based argument index,
+			      // as in gimplify_call_expr
+			      tree t
+				= build_tree_list (
+				    NULL_TREE,
+				    build_int_cst (integer_type_node,
+						   idx + arg_idx_offset));
+			      if (arg_list->u.adj_args.need_ptr)
+				need_device_ptr_list
+				  = chainon (need_device_ptr_list, t);
+			      else
+				need_device_addr_list
+				  = chainon (need_device_addr_list, t);
+			    }
 			}
 		    }
 		  tree t = NULL_TREE;
-		  if (need_device_ptr_list || append_args_tree)
+		  if (need_device_ptr_list
+		      || need_device_addr_list
+		      || append_args_tree)
 		    {
 		      t = build_tree_list (need_device_ptr_list,
-					   NULL_TREE /*need_device_addr */),
+					   need_device_addr_list),
 		      TREE_CHAIN (t) = append_args_tree;
 		      DECL_ATTRIBUTES (variant) = tree_cons (
 			get_identifier ("omp declare variant variant args"), t,

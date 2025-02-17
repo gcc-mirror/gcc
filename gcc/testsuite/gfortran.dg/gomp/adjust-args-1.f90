@@ -21,7 +21,7 @@ module main
       integer function f3 (a)
          import c_ptr
          type(c_ptr), intent(inout) :: a
-         !$omp declare variant (f1) match (construct={dispatch}) adjust_args (other: a) ! { dg-error "expected 'nothing' or 'need_device_ptr' at .1." }
+         !$omp declare variant (f1) match (construct={dispatch}) adjust_args (other: a) ! { dg-error "expected 'nothing', 'need_device_ptr' or 'need_device_addr' at .1." }
       end function
       integer function f4 (a)
          import c_ptr
@@ -30,15 +30,15 @@ module main
       end function
       integer function f5 (i)
          integer, intent(inout) :: i
-         !$omp declare variant (f1) match (construct={dispatch}) adjust_args () ! { dg-error "expected 'nothing' or 'need_device_ptr' at .1." }
+         !$omp declare variant (f1) match (construct={dispatch}) adjust_args () ! { dg-error "expected 'nothing', 'need_device_ptr' or 'need_device_addr' at .1." }
       end function
       integer function f6 (i)
          integer, intent(inout) :: i
-         !$omp declare variant (f1) match (construct={dispatch}) adjust_args (nothing) ! { dg-error "expected argument list at .1." }
+         !$omp declare variant (f1) match (construct={dispatch}) adjust_args (nothing) ! { dg-error "expected ':' at .1." }
       end function
       integer function f7 (i)
          integer, intent(inout) :: i
-         !$omp declare variant (f1) match (construct={dispatch}) adjust_args (nothing:) ! { dg-error "expected argument list at .1." }
+         !$omp declare variant (f1) match (construct={dispatch}) adjust_args (nothing:) ! { dg-error "expected dummy parameter name, 'omp_num_args' or constant positive integer at .1." }
       end function
 
    end interface

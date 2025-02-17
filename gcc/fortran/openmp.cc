@@ -6718,21 +6718,21 @@ gfc_match_omp_declare_variant (void)
 
       enum clause
       {
-	match,
-	adjust_args,
-	append_args
+	clause_match,
+	clause_adjust_args,
+	clause_append_args
       } ccode;
 
       if (gfc_match ("match") == MATCH_YES)
-	ccode = match;
+	ccode = clause_match;
       else if (gfc_match ("adjust_args") == MATCH_YES)
 	{
-	  ccode = adjust_args;
+	  ccode = clause_adjust_args;
 	  adjust_args_loc = gfc_current_locus;
 	}
       else if (gfc_match ("append_args") == MATCH_YES)
 	{
-	  ccode = append_args;
+	  ccode = clause_append_args;
 	  append_args_loc = gfc_current_locus;
 	}
       else
@@ -6741,13 +6741,13 @@ gfc_match_omp_declare_variant (void)
 	  break;
 	}
 
-      if (gfc_match (" (") != MATCH_YES)
+      if (gfc_match (" ( ") != MATCH_YES)
 	{
 	  gfc_error ("expected %<(%> at %C");
 	  return MATCH_ERROR;
 	}
 
-      if (ccode == match)
+      if (ccode == clause_match)
 	{
 	  if (has_match)
 	    {
@@ -6766,32 +6766,160 @@ gfc_match_omp_declare_variant (void)
 	      return MATCH_ERROR;
 	    }
 	}
-      else if (ccode == adjust_args)
+      else if (ccode == clause_adjust_args)
 	{
 	  has_adjust_args = true;
-	  bool need_device_ptr_p;
-	  if (gfc_match (" nothing") == MATCH_YES)
-	    need_device_ptr_p = false;
-	  else if (gfc_match (" need_device_ptr") == MATCH_YES)
+	  bool need_device_ptr_p = false;
+	  bool need_device_addr_p = false;
+	  if (gfc_match ("nothing ") == MATCH_YES)
+	    ;
+	  else if (gfc_match ("need_device_ptr ") == MATCH_YES)
 	    need_device_ptr_p = true;
+	  else if (gfc_match ("need_device_addr ") == MATCH_YES)
+	    need_device_addr_p = true;
 	  else
 	    {
-	      gfc_error ("expected %<nothing%> or %<need_device_ptr%> at %C");
+	      gfc_error ("expected %<nothing%>, %<need_device_ptr%> or "
+			 "%<need_device_addr%> at %C");
 	      return MATCH_ERROR;
 	    }
-	  gfc_omp_namelist **head = NULL;
-	  if (gfc_match_omp_variable_list (" :", &odv->adjust_args_list, false,
-					   NULL, &head)
-	      != MATCH_YES)
+	  if (gfc_match (": ") != MATCH_YES)
 	    {
-	      gfc_error ("expected argument list at %C");
+	      gfc_error ("expected %<:%> at %C");
 	      return MATCH_ERROR;
 	    }
-	  if (need_device_ptr_p)
-	    for (gfc_omp_namelist *n = *head; n != NULL; n = n->next)
-	      n->u.need_device_ptr = true;
+	  gfc_omp_namelist *tail = NULL;
+	  bool need_range = false, have_range = false;
+	  while (true)
+	    {
+	      gfc_omp_namelist *p = gfc_get_omp_namelist ();
+	      p->where = gfc_current_locus;
+	      p->u.adj_args.need_ptr = need_device_ptr_p;
+	      p->u.adj_args.need_addr = need_device_addr_p;
+	      if (tail)
+		{
+		  tail->next = p;
+		  tail = tail->next;
+		}
+	      else
+		{
+		  gfc_omp_namelist **q = &odv->adjust_args_list;
+		  if (*q)
+		    {
+		      for (; (*q)->next; q = &(*q)->next)
+			;
+		      (*q)->next = p;
+		    }
+		  else
+		    *q = p;
+		  tail = p;
+		}
+	      if (gfc_match (": ") == MATCH_YES)
+		{
+		  if (have_range)
+		    {
+		      gfc_error ("unexpected %<:%> at %C");
+		      return MATCH_ERROR;
+		    }
+		  p->u.adj_args.range_start = have_range = true;
+		  need_range = false;
+		  continue;
+		}
+	      if (have_range && gfc_match (", ") == MATCH_YES)
+		{
+		 have_range = false;
+		 continue;
+		}
+	      if (have_range && gfc_match (") ") == MATCH_YES)
+		break;
+	      locus saved_loc = gfc_current_locus;
+
+	      /* Without ranges, only arg names or integer literals permitted;
+		 handle literals here as gfc_match_expr simplifies the expr.  */
+	      if (gfc_match_literal_constant (&p->expr, true) == MATCH_YES)
+		{
+		  gfc_gobble_whitespace ();
+		  char c = gfc_peek_ascii_char ();
+		  if (c != ')' && c != ',' && c != ':')
+		    {
+		      gfc_free_expr (p->expr);
+		      p->expr = NULL;
+		      gfc_current_locus = saved_loc;
+		    }
+		}
+	      if (!p->expr && gfc_match ("omp_num_args") == MATCH_YES)
+		{
+		  if (!have_range)
+		    p->u.adj_args.range_start = need_range = true;
+		  else
+		    need_range = false;
+
+		  locus saved_loc2 = gfc_current_locus;
+		  gfc_gobble_whitespace ();
+		  char c = gfc_peek_ascii_char ();
+		  if (c == '+' || c == '-')
+		    {
+		      if (gfc_match ("+ %e", &p->expr) == MATCH_YES)
+			p->u.adj_args.omp_num_args_plus = true;
+		      else if (gfc_match ("- %e", &p->expr) == MATCH_YES)
+			p->u.adj_args.omp_num_args_minus = true;
+		      else if (!gfc_error_check ())
+			{
+			  gfc_error ("expected constant integer expression "
+				     "at %C");
+			  p->u.adj_args.error_p = true;
+			  return MATCH_ERROR;
+			}
+		      p->where = gfc_get_location_range (&saved_loc, 1,
+							 &saved_loc, 1,
+							 &gfc_current_locus);
+		    }
+		  else
+		    {
+		      p->where = gfc_get_location_range (&saved_loc, 1,
+							 &saved_loc, 1,
+							 &saved_loc2);
+		      p->u.adj_args.omp_num_args_plus = true;
+		    }
+		}
+	      else if (!p->expr)
+		{
+		  match m = gfc_match_expr (&p->expr);
+		  if (m != MATCH_YES)
+		    {
+		      gfc_error ("expected dummy parameter name, "
+				 "%<omp_num_args%> or constant positive integer"
+				 " at %C");
+		      p->u.adj_args.error_p = true;
+		      return MATCH_ERROR;
+		    }
+		  if (p->expr->expr_type == EXPR_CONSTANT && !have_range)
+		    need_range = true;  /* Constant expr but not literal.  */
+		  p->where = p->expr->where;
+		}
+	      else
+		p->where = p->expr->where;
+	      gfc_gobble_whitespace ();
+	      match m = gfc_match (": ");
+	      if (need_range && m != MATCH_YES)
+		{
+		  gfc_error ("expected %<:%> at %C");
+		  return MATCH_ERROR;
+		}
+	      if (m == MATCH_YES)
+		{
+		  p->u.adj_args.range_start = have_range = true;
+		  need_range = false;
+		  continue;
+		}
+	      need_range = have_range = false;
+	      if (gfc_match (", ") == MATCH_YES)
+		continue;
+	      if (gfc_match (") ") == MATCH_YES)
+		break;
+	    }
 	}
-      else if (ccode == append_args)
+      else if (ccode == clause_append_args)
 	{
 	  if (has_append_args)
 	    {
@@ -12817,18 +12945,6 @@ resolve_omp_dispatch (gfc_code *code)
     gfc_error ("%<OMP DISPATCH%> directive at %L cannot be followed by a "
 	       "procedure pointer",
 	       &code->loc);
-
-  gfc_omp_declare_variant *odv = gfc_current_ns->omp_declare_variant;
-  if (odv != NULL)
-    for (gfc_omp_namelist *n = odv->adjust_args_list; n != NULL; n = n->next)
-      if (n->sym->ts.type != BT_DERIVED || !n->sym->ts.u.derived->ts.is_iso_c
-	  || (n->sym->ts.u.derived->intmod_sym_id != ISOCBINDING_PTR))
-	{
-	  gfc_error (
-	    "argument list item %qs in %<need_device_ptr%> at %L must be of "
-	    "TYPE(C_PTR)",
-	    n->sym->name, &n->where);
-	}
 }
 
 /* Resolve OpenMP directive clauses and check various requirements
@@ -12977,18 +13093,59 @@ gfc_resolve_omp_declare (gfc_namespace *ns)
     }
 
   gfc_omp_declare_variant *odv;
+  gfc_omp_namelist *range_begin = NULL;
   for (odv = ns->omp_declare_variant; odv; odv = odv->next)
     for (gfc_omp_namelist *n = odv->adjust_args_list; n != NULL; n = n->next)
-      if (n->u.need_device_ptr
-	  && (!gfc_resolve_expr (n->expr) || n->sym->ts.type != BT_DERIVED
-	      || !n->sym->ts.u.derived->ts.is_iso_c
-	      || (n->sym->ts.u.derived->intmod_sym_id != ISOCBINDING_PTR)))
-	{
-	  gfc_error (
-	    "argument list item %qs in %<need_device_ptr%> at %L must be of "
-	    "TYPE(C_PTR)",
-	    n->sym->name, &n->where);
-	}
+      {
+	if ((n->expr == NULL
+	     && (range_begin
+		 || n->u.adj_args.range_start
+		 || n->u.adj_args.omp_num_args_plus
+		 || n->u.adj_args.omp_num_args_minus))
+	    || n->u.adj_args.error_p)
+	  {
+	  }
+	else if (range_begin
+		 || n->u.adj_args.range_start
+		 || n->u.adj_args.omp_num_args_plus
+		 || n->u.adj_args.omp_num_args_minus)
+	  {
+	    if (!n->expr
+		|| !gfc_resolve_expr (n->expr)
+		|| n->expr->expr_type != EXPR_CONSTANT
+		|| n->expr->ts.type != BT_INTEGER
+		|| n->expr->rank != 0
+		|| mpz_sgn (n->expr->value.integer) < 0
+		|| ((n->u.adj_args.omp_num_args_plus
+		     || n->u.adj_args.omp_num_args_minus)
+		    && mpz_sgn (n->expr->value.integer) == 0))
+	      {
+		if (n->u.adj_args.omp_num_args_plus
+		    || n->u.adj_args.omp_num_args_minus)
+		  gfc_error ("Expected constant non-negative scalar integer "
+			     "offset expression at %L", &n->where);
+		else
+		  gfc_error ("For range-based %<adjust_args%>, a constant "
+			     "positive scalar integer expression is required "
+			     "at %L", &n->where);
+	      }
+	  }
+	else if (n->expr
+		 && n->expr->expr_type == EXPR_CONSTANT
+		 && n->expr->ts.type == BT_INTEGER
+		 && mpz_sgn (n->expr->value.integer) > 0)
+	  {
+	  }
+	else if (!n->expr
+		 || !gfc_resolve_expr (n->expr)
+		 || n->expr->expr_type != EXPR_VARIABLE)
+	  gfc_error ("Expected dummy parameter name or a positive integer "
+		     "at %L", &n->where);
+	else if (n->expr->expr_type == EXPR_VARIABLE)
+	  n->sym = n->expr->symtree->n.sym;
+
+	range_begin = n->u.adj_args.range_start ? n : NULL;
+      }
 }
 
 struct omp_udr_callback_data
