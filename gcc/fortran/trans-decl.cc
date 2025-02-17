@@ -5991,6 +5991,19 @@ create_module_nml_decl (gfc_symbol *sym)
     }
 }
 
+static void
+gfc_handle_omp_declare_variant (gfc_symbol * sym)
+{
+  if (sym->attr.external
+      && sym->formal_ns
+      && sym->formal_ns->omp_declare_variant)
+    {
+      gfc_namespace *ns = gfc_current_ns;
+      gfc_current_ns = sym->ns;
+      gfc_get_symbol_decl (sym);
+      gfc_current_ns = ns;
+    }
+}
 
 /* Generate all the required code for module variables.  */
 
@@ -6014,6 +6027,11 @@ gfc_generate_module_vars (gfc_namespace * ns)
 
   if (flag_coarray == GFC_FCOARRAY_LIB && has_coarray_vars)
     generate_coarray_init (ns);
+
+  /* For OpenMP, ensure that declare variant in INTERFACE is is processed
+     especially as some late diagnostic is only done on tree level.  */
+  if (flag_openmp)
+    gfc_traverse_ns (ns, gfc_handle_omp_declare_variant);
 
   cur_module = NULL;
 
@@ -7869,6 +7887,11 @@ gfc_generate_function_code (gfc_namespace * ns)
     saved_function_decls = saved_parent_function_decls;
     saved_parent_function_decls = dm_saved_parent_function_decls;
   }
+
+  /* For OpenMP, ensure that declare variant in INTERFACE is is processed
+     especially as some late diagnostic is only done on tree level.  */
+  if (flag_openmp)
+    gfc_traverse_ns (ns, gfc_handle_omp_declare_variant);
 
   gfc_generate_contained_functions (ns);
 
