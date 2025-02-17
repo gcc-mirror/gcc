@@ -1,5 +1,13 @@
 2025-02-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* c-c++-common/goacc/combined-reduction.c: Adjust.
+	* c-c++-common/goacc/reduction-1.c: Likewise.
+	* c-c++-common/goacc/reduction-10.c: Likewise.
+	* c-c++-common/goacc/reduction-2.c: Likewise.
+	* c-c++-common/goacc/reduction-3.c: Likewise.
+	* c-c++-common/goacc/reduction-4.c: Likewise.
+	* gfortran.dg/goacc/loop-tree-1.f90: Likewise.
+
 	Backported from trunk:
 	2025-01-28  Thomas Schwinge  <tschwinge@baylibre.com>
 
