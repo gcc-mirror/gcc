@@ -11,3 +11,4 @@ test_1 (vint32m1_t a, vint32m1_t b, size_t vl)
 }
 
 /* { dg-error "return type 'vint32m1_t' requires the V ISA extension" "" { target { "riscv*-*-*" } } 0 } */
+/* { dg-error "argument type 'vint32m1_t' requires the V ISA extension" "" { target { "riscv*-*-*" } } 0 } */
