@@ -1,5 +1,7 @@
 2025-02-18  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* gfortran.dg/goacc/loop-2-serial-tile.f95: Adjust.
+
 	Backported from trunk:
 	2025-01-16  Thomas Schwinge  <thomas@codesourcery.com>
 
