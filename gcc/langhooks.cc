@@ -662,7 +662,7 @@ lhd_omp_deep_mapping_cnt (gimple *, tree, gimple_seq *)
 
 void
 lhd_omp_deep_mapping (gimple *, tree, unsigned HOST_WIDE_INT, tree, tree,
-		      tree, tree, tree, gimple_seq *)
+		      tree, tree, tree, gimple_seq *, vec<tree> *)
 {
 }
 

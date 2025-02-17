@@ -1,5 +1,10 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* testsuite/libgomp.fortran/allocatable-comp-iterators.f90: Add test
+	for non-const iterator boundaries.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* testsuite/libgomp.fortran/allocatable-comp-iterators.f90: New.
 
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>

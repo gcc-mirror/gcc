@@ -1,5 +1,24 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* trans-openmp.cc (gfc_omp_deep_mapping_map): Add new argument for
+	vector of newly created iterators.  Push new iterators onto the
+	vector.
+	(gfc_omp_deep_mapping_comps): Add new argument for vector of new
+	iterators.  Pass argument in calls to gfc_omp_deep_mapping_item and
+	gfc_omp_deep_mapping_comps.
+	(gfc_omp_deep_mapping_item): Add new argument for vector of new
+	iterators.  Pass argument in calls to gfc_omp_deep_mapping_map and
+	gfc_omp_deep_mapping_comps.
+	(gfc_omp_deep_mapping_do): Add new argument for vector of new
+	iterators.  Pass argument in calls to gfc_omp_deep_mapping_item.
+	(gfc_omp_deep_mapping_cnt): Pass NULL to new argument for
+	gfc_omp_deep_mapping_do.
+	(gfc_omp_deep_mapping): Add new argument for vector of new
+	iterators.  Pass argument in calls to gfc_omp_deep_mapping_do.
+	* trans.h (gfc_omp_deep_mapping): Add new argument.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* trans-openmp.cc (gfc_omp_deep_mapping_map): Remove const from ctx
 	argument.  Add arguments for iterators and the statement sequence to
 	go into the iterator loop.  Add statement sequence to iterator loop
