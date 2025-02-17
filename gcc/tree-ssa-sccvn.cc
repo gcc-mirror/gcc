@@ -366,6 +366,10 @@ static vn_ssa_aux_t last_pushed_avail;
    correct.  */
 static vn_tables_t valid_info;
 
+/* Global RPO state for access from hooks.  */
+static class eliminate_dom_walker *rpo_avail;
+basic_block vn_context_bb;
+
 
 /* Valueization hook for simplify_replace_tree.  Valueize NAME if it is
    an SSA name, otherwise just return it.  */
@@ -2501,7 +2505,10 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert,
   bool res = false;
   if (i == res_op->num_ops)
     {
-      mprts_hook = vn_lookup_simplify_result;
+      /* Do not leak not available operands into the simplified expression
+	 when called from PRE context.  */
+      if (rpo_avail)
+	mprts_hook = vn_lookup_simplify_result;
       res = res_op->resimplify (NULL, vn_valueize);
       mprts_hook = NULL;
     }
@@ -2683,10 +2690,6 @@ public:
      obstack.  */
   vn_avail *m_avail_freelist;
 };
-
-/* Global RPO state for access from hooks.  */
-static eliminate_dom_walker *rpo_avail;
-basic_block vn_context_bb;
 
 /* Return true if BASE1 and BASE2 can be adjusted so they have the
    same address and adjust *OFFSET1 and *OFFSET2 accordingly.
