@@ -74,7 +74,7 @@ static const char help_copy_paste[] =
   "# for a new device spec file, make sure you are copying from a specs file\n"
   "# for a device from the same or compatible:\n"
   "#     compiler version, compiler vendor, core architecture, SP width,\n"
-  "#     short-calls and FLMAP.\n"
+  "#     short-calls, features like CVT and FLMAP.\n"
   "# Otherwise, errors and wrong or sub-optimal code may likely occur.\n"
   "# See <" WIKI_URL ">\n"
   "# and <" SPECFILE_USAGE_URL "> for a description\n"
@@ -260,8 +260,9 @@ print_mcu (const avr_mcu_t *mcu, const McuInfo &mi)
   if (mi.is_arch)
     fprintf (f, "core architecture %s\n", mi.arch->name);
   else
-    fprintf (f, "device %s (core %s, %d-bit SP%s%s)\n", mi.mcu_Name,
+    fprintf (f, "device %s (core %s, %d-bit SP%s%s%s)\n", mi.mcu_Name,
 	     mi.arch->name, sp8 ? 8 : 16, rcall ? ", short-calls" : "",
+	     mi.have_cvt ? ", CVT" : "",
 	     mi.have_flmap ? ", FLMAP" : "");
   fprintf (f, "%s\n", header);
 
