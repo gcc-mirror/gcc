@@ -839,6 +839,7 @@ package Gen_IL.Fields is
       OK_To_Rename,
       Optimize_Alignment_Space,
       Optimize_Alignment_Time,
+      Original_Access_Type,
       Original_Array_Type,
       Original_Protected_Subprogram,
       Original_Record_Component,

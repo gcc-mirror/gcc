@@ -677,7 +677,8 @@ begin -- Gen_IL.Gen.Gen_Entities
    Cc (E_Access_Subprogram_Type, Access_Subprogram_Kind,
        --  An access-to-subprogram type, created by an access-to-subprogram
        --  declaration.
-       (Sm (Equivalent_Type, Node_Id)));
+       (Sm (Equivalent_Type, Node_Id),
+        Sm (Original_Access_Type, Node_Id)));
 
    Ab (Access_Protected_Kind, Access_Subprogram_Kind,
        (Sm (Equivalent_Type, Node_Id)));
