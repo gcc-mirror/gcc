@@ -464,8 +464,17 @@ ForeverStack<N>::resolve_segments (
 
       tl::optional<typename ForeverStack<N>::Node &> child = tl::nullopt;
 
+      /*
+       * On every iteration this loop either
+       *
+       * 1. terminates
+       * 2. decreases the depth of the node pointed to by current_node
+       *
+       * This ensures termination
+       */
       while (true)
 	{
+	  // may set the value of child
 	  for (auto &kv : current_node->children)
 	    {
 	      auto &link = kv.first;
@@ -508,6 +517,8 @@ ForeverStack<N>::resolve_segments (
 	  current_node = &current_node->parent.value ();
 	}
 
+      // if child didn't contain a value
+      // the while loop above should have return'd or kept looping
       current_node = &child.value ();
       insert_segment_resolution (outer_seg, current_node->id);
     }
