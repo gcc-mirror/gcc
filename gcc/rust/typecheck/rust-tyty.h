@@ -686,45 +686,31 @@ public:
     BaseType *repr = nullptr;
   };
 
-  ADTType (HirId ref, std::string identifier, RustIdent ident, ADTKind adt_kind,
+  ADTType (DefId id, HirId ref, std::string identifier, RustIdent ident,
+	   ADTKind adt_kind, std::vector<VariantDef *> variants,
+	   std::vector<SubstitutionParamMapping> subst_refs,
+	   SubstitutionArgumentMappings generic_arguments
+	   = SubstitutionArgumentMappings::error (),
+	   RegionConstraints region_constraints = RegionConstraints{},
+	   std::set<HirId> refs = std::set<HirId> ());
+
+  ADTType (DefId id, HirId ref, HirId ty_ref, std::string identifier,
+	   RustIdent ident, ADTKind adt_kind,
 	   std::vector<VariantDef *> variants,
 	   std::vector<SubstitutionParamMapping> subst_refs,
 	   SubstitutionArgumentMappings generic_arguments
 	   = SubstitutionArgumentMappings::error (),
 	   RegionConstraints region_constraints = RegionConstraints{},
-	   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::ADT, ident, refs),
-      SubstitutionRef (std::move (subst_refs), std::move (generic_arguments),
-		       region_constraints),
-      identifier (identifier), variants (variants), adt_kind (adt_kind)
-  {}
+	   std::set<HirId> refs = std::set<HirId> ());
 
-  ADTType (HirId ref, HirId ty_ref, std::string identifier, RustIdent ident,
-	   ADTKind adt_kind, std::vector<VariantDef *> variants,
-	   std::vector<SubstitutionParamMapping> subst_refs,
-	   SubstitutionArgumentMappings generic_arguments
-	   = SubstitutionArgumentMappings::error (),
-	   RegionConstraints region_constraints = RegionConstraints{},
-	   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::ADT, ident, refs),
-      SubstitutionRef (std::move (subst_refs), std::move (generic_arguments),
-		       region_constraints),
-      identifier (identifier), variants (variants), adt_kind (adt_kind)
-  {}
-
-  ADTType (HirId ref, HirId ty_ref, std::string identifier, RustIdent ident,
-	   ADTKind adt_kind, std::vector<VariantDef *> variants,
+  ADTType (DefId id, HirId ref, HirId ty_ref, std::string identifier,
+	   RustIdent ident, ADTKind adt_kind,
+	   std::vector<VariantDef *> variants,
 	   std::vector<SubstitutionParamMapping> subst_refs, ReprOptions repr,
 	   SubstitutionArgumentMappings generic_arguments
 	   = SubstitutionArgumentMappings::error (),
 	   RegionConstraints region_constraints = RegionConstraints{},
-	   std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::ADT, ident, refs),
-      SubstitutionRef (std::move (subst_refs), std::move (generic_arguments),
-		       region_constraints),
-      identifier (identifier), variants (variants), adt_kind (adt_kind),
-      repr (repr)
-  {}
+	   std::set<HirId> refs = std::set<HirId> ());
 
   ADTKind get_adt_kind () const { return adt_kind; }
 
@@ -754,6 +740,8 @@ public:
   {
     return identifier + subst_as_string ();
   }
+
+  DefId get_id () const;
 
   BaseType *clone () const final override;
 
@@ -800,6 +788,7 @@ public:
   handle_substitions (SubstitutionArgumentMappings &mappings) override final;
 
 private:
+  DefId id;
   std::string identifier;
   std::vector<VariantDef *> variants;
   ADTType::ADTKind adt_kind;
