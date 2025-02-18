@@ -2333,7 +2333,6 @@ declare_handle_contract_violation ()
       create_implicit_typedef (viol_name, violation);
       DECL_SOURCE_LOCATION (TYPE_NAME (violation)) = BUILTINS_LOCATION;
       DECL_CONTEXT (TYPE_NAME (violation)) = current_namespace;
-      TREE_PUBLIC (TYPE_NAME (violation)) = true;
       pushdecl_namespace_level (TYPE_NAME (violation), /*hidden*/true);
       pop_namespace ();
       pop_nested_namespace (std_node);
