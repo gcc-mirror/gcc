@@ -638,7 +638,7 @@ BaseType::monomorphized_clone () const
       for (auto &variant : adt->get_variants ())
 	cloned_variants.push_back (variant->monomorphized_clone ());
 
-      return new ADTType (adt->get_ref (), adt->get_ty_ref (),
+      return new ADTType (adt->get_id (), adt->get_ref (), adt->get_ty_ref (),
 			  adt->get_identifier (), adt->ident,
 			  adt->get_adt_kind (), cloned_variants,
 			  adt->clone_substs (), adt->get_repr_options (),
@@ -1621,6 +1621,43 @@ VariantDef::get_ident () const
 
 // ADTType
 
+ADTType::ADTType (DefId id, HirId ref, std::string identifier, RustIdent ident,
+		  ADTKind adt_kind, std::vector<VariantDef *> variants,
+		  std::vector<SubstitutionParamMapping> subst_refs,
+		  SubstitutionArgumentMappings generic_arguments,
+		  RegionConstraints region_constraints, std::set<HirId> refs)
+  : BaseType (ref, ref, TypeKind::ADT, ident, refs),
+    SubstitutionRef (std::move (subst_refs), std::move (generic_arguments),
+		     region_constraints),
+    id (id), identifier (identifier), variants (variants), adt_kind (adt_kind)
+{}
+
+ADTType::ADTType (DefId id, HirId ref, HirId ty_ref, std::string identifier,
+		  RustIdent ident, ADTKind adt_kind,
+		  std::vector<VariantDef *> variants,
+		  std::vector<SubstitutionParamMapping> subst_refs,
+		  SubstitutionArgumentMappings generic_arguments,
+		  RegionConstraints region_constraints, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::ADT, ident, refs),
+    SubstitutionRef (std::move (subst_refs), std::move (generic_arguments),
+		     region_constraints),
+    id (id), identifier (identifier), variants (variants), adt_kind (adt_kind)
+{}
+
+ADTType::ADTType (DefId id, HirId ref, HirId ty_ref, std::string identifier,
+		  RustIdent ident, ADTKind adt_kind,
+		  std::vector<VariantDef *> variants,
+		  std::vector<SubstitutionParamMapping> subst_refs,
+		  ReprOptions repr,
+		  SubstitutionArgumentMappings generic_arguments,
+		  RegionConstraints region_constraints, std::set<HirId> refs)
+  : BaseType (ref, ty_ref, TypeKind::ADT, ident, refs),
+    SubstitutionRef (std::move (subst_refs), std::move (generic_arguments),
+		     region_constraints),
+    id (id), identifier (identifier), variants (variants), adt_kind (adt_kind),
+    repr (repr)
+{}
+
 void
 ADTType::accept_vis (TyVisitor &vis)
 {
@@ -1702,6 +1739,12 @@ ADTType::is_equal (const BaseType &other) const
   return true;
 }
 
+DefId
+ADTType::get_id () const
+{
+  return id;
+}
+
 BaseType *
 ADTType::clone () const
 {
@@ -1709,7 +1752,7 @@ ADTType::clone () const
   for (auto &variant : variants)
     cloned_variants.push_back (variant->clone ());
 
-  return new ADTType (get_ref (), get_ty_ref (), identifier, ident,
+  return new ADTType (get_id (), get_ref (), get_ty_ref (), identifier, ident,
 		      get_adt_kind (), cloned_variants, clone_substs (),
 		      get_repr_options (), used_arguments,
 		      get_region_constraints (), get_combined_refs ());
