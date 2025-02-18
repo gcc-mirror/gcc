@@ -552,8 +552,14 @@ late_combine::check_register_pressure (insn_info *insn, rtx set)
 	  // Make sure that the source operand's class is at least as
 	  // permissive as the destination operand's class.
 	  auto src_class = alternative_class (alt, i);
-	  if (!reg_class_subset_p (dest_class, src_class))
-	    return false;
+	  if (dest_class != src_class)
+	    {
+	      auto extra_dest_regs = (reg_class_contents[dest_class]
+				      & ~reg_class_contents[src_class]
+				      & ~fixed_reg_set);
+	      if (!hard_reg_set_empty_p (extra_dest_regs))
+		return false;
+	    }
 
 	  // Make sure that the source operand occupies no more hard
 	  // registers than the destination operand.  This mostly matters
