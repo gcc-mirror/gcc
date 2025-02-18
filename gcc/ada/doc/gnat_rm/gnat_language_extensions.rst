@@ -657,6 +657,22 @@ An exception message can also be added:
         when Imported_C_Func /= 0;
    end;
 
+Implicit With
+-------------
+
+This feature allows a standalone ``use`` clause in the context clause of a
+compilation unit to imply an implicit ``with`` of the same library unit where
+an equivalent ``with`` clause would be allowed.
+
+.. code-block:: ada
+
+   use Ada.Text_IO;
+   procedure Main is
+   begin
+      Put_Line ("Hello");
+   end;
+
+
 Storage Model
 -------------
 
