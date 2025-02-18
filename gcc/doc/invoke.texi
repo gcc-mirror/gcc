@@ -578,7 +578,7 @@ Objective-C and Objective-C++ Dialects}.
 -ffold-mem-offsets
 -fcompare-elim  -fcprop-registers  -fcrossjumping
 -fcse-follow-jumps  -fcse-skip-blocks  -fcx-fortran-rules
--fcx-limited-range
+-fcx-limited-range -fcx-method
 -fdata-sections  -fdce  -fdelayed-branch
 -fdelete-null-pointer-checks  -fdevirtualize  -fdevirtualize-speculatively
 -fdevirtualize-at-ltrans  -fdse
@@ -15603,8 +15603,7 @@ When enabled, this option states that a range reduction step is not
 needed when performing complex division.  Also, there is no checking
 whether the result of a complex multiplication or division is @code{NaN
 + I*NaN}, with an attempt to rescue the situation in that case.  The
-default is @option{-fno-cx-limited-range}, but is enabled by
-@option{-ffast-math}.
+option is enabled by @option{-ffast-math}.
 
 This option controls the default setting of the ISO C99
 @code{CX_LIMITED_RANGE} pragma.  Nevertheless, the option applies to
@@ -15617,7 +15616,14 @@ reduction is done as part of complex division, but there is no checking
 whether the result of a complex multiplication or division is @code{NaN
 + I*NaN}, with an attempt to rescue the situation in that case.
 
-The default is @option{-fno-cx-fortran-rules}.
+@opindex fcx-method
+@item -fcx-method=@var{method}
+Complex multiplication and division follow the stated @var{method}.  The
+@var{method} argument should be one of @samp{limited-range}, @samp{fortran}
+or @samp{stdc}.
+
+The default is to honor language specific constraints which means
+@samp{fortran} for Fortran and @samp{stdc} otherwise.
 
 @end table
 

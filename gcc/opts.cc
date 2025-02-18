@@ -1384,16 +1384,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
          || opts->x_flag_peel_loops
          || opts->x_optimize >= 3);
 
-  /* With -fcx-limited-range, we do cheap and quick complex arithmetic.  */
-  if (opts->x_flag_cx_limited_range)
-    opts->x_flag_complex_method = 0;
-  else if (opts_set->x_flag_cx_limited_range)
-    opts->x_flag_complex_method = opts->x_flag_default_complex_method;
-
-  /* With -fcx-fortran-rules, we do something in-between cheap and C99.  */
-  if (opts->x_flag_cx_fortran_rules)
-    opts->x_flag_complex_method = 1;
-  else if (opts_set->x_flag_cx_fortran_rules)
+  /* Use a frontend provided default for the complex eval method.  */
+  if (!opts_set->x_flag_complex_method)
     opts->x_flag_complex_method = opts->x_flag_default_complex_method;
 
   /* Use -fvect-cost-model=cheap instead of -fvect-cost-mode=very-cheap
@@ -3465,8 +3457,8 @@ set_fast_math_flags (struct gcc_options *opts, int set)
 	opts->x_flag_signaling_nans = 0;
       if (!opts->frontend_set_flag_rounding_math)
 	opts->x_flag_rounding_math = 0;
-      if (!opts->frontend_set_flag_cx_limited_range)
-	opts->x_flag_cx_limited_range = 1;
+      if (!opts->frontend_set_flag_complex_method)
+	opts->x_flag_complex_method = 0;
     }
 }
 

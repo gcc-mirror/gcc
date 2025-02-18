@@ -438,8 +438,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	     != opt_for_fn (to->decl, flag_finite_math_only)
 	  || opt_for_fn (callee->decl, flag_signaling_nans)
 	     != opt_for_fn (to->decl, flag_signaling_nans)
-	  || opt_for_fn (callee->decl, flag_cx_limited_range)
-	     != opt_for_fn (to->decl, flag_cx_limited_range)
+	  || opt_for_fn (callee->decl, flag_complex_method)
+	     != opt_for_fn (to->decl, flag_complex_method)
 	  || opt_for_fn (callee->decl, flag_signed_zeros)
 	     != opt_for_fn (to->decl, flag_signed_zeros)
 	  || opt_for_fn (callee->decl, flag_associative_math)
@@ -465,8 +465,8 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	    = opt_for_fn (callee->decl, flag_finite_math_only);
 	  opts.x_flag_signaling_nans
 	    = opt_for_fn (callee->decl, flag_signaling_nans);
-	  opts.x_flag_cx_limited_range
-	    = opt_for_fn (callee->decl, flag_cx_limited_range);
+	  opts.x_flag_complex_method
+	    = opt_for_fn (callee->decl, flag_complex_method);
 	  opts.x_flag_signed_zeros
 	    = opt_for_fn (callee->decl, flag_signed_zeros);
 	  opts.x_flag_associative_math
