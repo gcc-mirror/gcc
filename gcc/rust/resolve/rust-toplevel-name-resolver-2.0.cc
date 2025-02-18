@@ -163,7 +163,16 @@ void
 TopLevel::visit (AST::ExternCrate &crate)
 {
   auto &mappings = Analysis::Mappings::get ();
-  CrateNum num = *mappings.lookup_crate_name (crate.get_referenced_crate ());
+  auto num_opt = mappings.lookup_crate_name (crate.get_referenced_crate ());
+
+  if (!num_opt)
+    {
+      rust_error_at (crate.get_locus (), "unknown crate %qs",
+		     crate.get_referenced_crate ().c_str ());
+      return;
+    }
+
+  CrateNum num = *num_opt;
 
   auto attribute_macros = mappings.lookup_attribute_proc_macros (num);
 
