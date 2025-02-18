@@ -2758,12 +2758,13 @@ constify_contract_access(tree decl)
    * parameter of reference type
    */
   if (!TREE_READONLY (decl)
-      && ((VAR_P (decl) && decl_storage_duration (decl) == dk_auto)
+      && (VAR_P (decl)
 	  || (TREE_CODE (decl) == PARM_DECL)
 	  || (REFERENCE_REF_P (decl)
-	      && ((VAR_P (TREE_OPERAND (decl, 0))
-		   && decl_storage_duration(TREE_OPERAND (decl, 0)) == dk_auto)
-		  || (TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL)))))
+	      && (VAR_P (TREE_OPERAND (decl, 0))
+		  || (TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL)
+		  || (TREE_CODE (TREE_OPERAND (decl, 0))
+		      == TEMPLATE_PARM_INDEX)))))
   {
       decl = view_as_const (decl);
   }
