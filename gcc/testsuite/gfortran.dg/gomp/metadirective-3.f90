@@ -22,4 +22,7 @@ end module
 !  that alternative and not produce a metadirective at all.  Otherwise this
 !  won't be resolved until late.
 ! { dg-final { scan-tree-dump-not "#pragma omp metadirective" "gimple" { target { ! offload_nvptx } } } }
-! { dg-final { scan-tree-dump "#pragma omp metadirective" "gimple" { target { offload_nvptx } } } }
+
+! The following two are xfail because the bogus error triggers and thus prevents the dump, cf. PR118694
+! { dg-final { scan-tree-dump "#pragma omp metadirective" "gimple" { target { offload_nvptx } xfail { offload_nvptx } } } }
+! { dg-bogus "'target' construct with nested 'teams' construct contains directives outside of the 'teams' construct" "PR118694" { xfail offload_nvptx } 10 }
