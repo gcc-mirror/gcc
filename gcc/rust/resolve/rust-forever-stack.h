@@ -547,13 +547,16 @@ template <Namespace N> class ForeverStack
 {
 public:
   ForeverStack ()
-    // FIXME: Is that valid? Do we use the root? If yes, we should give the
-    // crate's node id to ForeverStack's constructor
     : root (Node (Rib (Rib::Kind::Normal), UNKNOWN_NODEID)),
       cursor_reference (root)
   {
     rust_assert (root.is_root ());
     rust_assert (root.is_leaf ());
+
+    // TODO: Should we be using the forever stack root as the crate scope?
+    // TODO: Is this how we should be getting the crate node id?
+    auto &mappings = Analysis::Mappings::get ();
+    root.id = *mappings.crate_num_to_nodeid (mappings.get_current_crate ());
   }
 
   /**

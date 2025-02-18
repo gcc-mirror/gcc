@@ -1,7 +1,6 @@
 break-rust2.rs
 canonical_paths1.rs
 cfg1.rs
-complex-path1.rs
 const_generics_3.rs
 const_generics_4.rs
 feature_rust_attri0.rs
@@ -29,7 +28,6 @@ pub_restricted_2.rs
 pub_restricted_3.rs
 redef_error2.rs
 redef_error5.rs
-self-path1.rs
 self-path2.rs
 sizeof-stray-infer-var-bug.rs
 struct-expr-parse.rs

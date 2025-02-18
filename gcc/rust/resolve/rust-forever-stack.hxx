@@ -401,12 +401,7 @@ ForeverStack<N>::find_starting_point (
       if (seg.is_crate_path_seg ())
 	{
 	  starting_point = root;
-	  // TODO: is this how we should be getting the crate node id?
-	  auto &mappings = Analysis::Mappings::get ();
-	  NodeId current_crate
-	    = *mappings.crate_num_to_nodeid (mappings.get_current_crate ());
-
-	  insert_segment_resolution (outer_seg, current_crate);
+	  insert_segment_resolution (outer_seg, starting_point.get ().id);
 	  iterator++;
 	  break;
 	}
