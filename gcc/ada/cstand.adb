@@ -67,10 +67,10 @@ package body CStand is
 
    procedure Build_Float_Type
      (E     : Entity_Id;
-      Digs  : Int;
+      Digs  : Pos;
       Rep   : Float_Rep_Kind;
       Siz   : Int;
-      Align : Int);
+      Align : Nat);
    --  Procedure to build standard predefined float base type. The first
    --  parameter is the entity for the type. The second parameter is the
    --  digits value. The third parameter indicates the representation to
@@ -192,10 +192,10 @@ package body CStand is
 
    procedure Build_Float_Type
      (E     : Entity_Id;
-      Digs  : Int;
+      Digs  : Pos;
       Rep   : Float_Rep_Kind;
       Siz   : Int;
-      Align : Int)
+      Align : Nat)
    is
    begin
       Set_Type_Definition (Parent (E),
@@ -2086,7 +2086,7 @@ package body CStand is
       Set_Defining_Identifier (New_Node (N_Full_Type_Declaration, Stloc), Ent);
       Set_Scope (Ent, Standard_Standard);
       Build_Float_Type
-        (Ent, Pos (Digs), Float_Rep, Int (Size), Int (Alignment / 8));
+        (Ent, Pos (Digs), Float_Rep, Int (Size), Nat (Alignment / 8));
 
       Append_New_Elmt (Ent, Back_End_Float_Types);
    end Register_Float_Type;
