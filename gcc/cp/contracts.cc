@@ -1460,61 +1460,20 @@ set_contract_functions (tree fndecl, tree pre, tree post)
     set_postcondition_function (fndecl, post);
 }
 
-/* Return a copy of the function decl FNDECL with its own unshared
-   PARM_DECL and DECL_ATTRIBUTEs.  */
-
-static tree
-copy_fn_decl (tree fndecl)
-{
-  gcc_checking_assert (!error_operand_p (fndecl));
-
-  tree decl = copy_decl (fndecl);
-  DECL_ATTRIBUTES (decl) = copy_list (DECL_ATTRIBUTES (fndecl));
-
-  if (DECL_RESULT (fndecl))
-    {
-      DECL_RESULT (decl) = copy_decl (DECL_RESULT (fndecl));
-      DECL_CONTEXT (DECL_RESULT (decl)) = decl;
-    }
-
-  if (!DECL_ARGUMENTS (fndecl))
-    return decl;
-
-  if (VOID_TYPE_P (DECL_ARGUMENTS (fndecl)))
-    {
-      DECL_ARGUMENTS (decl) = void_list_node;
-      return decl;
-    }
-
-  tree last = DECL_ARGUMENTS (decl) = copy_decl (DECL_ARGUMENTS (decl));
-  DECL_CONTEXT (last) = decl;
-  for (tree p = TREE_CHAIN (DECL_ARGUMENTS (fndecl)); p; p = TREE_CHAIN (p))
-    {
-      if (VOID_TYPE_P (p))
-	{
-	  TREE_CHAIN (last) = void_list_node;
-	  break;
-	}
-      last = TREE_CHAIN (last) = copy_decl (p);
-      DECL_CONTEXT (last) = decl;
-    }
-  return decl;
-}
-
 /* Build a declaration for the pre- or postcondition of a guarded FNDECL.  */
 
 static tree
 build_contract_condition_function (tree fndecl, bool pre)
 {
-  if (TREE_TYPE (fndecl) == error_mark_node)
+  if (error_operand_p (fndecl))
     return error_mark_node;
+
   if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl)
       && !TYPE_METHOD_BASETYPE (TREE_TYPE (fndecl)))
     return error_mark_node;
 
-  /* Create and rename the unchecked function and give an internal name.  */
-  tree fn = copy_fn_decl (fndecl);
-  DECL_RESULT (fn) = NULL_TREE;
+  /* Start the copy.  */
+  tree fn = copy_decl (fndecl);
 
   /* Don't propagate declaration attributes to the checking function,
      including the original contracts.  */
@@ -1532,12 +1491,11 @@ build_contract_condition_function (tree fndecl, bool pre)
   if (DECL_ATTRIBUTES (fn))
     cplus_decl_attributes (&fn, DECL_ATTRIBUTES (fn), 0);
 
+  /* FIXME will later optimizations delete unused args to prevent extra arg
+     passing? do we care? */
   /* Handle the args list.  */
   tree arg_types = NULL_TREE;
   tree *last = &arg_types;
-
-  /* FIXME will later optimizations delete unused args to prevent extra arg
-     passing? do we care? */
   tree class_type = NULL_TREE;
   for (tree arg_type = TYPE_ARG_TYPES (TREE_TYPE (fn));
       arg_type && arg_type != void_list_node;
@@ -1553,6 +1511,20 @@ build_contract_condition_function (tree fndecl, bool pre)
       last = &TREE_CHAIN (*last);
     }
 
+  /* Copy the function parameters, if present.  Disable warnings for them.  */
+  DECL_ARGUMENTS (fn) = NULL_TREE;
+  if (DECL_ARGUMENTS (fndecl))
+    {
+      tree *last_a = &DECL_ARGUMENTS (fn);
+      for (tree p = DECL_ARGUMENTS (fndecl); p; p = TREE_CHAIN (p))
+	{
+	  *last_a = copy_decl (p);
+	  suppress_warning (*last_a);
+	  DECL_CONTEXT (*last_a) = fn;
+	  last_a = &TREE_CHAIN (*last_a);
+	}
+    }
+
   tree orig_fn_value_type = TREE_TYPE (TREE_TYPE (fn));
   if (!pre && !VOID_TYPE_P (orig_fn_value_type))
     {
@@ -1562,19 +1534,23 @@ build_contract_condition_function (tree fndecl, bool pre)
       tree parm = build_lang_decl (PARM_DECL, name, orig_fn_value_type);
       DECL_CONTEXT (parm) = fn;
       DECL_ARTIFICIAL (parm) = true;
+      suppress_warning (parm);
       DECL_ARGUMENTS (fn) = chainon (DECL_ARGUMENTS (fn), parm);
       *last = build_tree_list (NULL_TREE, orig_fn_value_type);
       last = &TREE_CHAIN (*last);
     }
+
   *last = void_list_node;
+
   /* The handlers are void fns.  */
+  tree resdecl = build_decl (DECL_SOURCE_LOCATION (fndecl), RESULT_DECL,
+			     0, void_type_node);
+  DECL_CONTEXT (resdecl) = fn;
+  DECL_ARTIFICIAL (resdecl) = true;
+  DECL_IGNORED_P (resdecl) = true;
+  DECL_RESULT (fn) = resdecl;
+
   TREE_TYPE (fn) = build_function_type (void_type_node, arg_types);
-
-  /* Disable warnings for all the parameters */
-  for (tree p = DECL_ARGUMENTS (fn); p && p!=void_list_node;
-      p = TREE_CHAIN (p))
-    suppress_warning (p);
-
   if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl))
     TREE_TYPE (fn) = build_method_type (class_type, TREE_TYPE (fn));
 
@@ -1905,9 +1881,22 @@ build_contract_wrapper_function (tree fndecl, bool is_cvh,
 
   location_t loc = DECL_SOURCE_LOCATION (fndecl);
 
-  tree wrapper_return_type = TREE_TYPE (TREE_TYPE (fndecl));
-  tree wrapper_args = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+  /* Handle the arg types list.  */
+  tree wrapper_args = NULL_TREE;
+  tree *last = &wrapper_args;
+  for (tree arg_type = TYPE_ARG_TYPES (TREE_TYPE (fndecl)); arg_type;
+       arg_type = TREE_CHAIN (arg_type))
+    {
+      if (arg_type == void_list_node)
+	{
+	  *last = void_list_node;
+	  break;
+	}
+      *last = build_tree_list (TREE_PURPOSE (arg_type), TREE_VALUE (arg_type));
+      last = &TREE_CHAIN (*last);
+    }
 
+  tree wrapper_return_type = copy_node (TREE_TYPE (TREE_TYPE (fndecl)));
   tree wrapper_type = build_function_type (wrapper_return_type, wrapper_args);
 
   /* Contract violation wrapper function is always noexcept. Otherwise,
@@ -1937,19 +1926,19 @@ build_contract_wrapper_function (tree fndecl, bool is_cvh,
   DECL_IGNORED_P (resdecl) = true;
   DECL_RESULT (wrapdecl) = resdecl;
 
-  /* Copy the function parameters.  */
-  tree last = DECL_ARGUMENTS (wrapdecl) = copy_decl (DECL_ARGUMENTS (fndecl));
-  DECL_CONTEXT (last) = wrapdecl;
-  for (tree p = TREE_CHAIN (DECL_ARGUMENTS (fndecl)); p; p = TREE_CHAIN (p))
+  /* Copy the function parameters, if present.  Suppress (e.g. unused)
+     warnings on them.  */
+  DECL_ARGUMENTS (wrapdecl) = NULL_TREE;
+  if (tree p = DECL_ARGUMENTS (fndecl))
     {
-      if (VOID_TYPE_P (p))
+      tree *last_a = &DECL_ARGUMENTS (wrapdecl);
+      for (; p; p = TREE_CHAIN (p))
 	{
-	  TREE_CHAIN (last) = void_list_node;
-	  break;
+	  *last_a = copy_decl (p);
+	  suppress_warning (*last_a);
+	  DECL_CONTEXT (*last_a) = wrapdecl;
+	  last_a = &TREE_CHAIN (*last_a);
 	}
-      suppress_warning (p);
-      last = TREE_CHAIN (last) = copy_decl (p);
-      DECL_CONTEXT (last) = wrapdecl;
     }
 
   /* Copy selected attributes from the original function.  */
