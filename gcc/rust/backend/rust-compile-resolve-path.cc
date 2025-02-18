@@ -32,6 +32,22 @@
 namespace Rust {
 namespace Compile {
 
+tree
+ResolvePathRef::Compile (HIR::QualifiedPathInExpression &expr, Context *ctx)
+{
+  ResolvePathRef resolver (ctx);
+  return resolver.resolve_path_like (expr);
+}
+
+tree
+ResolvePathRef::Compile (HIR::PathInExpression &expr, Context *ctx)
+{
+  ResolvePathRef resolver (ctx);
+  return resolver.resolve_path_like (expr);
+}
+
+ResolvePathRef::ResolvePathRef (Context *ctx) : HIRCompileBase (ctx) {}
+
 template <typename T>
 tree
 ResolvePathRef::resolve_path_like (T &expr)
@@ -51,18 +67,6 @@ ResolvePathRef::resolve_path_like (T &expr)
 
   return resolve (expr.get_final_segment ().get_segment (),
 		  expr.get_mappings (), expr.get_locus (), true);
-}
-
-void
-ResolvePathRef::visit (HIR::QualifiedPathInExpression &expr)
-{
-  resolved = resolve_path_like (expr);
-}
-
-void
-ResolvePathRef::visit (HIR::PathInExpression &expr)
-{
-  resolved = resolve_path_like (expr);
 }
 
 tree
