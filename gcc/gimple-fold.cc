@@ -8090,14 +8090,16 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 
   /* Prepare to turn compares of signed quantities with zero into sign-bit
      tests.  We need not worry about *_reversep here for these compare
-     rewrites: loads will have already been reversed before compares.  */
-  bool lsignbit = false, rsignbit = false;
+     rewrites: loads will have already been reversed before compares.  Save the
+     precision, because [lr]l_arg may change and we won't be able to tell how
+     wide it was originally.  */
+  unsigned lsignbit = 0, rsignbit = 0;
   if ((lcode == LT_EXPR || lcode == GE_EXPR)
       && integer_zerop (lr_arg)
       && INTEGRAL_TYPE_P (TREE_TYPE (ll_arg))
       && !TYPE_UNSIGNED (TREE_TYPE (ll_arg)))
     {
-      lsignbit = true;
+      lsignbit = TYPE_PRECISION (TREE_TYPE (ll_arg));
       lcode = (lcode == LT_EXPR ? NE_EXPR : EQ_EXPR);
     }
   /* Turn compares of unsigned quantities with powers of two into
@@ -8130,7 +8132,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
       && INTEGRAL_TYPE_P (TREE_TYPE (rl_arg))
       && !TYPE_UNSIGNED (TREE_TYPE (rl_arg)))
     {
-      rsignbit = true;
+      rsignbit = TYPE_PRECISION (TREE_TYPE (rl_arg));
       rcode = (rcode == LT_EXPR ? NE_EXPR : EQ_EXPR);
     }
   else if ((rcode == LT_EXPR || rcode == GE_EXPR)
@@ -8204,7 +8206,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
       || ! operand_equal_p (ll_inner, rl_inner, 0))
     {
       /* Try swapping the operands.  */
-      if (ll_reversep != rr_reversep
+      if (ll_reversep != rr_reversep || rsignbit
 	  || !operand_equal_p (ll_inner, rr_inner, 0))
 	return 0;
 
@@ -8284,6 +8286,14 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   if (lsignbit)
     {
       wide_int sign = wi::mask (ll_bitsize - 1, true, ll_bitsize);
+      /* If ll_arg is zero-extended and we're testing the sign bit, we know
+	 what the result should be.  Shifting the sign bit out of sign will get
+	 us to mask the entire field out, yielding zero, i.e., the sign bit of
+	 the zero-extended value.  We know the masked value is being compared
+	 with zero, so the compare will get us the result we're looking
+	 for: TRUE if EQ_EXPR, FALSE if NE_EXPR.  */
+      if (lsignbit > ll_bitsize && ll_unsignedp)
+	sign <<= 1;
       if (!ll_and_mask.get_precision ())
 	ll_and_mask = sign;
       else
@@ -8303,6 +8313,8 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   if (rsignbit)
     {
       wide_int sign = wi::mask (rl_bitsize - 1, true, rl_bitsize);
+      if (rsignbit > rl_bitsize && ll_unsignedp)
+	sign <<= 1;
       if (!rl_and_mask.get_precision ())
 	rl_and_mask = sign;
       else
