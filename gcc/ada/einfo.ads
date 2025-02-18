@@ -3626,7 +3626,7 @@ package Einfo is
 --       subprogram or the formal's Extra_Accessibility - whichever one is
 --       lesser. The Minimum_Accessibility field then points to this object.
 
---    Modulus [base type only]
+--    Modulus [implementation base type only]
 --       Defined in modular types. Contains the modulus. For the binary case,
 --       this will be a power of 2, but if Non_Binary_Modulus is set, then it
 --       will not be a power of 2.

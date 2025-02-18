@@ -572,7 +572,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  created for the base type, and this is the first named subtype).
 
    Ab (Modular_Integer_Kind, Integer_Kind,
-       (Sm (Modulus, Uint, Base_Type_Only),
+       (Sm (Modulus, Uint, Impl_Base_Type_Only),
         Sm (Original_Array_Type, Node_Id)));
 
    Cc (E_Modular_Integer_Type, Modular_Integer_Kind);
