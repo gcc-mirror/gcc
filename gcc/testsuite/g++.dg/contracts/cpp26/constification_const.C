@@ -23,7 +23,7 @@ void f1(int i) pre const(i++); // { dg-error "increment of read-only location" }
 void f2(int &i) pre const(i++); // { dg-error "increment of read-only location" }
 void f3(int *i) pre const(i++); // { dg-error "increment of read-only location" }
 void f4(int *i) pre const((*i)++); // ok, not deep const
-void f5(int *i) pre const(gi++); //  ok, non automatic storage
+void f5(int *i) pre const(gi++); // { dg-error "increment of read-only location" }
 
 // todo structured binding test
 // lambda tests
@@ -97,8 +97,8 @@ int main()
   contract_assert const(ri++); // { dg-error "increment of read-only location" }
   ri = 6;
 
-  contract_assert const(gi++); // ok, not automatic storage
-  contract_assert const(gri++); // ok, not automatic storage
+  contract_assert const(gi++); // { dg-error "increment of read-only location" }
+  contract_assert const(gri++); // { dg-error "increment of read-only location" }
 
   int& rgi = gi;
   contract_assert const(rgi++); // { dg-error "increment of read-only location" }
