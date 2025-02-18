@@ -12,9 +12,6 @@ issue-1901.rs
 issue-1981.rs
 issue-2043.rs
 issue-2330.rs
-issue-2723-1.rs
-issue-2723-2.rs
-issue-2782.rs
 issue-2812.rs
 issue-850.rs
 issue-855.rs
@@ -36,7 +33,6 @@ self-path1.rs
 self-path2.rs
 sizeof-stray-infer-var-bug.rs
 struct-expr-parse.rs
-traits3.rs
 undeclared_label.rs
 use_1.rs
 v0-mangle1.rs
@@ -45,7 +41,6 @@ while_break_expr.rs
 exhaustiveness2.rs
 issue-3139-2.rs
 issue-3033.rs
-issue-3009.rs
 issue-2953-2.rs
 issue-2905-2.rs
 issue-266.rs

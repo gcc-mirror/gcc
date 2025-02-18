@@ -255,6 +255,8 @@ Late::visit (AST::PathInExpression &expr)
   // in a function item` error here?
   // do we emit it in `get<Namespace::Labels>`?
 
+  DefaultResolver::visit (expr);
+
   if (expr.is_lang_item ())
     {
       ctx.map_usage (Usage (expr.get_node_id ()),
@@ -284,8 +286,6 @@ Late::visit (AST::PathInExpression &expr)
 
   ctx.map_usage (Usage (expr.get_node_id ()),
 		 Definition (resolved->get_node_id ()));
-
-  DefaultResolver::visit (expr);
 }
 
 void
