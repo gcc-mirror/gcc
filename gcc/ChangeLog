@@ -1,3 +1,17 @@
+2025-02-17  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/freebsd-spec.h: Change fbsd-lib-spec for FreeBSD > 13,
+	do not link against profiled system libraries if -pg is invoked.
+	Add a define to note about this change.
+	* config/aarch64/aarch64-freebsd.h: Use the note to inform if
+	-pg is invoked on FreeBSD > 13.
+	* config/arm/freebsd.h: Likewise.
+	* config/i386/freebsd.h: Likewise.
+	* config/i386/freebsd64.h: Likewise.
+	* config/riscv/freebsd.h: Likewise.
+	* config/rs6000/freebsd64.h: Likewise.
+	* config/rs6000/sysv4.h: Likeise.
+
 2025-02-12  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/118800
