@@ -4808,6 +4808,7 @@ finish_id_expression_1 (tree id_expression,
 						   | TYPE_QUAL_CONST));
 	  r = build1 (VIEW_CONVERT_EXPR, ctype, r);
 	}
+
       r = convert_from_reference (r);
       if (integral_constant_expression_p
 	  && !dependent_type_p (TREE_TYPE (decl))
@@ -4819,6 +4820,11 @@ finish_id_expression_1 (tree id_expression,
 		   "integral or enumeration type", decl, TREE_TYPE (decl));
 	  *non_integral_constant_expression_p = true;
 	}
+
+      if (flag_contracts_nonattr && should_constify_contract
+	  && processing_contract_condition)
+	r = constify_contract_access(r);
+
       return r;
     }
   else if (TREE_CODE (decl) == UNBOUND_CLASS_TEMPLATE)
