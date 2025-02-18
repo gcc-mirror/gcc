@@ -23,10 +23,11 @@ void f1(int i) pre const(i++); // { dg-error "increment of read-only location" }
 void f2(int &i) pre const(i++); // { dg-error "increment of read-only location" }
 void f3(int *i) pre const(i++); // { dg-error "increment of read-only location" }
 void f4(int *i) pre const((*i)++); // ok, not deep const
-void f5(int *i) pre const(gi++); //  ok, non automatic storage
+void f5(int *i) pre const(gi++); // { dg-error "increment of read-only location" }
 void f6(int *i) pre const mutable(gi++); // { dg-error {cannot be both 'const' and 'mutable'} }
+// { dg-error {increment of read-only location} "" { target *-*-* } .-1 }
 void f7(int *i) pre const((*i)++) pre mutable((*i)++); // ok, not deep const
-void f8(int *i) pre const(gi++) pre mutable(gi++); //  ok, non automatic storage
+void f8(int *i) pre const(gi++) pre mutable(gi++); // { dg-error "increment of read-only location" }
 
 // todo structured binding test
 // lambda tests
@@ -81,7 +82,7 @@ void template_related_tests()
   perfect_forward(ci);
   perfect_forward((const int&&) ci);
   perfect_forward2(666);
-// { dg-error {increment of read-only location} "" { target *-*-* } 66 }
+// { dg-error {increment of read-only location} "" { target *-*-* } 67 }
   S2 s;
   const S2 cs;
   s.perfect_forward();
@@ -109,8 +110,8 @@ int main()
   contract_assert const(ri++); // { dg-error "increment of read-only location" }
   ri = 6;
 
-  contract_assert const(gi++); // ok, not automatic storage
-  contract_assert const(gri++); // ok, not automatic storage
+  contract_assert const(gi++); // { dg-error "increment of read-only location" }
+  contract_assert const(gri++); // { dg-error "increment of read-only location" }
 
   int& rgi = gi;
   contract_assert const(rgi++); // { dg-error "increment of read-only location" }
