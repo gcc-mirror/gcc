@@ -46,9 +46,6 @@ not_find_value_in_scope.rs
 privacy4.rs
 privacy5.rs
 privacy8.rs
-macros/proc/attribute_non_function.rs
-macros/proc/derive_non_function.rs
-macros/proc/non_function.rs
 pub_restricted_1.rs
 pub_restricted_2.rs
 pub_restricted_3.rs
