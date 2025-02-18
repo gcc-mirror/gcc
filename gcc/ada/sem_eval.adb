@@ -144,7 +144,7 @@ package body Sem_Eval is
    Checking_For_Potentially_Static_Expression : Boolean := False;
    --  Global flag that is set True during Analyze_Static_Expression_Function
    --  in order to verify that the result expression of a static expression
-   --  function is a potentially static function (see RM2022 6.8(5.3)).
+   --  function is a potentially static function (see RM 2022 6.8(5.3)).
 
    -----------------------
    -- Local Subprograms --

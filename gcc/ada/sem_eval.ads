@@ -301,34 +301,34 @@ package Sem_Eval is
    --  is static or its value is known at compile time. This version is used
    --  for string types and returns the corresponding N_String_Literal node.
 
-   procedure Eval_Actual                 (N : Node_Id);
-   procedure Eval_Allocator              (N : Node_Id);
-   procedure Eval_Arithmetic_Op          (N : Node_Id);
-   procedure Eval_Call                   (N : Node_Id);
-   procedure Eval_Case_Expression        (N : Node_Id);
-   procedure Eval_Character_Literal      (N : Node_Id);
-   procedure Eval_Concatenation          (N : Node_Id);
-   procedure Eval_Entity_Name            (N : Node_Id);
-   procedure Eval_If_Expression          (N : Node_Id);
-   procedure Eval_Indexed_Component      (N : Node_Id);
-   procedure Eval_Integer_Literal        (N : Node_Id);
-   procedure Eval_Logical_Op             (N : Node_Id);
-   procedure Eval_Membership_Op          (N : Node_Id);
-   procedure Eval_Named_Integer          (N : Node_Id);
-   procedure Eval_Named_Real             (N : Node_Id);
-   procedure Eval_Op_Expon               (N : Node_Id);
-   procedure Eval_Op_Not                 (N : Node_Id);
-   procedure Eval_Real_Literal           (N : Node_Id);
-   procedure Eval_Relational_Op          (N : Node_Id);
-   procedure Eval_Selected_Component     (N : Node_Id);
-   procedure Eval_Shift                  (N : Node_Id);
-   procedure Eval_Short_Circuit          (N : Node_Id);
-   procedure Eval_Slice                  (N : Node_Id);
-   procedure Eval_String_Literal         (N : Node_Id);
-   procedure Eval_Qualified_Expression   (N : Node_Id);
-   procedure Eval_Type_Conversion        (N : Node_Id);
-   procedure Eval_Unary_Op               (N : Node_Id);
-   procedure Eval_Unchecked_Conversion   (N : Node_Id);
+   procedure Eval_Actual               (N : Node_Id);
+   procedure Eval_Allocator            (N : Node_Id);
+   procedure Eval_Arithmetic_Op        (N : Node_Id);
+   procedure Eval_Call                 (N : Node_Id);
+   procedure Eval_Case_Expression      (N : Node_Id);
+   procedure Eval_Character_Literal    (N : Node_Id);
+   procedure Eval_Concatenation        (N : Node_Id);
+   procedure Eval_Entity_Name          (N : Node_Id);
+   procedure Eval_If_Expression        (N : Node_Id);
+   procedure Eval_Indexed_Component    (N : Node_Id);
+   procedure Eval_Integer_Literal      (N : Node_Id);
+   procedure Eval_Logical_Op           (N : Node_Id);
+   procedure Eval_Membership_Op        (N : Node_Id);
+   procedure Eval_Named_Integer        (N : Node_Id);
+   procedure Eval_Named_Real           (N : Node_Id);
+   procedure Eval_Op_Expon             (N : Node_Id);
+   procedure Eval_Op_Not               (N : Node_Id);
+   procedure Eval_Real_Literal         (N : Node_Id);
+   procedure Eval_Relational_Op        (N : Node_Id);
+   procedure Eval_Selected_Component   (N : Node_Id);
+   procedure Eval_Shift                (N : Node_Id);
+   procedure Eval_Short_Circuit        (N : Node_Id);
+   procedure Eval_Slice                (N : Node_Id);
+   procedure Eval_String_Literal       (N : Node_Id);
+   procedure Eval_Qualified_Expression (N : Node_Id);
+   procedure Eval_Type_Conversion      (N : Node_Id);
+   procedure Eval_Unary_Op             (N : Node_Id);
+   procedure Eval_Unchecked_Conversion (N : Node_Id);
 
    procedure Flag_Non_Static_Expr (Msg : String; Expr : Node_Id);
    --  This procedure is called after it has been determined that Expr is not

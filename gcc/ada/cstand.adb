@@ -2095,7 +2095,7 @@ package body CStand is
    -- Set_Float_Bounds --
    ----------------------
 
-   procedure Set_Float_Bounds (Id  : Entity_Id) is
+   procedure Set_Float_Bounds (Id : Entity_Id) is
       L : Node_Id;
       H : Node_Id;
       --  Low and high bounds of literal value

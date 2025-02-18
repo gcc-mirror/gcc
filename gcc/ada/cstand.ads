@@ -42,7 +42,7 @@ package CStand is
    --  The semantics info is in the format given by Entity_Info. The global
    --  variables Last_Standard_Node_Id and Last_Standard_List_Id are also set.
 
-   procedure Set_Float_Bounds (Id  : Entity_Id);
+   procedure Set_Float_Bounds (Id : Entity_Id);
    --  Procedure to set bounds for float type or subtype. Id is the entity
    --  whose bounds and type are to be set (a floating-point type).
 

@@ -34,7 +34,7 @@ package body Urealp is
    --  add 1 to No_Ureal, since "+" means something different for Ureals).
 
    type Ureal_Entry is record
-      Num  : Uint;
+      Num : Uint;
       --  Numerator (always non-negative)
 
       Den : Uint;
