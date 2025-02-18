@@ -18,12 +18,15 @@ static_assert (__cpp_contracts_roles >= 201906);
 int gi = 7;
 int &gri = gi;
 
+bool f(int&&){ return true;}
+int temporary(){ return 4;}
 
 void f1(int i) pre(i++); // { dg-error "increment of read-only location" }
 void f2(int &i) pre(i++); // { dg-error "increment of read-only location" }
 void f3(int *i) pre(i++); // { dg-error "increment of read-only location" }
 void f4(int *i) pre((*i)++); // ok, not deep const
-void f5(int *i) pre(gi++); //  ok, non automatic storage
+void f5(int *i) pre(gi++); // { dg-error "increment of read-only location" }
+void f6() pre(f(temporary())); // ok, lifetime started within pre condition
 
 // todo structured binding test
 // lambda tests
@@ -97,8 +100,8 @@ int main()
   contract_assert(ri++); // { dg-error "increment of read-only location" }
   ri = 6;
 
-  contract_assert(gi++); // ok, not automatic storage
-  contract_assert(gri++); // ok, not automatic storage
+  contract_assert(gi++); // { dg-error "increment of read-only location" }
+  contract_assert(gri++); // { dg-error "increment of read-only location" }
 
   int& rgi = gi;
   contract_assert(rgi++); // { dg-error "increment of read-only location" }
