@@ -13010,16 +13010,6 @@ having large chains of nested wrapper functions.
 
 Enabled by default.
 
-@item -ffile-cache-files=
-Max number of files in the file cache.
-The file cache is used to print source lines in diagnostics and do some
-source checks like @option{-Wmisleading-indentation}.
-
-@item -ffile-cache-files=
-Max number of lines to index into file cache. When 0 this is automatically sized.
-The file cache is used to print source lines in diagnostics and do some
-source checks like @option{-Wmisleading-indentation}.
-
 @opindex fipa-sra
 @item -fipa-sra
 Perform interprocedural scalar replacement of aggregates, removal of
@@ -15791,6 +15781,16 @@ gives the maximum number of instructions in a block which should be
 considered for if-conversion.  The compiler will
 also use other heuristics to decide whether if-conversion is likely to be
 profitable.
+
+@item file-cache-files
+Max number of files in the file cache.
+The file cache is used to print source lines in diagnostics and do some
+source checks like @option{-Wmisleading-indentation}.
+
+@item file-cache-files
+Max number of lines to index into file cache. When 0 this is automatically sized.
+The file cache is used to print source lines in diagnostics and do some
+source checks like @option{-Wmisleading-indentation}.
 
 @item max-rtl-if-conversion-predictable-cost
 RTL if-conversion will try to remove conditional branches around a block
