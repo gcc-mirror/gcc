@@ -2,7 +2,7 @@
 /* { dg-require-effective-target int32plus } */
 /* { dg-additional-options "-fdump-rtl-expand-details" } */
 
-#include <stdint-gcc.h>
+#include <stdint.h>
 
 int8_t crc8_data8 ()
 {
