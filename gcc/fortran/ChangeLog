@@ -1,3 +1,25 @@
+2025-02-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115271
+	* gfortran.h (gfc_omp_namelist): Change need_device_ptr to adj_args
+	union and add more flags.
+	* openmp.cc (gfc_match_omp_declare_variant,
+	gfc_resolve_omp_declare): For adjust_args, handle need_device_addr
+	and numeric values/ranges besides dummy argument names.
+	(resolve_omp_dispatch): Remove bogus a adjust_args check.
+	* trans-decl.cc (gfc_handle_omp_declare_variant): New.
+	(gfc_generate_module_vars, gfc_generate_function_code): Call it.
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Handle numeric
+	values/ranges besides dummy argument names.
+
+2025-02-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/118862
+	* trans-expr.cc (gfc_conv_cst_int_power): Use functions for
+	unsigned wide integer.
+	(gfc_conv_cst_uint_power): Avoid generating the mask if it would
+	overflow an unsigned HOST_WIDE_INT.  Format fixes.
+
 2025-02-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* dump-parse-tree.cc (show_attr): Remove double output

@@ -1,3 +1,12 @@
+2025-02-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118856
+	PR c++/118763
+	* cp-tree.h (TARGET_EXPR_INTERNAL_P): New.
+	* call.cc (extend_temps_r): Check it instead of CLEANUP_EH_ONLY.
+	* tree.cc (get_internal_target_expr): Set it instead.
+	* typeck2.cc (maybe_push_temp_cleanup): Don't set CLEANUP_EH_ONLY.
+
 2025-02-15  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/118846

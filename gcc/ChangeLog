@@ -1,3 +1,77 @@
+2025-02-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (ix86_find_all_reg_use):
+	Scan only for SET RTX in PARALLEL.
+
+2025-02-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/118288
+	* builtins.cc (expand_builtin_crc_table_based):
+	Use gen_int_mode to emit constant integers with MSB set.
+
+2025-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118895
+	* tree-ssa-sccvn.cc (vn_nary_build_or_lookup_1): Only allow
+	CSE if we can verify the result is available.
+
+2025-02-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118764
+	* config/avr/gen-avr-mmcu-specs.cc (print_mcu)
+	[has CVT]: Mention CVT in header comment of generated specs file.
+
+2025-02-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.opt.urls: Regenetated.
+
+2025-02-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AVX10_1_UNSET): Adjust macro.
+	(OPTION_MASK_ISA2_AVX10_2_256_UNSET): Removed.
+	(OPTION_MASK_ISA2_AVX10_2_512_UNSET): Ditto.
+	(OPTION_MASK_ISA2_AVX10_2_UNSET): New.
+	(ix86_handle_option): Remove disable part for avx10.2-256.
+	Rename avx10.2-512 switch case to avx10.2 and adjust disable
+	part macro.
+	* common/config/i386/i386-isas.h: Adjust avx10.2 and
+	avx10.2-512.
+	* config/i386/driver-i386.cc
+	(host_detect_local_cpu): Do not append -mno-avx10.x-256
+	for -march=native.
+	* config/i386/i386-options.cc
+	(ix86_valid_target_attribute_inner_p): Adjust avx10.2 and
+	avx10.2-512.
+	* config/i386/i386.opt: Reject Negative for mavx10.2-256.
+	Alias mavx10.2-512 to mavx10.2. Reject Negative for
+	mavx10.2-512.
+	* doc/extend.texi: Adjust documentation.
+	* doc/sourcebuild.texi: Ditto.
+
+2025-02-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AVX2_UNSET): Change AVX10.1 unset macro.
+	(OPTION_MASK_ISA2_AVX10_1_256_UNSET): Removed.
+	(OPTION_MASK_ISA2_AVX10_1_512_UNSET): Removed.
+	(OPTION_MASK_ISA2_AVX10_1_UNSET): New.
+	(ix86_handle_option): Adjust AVX10.1 unset macro.
+	* common/config/i386/i386-isas.h: Remove avx10.1.
+	* config/i386/i386-options.cc
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	(ix86_option_override_internal): Adjust warning message.
+	* config/i386/i386.opt: Remove mavx10.1.
+	* doc/extend.texi: Remove avx10.1 and adjust doc.
+	* doc/sourcebuild.texi: Ditto.
+
+2025-02-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118815
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Do not check vector size conflict when AVX512 is not explicitly
+	set.
+
 2025-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/118248

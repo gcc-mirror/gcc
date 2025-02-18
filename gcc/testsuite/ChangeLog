@@ -1,3 +1,211 @@
+2025-02-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115271
+	* gfortran.dg/gomp/adjust-args-1.f90: Update dg-.* expectations.
+	* gfortran.dg/gomp/adjust-args-2.f90: Likewise.
+	* gfortran.dg/gomp/adjust-args-2a.f90: Likewise.
+	* gfortran.dg/gomp/adjust-args-3.f90: Likewise.
+	* gfortran.dg/gomp/adjust-args-4.f90: Remove array from c_ptr.
+	* gfortran.dg/gomp/adjust-args-5.f90: Likewise.
+	* gfortran.dg/gomp/adjust-args-11.f90: Likewise. Add check that
+	INTERFACE is now handled in subroutines and in modules.
+	* gfortran.dg/gomp/adjust-args-13.f90: New test.
+	* gfortran.dg/gomp/adjust-args-14.f90: New test.
+	* gfortran.dg/gomp/adjust-args-15.f90: New test.
+	* gfortran.dg/gomp/declare-variant-21.f90: New test.
+
+2025-02-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/118288
+	* gcc.dg/pr118288.c: New test.
+
+2025-02-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/102455
+	* g++.dg/ext/vector43.C: New test.
+
+2025-02-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118856
+	PR c++/118763
+	* g++.dg/ext/stmtexpr29.C: New test.
+
+2025-02-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96364
+	* g++.dg/cpp0x/gen-attrs-88.C: New test.
+
+2025-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118895
+	* gcc.dg/pr118895.c: New testcase.
+
+2025-02-17  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	PR target/117991
+	* g++.dg/template/builtin-speculation-overloads.def: SUCCESS
+	argument in SPECULATION_ASSERTS now uses a macro `true_def`
+	instead of the literal `true` for arguments which should work
+	with `__builtin_speculation_safe_value`.
+	* g++.dg/template/builtin-speculation-overloads1.C: Define
+	`true_def` macro on command line to compiler according to the
+	effective target representing that
+	`__builtin_speculation_safe_value` does something on this
+	target.
+	* g++.dg/template/builtin-speculation-overloads4.C: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_speculation_barrier_defined): New.
+
+2025-02-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_2-512-vminmaxbf16-2.c:
+	Add missing avx10_2_512 check.
+	* gcc.target/i386/avx10_2-512-vminmaxpd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxps-2.c: Ditto.
+	* gcc.target/i386/avx10-check.h: Change avx10.2 to avx10.2-256.
+	* gcc.target/i386/avx10_2-bf16-1.c: Ditto.
+	* gcc.target/i386/avx10_2-bf16-vector-cmp-1.c: Ditto.
+	* gcc.target/i386/avx10_2-bf16-vector-fma-1.c: Ditto.
+	* gcc.target/i386/avx10_2-bf16-vector-operations-1.c: Ditto.
+	* gcc.target/i386/avx10_2-bf16-vector-smaxmin-1.c: Ditto.
+	* gcc.target/i386/avx10_2-builtin-1.c: Ditto.
+	* gcc.target/i386/avx10_2-builtin-2.c: Ditto.
+	* gcc.target/i386/avx10_2-comibf-1.c: Ditto.
+	* gcc.target/i386/avx10_2-comibf-2.c: Ditto.
+	* gcc.target/i386/avx10_2-comibf-3.c: Ditto.
+	* gcc.target/i386/avx10_2-comibf-4.c: Ditto.
+	* gcc.target/i386/avx10_2-compare-1.c: Ditto.
+	* gcc.target/i386/avx10_2-compare-1b.c: Ditto.
+	* gcc.target/i386/avx10_2-convert-1.c: Ditto.
+	* gcc.target/i386/avx10_2-media-1.c: Ditto.
+	* gcc.target/i386/avx10_2-minmax-1.c: Ditto.
+	* gcc.target/i386/avx10_2-movrs-1.c: Ditto.
+	* gcc.target/i386/avx10_2-partial-bf16-vector-fast-math-1.c: Ditto.
+	* gcc.target/i386/avx10_2-partial-bf16-vector-fma-1.c: Ditto.
+	* gcc.target/i386/avx10_2-partial-bf16-vector-operations-1.c: Ditto.
+	* gcc.target/i386/avx10_2-partial-bf16-vector-smaxmin-1.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-1.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-2.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Ditto.
+	* gcc.target/i386/avx10_2-satcvt-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vaddbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcmpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcomisbf16-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vcomisbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ps2phx-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvthf82ph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttbf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttbf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttsd2sis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttsd2usis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttss2sis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttss2usis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vdivbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vdpphps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfmaddXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfmsubXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfnmaddXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfnmsubXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfpclassbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vgetexpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vgetmantbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmaxbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxpd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxsd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxsh-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxss-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmovd-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vmovd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmovw-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vmovw-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmpsadbw-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmulbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbssd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbssds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwusd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwusds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vrcpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vreducebf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vrndscalebf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vrsqrtbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vscalefbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vsqrtbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vsubbf16-2.c: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Ditto.
+	* gcc.target/i386/part-vect-vec_cmpbf.c: Ditto.
+	* gcc.target/i386/pr117495.c: Ditto.
+	* gcc.target/i386/sm4-avx10_2-1.c: Ditto.
+	* gcc.target/i386/sm4-check.h: Ditto.
+	* gcc.target/i386/vnniint16-auto-vectorize-3.c: Ditto.
+	* gcc.target/i386/vnniint8-auto-vectorize-3.c: Ditto.
+	* lib/target-supports.exp: Ditto.
+
+2025-02-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10-check.h: Change to avx10.1-256.
+	* gcc.target/i386/avx10_1-1.c: Ditto.
+	* gcc.target/i386/avx10_1-13.c: Ditto.
+	* gcc.target/i386/avx10_1-14.c: Ditto.
+	* gcc.target/i386/avx10_1-21.c: Ditto.
+	* gcc.target/i386/avx10_1-22.c: Ditto.
+	* gcc.target/i386/avx10_1-23.c: Ditto.
+	* gcc.target/i386/avx10_1-24.c: Ditto.
+	* gcc.target/i386/avx10_1-3.c: Ditto.
+	* gcc.target/i386/avx10_1-5.c: Ditto.
+	* gcc.target/i386/avx10_1-6.c: Ditto.
+	* gcc.target/i386/avx10_1-8.c: Ditto.
+	* gcc.target/i386/pr117946.c: Ditto.
+	* gcc.target/i386/avx10_1-12.c: Adjust warning message.
+	* gcc.target/i386/avx10_1-19.c: Ditto.
+	* gcc.target/i386/avx10_1-17.c: Adjust to no-avx10.1-512.
+
+2025-02-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118815
+	* gcc.target/i386/pr118815.c: New test.
+
 2025-02-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/118248
