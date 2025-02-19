@@ -1,3 +1,13 @@
+2025-02-20  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-02-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* configure.ac (unsupported_languages) [GCN, nvptx]: Add 'ada'.
+	(noconfigdirs) [GCN, nvptx]: Add 'target-libobjc',
+	'target-libffi', 'target-libgo'.
+	* configure: Regenerate.
+
 2018-12-20  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* Makefile.def (lang_env_dependencies): Disable `cxx' dependency
