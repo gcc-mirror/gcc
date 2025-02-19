@@ -1,3 +1,12 @@
+2025-03-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-03-06  Thomas Schwinge  <tschwinge@baylibre.com>
+		    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config [!__cpp_exceptions]
+	(_GLIBCXX_THROW_OR_ABORT): Reference '_EXC'.
+
 2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
