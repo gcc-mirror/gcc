@@ -97,7 +97,7 @@ struct __encoding : locale::facet
 
   // Convert `input` to UTF-8, using `out` to hold the result.
   codecvt_base::result
-  conv(string_view input, string& out) const
+  conv(string_view input, [[maybe_unused]] string& out) const
   {
     if (input.empty()) [[unlikely]]
       return codecvt_base::noconv;
