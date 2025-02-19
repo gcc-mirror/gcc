@@ -1658,20 +1658,23 @@ conv_caf_sendget (gfc_code *code)
   gfc_init_se (&rhs_se, NULL);
   if (rhs_expr->rank == 0)
     {
-      gfc_conv_expr (&rhs_se, rhs_expr);
-      gfc_add_block_to_block (&block, &rhs_se.pre);
       opt_rhs_desc = null_pointer_node;
       if (rhs_expr->ts.type == BT_CHARACTER)
 	{
+	  gfc_conv_expr (&rhs_se, rhs_expr);
+	  gfc_add_block_to_block (&block, &rhs_se.pre);
 	  opt_rhs_charlen = gfc_build_addr_expr (
 	    NULL_TREE, gfc_trans_force_lval (&block, rhs_se.string_length));
 	  rhs_size = build_int_cstu (size_type_node, rhs_expr->ts.kind);
 	}
       else
 	{
+	  gfc_typespec *ts
+	    = &sender_fn_expr->symtree->n.sym->formal->next->next->sym->ts;
+
 	  opt_rhs_charlen
 	    = build_zero_cst (build_pointer_type (size_type_node));
-	  rhs_size = TREE_TYPE (rhs_se.expr)->type_common.size_unit;
+	  rhs_size = gfc_typenode_for_spec (ts)->type_common.size_unit;
 	}
     }
   else if (!TYPE_LANG_SPECIFIC (TREE_TYPE (rhs_caf_decl))->rank
