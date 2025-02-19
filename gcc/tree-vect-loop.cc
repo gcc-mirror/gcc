@@ -1562,6 +1562,9 @@ vect_verify_loop_lens (loop_vec_info loop_vinfo)
   if (LOOP_VINFO_LENS (loop_vinfo).is_empty ())
     return false;
 
+  if (!VECTOR_MODE_P (loop_vinfo->vector_mode))
+    return false;
+
   machine_mode len_load_mode, len_store_mode;
   if (!get_len_load_store_mode (loop_vinfo->vector_mode, true)
 	 .exists (&len_load_mode))
