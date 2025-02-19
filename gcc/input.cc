@@ -134,10 +134,8 @@ public:
   unsigned m_use_count;
 
   /* The file_path is the key for identifying a particular file in
-     the cache.
-     For libcpp-using code, the underlying buffer for this field is
-     owned by the corresponding _cpp_file within the cpp_reader.  */
-  const char *m_file_path;
+     the cache.  This copy is owned by the slot.  */
+  char *m_file_path;
 
   FILE *m_fp;
 
@@ -395,6 +393,7 @@ file_cache::add_buffered_content (const char *file_path,
 void
 file_cache_slot::evict ()
 {
+  free (m_file_path);
   m_file_path = NULL;
   if (m_fp)
     fclose (m_fp);
@@ -492,7 +491,7 @@ file_cache_slot::create (const file_cache::input_context &in_context,
 			 const char *file_path, FILE *fp,
 			 unsigned highest_use_count)
 {
-  m_file_path = file_path;
+  m_file_path = file_path ? xstrdup (file_path) : nullptr;
   if (m_fp)
     fclose (m_fp);
   m_error = false;
@@ -623,6 +622,7 @@ file_cache_slot::file_cache_slot ()
 
 file_cache_slot::~file_cache_slot ()
 {
+  free (m_file_path);
   if (m_fp)
     {
       fclose (m_fp);
