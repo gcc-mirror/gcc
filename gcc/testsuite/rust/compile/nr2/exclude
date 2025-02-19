@@ -24,12 +24,9 @@ lookup_err1.rs
 macros/mbe/macro43.rs
 macros/mbe/macro44.rs
 macros/mbe/macro6.rs
-macros/mbe/macro_use1.rs
 multiple_bindings1.rs
 multiple_bindings2.rs
-nested_macro_use1.rs
 nested_macro_use2.rs
-nested_macro_use3.rs
 not_find_value_in_scope.rs
 privacy5.rs
 privacy8.rs

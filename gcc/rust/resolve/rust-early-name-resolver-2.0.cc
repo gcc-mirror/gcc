@@ -22,6 +22,7 @@
 #include "rust-toplevel-name-resolver-2.0.h"
 #include "rust-attributes.h"
 #include "rust-finalize-imports-2.0.h"
+#include "rust-attribute-values.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -227,11 +228,24 @@ Early::visit (AST::BlockExpr &block)
 void
 Early::visit (AST::Module &module)
 {
-  textual_scope.push ();
+  bool is_macro_use = false;
+
+  for (const auto &attr : module.get_outer_attrs ())
+    {
+      if (attr.get_path ().as_string () == Values::Attributes::MACRO_USE)
+	{
+	  is_macro_use = true;
+	  break;
+	}
+    }
+
+  if (!is_macro_use)
+    textual_scope.push ();
 
   DefaultResolver::visit (module);
 
-  textual_scope.pop ();
+  if (!is_macro_use)
+    textual_scope.pop ();
 }
 
 void
