@@ -305,9 +305,10 @@ static size_t dumpdir_length = 0;
    driver added to dumpdir after dumpbase or linker output name.  */
 static bool dumpdir_trailing_dash_added = false;
 
-/* True if -r, -shared, -pie, or -no-pie were specified on the command
-   line.  */
-static bool any_link_options_p;
+/* True if -r, -shared, -pie, -no-pie, -z lazy, or -z norelro were
+   specified on the command line, and therefore -fhardened should not
+   add -z now/relro.  */
+static bool avoid_linker_hardening_p;
 
 /* True if -static was specified on the command line.  */
 static bool static_p;
@@ -4434,8 +4435,15 @@ driver_handle_option (struct gcc_options *opts,
 	    }
 	/* Record the part after the last comma.  */
 	add_infile (arg + prev, "*");
+	if (strcmp (arg, "-z,lazy") == 0 || strcmp (arg, "-z,norelro") == 0)
+	  avoid_linker_hardening_p = true;
       }
       do_save = false;
+      break;
+
+    case OPT_z:
+      if (strcmp (arg, "lazy") == 0 || strcmp (arg, "norelro") == 0)
+	avoid_linker_hardening_p = true;
       break;
 
     case OPT_Xlinker:
@@ -4642,7 +4650,7 @@ driver_handle_option (struct gcc_options *opts,
     case OPT_r:
     case OPT_shared:
     case OPT_no_pie:
-      any_link_options_p = true;
+      avoid_linker_hardening_p = true;
       break;
 
     case OPT_static:
@@ -5026,7 +5034,7 @@ process_command (unsigned int decoded_options_count,
   /* TODO: check if -static -pie works and maybe use it.  */
   if (flag_hardened)
     {
-      if (!any_link_options_p && !static_p)
+      if (!avoid_linker_hardening_p && !static_p)
 	{
 #if defined HAVE_LD_PIE && defined LD_PIE_SPEC
 	  save_switch (LD_PIE_SPEC, 0, NULL, /*validated=*/true, /*known=*/false);
@@ -5045,7 +5053,7 @@ process_command (unsigned int decoded_options_count,
 	    }
 	}
       /* We can't use OPT_Whardened yet.  Sigh.  */
-      else if (warn_hardened)
+      else
 	warning_at (UNKNOWN_LOCATION, 0,
 		    "linker hardening options not enabled by %<-fhardened%> "
 		    "because other link options were specified on the command "

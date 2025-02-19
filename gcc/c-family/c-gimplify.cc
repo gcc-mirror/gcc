@@ -254,22 +254,30 @@ expr_loc_or_loc (const_tree expr, location_t or_loc)
    controlled by the loop.  INCR is the increment expression of a for-loop,
    or NULL_TREE.  COND_IS_FIRST indicates whether the condition is
    evaluated before the loop body as in while and for loops, or after the
-   loop body as in do-while loops.  */
+   loop body as in do-while loops.  COND_PREP and COND_CLEANUP are used
+   for C++ for/while loops with variable declaration as condition.  COND_PREP
+   is a BIND_EXPR with the declaration and initialization of the condition
+   variable, into which COND, BODY, continue label if needed and INCR if
+   non-NULL should be appended, and COND_CLEANUP is number of nested
+   CLEANUP_STMT -> TRY_FINALLY_EXPR statements at the end.  If non-NULL,
+   COND, BODY, continue label if needed and INCR if non-NULL should be
+   appended to the body of the COND_CLEANUP's nested TRY_FINALLY_EXPR.  */
 
 static void
 genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
-		   tree incr, tree name, bool cond_is_first,
-		   int *walk_subtrees, void *data, walk_tree_fn func,
-		   walk_tree_lh lh)
+		   tree incr, tree name, tree cond_prep, tree cond_cleanup,
+		   bool cond_is_first, int *walk_subtrees, void *data,
+		   walk_tree_fn func, walk_tree_lh lh)
 {
   tree blab, clab;
   tree entry = NULL, exit = NULL, t;
-  tree stmt_list = NULL;
+  tree stmt_list = NULL, outer_stmt_list = NULL_TREE, *stmt_list_p = NULL;
   location_t cond_locus = expr_loc_or_loc (cond, start_locus);
   location_t incr_locus = expr_loc_or_loc (incr, start_locus);
 
   protected_set_expr_location_if_unset (incr, start_locus);
 
+  walk_tree_1 (&cond_prep, func, data, NULL, lh);
   walk_tree_1 (&cond, func, data, NULL, lh);
   walk_tree_1 (&incr, func, data, NULL, lh);
 
@@ -284,9 +292,54 @@ genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
   if (name)
     release_named_bc (name);
 
-  /* If condition is zero don't generate a loop construct.  */
-  if (cond && integer_zerop (cond))
+  if (cond_prep)
     {
+      /* The C++ cases of
+	 while (A x = 42) body;
+	 for (; A x = 42; expr) body;
+	 This should be expanded into:
+
+	 top:
+	 COND_PREP
+
+	 with either
+
+	 if (COND); else break;
+	 BODY;
+	 cont:
+	 EXPR;
+	 goto top;
+
+	 appended into COND_PREP body or body of some TRY_FINALLY_EXPRs
+	 at the end of COND_PREP.  */
+      gcc_assert (cond_is_first && TREE_CODE (cond_prep) == BIND_EXPR);
+      tree top = build1 (LABEL_EXPR, void_type_node,
+			 create_artificial_label (start_locus));
+      exit = build1 (GOTO_EXPR, void_type_node, LABEL_EXPR_LABEL (top));
+      append_to_statement_list (top, &outer_stmt_list);
+      append_to_statement_list (cond_prep, &outer_stmt_list);
+      stmt_list_p = &BIND_EXPR_BODY (cond_prep);
+      if (cond_cleanup)
+	for (unsigned depth = tree_to_uhwi (cond_cleanup); depth; --depth)
+	  {
+	    t = tsi_stmt (tsi_last (*stmt_list_p));
+	    gcc_assert (TREE_CODE (t) == TRY_FINALLY_EXPR);
+	    stmt_list_p = &TREE_OPERAND (t, 0);
+	  }
+      stmt_list = *stmt_list_p;
+      *stmt_list_p = NULL_TREE;
+      tree after_cond = create_artificial_label (cond_locus);
+      tree goto_after_cond = build1 (GOTO_EXPR, void_type_node, after_cond);
+      t = build1 (GOTO_EXPR, void_type_node, get_bc_label (bc_break));
+      t = fold_build3_loc (cond_locus, COND_EXPR, void_type_node, cond,
+			   goto_after_cond, t);
+      append_to_statement_list (t, &stmt_list);
+      t = build1 (LABEL_EXPR, void_type_node, after_cond);
+      append_to_statement_list (t, &stmt_list);
+    }
+  else if (cond && integer_zerop (cond))
+    {
+      /* If condition is zero don't generate a loop construct.  */
       if (cond_is_first)
 	{
 	  t = build1_loc (start_locus, GOTO_EXPR, void_type_node,
@@ -383,6 +436,11 @@ genericize_c_loop (tree *stmt_p, location_t start_locus, tree cond, tree body,
       append_to_statement_list (d, &stmt_list);
     }
   append_to_statement_list (exit, &stmt_list);
+  if (stmt_list_p)
+    {
+      *stmt_list_p = stmt_list;
+      stmt_list = outer_stmt_list;
+    }
   finish_bc_block (&stmt_list, bc_break, blab);
   if (!stmt_list)
     stmt_list = build_empty_stmt (start_locus);
@@ -408,7 +466,8 @@ genericize_for_stmt (tree *stmt_p, int *walk_subtrees, void *data,
     }
 
   genericize_c_loop (&loop, EXPR_LOCATION (stmt), FOR_COND (stmt),
-		     FOR_BODY (stmt), FOR_EXPR (stmt), FOR_NAME (stmt), 1,
+		     FOR_BODY (stmt), FOR_EXPR (stmt), FOR_NAME (stmt),
+		     FOR_COND_PREP (stmt), FOR_COND_CLEANUP (stmt), 1,
 		     walk_subtrees, data, func, lh);
   append_to_statement_list (loop, &expr);
   if (expr == NULL_TREE)
@@ -424,7 +483,8 @@ genericize_while_stmt (tree *stmt_p, int *walk_subtrees, void *data,
 {
   tree stmt = *stmt_p;
   genericize_c_loop (stmt_p, EXPR_LOCATION (stmt), WHILE_COND (stmt),
-		     WHILE_BODY (stmt), NULL_TREE, WHILE_NAME (stmt), 1,
+		     WHILE_BODY (stmt), NULL_TREE, WHILE_NAME (stmt),
+		     WHILE_COND_PREP (stmt), WHILE_COND_CLEANUP (stmt), 1,
 		     walk_subtrees, data, func, lh);
 }
 
@@ -436,8 +496,8 @@ genericize_do_stmt (tree *stmt_p, int *walk_subtrees, void *data,
 {
   tree stmt = *stmt_p;
   genericize_c_loop (stmt_p, EXPR_LOCATION (stmt), DO_COND (stmt),
-		     DO_BODY (stmt), NULL_TREE, DO_NAME (stmt), 0,
-		     walk_subtrees, data, func, lh);
+		     DO_BODY (stmt), NULL_TREE, DO_NAME (stmt),
+		     NULL_TREE, NULL_TREE, 0, walk_subtrees, data, func, lh);
 }
 
 /* Genericize a SWITCH_STMT node *STMT_P by turning it into a SWITCH_EXPR.  */
@@ -728,7 +788,7 @@ c_genericize (tree fndecl)
 	dump_node (DECL_SAVED_TREE (fndecl),
 		   TDF_SLIM | local_dump_flags, dump_orig);
       else
-	print_c_tree (dump_orig, DECL_SAVED_TREE (fndecl));
+	print_c_tree (dump_orig, DECL_SAVED_TREE (fndecl), local_dump_flags);
       fprintf (dump_orig, "\n");
     }
 

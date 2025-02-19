@@ -27,6 +27,9 @@ UrlSuffix(gcc/LoongArch-Options.html#index-mabi-2)
 mbranch-cost=
 UrlSuffix(gcc/LoongArch-Options.html#index-mbranch-cost-2)
 
+maddr-reg-reg-cost=
+UrlSuffix(gcc/LoongArch-Options.html#index-maddr-reg-reg-cost)
+
 mcheck-zero-division
 UrlSuffix(gcc/LoongArch-Options.html#index-mcheck-zero-division)
 

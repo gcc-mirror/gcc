@@ -12,4 +12,4 @@ add_loop (int *x, int n, int res)
   return res;
 }
 
-/* { dg-final { scan-assembler-times {vslide1up\.vx\s+v[0-9]+,\s*v[0-9]+,\s*[a-x0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {add\s+[a-x0-9]+,\s*[a-x0-9]+,a2} 1 } } */

@@ -492,7 +492,7 @@ find_widening_optab_handler_and_mode (optab op, machine_mode to_mode,
     {
       gcc_checking_assert (VECTOR_MODE_P (from_mode)
 			   && GET_MODE_INNER (from_mode) < to_mode);
-      limit_mode = from_mode;
+      limit_mode = GET_MODE_NEXT_MODE (from_mode).require ();
     }
   else
     gcc_checking_assert (GET_MODE_CLASS (from_mode) == GET_MODE_CLASS (to_mode)

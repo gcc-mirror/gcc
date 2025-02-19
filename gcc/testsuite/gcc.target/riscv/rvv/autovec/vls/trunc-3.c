@@ -19,7 +19,7 @@ DEF_CONVERT (trunc, uint64_t, uint8_t, 128)
 DEF_CONVERT (trunc, uint64_t, uint8_t, 256)
 DEF_CONVERT (trunc, uint64_t, uint8_t, 512)
 
-/* { dg-final { scan-assembler-times {vncvt\.x\.x\.w} 42 } } */
+/* { dg-final { scan-assembler-times {vnsrl\.wi} 42 } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
 /* { dg-final { scan-tree-dump-not "1,1" "optimized" } } */
 /* { dg-final { scan-tree-dump-not "2,2" "optimized" } } */

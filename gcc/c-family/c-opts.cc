@@ -1213,20 +1213,9 @@ c_common_post_options (const char **pfilename)
   if (cxx_dialect >= cxx20)
     flag_concepts = 1;
 
-  /* Enable lifetime extension of range based for temporaries for C++23.
-     Diagnose -std=c++23 -fno-range-for-ext-temps.  */
-  if (cxx_dialect >= cxx23)
-    {
-      if (OPTION_SET_P (flag_range_for_ext_temps)
-	  && !flag_range_for_ext_temps)
-	error ("%<-fno-range-for-ext-temps%> is incompatible with C++23");
-      flag_range_for_ext_temps = 1;
-    }
-  /* Otherwise default to enabled in GNU modes but allow user to override.  */
-  else if (cxx_dialect >= cxx11
-	   && !flag_iso
-	   && !OPTION_SET_P (flag_range_for_ext_temps))
-    flag_range_for_ext_temps = 1;
+  /* Enable lifetime extension of range based for temporaries for C++23.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       flag_range_for_ext_temps, cxx_dialect >= cxx23);
 
   /* -fimmediate-escalation has no effect when immediate functions are not
      supported.  */

@@ -28,13 +28,6 @@ struct riscv_feature_bits {
   unsigned long long features[RISCV_FEATURE_BITS_LENGTH];
 };
 
-#define RISCV_VENDOR_FEATURE_BITS_LENGTH 1
-
-struct riscv_vendor_feature_bits {
-  unsigned length;
-  unsigned long long features[RISCV_VENDOR_FEATURE_BITS_LENGTH];
-};
-
 struct riscv_cpu_model {
   unsigned mvendorid;
   unsigned long long marchid;

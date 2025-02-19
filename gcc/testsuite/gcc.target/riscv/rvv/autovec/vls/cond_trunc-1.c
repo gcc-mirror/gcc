@@ -55,7 +55,7 @@ DEF_COND_CONVERT (trunc, v128udi, v128usi, 128)
 DEF_COND_CONVERT (trunc, v256udi, v256usi, 256)
 DEF_COND_CONVERT (trunc, v512udi, v512usi, 512)
 
-/* { dg-final { scan-assembler-times {vncvt\.x\.x\.w\s+v[0-9]+,\s*v[0-9]+,\s*v0.t} 46 } } */
+/* { dg-final { scan-assembler-times {vnsrl\.wi\s+v[0-9]+,\s*v[0-9]+,0,\s*v0.t} 46 } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
 /* { dg-final { scan-assembler-not {vmerge} } } */
 /* { dg-final { scan-tree-dump-not "1,1" "optimized" } } */

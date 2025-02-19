@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2" } */
+/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2-256" } */
 /* { dg-final { scan-assembler-times "vcomxsd\[ \\t\]+\{sae\}\[^\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  } } */
 /* { dg-final { scan-assembler-times "vcomxss\[ \\t\]+\{sae\}\[^\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vucomxsd\[ \\t\]+\{sae\}\[^\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  } } */

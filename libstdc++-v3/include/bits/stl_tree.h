@@ -2633,6 +2633,8 @@ namespace __rb_tree
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     equal_range(const _Key& __k)
     {
+      typedef pair<iterator, iterator> _Ret;
+
       _Base_ptr __x = _M_begin();
       _Base_ptr __y = _M_end();
       while (__x)
@@ -2647,12 +2649,11 @@ namespace __rb_tree
 	      _Base_ptr __yu(__y);
 	      __y = __x, __x = _S_left(__x);
 	      __xu = _S_right(__xu);
-	      return make_pair(iterator(_M_lower_bound(__x, __y, __k)),
-			       iterator(_M_upper_bound(__xu, __yu, __k)));
+	      return _Ret(iterator(_M_lower_bound(__x, __y, __k)),
+			  iterator(_M_upper_bound(__xu, __yu, __k)));
 	    }
 	}
-      return pair<iterator, iterator>(iterator(__y),
-				      iterator(__y));
+      return _Ret(iterator(__y), iterator(__y));
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
@@ -2664,6 +2665,8 @@ namespace __rb_tree
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     equal_range(const _Key& __k) const
     {
+      typedef pair<const_iterator, const_iterator> _Ret;
+
       _Base_ptr __x = _M_begin();
       _Base_ptr __y = _M_end();
       while (__x)
@@ -2678,12 +2681,11 @@ namespace __rb_tree
 	      _Base_ptr __yu(__y);
 	      __y = __x, __x = _S_left(__x);
 	      __xu = _S_right(__xu);
-	      return make_pair(const_iterator(_M_lower_bound(__x, __y, __k)),
-			       const_iterator(_M_upper_bound(__xu, __yu, __k)));
+	      return _Ret(const_iterator(_M_lower_bound(__x, __y, __k)),
+			  const_iterator(_M_upper_bound(__xu, __yu, __k)));
 	    }
 	}
-      return pair<const_iterator, const_iterator>(const_iterator(__y),
-						  const_iterator(__y));
+      return _Ret(const_iterator(__y), const_iterator(__y));
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,

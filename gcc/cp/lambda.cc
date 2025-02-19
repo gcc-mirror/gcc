@@ -613,7 +613,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	    return error_mark_node;
 	}
 
-      if (cxx_dialect < cxx20)
+      if (cxx_dialect < cxx20 && !explicit_init_p)
 	{
 	  auto_diagnostic_group d;
 	  tree stripped_init = tree_strip_any_location_wrapper (initializer);
@@ -1555,10 +1555,7 @@ record_lambda_scope (tree lambda)
   /* Before ABI v20, lambdas in static data member initializers did not
      get a dedicated lambda scope.  */
   tree scope = lambda_scope.scope;
-  if (scope
-      && VAR_P (scope)
-      && DECL_CLASS_SCOPE_P (scope)
-      && DECL_INITIALIZED_IN_CLASS_P (scope))
+  if (is_static_data_member_initialized_in_class (scope))
     {
       if (!abi_version_at_least (20))
 	scope = NULL_TREE;
@@ -1574,6 +1571,17 @@ record_lambda_scope (tree lambda)
 			"%<-fabi-version=20%> (GCC 15.1)", closure);
 	}
     }
+
+  /* An otherwise unattached class-scope lambda in a member template
+     should not have a mangling scope, as the mangling scope will not
+     correctly inherit on instantiation.  */
+  tree ctx = TYPE_CONTEXT (closure);
+  if (scope
+      && ctx
+      && CLASS_TYPE_P (ctx)
+      && ctx == TREE_TYPE (scope)
+      && current_template_depth > template_class_depth (ctx))
+    scope = NULL_TREE;
 
   LAMBDA_EXPR_EXTRA_SCOPE (lambda) = scope;
   if (scope)

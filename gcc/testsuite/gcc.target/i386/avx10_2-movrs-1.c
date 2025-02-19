@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-march=x86-64-v3 -mavx10.2 -mmovrs -O2" } */
+/* { dg-options "-march=x86-64-v3 -mavx10.2-256 -mmovrs -O2" } */
 /* { dg-final { scan-assembler-times "vmovrsb\[ \\t\]\+\\(%(?:r|e).x\\), %ymm\[0-9\]+" 3 } } */
 /* { dg-final { scan-assembler-times "vmovrsb\[ \\t\]\+\\(%(?:r|e).x\\), %ymm\[0-9\]+{%k\[1-7\]}" 2 } } */
 /* { dg-final { scan-assembler-times "vmovrsb\[ \\t\]\+\\(%(?:r|e).x\\), %ymm\[0-9\]+{%k\[1-7\]}{z}" 1 } } */

@@ -3933,6 +3933,7 @@ package body Sem_Aggr is
 
             if Is_Entity_Name (Choice)
               and then Is_Type (Entity (Choice))
+              and then Present (Key_Type)
               and then Base_Type (Entity (Choice)) = Base_Type (Key_Type)
             then
                null;

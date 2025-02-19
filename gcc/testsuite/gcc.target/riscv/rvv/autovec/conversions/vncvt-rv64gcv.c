@@ -3,4 +3,4 @@
 
 #include "vncvt-template.h"
 
-/* { dg-final { scan-assembler-times {\tvncvt.x.x.w} 10 } } */
+/* { dg-final { scan-assembler-times {\tvnsrl.wi} 10 } } */

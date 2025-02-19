@@ -23195,7 +23195,7 @@ gen_formal_parameter_pack_die  (tree parm_pack,
 	      && subr_die);
 
   parm_pack_die = new_die (DW_TAG_GNU_formal_parameter_pack, subr_die, parm_pack);
-  add_src_coords_attributes (parm_pack_die, parm_pack);
+  add_name_and_src_coords_attributes (parm_pack_die, parm_pack);
 
   for (arg = pack_arg; arg; arg = DECL_CHAIN (arg))
     {

@@ -2858,6 +2858,9 @@ c_pretty_printer::statement (tree t)
     {
 
     case SWITCH_STMT:
+      if (dump_flags != TDF_NONE)
+	internal_error ("dump flags not handled here");
+
       pp_c_ws_string (this, "switch");
       pp_space (this);
       pp_c_left_paren (this);
@@ -2875,6 +2878,9 @@ c_pretty_printer::statement (tree t)
 	    for ( expression(opt) ; expression(opt) ; expression(opt) ) statement
 	    for ( declaration expression(opt) ; expression(opt) ) statement  */
     case WHILE_STMT:
+      if (dump_flags != TDF_NONE)
+	internal_error ("dump flags not handled here");
+
       pp_c_ws_string (this, "while");
       pp_space (this);
       pp_c_left_paren (this);
@@ -2887,6 +2893,9 @@ c_pretty_printer::statement (tree t)
       break;
 
     case DO_STMT:
+      if (dump_flags != TDF_NONE)
+	internal_error ("dump flags not handled here");
+
       pp_c_ws_string (this, "do");
       pp_newline_and_indent (this, 3);
       statement (DO_BODY (t));
@@ -2901,6 +2910,9 @@ c_pretty_printer::statement (tree t)
       break;
 
     case FOR_STMT:
+      if (dump_flags != TDF_NONE)
+	internal_error ("dump flags not handled here");
+
       pp_c_ws_string (this, "for");
       pp_space (this);
       pp_c_left_paren (this);
@@ -2929,6 +2941,9 @@ c_pretty_printer::statement (tree t)
 	    continue ;
 	    return expression(opt) ;  */
     case BREAK_STMT:
+      if (dump_flags != TDF_NONE)
+	internal_error ("dump flags not handled here");
+
       pp_string (this, "break");
       if (BREAK_NAME (t))
 	{
@@ -2940,6 +2955,9 @@ c_pretty_printer::statement (tree t)
       break;
 
     case CONTINUE_STMT:
+      if (dump_flags != TDF_NONE)
+	internal_error ("dump flags not handled here");
+
       pp_string (this, "continue");
       if (CONTINUE_NAME (t))
 	{
@@ -2953,15 +2971,16 @@ c_pretty_printer::statement (tree t)
     default:
       if (pp_needs_newline (this))
 	pp_newline_and_indent (this, 0);
-      dump_generic_node (this, t, pp_indentation (this), TDF_NONE, true);
+      dump_generic_node (this, t, pp_indentation (this), dump_flags, true);
     }
 }
 
 
 /* Initialize the PRETTY-PRINTER for handling C codes.  */
 
-c_pretty_printer::c_pretty_printer ()
+c_pretty_printer::c_pretty_printer (dump_flags_t dump_flags)
   : pretty_printer (),
+    dump_flags (dump_flags),
     offset_list (),
     flags ()
 {
@@ -2981,9 +3000,9 @@ c_pretty_printer::clone () const
 /* Print the tree T in full, on file FILE.  */
 
 void
-print_c_tree (FILE *file, tree t)
+print_c_tree (FILE *file, tree t, dump_flags_t dump_flags)
 {
-  c_pretty_printer pp;
+  c_pretty_printer pp (dump_flags);
 
   pp_needs_newline (&pp) = true;
   pp.set_output_stream (file);
@@ -2996,7 +3015,7 @@ print_c_tree (FILE *file, tree t)
 DEBUG_FUNCTION void
 debug_c_tree (tree t)
 {
-  print_c_tree (stderr, t);
+  print_c_tree (stderr, t, TDF_NONE);
   fputc ('\n', stderr);
 }
 

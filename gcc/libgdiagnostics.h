@@ -686,6 +686,12 @@ diagnostic_finish_va (diagnostic *diag, const char *fmt, va_list *args)
   LIBGDIAGNOSTICS_PARAM_MUST_BE_NON_NULL (2)
   LIBGDIAGNOSTICS_PARAM_GCC_FORMAT_STRING (2, 0);
 
+/* Get the diagnostic_file associated with PHYSICAL_LOC.  */
+
+extern diagnostic_file *
+diagnostic_physical_location_get_file (const diagnostic_physical_location *physical_loc)
+  LIBGDIAGNOSTICS_PARAM_CAN_BE_NULL(0);
+
 /* DEFERRED:
    - thread-safety
    - plural forms

@@ -10635,8 +10635,10 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 					     outer_op, outer_const);
 	}
 
-      scalar_int_mode shift_unit_mode
-	= as_a <scalar_int_mode> (GET_MODE_INNER (shift_mode));
+      scalar_int_mode shift_unit_mode;
+      if (!is_a <scalar_int_mode> (GET_MODE_INNER (shift_mode),
+				   &shift_unit_mode))
+	return NULL_RTX;
 
       /* Handle cases where the count is greater than the size of the mode
 	 minus 1.  For ASHIFT, use the size minus one as the count (this can

@@ -85,6 +85,20 @@ check_for_binary_op_overflow (range_query *query,
 			      enum tree_code subcode, tree type,
 			      tree op0, tree op1, bool *ovf, gimple *s = NULL)
 {
+  relation_kind rel = VREL_VARYING;
+  /* For subtraction see if relations could simplify it.  */
+  if (s
+      && subcode == MINUS_EXPR
+      && types_compatible_p (TREE_TYPE (op0), TREE_TYPE (op1)))
+    {
+      rel = query->relation().query (s, op0, op1);
+      /* The result of the infinite precision subtraction of
+	 the same values will be always 0.  That will fit into any result
+	 type.  */
+      if (rel == VREL_EQ)
+        return true;
+    }
+
   int_range_max vr0, vr1;
   if (!query->range_of_expr (vr0, op0, s) || vr0.undefined_p ())
     vr0.set_varying (TREE_TYPE (op0));
@@ -95,6 +109,25 @@ check_for_binary_op_overflow (range_query *query,
   tree vr0max = wide_int_to_tree (TREE_TYPE (op0), vr0.upper_bound ());
   tree vr1min = wide_int_to_tree (TREE_TYPE (op1), vr1.lower_bound ());
   tree vr1max = wide_int_to_tree (TREE_TYPE (op1), vr1.upper_bound ());
+
+  /* If op1 is not negative, op0 - op1 in infinite precision for op0 >= op1
+     will be always in [0, op0] and so if vr0max - vr1min fits into type,
+     there won't be any overflow.  */
+  if ((rel == VREL_GT || rel == VREL_GE)
+      && tree_int_cst_sgn (vr1min) >= 0
+      && !arith_overflowed_p (MINUS_EXPR, type, vr0max, vr1min))
+    return true;
+
+  /* If op1 is not negative, op0 - op1 in infinite precision for op0 < op1
+     will be always in [-inf, -1] and so will always overflow if type is
+     unsigned.  */
+  if (rel == VREL_LT
+      && tree_int_cst_sgn (vr1min) >= 0
+      && TYPE_UNSIGNED (type))
+    {
+      *ovf = true;
+      return true;
+    }
 
   *ovf = arith_overflowed_p (subcode, type, vr0min,
 			     subcode == MINUS_EXPR ? vr1max : vr1min);

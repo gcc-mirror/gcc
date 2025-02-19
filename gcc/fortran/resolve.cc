@@ -1370,7 +1370,7 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	  gfc_find_vtab (&cons->expr->ts);
 
       if (cons->expr->expr_type != EXPR_NULL && rank != cons->expr->rank
-	  && (comp->attr.allocatable || cons->expr->rank))
+	  && (comp->attr.allocatable || comp->attr.pointer || cons->expr->rank))
 	{
 	  gfc_error ("The rank of the element in the structure "
 		     "constructor at %L does not match that of the "
@@ -1581,6 +1581,16 @@ resolve_structure_cons (gfc_expr *expr, int init)
 	      gfc_error ("Pointer initialization target at %L "
 			 "must have the SAVE attribute", &cons->expr->where);
 	    }
+	}
+
+      /* F2023:C770: A designator that is an initial-data-target shall ...
+	 not have a vector subscript.  */
+      if (comp->attr.pointer && (a.pointer || a.target)
+	  && gfc_has_vector_index (cons->expr))
+	{
+	  gfc_error ("Pointer assignment target at %L has a vector subscript",
+		     &cons->expr->where);
+	  t = false;
 	}
 
       /* F2003, C1272 (3).  */
@@ -4310,19 +4320,6 @@ resolve_operator (gfc_expr *e)
       return false;
 
     case INTRINSIC_POWER:
-
-      if (flag_unsigned)
-	{
-	  if (op1->ts.type == BT_UNSIGNED || op2->ts.type == BT_UNSIGNED)
-	    {
-	      CHECK_INTERFACES
-	      gfc_error ("Exponentiation not valid at %L for %s and %s",
-			 &e->where, gfc_typename (op1), gfc_typename (op2));
-	      return false;
-	    }
-	}
-      gcc_fallthrough ();
-
     case INTRINSIC_PLUS:
     case INTRINSIC_MINUS:
     case INTRINSIC_TIMES:
@@ -10741,7 +10738,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 			  || gfc_is_ptr_fcn (target));
 
   /* Finally resolve if this is an array or not.  */
-  if (target->expr_type == EXPR_FUNCTION
+  if (target->expr_type == EXPR_FUNCTION && target->rank == 0
       && (sym->ts.type == BT_CLASS || sym->ts.type == BT_DERIVED))
     {
       gfc_expression_rank (target);
@@ -11827,8 +11824,8 @@ resolve_transfer (gfc_code *code)
          the component to be printed to help debugging.  */
       if (ts->u.derived->ts.f90_type == BT_VOID)
 	{
-	  if (!gfc_notify_std (GFC_STD_GNU, "Data transfer element at %L "
-			       "cannot have PRIVATE components", &code->loc))
+	  gfc_error ("Data transfer element at %L "
+		     "cannot have PRIVATE components", &code->loc);
 	    return;
 	}
       else if (derived_inaccessible (ts->u.derived) && dtio_sub == NULL)

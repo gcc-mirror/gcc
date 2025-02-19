@@ -3587,6 +3587,9 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 	  nunits = nunits * 2;
 	}
 
+      /* This test can fail if (for example) we want a HF and Z[v]fh is
+	 not enabled.  In that case we just want to let the standard
+	 expansion path run.  */
       if (riscv_vector::get_vector_mode (smode, nunits).exists (&vmode))
 	{
 	  rtx v = gen_lowpart (vmode, SUBREG_REG (src));
@@ -3636,12 +3639,10 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 	    emit_move_insn (dest, gen_lowpart (GET_MODE (dest), int_reg));
 	  else
 	    emit_move_insn (dest, int_reg);
+	  return true;
 	}
-      else
-	gcc_unreachable ();
-
-      return true;
     }
+
   /* Expand
        (set (reg:QI target) (mem:QI (address)))
      to
@@ -6478,9 +6479,13 @@ riscv_fntype_abi (const_tree fntype)
   /* Implement the vector calling convention.  For more details please
      reference the below link.
      https://github.com/riscv-non-isa/riscv-elf-psabi-doc/pull/389  */
-  if (riscv_return_value_is_vector_type_p (fntype)
-	  || riscv_arguments_is_vector_type_p (fntype)
-	  || riscv_vector_cc_function_p (fntype))
+  bool validate_v_abi_p = false;
+
+  validate_v_abi_p |= riscv_return_value_is_vector_type_p (fntype);
+  validate_v_abi_p |= riscv_arguments_is_vector_type_p (fntype);
+  validate_v_abi_p |= riscv_vector_cc_function_p (fntype);
+
+  if (validate_v_abi_p)
     return riscv_v_abi ();
 
   return default_function_abi;
@@ -10900,7 +10905,9 @@ riscv_conditional_register_usage (void)
 	call_used_regs[regno] = 1;
     }
 
-  if (!TARGET_VECTOR)
+  if (TARGET_VECTOR)
+    global_regs[VXRM_REGNUM] = 1;
+  else
     {
       for (int regno = V_REG_FIRST; regno <= V_REG_LAST; regno++)
 	fixed_regs[regno] = call_used_regs[regno] = 1;

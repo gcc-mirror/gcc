@@ -173,6 +173,7 @@ extern void default_emit_call_builtin___clear_cache (rtx, rtx);
 extern poly_int64 default_return_pops_args (tree, tree, poly_int64);
 extern reg_class_t default_ira_change_pseudo_allocno_class (int, reg_class_t,
 							    reg_class_t);
+extern int default_ira_callee_saved_register_cost_scale (int);
 extern bool default_lra_p (void);
 extern int default_register_priority (int);
 extern bool default_register_usage_leveling_p (void);

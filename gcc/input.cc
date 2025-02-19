@@ -79,6 +79,10 @@ public:
   void evict ();
   void set_content (const char *buf, size_t sz);
 
+  static void tune(size_t line_record_size_) {
+      line_record_size = line_record_size_;
+  }
+
  private:
   /* These are information used to store a line boundary.  */
   class line_info
@@ -104,6 +108,11 @@ public:
     line_info ()
       :line_num (0), start_pos (0), end_pos (0)
     {}
+
+    static bool less_than(const line_info &a, const line_info &b)
+    {
+      return a.line_num < b.line_num;
+    }
   };
 
   bool needs_read_p () const;
@@ -116,7 +125,8 @@ public:
   bool goto_next_line ();
 
   static const size_t buffer_size = 4 * 1024;
-  static const size_t line_record_size = 100;
+  static size_t line_record_size;
+  static size_t recent_cached_lines_shift;
 
   /* The number of time this file has been accessed.  This is used
      to designate which file cache to evict from the cache
@@ -156,16 +166,6 @@ public:
      means we've read no line so far.  */
   size_t m_line_num;
 
-  /* This is the total number of lines of the current file.  At the
-     moment, we try to get this information from the line map
-     subsystem.  Note that this is just a hint.  When using the C++
-     front-end, this hint is correct because the input file is then
-     completely tokenized before parsing starts; so the line map knows
-     the number of lines before compilation really starts.  For e.g,
-     the C front-end, it can happen that we start emitting diagnostics
-     before the line map has seen the end of the file.  */
-  size_t m_total_lines;
-
   /* Could this file be missing a trailing newline on its final line?
      Initially true (to cope with empty files), set to true/false
      as each line is read.  */
@@ -174,11 +174,16 @@ public:
   /* This is a record of the beginning and end of the lines we've seen
      while reading the file.  This is useful to avoid walking the data
      from the beginning when we are asked to read a line that is
-     before LINE_START_IDX above.  Note that the maximum size of this
-     record is line_record_size, so that the memory consumption
-     doesn't explode.  We thus scale total_lines down to
-     line_record_size.  */
+     before LINE_START_IDX above.  When the lines exceed line_record_size
+     this is scaled down dynamically, with the line_info becoming anchors.  */
   vec<line_info, va_heap> m_line_record;
+
+  /* A cache of the recently seen lines. This is maintained as a ring
+     buffer. */
+  vec<line_info, va_heap> m_line_recent;
+
+  /* First and last valid entry in m_line_recent.  */
+  size_t m_line_recent_last, m_line_recent_first;
 
   void offset_buffer (int offset)
   {
@@ -191,6 +196,19 @@ public:
   }
 
 };
+
+size_t file_cache_slot::line_record_size = 0;
+size_t file_cache_slot::recent_cached_lines_shift = 8;
+
+/* Tune file_cache.  */
+void
+file_cache::tune (size_t num_file_slots_, size_t lines)
+{
+  num_file_slots = num_file_slots_;
+  file_cache_slot::tune (lines);
+}
+
+size_t file_cache::num_file_slots = 16;
 
 static const char *
 find_end_of_line (const char *s, size_t len);
@@ -298,25 +316,6 @@ expand_location_1 (const line_maps *set,
   return xloc;
 }
 
-/* Return the total lines number that have been read so far by the
-   line map (in the preprocessor) so far.  For languages like C++ that
-   entirely preprocess the input file before starting to parse, this
-   equals the actual number of lines of the file.  */
-
-static size_t
-total_lines_num (const char *file_path)
-{
-  size_t r = 0;
-  location_t l = 0;
-  if (linemap_get_file_highest_location (line_table, file_path, &l))
-    {
-      gcc_assert (l >= RESERVED_LOCATION_COUNT);
-      expanded_location xloc = expand_location (l);
-      r = xloc.line;
-    }
-  return r;
-}
-
 /* Lookup the cache used for the content of a given file accessed by
    caret diagnostic.  Return the found cached file, or NULL if no
    cached file was found.  */
@@ -405,8 +404,9 @@ file_cache_slot::evict ()
   m_line_start_idx = 0;
   m_line_num = 0;
   m_line_record.truncate (0);
+  m_line_recent_first = 0;
+  m_line_recent_last = 0;
   m_use_count = 0;
-  m_total_lines = 0;
   m_missing_trailing_newline = true;
 }
 
@@ -502,11 +502,12 @@ file_cache_slot::create (const file_cache::input_context &in_context,
   m_nb_read = 0;
   m_line_start_idx = 0;
   m_line_num = 0;
+  m_line_recent_first = 0;
+  m_line_recent_last = 0;
   m_line_record.truncate (0);
   /* Ensure that this cache entry doesn't get evicted next time
      add_file_to_cache_tab is called.  */
   m_use_count = ++highest_use_count;
-  m_total_lines = total_lines_num (file_path);
   m_missing_trailing_newline = true;
 
 
@@ -552,17 +553,6 @@ file_cache_slot::set_content (const char *buf, size_t sz)
     {
       fclose (m_fp);
       m_fp = nullptr;
-    }
-
-  /* Compute m_total_lines based on content of buffer.  */
-  m_total_lines = 0;
-  const char *line_start = m_data;
-  size_t remaining_size = sz;
-  while (const char *line_end = find_end_of_line (line_start, remaining_size))
-    {
-      ++m_total_lines;
-      remaining_size -= line_end + 1 - line_start;
-      line_start = line_end + 1;
     }
 }
 
@@ -620,9 +610,13 @@ file_cache::lookup_or_add_file (const char *file_path)
 file_cache_slot::file_cache_slot ()
 : m_use_count (0), m_file_path (NULL), m_fp (NULL), m_error (false), m_data (0),
   m_alloc_offset (0), m_size (0), m_nb_read (0), m_line_start_idx (0),
-  m_line_num (0), m_total_lines (0), m_missing_trailing_newline (true)
+  m_line_num (0), m_missing_trailing_newline (true),
+  m_line_recent_last (0), m_line_recent_first (0)
 {
   m_line_record.create (0);
+  m_line_recent.create (1U << recent_cached_lines_shift);
+  for (int i = 0; i < 1 << recent_cached_lines_shift; i++)
+    m_line_recent.quick_push (file_cache_slot::line_info (0, 0, 0));
 }
 
 /* Destructor for a cache of file used by caret diagnostic.  */
@@ -641,6 +635,7 @@ file_cache_slot::~file_cache_slot ()
       m_data = 0;
     }
   m_line_record.release ();
+  m_line_recent.release ();
 }
 
 void
@@ -660,7 +655,6 @@ file_cache_slot::dump (FILE *out, int indent) const
   fprintf (out, "%*snb_read: %zi\n", indent, "", m_nb_read);
   fprintf (out, "%*sstart_line_idx: %zi\n", indent, "", m_line_start_idx);
   fprintf (out, "%*sline_num: %zi\n", indent, "", m_line_num);
-  fprintf (out, "%*stotal_lines: %zi\n", indent, "", m_total_lines);
   fprintf (out, "%*smissing_trailing_newline: %i\n",
 	   indent, "", (int)m_missing_trailing_newline);
   fprintf (out, "%*sline records (%i):\n",
@@ -869,38 +863,52 @@ file_cache_slot::get_next_line (char **line, ssize_t *line_len)
 
   ++m_line_num;
 
-  /* Before we update our line record, make sure the hint about the
-     total number of lines of the file is correct.  If it's not, then
-     we give up recording line boundaries from now on.  */
-  bool update_line_record = true;
-  if (m_line_num > m_total_lines)
-    update_line_record = false;
-
-    /* Now update our line record so that re-reading lines from the
+  /* Now update our line record so that re-reading lines from the
      before m_line_start_idx is faster.  */
-  if (update_line_record
-      && m_line_record.length () < line_record_size)
+  size_t rlen = m_line_record.length ();
+  /* Only update when beyond the previously cached region.  */
+  if (rlen == 0 || m_line_record[rlen - 1].line_num < m_line_num)
     {
-      /* If the file lines fits in the line record, we just record all
-	 its lines ...*/
-      if (m_total_lines <= line_record_size
-	  && m_line_num > m_line_record.length ())
+      size_t spacing = rlen >= 2 ?
+	m_line_record[rlen - 1].line_num - m_line_record[rlen - 2].line_num : 1;
+      size_t delta = rlen >= 1 ?
+	m_line_num - m_line_record[rlen - 1].line_num : 1;
+
+      size_t max_size = line_record_size;
+      /* One anchor per hundred input lines.  */
+      if (max_size == 0)
+	max_size = m_line_num / 100;
+
+      /* If we're too far beyond drop half of the lines to rebalance.  */
+      if (rlen == max_size && delta >= spacing*2)
+	{
+	  size_t j = 0;
+	  for (size_t i = 1; i < rlen; i += 2)
+	    m_line_record[j++] = m_line_record[i];
+	  m_line_record.truncate (j);
+	  rlen = j;
+	  spacing *= 2;
+	}
+
+      if (rlen < max_size && delta >= spacing)
 	m_line_record.safe_push
 	  (file_cache_slot::line_info (m_line_num,
 				       m_line_start_idx,
 				       line_end - m_data));
-      else if (m_total_lines > line_record_size)
-	{
-	  /* ... otherwise, we just scale total_lines down to
-	     (line_record_size lines.  */
-	  size_t n = (m_line_num * line_record_size) / m_total_lines;
-	  if (m_line_record.length () == 0
-	      || n >= m_line_record.length ())
-	    m_line_record.safe_push
-	      (file_cache_slot::line_info (m_line_num,
-					   m_line_start_idx,
-					   line_end - m_data));
-	}
+    }
+
+  /* Cache recent tail lines separately for fast access. This assumes
+     most accesses do not skip backwards.  */
+  if (m_line_recent_last == m_line_recent_first
+	|| m_line_recent[m_line_recent_last].line_num == m_line_num - 1)
+    {
+      size_t mask = ((size_t)1 << recent_cached_lines_shift) - 1;
+      m_line_recent_last = (m_line_recent_last + 1) & mask;
+      if (m_line_recent_last == m_line_recent_first)
+	m_line_recent_first = (m_line_recent_first + 1) & mask;
+      m_line_recent[m_line_recent_last] =
+	file_cache_slot::line_info (m_line_num, m_line_start_idx,
+				    line_end - m_data);
     }
 
   /* Update m_line_start_idx so that it points to the next line to be
@@ -948,71 +956,45 @@ file_cache_slot::read_line_num (size_t line_num,
 {
   gcc_assert (line_num > 0);
 
+  /* Is the line in the recent line cache?
+     This assumes the main file processing is only using
+     a single contiguous cursor with only temporary excursions.  */
+  if (m_line_recent_first != m_line_recent_last
+	&& m_line_recent[m_line_recent_first].line_num <= line_num
+	&& m_line_recent[m_line_recent_last].line_num >= line_num)
+    {
+      line_info &last = m_line_recent[m_line_recent_last];
+      size_t mask = (1U << recent_cached_lines_shift) - 1;
+      size_t idx = (m_line_recent_last - (last.line_num - line_num)) & mask;
+      line_info &recent = m_line_recent[idx];
+      gcc_assert (recent.line_num == line_num);
+      *line = m_data + recent.start_pos;
+      *line_len = recent.end_pos - recent.start_pos;
+      return true;
+    }
+
   if (line_num <= m_line_num)
     {
-      /* We've been asked to read lines that are before m_line_num.
-	 So lets use our line record (if it's not empty) to try to
-	 avoid re-reading the file from the beginning again.  */
-
-      if (m_line_record.is_empty ())
+      line_info l (line_num, 0, 0);
+      int i = m_line_record.lower_bound (l, line_info::less_than);
+      if (i == 0)
 	{
 	  m_line_start_idx = 0;
 	  m_line_num = 0;
 	}
-      else
+      else if (m_line_record[i - 1].line_num == line_num)
 	{
-	  file_cache_slot::line_info *i = NULL;
-	  if (m_total_lines <= line_record_size)
-	    {
-	      /* In languages where the input file is not totally
-		 preprocessed up front, the m_total_lines hint
-		 can be smaller than the number of lines of the
-		 file.  In that case, only the first
-		 m_total_lines have been recorded.
-
-		 Otherwise, the first m_total_lines we've read have
-		 their start/end recorded here.  */
-	      i = (line_num <= m_total_lines)
-		? &m_line_record[line_num - 1]
-		: &m_line_record[m_total_lines - 1];
-	      gcc_assert (i->line_num <= line_num);
-	    }
-	  else
-	    {
-	      /*  So the file had more lines than our line record
-		  size.  Thus the number of lines we've recorded has
-		  been scaled down to line_record_size.  Let's
-		  pick the start/end of the recorded line that is
-		  closest to line_num.  */
-	      size_t n = (line_num <= m_total_lines)
-		? line_num * line_record_size / m_total_lines
-		: m_line_record.length () - 1;
-	      if (n < m_line_record.length ())
-		{
-		  i = &m_line_record[n];
-		  gcc_assert (i->line_num <= line_num);
-		}
-	    }
-
-	  if (i && i->line_num == line_num)
-	    {
-	      /* We have the start/end of the line.  */
-	      *line = m_data + i->start_pos;
-	      *line_len = i->end_pos - i->start_pos;
-	      return true;
-	    }
-
-	  if (i)
-	    {
-	      m_line_start_idx = i->start_pos;
-	      m_line_num = i->line_num - 1;
-	    }
-	  else
-	    {
-	      m_line_start_idx = 0;
-	      m_line_num = 0;
-	    }
+	  /* We have the start/end of the line.  */
+	  *line = m_data + m_line_record[i - 1].start_pos;
+	  *line_len = m_line_record[i - 1].end_pos - m_line_record[i - 1].start_pos;
+	  return true;
 	}
+      else
+       {
+	 gcc_assert (m_line_record[i - 1].line_num < m_line_num);
+	 m_line_start_idx = m_line_record[i - 1].start_pos;
+	 m_line_num = m_line_record[i - 1].line_num - 1;
+       }
     }
 
   /*  Let's walk from line m_line_num up to line_num - 1, without
@@ -1021,8 +1003,7 @@ file_cache_slot::read_line_num (size_t line_num,
     if (!goto_next_line ())
       return false;
 
-  /* The line we want is the next one.  Let's read and copy it back to
-     the caller.  */
+  /* The line we want is the next one.  Let's read it.  */
   return get_next_line (line, line_len);
 }
 
@@ -2367,6 +2348,48 @@ test_make_location_nonpure_range_endpoints (const line_table_case &case_)
   ASSERT_FALSE (IS_ADHOC_LOC (get_start (not_aaa_eq_bbb)));
   ASSERT_EQ (c21, get_finish (not_aaa_eq_bbb));
   ASSERT_FALSE (IS_ADHOC_LOC (get_finish (not_aaa_eq_bbb)));
+}
+
+/* Verify reading of a specific line LINENUM in TMP, FC.  */
+
+static void check_line (temp_source_file &tmp, file_cache &fc, int linenum)
+{
+  char_span line = fc.get_source_line (tmp.get_filename (), linenum);
+  int n;
+  /* get_buffer is not null terminated, but the sscanf stops after a number.  */
+  ASSERT_TRUE (sscanf (line.get_buffer (), "%d", &n) == 1);
+  ASSERT_EQ (n, linenum);
+}
+
+/* Test file cache replacement.  */
+
+static void test_replacement ()
+{
+  const int maxline = 1000;
+
+  char *vec = XNEWVEC (char, maxline * 15);
+  char *p = vec;
+  int i;
+  for (i = 1; i <= maxline; i++)
+    p += sprintf (p, "%d\n", i);
+
+  temp_source_file tmp (SELFTEST_LOCATION, ".txt", vec);
+  free (vec);
+  file_cache fc;
+
+  for (i = 2; i <= maxline; i++)
+    {
+      check_line (tmp, fc, i);
+      check_line (tmp, fc, i - 1);
+      if (i >= 10)
+	check_line (tmp, fc, i - 9);
+      if (i >= 350) /* Exceed the look behind cache.  */
+	check_line (tmp, fc, i - 300);
+    }
+  for (i = 5; i <= maxline; i += 100)
+    check_line (tmp, fc, i);
+  for (i = 1; i <= maxline; i++)
+    check_line (tmp, fc, i);
 }
 
 /* Verify reading of input files (e.g. for caret-based diagnostics).  */
@@ -4319,6 +4342,7 @@ input_cc_tests ()
 
   test_reading_source_line ();
   test_reading_source_buffer ();
+  test_replacement ();
 
   test_line_offset_overflow ();
 

@@ -292,7 +292,7 @@
 #ifndef __ARM_FEATURE_FP8
 #error Foo
 #endif
-#ifndef __ARM_FEATURE_FP8FMA
+#ifdef __ARM_FEATURE_FP8FMA
 #error Foo
 #endif
 #ifndef __ARM_FEATURE_FP8DOT4
@@ -306,10 +306,10 @@
 #ifndef __ARM_FEATURE_FP8
 #error Foo
 #endif
-#ifndef __ARM_FEATURE_FP8FMA
+#ifdef __ARM_FEATURE_FP8FMA
 #error Foo
 #endif
-#ifndef __ARM_FEATURE_FP8DOT4
+#ifdef __ARM_FEATURE_FP8DOT4
 #error Foo
 #endif
 #ifndef __ARM_FEATURE_FP8DOT2

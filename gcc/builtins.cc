@@ -7803,6 +7803,9 @@ expand_builtin_crc_table_based (internal_fn fn, scalar_mode crc_mode,
   gcc_assert (TREE_CODE (rhs3) == INTEGER_CST);
   rtx op3 = gen_int_mode (TREE_INT_CST_LOW (rhs3), crc_mode);
 
+  if (CONST_INT_P (op2))
+    op2 = gen_int_mode (INTVAL (op2), crc_mode);
+
   if (fn == IFN_CRC)
     expand_crc_table_based (target, op1, op2, op3, data_mode);
   else

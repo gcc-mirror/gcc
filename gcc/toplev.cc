@@ -2333,6 +2333,8 @@ toplev::main (int argc, char **argv)
 		  UNKNOWN_LOCATION, global_dc,
 		  targetm.target_option.override);
 
+  file_cache::tune (param_file_cache_files, param_file_cache_lines);
+
   handle_common_deferred_options ();
 
   init_local_tick ();

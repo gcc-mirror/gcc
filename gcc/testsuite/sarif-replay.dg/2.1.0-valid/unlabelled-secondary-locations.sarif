@@ -1,0 +1,59 @@
+{"$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+ "version": "2.1.0",
+ "runs": [{"tool": {"driver": {"name": "GNU C23",
+                               "fullName": "GNU C23 (GCC) version 15.0.1 20250203 (experimental) (x86_64-pc-linux-gnu)",
+                               "version": "15.0.1 20250203 (experimental)",
+                               "informationUri": "https://gcc.gnu.org/gcc-15/",
+                               "rules": []}},
+           "invocations": [{"executionSuccessful": false,
+                            "toolExecutionNotifications": []}],
+           "originalUriBaseIds": {"PWD": {"uri": "file:///nonexistent/"}},
+           "artifacts": [{"location": {"uri": "too-many-arguments.c",
+                                       "uriBaseId": "PWD"},
+                          "sourceLanguage": "c",
+                          "contents": {"text": "extern void fn_a ();\n\nvoid test_known_fn (void)\n{\n  fn_a (42);\n}\n"},
+                          "roles": ["analysisTarget"]}],
+           "results": [{"ruleId": "error",
+                        "level": "error",
+                        "message": {"text": "too many arguments to function 'fn_a'; expected 0, have 1"},
+                        "locations": [{"physicalLocation": {"artifactLocation": {"uri": "too-many-arguments.c",
+                                                                                 "uriBaseId": "PWD"},
+                                                            "region": {"startLine": 5,
+                                                                       "startColumn": 3,
+                                                                       "endColumn": 7},
+                                                            "contextRegion": {"startLine": 5,
+                                                                              "snippet": {"text": "  fn_a (42);\n"}}},
+                                       "logicalLocations": [{"name": "test_known_fn",
+                                                             "fullyQualifiedName": "test_known_fn",
+                                                             "decoratedName": "test_known_fn",
+                                                             "kind": "function"}],
+                                       "relationships": [{"target": 0,
+                                                          "kinds": ["relevant"]}]}],
+                        "relatedLocations": [{"physicalLocation": {"artifactLocation": {"uri": "too-many-arguments.c",
+                                                                                        "uriBaseId": "PWD"},
+                                                                   "region": {"startLine": 1,
+                                                                              "startColumn": 13,
+                                                                              "endColumn": 17},
+                                                                   "contextRegion": {"startLine": 1,
+                                                                                     "snippet": {"text": "extern void fn_a ();\n"}}},
+                                              "message": {"text": "declared here"},
+                                              "properties": {"nestingLevel": 0}},
+                                             {"physicalLocation": {"artifactLocation": {"uri": "too-many-arguments.c",
+                                                                                        "uriBaseId": "PWD"},
+                                                                   "region": {"startLine": 5,
+                                                                              "startColumn": 9,
+                                                                              "endColumn": 11},
+                                                                   "contextRegion": {"startLine": 5,
+                                                                                     "snippet": {"text": "  fn_a (42);\n"}}},
+                                              "id": 0}]}]}]}
+
+/* Verify that we underline the "42" here.  */
+/* { dg-begin-multiline-output "" }
+In function 'test_known_fn':
+too-many-arguments.c:5:3: error: too many arguments to function 'fn_a'; expected 0, have 1
+    5 |   fn_a (42);
+      |   ^~~~  ~~
+too-many-arguments.c:1:13: note: declared here
+    1 | extern void fn_a ();
+      |             ^~~~
+   { dg-end-multiline-output "" } */

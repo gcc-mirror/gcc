@@ -1,6 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2" } */
-/* { dg-require-effective-target avx10_2 } */
+/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2-256" } */
+/* { dg-require-effective-target avx10_2_256 } */
 
 #define AVX10_2
 #define AVX512VL

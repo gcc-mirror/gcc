@@ -134,6 +134,14 @@ Maximum size (in bytes) of objects tracked bytewise by dead store elimination.
 Common Joined UInteger Var(param_early_inlining_insns) Init(6) Optimization Param
 Maximal estimated growth of function body caused by early inlining of single call.
 
+-param=file-cache-files=
+Common Joined UInteger Var(param_file_cache_files) Init(16) Param
+Max number of files in the file cache.
+
+-param=file-cache-lines=
+Common Joined UInteger Var(param_file_cache_lines) Init(0) Param
+Max number of lines to index into file cache. When 0 this is automatically sized.
+
 -param=fsm-scale-path-stmts=
 Common Joined UInteger Var(param_fsm_scale_path_stmts) Init(2) IntegerRange(1, 10) Param Optimization
 Scale factor to apply to the number of statements in a threading path crossing a loop backedge when comparing to max-jump-thread-duplication-stmts.

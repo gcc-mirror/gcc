@@ -1185,41 +1185,6 @@ get_or_alloc_expr_for_constant (tree constant)
   return newexpr;
 }
 
-/* Return the folded version of T if T, when folded, is a gimple
-   min_invariant or an SSA name.  Otherwise, return T.  */
-
-static pre_expr
-fully_constant_expression (pre_expr e)
-{
-  switch (e->kind)
-    {
-    case CONSTANT:
-      return e;
-    case NARY:
-      {
-	vn_nary_op_t nary = PRE_EXPR_NARY (e);
-	tree res = vn_nary_simplify (nary);
-	if (!res)
-	  return e;
-	if (is_gimple_min_invariant (res))
-	  return get_or_alloc_expr_for_constant (res);
-	if (TREE_CODE (res) == SSA_NAME)
-	  return get_or_alloc_expr_for_name (res);
-	return e;
-      }
-    case REFERENCE:
-      {
-	vn_reference_t ref = PRE_EXPR_REFERENCE (e);
-	tree folded;
-	if ((folded = fully_constant_vn_reference_p (ref)))
-	  return get_or_alloc_expr_for_constant (folded);
-	return e;
-      }
-    default:
-      return e;
-    }
-}
-
 /* Translate the VUSE backwards through phi nodes in E->dest, so that
    it has the value it would have in E->src.  Set *SAME_VALID to true
    in case the new vuse doesn't change the value id of the OPERANDS.  */
@@ -1443,57 +1408,55 @@ phi_translate_1 (bitmap_set_t dest,
 	  }
 	if (changed)
 	  {
-	    pre_expr constant;
 	    unsigned int new_val_id;
 
-	    PRE_EXPR_NARY (expr) = newnary;
-	    constant = fully_constant_expression (expr);
-	    PRE_EXPR_NARY (expr) = nary;
-	    if (constant != expr)
+	    /* Try to simplify the new NARY.  */
+	    tree res = vn_nary_simplify (newnary);
+	    if (res)
 	      {
+		if (is_gimple_min_invariant (res))
+		  return get_or_alloc_expr_for_constant (res);
+
 		/* For non-CONSTANTs we have to make sure we can eventually
 		   insert the expression.  Which means we need to have a
 		   leader for it.  */
-		if (constant->kind != CONSTANT)
+		gcc_assert (TREE_CODE (res) == SSA_NAME);
+
+		/* Do not allow simplifications to non-constants over
+		   backedges as this will likely result in a loop PHI node
+		   to be inserted and increased register pressure.
+		   See PR77498 - this avoids doing predcoms work in
+		   a less efficient way.  */
+		if (e->flags & EDGE_DFS_BACK)
+		  ;
+		else
 		  {
-		    /* Do not allow simplifications to non-constants over
-		       backedges as this will likely result in a loop PHI node
-		       to be inserted and increased register pressure.
-		       See PR77498 - this avoids doing predcoms work in
-		       a less efficient way.  */
-		    if (e->flags & EDGE_DFS_BACK)
-		      ;
-		    else
+		    unsigned value_id = VN_INFO (res)->value_id;
+		    /* We want a leader in ANTIC_OUT or AVAIL_OUT here.
+		       dest has what we computed into ANTIC_OUT sofar
+		       so pick from that - since topological sorting
+		       by sorted_array_from_bitmap_set isn't perfect
+		       we may lose some cases here.  */
+		    pre_expr constant = find_leader_in_sets (value_id, dest,
+							     AVAIL_OUT (pred));
+		    if (constant)
 		      {
-			unsigned value_id = get_expr_value_id (constant);
-			/* We want a leader in ANTIC_OUT or AVAIL_OUT here.
-			   dest has what we computed into ANTIC_OUT sofar
-			   so pick from that - since topological sorting
-			   by sorted_array_from_bitmap_set isn't perfect
-			   we may lose some cases here.  */
-			constant = find_leader_in_sets (value_id, dest,
-							AVAIL_OUT (pred));
-			if (constant)
+			if (dump_file && (dump_flags & TDF_DETAILS))
 			  {
-			    if (dump_file && (dump_flags & TDF_DETAILS))
-			      {
-				fprintf (dump_file, "simplifying ");
-				print_pre_expr (dump_file, expr);
-				fprintf (dump_file, " translated %d -> %d to ",
-					 phiblock->index, pred->index);
-				PRE_EXPR_NARY (expr) = newnary;
-				print_pre_expr (dump_file, expr);
-				PRE_EXPR_NARY (expr) = nary;
-				fprintf (dump_file, " to ");
-				print_pre_expr (dump_file, constant);
-				fprintf (dump_file, "\n");
-			      }
-			    return constant;
+			    fprintf (dump_file, "simplifying ");
+			    print_pre_expr (dump_file, expr);
+			    fprintf (dump_file, " translated %d -> %d to ",
+				     phiblock->index, pred->index);
+			    PRE_EXPR_NARY (expr) = newnary;
+			    print_pre_expr (dump_file, expr);
+			    PRE_EXPR_NARY (expr) = nary;
+			    fprintf (dump_file, " to ");
+			    print_pre_expr (dump_file, constant);
+			    fprintf (dump_file, "\n");
 			  }
+			return constant;
 		      }
 		  }
-		else
-		  return constant;
 	      }
 
 	    tree result = vn_nary_op_lookup_pieces (newnary->length,

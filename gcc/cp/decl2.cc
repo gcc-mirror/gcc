@@ -1295,6 +1295,8 @@ start_initialized_static_member (const cp_declarator *declarator,
   gcc_checking_assert (VAR_P (value));
 
   DECL_CONTEXT (value) = current_class_type;
+  DECL_INITIALIZED_IN_CLASS_P (value) = true;
+
   if (processing_template_decl)
     {
       value = push_template_decl (value);
@@ -1305,10 +1307,35 @@ start_initialized_static_member (const cp_declarator *declarator,
   if (attrlist)
     cplus_decl_attributes (&value, attrlist, 0);
 
-  finish_member_declaration (value);
-  DECL_INITIALIZED_IN_CLASS_P (value) = true;
+  /* When defining a template we need to register the TEMPLATE_DECL.  */
+  tree maybe_template = value;
+  if (template_parm_scope_p ())
+    {
+      if (!DECL_TEMPLATE_SPECIALIZATION (value))
+	maybe_template = DECL_TI_TEMPLATE (value);
+      else
+	maybe_template = NULL_TREE;
+    }
+  if (maybe_template)
+    finish_member_declaration (maybe_template);
 
   return value;
+}
+
+/* Whether DECL is a static data member initialized at the point
+   of declaration within its class.  */
+
+bool
+is_static_data_member_initialized_in_class (tree decl)
+{
+  if (!decl || decl == error_mark_node)
+    return false;
+
+  tree inner = STRIP_TEMPLATE (decl);
+  return (inner
+	  && VAR_P (inner)
+	  && DECL_CLASS_SCOPE_P (inner)
+	  && DECL_INITIALIZED_IN_CLASS_P (inner));
 }
 
 /* Finish a declaration prepared with start_initialized_static_member.  */
@@ -1318,7 +1345,7 @@ finish_initialized_static_member (tree decl, tree init, tree asmspec)
 {
   if (decl == error_mark_node)
     return;
-  gcc_checking_assert (VAR_P (decl));
+  gcc_checking_assert (is_static_data_member_initialized_in_class (decl));
 
   int flags;
   if (init && DIRECT_LIST_INIT_P (init))
@@ -2786,6 +2813,19 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
   tree t = *tp;
   if (TREE_CODE (t) == PTRMEM_CST)
     t = PTRMEM_CST_MEMBER (t);
+
+  if (TREE_CODE (t) == TEMPLATE_DECL)
+    {
+      if (DECL_ALIAS_TEMPLATE_P (t) || concept_definition_p (t))
+	/* FIXME: We don't maintain TREE_PUBLIC / DECL_VISIBILITY for
+	   alias templates so we can't trust it here (PR107906).  Ditto
+	   for concepts.  */
+	return NULL_TREE;
+      t = DECL_TEMPLATE_RESULT (t);
+      if (!t)
+	return NULL_TREE;
+    }
+
   switch (TREE_CODE (t))
     {
     case CAST_EXPR:
@@ -2797,24 +2837,19 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
     case NEW_EXPR:
     case CONSTRUCTOR:
     case LAMBDA_EXPR:
+    case TYPE_DECL:
       tpvis = type_visibility (TREE_TYPE (t));
       break;
 
-    case TEMPLATE_DECL:
-      if (DECL_ALIAS_TEMPLATE_P (t) || concept_definition_p (t))
-	/* FIXME: We don't maintain TREE_PUBLIC / DECL_VISIBILITY for
-	   alias templates so we can't trust it here (PR107906).  Ditto
-	   for concepts.  */
-	break;
-      t = DECL_TEMPLATE_RESULT (t);
-      /* Fall through.  */
     case VAR_DECL:
     case FUNCTION_DECL:
       if (decl_constant_var_p (t))
 	/* The ODR allows definitions in different TUs to refer to distinct
 	   constant variables with internal or no linkage, so such a reference
 	   shouldn't affect visibility (PR110323).  FIXME but only if the
-	   lvalue-rvalue conversion is applied.  */;
+	   lvalue-rvalue conversion is applied.  We still want to restrict
+	   visibility according to the type of the declaration however.  */
+	tpvis = type_visibility (TREE_TYPE (t));
       else if (! TREE_PUBLIC (t))
 	tpvis = VISIBILITY_ANON;
       else
@@ -4985,7 +5020,8 @@ decl_maybe_constant_var_p (tree decl)
   tree type = TREE_TYPE (decl);
   if (!VAR_P (decl))
     return false;
-  if (DECL_DECLARED_CONSTEXPR_P (decl) && !TREE_THIS_VOLATILE (decl))
+  if (DECL_DECLARED_CONSTEXPR_P (decl)
+      && (!TREE_THIS_VOLATILE (decl) || NULLPTR_TYPE_P (type)))
     return true;
   if (DECL_HAS_VALUE_EXPR_P (decl))
     /* A proxy isn't constant.  */

@@ -1,3 +1,9 @@
+2025-02-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/118125
+	* lto-lang.cc (lto_gnu_attributes): Add an entry for cold attribute.
+	(handle_cold_attribute): New function.
+
 2025-01-14  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* lto-partition.cc (lto_balanced_map): Adjust code referencing

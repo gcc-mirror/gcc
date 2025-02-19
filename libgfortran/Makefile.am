@@ -874,6 +874,33 @@ generated/pow_c10_i16.c \
 generated/pow_c16_i16.c \
 generated/pow_c17_i16.c
 
+i_powu_c = \
+generated/pow_m1_m1.c \
+generated/pow_m1_m2.c \
+generated/pow_m1_m4.c \
+generated/pow_m1_m8.c \
+generated/pow_m1_m16.c \
+generated/pow_m2_m1.c \
+generated/pow_m2_m2.c \
+generated/pow_m2_m4.c \
+generated/pow_m2_m8.c \
+generated/pow_m2_m16.c \
+generated/pow_m4_m1.c \
+generated/pow_m4_m2.c \
+generated/pow_m4_m4.c \
+generated/pow_m4_m8.c \
+generated/pow_m4_m16.c \
+generated/pow_m8_m1.c \
+generated/pow_m8_m2.c \
+generated/pow_m8_m4.c \
+generated/pow_m8_m8.c \
+generated/pow_m8_m16.c \
+generated/pow_m16_m1.c \
+generated/pow_m16_m2.c \
+generated/pow_m16_m4.c \
+generated/pow_m16_m8.c \
+generated/pow_m16_m16.c
+
 i_pack_c = \
 generated/pack_i1.c \
 generated/pack_i2.c \
@@ -956,7 +983,7 @@ gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
 	$(i_minloc1s_c) $(i_maxloc2s_c) $(i_minloc2s_c) $(i_maxvals_c) \
 	$(i_maxval0s_c) $(i_minval0s_c) $(i_maxval1s_c) $(i_minval1s_c) \
 	$(i_findloc0_c) $(i_findloc0s_c) $(i_findloc1_c) $(i_findloc1s_c) \
-	$(i_findloc2s_c) $(i_isobinding_c)
+	$(i_findloc2s_c) $(i_isobinding_c) $(i_powu_c)
 
 # Machine generated specifics
 gfor_built_specific_src= \
@@ -1375,6 +1402,9 @@ $(in_unpack_c): m4/in_unpack.m4 $(I_M4_DEPS)
 
 $(i_pow_c): m4/pow.m4 $(I_M4_DEPS)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 pow.m4 > $@
+
+$(i_powu_c): m4/powu.m4 $(I_M4_DEPS)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 powu.m4 > $@
 
 $(i_pack_c): m4/pack.m4 $(I_M4_DEPS)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 pack.m4 > $@

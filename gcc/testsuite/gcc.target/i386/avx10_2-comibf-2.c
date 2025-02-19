@@ -1,6 +1,6 @@
 /* { dg-do run } */
-/* { dg-options "-march=x86-64-v3 -mavx10.2 -O2 -fno-trapping-math" } */
-/* { dg-require-effective-target avx10_2 } */
+/* { dg-options "-march=x86-64-v3 -mavx10.2-256 -O2 -fno-trapping-math" } */
+/* { dg-require-effective-target avx10_2_256 } */
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -92,7 +92,7 @@ test_ge (__bf16 a, __bf16 b)
 int
 main (void)
 {
-  if (!__builtin_cpu_supports ("avx10.2"))
+  if (!__builtin_cpu_supports ("avx10.2-256"))
     return 0;
 
   float test_values[] = {

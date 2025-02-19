@@ -185,6 +185,10 @@ mbranch-cost=
 Target RejectNegative Joined UInteger Var(la_branch_cost) Save
 -mbranch-cost=COST	Set the cost of branches to roughly COST instructions.
 
+maddr-reg-reg-cost=
+Target RejectNegative Joined UInteger Var(la_addr_reg_reg_cost) Save
+-maddr-reg-reg-cost=COST  Set the cost of ADDRESS_REG_REG to the value calculated by COST.
+
 mcheck-zero-division
 Target Mask(CHECK_ZERO_DIV) Save
 Trap on integer divide by zero.

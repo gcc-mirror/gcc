@@ -1,3 +1,170 @@
+2025-02-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115271
+	* gfortran.h (gfc_omp_namelist): Change need_device_ptr to adj_args
+	union and add more flags.
+	* openmp.cc (gfc_match_omp_declare_variant,
+	gfc_resolve_omp_declare): For adjust_args, handle need_device_addr
+	and numeric values/ranges besides dummy argument names.
+	(resolve_omp_dispatch): Remove bogus a adjust_args check.
+	* trans-decl.cc (gfc_handle_omp_declare_variant): New.
+	(gfc_generate_module_vars, gfc_generate_function_code): Call it.
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Handle numeric
+	values/ranges besides dummy argument names.
+
+2025-02-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/118862
+	* trans-expr.cc (gfc_conv_cst_int_power): Use functions for
+	unsigned wide integer.
+	(gfc_conv_cst_uint_power): Avoid generating the mask if it would
+	overflow an unsigned HOST_WIDE_INT.  Format fixes.
+
+2025-02-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.cc (show_attr): Remove double output
+	of attr->save.
+
+2025-02-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118080
+	* gfortran.texi: Adjust documentation.
+	* trans-decl.cc (create_function_arglist): Adjust to pass hidden
+	presence flag also for derived type dummies with VALUE,OPTIONAL
+	attribute.
+	* trans-expr.cc (gfc_conv_expr_present): Expect hidden presence
+	flag also for derived type dummies with VALUE,OPTIONAL attribute.
+	(conv_cond_temp): Adjust to allow derived types.
+	(conv_dummy_value): Extend to handle derived type dummies with
+	VALUE,OPTIONAL attribute.
+	(gfc_conv_procedure_call): Adjust for actual arguments passed to
+	derived type dummies with VALUE,OPTIONAL attribute.
+	* trans-types.cc (gfc_get_function_type): Adjust fndecl for
+	hidden presence flag.
+
+2025-02-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/117430
+	* resolve.cc (resolve_transfer): Change gfc_notify_std to
+	gfc_error.
+
+2025-02-15  Andrew Pinski  <pinskia@gcc.gnu.org>
+
+	PR fortran/118159
+	* invoke.texi: Remove mention of defunct web site for Coco.
+
+2025-02-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.cc (check_externals_procedure): Copy
+	typespec from old to new symbol.
+
+2025-02-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/118845
+	* interface.cc (compare_parameter): If the formal attribute has been
+	generated from an actual argument list, also output an pointer to
+	there in case of an error.
+	(gfc_get_formal_from_actual_arglist): Set function and subroutine
+	attributes and (if it is a function) the typespec from the actual
+	argument.
+
+2025-02-11  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Update call to
+	omp_check_context_selector.
+	(gfc_trans_omp_metadirective): Likewise.
+
+2025-02-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/24878
+	* interface.cc (compare_parameter): Better wording on
+	error message.
+
+2025-02-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/56423
+	* resolve.cc (resolve_structure_cons): Check rank of pointer target;
+	reject pointer target with vector subscripts.
+
+2025-02-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/24878
+	* interface.cc (compare_parameter): Check global subroutines
+	passed as actual arguments for subroutine / function and
+	function type.
+
+2025-02-08  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/107067
+	* parse.cc (parse_omp_do): Diagnose missing "OMP END METADIRECTIVE"
+	after loop.
+	(parse_omp_structured_block): Likewise for strictly structured block.
+	(parse_omp_metadirective_body): Use better test for variants ending
+	at different places.  Issue a user diagnostic at the end if any
+	were inconsistent, instead of calling gcc_assert.
+
+2025-02-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/59252
+	* trans-expr.cc (gfc_trans_subcomponent_assign): Initialize
+	allocatable non-deferred character with NULL properly.
+
+2025-02-07  Tomáš Trnka  <trnka@scm.com>
+
+	PR fortran/116829
+	* trans-decl.cc (init_intent_out_dt): Always call
+	gfc_init_default_dt() for BT_DERIVED to apply s->value if the
+	symbol isn't allocatable. Also simplify the logic a bit.
+
+2025-02-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/118750
+	* resolve.cc (resolve_assoc_var): If the target expression has
+	a rank, do not use gfc_expression_rank, since it will return 0
+	if the function is elemental. Resolution will have produced the
+	correct rank.
+
+2025-02-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118740
+	* openmp.cc (gfc_match_omp_context_selector, match_omp_metadirective):
+	Change sorry to sorry_at and use gfc_current_locus as location.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Likewise, but use n->where.
+
+2025-02-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118745
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Use
+	append_args_list in the condition for the append_arg location.
+
+2025-02-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/47485
+	* cpp.cc: fix -MT/-MQ adding additional target instead of
+	replacing the default.
+
+2025-02-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* arith.cc (arith_power): Handle modular arithmetic for
+	BT_UNSIGNED.
+	(eval_intrinsic):  Error for unsigned exponentiation with
+	-pedantic.
+	* expr.cc (gfc_type_convert_binary): Use type of first
+	argument for unsigned exponentiation.
+	* gfortran.texi: Mention arithmetic exponentiation.
+	* resolve.cc (resolve_operator): Allow unsigned exponentiation.
+	* trans-decl.cc (gfc_build_intrinsic_function_decls): Build
+	declarations for unsigned exponentiation.
+	* trans-expr.cc (gfc_conv_cst_uint_power): New function.
+	(gfc_conv_power_op): Call it.  Handle unsigned exponentiation.
+	* trans.h (gfor_fndecl_unsigned_pow_list):  Add declaration.
+
+2025-02-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93289
+	* decl.cc (gfc_set_constant_character_len): Downgrade different
+	string lengths in character array constructor to legacy extension.
+
 2025-01-31  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/108454

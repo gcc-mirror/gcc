@@ -712,7 +712,7 @@ build_throw (location_t loc, tree exp, tsubst_flags_t complain)
       allocate_expr = do_allocate_exception (temp_type);
       if (allocate_expr == error_mark_node)
 	return error_mark_node;
-      allocate_expr = get_target_expr (allocate_expr);
+      allocate_expr = get_internal_target_expr (allocate_expr);
       ptr = TARGET_EXPR_SLOT (allocate_expr);
       TARGET_EXPR_CLEANUP (allocate_expr) = do_free_exception (ptr);
       CLEANUP_EH_ONLY (allocate_expr) = 1;

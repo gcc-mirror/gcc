@@ -11964,12 +11964,10 @@
 (define_insn "*pop_multiple_with_writeback_and_return"
   [(match_parallel 0 "pop_multiple_return"
     [(return)
-     (set (match_operand:SI 1 "s_register_operand" "+rk")
+     (set (match_operand:SI 1 "register_operand" "")
           (plus:SI (match_dup 1)
-                   (match_operand:SI 2 "const_int_I_operand" "I")))
-     (set (match_operand:SI 3 "s_register_operand" "=rk")
-          (mem:SI (match_dup 1)))
-        ])]
+                   (match_operand:SI 2 "const_int_I_operand" "")))
+    ])]
   "TARGET_32BIT && (reload_in_progress || reload_completed)"
   "*
   {

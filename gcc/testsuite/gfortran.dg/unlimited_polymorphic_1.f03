@@ -155,7 +155,7 @@ END MODULE
   call foo([a(8),a(9)], res)
   if (trim (res) .ne. "type(a) array   8   9") STOP 1
 
-  call foo([sun, " & rain"], res)
+  call foo([sun, " & rain "], res)
   if (trim (res) .ne. "char( 8, 2)sunshine & rain") STOP 1
 
   call foo([sun//" never happens", " & rain always happens"], res)

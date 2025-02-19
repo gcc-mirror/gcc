@@ -30,6 +30,7 @@ do_test (void)
   __builtin_memset (ph_dst, 0, 2 * N * sizeof (_Float16));
 
   foo_ph (ph_dst);
+#pragma GCC novector
   for (int i = 0; i != N; i++)
     {
       if (ph_dst[i] != ph_src)

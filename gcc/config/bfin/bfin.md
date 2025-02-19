@@ -1440,12 +1440,15 @@
   "%0 = min(%1,%2)%!"
   [(set_attr "type" "dsp32")])
 
-(define_insn "abssi2"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(abs:SI (match_operand:SI 1 "register_operand" "d")))]
-  ""
-  "%0 = abs %1%!"
-  [(set_attr "type" "dsp32")])
+;; The ABS instruction is defined as saturating.  So at the least
+;; it is inappropriate for -fwrapv.  This also fixes the C23 uabs
+;; tests.
+;;(define_insn "abssi2"
+;;  [(set (match_operand:SI 0 "register_operand" "=d")
+;;	(abs:SI (match_operand:SI 1 "register_operand" "d")))]
+;;  ""
+;;  "%0 = abs %1%!"
+;;  [(set_attr "type" "dsp32")])
 
 (define_insn "ssabssi2"
   [(set (match_operand:SI 0 "register_operand" "=d")

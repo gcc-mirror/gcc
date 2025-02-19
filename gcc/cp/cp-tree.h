@@ -514,14 +514,14 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       OVL_LOOKUP_P (in OVERLOAD)
       LOOKUP_FOUND_P (in RECORD_TYPE, UNION_TYPE, ENUMERAL_TYPE, NAMESPACE_DECL)
       FNDECL_MANIFESTLY_CONST_EVALUATED (in FUNCTION_DECL)
-      get_contract_mutable (in ASSERTION_, PRECONDITION_, POSTCONDITION_STMT)
+      TARGET_EXPR_INTERNAL_P (in TARGET_EXPR)
+      CONTRACT_CONST (in ASSERTION_, PRECONDITION_, POSTCONDITION_STMT)
    5: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
       CONSTRUCTOR_PLACEHOLDER_BOUNDARY (in CONSTRUCTOR)
       OVL_EXPORT_P (in OVERLOAD)
       DECL_NTTP_OBJECT_P (in VAR_DECL)
-      get_contract_const (in ASSERTION_, PRECONDITION_, POSTCONDITION_STMT)
    6: TYPE_MARKED_P (in _TYPE)
       DECL_NONTRIVIALLY_INITIALIZED_P (in VAR_DECL)
       RANGE_FOR_IVDEP (in RANGE_FOR_STMT)
@@ -2339,6 +2339,7 @@ enum languages { lang_c, lang_cplusplus };
    || TREE_CODE (T) == TYPENAME_TYPE			\
    || TREE_CODE (T) == TYPEOF_TYPE			\
    || TREE_CODE (T) == BOUND_TEMPLATE_TEMPLATE_PARM	\
+   || TREE_CODE (T) == UNBOUND_CLASS_TEMPLATE		\
    || TREE_CODE (T) == DECLTYPE_TYPE			\
    || TREE_CODE (T) == TRAIT_TYPE			\
    || TREE_CODE (T) == DEPENDENT_OPERATOR_TYPE		\
@@ -5639,6 +5640,11 @@ decl_template_parm_check (const_tree t, const char *f, int l, const char *fn)
 #define TARGET_EXPR_ELIDING_P(NODE) \
   TREE_LANG_FLAG_3 (TARGET_EXPR_CHECK (NODE))
 
+/* True if this TARGET_EXPR is for holding an implementation detail like a
+   cleanup flag or loop index, and should be ignored by extend_all_temps.  */
+#define TARGET_EXPR_INTERNAL_P(NODE) \
+  TREE_LANG_FLAG_4 (TARGET_EXPR_CHECK (NODE))
+
 /* True if NODE is a TARGET_EXPR that just expresses a copy of its INITIAL; if
    the initializer has void type, it's doing something more complicated.  */
 #define SIMPLE_TARGET_EXPR_P(NODE)				\
@@ -7284,6 +7290,7 @@ extern tree grokbitfield (const cp_declarator *, cp_decl_specifier_seq *,
 			  tree, tree, tree);
 extern tree start_initialized_static_member	(const cp_declarator *,
 						 cp_decl_specifier_seq *, tree);
+extern bool is_static_data_member_initialized_in_class (tree decl);
 extern void finish_initialized_static_member	(tree, tree, tree);
 extern tree splice_template_attributes		(tree *, tree);
 extern bool any_dependent_type_attributes_p	(tree);
@@ -8240,6 +8247,7 @@ extern bool is_local_temp			(tree);
 extern tree build_aggr_init_expr		(tree, tree);
 extern tree get_target_expr			(tree,
 						 tsubst_flags_t = tf_warning_or_error);
+extern tree get_internal_target_expr		(tree);
 extern tree build_cplus_array_type		(tree, tree, int is_dep = -1);
 extern tree build_array_of_n_type		(tree, unsigned HOST_WIDE_INT);
 extern bool array_of_runtime_bound_p		(tree);

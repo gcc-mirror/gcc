@@ -970,6 +970,25 @@ get_target_expr (tree init, tsubst_flags_t complain /* = tf_warning_or_error */)
     }
 }
 
+/* Like get_target_expr, but for an internal detail like a cleanup flag or loop
+   iterator.  These variables should not be extended by extend_all_temps.
+
+   This function can also be used for an ephemeral copy of a scalar value such
+   as the pointer to the allocated memory in build_new_1.
+
+   This function should not be used for objects that are part of the abstract
+   C++ semantics such as in stabilize_expr.  */
+
+tree
+get_internal_target_expr (tree init)
+{
+  init = convert_bitfield_to_declared_type (init);
+  tree t = build_target_expr_with_type (init, TREE_TYPE (init),
+					tf_warning_or_error);
+  TARGET_EXPR_INTERNAL_P (t) = true;
+  return t;
+}
+
 /* If EXPR is a bitfield reference, convert it to the declared type of
    the bitfield, and return the resulting expression.  Otherwise,
    return EXPR itself.  */
@@ -5336,7 +5355,8 @@ handle_init_priority_attribute (tree* node,
       && !in_system_header_at (input_location))
     {
       warning
-	(0, "requested %<init_priority%> %i is reserved for internal use",
+	(OPT_Wprio_ctor_dtor,
+	 "requested %<init_priority%> %i is reserved for internal use",
 	 pri);
     }
 

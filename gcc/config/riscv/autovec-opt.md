@@ -638,6 +638,34 @@
 }
 [(set_attr "type" "viwalu")])
 
+; This is a bridge pattern for combine.  Although we do not have a
+; pattern that extends just the first operand it helps combine bridge
+; the gap to the pred_dual_widen insns.
+; If combination fails it will just expand two a separate extend and
+; a binop again.
+(define_insn_and_split "*single_widen_first_sub<any_extend:su><mode>"
+  [(set (match_operand:VWEXTI 0 "register_operand")
+	(minus:VWEXTI
+	  (any_extend:VWEXTI
+	    (match_operand:<V_DOUBLE_TRUNC> 1 "register_operand"))
+	  (match_operand:VWEXTI 2 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  insn_code extend_icode = code_for_pred_vf2 (<any_extend:CODE>, <MODE>mode);
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  rtx extend_ops[] = {tmp, operands[1]};
+  riscv_vector::emit_vlmax_insn (extend_icode, riscv_vector::UNARY_OP, extend_ops);
+
+  rtx ops[] = {operands[0], tmp, operands[2]};
+  insn_code icode = code_for_pred (MINUS, <MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops);
+  DONE;
+}
+[(set_attr "type" "vector")])
+
 (define_insn_and_split "*single_widen_add<any_extend:su><mode>"
   [(set (match_operand:VWEXTI 0 "register_operand")
 	(plus:VWEXTI
@@ -674,7 +702,8 @@
   insn_code extend_icode = code_for_pred_vf2 (<any_extend:CODE>, <MODE>mode);
   rtx tmp = gen_reg_rtx (<MODE>mode);
   rtx extend_ops[] = {tmp, operands[2]};
-  riscv_vector::emit_vlmax_insn (extend_icode, riscv_vector::UNARY_OP, extend_ops);
+  riscv_vector::emit_vlmax_insn (extend_icode, riscv_vector::UNARY_OP,
+				 extend_ops);
 
   rtx ops[] = {operands[0], operands[1], tmp};
   insn_code icode = code_for_pred (MULT, <MODE>mode);
@@ -770,6 +799,31 @@
   DONE;
 }
 [(set_attr "type" "vfwalu")])
+
+; This is a bridge pattern for combine (see above).
+(define_insn_and_split "*single_widen_first_sub<mode>"
+  [(set (match_operand:VWEXTF 0 "register_operand")
+	(minus:VWEXTF
+	  (float_extend:VWEXTF
+	    (match_operand:<V_DOUBLE_TRUNC> 1 "register_operand"))
+	  (match_operand:VWEXTF 2 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  insn_code extend_icode = code_for_pred_extend (<MODE>mode);
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  rtx extend_ops[] = {tmp, operands[1]};
+  riscv_vector::emit_vlmax_insn (extend_icode, riscv_vector::UNARY_OP,
+				 extend_ops);
+
+  rtx ops[] = {operands[0], tmp, operands[2]};
+  insn_code icode = code_for_pred (MINUS, <MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP_FRM_DYN, ops);
+  DONE;
+}
+[(set_attr "type" "vector")])
 
 ;; This combine pattern does not correspond to an single instruction,
 ;; i.e. there is no vfwmul.wv instruction. This is a temporary pattern

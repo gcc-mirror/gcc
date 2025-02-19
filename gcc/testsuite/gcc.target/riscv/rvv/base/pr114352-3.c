@@ -4,6 +4,7 @@
 
 /*
 ** test_1:
+** ...
 ** sext\.w\s+[atx][0-9]+,\s*[atx][0-9]+
 ** ...
 */
@@ -56,6 +57,7 @@ test_3 (int *a, int *b, int *out, unsigned count)
 
 /*
 ** test_4:
+** ...
 ** sext\.w\s+[atx][0-9]+,\s*[atx][0-9]+
 ** ...
 */

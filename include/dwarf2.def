@@ -788,6 +788,8 @@ DW_CFA (DW_CFA_hi_user, 0x3f)
 
 /* SGI/MIPS specific.  */
 DW_CFA (DW_CFA_MIPS_advance_loc8, 0x1d)
+/* AArch64 extensions.  */
+DW_CFA (DW_CFA_AARCH64_negate_ra_state_with_pc, 0x2c)
 /* GNU extensions.
    NOTE: DW_CFA_GNU_window_save is multiplexed on Sparc and AArch64.  */
 DW_CFA (DW_CFA_GNU_window_save, 0x2d)

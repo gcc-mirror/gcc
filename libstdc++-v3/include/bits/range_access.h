@@ -153,7 +153,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Container>
     [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
-    rbegin(_Container& __cont) -> decltype(__cont.rbegin())
+    rbegin(_Container& __cont) noexcept(noexcept(__cont.rbegin()))
+      -> decltype(__cont.rbegin())
     { return __cont.rbegin(); }
 
   /**
@@ -164,7 +165,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Container>
     [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
-    rbegin(const _Container& __cont) -> decltype(__cont.rbegin())
+    rbegin(const _Container& __cont) noexcept(noexcept(__cont.rbegin()))
+      -> decltype(__cont.rbegin())
     { return __cont.rbegin(); }
 
   /**
@@ -175,7 +177,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Container>
     [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
-    rend(_Container& __cont) -> decltype(__cont.rend())
+    rend(_Container& __cont) noexcept(noexcept(__cont.rend()))
+      -> decltype(__cont.rend())
     { return __cont.rend(); }
 
   /**
@@ -186,7 +189,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Container>
     [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
-    rend(const _Container& __cont) -> decltype(__cont.rend())
+    rend(const _Container& __cont) noexcept(noexcept(__cont.rend()))
+      -> decltype(__cont.rend())
     { return __cont.rend(); }
 
   /**
@@ -241,7 +245,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Container>
     [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
-    crbegin(const _Container& __cont) -> decltype(std::rbegin(__cont))
+    crbegin(const _Container& __cont) noexcept(noexcept(std::rbegin(__cont)))
+      -> decltype(std::rbegin(__cont))
     { return std::rbegin(__cont); }
 
   /**
@@ -252,7 +257,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Container>
     [[__nodiscard__, __gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR auto
-    crend(const _Container& __cont) -> decltype(std::rend(__cont))
+    crend(const _Container& __cont) noexcept(noexcept(std::rend(__cont)))
+      -> decltype(std::rend(__cont))
     { return std::rend(__cont); }
 
 #endif // C++14

@@ -9088,8 +9088,8 @@ static void
 output_statistics (FILE *f)
 {
   automaton_t automaton;
-  int states_num;
 #ifndef NDEBUG
+  int states_num;
   int transition_comb_vect_els = 0;
   int transition_full_vect_els = 0;
   int min_issue_delay_vect_els = 0;
@@ -9106,13 +9106,17 @@ output_statistics (FILE *f)
 	       automaton->NDFA_states_num, automaton->NDFA_arcs_num);
       fprintf (f, "    %5d DFA states,           %5d DFA arcs\n",
 	       automaton->DFA_states_num, automaton->DFA_arcs_num);
+#ifndef NDEBUG
       states_num = automaton->DFA_states_num;
+#endif
       if (!no_minimization_flag)
 	{
 	  fprintf (f, "    %5d minimal DFA states,   %5d minimal DFA arcs\n",
 		   automaton->minimal_DFA_states_num,
 		   automaton->minimal_DFA_arcs_num);
+#ifndef NDEBUG
 	  states_num = automaton->minimal_DFA_states_num;
+#endif
 	}
       fprintf (f, "    %5d all insns      %5d insn equivalence classes\n",
 	       description->insns_num, automaton->insn_equiv_classes_num);

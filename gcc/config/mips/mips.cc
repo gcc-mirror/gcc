@@ -15775,6 +15775,7 @@ AVAIL_NON_MIPS16 (dspr2_32, !TARGET_64BIT && TARGET_DSPR2)
 AVAIL_NON_MIPS16 (loongson, TARGET_LOONGSON_MMI)
 AVAIL_MIPS16E2_OR_NON_MIPS16 (cache, TARGET_CACHE_BUILTIN)
 AVAIL_NON_MIPS16 (msa, TARGET_MSA)
+AVAIL_NON_MIPS16 (r6, mips_isa_rev >= 6)
 
 /* Construct a mips_builtin_description from the given arguments.
 
@@ -15939,6 +15940,14 @@ AVAIL_NON_MIPS16 (msa, TARGET_MSA)
     { CODE_FOR_msa_ ## INSN, MIPS_FP_COND_f,				\
     "__builtin_msa_" #INSN,  MIPS_BUILTIN_DIRECT_NO_TARGET,		\
     FUNCTION_TYPE, mips_builtin_avail_msa, false }
+
+/* Define a MIPSr6 MIPS_BUILTIN_DIRECT pure function __builtin_mipsr6_<INSN>
+   for instruction CODE_FOR_mipsr6_<INSN>.  FUNCTION_TYPE is a builtin_description
+   field.  */
+#define MIPSR6_BUILTIN_PURE(INSN, FUNCTION_TYPE)			\
+    { CODE_FOR_mipsr6_ ## INSN, MIPS_FP_COND_f,				\
+    "__builtin_mipsr6_" #INSN,  MIPS_BUILTIN_DIRECT,			\
+    FUNCTION_TYPE, mips_builtin_avail_r6, true }
 
 #define CODE_FOR_mips_sqrt_ps CODE_FOR_sqrtv2sf2
 #define CODE_FOR_mips_addq_ph CODE_FOR_addv2hi3
@@ -16176,6 +16185,13 @@ AVAIL_NON_MIPS16 (msa, TARGET_MSA)
 #define CODE_FOR_msa_ldi_h CODE_FOR_msa_ldiv8hi
 #define CODE_FOR_msa_ldi_w CODE_FOR_msa_ldiv4si
 #define CODE_FOR_msa_ldi_d CODE_FOR_msa_ldiv2di
+
+#define CODE_FOR_mipsr6_min_a_s CODE_FOR_fmin_a_sf
+#define CODE_FOR_mipsr6_min_a_d CODE_FOR_fmin_a_df
+#define CODE_FOR_mipsr6_max_a_s CODE_FOR_fmax_a_sf
+#define CODE_FOR_mipsr6_max_a_d CODE_FOR_fmax_a_df
+#define CODE_FOR_mipsr6_class_s CODE_FOR_fclass_sf
+#define CODE_FOR_mipsr6_class_d CODE_FOR_fclass_df
 
 static const struct mips_builtin_description mips_builtins[] = {
 #define MIPS_GET_FCSR 0
@@ -16998,6 +17014,14 @@ static const struct mips_builtin_description mips_builtins[] = {
   MSA_NO_TARGET_BUILTIN (ctcmsa, MIPS_VOID_FTYPE_UQI_SI),
   MSA_BUILTIN_PURE (cfcmsa, MIPS_SI_FTYPE_UQI),
   MSA_BUILTIN_PURE (move_v, MIPS_V16QI_FTYPE_V16QI),
+
+  /* Built-in functions for MIPSr6.  */
+  MIPSR6_BUILTIN_PURE (min_a_s, MIPS_SF_FTYPE_SF_SF),
+  MIPSR6_BUILTIN_PURE (min_a_d, MIPS_DF_FTYPE_DF_DF),
+  MIPSR6_BUILTIN_PURE (max_a_s, MIPS_SF_FTYPE_SF_SF),
+  MIPSR6_BUILTIN_PURE (max_a_d, MIPS_DF_FTYPE_DF_DF),
+  MIPSR6_BUILTIN_PURE (class_s, MIPS_SF_FTYPE_SF),
+  MIPSR6_BUILTIN_PURE (class_d, MIPS_DF_FTYPE_DF),
 };
 
 /* Index I is the function declaration for mips_builtins[I], or null if the

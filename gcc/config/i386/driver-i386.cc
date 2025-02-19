@@ -910,9 +910,12 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 				    isa_names_table[i].option, NULL);
 	      }
 	    /* Never push -mno-avx10.1-{256,512} under -march=native to
-	       avoid unnecessary warnings when building librarys.  */
+	       avoid unnecessary warnings when building libraries.
+	       Never push -mno-avx10.x-256 under -march=native since
+	       there are no such options.  */
 	    else if (isa_names_table[i].feature != FEATURE_AVX10_1_256
 		     && isa_names_table[i].feature != FEATURE_AVX10_1_512
+		     && isa_names_table[i].feature != FEATURE_AVX10_2_256
 		     && check_avx512_features (cpu_model, cpu_features2,
 					       isa_names_table[i].feature))
 	      options = concat (options, neg_option,

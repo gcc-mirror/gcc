@@ -36,4 +36,4 @@ void f (void * restrict in, void * restrict out, int l, int n, int m, int cond)
   }
 }
 
-/* { dg-final { scan-assembler {add\s+\s*[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+\s+ble\s+[a-x0-9]+,\s*zero,\.L[0-9]+\s+vsetvli\s+zero,\s*[a-x0-9]+,\s*e8,\s*mf8,\s*t[au],\s*m[au]} { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-Oz" no-opts "-g" no-opts "-funroll-loops" } } } } */
+/* { dg-final { scan-assembler {add\s+\s*[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+\s+ble\s+[a-x0-9]+,\s*zero,\.L[0-9]+\s+.L[0-9]+:\s+vsetvli\s+zero,\s*[a-x0-9]+,\s*e8,\s*mf8,\s*t[au],\s*m[au]} { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-Oz" no-opts "-g" no-opts "-funroll-loops" } } } } */

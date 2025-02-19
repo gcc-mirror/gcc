@@ -31,7 +31,7 @@ CONTAINS
 
       bar = test_func () ! { dg-error "not RECURSIVE" }
       procptr => test_func ! { dg-warning "Non-RECURSIVE" }
-      CALL foobar (test_func) ! { dg-warning "Non-RECURSIVE" }
+      CALL foobar2 (test_func) ! { dg-warning "Non-RECURSIVE" }
     END FUNCTION bar
   END FUNCTION test_func
 

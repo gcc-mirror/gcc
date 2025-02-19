@@ -219,4 +219,5 @@ extern void loongarch_option_override_internal (struct loongarch_target *, struc
 extern void loongarch_reset_previous_fndecl (void);
 extern void loongarch_save_restore_target_globals (tree new_tree);
 extern void loongarch_register_pragmas (void);
+extern bool loongarch_process_target_attr (tree args, tree fndecl);
 #endif /* ! GCC_LOONGARCH_PROTOS_H */

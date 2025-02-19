@@ -17,5 +17,4 @@ void f2 (void * restrict in, void * restrict out, int l, int n, int m, size_t vl
   }
 }
 
-/* { dg-final { scan-assembler-times {add\s+\s*[a-x0-9]+,\s*[a-x0-9]+,\s*[a-x0-9]+\s+ble\s+[a-x0-9]+,\s*zero,\.L[0-9]+\s+} 1 { target { no-opts "-O0" no-opts "-O1" no-opts "-Os" no-opts "-Oz" no-opts "-g" no-opts "-funroll-loops" } } } } */
 /* { dg-final { scan-assembler-times {vsetvli} 1 { target { no-opts "-O0" no-opts "-g" no-opts "-funroll-loops" } } } } */

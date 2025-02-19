@@ -1264,6 +1264,10 @@ struct mips_cpu_info {
 
 #define ISA_HAS_FMIN_FMAX	(mips_isa_rev >= 6)
 
+#define ISA_HAS_FRINT		(mips_isa_rev >= 6)
+
+#define ISA_HAS_FCLASS		(mips_isa_rev >= 6)
+
 /* ISA has data indexed prefetch instructions.  This controls use of
    'prefx', along with TARGET_HARD_FLOAT and TARGET_DOUBLE_FLOAT.
    (prefx is a cop1x instruction, so can only be used if FP is

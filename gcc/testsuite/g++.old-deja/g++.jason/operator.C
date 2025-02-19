@@ -29,4 +29,4 @@ void * operator new (A a);	// { dg-error ".operator new. takes type .size_t." }
 void operator delete (A a);	// { dg-error ".operator delete. takes type .void\\*. as first parameter" }
 
 char * operator char * (int);	// { dg-error "return type" "ret" }
-// { dg-error "8:.operator char\\*\\*\\(int\\). must be a non-static member function" "mem" { target *-*-* } .-1 }
+// { dg-error "8:.operator char\\*\\(int\\). must be a non-static member function" "mem" { target *-*-* } .-1 }

@@ -1,3 +1,8 @@
+2025-02-10  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_uncompress_lzma_block): Add casts to avoid
+	potentially shifting a value farther than its type size.
+
 2025-01-30  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (elf_fetch_bits): Add casts to avoid potentially shifting

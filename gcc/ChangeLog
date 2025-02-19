@@ -1,3 +1,1039 @@
+2025-02-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (ix86_find_all_reg_use):
+	Scan only for SET RTX in PARALLEL.
+
+2025-02-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/118288
+	* builtins.cc (expand_builtin_crc_table_based):
+	Use gen_int_mode to emit constant integers with MSB set.
+
+2025-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118895
+	* tree-ssa-sccvn.cc (vn_nary_build_or_lookup_1): Only allow
+	CSE if we can verify the result is available.
+
+2025-02-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118764
+	* config/avr/gen-avr-mmcu-specs.cc (print_mcu)
+	[has CVT]: Mention CVT in header comment of generated specs file.
+
+2025-02-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.opt.urls: Regenetated.
+
+2025-02-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AVX10_1_UNSET): Adjust macro.
+	(OPTION_MASK_ISA2_AVX10_2_256_UNSET): Removed.
+	(OPTION_MASK_ISA2_AVX10_2_512_UNSET): Ditto.
+	(OPTION_MASK_ISA2_AVX10_2_UNSET): New.
+	(ix86_handle_option): Remove disable part for avx10.2-256.
+	Rename avx10.2-512 switch case to avx10.2 and adjust disable
+	part macro.
+	* common/config/i386/i386-isas.h: Adjust avx10.2 and
+	avx10.2-512.
+	* config/i386/driver-i386.cc
+	(host_detect_local_cpu): Do not append -mno-avx10.x-256
+	for -march=native.
+	* config/i386/i386-options.cc
+	(ix86_valid_target_attribute_inner_p): Adjust avx10.2 and
+	avx10.2-512.
+	* config/i386/i386.opt: Reject Negative for mavx10.2-256.
+	Alias mavx10.2-512 to mavx10.2. Reject Negative for
+	mavx10.2-512.
+	* doc/extend.texi: Adjust documentation.
+	* doc/sourcebuild.texi: Ditto.
+
+2025-02-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AVX2_UNSET): Change AVX10.1 unset macro.
+	(OPTION_MASK_ISA2_AVX10_1_256_UNSET): Removed.
+	(OPTION_MASK_ISA2_AVX10_1_512_UNSET): Removed.
+	(OPTION_MASK_ISA2_AVX10_1_UNSET): New.
+	(ix86_handle_option): Adjust AVX10.1 unset macro.
+	* common/config/i386/i386-isas.h: Remove avx10.1.
+	* config/i386/i386-options.cc
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	(ix86_option_override_internal): Adjust warning message.
+	* config/i386/i386.opt: Remove mavx10.1.
+	* doc/extend.texi: Remove avx10.1 and adjust doc.
+	* doc/sourcebuild.texi: Ditto.
+
+2025-02-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118815
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Do not check vector size conflict when AVX512 is not explicitly
+	set.
+
+2025-02-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118248
+	* config/riscv/riscv-string.cc (riscv_block_move_straight): Only
+	allocate REGS buffer if it will be needed.
+
+2025-02-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118764
+	* config/avr/avr-c.cc (avr_cpu_cpp_builtins)
+	[TARGET_CVT]: Define __AVR_CVT__.
+	* doc/invoke.texi (AVR Built-in Macros): Document __AVR_CVT__.
+
+2025-02-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_result_regno_unused_p): New static function.
+	(avr_out_bitop): Only output result bytes that are used.
+	(avr_out_plus_1): Same.
+
+2025-02-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-protos.h (avr_builtin_supported_p): Remove.
+	* config/avr/avr.cc (avr_init_builtins): Don't initialize
+	non-available built-ins with NULL_TREE.
+	(avr_builtin_supported_p): Move to...
+	* config/avr/avr-c.cc: ...here.
+	(avr_resolve_overloaded_builtin): Run avr_builtin_supported_p.
+
+2025-02-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/109780
+	PR target/109093
+	* config/i386/i386.cc (ix86_update_stack_alignment): New.
+	(ix86_find_all_reg_use_1): Likewise.
+	(ix86_find_all_reg_use): Likewise.
+	(ix86_find_max_used_stack_alignment): Also check memory accesses
+	from registers defined by stack or frame registers.
+
+2025-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98028
+	* vr-values.cc (check_for_binary_op_overflow): Try to use a known
+	relationship betwen op0/op1 to statically determine overflow state.
+
+2025-02-15  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* config/riscv/autovec-opt.md
+	(*single_widen_first_<any_widen_binop:optab><any_extend:su><mode>):
+	New combine "bridge" pattern.
+
+2025-02-15  Keith Packard  <keithp@keithp.com>
+
+	* config/rx/rx.md (rx_cmpstrn): Correctly handle len=0 case.
+
+2025-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* libsarifreplay.cc (sarif_replayer::handle_result_obj): Call
+	handle_fix_object if we see a single-element "fixes" array.
+	(sarif_replayer::handle_fix_object): New.
+	(sarif_replayer::handle_artifact_change_object): New.
+
+2025-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* libsarifreplay.cc (should_add_rule_p): New.
+	(sarif_replayer::handle_result_obj): Use it to filter out rules
+	that don't make sense.
+
+2025-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* libsarifreplay.cc (sarif_replayer::handle_result_obj): Treat any
+	relatedLocations without messages as secondary ranges within the
+	diagnostic.  Doing so requires stashing the notes until after
+	the diagnostic has been finished, so that relatedLocations can be
+	walked in one pass.
+
+2025-02-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/118881
+	* doc/libgdiagnostics/topics/physical-locations.rst: Add
+	diagnostic_physical_location_get_file.
+	* libgdiagnostics++.h (physical_location::get_file): New wrapper.
+	(diagnostic::add_location): Likewise.
+	* libgdiagnostics.cc (diagnostic_manager::get_file_by_name): New.
+	(diagnostic_physical_location::get_file): New.
+	(diagnostic_physical_location_get_file): New.
+	* libgdiagnostics.h (diagnostic_physical_location_get_file): New.
+	* libgdiagnostics.map (diagnostic_physical_location_get_file): New.
+	* libsarifreplay.cc (class annotation): New.
+	(add_any_annotations): New.
+	(sarif_replayer::handle_result_obj): Collect vectors of
+	annotations in the calls to handle_location_object and apply them
+	to "err" and to "note" as appropriate.
+	(sarif_replayer::handle_thread_flow_location_object): Pass nullptr
+	for annotations.
+	(sarif_replayer::handle_location_object): Handle §3.28.6
+	"annotations" property, using it to populate a new
+	"out_annotations" param.
+
+2025-02-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* config/nvptx/nvptx.cc (nvptx_record_needed_fndecl): Tag as
+	'static'.
+
+2025-02-15  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/118872
+	* config/riscv/riscv.cc (riscv_fntype_abi): Strengthen the logic
+	of the check to avoid missing the error report.
+
+2025-02-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118878
+	* config/avr/avr.cc (avr_out_plus_1): Don't ICE on result of
+	paradoxical reg's register allocation.
+
+2025-02-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/94282
+	PR target/113331
+	* common/config/gcn/gcn-common.cc (gcn_except_unwind_info): 'return UI_TARGET;'.
+	* config/gcn/gcn.cc (gcn_asm_init_sections): New function.
+	(TARGET_ASM_INIT_SECTIONS): '#define'.
+
+2025-02-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/86660
+	* common/config/nvptx/nvptx-common.cc (nvptx_except_unwind_info):
+	'return UI_TARGET;'.
+	* config/nvptx/nvptx.cc (nvptx_assemble_integer): Handle
+	'exception_section'.
+	(nvptx_output_section_asm_op, nvptx_asm_init_sections): New
+	functions.
+	(TARGET_ASM_INIT_SECTIONS): '#define'.
+	* config/nvptx/nvptx.h (TEXT_SECTION_ASM_OP, DATA_SECTION_ASM_OP):
+	Don't '#define'.
+	(ASM_OUTPUT_DWARF_DELTA): '#define'.
+
+2025-02-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.cc (init_frag): New 'bool active' member.
+	(output_init_frag, nvptx_assemble_value, nvptx_assemble_integer)
+	(nvptx_output_skip, nvptx_assemble_decl_begin)
+	(nvptx_assemble_decl_end): Sanity-check its state.
+
+2025-02-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.cc (nvptx_output_skip): Clarify case of
+	no or incomplete initializer.
+
+2025-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118852
+	* tree-vect-slp.cc (vect_analyze_slp): For early-break
+	forced-live IVs make sure we create an appropriate
+	entry into the SLP graph.
+
+2025-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/118790
+	* tree.cc (struct gt_value_expr_mark_data): New type.
+	(gt_value_expr_mark_2): Don't call ggc_set_mark, instead check
+	ggc_marked_p.  Treat data as gt_value_expr_mark_data * with pset
+	in it rather than address of the pset itself and push to be marked
+	VAR_DECLs into to_mark vec.
+	(gt_value_expr_mark_1): Change argument from hash_set<tree> *
+	to gt_value_expr_mark_data * and find pset in it.
+	(gt_value_expr_mark): Pass to traverse_noresize address of
+	gt_value_expr_mark_data object rather than hash_table<tree> and
+	for all entries in the to_mark vector after the traversal call
+	gt_ggc_mx.
+
+2025-02-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/genopts/loongarch.opt.in: Add
+	option '-maddr-reg-reg-cost='.
+	* config/loongarch/loongarch-def.cc
+	(loongarch_rtx_cost_data::loongarch_rtx_cost_data): Initialize
+	addr_reg_reg_cost to 3.
+	* config/loongarch/loongarch-opts.cc
+	(loongarch_target_option_override): If '-maddr-reg-reg-cost='
+	is not used, set it to the initial value.
+	* config/loongarch/loongarch-tune.h
+	(struct loongarch_rtx_cost_data): Add the member
+	addr_reg_reg_cost and its assignment function to the structure
+	loongarch_rtx_cost_data.
+	* config/loongarch/loongarch.cc (loongarch_address_insns):
+	Use la_addr_reg_reg_cost to set the cost of ADDRESS_REG_REG.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/loongarch.opt.urls: Regenerate.
+	* doc/invoke.texi: Add description of '-maddr-reg-reg-cost='.
+
+2025-02-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/118843
+	* config/loongarch/loongarch-c.cc
+	(loongarch_update_cpp_builtins): Fix macro definition issues.
+
+2025-02-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/118828
+	* config/loongarch/loongarch-c.cc (loongarch_pragma_target_parse):
+	Update the predefined macros.
+
+2025-02-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-c.cc (builtin_undef): New macro.
+	(loongarch_cpu_cpp_builtins): Split to loongarch_update_cpp_builtins
+	and loongarch_define_unconditional_macros.
+	(loongarch_def_or_undef): New functions.
+	(loongarch_define_unconditional_macros): Likewise.
+	(loongarch_update_cpp_builtins): Likewise.
+
+2025-02-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-target-attr.cc
+	(loongarch_pragma_target_parse): Move to ...
+	(loongarch_register_pragmas): Move to ...
+	* config/loongarch/loongarch-c.cc
+	(loongarch_pragma_target_parse): ... here.
+	(loongarch_register_pragmas): ... here.
+	* config/loongarch/loongarch-protos.h
+	(loongarch_process_target_attr): Function Declaration.
+
+2025-02-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90579
+	* tree-ssa-forwprop.cc (simplify_bitfield_ref): Move to
+	match.pd.
+	(pass_forwprop::execute): Adjust.
+	* match.pd (bit_field_ref (vec_perm ...)): New pattern
+	modeled after simplify_bitfield_ref.
+	* tree-vect-loop.cc (vect_expand_fold_left): Fold the
+	element extract stmt, combining it with the vector def.
+
+2025-02-13  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/118832
+	* config/riscv/riscv-v.cc (expand_const_vector):  Expand as
+	vlmax insn during lra.
+
+2025-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR driver/117739
+	* doc/invoke.texi: Tweak wording for -Whardened.
+	* gcc.cc (driver_handle_option): If -z lazy or -z norelro was
+	specified, don't enable linker hardening.
+	(process_command): Don't check warn_hardened.
+
+2025-02-13  Ed Catmur  <ed@catmur.uk>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/70536
+	* dwarf2out.cc (gen_formal_parameter_pack_die): Add name attr.
+
+2025-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/118790
+	* gengtype.cc (write_roots): Remove cache variable, instead break from
+	the loop on match and test o for NULL.  If the cache option has
+	non-empty string argument, call the specified function with v->name
+	as argument before calling gt_cleare_cache on it.
+	* tree.cc (gt_value_expr_mark_2, gt_value_expr_mark_1,
+	gt_value_expr_mark): New functions.
+	(value_expr_for_decl): Use GTY ((cache ("gt_value_expr_mark"))) rather
+	than just GTY ((cache)).
+	* doc/gty.texi (cache): Document optional argument of cache option.
+
+2025-02-13  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/114522
+	* config/arm/arm-builtins.cc (arm_fold_aes_op): New function.
+	(arm_general_gimple_fold_builtin): New function.
+	* config/arm/arm-builtins.h (arm_general_gimple_fold_builtin): New
+	prototype.
+	* config/arm/arm.cc (arm_gimple_fold_builtin): Call
+	arm_general_gimple_fold_builtin as needed.
+
+2025-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118822
+	PR c++/118833
+	* tree-iterator.h (tsi_split_stmt_list): Declare.
+	* tree-iterator.cc (tsi_split_stmt_list): New function.
+
+2025-02-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld_eh_frame_ciev3): Remove.
+	* configure, config.in: Regenerate.
+	* config/sol2.cc (solaris_override_options): Remove.
+	* config/sol2.h (SUBTARGET_OVERRIDE_OPTIONS): Remove.
+	* config/sol2-protos.h (solaris_override_options): Remove.
+
+2025-02-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, *-*-solaris2*): Updates for newer
+	Solaris 11.4 SRUs and binutils 2.44.
+
+2025-02-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/118835
+	* config/s390/s390.cc (s390_valid_shift_count): Reject shift
+	count operands which do not trivially fit the scheme of
+	address operands.
+
+2025-02-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118817
+	* tree-ssa-sccvn.cc (vn_nary_simplify): Do not process
+	CONSTRUCTOR NARY or update from CONSTRUCTOR simplified
+	gimple_match_op.
+
+2025-02-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/102150
+	* loop-invariant.cc (find_invariant_insn): Treat inline-asm similar to
+	trapping instruction and only move them if always executed.
+
+2025-02-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/102150
+	* ifcvt.cc (cheap_bb_rtx_cost_p): Return false if the insn
+	has an inline-asm in it.
+
+2025-02-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt.urls: Add -mcall-main.
+
+2025-02-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118806
+	* config/avr/avr.opt (-mcall-main): New option and...
+	(avropt_call_main): ...variable.
+	* config/avr/avr.cc (avr_no_call_main_p): New variable.
+	(avr_insert_attributes) [-mno-call-main, main]: Add attributes
+	noreturn and section(".init9") to main.  Set avr_no_call_main_p.
+	(avr_file_end) [avr_no_call_main_p]: Define symbol __call_main.
+	* doc/invoke.texi (AVR Options) <-mno-call-main>: Document.
+	<-mnodevicelib>: Extend explanation.
+
+2025-02-12  Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/117790
+	* tree-vect-loop-manip.cc (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Set profile counts for {main,alt}_loop_exit_block.
+
+2025-02-12  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* config/riscv/vector.md: vncvt substitute vnsrl.
+	vnsrl with x0 replace with immediate 0.
+	vneg substitute vrsub.
+
+2025-02-12  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/118601
+	* config/riscv/riscv-string.cc (expand_block_move): Check with new
+	constraint 'vl' instead of 'K'.
+	(expand_vec_setmem): Likewise.
+	(expand_vec_cmpmem): Likewise.
+	* config/riscv/riscv-v.cc (force_vector_length_operand): Likewise.
+	(expand_load_store): Likewise.
+	(expand_strided_load): Likewise.
+	(expand_strided_store): Likewise.
+	(expand_lanes_load_store): Likewise.
+
+2025-02-12  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/install.texi: Add missing comma after @xref to fix warning.
+
+2025-02-12  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/extend.texi: Fix a bunch of typos and other writing bugs.
+	* doc/invoke.texi: Likewise.
+
+2025-02-12  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* Makefile.in (TEXI_GCCINT_FILES): Remove interface.texi.
+	* doc/gccint.texi (Top): Remove menu entry for the "interface" node,
+	and include of interface.texi.
+	* doc/interface.texi: Delete.
+
+2025-02-12  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/riscv/riscv-feature-bits.h (RISCV_VENDOR_FEATURE_BITS_LENGTH): Drop.
+	(struct riscv_vendor_feature_bits): Drop.
+
+2025-02-11  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/115478
+	* config/aarch64/iterators.md (any_or_plus): New code iterator.
+	* config/aarch64/aarch64.md (extr<mode>5_insn): Use any_or_plus.
+	(extr<mode>5_insn_alt, extrsi5_insn_uxtw): Likewise.
+	(extrsi5_insn_uxtw_alt, extrsi5_insn_di): Likewise.
+
+2025-02-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/188574
+	* doc/invoke.texi: Adjust -frange-for-ext-temps documentation.
+
+2025-02-11  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def
+	(SSVE_FP8FMA): Adjust formatting.
+	(FP8DOT4): Replace FP8FMA dependency with FP8.
+	(SSVE_FP8DOT4): Replace SSVE_FP8FMA dependency with SME2+FP8.
+	(FP8DOT2): Replace FP8DOT4 dependency with FP8.
+	(SSVE_FP8DOT2): Replace SSVE_FP8DOT4 dependency with SME2+FP8.
+
+2025-02-11  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* omp-general.cc (omp_check_context_selector): Change
+	metadirective_p argument to a 3-way flag.  Add extra check for
+	OMP_CTX_BEGIN_DECLARE_VARIANT.
+	* omp-general.h (enum omp_ctx_directive): New.
+	(omp_check_context_selector): Adjust declaration.
+
+2025-02-11  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* omp-general.cc (omp_context_selector_props_compare): Handle
+	arbitrary expressions in the "user" and "device_num" selectors.
+	(omp_context_selector_set_compare): Detect mismatch when one
+	selector specifies a score and the other doesn't.
+
+2025-02-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/118125
+	* ipa-fnsummary.cc (redirect_to_unreachable): Add checking assert
+	that the builtin_unreachable decl has attribute cold.
+
+2025-02-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/118792
+	* libsarifreplay.cc (sarif_replayer::handle_region_object): Fix
+	off-by-one in handling of endColumn property so that the code
+	matches the comment and the SARIF spec (§3.30.8).
+
+2025-02-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118817
+	* tree-ssa-pre.cc (fully_constant_expression): Fold into
+	the single caller.
+	(phi_translate_1): Refactor folded in fully_constant_expression.
+	* tree-ssa-sccvn.cc (vn_nary_simplify): Update the NARY with
+	the simplified expression.
+
+2025-02-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/118825
+	* config/i386/i386.h (ASM_OUTPUT_SYMBOL_REF): Replace x with
+	SYM.
+
+2025-02-11  YunQiang Su  <syq@debian.org>
+
+	* config.gcc: Add mips*64*-linux-muslabi64 triple support.
+
+2025-02-11  Jie Mei  <jie.mei@oss.cipunited.com>
+	    Xi Ruoyao  <xry111@xry111.site>
+
+	* config/mips/i6400.md (i6400_fpu_minmax): Include
+	fclass type.
+	(i6400_fpu_fadd): Include frint type.
+	* config/mips/mips.cc (AVAIL_NON_MIPS16): Add an entry
+	for __builtin_mipsr6_xxx.
+	(MIPSR6_BUILTIN_PURE): Same as above.
+	(CODE_FOR_mipsr6_min_a_s, CODE_FOR_mipsr6_min_a_d)
+	(CODE_FOR_mipsr6_max_a_s, CODE_FOR_mipsr6_max_a_d)
+	(CODE_FOR_mipsr6_class_s, CODE_FOR_mipsr6_class_d):
+	New code_aliasing macros.
+	(mips_builtins): Add mips32r6 min_a_s, min_a_d, max_a_s,
+	max_a_d, class_s, class_d builtins.
+	* config/mips/mips.h (ISA_HAS_FRINT): Define a new macro.
+	(ISA_HAS_FCLASS): Same as above.
+	* config/mips/mips.md (UNSPEC_FRINT): New unspec.
+	(UNSPEC_FCLASS): Same as above.
+	(type): Add frint and fclass.
+	(fmin_a_<mode>): Generates MINA.fmt instructions.
+	(fmax_a_<mode>): Generates MAXA.fmt instructions.
+	(rint<mode>2): Generates RINT.fmt instructions.
+	(fclass_<mode>): Generates CLASS.fmt instructions.
+	* config/mips/p6600.md (p6600_fpu_fadd): Include
+	frint type.
+	(p6600_fpu_fabs): Include fclass type.
+
+2025-02-11  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118813
+	* config/i386/avx512bwintrin.h: Fix wrong __OPTIMIZE__
+	wrap.
+
+2025-02-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/mkoffload.cc (enum elf_arch_code): Add
+	EF_AMDGPU_MACH_AMDGCN_NONE.
+	(elf_arch): Use enum elf_arch_code as type.
+	(tool_cleanup): Silence warning by removing tailing '.' from error.
+	(get_arch_name): Return enum elf_arch_code.
+	(check_for_missing_lib): New; print fatal error if the multilib
+	is not available but it is for the associate generic ISA.
+	(main): Call it.
+
+2025-02-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	* doc/install.texi (GCN): Update section about multilibs and
+	required LLVM version.
+
+2025-02-10  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118097
+	* ipa-cp.cc (ipa_get_jf_arith_result): Adjust comment.
+	(ipa_get_jf_pass_through_result): Removed.
+	(ipa_value_from_jfunc): Use directly ipa_get_jf_arith_result, do
+	not specify operation type but make sure we check and possibly
+	convert the result.
+	(get_val_across_arith_op): Remove the last parameter, always pass
+	NULL_TREE to ipa_get_jf_arith_result in its last argument.
+	(propagate_vals_across_arith_jfunc): Do not pass res_type to
+	get_val_across_arith_op.
+	(propagate_vals_across_pass_through): Add checking assert that
+	parm_type is not NULL.
+
+2025-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118623
+	* config/i386/i386.md (*bt<mode>): Represent bt as
+	compare:CCC of const0_rtx and zero_extract rather than
+	zero_extract and const0_rtx.
+	(*bt<SWI48:mode>_mask): Likewise.
+	(*jcc_bt<mode>): Likewise.  Use LTU and GEU as flags test
+	instead of EQ and NE.
+	(*jcc_bt<mode>_mask): Likewise.
+	(*jcc_bt<SWI48:mode>_mask_1): Likewise.
+	(Help combine recognize bt followed by cmov splitter): Likewise.
+	(*bt<mode>_setcqi): Likewise.
+	(*bt<mode>_setncqi): Likewise.
+	(*bt<mode>_setnc<mode>): Likewise.
+	(*bt<mode>_setncqi_2): Likewise.
+	(*bt<mode>_setc<mode>_mask): Likewise.
+
+2025-02-09  Dario Gjorgjevski  <dario.gjorgjevski@gmail.com>
+
+	PR middle-end/117263
+	* genautomata.cc (output_statistics): Avoid set but unnused warnings
+	when compiling with NDEBUG.
+
+2025-02-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/118146
+	* config/riscv/riscv.cc (riscv_legitimize_move): Handle subreg
+	of vector source better to avoid ICE.
+
+2025-02-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118764
+	* doc/invoke.texi (AVR Options): Fix typos.
+
+2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/gcn/gcn.md (exception_receiver): 'define_expand'.
+	* config/nvptx/nvptx.md (exception_receiver): Likewise.
+
+2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* doc/sourcebuild.texi (Effective-Target Keywords): Clarify that
+	effective-target 'exceptions' and 'exceptions_enabled' are
+	orthogonal.
+
+2025-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118776
+	* config/i386/sse.md (<code><mode>3_mask): Use VI1248_AVX512VLBW
+	iterator rather than VI48_AVX512VL.
+	(<mask_codefor><code><mode>3<mask_name>): Rename to ...
+	(*avx512bw_<code><mode>3<mask_name>): ... this.  Use
+	nonimmediate_operand rather than register_operand predicate and %v
+	rather than v constraint for operand 1 and adjust condition to reject
+	MEMs in both operand 1 and 2.
+
+2025-02-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/114522
+	* config/aarch64/aarch64-builtins.cc (aarch64_fold_aes_op): New function.
+	(aarch64_general_gimple_fold_builtin): Call aarch64_fold_aes_op for crypto_aese
+	and crypto_aesd.
+
+2025-02-07  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR preprocessor/118168
+	* input.cc (file_cache::m_line_recent,
+	m_line_recent_first, m_line_recent_last): Add.
+	(file_cache_slot::evict): Clear new fields.
+	(file_cache_slot::create): Clear new fields.
+	(file_cache_slot::file_cache_slot): Initialize new fields.
+	(file_cache_slot::~file_cache_slot): Release m_line_recent.
+	(file_cache_slot::get_next_line): Maintain ring buffer of lines
+	in m_line_recent.
+	(file_cache_slot::read_line_num): Use m_line_recent to look up
+	recent lines quickly.
+
+2025-02-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/118089
+	* config/arm/arm.cc (arm_emit_multi_reg_pop): Restructure.
+	Don't emit LDR on thumb2 when POP can be used for smaller code.
+	Don't add a CFA adjust note when SP is popped off the stack.
+
+2025-02-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/118089
+	* config/arm/arm.cc (arm_emit_multi_reg_pop): Add a CFA adjust
+	note to single-register POP instructions.
+
+2025-02-07  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/116244
+	* ira-build.cc (create_insn_allocnos): Do not restrict the check for
+	subreg uses to allocno creation time.  Do it for all uses.
+
+2025-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR jit/118780
+	* system.h: Check INCLUDE_DLFCN_H for including dlfcn.h instead
+	of ENABLE_PLUGIN.
+	* plugin.cc: Define INCLUDE_DLFCN_H.
+
+2025-02-07  Pan Li  <pan2.li@intel.com>
+
+	PR target/118103
+	* config/riscv/riscv.cc (riscv_conditional_register_usage): Add
+	the VXRM as the global_regs.
+
+2025-02-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/118771
+	* config/aarch64/aarch64.cc (aarch64_split_move): Assert that npieces is
+	greater than 0.
+
+2025-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/115538
+	* tree-vectorizer.h (vect_get_slp_scalar_def): Declare.
+	* tree-vect-slp.cc (vect_get_slp_scalar_def): New helper.
+	* tree-vect-generic.cc (expand_vector_conversion): Adjust.
+	* tree-vect-stmts.cc (vectorizable_conversion): For SLP
+	correctly look at ranges of the scalar defs of the SLP operand.
+	(supportable_indirect_convert_operation): Likewise.
+
+2025-02-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_hsa_declare_function_name): Update
+	'amdhsa.version' output to match used code version.
+	* config/gcn/gen-gcn-device-macros.awk: Add a comment to
+	crosslink.
+
+2025-02-07  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md
+	(*sel<code><GPR:mode>_using_<GPR2:mode>): Rename to ...
+	(*sel<code><GPR:mode>_using_<X:mode>): ... here.
+	(GPR2): Remove as nothing uses it now.
+
+2025-02-07  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118514
+	PR tree-optimization/118706
+	* gimple-fold.cc (decode_field_reference): Refuse to consider
+	merging out-of-bounds BIT_FIELD_REFs.
+	(make_bit_field_load): Drop too-strict assert.
+	* tree-eh.cc (bit_field_ref_in_bounds_p): Rename to...
+	(access_in_bounds_of_type_p): ... this.  Change interface,
+	export.
+	(tree_could_trap_p): Adjust.
+	* tree-eh.h (access_in_bounds_of_type_p): Declare.
+
+2025-02-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-devices.def (GCN_DEVICE): Add gfx9-generic,
+	gfx902, gfx904, gfx909, gfx1031, gfx1032, gfx1033, gfx1034,
+	gfx1035, gfx1101, gfx1102, gfx1150, gfx1151, gfx1152, and gfx1153.
+	Add a currently unused column linking, a specific ISA to a generic
+	one (if it exists).
+	* config/gcn/gcn-tables.opt: Regenerate
+	* doc/invoke.texi (AMD GCN): Add the the new gfc... and the older
+	gfx{10-3,11}-generic to -march= as 'experimental'.
+
+2025-02-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-devices.def (GCN_DEVICE): Change sramecc for
+	gfx906 to 'any'.
+	* config/gcn/gcn.cc (GCN_DEVICE): Add tailing ... to #define.
+
+2025-02-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR rtl-optimization/111673
+	PR rtl-optimization/115932
+	PR rtl-optimization/116028
+	PR rtl-optimization/117081
+	PR rtl-optimization/117082
+	PR rtl-optimization/118497
+	* ira-color.cc (assign_hard_reg): Call the target hook for the
+	callee-saved register cost scale in epilogue and prologue.
+	* target.def (ira_callee_saved_register_cost_scale): New target
+	hook.
+	* targhooks.cc (default_ira_callee_saved_register_cost_scale):
+	New.
+	* targhooks.h (default_ira_callee_saved_register_cost_scale):
+	Likewise.
+	* config/i386/i386.cc (ix86_ira_callee_saved_register_cost_scale):
+	New.
+	(TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE): Likewise.
+	* doc/tm.texi: Regenerated.
+	* doc/tm.texi.in (TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE):
+	New.
+
+2025-02-06  Craig Blackmore  <craig.blackmore@embecosm.com>
+
+	* config/riscv/riscv.md: Move UNSPEC_SSP_SET and UNSPEC_SSP_TEST
+	to unspec enum.
+
+2025-02-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt.urls: Add mcvt.
+
+2025-02-06  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/118756
+	* tree-ssa-loop-ivopts.cc (contain_complex_addr_expr): Remove.
+
+2025-02-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118764
+	* config/avr/avr.opt (-mcvt): New target option.
+	* config/avr/avr-arch.h (AVR_CVT): New enum value.
+	* config/avr/avr-mcus.def: Add AVR_CVT flag for devices that
+	support it.
+	* config/avr/avr.cc (avr_handle_isr_attribute) [TARGET_CVT]: Issue
+	an error when a vector number larger that 3 is used.
+	* config/avr/gen-avr-mmcu-specs.cc (McuInfo.have_cvt): New property.
+	(print_mcu) <*avrlibc_startfile>: Use crt<mcu>-cvt.o depending
+	on -mcvt (or issue an error when the device doesn't support a CVT).
+	* doc/invoke.texi (AVR Options): Document -mcvt.
+
+2025-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117506
+	* loop-iv.cc (get_biv_step_1): For {ZERO,SIGN}_EXTEND
+	of PLUS apply {ZERO,SIGN}_EXTEND to op1.
+
+2025-02-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/118768
+	* config/avr/genmultilib.awk: Parse the AVR_MCU lines in
+	a more robust way w.r.t. white spaces.
+
+2025-02-06  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/118561
+	* config/loongarch/loongarch-builtins.cc
+	(loongarch_expand_builtin_lsx_test_branch):
+	NULL_RTX will not be returned when an error is detected.
+	(loongarch_expand_builtin): Likewise.
+
+2025-02-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/110449
+	* tree-ssa-loop-manip.h (insert_iv_increment): Declare.
+	* tree-ssa-loop-manip.cc (insert_iv_increment): New function,
+	split out from...
+	(create_iv): ...here and generalized to gimple_seqs.
+	* tree-vect-loop.cc (vectorizable_induction): Use
+	standard_iv_increment_position and insert_iv_increment
+	to insert the IV increment.
+
+2025-02-06  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/117922
+	* fold-mem-offsets.cc (pass_fold_mem_offsets::execute):
+	Do nothing for a highly connected CFG.
+
+2025-02-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118749
+	* tree-vect-data-refs.cc (vector_alignment_reachable_p): Pass
+	in the vectorization factor, when that cannot maintain
+	the DRs target alignment do not claim we can reach that
+	by peeling.
+
+2025-02-05  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/bfin/bfin.md (abssi): Disable pattern.
+
+2025-02-05  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/115568
+	* lra-remat.cc (create_cands): Check that output reload insn is
+	adjacent to given insn.  Update a comment.
+
+2025-02-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_insn_cost): Give PARALLELs
+	the same cost as the costliest SET.
+
+2025-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117239
+	* cselib.cc (cselib_init): Remove spurious closing paren in
+	the #ifdef STACK_ADDRESS_OFFSET specific code.
+
+2025-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117239
+	* cselib.cc: Include predict.h.
+	(callmem): Change type from rtx to rtx[2].
+	(cselib_preserve_only_values): Use callmem[0] rather than callmem.
+	(cselib_invalidate_mem): Optimize and don't try to invalidate
+	for the mem_rtx == callmem[1] case MEMs which clearly can't be
+	below the stack pointer.
+	(cselib_process_insn): Use callmem[0] rather than callmem.
+	For const/pure calls also call cselib_invalidate_mem (callmem[1])
+	in !ACCUMULATE_OUTGOING_ARGS or cfun->calls_alloca functions.
+	(cselib_init): Initialize callmem[0] rather than callmem and also
+	initialize callmem[1].
+
+2025-02-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/118089
+	* config/arm/arm.cc (thumb2_expand_return): Use LDM SP!, {PC}
+	when optimizing for size, or when there's no performance benefit over
+	LDR PC, [SP], #4.
+	(arm_expand_epilogue): Likewise.
+
+2025-02-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (*pop_multiple_with_writeback_and_return): Remove
+	constraints.  Don't validate the first transfer register here.
+
+2025-02-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.cc (decompose_addr_for_ldm_stm): New function.
+	(ldm_stm_operation_p): Rework to clarify logic.  Allow single
+	registers to be pushed or popped using LDM/STM.
+
+2025-02-05  Xi Ruoyao  <xry111@xry111.site>
+
+	PR tree-optimization/118727
+	* tree-vect-patterns.cc (vect_recog_sad_pattern): Don't call
+	vect_look_through_possible_promotion on ABD inputs.
+
+2025-02-05  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/arm/t-rtems: Add Cortex-M33 multilib.
+
+2025-02-04  Andi Kleen  <ak@gcc.gnu.org>
+
+	* doc/invoke.texi: Document file cache tunables.
+	* params.opt: Move auto tuning description to lines.
+
+2025-02-04  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.cc (print_operand): Remove the no longer
+	necessary 31-bit and weak symbol handling.
+	* config/s390/s390.md (*movdi_64): Do not use @PLT with larl.
+	(*movsi_larl): Likewise.
+	(main_base_64): Likewise.
+	(reload_base_64): Likewise.
+
+2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117113
+	* gimple-loop-jam.cc (unroll_jam_possible_p): Detect when
+	we cannot handle virtual SSA update.
+
+2025-02-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116926
+	* optabs-query.cc (find_widening_optab_handler_and_mode): Fix
+	limit for `vec-mode -> scalar-mode` case.
+
+2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/117611
+	* combine.cc (simplify_shift_const_1): Bail if not
+	scalar int mode.
+
+2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR lto/113207
+	* ipa-free-lang-data.cc (free_lang_data_in_type): First drop
+	const/volatile qualifiers from function argument types,
+	then build a simplified type.
+
+2025-02-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*sibcall_pop_memory):
+	Disable for TARGET_INDIRECT_BRANCH_REGISTER
+	* config/i386/predicates.md (call_insn_operand): Enable when
+	"satisfies_constraint_Bw (op)" is true, instead of open-coding
+	constraint here.
+	(sibcall_insn_operand): Ditto with "satisfies_constraint_Bs (op)"
+
+2025-02-03  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_choose_vector_init_constant):
+	New function, split out from...
+	(aarch64_expand_vector_init_fallback): ...here.  Use a bit-
+	reversed increment to find a constant index.  Add support for
+	stepped constants.
+
+2025-02-03  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR rtl-optimization/117248
+	* config/pa/predicates.md (r25_operand): New predicate.
+	(r26_operand): Likewise.
+	* config/pa/pa.md: Use match_operand for r25 and r26 hard
+	register operands in mult, div, udiv, mod and umod millicode
+	patterns.
+
+2025-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118717
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement_1):
+	Do not common stores referencing abnormal SSA names.
+	* tree-ssa-sink.cc (sink_common_stores_to_bb): Likewise.
+
+2025-02-03  Andi Kleen  <ak@gcc.gnu.org>
+
+	* input.cc (check_line): New.
+	(test_replacement): New function to test line caching.
+	(input_cc_tests): Call test_replacement
+
+2025-02-03  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR preprocessor/118168
+	* input.cc (file_cache_slot::get_next_line): Implement
+	dynamic sizing of m_line_record based on input length.
+	* params.opt: (param_file_cache_lines): Set to 0 to size
+	dynamically.
+
+2025-02-03  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR preprocessor/118168
+	* input.cc (total_lines_num): Remove.
+	(file_cache_slot::evict): Ditto.
+	(file_cache_slot::create): Ditto.
+	(file_cache_slot::set_content): Ditto.
+	(file_cache_slot::file_cache_slot): Ditto.
+	(file_cache_slot::dump): Ditto.
+
+2025-02-03  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR preprocessor/118168
+	* input.cc (file_cache_slot::get_next_line): Use new algorithm
+	to maintain
+	(file_cache_slot::read_line_num): Use binary search for lookup.
+
+2025-02-03  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR preprocessor/118168
+	* input.cc (file_cache::tune): New function.
+	* input.h (class file_cache): Make tunables non const.
+	* params.opt: Add new tunables.
+	* toplev.cc (toplev::main): Initialize input buffer context
+	tunables.
+
 2025-02-02  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117411

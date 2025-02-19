@@ -22,13 +22,13 @@ end program test
 subroutine bug1
    use ISO_C_BINDING
    implicit none
-   type(c_ptr) :: m
+   type(c_ptr) :: m, i
    type mytype
      integer a, b, c
    end type mytype
    type(mytype) x
    print *, transfer(32512, x)  ! Works.
-   print *, transfer(32512, m)  ! Caused ICE.
+   i = transfer(32512, m)  ! Caused ICE.
 end subroutine bug1 
 
 subroutine bug6

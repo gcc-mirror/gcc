@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cselib.h"
 #include "function-abi.h"
 #include "alias.h"
+#include "predict.h"
 
 /* A list of cselib_val structures.  */
 struct elt_list
@@ -248,8 +249,9 @@ static unsigned int *used_regs;
 static unsigned int n_used_regs;
 
 /* We pass this to cselib_invalidate_mem to invalidate all of
-   memory for a non-const call instruction.  */
-static GTY(()) rtx callmem;
+   memory for a non-const call instruction and memory below stack pointer
+   for const/pure calls.  */
+static GTY(()) rtx callmem[2];
 
 /* Set by discard_useless_locs if it deleted the last location of any
    value.  */
@@ -808,7 +810,7 @@ cselib_preserve_only_values (void)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     cselib_invalidate_regno (i, reg_raw_mode[i]);
 
-  cselib_invalidate_mem (callmem);
+  cselib_invalidate_mem (callmem[0]);
 
   remove_useless_values ();
 
@@ -2630,6 +2632,8 @@ cselib_invalidate_mem (rtx mem_rtx)
       struct elt_loc_list **p = &v->locs;
       bool had_locs = v->locs != NULL;
       rtx_insn *setting_insn = v->locs ? v->locs->setting_insn : NULL;
+      rtx sp_base = NULL_RTX;
+      HOST_WIDE_INT sp_off = 0;
 
       while (*p)
 	{
@@ -2644,6 +2648,114 @@ cselib_invalidate_mem (rtx mem_rtx)
 	      p = &(*p)->next;
 	      continue;
 	    }
+
+	  /* When invalidating memory below the stack pointer for const/pure
+	     calls and alloca/VLAs aren't used, attempt to optimize.  Values
+	     stored into area sometimes below the stack pointer shouldn't be
+	     addressable and should be stored just through stack pointer
+	     derived expressions, so don't invalidate MEMs not using stack
+	     derived addresses, or if the MEMs clearly aren't below the stack
+	     pointer.  This isn't a fully conservative approach, the hope is
+	     that invalidating more MEMs than this isn't actually needed.  */
+	  if (mem_rtx == callmem[1]
+	      && num_mems < param_max_cselib_memory_locations
+	      && GET_CODE (XEXP (x, 0)) == VALUE
+	      && !cfun->calls_alloca)
+	    {
+	      cselib_val *v2 = CSELIB_VAL_PTR (XEXP (x, 0));
+	      rtx x_base = NULL_RTX;
+	      HOST_WIDE_INT x_off = 0;
+	      if (SP_DERIVED_VALUE_P (v2->val_rtx))
+		x_base = v2->val_rtx;
+	      else
+		for (struct elt_loc_list *l = v2->locs; l; l = l->next)
+		  if (GET_CODE (l->loc) == PLUS
+		      && GET_CODE (XEXP (l->loc, 0)) == VALUE
+		      && SP_DERIVED_VALUE_P (XEXP (l->loc, 0))
+		      && CONST_INT_P (XEXP (l->loc, 1)))
+		    {
+		      x_base = XEXP (l->loc, 0);
+		      x_off = INTVAL (XEXP (l->loc, 1));
+		      break;
+		    }
+	      /* If x_base is NULL here, don't invalidate x as its address
+		 isn't derived from sp such that it could be in outgoing
+		 argument area of some call in !ACCUMULATE_OUTGOING_ARGS
+		 function.  */
+	      if (x_base)
+		{
+		  if (sp_base == NULL_RTX)
+		    {
+		      if (cselib_val *v3
+			  = cselib_lookup_1 (stack_pointer_rtx, Pmode, 0,
+					     VOIDmode))
+			{
+			  if (SP_DERIVED_VALUE_P (v3->val_rtx))
+			    sp_base = v3->val_rtx;
+			  else
+			    for (struct elt_loc_list *l = v3->locs;
+				 l; l = l->next)
+			      if (GET_CODE (l->loc) == PLUS
+				  && GET_CODE (XEXP (l->loc, 0)) == VALUE
+				  && SP_DERIVED_VALUE_P (XEXP (l->loc, 0))
+				  && CONST_INT_P (XEXP (l->loc, 1)))
+				{
+				  sp_base = XEXP (l->loc, 0);
+				  sp_off = INTVAL (XEXP (l->loc, 1));
+				  break;
+				}
+			}
+		      if (sp_base == NULL_RTX)
+			sp_base = pc_rtx;
+		    }
+		  /* Otherwise, if x_base and sp_base are the same,
+		     we know that x_base + x_off is the x's address and
+		     sp_base + sp_off is current value of stack pointer,
+		     so try to determine if x is certainly not below stack
+		     pointer.  */
+		  if (sp_base == x_base)
+		    {
+		      if (STACK_GROWS_DOWNWARD)
+			{
+			  HOST_WIDE_INT off = sp_off;
+#ifdef STACK_ADDRESS_OFFSET
+			  /* On SPARC take stack pointer bias into account as
+			     well.  */
+			  off += (STACK_ADDRESS_OFFSET
+				  - FIRST_PARM_OFFSET (current_function_decl));
+#endif
+			  if (x_off >= off)
+			    /* x is at or above the current stack pointer,
+			       no need to invalidate it.  */
+			    x_base = NULL_RTX;
+			}
+		      else
+			{
+			  HOST_WIDE_INT sz;
+			  enum machine_mode mode = GET_MODE (x);
+			  if ((MEM_SIZE_KNOWN_P (x)
+			       && MEM_SIZE (x).is_constant (&sz))
+			      || (mode != BLKmode
+				  && GET_MODE_SIZE (mode).is_constant (&sz)))
+			    if (x_off < sp_off
+				&& ((HOST_WIDE_INT) ((unsigned HOST_WIDE_INT)
+						     x_off + sz) <= sp_off))
+			      /* x's end is below or at the current stack
+				 pointer in !STACK_GROWS_DOWNWARD target,
+				 no need to invalidate it.  */
+			      x_base = NULL_RTX;
+			 }
+		    }
+		}
+	      if (x_base == NULL_RTX)
+		{
+		  has_mem = true;
+		  num_mems++;
+		  p = &(*p)->next;
+		  continue;
+		}
+	    }
+
 	  if (num_mems < param_max_cselib_memory_locations
 	      && ! canon_anti_dependence (x, false, mem_rtx,
 					  GET_MODE (mem_rtx), mem_addr))
@@ -3196,14 +3308,24 @@ cselib_process_insn (rtx_insn *insn)
 	 as if they were regular functions.  */
       if (RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)
 	  || !(RTL_CONST_OR_PURE_CALL_P (insn)))
-	cselib_invalidate_mem (callmem);
+	cselib_invalidate_mem (callmem[0]);
       else
-	/* For const/pure calls, invalidate any argument slots because
-	   they are owned by the callee.  */
-	for (x = CALL_INSN_FUNCTION_USAGE (insn); x; x = XEXP (x, 1))
-	  if (GET_CODE (XEXP (x, 0)) == USE
-	      && MEM_P (XEXP (XEXP (x, 0), 0)))
-	    cselib_invalidate_mem (XEXP (XEXP (x, 0), 0));
+	{
+	  /* For const/pure calls, invalidate any argument slots because
+	     they are owned by the callee.  */
+	  for (x = CALL_INSN_FUNCTION_USAGE (insn); x; x = XEXP (x, 1))
+	    if (GET_CODE (XEXP (x, 0)) == USE
+		&& MEM_P (XEXP (XEXP (x, 0), 0)))
+	      cselib_invalidate_mem (XEXP (XEXP (x, 0), 0));
+	  /* And invalidate memory below the stack (or above for
+	     !STACK_GROWS_DOWNWARD), as even const/pure call can invalidate
+	     that.  Do this only if !ACCUMULATE_OUTGOING_ARGS or if
+	     cfun->calls_alloca, otherwise the stack pointer shouldn't be
+	     changing in the middle of the function and nothing should be
+	     stored below the stack pointer.  */
+	  if (!ACCUMULATE_OUTGOING_ARGS || cfun->calls_alloca)
+	    cselib_invalidate_mem (callmem[1]);
+	}
     }
 
   cselib_record_sets (insn);
@@ -3256,8 +3378,31 @@ cselib_init (int record_what)
 
   /* (mem:BLK (scratch)) is a special mechanism to conflict with everything,
      see canon_true_dependence.  This is only created once.  */
-  if (! callmem)
-    callmem = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
+  if (! callmem[0])
+    callmem[0] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (VOIDmode));
+  /* Similarly create a MEM representing roughly everything below
+     the stack for STACK_GROWS_DOWNWARD targets or everything above
+     it otherwise.  Do this only when !ACCUMULATE_OUTGOING_ARGS or
+     if cfun->calls_alloca, otherwise the stack pointer shouldn't be
+     changing in the middle of the function and nothing should be stored
+     below the stack pointer.  */
+  if (!callmem[1] && (!ACCUMULATE_OUTGOING_ARGS || cfun->calls_alloca))
+    {
+      if (STACK_GROWS_DOWNWARD)
+	{
+	  unsigned HOST_WIDE_INT off = -(GET_MODE_MASK (Pmode) >> 1);
+#ifdef STACK_ADDRESS_OFFSET
+	  /* On SPARC take stack pointer bias into account as well.  */
+	  off += (STACK_ADDRESS_OFFSET
+		  - FIRST_PARM_OFFSET (current_function_decl));
+#endif
+	  callmem[1] = plus_constant (Pmode, stack_pointer_rtx, off);
+	}
+      else
+	callmem[1] = stack_pointer_rtx;
+      callmem[1] = gen_rtx_MEM (BLKmode, callmem[1]);
+      set_mem_size (callmem[1], GET_MODE_MASK (Pmode) >> 1);
+    }
 
   cselib_nregs = max_reg_num ();
 

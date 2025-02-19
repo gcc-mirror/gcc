@@ -45,6 +45,9 @@
 #include "arm-builtins.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "basic-block.h"
+#include "gimple.h"
+#include "ssa.h"
 
 #define SIMD_MAX_BUILTIN_ARGS 7
 
@@ -4051,6 +4054,58 @@ arm_cde_end_args (tree fndecl)
     default:
       gcc_unreachable ();
     }
+}
+
+/* Fold a call to vaeseq_u8 and vaesdq_u8.
+   That is `vaeseq_u8 (x ^ y, 0)` gets folded
+   into `vaeseq_u8 (x, y)`.*/
+static gimple *
+arm_fold_aes_op (gcall *stmt)
+{
+  tree arg0 = gimple_call_arg (stmt, 0);
+  tree arg1 = gimple_call_arg (stmt, 1);
+  if (integer_zerop (arg0))
+    arg0 = arg1;
+  else if (!integer_zerop (arg1))
+    return nullptr;
+  if (TREE_CODE (arg0) != SSA_NAME)
+    return nullptr;
+  if (!has_single_use (arg0))
+    return nullptr;
+  auto *s = dyn_cast<gassign *> (SSA_NAME_DEF_STMT (arg0));
+  if (!s || gimple_assign_rhs_code (s) != BIT_XOR_EXPR)
+    return nullptr;
+  gimple_call_set_arg (stmt, 0, gimple_assign_rhs1 (s));
+  gimple_call_set_arg (stmt, 1, gimple_assign_rhs2 (s));
+  return stmt;
+}
+
+/* Try to fold STMT, given that it's a call to the built-in function with
+   subcode FCODE.  Return the new statement on success and null on
+   failure.  */
+gimple *
+arm_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt)
+{
+  gimple *new_stmt = NULL;
+
+  switch (fcode)
+    {
+    case ARM_BUILTIN_CRYPTO_AESE:
+    case ARM_BUILTIN_CRYPTO_AESD:
+      new_stmt = arm_fold_aes_op (stmt);
+      break;
+    }
+
+  /* GIMPLE assign statements (unlike calls) require a non-null lhs.  If we
+     created an assign statement with a null lhs, then fix this by assigning
+     to a new (and subsequently unused) variable.  */
+  if (new_stmt && is_gimple_assign (new_stmt) && !gimple_assign_lhs (new_stmt))
+    {
+      tree new_lhs = make_ssa_name (gimple_call_return_type (stmt));
+      gimple_assign_set_lhs (new_stmt, new_lhs);
+    }
+
+  return new_stmt;
 }
 
 #include "gt-arm-builtins.h"

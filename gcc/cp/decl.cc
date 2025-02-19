@@ -96,12 +96,13 @@ static void record_key_method_defined (tree);
 static tree create_array_type_for_decl (tree, tree, tree, location_t);
 static tree get_atexit_node (void);
 static tree get_dso_handle_node (void);
-static tree start_cleanup_fn (bool);
+static tree start_cleanup_fn (tree, bool);
 static void end_cleanup_fn (void);
 static tree cp_make_fname_decl (location_t, tree, int);
 static void initialize_predefined_identifiers (void);
 static tree check_special_function_return_type
-       (special_function_kind, tree, tree, int, const location_t*);
+       (special_function_kind, tree, tree, int, const cp_declarator**,
+	const location_t*);
 static tree push_cp_library_fn (enum tree_code, tree, int);
 static tree build_cp_library_fn (tree, enum tree_code, tree, int);
 static void store_parm_decls (tree);
@@ -8320,11 +8321,6 @@ initialize_local_var (tree decl, tree init, bool decomp)
 	     code emitted by cp_finish_decomp.  */
 	  if (decomp)
 	    current_stmt_tree ()->stmts_are_full_exprs_p = 0;
-	  /* P2718R0 - avoid CLEANUP_POINT_EXPR for range-for-initializer,
-	     temporaries from there should have lifetime extended.  */
-	  else if (DECL_NAME (decl) == for_range__identifier
-		   && flag_range_for_ext_temps)
-	    current_stmt_tree ()->stmts_are_full_exprs_p = 0;
 	  else
 	    current_stmt_tree ()->stmts_are_full_exprs_p = 1;
 	  finish_expr_stmt (init);
@@ -8477,7 +8473,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
   if (TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
     parm = DECL_CHAIN (parm);
   for (; parm; parm = DECL_CHAIN (parm))
-    vec_safe_push (args, build_stub_object (TREE_TYPE (parm)));
+    vec_safe_push (args, forward_parm (parm));
 
   unsigned nappend_args = 0;
   tree append_args_list = TREE_CHAIN (TREE_CHAIN (chain));
@@ -10039,7 +10035,7 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 	      /* Wrap that value into a TARGET_EXPR, emit it right
 		 away and save for later uses in the cp_parse_condition
 		 or its instantiation.  */
-	      cond = get_target_expr (cond);
+	      cond = get_internal_target_expr (cond);
 	      add_stmt (cond);
 	      DECL_DECOMP_BASE (decl) = cond;
 	    }
@@ -10384,23 +10380,23 @@ get_dso_handle_node (void)
 }
 
 /* Begin a new function with internal linkage whose job will be simply
-   to destroy some particular variable.  OB_PARM is true if object pointer
+   to destroy some particular DECL.  OB_PARM is true if object pointer
    is passed to the cleanup function, otherwise no argument is passed.  */
 
-static GTY(()) int start_cleanup_cnt;
-
 static tree
-start_cleanup_fn (bool ob_parm)
+start_cleanup_fn (tree decl, bool ob_parm)
 {
-  char name[32];
-
   push_to_top_level ();
 
   /* No need to mangle this.  */
   push_lang_context (lang_name_c);
 
   /* Build the name of the function.  */
-  sprintf (name, "__tcf_%d", start_cleanup_cnt++);
+  gcc_checking_assert (HAS_DECL_ASSEMBLER_NAME_P (decl));
+  const char *dname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  dname = targetm.strip_name_encoding (dname);
+  char *name = ACONCAT (("__tcf", dname, NULL));
+
   tree fntype = TREE_TYPE (ob_parm ? get_cxa_atexit_fn_ptr_type ()
 				   : get_atexit_fn_ptr_type ());
   /* Build the function declaration.  */
@@ -10493,7 +10489,7 @@ register_dtor_fn (tree decl)
       build_cleanup (decl);
 
       /* Now start the function.  */
-      cleanup = start_cleanup_fn (ob_parm);
+      cleanup = start_cleanup_fn (decl, ob_parm);
 
       /* Now, recompute the cleanup.  It may contain SAVE_EXPRs that refer
 	 to the original function, rather than the anonymous one.  That
@@ -10702,7 +10698,7 @@ expand_static_init (tree decl, tree init)
 			       inner_if_stmt);
 
 	  inner_then_clause = begin_compound_stmt (BCS_NO_SCOPE);
-	  begin = get_target_expr (boolean_false_node);
+	  begin = get_internal_target_expr (boolean_false_node);
 	  flag = TARGET_EXPR_SLOT (begin);
 
 	  TARGET_EXPR_CLEANUP (begin)
@@ -11224,14 +11220,28 @@ grokfndecl (tree ctype,
      expression, that declaration shall be a definition..."  */
   if (friendp && !funcdef_flag)
     {
+      bool has_errored = false;
       for (tree t = FUNCTION_FIRST_USER_PARMTYPE (decl);
 	   t && t != void_list_node; t = TREE_CHAIN (t))
 	if (TREE_PURPOSE (t))
 	  {
-	    permerror (DECL_SOURCE_LOCATION (decl),
-		       "friend declaration of %qD specifies default "
-		       "arguments and isn%'t a definition", decl);
-	    break;
+	    diagnostic_t diag_kind = DK_PERMERROR;
+	    /* For templates, mark the default argument as erroneous and give a
+	       hard error.  */
+	    if (processing_template_decl)
+	      {
+		diag_kind = DK_ERROR;
+		TREE_PURPOSE (t) = error_mark_node;
+	      }
+	    if (!has_errored)
+	      {
+		has_errored = true;
+		emit_diagnostic (diag_kind,
+				 DECL_SOURCE_LOCATION (decl),
+				 /*diagnostic_option_id=*/0,
+				 "friend declaration of %qD specifies default "
+				 "arguments and isn%'t a definition", decl);
+	      }
 	  }
     }
 
@@ -12438,10 +12448,27 @@ smallest_type_location (const cp_decl_specifier_seq *declspecs)
   return smallest_type_location (type_quals, declspecs->locations);
 }
 
-/* Check that it's OK to declare a function with the indicated TYPE
-   and TYPE_QUALS.  SFK indicates the kind of special function (if any)
-   that this function is.  OPTYPE is the type given in a conversion
-   operator declaration, or the class type for a constructor/destructor.
+/* Returns whether DECLARATOR represented a pointer or a reference and if so,
+   strip out the pointer/reference declarator(s).  */
+
+static bool
+maybe_strip_indirect_ref (const cp_declarator** declarator)
+{
+  bool indirect_ref_p = false;
+  while (declarator && *declarator
+	 && ((*declarator)->kind == cdk_pointer
+	     || (*declarator)->kind == cdk_reference))
+    {
+      indirect_ref_p = true;
+      *declarator = (*declarator)->declarator;
+    }
+  return indirect_ref_p;
+}
+
+/* Check that it's OK to declare a function with the indicated TYPE, TYPE_QUALS
+   and DECLARATOR.  SFK indicates the kind of special function (if any) that
+   this function is.  OPTYPE is the type given in a conversion operator
+   declaration, or the class type for a constructor/destructor.
    Returns the actual return type of the function; that may be different
    than TYPE if an error occurs, or for certain special functions.  */
 
@@ -12450,13 +12477,18 @@ check_special_function_return_type (special_function_kind sfk,
 				    tree type,
 				    tree optype,
 				    int type_quals,
+				    const cp_declarator** declarator,
 				    const location_t* locations)
 {
+  gcc_assert (declarator);
+  location_t rettype_loc = (type
+			    ? smallest_type_location (type_quals, locations)
+			    : (*declarator)->id_loc);
   switch (sfk)
     {
     case sfk_constructor:
-      if (type)
-	error_at (smallest_type_location (type_quals, locations),
+      if (maybe_strip_indirect_ref (declarator) || type)
+	error_at (rettype_loc,
 		  "return type specification for constructor invalid");
       else if (type_quals != TYPE_UNQUALIFIED)
 	error_at (smallest_type_quals_location (type_quals, locations),
@@ -12469,8 +12501,8 @@ check_special_function_return_type (special_function_kind sfk,
       break;
 
     case sfk_destructor:
-      if (type)
-	error_at (smallest_type_location (type_quals, locations),
+      if (maybe_strip_indirect_ref (declarator) || type)
+	error_at (rettype_loc,
 		  "return type specification for destructor invalid");
       else if (type_quals != TYPE_UNQUALIFIED)
 	error_at (smallest_type_quals_location (type_quals, locations),
@@ -12485,8 +12517,8 @@ check_special_function_return_type (special_function_kind sfk,
       break;
 
     case sfk_conversion:
-      if (type)
-	error_at (smallest_type_location (type_quals, locations),
+      if (maybe_strip_indirect_ref (declarator) || type)
+	error_at (rettype_loc,
 		  "return type specified for %<operator %T%>", optype);
       else if (type_quals != TYPE_UNQUALIFIED)
 	error_at (smallest_type_quals_location (type_quals, locations),
@@ -12497,8 +12529,8 @@ check_special_function_return_type (special_function_kind sfk,
       break;
 
     case sfk_deduction_guide:
-      if (type)
-	error_at (smallest_type_location (type_quals, locations),
+      if (maybe_strip_indirect_ref (declarator) || type)
+	error_at (rettype_loc,
 		  "return type specified for deduction guide");
       else if (type_quals != TYPE_UNQUALIFIED)
 	error_at (smallest_type_quals_location (type_quals, locations),
@@ -13178,6 +13210,7 @@ grokdeclarator (const cp_declarator *declarator,
       type = check_special_function_return_type (sfk, type,
 						 ctor_return_type,
 						 type_quals,
+						 &declarator,
 						 declspecs->locations);
       type_quals = TYPE_UNQUALIFIED;
     }
@@ -13843,7 +13876,7 @@ grokdeclarator (const cp_declarator *declarator,
 
 	       The optional attribute-specifier-seq appertains to the
 	       array type.  */
-	    decl_attributes (&type, declarator->std_attributes, 0);
+	    cplus_decl_attributes (&type, declarator->std_attributes, 0);
 	  break;
 
 	case cdk_function:
@@ -14522,8 +14555,7 @@ grokdeclarator (const cp_declarator *declarator,
 		 [the optional attribute-specifier-seq (7.6.1) appertains
 		  to the pointer and not to the object pointed to].  */
 	  if (declarator->std_attributes)
-	    decl_attributes (&type, declarator->std_attributes,
-			     0);
+	    cplus_decl_attributes (&type, declarator->std_attributes, 0);
 
 	  ctype = NULL_TREE;
 	  break;
@@ -19643,7 +19675,7 @@ cxx_maybe_build_cleanup (tree decl, tsubst_flags_t complain)
   /* Assume no cleanup is required.  */
   cleanup = NULL_TREE;
 
-  if (error_operand_p (decl))
+  if (!decl || error_operand_p (decl))
     return cleanup;
 
   /* Handle "__attribute__((cleanup))".  We run the cleanup function

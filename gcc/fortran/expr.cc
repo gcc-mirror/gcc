@@ -981,6 +981,14 @@ gfc_type_convert_binary (gfc_expr *e, int wconversion)
 	  goto done;
 	}
 
+      /* Unsigned exponentiation is special, we need the type of the first
+	 argument here because of modulo arithmetic.  */
+      if (op1->ts.type == BT_UNSIGNED && e->value.op.op == INTRINSIC_POWER)
+	{
+	  e->ts = op1->ts;
+	  goto done;
+	}
+
       if (op1->ts.kind > op2->ts.kind)
 	gfc_convert_type_warn (op2, &op1->ts, 2, wconversion);
       else

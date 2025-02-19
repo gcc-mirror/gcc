@@ -1302,7 +1302,8 @@ expr_uses_parm_decl (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
    it is correct or error_mark_node otherwise.  */
 
 tree
-omp_check_context_selector (location_t loc, tree ctx, bool metadirective_p)
+omp_check_context_selector (location_t loc, tree ctx,
+			    enum omp_ctx_directive directive)
 {
   bool tss_seen[OMP_TRAIT_SET_LAST], ts_seen[OMP_TRAIT_LAST];
 
@@ -1398,7 +1399,7 @@ omp_check_context_selector (location_t loc, tree ctx, bool metadirective_p)
 
 	  /* This restriction is documented in the spec in the section
 	     for the metadirective "when" clause (7.4.1 in the 5.2 spec).  */
-	  if (metadirective_p
+	  if (directive == OMP_CTX_METADIRECTIVE
 	      && ts_code == OMP_TRAIT_CONSTRUCT_SIMD
 	      && OMP_TS_PROPERTIES (ts))
 	    {
@@ -1408,10 +1409,21 @@ omp_check_context_selector (location_t loc, tree ctx, bool metadirective_p)
 	      return error_mark_node;
 	    }
 
+	  /* "simd" is not allowed at all in "begin declare variant"
+	     selectors.  */
+	  if (directive == OMP_CTX_BEGIN_DECLARE_VARIANT
+	      && ts_code == OMP_TRAIT_CONSTRUCT_SIMD)
+	    {
+	      error_at (loc,
+			"the %<simd%> selector is not permitted in a "
+			"%<begin declare variant%> context selector");
+	      return error_mark_node;
+	    }
+
 	  /* Reject expressions that reference parameter variables in
 	     "declare variant", as this is not yet implemented.  FIXME;
 	     see PR middle-end/113904.  */
-	  if (!metadirective_p
+	  if (directive != OMP_CTX_METADIRECTIVE
 	      && (ts_code == OMP_TRAIT_DEVICE_NUM
 		  || ts_code == OMP_TRAIT_USER_CONDITION))
 	    {
@@ -2350,8 +2362,26 @@ omp_context_selector_props_compare (enum omp_tss_code set,
 		  if (set == OMP_TRAIT_SET_USER
 		      && sel == OMP_TRAIT_USER_CONDITION)
 		    {
-		      if (integer_zerop (OMP_TP_VALUE (p1))
-			  != integer_zerop (OMP_TP_VALUE (p2)))
+		      /* Recognize constants that have equal truth values,
+			 otherwise assume all expressions are unique.  */
+		      tree v1 = OMP_TP_VALUE (p1);
+		      tree v2 = OMP_TP_VALUE (p2);
+		      if (TREE_CODE (v1) != INTEGER_CST
+			  || TREE_CODE (v2) != INTEGER_CST
+			  || integer_zerop (v1) != integer_zerop (v2))
+			return 2;
+		      break;
+		    }
+		  if (set == OMP_TRAIT_SET_TARGET_DEVICE
+		      && sel == OMP_TRAIT_DEVICE_NUM)
+		    {
+		      /* Recognize constants that have equal values,
+			 otherwise assume all expressions are unique.  */
+		      tree v1 = OMP_TP_VALUE (p1);
+		      tree v2 = OMP_TP_VALUE (p2);
+		      if (TREE_CODE (v1) != INTEGER_CST
+			  || TREE_CODE (v2) != INTEGER_CST
+			  || tree_int_cst_compare (v1, v2) != 0)
 			return 2;
 		      break;
 		    }
@@ -2469,7 +2499,9 @@ omp_context_selector_set_compare (enum omp_tss_code set, tree ctx1, tree ctx2)
 	  {
 	    tree score1 = OMP_TS_SCORE (ts1);
 	    tree score2 = OMP_TS_SCORE (ts2);
-	    if (score1 && score2 && !simple_cst_equal (score1, score2))
+	    if ((score1 && score2 && !simple_cst_equal (score1, score2))
+		|| (score1 && !score2)
+		|| (!score1 && score2))
 	      return 2;
 
 	    int r = omp_context_selector_props_compare (set, OMP_TS_CODE (ts1),

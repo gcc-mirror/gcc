@@ -38,6 +38,7 @@ struct loongarch_rtx_cost_data
   unsigned short movcf2gr;
   unsigned short movgr2cf;
   unsigned short branch_cost;
+  unsigned short addr_reg_reg_cost;
   unsigned short memory_latency;
 
   /* Default RTX cost initializer, implemented in loongarch-def.cc.  */
@@ -112,6 +113,12 @@ struct loongarch_rtx_cost_data
   loongarch_rtx_cost_data branch_cost_ (unsigned short _branch_cost)
   {
     branch_cost = _branch_cost;
+    return *this;
+  }
+
+  loongarch_rtx_cost_data addr_reg_reg_cost_ (unsigned short _addr_reg_reg_cost)
+  {
+    addr_reg_reg_cost = _addr_reg_reg_cost;
     return *this;
   }
 

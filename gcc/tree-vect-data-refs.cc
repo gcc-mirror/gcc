@@ -1722,30 +1722,36 @@ not_size_aligned (tree exp)
    a few loop iterations.  Return false otherwise.  */
 
 static bool
-vector_alignment_reachable_p (dr_vec_info *dr_info)
+vector_alignment_reachable_p (dr_vec_info *dr_info, poly_uint64 vf)
 {
   stmt_vec_info stmt_info = dr_info->stmt;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+  poly_uint64 nelements = TYPE_VECTOR_SUBPARTS (vectype);
+  poly_uint64 vector_size = GET_MODE_SIZE (TYPE_MODE (vectype));
+  unsigned elem_size = vector_element_size (vector_size, nelements);
+  unsigned group_size = 1;
 
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
       /* For interleaved access we peel only if number of iterations in
 	 the prolog loop ({VF - misalignment}), is a multiple of the
 	 number of the interleaved accesses.  */
-      int elem_size, mis_in_elements;
 
       /* FORNOW: handle only known alignment.  */
       if (!known_alignment_for_access_p (dr_info, vectype))
 	return false;
 
-      poly_uint64 nelements = TYPE_VECTOR_SUBPARTS (vectype);
-      poly_uint64 vector_size = GET_MODE_SIZE (TYPE_MODE (vectype));
-      elem_size = vector_element_size (vector_size, nelements);
-      mis_in_elements = dr_misalignment (dr_info, vectype) / elem_size;
-
+      unsigned mis_in_elements = dr_misalignment (dr_info, vectype) / elem_size;
       if (!multiple_p (nelements - mis_in_elements, DR_GROUP_SIZE (stmt_info)))
 	return false;
+
+      group_size = DR_GROUP_SIZE (DR_GROUP_FIRST_ELEMENT (stmt_info));
     }
+
+  /* If the vectorization factor does not guarantee DR advancement of
+     a multiple of the target alignment no peeling will help.  */
+  if (!multiple_p (elem_size * group_size * vf, dr_target_alignment (dr_info)))
+    return false;
 
   /* If misalignment is known at the compile time then allow peeling
      only if natural alignment is reachable through peeling.  */
@@ -2346,7 +2352,9 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
       stmt_vec_info stmt_info = dr_info->stmt;
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-      do_peeling = vector_alignment_reachable_p (dr_info);
+      do_peeling
+	= vector_alignment_reachable_p (dr_info,
+					LOOP_VINFO_VECT_FACTOR (loop_vinfo));
       if (do_peeling)
         {
 	  if (known_alignment_for_access_p (dr_info, vectype))

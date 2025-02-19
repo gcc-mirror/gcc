@@ -69,5 +69,7 @@ LIBGDIAGNOSTICS_ABI_0
     diagnostic_finish;
     diagnostic_finish_va;
 
+    diagnostic_physical_location_get_file;
+
   local: *;
 };

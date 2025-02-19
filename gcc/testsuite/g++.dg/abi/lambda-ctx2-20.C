@@ -8,3 +8,6 @@
 // { dg-final { scan-assembler {_ZNK1BIiE1xMUlvE_clEv:} } }
 // { dg-final { scan-assembler {_ZNK1BIiE1xMUlvE0_clEv:} } }
 // { dg-final { scan-assembler {_ZNK1CIiE1xMUlvE_clEv:} } }
+// { dg-final { scan-assembler {_ZNK1D1xIiEUlvE_clEv:} } }
+// { dg-final { scan-assembler {_ZNK1EIiE1xIiEUlvE_clEv:} } }
+// { dg-final { scan-assembler {_ZNK1EIiE1xIiEUlvE0_clEv:} } }

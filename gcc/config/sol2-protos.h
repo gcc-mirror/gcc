@@ -24,7 +24,6 @@ extern void solaris_elf_asm_comdat_section (const char *, unsigned int, tree);
 extern void solaris_file_end (void);
 extern void solaris_insert_attributes (tree, tree *);
 extern void solaris_output_init_fini (FILE *, tree);
-extern void solaris_override_options (void);
 
 /* In sol2-c.cc.  */
 extern void solaris_register_pragmas (void);

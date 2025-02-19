@@ -1373,25 +1373,20 @@ Target Mask(ISA2_AVX10_1_512) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
 and AVX10.1-512 built-in functions and code generation.
 
-mavx10.1
-Target Alias(mavx10.1-256)
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
-and AVX10.1 built-in functions and code generation.
-
 mavx10.2-256
-Target Mask(ISA2_AVX10_2_256) Var(ix86_isa_flags2) Save
+Target RejectNegative Mask(ISA2_AVX10_2_256) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
 AVX10.1 and AVX10.2 built-in functions and code generation.
 
-mavx10.2-512
+mavx10.2
 Target Mask(ISA2_AVX10_2_512) Var(ix86_isa_flags2) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
 AVX10.1-512 and AVX10.2-512 built-in functions and code generation.
 
-mavx10.2
-Target Alias(mavx10.2-256)
+mavx10.2-512
+Target RejectNegative Alias(mavx10.2)
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
-AVX10.1 and AVX10.2 built-in functions and code generation.
+AVX10.1-512 and AVX10.2-512 built-in functions and code generation.
 
 mamx-avx512
 Target Mask(ISA2_AMX_AVX512) Var(ix86_isa_flags2) Save

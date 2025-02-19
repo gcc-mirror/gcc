@@ -261,17 +261,17 @@ AARCH64_OPT_EXTENSION("fp8", FP8, (SIMD), (), (), "f8cvt")
 
 AARCH64_OPT_EXTENSION("fp8fma", FP8FMA, (FP8), (), (), "f8fma")
 
-AARCH64_OPT_EXTENSION("ssve-fp8fma", SSVE_FP8FMA, (SME2,FP8), (), (), "smesf8fma")
+AARCH64_OPT_EXTENSION("ssve-fp8fma", SSVE_FP8FMA, (SME2, FP8), (), (), "smesf8fma")
 
 AARCH64_OPT_EXTENSION("faminmax", FAMINMAX, (SIMD), (), (), "faminmax")
 
-AARCH64_OPT_EXTENSION("fp8dot4", FP8DOT4, (FP8FMA), (), (), "f8dp4")
+AARCH64_OPT_EXTENSION("fp8dot4", FP8DOT4, (FP8), (), (), "f8dp4")
 
-AARCH64_OPT_EXTENSION("ssve-fp8dot4", SSVE_FP8DOT4, (SSVE_FP8FMA), (), (), "smesf8dp4")
+AARCH64_OPT_EXTENSION("ssve-fp8dot4", SSVE_FP8DOT4, (SME2, FP8), (), (), "smesf8dp4")
 
-AARCH64_OPT_EXTENSION("fp8dot2", FP8DOT2, (FP8DOT4), (), (), "f8dp2")
+AARCH64_OPT_EXTENSION("fp8dot2", FP8DOT2, (FP8), (), (), "f8dp2")
 
-AARCH64_OPT_EXTENSION("ssve-fp8dot2", SSVE_FP8DOT2, (SSVE_FP8DOT4), (), (), "smesf8dp2")
+AARCH64_OPT_EXTENSION("ssve-fp8dot2", SSVE_FP8DOT2, (SME2, FP8), (), (), "smesf8dp2")
 
 AARCH64_OPT_EXTENSION("lut", LUT, (SIMD), (), (), "lut")
 

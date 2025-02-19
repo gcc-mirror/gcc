@@ -26,6 +26,10 @@ mcall-prologues
 Target Mask(CALL_PROLOGUES) Optimization
 Optimization. Use subroutines for function prologues and epilogues.
 
+mcvt
+Target Mask(CVT)
+Use a startup code with a compact vector table.
+
 mmcu=
 Target RejectNegative Joined Var(avropt_mmcu) MissingArgError(missing device or architecture after %qs)
 -mmcu=<MCU>	Select the target MCU.
@@ -37,6 +41,10 @@ Optimization. Allow usage of __gcc_isr pseudo instructions in ISR prologues and 
 mn-flash=
 Target RejectNegative Joined Var(avropt_n_flash) UInteger Init(-1)
 This option is used internally. Set the number of 64 KiB flash segments.
+
+mcall-main
+Target Var(avropt_call_main) UInteger Init(1)
+Call main and exit (default).
 
 mskip-bug
 Target Mask(SKIP_BUG)

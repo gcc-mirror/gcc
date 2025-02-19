@@ -1686,6 +1686,16 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 
 	  set_immediate_dominator (CDI_DOMINATORS, new_preheader,
 				   loop->header);
+
+	  /* Fix up the profile counts of the new exit blocks.
+	     main_loop_exit_block was created by duplicating the
+	     preheader, so needs its count scaling according to the main
+	     exit edge's probability.  The remaining count from the
+	     preheader goes to the alt_loop_exit_block, since all
+	     alternative exits have been redirected there.  */
+	  main_loop_exit_block->count = loop_exit->count ();
+	  alt_loop_exit_block->count
+	    = preheader->count - main_loop_exit_block->count;
 	}
 
       /* Adjust the epilog loop PHI entry values to continue iteration.

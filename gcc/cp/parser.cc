@@ -14691,9 +14691,19 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
 	      decomp = &decomp_d;
 	      decomp->count = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
 	      decomp->decl = d;
+	      bool seen_name_independent_decl = false;
 	      for (unsigned int i = 0; i < decomp->count;
 		   i++, d = DECL_CHAIN (d))
 		{
+		  if (name_independent_decl_p (d))
+		    {
+		      /* If there is more than one _ decl in
+			 the structured binding, just push and move it
+			 away once.  */
+		      if (seen_name_independent_decl)
+			continue;
+		      seen_name_independent_decl = true;
+		    }
 		  tree name = DECL_NAME (d);
 		  names.safe_push (name);
 		  bindings.safe_push (IDENTIFIER_BINDING (name));
@@ -14955,15 +14965,6 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
 	{
 	  range_temp = build_range_temp (range_expr);
 	  pushdecl (range_temp);
-	  if (flag_range_for_ext_temps)
-	    {
-	      /* P2718R0 - put the range_temp declaration and everything
-		 until end of the range for body into an extra STATEMENT_LIST
-		 which will have CLEANUP_POINT_EXPR around it, so that all
-		 temporaries are destroyed at the end of it.  */
-	      gcc_assert (FOR_INIT_STMT (statement) == NULL_TREE);
-	      FOR_INIT_STMT (statement) = push_stmt_list ();
-	    }
 	  cp_finish_decl (range_temp, range_expr,
 			  /*is_constant_init*/false, NULL_TREE,
 			  LOOKUP_ONLYCONVERTING);
@@ -23738,6 +23739,10 @@ warn_about_ambiguous_parse (const cp_decl_specifier_seq *decl_specifiers,
 			(const_cast<cp_declarator *>(declarator))))
     return;
 
+  /* Don't warn for auto f () -> auto.  */
+  if (declarator->u.function.late_return_type)
+    return;
+
   /* Don't warn when the whole declarator (not just the declarator-id!)
      was parenthesized.  That is, don't warn for int(n()) but do warn
      for int(f)().  */
@@ -24226,8 +24231,26 @@ cp_parser_init_declarator (cp_parser* parser,
 
   /* Enter the newly declared entry in the symbol table.  If we're
      processing a declaration in a class-specifier, we wait until
-     after processing the initializer.  */
-  if (!member_p)
+     after processing the initializer, except for static data members
+     initialized here.  */
+  if (member_p)
+    {
+      if (scope)
+	/* Enter the SCOPE.  That way unqualified names appearing in the
+	   initializer will be looked up in SCOPE.  */
+	pushed_scope = push_scope (scope);
+
+      if (is_initialized
+	  && decl_specifiers->storage_class == sc_static
+	  && !function_declarator_p (declarator))
+	{
+	  tree all_attrs = attr_chainon (attributes, prefix_attributes);
+	  decl = start_initialized_static_member (declarator,
+						  decl_specifiers,
+						  all_attrs);
+	}
+    }
+  else
     {
       if (parser->in_unbraced_linkage_specification_p)
 	decl_specifiers->storage_class = sc_extern;
@@ -24244,10 +24267,6 @@ cp_parser_init_declarator (cp_parser* parser,
 	  && DECL_SOURCE_LOCATION (decl) == input_location)
 	DECL_SOURCE_LOCATION (decl) = declarator->id_loc;
     }
-  else if (scope)
-    /* Enter the SCOPE.  That way unqualified names appearing in the
-       initializer will be looked up in SCOPE.  */
-    pushed_scope = push_scope (scope);
 
   /* Perform deferred access control checks, now that we know in which
      SCOPE the declared entity resides.  */
@@ -24310,7 +24329,7 @@ cp_parser_init_declarator (cp_parser* parser,
 	  bool has_lambda_scope = false;
 
 	  if (decl != error_mark_node
-	      && !member_p
+	      && decl
 	      && (processing_template_decl || DECL_NAMESPACE_SCOPE_P (decl)))
 	    has_lambda_scope = true;
 
@@ -24360,10 +24379,14 @@ cp_parser_init_declarator (cp_parser* parser,
 	  pop_scope (pushed_scope);
 	  pushed_scope = NULL_TREE;
 	}
-      decl = grokfield (declarator, decl_specifiers,
-			initializer, !is_non_constant_init,
-			/*asmspec=*/NULL_TREE,
-			attr_chainon (attributes, prefix_attributes));
+      if (decl)
+	finish_initialized_static_member (decl, initializer,
+					  /*asmspec=*/NULL_TREE);
+      else
+	decl = grokfield (declarator, decl_specifiers,
+			  initializer, !is_non_constant_init,
+			  /*asmspec=*/NULL_TREE,
+			  attr_chainon (attributes, prefix_attributes));
       if (decl && TREE_CODE (decl) == FUNCTION_DECL)
 	cp_parser_save_default_args (parser, decl);
       cp_finalize_omp_declare_simd (parser, decl);
@@ -25650,6 +25673,26 @@ cp_parser_late_return_type_opt (cp_parser *parser, cp_declarator *declarator,
       /* Consume the ->.  */
       cp_lexer_consume_token (parser->lexer);
 
+      /* We may be in the context of parsing a parameter declaration,
+	 namely, its declarator.  auto_is_implicit_function_template_parm_p
+	 will be disabled in that case.  But for code like
+
+	   int g (auto fp() -> auto);
+
+	 we have to re-enable the flag for the trailing auto.  However, that
+	 only applies for the outermost trailing auto in a parameter clause; in
+
+	   int f2 (auto fp(auto fp2() -> auto) -> auto);
+
+	 the inner -> auto should not be synthesized.  */
+      int i = 0;
+      for (cp_binding_level *b = current_binding_level;
+	   b->kind == sk_function_parms; b = b->level_chain)
+	++i;
+      auto cleanup = make_temp_override
+	(parser->auto_is_implicit_function_template_parm_p,
+	 (i == 2 && !current_function_decl));
+
       type = cp_parser_trailing_type_id (parser);
     }
 
@@ -26416,15 +26459,6 @@ cp_parser_parameter_declaration (cp_parser *parser,
 				&decl_specifiers,
 				&declares_class_or_enum);
 
-  /* [dcl.spec.auto.general]: "A placeholder-type-specifier of the form
-     type-constraint opt auto can be used as a decl-specifier of the
-     decl-specifier-seq of a parameter-declaration of a function declaration
-     or lambda-expression..." but we must not synthesize an implicit template
-     type parameter in its declarator.  That is, in "void f(auto[auto{10}]);"
-     we want to synthesize only the first auto.  */
-  auto cleanup = make_temp_override
-    (parser->auto_is_implicit_function_template_parm_p, false);
-
   /* Complain about missing 'typename' or other invalid type names.  */
   if (!decl_specifiers.any_type_specifiers_p
       && cp_parser_parse_and_diagnose_invalid_type_name (parser))
@@ -26437,6 +26471,16 @@ cp_parser_parameter_declaration (cp_parser *parser,
       parser->type_definition_forbidden_message = saved_message;
       return NULL;
     }
+
+  /* [dcl.spec.auto.general]: "A placeholder-type-specifier of the form
+     type-constraint opt auto can be used as a decl-specifier of the
+     decl-specifier-seq of a parameter-declaration of a function declaration
+     or lambda-expression..." but we must not synthesize an implicit template
+     type parameter in its declarator (except the trailing-return-type).
+     That is, in "void f(auto[auto{10}]);" we want to synthesize only the
+     first auto.  */
+  auto cleanup = make_temp_override
+    (parser->auto_is_implicit_function_template_parm_p, false);
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -34169,7 +34213,11 @@ cp_parser_template_declaration_after_parameters (cp_parser* parser,
     }
 
   /* Register member declarations.  */
-  if (member_p && !friend_p && decl && !DECL_CLASS_TEMPLATE_P (decl))
+  if (member_p && !friend_p && decl && !DECL_CLASS_TEMPLATE_P (decl)
+      /* But this is not needed for initialised static members, that were
+	 registered in start_initialized_static_member to be able to be used
+	 in their own definition.  */
+      && !is_static_data_member_initialized_in_class (decl))
     finish_member_declaration (decl);
   /* If DECL is a function template, we must return to parse it later.
      (Even though there is no definition, there might be default
@@ -47114,20 +47162,12 @@ cp_parser_omp_loop_nest (cp_parser *parser, bool *if_p)
 
   /* Pop and remember the init block.  */
   if (sl)
-    {
-      sl = pop_stmt_list (sl);
-      /* P2718R0 - Add CLEANUP_POINT_EXPR so that temporaries in
-	 for-range-initializer whose lifetime is extended are destructed
-	 here.  */
-      if (flag_range_for_ext_temps
-	  && is_range_for
-	  && !processing_template_decl)
-	sl = maybe_cleanup_point_expr_void (sl);
-      add_stmt (sl);
-    }
+    add_stmt (pop_stmt_list (sl));
+
   tree range_for_decl[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
   if (is_range_for && !processing_template_decl)
     find_range_for_decls (range_for_decl);
+
   finish_compound_stmt (init_scope);
   init_block = pop_stmt_list (init_block);
   omp_for_parse_state->init_blockv[depth] = init_block;
@@ -50832,7 +50872,8 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
 	  ctx = cp_parser_omp_context_selector_specification (parser, true);
 	  if (ctx == error_mark_node)
 	    goto fail;
-	  ctx = omp_check_context_selector (match_loc, ctx, false);
+	  ctx = omp_check_context_selector (match_loc, ctx,
+					    OMP_CTX_DECLARE_VARIANT);
 	  if (ctx != error_mark_node && variant != error_mark_node)
 	    {
 	      tree match_loc_node
@@ -51819,7 +51860,8 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
 	  ctx = cp_parser_omp_context_selector_specification (parser, false);
 	  if (ctx == error_mark_node)
 	    goto fail;
-	  ctx = omp_check_context_selector (match_loc, ctx, true);
+	  ctx = omp_check_context_selector (match_loc, ctx,
+					    OMP_CTX_METADIRECTIVE);
 	  if (ctx == error_mark_node)
 	    goto fail;
 

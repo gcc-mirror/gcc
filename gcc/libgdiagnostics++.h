@@ -93,6 +93,8 @@ public:
   : m_inner (location)
   {}
 
+  file get_file () const;
+
   const diagnostic_physical_location *m_inner;
 };
 
@@ -198,6 +200,9 @@ public:
 
   void
   set_location (physical_location loc);
+
+  void
+  add_location (physical_location loc);
 
   void
   add_location_with_label (physical_location loc,
@@ -372,6 +377,14 @@ file::set_buffered_content (const char *data, size_t sz)
   diagnostic_file_set_buffered_content (m_inner, data, sz);
 }
 
+// class physical_location
+
+inline file
+physical_location::get_file () const
+{
+  return file (diagnostic_physical_location_get_file (m_inner));
+}
+
 // class execution_path
 
 inline diagnostic_event_id
@@ -446,6 +459,12 @@ diagnostic::add_location_with_label (physical_location loc,
 				     const char *text)
 {
   diagnostic_add_location_with_label (m_inner, loc.m_inner, text);
+}
+
+inline void
+diagnostic::add_location (physical_location loc)
+{
+  diagnostic_add_location (m_inner, loc.m_inner);
 }
 
 inline void

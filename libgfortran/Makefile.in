@@ -540,7 +540,20 @@ am__objects_49 = generated/findloc1_i1.lo generated/findloc1_i2.lo \
 am__objects_50 = generated/findloc1_s1.lo generated/findloc1_s4.lo
 am__objects_51 = generated/findloc2_s1.lo generated/findloc2_s4.lo
 am__objects_52 = runtime/ISO_Fortran_binding.lo
-am__objects_53 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
+am__objects_53 = generated/pow_m1_m1.lo generated/pow_m1_m2.lo \
+	generated/pow_m1_m4.lo generated/pow_m1_m8.lo \
+	generated/pow_m1_m16.lo generated/pow_m2_m1.lo \
+	generated/pow_m2_m2.lo generated/pow_m2_m4.lo \
+	generated/pow_m2_m8.lo generated/pow_m2_m16.lo \
+	generated/pow_m4_m1.lo generated/pow_m4_m2.lo \
+	generated/pow_m4_m4.lo generated/pow_m4_m8.lo \
+	generated/pow_m4_m16.lo generated/pow_m8_m1.lo \
+	generated/pow_m8_m2.lo generated/pow_m8_m4.lo \
+	generated/pow_m8_m8.lo generated/pow_m8_m16.lo \
+	generated/pow_m16_m1.lo generated/pow_m16_m2.lo \
+	generated/pow_m16_m4.lo generated/pow_m16_m8.lo \
+	generated/pow_m16_m16.lo
+am__objects_54 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_7) $(am__objects_8) $(am__objects_9) \
 	$(am__objects_10) $(am__objects_11) $(am__objects_12) \
 	$(am__objects_13) $(am__objects_14) $(am__objects_15) \
@@ -556,16 +569,16 @@ am__objects_53 = $(am__objects_4) $(am__objects_5) $(am__objects_6) \
 	$(am__objects_43) $(am__objects_44) $(am__objects_45) \
 	$(am__objects_46) $(am__objects_47) $(am__objects_48) \
 	$(am__objects_49) $(am__objects_50) $(am__objects_51) \
-	$(am__objects_52)
-@LIBGFOR_MINIMAL_FALSE@am__objects_54 = io/close.lo io/file_pos.lo \
+	$(am__objects_52) $(am__objects_53)
+@LIBGFOR_MINIMAL_FALSE@am__objects_55 = io/close.lo io/file_pos.lo \
 @LIBGFOR_MINIMAL_FALSE@	io/format.lo io/inquire.lo \
 @LIBGFOR_MINIMAL_FALSE@	io/intrinsics.lo io/list_read.lo \
 @LIBGFOR_MINIMAL_FALSE@	io/lock.lo io/open.lo io/read.lo \
 @LIBGFOR_MINIMAL_FALSE@	io/transfer.lo io/transfer128.lo \
 @LIBGFOR_MINIMAL_FALSE@	io/unit.lo io/unix.lo io/write.lo \
 @LIBGFOR_MINIMAL_FALSE@	io/fbuf.lo io/async.lo
-am__objects_55 = io/size_from_kind.lo $(am__objects_54)
-@LIBGFOR_MINIMAL_FALSE@am__objects_56 = intrinsics/access.lo \
+am__objects_56 = io/size_from_kind.lo $(am__objects_55)
+@LIBGFOR_MINIMAL_FALSE@am__objects_57 = intrinsics/access.lo \
 @LIBGFOR_MINIMAL_FALSE@	intrinsics/c99_functions.lo \
 @LIBGFOR_MINIMAL_FALSE@	intrinsics/chdir.lo intrinsics/chmod.lo \
 @LIBGFOR_MINIMAL_FALSE@	intrinsics/clock.lo \
@@ -589,8 +602,8 @@ am__objects_55 = io/size_from_kind.lo $(am__objects_54)
 @LIBGFOR_MINIMAL_FALSE@	intrinsics/system_clock.lo \
 @LIBGFOR_MINIMAL_FALSE@	intrinsics/time.lo intrinsics/umask.lo \
 @LIBGFOR_MINIMAL_FALSE@	intrinsics/unlink.lo
-@IEEE_SUPPORT_TRUE@am__objects_57 = ieee/ieee_helper.lo
-am__objects_58 = intrinsics/associated.lo intrinsics/abort.lo \
+@IEEE_SUPPORT_TRUE@am__objects_58 = ieee/ieee_helper.lo
+am__objects_59 = intrinsics/associated.lo intrinsics/abort.lo \
 	intrinsics/args.lo intrinsics/cshift0.lo \
 	intrinsics/eoshift0.lo intrinsics/eoshift2.lo \
 	intrinsics/erfc_scaled.lo intrinsics/extends_type_of.lo \
@@ -605,12 +618,12 @@ am__objects_58 = intrinsics/associated.lo intrinsics/abort.lo \
 	intrinsics/selected_real_kind.lo intrinsics/trigd.lo \
 	intrinsics/unpack_generic.lo runtime/in_pack_generic.lo \
 	runtime/in_unpack_generic.lo runtime/in_pack_class.lo \
-	runtime/in_unpack_class.lo $(am__objects_56) $(am__objects_57)
-@IEEE_SUPPORT_TRUE@am__objects_59 = ieee/ieee_arithmetic.lo \
+	runtime/in_unpack_class.lo $(am__objects_57) $(am__objects_58)
+@IEEE_SUPPORT_TRUE@am__objects_60 = ieee/ieee_arithmetic.lo \
 @IEEE_SUPPORT_TRUE@	ieee/ieee_exceptions.lo \
 @IEEE_SUPPORT_TRUE@	ieee/ieee_features.lo
-am__objects_60 =
-am__objects_61 = generated/_abs_c4.lo generated/_abs_c8.lo \
+am__objects_61 =
+am__objects_62 = generated/_abs_c4.lo generated/_abs_c8.lo \
 	generated/_abs_c10.lo generated/_abs_c16.lo \
 	generated/_abs_c17.lo generated/_abs_i4.lo \
 	generated/_abs_i8.lo generated/_abs_i16.lo \
@@ -679,7 +692,7 @@ am__objects_61 = generated/_abs_c4.lo generated/_abs_c8.lo \
 	generated/_aint_r17.lo generated/_anint_r4.lo \
 	generated/_anint_r8.lo generated/_anint_r10.lo \
 	generated/_anint_r16.lo generated/_anint_r17.lo
-am__objects_62 = generated/_sign_i4.lo generated/_sign_i8.lo \
+am__objects_63 = generated/_sign_i4.lo generated/_sign_i8.lo \
 	generated/_sign_i16.lo generated/_sign_r4.lo \
 	generated/_sign_r8.lo generated/_sign_r10.lo \
 	generated/_sign_r16.lo generated/_sign_r17.lo \
@@ -694,13 +707,13 @@ am__objects_62 = generated/_sign_i4.lo generated/_sign_i8.lo \
 	generated/_mod_r4.lo generated/_mod_r8.lo \
 	generated/_mod_r10.lo generated/_mod_r16.lo \
 	generated/_mod_r17.lo
-am__objects_63 = generated/misc_specifics.lo
-am__objects_64 = $(am__objects_61) $(am__objects_62) $(am__objects_63) \
+am__objects_64 = generated/misc_specifics.lo
+am__objects_65 = $(am__objects_62) $(am__objects_63) $(am__objects_64) \
 	intrinsics/dprod_r8.lo intrinsics/f2c_specifics.lo \
 	intrinsics/random_init.lo
-am_libgfortran_la_OBJECTS = $(am__objects_3) $(am__objects_53) \
-	$(am__objects_55) $(am__objects_58) $(am__objects_59) \
-	$(am__objects_60) $(am__objects_64)
+am_libgfortran_la_OBJECTS = $(am__objects_3) $(am__objects_54) \
+	$(am__objects_56) $(am__objects_59) $(am__objects_60) \
+	$(am__objects_61) $(am__objects_65)
 libgfortran_la_OBJECTS = $(am_libgfortran_la_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -1667,6 +1680,33 @@ generated/pow_c10_i16.c \
 generated/pow_c16_i16.c \
 generated/pow_c17_i16.c
 
+i_powu_c = \
+generated/pow_m1_m1.c \
+generated/pow_m1_m2.c \
+generated/pow_m1_m4.c \
+generated/pow_m1_m8.c \
+generated/pow_m1_m16.c \
+generated/pow_m2_m1.c \
+generated/pow_m2_m2.c \
+generated/pow_m2_m4.c \
+generated/pow_m2_m8.c \
+generated/pow_m2_m16.c \
+generated/pow_m4_m1.c \
+generated/pow_m4_m2.c \
+generated/pow_m4_m4.c \
+generated/pow_m4_m8.c \
+generated/pow_m4_m16.c \
+generated/pow_m8_m1.c \
+generated/pow_m8_m2.c \
+generated/pow_m8_m4.c \
+generated/pow_m8_m8.c \
+generated/pow_m8_m16.c \
+generated/pow_m16_m1.c \
+generated/pow_m16_m2.c \
+generated/pow_m16_m4.c \
+generated/pow_m16_m8.c \
+generated/pow_m16_m16.c
+
 i_pack_c = \
 generated/pack_i1.c \
 generated/pack_i2.c \
@@ -1749,7 +1789,7 @@ gfor_built_src = $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
 	$(i_minloc1s_c) $(i_maxloc2s_c) $(i_minloc2s_c) $(i_maxvals_c) \
 	$(i_maxval0s_c) $(i_minval0s_c) $(i_maxval1s_c) $(i_minval1s_c) \
 	$(i_findloc0_c) $(i_findloc0s_c) $(i_findloc1_c) $(i_findloc1s_c) \
-	$(i_findloc2s_c) $(i_isobinding_c)
+	$(i_findloc2s_c) $(i_isobinding_c) $(i_powu_c)
 
 
 # Machine generated specifics
@@ -3315,6 +3355,56 @@ generated/findloc2_s4.lo: generated/$(am__dirstamp) \
 	generated/$(DEPDIR)/$(am__dirstamp)
 runtime/ISO_Fortran_binding.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m1_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m1_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m1_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m1_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m1_m16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m2_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m2_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m2_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m2_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m2_m16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m4_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m4_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m4_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m4_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m4_m16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m8_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m8_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m8_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m8_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m8_m16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m16_m1.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m16_m2.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m16_m4.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m16_m8.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
+generated/pow_m16_m16.lo: generated/$(am__dirstamp) \
+	generated/$(DEPDIR)/$(am__dirstamp)
 io/$(am__dirstamp):
 	@$(MKDIR_P) io
 	@: > io/$(am__dirstamp)
@@ -4347,6 +4437,31 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_i8_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_i8_i4.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_i8_i8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m16_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m16_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m16_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m16_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m16_m8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m1_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m1_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m1_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m1_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m1_m8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m2_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m2_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m2_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m2_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m2_m8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m4_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m4_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m4_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m4_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m4_m8.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m8_m1.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m8_m16.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m8_m2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m8_m4.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_m8_m8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_r10_i16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_r10_i8.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@generated/$(DEPDIR)/pow_r16_i16.Plo@am__quote@
@@ -5083,6 +5198,9 @@ include/ISO_Fortran_binding.h: $(srcdir)/ISO_Fortran_binding.h
 
 @MAINTAINER_MODE_TRUE@$(i_pow_c): m4/pow.m4 $(I_M4_DEPS)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 pow.m4 > $@
+
+@MAINTAINER_MODE_TRUE@$(i_powu_c): m4/powu.m4 $(I_M4_DEPS)
+@MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 powu.m4 > $@
 
 @MAINTAINER_MODE_TRUE@$(i_pack_c): m4/pack.m4 $(I_M4_DEPS)
 @MAINTAINER_MODE_TRUE@	$(M4) -Dfile=$@ -I$(srcdir)/m4 pack.m4 > $@

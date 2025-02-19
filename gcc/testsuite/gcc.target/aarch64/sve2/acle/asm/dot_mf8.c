@@ -4,9 +4,9 @@
 
 #include "test_sve_acle.h"
 
-#pragma GCC target "+fp8dot2"
+#pragma GCC target "+fp8dot2+fp8dot4"
 #ifdef STREAMING_COMPATIBLE
-#pragma GCC target "+ssve-fp8dot2"
+#pragma GCC target "+ssve-fp8dot2+ssve-fp8dot4"
 #endif
 
 /*

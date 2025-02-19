@@ -19,7 +19,7 @@ DEF_COND_FP_CONVERT (fncvt, df, uqi, uint8_t, 128)
 DEF_COND_FP_CONVERT (fncvt, df, uqi, uint8_t, 256)
 DEF_COND_FP_CONVERT (fncvt, df, uqi, uint8_t, 512)
 
-/* { dg-final { scan-assembler-times {vncvt\.x\.x\.w\s+v[0-9]+,\s*v[0-9]+,\s*v0.t} 14 } } */
+/* { dg-final { scan-assembler-times {vnsrl\.wi\s+v[0-9]+,\s*v[0-9]+,0,\s*v0.t} 14 } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
 /* { dg-final { scan-assembler-not {vmerge} } } */
 /* { dg-final { scan-tree-dump-not "1,1" "optimized" } } */

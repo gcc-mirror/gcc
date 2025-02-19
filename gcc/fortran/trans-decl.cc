@@ -189,6 +189,8 @@ tree gfor_fndecl_caf_random_init;
    trans-intrinsic.cc.  */
 
 gfc_powdecl_list gfor_fndecl_math_powi[4][3];
+tree gfor_fndecl_unsigned_pow_list[5][5];
+
 tree gfor_fndecl_math_ishftc4;
 tree gfor_fndecl_math_ishftc8;
 tree gfor_fndecl_math_ishftc16;
@@ -2773,8 +2775,7 @@ create_function_arglist (gfc_symbol * sym)
   for (f = gfc_sym_get_dummy_args (sym); f; f = f->next)
     if (f->sym != NULL
 	&& f->sym->attr.optional && f->sym->attr.value
-	&& !f->sym->attr.dimension && f->sym->ts.type != BT_CLASS
-	&& !gfc_bt_struct (f->sym->ts.type))
+	&& !f->sym->attr.dimension && f->sym->ts.type != BT_CLASS)
       hidden_typelist = TREE_CHAIN (hidden_typelist);
 
   for (f = gfc_sym_get_dummy_args (sym); f; f = f->next)
@@ -2856,12 +2857,11 @@ create_function_arglist (gfc_symbol * sym)
 		type = gfc_sym_type (f->sym);
 	    }
 	}
-      /* For scalar intrinsic types, VALUE passes the value,
+      /* For scalar intrinsic types or derived types, VALUE passes the value,
 	 hence, the optional status cannot be transferred via a NULL pointer.
 	 Thus, we will use a hidden argument in that case.  */
       if (f->sym->attr.optional && f->sym->attr.value
-	  && !f->sym->attr.dimension && f->sym->ts.type != BT_CLASS
-	  && !gfc_bt_struct (f->sym->ts.type))
+	  && !f->sym->attr.dimension && f->sym->ts.type != BT_CLASS)
 	{
           tree tmp;
           strcpy (&name[1], f->sym->name);
@@ -3746,8 +3746,10 @@ gfc_build_intrinsic_function_decls (void)
     int rkind, ikind, jkind;
 #define NIKINDS 3
 #define NRKINDS 4
-    static int ikinds[NIKINDS] = {4, 8, 16};
-    static int rkinds[NRKINDS] = {4, 8, 10, 16};
+#define NUKINDS 5
+    static const int ikinds[NIKINDS] = {4, 8, 16};
+    static const int rkinds[NRKINDS] = {4, 8, 10, 16};
+    static const int ukinds[NUKINDS] = {1, 2, 4, 8, 16};
     char name[PREFIX_LEN + 12]; /* _gfortran_pow_?n_?n */
 
     for (ikind=0; ikind < NIKINDS; ikind++)
@@ -3797,9 +3799,29 @@ gfc_build_intrinsic_function_decls (void)
 		TREE_NOTHROW (gfor_fndecl_math_powi[rkind][ikind].cmplx) = 1;
 	      }
 	  }
+	/* For unsigned types, we have every power for every type.  */
+	for (int base = 0; base < NUKINDS; base++)
+	  {
+	    tree base_type = gfc_get_unsigned_type (ukinds[base]);
+	    for (int expon = 0; expon < NUKINDS; expon++)
+	      {
+		tree expon_type = gfc_get_unsigned_type (ukinds[base]);
+		if (base_type && expon_type)
+		  {
+		    sprintf (name, PREFIX("pow_m%d_m%d"), ukinds[base],
+			 ukinds[expon]);
+		    gfor_fndecl_unsigned_pow_list [base][expon] =
+		      gfc_build_library_function_decl (get_identifier (name),
+			 base_type, 2, base_type, expon_type);
+		    TREE_READONLY (gfor_fndecl_unsigned_pow_list[base][expon]) = 1;
+		    TREE_NOTHROW (gfor_fndecl_unsigned_pow_list[base][expon]) = 1;
+		  }
+	      }
+	  }
       }
 #undef NIKINDS
 #undef NRKINDS
+#undef NUKINDS
   }
 
   gfor_fndecl_math_ishftc4 = gfc_build_library_function_decl (
@@ -4527,7 +4549,6 @@ init_intent_out_dt (gfc_symbol * proc_sym, gfc_wrapped_block * block)
   tree tmp;
   tree present;
   gfc_symbol *s;
-  bool dealloc_with_value = false;
 
   gfc_init_block (&init);
   for (f = gfc_sym_get_dummy_args (proc_sym); f; f = f->next)
@@ -4558,12 +4579,9 @@ init_intent_out_dt (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	   by the caller.  */
 	if (tmp == NULL_TREE && !s->attr.allocatable
 	    && s->ts.u.derived->attr.alloc_comp)
-	  {
-	    tmp = gfc_deallocate_alloc_comp (s->ts.u.derived,
-					     s->backend_decl,
-					     s->as ? s->as->rank : 0);
-	    dealloc_with_value = s->value;
-	  }
+	  tmp = gfc_deallocate_alloc_comp (s->ts.u.derived,
+					   s->backend_decl,
+					   s->as ? s->as->rank : 0);
 
 	if (tmp != NULL_TREE && (s->attr.optional
 				 || s->ns->proc_name->attr.entry_master))
@@ -4573,14 +4591,9 @@ init_intent_out_dt (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 			      present, tmp, build_empty_stmt (input_location));
 	  }
 
-	if (tmp != NULL_TREE && !dealloc_with_value)
-	  gfc_add_expr_to_block (&init, tmp);
-	else if (s->value && !s->attr.allocatable)
-	  {
-	    gfc_add_expr_to_block (&init, tmp);
-	    gfc_init_default_dt (s, &init, false);
-	    dealloc_with_value = false;
-	  }
+	gfc_add_expr_to_block (&init, tmp);
+	if (s->value && !s->attr.allocatable)
+	  gfc_init_default_dt (s, &init, false);
       }
     else if (f->sym && f->sym->attr.intent == INTENT_OUT
 	     && f->sym->ts.type == BT_CLASS
@@ -6118,6 +6131,19 @@ create_module_nml_decl (gfc_symbol *sym)
     }
 }
 
+static void
+gfc_handle_omp_declare_variant (gfc_symbol * sym)
+{
+  if (sym->attr.external
+      && sym->formal_ns
+      && sym->formal_ns->omp_declare_variant)
+    {
+      gfc_namespace *ns = gfc_current_ns;
+      gfc_current_ns = sym->ns;
+      gfc_get_symbol_decl (sym);
+      gfc_current_ns = ns;
+    }
+}
 
 /* Generate all the required code for module variables.  */
 
@@ -6141,6 +6167,11 @@ gfc_generate_module_vars (gfc_namespace * ns)
 
   if (flag_coarray == GFC_FCOARRAY_LIB && has_coarray_vars_or_accessors)
     generate_coarray_init (ns);
+
+  /* For OpenMP, ensure that declare variant in INTERFACE is is processed
+     especially as some late diagnostic is only done on tree level.  */
+  if (flag_openmp)
+    gfc_traverse_ns (ns, gfc_handle_omp_declare_variant);
 
   cur_module = NULL;
 
@@ -7991,6 +8022,11 @@ gfc_generate_function_code (gfc_namespace * ns)
 	fsym->backend_decl = desc_p;
 	gfc_conv_cfi_to_gfc (&init, &cleanup, tmp, desc, fsym);
       }
+
+  /* For OpenMP, ensure that declare variant in INTERFACE is is processed
+     especially as some late diagnostic is only done on tree level.  */
+  if (flag_openmp)
+    gfc_traverse_ns (ns, gfc_handle_omp_declare_variant);
 
   gfc_generate_contained_functions (ns);
 

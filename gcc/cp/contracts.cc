@@ -2281,6 +2281,10 @@ build_contract_violation (tree contract, bool is_const)
 static tree
 declare_handle_contract_violation ()
 {
+  /* We may need to declare new types, ensure they are not considered
+     attached to a named module.  */
+  auto module_kind_override = make_temp_override
+    (module_kind, module_kind & ~(MK_PURVIEW | MK_ATTACH | MK_EXPORTING));
   tree fnname = get_identifier ("handle_contract_violation");
   tree viol_name = get_identifier ("contract_violation");
   tree l = lookup_qualified_name (global_namespace, fnname,
@@ -2369,6 +2373,11 @@ declare_noexcept_cvh_wrapper (tree fncvh_decl)
 static void
 build_contract_handler_call (tree violation, bool noexcept_wrap = false)
 {
+  /* We may need to declare new types, ensure they are not considered
+     attached to a named module.  */
+  auto module_kind_override = make_temp_override
+    (module_kind, module_kind & ~(MK_PURVIEW | MK_ATTACH | MK_EXPORTING));
+
   tree violation_fn = declare_handle_contract_violation ();
 
   if (flag_exceptions && noexcept_wrap

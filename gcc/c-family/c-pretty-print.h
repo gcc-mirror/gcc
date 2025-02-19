@@ -49,8 +49,10 @@ typedef void (*c_pretty_print_fn) (c_pretty_printer *, tree);
    and cp/cxx-pretty-print.cc for an example of derivation.  */
 class c_pretty_printer : public pretty_printer
 {
+  dump_flags_t dump_flags;
+
 public:
-  c_pretty_printer ();
+  c_pretty_printer (dump_flags_t = TDF_NONE);
   std::unique_ptr<pretty_printer> clone () const override;
 
   // Format string, possibly translated.
@@ -137,6 +139,6 @@ void pp_c_identifier (c_pretty_printer *, const char *);
 void pp_c_string_literal (c_pretty_printer *, tree);
 void pp_c_integer_constant (c_pretty_printer *, tree);
 
-void print_c_tree (FILE *file, tree t);
+void print_c_tree (FILE *file, tree t, dump_flags_t);
 
 #endif /* GCC_C_PRETTY_PRINTER */

@@ -1,0 +1,46 @@
+{"$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+ "version": "2.1.0",
+ "runs": [{"tool": {"driver": {"name": "GNU C23",
+                               "fullName": "GNU C23 (GCC) version 15.0.1 20250203 (experimental) (x86_64-pc-linux-gnu)",
+                               "version": "15.0.1 20250203 (experimental)",
+                               "informationUri": "https://gcc.gnu.org/gcc-15/",
+                               "rules": []}},
+           "invocations": [{"executionSuccessful": false,
+                            "toolExecutionNotifications": []}],
+           "artifacts": [{"location": {"uri": "bad-binary-ops-highlight-colors.c"},
+                          "sourceLanguage": "c",
+                          "contents": {"text": "/* Verify that colorization affects both text within diagnostic messages\n   and underlined ranges of quoted source, and that the types we use\n   match up between them.\n   Also implicitly verify that -fdiagnostics-show-highlight-colors is\n   on by default.  */\n\n\n\nstruct s {};\nstruct t {};\ntypedef struct s S;\ntypedef struct t T;\n\nextern S callee_4a (void);\nextern T callee_4b (void);\n\nint test_4 (void)\n{\n  return callee_4a () + callee_4b ();\n}\n"},
+                          "roles": ["analysisTarget"]}],
+           "results": [{"ruleId": "error",
+                        "level": "error",
+                        "message": {"text": "invalid operands to binary + (have ‘S’ {{aka ‘struct s’}} and ‘T’ {{aka ‘struct t’}})"},
+                        "locations": [{"physicalLocation": {"artifactLocation": {"uri": "bad-binary-ops-highlight-colors.c",
+                                                                                 "uriBaseId": "PWD"},
+                                                            "region": {"startLine": 19,
+                                                                       "startColumn": 23,
+                                                                       "endColumn": 24},
+                                                            "contextRegion": {"startLine": 19,
+                                                                              "snippet": {"text": "  return callee_4a () + callee_4b ();\n"}}},
+                                       "logicalLocations": [{"name": "test_4",
+                                                             "fullyQualifiedName": "test_4",
+                                                             "decoratedName": "test_4",
+                                                             "kind": "function"}],
+                                       "annotations": [{"startLine": 19,
+                                                        "startColumn": 10,
+                                                        "endColumn": 22,
+                                                        "message": {"text": "S {{aka struct s}}"}},
+                                                       {"startLine": 19,
+                                                        "startColumn": 25,
+                                                        "endColumn": 37,
+                                                        "message": {"text": "T {{aka struct t}}"}}]}]}]}]}
+
+/* Verify that we underline and label the ranges for the
+   "annotations" above.  */
+/* { dg-begin-multiline-output "" }
+bad-binary-ops-highlight-colors.c:19:23: error: invalid operands to binary + (have ‘S’ {aka ‘struct s’} and ‘T’ {aka ‘struct t’})
+   19 |   return callee_4a () + callee_4b ();
+      |          ~~~~~~~~~~~~ ^ ~~~~~~~~~~~~
+      |          |              |
+      |          |              T {aka struct t}
+      |          S {aka struct s}
+   { dg-end-multiline-output "" } */

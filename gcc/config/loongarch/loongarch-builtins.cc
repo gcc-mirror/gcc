@@ -2996,7 +2996,10 @@ loongarch_expand_builtin_lsx_test_branch (enum insn_code icode, tree exp)
     ops[1].value = force_reg (ops[1].mode, ops[1].value);
 
   if ((cbranch = maybe_gen_insn (icode, 3, ops)) == NULL_RTX)
-    error ("failed to expand built-in function");
+    {
+      error ("failed to expand built-in function");
+      return const0_rtx;
+    }
 
   cmp_result = gen_reg_rtx (SImode);
 
@@ -3036,7 +3039,7 @@ loongarch_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     {
       error_at (EXPR_LOCATION (exp),
 		"built-in function %qD is not enabled", fndecl);
-      return target;
+      return target ? target : const0_rtx;
     }
 
   switch (d->builtin_type)

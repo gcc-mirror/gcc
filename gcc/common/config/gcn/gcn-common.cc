@@ -37,7 +37,7 @@ static const struct default_options gcn_option_optimization_table[] =
 static enum unwind_info_type
 gcn_except_unwind_info (struct gcc_options *opts ATTRIBUTE_UNUSED)
 {
-  return UI_NONE;
+  return UI_TARGET;
 }
 
 #undef  TARGET_EXCEPT_UNWIND_INFO

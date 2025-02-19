@@ -198,6 +198,11 @@ are at the parentheses.
 
    TODO: example of output
 
+.. function::  diagnostic_file *diagnostic_physical_location_get_file (const diagnostic_physical_location *physical_loc)
+
+   Get the :type:`diagnostic_file` associated with a given physical location.
+
+
 Associating diagnostics with locations
 **************************************
 

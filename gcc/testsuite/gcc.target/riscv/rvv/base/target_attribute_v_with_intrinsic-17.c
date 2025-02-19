@@ -11,3 +11,4 @@ test_1 (vint64m1_t a, vint64m1_t b, size_t vl)
 }
 
 /* { dg-error "return type 'vint64m1_t' requires the zve64x, zve64f, zve64d or v ISA extension" "" { target { "riscv*-*-*" } } 0 } */
+/* { dg-error "argument type 'vint64m1_t' requires the zve64x, zve64f, zve64d or v ISA extension" "" { target { "riscv*-*-*" } } 0 } */

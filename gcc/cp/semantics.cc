@@ -602,6 +602,25 @@ add_decl_expr (tree decl)
   add_stmt (r);
 }
 
+/* Set EXPR_LOCATION on one cleanup T to LOC.  */
+
+static void
+set_one_cleanup_loc (tree t, location_t loc)
+{
+  if (!t)
+    return;
+  if (TREE_CODE (t) != POSTCONDITION_STMT)
+    protected_set_expr_location (t, loc);
+  /* Avoid locus differences for C++ cdtor calls depending on whether
+     cdtor_returns_this: a conversion to void is added to discard the return
+     value, and this conversion ends up carrying the location, and when it
+     gets discarded, the location is lost.  So hold it in the call as well.  */
+  if (TREE_CODE (t) == NOP_EXPR
+      && TREE_TYPE (t) == void_type_node
+      && TREE_CODE (TREE_OPERAND (t, 0)) == CALL_EXPR)
+    protected_set_expr_location (TREE_OPERAND (t, 0), loc);
+}
+
 /* Set EXPR_LOCATION of the cleanups of any CLEANUP_STMT in STMTS to LOC.  */
 
 static void
@@ -609,18 +628,7 @@ set_cleanup_locs (tree stmts, location_t loc)
 {
   if (TREE_CODE (stmts) == CLEANUP_STMT)
     {
-      tree t = CLEANUP_EXPR (stmts);
-      if (t && TREE_CODE (t) != POSTCONDITION_STMT)
-	protected_set_expr_location (t, loc);
-      /* Avoid locus differences for C++ cdtor calls depending on whether
-	 cdtor_returns_this: a conversion to void is added to discard the return
-	 value, and this conversion ends up carrying the location, and when it
-	 gets discarded, the location is lost.  So hold it in the call as
-	 well.  */
-      if (TREE_CODE (t) == NOP_EXPR
-	  && TREE_TYPE (t) == void_type_node
-	  && TREE_CODE (TREE_OPERAND (t, 0)) == CALL_EXPR)
-	protected_set_expr_location (TREE_OPERAND (t, 0), loc);
+      set_one_cleanup_loc (CLEANUP_EXPR (stmts), loc);
       set_cleanup_locs (CLEANUP_BODY (stmts), loc);
     }
   else if (TREE_CODE (stmts) == STATEMENT_LIST)
@@ -778,37 +786,110 @@ finish_cond (tree *cond_p, tree expr)
   *cond_p = expr;
 }
 
-/* If *COND_P specifies a conditional with a declaration, transform the
-   loop such that
+/* If loop condition specifies a conditional with a declaration,
+   such as
 	    while (A x = 42) { }
 	    for (; A x = 42;) { }
-   becomes
-	    while (true) { A x = 42; if (!x) break; }
-	    for (;;) { A x = 42; if (!x) break; }
-   The statement list for BODY will be empty if the conditional did
+   move the *BODY_P statements as a BIND_EXPR into {FOR,WHILE}_COND_PREP
+   and if there are any CLEANUP_STMT at the end, remember their count in
+   {FOR,WHILE}_COND_CLEANUP.
+   genericize_c_loop will then handle it appropriately.  In particular,
+   the {FOR,WHILE}_COND, {FOR,WHILE}_BODY, if used continue label and
+   FOR_EXPR will be appended into the {FOR,WHILE}_COND_PREP BIND_EXPR,
+   but it can't be done too early because only the actual body should
+   bind BREAK_STMT and CONTINUE_STMT to the inner loop.
+   The statement list for *BODY will be empty if the conditional did
    not declare anything.  */
 
 static void
-simplify_loop_decl_cond (tree *cond_p, tree body)
+adjust_loop_decl_cond (tree *body_p, tree *prep_p, tree *cleanup_p)
 {
-  tree cond, if_stmt;
-
-  if (!TREE_SIDE_EFFECTS (body))
+  if (!TREE_SIDE_EFFECTS (*body_p))
     return;
 
-  cond = *cond_p;
-  *cond_p = boolean_true_node;
+  gcc_assert (!processing_template_decl);
+  *prep_p = *body_p;
+  if (*prep_p != cur_stmt_list)
+    {
+      /* There can be just one CLEANUP_STMT, or there could be multiple
+	 nested CLEANUP_STMTs, e.g. for structured bindings used as
+	 condition.  */
+      gcc_assert (stmt_list_stack->length () > 1);
+      for (unsigned i = stmt_list_stack->length () - 2; ; --i)
+	{
+	  tree t = (*stmt_list_stack)[i];
+	  tree_stmt_iterator last = tsi_last (t);
+	  gcc_assert (tsi_one_before_end_p (last)
+		      && TREE_CODE (tsi_stmt (last)) == CLEANUP_STMT
+		      && (CLEANUP_BODY (tsi_stmt (last))
+			  == (*stmt_list_stack)[i + 1])
+		      && !CLEANUP_EH_ONLY (tsi_stmt (last)));
+	  if (t == *prep_p)
+	    {
+	      *cleanup_p = build_int_cst (long_unsigned_type_node,
+					  stmt_list_stack->length () - 1 - i);
+	      break;
+	    }
+	  gcc_assert (i >= 1);
+	}
+    }
+  current_binding_level->keep = true;
+  tree_stmt_iterator iter = tsi_last (cur_stmt_list);
+  /* Temporarily store in {FOR,WHILE}_BODY the last statement of
+     the innnermost statement list or NULL if it has no statement.
+     This is used in finish_loop_cond_prep to find out the splitting
+     point and then {FOR,WHILE}_BODY will be changed to the actual
+     body.  */
+  if (tsi_end_p (iter))
+    *body_p = NULL_TREE;
+  else
+    *body_p = tsi_stmt (iter);
+}
 
-  if_stmt = begin_if_stmt ();
-  cond_p = &cond;
-  while (TREE_CODE (*cond_p) == ANNOTATE_EXPR)
-    cond_p = &TREE_OPERAND (*cond_p, 0);
-  *cond_p = cp_build_unary_op (TRUTH_NOT_EXPR, *cond_p, false,
-			       tf_warning_or_error);
-  finish_if_stmt_cond (cond, if_stmt);
-  finish_break_stmt ();
-  finish_then_clause (if_stmt);
-  finish_if_stmt (if_stmt);
+/* Finalize {FOR,WHILE}_{BODY,COND_PREP} after the loop body.
+   The above function initialized *BODY_P to the last statement
+   in *PREP_P at that point.
+   Call do_poplevel on *PREP_P and move everything after that
+   former last statement into *BODY_P.  genericize_c_loop
+   will later put those parts back together.
+   CLEANUP is {FOR,WHILE}_COND_CLEANUP.  */
+
+static void
+finish_loop_cond_prep (tree *body_p, tree *prep_p, tree cleanup)
+{
+  *prep_p = do_poplevel (*prep_p);
+  gcc_assert (TREE_CODE (*prep_p) == BIND_EXPR);
+  if (BIND_EXPR_BODY (*prep_p) == *body_p)
+    {
+      gcc_assert (cleanup == NULL_TREE);
+      *body_p = build_empty_stmt (input_location);
+      return;
+    }
+  tree stmt_list = BIND_EXPR_BODY (*prep_p);
+  gcc_assert (TREE_CODE (stmt_list) == STATEMENT_LIST);
+  if (cleanup)
+    {
+      tree_stmt_iterator iter = tsi_last (stmt_list);
+      gcc_assert (TREE_CODE (tsi_stmt (iter)) == CLEANUP_STMT);
+      for (unsigned depth = tree_to_uhwi (cleanup); depth > 1; --depth)
+	{
+	  gcc_assert (TREE_CODE (CLEANUP_BODY (tsi_stmt (iter)))
+		      == STATEMENT_LIST);
+	  iter = tsi_last (CLEANUP_BODY (tsi_stmt (iter)));
+	  gcc_assert (TREE_CODE (tsi_stmt (iter)) == CLEANUP_STMT);
+	}
+      if (*body_p == NULL_TREE)
+	{
+	  *body_p = CLEANUP_BODY (tsi_stmt (iter));
+	  CLEANUP_BODY (tsi_stmt (iter)) = build_empty_stmt (input_location);
+	  return;
+	}
+      stmt_list = CLEANUP_BODY (tsi_stmt (iter));
+    }
+  tree_stmt_iterator iter = tsi_start (stmt_list);
+  while (tsi_stmt (iter) != *body_p)
+    tsi_next (&iter);
+  *body_p = tsi_split_stmt_list (input_location, iter);
 }
 
 /* Finish a goto-statement.  */
@@ -1369,7 +1450,8 @@ tree
 begin_while_stmt (void)
 {
   tree r;
-  r = build_stmt (input_location, WHILE_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
+  r = build_stmt (input_location, WHILE_STMT, NULL_TREE, NULL_TREE, NULL_TREE,
+		  NULL_TREE, NULL_TREE);
   add_stmt (r);
   WHILE_BODY (r) = do_pushlevel (sk_block);
   begin_cond (&WHILE_COND (r));
@@ -1407,7 +1489,9 @@ finish_while_stmt_cond (tree cond, tree while_stmt, bool ivdep,
 				      build_int_cst (integer_type_node,
 						     annot_expr_no_vector_kind),
 				      integer_zero_node);
-  simplify_loop_decl_cond (&WHILE_COND (while_stmt), WHILE_BODY (while_stmt));
+  adjust_loop_decl_cond (&WHILE_BODY (while_stmt),
+			 &WHILE_COND_PREP (while_stmt),
+			 &WHILE_COND_CLEANUP (while_stmt));
 }
 
 /* Finish a while-statement, which may be given by WHILE_STMT.  */
@@ -1416,7 +1500,12 @@ void
 finish_while_stmt (tree while_stmt)
 {
   end_maybe_infinite_loop (boolean_true_node);
-  WHILE_BODY (while_stmt) = do_poplevel (WHILE_BODY (while_stmt));
+  if (WHILE_COND_PREP (while_stmt))
+    finish_loop_cond_prep (&WHILE_BODY (while_stmt),
+			   &WHILE_COND_PREP (while_stmt),
+			   WHILE_COND_CLEANUP (while_stmt));
+  else
+    WHILE_BODY (while_stmt) = do_poplevel (WHILE_BODY (while_stmt));
   finish_loop_cond (&WHILE_COND (while_stmt), WHILE_BODY (while_stmt));
 }
 
@@ -1548,7 +1637,8 @@ begin_for_stmt (tree scope, tree init)
   tree r;
 
   r = build_stmt (input_location, FOR_STMT, NULL_TREE, NULL_TREE,
-		  NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
+		  NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE,
+		  NULL_TREE, NULL_TREE);
 
   if (scope == NULL_TREE)
     {
@@ -1606,7 +1696,8 @@ finish_for_cond (tree cond, tree for_stmt, bool ivdep, tree unroll,
 				  build_int_cst (integer_type_node,
 						 annot_expr_no_vector_kind),
 				  integer_zero_node);
-  simplify_loop_decl_cond (&FOR_COND (for_stmt), FOR_BODY (for_stmt));
+  adjust_loop_decl_cond (&FOR_BODY (for_stmt), &FOR_COND_PREP (for_stmt),
+			 &FOR_COND_CLEANUP (for_stmt));
 }
 
 /* Finish the increment-EXPRESSION in a for-statement, which may be
@@ -1680,7 +1771,12 @@ finish_for_stmt (tree for_stmt)
     RANGE_FOR_BODY (for_stmt) = do_poplevel (RANGE_FOR_BODY (for_stmt));
   else
     {
-      FOR_BODY (for_stmt) = do_poplevel (FOR_BODY (for_stmt));
+      if (FOR_COND_PREP (for_stmt))
+	finish_loop_cond_prep (&FOR_BODY (for_stmt),
+			       &FOR_COND_PREP (for_stmt),
+			       FOR_COND_CLEANUP (for_stmt));
+      else
+	FOR_BODY (for_stmt) = do_poplevel (FOR_BODY (for_stmt));
       if (FOR_COND (for_stmt))
 	finish_loop_cond (&FOR_COND (for_stmt),
 			  FOR_EXPR (for_stmt) ? integer_one_node
@@ -1700,20 +1796,6 @@ finish_for_stmt (tree for_stmt)
      be inspected in the debugger.  */
   tree range_for_decl[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
   find_range_for_decls (range_for_decl);
-
-  /* P2718R0 - Add CLEANUP_POINT_EXPR so that temporaries in
-     for-range-initializer whose lifetime is extended are destructed
-     here.  */
-  if (flag_range_for_ext_temps
-      && range_for_decl[0]
-      && FOR_INIT_STMT (for_stmt))
-    {
-      tree stmt = pop_stmt_list (FOR_INIT_STMT (for_stmt));
-      FOR_INIT_STMT (for_stmt) = NULL_TREE;
-      stmt = build_stmt (EXPR_LOCATION (for_stmt), EXPR_STMT, stmt);
-      stmt = maybe_cleanup_point_expr_void (stmt);
-      add_stmt (stmt);
-    }
 
   add_stmt (do_poplevel (scope));
 

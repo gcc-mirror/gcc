@@ -10,4 +10,4 @@ foo (long *__restrict a, long *__restrict b, long n)
   return a[1];
 }
 
-/* { dg-final { scan-assembler-times {\tvmv1r\.v} 1 } } */
+/* { dg-final { scan-assembler-not {\tvmv1r\.v} } } */

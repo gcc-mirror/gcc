@@ -8802,7 +8802,8 @@ c_parser_while_statement (c_parser *parser, bool ivdep, unsigned short unroll,
   body = c_parser_c99_block_statement (parser, if_p, &loc_after_labels);
   if (loop_name && !C_DECL_LOOP_SWITCH_NAME_USED (loop_name))
     loop_name = NULL_TREE;
-  add_stmt (build_stmt (loc, WHILE_STMT, cond, body, loop_name));
+  add_stmt (build_stmt (loc, WHILE_STMT, cond, body, loop_name, NULL_TREE,
+			NULL_TREE));
   add_stmt (c_end_compound_stmt (loc, block, flag_isoc99));
   c_parser_maybe_reclassify_token (parser);
   if (num_names)
@@ -9207,7 +9208,7 @@ c_parser_for_statement (c_parser *parser, bool ivdep, unsigned short unroll,
     add_stmt (build_stmt (for_loc, FOR_STMT, NULL_TREE, cond, incr,
 			  body, NULL_TREE,
 			  loop_name && C_DECL_LOOP_SWITCH_NAME_USED (loop_name)
-			  ? loop_name : NULL_TREE));
+			  ? loop_name : NULL_TREE, NULL_TREE, NULL_TREE));
   add_stmt (c_end_compound_stmt (for_loc, block,
 				 flag_isoc99 || c_dialect_objc ()));
   c_parser_maybe_reclassify_token (parser);
@@ -26981,7 +26982,8 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	  ctx  = c_parser_omp_context_selector_specification (parser, parms);
 	  if (ctx == error_mark_node)
 	    goto fail;
-	  ctx = omp_check_context_selector (match_loc, ctx, false);
+	  ctx = omp_check_context_selector (match_loc, ctx,
+					    OMP_CTX_DECLARE_VARIANT);
 	  if (ctx != error_mark_node && variant != error_mark_node)
 	    {
 	      if (TREE_CODE (variant) != FUNCTION_DECL)
@@ -29098,7 +29100,8 @@ c_parser_omp_metadirective (c_parser *parser, bool *if_p)
 							     NULL_TREE);
 	  if (ctx == error_mark_node)
 	    goto error;
-	  ctx = omp_check_context_selector (match_loc, ctx, true);
+	  ctx = omp_check_context_selector (match_loc, ctx,
+					    OMP_CTX_METADIRECTIVE);
 	  if (ctx == error_mark_node)
 	    goto error;
 

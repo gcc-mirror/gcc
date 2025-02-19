@@ -5878,7 +5878,7 @@ elf_uncompress_lzma_block (const unsigned char *compressed,
 	  /* The byte at compressed[off] is ignored for some
 	     reason.  */
 
-	  code = ((uint32_t)(compressed[off + 1] << 24)
+	  code = (((uint32_t)compressed[off + 1] << 24)
 		  + ((uint32_t)compressed[off + 2] << 16)
 		  + ((uint32_t)compressed[off + 3] << 8)
 		  + (uint32_t)compressed[off + 4]);

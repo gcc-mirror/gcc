@@ -1,3 +1,24 @@
+2025-02-11  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-parser.cc (c_finish_omp_declare_variant): Update call to
+	omp_check_context_selector.
+	(c_parser_omp_metadirective): Likewise.
+
+2025-02-07  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/86769
+	* c-parser.cc (c_parser_while_statement): Add 2 further NULL_TREE
+	operands to build_stmt.
+	(c_parser_for_statement): Likewise.
+
+2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR c/118742
+	* gimple-parser.cc (gimple_parser_build_unary_op): New
+	wrapper around build_unary_op.
+	(c_parser_gimple_unary_expression): Use it.
+
 2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-parser.cc (c_finish_omp_declare_variant): Modify how

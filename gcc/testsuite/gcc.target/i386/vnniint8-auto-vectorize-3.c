@@ -1,5 +1,5 @@
 /* { dg-do compile } */                                     
-/* { dg-options "-mavx10.2 -O2" } */
+/* { dg-options "-mavx10.2-256 -O2" } */
 /* { dg-final { scan-assembler "vpdpbssd\t" } } */
 /* { dg-final { scan-assembler "vpdpbuud\t" } } */
 

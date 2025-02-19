@@ -3,5 +3,5 @@
 
 #include "vneg-template.h"
 
-/* { dg-final { scan-assembler-times {\tvneg\.v} 4 } } */
+/* { dg-final { scan-assembler-times {\tvrsub\.vi} 4 } } */
 /* { dg-final { scan-assembler-times {\tvfneg\.v} 3 } } */

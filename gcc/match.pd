@@ -9531,6 +9531,62 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	(BIT_FIELD_REF { CONSTRUCTOR_ELT (ctor, idx / const_k)->value; }
 		       @1 { bitsize_int ((idx % const_k) * width); })))))))))
 
+(simplify
+ (BIT_FIELD_REF (vec_perm@0 @1 @2 VECTOR_CST@3) @rsize @rpos)
+ (with
+  {
+    tree elem_type = TREE_TYPE (TREE_TYPE (@0));
+    poly_uint64 elem_size = tree_to_poly_uint64 (TYPE_SIZE (elem_type));
+    poly_uint64 size = tree_to_poly_uint64 (TYPE_SIZE (type));
+    unsigned HOST_WIDE_INT nelts, idx;
+    unsigned HOST_WIDE_INT nelts_op = 0;
+  }
+  (if (constant_multiple_p (tree_to_poly_uint64 (@rpos), elem_size, &idx)
+       && VECTOR_CST_NELTS (@3).is_constant (&nelts)
+       && (known_eq (size, elem_size)
+	   || (constant_multiple_p (size, elem_size, &nelts_op)
+	       && pow2p_hwi (nelts_op))))
+   (with
+    {
+      bool ok = true;
+      /* One element.  */
+      if (known_eq (size, elem_size))
+        idx = TREE_INT_CST_LOW (VECTOR_CST_ELT (@3, idx)) % (2 * nelts);
+      else
+        {
+	  /* Clamp vec_perm_expr index.  */
+	  unsigned start
+	    = TREE_INT_CST_LOW (vector_cst_elt (@3, idx)) % (2 * nelts);
+	  unsigned end
+	    = (TREE_INT_CST_LOW (vector_cst_elt (@3, idx + nelts_op - 1))
+	       % (2 * nelts));
+	  /* Be in the same vector.  */
+	  if ((start < nelts) != (end < nelts))
+	    ok = false;
+	  else
+	    for (unsigned HOST_WIDE_INT i = 1; i != nelts_op; i++)
+	      {
+	        /* Continuous area.  */
+		if ((TREE_INT_CST_LOW (vector_cst_elt (@3, idx + i))
+		     % (2 * nelts) - 1)
+		    != (TREE_INT_CST_LOW (vector_cst_elt (@3, idx + i - 1))
+			% (2 * nelts)))
+		  {
+		    ok = false;
+		    break;
+		  }
+	      }
+	  /* Alignment not worse than before.  */
+	  if (start % nelts_op)
+	    ok = false;
+	  idx = start;
+	}
+    }
+    (if (ok)
+     (if (idx < nelts)
+      (BIT_FIELD_REF @1 @rsize { bitsize_int (idx * elem_size); })
+      (BIT_FIELD_REF @2 @rsize { bitsize_int ((idx - nelts) * elem_size); })))))))
+
 /* Simplify a bit extraction from a bit insertion for the cases with
    the inserted element fully covering the extraction or the insertion
    not touching the extraction.  */

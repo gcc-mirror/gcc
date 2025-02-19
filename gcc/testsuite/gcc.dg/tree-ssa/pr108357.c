@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-threadfull1" } */
+/* { dg-options "-O2 -fdump-tree-optimized" } */
 
 static char b;
 static unsigned c;
@@ -19,4 +19,7 @@ int main()
   f(g);
 }
 
-/* { dg-final { scan-tree-dump-not "foo" "threadfull1" } } */
+/* We expect threadfull1 to eliminate the call to foo(), but not all targets
+   manage that at that point.  Calling conventions (mandatory promotion) play a
+   role, but there's more than that.  */
+/* { dg-final { scan-tree-dump-not "foo" "optimized" } } */

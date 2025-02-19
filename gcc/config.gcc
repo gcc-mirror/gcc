@@ -2683,7 +2683,7 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 			default_mips_arch=mips64r2
 			enable_mips_multilibs="yes"
 			;;
-		mips64*-*-linux-gnuabi64 | mipsisa64*-*-linux-gnuabi64)
+		mips64*-*-linux-gnuabi64 | mipsisa64*-*-linux-gnuabi64 | mips*64*-linux-muslabi64)
 			default_mips_abi=64
 			enable_mips_multilibs="yes"
 			;;

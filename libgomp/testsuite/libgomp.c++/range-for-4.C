@@ -3,5 +3,5 @@
 // { dg-additional-options "-std=gnu++17" }
 // { dg-require-effective-target tls_runtime }
 
-#define RANGE_FOR_EXT_TEMPS 1
+#define RANGE_FOR_EXT_TEMPS 0
 #include "range-for-1.C"

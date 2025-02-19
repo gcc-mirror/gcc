@@ -11,3 +11,4 @@ vfloat16m1_t f0 (vfloat16m1_t vs2, vfloat16m1_t vs1, size_t vl)
 }
 
 /* { dg-error "return type 'vfloat16m1_t' requires the zvfhmin or zvfh ISA extension" "" { target { "riscv*-*-*" } } 0 } */
+/* { dg-error "argument type 'vfloat16m1_t' requires the zvfhmin or zvfh ISA extension" "" { target { "riscv*-*-*" } } 0 } */

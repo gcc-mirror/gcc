@@ -11,3 +11,4 @@ test_1 (vfloat32m1_t a, vfloat32m1_t b, size_t vl)
 }
 
 /* { dg-error "return type 'vfloat32m1_t' requires the zve32f, zve64f, zve64d or v ISA extension" "" { target { "riscv*-*-*" } } 0 } */
+/* { dg-error "argument type 'vfloat32m1_t' requires the zve32f, zve64f, zve64d or v ISA extension" "" { target { "riscv*-*-*" } } 0 } */

@@ -23,6 +23,9 @@
 // These 3 function template instantiations has a total of 3 template
 // parameters named T.
 // { dg-final { scan-assembler-times "\.ascii \"T.0\"\[\t \]+\[^\n\]*DW_AT_name" 3 } }
+// And the packs also have names.
+// { dg-final { scan-assembler-times "\.ascii \"PTs.0\"\[\t \]+\[^\n\]*DW_AT_name" 3 } }
+// { dg-final { scan-assembler-times "\.ascii \"args.0\"\[\t \]+\[^\n\]*DW_AT_name" 3 } }
 
 
 void
@@ -35,11 +38,11 @@ printf(const char* s)
   */
 }
 
-template<typename T, typename... PackTypes>
+template<typename T, typename... PTs>
 void
 printf(const char* s,
        T value,
-       PackTypes... args)
+       PTs... args)
 {
   while (*s)
     {

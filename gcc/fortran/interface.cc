@@ -2423,6 +2423,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
   gfc_component *ppc;
   bool codimension = false;
   gfc_array_spec *formal_as;
+  const char *actual_name;
 
   /* If the formal arg has type BT_VOID, it's to one of the iso_c_binding
      procs c_f_pointer or c_f_procpointer, and we need to accept most
@@ -2473,8 +2474,16 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 					   sizeof(err),NULL, NULL))
 	{
 	  if (where)
-	    gfc_error_opt (0, "Interface mismatch in dummy procedure %qs at %L:"
-			   " %s", formal->name, &actual->where, err);
+	    {
+	      /* Artificially generated symbol names would only confuse.  */
+	      if (formal->attr.artificial)
+		gfc_error_opt (0, "Interface mismatch in dummy procedure "
+			       "at %L conflicts with %L: %s", &actual->where,
+			       &formal->declared_at, err);
+	      else
+		gfc_error_opt (0, "Interface mismatch in dummy procedure %qs "
+			       "at %L: %s", formal->name, &actual->where, err);
+	    }
 	  return false;
 	}
 
@@ -2482,9 +2491,62 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 				   sizeof(err), NULL, NULL))
 	{
 	  if (where)
-	    gfc_error_opt (0, "Interface mismatch in dummy procedure %qs at %L:"
-			   " %s", formal->name, &actual->where, err);
+	    {
+	      if (formal->attr.artificial)
+		gfc_error_opt (0, "Interface mismatch in dummy procedure "
+			       "at %L conflichts with %L: %s", &actual->where,
+			       &formal->declared_at, err);
+	      else
+		gfc_error_opt (0, "Interface mismatch in dummy procedure %qs at "
+			       "%L: %s", formal->name, &actual->where, err);
+
+	    }
 	  return false;
+	}
+
+      /* The actual symbol may disagree with a global symbol.  If so, issue an
+	 error, but only if no previous error has been reported on the formal
+	 argument.  */
+      actual_name = act_sym->name;
+      if (!formal->error && actual_name)
+	{
+	  gfc_gsymbol *gsym;
+	  gsym = gfc_find_gsymbol (gfc_gsym_root, actual_name);
+	  if (gsym != NULL)
+	    {
+	      if (gsym->type == GSYM_SUBROUTINE && formal->attr.function)
+		{
+		  gfc_error ("Passing global subroutine %qs declared at %L "
+			     "as function at %L", actual_name, &gsym->where,
+			     &actual->where);
+		  return false;
+		}
+	      if (gsym->type == GSYM_FUNCTION && formal->attr.subroutine)
+		{
+		  gfc_error ("Passing global function %qs declared at %L "
+			     "as subroutine at %L", actual_name, &gsym->where,
+			     &actual->where);
+		  return false;
+		}
+	      if (gsym->type == GSYM_FUNCTION)
+		{
+		  gfc_symbol *global_asym;
+		  gfc_find_symbol (actual_name, gsym->ns, 0, &global_asym);
+		  if (global_asym != NULL)
+		    {
+		      gcc_assert (formal->attr.function);
+		      if (!gfc_compare_types (&global_asym->ts, &formal->ts))
+			{
+			  gfc_error ("Type mismatch at %L passing global "
+				     "function %qs declared at %L (%s/%s)",
+				     &actual->where, actual_name, &gsym->where,
+				     gfc_typename (&global_asym->ts),
+				     gfc_dummy_typename (&formal->ts));
+			  return false;
+			}
+		    }
+		}
+	    }
 	}
 
       if (formal->attr.function && !act_sym->attr.function)
@@ -2501,7 +2563,6 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 
       return true;
     }
-
   ppc = gfc_get_proc_ptr_comp (actual);
   if (ppc && ppc->ts.interface)
     {
@@ -5777,7 +5838,14 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
 	  gfc_get_symbol (name, gfc_current_ns, &s);
 	  if (a->expr->ts.type == BT_PROCEDURE)
 	    {
+	      gfc_symbol *asym = a->expr->symtree->n.sym;
 	      s->attr.flavor = FL_PROCEDURE;
+	      if (asym->attr.function)
+		{
+		  s->attr.function = 1;
+		  s->ts = asym->ts;
+		}
+	      s->attr.subroutine = asym->attr.subroutine;
 	    }
 	  else
 	    {

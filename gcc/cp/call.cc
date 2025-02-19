@@ -868,6 +868,67 @@ build_list_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 
   FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (ctor), i, val)
     {
+      if (TREE_CODE (val) == RAW_DATA_CST)
+	{
+	  tree elt
+	    = build_int_cst (TREE_TYPE (val), RAW_DATA_UCHAR_ELT (val, 0));
+	  conversion *sub
+	    = implicit_conversion (elttype, TREE_TYPE (val), elt,
+				   false, flags, complain);
+	  conversion *next;
+	  if (sub == NULL)
+	    return NULL;
+	  /* For conversion to initializer_list<unsigned char> or
+	     initializer_list<char> or initializer_list<signed char>
+	     we can optimize and keep RAW_DATA_CST with adjusted
+	     type if we report narrowing errors if needed.
+	     Use just one subconversion for that case.  */
+	  if (sub->kind == ck_std
+	      && sub->type
+	      && (TREE_CODE (sub->type) == INTEGER_TYPE
+		  || is_byte_access_type (sub->type))
+	      && TYPE_PRECISION (sub->type) == CHAR_BIT
+	      && (next = next_conversion (sub))
+	      && next->kind == ck_identity)
+	    {
+	      subconvs[i] = sub;
+	      continue;
+	    }
+	  /* Otherwise. build separate subconv for each RAW_DATA_CST
+	     byte.  Wrap those into an artificial ck_list which convert_like
+	     will then handle.  */
+	  conversion **subsubconvs = alloc_conversions (RAW_DATA_LENGTH (val));
+	  unsigned int j;
+	  subsubconvs[0] = sub;
+	  for (j = 1; j < (unsigned) RAW_DATA_LENGTH (val); ++j)
+	    {
+	      elt = build_int_cst (TREE_TYPE (val),
+				   RAW_DATA_UCHAR_ELT (val, j));
+	      sub = implicit_conversion (elttype, TREE_TYPE (val), elt,
+					 false, flags, complain);
+	      if (sub == NULL)
+		return NULL;
+	      subsubconvs[j] = sub;
+	    }
+
+	  t = alloc_conversion (ck_list);
+	  t->type = type;
+	  t->u.list = subsubconvs;
+	  t->rank = cr_exact;
+	  for (j = 0; j < (unsigned) RAW_DATA_LENGTH (val); ++j)
+	    {
+	      sub = subsubconvs[i];
+	      if (sub->rank > t->rank)
+		t->rank = sub->rank;
+	      if (sub->user_conv_p)
+		t->user_conv_p = true;
+	      if (sub->bad_p)
+		t->bad_p = true;
+	    }
+	  subconvs[i] = t;
+	  continue;
+	}
+
       conversion *sub
 	= implicit_conversion (elttype, TREE_TYPE (val), val,
 			       false, flags, complain);
@@ -3211,7 +3272,8 @@ add_builtin_candidate (struct z_candidate **candidates, enum tree_code code,
 	break;
 
       /* Otherwise, the types should be pointers.  */
-      if (!TYPE_PTR_OR_PTRMEM_P (type1) || !TYPE_PTR_OR_PTRMEM_P (type2))
+      if (!((TYPE_PTR_OR_PTRMEM_P (type1) || null_ptr_cst_p (args[0]))
+	    && (TYPE_PTR_OR_PTRMEM_P (type2) || null_ptr_cst_p (args[1]))))
 	return;
 
       /* We don't check that the two types are the same; the logic
@@ -8849,22 +8911,22 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 	      {
 		if (TREE_CODE (val) == RAW_DATA_CST)
 		  {
-		    tree elt_type;
-		    conversion *next;
 		    /* For conversion to initializer_list<unsigned char> or
 		       initializer_list<char> or initializer_list<signed char>
 		       we can optimize and keep RAW_DATA_CST with adjusted
 		       type if we report narrowing errors if needed, for
 		       others this converts each element separately.  */
-		    if (convs->u.list[ix]->kind == ck_std
-			&& (elt_type = convs->u.list[ix]->type)
-			&& (TREE_CODE (elt_type) == INTEGER_TYPE
-			    || is_byte_access_type (elt_type))
-			&& TYPE_PRECISION (elt_type) == CHAR_BIT
-			&& (next = next_conversion (convs->u.list[ix]))
-			&& next->kind == ck_identity)
+		    if (convs->u.list[ix]->kind == ck_std)
 		      {
-			if (!TYPE_UNSIGNED (elt_type)
+			tree et = convs->u.list[ix]->type;
+			conversion *next = next_conversion (convs->u.list[ix]);
+			gcc_assert (et
+				    && (TREE_CODE (et) == INTEGER_TYPE
+					|| is_byte_access_type (et))
+				    && TYPE_PRECISION (et) == CHAR_BIT
+				    && next
+				    && next->kind == ck_identity);
+			if (!TYPE_UNSIGNED (et)
 			    /* For RAW_DATA_CST, TREE_TYPE (val) can be
 			       either integer_type_node (when it has been
 			       created by the lexer from CPP_EMBED) or
@@ -8890,7 +8952,7 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 						 "narrowing conversion of "
 						 "%qd from %qH to %qI",
 						 RAW_DATA_UCHAR_ELT (val, i),
-						 TREE_TYPE (val), elt_type);
+						 TREE_TYPE (val), et);
 				  if (errorcount != savederrorcount)
 				    return error_mark_node;
 				}
@@ -8898,19 +8960,21 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 				return error_mark_node;
 			    }
 			tree sub = copy_node (val);
-			TREE_TYPE (sub) = elt_type;
+			TREE_TYPE (sub) = et;
 			CONSTRUCTOR_APPEND_ELT (CONSTRUCTOR_ELTS (new_ctor),
 						NULL_TREE, sub);
 		      }
 		    else
 		      {
+			conversion *conv = convs->u.list[ix];
+			gcc_assert (conv->kind == ck_list);
 			for (int i = 0; i < RAW_DATA_LENGTH (val); ++i)
 			  {
 			    tree elt
 			      = build_int_cst (TREE_TYPE (val),
 					       RAW_DATA_UCHAR_ELT (val, i));
 			    tree sub
-			      = convert_like (convs->u.list[ix], elt,
+			      = convert_like (conv->u.list[i], elt,
 					      fn, argnum, false, false,
 					      /*nested_p=*/true, complain);
 			    if (sub == error_mark_node)
@@ -14099,6 +14163,8 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
   return pushdecl (var);
 }
 
+static tree extend_temps_r (tree *, int *, void *);
+
 /* EXPR is the initializer for a variable DECL of reference or
    std::initializer_list type.  Create, push and return a new VAR_DECL
    for the initializer so that it will live as long as DECL.  Any
@@ -14107,7 +14173,8 @@ make_temporary_var_for_ref_to_temp (tree decl, tree type)
 
 static tree
 set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
-			  tree *initp, tree *cond_guard)
+			  tree *initp, tree *cond_guard,
+			  void *walk_data)
 {
   tree init;
   tree type;
@@ -14143,10 +14210,16 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
       suppress_warning (decl);
     }
 
-  /* Recursively extend temps in this initializer.  */
-  TARGET_EXPR_INITIAL (expr)
-    = extend_ref_init_temps (decl, TARGET_EXPR_INITIAL (expr), cleanups,
-			     cond_guard);
+  /* Recursively extend temps in this initializer.  The recursion needs to come
+     after creating the variable to conform to the mangling ABI, and before
+     maybe_constant_init because the extension might change its result.  */
+  if (walk_data)
+    cp_walk_tree (&TARGET_EXPR_INITIAL (expr), extend_temps_r,
+		  walk_data, nullptr);
+  else
+    TARGET_EXPR_INITIAL (expr)
+      = extend_ref_init_temps (decl, TARGET_EXPR_INITIAL (expr), cleanups,
+			       cond_guard);
 
   /* Any reference temp has a non-trivial initializer.  */
   DECL_NONTRIVIALLY_INITIALIZED_P (var) = true;
@@ -14187,6 +14260,8 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
 	init = add_stmt_to_compound (init, register_dtor_fn (var));
       else
 	{
+	  /* ??? Instead of rebuilding the cleanup, we could replace the slot
+	     with var in TARGET_EXPR_CLEANUP (expr).  */
 	  tree cleanup = cxx_maybe_build_cleanup (var, tf_warning_or_error);
 	  if (cleanup)
 	    {
@@ -14204,6 +14279,37 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
 		    }
 		  cleanup = build3 (COND_EXPR, void_type_node,
 				    *cond_guard, cleanup, NULL_TREE);
+		}
+	      if (flag_exceptions && TREE_CODE (TREE_TYPE (var)) != ARRAY_TYPE)
+		{
+		  /* The normal cleanup for this extended variable isn't pushed
+		     until cp_finish_decl, so we need to retain a TARGET_EXPR
+		     to clean it up in case a later initializer throws
+		     (g++.dg/eh/ref-temp3.C).
+
+		     We don't do this for array temporaries because they have
+		     the array cleanup region from build_vec_init.
+
+		     Unlike maybe_push_temp_cleanup, we don't actually need a
+		     flag, but a TARGET_EXPR needs a TARGET_EXPR_SLOT.
+		     Perhaps this could use WITH_CLEANUP_EXPR instead, but
+		     gimplify.cc doesn't handle that, and front-end handling
+		     was removed in r8-1725 and r8-1818.
+
+		     Alternately it might be preferable to flatten an
+		     initialization with extended temps into a sequence of
+		     (non-full-expression) statements, so we could immediately
+		     push_cleanup here for only a single cleanup region, but we
+		     don't have a mechanism for that in the front-end, only the
+		     gimplifier.  */
+		  tree targ = get_internal_target_expr (boolean_true_node);
+		  TARGET_EXPR_CLEANUP (targ) = cleanup;
+		  CLEANUP_EH_ONLY (targ) = true;
+		  /* Don't actually initialize the bool.  */
+		  init = (!init ? void_node
+			  : convert_to_void (init, ICV_STATEMENT, tf_none));
+		  TARGET_EXPR_INITIAL (targ) = init;
+		  init = targ;
 		}
 	      vec_safe_push (*cleanups, cleanup);
 	    }
@@ -14746,13 +14852,116 @@ extend_ref_init_temps_1 (tree decl, tree init, vec<tree, va_gc> **cleanups,
   if (TREE_CODE (*p) == TARGET_EXPR)
     {
       tree subinit = NULL_TREE;
-      *p = set_up_extended_ref_temp (decl, *p, cleanups, &subinit, cond_guard);
+      *p = set_up_extended_ref_temp (decl, *p, cleanups, &subinit,
+				     cond_guard, nullptr);
       recompute_tree_invariant_for_addr_expr (sub);
       if (init != sub)
 	init = fold_convert (TREE_TYPE (init), sub);
       if (subinit)
 	init = build2 (COMPOUND_EXPR, TREE_TYPE (init), subinit, init);
     }
+  return init;
+}
+
+/* Data for extend_temps_r, mostly matching the parameters of
+   extend_ref_init_temps.  */
+
+struct extend_temps_data
+{
+  tree decl;
+  tree init;
+  vec<tree, va_gc> **cleanups;
+  tree* cond_guard;
+  hash_set<tree> *pset;		 // For avoiding redundant walk_tree.
+  hash_map<tree, tree> *var_map; // For remapping extended temps.
+};
+
+/* Tree walk function for extend_all_temps.  Generally parallel to
+   extend_ref_init_temps_1, but adapted for walk_tree.  */
+
+tree
+extend_temps_r (tree *tp, int *walk_subtrees, void *data)
+{
+  extend_temps_data *d = (extend_temps_data *)data;
+
+  if (TREE_CODE (*tp) == VAR_DECL)
+    {
+      if (tree *r = d->var_map->get (*tp))
+	*tp = *r;
+      return NULL_TREE;
+    }
+
+  if (TYPE_P (*tp) || TREE_CODE (*tp) == CLEANUP_POINT_EXPR
+      || d->pset->add (*tp))
+    {
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  if (TREE_CODE (*tp) == COND_EXPR)
+    {
+      cp_walk_tree (&TREE_OPERAND (*tp, 0), extend_temps_r, d, nullptr);
+
+      auto walk_arm = [d](tree &op)
+      {
+	tree cur_cond_guard = NULL_TREE;
+	auto ov = make_temp_override (d->cond_guard, &cur_cond_guard);
+	cp_walk_tree (&op, extend_temps_r, d, nullptr);
+	if (cur_cond_guard)
+	  {
+	    tree set = build2 (MODIFY_EXPR, boolean_type_node,
+			       cur_cond_guard, boolean_true_node);
+	    op = add_stmt_to_compound (set, op);
+	  }
+      };
+      walk_arm (TREE_OPERAND (*tp, 1));
+      walk_arm (TREE_OPERAND (*tp, 2));
+
+      *walk_subtrees = 0;
+      return NULL_TREE;
+    }
+
+  tree *p = tp;
+
+  if (TREE_CODE (*tp) == ADDR_EXPR)
+    for (p = &TREE_OPERAND (*tp, 0);
+	 TREE_CODE (*p) == COMPONENT_REF || TREE_CODE (*p) == ARRAY_REF; )
+      p = &TREE_OPERAND (*p, 0);
+
+  if (TREE_CODE (*p) == TARGET_EXPR
+      /* An eliding TARGET_EXPR isn't a temporary at all.  */
+      && !TARGET_EXPR_ELIDING_P (*p)
+      /* A TARGET_EXPR with TARGET_EXPR_INTERNAL_P is an artificial variable
+	 used during initialization that need not be extended.  */
+      && !TARGET_EXPR_INTERNAL_P (*p))
+    {
+      /* A CLEANUP_EH_ONLY expr should also have TARGET_EXPR_INTERNAL_P.  */
+      gcc_checking_assert (!CLEANUP_EH_ONLY (*p));
+
+      tree subinit = NULL_TREE;
+      tree slot = TARGET_EXPR_SLOT (*p);
+      *p = set_up_extended_ref_temp (d->decl, *p, d->cleanups, &subinit,
+				     d->cond_guard, d);
+      if (TREE_CODE (*tp) == ADDR_EXPR)
+	recompute_tree_invariant_for_addr_expr (*tp);
+      if (subinit)
+	*tp = cp_build_compound_expr (subinit, *tp, tf_none);
+      d->var_map->put (slot, *p);
+    }
+
+  return NULL_TREE;
+}
+
+/* Extend all the temporaries in a for-range-initializer.  */
+
+static tree
+extend_all_temps (tree decl, tree init, vec<tree, va_gc> **cleanups)
+{
+  hash_set<tree> pset;
+  hash_map<tree, tree> map;
+  gcc_assert (!TREE_STATIC (decl));
+  extend_temps_data d = { decl, init, cleanups, nullptr, &pset, &map };
+  cp_walk_tree (&init, extend_temps_r, &d, nullptr);
   return init;
 }
 
@@ -14768,11 +14977,13 @@ extend_ref_init_temps (tree decl, tree init, vec<tree, va_gc> **cleanups,
   if (processing_template_decl)
     return init;
 
-  /* P2718R0 - ignore temporaries in C++23 for-range-initializer, those
-     have all extended lifetime.  */
+  /* P2718R0 - in C++23 for-range-initializer, extend all temps.  */
   if (DECL_NAME (decl) == for_range__identifier
       && flag_range_for_ext_temps)
-    return init;
+    {
+      gcc_checking_assert (!cond_guard);
+      return extend_all_temps (decl, init, cleanups);
+    }
 
   maybe_warn_dangling_reference (decl, init);
 

@@ -1412,7 +1412,15 @@ typedef struct gfc_omp_namelist
 	  bool target;
 	  bool targetsync;
 	} init;
-      bool need_device_ptr;
+      struct
+	{
+	  bool need_ptr:1;
+	  bool need_addr:1;
+	  bool range_start:1;
+	  bool omp_num_args_plus:1;
+	  bool omp_num_args_minus:1;
+	  bool error_p:1;
+	} adj_args;
     } u;
   union
     {

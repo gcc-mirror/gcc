@@ -199,7 +199,7 @@ _kunpackw_mask32 (__mmask16 __A, __mmask16 __B)
 					      (__mmask32) __B);
 }
 
-#if __OPTIMIZE__
+#ifdef __OPTIMIZE__
 extern __inline __mmask32
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _kshiftli_mask32 (__mmask32 __A, unsigned int __B)

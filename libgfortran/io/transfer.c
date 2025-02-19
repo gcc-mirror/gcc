@@ -2068,11 +2068,13 @@ static void
 formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kind,
 				 size_t size)
 {
-  gfc_offset pos, bytes_used;
+  gfc_offset tab_pos, bytes_used;
   const fnode *f;
   format_token t;
   int n;
   int consume_data_flag;
+
+  tab_pos = 0; bytes_used = 0;
 
   /* Change a complex data item into a pair of reals.  */
 
@@ -2398,10 +2400,12 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	case FMT_X:
 	case FMT_TR:
 	  consume_data_flag = 0;
-
 	  dtp->u.p.skips += f->u.n;
-	  pos = bytes_used + dtp->u.p.skips - 1;
-	  dtp->u.p.pending_spaces = pos - dtp->u.p.max_pos + 1;
+	  tab_pos = bytes_used + dtp->u.p.skips - 1;
+	  dtp->u.p.pending_spaces = tab_pos - dtp->u.p.max_pos + 1;
+	  dtp->u.p.pending_spaces = dtp->u.p.pending_spaces < 0
+				    ? f->u.n : dtp->u.p.pending_spaces;
+
 	  /* Writes occur just before the switch on f->format, above, so
 	     that trailing blanks are suppressed, unless we are doing a
 	     non-advancing write in which case we want to output the blanks
@@ -2414,35 +2418,50 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  break;
 
 	case FMT_TL:
-	case FMT_T:
 	  consume_data_flag = 0;
-
-	  if (f->format == FMT_TL)
+	  /* Handle the special case when no bytes have been used yet.
+	     Cannot go below zero. */
+	  if (bytes_used == 0)
 	    {
-
-	      /* Handle the special case when no bytes have been used yet.
-	         Cannot go below zero. */
-	      if (bytes_used == 0)
-		{
-		  dtp->u.p.pending_spaces -= f->u.n;
-		  dtp->u.p.skips -= f->u.n;
-		  dtp->u.p.skips = dtp->u.p.skips < 0 ? 0 : dtp->u.p.skips;
-		}
-
-	      pos = bytes_used - f->u.n;
+	      dtp->u.p.pending_spaces -= f->u.n;
+	      dtp->u.p.skips -= f->u.n;
+	      dtp->u.p.skips = dtp->u.p.skips < 0 ? 0 : dtp->u.p.skips;
 	    }
-	  else /* FMT_T */
-	    pos = f->u.n - dtp->u.p.pending_spaces - 1;
+
+	  tab_pos = bytes_used - f->u.n;
 
 	  /* Standard 10.6.1.1: excessive left tabbing is reset to the
 	     left tab limit.  We do not check if the position has gone
 	     beyond the end of record because a subsequent tab could
 	     bring us back again.  */
-	  pos = pos < 0 ? 0 : pos;
+	  tab_pos = tab_pos < 0 ? 0 : tab_pos;
 
-	  dtp->u.p.skips = dtp->u.p.skips + pos - bytes_used;
+	  dtp->u.p.skips = dtp->u.p.skips + tab_pos - bytes_used;
 	  dtp->u.p.pending_spaces = dtp->u.p.pending_spaces
-				    + pos - dtp->u.p.max_pos;
+				    + tab_pos - dtp->u.p.max_pos;
+	  dtp->u.p.pending_spaces = dtp->u.p.pending_spaces < 0
+				    ? 0 : dtp->u.p.pending_spaces;
+	  break;
+
+	case FMT_T:
+	  consume_data_flag = 0;
+	  if (f->u.n < tab_pos + 1)
+	    {
+	      tab_pos = f->u.n;
+	      dtp->u.p.skips = tab_pos - bytes_used - 1;
+	      dtp->u.p.pending_spaces = tab_pos - bytes_used - 1;
+	    }
+	  else
+	    {
+	      tab_pos = f->u.n - dtp->u.p.pending_spaces - 1;
+
+	      /* Excessive left tabbing is reset to the left tab limit.  */
+	      tab_pos = tab_pos < 0 ? 0 : tab_pos;
+
+	      dtp->u.p.skips = dtp->u.p.skips + tab_pos - bytes_used;
+	      dtp->u.p.pending_spaces = dtp->u.p.pending_spaces
+				      + tab_pos - dtp->u.p.max_pos;
+	    }
 	  dtp->u.p.pending_spaces = dtp->u.p.pending_spaces < 0
 				    ? 0 : dtp->u.p.pending_spaces;
 	  break;
@@ -2550,12 +2569,16 @@ formatted_transfer_scalar_write (st_parameter_dt *dtp, bt type, void *p, int kin
 	  p = ((char *) p) + size;
 	}
 
+      /* Calculate the new max_pos if any.  */
+      gfc_offset new_pos;
       if (is_stream_io(dtp))
-	pos = dtp->u.p.current_unit->fbuf->act;
+	new_pos = dtp->u.p.current_unit->fbuf->act;
       else
-	pos = dtp->u.p.current_unit->recl - dtp->u.p.current_unit->bytes_left;
+	new_pos = dtp->u.p.current_unit->recl
+		   - dtp->u.p.current_unit->bytes_left;
 
-      dtp->u.p.max_pos = (dtp->u.p.max_pos > pos) ? dtp->u.p.max_pos : pos;
+      dtp->u.p.max_pos = (dtp->u.p.max_pos > new_pos) ?
+			  dtp->u.p.max_pos : new_pos;
     }
 
   return;

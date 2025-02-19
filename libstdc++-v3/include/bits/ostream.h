@@ -507,6 +507,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __d;
 	}
 #pragma GCC diagnostic pop
+
+      // RAII type to clear and restore an ostream's exceptions mask.
+      struct _Disable_exceptions
+      {
+	_Disable_exceptions(basic_ostream& __os)
+	: _M_os(__os), _M_exception(_M_os._M_exception)
+	{ _M_os._M_exception = ios_base::goodbit; }
+
+	~_Disable_exceptions()
+	{ _M_os._M_exception = _M_exception; }
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // deleted functions
+	_Disable_exceptions(const _Disable_exceptions&) = delete;
+	_Disable_exceptions& operator=(const _Disable_exceptions&) = delete;
+#pragma GCC diagnostic pop
+
+      private:
+	basic_ostream& _M_os;
+	const ios_base::iostate _M_exception;
+      };
     };
 
   /**
@@ -543,18 +564,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        *  @brief  Possibly flushes the stream.
        *
-       *  If @c ios_base::unitbuf is set in @c os.flags(), and
-       *  @c std::uncaught_exception() is true, the sentry destructor calls
-       *  @c flush() on the output stream.
+       *  If `ios_base::unitbuf` is set in `os.flags()`, and
+       *  `std::uncaught_exception()` is true, the sentry destructor flushes
+       *  the output stream.
       */
       ~sentry()
       {
-	// XXX MT
-	if (bool(_M_os.flags() & ios_base::unitbuf) && !uncaught_exception())
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 397. ostream::sentry dtor throws exceptions
+	// 835. Tying two streams together (correction to DR 581)
+	// 4188. ostream::sentry destructor should handle exceptions
+	if (bool(_M_os.flags() & ios_base::unitbuf) && _M_os.good()
+	      && !uncaught_exception()) // XXX MT
 	  {
-	    // Can't call flush directly or else will get into recursive lock.
-	    if (_M_os.rdbuf() && _M_os.rdbuf()->pubsync() == -1)
-	      _M_os.setstate(ios_base::badbit);
+	    _Disable_exceptions __noex(_M_os);
+	    __try
+	      {
+		// Can't call _M_os.flush() directly because that constructs
+		// another sentry.
+		if (_M_os.rdbuf() && _M_os.rdbuf()->pubsync() == -1)
+		  _M_os.setstate(ios_base::badbit);
+	      }
+	    __catch(...)
+	      { _M_os.setstate(ios_base::badbit); }
 	  }
       }
 #pragma GCC diagnostic pop

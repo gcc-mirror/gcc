@@ -1755,10 +1755,8 @@ expand_vector_conversion (gimple_stmt_iterator *gsi)
     modifier = WIDEN;
 
   auto_vec<std::pair<tree, tree_code> > converts;
-  if (supportable_indirect_convert_operation (code,
-					      ret_type, arg_type,
-					      converts,
-					      arg))
+  if (supportable_indirect_convert_operation (code, ret_type, arg_type,
+					      converts))
     {
       new_rhs = arg;
       for (unsigned int i = 0; i < converts.length () - 1; i++)

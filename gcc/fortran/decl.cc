@@ -1889,12 +1889,20 @@ gfc_set_constant_character_len (gfc_charlen_t len, gfc_expr *expr,
 
       /* Apply the standard by 'hand' otherwise it gets cleared for
 	 initializers.  */
-      if (check_len != -1 && slen != check_len
-          && !(gfc_option.allow_std & GFC_STD_GNU))
-	gfc_error_now ("The CHARACTER elements of the array constructor "
-		       "at %L must have the same length (%ld/%ld)",
-		       &expr->where, (long) slen,
-		       (long) check_len);
+      if (check_len != -1 && slen != check_len)
+	{
+	  if (!(gfc_option.allow_std & GFC_STD_GNU))
+	    gfc_error_now ("The CHARACTER elements of the array constructor "
+			   "at %L must have the same length (%ld/%ld)",
+			   &expr->where, (long) slen,
+			   (long) check_len);
+	  else
+	    gfc_notify_std (GFC_STD_LEGACY,
+			    "The CHARACTER elements of the array constructor "
+			    "at %L must have the same length (%ld/%ld)",
+			    &expr->where, (long) slen,
+			    (long) check_len);
+	}
 
       s[len] = '\0';
       free (expr->value.character.string);

@@ -17703,12 +17703,12 @@
 })
 
 (define_expand "<code><mode>3_mask"
-  [(set (match_operand:VI48_AVX512VL 0 "register_operand")
-	(vec_merge:VI48_AVX512VL
-	  (maxmin:VI48_AVX512VL
-	    (match_operand:VI48_AVX512VL 1 "nonimmediate_operand")
-	    (match_operand:VI48_AVX512VL 2 "nonimmediate_operand"))
-	  (match_operand:VI48_AVX512VL 3 "nonimm_or_0_operand")
+  [(set (match_operand:VI1248_AVX512VLBW 0 "register_operand")
+	(vec_merge:VI1248_AVX512VLBW
+	  (maxmin:VI1248_AVX512VLBW
+	    (match_operand:VI1248_AVX512VLBW 1 "nonimmediate_operand")
+	    (match_operand:VI1248_AVX512VLBW 2 "nonimmediate_operand"))
+	  (match_operand:VI1248_AVX512VLBW 3 "nonimm_or_0_operand")
 	  (match_operand:<avx512fmaskmode> 4 "register_operand")))]
   "TARGET_AVX512F"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
@@ -17724,12 +17724,12 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "<mask_codefor><code><mode>3<mask_name>"
+(define_insn "*avx512bw_<code><mode>3<mask_name>"
   [(set (match_operand:VI12_AVX512VL 0 "register_operand" "=v")
         (maxmin:VI12_AVX512VL
-          (match_operand:VI12_AVX512VL 1 "register_operand" "v")
+          (match_operand:VI12_AVX512VL 1 "nonimmediate_operand" "%v")
           (match_operand:VI12_AVX512VL 2 "nonimmediate_operand" "vm")))]
-  "TARGET_AVX512BW"
+  "TARGET_AVX512BW && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
   "vp<maxmin_int><ssemodesuffix>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "type" "sseiadd")
    (set_attr "prefix" "evex")

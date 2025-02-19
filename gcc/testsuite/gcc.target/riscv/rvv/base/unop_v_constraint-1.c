@@ -8,8 +8,8 @@
 **  ...
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)
-**	vneg\.v\tv[0-9]+,\s*v[0-9]+
-**	vneg\.v\tv[0-9]+,\s*v[0-9]+
+**	vrsub\.vi\tv[0-9]+,\s*v[0-9]+,\s*0
+**	vrsub\.vi\tv[0-9]+,\s*v[0-9]+,\s*0
 **	vse32\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	ret
 */
@@ -28,8 +28,8 @@ void f1 (void * in, void *out)
 **	vlm.v\tv[0-9]+,0\([a-x0-9]+\)
 **  ...
 **	vle32.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
-**	vneg\.v\tv[0-9]+,\s*v[0-9]+
-**	vneg\.v\tv[1-9][0-9]?,\s*v[0-9]+,\s*v0.t
+**	vrsub\.vi\tv[0-9]+,\s*v[0-9]+,\s*0
+**	vrsub\.vi\tv[0-9]+,\s*v[0-9]+,\s*0,\s*v0.t
 **	vse32.v\tv[0-9]+,0\([a-x0-9]+\)
 **	ret
 */
@@ -51,8 +51,8 @@ void f2 (void * in, void *out)
 **  ...
 **	vle32\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle32.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
-**	vneg\.v\tv[0-9]+,\s*v[0-9]+
-**	vneg\.v\tv[1-9][0-9]?,\s*v[0-9]+,\s*v0.t
+**	vrsub\.vi\tv[0-9]+,\s*v[0-9]+,\s*0
+**	vrsub\.vi\tv[0-9]+,\s*v[0-9]+,\s*0,\s*v0.t
 **	vse32.v\tv[0-9]+,0\([a-x0-9]+\)
 **	ret
 */
@@ -72,8 +72,8 @@ void f3 (void * in, void *out)
 **  ...
 **	vle8\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle8\.v\tv[0-9]+,0\([a-x0-9]+\)
-**	vneg\.v\tv[0-9]+,\s*v[0-9]+
-**	vneg\.v\tv[0-9]+,\s*v[0-9]+
+**	vrsub\.vi\tv[0-9]+,\s*v[0-9]+,\s*0
+**	vrsub\.vi\tv[0-9]+,\s*v[0-9]+,\s*0
 **	vse8\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	ret
 */
@@ -92,8 +92,8 @@ void f4 (void * in, void *out)
 **	vlm.v\tv[0-9]+,0\([a-x0-9]+\)
 **  ...
 **	vle8.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
-**	vneg\.v\tv[0-9]+,\s*v[0-9]+
-**	vneg\.v\tv[1-9][0-9]?,\s*v[0-9]+,\s*v0.t
+**	vrsub\.vi\tv[0-9]+,\s*v[0-9]+,\s*0
+**	vrsub\.vi\tv[0-9]+,\s*v[0-9]+,\s*0,\s*v0.t
 **	vse8.v\tv[0-9]+,0\([a-x0-9]+\)
 **	ret
 */
@@ -115,8 +115,8 @@ void f5 (void * in, void *out)
 **  ...
 **	vle8\.v\tv[0-9]+,0\([a-x0-9]+\)
 **	vle8.v\tv[0-9]+,0\([a-x0-9]+\),v0.t
-**	vneg\.v\tv[0-9]+,\s*v[0-9]+
-**	vneg\.v\tv[1-9][0-9]?,\s*v[0-9]+,\s*v0.t
+**	vrsub\.vi\tv[0-9]+,\s*v[0-9]+,\s*0
+**	vrsub\.vi\tv[0-9]+,\s*v[0-9]+,\s*0,\s*v0.t
 **	vse8.v\tv[0-9]+,0\([a-x0-9]+\)
 **	ret
 */

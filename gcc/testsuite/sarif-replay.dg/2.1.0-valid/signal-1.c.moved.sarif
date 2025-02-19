@@ -170,16 +170,16 @@
 In function 'custom_logger':
 signal-1.c:13:3: warning: call to ‘fprintf’ from within signal handler [-Wanalyzer-unsafe-call-within-signal-handler]
    13 |   fprintf(stderr, "LOG: %s", msg);
-      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |   ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   'main': events 1-2
     |
     |   21 | int main(int argc, const char *argv)
-    |      |     ^~~~~
+    |      |     ^~~~
     |      |     |
     |      |     (1) entry to ‘main’
     |......
     |   25 |   signal(SIGINT, handler);
-    |      |   ~~~~~~~~~~~~~~~~~~~~~~~~
+    |      |   ~~~~~~~~~~~~~~~~~~~~~~~
     |      |   |
     |      |   (2) registering ‘handler’ as signal handler
     |
@@ -191,24 +191,24 @@ signal-1.c:13:3: warning: call to ‘fprintf’ from within signal handler [-Wan
     +--> 'handler': events 4-5
            |
            |   16 | static void handler(int signum)
-           |      |             ^~~~~~~~
+           |      |             ^~~~~~~
            |      |             |
            |      |             (4) entry to ‘handler’
            |   17 | {
            |   18 |   custom_logger("got signal");
-           |      |   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+           |      |   ~~~~~~~~~~~~~~~~~~~~~~~~~~~
            |      |   |
            |      |   (5) calling ‘custom_logger’ from ‘handler’
            |
            +--> 'custom_logger': events 6-7
                   |
                   |   11 | void custom_logger(const char *msg)
-                  |      |      ^~~~~~~~~~~~~~
+                  |      |      ^~~~~~~~~~~~~
                   |      |      |
                   |      |      (6) entry to ‘custom_logger’
                   |   12 | {
                   |   13 |   fprintf(stderr, "LOG: %s", msg);
-                  |      |   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                  |      |   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                   |      |   |
                   |      |   (7) call to ‘fprintf’ from within signal handler
                   |

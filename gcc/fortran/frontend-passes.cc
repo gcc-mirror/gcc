@@ -5727,6 +5727,7 @@ check_externals_procedure (gfc_symbol *sym, locus *loc,
   gcc_assert (new_sym);
   new_sym->attr = sym->attr;
   new_sym->attr.if_source = IFSRC_DECL;
+  new_sym->ts = sym->ts;
   gfc_current_ns = gsym->ns;
 
   gfc_get_formal_from_actual_arglist (new_sym, actual);

@@ -191,6 +191,22 @@
 	  && CONSTANT_P (op) && ! TARGET_PORTABLE_RUNTIME);
 })
 
+;; True iff OP is a SImode r25 register operand.
+
+(define_predicate "r25_operand"
+  (match_code "reg")
+{
+  return mode == SImode && REG_P (op) && REGNO (op) == 25;
+})
+
+;; True iff OP is a SImode r26 register operand.
+
+(define_predicate "r26_operand"
+  (match_code "reg")
+{
+  return mode == SImode && REG_P (op) && REGNO (op) == 26;
+})
+
 ;; True iff OP can be used as the divisor in a div millicode call.
 
 (define_predicate "div_operand"

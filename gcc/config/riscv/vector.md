@@ -3904,7 +3904,10 @@
 	    (match_operand:V_VLSI 3 "register_operand"       "vr,vr, vr, vr"))
 	  (match_operand:V_VLSI 2 "vector_merge_operand"     "vu, 0, vu,  0")))]
   "TARGET_VECTOR"
-  "v<insn>.v\t%0,%3%p1"
+  {
+    /* vneg.v = vrsub vd,vs,x0 = vrsub vd,vs,0.  */
+    return (<CODE> == NEG) ? "vrsub.vi\t%0,%3,0%p1" : "v<insn>.v\t%0,%3%p1";
+  }
   [(set_attr "type" "vialu")
    (set_attr "mode" "<MODE>")
    (set_attr "vl_op_idx" "4")
@@ -4258,7 +4261,13 @@
 	     (match_operand 4 "pmode_reg_or_uimm5_operand"             " rK, rK, rK, rK,   rK,   rK")))
 	  (match_operand:<V_DOUBLE_TRUNC> 2 "vector_merge_operand"     " vu,  0, vu,  0,   vu,    0")))]
   "TARGET_VECTOR"
-  "vn<insn>.w%o4\t%0,%3,%4%p1"
+  {
+    /* vnsrl vd,vs,x0 = vnsrl vd,vs,0.  */
+    if (REG_P (operands[4]) && REGNO (operands[4]) == 0)
+      return "vn<insn>.wi\t%0,%3,0%p1";
+
+    return "vn<insn>.w%o4\t%0,%3,%4%p1";
+  }
   [(set_attr "type" "vnshift")
    (set_attr "mode" "<V_DOUBLE_TRUNC>")
    (set_attr "spec_restriction" "none,none,thv,thv,none,none")])
@@ -4279,7 +4288,8 @@
 	    (match_operand:VWEXTI 3 "register_operand"                 "  0,  0,  0,  0,   vr,   vr"))
 	  (match_operand:<V_DOUBLE_TRUNC> 2 "vector_merge_operand"     " vu,  0, vu,  0,   vu,    0")))]
   "TARGET_VECTOR"
-  "vncvt.x.x.w\t%0,%3%p1"
+  ;; vncvt.x.x.w = vnsrl vd,vs,x0 = vnsrl vd,vs,0
+  "vnsrl.wi\t%0,%3,0%p1";
   [(set_attr "type" "vnshift")
    (set_attr "mode" "<V_DOUBLE_TRUNC>")
    (set_attr "vl_op_idx" "4")

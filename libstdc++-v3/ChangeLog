@@ -1,3 +1,114 @@
+2025-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/shared_ptr_base.h: Do not include <bit>.
+
+2025-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100612
+	* include/std/thread (__pmf_expects_stop_token): Constrain
+	variable template specialization with concept. Add comment.
+
+2025-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (rbegin, rend, crbegin, crend):
+	Add conditional noexcept, as per P3623R0.
+	* testsuite/24_iterators/headers/iterator/range_access.cc: Add
+	noexcept-specifier to rbegin, rend, crbegin and crend
+	declarations.
+
+2025-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/24_iterators/headers/iterator/range_access_c++11.cc:
+	Removed.
+	* testsuite/24_iterators/headers/iterator/range_access_c++14.cc:
+	Removed.
+	* testsuite/24_iterators/headers/iterator/range_access_c++17.cc:
+	Removed.
+	* testsuite/24_iterators/headers/iterator/range_access.cc:
+	New test.
+
+2025-02-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR libstdc++/118865
+	* include/bits/stl_list.h (_M_initialize_dispatch): Add an
+	unreachable if the iterator was not empty that the list will
+	now be not empty.
+
+2025-02-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/parallel/algobase.h (__mismatch_switch): Qualify calls
+	to make_pair to avoid ADL.
+
+2025-02-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tree.h (_Rb_tree::_M_equal_range): Replace
+	unqualified call to make_pair with explicit construction of
+	std::pair.
+	* testsuite/23_containers/set/operations/equal_range_adl.cc:
+	New test.
+
+2025-02-14  Matthew Malcomson  <mmalcomson@nvidia.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h (__atomic_fetch_addable): Define
+	new concept.
+	(__atomic_impl::__fetch_add_flt): Use new concept to make use of
+	__atomic_fetch_add when available.
+	(__atomic_fetch_subtractable, __fetch_sub_flt): Likewise.
+	(__atomic_add_fetchable, __add_fetch_flt): Likewise.
+	(__atomic_sub_fetchable, __sub_fetch_flt): Likewise.
+
+2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Turn
+	'sorry, unimplemented: exception handling not supported' into
+	UNSUPPORTED.
+
+2025-02-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/lib/prune.exp (libstdc++-dg-prune): Clarify
+	effective-target 'exceptions_enabled'.
+
+2025-02-07  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	PR libstdc++/118160
+	PR libstdc++/100249
+	* include/bits/ranges_algo.h (__is_permutation_fn): Avoid a
+	dangling reference by storing the result of the iterator
+	dereference and the result of the projection in two distinct
+	variables, in order to lifetime-extend each one.
+	Forward the projected value to the predicate.
+	* testsuite/25_algorithms/is_permutation/constrained.cc: Add a
+	test with a range returning prvalues. Test it in a constexpr
+	context, in order to rely on the compiler to catch UB.
+
+2025-02-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ostream.h (basic_ostream::_Disable_exceptions):
+	RAII helper type.
+	(basic_ostream::sentry::~sentry): Use _Disable_exceptions. Add
+	try-catch block around call to pubsync.
+	* testsuite/27_io/basic_ostream/exceptions/char/lwg4188.cc: New
+	test.
+	* testsuite/27_io/basic_ostream/exceptions/wchar_t/lwg4188.cc:
+	New test.
+
+2025-02-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/111050
+	* include/bits/hashtable_policy.h (_Hash_node_value_base): Add
+	comment about always_inline attributes.
+
+2025-02-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118701
+	* config/abi/pre/gnu.ver (CXXABI_1.3.16): Move __riscv guard
+	around version.
+	* scripts/extract_symvers.pl: Allow for weak versions.
+	* testsuite/util/testsuite_abi.cc (check_version): Wrap
+	CXXABI_1.3.16 in __riscv.
+
 2025-01-31  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/118156

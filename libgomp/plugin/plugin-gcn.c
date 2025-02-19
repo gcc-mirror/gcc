@@ -66,6 +66,14 @@
 #define R_AMDGPU_RELATIVE64	13	/* B + A  */
 #endif
 
+#define ELFABIVERSION_AMDGPU_HSA_V6		4
+
+#define EF_AMDGPU_GENERIC_VERSION_V		0xff000000  /* Mask.  */
+#define EF_AMDGPU_GENERIC_VERSION_OFFSET	24
+
+#define GET_GENERIC_VERSION(VAR) ((VAR & EF_AMDGPU_GENERIC_VERSION_V) \
+				  >> EF_AMDGPU_GENERIC_VERSION_OFFSET)
+
 /* GCN specific definitions for asynchronous queues.  */
 
 #define ASYNC_QUEUE_SIZE 64
@@ -242,7 +250,7 @@ struct kernel_dispatch
 };
 
 /* Structure of the kernargs segment, supporting console output.
- 
+
    This needs to match the definitions in Newlib, and the expectations
    in libgomp target code.  */
 
@@ -1668,6 +1676,13 @@ elf_gcn_isa_field (Elf64_Ehdr *image)
   return image->e_flags & EF_AMDGPU_MACH_MASK;
 }
 
+static int
+elf_gcn_isa_is_generic (Elf64_Ehdr *image)
+{
+  return (image->e_ident[8] == ELFABIVERSION_AMDGPU_HSA_V6
+	  && GET_GENERIC_VERSION (image->e_flags));
+}
+
 /* Returns the name that the HSA runtime uses for the ISA or NULL if we do not
    support the ISA. */
 
@@ -2399,38 +2414,88 @@ init_basic_kernel_info (struct kernel_info *kernel,
   return true;
 }
 
-/* Check that the GCN ISA of the given image matches the ISA of the agent. */
+/* If status is SUCCESS, assume that the code runs if either the ISA of agent
+   and code is the same - or it is generic code.
+   Otherwise, execution failed with the provided status code; try to give
+   some useful diagnostic.  */
 
 static bool
-isa_matches_agent (struct agent_info *agent, Elf64_Ehdr *image)
+isa_matches_agent (struct agent_info *agent, Elf64_Ehdr *image,
+		   hsa_status_t status)
 {
+  /* Generic image - assume that it works and only return to here
+     when it fails, i.e. fatal == true.  */
+  if (status == HSA_STATUS_SUCCESS && elf_gcn_isa_is_generic (image))
+    return true;
+
   int isa_field = elf_gcn_isa_field (image);
-  const char* isa_s = isa_name (isa_field);
-  if (!isa_s)
+  if (status == HSA_STATUS_SUCCESS && isa_field == agent->device_isa)
+    return true;
+
+  /* If we get here, either the binary is non-generic and has a mismatch of
+     the ISA - or is generic but not handled by the ROCm (e.g. because ROCm
+     is too old).  */
+
+  char msg[340];
+  char agent_isa_xs[8];
+  char device_isa_xs[8];
+  const char *agent_isa_s = isa_name (agent->device_isa);
+  const char *device_isa_s = isa_name (isa_field);
+  if (agent_isa_s == NULL)
     {
-      hsa_error ("Unsupported ISA in GCN code object.", HSA_STATUS_ERROR);
-      return false;
+      snprintf (agent_isa_xs, sizeof agent_isa_xs,
+		"0x%X", agent->device_isa);
+      agent_isa_s = agent_isa_xs;
+    }
+  if (device_isa_s == NULL)
+    {
+      snprintf (device_isa_xs, sizeof device_isa_xs, "0x%X", isa_field);
+      device_isa_s = device_isa_xs;
     }
 
-  if (isa_field != agent->device_isa)
-    {
-      char msg[204];
-      const char *agent_isa_s = isa_name (agent->device_isa);
-      assert (agent_isa_s);
+  /* Some error which should be unrelated to the ISA.  */
+  if (status != HSA_STATUS_SUCCESS
+      && status != HSA_STATUS_ERROR_INVALID_CODE_OBJECT
+      && status != HSA_STATUS_ERROR_INVALID_ISA_NAME
+      && status != HSA_STATUS_ERROR_INCOMPATIBLE_ARGUMENTS)
+    snprintf (msg, sizeof msg,
+	      "Could not load GCN code object with ISA %s on GPU with "
+	      "ISA %s (device %d).\n"
+	      "Consider using ROCR_VISIBLE_DEVICES to disable incompatible "
+	      "devices or run with LOADER_ENABLE_LOGGING=1 for more details.",
+	      device_isa_s, agent_isa_s, agent->device_id);
+  else if (status == HSA_STATUS_ERROR_INVALID_ISA_NAME
+	   && elf_gcn_isa_is_generic (image))
+    snprintf (msg, sizeof msg,
+	      "Unsupported generic ISA %s on GPU with ISA %s (device %d).\n"
+	      "%s%s%s"
+	      "Consider using ROCR_VISIBLE_DEVICES to disable incompatible "
+	      "devices, run with LOADER_ENABLE_LOGGING=1 for more details, "
+	      "or try updating to a ROCm that supports this generic ISA.",
+	      device_isa_s, agent_isa_s, agent->device_id,
+	      agent_isa_s[0] != '0'
+	      ? "Try to recompile with '-foffload-options=-march=" : "",
+	      agent_isa_s[0] != '0' ? agent_isa_s : "",
+	      agent_isa_s[0] != '0' ? ".\n" : "");
+  else if (agent_isa_s[0] == '0')
+    snprintf (msg, sizeof msg,
+	      "GCN code object ISA '%s' is incompatible with GPU ISA '%s' "
+	      "(device %d).\n"
+	      "Consider using ROCR_VISIBLE_DEVICES to disable incompatible "
+	      "devices or run with LOADER_ENABLE_LOGGING=1 for more details.",
+	      device_isa_s, agent_isa_s, agent->device_id);
+  else
+    snprintf (msg, sizeof msg,
+	      "GCN code object ISA '%s' is incompatible with GPU ISA '%s' "
+	      "(device %d).\n"
+	      "Try to recompile with '-foffload-options=-march=%s',\n"
+	      "or use ROCR_VISIBLE_DEVICES to disable incompatible "
+	      "devices.\n",
+	      device_isa_s, agent_isa_s, agent->device_id, agent_isa_s);
 
-      snprintf (msg, sizeof msg,
-		"GCN code object ISA '%s' does not match GPU ISA '%s' "
-		"(device %d).\n"
-		"Try to recompile with '-foffload-options=-march=%s',\n"
-		"or use ROCR_VISIBLE_DEVICES to disable incompatible "
-		"devices.\n",
-		isa_s, agent_isa_s, agent->device_id, agent_isa_s);
-
-      hsa_error (msg, HSA_STATUS_ERROR);
-      return false;
-    }
-
-  return true;
+  hsa_error (msg, status != HSA_STATUS_SUCCESS
+		  ? status : HSA_STATUS_ERROR_INVALID_CODE_OBJECT);
+  return false;
 }
 
 /* Create and finalize the program consisting of all loaded modules.  */
@@ -2464,7 +2529,8 @@ create_and_finalize_hsa_program (struct agent_info *agent)
     {
       Elf64_Ehdr *image = (Elf64_Ehdr *)module->image_desc->gcn_image->image;
 
-      if (!isa_matches_agent (agent, image))
+      /* Check the ISA early because older ROCm had unhelpful errors.  */
+      if (!isa_matches_agent (agent, image, HSA_STATUS_SUCCESS))
 	goto fail;
 
       hsa_code_object_t co = { 0 };
@@ -2482,7 +2548,7 @@ create_and_finalize_hsa_program (struct agent_info *agent)
 	(agent->executable, agent->id, co, "");
       if (status != HSA_STATUS_SUCCESS)
 	{
-	  hsa_error ("Could not load GCN code object", status);
+	  isa_matches_agent (agent, image, status);
 	  goto fail;
 	}
 

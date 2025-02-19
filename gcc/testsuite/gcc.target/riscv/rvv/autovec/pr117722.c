@@ -18,6 +18,6 @@ int pixel_sad_n(unsigned char *pix1, unsigned char *pix2, int n)
   return sum;
 }
 
-/* { dg-final { scan-assembler {vmin\.v} } } */
-/* { dg-final { scan-assembler {vmax\.v} } } */
+/* { dg-final { scan-assembler {vminu\.v} } } */
+/* { dg-final { scan-assembler {vmaxu\.v} } } */
 /* { dg-final { scan-assembler {vsub\.v} } } */

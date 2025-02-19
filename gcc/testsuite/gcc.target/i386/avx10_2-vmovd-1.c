@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2" } */
+/* { dg-options "-O2 -march=x86-64-v3 -mavx10.2-256" } */
 /* { dg-final { scan-assembler-times "vmovd\t\[0-9\]+\\(%e\[bs\]p\\), %xmm0" 1 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "vmovss\t\[0-9\]+\\(%e\[bs\]p\\), %xmm0" 1 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "vmovd\t%xmm0, %xmm0" 3 { target ia32 } } } */

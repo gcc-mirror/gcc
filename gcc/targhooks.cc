@@ -1305,6 +1305,14 @@ default_ira_change_pseudo_allocno_class (int regno ATTRIBUTE_UNUSED,
   return cl;
 }
 
+int
+default_ira_callee_saved_register_cost_scale (int)
+{
+  return (optimize_size
+	  ? 1
+	  : REG_FREQ_FROM_BB (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+}
+
 extern bool
 default_lra_p (void)
 {

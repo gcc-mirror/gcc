@@ -6,3 +6,6 @@
 // { dg-regexp {[^\n]*lambda-ctx2.h:[:0-9]* warning: the mangled name of .A::<lambda>.[^\n]*\n} }
 // { dg-regexp {[^\n]*lambda-ctx2.h:[:0-9]* warning: the mangled name of .B<int>::<lambda>.[^\n]*\n} }
 // { dg-regexp {[^\n]*lambda-ctx2.h:[:0-9]* warning: the mangled name of .B<int>::<lambda>.[^\n]*\n} }
+// { dg-regexp {[^\n]*lambda-ctx2.h:[:0-9]* warning: the mangled name of .D::<lambda>.[^\n]*\n} }
+// { dg-regexp {[^\n]*lambda-ctx2.h:[:0-9]* warning: the mangled name of .E<int>::<lambda>.[^\n]*\n} }
+// { dg-regexp {[^\n]*lambda-ctx2.h:[:0-9]* warning: the mangled name of .E<int>::<lambda>.[^\n]*\n} }

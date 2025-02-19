@@ -61,7 +61,6 @@
 #include <ext/atomicity.h>
 #include <ext/concurrence.h>
 #if __cplusplus >= 202002L
-# include <bit>          // __bit_floor
 # include <compare>
 # include <bits/align.h> // std::align
 # include <bits/stl_uninitialized.h>

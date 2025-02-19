@@ -1,4 +1,4 @@
-/* { dg-do run { target { avx10_2 } } } */
+/* { dg-do run { target { avx10_2_256 } } } */
 /* { dg-options "-march=x86-64-v3 -O2" } */
 
 #include "avx10_2-comibf-3.c"
@@ -24,7 +24,7 @@ int foo3 (__bf16 a, __bf16 b, __bf16 c, __bf16 d)
 
 int main (void)
 {
-  if (!__builtin_cpu_supports ("avx10.2"))
+  if (!__builtin_cpu_supports ("avx10.2-256"))
     return 0;
 
   __bf16 a = 0.5bf16, b = -0.25bf16, c = 1.75bf16, d = -0.125bf16;

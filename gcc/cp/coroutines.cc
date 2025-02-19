@@ -1188,6 +1188,28 @@ build_template_co_await_expr (location_t kw, tree type, tree expr, tree kind)
   return aw_expr;
 }
 
+/* Is EXPR an lvalue that will refer to the same object after a resume?
+
+   This is close to asking tree_invariant_p of its address, but that doesn't
+   distinguish temporaries from other variables.  */
+
+static bool
+is_stable_lvalue (tree expr)
+{
+  if (TREE_SIDE_EFFECTS (expr))
+    return false;
+
+  for (; handled_component_p (expr);
+       expr = TREE_OPERAND (expr, 0))
+    {
+      if (TREE_CODE (expr) == ARRAY_REF
+	  && !TREE_CONSTANT (TREE_OPERAND (expr, 1)))
+	return false;
+    }
+
+  return (TREE_CODE (expr) == PARM_DECL
+	  || (VAR_P (expr) && !is_local_temp (expr)));
+}
 
 /*  This performs [expr.await] bullet 3.3 and validates the interface obtained.
     It is also used to build the initial and final suspend points.
@@ -1250,7 +1272,7 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind,
   if (o_type && !VOID_TYPE_P (o_type))
     o_type = complete_type_or_else (o_type, o);
 
-  if (!o_type)
+  if (!o_type || o_type == error_mark_node)
     return error_mark_node;
 
   if (TREE_CODE (o_type) != RECORD_TYPE)
@@ -1282,14 +1304,30 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind,
   if (!glvalue_p (o))
     o = get_target_expr (o, tf_warning_or_error);
 
+  /* [expr.await]/3.4 e is an lvalue referring to the result of evaluating the
+     (possibly-converted) o.
+
+     So, either reuse an existing stable lvalue such as a variable or
+     COMPONENT_REF thereof, or create a new a coroutine state frame variable
+     for the awaiter, since it must persist across suspension.  */
+  tree e_var = NULL_TREE;
   tree e_proxy = o;
-  if (glvalue_p (o))
+  if (is_stable_lvalue (o))
     o = NULL_TREE; /* Use the existing entity.  */
-  else /* We need to materialise it.  */
+  else /* We need a non-temp var.  */
     {
-      e_proxy = get_awaitable_var (suspend_kind, o_type);
-      o = cp_build_init_expr (loc, e_proxy, o);
-      e_proxy = convert_from_reference (e_proxy);
+      tree p_type = TREE_TYPE (o);
+      tree o_a = o;
+      if (glvalue_p (o))
+	{
+	  /* Build a reference variable for a non-stable lvalue o.  */
+	  p_type = cp_build_reference_type (p_type, xvalue_p (o));
+	  o_a = build_address (o);
+	  o_a = cp_fold_convert (p_type, o_a);
+	}
+      e_var = get_awaitable_var (suspend_kind, p_type);
+      o = cp_build_init_expr (loc, e_var, o_a);
+      e_proxy = convert_from_reference (e_var);
     }
 
   /* I suppose we could check that this is contextually convertible to bool.  */
@@ -1355,7 +1393,7 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind,
 	return error_mark_node;
       if (coro_diagnose_throwing_fn (awrs_func))
 	return error_mark_node;
-      if (tree dummy = cxx_maybe_build_cleanup (e_proxy, tf_none))
+      if (tree dummy = cxx_maybe_build_cleanup (e_var, tf_none))
 	{
 	  if (CONVERT_EXPR_P (dummy))
 	    dummy = TREE_OPERAND (dummy, 0);
@@ -1366,7 +1404,8 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind,
     }
 
   /* We now have three call expressions, in terms of the promise, handle and
-     'e' proxies.  Save them in the await expression for later expansion.  */
+     'e' proxy expression.  Save them in the await expression for later
+     expansion.  */
 
   tree awaiter_calls = make_tree_vec (3);
   TREE_VEC_ELT (awaiter_calls, 0) = awrd_call; /* await_ready().  */
@@ -1379,8 +1418,8 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind,
     }
   TREE_VEC_ELT (awaiter_calls, 2) = awrs_call; /* await_resume().  */
 
-  if (REFERENCE_REF_P (e_proxy))
-    e_proxy = TREE_OPERAND (e_proxy, 0);
+  if (e_var)
+    e_proxy = e_var;
 
   tree awrs_type = TREE_TYPE (TREE_TYPE (awrs_func));
   tree suspend_kind_cst = build_int_cst (integer_type_node,

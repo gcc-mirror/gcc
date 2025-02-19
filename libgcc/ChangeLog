@@ -1,3 +1,25 @@
+2025-02-17  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/118844
+	* config/loongarch/t-crtstuff: Add '-mcmodel=extreme'
+	to CRTSTUFF_T_CFLAGS_S.
+
+2025-02-12  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/riscv/feature_bits.c (RISCV_VENDOR_FEATURE_BITS_LENGTH): Drop.
+	(__init_riscv_features_bits_linux): Drop.
+
+2025-02-08  Dimitry Andric  <dimitry@andric.com>
+
+	PR target/118685
+	* config.host (*-*-freebsd*): Add crtbeginT.o to extra_parts.
+
+2025-02-07  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/117674
+	* config/rs6000/linux-unwind.h (ppc_backchain_fallback): Add cast to
+	avoid comparison between pointer and integer warning.
+
 2025-01-30  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/t-avr (LIB1ASMFUNCS): Add _strlen_memx.
