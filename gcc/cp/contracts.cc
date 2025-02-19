@@ -3129,7 +3129,8 @@ finish_function_contracts (tree fndecl)
 {
   /* If the guarded func is either already decided to be ill-formed or is
      not yet complete return early.  */
-  if (fndecl == error_mark_node
+  if (error_operand_p (fndecl)
+      || !DECL_INITIAL (fndecl)
       || DECL_INITIAL (fndecl) == error_mark_node)
     return;
 
