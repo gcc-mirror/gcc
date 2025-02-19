@@ -885,7 +885,7 @@ namespace __gnu_cxx
 #ifdef __has_builtin
 # ifdef __is_identifier
 // Intel and older Clang require !__is_identifier for some built-ins:
-#  define _GLIBCXX_HAS_BUILTIN(B) __has_builtin(B) || ! __is_identifier(B)
+#  define _GLIBCXX_HAS_BUILTIN(B) (__has_builtin(B) || ! __is_identifier(B))
 # else
 #  define _GLIBCXX_HAS_BUILTIN(B) __has_builtin(B)
 # endif
