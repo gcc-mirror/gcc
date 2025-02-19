@@ -5676,10 +5676,8 @@ package body Sem_Util is
          --  to start scanning from the incomplete view, which is earlier on
          --  the entity chain.
 
-         elsif Nkind (Parent (B_Type)) = N_Full_Type_Declaration
-           and then Present (Incomplete_View (Parent (B_Type)))
-         then
-            Id := Incomplete_View (Parent (B_Type));
+         elsif Present (Incomplete_View (B_Type)) then
+            Id := Incomplete_View (B_Type);
 
             --  If T is a derived from a type with an incomplete view declared
             --  elsewhere, that incomplete view is irrelevant, we want the

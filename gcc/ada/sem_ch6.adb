@@ -4666,10 +4666,8 @@ package body Sem_Ch6 is
                --  an incomplete tagged type declaration, get the class-wide
                --  type of the incomplete tagged type to match Find_Type_Name.
 
-               if Nkind (Parent (Etyp)) = N_Full_Type_Declaration
-                 and then Present (Incomplete_View (Parent (Etyp)))
-               then
-                  Etyp := Class_Wide_Type (Incomplete_View (Parent (Etyp)));
+               if Present (Incomplete_View (Etype (Etyp))) then
+                  Etyp := Class_Wide_Type (Incomplete_View (Etype (Etyp)));
                end if;
 
                Set_Directly_Designated_Type (Etype (Spec_Id), Etyp);

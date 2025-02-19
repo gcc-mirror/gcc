@@ -3194,7 +3194,7 @@ package body Sem_Ch3 is
         and then Present (Full_View (Prev))
       then
          T := Full_View (Prev);
-         Set_Incomplete_View (N, Prev);
+         Set_Incomplete_View (T, Prev);
       else
          T := Prev;
       end if;
@@ -11983,7 +11983,7 @@ package body Sem_Ch3 is
             Insert_Before (Typ_Decl, Decl);
             Analyze (Decl);
             Set_Full_View (Inc_T, Typ);
-            Set_Incomplete_View (Typ_Decl, Inc_T);
+            Set_Incomplete_View (Typ, Inc_T);
 
             --  If the type is tagged, create a common class-wide type for
             --  both views, and set the Etype of the class-wide type to the

@@ -534,8 +534,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Discriminant_Specifications, List_Id, Default_No_List),
         Sy (Type_Definition, Node_Id),
         Sy (Aspect_Specifications, List_Id, Default_No_List),
-        Sm (Discr_Check_Funcs_Built, Flag),
-        Sm (Incomplete_View, Node_Id)));
+        Sm (Discr_Check_Funcs_Built, Flag)));
 
    Cc (N_Incomplete_Type_Declaration, N_Declaration,
        (Sy (Defining_Identifier, Node_Id),

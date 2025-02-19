@@ -2245,6 +2245,11 @@ package Einfo is
 --       is relocated to the corresponding package body, which must have a
 --       corresponding nonlimited with_clause.
 
+--    Incomplete_View
+--       Defined in all entities. Present in those that are completions of
+--       incomplete types. Denotes the corresponding incomplete view declared
+--       by the incomplete declaration.
+
 --    Indirect_Call_Wrapper
 --       Defined on subprogram entities. Set if the subprogram has class-wide
 --       preconditions. Denotes the internal wrapper that checks preconditions

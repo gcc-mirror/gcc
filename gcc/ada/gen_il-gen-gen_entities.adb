@@ -114,6 +114,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Has_Xref_Entry, Flag),
         Sm (Has_Yield_Aspect, Flag),
         Sm (Homonym, Node_Id),
+        Sm (Incomplete_View, Node_Id),
         Sm (In_Package_Body, Flag),
         Sm (In_Private_Part, Flag),
         Sm (In_Use, Flag),
