@@ -2061,11 +2061,6 @@ private:
   const private_region m_private_reg;
 };
 
-class kf_ubsan_bounds : public internal_known_function
-{
-  /* Empty.  */
-};
-
 /* Handle calls to functions referenced by
    __attribute__((malloc(FOO))).  */
 
@@ -2202,6 +2197,13 @@ register_atomic_builtins (known_function_manager &kfm)
 	   make_unique<kf_atomic_fetch_op> (BIT_IOR_EXPR));
 }
 
+/* Handle calls to the various IFN_UBSAN_* with no return value.
+   For now, treat these as no-ops.  */
+
+class kf_ubsan_noop : public internal_known_function
+{
+};
+
 /* Handle calls to the various __builtin___ubsan_handle_*.
    These can return, but continuing after such a return
    isn't likely to be interesting to the user of the analyzer.
@@ -2219,6 +2221,15 @@ class kf_ubsan_handler : public internal_known_function
 static void
 register_sanitizer_builtins (known_function_manager &kfm)
 {
+  /* Handle calls to the various IFN_UBSAN_* with no return value.
+     For now, treat these as no-ops.  */
+  kfm.add (IFN_UBSAN_NULL,
+	   make_unique<kf_ubsan_noop> ());
+  kfm.add (IFN_UBSAN_BOUNDS,
+	   make_unique<kf_ubsan_noop> ());
+  kfm.add (IFN_UBSAN_PTR,
+	   make_unique<kf_ubsan_noop> ());
+
   kfm.add (BUILT_IN_UBSAN_HANDLE_NONNULL_ARG,
 	   make_unique<kf_ubsan_handler> ());
 }
@@ -2236,7 +2247,6 @@ register_known_functions (known_function_manager &kfm,
   /* Internal fns the analyzer has known_functions for.  */
   {
     kfm.add (IFN_BUILTIN_EXPECT, make_unique<kf_expect> ());
-    kfm.add (IFN_UBSAN_BOUNDS, make_unique<kf_ubsan_bounds> ());
   }
 
   /* GCC built-ins that do not correspond to a function
