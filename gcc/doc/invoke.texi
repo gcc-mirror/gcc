@@ -20383,10 +20383,6 @@ Dump after common sequence discovery.
 @item -fdump-rtl-shorten
 Dump after shortening branches.
 
-@opindex fdump-rtl-sibling
-@item -fdump-rtl-sibling
-Dump after sibling call optimizations.
-
 @opindex fdump-rtl-split1
 @opindex fdump-rtl-split2
 @opindex fdump-rtl-split3
@@ -20416,10 +20412,6 @@ x87's stack-like registers.  This pass is only run on x86 variants.
 @itemx -fdump-rtl-subreg2
 @option{-fdump-rtl-subreg1} and @option{-fdump-rtl-subreg2} enable dumping after
 the two subreg expansion passes.
-
-@opindex fdump-rtl-unshare
-@item -fdump-rtl-unshare
-Dump after all rtl has been unshared.
 
 @opindex fdump-rtl-vartrack
 @item -fdump-rtl-vartrack
