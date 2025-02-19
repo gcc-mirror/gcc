@@ -207,7 +207,7 @@ struct _Dir_base
   }
 
   static posix::DIR*
-  openat(const _At_path& atp, bool nofollow)
+  openat(const _At_path& atp, [[maybe_unused]] bool nofollow)
   {
 #if _GLIBCXX_HAVE_FDOPENDIR && defined O_RDONLY && defined O_DIRECTORY \
     && ! _GLIBCXX_FILESYSTEM_IS_WINDOWS
