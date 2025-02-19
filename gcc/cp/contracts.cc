@@ -3141,7 +3141,7 @@ finish_function_contracts (tree fndecl)
   /* If this is not a client side check and definition side checks are
      disabled, do nothing.  */
   if (!flag_contracts_nonattr_definition_check
-      && !DECL_CONTRACT_WRAPPER(fndecl))
+      && !DECL_CONTRACT_WRAPPER (fndecl))
     return;
 
   for (tree ca = DECL_CONTRACTS (fndecl); ca; ca = CONTRACT_CHAIN (ca))
@@ -3163,28 +3163,25 @@ finish_function_contracts (tree fndecl)
   if (pre == error_mark_node || post == error_mark_node)
     return;
 
-  if (pre && (!DECL_INITIAL (pre) || DECL_INITIAL (pre)== error_mark_node))
+  if (pre && !DECL_INITIAL (pre))
     {
       DECL_PENDING_INLINE_P (pre) = false;
       start_preparsed_function (pre, DECL_ATTRIBUTES (pre), flags);
       remap_and_emit_conditions (fndecl, pre, PRECONDITION_STMT);
       finish_return_stmt (NULL_TREE);
-      tree finished_pre = finish_function (false);
-      expand_or_defer_fn (finished_pre);
+      pre = finish_function (false);
+      expand_or_defer_fn (pre);
     }
 
-  if (post && (!DECL_INITIAL (post) || DECL_INITIAL (post) == error_mark_node))
+  if (post && !DECL_INITIAL (post))
     {
       DECL_PENDING_INLINE_P (post) = false;
-      start_preparsed_function (post,
-				DECL_ATTRIBUTES (post),
-				flags);
+      start_preparsed_function (post, DECL_ATTRIBUTES (post), flags);
       remap_and_emit_conditions (fndecl, post, POSTCONDITION_STMT);
       gcc_checking_assert (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (post))));
       finish_return_stmt (NULL_TREE);
-
-      tree finished_post = finish_function (false);
-      expand_or_defer_fn (finished_post);
+      post = finish_function (false);
+      expand_or_defer_fn (post);
     }
 
   /* Check if we need to update wrapper function contracts.  */
