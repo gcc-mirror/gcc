@@ -1,3 +1,68 @@
+2025-02-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/115703
+	* gcc.target/riscv/rvv/autovec/pr115703-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr115703.c: New test.
+
+2025-02-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/116986
+	* gcc.dg/crc-builtin-rev-target32.c: Include stdint.h
+	instead of stdint-gcc.h.
+	* gcc.dg/crc-builtin-rev-target64.c: Likewise.
+	* gcc.dg/crc-builtin-target32.c: Likewise.
+	* gcc.dg/crc-builtin-target64.c: Likewise.
+	* gcc.dg/torture/pr115387-2.c: Likewise.
+
+2025-02-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/gomp/metadirective-3.f90: Add xfail when
+	compiling for offload_nvptx.
+
+2025-02-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/108840
+	* gcc.target/aarch64/pr108840.c: Run at -O2 but disable combine.
+
+2025-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98845
+	* gcc.dg/pr98845.c: New testcase.
+	* gcc.dg/pr81192.c: Adjust.
+
+2025-02-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/base/bug-9.c: Added new failure check.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-17.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-18.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-19.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-20.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-21.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-22.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-23.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-24.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-25.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-26.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-27.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-28.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-29.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-3.c: Likewise.
+
+2025-02-18  Pan Li  <pan2.li@intel.com>
+
+	PR target/118540
+	* gcc.target/riscv/rvv/base/pr118540-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr118540-2.c: New test.
+
+2025-02-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/scanasm.exp (check-function-bodies): Fix usage comment.
+
+2025-02-18  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118805
+	* gcc.dg/field-merge-26.c: New.
+
 2025-02-17  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/115271

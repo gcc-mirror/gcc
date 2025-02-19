@@ -1,3 +1,13 @@
+2025-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc
+	(saved_diagnostic::maybe_add_sarif_properties): Add various
+	properties for debugging, for m_stmt, m_var, and m_duplicates.
+	Remove stray 'if' statement.  Capture the kind of the
+	pending_diagnostic.
+	* region-model.cc
+	(poisoned_value_diagnostic::maybe_add_sarif_properties): New.
+
 2024-12-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* region-model.cc: Include "gcc-urlifier.h".

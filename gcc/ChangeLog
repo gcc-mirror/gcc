@@ -1,3 +1,60 @@
+2025-02-18  Andi Kleen  <ak@gcc.gnu.org>
+
+	* doc/invoke.texi:
+
+2025-02-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* opts-diagnostic.cc (sarif_scheme_handler::make_sink): Put
+	properties in alphabetical order.
+
+2025-02-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/115703
+	* config/riscv/riscv-vsetvl.cc: Use max_sew for calculating the
+	new LMUL.
+
+2025-02-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/108840
+	* late-combine.cc (late_combine::check_register_pressure):
+	Take only allocatable registers into account when checking
+	the permissiveness of register classes.
+
+2025-02-18  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/118320
+	* pair-fusion.cc (pair_fusion_bb_info::fuse_pair): Tweak wording in dump
+	message when punting on invalid use arrays.
+
+2025-02-18  Soumya AR  <soumyaa@nvidia.com>
+
+	* config/aarch64/tuning_models/generic_armv8_a.h: Updated prefetch
+	struct pointer.
+
+2025-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98845
+	* tree-ssa-tail-merge.cc (stmt_local_def): Consider a
+	def with no uses not local.
+
+2025-02-18  Pan Li  <pan2.li@intel.com>
+
+	PR target/118540
+	* config/riscv/riscv-target-attr.cc (riscv_target_attr_parser::parse_arch):
+	Report error when cmd xlen is different with target attribute.
+
+2025-02-18  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.opt.urls: Adjust the order for avx10.2
+	and avx10.2-512 due to their order change in i386.opt.
+
+2025-02-18  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118805
+	* gimple-fold.cc (fold_truth_andor_for_combine): Detect and
+	cope with zero-extension in signbit tests.  Reject swapping
+	right-compare operands if rsignbit.
+
 2025-02-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.cc (ix86_find_all_reg_use):
