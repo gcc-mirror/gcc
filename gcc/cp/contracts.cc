@@ -1715,24 +1715,14 @@ build_postcondition_function (tree fndecl)
 static void
 build_contract_function_decls (tree fndecl)
 {
-  /* Constructors and destructors have their contracts inserted inline.  */
-  if (!outline_contracts_p (fndecl))
-    return;
-
+  /* Build the pre/post functions (or not).  */
   if (!get_precondition_function (fndecl))
-    {
-      /* Build the pre/post functions (or not).  */
-      tree pre = build_precondition_function (fndecl);
-      if (pre)
-	set_precondition_function (fndecl, pre);
-    }
+    if (tree pre = build_precondition_function (fndecl))
+      set_precondition_function (fndecl, pre);
 
   if (!get_postcondition_function (fndecl))
-    {
-      tree post = build_postcondition_function (fndecl);
-      if (post)
-	set_postcondition_function (fndecl, post);
-    }
+    if (tree post = build_postcondition_function (fndecl))
+      set_postcondition_function (fndecl, post);
 }
 
 /* Build a layout-compatible internal version of source location __impl
