@@ -3317,7 +3317,7 @@ package body Sem_Attr is
          E1 := Empty;
          E2 := Empty;
 
-      else
+      elsif Aname /= Name_Make then
          E1 := First (Exprs);
 
          --  Skip analysis for case of Restriction_Set, we do not expect
@@ -5163,6 +5163,36 @@ package body Sem_Attr is
          Check_Type;
          Check_Not_Incomplete_Type;
          Set_Etype (N, Universal_Integer);
+
+      ----------
+      -- Make --
+      ----------
+
+      when Attribute_Make => declare
+         Expr : Entity_Id;
+      begin
+         --  Should this be assert? Parsing should fail if it hits 'Make
+         --  and all extensions aren't enabled ???
+
+         if not All_Extensions_Allowed then
+            return;
+         end if;
+
+         Set_Etype (N, Etype (P));
+
+         if Present (Expressions (N)) then
+            Expr := First (Expressions (N));
+            while Present (Expr) loop
+               if Nkind (Expr) = N_Parameter_Association then
+                  Analyze (Explicit_Actual_Parameter (Expr));
+               else
+                  Analyze (Expr);
+               end if;
+
+               Next (Expr);
+            end loop;
+         end if;
+      end;
 
       --------------
       -- Mantissa --
@@ -8713,6 +8743,13 @@ package body Sem_Attr is
          Set_Etype (N, C_Type);
          return;
 
+      --  Handle 'Make constructor calls
+
+      elsif All_Extensions_Allowed
+        and then Id = Attribute_Make
+      then
+         P_Type := P_Entity;
+
       --  No other cases are foldable (they certainly aren't static, and at
       --  the moment we don't try to fold any cases other than the ones above).
 
@@ -8724,9 +8761,10 @@ package body Sem_Attr is
       --  If either attribute or the prefix is Any_Type, then propagate
       --  Any_Type to the result and don't do anything else at all.
 
-      if P_Type = Any_Type
+      if Id /= Attribute_Make
+        and then (P_Type = Any_Type
         or else (Present (E1) and then Etype (E1) = Any_Type)
-        or else (Present (E2) and then Etype (E2) = Any_Type)
+        or else (Present (E2) and then Etype (E2) = Any_Type))
       then
          Set_Etype (N, Any_Type);
          return;
@@ -8839,7 +8877,9 @@ package body Sem_Attr is
          Static := False;
          Set_Is_Static_Expression (N, False);
 
-      elsif Id /= Attribute_Max_Alignment_For_Allocation then
+      elsif Id not in Attribute_Max_Alignment_For_Allocation
+                    | Attribute_Make
+      then
          if not Is_Constrained (P_Type)
            or else (Id /= Attribute_First and then
                     Id /= Attribute_Last  and then
@@ -8915,53 +8955,55 @@ package body Sem_Attr is
       --  of the expressions to be scalar in order for the attribute to be
       --  considered to be static.
 
-      declare
-         E : Node_Id;
+      if Id /= Attribute_Make then
+         declare
+            E : Node_Id;
 
-      begin
-         E := E1;
+         begin
+            E := E1;
 
-         while Present (E) loop
+            while Present (E) loop
 
-            --  If expression is not static, then the attribute reference
-            --  result certainly cannot be static.
+               --  If expression is not static, then the attribute reference
+               --  result certainly cannot be static.
 
-            if not Is_Static_Expression (E) then
-               Static := False;
+               if not Is_Static_Expression (E) then
+                  Static := False;
+                  Set_Is_Static_Expression (N, False);
+               end if;
+
+               if Raises_Constraint_Error (E) then
+                  Set_Raises_Constraint_Error (N);
+               end if;
+
+               --  If the result is not known at compile time, or is not of
+               --  a scalar type, then the result is definitely not static,
+               --  so we can quit now.
+
+               if not Compile_Time_Known_Value (E)
+                 or else not Is_Scalar_Type (Etype (E))
+               then
+                  Check_Expressions;
+                  return;
+
+               --  If the expression raises a constraint error, then so does
+               --  the attribute reference. We keep going in this case because
+               --  we are still interested in whether the attribute reference
+               --  is static even if it is not static.
+
+               elsif Raises_Constraint_Error (E) then
+                  Set_Raises_Constraint_Error (N);
+               end if;
+
+               Next (E);
+            end loop;
+
+            if Raises_Constraint_Error (Prefix (N)) then
                Set_Is_Static_Expression (N, False);
-            end if;
-
-            if Raises_Constraint_Error (E) then
-               Set_Raises_Constraint_Error (N);
-            end if;
-
-            --  If the result is not known at compile time, or is not of
-            --  a scalar type, then the result is definitely not static,
-            --  so we can quit now.
-
-            if not Compile_Time_Known_Value (E)
-              or else not Is_Scalar_Type (Etype (E))
-            then
-               Check_Expressions;
                return;
-
-            --  If the expression raises a constraint error, then so does
-            --  the attribute reference. We keep going in this case because
-            --  we are still interested in whether the attribute reference
-            --  is static even if it is not static.
-
-            elsif Raises_Constraint_Error (E) then
-               Set_Raises_Constraint_Error (N);
             end if;
-
-            Next (E);
-         end loop;
-
-         if Raises_Constraint_Error (Prefix (N)) then
-            Set_Is_Static_Expression (N, False);
-            return;
-         end if;
-      end;
+         end;
+      end if;
 
       --  Deal with the case of a static attribute reference that raises
       --  constraint error. The Raises_Constraint_Error flag will already
@@ -9778,6 +9820,13 @@ package body Sem_Attr is
             Fold_Uint (N, Esize (P_TypeA), Static);
          end if;
       end Machine_Size;
+
+      ----------
+      -- Make --
+      ----------
+
+      when Attribute_Make =>
+         Set_Etype (N, Etype (Prefix (N)));
 
       --------------
       -- Mantissa --
@@ -11096,7 +11145,9 @@ package body Sem_Attr is
       --  If this is still an attribute reference, then it has not been folded
       --  and that means that its expressions are in a non-static context.
 
-      elsif Nkind (N) = N_Attribute_Reference then
+      elsif Nkind (N) = N_Attribute_Reference
+        and then Attribute_Name (N) /= Name_Make
+      then
          Check_Expressions;
 
       --  Note: the else case not covered here are odd cases where the
@@ -12961,6 +13012,7 @@ package body Sem_Attr is
 
             if Expander_Active
               and then Present (Expressions (N))
+              and then Attr_Id /= Attribute_Make
             then
                declare
                   Expr : Node_Id := First (Expressions (N));

@@ -534,7 +534,11 @@ package body Sem_Ch5 is
       if In_Inlined_Body then
          null;
 
-      elsif not Is_Variable (Lhs) then
+      elsif not Is_Variable (Lhs)
+        and then not (not Comes_From_Source (Lhs)
+                       and then Nkind (Lhs) in N_Has_Etype
+                       and then Needs_Construction (Etype (Lhs)))
+      then
 
          --  Ada 2005 (AI-327): Check assignment to the attribute Priority of a
          --  protected object.

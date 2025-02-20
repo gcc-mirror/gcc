@@ -3765,6 +3765,21 @@ package body Exp_Ch3 is
                      Actions := Build_Assignment (Id, Expression (Decl));
                   end if;
 
+               --  Expand components with constructors to have the 'Make
+               --  attribute.
+
+               elsif Present (Constructor_Name (Typ))
+                 and then Present (Default_Constructor (Typ))
+               then
+                  Set_Expression (Decl,
+                    Make_Attribute_Reference (Loc,
+                      Attribute_Name => Name_Make,
+                      Prefix         =>
+                        Subtype_Indication
+                          (Component_Definition (Decl))));
+                  Analyze (Expression (Decl));
+                  Actions := Build_Assignment (Id, Expression (Decl));
+
                --  CPU, Dispatching_Domain, Priority, and Secondary_Stack_Size
                --  components are filled in with the corresponding rep-item
                --  expression of the concurrent type (if any).
@@ -6754,11 +6769,12 @@ package body Exp_Ch3 is
    procedure Expand_N_Object_Declaration (N : Node_Id) is
       Loc      : constant Source_Ptr := Sloc (N);
       Def_Id   : constant Entity_Id  := Defining_Identifier (N);
-      Expr     : constant Node_Id    := Expression (N);
       Obj_Def  : constant Node_Id    := Object_Definition (N);
       Typ      : constant Entity_Id  := Etype (Def_Id);
       Base_Typ : constant Entity_Id  := Base_Type (Typ);
       Next_N   : constant Node_Id    := Next (N);
+
+      Expr : Node_Id := Expression (N);
 
       Special_Ret_Obj : constant Boolean := Is_Special_Return_Object (Def_Id);
       --  If this is a special return object, it will be allocated differently
@@ -7476,7 +7492,11 @@ package body Exp_Ch3 is
       --  Don't do anything for deferred constants. All proper actions will be
       --  expanded during the full declaration.
 
-      if No (Expr) and Constant_Present (N) then
+      if No (Expr)
+        and then Constant_Present (N)
+        and then (No (Constructor_Name (Typ))
+                   or else No (Default_Constructor (Typ)))
+      then
          return;
       end if;
 
@@ -7499,6 +7519,21 @@ package body Exp_Ch3 is
         and then Related_Type (Def_Id) = Implementation_Base_Type (Typ)
       then
          return;
+      end if;
+
+      --  Expand objects with default constructors to have the 'Make
+      --  attribute.
+
+      if Comes_From_Source (N)
+        and then No (Expr)
+        and then Present (Constructor_Name (Typ))
+        and then Present (Default_Constructor (Typ))
+      then
+         Expr := Make_Attribute_Reference (Loc,
+                   Attribute_Name => Name_Make,
+                   Prefix         => Object_Definition (N));
+         Set_Expression (N, Expr);
+         Analyze_And_Resolve (Expr);
       end if;
 
       --  Make shared memory routines for shared passive variable

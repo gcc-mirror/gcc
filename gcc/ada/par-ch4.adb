@@ -592,6 +592,20 @@ package body Ch4 is
                                Explicit_Actual_Parameter => Rnam));
                            exit;
 
+                        --  'Make is a special attribute that takes a variable
+                        --  amount of parameters.
+
+                        elsif All_Extensions_Allowed
+                          and then Attr_Name = Name_Make
+                        then
+                           Scan;
+                           Rnam := P_Expression;
+                           Append_To (Expressions (Name_Node),
+                             Make_Parameter_Association (Sloc (Rnam),
+                               Selector_Name             => Expr,
+                               Explicit_Actual_Parameter => Rnam));
+                           exit;
+
                         --  For all other cases named notation is illegal
 
                         else
@@ -3473,8 +3487,9 @@ package body Ch4 is
 
    function P_Allocator return Node_Id is
       Alloc_Node             : Node_Id;
-      Type_Node              : Node_Id;
       Null_Exclusion_Present : Boolean;
+      Scan_State             : Saved_Scan_State;
+      Type_Node              : Node_Id;
 
    begin
       Alloc_Node := New_Node (N_Allocator, Token_Ptr);
@@ -3496,6 +3511,31 @@ package body Ch4 is
 
       Null_Exclusion_Present := P_Null_Exclusion;
       Set_Null_Exclusion_Present (Alloc_Node, Null_Exclusion_Present);
+
+      --  Check for 'Make
+
+      if All_Extensions_Allowed
+        and then Token = Tok_Identifier
+      then
+         Save_Scan_State (Scan_State);
+         Type_Node := P_Qualified_Simple_Name_Resync;
+         if Token = Tok_Apostrophe then
+            Scan;
+            if Token_Name = Name_Make then
+               Restore_Scan_State (Scan_State);
+               Set_Expression
+                 (Alloc_Node,
+                  Make_Qualified_Expression (Token_Ptr,
+                    Subtype_Mark => Check_Subtype_Mark (Type_Node),
+                    Expression   => P_Expression_Or_Range_Attribute));
+               return Alloc_Node;
+            end if;
+         end if;
+         Restore_Scan_State (Scan_State);
+      end if;
+
+      --  Otherwise continue parsing the subtype
+
       Type_Node := P_Subtype_Mark_Resync;
 
       if Token = Tok_Apostrophe then

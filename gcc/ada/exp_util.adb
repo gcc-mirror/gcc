@@ -14474,7 +14474,16 @@ package body Exp_Util is
       else
          N := First (L);
          while Present (N) loop
-            if not Side_Effect_Free (N, Name_Req, Variable_Ref) then
+            if Nkind (N) = N_Parameter_Association then
+               if not
+                 Side_Effect_Free
+                  (Explicit_Actual_Parameter (N), Name_Req, Variable_Ref)
+               then
+                  return False;
+               end if;
+
+               Next (N);
+            elsif not Side_Effect_Free (N, Name_Req, Variable_Ref) then
                return False;
             else
                Next (N);

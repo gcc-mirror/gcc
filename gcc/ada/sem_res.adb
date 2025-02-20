@@ -4842,6 +4842,7 @@ package body Sem_Res is
 
                if not Is_OK_Variable_For_Out_Formal (A)
                  and then not Is_Init_Proc (Nam)
+                 and then not Is_Expanded_Constructor_Call (N)
                then
                   Error_Msg_NE ("actual for& must be a variable", A, F);
 
@@ -8146,6 +8147,7 @@ package body Sem_Res is
            and then not Preanalysis_Active
            and then not Is_Imported (E)
            and then Nkind (Parent (E)) /= N_Object_Renaming_Declaration
+           and then not Needs_Construction (Etype (E))
          then
             if No_Initialization (Parent (E))
               or else (Present (Full_View (E))

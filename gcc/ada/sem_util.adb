@@ -6635,6 +6635,30 @@ package body Sem_Util is
       return Is_Class_Wide_Type (Typ) or else Needs_Finalization (Typ);
    end CW_Or_Needs_Finalization;
 
+   -------------------------
+   -- Default_Constructor --
+   -------------------------
+
+   function Default_Constructor (Typ : Entity_Id) return Entity_Id is
+      Construct : Elmt_Id;
+   begin
+      pragma Assert (Is_Type (Typ));
+      if No (Constructor_Name (Typ)) or else No (Constructor_List (Typ)) then
+         return Empty;
+      end if;
+
+      Construct := First_Elmt (Constructor_List (Typ));
+      while Present (Construct) loop
+         if Parameter_Count (Elists.Node (Construct)) = 1 then
+            return Elists.Node (Construct);
+         end if;
+
+         Next_Elmt (Construct);
+      end loop;
+
+      return Empty;
+   end Default_Constructor;
+
    ---------------------
    -- Defining_Entity --
    ---------------------
@@ -25405,6 +25429,8 @@ package body Sem_Util is
                end if;
 
                if Nkind (P) = N_Selected_Component
+               --  and then Ekind (Entity (Selector_Name (P)))
+               --             in Record_Field_Kind
                  and then Present (Entry_Formal (Entity (Selector_Name (P))))
                then
                   --  Case of a reference to an entry formal
@@ -26134,6 +26160,24 @@ package body Sem_Util is
 
       return Empty;
    end Param_Entity;
+
+   ---------------------
+   -- Parameter_Count --
+   ---------------------
+
+   function Parameter_Count (Subp : Entity_Id) return Nat is
+      Result : Nat := 0;
+      Param  : Entity_Id;
+   begin
+      Param := First_Entity (Subp);
+      while Present (Param) loop
+         Result := Result + 1;
+
+         Param := Next_Entity (Param);
+      end loop;
+
+      return Result;
+   end Parameter_Count;
 
    ----------------------
    -- Policy_In_Effect --

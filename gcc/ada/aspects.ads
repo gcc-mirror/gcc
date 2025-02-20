@@ -81,6 +81,7 @@ package Aspects is
       Aspect_Bit_Order,
       Aspect_Component_Size,
       Aspect_Constant_Indexing,
+      Aspect_Constructor,                   -- GNAT
       Aspect_Contract_Cases,                -- GNAT
       Aspect_Convention,
       Aspect_CPU,
@@ -106,6 +107,7 @@ package Aspects is
       Aspect_GNAT_Annotate,                 -- GNAT
       Aspect_Implicit_Dereference,
       Aspect_Initial_Condition,             -- GNAT
+      Aspect_Initialize,                    -- GNAT
       Aspect_Initializes,                   -- GNAT
       Aspect_Input,
       Aspect_Integer_Literal,
@@ -428,6 +430,7 @@ package Aspects is
       Aspect_Bit_Order                  => Expression,
       Aspect_Component_Size             => Expression,
       Aspect_Constant_Indexing          => Name,
+      Aspect_Constructor                => Name,
       Aspect_Contract_Cases             => Expression,
       Aspect_Convention                 => Name,
       Aspect_CPU                        => Expression,
@@ -453,6 +456,7 @@ package Aspects is
       Aspect_GNAT_Annotate              => Expression,
       Aspect_Implicit_Dereference       => Name,
       Aspect_Initial_Condition          => Expression,
+      Aspect_Initialize                 => Expression,
       Aspect_Initializes                => Expression,
       Aspect_Input                      => Name,
       Aspect_Integer_Literal            => Name,
@@ -529,6 +533,7 @@ package Aspects is
       Aspect_Component_Size               => True,
       Aspect_Constant_Indexing            => False,
       Aspect_Contract_Cases               => False,
+      Aspect_Constructor                  => False,
       Aspect_Convention                   => True,
       Aspect_CPU                          => False,
       Aspect_Default_Component_Value      => True,
@@ -556,6 +561,7 @@ package Aspects is
       Aspect_GNAT_Annotate                => False,
       Aspect_Implicit_Dereference         => False,
       Aspect_Initial_Condition            => False,
+      Aspect_Initialize                   => False,
       Aspect_Initializes                  => False,
       Aspect_Input                        => False,
       Aspect_Integer_Literal              => False,
@@ -698,6 +704,7 @@ package Aspects is
       Aspect_Constant_After_Elaboration   => Name_Constant_After_Elaboration,
       Aspect_Constant_Indexing            => Name_Constant_Indexing,
       Aspect_Contract_Cases               => Name_Contract_Cases,
+      Aspect_Constructor                  => Name_Constructor,
       Aspect_Convention                   => Name_Convention,
       Aspect_CPU                          => Name_CPU,
       Aspect_CUDA_Device                  => Name_CUDA_Device,
@@ -742,6 +749,7 @@ package Aspects is
       Aspect_Inline                       => Name_Inline,
       Aspect_Inline_Always                => Name_Inline_Always,
       Aspect_Initial_Condition            => Name_Initial_Condition,
+      Aspect_Initialize                   => Name_Initialize,
       Aspect_Initializes                  => Name_Initializes,
       Aspect_Input                        => Name_Input,
       Aspect_Integer_Literal              => Name_Integer_Literal,
@@ -965,6 +973,7 @@ package Aspects is
       Aspect_Asynchronous                 => Always_Delay,
       Aspect_Attach_Handler               => Always_Delay,
       Aspect_Constant_Indexing            => Always_Delay,
+      Aspect_Constructor                  => Always_Delay,
       Aspect_CPU                          => Always_Delay,
       Aspect_CUDA_Device                  => Always_Delay,
       Aspect_CUDA_Global                  => Always_Delay,
@@ -1070,6 +1079,7 @@ package Aspects is
       Aspect_Import                       => Never_Delay,
       Aspect_Initial_Condition            => Never_Delay,
       Aspect_Local_Restrictions           => Never_Delay,
+      Aspect_Initialize                   => Never_Delay,
       Aspect_Initializes                  => Never_Delay,
       Aspect_Max_Entry_Queue_Length       => Never_Delay,
       Aspect_Max_Queue_Length             => Never_Delay,

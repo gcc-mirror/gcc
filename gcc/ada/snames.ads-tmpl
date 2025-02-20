@@ -147,6 +147,7 @@ package Snames is
    --  Names of aspects for which there are no matching pragmas or attributes
    --  so that they need to be included for aspect specification use.
 
+   Name_Constructor                    : constant Name_Id := N + $;
    Name_Default_Value                  : constant Name_Id := N + $;
    Name_Default_Component_Value        : constant Name_Id := N + $;
    Name_Designated_Storage_Model       : constant Name_Id := N + $;
@@ -1080,6 +1081,7 @@ package Snames is
    Name_Img                            : constant Name_Id := N + $; -- GNAT
    Name_Input                          : constant Name_Id := N + $;
    Name_Machine                        : constant Name_Id := N + $;
+   Name_Make                           : constant Name_Id := N + $; -- GNAT
    Name_Max                            : constant Name_Id := N + $;
    Name_Min                            : constant Name_Id := N + $;
    Name_Model                          : constant Name_Id := N + $;
@@ -1614,6 +1616,7 @@ package Snames is
       Attribute_Img,
       Attribute_Input,
       Attribute_Machine,
+      Attribute_Make,
       Attribute_Max,
       Attribute_Min,
       Attribute_Model,

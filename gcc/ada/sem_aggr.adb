@@ -6984,6 +6984,30 @@ package body Sem_Aggr is
       --  Check the dimensions of the components in the record aggregate
 
       Analyze_Dimension_Extension_Or_Record_Aggregate (N);
+
+      --  Do a pass for constructors which rely on things being fully expanded
+
+      declare
+         function Resolve_Make_Expr (N : Node_Id) return Traverse_Result;
+         --  Recurse in the aggregate and resolve references to 'Make
+
+         function Resolve_Make_Expr (N : Node_Id) return Traverse_Result is
+         begin
+            if Nkind (N) = N_Attribute_Reference
+              and then Attribute_Name (N) = Name_Make
+            then
+               Set_Analyzed (N, False);
+               Resolve (N);
+            end if;
+
+            return OK;
+         end Resolve_Make_Expr;
+
+         procedure Search_And_Resolve_Make_Expr is new
+           Traverse_Proc (Resolve_Make_Expr);
+      begin
+         Search_And_Resolve_Make_Expr (N);
+      end;
    end Resolve_Record_Aggregate;
 
    -----------------------------

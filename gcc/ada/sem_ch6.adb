@@ -5401,6 +5401,89 @@ package body Sem_Ch6 is
 
          End_Scope;
 
+         --  Register the subprogram in a Constructor_List when it is a valid
+         --  constructor.
+
+         if All_Extensions_Allowed
+           and then Present (First_Formal (Designator))
+         then
+
+            declare
+               First_Form_Type : constant Entity_Id :=
+                 Etype (First_Formal (Designator));
+
+               Construct : Elmt_Id;
+            begin
+               --  Valid constructors have a "controlling" formal of a type
+               --  with the Constructor aspect specified. Additionally, the
+               --  subprogram name must match value described by the aspect.
+
+               --  Additionally, constructor declarations must exist within the
+               --  same scope as the type declaration and before the type is
+               --  frozen.
+
+               --  For example:
+               --
+               --     type Foo is null record with Constructor => Bar;
+               --
+               --     procedure Bar (Self : in out Foo);
+               --
+
+               if Present (Constructor_Name (First_Form_Type))
+                 and then Current_Scope = Scope (First_Form_Type)
+                 and then Chars (Constructor_Name (First_Form_Type))
+                            = Chars (Designator)
+                 and then Ekind (Designator) = E_Procedure
+                 and then Nkind (Parent (N)) = N_Subprogram_Declaration
+               then
+                  --  If the constructor list is empty than we don't have to
+                  --  look for duplicates - we simply create the list and
+                  --  add it.
+
+                  if No (Constructor_List (First_Form_Type)) then
+                     Set_Constructor_List
+                       (First_Form_Type, New_Elmt_List (Designator));
+
+                  --  Otherwise, we need to check the constructor hasen't
+                  --  already been added (e.g. a specification and body) and
+                  --  that there isn't a constructor with the same number of
+                  --  type of formals.
+
+                  --  NOTE: The Constructor_List is sorted by the number of
+                  --  parameters.
+
+                  else
+                     Construct := First_Elmt
+                                    (Constructor_List (First_Form_Type));
+
+                     --  Skip over constructors with less than the number of
+                     --  parameters than Designator ???
+
+                     --  Loop through the constructors looking for ones which
+                     --  "match."
+
+                     Outter : loop
+
+                        --  When we are at the end of the constructor list we
+                        --  know there are no matches, so it is safe to add.
+
+                        if No (Construct) then
+                           Append_Elmt
+                             (Designator,
+                              Constructor_List (First_Form_Type));
+                           exit Outter;
+                        end if;
+
+                        --  Loop through the formals and check the formals
+                        --  match on type ???
+
+                        Next_Elmt (Construct);
+                     end loop Outter;
+                  end if;
+               end if;
+            end;
+         end if;
+
       --  The subprogram scope is pushed and popped around the processing of
       --  the return type for consistency with call above to Process_Formals
       --  (which itself can call Analyze_Return_Type), and to ensure that any

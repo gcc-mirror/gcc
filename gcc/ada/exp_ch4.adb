@@ -4491,6 +4491,15 @@ package body Exp_Ch4 is
          Error_Msg_N ("?_a?use of an anonymous access type allocator", N);
       end if;
 
+      --  Here we set no initialization on types with constructors since we
+      --  generate initialization for the separately.
+
+      if Present (Constructor_Name (Directly_Designated_Type (PtrT)))
+        and then Nkind (Expression (N)) = N_Identifier
+      then
+         Set_No_Initialization (N, False);
+      end if;
+
       --  RM E.2.2(17). We enforce that the expected type of an allocator
       --  shall not be a remote access-to-class-wide-limited-private type.
       --  We probably shouldn't be doing this legality check during expansion,

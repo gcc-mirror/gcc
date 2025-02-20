@@ -4327,6 +4327,7 @@ package body Exp_Aggr is
       Typ                  : constant Entity_Id := Etype (N);
       Dims                 : constant Nat := Number_Dimensions (Typ);
       Max_Others_Replicate : constant Nat := Max_Aggregate_Size (N);
+      Ctyp                 : constant Entity_Id := Component_Type (Typ);
 
       Static_Components : Boolean   := True;
 
@@ -4803,7 +4804,13 @@ package body Exp_Aggr is
       --  components because in this case will need to call the corresponding
       --  IP procedure.
 
-      if Has_Default_Init_Comps (N) then
+      if Has_Default_Init_Comps (N)
+        or else Present (Constructor_Name (Ctyp))
+        or else (Is_Access_Type (Ctyp)
+                  and then Present
+                             (Constructor_Name
+                               (Directly_Designated_Type (Ctyp))))
+      then
          return;
       end if;
 

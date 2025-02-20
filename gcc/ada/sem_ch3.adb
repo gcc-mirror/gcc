@@ -23144,6 +23144,14 @@ package body Sem_Ch3 is
 
          Propagate_Concurrent_Flags (T, Etype (Component));
 
+         --  Propagate information about constructor dependence
+
+         if Ekind (Etype (Component)) /= E_Void
+           and then Needs_Construction (Etype (Component))
+         then
+            Set_Needs_Construction (T);
+         end if;
+
          if Ekind (Component) /= E_Component then
             null;
 

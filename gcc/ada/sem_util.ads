@@ -647,6 +647,10 @@ package Sem_Util is
    --  as Needs_Finalization except with pragma Restrictions (No_Finalization),
    --  in which case we know that class-wide objects do not need finalization.
 
+   function Default_Constructor (Typ : Entity_Id) return Entity_Id;
+   --  Determine the default constructor (e.g. the constructor with only one
+   --  formal parameter) for a given type Typ.
+
    function Defining_Entity (N : Node_Id) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If the
    --  declaration has a specification, the entity is obtained from the
@@ -2859,6 +2863,9 @@ package Sem_Util is
    --
    --  WARNING: this routine should be used in debugging scenarios such as
    --  tracking down undefined symbols as it is fairly low level.
+
+   function Parameter_Count (Subp : Entity_Id) return Nat;
+   --  Return the number of parameters for a given subprogram Subp.
 
    function Param_Entity (N : Node_Id) return Entity_Id;
    --  Given an expression N, determines if the expression is a reference

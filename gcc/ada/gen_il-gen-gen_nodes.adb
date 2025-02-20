@@ -303,6 +303,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Is_Known_Guaranteed_ABE, Flag),
         Sm (Is_SPARK_Mode_On_Node, Flag),
         Sm (No_Elaboration_Check, Flag),
+        Sm (Is_Expanded_Constructor_Call, Flag),
         Sm (Is_Expanded_Prefixed_Call, Flag)));
 
    Cc (N_Function_Call, N_Subprogram_Call,

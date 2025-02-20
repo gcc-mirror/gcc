@@ -54,6 +54,7 @@ with Restrict;         use Restrict;
 with Rident;           use Rident;
 with Rtsfind;          use Rtsfind;
 with Sem;              use Sem;
+with Sem_Aggr;         use Sem_Aggr;
 with Sem_Aux;          use Sem_Aux;
 with Sem_Case;         use Sem_Case;
 with Sem_Cat;          use Sem_Cat;
@@ -3873,6 +3874,89 @@ package body Sem_Ch13 is
                   goto Continue;
                end Initial_Condition;
 
+               --  Initialize
+
+               when Aspect_Initialize => Initialize : declare
+                  Aspect_Comp : Node_Id;
+                  Type_Comp   : Node_Id;
+                  Typ  : Entity_Id;
+                  Dummy_Aggr : Node_Id;
+               begin
+                  --  Error checking
+
+                  if not All_Extensions_Allowed then
+                     goto Continue;
+                  end if;
+
+                  if Ekind (E) /= E_Procedure then
+                     Error_Msg_N ("Initialize must apply to a constructor", N);
+                  end if;
+
+                  if Present (Expressions (Expression (Aspect))) then
+                     Error_Msg_N ("only component associations allowed", N);
+                  end if;
+
+                  --  Install the others for the aggregate if necessary
+
+                  Typ := Etype (First_Entity (E));
+
+                  if No (First_Entity (Typ)) then
+                     Error_Msg_N
+                       ("Initialize can only apply to contructors"
+                         & " whose type has one or more components", N);
+                  end if;
+
+                  Aspect_Comp :=
+                    First (Component_Associations (Expression (Aspect)));
+                  Type_Comp := First_Entity (Typ);
+                  while Present (Type_Comp) loop
+                     if No (Aspect_Comp) then
+                        Append_To
+                          (Component_Associations (Expression (Aspect)),
+                             Make_Component_Association (Loc,
+                               Choices     =>
+                                 New_List (Make_Others_Choice (Loc)),
+                               Box_Present => True));
+                        exit;
+                     elsif Nkind (First (Choices (Aspect_Comp)))
+                             = N_Others_Choice
+                     then
+                        exit;
+                     end if;
+
+                     Next (Aspect_Comp);
+                     Next_Entity (Type_Comp);
+                  end loop;
+
+                  --  Push the scope and formals for analysis
+
+                  Push_Scope (E);
+                  Install_Formals (Defining_Unit_Name (Specification (N)));
+
+                  --  Analyze the components
+
+                  Aspect_Comp :=
+                    First (Component_Associations (Expression (Aspect)));
+                  while Present (Aspect_Comp) loop
+                     if Present (Expression (Aspect_Comp)) then
+                        Analyze (Expression (Aspect_Comp));
+                     end if;
+
+                     Next (Aspect_Comp);
+                  end loop;
+
+                  --  Do a psuedo pass over the aggregate to ensure it is valid
+
+                  Expander_Active := False;
+                  Dummy_Aggr := New_Copy_Tree (Expression (Aspect));
+                  Resolve_Aggregate (Dummy_Aggr, Typ);
+                  Expander_Active := True;
+
+                  --  Return the scope
+
+                  End_Scope;
+               end Initialize;
+
                --  Initializes
 
                --  Aspect Initializes is never delayed because it is equivalent
@@ -4345,6 +4429,10 @@ package body Sem_Ch13 is
                when Aspect_Implicit_Dereference =>
                   Analyze_Aspect_Implicit_Dereference;
                   goto Continue;
+
+               when Aspect_Constructor =>
+                  Set_Constructor_Name (E, Expr);
+                  Set_Needs_Construction (E);
 
                --  Dimension
 
@@ -10799,7 +10887,8 @@ package body Sem_Ch13 is
       --  name, so we need to verify that one of these interpretations is
       --  the one available at at the freeze point.
 
-      elsif A_Id in Aspect_Input
+      elsif A_Id in Aspect_Constructor
+                  | Aspect_Input
                   | Aspect_Output
                   | Aspect_Read
                   | Aspect_Write
@@ -11109,7 +11198,8 @@ package body Sem_Ch13 is
          --  Special case, the expression of these aspects is just an entity
          --  that does not need any resolution, so just analyze.
 
-         when Aspect_Input
+         when Aspect_Constructor
+            | Aspect_Input
             | Aspect_Output
             | Aspect_Put_Image
             | Aspect_Read
@@ -11321,6 +11411,7 @@ package body Sem_Ch13 is
             | Aspect_GNAT_Annotate
             | Aspect_Implicit_Dereference
             | Aspect_Initial_Condition
+            | Aspect_Initialize
             | Aspect_Initializes
             | Aspect_Max_Entry_Queue_Length
             | Aspect_Max_Queue_Length
@@ -16340,6 +16431,9 @@ package body Sem_Ch13 is
                   when Aspect_Invariant
                      | Aspect_Predicate_Failure
                   =>
+                     null;
+
+                  when Aspect_Constructor =>
                      null;
 
                   when Aspect_Dynamic_Predicate
