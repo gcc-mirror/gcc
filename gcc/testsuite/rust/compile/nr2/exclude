@@ -77,4 +77,5 @@ for-loop2.rs
 issue-3403.rs
 derive-eq-invalid.rs
 derive-partialeq1.rs
+derive-hash1.rs
 # please don't delete the trailing newline
