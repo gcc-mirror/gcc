@@ -1855,11 +1855,13 @@ set_contract_wrapper_function (tree fndecl, tree wrapper)
    If is_cvh is true, we're wrapping a contract violation handler
    in a noexcept wrapper. Otherwise, we're making a caller side
    contract check wrapper. For caller side contract check, postconditions
-   are only checked if check_post is true.  */
+   are only checked if check_post is true.
+   Defer the attachment of the contracts to this function until the callee
+   is non-dependent, or we get cases where the conditions can be non-dependent
+   but still need tsubst-ing.  */
 
 static tree
-build_contract_wrapper_function (tree fndecl, bool is_cvh,
-				 bool check_post = true)
+build_contract_wrapper_function (tree fndecl, bool is_cvh)
 {
   if (error_operand_p (fndecl))
     return error_mark_node;
@@ -1945,11 +1947,6 @@ build_contract_wrapper_function (tree fndecl, bool is_cvh,
     SET_DECL_ALIGN (wrapdecl, DECL_ALIGN (fndecl));
   /* Copy any alignment the user added.  */
   DECL_USER_ALIGN (wrapdecl) = DECL_USER_ALIGN (fndecl);
-
-  /* Apply contracts from the original fn if this isn't a contract
-     violation handler.  */
-  if (!is_cvh)
-    copy_and_remap_contracts (wrapdecl, fndecl, true, check_post);
 
   /* Make this function internal.  */
   TREE_PUBLIC (wrapdecl) = false;
@@ -3118,6 +3115,8 @@ finish_function_contracts (tree fndecl)
       || DECL_INITIAL (fndecl) == error_mark_node)
     return;
 
+  /* If there are no contracts here, or we're building them in-line then we
+     do not need to build the outlined functions.  */
   if (!handle_contracts_p (fndecl)
       || !outline_contracts_p (fndecl))
     return;
@@ -3166,20 +3165,6 @@ finish_function_contracts (tree fndecl)
       finish_return_stmt (NULL_TREE);
       post = finish_function (false);
       expand_or_defer_fn (post);
-    }
-
-  /* Check if we need to update wrapper function contracts.  */
-  tree wrapdecl = get_contract_wrapper_function (fndecl);
-  if (wrapdecl)
-    {
-      /* We copy postconditions on virtual function wrapper calls or if
-	 postcondition checks are enabled on the caller side.  */
-      bool copy_post
-	= (flag_contract_nonattr_client_check > 1)
-	   || ((DECL_IOBJ_MEMBER_FUNCTION_P (fndecl)
-	       && DECL_VIRTUAL_P (fndecl)));
-
-      copy_and_remap_contracts (wrapdecl, fndecl, true, copy_post);
     }
 }
 
@@ -3442,19 +3427,19 @@ maybe_contract_wrap_call (tree fndecl, tree call)
   if (!should_contract_wrap_call (do_pre, do_post, is_virtual))
     return call;
 
+  /* We should not have reached here with nothing to do.  */
   /* We check postconditions on virtual function calls or if postcondition
      checks are enabled for all clients.  */
-  bool check_post = (flag_contract_nonattr_client_check > 1) || is_virtual;
-
-  /* We should not have reached here with nothing to do.  */
-  gcc_checking_assert (do_pre || (check_post && do_post));
+  gcc_checking_assert (do_pre
+		       || (do_post
+			   && ((flag_contract_nonattr_client_check > 1)
+			       || is_virtual)));
 
   /* Build the declaration of the wrapper, if we need to.  */
   tree wrapdecl = get_contract_wrapper_function (fndecl);
   if (!wrapdecl)
     {
-      wrapdecl = build_contract_wrapper_function (fndecl, /*is_cvh*/false,
-						  check_post);
+      wrapdecl = build_contract_wrapper_function (fndecl, /*is_cvh*/false);
       set_contract_wrapper_function (fndecl, wrapdecl);
     }
 
@@ -3483,6 +3468,18 @@ define_contract_wrapper_func (const tree& fndecl, const tree& wrapdecl, void*)
   /* If we already built this function on a previous pass, then do nothing.  */
   if (DECL_INITIAL (wrapdecl) && DECL_INITIAL (wrapdecl) != error_mark_node)
     return true;
+
+  /* FIXME: Maybe we should check if fndecl is still dependent?  */
+
+  /* FIXME: We should not really have any.  */
+  remove_contract_attributes (wrapdecl);
+  bool is_virtual = DECL_IOBJ_MEMBER_FUNCTION_P (fndecl)
+		    && DECL_VIRTUAL_P (fndecl);
+  /* We check postconditions on virtual function calls or if postcondition
+     checks are enabled for all clients.  We should not get here unless there
+     are some checks to make.  */
+  bool check_post = (flag_contract_nonattr_client_check > 1) || is_virtual;
+  copy_and_remap_contracts (wrapdecl, fndecl, /*remap_result*/true, check_post);
 
   start_preparsed_function (wrapdecl, /*DECL_ATTRIBUTES*/NULL_TREE,
 			    SF_DEFAULT | SF_PRE_PARSED);
