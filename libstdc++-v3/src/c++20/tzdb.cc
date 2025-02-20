@@ -35,6 +35,9 @@
 #include <atomic>     // atomic<T*>, atomic<int>
 #include <memory>     // atomic<shared_ptr<T>>
 #include <mutex>      // mutex
+#if defined __GTHREADS && ! defined _GLIBCXX_HAS_GTHREADS
+# include <ext/concurrence.h> // __gnu_cxx::__mutex
+#endif
 #include <filesystem> // filesystem::read_symlink
 
 #ifndef _AIX
@@ -97,11 +100,18 @@ namespace std::chrono
 {
   namespace
   {
-#if ! USE_ATOMIC_SHARED_PTR
 #ifndef __GTHREADS
     // Dummy no-op mutex type for single-threaded targets.
     struct mutex { void lock() { } void unlock() { } };
+#elif ! defined _GLIBCXX_HAS_GTHREADS
+    // Use __gnu_cxx::__mutex if std::mutex isn't available.
+    using mutex = __gnu_cxx::__mutex;
+# if ! USE_ATOMIC_SHARED_PTR && defined __GTHREAD_MUTEX_INIT
+#  error "TODO: __gnu_cxx::__mutex can't be initialized with 'constinit'"
+# endif
 #endif
+
+#if ! USE_ATOMIC_SHARED_PTR
     inline mutex& list_mutex()
     {
 #ifdef __GTHREAD_MUTEX_INIT
