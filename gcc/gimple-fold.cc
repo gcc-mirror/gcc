@@ -6762,10 +6762,10 @@ fold_stmt (gimple_stmt_iterator *gsi, tree (*valueize) (tree), bitmap dce_bitmap
    which can produce *&x = 0.  */
 
 bool
-fold_stmt_inplace (gimple_stmt_iterator *gsi)
+fold_stmt_inplace (gimple_stmt_iterator *gsi, tree (*valueize) (tree))
 {
   gimple *stmt = gsi_stmt (*gsi);
-  bool changed = fold_stmt_1 (gsi, true, no_follow_ssa_edges);
+  bool changed = fold_stmt_1 (gsi, true, valueize);
   gcc_assert (gsi_stmt (*gsi) == stmt);
   return changed;
 }
