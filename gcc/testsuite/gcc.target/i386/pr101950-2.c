@@ -6,14 +6,19 @@
 /* { dg-final { scan-assembler-times "\txor\[ql]\t" 2 } } */
 /* { dg-final { scan-assembler-times "\tsar\[ql]\t|\tcltd" 2 } } */
 
+/* Use pointers to avoid register allocation difference due to argument
+   and return register being different and the difference in selecting eax
+   for one the result of the xor vs selecting rdi due to the order of the
+   shift vs the not shift. */
+
 int
-foo (long x)
+foo (long *x)
 {
-  return __builtin_clrsbl (x);
+  return __builtin_clrsbl (*x);
 }
 
 int
-bar (int x)
+bar (int *x)
 {
-  return __builtin_clrsb (x);
+  return __builtin_clrsb (*x);
 }
