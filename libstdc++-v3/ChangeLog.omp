@@ -1,6 +1,13 @@
 2025-03-19  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-03-06  Jonathan Wakely  <jwakely@redhat.com>
+		    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* src/c++20/tzdb.cc [__GTHREADS && !__GTHREADS_CXX0X]: Use
+	'__gnu_cxx::__mutex'.
+
+	Backported from trunk:
 	2025-03-06  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* src/c++17/fs_dir.cc (do_unlink): Tag 'is_directory' as
