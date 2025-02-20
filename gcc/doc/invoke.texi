@@ -15787,7 +15787,7 @@ Max number of files in the file cache.
 The file cache is used to print source lines in diagnostics and do some
 source checks like @option{-Wmisleading-indentation}.
 
-@item file-cache-files
+@item file-cache-lines
 Max number of lines to index into file cache. When 0 this is automatically sized.
 The file cache is used to print source lines in diagnostics and do some
 source checks like @option{-Wmisleading-indentation}.
