@@ -27,5 +27,5 @@ int main(int, char**)
 
   return 0;
 }
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 14.*(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: r > 2.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Base::f at .*: a > 14.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Base::f at .*: r > 2.*(\n|\r\n|\r)" }
