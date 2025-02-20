@@ -2036,7 +2036,7 @@
 #undef __glibcxx_want_is_virtual_base_of
 
 #if !defined(__cpp_lib_ranges_concat)
-# if (__cplusplus >  202302L)
+# if (__cplusplus >  202302L) && (__cpp_pack_indexing)
 #  define __glibcxx_ranges_concat 202403L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_ranges_concat)
 #   define __cpp_lib_ranges_concat 202403L

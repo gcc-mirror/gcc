@@ -9683,12 +9683,8 @@ namespace ranges
 	&& __all_but_last_common<_Const, _Rs...>::value;
 
     template<typename _Range, typename... _Rs>
-      struct __last_is_common
-      { static inline constexpr bool value = __last_is_common<_Rs...>::value; };
-
-    template<typename _Range>
-      struct __last_is_common<_Range>
-      { static inline constexpr bool value = common_range<_Range>; };
+      struct __all_but_first_sized
+      { static inline constexpr bool value = (sized_range<_Rs> && ...); };
   } // namespace __detail
 
   template<input_range... _Vs>
@@ -9726,13 +9722,11 @@ namespace ranges
     constexpr auto
     end() requires (!(__detail::__simple_view<_Vs> && ...))
     {
+      constexpr auto __n = sizeof...(_Vs);
       if constexpr ((semiregular<iterator_t<_Vs>> && ...)
-		    && __detail::__last_is_common<_Vs...>::value)
-	{
-	  constexpr auto __n = sizeof...(_Vs);
-	  return iterator<false>(this, in_place_index<__n - 1>,
-				 ranges::end(std::get<__n - 1>(_M_views)));
-	}
+		    && common_range<_Vs...[__n - 1]>)
+	return iterator<false>(this, in_place_index<__n - 1>,
+			       ranges::end(std::get<__n - 1>(_M_views)));
       else
 	return default_sentinel;
     }
@@ -9740,13 +9734,11 @@ namespace ranges
     constexpr auto
     end() const requires (range<const _Vs> && ...) && __detail::__concatable<const _Vs...>
     {
+      constexpr auto __n = sizeof...(_Vs);
       if constexpr ((semiregular<iterator_t<const _Vs>> && ...)
-		    && __detail::__last_is_common<const _Vs...>::value)
-	{
-	  constexpr auto __n = sizeof...(_Vs);
-	  return iterator<true>(this, in_place_index<__n - 1>,
-				ranges::end(std::get<__n - 1>(_M_views)));
-	}
+		    && common_range<const _Vs...[__n - 1]>)
+	return iterator<true>(this, in_place_index<__n - 1>,
+			      ranges::end(std::get<__n - 1>(_M_views)));
       else
 	return default_sentinel;
     }
@@ -10128,8 +10120,9 @@ namespace ranges
 
     friend constexpr difference_type
     operator-(const iterator& __x, default_sentinel_t)
-      requires __detail::__concat_is_random_access<_Const, _Vs...>
-	&& __detail::__last_is_common<__maybe_const_t<_Const, _Vs>...>::value
+      requires (sized_sentinel_for<sentinel_t<__maybe_const_t<_Const, _Vs>>,
+				   iterator_t<__maybe_const_t<_Const, _Vs>>> && ...)
+	&& __detail::__all_but_first_sized<__maybe_const_t<_Const, _Vs>...>::value
     {
       return _S_invoke_with_runtime_index([&]<size_t _Ix>() -> difference_type {
 	auto __dx = ranges::distance(std::get<_Ix>(__x._M_it),
@@ -10148,8 +10141,9 @@ namespace ranges
 
     friend constexpr difference_type
     operator-(default_sentinel_t, const iterator& __x)
-      requires __detail::__concat_is_random_access<_Const, _Vs...>
-	&& __detail::__last_is_common<__maybe_const_t<_Const, _Vs>...>::value
+      requires (sized_sentinel_for<sentinel_t<__maybe_const_t<_Const, _Vs>>,
+				   iterator_t<__maybe_const_t<_Const, _Vs>>> && ...)
+	&& __detail::__all_but_first_sized<__maybe_const_t<_Const, _Vs>...>::value
     { return -(__x - default_sentinel); }
 
     friend constexpr decltype(auto)
