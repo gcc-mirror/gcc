@@ -25,6 +25,6 @@ int main()
   foo(c);
 
 }
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 5.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Base<int>::f at .*: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function Child1<int>::f at .*: a > 3.*(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: i > 4.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Base<int>::f at .*: i > 4.*(\n|\r\n|\r)" }
