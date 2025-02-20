@@ -574,13 +574,11 @@ package body Sem_Eval is
 
          Rewrite (N, New_Copy (N));
 
-         if not Is_Floating_Point_Type (T) then
-            Set_Realval
-              (N, Corresponding_Integer_Value (N) * Small_Value (T));
-
-         elsif not UR_Is_Zero (Realval (N)) then
+         if Is_Floating_Point_Type (T) then
             Set_Realval (N, Machine_Number (Base_Type (T), Realval (N), N));
             Set_Is_Machine_Number (N);
+         else
+            Set_Realval (N, Corresponding_Integer_Value (N) * Small_Value (T));
          end if;
 
       end if;
