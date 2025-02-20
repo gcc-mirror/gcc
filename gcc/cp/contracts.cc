@@ -2843,6 +2843,9 @@ build_arg_list (tree fndecl)
 void
 start_function_contracts (tree fndecl)
 {
+  if (error_operand_p (fndecl))
+    return;
+
   if (!handle_contracts_p (fndecl))
     return;
 
