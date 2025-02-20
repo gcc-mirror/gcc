@@ -1,6 +1,15 @@
 2025-03-19  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-03-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/92713
+	PR target/101544
+	* config/cpu/nvptx/cpu_defines.h: New.
+	* config/cpu/nvptx/t-nvptx: Likewise.
+	* configure.host: Handle GCN, nvptx.
+
+	Backported from trunk:
 	2025-03-13  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_CXX_FLAGS): Append to
