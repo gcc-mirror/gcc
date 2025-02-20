@@ -1098,7 +1098,7 @@ void aarch64_finish_ldpstp_peephole (rtx *, bool,
 				     enum rtx_code = (enum rtx_code)0);
 
 void aarch64_expand_sve_vec_cmp_int (rtx, rtx_code, rtx, rtx);
-bool aarch64_expand_sve_vec_cmp_float (rtx, rtx_code, rtx, rtx, bool);
+void aarch64_expand_sve_vec_cmp_float (rtx, rtx_code, rtx, rtx);
 
 bool aarch64_prepare_sve_int_fma (rtx *, rtx_code);
 bool aarch64_prepare_sve_cond_int_fma (rtx *, rtx_code);
