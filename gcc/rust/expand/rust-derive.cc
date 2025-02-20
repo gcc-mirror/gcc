@@ -23,6 +23,7 @@
 #include "rust-derive-default.h"
 #include "rust-derive-eq.h"
 #include "rust-derive-partial-eq.h"
+#include "rust-derive-hash.h"
 
 namespace Rust {
 namespace AST {
@@ -35,29 +36,32 @@ std::vector<std::unique_ptr<Item>>
 DeriveVisitor::derive (Item &item, const Attribute &attr,
 		       BuiltinMacro to_derive)
 {
+  auto loc = attr.get_locus ();
+
   switch (to_derive)
     {
     case BuiltinMacro::Clone:
-      return vec (DeriveClone (attr.get_locus ()).go (item));
+      return vec (DeriveClone (loc).go (item));
     case BuiltinMacro::Copy:
-      return vec (DeriveCopy (attr.get_locus ()).go (item));
+      return vec (DeriveCopy (loc).go (item));
     case BuiltinMacro::Debug:
       rust_warning_at (
-	attr.get_locus (), 0,
+	loc, 0,
 	"derive(Debug) is not fully implemented yet and has no effect - only a "
 	"stub implementation will be generated");
-      return vec (DeriveDebug (attr.get_locus ()).go (item));
+      return vec (DeriveDebug (loc).go (item));
     case BuiltinMacro::Default:
-      return vec (DeriveDefault (attr.get_locus ()).go (item));
+      return vec (DeriveDefault (loc).go (item));
     case BuiltinMacro::Eq:
-      return DeriveEq (attr.get_locus ()).go (item);
+      return DeriveEq (loc).go (item);
     case BuiltinMacro::PartialEq:
-      return DerivePartialEq (attr.get_locus ()).go (item);
+      return DerivePartialEq (loc).go (item);
+    case BuiltinMacro::Hash:
+      return vec (DeriveHash (loc).go (item));
     case BuiltinMacro::Ord:
     case BuiltinMacro::PartialOrd:
-    case BuiltinMacro::Hash:
     default:
-      rust_sorry_at (attr.get_locus (), "unimplemented builtin derive macro");
+      rust_sorry_at (loc, "unimplemented builtin derive macro");
       return {};
     };
 }
