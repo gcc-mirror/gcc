@@ -1,0 +1,7 @@
+# Per-file flags, see '../../../configure.host', "inject per-file flags".
+
+# 'ptxas'/CUDA Driver rejects objects with a lot of global constant data:
+#     ptxas error   : File uses too much global constant data ([...])
+# Cut short the assembly-time check; defer to actual use of the object file.
+AM_MAKEFLAGS += CXXFLAGS-src/c++17/floating_to_chars.lo=-Wa,--no-verify
+AM_MAKEFLAGS += CXXFLAGS-src/c++20/tzdb.lo=-Wa,--no-verify

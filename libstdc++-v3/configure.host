@@ -150,6 +150,9 @@ case "${host_cpu}" in
   arm*)
     cpu_defines_dir=cpu/arm
     ;;
+  nvptx)
+    cpu_defines_dir=cpu/nvptx
+    ;;
   powerpc* | rs6000)
     cpu_defines_dir=cpu/powerpc
     ;;
@@ -367,6 +370,16 @@ case "${host}" in
   arm*-*-freebsd*)
      port_specific_symbol_files="\$(srcdir)/../config/os/gnu-linux/arm-eabi-extra.ver"
      ;;
+  nvptx-*-none)
+    # For 'make all-target-libstdc++-v3', we need to inject per-file flags:
+    OPTIMIZE_CXXFLAGS="${OPTIMIZE_CXXFLAGS} \$(CXXFLAGS-\$(subdir)/\$@)"
+    # ..., see:
+    tmake_file="$tmake_file cpu/nvptx/t-nvptx"
+
+    # For 'make all-target-libstdc++-v3', re 'alloca'/VLA usage:
+    EXTRA_CFLAGS="${EXTRA_CFLAGS} -mfake-ptx-alloca"
+    OPTIMIZE_CXXFLAGS="${OPTIMIZE_CXXFLAGS} -mfake-ptx-alloca"
+    ;;
   powerpc*-*-darwin*)
     port_specific_symbol_files="\$(srcdir)/../config/os/bsd/darwin/ppc-extra.ver"
     ;;
@@ -381,5 +394,29 @@ case "${host}" in
 	    ;;
     esac
     abi_baseline_subdir_switch=--print-multi-os-directory
+    ;;
+esac
+
+
+# Dumb down libstdc++ for certain configurations.
+# THIS TABLE IS SORTED.  KEEP IT THAT WAY.
+case "${host}" in
+  amdgcn-*-amdhsa \
+  | nvptx-*-none )
+    # For 'make all-target-libstdc++-v3' and 'make check-target-libstdc++-v3',
+    # exception handling is not supported: in case that exception handling
+    # constructs survive compiler optimizations, the back ends error out:
+    #     sorry, unimplemented: exception handling not supported
+    EXTRA_CXX_FLAGS="${EXTRA_CXX_FLAGS} -fno-exceptions"
+
+    # For 'make all-target-libstdc++-v3' and 'make check-target-libstdc++-v3',
+    # RTTI is not supported.
+    EXTRA_CXX_FLAGS="${EXTRA_CXX_FLAGS} -fno-rtti"
+
+    # Cannot '#include' all newlib header files without explosion, for example:
+    #     error: 'jmp_buf' was not declared in this scope
+    # Just disable generation of PCH files here, instead of attempting to care
+    # for such special cases in some more complex way.
+    enable_libstdcxx_pch=no
     ;;
 esac
