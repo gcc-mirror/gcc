@@ -819,8 +819,10 @@ write_mangled_name (const tree decl, bool top_level)
       write_encoding (decl);
     }
 
-  /* If this is the pre/post function for a guarded function, append
-     .pre/post, like something from create_virtual_clone.  */
+  /* Identify helper functions for contracts support.  */
+  if (DECL_IS_WRAPPER_FN_P (decl))
+    write_string (JOIN_STR "contract_wrapper");
+
   if (DECL_IS_PRE_FN_P (decl))
     write_string (JOIN_STR "pre");
   else if (DECL_IS_POST_FN_P (decl))
