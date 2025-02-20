@@ -1545,14 +1545,9 @@ build_contract_condition_function (tree fndecl, bool pre)
   *last = void_list_node;
 
   /* The handlers are void fns.  */
-  tree resdecl = build_decl (DECL_SOURCE_LOCATION (fndecl), RESULT_DECL,
-			     0, void_type_node);
-  DECL_CONTEXT (resdecl) = fn;
-  DECL_ARTIFICIAL (resdecl) = true;
-  DECL_IGNORED_P (resdecl) = true;
-  DECL_RESULT (fn) = resdecl;
-
   TREE_TYPE (fn) = build_function_type (void_type_node, arg_types);
+  DECL_RESULT (fn) = NULL_TREE; /* Let the start function code fill it in.  */
+
   if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl))
     TREE_TYPE (fn) = build_method_type (class_type, TREE_TYPE (fn));
 
@@ -1922,12 +1917,8 @@ build_contract_wrapper_function (tree fndecl, bool is_cvh,
   /* This declaration is a contract wrapper function.  */
   DECL_CONTRACT_WRAPPER (wrapdecl) = true;
 
-  /* Build our result decl.  */
-  tree resdecl = build_decl (loc, RESULT_DECL, 0, wrapper_return_type);
-  DECL_CONTEXT (resdecl) = wrapdecl;
-  DECL_ARTIFICIAL (resdecl) = true;
-  DECL_IGNORED_P (resdecl) = true;
-  DECL_RESULT (wrapdecl) = resdecl;
+  /* Let the start function code fill in the result decl.  */
+  DECL_RESULT (wrapdecl) = NULL_TREE; 
 
   /* Copy the function parameters, if present.  Suppress (e.g. unused)
      warnings on them.  */
