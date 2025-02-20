@@ -1,3 +1,49 @@
+2025-02-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/isr-04-regs.c: New test.
+	* gcc.target/avr/isr-test.h: Don't set GPRs to values
+	that are 0 mod 0x11.
+
+2025-02-19  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.target/aarch64/pr112105.c: Change to be -O2 rather
+	than -O1.
+
+2025-02-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/118300
+	* gcc.dg/analyzer/ubsan-pr118300.c: New test.
+
+2025-02-19  Pan Li  <pan2.li@intel.com>
+
+	PR middle-end/116351
+	* gcc.target/riscv/rvv/base/pr116351-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr116351-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr116351.h: New test.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vect-shift-imm-round.c: New test.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/wide-mul-reduc-2.c (dg-final): Scan
+	DOT_PROD_EXPR in optimized tree.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/wide-mul-reduc-1.c: New test.
+	* gcc.target/loongarch/wide-mul-reduc-2.c: New test.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vrepli.c: New test.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/115478
+	* gcc.target/loongarch/bytepick_shift_128.c: New test.
+
 2025-02-18  Robin Dapp  <rdapp@ventanamicro.com>
 
 	PR target/115703

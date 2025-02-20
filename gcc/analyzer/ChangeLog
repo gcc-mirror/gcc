@@ -1,3 +1,13 @@
+2025-02-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/118300
+	* kf.cc (class kf_ubsan_bounds): Replace this with...
+	(class kf_ubsan_noop): ...this.
+	(register_sanitizer_builtins): Use it to handle IFN_UBSAN_NULL,
+	IFN_UBSAN_BOUNDS, and IFN_UBSAN_PTR as nop-ops.
+	(register_known_functions): Drop handling of IFN_UBSAN_BOUNDS
+	here, as it's now handled by register_sanitizer_builtins above.
+
 2025-02-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-manager.cc

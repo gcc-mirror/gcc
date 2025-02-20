@@ -1,3 +1,10 @@
+2025-02-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* configure.ac (unsupported_languages) [GCN, nvptx]: Add 'ada'.
+	(noconfigdirs) [GCN, nvptx]: Add 'target-libobjc',
+	'target-libffi', 'target-libgo'.
+	* configure: Regenerate.
+
 2025-02-05  Jin Ma  <jinma@linux.alibaba.com>
 
 	* MAINTAINERS: Add myself.

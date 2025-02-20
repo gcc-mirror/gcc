@@ -1,3 +1,378 @@
+2025-02-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/118919
+	* input.cc (file_cache_slot::m_file_path): Make non-const.
+	(file_cache_slot::evict): Free m_file_path.
+	(file_cache_slot::create): Store a copy of file_path if non-null.
+	(file_cache_slot::~file_cache_slot): Free m_file_path.
+
+2025-02-19  Pan Li  <pan2.li@intel.com>
+
+	PR middle-end/116351
+	* tree-vect-loop.cc (vect_verify_loop_lens): Return false if the
+	loop_vinfo has relevant mode such as DImode.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/lasx.md (UNSPEC_LASX_XVSRARI): Remove.
+	(UNSPEC_LASX_XVSRLRI): Remove.
+	(lasx_xvsrari_<lsxfmt>): Remove.
+	(lasx_xvsrlri_<lsxfmt>): Remove.
+	* config/loongarch/lsx.md (UNSPEC_LSX_VSRARI): Remove.
+	(UNSPEC_LSX_VSRLRI): Remove.
+	(lsx_vsrari_<lsxfmt>): Remove.
+	(lsx_vsrlri_<lsxfmt>): Remove.
+	* config/loongarch/simd.md (simd_<optab>_imm_round_<mode>): New
+	define_insn.
+	(<simd_isa>_<x>v<insn>ri_<simdfmt>): New define_expand.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/simd.md (wvec_half): New define_mode_attr.
+	(<su>dot_prod<wvec_half><mode>): New define_expand.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/simd.md (even_odd): New define_int_attr.
+	(vec_widen_<su>mult_<even_odd>_<mode>): New define_expand.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/simd.md (LVEC): New define_mode_attr.
+	(simdfmt_as_i): Make it same as simdfmt for integer vector
+	modes.
+	(_f): New define_mode_attr.
+	* config/loongarch/lsx.md (lsx_vpickev_b): Remove.
+	(lsx_vpickev_h): Remove.
+	(lsx_vpickev_w): Remove.
+	(lsx_vpickev_w_f): Remove.
+	(lsx_vpickod_b): Remove.
+	(lsx_vpickod_h): Remove.
+	(lsx_vpickod_w): Remove.
+	(lsx_vpickev_w_f): Remove.
+	(lsx_pick_evod_<mode>): New define_insn.
+	(lsx_<x>vpick<ev_od>_<simdfmt_as_i><_f>): New
+	define_expand.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/lasx.md (UNSPEC_LASX_XVMADDWEV): Remove.
+	(UNSPEC_LASX_XVMADDWEV2): Remove.
+	(UNSPEC_LASX_XVMADDWEV3): Remove.
+	(UNSPEC_LASX_XVMADDWOD): Remove.
+	(UNSPEC_LASX_XVMADDWOD2): Remove.
+	(UNSPEC_LASX_XVMADDWOD3): Remove.
+	(lasx_xvmaddwev_h_b<u>): Remove.
+	(lasx_xvmaddwev_w_h<u>): Remove.
+	(lasx_xvmaddwev_d_w<u>): Remove.
+	(lasx_xvmaddwev_q_d): Remove.
+	(lasx_xvmaddwod_h_b<u>): Remove.
+	(lasx_xvmaddwod_w_h<u>): Remove.
+	(lasx_xvmaddwod_d_w<u>): Remove.
+	(lasx_xvmaddwod_q_d): Remove.
+	(lasx_xvmaddwev_q_du): Remove.
+	(lasx_xvmaddwod_q_du): Remove.
+	(lasx_xvmaddwev_h_bu_b): Remove.
+	(lasx_xvmaddwev_w_hu_h): Remove.
+	(lasx_xvmaddwev_d_wu_w): Remove.
+	(lasx_xvmaddwev_q_du_d): Remove.
+	(lasx_xvmaddwod_h_bu_b): Remove.
+	(lasx_xvmaddwod_w_hu_h): Remove.
+	(lasx_xvmaddwod_d_wu_w): Remove.
+	(lasx_xvmaddwod_q_du_d): Remove.
+	* config/loongarch/lsx.md (UNSPEC_LSX_VMADDWEV): Remove.
+	(UNSPEC_LSX_VMADDWEV2): Remove.
+	(UNSPEC_LSX_VMADDWEV3): Remove.
+	(UNSPEC_LSX_VMADDWOD): Remove.
+	(UNSPEC_LSX_VMADDWOD2): Remove.
+	(UNSPEC_LSX_VMADDWOD3): Remove.
+	(lsx_vmaddwev_h_b<u>): Remove.
+	(lsx_vmaddwev_w_h<u>): Remove.
+	(lsx_vmaddwev_d_w<u>): Remove.
+	(lsx_vmaddwev_q_d): Remove.
+	(lsx_vmaddwod_h_b<u>): Remove.
+	(lsx_vmaddwod_w_h<u>): Remove.
+	(lsx_vmaddwod_d_w<u>): Remove.
+	(lsx_vmaddwod_q_d): Remove.
+	(lsx_vmaddwev_q_du): Remove.
+	(lsx_vmaddwod_q_du): Remove.
+	(lsx_vmaddwev_h_bu_b): Remove.
+	(lsx_vmaddwev_w_hu_h): Remove.
+	(lsx_vmaddwev_d_wu_w): Remove.
+	(lsx_vmaddwev_q_du_d): Remove.
+	(lsx_vmaddwod_h_bu_b): Remove.
+	(lsx_vmaddwod_w_hu_h): Remove.
+	(lsx_vmaddwod_d_wu_w): Remove.
+	(lsx_vmaddwod_q_du_d): Remove.
+	* config/loongarch/simd.md (simd_maddw_evod_<mode>_<su>):
+	New define_insn.
+	(<simd_isa>_<x>vmaddw<ev_od>_<simdfmt_w>_<simdfmt><u>): New
+	define_expand.
+	(simd_maddw_evod_<mode>_hetero): New define_insn.
+	(<simd_isa>_<x>vmaddw<ev_od>_<simdfmt_w>_<simdfmt>u_<simdfmt>):
+	New define_expand.
+	(<simd_isa>_maddw<ev_od>_q_d<u>_punned): New define_expand.
+	(<simd_isa>_maddw<ev_od>_q_du_d_punned): New define_expand.
+	* config/loongarch/loongarch-builtins.cc
+	(CODE_FOR_lsx_vmaddwev_q_d): Define as a macro to override it
+	with the punned expand.
+	(CODE_FOR_lsx_vmaddwev_q_du): Likewise.
+	(CODE_FOR_lsx_vmaddwev_q_du_d): Likewise.
+	(CODE_FOR_lsx_vmaddwod_q_d): Likewise.
+	(CODE_FOR_lsx_vmaddwod_q_du): Likewise.
+	(CODE_FOR_lsx_vmaddwod_q_du_d): Likewise.
+	(CODE_FOR_lasx_xvmaddwev_q_d): Likewise.
+	(CODE_FOR_lasx_xvmaddwev_q_du): Likewise.
+	(CODE_FOR_lasx_xvmaddwev_q_du_d): Likewise.
+	(CODE_FOR_lasx_xvmaddwod_q_d): Likewise.
+	(CODE_FOR_lasx_xvmaddwod_q_du): Likewise.
+	(CODE_FOR_lasx_xvmaddwod_q_du_d): Likewise.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/lasx.md (UNSPEC_LASX_XVHADDW_Q_D): Remove.
+	(UNSPEC_LASX_XVHSUBW_Q_D): Remove.
+	(UNSPEC_LASX_XVHADDW_QU_DU): Remove.
+	(UNSPEC_LASX_XVHSUBW_QU_DU): Remove.
+	(lasx_xvh<addsub:optab>w_h<u>_b<u>): Remove.
+	(lasx_xvh<addsub:optab>w_w<u>_h<u>): Remove.
+	(lasx_xvh<addsub:optab>w_d<u>_w<u>): Remove.
+	(lasx_xvhaddw_q_d): Remove.
+	(lasx_xvhsubw_q_d): Remove.
+	(lasx_xvhaddw_qu_du): Remove.
+	(lasx_xvhsubw_qu_du): Remove.
+	(reduc_plus_scal_v4di): Call gen_lasx_haddw_q_d_punned instead
+	of gen_lasx_xvhaddw_q_d.
+	(reduc_plus_scal_v8si): Likewise.
+	* config/loongarch/lsx.md (UNSPEC_LSX_VHADDW_Q_D): Remove.
+	(UNSPEC_ASX_VHSUBW_Q_D): Remove.
+	(UNSPEC_ASX_VHADDW_QU_DU): Remove.
+	(UNSPEC_ASX_VHSUBW_QU_DU): Remove.
+	(lsx_vh<addsub:optab>w_h<u>_b<u>): Remove.
+	(lsx_vh<addsub:optab>w_w<u>_h<u>): Remove.
+	(lsx_vh<addsub:optab>w_d<u>_w<u>): Remove.
+	(lsx_vhaddw_q_d): Remove.
+	(lsx_vhsubw_q_d): Remove.
+	(lsx_vhaddw_qu_du): Remove.
+	(lsx_vhsubw_qu_du): Remove.
+	(reduc_plus_scal_v2di): Change the temporary register mode to
+	V1TI, and pun the mode calling gen_vec_extractv2didi.
+	(reduc_plus_scal_v4si): Change the temporary register mode to
+	V1TI.
+	* config/loongarch/simd.md (simd_h<optab>w_<mode>_<su>): New
+	define_insn.
+	(<simd_isa>_<x>vh<optab>w_<simdfmt_w><u>_<simdfmt><u>): New
+	define_expand.
+	(<simd_isa>_h<optab>w_q<u>_d<u>_punned): New define_expand.
+	* config/loongarch/loongarch-builtins.cc
+	(CODE_FOR_lsx_vhaddw_q_d): Define as a macro to override with
+	punned expand.
+	(CODE_FOR_lsx_vhaddw_qu_du): Likewise.
+	(CODE_FOR_lsx_vhsubw_q_d): Likewise.
+	(CODE_FOR_lsx_vhsubw_qu_du): Likewise.
+	(CODE_FOR_lasx_xvhaddw_q_d): Likewise.
+	(CODE_FOR_lasx_xvhaddw_qu_du): Likewise.
+	(CODE_FOR_lasx_xvhsubw_q_d): Likewise.
+	(CODE_FOR_lasx_xvhsubw_qu_du): Likewise.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/lasx.md (UNSPEC_LASX_XVADDWEV): Remove.
+	(UNSPEC_LASX_XVADDWEV2): Remove.
+	(UNSPEC_LASX_XVADDWEV3): Remove.
+	(UNSPEC_LASX_XVSUBWEV): Remove.
+	(UNSPEC_LASX_XVSUBWEV2): Remove.
+	(UNSPEC_LASX_XVMULWEV): Remove.
+	(UNSPEC_LASX_XVMULWEV2): Remove.
+	(UNSPEC_LASX_XVMULWEV3): Remove.
+	(UNSPEC_LASX_XVADDWOD): Remove.
+	(UNSPEC_LASX_XVADDWOD2): Remove.
+	(UNSPEC_LASX_XVADDWOD3): Remove.
+	(UNSPEC_LASX_XVSUBWOD): Remove.
+	(UNSPEC_LASX_XVSUBWOD2): Remove.
+	(UNSPEC_LASX_XVMULWOD): Remove.
+	(UNSPEC_LASX_XVMULWOD2): Remove.
+	(UNSPEC_LASX_XVMULWOD3): Remove.
+	(lasx_xv<addsubmul:optab>wev_h_b<u>): Remove.
+	(lasx_xv<addsubmul:optab>wev_w_h<u>): Remove.
+	(lasx_xv<addsubmul:optab>wev_d_w<u>): Remove.
+	(lasx_xvaddwev_q_d): Remove.
+	(lasx_xvsubwev_q_d): Remove.
+	(lasx_xvmulwev_q_d): Remove.
+	(lasx_xv<addsubmul:optab>wod_h_b<u>): Remove.
+	(lasx_xv<addsubmul:optab>wod_w_h<u>): Remove.
+	(lasx_xv<addsubmul:optab>wod_d_w<u>): Remove.
+	(lasx_xvaddwod_q_d): Remove.
+	(lasx_xvsubwod_q_d): Remove.
+	(lasx_xvmulwod_q_d): Remove.
+	(lasx_xvaddwev_q_du): Remove.
+	(lasx_xvsubwev_q_du): Remove.
+	(lasx_xvmulwev_q_du): Remove.
+	(lasx_xvaddwod_q_du): Remove.
+	(lasx_xvsubwod_q_du): Remove.
+	(lasx_xvmulwod_q_du): Remove.
+	(lasx_xv<addmul:optab>wev_h_bu_b): Remove.
+	(lasx_xv<addmul:optab>wev_w_hu_h): Remove.
+	(lasx_xv<addmul:optab>wev_d_wu_w): Remove.
+	(lasx_xv<addmul:optab>wod_h_bu_b): Remove.
+	(lasx_xv<addmul:optab>wod_w_hu_h): Remove.
+	(lasx_xv<addmul:optab>wod_d_wu_w): Remove.
+	(lasx_xvaddwev_q_du_d): Remove.
+	(lasx_xvsubwev_q_du_d): Remove.
+	(lasx_xvmulwev_q_du_d): Remove.
+	(lasx_xvaddwod_q_du_d): Remove.
+	(lasx_xvsubwod_q_du_d): Remove.
+	* config/loongarch/lsx.md (UNSPEC_LSX_XVADDWEV): Remove.
+	(UNSPEC_LSX_VADDWEV2): Remove.
+	(UNSPEC_LSX_VADDWEV3): Remove.
+	(UNSPEC_LSX_VSUBWEV): Remove.
+	(UNSPEC_LSX_VSUBWEV2): Remove.
+	(UNSPEC_LSX_VMULWEV): Remove.
+	(UNSPEC_LSX_VMULWEV2): Remove.
+	(UNSPEC_LSX_VMULWEV3): Remove.
+	(UNSPEC_LSX_VADDWOD): Remove.
+	(UNSPEC_LSX_VADDWOD2): Remove.
+	(UNSPEC_LSX_VADDWOD3): Remove.
+	(UNSPEC_LSX_VSUBWOD): Remove.
+	(UNSPEC_LSX_VSUBWOD2): Remove.
+	(UNSPEC_LSX_VMULWOD): Remove.
+	(UNSPEC_LSX_VMULWOD2): Remove.
+	(UNSPEC_LSX_VMULWOD3): Remove.
+	(lsx_v<addsubmul:optab>wev_h_b<u>): Remove.
+	(lsx_v<addsubmul:optab>wev_w_h<u>): Remove.
+	(lsx_v<addsubmul:optab>wev_d_w<u>): Remove.
+	(lsx_vaddwev_q_d): Remove.
+	(lsx_vsubwev_q_d): Remove.
+	(lsx_vmulwev_q_d): Remove.
+	(lsx_v<addsubmul:optab>wod_h_b<u>): Remove.
+	(lsx_v<addsubmul:optab>wod_w_h<u>): Remove.
+	(lsx_v<addsubmul:optab>wod_d_w<u>): Remove.
+	(lsx_vaddwod_q_d): Remove.
+	(lsx_vsubwod_q_d): Remove.
+	(lsx_vmulwod_q_d): Remove.
+	(lsx_vaddwev_q_du): Remove.
+	(lsx_vsubwev_q_du): Remove.
+	(lsx_vmulwev_q_du): Remove.
+	(lsx_vaddwod_q_du): Remove.
+	(lsx_vsubwod_q_du): Remove.
+	(lsx_vmulwod_q_du): Remove.
+	(lsx_v<addmul:optab>wev_h_bu_b): Remove.
+	(lsx_v<addmul:optab>wev_w_hu_h): Remove.
+	(lsx_v<addmul:optab>wev_d_wu_w): Remove.
+	(lsx_v<addmul:optab>wod_h_bu_b): Remove.
+	(lsx_v<addmul:optab>wod_w_hu_h): Remove.
+	(lsx_v<addmul:optab>wod_d_wu_w): Remove.
+	(lsx_vaddwev_q_du_d): Remove.
+	(lsx_vsubwev_q_du_d): Remove.
+	(lsx_vmulwev_q_du_d): Remove.
+	(lsx_vaddwod_q_du_d): Remove.
+	(lsx_vsubwod_q_du_d): Remove.
+	(lsx_vmulwod_q_du_d): Remove.
+	* config/loongarch/loongarch-modes.def: Add V4TI and V1DI.
+	* config/loongarch/loongarch-protos.h
+	(loongarch_gen_stepped_int_parallel): New function prototype.
+	* config/loongarch/loongarch.cc (loongarch_print_operand):
+	Accept 'O' for printing "ev" or "od."
+	(loongarch_gen_stepped_int_parallel): Implement.
+	* config/loongarch/predicates.md
+	(vect_par_cnst_even_or_odd_half): New define_predicate.
+	* config/loongarch/simd.md (WVEC_HALF): New define_mode_attr.
+	(simdfmt_w): Likewise.
+	(zero_one): New define_int_iterator.
+	(ev_od): New define_int_attr.
+	(simd_<optab>w_evod_<mode:IVEC>_<su>): New define_insn.
+	(<simd_isa>_<x>v<optab>w<ev_od>_<simdfmt_w>_<simdfmt><u>): New
+	define_expand.
+	(simd_<optab>w_evod_<mode>_hetero): New define_insn.
+	(<simd_isa>_<x>v<optab>w<ev_od>_<simdfmt_w>_<simdfmt>u_<simdfmt>):
+	New define_expand.
+	(DIVEC): New define_mode_iterator.
+	(<simd_isa>_<optab>w<ev_od>_q_d<u>_punned): New define_expand.
+	(<simd_isa>_<optab>w<ev_od>_q_du_d_punned): Likewise.
+	* config/loongarch/loongarch-builtins.cc
+	(CODE_FOR_lsx_vaddwev_q_d): Define as a macro to override it
+	with the punned expand.
+	(CODE_FOR_lsx_vaddwev_q_du): Likewise.
+	(CODE_FOR_lsx_vsubwev_q_d): Likewise.
+	(CODE_FOR_lsx_vsubwev_q_du): Likewise.
+	(CODE_FOR_lsx_vmulwev_q_d): Likewise.
+	(CODE_FOR_lsx_vmulwev_q_du): Likewise.
+	(CODE_FOR_lsx_vaddwod_q_d): Likewise.
+	(CODE_FOR_lsx_vaddwod_q_du): Likewise.
+	(CODE_FOR_lsx_vsubwod_q_d): Likewise.
+	(CODE_FOR_lsx_vsubwod_q_du): Likewise.
+	(CODE_FOR_lsx_vmulwod_q_d): Likewise.
+	(CODE_FOR_lsx_vmulwod_q_du): Likewise.
+	(CODE_FOR_lsx_vaddwev_q_du_d): Likewise.
+	(CODE_FOR_lsx_vmulwev_q_du_d): Likewise.
+	(CODE_FOR_lsx_vaddwod_q_du_d): Likewise.
+	(CODE_FOR_lsx_vmulwod_q_du_d): Likewise.
+	(CODE_FOR_lasx_xvaddwev_q_d): Likewise.
+	(CODE_FOR_lasx_xvaddwev_q_du): Likewise.
+	(CODE_FOR_lasx_xvsubwev_q_d): Likewise.
+	(CODE_FOR_lasx_xvsubwev_q_du): Likewise.
+	(CODE_FOR_lasx_xvmulwev_q_d): Likewise.
+	(CODE_FOR_lasx_xvmulwev_q_du): Likewise.
+	(CODE_FOR_lasx_xvaddwod_q_d): Likewise.
+	(CODE_FOR_lasx_xvaddwod_q_du): Likewise.
+	(CODE_FOR_lasx_xvsubwod_q_d): Likewise.
+	(CODE_FOR_lasx_xvsubwod_q_du): Likewise.
+	(CODE_FOR_lasx_xvmulwod_q_d): Likewise.
+	(CODE_FOR_lasx_xvmulwod_q_du): Likewise.
+	(CODE_FOR_lasx_xvaddwev_q_du_d): Likewise.
+	(CODE_FOR_lasx_xvmulwev_q_du_d): Likewise.
+	(CODE_FOR_lasx_xvaddwod_q_du_d): Likewise.
+	(CODE_FOR_lasx_xvmulwod_q_du_d): Likewise.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/lsx.md (mov<LSX:mode>): Remove.
+	(movmisalign<LSX:mode>): Remove.
+	(mov<LSX:mode>_lsx): Remove.
+	* config/loongarch/lasx.md (mov<LASX:mode>): Remove.
+	(movmisalign<LASX:mode>): Remove.
+	(mov<LASX:mode>_lasx): Remove.
+	* config/loongarch/loongarch-modes.def (V1TI): Add.
+	(V2TI): Mention in the comment.
+	* config/loongarch/loongarch.md (mode): Add V1TI and V2TI.
+	* config/loongarch/simd.md (ALLVEC_TI): New mode iterator.
+	(mov<ALLVEC_TI:mode): New define_expand.
+	(movmisalign<ALLVEC_TI:mode>): Likewise.
+	(mov<ALLVEC_TI:mode>_simd): New define_insn_and_split.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch-protos.h
+	(loongarch_const_vector_vrepli): New function prototype.
+	* config/loongarch/loongarch.cc (loongarch_const_vector_vrepli):
+	Implement.
+	(loongarch_const_insns): Call loongarch_const_vector_vrepli
+	instead of loongarch_const_vector_same_int_p.
+	(loongarch_split_vector_move_p): Likewise.
+	(loongarch_output_move): Use loongarch_const_vector_vrepli to
+	pun operend[1] into a better mode if it's a const int vector,
+	and decide the suffix of [x]vrepli with the new mode.
+	* config/loongarch/constraints.md (YI): Call
+	loongarch_const_vector_vrepli instead of
+	loongarch_const_vector_same_int_p.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/115478
+	* config/loongarch/loongarch.md (any_or_plus): New
+	define_code_iterator.
+	(bstrins_<mode>_for_ior_mask): Use any_or_plus instead of ior.
+	(bytepick_w_<bytepick_imm>): Likewise.
+	(bytepick_d_<bytepick_imm>): Likewise.
+	(bytepick_d_<bytepick_imm>_rev): Likewise.
+
+2025-02-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR middle-end/113525
+	* doc/invoke.texi (dump-rtl-sibling): Drop documentation for pass
+	removed long ago.
+	(dump-rtl-unshare): Likewise.
+
 2025-02-18  Andi Kleen  <ak@gcc.gnu.org>
 
 	* doc/invoke.texi:
