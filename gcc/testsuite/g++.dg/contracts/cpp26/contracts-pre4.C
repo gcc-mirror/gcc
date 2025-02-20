@@ -78,17 +78,17 @@ int main(int, char**)
   return 0;
 }
 
-// { dg-output "contract violation in function .*contract_wrapper at .*.C:7: a > 5.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Base::f at .*.C:7: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function Base::f at .*.C:7: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "Base: 13(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*.C:7: a > 5.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Base::f at .*.C:7: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function Base::f at .*.C:7: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "Child0: 13(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*.C:23: a > 14.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Child1::f at .*.C:23: a > 14.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function Child1::f at .*.C:23: a > 14.*(\n|\r\n|\r)" }
 // { dg-output "Child1: 27(\n|\r\n|\r)" }
 // { dg-output "Child2: 31(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*.C:45: a > 0.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function Child3::f at .*.C:45: a > 0.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function Child3::f at .*.C:45: a > 0.*(\n|\r\n|\r)" }
 // { dg-output "Child3: 40(\n|\r\n|\r)" }
 // { dg-output "Child3: 41(\n|\r\n|\r)" }
