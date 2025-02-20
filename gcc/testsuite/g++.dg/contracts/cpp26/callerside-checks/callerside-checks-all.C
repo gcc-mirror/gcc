@@ -34,19 +34,19 @@ int main(int, char**)
   return 0;
 }
 
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 2.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function f at .*: a > 2.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function f at .*: a > 2.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function f at .*: r > 2.*(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: r > 2.*(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 3.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function f at .*: r > 2.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S::f at .*: a > 3.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function S::f at .*: a > 3.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function S::f at .*: r > 3.*(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: r > 3.*(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 4.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function S::f at .*: r > 3.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function TS<int>::f at .*: a > 4.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function TS<int>::f at .*: a > 4.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function TS<int>::f at .*: r > 4.*(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: r > 4.*(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 5.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function TS<int>::f at .*: r > 4.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function TS<int>::tf at .*: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function TS<int>::tf<int> at .*: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function TS<int>::tf<int> at .*: r > 5.*(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: r > 5.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function TS<int>::tf at .*: r > 5.*(\n|\r\n|\r)" }
