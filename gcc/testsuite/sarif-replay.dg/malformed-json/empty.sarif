@@ -1,0 +1,2 @@
+/* Empty file (apart from these comments).  */
+/* { dg-error "expected a JSON value but got EOF" "" { target *-*-* } 3 } */
