@@ -113,13 +113,17 @@ DeriveEq::eq_impls (
   std::unique_ptr<AssociatedItem> &&fn, std::string name,
   const std::vector<std::unique_ptr<GenericParam>> &type_generics)
 {
+  // We create two copies of the type-path to avoid duplicate NodeIds
   auto eq = builder.type_path ({"core", "cmp", "Eq"}, true);
+  auto eq_bound
+    = builder.trait_bound (builder.type_path ({"core", "cmp", "Eq"}, true));
+
   auto steq = builder.type_path (LangItem::Kind::STRUCTURAL_TEQ);
 
   auto trait_items = vec (std::move (fn));
 
   auto eq_generics
-    = setup_impl_generics (name, type_generics, builder.trait_bound (eq));
+    = setup_impl_generics (name, type_generics, std::move (eq_bound));
   auto steq_generics = setup_impl_generics (name, type_generics);
 
   auto eq_impl = builder.trait_impl (eq, std::move (eq_generics.self_type),
