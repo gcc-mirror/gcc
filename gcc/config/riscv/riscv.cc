@@ -728,6 +728,12 @@ static const unsigned gpr_save_reg_order[] = {
   S10_REGNUM, S11_REGNUM
 };
 
+/* Order for the (ra, s0-sx) of zcmp_save.  */
+static const unsigned zcmp_save_reg_order[]
+  = {RETURN_ADDR_REGNUM, S0_REGNUM,  S1_REGNUM,	 S2_REGNUM,	S3_REGNUM,
+     S4_REGNUM,		 S5_REGNUM,  S6_REGNUM,	 S7_REGNUM,	S8_REGNUM,
+     S9_REGNUM,		 S10_REGNUM, S11_REGNUM, INVALID_REGNUM};
+
 /* A table describing all the processors GCC knows about.  */
 static const struct riscv_tune_info riscv_tune_info_table[] = {
 #define RISCV_TUNE(TUNE_NAME, PIPELINE_MODEL, TUNE_INFO)	\
@@ -8364,8 +8370,11 @@ riscv_adjust_multi_push_cfi_prologue (int saved_size)
   int offset;
   int saved_cnt = 0;
 
-  if (mask & S10_MASK)
-    mask |= S11_MASK;
+  unsigned int num_multi_push = riscv_multi_push_regs_count (mask);
+  for (unsigned int i = 0; i < num_multi_push; i++) {
+    gcc_assert(zcmp_save_reg_order[i] != INVALID_REGNUM);
+    mask |= 1 << (zcmp_save_reg_order[i] - GP_REG_FIRST);
+  }
 
   for (int regno = GP_REG_LAST; regno >= GP_REG_FIRST; regno--)
     if (BITSET_P (mask & MULTI_PUSH_GPR_MASK, regno - GP_REG_FIRST))
