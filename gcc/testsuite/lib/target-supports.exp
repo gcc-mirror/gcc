@@ -651,15 +651,7 @@ proc check_effective_target_trampolines { } {
 proc check_effective_target_stack_size { } {
     # For nvptx target, stack size limits are relevant for execution only.
     if { [istarget nvptx-*-*] } {
-	# Find 'dg-do-what' in an outer frame.
-	set level 1
-	while true {
-	    upvar $level dg-do-what dg-do-what
-	    if [info exists dg-do-what] then break
-	    incr level
-	}
-	verbose "check_effective_target_stack_size: found dg-do-what at level $level" 2
-
+	set dg-do-what [find-dg-do-what]
 	if { ![string equal [lindex ${dg-do-what} 0] run] } {
 	    return 0
 	}
@@ -1006,15 +998,7 @@ proc check_effective_target_alloca {} {
 		return 0
 	    }
 
-	    # Find 'dg-do-what' in an outer frame.
-	    set level 1
-	    while true {
-		upvar $level dg-do-what dg-do-what
-		if [info exists dg-do-what] then break
-		incr level
-	    }
-	    verbose "check_effective_target_alloca: found dg-do-what at level $level" 2
-
+	    set dg-do-what [find-dg-do-what]
 	    if { [string equal [lindex ${dg-do-what} 0] run] } {
 		# For 'dg-do run', it additionally depends on runtime support.
 		# (If not supported, we don't try to demote 'run' to 'link',
