@@ -1,3 +1,78 @@
+2025-02-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-core.h: Add comments making clear that these
+	functions implicitly use global_dc.
+
+2025-02-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* libsarifreplay.cc
+	(sarif_replayer::make_plain_text_within_result_message): Capture
+	which json::string was used.  When reporting on unescaped "{" or
+	"}" in SARIF message strings, use that string rather than the
+	message object, and refer the user to §3.11.5 ("Messages with
+	placeholders") rather than §3.11.11 ("arguments").  Ideally we'd
+	place the error at the precise character, but that can't be done
+	without reworking json-parsing.cc's lexer::lex_string, which is
+	too invasive for stage 4.
+	(sarif_replayer::get_plain_text_from_mfms): Capture which
+	json::string was used.
+	(sarif_replayer::lookup_plain_text_within_result_message):
+	Likewise.
+
+2025-02-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific, aarch64*-*-*): Drop note for
+	Binutils pre 2.24.
+
+2025-02-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_expand_sve_vec_cmp_float):
+	Remove can_invert_p argument and change return type to void.
+	* config/aarch64/aarch64.cc (aarch64_expand_sve_vec_cmp_float):
+	Likewise.
+	* config/aarch64/aarch64-sve.md (vec_cmp<mode><vpred>): Update call
+	accordingly.
+
+2025-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118521
+	* tree-scalar-evolution.cc (final_value_replacement_loop):
+	Fold uses of the replaced PHI def.
+
+2025-02-20  Filip Kastl  <fkastl@suse.cz>
+
+	* doc/invoke.texi: Fix typo file-cache-files ->
+	file-cache-lines.
+
+2025-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86270
+	* tree-outof-ssa.cc (insert_backedge_copies): Pattern
+	match a single conflict in a loop condition and adjust
+	that avoiding the conflict if possible.
+
+2025-02-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	Revert:
+	2025-02-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/109780
+	PR target/109093
+	* config/i386/i386.cc (ix86_update_stack_alignment): New.
+	(ix86_find_all_reg_use_1): Likewise.
+	(ix86_find_all_reg_use): Likewise.
+	(ix86_find_max_used_stack_alignment): Also check memory accesses
+	from registers defined by stack or frame registers.
+
+2025-02-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	Revert:
+	2025-02-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (ix86_find_all_reg_use):
+	Scan only for SET RTX in PARALLEL.
+
 2025-02-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/118919

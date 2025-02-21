@@ -1,3 +1,87 @@
+2025-02-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* sarif-replay.dg/malformed-json/empty.sarif: New test.
+
+2025-02-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* sarif-replay.dg/2.1.0-invalid/3.11.11-malformed-placeholder.sarif:
+	Rename to...
+	* sarif-replay.dg/2.1.0-invalid/3.11.5-unescaped-braces.sarif:
+	...this.  Update expected subsection in error message, and
+	expected underline in quoted JSON.
+
+2025-02-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/116604
+	* gcc.target/aarch64/sve/pcs/args_1.c (callee_pred): Enable scheduling
+	and use both memory arguments in the same instruction.  Expect no
+	prologue and epilogue code.
+
+2025-02-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/var_stride_2.c: Expect ADD+LSL.
+	* gcc.target/aarch64/sve/var_stride_4.c: Accept LSL or SBFIZ.
+
+2025-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118521
+	* g++.dg/torture/pr118521.C: New testcase.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_lib_comm_1.f90: Fix up scan_trees.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray/send_char_array_1.f90: Extend test to
+	catch more cases.
+	* gfortran.dg/coarray_42.f90: Invert tests use, because no
+	longer a send is needed when local memory in a coarray is
+	allocated.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray/coarray_allocated.f90: Adapt to new method
+	of checking on remote image.
+	* gfortran.dg/coarray_lib_alloc_4.f90: Same.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_lib_comm_1.f90: Adapt scan expression.
+	* gfortran.dg/coarray/get_with_fn_parameter.f90: New test.
+	* gfortran.dg/coarray/get_with_scalar_fn.f90: New test.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_lib_comm_1.f90: Adapt to renamed ABI
+	function.
+	* gfortran.dg/coarray_stat_function.f90: Same.
+	* gfortran.dg/coindexed_1.f90: Same.
+
+2025-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86270
+	* gcc.target/i386/pr86270.c: Adjust to check for no reg-reg
+	copies as well.
+
+2025-02-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/118936
+	* gcc.target/i386/pr118936.c: New test.
+
+2025-02-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	Revert:
+	2025-02-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/109780
+	PR target/109093
+	* g++.target/i386/pr109780-1.C: New test.
+	* gcc.target/i386/pr109093-1.c: Likewise.
+	* gcc.target/i386/pr109780-1.c: Likewise.
+	* gcc.target/i386/pr109780-2.c: Likewise.
+	* gcc.target/i386/pr109780-3.c: Likewise.
+
 2025-02-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	* gcc.target/avr/torture/isr-04-regs.c: New test.

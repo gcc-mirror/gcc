@@ -1,3 +1,72 @@
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h (_gfortran_caf_get): Removed because deprecated.
+	(_gfortran_caf_send): Same.
+	(_gfortran_caf_sendget): Same.
+	(_gfortran_caf_send_by_ref): Same.
+	* caf/single.c (assign_char4_from_char1): Same.
+	(assign_char1_from_char4): Same.
+	(convert_type): Same.
+	(defined): Same.
+	(_gfortran_caf_get): Same.
+	(_gfortran_caf_send): Same.
+	(_gfortran_caf_sendget): Same.
+	(copy_data): Same.
+	(get_for_ref): Same.
+	(_gfortran_caf_get_by_ref): Same.
+	(send_by_ref): Same.
+	(_gfortran_caf_send_by_ref): Same.
+	(_gfortran_caf_sendget_by_ref): Same.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h: Add prototype for transfer_between_remotes.
+	* caf/single.c: Implement transfer_between_remotes.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h: Add/Correct prototypes for caf_get_from_remote,
+	caf_send_to_remote.
+	* caf/single.c (struct accessor_hash_t): Rename accessor_t to
+	getter_t.
+	(_gfortran_caf_register_accessor): Use new name of getter_t.
+	(_gfortran_caf_send_to_remote): New function for sending data to
+	coarray on a remote image.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h (_gfortran_caf_is_present_on_remote): Add new
+	function.
+	(_gfortran_caf_is_present): Remove deprecated one.
+	* caf/single.c (struct accessor_hash_t): Add function ptr access
+	for remote side call.
+	(_gfortran_caf_is_present_on_remote): Added.
+	(_gfortran_caf_is_present): Removed.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h (_gfortran_caf_register_accessor): Reflect
+	changed parameter order.
+	* caf/single.c (struct accessor_hash_t): Same.
+	(_gfortran_caf_register_accessor): Call accessor using a token
+	for accessing arrays with a descriptor on the source side.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h (_gfortran_caf_get_by_ref): Remove from ABI.
+	This function is replaced by caf_get_from_remote ().
+	(_gfortran_caf_get_remote_function_index): Use better name.
+	* caf/single.c (_gfortran_caf_finalize): Free internal data.
+	(_gfortran_caf_get_by_ref): Remove from public interface, but
+	keep it, because it is still used by sendget ().
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/single.c (_gfortran_caf_finalize): Free memory preventing
+	leaks.
+	(_gfortran_caf_get_by_ct): Fix constness.
+	* caf/libcaf.h (_gfortran_caf_register_accessor): Fix constness.
+
 2025-02-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/114618

@@ -1,3 +1,155 @@
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* gfortran.texi: Remove deprecated functions from documentation.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Remove
+	decprecated function decls.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_exponent): Remove
+	deprecated/no longer needed routines.
+	* trans.h: Remove unused decls.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* coarray.cc (rewrite_caf_send): Rewrite to
+	transfer_between_remotes when both sides of the assignment have
+	a coarray.
+	(coindexed_code_callback): Prevent duplicate rewrite.
+	* gfortran.texi: Add documentation for transfer_between_remotes.
+	* intrinsic.cc (add_subroutines): Add intrinsic symbol for
+	caf_sendget to allow easy rewrite to transfer_between_remotes.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Add
+	prototype for transfer_between_remotes.
+	* trans-intrinsic.cc (conv_caf_vector_subscript_elem): Mark as
+	deprecated.
+	(conv_caf_vector_subscript): Same.
+	(compute_component_offset): Same.
+	(conv_expr_ref_to_caf_ref): Same.
+	(conv_stat_and_team): Extract stat and team from expr.
+	(gfc_conv_intrinsic_caf_get): Use conv_stat_and_team.
+	(conv_caf_send_to_remote): Same.
+	(has_ref_after_cafref): Mark as deprecated.
+	(conv_caf_sendget): Translate to transfer_between_remotes.
+	* trans.h: Add prototype for transfer_between_remotes.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* coarray.cc (move_coarray_ref): Move the coarray reference out
+	of the given one.  Especially when there is a regular array ref.
+	(fixup_comp_refs): Move components refs to a derived type where
+	the codim has been removed, aka a new type.
+	(split_expr_at_caf_ref): Correctly split the reference chain.
+	(remove_caf_ref): Simplify.
+	(create_get_callback): Fix some deficiencies.
+	(create_allocated_callback): Adapt to new signature of split.
+	(create_send_callback): New function.
+	(rewrite_caf_send): Rewrite a call to caf_send to
+	caf_send_to_remote.
+	(coindexed_code_callback): Treat caf_send and caf_sendget
+	correctly.
+	* gfortran.h (enum gfc_isym_id): Add SENDGET-isym.
+	* gfortran.texi: Add documentation for send_to_remote.
+	* resolve.cc (gfc_resolve_code): No longer generate send_by_ref
+	when allocatable coarray (component) is on the lhs.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Add
+	caf_send_to_remote decl.
+	* trans-intrinsic.cc (conv_caf_func_index): Ensure the static
+	variables created are not in a block-scope.
+	(conv_caf_send_to_remote): Translate caf_send_to_remote calls.
+	(conv_caf_send): Renamed to conv_caf_sendget.
+	(conv_caf_sendget): Renamed from conv_caf_send.
+	(gfc_conv_intrinsic_subroutine): Branch correctly for
+	conv_caf_send and sendget.
+	* trans.h: Correct decl.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* coarray.cc (create_allocated_callback): Add creating remote
+	side procedure for checking allocation status of coarray.
+	(rewrite_caf_allocated): Rewrite ALLOCATED on coarray to use caf
+	routine.
+	(coindexed_expr_callback): Exempt caf_is_present_on_remote from
+	being rewritten again.
+	* gfortran.h (enum gfc_isym_id): Add caf_is_present_on_remote
+	id.
+	* gfortran.texi: Add documentation for caf_is_present_on_remote.
+	* intrinsic.cc (add_functions): Add caf_is_present_on_remote
+	symbol.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Define
+	interface of caf_is_present_on_remote.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_caf_is_present_remote):
+	Translate caf_is_present_on_remote.
+	(trans_caf_is_present): Remove.
+	(caf_this_image_ref): Remove.
+	(gfc_conv_allocated): Take out coarray treatment, because that
+	is rewritten to caf_is_present_on_remote now.
+	(gfc_conv_intrinsic_function): Handle caf_is_present_on_remote
+	calls.
+	* trans.h: Add symbol for caf_is_present_on_remote and remove
+	old one.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* coarray.cc (get_arrayspec_from_expr): Treat array result of
+	function calls correctly.
+	(remove_coarray_from_derived_type): Prevent memory loss.
+	(add_caf_get_from_remote): Correct locus.
+	(find_comp): New function to find or create a new component in a
+	derived type.
+	(check_add_new_comp_handle_array): Handle allocatable arrays or
+	non-pure/non-elemental functions in indexes of coarrays.
+	(check_add_new_component): Use above function.
+	(create_get_parameter_type): Rename to
+	create_caf_add_data_parameter_type.
+	(create_caf_add_data_parameter_type): Renaming of variable and
+	make the additional data a coarray.
+	(remove_caf_ref): Factor out to reuse in other caf-functions.
+	(create_get_callback): Use function factored out, set locus
+	correctly and ensure a kind is set for parameters.
+	(add_caf_get_intrinsic): Rename to add_caf_get_from_remote and
+	rename some variables.
+	(coindexed_expr_callback): Skip over function created by the
+	rewriter.
+	(coindexed_code_callback): Filter some intrinsics not to
+	process.
+	(gfc_coarray_rewrite): Rewrite also contained functions.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_caf_get): Reflect
+	changed order on caf_get_from_remote ().
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* gfortran.texi: Rename caf_get_by_ct to caf_get_from_remote.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Rename
+	intrinsic.
+	* trans-intrinsic.cc (conv_caf_func_index): Factor out
+	functionality to be reused by other caf-functions.
+	(conv_caf_add_call_data): Same.
+	(gfc_conv_intrinsic_caf_get): Use functions factored out.
+	* trans.h: Rename intrinsic symbol.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* Make-lang.in: Add coarray.cc.
+	* coarray.cc: New file.
+	* gfortran.h (gfc_coarray_rewrite): New procedure.
+	* parse.cc (rewrite_expr_tree): Add entrypoint for rewriting
+	expression trees.
+	* resolve.cc (gfc_resolve_ref): Remove caf_lhs handling.
+	(get_arrayspec_from_expr): Moved to rewrite.cc.
+	(remove_coarray_from_derived_type): Same.
+	(convert_coarray_class_to_derived_type): Same.
+	(split_expr_at_caf_ref): Same.
+	(check_add_new_component): Same.
+	(create_get_parameter_type): Same.
+	(create_get_callback): Same.
+	(add_caf_get_intrinsic): Same.
+	(resolve_variable): Remove caf_lhs handling.
+
 2025-02-17  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/115271

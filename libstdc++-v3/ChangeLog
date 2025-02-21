@@ -1,3 +1,62 @@
+2025-02-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118559
+	* include/std/type_traits (rank, rank_v): Do not use
+	__array_rank for Clang 19 and older.
+
+2025-02-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_HAS_BUILTIN): Add parentheses.
+
+2025-02-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118855
+	* include/std/bit (__count_lzero, __count_rzero, __popcount):
+	Use type-generic built-ins when available.
+
+2025-02-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/simd.h (__find_next_valid_abi): Cast
+	__bit_ceil argument to unsigned.
+	* src/c++17/floating_from_chars.cc (__floating_from_chars_hex):
+	Cast __bit_ceil argument to unsigned.
+	* src/c++17/memory_resource.cc (big_block): Cast __bit_width
+	argument to unsigned.
+
+2025-02-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/memory_resource.cc (default_res): Define here
+	instead of including default_resource.h.
+	* src/c++98/globals_io.cc (__ioinit): Define here instead of
+	including ios_base_init.h.
+	* src/c++17/default_resource.h: Removed.
+	* src/c++98/ios_base_init.h: Removed.
+
+2025-02-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118811
+	* src/c++20/tzdb.cc (tzdb_list::_Node): Use init_priority
+	attribute on static data members.
+	* testsuite/std/time/tzdb_list/pr118811.cc: New test.
+
+2025-02-20  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (concat_view::iterator): Rename to ...
+	(concat_view::_Iterator): ... this throughout.
+
+2025-02-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/115209
+	* include/bits/version.def (ranges_concat): Depend on
+	__cpp_pack_indexing.
+	* include/bits/version.h: Regenerate.
+	* include/std/ranges (__detail::__last_is_common): Remove.
+	(__detail::__all_but_first_sized): New.
+	(concat_view::end): Use C++26 pack indexing instead of
+	__last_is_common as per R8 of P2542.
+	(concat_view::iterator::operator-): Update constraints on
+	iter/sent overloads as per R8 of P2542.
+
 2025-02-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr_base.h: Do not include <bit>.
