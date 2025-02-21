@@ -6022,7 +6022,8 @@ vect_recog_gather_scatter_pattern (vec_info *vinfo,
       else
 	pattern_stmt = gimple_build_call_internal (gs_info.ifn, 4, base,
 						   offset, scale, zero);
-      tree load_lhs = vect_recog_temp_ssa_var (gs_info.element_type, NULL);
+      tree lhs = gimple_get_lhs (stmt_info->stmt);
+      tree load_lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
       gimple_call_set_lhs (pattern_stmt, load_lhs);
     }
   else
