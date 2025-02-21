@@ -1,4 +1,3 @@
-// { dg-require-effective-target alloca }
 /* PR c/77754 */
 
 int fn3();

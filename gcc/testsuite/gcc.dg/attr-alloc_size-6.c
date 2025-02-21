@@ -4,7 +4,6 @@
    to allocate objects in excess of the number of bytes specified by
    -Walloc-larger-than=maximum.  */
 /* { dg-do compile } */
-/* { dg-require-effective-target alloca } */
 /* { dg-options "-O0 -Wall -Walloc-size-larger-than=12345 -Wno-use-after-free" } */
 
 #define MAXOBJSZ  12345

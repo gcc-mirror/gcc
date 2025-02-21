@@ -1,7 +1,6 @@
 /* PR c/61561.  */
 /* { dg-do assemble } */
 /* { dg-options " -w -O2" } */
-/* { dg-require-effective-target alloca } */
 
 int dummy (int a);
 

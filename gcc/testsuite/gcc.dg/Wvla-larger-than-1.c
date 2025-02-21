@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target alloca } */
 /* { dg-options "-Wvla-larger-than=100 -O2" } */
 
 typedef __SIZE_TYPE__ size_t;

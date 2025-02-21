@@ -1,7 +1,6 @@
 /* PR target/99085 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fgraphite-identity -fsel-sched-pipelining -fselective-scheduling2" } */
-/* { dg-require-effective-target alloca } */
 
 void
 foo (int m, int n, int o, int i)

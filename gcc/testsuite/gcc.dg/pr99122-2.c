@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu17 -O2 -g -w" } */
-/* { dg-require-effective-target alloca } */
 
 static int foo ();
 

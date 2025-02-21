@@ -1,6 +1,5 @@
 /* { dg-do run { target fpic } } */
 /* { dg-options "-O2 -fpic" } */
-/* { dg-require-effective-target alloca } */
 
 extern void abort (void);
 extern void exit (int);

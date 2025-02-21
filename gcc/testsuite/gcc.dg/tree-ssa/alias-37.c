@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target alloca } */
 /* { dg-options "-O2 -fdump-tree-dse1-details" } */
 
 int i;

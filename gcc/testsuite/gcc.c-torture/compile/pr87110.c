@@ -1,4 +1,3 @@
-// { dg-require-effective-target alloca }
 enum a { b, c };
 struct d {
   _Bool e;

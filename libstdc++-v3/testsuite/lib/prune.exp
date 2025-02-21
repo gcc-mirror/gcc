@@ -107,6 +107,13 @@ proc libstdc++-dg-prune { system text } {
 	}
     }
 
+    # If dynamic stack allocation is not supported, expectant tests are UNSUPPORTED.
+    if { ![check_effective_target_alloca] } {
+	if [regexp "(^|\n)\[^\n\]*: sorry, unimplemented: dynamic stack allocation not supported" $text] {
+	    return "::unsupported::dynamic stack allocation not supported"
+	}
+    }
+
     foreach p $additional_prunes {
 	if { [string length $p] > 0 } {
 	    # Following regexp matches a complete line containing $p.

@@ -1,7 +1,6 @@
 // PR c++/44613
 // { dg-do run }
 // { dg-options "" }
-// { dg-require-effective-target alloca }
 
 typedef int int32_t __attribute__((mode (__SI__)));
 

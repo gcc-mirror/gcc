@@ -1018,7 +1018,10 @@ proc check_effective_target_alloca {} {
 
 	    set dg-do-what [find-dg-do-what]
 	    if { ![llength ${dg-do-what}] } {
-		error "unexpected call stack"
+		# This happens if 'gcc-dg-prune' etc. get called outside of
+		# 'dg-test'.  For these purposes, assume that dynamic stack
+		# allocation is supported.
+		return 1
 	    }
 	    if { [string equal [lindex ${dg-do-what} 0] run] } {
 		# For 'dg-do run', it additionally depends on runtime support.

@@ -1,7 +1,6 @@
 /* PR c/33238 */
 /* { dg-do compile } */
 /* { dg-options "-std=gnu89" } */
-/* { dg-require-effective-target alloca } */
 
 void
 reverse (void *x, int y, int z)

@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-fstrub=strict" } */
-/* { dg-require-effective-target alloca } */
 /* { dg-require-effective-target strub } */
 
 /* Check that a non-strub function leaves a string behind in the stack, and that

@@ -1,4 +1,3 @@
-// { dg-require-effective-target alloca }
 /* PR middle-end/86528 */
 
 void __attribute__((noinline, noclone))

@@ -3,8 +3,7 @@
    or through pointers is diagnosed.  In most cases this doesn't require
    optimization.
    { dg-do compile }
-   { dg-options "-Wall -Wfree-nonheap-object" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-Wall -Wfree-nonheap-object" } */
 
 typedef __INTPTR_TYPE__ intptr_t;
 typedef __SIZE_TYPE__   size_t;

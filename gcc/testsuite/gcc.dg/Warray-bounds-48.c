@@ -1,8 +1,7 @@
 /* PR middle-end/91647 - missing -Warray-bounds accessing a zero-length array
    of a declared object
    { dg-do "compile" }
-   { dg-options "-O2 -Wall" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O2 -Wall" } */
 
 /* pr102706: disabled warnings because the now-disabled conditions for the
    bogus warnings to come up do not take cost analysis into account, and often

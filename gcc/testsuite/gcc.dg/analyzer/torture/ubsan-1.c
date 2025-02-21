@@ -1,6 +1,5 @@
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
 /* { dg-additional-options "-fsanitize=bounds" } */
-/* { dg-require-effective-target alloca } */
 
 #include <stdlib.h>
 #include "../analyzer-decls.h"

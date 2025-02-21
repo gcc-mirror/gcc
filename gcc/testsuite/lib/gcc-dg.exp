@@ -452,6 +452,13 @@ proc gcc-dg-prune { system text } {
 	}
     }
 
+    # If dynamic stack allocation is not supported, expectant tests are UNSUPPORTED.
+    if { ![check_effective_target_alloca] } {
+	if [regexp "(^|\n)\[^\n\]*: sorry, unimplemented: dynamic stack allocation not supported" $text] {
+	    return "::unsupported::dynamic stack allocation not supported"
+	}
+    }
+
     return $text
 }
 

@@ -1,5 +1,4 @@
 /* { dg-additional-options "-fdiagnostics-path-format=inline-events -fdiagnostics-show-caret -fanalyzer-fine-grained" } */
-/* { dg-require-effective-target alloca } */
 
 #include <stdint.h>
 

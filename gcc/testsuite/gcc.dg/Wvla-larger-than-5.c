@@ -1,7 +1,6 @@
 /* PR middle-end/100510 - bogus -Wvla-large-than with -Walloca
    { dg-do compile }
-   { dg-options "-O0 -Walloca -Wvla-larger-than=1000" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O0 -Walloca -Wvla-larger-than=1000" } */
 
 void f (void*);
 

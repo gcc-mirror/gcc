@@ -1,7 +1,6 @@
 /* Test __auto_type.  Test correct uses.  */
 /* { dg-do run } */
 /* { dg-options "" } */
-/* { dg-require-effective-target alloca } */
 
 extern void abort (void);
 extern void exit (int);

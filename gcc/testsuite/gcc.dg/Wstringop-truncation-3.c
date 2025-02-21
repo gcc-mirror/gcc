@@ -1,6 +1,5 @@
 /* PR c/85931 - -Wsizeof-pointer-memaccess for strncpy with size of source
    { dg-do compile }
-   { dg-require-effective-target alloca }
    { dg-options "-O2 -Wall -Wstringop-truncation -ftrack-macro-expansion=0" } */
 
 typedef __SIZE_TYPE__ size_t;

@@ -2,7 +2,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3" } */
 /* { dg-additional-options "-mavx2" { target { i?86-*-* x86_64-*-* } } } */
-/* { dg-require-effective-target alloca } */
 
 int *
 foo (int a, int *b, int *c, int *d)

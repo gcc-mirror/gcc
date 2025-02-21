@@ -1,4 +1,3 @@
-/* { dg-require-effective-target alloca } */
 /* { dg-additional-options "-std=gnu89" } */
 
 void zzz (char *s1, char *s2, int len, int *q)

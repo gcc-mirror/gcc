@@ -1,8 +1,7 @@
 /* PR middle-end/94004 - missing -Walloca on calls to alloca due
    to -Wno-system-headers
    { dg-do compile }
-   { dg-options "-O2 -Wall -Walloca-larger-than=8 -ftrack-macro-expansion=0" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O2 -Wall -Walloca-larger-than=8 -ftrack-macro-expansion=0" } */
 
 #include "Walloca-larger-than-3.h"
 

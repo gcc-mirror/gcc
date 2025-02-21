@@ -1,5 +1,4 @@
 /* { dg-additional-options "-fanalyzer-call-summaries --param analyzer-min-snodes-for-call-summary=0" } */
-/* { dg-require-effective-target alloca } */
 
 /* There need to be at least two calls to a function for the
    call-summarization code to be used.

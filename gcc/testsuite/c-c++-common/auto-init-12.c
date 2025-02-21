@@ -1,7 +1,6 @@
 /* Verify zero initialization for VLA automatic variables.  */
 /* { dg-do compile } */
 /* { dg-options "-ftrivial-auto-var-init=pattern -fdump-tree-gimple" } */
-/* { dg-require-effective-target alloca } */
 
 extern void bar (int);
 

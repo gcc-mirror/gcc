@@ -3,7 +3,6 @@
    ASM_SIMPLIFY_DWARF_ADDR hook.  */
 /* { dg-do compile { target fpic } } */
 /* { dg-options "-O2 -fpic -g" } */
-/* { dg-require-effective-target alloca } */
 
 static inline char *
 bar (unsigned long x, char *y)

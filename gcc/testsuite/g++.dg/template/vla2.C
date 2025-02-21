@@ -1,7 +1,6 @@
 // PR c++/28879
 // { dg-do compile }
 // { dg-options "" }
-// { dg-require-effective-target alloca }
 
 struct A
 {
