@@ -51,6 +51,14 @@ vec (std::unique_ptr<T> &&t1, std::unique_ptr<T> &&t2)
   return v;
 }
 
+/* Pointer-ify something */
+template <typename T>
+static std::unique_ptr<T>
+ptrify (T value)
+{
+  return std::unique_ptr<T> (new T (value));
+}
+
 // TODO: Use this builder when expanding regular macros
 /* Builder class with helper methods to create AST nodes. This builder is
  * tailored towards generating multiple AST nodes from a single location, and
@@ -59,6 +67,10 @@ class Builder
 {
 public:
   Builder (location_t loc) : loc (loc) {}
+
+  /* Create an expression statement from an expression */
+  std::unique_ptr<Stmt> statementify (std::unique_ptr<Expr> &&value,
+				      bool semicolon_followed = true) const;
 
   /* Create a string literal expression ("content") */
   std::unique_ptr<Expr> literal_string (std::string &&content) const;
@@ -102,6 +114,8 @@ public:
   std::unique_ptr<BlockExpr> block (tl::optional<std::unique_ptr<Stmt>> &&stmt,
 				    std::unique_ptr<Expr> &&tail_expr
 				    = nullptr) const;
+  /* Create an empty block */
+  std::unique_ptr<BlockExpr> block () const;
 
   /* Create an early return expression with an optional expression */
   std::unique_ptr<Expr> return_expr (std::unique_ptr<Expr> &&to_return
@@ -151,6 +165,7 @@ public:
   function (std::string function_name,
 	    std::vector<std::unique_ptr<Param>> params,
 	    std::unique_ptr<Type> return_type, std::unique_ptr<BlockExpr> block,
+	    std::vector<std::unique_ptr<GenericParam>> generic_params = {},
 	    FunctionQualifiers qualifiers
 	    = FunctionQualifiers (UNKNOWN_LOCATION, Async::No, Const::No,
 				  Unsafety::Normal),
@@ -197,8 +212,8 @@ public:
    * do not need to separate the segments using `::`, you can simply provide a
    * vector of strings to the functions which will get turned into path segments
    */
-  PathInExpression
-  path_in_expression (std::vector<std::string> &&segments) const;
+  PathInExpression path_in_expression (std::vector<std::string> &&segments,
+				       bool opening_scope = false) const;
 
   /**
    * Create a path in expression from a lang item.
@@ -264,6 +279,11 @@ public:
 	      std::vector<std::unique_ptr<GenericParam>> generics = {},
 	      WhereClause where_clause = WhereClause::create_empty (),
 	      Visibility visibility = Visibility::create_private ()) const;
+
+  std::unique_ptr<GenericParam>
+  generic_type_param (std::string type_representation,
+		      std::vector<std::unique_ptr<TypeParamBound>> &&bounds,
+		      std::unique_ptr<Type> &&type = nullptr);
 
   static std::unique_ptr<Type> new_type (Type &type);
 
