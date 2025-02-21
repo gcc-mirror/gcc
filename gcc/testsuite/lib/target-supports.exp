@@ -652,6 +652,9 @@ proc check_effective_target_stack_size { } {
     # For nvptx target, stack size limits are relevant for execution only.
     if { [istarget nvptx-*-*] } {
 	set dg-do-what [find-dg-do-what]
+	if { ![llength ${dg-do-what}] } {
+	    error "unexpected call stack"
+	}
 	if { ![string equal [lindex ${dg-do-what} 0] run] } {
 	    return 0
 	}
@@ -999,6 +1002,9 @@ proc check_effective_target_alloca {} {
 	    }
 
 	    set dg-do-what [find-dg-do-what]
+	    if { ![llength ${dg-do-what}] } {
+		error "unexpected call stack"
+	    }
 	    if { [string equal [lindex ${dg-do-what} 0] run] } {
 		# For 'dg-do run', it additionally depends on runtime support.
 		# (If not supported, we don't try to demote 'run' to 'link',
