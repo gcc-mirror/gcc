@@ -1445,8 +1445,14 @@ conv_caf_send_to_remote (gfc_code *code)
 	  NULL_TREE, gfc_trans_force_lval (&block, lhs_se.string_length));
       else
 	opt_lhs_charlen = build_zero_cst (build_pointer_type (size_type_node));
-      if (!TYPE_LANG_SPECIFIC (TREE_TYPE (caf_decl))->rank
-	  || GFC_ARRAY_TYPE_P (TREE_TYPE (caf_decl)))
+      /* Get the third formal argument of the receiver function.  (This is the
+	 location where to put the data on the remote image.)  Need to look at
+	 the argument in the function decl, because in the gfc_symbol's formal
+	 argument an array may have no descriptor while in the generated
+	 function decl it has.  */
+      tmp = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TYPE_ARG_TYPES (
+	TREE_TYPE (receiver_fn_expr->symtree->n.sym->backend_decl)))));
+      if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
 	opt_lhs_desc = null_pointer_node;
       else
 	opt_lhs_desc
@@ -1635,8 +1641,14 @@ conv_caf_sendget (gfc_code *code)
 	  NULL_TREE, gfc_trans_force_lval (&block, lhs_se.string_length));
       else
 	opt_lhs_charlen = build_zero_cst (build_pointer_type (size_type_node));
-      if (!TYPE_LANG_SPECIFIC (TREE_TYPE (lhs_caf_decl))->rank
-	  || GFC_ARRAY_TYPE_P (TREE_TYPE (lhs_caf_decl)))
+      /* Get the third formal argument of the receiver function.  (This is the
+	 location where to put the data on the remote image.)  Need to look at
+	 the argument in the function decl, because in the gfc_symbol's formal
+	 argument an array may have no descriptor while in the generated
+	 function decl it has.  */
+      tmp = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TYPE_ARG_TYPES (
+	TREE_TYPE (receiver_fn_expr->symtree->n.sym->backend_decl)))));
+      if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
 	opt_lhs_desc = null_pointer_node;
       else
 	opt_lhs_desc
@@ -1677,8 +1689,14 @@ conv_caf_sendget (gfc_code *code)
 	  rhs_size = gfc_typenode_for_spec (ts)->type_common.size_unit;
 	}
     }
-  else if (!TYPE_LANG_SPECIFIC (TREE_TYPE (rhs_caf_decl))->rank
-	   || GFC_ARRAY_TYPE_P (TREE_TYPE (rhs_caf_decl)))
+  /* Get the fifth formal argument of the getter function.  This is the argument
+     pointing to the data to get on the remote image.  Need to look at the
+     argument in the function decl, because in the gfc_symbol's formal argument
+     an array may have no descriptor while in the generated function decl it
+     has.  */
+  else if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_VALUE (
+	     TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (TYPE_ARG_TYPES (
+	       TREE_TYPE (sender_fn_expr->symtree->n.sym->backend_decl))))))))))
     {
       rhs_se.data_not_needed = 1;
       gfc_conv_expr_descriptor (&rhs_se, rhs_expr);

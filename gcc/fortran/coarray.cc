@@ -295,11 +295,12 @@ move_coarray_ref (gfc_ref **from, gfc_expr *expr)
 static void
 fixup_comp_refs (gfc_expr *expr)
 {
-  gfc_symbol *type = expr->symtree->n.sym->ts.type == BT_DERIVED
-		       ? expr->symtree->n.sym->ts.u.derived
-		       : (expr->symtree->n.sym->ts.type == BT_CLASS
-			    ? CLASS_DATA (expr->symtree->n.sym)->ts.u.derived
-			    : nullptr);
+  bool class_ref = expr->symtree->n.sym->ts.type == BT_CLASS;
+  gfc_symbol *type
+    = expr->symtree->n.sym->ts.type == BT_DERIVED
+	? expr->symtree->n.sym->ts.u.derived
+	: (class_ref ? CLASS_DATA (expr->symtree->n.sym)->ts.u.derived
+		     : nullptr);
   if (!type)
     return;
   gfc_ref **pref = &(expr->ref);
@@ -317,6 +318,9 @@ fixup_comp_refs (gfc_expr *expr)
 	      ref = nullptr;
 	      break;
 	    }
+	  if (class_ref)
+	    /* Link to the class type to allow for derived type resolution.  */
+	    (*pref)->u.c.sym = ref->u.c.sym;
 	  (*pref)->next = ref->next;
 	  ref->next = NULL;
 	  gfc_free_ref_list (ref);
@@ -372,6 +376,7 @@ split_expr_at_caf_ref (gfc_expr *expr, gfc_namespace *ns,
   st->n.sym->attr.dummy = 1;
   st->n.sym->attr.intent = INTENT_IN;
   st->n.sym->ts = *caf_ts;
+  st->n.sym->declared_at = expr->where;
 
   *post_caf_ref_expr = gfc_get_variable_expr (st);
   (*post_caf_ref_expr)->where = expr->where;
