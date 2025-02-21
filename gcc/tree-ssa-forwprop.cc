@@ -1343,6 +1343,88 @@ optimize_memcpy_to_memset (gimple_stmt_iterator *gsip, tree dest, tree src, tree
     }
   return true;
 }
+/* Optimizes
+   a = c;
+   b = a;
+   into
+   a = c;
+   b = c;
+   GSIP is the second statement and SRC is the common
+   between the statements.
+*/
+static bool
+optimize_agr_copyprop (gimple_stmt_iterator *gsip)
+{
+  gimple *stmt = gsi_stmt (*gsip);
+  if (gimple_has_volatile_ops (stmt))
+    return false;
+
+  tree dest = gimple_assign_lhs (stmt);
+  tree src = gimple_assign_rhs1 (stmt);
+  /* If the statement is `src = src;` then ignore it. */
+  if (operand_equal_p (dest, src, 0))
+    return false;
+
+  tree vuse = gimple_vuse (stmt);
+  /* If the vuse is the default definition, then there is no store beforehand.  */
+  if (SSA_NAME_IS_DEFAULT_DEF (vuse))
+    return false;
+  gimple *defstmt = SSA_NAME_DEF_STMT (vuse);
+  if (!gimple_assign_load_p (defstmt)
+      || !gimple_store_p (defstmt))
+    return false;
+  if (gimple_has_volatile_ops (defstmt))
+    return false;
+
+  tree dest2 = gimple_assign_lhs (defstmt);
+  tree src2 = gimple_assign_rhs1 (defstmt);
+
+  /* If the original store is `src2 = src2;` skip over it. */
+  if (operand_equal_p (src2, dest2, 0))
+    return false;
+  if (!operand_equal_p (src, dest2, 0))
+    return false;
+
+
+  /* For 2 memory refences and using a temporary to do the copy,
+     don't remove the temporary as the 2 memory references might overlap.
+     Note t does not need to be decl as it could be field.
+     See PR 22237 for full details.
+     E.g.
+     t = *a;
+     *b = t;
+     Cannot be convert into
+     t = *a;
+     *b = *a;
+     Though the following is allowed to be done:
+     t = *a;
+     *a = t;
+     And convert it into:
+     t = *a;
+     *a = *a;
+  */
+  if (!operand_equal_p (src2, dest, 0)
+      && !DECL_P (dest) && !DECL_P (src2))
+    return false;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Simplified\n  ");
+      print_gimple_stmt (dump_file, stmt, 0, dump_flags);
+      fprintf (dump_file, "after previous\n  ");
+      print_gimple_stmt (dump_file, defstmt, 0, dump_flags);
+    }
+  gimple_assign_set_rhs_from_tree (gsip, unshare_expr (src2));
+  update_stmt (stmt);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "into\n  ");
+      print_gimple_stmt (dump_file, stmt, 0, dump_flags);
+    }
+  statistics_counter_event (cfun, "copy prop for aggregate", 1);
+  return true;
+}
 
 /* *GSI_P is a GIMPLE_CALL to a builtin function.
    Optimize
@@ -4720,6 +4802,11 @@ pass_forwprop::execute (function *fun)
 						       gimple_assign_lhs (stmt),
 						       gimple_assign_rhs1 (stmt),
 						       /* len = */NULL_TREE))
+			  {
+			    changed = true;
+			    break;
+			  }
+			if (optimize_agr_copyprop (&gsi))
 			  {
 			    changed = true;
 			    break;

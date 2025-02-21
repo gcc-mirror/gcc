@@ -1,5 +1,7 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O1 -fno-tree-sra -fdump-tree-optimized" } */
+/* { dg-options "-O1 -fno-tree-sra -fdump-tree-optimized -fdump-tree-forwprop1-details" } */
+
+/* PR tree-optimization/14295 */
 
 extern void link_error (void);
 
@@ -25,4 +27,6 @@ struct s foo (struct s r)
 
 /* There should be no references to any of "temp_struct*"
    temporaries.  */
-/* { dg-final { scan-tree-dump-times "temp_struct" 0 "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "temp_struct" 0 "optimized" } } */
+/* Also check that forwprop pass did the copy prop. */
+/* { dg-final { scan-tree-dump-times "after previous" 3 "forwprop1" } } */
