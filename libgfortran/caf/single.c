@@ -672,12 +672,12 @@ _gfortran_caf_transfer_between_remotes (
   if (!scalar_transfer)
     {
       const size_t desc_size = sizeof (*transfer_desc);
-      transfer_desc = alloca (desc_size);
+      transfer_desc = __builtin_alloca (desc_size);
       memset (transfer_desc, 0, desc_size);
       transfer_ptr = transfer_desc;
     }
   else if (opt_dst_charlen)
-    transfer_ptr = alloca (*opt_dst_charlen * src_size);
+    transfer_ptr = __builtin_alloca (*opt_dst_charlen * src_size);
   else
     {
       buffer = NULL;
