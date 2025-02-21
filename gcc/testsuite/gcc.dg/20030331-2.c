@@ -1,5 +1,4 @@
 // { dg-options "" }
-/* { dg-require-effective-target alloca } */
 
 extern int printf (const char *, ...);
 

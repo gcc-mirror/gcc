@@ -2,7 +2,6 @@
 /* { dg-do compile { target { { ! x32 } && { ! avx512f_runtime } } } } */
 /* { dg-options "-Ofast -mabi=ms -mavx512f" } */
 /* { dg-require-effective-target avx512f } */
-/* { dg-require-effective-target alloca } */
 
 /* Test with alloca (and DRAP).  */
 

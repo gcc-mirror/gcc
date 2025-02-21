@@ -1,5 +1,3 @@
-/* { dg-require-effective-target alloca } */
-
 #include <stdlib.h>
 
 /* Tests warn on use of floating-point operands inside the calculation

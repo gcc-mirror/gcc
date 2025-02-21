@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-require-effective-target alloca }
+
 struct A
 {
   A(int);

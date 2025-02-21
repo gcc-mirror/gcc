@@ -1,4 +1,3 @@
-/* { dg-require-effective-target alloca } */
 /* { dg-additional-options "-fno-ipa-modref" } */
 
 #include <stdlib.h>
@@ -722,7 +721,7 @@ void test_29c (int len)
   __analyzer_eval (q->x == 107024); /* { dg-warning "TRUE" } */
   __analyzer_eval (q->y == 107025); /* { dg-warning "TRUE" } */
 
-  __analyzer_eval (p[10].x == 0); /* { dg-warning "use of uninitialized value '\\*p\\\[10\\\].x'" } */
+  __analyzer_eval (p[10].x == 0); /* { dg-warning "use of uninitialized value '\\*p\\\[10\\\].x'" "" { xfail { ! alloca } } } */
 }
 
 void test_30 (void *ptr)

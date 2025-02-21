@@ -1,5 +1,4 @@
 /* { dg-additional-options "-Wno-analyzer-null-argument" } */
-/* { dg-require-effective-target alloca } */
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,7 +1,6 @@
 /* PR middle-end/100250 - ICE related to -Wmaybe-uninitialized
    { dg-do compile }
-   { dg-options "-O2 -Wall" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O2 -Wall" } */
 
 extern void f (int D, const int[D], const int[D]);
 

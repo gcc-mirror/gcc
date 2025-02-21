@@ -1,7 +1,6 @@
 /* PR middle-end/82608 - missing -Warray-bounds on an out-of-bounds VLA index
  { dg-do compile }
- { dg-options "-O2 -Wall -Wno-uninitialized -ftrack-macro-expansion=0" }
- { dg-require-effective-target alloca } */
+ { dg-options "-O2 -Wall -Wno-uninitialized -ftrack-macro-expansion=0" } */
 
 #include "range.h"
 

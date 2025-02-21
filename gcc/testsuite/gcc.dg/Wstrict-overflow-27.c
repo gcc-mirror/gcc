@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target alloca } */
 /* { dg-options "-O3 -Wstrict-overflow=2 -Werror" } */
 
 typedef __SIZE_TYPE__ size_t;

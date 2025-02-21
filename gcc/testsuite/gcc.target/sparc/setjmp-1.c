@@ -4,7 +4,6 @@
 /* { dg-do run { target *-*-solaris2.* *-*-linux* *-*-*bsd* } } */
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-fPIC" } */
-/* { dg-require-effective-target alloca } */
 
 #include <stdio.h>
 #include <setjmp.h>

@@ -1,5 +1,4 @@
 /* PR tree-optimization/33136 */
-/* { dg-require-effective-target alloca } */
 
 extern void abort (void);
 

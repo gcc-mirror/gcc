@@ -1,5 +1,3 @@
-/* { dg-require-effective-target alloca } */
-
 int test_1 (void)
 {
   int *p = (int *) __builtin_alloca (sizeof (int)); /* { dg-message "region created on stack here" } */

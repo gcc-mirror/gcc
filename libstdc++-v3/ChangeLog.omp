@@ -1,3 +1,12 @@
+2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-02-22  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/lib/prune.exp (proc libstdc++-dg-prune): Turn
+	'sorry, unimplemented: dynamic stack allocation not supported' into
+	UNSUPPORTED.
+
 2025-02-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:

@@ -1,7 +1,6 @@
 /* PR29970 */
 /* { dg-do run } */
 /* { dg-options "-Wunused-variable" } */
-/* { dg-require-effective-target alloca } */
 
 
 

@@ -1,5 +1,4 @@
 /* PR middle-end/82564 */
-/* { dg-require-effective-target alloca } */
 
 int
 main ()

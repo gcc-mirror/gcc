@@ -1,7 +1,6 @@
 // N3639 allows initialization and capture of VLAs
 // { dg-do run { target c++11 } }
 // { dg-options "-Wno-vla" }
-// { dg-require-effective-target alloca }
 
 void f(int n)
 {

@@ -1,6 +1,5 @@
 // { dg-do assemble  }
 // { dg-options "" }
-// { dg-require-effective-target alloca }
 // Origin: Alfred Minarik <a8601248@unet.univie.ac.at>
 
 template<typename _CharT>

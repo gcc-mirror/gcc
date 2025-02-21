@@ -1,5 +1,4 @@
 /* PR middle-end/34134 */
-/* { dg-require-effective-target alloca } */
 
 extern void bar (void *, int);
 

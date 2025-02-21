@@ -1,5 +1,4 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target alloca } */
 /* { dg-options "-Walloca-larger-than=256 -O2" } */
 
 void f (void*);

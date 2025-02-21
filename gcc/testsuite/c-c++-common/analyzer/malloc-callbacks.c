@@ -1,5 +1,3 @@
-/* { dg-require-effective-target alloca } */
-
 #include <stdlib.h>
 
 typedef void *(*allocator_t) (size_t);

@@ -1,8 +1,7 @@
 /* PR tree-optimization/99121 - ICE in -Warray-bounds on a multidimensional
    VLA
    { dg-do compile }
-   { dg-options "-O2 -Wall -ftrack-macro-expansion=0" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O2 -Wall -ftrack-macro-expansion=0" } */
 
 #define NOIPA __attribute__ ((noipa))
 

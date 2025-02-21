@@ -1,6 +1,5 @@
 /* VLAs should be deallocated on a jump to before their definition,
    including a jump to a label in an inner scope.  PR 19771.  */
-/* { dg-require-effective-target alloca } */
 
 #if (__SIZEOF_INT__ <= 2)
 #define LIMIT 10000

@@ -2,8 +2,7 @@
    variable within the same function
    Exercise -Wdangling-pointer for VLAs.
    { dg-do compile }
-   { dg-options "-O0 -Wall -ftrack-macro-expansion=0" }
-   { dg-require-effective-target alloca } */
+   { dg-options "-O0 -Wall -ftrack-macro-expansion=0" } */
 
 void sink (void*, ...);
 

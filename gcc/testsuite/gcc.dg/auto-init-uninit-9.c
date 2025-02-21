@@ -3,6 +3,5 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O -Wuninitialized -ftrivial-auto-var-init=zero" } */
-/* { dg-require-effective-target alloca } */
 
 #include "uninit-9.c"

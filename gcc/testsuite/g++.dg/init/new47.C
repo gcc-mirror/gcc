@@ -1,7 +1,6 @@
 // PR c++/70448
 // { dg-do compile }
 // { dg-options "-Wall" }
-// { dg-require-effective-target alloca }
 
 typedef __typeof__ (sizeof 0) size_t;
 void *operator new (size_t, void *p) { return p; }

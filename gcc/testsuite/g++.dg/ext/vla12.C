@@ -1,7 +1,6 @@
 // VLA sizeof test
 // { dg-do compile }
 // { dg-options "" }
-// { dg-require-effective-target alloca }
 
 int
 f1 (int i)
