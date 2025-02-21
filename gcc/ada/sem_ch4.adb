@@ -6040,9 +6040,10 @@ package body Sem_Ch4 is
          Error_Msg_NE ("invalid prefix in selected component&", N, Sel);
       end if;
 
-      --  If N still has no type, the component is not defined in the prefix
+      --  If the selector is not labelled with an entity at this point, the
+      --  component is not defined in the prefix.
 
-      if Etype (N) = Any_Type then
+      if No (Entity (Sel)) then
 
          if Is_Single_Concurrent_Object then
             Error_Msg_Node_2 := Entity (Pref);
