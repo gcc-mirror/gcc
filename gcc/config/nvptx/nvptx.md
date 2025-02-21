@@ -1677,7 +1677,7 @@
     emit_insn (gen_nvptx_alloca (Pmode, operands[0], operands[1]));
   else if (!TARGET_SOFT_STACK)
     {
-      sorry ("target cannot support alloca");
+      sorry ("dynamic stack allocation not supported");
       emit_insn (gen_nop ());
     }
   else if (TARGET_SOFT_STACK)

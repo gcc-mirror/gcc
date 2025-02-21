@@ -1002,7 +1002,7 @@ proc check_effective_target_untyped_assembly {} {
     return 1
 }
 
-# Return 1 if alloca is supported, 0 otherwise.
+# Return 1 if dynamic stack allocation is supported, 0 otherwise.
 
 proc check_effective_target_alloca {} {
     if { [istarget bpf-*-*] } {
