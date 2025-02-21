@@ -920,6 +920,23 @@ optimize_memcpy_to_memset (gimple_stmt_iterator *gsip, tree dest, tree src, tree
   tree val = integer_zero_node;
   if (gimple_store_p (defstmt)
       && gimple_assign_single_p (defstmt)
+      && TREE_CODE (gimple_assign_rhs1 (defstmt)) == STRING_CST
+      && !gimple_clobber_p (defstmt))
+    {
+      tree str = gimple_assign_rhs1 (defstmt);
+      src2 = gimple_assign_lhs (defstmt);
+      /* The string must contain all null char's for now.  */
+      for (int i = 0; i < TREE_STRING_LENGTH (str); i++)
+	{
+	  if (TREE_STRING_POINTER (str)[i] != 0)
+	    {
+	      src2 = NULL_TREE;
+	      break;
+	    }
+	}
+    }
+  else if (gimple_store_p (defstmt)
+      && gimple_assign_single_p (defstmt)
       && TREE_CODE (gimple_assign_rhs1 (defstmt)) == CONSTRUCTOR
       && !gimple_clobber_p (defstmt))
     src2 = gimple_assign_lhs (defstmt);
