@@ -13301,10 +13301,12 @@ package body Exp_Ch4 is
       Obj_Decl : constant Node_Id :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Obj_Id,
-          Aliased_Present     => Aliased_Present (Decl),
+          Aliased_Present     => True,
           Constant_Present    => Constant_Present (Decl),
           Object_Definition   => New_Copy_Tree (Object_Definition (Decl)),
           Expression          => Relocate_Node (Expr));
+      --  We make the object unconditionally aliased to avoid dangling bound
+      --  issues when its nominal subtype is an unconstrained array type.
 
       Master_Node_Decl : Node_Id;
       Master_Node_Id   : Entity_Id;
@@ -13318,6 +13320,11 @@ package body Exp_Ch4 is
       end if;
 
       Insert_Action (Expr, Obj_Decl);
+
+      --  The object can never be local to an elaboration routine at library
+      --  level since we will take 'Unrestricted_Access of it.
+
+      Set_Is_Statically_Allocated (Obj_Id, Is_Library_Level_Entity (Obj_Id));
 
       --  If the object needs finalization, we need to insert its Master_Node
       --  manually because 1) the machinery in Exp_Ch7 will not pick it since
