@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-additional-options "-Wall" }
 
-#include <vector> // dg-bogus new_allocator.h:191 warning: writing 1 byte into a region of size 0
+#include <vector> // { dg-bogus "writing 1 byte into a region of size 0" "" { target *-*-* } 0 }
 
 void bar(std::vector<char>);
 
