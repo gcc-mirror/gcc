@@ -38,14 +38,6 @@ DeriveDebug::go (Item &item)
   return std::move (expanded);
 }
 
-/* Pointer-ify something */
-template <typename T>
-static std::unique_ptr<T>
-ptrify (T value)
-{
-  return std::unique_ptr<T> (new T (value));
-}
-
 std::unique_ptr<AssociatedItem>
 DeriveDebug::stub_debug_fn ()
 {
