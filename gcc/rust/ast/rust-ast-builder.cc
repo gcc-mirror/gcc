@@ -33,6 +33,14 @@
 namespace Rust {
 namespace AST {
 
+std::unique_ptr<Stmt>
+Builder::statementify (std::unique_ptr<Expr> &&value,
+		       bool semicolon_followed) const
+{
+  return std::make_unique<ExprStmt> (std::move (value), loc,
+				     semicolon_followed);
+}
+
 std::unique_ptr<Expr>
 Builder::literal_string (std::string &&content) const
 {
@@ -150,13 +158,14 @@ Builder::function (std::string function_name,
 		   std::vector<std::unique_ptr<Param>> params,
 		   std::unique_ptr<Type> return_type,
 		   std::unique_ptr<BlockExpr> block,
+		   std::vector<std::unique_ptr<GenericParam>> generic_params,
 		   FunctionQualifiers qualifiers, WhereClause where_clause,
 		   Visibility visibility) const
 {
   return std::unique_ptr<Function> (
-    new Function (function_name, qualifiers, {}, std::move (params),
-		  std::move (return_type), where_clause, std::move (block),
-		  visibility, {}, loc));
+    new Function (function_name, qualifiers, std::move (generic_params),
+		  std::move (params), std::move (return_type), where_clause,
+		  std::move (block), visibility, {}, loc));
 }
 
 PathExprSegment
@@ -277,13 +286,14 @@ Builder::reference_type (std::unique_ptr<TypeNoBounds> &&inner_type,
 }
 
 PathInExpression
-Builder::path_in_expression (std::vector<std::string> &&segments) const
+Builder::path_in_expression (std::vector<std::string> &&segments,
+			     bool opening_scope) const
 {
   auto path_segments = std::vector<PathExprSegment> ();
   for (auto &seg : segments)
     path_segments.emplace_back (path_segment (seg));
 
-  return PathInExpression (std::move (path_segments), {}, loc);
+  return PathInExpression (std::move (path_segments), {}, loc, opening_scope);
 }
 
 PathInExpression
@@ -310,6 +320,14 @@ Builder::block (tl::optional<std::unique_ptr<Stmt>> &&stmt,
     stmts.emplace_back (std::move (*stmt));
 
   return block (std::move (stmts), std::move (tail_expr));
+}
+
+std::unique_ptr<BlockExpr>
+Builder::block () const
+{
+  auto stmts = std::vector<std::unique_ptr<Stmt>> ();
+
+  return block (std::move (stmts));
 }
 
 std::unique_ptr<BlockExpr>
@@ -491,6 +509,17 @@ Builder::trait_impl (TypePath trait_path, std::unique_ptr<Type> target,
 		   /* exclam */ false, std::move (trait_items),
 		   std::move (generics), std::move (target), where_clause,
 		   visibility, {}, {}, loc));
+}
+
+std::unique_ptr<GenericParam>
+Builder::generic_type_param (
+  std::string type_representation,
+  std::vector<std::unique_ptr<TypeParamBound>> &&bounds,
+  std::unique_ptr<Type> &&type)
+{
+  return std::make_unique<TypeParam> (type_representation, loc,
+				      std::move (bounds), std::move (type),
+				      std::vector<Attribute> ());
 }
 
 std::unique_ptr<Type>
