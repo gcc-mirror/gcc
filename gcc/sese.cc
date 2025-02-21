@@ -489,6 +489,7 @@ DEBUG_FUNCTION void
 debug_edge (const_edge e)
 {
   print_edge (stderr, e);
+  fprintf (stderr, "\n");
 }
 
 /* Pretty print sese S to STDERR.  */
