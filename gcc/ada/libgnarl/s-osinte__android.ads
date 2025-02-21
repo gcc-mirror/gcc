@@ -147,7 +147,20 @@ package System.OS_Interface is
    --  Not clear why these two signals are reserved. Perhaps they are not
    --  supported by this version of GNU/Linux ???
 
-   type sigset_t is private;
+   --  struct sigaction fields are of different sizes and come in different
+   --  order on ARM vs aarch64.  As this source is shared by the two
+   --  configurations, fetch the type definition through System.Linux, which
+   --  is specialized.
+
+   type sigset_t is
+     array (0 .. OS_Constants.SIZEOF_sigset - 1) of Interfaces.C.unsigned_char;
+   pragma Convention (C, sigset_t);
+   for sigset_t'Alignment use Interfaces.C.unsigned_long'Alignment;
+
+   package Android_Sigaction is new
+     System.Linux.Android_Sigaction (sigset_t => sigset_t);
+
+   type struct_sigaction is new Android_Sigaction.struct_sigaction;
 
    function sigaddset (set : access sigset_t; sig : Signal) return int;
    pragma Import (C, sigaddset, "_sigaddset");
@@ -172,14 +185,6 @@ package System.OS_Interface is
       X_data   : union_type_3;
    end record;
    pragma Convention (C, siginfo_t);
-
-   type struct_sigaction is record
-      sa_handler  : System.Address;
-      sa_mask     : sigset_t;
-      sa_flags    : Interfaces.C.int;
-      sa_restorer : System.Address;
-   end record;
-   pragma Convention (C, struct_sigaction);
 
    type struct_sigaction_ptr is access all struct_sigaction;
 
@@ -622,23 +627,6 @@ package System.OS_Interface is
    --  depending on the version of the system.
 
 private
-
-   type sigset_t is
-     array (0 .. OS_Constants.SIZEOF_sigset - 1) of unsigned_char;
-   pragma Convention (C, sigset_t);
-   for sigset_t'Alignment use Interfaces.C.unsigned_long'Alignment;
-
-   pragma Warnings (Off);
-   for struct_sigaction use record
-      sa_handler at Linux.sa_handler_pos range 0 .. Standard'Address_Size - 1;
-      sa_mask    at Linux.sa_mask_pos
-        range 0 .. OS_Constants.SIZEOF_sigset * 8 - 1;
-      sa_flags   at Linux.sa_flags_pos
-        range 0 .. Interfaces.C.int'Size - 1;
-   end record;
-   --  We intentionally leave sa_restorer unspecified and let the compiler
-   --  append it after the last field, so disable corresponding warning.
-   pragma Warnings (On);
 
    type pid_t is new int;
 

@@ -118,13 +118,19 @@ package System.Linux is
    SIG33      : constant := 33; --  glibc internal signal
    SIG34      : constant := 34; --  glibc internal signal
 
-   --  struct_sigaction offsets
+   --  struct_sigaction
 
-   --  sa_flags come first on aarch64-android (sa_flags, sa_handler, sa_mask)
-
-   sa_flags_pos   : constant := 0;
-   sa_handler_pos : constant := sa_flags_pos + Interfaces.C.int'Size / 8;
-   sa_mask_pos    : constant := sa_handler_pos + Standard'Address_Size / 8;
+   generic
+      type sigset_t is private;
+   package Android_Sigaction is
+      type struct_sigaction is record
+         sa_flags    : Interfaces.C.int;
+         sa_handler  : System.Address;
+         sa_mask     : sigset_t;
+         sa_restorer : System.Address;
+      end record;
+      pragma Convention (C, struct_sigaction);
+   end Android_Sigaction;
 
    SA_SIGINFO  : constant := 16#00000004#;
    SA_ONSTACK  : constant := 16#08000000#;
