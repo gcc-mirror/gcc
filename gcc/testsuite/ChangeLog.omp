@@ -1,3 +1,16 @@
+2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-02-22  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/bpf/diag-alloca-1.c: Adjust 'dg-message'.
+	* gcc.target/bpf/diag-alloca-2.c: Likewise.
+	* gcc.target/nvptx/alloca-1-O0-sm_30.c: Likewise.
+	* gcc.target/nvptx/alloca-2-O1-sm_30.c: Likewise.
+	* gcc.target/nvptx/vla-1-O0-sm_30.c: Likewise.
+	* lib/target-supports.exp (proc check_effective_target_alloca):
+	Adjust comment.
+
 2025-02-18  Thomas Schwinge  <thomas@codesourcery.com>
 
 	Backported from trunk:
