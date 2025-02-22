@@ -768,6 +768,7 @@ END checkVarEquivalence ;
 PROCEDURE checkConstMeta (result: status; tinfo: tInfo;
                           left, right: CARDINAL) : status ;
 VAR
+   typeLeft,
    typeRight: CARDINAL ;
 BEGIN
    Assert (IsConst (left)) ;
@@ -798,6 +799,11 @@ BEGIN
             RETURN doCheckPair (result, tinfo, Char, typeRight)
          END
       END
+   ELSIF IsTyped (left) AND IsTyped (right)
+   THEN
+      typeRight := GetDType (right) ;
+      typeLeft := GetDType (left) ;
+      RETURN doCheckPair (result, tinfo, typeLeft, typeRight)
    END ;
    RETURN result
 END checkConstMeta ;

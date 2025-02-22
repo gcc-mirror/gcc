@@ -75,6 +75,7 @@ FROM M2LexBuf IMPORT UnknownTokenNo, GetTokenNo, FindFileNameFromToken,
                      TokenToLineNo, TokenToColumnNo, TokenToLocation, MakeVirtual2Tok ;
 
 FROM StrIO IMPORT WriteString, WriteLn ;
+FROM NumberIO IMPORT WriteCard ;
 FROM M2GCCDeclare IMPORT TryDeclareConstant, DeclareConstructor ;
 FROM M2Quads IMPORT QuadOperator, PutQuad, SubQuad, WriteOperand ;
 FROM SymbolConversion IMPORT GccKnowsAbout, Mod2Gcc ;
@@ -145,6 +146,8 @@ TYPE
                          errorReported : BOOLEAN ;  (* error message reported yet? *)
                          strict        : BOOLEAN ;  (* is it a comparison expression?  *)
                          isin          : BOOLEAN ;  (* expression created by IN operator?  *)
+                         cancelled     : BOOLEAN ;  (* Has this range been cancelled?  *)
+                         dependantid   : CARDINAL ;   (* The associated dependant range test.  *)
                       END ;
 
 
@@ -316,7 +319,9 @@ BEGIN
          expr2tok       := UnknownTokenNo ;
          byconsttok     := UnknownTokenNo ;
          incrementquad  := 0 ;
-         errorReported  := FALSE
+         errorReported  := FALSE ;
+         cancelled      := FALSE ;
+         dependantid    := 0
       END ;
       PutIndice(RangeIndex, r, p)
    END ;
@@ -555,7 +560,8 @@ END PutRangeUnary ;
 *)
 
 PROCEDURE PutRangeParam (tokno: CARDINAL; p: Range; t: TypeOfRange; proc: CARDINAL;
-                         i: CARDINAL; formal, actual: CARDINAL) : Range ;
+                         paramno: CARDINAL; formal, actual: CARDINAL;
+                         depRangeId: CARDINAL) : Range ;
 BEGIN
    WITH p^ DO
       type           := t ;
@@ -564,11 +570,12 @@ BEGIN
       desLowestType  := NulSym ;
       exprLowestType := NulSym ;
       procedure      := proc ;
-      paramNo        := i ;
+      paramNo        := paramno ;
       isLeftValue    := FALSE ;
       tokenNo        := tokno ;
       strict         := FALSE ;
-      isin           := FALSE
+      isin           := FALSE ;
+      dependantid    := depRangeId
    END ;
    RETURN p
 END PutRangeParam ;
@@ -805,13 +812,16 @@ END InitTypesAssignmentCheck ;
                              and, e, are parameter compatible.
 *)
 
-PROCEDURE InitTypesParameterCheck (tokno: CARDINAL; proc: CARDINAL; i: CARDINAL;
-                                   formal, actual: CARDINAL) : CARDINAL ;
+PROCEDURE InitTypesParameterCheck (tokno: CARDINAL;
+                                   proc: CARDINAL; paramno: CARDINAL;
+                                   formal, actual: CARDINAL;
+                                   depRangeId: CARDINAL) : CARDINAL ;
 VAR
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   Assert (PutRangeParam (tokno, GetIndice (RangeIndex, r), typeparam, proc, i, formal, actual) # NIL) ;
+   Assert (PutRangeParam (tokno, GetIndice (RangeIndex, r), typeparam, proc,
+                          paramno, formal, actual, depRangeId) # NIL) ;
    RETURN r
 END InitTypesParameterCheck ;
 
@@ -824,7 +834,7 @@ END InitTypesParameterCheck ;
 *)
 
 PROCEDURE PutRangeParamAssign (tokno: CARDINAL; p: Range; t: TypeOfRange; proc: CARDINAL;
-                               i: CARDINAL; formal, actual: CARDINAL) : Range ;
+                               i: CARDINAL; formal, actual: CARDINAL; parentRangeId: CARDINAL) : Range ;
 BEGIN
    WITH p^ DO
       type           := t ;
@@ -836,7 +846,8 @@ BEGIN
       paramNo        := i ;
       dimension      := i ;
       isLeftValue    := FALSE ;
-      tokenNo        := tokno
+      tokenNo        := tokno ;
+      dependantid    := parentRangeId
    END ;
    RETURN( p )
 END PutRangeParamAssign ;
@@ -847,13 +858,14 @@ END PutRangeParamAssign ;
                              are parameter compatible.
 *)
 
-PROCEDURE InitParameterRangeCheck (tokno: CARDINAL; proc: CARDINAL; i: CARDINAL;
-                                   formal, actual: CARDINAL) : CARDINAL ;
+PROCEDURE InitParameterRangeCheck (tokno: CARDINAL; proc: CARDINAL; paramno: CARDINAL;
+                                   formal, actual: CARDINAL; parentRangeId: CARDINAL) : CARDINAL ;
 VAR
    r: CARDINAL ;
 BEGIN
    r := InitRange () ;
-   Assert (PutRangeParamAssign (tokno, GetIndice (RangeIndex, r), paramassign, proc, i, formal, actual) # NIL) ;
+   Assert (PutRangeParamAssign (tokno, GetIndice (RangeIndex, r), paramassign, proc,
+                                paramno, formal, actual, parentRangeId) # NIL) ;
    RETURN r
 END InitParameterRangeCheck ;
 
@@ -1239,6 +1251,64 @@ BEGIN
       END
    END
 END FoldAssignment ;
+
+
+(*
+   CheckCancelled - check to see if the range has been cancelled and if so remove quad.
+*)
+
+PROCEDURE CheckCancelled (range: CARDINAL; quad: CARDINAL) ;
+BEGIN
+   IF IsCancelled (range)
+   THEN
+      SubQuad (quad)
+   END
+END CheckCancelled ;
+
+
+(*
+   IsCancelled - return the cancelled flag associated with range.
+*)
+
+PROCEDURE IsCancelled (range: CARDINAL) : BOOLEAN ;
+VAR
+   p: Range ;
+BEGIN
+   p := GetIndice (RangeIndex, range) ;
+   WITH p^ DO
+      IF cancelled
+      THEN
+         RETURN TRUE
+      END ;
+      IF (dependantid # 0) AND IsCancelled (dependantid)
+      THEN
+         cancelled := TRUE
+      END ;
+      RETURN cancelled
+   END
+END IsCancelled ;
+
+
+(*
+   Cancel - set the cancelled flag in range.
+*)
+
+PROCEDURE Cancel (range: CARDINAL) ;
+VAR
+   p: Range ;
+BEGIN
+   IF range # 0
+   THEN
+      p := GetIndice (RangeIndex, range) ;
+      WITH p^ DO
+         IF NOT cancelled
+         THEN
+            cancelled := TRUE ;
+            Cancel (dependantid)
+         END
+      END
+   END
+END Cancel ;
 
 
 (*
@@ -1699,7 +1769,10 @@ END FoldTypeAssign ;
                    The quad is removed if the check succeeds.
 *)
 
-PROCEDURE FoldTypeParam (q: CARDINAL; tokenNo: CARDINAL; formal, actual, procedure: CARDINAL; paramNo: CARDINAL) ;
+PROCEDURE FoldTypeParam (q: CARDINAL; tokenNo: CARDINAL;
+                         formal, actual, procedure: CARDINAL;
+                         paramNo: CARDINAL;
+                         depRangeId: CARDINAL) ;
 VAR
    compatible: BOOLEAN ;
 BEGIN
@@ -1724,6 +1797,8 @@ BEGIN
    IF compatible
    THEN
       SubQuad(q)
+   ELSE
+      Cancel (depRangeId)
    END
 END FoldTypeParam ;
 
@@ -1836,7 +1911,7 @@ BEGIN
          CASE type OF
 
          typeassign:  FoldTypeAssign(q, tokenNo, des, expr, r) |
-         typeparam:   FoldTypeParam(q, tokenNo, des, expr, procedure, paramNo) |
+         typeparam:   FoldTypeParam(q, tokenNo, des, expr, procedure, paramNo, r) |
          typeexpr:    FoldTypeExpr(q, tokenNo, des, expr, strict, isin, r)
 
          ELSE
@@ -2271,7 +2346,7 @@ END FoldZeroRem ;
 
 
 (*
-   FoldRangeCheck - attempts to resolve the range check, r.
+   FoldRangeCheck - attempts to resolve the range check.
                     If it evaluates to true then
                        it is replaced by an ErrorOp
                     elsif it evaluates to false then
@@ -2280,47 +2355,63 @@ END FoldZeroRem ;
                        it is left alone
 *)
 
-PROCEDURE FoldRangeCheck (tokenno: CARDINAL; q: CARDINAL; r: CARDINAL) ;
+PROCEDURE FoldRangeCheck (tokenno: CARDINAL; quad: CARDINAL; range: CARDINAL) ;
+BEGIN
+   IF IsCancelled (range)
+   THEN
+      SubQuad (quad)
+   ELSE
+      FoldRangeCheckLower (tokenno, quad, range)
+   END
+END FoldRangeCheck ;
+
+
+(*
+   FoldRangeCheckLower - call the appropriate Fold procedure depending upon the type
+                         of range.
+*)
+
+PROCEDURE FoldRangeCheckLower (tokenno: CARDINAL; quad: CARDINAL; range: CARDINAL) ;
 VAR
    p: Range ;
 BEGIN
-   p := GetIndice(RangeIndex, r) ;
+   p := GetIndice(RangeIndex, range) ;
    WITH p^ DO
       CASE type OF
 
-      assignment           :  FoldAssignment(tokenno, q, r) |
-      returnassignment     :  FoldReturn(tokenno, q, r) |
+      assignment           :  FoldAssignment(tokenno, quad, range) |
+      returnassignment     :  FoldReturn(tokenno, quad, range) |
 (*      subrangeassignment   :  |  unused currently *)
-      inc                  :  FoldInc(tokenno, q, r) |
-      dec                  :  FoldDec(tokenno, q, r) |
-      incl                 :  FoldIncl(tokenno, q, r) |
-      excl                 :  FoldExcl(tokenno, q, r) |
-      shift                :  FoldShift(tokenno, q, r) |
-      rotate               :  FoldRotate(tokenno, q, r) |
-      typeassign           :  FoldTypeCheck(tokenno, q, r) |
-      typeparam            :  FoldTypeCheck(tokenno, q, r) |
-      typeexpr             :  FoldTypeCheck(tokenno, q, r) |
-      paramassign          :  FoldParameterAssign(tokenno, q, r) |
-      staticarraysubscript :  FoldStaticArraySubscript(tokenno, q, r) |
-      dynamicarraysubscript:  FoldDynamicArraySubscript(tokenno, q, r) |
-      forloopbegin         :  FoldForLoopBegin(tokenno, q, r) |
-      forloopto            :  FoldForLoopTo(tokenno, q, r) |
+      inc                  :  FoldInc(tokenno, quad, range) |
+      dec                  :  FoldDec(tokenno, quad, range) |
+      incl                 :  FoldIncl(tokenno, quad, range) |
+      excl                 :  FoldExcl(tokenno, quad, range) |
+      shift                :  FoldShift(tokenno, quad, range) |
+      rotate               :  FoldRotate(tokenno, quad, range) |
+      typeassign           :  FoldTypeCheck(tokenno, quad, range) |
+      typeparam            :  FoldTypeCheck(tokenno, quad, range) |
+      typeexpr             :  FoldTypeCheck(tokenno, quad, range) |
+      paramassign          :  FoldParameterAssign(tokenno, quad, range) |
+      staticarraysubscript :  FoldStaticArraySubscript(tokenno, quad, range) |
+      dynamicarraysubscript:  FoldDynamicArraySubscript(tokenno, quad, range) |
+      forloopbegin         :  FoldForLoopBegin(tokenno, quad, range) |
+      forloopto            :  FoldForLoopTo(tokenno, quad, range) |
       forloopend           :  RETURN (* unable to fold anything at this point, des, will be variable *) |
-      pointernil           :  FoldNil(tokenno, q, r) |
+      pointernil           :  FoldNil(tokenno, quad, range) |
       noreturn             :  RETURN (* nothing to fold *) |
       noelse               :  RETURN (* nothing to fold *) |
-      casebounds           :  FoldCaseBounds(tokenno, q, r) |
-      wholenonposdiv       :  FoldNonPosDiv(tokenno, q, r) |
-      wholenonposmod       :  FoldNonPosMod(tokenno, q, r) |
-      wholezerodiv         :  FoldZeroDiv(tokenno, q, r) |
-      wholezerorem         :  FoldZeroRem(tokenno, q, r) |
-      none                 :  SubQuad(q)
+      casebounds           :  FoldCaseBounds(tokenno, quad, range) |
+      wholenonposdiv       :  FoldNonPosDiv(tokenno, quad, range) |
+      wholenonposmod       :  FoldNonPosMod(tokenno, quad, range) |
+      wholezerodiv         :  FoldZeroDiv(tokenno, quad, range) |
+      wholezerorem         :  FoldZeroRem(tokenno, quad, range) |
+      none                 :  SubQuad(quad)
 
       ELSE
          InternalError ('unexpected case')
       END
    END
-END FoldRangeCheck ;
+END FoldRangeCheckLower ;
 
 
 (*
@@ -3595,6 +3686,19 @@ VAR
 BEGIN
    p := GetIndice(RangeIndex, r) ;
    WITH p^ DO
+      WriteString ('range ') ;
+      WriteCard (r, 0) ;
+      WriteString (' ') ;
+      IF cancelled
+      THEN
+         WriteString ('cancelled ')
+      END ;
+      IF dependantid # 0
+      THEN
+         WriteString ('dep ') ;
+         WriteCard (dependantid, 0) ;
+         WriteString (' ')
+      END ;
       CASE type OF
 
       assignment           :  WriteString('assignment (') ; WriteOperand(des) ; WriteString(', ') ; WriteOperand(expr) |

@@ -265,8 +265,9 @@ PROCEDURE InitTypesAssignmentCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL 
 *)
 
 PROCEDURE InitTypesParameterCheck (tokno: CARDINAL;
-                                   proc: CARDINAL; i: CARDINAL;
-                                   formal, actual: CARDINAL) : CARDINAL ;
+                                   proc: CARDINAL; paramno: CARDINAL;
+                                   formal, actual: CARDINAL;
+                                   depRangeId: CARDINAL) : CARDINAL ;
 
 
 (*
@@ -275,8 +276,9 @@ PROCEDURE InitTypesParameterCheck (tokno: CARDINAL;
 *)
 
 PROCEDURE InitParameterRangeCheck (tokno: CARDINAL;
-                                   proc: CARDINAL; i: CARDINAL;
-                                   formal, actual: CARDINAL) : CARDINAL ;
+                                   proc: CARDINAL; paramno: CARDINAL;
+                                   formal, actual: CARDINAL;
+                                   parentRangeId: CARDINAL) : CARDINAL ;
 
 
 (*
@@ -304,11 +306,10 @@ PROCEDURE CodeRangeCheck (r: CARDINAL; function: String) ;
 
 
 (*
-   FoldRangeCheck - returns a Tree representing the code for a
-                    range test defined by, r.
+   FoldRangeCheck - attempts to resolve the range check.
 *)
 
-PROCEDURE FoldRangeCheck (tokenno: CARDINAL; q: CARDINAL; r: CARDINAL) ;
+PROCEDURE FoldRangeCheck (tokenno: CARDINAL; quad: CARDINAL; range: CARDINAL) ;
 
 
 (*
