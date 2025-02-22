@@ -1,3 +1,23 @@
+2025-02-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/48958
+	* trans-array.cc (gfc_trans_deferred_array): Initialize the data
+	component of non-saved pointers when -fcheck=pointer is set.
+
+2025-02-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* trans-array.cc (gfc_full_array_size): Obtain the rank from
+	the array descriptor for assumed rank.
+	(gfc_tree_array_size): Likewise; permit expr = NULL to operate
+	only the tree.
+	(gfc_conv_descriptor_stride_get): Update for added assumed-rank
+	array types.
+	* trans-openmp.cc (gfc_omp_finish_clause): Likewise.
+	* trans-types.cc (gfc_build_array_type, gfc_get_derived_type,
+	gfc_get_array_descr_info): Likewise.
+	* trans.h (enum gfc_array_kind): Add
+	GFC_ARRAY_ASSUMED_RANK_{ALLOCATABLE,POINTER{,_CONT}}.
+
 2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/107635

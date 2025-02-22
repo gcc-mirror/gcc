@@ -1,3 +1,14 @@
+2025-02-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	* sese.cc (debug_edge): Append a newline.
+
+2025-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118954
+	* tree-predcom.cc (ref_at_iteration): Make sure to not
+	associate the constant offset with DR_BASE_ADDRESS when
+	that is an offsetted pointer.
+
 2025-02-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-core.h: Add comments making clear that these

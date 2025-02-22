@@ -1,3 +1,8 @@
+2025-02-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* caf/single.c: Replace alloca with __builtin_alloca.
+
 2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* caf/libcaf.h (_gfortran_caf_get): Removed because deprecated.
