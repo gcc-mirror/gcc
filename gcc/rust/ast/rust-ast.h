@@ -1996,13 +1996,6 @@ public:
     return std::move (item);
   }
 
-  std::unique_ptr<AssociatedItem> take_trait_item ()
-  {
-    rust_assert (!is_error ());
-    return std::unique_ptr<AssociatedItem> (
-      static_cast<AssociatedItem *> (assoc_item.release ()));
-  }
-
   std::unique_ptr<ExternalItem> take_external_item ()
   {
     rust_assert (!is_error ());
@@ -2013,16 +2006,6 @@ public:
   {
     rust_assert (!is_error ());
     return std::move (assoc_item);
-  }
-
-  std::unique_ptr<AssociatedItem> take_impl_item ()
-  {
-    return take_assoc_item ();
-  }
-
-  std::unique_ptr<AssociatedItem> take_trait_impl_item ()
-  {
-    return take_assoc_item ();
   }
 
   std::unique_ptr<Type> take_type ()
