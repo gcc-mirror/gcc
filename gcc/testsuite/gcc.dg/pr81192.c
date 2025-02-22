@@ -25,9 +25,13 @@ void __GIMPLE(ssa, startwith("pre")) fn2   ()
   if (j_6(D) != _Literal (int)2147483647)
     goto __BB4;
   else
-    goto __BB5;
+    goto __BB9;
 
   __BB(4):
+  iftmp2_8 = j_6(D) + _Literal (int)1;
+  goto __BB5;
+
+  __BB(9):
   iftmp2_8 = j_6(D) + _Literal (int)1;
   goto __BB5;
 

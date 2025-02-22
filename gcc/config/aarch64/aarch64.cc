@@ -26877,14 +26877,10 @@ aarch64_emit_sve_invert_fp_cond (rtx target, rtx_code code, rtx pred,
 
 /* Expand an SVE floating-point comparison using the SVE equivalent of:
 
-     (set TARGET (CODE OP0 OP1))
+     (set TARGET (CODE OP0 OP1)).  */
 
-   If CAN_INVERT_P is true, the caller can also handle inverted results;
-   return true if the result is in fact inverted.  */
-
-bool
-aarch64_expand_sve_vec_cmp_float (rtx target, rtx_code code,
-				  rtx op0, rtx op1, bool can_invert_p)
+void
+aarch64_expand_sve_vec_cmp_float (rtx target, rtx_code code, rtx op0, rtx op1)
 {
   machine_mode pred_mode = GET_MODE (target);
   machine_mode data_mode = GET_MODE (op0);
@@ -26902,16 +26898,14 @@ aarch64_expand_sve_vec_cmp_float (rtx target, rtx_code code,
     case GE:
     case EQ:
     case NE:
-      {
-	/* There is native support for the comparison.  */
-	aarch64_emit_sve_fp_cond (target, code, ptrue, true, op0, op1);
-	return false;
-      }
+      /* There is native support for the comparison.  */
+      aarch64_emit_sve_fp_cond (target, code, ptrue, true, op0, op1);
+      return;
 
     case LTGT:
       /* This is a trapping operation (LT or GT).  */
       aarch64_emit_sve_or_fp_conds (target, LT, GT, ptrue, true, op0, op1);
-      return false;
+      return;
 
     case UNEQ:
       if (!flag_trapping_math)
@@ -26920,7 +26914,7 @@ aarch64_expand_sve_vec_cmp_float (rtx target, rtx_code code,
 	  op1 = force_reg (data_mode, op1);
 	  aarch64_emit_sve_or_fp_conds (target, UNORDERED, EQ,
 					ptrue, true, op0, op1);
-	  return false;
+	  return;
 	}
       /* fall through */
     case UNLT:
@@ -26941,15 +26935,9 @@ aarch64_expand_sve_vec_cmp_float (rtx target, rtx_code code,
 	    code = NE;
 	  else
 	    code = reverse_condition_maybe_unordered (code);
-	  if (can_invert_p)
-	    {
-	      aarch64_emit_sve_fp_cond (target, code,
-					ordered, false, op0, op1);
-	      return true;
-	    }
 	  aarch64_emit_sve_invert_fp_cond (target, code,
 					   ordered, false, op0, op1);
-	  return false;
+	  return;
 	}
       break;
 
@@ -26964,13 +26952,7 @@ aarch64_expand_sve_vec_cmp_float (rtx target, rtx_code code,
 
   /* There is native support for the inverse comparison.  */
   code = reverse_condition_maybe_unordered (code);
-  if (can_invert_p)
-    {
-      aarch64_emit_sve_fp_cond (target, code, ptrue, true, op0, op1);
-      return true;
-    }
   aarch64_emit_sve_invert_fp_cond (target, code, ptrue, true, op0, op1);
-  return false;
 }
 
 /* Return true if:

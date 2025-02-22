@@ -1,3 +1,213 @@
+2025-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118954
+	* gcc.dg/torture/pr118954.c: New testcase.
+
+2025-02-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118521
+	* g++.dg/torture/pr118521.C: Use dg-bogus properly.
+
+2025-02-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/48958
+	* gfortran.dg/pointer_init_13.f90: New test.
+
+2025-02-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* sarif-replay.dg/malformed-json/empty.sarif: New test.
+
+2025-02-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* sarif-replay.dg/2.1.0-invalid/3.11.11-malformed-placeholder.sarif:
+	Rename to...
+	* sarif-replay.dg/2.1.0-invalid/3.11.5-unescaped-braces.sarif:
+	...this.  Update expected subsection in error message, and
+	expected underline in quoted JSON.
+
+2025-02-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/116604
+	* gcc.target/aarch64/sve/pcs/args_1.c (callee_pred): Enable scheduling
+	and use both memory arguments in the same instruction.  Expect no
+	prologue and epilogue code.
+
+2025-02-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/var_stride_2.c: Expect ADD+LSL.
+	* gcc.target/aarch64/sve/var_stride_4.c: Accept LSL or SBFIZ.
+
+2025-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118521
+	* g++.dg/torture/pr118521.C: New testcase.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_lib_comm_1.f90: Fix up scan_trees.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray/send_char_array_1.f90: Extend test to
+	catch more cases.
+	* gfortran.dg/coarray_42.f90: Invert tests use, because no
+	longer a send is needed when local memory in a coarray is
+	allocated.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray/coarray_allocated.f90: Adapt to new method
+	of checking on remote image.
+	* gfortran.dg/coarray_lib_alloc_4.f90: Same.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_lib_comm_1.f90: Adapt scan expression.
+	* gfortran.dg/coarray/get_with_fn_parameter.f90: New test.
+	* gfortran.dg/coarray/get_with_scalar_fn.f90: New test.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_lib_comm_1.f90: Adapt to renamed ABI
+	function.
+	* gfortran.dg/coarray_stat_function.f90: Same.
+	* gfortran.dg/coindexed_1.f90: Same.
+
+2025-02-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86270
+	* gcc.target/i386/pr86270.c: Adjust to check for no reg-reg
+	copies as well.
+
+2025-02-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/118936
+	* gcc.target/i386/pr118936.c: New test.
+
+2025-02-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	Revert:
+	2025-02-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/109780
+	PR target/109093
+	* g++.target/i386/pr109780-1.C: New test.
+	* gcc.target/i386/pr109093-1.c: Likewise.
+	* gcc.target/i386/pr109780-1.c: Likewise.
+	* gcc.target/i386/pr109780-2.c: Likewise.
+	* gcc.target/i386/pr109780-3.c: Likewise.
+
+2025-02-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/isr-04-regs.c: New test.
+	* gcc.target/avr/isr-test.h: Don't set GPRs to values
+	that are 0 mod 0x11.
+
+2025-02-19  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.target/aarch64/pr112105.c: Change to be -O2 rather
+	than -O1.
+
+2025-02-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/118300
+	* gcc.dg/analyzer/ubsan-pr118300.c: New test.
+
+2025-02-19  Pan Li  <pan2.li@intel.com>
+
+	PR middle-end/116351
+	* gcc.target/riscv/rvv/base/pr116351-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr116351-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr116351.h: New test.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vect-shift-imm-round.c: New test.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/wide-mul-reduc-2.c (dg-final): Scan
+	DOT_PROD_EXPR in optimized tree.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/wide-mul-reduc-1.c: New test.
+	* gcc.target/loongarch/wide-mul-reduc-2.c: New test.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vrepli.c: New test.
+
+2025-02-19  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/115478
+	* gcc.target/loongarch/bytepick_shift_128.c: New test.
+
+2025-02-18  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/115703
+	* gcc.target/riscv/rvv/autovec/pr115703-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr115703.c: New test.
+
+2025-02-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/116986
+	* gcc.dg/crc-builtin-rev-target32.c: Include stdint.h
+	instead of stdint-gcc.h.
+	* gcc.dg/crc-builtin-rev-target64.c: Likewise.
+	* gcc.dg/crc-builtin-target32.c: Likewise.
+	* gcc.dg/crc-builtin-target64.c: Likewise.
+	* gcc.dg/torture/pr115387-2.c: Likewise.
+
+2025-02-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/gomp/metadirective-3.f90: Add xfail when
+	compiling for offload_nvptx.
+
+2025-02-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/108840
+	* gcc.target/aarch64/pr108840.c: Run at -O2 but disable combine.
+
+2025-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98845
+	* gcc.dg/pr98845.c: New testcase.
+	* gcc.dg/pr81192.c: Adjust.
+
+2025-02-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/base/bug-9.c: Added new failure check.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-17.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-18.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-19.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-20.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-21.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-22.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-23.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-24.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-25.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-26.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-27.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-28.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-29.c: Likewise.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-3.c: Likewise.
+
+2025-02-18  Pan Li  <pan2.li@intel.com>
+
+	PR target/118540
+	* gcc.target/riscv/rvv/base/pr118540-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr118540-2.c: New test.
+
+2025-02-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/scanasm.exp (check-function-bodies): Fix usage comment.
+
+2025-02-18  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/118805
+	* gcc.dg/field-merge-26.c: New.
+
 2025-02-17  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/115271

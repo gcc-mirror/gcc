@@ -3,7 +3,7 @@
   "runs": [{
     "tool": { "driver": { "name": "example" } },
     "results": [
-      { "message": { "text" : "before {} after" }, /* { dg-error "unescaped '\\\{' within message string \\\[SARIF v2.1.0 §3.11.11\\\]" } */
+      { "message": { "text" : "before {} after" }, /* { dg-error "unescaped '\\\{' within message string \\\[SARIF v2.1.0 §3.11.5\\\]" } */
       	"locations": [] }
     ]
   }]
@@ -11,5 +11,5 @@
 
 /* { dg-begin-multiline-output "" }
     6 |       { "message": { "text" : "before {} after" },
-      |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      |                               ^~~~~~~~~~~~~~~~~
    { dg-end-multiline-output ""  }  */

@@ -149,7 +149,10 @@ namespace pmr
 #ifdef _GLIBCXX_ATOMIC_MEM_RES_CAN_BE_CONSTANT_INITIALIZED
     __constinit constant_init<atomic_mem_res> default_res{&newdel_res.obj};
 #else
-# include "default_resource.h"
+# pragma GCC diagnostic ignored "-Wprio-ctor-dtor"
+    struct {
+      atomic_mem_res obj = &newdel_res.obj;
+    } default_res __attribute__ ((init_priority (100)));
 #endif
   } // namespace
 
@@ -588,7 +591,8 @@ namespace pmr
     // The minimum size of a big block.
     // All big_block allocations will be a multiple of this value.
     // Use bit_ceil to get a power of two even for e.g. 20-bit size_t.
-    static constexpr size_t min = __bit_ceil(numeric_limits<size_t>::digits);
+    static constexpr size_t min
+      = __bit_ceil((unsigned)numeric_limits<size_t>::digits);
 
     constexpr
     big_block(size_t bytes, size_t alignment)

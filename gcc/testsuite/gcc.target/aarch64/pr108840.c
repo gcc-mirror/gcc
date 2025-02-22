@@ -1,6 +1,6 @@
 /* PR target/108840.  Check that the explicit &31 is eliminated.  */
 /* { dg-do compile } */
-/* { dg-options "-O" } */
+/* { dg-options "-O2 -fno-tree-vectorize -fdisable-rtl-combine" } */
 
 int
 foo (int x, int y)

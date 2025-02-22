@@ -272,12 +272,14 @@ private:
   const char *
   lookup_plain_text_within_result_message (const json::object *tool_component_obj,
 					   const json::object &message_obj,
-					   const json::object *rule_obj);
+					   const json::object *rule_obj,
+					   const json::string *&out_js_str);
 
   // "multiformatMessageString" object (§3.12).
   const char *
   get_plain_text_from_mfms (json::value &mfms_val,
-			    const property_spec_ref &prop);
+			    const property_spec_ref &prop,
+			    const json::string *&out_js_str);
 
   // "run" object (§3.14)
   enum status
@@ -1367,12 +1369,16 @@ make_plain_text_within_result_message (const json::object *tool_component_obj,
 				       const json::object &message_obj,
 				       const json::object *rule_obj)
 {
+  const json::string *js_str = nullptr;
   const char *original_text
     = lookup_plain_text_within_result_message (tool_component_obj,
 					       message_obj,
-					       rule_obj);
+					       rule_obj,
+					       js_str);
   if (!original_text)
     return label_text::borrow (nullptr);
+
+  gcc_assert (js_str);
 
   /* Look up any arguments for substituting into placeholders.  */
   const property_spec_ref arguments_prop ("message", "arguments", "3.11.11");
@@ -1425,7 +1431,9 @@ make_plain_text_within_result_message (const json::object *tool_component_obj,
 	    }
 	  else
 	    {
-	      report_invalid_sarif (message_obj, arguments_prop,
+	      const spec_ref msgs_with_placeholders ("3.11.5");
+	      gcc_assert (js_str);
+	      report_invalid_sarif (*js_str, msgs_with_placeholders,
 				    "unescaped '%c' within message string",
 				    ch);
 	      return label_text::borrow (nullptr);
@@ -1450,11 +1458,14 @@ make_plain_text_within_result_message (const json::object *tool_component_obj,
 
 /* Handle a value that should be a multiformatMessageString object (§3.12).
    Complain using prop if MFMS_VAL is not an object.
-   Return get the "text" value (or nullptr, and complain).  */
+   Return get the "text" value (or nullptr, and complain).
+   If the result is non-null, write the json::string that was actually used
+   to OUT_JS_STR.  */
 
 const char *
 sarif_replayer::get_plain_text_from_mfms (json::value &mfms_val,
-					  const property_spec_ref &prop)
+					  const property_spec_ref &prop,
+					  const json::string *&out_js_str)
 {
   auto mfms_obj = require_object (mfms_val, prop);
   if (!mfms_obj)
@@ -1465,6 +1476,7 @@ sarif_replayer::get_plain_text_from_mfms (json::value &mfms_val,
   auto text_jstr = get_required_property<json::string> (*mfms_obj, text_prop);
   if (!text_jstr)
     return nullptr;
+  out_js_str = text_jstr;
   return text_jstr->get_string ();
 }
 
@@ -1479,13 +1491,17 @@ sarif_replayer::get_plain_text_from_mfms (json::value &mfms_val,
    is the value of result.message (§3.27.11).
 
    MESSAGE_OBJ is "theMessage"
-   RULE_OBJ is "theRule".  */
+   RULE_OBJ is "theRule".
+
+   If the result is non-null, write the json::string that was actually used
+   to OUT_JS_STR.  */
 
 const char *
 sarif_replayer::
 lookup_plain_text_within_result_message (const json::object *tool_component_obj,
 					 const json::object &message_obj,
-					 const json::object *rule_obj)
+					 const json::object *rule_obj,
+					 const json::string *&out_js_str)
 {
   // rule_obj can be NULL
 
@@ -1493,8 +1509,11 @@ lookup_plain_text_within_result_message (const json::object *tool_component_obj,
        Use the text or markdown property of theMessage as appropriate.  */
   if (const json::string *str
       = get_optional_property<json::string> (message_obj, PROP_message_text))
-    // TODO: check language
-    return str->get_string ();
+    {
+      // TODO: check language
+      out_js_str = str;
+      return str->get_string ();
+    }
 
   if (rule_obj)
     if (auto message_id_jstr
@@ -1507,7 +1526,7 @@ lookup_plain_text_within_result_message (const json::object *tool_component_obj,
 	    = get_optional_property<json::object> (*rule_obj,
 						   message_strings))
 	  if (json::value *mfms = message_strings_obj->get (message_id))
-	    return get_plain_text_from_mfms (*mfms, message_strings);
+	    return get_plain_text_from_mfms (*mfms, message_strings, out_js_str);
 
 	/* Look up by theMessage.id within theComponent.globalMessageStrings
 	   (§3.19.22).  */
@@ -1519,7 +1538,7 @@ lookup_plain_text_within_result_message (const json::object *tool_component_obj,
 		= get_optional_property<json::object> (*tool_component_obj,
 						       prop_gms))
 	      if (auto mfms = global_message_strings->get (message_id))
-		return get_plain_text_from_mfms (*mfms, prop_gms);
+		return get_plain_text_from_mfms (*mfms, prop_gms, out_js_str);
 	  }
       }
 

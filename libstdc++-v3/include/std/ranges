@@ -9683,12 +9683,8 @@ namespace ranges
 	&& __all_but_last_common<_Const, _Rs...>::value;
 
     template<typename _Range, typename... _Rs>
-      struct __last_is_common
-      { static inline constexpr bool value = __last_is_common<_Rs...>::value; };
-
-    template<typename _Range>
-      struct __last_is_common<_Range>
-      { static inline constexpr bool value = common_range<_Range>; };
+      struct __all_but_first_sized
+      { static inline constexpr bool value = (sized_range<_Rs> && ...); };
   } // namespace __detail
 
   template<input_range... _Vs>
@@ -9697,7 +9693,7 @@ namespace ranges
   {
     tuple<_Vs...> _M_views;
 
-    template<bool _Const> class iterator;
+    template<bool _Const> class _Iterator;
 
   public:
     constexpr concat_view() = default;
@@ -9707,18 +9703,18 @@ namespace ranges
     : _M_views(std::move(__views)...)
     { }
 
-    constexpr iterator<false>
+    constexpr _Iterator<false>
     begin() requires (!(__detail::__simple_view<_Vs> && ...))
     {
-      iterator<false> __it(this, in_place_index<0>, ranges::begin(std::get<0>(_M_views)));
+      _Iterator<false> __it(this, in_place_index<0>, ranges::begin(std::get<0>(_M_views)));
       __it.template _M_satisfy<0>();
       return __it;
     }
 
-    constexpr iterator<true>
+    constexpr _Iterator<true>
     begin() const requires (range<const _Vs> && ...) && __detail::__concatable<const _Vs...>
     {
-      iterator<true> __it(this, in_place_index<0>, ranges::begin(std::get<0>(_M_views)));
+      _Iterator<true> __it(this, in_place_index<0>, ranges::begin(std::get<0>(_M_views)));
       __it.template _M_satisfy<0>();
       return __it;
     }
@@ -9726,13 +9722,11 @@ namespace ranges
     constexpr auto
     end() requires (!(__detail::__simple_view<_Vs> && ...))
     {
+      constexpr auto __n = sizeof...(_Vs);
       if constexpr ((semiregular<iterator_t<_Vs>> && ...)
-		    && __detail::__last_is_common<_Vs...>::value)
-	{
-	  constexpr auto __n = sizeof...(_Vs);
-	  return iterator<false>(this, in_place_index<__n - 1>,
-				 ranges::end(std::get<__n - 1>(_M_views)));
-	}
+		    && common_range<_Vs...[__n - 1]>)
+	return _Iterator<false>(this, in_place_index<__n - 1>,
+				ranges::end(std::get<__n - 1>(_M_views)));
       else
 	return default_sentinel;
     }
@@ -9740,13 +9734,11 @@ namespace ranges
     constexpr auto
     end() const requires (range<const _Vs> && ...) && __detail::__concatable<const _Vs...>
     {
+      constexpr auto __n = sizeof...(_Vs);
       if constexpr ((semiregular<iterator_t<const _Vs>> && ...)
-		    && __detail::__last_is_common<const _Vs...>::value)
-	{
-	  constexpr auto __n = sizeof...(_Vs);
-	  return iterator<true>(this, in_place_index<__n - 1>,
-				ranges::end(std::get<__n - 1>(_M_views)));
-	}
+		    && common_range<const _Vs...[__n - 1]>)
+	return _Iterator<true>(this, in_place_index<__n - 1>,
+			       ranges::end(std::get<__n - 1>(_M_views)));
       else
 	return default_sentinel;
     }
@@ -9809,7 +9801,7 @@ namespace ranges
   template<input_range... _Vs>
     requires (view<_Vs> && ...) && (sizeof...(_Vs) > 0) && __detail::__concatable<_Vs...>
   template<bool _Const>
-  class concat_view<_Vs...>::iterator
+  class concat_view<_Vs...>::_Iterator
   : public __detail::__concat_view_iter_cat<_Const, _Vs...>
   {
     static auto
@@ -9826,7 +9818,7 @@ namespace ranges
     }
 
     friend concat_view;
-    friend iterator<!_Const>;
+    friend _Iterator<!_Const>;
 
   public:
     // iterator_category defined in __concat_view_iter_cat
@@ -9937,16 +9929,16 @@ namespace ranges
 
     template<typename... _Args>
       explicit constexpr
-      iterator(__maybe_const_t<_Const, concat_view>* __parent, _Args&&... __args)
+      _Iterator(__maybe_const_t<_Const, concat_view>* __parent, _Args&&... __args)
 	requires constructible_from<__base_iter, _Args&&...>
       : _M_parent(__parent), _M_it(std::forward<_Args>(__args)...)
       { }
 
   public:
-    iterator() = default;
+    _Iterator() = default;
 
     constexpr
-    iterator(iterator<!_Const> __it)
+    _Iterator(_Iterator<!_Const> __it)
       requires _Const && (convertible_to<iterator_t<_Vs>, iterator_t<const _Vs>> && ...)
     : _M_parent(__it._M_parent)
     {
@@ -9963,7 +9955,7 @@ namespace ranges
       return std::visit([](auto&& __it) -> reference { return *__it; }, _M_it);
     }
 
-    constexpr iterator&
+    constexpr _Iterator&
     operator++()
     {
       _M_invoke_with_runtime_index([this]<size_t _Idx>() {
@@ -9977,7 +9969,7 @@ namespace ranges
     operator++(int)
     { ++*this; }
 
-    constexpr iterator
+    constexpr _Iterator
     operator++(int)
       requires __detail::__all_forward<_Const, _Vs...>
     {
@@ -9986,7 +9978,7 @@ namespace ranges
       return __tmp;
     }
 
-    constexpr iterator&
+    constexpr _Iterator&
     operator--()
       requires __detail::__concat_is_bidirectional<_Const, _Vs...>
     {
@@ -9997,7 +9989,7 @@ namespace ranges
       return *this;
     }
 
-    constexpr iterator
+    constexpr _Iterator
     operator--(int)
       requires __detail::__concat_is_bidirectional<_Const, _Vs...>
     {
@@ -10006,7 +9998,7 @@ namespace ranges
       return __tmp;
     }
 
-    constexpr iterator&
+    constexpr _Iterator&
     operator+=(difference_type __n)
       requires __detail::__concat_is_random_access<_Const, _Vs...>
     {
@@ -10021,7 +10013,7 @@ namespace ranges
       return *this;
     }
 
-    constexpr iterator&
+    constexpr _Iterator&
     operator-=(difference_type __n)
       requires __detail::__concat_is_random_access<_Const, _Vs...>
     {
@@ -10035,7 +10027,7 @@ namespace ranges
     { return *((*this) + __n); }
 
     friend constexpr bool
-    operator==(const iterator& __x, const iterator& __y)
+    operator==(const _Iterator& __x, const _Iterator& __y)
       requires (equality_comparable<iterator_t<__maybe_const_t<_Const, _Vs>>> && ...)
     {
       __glibcxx_assert(!__x._M_it.valueless_by_exception());
@@ -10044,7 +10036,7 @@ namespace ranges
     }
 
     friend constexpr bool
-    operator==(const iterator& __it, default_sentinel_t)
+    operator==(const _Iterator& __it, default_sentinel_t)
     {
       __glibcxx_assert(!__it._M_it.valueless_by_exception());
       constexpr auto __last_idx = sizeof...(_Vs) - 1;
@@ -10054,48 +10046,48 @@ namespace ranges
     }
 
     friend constexpr bool
-    operator<(const iterator& __x, const iterator& __y)
+    operator<(const _Iterator& __x, const _Iterator& __y)
       requires __detail::__all_random_access<_Const, _Vs...>
     { return __x._M_it < __y._M_it; }
 
     friend constexpr bool
-    operator>(const iterator& __x, const iterator& __y)
+    operator>(const _Iterator& __x, const _Iterator& __y)
       requires __detail::__all_random_access<_Const, _Vs...>
     { return __x._M_it > __y._M_it; }
 
     friend constexpr bool
-    operator<=(const iterator& __x, const iterator& __y)
+    operator<=(const _Iterator& __x, const _Iterator& __y)
       requires __detail::__all_random_access<_Const, _Vs...>
     { return __x._M_it <= __y._M_it; }
 
     friend constexpr bool
-    operator>=(const iterator& __x, const iterator& __y)
+    operator>=(const _Iterator& __x, const _Iterator& __y)
       requires __detail::__all_random_access<_Const, _Vs...>
     { return __x._M_it >= __y._M_it; }
 
     friend constexpr auto
-    operator<=>(const iterator& __x, const iterator& __y)
+    operator<=>(const _Iterator& __x, const _Iterator& __y)
       requires __detail::__all_random_access<_Const, _Vs...>
 	&& (three_way_comparable<iterator_t<__maybe_const_t<_Const, _Vs>>> && ...)
     { return __x._M_it <=> __y._M_it; }
 
-    friend constexpr iterator
-    operator+(const iterator& __it, difference_type __n)
+    friend constexpr _Iterator
+    operator+(const _Iterator& __it, difference_type __n)
       requires __detail::__concat_is_random_access<_Const, _Vs...>
     { return auto(__it) += __n; }
 
-    friend constexpr iterator
-    operator+(difference_type __n, const iterator& __it)
+    friend constexpr _Iterator
+    operator+(difference_type __n, const _Iterator& __it)
       requires __detail::__concat_is_random_access<_Const, _Vs...>
     { return __it + __n; }
 
-    friend constexpr iterator
-    operator-(const iterator& __it, difference_type __n)
+    friend constexpr _Iterator
+    operator-(const _Iterator& __it, difference_type __n)
       requires __detail::__concat_is_random_access<_Const, _Vs...>
     { return auto(__it) -= __n; }
 
     friend constexpr difference_type
-    operator-(const iterator& __x, const iterator& __y)
+    operator-(const _Iterator& __x, const _Iterator& __y)
       requires __detail::__concat_is_random_access<_Const, _Vs...>
     {
       return _S_invoke_with_runtime_index([&]<size_t _Ix>() -> difference_type {
@@ -10127,9 +10119,10 @@ namespace ranges
     }
 
     friend constexpr difference_type
-    operator-(const iterator& __x, default_sentinel_t)
-      requires __detail::__concat_is_random_access<_Const, _Vs...>
-	&& __detail::__last_is_common<__maybe_const_t<_Const, _Vs>...>::value
+    operator-(const _Iterator& __x, default_sentinel_t)
+      requires (sized_sentinel_for<sentinel_t<__maybe_const_t<_Const, _Vs>>,
+				   iterator_t<__maybe_const_t<_Const, _Vs>>> && ...)
+	&& __detail::__all_but_first_sized<__maybe_const_t<_Const, _Vs>...>::value
     {
       return _S_invoke_with_runtime_index([&]<size_t _Ix>() -> difference_type {
 	auto __dx = ranges::distance(std::get<_Ix>(__x._M_it),
@@ -10147,13 +10140,14 @@ namespace ranges
     }
 
     friend constexpr difference_type
-    operator-(default_sentinel_t, const iterator& __x)
-      requires __detail::__concat_is_random_access<_Const, _Vs...>
-	&& __detail::__last_is_common<__maybe_const_t<_Const, _Vs>...>::value
+    operator-(default_sentinel_t, const _Iterator& __x)
+      requires (sized_sentinel_for<sentinel_t<__maybe_const_t<_Const, _Vs>>,
+				   iterator_t<__maybe_const_t<_Const, _Vs>>> && ...)
+	&& __detail::__all_but_first_sized<__maybe_const_t<_Const, _Vs>...>::value
     { return -(__x - default_sentinel); }
 
     friend constexpr decltype(auto)
-    iter_move(const iterator& __it)
+    iter_move(const _Iterator& __it)
     {
       using _Res = __detail::__concat_rvalue_reference_t<__maybe_const_t<_Const, _Vs>...>;
       return std::visit([](const auto& __i) -> _Res {
@@ -10162,8 +10156,8 @@ namespace ranges
     }
 
     friend constexpr void
-    iter_swap(const iterator& __x, const iterator& __y)
-      requires swappable_with<iter_reference_t<iterator>, iter_reference_t<iterator>>
+    iter_swap(const _Iterator& __x, const _Iterator& __y)
+      requires swappable_with<iter_reference_t<_Iterator>, iter_reference_t<_Iterator>>
 	&& (... && indirectly_swappable<iterator_t<__maybe_const_t<_Const, _Vs>>>)
     {
       std::visit([&]<typename _Tp, typename _Up>(const _Tp& __it1, const _Up& __it2) {

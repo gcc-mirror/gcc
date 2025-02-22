@@ -1664,16 +1664,23 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
       tree size = create_tmp_var (gfc_array_index_type);
       tree elemsz = TYPE_SIZE_UNIT (gfc_get_element_type (type));
       elemsz = fold_convert (gfc_array_index_type, elemsz);
-      if (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE
-	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER
-	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER_CONT)
+      enum gfc_array_kind akind = GFC_TYPE_ARRAY_AKIND (type);
+      if (akind == GFC_ARRAY_ALLOCATABLE
+	  || akind == GFC_ARRAY_POINTER
+	  || akind == GFC_ARRAY_POINTER_CONT
+	  || akind == GFC_ARRAY_ASSUMED_RANK_ALLOCATABLE
+	  || akind == GFC_ARRAY_ASSUMED_RANK_POINTER
+	  || akind == GFC_ARRAY_ASSUMED_RANK_POINTER_CONT)
 	{
 	  stmtblock_t cond_block;
 	  tree tem, then_b, else_b, zero, cond;
 
+	  int rank = ((akind == GFC_ARRAY_ASSUMED_RANK_ALLOCATABLE
+		       || akind == GFC_ARRAY_ASSUMED_RANK_POINTER
+		       || akind == GFC_ARRAY_ASSUMED_RANK_POINTER_CONT)
+		      ? -1 : GFC_TYPE_ARRAY_RANK (type));
 	  gfc_init_block (&cond_block);
-	  tem = gfc_full_array_size (&cond_block, decl,
-				     GFC_TYPE_ARRAY_RANK (type));
+	  tem = gfc_full_array_size (&cond_block, unshare_expr (decl), rank);
 	  gfc_add_modify (&cond_block, size, tem);
 	  gfc_add_modify (&cond_block, size,
 			  fold_build2 (MULT_EXPR, gfc_array_index_type,
@@ -1683,7 +1690,7 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 	  zero = build_int_cst (gfc_array_index_type, 0);
 	  gfc_add_modify (&cond_block, size, zero);
 	  else_b = gfc_finish_block (&cond_block);
-	  tem = gfc_conv_descriptor_data_get (decl);
+	  tem = gfc_conv_descriptor_data_get (unshare_expr (decl));
 	  tem = fold_convert (pvoid_type_node, tem);
 	  cond = fold_build2_loc (input_location, NE_EXPR,
 				  boolean_type_node, tem, null_pointer_node);
@@ -1701,10 +1708,13 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 	  stmtblock_t cond_block;
 	  tree then_b;
 
+	  int rank = ((akind == GFC_ARRAY_ASSUMED_RANK
+		       || akind == GFC_ARRAY_ASSUMED_RANK_CONT)
+		      ? -1 : GFC_TYPE_ARRAY_RANK (type));
 	  gfc_init_block (&cond_block);
 	  gfc_add_modify (&cond_block, size,
-			  gfc_full_array_size (&cond_block, decl,
-					       GFC_TYPE_ARRAY_RANK (type)));
+			  gfc_full_array_size (&cond_block, unshare_expr (decl),
+					       rank));
 	  gfc_add_modify (&cond_block, size,
 			  fold_build2 (MULT_EXPR, gfc_array_index_type,
 				       size, elemsz));
@@ -1715,9 +1725,12 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 	}
       else
 	{
+	  int rank = ((akind == GFC_ARRAY_ASSUMED_RANK
+		       || akind == GFC_ARRAY_ASSUMED_RANK_CONT)
+		      ? -1 : GFC_TYPE_ARRAY_RANK (type));
 	  gfc_add_modify (&block, size,
-			  gfc_full_array_size (&block, decl,
-					       GFC_TYPE_ARRAY_RANK (type)));
+			  gfc_full_array_size (&block, unshare_expr (decl),
+					       rank));
 	  gfc_add_modify (&block, size,
 			  fold_build2 (MULT_EXPR, gfc_array_index_type,
 				       size, elemsz));

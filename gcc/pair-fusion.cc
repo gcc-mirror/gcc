@@ -1742,7 +1742,7 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
     {
       if (dump_file)
 	fprintf (dump_file,
-		 "  load pair: i%d and i%d use different definiitions of"
+		 "  rejecting pair: i%d and i%d use different definiitions of"
 		 " the same register\n",
 		 insns[0]->uid (), insns[1]->uid ());
       return false;

@@ -284,6 +284,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "builtins.h"
 #include "case-cfn-macros.h"
+#include "tree-eh.h"
 
 static tree analyze_scalar_evolution_1 (class loop *, tree);
 static tree analyze_scalar_evolution_for_address_of (class loop *loop,
@@ -3946,6 +3947,23 @@ final_value_replacement_loop (class loop *loop)
 	  fprintf (dump_file, " final stmt:\n  ");
 	  print_gimple_stmt (dump_file, SSA_NAME_DEF_STMT (rslt), 0);
 	  fprintf (dump_file, "\n");
+	}
+
+      /* Re-fold immediate uses of the replaced def, but avoid
+	 CFG manipulations from this function.  For now only do
+	 a single-level re-folding, not re-folding uses of
+	 folded uses.  */
+      if (! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rslt))
+	{
+	  gimple *use_stmt;
+	  imm_use_iterator imm_iter;
+	  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, rslt)
+	    {
+	      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
+	      if (!stmt_can_throw_internal (cfun, use_stmt)
+		  && fold_stmt (&gsi, follow_all_ssa_edges))
+		update_stmt (gsi_stmt (gsi));
+	    }
 	}
     }
 

@@ -3521,6 +3521,13 @@ add_functions (void)
 	     BT_REAL, dr, GFC_STD_GNU, NULL, NULL, NULL,
 	     x, BT_REAL, dr, REQUIRED);
   make_from_module();
+
+  add_sym_3 (GFC_PREFIX ("caf_is_present_on_remote"),
+	     GFC_ISYM_CAF_IS_PRESENT_ON_REMOTE, CLASS_IMPURE, ACTUAL_NO,
+	     BT_LOGICAL, dl, GFC_STD_GNU, NULL, NULL, NULL, ca, BT_VOID, di,
+	     REQUIRED, val, BT_INTEGER, di, REQUIRED, i, BT_INTEGER, di,
+	     REQUIRED);
+  make_from_module ();
 }
 
 
@@ -3891,6 +3898,10 @@ add_subroutines (void)
 	      "y", BT_REAL, dr, REQUIRED, INTENT_IN);
   make_from_module();
 
+  add_sym_2s (GFC_PREFIX ("caf_sendget"), GFC_ISYM_CAF_SENDGET, CLASS_IMPURE,
+	      BT_UNKNOWN, 0, GFC_STD_GNU, NULL, NULL, NULL, "x", BT_REAL, dr,
+	      REQUIRED, INTENT_OUT, "y", BT_REAL, dr, REQUIRED, INTENT_IN);
+  make_from_module ();
 
   /* More G77 compatibility garbage.  */
   add_sym_3s ("alarm", GFC_ISYM_ALARM, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,

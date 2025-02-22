@@ -1,4 +1,4 @@
-/* { dg-options "-O" } */
+/* { dg-options "-O2" } */
 
 #include <arm_neon.h>
 typedef struct {

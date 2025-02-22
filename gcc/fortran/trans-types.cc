@@ -1628,8 +1628,16 @@ gfc_build_array_type (tree type, gfc_array_spec * as,
     akind = contiguous ? GFC_ARRAY_ASSUMED_SHAPE_CONT
 		       : GFC_ARRAY_ASSUMED_SHAPE;
   else if (as->type == AS_ASSUMED_RANK)
-    akind = contiguous ? GFC_ARRAY_ASSUMED_RANK_CONT
-		       : GFC_ARRAY_ASSUMED_RANK;
+    {
+      if (akind == GFC_ARRAY_ALLOCATABLE)
+	akind = GFC_ARRAY_ASSUMED_RANK_ALLOCATABLE;
+      else if (akind == GFC_ARRAY_POINTER || akind == GFC_ARRAY_POINTER_CONT)
+	akind = contiguous ? GFC_ARRAY_ASSUMED_RANK_POINTER_CONT
+			   : GFC_ARRAY_ASSUMED_RANK_POINTER;
+      else
+	akind = contiguous ? GFC_ARRAY_ASSUMED_RANK_CONT
+			   : GFC_ARRAY_ASSUMED_RANK;
+    }
   return gfc_get_array_type_bounds (type, as->rank == -1
 					  ? GFC_MAX_DIMENSIONS : as->rank,
 				    corank, lbound, ubound, 0, akind,
@@ -2958,9 +2966,10 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
     }
 
   if (derived->components
-	&& derived->components->ts.type == BT_DERIVED
-	&& strcmp (derived->components->name, "_data") == 0
-	&& derived->components->ts.u.derived->attr.unlimited_polymorphic)
+      && derived->components->ts.type == BT_DERIVED
+      && startswith (derived->name, "__class")
+      && strcmp (derived->components->name, "_data") == 0
+      && derived->components->ts.u.derived->attr.unlimited_polymorphic)
     unlimited_entity = true;
 
   /* Go through the derived type components, building them as
@@ -3067,11 +3076,24 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 	  if (c->attr.pointer || c->attr.allocatable || c->attr.pdt_array)
 	    {
 	      enum gfc_array_kind akind;
-	      if (c->attr.pointer)
+	      bool is_ptr = ((c == derived->components
+			      && derived->components->ts.type == BT_DERIVED
+			      && startswith (derived->name, "__class")
+			      && (strcmp (derived->components->name, "_data")
+				  == 0))
+			     ? c->attr.class_pointer : c->attr.pointer);
+	      if (is_ptr)
 		akind = c->attr.contiguous ? GFC_ARRAY_POINTER_CONT
 					   : GFC_ARRAY_POINTER;
-	      else
+	      else if (c->attr.allocatable)
 		akind = GFC_ARRAY_ALLOCATABLE;
+	      else if (c->as->type == AS_ASSUMED_RANK)
+		akind = GFC_ARRAY_ASSUMED_RANK;
+	      else
+		/* FIXME – see PR fortran/104651.  Additionally, the following
+		   gfc_build_array_type should use !is_ptr instead of
+		   c->attr.pointer and codim unconditionally without '? :'. */
+		akind = GFC_ARRAY_ASSUMED_SHAPE;
 	      /* Pointers to arrays aren't actually pointer types.  The
 		 descriptors are separate, but the data is common.  Every
 		 array pointer in a coarray derived type needs to provide space
@@ -3753,15 +3775,22 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
     t = fold_build_pointer_plus (t, data_off);
   t = build1 (NOP_EXPR, build_pointer_type (ptr_type_node), t);
   info->data_location = build1 (INDIRECT_REF, ptr_type_node, t);
-  if (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE)
+  enum gfc_array_kind akind = GFC_TYPE_ARRAY_AKIND (type);
+  if (akind == GFC_ARRAY_ALLOCATABLE
+      || akind == GFC_ARRAY_ASSUMED_RANK_ALLOCATABLE)
     info->allocated = build2 (NE_EXPR, logical_type_node,
 			      info->data_location, null_pointer_node);
-  else if (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER
-	   || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER_CONT)
+  else if (akind == GFC_ARRAY_POINTER
+	   || akind == GFC_ARRAY_POINTER_CONT
+	   || akind == GFC_ARRAY_ASSUMED_RANK_POINTER
+	   || akind == GFC_ARRAY_ASSUMED_RANK_POINTER_CONT)
     info->associated = build2 (NE_EXPR, logical_type_node,
 			       info->data_location, null_pointer_node);
-  if ((GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_RANK
-       || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_RANK_CONT)
+  if ((akind == GFC_ARRAY_ASSUMED_RANK
+       || akind == GFC_ARRAY_ASSUMED_RANK_CONT
+       || akind == GFC_ARRAY_ASSUMED_RANK_ALLOCATABLE
+       || akind == GFC_ARRAY_ASSUMED_RANK_POINTER
+       || akind == GFC_ARRAY_ASSUMED_RANK_POINTER_CONT)
       && dwarf_version >= 5)
     {
       rank = 1;
@@ -3792,8 +3821,8 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
 					       dim_off, upper_suboff));
       t = build1 (INDIRECT_REF, gfc_array_index_type, t);
       info->dimen[dim].upper_bound = t;
-      if (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_SHAPE
-	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_SHAPE_CONT)
+      if (akind == GFC_ARRAY_ASSUMED_SHAPE
+	  || akind == GFC_ARRAY_ASSUMED_SHAPE_CONT)
 	{
 	  /* Assumed shape arrays have known lower bounds.  */
 	  info->dimen[dim].upper_bound

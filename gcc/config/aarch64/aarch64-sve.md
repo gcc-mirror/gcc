@@ -8495,7 +8495,7 @@
   "TARGET_SVE"
   {
     aarch64_expand_sve_vec_cmp_float (operands[0], GET_CODE (operands[1]),
-				      operands[2], operands[3], false);
+				      operands[2], operands[3]);
     DONE;
   }
 )

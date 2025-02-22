@@ -59,7 +59,7 @@ static void compare_reginfo (unsigned long gpr_ignore)
 
   gpr_ignore >>= FIRST_REG;
 
-    for (regno = FIRST_REG; regno < 32;
+  for (regno = FIRST_REG; regno < 32;
        regno++, preg1++, preg2++, gpr_ignore >>= 1)
     {
       if (gpr_ignore & 1)
@@ -189,6 +189,7 @@ static void host_store1 (void)
    XX_RAMPY
    XX_RAMPX
    CR "dec __zero_reg__"
+   CR "dec __zero_reg__"
    CR "clr r31"
    XX_SREG
    /* Must set I-flag due to RETI of ISR */
@@ -200,7 +201,7 @@ static void host_store1 (void)
    ST_RAMPD (mem1)
    ST_EIND  (mem1)
    ST_SREG  (mem1)
-   CR "ldi r31, 0xaa"
+   CR "ldi r31, 0xab"
    CR "mov __tmp_reg__, r31"
    CR "ldi r31, 31"
    ST_REGS_LO (mem1)

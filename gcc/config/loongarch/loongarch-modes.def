@@ -27,14 +27,16 @@ CC_MODE (FCC);
 /* Vector modes.  */
 VECTOR_MODES (INT, 4);	      /* V4QI  V2HI      */
 VECTOR_MODES (INT, 8);	      /* V8QI  V4HI V2SI */
+VECTOR_MODE (INT, DI, 1);     /*		 V1DI */
 VECTOR_MODES (FLOAT, 8);      /*       V4HF V2SF */
 
 /* For LARCH LSX 128 bits.  */
 VECTOR_MODES (INT, 16);	      /* V16QI V8HI V4SI V2DI */
 VECTOR_MODES (FLOAT, 16);     /*	    V4SF V2DF */
+VECTOR_MODE (INT, TI, 1);     /*		 V1TI */
 
 /* For LARCH LASX 256 bits.  */
-VECTOR_MODES (INT, 32);	      /* V32QI V16HI V8SI V4DI */
+VECTOR_MODES (INT, 32);	      /* V32QI V16HI V8SI V4DI V2TI */
 VECTOR_MODES (FLOAT, 32);     /*	     V8SF V4DF */
 
 /* Double-sized vector modes for vec_concat.  */
@@ -49,6 +51,7 @@ VECTOR_MODE (INT, QI, 64);    /* V64QI	*/
 VECTOR_MODE (INT, HI, 32);    /* V32HI	*/
 VECTOR_MODE (INT, SI, 16);    /* V16SI	*/
 VECTOR_MODE (INT, DI, 8);     /* V8DI */
+VECTOR_MODE (INT, TI, 4);     /* V4TI */
 VECTOR_MODE (FLOAT, SF, 16);  /* V16SF	*/
 VECTOR_MODE (FLOAT, DF, 8);   /* V8DF */
 

@@ -205,6 +205,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __gnu_cxx::__int_traits;
       constexpr auto _Nd = __int_traits<_Tp>::__digits;
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_clzg)
+      return __builtin_clzg(__x, _Nd);
+#else
       if (__x == 0)
         return _Nd;
 
@@ -242,6 +245,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  unsigned long long __low = __x & __max_ull;
 	  return (_Nd - _Nd_ull) + __builtin_clzll(__low);
 	}
+#endif
     }
 
   template<typename _Tp>
@@ -258,6 +262,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __gnu_cxx::__int_traits;
       constexpr auto _Nd = __int_traits<_Tp>::__digits;
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_ctzg)
+      return __builtin_ctzg(__x, _Nd);
+#else
       if (__x == 0)
         return _Nd;
 
@@ -283,6 +290,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  unsigned long long __high = __x >> _Nd_ull;
 	  return __builtin_ctzll(__high) + _Nd_ull;
 	}
+#endif
     }
 
   template<typename _Tp>
@@ -296,6 +304,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr int
     __popcount(_Tp __x) noexcept
     {
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_popcountg)
+      return __builtin_popcountg(__x);
+#else
       using __gnu_cxx::__int_traits;
       constexpr auto _Nd = __int_traits<_Tp>::__digits;
 
@@ -319,6 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  unsigned long long __high = __x >> _Nd_ull;
 	  return __builtin_popcountll(__low) + __builtin_popcountll(__high);
 	}
+#endif
     }
 
   template<typename _Tp>

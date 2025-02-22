@@ -1842,6 +1842,7 @@ ftms = {
   values = {
     v = 202403;
     cxxmin = 26;
+    extra_cond = "__cpp_pack_indexing";
   };
 };
 

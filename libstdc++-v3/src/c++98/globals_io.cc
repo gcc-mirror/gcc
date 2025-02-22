@@ -69,7 +69,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   fake_wostream wclog;
 #endif
 
-#include "ios_base_init.h"
+// If the target supports init priorities, set up a static object in the
+// compiled library to perform the <iostream> initialization once and
+// sufficiently early (so that it happens before any other global
+// constructor when statically linking with libstdc++.a), instead of
+// doing so in (each TU that includes) <iostream>.
+// This needs to be done in the same TU that defines the stream objects.
+#if _GLIBCXX_USE_INIT_PRIORITY_ATTRIBUTE
+#pragma GCC diagnostic ignored "-Wprio-ctor-dtor"
+static ios_base::Init __ioinit __attribute__((init_priority(90)));
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

@@ -4205,13 +4205,10 @@ future implementation of teams.  It is about to change without further notice.
 * _gfortran_caf_register_accessor:: Register an accessor for remote access
 * _gfortran_caf_register_accessors_finish:: Finish registering accessor functions
 * _gfortran_caf_get_remote_function_index:: Get the index of an accessor
-* _gfortran_caf_is_present:: Query whether an allocatable or pointer component in a derived type coarray is allocated
-* _gfortran_caf_send:: Sending data from a local image to a remote image
-* _gfortran_caf_get:: Getting data from a remote image
-* _gfortran_caf_sendget:: Sending data between remote images
-* _gfortran_caf_send_by_ref:: Sending data from a local image to a remote image using enhanced references
-* _gfortran_caf_get_by_ref:: Getting data from a remote image using enhanced references
-* _gfortran_caf_get_by_ct:: Getting data from a remote image using a remote side accessor
+* _gfortran_caf_get_from_remote:: Getting data from a remote image using a remote side accessor
+* _gfortran_caf_is_present_on_remote:: Check that a coarray or a part of it is allocated on the remote image
+* _gfortran_caf_send_to_remote:: Send data to a remote image using a remote side accessor to store it
+* _gfortran_caf_transfer_between_remotes:: Initiate data transfer between to remote images
 * _gfortran_caf_sendget_by_ref:: Sending data between remote images using enhanced references
 * _gfortran_caf_lock:: Locking a lock variable
 * _gfortran_caf_unlock:: Unlocking a lock variable
@@ -4617,8 +4614,8 @@ Return the index of the accessor in the lookup table build by
 fast, because it may be called often.  A log(N) lookup time for a given hash is
 preferred.  The reference implementation uses @code{bsearch ()}, for example.
 The index returned shall be an array index to be used by
-@ref{_gfortran_caf_get_by_ct}, i.e. a constant time operation is mandatory for
-quick access.
+@ref{_gfortran_caf_get_from_remote}, i.e. a constant time operation is mandatory
+for quick access.
 
 The GFortran compiler ensures that
 @code{_gfortran_caf_get_remote_function_index} is called once only for each
@@ -4646,277 +4643,9 @@ message, when the hash could not be found.
 @end table
 
 
-
-@node _gfortran_caf_is_present
-@subsection @code{_gfortran_caf_is_present} --- Query whether an allocatable or pointer component in a derived type coarray is allocated
-@cindex Coarray, _gfortran_caf_is_present
-
-@table @asis
-@item @emph{Description}:
-Used to query the coarray library whether an allocatable component in a derived
-type coarray is allocated on a remote image.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_is_present (caf_token_t token, int image_index,
-gfc_reference_t *ref)}
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .70
-@item @var{token} @tab An opaque pointer identifying the coarray.
-@item @var{image_index} @tab The ID of the remote image; must be a positive
-number.
-@item @var{ref} @tab A chain of references to address the allocatable or
-pointer component in the derived type coarray.  The object reference needs to be
-a scalar or a full array reference, respectively.
-@end multitable
-
-@end table
-
-@node _gfortran_caf_send
-@subsection @code{_gfortran_caf_send} --- Sending data from a local image to a remote image
-@cindex Coarray, _gfortran_caf_send
-
-@table @asis
-@item @emph{Description}:
-Called to send a scalar, an array section or a whole array from a local
-to a remote image identified by the image_index.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_send (caf_token_t token, size_t offset,
-int image_index, gfc_descriptor_t *dest, caf_vector_t *dst_vector,
-gfc_descriptor_t *src, int dst_kind, int src_kind, bool may_require_tmp,
-int *stat)}
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .70
-@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab intent(in)  The number of bytes the actual data is
-shifted compared to the base address of the coarray.
-@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
-positive number.
-@item @var{dest} @tab intent(in)  Array descriptor for the remote image for the
-bounds and the size.  The @code{base_addr} shall not be accessed.
-@item @var{dst_vector} @tab intent(in)  If not NULL, it contains the vector
-subscript of the destination array; the values are relative to the dimension
-triplet of the dest argument.
-@item @var{src} @tab intent(in)  Array descriptor of the local array to be
-transferred to the remote image
-@item @var{dst_kind} @tab intent(in)  Kind of the destination argument
-@item @var{src_kind} @tab intent(in)  Kind of the source argument
-@item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
-it is known at compile time that the @var{dest} and @var{src} either cannot
-overlap or overlap (fully or partially) such that walking @var{src} and
-@var{dest} in elementwise order (honoring the stride value) does not
-lead to wrong results.  Otherwise, the value is @code{true}.
-@item @var{stat} @tab intent(out) when non-NULL give the result of the
-operation, i.e., zero on success and nonzero on error.  When NULL and an error
-occurs, then an error message is printed and the program is terminated.
-@end multitable
-
-@item @emph{NOTES}
-It is permitted to have @var{image_index} equal the current image; the memory
-of the send-to and the send-from might (partially) overlap in that case.  The
-implementation has to take care that it handles this case, e.g. using
-@code{memmove} which handles (partially) overlapping memory. If
-@var{may_require_tmp} is true, the library might additionally create a
-temporary variable, unless additional checks show that this is not required
-(e.g. because walking backward is possible or because both arrays are
-contiguous and @code{memmove} takes care of overlap issues).
-
-Note that the assignment of a scalar to an array is permitted. In addition,
-the library has to handle numeric type conversion, and padding
-and different character kinds for strings.
-@end table
-
-
-@node _gfortran_caf_get
-@subsection @code{_gfortran_caf_get} --- Getting data from a remote image
-@cindex Coarray, _gfortran_caf_get
-
-@table @asis
-@item @emph{Description}:
-Called to get an array section or a whole array from a remote,
-image identified by the image_index.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_get (caf_token_t token, size_t offset,
-int image_index, gfc_descriptor_t *src, caf_vector_t *src_vector,
-gfc_descriptor_t *dest, int src_kind, int dst_kind, bool may_require_tmp,
-int *stat)}
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .70
-@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{offset} @tab intent(in)  The number of bytes the actual data is
-shifted compared to the base address of the coarray.
-@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
-positive number.
-@item @var{dest} @tab intent(out) Array descriptor of the local array to store
-the data retrieved from the remote image
-@item @var{src} @tab intent(in) Array descriptor for the remote image for the
-bounds and the size.  The @code{base_addr} shall not be accessed.
-@item @var{src_vector} @tab intent(in)  If not NULL, it contains the vector
-subscript of the source array; the values are relative to the dimension
-triplet of the @var{src} argument.
-@item @var{dst_kind} @tab intent(in)  Kind of the destination argument
-@item @var{src_kind} @tab intent(in)  Kind of the source argument
-@item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
-it is known at compile time that the @var{dest} and @var{src} either cannot
-overlap or overlap (fully or partially) such that walking @var{src} and
-@var{dest} in elementwise order (honoring the stride value) does not
-lead to wrong results.  Otherwise, the value is @code{true}.
-@item @var{stat} @tab intent(out) When non-NULL give the result of the
-operation, i.e., zero on success and nonzero on error.  When NULL and an error
-occurs, then an error message is printed and the program is terminated.
-@end multitable
-
-@item @emph{NOTES}
-It is permitted to have @var{image_index} equal the current image; the memory of
-the send-to and the send-from might (partially) overlap in that case.  The
-implementation has to take care that it handles this case, e.g. using
-@code{memmove} which handles (partially) overlapping memory. If
-@var{may_require_tmp} is true, the library might additionally create a
-temporary variable, unless additional checks show that this is not required
-(e.g. because walking backward is possible or because both arrays are
-contiguous and @code{memmove} takes care of overlap issues).
-
-Note that the library has to handle numeric-type conversion and for strings,
-padding and different character kinds.
-@end table
-
-
-@node _gfortran_caf_sendget
-@subsection @code{_gfortran_caf_sendget} --- Sending data between remote images
-@cindex Coarray, _gfortran_caf_sendget
-
-@table @asis
-@item @emph{Description}:
-Called to send a scalar, an array section or a whole array from a remote image
-identified by the @var{src_image_index} to a remote image identified by the
-@var{dst_image_index}.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_sendget (caf_token_t dst_token, size_t dst_offset,
-int dst_image_index, gfc_descriptor_t *dest, caf_vector_t *dst_vector,
-caf_token_t src_token, size_t src_offset, int src_image_index,
-gfc_descriptor_t *src, caf_vector_t *src_vector, int dst_kind, int src_kind,
-bool may_require_tmp, int *stat)}
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .70
-@item @var{dst_token} @tab intent(in)  An opaque pointer identifying the
-destination coarray.
-@item @var{dst_offset} @tab intent(in)  The number of bytes the actual data
-is shifted compared to the base address of the destination coarray.
-@item @var{dst_image_index} @tab intent(in)  The ID of the destination remote
-image; must be a positive number.
-@item @var{dest} @tab intent(in) Array descriptor for the destination
-remote image for the bounds and the size.  The @code{base_addr} shall not be
-accessed.
-@item @var{dst_vector} @tab intent(int)  If not NULL, it contains the vector
-subscript of the destination array; the values are relative to the dimension
-triplet of the @var{dest} argument.
-@item @var{src_token} @tab intent(in)  An opaque pointer identifying the source
-coarray.
-@item @var{src_offset} @tab intent(in)  The number of bytes the actual data
-is shifted compared to the base address of the source coarray.
-@item @var{src_image_index} @tab intent(in)  The ID of the source remote image;
-must be a positive number.
-@item @var{src} @tab intent(in) Array descriptor of the local array to be
-transferred to the remote image.
-@item @var{src_vector} @tab intent(in) Array descriptor of the local array to
-be transferred to the remote image
-@item @var{dst_kind} @tab intent(in)  Kind of the destination argument
-@item @var{src_kind} @tab intent(in)  Kind of the source argument
-@item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
-it is known at compile time that the @var{dest} and @var{src} either cannot
-overlap or overlap (fully or partially) such that walking @var{src} and
-@var{dest} in elementwise order (honoring the stride value) does not
-lead to wrong results.  Otherwise, the value is @code{true}.
-@item @var{stat} @tab intent(out) when non-NULL give the result of the
-operation, i.e., zero on success and nonzero on error.  When NULL and an error
-occurs, then an error message is printed and the program is terminated.
-@end multitable
-
-@item @emph{NOTES}
-It is permitted to have the same image index for both @var{src_image_index} and
-@var{dst_image_index}; the memory of the send-to and the send-from might
-(partially) overlap in that case.  The implementation has to take care that it
-handles this case, e.g. using @code{memmove} which handles (partially)
-overlapping memory.  If @var{may_require_tmp} is true, the library
-might additionally create a temporary variable, unless additional checks show
-that this is not required (e.g. because walking backward is possible or because
-both arrays are contiguous and @code{memmove} takes care of overlap issues).
-
-Note that the assignment of a scalar to an array is permitted. In addition,
-the library has to handle numeric-type conversion and for strings, padding and
-different character kinds.
-@end table
-
-@node _gfortran_caf_send_by_ref
-@subsection @code{_gfortran_caf_send_by_ref} --- Sending data from a local image to a remote image with enhanced referencing options
-@cindex Coarray, _gfortran_caf_send_by_ref
-
-@table @asis
-@item @emph{Description}:
-Called to send a scalar, an array section or a whole array from a local to a
-remote image identified by the @var{image_index}.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_send_by_ref (caf_token_t token, int image_index,
-gfc_descriptor_t *src, caf_reference_t *refs, int dst_kind, int src_kind,
-bool may_require_tmp, bool dst_reallocatable, int *stat, int dst_type)}
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .70
-@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
-positive number.
-@item @var{src} @tab intent(in) Array descriptor of the local array to be
-transferred to the remote image
-@item @var{refs} @tab intent(in) The references on the remote array to store
-the data given by src.  Guaranteed to have at least one entry.
-@item @var{dst_kind} @tab intent(in)  Kind of the destination argument
-@item @var{src_kind} @tab intent(in)  Kind of the source argument
-@item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
-it is known at compile time that the @var{dest} and @var{src} either cannot
-overlap or overlap (fully or partially) such that walking @var{src} and
-@var{dest} in elementwise order (honoring the stride value) does not
-lead to wrong results.  Otherwise, the value is @code{true}.
-@item @var{dst_reallocatable} @tab intent(in)  Set when the destination is of
-allocatable or pointer type and the refs allow reallocation, i.e., the ref
-is a full array or component ref.
-@item @var{stat} @tab intent(out) When non-@code{NULL} give the result of the
-operation, i.e., zero on success and nonzero on error.  When @code{NULL} and
-an error occurs, then an error message is printed and the program is terminated.
-@item @var{dst_type} @tab intent(in)  Give the type of the destination.  When
-the destination is not an array, than the precise type, e.g. of a component in
-a derived type, is not known, but provided here.
-@end multitable
-
-@item @emph{NOTES}
-It is permitted to have @var{image_index} equal the current image; the memory of
-the send-to and the send-from might (partially) overlap in that case.  The
-implementation has to take care that it handles this case, e.g. using
-@code{memmove} which handles (partially) overlapping memory.  If
-@var{may_require_tmp} is true, the library might additionally create a
-temporary variable, unless additional checks show that this is not required
-(e.g. because walking backward is possible or because both arrays are
-contiguous and @code{memmove} takes care of overlap issues).
-
-Note that the assignment of a scalar to an array is permitted.  In addition,
-the library has to handle numeric-type conversion and for strings, padding
-and different character kinds.
-
-Because of the more complicated references possible some operations may be
-unsupported by certain libraries.  The library is expected to issue a precise
-error message why the operation is not permitted.
-@end table
-
-
-@node _gfortran_caf_get_by_ref
-@subsection @code{_gfortran_caf_get_by_ref} --- Getting data from a remote image using enhanced references
-@cindex Coarray, _gfortran_caf_get_by_ref
+@node _gfortran_caf_get_from_remote
+@subsection @code{_gfortran_caf_get_from_remote} --- Getting data from a remote image using a remote side accessor
+@cindex Coarray, _gfortran_caf_get_from_remote
 
 @table @asis
 @item @emph{Description}:
@@ -4924,68 +4653,7 @@ Called to get a scalar, an array section or a whole array from a remote image
 identified by the @var{image_index}.
 
 @item @emph{Syntax}:
-@code{void _gfortran_caf_get_by_ref (caf_token_t token, int image_index,
-caf_reference_t *refs, gfc_descriptor_t *dst, int dst_kind, int src_kind,
-bool may_require_tmp, bool dst_reallocatable, int *stat, int src_type)}
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .70
-@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
-@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
-positive number.
-@item @var{refs} @tab intent(in) The references to apply to the remote structure
-to get the data.
-@item @var{dst} @tab intent(in) Array descriptor of the local array to store
-the data transferred from the remote image.  May be reallocated where needed
-and when @var{DST_REALLOCATABLE} allows it.
-@item @var{dst_kind} @tab intent(in)  Kind of the destination argument
-@item @var{src_kind} @tab intent(in)  Kind of the source argument
-@item @var{may_require_tmp} @tab intent(in)  The variable is @code{false} when
-it is known at compile time that the @var{dest} and @var{src} either cannot
-overlap or overlap (fully or partially) such that walking @var{src} and
-@var{dest} in elementwise order (honoring the stride value) does not
-lead to wrong results.  Otherwise, the value is @code{true}.
-@item @var{dst_reallocatable} @tab intent(in)  Set when @var{DST} is of
-allocatable or pointer type and its refs allow reallocation, i.e., the full
-array or a component is referenced.
-@item @var{stat} @tab intent(out) When non-@code{NULL} give the result of the
-operation, i.e., zero on success and nonzero on error.  When @code{NULL} and an
-error occurs, then an error message is printed and the program is terminated.
-@item @var{src_type} @tab intent(in)  Give the type of the source.  When the
-source is not an array, than the precise type, e.g. of a component in a
-derived type, is not known, but provided here.
-@end multitable
-
-@item @emph{NOTES}
-It is permitted to have @code{image_index} equal the current image; the memory
-of the send-to and the send-from might (partially) overlap in that case.  The
-implementation has to take care that it handles this case, e.g. using
-@code{memmove} which handles (partially) overlapping memory.  If
-@var{may_require_tmp} is true, the library might additionally create a
-temporary variable, unless additional checks show that this is not required
-(e.g. because walking backward is possible or because both arrays are
-contiguous and @code{memmove} takes care of overlap issues).
-
-Note that the library has to handle numeric-type conversion and for strings,
-padding and different character kinds.
-
-Because of the more complicated references possible some operations may be
-unsupported by certain libraries.  The library is expected to issue a precise
-error message why the operation is not permitted.
-@end table
-
-
-@node _gfortran_caf_get_by_ct
-@subsection @code{_gfortran_caf_get_by_ct} --- Getting data from a remote image using a remote side accessor
-@cindex Coarray, _gfortran_caf_get_by_ct
-
-@table @asis
-@item @emph{Description}:
-Called to get a scalar, an array section or a whole array from a remote image
-identified by the @var{image_index}.
-
-@item @emph{Syntax}:
-@code{void _gfortran_caf_get_by_ct (caf_token_t token,
+@code{void _gfortran_caf_get_from_remote (caf_token_t token,
 const gfc_descriptor_t *opt_src_desc, const size_t *opt_src_charlen,
 const int image_index, const size_t dst_size, void **dst_data,
 size_t *opt_dst_charlen, gfc_descriptor_t *opt_dst_desc,
@@ -5047,6 +4715,212 @@ It is permitted to have @code{image_index} equal the current image; the memory
 to get and the memory to store the data may (partially) overlap.  The
 implementation has to take care that it handles this case, e.g. using
 @code{memmove} which handles (partially) overlapping memory.
+@end table
+
+
+@node _gfortran_caf_is_present_on_remote
+@subsection @code{_gfortran_caf_is_present_on_remote} --- Check that a coarray or a part of it is allocated on the remote image
+@cindex Coarray, _gfortran_caf_is_present_on_remote
+
+@table @asis
+@item @emph{Description}:
+Check if an allocatable coarray or a component of a derived type coarray is
+allocated on the remote image identified by the @var{image_index}.  The check
+is done by calling routine on the remote side.
+
+@item @emph{Syntax}:
+@code{int32_t _gfortran_caf_is_present_on_remote (caf_token_t token,
+const int image_index, const int is_present_index, void *add_data,
+const size_t add_data_size)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number.  @code{this_image ()} is valid.
+@item @var{is_present_index} @tab intent(in)  The index of the accessor to
+execute as returned by @code{_gfortran_caf_get_remote_function_index ()}.
+@item @var{add_data} @tab intent(inout)  Additional data needed in the accessor.
+I.e., when an array reference uses a local variable @var{v}, it is transported
+in this structure and all references in the accessor are rewritten to access the
+member.  The data in the structure of @var{add_data} may be changed by the
+accessor, but these changes are lost to the calling Fortran program.
+@item @var{add_data_size} @tab intent(in)  The size of the @var{add_data}
+structure.
+@end multitable
+@end table
+
+
+@node _gfortran_caf_send_to_remote
+@subsection @code{_gfortran_caf_send_to_remote} --- Send data to a remote image using a remote side accessor to store it
+@cindex Coarray, _gfortran_caf_send_to_remote
+
+@table @asis
+@item @emph{Description}:
+Called to send a scalar, an array section or a whole array to a remote image
+identified by the @var{image_index}. The call modifies the memory of the remote
+image.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_send_to_remote (caf_token_t token,
+gfc_descriptor_t *opt_dst_desc, const size_t *opt_dst_charlen,
+const int image_index, const size_t src_size, const void *src_data,
+size_t *opt_src_charlen, const gfc_descriptor_t *opt_src_desc,
+const int setter_index, void *add_data, const size_t add_data_size, int *stat,
+caf_team_t *team, int *team_number)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{token} @tab intent(in)  An opaque pointer identifying the coarray.
+@item @var{opt_dst_desc} @tab intent(inout)  A pointer to the descriptor when
+the object identified by @var{token} is an array with a descriptor.  The
+parameter needs to be set to @code{NULL}, when @var{token} identifies a scalar
+or is an array without a descriptor.
+@item @var{opt_dst_charlen} @tab intent(in) When the object to send is a char
+array with deferred length, then this parameter needs to be set to point to its
+length.  Else the parameter needs to be set to @code{NULL}.
+@item @var{image_index} @tab intent(in)  The ID of the remote image; must be a
+positive number.  @code{this_image ()} is valid.
+@item @var{src_size} @tab intent(in) The size of data expected to be transferred
+to the remote image.  If the data type to get is a string or string array,
+then this needs to be set to the byte size of each character, i.e. @code{4} for
+a @code{CHARACTER (KIND=4)} string.  The length of the string is then given
+in @code{opt_src_charlen} (also for string arrays).
+@item @var{src_data} @tab intent(in) A pointer the data to be send to the remote
+image.  When a descriptor is provided in @code{opt_src_desc} then this parameter
+can be ignored by the library implementing the coarray functionality.
+@item @var{opt_src_charlen} @tab intent(in)  When a char array is send, this
+parameter is set to its length.
+@item @var{opt_src_desc} @tab intent(in)  When a descriptor array is send, then
+this parameter gives the handle.
+@item @var{setter_index} @tab intent(in)  The index of the accessor to execute
+as returned by @code{_gfortran_caf_get_remote_function_index ()}.
+@item @var{add_data} @tab intent(inout)  Additional data needed in the accessor.
+I.e., when an array reference uses a local variable @var{v}, it is transported
+in this structure and all references in the accessor are rewritten to access the
+member.  The data in the structure of @var{add_data} may be changed by the
+accessor, but these changes are lost to the calling Fortran program.
+@item @var{add_data_size} @tab intent(in)  The size of the @var{add_data}
+structure.
+@item @var{stat} @tab intent(out) When non-@code{NULL} give the result of the
+operation, i.e., zero on success and non-zero on error.  When @code{NULL} and an
+error occurs, then an error message is printed and the program is terminated.
+@item @var{team} @tab intent(in)  The opaque team handle as returned by
+@code{FORM TEAM}.  Unused at the moment.
+@item @var{team_number} @tab intent(in)  The number of the team this access is
+to be part of.  Unused at the moment.
+@end multitable
+
+@item @emph{NOTES}
+It is permitted to have @code{image_index} equal the current image; the memory
+to send the data to and the memory to read for the data may (partially) overlap.
+The implementation has to take care that it handles this case, e.g. using
+@code{memmove} which handles (partially) overlapping memory.
+@end table
+
+
+@node _gfortran_caf_transfer_between_remotes
+@subsection @code{_gfortran_caf_transfer_between_remotes} --- Initiate data transfer between to remote images
+@cindex Coarray, _gfortran_caf_transfer_between_remotes
+
+@table @asis
+@item @emph{Description}:
+Initiates a transfer of data from one remote image to another remote image.
+The call modifies the memory of the receiving remote image given by
+@code{dst_image_index}.  The @code{src_image_index}'s memory is not modified.
+The call returns when the transfer has commenced.
+
+@item @emph{Syntax}:
+@code{void _gfortran_caf_transfer_between_remotes (caf_token_t dst_token,
+gfc_descriptor_t *opt_dst_desc, size_t *opt_dst_charlen,
+const int dst_image_index, const int dst_access_index, void *dst_add_data,
+const size_t dst_add_data_size, caf_token_t src_token,
+const gfc_descriptor_t *opt_src_desc, const size_t *opt_src_charlen,
+const int src_image_index, const int src_access_index, void *src_add_data,
+const size_t src_add_data_size, const size_t src_size,
+const bool scalar_transfer, int *dst_stat, int *src_stat, caf_team_t *dst_team,
+int *dst_team_number, caf_team_t *src_team, int *src_team_number)
+}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{dst_token} @tab intent(in)  An opaque pointer identifying the coarray
+on the receiving image.
+@item @var{opt_dst_desc} @tab intent(inout)  A pointer to the descriptor when
+the object identified by @var{dst_token} is an array with a descriptor.  The
+parameter needs to be set to @code{NULL}, when @var{dst_token} identifies a
+scalar or is an array without a descriptor.
+@item @var{opt_dst_charlen} @tab intent(in) When the object to modify on the
+receiving image is a char array with deferred length, then this parameter needs
+to be set to point to its length.  Else the parameter needs to be set to
+@code{NULL}.
+@item @var{dst_image_index} @tab intent(in)  The ID of the receiving/destination
+remote image; must be a positive number.  @code{this_image ()} is valid.
+@item @var{dst_access_index} @tab intent(in)  The index of the accessor to
+execute on the receiving image as returned by
+@code{_gfortran_caf_get_remote_function_index ()}.
+@item @var{dst_add_data} @tab intent(inout)  Additional data needed in the
+accessor on the receiving side.  I.e., when an array reference uses a local
+variable @var{v}, it is transported in this structure and all references in the
+accessor are rewritten to access the member.  The data in the structure of
+@var{dst_add_data} may be changed by the accessor, but these changes are lost to
+the calling Fortran program.
+@item @var{dst_add_data_size} @tab intent(in)  The size of the
+@var{dst_add_data} structure.
+@item @var{src_token} @tab intent(in)  An opaque pointer identifying the coarray
+on the sending image.
+@item @var{opt_src_desc} @tab intent(inout)  A pointer to the descriptor when
+the object identified by @var{src_token} is an array with a descriptor.  The
+parameter needs to be set to @code{NULL}, when @var{src_token} identifies a
+scalar or is an array without a descriptor.
+@item @var{opt_src_charlen} @tab intent(in) When the object to get from the
+source image is a char array with deferred length, then this parameter needs
+to be set to point to its length.  Else the parameter needs to be set to
+@code{NULL}.
+@item @var{src_image_index} @tab intent(in)  The ID of the sending/source
+remote image; must be a positive number.  @code{this_image ()} is valid.
+@item @var{src_access_index} @tab intent(in)  The index of the accessor to
+execute on the sending image as returned by
+@code{_gfortran_caf_get_remote_function_index ()}.
+@item @var{src_add_data} @tab intent(inout)  Additional data needed in the
+accessor on the sending side.  I.e., when an array reference uses a local
+variable @var{v}, it is transported in this structure and all references in the
+accessor are rewritten to access the member.  The data in the structure of
+@var{src_add_data} may be changed by the accessor, but these changes are lost to
+the calling Fortran program.
+@item @var{src_add_data_size} @tab intent(in)  The size of the
+@var{src_add_data} structure.
+@item @var{src_size} @tab intent(in) The size of data expected to be transferred
+between the images.  If the data type to get is a string or string array,
+then this needs to be set to the byte size of each character, i.e. @code{4} for
+a @code{CHARACTER (KIND=4)} string.  The length of the string is then given
+in @code{opt_src_charlen} and @code{opt_dst_charlen} (also for string arrays).
+@item @var{scalar_transfer} @tab intent(in)  Is set to true when the data to be
+transfered between the two images is not an array with a descriptor.
+@item @var{dst_stat} @tab intent(out) When non-@code{NULL} give the result of
+the operation on the receiving side, i.e., zero on success and non-zero on
+error.  When @code{NULL} and an error occurs, then an error message is printed
+and the program is terminated.
+@item @var{src_stat} @tab intent(out) When non-@code{NULL} give the result of
+the operation on the sending side, i.e., zero on success and non-zero on error.
+When @code{NULL} and an error occurs, then an error message is printed and the
+program is terminated.
+@item @var{dst_team} @tab intent(in)  The opaque team handle as returned by
+@code{FORM TEAM}.  Unused at the moment.
+@item @var{dst_team_number} @tab intent(in)  The number of the team this access
+is to be part of.  Unused at the moment.
+@item @var{src_team} @tab intent(in)  The opaque team handle as returned by
+@code{FORM TEAM}.  Unused at the moment.
+@item @var{src_team_number} @tab intent(in)  The number of the team this access
+is to be part of.  Unused at the moment.
+@end multitable
+
+@item @emph{NOTES}
+It is permitted to have both @code{dst_image_index} and @code{src_image_index}
+equal the current image; the memory to send the data to and the memory to read
+for the data may (partially) overlap.  The implementation has to take care that
+it handles this case, e.g. using @code{memmove} which handles (partially)
+overlapping memory.
 @end table
 
 

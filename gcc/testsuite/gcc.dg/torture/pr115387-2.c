@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 
 #include <stddef.h>
-#include <stdint-gcc.h>
+#include <stdint.h>
 
 char *
 test (char *string, size_t maxlen)

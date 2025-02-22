@@ -52,13 +52,13 @@ fortran-warn = $(STRICT_WARN)
 # from the parse tree to GENERIC
 
 F95_PARSER_OBJS = fortran/arith.o fortran/array.o fortran/bbt.o \
-    fortran/check.o fortran/class.o fortran/constructor.o fortran/cpp.o \
-    fortran/data.o fortran/decl.o fortran/dump-parse-tree.o fortran/error.o \
-    fortran/expr.o fortran/interface.o fortran/intrinsic.o fortran/io.o \
-    fortran/iresolve.o fortran/match.o fortran/matchexp.o fortran/misc.o \
-    fortran/module.o fortran/openmp.o fortran/options.o fortran/parse.o \
-    fortran/primary.o fortran/resolve.o fortran/scanner.o fortran/simplify.o \
-    fortran/st.o fortran/symbol.o fortran/target-memory.o
+    fortran/check.o fortran/class.o fortran/coarray.o fortran/constructor.o \
+    fortran/cpp.o fortran/data.o fortran/decl.o fortran/dump-parse-tree.o \
+    fortran/error.o fortran/expr.o fortran/interface.o fortran/intrinsic.o \
+    fortran/io.o fortran/iresolve.o fortran/match.o fortran/matchexp.o \
+    fortran/misc.o fortran/module.o fortran/openmp.o fortran/options.o \
+    fortran/parse.o fortran/primary.o fortran/resolve.o fortran/scanner.o \
+    fortran/simplify.o fortran/st.o fortran/symbol.o fortran/target-memory.o
 
 F95_OBJS = $(F95_PARSER_OBJS) $(FORTRAN_TARGET_OBJS) \
     fortran/convert.o fortran/dependency.o fortran/f95-lang.o \

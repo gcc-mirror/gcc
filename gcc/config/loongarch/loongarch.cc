@@ -1846,6 +1846,28 @@ loongarch_const_vector_shuffle_set_p (rtx op, machine_mode mode)
   return true;
 }
 
+rtx
+loongarch_const_vector_vrepli (rtx x, machine_mode mode)
+{
+  int size = GET_MODE_SIZE (mode);
+
+  if (GET_CODE (x) != CONST_VECTOR
+      || GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
+    return NULL_RTX;
+
+  for (scalar_int_mode elem_mode: {QImode, HImode, SImode, DImode})
+    {
+      machine_mode new_mode =
+	mode_for_vector (elem_mode, size / GET_MODE_SIZE (elem_mode))
+	  .require ();
+      rtx op = lowpart_subreg (new_mode, x, mode);
+      if (loongarch_const_vector_same_int_p (op, new_mode, -512, 511))
+	return op;
+    }
+
+  return NULL_RTX;
+}
+
 /* Return true if rtx constants of mode MODE should be put into a small
    data section.  */
 
@@ -2501,7 +2523,7 @@ loongarch_const_insns (rtx x)
     case CONST_VECTOR:
       if ((LSX_SUPPORTED_MODE_P (GET_MODE (x))
 	   || LASX_SUPPORTED_MODE_P (GET_MODE (x)))
-	  && loongarch_const_vector_same_int_p (x, GET_MODE (x), -512, 511))
+	  && loongarch_const_vector_vrepli (x, GET_MODE (x)))
 	return 1;
       /* Fall through.  */
     case CONST_DOUBLE:
@@ -4656,7 +4678,7 @@ loongarch_split_vector_move_p (rtx dest, rtx src)
   /* Check for vector set to an immediate const vector with valid replicated
      element.  */
   if (FP_REG_RTX_P (dest)
-      && loongarch_const_vector_same_int_p (src, GET_MODE (src), -512, 511))
+      && loongarch_const_vector_vrepli (src, GET_MODE (src)))
     return false;
 
   /* Check for vector load zero immediate.  */
@@ -4792,13 +4814,15 @@ loongarch_output_move (rtx *operands)
       && src_code == CONST_VECTOR
       && CONST_INT_P (CONST_VECTOR_ELT (src, 0)))
     {
-      gcc_assert (loongarch_const_vector_same_int_p (src, mode, -512, 511));
+      operands[1] = loongarch_const_vector_vrepli (src, mode);
+      gcc_assert (operands[1]);
+
       switch (GET_MODE_SIZE (mode))
 	{
 	case 16:
-	  return "vrepli.%v0\t%w0,%E1";
+	  return "vrepli.%v1\t%w0,%E1";
 	case 32:
-	  return "xvrepli.%v0\t%u0,%E1";
+	  return "xvrepli.%v1\t%u0,%E1";
 	default: gcc_unreachable ();
 	}
     }
@@ -6250,6 +6274,10 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (op));
       else
 	output_operand_lossage ("invalid use of '%%%c'", letter);
+      break;
+
+    case 'O':
+      fprintf (file, "%s", INTVAL (XVECEXP (op, 0, 0)) ? "od" : "ev");
       break;
 
     case 'F':
@@ -11085,6 +11113,18 @@ loongarch_builtin_support_vector_misalignment (machine_mode mode,
     }
   return default_builtin_support_vector_misalignment (mode, type, misalignment,
 						      is_packed);
+}
+
+/* Return a PARALLEL containing NELTS elements, with element I equal
+   to BASE + I * STEP.  */
+rtx
+loongarch_gen_stepped_int_parallel (unsigned int nelts, int base,
+				    int step)
+{
+  rtvec vec = rtvec_alloc (nelts);
+  for (unsigned int i = 0; i < nelts; i++)
+    RTVEC_ELT (vec, i) = GEN_INT (base + i * step);
+  return gen_rtx_PARALLEL (VOIDmode, vec);
 }
 
 /* Implement TARGET_C_MODE_FOR_FLOATING_TYPE.  Return TFmode or DFmode

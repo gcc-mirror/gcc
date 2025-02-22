@@ -1,3 +1,8 @@
+2025-02-18  Roman Kagan  <rkagan@amazon.de>
+
+	* config/i386/linux-unwind.h: Remove preprocessor
+	condition to enable fallback path for all libc-s.
+
 2025-02-17  Lulu Cheng  <chenglulu@loongson.cn>
 
 	PR target/118844

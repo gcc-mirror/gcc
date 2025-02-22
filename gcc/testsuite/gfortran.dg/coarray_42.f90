@@ -11,11 +11,11 @@ program Jac
 
   allocate(D[2,2,*])
   allocate(D%endsi(2), source = 0)
-  ! Lhs may be reallocate, so caf_send_by_ref needs to be used.
+  ! Lhs may be reallocate. Due to new communication pattern no send.
   D%endsi = D%n
   if (any(D%endsi /= [ 64, 64])) error stop
   deallocate(D)
 end program
 
-! { dg-final { scan-tree-dump-times "caf_send_by_ref" 1 "original" } }
+! { dg-final { scan-tree-dump-not "caf_send" "original" } }
 

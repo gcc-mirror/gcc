@@ -1484,7 +1484,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /// rank
-#if _GLIBCXX_USE_BUILTIN_TRAIT(__array_rank)
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__array_rank) \
+  && (!defined(__clang__) || __clang_major__ >= 20) // PR118559
   template<typename _Tp>
     struct rank
     : public integral_constant<std::size_t, __array_rank(_Tp)> { };
@@ -3656,7 +3657,8 @@ template <typename _Tp>
 template <typename _Tp>
   inline constexpr size_t alignment_of_v = alignment_of<_Tp>::value;
 
-#if _GLIBCXX_USE_BUILTIN_TRAIT(__array_rank)
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__array_rank) \
+  && (!defined(__clang__) || __clang_major__ >= 20) // PR118559
 template <typename _Tp>
   inline constexpr size_t rank_v = __array_rank(_Tp);
 #else

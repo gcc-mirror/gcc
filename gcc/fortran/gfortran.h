@@ -456,7 +456,9 @@ enum gfc_isym_id
   GFC_ISYM_BLT,
   GFC_ISYM_BTEST,
   GFC_ISYM_CAF_GET,
+  GFC_ISYM_CAF_IS_PRESENT_ON_REMOTE,
   GFC_ISYM_CAF_SEND,
+  GFC_ISYM_CAF_SENDGET,
   GFC_ISYM_CEILING,
   GFC_ISYM_CHAR,
   GFC_ISYM_CHDIR,
@@ -3974,6 +3976,8 @@ const char* gfc_lookup_function_fuzzy (const char *, gfc_symtree *);
 bool gfc_pure_function (gfc_expr *e, const char **name);
 bool gfc_implicit_pure_function (gfc_expr *e);
 
+/* coarray.cc */
+void gfc_coarray_rewrite (gfc_namespace *);
 
 /* array.cc */
 gfc_iterator *gfc_copy_iterator (gfc_iterator *);

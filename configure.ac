@@ -676,6 +676,21 @@ if test "${ENABLE_LIBSTDCXX}" = "default" ; then
   esac
 fi
 
+# Disable Ada/GNAT on systems where it is known to not work.
+# For testing, you can override this with --enable-languages=ada.
+case ,${enable_languages}, in
+  *,ada,*)
+    ;;
+  *)
+      case "${target}" in
+        amdgcn*-*-* \
+        | nvptx*-*-* )
+          unsupported_languages="$unsupported_languages ada"
+          ;;
+      esac
+      ;;
+esac
+
 # Disable C++ on systems where it is known to not work.
 # For testing, you can override this with --enable-languages=c++.
 case ,${enable_languages}, in
@@ -702,6 +717,16 @@ case ,${enable_languages}, in
           ;;
       esac
       ;;
+esac
+
+# Disable libobjc for some systems where it is known to not work.
+case "${target}" in
+  amdgcn*-*-*)
+    noconfigdirs="$noconfigdirs target-libobjc"
+    ;;
+  nvptx*-*-*)
+    noconfigdirs="$noconfigdirs target-libobjc"
+    ;;
 esac
 
 # Disable D on systems where it is known to not work.
@@ -781,6 +806,9 @@ case "${target}" in
   alpha*-*-*vms*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
+  amdgcn*-*-*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
   arm*-*-freebsd*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
@@ -822,6 +850,9 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
   mmix-*-*)
+    noconfigdirs="$noconfigdirs target-libffi"
+    ;;
+  nvptx*-*-*)
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
   powerpc-*-aix*)
@@ -871,9 +902,15 @@ if test x$enable_libgo = x; then
     *-*-cygwin* | *-*-mingw*)
 	noconfigdirs="$noconfigdirs target-libgo"
 	;;
+    amdgcn*-*-*)
+	noconfigdirs="$noconfigdirs target-libgo"
+	;;
     bpf-*-*)
         noconfigdirs="$noconfigdirs target-libgo"
         ;;
+    nvptx*-*-*)
+	noconfigdirs="$noconfigdirs target-libgo"
+	;;
     esac
 fi
 
@@ -1275,7 +1312,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gprof"
     ;;
   nvptx*-*-*)
-    noconfigdirs="$noconfigdirs target-libssp target-libstdc++-v3 target-libobjc"
+    noconfigdirs="$noconfigdirs target-libssp target-libstdc++-v3"
     ;;
   sh-*-*)
     case "${target}" in

@@ -89,98 +89,6 @@ typedef struct caf_static_t {
 }
 caf_static_t;
 
-/* When there is a vector subscript in this dimension, nvec == 0, otherwise,
-   lower_bound, upper_bound, stride contains the bounds relative to the declared
-   bounds; kind denotes the integer kind of the elements of vector[].  */
-typedef struct caf_vector_t {
-  size_t nvec;
-  union {
-    struct {
-      void *vector;
-      int kind;
-    } v;
-    struct {
-      ptrdiff_t lower_bound, upper_bound, stride;
-    } triplet;
-  } u;
-}
-caf_vector_t;
-
-typedef enum caf_ref_type_t {
-  /* Reference a component of a derived type, either regular one or an
-     allocatable or pointer type.  For regular ones idx in caf_reference_t is
-     set to -1.  */
-  CAF_REF_COMPONENT,
-  /* Reference an allocatable array.  */
-  CAF_REF_ARRAY,
-  /* Reference a non-allocatable/non-pointer array.  */
-  CAF_REF_STATIC_ARRAY
-} caf_ref_type_t;
-
-typedef enum caf_array_ref_t {
-  /* No array ref.  This terminates the array ref.  */
-  CAF_ARR_REF_NONE = 0,
-  /* Reference array elements given by a vector.  Only for this mode
-     caf_reference_t.u.a.dim[i].v is valid.  */
-  CAF_ARR_REF_VECTOR,
-  /* A full array ref (:).  */
-  CAF_ARR_REF_FULL,
-  /* Reference a range on elements given by start, end and stride.  */
-  CAF_ARR_REF_RANGE,
-  /* Only a single item is referenced given in the start member.  */
-  CAF_ARR_REF_SINGLE,
-  /* An array ref of the kind (i:), where i is an arbitrary valid index in the
-     array.  The index i is given in the start member.  */
-  CAF_ARR_REF_OPEN_END,
-  /* An array ref of the kind (:i), where the lower bound of the array ref
-     is given by the remote side.  The index i is given in the end member.  */
-  CAF_ARR_REF_OPEN_START
-} caf_array_ref_t;
-
-/* References to remote components of a derived type.  */
-typedef struct caf_reference_t {
-  /* A pointer to the next ref or NULL.  */
-  struct caf_reference_t *next;
-  /* The type of the reference.  */
-  /* caf_ref_type_t, replaced by int to allow specification in fortran FE.  */
-  int type;
-  /* The size of an item referenced in bytes.  I.e. in an array ref this is
-     the factor to advance the array pointer with to get to the next item.
-     For component refs this gives just the size of the element referenced.  */
-  size_t item_size;
-  union {
-    struct {
-      /* The offset (in bytes) of the component in the derived type.  */
-      ptrdiff_t offset;
-      /* The offset (in bytes) to the caf_token associated with this
-	 component.  NULL, when not allocatable/pointer ref.  */
-      ptrdiff_t caf_token_offset;
-    } c;
-    struct {
-      /* The mode of the array ref.  See CAF_ARR_REF_*.  */
-      /* caf_array_ref_t, replaced by unsigend char to allow specification in
-	 fortran FE.  */
-      unsigned char mode[GFC_MAX_DIMENSIONS];
-      /* The type of a static array.  Unset for array's with descriptors.  */
-      int static_array_type;
-      /* Subscript refs (s) or vector refs (v).  */
-      union {
-	struct {
-	  /* The start and end boundary of the ref and the stride.  */
-	  index_type start, end, stride;
-	} s;
-	struct {
-	  /* nvec entries of kind giving the elements to reference.  */
-	  void *vector;
-	  /* The number of entries in vector.  */
-	  size_t nvec;
-	  /* The integer kind used for the elements in vector.  */
-	  int kind;
-	} v;
-      } dim[GFC_MAX_DIMENSIONS];
-    } a;
-  } u;
-} caf_reference_t;
 
 void _gfortran_caf_init (int *, char ***);
 void _gfortran_caf_finalize (void);
@@ -213,47 +121,45 @@ void _gfortran_caf_co_max (gfc_descriptor_t *, int, int *, char *, int, size_t);
 void _gfortran_caf_co_reduce (gfc_descriptor_t *, void* (*) (void *, void*),
 			      int, int, int *, char *, int, size_t);
 
-void _gfortran_caf_get (caf_token_t, size_t, int, gfc_descriptor_t *,
-			caf_vector_t *, gfc_descriptor_t *, int, int, bool,
-			int *);
-void _gfortran_caf_send (caf_token_t, size_t, int, gfc_descriptor_t *,
-			 caf_vector_t *, gfc_descriptor_t *, int, int, bool,
-			 int *);
-void _gfortran_caf_sendget (caf_token_t, size_t, int, gfc_descriptor_t *,
-			    caf_vector_t *, caf_token_t, size_t, int,
-			    gfc_descriptor_t *, caf_vector_t *, int, int, bool);
-
-void _gfortran_caf_get_by_ref (caf_token_t token, int image_idx,
-	gfc_descriptor_t *dst, caf_reference_t *refs, int dst_kind,
-	int src_kind, bool may_require_tmp, bool dst_reallocatable, int *stat,
-	int src_type);
-void _gfortran_caf_send_by_ref (caf_token_t token, int image_index,
-	gfc_descriptor_t *src, caf_reference_t *refs, int dst_kind,
-	int src_kind, bool may_require_tmp, bool dst_reallocatable, int *stat,
-	int dst_type);
-void _gfortran_caf_sendget_by_ref (
-	caf_token_t dst_token, int dst_image_index, caf_reference_t *dst_refs,
-	caf_token_t src_token, int src_image_index, caf_reference_t *src_refs,
-	int dst_kind, int src_kind, bool may_require_tmp, int *dst_stat,
-	int *src_stat, int dst_type, int src_type);
-
-void _gfortran_caf_register_accessor (const int hash,
-				      void (*accessor) (void **, int32_t *,
-							void *, void *,
-							const size_t *,
-							size_t *));
+void _gfortran_caf_register_accessor (
+  const int hash,
+  void (*accessor) (void *, const int *, void **, int32_t *, void *,
+		    caf_token_t, const size_t, size_t *, const size_t *));
 
 void _gfortran_caf_register_accessors_finish (void);
 
 int _gfortran_caf_get_remote_function_index (const int hash);
 
-void _gfortran_caf_get_by_ct (
-	caf_token_t token, const gfc_descriptor_t *opt_src_desc,
-	const size_t *opt_src_charlen, const int image_index,
-	const size_t dst_size, void **dst_data, size_t *opt_dst_charlen,
-	gfc_descriptor_t *opt_dst_desc, const bool may_realloc_dst,
-	const int getter_index, void *get_data, const size_t get_data_size,
-	int *stat, caf_team_t *team, int *team_number);
+void _gfortran_caf_get_from_remote (
+  caf_token_t token, const gfc_descriptor_t *opt_src_desc,
+  const size_t *opt_src_charlen, const int image_index, const size_t dst_size,
+  void **dst_data, size_t *opt_dst_charlen, gfc_descriptor_t *opt_dst_desc,
+  const bool may_realloc_dst, const int accessor_index, void *add_data,
+  const size_t add_data_size, int *stat, caf_team_t *team, int *team_number);
+
+int32_t _gfortran_caf_is_present_on_remote (caf_token_t token, int, int,
+					    void *add_data,
+					    const size_t add_data_size);
+
+void _gfortran_caf_send_to_remote (
+  caf_token_t token, gfc_descriptor_t *opt_dst_desc,
+  const size_t *opt_dst_charlen, const int image_index, const size_t src_size,
+  const void *src_data, const size_t *opt_src_charlen,
+  const gfc_descriptor_t *opt_src_desc, const int accessor_index,
+  void *add_data, const size_t add_data_size, int *stat, caf_team_t *team,
+  int *team_number);
+
+void _gfortran_caf_transfer_between_remotes (
+  caf_token_t dst_token, gfc_descriptor_t *opt_dst_desc,
+  size_t *opt_dst_charlen, const int dst_image_index,
+  const int dst_access_index, void *dst_add_data,
+  const size_t dst_add_data_size, caf_token_t src_token,
+  const gfc_descriptor_t *opt_src_desc, const size_t *opt_src_charlen,
+  const int src_image_index, const int src_access_index, void *src_add_data,
+  const size_t src_add_data_size, const size_t src_size,
+  const bool scalar_transfer, int *dst_stat, int *src_stat,
+  caf_team_t *dst_team, int *dst_team_number, caf_team_t *src_team,
+  int *src_team_number);
 
 void _gfortran_caf_atomic_define (caf_token_t, size_t, int, void *, int *,
 				  int, int);
@@ -276,8 +182,6 @@ int _gfortran_caf_image_status (int, caf_team_t * __attribute__ ((unused)));
 void _gfortran_caf_stopped_images (gfc_descriptor_t *,
 				   caf_team_t * __attribute__ ((unused)),
 				   int *);
-
-int _gfortran_caf_is_present (caf_token_t, int, caf_reference_t *);
 
 void _gfortran_caf_random_init (bool, bool);
 
