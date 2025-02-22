@@ -1489,22 +1489,44 @@ expand_const_vector (rtx target, rtx src)
 
 		  EEW = 32, { 2, 4, ... }.
 
-	     This only works as long as the larger type does not overflow
-	     as we can't guarantee a zero value for each second element
-	     of the sequence with smaller EEW.
-	     ??? For now we assume that no overflow happens with positive
-	     steps and forbid negative steps altogether.  */
+	     Both the series1 and series2 may overflow before taking the IOR
+	     to generate the final result.  However, only series1 matters
+	     because the series2 will shift before IOR, thus the overflow
+	     bits will never pollute the final result.
+
+	     For now we forbid the negative steps and overflow, and they
+	     will fall back to the default merge way to generate the
+	     const_vector.  */
+
 	  unsigned int new_smode_bitsize = builder.inner_bits_size () * 2;
 	  scalar_int_mode new_smode;
 	  machine_mode new_mode;
 	  poly_uint64 new_nunits
 	    = exact_div (GET_MODE_NUNITS (builder.mode ()), 2);
+
+	  poly_int64 base1_poly = rtx_to_poly_int64 (base1);
+	  bool overflow_smode_p = false;
+
+	  if (!step1.is_constant ())
+	    overflow_smode_p = true;
+	  else
+	    {
+	      int elem_count = XVECLEN (src, 0);
+	      uint64_t step1_val = step1.to_constant ();
+	      uint64_t base1_val = base1_poly.to_constant ();
+	      uint64_t elem_val = base1_val + (elem_count - 1) * step1_val;
+
+	      if ((elem_val >> builder.inner_bits_size ()) != 0)
+		overflow_smode_p = true;
+	    }
+
 	  if (known_ge (step1, 0) && known_ge (step2, 0)
 	      && int_mode_for_size (new_smode_bitsize, 0).exists (&new_smode)
-	      && get_vector_mode (new_smode, new_nunits).exists (&new_mode))
+	      && get_vector_mode (new_smode, new_nunits).exists (&new_mode)
+	      && !overflow_smode_p)
 	    {
 	      rtx tmp1 = gen_reg_rtx (new_mode);
-	      base1 = gen_int_mode (rtx_to_poly_int64 (base1), new_smode);
+	      base1 = gen_int_mode (base1_poly, new_smode);
 	      expand_vec_series (tmp1, base1, gen_int_mode (step1, new_smode));
 
 	      if (rtx_equal_p (base2, const0_rtx) && known_eq (step2, 0))
