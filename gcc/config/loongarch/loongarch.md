@@ -1773,21 +1773,23 @@
 
 ;; This attribute used for get connection of scalar mode and corresponding
 ;; vector mode.
-(define_mode_attr cntmap [(SI "v4si") (DI "v2di")])
+(define_mode_attr cntmap [(SI "V4SI") (DI "V2DI")])
 
-(define_expand "popcount<mode>2"
-  [(set (match_operand:GPR 0 "register_operand")
-	(popcount:GPR (match_operand:GPR 1 "register_operand")))]
+(define_insn_and_split "popcount<mode>2"
+  [(set (match_operand:GPR 0 "register_operand" "=f")
+	(popcount:GPR (match_operand:GPR 1 "register_operand" "f")))]
   "ISA_HAS_LSX"
+  "#"
+  ;; Do the split very lately to work around init-regs unneeded zero-
+  ;; initialization from init-regs.  See PR61810 and all the referenced
+  ;; issues.
+  "&& reload_completed"
+  [(set (match_operand:<cntmap> 0 "register_operand" "=f")
+	(popcount:<cntmap>
+	  (match_operand:<cntmap> 1 "register_operand" "f")))]
 {
-  rtx in = operands[1];
-  rtx out = operands[0];
-  rtx vreg = <MODE>mode == SImode ? gen_reg_rtx (V4SImode) :
-				    gen_reg_rtx (V2DImode);
-  emit_insn (gen_lsx_vinsgr2vr_<size> (vreg, in, vreg, GEN_INT (1)));
-  emit_insn (gen_popcount<cntmap>2 (vreg, vreg));
-  emit_insn (gen_lsx_vpickve2gr_<size> (out, vreg, GEN_INT (0)));
-  DONE;
+  operands[0] = gen_rtx_REG (<cntmap>mode, REGNO (operands[0]));
+  operands[1] = gen_rtx_REG (<cntmap>mode, REGNO (operands[1]));
 })
 
 ;;
