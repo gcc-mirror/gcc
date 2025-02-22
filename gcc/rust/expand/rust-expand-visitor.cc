@@ -722,6 +722,12 @@ ExpandVisitor::visit (AST::TypeBoundWhereClauseItem &item)
 }
 
 void
+ExpandVisitor::visit (AST::Module &module)
+{
+  expand_inner_items (module.get_items ());
+}
+
+void
 ExpandVisitor::visit (AST::ExternCrate &crate)
 {}
 
