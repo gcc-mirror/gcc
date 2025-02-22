@@ -729,8 +729,6 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
-  NodeId get_pattern_node_id () const { return get_node_id (); }
-
   PathExprSegment &get_final_segment () { return get_segments ().back (); }
   const PathExprSegment &get_final_segment () const
   {
