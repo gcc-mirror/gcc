@@ -2267,6 +2267,13 @@ extern unsigned int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER];
   } while (0)
 #endif
 
+/* In Intel syntax, we have to quote user-defined labels that would
+   match (unprefixed) registers or operators.  */
+
+#undef ASM_OUTPUT_LABELREF
+#define ASM_OUTPUT_LABELREF(STREAM, NAME)	\
+  ix86_asm_output_labelref ((STREAM), user_label_prefix, (NAME))
+
 /* Under some conditions we need jump tables in the text section,
    because the assembler cannot handle label differences between
    sections.  */

@@ -1716,6 +1716,19 @@ ix86_asm_output_function_label (FILE *out_file, const char *fname,
     }
 }
 
+/* Output a user-defined label.  In AT&T syntax, registers are prefixed
+   with %, so labels require no punctuation.  In Intel syntax, registers
+   are unprefixed, so labels may clash with registers or other operators,
+   and require quoting.  */
+void
+ix86_asm_output_labelref (FILE *file, const char *prefix, const char *label)
+{
+  if (ASSEMBLER_DIALECT == ASM_ATT)
+    fprintf (file, "%s%s", prefix, label);
+  else
+    fprintf (file, "\"%s%s\"", prefix, label);
+}
+
 /* Implementation of call abi switching target hook. Specific to FNDECL
    the specific call register sets are set.  See also
    ix86_conditional_register_usage for more details.  */

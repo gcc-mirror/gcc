@@ -246,9 +246,10 @@ do {							\
 #undef ASM_OUTPUT_LABELREF
 #define  ASM_OUTPUT_LABELREF(STREAM, NAME)	\
 do {						\
+  const char *prefix = "";			\
   if ((NAME)[0] != FASTCALL_PREFIX)		\
-    fputs (user_label_prefix, (STREAM));	\
-  fputs ((NAME), (STREAM));			\
+    prefix = user_label_prefix;			\
+  ix86_asm_output_labelref ((STREAM), prefix, (NAME));	\
 } while (0)
 
 /* This does much the same in memory rather than to a stream.  */

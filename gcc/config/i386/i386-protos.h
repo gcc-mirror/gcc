@@ -199,6 +199,7 @@ extern int ix86_attr_length_vex_default (rtx_insn *, bool, bool);
 extern rtx ix86_libcall_value (machine_mode);
 extern bool ix86_function_arg_regno_p (int);
 extern void ix86_asm_output_function_label (FILE *, const char *, tree);
+extern void ix86_asm_output_labelref (FILE *, const char *, const char *);
 extern void ix86_call_abi_override (const_tree);
 extern int ix86_reg_parm_stack_space (const_tree);
 
