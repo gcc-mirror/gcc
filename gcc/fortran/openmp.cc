@@ -7124,7 +7124,6 @@ gfc_match_omp_declare_variant (void)
 		  else
 		    need_range = false;
 
-		  locus saved_loc2 = gfc_current_locus;
 		  gfc_gobble_whitespace ();
 		  char c = gfc_peek_ascii_char ();
 		  if (c == '+' || c == '-')
