@@ -1852,6 +1852,17 @@ set_contract_wrapper_function (tree fndecl, tree wrapper)
   decl_wrapper_fn->put (fndecl, wrapper);
 }
 
+static tree
+contracts_fixup_cdtorname (tree idin)
+{
+  const char *n = IDENTIFIER_POINTER (idin);
+  size_t l = strlen (n);
+  char *nn = xasprintf ("%.*s_", (int)l-1, n);
+  tree nid = get_identifier (nn);
+  free (nn);
+  return nid;
+}
+
 /* Build a declaration for the contract wrapper of a caller FNDECL.
    If is_cvh is true, we're wrapping a contract violation handler
    in a noexcept wrapper. Otherwise, we're making a caller side
@@ -1870,6 +1881,8 @@ build_contract_wrapper_function (tree fndecl, bool is_cvh)
   tree fnname;
   if (is_cvh)
     fnname = get_identifier ("handle_contract_violation.noexcept_wrapper");
+  else if (DECL_NAME (fndecl) && IDENTIFIER_CDTOR_P (DECL_NAME (fndecl)))
+    fnname = contracts_fixup_cdtorname (DECL_NAME (fndecl));
   else
     fnname = copy_node (DECL_NAME (fndecl));
   location_t loc = DECL_SOURCE_LOCATION (fndecl);
@@ -3476,7 +3489,10 @@ define_contract_wrapper_func (const tree& fndecl, const tree& wrapdecl, void*)
      checks are enabled for all clients.  We should not get here unless there
      are some checks to make.  */
   bool check_post = (flag_contract_nonattr_client_check > 1) || is_virtual;
-  copy_and_remap_contracts (wrapdecl, fndecl, /*remap_result*/true, check_post);
+  /* For wrappers on CDTORs we need to refer to the original contracts,
+     when the wrapper is around a clone.  */
+  copy_and_remap_contracts (wrapdecl, DECL_ORIGIN (fndecl),
+			    /*remap_result*/true, check_post);
 
   start_preparsed_function (wrapdecl, /*DECL_ATTRIBUTES*/NULL_TREE,
 			    SF_DEFAULT | SF_PRE_PARSED);
