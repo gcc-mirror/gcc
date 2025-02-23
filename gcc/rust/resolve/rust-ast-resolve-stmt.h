@@ -63,7 +63,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, constant.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	rust_error_at (r, "defined multiple times");
       });
 
     ResolveType::go (constant.get_type ());
@@ -97,7 +97,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, struct_decl.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	rust_error_at (r, "defined multiple times");
       });
 
     NodeId scope_node_id = struct_decl.get_node_id ();
@@ -128,7 +128,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, enum_decl.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	rust_error_at (r, "defined multiple times");
       });
 
     NodeId scope_node_id = enum_decl.get_node_id ();
@@ -158,7 +158,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, item.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	rust_error_at (r, "defined multiple times");
       });
 
     // Done, no fields.
@@ -178,7 +178,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, item.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	rust_error_at (r, "defined multiple times");
       });
 
     for (auto &field : item.get_tuple_fields ())
@@ -204,7 +204,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, item.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	rust_error_at (r, "defined multiple times");
       });
 
     for (auto &field : item.get_struct_fields ())
@@ -230,7 +230,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, item.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	rust_error_at (r, "defined multiple times");
       });
 
     // Done, no fields.
@@ -251,7 +251,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, struct_decl.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	rust_error_at (r, "defined multiple times");
       });
 
     NodeId scope_node_id = struct_decl.get_node_id ();
@@ -287,7 +287,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, union_decl.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	rust_error_at (r, "defined multiple times");
       });
 
     NodeId scope_node_id = union_decl.get_node_id ();
@@ -323,7 +323,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, function.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "redefined multiple times");
+	rust_error_at (r, "defined multiple times");
       });
 
     NodeId scope_node_id = function.get_node_id ();
