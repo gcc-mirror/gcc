@@ -1,3 +1,10 @@
+2025-02-22  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/bpf/bpf.md (define_expand "allocate_stack"): Emit
+	'sorry, unimplemented: dynamic stack allocation not supported'.
+	* config/nvptx/nvptx.md (define_expand "allocate_stack")
+	[!TARGET_SOFT_STACK && !(TARGET_PTX_7_3 && TARGET_SM52)]: Likewise.
+
 2025-02-21  H.J. Lu  <hjl.tools@gmail.com>
 
 	* sese.cc (debug_edge): Append a newline.

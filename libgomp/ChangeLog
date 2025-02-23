@@ -1,3 +1,9 @@
+2025-02-22  shynur  <shynur@outlook.com>
+
+	* oacc-mem.c (acc_unmap_data, goacc_exit_datum_1, find_group_last,
+	goacc_enter_data_internal): Add '__attribute__((unused))'.
+	* target.c (gomp_unmap_vars_internal): Likewise.
+
 2025-02-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/188574

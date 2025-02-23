@@ -1,3 +1,41 @@
+2025-02-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118978
+	* gm2-compiler/M2Check.mod (checkConstMeta): Add check for
+	typed constants.
+	* gm2-compiler/M2Quads.mod (BoolFrame): New field RangeDep.
+	(CheckProcedureParameters): Call PutRangeDep to associate the
+	range dependency with the parameter on the quad stack.
+	Pass ParamCheckId to CheckParameter.
+	(CheckProcTypeAndProcedure): Add ParamCheckId parameter.
+	Pass ParamCheckId to BuildRange.
+	(CheckParameter): New parameter ParamCheckId.
+	Pass ParamCheckId to CheckProcTypeAndProcedure.
+	(CheckParameterOrdinals): Add extra range dep parameter to the
+	call of InitParameterRangeCheck.
+	(ConvertBooleanToVariable): Initialize RangeDep field.
+	(PushBacktok): Ditto.
+	(OperandRangeDep): New procedure.
+	(PutRangeDep): Ditto.
+	* gm2-compiler/M2Range.def (InitTypesParameterCheck): Add new
+	parameter depRangeId.
+	(InitParameterRangeCheck): Add new parameter parentRangeId.
+	(FoldRangeCheck): Add new parameter range.
+	* gm2-compiler/M2Range.mod (InitTypesParameterCheck): Add new
+	parameter depRangeId.
+	(InitParameterRangeCheck): Add new parameter parentRangeId.
+	(FoldRangeCheck): Add new parameter range and rewrite.
+	(FoldRangeCheckLower): New procedure.
+	(Range): New field cancelled.
+	New field dependantid.
+	(PutRangeParam): Initialize dependantid.
+	(PutRangeParamAssign): Ditto.
+	(CheckCancelled): New procedure.
+	(Cancel): Ditto.
+	(IsCancelled): New procedure function.
+	(FoldTypeParam): Add depRangeId parameter.
+	(WriteRangeCheck): Add dependent debugging.
+
 2025-02-11  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/118761
