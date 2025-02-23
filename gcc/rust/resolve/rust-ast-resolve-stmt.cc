@@ -70,7 +70,7 @@ ResolveStmt::visit (AST::StaticItem &var)
     [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
       rich_location r (line_table, var.get_locus ());
       r.add_range (locus);
-      rust_error_at (r, "redefined multiple times");
+      rust_error_at (r, "defined multiple times");
     });
 
   ResolveType::go (var.get_type ());
