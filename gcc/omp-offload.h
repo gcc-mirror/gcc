@@ -26,6 +26,16 @@ extern int oacc_get_default_dim (int dim);
 extern int oacc_get_min_dim (int dim);
 extern int oacc_fn_attrib_level (tree attr);
 
+/* Used by both NVPTX/GCN OpenACC code.  */
+extern void oacc_build_indexed_ssa_loop (location_t loc, tree max_index,
+					 gimple_stmt_iterator *gsi,
+					 tree *out_loop_index,
+					 gimple_stmt_iterator *out_loop_body_code_gsi);
+extern void oacc_build_array_copy (tree dst, tree src, tree max_idx, gimple_seq *seq);
+extern void oacc_build_array_copy_loop (location_t loc, tree dst, tree src,
+					tree max_idx,
+					gimple_stmt_iterator *gsi);
+
 extern GTY(()) vec<tree, va_gc> *offload_funcs;
 extern GTY(()) vec<tree, va_gc> *offload_vars;
 extern GTY(()) vec<tree, va_gc> *offload_ind_funcs;
