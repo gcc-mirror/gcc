@@ -29,7 +29,6 @@ RUNTESTDEFAULTFLAGS = --tool $$tool --srcdir $$srcdir
 
 PWD_COMMAND = $${PWDCMD-pwd}
 
-check_p_subno=$(word 2,$(subst _, ,$*))
 check_p_numbers0:=1 2 3 4 5 6 7 8 9
 check_p_numbers1:=0 $(check_p_numbers0)
 check_p_numbers2:=$(foreach i,$(check_p_numbers0),$(addprefix $(i),$(check_p_numbers1)))
@@ -38,7 +37,7 @@ check_p_numbers4:=$(foreach i,$(check_p_numbers0),$(addprefix $(i),$(check_p_num
 check_p_numbers5:=$(addprefix 0,$(check_p_numbers3)) $(check_p_numbers4)
 check_p_numbers6:=$(foreach i,$(check_p_numbers0),$(addprefix $(i),$(check_p_numbers5)))
 check_p_numbers:=$(check_p_numbers0) $(check_p_numbers2) $(check_p_numbers4) $(check_p_numbers6)
-check_p_subdirs=$(wordlist 1,$(if $(GCC_TEST_PARALLEL_SLOTS),$(GCC_TEST_PARALLEL_SLOTS),10),$(check_p_numbers))
+check_p_subdirs=$(wordlist 1,$(if $(GCC_TEST_PARALLEL_SLOTS),$(GCC_TEST_PARALLEL_SLOTS),128),$(check_p_numbers))
 check_DEJAGNU_libphobos_targets = $(addprefix check-DEJAGNUlibphobos,$(check_p_subdirs))
 $(check_DEJAGNU_libphobos_targets): check-DEJAGNUlibphobos%: libphobos%/site.exp
 
