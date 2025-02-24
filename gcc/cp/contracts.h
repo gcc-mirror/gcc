@@ -319,6 +319,10 @@ enum contract_matching_context
   (DECL_DECLARES_FUNCTION_P (NODE) && DECL_LANG_SPECIFIC (NODE) && \
    CONTRACT_HELPER (NODE) == ldf_contract_post)
 
+#define DECL_IS_WRAPPER_FN_P(NODE) \
+  (DECL_DECLARES_FUNCTION_P (NODE) && DECL_LANG_SPECIFIC (NODE) && \
+   DECL_CONTRACT_WRAPPER (NODE))
+
 extern void remove_contract_attributes		(tree);
 extern void copy_contract_attributes		(tree, tree);
 extern void remap_contracts			(tree, tree, tree, bool);
