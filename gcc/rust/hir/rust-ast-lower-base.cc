@@ -30,6 +30,14 @@
 namespace Rust {
 namespace HIR {
 
+// We special case lowering macro invocations as that should NEVER happen
+void
+ASTLoweringBase::visit (AST::MacroInvocation &invoc)
+{
+  rust_fatal_error (invoc.get_locus (), "rogue macro detected during lowering");
+  rust_unreachable ();
+}
+
 void
 ASTLoweringBase::visit (AST::Token &)
 {}
@@ -371,9 +379,6 @@ ASTLoweringBase::visit (AST::MacroMatcher &)
 {}
 void
 ASTLoweringBase::visit (AST::MacroRulesDefinition &)
-{}
-void
-ASTLoweringBase::visit (AST::MacroInvocation &)
 {}
 void
 ASTLoweringBase::visit (AST::MetaItemPath &)
