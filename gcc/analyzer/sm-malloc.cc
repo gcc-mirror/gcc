@@ -501,6 +501,12 @@ private:
   void on_zero_assignment (sm_context &sm_ctxt,
 			   const gimple *stmt,
 			   tree lhs) const;
+  void handle_nonnull (sm_context &sm_ctx,
+		       const supernode *node,
+		       const gimple *stmt,
+		       tree fndecl,
+		       tree arg,
+		       unsigned i) const;
 
   /* A map for consolidating deallocators so that they are
      unique per deallocator FUNCTION_DECL.  */
@@ -2004,6 +2010,43 @@ malloc_state_machine::maybe_assume_non_null (sm_context &sm_ctxt,
     }
 }
 
+/* Helper method for malloc_state_machine::on_stmt.  Handle a single
+   argument (Ith argument ARG) if it is nonnull or nonnull_if_nonzero
+   and size is nonzero.  */
+
+void
+malloc_state_machine::handle_nonnull (sm_context &sm_ctxt,
+				      const supernode *node,
+				      const gimple *stmt,
+				      tree fndecl,
+				      tree arg,
+				      unsigned i) const
+{
+  state_t state = sm_ctxt.get_state (stmt, arg);
+  /* Can't use a switch as the states are non-const.  */
+  /* Do use the fndecl that caused the warning so that the
+     misused attributes are printed and the user not confused.  */
+  if (unchecked_p (state))
+    {
+      tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
+      sm_ctxt.warn (node, stmt, arg,
+		    make_unique<possible_null_arg> (*this, diag_arg, fndecl,
+						    i));
+      const allocation_state *astate
+	= as_a_allocation_state (state);
+      sm_ctxt.set_next_state (stmt, arg, astate->get_nonnull ());
+    }
+  else if (state == m_null)
+    {
+      tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
+      sm_ctxt.warn (node, stmt, arg,
+		    make_unique<null_arg> (*this, diag_arg, fndecl, i));
+      sm_ctxt.set_next_state (stmt, arg, m_stop);
+    }
+  else if (state == m_start)
+    maybe_assume_non_null (sm_ctxt, arg, stmt);
+}
+
 /* Implementation of state_machine::on_stmt vfunc for malloc_state_machine.  */
 
 bool
@@ -2118,37 +2161,37 @@ malloc_state_machine::on_stmt (sm_context &sm_ctxt,
 		       just the specified pointers.  */
 		    if (bitmap_empty_p (nonnull_args)
 			|| bitmap_bit_p (nonnull_args, i))
-		      {
-			state_t state = sm_ctxt.get_state (stmt, arg);
-			/* Can't use a switch as the states are non-const.  */
-			/* Do use the fndecl that caused the warning so that the
-			   misused attributes are printed and the user not
-			   confused.  */
-			if (unchecked_p (state))
-			  {
-			    tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
-			    sm_ctxt.warn (node, stmt, arg,
-					  make_unique<possible_null_arg>
-					    (*this, diag_arg, fndecl, i));
-			    const allocation_state *astate
-			      = as_a_allocation_state (state);
-			    sm_ctxt.set_next_state (stmt, arg,
-						    astate->get_nonnull ());
-			  }
-			else if (state == m_null)
-			  {
-			    tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
-			    sm_ctxt.warn (node, stmt, arg,
-					  make_unique<null_arg>
-					    (*this, diag_arg, fndecl, i));
-			    sm_ctxt.set_next_state (stmt, arg, m_stop);
-			  }
-			else if (state == m_start)
-			  maybe_assume_non_null (sm_ctxt, arg, stmt);
-		      }
+		      handle_nonnull (sm_ctxt, node, stmt, fndecl, arg, i);
 		  }
 		BITMAP_FREE (nonnull_args);
 	      }
+	    /* Handle __attribute__((nonnull_if_nonzero (x, y))).  */
+	    if (fntype)
+	      for (tree attrs = TYPE_ATTRIBUTES (fntype);
+		   (attrs = lookup_attribute ("nonnull_if_nonzero", attrs));
+		   attrs = TREE_CHAIN (attrs))
+		{
+		  tree args = TREE_VALUE (attrs);
+		  unsigned int idx = TREE_INT_CST_LOW (TREE_VALUE (args)) - 1;
+		  unsigned int idx2
+		    = TREE_INT_CST_LOW (TREE_VALUE (TREE_CHAIN (args))) - 1;
+		  if (idx < gimple_call_num_args (stmt)
+		      && idx2 < gimple_call_num_args (stmt))
+		    {
+		      tree arg = gimple_call_arg (stmt, idx);
+		      tree arg2 = gimple_call_arg (stmt, idx2);
+		      if (TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE
+			  || !INTEGRAL_TYPE_P (TREE_TYPE (arg2))
+			  || integer_zerop (arg2))
+			continue;
+		      if (integer_nonzerop (arg2))
+			;
+		      else
+			/* FIXME: Use ranger here to query arg2 range?  */
+			continue;
+		      handle_nonnull (sm_ctxt, node, stmt, fndecl, arg, idx);
+		    }
+		}
 	  }
 
 	  /* Check for this after nonnull, so that if we have both
