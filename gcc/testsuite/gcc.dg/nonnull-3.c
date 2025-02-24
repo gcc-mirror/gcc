@@ -9,11 +9,11 @@
 void
 foo (void *p, char *s)
 {
-  __builtin_bzero (NULL, 0);  /* { dg-warning "null" "pr80936" } */
-  __builtin_bcopy (NULL, p, 0);  /* { dg-warning "null" "pr80936" } */
-  __builtin_bcopy (p, NULL, 0);  /* { dg-warning "null" "pr80936" } */
-  __builtin_bcmp (NULL, p, 0);  /* { dg-warning "null" "pr80936" } */
-  __builtin_bcmp (p, NULL, 0);  /* { dg-warning "null" "pr80936" } */
+  __builtin_bzero (NULL, 16);  /* { dg-warning "null" "pr80936" } */
+  __builtin_bcopy (NULL, p, 16);  /* { dg-warning "null" "pr80936" } */
+  __builtin_bcopy (p, NULL, 16);  /* { dg-warning "null" "pr80936" } */
+  __builtin_bcmp (NULL, p, 16);  /* { dg-warning "null" "pr80936" } */
+  __builtin_bcmp (p, NULL, 16);  /* { dg-warning "null" "pr80936" } */
   __builtin_index (NULL, 16);  /* { dg-warning "null" "null pointer check" } */
   __builtin_rindex (NULL, 16);  /* { dg-warning "null" "null pointer check" } */
 

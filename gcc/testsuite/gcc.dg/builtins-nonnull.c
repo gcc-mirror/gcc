@@ -24,6 +24,9 @@ void sink (int, ...);
 
 void test_memfuncs (void *s, unsigned n)
 {
+  if (n == 0)
+    return;
+
   /* Bzero is not declared attribute nonnull (maybe it should be?)
      but it's transformed into a call to memset() which is.  */
   bzero (null (), n);             /* { dg-warning "argument 1 null where non-null expected" } */
@@ -51,6 +54,9 @@ void test_memfuncs (void *s, unsigned n)
 
 void test_memfuncs_chk (void *s, unsigned n)
 {
+  if (n == 0)
+    return;
+
   T (memcpy (null (), s, n));     /* { dg-warning "argument 1 null where non-null expected" } */
   T (memcpy (s, null (), n));     /* { dg-warning "argument 2 null where non-null expected" } */
 
@@ -76,6 +82,9 @@ void test_memfuncs_chk (void *s, unsigned n)
 
 void test_strfuncs (char *s, unsigned n)
 {
+  if (n == 0)
+    return;
+
   T (strcat (null (), s));        /* { dg-warning "argument 1 null where non-null expected" } */
   T (strcat (s, null ()));        /* { dg-warning "argument 2 null where non-null expected" } */
 
@@ -119,6 +128,9 @@ void test_strfuncs (char *s, unsigned n)
 
 void test_strfuncs_chk (char *s, unsigned n)
 {
+  if (n == 0)
+    return;
+
   T (strcat (null (), s));        /* { dg-warning "argument 1 null where non-null expected" } */
   T (strcat (s, null ()));        /* { dg-warning "argument 2 null where non-null expected" } */
 

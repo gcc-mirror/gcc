@@ -34,5 +34,4 @@ main ()
 
 /* { dg-output "\.c:13:\[0-9]*:\[^\n\r]*null pointer returned from function declared to never return null\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*\.c:29:\[0-9]*:\[^\n\r]*null pointer passed as argument 1, which is declared to never be null\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*\.c:30:\[0-9]*:\[^\n\r]*null pointer passed as argument 3, which is declared to never be null\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "\[^\n\r]*\.c:31:\[0-9]*:\[^\n\r]*null pointer passed as argument 1, which is declared to never be null" } */
+/* { dg-output "\[^\n\r]*\.c:30:\[0-9]*:\[^\n\r]*null pointer passed as argument 3, which is declared to never be null" } */
