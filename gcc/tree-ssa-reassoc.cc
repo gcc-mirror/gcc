@@ -3362,7 +3362,7 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 	    continue;
 	  highj = ranges[j].high;
 	  if (highj == NULL_TREE)
-	    highj = TYPE_MAX_VALUE (type);
+	    highj = TYPE_MAX_VALUE (TREE_TYPE (lowj));
 	  wide_int mask2;
 	  exp2 = extract_bit_test_mask (ranges[j].exp, prec, lowi, lowj,
 					highj, &mask2, NULL);
