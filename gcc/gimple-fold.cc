@@ -906,18 +906,41 @@ size_must_be_zero_p (tree size)
 static bool
 optimize_memcpy_to_memset (gimple_stmt_iterator *gsip, tree dest, tree src, tree len)
 {
+  ao_ref read;
   gimple *stmt = gsi_stmt (*gsip);
   if (gimple_has_volatile_ops (stmt))
     return false;
 
-  tree vuse = gimple_vuse (stmt);
-  if (vuse == NULL || TREE_CODE (vuse) != SSA_NAME)
-    return false;
 
-  gimple *defstmt = SSA_NAME_DEF_STMT (vuse);
   tree src2 = NULL_TREE, len2 = NULL_TREE;
   poly_int64 offset, offset2;
   tree val = integer_zero_node;
+  bool len_was_null = len == NULL_TREE;
+  if (len == NULL_TREE)
+    len = (TREE_CODE (src) == COMPONENT_REF
+	   ? DECL_SIZE_UNIT (TREE_OPERAND (src, 1))
+	   : TYPE_SIZE_UNIT (TREE_TYPE (src)));
+  if (len == NULL_TREE
+      || !poly_int_tree_p (len))
+    return false;
+
+  ao_ref_init (&read, src);
+  tree vuse = gimple_vuse (stmt);
+  gimple *defstmt;
+  do {
+    if (vuse == NULL || TREE_CODE (vuse) != SSA_NAME)
+      return false;
+    defstmt = SSA_NAME_DEF_STMT (vuse);
+    if (is_a <gphi*>(defstmt))
+      return false;
+
+    /* If the len was null, then we can use TBBA. */
+    if (stmt_may_clobber_ref_p_1 (defstmt, &read,
+				  /* tbaa_p = */ len_was_null))
+      break;
+    vuse = gimple_vuse (defstmt);
+  } while (true);
+
   if (gimple_store_p (defstmt)
       && gimple_assign_single_p (defstmt)
       && TREE_CODE (gimple_assign_rhs1 (defstmt)) == STRING_CST
@@ -956,17 +979,11 @@ optimize_memcpy_to_memset (gimple_stmt_iterator *gsip, tree dest, tree src, tree
   if (src2 == NULL_TREE)
     return false;
 
-  if (len == NULL_TREE)
-    len = (TREE_CODE (src) == COMPONENT_REF
-	   ? DECL_SIZE_UNIT (TREE_OPERAND (src, 1))
-	   : TYPE_SIZE_UNIT (TREE_TYPE (src)));
   if (len2 == NULL_TREE)
     len2 = (TREE_CODE (src2) == COMPONENT_REF
 	    ? DECL_SIZE_UNIT (TREE_OPERAND (src2, 1))
 	    : TYPE_SIZE_UNIT (TREE_TYPE (src2)));
-  if (len == NULL_TREE
-      || !poly_int_tree_p (len)
-      || len2 == NULL_TREE
+  if (len2 == NULL_TREE
       || !poly_int_tree_p (len2))
     return false;
 
