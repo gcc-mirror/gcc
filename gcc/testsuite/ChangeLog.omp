@@ -1,3 +1,25 @@
+2025-02-28  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/alloca-1-dead-O0-sm_30.c: New.
+	* gcc.target/nvptx/alloca-1-dead-O0.c: Likewise.
+	* gcc.target/nvptx/alloca-1-dead-O1-sm_30.c: Likewise.
+	* gcc.target/nvptx/alloca-1-dead-O1.c: Likewise.
+	* gcc.target/nvptx/alloca-1-unused-O0-sm_30.c: Likewise.
+	* gcc.target/nvptx/alloca-1-unused-O0.c: Likewise.
+	* gcc.target/nvptx/alloca-1-unused-O1-sm_30.c: Likewise.
+	* gcc.target/nvptx/alloca-1-unused-O1.c: Likewise.
+	* gcc.target/nvptx/vla-1-dead-O0-sm_30.c: Likewise.
+	* gcc.target/nvptx/vla-1-dead-O0.c: Likewise.
+	* gcc.target/nvptx/vla-1-dead-O1-sm_30.c: Likewise.
+	* gcc.target/nvptx/vla-1-dead-O1.c: Likewise.
+	* gcc.target/nvptx/vla-1-unused-O0-sm_30.c: Likewise.
+	* gcc.target/nvptx/vla-1-unused-O0.c: Likewise.
+	* gcc.target/nvptx/vla-1-unused-O1-sm_30.c: Likewise.
+	* gcc.target/nvptx/vla-1-unused-O1.c: Likewise.
+
 2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
