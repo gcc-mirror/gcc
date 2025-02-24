@@ -874,7 +874,7 @@ Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
   auto it = macroMappings.find (macro->get_node_id ());
   rust_assert (it == macroMappings.end ());
 
-  macroMappings[macro->get_node_id ()] = macro;
+  macroMappings[macro->get_node_id ()] = {macro, currentCrateNum};
 }
 
 tl::optional<AST::MacroRulesDefinition *>
@@ -884,7 +884,17 @@ Mappings::lookup_macro_def (NodeId id)
   if (it == macroMappings.end ())
     return tl::nullopt;
 
-  return it->second;
+  return it->second.first;
+}
+
+tl::optional<CrateNum>
+Mappings::lookup_macro_def_crate (NodeId id)
+{
+  auto it = macroMappings.find (id);
+  if (it == macroMappings.end ())
+    return tl::nullopt;
+
+  return it->second.second;
 }
 
 void

@@ -17,8 +17,45 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-macro-substitute-ctx.h"
+#include "input.h"
+#include "rust-hir-map.h"
+#include "rust-token.h"
 
 namespace Rust {
+
+bool
+SubstituteCtx::substitute_dollar_crate (
+  std::vector<std::unique_ptr<AST::Token>> &expanded)
+{
+  auto &mappings = Analysis::Mappings::get ();
+
+  auto def_crate = mappings.lookup_macro_def_crate (definition.get_node_id ());
+  auto current_crate = mappings.get_current_crate ();
+
+  rust_assert (def_crate);
+
+  // If we're expanding a macro defined in the current crate which uses $crate,
+  // we can just replace the metavar with the `crate` path segment. Otherwise,
+  // use the fully qualified extern-crate lookup path `::<crate_name>`
+  if (*def_crate == current_crate)
+    {
+      expanded.push_back (std::make_unique<AST::Token> (
+	Rust::Token::make_identifier (UNKNOWN_LOCATION, "crate")));
+    }
+  else
+    {
+      auto name = mappings.get_crate_name (*def_crate);
+
+      rust_assert (name);
+
+      expanded.push_back (std::make_unique<AST::Token> (
+	Rust::Token::make (SCOPE_RESOLUTION, UNKNOWN_LOCATION)));
+      expanded.push_back (std::make_unique<AST::Token> (
+	Rust::Token::make_identifier (UNKNOWN_LOCATION, std::string (*name))));
+    }
+
+  return true;
+}
 
 bool
 SubstituteCtx::substitute_metavar (
@@ -30,14 +67,15 @@ SubstituteCtx::substitute_metavar (
   auto it = fragments.find (metavar_name);
   if (it == fragments.end ())
     {
-      // fail to substitute
+      // fail to substitute, unless we are dealing with a special-case metavar
+      // like $crate
 
-      // HACK: substitute ($ crate) => (crate)
-      if (metavar->get_id () != CRATE)
-	return false;
+      if (metavar->get_id () == CRATE)
+	return substitute_dollar_crate (expanded);
 
       expanded.push_back (metavar->clone_token ());
-      return true;
+
+      return false;
     }
   else
     {
@@ -187,7 +225,8 @@ SubstituteCtx::substitute_repetition (
 			     kv_match.second->get_fragments ().at (i).get ());
 	}
 
-      auto substitute_context = SubstituteCtx (input, new_macro, sub_map);
+      auto substitute_context
+	= SubstituteCtx (input, new_macro, sub_map, definition);
       auto new_tokens = substitute_context.substitute_tokens ();
 
       // Skip the first repetition, but add the separator to the expanded

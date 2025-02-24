@@ -23,6 +23,7 @@
 #include "rust-ast-full.h"
 #include "rust-ast-visitor.h"
 #include "rust-diagnostics.h"
+#include "rust-macro.h"
 #include "rust-parse.h"
 #include "rust-cfg-strip.h"
 #include "rust-early-name-resolver.h"
@@ -118,7 +119,7 @@ MacroExpander::expand_decl_macro (location_t invoc_locus,
   for (auto &ent : matched_fragments)
     matched_fragments_ptr.emplace (ent.first, ent.second.get ());
 
-  return transcribe_rule (*matched_rule, invoc_token_tree,
+  return transcribe_rule (rules_def, *matched_rule, invoc_token_tree,
 			  matched_fragments_ptr, semicolon, peek_context ());
 }
 
@@ -1023,7 +1024,8 @@ tokens_to_str (std::vector<std::unique_ptr<AST::Token>> &tokens)
 
 AST::Fragment
 MacroExpander::transcribe_rule (
-  AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
+  AST::MacroRulesDefinition &definition, AST::MacroRule &match_rule,
+  AST::DelimTokenTree &invoc_token_tree,
   std::map<std::string, MatchedFragmentContainer *> &matched_fragments,
   AST::InvocKind invoc_kind, ContextType ctx)
 {
@@ -1037,8 +1039,8 @@ MacroExpander::transcribe_rule (
   auto invoc_stream = invoc_token_tree.to_token_stream ();
   auto macro_rule_tokens = transcribe_tree.to_token_stream ();
 
-  auto substitute_context
-    = SubstituteCtx (invoc_stream, macro_rule_tokens, matched_fragments);
+  auto substitute_context = SubstituteCtx (invoc_stream, macro_rule_tokens,
+					   matched_fragments, definition);
   std::vector<std::unique_ptr<AST::Token>> substituted_tokens
     = substitute_context.substitute_tokens ();
 
