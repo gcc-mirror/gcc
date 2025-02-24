@@ -1,3 +1,13 @@
+2025-02-28  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.md (define_expand "allocate_stack")
+	[!TARGET_SOFT_STACK]: Move
+	'sorry ("dynamic stack allocation not supported");'...
+	(define_insn "@nvptx_alloca_<mode>"): ... here.
+
 2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
