@@ -7250,7 +7250,7 @@ package body Sem_Ch13 is
             else
                Small := Expr_Value_R (Expr);
 
-               if Small <= Ureal_0 then
+               if not UR_Is_Positive (Small) then
                   Error_Msg_N ("small value must be greater than zero", Expr);
                   return;
                end if;

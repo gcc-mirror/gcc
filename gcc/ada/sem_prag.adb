@@ -26953,7 +26953,7 @@ package body Sem_Prag is
                Opt.Time_Slice_Set := True;
                Val := Expr_Value_R (Get_Pragma_Arg (Arg1));
 
-               if Val <= Ureal_0 then
+               if not UR_Is_Positive (Val) then
                   Opt.Time_Slice_Value := 0;
 
                elsif Val > UR_From_Uint (UI_From_Int (1000)) then
