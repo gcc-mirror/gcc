@@ -391,14 +391,14 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
       {
 	gcall *call = as_a <gcall *> (stmt);
 
-	/* Never elide a noreturn call we pruned control-flow for.  */
-	if ((gimple_call_flags (call) & ECF_NORETURN)
-	    && gimple_call_ctrl_altering_p (call))
+	/* Never elide a noreturn call we pruned control-flow for.
+	   Same for statements that can alter control flow in unpredictable
+	   ways.  */
+	if (gimple_call_ctrl_altering_p (call))
 	  {
 	    mark_stmt_necessary (call, true);
 	    return;
 	  }
-
 
 	if (is_removable_allocation_p (call, false))
 	  return;
