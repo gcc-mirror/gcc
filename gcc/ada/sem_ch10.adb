@@ -4932,6 +4932,8 @@ package body Sem_Ch10 is
                            if Entity (Name (Clause)) = Id
                              or else
                                (Nkind (Name (Clause)) = N_Expanded_Name
+                                 and then
+                                   Is_Entity_Name (Prefix (Name (Clause)))
                                  and then Entity (Prefix (Name (Clause))) = Id)
                            then
                               return True;
