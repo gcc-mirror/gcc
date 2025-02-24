@@ -125,19 +125,10 @@ package body Nlists is
    --------------------------
 
    procedure Allocate_List_Tables (N : Node_Or_Entity_Id) is
-      Old_Last : constant Node_Or_Entity_Id'Base := Next_Node.Last;
-
    begin
-      pragma Assert (N >= Old_Last);
+      pragma Assert (N >= Next_Node.Last);
       Next_Node.Set_Last (N);
       Prev_Node.Set_Last (N);
-
-      --  Make sure we have no uninitialized junk in any new entries added.
-
-      for J in Old_Last + 1 .. N loop
-         Next_Node.Table (J) := Empty;
-         Prev_Node.Table (J) := Empty;
-      end loop;
    end Allocate_List_Tables;
 
    ------------

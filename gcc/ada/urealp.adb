@@ -48,20 +48,6 @@ package body Urealp is
       --  Flag set if value is negative
    end record;
 
-   --  The following representation clause ensures that the above record
-   --  has no holes. We do this so that when instances of this record are
-   --  written, we do not write uninitialized values to the file.
-
-   for Ureal_Entry use record
-      Num      at  0 range 0 .. 31;
-      Den      at  4 range 0 .. 31;
-      Rbase    at  8 range 0 .. 31;
-      Negative at 12 range 0 .. 31;
-   end record;
-
-   for Ureal_Entry'Size use 16 * 8;
-   --  This ensures that we did not leave out any fields
-
    package Ureals is new Table.Table (
      Table_Component_Type => Ureal_Entry,
      Table_Index_Type     => Ureal'Base,

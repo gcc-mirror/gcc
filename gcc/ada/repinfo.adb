@@ -77,20 +77,6 @@ package body Repinfo is
       Op3  : Node_Ref_Or_Val;
    end record;
 
-   --  The following representation clause ensures that the above record
-   --  has no holes. We do this so that when instances of this record are
-   --  written, we do not write uninitialized values to the file.
-
-   for Exp_Node use record
-      Expr at  0 range 0 .. 31;
-      Op1  at  4 range 0 .. 31;
-      Op2  at  8 range 0 .. 31;
-      Op3  at 12 range 0 .. 31;
-   end record;
-
-   for Exp_Node'Size use 16 * 8;
-   --  This ensures that we did not leave out any fields
-
    package Rep_Table is new Table.Table (
       Table_Component_Type => Exp_Node,
       Table_Index_Type     => Nat,
