@@ -36,6 +36,7 @@ public:
 
 private:
   using AST::DefaultASTVisitor::visit;
+
   /**
    * Execute a lambda within a scope. This is equivalent to calling
    * `enter_scope` before your code and `exit_scope` after. This ensures
@@ -181,12 +182,6 @@ private:
   virtual void visit (AST::StructPatternFieldIdent &field);
   virtual void visit (AST::StructPattern &pattern);
   virtual void visit (AST::TupleStructPattern &pattern);
-  virtual void visit (AST::TraitBound &bound);
-  virtual void visit (AST::ImplTraitType &type);
-  virtual void visit (AST::TraitObjectType &type);
-  virtual void visit (AST::ParenthesisedType &type);
-  virtual void visit (AST::ImplTraitTypeOneBound &type);
-  virtual void visit (AST::TraitObjectTypeOneBound &type);
   virtual void visit (AST::TupleType &type);
   virtual void visit (AST::RawPointerType &type);
   virtual void visit (AST::ReferenceType &type);

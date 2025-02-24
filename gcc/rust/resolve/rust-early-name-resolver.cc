@@ -561,30 +561,6 @@ EarlyNameResolver::visit (AST::TupleStructPattern &pattern)
 }
 
 void
-EarlyNameResolver::visit (AST::TraitBound &)
-{}
-
-void
-EarlyNameResolver::visit (AST::ImplTraitType &)
-{}
-
-void
-EarlyNameResolver::visit (AST::TraitObjectType &)
-{}
-
-void
-EarlyNameResolver::visit (AST::ParenthesisedType &)
-{}
-
-void
-EarlyNameResolver::visit (AST::ImplTraitTypeOneBound &)
-{}
-
-void
-EarlyNameResolver::visit (AST::TraitObjectTypeOneBound &)
-{}
-
-void
 EarlyNameResolver::visit (AST::TupleType &)
 {}
 
