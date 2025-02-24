@@ -1758,6 +1758,27 @@ nvptx_output_set_softstack (unsigned src_regno)
     }
   return "";
 }
+
+/* Output a fake PTX 'alloca'.  */
+
+const char *
+nvptx_output_fake_ptx_alloca (void)
+{
+#define FAKE_PTX_ALLOCA_NAME "__GCC_nvptx__PTX_alloca_not_supported"
+  static tree decl;
+  if (!decl)
+    {
+      tree alloca_type = TREE_TYPE (builtin_decl_explicit (BUILT_IN_ALLOCA));
+      decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
+			 get_identifier (FAKE_PTX_ALLOCA_NAME), alloca_type);
+      DECL_EXTERNAL (decl) = 1;
+      TREE_PUBLIC (decl) = 1;
+      nvptx_record_needed_fndecl (decl);
+    }
+  return "\tcall\t(%0), " FAKE_PTX_ALLOCA_NAME ", (%1);";
+#undef FAKE_PTX_ALLOCA_NAME
+}
+
 /* Output a return instruction.  Also copy the return value to its outgoing
    location.  */
 

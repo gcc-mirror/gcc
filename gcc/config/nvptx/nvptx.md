@@ -1705,6 +1705,8 @@
 	output_asm_insn ("}", NULL);
 	return "";
       }
+    else if (nvptx_fake_ptx_alloca)
+      return nvptx_output_fake_ptx_alloca ();
     else
       {
 	sorry_at (INSN_LOCATION (insn),
@@ -1733,6 +1735,7 @@
       gcc_checking_assert (REG_P (operands[0]));
       emit_insn (gen_nvptx_stacksave (Pmode, operands[0], operands[1]));
     }
+  /* We don't bother to special-case '-mfake-ptx-alloca' here.  */
   else
     {
       /* The concept of a '%stack' pointer doesn't apply like this.
@@ -1765,6 +1768,7 @@
       operands[1] = force_reg (Pmode, operands[1]);
       emit_insn (gen_nvptx_stackrestore (Pmode, operands[0], operands[1]));
     }
+  /* We don't bother to special-case '-mfake-ptx-alloca' here.  */
   else if (!TARGET_SOFT_STACK)
     ; /* See 'save_stack_block'.  */
   else if (TARGET_SOFT_STACK)

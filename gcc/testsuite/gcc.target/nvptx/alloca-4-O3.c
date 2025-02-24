@@ -1,6 +1,8 @@
 /* { dg-do assemble } */
 /* { dg-options {-O3 -mno-soft-stack} } */
 /* { dg-add-options nvptx_alloca_ptx } */
+/* Verify the fake one isn't used if the real PTX 'alloca' is available. 
+   { dg-additional-options -mfake-ptx-alloca } */
 /* { dg-additional-options -save-temps } */
 /* { dg-final { check-function-bodies {** } {} } } */
 
