@@ -213,7 +213,7 @@ AARCH64_OPT_EXTENSION("memtag", MEMTAG, (), (), (), "")
 
 AARCH64_OPT_FMV_EXTENSION("sb", SB, (), (), (), "sb")
 
-AARCH64_OPT_FMV_EXTENSION("predres", PREDRES, (), (), (), "")
+AARCH64_OPT_EXTENSION("predres", PREDRES, (), (), (), "")
 
 AARCH64_OPT_EXTENSION("ssbs", SSBS, (), (), (), "ssbs")
 

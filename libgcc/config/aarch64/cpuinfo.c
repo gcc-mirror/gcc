@@ -339,25 +339,6 @@ __init_cpu_features_constructor (unsigned long hwcap,
     setCPUFeature(FEAT_SME_I64);
   if (hwcap2 & HWCAP2_SME_F64F64)
     setCPUFeature(FEAT_SME_F64);
-  if (hwcap & HWCAP_CPUID)
-    {
-      unsigned long ftr;
-
-      getCPUFeature(ID_AA64ISAR1_EL1, ftr);
-      /* ID_AA64ISAR1_EL1.SPECRES >= 0b0001  */
-      if (extractBits(ftr, 40, 4) >= 0x1)
-	setCPUFeature(FEAT_PREDRES);
-      /* ID_AA64ISAR1_EL1.LS64 >= 0b0001  */
-      if (extractBits(ftr, 60, 4) >= 0x1)
-	setCPUFeature(FEAT_LS64);
-      /* ID_AA64ISAR1_EL1.LS64 >= 0b0010  */
-      if (extractBits(ftr, 60, 4) >= 0x2)
-	setCPUFeature(FEAT_LS64_V);
-      /* ID_AA64ISAR1_EL1.LS64 >= 0b0011  */
-      if (extractBits(ftr, 60, 4) >= 0x3)
-	setCPUFeature(FEAT_LS64_ACCDATA);
-    }
-
   if (hwcap & HWCAP_FP)
     {
       setCPUFeature(FEAT_FP);
