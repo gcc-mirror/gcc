@@ -3,6 +3,16 @@
 	Backported from trunk:
 	2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* gcc.target/nvptx/alloca-1-O0_-mfake-ptx-alloca.c: New.
+	* gcc.target/nvptx/alloca-2-O0_-mfake-ptx-alloca.c: Likewise.
+	* gcc.target/nvptx/alloca-4-O3_-mfake-ptx-alloca.c: Likewise.
+	* gcc.target/nvptx/vla-1-O0_-mfake-ptx-alloca.c: Likewise.
+	* gcc.target/nvptx/alloca-4-O3.c:
+	'dg-additional-options -mfake-ptx-alloca'.
+
+	Backported from trunk:
+	2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* gcc.target/nvptx/alloca-1-unused-O0-sm_30.c: Adjust.
 
 	Backported from trunk:

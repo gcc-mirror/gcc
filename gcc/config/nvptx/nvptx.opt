@@ -167,3 +167,18 @@ Target Var(nvptx_alias) Init(0) Undocumented
 
 mexperimental
 Target Var(nvptx_experimental) Init(0) Undocumented
+
+mfake-ptx-alloca
+Target Var(nvptx_fake_ptx_alloca) Init(0) Undocumented
+; With '-mfake-ptx-alloca' enabled, the user-visible behavior changes only
+; for configurations where PTX 'alloca' is not available.  Rather than a
+; compile-time 'sorry, unimplemented: dynamic stack allocation not supported'
+; in presence of dynamic stack allocation, compilation and assembly then
+; succeeds.  However, attempting to link in such '*.o' files then fails due
+; to unresolved symbol '__GCC_nvptx__PTX_alloca_not_supported'.
+; 
+; This is meant to be used in scenarios where large volumes of code are
+; compiled, a small fraction of which runs into dynamic stack allocation, but
+; these parts are not important for specific use cases, and we'd thus like the
+; build to succeed, and error out just upon actual, very rare use of the
+; offending '*.o' files.

@@ -3,6 +3,17 @@
 	Backported from trunk:
 	2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* config/nvptx/nvptx.opt (-mfake-ptx-alloca): New.
+	* config/nvptx/nvptx-protos.h (nvptx_output_fake_ptx_alloca):
+	Declare.
+	* config/nvptx/nvptx.cc (nvptx_output_fake_ptx_alloca): New.
+	* config/nvptx/nvptx.md (define_insn "@nvptx_alloca_<mode>")
+	[!(TARGET_PTX_7_3 && TARGET_SM52)]: Use it for
+	'-mfake-ptx-alloca'.
+
+	Backported from trunk:
+	2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* config/nvptx/nvptx.md (define_expand "allocate_stack")
 	[!TARGET_SOFT_STACK]: Move
 	'sorry ("dynamic stack allocation not supported");'...
