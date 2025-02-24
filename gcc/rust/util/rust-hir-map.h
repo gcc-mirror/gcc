@@ -269,6 +269,7 @@ public:
   void insert_macro_def (AST::MacroRulesDefinition *macro);
 
   tl::optional<AST::MacroRulesDefinition *> lookup_macro_def (NodeId id);
+  tl::optional<CrateNum> lookup_macro_def_crate (NodeId id);
 
   void insert_macro_invocation (AST::MacroInvocation &invoc,
 				AST::MacroRulesDefinition *def);
@@ -402,7 +403,8 @@ private:
   std::map<CrateNum, std::set<HirId>> hirNodesWithinCrate;
 
   // MBE macros
-  std::map<NodeId, AST::MacroRulesDefinition *> macroMappings;
+  std::map<NodeId, std::pair<AST::MacroRulesDefinition *, CrateNum>>
+    macroMappings;
   std::map<NodeId, AST::MacroRulesDefinition *> macroInvocations;
   std::vector<NodeId> exportedMacros;
 

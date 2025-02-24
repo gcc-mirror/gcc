@@ -331,7 +331,8 @@ struct MacroExpander
 		       AST::DelimTokenTree &invoc_token_tree);
 
   AST::Fragment transcribe_rule (
-    AST::MacroRule &match_rule, AST::DelimTokenTree &invoc_token_tree,
+    AST::MacroRulesDefinition &definition, AST::MacroRule &match_rule,
+    AST::DelimTokenTree &invoc_token_tree,
     std::map<std::string, MatchedFragmentContainer *> &matched_fragments,
     AST::InvocKind invoc_kind, ContextType ctx);
 
