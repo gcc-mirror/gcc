@@ -7905,8 +7905,6 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name,
 #define TARGET_ASM_DECLARE_CONSTANT_NAME nvptx_asm_declare_constant_name
 #undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
 #define TARGET_USE_BLOCKS_FOR_CONSTANT_P hook_bool_mode_const_rtx_true
-#undef TARGET_ASM_NEED_VAR_DECL_BEFORE_USE
-#define TARGET_ASM_NEED_VAR_DECL_BEFORE_USE true
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG nvptx_reorg
