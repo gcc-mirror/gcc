@@ -387,9 +387,6 @@ the applicable standard for each intrinsic procedure is noted.
 systems that support a core dump, @code{ABORT} produces a core dump.
 It also prints a backtrace, unless @code{-fno-backtrace} is given.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine
 
@@ -403,6 +400,9 @@ program test_abort
   if (i /= j) call abort
 end program test_abort
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{EXIT}, @*
@@ -432,9 +432,6 @@ end program test_abort
 
 @item @emph{Description}:
 @code{ABS(A)} computes the absolute value of @code{A}.
-
-@item @emph{Standard}:
-Fortran 77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -476,6 +473,9 @@ end program test_abs
 @item @code{ZABS(A)}  @tab @code{COMPLEX(8) A} @tab @code{REAL(8)} @tab GNU extension
 @item @code{CDABS(A)} @tab @code{COMPLEX(8) A} @tab @code{REAL(8)} @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 77 and later, has overloads that are GNU extensions
 @end table
 
 
@@ -494,9 +494,6 @@ end program test_abs
 exists, is readable, writable or executable. Except for the
 executable check, @code{ACCESS} can be replaced by
 Fortran 95's @code{INQUIRE}.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Inquiry function
@@ -532,6 +529,9 @@ program access_test
     print *, trim(file2),' is readable, writable and executable'
 end program access_test
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 @end table
 
 
@@ -549,9 +549,6 @@ end program access_test
 @item @emph{Description}:
 @code{ACHAR(I)} returns the character located at position @code{I}
 in the @acronym{ASCII} collating sequence.
-
-@item @emph{Standard}:
-Fortran 77 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -580,6 +577,9 @@ end program test_achar
 See @ref{ICHAR} for a discussion of converting between numerical values
 and formatted string representations.
 
+@item @emph{Standard}:
+Fortran 77 and later, with @var{KIND} argument Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{CHAR}, @*
 @ref{IACHAR}, @*
@@ -601,9 +601,6 @@ and formatted string representations.
 
 @item @emph{Description}:
 @code{ACOS(X)} computes the arccosine of @var{X} (inverse of @code{COS(X)}).
-
-@item @emph{Standard}:
-Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
@@ -634,6 +631,9 @@ end program test_acos
 @item @code{DACOS(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}  @tab Fortran 77 and later
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later, for a complex argument Fortran 2008 or later
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{COS} @*
@@ -657,9 +657,6 @@ Degrees function: @*
 @item @emph{Description}:
 @code{ACOSD(X)} computes the arccosine of @var{X} in degrees (inverse of
 @code{COSD(X)}).
-
-@item @emph{Standard}:
-Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -690,6 +687,9 @@ end program test_acosd
 @item @code{DACOSD(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}  @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 2023
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{COSD} @*
@@ -714,9 +714,6 @@ Radians function: @*
 
 @item @emph{Description}:
 @code{ACOSH(X)} computes the inverse hyperbolic cosine of @var{X}.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -745,6 +742,9 @@ END PROGRAM
 @item @code{DACOSH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 2008 and later
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{COSH}
@@ -765,9 +765,6 @@ Inverse function: @*
 @item @emph{Description}:
 @code{ADJUSTL(STRING)} left adjusts a string by removing leading spaces.
 Spaces are inserted at the end of the string as needed.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
@@ -791,6 +788,9 @@ program test_adjustl
 end program test_adjustl
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later
+
 @item @emph{See also}:
 @ref{ADJUSTR}, @*
 @ref{TRIM}
@@ -811,9 +811,6 @@ end program test_adjustl
 @item @emph{Description}:
 @code{ADJUSTR(STRING)} right adjusts a string by removing trailing spaces.
 Spaces are inserted at the start of the string as needed.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
@@ -836,6 +833,9 @@ program test_adjustr
   print *, str
 end program test_adjustr
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later
 
 @item @emph{See also}:
 @ref{ADJUSTL}, @*
@@ -861,9 +861,6 @@ end program test_adjustr
 The @code{IMAG(Z)} and @code{IMAGPART(Z)} intrinsic functions are provided
 for compatibility with @command{g77}, and their use in new code is 
 strongly discouraged.
-
-@item @emph{Standard}:
-Fortran 77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -896,6 +893,9 @@ end program test_aimag
 @item @code{IMAG(Z)}     @tab @code{COMPLEX Z}    @tab @code{REAL}     @tab GNU extension
 @item @code{IMAGPART(Z)} @tab @code{COMPLEX Z}    @tab @code{REAL}     @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 77 and later, has overloads that are GNU extensions
 @end table
 
 
@@ -913,9 +913,6 @@ end program test_aimag
 
 @item @emph{Description}:
 @code{AINT(A [, KIND])} truncates its argument to a whole number.
-
-@item @emph{Standard}:
-Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -954,6 +951,9 @@ end program test_aint
 @item @code{AINT(A)} @tab @code{REAL(4) A} @tab @code{REAL(4)}   @tab Fortran 77 and later
 @item @code{DINT(A)} @tab @code{REAL(8) A} @tab @code{REAL(8)}   @tab Fortran 77 and later
 @end multitable
+
+@item @emph{Standard}:
+Fortran 77 and later
 @end table
 
 
@@ -974,9 +974,6 @@ set up a signal and @code{signal(2)} to catch it. If @var{STATUS} is
 supplied, it is returned with the number of seconds remaining until
 any previously scheduled alarm was due to be delivered, or zero if there
 was no previously scheduled alarm.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Subroutine
@@ -1005,6 +1002,9 @@ end program test_alarm
 @end smallexample
 This causes the external routine @var{handler_print} to be called
 after 3 seconds.
+
+@item @emph{Standard}:
+GNU extension
 @end table
 
 
@@ -1022,9 +1022,6 @@ after 3 seconds.
 @item @emph{Description}:
 @code{ALL(MASK [, DIM])} determines if all the values are true in @var{MASK}
 in the array along dimension @var{DIM}.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
@@ -1072,6 +1069,9 @@ program test_all
     end subroutine section
 end program test_all
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -1091,10 +1091,6 @@ end program test_all
 @item @emph{Description}:
 @code{ALLOCATED(ARRAY)} and @code{ALLOCATED(SCALAR)} check the allocation
 status of @var{ARRAY} and @var{SCALAR}, respectively.
-
-@item @emph{Standard}:
-Fortran 90 and later.  Note, the @code{SCALAR=} keyword and allocatable
-scalar entities are available in Fortran 2003 and later.
 
 @item @emph{Class}:
 Inquiry function
@@ -1118,6 +1114,10 @@ program test_allocated
   if (.not. allocated(x)) allocate(x(i))
 end program test_allocated
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later.  Note, the @code{SCALAR=} keyword and allocatable
+scalar entities are available in Fortran 2003 and later.
 @end table
 
 
@@ -1138,9 +1138,6 @@ Bitwise logical @code{AND}.
 This intrinsic routine is provided for backwards compatibility with 
 GNU Fortran 77.  For integer arguments, programmers should consider
 the use of the @ref{IAND} intrinsic defined by the Fortran standard.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Function
@@ -1175,6 +1172,9 @@ PROGRAM test_and
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 Fortran 95 elemental function: @*
 @ref{IAND}
@@ -1195,9 +1195,6 @@ Fortran 95 elemental function: @*
 
 @item @emph{Description}:
 @code{ANINT(A [, KIND])} rounds its argument to the nearest whole number.
-
-@item @emph{Standard}:
-Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -1234,6 +1231,9 @@ end program test_anint
 @item @code{ANINT(A)}  @tab @code{REAL(4) A} @tab @code{REAL(4)}   @tab Fortran 77 and later
 @item @code{DNINT(A)} @tab @code{REAL(8) A} @tab @code{REAL(8)}   @tab Fortran 77 and later
 @end multitable
+
+@item @emph{Standard}:
+Fortran 77 and later
 @end table
 
 
@@ -1251,9 +1251,6 @@ end program test_anint
 @item @emph{Description}:
 @code{ANY(MASK [, DIM])} determines if any of the values in the logical array
 @var{MASK} along dimension @var{DIM} are @code{.TRUE.}.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
@@ -1301,6 +1298,9 @@ program test_any
     end subroutine section
 end program test_any
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -1318,9 +1318,6 @@ end program test_any
 
 @item @emph{Description}:
 @code{ASIN(X)} computes the arcsine of its @var{X} (inverse of @code{SIN(X)}).
-
-@item @emph{Standard}:
-Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
@@ -1351,6 +1348,9 @@ end program test_asin
 @item @code{DASIN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later, for a complex argument Fortran 2008 or later
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{SIN} @*
@@ -1374,9 +1374,6 @@ Degrees function: @*
 @item @emph{Description}:
 @code{ASIND(X)} computes the arcsine of its @var{X} in degrees (inverse of
 @code{SIND(X)}).
-
-@item @emph{Standard}:
-Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -1407,6 +1404,9 @@ end program test_asind
 @item @code{DASIND(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 2023
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{SIND} @*
@@ -1429,9 +1429,6 @@ Radians function: @*
 
 @item @emph{Description}:
 @code{ASINH(X)} computes the inverse hyperbolic sine of @var{X}.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -1460,6 +1457,9 @@ END PROGRAM
 @item @code{DASINH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension.
 @end multitable
 
+@item @emph{Standard}:
+Fortran 2008 and later
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{SINH}
@@ -1480,9 +1480,6 @@ Inverse function: @*
 @item @emph{Description}:
 @code{ASSOCIATED(POINTER [, TARGET])} determines the status of the pointer
 @var{POINTER} or if @var{POINTER} is associated with the target @var{TARGET}.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -1538,6 +1535,9 @@ program test_associated
 end program test_associated
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later
+
 @item @emph{See also}:
 @ref{NULL}
 @end table
@@ -1560,10 +1560,6 @@ end program test_associated
 
 @item @emph{Description}:
 @code{ATAN(X)} computes the arctangent of @var{X}.
-
-@item @emph{Standard}:
-Fortran 77 and later, for a complex argument and for two arguments
-Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
@@ -1597,6 +1593,10 @@ end program test_atan
 @item @code{DATAN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later, for a complex argument and for two arguments
+Fortran 2008 or later
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{TAN} @*
@@ -1622,9 +1622,6 @@ Degrees function: @*
 @item @emph{Description}:
 @code{ATAND(X)} computes the arctangent of @var{X} in degrees (inverse of
 @ref{TAND}).
-
-@item @emph{Standard}:
-Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -1656,6 +1653,9 @@ end program test_atand
 @item @code{DATAND(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 2023
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{TAND} @*
@@ -1681,9 +1681,6 @@ Radians function: @*
 function of the complex number @math{X + i Y}.  This function can
 be used to transform from Cartesian into polar coordinates and
 allows to determine the angle in the correct quadrant.
-
-@item @emph{Standard}:
-Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -1721,6 +1718,9 @@ end program test_atan2
 @item @code{DATAN2(X, Y)} @tab @code{REAL(8) X, Y} @tab @code{REAL(8)} @tab Fortran 77 and later
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later
+
 @item @emph{See also}:
 Alias: @*
 @ref{ATAN} @*
@@ -1746,9 +1746,6 @@ Degrees function: @*
 function of the complex number @math{X + i Y} in degrees.  This function can
 be used to transform from Cartesian into polar coordinates and
 allows to determine the angle in the correct quadrant.
-
-@item @emph{Standard}:
-Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -1786,6 +1783,9 @@ end program test_atan2d
 @item @code{DATAN2D(X, Y)} @tab @code{REAL(8) X, Y} @tab @code{REAL(8)} @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 2023
+
 @item @emph{See also}:
 Alias: @*
 @ref{ATAND} @*
@@ -1808,9 +1808,6 @@ Radians function: @*
 
 @item @emph{Description}:
 @code{ATANH(X)} computes the inverse hyperbolic tangent of @var{X}.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -1839,6 +1836,9 @@ END PROGRAM
 @item @code{DATANH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 2008 and later
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{TANH}
@@ -1864,9 +1864,6 @@ has failed, it is assigned a positive value; in particular, for a coindexed
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
 failed, the value @code{STAT_FAILED_IMAGE}.
 
-@item @emph{Standard}:
-TS 18508 or later
-
 @item @emph{Class}:
 Atomic subroutine
 
@@ -1887,6 +1884,9 @@ program atomic
   call atomic_add (atom[1], this_image())
 end program atomic
 @end smallexample
+
+@item @emph{Standard}:
+TS 18508 or later
 
 @item @emph{See also}:
 @ref{ATOMIC_DEFINE}, @*
@@ -1918,9 +1918,6 @@ for a coindexed @var{ATOM}, if the remote image has stopped, it is assigned the
 value of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote
 image has failed, the value @code{STAT_FAILED_IMAGE}.
 
-@item @emph{Standard}:
-TS 18508 or later
-
 @item @emph{Class}:
 Atomic subroutine
 
@@ -1941,6 +1938,9 @@ program atomic
   call atomic_and (atom[1], int(b'10100011101'))
 end program atomic
 @end smallexample
+
+@item @emph{Standard}:
+TS 18508 or later
 
 @item @emph{See also}:
 @ref{ATOMIC_DEFINE}, @*
@@ -1973,9 +1973,6 @@ has failed, it is assigned a positive value; in particular, for a coindexed
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
 failed, the value @code{STAT_FAILED_IMAGE}.
 
-@item @emph{Standard}:
-TS 18508 or later
-
 @item @emph{Class}:
 Atomic subroutine
 
@@ -2000,6 +1997,9 @@ program atomic
   call atomic_cas (atom[1], prev, .false., .true.))
 end program atomic
 @end smallexample
+
+@item @emph{Standard}:
+TS 18508 or later
 
 @item @emph{See also}:
 @ref{ATOMIC_DEFINE}, @*
@@ -2027,9 +2027,6 @@ has failed, it is assigned a positive value; in particular, for a coindexed
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
 failed, the value @code{STAT_FAILED_IMAGE}.
 
-@item @emph{Standard}:
-Fortran 2008 and later; with @var{STAT}, TS 18508 or later
-
 @item @emph{Class}:
 Atomic subroutine
 
@@ -2052,6 +2049,9 @@ program atomic
   call atomic_define (atom[1], this_image())
 end program atomic
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2008 and later; with @var{STAT}, TS 18508 or later
 
 @item @emph{See also}:
 @ref{ATOMIC_REF}, @*
@@ -2084,9 +2084,6 @@ has failed, it is assigned a positive value; in particular, for a coindexed
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
 failed, the value @code{STAT_FAILED_IMAGE}.
 
-@item @emph{Standard}:
-TS 18508 or later
-
 @item @emph{Class}:
 Atomic subroutine
 
@@ -2110,6 +2107,9 @@ program atomic
   call atomic_add (atom[1], this_image(), old)
 end program atomic
 @end smallexample
+
+@item @emph{Standard}:
+TS 18508 or later
 
 @item @emph{See also}:
 @ref{ATOMIC_DEFINE}, @*
@@ -2141,9 +2141,6 @@ failed, it is assigned a positive value; in particular, for a coindexed
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
 failed, the value @code{STAT_FAILED_IMAGE}.
 
-@item @emph{Standard}:
-TS 18508 or later
-
 @item @emph{Class}:
 Atomic subroutine
 
@@ -2165,6 +2162,9 @@ program atomic
   call atomic_fetch_and (atom[1], int(b'10100011101'), old)
 end program atomic
 @end smallexample
+
+@item @emph{Standard}:
+TS 18508 or later
 
 @item @emph{See also}:
 @ref{ATOMIC_DEFINE}, @*
@@ -2196,9 +2196,6 @@ failed, it is assigned a positive value; in particular, for a coindexed
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
 failed, the value @code{STAT_FAILED_IMAGE}.
 
-@item @emph{Standard}:
-TS 18508 or later
-
 @item @emph{Class}:
 Atomic subroutine
 
@@ -2220,6 +2217,9 @@ program atomic
   call atomic_fetch_or (atom[1], int(b'10100011101'), old)
 end program atomic
 @end smallexample
+
+@item @emph{Standard}:
+TS 18508 or later
 
 @item @emph{See also}:
 @ref{ATOMIC_DEFINE}, @*
@@ -2251,9 +2251,6 @@ failed, it is assigned a positive value; in particular, for a coindexed
 @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image has
 failed, the value @code{STAT_FAILED_IMAGE}.
 
-@item @emph{Standard}:
-TS 18508 or later
-
 @item @emph{Class}:
 Atomic subroutine
 
@@ -2275,6 +2272,9 @@ program atomic
   call atomic_fetch_xor (atom[1], int(b'10100011101'), old)
 end program atomic
 @end smallexample
+
+@item @emph{Standard}:
+TS 18508 or later
 
 @item @emph{See also}:
 @ref{ATOMIC_DEFINE}, @*
@@ -2305,9 +2305,6 @@ for a coindexed @var{ATOM}, if the remote image has stopped, it is assigned the
 value of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote
 image has failed, the value @code{STAT_FAILED_IMAGE}.
 
-@item @emph{Standard}:
-TS 18508 or later
-
 @item @emph{Class}:
 Atomic subroutine
 
@@ -2328,6 +2325,9 @@ program atomic
   call atomic_or (atom[1], int(b'10100011101'))
 end program atomic
 @end smallexample
+
+@item @emph{Standard}:
+TS 18508 or later
 
 @item @emph{See also}:
 @ref{ATOMIC_DEFINE}, @*
@@ -2358,9 +2358,6 @@ coindexed @var{ATOM}, if the remote image has stopped, it is assigned the value
 of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image
 has failed, the value @code{STAT_FAILED_IMAGE}.
 
-@item @emph{Standard}:
-Fortran 2008 and later; with @var{STAT}, TS 18508 or later
-
 @item @emph{Class}:
 Atomic subroutine
 
@@ -2388,6 +2385,9 @@ program atomic
   end if
 end program atomic
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2008 and later; with @var{STAT}, TS 18508 or later
 
 @item @emph{See also}:
 @ref{ATOMIC_DEFINE}, @*
@@ -2418,9 +2418,6 @@ for a coindexed @var{ATOM}, if the remote image has stopped, it is assigned the
 value of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote
 image has failed, the value @code{STAT_FAILED_IMAGE}.
 
-@item @emph{Standard}:
-TS 18508 or later
-
 @item @emph{Class}:
 Atomic subroutine
 
@@ -2441,6 +2438,9 @@ program atomic
   call atomic_xor (atom[1], int(b'10100011101'))
 end program atomic
 @end smallexample
+
+@item @emph{Standard}:
+TS 18508 or later
 
 @item @emph{See also}:
 @ref{ATOMIC_DEFINE}, @*
@@ -2466,14 +2466,14 @@ end program atomic
 execution continues normally afterwards. The backtrace information is printed
 to the unit corresponding to @code{ERROR_UNIT} in @code{ISO_FORTRAN_ENV}.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine
 
 @item @emph{Arguments}:
 None
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{ABORT}
@@ -2496,9 +2496,6 @@ None
 @code{BESSEL_J0(X)} computes the Bessel function of the first kind of
 order 0 of @var{X}. This function is available under the name
 @code{BESJ0} as a GNU extension.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -2526,6 +2523,9 @@ end program test_besj0
 @headitem Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DBESJ0(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}   @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 2008 and later
 @end table
 
 
@@ -2545,9 +2545,6 @@ end program test_besj0
 @code{BESSEL_J1(X)} computes the Bessel function of the first kind of
 order 1 of @var{X}. This function is available under the name
 @code{BESJ1} as a GNU extension.
-
-@item @emph{Standard}:
-Fortran 2008
 
 @item @emph{Class}:
 Elemental function
@@ -2575,6 +2572,9 @@ end program test_besj1
 @headitem Name             @tab Argument          @tab Return type       @tab Standard
 @item @code{DBESJ1(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 2008
 @end table
 
 
@@ -2601,9 +2601,6 @@ their ranks and shapes shall conform.
 
 @code{BESSEL_JN(N1, N2, X)} returns an array with the Bessel functions
 of the first kind of the orders @var{N1} to @var{N2}.
-
-@item @emph{Standard}:
-Fortran 2008 and later, negative @var{N} is allowed as GNU extension
 
 @item @emph{Class}:
 Elemental function, except for the transformational function
@@ -2641,6 +2638,9 @@ end program test_besjn
 @item @code{DBESJN(N, X)} @tab @code{INTEGER N}    @tab @code{REAL(8)}    @tab GNU extension
 @item                     @tab @code{REAL(8) X}    @tab                   @tab
 @end multitable
+
+@item @emph{Standard}:
+Fortran 2008 and later, negative @var{N} is allowed as GNU extension
 @end table
 
 
@@ -2660,9 +2660,6 @@ end program test_besjn
 @code{BESSEL_Y0(X)} computes the Bessel function of the second kind of
 order 0 of @var{X}. This function is available under the name
 @code{BESY0} as a GNU extension.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -2688,6 +2685,9 @@ end program test_besy0
 @headitem Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DBESY0(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 2008 and later
 @end table
 
 
@@ -2707,9 +2707,6 @@ end program test_besy0
 @code{BESSEL_Y1(X)} computes the Bessel function of the second kind of
 order 1 of @var{X}. This function is available under the name
 @code{BESY1} as a GNU extension.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -2735,6 +2732,9 @@ end program test_besy1
 @headitem Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DBESY1(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 2008 and later
 @end table
 
 
@@ -2761,9 +2761,6 @@ their ranks and shapes shall conform.
 
 @code{BESSEL_YN(N1, N2, X)} returns an array with the Bessel functions
 of the first kind of the orders @var{N1} to @var{N2}.
-
-@item @emph{Standard}:
-Fortran 2008 and later, negative @var{N} is allowed as GNU extension
 
 @item @emph{Class}:
 Elemental function, except for the transformational function
@@ -2801,6 +2798,9 @@ end program test_besyn
 @item @code{DBESYN(N,X)} @tab @code{INTEGER N} @tab @code{REAL(8)}  @tab GNU extension
 @item                    @tab @code{REAL(8) X} @tab                 @tab
 @end multitable
+
+@item @emph{Standard}:
+Fortran 2008 and later, negative @var{N} is allowed as GNU extension
 @end table
 
 
@@ -2818,10 +2818,6 @@ end program test_besyn
 Determines whether an integral is a bitwise greater than or equal to
 another.
 
-@item @emph{Standard}:
-Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -2837,6 +2833,10 @@ The return value is of type @code{LOGICAL} and of the default kind.
 @item @emph{Notes}:
 For @code{UNSIGNED} arguments, this function is identical to the
 @code{.GE.} and @code{>=} operators.
+
+@item @emph{Standard}:
+Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 
 @item @emph{See also}:
 @ref{BGT}, @*
@@ -2858,10 +2858,6 @@ For @code{UNSIGNED} arguments, this function is identical to the
 @item @emph{Description}:
 Determines whether an integral is a bitwise greater than another.
 
-@item @emph{Standard}:
-Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -2877,6 +2873,10 @@ The return value is of type @code{LOGICAL} and of the default kind.
 @item @emph{Notes}:
 For @code{UNSIGNED} arguments, this function is identical to the
 @code{.GT.}  and @code{>} operators.
+
+@item @emph{Standard}:
+Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 
 @item @emph{See also}:
 @ref{BGE}, @*
@@ -2901,10 +2901,6 @@ For @code{UNSIGNED} arguments, this function is identical to the
 plus the sign bit) represented by the type of @var{I}.  The result of
 @code{BIT_SIZE(I)} is independent of the actual value of @var{I}.
 
-@item @emph{Standard}:
-Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
-
 @item @emph{Class}:
 Inquiry function
 
@@ -2925,6 +2921,10 @@ program test_bit_size
     print *, size
 end program test_bit_size
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 @end table
 
 
@@ -2942,10 +2942,6 @@ end program test_bit_size
 Determines whether an integral is a bitwise less than or equal to
 another.
 
-@item @emph{Standard}:
-Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -2961,6 +2957,10 @@ The return value is of type @code{LOGICAL} and of the default kind.
 @item @emph{Notes}:
 For @code{UNSIGNED} arguments, this function is identical to the
 @code{.LE.}  and @code{<=} operators.
+
+@item @emph{Standard}:
+Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 
 @item @emph{See also}:
 @ref{BGT}, @*
@@ -2982,10 +2982,6 @@ For @code{UNSIGNED} arguments, this function is identical to the
 @item @emph{Description}:
 Determines whether an integral is a bitwise less than another.
 
-@item @emph{Standard}:
-Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -3001,6 +2997,10 @@ The return value is of type @code{LOGICAL} and of the default kind.
 @item @emph{Notes}:
 For @code{UNSIGNED} arguments, this function is identical to the
 @code{.LT.}  and @code{<} operators.
+
+@item @emph{Standard}:
+Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 
 @item @emph{See also}:
 @ref{BGE}, @*
@@ -3026,10 +3026,6 @@ For @code{UNSIGNED} arguments, this function is identical to the
 @item @emph{Description}:
 @code{BTEST(I,POS)} returns logical @code{.TRUE.} if the bit at @var{POS}
 in @var{I} is set.  The counting of the bits starts at 0.
-
-@item @emph{Standard}:
-Fortran 90 and later, has overloads that are GNU extensions; extension
-for @code{UNSIGNED} (@pxref{Unsigned integers})
 
 @item @emph{Class}:
 Elemental function
@@ -3065,6 +3061,10 @@ end program test_btest
 @item @code{BJTEST(I,POS)} @tab @code{INTEGER(4) I,POS} @tab @code{LOGICAL(4)} @tab GNU extension
 @item @code{BKTEST(I,POS)} @tab @code{INTEGER(8) I,POS} @tab @code{LOGICAL(8)} @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 90 and later, has overloads that are GNU extensions; extension
+for @code{UNSIGNED} (@pxref{Unsigned integers})
 @end table
 
 @node C_ASSOCIATED
@@ -3080,9 +3080,6 @@ end program test_btest
 @item @emph{Description}:
 @code{C_ASSOCIATED(c_ptr_1[, c_ptr_2])} determines the status of the C pointer
 @var{c_ptr_1} or if @var{c_ptr_1} is associated with the target @var{c_ptr_2}.
-
-@item @emph{Standard}:
-Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -3110,6 +3107,9 @@ subroutine association_test(a,b)
 end subroutine association_test
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{C_LOC}, @*
 @ref{C_FUNLOC}
@@ -3128,9 +3128,6 @@ end subroutine association_test
 @item @emph{Description}:
 @code{C_F_POINTER(CPTR, FPTR[, SHAPE])} assigns the target of the C pointer
 @var{CPTR} to the Fortran pointer @var{FPTR} and specifies its shape.
-
-@item @emph{Standard}:
-Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
@@ -3165,6 +3162,9 @@ program main
 end program main
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{C_LOC}, @*
 @ref{C_F_PROCPOINTER}
@@ -3183,9 +3183,6 @@ end program main
 @item @emph{Description}:
 @code{C_F_PROCPOINTER(CPTR, FPTR)} Assign the target of the C function pointer
 @var{CPTR} to the Fortran procedure pointer @var{FPTR}.
-
-@item @emph{Standard}:
-Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
@@ -3223,6 +3220,9 @@ program main
 end program main
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{C_LOC}, @*
 @ref{C_F_POINTER}
@@ -3240,9 +3240,6 @@ end program main
 
 @item @emph{Description}:
 @code{C_FUNLOC(x)} determines the C address of the argument.
-
-@item @emph{Standard}:
-Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -3281,6 +3278,9 @@ program main
 end program main
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{C_ASSOCIATED}, @*
 @ref{C_LOC}, @*
@@ -3300,9 +3300,6 @@ end program main
 
 @item @emph{Description}:
 @code{C_LOC(X)} determines the C address of the argument.
-
-@item @emph{Standard}:
-Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -3329,6 +3326,9 @@ subroutine association_test(a,b)
 end subroutine association_test
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{C_ASSOCIATED}, @*
 @ref{C_FUNLOC}, @*
@@ -3350,9 +3350,6 @@ end subroutine association_test
 @item @emph{Description}:
 @code{C_SIZEOF(X)} calculates the number of bytes of storage the
 expression @code{X} occupies.
-
-@item @emph{Standard}:
-Fortran 2008
 
 @item @emph{Class}:
 Inquiry function of the module @code{ISO_C_BINDING}
@@ -3382,6 +3379,9 @@ the sizes of the data pointed to by these components.
 The example prints @code{T} unless you are using a platform
 where default @code{REAL} variables are unusually padded.
 
+@item @emph{Standard}:
+Fortran 2008
+
 @item @emph{See also}:
 @ref{SIZEOF}, @*
 @ref{STORAGE_SIZE}
@@ -3400,9 +3400,6 @@ where default @code{REAL} variables are unusually padded.
 
 @item @emph{Description}:
 @code{CEILING(A)} returns the least integer greater than or equal to @var{A}.
-
-@item @emph{Standard}:
-Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -3428,6 +3425,9 @@ program test_ceiling
 end program test_ceiling
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 95 and later
+
 @item @emph{See also}:
 @ref{FLOOR}, @*
 @ref{NINT}
@@ -3446,9 +3446,6 @@ end program test_ceiling
 
 @item @emph{Description}:
 @code{CHAR(I [, KIND])} returns the character represented by the integer @var{I}.
-
-@item @emph{Standard}:
-Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -3483,6 +3480,9 @@ end program test_char
 See @ref{ICHAR} for a discussion of converting between numerical values
 and formatted string representations.
 
+@item @emph{Standard}:
+Fortran 77 and later
+
 @item @emph{See also}:
 @ref{ACHAR}, @*
 @ref{IACHAR}, @*
@@ -3510,9 +3510,6 @@ Change current working directory to a specified path.
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -3537,6 +3534,9 @@ PROGRAM test_chdir
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 @ref{GETCWD}
 @end table
@@ -3560,9 +3560,6 @@ END PROGRAM
 
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Subroutine, function
@@ -3608,6 +3605,9 @@ program chmod_test
 end program chmod_test
 @end smallexample
 
+
+@item @emph{Standard}:
+GNU extension
 @end table
 
 
@@ -3627,10 +3627,6 @@ end program chmod_test
 the real component.  If @var{Y} is present it is converted to the imaginary
 component.  If @var{Y} is not present then the imaginary component is set to
 0.0.  If @var{X} is complex then @var{Y} must not be present.
-
-@item @emph{Standard}:
-Fortran 77 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
 
 @item @emph{Class}:
 Elemental function
@@ -3662,6 +3658,10 @@ program test_cmplx
 end program test_cmplx
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 77 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
+
 @item @emph{See also}:
 @ref{COMPLEX}
 @end table
@@ -3684,9 +3684,6 @@ becomes defined as if by intrinsic assignment.  If the execution was
 successful and @var{STAT} is present, it is assigned the value zero.  If the
 execution failed, @var{STAT} gets assigned a nonzero value and, if present,
 @var{ERRMSG} gets assigned a value describing the occurred error.
-
-@item @emph{Standard}:
-Technical Specification (TS) 18508 or later
 
 @item @emph{Class}:
 Collective subroutine
@@ -3714,6 +3711,9 @@ program test
   print *, this_image, ":", val
 end program test
 @end smallexample
+
+@item @emph{Standard}:
+Technical Specification (TS) 18508 or later
 
 @item @emph{See also}:
 @ref{CO_MAX}, @*
@@ -3743,9 +3743,6 @@ successful and @var{STAT} is present, it is assigned the value zero.  If the
 execution failed, @var{STAT} gets assigned a nonzero value and, if present,
 @var{ERRMSG} gets assigned a value describing the occurred error.
 
-@item @emph{Standard}:
-Technical Specification (TS) 18508 or later
-
 @item @emph{Class}:
 Collective subroutine
 
@@ -3771,6 +3768,9 @@ program test
   end if
 end program test
 @end smallexample
+
+@item @emph{Standard}:
+Technical Specification (TS) 18508 or later
 
 @item @emph{See also}:
 @ref{CO_MIN}, @*
@@ -3800,9 +3800,6 @@ successful and @var{STAT} is present, it is assigned the value zero.  If the
 execution failed, @var{STAT} gets assigned a nonzero value and, if present,
 @var{ERRMSG} gets assigned a value describing the occurred error.
 
-@item @emph{Standard}:
-Technical Specification (TS) 18508 or later
-
 @item @emph{Class}:
 Collective subroutine
 
@@ -3828,6 +3825,9 @@ program test
   end if
 end program test
 @end smallexample
+
+@item @emph{Standard}:
+Technical Specification (TS) 18508 or later
 
 @item @emph{See also}:
 @ref{CO_MAX}, @*
@@ -3860,9 +3860,6 @@ images.  If the execution was successful and @var{STAT} is present, it is
 assigned the value zero.  If the execution failed, @var{STAT} gets assigned
 a nonzero value and, if present, @var{ERRMSG} gets assigned a value describing
 the occurred error.
-
-@item @emph{Standard}:
-Technical Specification (TS) 18508 or later
 
 @item @emph{Class}:
 Collective subroutine
@@ -3912,6 +3909,9 @@ intrinsics in the standard fulfill the criteria of having a specific
 function, which takes two arguments of the same type and returning that
 type as result.
 
+@item @emph{Standard}:
+Technical Specification (TS) 18508 or later
+
 @item @emph{See also}:
 @ref{CO_MIN}, @*
 @ref{CO_MAX}, @*
@@ -3940,9 +3940,6 @@ successful and @var{STAT} is present, it is assigned the value zero.  If the
 execution failed, @var{STAT} gets assigned a nonzero value and, if present,
 @var{ERRMSG} gets assigned a value describing the occurred error.
 
-@item @emph{Standard}:
-Technical Specification (TS) 18508 or later
-
 @item @emph{Class}:
 Collective subroutine
 
@@ -3970,6 +3967,9 @@ program test
 end program test
 @end smallexample
 
+@item @emph{Standard}:
+Technical Specification (TS) 18508 or later
+
 @item @emph{See also}:
 @ref{CO_MAX}, @*
 @ref{CO_MIN}, @*
@@ -3994,9 +3994,6 @@ end program test
 @code{COMMAND_ARGUMENT_COUNT} returns the number of arguments passed on the
 command line when the containing program was invoked.
 
-@item @emph{Standard}:
-Fortran 2003 and later
-
 @item @emph{Class}:
 Inquiry function
 
@@ -4016,6 +4013,9 @@ program test_command_argument_count
     print *, count
 end program test_command_argument_count
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2003 and later
 
 @item @emph{See also}:
 @ref{GET_COMMAND}, @*
@@ -4039,9 +4039,6 @@ end program test_command_argument_count
 @code{COMPILER_OPTIONS} returns a string with the options used for
 compiling.
 
-@item @emph{Standard}:
-Fortran 2008
-
 @item @emph{Class}:
 Inquiry function of the module @code{ISO_FORTRAN_ENV}
 
@@ -4061,6 +4058,9 @@ the @code{COMPILER_OPTIONS} intrinsic.
                  compiler_options()
    end
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2008
 
 @item @emph{See also}:
 @ref{COMPILER_VERSION}, @*
@@ -4083,9 +4083,6 @@ the @code{COMPILER_OPTIONS} intrinsic.
 @code{COMPILER_VERSION} returns a string with the name and the
 version of the compiler.
 
-@item @emph{Standard}:
-Fortran 2008
-
 @item @emph{Class}:
 Inquiry function of the module @code{ISO_FORTRAN_ENV}
 
@@ -4104,6 +4101,9 @@ It contains the name of the compiler and its version number.
                  compiler_options()
    end
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2008
 
 @item @emph{See also}:
 @ref{COMPILER_OPTIONS}, @*
@@ -4126,9 +4126,6 @@ It contains the name of the compiler and its version number.
 @code{COMPLEX(X, Y)} returns a complex number where @var{X} is converted
 to the real component and @var{Y} is converted to the imaginary
 component.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Elemental function
@@ -4157,6 +4154,9 @@ program test_complex
 end program test_complex
 @end smallexample
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 @ref{CMPLX}
 @end table
@@ -4176,9 +4176,6 @@ end program test_complex
 @item @emph{Description}:
 @code{CONJG(Z)} returns the conjugate of @var{Z}.  If @var{Z} is @code{(x, y)}
 then the result is @code{(x, -y)}
-
-@item @emph{Standard}:
-Fortran 77 and later, has an overload that is a GNU extension
 
 @item @emph{Class}:
 Elemental function
@@ -4208,6 +4205,9 @@ end program test_conjg
 @headitem Name             @tab Argument             @tab Return type       @tab Standard
 @item @code{DCONJG(Z)} @tab @code{COMPLEX(8) Z}  @tab @code{COMPLEX(8)} @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 77 and later, has an overload that is a GNU extension
 @end table
 
 
@@ -4228,9 +4228,6 @@ end program test_conjg
 
 @item @emph{Description}:
 @code{COS(X)} computes the cosine of @var{X}.
-
-@item @emph{Standard}:
-Fortran 77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -4264,6 +4261,9 @@ end program test_cos
 @item @code{CDCOS(X)} @tab @code{COMPLEX(8) X} @tab @code{COMPLEX(8)} @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later, has overloads that are GNU extensions
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{ACOS} @*
@@ -4289,9 +4289,6 @@ Degrees function: @*
 
 @item @emph{Description}:
 @code{COSD(X)} computes the cosine of @var{X} in degrees.
-
-@item @emph{Standard}:
-Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -4323,6 +4320,9 @@ end program test_cosd
 @item @code{CDCOSD(X)} @tab @code{COMPLEX(8) X} @tab @code{COMPLEX(8)} @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 2023
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{ACOSD} @*
@@ -4346,9 +4346,6 @@ Radians function: @*
 
 @item @emph{Description}:
 @code{COSH(X)} computes the hyperbolic cosine of @var{X}.
-
-@item @emph{Standard}:
-Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
@@ -4379,6 +4376,9 @@ end program test_cosh
 @item @code{DCOSH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later, for a complex argument Fortran 2008 or later
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{ACOSH}
@@ -4403,9 +4403,6 @@ divided by @code{SIN(x)}, or @code{1 / TAN(x)}.
 
 This function is for compatibility only and should be avoided in favor of
 standard constructs wherever possible.
-
-@item @emph{Standard}:
-GNU extension, enabled with @option{-fdec-math}.
 
 @item @emph{Class}:
 Elemental function
@@ -4433,6 +4430,9 @@ end program test_cotan
 @item @code{DCOTAN(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}  @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+GNU extension, enabled with @option{-fdec-math}.
+
 @item @emph{See also}:
 Converse function: @*
 @ref{TAN} @*
@@ -4456,12 +4456,6 @@ Degrees function: @*
 @item @emph{Description}:
 @code{COTAND(X)} computes the cotangent of @var{X} in degrees.  Equivalent to
 @code{COSD(x)} divided by @code{SIND(x)}, or @code{1 / TAND(x)}.
-
-@item @emph{Standard}:
-GNU extension.
-
-This function is for compatibility only and should be avoided in favor of
-standard constructs wherever possible.
 
 @item @emph{Class}:
 Elemental function
@@ -4488,6 +4482,12 @@ end program test_cotand
 @item @code{COTAND(X)}   @tab @code{REAL(4) X}  @tab @code{REAL(4)}  @tab GNU extension
 @item @code{DCOTAND(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}  @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+GNU extension.
+
+This function is for compatibility only and should be avoided in favor of
+standard constructs wherever possible.
 
 @item @emph{See also}:
 Converse function: @*
@@ -4516,9 +4516,6 @@ or, if the @var{DIM} argument is supplied, counts the number of
 elements along each row of the array in the @var{DIM} direction.
 If the array has zero size, or all of the elements of @var{MASK} are
 @code{.FALSE.}, then the result is @code{0}.
-
-@item @emph{Standard}:
-Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Transformational function
@@ -4562,6 +4559,9 @@ program test_count
     print '(3i3)', count(mask, 2)
 end program test_count
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 @end table
 
 
@@ -4589,9 +4589,6 @@ and may not start with @code{0.0}. For @code{CPU_TIME}, the absolute
 value is meaningless; only differences between subsequent calls to
 this subroutine, as shown in the example below, should be used.
 
-@item @emph{Standard}:
-Fortran 95 and later
-
 @item @emph{Class}:
 Subroutine
 
@@ -4613,6 +4610,9 @@ program test_cpu_time
     print '("Time = ",f6.3," seconds.")',finish-start
 end program test_cpu_time
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 95 and later
 
 @item @emph{See also}:
 @ref{SYSTEM_CLOCK}, @*
@@ -4641,9 +4641,6 @@ If the rank of @var{ARRAY} is one, then all elements of @var{ARRAY} are shifted
 by @var{SHIFT} places.  If rank is greater than one, then all complete rank one
 sections of @var{ARRAY} along the given dimension are shifted.  Elements
 shifted out one end of each rank one section are shifted back in the other end.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
@@ -4676,6 +4673,9 @@ program test_cshift
     print '(3i3)', a(3,:)
 end program test_cshift
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -4700,9 +4700,6 @@ Aug 19 18:13:14 1995}.
 
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Subroutine, function
@@ -4732,6 +4729,9 @@ program test_ctime
     print *, 'Program was started on ', date
 end program test_ctime
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{DATE_AND_TIME}, @*
@@ -4776,9 +4776,6 @@ Time (UTC).  Unavailable time and date parameters return blanks.
 @item @code{VALUES(8)}: @tab The milliseconds of the second
 @end multitable
 
-@item @emph{Standard}:
-Fortran 90 and later
-
 @item @emph{Class}:
 Subroutine
 
@@ -4814,6 +4811,9 @@ program test_time_and_date
 end program test_time_and_date
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later
+
 @item @emph{See also}:
 @ref{CPU_TIME}, @*
 @ref{SYSTEM_CLOCK}
@@ -4832,9 +4832,6 @@ end program test_time_and_date
 
 @item @emph{Description}:
 @code{DBLE(A)} Converts @var{A} to double precision real type.
-
-@item @emph{Standard}:
-Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -4858,6 +4855,9 @@ program test_dble
 end program test_dble
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 77 and later
+
 @item @emph{See also}:
 @ref{REAL}
 @end table
@@ -4879,9 +4879,6 @@ end program test_dble
 converted to the real component.  If @var{Y} is present it is converted to the
 imaginary component.  If @var{Y} is not present then the imaginary component is
 set to 0.0.  If @var{X} is complex then @var{Y} must not be present.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Elemental function
@@ -4910,6 +4907,9 @@ program test_dcmplx
     print *, dcmplx(x,i)
 end program test_dcmplx
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 @end table
 
 
@@ -4926,10 +4926,6 @@ end program test_dcmplx
 @code{DIGITS(X)} returns the number of significant binary digits of the internal
 model representation of @var{X}.  For example, on a system using a 32-bit
 floating point representation, a default real number would likely return 24.
-
-@item @emph{Standard}:
-Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
 
 @item @emph{Class}:
 Inquiry function
@@ -4953,6 +4949,10 @@ program test_digits
     print *, digits(y)
 end program test_digits
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 @end table
 
 
@@ -4971,9 +4971,6 @@ end program test_digits
 @item @emph{Description}:
 @code{DIM(X,Y)} returns the difference @code{X-Y} if the result is positive;
 otherwise returns zero.
-
-@item @emph{Standard}:
-Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5008,6 +5005,9 @@ end program test_dim
 @item @code{IDIM(X,Y)} @tab @code{INTEGER(4) X, Y} @tab @code{INTEGER(4)} @tab Fortran 77 and later
 @item @code{DDIM(X,Y)} @tab @code{REAL(8) X, Y}    @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
+
+@item @emph{Standard}:
+Fortran 77 and later
 @end table
 
 
@@ -5033,10 +5033,6 @@ is @code{SUM(CONJG(VECTOR_A)*VECTOR_B)}. If the vectors are @code{LOGICAL},
 the result is @code{ANY(VECTOR_A .AND. VECTOR_B)}. If one of @var{VECTOR_A}
 or @var{VECTOR_B} is @code{UNSIGNED}, the other one shall also be
 @code{UNSIGNED}.
-
-@item @emph{Standard}:
-Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
 
 @item @emph{Class}:
 Transformational function
@@ -5073,6 +5069,10 @@ program test_dot_prod
     print *, dot_product(a,b)
 end program test_dot_prod
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 @end table
 
 
@@ -5088,9 +5088,6 @@ end program test_dot_prod
 
 @item @emph{Description}:
 @code{DPROD(X,Y)} returns the product @code{X*Y}.
-
-@item @emph{Standard}:
-Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5121,6 +5118,9 @@ end program test_dprod
 @item @code{DPROD(X,Y)} @tab @code{REAL(4) X, Y}    @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
 
+
+@item @emph{Standard}:
+Fortran 77 and later
 @end table
 
 
@@ -5135,9 +5135,6 @@ end program test_dprod
 
 @item @emph{Description}:
 @code{DREAL(Z)} returns the real part of complex variable @var{Z}.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Elemental function
@@ -5157,6 +5154,9 @@ program test_dreal
     print *, dreal(z)
 end program test_dreal
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{AIMAG}
@@ -5181,10 +5181,6 @@ rightmost @var{SHIFT} bits of the result are the leftmost @var{SHIFT}
 bits of @var{J}, and the remaining bits are the rightmost bits of
 @var{I}.
 
-@item @emph{Standard}:
-Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -5206,6 +5202,10 @@ shall be less than or equal to @code{BIT_SIZE(I)}; otherwise,
 @item @emph{Return value}:
 The return value is the same type and type kind parameter as @var{I} or,
 if @var{I} is a BOZ constant, @var{J}.
+
+@item @emph{Standard}:
+Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 
 @item @emph{See also}:
 @ref{DSHIFTR}
@@ -5228,10 +5228,6 @@ leftmost @var{SHIFT} bits of the result are the rightmost @var{SHIFT}
 bits of @var{I}, and the remaining bits are the leftmost bits of
 @var{J}.
 
-@item @emph{Standard}:
-Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -5253,6 +5249,10 @@ shall be less than or equal to @code{BIT_SIZE(I)}; otherwise,
 @item @emph{Return value}:
 The return value is the same type and type kind parameter as @var{I} or,
 if @var{I} is a BOZ constant, @var{J}.
+
+@item @emph{Standard}:
+Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 
 @item @emph{See also}:
 @ref{DSHIFTL}
@@ -5305,9 +5305,6 @@ only one form can be used in any given program unit.
 @item @code{TIME}: @tab Run time since start in seconds.
 @end multitable
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -5340,6 +5337,9 @@ program test_dtime
     print *, tarray(2)
 end program test_dtime
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{CPU_TIME}
@@ -5377,10 +5377,6 @@ following are copied in depending on the type of @var{ARRAY}.
 @item Character(@var{len}) @tab @var{len} blanks.
 @end multitable
 
-@item @emph{Standard}:
-Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
-
 @item @emph{Class}:
 Transformational function
 
@@ -5413,6 +5409,10 @@ program test_eoshift
     print '(3i3)', a(3,:)
 end program test_eoshift
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 @end table
 
 
@@ -5429,9 +5429,6 @@ end program test_eoshift
 @item @emph{Description}:
 @code{EPSILON(X)} returns the smallest number @var{E} of the same kind
 as @var{X} such that @math{1 + E > 1}.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -5453,6 +5450,9 @@ program test_epsilon
     print *, EPSILON(y)
 end program test_epsilon
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -5468,9 +5468,6 @@ end program test_epsilon
 
 @item @emph{Description}:
 @code{ERF(X)} computes the error function of @var{X}.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5497,6 +5494,9 @@ end program test_erf
 @headitem Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DERF(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 2008 and later
 @end table
 
 
@@ -5512,9 +5512,6 @@ end program test_erf
 
 @item @emph{Description}:
 @code{ERFC(X)} computes the complementary error function of @var{X}.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5541,6 +5538,9 @@ end program test_erfc
 @headitem Name            @tab Argument          @tab Return type       @tab Standard
 @item @code{DERFC(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 2008 and later
 @end table
 
 
@@ -5557,9 +5557,6 @@ end program test_erfc
 @item @emph{Description}:
 @code{ERFC_SCALED(X)} computes the exponentially-scaled complementary
 error function of @var{X}.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5579,6 +5576,9 @@ program test_erfc_scaled
   x = erfc_scaled(x)
 end program test_erfc_scaled
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2008 and later
 @end table
 
 
@@ -5618,9 +5618,6 @@ only one form can be used in any given program unit.
 @item @code{TIME}: @tab Run time since start in seconds.
 @end multitable
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -5653,6 +5650,9 @@ program test_etime
 end program test_etime
 @end smallexample
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 @ref{CPU_TIME}
 
@@ -5675,9 +5675,6 @@ posted to the @var{EVENT} variable and not yet been removed by calling
 @code{EVENT WAIT}. When @var{STAT} is present and the invocation is successful,
 it is assigned the value 0. If it is present and the invocation fails,
 it is assigned a positive value and @var{COUNT} is assigned the value @math{-1}.
-
-@item @emph{Standard}:
-TS 18508 or later
 
 @item @emph{Class}:
  subroutine
@@ -5707,6 +5704,9 @@ program atomic
 end program atomic
 @end smallexample
 
+
+@item @emph{Standard}:
+TS 18508 or later
 @end table
 
 
@@ -5745,9 +5745,6 @@ called concurrently.
 For asynchronous execution on supported targets, the POSIX
 @code{posix_spawn} or @code{fork} functions are used.  Also, a signal
 handler for the @code{SIGCHLD} signal is installed.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Subroutine
@@ -5788,6 +5785,9 @@ dependent. In particular, on POSIX-compliant systems, the @code{SIGINT} and
 such, if the parent process is terminated, the child process might not be
 terminated alongside.
 
+@item @emph{Standard}:
+Fortran 2008 and later
+
 @item @emph{See also}:
 @ref{SYSTEM}
 @end table
@@ -5809,9 +5809,6 @@ terminated alongside.
 is omitted it returns the canonical @emph{success} for the system.  All Fortran
 I/O units are closed. 
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine
 
@@ -5831,6 +5828,9 @@ program test_exit
   call EXIT(STATUS)
 end program test_exit
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{ABORT}, @*
@@ -5855,9 +5855,6 @@ end program test_exit
 
 @item @emph{Description}:
 @code{EXP(X)} computes the base @math{e} exponential of @var{X}.
-
-@item @emph{Standard}:
-Fortran 77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -5888,6 +5885,9 @@ end program test_exp
 @item @code{ZEXP(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}   @tab GNU extension
 @item @code{CDEXP(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}   @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 77 and later, has overloads that are GNU extensions
 @end table
 
 
@@ -5905,9 +5905,6 @@ end program test_exp
 @item @emph{Description}:
 @code{EXPONENT(X)} returns the value of the exponent part of @var{X}. If @var{X}
 is zero the value returned is zero. 
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
@@ -5930,6 +5927,9 @@ program test_exponent
   print *, exponent(0.0)
 end program test_exponent
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -5945,9 +5945,6 @@ end program test_exponent
 @item @emph{Description}:
 Query dynamic type for extension.
 
-@item @emph{Standard}:
-Fortran 2003 and later
-
 @item @emph{Class}:
 Inquiry function
 
@@ -5962,6 +5959,9 @@ unlimited polymorphic.
 @item @emph{Return value}:
 The return value is a scalar of type default logical. It is true if and only if
 the dynamic type of A is an extension type of the dynamic type of MOLD.
+
+@item @emph{Standard}:
+Fortran 2003 and later
 
 @item @emph{See also}:
 @ref{SAME_TYPE_AS}
@@ -5992,9 +5992,6 @@ TIME())}.
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -6023,6 +6020,9 @@ program test_fdate
     print *, 'Program ended on ', date
 end program test_fdate
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{DATE_AND_TIME}, @*
@@ -6057,9 +6057,6 @@ Note that the @code{FGET} intrinsic is provided for backwards compatibility with
 Programmers should consider the use of new stream IO feature in new code 
 for future portability. See also @ref{Fortran 2003 status}.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -6088,6 +6085,9 @@ PROGRAM test_fget
   WRITE (*,*) TRIM(str)
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{FGETC}, @*
@@ -6124,9 +6124,6 @@ with @command{g77}.  GNU Fortran provides the Fortran 2003 Stream facility.
 Programmers should consider the use of new stream IO feature in new code 
 for future portability. See also @ref{Fortran 2003 status}.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -6155,6 +6152,9 @@ PROGRAM test_fgetc
   CLOSE(UNIT=fd)
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{FGET}, @*
@@ -6191,9 +6191,6 @@ of zeroes.  Similarly, if @var{DIM} is supplied and all of the
 elements of @var{MASK} along a given row are zero, the result value
 for that row is zero.
 
-@item @emph{Standard}:
-Fortran 2008 and later
-
 @item @emph{Class}:
 Transformational function
 
@@ -6225,6 +6222,9 @@ of one, the result is a scalar.  If the optional argument @var{KIND}
 is present, the result is an integer of kind @var{KIND}, otherwise it
 is of default kind.
 
+@item @emph{Standard}:
+Fortran 2008 and later
+
 @item @emph{See also}:
 @ref{MAXLOC}, @*
 @ref{MINLOC}
@@ -6243,9 +6243,6 @@ is of default kind.
 
 @item @emph{Description}:
 @code{FLOOR(A)} returns the greatest integer less than or equal to @var{A}.
-
-@item @emph{Standard}:
-Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
@@ -6271,6 +6268,9 @@ program test_floor
 end program test_floor
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 95 and later
+
 @item @emph{See also}:
 @ref{CEILING}, @*
 @ref{NINT}
@@ -6290,9 +6290,6 @@ end program test_floor
 @item @emph{Description}:
 Flushes Fortran unit(s) currently open for output. Without the optional
 argument, all units are flushed, otherwise just the unit specified.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Subroutine
@@ -6344,6 +6341,9 @@ descriptor of the I/O unit as argument (retrieved with GNU intrinsic
   if (ret /= 0) stop "Error calling FSYNC"
 @end smallexample
 
+
+@item @emph{Standard}:
+GNU extension
 @end table
 
 
@@ -6360,9 +6360,6 @@ descriptor of the I/O unit as argument (retrieved with GNU intrinsic
 @item @emph{Description}:
 @code{FNUM(UNIT)} returns the POSIX file descriptor number corresponding to the
 open Fortran I/O unit @code{UNIT}.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Function
@@ -6385,6 +6382,9 @@ program test_fnum
   close (10)
 end program test_fnum
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 @end table
 
 
@@ -6416,9 +6416,6 @@ Note that the @code{FGET} intrinsic is provided for backwards compatibility with
 Programmers should consider the use of new stream IO feature in new code 
 for future portability. See also @ref{Fortran 2003 status}.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -6441,6 +6438,9 @@ PROGRAM test_fput
   END DO
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{FPUTC}, @*
@@ -6477,9 +6477,6 @@ Note that the @code{FGET} intrinsic is provided for backwards compatibility with
 Programmers should consider the use of new stream IO feature in new code 
 for future portability. See also @ref{Fortran 2003 status}.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -6507,6 +6504,9 @@ PROGRAM test_fputc
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 @ref{FPUT}, @*
 @ref{FGET}, @*
@@ -6528,9 +6528,6 @@ END PROGRAM
 @item @emph{Description}:
 @code{FRACTION(X)} returns the fractional part of the model
 representation of @code{X}.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
@@ -6554,6 +6551,9 @@ program test_fraction
 end program test_fraction
 @end smallexample
 
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -6574,9 +6574,6 @@ provided in GNU Fortran to allow user to compile legacy code. For
 new code using Fortran 95 pointers, the memory de-allocation intrinsic is
 @code{DEALLOCATE}.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine
 
@@ -6591,6 +6588,9 @@ None
 
 @item @emph{Example}:
 See @code{MALLOC} for an example.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{MALLOC}
@@ -6633,9 +6633,6 @@ Please note that GNU Fortran provides the Fortran 2003 Stream facility.
 Programmers should consider the use of new stream IO feature in new code 
 for future portability. See also @ref{Fortran 2003 status}.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine
 
@@ -6673,6 +6670,9 @@ PROGRAM test_fseek
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 @ref{FTELL}
 @end table
@@ -6700,9 +6700,6 @@ The elements in @code{VALUES} are the same as described by @ref{STAT}.
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -6716,6 +6713,9 @@ on success and a system specific error code otherwise.
 
 @item @emph{Example}:
 See @ref{STAT} for an example.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 To stat a link: @*
@@ -6744,9 +6744,6 @@ Retrieves the current position within an open file.
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -6769,6 +6766,9 @@ PROGRAM test_ftell
   WRITE(*,*) i
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{FSEEK}
@@ -6798,9 +6798,6 @@ $$
 $$
 @end tex
 
-@item @emph{Standard}:
-Fortran 2008 and later
-
 @item @emph{Class}:
 Elemental function
 
@@ -6827,6 +6824,9 @@ end program test_gamma
 @item @code{DGAMMA(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 2008 and later
+
 @item @emph{See also}:
 Logarithm of the Gamma function: @*
 @ref{LOG_GAMMA}
@@ -6847,9 +6847,6 @@ Logarithm of the Gamma function: @*
 Returns the system error message corresponding to the last system error.
 This resembles the functionality of @code{strerror(3)} in C.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine
 
@@ -6866,6 +6863,9 @@ PROGRAM test_gerror
   WRITE(*,*) msg
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{IERRNO}, @*
@@ -6892,9 +6892,6 @@ This intrinsic routine is provided for backwards compatibility with
 GNU Fortran 77.  In new code, programmers should consider the use of 
 the @ref{GET_COMMAND_ARGUMENT} intrinsic defined by the Fortran 2003 
 standard.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Subroutine
@@ -6928,6 +6925,9 @@ PROGRAM test_getarg
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 GNU Fortran 77 compatibility function: @*
 @ref{IARGC} @*
@@ -6951,9 +6951,6 @@ Fortran 2003 functions and subroutines: @*
 
 @item @emph{Description}:
 Retrieve the entire command line that was used to invoke the program.
-
-@item @emph{Standard}:
-Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
@@ -6984,6 +6981,9 @@ PROGRAM test_get_command
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{GET_COMMAND_ARGUMENT}, @*
 @ref{COMMAND_ARGUMENT_COUNT}
@@ -7004,9 +7004,6 @@ END PROGRAM
 @item @emph{Description}:
 Retrieve the @var{NUMBER}-th argument that was passed on the
 command line when the containing program was invoked.
-
-@item @emph{Standard}:
-Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
@@ -7052,6 +7049,9 @@ PROGRAM test_get_command_argument
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{GET_COMMAND}, @*
 @ref{COMMAND_ARGUMENT_COUNT}
@@ -7077,9 +7077,6 @@ Get current working directory.
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -7098,6 +7095,9 @@ PROGRAM test_getcwd
   WRITE(*,*) TRIM(cwd)
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{CHDIR}
@@ -7126,9 +7126,6 @@ Note that @code{GETENV} need not be thread-safe. It is the
 responsibility of the user to ensure that the environment is not being
 updated concurrently with a call to the @code{GETENV} intrinsic.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine
 
@@ -7152,6 +7149,9 @@ PROGRAM test_getenv
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 @ref{GET_ENVIRONMENT_VARIABLE}
 @end table
@@ -7174,9 +7174,6 @@ Note that @code{GET_ENVIRONMENT_VARIABLE} need not be thread-safe. It
 is the responsibility of the user to ensure that the environment is
 not being updated concurrently with a call to the
 @code{GET_ENVIRONMENT_VARIABLE} intrinsic.
-
-@item @emph{Standard}:
-Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
@@ -7216,6 +7213,9 @@ PROGRAM test_getenv
   WRITE (*,*) TRIM(homedir)
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2003 and later
 @end table
 
 
@@ -7232,9 +7232,6 @@ END PROGRAM
 @item @emph{Description}:
 Returns the numerical group ID of the current process.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Function
 
@@ -7244,6 +7241,9 @@ kind.
 
 @item @emph{Example}:
 See @code{GETPID} for an example.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{GETPID}, @*
@@ -7264,9 +7264,6 @@ See @code{GETPID} for an example.
 
 @item @emph{Description}:
 Gets the username under which the program is running.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Subroutine
@@ -7291,6 +7288,9 @@ PROGRAM TEST_GETLOG
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 @ref{GETUID}
 @end table
@@ -7310,9 +7310,6 @@ END PROGRAM
 @item @emph{Description}:
 Returns the numerical process identifier of the current process.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Function
 
@@ -7328,6 +7325,9 @@ program info
   print *, "Your numerical group ID is ", getgid()
 end program info
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{GETGID}, @*
@@ -7349,9 +7349,6 @@ end program info
 @item @emph{Description}:
 Returns the numerical user ID of the current process.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Function
 
@@ -7361,6 +7358,9 @@ kind.
 
 @item @emph{Example}:
 See @code{GETPID} for an example.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{GETPID}, @*
@@ -7389,9 +7389,6 @@ GNU Fortran 77.  In new code, programmers should consider the use of
 the @ref{DATE_AND_TIME} intrinsic defined by the Fortran 95
 standard.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine
 
@@ -7418,6 +7415,9 @@ seconds
 @item Daylight savings indicator: positive if daylight savings is in
 effect, zero if not, and negative if the information is not available.
 @end enumerate
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{DATE_AND_TIME}, @*
@@ -7447,9 +7447,6 @@ Retrieves the host name of the system on which the program is running.
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -7464,6 +7461,9 @@ Returns 0 on success, or a system specific error code otherwise.
 In either syntax, @var{NAME} is set to the current hostname if it can
 be obtained, or to a blank string otherwise.
 
+
+@item @emph{Standard}:
+GNU extension
 @end table
 
 
@@ -7481,10 +7481,6 @@ be obtained, or to a blank string otherwise.
 @item @emph{Description}:
 @code{HUGE(X)} returns the largest number that is not an infinity in
 the model of the type of @code{X}.
-
-@item @emph{Standard}:
-Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
 
 @item @emph{Class}:
 Inquiry function
@@ -7505,6 +7501,10 @@ program test_huge_tiny
   print *, tiny(0.0), tiny(0.0d0)
 end program test_huge_tiny
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 @end table
 
 
@@ -7521,9 +7521,6 @@ end program test_huge_tiny
 @item @emph{Description}:
 @code{HYPOT(X,Y)} is the Euclidean distance function. It is equal to
 @math{\sqrt{X^2 + Y^2}}, without undue underflow or overflow.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -7545,6 +7542,9 @@ program test_hypot
   x = hypot(x,y)
 end program test_hypot
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2008 and later
 @end table
 
 
@@ -7563,9 +7563,6 @@ end program test_hypot
 @item @emph{Description}:
 @code{IACHAR(C)} returns the code for the @acronym{ASCII} character
 in the first character position of @code{C}.
-
-@item @emph{Standard}:
-Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -7593,6 +7590,9 @@ end program test_iachar
 See @ref{ICHAR} for a discussion of converting between numerical values
 and formatted string representations.
 
+@item @emph{Standard}:
+Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{ACHAR}, @*
 @ref{CHAR}, @*
@@ -7617,10 +7617,6 @@ and formatted string representations.
 @item @emph{Description}:
 Reduces with bitwise AND the elements of @var{ARRAY} along dimension @var{DIM}
 if the corresponding element in @var{MASK} is @code{TRUE}.
-
-@item @emph{Standard}:
-Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
 
 @item @emph{Class}:
 Transformational function
@@ -7656,6 +7652,10 @@ PROGRAM test_iall
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
+
 @item @emph{See also}:
 @ref{IANY}, @*
 @ref{IPARITY}, @*
@@ -7680,11 +7680,6 @@ END PROGRAM
 
 @item @emph{Description}:
 Bitwise logical @code{AND}.
-
-@item @emph{Standard}:
-Fortran 90 and later, with boz-literal-constant Fortran 2008 and
-later, has overloads that are GNU extensions.  Extension for
-@code{UNSIGNED} (@pxref{Unsigned integers})
 
 @item @emph{Class}:
 Elemental function
@@ -7724,6 +7719,11 @@ END PROGRAM
 @item @code{KIAND(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 90 and later, with boz-literal-constant Fortran 2008 and
+later, has overloads that are GNU extensions.  Extension for
+@code{UNSIGNED} (@pxref{Unsigned integers})
+
 @item @emph{See also}:
 @ref{IOR}, @*
 @ref{IEOR}, @*
@@ -7751,10 +7751,6 @@ END PROGRAM
 @item @emph{Description}:
 Reduces with bitwise OR (inclusive or) the elements of @var{ARRAY} along
 dimension @var{DIM} if the corresponding element in @var{MASK} is @code{TRUE}.
-
-@item @emph{Standard}:
-Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
 
 @item @emph{Class}:
 Transformational function
@@ -7790,6 +7786,10 @@ PROGRAM test_iany
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
+
 @item @emph{See also}:
 @ref{IPARITY}, @*
 @ref{IALL}, @*
@@ -7818,9 +7818,6 @@ GNU Fortran 77.  In new code, programmers should consider the use of
 the @ref{COMMAND_ARGUMENT_COUNT} intrinsic defined by the Fortran 2003 
 standard.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Function
 
@@ -7832,6 +7829,9 @@ The number of command line arguments, type @code{INTEGER(4)}.
 
 @item @emph{Example}:
 See @ref{GETARG}
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 GNU Fortran 77 compatibility subroutine: @*
@@ -7862,10 +7862,6 @@ Fortran 2003 functions and subroutines: @*
 @code{IBCLR} returns the value of @var{I} with the bit at position
 @var{POS} set to zero.
 
-@item @emph{Standard}:
-Fortran 90 and later, has overloads that are GNU extensions. Extension
-for @code{UNSIGNED} (@pxref{Unsigned integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -7887,6 +7883,10 @@ The return value is of the same type as @var{I}.
 @item @code{JIBCLR(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
 @item @code{KIBCLR(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 90 and later, has overloads that are GNU extensions. Extension
+for @code{UNSIGNED} (@pxref{Unsigned integers})
 
 @item @emph{See also}:
 @ref{IBITS}, @*
@@ -7920,10 +7920,6 @@ bits.  The result is right-justified and the remaining bits are
 zeroed.  The value of @code{POS+LEN} must be less than or equal to the
 value @code{BIT_SIZE(I)}.
 
-@item @emph{Standard}:
-Fortran 90 and later, has overloads that are GNU extensions. Extension
-for @code{UNSIGNED} (@pxref{Unsigned integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -7946,6 +7942,10 @@ The return value is of type as @var{I}.
 @item @code{JIBITS(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
 @item @code{KIBITS(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 90 and later, has overloads that are GNU extensions. Extension
+for @code{UNSIGNED} (@pxref{Unsigned integers})
 
 @item @emph{See also}:
 @ref{BIT_SIZE}, @*
@@ -7975,10 +7975,6 @@ The return value is of type as @var{I}.
 @code{IBSET} returns the value of @var{I} with the bit at position
 @var{POS} set to one.
 
-@item @emph{Standard}:
-Fortran 90 and later, has overloads that are GNU extensions.  Extension
-for @code{UNSIGNED} (@pxref{Unsigned integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -8000,6 +7996,10 @@ The return value is of the same type as @var{I}.
 @item @code{JIBSET(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
 @item @code{KIBSET(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 90 and later, has overloads that are GNU extensions.  Extension
+for @code{UNSIGNED} (@pxref{Unsigned integers})
 
 @item @emph{See also}:
 @ref{IBCLR}, @*
@@ -8026,9 +8026,6 @@ The return value is of the same type as @var{I}.
 position of @code{C} in the system's native character set.
 The correspondence between characters and their codes is not necessarily
 the same across different GNU Fortran implementations.
-
-@item @emph{Standard}:
-Fortran 77 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -8081,6 +8078,9 @@ program read_val
 end program read_val
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 77 and later, with @var{KIND} argument Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{ACHAR}, @*
 @ref{CHAR}, @*
@@ -8110,9 +8110,6 @@ GNU Fortran 77.  In new code, programmers should consider the use of
 the @ref{DATE_AND_TIME} intrinsic defined by the Fortran 95
 standard.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine
 
@@ -8136,6 +8133,9 @@ program test_idate
 end program test_idate
 @end smallexample
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 @ref{DATE_AND_TIME}
 @end table
@@ -8158,11 +8158,6 @@ end program test_idate
 @item @emph{Description}:
 @code{IEOR} returns the bitwise Boolean exclusive-OR of @var{I} and
 @var{J}.
-
-@item @emph{Standard}:
-Fortran 90 and later, with boz-literal-constant Fortran 2008 and
-later, has overloads that are GNU extensions. Extension for
-@code{UNSIGNED} (@pxref{Unsigned integers})
 
 @item @emph{Class}:
 Elemental function
@@ -8193,6 +8188,11 @@ with the kind type parameter of the other argument as-if a call to @ref{INT} or
 @item @code{KIEOR(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 90 and later, with boz-literal-constant Fortran 2008 and
+later, has overloads that are GNU extensions. Extension for
+@code{UNSIGNED} (@pxref{Unsigned integers})
+
 @item @emph{See also}:
 @ref{IOR}, @*
 @ref{IAND}, @*
@@ -8217,9 +8217,6 @@ with the kind type parameter of the other argument as-if a call to @ref{INT} or
 Returns the last system error number, as given by the C @code{errno}
 variable.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Function
 
@@ -8229,6 +8226,9 @@ None
 @item @emph{Return value}:
 The return value is of type @code{INTEGER} and of the default integer
 kind.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{PERROR}
@@ -8248,9 +8248,6 @@ kind.
 
 @item @emph{Description}:
 Returns the image index belonging to a cosubscript.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Inquiry function.
@@ -8272,6 +8269,9 @@ INTEGER :: array[2,-1:4,8,*]
 ! Writes  28 (or 0 if there are fewer than 28 images)
 WRITE (*,*) IMAGE_INDEX (array, [2,0,3,1])
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2008 and later
 
 @item @emph{See also}:
 @ref{THIS_IMAGE}, @*
@@ -8296,9 +8296,6 @@ Returns the position of the start of the first occurrence of string
 @var{SUBSTRING} is not present in @var{STRING}, zero is returned.  If 
 the @var{BACK} argument is present and true, the return value is the
 start of the last occurrence rather than the first.
-
-@item @emph{Standard}:
-Fortran 77 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -8325,6 +8322,9 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 @item @code{INDEX(STRING,SUBSTRING)} @tab @code{CHARACTER}   @tab @code{INTEGER(4)} @tab Fortran 77 and later
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later, with @var{KIND} argument Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{SCAN}, @*
 @ref{VERIFY}
@@ -8345,9 +8345,6 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 
 @item @emph{Description}:
 Convert to integer type
-
-@item @emph{Standard}:
-Fortran 77 and later, with boz-literal-constant Fortran 2008 and later.
 
 @item @emph{Class}:
 Elemental function, extension for @code{UNSIGNED} (@pxref{Unsigned
@@ -8399,6 +8396,9 @@ end program
 @item @code{IDINT(A)} @tab @code{REAL(8) A}  @tab @code{INTEGER}    @tab Fortran 77 and later
 @end multitable
 
+
+@item @emph{Standard}:
+Fortran 77 and later, with boz-literal-constant Fortran 2008 and later.
 @end table
 
 
@@ -8416,9 +8416,6 @@ Convert to a @code{KIND=2} integer type. This is equivalent to the
 standard @code{INT} intrinsic with an optional argument of
 @code{KIND=2}, and is only included for backwards compatibility.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Elemental function
 
@@ -8430,6 +8427,9 @@ Elemental function
 
 @item @emph{Return value}:
 The return value is a @code{INTEGER(2)} variable.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{INT}, @*
@@ -8452,9 +8452,6 @@ Convert to a @code{KIND=8} integer type. This is equivalent to the
 standard @code{INT} intrinsic with an optional argument of
 @code{KIND=8}, and is only included for backwards compatibility.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Elemental function
 
@@ -8466,6 +8463,9 @@ Elemental function
 
 @item @emph{Return value}:
 The return value is a @code{INTEGER(8)} variable.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{INT}, @*
@@ -8491,11 +8491,6 @@ The return value is a @code{INTEGER(8)} variable.
 @item @emph{Description}:
 @code{IOR} returns the bitwise Boolean inclusive-OR of @var{I} and
 @var{J}.
-
-@item @emph{Standard}:
-Fortran 90 and later, with boz-literal-constant Fortran 2008 and
-later, has overloads that are GNU extensions.  Extension for
-@code{UNSIGNED} (@pxref{Unsigned integers})
 
 @item @emph{Class}:
 Elemental function
@@ -8526,6 +8521,11 @@ with the kind type parameter of the other argument as-if a call to @ref{INT} or
 @item @code{KIOR(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 90 and later, with boz-literal-constant Fortran 2008 and
+later, has overloads that are GNU extensions.  Extension for
+@code{UNSIGNED} (@pxref{Unsigned integers})
+
 @item @emph{See also}:
 @ref{IEOR}, @*
 @ref{IAND}, @*
@@ -8554,10 +8554,6 @@ with the kind type parameter of the other argument as-if a call to @ref{INT} or
 @item @emph{Description}:
 Reduces with bitwise XOR (exclusive or) the elements of @var{ARRAY} along
 dimension @var{DIM} if the corresponding element in @var{MASK} is @code{TRUE}.
-
-@item @emph{Standard}:
-Fortran 2008 and later. Extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
 
 @item @emph{Class}:
 Transformational function
@@ -8594,6 +8590,10 @@ PROGRAM test_iparity
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 2008 and later. Extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
+
 @item @emph{See also}:
 @ref{IANY}, @*
 @ref{IALL}, @*
@@ -8625,9 +8625,6 @@ GNU Fortran 77. It implements a simple modulo generator as provided
 by @command{g77}. For new code, one should consider the use of 
 @ref{RANDOM_NUMBER} as it implements a superior algorithm.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Function
 
@@ -8650,6 +8647,9 @@ program test_irand
 end program test_irand
 @end smallexample
 
+
+@item @emph{Standard}:
+GNU extension
 @end table
 
 
@@ -8665,9 +8665,6 @@ end program test_irand
 
 @item @emph{Description}:
 @code{IS_CONTIGUOUS} tests whether an array is contiguous.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -8699,6 +8696,9 @@ contains
   end subroutine sub
 end program test
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2008 and later
 @end table
 
 
@@ -8717,9 +8717,6 @@ end program test
 status ``end of file''. The function is equivalent to comparing the variable
 with the @code{IOSTAT_END} parameter of the intrinsic module
 @code{ISO_FORTRAN_ENV}.
-
-@item @emph{Standard}:
-Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -8744,6 +8741,9 @@ PROGRAM iostat
   IF(IS_IOSTAT_END(stat)) STOP 'END OF FILE'
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2003 and later
 @end table
 
 
@@ -8762,9 +8762,6 @@ END PROGRAM
 status ``end of record''. The function is equivalent to comparing the
 variable with the @code{IOSTAT_EOR} parameter of the intrinsic module
 @code{ISO_FORTRAN_ENV}.
-
-@item @emph{Standard}:
-Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -8789,6 +8786,9 @@ PROGRAM iostat
   IF(IS_IOSTAT_EOR(stat)) STOP 'END OF RECORD'
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2003 and later
 @end table
 
 
@@ -8803,9 +8803,6 @@ END PROGRAM
 
 @item @emph{Description}:
 Determine whether a unit is connected to a terminal device.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Function
@@ -8828,6 +8825,9 @@ PROGRAM test_isatty
   END DO
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{TTYNAM}
@@ -8857,10 +8857,6 @@ absolute value of @var{SHIFT} is greater than @code{BIT_SIZE(I)}, the
 value is undefined.  Bits shifted out from the left end or right end are
 lost; zeros are shifted in from the opposite end.
 
-@item @emph{Standard}:
-Fortran 90 and later, has overloads that are GNU extensions. Extension for
-@code{UNSIGNED} (@pxref{Unsigned integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -8882,6 +8878,10 @@ The return value is of type of @var{I}.
 @item @code{JISHFT(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
 @item @code{KISHFT(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 90 and later, has overloads that are GNU extensions. Extension for
+@code{UNSIGNED} (@pxref{Unsigned integers})
 
 @item @emph{See also}:
 @ref{ISHFTC}
@@ -8912,10 +8912,6 @@ a right shift.  The absolute value of @var{SHIFT} must be less than
 @var{SIZE}.  If the @var{SIZE} argument is omitted, it is taken to be
 equivalent to @code{BIT_SIZE(I)}.
 
-@item @emph{Standard}:
-Fortran 90 and later, has overloads that are GNU extensions. Extension for
-@code{UNSIGNED} (@pxref{Unsigned integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -8941,6 +8937,10 @@ The return value is of the same type as @var{I}.
 @item @code{KISHFTC(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 90 and later, has overloads that are GNU extensions. Extension for
+@code{UNSIGNED} (@pxref{Unsigned integers})
+
 @item @emph{See also}:
 @ref{ISHFT}
 @end table
@@ -8959,9 +8959,6 @@ The return value is of the same type as @var{I}.
 @item @emph{Description}:
 @code{ISNAN} tests whether a floating-point value is an IEEE
 Not-a-Number (NaN).
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Elemental function
@@ -8986,6 +8983,9 @@ program test_nan
   if (isnan(x)) stop '"x" is a NaN'
 end program test_nan
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 @end table
 
 
@@ -9011,9 +9011,6 @@ GNU Fortran 77.  In new code, programmers should consider the use of
 the @ref{DATE_AND_TIME} intrinsic defined by the Fortran 95
 standard.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine
 
@@ -9036,6 +9033,9 @@ program test_itime
   print *, tarray(3)
 end program test_itime
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{DATE_AND_TIME}
@@ -9061,9 +9061,6 @@ See @code{kill(2)}.
 This intrinsic is provided in both subroutine and function forms;
 however, only one form can be used in any given program unit.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -9078,6 +9075,9 @@ Returns 0 on success; otherwise a system-specific error code is returned.
 @code{pid}.
 Returns 0 on success; otherwise a system-specific error code is returned.
 @end multitable
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{ABORT}, @*
@@ -9096,9 +9096,6 @@ Returns 0 on success; otherwise a system-specific error code is returned.
 
 @item @emph{Description}:
 @code{KIND(X)} returns the kind value of the entity @var{X}.
-
-@item @emph{Standard}:
-Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -9125,6 +9122,9 @@ program test_kind
 end program test_kind
 @end smallexample
 
+
+@item @emph{Standard}:
+Fortran 95 and later
 @end table
 
 
@@ -9141,9 +9141,6 @@ end program test_kind
 @item @emph{Description}:
 Returns the lower bounds of an array, or a single lower bound
 along the @var{DIM} dimension.
-
-@item @emph{Standard}:
-Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -9166,6 +9163,9 @@ corresponding to the lower bound of the array along that dimension.  If
 structure component, or if it has a zero extent along the relevant
 dimension, the lower bound is taken to be 1.
 
+@item @emph{Standard}:
+Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{UBOUND}, @*
 @ref{LCOBOUND}
@@ -9186,9 +9186,6 @@ dimension, the lower bound is taken to be 1.
 Returns the lower bounds of a coarray, or a single lower cobound
 along the @var{DIM} codimension.
 
-@item @emph{Standard}:
-Fortran 2008 and later
-
 @item @emph{Class}:
 Inquiry function
 
@@ -9206,6 +9203,9 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 If @var{DIM} is absent, the result is an array of the lower cobounds of
 @var{COARRAY}.  If @var{DIM} is present, the result is a scalar
 corresponding to the lower cobound of the array along that codimension.
+
+@item @emph{Standard}:
+Fortran 2008 and later
 
 @item @emph{See also}:
 @ref{UCOBOUND}, @*
@@ -9226,9 +9226,6 @@ corresponding to the lower cobound of the array along that codimension.
 @item @emph{Description}:
 @code{LEADZ} returns the number of leading zero bits of an integer.
 
-@item @emph{Standard}:
-Fortran 2008 and later
-
 @item @emph{Class}:
 Elemental function
 
@@ -9248,6 +9245,9 @@ PROGRAM test_leadz
   WRITE (*,*) LEADZ(1)     ! prints 31
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2008 and later
 
 @item @emph{See also}:
 @ref{BIT_SIZE}, @*
@@ -9273,9 +9273,6 @@ the length of an element of @var{STRING} is returned.  Note that
 @var{STRING} need not be defined when this intrinsic is invoked, since
 only the length, not the content, of @var{STRING} is needed.
 
-@item @emph{Standard}:
-Fortran 77 and later, with @var{KIND} argument Fortran 2003 and later
-
 @item @emph{Class}:
 Inquiry function
 
@@ -9297,6 +9294,9 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 @item @code{LEN(STRING)} @tab @code{CHARACTER}  @tab @code{INTEGER}    @tab Fortran 77 and later
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later, with @var{KIND} argument Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{LEN_TRIM}, @*
 @ref{ADJUSTL}, @*
@@ -9317,9 +9317,6 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 @item @emph{Description}:
 Returns the length of a character string, ignoring any trailing blanks.
 
-@item @emph{Standard}:
-Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
-
 @item @emph{Class}:
 Elemental function
 
@@ -9334,6 +9331,9 @@ expression indicating the kind parameter of the result.
 @item @emph{Return value}:
 The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 @var{KIND} is absent, the return value is of default integer kind.
+
+@item @emph{Standard}:
+Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{See also}:
 @ref{LEN}, @*
@@ -9367,9 +9367,6 @@ that the latter use the processor's character ordering (which is not
 ASCII on some targets), whereas the former always use the ASCII
 ordering.
 
-@item @emph{Standard}:
-Fortran 77 and later
-
 @item @emph{Class}:
 Elemental function
 
@@ -9388,6 +9385,9 @@ otherwise, based on the ASCII ordering.
 @headitem Name                           @tab Argument          @tab Return type       @tab Standard
 @item @code{LGE(STRING_A,STRING_B)} @tab @code{CHARACTER}  @tab @code{LOGICAL}    @tab Fortran 77 and later
 @end multitable
+
+@item @emph{Standard}:
+Fortran 77 and later
 
 @item @emph{See also}:
 @ref{LGT}, @*
@@ -9421,9 +9421,6 @@ that the latter use the processor's character ordering (which is not
 ASCII on some targets), whereas the former always use the ASCII
 ordering.
 
-@item @emph{Standard}:
-Fortran 77 and later
-
 @item @emph{Class}:
 Elemental function
 
@@ -9442,6 +9439,9 @@ otherwise, based on the ASCII ordering.
 @headitem Name                           @tab Argument          @tab Return type       @tab Standard
 @item @code{LGT(STRING_A,STRING_B)} @tab @code{CHARACTER}  @tab @code{LOGICAL}    @tab Fortran 77 and later
 @end multitable
+
+@item @emph{Standard}:
+Fortran 77 and later
 
 @item @emph{See also}:
 @ref{LGE}, @*
@@ -9475,9 +9475,6 @@ contains 0 on success or a nonzero error code upon return; see
 This intrinsic is provided in both subroutine and function forms;
 however, only one form can be used in any given program unit.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -9487,6 +9484,9 @@ Subroutine, function
 @item @var{PATH2} @tab Shall be of default @code{CHARACTER} type.
 @item @var{STATUS} @tab (Optional) Shall be of default @code{INTEGER} type.
 @end multitable
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{SYMLNK}, @*
@@ -9519,9 +9519,6 @@ that the latter use the processor's character ordering (which is not
 ASCII on some targets), whereas the former always use the ASCII
 ordering.
 
-@item @emph{Standard}:
-Fortran 77 and later
-
 @item @emph{Class}:
 Elemental function
 
@@ -9540,6 +9537,9 @@ otherwise, based on the ASCII ordering.
 @headitem Name                           @tab Argument          @tab Return type       @tab Standard
 @item @code{LLE(STRING_A,STRING_B)} @tab @code{CHARACTER}  @tab @code{LOGICAL}    @tab Fortran 77 and later
 @end multitable
+
+@item @emph{Standard}:
+Fortran 77 and later
 
 @item @emph{See also}:
 @ref{LGE}, @*
@@ -9573,9 +9573,6 @@ that the latter use the processor's character ordering (which is not
 ASCII on some targets), whereas the former always use the ASCII
 ordering.
 
-@item @emph{Standard}:
-Fortran 77 and later
-
 @item @emph{Class}:
 Elemental function
 
@@ -9594,6 +9591,9 @@ otherwise, based on the ASCII ordering.
 @headitem Name                           @tab Argument          @tab Return type       @tab Standard
 @item @code{LLT(STRING_A,STRING_B)} @tab @code{CHARACTER}  @tab @code{LOGICAL}    @tab Fortran 77 and later
 @end multitable
+
+@item @emph{Standard}:
+Fortran 77 and later
 
 @item @emph{See also}:
 @ref{LGE}, @*
@@ -9617,9 +9617,6 @@ Returns the length of a character string, ignoring any trailing blanks.
 This is identical to the standard @code{LEN_TRIM} intrinsic, and is only
 included for backwards compatibility.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Elemental function
 
@@ -9631,6 +9628,9 @@ with @code{INTENT(IN)}
 
 @item @emph{Return value}:
 The return value is of @code{INTEGER(kind=4)} type.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{INDEX intrinsic}, @*
@@ -9650,9 +9650,6 @@ The return value is of @code{INTEGER(kind=4)} type.
 
 @item @emph{Description}:
 @code{LOC(X)} returns the address of @var{X} as an integer.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Inquiry function
@@ -9676,6 +9673,9 @@ program test_loc
   print *, i
 end program test_loc
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 @end table
 
 
@@ -9699,9 +9699,6 @@ end program test_loc
 @item @emph{Description}:
 @code{LOG(X)} computes the natural logarithm of @var{X}, i.e. the
 logarithm to the base @math{e}.
-
-@item @emph{Standard}:
-Fortran 77 and later, has GNU extensions
 
 @item @emph{Class}:
 Elemental function
@@ -9737,6 +9734,9 @@ end program test_log
 @item @code{ZLOG(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab GNU extension
 @item @code{CDLOG(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 77 and later, has GNU extensions
 @end table
 
 
@@ -9756,9 +9756,6 @@ end program test_log
 
 @item @emph{Description}:
 @code{LOG10(X)} computes the base 10 logarithm of @var{X}.
-
-@item @emph{Standard}:
-Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -9786,6 +9783,9 @@ end program test_log10
 @item @code{ALOG10(X)}  @tab @code{REAL(4) X}  @tab @code{REAL(4)}    @tab Fortran 77 and later
 @item @code{DLOG10(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
+
+@item @emph{Standard}:
+Fortran 77 and later
 @end table
 
 
@@ -9805,9 +9805,6 @@ end program test_log10
 @item @emph{Description}:
 @code{LOG_GAMMA(X)} computes the natural logarithm of the absolute value
 of the Gamma (@math{\Gamma}) function.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -9837,6 +9834,9 @@ end program test_log_gamma
 @item @code{DLGAMA(X)} @tab @code{REAL(8) X} @tab @code{REAL(8)}    @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 2008 and later
+
 @item @emph{See also}:
 Gamma function: @*
 @ref{GAMMA}
@@ -9856,9 +9856,6 @@ Gamma function: @*
 @item @emph{Description}:
 Converts one kind of @code{LOGICAL} variable to another.
 
-@item @emph{Standard}:
-Fortran 90 and later
-
 @item @emph{Class}:
 Elemental function
 
@@ -9873,6 +9870,9 @@ expression indicating the kind parameter of the result.
 The return value is a @code{LOGICAL} value equal to @var{L}, with a
 kind corresponding to @var{KIND}, or of the default logical kind if
 @var{KIND} is not given.
+
+@item @emph{Standard}:
+Fortran 90 and later
 
 @item @emph{See also}:
 @ref{INT}, @*
@@ -9902,9 +9902,6 @@ This function has been superseded by the @code{ISHFT} intrinsic, which
 is standard in Fortran 95 and later, and the @code{SHIFTL} intrinsic,
 which is standard in Fortran 2008 and later.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Elemental function
 
@@ -9917,6 +9914,9 @@ Elemental function
 @item @emph{Return value}:
 The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{ISHFT}, @*
@@ -9951,9 +9951,6 @@ The elements in @code{VALUES} are the same as described by @ref{STAT}.
 This intrinsic is provided in both subroutine and function forms;
 however, only one form can be used in any given program unit.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -9968,6 +9965,9 @@ Returns 0 on success and a system specific error code otherwise.
 
 @item @emph{Example}:
 See @ref{STAT} for an example.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 To stat an open file: @*
@@ -9997,9 +9997,6 @@ GNU Fortran 77.  In new code, programmers should consider the use of
 the @ref{DATE_AND_TIME} intrinsic defined by the Fortran 95
 standard.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine
 
@@ -10027,6 +10024,9 @@ seconds
 effect, zero if not, and negative if the information is not available.
 @end enumerate
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 @ref{DATE_AND_TIME}, @*
 @ref{CTIME}, @*
@@ -10053,9 +10053,6 @@ is an extension intended to be used with Cray pointers, and is provided
 in GNU Fortran to allow the user to compile legacy code. For new code
 using Fortran 95 pointers, the memory allocation intrinsic is
 @code{ALLOCATE}.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Function
@@ -10094,6 +10091,9 @@ program test_malloc
 end program test_malloc
 @end smallexample
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 @ref{FREE}
 @end table
@@ -10113,9 +10113,6 @@ end program test_malloc
 @code{MASKL(I[, KIND])} has its leftmost @var{I} bits set to 1, and the
 remaining bits set to 0.
 
-@item @emph{Standard}:
-Fortran 2008 and later
-
 @item @emph{Class}:
 Elemental function
 
@@ -10130,6 +10127,9 @@ Elemental function
 The return value is of type @code{INTEGER}. If @var{KIND} is present, it
 specifies the kind value of the return type; otherwise, it is of the
 default integer kind.
+
+@item @emph{Standard}:
+Fortran 2008 and later
 
 @item @emph{See also}:
 @ref{MASKR}
@@ -10150,9 +10150,6 @@ default integer kind.
 @code{MASKL(I[, KIND])} has its rightmost @var{I} bits set to 1, and the
 remaining bits set to 0.
 
-@item @emph{Standard}:
-Fortran 2008 and later
-
 @item @emph{Class}:
 Elemental function
 
@@ -10167,6 +10164,9 @@ Elemental function
 The return value is of type @code{INTEGER}. If @var{KIND} is present, it
 specifies the kind value of the return type; otherwise, it is of the
 default integer kind.
+
+@item @emph{Standard}:
+Fortran 2008 and later
 
 @item @emph{See also}:
 @ref{MASKL}
@@ -10186,10 +10186,6 @@ default integer kind.
 
 @item @emph{Description}:
 Performs a matrix multiplication on numeric or logical arguments.
-
-@item @emph{Standard}:
-Fortran 90 and later. Extension for@code{UNSIGNED}
-(@pxref{Unsigned integers})
 
 @item @emph{Class}:
 Transformational function
@@ -10216,6 +10212,10 @@ equal to the last (or only) dimension of @var{MATRIX_A}.
 The matrix product of @var{MATRIX_A} and @var{MATRIX_B}.  The type and
 kind of the result follow the usual type and kind promotion rules, as
 for the @code{*} or @code{.AND.} operators.
+
+@item @emph{Standard}:
+Fortran 90 and later. Extension for@code{UNSIGNED}
+(@pxref{Unsigned integers})
 @end table
 
 
@@ -10236,10 +10236,6 @@ for the @code{*} or @code{.AND.} operators.
 
 @item @emph{Description}:
 Returns the argument with the largest (most positive) value.
-
-@item @emph{Standard}:
-Fortran 77 and later.  Extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
 
 @item @emph{Class}:
 Elemental function
@@ -10267,6 +10263,10 @@ and has the same type and kind as the first argument.
 @item @code{DMAX1(A1)} @tab @code{REAL(8) A1}    @tab @code{REAL(8)}      @tab Fortran 77 and later
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later.  Extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
+
 @item @emph{See also}:
 @ref{MAXLOC} @*
 @ref{MAXVAL}, @*
@@ -10287,9 +10287,6 @@ and has the same type and kind as the first argument.
 @item @emph{Description}:
 @code{MAXEXPONENT(X)} returns the maximum exponent in the model of the
 type of @code{X}.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -10313,6 +10310,9 @@ program exponents
   print *, minexponent(y), maxexponent(y)
 end program exponents
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -10344,12 +10344,6 @@ the result is an array of zeroes.  Similarly, if @var{DIM} is supplied
 and all of the elements of @var{MASK} along a given row are zero, the
 result value for that row is zero.
 
-@item @emph{Standard}:
-Fortran 95 and later; @var{ARRAY} of @code{CHARACTER} and the
-@var{KIND} argument are available in Fortran 2003 and later.
-The @var{BACK} argument is available in Fortran 2008 and later.
-Extension for@code{UNSIGNED} (@pxref{Unsigned integers}).
-
 @item @emph{Class}:
 Transformational function
 
@@ -10376,6 +10370,12 @@ dimension removed.  If @var{DIM} is present and @var{ARRAY} has a rank
 of one, the result is a scalar.   If the optional argument @var{KIND}
 is present, the result is an integer of kind @var{KIND}, otherwise it
 is of default kind.
+
+@item @emph{Standard}:
+Fortran 95 and later; @var{ARRAY} of @code{CHARACTER} and the
+@var{KIND} argument are available in Fortran 2003 and later.
+The @var{BACK} argument is available in Fortran 2008 and later.
+Extension for@code{UNSIGNED} (@pxref{Unsigned integers}).
 
 @item @emph{See also}:
 @ref{FINDLOC}, @*
@@ -10409,10 +10409,6 @@ if @var{ARRAY} is of type @code{INTEGER} or @code{REAL}, @code{0}
 if it is type @code{UNSIGNED}. or a string of nulls if @var{ARRAY} is of
 character type.
 
-@item @emph{Standard}:
-Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
-
 @item @emph{Class}:
 Transformational function
 
@@ -10433,6 +10429,10 @@ is a scalar.  If @var{DIM} is present, the result is an array with a
 rank one less than the rank of @var{ARRAY}, and a size corresponding to
 the size of @var{ARRAY} with the @var{DIM} dimension removed.  In all
 cases, the result is of the same type and kind as @var{ARRAY}.
+
+@item @emph{Standard}:
+Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 
 @item @emph{See also}:
 @ref{MAX}, @*
@@ -10461,9 +10461,6 @@ the values returned by this intrinsic might be, or become, negative, or
 numerically less than previous values, during a single run of the
 compiled program.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Function
 
@@ -10471,6 +10468,9 @@ Function
 The return value is a scalar of type @code{INTEGER(4)}, equal to the
 number of clock ticks since the start of the process, or @code{-1} if
 the system does not support @code{clock(3)}.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{CTIME}, @*
@@ -10504,9 +10504,6 @@ overflows of the 32-bit value can still occur. Therefore, the values
 returned by this intrinsic might be or become negative or numerically
 less than previous values during a single run of the compiled program.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Function
 
@@ -10514,6 +10511,9 @@ Function
 The return value is a scalar of type @code{INTEGER(8)}, equal to the
 number of clock ticks since the start of the process, or @code{-1} if
 the system does not support @code{clock(3)}.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{CTIME}, @*
@@ -10540,9 +10540,6 @@ Select values from two arrays according to a logical mask.  The result
 is equal to @var{TSOURCE} if @var{MASK} is @code{.TRUE.}, or equal to
 @var{FSOURCE} if it is @code{.FALSE.}.
 
-@item @emph{Standard}:
-Fortran 90 and later
-
 @item @emph{Class}:
 Elemental function
 
@@ -10557,6 +10554,9 @@ as @var{TSOURCE}.
 @item @emph{Return value}:
 The result is of the same type and type parameters as @var{TSOURCE}.
 
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -10576,10 +10576,6 @@ as determined by the mask.  The i-th bit of the result is equal to the
 i-th bit of @var{I} if the i-th bit of @var{MASK} is 1; it is equal to
 the i-th bit of @var{J} otherwise.
 
-@item @emph{Standard}:
-Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -10597,6 +10593,10 @@ boz-literal-constant.
 @item @emph{Return value}:
 The result is of the same type and kind as @var{I}.
 
+
+@item @emph{Standard}:
+Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 @end table
 
 
@@ -10617,10 +10617,6 @@ The result is of the same type and kind as @var{I}.
 
 @item @emph{Description}:
 Returns the argument with the smallest (most negative) value.
-
-@item @emph{Standard}:
-Fortran 77 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
 
 @item @emph{Class}:
 Elemental function
@@ -10648,6 +10644,10 @@ and has the same type and kind as the first argument.
 @item @code{DMIN1(A1)}  @tab @code{REAL(8) A1}    @tab @code{REAL(8)}     @tab Fortran 77 and later
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
+
 @item @emph{See also}:
 @ref{MAX}, @*
 @ref{MINLOC}, @*
@@ -10669,9 +10669,6 @@ and has the same type and kind as the first argument.
 @code{MINEXPONENT(X)} returns the minimum exponent in the model of the
 type of @code{X}.
 
-@item @emph{Standard}:
-Fortran 90 and later
-
 @item @emph{Class}:
 Inquiry function
 
@@ -10686,6 +10683,9 @@ kind.
 
 @item @emph{Example}:
 See @code{MAXEXPONENT} for an example.
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -10717,12 +10717,6 @@ the result is an array of zeroes.  Similarly, if @var{DIM} is supplied
 and all of the elements of @var{MASK} along a given row are zero, the
 result value for that row is zero.
 
-@item @emph{Standard}:
-Fortran 90 and later; @var{ARRAY} of @code{CHARACTER} and the
-@var{KIND} argument are available in Fortran 2003 and later.
-The @var{BACK} argument is available in Fortran 2008 and later.
-Extension for @code{UNSIGNED} (@pxref{Unsigned integers}).
-
 @item @emph{Class}:
 Transformational function
 
@@ -10749,6 +10743,12 @@ dimension removed.  If @var{DIM} is present and @var{ARRAY} has a rank
 of one, the result is a scalar.  If the optional argument @var{KIND}
 is present, the result is an integer of kind @var{KIND}, otherwise it
 is of default kind.
+
+@item @emph{Standard}:
+Fortran 90 and later; @var{ARRAY} of @code{CHARACTER} and the
+@var{KIND} argument are available in Fortran 2003 and later.
+The @var{BACK} argument is available in Fortran 2008 and later.
+Extension for @code{UNSIGNED} (@pxref{Unsigned integers}).
 
 @item @emph{See also}:
 @ref{FINDLOC}, @*
@@ -10781,10 +10781,6 @@ considered.  If the array has zero size, or all of the elements of
 @var{ARRAY} is numeric, or a string of @code{CHAR(255)} characters if
 @var{ARRAY} is of character type.
 
-@item @emph{Standard}:
-Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
-
 @item @emph{Class}:
 Transformational function
 
@@ -10805,6 +10801,10 @@ is a scalar.  If @var{DIM} is present, the result is an array with a
 rank one less than the rank of @var{ARRAY}, and a size corresponding to
 the size of @var{ARRAY} with the @var{DIM} dimension removed.  In all
 cases, the result is of the same type and kind as @var{ARRAY}.
+
+@item @emph{Standard}:
+Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 
 @item @emph{See also}:
 @ref{MIN}, @*
@@ -10831,10 +10831,6 @@ cases, the result is of the same type and kind as @var{ARRAY}.
 
 @item @emph{Description}:
 @code{MOD(A,P)} computes the remainder of the division of A by P@. 
-
-@item @emph{Standard}:
-Fortran 77 and later, has overloads that are GNU extensions. Extension
-for @code{UNSIGNED}.
 
 @item @emph{Class}:
 Elemental function
@@ -10891,6 +10887,10 @@ end program test_mod
 @item @code{KMOD(A,P)}  @tab @code{INTEGER(8) A,P} @tab @code{INTEGER(8)} @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later, has overloads that are GNU extensions. Extension
+for @code{UNSIGNED}.
+
 @item @emph{See also}:
 @ref{MODULO}
 
@@ -10910,10 +10910,6 @@ end program test_mod
 
 @item @emph{Description}:
 @code{MODULO(A,P)} computes the @var{A} modulo @var{P}.
-
-@item @emph{Standard}:
-Fortran 95 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
 
 @item @emph{Class}:
 Elemental function
@@ -10958,6 +10954,10 @@ program test_modulo
 end program
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 95 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
+
 @item @emph{See also}:
 @ref{MOD}
 
@@ -10978,9 +10978,6 @@ end program
 @item @emph{Description}:
 @code{MOVE_ALLOC(FROM, TO)} moves the allocation from @var{FROM} to
 @var{TO}.  @var{FROM} becomes deallocated in the process.
-
-@item @emph{Standard}:
-Fortran 2003 and later
 
 @item @emph{Class}:
 Pure subroutine
@@ -11008,6 +11005,9 @@ program test_move_alloc
     print *, b
 end program test_move_alloc
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2003 and later
 @end table
 
 
@@ -11033,10 +11033,6 @@ affected by the movement of bits is unchanged. The values of
 @code{FROMPOS+LEN-1} and @code{TOPOS+LEN-1} must be less than
 @code{BIT_SIZE(FROM)}.
 
-@item @emph{Standard}:
-Fortran 90 and later, has overloads that are GNU extensions. Extension
-for @code{UNSIGNED} (@pxref{Unsigned integers}).
-
 @item @emph{Class}:
 Elemental subroutine
 
@@ -11059,6 +11055,10 @@ as @var{FROM}.
 @item @code{JMVBITS(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
 @item @code{KMVBITS(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 90 and later, has overloads that are GNU extensions. Extension
+for @code{UNSIGNED} (@pxref{Unsigned integers}).
 
 @item @emph{See also}:
 @ref{IBCLR}, @*
@@ -11084,9 +11084,6 @@ as @var{FROM}.
 @item @emph{Description}:
 @code{NEAREST(X, S)} returns the processor-representable number nearest
 to @code{X} in the direction indicated by the sign of @code{S}.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
@@ -11114,6 +11111,9 @@ program test_nearest
   write (*,"(3(G20.15))") x, y, x - y
 end program test_nearest
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -11130,9 +11130,6 @@ end program test_nearest
 
 @item @emph{Description}:
 @code{NEW_LINE(C)} returns the new-line character.
-
-@item @emph{Standard}:
-Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -11154,6 +11151,9 @@ program newline
   write(*,'(A)') 'This is record 1.'//NEW_LINE('A')//'This is record 2.'
 end program newline
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2003 and later
 @end table
 
 
@@ -11170,9 +11170,6 @@ end program newline
 
 @item @emph{Description}:
 @code{NINT(A)} rounds its argument to the nearest whole number.
-
-@item @emph{Standard}:
-Fortran 77 and later, with @var{KIND} argument Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
@@ -11207,6 +11204,9 @@ end program test_nint
 @item @code{IDNINT(A)} @tab @code{REAL(8) A}   @tab  @code{INTEGER} @tab Fortran 77 and later
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later, with @var{KIND} argument Fortran 90 and later
+
 @item @emph{See also}:
 @ref{CEILING}, @*
 @ref{FLOOR}
@@ -11230,9 +11230,6 @@ end program test_nint
 @item @emph{Description}:
 Calculates the Euclidean vector norm (@math{L_2} norm)
 of @var{ARRAY} along dimension @var{DIM}.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Transformational function
@@ -11261,6 +11258,9 @@ PROGRAM test_sum
   print *, NORM2(x)  ! = sqrt(55.) ~ 7.416
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2008 and later
 @end table
 
 
@@ -11283,10 +11283,6 @@ END PROGRAM
 @item @emph{Description}:
 @code{NOT} returns the bitwise Boolean inverse of @var{I}.
 
-@item @emph{Standard}:
-Fortran 90 and later, has overloads that are GNU extensions, extension
-for @code{UNSIGNED} (@pxref{Unsigned integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -11307,6 +11303,10 @@ The return type is @code{INTEGER}, of the same kind as the argument.
 @item @code{JNOT(A)} @tab @code{INTEGER(4) A} @tab @code{INTEGER(4)} @tab GNU extension
 @item @code{KNOT(A)} @tab @code{INTEGER(8) A} @tab @code{INTEGER(8)} @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 90 and later, has overloads that are GNU extensions, extension
+for @code{UNSIGNED} (@pxref{Unsigned integers})
 
 @item @emph{See also}:
 @ref{IAND}, @*
@@ -11338,9 +11338,6 @@ returned, otherwise the type is determined by context.
 In Fortran 95, @var{MOLD} is optional. Please note that Fortran 2003
 includes cases where it is required.
 
-@item @emph{Standard}:
-Fortran 95 and later
-
 @item @emph{Class}:
 Transformational function
 
@@ -11357,6 +11354,9 @@ A disassociated pointer.
 @smallexample
 REAL, POINTER, DIMENSION(:) :: VEC => NULL ()
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 95 and later
 
 @item @emph{See also}:
 @ref{ASSOCIATED}
@@ -11376,10 +11376,6 @@ REAL, POINTER, DIMENSION(:) :: VEC => NULL ()
 
 @item @emph{Description}:
 Returns the number of images.
-
-@item @emph{Standard}:
-Fortran 2008 and later. With @var{DISTANCE} or @var{FAILED} argument, 
-Technical Specification (TS) 18508 or later
 
 @item @emph{Class}:
 Transformational function
@@ -11414,6 +11410,10 @@ IF (THIS_IMAGE() == 1) THEN
 END IF
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 2008 and later. With @var{DISTANCE} or @var{FAILED} argument, 
+Technical Specification (TS) 18508 or later
+
 @item @emph{See also}:
 @ref{THIS_IMAGE}, @*
 @ref{IMAGE_INDEX}
@@ -11437,9 +11437,6 @@ Bitwise logical @code{OR}.
 This intrinsic routine is provided for backwards compatibility with 
 GNU Fortran 77.  For integer arguments, programmers should consider
 the use of the @ref{IOR} intrinsic defined by the Fortran standard.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Function
@@ -11474,6 +11471,9 @@ PROGRAM test_or
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 Fortran 95 elemental function: @*
 @ref{IOR}
@@ -11493,9 +11493,6 @@ Fortran 95 elemental function: @*
 @item @emph{Description}:
 @code{OUT_OF_RANGE(X, MOLD[, ROUND])} determines if the value of @code{X}
 can be safely converted to an object with the type of argument @code{MOLD}.
-
-@item @emph{Standard}:
-Fortran 2018
 
 @item @emph{Class}:
 Elemental function
@@ -11543,6 +11540,9 @@ PROGRAM test_out_of_range
 END PROGRAM
 @end smallexample
 
+
+@item @emph{Standard}:
+Fortran 2018
 @end table
 
 
@@ -11564,9 +11564,6 @@ Stores the elements of @var{ARRAY} in an array of rank one.
 The beginning of the resulting array is made up of elements whose @var{MASK} 
 equals @code{TRUE}. Afterwards, positions are filled with elements taken from
 @var{VECTOR}.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
@@ -11610,6 +11607,9 @@ PROGRAM test_pack_2
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later
+
 @item @emph{See also}:
 @ref{UNPACK}
 @end table
@@ -11632,9 +11632,6 @@ END PROGRAM
 @item @emph{Description}:
 Calculates the parity, i.e. the reduction using @code{.XOR.},
 of @var{MASK} along dimension @var{DIM}.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Transformational function
@@ -11664,6 +11661,9 @@ PROGRAM test_sum
   print *, PARITY(x) ! prints "T" (true).
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2008 and later
 @end table
 
 
@@ -11682,9 +11682,6 @@ Prints (on the C @code{stderr} stream) a newline-terminated error
 message corresponding to the last system error. This is prefixed by
 @var{STRING}, a colon and a space. See @code{perror(3)}.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine
 
@@ -11693,6 +11690,9 @@ Subroutine
 @item @var{STRING} @tab A scalar of type @code{CHARACTER} and of the
 default kind.
 @end multitable
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{IERRNO}
@@ -11714,9 +11714,6 @@ default kind.
 @code{POPCNT(I)} returns the number of bits set ('1' bits) in the binary
 representation of @code{I}.
 
-@item @emph{Standard}:
-Fortran 2008 and later
-
 @item @emph{Class}:
 Elemental function
 
@@ -11737,6 +11734,9 @@ program test_population
   print *, popcnt(huge(0_8)), poppar(huge(0_8))
 end program test_population
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2008 and later
 
 @item @emph{See also}:
 @ref{POPPAR}, @*
@@ -11762,9 +11762,6 @@ of the number of bits set ('1' bits) in the binary representation of
 @code{I}. It is equal to 0 if @code{I} has an even number of bits set,
 and 1 for an odd number of '1' bits.
 
-@item @emph{Standard}:
-Fortran 2008 and later
-
 @item @emph{Class}:
 Elemental function
 
@@ -11786,6 +11783,9 @@ program test_population
 end program test_population
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 2008 and later
+
 @item @emph{See also}:
 @ref{POPCNT}, @*
 @ref{LEADZ}, @*
@@ -11806,9 +11806,6 @@ end program test_population
 @item @emph{Description}:
 @code{PRECISION(X)} returns the decimal precision in the model of the
 type of @code{X}.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -11834,6 +11831,9 @@ program prec_and_range
 end program prec_and_range
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later
+
 @item @emph{See also}:
 @ref{SELECTED_REAL_KIND}, @*
 @ref{RANGE}
@@ -11851,9 +11851,6 @@ end program prec_and_range
 
 @item @emph{Description}:
 Determines whether an optional dummy argument is present.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -11880,6 +11877,9 @@ CONTAINS
   END FUNCTION
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -11902,10 +11902,6 @@ END PROGRAM
 @item @emph{Description}:
 Multiplies the elements of @var{ARRAY} along dimension @var{DIM} if
 the corresponding element in @var{MASK} is @code{TRUE}.
-
-@item @emph{Standard}:
-Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
 
 @item @emph{Class}:
 Transformational function
@@ -11938,6 +11934,10 @@ PROGRAM test_product
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
+
 @item @emph{See also}:
 @ref{SUM}
 @end table
@@ -11956,9 +11956,6 @@ END PROGRAM
 
 @item @emph{Description}:
 @code{RADIX(X)} returns the base of the model representing the entity @var{X}.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -11980,6 +11977,9 @@ program test_radix
 end program test_radix
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later
+
 @item @emph{See also}:
 @ref{SELECTED_REAL_KIND}
 @end table
@@ -11997,11 +11997,11 @@ For compatibility with HP FORTRAN 77/iX, the @code{RAN} intrinsic is
 provided as an alias for @code{RAND}.  See @ref{RAND} for complete
 documentation.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Function
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{RAND}, @*
@@ -12031,9 +12031,6 @@ GNU Fortran 77. It implements a simple modulo generator as provided
 by @command{g77}. For new code, one should consider the use of 
 @ref{RANDOM_NUMBER} as it implements a superior algorithm.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Function
 
@@ -12056,6 +12053,9 @@ program test_rand
 end program test_rand
 @end smallexample
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 @ref{SRAND}, @*
 @ref{RANDOM_NUMBER}
@@ -12075,9 +12075,6 @@ end program test_rand
 @item @emph{Description}:
 Initializes the state of the pseudorandom number generator used by 
 @code{RANDOM_NUMBER}.
-
-@item @emph{Standard}:
-Fortran 2018
 
 @item @emph{Class}:
 Subroutine
@@ -12113,6 +12110,9 @@ program test_random_seed
 end program test_random_seed
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 2018
+
 @item @emph{See also}:
 @ref{RANDOM_NUMBER}, @*
 @ref{RANDOM_SEED}
@@ -12147,10 +12147,6 @@ each thread has its own random number state. For details of the
 seeding procedure, see the documentation for the @code{RANDOM_SEED}
 intrinsic.
 
-@item @emph{Standard}:
-Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
-
 @item @emph{Class}:
 Subroutine
 
@@ -12166,6 +12162,10 @@ program test_random_number
   CALL RANDOM_NUMBER(r)
 end program
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 
 @item @emph{See also}:
 @ref{RANDOM_SEED}, @*
@@ -12203,9 +12203,6 @@ alias any other stream in the system, where @var{N} is the number of
 threads that have used @code{RANDOM_NUMBER} so far during the program
 execution.
 
-@item @emph{Standard}:
-Fortran 90 and later
-
 @item @emph{Class}:
 Subroutine
 
@@ -12238,6 +12235,9 @@ program test_random_seed
 end program test_random_seed
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later
+
 @item @emph{See also}:
 @ref{RANDOM_NUMBER}, @*
 @ref{RANDOM_INIT}
@@ -12258,10 +12258,6 @@ end program test_random_seed
 @code{RANGE(X)} returns the decimal exponent range in the model of the
 type of @code{X}.
 
-@item @emph{Standard}:
-Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
-
 @item @emph{Class}:
 Inquiry function
 
@@ -12277,6 +12273,10 @@ kind.
 
 @item @emph{Example}:
 See @code{PRECISION} for an example.
+
+@item @emph{Standard}:
+Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 
 @item @emph{See also}:
 @ref{SELECTED_REAL_KIND}, @*
@@ -12296,9 +12296,6 @@ See @code{PRECISION} for an example.
 
 @item @emph{Description}:
 @code{RANK(A)} returns the rank of a scalar or array data object.
-
-@item @emph{Standard}:
-Technical Specification (TS) 29113
 
 @item @emph{Class}:
 Inquiry function
@@ -12322,6 +12319,9 @@ program test_rank
 end program test_rank
 @end smallexample
 
+
+@item @emph{Standard}:
+Technical Specification (TS) 29113
 @end table
 
 
@@ -12350,11 +12350,6 @@ end program test_rank
 @code{REAL(A [, KIND])} converts its argument @var{A} to a real type.  The
 @code{REALPART} function is provided for compatibility with @command{g77},
 and its use is strongly discouraged.
-
-@item @emph{Standard}:
-Fortran 77 and later, with @var{KIND} argument Fortran 90 and later,
-has GNU extensions.  Extension for @code{UNSIGNED} (@pxref{Unsigned
-integers}).
 
 @item @emph{Class}:
 Elemental function
@@ -12403,6 +12398,11 @@ end program test_real
 @item @code{SNGL(A)}   @tab @code{REAL(8)}     @tab @code{REAL(4)}  @tab Fortran 77 and later
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later, with @var{KIND} argument Fortran 90 and later,
+has GNU extensions.  Extension for @code{UNSIGNED} (@pxref{Unsigned
+integers}).
+
 @item @emph{See also}:
 @ref{DBLE}
 
@@ -12433,9 +12433,6 @@ contains 0 on success or a nonzero error code upon return; see
 This intrinsic is provided in both subroutine and function forms;
 however, only one form can be used in any given program unit.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -12445,6 +12442,9 @@ Subroutine, function
 @item @var{PATH2} @tab Shall be of default @code{CHARACTER} type.
 @item @var{STATUS} @tab (Optional) Shall be of default @code{INTEGER} type.
 @end multitable
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{LINK}
@@ -12466,9 +12466,6 @@ Subroutine, function
 @item @emph{Description}:
 Concatenates @var{NCOPIES} copies of a string.
 
-@item @emph{Standard}:
-Fortran 90 and later
-
 @item @emph{Class}:
 Transformational function
 
@@ -12488,6 +12485,9 @@ program test_repeat
   write(*,*) repeat("x", 5)   ! "xxxxx"
 end program
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -12506,9 +12506,6 @@ end program
 Reshapes @var{SOURCE} to correspond to @var{SHAPE}. If necessary,
 the new array may be padded with elements from @var{PAD} or permuted
 as defined by @var{ORDER}.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
@@ -12540,6 +12537,9 @@ PROGRAM test_reshape
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later
+
 @item @emph{See also}:
 @ref{SHAPE}
 @end table
@@ -12561,9 +12561,6 @@ END PROGRAM
 @code{RRSPACING(X)} returns the  reciprocal of the relative spacing of
 model numbers near @var{X}.
 
-@item @emph{Standard}:
-Fortran 90 and later
-
 @item @emph{Class}:
 Elemental function
 
@@ -12576,6 +12573,9 @@ Elemental function
 The return value is of the same type and kind as @var{X}.
 The value returned is equal to
 @code{ABS(FRACTION(X)) * FLOAT(RADIX(X))**DIGITS(X)}.
+
+@item @emph{Standard}:
+Fortran 90 and later
 
 @item @emph{See also}:
 @ref{SPACING}
@@ -12604,9 +12604,6 @@ representation is the sign bit.
 This function has been superseded by the @code{SHIFTA} intrinsic, which
 is standard in Fortran 2008 and later.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Elemental function
 
@@ -12619,6 +12616,9 @@ Elemental function
 @item @emph{Return value}:
 The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{ISHFT}, @*
@@ -12643,9 +12643,6 @@ The return value is of type @code{INTEGER} and of the same kind as
 @item @emph{Description}:
 Query dynamic types for equality.
 
-@item @emph{Standard}:
-Fortran 2003 and later
-
 @item @emph{Class}:
 Inquiry function
 
@@ -12660,6 +12657,9 @@ unlimited polymorphic.
 @item @emph{Return value}:
 The return value is a scalar of type default logical. It is true if and
 only if the dynamic type of A is the same as the dynamic type of B.
+
+@item @emph{Standard}:
+Fortran 2003 and later
 
 @item @emph{See also}:
 @ref{EXTENDS_TYPE_OF}
@@ -12680,9 +12680,6 @@ only if the dynamic type of A is the same as the dynamic type of B.
 
 @item @emph{Description}:
 @code{SCALE(X,I)} returns @code{X * RADIX(X)**I}.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
@@ -12706,6 +12703,9 @@ program test_scale
 end program test_scale
 @end smallexample
 
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -12728,9 +12728,6 @@ returns the position of the leftmost character of @var{STRING} that is
 in @var{SET}. If @var{BACK} equals @code{TRUE}, the rightmost position
 is returned. If no character of @var{SET} is found in @var{STRING}, the 
 result is zero.
-
-@item @emph{Standard}:
-Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -12757,6 +12754,9 @@ PROGRAM test_scan
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{INDEX intrinsic}, @*
 @ref{VERIFY}
@@ -12779,9 +12779,6 @@ END PROGRAM
 @var{X} is a reference time, also in seconds. If this is zero, the time in
 seconds from midnight is returned. This function is non-standard and its
 use is discouraged.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Function
@@ -12808,6 +12805,9 @@ program test_secnds
     print *, "Something took ", t2, " seconds."
 end program test_secnds
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 @end table
 
 
@@ -12834,9 +12834,6 @@ compatibility.
 This intrinsic is provided in both subroutine and function forms;
 however, only one form can be used in any given program unit.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -12848,6 +12845,9 @@ Subroutine, function
 @item @emph{Return value}:
 In either syntax, @var{TIME} is set to the process's current runtime in
 seconds.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{CPU_TIME}
@@ -12873,9 +12873,6 @@ set named @var{NAME}, if a character set with such a name is supported,
 or @math{-1} otherwise. Currently, supported character sets include
 ``ASCII'' and ``DEFAULT'', which are equivalent, and ``ISO_10646''
 (Universal Character Set, UCS-4) which is commonly known as Unicode.
-
-@item @emph{Standard}:
-Fortran 2003 and later
 
 @item @emph{Class}:
 Transformational function
@@ -12907,6 +12904,9 @@ program character_kind
   write (*,*) trim (hello_world)
 end program character_kind
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2003 and later
 @end table
 
 
@@ -12926,9 +12926,6 @@ end program character_kind
 type that can represent all values ranging from @math{-10^R} (exclusive)
 to @math{10^R} (exclusive). If there is no integer kind that accommodates
 this range, @code{SELECTED_INT_KIND} returns @math{-1}.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
@@ -12953,6 +12950,9 @@ program large_integers
   print *, huge(i15) >= 10_k15**15-1
 end program large_integers
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -12971,9 +12971,6 @@ end program large_integers
 @code{SELECTED_LOGICAL_KIND(BITS)} return the kind value of the smallest
 logical type whose storage size in bits is at least @var{BITS}. If there
 is no such logical kind, @code{SELECTED_LOGICAL_KIND} returns @math{-1}.
-
-@item @emph{Standard}:
-Fortran 2023 and later
 
 @item @emph{Class}:
 Transformational function
@@ -12995,6 +12992,9 @@ program logical_kinds
   print *, storage_size(l1), storage_size(l40)
 end program logical_kinds
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2023 and later
 @end table
 
 
@@ -13014,9 +13014,6 @@ end program logical_kinds
 @code{SELECTED_REAL_KIND(P,R)} returns the kind value of a real data type
 with decimal precision of at least @code{P} digits, exponent range of
 at least @code{R}, and with a radix of @code{RADIX}.
-
-@item @emph{Standard}:
-Fortran 90 and later, with @code{RADIX} Fortran 2008 or later
 
 @item @emph{Class}:
 Transformational function
@@ -13069,6 +13066,9 @@ program real_kinds
 end program real_kinds
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later, with @code{RADIX} Fortran 2008 or later
+
 @item @emph{See also}:
 @ref{PRECISION}, @*
 @ref{RANGE}, @*
@@ -13091,9 +13091,6 @@ integer type that can represent all values ranging from 0 to
 @math{10^R} (exclusive). If there is no unsigned kind that accommodates
 this range, @code{SELECTED_UNSIGNED_KIND} returns @math{-1}.
 
-@item @emph{Standard}:
-Extension for @code{UNSIGNED} (@pxref{Unsigned integers})
-
 @item @emph{Class}:
 Transformational function
 
@@ -13113,6 +13110,9 @@ program large_unsigned
   print *, huge(i5), huge(i15)
 end program large_unsigned
 @end smallexample
+
+@item @emph{Standard}:
+Extension for @code{UNSIGNED} (@pxref{Unsigned integers})
 @end table
 
 
@@ -13129,9 +13129,6 @@ end program large_unsigned
 @item @emph{Description}:
 @code{SET_EXPONENT(X, I)} returns the real number whose fractional part
 is that of @var{X} and whose exponent part is @var{I}.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
@@ -13157,6 +13154,9 @@ PROGRAM test_setexp
 END PROGRAM
 @end smallexample
 
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -13172,9 +13172,6 @@ END PROGRAM
 
 @item @emph{Description}:
 Determines the shape of an array.
-
-@item @emph{Standard}:
-Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -13204,6 +13201,9 @@ PROGRAM test_shape
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{RESHAPE}, @*
 @ref{SIZE}
@@ -13230,10 +13230,6 @@ are lost. The fill is arithmetic: the bits shifted in from the left
 end are equal to the leftmost bit, which in two's complement
 representation is the sign bit.
 
-@item @emph{Standard}:
-Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -13245,6 +13241,10 @@ Elemental function
 
 @item @emph{Return value}:
 The return value is of the same type and kind as @var{I}.
+
+@item @emph{Standard}:
+Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 
 @item @emph{See also}:
 @ref{SHIFTL}, @*
@@ -13270,10 +13270,6 @@ nonnegative and less than or equal to @code{BIT_SIZE(I)}, otherwise
 the result value is undefined.  Bits shifted out from the left end are
 lost, and bits shifted in from the right end are set to 0.
 
-@item @emph{Standard}:
-Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -13285,6 +13281,10 @@ Elemental function
 
 @item @emph{Return value}:
 The return value is of the same type and kind as @var{I}.
+
+@item @emph{Standard}:
+Fortran 2008 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
 
 @item @emph{See also}:
 @ref{SHIFTA}, @*
@@ -13310,9 +13310,6 @@ nonnegative and less than or equal to @code{BIT_SIZE(I)}, otherwise
 the result value is undefined.  Bits shifted out from the right end
 are lost, and bits shifted in from the left end are set to 0.
 
-@item @emph{Standard}:
-Fortran 2008 and later
-
 @item @emph{Class}:
 Elemental function
 
@@ -13325,6 +13322,9 @@ Elemental function
 @item @emph{Return value}:
 The return value is of type @code{INTEGER} and of the same kind as
 @var{I}.
+
+@item @emph{Standard}:
+Fortran 2008 and later
 
 @item @emph{See also}:
 @ref{SHIFTA}, @*
@@ -13346,9 +13346,6 @@ The return value is of type @code{INTEGER} and of the same kind as
 
 @item @emph{Description}:
 @code{SIGN(A,B)} returns the value of @var{A} with the sign of @var{B}.
-
-@item @emph{Standard}:
-Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -13384,6 +13381,9 @@ end program test_sign
 @item @code{ISIGN(A,B)} @tab @code{INTEGER(4) A, B} @tab @code{INTEGER(4)} @tab Fortran 77 and later
 @item @code{DSIGN(A,B)} @tab @code{REAL(8) A, B}    @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
+
+@item @emph{Standard}:
+Fortran 77 and later
 @end table
 
 
@@ -13409,9 +13409,6 @@ its default action.  See @code{signal(2)}.
 
 If @code{SIGNAL} is called as a subroutine and the @var{STATUS} argument
 is supplied, it is set to the value returned by @code{signal(2)}.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Subroutine, function
@@ -13449,6 +13446,9 @@ program test_signal
   call sleep (30)
 end program test_signal
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 @end table
 
 
@@ -13469,9 +13469,6 @@ end program test_signal
 
 @item @emph{Description}:
 @code{SIN(X)} computes the sine of @var{X}.
-
-@item @emph{Standard}:
-Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -13503,6 +13500,9 @@ end program test_sin
 @item @code{CDSIN(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)} @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{ASIN} @*
@@ -13528,9 +13528,6 @@ Degrees function: @*
 
 @item @emph{Description}:
 @code{SIND(X)} computes the sine of @var{X} in degrees.
-
-@item @emph{Standard}:
-Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -13561,6 +13558,9 @@ end program test_sind
 @item @code{CDSIND(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)} @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 2023
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{ASIND} @*
@@ -13582,10 +13582,6 @@ Radians function: @*
 
 @item @emph{Description}:
 @code{SINH(X)} computes the hyperbolic sine of @var{X}.
-
-@item @emph{Standard}:
-Fortran 90 and later, for a complex argument Fortran 2008 or later, has
-a GNU extension
 
 @item @emph{Class}:
 Elemental function
@@ -13612,6 +13608,10 @@ end program test_sinh
 @item @code{DSINH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 90 and later
 @end multitable
 
+@item @emph{Standard}:
+Fortran 90 and later, for a complex argument Fortran 2008 or later, has
+a GNU extension
+
 @item @emph{See also}:
 @ref{ASINH}
 @end table
@@ -13632,9 +13632,6 @@ end program test_sinh
 @item @emph{Description}:
 Determine the extent of @var{ARRAY} along a specified dimension @var{DIM},
 or the total number of elements in @var{ARRAY} if @var{DIM} is absent.
-
-@item @emph{Standard}:
-Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -13661,6 +13658,9 @@ PROGRAM test_size
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{SHAPE}, @*
 @ref{RESHAPE}
@@ -13680,9 +13680,6 @@ END PROGRAM
 @item @emph{Description}:
 @code{SIZEOF(X)} calculates the number of bytes of storage the
 expression @code{X} occupies.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Inquiry function
@@ -13715,6 +13712,9 @@ storage or an array element multiplied by the size of the array.
 The example prints @code{.TRUE.} unless you are using a platform
 where default @code{REAL} variables are unusually padded.
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 @ref{C_SIZEOF}, @*
 @ref{STORAGE_SIZE}
@@ -13733,9 +13733,6 @@ where default @code{REAL} variables are unusually padded.
 @item @emph{Description}:
 Calling this subroutine causes the process to pause for @var{SECONDS} seconds.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine
 
@@ -13750,6 +13747,9 @@ program test_sleep
   call sleep(5)
 end
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 @end table
 
 
@@ -13767,9 +13767,6 @@ end
 @item @emph{Description}:
 Determines the distance between the argument @var{X} and the nearest 
 adjacent number of the same type.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
@@ -13793,6 +13790,9 @@ PROGRAM test_spacing
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later
+
 @item @emph{See also}:
 @ref{RRSPACING}
 @end table
@@ -13813,9 +13813,6 @@ END PROGRAM
 @item @emph{Description}:
 Replicates a @var{SOURCE} array @var{NCOPIES} times along a specified 
 dimension @var{DIM}.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
@@ -13842,6 +13839,9 @@ PROGRAM test_spread
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later
+
 @item @emph{See also}:
 @ref{UNPACK}
 @end table
@@ -13864,9 +13864,6 @@ END PROGRAM
 
 @item @emph{Description}:
 @code{SQRT(X)} computes the square root of @var{X}.
-
-@item @emph{Standard}:
-Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
@@ -13900,6 +13897,9 @@ end program test_sqrt
 @item @code{ZSQRT(X)}  @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab GNU extension
 @item @code{CDSQRT(X)} @tab @code{COMPLEX(8) X}  @tab @code{COMPLEX(8)}    @tab GNU extension
 @end multitable
+
+@item @emph{Standard}:
+Fortran 77 and later
 @end table
 
 
@@ -13918,9 +13918,6 @@ end program test_sqrt
 @code{SRAND} reinitializes the pseudo-random number generator
 called by @code{RAND} and @code{IRAND}. The new seed used by the
 generator is specified by the required argument @var{SEED}.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Subroutine
@@ -13946,6 +13943,9 @@ Please note that in GNU Fortran, these two sets of intrinsics (@code{RAND},
 @code{IRAND} and @code{SRAND} on the one hand, @code{RANDOM_NUMBER} and
 @code{RANDOM_SEED} on the other hand) access two independent
 pseudo-random number generators.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{RAND}, @*
@@ -13995,9 +13995,6 @@ If an element is not relevant, it is returned as 0.
 This intrinsic is provided in both subroutine and function forms; however,
 only one form can be used in any given program unit.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -14036,6 +14033,9 @@ PROGRAM test_stat
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 To stat an open file: @*
 @ref{FSTAT} @*
@@ -14057,9 +14057,6 @@ To stat a link: @*
 @item @emph{Description}:
 Returns the storage size of argument @var{A} in bits.
 
-@item @emph{Standard}:
-Fortran 2008 and later
-
 @item @emph{Class}:
 Inquiry function
 
@@ -14074,6 +14071,9 @@ The result is a scalar integer with the kind type parameter specified by KIND
 (or default integer type if KIND is missing). The result value is the size
 expressed in bits for an element of an array that has the dynamic type and type
 parameters of A.
+
+@item @emph{Standard}:
+Fortran 2008 and later
 
 @item @emph{See also}:
 @ref{C_SIZEOF}, @*
@@ -14100,10 +14100,6 @@ parameters of A.
 @item @emph{Description}:
 Adds the elements of @var{ARRAY} along dimension @var{DIM} if
 the corresponding element in @var{MASK} is @code{TRUE}.
-
-@item @emph{Standard}:
-Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
-integers})
 
 @item @emph{Class}:
 Transformational function
@@ -14136,6 +14132,10 @@ PROGRAM test_sum
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
+integers})
+
 @item @emph{See also}:
 @ref{PRODUCT}
 @end table
@@ -14167,9 +14167,6 @@ contains 0 on success or a nonzero error code upon return; see
 This intrinsic is provided in both subroutine and function forms;
 however, only one form can be used in any given program unit.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -14179,6 +14176,9 @@ Subroutine, function
 @item @var{PATH2} @tab Shall be of default @code{CHARACTER} type.
 @item @var{STATUS} @tab (Optional) Shall be of default @code{INTEGER} type.
 @end multitable
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{LINK}, @*
@@ -14213,9 +14213,6 @@ Note that the @code{system} function need not be thread-safe. It is
 the responsibility of the user to ensure that @code{system} is not
 called concurrently.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -14224,6 +14221,9 @@ Subroutine, function
 @item @var{COMMAND} @tab Shall be of default @code{CHARACTER} type.
 @item @var{STATUS}  @tab (Optional) Shall be of default @code{INTEGER} type.
 @end multitable
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{EXECUTE_COMMAND_LINE}, which is part of the Fortran 2008 standard
@@ -14278,9 +14278,6 @@ uses @code{QueryPerformanceCounter} and
 @code{QueryPerformanceCounterFrequency}. For more information, and
 potential caveats, please see the platform documentation.
 
-@item @emph{Standard}:
-Fortran 90 and later
-
 @item @emph{Class}:
 Subroutine
 
@@ -14303,6 +14300,9 @@ PROGRAM test_system_clock
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later
+
 @item @emph{See also}:
 @ref{DATE_AND_TIME}, @*
 @ref{CPU_TIME}
@@ -14323,9 +14323,6 @@ END PROGRAM
 
 @item @emph{Description}:
 @code{TAN(X)} computes the tangent of @var{X}.
-
-@item @emph{Standard}:
-Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
@@ -14353,6 +14350,9 @@ end program test_tan
 @item @code{DTAN(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}  @tab Fortran 77 and later
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later, for a complex argument Fortran 2008 or later
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{ATAN} @*
@@ -14375,9 +14375,6 @@ Degrees function: @*
 
 @item @emph{Description}:
 @code{TAND(X)} computes the tangent of @var{X} in degrees.
-
-@item @emph{Standard}:
-Fortran 2023
 
 @item @emph{Class}:
 Elemental function
@@ -14405,6 +14402,9 @@ end program test_tand
 @item @code{DTAND(X)}  @tab @code{REAL(8) X}  @tab @code{REAL(8)}  @tab GNU extension
 @end multitable
 
+@item @emph{Standard}:
+Fortran 2023
+
 @item @emph{See also}:
 Inverse function: @*
 @ref{ATAND} @*
@@ -14428,9 +14428,6 @@ Radians function: @*
 
 @item @emph{Description}:
 @code{TANH(X)} computes the hyperbolic tangent of @var{X}.
-
-@item @emph{Standard}:
-Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
@@ -14461,6 +14458,9 @@ end program test_tanh
 @item @code{DTANH(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab Fortran 77 and later
 @end multitable
 
+@item @emph{Standard}:
+Fortran 77 and later, for a complex argument Fortran 2008 or later
+
 @item @emph{See also}:
 @ref{ATANH}
 @end table
@@ -14483,10 +14483,6 @@ end program test_tanh
 
 @item @emph{Description}:
 Returns the cosubscript for this image.
-
-@item @emph{Standard}:
-Fortran 2008 and later. With @var{DISTANCE} argument, 
-Technical Specification (TS) 18508 or later
 
 @item @emph{Class}:
 Transformational function
@@ -14531,6 +14527,10 @@ IF (THIS_IMAGE(HUGE(1)) /= THIS_IMAGE())
   error stop "something is rotten here"
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 2008 and later. With @var{DISTANCE} argument, 
+Technical Specification (TS) 18508 or later
+
 @item @emph{See also}:
 @ref{NUM_IMAGES}, @*
 @ref{IMAGE_INDEX}
@@ -14563,14 +14563,14 @@ See @ref{TIME8}, for information on a similar intrinsic that might be
 portable to more GNU Fortran implementations, though to fewer Fortran
 compilers.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Function
 
 @item @emph{Return value}:
 The return value is a scalar of type @code{INTEGER(4)}.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{DATE_AND_TIME}, @*
@@ -14606,14 +14606,14 @@ overflows of the 32-bit value can still occur. Therefore, the values
 returned by this intrinsic might be or become negative or numerically
 less than previous values during a single run of the compiled program.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Function
 
 @item @emph{Return value}:
 The return value is a scalar of type @code{INTEGER(8)}.
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{DATE_AND_TIME}, @*
@@ -14640,9 +14640,6 @@ The return value is a scalar of type @code{INTEGER(8)}.
 @code{TINY(X)} returns the smallest positive (non zero) number
 in the model of the type of @code{X}.
 
-@item @emph{Standard}:
-Fortran 90 and later
-
 @item @emph{Class}:
 Inquiry function
 
@@ -14656,6 +14653,9 @@ The return value is of the same type and kind as @var{X}
 
 @item @emph{Example}:
 See @code{HUGE} for an example.
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -14671,9 +14671,6 @@ See @code{HUGE} for an example.
 
 @item @emph{Description}:
 @code{TRAILZ} returns the number of trailing zero bits of an integer.
-
-@item @emph{Standard}:
-Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
@@ -14693,6 +14690,9 @@ PROGRAM test_trailz
   WRITE (*,*) TRAILZ(8)  ! prints 3
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 2008 and later
 
 @item @emph{See also}:
 @ref{BIT_SIZE}, @*
@@ -14720,9 +14720,6 @@ parameters as @var{MOLD}.
 
 This is approximately equivalent to the C concept of @emph{casting} one
 type to another.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
@@ -14762,6 +14759,9 @@ PROGRAM test_transfer
   print *, transfer(x, 1.0)    ! prints "NaN" on i686
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -14781,9 +14781,6 @@ END PROGRAM
 Transpose an array of rank two. Element (i, j) of the result has the value 
 @code{MATRIX(j, i)}, for all i, j.
 
-@item @emph{Standard}:
-Fortran 90 and later
-
 @item @emph{Class}:
 Transformational function
 
@@ -14795,6 +14792,9 @@ Transformational function
 @item @emph{Return value}:
 The result has the same type as @var{MATRIX}, and has shape 
 @code{(/ m, n /)} if @var{MATRIX} has shape @code{(/ n, m /)}.
+
+@item @emph{Standard}:
+Fortran 90 and later
 @end table
 
 
@@ -14810,9 +14810,6 @@ The result has the same type as @var{MATRIX}, and has shape
 
 @item @emph{Description}:
 Removes trailing blank characters of a string.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
@@ -14833,6 +14830,9 @@ PROGRAM test_trim
   WRITE(*,*) LEN(s), LEN(TRIM(s))  ! "10 8", with/without trailing blanks
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+Fortran 90 and later
 
 @item @emph{See also}:
 @ref{ADJUSTL}, @*
@@ -14860,9 +14860,6 @@ see @code{ttyname(3)}.
 This intrinsic is provided in both subroutine and function forms; 
 however, only one form can be used in any given program unit. 
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -14882,6 +14879,9 @@ PROGRAM test_ttynam
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+GNU extension
+
 @item @emph{See also}:
 @ref{ISATTY}
 @end table
@@ -14900,9 +14900,6 @@ END PROGRAM
 @item @emph{Description}:
 Returns the upper bounds of an array, or a single upper bound
 along the @var{DIM} dimension.
-
-@item @emph{Standard}:
-Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
@@ -14926,6 +14923,9 @@ structure component, or if it has a zero extent along the relevant
 dimension, the upper bound is taken to be the number of elements along
 the relevant dimension.
 
+@item @emph{Standard}:
+Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{LBOUND}, @*
 @ref{LCOBOUND}
@@ -14946,9 +14946,6 @@ the relevant dimension.
 Returns the upper cobounds of a coarray, or a single upper cobound
 along the @var{DIM} codimension.
 
-@item @emph{Standard}:
-Fortran 2008 and later
-
 @item @emph{Class}:
 Inquiry function
 
@@ -14967,6 +14964,9 @@ If @var{DIM} is absent, the result is an array of the lower cobounds of
 @var{COARRAY}.  If @var{DIM} is present, the result is a scalar
 corresponding to the lower cobound of the array along that codimension.
 
+@item @emph{Standard}:
+Fortran 2008 and later
+
 @item @emph{See also}:
 @ref{LCOBOUND}, @*
 @ref{LBOUND}
@@ -14984,9 +14984,6 @@ corresponding to the lower cobound of the array along that codimension.
 @item @emph{Description}:
 Convert to unsigned type
 
-@item @emph{Standard}:
-Extension.
-
 @item @emph{Class}:
 Elemental function
 
@@ -14997,6 +14994,9 @@ Elemental function
 @item @var{KIND} @tab (Optional) A scalar @code{INTEGER} constant
 expression indicating the kind parameter of the result.
 @end multitable
+
+@item @emph{Standard}:
+Extension.
 @end table
 
 @node UMASK
@@ -15016,9 +15016,6 @@ Sets the file creation mask to @var{MASK}. If called as a function, it
 returns the old value. If called as a subroutine and argument @var{OLD}
 if it is supplied, it is set to the old value. See @code{umask(2)}.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -15029,6 +15026,9 @@ Subroutine, function
 @code{INTEGER}.
 @end multitable
 
+
+@item @emph{Standard}:
+GNU extension
 @end table
 
 @node UMASKL
@@ -15044,9 +15044,6 @@ Subroutine, function
 @code{UMASKL(I[, KIND])} has its leftmost @var{I} bits set to 1, and the
 remaining bits set to 0.
 
-@item @emph{Standard}:
-Extension (@pxref{Unsigned integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -15061,6 +15058,9 @@ Elemental function
 The return value is of type @code{UNSIGNED}. If @var{KIND} is present, it
 specifies the kind value of the return type; otherwise, it is of the
 default unsigned kind.
+
+@item @emph{Standard}:
+Extension (@pxref{Unsigned integers})
 
 @item @emph{See also}:
 @ref{MASKL}, @*
@@ -15081,9 +15081,6 @@ default unsigned kind.
 @code{UMASKL(I[, KIND])} has its rightmost @var{I} bits set to 1, and the
 remaining bits set to 0.
 
-@item @emph{Standard}:
-Extension (@pxref{Unsigned integers})
-
 @item @emph{Class}:
 Elemental function
 
@@ -15098,6 +15095,9 @@ Elemental function
 The return value is of type @code{UNSIGNED}. If @var{KIND} is present, it
 specifies the kind value of the return type; otherwise, it is of the
 default integer kind.
+
+@item @emph{Standard}:
+Extension (@pxref{Unsigned integers})
 
 @item @emph{See also}:
 @ref{MASKL}, @*
@@ -15128,9 +15128,6 @@ see @code{unlink(2)}.
 This intrinsic is provided in both subroutine and function forms;
 however, only one form can be used in any given program unit.
 
-@item @emph{Standard}:
-GNU extension
-
 @item @emph{Class}:
 Subroutine, function
 
@@ -15139,6 +15136,9 @@ Subroutine, function
 @item @var{PATH} @tab Shall be of default @code{CHARACTER} type.
 @item @var{STATUS} @tab (Optional) Shall be of default @code{INTEGER} type.
 @end multitable
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 @ref{LINK}, @*
@@ -15160,9 +15160,6 @@ Subroutine, function
 
 @item @emph{Description}:
 Store the elements of @var{VECTOR} in an array of higher rank.
-
-@item @emph{Standard}:
-Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
@@ -15192,6 +15189,9 @@ PROGRAM test_unpack
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later
+
 @item @emph{See also}:
 @ref{PACK}, @*
 @ref{SPREAD}
@@ -15217,9 +15217,6 @@ returns the position of the leftmost character of @var{STRING} that is
 not in @var{SET}. If @var{BACK} equals @code{TRUE}, the rightmost
 position is returned. If all characters of @var{STRING} are found in
 @var{SET}, the result is zero.
-
-@item @emph{Standard}:
-Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
@@ -15248,6 +15245,9 @@ PROGRAM test_verify
 END PROGRAM
 @end smallexample
 
+@item @emph{Standard}:
+Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
+
 @item @emph{See also}:
 @ref{SCAN}, @*
 @ref{INDEX intrinsic}
@@ -15272,9 +15272,6 @@ This intrinsic routine is provided for backwards compatibility with
 GNU Fortran 77.  For integer arguments, programmers should consider
 the use of the @ref{IEOR} intrinsic and for logical arguments the
 @code{.NEQV.} operator, which are both defined by the Fortran standard.
-
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Class}:
 Function
@@ -15308,6 +15305,9 @@ PROGRAM test_xor
   WRITE (*,*) XOR(a, b)
 END PROGRAM
 @end smallexample
+
+@item @emph{Standard}:
+GNU extension
 
 @item @emph{See also}:
 Fortran 95 elemental function: @*
