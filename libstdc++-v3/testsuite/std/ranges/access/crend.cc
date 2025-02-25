@@ -28,6 +28,11 @@ struct R1
   int i = 0;
   int j = 0;
 
+#if __cpp_lib_ranges_as_const
+  const int *begin() const;
+  const int *end() const;
+#endif
+
   constexpr const int* rbegin() const { return &i; }
   constexpr const int* rend() const { return &i + 1; }
   friend constexpr const int* rbegin(const R1&& r) { return &r.j; }
@@ -78,6 +83,11 @@ struct R3
 {
   int i = 0;
 
+#if __cpp_lib_ranges_as_const
+  const int *begin() const;
+  const int *end() const;
+#endif
+
   const int* rbegin() const noexcept { return &i + 1; }
   const long* rend() const noexcept { return nullptr; } // not a sentinel for rbegin()
 
@@ -89,9 +99,11 @@ struct R4
 {
   int i = 0;
 
+#if __cpp_lib_ranges_as_const
   // These members mean that range<R4> and range<const R4> are satisfied.
   const short* begin() const { return 0; }
   const short* end() const { return 0; }
+#endif
 
   const int* rbegin() const noexcept { return &i + 1; }
   const long* rend() const noexcept { return nullptr; } // not a sentinel for rbegin()
@@ -105,16 +117,8 @@ test03()
 {
   R3 r;
   const R3& c = r;
-#if ! __cpp_lib_ranges_as_const
   VERIFY( std::ranges::crend(r) == std::ranges::rend(c) );
   static_assert( !noexcept(std::ranges::crend(r)) );
-#else
-  // constant_range<const R3> is not satisfied, so crend(r) is equivalent
-  // to const_sentinel{rend(r)}, which is ill-formed because range<R3>
-  // is not satisfied.
-  static_assert( not std::ranges::range<R3> );
-  static_assert( not std::ranges::range<const R3> );
-#endif
   VERIFY( std::ranges::crend(c) == std::ranges::rend(c) );
   static_assert( !noexcept(std::ranges::crend(c)) );
 

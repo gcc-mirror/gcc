@@ -63,10 +63,8 @@ test03()
 
   // Verify that _Sentinel<false> is implicitly convertible to _Sentinel<true>.
   static_assert(!ranges::common_range<decltype(v)>);
-#if ! __cpp_lib_ranges_as_const
   static_assert(!std::same_as<decltype(ranges::end(v)),
 			      decltype(ranges::cend(v))>);
-#endif
   auto b = ranges::cend(v);
   b = ranges::end(v);
 }

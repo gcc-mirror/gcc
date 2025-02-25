@@ -642,11 +642,11 @@ namespace ranges
   namespace __access
   {
 #if __glibcxx_ranges_as_const // >= C++23
-    template<typename _Range>
+    template<input_range _Range>
       constexpr auto&
       __possibly_const_range(_Range& __r) noexcept
       {
-	if constexpr (constant_range<const _Range> && !constant_range<_Range>)
+	if constexpr (input_range<const _Range>)
 	  return const_cast<const _Range&>(__r);
 	else
 	  return __r;

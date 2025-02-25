@@ -52,15 +52,6 @@ struct R
   friend const int* end(const R&& r) noexcept { return r.a + 3; }
 };
 
-#if __cpp_lib_ranges_as_const
-struct R2 : R
-{
-  // This overload means constant_range<const R2> will be satisfied:
-  friend const int* begin(const R2&) noexcept;
-  friend const int* end(const R2& r2) noexcept { return r2.a + 2; }
-};
-#endif
-
 struct RV // view on an R
 {
   R& r;
@@ -79,26 +70,11 @@ test03()
 {
   R r;
   const R& c = r;
-#if ! __cpp_lib_ranges_as_const
   VERIFY( std::ranges::cend(r) == std::ranges::end(c) );
-#else
-  // constant_range<const R> is not satisfied, so cend(r) == end(r) instead.
-  VERIFY( std::ranges::cend(r) == std::ranges::end(r) );
-  R2 r2;
-  const R& c2 = r2;
-  // But constant_range<const R2> is satisfied, so cend(r2) == end(c2).
-  VERIFY( std::ranges::cend(r2) == std::ranges::end(c2) );
-  VERIFY( std::ranges::cend(r2) == std::ranges::end((const R&)c2) );
-#endif
   VERIFY( std::ranges::cend(c) == std::ranges::end(c) );
 
   RV v{r};
-#if ! __cpp_lib_ranges_as_const
   VERIFY( std::ranges::cend(std::move(v)) == std::ranges::end(c) );
-#else
-  // constant_range<RV> is already satisfied, so cend(v) == end(r) instead.
-  VERIFY( std::ranges::cend(std::move(v)) == std::ranges::end(r) );
-#endif
 
   const RV cv{r};
   VERIFY( std::ranges::cend(std::move(cv)) == std::ranges::end(c) );
@@ -107,7 +83,7 @@ test03()
 struct RR
 {
   short s = 0;
-  long l = 0;
+  short l = 0;
   int a[4] = { 0, 1, 2, 3 };
 
   const void* begin() const; // return type not an iterator
@@ -115,8 +91,8 @@ struct RR
   friend int* end(RR&) { throw 1; }
   short* end() noexcept { return &s; }
 
-  friend const long* begin(const RR&) noexcept;
-  const long* end() const { return &l; }
+  friend const short* begin(const RR&) noexcept;
+  const short* end() const { return &l; }
 
   friend int* begin(RR&&) noexcept;
   friend int* end(RR&& r) { return r.a + 1; }
