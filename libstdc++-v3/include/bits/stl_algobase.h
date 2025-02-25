@@ -943,7 +943,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
     inline typename
     __gnu_cxx::__enable_if<__is_byte<_Up>::__value
 			     && (__are_same<_Up, _Tp>::__value // for std::byte
-				   || __memcpyable_integer<_Tp>::__value),
+				   || __memcpyable_integer<_Tp>::__width),
 			   void>::__type
     __fill_a1(_Up* __first, _Up* __last, const _Tp& __x)
     {
@@ -955,6 +955,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	{
 	  for (; __first != __last; ++__first)
 	    *__first = __val;
+	  return;
 	}
 #endif
       if (const size_t __len = __last - __first)
