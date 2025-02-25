@@ -1,3 +1,73 @@
+2025-02-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/114516
+	* config/riscv/riscv-vector-costs.cc (compute_estimated_lmul):
+	Add pattern statements to program points.
+
+2025-02-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/118950
+	* tree-vect-patterns.cc (vect_recog_gather_scatter_pattern): Use
+	original LHS's type.
+
+2025-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118915
+	* tree-ssa-reassoc.cc (optimize_range_tests_to_bit_test): For
+	highj == NULL_TREE use TYPE_MAX_VALUE (TREE_TYPE (lowj)) rather
+	than TYPE_MAX_VALUE (type).
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118973
+	* tree-ssa-dce.cc (mark_stmt_if_obviously_necessary): Calls
+	that alter control flow in unpredictable ways need to be
+	preserved.
+
+2025-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/118993
+	* gimplify.cc (gimplify_scan_omp_clauses): Fix diagnostics typo,
+	undfined -> undefined.
+
+2025-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117023
+	* builtin-attrs.def (ATTR_NONNULL_IF_NONZERO): New DEF_ATTR_IDENT.
+	(ATTR_NOTHROW_NONNULL_IF12_LEAF, ATTR_NOTHROW_NONNULL_IF13_LEAF,
+	ATTR_NOTHROW_NONNULL_IF123_LEAF, ATTR_NOTHROW_NONNULL_IF23_LEAF,
+	ATTR_NOTHROW_NONNULL_1_IF23_LEAF, ATTR_PURE_NOTHROW_NONNULL_IF12_LEAF,
+	ATTR_PURE_NOTHROW_NONNULL_IF13_LEAF,
+	ATTR_PURE_NOTHROW_NONNULL_IF123_LEAF,
+	ATTR_WARN_UNUSED_RESULT_NOTHROW_NONNULL_IF12_LEAF,
+	ATTR_MALLOC_WARN_UNUSED_RESULT_NOTHROW_NONNULL_IF12_LEAF): New
+	DEF_ATTR_TREE_LIST.
+	* builtins.def (BUILT_IN_STRNDUP): Use
+	ATTR_MALLOC_WARN_UNUSED_RESULT_NOTHROW_NONNULL_IF12_LEAF instead of
+	ATTR_MALLOC_WARN_UNUSED_RESULT_NOTHROW_NONNULL_LEAF.
+	(BUILT_IN_STRNCAT, BUILT_IN_STRNCAT_CHK): Use
+	ATTR_NOTHROW_NONNULL_1_IF23_LEAF instead of ATTR_NOTHROW_NONNULL_LEAF.
+	(BUILT_IN_BCOPY, BUILT_IN_MEMCPY, BUILT_IN_MEMCPY_CHK,
+	BUILT_IN_MEMMOVE, BUILT_IN_MEMMOVE_CHK,  BUILT_IN_STRNCPY,
+	BUILT_IN_STRNCPY_CHK): Use ATTR_NOTHROW_NONNULL_IF123_LEAF instead of
+	ATTR_NOTHROW_NONNULL_LEAF.
+	(BUILT_IN_MEMPCPY, BUILT_IN_MEMPCPY_CHK, BUILT_IN_STPNCPY,
+	BUILT_IN_STPNCPY_CHK): Use ATTR_NOTHROW_NONNULL_IF123_LEAF instead of
+	ATTR_RETNONNULL_NOTHROW_LEAF.
+	(BUILT_IN_BZERO, BUILT_IN_MEMSET, BUILT_IN_MEMSET_CHK): Use
+	ATTR_NOTHROW_NONNULL_IF13_LEAF instead of ATTR_NOTHROW_NONNULL_LEAF.
+	(BUILT_IN_BCMP, BUILT_IN_MEMCMP, BUILT_IN_STRNCASECMP,
+	BUILT_IN_STRNCMP): Use ATTR_PURE_NOTHROW_NONNULL_IF123_LEAF instead of
+	ATTR_PURE_NOTHROW_NONNULL_LEAF.
+	(BUILT_IN_STRNLEN): Use ATTR_PURE_NOTHROW_NONNULL_IF12_LEAF instead of
+	ATTR_PURE_NOTHROW_NONNULL_LEAF.
+	(BUILT_IN_MEMCHR): Use ATTR_PURE_NOTHROW_NONNULL_IF13_LEAF instead of
+	ATTR_PURE_NOTHROW_NONNULL_LEAF.
+
+2025-02-24  Lino Hsing-Yu Peng  <linopeng@andestech.com>
+
+	* config/riscv/riscv.cc: Set multi push regs bits.
+
 2025-02-22  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* config/bpf/bpf.md (define_expand "allocate_stack"): Emit

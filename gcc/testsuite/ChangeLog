@@ -1,3 +1,73 @@
+2025-02-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/114516
+	* gcc.dg/vect/costmodel/riscv/rvv/pr114516.c: New test.
+
+2025-02-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/118950
+	* gcc.target/riscv/rvv/autovec/pr118950.c: New test.
+
+2025-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118915
+	* gcc.c-torture/execute/pr118915.c: New test.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118973
+	* g++.dg/torture/pr118973.C: New testcase.
+
+2025-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/118993
+	* c-c++-common/gomp/allocate-18.c: Adjust dg-warning regex for
+	diagnostics typo fix.
+	* gfortran.dg/gomp/allocate-clause.f90: Likewise.
+
+2025-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117023
+	* gcc.dg/builtins-nonnull.c (test_memfuncs, test_memfuncs_chk,
+	test_strfuncs, test_strfuncs_chk): Add if (n == 0) return; at the
+	start of the functions.
+	* gcc.dg/Wnonnull-2.c: Copy __builtin_* call statements where
+	appropriate 3 times, once with 0 length, once with n and once with
+	non-zero constant and expect warning only in the third case.
+	Formatting fixes.
+	* gcc.dg/Wnonnull-3.c: Copy __builtin_* call statements where
+	appropriate 3 times, once with 0 length, once with n and once with
+	n guarded with n != 0 and expect warning only in the third case.
+	Formatting fixes.
+	* gcc.dg/nonnull-3.c (foo): Use 16 instead of 0 in the calls added
+	for PR80936.
+	* gcc.dg/nonnull-11.c: New test.
+	* c-c++-common/ubsan/nonnull-1.c: Don't expect runtime diagnostics
+	for the __builtin_memcpy call.
+	* gcc.dg/tree-ssa/pr78154.c (f): Add dn argument and return early
+	if it is NULL.  Duplicate cases of builtins which have the first
+	argument changed from nonnull to nonnull_if_nonzero except stpncpy,
+	once with dn as first argument instead of d and once with constant
+	non-zero count rather than n.  Disable the stpncpy non-null check.
+	* gcc.dg/Wbuiltin-declaration-mismatch-14.c (test_builtin_calls):
+	Triplicate the strncmp calls, once with 1 last argument and expect
+	warning, once with n last argument and don't expect warning and
+	once with 0 last argument and don't expect warning.
+	* gcc.dg/Wbuiltin-declaration-mismatch-15.c (test_builtin_calls_fe):
+	Likewise.
+
+2025-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117023
+	* c-c++-common/analyzer/call-summaries-malloc.c
+	(test_use_without_check): Pass 4 rather than sz to memset.
+	* c-c++-common/analyzer/strncpy-1.c (test_null_dst,
+	test_null_src): Pass 42 rather than count to strncpy.
+
+2025-02-24  Lino Hsing-Yu Peng  <linopeng@andestech.com>
+
+	* gcc.target/riscv/zcmp_push_gpr.c: New test.
+
 2025-02-23  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR tree-optimization/82142

@@ -1,3 +1,11 @@
+2025-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117023
+	* sm-malloc.cc (malloc_state_machine::handle_nonnull): New private
+	method.
+	(malloc_state_machine::on_stmt): Use it for nonnull attribute arguments.
+	Handle also nonnull_if_nonzero attributes.
+
 2025-02-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/118300
