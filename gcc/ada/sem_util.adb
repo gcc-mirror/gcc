@@ -5717,6 +5717,7 @@ package body Sem_Util is
                          or else Is_Primitive (Id))
               and then Parent_Kind (Parent (Id))
                                     not in N_Formal_Subprogram_Declaration
+              and then not Is_Child_Unit (Id)
             then
                Is_Prim := False;
 
