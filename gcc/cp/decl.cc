@@ -93,7 +93,7 @@ static void record_key_method_defined (tree);
 static tree create_array_type_for_decl (tree, tree, tree, location_t);
 static tree get_atexit_node (void);
 static tree get_dso_handle_node (void);
-static tree start_cleanup_fn (bool);
+static tree start_cleanup_fn (bool, bool);
 static void end_cleanup_fn (void);
 static tree cp_make_fname_decl (location_t, tree, int);
 static void initialize_predefined_identifiers (void);
@@ -10004,7 +10004,7 @@ get_dso_handle_node (void)
 static GTY(()) int start_cleanup_cnt;
 
 static tree
-start_cleanup_fn (bool ob_parm)
+start_cleanup_fn (bool ob_parm, bool omp_target)
 {
   char name[32];
 
@@ -10014,7 +10014,8 @@ start_cleanup_fn (bool ob_parm)
   push_lang_context (lang_name_c);
 
   /* Build the name of the function.  */
-  sprintf (name, "__tcf_%d", start_cleanup_cnt++);
+  sprintf (name, "%s_%d",
+	   (omp_target ? "__omp_tcf" : "__tcf"), start_cleanup_cnt++);
   tree fntype = TREE_TYPE (ob_parm ? get_cxa_atexit_fn_ptr_type ()
 				   : get_atexit_fn_ptr_type ());
   /* Build the function declaration.  */
@@ -10040,6 +10041,15 @@ start_cleanup_fn (bool ob_parm)
     }
 
   fndecl = pushdecl (fndecl, /*hidden=*/true);
+  if (omp_target)
+    {
+      DECL_ATTRIBUTES (fndecl)
+	= tree_cons (get_identifier ("omp declare target"), NULL_TREE,
+		     DECL_ATTRIBUTES (fndecl));
+      DECL_ATTRIBUTES (fndecl)
+	= tree_cons (get_identifier ("omp declare target nohost"), NULL_TREE,
+		     DECL_ATTRIBUTES (fndecl));
+    }
   start_preparsed_function (fndecl, NULL_TREE, SF_PRE_PARSED);
 
   pop_lang_context ();
@@ -10061,7 +10071,7 @@ end_cleanup_fn (void)
    static storage duration.  */
 
 tree
-register_dtor_fn (tree decl)
+register_dtor_fn (tree decl, bool omp_target)
 {
   tree cleanup;
   tree addr;
@@ -10107,7 +10117,7 @@ register_dtor_fn (tree decl)
       build_cleanup (decl);
   
       /* Now start the function.  */
-      cleanup = start_cleanup_fn (ob_parm);
+      cleanup = start_cleanup_fn (ob_parm, omp_target);
 
       /* Now, recompute the cleanup.  It may contain SAVE_EXPRs that refer
 	 to the original function, rather than the anonymous one.  That

@@ -1,3 +1,11 @@
+2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118876
+	* g++.dg/gomp/pr118876.C: New test.
+
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	* c-c++-common/gomp/target-map-iterators-3.c: Update expected Gimple

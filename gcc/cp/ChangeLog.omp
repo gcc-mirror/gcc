@@ -1,6 +1,24 @@
 2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118876
+	* cp-tree.h (register_dtor_fn): Add a bool argument defaulted to false.
+	* decl.cc (start_cleanup_fn): Add OMP_TARGET argument, use
+	"__omp_tcf" prefix rather than "__tcf" in that case.  Add
+	"omp declare target" and "omp declare target nohost" attributes
+	to the fndecl.
+	(register_dtor_fn): Add OMP_TARGET argument, pass it down to
+	start_cleanup_fn.
+	* decl2.cc (one_static_initialization_or_destruction): Add OMP_TARGET
+	argument, pass it down to register_dtor_fn.
+	(emit_partial_init_fini_fn): Pass omp_target to
+	one_static_initialization_or_destruction.
+	(handle_tls_init): Pass false to
+	one_static_initialization_or_destruction.
+
+	Backported from trunk:
 	2024-08-07  Julian Brown  <julian@codesourcery.com>
 		    Tobias Burnus  <tobias@baylibre.com>
 
