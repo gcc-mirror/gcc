@@ -15,7 +15,7 @@
 # <http://www.gnu.org/licenses/>.
 
 # Immediately exit if we can't run target executables.
-if { ![isnative] || ![is-effective-target shared] } {
+if { ![isnative] } {
     return
 }
 
@@ -24,13 +24,8 @@ if { ![is-effective-target d_runtime_has_std_library] } {
     return
 }
 
-# Skip running test if not doing expensive tests.
-if { ![is-effective-target run_expensive_tests] } {
-    return
-}
-
 # Gather a list of all tests.
-set tests [lsort [filter_libphobos_unittests [find $srcdir/../src "*.d"]]]
+set tests [lsort [find $srcdir/$subdir *.d]]
 
 set version_flags "-fversion=StdUnittest"
 
@@ -39,11 +34,8 @@ if { [is-effective-target linux_pre_2639] } {
 }
 
 set libphobos_skip_tests {
-    # Skip curl tests if library is not available
-    { libphobos.phobos/shared/etc/c/curl.d { ! libcurl_available } }
-    { libphobos.phobos/shared/std/net/curl.d { ! libcurl_available } }
     # Skip concurrency.d test: SEGVs or hangs on macOS 13+ (PR d/111628).
-    { libphobos.phobos/shared/std/concurrency.d { x86_64-apple-darwin2[2-9]* } }
+    { libphobos.phobos/std_concurrency.d { x86_64-apple-darwin2[2-9]* } }
 }
 
 # Initialize dg.
@@ -51,10 +43,7 @@ dg-init
 
 # Main loop.
 foreach test $tests {
-    set libphobos_test_name "$subdir/[dg-trim-dirname $srcdir/../src $test]"
-    dg-runtest $test "-shared-libphobos" \
-	"-Wno-deprecated -fmain -fbuilding-libphobos-tests -fno-moduleinfo $version_flags"
-    set libphobos_test_name ""
+    dg-runtest $test "" "-Wno-deprecated -fmain $version_flags"
 }
 
 # All done.
