@@ -379,6 +379,9 @@ the applicable standard for each intrinsic procedure is noted.
 @cindex core, dump
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL ABORT}
+
 @item @emph{Description}:
 @code{ABORT} causes immediate termination of the program.  On operating
 systems that support a core dump, @code{ABORT} produces a core dump.
@@ -389,9 +392,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL ABORT}
 
 @item @emph{Return value}:
 Does not return.
@@ -427,6 +427,9 @@ end program test_abort
 @cindex absolute value
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ABS(A)}
+
 @item @emph{Description}:
 @code{ABS(A)} computes the absolute value of @code{A}.
 
@@ -435,9 +438,6 @@ Fortran 77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ABS(A)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -486,6 +486,9 @@ end program test_abs
 @cindex file system, access mode
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ACCESS(NAME, MODE)}
+
 @item @emph{Description}:
 @code{ACCESS(NAME, MODE)} checks whether the file @var{NAME} 
 exists, is readable, writable or executable. Except for the
@@ -497,9 +500,6 @@ GNU extension
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = ACCESS(NAME, MODE)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -543,6 +543,9 @@ end program access_test
 @cindex collating sequence, @acronym{ASCII}
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ACHAR(I [, KIND])}
+
 @item @emph{Description}:
 @code{ACHAR(I)} returns the character located at position @code{I}
 in the @acronym{ASCII} collating sequence.
@@ -552,9 +555,6 @@ Fortran 77 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ACHAR(I [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -596,6 +596,9 @@ and formatted string representations.
 @cindex cosine, inverse
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ACOS(X)}
+
 @item @emph{Description}:
 @code{ACOS(X)} computes the arccosine of @var{X} (inverse of @code{COS(X)}).
 
@@ -604,9 +607,6 @@ Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ACOS(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -651,6 +651,9 @@ Degrees function: @*
 @cindex cosine, inverse, degrees
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ACOSD(X)}
+
 @item @emph{Description}:
 @code{ACOSD(X)} computes the arccosine of @var{X} in degrees (inverse of
 @code{COSD(X)}).
@@ -660,9 +663,6 @@ Fortran 2023
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ACOSD(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -709,6 +709,9 @@ Radians function: @*
 @cindex cosine, hyperbolic, inverse
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ACOSH(X)}
+
 @item @emph{Description}:
 @code{ACOSH(X)} computes the inverse hyperbolic cosine of @var{X}.
 
@@ -717,9 +720,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ACOSH(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -759,6 +759,9 @@ Inverse function: @*
 @cindex adjust string
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ADJUSTL(STRING)}
+
 @item @emph{Description}:
 @code{ADJUSTL(STRING)} left adjusts a string by removing leading spaces.
 Spaces are inserted at the end of the string as needed.
@@ -768,9 +771,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ADJUSTL(STRING)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -805,6 +805,9 @@ end program test_adjustl
 @cindex adjust string
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ADJUSTR(STRING)}
+
 @item @emph{Description}:
 @code{ADJUSTR(STRING)} right adjusts a string by removing trailing spaces.
 Spaces are inserted at the start of the string as needed.
@@ -814,9 +817,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ADJUSTR(STRING)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -853,6 +853,9 @@ end program test_adjustr
 @cindex complex numbers, imaginary part
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = AIMAG(Z)}
+
 @item @emph{Description}:
 @code{AIMAG(Z)} yields the imaginary part of complex argument @code{Z}.
 The @code{IMAG(Z)} and @code{IMAGPART(Z)} intrinsic functions are provided
@@ -864,9 +867,6 @@ Fortran 77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = AIMAG(Z)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -908,6 +908,9 @@ end program test_aimag
 @cindex rounding, floor
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = AINT(A [, KIND])} 
+
 @item @emph{Description}:
 @code{AINT(A [, KIND])} truncates its argument to a whole number.
 
@@ -916,9 +919,6 @@ Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = AINT(A [, KIND])} 
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -964,6 +964,9 @@ end program test_aint
 @cindex delayed execution
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL ALARM(SECONDS, HANDLER [, STATUS])}
+
 @item @emph{Description}:
 @code{ALARM(SECONDS, HANDLER [, STATUS])} causes external subroutine @var{HANDLER}
 to be executed after a delay of @var{SECONDS} by using @code{alarm(2)} to
@@ -977,9 +980,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL ALARM(SECONDS, HANDLER [, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1016,6 +1016,9 @@ after 3 seconds.
 @cindex array, condition testing
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ALL(MASK [, DIM])}
+
 @item @emph{Description}:
 @code{ALL(MASK [, DIM])} determines if all the values are true in @var{MASK}
 in the array along dimension @var{DIM}.
@@ -1025,9 +1028,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = ALL(MASK [, DIM])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1082,6 +1082,12 @@ end program test_all
 @cindex allocation, status
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = ALLOCATED(ARRAY)}
+@item @code{RESULT = ALLOCATED(SCALAR)} 
+@end multitable
+
 @item @emph{Description}:
 @code{ALLOCATED(ARRAY)} and @code{ALLOCATED(SCALAR)} check the allocation
 status of @var{ARRAY} and @var{SCALAR}, respectively.
@@ -1092,12 +1098,6 @@ scalar entities are available in Fortran 2003 and later.
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = ALLOCATED(ARRAY)}
-@item @code{RESULT = ALLOCATED(SCALAR)} 
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1129,6 +1129,9 @@ end program test_allocated
 @cindex logical and, bitwise
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = AND(I, J)}
+
 @item @emph{Description}:
 Bitwise logical @code{AND}.
 
@@ -1141,9 +1144,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = AND(I, J)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1190,6 +1190,9 @@ Fortran 95 elemental function: @*
 @cindex rounding, ceiling
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ANINT(A [, KIND])}
+
 @item @emph{Description}:
 @code{ANINT(A [, KIND])} rounds its argument to the nearest whole number.
 
@@ -1198,9 +1201,6 @@ Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ANINT(A [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1245,6 +1245,9 @@ end program test_anint
 @cindex array, condition testing
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ANY(MASK [, DIM])}
+
 @item @emph{Description}:
 @code{ANY(MASK [, DIM])} determines if any of the values in the logical array
 @var{MASK} along dimension @var{DIM} are @code{.TRUE.}.
@@ -1254,9 +1257,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = ANY(MASK [, DIM])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1313,6 +1313,9 @@ end program test_any
 @cindex sine, inverse
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ASIN(X)}
+
 @item @emph{Description}:
 @code{ASIN(X)} computes the arcsine of its @var{X} (inverse of @code{SIN(X)}).
 
@@ -1321,9 +1324,6 @@ Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ASIN(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1368,6 +1368,9 @@ Degrees function: @*
 @cindex sine, inverse, degrees
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ASIND(X)}
+
 @item @emph{Description}:
 @code{ASIND(X)} computes the arcsine of its @var{X} in degrees (inverse of
 @code{SIND(X)}).
@@ -1377,9 +1380,6 @@ Fortran 2023
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ASIND(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1424,6 +1424,9 @@ Radians function: @*
 @cindex sine, hyperbolic, inverse
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ASINH(X)}
+
 @item @emph{Description}:
 @code{ASINH(X)} computes the inverse hyperbolic sine of @var{X}.
 
@@ -1432,9 +1435,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ASINH(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1474,6 +1474,9 @@ Inverse function: @*
 @cindex association status
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ASSOCIATED(POINTER [, TARGET])}
+
 @item @emph{Description}:
 @code{ASSOCIATED(POINTER [, TARGET])} determines the status of the pointer
 @var{POINTER} or if @var{POINTER} is associated with the target @var{TARGET}.
@@ -1483,9 +1486,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = ASSOCIATED(POINTER [, TARGET])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1552,6 +1552,12 @@ end program test_associated
 @cindex tangent, inverse
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = ATAN(X)}
+@item @code{RESULT = ATAN(Y, X)}
+@end multitable
+
 @item @emph{Description}:
 @code{ATAN(X)} computes the arctangent of @var{X}.
 
@@ -1561,12 +1567,6 @@ Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = ATAN(X)}
-@item @code{RESULT = ATAN(Y, X)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1614,6 +1614,11 @@ Degrees function: @*
 @cindex tangent, inverse, degrees
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = ATAND(X)}
+@end multitable
+
 @item @emph{Description}:
 @code{ATAND(X)} computes the arctangent of @var{X} in degrees (inverse of
 @ref{TAND}).
@@ -1623,11 +1628,6 @@ Fortran 2023
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = ATAND(X)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1673,6 +1673,9 @@ Radians function: @*
 @cindex tangent, inverse
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ATAN2(Y, X)}
+
 @item @emph{Description}:
 @code{ATAN2(Y, X)} computes the principal value of the argument
 function of the complex number @math{X + i Y}.  This function can
@@ -1684,9 +1687,6 @@ Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ATAN2(Y, X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1738,6 +1738,9 @@ Degrees function: @*
 @cindex tangent, inverse, degrees
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ATAN2D(Y, X)}
+
 @item @emph{Description}:
 @code{ATAN2D(Y, X)} computes the principal value of the argument
 function of the complex number @math{X + i Y} in degrees.  This function can
@@ -1749,9 +1752,6 @@ Fortran 2023
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ATAN2D(Y, X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1803,6 +1803,9 @@ Radians function: @*
 @cindex tangent, hyperbolic, inverse
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ATANH(X)}
+
 @item @emph{Description}:
 @code{ATANH(X)} computes the inverse hyperbolic tangent of @var{X}.
 
@@ -1811,9 +1814,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ATANH(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1852,6 +1852,9 @@ Inverse function: @*
 @cindex Atomic subroutine, add
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL ATOMIC_ADD (ATOM, VALUE [, STAT])}
+
 @item @emph{Description}:
 @code{ATOMIC_ADD(ATOM, VALUE)} atomically adds the value of @var{VALUE} to the
 variable @var{ATOM}. When @var{STAT} is present and the invocation was
@@ -1866,9 +1869,6 @@ TS 18508 or later
 
 @item @emph{Class}:
 Atomic subroutine
-
-@item @emph{Syntax}:
-@code{CALL ATOMIC_ADD (ATOM, VALUE [, STAT])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1906,6 +1906,9 @@ end program atomic
 @cindex Atomic subroutine, AND
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL ATOMIC_AND (ATOM, VALUE [, STAT])}
+
 @item @emph{Description}:
 @code{ATOMIC_AND(ATOM, VALUE)} atomically defines @var{ATOM} with the bitwise
 AND between the values of @var{ATOM} and @var{VALUE}. When @var{STAT} is present
@@ -1920,9 +1923,6 @@ TS 18508 or later
 
 @item @emph{Class}:
 Atomic subroutine
-
-@item @emph{Syntax}:
-@code{CALL ATOMIC_AND (ATOM, VALUE [, STAT])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -1959,6 +1959,9 @@ end program atomic
 @cindex Atomic subroutine, compare and swap
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL ATOMIC_CAS (ATOM, OLD, COMPARE, NEW [, STAT])}
+
 @item @emph{Description}:
 @code{ATOMIC_CAS} compares the variable @var{ATOM} with the value of
 @var{COMPARE}; if the value is the same, @var{ATOM} is set to the value
@@ -1975,9 +1978,6 @@ TS 18508 or later
 
 @item @emph{Class}:
 Atomic subroutine
-
-@item @emph{Syntax}:
-@code{CALL ATOMIC_CAS (ATOM, OLD, COMPARE, NEW [, STAT])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2015,6 +2015,9 @@ end program atomic
 @cindex Atomic subroutine, define
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL ATOMIC_DEFINE (ATOM, VALUE [, STAT])}
+
 @item @emph{Description}:
 @code{ATOMIC_DEFINE(ATOM, VALUE)} defines the variable @var{ATOM} with the value
 @var{VALUE} atomically. When @var{STAT} is present and the invocation was
@@ -2029,9 +2032,6 @@ Fortran 2008 and later; with @var{STAT}, TS 18508 or later
 
 @item @emph{Class}:
 Atomic subroutine
-
-@item @emph{Syntax}:
-@code{CALL ATOMIC_DEFINE (ATOM, VALUE [, STAT])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2071,6 +2071,9 @@ end program atomic
 @cindex Atomic subroutine, ADD with fetch
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL ATOMIC_FETCH_ADD (ATOM, VALUE, old [, STAT])}
+
 @item @emph{Description}:
 @code{ATOMIC_FETCH_ADD(ATOM, VALUE, OLD)} atomically stores the value of
 @var{ATOM} in @var{OLD} and adds the value of @var{VALUE} to the
@@ -2086,9 +2089,6 @@ TS 18508 or later
 
 @item @emph{Class}:
 Atomic subroutine
-
-@item @emph{Syntax}:
-@code{CALL ATOMIC_FETCH_ADD (ATOM, VALUE, old [, STAT])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2128,6 +2128,9 @@ end program atomic
 @cindex Atomic subroutine, AND with fetch
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL ATOMIC_FETCH_AND (ATOM, VALUE, OLD [, STAT])}
+
 @item @emph{Description}:
 @code{ATOMIC_AND(ATOM, VALUE)} atomically stores the value of @var{ATOM} in
 @var{OLD} and defines @var{ATOM} with the bitwise AND between the values of
@@ -2143,9 +2146,6 @@ TS 18508 or later
 
 @item @emph{Class}:
 Atomic subroutine
-
-@item @emph{Syntax}:
-@code{CALL ATOMIC_FETCH_AND (ATOM, VALUE, OLD [, STAT])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2183,6 +2183,9 @@ end program atomic
 @cindex Atomic subroutine, OR with fetch
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL ATOMIC_FETCH_OR (ATOM, VALUE, OLD [, STAT])}
+
 @item @emph{Description}:
 @code{ATOMIC_OR(ATOM, VALUE)} atomically stores the value of @var{ATOM} in
 @var{OLD} and defines @var{ATOM} with the bitwise OR between the values of
@@ -2198,9 +2201,6 @@ TS 18508 or later
 
 @item @emph{Class}:
 Atomic subroutine
-
-@item @emph{Syntax}:
-@code{CALL ATOMIC_FETCH_OR (ATOM, VALUE, OLD [, STAT])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2238,6 +2238,9 @@ end program atomic
 @cindex Atomic subroutine, XOR with fetch
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL ATOMIC_FETCH_XOR (ATOM, VALUE, OLD [, STAT])}
+
 @item @emph{Description}:
 @code{ATOMIC_XOR(ATOM, VALUE)} atomically stores the value of @var{ATOM} in
 @var{OLD} and defines @var{ATOM} with the bitwise XOR between the values of
@@ -2253,9 +2256,6 @@ TS 18508 or later
 
 @item @emph{Class}:
 Atomic subroutine
-
-@item @emph{Syntax}:
-@code{CALL ATOMIC_FETCH_XOR (ATOM, VALUE, OLD [, STAT])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2293,6 +2293,9 @@ end program atomic
 @cindex Atomic subroutine, OR
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL ATOMIC_OR (ATOM, VALUE [, STAT])}
+
 @item @emph{Description}:
 @code{ATOMIC_OR(ATOM, VALUE)} atomically defines @var{ATOM} with the bitwise
 AND between the values of @var{ATOM} and @var{VALUE}. When @var{STAT} is present
@@ -2307,9 +2310,6 @@ TS 18508 or later
 
 @item @emph{Class}:
 Atomic subroutine
-
-@item @emph{Syntax}:
-@code{CALL ATOMIC_OR (ATOM, VALUE [, STAT])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2346,6 +2346,9 @@ end program atomic
 @cindex Atomic subroutine, reference
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL ATOMIC_REF(VALUE, ATOM [, STAT])}
+
 @item @emph{Description}:
 @code{ATOMIC_DEFINE(ATOM, VALUE)} atomically assigns the value of the
 variable @var{ATOM} to @var{VALUE}. When @var{STAT} is present and the
@@ -2360,9 +2363,6 @@ Fortran 2008 and later; with @var{STAT}, TS 18508 or later
 
 @item @emph{Class}:
 Atomic subroutine
-
-@item @emph{Syntax}:
-@code{CALL ATOMIC_REF(VALUE, ATOM [, STAT])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2406,6 +2406,9 @@ end program atomic
 @cindex Atomic subroutine, XOR
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL ATOMIC_XOR (ATOM, VALUE [, STAT])}
+
 @item @emph{Description}:
 @code{ATOMIC_AND(ATOM, VALUE)} atomically defines @var{ATOM} with the bitwise
 XOR between the values of @var{ATOM} and @var{VALUE}. When @var{STAT} is present
@@ -2420,9 +2423,6 @@ TS 18508 or later
 
 @item @emph{Class}:
 Atomic subroutine
-
-@item @emph{Syntax}:
-@code{CALL ATOMIC_XOR (ATOM, VALUE [, STAT])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2458,6 +2458,9 @@ end program atomic
 @cindex backtrace
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL BACKTRACE}
+
 @item @emph{Description}:
 @code{BACKTRACE} shows a backtrace at an arbitrary place in user code. Program
 execution continues normally afterwards. The backtrace information is printed
@@ -2468,9 +2471,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL BACKTRACE}
 
 @item @emph{Arguments}:
 None
@@ -2489,6 +2489,9 @@ None
 @cindex Bessel function, first kind
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = BESSEL_J0(X)}
+
 @item @emph{Description}:
 @code{BESSEL_J0(X)} computes the Bessel function of the first kind of
 order 0 of @var{X}. This function is available under the name
@@ -2499,9 +2502,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = BESSEL_J0(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2538,6 +2538,9 @@ end program test_besj0
 @cindex Bessel function, first kind
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = BESSEL_J1(X)}
+
 @item @emph{Description}:
 @code{BESSEL_J1(X)} computes the Bessel function of the first kind of
 order 1 of @var{X}. This function is available under the name
@@ -2548,9 +2551,6 @@ Fortran 2008
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = BESSEL_J1(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2587,6 +2587,12 @@ end program test_besj1
 @cindex Bessel function, first kind
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = BESSEL_JN(N, X)}
+@item @code{RESULT = BESSEL_JN(N1, N2, X)}
+@end multitable
+
 @item @emph{Description}:
 @code{BESSEL_JN(N, X)} computes the Bessel function of the first kind of
 order @var{N} of @var{X}. This function is available under the name
@@ -2602,12 +2608,6 @@ Fortran 2008 and later, negative @var{N} is allowed as GNU extension
 @item @emph{Class}:
 Elemental function, except for the transformational function
 @code{BESSEL_JN(N1, N2, X)}
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = BESSEL_JN(N, X)}
-@item @code{RESULT = BESSEL_JN(N1, N2, X)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2653,6 +2653,9 @@ end program test_besjn
 @cindex Bessel function, second kind
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = BESSEL_Y0(X)}
+
 @item @emph{Description}:
 @code{BESSEL_Y0(X)} computes the Bessel function of the second kind of
 order 0 of @var{X}. This function is available under the name
@@ -2663,9 +2666,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = BESSEL_Y0(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2700,6 +2700,9 @@ end program test_besy0
 @cindex Bessel function, second kind
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = BESSEL_Y1(X)}
+
 @item @emph{Description}:
 @code{BESSEL_Y1(X)} computes the Bessel function of the second kind of
 order 1 of @var{X}. This function is available under the name
@@ -2710,9 +2713,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = BESSEL_Y1(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2747,6 +2747,12 @@ end program test_besy1
 @cindex Bessel function, second kind
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = BESSEL_YN(N, X)}
+@item @code{RESULT = BESSEL_YN(N1, N2, X)}
+@end multitable
+
 @item @emph{Description}:
 @code{BESSEL_YN(N, X)} computes the Bessel function of the second kind of
 order @var{N} of @var{X}. This function is available under the name
@@ -2762,12 +2768,6 @@ Fortran 2008 and later, negative @var{N} is allowed as GNU extension
 @item @emph{Class}:
 Elemental function, except for the transformational function
 @code{BESSEL_YN(N1, N2, X)}
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = BESSEL_YN(N, X)}
-@item @code{RESULT = BESSEL_YN(N1, N2, X)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2811,6 +2811,9 @@ end program test_besyn
 @cindex bitwise comparison
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = BGE(I, J)}
+
 @item @emph{Description}:
 Determines whether an integral is a bitwise greater than or equal to
 another.
@@ -2821,9 +2824,6 @@ integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = BGE(I, J)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2852,6 +2852,9 @@ For @code{UNSIGNED} arguments, this function is identical to the
 @cindex bitwise comparison
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = BGT(I, J)}
+
 @item @emph{Description}:
 Determines whether an integral is a bitwise greater than another.
 
@@ -2861,9 +2864,6 @@ integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = BGT(I, J)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2893,6 +2893,9 @@ For @code{UNSIGNED} arguments, this function is identical to the
 @cindex size of a variable, in bits
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = BIT_SIZE(I)}
+
 @item @emph{Description}:
 @code{BIT_SIZE(I)} returns the number of bits (for integers, the precision
 plus the sign bit) represented by the type of @var{I}.  The result of
@@ -2904,9 +2907,6 @@ integers})
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = BIT_SIZE(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2935,6 +2935,9 @@ end program test_bit_size
 @cindex bitwise comparison
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = BLE(I, J)}
+
 @item @emph{Description}:
 Determines whether an integral is a bitwise less than or equal to
 another.
@@ -2945,9 +2948,6 @@ integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = BLE(I, J)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -2976,6 +2976,9 @@ For @code{UNSIGNED} arguments, this function is identical to the
 @cindex bitwise comparison
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = BLT(I, J)}
+
 @item @emph{Description}:
 Determines whether an integral is a bitwise less than another.
 
@@ -2985,9 +2988,6 @@ integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = BLT(I, J)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3020,6 +3020,9 @@ For @code{UNSIGNED} arguments, this function is identical to the
 @cindex bits, testing
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = BTEST(I, POS)}
+
 @item @emph{Description}:
 @code{BTEST(I,POS)} returns logical @code{.TRUE.} if the bit at @var{POS}
 in @var{I} is set.  The counting of the bits starts at 0.
@@ -3030,9 +3033,6 @@ for @code{UNSIGNED} (@pxref{Unsigned integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = BTEST(I, POS)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3074,6 +3074,9 @@ end program test_btest
 @cindex pointer, C association status
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = C_ASSOCIATED(c_ptr_1[, c_ptr_2])}
+
 @item @emph{Description}:
 @code{C_ASSOCIATED(c_ptr_1[, c_ptr_2])} determines the status of the C pointer
 @var{c_ptr_1} or if @var{c_ptr_1} is associated with the target @var{c_ptr_2}.
@@ -3083,9 +3086,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = C_ASSOCIATED(c_ptr_1[, c_ptr_2])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3122,6 +3122,9 @@ end subroutine association_test
 @cindex pointer, convert C to Fortran
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL C_F_POINTER(CPTR, FPTR[, SHAPE])}
+
 @item @emph{Description}:
 @code{C_F_POINTER(CPTR, FPTR[, SHAPE])} assigns the target of the C pointer
 @var{CPTR} to the Fortran pointer @var{FPTR} and specifies its shape.
@@ -3131,9 +3134,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL C_F_POINTER(CPTR, FPTR[, SHAPE])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3177,6 +3177,9 @@ end program main
 @cindex pointer, C address of pointers
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL C_F_PROCPOINTER(cptr, fptr)}
+
 @item @emph{Description}:
 @code{C_F_PROCPOINTER(CPTR, FPTR)} Assign the target of the C function pointer
 @var{CPTR} to the Fortran procedure pointer @var{FPTR}.
@@ -3186,9 +3189,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL C_F_PROCPOINTER(cptr, fptr)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3235,6 +3235,9 @@ end program main
 @cindex pointer, C address of procedures
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = C_FUNLOC(x)}
+
 @item @emph{Description}:
 @code{C_FUNLOC(x)} determines the C address of the argument.
 
@@ -3243,9 +3246,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = C_FUNLOC(x)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3295,6 +3295,9 @@ end program main
 @cindex procedure pointer, convert C to Fortran
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = C_LOC(X)}
+
 @item @emph{Description}:
 @code{C_LOC(X)} determines the C address of the argument.
 
@@ -3303,9 +3306,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = C_LOC(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .10 .75
@@ -3344,6 +3344,9 @@ end subroutine association_test
 @cindex size of an expression
 
 @table @asis
+@item @emph{Synopsis}:
+@code{N = C_SIZEOF(X)}
+
 @item @emph{Description}:
 @code{C_SIZEOF(X)} calculates the number of bytes of storage the
 expression @code{X} occupies.
@@ -3353,9 +3356,6 @@ Fortran 2008
 
 @item @emph{Class}:
 Inquiry function of the module @code{ISO_C_BINDING}
-
-@item @emph{Syntax}:
-@code{N = C_SIZEOF(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3395,6 +3395,9 @@ where default @code{REAL} variables are unusually padded.
 @cindex rounding, ceiling
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = CEILING(A [, KIND])}
+
 @item @emph{Description}:
 @code{CEILING(A)} returns the least integer greater than or equal to @var{A}.
 
@@ -3403,9 +3406,6 @@ Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = CEILING(A [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3441,6 +3441,9 @@ end program test_ceiling
 @cindex conversion, to character
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = CHAR(I [, KIND])}
+
 @item @emph{Description}:
 @code{CHAR(I [, KIND])} returns the character represented by the integer @var{I}.
 
@@ -3449,9 +3452,6 @@ Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = CHAR(I [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3498,6 +3498,12 @@ and formatted string representations.
 @cindex system, working directory
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL CHDIR(NAME [, STATUS])}
+@item @code{STATUS = CHDIR(NAME)}
+@end multitable
+
 @item @emph{Description}:
 Change current working directory to a specified path.
 
@@ -3509,12 +3515,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL CHDIR(NAME [, STATUS])}
-@item @code{STATUS = CHDIR(NAME)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3549,6 +3549,12 @@ END PROGRAM
 @cindex file system, change access mode
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL CHMOD(NAME, MODE[, STATUS])}
+@item @code{STATUS = CHMOD(NAME, MODE)}
+@end multitable
+
 @item @emph{Description}:
 @code{CHMOD} changes the permissions of a file.
 
@@ -3560,12 +3566,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL CHMOD(NAME, MODE[, STATUS])}
-@item @code{STATUS = CHMOD(NAME, MODE)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3619,6 +3619,9 @@ end program chmod_test
 @cindex conversion, to complex
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = CMPLX(X [, Y [, KIND]])}
+
 @item @emph{Description}:
 @code{CMPLX(X [, Y [, KIND]])} returns a complex number where @var{X} is converted to
 the real component.  If @var{Y} is present it is converted to the imaginary
@@ -3631,9 +3634,6 @@ integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = CMPLX(X [, Y [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -3674,6 +3674,9 @@ end program test_cmplx
 @cindex Collectives, value broadcasting
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL CO_BROADCAST(A, SOURCE_IMAGE [, STAT, ERRMSG])}
+
 @item @emph{Description}:
 @code{CO_BROADCAST} copies the value of argument @var{A} on the image with
 image index @code{SOURCE_IMAGE} to all images in the current team.  @var{A}
@@ -3687,9 +3690,6 @@ Technical Specification (TS) 18508 or later
 
 @item @emph{Class}:
 Collective subroutine
-
-@item @emph{Syntax}:
-@code{CALL CO_BROADCAST(A, SOURCE_IMAGE [, STAT, ERRMSG])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .20 .65
@@ -3730,6 +3730,9 @@ end program test
 @cindex Collectives, maximal value
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL CO_MAX(A [, RESULT_IMAGE, STAT, ERRMSG])}
+
 @item @emph{Description}:
 @code{CO_MAX} determines element-wise the maximal value of @var{A} on all
 images of the current team.  If @var{RESULT_IMAGE} is present, the maximum
@@ -3745,9 +3748,6 @@ Technical Specification (TS) 18508 or later
 
 @item @emph{Class}:
 Collective subroutine
-
-@item @emph{Syntax}:
-@code{CALL CO_MAX(A [, RESULT_IMAGE, STAT, ERRMSG])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .20 .65
@@ -3787,6 +3787,9 @@ end program test
 @cindex Collectives, minimal value
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL CO_MIN(A [, RESULT_IMAGE, STAT, ERRMSG])}
+
 @item @emph{Description}:
 @code{CO_MIN} determines element-wise the minimal value of @var{A} on all
 images of the current team.  If @var{RESULT_IMAGE} is present, the minimal
@@ -3802,9 +3805,6 @@ Technical Specification (TS) 18508 or later
 
 @item @emph{Class}:
 Collective subroutine
-
-@item @emph{Syntax}:
-@code{CALL CO_MIN(A [, RESULT_IMAGE, STAT, ERRMSG])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .20 .65
@@ -3844,6 +3844,9 @@ end program test
 @cindex Collectives, generic reduction
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL CO_REDUCE(A, OPERATION, [, RESULT_IMAGE, STAT, ERRMSG])}
+
 @item @emph{Description}:
 @code{CO_REDUCE} determines element-wise the reduction of the value of @var{A}
 on all images of the current team.  The pure function passed as @var{OPERATION}
@@ -3863,9 +3866,6 @@ Technical Specification (TS) 18508 or later
 
 @item @emph{Class}:
 Collective subroutine
-
-@item @emph{Syntax}:
-@code{CALL CO_REDUCE(A, OPERATION, [, RESULT_IMAGE, STAT, ERRMSG])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .20 .65
@@ -3927,6 +3927,9 @@ type as result.
 @cindex Collectives, sum of values
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL CO_SUM(A [, RESULT_IMAGE, STAT, ERRMSG])}
+
 @item @emph{Description}:
 @code{CO_SUM} sums up the values of each element of @var{A} on all
 images of the current team.  If @var{RESULT_IMAGE} is present, the summed-up
@@ -3942,9 +3945,6 @@ Technical Specification (TS) 18508 or later
 
 @item @emph{Class}:
 Collective subroutine
-
-@item @emph{Syntax}:
-@code{CALL CO_SUM(A [, RESULT_IMAGE, STAT, ERRMSG])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .20 .65
@@ -3987,6 +3987,9 @@ end program test
 @cindex arguments, to program
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = COMMAND_ARGUMENT_COUNT()}
+
 @item @emph{Description}:
 @code{COMMAND_ARGUMENT_COUNT} returns the number of arguments passed on the
 command line when the containing program was invoked.
@@ -3996,9 +3999,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = COMMAND_ARGUMENT_COUNT()}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4032,6 +4032,9 @@ end program test_command_argument_count
 @cindex compiler flags inquiry function
 
 @table @asis
+@item @emph{Synopsis}:
+@code{STR = COMPILER_OPTIONS()}
+
 @item @emph{Description}:
 @code{COMPILER_OPTIONS} returns a string with the options used for
 compiling.
@@ -4041,9 +4044,6 @@ Fortran 2008
 
 @item @emph{Class}:
 Inquiry function of the module @code{ISO_FORTRAN_ENV}
-
-@item @emph{Syntax}:
-@code{STR = COMPILER_OPTIONS()}
 
 @item @emph{Arguments}:
 None
@@ -4076,6 +4076,9 @@ the @code{COMPILER_OPTIONS} intrinsic.
 @cindex version of the compiler
 
 @table @asis
+@item @emph{Synopsis}:
+@code{STR = COMPILER_VERSION()}
+
 @item @emph{Description}:
 @code{COMPILER_VERSION} returns a string with the name and the
 version of the compiler.
@@ -4085,9 +4088,6 @@ Fortran 2008
 
 @item @emph{Class}:
 Inquiry function of the module @code{ISO_FORTRAN_ENV}
-
-@item @emph{Syntax}:
-@code{STR = COMPILER_VERSION()}
 
 @item @emph{Arguments}:
 None
@@ -4119,6 +4119,9 @@ It contains the name of the compiler and its version number.
 @cindex conversion, to complex
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = COMPLEX(X, Y)}
+
 @item @emph{Description}:
 @code{COMPLEX(X, Y)} returns a complex number where @var{X} is converted
 to the real component and @var{Y} is converted to the imaginary
@@ -4129,9 +4132,6 @@ GNU extension
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = COMPLEX(X, Y)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4170,6 +4170,9 @@ end program test_complex
 @cindex complex conjugate
 
 @table @asis
+@item @emph{Synopsis}:
+@code{Z = CONJG(Z)}
+
 @item @emph{Description}:
 @code{CONJG(Z)} returns the conjugate of @var{Z}.  If @var{Z} is @code{(x, y)}
 then the result is @code{(x, -y)}
@@ -4179,9 +4182,6 @@ Fortran 77 and later, has an overload that is a GNU extension
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{Z = CONJG(Z)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4223,6 +4223,9 @@ end program test_conjg
 @cindex cosine
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = COS(X)}
+
 @item @emph{Description}:
 @code{COS(X)} computes the cosine of @var{X}.
 
@@ -4231,9 +4234,6 @@ Fortran 77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = COS(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4284,6 +4284,9 @@ Degrees function: @*
 @cindex cosine, degrees
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = COSD(X)}
+
 @item @emph{Description}:
 @code{COSD(X)} computes the cosine of @var{X} in degrees.
 
@@ -4292,9 +4295,6 @@ Fortran 2023
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = COSD(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4341,6 +4341,9 @@ Radians function: @*
 @cindex cosine, hyperbolic
 
 @table @asis
+@item @emph{Synopsis}:
+@code{X = COSH(X)}
+
 @item @emph{Description}:
 @code{COSH(X)} computes the hyperbolic cosine of @var{X}.
 
@@ -4349,9 +4352,6 @@ Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{X = COSH(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4394,6 +4394,9 @@ Inverse function: @*
 @cindex cotangent
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = COTAN(X)}
+
 @item @emph{Description}:
 @code{COTAN(X)} computes the cotangent of @var{X}. Equivalent to @code{COS(x)}
 divided by @code{SIN(x)}, or @code{1 / TAN(x)}.
@@ -4406,9 +4409,6 @@ GNU extension, enabled with @option{-fdec-math}.
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = COTAN(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4450,6 +4450,9 @@ Degrees function: @*
 @cindex cotangent, degrees
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = COTAND(X)}
+
 @item @emph{Description}:
 @code{COTAND(X)} computes the cotangent of @var{X} in degrees.  Equivalent to
 @code{COSD(x)} divided by @code{SIND(x)}, or @code{1 / TAND(x)}.
@@ -4462,9 +4465,6 @@ standard constructs wherever possible.
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = COTAND(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4506,6 +4506,9 @@ Radians function: @*
 @cindex array, number of elements
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = COUNT(MASK [, DIM, KIND])}
+
 @item @emph{Description}:
 
 Counts the number of @code{.TRUE.} elements in a logical @var{MASK},
@@ -4519,9 +4522,6 @@ Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = COUNT(MASK [, DIM, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4572,6 +4572,9 @@ end program test_count
 @cindex time, elapsed
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL CPU_TIME(TIME)}
+
 @item @emph{Description}:
 Returns a @code{REAL} value representing the elapsed CPU time in
 seconds.  This is useful for testing segments of code to determine
@@ -4591,9 +4594,6 @@ Fortran 95 and later
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL CPU_TIME(TIME)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4629,6 +4629,9 @@ end program test_cpu_time
 @cindex array, rotate
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = CSHIFT(ARRAY, SHIFT [, DIM])}
+
 @item @emph{Description}:
 @code{CSHIFT(ARRAY, SHIFT [, DIM])} performs a circular shift on elements of
 @var{ARRAY} along the dimension of @var{DIM}.  If @var{DIM} is omitted it is
@@ -4644,9 +4647,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = CSHIFT(ARRAY, SHIFT [, DIM])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4687,6 +4687,12 @@ end program test_cshift
 @cindex conversion, to string
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL CTIME(TIME, RESULT)}.
+@item @code{RESULT = CTIME(TIME)}.
+@end multitable
+
 @item @emph{Description}:
 @code{CTIME} converts a system time value, such as returned by
 @ref{TIME8}, to a string. The output is of the form @samp{Sat
@@ -4700,12 +4706,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL CTIME(TIME, RESULT)}.
-@item @code{RESULT = CTIME(TIME)}.
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4752,6 +4752,9 @@ end program test_ctime
 @cindex current time
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL DATE_AND_TIME([DATE, TIME, ZONE, VALUES])}
+
 @item @emph{Description}:
 @code{DATE_AND_TIME(DATE, TIME, ZONE, VALUES)} gets the corresponding date and
 time information from the real-time system clock.  @var{DATE} is
@@ -4778,9 +4781,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL DATE_AND_TIME([DATE, TIME, ZONE, VALUES])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4827,6 +4827,9 @@ end program test_time_and_date
 @cindex conversion, to real
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = DBLE(A)}
+
 @item @emph{Description}:
 @code{DBLE(A)} Converts @var{A} to double precision real type.
 
@@ -4835,9 +4838,6 @@ Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = DBLE(A)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4871,6 +4871,9 @@ end program test_dble
 @cindex conversion, to complex
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = DCMPLX(X [, Y])}
+
 @item @emph{Description}:
 @code{DCMPLX(X [,Y])} returns a double complex number where @var{X} is
 converted to the real component.  If @var{Y} is present it is converted to the
@@ -4882,9 +4885,6 @@ GNU extension
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = DCMPLX(X [, Y])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4919,6 +4919,9 @@ end program test_dcmplx
 @cindex model representation, significant digits
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = DIGITS(X)}
+
 @item @emph{Description}:
 @code{DIGITS(X)} returns the number of significant binary digits of the internal
 model representation of @var{X}.  For example, on a system using a 32-bit
@@ -4930,9 +4933,6 @@ integers})
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = DIGITS(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -4965,6 +4965,9 @@ end program test_digits
 @cindex positive difference
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = DIM(X, Y)}
+
 @item @emph{Description}:
 @code{DIM(X,Y)} returns the difference @code{X-Y} if the result is positive;
 otherwise returns zero.
@@ -4974,9 +4977,6 @@ Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = DIM(X, Y)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5020,6 +5020,9 @@ end program test_dim
 @cindex product, vector
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = DOT_PRODUCT(VECTOR_A, VECTOR_B)}
+
 @item @emph{Description}:
 @code{DOT_PRODUCT(VECTOR_A, VECTOR_B)} computes the dot product multiplication
 of two vectors @var{VECTOR_A} and @var{VECTOR_B}.  The two vectors may be
@@ -5037,9 +5040,6 @@ integers})
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = DOT_PRODUCT(VECTOR_A, VECTOR_B)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5083,6 +5083,9 @@ end program test_dot_prod
 @cindex product, double-precision
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = DPROD(X, Y)}
+
 @item @emph{Description}:
 @code{DPROD(X,Y)} returns the product @code{X*Y}.
 
@@ -5091,9 +5094,6 @@ Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = DPROD(X, Y)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5130,6 +5130,9 @@ end program test_dprod
 @cindex complex numbers, real part
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = DREAL(A)}
+
 @item @emph{Description}:
 @code{DREAL(Z)} returns the real part of complex variable @var{Z}.
 
@@ -5138,9 +5141,6 @@ GNU extension
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = DREAL(A)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5172,6 +5172,9 @@ end program test_dreal
 @cindex shift, left
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = DSHIFTL(I, J, SHIFT)}
+
 @item @emph{Description}:
 @code{DSHIFTL(I, J, SHIFT)} combines bits of @var{I} and @var{J}. The
 rightmost @var{SHIFT} bits of the result are the leftmost @var{SHIFT}
@@ -5184,9 +5187,6 @@ integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = DSHIFTL(I, J, SHIFT)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5219,6 +5219,9 @@ if @var{I} is a BOZ constant, @var{J}.
 @cindex shift, right
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = DSHIFTR(I, J, SHIFT)}
+
 @item @emph{Description}:
 @code{DSHIFTR(I, J, SHIFT)} combines bits of @var{I} and @var{J}. The
 leftmost @var{SHIFT} bits of the result are the rightmost @var{SHIFT}
@@ -5231,9 +5234,6 @@ integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = DSHIFTR(I, J, SHIFT)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5266,6 +5266,12 @@ if @var{I} is a BOZ constant, @var{J}.
 @cindex elapsed time
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL DTIME(VALUES, TIME)}.
+@item @code{TIME = DTIME(VALUES)}, (not recommended).
+@end multitable
+
 @item @emph{Description}:
 @code{DTIME(VALUES, TIME)} initially returns the number of seconds of runtime
 since the start of the process's execution in @var{TIME}.  @var{VALUES}
@@ -5304,12 +5310,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL DTIME(VALUES, TIME)}.
-@item @code{TIME = DTIME(VALUES)}, (not recommended).
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5354,6 +5354,9 @@ end program test_dtime
 @cindex array, shift
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = EOSHIFT(ARRAY, SHIFT [, BOUNDARY, DIM])}
+
 @item @emph{Description}:
 @code{EOSHIFT(ARRAY, SHIFT[, BOUNDARY, DIM])} performs an end-off shift on
 elements of @var{ARRAY} along the dimension of @var{DIM}.  If @var{DIM} is
@@ -5380,9 +5383,6 @@ integers})
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = EOSHIFT(ARRAY, SHIFT [, BOUNDARY, DIM])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5423,6 +5423,9 @@ end program test_eoshift
 @cindex model representation, epsilon
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = EPSILON(X)}
+
 @item @emph{Description}:
 @code{EPSILON(X)} returns the smallest number @var{E} of the same kind
 as @var{X} such that @math{1 + E > 1}.
@@ -5432,9 +5435,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = EPSILON(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5463,6 +5463,9 @@ end program test_epsilon
 @cindex error function
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ERF(X)}
+
 @item @emph{Description}:
 @code{ERF(X)} computes the error function of @var{X}.
 
@@ -5471,9 +5474,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ERF(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5507,6 +5507,9 @@ end program test_erf
 @cindex error function, complementary
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ERFC(X)}
+
 @item @emph{Description}:
 @code{ERFC(X)} computes the complementary error function of @var{X}.
 
@@ -5515,9 +5518,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ERFC(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5551,6 +5551,9 @@ end program test_erfc
 @cindex error function, complementary, exponentially-scaled
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ERFC_SCALED(X)}
+
 @item @emph{Description}:
 @code{ERFC_SCALED(X)} computes the exponentially-scaled complementary
 error function of @var{X}.
@@ -5560,9 +5563,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ERFC_SCALED(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5589,6 +5589,12 @@ end program test_erfc_scaled
 @cindex time, elapsed
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL ETIME(VALUES, TIME)}.
+@item @code{TIME = ETIME(VALUES)}, (not recommended).
+@end multitable
+
 @item @emph{Description}:
 @code{ETIME(VALUES, TIME)} returns the number of seconds of runtime
 since the start of the process's execution in @var{TIME}.  @var{VALUES}
@@ -5617,12 +5623,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL ETIME(VALUES, TIME)}.
-@item @code{TIME = ETIME(VALUES)}, (not recommended).
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5666,6 +5666,9 @@ end program test_etime
 @cindex Events, EVENT_QUERY
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL EVENT_QUERY (EVENT, COUNT [, STAT])}
+
 @item @emph{Description}:
 @code{EVENT_QUERY} assigns the number of events to @var{COUNT} that have been
 posted to the @var{EVENT} variable and not yet been removed by calling
@@ -5678,9 +5681,6 @@ TS 18508 or later
 
 @item @emph{Class}:
  subroutine
-
-@item @emph{Syntax}:
-@code{CALL EVENT_QUERY (EVENT, COUNT [, STAT])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5718,6 +5718,9 @@ end program atomic
 @cindex command line
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL EXECUTE_COMMAND_LINE(COMMAND [, WAIT, EXITSTAT, CMDSTAT, CMDMSG ])}
+
 @item @emph{Description}:
 @code{EXECUTE_COMMAND_LINE} runs a shell command, synchronously or
 asynchronously.
@@ -5748,9 +5751,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL EXECUTE_COMMAND_LINE(COMMAND [, WAIT, EXITSTAT, CMDSTAT, CMDMSG ])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5801,6 +5801,9 @@ terminated alongside.
 @cindex terminate program
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL EXIT([STATUS])}
+
 @item @emph{Description}:
 @code{EXIT} causes immediate termination of the program with status.  If status
 is omitted it returns the canonical @emph{success} for the system.  All Fortran
@@ -5811,9 +5814,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL EXIT([STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5850,6 +5850,9 @@ end program test_exit
 @cindex logarithm function, inverse
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = EXP(X)}
+
 @item @emph{Description}:
 @code{EXP(X)} computes the base @math{e} exponential of @var{X}.
 
@@ -5858,9 +5861,6 @@ Fortran 77 and later, has overloads that are GNU extensions
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = EXP(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5899,6 +5899,9 @@ end program test_exp
 @cindex floating point, exponent
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = EXPONENT(X)}
+
 @item @emph{Description}:
 @code{EXPONENT(X)} returns the value of the exponent part of @var{X}. If @var{X}
 is zero the value returned is zero. 
@@ -5908,9 +5911,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = EXPONENT(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5939,6 +5939,9 @@ end program test_exponent
 @fnindex EXTENDS_TYPE_OF
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = EXTENDS_TYPE_OF(A, MOLD)}
+
 @item @emph{Description}:
 Query dynamic type for extension.
 
@@ -5947,9 +5950,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = EXTENDS_TYPE_OF(A, MOLD)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -5978,6 +5978,12 @@ the dynamic type of A is an extension type of the dynamic type of MOLD.
 @cindex current date
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL FDATE(DATE)}.
+@item @code{DATE = FDATE()}.
+@end multitable
+
 @item @emph{Description}:
 @code{FDATE(DATE)} returns the current date (using the same format as
 @ref{CTIME}) in @var{DATE}. It is equivalent to @code{CALL CTIME(DATE,
@@ -5991,12 +5997,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL FDATE(DATE)}.
-@item @code{DATE = FDATE()}.
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6038,6 +6038,12 @@ end program test_fdate
 @cindex file operation, read character
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL FGET(C [, STATUS])}
+@item @code{STATUS = FGET(C)}
+@end multitable
+
 @item @emph{Description}:
 Read a single character in stream mode from stdin by bypassing normal 
 formatted output. Stream I/O should not be mixed with normal record-oriented 
@@ -6056,12 +6062,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL FGET(C [, STATUS])}
-@item @code{STATUS = FGET(C)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6105,6 +6105,12 @@ END PROGRAM
 @cindex file operation, read character
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL FGETC(UNIT, C [, STATUS])}
+@item @code{STATUS = FGETC(UNIT, C)}
+@end multitable
+
 @item @emph{Description}:
 Read a single character in stream mode by bypassing normal formatted output. 
 Stream I/O should not be mixed with normal record-oriented (formatted or 
@@ -6123,12 +6129,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL FGETC(UNIT, C [, STATUS])}
-@item @code{STATUS = FGETC(UNIT, C)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6168,6 +6168,12 @@ END PROGRAM
 @cindex findloc
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = FINDLOC(ARRAY, VALUE, DIM [, MASK] [,KIND] [,BACK])}
+@item @code{RESULT = FINDLOC(ARRAY, VALUE, [, MASK] [,KIND] [,BACK])}
+@end multitable
+
 @item @emph{Description}:
 Determines the location of the element in the array with the value
 given in the @var{VALUE} argument, or, if the @var{DIM} argument is
@@ -6190,12 +6196,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = FINDLOC(ARRAY, VALUE, DIM [, MASK] [,KIND] [,BACK])}
-@item @code{RESULT = FINDLOC(ARRAY, VALUE, [, MASK] [,KIND] [,BACK])}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6238,6 +6238,9 @@ is of default kind.
 @cindex rounding, floor
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = FLOOR(A [, KIND])}
+
 @item @emph{Description}:
 @code{FLOOR(A)} returns the greatest integer less than or equal to @var{A}.
 
@@ -6246,9 +6249,6 @@ Fortran 95 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = FLOOR(A [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6284,6 +6284,9 @@ end program test_floor
 @cindex file operation, flush
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL FLUSH(UNIT)}
+
 @item @emph{Description}:
 Flushes Fortran unit(s) currently open for output. Without the optional
 argument, all units are flushed, otherwise just the unit specified.
@@ -6293,9 +6296,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL FLUSH(UNIT)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6354,6 +6354,9 @@ descriptor of the I/O unit as argument (retrieved with GNU intrinsic
 @cindex file operation, file number
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = FNUM(UNIT)}
+
 @item @emph{Description}:
 @code{FNUM(UNIT)} returns the POSIX file descriptor number corresponding to the
 open Fortran I/O unit @code{UNIT}.
@@ -6363,9 +6366,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = FNUM(UNIT)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6397,6 +6397,12 @@ end program test_fnum
 @cindex file operation, write character
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL FPUT(C [, STATUS])}
+@item @code{STATUS = FPUT(C)}
+@end multitable
+
 @item @emph{Description}:
 Write a single character in stream mode to stdout by bypassing normal 
 formatted output. Stream I/O should not be mixed with normal record-oriented 
@@ -6415,12 +6421,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL FPUT(C [, STATUS])}
-@item @code{STATUS = FPUT(C)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6458,6 +6458,12 @@ END PROGRAM
 @cindex file operation, write character
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL FPUTC(UNIT, C [, STATUS])}
+@item @code{STATUS = FPUTC(UNIT, C)}
+@end multitable
+
 @item @emph{Description}:
 Write a single character in stream mode by bypassing normal formatted 
 output. Stream I/O should not be mixed with normal record-oriented 
@@ -6476,12 +6482,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL FPUTC(UNIT, C [, STATUS])}
-@item @code{STATUS = FPUTC(UNIT, C)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6522,6 +6522,9 @@ END PROGRAM
 @cindex floating point, fraction
 
 @table @asis
+@item @emph{Synopsis}:
+@code{Y = FRACTION(X)}
+
 @item @emph{Description}:
 @code{FRACTION(X)} returns the fractional part of the model
 representation of @code{X}.
@@ -6531,9 +6534,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{Y = FRACTION(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6564,6 +6564,9 @@ end program test_fraction
 @cindex pointer, cray
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL FREE(PTR)}
+
 @item @emph{Description}:
 Frees memory previously allocated by @code{MALLOC}. The @code{FREE}
 intrinsic is an extension intended to be used with Cray pointers, and is
@@ -6576,9 +6579,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL FREE(PTR)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6605,6 +6605,9 @@ See @code{MALLOC} for an example.
 @cindex file operation, position
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL FSEEK(UNIT, OFFSET, WHENCE[, STATUS])}
+
 @item @emph{Description}:
 Moves @var{UNIT} to the specified @var{OFFSET}. If @var{WHENCE} 
 is set to 0, the @var{OFFSET} is taken as an absolute value @code{SEEK_SET},
@@ -6635,9 +6638,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL FSEEK(UNIT, OFFSET, WHENCE[, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6685,6 +6685,12 @@ END PROGRAM
 @cindex file system, file status
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL FSTAT(UNIT, VALUES [, STATUS])}
+@item @code{STATUS = FSTAT(UNIT, VALUES)}
+@end multitable
+
 @item @emph{Description}:
 @code{FSTAT} is identical to @ref{STAT}, except that information about an 
 already opened file is obtained.
@@ -6699,12 +6705,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL FSTAT(UNIT, VALUES [, STATUS])}
-@item @code{STATUS = FSTAT(UNIT, VALUES)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6732,6 +6732,12 @@ To stat a file: @*
 @cindex file operation, position
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL FTELL(UNIT, OFFSET)}
+@item @code{OFFSET = FTELL(UNIT)}
+@end multitable
+
 @item @emph{Description}:
 Retrieves the current position within an open file.
 
@@ -6743,12 +6749,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL FTELL(UNIT, OFFSET)}
-@item @code{OFFSET = FTELL(UNIT)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6784,6 +6784,9 @@ END PROGRAM
 @cindex Factorial function
 
 @table @asis
+@item @emph{Synopsis}:
+@code{X = GAMMA(X)}
+
 @item @emph{Description}:
 @code{GAMMA(X)} computes Gamma (@math{\Gamma}) of @var{X}. For positive,
 integer values of @var{X} the Gamma function simplifies to the factorial
@@ -6800,9 +6803,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{X = GAMMA(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6840,6 +6840,9 @@ Logarithm of the Gamma function: @*
 @cindex system, error handling
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL GERROR(RESULT)}
+
 @item @emph{Description}:
 Returns the system error message corresponding to the last system error.
 This resembles the functionality of @code{strerror(3)} in C.
@@ -6849,9 +6852,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL GERROR(RESULT)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6881,6 +6881,9 @@ END PROGRAM
 @cindex arguments, to program
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL GETARG(POS, VALUE)}
+
 @item @emph{Description}:
 Retrieve the @var{POS}-th argument that was passed on the
 command line when the containing program was invoked.
@@ -6895,9 +6898,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL GETARG(POS, VALUE)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6946,6 +6946,9 @@ Fortran 2003 functions and subroutines: @*
 @cindex arguments, to program
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL GET_COMMAND([COMMAND, LENGTH, STATUS])}
+
 @item @emph{Description}:
 Retrieve the entire command line that was used to invoke the program.
 
@@ -6954,9 +6957,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL GET_COMMAND([COMMAND, LENGTH, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -6998,6 +6998,9 @@ END PROGRAM
 @cindex arguments, to program
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL GET_COMMAND_ARGUMENT(NUMBER [, VALUE, LENGTH, STATUS])}
+
 @item @emph{Description}:
 Retrieve the @var{NUMBER}-th argument that was passed on the
 command line when the containing program was invoked.
@@ -7007,9 +7010,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL GET_COMMAND_ARGUMENT(NUMBER [, VALUE, LENGTH, STATUS])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7065,6 +7065,12 @@ END PROGRAM
 @cindex system, working directory
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL GETCWD(C [, STATUS])}
+@item @code{STATUS = GETCWD(C)}
+@end multitable
+
 @item @emph{Description}:
 Get current working directory.
 
@@ -7076,12 +7082,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL GETCWD(C [, STATUS])}
-@item @code{STATUS = GETCWD(C)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7111,6 +7111,9 @@ END PROGRAM
 @cindex environment variable
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL GETENV(NAME, VALUE)}
+
 @item @emph{Description}:
 Get the @var{VALUE} of the environmental variable @var{NAME}.
 
@@ -7128,9 +7131,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL GETENV(NAME, VALUE)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7164,6 +7164,9 @@ END PROGRAM
 @cindex environment variable
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL GET_ENVIRONMENT_VARIABLE(NAME[, VALUE, LENGTH, STATUS, TRIM_NAME)}
+
 @item @emph{Description}:
 Get the @var{VALUE} of the environmental variable @var{NAME}.
 
@@ -7177,9 +7180,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL GET_ENVIRONMENT_VARIABLE(NAME[, VALUE, LENGTH, STATUS, TRIM_NAME)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7226,6 +7226,9 @@ END PROGRAM
 @cindex system, group ID
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = GETGID()}
+
 @item @emph{Description}:
 Returns the numerical group ID of the current process.
 
@@ -7234,9 +7237,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = GETGID()}
 
 @item @emph{Return value}:
 The return value of @code{GETGID} is an @code{INTEGER} of the default
@@ -7259,6 +7259,9 @@ See @code{GETPID} for an example.
 @cindex login name
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL GETLOG(C)}
+
 @item @emph{Description}:
 Gets the username under which the program is running.
 
@@ -7267,9 +7270,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL GETLOG(C)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7304,6 +7304,9 @@ END PROGRAM
 @cindex process ID
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = GETPID()}
+
 @item @emph{Description}:
 Returns the numerical process identifier of the current process.
 
@@ -7312,9 +7315,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = GETPID()}
 
 @item @emph{Return value}:
 The return value of @code{GETPID} is an @code{INTEGER} of the default
@@ -7343,6 +7343,9 @@ end program info
 @cindex user id
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = GETUID()}
+
 @item @emph{Description}:
 Returns the numerical user ID of the current process.
 
@@ -7351,9 +7354,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = GETUID()}
 
 @item @emph{Return value}:
 The return value of @code{GETUID} is an @code{INTEGER} of the default
@@ -7375,6 +7375,9 @@ See @code{GETPID} for an example.
 @cindex time, conversion to GMT info
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL GMTIME(TIME, VALUES)}
+
 @item @emph{Description}:
 Given a system time value @var{TIME} (as provided by the @ref{TIME}
 intrinsic), fills @var{VALUES} with values extracted from it appropriate
@@ -7391,9 +7394,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL GMTIME(TIME, VALUES)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7435,6 +7435,12 @@ effect, zero if not, and negative if the information is not available.
 @cindex system, host name
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL HOSTNM(C [, STATUS])}
+@item @code{STATUS = HOSTNM(NAME)}
+@end multitable
+
 @item @emph{Description}:
 Retrieves the host name of the system on which the program is running.
 
@@ -7446,12 +7452,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL HOSTNM(C [, STATUS])}
-@item @code{STATUS = HOSTNM(NAME)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7475,6 +7475,9 @@ be obtained, or to a blank string otherwise.
 @cindex model representation, largest number
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = HUGE(X)}
+
 @item @emph{Description}:
 @code{HUGE(X)} returns the largest number that is not an infinity in
 the model of the type of @code{X}.
@@ -7485,9 +7488,6 @@ integers})
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = HUGE(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7515,6 +7515,9 @@ end program test_huge_tiny
 @cindex Euclidean distance
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = HYPOT(X, Y)}
+
 @item @emph{Description}:
 @code{HYPOT(X,Y)} is the Euclidean distance function. It is equal to
 @math{\sqrt{X^2 + Y^2}}, without undue underflow or overflow.
@@ -7524,9 +7527,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = HYPOT(X, Y)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7557,6 +7557,9 @@ end program test_hypot
 @cindex conversion, to integer
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = IACHAR(C [, KIND])}
+
 @item @emph{Description}:
 @code{IACHAR(C)} returns the code for the @acronym{ASCII} character
 in the first character position of @code{C}.
@@ -7566,9 +7569,6 @@ Fortran 95 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = IACHAR(C [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7608,6 +7608,12 @@ and formatted string representations.
 @cindex bits, AND of array elements
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = IALL(ARRAY[, MASK])}
+@item @code{RESULT = IALL(ARRAY, DIM[, MASK])}
+@end multitable
+
 @item @emph{Description}:
 Reduces with bitwise AND the elements of @var{ARRAY} along dimension @var{DIM}
 if the corresponding element in @var{MASK} is @code{TRUE}.
@@ -7618,12 +7624,6 @@ integers})
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = IALL(ARRAY[, MASK])}
-@item @code{RESULT = IALL(ARRAY, DIM[, MASK])}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7675,6 +7675,9 @@ END PROGRAM
 @cindex logical and, bitwise
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = IAND(I, J)}
+
 @item @emph{Description}:
 Bitwise logical @code{AND}.
 
@@ -7685,9 +7688,6 @@ later, has overloads that are GNU extensions.  Extension for
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = IAND(I, J)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7742,6 +7742,12 @@ END PROGRAM
 @cindex bits, OR of array elements
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = IANY(ARRAY[, MASK])}
+@item @code{RESULT = IANY(ARRAY, DIM[, MASK])}
+@end multitable
+
 @item @emph{Description}:
 Reduces with bitwise OR (inclusive or) the elements of @var{ARRAY} along
 dimension @var{DIM} if the corresponding element in @var{MASK} is @code{TRUE}.
@@ -7752,12 +7758,6 @@ integers})
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = IANY(ARRAY[, MASK])}
-@item @code{RESULT = IANY(ARRAY, DIM[, MASK])}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7806,6 +7806,9 @@ END PROGRAM
 @cindex arguments, to program
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = IARGC()}
+
 @item @emph{Description}:
 @code{IARGC} returns the number of arguments passed on the
 command line when the containing program was invoked.
@@ -7820,9 +7823,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = IARGC()}
 
 @item @emph{Arguments}:
 None
@@ -7855,6 +7855,9 @@ Fortran 2003 functions and subroutines: @*
 @cindex bits, clear
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = IBCLR(I, POS)}
+
 @item @emph{Description}:
 @code{IBCLR} returns the value of @var{I} with the bit at position
 @var{POS} set to zero.
@@ -7865,9 +7868,6 @@ for @code{UNSIGNED} (@pxref{Unsigned integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = IBCLR(I, POS)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7910,6 +7910,9 @@ The return value is of the same type as @var{I}.
 @cindex bits, extract
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = IBITS(I, POS, LEN)}
+
 @item @emph{Description}:
 @code{IBITS} extracts a field of length @var{LEN} from @var{I},
 starting from bit position @var{POS} and extending left for @var{LEN}
@@ -7923,9 +7926,6 @@ for @code{UNSIGNED} (@pxref{Unsigned integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = IBITS(I, POS, LEN)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -7968,6 +7968,9 @@ The return value is of type as @var{I}.
 @cindex bits, set
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = IBSET(I, POS)}
+
 @item @emph{Description}:
 @code{IBSET} returns the value of @var{I} with the bit at position
 @var{POS} set to one.
@@ -7978,9 +7981,6 @@ for @code{UNSIGNED} (@pxref{Unsigned integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = IBSET(I, POS)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8018,6 +8018,9 @@ The return value is of the same type as @var{I}.
 @cindex conversion, to integer
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ICHAR(C [, KIND])}
+
 @item @emph{Description}:
 @code{ICHAR(C)} returns the code for the character in the first character
 position of @code{C} in the system's native character set.
@@ -8029,9 +8032,6 @@ Fortran 77 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ICHAR(C [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8096,6 +8096,9 @@ end program read_val
 @cindex current date
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL IDATE(VALUES)}
+
 @item @emph{Description}:
 @code{IDATE(VALUES)} Fills @var{VALUES} with the numerical values at the  
 current local time. The day (in the range 1-31), month (in the range 1-12), 
@@ -8112,9 +8115,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL IDATE(VALUES)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8152,6 +8152,9 @@ end program test_idate
 @cindex logical exclusive or, bitwise
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = IEOR(I, J)}
+
 @item @emph{Description}:
 @code{IEOR} returns the bitwise Boolean exclusive-OR of @var{I} and
 @var{J}.
@@ -8163,9 +8166,6 @@ later, has overloads that are GNU extensions. Extension for
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = IEOR(I, J)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8210,6 +8210,9 @@ with the kind type parameter of the other argument as-if a call to @ref{INT} or
 @cindex system, error handling
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = IERRNO()}
+
 @item @emph{Description}:
 Returns the last system error number, as given by the C @code{errno}
 variable.
@@ -8219,9 +8222,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = IERRNO()}
 
 @item @emph{Arguments}:
 None
@@ -8243,6 +8243,9 @@ kind.
 @cindex images, cosubscript to image index conversion
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = IMAGE_INDEX(COARRAY, SUB)}
+
 @item @emph{Description}:
 Returns the image index belonging to a cosubscript.
 
@@ -8251,9 +8254,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Inquiry function.
-
-@item @emph{Syntax}:
-@code{RESULT = IMAGE_INDEX(COARRAY, SUB)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8287,6 +8287,9 @@ WRITE (*,*) IMAGE_INDEX (array, [2,0,3,1])
 @cindex string, find substring
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = INDEX(STRING, SUBSTRING [, BACK [, KIND]])}
+
 @item @emph{Description}:
 Returns the position of the start of the first occurrence of string
 @var{SUBSTRING} as a substring in @var{STRING}, counting from one.  If
@@ -8299,9 +8302,6 @@ Fortran 77 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = INDEX(STRING, SUBSTRING [, BACK [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8340,6 +8340,9 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 @cindex conversion, to integer
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = INT(A [, KIND))}
+
 @item @emph{Description}:
 Convert to integer type
 
@@ -8349,9 +8352,6 @@ Fortran 77 and later, with boz-literal-constant Fortran 2008 and later.
 @item @emph{Class}:
 Elemental function, extension for @code{UNSIGNED} (@pxref{Unsigned
 integers}).
-
-@item @emph{Syntax}:
-@code{RESULT = INT(A [, KIND))}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8408,6 +8408,9 @@ end program
 @cindex conversion, to integer
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = INT2(A)}
+
 @item @emph{Description}:
 Convert to a @code{KIND=2} integer type. This is equivalent to the
 standard @code{INT} intrinsic with an optional argument of
@@ -8418,9 +8421,6 @@ GNU extension
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = INT2(A)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8444,6 +8444,9 @@ The return value is a @code{INTEGER(2)} variable.
 @cindex conversion, to integer
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = INT8(A)}
+
 @item @emph{Description}:
 Convert to a @code{KIND=8} integer type. This is equivalent to the
 standard @code{INT} intrinsic with an optional argument of
@@ -8454,9 +8457,6 @@ GNU extension
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = INT8(A)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8485,6 +8485,9 @@ The return value is a @code{INTEGER(8)} variable.
 @cindex logical or, bitwise
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = IOR(I, J)}
+
 @item @emph{Description}:
 @code{IOR} returns the bitwise Boolean inclusive-OR of @var{I} and
 @var{J}.
@@ -8496,9 +8499,6 @@ later, has overloads that are GNU extensions.  Extension for
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = IOR(I, J)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8545,6 +8545,12 @@ with the kind type parameter of the other argument as-if a call to @ref{INT} or
 @cindex bits, XOR of array elements
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = IPARITY(ARRAY[, MASK])}
+@item @code{RESULT = IPARITY(ARRAY, DIM[, MASK])}
+@end multitable
+
 @item @emph{Description}:
 Reduces with bitwise XOR (exclusive or) the elements of @var{ARRAY} along
 dimension @var{DIM} if the corresponding element in @var{MASK} is @code{TRUE}.
@@ -8555,12 +8561,6 @@ integers})
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = IPARITY(ARRAY[, MASK])}
-@item @code{RESULT = IPARITY(ARRAY, DIM[, MASK])}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8609,6 +8609,9 @@ END PROGRAM
 @cindex random number generation
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = IRAND(I)}
+
 @item @emph{Description}:
 @code{IRAND(FLAG)} returns a pseudo-random number from a uniform
 distribution between 0 and a system-dependent limit (which is in most
@@ -8627,9 +8630,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = IRAND(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8660,6 +8660,9 @@ end program test_irand
 @cindex array, contiguity
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = IS_CONTIGUOUS(ARRAY)}
+
 @item @emph{Description}:
 @code{IS_CONTIGUOUS} tests whether an array is contiguous.
 
@@ -8668,9 +8671,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = IS_CONTIGUOUS(ARRAY)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8709,6 +8709,9 @@ end program test
 @cindex @code{IOSTAT}, end of file
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = IS_IOSTAT_END(I)}
+
 @item @emph{Description}:
 @code{IS_IOSTAT_END} tests whether an variable has the value of the I/O
 status ``end of file''. The function is equivalent to comparing the variable
@@ -8720,9 +8723,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = IS_IOSTAT_END(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8754,6 +8754,9 @@ END PROGRAM
 @cindex @code{IOSTAT}, end of record
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = IS_IOSTAT_EOR(I)}
+
 @item @emph{Description}:
 @code{IS_IOSTAT_EOR} tests whether an variable has the value of the I/O
 status ``end of record''. The function is equivalent to comparing the
@@ -8765,9 +8768,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = IS_IOSTAT_EOR(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8798,6 +8798,9 @@ END PROGRAM
 @cindex system, terminal
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ISATTY(UNIT)}
+
 @item @emph{Description}:
 Determine whether a unit is connected to a terminal device.
 
@@ -8806,9 +8809,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = ISATTY(UNIT)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8845,6 +8845,9 @@ END PROGRAM
 @cindex bits, shift
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ISHFT(I, SHIFT)}
+
 @item @emph{Description}:
 @code{ISHFT} returns a value corresponding to @var{I} with all of the
 bits shifted @var{SHIFT} places.  A value of @var{SHIFT} greater than
@@ -8860,9 +8863,6 @@ Fortran 90 and later, has overloads that are GNU extensions. Extension for
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ISHFT(I, SHIFT)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8899,6 +8899,9 @@ The return value is of type of @var{I}.
 @cindex bits, shift circular
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = ISHFTC(I, SHIFT [, SIZE])}
+
 @item @emph{Description}:
 @code{ISHFTC} returns a value corresponding to @var{I} with the
 rightmost @var{SIZE} bits shifted circularly @var{SHIFT} places; that
@@ -8915,9 +8918,6 @@ Fortran 90 and later, has overloads that are GNU extensions. Extension for
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = ISHFTC(I, SHIFT [, SIZE])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8953,6 +8953,9 @@ The return value is of the same type as @var{I}.
 @cindex IEEE, ISNAN
 
 @table @asis
+@item @emph{Synopsis}:
+@code{ISNAN(X)}
+
 @item @emph{Description}:
 @code{ISNAN} tests whether a floating-point value is an IEEE
 Not-a-Number (NaN).
@@ -8962,9 +8965,6 @@ GNU extension
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{ISNAN(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -8997,6 +8997,9 @@ end program test_nan
 @cindex current time
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL ITIME(VALUES)}
+
 @item @emph{Description}:
 @code{ITIME(VALUES)} Fills @var{VALUES} with the numerical values at the  
 current local time. The hour (in the range 1-24), minute (in the range 1-60), 
@@ -9013,9 +9016,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL ITIME(VALUES)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9048,6 +9048,12 @@ end program test_itime
 @fnindex KILL
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL KILL(PID, SIG [, STATUS])}
+@item @code{STATUS = KILL(PID, SIG)}
+@end multitable
+
 @item @emph{Description}:
 Sends the signal specified by @var{SIG} to the process @var{PID}.
 See @code{kill(2)}.
@@ -9060,12 +9066,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL KILL(PID, SIG [, STATUS])}
-@item @code{STATUS = KILL(PID, SIG)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9091,6 +9091,9 @@ Returns 0 on success; otherwise a system-specific error code is returned.
 @cindex kind
 
 @table @asis
+@item @emph{Synopsis}:
+@code{K = KIND(X)}
+
 @item @emph{Description}:
 @code{KIND(X)} returns the kind value of the entity @var{X}.
 
@@ -9099,9 +9102,6 @@ Fortran 95 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{K = KIND(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9135,6 +9135,9 @@ end program test_kind
 @cindex array, lower bound
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = LBOUND(ARRAY [, DIM [, KIND]])}
+
 @item @emph{Description}:
 Returns the lower bounds of an array, or a single lower bound
 along the @var{DIM} dimension.
@@ -9144,9 +9147,6 @@ Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = LBOUND(ARRAY [, DIM [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9179,6 +9179,9 @@ dimension, the lower bound is taken to be 1.
 @cindex coarray, lower bound
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = LCOBOUND(COARRAY [, DIM [, KIND]])}
+
 @item @emph{Description}:
 Returns the lower bounds of a coarray, or a single lower cobound
 along the @var{DIM} codimension.
@@ -9188,9 +9191,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = LCOBOUND(COARRAY [, DIM [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9220,6 +9220,9 @@ corresponding to the lower cobound of the array along that codimension.
 @cindex zero bits
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = LEADZ(I)}
+
 @item @emph{Description}:
 @code{LEADZ} returns the number of leading zero bits of an integer.
 
@@ -9228,9 +9231,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = LEADZ(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9264,6 +9264,9 @@ END PROGRAM
 @cindex string, length
 
 @table @asis
+@item @emph{Synopsis}:
+@code{L = LEN(STRING [, KIND])}
+
 @item @emph{Description}:
 Returns the length of a character string.  If @var{STRING} is an array,
 the length of an element of @var{STRING} is returned.  Note that
@@ -9275,9 +9278,6 @@ Fortran 77 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{L = LEN(STRING [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9311,6 +9311,9 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 @cindex string, length, without trailing whitespace
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = LEN_TRIM(STRING [, KIND])}
+
 @item @emph{Description}:
 Returns the length of a character string, ignoring any trailing blanks.
 
@@ -9319,9 +9322,6 @@ Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = LEN_TRIM(STRING [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9350,6 +9350,9 @@ The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 @cindex string, comparison
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = LGE(STRING_A, STRING_B)}
+
 @item @emph{Description}:
 Determines whether one string is lexically greater than or equal to
 another string, where the two strings are interpreted as containing
@@ -9369,9 +9372,6 @@ Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = LGE(STRING_A, STRING_B)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9404,6 +9404,9 @@ otherwise, based on the ASCII ordering.
 @cindex string, comparison
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = LGT(STRING_A, STRING_B)}
+
 @item @emph{Description}:
 Determines whether one string is lexically greater than another string,
 where the two strings are interpreted as containing ASCII character
@@ -9423,9 +9426,6 @@ Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = LGT(STRING_A, STRING_B)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9458,6 +9458,12 @@ otherwise, based on the ASCII ordering.
 @cindex file system, hard link
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL LINK(PATH1, PATH2 [, STATUS])}
+@item @code{STATUS = LINK(PATH1, PATH2)}
+@end multitable
+
 @item @emph{Description}:
 Makes a (hard) link from file @var{PATH1} to @var{PATH2}. A null
 character (@code{CHAR(0)}) can be used to mark the end of the names in
@@ -9474,12 +9480,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL LINK(PATH1, PATH2 [, STATUS])}
-@item @code{STATUS = LINK(PATH1, PATH2)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9502,6 +9502,9 @@ Subroutine, function
 @cindex string, comparison
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = LLE(STRING_A, STRING_B)}
+
 @item @emph{Description}:
 Determines whether one string is lexically less than or equal to another
 string, where the two strings are interpreted as containing ASCII
@@ -9521,9 +9524,6 @@ Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = LLE(STRING_A, STRING_B)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9556,6 +9556,9 @@ otherwise, based on the ASCII ordering.
 @cindex string, comparison
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = LLT(STRING_A, STRING_B)}
+
 @item @emph{Description}:
 Determines whether one string is lexically less than another string,
 where the two strings are interpreted as containing ASCII character
@@ -9575,9 +9578,6 @@ Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = LLT(STRING_A, STRING_B)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9609,6 +9609,9 @@ otherwise, based on the ASCII ordering.
 @cindex string, find non-blank character
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = LNBLNK(STRING)}
+
 @item @emph{Description}:
 Returns the length of a character string, ignoring any trailing blanks.
 This is identical to the standard @code{LEN_TRIM} intrinsic, and is only
@@ -9619,9 +9622,6 @@ GNU extension
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = LNBLNK(STRING)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9645,6 +9645,9 @@ The return value is of @code{INTEGER(kind=4)} type.
 @cindex location of a variable in memory
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = LOC(X)}
+
 @item @emph{Description}:
 @code{LOC(X)} returns the address of @var{X} as an integer.
 
@@ -9653,9 +9656,6 @@ GNU extension
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = LOC(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9693,6 +9693,9 @@ end program test_loc
 @cindex natural logarithm function
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = LOG(X)}
+
 @item @emph{Description}:
 @code{LOG(X)} computes the natural logarithm of @var{X}, i.e. the
 logarithm to the base @math{e}.
@@ -9702,9 +9705,6 @@ Fortran 77 and later, has GNU extensions
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = LOG(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9751,6 +9751,9 @@ end program test_log
 @cindex base 10 logarithm function
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = LOG10(X)}
+
 @item @emph{Description}:
 @code{LOG10(X)} computes the base 10 logarithm of @var{X}.
 
@@ -9759,9 +9762,6 @@ Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = LOG10(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9799,6 +9799,9 @@ end program test_log10
 @cindex Gamma function, logarithm of
 
 @table @asis
+@item @emph{Synopsis}:
+@code{X = LOG_GAMMA(X)}
+
 @item @emph{Description}:
 @code{LOG_GAMMA(X)} computes the natural logarithm of the absolute value
 of the Gamma (@math{\Gamma}) function.
@@ -9808,9 +9811,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{X = LOG_GAMMA(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9850,6 +9850,9 @@ Gamma function: @*
 @cindex conversion, to logical
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = LOGICAL(L [, KIND])}
+
 @item @emph{Description}:
 Converts one kind of @code{LOGICAL} variable to another.
 
@@ -9858,9 +9861,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = LOGICAL(L [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9888,6 +9888,9 @@ kind corresponding to @var{KIND}, or of the default logical kind if
 @cindex bits, shift left
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = LSHIFT(I, SHIFT)}
+
 @item @emph{Description}:
 @code{LSHIFT} returns a value corresponding to @var{I} with all of the
 bits shifted left by @var{SHIFT} places.  @var{SHIFT} shall be
@@ -9904,9 +9907,6 @@ GNU extension
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = LSHIFT(I, SHIFT)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9935,6 +9935,12 @@ The return value is of type @code{INTEGER} and of the same kind as
 @cindex file system, file status
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL LSTAT(NAME, VALUES [, STATUS])}
+@item @code{STATUS = LSTAT(NAME, VALUES)}
+@end multitable
+
 @item @emph{Description}:
 @code{LSTAT} is identical to @ref{STAT}, except that if path is a
 symbolic link, then the operation is performed on the link itself,
@@ -9950,12 +9956,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL LSTAT(NAME, VALUES [, STATUS])}
-@item @code{STATUS = LSTAT(NAME, VALUES)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -9984,6 +9984,9 @@ To stat a file: @*
 @cindex time, conversion to local time info
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL LTIME(TIME, VALUES)}
+
 @item @emph{Description}:
 Given a system time value @var{TIME} (as provided by the @ref{TIME}
 intrinsic), fills @var{VALUES} with values extracted from it appropriate
@@ -9999,9 +10002,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL LTIME(TIME, VALUES)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10043,6 +10043,9 @@ effect, zero if not, and negative if the information is not available.
 @cindex pointer, cray
 
 @table @asis
+@item @emph{Synopsis}:
+@code{PTR = MALLOC(SIZE)}
+
 @item @emph{Description}:
 @code{MALLOC(SIZE)} allocates @var{SIZE} bytes of dynamic memory and
 returns the address of the allocated memory. The @code{MALLOC} intrinsic
@@ -10056,9 +10059,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{PTR = MALLOC(SIZE)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10106,6 +10106,9 @@ end program test_malloc
 @cindex mask, left justified
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = MASKL(I[, KIND])}
+
 @item @emph{Description}:
 @code{MASKL(I[, KIND])} has its leftmost @var{I} bits set to 1, and the
 remaining bits set to 0.
@@ -10115,9 +10118,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = MASKL(I[, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10143,6 +10143,9 @@ default integer kind.
 @cindex mask, right justified
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = MASKR(I[, KIND])}
+
 @item @emph{Description}:
 @code{MASKL(I[, KIND])} has its rightmost @var{I} bits set to 1, and the
 remaining bits set to 0.
@@ -10152,9 +10155,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = MASKR(I[, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10181,6 +10181,9 @@ default integer kind.
 @cindex product, matrix
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = MATMUL(MATRIX_A, MATRIX_B)}
+
 @item @emph{Description}:
 Performs a matrix multiplication on numeric or logical arguments.
 
@@ -10190,9 +10193,6 @@ Fortran 90 and later. Extension for@code{UNSIGNED}
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = MATMUL(MATRIX_A, MATRIX_B)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10231,6 +10231,9 @@ for the @code{*} or @code{.AND.} operators.
 @cindex maximum value
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = MAX(A1, A2 [, A3 [, ...]])}
+
 @item @emph{Description}:
 Returns the argument with the largest (most positive) value.
 
@@ -10240,9 +10243,6 @@ integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = MAX(A1, A2 [, A3 [, ...]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10281,6 +10281,9 @@ and has the same type and kind as the first argument.
 @cindex model representation, maximum exponent
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = MAXEXPONENT(X)}
+
 @item @emph{Description}:
 @code{MAXEXPONENT(X)} returns the maximum exponent in the model of the
 type of @code{X}.
@@ -10290,9 +10293,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = MAXEXPONENT(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10323,6 +10323,12 @@ end program exponents
 @cindex array, location of maximum element
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = MAXLOC(ARRAY, DIM [, MASK] [,KIND] [,BACK])}
+@item @code{RESULT = MAXLOC(ARRAY [, MASK] [,KIND] [,BACK])}
+@end multitable
+
 @item @emph{Description}:
 Determines the location of the element in the array with the maximum
 value, or, if the @var{DIM} argument is supplied, determines the
@@ -10346,12 +10352,6 @@ Extension for@code{UNSIGNED} (@pxref{Unsigned integers}).
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = MAXLOC(ARRAY, DIM [, MASK] [,KIND] [,BACK])}
-@item @code{RESULT = MAXLOC(ARRAY [, MASK] [,KIND] [,BACK])}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10392,6 +10392,12 @@ is of default kind.
 @cindex maximum value
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = MAXVAL(ARRAY, DIM [, MASK])}
+@item @code{RESULT = MAXVAL(ARRAY [, MASK])}
+@end multitable
+
 @item @emph{Description}:
 Determines the maximum value of the elements in an array value, or, if
 the @var{DIM} argument is supplied, determines the maximum value along
@@ -10409,12 +10415,6 @@ integers})
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = MAXVAL(ARRAY, DIM [, MASK])}
-@item @code{RESULT = MAXVAL(ARRAY [, MASK])}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10448,6 +10448,9 @@ cases, the result is of the same type and kind as @var{ARRAY}.
 @cindex clock ticks
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = MCLOCK()}
+
 @item @emph{Description}:
 Returns the number of clock ticks since the start of the process, based
 on the function @code{clock(3)} in the C standard library.
@@ -10463,9 +10466,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = MCLOCK()}
 
 @item @emph{Return value}:
 The return value is a scalar of type @code{INTEGER(4)}, equal to the
@@ -10489,6 +10489,9 @@ the system does not support @code{clock(3)}.
 @cindex clock ticks
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = MCLOCK8()}
+
 @item @emph{Description}:
 Returns the number of clock ticks since the start of the process, based
 on the function @code{clock(3)} in the C standard library.
@@ -10506,9 +10509,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = MCLOCK8()}
 
 @item @emph{Return value}:
 The return value is a scalar of type @code{INTEGER(8)}, equal to the
@@ -10532,6 +10532,9 @@ the system does not support @code{clock(3)}.
 @cindex array, combine arrays
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = MERGE(TSOURCE, FSOURCE, MASK)}
+
 @item @emph{Description}:
 Select values from two arrays according to a logical mask.  The result
 is equal to @var{TSOURCE} if @var{MASK} is @code{.TRUE.}, or equal to
@@ -10542,9 +10545,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = MERGE(TSOURCE, FSOURCE, MASK)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10567,6 +10567,9 @@ The result is of the same type and type parameters as @var{TSOURCE}.
 @cindex bits, merge
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = MERGE_BITS(I, J, MASK)}
+
 @item @emph{Description}:
 @code{MERGE_BITS(I, J, MASK)} merges the bits of @var{I} and @var{J}
 as determined by the mask.  The i-th bit of the result is equal to the 
@@ -10579,9 +10582,6 @@ integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = MERGE_BITS(I, J, MASK)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10612,6 +10612,9 @@ The result is of the same type and kind as @var{I}.
 @cindex minimum value
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = MIN(A1, A2 [, A3, ...])}
+
 @item @emph{Description}:
 Returns the argument with the smallest (most negative) value.
 
@@ -10621,9 +10624,6 @@ integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = MIN(A1, A2 [, A3, ...])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10662,6 +10662,9 @@ and has the same type and kind as the first argument.
 @cindex model representation, minimum exponent
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = MINEXPONENT(X)}
+
 @item @emph{Description}:
 @code{MINEXPONENT(X)} returns the minimum exponent in the model of the
 type of @code{X}.
@@ -10671,9 +10674,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = MINEXPONENT(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10696,6 +10696,12 @@ See @code{MAXEXPONENT} for an example.
 @cindex array, location of minimum element
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = MINLOC(ARRAY, DIM [, MASK] [,KIND] [,BACK])}
+@item @code{RESULT = MINLOC(ARRAY [, MASK], [,KIND] [,BACK])}
+@end multitable
+
 @item @emph{Description}:
 Determines the location of the element in the array with the minimum
 value, or, if the @var{DIM} argument is supplied, determines the
@@ -10719,12 +10725,6 @@ Extension for @code{UNSIGNED} (@pxref{Unsigned integers}).
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = MINLOC(ARRAY, DIM [, MASK] [,KIND] [,BACK])}
-@item @code{RESULT = MINLOC(ARRAY [, MASK], [,KIND] [,BACK])}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10765,6 +10765,12 @@ is of default kind.
 @cindex minimum value
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = MINVAL(ARRAY, DIM [, MASK])}
+@item @code{RESULT = MINVAL(ARRAY [, MASK])}
+@end multitable
+
 @item @emph{Description}:
 Determines the minimum value of the elements in an array value, or, if
 the @var{DIM} argument is supplied, determines the minimum value along
@@ -10781,12 +10787,6 @@ integers})
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = MINVAL(ARRAY, DIM [, MASK])}
-@item @code{RESULT = MINVAL(ARRAY [, MASK])}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10826,6 +10826,9 @@ cases, the result is of the same type and kind as @var{ARRAY}.
 @cindex division, remainder
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = MOD(A, P)}
+
 @item @emph{Description}:
 @code{MOD(A,P)} computes the remainder of the division of A by P@. 
 
@@ -10835,9 +10838,6 @@ for @code{UNSIGNED}.
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = MOD(A, P)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10905,6 +10905,9 @@ end program test_mod
 @cindex division, modulo
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = MODULO(A, P)}
+
 @item @emph{Description}:
 @code{MODULO(A,P)} computes the @var{A} modulo @var{P}.
 
@@ -10914,9 +10917,6 @@ integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = MODULO(A, P)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -10972,6 +10972,9 @@ end program
 @cindex allocation, moving
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL MOVE_ALLOC(FROM, TO)}
+
 @item @emph{Description}:
 @code{MOVE_ALLOC(FROM, TO)} moves the allocation from @var{FROM} to
 @var{TO}.  @var{FROM} becomes deallocated in the process.
@@ -10981,9 +10984,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Pure subroutine
-
-@item @emph{Syntax}:
-@code{CALL MOVE_ALLOC(FROM, TO)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11022,6 +11022,9 @@ end program test_move_alloc
 @cindex bits, move
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL MVBITS(FROM, FROMPOS, LEN, TO, TOPOS)}
+
 @item @emph{Description}:
 Moves @var{LEN} bits from positions @var{FROMPOS} through
 @code{FROMPOS+LEN-1} of @var{FROM} to positions @var{TOPOS} through
@@ -11036,9 +11039,6 @@ for @code{UNSIGNED} (@pxref{Unsigned integers}).
 
 @item @emph{Class}:
 Elemental subroutine
-
-@item @emph{Syntax}:
-@code{CALL MVBITS(FROM, FROMPOS, LEN, TO, TOPOS)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11078,6 +11078,9 @@ as @var{FROM}.
 @cindex floating point, nearest different
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = NEAREST(X, S)}
+
 @item @emph{Description}:
 @code{NEAREST(X, S)} returns the processor-representable number nearest
 to @code{X} in the direction indicated by the sign of @code{S}.
@@ -11087,9 +11090,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = NEAREST(X, S)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11125,6 +11125,9 @@ end program test_nearest
 @cindex output, newline
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = NEW_LINE(C)}
+
 @item @emph{Description}:
 @code{NEW_LINE(C)} returns the new-line character.
 
@@ -11133,9 +11136,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = NEW_LINE(C)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11165,6 +11165,9 @@ end program newline
 @cindex rounding, nearest whole number
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = NINT(A [, KIND])}
+
 @item @emph{Description}:
 @code{NINT(A)} rounds its argument to the nearest whole number.
 
@@ -11173,9 +11176,6 @@ Fortran 77 and later, with @var{KIND} argument Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = NINT(A [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11222,6 +11222,11 @@ end program test_nint
 @cindex norm, Euclidean
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = NORM2(ARRAY[, DIM])}
+@end multitable
+
 @item @emph{Description}:
 Calculates the Euclidean vector norm (@math{L_2} norm)
 of @var{ARRAY} along dimension @var{DIM}.
@@ -11231,11 +11236,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = NORM2(ARRAY[, DIM])}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11277,6 +11277,9 @@ END PROGRAM
 @cindex logical not, bitwise
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = NOT(I)}
+
 @item @emph{Description}:
 @code{NOT} returns the bitwise Boolean inverse of @var{I}.
 
@@ -11286,9 +11289,6 @@ for @code{UNSIGNED} (@pxref{Unsigned integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = NOT(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11326,6 +11326,9 @@ The return type is @code{INTEGER}, of the same kind as the argument.
 @cindex pointer, disassociated
 
 @table @asis
+@item @emph{Synopsis}:
+@code{PTR => NULL([MOLD])}
+
 @item @emph{Description}:
 Returns a disassociated pointer.
 
@@ -11340,9 +11343,6 @@ Fortran 95 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{PTR => NULL([MOLD])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11371,6 +11371,9 @@ REAL, POINTER, DIMENSION(:) :: VEC => NULL ()
 @cindex images, number of
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = NUM_IMAGES(DISTANCE, FAILED)}
+
 @item @emph{Description}:
 Returns the number of images.
 
@@ -11380,9 +11383,6 @@ Technical Specification (TS) 18508 or later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = NUM_IMAGES(DISTANCE, FAILED)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11428,6 +11428,9 @@ END IF
 @cindex logical or, bitwise
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = OR(I, J)}
+
 @item @emph{Description}:
 Bitwise logical @code{OR}.
 
@@ -11440,9 +11443,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = OR(I, J)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11487,6 +11487,9 @@ Fortran 95 elemental function: @*
 @cindex range check, numerical conversion
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = OUT_OF_RANGE(X, MOLD[, ROUND])}
+
 @item @emph{Description}:
 @code{OUT_OF_RANGE(X, MOLD[, ROUND])} determines if the value of @code{X}
 can be safely converted to an object with the type of argument @code{MOLD}.
@@ -11496,9 +11499,6 @@ Fortran 2018
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = OUT_OF_RANGE(X, MOLD[, ROUND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11555,6 +11555,9 @@ END PROGRAM
 @cindex array, gather elements
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = PACK(ARRAY, MASK[,VECTOR])}
+
 @item @emph{Description}:
 Stores the elements of @var{ARRAY} in an array of rank one.
 
@@ -11567,9 +11570,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = PACK(ARRAY, MASK[,VECTOR])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11624,6 +11624,11 @@ END PROGRAM
 @cindex XOR reduction
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = PARITY(MASK[, DIM])}
+@end multitable
+
 @item @emph{Description}:
 Calculates the parity, i.e. the reduction using @code{.XOR.},
 of @var{MASK} along dimension @var{DIM}.
@@ -11633,11 +11638,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = PARITY(MASK[, DIM])}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11674,6 +11674,9 @@ END PROGRAM
 @cindex system, error handling
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL PERROR(STRING)}
+
 @item @emph{Description}:
 Prints (on the C @code{stderr} stream) a newline-terminated error
 message corresponding to the last system error. This is prefixed by
@@ -11684,9 +11687,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL PERROR(STRING)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11707,6 +11707,9 @@ default kind.
 @cindex bits set
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = POPCNT(I)}
+
 @item @emph{Description}:
 @code{POPCNT(I)} returns the number of bits set ('1' bits) in the binary
 representation of @code{I}.
@@ -11716,9 +11719,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = POPCNT(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11753,6 +11753,9 @@ end program test_population
 @cindex parity
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = POPPAR(I)}
+
 @item @emph{Description}:
 @code{POPPAR(I)} returns parity of the integer @code{I}, i.e. the parity
 of the number of bits set ('1' bits) in the binary representation of
@@ -11764,9 +11767,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = POPPAR(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11800,6 +11800,9 @@ end program test_population
 @cindex model representation, precision
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = PRECISION(X)}
+
 @item @emph{Description}:
 @code{PRECISION(X)} returns the decimal precision in the model of the
 type of @code{X}.
@@ -11809,9 +11812,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = PRECISION(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11846,6 +11846,9 @@ end program prec_and_range
 @fnindex PRESENT
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = PRESENT(A)}
+
 @item @emph{Description}:
 Determines whether an optional dummy argument is present.
 
@@ -11854,9 +11857,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = PRESENT(A)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11893,6 +11893,12 @@ END PROGRAM
 @cindex multiply array elements
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = PRODUCT(ARRAY[, MASK])}
+@item @code{RESULT = PRODUCT(ARRAY, DIM[, MASK])}
+@end multitable
+
 @item @emph{Description}:
 Multiplies the elements of @var{ARRAY} along dimension @var{DIM} if
 the corresponding element in @var{MASK} is @code{TRUE}.
@@ -11903,12 +11909,6 @@ integers})
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = PRODUCT(ARRAY[, MASK])}
-@item @code{RESULT = PRODUCT(ARRAY, DIM[, MASK])}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -11951,6 +11951,9 @@ END PROGRAM
 @cindex model representation, radix
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = RADIX(X)}
+
 @item @emph{Description}:
 @code{RADIX(X)} returns the base of the model representing the entity @var{X}.
 
@@ -11959,9 +11962,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = RADIX(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12016,6 +12016,9 @@ Function
 @cindex random number generation
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = RAND(I)}
+
 @item @emph{Description}:
 @code{RAND(FLAG)} returns a pseudo-random number from a uniform
 distribution between 0 and 1. If @var{FLAG} is 0, the next number
@@ -12033,9 +12036,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = RAND(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12069,6 +12069,9 @@ end program test_rand
 @cindex random number generation, initialization
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL RANDOM_INIT(REPEATABLE, IMAGE_DISTINCT)}
+
 @item @emph{Description}:
 Initializes the state of the pseudorandom number generator used by 
 @code{RANDOM_NUMBER}.
@@ -12078,9 +12081,6 @@ Fortran 2018
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL RANDOM_INIT(REPEATABLE, IMAGE_DISTINCT)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .25 .70
@@ -12125,6 +12125,9 @@ end program test_random_seed
 @cindex random number generation
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL RANDOM_NUMBER(HARVEST)}
+
 @item @emph{Description}:
 For @code{REAL} argument, returns a single pseudorandom number or an
 array of pseudorandom numbers from the uniform distribution over the
@@ -12150,9 +12153,6 @@ integers})
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL RANDOM_NUMBER(HARVEST)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12181,6 +12181,9 @@ end program
 @cindex seeding a random number generator
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL RANDOM_SEED([SIZE, PUT, GET])}
+
 @item @emph{Description}:
 Restarts or queries the state of the pseudorandom number generator used by 
 @code{RANDOM_NUMBER}.
@@ -12205,9 +12208,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL RANDOM_SEED([SIZE, PUT, GET])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12251,6 +12251,9 @@ end program test_random_seed
 @cindex model representation, range
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = RANGE(X)}
+
 @item @emph{Description}:
 @code{RANGE(X)} returns the decimal exponent range in the model of the
 type of @code{X}.
@@ -12261,9 +12264,6 @@ integers})
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = RANGE(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12291,6 +12291,9 @@ See @code{PRECISION} for an example.
 @cindex rank
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = RANK(A)}
+
 @item @emph{Description}:
 @code{RANK(A)} returns the rank of a scalar or array data object.
 
@@ -12299,9 +12302,6 @@ Technical Specification (TS) 29113
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = RANK(A)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12340,6 +12340,12 @@ end program test_rank
 @cindex complex numbers, real part
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = REAL(A [, KIND])}
+@item @code{RESULT = REALPART(Z)}
+@end multitable
+
 @item @emph{Description}:
 @code{REAL(A [, KIND])} converts its argument @var{A} to a real type.  The
 @code{REALPART} function is provided for compatibility with @command{g77},
@@ -12352,12 +12358,6 @@ integers}).
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = REAL(A [, KIND])}
-@item @code{RESULT = REALPART(Z)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12416,6 +12416,12 @@ end program test_real
 @cindex file system, rename file
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL RENAME(PATH1, PATH2 [, STATUS])}
+@item @code{STATUS = RENAME(PATH1, PATH2)}
+@end multitable
+
 @item @emph{Description}:
 Renames a file from file @var{PATH1} to @var{PATH2}. A null
 character (@code{CHAR(0)}) can be used to mark the end of the names in
@@ -12432,12 +12438,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL RENAME(PATH1, PATH2 [, STATUS])}
-@item @code{STATUS = RENAME(PATH1, PATH2)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12460,6 +12460,9 @@ Subroutine, function
 @cindex string, concatenate
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = REPEAT(STRING, NCOPIES)}
+
 @item @emph{Description}:
 Concatenates @var{NCOPIES} copies of a string.
 
@@ -12468,9 +12471,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = REPEAT(STRING, NCOPIES)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12499,6 +12499,9 @@ end program
 @cindex array, transmogrify
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = RESHAPE(SOURCE, SHAPE[, PAD, ORDER])}
+
 @item @emph{Description}:
 Reshapes @var{SOURCE} to correspond to @var{SHAPE}. If necessary,
 the new array may be padded with elements from @var{PAD} or permuted
@@ -12509,9 +12512,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = RESHAPE(SOURCE, SHAPE[, PAD, ORDER])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12554,6 +12554,9 @@ END PROGRAM
 
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = RRSPACING(X)}
+
 @item @emph{Description}:
 @code{RRSPACING(X)} returns the  reciprocal of the relative spacing of
 model numbers near @var{X}.
@@ -12563,9 +12566,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = RRSPACING(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12589,6 +12589,9 @@ The value returned is equal to
 @cindex bits, shift right
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = RSHIFT(I, SHIFT)}
+
 @item @emph{Description}:
 @code{RSHIFT} returns a value corresponding to @var{I} with all of the
 bits shifted right by @var{SHIFT} places.  @var{SHIFT} shall be
@@ -12606,9 +12609,6 @@ GNU extension
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = RSHIFT(I, SHIFT)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12637,6 +12637,9 @@ The return value is of type @code{INTEGER} and of the same kind as
 @fnindex SAME_TYPE_AS
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SAME_TYPE_AS(A, B)}
+
 @item @emph{Description}:
 Query dynamic types for equality.
 
@@ -12645,9 +12648,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = SAME_TYPE_AS(A, B)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12675,6 +12675,9 @@ only if the dynamic type of A is the same as the dynamic type of B.
 @cindex floating point, scale
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SCALE(X, I)}
+
 @item @emph{Description}:
 @code{SCALE(X,I)} returns @code{X * RADIX(X)**I}.
 
@@ -12683,9 +12686,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = SCALE(X, I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12716,6 +12716,9 @@ end program test_scale
 @cindex string, find subset
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SCAN(STRING, SET[, BACK [, KIND]])}
+
 @item @emph{Description}:
 Scans a @var{STRING} for any of the characters in a @var{SET} 
 of characters.
@@ -12731,9 +12734,6 @@ Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = SCAN(STRING, SET[, BACK [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12771,6 +12771,9 @@ END PROGRAM
 @cindex elapsed time
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SECNDS (X)}
+
 @item @emph{Description}:
 @code{SECNDS(X)} gets the time in seconds from the real-time system clock.
 @var{X} is a reference time, also in seconds. If this is zero, the time in
@@ -12782,9 +12785,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = SECNDS (X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12819,6 +12819,12 @@ end program test_secnds
 @cindex elapsed time
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL SECOND(TIME)}
+@item @code{TIME = SECOND()}
+@end multitable
+
 @item @emph{Description}:
 Returns a @code{REAL(4)} value representing the elapsed CPU time in
 seconds.  This provides the same functionality as the standard
@@ -12833,12 +12839,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL SECOND(TIME)}
-@item @code{TIME = SECOND()}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12863,6 +12863,9 @@ seconds.
 @cindex kind, character
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SELECTED_CHAR_KIND(NAME)}
+
 @item @emph{Description}:
 
 @code{SELECTED_CHAR_KIND(NAME)} returns the kind value for the character
@@ -12876,9 +12879,6 @@ Fortran 2003 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = SELECTED_CHAR_KIND(NAME)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12918,6 +12918,9 @@ end program character_kind
 @cindex kind, integer
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SELECTED_INT_KIND(R)}
+
 @item @emph{Description}:
 @code{SELECTED_INT_KIND(R)} return the kind value of the smallest integer
 type that can represent all values ranging from @math{-10^R} (exclusive)
@@ -12929,9 +12932,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = SELECTED_INT_KIND(R)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -12964,6 +12964,9 @@ end program large_integers
 @cindex kind, logical
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SELECTED_LOGICAL_KIND(BITS)}
+
 @item @emph{Description}:
 @code{SELECTED_LOGICAL_KIND(BITS)} return the kind value of the smallest
 logical type whose storage size in bits is at least @var{BITS}. If there
@@ -12974,9 +12977,6 @@ Fortran 2023 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = SELECTED_LOGICAL_KIND(BITS)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13007,6 +13007,9 @@ end program logical_kinds
 @cindex radix, real
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SELECTED_REAL_KIND([P, R, RADIX])}
+
 @item @emph{Description}:
 @code{SELECTED_REAL_KIND(P,R)} returns the kind value of a real data type
 with decimal precision of at least @code{P} digits, exponent range of
@@ -13017,9 +13020,6 @@ Fortran 90 and later, with @code{RADIX} Fortran 2008 or later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = SELECTED_REAL_KIND([P, R, RADIX])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13082,6 +13082,9 @@ end program real_kinds
 @cindex kind, unsigned
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SELECTED_UNSIGNED_KIND(R)}
+
 @item @emph{Description}:
 @code{SELECTED_UNSIGNED_KIND(R)} return the kind value of the smallest
 integer type that can represent all values ranging from 0 to
@@ -13093,9 +13096,6 @@ Extension for @code{UNSIGNED} (@pxref{Unsigned integers})
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = SELECTED_UNSIGNED_KIND(R)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13123,6 +13123,9 @@ end program large_unsigned
 @cindex floating point, set exponent
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SET_EXPONENT(X, I)}
+
 @item @emph{Description}:
 @code{SET_EXPONENT(X, I)} returns the real number whose fractional part
 is that of @var{X} and whose exponent part is @var{I}.
@@ -13132,9 +13135,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = SET_EXPONENT(X, I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13167,6 +13167,9 @@ END PROGRAM
 @cindex array, shape
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SHAPE(SOURCE [, KIND])}
+
 @item @emph{Description}:
 Determines the shape of an array.
 
@@ -13175,9 +13178,6 @@ Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = SHAPE(SOURCE [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13218,6 +13218,9 @@ END PROGRAM
 @cindex shift, right with fill
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SHIFTA(I, SHIFT)}
+
 @item @emph{Description}:
 @code{SHIFTA} returns a value corresponding to @var{I} with all of the
 bits shifted right by @var{SHIFT} places.  @var{SHIFT} that be
@@ -13233,9 +13236,6 @@ integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = SHIFTA(I, SHIFT)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13260,6 +13260,9 @@ The return value is of the same type and kind as @var{I}.
 @cindex shift, left
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SHIFTL(I, SHIFT)}
+
 @item @emph{Description}:
 @code{SHIFTL} returns a value corresponding to @var{I} with all of the
 bits shifted left by @var{SHIFT} places.  @var{SHIFT} shall be
@@ -13273,9 +13276,6 @@ integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = SHIFTL(I, SHIFT)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13300,6 +13300,9 @@ The return value is of the same type and kind as @var{I}.
 @cindex shift, right
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SHIFTR(I, SHIFT)}
+
 @item @emph{Description}:
 @code{SHIFTR} returns a value corresponding to @var{I} with all of the
 bits shifted right by @var{SHIFT} places.  @var{SHIFT} shall be
@@ -13312,9 +13315,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = SHIFTR(I, SHIFT)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13341,6 +13341,9 @@ The return value is of type @code{INTEGER} and of the same kind as
 @cindex sign copying
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SIGN(A, B)}
+
 @item @emph{Description}:
 @code{SIGN(A,B)} returns the value of @var{A} with the sign of @var{B}.
 
@@ -13349,9 +13352,6 @@ Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = SIGN(A, B)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13394,6 +13394,12 @@ end program test_sign
 @cindex system, signal handling
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL SIGNAL(NUMBER, HANDLER [, STATUS])}
+@item @code{STATUS = SIGNAL(NUMBER, HANDLER)}
+@end multitable
+
 @item @emph{Description}:
 @code{SIGNAL(NUMBER, HANDLER [, STATUS])} causes external subroutine
 @var{HANDLER} to be executed with a single integer argument passed by
@@ -13409,12 +13415,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL SIGNAL(NUMBER, HANDLER [, STATUS])}
-@item @code{STATUS = SIGNAL(NUMBER, HANDLER)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13464,6 +13464,9 @@ end program test_signal
 @cindex sine
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SIN(X)}
+
 @item @emph{Description}:
 @code{SIN(X)} computes the sine of @var{X}.
 
@@ -13472,9 +13475,6 @@ Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = SIN(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13523,6 +13523,9 @@ Degrees function: @*
 @cindex sine, degrees
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SIND(X)}
+
 @item @emph{Description}:
 @code{SIND(X)} computes the sine of @var{X} in degrees.
 
@@ -13531,9 +13534,6 @@ Fortran 2023
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = SIND(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13577,6 +13577,9 @@ Radians function: @*
 @cindex sine, hyperbolic
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SINH(X)}
+
 @item @emph{Description}:
 @code{SINH(X)} computes the hyperbolic sine of @var{X}.
 
@@ -13586,9 +13589,6 @@ a GNU extension
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = SINH(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13626,6 +13626,9 @@ end program test_sinh
 @cindex array, count elements
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SIZE(ARRAY[, DIM [, KIND]])}
+
 @item @emph{Description}:
 Determine the extent of @var{ARRAY} along a specified dimension @var{DIM},
 or the total number of elements in @var{ARRAY} if @var{DIM} is absent.
@@ -13635,9 +13638,6 @@ Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = SIZE(ARRAY[, DIM [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13674,6 +13674,9 @@ END PROGRAM
 @cindex size of an expression
 
 @table @asis
+@item @emph{Synopsis}:
+@code{N = SIZEOF(X)}
+
 @item @emph{Description}:
 @code{SIZEOF(X)} calculates the number of bytes of storage the
 expression @code{X} occupies.
@@ -13683,9 +13686,6 @@ GNU extension
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{N = SIZEOF(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13727,6 +13727,9 @@ where default @code{REAL} variables are unusually padded.
 @cindex delayed execution
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL SLEEP(SECONDS)}
+
 @item @emph{Description}:
 Calling this subroutine causes the process to pause for @var{SECONDS} seconds.
 
@@ -13735,9 +13738,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL SLEEP(SECONDS)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13761,6 +13761,9 @@ end
 @cindex floating point, relative spacing
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SPACING(X)}
+
 @item @emph{Description}:
 Determines the distance between the argument @var{X} and the nearest 
 adjacent number of the same type.
@@ -13770,9 +13773,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = SPACING(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13807,6 +13807,9 @@ END PROGRAM
 @cindex array, duplicate dimensions
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SPREAD(SOURCE, DIM, NCOPIES)}
+
 @item @emph{Description}:
 Replicates a @var{SOURCE} array @var{NCOPIES} times along a specified 
 dimension @var{DIM}.
@@ -13816,9 +13819,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = SPREAD(SOURCE, DIM, NCOPIES)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13859,6 +13859,9 @@ END PROGRAM
 @cindex square-root
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = SQRT(X)}
+
 @item @emph{Description}:
 @code{SQRT(X)} computes the square root of @var{X}.
 
@@ -13867,9 +13870,6 @@ Fortran 77 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = SQRT(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13911,6 +13911,9 @@ end program test_sqrt
 @cindex seeding a random number generator
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL SRAND(SEED)}
+
 @item @emph{Description}:
 @code{SRAND} reinitializes the pseudo-random number generator
 called by @code{RAND} and @code{IRAND}. The new seed used by the
@@ -13921,9 +13924,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine
-
-@item @emph{Syntax}:
-@code{CALL SRAND(SEED)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -13961,6 +13961,12 @@ pseudo-random number generators.
 @cindex file system, file status
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL STAT(NAME, VALUES [, STATUS])}
+@item @code{STATUS = STAT(NAME, VALUES)}
+@end multitable
+
 @item @emph{Description}:
 This function returns information about a file. No permissions are required on 
 the file itself, but execute (search) permission is required on all of the 
@@ -13994,12 +14000,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL STAT(NAME, VALUES [, STATUS])}
-@item @code{STATUS = STAT(NAME, VALUES)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14051,6 +14051,9 @@ To stat a link: @*
 @cindex storage size
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = STORAGE_SIZE(A [, KIND])}
+
 @item @emph{Description}:
 Returns the storage size of argument @var{A} in bits.
 
@@ -14059,9 +14062,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = STORAGE_SIZE(A [, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14091,6 +14091,12 @@ parameters of A.
 @cindex sum array elements
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = SUM(ARRAY[, MASK])}
+@item @code{RESULT = SUM(ARRAY, DIM[, MASK])}
+@end multitable
+
 @item @emph{Description}:
 Adds the elements of @var{ARRAY} along dimension @var{DIM} if
 the corresponding element in @var{MASK} is @code{TRUE}.
@@ -14101,12 +14107,6 @@ integers})
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = SUM(ARRAY[, MASK])}
-@item @code{RESULT = SUM(ARRAY, DIM[, MASK])}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14149,6 +14149,12 @@ END PROGRAM
 @cindex file system, soft link
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL SYMLNK(PATH1, PATH2 [, STATUS])}
+@item @code{STATUS = SYMLNK(PATH1, PATH2)}
+@end multitable
+
 @item @emph{Description}:
 Makes a symbolic link from file @var{PATH1} to @var{PATH2}. A null
 character (@code{CHAR(0)}) can be used to mark the end of the names in
@@ -14166,12 +14172,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL SYMLNK(PATH1, PATH2 [, STATUS])}
-@item @code{STATUS = SYMLNK(PATH1, PATH2)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14193,6 +14193,12 @@ Subroutine, function
 @cindex system, system call
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL SYSTEM(COMMAND [, STATUS])}
+@item @code{STATUS = SYSTEM(COMMAND)}
+@end multitable
+
 @item @emph{Description}:
 Passes the command @var{COMMAND} to a shell (see @code{system(3)}). If
 argument @var{STATUS} is present, it contains the value returned by
@@ -14212,12 +14218,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL SYSTEM(COMMAND [, STATUS])}
-@item @code{STATUS = SYSTEM(COMMAND)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14239,6 +14239,9 @@ and should considered in new code for future portability.
 @cindex clock ticks
 
 @table @asis
+@item @emph{Synopsis}:
+@code{CALL SYSTEM_CLOCK([COUNT, COUNT_RATE, COUNT_MAX])}
+
 @item @emph{Description}:
 Determines the @var{COUNT} of a processor clock since an unspecified
 time in the past modulo @var{COUNT_MAX}, @var{COUNT_RATE} determines
@@ -14281,9 +14284,6 @@ Fortran 90 and later
 @item @emph{Class}:
 Subroutine
 
-@item @emph{Syntax}:
-@code{CALL SYSTEM_CLOCK([COUNT, COUNT_RATE, COUNT_MAX])}
-
 @item @emph{Arguments}:
 @multitable @columnfractions .20 .65
 @item @var{COUNT}      @tab (Optional) shall be a scalar of type 
@@ -14318,6 +14318,9 @@ END PROGRAM
 @cindex tangent
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = TAN(X)}
+
 @item @emph{Description}:
 @code{TAN(X)} computes the tangent of @var{X}.
 
@@ -14326,9 +14329,6 @@ Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = TAN(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14370,6 +14370,9 @@ Degrees function: @*
 @cindex tangent, degrees
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = TAND(X)}
+
 @item @emph{Description}:
 @code{TAND(X)} computes the tangent of @var{X} in degrees.
 
@@ -14378,9 +14381,6 @@ Fortran 2023
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = TAND(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14423,6 +14423,9 @@ Radians function: @*
 @cindex tangent, hyperbolic
 
 @table @asis
+@item @emph{Synopsis}:
+@code{X = TANH(X)}
+
 @item @emph{Description}:
 @code{TANH(X)} computes the hyperbolic tangent of @var{X}.
 
@@ -14431,9 +14434,6 @@ Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{X = TANH(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14474,6 +14474,13 @@ end program test_tanh
 @cindex images, index of this image
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{RESULT = THIS_IMAGE()}
+@item @code{RESULT = THIS_IMAGE(DISTANCE)}
+@item @code{RESULT = THIS_IMAGE(COARRAY [, DIM])}
+@end multitable
+
 @item @emph{Description}:
 Returns the cosubscript for this image.
 
@@ -14483,13 +14490,6 @@ Technical Specification (TS) 18508 or later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{RESULT = THIS_IMAGE()}
-@item @code{RESULT = THIS_IMAGE(DISTANCE)}
-@item @code{RESULT = THIS_IMAGE(COARRAY [, DIM])}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14545,6 +14545,9 @@ IF (THIS_IMAGE(HUGE(1)) /= THIS_IMAGE())
 @cindex current time
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = TIME()}
+
 @item @emph{Description}:
 Returns the current time encoded as an integer (in the manner of the
 function @code{time(3)} in the C standard library). This value is
@@ -14565,9 +14568,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = TIME()}
 
 @item @emph{Return value}:
 The return value is a scalar of type @code{INTEGER(4)}.
@@ -14590,6 +14590,9 @@ The return value is a scalar of type @code{INTEGER(4)}.
 @cindex current time
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = TIME8()}
+
 @item @emph{Description}:
 Returns the current time encoded as an integer (in the manner of the
 function @code{time(3)} in the C standard library). This value is
@@ -14608,9 +14611,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = TIME8()}
 
 @item @emph{Return value}:
 The return value is a scalar of type @code{INTEGER(8)}.
@@ -14633,6 +14633,9 @@ The return value is a scalar of type @code{INTEGER(8)}.
 @cindex model representation, smallest number
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = TINY(X)}
+
 @item @emph{Description}:
 @code{TINY(X)} returns the smallest positive (non zero) number
 in the model of the type of @code{X}.
@@ -14642,9 +14645,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = TINY(X)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14666,6 +14666,9 @@ See @code{HUGE} for an example.
 @cindex zero bits
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = TRAILZ(I)}
+
 @item @emph{Description}:
 @code{TRAILZ} returns the number of trailing zero bits of an integer.
 
@@ -14674,9 +14677,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = TRAILZ(I)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14710,6 +14710,9 @@ END PROGRAM
 @cindex type cast
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = TRANSFER(SOURCE, MOLD[, SIZE])}
+
 @item @emph{Description}:
 Interprets the bitwise representation of @var{SOURCE} in memory as if it
 is the representation of a variable or array of the same type and type
@@ -14723,9 +14726,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = TRANSFER(SOURCE, MOLD[, SIZE])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14774,6 +14774,9 @@ END PROGRAM
 @cindex transpose
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = TRANSPOSE(MATRIX)}
+
 @item @emph{Description}:
 Transpose an array of rank two. Element (i, j) of the result has the value 
 @code{MATRIX(j, i)}, for all i, j.
@@ -14783,9 +14786,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = TRANSPOSE(MATRIX)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14805,6 +14805,9 @@ The result has the same type as @var{MATRIX}, and has shape
 @cindex string, remove trailing whitespace
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = TRIM(STRING)}
+
 @item @emph{Description}:
 Removes trailing blank characters of a string.
 
@@ -14813,9 +14816,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = TRIM(STRING)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14847,6 +14847,12 @@ END PROGRAM
 @cindex system, terminal
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL TTYNAM(UNIT, NAME)}
+@item @code{NAME = TTYNAM(UNIT)}
+@end multitable
+
 @item @emph{Description}:
 Get the name of a terminal device. For more information, 
 see @code{ttyname(3)}.
@@ -14859,12 +14865,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL TTYNAM(UNIT, NAME)}
-@item @code{NAME = TTYNAM(UNIT)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14894,6 +14894,9 @@ END PROGRAM
 @cindex array, upper bound
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = UBOUND(ARRAY [, DIM [, KIND]])}
+
 @item @emph{Description}:
 Returns the upper bounds of an array, or a single upper bound
 along the @var{DIM} dimension.
@@ -14903,9 +14906,6 @@ Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = UBOUND(ARRAY [, DIM [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14939,6 +14939,9 @@ the relevant dimension.
 @cindex coarray, upper bound
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = UCOBOUND(COARRAY [, DIM [, KIND]])}
+
 @item @emph{Description}:
 Returns the upper cobounds of a coarray, or a single upper cobound
 along the @var{DIM} codimension.
@@ -14948,9 +14951,6 @@ Fortran 2008 and later
 
 @item @emph{Class}:
 Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = UCOBOUND(COARRAY [, DIM [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -14978,6 +14978,9 @@ corresponding to the lower cobound of the array along that codimension.
 @cindex, conversion, to unsigned
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = UINT(A [, KIND))}
+
 @item @emph{Description}:
 Convert to unsigned type
 
@@ -14986,9 +14989,6 @@ Extension.
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = UINT(A [, KIND))}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -15005,6 +15005,12 @@ expression indicating the kind parameter of the result.
 @cindex file system, file creation mask
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL UMASK(MASK [, OLD])}
+@item @code{OLD = UMASK(MASK)}
+@end multitable
+
 @item @emph{Description}:
 Sets the file creation mask to @var{MASK}. If called as a function, it
 returns the old value. If called as a subroutine and argument @var{OLD}
@@ -15015,12 +15021,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL UMASK(MASK [, OLD])}
-@item @code{OLD = UMASK(MASK)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -15037,6 +15037,9 @@ Subroutine, function
 @cindex mask, left justified
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = UMASKL(I[, KIND])}
+
 @item @emph{Description}:
 @code{UMASKL(I[, KIND])} has its leftmost @var{I} bits set to 1, and the
 remaining bits set to 0.
@@ -15046,9 +15049,6 @@ Extension (@pxref{Unsigned integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = UMASKL(I[, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -15074,6 +15074,9 @@ default unsigned kind.
 @cindex mask, right justified
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = MASKR(I[, KIND])}
+
 @item @emph{Description}:
 @code{UMASKL(I[, KIND])} has its rightmost @var{I} bits set to 1, and the
 remaining bits set to 0.
@@ -15083,9 +15086,6 @@ Extension (@pxref{Unsigned integers})
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = MASKR(I[, KIND])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -15112,6 +15112,12 @@ default integer kind.
 @cindex file system, remove file
 
 @table @asis
+@item @emph{Synopsis}:
+@multitable @columnfractions .80
+@item @code{CALL UNLINK(PATH [, STATUS])}
+@item @code{STATUS = UNLINK(PATH)}
+@end multitable
+
 @item @emph{Description}:
 Unlinks the file @var{PATH}. A null character (@code{CHAR(0)}) can be
 used to mark the end of the name in @var{PATH}; otherwise, trailing
@@ -15127,12 +15133,6 @@ GNU extension
 
 @item @emph{Class}:
 Subroutine, function
-
-@item @emph{Syntax}:
-@multitable @columnfractions .80
-@item @code{CALL UNLINK(PATH [, STATUS])}
-@item @code{STATUS = UNLINK(PATH)}
-@end multitable
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -15155,6 +15155,9 @@ Subroutine, function
 @cindex array, scatter elements
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = UNPACK(VECTOR, MASK, FIELD)}
+
 @item @emph{Description}:
 Store the elements of @var{VECTOR} in an array of higher rank.
 
@@ -15163,9 +15166,6 @@ Fortran 90 and later
 
 @item @emph{Class}:
 Transformational function
-
-@item @emph{Syntax}:
-@code{RESULT = UNPACK(VECTOR, MASK, FIELD)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -15205,6 +15205,9 @@ END PROGRAM
 @cindex string, find missing set
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = VERIFY(STRING, SET[, BACK [, KIND]])}
+
 @item @emph{Description}:
 Verifies that all the characters in @var{STRING} belong to the set of
 characters in @var{SET}.
@@ -15220,9 +15223,6 @@ Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
 @item @emph{Class}:
 Elemental function
-
-@item @emph{Syntax}:
-@code{RESULT = VERIFY(STRING, SET[, BACK [, KIND]])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
@@ -15262,6 +15262,9 @@ END PROGRAM
 @cindex logical exclusive or, bitwise
 
 @table @asis
+@item @emph{Synopsis}:
+@code{RESULT = XOR(I, J)}
+
 @item @emph{Description}:
 Bitwise logical exclusive or. 
 
@@ -15275,9 +15278,6 @@ GNU extension
 
 @item @emph{Class}:
 Function
-
-@item @emph{Syntax}:
-@code{RESULT = XOR(I, J)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
