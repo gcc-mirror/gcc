@@ -4173,7 +4173,7 @@ The references make up a single linked list of reference operations.  The
 the chain.  Component and array refs can be arbitrarily mixed as long as they
 comply to the Fortran standard.
 
-@emph{NOTES}
+@emph{Notes}:
 The member @code{STATIC_ARRAY_TYPE} is used only when the @code{TYPE} is
 @code{CAF_REF_STATIC_ARRAY}.  The member gives the type of the data referenced.
 Because no array descriptor is available for a descriptorless array and
@@ -4256,7 +4256,7 @@ arguments passed to the program or @code{NULL}.
 command-line arguments or @code{NULL}.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 The function is modelled after the initialization function of the Message
 Passing Interface (MPI) specification.  Due to the way coarray registration
 works, it might not be the first call to the library.  If the main program is
@@ -4278,7 +4278,7 @@ been compiled with the @option{-fcoarray=lib} option.
 @item @emph{Syntax}:
 @code{void _gfortran_caf_finish (void)}
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 For non-Fortran programs, it is recommended to call the function at the end
 of the main program.  To ensure that the shutdown is also performed for
 programs where this function is not explicitly invoked, for instance
@@ -4305,7 +4305,7 @@ This function returns the current image number, which is a positive number.
 in TS18508.  Shall be a nonnegative number.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 If the Fortran intrinsic @code{this_image} is invoked without an argument, which
 is the only permitted form in Fortran 2008, GCC passes @code{0} as
 first argument.
@@ -4334,7 +4334,7 @@ Shall be positive.
 @item @var{failed} @tab shall be -1, 0, or 1
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function follows TS18508. If the num_image intrinsic has no arguments,
 then the compiler passes @code{distance=0} and @code{failed=-1} to the function.
 @end table
@@ -4362,7 +4362,7 @@ has executed a @code{FAIL IMAGE} statement.
 performed.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function follows TS18508.  Because team-functionality is not yet
 implemented a null pointer is passed for the @var{team} argument at the moment.
 @end table
@@ -4390,7 +4390,7 @@ performed.
 @item @var{image} @tab optional; the kind of the resulting integer array.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function follows TS18508.  Because team-functionality is not yet
 implemented a null pointer is passed for the @var{team} argument at the moment.
 @end table
@@ -4418,7 +4418,7 @@ performed.
 @item @var{image} @tab optional; the kind of the resulting integer array.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function follows TS18508.  Because team-functionality is not yet
 implemented a null pointer is passed for the @var{team} argument at the moment.
 @end table
@@ -4478,7 +4478,7 @@ an error message; may be @code{NULL}
 @item @var{errmsg_len} @tab the buffer size of errmsg.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 Nonallocatable coarrays have to be registered prior use from remote images.
 In order to guarantee this, they have to be registered before the main
 program. This can be achieved by creating constructor functions. That is what
@@ -4529,7 +4529,7 @@ to an error message; may be NULL
 @item @var{errmsg_len} @tab the buffer size of errmsg.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 For nonallocatable coarrays this function is never called.  If a cleanup is
 required, it has to be handled via the finish, stop and error stop functions,
 and via destructors.
@@ -4564,7 +4564,7 @@ size_t *opt_dst_charlen)}.  GFortran ensures that functions provided to
 @code{_gfortran_caf_register_accessor} adhere to this interface.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function is required to have a nearly constant runtime complexity, because
 it will be called to register multiple accessor in a sequence.  GFortran ensures
 that before the first remote accesses commences
@@ -4594,7 +4594,7 @@ indexing operations.
 @item @emph{Arguments}:
 No arguments.
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function may be called multiple times with and without new hash-accessors-
 pairs being added.  The post-condition after each call has to be that hashes
 can be looked up quickly and indexing on the lookup table of hash-accessor-pairs
@@ -4634,7 +4634,7 @@ lookups.
 The zero based index to access the accessor funtion in a lookup table.
 On error, @code{-1} can be returned.
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 The function's complexity is expected to be significantly smaller than N,
 where N is the number of all accessors registered.  Although returning @code{-1}
 is valid, will this most likely crash the Fortran program when accessing the
@@ -4710,7 +4710,7 @@ error occurs, then an error message is printed and the program is terminated.
 to be part of.  Unused at the moment.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 It is permitted to have @code{image_index} equal the current image; the memory
 to get and the memory to store the data may (partially) overlap.  The
 implementation has to take care that it handles this case, e.g. using
@@ -4811,7 +4811,7 @@ error occurs, then an error message is printed and the program is terminated.
 to be part of.  Unused at the moment.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 It is permitted to have @code{image_index} equal the current image; the memory
 to send the data to and the memory to read for the data may (partially) overlap.
 The implementation has to take care that it handles this case, e.g. using
@@ -4915,7 +4915,7 @@ is to be part of.  Unused at the moment.
 is to be part of.  Unused at the moment.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 It is permitted to have both @code{dst_image_index} and @code{src_image_index}
 equal the current image; the memory to send the data to and the memory to read
 for the data may (partially) overlap.  The implementation has to take care that
@@ -4978,7 +4978,7 @@ source is not an array, than the precise type, e.g. of a component in a
 derived type, is not known, but provided here.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 It is permitted to have the same image index for both @var{src_image_index} and
 @var{dst_image_index}; the memory of the send-to and the send-from might
 (partially) overlap in that case.  The implementation has to take care that it
@@ -5030,7 +5030,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function is also called for critical blocks; for those, the array index
 is always zero and the image index is one.  Libraries are permitted to use other
 images for critical-block locking variables.
@@ -5064,7 +5064,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function is also called for critical block; for those, the array index
 is always zero and the image index is one.  Libraries are permitted to use other
 images for critical-block locking variables.
@@ -5095,7 +5095,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This acts like an atomic add of one to the remote image's event variable.
 The statement is an image-control statement but does not imply sync memory.
 Still, all preceding push communications of this image to the specified
@@ -5132,7 +5132,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function only operates on a local coarray. It acts like a loop checking
 atomically the value of the event variable, breaking if the value is greater
 or equal the requested number of counts. Before the function returns, the
@@ -5174,7 +5174,7 @@ the event variable.
 @item @var{stat} @tab intent(out)  Stores the STAT=; may be NULL.
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 The typical use is to check the local event variable to only call
 @code{event_wait} when the data is available. However, a coindexed variable
 is permitted; there is no ordering or synchronization implied.  It acts like
@@ -5261,7 +5261,8 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTE} A simple implementation could be
+@item @emph{Notes}:
+A simple implementation could be
 @code{__asm__ __volatile__ ("":::"memory")} to prevent code movements.
 @end table
 
@@ -5321,7 +5322,7 @@ current image.
 @item @emph{Syntax}:
 @code{void _gfortran_caf_fail_image ()}
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 This function follows TS18508.
 @end table
 
@@ -5522,7 +5523,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 If @var{result_image} is nonzero, the data in the array descriptor @var{a} on
 all images except of the specified one become undefined; hence, the library may
 make use of this.
@@ -5559,7 +5560,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 If @var{result_image} is nonzero, the data in the array descriptor @var{a} on
 all images except of the specified one become undefined; hence, the library may
 make use of this.
@@ -5594,7 +5595,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 If @var{result_image} is nonzero, the data in the array descriptor @var{a} on
 all images except of the specified one become undefined; hence, the library may
 make use of this.
@@ -5642,7 +5643,7 @@ an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
 @end multitable
 
-@item @emph{NOTES}
+@item @emph{Notes}:
 If @var{result_image} is nonzero, the data in the array descriptor @var{a} on
 all images except of the specified one become undefined; hence, the library may
 make use of this.

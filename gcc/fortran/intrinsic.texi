@@ -576,7 +576,7 @@ program test_achar
 end program test_achar
 @end smallexample
 
-@item @emph{Note}:
+@item @emph{Notes}:
 See @ref{ICHAR} for a discussion of converting between numerical values
 and formatted string representations.
 
@@ -2623,7 +2623,7 @@ for @code{BESSEL_JN(N1, N2, X)} it shall be scalar.
 The return value is a scalar of type @code{REAL}. It has the same
 kind as @var{X}.
 
-@item @emph{Note}:
+@item @emph{Notes}:
 The transformational function uses a recurrence algorithm which might,
 for some values of @var{X}, lead to different results than calls to
 the elemental function.
@@ -2783,7 +2783,7 @@ for @code{BESSEL_YN(N1, N2, X)} it shall be scalar.
 The return value is a scalar of type @code{REAL}. It has the same
 kind as @var{X}.
 
-@item @emph{Note}:
+@item @emph{Notes}:
 The transformational function uses a recurrence algorithm which might,
 for some values of @var{X}, lead to different results than calls to
 the elemental function.
@@ -2835,7 +2835,7 @@ Elemental function
 @item @emph{Return value}:
 The return value is of type @code{LOGICAL} and of the default kind.
 
-@item @emph{Note}:
+@item @emph{Notes}:
 For @code{UNSIGNED} arguments, this function is identical to the
 @code{.GE.} and @code{>=} operators.
 
@@ -2875,7 +2875,7 @@ Elemental function
 @item @emph{Return value}:
 The return value is of type @code{LOGICAL} and of the default kind.
 
-@item @emph{Note}:
+@item @emph{Notes}:
 For @code{UNSIGNED} arguments, this function is identical to the
 @code{.GT.}  and @code{>} operators.
 
@@ -2959,7 +2959,7 @@ Elemental function
 @item @emph{Return value}:
 The return value is of type @code{LOGICAL} and of the default kind.
 
-@item @emph{Note}:
+@item @emph{Notes}:
 For @code{UNSIGNED} arguments, this function is identical to the
 @code{.LE.}  and @code{<=} operators.
 
@@ -2999,7 +2999,7 @@ Elemental function
 @item @emph{Return value}:
 The return value is of type @code{LOGICAL} and of the default kind.
 
-@item @emph{Note}:
+@item @emph{Notes}:
 For @code{UNSIGNED} arguments, this function is identical to the
 @code{.LT.}  and @code{<} operators.
 
@@ -3480,7 +3480,7 @@ end program test_char
 @item @code{CHAR(I)} @tab @code{INTEGER I} @tab @code{CHARACTER(LEN=1)} @tab Fortran 77 and later
 @end multitable
 
-@item @emph{Note}:
+@item @emph{Notes}:
 See @ref{ICHAR} for a discussion of converting between numerical values
 and formatted string representations.
 
@@ -3907,7 +3907,7 @@ contains
 end program test
 @end smallexample
 
-@item @emph{Note}:
+@item @emph{Notes}:
 While the rules permit in principle an intrinsic function, none of the
 intrinsics in the standard fulfill the criteria of having a specific
 function, which takes two arguments of the same type and returning that
@@ -4658,7 +4658,7 @@ Transformational function
 @item @var{DIM}    @tab The type shall be @code{INTEGER}.
 @end multitable
 
-@item @emph{Note}:
+@item @emph{Notes}:
 @var{ARRAY} can also be @code{UNSIGNED}.
 
 @item @emph{Return value}:
@@ -4736,7 +4736,7 @@ program test_ctime
 end program test_ctime
 @end smallexample
 
-@item @emph{See Also}:
+@item @emph{See also}:
 @ref{DATE_AND_TIME}, @*
 @ref{GMTIME}, @*
 @ref{LTIME}, @*
@@ -5395,7 +5395,7 @@ Transformational function
 @item @var{DIM}    @tab The type shall be @code{INTEGER}.
 @end multitable
 
-@item @emph{Note}:
+@item @emph{Notes}:
 @var{ARRAY} can also be @code{UNSIGNED}.
 
 @item @emph{Return value}:
@@ -5782,7 +5782,7 @@ end program test_exec
 @end smallexample
 
 
-@item @emph{Note}:
+@item @emph{Notes}:
 
 Because this intrinsic is implemented in terms of the @code{system}
 function call, its behavior with respect to signaling is processor
@@ -6218,7 +6218,7 @@ expression indicating the kind parameter of the result.
 @item @var{BACK} @tab (Optional) A scalar of type @code{LOGICAL}.
 @end multitable
 
-@item @emph{Note}:
+@item @emph{Notes}:
 @var{ARRAY} can also be @code{UNSIGNED}.
 
 @item @emph{Return value}:
@@ -6308,7 +6308,7 @@ Subroutine
 @item @var{UNIT} @tab (Optional) The type shall be @code{INTEGER}.
 @end multitable
 
-@item @emph{Note}:
+@item @emph{Notes}:
 Beginning with the Fortran 2003 standard, there is a @code{FLUSH}
 statement that should be preferred over the @code{FLUSH} intrinsic.
 
@@ -7598,7 +7598,7 @@ program test_iachar
 end program test_iachar
 @end smallexample
 
-@item @emph{Note}:
+@item @emph{Notes}:
 See @ref{ICHAR} for a discussion of converting between numerical values
 and formatted string representations.
 
@@ -8067,7 +8067,7 @@ end program test_ichar
 @item @code{ICHAR(C)}  @tab @code{CHARACTER C}   @tab @code{INTEGER(4)}    @tab Fortran 77 and later
 @end multitable
 
-@item @emph{Note}:
+@item @emph{Notes}:
 No intrinsic exists to convert between a numeric value and a formatted
 character string representation -- for instance, given the
 @code{CHARACTER} value @code{'154'}, obtaining an @code{INTEGER} or
@@ -9063,8 +9063,6 @@ See @code{kill(2)}.
 
 This intrinsic is provided in both subroutine and function forms;
 however, only one form can be used in any given program unit.
-@item @emph{Standard}:
-GNU extension
 
 @item @emph{Standard}:
 GNU extension
@@ -10866,7 +10864,7 @@ returned value has the same sign as A and a magnitude less than the
 magnitude of P.  (As a GNU extension, kind is the largest kind of the actual
 arguments.)
 
-@item @emph{Note}:
+@item @emph{Notes}:
 @code{MOD} and @code{MODULO} yield identical results if their arguments
 are @code{UNSIGNED}.
 
@@ -10951,7 +10949,7 @@ extension, kind is the largest kind of the actual arguments.)
 The returned value has the same sign as P and a magnitude less than
 the magnitude of P.
 
-@item @emph{Note}:
+@item @emph{Notes}:
 @code{MOD} and @code{MODULO} yield identical results if their arguments
 are @code{UNSIGNED}.
 
