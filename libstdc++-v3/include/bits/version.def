@@ -1111,6 +1111,10 @@ ftms = {
 ftms = {
   name = constexpr_algorithms;
   values = {
+    v = 202306;
+    cxxmin = 26;
+  };
+  values = {
     v = 201806;
     cxxmin = 20;
   };
