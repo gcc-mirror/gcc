@@ -26,3 +26,14 @@ gen_phobos_sources.d
     Example:
 
 	cd src && ../scripts/gen_phobos_sources >> Makefile.am
+
+tests_extractor.d
+
+    Searches the given input directory recursively for public unittest blocks
+    (annotated with three slashes). The tests will be extracted as one file for
+    each source file to the output directory.  Used to regenerate all tests
+    cases in testsuite/libphobos.phobos.
+
+    Example:
+
+	./tests_extractor -i ../libphobos/src -o ../testsuite/libphobos.phobos
