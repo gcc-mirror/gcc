@@ -44,6 +44,9 @@ ix86_d_target_versions (void)
     d_add_builtin_version ("D_HardFloat");
   else
     d_add_builtin_version ("D_SoftFloat");
+
+  if (flag_cf_protection != CF_NONE)
+    d_add_builtin_version ("GNU_CET");
 }
 
 /* Handle a call to `__traits(getTargetInfo, "floatAbi")'.  */
@@ -79,6 +82,14 @@ ix86_d_handle_target_object_format (void)
   return build_string_literal (strlen (objfmt) + 1, objfmt);
 }
 
+/* Handle a call to `__traits(getTargetInfo, "CET")'.  */
+
+static tree
+ix86_d_handle_target_cf_protection (void)
+{
+  return build_int_cst_type (uint32_type_node, flag_cf_protection & ~CF_SET);
+}
+
 /* Implement TARGET_D_REGISTER_CPU_TARGET_INFO.  */
 
 void
@@ -87,6 +98,7 @@ ix86_d_register_target_info (void)
   const struct d_target_info_spec handlers[] = {
     { "floatAbi", ix86_d_handle_target_float_abi },
     { "objectFormat", ix86_d_handle_target_object_format },
+    { "CET", ix86_d_handle_target_cf_protection },
     { NULL, NULL },
   };
 

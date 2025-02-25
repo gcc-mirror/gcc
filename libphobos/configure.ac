@@ -70,13 +70,10 @@ GCC_CET_FLAGS(CET_FLAGS)
 AC_SUBST(CET_FLAGS)
 # To ensure that runtime code for CET is compiled in, add in D version flags.
 AS_IF([test x$enable_cet = xyes], [
-  CET_DFLAGS="$CET_FLAGS -fversion=CET"
   DCFG_ENABLE_CET=true
 ], [
-  CET_DFLAGS=
   DCFG_ENABLE_CET=false
 ])
-AC_SUBST(CET_DFLAGS)
 AC_SUBST(DCFG_ENABLE_CET)
 
 # This should be inherited in the recursive make, but ensure it is defined.

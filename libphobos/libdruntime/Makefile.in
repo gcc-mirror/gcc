@@ -625,7 +625,6 @@ CC = @CC@
 CCAS = @CCAS@
 CCASFLAGS = @CCASFLAGS@
 CC_FOR_BUILD = @CC_FOR_BUILD@
-CET_DFLAGS = @CET_DFLAGS@
 CET_FLAGS = @CET_FLAGS@
 CFLAGS = @CFLAGS@
 CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
@@ -784,7 +783,7 @@ D_EXTRA_DFLAGS = -fpreview=dip1000 -fpreview=fieldwise -fpreview=dtorfields \
 # D flags for compilation
 AM_DFLAGS = \
 	$(phobos_lt_pic_flag) $(phobos_compiler_shared_flag) \
-	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(SECTION_FLAGS) $(CET_DFLAGS)
+	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(SECTION_FLAGS) $(CET_FLAGS)
 
 
 # Flags for other kinds of sources
