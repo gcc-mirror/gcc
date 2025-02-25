@@ -1872,7 +1872,7 @@ conventions, and for example records are laid out in a manner that is
 consistent with C.  This means that specifying convention C (for example)
 has no effect.
 
-There are four exceptions to this general rule:
+There are three exceptions to this general rule:
 
 * *Convention Fortran and array subtypes*.
 
