@@ -1729,9 +1729,11 @@ private:
   }
   inline void use_max_sew (vsetvl_info &prev, const vsetvl_info &next)
   {
-    int max_sew = MAX (prev.get_sew (), next.get_sew ());
-    prev.set_sew (max_sew);
-    prev.set_ratio (calculate_ratio (prev.get_sew (), prev.get_vlmul ()));
+    bool prev_sew_larger = prev.get_sew () >= next.get_sew ();
+    const vsetvl_info from = prev_sew_larger ? prev : next;
+    prev.set_sew (from.get_sew ());
+    prev.set_vlmul (from.get_vlmul ());
+    prev.set_ratio (from.get_ratio ());
     use_min_of_max_sew (prev, next);
   }
   inline void use_next_sew_lmul (vsetvl_info &prev, const vsetvl_info &next)
