@@ -9377,8 +9377,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	      tree guard = NULL_TREE;
 	      if (cleanups || cleanup)
 		{
-		  guard = force_target_expr (boolean_type_node,
-					     boolean_false_node, tf_none);
+		  guard = get_internal_target_expr (boolean_false_node);
 		  add_stmt (guard);
 		  guard = TARGET_EXPR_SLOT (guard);
 		}
@@ -9407,8 +9406,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		     popped that all, so push those extra cleanups around
 		     the whole sequence with a guard variable.  */
 		  gcc_assert (TREE_CODE (sl) == STATEMENT_LIST);
-		  guard = force_target_expr (integer_type_node,
-					     integer_zero_node, tf_none);
+		  guard = get_internal_target_expr (integer_zero_node);
 		  add_stmt (guard);
 		  guard = TARGET_EXPR_SLOT (guard);
 		  for (unsigned i = 0; i < n_extra_cleanups; ++i)

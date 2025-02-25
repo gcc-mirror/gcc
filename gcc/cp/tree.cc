@@ -982,8 +982,7 @@ tree
 get_internal_target_expr (tree init)
 {
   init = convert_bitfield_to_declared_type (init);
-  tree t = build_target_expr_with_type (init, TREE_TYPE (init),
-					tf_warning_or_error);
+  tree t = force_target_expr (TREE_TYPE (init), init, tf_warning_or_error);
   TARGET_EXPR_INTERNAL_P (t) = true;
   return t;
 }
