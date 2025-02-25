@@ -48,7 +48,7 @@ macro_rules! nonzero_integers {
 
             }
 
-            impl_nonzero_fmt! { // { dg-error "unknown macro" }
+            impl_nonzero_fmt! { // { dg-error "could not resolve macro invocation" }
                 (Debug, Display, Binary, Octal, LowerHex, UpperHex) for $Ty
             }
         )+

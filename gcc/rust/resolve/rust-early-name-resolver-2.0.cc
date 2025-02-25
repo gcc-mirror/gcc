@@ -280,7 +280,8 @@ Early::visit (AST::MacroInvocation &invoc)
   if (!definition.has_value ())
     {
       collect_error (Error (invoc.get_locus (), ErrorCode::E0433,
-			    "could not resolve macro invocation"));
+			    "could not resolve macro invocation %qs",
+			    path.as_string ().c_str ()));
       return;
     }
 

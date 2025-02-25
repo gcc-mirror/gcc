@@ -16,7 +16,7 @@ mod foo {
     }
 
     fn bar_f() {
-        baz!(); // { dg-error "unknown macro" }
+        baz!(); // { dg-error "could not resolve macro invocation" }
     }
 }
 
