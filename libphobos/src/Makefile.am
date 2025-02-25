@@ -78,7 +78,7 @@ install-data-local:
 	done
 
 # Source file definitions. Boring stuff, auto-generated with
-# https://gist.github.com/jpf91/8744acebc9dcf1e9d1a35cdff20afbb2
+# libphobos/scripts/gen_phobos_sources.d
 # Can't use wildcards here:
 # https://www.gnu.org/software/automake/manual/html_node/Wildcards.html
 if ENABLE_LIBDRUNTIME_ONLY

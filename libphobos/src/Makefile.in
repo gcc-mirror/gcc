@@ -624,7 +624,7 @@ libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 
 
 # Source file definitions. Boring stuff, auto-generated with
-# https://gist.github.com/jpf91/8744acebc9dcf1e9d1a35cdff20afbb2
+# libphobos/scripts/gen_phobos_sources.d
 # Can't use wildcards here:
 # https://www.gnu.org/software/automake/manual/html_node/Wildcards.html
 @ENABLE_LIBDRUNTIME_ONLY_TRUE@PHOBOS_DSOURCES = 

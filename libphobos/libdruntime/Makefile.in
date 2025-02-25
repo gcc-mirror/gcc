@@ -850,7 +850,7 @@ libgdruntime_convenience_la_DEPENDENCIES = $(libgdruntime_la_DEPENDENCIES)
 libgdruntime_convenience_la_LINK = $(libgdruntime_la_LINK)
 
 # Source file definitions. Boring stuff, auto-generated with
-# https://gist.github.com/jpf91/8ad1dbc9902d6ad876313f134c6527d1
+# libphobos/scripts/gen_druntime_sources.d
 # Can't use wildcards here:
 # https://www.gnu.org/software/automake/manual/html_node/Wildcards.html
 DRUNTIME_CSOURCES = core/stdc/errno_.c etc/valgrind/valgrind_.c

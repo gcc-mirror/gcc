@@ -167,7 +167,7 @@ install-data-local:
 	done
 
 # Source file definitions. Boring stuff, auto-generated with
-# https://gist.github.com/jpf91/8ad1dbc9902d6ad876313f134c6527d1
+# libphobos/scripts/gen_druntime_sources.d
 # Can't use wildcards here:
 # https://www.gnu.org/software/automake/manual/html_node/Wildcards.html
 
