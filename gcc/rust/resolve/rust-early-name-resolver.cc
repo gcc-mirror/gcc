@@ -477,7 +477,8 @@ EarlyNameResolver::visit (AST::MacroInvocation &invoc)
   bool found = resolver.get_macro_scope ().lookup (seg, &resolved_node);
   if (!found)
     {
-      rust_error_at (invoc.get_locus (), "unknown macro: [%s]",
+      rust_error_at (invoc.get_locus (), ErrorCode::E0433,
+		     "could not resolve macro invocation %qs",
 		     seg.get ().c_str ());
       return;
     }
