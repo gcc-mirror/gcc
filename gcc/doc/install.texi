@@ -227,7 +227,7 @@ Necessary to bootstrap GCC.  GCC 5.4 or newer has sufficient support
 for used C++14 features.
 
 Versions of GCC prior to 15 allow bootstrapping with an ISO C++11
-compiler, versions prior to 11 allow bootstrapping with an ISO C++98
+compiler, versions prior to 10.5 allow bootstrapping with an ISO C++98
 compiler, and versions prior to 4.8 allow bootstrapping with an ISO
 C89 compiler.
 
