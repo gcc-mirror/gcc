@@ -1,3 +1,129 @@
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118717
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement_1):
+	Do not common stores referencing abnormal SSA names.
+	* tree-ssa-sink.cc (sink_common_stores_to_bb): Likewise.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118653
+	* tree-vect-loop.cc (vectorizable_live_operation): Also allow
+	out-of-loop debug uses.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117979
+	* tree-ssa-dce.cc (make_forwarders_with_degenerate_phis):
+	Properly update the irreducible region state.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-13  Richard Biener  <rguenther@suse.de>
+		    Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR tree-optimization/117119
+	* tree-data-ref.cc (initialize_matrix_A): Check whether
+	an INTEGER_CST fits in HWI, otherwise return chrec_dont_know.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117113
+	* gimple-loop-jam.cc (unroll_jam_possible_p): Detect when
+	we cannot handle virtual SSA update.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR lto/113207
+	* ipa-free-lang-data.cc (free_lang_data_in_type): First drop
+	const/volatile qualifiers from function argument types,
+	then build a simplified type.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/118662
+	* combine.cc (try_combine): When re-materializing a load
+	from an extended reg by a lowpart subreg make sure we're
+	not dealing with vector or complex modes.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117424
+	* tree-eh.cc (tree_could_trap_p): Verify the base is
+	fully contained within a decl.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116906
+	* tree-ssa-pre.cc (prune_clobbered_mems): Add clean_traps
+	argument.
+	(compute_antic_aux): Direct prune_clobbered_mems to prune
+	all traps when any MAX solution was involved in the ANTIC
+	computation.
+	(compute_partial_antic_aux): Adjust.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-16  Richard Biener  <rguenther@suse.de>
+		    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR tree-optimization/115494
+	* tree-ssa-pre.cc (phi_translate_1): Always generate a
+	representative for translated dependent expressions.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114052
+	* tree-ssa-loop-niter.cc (maybe_lower_iteration_bound): Check
+	for infinite subloops we might not exit.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112859
+	* tree-loop-distribution.cc
+	(loop_distribution::pg_add_dependence_edges): Add comment.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112859
+	PR tree-optimization/115347
+	* tree-loop-distribution.cc
+	(loop_distribution::pg_add_dependence_edges): For a zero
+	distance vector still make sure to not have an inner
+	loop with zero distance.
+
 2025-02-17  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/freebsd-spec.h: Change fbsd-lib-spec for FreeBSD > 13,
