@@ -13017,11 +13017,14 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   else
     {
       gfc_conv_expr (&lse, expr1);
-      if (gfc_option.rtcheck & GFC_RTCHECK_MEM
-	  && !init_flag
-	  && gfc_expr_attr (expr1).allocatable
-	  && expr1->rank
-	  && !expr2->rank)
+      /* For some expression (e.g. complex numbers) fold_convert uses a
+	 SAVE_EXPR, which is hazardous on the lhs, because the value is
+	 not updated when assigned to.  */
+      if (TREE_CODE (lse.expr) == SAVE_EXPR)
+	lse.expr = TREE_OPERAND (lse.expr, 0);
+
+      if (gfc_option.rtcheck & GFC_RTCHECK_MEM && !init_flag
+	  && gfc_expr_attr (expr1).allocatable && expr1->rank && !expr2->rank)
 	{
 	  tree cond;
 	  const char* msg;
