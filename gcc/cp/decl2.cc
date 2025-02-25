@@ -64,7 +64,7 @@ static tree start_partial_init_fini_fn (bool, unsigned, unsigned, bool);
 static void finish_partial_init_fini_fn (tree);
 static tree emit_partial_init_fini_fn (bool, unsigned, tree,
 				       unsigned, location_t, tree);
-static void one_static_initialization_or_destruction (bool, tree, tree);
+static void one_static_initialization_or_destruction (bool, tree, tree, bool);
 static void generate_ctor_or_dtor_function (bool, unsigned, tree, location_t,
 					    bool);
 static tree prune_vars_needing_no_initialization (tree *);
@@ -4418,7 +4418,8 @@ fix_temporary_vars_context_r (tree *node,
    are destroying it.  */
 
 static void
-one_static_initialization_or_destruction (bool initp, tree decl, tree init)
+one_static_initialization_or_destruction (bool initp, tree decl, tree init,
+					  bool omp_target)
 {
   /* If we are supposed to destruct and there's a trivial destructor,
      nothing has to be done.  */
@@ -4521,7 +4522,7 @@ one_static_initialization_or_destruction (bool initp, tree decl, tree init)
       /* If we're using __cxa_atexit, register a function that calls the
 	 destructor for the object.  */
       if (flag_use_cxa_atexit)
-	finish_expr_stmt (register_dtor_fn (decl));
+	finish_expr_stmt (register_dtor_fn (decl, omp_target));
     }
   else
     finish_expr_stmt (build_cleanup (decl));
@@ -4649,7 +4650,7 @@ emit_partial_init_fini_fn (bool initp, unsigned priority, tree vars,
 	  walk_tree (&init, copy_tree_body_r, &id, NULL);
 	}
       /* Do one initialization or destruction.  */
-      one_static_initialization_or_destruction (initp, decl, init);
+      one_static_initialization_or_destruction (initp, decl, init, omp_target);
     }
   decomp_finalize_var_list (sl, save_stmts_are_full_exprs_p);
 
@@ -5204,7 +5205,8 @@ handle_tls_init (void)
       tree init = TREE_PURPOSE (vars);
       sl = decomp_handle_one_var (vars, sl, &saw_nonbase,
 				  save_stmts_are_full_exprs_p);
-      one_static_initialization_or_destruction (/*initp=*/true, var, init);
+      one_static_initialization_or_destruction (/*initp=*/true, var, init,
+						false);
 
       /* Output init aliases even with -fno-extern-tls-init.  */
       if (TARGET_SUPPORTS_ALIASES && TREE_PUBLIC (var))

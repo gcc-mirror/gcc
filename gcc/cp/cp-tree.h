@@ -7201,7 +7201,7 @@ extern int wrapup_namespace_globals		();
 extern tree create_implicit_typedef		(tree, tree);
 extern int local_variable_p			(const_tree);
 extern tree get_cxa_atexit_fn_ptr_type		();
-extern tree register_dtor_fn			(tree);
+extern tree register_dtor_fn			(tree, bool = false);
 extern tmpl_spec_kind current_tmpl_spec_kind	(int);
 extern tree cxx_builtin_function		(tree decl);
 extern tree cxx_builtin_function_ext_scope	(tree decl);
