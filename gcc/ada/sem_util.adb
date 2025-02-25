@@ -8923,9 +8923,10 @@ package body Sem_Util is
    --------------------------
 
    procedure Find_Overlaid_Entity
-     (N   : Node_Id;
-      Ent : out Entity_Id;
-      Off : out Boolean)
+     (N        : Node_Id;
+      Ent      : out Entity_Id;
+      Ovrl_Typ : out Entity_Id;
+      Off      : out Boolean)
    is
       pragma Assert
         (Nkind (N) = N_Attribute_Definition_Clause
@@ -8948,6 +8949,7 @@ package body Sem_Util is
       --  constant that eventually references Y'Address.
 
       Ent := Empty;
+      Ovrl_Typ := Empty;
       Off := False;
 
       Expr := Expression (N);
@@ -8998,11 +9000,33 @@ package body Sem_Util is
                   and then Is_Concurrent_Type (Scope (Ent)));
                Ent := Empty;
             end if;
+
+            if No (Ovrl_Typ) then
+               Ovrl_Typ := Etype (Ent);
+            end if;
+
             return;
 
          --  Check for components
 
          elsif Nkind (Expr) in N_Selected_Component | N_Indexed_Component then
+            if Nkind (Expr) = N_Selected_Component then
+               --  If Something.Other'Address, use
+               --  the Etype of the Other component.
+
+               if No (Ovrl_Typ) then
+                  Ovrl_Typ := Etype (Entity (Selector_Name (Expr)));
+               end if;
+
+            else
+               --  If Something(Index)'Address, use
+               --  the Etype of the array component.
+
+               if No (Ovrl_Typ) then
+                  Ovrl_Typ := Etype (Expr);
+               end if;
+            end if;
+
             Expr := Prefix (Expr);
             Off  := True;
 
@@ -25599,10 +25623,11 @@ package body Sem_Util is
                declare
                   Addr  : constant Node_Id := Address_Clause (Ent);
                   O_Ent : Entity_Id;
+                  O_Typ : Entity_Id;
                   Off   : Boolean;
 
                begin
-                  Find_Overlaid_Entity (Addr, O_Ent, Off);
+                  Find_Overlaid_Entity (Addr, O_Ent, O_Typ,  Off);
 
                   Error_Msg_Sloc := Sloc (Addr);
                   Error_Msg_NE
@@ -29050,9 +29075,10 @@ package body Sem_Util is
    ------------------------------
 
    function Ultimate_Overlaid_Entity (E : Entity_Id) return Entity_Id is
-      Address : Node_Id;
-      Alias   : Entity_Id := E;
-      Offset  : Boolean;
+      Address  : Node_Id;
+      Alias    : Entity_Id := E;
+      Offset   : Boolean;
+      Ovrl_Typ : Entity_Id;
 
    begin
       --  Currently this routine is only called for stand-alone objects that
@@ -29064,7 +29090,7 @@ package body Sem_Util is
       loop
          Address := Address_Clause (Alias);
          if Present (Address) then
-            Find_Overlaid_Entity (Address, Alias, Offset);
+            Find_Overlaid_Entity (Address, Alias, Ovrl_Typ, Offset);
             if Present (Alias) then
                null;
             else

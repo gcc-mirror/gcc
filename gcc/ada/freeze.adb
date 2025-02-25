@@ -715,10 +715,11 @@ package body Freeze is
          then
             declare
                O_Ent : Entity_Id;
+               O_Typ : Entity_Id;
                Off   : Boolean;
 
             begin
-               Find_Overlaid_Entity (Addr, O_Ent, Off);
+               Find_Overlaid_Entity (Addr, O_Ent, O_Typ, Off);
 
                if Ekind (O_Ent) = E_Constant
                  and then Etype (O_Ent) = Typ

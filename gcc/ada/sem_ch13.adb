@@ -6208,6 +6208,7 @@ package body Sem_Ch13 is
                declare
                   Expr  : constant Node_Id := Expression (N);
                   O_Ent : Entity_Id;
+                  O_Typ : Entity_Id;
                   Off   : Boolean;
 
                begin
@@ -6220,7 +6221,7 @@ package body Sem_Ch13 is
                      return;
                   end if;
 
-                  Find_Overlaid_Entity (N, O_Ent, Off);
+                  Find_Overlaid_Entity (N, O_Ent, O_Typ, Off);
 
                   if Present (O_Ent) then
 
@@ -6273,10 +6274,10 @@ package body Sem_Ch13 is
 
                      if (Is_Record_Type (Etype (U_Ent))
                           or else Is_Array_Type (Etype (U_Ent)))
-                       and then (Is_Record_Type (Etype (O_Ent))
-                                  or else Is_Array_Type (Etype (O_Ent)))
+                       and then (Is_Record_Type (O_Typ)
+                                  or else Is_Array_Type (O_Typ))
                        and then Reverse_Storage_Order (Etype (U_Ent)) /=
-                                Reverse_Storage_Order (Etype (O_Ent))
+                                Reverse_Storage_Order (O_Typ)
                      then
                         Error_Msg_N
                           ("??overlay changes scalar storage order", Expr);
