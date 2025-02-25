@@ -34,20 +34,21 @@ test01()
   {
     int i = 0;
     int j = 0;
+
+#if __cpp_lib_ranges_as_const
+    // These overloads mean that range<R> and range<const R> are satisfied.
+    const int* begin() const { throw; }
+    const int* end() const { throw; }
+#endif
+
     int* data() { return &j; }
     const R* data() const noexcept { return nullptr; }
   };
   static_assert( has_cdata<R&> );
   static_assert( has_cdata<const R&> );
   R r;
-#if ! __cpp_lib_ranges_as_const
   VERIFY( std::ranges::cdata(r) == (R*)nullptr );
   static_assert( noexcept(std::ranges::cdata(r)) );
-#else
-  // constant_range<const R> is not satisfied, so cdata(r) == data(r).
-  VERIFY( std::ranges::cdata(r) == &r.j );
-  static_assert( ! noexcept(std::ranges::cdata(r)) );
-#endif
   const R& c = r;
   VERIFY( std::ranges::cdata(c) == (R*)nullptr );
   static_assert( noexcept(std::ranges::cdata(c)) );
@@ -58,11 +59,11 @@ test01()
 
   struct R2
   {
+#if __cpp_lib_ranges_as_const
     // These overloads mean that range<R2> and range<const R2> are satisfied.
-    int* begin();
-    int* end();
-    const int* begin() const;
-    const int* end() const;
+    const int* begin() const { throw; }
+    const int* end() const { throw; }
+#endif
 
     int i = 0;
     int j = 0;
