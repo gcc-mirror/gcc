@@ -2287,7 +2287,12 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 		  tmp = se.expr;
 		}
 	    }
-	  if (!POINTER_TYPE_P (TREE_TYPE (se.expr)))
+	  /* For non-pointer types in se.expr, the first condition holds.
+	     For pointer or reference types in se.expr, a double TREE_TYPE ()
+	     is possible and an associate variable always is a pointer.  */
+	  if (!POINTER_TYPE_P (TREE_TYPE (se.expr))
+	      || TREE_TYPE (TREE_TYPE (se.expr))
+		   != TREE_TYPE (TREE_TYPE (sym->backend_decl)))
 	    tmp = gfc_build_addr_expr (tmp, se.expr);
 	}
 
