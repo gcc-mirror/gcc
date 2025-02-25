@@ -2480,6 +2480,7 @@ lra (FILE *f, int verbose)
 	    lra_clear_live_ranges ();
 	  bool fails_p;
 	  lra_hard_reg_split_p = false;
+	  int split_fails_num = 0;
 	  do
 	    {
 	      /* We need live ranges for lra_assign -- so build them.
@@ -2493,7 +2494,7 @@ lra (FILE *f, int verbose)
 		 coalescing.  If inheritance pseudos were spilled, the
 		 memory-memory moves involving them will be removed by
 		 pass undoing inheritance.  */
-	      if (lra_simple_p)
+	      if (lra_simple_p || lra_hard_reg_split_p)
 		lra_assign (fails_p);
 	      else
 		{
@@ -2522,8 +2523,15 @@ lra (FILE *f, int verbose)
 		  if (live_p)
 		    lra_clear_live_ranges ();
 		  live_p = false;
-		  if (! lra_split_hard_reg_for ())
-		    break;
+		  /* See a comment for LRA_MAX_FAILED_SPLITS definition.  */
+		  bool last_failed_split_p
+		    = split_fails_num > LRA_MAX_FAILED_SPLITS;
+		  if (! lra_split_hard_reg_for (last_failed_split_p))
+		    {
+		      if (last_failed_split_p)
+			break;
+		      split_fails_num++;
+		    }
 		  lra_hard_reg_split_p = true;
 		}
 	    }
