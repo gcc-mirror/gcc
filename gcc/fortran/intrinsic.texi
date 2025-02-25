@@ -2355,7 +2355,6 @@ coindexed @var{ATOM}, if the remote image has stopped, it is assigned the value
 of @code{ISO_FORTRAN_ENV}'s @code{STAT_STOPPED_IMAGE} and if the remote image
 has failed, the value @code{STAT_FAILED_IMAGE}.
 
-
 @item @emph{Standard}:
 Fortran 2008 and later; with @var{STAT}, TS 18508 or later
 
@@ -4587,7 +4586,6 @@ and may not start with @code{0.0}. For @code{CPU_TIME}, the absolute
 value is meaningless; only differences between subsequent calls to
 this subroutine, as shown in the example below, should be used.
 
-
 @item @emph{Standard}:
 Fortran 95 and later
 
@@ -4643,7 +4641,6 @@ shifted out one end of each rank one section are shifted back in the other end.
 
 @item @emph{Standard}:
 Fortran 90 and later
-
 
 @item @emph{Class}:
 Transformational function
@@ -5791,7 +5788,6 @@ dependent. In particular, on POSIX-compliant systems, the @code{SIGINT} and
 such, if the parent process is terminated, the child process might not be
 terminated alongside.
 
-
 @item @emph{See also}:
 @ref{SYSTEM}
 @end table
@@ -5966,7 +5962,6 @@ unlimited polymorphic.
 @item @emph{Return value}:
 The return value is a scalar of type default logical. It is true if and only if
 the dynamic type of A is an extension type of the dynamic type of MOLD.
-
 
 @item @emph{See also}:
 @ref{SAME_TYPE_AS}
@@ -6192,7 +6187,6 @@ for that row is zero.
 
 @item @emph{Standard}:
 Fortran 2008 and later
-
 
 @item @emph{Class}:
 Transformational function
@@ -7248,7 +7242,6 @@ Function
 The return value of @code{GETGID} is an @code{INTEGER} of the default
 kind.
 
-
 @item @emph{Example}:
 See @code{GETPID} for an example.
 
@@ -7327,7 +7320,6 @@ Function
 The return value of @code{GETPID} is an @code{INTEGER} of the default
 kind.
 
-
 @item @emph{Example}:
 @smallexample
 program info
@@ -7366,7 +7358,6 @@ Function
 @item @emph{Return value}:
 The return value of @code{GETUID} is an @code{INTEGER} of the default
 kind.
-
 
 @item @emph{Example}:
 See @code{GETPID} for an example.
@@ -8271,7 +8262,6 @@ Inquiry function.
 the corank of @var{COARRAY}.
 @end multitable
 
-
 @item @emph{Return value}:
 Scalar default integer with the value of the image index that corresponds
 to the cosubscripts. For invalid cosubscripts the result is zero.
@@ -8838,6 +8828,7 @@ PROGRAM test_isatty
   END DO
 END PROGRAM
 @end smallexample
+
 @item @emph{See also}:
 @ref{TTYNAM}
 @end table
@@ -8965,6 +8956,7 @@ The return value is of the same type as @var{I}.
 @item @emph{Description}:
 @code{ISNAN} tests whether a floating-point value is an IEEE
 Not-a-Number (NaN).
+
 @item @emph{Standard}:
 GNU extension
 
@@ -9033,7 +9025,6 @@ and the kind shall be the default integer kind.
 
 @item @emph{Return value}:
 Does not return anything.
-
 
 @item @emph{Example}:
 @smallexample
@@ -9147,6 +9138,7 @@ end program test_kind
 @item @emph{Description}:
 Returns the lower bounds of an array, or a single lower bound
 along the @var{DIM} dimension.
+
 @item @emph{Standard}:
 Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
@@ -9190,6 +9182,7 @@ dimension, the lower bound is taken to be 1.
 @item @emph{Description}:
 Returns the lower bounds of a coarray, or a single lower cobound
 along the @var{DIM} codimension.
+
 @item @emph{Standard}:
 Fortran 2008 and later
 
@@ -9298,13 +9291,11 @@ expression indicating the kind parameter of the result.
 The return value is of type @code{INTEGER} and of kind @var{KIND}. If
 @var{KIND} is absent, the return value is of default integer kind.
 
-
 @item @emph{Specific names}:
 @multitable @columnfractions .20 .23 .20 .33
 @headitem Name               @tab Argument          @tab Return type       @tab Standard
 @item @code{LEN(STRING)} @tab @code{CHARACTER}  @tab @code{INTEGER}    @tab Fortran 77 and later
 @end multitable
-
 
 @item @emph{See also}:
 @ref{LEN_TRIM}, @*
@@ -11387,7 +11378,6 @@ Returns the number of images.
 Fortran 2008 and later. With @var{DISTANCE} or @var{FAILED} argument, 
 Technical Specification (TS) 18508 or later
 
-
 @item @emph{Class}:
 Transformational function
 
@@ -11747,6 +11737,7 @@ program test_population
   print *, popcnt(huge(0_8)), poppar(huge(0_8))
 end program test_population
 @end smallexample
+
 @item @emph{See also}:
 @ref{POPPAR}, @*
 @ref{LEADZ}, @*
@@ -11794,6 +11785,7 @@ program test_population
   print *, popcnt(huge(0_8)), poppar(huge(0_8))
 end program test_population
 @end smallexample
+
 @item @emph{See also}:
 @ref{POPCNT}, @*
 @ref{LEADZ}, @*
@@ -11841,6 +11833,7 @@ program prec_and_range
   print *, precision(y), range(y)
 end program prec_and_range
 @end smallexample
+
 @item @emph{See also}:
 @ref{SELECTED_REAL_KIND}, @*
 @ref{RANGE}
@@ -11936,7 +11929,6 @@ If @var{DIM} is absent, a scalar with the product of all elements in
 the rank of @var{ARRAY}, and a shape similar to that of @var{ARRAY} with 
 dimension @var{DIM} dropped is returned.
 
-
 @item @emph{Example}:
 @smallexample
 PROGRAM test_product
@@ -11987,6 +11979,7 @@ program test_radix
   print *, "The radix for the default real kind is", radix(0.0)
 end program test_radix
 @end smallexample
+
 @item @emph{See also}:
 @ref{SELECTED_REAL_KIND}
 @end table
@@ -12151,7 +12144,6 @@ each thread has its own random number state. For details of the
 seeding procedure, see the documentation for the @code{RANDOM_SEED}
 intrinsic.
 
-
 @item @emph{Standard}:
 Fortran 90 and later, extension for @code{UNSIGNED} (@pxref{Unsigned
 integers})
@@ -12285,6 +12277,7 @@ kind.
 
 @item @emph{Example}:
 See @code{PRECISION} for an example.
+
 @item @emph{See also}:
 @ref{SELECTED_REAL_KIND}, @*
 @ref{PRECISION}
@@ -12357,7 +12350,6 @@ Fortran 77 and later, with @var{KIND} argument Fortran 90 and later,
 has GNU extensions.  Extension for @code{UNSIGNED} (@pxref{Unsigned
 integers}).
 
-
 @item @emph{Class}:
 Elemental function
 
@@ -12410,7 +12402,6 @@ end program test_real
 @item @code{FLOATK(A)} @tab @code{INTEGER(8)}  @tab @code{REAL(4)}  @tab GNU extension (-fdec)
 @item @code{SNGL(A)}   @tab @code{REAL(8)}     @tab @code{REAL(4)}  @tab Fortran 77 and later
 @end multitable
-
 
 @item @emph{See also}:
 @ref{DBLE}
@@ -13077,6 +13068,7 @@ program real_kinds
   print *, precision(z), range(z)
 end program real_kinds
 @end smallexample
+
 @item @emph{See also}:
 @ref{PRECISION}, @*
 @ref{RANGE}, @*
@@ -14061,10 +14053,13 @@ To stat a link: @*
 @table @asis
 @item @emph{Description}:
 Returns the storage size of argument @var{A} in bits.
+
 @item @emph{Standard}:
 Fortran 2008 and later
+
 @item @emph{Class}:
 Inquiry function
+
 @item @emph{Syntax}:
 @code{RESULT = STORAGE_SIZE(A [, KIND])}
 
@@ -14506,7 +14501,6 @@ present, required).
 @var{DIM} shall be between one and the corank of @var{COARRAY}.
 @end multitable
 
-
 @item @emph{Return value}:
 Default integer. If @var{COARRAY} is not present, it is scalar; if
 @var{DISTANCE} is not present or has value 0, its value is the image index on
@@ -14903,6 +14897,7 @@ END PROGRAM
 @item @emph{Description}:
 Returns the upper bounds of an array, or a single upper bound
 along the @var{DIM} dimension.
+
 @item @emph{Standard}:
 Fortran 90 and later, with @var{KIND} argument Fortran 2003 and later
 
@@ -14947,6 +14942,7 @@ the relevant dimension.
 @item @emph{Description}:
 Returns the upper cobounds of a coarray, or a single upper cobound
 along the @var{DIM} codimension.
+
 @item @emph{Standard}:
 Fortran 2008 and later
 
