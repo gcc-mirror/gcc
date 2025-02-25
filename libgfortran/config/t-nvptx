@@ -1,0 +1,2 @@
+# Re 'alloca' usage in '../caf/single.c':
+AM_CFLAGS += -mfake-ptx-alloca

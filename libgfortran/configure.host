@@ -91,6 +91,10 @@ case "${target}" in
 	tmake_file="t-aix"
 	;;
 
+  nvptx-*-none)
+	tmake_file="$tmake_file t-nvptx"
+	;;
+
   *)
 	;;
 
