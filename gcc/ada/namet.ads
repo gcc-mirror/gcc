@@ -609,6 +609,7 @@ private
       --  Int Value associated with this name
 
    end record;
+   --  The aliased non-boolean components are required to match the C structure
 
    for Name_Entry use record
       Name_Chars_Index      at  0 range 0 .. 31;
@@ -622,9 +623,10 @@ private
       Hash_Link             at  8 range 0 .. 31;
       Int_Info              at 12 range 0 .. 31;
    end record;
+   --  This ensures a matching layout between Ada and C
 
    for Name_Entry'Size use 16 * 8;
-   --  This ensures that we did not leave out any fields
+   --  This ensures that record is reasonably small
 
    --  This is the table that is referenced by Valid_Name_Id entries.
    --  It contains one entry for each unique name in the table.
