@@ -58,11 +58,9 @@ pru_pragma_ctable_entry (cpp_reader *)
 	  if (type != CPP_EOF)
 	    error ("junk at end of %<#pragma CTABLE_ENTRY%>");
 	  else if (i >= ARRAY_SIZE (pru_ctable))
-	    error ("%<CTABLE_ENTRY%> index %" HOST_WIDE_INT_PRINT "d"
-		   " is not valid", i);
+	    error ("%<CTABLE_ENTRY%> index %wd is not valid", i);
 	  else if (pru_ctable[i].valid && pru_ctable[i].base != base)
-	    error ("redefinition of %<CTABLE_ENTRY "
-		   "%" HOST_WIDE_INT_PRINT "d%>", i);
+	    error ("redefinition of %<CTABLE_ENTRY %wd%>", i);
 	  else
 	    {
 	      if (base & 0xff)
