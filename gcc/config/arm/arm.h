@@ -2261,8 +2261,8 @@ extern int making_const_table;
 
 #define REVERSE_CONDITION(CODE,MODE) \
   (((MODE) == CCFPmode || (MODE) == CCFPEmode) \
-   ? reverse_condition_maybe_unordered (code) \
-   : reverse_condition (code))
+   ? reverse_condition_maybe_unordered (CODE) \
+   : reverse_condition (CODE))
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
   ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
