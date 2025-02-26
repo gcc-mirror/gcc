@@ -646,6 +646,8 @@ namespace ranges
       constexpr auto&
       __possibly_const_range(_Range& __r) noexcept
       {
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 4027. possibly-const-range should prefer returning const R&
 	if constexpr (input_range<const _Range>)
 	  return const_cast<const _Range&>(__r);
 	else
