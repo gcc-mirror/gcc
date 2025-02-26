@@ -10270,7 +10270,8 @@ pop_init_level (location_t loc, int implicit,
 	  gcc_assert (!TYPE_SIZE (constructor_type));
 
 	  if (constructor_depth > 2)
-	    error_init (loc, "initialization of flexible array member in a nested context");
+	    error_init (loc, "initialization of flexible array member "
+			     "in a nested context");
 	  else
 	    pedwarn_init (loc, OPT_Wpedantic,
 			  "initialization of a flexible array member");
@@ -10278,7 +10279,8 @@ pop_init_level (location_t loc, int implicit,
 	  /* We have already issued an error message for the existence
 	     of a flexible array member not at the end of the structure.
 	     Discard the initializer so that we do not die later.  */
-	  if (DECL_CHAIN (constructor_fields) != NULL_TREE)
+	  if (DECL_CHAIN (constructor_fields) != NULL_TREE
+	      && (!p->type || TREE_CODE (p->type) != UNION_TYPE))
 	    constructor_type = NULL_TREE;
 	}
     }
@@ -12123,6 +12125,42 @@ retry:
 				   || real_zerop (value.value))))
 	    warning (OPT_Wtraditional, "traditional C rejects initialization "
 		     "of unions");
+
+	  /* Error for non-static initialization of a flexible array member.  */
+	  if (fieldcode == ARRAY_TYPE
+	      && !require_constant_value
+	      && TYPE_SIZE (fieldtype) == NULL_TREE)
+	    {
+	      error_init (loc, "non-static initialization of a flexible "
+			  "array member");
+	      break;
+	    }
+
+	  /* Error for initialization of a flexible array member with
+	     a string constant if the structure is in an array.  E.g.:
+	     union U { int x; char y[]; };
+	     union U s[] = { { 1, "foo" } };
+	     is invalid.  */
+	  if (string_flag
+	      && fieldcode == ARRAY_TYPE
+	      && constructor_depth > 1
+	      && TYPE_SIZE (fieldtype) == NULL_TREE)
+	    {
+	      bool in_array_p = false;
+	      for (struct constructor_stack *p = constructor_stack;
+		   p && p->type; p = p->next)
+		if (TREE_CODE (p->type) == ARRAY_TYPE)
+		  {
+		    in_array_p = true;
+		    break;
+		  }
+	      if (in_array_p)
+		{
+		  error_init (loc, "initialization of flexible array "
+			      "member in a nested context");
+		  break;
+		}
+	    }
 
 	  /* Accept a string constant to initialize a subarray.  */
 	  if (value.value != NULL_TREE
