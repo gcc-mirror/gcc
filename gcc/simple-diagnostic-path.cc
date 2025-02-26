@@ -41,15 +41,6 @@ simple_diagnostic_path::simple_diagnostic_path (pretty_printer *event_pp)
   add_thread ("main");
 }
 
-/* Implementation of diagnostic_path::num_events vfunc for
-   simple_diagnostic_path: simply get the number of events in the vec.  */
-
-unsigned
-simple_diagnostic_path::num_events () const
-{
-  return m_events.length ();
-}
-
 /* Implementation of diagnostic_path::get_event vfunc for
    simple_diagnostic_path: simply return the event in the vec.  */
 
@@ -57,12 +48,6 @@ const diagnostic_event &
 simple_diagnostic_path::get_event (int idx) const
 {
   return *m_events[idx];
-}
-
-unsigned
-simple_diagnostic_path::num_threads () const
-{
-  return m_threads.length ();
 }
 
 const diagnostic_thread &

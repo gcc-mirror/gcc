@@ -100,9 +100,9 @@ class simple_diagnostic_path : public diagnostic_path
  public:
   simple_diagnostic_path (pretty_printer *event_pp);
 
-  unsigned num_events () const final override;
+  unsigned num_events () const final override { return m_events.length (); }
   const diagnostic_event & get_event (int idx) const final override;
-  unsigned num_threads () const final override;
+  unsigned num_threads () const final override { return m_threads.length (); }
   const diagnostic_thread &
   get_thread (diagnostic_thread_id_t) const final override;
   bool
