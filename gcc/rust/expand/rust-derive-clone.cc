@@ -91,14 +91,17 @@ DeriveClone::clone_impl (
   std::unique_ptr<AssociatedItem> &&clone_fn, std::string name,
   const std::vector<std::unique_ptr<GenericParam>> &type_generics)
 {
-  auto clone = builder.type_path (LangItem::Kind::CLONE);
+  // we should have two of these, so we don't run into issues with
+  // two paths sharing a node id
+  auto clone_bound = builder.type_path (LangItem::Kind::CLONE);
+  auto clone_trait_path = builder.type_path (LangItem::Kind::CLONE);
 
   auto trait_items = vec (std::move (clone_fn));
 
-  auto generics
-    = setup_impl_generics (name, type_generics, builder.trait_bound (clone));
+  auto generics = setup_impl_generics (name, type_generics,
+				       builder.trait_bound (clone_bound));
 
-  return builder.trait_impl (clone, std::move (generics.self_type),
+  return builder.trait_impl (clone_trait_path, std::move (generics.self_type),
 			     std::move (trait_items),
 			     std::move (generics.impl));
 }
@@ -173,9 +176,14 @@ DeriveClone::clone_enum_identifier (PathInExpression variant_path,
 				    const std::unique_ptr<EnumItem> &variant)
 {
   auto pattern = std::unique_ptr<Pattern> (new ReferencePattern (
-    std::unique_ptr<Pattern> (new PathInExpression (variant_path)), false,
-    false, loc));
-  auto expr = std::unique_ptr<Expr> (new PathInExpression (variant_path));
+    std::unique_ptr<Pattern> (new PathInExpression (
+      variant_path.get_segments (), {}, variant_path.get_locus (),
+      variant_path.opening_scope_resolution ())),
+    false, false, loc));
+  auto expr = std::unique_ptr<Expr> (
+    new PathInExpression (variant_path.get_segments (), {},
+			  variant_path.get_locus (),
+			  variant_path.opening_scope_resolution ()));
 
   return builder.match_case (std::move (pattern), std::move (expr));
 }
@@ -206,14 +214,19 @@ DeriveClone::clone_enum_tuple (PathInExpression variant_path,
   auto pattern_items = std::unique_ptr<TupleStructItems> (
     new TupleStructItemsNoRange (std::move (patterns)));
 
-  auto pattern = std::unique_ptr<Pattern> (
-    new ReferencePattern (std::unique_ptr<Pattern> (new TupleStructPattern (
-			    variant_path, std::move (pattern_items))),
-			  false, false, loc));
+  auto pattern = std::unique_ptr<Pattern> (new ReferencePattern (
+    std::unique_ptr<Pattern> (new TupleStructPattern (
+      PathInExpression (variant_path.get_segments (), {},
+			variant_path.get_locus (),
+			variant_path.opening_scope_resolution ()),
+      std::move (pattern_items))),
+    false, false, loc));
 
-  auto expr
-    = builder.call (std::unique_ptr<Expr> (new PathInExpression (variant_path)),
-		    std::move (cloned_patterns));
+  auto expr = builder.call (std::unique_ptr<Expr> (new PathInExpression (
+			      variant_path.get_segments (), {},
+			      variant_path.get_locus (),
+			      variant_path.opening_scope_resolution ())),
+			    std::move (cloned_patterns));
 
   return builder.match_case (std::move (pattern), std::move (expr));
 }

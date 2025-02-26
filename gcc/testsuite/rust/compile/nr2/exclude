@@ -5,7 +5,6 @@ const_generics_3.rs
 const_generics_4.rs
 feature_rust_attri0.rs
 generics9.rs
-issue-1483.rs
 issue-1901.rs
 issue-1981.rs
 issue-2043.rs
@@ -34,14 +33,9 @@ undeclared_label.rs
 use_1.rs
 while_break_expr.rs
 issue-3139-2.rs
-issue-2953-2.rs
 issue-2905-2.rs
 issue-266.rs
-derive_clone_enum1.rs
-derive_clone_enum2.rs
 derive_clone_enum3.rs
-issue-3139-1.rs
-issue-3139-3.rs
 derive-debug1.rs
 derive-default1.rs
 issue-3402-1.rs

@@ -472,6 +472,8 @@ void
 Resolver::insert_resolved_name (NodeId refId, NodeId defId)
 {
   rust_assert (!flag_name_resolution_2_0);
+  rust_assert (resolved_names.find (refId) == resolved_names.end ());
+
   resolved_names[refId] = defId;
   get_name_scope ().append_reference_for_def (refId, defId);
   insert_captured_item (defId);
@@ -492,9 +494,8 @@ Resolver::lookup_resolved_name (NodeId refId, NodeId *defId)
 void
 Resolver::insert_resolved_type (NodeId refId, NodeId defId)
 {
-  // auto it = resolved_types.find (refId);
-  // rust_assert (it == resolved_types.end ());
   rust_assert (!flag_name_resolution_2_0);
+  rust_assert (resolved_types.find (refId) == resolved_types.end ());
 
   resolved_types[refId] = defId;
   get_type_scope ().append_reference_for_def (refId, defId);
