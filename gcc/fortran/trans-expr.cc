@@ -6999,6 +6999,12 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  if ((fsym && fsym->attr.value)
 	      || (ulim_copy && (argc == 2 || argc == 3)))
 	    gfc_conv_expr (&parmse, e);
+	  else if (e->expr_type == EXPR_ARRAY)
+	    {
+	      gfc_conv_expr (&parmse, e);
+	      if (e->ts.type != BT_CHARACTER)
+		parmse.expr = gfc_build_addr_expr (NULL_TREE, parmse.expr);
+	    }
 	  else
 	    gfc_conv_expr_reference (&parmse, e);
 
@@ -7930,11 +7936,11 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  /* It is known the e returns a structure type with at least one
 	     allocatable component.  When e is a function, ensure that the
 	     function is called once only by using a temporary variable.  */
-	  if (!DECL_P (parmse.expr))
+	  if (!DECL_P (parmse.expr) && e->expr_type == EXPR_FUNCTION)
 	    parmse.expr = gfc_evaluate_now_loc (input_location,
 						parmse.expr, &se->pre);
 
-	  if (fsym && fsym->attr.value)
+	  if ((fsym && fsym->attr.value) || e->expr_type == EXPR_ARRAY)
 	    tmp = parmse.expr;
 	  else
 	    tmp = build_fold_indirect_ref_loc (input_location,
@@ -7993,7 +7999,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      /* Scalars passed to an assumed rank argument are converted to
 		 a descriptor. Obtain the data field before deallocating any
 		 allocatable components.  */
-	      if (parm_rank == 0 && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
+	      if (parm_rank == 0 && e->expr_type != EXPR_ARRAY
+		  && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
 		tmp = gfc_conv_descriptor_data_get (tmp);
 
 	      if (scalar_res_outside_loop)

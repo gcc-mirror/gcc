@@ -2002,13 +2002,10 @@ gfc_trans_array_ctor_element (stmtblock_t * pblock, tree desc,
 
   if (expr->expr_type == EXPR_FUNCTION && expr->ts.type == BT_DERIVED
       && expr->ts.u.derived->attr.alloc_comp)
-    {
-      if (!VAR_P (se->expr))
-	se->expr = gfc_evaluate_now (se->expr, &se->pre);
-      gfc_add_expr_to_block (&se->finalblock,
-			     gfc_deallocate_alloc_comp_no_caf (
-			       expr->ts.u.derived, se->expr, expr->rank, true));
-    }
+    gfc_add_expr_to_block (&se->finalblock,
+			   gfc_deallocate_alloc_comp_no_caf (expr->ts.u.derived,
+							     tmp, expr->rank,
+							     true));
 
   if (expr->ts.type == BT_CHARACTER)
     {
