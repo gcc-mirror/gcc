@@ -1,3 +1,64 @@
+2025-02-25  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/bits/algorithmfwd.h (stable_sort): Add constexpr.
+	* include/bits/ranges_algo.h (__stable_sort_fn): Add constexpr
+	to the function call operators.
+	* include/bits/stl_algo.h (__stable_sort): Add constexpr.
+	During constant evaluation, always use the non-allocating path.
+	(stable_sort): Add constexpr.
+	(__inplace_stable_sort): Likewise.
+	(__merge_without_buffer): Likewise.
+	* include/bits/version.def (constexpr_algorithms): Bump value
+	for C++26.
+	* include/bits/version.h: Regnerate.
+	* testsuite/25_algorithms/cpp_lib_constexpr.cc: Test the bumped
+	feature-testing macro.
+	* testsuite/25_algorithms/headers/algorithm/synopsis.cc: Adapt
+	the test to constexpr stable_sort.
+	* testsuite/25_algorithms/stable_sort/constexpr.cc: New test.
+
+2025-02-25  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/bits/c++config (_GLIBCXX26_CONSTEXPR): New macro.
+
+2025-02-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93059
+	* include/bits/stl_algobase.h (__fill_a1): Fix typo in SFINAE
+	constraint.
+
+2025-02-25  François Dumont  <frs.dumont@gmail.com>
+
+	* include/bits/hashtable_policy.h
+	(_Hash_code_base::_M_copy_code, _Hash_code_base::_M_store_code): Remove.
+	* include/bits/hashtable.h (_M_hash_code_ext): New.
+	(_M_merge_multi(_Hashtable&)): Use latter.
+	(_M_copy_code): New.
+	(_M_assign): Use latter.
+	(_M_bucket_index_ex): New.
+	(_M_equals): Use latter.
+	(_M_store_code): New.
+	(_M_src_hash_code): Remove key_type parameter.
+	* testsuite/23_containers/unordered_map/modifiers/merge.cc (test10): New
+	test case.
+
+2025-02-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/118083
+	* include/bits/ranges_base.h
+	(ranges::__access::__possibly_const_range): Adjust logic as per
+	LWG 4027.  Add missing input_range constraint.
+	* testsuite/std/ranges/access/cbegin.cc (test05): Verify LWG
+	4027 testcases.
+	* testsuite/std/ranges/access/cdata.cc: Adjust, simplify and
+	consolidate some tests after the above.
+	* testsuite/std/ranges/access/cend.cc: Likewise.
+	* testsuite/std/ranges/access/crbegin.cc: Likewise.
+	* testsuite/std/ranges/access/crend.cc: Likewise.
+	* testsuite/std/ranges/adaptors/join.cc: Likewise.
+	* testsuite/std/ranges/adaptors/take_while.cc: Likewise.
+	* testsuite/std/ranges/adaptors/transform.cc: Likewise.
+
 2025-02-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/118981

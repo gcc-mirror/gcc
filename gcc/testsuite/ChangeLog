@@ -1,3 +1,36 @@
+2025-02-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/115028
+	* gcc.target/i386/pr101950-2.c: Use a pointer argument instead
+	of the argument directly.
+
+2025-02-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/115458
+	* g++.target/riscv/pr115458.C: New.
+
+2025-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/118654
+	* gdc.dg/target/i386/i386.exp: New test.
+	* gdc.dg/target/i386/targetinfo_CET.d: New test.
+
+2025-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119000
+	* c-c++-common/gomp/pr119000.c: New test.
+
+2025-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118876
+	* g++.dg/gomp/pr118876.C: New test.
+
+2025-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118923
+	* g++.dg/cpp0x/pr118923.C: New test.
+	* g++.dg/cpp1y/pr118923.C: New test.
+
 2025-02-24  Robin Dapp  <rdapp@ventanamicro.com>
 
 	PR target/114516

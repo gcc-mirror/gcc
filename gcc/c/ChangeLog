@@ -1,3 +1,10 @@
+2025-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119000
+	* c-parser.cc (c_parser_omp_atomic): For omp write call
+	default_function_array_read_conversion on the rhs expression.
+	Merge the two adjacent if (code == NOP_EXPR) blocks.
+
 2025-02-11  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* c-parser.cc (c_finish_omp_declare_variant): Update call to

@@ -1,3 +1,20 @@
+2025-02-25  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* coarray.cc (fixup_comp_refs): For class types set correct
+	component (class) type.
+	(split_expr_at_caf_ref): Provide location.
+	* trans-intrinsic.cc (conv_caf_send_to_remote): Look at
+	generated formal argument and not declared one to detect
+	descriptor arrays.
+	(conv_caf_sendget): Same.
+
+2025-02-25  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* trans-intrinsic.cc (conv_caf_sendget): Use the size of data
+	transferred between the two images and not the descritor's size.
+
 2025-02-21  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/48958

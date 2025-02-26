@@ -1,3 +1,31 @@
+2025-02-25  Jason Merrill  <jason@redhat.com>
+
+	* doc/install.texi: 10.5 won't bootstrap with C++98.
+
+2025-02-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/115458
+	* lra-int.h (LRA_MAX_FAILED_SPLITS): Define and check its value.
+	(lra_split_hard_reg_for): Change prototype.
+	* lra.cc (lra): Try to split hard reg range several times after a
+	failure.
+	* lra-assigns.cc (lra_split_hard_reg_for): Add an arg, a flag of
+	giving up.  Report asm error and nullify the asm insn depending on
+	the arg value.
+
+2025-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/118991
+	* config/pru/pru-pragma.cc (pru_pragma_ctable_entry): Use %wd
+	instead of %" HOST_WIDE_INT_PRINT "d to print a hwi in error.
+
+2025-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/118654
+	* config/i386/i386-d.cc (ix86_d_target_versions): Predefine GNU_CET.
+	(ix86_d_handle_target_cf_protection): New.
+	(ix86_d_register_target_info): Add 'CET' TargetInfo key.
+
 2025-02-24  Robin Dapp  <rdapp@ventanamicro.com>
 
 	PR target/114516

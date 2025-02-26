@@ -1,3 +1,12 @@
+2025-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/118654
+	* implement-d.texi: Document CET version and traits key.
+
+2025-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (check_gdc_parallelize): Increase to 128.
+
 2025-01-29  Arsen Arsenović  <arsen@aarsen.me>
 	    Jakub Jelinek  <jakub@redhat.com>
 
