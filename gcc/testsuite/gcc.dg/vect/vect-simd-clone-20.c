@@ -1,5 +1,7 @@
+/* { dg-do-if compile { target { sse2_runtime && { ! sse4_runtime } } } } */
 /* { dg-require-effective-target vect_simd_clones } */
 /* { dg-additional-options "-fopenmp-simd --param vect-epilogues-nomask=0" } */
+/* { dg-additional-options "-msse4" { target sse4 } } */
 /* { dg-additional-options "-mavx" { target avx_runtime } } */
 
 /* Test that simd inbranch clones work correctly.  */
@@ -80,8 +82,8 @@ main ()
 }
 
 /* Ensure the the in-branch simd clones are used on targets that support them.  */
-/* { dg-final { scan-tree-dump-times {[\n\r] [^\n]* = foo\.simdclone} 2 "vect" { target { aarch64*-*-* } } } } */
-/* { dg-final { scan-tree-dump-times {[\n\r] [^\n]* = foo\.simdclone} 4 "vect" { target { x86_64*-*-* } } } } */
+/* { dg-final { scan-tree-dump-times {[\n\r] [^\n]* = foo\.simdclone} 2 "vect" { target { aarch64*-*-* || { sse4 && { ! avx_runtime } } } } } } */
+/* { dg-final { scan-tree-dump-times {[\n\r] [^\n]* = foo\.simdclone} 4 "vect" { target { avx_runtime } } } } */
 
 /* The LTO test produces two dump files and we scan the wrong one.  */
 /* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */

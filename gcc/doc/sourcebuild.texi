@@ -1128,6 +1128,11 @@ by the specified floating-point factor.
 @subsubsection Skip a test for some targets
 
 @table @code
+@item @{ dg-do-if @var{action} @{ @var{selector} @} @}
+Same as dg-do if the selector matches and the test hasn't already been
+marked as unsupported.  Use it to override an action on a target while
+leaving the default action alone for other targets.
+
 @item @{ dg-skip-if @var{comment} @{ @var{selector} @} [@{ @var{include-opts} @} [@{ @var{exclude-opts} @}]] @}
 Arguments @var{include-opts} and @var{exclude-opts} are lists in which
 each element is a string of zero or more GCC options.

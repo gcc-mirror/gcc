@@ -393,6 +393,35 @@ proc check-flags { args } {
     return $result
 }
 
+# Override dg-do action on target, without setting the test as
+# unsupported on other targets.  Multiple such overriders can be
+# present.  If the test is already marked as unsupported, it has no
+# effect.  Otherwise, if the target selector matches, call dg-do,
+# otherwise leave dg-do-what alone, so that any earlier setting
+# (possibly the default) prevails.
+
+proc dg-do-if { args } {
+    set args [lreplace $args 0 0]
+    # Verify the number of arguments.
+    if { [llength $args] != 2 } {
+	error "syntax error, need a single action and target selector"
+    }
+
+    # Don't bother if we're already skipping the test.
+    upvar dg-do-what dg-do-what
+    if { [lindex ${dg-do-what} 1] == "N" } {
+	return
+    }
+    
+    # Evaluate selector, return if it does not match.
+    switch [dg-process-target-1 [lindex $args 1]] {
+	"N" { return }
+	"P" { return }
+    }
+
+    eval dg-do $args
+}
+
 # Skip the test (report it as UNSUPPORTED) if the target list and
 # included flags are matched and the excluded flags are not matched.
 #
