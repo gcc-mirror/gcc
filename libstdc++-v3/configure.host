@@ -61,6 +61,10 @@
 #
 # It possibly modifies the following variables:
 #
+#   EXTRA_CFLAGS           extra flags to pass when compiling C code
+#
+#   EXTRA_CXX_FLAGS        extra flags to pass when compiling C++ code
+#
 #   OPT_LDFLAGS            extra flags to pass when linking the library, of
 #                          the form '-Wl,blah'
 #                          (defaults to empty in acinclude.m4)

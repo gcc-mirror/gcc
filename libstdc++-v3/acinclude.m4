@@ -3267,9 +3267,11 @@ AC_DEFUN([GLIBCXX_ENABLE_CXX_FLAGS], [dnl
 	     AC_MSG_ERROR([compiler flags start with a -]) ;;
       esac
     done
+
+    # Append the additional flags to any that came from 'configure.host'.
+    EXTRA_CXX_FLAGS="$EXTRA_CXX_FLAGS $enable_cxx_flags"
   fi
 
-  EXTRA_CXX_FLAGS="$enable_cxx_flags"
   AC_MSG_RESULT($EXTRA_CXX_FLAGS)
   AC_SUBST(EXTRA_CXX_FLAGS)
 ])

@@ -19450,9 +19450,11 @@ fi
 	     as_fn_error $? "compiler flags start with a -" "$LINENO" 5 ;;
       esac
     done
+
+    # Append the additional flags to any that came from 'configure.host'.
+    EXTRA_CXX_FLAGS="$EXTRA_CXX_FLAGS $enable_cxx_flags"
   fi
 
-  EXTRA_CXX_FLAGS="$enable_cxx_flags"
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $EXTRA_CXX_FLAGS" >&5
 $as_echo "$EXTRA_CXX_FLAGS" >&6; }
 
