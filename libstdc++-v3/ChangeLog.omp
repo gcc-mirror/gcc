@@ -1,6 +1,14 @@
 2025-03-19  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-03-13  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_CXX_FLAGS): Append to
+	'EXTRA_CXX_FLAGS' any additional flags.
+	* configure: Regenerate.
+	* configure.host: Document 'EXTRA_CFLAGS', 'EXTRA_CXX_FLAGS'.
+
+	Backported from trunk:
 	2025-03-06  Jonathan Wakely  <jwakely@redhat.com>
 		    Thomas Schwinge  <tschwinge@baylibre.com>
 
