@@ -11486,3 +11486,26 @@ and,
       }
       (if (full_perm_p)
 	(vec_perm (op@3 @0 @1) @3 @2))))))
+
+#if GIMPLE
+/* Simplify (a >> 1) + (b >> 1) + ((a | b) & 1) to .AVG_CEIL (a, b).
+   Similar for (a | b) - ((a ^ b) >> 1).  */
+
+(simplify
+  (plus:c
+    (plus (rshift @0 integer_onep@1) (rshift @2 @1))
+    (bit_and (bit_ior @0 @2) integer_onep@3))
+  (if (cfun && (cfun->curr_properties & PROP_last_full_fold) != 0
+      && VECTOR_TYPE_P (type)
+      && direct_internal_fn_supported_p (IFN_AVG_CEIL, type, OPTIMIZE_FOR_BOTH))
+      (IFN_AVG_CEIL @0 @2)))
+
+(simplify
+  (minus
+    (bit_ior @0 @2)
+    (rshift (bit_xor @0 @2) integer_onep@1))
+  (if (cfun && (cfun->curr_properties & PROP_last_full_fold) != 0
+      && VECTOR_TYPE_P (type)
+      && direct_internal_fn_supported_p (IFN_AVG_CEIL, type, OPTIMIZE_FOR_BOTH))
+      (IFN_AVG_CEIL @0 @2)))
+#endif
