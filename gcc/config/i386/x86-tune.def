@@ -87,7 +87,8 @@ DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY,
    several insns to break false dependency on the dest register for GLC
    micro-architecture.  */
 DEF_TUNE (X86_TUNE_DEST_FALSE_DEP_FOR_GLC,
-	  "dest_false_dep_for_glc", m_SAPPHIRERAPIDS | m_CORE_HYBRID
+	  "dest_false_dep_for_glc", m_SAPPHIRERAPIDS | m_GRANITERAPIDS
+	  | m_GRANITERAPIDS_D | m_DIAMONDRAPIDS | m_CORE_HYBRID
 	  | m_CORE_ATOM)
 
 /* X86_TUNE_SSE_SPLIT_REGS: Set for machines where the type and dependencies
@@ -527,7 +528,8 @@ DEF_TUNE (X86_TUNE_AVOID_128FMA_CHAINS, "avoid_fma_chains", m_ZNVER
    smaller FMA chain.  */
 DEF_TUNE (X86_TUNE_AVOID_256FMA_CHAINS, "avoid_fma256_chains",
 	  m_ZNVER2 | m_ZNVER3 | m_ZNVER4 | m_ZNVER5 | m_CORE_HYBRID
-	  | m_SAPPHIRERAPIDS | m_CORE_ATOM | m_GENERIC)
+	  | m_SAPPHIRERAPIDS | m_GRANITERAPIDS | m_GRANITERAPIDS_D
+	  | m_DIAMONDRAPIDS | m_CORE_ATOM | m_GENERIC)
 
 /* X86_TUNE_AVOID_512FMA_CHAINS: Avoid creating loops with tight 512bit or
    smaller FMA chain.  */
@@ -594,12 +596,14 @@ DEF_TUNE (X86_TUNE_AVX256_STORE_BY_PIECES, "avx256_store_by_pieces",
 /* X86_TUNE_AVX512_MOVE_BY_PIECES: Optimize move_by_pieces with 512-bit
    AVX instructions.  */
 DEF_TUNE (X86_TUNE_AVX512_MOVE_BY_PIECES, "avx512_move_by_pieces",
-	  m_SAPPHIRERAPIDS | m_ZNVER4 | m_ZNVER5)
+	  m_SAPPHIRERAPIDS | m_GRANITERAPIDS | m_GRANITERAPIDS_D
+	  | m_DIAMONDRAPIDS | m_ZNVER4 | m_ZNVER5)
 
 /* X86_TUNE_AVX512_STORE_BY_PIECES: Optimize store_by_pieces with 512-bit
    AVX instructions.  */
 DEF_TUNE (X86_TUNE_AVX512_STORE_BY_PIECES, "avx512_store_by_pieces",
-	  m_SAPPHIRERAPIDS | m_ZNVER4 | m_ZNVER5)
+	  m_SAPPHIRERAPIDS | m_GRANITERAPIDS | m_GRANITERAPIDS_D
+	  | m_DIAMONDRAPIDS | m_ZNVER4 | m_ZNVER5)
 
 /* X86_TUNE_AVX512_TWO_EPILOGUES: Use two vector epilogues for 512-bit
    vectorized loops.  */
