@@ -3,6 +3,11 @@
 	Backported from trunk:
 	2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* gcc.target/nvptx/stack_frame-1.c: New.
+
+	Backported from trunk:
+	2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* gcc.target/nvptx/alloca-1-O0_-mfake-ptx-alloca.c: New.
 	* gcc.target/nvptx/alloca-2-O0_-mfake-ptx-alloca.c: Likewise.
 	* gcc.target/nvptx/alloca-4-O3_-mfake-ptx-alloca.c: Likewise.
