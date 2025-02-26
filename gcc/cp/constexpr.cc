@@ -3388,16 +3388,22 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 
 	    /* Rewrite all occurrences of the function's RESULT_DECL with the
 	       current object under construction.  */
-	    if (!*non_constant_p && ctx->object
+	    if (!*non_constant_p
+		&& ctx->object
 		&& CLASS_TYPE_P (TREE_TYPE (res))
 		&& !is_empty_class (TREE_TYPE (res)))
-	      if (replace_decl (&result, res, ctx->object))
-		{
-		  cacheable = false;
-		  result = cxx_eval_constant_expression (ctx, result, lval,
-							 non_constant_p,
-							 overflow_p);
-		}
+	      {
+		if (!same_type_ignoring_top_level_qualifiers_p
+		    (TREE_TYPE (res), TREE_TYPE (ctx->object)))
+		  *non_constant_p = true;
+		else if (replace_decl (&result, res, ctx->object))
+		  {
+		    cacheable = false;
+		    result = cxx_eval_constant_expression (ctx, result, lval,
+							   non_constant_p,
+							   overflow_p);
+		  }
+	      }
 
 	  /* Only cache a permitted result of a constant expression.  */
 	  if (cacheable && !reduced_constant_expression_p (result))
@@ -9605,7 +9611,12 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
   if (TREE_CODE (t) == CONVERT_EXPR
       && VOID_TYPE_P (TREE_TYPE (t)))
     t = TREE_OPERAND (t, 0);
-  if (TREE_CODE (t) == INIT_EXPR)
+  /* If the types don't match, the INIT_EXPR is initializing a subobject of
+     DECL and losing that information would cause mischief later.  */
+  if (TREE_CODE (t) == INIT_EXPR
+      && (!decl
+	  || same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (decl),
+							TREE_TYPE (t))))
     t = TREE_OPERAND (t, 1);
   if (TREE_CODE (t) == TARGET_EXPR)
     t = TARGET_EXPR_INITIAL (t);
