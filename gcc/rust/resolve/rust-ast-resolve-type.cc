@@ -249,14 +249,28 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	    = CanonicalPath::new_seg (segment->get_node_id (), ident_string);
 	  if (resolver->get_type_scope ().lookup (path, &resolved_node))
 	    {
-	      resolver->insert_resolved_type (segment->get_node_id (),
-					      resolved_node);
+	      NodeId existing = UNKNOWN_NODEID;
+	      bool ok = resolver->lookup_resolved_type (segment->get_node_id (),
+							&existing);
+
+	      if (ok)
+		rust_assert (existing == resolved_node);
+	      else
+		resolver->insert_resolved_type (segment->get_node_id (),
+						resolved_node);
 	      resolved_node_id = resolved_node;
 	    }
 	  else if (resolver->get_name_scope ().lookup (path, &resolved_node))
 	    {
-	      resolver->insert_resolved_name (segment->get_node_id (),
-					      resolved_node);
+	      NodeId existing = UNKNOWN_NODEID;
+	      bool ok = resolver->lookup_resolved_name (segment->get_node_id (),
+							&existing);
+
+	      if (ok)
+		rust_assert (existing == resolved_node);
+	      else
+		resolver->insert_resolved_name (segment->get_node_id (),
+						resolved_node);
 	      resolved_node_id = resolved_node;
 	    }
 	  else if (!segment->is_lang_item () && segment->is_lower_self_seg ())
@@ -264,8 +278,16 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 	      // what is the current crate scope node id?
 	      module_scope_id = crate_scope_id;
 	      previous_resolved_node_id = module_scope_id;
-	      resolver->insert_resolved_name (segment->get_node_id (),
-					      module_scope_id);
+
+	      NodeId existing = UNKNOWN_NODEID;
+	      bool ok = resolver->lookup_resolved_name (segment->get_node_id (),
+							&existing);
+
+	      if (ok)
+		rust_assert (existing == module_scope_id);
+	      else
+		resolver->insert_resolved_name (segment->get_node_id (),
+						module_scope_id);
 
 	      continue;
 	    }
@@ -283,15 +305,33 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
 		    resolved_node))
 		{
 		  resolved_node_id = resolved_node;
-		  resolver->insert_resolved_name (segment->get_node_id (),
-						  resolved_node);
+
+		  NodeId existing = UNKNOWN_NODEID;
+		  bool ok
+		    = resolver->lookup_resolved_name (segment->get_node_id (),
+						      &existing);
+
+		  if (ok)
+		    rust_assert (existing == resolved_node);
+		  else
+		    resolver->insert_resolved_name (segment->get_node_id (),
+						    resolved_node);
 		}
 	      else if (resolver->get_type_scope ().decl_was_declared_here (
 			 resolved_node))
 		{
 		  resolved_node_id = resolved_node;
-		  resolver->insert_resolved_type (segment->get_node_id (),
-						  resolved_node);
+
+		  NodeId existing = UNKNOWN_NODEID;
+		  bool ok
+		    = resolver->lookup_resolved_type (segment->get_node_id (),
+						      &existing);
+
+		  if (ok)
+		    rust_assert (existing == resolved_node);
+		  else
+		    resolver->insert_resolved_type (segment->get_node_id (),
+						    resolved_node);
 		}
 	      else
 		{
@@ -327,15 +367,29 @@ ResolveRelativeTypePath::go (AST::TypePath &path, NodeId &resolved_node_id)
       // name scope first
       if (resolver->get_name_scope ().decl_was_declared_here (resolved_node_id))
 	{
-	  resolver->insert_resolved_name (path.get_node_id (),
-					  resolved_node_id);
+	  NodeId existing = UNKNOWN_NODEID;
+	  bool ok
+	    = resolver->lookup_resolved_name (path.get_node_id (), &existing);
+
+	  if (ok)
+	    rust_assert (existing == resolved_node_id);
+	  else
+	    resolver->insert_resolved_name (path.get_node_id (),
+					    resolved_node_id);
 	}
       // check the type scope
       else if (resolver->get_type_scope ().decl_was_declared_here (
 		 resolved_node_id))
 	{
-	  resolver->insert_resolved_type (path.get_node_id (),
-					  resolved_node_id);
+	  NodeId existing = UNKNOWN_NODEID;
+	  bool ok
+	    = resolver->lookup_resolved_type (path.get_node_id (), &existing);
+
+	  if (ok)
+	    rust_assert (existing == resolved_node_id);
+	  else
+	    resolver->insert_resolved_type (path.get_node_id (),
+					    resolved_node_id);
 	}
       else
 	{

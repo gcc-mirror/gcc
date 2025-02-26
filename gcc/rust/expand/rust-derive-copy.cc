@@ -42,13 +42,16 @@ DeriveCopy::copy_impl (
   std::string name,
   const std::vector<std::unique_ptr<GenericParam>> &type_generics)
 {
-  auto copy = builder.type_path (LangItem::Kind::COPY);
+  // we should have two of these, so we don't run into issues with
+  // two paths sharing a node id
+  auto copy_bound = builder.type_path (LangItem::Kind::COPY);
+  auto copy_trait_path = builder.type_path (LangItem::Kind::COPY);
 
-  auto generics
-    = setup_impl_generics (name, type_generics, builder.trait_bound (copy));
+  auto generics = setup_impl_generics (name, type_generics,
+				       builder.trait_bound (copy_bound));
 
-  return builder.trait_impl (copy, std::move (generics.self_type), {},
-			     std::move (generics.impl));
+  return builder.trait_impl (copy_trait_path, std::move (generics.self_type),
+			     {}, std::move (generics.impl));
 }
 
 void

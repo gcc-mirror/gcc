@@ -2124,13 +2124,26 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
       auto &nr_ctx = const_cast<Resolver2_0::NameResolutionContext &> (
 	Resolver2_0::ImmutableNameResolutionContext::get ().resolver ());
 
-      nr_ctx.map_usage (Resolver2_0::Usage (expr.get_mappings ().get_nodeid ()),
-			Resolver2_0::Definition (resolved_node_id));
+      auto existing = nr_ctx.lookup (expr.get_mappings ().get_nodeid ());
+      if (existing)
+	rust_assert (*existing == resolved_node_id);
+      else
+	nr_ctx.map_usage (Resolver2_0::Usage (
+			    expr.get_mappings ().get_nodeid ()),
+			  Resolver2_0::Definition (resolved_node_id));
     }
   else
     {
-      resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
-				      resolved_node_id);
+      NodeId existing = UNKNOWN_NODEID;
+      bool ok
+	= resolver->lookup_resolved_name (expr.get_mappings ().get_nodeid (),
+					  &existing);
+
+      if (ok)
+	rust_assert (existing == resolved_node_id);
+      else
+	resolver->insert_resolved_name (expr.get_mappings ().get_nodeid (),
+					resolved_node_id);
     }
 
   // return the result of the function back

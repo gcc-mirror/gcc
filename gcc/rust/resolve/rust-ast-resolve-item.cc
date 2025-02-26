@@ -903,7 +903,18 @@ flatten_list (const AST::UseTreeList &list, std::vector<Import> &imports)
 
       for (auto import = imports.begin () + start_idx; import != imports.end ();
 	   import++)
-	import->add_prefix (prefix);
+	{
+	  // avoid duplicate node ids
+	  auto prefix_copy
+	    = AST::SimplePath ({}, prefix.has_opening_scope_resolution (),
+			       prefix.get_locus ());
+	  for (auto &seg : prefix.get_segments ())
+	    prefix_copy.get_segments ().push_back (
+	      AST::SimplePathSegment (seg.get_segment_name (),
+				      seg.get_locus ()));
+
+	  import->add_prefix (std::move (prefix_copy));
+	}
     }
 }
 
