@@ -5,6 +5,7 @@ int*
 foo (int* mem, int beg, int end, int val)
 {
   int i;
+#pragma GCC novector
   for (i = beg; i < end; i++)
     if (mem[i] == val) 
       return &mem[i];
