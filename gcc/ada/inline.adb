@@ -4077,6 +4077,7 @@ package body Inline is
             --  Replace call with temporary and create its declaration
 
             Temp := Make_Temporary (Loc, 'C');
+            Mutate_Ekind (Temp, E_Constant);
             Set_Is_Internal (Temp);
 
             --  For the unconstrained case, the generated temporary has the

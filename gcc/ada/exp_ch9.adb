@@ -4273,6 +4273,7 @@ package body Exp_Ch9 is
                    Defining_Identifier => Obj,
                    Object_Definition   => New_Occurrence_Of (Conctyp, Loc),
                    Expression          => ExpR);
+               Mutate_Ekind (Obj, E_Variable);
                Set_Etype (Obj, Conctyp);
                Decls := New_List (Decl);
                Rewrite (Concval, New_Occurrence_Of (Obj, Loc));

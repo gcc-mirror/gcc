@@ -2422,6 +2422,7 @@ package body Contracts is
             --  verify the return value.
 
             Result := Make_Defining_Identifier (Loc, Name_uResult);
+            Mutate_Ekind (Result, E_Constant);
             Set_Etype (Result, Typ);
 
             --  Add an invariant check when the return type has invariants and

@@ -570,12 +570,16 @@ package body Exp_Fixd is
       --  Case where we can compute the denominator in Max_Integer_Size bits
 
       if QR_Id = RE_Null then
+         Mutate_Ekind (Qnn, E_Constant);
+         Mutate_Ekind (Rnn, E_Constant);
 
          --  Create temporaries for numerator and denominator and set Etypes,
          --  so that New_Occurrence_Of picks them up for Build_xxx calls.
 
          Nnn := Make_Temporary (Loc, 'N');
+         Mutate_Ekind (Nnn, E_Constant);
          Dnn := Make_Temporary (Loc, 'D');
+         Mutate_Ekind (Dnn, E_Constant);
 
          Set_Etype (Nnn, QR_Typ);
          Set_Etype (Dnn, QR_Typ);
@@ -621,6 +625,8 @@ package body Exp_Fixd is
       --  to call the runtime routine to compute the quotient and remainder.
 
       else
+         Mutate_Ekind (Qnn, E_Variable);
+         Mutate_Ekind (Rnn, E_Variable);
          Rnd := Boolean_Literals (Rounded_Result_Set (N));
 
          Code := New_List (
@@ -935,8 +941,13 @@ package body Exp_Fixd is
       --  Case where we can compute the numerator in Max_Integer_Size bits
 
       if QR_Id = RE_Null then
+         Mutate_Ekind (Qnn, E_Constant);
+         Mutate_Ekind (Rnn, E_Constant);
+
          Nnn := Make_Temporary (Loc, 'N');
+         Mutate_Ekind (Nnn, E_Constant);
          Dnn := Make_Temporary (Loc, 'D');
+         Mutate_Ekind (Dnn, E_Constant);
 
          --  Set Etypes, so that they can be picked up by New_Occurrence_Of
 
@@ -982,6 +993,9 @@ package body Exp_Fixd is
       --  to call the runtime routine to compute the quotient and remainder.
 
       else
+         Mutate_Ekind (Qnn, E_Variable);
+         Mutate_Ekind (Rnn, E_Variable);
+
          Rnd := Boolean_Literals (Rounded_Result_Set (N));
 
          Code := New_List (
