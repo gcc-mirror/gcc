@@ -77,6 +77,8 @@
 #define LONG_LONG_TYPE_SIZE 64
 #define TARGET_SUPPORTS_WIDE_INT 1
 
+#define MAX_FIXED_MODE_SIZE 128
+
 #undef SIZE_TYPE
 #define SIZE_TYPE (TARGET_ABI64 ? "long unsigned int" : "unsigned int")
 #undef PTRDIFF_TYPE
