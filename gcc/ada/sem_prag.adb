@@ -23717,6 +23717,8 @@ package body Sem_Prag is
 
                Analyze_If_Present (Pragma_SPARK_Mode);
                Analyze_If_Present (Pragma_Volatile_Function);
+               Analyze_If_Present (Pragma_Global);
+               Analyze_If_Present (Pragma_Depends);
                Analyze_Program_Exit_In_Decl_Part (N);
             end if;
          end Program_Exit;
@@ -28425,6 +28427,46 @@ package body Sem_Prag is
 
       Errors        : Nat;
       Restore_Scope : Boolean := False;
+      Unused        : Boolean;
+
+      Subp_Inputs, Subp_Outputs : Elist_Id := No_Elist;
+      --  Inputs and outputs of the subprogram
+
+      function Check_Reference (N : Node_Id) return Traverse_Result;
+      --  Check references to objects within the Program_Exit expression
+
+      ---------------------
+      -- Check_Reference --
+      ---------------------
+
+      function Check_Reference (N : Node_Id) return Traverse_Result is
+      begin
+          --  If an output of a subprogram with side effects is mentioned
+          --  in the boolean expression of its aspect Program_Exit, then it
+          --  shall either occur inside the prefix of a reference to the Old
+          --  attribute or be a stand-alone object.
+
+         if Is_Attribute_Old (N) then
+            return Skip;
+         end if;
+
+         if Is_Entity_Name (N) then
+            declare
+               E : constant Entity_Id := Entity (N);
+            begin
+               if Appears_In (Subp_Outputs, E)
+                 and then Ekind (E) not in E_Constant | E_Variable
+               then
+                  Error_Msg_NE
+                    ("reference to subprogram output & in Program_Exit", N, E);
+               end if;
+            end;
+         end if;
+
+         return OK;
+      end Check_Reference;
+
+      procedure Check_Exit_References is new Traverse_Proc (Check_Reference);
 
    --  Start of processing for Analyze_Pre_Post_Condition_In_Decl_Part
 
@@ -28474,6 +28516,15 @@ package body Sem_Prag is
 
          Preanalyze_And_Resolve_Assert_Expression
            (Expression (Arg1), Any_Boolean);
+
+         Collect_Subprogram_Inputs_Outputs
+           (Spec_Id,
+            Synthesize   => True,
+            Subp_Inputs  => Subp_Inputs,
+            Subp_Outputs => Subp_Outputs,
+            Global_Seen  => Unused);
+
+         Check_Exit_References (Expression (Arg1));
 
          --  Emit a clarification message when the expression contains at least
          --  one undefined reference, possibly due to contract freezing.
