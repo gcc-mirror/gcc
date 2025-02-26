@@ -549,7 +549,7 @@ lra_asm_insn_error (rtx_insn *insn)
   if (JUMP_P (insn))
     {
       ira_nullify_asm_goto (insn);
-      lra_update_insn_regno_info (insn);
+      lra_invalidate_insn_data (insn);
     }
   else
     {

@@ -1856,11 +1856,6 @@ lra_split_hard_reg_for (bool fail_p)
 	  {
 	    asm_p = true;
 	    lra_asm_insn_error (insn);
-	    if (JUMP_P (insn))
-	      ira_nullify_asm_goto (insn);
-	    else
-	      PATTERN (insn) = gen_rtx_USE (VOIDmode, const0_rtx);
-	    lra_invalidate_insn_data (insn);
 	  }
 	else if (!asm_p)
 	  {
