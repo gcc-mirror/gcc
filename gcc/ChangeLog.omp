@@ -3,6 +3,11 @@
 	Backported from trunk:
 	2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* config/nvptx/nvptx.h (MAX_FIXED_MODE_SIZE): '#define'.
+
+	Backported from trunk:
+	2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* config/nvptx/nvptx.opt (-mfake-ptx-alloca): New.
 	* config/nvptx/nvptx-protos.h (nvptx_output_fake_ptx_alloca):
 	Declare.

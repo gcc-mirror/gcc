@@ -3,6 +3,11 @@
 	Backported from trunk:
 	2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* gcc.target/nvptx/stack_frame-1.c: Adjust.
+
+	Backported from trunk:
+	2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* gcc.target/nvptx/stack_frame-1.c: New.
 
 	Backported from trunk:
