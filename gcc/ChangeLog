@@ -1,3 +1,88 @@
+2025-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117912
+	* tree-ssa-sccvn.cc (copy_reference_ops_from_ref): For addresses
+	of zero-sized components do not set ->off if the object size pass
+	didn't run.
+	For OOB ARRAY_REF accesses in address expressions avoid setting
+	->off if the object size pass didn't run.
+	(valueize_refs_1): Likewise.
+
+2025-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116850
+	* gimple-ssa-isolate-paths.cc (bb_split_points): New global.
+	(insert_trap): Delay BB splitting if post-doms are computed.
+	(find_explicit_erroneous_behavior): Process delayed BB
+	splitting after releasing post dominators.
+	(gimple_ssa_isolate_erroneous_paths): Do not free post-dom
+	info here.
+
+2025-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/115641
+	* fold-const.cc (decode_field_reference): If the inner
+	reference isn't something we can take the address of, fail.
+
+2025-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118717
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement_1):
+	Do not common stores referencing abnormal SSA names.
+	* tree-ssa-sink.cc (sink_common_stores_to_bb): Likewise.
+
+2025-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-13  Richard Biener  <rguenther@suse.de>
+		    Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR tree-optimization/117119
+	* tree-data-ref.cc (initialize_matrix_A): Check whether
+	an INTEGER_CST fits in HWI, otherwise return chrec_dont_know.
+
+2025-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114921
+	* tree-vect-stmts.cc (vectorizable_assignment): Use
+	tree_nop_conversion_p to identify converts we can vectorize
+	with a simple assignment.
+
+2025-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114921
+	* tree-vect-stmts.cc (vectorizable_assignment): Require
+	same vector component modes for input and output for
+	CONVERT_EXPR_CODE_P.
+
+2025-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR jit/118780
+	* system.h: Check INCLUDE_DLFCN_H for including dlfcn.h instead
+	of ENABLE_PLUGIN.
+	* plugin.cc: Define INCLUDE_DLFCN_H.
+
 2025-02-17  Andreas Tobler  <andreast@gcc.gnu.org>
 
 	* config/freebsd-spec.h: Change fbsd-lib-spec for FreeBSD > 13,

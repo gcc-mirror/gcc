@@ -1,3 +1,46 @@
+2025-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-12-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117912
+	* c-c++-common/torture/pr117912-1.c: New testcase.
+	* c-c++-common/torture/pr117912-2.c: Likewise.
+	* c-c++-common/torture/pr117912-3.c: Likewise.
+
+2025-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116850
+	* gcc.dg/pr116850.c: New testcase.
+
+2025-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/115641
+	* gcc.dg/torture/pr115641.c: New testcase.
+
+2025-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118717
+	* gcc.dg/torture/pr118717.c: New testcase.
+
+2025-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-13  Richard Biener  <rguenther@suse.de>
+		    Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR tree-optimization/117119
+	* gcc.dg/torture/pr117119.c: New testcase.
+
 2025-02-20  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
