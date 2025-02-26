@@ -1,6 +1,6 @@
 // test that contracts on overriding functions are found correctly
-// { dg-do compile }
-// { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on -fcontracts-nonattr -g3" }
+// { dg-do run }
+// { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on -fcontracts-nonattr" }
 #include <cstdio>
 
 struct Base
@@ -62,33 +62,33 @@ int main(int, char**)
   return 0;
 }
 
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 5.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function .* at .*: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function Base::f at .*: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "Base: 3(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 5.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function .* at .*: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function Base::f at .*: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "Child0: 3(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 14.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function .* at .*: a > 14.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function Child1::f at .*: a > 14.*(\n|\r\n|\r)" }
 // { dg-output "Child1: 17(\n|\r\n|\r)" }
 // { dg-output "contract violation in function GChild1::f at .*: a > 6.*(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 6.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function .* at .*: a > 6.*(\n|\r\n|\r)" }
 // { dg-output "GChild1: 103(\n|\r\n|\r)" }
 // { dg-output "contract violation in function GChild2::f at .*: a > 30.*(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 30.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function .* at .*: a > 30.*(\n|\r\n|\r)" }
 // { dg-output "GChild2: 207(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 5.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function .* at .*: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function Base::f at .*: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "fooBase.Base.: 1(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 5.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function .* at .*: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function Base::f at .*: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "fooBase.Child0.: 1(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 5.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function .* at .*: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function Child1::f at .*: a > 14.*(\n|\r\n|\r)" }
 // { dg-output "fooBase.Child1.: 11(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 5.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function .* at .*: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function GChild1::f at .*: a > 6.*(\n|\r\n|\r)" }
 // { dg-output "fooBase.GChild1.: 101(\n|\r\n|\r)" }
-// { dg-output "contract violation in function .*contract_wrapper at .*: a > 5.*(\n|\r\n|\r)" }
+// { dg-output "contract violation in function .* at .*: a > 5.*(\n|\r\n|\r)" }
 // { dg-output "contract violation in function GChild2::f at .*: a > 30.*(\n|\r\n|\r)" }
 // { dg-output "fooBase.GChild2.: 201(\n|\r\n|\r)" }

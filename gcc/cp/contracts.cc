@@ -1481,6 +1481,11 @@ build_contract_condition_function (tree fndecl, bool pre)
      including the original contracts.  */
   DECL_ATTRIBUTES (fn) = NULL_TREE;
 
+  /* DECL_ASSEMBLER_NAME will be copied from FNDECL if it's already set. Unset
+     it so fn name later gets mangled according to the rules for pre and post
+     functions.  */
+  SET_DECL_ASSEMBLER_NAME (fn, NULL_TREE);
+
   /* If requested, disable optimisation of checking functions; this can, in
      some cases, prevent UB from eliding the checks themselves.  */
   if (flag_contract_disable_optimized_checks)
@@ -1946,8 +1951,6 @@ build_contract_wrapper_function (tree fndecl, bool is_cvh)
 
   /* Copy selected attributes from the original function.  */
   TREE_USED (wrapdecl) = TREE_USED (fndecl);
-  if (DECL_SECTION_NAME (fndecl))
-    set_decl_section_name (wrapdecl, fndecl);
 
   /* Copy any alignment that the FE added.  */
   if (DECL_ALIGN (fndecl))
@@ -3436,14 +3439,6 @@ maybe_contract_wrap_call (tree fndecl, tree call)
      client-side checks are enabled).  */
   if (!should_contract_wrap_call (do_pre, do_post, is_virtual))
     return call;
-
-  /* We should not have reached here with nothing to do.  */
-  /* We check postconditions on virtual function calls or if postcondition
-     checks are enabled for all clients.  */
-  gcc_checking_assert (do_pre
-		       || (do_post
-			   && ((flag_contract_nonattr_client_check > 1)
-			       || is_virtual)));
 
   /* Build the declaration of the wrapper, if we need to.  */
   tree wrapdecl = get_contract_wrapper_function (fndecl);
