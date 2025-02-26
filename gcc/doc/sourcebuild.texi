@@ -2798,6 +2798,9 @@ Target supports the execution of @code{user_msr} instructions.
 @item vect_cmdline_needed
 Target requires a command line argument to enable a SIMD instruction set.
 
+@item x86
+Target is ia32 or x86_64.
+
 @item xorsign
 Target supports the xorsign optab expansion.
 
