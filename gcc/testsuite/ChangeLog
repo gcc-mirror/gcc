@@ -1,3 +1,10 @@
+2025-02-25  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2025-02-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/pr118835.c: New test.
+
 2025-02-24  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
