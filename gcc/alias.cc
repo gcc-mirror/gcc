@@ -2535,19 +2535,39 @@ memrefs_conflict_p (poly_int64 xsize, rtx x, poly_int64 ysize, rtx y,
 	    return memrefs_conflict_p (xsize, x1, ysize, y1, c);
 	  if (poly_int_rtx_p (x1, &cx1))
 	    {
+	      poly_offset_int co = c;
+	      co -= cx1;
 	      if (poly_int_rtx_p (y1, &cy1))
-		return memrefs_conflict_p (xsize, x0, ysize, y0,
-					   c - cx1 + cy1);
+		{
+		  co += cy1;
+		  if (!co.to_shwi (&c))
+		    return -1;
+		  return memrefs_conflict_p (xsize, x0, ysize, y0, c);
+		}
+	      else if (!co.to_shwi (&c))
+		return -1;
 	      else
-		return memrefs_conflict_p (xsize, x0, ysize, y, c - cx1);
+		return memrefs_conflict_p (xsize, x0, ysize, y, c);
 	    }
 	  else if (poly_int_rtx_p (y1, &cy1))
-	    return memrefs_conflict_p (xsize, x, ysize, y0, c + cy1);
+	    {
+	      poly_offset_int co = c;
+	      co += cy1;
+	      if (!co.to_shwi (&c))
+		return -1;
+	      return memrefs_conflict_p (xsize, x, ysize, y0, c);
+	    }
 
 	  return -1;
 	}
       else if (poly_int_rtx_p (x1, &cx1))
-	return memrefs_conflict_p (xsize, x0, ysize, y, c - cx1);
+	{
+	  poly_offset_int co = c;
+	  co -= cx1;
+	  if (!co.to_shwi (&c))
+	    return -1;
+	  return memrefs_conflict_p (xsize, x0, ysize, y, c);
+	}
     }
   else if (GET_CODE (y) == PLUS)
     {
@@ -2563,7 +2583,13 @@ memrefs_conflict_p (poly_int64 xsize, rtx x, poly_int64 ysize, rtx y,
 
       poly_int64 cy1;
       if (poly_int_rtx_p (y1, &cy1))
-	return memrefs_conflict_p (xsize, x, ysize, y0, c + cy1);
+	{
+	  poly_offset_int co = c;
+	  co += cy1;
+	  if (!co.to_shwi (&c))
+	    return -1;
+	  return memrefs_conflict_p (xsize, x, ysize, y0, c);
+	}
       else
 	return -1;
     }
@@ -2616,8 +2642,16 @@ memrefs_conflict_p (poly_int64 xsize, rtx x, poly_int64 ysize, rtx y,
 	  if (maybe_gt (xsize, 0))
 	    xsize = -xsize;
 	  if (maybe_ne (xsize, 0))
-	    xsize += sc + 1;
-	  c -= sc + 1;
+	    {
+	      poly_offset_int xsizeo = xsize;
+	      xsizeo += sc + 1;
+	      if (!xsizeo.to_shwi (&xsize))
+		return -1;
+	    }
+	  poly_offset_int co = c;
+	  co -= sc + 1;
+	  if (!co.to_shwi (&c))
+	    return -1;
 	  return memrefs_conflict_p (xsize, canon_rtx (XEXP (x, 0)),
 				     ysize, y, c);
 	}
@@ -2631,8 +2665,16 @@ memrefs_conflict_p (poly_int64 xsize, rtx x, poly_int64 ysize, rtx y,
 	  if (maybe_gt (ysize, 0))
 	    ysize = -ysize;
 	  if (maybe_ne (ysize, 0))
-	    ysize += sc + 1;
-	  c += sc + 1;
+	    {
+	      poly_offset_int ysizeo = ysize;
+	      ysizeo += sc + 1;
+	      if (!ysizeo.to_shwi (&ysize))
+		return -1;
+	    }
+	  poly_offset_int co = c;
+	  co += sc + 1;
+	  if (!co.to_shwi (&c))
+	    return -1;
 	  return memrefs_conflict_p (xsize, x,
 				     ysize, canon_rtx (XEXP (y, 0)), c);
 	}
@@ -2643,7 +2685,11 @@ memrefs_conflict_p (poly_int64 xsize, rtx x, poly_int64 ysize, rtx y,
       poly_int64 cx, cy;
       if (poly_int_rtx_p (x, &cx) && poly_int_rtx_p (y, &cy))
 	{
-	  c += cy - cx;
+	  poly_offset_int co = c;
+	  co += cy;
+	  co -= cx;
+	  if (!co.to_shwi (&c))
+	    return -1;
 	  return offset_overlap_p (c, xsize, ysize);
 	}
 
