@@ -73,19 +73,19 @@ test_parallel ()
   for (i = 0; i < 100; i++)
     c1.get_d ()[1] += 1;
 
-#pragma acc parallel reduction(+:c1a[1].a) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:c1a[1].a) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c1a[1].a += 1;
 
-#pragma acc parallel reduction(+:c1a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:c1a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c1a[1].get_b () += 1;
 
-#pragma acc parallel reduction(+:c1a[1].c[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:c1a[1].c[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c1a[1].c[1] += 1;
 
-#pragma acc parallel reduction(+:c1a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:c1a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c1a[1].get_d ()[1] += 1;
 
@@ -109,19 +109,19 @@ test_parallel ()
     c2.get_d ()[1] += 1;
 
 
-#pragma acc parallel reduction(+:c2a[1].a) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:c2a[1].a) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c2a[1].a += 1;
 
-#pragma acc parallel reduction(+:c2a[1].get_b ()[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:c2a[1].get_b ()[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c2a[1].get_b () += 1;
 
-#pragma acc parallel reduction(+:c2a[1].c[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:c2a[1].c[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c2a[1].c[1] += 1;
 
-#pragma acc parallel reduction(+:c2a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:c2a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c2a[1].get_d ()[1] += 1;
 
@@ -144,19 +144,19 @@ test_parallel ()
   for (i = 0; i < 100; i++)
     s1.get_d ()[1] += 1;
 
-#pragma acc parallel reduction(+:s1a[1].a) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:s1a[1].a) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s1a[1].a += 1;
 
-#pragma acc parallel reduction(+:s1a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:s1a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s1a[1].get_b () += 1;
 
-#pragma acc parallel reduction(+:s1a[1].c[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:s1a[1].c[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s1a[1].c[1] += 1;
 
-#pragma acc parallel reduction(+:s1a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:s1a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s1a[1].get_d ()[1] += 1;
 
@@ -179,30 +179,30 @@ test_parallel ()
   for (i = 0; i < 100; i++)
     s2.get_d ()[1] += 1;
 
-#pragma acc parallel reduction(+:s2a[1].a) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:s2a[1].a) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s2a[1].a += 1;
 
-#pragma acc parallel reduction(+:s2a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:s2a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s2a[1].get_b () += 1;
 
-#pragma acc parallel reduction(+:s2a[1].c[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:s2a[1].c[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s2a[1].c[1] += 1;
 
-#pragma acc parallel reduction(+:s2a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:s2a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s2a[1].get_d ()[1] += 1;
 
 
   // Reductions on arrays.
 
-#pragma acc parallel reduction(+:a[10]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:a[10]) // { dg-error "zero length array section in 'reduction' clause" }
   for (i = 0; i < 100; i++)
     a[10] += 1;
 
-#pragma acc parallel reduction(+:b[10]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel reduction(+:b[10]) // { dg-error "zero length array section in 'reduction' clause" }
   for (i = 0; i < 100; i++)
     b[10] += 1;
 }
@@ -236,19 +236,19 @@ test_combined ()
   for (i = 0; i < 100; i++)
     c1.get_d ()[1] += 1;
 
-#pragma acc parallel loop reduction(+:c1a[1].a) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:c1a[1].a) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c1a[1].a += 1;
 
-#pragma acc parallel loop reduction(+:c1a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:c1a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c1a[1].get_b () += 1;
 
-#pragma acc parallel loop reduction(+:c1a[1].c[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:c1a[1].c[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c1a[1].c[1] += 1;
 
-#pragma acc parallel loop reduction(+:c1a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:c1a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c1a[1].get_d ()[1] += 1;
 
@@ -272,19 +272,19 @@ test_combined ()
     c2.get_d ()[1] += 1;
 
 
-#pragma acc parallel loop reduction(+:c2a[1].a) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:c2a[1].a) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c2a[1].a += 1;
 
-#pragma acc parallel loop reduction(+:c2a[1].get_b ()[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:c2a[1].get_b ()[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c2a[1].get_b () += 1;
 
-#pragma acc parallel loop reduction(+:c2a[1].c[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:c2a[1].c[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c2a[1].c[1] += 1;
 
-#pragma acc parallel loop reduction(+:c2a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:c2a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     c2a[1].get_d ()[1] += 1;
 
@@ -307,19 +307,19 @@ test_combined ()
   for (i = 0; i < 100; i++)
     s1.get_d ()[1] += 1;
 
-#pragma acc parallel loop reduction(+:s1a[1].a) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:s1a[1].a) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s1a[1].a += 1;
 
-#pragma acc parallel loop reduction(+:s1a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:s1a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s1a[1].get_b () += 1;
 
-#pragma acc parallel loop reduction(+:s1a[1].c[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:s1a[1].c[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s1a[1].c[1] += 1;
 
-#pragma acc parallel loop reduction(+:s1a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:s1a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s1a[1].get_d ()[1] += 1;
 
@@ -342,30 +342,30 @@ test_combined ()
   for (i = 0; i < 100; i++)
     s2.get_d ()[1] += 1;
 
-#pragma acc parallel loop reduction(+:s2a[1].a) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:s2a[1].a) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s2a[1].a += 1;
 
-#pragma acc parallel loop reduction(+:s2a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:s2a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s2a[1].get_b () += 1;
 
-#pragma acc parallel loop reduction(+:s2a[1].c[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:s2a[1].c[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s2a[1].c[1] += 1;
 
-#pragma acc parallel loop reduction(+:s2a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:s2a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
   for (i = 0; i < 100; i++)
     s2a[1].get_d ()[1] += 1;
 
 
   // Reductions on arrays.
 
-#pragma acc parallel loop reduction(+:a[10]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:a[10]) // { dg-error "zero length array section in 'reduction' clause" }
   for (i = 0; i < 100; i++)
     a[10] += 1;
 
-#pragma acc parallel loop reduction(+:b[10]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc parallel loop reduction(+:b[10]) // { dg-error "zero length array section in 'reduction' clause" }
   for (i = 0; i < 100; i++)
     b[10] += 1;
 }
@@ -402,19 +402,19 @@ test_loop ()
     for (i = 0; i < 100; i++)
       c1.get_d ()[1] += 1;
 
-#pragma acc loop reduction(+:c1a[1].a) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:c1a[1].a) // { dg-error "expected '\\\)' before '\\\.' token" }
     for (i = 0; i < 100; i++)
       c1a[1].a += 1;
 
-#pragma acc loop reduction(+:c1a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:c1a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\.' token" }
     for (i = 0; i < 100; i++)
       c1a[1].get_b () += 1;
 
-#pragma acc loop reduction(+:c1a[1].c[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:c1a[1].c[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
     for (i = 0; i < 100; i++)
       c1a[1].c[1] += 1;
 
-#pragma acc loop reduction(+:c1a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:c1a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
     for (i = 0; i < 100; i++)
       c1a[1].get_d ()[1] += 1;
 
@@ -438,19 +438,19 @@ test_loop ()
       c2.get_d ()[1] += 1;
 
 
-#pragma acc loop reduction(+:c2a[1].a) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:c2a[1].a) // { dg-error "expected '\\\)' before '\\\.' token" }
     for (i = 0; i < 100; i++)
       c2a[1].a += 1;
 
-#pragma acc loop reduction(+:c2a[1].get_b ()[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:c2a[1].get_b ()[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
     for (i = 0; i < 100; i++)
       c2a[1].get_b () += 1;
 
-#pragma acc loop reduction(+:c2a[1].c[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:c2a[1].c[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
     for (i = 0; i < 100; i++)
       c2a[1].c[1] += 1;
 
-#pragma acc loop reduction(+:c2a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:c2a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
     for (i = 0; i < 100; i++)
       c2a[1].get_d ()[1] += 1;
 
@@ -473,19 +473,19 @@ test_loop ()
     for (i = 0; i < 100; i++)
       s1.get_d ()[1] += 1;
 
-#pragma acc loop reduction(+:s1a[1].a) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:s1a[1].a) // { dg-error "expected '\\\)' before '\\\.' token" }
     for (i = 0; i < 100; i++)
       s1a[1].a += 1;
 
-#pragma acc loop reduction(+:s1a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:s1a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\.. token" }
     for (i = 0; i < 100; i++)
       s1a[1].get_b () += 1;
 
-#pragma acc loop reduction(+:s1a[1].c[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:s1a[1].c[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
     for (i = 0; i < 100; i++)
       s1a[1].c[1] += 1;
 
-#pragma acc loop reduction(+:s1a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:s1a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
     for (i = 0; i < 100; i++)
       s1a[1].get_d ()[1] += 1;
 
@@ -508,30 +508,30 @@ test_loop ()
     for (i = 0; i < 100; i++)
       s2.get_d ()[1] += 1;
 
-#pragma acc loop reduction(+:s2a[1].a) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:s2a[1].a) // { dg-error "expected '\\\)' before '\\\.' token" }
     for (i = 0; i < 100; i++)
       s2a[1].a += 1;
 
-#pragma acc loop reduction(+:s2a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:s2a[1].get_b ()) // { dg-error "expected '\\\)' before '\\\.' token" }
     for (i = 0; i < 100; i++)
       s2a[1].get_b () += 1;
 
-#pragma acc loop reduction(+:s2a[1].c[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:s2a[1].c[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
     for (i = 0; i < 100; i++)
       s2a[1].c[1] += 1;
 
-#pragma acc loop reduction(+:s2a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:s2a[1].get_d ()[1]) // { dg-error "expected '\\\)' before '\\\.' token" }
     for (i = 0; i < 100; i++)
       s2a[1].get_d ()[1] += 1;
 
 
     // Reductions on arrays.
 
-#pragma acc loop reduction(+:a[10]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:a[10]) // { dg-error "zero length array section in 'reduction' clause" }
     for (i = 0; i < 100; i++)
       a[10] += 1;
 
-#pragma acc loop reduction(+:b[10]) // { dg-error "expected '\\\)' before '\\\[' token" }
+#pragma acc loop reduction(+:b[10]) // { dg-error "zero length array section in 'reduction' clause" }
     for (i = 0; i < 100; i++)
       b[10] += 1;
   }

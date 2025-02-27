@@ -475,27 +475,28 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    of A starting from shift's type sign bit are zero, as
    (unsigned long long) (1 << 31) is -2147483648ULL, not 2147483648ULL,
    so it is valid only if A >> 31 is zero.  */
-(simplify
- (trunc_div (convert?@0 @3) (convert2? (lshift integer_onep@1 @2)))
- (if ((TYPE_UNSIGNED (type) || tree_expr_nonnegative_p (@0))
-      && (!VECTOR_TYPE_P (type)
-	  || target_supports_op_p (type, RSHIFT_EXPR, optab_vector)
-	  || target_supports_op_p (type, RSHIFT_EXPR, optab_scalar))
-      && (useless_type_conversion_p (type, TREE_TYPE (@1))
-	  || (element_precision (type) >= element_precision (TREE_TYPE (@1))
-	      && (TYPE_UNSIGNED (TREE_TYPE (@1))
-		  || (element_precision (type)
-		      == element_precision (TREE_TYPE (@1)))
-		  || (INTEGRAL_TYPE_P (type)
-		      && (tree_nonzero_bits (@0)
-			  & wi::mask (element_precision (TREE_TYPE (@1)) - 1,
-				      true,
-				      element_precision (type))) == 0)))))
-   (if (!VECTOR_TYPE_P (type)
-	&& useless_type_conversion_p (TREE_TYPE (@3), TREE_TYPE (@1))
-	&& element_precision (TREE_TYPE (@3)) < element_precision (type))
-    (convert (rshift @3 @2))
-    (rshift @0 @2))))
+(for div (trunc_div exact_div)
+ (simplify
+  (div (convert?@0 @3) (convert2? (lshift integer_onep@1 @2)))
+  (if ((TYPE_UNSIGNED (type) || tree_expr_nonnegative_p (@0))
+       && (!VECTOR_TYPE_P (type)
+	   || target_supports_op_p (type, RSHIFT_EXPR, optab_vector)
+	   || target_supports_op_p (type, RSHIFT_EXPR, optab_scalar))
+       && (useless_type_conversion_p (type, TREE_TYPE (@1))
+	   || (element_precision (type) >= element_precision (TREE_TYPE (@1))
+	       && (TYPE_UNSIGNED (TREE_TYPE (@1))
+		   || (element_precision (type)
+		       == element_precision (TREE_TYPE (@1)))
+		   || (INTEGRAL_TYPE_P (type)
+		       && (tree_nonzero_bits (@0)
+			   & wi::mask (element_precision (TREE_TYPE (@1)) - 1,
+				       true,
+				       element_precision (type))) == 0)))))
+    (if (!VECTOR_TYPE_P (type)
+	 && useless_type_conversion_p (TREE_TYPE (@3), TREE_TYPE (@1))
+	 && element_precision (TREE_TYPE (@3)) < element_precision (type))
+     (convert (rshift @3 @2))
+     (rshift @0 @2)))))
 
 /* Preserve explicit divisions by 0: the C++ front-end wants to detect
    undefined behavior in constexpr evaluation, and assuming that the division
@@ -925,13 +926,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 				{ build_one_cst (utype); })))))))
 
 /* Simplify (unsigned t * 2)/2 -> unsigned t & 0x7FFFFFFF.  */
-(simplify
- (trunc_div (mult @0 integer_pow2p@1) @1)
- (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) && TYPE_UNSIGNED (TREE_TYPE (@0)))
-  (bit_and @0 { wide_int_to_tree
-		(type, wi::mask (TYPE_PRECISION (type)
-				 - wi::exact_log2 (wi::to_wide (@1)),
-				 false, TYPE_PRECISION (type))); })))
+(for div (trunc_div exact_div)
+ (simplify
+  (div (mult @0 integer_pow2p@1) @1)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) && TYPE_UNSIGNED (TREE_TYPE (@0)))
+   (bit_and @0 { wide_int_to_tree
+		 (type, wi::mask (TYPE_PRECISION (type)
+				  - wi::exact_log2 (wi::to_wide (@1)),
+				  false, TYPE_PRECISION (type))); }))))
 
 /* Simplify (unsigned t / 2) * 2 -> unsigned t & ~1.  */
 (simplify
@@ -5164,7 +5166,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Sink binary operation to branches, but only if we can fold it.  */
 (for op (tcc_comparison plus minus mult bit_and bit_ior bit_xor
-	 lshift rshift rdiv trunc_div ceil_div floor_div round_div
+	 lshift rshift rdiv trunc_div ceil_div floor_div round_div exact_div
 	 trunc_mod ceil_mod floor_mod round_mod min max)
 /* (c ? a : b) op (c ? d : e)  -->  c ? (a op d) : (b op e) */
  (simplify

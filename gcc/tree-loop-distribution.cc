@@ -1197,6 +1197,16 @@ generate_memset_builtin (class loop *loop, partition *partition)
   /* The new statements will be placed before LOOP.  */
   gsi = gsi_last_bb (loop_preheader_edge (loop)->src);
 
+  if (flag_openacc
+      && gsi_stmt (gsi)
+      && gimple_call_internal_p (gsi_stmt (gsi), IFN_UNIQUE)
+      && (TREE_INT_CST_LOW (gimple_call_arg (gsi_stmt (gsi), 0))
+	  == (unsigned HOST_WIDE_INT) IFN_UNIQUE_OACC_FORK))
+    {
+      edge e = split_block (loop_preheader_edge (loop)->src, gsi_stmt (gsi));
+      gsi = gsi_last_bb (e->dest);
+    }
+
   nb_bytes = rewrite_to_non_trapping_overflow (builtin->size);
   nb_bytes = force_gimple_operand_gsi (&gsi, nb_bytes, true, NULL_TREE,
 				       false, GSI_CONTINUE_LINKING);
@@ -1250,6 +1260,16 @@ generate_memcpy_builtin (class loop *loop, partition *partition)
 
   /* The new statements will be placed before LOOP.  */
   gsi = gsi_last_bb (loop_preheader_edge (loop)->src);
+
+  if (flag_openacc
+      && gsi_stmt (gsi)
+      && gimple_call_internal_p (gsi_stmt (gsi), IFN_UNIQUE)
+      && (TREE_INT_CST_LOW (gimple_call_arg (gsi_stmt (gsi), 0))
+	  == (unsigned HOST_WIDE_INT) IFN_UNIQUE_OACC_FORK))
+    {
+      edge e = split_block (loop_preheader_edge (loop)->src, gsi_stmt (gsi));
+      gsi = gsi_last_bb (e->dest);
+    }
 
   nb_bytes = rewrite_to_non_trapping_overflow (builtin->size);
   nb_bytes = force_gimple_operand_gsi (&gsi, nb_bytes, true, NULL_TREE,

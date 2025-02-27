@@ -77,7 +77,7 @@ program main
   !$acc end kernels
 end program main
 
-! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_kernels map\(to:a\[_[0-9]+\] \[len: _[0-9]+\]\) map\(alloc:a \[pointer assign, bias: _[0-9]+\]\) map\(tofrom:sum \[len: [0-9]+\]\)$} 1 "gimple" } }
+! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_kernels map\(to:a\[D.[0-9]+\] \[len: _[0-9]+\]\) map\(alloc:a \[pointer assign, bias: D.[0-9]+\]\) map\(tofrom:sum \[len: [0-9]+\]\)$} 1 "gimple" } }
 
 ! { dg-final { scan-tree-dump-times {(?n)#pragma acc loop private\(i\)$} 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times {(?n)#pragma acc loop private\(i\) independent$} 1 "gimple" } }
@@ -86,11 +86,11 @@ end program main
 
 ! Check that the OpenACC 'kernels' got decomposed into 'data' and an enclosed
 ! sequence of compute constructs.
-! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_data_kernels map\(to:a\[_[0-9]+\] \[len: _[0-9]+\]\) map\(tofrom:sum \[len: [0-9]+\]\)$} 1 "omp_oacc_kernels_decompose" } }
+! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_data_kernels map\(to:a\[D.[0-9]+\] \[len: _[0-9]+\]\) map\(tofrom:sum \[len: [0-9]+\]\)$} 1 "omp_oacc_kernels_decompose" } }
 ! As noted above, we get three "old-style" kernel regions, one gang-single region, and one parallelized loop region.
-! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_kernels async\(-1\) map\(force_present:a\[_[0-9]+\] \[len: _[0-9]+\]\) map\(alloc:a \[pointer assign, bias: _[0-9]+\]\) map\(force_present:sum \[len: [0-9]+\]\)$} 3 "omp_oacc_kernels_decompose" } }
-! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_parallel_kernels_parallelized async\(-1\) map\(force_present:a\[_[0-9]+\] \[len: _[0-9]+\]\) map\(alloc:a \[pointer assign, bias: _[0-9]+\]\) map\(force_present:sum \[len: [0-9]+\]\)$} 1 "omp_oacc_kernels_decompose" } }
-! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_parallel_kernels_gang_single async\(-1\) num_gangs\(1\) map\(force_present:a\[_[0-9]+\] \[len: _[0-9]+\]\) map\(alloc:a \[pointer assign, bias: _[0-9]+\]\) map\(force_present:sum \[len: [0-9]+\]\)$} 1 "omp_oacc_kernels_decompose" } }
+! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_kernels async\(-1\) map\(force_present:a\[D.[0-9]+\] \[len: _[0-9]+\]\) map\(alloc:a \[pointer assign, bias: D.[0-9]+\]\) map\(force_present:sum \[len: [0-9]+\]\)$} 3 "omp_oacc_kernels_decompose" } }
+! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_parallel_kernels_parallelized async\(-1\) map\(force_present:a\[D.[0-9]+\] \[len: _[0-9]+\]\) map\(alloc:a \[pointer assign, bias: D.[0-9]+\]\) map\(force_present:sum \[len: [0-9]+\]\)$} 1 "omp_oacc_kernels_decompose" } }
+! { dg-final { scan-tree-dump-times {(?n)#pragma omp target oacc_parallel_kernels_gang_single async\(-1\) num_gangs\(1\) map\(force_present:a\[D.[0-9]+\] \[len: _[0-9]+\]\) map\(alloc:a \[pointer assign, bias: D.[0-9]+\]\) map\(force_present:sum \[len: [0-9]+\]\)$} 1 "omp_oacc_kernels_decompose" } }
 !
 ! 'data' plus five CCs.
 ! { dg-final { scan-tree-dump-times {(?n)#pragma omp target } 6 "omp_oacc_kernels_decompose" } }
