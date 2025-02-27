@@ -1986,7 +1986,12 @@
 #undef __glibcxx_want_to_underlying
 
 #if !defined(__cpp_lib_tuple_like)
-# if (__cplusplus >= 202100L)
+# if (__cplusplus >  202302L) && (__cpp_explicit_this_parameter >= 202110L)
+#  define __glibcxx_tuple_like 202311L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_tuple_like)
+#   define __cpp_lib_tuple_like 202311L
+#  endif
+# elif (__cplusplus >= 202100L)
 #  define __glibcxx_tuple_like 202207L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_tuple_like)
 #   define __cpp_lib_tuple_like 202207L

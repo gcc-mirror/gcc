@@ -1798,6 +1798,11 @@ ftms = {
 ftms = {
   name = tuple_like;
   values = {
+    v = 202311;
+    cxxmin = 26;
+    extra_cond = "__cpp_explicit_this_parameter >= 202110L";
+  };
+  values = {
     v = 202207;
     cxxmin = 23;
   };
