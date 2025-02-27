@@ -1237,12 +1237,13 @@ package body Urealp is
    ---------------
 
    function UR_Negate (Real : Ureal) return Ureal is
+      Val : constant Ureal_Entry := Ureals.Table (Real);
    begin
       return Store_Ureal
-               ((Num      => Ureals.Table (Real).Num,
-                 Den      => Ureals.Table (Real).Den,
-                 Rbase    => Ureals.Table (Real).Rbase,
-                 Negative => not Ureals.Table (Real).Negative));
+               ((Num      => Val.Num,
+                 Den      => Val.Den,
+                 Rbase    => Val.Rbase,
+                 Negative => not Val.Negative));
    end UR_Negate;
 
    ------------
