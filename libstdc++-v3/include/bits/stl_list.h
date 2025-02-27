@@ -1784,7 +1784,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       void
       pop_front() _GLIBCXX_NOEXCEPT
-      { this->_M_erase(begin()); }
+      {
+	__glibcxx_requires_nonempty();
+	this->_M_erase(begin());
+      }
 
       /**
        *  @brief  Add data to the end of the %list.
@@ -1833,7 +1836,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       void
       pop_back() _GLIBCXX_NOEXCEPT
-      { this->_M_erase(iterator(this->_M_impl._M_node._M_prev)); }
+      {
+	__glibcxx_requires_nonempty();
+	this->_M_erase(iterator(this->_M_impl._M_node._M_prev));
+      }
 
 #if __cplusplus >= 201103L
       /**
