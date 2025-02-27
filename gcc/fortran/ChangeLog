@@ -1,3 +1,8 @@
+2025-02-26  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/108233
+	* trans-expr.cc (gfc_trans_assignment_1): Remove SAVE_EXPR on lhs.
+
 2025-02-25  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/107635

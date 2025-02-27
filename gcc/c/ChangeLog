@@ -1,3 +1,12 @@
+2025-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119001
+	* c-typeck.cc (pop_init_level): Don't clear constructor_type
+	if DECL_CHAIN of constructor_fields is NULL but p->type is UNION_TYPE.
+	Formatting fix.
+	(process_init_element): Diagnose non-static initialization of flexible
+	array member in union or FAM in union initialization in nested context.
+
 2025-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/119000

@@ -1,3 +1,62 @@
+2025-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119001
+	* gcc.dg/pr119001-1.c: New test.
+	* gcc.dg/pr119001-2.c: New test.
+
+2025-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114870
+	* gcc.dg/c23-stddef-2.c: New test.
+
+2025-02-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp (check_effective_target_x86): New.
+	Replace all uses of i?86-*-* and x86_64-*-* in this file.
+
+2025-02-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports-dg.exp (dg-do-if): New.
+	* gcc.dg/vect/vect-simd-clone-16f.c: Use -msse4 on x86, and
+	skip in case execution is enabled but the runtime isn't.
+	* gcc.dg/vect/vect-simd-clone-17f.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-18f.c: Likewise.
+	* gcc.dg/vect/vect-simd-clone-20.c: Likewise, but only skip
+	the scan test.
+
+2025-02-26  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/108233
+	* gfortran.dg/coarray/complex_1.f90: New test.
+
+2025-02-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/118464
+	PR tree-optimization/116855
+	* g++.dg/ext/pragma-unroll-lambda-lto.C: Add pragma novector.
+	* gcc.dg/tree-ssa/gen-vect-2.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-25.c: Likewise.
+	* gcc.dg/tree-ssa/gen-vect-32.c: Likewise.
+	* gcc.dg/tree-ssa/ivopt_mult_2g.c: Likewise.
+	* gcc.dg/tree-ssa/ivopts-5.c: Likewise.
+	* gcc.dg/tree-ssa/ivopts-6.c: Likewise.
+	* gcc.dg/tree-ssa/ivopts-7.c: Likewise.
+	* gcc.dg/tree-ssa/ivopts-8.c: Likewise.
+	* gcc.dg/tree-ssa/ivopts-9.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-1.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-10.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-11.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-12.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-2.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-3.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-4.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-5.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-6.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-7.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-8.c: Likewise.
+	* gcc.dg/tree-ssa/predcom-dse-9.c: Likewise.
+	* gcc.target/i386/pr90178.c: Likewise.
+
 2025-02-25  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR testsuite/115028

@@ -1,3 +1,9 @@
+2025-02-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/118083
+	* include/bits/ranges_base.h
+	(ranges::__access::__possibly_const_range): Mention LWG 4027.
+
 2025-02-25  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
 
 	* include/bits/algorithmfwd.h (stable_sort): Add constexpr.

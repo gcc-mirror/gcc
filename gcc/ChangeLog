@@ -1,3 +1,50 @@
+2025-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119001
+	* varasm.cc (output_constructor_regular_field): Don't fail
+	assertion if next is non-NULL and FIELD_DECL if
+	TREE_CODE (local->type) is UNION_TYPE.
+
+2025-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114870
+	* ginclude/stddef.h (__STDC_VERSION_STDDEF_H__, unreachable): Don't
+	redefine multiple times if stddef.h is first included without __need_*
+	defines and later with them.  Move nullptr_t and unreachable and
+	__STDC_VERSION_STDDEF_H__ definitions into the same
+	defined (__STDC_VERSION__) && __STDC_VERSION__ > 201710L #if block.
+
+2025-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119002
+	* config/arm/arm.h (REVERSE_CONDITION): Use CODE - the macro
+	argument - in the macro rather than code.
+
+2025-02-26  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/119021
+	* lra.cc (lra_asm_insn_error): Use lra_invalidate_insn_data
+	instead of lra_update_insn_regno_info.
+	* lra-assigns.cc (lra_split_hard_reg_for): Restore old code.
+
+2025-02-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/sourcebuild.texi: Add x86 effective target.
+
+2025-02-26  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/sourcebuild.texi (dg-do-if): Document.
+
+2025-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/116143
+	* simple-diagnostic-path.h (simple_diagnostic_path::num_events): Define
+	inline.
+	(simple_diagnostic_path::num_threads): Likewise.
+	* simple-diagnostic-path.cc (simple_diagnostic_path::num_events):
+	Remove out of line definition.
+	(simple_diagnostic_path::num_threads): Likewise.
+
 2025-02-25  Jason Merrill  <jason@redhat.com>
 
 	* doc/install.texi: 10.5 won't bootstrap with C++98.
