@@ -4802,7 +4802,10 @@ build_vec_init (tree base, tree maxindex, tree init,
 	  tree baseref = build1 (INDIRECT_REF, type, base);
 	  tree one_init;
 
-	  num_initialized_elts++;
+	  if (field && TREE_CODE (field) == RANGE_EXPR)
+	    num_initialized_elts += range_expr_nelts (field);
+	  else
+	    num_initialized_elts++;
 
 	  /* We need to see sub-array TARGET_EXPR before cp_fold_r so we can
 	     handle cleanup flags properly.  */
