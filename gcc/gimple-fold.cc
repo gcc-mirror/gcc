@@ -8313,7 +8313,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   if (rsignbit)
     {
       wide_int sign = wi::mask (rl_bitsize - 1, true, rl_bitsize);
-      if (rsignbit > rl_bitsize && ll_unsignedp)
+      if (rsignbit > rl_bitsize && rl_unsignedp)
 	sign <<= 1;
       if (!rl_and_mask.get_precision ())
 	rl_and_mask = sign;
