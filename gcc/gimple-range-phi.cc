@@ -483,7 +483,7 @@ phi_analyzer::process_phi (gphi *phi)
 	    }
 	}
     }
-  // If this dpoesn;t form a group, all members are instead simple phis.
+  // If this doesn't form a group, all members are instead simple phis.
   if (!g)
     {
       bitmap_ior_into (m_simple, m_current);
