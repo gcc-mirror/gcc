@@ -9569,6 +9569,9 @@ namespace __detail
     constexpr auto
     to [[nodiscard]] (_Args&&... __args)
     {
+      static_assert(!is_const_v<_Cont> && !is_volatile_v<_Cont>);
+      static_assert(is_class_v<_Cont>);
+
       using __detail::_To;
       using views::__adaptor::_Partial;
       return _Partial<_To<_Cont>, decay_t<_Args>...>{0, std::forward<_Args>(__args)...};
