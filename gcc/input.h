@@ -161,7 +161,7 @@ class file_cache
 			     const char *buffer,
 			     size_t sz);
 
-  static void tune(size_t num_file_slots_, size_t lines);
+  void tune (size_t num_file_slots, size_t lines);
 
  private:
   file_cache_slot *evicted_cache_tab_entry (unsigned *highest_use_count);
@@ -169,7 +169,7 @@ class file_cache
   file_cache_slot *lookup_file (const char *file_path);
 
  private:
-  static size_t num_file_slots;
+  size_t m_num_file_slots;
   file_cache_slot *m_file_slots;
   input_context m_input_context;
 };

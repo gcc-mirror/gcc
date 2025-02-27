@@ -79,8 +79,11 @@ public:
   void evict ();
   void set_content (const char *buf, size_t sz);
 
-  static void tune(size_t line_record_size_) {
-      line_record_size = line_record_size_;
+  static size_t tune (size_t line_record_size_)
+  {
+    size_t ret = line_record_size;
+    line_record_size = line_record_size_;
+    return ret;
   }
 
  private:
@@ -200,13 +203,16 @@ size_t file_cache_slot::recent_cached_lines_shift = 8;
 
 /* Tune file_cache.  */
 void
-file_cache::tune (size_t num_file_slots_, size_t lines)
+file_cache::tune (size_t num_file_slots, size_t lines)
 {
-  num_file_slots = num_file_slots_;
-  file_cache_slot::tune (lines);
+  if (file_cache_slot::tune (lines) != lines
+      || m_num_file_slots != num_file_slots)
+    {
+      delete[] m_file_slots;
+      m_file_slots = new file_cache_slot[num_file_slots];
+    }
+  m_num_file_slots = num_file_slots;
 }
-
-size_t file_cache::num_file_slots = 16;
 
 static const char *
 find_end_of_line (const char *s, size_t len);
@@ -325,7 +331,7 @@ file_cache::lookup_file (const char *file_path)
 
   /* This will contain the found cached file.  */
   file_cache_slot *r = NULL;
-  for (unsigned i = 0; i < num_file_slots; ++i)
+  for (unsigned i = 0; i < m_num_file_slots; ++i)
     {
       file_cache_slot *c = &m_file_slots[i];
       if (c->get_file_path () && !strcmp (c->get_file_path (), file_path))
@@ -419,7 +425,7 @@ file_cache::evicted_cache_tab_entry (unsigned *highest_use_count)
 {
   file_cache_slot *to_evict = &m_file_slots[0];
   unsigned huc = to_evict->get_use_count ();
-  for (unsigned i = 1; i < num_file_slots; ++i)
+  for (unsigned i = 1; i < m_num_file_slots; ++i)
     {
       file_cache_slot *c = &m_file_slots[i];
       bool c_is_empty = (c->get_file_path () == NULL);
@@ -449,7 +455,7 @@ file_cache::evicted_cache_tab_entry (unsigned *highest_use_count)
    accessed by caret diagnostic.  This cache is added to an array of
    cache and can be retrieved by lookup_file_in_cache_tab.  This
    function returns the created cache.  Note that only the last
-   num_file_slots files are cached.
+   m_num_file_slots files are cached.
 
    This can return nullptr if the FILE_PATH can't be opened for
    reading, or if the content can't be converted to the input_charset.  */
@@ -558,7 +564,7 @@ file_cache_slot::set_content (const char *buf, size_t sz)
 /* file_cache's ctor.  */
 
 file_cache::file_cache ()
-: m_file_slots (new file_cache_slot[num_file_slots])
+: m_num_file_slots (16), m_file_slots (new file_cache_slot[m_num_file_slots])
 {
   initialize_input_context (nullptr, false);
 }
@@ -573,7 +579,7 @@ file_cache::~file_cache ()
 void
 file_cache::dump (FILE *out, int indent) const
 {
-  for (size_t i = 0; i < num_file_slots; ++i)
+  for (size_t i = 0; i < m_num_file_slots; ++i)
     {
       fprintf (out, "%*sslot[%i]:\n", indent, "", (int)i);
       m_file_slots[i].dump (out, indent + 2);
@@ -869,10 +875,12 @@ file_cache_slot::get_next_line (char **line, ssize_t *line_len)
   /* Only update when beyond the previously cached region.  */
   if (rlen == 0 || m_line_record[rlen - 1].line_num < m_line_num)
     {
-      size_t spacing = rlen >= 2 ?
-	m_line_record[rlen - 1].line_num - m_line_record[rlen - 2].line_num : 1;
-      size_t delta = rlen >= 1 ?
-	m_line_num - m_line_record[rlen - 1].line_num : 1;
+      size_t spacing
+	= (rlen >= 2
+	   ? (m_line_record[rlen - 1].line_num
+	      - m_line_record[rlen - 2].line_num) : 1);
+      size_t delta
+	= rlen >= 1 ? m_line_num - m_line_record[rlen - 1].line_num : 1;
 
       size_t max_size = line_record_size;
       /* One anchor per hundred input lines.  */
@@ -880,7 +888,7 @@ file_cache_slot::get_next_line (char **line, ssize_t *line_len)
 	max_size = m_line_num / 100;
 
       /* If we're too far beyond drop half of the lines to rebalance.  */
-      if (rlen == max_size && delta >= spacing*2)
+      if (rlen == max_size && delta >= spacing * 2)
 	{
 	  size_t j = 0;
 	  for (size_t i = 1; i < rlen; i += 2)
@@ -891,24 +899,25 @@ file_cache_slot::get_next_line (char **line, ssize_t *line_len)
 	}
 
       if (rlen < max_size && delta >= spacing)
-	m_line_record.safe_push
-	  (file_cache_slot::line_info (m_line_num,
-				       m_line_start_idx,
-				       line_end - m_data));
+	{
+	  file_cache_slot::line_info li (m_line_num, m_line_start_idx,
+					 line_end - m_data);
+	  m_line_record.safe_push (li);
+	}
     }
 
   /* Cache recent tail lines separately for fast access. This assumes
      most accesses do not skip backwards.  */
   if (m_line_recent_last == m_line_recent_first
-	|| m_line_recent[m_line_recent_last].line_num == m_line_num - 1)
+      || m_line_recent[m_line_recent_last].line_num == m_line_num - 1)
     {
-      size_t mask = ((size_t)1 << recent_cached_lines_shift) - 1;
+      size_t mask = ((size_t) 1 << recent_cached_lines_shift) - 1;
       m_line_recent_last = (m_line_recent_last + 1) & mask;
       if (m_line_recent_last == m_line_recent_first)
 	m_line_recent_first = (m_line_recent_first + 1) & mask;
-      m_line_recent[m_line_recent_last] =
-	file_cache_slot::line_info (m_line_num, m_line_start_idx,
-				    line_end - m_data);
+      m_line_recent[m_line_recent_last]
+	= file_cache_slot::line_info (m_line_num, m_line_start_idx,
+				      line_end - m_data);
     }
 
   /* Update m_line_start_idx so that it points to the next line to be
@@ -952,7 +961,7 @@ file_cache_slot::goto_next_line ()
 
 bool
 file_cache_slot::read_line_num (size_t line_num,
-		       char ** line, ssize_t *line_len)
+				char ** line, ssize_t *line_len)
 {
   gcc_assert (line_num > 0);
 
@@ -1044,10 +1053,10 @@ file_cache::get_source_line (const char *file_path, int line)
 char *
 get_source_text_between (file_cache &fc, location_t start, location_t end)
 {
-  expanded_location expstart =
-    expand_location_to_spelling_point (start, LOCATION_ASPECT_START);
-  expanded_location expend =
-    expand_location_to_spelling_point (end, LOCATION_ASPECT_FINISH);
+  expanded_location expstart
+    = expand_location_to_spelling_point (start, LOCATION_ASPECT_START);
+  expanded_location expend
+    = expand_location_to_spelling_point (end, LOCATION_ASPECT_FINISH);
 
   /* If the locations are in different files or the end comes before the
      start, give up and return nothing.  */
