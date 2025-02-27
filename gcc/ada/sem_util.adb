@@ -21907,7 +21907,7 @@ package body Sem_Util is
          Set_Last_Assignment (Ent, Empty);
       end if;
 
-      if Is_Object (Ent) then
+      if Is_Object (Ent) and then Ekind (Ent) not in Record_Field_Kind then
          if not Last_Assignment_Only then
             Kill_Checks (Ent);
             Set_Current_Value (Ent, Empty);
