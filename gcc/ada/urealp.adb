@@ -818,7 +818,7 @@ package body Urealp is
          return Store_Ureal
                   ((Num      => Uint_1,
                     Den      => -N,
-                    Rbase    => UI_To_Int (UR_Trunc (Bas)),
+                    Rbase    => UI_To_Int (IBas),
                     Negative => Neg));
 
       --  If the exponent is negative then we raise the numerator and the
