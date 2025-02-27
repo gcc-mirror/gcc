@@ -547,7 +547,9 @@ do_whole_program_analysis (void)
 
   symtab_node::checking_verify_symtab_nodes ();
   bitmap_obstack_release (NULL);
-  if (flag_lto_partition == LTO_PARTITION_1TO1)
+  if (flag_ipa_reorder_for_locality)
+    lto_locality_map (param_max_locality_partition_size);
+  else if (flag_lto_partition == LTO_PARTITION_1TO1)
     lto_1_to_1_map ();
   else if (flag_lto_partition == LTO_PARTITION_MAX)
     lto_max_map ();

@@ -2116,6 +2116,10 @@ fipa-modref
 Common Var(flag_ipa_modref) Optimization
 Perform interprocedural modref analysis.
 
+fipa-reorder-for-locality
+Common Var(flag_ipa_reorder_for_locality) Init(0) Optimization
+Perform reordering and cloning of functions to maximize locality.
+
 fipa-profile
 Common Var(flag_ipa_profile) Init(0) Optimization
 Perform interprocedural profile propagation.
@@ -2275,6 +2279,9 @@ Enum
 Name(lto_partition_model) Type(enum lto_partition_model) UnknownError(unknown LTO partitioning model %qs)
 
 EnumValue
+Enum(lto_partition_model) String(default) Value(LTO_PARTITION_DEFAULT)
+
+EnumValue
 Enum(lto_partition_model) String(none) Value(LTO_PARTITION_NONE)
 
 EnumValue
@@ -2293,7 +2300,7 @@ EnumValue
 Enum(lto_partition_model) String(cache) Value(LTO_PARTITION_CACHE)
 
 flto-partition=
-Common Joined RejectNegative Enum(lto_partition_model) Var(flag_lto_partition) Init(LTO_PARTITION_BALANCED)
+Common Joined RejectNegative Enum(lto_partition_model) Var(flag_lto_partition) Init(LTO_PARTITION_DEFAULT)
 Specify the algorithm to partition symbols and vars at linktime.
 
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.

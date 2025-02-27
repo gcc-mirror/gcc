@@ -229,6 +229,8 @@ lto_set_symtab_encoder_in_partition (lto_symtab_encoder_t encoder,
 				     symtab_node *node)
 {
   int index = lto_symtab_encoder_encode (encoder, node);
+  if (dump_file)
+    fprintf(dump_file, "Node %s, index %d\n", node->asm_name(), index);
   encoder->nodes[index].in_partition = true;
 }
 

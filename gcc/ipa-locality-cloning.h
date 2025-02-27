@@ -1,5 +1,5 @@
 /* LTO partitioning logic routines.
-   Copyright (C) 2009-2025 Free Software Foundation, Inc.
+   Copyright The GNU Toolchain Authors
 
 This file is part of GCC.
 
@@ -17,27 +17,19 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef IPA_LOCALITY_CLONING_H
+#define IPA_LOCALITY_CLONING_H
 
-/* Structure describing ltrans partitions.  */
-
-struct ltrans_partition_def
+/* Structure describing locality partitions.  */
+struct locality_partition_def
 {
-  lto_symtab_encoder_t encoder;
-  const char * name;
+  int part_id;
+  vec<cgraph_node *> nodes;
   int insns;
-  int symbols;
-  hash_set<symtab_node *> *initializers_visited;
 };
 
-typedef struct ltrans_partition_def *ltrans_partition;
+typedef struct locality_partition_def *locality_partition;
 
-extern vec<ltrans_partition> ltrans_partitions;
+extern vec<locality_partition> locality_partitions;
 
-void lto_1_to_1_map (void);
-void lto_max_map (void);
-void lto_cache_map (int, int);
-void lto_balanced_map (int, int);
-void lto_locality_map (int);
-void lto_promote_cross_file_statics (void);
-void free_ltrans_partitions (void);
-void lto_promote_statics_nonwpa (void);
+#endif /* IPA_LOCALITY_CLONING_H */

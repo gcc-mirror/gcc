@@ -593,7 +593,7 @@ Objective-C and Objective-C++ Dialects}.
 -finline-functions  -finline-functions-called-once  -finline-limit=@var{n}
 -finline-small-functions -fipa-modref -fipa-cp  -fipa-cp-clone
 -fipa-bit-cp  -fipa-vrp  -fipa-pta  -fipa-profile  -fipa-pure-const
--fipa-reference  -fipa-reference-addressable
+-fipa-reference  -fipa-reference-addressable -fipa-reorder-for-locality
 -fipa-stack-alignment  -fipa-icf  -fira-algorithm=@var{algorithm}
 -flate-combine-instructions -flifetime-dse -flive-patching=@var{level}
 -fira-region=@var{region}  -fira-hoist-pressure
@@ -13871,6 +13871,21 @@ Enabled by default at @option{-O1} and higher.
 Discover read-only, write-only and non-addressable static variables.
 Enabled by default at @option{-O1} and higher.
 
+@opindex fipa-reorder-for-locality
+@item -fipa-reorder-for-locality
+Group call chains close together in the binary layout to improve code
+locality and minimize jump distances between frequently called functions.
+Unlike @option{-freorder-functions} this pass considers the call
+chains between functions and groups them together, rather than grouping all
+hot/normal/cold/never-executed functions into separate sections.
+Unlike @option{-fprofile-reorder-functions} it aims to improve code locality
+throughout the runtime of the program rather than focusing on program startup.
+This option is incompatible with an explicit
+@option{-flto-partition=} option since it enforces a custom partitioning
+scheme.
+If using this option it is recommended to also use profile feedback, but this
+option is not enabled by default otherwise.
+
 @opindex fipa-stack-alignment
 @item -fipa-stack-alignment
 Reduce stack alignment on call sites if possible.
@@ -14606,11 +14621,13 @@ Enabled for x86 at levels @option{-O2}, @option{-O3}, @option{-Os}.
 @opindex freorder-functions
 @item -freorder-functions
 Reorder functions in the object file in order to
-improve code locality.  This is implemented by using special
-subsections @code{.text.hot} for most frequently executed functions and
-@code{.text.unlikely} for unlikely executed functions.  Reordering is done by
-the linker so object file format must support named sections and linker must
-place them in a reasonable way.
+improve code locality.  Unlike @option{-fipa-reorder-for-locality} this option
+prioritises grouping all functions within a category
+(hot/normal/cold/never-executed) together.
+This is implemented by using special subsections @code{.text.hot} for most
+frequently executed functions and @code{.text.unlikely} for unlikely executed
+functions.  Reordering is done by the linker so object file format must support
+named sections and linker must place them in a reasonable way.
 
 This option isn't effective unless you either provide profile feedback
 (see @option{-fprofile-arcs} for details) or manually annotate functions with
@@ -15635,7 +15652,8 @@ Enabled by @option{-fprofile-generate}, @option{-fprofile-use}, and
 @item -fprofile-reorder-functions
 Function reordering based on profile instrumentation collects
 first time of execution of a function and orders these functions
-in ascending order.
+in ascending order, aiming to optimize program startup through more
+efficient loading of text segments.
 
 Enabled with @option{-fprofile-use}.
 

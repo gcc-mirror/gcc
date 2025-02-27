@@ -404,7 +404,15 @@ enum lto_partition_model {
   LTO_PARTITION_BALANCED = 2,
   LTO_PARTITION_1TO1 = 3,
   LTO_PARTITION_MAX = 4,
-  LTO_PARTITION_CACHE = 5
+  LTO_PARTITION_CACHE = 5,
+  LTO_PARTITION_DEFAULT= 6
+};
+
+/* flag_lto_locality_cloning initialization values.  */
+enum lto_locality_cloning_model {
+  LTO_LOCALITY_NO_CLONING = 0,
+  LTO_LOCALITY_NON_INTERPOSABLE_CLONING = 1,
+  LTO_LOCALITY_MAXIMAL_CLONING = 2,
 };
 
 /* flag_lto_linker_output initialization values.  */

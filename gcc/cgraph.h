@@ -2627,6 +2627,7 @@ void tree_function_versioning (tree, tree, vec<ipa_replace_map *, va_gc> *,
 void dump_callgraph_transformation (const cgraph_node *original,
 				    const cgraph_node *clone,
 				    const char *suffix);
+void set_new_clone_decl_and_node_flags (cgraph_node *new_node);
 /* In cgraphbuild.cc  */
 int compute_call_stmt_bb_frequency (tree, basic_block bb);
 void record_references_in_initializer (tree, bool);

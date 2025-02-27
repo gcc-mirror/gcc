@@ -158,7 +158,7 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 /* Set flags of NEW_NODE and its decl.  NEW_NODE is a newly created private
    clone or its thunk.  */
 
-static void
+void
 set_new_clone_decl_and_node_flags (cgraph_node *new_node)
 {
   DECL_EXTERNAL (new_node->decl) = 0;
