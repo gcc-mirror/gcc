@@ -1,3 +1,13 @@
+2025-02-26  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2025-02-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/118835
+	* config/s390/s390.cc (s390_valid_shift_count): Reject shift
+	count operands which do not trivially fit the scheme of
+	address operands.
+
 2025-02-11  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

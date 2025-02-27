@@ -1,3 +1,10 @@
+2025-02-26  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2025-02-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/pr118835.c: New test.
+
 2025-02-04  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR middle-end/115913
