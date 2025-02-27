@@ -158,6 +158,20 @@ namespace ranges
 
   inline constexpr __equal_fn equal{};
 
+namespace __detail
+{
+  template<bool _IsMove, typename _OutIter, typename _InIter>
+    [[__gnu__::__always_inline__]]
+    constexpr void
+    __assign_one(_OutIter& __out, _InIter& __in)
+    {
+      if constexpr (_IsMove)
+	*__out = ranges::iter_move(__in);
+      else
+	*__out = *__in;
+    }
+} // namespace __detail
+
   template<typename _Iter, typename _Out>
     struct in_out_result
     {
@@ -261,14 +275,14 @@ namespace ranges
 		    __builtin_memmove(__result, __first,
 				      sizeof(_ValueTypeI) * __num);
 		  else if (__num == 1)
-		    std::__assign_one<_IsMove>(__result, __first);
+		    __detail::__assign_one<_IsMove>(__result, __first);
 		  return {__first + __num, __result + __num};
 		}
 	    }
 
 	  for (auto __n = __last - __first; __n > 0; --__n)
 	    {
-	      std::__assign_one<_IsMove>(__result, __first);
+	      __detail::__assign_one<_IsMove>(__result, __first);
 	      ++__first;
 	      ++__result;
 	    }
@@ -278,7 +292,7 @@ namespace ranges
 	{
 	  while (__first != __last)
 	    {
-	      std::__assign_one<_IsMove>(__result, __first);
+	      __detail::__assign_one<_IsMove>(__result, __first);
 	      ++__first;
 	      ++__result;
 	    }
@@ -390,7 +404,7 @@ namespace ranges
 		    __builtin_memmove(__result, __first,
 				      sizeof(_ValueTypeI) * __num);
 		  else if (__num == 1)
-		    std::__assign_one<_IsMove>(__result, __first);
+		    __detail::__assign_one<_IsMove>(__result, __first);
 		  return {__first + __num, __result};
 		}
 	    }
@@ -402,7 +416,7 @@ namespace ranges
 	    {
 	      --__tail;
 	      --__result;
-	      std::__assign_one<_IsMove>(__result, __tail);
+	      __detail::__assign_one<_IsMove>(__result, __tail);
 	    }
 	  return {std::move(__lasti), std::move(__result)};
 	}
@@ -415,7 +429,7 @@ namespace ranges
 	    {
 	      --__tail;
 	      --__result;
-	      std::__assign_one<_IsMove>(__result, __tail);
+	      __detail::__assign_one<_IsMove>(__result, __tail);
 	    }
 	  return {std::move(__lasti), std::move(__result)};
 	}
