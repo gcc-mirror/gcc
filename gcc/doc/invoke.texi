@@ -1700,9 +1700,13 @@ f77  f77-cpp-input f95  f95-cpp-input
 go
 @end smallexample
 
+Note that @option{-x} does not imply a particular language standard.
+For example @option{-x f77} may also require @option{-std=legacy} for some older
+source codes.
+
 @item -x none
 Turn off any specification of a language, so that subsequent files are
-handled according to their file name suffixes (as they are if @option{-x}
+handled according to their file name suffixes (as if @option{-x}
 has not been used at all).
 @end table
 
