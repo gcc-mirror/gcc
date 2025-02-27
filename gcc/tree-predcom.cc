@@ -234,6 +234,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-affine.h"
 #include "builtins.h"
 #include "opts.h"
+#include "tree-ssa-address.h"
 
 /* The maximum number of iterations between the considered memory
    references.  */
@@ -1824,6 +1825,7 @@ ref_at_iteration (data_reference_p dr, int iter,
   tree type = build_aligned_type (TREE_TYPE (ref),
 				  get_object_alignment (ref));
   ref = build2 (MEM_REF, type, addr, alias_ptr);
+  copy_ref_info (ref, DR_REF (dr));
   if (ref_type)
     ref = build3 (ref_code, ref_type, ref, ref_op1, ref_op2);
   return ref;
