@@ -8404,7 +8404,8 @@ package body Sem_Ch8 is
 
             if Is_Overloaded (P) then
 
-               --  The prefix must resolve to a unique enclosing construct
+               --  The prefix must resolve to a unique enclosing construct, per
+               --  the last sentence of RM 4.1.3 (13).
 
                declare
                   Found : Boolean := False;
