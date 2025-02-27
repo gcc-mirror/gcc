@@ -175,6 +175,35 @@ public:
     ConstParamType,
   } kind;
 
+  static std::string kind_to_string (Rib::Kind kind)
+  {
+    switch (kind)
+      {
+      case Rib::Kind::Normal:
+	return "Normal";
+      case Rib::Kind::Module:
+	return "Module";
+      case Rib::Kind::Function:
+	return "Function";
+      case Rib::Kind::ConstantItem:
+	return "ConstantItem";
+      case Rib::Kind::TraitOrImpl:
+	return "TraitOrImpl";
+      case Rib::Kind::Item:
+	return "Item";
+      case Rib::Kind::Closure:
+	return "Closure";
+      case Rib::Kind::MacroDefinition:
+	return "Macro definition";
+      case Rib::Kind::ForwardTypeParamBan:
+	return "Forward type param ban";
+      case Rib::Kind::ConstParamType:
+	return "Const Param Type";
+      default:
+	rust_unreachable ();
+      }
+  }
+
   Rib (Kind kind);
   Rib (Kind kind, std::string identifier, NodeId id);
   Rib (Kind kind, std::unordered_map<std::string, NodeId> values);

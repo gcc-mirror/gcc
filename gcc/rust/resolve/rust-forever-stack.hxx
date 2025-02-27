@@ -781,13 +781,17 @@ ForeverStack<N>::stream_rib (std::stringstream &stream, const Rib &rib,
 			     const std::string &next,
 			     const std::string &next_next) const
 {
+  std::string rib_kind = Rib::kind_to_string (rib.kind);
+  stream << next << "rib [" << rib_kind << "]: {";
   if (rib.get_values ().empty ())
     {
-      stream << next << "rib: {},\n";
+      stream << "}\n";
       return;
     }
-
-  stream << next << "rib: {\n";
+  else
+    {
+      stream << "\n";
+    }
 
   for (const auto &kv : rib.get_values ())
     stream << next_next << kv.first << ": " << kv.second.to_string () << "\n";
