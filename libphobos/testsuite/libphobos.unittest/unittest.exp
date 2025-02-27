@@ -42,8 +42,10 @@ foreach unit_test $unit_test_list {
     set expected_fail [lindex $unit_test 1]
 
     foreach test $tests {
+        set libphobos_test_name "[dg-trim-dirname $srcdir $test] $test_flags"
         set shouldfail $expected_fail
-        dg-test $test "" $test_flags
+        dg-runtest $test "" $test_flags
+        set libphobos_test_name ""
     }
 
     set shouldfail 0
