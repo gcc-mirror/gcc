@@ -134,7 +134,7 @@ package body Product is
       Ahi, Alo, Bhi, Blo, E : Num;
 
    begin
-      if Is_Infinity (P) or else Is_Zero (P) then
+      if Is_Infinity_Or_NaN (P) or else Is_Zero (P) then
          return (P, 0.0);
 
       else
@@ -157,7 +157,7 @@ package body Product is
       Hi, Lo, E : Num;
 
    begin
-      if Is_Infinity (Q) or else Is_Zero (Q) then
+      if Is_Infinity_Or_NaN (Q) or else Is_Zero (Q) then
          return (Q, 0.0);
 
       else

@@ -78,7 +78,7 @@ package body Product is
       E : Num;
 
    begin
-      if Is_Infinity (P) or else Is_Zero (P) then
+      if Is_Infinity_Or_NaN (P) or else Is_Zero (P) then
          return (P, 0.0);
 
       else
