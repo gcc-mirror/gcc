@@ -1904,8 +1904,12 @@ ifeq (@enable_libgdiagnostics@,yes)
 ALL_HOST_OBJS += $(libgdiagnostics_OBJS) $(SARIF_REPLAY_OBJS)
 endif
 
-BACKEND = libbackend.a main.o libcommon-target.a libcommon.a \
-	$(CPPLIB) $(LIBDECNUMBER)
+# libbackend.a objs that might not be in some cases linked into the compiler,
+# yet they are supposed to be part of the plugin ABI.  See PR116143.
+EXTRA_BACKEND_OBJS = simple-diagnostic-path.o lazy-diagnostic-path.o
+
+BACKEND = $(EXTRA_BACKEND_OBJS) libbackend.a main.o libcommon-target.a \
+	libcommon.a $(CPPLIB) $(LIBDECNUMBER)
 
 # This is defined to "yes" if Tree checking is enabled, which roughly means
 # front-end checking.
