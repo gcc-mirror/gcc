@@ -3072,17 +3072,17 @@ maybe_apply_function_contracts (tree fndecl)
   /* The DECL_SAVED_TREE stmt list will be popped by our caller.  */
 }
 
-/* Replace any contract attributes on SOURCE with a copy where any
-   references to SOURCE's PARM_DECLs have been rewritten to the corresponding
-   PARM_DECL in DEST.  If remap_result is true, result identifier is
-   also re-mapped. C++20 version used this function to remap contracts on
-   virtual functions from base class to derived class. In such a case
-   postcondition identified wasn't remapped. Caller side wrapper functions
-   need to remap the result identifier.
-   I remap_post is false, postconditions are dropped from the destination.  */
+/* Returns a copy of SOURCE contracts where any references to SOURCE's
+   PARM_DECLs have been rewritten to the corresponding PARM_DECL in DEST. If
+   remap_result is true, result identifier is also re-mapped.
+   C++20 version used this function to remap contracts on virtual functions
+   from base class to derived class. In such a case postcondition identifier
+   wasn't remapped. Caller side wrapper functions need to remap the result
+   identifier.
+   If remap_post is false, postconditions are dropped from the destination.  */
 
-void
-copy_and_remap_contracts (tree dest, tree source, bool remap_result = true,
+tree
+remap_contracts (tree dest, tree source, bool remap_result = true,
 			  bool remap_post = true )
 {
   tree last = NULL_TREE, contract_attrs = NULL_TREE;
@@ -3118,7 +3118,7 @@ copy_and_remap_contracts (tree dest, tree source, bool remap_result = true,
 	contract_attrs = c;
     }
 
-  set_decl_contracts (dest, contract_attrs);
+  return contract_attrs;
 }
 
 /* Finish up the pre & post function definitions for a guarded FNDECL,
@@ -3414,7 +3414,10 @@ should_contract_wrap_call (bool do_pre, bool do_post, bool is_virt)
 
   /* We always wrap virtual function calls, and non-virtual calls when
      client-side checking is enabled for all contracts.  */
-  if (is_virt || (flag_contract_nonattr_client_check > 1))
+  if ((is_virt
+       && (flag_contract_nonattr_inheritance_mode
+	   == CONTRACT_INHERITANCE_P2900R13))
+      || (flag_contract_nonattr_client_check > 1))
     return true;
 
   /* Otherwise, any function with pre-conditions when selected.  */
@@ -3489,11 +3492,16 @@ define_contract_wrapper_func (const tree& fndecl, const tree& wrapdecl, void*)
   /* We check postconditions on virtual function calls or if postcondition
      checks are enabled for all clients.  We should not get here unless there
      are some checks to make.  */
-  bool check_post = (flag_contract_nonattr_client_check > 1) || is_virtual;
+  bool check_post
+    = (flag_contract_nonattr_client_check > 1)
+      || (is_virtual
+	  && (flag_contract_nonattr_inheritance_mode
+	      == CONTRACT_INHERITANCE_P2900R13));
   /* For wrappers on CDTORs we need to refer to the original contracts,
      when the wrapper is around a clone.  */
-  copy_and_remap_contracts (wrapdecl, DECL_ORIGIN (fndecl),
-			    /*remap_result*/true, check_post);
+  set_decl_contracts( wrapdecl,
+		      remap_contracts (wrapdecl, DECL_ORIGIN (fndecl),
+				       /*remap_result*/true, check_post));
 
   start_preparsed_function (wrapdecl, /*DECL_ATTRIBUTES*/NULL_TREE,
 			    SF_DEFAULT | SF_PRE_PARSED);
