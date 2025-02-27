@@ -7951,6 +7951,7 @@ extern tree lookup_member			(tree, tree, int, bool,
 extern tree lookup_member_fuzzy			(tree, tree, bool);
 extern tree locate_field_accessor		(tree, tree, bool);
 extern int look_for_overrides			(tree, tree);
+extern void check_override_contracts		(tree);
 extern void get_pure_virtuals			(tree);
 extern void maybe_suppress_debug_info		(tree);
 extern void note_debug_info_needed		(tree);
