@@ -2193,10 +2193,11 @@ check_final_overrider (tree overrider, tree basefn)
       {
 	/* We're inheriting basefn's contracts; create a copy of them but
 	   replace references to their parms to our parms.  */
-	copy_and_remap_contracts (overrider,
-				  basefn,
-				  /* don't remap result */ false,
-				  /* remap post conditions */ true);
+	set_decl_contracts( overrider,
+			    remap_contracts (overrider,
+					     basefn,
+					     /* don't remap result */ false,
+					     /* remap post conditions */ true));
       }
     else if (DECL_HAS_CONTRACTS_P (basefn) && DECL_HAS_CONTRACTS_P (overrider))
       {
@@ -2209,7 +2210,6 @@ check_final_overrider (tree overrider, tree basefn)
 	defer_guarded_contract_match (overrider, basefn, DECL_CONTRACTS (basefn));
       }
   }
-
   if (DECL_FINAL_P (basefn))
     {
       auto_diagnostic_group d;
@@ -2219,6 +2219,63 @@ check_final_overrider (tree overrider, tree basefn)
       return 0;
     }
   return 1;
+}
+
+/* Given a class TYPE, and a virtual function decl FNDECL, check the direct
+   base classes for contracts.
+  */
+
+void
+check_override_contracts (tree fndecl)
+{
+
+  if (!flag_contracts || !flag_contracts_nonattr
+      || flag_contract_nonattr_inheritance_mode != CONTRACT_INHERITANCE_VILLE )
+    return;
+
+  /* A constructor for a class T does not override a function T
+     in a base class.  */
+  if (DECL_CONSTRUCTOR_P (fndecl))
+    return;
+
+  bool explicit_contracts = DECL_HAS_CONTRACTS_P(fndecl);
+  tree binfo = TYPE_BINFO (DECL_CONTEXT (fndecl));
+  tree base_binfo;
+
+  for (int i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
+    {
+      tree basetype = BINFO_TYPE (base_binfo);
+
+      if (!TYPE_POLYMORPHIC_P (basetype))
+  	continue;
+
+      tree basefn = look_for_overrides_here (basetype, fndecl);
+      if (!basefn)
+	continue;
+
+      if (!explicit_contracts && DECL_HAS_CONTRACTS_P(basefn))
+	{
+	  /* We're inheriting basefn's contracts; create a copy of them but
+	   * replace references to their parms to our parms.  */
+	  tree base_contracts = remap_contracts (
+	      fndecl, basefn,
+	      /* don't remap result */false,
+	      /* remap post conditions */true);
+	  tree contracts = chainon (DECL_CONTRACTS (fndecl), base_contracts);
+
+	  set_decl_contracts(fndecl, contracts);
+
+	  if (suggest_explicit_contract)
+	    {
+	      warning_at (DECL_SOURCE_LOCATION(fndecl),
+			  suggest_explicit_contract,
+			  "Function implicitly inherits a contract");
+	      inform (DECL_SOURCE_LOCATION(basefn),
+		      "overridden function is %qD", basefn);
+	    }
+	}
+    }
+
 }
 
 /* Given a class TYPE, and a function decl FNDECL, look for

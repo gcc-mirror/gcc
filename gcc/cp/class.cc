@@ -3202,6 +3202,8 @@ check_for_override (tree decl, tree ctype)
 	 function.  */
       DECL_VINDEX (decl) = decl;
 
+      check_override_contracts (decl);
+
       if (warn_override
 	  && !DECL_OVERRIDE_P (decl)
 	  && !DECL_FINAL_P (decl)
