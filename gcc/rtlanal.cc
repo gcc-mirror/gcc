@@ -3252,6 +3252,7 @@ may_trap_p_1 (const_rtx x, unsigned flags)
 	return true;
       break;
 
+    case PARALLEL:
     case NEG:
     case ABS:
     case SUBREG:
