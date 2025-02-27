@@ -8419,6 +8419,7 @@ package body Sem_Ch8 is
                         if Found then
                            Error_Msg_N (
                               "prefix must be unique enclosing scope", N);
+                           Change_Selected_Component_To_Expanded_Name (N);
                            Set_Entity (N, Any_Id);
                            Set_Etype  (N, Any_Type);
                            return;
