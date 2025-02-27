@@ -100,7 +100,7 @@ subroutine pr54992  ! This test remains as the original.
   implicit none
   type (tn), target  :: b
   class(ncBh), pointer :: bh
-  class(ncBh), allocatable, dimension(:) :: t
+
   allocate(b%cBh(1),source=defaultBhC)
   b%cBh(1)%hostNode => b
 ! #1 this worked

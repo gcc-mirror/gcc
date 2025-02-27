@@ -17063,6 +17063,14 @@ skip_interfaces:
       return;
     }
 
+  /* Ensure that variables of derived or class type having a finalizer are
+     marked used even when the variable is not used anything else in the scope.
+     This fixes PR118730.  */
+  if (sym->attr.flavor == FL_VARIABLE && !sym->attr.referenced
+      && (sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS)
+      && gfc_may_be_finalized (sym->ts))
+    gfc_set_sym_referenced (sym);
+
   if (sym->attr.flavor == FL_DERIVED && !resolve_fl_derived (sym))
     return;
 
