@@ -1,6 +1,6 @@
 /* { dg-require-effective-target strub } */
 /* { dg-do compile } */
-/* { dg-options "-fstrub=all -O2 -m32 -mno-accumulate-outgoing-args" } */
+/* { dg-options "-fstrub=all -O2 -mno-accumulate-outgoing-args" } */
 
 __attribute__((noipa))
 long _raw_syscall(void *, long, long) {
