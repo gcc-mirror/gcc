@@ -7081,6 +7081,8 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
   if (gimple_assign_single_p (stmt)
       && !gimple_has_volatile_ops (stmt)
       && !is_gimple_reg (gimple_assign_lhs (stmt))
+      && (TREE_CODE (gimple_assign_lhs (stmt)) != VAR_DECL
+	  || !DECL_HARD_REGISTER (gimple_assign_lhs (stmt)))
       && (TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME
 	  || is_gimple_min_invariant (gimple_assign_rhs1 (stmt))))
     {
