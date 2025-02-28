@@ -1,3 +1,11 @@
+2025-02-27  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/x86-tune.def
+	(X86_TUNE_DEST_FALSE_DEP_FOR_GLC): Add GNR, GNR-D.
+	(X86_TUNE_AVOID_256FMA_CHAINS): Ditto.
+	(X86_TUNE_AVX512_MOVE_BY_PIECES): Ditto.
+	(X86_TUNE_AVX512_STORE_BY_PIECES): Ditto.
+
 2025-02-25  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	Backported from master:
