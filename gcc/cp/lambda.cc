@@ -971,9 +971,8 @@ maybe_resolve_dummy (tree object, bool add_capture_p)
 /* When parsing a generic lambda containing an argument-dependent
    member function call we defer overload resolution to instantiation
    time.  But we have to know now whether to capture this or not.
-   Do that if FNS contains any non-static fns.
-   The std doesn't anticipate this case, but I expect this to be the
-   outcome of discussion.  */
+   Do that if FNS contains any non-static fns as per
+   [expr.prim.lambda.capture]/7.1.  */
 
 void
 maybe_generic_this_capture (tree object, tree fns)
@@ -992,7 +991,7 @@ maybe_generic_this_capture (tree object, tree fns)
 	for (lkp_iterator iter (fns); iter; ++iter)
 	  if (((!id_expr && TREE_CODE (*iter) != USING_DECL)
 	       || TREE_CODE (*iter) == TEMPLATE_DECL)
-	      && DECL_IOBJ_MEMBER_FUNCTION_P (*iter))
+	      && DECL_OBJECT_MEMBER_FUNCTION_P (*iter))
 	    {
 	      /* Found a non-static member.  Capture this.  */
 	      lambda_expr_this_capture (lam, /*maybe*/-1);
