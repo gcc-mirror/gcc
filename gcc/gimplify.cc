@@ -7810,6 +7810,7 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  /* Turn the in/out constraint into an output constraint.  */
 	  char *p = xstrdup (constraint);
 	  p[0] = '=';
+	  TREE_PURPOSE (link) = unshare_expr (TREE_PURPOSE (link));
 	  TREE_VALUE (TREE_PURPOSE (link)) = build_string (constraint_len, p);
 
 	  /* And add a matching input constraint.  */
