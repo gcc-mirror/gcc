@@ -2271,10 +2271,10 @@ package body Atree is
       --  Copy substitute node into place, preserving old fields as required
 
       Copy_Node (Source => New_Node, Destination => Old_Node);
-      Set_Error_Posted (Old_Node, Old_Error_Posted);
 
       Set_Check_Actuals (Old_Node, Old_CA);
       Set_Is_Ignored_Ghost_Node (Old_Node, Old_Is_IGN);
+      Set_Error_Posted (Old_Node, Old_Error_Posted);
 
       if Nkind (New_Node) in N_Subexpr then
          Set_Paren_Count     (Old_Node, Old_Paren_Count);
