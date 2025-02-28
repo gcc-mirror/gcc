@@ -539,9 +539,10 @@ package Atree is
    --  newly constructed replacement subtree.
    --
    --  Note: New_Node may not contain references to Old_Node, for example as
-   --  descendants, since the rewrite would make such references invalid. If
-   --  New_Node does need to reference Old_Node, then these references should
-   --  be to a relocated copy of Old_Node (see Relocate_Node procedure).
+   --  descendants, since the rewrite would turn them into cyclic
+   --  self-references. If New_Node does need to reference Old_Node, then these
+   --  references should be to a relocated copy of Old_Node (see Relocate_Node
+   --  procedure).
    --
    --  Note: The Original_Node function applied to Old_Node (which has now
    --  been replaced by the contents of New_Node), can be used to obtain the
@@ -555,10 +556,8 @@ package Atree is
    --  original contents of the Old_Node, but rather the New_Node value.
    --  Replace also preserves the setting of Comes_From_Source.
    --
-   --  Note that New_Node must not contain references to Old_Node, for example
-   --  as descendants, since the rewrite would make such references invalid. If
-   --  New_Node does need to reference Old_Node, then these references should
-   --  be to a relocated copy of Old_Node (see Relocate_Node procedure).
+   --  The note in the documentation of Rewrite about the risk of creating
+   --  cyclic references also applies here.
    --
    --  Replace is used in certain circumstances where it is desirable to
    --  suppress any history of the rewriting operation. Notably, it is used
