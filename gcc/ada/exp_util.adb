@@ -1523,7 +1523,118 @@ package body Exp_Util is
             New_E := Type_Map.Get (Entity (N));
 
             if Present (New_E) then
-               Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
+               declare
+
+                  Ctrl_Type : constant Entity_Id
+                    := Find_Dispatching_Type (Par_Subp);
+
+                  function Call_To_Parent_Dispatching_Op_Must_Be_Mapped
+                    (Call_Node : Node_Id) return Boolean;
+                  --  If Call_Node is a call to a primitive function F of the
+                  --  tagged type T associated with Par_Subp that either has
+                  --  any actuals that are controlling formals of Par_Subp,
+                  --  or else the call to F is an actual parameter of an
+                  --  enclosing call to a primitive of T that has any actuals
+                  --  that are controlling formals of Par_Subp (and recursively
+                  --  up the tree of enclosing function calls), returns True;
+                  --  otherwise returns False. Returning True implies that the
+                  --  call to F must be mapped to a call that instead targets
+                  --  the corresponding function F of the tagged type for which
+                  --  Subp is a primitive function.
+
+                  --------------------------------------------------
+                  -- Call_To_Parent_Dispatching_Op_Must_Be_Mapped --
+                  --------------------------------------------------
+
+                  function Call_To_Parent_Dispatching_Op_Must_Be_Mapped
+                    (Call_Node : Node_Id) return Boolean
+                  is
+                     pragma Assert (Nkind (Call_Node) = N_Function_Call);
+
+                     Actual           : Node_Id := First_Actual (Call_Node);
+                     Actual_Type      : Entity_Id;
+                     Actual_Or_Prefix : Node_Id;
+
+                  begin
+                     if Is_Entity_Name (Name (Call_Node))
+                       and then Is_Dispatching_Operation
+                                  (Entity (Name (Call_Node)))
+                       and then
+                            Is_Ancestor
+                              (Ctrl_Type,
+                               Find_Dispatching_Type
+                                 (Entity (Name (Call_Node))))
+                     then
+                        while Present (Actual) loop
+
+                           --  Account for 'Old and explicit dereferences,
+                           --  picking up the prefix object in those cases.
+
+                           if (Nkind (Actual) = N_Attribute_Reference
+                                and then Attribute_Name (Actual) = Name_Old)
+                             or else Nkind (Actual) = N_Explicit_Dereference
+                           then
+                              Actual_Or_Prefix := Prefix (Actual);
+                           else
+                              Actual_Or_Prefix := Actual;
+                           end if;
+
+                           Actual_Type := Etype (Actual);
+
+                           if Is_Anonymous_Access_Type (Actual_Type) then
+                              Actual_Type := Designated_Type (Actual_Type);
+                           end if;
+
+                           if Nkind (Actual_Or_Prefix)
+                                in N_Identifier
+                                 | N_Expanded_Name
+                                 | N_Operator_Symbol
+
+                             and then Is_Formal (Entity (Actual_Or_Prefix))
+
+                             and then Covers (Ctrl_Type, Actual_Type)
+                           then
+                              --  At least one actual is a formal parameter of
+                              --  Par_Subp with type Ctrl_Type.
+
+                              return True;
+                           end if;
+
+                           Next_Actual (Actual);
+                        end loop;
+
+                        if Nkind (Parent (Call_Node)) = N_Function_Call then
+                           return
+                             Call_To_Parent_Dispatching_Op_Must_Be_Mapped
+                               (Parent (Call_Node));
+                        end if;
+
+                        return False;
+
+                     else
+                        return False;
+                     end if;
+                  end Call_To_Parent_Dispatching_Op_Must_Be_Mapped;
+
+               begin
+                  --  If N's entity is in the map, then the entity is either
+                  --  a formal of the parent subprogram that should necessarily
+                  --  be mapped, or it's a function call's target entity that
+                  --  that should be mapped if the call involves any actuals
+                  --  that reference formals of the parent subprogram (or the
+                  --  function call is part of an enclosing call that similarly
+                  --  qualifies for mapping). Rewrite a node that references
+                  --  any such qualified entity to a new node referencing the
+                  --  corresponding entity associated with the derived type.
+
+                  if not Is_Subprogram (Entity (N))
+                    or else Nkind (Parent (N)) /= N_Function_Call
+                    or else
+                      Call_To_Parent_Dispatching_Op_Must_Be_Mapped (Parent (N))
+                  then
+                     Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
+                  end if;
+               end;
             end if;
 
             --  Update type of function call node, which should be the same as
