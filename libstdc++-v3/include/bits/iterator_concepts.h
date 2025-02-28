@@ -103,32 +103,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace ranges
   {
     /// @cond undocumented
+    // Implementation of std::ranges::iter_move, [iterator.cust.move].
     namespace __imove
     {
       void iter_move() = delete;
 
+      // Satisfied if _Tp is a class or enumeration type and iter_move
+      // can be found by argument-dependent lookup.
       template<typename _Tp>
 	concept __adl_imove
 	  = (std::__detail::__class_or_enum<remove_reference_t<_Tp>>)
-	  && requires(_Tp&& __t) { iter_move(static_cast<_Tp&&>(__t)); };
+	      && requires(_Tp&& __t) { iter_move(static_cast<_Tp&&>(__t)); };
 
       struct _IterMove
       {
       private:
+	// The type returned by dereferencing a value of type _Tp.
+	// Unlike iter_reference_t this preserves the value category of _Tp.
+	template<typename _Tp>
+	  using __iter_ref_t = decltype(*std::declval<_Tp>());
+
 	template<typename _Tp>
 	  struct __result
-	  { using type = iter_reference_t<_Tp>; };
+	  { using type = __iter_ref_t<_Tp>; };
 
+	// Use iter_move(E) if that works.
 	template<typename _Tp>
 	  requires __adl_imove<_Tp>
 	  struct __result<_Tp>
 	  { using type = decltype(iter_move(std::declval<_Tp>())); };
 
+	// Otherwise, if *E if an lvalue, use std::move(*E).
 	template<typename _Tp>
 	  requires (!__adl_imove<_Tp>)
-	  && is_lvalue_reference_v<iter_reference_t<_Tp>>
+	    && is_lvalue_reference_v<__iter_ref_t<_Tp>>
 	  struct __result<_Tp>
-	  { using type = remove_reference_t<iter_reference_t<_Tp>>&&; };
+	  { using type = remove_reference_t<__iter_ref_t<_Tp>>&&; };
 
 	template<typename _Tp>
 	  static constexpr bool
@@ -142,10 +152,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       public:
 	// The result type of iter_move(std::declval<_Tp>())
-	template<std::__detail::__dereferenceable _Tp>
+	template<typename _Tp>
 	  using __type = typename __result<_Tp>::type;
 
-	template<std::__detail::__dereferenceable _Tp>
+	template<typename _Tp>
+	  requires __adl_imove<_Tp> || requires { typename __iter_ref_t<_Tp>; }
 	  [[nodiscard]]
 	  constexpr __type<_Tp>
 	  operator()(_Tp&& __e) const
@@ -153,10 +164,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    if constexpr (__adl_imove<_Tp>)
 	      return iter_move(static_cast<_Tp&&>(__e));
-	    else if constexpr (is_lvalue_reference_v<iter_reference_t<_Tp>>)
-	      return static_cast<__type<_Tp>>(*__e);
+	    else if constexpr (is_lvalue_reference_v<__iter_ref_t<_Tp>>)
+	      return std::move(*static_cast<_Tp&&>(__e));
 	    else
-	      return *__e;
+	      return *static_cast<_Tp&&>(__e);
 	  }
       };
     } // namespace __imove
@@ -167,6 +178,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
   } // namespace ranges
 
+  /// The result type of ranges::iter_move(std::declval<_Tp&>())
   template<__detail::__dereferenceable _Tp>
     requires __detail::__can_reference<ranges::__imove::_IterMove::__type<_Tp&>>
     using iter_rvalue_reference_t = ranges::__imove::_IterMove::__type<_Tp&>;
@@ -873,11 +885,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace ranges
 {
   /// @cond undocumented
+  // Implementation of std::ranges::iter_swap, [iterator.cust.swap].
   namespace __iswap
   {
     template<typename _It1, typename _It2>
       void iter_swap(_It1, _It2) = delete;
 
+    // Satisfied if _Tp and _Up are class or enumeration types and iter_swap
+    // can be found by argument-dependent lookup.
     template<typename _Tp, typename _Up>
       concept __adl_iswap
 	= (std::__detail::__class_or_enum<remove_reference_t<_Tp>>
