@@ -628,3 +628,9 @@
 #elif __cpp_pack_indexing != 202311
 #  error "__cpp_pack_indexing != 202311"
 #endif
+
+#ifndef __cpp_pp_embed
+# error "__cpp_pp_embed"
+#elif __cpp_pp_embed != 202502
+#  error "__cpp_pp_embed != 202502"
+#endif
