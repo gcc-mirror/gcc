@@ -1,3 +1,15 @@
+2025-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118928
+	* constexpr.cc (cxx_eval_constant_expression) <case GOTO_EXPR>: Remove
+	an assert.
+
+2025-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118516
+	* parser.cc (cp_parser_template_argument): Don't call
+	require_potential_constant_expression.
+
 2025-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/118876

@@ -1,3 +1,91 @@
+2025-02-27  Pan Li  <pan2.li@intel.com>
+
+	PR target/118931
+	* gcc.target/riscv/rvv/base/pr118931-run-1.c: New test.
+
+2025-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119030
+	* gcc.c-torture/execute/pr119030.c: New test.
+
+2025-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/118860
+	* gcc.dg/pr118860.c: New test.
+
+2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/stack_frame-1.c: Adjust.
+
+2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/stack_frame-1.c: New.
+
+2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/alloca-1-O0_-mfake-ptx-alloca.c: New.
+	* gcc.target/nvptx/alloca-2-O0_-mfake-ptx-alloca.c: Likewise.
+	* gcc.target/nvptx/alloca-4-O3_-mfake-ptx-alloca.c: Likewise.
+	* gcc.target/nvptx/vla-1-O0_-mfake-ptx-alloca.c: Likewise.
+	* gcc.target/nvptx/alloca-4-O3.c:
+	'dg-additional-options -mfake-ptx-alloca'.
+
+2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/alloca-1-unused-O0-sm_30.c: Adjust.
+
+2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/alloca-1-dead-O0-sm_30.c: New.
+	* gcc.target/nvptx/alloca-1-dead-O0.c: Likewise.
+	* gcc.target/nvptx/alloca-1-dead-O1-sm_30.c: Likewise.
+	* gcc.target/nvptx/alloca-1-dead-O1.c: Likewise.
+	* gcc.target/nvptx/alloca-1-unused-O0-sm_30.c: Likewise.
+	* gcc.target/nvptx/alloca-1-unused-O0.c: Likewise.
+	* gcc.target/nvptx/alloca-1-unused-O1-sm_30.c: Likewise.
+	* gcc.target/nvptx/alloca-1-unused-O1.c: Likewise.
+	* gcc.target/nvptx/vla-1-dead-O0-sm_30.c: Likewise.
+	* gcc.target/nvptx/vla-1-dead-O0.c: Likewise.
+	* gcc.target/nvptx/vla-1-dead-O1-sm_30.c: Likewise.
+	* gcc.target/nvptx/vla-1-dead-O1.c: Likewise.
+	* gcc.target/nvptx/vla-1-unused-O0-sm_30.c: Likewise.
+	* gcc.target/nvptx/vla-1-unused-O0.c: Likewise.
+	* gcc.target/nvptx/vla-1-unused-O1-sm_30.c: Likewise.
+	* gcc.target/nvptx/vla-1-unused-O1.c: Likewise.
+
+2025-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118928
+	* g++.dg/cpp0x/constexpr-prvalue5.C: New test.
+
+2025-02-27  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/118940
+	* gcc.target/i386/pr118940.c: New test.
+
+2025-02-27  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/116336
+	* gcc.dg/pr116336.c: New test.
+
+2025-02-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118516
+	* g++.dg/cpp2a/fn-template11.C:
+	* g++.dg/template/fn-template1.C: New test.
+	* g++.dg/template/fn-template2.C: New test.
+
+2025-02-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/lto/pr61123-enum-size_0.c: (dg-lto-options) Move
+	linker related options to ...
+	(dg-extra-ld-options): ... here.  Add -flinker-output=nolto-rel.
+
+2025-02-27  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/118789
+	* gfortran.dg/associate_73.f90: New test.
+
 2025-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/119001

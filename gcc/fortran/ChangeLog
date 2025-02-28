@@ -1,3 +1,9 @@
+2025-02-27  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/118789
+	* trans-stmt.cc (trans_associate_var): Compare pointed to types when
+	expr to associate is already a pointer.
+
 2025-02-26  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/108233

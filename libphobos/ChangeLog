@@ -1,3 +1,8 @@
+2025-02-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/libphobos.unittest/unittest.exp: Use `dg-runtest' rather
+	than `dg-test'.  Set `libphobos_test_name'.
+
 2025-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* testsuite/libphobos.phobos/shared/phobos-shared.exp: Require

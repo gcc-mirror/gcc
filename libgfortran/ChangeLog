@@ -1,3 +1,9 @@
+2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/107635
+	* config/t-nvptx: New.
+	* configure.host [nvptx] (tmake_file): Add it.
+
 2025-02-21  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/107635

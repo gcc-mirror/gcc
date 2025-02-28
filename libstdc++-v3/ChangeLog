@@ -1,3 +1,8 @@
+2025-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (_Impl::_M_allocate): Fix outdated
+	comment.
+
 2025-02-26  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/118083

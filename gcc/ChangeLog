@@ -1,3 +1,94 @@
+2025-02-27  Pan Li  <pan2.li@intel.com>
+
+	PR target/118931
+	* config/riscv/riscv-v.cc (expand_const_vector): Add overflow to
+	smode check and clean up highest bits if overflow.
+
+2025-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119030
+	* gimple-fold.cc (fold_truth_andor_for_ifcombine): Fix a pasto,
+	ll_unsignedp -> rl_unsignedp.
+
+2025-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/118860
+	* input.h (file_cache::tune): No longer static.  Rename argument
+	from num_file_slots_ to num_file_slots.  Formatting fix.
+	(file_cache::num_file_slots): Renamed to ...
+	(file_cache::m_num_file_slots): ... this.  No longer static.
+	* input.cc (file_cache_slot::tune): Change return type from void to
+	size_t, return previous file_cache_slot::line_record_size value.
+	Formatting fixes.
+	(file_cache::tune): Rename argument from num_file_slots_ to
+	num_file_slots.  Set m_num_file_slots rather than num_file_slots.
+	If m_num_file_slots or file_cache_slot::line_record_size changes,
+	delete[] m_file_slots and new it again.
+	(file_cache::num_file_slots): Remove definition.
+	(file_cache::lookup_file): Use m_num_file_slots rather than
+	num_file_slots.
+	(file_cache::evicted_cache_tab_entry): Likewise.
+	(file_cache::file_cache): Likewise.  Initialize m_num_file_slots
+	to 16.
+	(file_cache::dump): Use m_num_file_slots rather than num_file_slots.
+	(file_cache_slot::get_next_line): Formatting fixes.
+	(file_cache_slot::read_line_num): Likewise.
+	(get_source_text_between): Likewise.
+	* toplev.cc (toplev::main): Call global_dc->get_file_cache ().tune
+	rather than file_cache::tune.
+
+2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.h (MAX_FIXED_MODE_SIZE): '#define'.
+
+2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.opt (-mfake-ptx-alloca): New.
+	* config/nvptx/nvptx-protos.h (nvptx_output_fake_ptx_alloca):
+	Declare.
+	* config/nvptx/nvptx.cc (nvptx_output_fake_ptx_alloca): New.
+	* config/nvptx/nvptx.md (define_insn "@nvptx_alloca_<mode>")
+	[!(TARGET_PTX_7_3 && TARGET_SM52)]: Use it for
+	'-mfake-ptx-alloca'.
+
+2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.md (define_expand "allocate_stack")
+	[!TARGET_SOFT_STACK]: Move
+	'sorry ("dynamic stack allocation not supported");'...
+	(define_insn "@nvptx_alloca_<mode>"): ... here.
+
+2025-02-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/108369
+	* doc/invoke.texi: Add a note to clarify. Adjust some wording.
+
+2025-02-27  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/x86-tune.def
+	(X86_TUNE_DEST_FALSE_DEP_FOR_GLC): Add GNR, GNR-D, DMR.
+	(X86_TUNE_AVOID_256FMA_CHAINS): Ditto.
+	(X86_TUNE_AVX512_MOVE_BY_PIECES): Ditto.
+	(X86_TUNE_AVX512_STORE_BY_PIECES): Ditto.
+
+2025-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-range-phi.cc (phi_analyzer::process_phi): Fix comment typo,
+	dpoesn;t -> doesn't.
+
+2025-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/116143
+	* Makefile.in (EXTRA_BACKEND_OBJS): New variable.
+	(BACKEND): Use it before libbackend.a.
+
+2025-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/118819
+	* alias.cc (memrefs_conflict_p): Perform arithmetics on c, xsize and
+	ysize in poly_offset_int and return -1 if it is not representable in
+	poly_int64.
+
 2025-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/119001
