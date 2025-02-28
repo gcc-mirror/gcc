@@ -285,15 +285,11 @@ package Atree is
 
    procedure Copy_Node (Source, Destination : Node_Or_Entity_Id);
    --  Copy the entire contents of the source node to the destination node.
-   --  The contents of the source node is not affected. If the source node
-   --  has an extension, then the destination must have an extension also.
-   --  The parent pointer of the destination and its list link, if any, are
-   --  not affected by the copy. Note that parent pointers of descendants
-   --  are not adjusted, so the descendants of the destination node after
-   --  the Copy_Node is completed have dubious parent pointers. Note that
-   --  this routine does NOT copy aspect specifications, the Has_Aspects
-   --  flag in the returned node will always be False. The caller must deal
-   --  with copying aspect specifications where this is required.
+   --  The contents of the source node is not affected. The parent pointer of
+   --  the destination and its list link, if any, are not affected by the copy.
+   --  Note that parent pointers of descendants are not adjusted, so the
+   --  descendants of the destination node after the Copy_Node is completed
+   --  have dubious parent pointers.
 
    function New_Copy (Source : Node_Id) return Node_Id;
    --  This function allocates a new node, and then initializes it by copying
