@@ -536,11 +536,7 @@ package Atree is
    procedure Rewrite (Old_Node, New_Node : Node_Id);
    --  This is used when a complete subtree is to be replaced. Old_Node is the
    --  root of the old subtree to be replaced, and New_Node is the root of the
-   --  newly constructed replacement subtree. The actual mechanism is to swap
-   --  the contents of these two nodes fixing up the parent pointers of the
-   --  replaced node (we do not attempt to preserve parent pointers for the
-   --  original node).
-   --  ??? The above explanation is incorrect, instead Copy_Node is called.
+   --  newly constructed replacement subtree.
    --
    --  Note: New_Node may not contain references to Old_Node, for example as
    --  descendants, since the rewrite would make such references invalid. If
