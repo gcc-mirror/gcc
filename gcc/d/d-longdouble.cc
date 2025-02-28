@@ -113,7 +113,7 @@ longdouble::to_bool (void) const
 longdouble
 longdouble::add (const longdouble &r) const
 {
-  longdouble x;
+  longdouble x = {};
   real_arithmetic (&x.rv (), PLUS_EXPR, &this->rv (), &r.rv ());
   return x.normalize ();
 }
@@ -121,7 +121,7 @@ longdouble::add (const longdouble &r) const
 longdouble
 longdouble::sub (const longdouble &r) const
 {
-  longdouble x;
+  longdouble x = {};
   real_arithmetic (&x.rv (), MINUS_EXPR, &this->rv (), &r.rv ());
   return x.normalize ();
 }
@@ -129,7 +129,7 @@ longdouble::sub (const longdouble &r) const
 longdouble
 longdouble::mul (const longdouble &r) const
 {
-  longdouble x;
+  longdouble x = {};
   real_arithmetic (&x.rv (), MULT_EXPR, &this->rv (), &r.rv ());
   return x.normalize ();
 }
@@ -137,7 +137,7 @@ longdouble::mul (const longdouble &r) const
 longdouble
 longdouble::div (const longdouble &r) const
 {
-  longdouble x;
+  longdouble x = {};
   real_arithmetic (&x.rv (), RDIV_EXPR, &this->rv (), &r.rv ());
   return x.normalize ();
 }
@@ -145,7 +145,7 @@ longdouble::div (const longdouble &r) const
 longdouble
 longdouble::mod (const longdouble &r) const
 {
-  longdouble x;
+  longdouble x = {};
   real_value q;
 
   if (r.rv ().cl == rvc_zero || REAL_VALUE_ISINF (this->rv ()))
@@ -172,7 +172,7 @@ longdouble::mod (const longdouble &r) const
 longdouble
 longdouble::neg (void) const
 {
-  longdouble x;
+  longdouble x = {};
   real_arithmetic (&x.rv (), NEGATE_EXPR, &this->rv (), NULL);
   return x.normalize ();
 }

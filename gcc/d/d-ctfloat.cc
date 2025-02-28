@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 real_t
 CTFloat::fabs (real_t r)
 {
-  real_t x;
+  real_t x = {};
   real_arithmetic (&x.rv (), ABS_EXPR, &r.rv (), NULL);
   return x.normalize ();
 }
@@ -43,7 +43,7 @@ CTFloat::fabs (real_t r)
 real_t
 CTFloat::ldexp (real_t r, int exp)
 {
-  real_t x;
+  real_t x = {};
   real_ldexp (&x.rv (), &r.rv (), exp);
   return x.normalize ();
 }
@@ -87,7 +87,7 @@ CTFloat::isInfinity (real_t r)
 real_t
 CTFloat::parse (const char *buffer, bool &overflow)
 {
-  real_t r;
+  real_t r = {};
   real_from_string3 (&r.rv (), buffer, TYPE_MODE (long_double_type_node));
 
   /* Front-end checks overflow to see if the value is representable.  */
