@@ -4399,10 +4399,10 @@ package body Contracts is
          Seen    : Subprogram_List (Subps'Range) := (others => Empty);
 
          function Inherit_Condition
-           (Par_Subp : Entity_Id;
-            Subp     : Entity_Id) return Node_Id;
-         --  Inherit the class-wide condition from Par_Subp to Subp and adjust
-         --  all the references to formals in the inherited condition.
+           (Par_Subp : Entity_Id) return Node_Id;
+         --  Inherit the class-wide condition from Par_Subp. Simply makes
+         --  a copy of the condition in preparation for later mapping of
+         --  referenced formals and functions by Build_Class_Wide_Expression.
 
          procedure Merge_Conditions (From : Node_Id; Into : Node_Id);
          --  Merge two class-wide preconditions or postconditions (the former
@@ -4417,92 +4417,11 @@ package body Contracts is
          -----------------------
 
          function Inherit_Condition
-           (Par_Subp : Entity_Id;
-            Subp     : Entity_Id) return Node_Id
-         is
-            function Check_Condition (Expr : Node_Id) return Boolean;
-            --  Used in assertion to check that Expr has no reference to the
-            --  formals of Par_Subp.
-
-            ---------------------
-            -- Check_Condition --
-            ---------------------
-
-            function Check_Condition (Expr : Node_Id) return Boolean is
-               Par_Formal_Id : Entity_Id;
-
-               function Check_Entity (N : Node_Id) return Traverse_Result;
-               --  Check occurrence of Par_Formal_Id
-
-               ------------------
-               -- Check_Entity --
-               ------------------
-
-               function Check_Entity (N : Node_Id) return Traverse_Result is
-               begin
-                  if Nkind (N) = N_Identifier
-                    and then Present (Entity (N))
-                    and then Entity (N) = Par_Formal_Id
-                  then
-                     return Abandon;
-                  end if;
-
-                  return OK;
-               end Check_Entity;
-
-               function Check_Expression is new Traverse_Func (Check_Entity);
-
-            --  Start of processing for Check_Condition
-
-            begin
-               Par_Formal_Id := First_Formal (Par_Subp);
-
-               while Present (Par_Formal_Id) loop
-                  if Check_Expression (Expr) = Abandon then
-                     return False;
-                  end if;
-
-                  Next_Formal (Par_Formal_Id);
-               end loop;
-
-               return True;
-            end Check_Condition;
-
-            --  Local variables
-
-            Assoc_List     : constant Elist_Id := New_Elmt_List;
-            Par_Formal_Id  : Entity_Id := First_Formal (Par_Subp);
-            Subp_Formal_Id : Entity_Id := First_Formal (Subp);
-            New_Condition  : Node_Id;
-
+           (Par_Subp : Entity_Id) return Node_Id is
          begin
-            while Present (Par_Formal_Id) loop
-               Append_Elmt (Par_Formal_Id,  Assoc_List);
-               Append_Elmt (Subp_Formal_Id, Assoc_List);
-
-               Next_Formal (Par_Formal_Id);
-               Next_Formal (Subp_Formal_Id);
-            end loop;
-
-            --  Check that Parent field of all the nodes have their correct
-            --  decoration; required because otherwise mapped nodes with
-            --  wrong Parent field are left unmodified in the copied tree
-            --  and cause reporting wrong errors at later stages.
-
-            pragma Assert
-              (Check_Parents (Class_Condition (Kind, Par_Subp), Assoc_List));
-
-            New_Condition :=
+            return
               New_Copy_Tree
-                (Source => Class_Condition (Kind, Par_Subp),
-                 Map    => Assoc_List);
-
-            --  Ensure that the inherited condition has no reference to the
-            --  formals of the parent subprogram.
-
-            pragma Assert (Check_Condition (New_Condition));
-
-            return New_Condition;
+                (Source => Class_Condition (Kind, Par_Subp));
          end Inherit_Condition;
 
          ----------------------
@@ -4616,9 +4535,7 @@ package body Contracts is
                   Par_Prim        := Subp_Id;
                   Par_Iface_Prims := Covered_Interface_Primitives (Par_Prim);
 
-                  Cond := Inherit_Condition
-                            (Subp     => Spec_Id,
-                             Par_Subp => Subp_Id);
+                  Cond := Inherit_Condition (Par_Subp => Subp_Id);
 
                   if Present (Class_Cond) then
                      Merge_Conditions (Cond, Class_Cond);
@@ -4662,9 +4579,7 @@ package body Contracts is
                then
                   Seen (Index) := Subp_Id;
 
-                  Cond := Inherit_Condition
-                            (Subp     => Spec_Id,
-                             Par_Subp => Subp_Id);
+                  Cond := Inherit_Condition (Par_Subp => Subp_Id);
 
                   Check_Class_Condition
                     (Cond            => Cond,
