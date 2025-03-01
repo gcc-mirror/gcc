@@ -209,6 +209,50 @@
 }
   [(set (attr "length") (const_int 12))])
 
+(define_insn "atomic_storeti_lsx"
+  [(set (match_operand:TI 0 "memory_operand" "=m")
+	(unspec_volatile:TI
+	  [(match_operand:V2DI 1 "register_operand" "f")
+	   (match_operand:SI   2 "const_int_operand")] ;; model
+	UNSPEC_ATOMIC_STORE))]
+  "ISA_HAS_LSX && TARGET_64BIT"
+{
+  enum memmodel model = memmodel_base (INTVAL (operands[2]));
+
+  switch (model)
+    {
+    case MEMMODEL_SEQ_CST:
+      return "dbar\t0x12\\n\\t"
+	     "vst\t%w1,%0\\n\\t"
+	     "dbar\t0x18";
+    case MEMMODEL_RELEASE:
+      return "dbar\t0x12\\n\\t"
+	     "vst\t%w1,%0";
+    case MEMMODEL_RELAXED:
+      return "vst\t%w1,%0";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set (attr "length") (const_int 12))])
+
+(define_expand "atomic_storeti"
+  [(match_operand:TI 0 "memory_operand"   "=m")
+   (match_operand:TI 1 "reg_or_0_operand" "rJ")
+   (match_operand:SI 2 "const_int_operand")]
+  "ISA_HAS_LSX && TARGET_64BIT"
+{
+  rtx vr = gen_reg_rtx (V2DImode), op1 = operands[1];
+  rtvec v = rtvec_alloc (2);
+
+  for (int i = 0; i < 2; i++)
+    RTVEC_ELT (v, i) = loongarch_subword (op1, i);
+
+  emit_insn (gen_vec_initv2didi (vr, gen_rtx_PARALLEL (V2DImode, v)));
+  emit_insn (gen_atomic_storeti_lsx (operands[0], vr, operands[2]));
+  DONE;
+})
+
 (define_insn "atomic_<amop><mode>"
   [(set (match_operand:GPR 0 "memory_operand" "+ZB")
 	(unspec_volatile:GPR
