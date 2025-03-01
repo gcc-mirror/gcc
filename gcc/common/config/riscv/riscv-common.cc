@@ -213,7 +213,7 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zcmp", "zca"},
   {"zcmt", "zca"},
   {"zcmt", "zicsr"},
-  {"zcf", "f",
+  {"zce", "zcf",
    [] (const riscv_subset_list *subset_list) -> bool
    {
      return subset_list->xlen () == 32 && subset_list->lookup ("f");
