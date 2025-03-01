@@ -661,7 +661,7 @@
 			(match_operand:SHORT 2 "reg_or_0_operand" "rJ"))
 	   (match_operand:SI 3 "const_int_operand")] ;; model
 	 UNSPEC_SYNC_OLD_OP))]
-  ""
+  "!ISA_HAS_LAM_BH"
 {
   union loongarch_gen_fn_ptrs generator;
   generator.fn_7 = gen_atomic_cas_value_sub_7_si;
