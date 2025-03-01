@@ -1933,6 +1933,9 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
 		ft2 = DECL_BIT_FIELD_TYPE (s2);
 	      }
 
+	    if (TREE_CODE (ft1) == ERROR_MARK || TREE_CODE (ft2) == ERROR_MARK)
+	      return false;
+
 	    data->anon_field = !DECL_NAME (s1);
 	    data->pointedto = false;
 
