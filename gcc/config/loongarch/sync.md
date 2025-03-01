@@ -36,9 +36,6 @@
 
 (define_code_iterator any_atomic [plus ior xor and])
 
-;; This attribute gives the format suffix for atomic memory operations.
-(define_mode_attr amo [(QI "b") (HI "h") (SI "w") (DI "d")])
-
 ;; <amop> expands to the name of the atomic operand that implements a
 ;; particular code.
 (define_code_attr amop [(ior "or") (xor "xor") (and "and") (plus "add")])
@@ -181,7 +178,7 @@
 	   (match_operand:SI 2 "const_int_operand")] ;; model
 	 UNSPEC_SYNC_OLD_OP))]
   ""
-  "am<amop>%A2.<amo>\t$zero,%z1,%0"
+  "am<amop>%A2.<size>\t$zero,%z1,%0"
   [(set (attr "length") (const_int 4))])
 
 (define_insn "atomic_add<mode>"
@@ -192,7 +189,7 @@
 	   (match_operand:SI 2 "const_int_operand")] ;; model
 	 UNSPEC_SYNC_OLD_OP))]
   "ISA_HAS_LAM_BH"
-  "amadd%A2.<amo>\t$zero,%z1,%0"
+  "amadd%A2.<size>\t$zero,%z1,%0"
   [(set (attr "length") (const_int 4))])
 
 (define_insn "atomic_fetch_<amop><mode>"
@@ -205,7 +202,7 @@
 	   (match_operand:SI 3 "const_int_operand")] ;; model
 	 UNSPEC_SYNC_OLD_OP))]
   ""
-  "am<amop>%A3.<amo>\t%0,%z2,%1"
+  "am<amop>%A3.<size>\t%0,%z2,%1"
   [(set (attr "length") (const_int 4))])
 
 (define_insn "atomic_exchange<mode>"
@@ -217,7 +214,7 @@
    (set (match_dup 1)
 	(match_operand:GPR 2 "register_operand" "r"))]
   ""
-  "amswap%A3.<amo>\t%0,%z2,%1"
+  "amswap%A3.<size>\t%0,%z2,%1"
   [(set (attr "length") (const_int 4))])
 
 (define_insn "atomic_exchange<mode>_short"
@@ -229,7 +226,7 @@
    (set (match_dup 1)
 	(match_operand:SHORT 2 "register_operand" "r"))]
   "ISA_HAS_LAM_BH"
-  "amswap%A3.<amo>\t%0,%z2,%1"
+  "amswap%A3.<size>\t%0,%z2,%1"
   [(set (attr "length") (const_int 4))])
 
 (define_insn "atomic_cas_value_strong<mode>"
@@ -244,7 +241,7 @@
   ""
 {
   output_asm_insn ("1:", operands);
-  output_asm_insn ("ll.<amo>\t%0,%1", operands);
+  output_asm_insn ("ll.<size>\t%0,%1", operands);
 
   /* Like the test case atomic-cas-int.C, in loongarch64, O1 and higher, the
      return value of the val_without_const_folding will not be truncated and
@@ -264,7 +261,7 @@
     output_asm_insn ("bne\t%0,%z2,2f", operands);
 
   output_asm_insn ("or%i3\t%5,$zero,%3", operands);
-  output_asm_insn ("sc.<amo>\t%5,%1", operands);
+  output_asm_insn ("sc.<size>\t%5,%1", operands);
   output_asm_insn ("beqz\t%5,1b", operands);
   output_asm_insn ("b\t3f", operands);
   output_asm_insn ("2:", operands);
@@ -289,7 +286,7 @@
 			       (match_operand:SI 4 "const_int_operand")]  ;; mod_s
 	 UNSPEC_COMPARE_AND_SWAP))]
   "ISA_HAS_LAMCAS"
-  "ori\t%0,%z2,0\n\tamcas%A4.<amo>\t%0,%z3,%1"
+  "ori\t%0,%z2,0\n\tamcas%A4.<size>\t%0,%z3,%1"
   [(set (attr "length") (const_int 8))])
 
 (define_expand "atomic_compare_and_swap<mode>"
@@ -404,12 +401,12 @@
   ""
 {
   return "1:\\n\\t"
-	 "ll.<amo>\\t%0,%1\\n\\t"
+	 "ll.<size>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%2\\n\\t"
 	 "bne\\t%7,%z4,2f\\n\\t"
 	 "and\\t%7,%0,%z3\\n\\t"
 	 "or%i5\\t%7,%7,%5\\n\\t"
-	 "sc.<amo>\\t%7,%1\\n\\t"
+	 "sc.<size>\\t%7,%1\\n\\t"
 	 "beq\\t$zero,%7,1b\\n\\t"
 	 "b\\t3f\\n\\t"
 	 "2:\\n\\t"
@@ -494,12 +491,12 @@
   ""
 {
   return "1:\\n\\t"
-	 "ll.<amo>\\t%0,%1\\n\\t"
+	 "ll.<size>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%3\\n\\t"
 	 "add.w\\t%8,%0,%z5\\n\\t"
 	 "and\\t%8,%8,%z2\\n\\t"
 	 "or%i8\\t%7,%7,%8\\n\\t"
-	 "sc.<amo>\\t%7,%1\\n\\t"
+	 "sc.<size>\\t%7,%1\\n\\t"
 	 "beq\\t$zero,%7,1b";
 }
 
@@ -520,12 +517,12 @@
   ""
 {
   return "1:\\n\\t"
-	 "ll.<amo>\\t%0,%1\\n\\t"
+	 "ll.<size>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%3\\n\\t"
 	 "sub.w\\t%8,%0,%z5\\n\\t"
 	 "and\\t%8,%8,%z2\\n\\t"
 	 "or%i8\\t%7,%7,%8\\n\\t"
-	 "sc.<amo>\\t%7,%1\\n\\t"
+	 "sc.<size>\\t%7,%1\\n\\t"
 	 "beq\\t$zero,%7,1b";
 }
   [(set (attr "length") (const_int 28))])
@@ -545,12 +542,12 @@
   ""
 {
   return "1:\\n\\t"
-	 "ll.<amo>\\t%0,%1\\n\\t"
+	 "ll.<size>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%3\\n\\t"
 	 "and\\t%8,%0,%z5\\n\\t"
 	 "and\\t%8,%8,%z2\\n\\t"
 	 "or%i8\\t%7,%7,%8\\n\\t"
-	 "sc.<amo>\\t%7,%1\\n\\t"
+	 "sc.<size>\\t%7,%1\\n\\t"
 	 "beq\\t$zero,%7,1b";
 }
   [(set (attr "length") (const_int 28))])
@@ -570,12 +567,12 @@
   ""
 {
   return "1:\\n\\t"
-	 "ll.<amo>\\t%0,%1\\n\\t"
+	 "ll.<size>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%3\\n\\t"
 	 "xor\\t%8,%0,%z5\\n\\t"
 	 "and\\t%8,%8,%z2\\n\\t"
 	 "or%i8\\t%7,%7,%8\\n\\t"
-	 "sc.<amo>\\t%7,%1\\n\\t"
+	 "sc.<size>\\t%7,%1\\n\\t"
 	 "beq\\t$zero,%7,1b";
 }
 
@@ -596,12 +593,12 @@
   ""
 {
   return "1:\\n\\t"
-	 "ll.<amo>\\t%0,%1\\n\\t"
+	 "ll.<size>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%3\\n\\t"
 	 "or\\t%8,%0,%z5\\n\\t"
 	 "and\\t%8,%8,%z2\\n\\t"
 	 "or%i8\\t%7,%7,%8\\n\\t"
-	 "sc.<amo>\\t%7,%1\\n\\t"
+	 "sc.<size>\\t%7,%1\\n\\t"
 	 "beq\\t$zero,%7,1b";
 }
 
@@ -622,12 +619,12 @@
   ""
 {
   return "1:\\n\\t"
-	 "ll.<amo>\\t%0,%1\\n\\t"
+	 "ll.<size>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%3\\n\\t"
 	 "and\\t%8,%0,%z5\\n\\t"
 	 "xor\\t%8,%8,%z2\\n\\t"
 	 "or%i8\\t%7,%7,%8\\n\\t"
-	 "sc.<amo>\\t%7,%1\\n\\t"
+	 "sc.<size>\\t%7,%1\\n\\t"
 	 "beq\\t$zero,%7,1b";
 }
   [(set (attr "length") (const_int 28))])
@@ -646,10 +643,10 @@
   ""
 {
   return "1:\\n\\t"
-	 "ll.<amo>\\t%0,%1\\n\\t"
+	 "ll.<size>\\t%0,%1\\n\\t"
 	 "and\\t%7,%0,%z3\\n\\t"
 	 "or%i5\\t%7,%7,%5\\n\\t"
-	 "sc.<amo>\\t%7,%1\\n\\t"
+	 "sc.<size>\\t%7,%1\\n\\t"
 	 "beqz\\t%7,1b\\n\\t";
 }
   [(set (attr "length") (const_int 20))])
@@ -686,7 +683,7 @@
 	   (match_operand:SI 3 "const_int_operand")] ;; model
 	 UNSPEC_SYNC_OLD_OP))]
   "ISA_HAS_LAM_BH"
-  "amadd%A3.<amo>\t%0,%z2,%1"
+  "amadd%A3.<size>\t%0,%z2,%1"
   [(set (attr "length") (const_int 4))])
 
 (define_expand "atomic_fetch_add<mode>"
