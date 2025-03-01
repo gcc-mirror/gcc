@@ -6222,9 +6222,7 @@ loongarch_print_operand_reloc (FILE *file, rtx op, bool hi64_part,
    'Q'  Print R_LARCH_RELAX for TLS IE.
    'r'  Print address 12-31bit relocation associated with OP.
    'R'  Print address 32-51bit relocation associated with OP.
-   'T'	Print 'f' for (eq:CC ...), 't' for (ne:CC ...),
-	      'z' for (eq:?I ...), 'n' for (ne:?I ...).
-   't'	Like 'T', but with the EQ/NE cases reversed
+   'T'	Print a comment marker if %G outputs nothing.
    'u'	Print a LASX register.
    'v'	Print the insn size suffix b, h, w or d for vector modes V16QI, V8HI,
 	  V4SI, V2SI, and w, d for vector modes V4SF, V2DF respectively.
@@ -6307,6 +6305,13 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
 	fputs ("dbar\t0x700", file);
       break;
 
+    case 'T':
+      if (!loongarch_cas_failure_memorder_needs_acquire (
+	    memmodel_from_int (INTVAL (op)))
+	  && ISA_HAS_LD_SEQ_SA)
+	fprintf (file, "%s", ASM_COMMENT_START);
+      break;
+
     case 'h':
       if (code == HIGH)
 	op = XEXP (op, 0);
@@ -6383,14 +6388,6 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
     case 'R':
       loongarch_print_operand_reloc (file, op, true /* hi64_part */,
 				     false /* lo_reloc */);
-      break;
-
-    case 't':
-    case 'T':
-      {
-	int truth = (code == NE) == (letter == 'T');
-	fputc ("zfnt"[truth * 2 + FCC_REG_P (REGNO (XEXP (op, 0)))], file);
-      }
       break;
 
     case 'V':

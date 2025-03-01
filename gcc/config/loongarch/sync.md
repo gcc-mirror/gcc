@@ -264,7 +264,7 @@
   output_asm_insn ("or%i3\t%5,$zero,%3", operands);
   output_asm_insn ("sc.<size>\t%5,%1", operands);
   output_asm_insn ("beqz\t%5,1b", operands);
-  output_asm_insn ("b\t3f", operands);
+  output_asm_insn ("%T4b\t3f", operands);
   output_asm_insn ("2:", operands);
   output_asm_insn ("%G4", operands);
   output_asm_insn ("3:", operands);
@@ -408,7 +408,7 @@
 	 "or%i5\\t%7,%7,%5\\n\\t"
 	 "sc.<size>\\t%7,%1\\n\\t"
 	 "beq\\t$zero,%7,1b\\n\\t"
-	 "b\\t3f\\n\\t"
+	 "%T6b\\t3f\\n\\t"
 	 "2:\\n\\t"
 	 "%G6\\n\\t"
 	 "3:\\n\\t";
