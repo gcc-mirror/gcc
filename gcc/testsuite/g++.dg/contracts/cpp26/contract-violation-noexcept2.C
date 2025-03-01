@@ -29,11 +29,11 @@ int main()
     g();
   } catch (...) {
     // We should not get here
-    std::abort();
+    __builtin_abort();
   }
   if (!f_result)
     // We should not get here
-    std::abort();
+    __builtin_abort();
   // We should not get here
-  std::abort();
+  __builtin_abort();
 }
