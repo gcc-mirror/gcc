@@ -35,8 +35,6 @@
 ])
 
 (define_code_iterator any_atomic [plus ior xor and])
-(define_code_attr atomic_optab
-  [(plus "add") (ior "or") (xor "xor") (and "and")])
 
 ;; This attribute gives the format suffix for atomic memory operations.
 (define_mode_attr amo [(QI "b") (HI "h") (SI "w") (DI "d")])
@@ -175,7 +173,7 @@
 }
   [(set (attr "length") (const_int 12))])
 
-(define_insn "atomic_<atomic_optab><mode>"
+(define_insn "atomic_<amop><mode>"
   [(set (match_operand:GPR 0 "memory_operand" "+ZB")
 	(unspec_volatile:GPR
 	  [(any_atomic:GPR (match_dup 0)
@@ -197,7 +195,7 @@
   "amadd%A2.<amo>\t$zero,%z1,%0"
   [(set (attr "length") (const_int 4))])
 
-(define_insn "atomic_fetch_<atomic_optab><mode>"
+(define_insn "atomic_fetch_<amop><mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
 	(match_operand:GPR 1 "memory_operand" "+ZB"))
    (set (match_dup 1)
