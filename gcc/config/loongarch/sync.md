@@ -356,6 +356,41 @@
   "amswap%A3.<size>\t%0,%z2,%1"
   [(set (attr "length") (const_int 4))])
 
+(define_insn "atomic_exchangeti_scq"
+  [(set (match_operand:TI 0 "register_operand" "=&r")
+	(unspec_volatile:TI
+	  [(match_operand:TI 1 "memory_operand" "+ZB")]
+	  UNSPEC_SYNC_EXCHANGE))
+   (set (match_dup 1)
+	(match_operand:TI 2 "register_operand" "rJ"))
+   (clobber (match_scratch:DI 3 "=&r"))]
+  "TARGET_64BIT && ISA_HAS_SCQ"
+{
+  output_asm_insn ("1:", operands);
+  output_asm_insn ("ll.d\t%0,%1", operands);
+  if (!ISA_HAS_LD_SEQ_SA)
+    output_asm_insn ("dbar\t0x700", operands);
+  output_asm_insn ("ld.d\t%t0,%b1,8", operands);
+  output_asm_insn ("move\t%3,%z2", operands);
+  output_asm_insn ("sc.q\t%3,%t2,%1", operands);
+  output_asm_insn ("beqz\t%3,1b", operands);
+
+  return "";
+}
+  [(set (attr "length") (const_int 24))])
+
+(define_expand "atomic_exchangeti"
+  [(match_operand:TI 0 "register_operand" "=&r")
+   (match_operand:TI 1 "memory_operand"   "+ZB")
+   (match_operand:TI 2 "register_operand" "rJ")
+   (match_operand:SI 3 "const_int_operand")] ;; model
+  "TARGET_64BIT && ISA_HAS_SCQ"
+{
+  emit_insn (gen_atomic_exchangeti_scq (operands[0], operands[1],
+					operands[2]));
+  DONE;
+})
+
 (define_insn "atomic_exchange<mode>_short"
   [(set (match_operand:SHORT 0 "register_operand" "=&r")
 	(unspec_volatile:SHORT
