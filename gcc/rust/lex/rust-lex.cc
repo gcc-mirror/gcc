@@ -21,7 +21,7 @@
 #include "rust-lex.h"
 #include "rust-diagnostics.h"
 #include "rust-linemap.h"
-#include "rust-session-manager.h"
+#include "rust-edition.h"
 #include "safe-ctype.h"
 #include "cpplib.h"
 #include "rust-keyword-values.h"
@@ -277,9 +277,7 @@ Lexer::classify_keyword (const std::string &str)
   // https://doc.rust-lang.org/reference/keywords.html#reserved-keywords
 
   // `try` is not a reserved keyword before 2018
-  if (Session::get_instance ().options.get_edition ()
-	== CompileOptions::Edition::E2015
-      && id == TRY)
+  if (get_rust_edition () == Edition::E2015 && id == TRY)
     return IDENTIFIER;
 
   return id;

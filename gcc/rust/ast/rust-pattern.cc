@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rust-diagnostics.h"
 #include "rust-ast-visitor.h"
 #include "rust-macro.h"
-#include "rust-session-manager.h"
 #include "rust-lex.h"
 #include "rust-parse.h"
 #include "rust-operators.h"

@@ -29,7 +29,6 @@
 #include "rust-macro-invoc-lexer.h"
 #include "rust-macro.h"
 #include "rust-parse.h"
-#include "rust-session-manager.h"
 #include "rust-system.h"
 #include "rust-token.h"
 namespace Rust {
