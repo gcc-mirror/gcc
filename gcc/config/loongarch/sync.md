@@ -135,6 +135,47 @@
 }
   [(set (attr "length") (const_int 12))])
 
+(define_insn "atomic_loadti_lsx"
+  [(set (match_operand:V2DI 0 "register_operand" "=f")
+	(unspec_volatile:V2DI
+          [(match_operand:TI 1 "memory_operand" "m")
+	   (match_operand:SI 2 "const_int_operand")] ;; model
+	  UNSPEC_ATOMIC_LOAD))]
+  "ISA_HAS_LSX && TARGET_64BIT"
+{
+  enum memmodel model = memmodel_base (INTVAL (operands[2]));
+
+  switch (model)
+    {
+    case MEMMODEL_SEQ_CST:
+      output_asm_insn ("dbar\t0x11", operands);
+      /* fall through */
+    case MEMMODEL_ACQUIRE:
+    case MEMMODEL_RELAXED:
+      return "vld\t%w0,%1\\n\\t%G2";
+
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set (attr "length") (const_int 12))])
+
+(define_expand "atomic_loadti"
+  [(match_operand:TI 0 "register_operand" "=r")
+   (match_operand:TI 1 "memory_operand"   "m")
+   (match_operand:SI 2 "const_int_operand")]
+  "ISA_HAS_LSX && TARGET_64BIT"
+{
+  rtx vr = gen_reg_rtx (V2DImode);
+
+  emit_insn (gen_atomic_loadti_lsx (vr, operands[1], operands[2]));
+  for (int i = 0; i < 2; i++)
+    emit_insn (
+      gen_lsx_vpickve2gr_d (loongarch_subword (operands[0], i), vr,
+			    GEN_INT (i)));
+  DONE;
+})
+
 ;; Implement atomic stores with amoswap.  Fall back to fences for atomic loads.
 (define_insn "atomic_store<mode>"
   [(set (match_operand:QHWD 0 "memory_operand" "=m")
