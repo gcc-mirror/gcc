@@ -5410,6 +5410,14 @@ h8300_init_libfuncs (void)
   set_optab_libfunc (udiv_optab, HImode, "__udivhi3");
   set_optab_libfunc (smod_optab, HImode, "__modhi3");
   set_optab_libfunc (umod_optab, HImode, "__umodhi3");
+
+/* The comment below comes from config/mmix/mmix.cc.
+
+   Unfortunately, by default __builtin_ffs is expanded to ffs for
+   targets where INT_TYPE_SIZE < BITS_PER_WORD.  That together with
+   newlib since 2017-07-04 implementing ffs as __builtin_ffs leads to
+   (newlib) ffs recursively calling itself.  */
+  set_optab_libfunc (ffs_optab, HImode, "__ffshi2");
 }
 
 /* Worker function for TARGET_FUNCTION_VALUE.
