@@ -2361,22 +2361,29 @@ test_make_location_nonpure_range_endpoints (const line_table_case &case_)
 
 /* Verify reading of a specific line LINENUM in TMP, FC.  */
 
-static void check_line (temp_source_file &tmp, file_cache &fc, int linenum)
+static void
+check_line (temp_source_file &tmp, file_cache &fc, int linenum)
 {
   char_span line = fc.get_source_line (tmp.get_filename (), linenum);
   int n;
-  /* get_buffer is not null terminated, but the sscanf stops after a number.  */
-  ASSERT_TRUE (sscanf (line.get_buffer (), "%d", &n) == 1);
+  const char *b = line.get_buffer ();
+  size_t l = line.length ();
+  char buf[5];
+  ASSERT_LT (l, 5);
+  memcpy (buf, b, l);
+  buf[l] = '\0';
+  ASSERT_TRUE (sscanf (buf, "%d", &n) == 1);
   ASSERT_EQ (n, linenum);
 }
 
 /* Test file cache replacement.  */
 
-static void test_replacement ()
+static void
+test_replacement ()
 {
   const int maxline = 1000;
 
-  char *vec = XNEWVEC (char, maxline * 15);
+  char *vec = XNEWVEC (char, maxline * 5);
   char *p = vec;
   int i;
   for (i = 1; i <= maxline; i++)
