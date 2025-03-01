@@ -32,7 +32,7 @@
 #include "rust-dir-owner.h"
 #include "rust-attribute-values.h"
 #include "rust-keyword-values.h"
-#include "rust-session-manager.h"
+#include "rust-edition.h"
 
 #include "optional.h"
 
@@ -1453,8 +1453,7 @@ Parser<ManagedTokenSource>::parse_async_item (AST::Visibility vis,
   auto offset = (lexer.peek_token ()->get_id () == CONST) ? 1 : 0;
   const_TokenPtr t = lexer.peek_token (offset);
 
-  if (Session::get_instance ().options.get_edition ()
-      == CompileOptions::Edition::E2015)
+  if (get_rust_edition () == Edition::E2015)
     {
       add_error (Error (t->get_locus (), ErrorCode::E0670,
 			"%<async fn%> is not permitted in Rust 2015"));

@@ -19,7 +19,7 @@
 #ifndef RUST_FEATURE_H
 #define RUST_FEATURE_H
 
-#include "rust-session-manager.h"
+#include "rust-edition.h"
 #include "optional.h"
 
 namespace Rust {
@@ -66,7 +66,7 @@ private:
   Feature (Name name, State state, const char *name_str,
 	   const char *rustc_since,
 	   tl::optional<unsigned> issue_number = tl::nullopt,
-	   const tl::optional<CompileOptions::Edition> &edition = tl::nullopt,
+	   const tl::optional<Edition> &edition = tl::nullopt,
 	   const char *description = "")
     : m_state (state), m_name (name), m_name_str (name_str),
       m_rustc_since (rustc_since), m_issue (issue_number), edition (edition),
@@ -78,7 +78,7 @@ private:
   std::string m_name_str;
   std::string m_rustc_since;
   tl::optional<unsigned> m_issue;
-  tl::optional<CompileOptions::Edition> edition;
+  tl::optional<Edition> edition;
   std::string m_description; // TODO: Switch to optional?
 
   static const std::map<std::string, Name> name_hash_map;

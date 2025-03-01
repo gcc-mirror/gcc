@@ -235,6 +235,7 @@ GRS_OBJS = \
     rust/rust-unicode.o \
     rust/rust-punycode.o \
     rust/rust-unwrap-segment.o \
+    rust/rust-edition.o \
 	rust/rust-expand-format-args.o \
 	rust/rust-lang-item.o \
 	rust/rust-collect-lang-items.o \

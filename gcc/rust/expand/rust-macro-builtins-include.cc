@@ -20,6 +20,7 @@
 #include "rust-common.h"
 #include "rust-macro-builtins.h"
 #include "rust-macro-builtins-helpers.h"
+#include "rust-session-manager.h"
 #include "optional.h"
 namespace Rust {
 /* Expand builtin macro include_bytes!("filename"), which includes the contents

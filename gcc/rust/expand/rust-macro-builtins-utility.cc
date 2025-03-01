@@ -20,6 +20,7 @@
 #include "rust-ast-builder.h"
 #include "rust-macro-builtins.h"
 #include "rust-macro-builtins-helpers.h"
+#include "rust-session-manager.h"
 
 namespace Rust {
 
