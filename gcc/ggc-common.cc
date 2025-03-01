@@ -154,7 +154,7 @@ void *
 ggc_internal_cleared_alloc_no_dtor (size_t size, void (*f)(void *),
 				    size_t s, size_t n MEM_STAT_DECL)
 {
-  return ggc_internal_cleared_alloc (s, f, s, n PASS_MEM_STAT);
+  return ggc_internal_cleared_alloc (size, f, s, n PASS_MEM_STAT);
 }
 #endif
 
