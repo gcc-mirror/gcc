@@ -236,12 +236,28 @@
 }
   [(set (attr "length") (const_int 12))])
 
+(define_insn "atomic_storeti_scq"
+  [(set (match_operand:TI 0 "memory_operand" "=m")
+	(unspec_volatile:TI
+	  [(match_operand:TI 1 "register_operand" "r")]
+	  UNSPEC_ATOMIC_STORE))
+   (clobber (match_scratch:DI 2 "=&r"))]
+  "TARGET_64BIT && ISA_HAS_SCQ"
+  "1:\\n\\tll.d\t$r0,%0\n\tmove\t%2,%1\n\tsc.q\t%2,%t1,%0\n\tbeqz\t%2,1b"
+  [(set (attr "length") (const_int 16))])
+
 (define_expand "atomic_storeti"
   [(match_operand:TI 0 "memory_operand"   "=m")
    (match_operand:TI 1 "reg_or_0_operand" "rJ")
    (match_operand:SI 2 "const_int_operand")]
-  "ISA_HAS_LSX && TARGET_64BIT"
+  "TARGET_64BIT && (ISA_HAS_LSX || ISA_HAS_SCQ)"
 {
+  if (!ISA_HAS_LSX)
+    {
+      emit_insn (gen_atomic_storeti_scq (operands[0], operands[1]));
+      DONE;
+    }
+
   rtx vr = gen_reg_rtx (V2DImode), op1 = operands[1];
   rtvec v = rtvec_alloc (2);
 

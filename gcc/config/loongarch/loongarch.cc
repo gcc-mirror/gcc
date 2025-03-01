@@ -6223,6 +6223,7 @@ loongarch_print_operand_reloc (FILE *file, rtx op, bool hi64_part,
    'r'  Print address 12-31bit relocation associated with OP.
    'R'  Print address 32-51bit relocation associated with OP.
    'T'	Print a comment marker if %G outputs nothing.
+   't'	Print the register containing the higher 64 bits of a TImode.
    'u'	Print a LASX register.
    'v'	Print the insn size suffix b, h, w or d for vector modes V16QI, V8HI,
 	  V4SI, V2SI, and w, d for vector modes V4SF, V2DF respectively.
@@ -6493,6 +6494,16 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
 	}
       break;
 
+    case 't':
+      if (GET_MODE (op) != TImode
+	  || (op != CONST0_RTX (TImode) && code != REG))
+	{
+	  output_operand_lossage ("invalid use of '%%%c'", letter);
+	  break;
+	}
+      op = loongarch_subword (op, 1);
+      letter = 'z';
+      /* fall through */
     default:
       switch (code)
 	{
