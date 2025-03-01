@@ -366,15 +366,14 @@
   rtx aligned_mem = change_address (mem, SImode, aligned_addr);
   set_mem_alias_set (aligned_mem, 0);
 
-  rtx offset = gen_reg_rtx (SImode);
-  emit_move_insn (offset, gen_rtx_AND (SImode, gen_lowpart (SImode, addr),
-				       GEN_INT (3)));
-
   rtx tmp = gen_reg_rtx (SImode);
   emit_move_insn (tmp, GEN_INT (1));
 
+  /* Note that we have defined SHIFT_COUNT_TRUNCATED to 1, so we don't need
+     to mask addr with 0b11 here.  */
   rtx shmt = gen_reg_rtx (SImode);
-  emit_move_insn (shmt, gen_rtx_ASHIFT (SImode, offset, GEN_INT (3)));
+  emit_move_insn (shmt, gen_rtx_ASHIFT (SImode, gen_lowpart (SImode, addr),
+					GEN_INT (3)));
 
   rtx word = gen_reg_rtx (SImode);
   emit_move_insn (word, gen_rtx_ASHIFT (SImode, tmp, shmt));
