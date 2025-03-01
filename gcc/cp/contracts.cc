@@ -1550,7 +1550,13 @@ build_contract_condition_function (tree fndecl, bool pre)
   *last = void_list_node;
 
   /* The handlers are void fns.  */
-  TREE_TYPE (fn) = build_function_type (void_type_node, arg_types);
+  tree adjusted_type = build_function_type (void_type_node, arg_types);
+
+  /* If the original function is noexcept, build a noexcept function. */
+  if (flag_exceptions && type_noexcept_p (TREE_TYPE (fndecl)))
+    adjusted_type = build_exception_variant (adjusted_type, noexcept_true_spec);
+
+  TREE_TYPE (fn) = adjusted_type;
   DECL_RESULT (fn) = NULL_TREE; /* Let the start function code fill it in.  */
 
   if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl))
