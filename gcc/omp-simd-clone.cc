@@ -1426,7 +1426,7 @@ simd_clone_adjust (struct cgraph_node *node)
 	case SIMD_CLONE_ARG_TYPE_VECTOR:
 	  if (sc->args[i].arg_type == SIMD_CLONE_ARG_TYPE_MASK
 	      && sc->mask_mode != VOIDmode)
-	    elem_type = boolean_type_node;
+	    elem_type = simd_clone_compute_base_data_type (sc->origin, sc);
 	  else
 	    elem_type = TREE_TYPE (sc->args[i].vector_type);
 	  if (INTEGRAL_TYPE_P (elem_type) || POINTER_TYPE_P (elem_type))
