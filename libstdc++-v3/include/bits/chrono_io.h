@@ -887,27 +887,30 @@ namespace __format
 
       template<typename _Tp, typename _FormatContext>
 	typename _FormatContext::iterator
-	_M_c(const _Tp& __tt, typename _FormatContext::iterator __out,
+	_M_c(const _Tp& __t, typename _FormatContext::iterator __out,
 	     _FormatContext& __ctx, bool __mod = false) const
 	{
 	  // %c  Locale's date and time representation.
 	  // %Ec Locale's alternate date and time representation.
 
-	  basic_string<_CharT> __fmt;
-	  auto __t = _S_floor_seconds(__tt);
-	  locale __loc = _M_locale(__ctx);
-	  const auto& __tp = use_facet<__timepunct<_CharT>>(__loc);
-	  const _CharT* __formats[2];
-	  __tp._M_date_time_formats(__formats);
-	  if (*__formats[__mod]) [[likely]]
-	    {
-	      __fmt = _GLIBCXX_WIDEN("{:L}");
-	      __fmt.insert(3u, __formats[__mod]);
-	    }
-	  else
-	    __fmt = _GLIBCXX_WIDEN("{:L%a %b %e %T %Y}");
-	  return std::vformat_to(std::move(__out), __loc, __fmt,
-				 std::make_format_args<_FormatContext>(__t));
+	  using namespace chrono;
+	  auto __d = _S_days(__t); // Either sys_days or local_days.
+	  using _TDays = decltype(__d);
+	  const year_month_day __ymd(__d);
+	  const auto __y = __ymd.year();
+	  const auto __hms = _S_hms(__t);
+
+	  struct tm __tm{};
+	  __tm.tm_year = (int)__y - 1900;
+	  __tm.tm_yday = (__d - _TDays(__y/January/1)).count();
+	  __tm.tm_mon = (unsigned)__ymd.month() - 1;
+	  __tm.tm_mday = (unsigned)__ymd.day();
+	  __tm.tm_wday = weekday(__d).c_encoding();
+	  __tm.tm_hour = __hms.hours().count();
+	  __tm.tm_min = __hms.minutes().count();
+	  __tm.tm_sec = __hms.seconds().count();
+	  return _M_locale_fmt(std::move(__out), _M_locale(__ctx), __tm, 'c',
+			       __mod ? 'E' : '\0');
 	}
 
       template<typename _Tp, typename _FormatContext>
