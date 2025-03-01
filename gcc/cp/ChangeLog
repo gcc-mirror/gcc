@@ -1,3 +1,33 @@
+2025-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114913
+	PR c++/110822
+	* constexpr.cc (replace_decl_r): If we've replaced something
+	inside of an ADDR_EXPR, call cxx_mark_addressable and
+	recompute_tree_invariant_for_addr_expr on the resulting ADDR_EXPR.
+
+2025-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118986
+	* constexpr.cc (cxx_eval_call_expression): Check that the types match
+	before calling replace_decl, if not, set *non_constant_p.
+	(maybe_constant_init_1): Don't strip INIT_EXPR if it would change the
+	type of the expression.
+
+2025-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119038
+	* lambda.cc (maybe_generic_this_capture): Consider xobj
+	member functions as well, not just iobj.  Update function
+	comment.
+
+2025-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119045
+	* constexpr.cc (cxx_eval_store_expression) <case REALPART_EXPR>:
+	Assert that refs->is_empty () rather than probe == target.
+	(cxx_eval_store_expression) <case IMAGPART_EXPR>: Likewise.
+
 2025-02-27  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/118928

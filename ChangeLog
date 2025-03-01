@@ -1,3 +1,7 @@
+2025-02-28  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* MAINTAINERS: Added myself as write after approval and DCO.
+
 2025-02-19  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* configure.ac (unsupported_languages) [GCN, nvptx]: Add 'ada'.

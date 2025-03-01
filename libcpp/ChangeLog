@@ -1,3 +1,12 @@
+2025-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (enum cpp_warning_reason): Add
+	CPP_W_CXX26_EXTENSIONS enumerator.
+	* init.cc (lang_defaults): Set embed for GNUCXX26 and CXX26.
+	* directives.cc (do_embed): Adjust pedwarn wording for embed in C++,
+	use cpp_pedwarning instead of cpp_error and add CPP_W_C11_C23_COMPAT
+	warning of cpp_pedwarning hasn't diagnosed anything.
+
 2024-12-24  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* macro.cc (tokens_buff_new): Fix length argument to XNEWVEC.

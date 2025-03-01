@@ -1,3 +1,9 @@
+2025-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wc++26-extensions): Add CppReason(CPP_W_CXX26_EXTENSIONS).
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine __cpp_pp_embed=202502
+	for C++26.
+
 2025-02-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/118822

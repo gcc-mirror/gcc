@@ -1,3 +1,9 @@
+2025-02-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/118730
+	* resolve.cc: Mark unused derived type variable with finalizers
+	referenced to execute finalizer when leaving scope.
+
 2025-02-27  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/118789

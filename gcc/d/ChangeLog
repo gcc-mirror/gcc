@@ -1,3 +1,20 @@
+2025-02-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/116961
+	* d-codegen.cc (build_float_cst): Change new_value type from real_t to
+	real_value.
+	* d-ctfloat.cc (CTFloat::fabs): Default initialize the return value.
+	(CTFloat::ldexp): Likewise.
+	(CTFloat::parse): Likewise.
+	* d-longdouble.cc (longdouble::add): Likewise.
+	(longdouble::sub): Likewise.
+	(longdouble::mul): Likewise.
+	(longdouble::div): Likewise.
+	(longdouble::mod): Likewise.
+	(longdouble::neg): Likewise.
+	* d-port.cc (Port::isFloat32LiteralOutOfRange): Likewise.
+	(Port::isFloat64LiteralOutOfRange): Likewise.
+
 2025-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/118654

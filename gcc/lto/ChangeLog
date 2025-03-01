@@ -1,3 +1,9 @@
+2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR lto/91299
+	* lto-symtab.cc (lto_symtab_merge_symbols): Set DECL_EXTERNAL
+	only after calling get_availability.
+
 2025-02-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/118125

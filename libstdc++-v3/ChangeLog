@@ -1,3 +1,59 @@
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106612
+	* include/bits/iterator_concepts.h (_IterMove::__iter_ref_t):
+	New alias template.
+	(_IterMove::__result): Use __iter_ref_t instead of
+	std::iter_reference_t.
+	(_IterMove::__type): Remove incorrect __dereferenceable
+	constraint.
+	(_IterMove::operator()): Likewise. Add correct constraints. Use
+	__iter_ref_t instead of std::iter_reference_t. Forward parameter
+	as correct value category.
+	(iter_swap): Add comments.
+	* testsuite/24_iterators/customization_points/iter_move.cc: Test
+	that iter_move is found by ADL and that rvalue arguments are
+	handled correctly.
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105609
+	* include/bits/ranges_algobase.h (__detail::__assign_one): New
+	helper function.
+	(__copy_or_move, __copy_or_move_backward): Use new function
+	instead of std::__assign_one.
+	* testsuite/25_algorithms/move/constrained.cc: Check that
+	ADL iter_move is used in preference to std::move.
+	* testsuite/25_algorithms/move_backward/constrained.cc:
+	Likewise.
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112803
+	* include/std/ranges (ranges::to): Add static assertions to
+	enforce Mandates conditions.
+	* testsuite/std/ranges/conv/112803.cc: New test.
+
+2025-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/104606
+	* include/std/optional (operator<=>): Revert r14-9771 change.
+	Add constraint checking the validity of the return type
+	compare_three_way_result_t before the three_way_comparable_with
+	constraint.
+
+2025-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/112490
+	* include/bits/stl_iterator.h (basic_const_iterator::operator<):
+	Replace non-dependent basic_const_iterator function parameter with
+	a dependent one of type basic_const_iterator<_It3> where _It3
+	matches _It.
+	(basic_const_iterator::operator>): Likewise.
+	(basic_const_iterator::operator<=): Likewise.
+	(basic_const_iterator::operator>=): Likewise.
+	* testsuite/24_iterators/const_iterator/112490.cc: New test.
+
 2025-02-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/stacktrace (_Impl::_M_allocate): Fix outdated

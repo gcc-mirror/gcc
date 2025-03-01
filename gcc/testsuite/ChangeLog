@@ -1,3 +1,99 @@
+2025-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/115871
+	* gcc.dg/gomp/simd-clones-8.c: New test.
+
+2025-03-01  Xi Ruoyao  <xry111@xry111.site>
+
+	* c-c++-common/toplevel-asm-1.c: Use %cc3 %cc4 instead of %c3
+	%c4 on LoongArch.
+
+2025-02-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/116961
+	* gdc.dg/pr116961.d: New test.
+
+2025-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/114913
+	PR c++/110822
+	* g++.dg/cpp0x/constexpr-nsdmi4.C: New test.
+	* g++.dg/cpp0x/constexpr-nsdmi5.C: New test.
+
+2025-02-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118986
+	* g++.dg/cpp2a/constexpr-prvalue1.C: New test.
+
+2025-02-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118243
+	* g++.dg/ipa/pr118243.C: New test.
+
+2025-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119038
+	* g++.dg/cpp23/explicit-obj-lambda15.C: New test.
+
+2025-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119045
+	* g++.dg/cpp1y/constexpr-complex2.C: New test.
+
+2025-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp/embed-1.C: Adjust for pedwarn wording change and don't
+	expect any error for C++26.
+	* g++.dg/cpp/embed-2.C: Adjust for pedwarn wording change and don't
+	expect any warning for C++26.
+	* g++.dg/cpp26/feat-cxx26.C: Test __cpp_pp_embed value.
+	* gcc.dg/cpp/embed-17.c: New test.
+
+2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR lto/91299
+	* gcc.dg/lto/pr91299_0.c: New testcase.
+	* gcc.dg/lto/pr91299_1.c: Likewise.
+
+2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/111245
+	* g++.dg/torture/pr111245.C: New testcase.
+
+2025-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117712
+	* gcc.dg/pr117712.c: New test.
+
+2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87984
+	* gcc.target/i386/pr87984.c: New testcase.
+
+2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66279
+	* g++.dg/pr66279.C: New testcase.
+
+2025-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/strub-pr118006.c: Remove -m32 from dg-options.
+
+2025-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118940
+	* gcc.target/i386/pr118940.c: Drop -w, -g and -m32 from dg-options, move
+	-march=i386 -mregparm=3 to dg-additional-options for ia32 and -fno-pie
+	to dg-additional-options for pie.  Reduce the test.
+
+2025-02-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/118730
+	* gfortran.dg/class_array_15.f03: Remove unused variable.
+	* gfortran.dg/coarray_poly_7.f90: Adapt scan-tree-dump expr.
+	* gfortran.dg/coarray_poly_8.f90: Same.
+	* gfortran.dg/finalize_60.f90: New test.
+
 2025-02-27  Pan Li  <pan2.li@intel.com>
 
 	PR target/118931

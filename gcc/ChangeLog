@@ -1,3 +1,112 @@
+2025-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR jit/117047
+	* acinclude.m4 (gcc_CHECK_ATTRIBUTE_ALIAS): New.
+	* configure.ac: Add gcc_CHECK_ATTRIBUTE_ALIAS.
+	* ggc.h (ggc_internal_alloc): Remove ATTRIBUTE_MALLOC from
+	overload with finalizer pointer.  Call ggc_internal_alloc_no_dtor
+	in inline overload without finalizer pointer.
+	(ggc_internal_alloc_no_dtor): Declare.
+	(ggc_internal_cleared_alloc): Remove ATTRIBUTE_MALLOC from
+	overload with finalizer pointer.  Call
+	ggc_internal_cleared_alloc_no_dtor in inline overload without
+	finalizer pointer.
+	(ggc_internal_cleared_alloc_no_dtor): Declare.
+	(ggc_alloc): Call ggc_internal_alloc_no_dtor if no finalization
+	is needed.
+	(ggc_alloc_no_dtor): Call ggc_internal_alloc_no_dtor.
+	(ggc_cleared_alloc): Call ggc_internal_cleared_alloc_no_dtor if no
+	finalization is needed.
+	(ggc_vec_alloc): Call ggc_internal_alloc_no_dtor if no finalization
+	is needed.
+	(ggc_cleared_vec_alloc): Call ggc_internal_cleared_alloc_no_dtor if no
+	finalization is needed.
+	* ggc-page.cc (ggc_internal_alloc): If HAVE_ATTRIBUTE_ALIAS, turn
+	overload with finalizer into alias to ggc_internal_alloc_ and
+	rename it to ...
+	(ggc_internal_alloc_): ... this, make it extern "C".
+	(ggc_internal_alloc_no_dtor): New alias if HAVE_ATTRIBUTE_ALIAS,
+	otherwise new noinline wrapper.
+	* ggc-common.cc (ggc_internal_cleared_alloc): If HAVE_ATTRIBUTE_ALIAS,
+	turn overload with finalizer into alias to ggc_internal_alloc_ and
+	rename it to ...
+	(ggc_internal_cleared_alloc_): ... this, make it extern "C".
+	(ggc_internal_cleared_alloc_no_dtor): New alias if
+	HAVE_ATTRIBUTE_ALIAS, otherwise new noinline wrapper.
+	* ggc-none.cc (ggc_internal_alloc): If HAVE_ATTRIBUTE_ALIAS, turn
+	overload with finalizer into alias to ggc_internal_alloc_ and
+	rename it to ...
+	(ggc_internal_alloc_): ... this, make it extern "C".
+	(ggc_internal_alloc_no_dtor): New alias if HAVE_ATTRIBUTE_ALIAS,
+	otherwise new wrapper.
+	(ggc_internal_cleared_alloc): If HAVE_ATTRIBUTE_ALIAS, turn overload
+	with finalizer into alias to ggc_internal_alloc_ and rename it to ...
+	(ggc_internal_cleared_alloc_): ... this, make it extern "C".
+	(ggc_internal_cleared_alloc_no_dtor): New alias if
+	HAVE_ATTRIBUTE_ALIAS, otherwise new wrapper.
+	* genmatch.cc (ggc_internal_cleared_alloc, ggc_free): Formatting fix.
+	(ggc_internal_cleared_alloc_no_dtor): Define.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
+2025-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/115871
+	* omp-simd-clone.cc (simd_clone_adjust): For SIMD_CLONE_ARG_TYPE_MASK
+	and sc->mask_mode not VOIDmode, set elem_type to the characteristic
+	type rather than boolean_type_node.
+
+2025-03-01  Jan Dubiec  <jdx@o2.pl>
+
+	PR target/109189
+	* config/h8300/h8300.cc (h8300_print_operand): Replace %ld format
+	strings with HOST_WIDE_INT_PRINT_DEC macro in order to silence
+	-Wformat warnings when building on Windows/MinGW64.
+
+2025-02-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118243
+	* ipa-sra.cc (pull_accesses_from_callee): New parameters
+	caller_ipcp_ts and param_idx.  Check that scalar pulled accesses would
+	not clash with a known IPA-CP aggregate constant.
+	(param_splitting_across_edge): Pass IPA-CP transformation summary and
+	caller parameter index to pull_accesses_from_callee.
+
+2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/111245
+	* ipa-modref.cc (modref_access_analysis::analyze_store): Do
+	not guard the check of whether the stmt could throw by
+	cfun->can_throw_non_call_exceptions.
+
+2025-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117712
+	* expr.cc (force_operand): Handle {,UNSIGNED_}FIX with
+	FIX operand using expand_fix on the inner FIX operand.
+
+2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87984
+	* tree-ssa-dom.cc (dom_opt_dom_walker::optimize_stmt): Do
+	not perform redundant store elimination to hard register
+	variables.
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_stmt):
+	Likewise.
+
+2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66279
+	* gimplify.cc (gimplify_asm_expr): Copy TREE_PURPOSE before
+	rewriting it for "+" processing.
+
+2025-02-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386.h (TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P):
+	Moved to ...
+	* config/i386/i386.cc (TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P):
+	Here.
+
 2025-02-27  Pan Li  <pan2.li@intel.com>
 
 	PR target/118931
