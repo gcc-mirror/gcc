@@ -35,5 +35,5 @@ int main()
     // We should not get here
     return 1;
   // We should not get here
-  return 0;
+  return 1;
 }
