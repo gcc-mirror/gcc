@@ -102,7 +102,7 @@
 (define_insn "atomic_load<mode>"
   [(set (match_operand:QHWD 0 "register_operand" "=r")
     (unspec_volatile:QHWD
-      [(match_operand:QHWD 1 "memory_operand" "+m")
+      [(match_operand:QHWD 1 "memory_operand" "m")
        (match_operand:SI 2 "const_int_operand")]                        ;; model
       UNSPEC_ATOMIC_LOAD))]
   ""
@@ -139,7 +139,7 @@
 
 ;; Implement atomic stores with amoswap.  Fall back to fences for atomic loads.
 (define_insn "atomic_store<mode>"
-  [(set (match_operand:QHWD 0 "memory_operand" "+m")
+  [(set (match_operand:QHWD 0 "memory_operand" "=m")
     (unspec_volatile:QHWD
       [(match_operand:QHWD 1 "reg_or_0_operand" "rJ")
        (match_operand:SI 2 "const_int_operand")]      ;; model
