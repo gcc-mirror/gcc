@@ -29,11 +29,11 @@ int main()
     g();
   } catch (...) {
     // We should not get here
-    return 1;
+    std::abort();
   }
   if (!f_result)
     // We should not get here
-    return 1;
+    std::abort();
   // We should not get here
-  return 1;
+  std::abort();
 }
