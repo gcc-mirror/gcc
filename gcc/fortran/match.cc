@@ -5071,6 +5071,7 @@ cleanup:
   new_st.expr1 = NULL;
   gfc_free_expr (new_st.expr2);
   new_st.expr2 = NULL;
+  gfc_free_expr (p);
   return MATCH_ERROR;
 }
 

@@ -4298,6 +4298,8 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
   locus where, old_loc;
   match m;
 
+  *result = NULL;
+
   /* Since nothing has any business being an lvalue in a module
      specification block, an interface block or a contains section,
      we force the changed_symbols mechanism to work by setting
