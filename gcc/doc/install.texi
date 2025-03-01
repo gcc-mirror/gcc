@@ -4145,8 +4145,7 @@ This configuration is intended for embedded systems.
 @end html
 @anchor{x-x-freebsd}
 @heading *-*-freebsd*
-We support FreeBSD using the ELF file format with DWARF 2 debugging
-for all CPU architectures.
+FreeBSD using the ELF file format with DWARF 2 debugging.
 
 We recommend bootstrapping against the latest GNU binutils or the
 version found in the @file{devel/binutils} port. This also has been
