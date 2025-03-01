@@ -203,6 +203,46 @@
   "am<amop>%A3.<size>\t%0,%z2,%1"
   [(set (attr "length") (const_int 4))])
 
+(define_insn "atomic_fetch_nand_mask_inverted<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&r")
+	(match_operand:GPR 1 "memory_operand" "+ZC"))
+   (set (match_dup 1)
+	(unspec_volatile:GPR
+	  [(ior:GPR (not (match_dup 1))
+		    (match_operand:GPR 2 "register_operand" "r"))]
+	  UNSPEC_SYNC_OLD_OP))
+   (clobber (match_scratch:GPR 3 "=&r"))]
+  ""
+  {
+    return "1:\\n\\t"
+	   "ll.<d>\\t%0,%1\\n\\t"
+	   "orn\\t%3,%2,%0\\n\\t"
+	   "sc.<d>\\t%3,%1\\n\\t"
+	   "beqz\\t%3,1b";
+  }
+  [(set (attr "length") (const_int 16))])
+
+(define_expand "atomic_fetch_nand<mode>"
+  [(match_operand:GPR 0 "register_operand")
+   (match_operand:GPR 1 "memory_operand")
+   (match_operand:GPR 2 "reg_or_0_operand")
+   (match_operand:SI  3 "const_int_operand")]
+  ""
+  {
+    /* ~(atom & mask) = (~mask) | (~atom), so we can hoist
+       (~mask) out of the ll/sc loop and use the orn instruction in the
+       ll/sc loop.  */
+    rtx inverted_mask = gen_reg_rtx (<MODE>mode);
+    emit_move_insn (inverted_mask,
+		    expand_simple_unop (<MODE>mode, NOT, operands[2],
+					NULL_RTX, false));
+
+    emit_insn (
+      gen_atomic_fetch_nand_mask_inverted<mode> (operands[0], operands[1],
+						 inverted_mask));
+    DONE;
+  })
+
 (define_insn "atomic_exchange<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
 	(unspec_volatile:GPR
