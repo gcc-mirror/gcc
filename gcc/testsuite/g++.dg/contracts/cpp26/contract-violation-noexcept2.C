@@ -1,0 +1,39 @@
+// test that a noexcept function can't throw even if a violation handler throws
+// { dg-do run }
+// { dg-options "-std=c++2a -fcontracts  -fcontracts-nonattr " }
+// { dg-additional-sources "throwing-violation-handler.cc" }
+
+#include <exception>
+#include <cstdlib>
+
+void f(int x) noexcept pre(x >= 0)
+{
+}
+
+void g();
+
+bool f_result = true;
+
+void my_term()
+{
+  try { throw; }
+  catch(int) { std::exit(0); }
+}
+
+
+int main()
+{
+  std::set_terminate (my_term);
+  try
+  {
+    g();
+  } catch (...) {
+    // We should not get here
+    return 1;
+  }
+  if (!f_result)
+    // We should not get here
+    return 1;
+  // We should not get here
+  return 0;
+}
