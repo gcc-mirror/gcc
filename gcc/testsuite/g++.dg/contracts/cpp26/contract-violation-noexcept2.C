@@ -4,7 +4,6 @@
 // { dg-additional-sources "throwing-violation-handler.cc" }
 
 #include <exception>
-#include <cstdlib>
 
 void f(int x) noexcept pre(x >= 0)
 {
@@ -17,7 +16,7 @@ bool f_result = true;
 void my_term()
 {
   try { throw; }
-  catch(int) { std::exit(0); }
+  catch(int) { __builtin_exit(0); }
 }
 
 
