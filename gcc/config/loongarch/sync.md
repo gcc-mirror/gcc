@@ -30,6 +30,13 @@
   UNSPEC_ATOMIC_STORE
   UNSPEC_ATOMIC_LOAD
   UNSPEC_MEMORY_BARRIER
+
+  UNSPEC_TI_FETCH_ADD
+  UNSPEC_TI_FETCH_SUB
+  UNSPEC_TI_FETCH_AND
+  UNSPEC_TI_FETCH_XOR
+  UNSPEC_TI_FETCH_OR
+  UNSPEC_TI_FETCH_NAND_MASK_INVERTED
 ])
 
 (define_code_iterator any_atomic [plus ior xor and])
@@ -323,11 +330,13 @@
   }
   [(set (attr "length") (const_int 16))])
 
+(define_mode_iterator ALL_SC [GPR (TI "TARGET_64BIT && ISA_HAS_SCQ")])
+(define_mode_attr _scq [(SI "") (DI "") (TI "_scq")])
 (define_expand "atomic_fetch_nand<mode>"
-  [(match_operand:GPR 0 "register_operand")
-   (match_operand:GPR 1 "memory_operand")
-   (match_operand:GPR 2 "reg_or_0_operand")
-   (match_operand:SI  3 "const_int_operand")]
+  [(match_operand:ALL_SC 0 "register_operand")
+   (match_operand:ALL_SC 1 "memory_operand")
+   (match_operand:ALL_SC 2 "reg_or_0_operand")
+   (match_operand:SI     3 "const_int_operand")]
   ""
   {
     /* ~(atom & mask) = (~mask) | (~atom), so we can hoist
@@ -339,8 +348,9 @@
 					NULL_RTX, false));
 
     emit_insn (
-      gen_atomic_fetch_nand_mask_inverted<mode> (operands[0], operands[1],
-						 inverted_mask));
+      gen_atomic_fetch_nand_mask_inverted<mode><_scq> (operands[0],
+						       operands[1],
+						       inverted_mask));
     DONE;
   })
 
@@ -877,6 +887,101 @@
       loongarch_expand_atomic_qihi (generator, operands[0], operands[1],
 				    const0_rtx, operands[2], operands[3]);
     }
+  DONE;
+})
+
+(define_int_iterator UNSPEC_TI_FETCH_DIRECT
+  [UNSPEC_TI_FETCH_ADD
+   UNSPEC_TI_FETCH_SUB
+   UNSPEC_TI_FETCH_AND
+   UNSPEC_TI_FETCH_XOR
+   UNSPEC_TI_FETCH_OR])
+(define_int_iterator UNSPEC_TI_FETCH
+  [UNSPEC_TI_FETCH_DIRECT UNSPEC_TI_FETCH_NAND_MASK_INVERTED])
+(define_int_attr amop_ti_fetch
+  [(UNSPEC_TI_FETCH_ADD "add")
+   (UNSPEC_TI_FETCH_SUB "sub")
+   (UNSPEC_TI_FETCH_AND "and")
+   (UNSPEC_TI_FETCH_XOR "xor")
+   (UNSPEC_TI_FETCH_OR "or")
+   (UNSPEC_TI_FETCH_NAND_MASK_INVERTED "nand_mask_inverted")])
+(define_int_attr size_ti_fetch
+  [(UNSPEC_TI_FETCH_ADD "36")
+   (UNSPEC_TI_FETCH_SUB "36")
+   (UNSPEC_TI_FETCH_AND "28")
+   (UNSPEC_TI_FETCH_XOR "28")
+   (UNSPEC_TI_FETCH_OR "28")
+   (UNSPEC_TI_FETCH_NAND_MASK_INVERTED "28")])
+
+(define_insn "atomic_fetch_<amop_ti_fetch>ti_scq"
+  [(set (match_operand:TI 0 "register_operand" "=&r")
+        (match_operand:TI 1 "memory_operand" "+ZB"))
+   (set (match_dup 1)
+	(unspec_volatile:TI
+	  [(match_dup 0)
+	   (match_operand:TI 2 "reg_or_0_operand" "rJ")]
+	  UNSPEC_TI_FETCH))
+   (clobber (match_scratch:DI 3 "=&r"))
+   (clobber (match_scratch:DI 4 "=&r"))]
+  "TARGET_64BIT && ISA_HAS_SCQ"
+{
+  output_asm_insn ("1:", operands);
+  output_asm_insn ("ll.d\t%0,%1", operands);
+  if (!ISA_HAS_LD_SEQ_SA)
+    output_asm_insn ("dbar\t0x700", operands);
+  output_asm_insn ("ld.d\t%t0,%b1,8", operands);
+
+  switch (<UNSPEC_TI_FETCH>)
+    {
+    case UNSPEC_TI_FETCH_AND:
+    case UNSPEC_TI_FETCH_OR:
+    case UNSPEC_TI_FETCH_XOR:
+      output_asm_insn ("<amop_ti_fetch>\t%3,%0,%z2", operands);
+      output_asm_insn ("<amop_ti_fetch>\t%4,%t0,%t2", operands);
+      break;
+    case UNSPEC_TI_FETCH_NAND_MASK_INVERTED:
+      output_asm_insn ("orn\t%3,%z2,%0", operands);
+      output_asm_insn ("orn\t%4,%t2,%t0", operands);
+      break;
+    case UNSPEC_TI_FETCH_ADD:
+    case UNSPEC_TI_FETCH_SUB:
+      output_asm_insn ("<amop_ti_fetch>.d\t%3,%0,%z2", operands);
+
+      /* Generate carry bit.  */
+      output_asm_insn (
+	<UNSPEC_TI_FETCH> == UNSPEC_TI_FETCH_ADD ? "sltu\t%4,%3,%0"
+						 : "sltu\t%4,%0,%3",
+	operands);
+
+      output_asm_insn ("<amop_ti_fetch>.d\t%4,%t0,%4", operands);
+      output_asm_insn ("<amop_ti_fetch>.d\t%4,%4,%t2", operands);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  output_asm_insn ("sc.q\t%3,%4,%1", operands);
+  output_asm_insn ("beqz\t%3,1b", operands);
+
+  return "";
+}
+  [(set_attr "length" "<size_ti_fetch>")])
+
+(define_expand "atomic_fetch_<amop_ti_fetch>ti"
+  [(set (match_operand:TI 0 "register_operand" "=&r")
+        (match_operand:TI 1 "memory_operand" "+ZB"))
+   (set (match_dup 1)
+	(unspec_volatile:TI
+	  [(match_dup 0)
+	   (match_operand:TI 2 "reg_or_0_operand" "rJ")]
+	  UNSPEC_TI_FETCH_DIRECT))
+   (match_operand:SI    3 "const_int_operand")] ;; model
+  "TARGET_64BIT && ISA_HAS_SCQ"
+{
+  /* Model is ignored as sc.q implies a full barrier.  */
+  emit_insn (gen_atomic_fetch_<amop_ti_fetch>ti_scq (operands[0],
+						     operands[1],
+						     operands[2]));
   DONE;
 })
 
