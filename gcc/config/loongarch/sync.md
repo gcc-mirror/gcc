@@ -636,6 +636,95 @@
   DONE;
 })
 
+(define_insn "atomic_compare_and_swapti_scq"
+  [(set (match_operand:TI 0 "register_operand" "=&r")
+	(match_operand:TI 1 "memory_operand"   "+ZB"))
+   (set (match_dup 1)
+	(unspec_volatile:TI [(match_operand:TI 2 "reg_or_0_operand" "rJ")
+			     (match_operand:TI 3 "reg_or_0_operand" "rJ")
+			     (match_operand:SI 4 "const_int_operand")]  ;; mod_f
+	 UNSPEC_COMPARE_AND_SWAP))
+   (clobber (match_scratch:DI 5 "=&r"))]
+  "TARGET_64BIT && ISA_HAS_SCQ"
+{
+  output_asm_insn ("1:", operands);
+  output_asm_insn ("ll.d\t%0,%1", operands);
+
+  /* Compare the low word */
+  output_asm_insn ("bne\t%0,%z2,2f", operands);
+
+  /* Don't reorder the load of high word before ll.d.  As the TImode
+     must be aligned in the memory, the high and low words must be in
+     the same cacheline, thus dbar 0x700 is enough.  */
+  if (!ISA_HAS_LD_SEQ_SA)
+    output_asm_insn ("dbar\t0x700", operands);
+
+  /* Now load the high word.  As the high and low words are in the same
+     cacheline, in case another core has clobbered the high word before the
+     sc.q instruction is executed, the LL bit for the low word will be
+     cleared.  Thus a normal load is sufficient.  */
+  output_asm_insn ("ld.d\t%t0,%b1,8", operands);
+
+  /* Compare the high word.  */
+  output_asm_insn ("bne\t%t0,%t2,2f", operands);
+
+  /* Copy the low word of the new value as it'll be clobbered by sc.q.  */
+  output_asm_insn ("move\t%5,%z3", operands);
+
+  /* Store both words if LL bit is still set.  */
+  output_asm_insn ("sc.q\t%5,%t3,%1", operands);
+
+  /* Check if sc.q has done the store.  */
+  output_asm_insn ("beqz\t%5,1b", operands);
+
+  /* Jump over the mod_f barrier if sc.q has succeeded.  */
+  output_asm_insn ("%T4b\t3f", operands);
+
+  /* The barrier for mod_f.  */
+  output_asm_insn ("2:", operands);
+  output_asm_insn ("%G4", operands);
+
+  output_asm_insn ("3:", operands);
+  return "";
+}
+  [(set_attr "length" "40")])
+
+(define_expand "atomic_compare_and_swapti"
+  [(match_operand:SI 0 "register_operand" "")   ;; bool output
+   (match_operand:TI 1 "register_operand" "")  ;; val output
+   (match_operand:TI 2 "memory_operand" "")    ;; memory
+   (match_operand:TI 3 "reg_or_0_operand" "")  ;; expected value
+   (match_operand:TI 4 "reg_or_0_operand" "")  ;; desired value
+   (match_operand:SI 5 "const_int_operand" "")  ;; is_weak
+   (match_operand:SI 6 "const_int_operand" "")  ;; mod_s
+   (match_operand:SI 7 "const_int_operand" "")] ;; mod_f
+  "TARGET_64BIT && ISA_HAS_SCQ"
+{
+  emit_insn (gen_atomic_compare_and_swapti_scq (operands[1], operands[2],
+						operands[3], operands[4],
+						operands[7]));
+
+  rtx t[2];
+
+  for (int i = 0; i < 2; i++)
+    {
+      rtx compare = loongarch_subword (operands[1], i);
+      rtx expect = loongarch_subword (operands[3], i);
+
+      t[i] = gen_reg_rtx (DImode);
+
+      if (expect != const0_rtx)
+	emit_insn (gen_xordi3 (t[i], compare, expect));
+      else
+	emit_move_insn (t[i], compare);
+    }
+
+  emit_insn (gen_iordi3 (t[0], t[0], t[1]));
+  emit_insn (gen_rtx_SET (operands[0],
+			  gen_rtx_EQ (SImode, t[0], const0_rtx)));
+  DONE;
+})
+
 (define_insn "atomic_cas_value_add_7_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")				;; res
 	(match_operand:GPR 1 "memory_operand" "+ZC"))
