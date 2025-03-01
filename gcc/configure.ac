@@ -3296,6 +3296,8 @@ AC_MSG_RESULT($gcc_cv_ld_ro_rw_mix)
 
 gcc_AC_INITFINI_ARRAY
 
+gcc_CHECK_ATTRIBUTE_ALIAS
+
 # Some assemblers (GNU as for LoongArch) generates relocations for
 # leb128 symbol arithmetic for relaxation, we need to disable relaxation
 # probing leb128 support then.

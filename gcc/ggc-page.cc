@@ -1273,9 +1273,15 @@ add_finalizer (void *result, void (*f)(void *), size_t s, size_t n)
 
 /* Allocate a chunk of memory of SIZE bytes.  Its contents are undefined.  */
 
+#ifdef HAVE_ATTRIBUTE_ALIAS
+extern "C" void *
+ggc_internal_alloc_ (size_t size, void (*f)(void *), size_t s, size_t n
+		     MEM_STAT_DECL)
+#else
 void *
 ggc_internal_alloc (size_t size, void (*f)(void *), size_t s, size_t n
 		    MEM_STAT_DECL)
+#endif
 {
   size_t order, word, bit, object_offset, object_size;
   struct page_entry *entry;
@@ -1457,6 +1463,27 @@ ggc_internal_alloc (size_t size, void (*f)(void *), size_t s, size_t n
 
   return result;
 }
+
+#ifdef HAVE_ATTRIBUTE_ALIAS
+extern void *
+ggc_internal_alloc (size_t size, void (*f)(void *), size_t s,
+		    size_t n MEM_STAT_DECL)
+     __attribute__((__alias__ ("ggc_internal_alloc_")));
+extern void *
+ggc_internal_alloc_no_dtor (size_t size, void (*f)(void *), size_t s,
+			    size_t n MEM_STAT_DECL)
+     __attribute__((__alias__ ("ggc_internal_alloc_")));
+#else
+#ifdef __GNUC__
+__attribute__ ((__noinline__))
+#endif
+void *
+ggc_internal_alloc_no_dtor (size_t size, void (*f)(void *), size_t s,
+			    size_t n MEM_STAT_DECL)
+{
+  return ggc_internal_alloc (size, f, s, n PASS_MEM_STAT);
+}
+#endif
 
 /* Mark function for strings.  */
 

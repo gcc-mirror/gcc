@@ -442,6 +442,23 @@ AC_DEFINE_UNQUOTED(HAVE_INITFINI_ARRAY_SUPPORT,
   [Define 0/1 if .init_array/.fini_array sections are available and working.])
 ])
 
+dnl Check whether the host supports symbol aliases.
+AC_DEFUN([gcc_CHECK_ATTRIBUTE_ALIAS], [
+  AC_CACHE_CHECK([whether the host/build supports symbol aliases],
+                 gcc_cv_have_attribute_alias, [
+  if test "x${build}" = "x${host}"; then
+    AC_TRY_LINK([
+extern "C" void foo(void) { }
+extern void bar(void) __attribute__((alias("foo")));],
+    [bar();], gcc_cv_have_attribute_alias=yes, gcc_cv_have_attribute_alias=no)
+  else
+    gcc_cv_have_attribute_alias=no
+  fi])
+  if test $gcc_cv_have_attribute_alias = yes; then
+    AC_DEFINE(HAVE_ATTRIBUTE_ALIAS, 1,
+      [Define to 1 if the host/build supports __attribute__((alias(...))).])
+  fi])
+
 dnl # gcc_GAS_FLAGS
 dnl # Used by gcc_GAS_CHECK_FEATURE 
 dnl #

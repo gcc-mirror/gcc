@@ -34,12 +34,22 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Stubs for GGC referenced through instantiations triggered by hash-map.  */
-void *ggc_internal_cleared_alloc (size_t, void (*)(void *),
-				  size_t, size_t MEM_STAT_DECL)
+void *
+ggc_internal_cleared_alloc (size_t, void (*)(void *),
+			    size_t, size_t MEM_STAT_DECL)
 {
   return NULL;
 }
-void ggc_free (void *)
+
+void *
+ggc_internal_cleared_alloc_no_dtor (size_t, void (*)(void *),
+				    size_t, size_t MEM_STAT_DECL)
+{
+  return NULL;
+}
+
+void
+ggc_free (void *)
 {
 }
 
