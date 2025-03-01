@@ -24,9 +24,6 @@
   UNSPEC_COMPARE_AND_SWAP_AMCAS
   UNSPEC_COMPARE_AND_SWAP_ADD
   UNSPEC_COMPARE_AND_SWAP_SUB
-  UNSPEC_COMPARE_AND_SWAP_AND
-  UNSPEC_COMPARE_AND_SWAP_XOR
-  UNSPEC_COMPARE_AND_SWAP_OR
   UNSPEC_COMPARE_AND_SWAP_NAND
   UNSPEC_SYNC_OLD_OP
   UNSPEC_SYNC_EXCHANGE
@@ -343,17 +340,18 @@
   DONE;
 })
 
-(define_expand "atomic_test_and_set"
-  [(match_operand:QI 0 "register_operand" "")     ;; bool output
-   (match_operand:QI 1 "memory_operand" "+ZB")    ;; memory
-   (match_operand:SI 2 "const_int_operand" "")]   ;; model
+(define_expand "atomic_fetch_<amop><mode>"
+  [(match_operand:SHORT 0 "register_operand" "")		 ;; output
+   (any_bitwise (match_operand:SHORT 1 "memory_operand"   "+ZB") ;; memory
+		(match_operand:SHORT 2 "reg_or_0_operand" "rJ")) ;; val
+   (match_operand:SI 3 "const_int_operand" "")]			 ;; model
   ""
 {
-  /* We have no QImode atomics, so use the address LSBs to form a mask,
-     then use an aligned SImode atomic.  */
+  /* We have no QI/HImode bitwise atomics, so use the address LSBs to form
+     a mask, then use an aligned SImode atomic.  */
   rtx result = operands[0];
   rtx mem = operands[1];
-  rtx model = operands[2];
+  rtx model = operands[3];
   rtx addr = force_reg (Pmode, XEXP (mem, 0));
   rtx mask = gen_int_mode (-4, Pmode);
   rtx aligned_addr = gen_reg_rtx (Pmode);
@@ -367,7 +365,8 @@
   set_mem_alias_set (aligned_mem, 0);
 
   rtx tmp = gen_reg_rtx (SImode);
-  emit_move_insn (tmp, GEN_INT (1));
+  emit_move_insn (tmp, simplify_gen_unary (ZERO_EXTEND, SImode,
+					   operands[2], <MODE>mode));
 
   /* Note that we have defined SHIFT_COUNT_TRUNCATED to 1, so we don't need
      to mask addr with 0b11 here.  */
@@ -378,11 +377,34 @@
   rtx word = gen_reg_rtx (SImode);
   emit_move_insn (word, gen_rtx_ASHIFT (SImode, tmp, shmt));
 
+  if (<is_and>)
+    {
+      /* word = word | ~(mode_mask << shmt) */
+      rtx tmp = force_reg (SImode,
+			   gen_int_mode (GET_MODE_MASK (<MODE>mode),
+					 SImode));
+      emit_move_insn (tmp, gen_rtx_ASHIFT (SImode, tmp, shmt));
+      emit_move_insn (word, gen_rtx_IOR (SImode, gen_rtx_NOT (SImode, tmp),
+					 word));
+    }
+
   tmp = gen_reg_rtx (SImode);
-  emit_insn (gen_atomic_fetch_orsi (tmp, aligned_mem, word, model));
+  emit_insn (gen_atomic_fetch_<amop>si (tmp, aligned_mem, word, model));
 
   emit_move_insn (gen_lowpart (SImode, result),
 		  gen_rtx_LSHIFTRT (SImode, tmp, shmt));
+  DONE;
+})
+
+(define_expand "atomic_test_and_set"
+  [(match_operand:QI 0 "register_operand" "")     ;; bool output
+   (match_operand:QI 1 "memory_operand" "+ZB")    ;; memory
+   (match_operand:SI 2 "const_int_operand" "")]   ;; model
+  ""
+{
+  rtx one = force_reg (QImode, gen_int_mode (1, QImode));
+  emit_insn (gen_atomic_fetch_orqi (operands[0], operands[1], one,
+				    operands[2]));
   DONE;
 })
 
@@ -524,83 +546,6 @@
 }
   [(set (attr "length") (const_int 28))])
 
-(define_insn "atomic_cas_value_and_7_<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=&r")				;; res
-	(match_operand:GPR 1 "memory_operand" "+ZC"))
-   (set (match_dup 1)
-	(unspec_volatile:GPR [(match_operand:GPR 2 "reg_or_0_operand" "rJ")	;; mask
-			      (match_operand:GPR 3 "reg_or_0_operand" "rJ")	;; inverted_mask
-			      (match_operand:GPR 4 "reg_or_0_operand"  "rJ")	;; old val
-			      (match_operand:GPR 5 "reg_or_0_operand"  "rJ")	;; new val
-			      (match_operand:SI 6 "const_int_operand")]		;; model
-	 UNSPEC_COMPARE_AND_SWAP_AND))
-   (clobber (match_scratch:GPR 7 "=&r"))
-   (clobber (match_scratch:GPR 8 "=&r"))]
-  ""
-{
-  return "1:\\n\\t"
-	 "ll.<size>\\t%0,%1\\n\\t"
-	 "and\\t%7,%0,%3\\n\\t"
-	 "and\\t%8,%0,%z5\\n\\t"
-	 "and\\t%8,%8,%z2\\n\\t"
-	 "or%i8\\t%7,%7,%8\\n\\t"
-	 "sc.<size>\\t%7,%1\\n\\t"
-	 "beq\\t$zero,%7,1b";
-}
-  [(set (attr "length") (const_int 28))])
-
-(define_insn "atomic_cas_value_xor_7_<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=&r")				;; res
-	(match_operand:GPR 1 "memory_operand" "+ZC"))
-   (set (match_dup 1)
-	(unspec_volatile:GPR [(match_operand:GPR 2 "reg_or_0_operand" "rJ")	;; mask
-			      (match_operand:GPR 3 "reg_or_0_operand" "rJ")	;; inverted_mask
-			      (match_operand:GPR 4 "reg_or_0_operand"  "rJ")	;; old val
-			      (match_operand:GPR 5 "reg_or_0_operand"  "rJ")	;; new val
-			      (match_operand:SI 6 "const_int_operand")]		;; model
-	 UNSPEC_COMPARE_AND_SWAP_XOR))
-   (clobber (match_scratch:GPR 7 "=&r"))
-   (clobber (match_scratch:GPR 8 "=&r"))]
-  ""
-{
-  return "1:\\n\\t"
-	 "ll.<size>\\t%0,%1\\n\\t"
-	 "and\\t%7,%0,%3\\n\\t"
-	 "xor\\t%8,%0,%z5\\n\\t"
-	 "and\\t%8,%8,%z2\\n\\t"
-	 "or%i8\\t%7,%7,%8\\n\\t"
-	 "sc.<size>\\t%7,%1\\n\\t"
-	 "beq\\t$zero,%7,1b";
-}
-
-  [(set (attr "length") (const_int 28))])
-
-(define_insn "atomic_cas_value_or_7_<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=&r")				;; res
-	(match_operand:GPR 1 "memory_operand" "+ZC"))
-   (set (match_dup 1)
-	(unspec_volatile:GPR [(match_operand:GPR 2 "reg_or_0_operand" "rJ")	;; mask
-			      (match_operand:GPR 3 "reg_or_0_operand" "rJ")	;; inverted_mask
-			      (match_operand:GPR 4 "reg_or_0_operand"  "rJ")	;; old val
-			      (match_operand:GPR 5 "reg_or_0_operand"  "rJ")	;; new val
-			      (match_operand:SI 6 "const_int_operand")]		;; model
-	 UNSPEC_COMPARE_AND_SWAP_OR))
-   (clobber (match_scratch:GPR 7 "=&r"))
-   (clobber (match_scratch:GPR 8 "=&r"))]
-  ""
-{
-  return "1:\\n\\t"
-	 "ll.<size>\\t%0,%1\\n\\t"
-	 "and\\t%7,%0,%3\\n\\t"
-	 "or\\t%8,%0,%z5\\n\\t"
-	 "and\\t%8,%8,%z2\\n\\t"
-	 "or%i8\\t%7,%7,%8\\n\\t"
-	 "sc.<size>\\t%7,%1\\n\\t"
-	 "beq\\t$zero,%7,1b";
-}
-
-  [(set (attr "length") (const_int 28))])
-
 (define_insn "atomic_cas_value_nand_7_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")				;; res
 	(match_operand:GPR 1 "memory_operand" "+ZC"))
@@ -720,60 +665,6 @@
 {
   union loongarch_gen_fn_ptrs generator;
   generator.fn_7 = gen_atomic_cas_value_sub_7_si;
-  loongarch_expand_atomic_qihi (generator, operands[0], operands[1],
-				operands[1], operands[2], operands[3]);
-  DONE;
-})
-
-(define_expand "atomic_fetch_and<mode>"
-  [(set (match_operand:SHORT 0 "register_operand" "=&r")
-	(match_operand:SHORT 1 "memory_operand" "+ZB"))
-   (set (match_dup 1)
-	(unspec_volatile:SHORT
-	  [(and:SHORT (match_dup 1)
-		      (match_operand:SHORT 2 "reg_or_0_operand" "rJ"))
-	   (match_operand:SI 3 "const_int_operand")] ;; model
-	 UNSPEC_SYNC_OLD_OP))]
-  ""
-{
-  union loongarch_gen_fn_ptrs generator;
-  generator.fn_7 = gen_atomic_cas_value_and_7_si;
-  loongarch_expand_atomic_qihi (generator, operands[0], operands[1],
-				operands[1], operands[2], operands[3]);
-  DONE;
-})
-
-(define_expand "atomic_fetch_xor<mode>"
-  [(set (match_operand:SHORT 0 "register_operand" "=&r")
-	(match_operand:SHORT 1 "memory_operand" "+ZB"))
-   (set (match_dup 1)
-	(unspec_volatile:SHORT
-	  [(xor:SHORT (match_dup 1)
-		      (match_operand:SHORT 2 "reg_or_0_operand" "rJ"))
-	   (match_operand:SI 3 "const_int_operand")] ;; model
-	 UNSPEC_SYNC_OLD_OP))]
-  ""
-{
-  union loongarch_gen_fn_ptrs generator;
-  generator.fn_7 = gen_atomic_cas_value_xor_7_si;
-  loongarch_expand_atomic_qihi (generator, operands[0], operands[1],
-				operands[1], operands[2], operands[3]);
-  DONE;
-})
-
-(define_expand "atomic_fetch_or<mode>"
-  [(set (match_operand:SHORT 0 "register_operand" "=&r")
-	(match_operand:SHORT 1 "memory_operand" "+ZB"))
-   (set (match_dup 1)
-	(unspec_volatile:SHORT
-	  [(ior:SHORT (match_dup 1)
-		      (match_operand:SHORT 2 "reg_or_0_operand" "rJ"))
-	   (match_operand:SI 3 "const_int_operand")] ;; model
-	 UNSPEC_SYNC_OLD_OP))]
-  ""
-{
-  union loongarch_gen_fn_ptrs generator;
-  generator.fn_7 = gen_atomic_cas_value_or_7_si;
   loongarch_expand_atomic_qihi (generator, operands[0], operands[1],
 				operands[1], operands[2], operands[3]);
   DONE;
