@@ -356,12 +356,13 @@
   rtx mem = operands[1];
   rtx model = operands[2];
   rtx addr = force_reg (Pmode, XEXP (mem, 0));
-  rtx tmp_reg = gen_reg_rtx (Pmode);
-  rtx zero_reg = gen_rtx_REG (Pmode, 0);
-
+  rtx mask = gen_int_mode (-4, Pmode);
   rtx aligned_addr = gen_reg_rtx (Pmode);
-  emit_move_insn (tmp_reg, gen_rtx_PLUS (Pmode, zero_reg, GEN_INT (-4)));
-  emit_move_insn (aligned_addr, gen_rtx_AND (Pmode, addr, tmp_reg));
+
+  if (!and_operand (mask, Pmode))
+    mask = force_reg (Pmode, mask);
+
+  emit_move_insn (aligned_addr, gen_rtx_AND (Pmode, addr, mask));
 
   rtx aligned_mem = change_address (mem, SImode, aligned_addr);
   set_mem_alias_set (aligned_mem, 0);
