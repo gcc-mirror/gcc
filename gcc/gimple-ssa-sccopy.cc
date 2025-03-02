@@ -568,6 +568,19 @@ scc_copy_prop::propagate ()
     {
       vec<gimple *> scc = worklist.pop ();
 
+      /* When we do 'replace_scc_by_value' it may happen that some EH edges
+	 get removed.  That means parts of CFG get removed.  Those may
+	 contain copy statements.  For that reason we prune SCCs here.  */
+      unsigned i;
+      for (i = 0; i < scc.length (); i++)
+	if (gimple_bb (scc[i]) == NULL)
+	  scc.unordered_remove (i);
+      if (scc.is_empty ())
+	{
+	  scc.release ();
+	  continue;
+	}
+
       auto_vec<gimple *> inner;
       hash_set<tree> outer_ops;
       tree last_outer_op = NULL_TREE;
