@@ -1116,8 +1116,8 @@ end program test_allocated
 @end smallexample
 
 @item @emph{Standard}:
-Fortran 90 and later.  Note, the @code{SCALAR=} keyword and allocatable
-scalar entities are available in Fortran 2003 and later.
+Fortran 90 and later; for the @code{SCALAR=} keyword and allocatable
+scalar entities, Fortran 2003 and later.
 @end table
 
 
@@ -2072,7 +2072,7 @@ Fortran 2008 and later; with @var{STAT}, TS 18508 or later
 
 @table @asis
 @item @emph{Synopsis}:
-@code{CALL ATOMIC_FETCH_ADD (ATOM, VALUE, old [, STAT])}
+@code{CALL ATOMIC_FETCH_ADD (ATOM, VALUE, OLD [, STAT])}
 
 @item @emph{Description}:
 @code{ATOMIC_FETCH_ADD(ATOM, VALUE, OLD)} atomically stores the value of
@@ -3075,24 +3075,24 @@ for @code{UNSIGNED} (@pxref{Unsigned integers})
 
 @table @asis
 @item @emph{Synopsis}:
-@code{RESULT = C_ASSOCIATED(c_ptr_1[, c_ptr_2])}
+@code{RESULT = C_ASSOCIATED(CPTR1[, CPTR2])}
 
 @item @emph{Description}:
-@code{C_ASSOCIATED(c_ptr_1[, c_ptr_2])} determines the status of the C pointer
-@var{c_ptr_1} or if @var{c_ptr_1} is associated with the target @var{c_ptr_2}.
+@code{C_ASSOCIATED(CPTR1[, CPTR2])} determines the status of the C pointer
+@var{CPTR1} or if @var{CPTR1} is associated with the target @var{CPTR2}.
 
 @item @emph{Class}:
 Inquiry function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{c_ptr_1} @tab Scalar of the type @code{C_PTR} or @code{C_FUNPTR}.
-@item @var{c_ptr_2} @tab (Optional) Scalar of the same type as @var{c_ptr_1}.
+@item @var{CPTR1} @tab Scalar of the type @code{C_PTR} or @code{C_FUNPTR}.
+@item @var{CPTR2} @tab (Optional) Scalar of the same type as @var{CPTR1}.
 @end multitable
 
 @item @emph{Return value}:
 The return value is of type @code{LOGICAL}; it is @code{.false.} if either
-@var{c_ptr_1} is a C NULL pointer or if @var{c_ptr1} and @var{c_ptr_2}
+@var{CPTR1} is a C NULL pointer or if @var{CPTR1} and @var{CPTR2}
 point to different addresses.
 
 @item @emph{Example}:
@@ -3178,7 +3178,7 @@ Fortran 2003 and later
 
 @table @asis
 @item @emph{Synopsis}:
-@code{CALL C_F_PROCPOINTER(cptr, fptr)}
+@code{CALL C_F_PROCPOINTER(CPTR, FPTR)}
 
 @item @emph{Description}:
 @code{C_F_PROCPOINTER(CPTR, FPTR)} Assign the target of the C function pointer
@@ -3236,17 +3236,17 @@ Fortran 2003 and later
 
 @table @asis
 @item @emph{Synopsis}:
-@code{RESULT = C_FUNLOC(x)}
+@code{RESULT = C_FUNLOC(X)}
 
 @item @emph{Description}:
-@code{C_FUNLOC(x)} determines the C address of the argument.
+@code{C_FUNLOC(X)} determines the C address of the argument.
 
 @item @emph{Class}:
 Inquiry function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{x} @tab Interoperable function or pointer to such function.
+@item @var{X} @tab Interoperable function or pointer to such function.
 @end multitable
 
 @item @emph{Return value}:
