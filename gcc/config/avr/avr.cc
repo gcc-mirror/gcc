@@ -2750,10 +2750,19 @@ avr_print_operand (FILE *file, rtx x, int code)
 		  fprintf (file, HOST_WIDE_INT_PRINT_HEX, ival - sfr0);
 	      }
 	    else
-	      output_operand_lossage
-		("bad I/O address 0x" HOST_WIDE_INT_PRINT_HEX_PURE
-		 " outside of valid range [0x%x, 0x%x] for %%i operand",
-		 ival, sfr0, sfr0 + 0x3f);
+	      {
+		char buf[17];
+		/* Printed indirectly through buffer, as
+		   output_operand_lossage is translatable but uses printf
+		   format strings, so HOST_WIDE_INT_PRINT_HEX_PURE macro can't
+		   be used there to make translation possible and how exactly
+		   can be HOST_WIDE_INT printed is host dependent.  */
+		snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_HEX_PURE,
+			  ival);
+		output_operand_lossage ("bad I/O address 0x%s outside of "
+					"valid range [0x%x, 0x%x] for %%i "
+					"operand", buf, sfr0, sfr0 + 0x3f);
+	      }
 	  }
 	  break; // CONST_INT
 
