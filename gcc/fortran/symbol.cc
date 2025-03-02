@@ -4624,12 +4624,29 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
      entity may be defined by means of C and the Fortran entity is said
      to be interoperable with the C entity.  There does not have to be such
      an interoperating C entity."
+
+     However, later discussion on the J3 mailing list
+     (https://mailman.j3-fortran.org/pipermail/j3/2021-July/013190.html)
+     found this to be a defect, and Fortran 2018 added in section 18.3.4
+     the following constraint:
+     "C1805: A derived type with the BIND attribute shall have at least one
+     component."
+
+     We thus allow empty derived types only as GNU extension while giving a
+     warning by default, or reject empty types in standard conformance mode.
   */
   if (curr_comp == NULL)
     {
-      gfc_warning (0, "Derived type %qs with BIND(C) attribute at %L is empty, "
-		   "and may be inaccessible by the C companion processor",
-		   derived_sym->name, &(derived_sym->declared_at));
+      if (!gfc_notify_std (GFC_STD_GNU, "Derived type %qs with BIND(C) "
+			   "attribute at %L has no components",
+			   derived_sym->name, &(derived_sym->declared_at)))
+	return false;
+      else if (!pedantic)
+	/* Generally emit warning, but not twice if -pedantic is given.  */
+	gfc_warning (0, "Derived type %qs with BIND(C) attribute at %L "
+		     "is empty, and may be inaccessible by the C "
+		     "companion processor",
+		     derived_sym->name, &(derived_sym->declared_at));
       derived_sym->ts.is_c_interop = 1;
       derived_sym->attr.is_bind_c = 1;
       return true;
