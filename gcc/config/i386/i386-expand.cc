@@ -26746,15 +26746,6 @@ ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
 	  && (!op2 || !side_effects_p (op2))
 	  && op0)
 	{
-	  if (GET_MODE (op0) != mode)
-	    op0 = gen_lowpart (mode, op0);
-	  if (!TARGET_64BIT && !register_operand (op0, mode))
-	    {
-	      /* Avoid force_reg (mode, op0).  */
-	      rtx reg = gen_reg_rtx (mode);
-	      emit_move_insn (reg, op0);
-	      op0 = reg;
-	    }
 	  emit_move_insn (target, gen_rtx_XOR (mode, op0, CONSTM1_RTX (mode)));
 	  return target;
 	}
@@ -26779,15 +26770,6 @@ ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
 	  && (!op2 || !side_effects_p (op2))
 	  && op1)
 	{
-	  if (GET_MODE (op1) != mode)
-	    op1 = gen_lowpart (mode, op1);
-	  if (!TARGET_64BIT && !register_operand (op1, mode))
-	    {
-	      /* Avoid force_reg (mode, op1).  */
-	      rtx reg = gen_reg_rtx (mode);
-	      emit_move_insn (reg, op1);
-	      op1 = reg;
-	    }
 	  emit_move_insn (target, gen_rtx_XOR (mode, op1, CONSTM1_RTX (mode)));
 	  return target;
 	}
@@ -26819,15 +26801,6 @@ ix86_expand_ternlog (machine_mode mode, rtx op0, rtx op1, rtx op2, int idx,
 	  && (!op1 || !side_effects_p (op1))
 	  && op2)
 	{
-	  if (GET_MODE (op2) != mode)
-	    op2 = gen_lowpart (mode, op2);
-	  if (!TARGET_64BIT && !register_operand (op2, mode))
-	    {
-	      /* Avoid force_reg (mode, op2).  */
-	      rtx reg = gen_reg_rtx (mode);
-	      emit_move_insn (reg, op2);
-	      op2 = reg;
-	    }
 	  emit_move_insn (target, gen_rtx_XOR (mode, op2, CONSTM1_RTX (mode)));
 	  return target;
 	}
