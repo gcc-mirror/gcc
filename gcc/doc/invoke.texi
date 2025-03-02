@@ -24353,33 +24353,6 @@ instructions.  This option has only an effect on reduced Tiny devices like
 ATtiny40.  See also the @code{absdata}
 @ref{AVR Variable Attributes,variable attribute}.
 
-@opindex maccumulate-args
-@item -maccumulate-args
-Accumulate outgoing function arguments and acquire/release the needed
-stack space for outgoing function arguments once in function
-prologue/epilogue.  Without this option, outgoing arguments are pushed
-before calling a function and popped afterwards.
-
-Popping the arguments after the function call can be expensive on
-AVR so that accumulating the stack space might lead to smaller
-executables because arguments need not be removed from the
-stack after such a function call.
-
-This option can lead to reduced code size for functions that perform
-several calls to functions that get their arguments on the stack like
-calls to printf-like functions.
-
-@opindex mbranch-cost
-@item -mbranch-cost=@var{cost}
-Set the branch costs for conditional branch instructions to
-@var{cost}.  Reasonable values for @var{cost} are small, non-negative
-integers. The default branch cost is 0.
-
-@opindex mcall-prologues
-@item -mcall-prologues
-Functions prologues/epilogues are expanded as calls to appropriate
-subroutines.  Code size is smaller.
-
 @opindex mcvt
 @item -mcvt
 Use a @emph{compact vector table}.  Some devices support a CVT
@@ -24396,27 +24369,6 @@ For example, you can link with @code{-Wl,--defsym,__init_cvt=0}.
 
 The CVT startup code is available since
 @w{@uref{https://github.com/avrdudes/avr-libc/issues/1010,AVR-LibC v2.3}}.
-
-@opindex mfuse-add
-@item -mfuse-add
-@itemx -mno-fuse-add
-@itemx -mfuse-add=@var{level}
-Optimize indirect memory accesses on reduced Tiny devices.
-The default uses @code{@var{level}=1} for optimizations @option{-Og}
-and @option{-O1}, and @code{@var{level}=2} for higher optimizations.
-Valid values for @var{level} are @code{0}, @code{1} and @code{2}.
-
-@opindex mfuse-move
-@item -mfuse-move
-@itemx -mno-fuse-move
-@itemx -mfuse-move=@var{level}
-Run a post reload optimization pass that tries to fuse move instructions
-and to split multi-byte instructions into 8-bit operations.
-The default uses @code{@var{level}=3} for optimization @option{-O1},
-and @code{@var{level}=23} for higher optimizations.
-Valid values for @var{level} are in the range @code{0} @dots{} @code{23}
-which is a 3:2:2:2 mixed radix value.  Each digit controls some
-aspect of the optimization.
 
 @opindex mdouble
 @opindex mlong-double
@@ -24506,39 +24458,6 @@ support (@w{@uref{https://sourceware.org/PR31124,PR31124}}) is available.
 In that case, @option{-mrodata-in-ram} can be used to return to the old
 layout with @code{.rodata} in RAM.
 
-@opindex mstrict-X
-@item -mstrict-X
-Use address register @code{X} in a way proposed by the hardware.  This means
-that @code{X} is only used in indirect, post-increment or
-pre-decrement addressing.
-
-Without this option, the @code{X} register may be used in the same way
-as @code{Y} or @code{Z} which then is emulated by additional
-instructions.
-For example, loading a value with @code{X+const} addressing with a
-small non-negative @code{const < 64} to a register @var{Rn} is
-performed as
-
-@example
-adiw r26, const   ; X += const
-ld   @var{Rn}, X        ; @var{Rn} = *X
-sbiw r26, const   ; X -= const
-@end example
-
-@opindex msplit-bit-shift
-@item -msplit-bit-shift
-Split multi-byte shifts with a constant offset into a shift with
-a byte offset and a residual shift with a non-byte offset.
-This optimization is turned on per default for @option{-O2} and higher,
-including @option{-Os} but excluding @option{-Oz}.
-Splitting of shifts with a constant offset that is
-a multiple of 8 is controlled by @option{-mfuse-move}.
-
-@opindex msplit-ldst
-@item -msplit-ldst
-Split multi-byte loads and stores into several byte loads and stores.
-This optimization is turned on per default for @option{-O2} and higher.
-
 @opindex mtiny-stack
 @item -mtiny-stack
 Only change the lower 8@tie{}bits of the stack pointer.
@@ -24588,6 +24507,98 @@ resulting address space is not contained in the incoming address space.
 @item -Wmisspelled-isr
 Warn if the ISR is misspelled, i.e.@: without __vector prefix.
 Enabled by default.
+@end table
+
+
+@subsubsection AVR Optimization Options
+The following options are pure optimization options.
+Options @option{-mgas-isr-prologues}, @option{-mmain-is-OS_task},
+@option{-mno-call-main} and @option{-mrelax} from above are only
+@emph{almost} optimization options, since there are rare occasions
+where their different code generation matters.
+
+@table @gcctabopt
+@opindex maccumulate-args
+@item -maccumulate-args
+Accumulate outgoing function arguments and acquire/release the needed
+stack space for outgoing function arguments once in function
+prologue/epilogue.  Without this option, outgoing arguments are pushed
+before calling a function and popped afterwards.
+
+Popping the arguments after the function call can be expensive on
+AVR so that accumulating the stack space might lead to smaller
+executables because arguments need not be removed from the
+stack after such a function call.
+
+This option can lead to reduced code size for functions that perform
+several calls to functions that get their arguments on the stack like
+calls to printf-like functions.
+
+@opindex mbranch-cost
+@item -mbranch-cost=@var{cost}
+Set the branch costs for conditional branch instructions to
+@var{cost}.  Reasonable values for @var{cost} are small, non-negative
+integers. The default branch cost is 0.
+
+@opindex mcall-prologues
+@item -mcall-prologues
+Functions prologues/epilogues are expanded as calls to appropriate
+subroutines.  Code size is smaller.
+
+@opindex mfuse-add
+@item -mfuse-add
+@itemx -mno-fuse-add
+@itemx -mfuse-add=@var{level}
+Optimize indirect memory accesses on reduced Tiny devices.
+The default uses @code{@var{level}=1} for optimizations @option{-Og}
+and @option{-O1}, and @code{@var{level}=2} for higher optimizations.
+Valid values for @var{level} are @code{0}, @code{1} and @code{2}.
+
+@opindex mfuse-move
+@item -mfuse-move
+@itemx -mno-fuse-move
+@itemx -mfuse-move=@var{level}
+Run a post reload optimization pass that tries to fuse move instructions
+and to split multi-byte instructions into 8-bit operations.
+The default uses @code{@var{level}=3} for optimization @option{-O1},
+and @code{@var{level}=23} for higher optimizations.
+Valid values for @var{level} are in the range @code{0} @dots{} @code{23}
+which is a 3:2:2:2 mixed radix value.  Each digit controls some
+aspect of the optimization.
+
+@opindex mstrict-X
+@item -mstrict-X
+Use address register @code{X} in a way proposed by the hardware.  This means
+that @code{X} is only used in indirect, post-increment or
+pre-decrement addressing.
+
+Without this option, the @code{X} register may be used in the same way
+as @code{Y} or @code{Z} which then is emulated by additional
+instructions.
+For example, loading a value with @code{X+const} addressing with a
+small non-negative @code{const < 64} to a register @var{Rn} is
+performed as
+
+@example
+adiw r26, const   ; X += const
+ld   @var{Rn}, X        ; @var{Rn} = *X
+sbiw r26, const   ; X -= const
+@end example
+
+@opindex msplit-bit-shift
+@item -msplit-bit-shift
+Split multi-byte shifts with a constant offset into a shift with
+a byte offset and a residual shift with a non-byte offset.
+This optimization is turned on per default for @option{-O2} and higher,
+including @option{-Os} but excluding @option{-Oz}.
+Splitting of shifts with a constant offset that is
+a multiple of 8 is controlled by @option{-mfuse-move}.
+
+@opindex msplit-ldst
+@item -msplit-ldst
+Split multi-byte loads and stores into several byte loads and stores.
+This optimization is turned on per default for @option{-O2} and higher.
+
 @end table
 
 @anchor{eind}
@@ -24950,7 +24961,7 @@ when the @code{.rodata} sections for read-only data is located in RAM;
 and defined to@tie{}0, otherwise.
 
 @item __WITH_AVRLIBC__
-The compiler is configured to be used together with AVR-Libc.
+The compiler is configured to be used together with AVR-LibC.
 See the @option{--with-avrlibc} configure option.
 
 @item __HAVE_SIGNAL_N__
