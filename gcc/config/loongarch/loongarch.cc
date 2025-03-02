@@ -2363,14 +2363,9 @@ loongarch_index_address_p (rtx addr, machine_mode mode ATTRIBUTE_UNUSED)
   return true;
 }
 
-/* Return the number of instructions needed to load or store a value
-   of mode MODE at address X.  Return 0 if X isn't valid for MODE.
-   Assume that multiword moves may need to be split into word moves
-   if MIGHT_SPLIT_P, otherwise assume that a single load or store is
-   enough.  */
-
-int
-loongarch_address_insns (rtx x, machine_mode mode, bool might_split_p)
+static int
+loongarch_address_insns_1 (rtx x, machine_mode mode, bool might_split_p,
+			   int reg_reg_cost)
 {
   struct loongarch_address_info addr;
   int factor;
@@ -2405,7 +2400,7 @@ loongarch_address_insns (rtx x, machine_mode mode, bool might_split_p)
 	return factor;
 
       case ADDRESS_REG_REG:
-	return factor * la_addr_reg_reg_cost;
+	return factor * reg_reg_cost;
 
       case ADDRESS_CONST_INT:
 	return lsx_p ? 0 : factor;
@@ -2418,6 +2413,18 @@ loongarch_address_insns (rtx x, machine_mode mode, bool might_split_p)
 	  : factor * loongarch_symbol_insns (addr.symbol_type, mode);
       }
   return 0;
+}
+
+/* Return the number of instructions needed to load or store a value
+   of mode MODE at address X.  Return 0 if X isn't valid for MODE.
+   Assume that multiword moves may need to be split into word moves
+   if MIGHT_SPLIT_P, otherwise assume that a single load or store is
+   enough.  */
+
+int
+loongarch_address_insns (rtx x, machine_mode mode, bool might_split_p)
+{
+  return loongarch_address_insns_1 (x, mode, might_split_p, 1);
 }
 
 /* Return true if X fits within an unsigned field of BITS bits that is
@@ -3746,6 +3753,17 @@ loongarch_set_reg_reg_cost (machine_mode mode)
     }
 }
 
+/* Implement TARGET_ADDRESS_COST.  */
+
+static int
+loongarch_address_cost (rtx addr, machine_mode mode,
+			addr_space_t as ATTRIBUTE_UNUSED,
+			bool speed ATTRIBUTE_UNUSED)
+{
+  return loongarch_address_insns_1 (addr, mode, false,
+				    la_addr_reg_reg_cost);
+}
+
 /* Implement TARGET_RTX_COSTS.  */
 
 static bool
@@ -3814,7 +3832,7 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  *total = COSTS_N_INSNS (2);
 	  return true;
 	}
-      cost = loongarch_address_insns (addr, mode, true);
+      cost = loongarch_address_cost (addr, mode, true, speed);
       if (cost > 0)
 	{
 	  *total = COSTS_N_INSNS (cost + 1);
@@ -4399,16 +4417,6 @@ loongarch_vector_costs::finish_cost (const vector_costs *scalar_costs)
       = determine_suggested_unroll_factor (loop_vinfo);
 
   vector_costs::finish_cost (scalar_costs);
-}
-
-/* Implement TARGET_ADDRESS_COST.  */
-
-static int
-loongarch_address_cost (rtx addr, machine_mode mode,
-			addr_space_t as ATTRIBUTE_UNUSED,
-			bool speed ATTRIBUTE_UNUSED)
-{
-  return loongarch_address_insns (addr, mode, false);
 }
 
 /* Implement TARGET_INSN_COST.  */

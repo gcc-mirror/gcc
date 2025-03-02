@@ -119,7 +119,6 @@
   UNSPEC_LASX_XVSSRLRN
   UNSPEC_LASX_XVEXTL_QU_DU
   UNSPEC_LASX_XVLDI
-  UNSPEC_LASX_XVLDX
   UNSPEC_LASX_XVSTX
   UNSPEC_LASX_VECINIT_MERGE
   UNSPEC_LASX_VEC_SET_INTERNAL
@@ -3578,18 +3577,6 @@
 }
   [(set_attr "type" "simd_load")
    (set_attr "mode" "V4DI")])
-
-(define_insn "lasx_xvldx"
-  [(set (match_operand:V32QI 0 "register_operand" "=f")
-	(unspec:V32QI [(match_operand:DI 1 "register_operand" "r")
-		       (match_operand:DI 2 "reg_or_0_operand" "rJ")]
-		      UNSPEC_LASX_XVLDX))]
-  "ISA_HAS_LASX"
-{
-  return "xvldx\t%u0,%1,%z2";
-}
-  [(set_attr "type" "simd_load")
-   (set_attr "mode" "V32QI")])
 
 (define_insn "lasx_xvstx"
   [(set (mem:V32QI (plus:DI (match_operand:DI 1 "register_operand" "r")
