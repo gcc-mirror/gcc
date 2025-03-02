@@ -3252,7 +3252,7 @@
   "!TARGET_XCVBI"
 {
   if (get_attr_length (insn) == 12)
-    return "b%n1\t%2,%z3,1f; jump\t%l0,ra; 1:";
+    return "b%r1\t%2,%z3,1f; jump\t%l0,ra; 1:";
 
   return "b%C1\t%2,%z3,%l0";
 }

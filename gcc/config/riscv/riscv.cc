@@ -6868,7 +6868,7 @@ riscv_asm_output_opcode (FILE *asm_out_file, const char *p)
 	  any outermost HIGH.
    'R'	Print the low-part relocation associated with OP.
    'C'	Print the integer branch condition for comparison OP.
-   'n'	Print the inverse of the integer branch condition for comparison OP.
+   'r'	Print the inverse of the integer branch condition for comparison OP.
    'A'	Print the atomic operation suffix for memory model OP.
    'I'	Print the LR suffix for memory model OP.
    'J'	Print the SC suffix for memory model OP.
@@ -7027,7 +7027,7 @@ riscv_print_operand (FILE *file, rtx op, int letter)
       fputs (GET_RTX_NAME (code), file);
       break;
 
-    case 'n':
+    case 'r':
       /* The RTL names match the instruction names. */
       fputs (GET_RTX_NAME (reverse_condition (code)), file);
       break;
