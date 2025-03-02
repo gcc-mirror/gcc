@@ -14037,6 +14037,19 @@ grokdeclarator (const cp_declarator *declarator,
 				"invalid use of %<decltype(auto)%>");
 		    return error_mark_node;
 		  }
+		else if (is_constrained_auto (type))
+		  {
+		    if (funcdecl_p)
+		      error_at (typespec_loc,
+				"%qs function with trailing return type "
+				"has constrained %<auto%> type specifier "
+				"rather than plain %<auto%>",
+				name);
+		    else
+		      error_at (typespec_loc,
+				"invalid use of constrained %<auto%> type");
+		    return error_mark_node;
+		  }
 		tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node);
 		if (!tmpl)
 		  if (tree late_auto = type_uses_auto (late_return_type))
