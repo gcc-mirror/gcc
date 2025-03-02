@@ -14,9 +14,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Compile tests, no torture testing, for name resolution 2.0
-#
-# These tests raise errors in the front end; torture testing doesn't apply.
+# Run compile tests with name resolution 2.0 enabled
 
 # Load support procs.
 load_lib rust-dg.exp
@@ -44,7 +42,7 @@ namespace eval rust-nr2-ns {
     # Run tests in directories
     # Manually specifying these, in case some other test file
     # does something weird
-    set test_dirs {{} {macros builtin} {macros mbe} {macros proc}}
+    set test_dirs {{} {macros builtin} {macros mbe} {macros proc} {torture}}
 
     set tests_expect_ok ""
     set tests_expect_err ""
