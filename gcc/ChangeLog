@@ -1,3 +1,38 @@
+2025-03-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific, *-*-freebsd*): Simplify description.
+
+2025-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR jit/117047
+	* ggc-common.cc (ggc_internal_cleared_alloc_no_dtor): Pass size
+	rather than s as the first argument to ggc_internal_cleared_alloc.
+
+2025-03-01  Yuriy Kolerov  <Yuriy.Kolerov@synopsys.com>
+
+	PR target/118906
+	* common/config/riscv/riscv-common.cc: fix zce to zcf
+	implication.
+
+2025-03-01  Jan Dubiec  <jdx@o2.pl>
+
+	PR target/114222
+	* config/h8300/h8300.cc (h8300_init_libfuncs): For HImode override
+	calls to external ffs() (from newlib) with calls to __ffshi2() from
+	libgcc. The implementation of ffs() in newlib calls __builtin_ffs()
+	what causes infinite recursion and finally a stack overflow.
+
+2025-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/119052
+	* input.cc (check_line): Don't call sscanf on non-null terminated
+	buffer, instead copy line.length () bytes from line.get_buffer ()
+	to a local buffer, null terminate it and call sscanf on that.
+	Formatting fix.
+	(test_replacement): Just allocate maxline * 5 rather than maxline * 15
+	bytes for the file.  Formatting fix.
+
 2025-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR jit/117047

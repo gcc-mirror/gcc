@@ -1,3 +1,9 @@
+2025-03-01  Harald Anlauf  <anlauf@gmx.de>
+
+	* match.cc (gfc_match_nullify): Free matched expression when
+	cleaning up.
+	* primary.cc (match_variable): Initialize result to NULL.
+
 2025-02-28  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/118730

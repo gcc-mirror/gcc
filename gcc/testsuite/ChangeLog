@@ -1,3 +1,11 @@
+2025-03-01  Yuriy Kolerov  <Yuriy.Kolerov@synopsys.com>
+
+	PR target/118906
+	* gcc.target/riscv/attribute-zce-1.c: New test.
+	* gcc.target/riscv/attribute-zce-2.c: New test.
+	* gcc.target/riscv/attribute-zce-3.c: New test.
+	* gcc.target/riscv/attribute-zce-4.c: New test.
+
 2025-03-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/115871
