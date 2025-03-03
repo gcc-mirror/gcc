@@ -1,3 +1,11 @@
+2025-03-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2025-02-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/116961
+	* gdc.dg/pr116961.d: New test.
+
 2025-02-26  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	Backported from master:
