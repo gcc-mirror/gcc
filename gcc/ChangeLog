@@ -1,3 +1,10 @@
+2025-03-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116720
+	* config/riscv/thead.cc (th_mempair_operands_p): Test for
+	aligned memory after swapping operands.  Simplify test for
+	first memory access as well.
+
 2025-02-27  Haochen Jiang  <haochen.jiang@intel.com>
 
 	* config/i386/x86-tune.def
