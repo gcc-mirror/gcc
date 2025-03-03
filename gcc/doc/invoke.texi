@@ -13507,7 +13507,9 @@ helps machines that have slow floating point or memory load instructions
 by allowing other instructions to be issued until the result of the load
 or floating-point instruction is required.
 
-Enabled at levels @option{-O2}, @option{-O3}.
+Conventionally enabled at optimization levels @option{-O2} and @option{-O3}.
+However, many targets override this behavior.  For example, on x86, it is
+disabled at all levels, while on AArch64, it is enabled only at @option{-O3}.
 
 @opindex fschedule-insns2
 @item -fschedule-insns2
