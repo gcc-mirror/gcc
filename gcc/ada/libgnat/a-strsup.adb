@@ -755,7 +755,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
       if Num_Delete <= 0 then
          return Source;
 
-      elsif From - 1 > Slen then
+      elsif From > Slen then
          raise Ada.Strings.Index_Error;
 
       elsif Through >= Slen then
@@ -784,7 +784,7 @@ package body Ada.Strings.Superbounded with SPARK_Mode is
       if Num_Delete <= 0 then
          return;
 
-      elsif From - 1 > Slen then
+      elsif From > Slen then
          raise Ada.Strings.Index_Error;
 
       elsif Through >= Slen then

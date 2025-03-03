@@ -754,7 +754,7 @@ package body Ada.Strings.Wide_Wide_Superbounded is
       if Num_Delete <= 0 then
          return Source;
 
-      elsif From > Slen + 1 then
+      elsif From > Slen then
          raise Ada.Strings.Index_Error;
 
       elsif Through >= Slen then
@@ -783,7 +783,7 @@ package body Ada.Strings.Wide_Wide_Superbounded is
       if Num_Delete <= 0 then
          return;
 
-      elsif From > Slen + 1 then
+      elsif From > Slen then
          raise Ada.Strings.Index_Error;
 
       elsif Through >= Slen then
