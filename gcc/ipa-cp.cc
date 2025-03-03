@@ -1720,8 +1720,45 @@ ipa_vr_intersect_with_arith_jfunc (vrange &vr,
   enum tree_code operation = ipa_get_jf_pass_through_operation (jfunc);
   if (TREE_CODE_CLASS (operation) == tcc_unary)
     {
+      value_range op_res;
+      const value_range *inter_vr;
+      if (operation != NOP_EXPR)
+	{
+	  /* Since we construct arithmetic jump functions even when there is a
+             type conversion in between the operation encoded in the jump
+             function and when it is passed in a call argument, the IPA
+             propagation phase must also perform the operation and conversion
+             in two separate steps.
+
+	     TODO: In order to remove the use of expr_type_first_operand_type_p
+	     predicate we would need to stream the operation type, ideally
+	     encoding the whole jump function as a series of expr_eval_op
+	     structures.  */
+
+	  tree operation_type;
+	  if (expr_type_first_operand_type_p (operation))
+	    operation_type = src_type;
+	  else if (operation == ABSU_EXPR)
+	    operation_type = unsigned_type_for (src_type);
+	  else
+	    return;
+	  op_res.set_varying (operation_type);
+	  if (!ipa_vr_operation_and_type_effects (op_res, src_vr, operation,
+						  operation_type, src_type))
+	    return;
+	  if (src_type == dst_type)
+	    {
+	      vr.intersect (op_res);
+	      return;
+	    }
+	  inter_vr = &op_res;
+	  src_type = operation_type;
+	}
+      else
+	inter_vr = &src_vr;
+
       value_range tmp_res (dst_type);
-      if (ipa_vr_operation_and_type_effects (tmp_res, src_vr, operation,
+      if (ipa_vr_operation_and_type_effects (tmp_res, *inter_vr, NOP_EXPR,
 					     dst_type, src_type))
 	vr.intersect (tmp_res);
       return;
@@ -1737,10 +1774,12 @@ ipa_vr_intersect_with_arith_jfunc (vrange &vr,
   tree operation_type;
   if (TREE_CODE_CLASS (operation) == tcc_comparison)
     operation_type = boolean_type_node;
-  else
+  else if (expr_type_first_operand_type_p (operation))
     operation_type = src_type;
+  else
+    return;
 
-  value_range op_res (dst_type);
+  value_range op_res (operation_type);
   if (!ipa_vr_supported_type_p (operation_type)
       || !handler.operand_check_p (operation_type, src_type, op_vr.type ())
       || !handler.fold_range (op_res, operation_type, src_vr, op_vr))
