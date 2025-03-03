@@ -2394,6 +2394,11 @@ gfc_get_tree_for_caf_expr (gfc_expr *expr)
 	  if (CLASS_DATA (expr->symtree->n.sym)->attr.codimension)
 	    return caf_decl;
 	}
+      else if (DECL_P (caf_decl) && DECL_LANG_SPECIFIC (caf_decl)
+	       && GFC_DECL_TOKEN (caf_decl)
+	       && CLASS_DATA (expr->symtree->n.sym)->attr.codimension)
+	return caf_decl;
+
       for (ref = expr->ref; ref; ref = ref->next)
 	{
 	  if (ref->type == REF_COMPONENT
