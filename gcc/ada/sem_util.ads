@@ -619,7 +619,21 @@ package Sem_Util is
    --  Find whether there is a previous definition for name or identifier N in
    --  the current scope. Because declarations for a scope are not necessarily
    --  contiguous (e.g. for packages) the first entry on the visibility chain
-   --  for N is not necessarily in the current scope.
+   --  for N is not necessarily in the current scope. Take, for example:
+   --
+   --  package P is
+   --     X : constant := 13;
+   --
+   --     package Q is
+   --        X : constant := 67;
+   --     end Q;
+   --
+   --     Y : constant := X;
+   --  end P;
+   --
+   --  When the declaration of Y is analyzed, the first entry on the visibility
+   --  chain is the X equal to 67, but Current_Entity_In_Scope returns the X
+   --  equal to 13.
 
    function Current_Scope return Entity_Id;
    --  Get entity representing current scope
