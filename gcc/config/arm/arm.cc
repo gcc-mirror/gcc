@@ -7954,8 +7954,8 @@ legitimate_pic_operand_p (rtx x)
 
 /* Record that the current function needs a PIC register.  If PIC_REG is null,
    a new pseudo is allocated as PIC register, otherwise PIC_REG is used.  In
-   both case cfun->machine->pic_reg is initialized if we have not already done
-   so.  COMPUTE_NOW decide whether and where to set the PIC register.  If true,
+   both cases cfun->machine->pic_reg is initialized if we have not already done
+   so.  COMPUTE_NOW decides whether and where to set the PIC register.  If true,
    PIC register is reloaded in the current position of the instruction stream
    irregardless of whether it was loaded before.  Otherwise, it is only loaded
    if not already done so (crtl->uses_pic_offset_table is null).  Note that
@@ -7975,6 +7975,7 @@ require_pic_register (rtx pic_reg, bool compute_now)
   if (!crtl->uses_pic_offset_table || compute_now)
     {
       gcc_assert (can_create_pseudo_p ()
+		  || (arm_pic_register != INVALID_REGNUM)
 		  || (pic_reg != NULL_RTX
 		      && REG_P (pic_reg)
 		      && GET_MODE (pic_reg) == Pmode));
