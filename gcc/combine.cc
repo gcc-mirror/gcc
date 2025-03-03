@@ -14515,9 +14515,9 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 	      if (from_insn != i3)
 		break;
 
-	      if (REG_P (XEXP (note, 0))
-		  ? find_reg_note (i3, REG_UNUSED, XEXP (note, 0))
-		  : find_regno_note (i3, REG_UNUSED, REGNO (XEXP (note, 0))))
+	      if (! (REG_P (XEXP (note, 0))
+		     ? find_regno_note (i3, REG_UNUSED, REGNO (XEXP (note, 0)))
+		     : find_reg_note (i3, REG_UNUSED, XEXP (note, 0))))
 		place = i3;
 	    }
 	  /* Otherwise, if this register is used by I3, then this register
@@ -14525,9 +14525,9 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 	     is one already.  */
 	  else if (reg_referenced_p (XEXP (note, 0), PATTERN (i3)))
 	    {
-	      if (REG_P (XEXP (note, 0))
-		  ? find_reg_note (i3, REG_DEAD, XEXP (note, 0))
-		  : find_regno_note (i3, REG_DEAD, REGNO (XEXP (note, 0))))
+	      if (! (REG_P (XEXP (note, 0))
+		     ? find_regno_note (i3, REG_DEAD, REGNO (XEXP (note, 0)))
+		     : find_reg_note (i3, REG_DEAD, XEXP (note, 0))))
 		{
 		  PUT_REG_NOTE_KIND (note, REG_DEAD);
 		  place = i3;
@@ -14564,11 +14564,11 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		{
 		  if (!reg_set_p (XEXP (note, 0), PATTERN (i2)))
 		    PUT_REG_NOTE_KIND (note, REG_DEAD);
-		  if (REG_P (XEXP (note, 0))
-		      ? find_reg_note (i2, REG_NOTE_KIND (note),
-				       XEXP (note, 0))
-		      : find_regno_note (i2, REG_NOTE_KIND (note),
-					 REGNO (XEXP (note, 0))))
+		  if (! (REG_P (XEXP (note, 0))
+			 ? find_regno_note (i2, REG_NOTE_KIND (note),
+					    REGNO (XEXP (note, 0)))
+			 : find_reg_note (i2, REG_NOTE_KIND (note),
+					  XEXP (note, 0))))
 		    place = i2;
 		}
 	    }
