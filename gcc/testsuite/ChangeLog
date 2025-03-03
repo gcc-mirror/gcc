@@ -1,3 +1,19 @@
+2025-03-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2024-12-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116720
+	* gcc.target/riscv/pr116720.c: New test.
+
+2025-03-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2025-02-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/116961
+	* gdc.dg/pr116961.d: New test.
+
 2025-02-27  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp2a/concepts-pr67774.C: Change target to c++20_only.
