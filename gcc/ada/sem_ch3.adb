@@ -4659,9 +4659,7 @@ package body Sem_Ch3 is
             Set_Has_Completion (Id);
          end if;
 
-         --  Set type and resolve (type may be overridden later on). Note:
-         --  Ekind (Id) must still be E_Void at this point so that incorrect
-         --  early usage within E is properly diagnosed.
+         --  Set type and resolve (type may be overridden later on)
 
          Set_Etype (Id, T);
 
