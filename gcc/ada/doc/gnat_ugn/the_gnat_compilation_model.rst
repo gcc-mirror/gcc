@@ -1477,6 +1477,10 @@ You can place configuration pragmas either appear at the start of a compilation
 unit or in a configuration pragma file that applies to
 all compilations performed in a given compilation environment.
 
+Configuration pragmas placed before a library level package specification
+are not propagated to the corresponding package body (see RM 10.1.5(8));
+they must be added explicitly to the package body.
+
 GNAT includes the ``gnatchop`` utility to provide an automatic
 way to handle configuration pragmas that follows the semantics for
 compilations (that is, files with multiple units) described in the RM.
