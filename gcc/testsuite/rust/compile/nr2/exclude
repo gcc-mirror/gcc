@@ -23,7 +23,6 @@ pub_restricted_1.rs
 pub_restricted_2.rs
 pub_restricted_3.rs
 sizeof-stray-infer-var-bug.rs
-struct-expr-parse.rs
 undeclared_label.rs
 use_1.rs
 while_break_expr.rs
@@ -40,15 +39,8 @@ derive-eq-invalid.rs
 derive-hash1.rs
 torture/alt_patterns1.rs
 torture/builtin_abort.rs
-torture/impl_block3.rs
-torture/issue-1434.rs
 torture/loop4.rs
 torture/loop8.rs
-torture/methods1.rs
-torture/methods2.rs
-torture/methods3.rs
 torture/name_resolve1.rs
-torture/nested_struct1.rs
-torture/struct_init_3.rs
 torture/uninit-intrinsic-1.rs
 # please don't delete the trailing newline

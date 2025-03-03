@@ -260,6 +260,34 @@ Late::visit (AST::IdentifierExpr &expr)
 }
 
 void
+Late::visit (AST::StructExprFieldIdentifier &expr)
+{
+  tl::optional<Rib::Definition> resolved = tl::nullopt;
+
+  if (auto value = ctx.values.get (expr.get_field_name ()))
+    {
+      resolved = value;
+    }
+  // seems like we don't need a type namespace lookup
+  else
+    {
+      rust_error_at (expr.get_locus (), "could not resolve struct field: %qs",
+		     expr.get_field_name ().as_string ().c_str ());
+      return;
+    }
+
+  if (resolved->is_ambiguous ())
+    {
+      rust_error_at (expr.get_locus (), ErrorCode::E0659, "%qs is ambiguous",
+		     expr.as_string ().c_str ());
+      return;
+    }
+
+  ctx.map_usage (Usage (expr.get_node_id ()),
+		 Definition (resolved->get_node_id ()));
+}
+
+void
 Late::visit (AST::PathInExpression &expr)
 {
   // TODO: How do we have a nice error with `can't capture dynamic environment
