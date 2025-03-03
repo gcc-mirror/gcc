@@ -1,3 +1,25 @@
+2025-03-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/118934
+	* config/riscv/corev.md (cv_branch): Adjust output template.
+	(branch): Likewise.
+	* config/riscv/riscv.md (branch): Likewise.
+	* config/riscv/riscv.cc (riscv_asm_output_opcode): Handle 'r' rather
+	than 'n'.
+
+2025-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/118991
+	* config/avr/avr.cc (avr_print_operand): Print ival into
+	a temporary buffer and use %s in output_operand_lossage to make
+	the diagnostics translatable.
+
+2025-03-02  Filip Kastl  <fkastl@suse.cz>
+
+	PR tree-optimization/117919
+	* gimple-ssa-sccopy.cc (scc_copy_prop::propagate): Prune
+	statements that 'replace_uses_by ()' removed.
+
 2025-03-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	PR target/69374

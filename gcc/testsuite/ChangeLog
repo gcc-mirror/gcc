@@ -1,3 +1,13 @@
+2025-03-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119088
+	* gm2/pim/fail/tinyfor4.mod: New test.
+
+2025-03-02  Filip Kastl  <fkastl@suse.cz>
+
+	PR tree-optimization/117919
+	* g++.dg/pr117919.C: New test.
+
 2025-03-01  Yuriy Kolerov  <Yuriy.Kolerov@synopsys.com>
 
 	PR target/118906

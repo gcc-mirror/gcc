@@ -1,3 +1,34 @@
+2025-03-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* intrinsic.texi: Fix inconsistent capitalization of argument
+	names and other minor copy-editing.
+
+2025-03-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR fortran/47928
+	* intrinsic.texi: Move the "Standard" subheading farther down.
+
+2025-03-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR fortran/47928
+	* gfortran.texi: Move all the "Syntax" subheadings ahead of
+	"Description", and rename to "Synopsis".
+	* intrinsic.texi: Likewise.
+
+2025-03-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR fortran/47928
+	* intrinsic.texi: Put a blank line between "@item @emph{}"
+	subheadings, but not more than one.
+
+2025-03-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR fortran/47928
+	* gfortran.texi: Consistently use "@emph{Notes}:" instead of
+	other spellings.
+	* intrinsic.texi: Likewise.  Also fix an inconsistent capitalization
+	and remove a redundant "Standard" entry.
+
 2025-03-01  Harald Anlauf  <anlauf@gmx.de>
 
 	* match.cc (gfc_match_nullify): Free matched expression when
