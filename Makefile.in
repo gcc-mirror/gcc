@@ -640,6 +640,26 @@ STAGEprofile_CONFIGURE_FLAGS += --disable-libstdcxx-pch
 @endif target-libstdc++-v3-bootstrap
 
 @if target-libphobos-bootstrap
+# Defaults for each stage if we're bootstrapping D.
+
+STAGE1_GDCFLAGS = $(GDCFLAGS)
+
+STAGE2_GDCFLAGS = $(GDCFLAGS)
+
+STAGE3_GDCFLAGS = $(GDCFLAGS)
+
+STAGE4_GDCFLAGS = $(GDCFLAGS)
+
+STAGEprofile_GDCFLAGS = $(GDCFLAGS)
+
+STAGEtrain_GDCFLAGS = $(GDCFLAGS)
+
+STAGEfeedback_GDCFLAGS = $(GDCFLAGS)
+
+STAGEautoprofile_GDCFLAGS = $(GDCFLAGS)
+
+STAGEautofeedback_GDCFLAGS = $(GDCFLAGS)
+
 STAGE1_CONFIGURE_FLAGS += --with-libphobos-druntime-only
 STAGE2_CONFIGURE_FLAGS += --with-libphobos-druntime-only
 @endif target-libphobos-bootstrap
@@ -653,6 +673,10 @@ STAGE2_CFLAGS += -fno-checking
 STAGE2_TFLAGS += -fno-checking
 STAGE3_CFLAGS += -fchecking=1
 STAGE3_TFLAGS += -fchecking=1
+@if target-libphobos-bootstrap
+STAGE2_GDCFLAGS += -fno-checking
+STAGE3_GDCFLAGS += -fchecking=1
+@endif target-libphobos-bootstrap
 
 STAGEprofile_CFLAGS = $(STAGE2_CFLAGS) -fprofile-generate
 STAGEprofile_TFLAGS = $(STAGE2_TFLAGS)
@@ -951,38 +975,47 @@ BASE_FLAGS_TO_PASS = \
 	"LEAN=$(LEAN)" \
 	"STAGE1_CFLAGS=$(STAGE1_CFLAGS)" \
 	"STAGE1_CXXFLAGS=$(STAGE1_CXXFLAGS)" \
+	"STAGE1_GDCFLAGS=$(STAGE1_GDCFLAGS)" \
 	"STAGE1_GENERATOR_CFLAGS=$(STAGE1_GENERATOR_CFLAGS)" \
 	"STAGE1_TFLAGS=$(STAGE1_TFLAGS)" \
 	"STAGE2_CFLAGS=$(STAGE2_CFLAGS)" \
 	"STAGE2_CXXFLAGS=$(STAGE2_CXXFLAGS)" \
+	"STAGE2_GDCFLAGS=$(STAGE2_GDCFLAGS)" \
 	"STAGE2_GENERATOR_CFLAGS=$(STAGE2_GENERATOR_CFLAGS)" \
 	"STAGE2_TFLAGS=$(STAGE2_TFLAGS)" \
 	"STAGE3_CFLAGS=$(STAGE3_CFLAGS)" \
 	"STAGE3_CXXFLAGS=$(STAGE3_CXXFLAGS)" \
+	"STAGE3_GDCFLAGS=$(STAGE3_GDCFLAGS)" \
 	"STAGE3_GENERATOR_CFLAGS=$(STAGE3_GENERATOR_CFLAGS)" \
 	"STAGE3_TFLAGS=$(STAGE3_TFLAGS)" \
 	"STAGE4_CFLAGS=$(STAGE4_CFLAGS)" \
 	"STAGE4_CXXFLAGS=$(STAGE4_CXXFLAGS)" \
+	"STAGE4_GDCFLAGS=$(STAGE4_GDCFLAGS)" \
 	"STAGE4_GENERATOR_CFLAGS=$(STAGE4_GENERATOR_CFLAGS)" \
 	"STAGE4_TFLAGS=$(STAGE4_TFLAGS)" \
 	"STAGEprofile_CFLAGS=$(STAGEprofile_CFLAGS)" \
 	"STAGEprofile_CXXFLAGS=$(STAGEprofile_CXXFLAGS)" \
+	"STAGEprofile_GDCFLAGS=$(STAGEprofile_GDCFLAGS)" \
 	"STAGEprofile_GENERATOR_CFLAGS=$(STAGEprofile_GENERATOR_CFLAGS)" \
 	"STAGEprofile_TFLAGS=$(STAGEprofile_TFLAGS)" \
 	"STAGEtrain_CFLAGS=$(STAGEtrain_CFLAGS)" \
 	"STAGEtrain_CXXFLAGS=$(STAGEtrain_CXXFLAGS)" \
+	"STAGEtrain_GDCFLAGS=$(STAGEtrain_GDCFLAGS)" \
 	"STAGEtrain_GENERATOR_CFLAGS=$(STAGEtrain_GENERATOR_CFLAGS)" \
 	"STAGEtrain_TFLAGS=$(STAGEtrain_TFLAGS)" \
 	"STAGEfeedback_CFLAGS=$(STAGEfeedback_CFLAGS)" \
 	"STAGEfeedback_CXXFLAGS=$(STAGEfeedback_CXXFLAGS)" \
+	"STAGEfeedback_GDCFLAGS=$(STAGEfeedback_GDCFLAGS)" \
 	"STAGEfeedback_GENERATOR_CFLAGS=$(STAGEfeedback_GENERATOR_CFLAGS)" \
 	"STAGEfeedback_TFLAGS=$(STAGEfeedback_TFLAGS)" \
 	"STAGEautoprofile_CFLAGS=$(STAGEautoprofile_CFLAGS)" \
 	"STAGEautoprofile_CXXFLAGS=$(STAGEautoprofile_CXXFLAGS)" \
+	"STAGEautoprofile_GDCFLAGS=$(STAGEautoprofile_GDCFLAGS)" \
 	"STAGEautoprofile_GENERATOR_CFLAGS=$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 	"STAGEautoprofile_TFLAGS=$(STAGEautoprofile_TFLAGS)" \
 	"STAGEautofeedback_CFLAGS=$(STAGEautofeedback_CFLAGS)" \
 	"STAGEautofeedback_CXXFLAGS=$(STAGEautofeedback_CXXFLAGS)" \
+	"STAGEautofeedback_GDCFLAGS=$(STAGEautofeedback_GDCFLAGS)" \
 	"STAGEautofeedback_GENERATOR_CFLAGS=$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 	"STAGEautofeedback_TFLAGS=$(STAGEautofeedback_TFLAGS)" \
 	$(CXX_FOR_TARGET_FLAG_TO_PASS) \
@@ -12186,6 +12219,7 @@ configure-stage1-gcc:
 	$(HOST_EXPORTS) \
 	CFLAGS="$(STAGE1_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE1_CXXFLAGS)"; export CXXFLAGS; \
+	GDCFLAGS="$(STAGE1_GDCFLAGS)"; export GDCFLAGS; \
 	LIBCFLAGS="$(LIBCFLAGS)"; export LIBCFLAGS;  \
 	echo Configuring stage 1 in $(HOST_SUBDIR)/gcc; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc; \
@@ -12220,6 +12254,7 @@ configure-stage2-gcc:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE2_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE2_CXXFLAGS)"; export CXXFLAGS; \
+	GDCFLAGS="$(STAGE2_GDCFLAGS)"; export GDCFLAGS; \
 	LIBCFLAGS="$(STAGE2_CFLAGS)"; export LIBCFLAGS;  \
 	echo Configuring stage 2 in $(HOST_SUBDIR)/gcc; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc; \
@@ -12254,6 +12289,7 @@ configure-stage3-gcc:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE3_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE3_CXXFLAGS)"; export CXXFLAGS; \
+	GDCFLAGS="$(STAGE3_GDCFLAGS)"; export GDCFLAGS; \
 	LIBCFLAGS="$(STAGE3_CFLAGS)"; export LIBCFLAGS;  \
 	echo Configuring stage 3 in $(HOST_SUBDIR)/gcc; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc; \
@@ -12288,6 +12324,7 @@ configure-stage4-gcc:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGE4_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGE4_CXXFLAGS)"; export CXXFLAGS; \
+	GDCFLAGS="$(STAGE4_GDCFLAGS)"; export GDCFLAGS; \
 	LIBCFLAGS="$(STAGE4_CFLAGS)"; export LIBCFLAGS;  \
 	echo Configuring stage 4 in $(HOST_SUBDIR)/gcc; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc; \
@@ -12322,6 +12359,7 @@ configure-stageprofile-gcc:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEprofile_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEprofile_CXXFLAGS)"; export CXXFLAGS; \
+	GDCFLAGS="$(STAGEprofile_GDCFLAGS)"; export GDCFLAGS; \
 	LIBCFLAGS="$(STAGEprofile_CFLAGS)"; export LIBCFLAGS;  \
 	echo Configuring stage profile in $(HOST_SUBDIR)/gcc; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc; \
@@ -12356,6 +12394,7 @@ configure-stagetrain-gcc:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEtrain_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEtrain_CXXFLAGS)"; export CXXFLAGS; \
+	GDCFLAGS="$(STAGEtrain_GDCFLAGS)"; export GDCFLAGS; \
 	LIBCFLAGS="$(STAGEtrain_CFLAGS)"; export LIBCFLAGS;  \
 	echo Configuring stage train in $(HOST_SUBDIR)/gcc; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc; \
@@ -12390,6 +12429,7 @@ configure-stagefeedback-gcc:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEfeedback_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEfeedback_CXXFLAGS)"; export CXXFLAGS; \
+	GDCFLAGS="$(STAGEfeedback_GDCFLAGS)"; export GDCFLAGS; \
 	LIBCFLAGS="$(STAGEfeedback_CFLAGS)"; export LIBCFLAGS;  \
 	echo Configuring stage feedback in $(HOST_SUBDIR)/gcc; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc; \
@@ -12424,6 +12464,7 @@ configure-stageautoprofile-gcc:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEautoprofile_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)"; export CXXFLAGS; \
+	GDCFLAGS="$(STAGEautoprofile_GDCFLAGS)"; export GDCFLAGS; \
 	LIBCFLAGS="$(STAGEautoprofile_CFLAGS)"; export LIBCFLAGS;  \
 	echo Configuring stage autoprofile in $(HOST_SUBDIR)/gcc; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc; \
@@ -12458,6 +12499,7 @@ configure-stageautofeedback-gcc:
 	$(POSTSTAGE1_HOST_EXPORTS) \
 	CFLAGS="$(STAGEautofeedback_CFLAGS)"; export CFLAGS; \
 	CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)"; export CXXFLAGS; \
+	GDCFLAGS="$(STAGEautofeedback_GDCFLAGS)"; export GDCFLAGS; \
 	LIBCFLAGS="$(STAGEautofeedback_CFLAGS)"; export LIBCFLAGS;  \
 	echo Configuring stage autofeedback in $(HOST_SUBDIR)/gcc; \
 	$(SHELL) $(srcdir)/mkinstalldirs $(HOST_SUBDIR)/gcc; \
@@ -12520,6 +12562,7 @@ all-stage1-gcc: configure-stage1-gcc
 		CFLAGS="$(STAGE1_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGE1_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE1_CXXFLAGS)" \
+		GDCFLAGS="$(STAGE1_GDCFLAGS)" \
 		LIBCFLAGS="$(LIBCFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
@@ -12565,6 +12608,7 @@ all-stage2-gcc: configure-stage2-gcc
 		CFLAGS="$(STAGE2_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGE2_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE2_CXXFLAGS)" \
+		GDCFLAGS="$(STAGE2_GDCFLAGS)" \
 		LIBCFLAGS="$(STAGE2_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
@@ -12608,6 +12652,7 @@ all-stage3-gcc: configure-stage3-gcc
 		CFLAGS="$(STAGE3_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGE3_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE3_CXXFLAGS)" \
+		GDCFLAGS="$(STAGE3_GDCFLAGS)" \
 		LIBCFLAGS="$(STAGE3_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
@@ -12651,6 +12696,7 @@ all-stage4-gcc: configure-stage4-gcc
 		CFLAGS="$(STAGE4_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGE4_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGE4_CXXFLAGS)" \
+		GDCFLAGS="$(STAGE4_GDCFLAGS)" \
 		LIBCFLAGS="$(STAGE4_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
@@ -12694,6 +12740,7 @@ all-stageprofile-gcc: configure-stageprofile-gcc
 		CFLAGS="$(STAGEprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEprofile_CXXFLAGS)" \
+		GDCFLAGS="$(STAGEprofile_GDCFLAGS)" \
 		LIBCFLAGS="$(STAGEprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
@@ -12737,6 +12784,7 @@ all-stagetrain-gcc: configure-stagetrain-gcc
 		CFLAGS="$(STAGEtrain_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEtrain_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEtrain_CXXFLAGS)" \
+		GDCFLAGS="$(STAGEtrain_GDCFLAGS)" \
 		LIBCFLAGS="$(STAGEtrain_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
@@ -12780,6 +12828,7 @@ all-stagefeedback-gcc: configure-stagefeedback-gcc
 		CFLAGS="$(STAGEfeedback_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEfeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEfeedback_CXXFLAGS)" \
+		GDCFLAGS="$(STAGEfeedback_GDCFLAGS)" \
 		LIBCFLAGS="$(STAGEfeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
@@ -12823,6 +12872,7 @@ all-stageautoprofile-gcc: configure-stageautoprofile-gcc
 		CFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautoprofile_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautoprofile_CXXFLAGS)" \
+		GDCFLAGS="$(STAGEautoprofile_GDCFLAGS)" \
 		LIBCFLAGS="$(STAGEautoprofile_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
@@ -12866,6 +12916,7 @@ all-stageautofeedback-gcc: configure-stageautofeedback-gcc
 		CFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		GENERATOR_CFLAGS="$(STAGEautofeedback_GENERATOR_CFLAGS)" \
 		CXXFLAGS="$(STAGEautofeedback_CXXFLAGS)" \
+		GDCFLAGS="$(STAGEautofeedback_GDCFLAGS)" \
 		LIBCFLAGS="$(STAGEautofeedback_CFLAGS)" \
 		CFLAGS_FOR_TARGET="$(CFLAGS_FOR_TARGET)" \
 		CXXFLAGS_FOR_TARGET="$(CXXFLAGS_FOR_TARGET)" \
