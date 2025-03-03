@@ -20081,6 +20081,15 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
      intermediary step for the former.  */
   if (flag_mlow_precision_sqrt)
     flag_mrecip_low_precision_sqrt = true;
+
+  /* Turn off outline atomics with -mcmodel=large.  */
+  if (aarch64_cmodel == AARCH64_CMODEL_LARGE)
+    {
+      if (!TARGET_LSE && opts->x_aarch64_flag_outline_atomics == 1)
+	warning (OPT_moutline_atomics,
+		 "%<-mcmodel=large%> implies %<-mno-outline-atomics%>");
+      opts->x_aarch64_flag_outline_atomics = 0;
+    }
 }
 
 /* 'Unpack' up the internal tuning structs and update the options

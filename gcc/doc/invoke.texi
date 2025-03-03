@@ -21501,10 +21501,10 @@ dynamically linked.  This is the default code model.
 
 @opindex mcmodel=large
 @item -mcmodel=large
-Generate code for the large code model.  This makes no assumptions about
-addresses and sizes of sections.  Programs can be statically linked only.  The
-@option{-mcmodel=large} option is incompatible with @option{-mabi=ilp32},
-@option{-fpic} and @option{-fPIC}.
+Generate code for the large code model.  This allows large .bss and .data
+sections, however .text and .rodata must still be < 2GiB in total.
+The @option{-moutline-atomics} is turned off by default.  Static linking
+with small/tiny model object files is not supported.
 
 @item -mtp=@var{name}
 @opindex mtp
