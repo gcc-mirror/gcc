@@ -1256,7 +1256,17 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
     {
-      hstate.add_hwi (DECL_MODE (t));
+      /* Similar to TYPE_MODE, avoid streaming out host-specific DECL_MODE
+	 for aggregate type with offloading enabled, and while streaming-in
+	 recompute appropriate DECL_MODE for accelerator.  */
+      if (lto_stream_offload_p
+	  && (VAR_P (t)
+	      || TREE_CODE (t) == PARM_DECL
+	      || TREE_CODE (t) == FIELD_DECL)
+	  && AGGREGATE_TYPE_P (TREE_TYPE (t)))
+	hstate.add_hwi (VOIDmode);
+      else
+	hstate.add_hwi (DECL_MODE (t));
       hstate.add_flag (DECL_NONLOCAL (t));
       hstate.add_flag (DECL_VIRTUAL_P (t));
       hstate.add_flag (DECL_IGNORED_P (t));
@@ -1354,7 +1364,19 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
     {
-      hstate.add_hwi (TYPE_MODE (t));
+      /* For offloading, avoid streaming out TYPE_MODE for aggregate type since
+	 it may be host-specific. For eg, aarch64 uses OImode for ARRAY_TYPE
+	 whose size is 256-bits, which is not representable on accelerator.
+	 Instead stream out VOIDmode, and while streaming-in, recompute
+	 appropriate TYPE_MODE for accelerator.  */
+      if (lto_stream_offload_p
+	  && (AGGREGATE_TYPE_P (t) || VECTOR_TYPE_P (t)))
+	hstate.add_hwi (VOIDmode);
+      /* for VECTOR_TYPE, TYPE_MODE reevaluates the mode using target_flags
+	 not necessary valid in a global context.
+	 Use the raw value previously set by layout_type.  */
+      else
+	hstate.add_hwi (TYPE_MODE_RAW (t));
       /* TYPE_NO_FORCE_BLK is private to stor-layout and need
 	 no streaming.  */
       hstate.add_flag (TYPE_PACKED (t));
