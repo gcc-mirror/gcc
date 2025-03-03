@@ -8216,23 +8216,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       /* For descriptorless coarrays and assumed-shape coarray dummies, we
 	 pass the token and the offset as additional arguments.  */
       if (fsym && e == NULL && flag_coarray == GFC_FCOARRAY_LIB
-	  && ((fsym->ts.type != BT_CLASS && fsym->attr.codimension
-	       && !fsym->attr.allocatable)
-	      || (fsym->ts.type == BT_CLASS
-		  && CLASS_DATA (fsym)->attr.codimension
-		  && !CLASS_DATA (fsym)->attr.allocatable)))
+	  && attr->codimension && !attr->allocatable)
 	{
 	  /* Token and offset.  */
 	  vec_safe_push (stringargs, null_pointer_node);
 	  vec_safe_push (stringargs, build_int_cst (gfc_array_index_type, 0));
 	  gcc_assert (fsym->attr.optional);
 	}
-      else if (fsym && flag_coarray == GFC_FCOARRAY_LIB
-	       && ((fsym->ts.type != BT_CLASS && fsym->attr.codimension
-		    && !fsym->attr.allocatable)
-		   || (fsym->ts.type == BT_CLASS
-		       && CLASS_DATA (fsym)->attr.codimension
-		       && !CLASS_DATA (fsym)->attr.allocatable)))
+      else if (fsym && flag_coarray == GFC_FCOARRAY_LIB && attr->codimension
+	       && !attr->allocatable)
 	{
 	  tree caf_decl, caf_type, caf_desc = NULL_TREE;
 	  tree offset, tmp2;
