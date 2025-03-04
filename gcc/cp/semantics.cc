@@ -12615,7 +12615,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       if (identifier_p (expr))
         expr = lookup_name (expr);
 
-      if (INDIRECT_REF_P (expr)
+      while (INDIRECT_REF_P (expr)
 	  || TREE_CODE (expr) == VIEW_CONVERT_EXPR)
         /* This can happen when the expression is, e.g., "a.b". Just
            look at the underlying operand.  */
