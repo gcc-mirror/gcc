@@ -366,6 +366,16 @@ DEF_TUNE (X86_TUNE_AVOID_FALSE_DEP_FOR_BMI, "avoid_false_dep_for_bmi",
 	  | m_CANNONLAKE | m_CASCADELAKE | m_COOPERLAKE
 	  | m_ZHAOXIN | m_GENERIC)
 
+/* X86_TUNE_AVOID_FALSE_DEP_FOR_TZCNT: Avoid false dependency
+   for tzcnt instruction (also included in X86_TUNE_AVOID_FALSE_DEP_FOR_BMI).  */
+DEF_TUNE (X86_TUNE_AVOID_FALSE_DEP_FOR_TZCNT, "avoid_false_dep_for_tzcnt",
+	  m_ZNVER5)
+
+/* X86_TUNE_AVOID_FALSE_DEP_FOR_BLS: Avoid false dependency
+   for blsi, blsr and blsmsk instructions.  */
+DEF_TUNE (X86_TUNE_AVOID_FALSE_DEP_FOR_BLS, "avoid_false_dep_for_bls",
+	  m_ZNVER5)
+
 /* X86_TUNE_ADJUST_UNROLL: This enables adjusting the unroll factor based
    on hardware capabilities. Bdver3 hardware has a loop buffer which makes
    unrolling small loop less important. For, such architectures we adjust
