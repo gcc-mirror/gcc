@@ -613,10 +613,6 @@ make_postcondition_variable (cp_expr id, tree type)
   DECL_ARTIFICIAL (decl) = true;
   DECL_SOURCE_LOCATION (decl) = id.get_location ();
 
-  /* Maybe constify the postcondition variable.  */
-  if (flag_contracts_nonattr && should_constify_contract)
-    TREE_READONLY(decl) = true;
-
   pushdecl (decl);
   return decl;
 }
@@ -2753,14 +2749,9 @@ tree view_as_const(tree decl)
 tree
 constify_contract_access(tree decl)
 {
-  /* only constifies the automatic storage variables for now.
-   * The postcondition variable is created const. Parameters need to be
-   * checked separately, and we also need to make references and *this const
-   */
 
-  /* We check if we have a variable of automatic storage duration, a parameter,
-   * a variable of automatic storage duration of reference type, or a
-   * parameter of reference type
+  /* We check if we have a variable, a parameter, a variable of reference type,
+   * or a parameter of reference type
    */
   if (!TREE_READONLY (decl)
       && (VAR_P (decl)
@@ -2790,7 +2781,11 @@ maybe_reject_param_in_postcondition (tree decl)
       && !dependent_type_p (TREE_TYPE (decl))
       && !CP_TYPE_CONST_P (TREE_TYPE (decl))
       && !(REFERENCE_REF_P (decl)
-	   && TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL))
+	   && TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL)
+	   /* Return value parameter has DECL_ARTIFICIAL flag set. The flag
+	    * presence of the flag should be sufficient to distinguish the
+	    * return value parameter in this context. */
+	   && !(DECL_ARTIFICIAL (decl)))
     {
       error_at (DECL_SOURCE_LOCATION (decl),
 		"a value parameter used in a postcondition must be const");
