@@ -8186,8 +8186,16 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	{
 	  if (se->direct_byref && !se->byref_noassign)
 	    {
+	      struct lang_type *lhs_ls
+		= TYPE_LANG_SPECIFIC (TREE_TYPE (se->expr)),
+		*rhs_ls = TYPE_LANG_SPECIFIC (TREE_TYPE (desc));
+	      /* When only the array_kind differs, do a view_convert.  */
+	      tmp = lhs_ls && rhs_ls && lhs_ls->rank == rhs_ls->rank
+			&& lhs_ls->akind != rhs_ls->akind
+		      ? build1 (VIEW_CONVERT_EXPR, TREE_TYPE (se->expr), desc)
+		      : desc;
 	      /* Copy the descriptor for pointer assignments.  */
-	      gfc_add_modify (&se->pre, se->expr, desc);
+	      gfc_add_modify (&se->pre, se->expr, tmp);
 
 	      /* Add any offsets from subreferences.  */
 	      gfc_get_dataptr_offset (&se->pre, se->expr, desc, NULL_TREE,
