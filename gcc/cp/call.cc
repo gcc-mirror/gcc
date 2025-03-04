@@ -14902,7 +14902,7 @@ extend_temps_r (tree *tp, int *walk_subtrees, void *data)
 	  {
 	    tree set = build2 (MODIFY_EXPR, boolean_type_node,
 			       cur_cond_guard, boolean_true_node);
-	    op = add_stmt_to_compound (set, op);
+	    op = cp_build_compound_expr (set, op, tf_none);
 	  }
       };
       walk_arm (TREE_OPERAND (*tp, 1));
