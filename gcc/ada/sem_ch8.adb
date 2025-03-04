@@ -1149,29 +1149,6 @@ package body Sem_Ch8 is
 
          Resolve (Nam, T);
 
-         --  If the renamed object is a function call of a limited type,
-         --  the expansion of the renaming is complicated by the presence
-         --  of various temporaries and subtypes that capture constraints
-         --  of the renamed object. Rewrite node as an object declaration,
-         --  whose expansion is simpler. Given that the object is limited
-         --  there is no copy involved and no performance hit.
-
-         if Nkind (Nam) = N_Function_Call
-           and then Is_Inherently_Limited_Type (Etype (Nam))
-           and then not Is_Constrained (Etype (Nam))
-           and then Comes_From_Source (N)
-         then
-            Set_Etype (Id, T);
-            Mutate_Ekind (Id, E_Constant);
-            Rewrite (N,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Id,
-                Constant_Present    => True,
-                Object_Definition   => New_Occurrence_Of (Etype (Nam), Loc),
-                Expression          => Relocate_Node (Nam)));
-            return;
-         end if;
-
          --  Ada 2012 (AI05-149): Reject renaming of an anonymous access object
          --  when renaming declaration has a named access type. The Ada 2012
          --  coverage rules allow an anonymous access type in the context of

@@ -8741,8 +8741,9 @@ package body Exp_Ch3 is
                   --  be illegal in some cases (such as converting access-
                   --  to-unconstrained to access-to-constrained), but the
                   --  the unchecked conversion will presumably fail to work
-                  --  right in just such cases. It's not clear at all how to
-                  --  handle this.
+                  --  right in just such cases. In order to handle this
+                  --  properly, in the Caller_Allocation case, the callee
+                  --  needs to do the constraint check.
 
                   Alloc_Stmt :=
                     Make_If_Statement (Loc,

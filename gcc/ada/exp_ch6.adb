@@ -158,7 +158,7 @@ package body Exp_Ch6 is
       Alloc_Form_Exp : Node_Id             := Empty;
       Pool_Exp       : Node_Id             := Empty);
    --  Ada 2005 (AI-318-02): If the result type of a build-in-place call needs
-   --  them, add the actuals parameters BIP_Alloc_Form and BIP_Storage_Pool.
+   --  them, add the actual parameters BIP_Alloc_Form and BIP_Storage_Pool.
    --  If Alloc_Form_Exp is present, then pass it for the first parameter,
    --  otherwise pass a literal corresponding to the Alloc_Form parameter
    --  (which must not be Unspecified in that case). If Pool_Exp is present,
@@ -442,9 +442,7 @@ package body Exp_Ch6 is
          return;
       end if;
 
-      --  Locate the implicit allocation form parameter in the called function.
-      --  Maybe it would be better for each implicit formal of a build-in-place
-      --  function to have a flag or a Uint attribute to identify it. ???
+      --  Locate the implicit allocation form parameter in the called function
 
       Alloc_Form_Formal := Build_In_Place_Formal (Function_Id, BIP_Alloc_Form);
 
@@ -928,9 +926,6 @@ package body Exp_Ch6 is
       Formal_Suffix : constant String := BIP_Formal_Suffix (Kind);
 
    begin
-      --  Maybe it would be better for each implicit formal of a build-in-place
-      --  function to have a flag or a Uint attribute to identify it. ???
-
       --  The return type in the function declaration may have been a limited
       --  view, and the extra formals for the function were not generated at
       --  that point. At the point of call the full view must be available and
@@ -8821,6 +8816,19 @@ package body Exp_Ch6 is
           and then
         not Has_Foreign_Convention (Return_Applies_To (Scope (Obj_Def_Id)));
 
+      Constraint_Check_Needed : constant Boolean :=
+        (Has_Discriminants (Obj_Typ) or else Is_Array_Type (Obj_Typ))
+         and then Is_Tagged_Type (Obj_Typ)
+         and then Is_Constrained (Obj_Typ);
+      --  We are processing a call in the context of something like
+      --  "X : T := F (...);". This is True if we need to do a constraint
+      --  check, because T has constrained bounds or discriminants,
+      --  and F is returning an unconstrained subtype.
+      --  We are currently doing the check at the call site,
+      --  which is possible only in the callee-allocates case,
+      --  which is why we have Is_Tagged_Type above.
+      --  ???The check is missing in the untagged caller-allocates case.
+
    --  Start of processing for Make_Build_In_Place_Call_In_Object_Declaration
 
    begin
@@ -8863,15 +8871,16 @@ package body Exp_Ch6 is
               Subtype_Indication =>
                 New_Occurrence_Of (Designated_Type, Loc)));
 
-      --  The access type and its accompanying object must be inserted after
-      --  the object declaration in the constrained case, so that the function
-      --  call can be passed access to the object. In the indefinite case, or
+      --  The access type and its object must be inserted after the object
+      --  declaration in the caller-allocates case, so that the function call
+      --  can be passed access to the object. In the caller-allocates case, or
       --  if the object declaration is for a return object, the access type and
       --  object must be inserted before the object, since the object
       --  declaration is rewritten to be a renaming of a dereference of the
       --  access object.
 
-      if Definite and then not Is_OK_Return_Object then
+      if Definite and not Is_OK_Return_Object and not Constraint_Check_Needed
+      then
          Insert_Action_After (Obj_Decl, Ptr_Typ_Decl);
       else
          Insert_Action (Obj_Decl, Ptr_Typ_Decl);
@@ -8952,7 +8961,7 @@ package body Exp_Ch6 is
       --  to the (specific) result type of the function is inserted to handle
       --  the case where the object is declared with a class-wide type.
 
-      elsif Definite then
+      elsif Definite and not Constraint_Check_Needed then
          Caller_Object := Unchecked_Convert_To
            (Result_Subt, New_Occurrence_Of (Obj_Def_Id, Loc));
 
@@ -9090,8 +9099,8 @@ package body Exp_Ch6 is
       --  itself the return expression of an enclosing BIP function, then mark
       --  the object as having no initialization.
 
-      if Definite and then not Is_OK_Return_Object then
-
+      if Definite and not Is_OK_Return_Object and not Constraint_Check_Needed
+      then
          Set_Expression (Obj_Decl, Empty);
          Set_No_Initialization (Obj_Decl);
 
@@ -9150,6 +9159,10 @@ package body Exp_Ch6 is
          Analyze (Obj_Decl);
          Replace_Renaming_Declaration_Id
            (Obj_Decl, Original_Node (Obj_Decl));
+
+         if Constraint_Check_Needed then
+            Apply_Constraint_Check (Call_Deref, Obj_Typ);
+         end if;
       end if;
 
       pragma Assert (Check_Number_Of_Actuals (Func_Call, Function_Id));
