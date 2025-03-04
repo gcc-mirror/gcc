@@ -1,3 +1,85 @@
+2025-03-03  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(struct aarch64_extension_info): Add field.
+	(aarch64_get_required_features): New.
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_simd_switcher::aarch64_simd_switcher): Rename to...
+	(aarch64_target_switcher::aarch64_target_switcher): ...this,
+	and extend to handle sve, nosimd and target pragmas.
+	(aarch64_simd_switcher::~aarch64_simd_switcher): Rename to...
+	(aarch64_target_switcher::~aarch64_target_switcher): ...this,
+	and extend to handle sve, nosimd and target pragmas.
+	(handle_arm_acle_h): Use aarch64_target_switcher.
+	(handle_arm_neon_h): Rename switcher and pass explicit flags.
+	(aarch64_general_init_builtins): Ditto.
+	* config/aarch64/aarch64-protos.h
+	(class aarch64_simd_switcher): Rename to...
+	(class aarch64_target_switcher): ...this, and add new members.
+	(aarch64_get_required_features): New prototype.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(sve_switcher::sve_switcher): Delete
+	(sve_switcher::~sve_switcher): Delete
+	(sve_alignment_switcher::sve_alignment_switcher): New
+	(sve_alignment_switcher::~sve_alignment_switcher): New
+	(register_builtin_types): Use alignment switcher
+	(init_builtins): Rename switcher.
+	(handle_arm_neon_sve_bridge_h): Ditto.
+	(handle_arm_sme_h): Ditto.
+	(handle_arm_sve_h): Ditto, and use alignment switcher.
+	* config/aarch64/aarch64-sve-builtins.h
+	(class sve_switcher): Delete.
+	(class sme_switcher): Delete.
+	(class sve_alignment_switcher): New.
+	* config/aarch64/t-aarch64 (aarch64-builtins.o): Add $(REGS_H).
+	(aarch64-sve-builtins.o): Remove $(REG_H).
+
+2025-03-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/thumb1.md (split patterns for GEU and LEU): New.
+
+2025-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	Revert:
+	2025-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* combine.cc (distribute_notes):
+	Reverse negative logic in ternary operators.
+
+2025-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* combine.cc (distribute_notes):
+	Reverse negative logic in ternary operators.
+
+2025-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/118739
+	* combine.cc (distribute_notes) <case REG_UNUSED>: Correct the
+	logic when the register is used by I3.
+
+2025-03-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118785
+	* ipa-cp.cc (ipa_vr_intersect_with_arith_jfunc): Handle non-conversion
+	unary operations separately before doing any conversions.  Check
+	expr_type_first_operand_type_p for non-unary operations too.  Fix type
+	of op_res.
+
+2025-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119057
+	* tree-vect-loop.cc (check_reduction_path): Add argument
+	specifying whether we're analyzing the inner loop of a
+	double reduction.  Do not allow extra uses outside of the
+	double reduction cycle in this case.
+	(vect_is_simple_reduction): Adjust.
+
+2025-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/119067
+	* ipa-devirt.cc (odr_types_equivalent_p): Check
+	TYPE_VECTOR_SUBPARTS for vectors.
+
 2025-03-02  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/118934

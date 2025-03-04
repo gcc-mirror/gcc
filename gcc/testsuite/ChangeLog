@@ -1,3 +1,40 @@
+2025-03-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101577
+	* gfortran.dg/empty_derived_type.f90: Adjust dg-options.
+	* gfortran.dg/empty_derived_type_2.f90: New test.
+
+2025-03-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/unsigned-extend-1.c: Expand check for any
+	insn suggesting a zero-extend.  XFAIL for thumb1 code.
+
+2025-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/118739
+	* gcc.target/i386/pr118739.c: New test.
+
+2025-03-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118785
+	* g++.dg/lto/pr118785_0.C: New test.
+
+2025-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119057
+	* gcc.dg/vect/pr119057.c: New testcase.
+
+2025-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/119067
+	* g++.dg/lto/pr119067_0.C: New testcase.
+	* g++.dg/lto/pr119067_1.C: Likewise.
+
+2025-03-03  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/118747
+	* gfortran.dg/alloc_comp_auto_array_4.f90: New test.
+
 2025-03-02  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/119088

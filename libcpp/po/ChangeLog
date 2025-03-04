@@ -1,3 +1,9 @@
+2025-03-03  Joseph Myers  <josmyers@redhat.com>
+
+	* be.po, ca.po, da.po, de.po, el.po, eo.po, es.po, fi.po, fr.po,
+	id.po, ja.po, ka.po, nl.po, pt_BR.po, ro.po, ru.po, sr.po, sv.po,
+	tr.po, uk.po, vi.po, zh_CN.po, zh_TW.po: Update.
+
 2025-02-14  Joseph Myers  <josmyers@redhat.com>
 
 	* cpplib.pot: Regenerate.

@@ -1,3 +1,19 @@
+2025-03-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101577
+	* symbol.cc (verify_bind_c_derived_type): Generate error message
+	for derived type with no components in standard conformance mode,
+	indicating that this is a GNU extension.
+
+2025-03-03  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/118747
+	* trans-array.cc (gfc_trans_array_ctor_element): Remove copy to
+	temporary variable.
+	* trans-expr.cc (gfc_conv_procedure_call): Use references to
+	array members instead of copies when freeing after use.
+	Formatting fix.
+
 2025-03-02  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* intrinsic.texi: Fix inconsistent capitalization of argument
