@@ -8089,9 +8089,6 @@ package body Sem_Util is
       if Ekind (Def_Id) in E_Discriminant | E_Component then
          null;
 
-      --  If a type is already set, leave it alone (happens when a type
-      --  declaration is reanalyzed following a call to the optimizer).
-
       elsif Present (Etype (Def_Id)) then
          null;
 
