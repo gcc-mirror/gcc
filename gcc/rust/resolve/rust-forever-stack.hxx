@@ -173,6 +173,14 @@ ForeverStack<Namespace::Labels>::insert (Identifier name, NodeId node)
 		       Rib::Definition::Shadowable (node));
 }
 
+template <>
+inline tl::expected<NodeId, DuplicateNameError>
+ForeverStack<Namespace::Types>::insert_variant (Identifier name, NodeId node)
+{
+  return insert_inner (peek (), name.as_string (),
+		       Rib::Definition::NonShadowable (node, true));
+}
+
 template <Namespace N>
 Rib &
 ForeverStack<N>::peek ()
@@ -275,10 +283,12 @@ ForeverStack<N>::get (const Identifier &name)
 
     return candidate.map_or (
       [&resolved_definition] (Rib::Definition found) {
-	// for most namespaces, we do not need to care about various ribs - they
-	// are available from all contexts if defined in the current scope, or
-	// an outermore one. so if we do have a candidate, we can return it
-	// directly and stop iterating
+	if (found.is_variant ())
+	  return KeepGoing::Yes;
+	// for most namespaces, we do not need to care about various ribs -
+	// they are available from all contexts if defined in the current
+	// scope, or an outermore one. so if we do have a candidate, we can
+	// return it directly and stop iterating
 	resolved_definition = found;
 
 	return KeepGoing::No;

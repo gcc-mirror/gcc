@@ -32,6 +32,43 @@ TopLevel::TopLevel (NameResolutionContext &resolver)
 
 template <typename T>
 void
+TopLevel::insert_enum_variant_or_error_out (const Identifier &identifier,
+					    const T &node)
+{
+  insert_enum_variant_or_error_out (identifier, node.get_locus (),
+				    node.get_node_id ());
+}
+
+void
+TopLevel::check_multiple_insertion_error (
+  tl::expected<NodeId, DuplicateNameError> result, const Identifier &identifier,
+  const location_t &locus, const NodeId node_id)
+{
+  if (result)
+    dirty = true;
+  else if (result.error ().existing != node_id)
+    {
+      rich_location rich_loc (line_table, locus);
+      rich_loc.add_range (node_locations[result.error ().existing]);
+
+      rust_error_at (rich_loc, ErrorCode::E0428, "%qs defined multiple times",
+		     identifier.as_string ().c_str ());
+    }
+}
+void
+TopLevel::insert_enum_variant_or_error_out (const Identifier &identifier,
+					    const location_t &locus,
+					    const NodeId node_id)
+{
+  // keep track of each node's location to provide useful errors
+  node_locations.emplace (node_id, locus);
+
+  auto result = ctx.insert_variant (identifier, node_id);
+  check_multiple_insertion_error (result, identifier, locus, node_id);
+}
+
+template <typename T>
+void
 TopLevel::insert_or_error_out (const Identifier &identifier, const T &node,
 			       Namespace ns)
 {
@@ -47,16 +84,7 @@ TopLevel::insert_or_error_out (const Identifier &identifier,
   node_locations.emplace (node_id, locus);
 
   auto result = ctx.insert (identifier, node_id, ns);
-  if (result)
-    dirty = true;
-  else if (result.error ().existing != node_id)
-    {
-      rich_location rich_loc (line_table, locus);
-      rich_loc.add_range (node_locations[result.error ().existing]);
-
-      rust_error_at (rich_loc, ErrorCode::E0428, "%qs defined multiple times",
-		     identifier.as_string ().c_str ());
-    }
+  check_multiple_insertion_error (result, identifier, locus, node_id);
 }
 
 void
@@ -336,19 +364,19 @@ TopLevel::visit (AST::TupleStruct &tuple_struct)
 void
 TopLevel::visit (AST::EnumItem &variant)
 {
-  insert_or_error_out (variant.get_identifier (), variant, Namespace::Types);
+  insert_enum_variant_or_error_out (variant.get_identifier (), variant);
 }
 
 void
 TopLevel::visit (AST::EnumItemTuple &variant)
 {
-  insert_or_error_out (variant.get_identifier (), variant, Namespace::Types);
+  insert_enum_variant_or_error_out (variant.get_identifier (), variant);
 }
 
 void
 TopLevel::visit (AST::EnumItemStruct &variant)
 {
-  insert_or_error_out (variant.get_identifier (), variant, Namespace::Types);
+  insert_enum_variant_or_error_out (variant.get_identifier (), variant);
 }
 
 void

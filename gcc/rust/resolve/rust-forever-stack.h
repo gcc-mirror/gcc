@@ -591,6 +591,9 @@ public:
    */
   tl::expected<NodeId, DuplicateNameError> insert (Identifier name, NodeId id);
 
+  tl::expected<NodeId, DuplicateNameError> insert_variant (Identifier name,
+							   NodeId id);
+
   /**
    * Insert a new shadowable definition in the innermost `Rib` in this stack
    *

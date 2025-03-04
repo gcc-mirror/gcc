@@ -111,7 +111,7 @@ public:
   class Definition
   {
   public:
-    static Definition NonShadowable (NodeId id);
+    static Definition NonShadowable (NodeId id, bool enum_variant = false);
     static Definition Shadowable (NodeId id);
     static Definition Globbed (NodeId id);
 
@@ -124,10 +124,20 @@ public:
     std::vector<NodeId> ids_non_shadowable;
     std::vector<NodeId> ids_globbed;
 
+    // Enum variant should be skipped when dealing with inner definition.
+    // struct E2;
+    //
+    // enum MyEnum<T> /* <-- Should be kept */{
+    //     E2 /* <-- Should be skipped */ (E2);
+    // }
+    bool enum_variant;
+
     Definition () = default;
 
     Definition &operator= (const Definition &) = default;
     Definition (Definition const &) = default;
+
+    bool is_variant () const;
 
     bool is_ambiguous () const;
 
@@ -155,7 +165,7 @@ public:
       GLOBBED
     };
 
-    Definition (NodeId id, Mode mode);
+    Definition (NodeId id, Mode mode, bool enum_variant);
   };
 
   enum class Kind
