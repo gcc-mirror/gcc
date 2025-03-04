@@ -16338,7 +16338,7 @@ Returns the first argument raised to the power of the second.  Unlike the
 
 @defbuiltin{uint16_t __builtin_bswap16 (uint16_t @var{x})}
 Returns @var{x} with the order of the bytes reversed; for example,
-@code{0xaabb} becomes @code{0xbbaa}.  Byte here always means
+@code{0xabcd} becomes @code{0xcdab}.  Byte here always means
 exactly 8 bits.
 @enddefbuiltin
 
