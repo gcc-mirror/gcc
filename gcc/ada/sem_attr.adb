@@ -5693,19 +5693,15 @@ package body Sem_Attr is
       when Attribute_Partition_ID =>
          Check_E0;
 
-         if P_Type /= Any_Type then
-            if not Is_Library_Level_Entity (Entity (P)) then
-               Error_Attr_P
-                 ("prefix of % attribute must be library-level entity");
+         if not Is_Library_Level_Entity (Entity (P)) then
+            Error_Attr_P
+              ("prefix of % attribute must be library-level entity");
 
-            --  The defining entity of prefix should not be declared inside a
-            --  Pure unit. RM E.1(8). Is_Pure was set during declaration.
+         --  The defining entity of prefix should not be declared inside a
+         --  Pure unit. RM E.1(8). Is_Pure was set during declaration.
 
-            elsif Is_Entity_Name (P)
-              and then Is_Pure (Entity (P))
-            then
-               Error_Attr_P ("prefix of% attribute must not be declared pure");
-            end if;
+         elsif Is_Entity_Name (P) and then Is_Pure (Entity (P)) then
+            Error_Attr_P ("prefix of% attribute must not be declared pure");
          end if;
 
          Set_Etype (N, Universal_Integer);
