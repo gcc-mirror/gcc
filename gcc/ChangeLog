@@ -1,3 +1,12 @@
+2025-03-03  Filip Kastl  <fkastl@suse.cz>
+
+	Backported from master:
+	2025-03-02  Filip Kastl  <fkastl@suse.cz>
+
+	PR tree-optimization/117919
+	* gimple-ssa-sccopy.cc (scc_copy_prop::propagate): Prune
+	statements that 'replace_uses_by ()' removed.
+
 2025-03-02  Jeff Law  <jlaw@ventanamicro.com>
 
 	Backported from master:

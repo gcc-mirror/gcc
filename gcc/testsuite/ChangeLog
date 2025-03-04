@@ -1,3 +1,11 @@
+2025-03-03  Filip Kastl  <fkastl@suse.cz>
+
+	Backported from master:
+	2025-03-02  Filip Kastl  <fkastl@suse.cz>
+
+	PR tree-optimization/117919
+	* g++.dg/pr117919.C: New test.
+
 2025-03-02  Jeff Law  <jlaw@ventanamicro.com>
 
 	Backported from master:
