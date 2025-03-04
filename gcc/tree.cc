@@ -13982,6 +13982,7 @@ gimple_canonical_types_compatible_p (const_tree t1, const_tree t2,
      flexible array members, we allow mismatching modes for structures or
      unions.  */
   if (!RECORD_OR_UNION_TYPE_P (t1)
+      && TREE_CODE (t1) != ARRAY_TYPE
       && TYPE_MODE (t1) != TYPE_MODE (t2))
     return false;
 
@@ -14313,6 +14314,7 @@ verify_type (const_tree t)
 	 flexible array members.  */
       && !RECORD_OR_UNION_TYPE_P (t)
       && !RECORD_OR_UNION_TYPE_P (TYPE_CANONICAL (t))
+      && TREE_CODE (t) != ARRAY_TYPE
       && TYPE_MODE (t) != TYPE_MODE (TYPE_CANONICAL (t)))
     {
       error ("%<TYPE_MODE%> of %<TYPE_CANONICAL%> is not compatible");
