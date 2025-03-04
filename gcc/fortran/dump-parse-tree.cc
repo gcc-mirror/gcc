@@ -4108,6 +4108,8 @@ gfc_dump_c_prototypes (FILE *file)
 
 /* Loop over all external symbols, writing out their declarations.  */
 
+static bool seen_conflict;
+
 void
 gfc_dump_external_c_prototypes (FILE * file)
 {
@@ -4119,6 +4121,7 @@ gfc_dump_external_c_prototypes (FILE * file)
     return;
 
   dumpfile = file;
+  seen_conflict = false;
   fprintf (dumpfile,
 	   _("/* Prototypes for external procedures generated from %s\n"
 	     "   by GNU Fortran %s%s.\n\n"
@@ -4130,6 +4133,11 @@ gfc_dump_external_c_prototypes (FILE * file)
     return;
 
   gfc_traverse_gsymbol (gfc_gsym_root, show_external_symbol, (void *) &bind_c);
+  if (seen_conflict)
+    fprintf (dumpfile,
+	     _("\n\n/* WARNING: Because of differing arguments to an external\n"
+	       "   procedure, this header file is not compatible with -std=c23."
+	       "\n\n   Use another -std option to compile.  */\n"));
 }
 
 /* Callback function for dumping external symbols, be they BIND(C) or
@@ -4406,17 +4414,92 @@ write_variable (gfc_symbol *sym)
   fputs (";\n", dumpfile);
 }
 
+static void
+write_formal_arglist (gfc_symbol *sym, bool bind_c)
+{
+  gfc_formal_arglist *f;
+
+  for (f = sym->formal; f != NULL; f = f->next)
+    {
+      enum type_return rok;
+      const char *intent_in;
+      gfc_symbol *s;
+      const char *pre, *type_name, *post;
+      bool asterisk;
+
+      s = f->sym;
+      rok = get_c_type_name (&(s->ts), s->as, &pre, &type_name, &asterisk,
+			     &post, false);
+      /* Procedure arguments have to be converted to function pointers.  */
+      if (s->attr.subroutine)
+	{
+	  fprintf (dumpfile, "void (*%s) (", s->name);
+	  if (s->ext_dummy_arglist_mismatch)
+	    seen_conflict = true;
+	  else
+	    write_formal_arglist (s, bind_c);
+
+	  fputc (')', dumpfile);
+	  goto next;
+	}
+
+      if (rok == T_ERROR)
+	{
+	  gfc_error_now ("Cannot convert %qs to interoperable type at %L",
+			 gfc_typename (&s->ts), &s->declared_at);
+	  fprintf (dumpfile, "/* Cannot convert '%s' to interoperable type */",
+		   gfc_typename (&s->ts));
+	  return;
+	}
+
+      if (s->attr.function)
+	{
+	  fprintf (dumpfile, "%s (*%s) (", type_name, s->name);
+	  if (s->ext_dummy_arglist_mismatch)
+	    seen_conflict = true;
+	  else
+	    write_formal_arglist (s, bind_c);
+
+	  fputc (')',dumpfile);
+	  goto next;
+	}
+
+      /* For explicit arrays, we already set the asterisk above.  */
+      if (!s->attr.value && !(s->as && s->as->type == AS_EXPLICIT))
+	asterisk = true;
+
+      if (s->attr.intent == INTENT_IN && !s->attr.value)
+	intent_in = "const ";
+      else
+	intent_in = "";
+
+      fputs (intent_in, dumpfile);
+      fputs (type_name, dumpfile);
+      fputs (pre, dumpfile);
+      if (asterisk)
+	fputs ("*", dumpfile);
+
+      fputs (s->name, dumpfile);
+      fputs (post, dumpfile);
+      if (bind_c && rok == T_WARN)
+	fputs(" /* WARNING: non-interoperable KIND */ ", dumpfile);
+
+    next:
+      if (f->next)
+	fputs(", ", dumpfile);
+    }
+  if (!bind_c)
+    for (f = sym->formal; f; f = f->next)
+      if (f->sym->ts.type == BT_CHARACTER)
+	fprintf (dumpfile, ", size_t %s_len", f->sym->name);
+
+}
 
 /* Write out a procedure, including its arguments.  */
 static void
 write_proc (gfc_symbol *sym, bool bind_c)
 {
-  const char *pre, *type_name, *post;
-  bool asterisk;
-  enum type_return rok;
-  gfc_formal_arglist *f;
   const char *sym_name;
-  const char *intent_in;
   bool external_character;
 
   external_character =  sym->ts.type == BT_CHARACTER && !bind_c;
@@ -4445,50 +4528,7 @@ write_proc (gfc_symbol *sym, bool bind_c)
       if (sym->formal)
 	fputs (", ", dumpfile);
     }
-
-  for (f = sym->formal; f; f = f->next)
-    {
-      gfc_symbol *s;
-      s = f->sym;
-      rok = get_c_type_name (&(s->ts), s->as, &pre, &type_name, &asterisk,
-			     &post, false);
-      if (rok == T_ERROR)
-	{
-	  gfc_error_now ("Cannot convert %qs to interoperable type at %L",
-			 gfc_typename (&s->ts), &s->declared_at);
-	  fprintf (dumpfile, "/* Cannot convert '%s' to interoperable type */",
-		   gfc_typename (&s->ts));
-	  return;
-	}
-
-      /* For explicit arrays, we already set the asterisk above.  */
-      if (!s->attr.value && !(s->as && s->as->type == AS_EXPLICIT))
-	asterisk = true;
-
-      if (s->attr.intent == INTENT_IN && !s->attr.value)
-	intent_in = "const ";
-      else
-	intent_in = "";
-
-      fputs (intent_in, dumpfile);
-      fputs (type_name, dumpfile);
-      fputs (pre, dumpfile);
-      if (asterisk)
-	fputs ("*", dumpfile);
-
-      fputs (s->name, dumpfile);
-      fputs (post, dumpfile);
-      if (bind_c && rok == T_WARN)
-	fputs(" /* WARNING: non-interoperable KIND */ ", dumpfile);
-
-      if (f->next)
-	fputs(", ", dumpfile);
-    }
-  if (!bind_c)
-    for (f = sym->formal; f; f = f->next)
-      if (f->sym->ts.type == BT_CHARACTER)
-	fprintf (dumpfile, ", size_t %s_len", f->sym->name);
-
+  write_formal_arglist (sym, bind_c);
   fputs (");\n", dumpfile);
 }
 

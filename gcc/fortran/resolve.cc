@@ -3427,6 +3427,32 @@ resolve_function (gfc_expr *expr)
       return false;
     }
 
+  /* Add and check formal interface when -fc-prototypes-external is in
+     force, see comment in resolve_call().  */
+
+  if (warn_external_argument_mismatch && sym && sym->attr.dummy
+      && sym->attr.external)
+    {
+      if (sym->formal)
+	{
+	  bool conflict;
+	  conflict = !gfc_compare_actual_formal (&expr->value.function.actual,
+						 sym->formal, 0, 0, 0, NULL);
+	  if (conflict)
+	    {
+	      sym->ext_dummy_arglist_mismatch = 1;
+	      gfc_warning (OPT_Wexternal_argument_mismatch,
+			   "Different argument lists in external dummy "
+			   "function %s at %L and %L", sym->name,
+			   &expr->where, &sym->formal_at);
+	    }
+	}
+      else
+	{
+	  gfc_get_formal_from_actual_arglist (sym, expr->value.function.actual);
+	  sym->formal_at = expr->where;
+	}
+    }
   /* See if function is already resolved.  */
 
   if (expr->value.function.name != NULL
@@ -3938,6 +3964,43 @@ resolve_call (gfc_code *c)
   /* If external, check for usage.  */
   if (csym && is_external_proc (csym))
     resolve_global_procedure (csym, &c->loc, 1);
+
+  /* If we have an external dummy argument, we want to write out its arguments
+     with -fc-prototypes-external.  Code like
+
+     subroutine foo(a,n)
+       external a
+       if (n == 1) call a(1)
+       if (n == 2) call a(2,3)
+     end subroutine foo
+
+     is actually legal Fortran, but it is not possible to generate a C23-
+     compliant prototype for this, so we just record the fact here and
+     handle that during -fc-prototypes-external processing.  */
+
+  if (warn_external_argument_mismatch && csym && csym->attr.dummy
+      && csym->attr.external)
+    {
+      if (csym->formal)
+	{
+	  bool conflict;
+	  conflict = !gfc_compare_actual_formal (&c->ext.actual, csym->formal,
+						 0, 0, 0, NULL);
+	  if (conflict)
+	    {
+	      csym->ext_dummy_arglist_mismatch = 1;
+	      gfc_warning (OPT_Wexternal_argument_mismatch,
+			   "Different argument lists in external dummy "
+			   "subroutine %s at %L and %L", csym->name,
+			   &c->loc, &csym->formal_at);
+	    }
+	}
+      else
+	{
+	  gfc_get_formal_from_actual_arglist (csym, c->ext.actual);
+	  csym->formal_at = c->loc;
+	}
+    }
 
   t = true;
   if (c->resolved_sym == NULL)

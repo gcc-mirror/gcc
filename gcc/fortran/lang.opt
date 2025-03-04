@@ -241,6 +241,10 @@ Wdo-subscript
 Fortran Var(warn_do_subscript) Warning LangEnabledBy(Fortran,Wextra)
 Warn about possibly incorrect subscripts in do loops.
 
+Wexternal-argument-mismatch
+Fortran Var(warn_external_argument_mismatch) Warning LangEnabledBy(Fortran,Wall || fc-prototypes-external)
+Warn when arguments of external procedures do not match.
+
 Wextra
 Fortran Warning
 ; Documented in common
