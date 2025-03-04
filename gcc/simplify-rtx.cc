@@ -2655,6 +2655,9 @@ simplify_context::simplify_logical_relational_operation (rtx_code code,
 
   enum rtx_code code0 = GET_CODE (op0);
   enum rtx_code code1 = GET_CODE (op1);
+  machine_mode cmp_mode = GET_MODE (XEXP (op0, 0));
+  if (cmp_mode == VOIDmode)
+    cmp_mode = GET_MODE (XEXP (op0, 1));
 
   /* Assume at first that the comparisons are on integers, and that the
      operands are therefore ordered.  */
@@ -2672,8 +2675,10 @@ simplify_context::simplify_logical_relational_operation (rtx_code code,
     }
   else
     {
-      /* See whether the operands might be unordered.  */
-      if (HONOR_NANS (GET_MODE (XEXP (op0, 0))))
+      /* See whether the operands might be unordered.  Assume that all
+	 results are possible for CC modes, and punt later if we don't get an
+	 always-true or always-false answer.  */
+      if (GET_MODE_CLASS (cmp_mode) == MODE_CC || HONOR_NANS (cmp_mode))
 	all = 15;
       mask0 = comparison_to_mask (code0) & all;
       mask1 = comparison_to_mask (code1) & all;
@@ -2702,6 +2707,9 @@ simplify_context::simplify_logical_relational_operation (rtx_code code,
     code = mask_to_unsigned_comparison (mask);
   else
     {
+      if (GET_MODE_CLASS (cmp_mode) == MODE_CC)
+	return 0;
+
       code = mask_to_comparison (mask);
       /* LTGT and NE are arithmetically equivalent for ordered operands,
 	 with NE being the canonical choice.  */

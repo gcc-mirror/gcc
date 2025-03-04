@@ -1,4 +1,4 @@
-/* { dg-options "-O" } */
+/* { dg-options "-O2" } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 /*
