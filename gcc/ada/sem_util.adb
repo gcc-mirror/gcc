@@ -8082,17 +8082,7 @@ package body Sem_Util is
 
       --  If we fall through, declaration is OK, at least OK enough to continue
 
-      --  If Def_Id is a discriminant or a record component we are in the midst
-      --  of inheriting components in a derived record definition. Preserve
-      --  their Ekind and Etype.
-
-      if Ekind (Def_Id) in E_Discriminant | E_Component then
-         null;
-
-      elsif Present (Etype (Def_Id)) then
-         null;
-
-      else
+      if No (Etype (Def_Id)) then
          Set_Etype (Def_Id, Any_Type); -- avoid cascaded errors
       end if;
 
