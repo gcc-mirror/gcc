@@ -6544,10 +6544,22 @@ vect_determine_precisions_from_users (stmt_vec_info stmt_info, gassign *stmt)
     case RSHIFT_EXPR:
       {
 	tree shift = gimple_assign_rhs2 (stmt);
-	if (TREE_CODE (shift) != INTEGER_CST
-	    || !wi::ltu_p (wi::to_widest (shift), precision))
+	unsigned int min_const_shift, max_const_shift;
+	wide_int min_shift, max_shift;
+	if (TREE_CODE (shift) == SSA_NAME
+	    && vect_get_range_info (shift, &min_shift, &max_shift)
+	    && wi::ge_p (min_shift, 0, TYPE_SIGN (TREE_TYPE (shift)))
+	    && wi::lt_p (max_shift, TYPE_PRECISION (type),
+			 TYPE_SIGN (TREE_TYPE (shift))))
+	  {
+	    min_const_shift = min_shift.to_uhwi ();
+	    max_const_shift = max_shift.to_uhwi ();
+	  }
+	else if (TREE_CODE (shift) == INTEGER_CST
+		 && wi::ltu_p (wi::to_widest (shift), precision))
+	  min_const_shift = max_const_shift = TREE_INT_CST_LOW (shift);
+	else
 	  return;
-	unsigned int const_shift = TREE_INT_CST_LOW (shift);
 	if (code == LSHIFT_EXPR)
 	  {
 	    /* Avoid creating an undefined shift.
@@ -6559,16 +6571,16 @@ vect_determine_precisions_from_users (stmt_vec_info stmt_info, gassign *stmt)
 	       of vectorization.  This sort of thing should really be
 	       handled before vectorization.  */
 	    operation_precision = MAX (stmt_info->min_output_precision,
-				       const_shift + 1);
+				       max_const_shift + 1);
 	    /* We need CONST_SHIFT fewer bits of the input.  */
-	    min_input_precision = (MAX (operation_precision, const_shift)
-				   - const_shift);
+	    min_input_precision = (MAX (operation_precision, max_const_shift)
+				   - min_const_shift);
 	  }
 	else
 	  {
 	    /* We need CONST_SHIFT extra bits to do the operation.  */
 	    operation_precision = (stmt_info->min_output_precision
-				   + const_shift);
+				   + max_const_shift);
 	    min_input_precision = operation_precision;
 	  }
 	break;

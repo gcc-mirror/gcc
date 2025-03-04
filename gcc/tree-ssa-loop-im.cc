@@ -143,6 +143,8 @@ public:
 				   different modes.  */
 };
 
+static bool in_loop_pipeline;
+
 /* We use six bits per loop in the ref->dep_loop bitmap to record
    the dep_kind x dep_state combinations.  */
 
@@ -1239,7 +1241,11 @@ compute_invariantness (basic_block bb)
 		   lim_data->cost);
 	}
 
-      if (lim_data->cost >= LIM_EXPENSIVE)
+      if (lim_data->cost >= LIM_EXPENSIVE
+	  /* When we run before PRE and PRE is active hoist all expressions
+	     since PRE would do so anyway and we can preserve range info
+	     but PRE cannot.  */
+	  || (flag_tree_pre && !in_loop_pipeline))
 	set_profitable_level (stmt);
     }
 }
@@ -3759,7 +3765,7 @@ public:
 unsigned int
 pass_lim::execute (function *fun)
 {
-  bool in_loop_pipeline = scev_initialized_p ();
+  in_loop_pipeline = scev_initialized_p ();
   if (!in_loop_pipeline)
     loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
 
