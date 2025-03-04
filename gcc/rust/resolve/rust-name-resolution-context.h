@@ -172,6 +172,9 @@ public:
   tl::expected<NodeId, DuplicateNameError> insert (Identifier name, NodeId id,
 						   Namespace ns);
 
+  tl::expected<NodeId, DuplicateNameError> insert_variant (Identifier name,
+							   NodeId id);
+
   tl::expected<NodeId, DuplicateNameError>
   insert_shadowable (Identifier name, NodeId id, Namespace ns);
 

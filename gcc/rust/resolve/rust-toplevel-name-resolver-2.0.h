@@ -114,9 +114,14 @@ public:
     return std::move (imports_to_resolve);
   }
 
+  void check_multiple_insertion_error (
+    tl::expected<NodeId, DuplicateNameError> result,
+    const Identifier &identifier, const location_t &locus,
+    const NodeId node_id);
+
   /**
-   * Insert a new definition or error out if a definition with the same name was
-   * already present in the same namespace in the same scope.
+   * Insert a new definition or error out if a definition with the same name
+   * was already present in the same namespace in the same scope.
    *
    * @param identifier The identifier of the definition to add.
    * @param node A reference to the node, so we can get its `NodeId` and
@@ -129,6 +134,14 @@ public:
   void insert_or_error_out (const Identifier &identifier,
 			    const location_t &locus, const NodeId &id,
 			    Namespace ns);
+
+  template <typename T>
+  void insert_enum_variant_or_error_out (const Identifier &identifier,
+					 const T &node);
+
+  void insert_enum_variant_or_error_out (const Identifier &identifier,
+					 const location_t &locus,
+					 const NodeId node_id);
 
 private:
   // If a new export has been defined whilst visiting the visitor is considered

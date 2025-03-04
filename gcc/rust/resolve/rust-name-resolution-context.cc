@@ -46,6 +46,12 @@ NameResolutionContext::insert (Identifier name, NodeId id, Namespace ns)
 }
 
 tl::expected<NodeId, DuplicateNameError>
+NameResolutionContext::insert_variant (Identifier name, NodeId id)
+{
+  return types.insert_variant (name, id);
+}
+
+tl::expected<NodeId, DuplicateNameError>
 NameResolutionContext::insert_shadowable (Identifier name, NodeId id,
 					  Namespace ns)
 {

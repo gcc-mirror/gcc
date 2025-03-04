@@ -22,7 +22,8 @@
 namespace Rust {
 namespace Resolver2_0 {
 
-Rib::Definition::Definition (NodeId id, Mode mode)
+Rib::Definition::Definition (NodeId id, Mode mode, bool enum_variant)
+  : enum_variant (enum_variant)
 {
   switch (mode)
     {
@@ -51,6 +52,12 @@ Rib::Definition::is_ambiguous () const
     return ids_globbed.size () > 1;
 }
 
+bool
+Rib::Definition::is_variant () const
+{
+  return enum_variant;
+}
+
 std::string
 Rib::Definition::to_string () const
 {
@@ -75,19 +82,19 @@ Rib::Definition::to_string () const
 Rib::Definition
 Rib::Definition::Shadowable (NodeId id)
 {
-  return Definition (id, Mode::SHADOWABLE);
+  return Definition (id, Mode::SHADOWABLE, false);
 }
 
 Rib::Definition
-Rib::Definition::NonShadowable (NodeId id)
+Rib::Definition::NonShadowable (NodeId id, bool enum_variant)
 {
-  return Definition (id, Mode::NON_SHADOWABLE);
+  return Definition (id, Mode::NON_SHADOWABLE, enum_variant);
 }
 
 Rib::Definition
 Rib::Definition::Globbed (NodeId id)
 {
-  return Definition (id, Mode::GLOBBED);
+  return Definition (id, Mode::GLOBBED, false);
 }
 
 DuplicateNameError::DuplicateNameError (std::string name, NodeId existing)
