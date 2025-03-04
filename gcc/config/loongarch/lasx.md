@@ -3570,69 +3570,40 @@
   [(set_attr "type" "simd_store")
    (set_attr "mode" "DI")])
 
-(define_expand "vec_widen_<su>add_hi_<mode>"
+(define_int_attr hi_lo [(0 "lo") (1 "hi")])
+
+(define_expand "vec_widen_<su><optab>_<hi_lo>_<mode>"
   [(match_operand:<VDMODE256> 0 "register_operand")
-   (any_extend:<VDMODE256> (match_operand:ILASX_HB 1 "register_operand"))
-   (any_extend:<VDMODE256> (match_operand:ILASX_HB 2 "register_operand"))]
+   (match_operand:ILASX_HB 1 "register_operand")
+   (match_operand:ILASX_HB 2 "register_operand")
+   (any_extend (const_int 0))
+   (addsub (const_int 0) (const_int 0))
+   (const_int zero_one)]
   "ISA_HAS_LASX"
 {
+  rtx (*fn_even) (rtx, rtx, rtx) =
+gen_lasx_xv<optab>wev_<dlasxfmt>_<lasxfmt><u>;
+  rtx (*fn_odd) (rtx, rtx, rtx) =
+gen_lasx_xv<optab>wod_<dlasxfmt>_<lasxfmt><u>;
   loongarch_expand_vec_widen_hilo (operands[0], operands[1], operands[2],
-                        <u_bool>, true, "add");
+                        <zero_one>, fn_even, fn_odd);
   DONE;
 })
 
-(define_expand "vec_widen_<su>add_lo_<mode>"
+(define_expand "vec_widen_<su>mult_<hi_lo>_<mode>"
   [(match_operand:<VDMODE256> 0 "register_operand")
-   (any_extend:<VDMODE256> (match_operand:ILASX_HB 1 "register_operand"))
-   (any_extend:<VDMODE256> (match_operand:ILASX_HB 2 "register_operand"))]
+   (match_operand:ILASX_HB 1 "register_operand")
+   (match_operand:ILASX_HB 2 "register_operand")
+   (any_extend (const_int 0))
+   (const_int zero_one)]
   "ISA_HAS_LASX"
 {
+  rtx (*fn_even) (rtx, rtx, rtx) =
+gen_lasx_xvmulwev_<dlasxfmt>_<lasxfmt><u>;
+  rtx (*fn_odd) (rtx, rtx, rtx) =
+gen_lasx_xvmulwod_<dlasxfmt>_<lasxfmt><u>;
   loongarch_expand_vec_widen_hilo (operands[0], operands[1], operands[2],
-                        <u_bool>, false, "add");
-  DONE;
-})
-
-(define_expand "vec_widen_<su>sub_hi_<mode>"
-  [(match_operand:<VDMODE256> 0 "register_operand")
-   (any_extend:<VDMODE256> (match_operand:ILASX_HB 1 "register_operand"))
-   (any_extend:<VDMODE256> (match_operand:ILASX_HB 2 "register_operand"))]
-  "ISA_HAS_LASX"
-{
-  loongarch_expand_vec_widen_hilo (operands[0], operands[1], operands[2],
-                        <u_bool>, true, "sub");
-  DONE;
-})
-
-(define_expand "vec_widen_<su>sub_lo_<mode>"
-  [(match_operand:<VDMODE256> 0 "register_operand")
-   (any_extend:<VDMODE256> (match_operand:ILASX_HB 1 "register_operand"))
-   (any_extend:<VDMODE256> (match_operand:ILASX_HB 2 "register_operand"))]
-  "ISA_HAS_LASX"
-{
-  loongarch_expand_vec_widen_hilo (operands[0], operands[1], operands[2],
-                        <u_bool>, false, "sub");
-  DONE;
-})
-
-(define_expand "vec_widen_<su>mult_hi_<mode>"
-  [(match_operand:<VDMODE256> 0 "register_operand")
-   (any_extend:<VDMODE256> (match_operand:ILASX_HB 1 "register_operand"))
-   (any_extend:<VDMODE256> (match_operand:ILASX_HB 2 "register_operand"))]
-  "ISA_HAS_LASX"
-{
-  loongarch_expand_vec_widen_hilo (operands[0], operands[1], operands[2],
-                        <u_bool>, true, "mult");
-  DONE;
-})
-
-(define_expand "vec_widen_<su>mult_lo_<mode>"
-  [(match_operand:<VDMODE256> 0 "register_operand")
-   (any_extend:<VDMODE256> (match_operand:ILASX_HB 1 "register_operand"))
-   (any_extend:<VDMODE256> (match_operand:ILASX_HB 2 "register_operand"))]
-  "ISA_HAS_LASX"
-{
-  loongarch_expand_vec_widen_hilo (operands[0], operands[1], operands[2],
-                        <u_bool>, false, "mult");
+                        <zero_one>, fn_even, fn_odd);
   DONE;
 })
 

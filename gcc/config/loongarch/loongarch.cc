@@ -8903,98 +8903,22 @@ loongarch_expand_vec_interleave (rtx target, rtx op0, rtx op1, bool high_p)
 
 void
 loongarch_expand_vec_widen_hilo (rtx dest, rtx op1, rtx op2,
-				 bool uns_p, bool high_p, const char *optab)
+				 bool high_p, rtx (*fn_even) (rtx, rtx, rtx),
+				 rtx (*fn_odd) (rtx, rtx, rtx))
 {
   machine_mode wmode = GET_MODE (dest);
   machine_mode mode = GET_MODE (op1);
-  rtx t1, t2, t3;
+  rtx t1 = gen_reg_rtx (wmode);
+  rtx t2 = gen_reg_rtx (wmode);
+  rtx t3 = gen_reg_rtx (wmode);
 
-  t1 = gen_reg_rtx (wmode);
-  t2 = gen_reg_rtx (wmode);
-  t3 = gen_reg_rtx (wmode);
   switch (mode)
     {
     case V16HImode:
-      if (!strcmp (optab, "add"))
-	{
-	  if (!uns_p)
-	    {
-	      emit_insn (gen_lasx_xvaddwev_w_h (t1, op1, op2));
-	      emit_insn (gen_lasx_xvaddwod_w_h (t2, op1, op2));
-	    }
-	  else
-	    {
-	      emit_insn (gen_lasx_xvaddwev_w_hu (t1, op1, op2));
-	      emit_insn (gen_lasx_xvaddwod_w_hu (t2, op1, op2));
-	    }
-	}
-      else if (!strcmp (optab, "mult"))
-	{
-	  if (!uns_p)
-	    {
-	      emit_insn (gen_lasx_xvmulwev_w_h (t1, op1, op2));
-	      emit_insn (gen_lasx_xvmulwod_w_h (t2, op1, op2));
-	    }
-	  else
-	    {
-	      emit_insn (gen_lasx_xvmulwev_w_hu (t1, op1, op2));
-	      emit_insn (gen_lasx_xvmulwod_w_hu (t2, op1, op2));
-	    }
-	}
-      else if (!strcmp (optab, "sub"))
-	{
-	  if (!uns_p)
-	    {
-	      emit_insn (gen_lasx_xvsubwev_w_h (t1, op1, op2));
-	      emit_insn (gen_lasx_xvsubwod_w_h (t2, op1, op2));
-	    }
-	  else
-	    {
-	      emit_insn (gen_lasx_xvsubwev_w_hu (t1, op1, op2));
-	      emit_insn (gen_lasx_xvsubwod_w_hu (t2, op1, op2));
-	    }
-	}
-      break;
-
     case V32QImode:
-      if (!strcmp (optab, "add"))
 	{
-	  if (!uns_p)
-	    {
-	      emit_insn (gen_lasx_xvaddwev_h_b (t1, op1, op2));
-	      emit_insn (gen_lasx_xvaddwod_h_b (t2, op1, op2));
-	    }
-	  else
-	    {
-	      emit_insn (gen_lasx_xvaddwev_h_bu (t1, op1, op2));
-	      emit_insn (gen_lasx_xvaddwod_h_bu (t2, op1, op2));
-	    }
-	}
-      else if (!strcmp (optab, "mult"))
-	{
-	  if (!uns_p)
-	    {
-	      emit_insn (gen_lasx_xvmulwev_h_b (t1, op1, op2));
-	      emit_insn (gen_lasx_xvmulwod_h_b (t2, op1, op2));
-	    }
-	  else
-	    {
-	      emit_insn (gen_lasx_xvmulwev_h_bu (t1, op1, op2));
-	      emit_insn (gen_lasx_xvmulwod_h_bu (t2, op1, op2));
-	    }
-	}
-      else if (!strcmp (optab, "sub"))
-	{
-	  if (!uns_p)
-	    {
-	      emit_insn (gen_lasx_xvsubwev_h_b (t1, op1, op2));
-	      emit_insn (gen_lasx_xvsubwod_h_b (t2, op1, op2));
-	    }
-	  else
-	    {
-	      emit_insn (gen_lasx_xvsubwev_h_bu (t1, op1, op2));
-	      emit_insn (gen_lasx_xvsubwod_h_bu (t2, op1, op2));
-	    }
+	  emit_insn (fn_even (t1, op1, op2));
+	  emit_insn (fn_odd (t2, op1, op2));
 	}
       break;
 
