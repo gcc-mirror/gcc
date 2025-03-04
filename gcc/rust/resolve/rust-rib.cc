@@ -76,6 +76,8 @@ Rib::Definition::to_string () const
 	}
     }
   out << "]";
+  if (enum_variant)
+    out << "(enum variant)";
   return out.str ();
 }
 
