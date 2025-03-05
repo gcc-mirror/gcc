@@ -5015,8 +5015,6 @@ determine_group_iv_cost_address (struct ivopts_data *data,
 	sum_cost = infinite_cost;
     }
 
-  /* Uses in a group can share setup code, so only add setup cost once.  */
-  cost -= cost.scratch;
   /* Compute and add costs for rest uses of this group.  */
   for (i = 1; i < group->vuses.length () && !sum_cost.infinite_cost_p (); i++)
     {
@@ -5032,7 +5030,12 @@ determine_group_iv_cost_address (struct ivopts_data *data,
 	    if (!inv_exprs)
 	      inv_exprs = BITMAP_ALLOC (NULL);
 
-	    bitmap_set_bit (inv_exprs, inv_expr->id);
+	    /* Uses in a group can share setup code,
+	       so only add setup cost once.  */
+	    if (bitmap_bit_p (inv_exprs, inv_expr->id))
+	      cost -= cost.scratch;
+	    else
+	      bitmap_set_bit (inv_exprs, inv_expr->id);
 	  }
       sum_cost += cost;
     }
