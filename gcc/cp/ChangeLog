@@ -1,3 +1,16 @@
+2025-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119073
+	* call.cc (extend_temps_r): Preserve types of COND_EXPR arms.
+
+2025-03-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109431
+	* cp-tree.h (range_expr_nelts): Declare.
+	* init.cc (build_vec_init): If the CONSTRUCTOR's index is a
+	RANGE_EXPR, use range_expr_nelts to count how many elements
+	were initialized.
+
 2025-02-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/114913

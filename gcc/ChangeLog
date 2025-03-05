@@ -1,3 +1,73 @@
+2025-03-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Optimization Options): New @subsubsection
+	for pure optimization options.
+
+2025-03-04  Oscar Gustafsson  <oscar.gustafsson@gmail.com>
+
+	* doc/extend.texi: Improve example for __builtin_bswap16.
+
+2025-03-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386.h (TARGET_AVOID_FALSE_DEP_FOR_TZCNT): New macro.
+	(TARGET_AVOID_FALSE_DEP_FOR_BLS): New macro.
+	* config/i386/i386.md (*bmi_blsi_<mode>): Add splitter for false
+	dependency.
+	(*bmi_blsi_<mode>_ccno): Add splitter for false dependency.
+	(*bmi_blsi_<mode>_falsedep): New pattern.
+	(*bmi_blsmsk_<mode>): Add splitter for false dependency.
+	(*bmi_blsmsk_<mode>_falsedep): New pattern.
+	(*bmi_blsr_<mode>): Add splitter for false dependency.
+	(*bmi_blsr_<mode>_cmp): Add splitter for false dependency
+	(*bmi_blsr_<mode>_cmp_falsedep): New pattern.
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_FALSE_DEP_FOR_TZCNT): New tune.
+	(X86_TUNE_AVOID_FALSE_DEP_FOR_BLS): New tune.
+
+2025-03-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386.h (TARGET_FUSE_ALU_AND_BRANCH_MEM): New macro.
+	(TARGET_FUSE_ALU_AND_BRANCH_MEM_IMM): New macro.
+	(TARGET_FUSE_ALU_AND_BRANCH_RIP_RELATIVE): New macro.
+	* config/i386/x86-tune-sched.cc (ix86_fuse_mov_alu_p): Support
+	non-single-set.
+	(ix86_macro_fusion_pair_p): Allow ALU which only clobbers;
+	be more careful about immediates; check TARGET_FUSE_ALU_AND_BRANCH_MEM,
+	TARGET_FUSE_ALU_AND_BRANCH_MEM_IMM, TARGET_FUSE_ALU_AND_BRANCH_RIP_RELATIVE;
+	verify that we never use unsigned checks with inc/dec.
+	* config/i386/x86-tune.def (X86_TUNE_FUSE_ALU_AND_BRANCH): New tune.
+	(X86_TUNE_FUSE_ALU_AND_BRANCH_MEM): New tune.
+	(X86_TUNE_FUSE_ALU_AND_BRANCH_MEM_IMM): New tune.
+	(X86_TUNE_FUSE_ALU_AND_BRANCH_RIP_RELATIVE): New tune.
+
+2025-03-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/118892
+	* config/aarch64/aarch64.md (copysign<GPF:mode>3): Use
+	force_lowpart_subreg instead of lowpart_subreg.
+
+2025-03-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118976
+	* fold-const.cc (const_unop): Use ~ rather than - for BIT_NOT_EXPR.
+	* config/aarch64/aarch64.cc (aarch64_test_sve_folding): New function.
+	(aarch64_run_selftests): Run it.
+
+2025-03-04  Richard Sandiford  <richard.sandiford@arm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119002
+	* simplify-rtx.cc
+	(simplify_context::simplify_logical_relational_operation): Handle
+	comparisons between CC values.  If there is no evidence that the
+	CC values are unsigned, restrict the fold to always-true or
+	always-false results.
+
+2025-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119096
+	* tree-vect-loop.cc (vect_transform_reduction): Use the
+	correct else value for .COND_fn.
+
 2025-03-03  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	* common/config/aarch64/aarch64-common.cc

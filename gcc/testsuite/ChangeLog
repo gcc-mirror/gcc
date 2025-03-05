@@ -1,3 +1,68 @@
+2025-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119073
+	* g++.dg/cpp0x/range-for39.C: New test.
+
+2025-03-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119049
+	PR fortran/119074
+	* gfortran.dg/interface_55.f90: New test.
+	* gfortran.dg/interface_56.f90: New test.
+
+2025-03-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/pr68674.c: Use effective-target arm_arch_v7a
+	and arm_libc_fp_abi.
+
+2025-03-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.target/i386/blsi.c: New test.
+	* gcc.target/i386/blsmsk.c: New test.
+	* gcc.target/i386/blsr.c: New test.
+
+2025-03-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103391
+	* gfortran.dg/assign_12.f90: New test.
+
+2025-03-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/109431
+	* g++.dg/init/array67.C: New test.
+
+2025-03-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/118892
+	* gcc.target/aarch64/copysign-pr118892.c: New test.
+
+2025-03-04  Richard Sandiford  <richard.sandiford@arm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/ieee/pr119002.c: New test.
+	* gcc.target/aarch64/pr117186.c: Run at -O2 rather than -O.
+
+2025-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119071
+	* gcc.dg/pr119071.c: New test.
+	* gcc.c-torture/execute/pr119071.c: New test.
+
+2025-03-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/77872
+	* gfortran.dg/coarray/class_1.f90: New test.
+
+2025-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119096
+	* gcc.dg/vect/pr119096.c: New testcase.
+
+2025-03-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/bug-3.c: Update asm check to
+	function body check.
+
 2025-03-03  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/101577

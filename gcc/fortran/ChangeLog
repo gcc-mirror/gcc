@@ -1,3 +1,43 @@
+2025-03-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119049
+	PR fortran/119074
+	* dump-parse-tree.cc (seen_conflict): New static varaible.
+	(gfc_dump_external_c_prototypes): Initialize it. If it was
+	set, write out a warning that -std=c23 will not work.
+	(write_proc): Move the work of actually writing out the
+	formal arglist to...
+	(write_formal_arglist): New function. Handle external dummy
+	parameters and their argument lists. If there were mismatched
+	arguments, output an empty argument list in pre-C23 style.
+	* gfortran.h (struct gfc_symbol): Add ext_dummy_arglist_mismatch
+	flag and formal_at.
+	* invoke.texi: Document -Wexternal-argument-mismatch.
+	* lang.opt: Put it in.
+	* resolve.cc (resolve_function): If warning about external
+	argument mismatches, build a formal from actual arglist the
+	first time around, and later compare and warn.
+	(resolve_call): Likewise
+
+2025-03-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103391
+	* trans-expr.cc (gfc_trans_assignment_1): Do not use poly assign
+	for pointer arrays on lhs (as it is done for allocatables
+	already).
+
+2025-03-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/77872
+	* trans-expr.cc (gfc_get_tree_for_caf_expr): Pick up token from
+	decl when it is present there for class types.
+
+2025-03-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/77872
+	* trans-expr.cc (gfc_conv_procedure_call): Use attr instead of
+	doing type check and branching for BT_CLASS.
+
 2025-03-03  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/101577
