@@ -1922,6 +1922,14 @@ m2pp_bit_ior_expr (pretty *s, tree t)
   m2pp_binary (s, t, "|");
 }
 
+/* m2pp_bit_and_expr generate a C style bit and.  */
+
+static void
+m2pp_bit_and_expr (pretty *s, tree t)
+{
+  m2pp_binary (s, t, "&");
+}
+
 /* m2pp_truth_expr.  */
 
 static void
@@ -1934,6 +1942,21 @@ m2pp_truth_expr (pretty *s, tree t, const char *op)
   m2pp_print (s, op);
   m2pp_needspace (s);
   m2pp_print (s, "(");
+  m2pp_expression (s, TREE_OPERAND (t, 1));
+  m2pp_print (s, ")");
+}
+
+/* m2pp_binary_function handle GCC expression tree as a function.  */
+
+static void
+m2pp_binary_function (pretty *s, tree t, const char *funcname)
+{
+  m2pp_print (s, funcname);
+  m2pp_needspace (s);
+  m2pp_print (s, "(");
+  m2pp_expression (s, TREE_OPERAND (t, 0));
+  m2pp_print (s, ",");
+  m2pp_needspace (s);
   m2pp_expression (s, TREE_OPERAND (t, 1));
   m2pp_print (s, ")");
 }
@@ -2085,11 +2108,20 @@ m2pp_simple_expression (pretty *s, tree t)
     case BIT_IOR_EXPR:
       m2pp_bit_ior_expr (s, t);
       break;
+    case BIT_AND_EXPR:
+      m2pp_bit_and_expr (s, t);
+      break;
     case TRUTH_ANDIF_EXPR:
       m2pp_truth_expr (s, t, "AND");
       break;
     case TRUTH_ORIF_EXPR:
       m2pp_truth_expr (s, t, "OR");
+      break;
+    case LROTATE_EXPR:
+      m2pp_binary_function (s, t, "LROTATE");
+      break;
+    case RROTATE_EXPR:
+      m2pp_binary_function (s, t, "RROTATE");      
       break;
     default:
       m2pp_unknown (s, __FUNCTION__, get_tree_code_name (code));
