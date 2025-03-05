@@ -3212,12 +3212,6 @@ struct GTY(()) lang_decl {
 #define CONTRACT_HELPER(NODE) \
  (LANG_DECL_FN_CHECK (NODE)->contract_helper)
 
-/* In VIEW_CONVERT_EXPR, set when this node is a const wrapper.  Used to
-   constify entities inside contract assertions.  */
-
-#define CONTRACT_CONSTIFY_EXPR_P(NODE) \
-  (TREE_CHECK(NODE, VIEW_CONVERT_EXPR)->base.private_flag)
-
 /* For a FUNCTION_DECL or a VAR_DECL, the language linkage for the
    declaration.  Some entities (like a member function in a local
    class, or a local variable) do not have linkage at all, and this
@@ -9033,19 +9027,17 @@ set_contract_const (tree t, bool constify)
 inline bool
 contract_const_wrapper_p (const_tree exp)
 {
-  /* A wrapper node has code VIEW_CONVERT_EXPR, and the flag
-     EXPR_LOCATION_WRAPPER_P is set.  */
-  if (TREE_CODE (exp) == VIEW_CONVERT_EXPR
-      && CONTRACT_CONSTIFY_EXPR_P (exp))
-    return true;
-  return false;
+  /* A wrapper node has code VIEW_CONVERT_EXPR, and the flag base.private_flag
+     is set. The wrapper node is used to Used to constify entities inside
+     contract assertions.  */
+  return ((TREE_CODE (exp) == VIEW_CONVERT_EXPR) && exp->base.private_flag);
 }
 
-/* If EXP is a CONTRACT_CONSTIFY_EXPR_P, return the wrapped expression.
+/* If EXP is a contract_const_wrapper_p, return the wrapped expression.
    Otherwise, do nothing. */
 
 inline tree
-strip_contract_constify_expr (tree exp)
+strip_contract_const_wrapper (tree exp)
 {
   if (contract_const_wrapper_p (exp))
     return TREE_OPERAND (exp, 0);
