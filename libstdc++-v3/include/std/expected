@@ -1541,6 +1541,7 @@ namespace __expected
       value() &&
       {
 	static_assert( is_copy_constructible_v<_Er> );
+	static_assert( is_move_constructible_v<_Er> );
 	if (_M_has_value) [[likely]]
 	  return;
 	_GLIBCXX_THROW_OR_ABORT(bad_expected_access<_Er>(std::move(_M_unex)));
