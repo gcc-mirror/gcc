@@ -1004,7 +1004,7 @@ _mm256_cvtbf8_ph (__m128i __A)
 
 extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_cvtbf8_ph (__m256h __S, __mmask8 __U, __m128i __A)
+_mm256_mask_cvtbf8_ph (__m256h __S, __mmask16 __U, __m128i __A)
 {
   return (__m256h) _mm256_castsi256_ph ((__m256i) _mm256_mask_slli_epi16 (
 	 (__m256i) __S, __U, (__m256i) _mm256_cvtepi8_epi16 (__A), 8));
@@ -1012,7 +1012,7 @@ _mm256_mask_cvtbf8_ph (__m256h __S, __mmask8 __U, __m128i __A)
 
 extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_cvtbf8_ph (__mmask8 __U, __m128i __A)
+_mm256_maskz_cvtbf8_ph (__mmask16 __U, __m128i __A)
 {
   return (__m256h) _mm256_castsi256_ph ((__m256i) _mm256_slli_epi16 (
 	 (__m256i) _mm256_maskz_cvtepi8_epi16 (__U, __A), 8));

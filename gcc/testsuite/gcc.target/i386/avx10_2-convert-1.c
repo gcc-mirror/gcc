@@ -289,6 +289,6 @@ avx10_2_cvtbf8_fp16_test (void)
   y = _mm_maskz_cvtbf8_ph (m8, z3);
 
   y2 = _mm256_cvtbf8_ph (z3);
-  y2 = _mm256_mask_cvtbf8_ph (z2, m8, z3);
-  y2 = _mm256_maskz_cvtbf8_ph (m8, z3);
+  y2 = _mm256_mask_cvtbf8_ph (z2, m16, z3);
+  y2 = _mm256_maskz_cvtbf8_ph (m16, z3);
 }

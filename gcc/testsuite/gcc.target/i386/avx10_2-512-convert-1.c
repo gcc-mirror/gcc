@@ -183,6 +183,6 @@ void extern
 avx10_2_512_cvtbf8_fp16_test (void)
 {
   y = _mm512_cvtbf8_ph (z1);
-  y = _mm512_mask_cvtbf8_ph (z, m16, z1);
-  y = _mm512_maskz_cvtbf8_ph (m16, z1);
+  y = _mm512_mask_cvtbf8_ph (z, m32, z1);
+  y = _mm512_maskz_cvtbf8_ph (m32, z1);
 }
