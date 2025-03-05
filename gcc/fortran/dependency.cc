@@ -1250,7 +1250,8 @@ check_data_pointer_types (gfc_expr *expr1, gfc_expr *expr2)
   sym2 = expr2->symtree->n.sym;
 
   /* Keep it simple for now.  */
-  if (sym1->ts.type == BT_DERIVED && sym2->ts.type == BT_DERIVED)
+  if (sym1->ts.type == BT_DERIVED && sym2->ts.type == BT_DERIVED
+      && sym1->ts.u.derived == sym2->ts.u.derived)
     return false;
 
   if (sym1->attr.pointer)
