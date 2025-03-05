@@ -1368,6 +1368,9 @@ struct GTY(()) tree_base {
        ENUM_IS_OPAQUE in
 	   ENUMERAL_TYPE
 
+      EXPR_CONTRACT_CONST_WRAPPER_P in
+	   VIEW_CONVERT_EXPR
+
    protected_flag:
 
        TREE_PROTECTED in
