@@ -1376,23 +1376,3 @@ proc gcc-transform-out-of-tree { args } {
 
 set additional_prunes ""
 set dg_runtest_extra_prunes ""
-
-# Find the 'dg-do-what' variable living inside DejaGnu's 'dg-test' procedure,
-# as a local variable.  We start looking at the second-outer frame: this way,
-# the caller of 'find-dg-do-what' may maintain a local 'dg-do-what' variable
-# without interfering with this search.
-proc find-dg-do-what { } {
-    set level [info level]
-    set lookup_level 2
-    while { $lookup_level <= $level } {
-	upvar $lookup_level dg-do-what dg-do-what
-	if { [info exists dg-do-what] } {
-	    verbose "find-dg-do-what: found 'dg-do-what' at level $lookup_level: ${dg-do-what}" 2
-	    return ${dg-do-what}
-	}
-	incr lookup_level
-    }
-    # We've not be called (indirectly) from 'dg-test'.
-    verbose "find-dg-do-what: have not found 'dg-do-what'" 2
-    return [list]
-}
