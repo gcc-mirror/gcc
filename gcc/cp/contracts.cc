@@ -2737,10 +2737,14 @@ finish_contract_condition (cp_expr condition)
 
 tree view_as_const(tree decl)
 {
-  tree ctype = TREE_TYPE (decl);
-  ctype = cp_build_qualified_type (ctype, (cp_type_quals (ctype)
-						     | TYPE_QUAL_CONST));
-  decl = build1 (VIEW_CONVERT_EXPR, ctype, decl);
+  if (!contract_const_wrapper_p (decl))
+    {
+      tree ctype = TREE_TYPE (decl);
+      ctype = cp_build_qualified_type (ctype, (cp_type_quals (ctype)
+					       | TYPE_QUAL_CONST));
+      decl = build1 (VIEW_CONVERT_EXPR, ctype, decl);
+      EXPR_CONTRACT_CONST_WRAPPER_P(decl) = true;
+    }
   return decl;
 }
 
