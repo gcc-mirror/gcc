@@ -1,3 +1,13 @@
+2025-03-04  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119038
+	* lambda.cc (maybe_generic_this_capture): Consider xobj
+	member functions as well, not just iobj.  Update function
+	comment.
+
 2025-02-27  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

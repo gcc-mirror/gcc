@@ -1,3 +1,45 @@
+2025-03-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118531
+	* config/aarch64/aarch64.md (*insv_reg<mode>_<SUBDI_BITS>)
+	(*aarch64_bfi<GPI:mode><ALLX:mode>_<SUBDI_BITS>)
+	(*aarch64_bfidi<ALLX:mode>_subreg_<SUBDI_BITS>): Add missing
+	simd requirements.
+
+2025-03-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-03-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118976
+	* fold-const.cc (const_unop): Use ~ rather than - for BIT_NOT_EXPR.
+	* config/aarch64/aarch64.cc (aarch64_test_sve_folding): New function.
+	(aarch64_run_selftests): Run it.
+
+2025-03-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2025-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/118739
+	* combine.cc (distribute_notes) <case REG_UNUSED>: Correct the
+	logic when the register is used by I3.
+
+2025-03-04  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-02-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118243
+	* ipa-sra.cc (pull_accesses_from_callee): New parameters
+	caller_ipcp_ts and param_idx.  Check that scalar pulled accesses would
+	not clash with a known IPA-CP aggregate constant.
+	(param_splitting_across_edge): Pass IPA-CP transformation summary and
+	caller parameter index to pull_accesses_from_callee.
+
 2025-03-03  Filip Kastl  <fkastl@suse.cz>
 
 	Backported from master:

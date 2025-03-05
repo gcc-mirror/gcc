@@ -1,3 +1,58 @@
+2025-03-04  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119038
+	* g++.dg/cpp23/explicit-obj-lambda15.C: New test.
+
+2025-03-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/ins_bitfield_1a.c: New test.
+	* gcc.target/aarch64/ins_bitfield_3a.c: Likewise.
+	* gcc.target/aarch64/ins_bitfield_5a.c: Likewise.
+
+2025-03-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/unsigned-extend-1.c: Expand check for any
+	insn suggesting a zero-extend.  XFAIL for thumb1 code.
+
+2025-03-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2025-03-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/pr68674.c: Use effective-target arm_arch_v7a
+	and arm_libc_fp_abi.
+
+2025-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119071
+	* gcc.dg/pr119071.c: New test.
+	* gcc.c-torture/execute/pr119071.c: New test.
+
+2025-03-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2025-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/118739
+	* gcc.target/i386/pr118739.c: New test.
+
+2025-03-04  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-02-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118243
+	* g++.dg/ipa/pr118243.C: New test.
+
 2025-03-03  Filip Kastl  <fkastl@suse.cz>
 
 	Backported from master:
