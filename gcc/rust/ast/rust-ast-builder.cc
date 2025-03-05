@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-ast-builder.h"
+#include "optional.h"
 #include "rust-ast-builder-type.h"
 #include "rust-ast.h"
 #include "rust-common.h"
@@ -352,7 +353,7 @@ Builder::let (std::unique_ptr<Pattern> &&pattern, std::unique_ptr<Type> &&type,
 {
   return std::unique_ptr<Stmt> (new LetStmt (std::move (pattern),
 					     std::move (init), std::move (type),
-					     {}, loc));
+					     tl::nullopt, {}, loc));
 }
 
 std::unique_ptr<Expr>
