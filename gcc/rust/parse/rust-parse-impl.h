@@ -6163,6 +6163,10 @@ Parser<ManagedTokenSource>::parse_let_stmt (AST::AttrVec outer_attrs,
 	}
     }
 
+  tl::optional<std::unique_ptr<AST::Expr>> else_expr = tl::nullopt;
+  if (maybe_skip_token (ELSE))
+    else_expr = parse_block_expr ();
+
   if (restrictions.consume_semi)
     {
       // `stmt` macro variables are parsed without a semicolon, but should be
@@ -6177,7 +6181,7 @@ Parser<ManagedTokenSource>::parse_let_stmt (AST::AttrVec outer_attrs,
 
   return std::unique_ptr<AST::LetStmt> (
     new AST::LetStmt (std::move (pattern), std::move (expr), std::move (type),
-		      std::move (outer_attrs), locus));
+		      std::move (else_expr), std::move (outer_attrs), locus));
 }
 
 // Parses a type path.
