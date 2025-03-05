@@ -26301,7 +26301,7 @@ aarch64_evpc_dup (struct expand_vec_perm_d *d)
   in0 = d->op0;
   lane = GEN_INT (elt); /* The pattern corrects for big-endian.  */
 
-  rtx parallel = gen_rtx_PARALLEL (vmode, gen_rtvec (1, lane));
+  rtx parallel = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, lane));
   rtx select = gen_rtx_VEC_SELECT (GET_MODE_INNER (vmode), in0, parallel);
   emit_set_insn (out, gen_rtx_VEC_DUPLICATE (vmode, select));
   return true;
