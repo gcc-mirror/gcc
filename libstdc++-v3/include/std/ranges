@@ -9922,6 +9922,7 @@ namespace ranges
 	    return __f.template operator()<_Idx>();
 	  if constexpr (_Idx + 1 < sizeof...(_Vs))
 	    return __self.template operator()<_Idx + 1>();
+	  __builtin_unreachable();
 	}.template operator()<0>();
       }
 
@@ -9943,12 +9944,12 @@ namespace ranges
     constexpr
     _Iterator(_Iterator<!_Const> __it)
       requires _Const && (convertible_to<iterator_t<_Vs>, iterator_t<const _Vs>> && ...)
-    : _M_parent(__it._M_parent)
-    {
-      _M_invoke_with_runtime_index([this, &__it]<size_t _Idx>() {
-	_M_it.template emplace<_Idx>(std::get<_Idx>(std::move(__it._M_it)));
-      });
-    }
+    : _M_parent(__it._M_parent),
+      _M_it(_S_invoke_with_runtime_index([this, &__it]<size_t _Idx>() {
+	      return __base_iter(in_place_index<_Idx>,
+				 std::get<_Idx>(std::move(__it._M_it)));
+	    }, __it._M_it.index()))
+    { }
 
     constexpr decltype(auto)
     operator*() const
@@ -10186,12 +10187,12 @@ namespace ranges
 	requires __detail::__can_concat_view<_Ts...>
       constexpr auto
       operator() [[nodiscard]] (_Ts&&... __ts) const
-      {
-	if constexpr (sizeof...(_Ts) == 1)
-	  return views::all(std::forward<_Ts>(__ts)...);
-	else
-	  return concat_view(std::forward<_Ts>(__ts)...);
-      }
+      { return concat_view(std::forward<_Ts>(__ts)...); }
+
+      template<input_range _Range>
+      constexpr auto
+      operator() [[nodiscard]] (_Range&& __t) const
+      { return views::all(std::forward<_Range>(__t)); }
     };
 
     inline constexpr _Concat concat;
