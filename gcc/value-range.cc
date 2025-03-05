@@ -2050,7 +2050,7 @@ irange::union_bitmask (const irange &r)
 
   irange_bitmask bm = get_bitmask ();
   irange_bitmask save = bm;
-  if (!bm.union_ (r.get_bitmask ()))
+  if (!bm.union_ (r.get_bitmask ()) && (!bm.unknown_p () || m_bitmask.unknown_p ()))
     return false;
 
   m_bitmask = bm;
