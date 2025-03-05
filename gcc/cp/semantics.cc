@@ -12800,7 +12800,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	 strip the const wrapper. Per P2900R14, "For a function f with the
 	 return type T , the result name is an lvalue of type const T , decltype(r)
 	 is T , and decltype((r)) is const T&."  */
-      expr = strip_contract_constify_expr (expr);
+      expr = strip_contract_const_wrapper (expr);
 
       if (INDIRECT_REF_P (expr)
 	  || TREE_CODE (expr) == VIEW_CONVERT_EXPR)
