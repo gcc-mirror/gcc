@@ -5101,10 +5101,8 @@ set_identifier_type_value_with_scope (tree id, tree decl, cp_binding_level *b)
   if (b->kind == sk_namespace)
     /* At namespace scope we should not see an identifier type value.  */
     gcc_checking_assert (!REAL_IDENTIFIER_TYPE_VALUE (id)
-			 /* We could be pushing a friend underneath a template
-			    parm (ill-formed).  */
-			 || (TEMPLATE_PARM_P
-			     (TYPE_NAME (REAL_IDENTIFIER_TYPE_VALUE (id)))));
+			 /* But we might end up here with ill-formed input.  */
+			 || seen_error ());
   else
     {
       /* Push the current type value, so we can restore it later  */
