@@ -8479,7 +8479,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	if (TREE_CODE (t) == CONVERT_EXPR
 	    && ARITHMETIC_TYPE_P (type)
 	    && INDIRECT_TYPE_P (TREE_TYPE (op))
-	    && ctx->manifestly_const_eval == mce_true)
+	    && ctx->strict)
 	  {
 	    if (!ctx->quiet)
 	      error_at (loc,
@@ -9747,16 +9747,26 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
     {
       /* [basic.start.static] allows constant-initialization of variables with
 	 static or thread storage duration even if it isn't required, but we
-	 shouldn't bend the rules the same way for automatic variables.  */
+	 shouldn't bend the rules the same way for automatic variables.
+
+	 But still enforce the requirements of constexpr/constinit.
+	 [dcl.constinit] "If a variable declared with the constinit specifier
+	 has dynamic initialization, the program is ill-formed, even if the
+	 implementation would perform that initialization as a static
+	 initialization."  */
       bool is_static = (decl && DECL_P (decl)
 			&& (TREE_STATIC (decl) || DECL_EXTERNAL (decl)));
+      bool strict = (!is_static
+		     || (decl && DECL_P (decl)
+			 && (DECL_DECLARED_CONSTEXPR_P (decl)
+			     || DECL_DECLARED_CONSTINIT_P (decl))));
       if (is_static)
 	manifestly_const_eval = mce_true;
 
       if (cp_unevaluated_operand && manifestly_const_eval != mce_true)
 	return fold_to_constant (t);
 
-      t = cxx_eval_outermost_constant_expr (t, allow_non_constant, !is_static,
+      t = cxx_eval_outermost_constant_expr (t, allow_non_constant, strict,
 					    manifestly_const_eval,
 					    false, decl);
     }
