@@ -73,9 +73,10 @@ public:
   void visit (AST::LetStmt &stmt) override
   {
     if (stmt.has_init_expr ())
-      {
-	ResolveExpr::go (stmt.get_init_expr (), prefix, canonical_prefix);
-      }
+      ResolveExpr::go (stmt.get_init_expr (), prefix, canonical_prefix);
+
+    if (stmt.has_else_expr ())
+      ResolveExpr::go (stmt.get_else_expr (), prefix, canonical_prefix);
 
     PatternDeclaration::go (stmt.get_pattern (), Rib::ItemType::Var);
     if (stmt.has_type ())
