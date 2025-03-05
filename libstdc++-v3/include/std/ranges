@@ -9176,7 +9176,7 @@ namespace views::__adaptor
     { return auto(__x) -= __y; }
 
     friend constexpr difference_type
-    operator-(const _Iterator& __x, const _Iterator& __y)
+    operator-(const _Iterator& __x, const _Iterator& __y) noexcept
     { return __x._M_pos - __y._M_pos; }
 
     friend constexpr auto
