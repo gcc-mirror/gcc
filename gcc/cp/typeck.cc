@@ -11450,7 +11450,7 @@ check_return_expr (tree retval, bool *no_warning, bool *dangling)
       bool converted = false;
       tree moved;
       /* Until C++23, this was only interesting for class type, but in C++23,
-	 we should do the below when we're converting rom/to a class/reference
+	 we should do the below when we're converting from/to a class/reference
 	 (a non-scalar type).  */
 	if ((cxx_dialect < cxx23
 	     ? CLASS_TYPE_P (functype)
