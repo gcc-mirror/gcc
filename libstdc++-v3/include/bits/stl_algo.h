@@ -4987,11 +4987,11 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	return;
 
 #if _GLIBCXX_HOSTED
-      if (__is_constant_evaluated())
-	{
-	  std::__inplace_stable_sort(__first, __last, __comp);
-	  return;
-	}
+# if __glibcxx_constexpr_algorithms >= 202306L // >= C++26
+      if consteval {
+	return std::__inplace_stable_sort(__first, __last, __comp);
+      }
+# endif
 
       typedef _Temporary_buffer<_RandomAccessIterator, _ValueType> _TmpBuf;
       // __stable_sort_adaptive sorts the range in two halves,
