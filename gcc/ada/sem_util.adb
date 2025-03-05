@@ -8935,9 +8935,9 @@ package body Sem_Util is
       --  In the second case, the expr is either Y'Address, or recursively a
       --  constant that eventually references Y'Address.
 
-      Ent := Empty;
+      Ent      := Empty;
       Ovrl_Typ := Empty;
-      Off := False;
+      Off      := False;
 
       Expr := Expression (N);
 
@@ -8967,6 +8967,8 @@ package body Sem_Util is
          end if;
       end loop;
 
+      Ovrl_Typ := Etype (Expr);
+
       --  This loop checks the form of the prefix for an entity, using
       --  recursion to deal with intermediate components.
 
@@ -8985,11 +8987,8 @@ package body Sem_Util is
                pragma Assert
                  (not Expander_Active
                   and then Is_Concurrent_Type (Scope (Ent)));
-               Ent := Empty;
-            end if;
-
-            if No (Ovrl_Typ) then
-               Ovrl_Typ := Etype (Ent);
+               Ent      := Empty;
+               Ovrl_Typ := Empty;
             end if;
 
             return;
@@ -8997,23 +8996,6 @@ package body Sem_Util is
          --  Check for components
 
          elsif Nkind (Expr) in N_Selected_Component | N_Indexed_Component then
-            if Nkind (Expr) = N_Selected_Component then
-               --  If Something.Other'Address, use
-               --  the Etype of the Other component.
-
-               if No (Ovrl_Typ) then
-                  Ovrl_Typ := Etype (Entity (Selector_Name (Expr)));
-               end if;
-
-            else
-               --  If Something(Index)'Address, use
-               --  the Etype of the array component.
-
-               if No (Ovrl_Typ) then
-                  Ovrl_Typ := Etype (Expr);
-               end if;
-            end if;
-
             Expr := Prefix (Expr);
             Off  := True;
 
