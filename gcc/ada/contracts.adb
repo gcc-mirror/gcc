@@ -1278,7 +1278,12 @@ package body Contracts is
          while Present (Prag) loop
             Prag_Nam := Pragma_Name (Prag);
 
-            if Prag_Nam = Name_Initial_Condition then
+            --  When Assertion_Levels are used then the pacakage can have
+            --  multiple consecutive Initial_Condition pragmas.
+            --  Find the first one here and then iterate over all of them
+            --  later.
+
+            if Prag_Nam = Name_Initial_Condition and then No (Init_Cond) then
                Init_Cond := Prag;
 
             elsif Prag_Nam = Name_Initializes then
@@ -1295,9 +1300,12 @@ package body Contracts is
             Analyze_Initializes_In_Decl_Part (Init);
          end if;
 
-         if Present (Init_Cond) then
+         while Present (Init_Cond)
+           and then Pragma_Name (Init_Cond) = Name_Initial_Condition
+         loop
             Analyze_Initial_Condition_In_Decl_Part (Init_Cond);
-         end if;
+            Init_Cond := Next_Pragma (Init_Cond);
+         end loop;
       end if;
 
       --  Restore the SPARK_Mode of the enclosing context after all delayed

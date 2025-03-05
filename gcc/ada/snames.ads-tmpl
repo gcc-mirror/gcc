@@ -424,6 +424,7 @@ package Snames is
    Name_Aggregate_Individually_Assign  : constant Name_Id := N + $; -- GNAT
    Name_Allow_Integer_Address          : constant Name_Id := N + $; -- GNAT
    Name_Annotate                       : constant Name_Id := N + $; -- GNAT
+   Name_Assertion_Level                : constant Name_Id := N + $; -- GNAT
    Name_Assertion_Policy               : constant Name_Id := N + $; -- Ada 05
    Name_Assume_No_Invalid_Values       : constant Name_Id := N + $; -- GNAT
    Name_C_Pass_By_Copy                 : constant Name_Id := N + $; -- GNAT
@@ -1409,6 +1410,10 @@ package Snames is
    Name_Reference_Control_Type           : constant Name_Id := N + $;
    Name_Get_Element_Access               : constant Name_Id := N + $;
 
+   --  Names used to implement Assertion_Levels
+
+   Name_uDefault_Assertion_Level          : constant Name_Id := N + $;
+
    --  Names for Ada 202x Aggregate aspect. Name_Aggregate is already
    --  present for gprbuild.
 
@@ -1773,6 +1778,7 @@ package Snames is
       Pragma_Aggregate_Individually_Assign,
       Pragma_Allow_Integer_Address,
       Pragma_Annotate,
+      Pragma_Assertion_Level,
       Pragma_Assertion_Policy,
       Pragma_Assume_No_Invalid_Values,
       Pragma_C_Pass_By_Copy,

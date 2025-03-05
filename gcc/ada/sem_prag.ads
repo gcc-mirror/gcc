@@ -253,6 +253,15 @@ package Sem_Prag is
      (Pragma_Extensions_Visible => True,
       others                    => False);
 
+   function Find_Assertion_Level (Nam : Name_Id) return Entity_Id;
+   --  Find an existing definition with the given name that has been inserted
+   --  into the Assertion_Levels table.
+
+   procedure Insert_Assertion_Level (Level : Entity_Id);
+   --  Insert a new level into the Assertion_Levels table. If there is already
+   --  an entry with the same name check that it has the same dependencies as
+   --  the level you are trying to insert. Raises an error otherwise.
+
    -----------------
    -- Subprograms --
    -----------------
@@ -377,7 +386,7 @@ package Sem_Prag is
    --  in fact of the same kind as the source pragma Prag. This is used
    --  in GNATprove_Mode to generate the inherited pre- and postconditions.
 
-   procedure Check_Applicable_Policy (N : Node_Id);
+   procedure Check_Applicable_Policy (N : Node_Id; Level : Entity_Id := Empty);
    --  N is either an N_Aspect or an N_Pragma node. There are two cases. If
    --  the name of the aspect or pragma is not one of those recognized as
    --  an assertion kind by an Assertion_Policy pragma, then the call has
@@ -409,25 +418,6 @@ package Sem_Prag is
    --  Async_Readers, Async_Writers, Effective_Reads and Effective_Writes. Item
    --  is the related variable or state. Ensure legality of the combination and
    --  issue an error for an illegal combination.
-
-   function Check_Kind (Nam : Name_Id) return Name_Id;
-   --  This function is used in connection with pragmas Assert, Check,
-   --  and assertion aspects and pragmas, to determine if Check pragmas
-   --  (or corresponding assertion aspects or pragmas) are currently active
-   --  as determined by the presence of -gnata on the command line (which
-   --  sets the default), and the appearance of pragmas Check_Policy and
-   --  Assertion_Policy as configuration pragmas either in a configuration
-   --  pragma file, or at the start of the current unit, or locally given
-   --  Check_Policy and Assertion_Policy pragmas that are currently active.
-   --
-   --  The value returned is one of the names Check, Ignore, Disable (On
-   --  returns Check, and Off returns Ignore).
-   --
-   --  Note: for assertion kinds Pre'Class, Post'Class, Invariant'Class,
-   --  and Type_Invariant'Class, the name passed is Name_uPre, Name_uPost,
-   --  Name_uInvariant, or Name_uType_Invariant, which corresponds to _Pre,
-   --  _Post, _Invariant, or _Type_Invariant, which are special names used
-   --  in identifiers to represent these attribute references.
 
    procedure Check_Missing_Part_Of (Item_Id : Entity_Id);
    --  Determine whether the placement within the state space of an abstract
@@ -533,6 +523,9 @@ package Sem_Prag is
    --  Context denotes the entity of the function, package or procedure where
    --  Prag resides.
 
+   function Get_Assertion_Level (Nam : Name_Id) return Entity_Id;
+   --  Returns the entity of a known Assertion_Level name
+
    function Get_SPARK_Mode_From_Annotation
      (N : Node_Id) return SPARK_Mode_Type;
    --  Given an aspect or pragma SPARK_Mode node, return corresponding mode id
@@ -598,6 +591,10 @@ package Sem_Prag is
    --  represented by the corresponding special names Name_uPre, Name_uPost,
    --  Name_uInvariant, and Name_uType_Invariant (_Pre, _Post, _Invariant,
    --  and _Type_Invariant).
+
+   function Is_Valid_Assertion_Level (Nam : Name_Id) return Boolean;
+   --  Return True if Nam is one of the Assertion_Levels declared in the
+   --  current context.
 
    procedure Process_Compilation_Unit_Pragmas (N : Node_Id);
    --  Called at the start of processing compilation unit N to deal with any

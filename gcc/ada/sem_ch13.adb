@@ -1960,6 +1960,14 @@ package body Sem_Ch13 is
             --  expression is allowed. Includes checking that the expression
             --  does not raise Constraint_Error.
 
+            procedure Convert_Aspect_With_Assertion_Levels (Aspect : Node_Id);
+            --  If an Aspect is using an association with an Assertion_Level
+            --  analyze the aspect with the level and convert it into an aspect
+            --  without the Assertion_Level. In the case the aspect has
+            --  associations with Assertion_Levels then multiple aspects are
+            --  created and each one will point to the original aspect that
+            --  they were created from in the Original_Aspect field.
+
             function Directly_Specified
               (Id : Entity_Id; A : Aspect_Id) return Boolean;
             --  Returns True if the given aspect is directly (as opposed to
@@ -3114,6 +3122,73 @@ package body Sem_Ch13 is
                end case;
             end Check_Expr_Is_OK_Static_Expression;
 
+            ------------------------------------------
+            -- Convert_Aspect_With_Assertion_Levels --
+            ------------------------------------------
+
+            procedure Convert_Aspect_With_Assertion_Levels (Aspect : Node_Id)
+            is
+               Assoc      : Node_Id;
+               Assocs     : List_Id;
+               Choice     : Node_Id;
+               Level      : Entity_Id;
+               Sub_Expr   : Node_Id;
+               New_Aspect : Node_Id;
+            begin
+               Assocs := Component_Associations (Expression (Aspect));
+               Assoc := First (Assocs);
+
+               if Present (Expressions (Expression (Aspect))) then
+                  Error_Msg_N
+                    ("wrong syntax for argument of %", Expression (Aspect));
+                  Error_Msg_N
+                    ("\aspect with Assertion_Level can only contain "
+                     & "contain Assertion_Level associations",
+                     Expression (Aspect));
+               end if;
+
+               while Present (Assoc) loop
+                  if List_Length (Choices (Assoc)) > 1 then
+                     Error_Msg_Name_1 := Nam;
+                     Error_Msg_N ("wrong syntax for argument of %", Assoc);
+                     Error_Msg_N
+                       ("\only one Assertion_Level can be associated "
+                        & "with an expression",
+                        Assoc);
+                  end if;
+
+                  Choice := First (Choices (Assoc));
+
+                  if Nkind (Choice) /= N_Identifier then
+                     Error_Msg_N ("wrong syntax for argument of %", Assoc);
+                     Error_Msg_N
+                       ("\association must denote an Assertion_Level", Assoc);
+                  end if;
+
+                  Level := Get_Assertion_Level (Chars (Choice));
+
+                  Sub_Expr := Expression (Assoc);
+                  New_Aspect :=
+                    Make_Aspect_Specification
+                      (Sloc       => Sloc (Assoc),
+                       Identifier => New_Copy_Tree (Id),
+                       Expression => Sub_Expr);
+
+                  Check_Applicable_Policy (New_Aspect, Level);
+
+                  Set_Aspect_Ghost_Assertion_Level (New_Aspect, Level);
+
+                  Insert_After (Aspect, New_Aspect);
+
+                  --  Store the Original_Aspect for the detection of
+                  --  duplicates.
+
+                  Set_Original_Aspect (New_Aspect, Aspect);
+
+                  Next (Assoc);
+               end loop;
+            end Convert_Aspect_With_Assertion_Levels;
+
             ------------------------
             -- Directly_Specified --
             ------------------------
@@ -3160,11 +3235,10 @@ package body Sem_Ch13 is
 
                --  Set additional semantic fields
 
-               if Is_Ignored (Aspect) then
-                  Set_Is_Ignored (Aitem);
-               elsif Is_Checked (Aspect) then
-                  Set_Is_Checked (Aitem);
-               end if;
+               Set_Is_Checked (Aitem, Is_Checked (Aspect));
+               Set_Is_Ignored (Aitem, Is_Ignored (Aspect));
+               Set_Pragma_Ghost_Assertion_Level
+                  (Aitem, Aspect_Ghost_Assertion_Level (Aspect));
 
                Set_Corresponding_Aspect (Aitem, Aspect);
                Set_From_Aspect_Specification (Aitem);
@@ -3185,7 +3259,22 @@ package body Sem_Ch13 is
             --  as such for later reference in the tree. This also sets the
             --  Is_Ignored and Is_Checked flags appropriately.
 
-            Check_Applicable_Policy (Aspect);
+            if Is_Valid_Assertion_Kind (Nam) then
+               if Is_Checked (Aspect) or else Is_Ignored (Aspect) then
+                  null;
+
+               --  If the Aspect has at least one Assertion_Level argument
+               --  then split the original Aspect into multiple aspects each
+               --  with an associated Assertion_Level.
+
+               elsif Has_Assertion_Level_Argument (Aspect) then
+                  Convert_Aspect_With_Assertion_Levels (Aspect);
+                  goto Continue;
+               else
+                  Check_Applicable_Policy (Aspect);
+               end if;
+
+            end if;
 
             if Is_Disabled (Aspect) then
                goto Continue;
@@ -3249,8 +3338,11 @@ package body Sem_Ch13 is
             if No_Duplicates_Allowed (A_Id) then
                Anod := First (L);
                while Anod /= Aspect loop
-                  if Comes_From_Source (Aspect)
-                    and then Same_Aspect (A_Id, Get_Aspect_Id (Anod))
+
+                  if (Comes_From_Source (Aspect)
+                     or else (Original_Aspect (Aspect) /= Anod
+                              and then not From_Same_Aspect (Aspect, Anod)))
+                     and then Same_Aspect (A_Id, Get_Aspect_Id (Anod))
                   then
                      Error_Msg_Name_1 := Nam;
                      Error_Msg_Sloc := Sloc (Anod);
@@ -3260,12 +3352,12 @@ package body Sem_Ch13 is
                      if Class_Present (Anod) = Class_Present (Aspect) then
                         if not Class_Present (Anod) then
                            Error_Msg_NE
-                             ("aspect% for & previously given#",
-                              Id, E);
+                             ("aspect% for & previously given#", Id, E);
                         else
                            Error_Msg_NE
                              ("aspect `%''Class` for & previously given#",
-                              Id, E);
+                              Id,
+                              E);
                         end if;
                      end if;
                   end if;

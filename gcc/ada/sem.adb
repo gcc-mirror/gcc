@@ -1460,7 +1460,7 @@ package body Sem is
 
          --  Set up a clean environment before analyzing
 
-         Install_Ghost_Region (None, Empty);
+         Install_Ghost_Region (None, Empty, Empty);
          Ignore_SPARK_Mode_Pragmas_In_Instance := False;
 
          Outer_Generic_Scope := Empty;

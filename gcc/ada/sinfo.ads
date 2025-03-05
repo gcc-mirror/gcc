@@ -798,6 +798,12 @@ package Sinfo is
    --    ancestor of the type of the aggregate in a generic context, if any,
    --    when the type is a derived tagged type. Otherwise Empty.
 
+   --  Aspect_Ghost_Assertion_Level
+   --     Assertion_Level that was originally used in the assertion level
+   --     associations of its arguments. These aspects are transformed to new
+   --     aspects with the associated arguments and the original assertion
+   --     level is stored in this attribute.
+
    --  Aspect_On_Partial_View
    --    Present on an N_Aspect_Specification node. For an aspect that applies
    --    to a type entity, indicates whether the specification appears on the
@@ -2122,6 +2128,12 @@ package Sinfo is
    --    indication carries a null-exclusion indicator, which is distinct from
    --    the null-exclusion indicator that may precede the access keyword.
 
+   --  Original_Pragma
+   --    When aspects with assertion level associations are transformed in to
+   --    individual aspects without the assertion level we store the original
+   --    aspect in this attribute. This is used to avoid duplicate detection on
+   --    these aspects.
+
    --  Original_Discriminant
    --    Present in identifiers. Used in references to discriminants that
    --    appear in generic units. Because the names of the discriminants may be
@@ -2137,6 +2149,12 @@ package Sinfo is
    --    named numbers in generic units, where the Associated_Node field
    --    interferes with the Entity field, making it impossible to preserve the
    --    original entity at the point of instantiation.
+
+   --  Original_Pragma
+   --    When pragmas with assertion level associations are transformed in to
+   --    individual pragmas without the assertion level we store the original
+   --    prama in this attribute. This is used to avoid duplicate detection on
+   --    these pragmas.
 
    --  Others_Discrete_Choices
    --    When a case statement or variant is analyzed, the semantic checks
@@ -2165,6 +2183,12 @@ package Sinfo is
    --    error diagnostics: if there is a premature usage of an incomplete
    --    type, a subsequently generated error message indicates the position
    --    of its full declaration.
+
+   --  Pragma_Ghost_Assertion_Level
+   --     Assertion_Level that was originally used in the assertion level
+   --     associations of its arguments. These pragmas are transformed to new
+   --     pragmas with the associated arguments and the original assertion
+   --     level is stored in this attribute.
 
    --  Present_Expr
    --    Present in an N_Variant node. This has a meaningful value only after
@@ -2705,6 +2729,8 @@ package Sinfo is
       --  Is_Delayed_Aspect
       --  Is_Disabled
       --  Import_Interface_Present
+      --  Original_Pragma
+      --  Pragma_Ghost_Assertion_Level
       --  Uneval_Old_Warn
 
       --  Note: we should have a section on what pragmas are passed on to
@@ -7627,7 +7653,9 @@ package Sinfo is
       --  Is_Delayed_Aspect
       --  Is_Disabled
       --  Is_Boolean_Aspect
+      --  Aspect_Ghost_Assertion_Level
       --  Aspect_On_Partial_View
+      --  Original_Aspect
 
       --  Note: Aspect_Specification is an Ada 2012 feature
 

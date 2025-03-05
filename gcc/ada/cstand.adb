@@ -41,6 +41,7 @@ with Targparm;       use Targparm;
 with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
 with Sem_Mech;       use Sem_Mech;
+with Sem_Prag;       use Sem_Prag;
 with Sem_Util;       use Sem_Util;
 with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
@@ -456,6 +457,11 @@ package body CStand is
       procedure Make_Dummy_Index (E : Entity_Id);
       --  Called to provide a dummy index field value for Any_Array/Any_String
 
+      function Make_Assertion_Level_Definition
+        (Nam : Name_Id) return Entity_Id;
+      --  Create an Assertion_Level definition with the given name in the'
+      --  Sandard package.
+
       procedure Pack_String_Type (String_Type : Entity_Id);
       --  Generate proper tree for pragma Pack that applies to given type, and
       --  mark type as having the pragma.
@@ -557,6 +563,18 @@ package body CStand is
          Set_Etype (Index, Standard_Integer);
          Set_First_Index (E, Index);
       end Make_Dummy_Index;
+
+      -------------------------------------
+      -- Make_Assertion_Level_Definition --
+      -------------------------------------
+
+      function Make_Assertion_Level_Definition (Nam : Name_Id) return Entity_Id
+      is
+         Level : constant Entity_Id := Make_Assertion_Level (Stloc, Nam);
+      begin
+         Insert_Assertion_Level (Level);
+         return Level;
+      end Make_Assertion_Level_Definition;
 
       ----------------------
       -- Pack_String_Type --
@@ -1494,6 +1512,11 @@ package body CStand is
          Set_Size_Known_At_Compile_Time (Standard_Duration);
       end Build_Duration;
 
+      Standard_Level_Static := Make_Assertion_Level_Definition (Name_Static);
+      Standard_Level_Runtime := Make_Assertion_Level_Definition (Name_Runtime);
+      Standard_Level_Default :=
+        Make_Assertion_Level_Definition (Name_uDefault_Assertion_Level);
+
       --  Build standard exception type. Note that the type name here is
       --  actually used in the generated code, so it must be set correctly.
       --  The type Standard_Exception_Type must be consistent with the type
@@ -1933,6 +1956,10 @@ package body CStand is
       P ("--  This is not accurate Ada, since new base types cannot be ");
       P ("--  created, but the listing shows the target dependent");
       P ("--  characteristics of the Standard types for this compiler");
+      Write_Eol;
+
+      P ("pragma Assertion_Level (Runtime);");
+      P ("pragma Assertion_Level (Static);");
       Write_Eol;
 
       P ("package Standard is");

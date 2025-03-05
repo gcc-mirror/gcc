@@ -1893,12 +1893,11 @@ package body Exp_Util is
       -------------------
 
       procedure Add_DIC_Check
-        (DIC_Prag : Node_Id;
-         DIC_Expr : Node_Id;
-         Stmts    : in out List_Id)
+        (DIC_Prag : Node_Id; DIC_Expr : Node_Id; Stmts : in out List_Id)
       is
-         Loc : constant Source_Ptr := Sloc (DIC_Prag);
-         Nam : constant Name_Id    := Original_Aspect_Pragma_Name (DIC_Prag);
+         Loc  : constant Source_Ptr := Sloc (DIC_Prag);
+         Nam  : constant Name_Id := Original_Aspect_Pragma_Name (DIC_Prag);
+         Prag : Node_Id;
 
       begin
          --  The DIC pragma is ignored, nothing left to do
@@ -1908,21 +1907,25 @@ package body Exp_Util is
 
          --  Otherwise the DIC expression must be checked at run time.
          --  Generate:
-
+         --
          --    pragma Check (<Nam>, <DIC_Expr>);
 
          else
-            Append_New_To (Stmts,
-              Make_Pragma (Loc,
-                Pragma_Identifier            =>
-                  Make_Identifier (Loc, Name_Check),
+            Prag :=
+              Make_Pragma
+                (Loc,
+                 Pragma_Identifier            =>
+                   Make_Identifier (Loc, Name_Check),
+                 Pragma_Argument_Associations =>
+                   New_List
+                     (Make_Pragma_Argument_Association
+                        (Loc, Expression => Make_Identifier (Loc, Nam)),
+                      Make_Pragma_Argument_Association
+                        (Loc, Expression => DIC_Expr)));
 
-                Pragma_Argument_Associations => New_List (
-                  Make_Pragma_Argument_Association (Loc,
-                    Expression => Make_Identifier (Loc, Nam)),
+            Copy_Assertion_Policy_Attributes (Prag, DIC_Prag);
 
-                  Make_Pragma_Argument_Association (Loc,
-                    Expression => DIC_Expr))));
+            Append_New_To (Stmts, Prag);
          end if;
 
          --  Add the pragma to the list of processed pragmas
@@ -2318,6 +2321,7 @@ package body Exp_Util is
       DIC_Typ      : Entity_Id;
       Dummy_1      : Entity_Id;
       Dummy_2      : Entity_Id;
+      Prag         : Node_Id;
       Proc_Body    : Node_Id;
       Proc_Body_Id : Entity_Id;
       Proc_Decl    : Node_Id;
@@ -2464,12 +2468,23 @@ package body Exp_Util is
       if Partial_DIC then
          pragma Assert (Present (Priv_Typ));
 
-         if Has_Own_DIC (Work_Typ) then  -- If we're testing this then maybe
-            Add_Own_DIC        -- we shouldn't be calling Find_DIC_Typ above???
-              (DIC_Prag => DIC_Prag,
-               DIC_Typ  => DIC_Typ,  -- Should this just be Work_Typ???
-               Obj_Id   => Obj_Id,
-               Stmts    => Stmts);
+         if Has_Own_DIC (Work_Typ) then
+            --  If we're testing this then maybe
+
+            Prag := DIC_Prag;
+            while Present (Prag)
+              and then Nkind (Prag) = N_Pragma
+              and then Pragma_Name (Prag) = Name_Default_Initial_Condition
+              and then (Prag = DIC_Prag
+                        or else From_Same_Pragma (Prag, DIC_Prag))
+            loop
+               Add_Own_DIC    -- we shouldn't be calling Find_DIC_Typ above???
+                 (DIC_Prag => Prag,
+                  DIC_Typ  => DIC_Typ,  -- Should this just be Work_Typ???
+                  Obj_Id   => Obj_Id,
+                  Stmts    => Stmts);
+               Next_Rep_Item (Prag);
+            end loop;
          end if;
 
       --  Otherwise, the "full" DIC procedure verifies the DICs inherited from
@@ -3229,8 +3244,9 @@ package body Exp_Util is
          Ploc    : constant Source_Ptr := Sloc (Prag);
          Str_Arg : constant Node_Id    := Next (Next (First (Args)));
 
-         Assoc : List_Id;
-         Str   : String_Id;
+         Assoc      : List_Id;
+         Check_Prag : Node_Id;
+         Str        : String_Id;
 
       begin
          --  The invariant is ignored, nothing left to do
@@ -3273,10 +3289,14 @@ package body Exp_Util is
             --  Generate:
             --    pragma Check (<Nam>, <Expr>, <Str>);
 
-            Append_New_To (Checks,
+            Check_Prag :=
               Make_Pragma (Ploc,
-                Chars                        => Name_Check,
-                Pragma_Argument_Associations => Assoc));
+                 Chars                        => Name_Check,
+                 Pragma_Argument_Associations => Assoc);
+
+            Copy_Assertion_Policy_Attributes (Check_Prag, Prag);
+
+            Append_New_To (Checks, Check_Prag);
          end if;
 
          --  Output an info message when inheriting an invariant and the

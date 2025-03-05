@@ -445,6 +445,7 @@ package Lib.Xref is
       E_Anonymous_Access_Type                      => ' ',
       E_Array_Subtype                              => 'A',
       E_Array_Type                                 => 'A',
+      E_Assertion_Level                            => 'z',
       E_Block                                      => 'q',
       E_Class_Wide_Subtype                         => 'C',
       E_Class_Wide_Type                            => 'C',
@@ -547,7 +548,7 @@ package Lib.Xref is
    --    w     protected object                protected type
    --    x     abstract procedure              exception
    --    y     abstract function               entry or entry family
-   --    z     generic formal parameter        (unused)
+   --    z     generic formal parameter        assertion level
 
    ---------------------------------------------------
    -- Handling of Imported and Exported Subprograms --

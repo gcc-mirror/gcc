@@ -608,6 +608,10 @@ package Einfo is
 --       determine if there actually is an active Suppress or Unsuppress pragma
 --       that applies to the entity.
 
+--    Child_Levels
+--       Assrtion levels that depend on the given level are considered to be
+--        the child levels of that level.
+
 --    Class_Postconditions
 --       Defined on subprogram entities. Set if the subprogram has class-wide
 --       postconditions. Denotes the (and-then) expression built by merging
@@ -1460,6 +1464,12 @@ package Einfo is
 --       Defined in package and subprogram instances. Holds mapping that
 --       associates generic parameters with the corresponding instances, in
 --       those cases where the instance is an entity.
+
+--    Ghost_Assertion_Level
+--       Assertion level associated with the declaration of the entity. Its
+--       value is either Empty for non-ghost entities. Standard_Level_Default
+--       for Ghost entities without an assertion level or a user defined
+--       assertion level.
 
 --    Has_Aliased_Components [implementation base type only]
 --       Defined in array type entities. Indicates that the component type
@@ -4008,6 +4018,10 @@ package Einfo is
 --       used when obtaining the formal kind of a formal parameter (the result
 --       is one of E_[In/Out/In_Out]_Parameter).
 
+--    Parent_Levels
+--       Assrtion levels that the given level depends on are considered to be
+--       parent levels of that level.
+
 --    Parent_Subtype [base type only]
 --       Defined in E_Record_Type. Set only for derived tagged types, in which
 --       case it points to the subtype of the parent type. This is the type
@@ -5242,6 +5256,10 @@ package Einfo is
    --    Next_Index                            (synth)
    --    Number_Dimensions                     (synth)
    --    (plus type attributes)
+
+   --  E_Assertion_Level
+   --    Child_Levels
+   --    Parent_Levels
 
    --  E_Block
    --    Renamed_Entity $$$

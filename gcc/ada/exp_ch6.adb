@@ -4027,7 +4027,8 @@ package body Exp_Ch6 is
 
       procedure Check_Subprogram_Variant;
       --  Emit a call to the internally generated procedure with checks for
-      --  aspect Subprogram_Variant, if present and enabled.
+      --  aspect Subprogram_Variant, if present and enabled. Multiple calls are
+      --  added when the subprogram was using Assertion_Levels.
 
       function Inherited_From_Formal (S : Entity_Id) return Entity_Id;
       --  Within an instance, a type derived from an untagged formal derived
@@ -4312,7 +4313,7 @@ package body Exp_Ch6 is
 
          --  Local variables
 
-         Variant_Prag : constant Node_Id :=
+         Variant_Prag : Node_Id :=
            Get_Pragma (Current_Scope, Pragma_Subprogram_Variant);
 
          New_Call     : Node_Id;
@@ -4320,8 +4321,10 @@ package body Exp_Ch6 is
          Variant_Proc : Entity_Id;
 
       begin
-         if Present (Variant_Prag) and then Is_Checked (Variant_Prag) then
-
+         while Present (Variant_Prag)
+           and then Is_Checked (Variant_Prag)
+           and then Pragma_Name (Variant_Prag) = Name_Subprogram_Variant
+         loop
             Pragma_Arg1 :=
               Expression (First (Pragma_Argument_Associations (Variant_Prag)));
 
@@ -4330,12 +4333,13 @@ package body Exp_Ch6 is
             --  run-time execution.
 
             if Nkind (Pragma_Arg1) = N_Aggregate then
-               pragma Assert
-                 (Chars
-                    (First
-                      (Choices
-                         (First (Component_Associations (Pragma_Arg1))))) =
-                  Name_Structural);
+               pragma
+                 Assert
+                   (Chars
+                      (First
+                         (Choices
+                            (First (Component_Associations (Pragma_Arg1)))))
+                      = Name_Structural);
                return;
             end if;
 
@@ -4345,7 +4349,8 @@ package body Exp_Ch6 is
             Variant_Proc := Entity (Pragma_Arg1);
 
             New_Call :=
-              Make_Procedure_Call_Statement (Loc,
+              Make_Procedure_Call_Statement
+                (Loc,
                  Name                   =>
                    New_Occurrence_Of (Variant_Proc, Loc),
                  Parameter_Associations =>
@@ -4353,9 +4358,13 @@ package body Exp_Ch6 is
 
             Insert_Action (Call_Node, New_Call);
 
-            pragma Assert (Etype (New_Call) /= Any_Type
-              or else Serious_Errors_Detected > 0);
-         end if;
+            pragma
+              Assert
+                (Etype (New_Call) /= Any_Type
+                   or else Serious_Errors_Detected > 0);
+
+            Variant_Prag := Next_Pragma (Variant_Prag);
+         end loop;
       end Check_Subprogram_Variant;
 
       ---------------------------

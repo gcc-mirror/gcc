@@ -1394,6 +1394,7 @@ begin
          | Pragma_Annotate
          | Pragma_Assert
          | Pragma_Assert_And_Cut
+         | Pragma_Assertion_Level
          | Pragma_Assertion_Policy
          | Pragma_Assume
          | Pragma_Assume_No_Invalid_Values

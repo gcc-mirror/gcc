@@ -1805,11 +1805,15 @@ package body Atree is
       if Ghost_Config.Ghost_Mode = Check then
          if Nkind (N) in N_Entity then
             Set_Is_Checked_Ghost_Entity (N);
+            Set_Ghost_Assertion_Level
+              (N, Ghost_Config.Ghost_Mode_Assertion_Level);
          end if;
 
       elsif Ghost_Config.Ghost_Mode = Ignore then
          if Nkind (N) in N_Entity then
             Set_Is_Ignored_Ghost_Entity (N);
+            Set_Ghost_Assertion_Level
+              (N, Ghost_Config.Ghost_Mode_Assertion_Level);
          end if;
 
          Set_Is_Ignored_Ghost_Node (N);
