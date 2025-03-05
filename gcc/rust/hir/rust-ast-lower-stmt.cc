@@ -76,11 +76,16 @@ ASTLoweringStmt::visit (AST::LetStmt &stmt)
     type
       = std::unique_ptr<Type> (ASTLoweringType::translate (stmt.get_type ()));
 
-  tl::optional<std::unique_ptr<HIR::Expr>> init_expression = tl::nullopt;
+  tl::optional<std::unique_ptr<HIR::Expr>> init_expr = tl::nullopt;
+  tl::optional<std::unique_ptr<HIR::Expr>> else_expr = tl::nullopt;
 
   if (stmt.has_init_expr ())
-    init_expression = std::unique_ptr<HIR::Expr> (
+    init_expr = std::unique_ptr<HIR::Expr> (
       ASTLoweringExpr::translate (stmt.get_init_expr ()));
+
+  if (stmt.has_else_expr ())
+    else_expr = std::unique_ptr<HIR::Expr> (
+      ASTLoweringExpr::translate (stmt.get_else_expr ()));
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
@@ -88,8 +93,9 @@ ASTLoweringStmt::visit (AST::LetStmt &stmt)
 				 UNKNOWN_LOCAL_DEFID);
   translated
     = new HIR::LetStmt (mapping, std::unique_ptr<HIR::Pattern> (variables),
-			std::move (init_expression), std::move (type),
-			stmt.get_outer_attrs (), stmt.get_locus ());
+			std::move (init_expr), std::move (else_expr),
+			std::move (type), stmt.get_outer_attrs (),
+			stmt.get_locus ());
 }
 
 void
