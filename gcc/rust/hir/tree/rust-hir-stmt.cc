@@ -26,11 +26,13 @@ namespace HIR {
 LetStmt::LetStmt (Analysis::NodeMapping mappings,
 		  std::unique_ptr<Pattern> variables_pattern,
 		  tl::optional<std::unique_ptr<Expr>> init_expr,
+		  tl::optional<std::unique_ptr<Expr>> else_expr,
 		  tl::optional<std::unique_ptr<Type>> type,
 		  AST::AttrVec outer_attrs, location_t locus)
   : Stmt (std::move (mappings)), outer_attrs (std::move (outer_attrs)),
     variables_pattern (std::move (variables_pattern)), type (std::move (type)),
-    init_expr (std::move (init_expr)), locus (locus)
+    init_expr (std::move (init_expr)), else_expr (std::move (else_expr)),
+    locus (locus)
 {}
 
 LetStmt::LetStmt (LetStmt const &other)
@@ -43,6 +45,8 @@ LetStmt::LetStmt (LetStmt const &other)
   // guard to prevent null dereference (always required)
   if (other.has_init_expr ())
     init_expr = other.get_init_expr ().clone_expr ();
+  if (other.has_else_expr ())
+    else_expr = other.get_else_expr ().clone_expr ();
 
   if (other.has_type ())
     type = other.get_type ().clone_type ();
@@ -67,6 +71,12 @@ LetStmt::operator= (LetStmt const &other)
     init_expr = other.get_init_expr ().clone_expr ();
   else
     init_expr = nullptr;
+
+  if (other.has_else_expr ())
+    else_expr = other.get_else_expr ().clone_expr ();
+  else
+    else_expr = tl::nullopt;
+
   if (other.has_type ())
     type = other.get_type ().clone_type ();
   else

@@ -101,6 +101,7 @@ class LetStmt : public Stmt
   tl::optional<std::unique_ptr<Type>> type;
 
   tl::optional<std::unique_ptr<Expr>> init_expr;
+  tl::optional<std::unique_ptr<Expr>> else_expr;
 
   location_t locus;
 
@@ -113,12 +114,15 @@ public:
 
   // Returns whether let statement has an initialisation expression.
   bool has_init_expr () const { return init_expr.has_value (); }
+  // Returns whether let statement has a diverging else expression.
+  bool has_else_expr () const { return else_expr.has_value (); }
 
   std::string as_string () const override;
 
   LetStmt (Analysis::NodeMapping mappings,
 	   std::unique_ptr<Pattern> variables_pattern,
 	   tl::optional<std::unique_ptr<Expr>> init_expr,
+	   tl::optional<std::unique_ptr<Expr>> else_expr,
 	   tl::optional<std::unique_ptr<Type>> type, AST::AttrVec outer_attrs,
 	   location_t locus);
 
@@ -165,6 +169,18 @@ public:
   {
     rust_assert (*init_expr);
     return *init_expr.value ();
+  }
+
+  HIR::Expr &get_else_expr ()
+  {
+    rust_assert (*else_expr);
+    return *else_expr.value ();
+  }
+
+  const HIR::Expr &get_else_expr () const
+  {
+    rust_assert (*else_expr);
+    return *else_expr.value ();
   }
 
   HIR::Pattern &get_pattern () { return *variables_pattern; }
