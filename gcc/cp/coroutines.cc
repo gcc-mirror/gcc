@@ -5161,6 +5161,7 @@ cp_coroutine_transform::build_ramp_function ()
 
   /* Used for return objects in the RESULT slot.  */
   tree ret_val_dtor = NULL_TREE;
+  tree retval = NULL_TREE;
 
   /* [dcl.fct.def.coroutine] / 7
      The expression promise.get_return_object() is used to initialize the
@@ -5189,6 +5190,21 @@ cp_coroutine_transform::build_ramp_function ()
       /* Check for bad things.  */
       if (!r || r == error_mark_node)
 	return false;
+      if (!aggregate_value_p (fn_return_type, orig_fn_decl)
+	  && TREE_CODE (r) == INIT_EXPR)
+	{
+	  /* If fn_return_type doesn't need to be returned in memory, normally
+	     gimplify_return_expr redirects the INIT_EXPR to a temporary.  But
+	     r isn't wrapped in the RETURN_EXPR, so we need to do the
+	     redirection here as well.  See PR118874.  */
+	  tree temp = create_temporary_var (fn_return_type);
+	  add_decl_expr (temp);
+	  retval = copy_node (r);
+	  TREE_OPERAND (r, 0) = temp;
+	  TREE_OPERAND (retval, 1) = temp;
+	}
+      else
+	retval = DECL_RESULT (orig_fn_decl);
     }
 
   finish_expr_stmt (r);
@@ -5215,7 +5231,7 @@ cp_coroutine_transform::build_ramp_function ()
   /* The ramp is done, we just need the return statement, which we build from
      the return object we constructed before we called the actor.  */
 
-  r = void_ramp_p ? NULL_TREE : DECL_RESULT (orig_fn_decl);
+  r = retval;
 
   /* The reminder of finish_return_expr ().  */
   r = build_stmt (loc, RETURN_EXPR, r);
