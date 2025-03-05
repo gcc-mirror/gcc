@@ -244,7 +244,7 @@ namespace ranges
 
     template<typename _Tp, typename _Up, typename _Vp>
       concept __pair_like_convertible_from
-	= !range<_Tp> && !is_reference_v<_Vp> && __pair_like<_Tp>
+	= !range<_Tp> && !is_reference_v<_Tp> && __pair_like<_Tp>
 	&& constructible_from<_Tp, _Up, _Vp>
 	&& __convertible_to_non_slicing<_Up, tuple_element_t<0, _Tp>>
 	&& convertible_to<_Vp, tuple_element_t<1, _Tp>>;
