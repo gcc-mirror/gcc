@@ -57,6 +57,7 @@
 #define __glibcxx_want_ranges
 #define __glibcxx_want_ranges_as_const
 #define __glibcxx_want_ranges_as_rvalue
+#define __glibcxx_want_ranges_cache_latest
 #define __glibcxx_want_ranges_cartesian_product
 #define __glibcxx_want_ranges_concat
 #define __glibcxx_want_ranges_chunk
@@ -1534,6 +1535,8 @@ namespace views::__adaptor
 	    this->_M_payload._M_apply(_Optional_func{__f}, __i);
 	    return this->_M_get();
 	  }
+
+	using _Optional_base<_Tp>::_M_reset;
       };
 
     template<range _Range>
@@ -10200,6 +10203,192 @@ namespace ranges
 
 } // namespace ranges
 #endif // __cpp_lib_ranges_concat
+
+#if __cpp_lib_ranges_cache_latest // C++ >= 26
+namespace ranges
+{
+  template<input_range _Vp>
+    requires view<_Vp>
+  class cache_latest_view : public view_interface<cache_latest_view<_Vp>>
+  {
+    _Vp _M_base = _Vp();
+
+    using __cache_t = __conditional_t<is_reference_v<range_reference_t<_Vp>>,
+				      add_pointer_t<range_reference_t<_Vp>>,
+				      range_reference_t<_Vp>>;
+    __detail::__non_propagating_cache<__cache_t> _M_cache;
+
+    class _Iterator;
+    class _Sentinel;
+
+  public:
+    cache_latest_view() requires default_initializable<_Vp> = default;
+
+    constexpr explicit
+    cache_latest_view(_Vp __base)
+    : _M_base(std::move(__base))
+    { }
+
+    constexpr _Vp
+    base() const & requires copy_constructible<_Vp>
+    { return _M_base; }
+
+    constexpr _Vp
+    base() &&
+    { return std::move(_M_base); }
+
+    constexpr auto
+    begin()
+    { return _Iterator(*this); }
+
+    constexpr auto
+    end()
+    { return _Sentinel(*this); }
+
+    constexpr auto
+    size() requires sized_range<_Vp>
+    { return ranges::size(_M_base); }
+
+    constexpr auto
+    size() const requires sized_range<const _Vp>
+    { return ranges::size(_M_base); }
+  };
+
+  template<typename _Range>
+    cache_latest_view(_Range&&) -> cache_latest_view<views::all_t<_Range>>;
+
+  template<input_range _Vp>
+    requires view<_Vp>
+  class cache_latest_view<_Vp>::_Iterator
+  {
+    cache_latest_view* _M_parent;
+    iterator_t<_Vp> _M_current;
+
+    constexpr explicit
+    _Iterator(cache_latest_view& __parent)
+    : _M_parent(std::__addressof(__parent)),
+      _M_current(ranges::begin(__parent._M_base))
+    { }
+
+    friend class cache_latest_view;
+
+  public:
+    using difference_type = range_difference_t<_Vp>;
+    using value_type = range_value_t<_Vp>;
+    using iterator_concept = input_iterator_tag;
+
+    _Iterator(_Iterator&&) = default;
+
+    _Iterator&
+    operator=(_Iterator&&) = default;
+
+    constexpr iterator_t<_Vp>
+    base() &&
+    { return std::move(_M_current); }
+
+    constexpr const iterator_t<_Vp>&
+    base() const & noexcept
+    { return _M_current; }
+
+    constexpr range_reference_t<_Vp>&
+    operator*() const
+    {
+      if constexpr (is_reference_v<range_reference_t<_Vp>>)
+	{
+	  if (!_M_parent->_M_cache)
+	    _M_parent->_M_cache = std::__addressof(__detail::__as_lvalue(*_M_current));
+	  return **_M_parent->_M_cache;
+	}
+      else
+	{
+	  if (!_M_parent->_M_cache)
+	    _M_parent->_M_cache._M_emplace_deref(_M_current);
+	  return *_M_parent->_M_cache;
+	}
+    }
+
+    constexpr _Iterator&
+    operator++()
+    {
+      _M_parent->_M_cache._M_reset();
+      ++_M_current;
+      return *this;
+    }
+
+    constexpr void
+    operator++(int)
+    { ++*this; }
+
+    friend constexpr range_rvalue_reference_t<_Vp>
+    iter_move(const _Iterator& __i)
+      noexcept(noexcept(ranges::iter_move(__i._M_current)))
+    { return ranges::iter_move(__i._M_current); }
+
+    friend constexpr void
+    iter_swap(const _Iterator& __x, const _Iterator& __y)
+      noexcept(noexcept(ranges::iter_swap(__x._M_current, __y._M_current)))
+      requires indirectly_swappable<iterator_t<_Vp>>
+    { ranges::iter_swap(__x._M_current, __y._M_current); }
+  };
+
+  template<input_range _Vp>
+    requires view<_Vp>
+  class cache_latest_view<_Vp>::_Sentinel
+  {
+    sentinel_t<_Vp> _M_end = sentinel_t<_Vp>();
+
+    constexpr explicit
+    _Sentinel(cache_latest_view& __parent)
+    : _M_end(ranges::end(__parent._M_base))
+    { }
+
+    friend class cache_latest_view;
+
+  public:
+    _Sentinel() = default;
+
+    constexpr sentinel_t<_Vp>
+    base() const
+    { return _M_end; }
+
+    friend constexpr bool
+    operator==(const _Iterator& __x, const _Sentinel& __y)
+    { return __x._M_current == __y._M_end; }
+
+    friend constexpr range_difference_t<_Vp>
+    operator-(const _Iterator& __x, const _Sentinel& __y)
+      requires sized_sentinel_for<sentinel_t<_Vp>, iterator_t<_Vp>>
+    { return __x._M_current - __y._M_end; }
+
+    friend constexpr range_difference_t<_Vp>
+    operator-(const _Sentinel& __x, const _Iterator& __y)
+      requires sized_sentinel_for<sentinel_t<_Vp>, iterator_t<_Vp>>
+    { return __x._M_end - __y._M_current; }
+  };
+
+  namespace views
+  {
+    namespace __detail
+    {
+      template<typename _Tp>
+	concept __can_cache_latest = requires { cache_latest_view(std::declval<_Tp>()); };
+    }
+
+    struct _CacheLatest : __adaptor::_RangeAdaptorClosure<_CacheLatest>
+    {
+      template<viewable_range _Range>
+	requires __detail::__can_cache_latest<_Range>
+	constexpr auto
+	operator() [[nodiscard]] (_Range&& __r) const
+	{ return cache_latest_view(std::forward<_Range>(__r)); }
+
+      static constexpr bool _S_has_simple_call_op = true;
+    };
+
+    inline constexpr _CacheLatest cache_latest;
+  }
+} // namespace ranges
+#endif // __cpp_lib_ranges_cache_latest
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

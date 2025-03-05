@@ -2045,6 +2045,16 @@
 #endif /* !defined(__cpp_lib_is_virtual_base_of) && defined(__glibcxx_want_is_virtual_base_of) */
 #undef __glibcxx_want_is_virtual_base_of
 
+#if !defined(__cpp_lib_ranges_cache_latest)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_ranges_cache_latest 202411L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_ranges_cache_latest)
+#   define __cpp_lib_ranges_cache_latest 202411L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_ranges_cache_latest) && defined(__glibcxx_want_ranges_cache_latest) */
+#undef __glibcxx_want_ranges_cache_latest
+
 #if !defined(__cpp_lib_ranges_concat)
 # if (__cplusplus >  202302L) && (__cpp_pack_indexing)
 #  define __glibcxx_ranges_concat 202403L

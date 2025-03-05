@@ -1847,6 +1847,14 @@ ftms = {
 };
 
 ftms = {
+  name = ranges_cache_latest;
+  values = {
+    v = 202411;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = ranges_concat;
   values = {
     v = 202403;
