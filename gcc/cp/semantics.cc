@@ -12796,7 +12796,13 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       if (identifier_p (expr))
         expr = lookup_name (expr);
 
-      while (INDIRECT_REF_P (expr)
+      /* If e is a constified expression inside a contract assertion,
+	 strip the const wrapper. Per P2900R14, "For a function f with the
+	 return type T , the result name is an lvalue of type const T , decltype(r)
+	 is T , and decltype((r)) is const T&."  */
+      STRIP_ANY_CONTRACT_CONST_WRAPPER (expr);
+
+      if (INDIRECT_REF_P (expr)
 	  || TREE_CODE (expr) == VIEW_CONVERT_EXPR)
         /* This can happen when the expression is, e.g., "a.b". Just
            look at the underlying operand.  */
