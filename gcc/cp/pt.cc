@@ -16865,7 +16865,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       {
-	if (type == TREE_TYPE (t) && TREE_CODE (type) != METHOD_TYPE)
+	if (type == TREE_TYPE (t)
+	    && TREE_CODE (type) != METHOD_TYPE
+	    && TYPE_ATTRIBUTES (t) == NULL_TREE)
 	  return t;
 
 	/* [temp.deduct]
@@ -16935,9 +16937,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     A,' while an attempt to create the type type rvalue reference to
 	     cv T' creates the type T"
 	  */
-	  r = cp_build_reference_type
-	      (TREE_TYPE (type),
-	       TYPE_REF_IS_RVALUE (t) && TYPE_REF_IS_RVALUE (type));
+	  r = cp_build_reference_type (TREE_TYPE (type),
+				       TYPE_REF_IS_RVALUE (t)
+				       && TYPE_REF_IS_RVALUE (type));
 	else
 	  r = cp_build_reference_type (type, TYPE_REF_IS_RVALUE (t));
 	r = cp_build_qualified_type (r, cp_type_quals (t), complain);
@@ -16945,6 +16947,11 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (r != error_mark_node)
 	  /* Will this ever be needed for TYPE_..._TO values?  */
 	  layout_type (r);
+
+	if (!apply_late_template_attributes (&r, TYPE_ATTRIBUTES (t),
+					     /*flags=*/0,
+					     args, complain, in_decl))
+	  return error_mark_node;
 
 	return r;
       }
@@ -17020,7 +17027,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	/* As an optimization, we avoid regenerating the array type if
 	   it will obviously be the same as T.  */
-	if (type == TREE_TYPE (t) && domain == TYPE_DOMAIN (t))
+	if (type == TREE_TYPE (t)
+	    && domain == TYPE_DOMAIN (t)
+	    && TYPE_ATTRIBUTES (t) == NULL_TREE)
 	  return t;
 
 	/* These checks should match the ones in create_array_type_for_decl.
@@ -17058,6 +17067,11 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    SET_TYPE_ALIGN (r, TYPE_ALIGN (t));
 	    TYPE_USER_ALIGN (r) = 1;
 	  }
+
+	if (!apply_late_template_attributes (&r, TYPE_ATTRIBUTES (t),
+					     /*flags=*/0,
+					     args, complain, in_decl))
+	  return error_mark_node;
 
 	return r;
       }
