@@ -8919,6 +8919,29 @@ loongarch_expand_vec_widen_hilo (rtx dest, rtx op1, rtx op2,
 	{
 	  emit_insn (fn_even (t1, op1, op2));
 	  emit_insn (fn_odd (t2, op1, op2));
+	  loongarch_expand_vec_interleave (t3, t1, t2, high_p);
+	}
+      break;
+
+    case V8HImode:
+	{
+	  emit_insn (fn_even (t1, op1, op2));
+	  emit_insn (fn_odd (t2, op1, op2));
+	  if (high_p)
+	    emit_insn (gen_lsx_vilvh_w (t3, t1, t2));
+	  else
+	    emit_insn (gen_lsx_vilvl_w (t3, t1, t2));
+	}
+      break;
+
+    case V16QImode:
+	{
+	  emit_insn (fn_even (t1, op1, op2));
+	  emit_insn (fn_odd (t2, op1, op2));
+	  if (high_p)
+	    emit_insn (gen_lsx_vilvh_h (t3, t1, t2));
+	  else
+	    emit_insn (gen_lsx_vilvl_h (t3, t1, t2));
 	}
       break;
 
@@ -8926,7 +8949,6 @@ loongarch_expand_vec_widen_hilo (rtx dest, rtx op1, rtx op2,
       gcc_unreachable ();
     }
 
-  loongarch_expand_vec_interleave (t3, t1, t2, high_p);
   emit_move_insn (dest, gen_lowpart (wmode, t3));
 }
 

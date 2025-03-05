@@ -3570,8 +3570,6 @@
   [(set_attr "type" "simd_store")
    (set_attr "mode" "DI")])
 
-(define_int_attr hi_lo [(0 "lo") (1 "hi")])
-
 (define_expand "vec_widen_<su><optab>_<hi_lo>_<mode>"
   [(match_operand:<VDMODE256> 0 "register_operand")
    (match_operand:ILASX_HB 1 "register_operand")

@@ -169,6 +169,8 @@
 			  (V4SI  "uimm5") (V8SI "uimm5")
 			  (V2DI  "uimm6") (V4DI "uimm6")])
 
+(define_int_attr hi_lo [(0 "lo") (1 "hi")])
+
 ;; =======================================================================
 ;; For many LASX instructions, the only difference of it from the LSX
 ;; counterpart is the length of vector operands.  Describe these LSX/LASX
