@@ -1,6 +1,6 @@
 // check that the return value has correct const qualification
 // { dg-do run }
-// { dg-options "-std=c++2b -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=observe  " }
+// { dg-options "-std=c++2b -fcontracts -fcontracts-nonattr " }
 
 
 #include <type_traits>
