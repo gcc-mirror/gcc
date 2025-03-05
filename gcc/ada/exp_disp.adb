@@ -413,7 +413,9 @@ package body Exp_Disp is
             if Nkind (D) = N_Package_Declaration then
                Build_Package_Dispatch_Tables (D);
 
-            elsif Nkind (D) = N_Package_Body then
+            elsif Nkind (D) = N_Package_Body
+              and then Ekind (Corresponding_Spec (D)) /= E_Generic_Package
+            then
                Build_Dispatch_Tables (Declarations (D));
 
             elsif Nkind (D) = N_Package_Body_Stub

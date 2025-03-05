@@ -1225,8 +1225,14 @@ package body Sem_Ch10 is
 
       if Expander_Active and then Tagged_Type_Expansion then
          case Nkind (Unit_Node) is
-            when N_Package_Declaration | N_Package_Body =>
+            when N_Package_Declaration =>
                Build_Static_Dispatch_Tables (Unit_Node);
+
+            when N_Package_Body =>
+               if Ekind (Corresponding_Spec (Unit_Node)) /= E_Generic_Package
+               then
+                  Build_Static_Dispatch_Tables (Unit_Node);
+               end if;
 
             when N_Package_Instantiation =>
                Build_Static_Dispatch_Tables (Instance_Spec (Unit_Node));
