@@ -26187,10 +26187,10 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
      for the parent typedef which TYPE is a type of.  */
   if (typedef_variant_p (type))
     {
-      if (TREE_ASM_WRITTEN (type))
+      tree name = TYPE_NAME (type);
+      if (TREE_ASM_WRITTEN (name))
 	return;
 
-      tree name = TYPE_NAME (type);
       tree origin = decl_ultimate_origin (name);
       if (origin != NULL && origin != name)
 	{
@@ -26203,8 +26203,6 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 
       /* Give typedefs the right scope.  */
       context_die = scope_die_for (type, context_die);
-
-      TREE_ASM_WRITTEN (type) = 1;
 
       gen_decl_die (name, NULL, NULL, context_die);
       return;
