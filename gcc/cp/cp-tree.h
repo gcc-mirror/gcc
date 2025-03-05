@@ -3215,14 +3215,8 @@ struct GTY(()) lang_decl {
 /* In VIEW_CONVERT_EXPR, set when this node is a const wrapper.  Used to
    constify entities inside contract assertions.  */
 
-#define EXPR_CONTRACT_CONST_WRAPPER_P(NODE) \
+#define CONTRACT_CONSTIFY_EXPR_P(NODE) \
   (TREE_CHECK(NODE, VIEW_CONVERT_EXPR)->base.private_flag)
-
-/* Remove any VIEW_CONVERT_EXPR that's used to constify an entity inside a
-   contract assertion.  */
-
-#define STRIP_ANY_CONTRACT_CONST_WRAPPER(EXP) \
-  (EXP) = tree_strip_any_contract_const_wrapper (CONST_CAST_TREE (EXP))
 
 /* For a FUNCTION_DECL or a VAR_DECL, the language linkage for the
    declaration.  Some entities (like a member function in a local
@@ -9042,15 +9036,16 @@ contract_const_wrapper_p (const_tree exp)
   /* A wrapper node has code VIEW_CONVERT_EXPR, and the flag
      EXPR_LOCATION_WRAPPER_P is set.  */
   if (TREE_CODE (exp) == VIEW_CONVERT_EXPR
-      && EXPR_CONTRACT_CONST_WRAPPER_P (exp))
+      && CONTRACT_CONSTIFY_EXPR_P (exp))
     return true;
   return false;
 }
 
-/* Implementation of STRIP_ANY_CONTRACT_CONST_WRAPPER.  */
+/* If EXP is a CONTRACT_CONSTIFY_EXPR_P, return the wrapped expression.
+   Otherwise, do nothing. */
 
 inline tree
-tree_strip_any_contract_const_wrapper (tree exp)
+strip_contract_constify_expr (tree exp)
 {
   if (contract_const_wrapper_p (exp))
     return TREE_OPERAND (exp, 0);
