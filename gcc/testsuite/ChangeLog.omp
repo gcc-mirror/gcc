@@ -1,3 +1,11 @@
+2025-03-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-03-13  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* lib/gcc-dg.exp (find-dg-do-what): Move...
+	* lib/target-supports-dg.exp: ... here.
+
 2025-02-28  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
