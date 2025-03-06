@@ -1,3 +1,40 @@
+2025-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119071
+	* gcc.dg/pr119071.c: New test.
+	* gcc.c-torture/execute/pr119071.c: New test.
+
+2025-03-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2025-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/118739
+	* gcc.target/i386/pr118739.c: New test.
+
+2025-03-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116999
+	PR target/117045
+	* gcc.target/aarch64/sve/acle/general/whilele_5.c: Fix bogus
+	expected result.
+	* gcc.target/aarch64/sve/acle/general/whilele_11.c: New test.
+	* gcc.target/aarch64/sve/acle/general/whilele_12.c: Likewise.
+
+2025-03-05  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/116238
+	* gcc.target/aarch64/sve/pr116238.c: New test.
+
 2025-03-02  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/116720
