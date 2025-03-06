@@ -12393,7 +12393,8 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
          to our attributes parameter.  */
       gcc_assert (*p == attributes);
     }
-  else if (FUNC_OR_METHOD_TYPE_P (*decl_p))
+  else if (FUNC_OR_METHOD_TYPE_P (*decl_p)
+	   || (attr_flags & ATTR_FLAG_TYPE_IN_PLACE) == 0)
     p = NULL;
   else
     {
@@ -16867,7 +16868,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       {
 	if (type == TREE_TYPE (t)
 	    && TREE_CODE (type) != METHOD_TYPE
-	    && TYPE_ATTRIBUTES (t) == NULL_TREE)
+	    && (TYPE_ATTRIBUTES (t) == NULL_TREE
+		|| !ATTR_IS_DEPENDENT (TYPE_ATTRIBUTES (t))))
 	  return t;
 
 	/* [temp.deduct]
@@ -17029,7 +17031,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	   it will obviously be the same as T.  */
 	if (type == TREE_TYPE (t)
 	    && domain == TYPE_DOMAIN (t)
-	    && TYPE_ATTRIBUTES (t) == NULL_TREE)
+	    && (TYPE_ATTRIBUTES (t) == NULL_TREE
+		|| !ATTR_IS_DEPENDENT (TYPE_ATTRIBUTES (t))))
 	  return t;
 
 	/* These checks should match the ones in create_array_type_for_decl.
