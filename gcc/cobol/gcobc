@@ -1,0 +1,465 @@
+#! /bin/sh -e
+
+#
+# COPYRIGHT
+# The gcobc program is in public domain.
+# If it breaks then you get to keep both pieces.
+#
+# This file emulates the GnuCOBOL cobc compiler to a limited degree.
+# For options that can be "mapped" (see migration-guide.1), it accepts
+# cobc options, changing them to the gcobol equivalents.  Options not
+# recognized by the script are passed verbatim to gcobol, which will
+# reject them unless of course they are gcobol options.
+#
+# User-defined variables, and their defaults:
+#
+#     Variable	Default		Effect
+#     echo	 none	  	If defined, echo the gcobol command
+#     gcobcx	 none		Produce verbose messages
+#     gcobol	./gcobol	Name of the gcobol binary
+#     GCOBCUDF	PREFIX/share/cobol/udf/    Location of UDFs to be prepended to input
+#
+# By default, this script includes all files in $GCOBCUDF.  To defeat
+# that behavior, use GCOBCUDF=none.
+#
+# A list of supported options is produced with "gcobc -HELP".
+#
+## Maintainer note. In modifying this file, the following may make
+## your life easier:
+##
+##  - To force the script to exit, either set exit_status to 1, or call
+##    the error function.
+##  - As handled options are added, add them to the HELP here-doc.
+##  - The compiler can produce only one kind of output.  In this
+##    script, that's known by $mode.  Options that affect the type of
+##    output set the mode variable.  Everything else is appended to the
+##    opts variable.
+##
+
+if [ "$COBCPY" ]
+then
+    copydir="-I$COBCPY"
+fi
+
+if [ "$COB_COPY_DIR" ]
+then
+    copydir="-I$COB_COPY_DIR"
+fi
+
+# TODO: this file likely needs to query gcobol for its shared path instead
+udf_default="${0%/*}/../share/gcobol/udf"
+if [ ! -d "$udfdir" ]
+then
+   # the one above is the installed one from the packages this one was previously used
+   udf_default="${0%/*}/../share/cobol/udf"
+fi
+udfdir="${GCOBCUDF:-$udf_default}"
+
+if [ -d "$udfdir" ]
+then
+    for F in "$udfdir"/*
+    do
+        if [ -f "$F" ]
+        then
+            includes="$includes -include $F "
+        fi
+    done
+else
+    if [ "${GCOBCUDF:-none}" != "none" ]
+    then
+        echo warning: no such directory: "'$GCOBCUDF'"
+    fi
+fi
+
+exit_status=0
+skip_arg=
+opts="$copydir ${dialect:--dialect mf} $includes"
+mode=-shared
+
+incomparable="has no comparable gcobol option"
+
+if [ "${gcobcx:-0}" -gt 1 ]
+then
+    set -x
+fi
+
+error() {
+    echo "error: $1" >&2
+    exit_status=1
+}
+warn() {
+    echo "warning: $1 ignored" >&2
+}
+ignore_arg() {
+    warn "$1"
+    skip_arg="$1"
+}
+no_warn() { :; } # silence is golden
+
+help() {
+    cat<<EOF
+$0 recognizes the following GnuCOBOL cobc output mode options:
+        -b, -c, -m, -S, -x
+$0 recognizes the following GnuCOBOL cobc compilation options:
+        -C
+        -d, --debug
+        -E
+        -g
+        --coverage
+        -ext
+        -fec=exception-name, -fno-ec=exception-name
+        -fformat
+        --fixed
+        -F, --free
+        -fimplicit-init
+        -h, --help
+        -save-temps=
+        -save-temps
+        -std=mvs
+        -std=mf
+Options that are the same in gcobol and cobc are passed through verbatim.
+Options that have no analog in gcobol produce a warning message.
+To produce this message, use -HELP.
+To see the constructed cobc command-line, use -echo.
+To override the default cobc, set the "cobc" environment variable.
+By default, gcobc invokes the gcobol the same directory the gcobc resides.
+To override, set the gcobol environment variable.
+EOF
+}
+
+#
+# Simply iterate over the command-line tokens.  We can't use getopts
+# here because it's not designed for single-dash words (e.g. -shared).
+#
+
+for opt in "$@"
+do
+    if [ "$skip_arg" ]
+    then
+        skip_arg=
+        continue
+    fi
+
+    if [ "$pending_arg" ]
+    then
+        opts="$opts $pending_arg $opt"
+        pending_arg=
+        continue
+    fi
+
+    case $opt in
+        -A | -Q) warn "$opt"
+                 ;;
+        -b) mode="-shared"
+            ;;
+        -c) mode="-c"
+            ;;
+        --conf=*) warn "$opt"
+                  ;;
+        -C) error "$opt $incomparable"
+            ;;
+        -d | --debug) opts="$opts -fcobol-exceptions=EC-ALL"
+                      warn "$opt implies -fstack-check:"
+                      ;;
+        # -D
+        -E) opts="$opts $opt -fsyntax-only"
+            ;;
+        -echo) echo="echo"
+               ;;
+
+        -fec=* | -fno-ec=*)
+            opt="$(echo "$opt" | sed -E 's/-f(no-)?ec=/-f\1cobol-exceptions=EC-/g')"
+            opts="$opts $opt"
+            ;;
+        -ext)
+            pending_arg=$opt
+            ;;
+        -ext=*) opts="$opts $(echo "$opt" | sed 's/-ext=/-copyext ./')"
+                ;;
+
+        # A.3 Compiler options
+        -fsign=*) warn "$opt" ;;
+        -ffold-copy=*) warn "$opt" ;;
+        -ffold-call=*) warn "$opt" ;;
+        -fmax-errors=*) warn "$opt" ;;
+        -fintrinsics=*) warn "$opt" ;;
+        -fdump=*) warn "$opt" ;;
+        -fcallfh=*) warn "$opt" ;;
+        -fsqlschema=*) warn "$opt" ;;
+        -fsql) warn "$opt" ;;
+        -fno-recursive-check) no_warn "$opt" ;;
+        -fstack-extended) warn "$opt" ;;
+        -fno-remove-unreachable) no_warn "$opt" ;;
+        -finline-intrinsic) warn "$opt" ;;
+        -ftrace) warn "$opt" ;;
+        -ftraceall) warn "$opt" ;;
+        -fsymtab) warn "$opt" ;;
+        # -fsyntax-only is identical
+        -fdebugging-line) warn "$opt" ;;
+        -fsource-location) warn "$opt" ;;
+        -fstack-check) warn "$opt" ;;
+        -fsection-exit-check) warn "$opt" ;;
+        -fimplicit-goback-check) warn "$opt" ;;
+        -fwrite-after) warn "$opt" ;;
+        -fmfcomment) warn "$opt" ;;
+        -facucomment) warn "$opt" ;;
+        -fno-trunc) no_warn "$opt" ;;
+        -fsingle-quote) warn "$opt" ;;
+        -foptional-file) warn "$opt" ;;
+        -fstatic-call | -fno-static-call)
+            opts="$opts $opt"
+            static_used="x"
+            ;;
+        -fno-gen-c-decl-static-call) no_warn "$opt" ;;
+        -fmf-files) warn "$opt" ;;
+        -ffile-format=*) warn "$opt" ;;
+        -fno-theaders) no_warn "$opt" ;;
+        -fno-tsource) no_warn "$opt" ;;
+        -fno-tmessages) no_warn "$opt" ;;
+        -ftsymbols) warn "$opt" ;;
+        -fdatamap) warn "$opt" ;;
+        -fno-diagnostics-show-option) no_warn "$opt" ;;
+        -fibmcomp) warn "$opt" ;;
+        -fno-ibmcomp) no_warn "$opt" ;;
+
+        # A.4 Compiler dialect configuration options
+        -fname=*) warn "$opt" ;;
+        -freserved-words=*) warn "$opt" ;;
+        -ftab-width=*) warn "$opt" ;;
+        -ftext-column=*) warn "$opt" ;;
+        -fpic-length=*) warn "$opt" ;;
+        -fword-length=*) warn "$opt" ;;
+        -fliteral-length=*) warn "$opt" ;;
+        -fnumeric-literal-length=*) warn "$opt" ;;
+        -fdefaultbyte=*) warn "$opt" ;;
+        -falign-record=*) warn "$opt" ;;
+        -fkeycompress=*) warn "$opt" ;;
+        -falign-opt) warn "$opt" ;;
+        -fbinary-size=*) warn "$opt" ;;
+        -fbinary-byteorder=*) warn "$opt" ;;
+        -fassign-clause=*) warn "$opt" ;;
+        -fscreen-section-rules=*) warn "$opt" ;;
+        -fdpc-in-data=*) warn "$opt" ;;
+        -ffilename-mapping) warn "$opt" ;;
+        -fpretty-display) warn "$opt" ;;
+        -fbinary-truncate | -fno-binary-truncate) warn "$opt" ;;
+        -fcomplex-odo) warn "$opt" ;;
+        -fodoslide) warn "$opt" ;;
+        -findirect-redefines) warn "$opt" ;;
+        -flarger-redefines-ok) warn "$opt" ;;
+        -frelax-syntax-checks) warn "$opt" ;;
+        -fref-mod-zero-length) warn "$opt" ;;
+        -frelax-level-hierarchy) warn "$opt" ;;
+        -flocal-implies-recursive) warn "$opt" ;;
+        -fsticky-linkage) warn "$opt" ;;
+        -fmove-ibm) warn "$opt" ;;
+        -fperform-osvs) warn "$opt" ;;
+        -farithmetic-osvs) warn "$opt" ;;
+        -fconstant-folding) warn "$opt" ;;
+        -fhostsign) warn "$opt" ;;
+        -fprogram-name-redefinition) warn "$opt" ;;
+        -faccept-update) warn "$opt" ;;
+        -faccept-auto) warn "$opt" ;;
+        -fconsole-is-crt) warn "$opt" ;;
+        -fno-echo-means-secure) no_warn "$opt" ;;
+        -fline-col-zero-default) warn "$opt" ;;
+        -freport-column-plus) warn "$opt" ;;
+        -fdisplay-special-fig-consts) warn "$opt" ;;
+        -fbinary-comp-1) warn "$opt" ;;
+        -fnumeric-pointer) warn "$opt" ;;
+        -fmove-non-numeric-lit-to-numeric-is-zero) warn "$opt" ;;
+        -fimplicit-assign-dynamic-var) warn "$opt" ;;
+        -fcomment-paragraphs=*) warn "$opt" ;;
+        -fmemory-size-clause=*) warn "$opt" ;;
+        -fmultiple-file-tape-clause=*) warn "$opt" ;;
+        -flabel-records-clause=*) warn "$opt" ;;
+        -fvalue-of-clause=*) warn "$opt" ;;
+        -fdata-records-clause=*) warn "$opt" ;;
+        -ftop-level-occurs-clause=*) warn "$opt" ;;
+        -fsame-as-clause=*) warn "$opt" ;;
+        -ftype-to-clause=*) warn "$opt" ;;
+        -fusage-type=*) warn "$opt" ;;
+        -fsynchronized-clause=*) warn "$opt" ;;
+        -fsync-left-right=*) warn "$opt" ;;
+        -fspecial-names-clause=*) warn "$opt" ;;
+        -fgoto-statement-without-name=*) warn "$opt" ;;
+        -fstop-literal-statement=*) warn "$opt" ;;
+        -fstop-identifier-statement=*) warn "$opt" ;;
+        -fdebugging-mode=*) warn "$opt" ;;
+        -fuse-for-debugging=*) warn "$opt" ;;
+        -fpadding-character-clause=*) warn "$opt" ;;
+        -fnext-sentence-phrase=*) warn "$opt" ;;
+        -flisting-statements=*) warn "$opt" ;;
+        -ftitle-statement=*) warn "$opt" ;;
+        -fentry-statement=*) warn "$opt" ;;
+        -fmove-noninteger-to-alphanumeric=*) warn "$opt" ;;
+        -foccurs-max-length-without-subscript) warn "$opt" ;;
+        -flength-in-data-division) warn "$opt" ;;
+        -fmove-figurative-constant-to-numeric=*) warn "$opt" ;;
+        -fmove-figurative-space-to-numeric=*) warn "$opt" ;;
+        -fmove-figurative-quote-to-numeric=*) warn "$opt" ;;
+        -fodo-without-to=*) warn "$opt" ;;
+        -fodo-last-varlen=*) warn "$opt" ;;
+        -fsection-segments=*) warn "$opt" ;;
+        -falter-statement=*) warn "$opt" ;;
+        -fcall-overflow=*) warn "$opt" ;;
+        -fnumeric-boolean=*) warn "$opt" ;;
+        -fhexadecimal-boolean=*) warn "$opt" ;;
+        -fnational-literals=*) warn "$opt" ;;
+        -fhexadecimal-national-literals=*) warn "$opt" ;;
+        -fnational-character-literals=*) warn "$opt" ;;
+        -fhp-octal-literals=*) warn "$opt" ;;
+        -facu-literals=*) warn "$opt" ;;
+        -fword-continuation=*) warn "$opt" ;;
+        -fnot-exception-before-exception=*) warn "$opt" ;;
+        -faccept-display-extensions=*) warn "$opt" ;;
+        -frenames-uncommon-levels=*) warn "$opt" ;;
+        -fsymbolic-constant=*) warn "$opt" ;;
+        -fconstant-78=*) warn "$opt" ;;
+        -fconstant-01=*) warn "$opt" ;;
+        -fperform-varying-without-by=*) warn "$opt" ;;
+        -freference-out-of-declaratives=*) warn "$opt" ;;
+        -freference-bounds-check=*) warn "$opt" ;;
+        -fprogram-prototypes=*) warn "$opt" ;;
+        -fcall-convention-mnemonic=*) warn "$opt" ;;
+        -fcall-convention-linkage=*) warn "$opt" ;;
+        -fnumeric-value-for-edited-item=*) warn "$opt" ;;
+        -fincorrect-conf-sec-order=*) warn "$opt" ;;
+        -fdefine-constant-directive=*) warn "$opt" ;;
+        -ffree-redefines-position=*) warn "$opt" ;;
+        -frecords-mismatch-record-clause=*) warn "$opt" ;;
+        -frecord-delimiter=*) warn "$opt" ;;
+        -fsequential-delimiters=*) warn "$opt" ;;
+        -frecord-delim-with-fixed-recs=*) warn "$opt" ;;
+        -frecord-sequential-advancing=*) warn "$opt" ;;
+        -fmissing-statement=*) warn "$opt" ;;
+        -fzero-length-literals=*) warn "$opt" ;;
+        -fxml-generate-extra-phrases=*) warn "$opt" ;;
+        -fcontinue-after=*) warn "$opt" ;;
+        -fgoto-entry=*) warn "$opt" ;;
+        -fdepending-on-not-fixed=*) warn "$opt" ;;
+        -fbinary-sync-clause=*) warn "$opt" ;;
+        -fnonnumeric-with-numeric-group-usage=*) warn "$opt" ;;
+        -fassign-variable=*) warn "$opt" ;;
+        -fassign-using-variable=*) warn "$opt" ;;
+        -fassign-ext-dyn=*) warn "$opt" ;;
+        -fassign-disk-from=*) warn "$opt" ;;
+        -fvsam-status=*) warn "$opt" ;;
+        -fself-call-recursive=*) warn "$opt" ;;
+
+        # TODO: create a temporary COBOL file with COBOL-WORDS directives
+        # and force-include it
+        -fnot-reserved=*) warn "$opt" ;;
+        -freserved=*) warn "$opt" ;;
+        -fnot-register=*) warn "$opt" ;;
+        -fregister=*) warn "$opt" ;;
+
+        -fformat=auto ) ;; # gcobol and gnucobol default
+
+        -fixed | --fixed | -fformat=fixed | -fformat=variable | -fformat=xcard)
+                    # note: variable + xcard are only _more similar_ to fixed than free,
+                    # (with changing right-column to 250/255, which isn't supported in gcobol, yet)
+                    opts="$opts -ffixed-form"
+                    ;;
+
+        -F | -free | --free | -fformat=free | -fformat=* )
+                    # note: "all other formats" are only _more similar_ to free than fixed
+                    opts="$opts -ffree-form"
+                    ;;
+
+        -h | --help) opts="$opts --help"
+                     ;;
+
+        -HELP) help && exit
+               ;;
+        -i | --info) warn "$opt"
+                     ;;
+
+        # -I
+        -fimplicit-init) warn "$opt"
+                         ;;
+        -j | -job)  warn "$opt"
+                    ;;
+        -K) ignore_arg "$opt"
+            ;;
+        -K*) warn "$opt"
+            ;;
+        # -l
+        # -L
+        --list*) warn "$opt"
+                 ;;
+        -m) mode="-shared"
+            ;;
+        # -main
+        # -nomain
+        # -o
+        # -O0, -Ox
+        -O | -O2 | -Os) warn "$opt"
+                        ;;
+        -S) mode="$opt"
+            ;;
+        -save-temps=*) opt="$(echo "$opt" | sed -E 's/^.+=//')"
+                       export GCOBOL_TEMPDIR="$opt"
+                       ;;
+        -save-temps)  export GCOBOL_TEMPDIR="${PWD:-$(pwd)}"
+                      ;;
+        # -shared is identical
+
+        -std=mvs) opts="$opts -dialect ibm"
+                  ;;
+        -std=mf)  opts="$opts -dialect mf"
+                  ;;
+        -t | -T | -tlines=* | -P | -P=* | -X | --Xref)
+            warn "$opt (no listing)"
+            ;;
+        -q | --brief) warn "$opt"
+                      ;;
+        -v | --verbose) opts="$opts -V"
+                        ;;
+        # note: we want -dumpversion to be passed to gcc
+        -V | --version | -version) opts="$opts --version"
+                                        ;;
+
+        # pass through, strangely -Wall is not supported
+        -w | -W | -Wextra) opts="$opts $opt"
+             ;;
+        -Wno-*) no_warn "$opt"
+             ;;
+
+        -W*) ignore_arg "$opt"
+             ;;
+
+        -x) mode=
+            ;;
+
+        *) opts="$opts $opt" # pass through
+           ;;
+    esac
+done
+
+# cobc default:
+if [ "$static_used" = "" ]
+then
+    opts="$opts -fno-static-call";
+fi
+
+if [ "$exit_status" -gt 0 ]
+then
+    exit $exit_status
+fi
+
+# To override the default gcobol, set the "gcobol" environment variable.
+gcobol="${gcobol:-${0%/*}/gcobol}"
+
+if [ "$echo" ]
+then
+    echo $gcobol $mode $opts
+    exit
+fi
+
+if [ "$gcobcx" ]
+then
+    set -x
+fi
+
+exec $gcobol $mode $opts

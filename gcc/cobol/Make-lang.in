@@ -1,0 +1,366 @@
+# Top level -*- makefile -*- fragment for Cobol
+#   Copyright (C) 2021-2025 Free Software Foundation, Inc.
+
+# This file is part of GCC.
+
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file provides the language dependent support in the main Makefile.
+# Each language makefile fragment must provide the following targets:
+#
+# foo.all.cross, foo.start.encap, foo.rest.encap,
+# foo.install-common, foo.install-man, foo.install-info, foo.install-pdf,
+# foo.install-html, foo.info, foo.dvi, foo.pdf, foo.html, foo.uninstall,
+# foo.mostlyclean, foo.clean, foo.distclean,
+# foo.maintainer-clean, foo.stage1, foo.stage2, foo.stage3, foo.stage4
+#
+# where `foo' is the name of the language.
+#
+# It should also provide rules for:
+#
+# - making any compiler driver (eg: g++)
+# - the compiler proper (eg: cc1plus)
+# - define the names for selecting the language in LANGUAGES.
+
+gcobol_INSTALL_NAME := $(shell echo gcobol|sed '$(program_transform_name)')
+gcobol_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcobol|sed '$(program_transform_name)')
+
+cobol: cobol1$(exeext)
+.PHONY: cobol
+
+BINCLUDE ?= ./gcc
+LIB_INCLUDE ?= $(srcdir)/../libgcobol
+LIB_SOURCE ?= $(srcdir)/../libgcobol
+
+#
+# At this point, as of 2022-10-21, CPPFLAGS is an empty string and can be
+# altered.  CFLAGS and CXXFLAGS are being established upstream, and thus
+# cannot, at this point, be changed.
+#
+# Note further that we are producing only a 64-bit version of libgcobol.so, so
+# it is safe to hard-code the lib64 location.  This obviously has to match the
+# installation code in libgcobol/Makefile.in
+#
+CPPFLAGS =					\
+ -std=c++14					\
+ -Iinclude					\
+ -I$(BINCLUDE)					\
+ -I$(LIB_INCLUDE)				\
+ -DEXEC_LIB=\"$(prefix)/lib64\"		\
+ $(END)
+
+YFLAGS = -Werror -Wmidrule-values -Wno-yacc \
+	--debug --verbose
+
+LFLAGS = -d -Ca
+
+#
+# These are the object files for creating the cobol1.exe compiler:
+#
+cobol1_OBJS =    \
+ cobol/cdf.o        \
+ cobol/cdf-copy.o   \
+ cobol/cobol1.o     \
+ cobol/convert.o    \
+ cobol/except.o     \
+ cobol/genutil.o    \
+ cobol/genapi.o     \
+ cobol/genmath.o    \
+ cobol/gengen.o     \
+ cobol/lexio.o      \
+ cobol/parse.o      \
+ cobol/scan.o       \
+ cobol/structs.o    \
+ cobol/symbols.o    \
+ cobol/symfind.o    \
+ cobol/util.o       \
+ cobol/charmaps.o   \
+ cobol/valconv.o    \
+ $(END)
+
+#
+# There is source code in libgcobol/charmaps.cc and
+# libgcobol/valconv.cc that needs to be compiled into both libgcobol
+# and cobol1.  We copy those two source code files from libgcobol to
+# here to avoid the nightmare of one file appearing in more than one
+# place.  For simplicity, we make those compilations dependent on all
+# of the libgcobol/*.h files, which might lead to the occasional
+# unnecessary compilation.  The impact of that is negligible.
+#
+cobol/charmaps.cc: $(LIB_SOURCE)/charmaps.cc
+	cp $^ $@
+
+cobol/valconv.cc: $(LIB_SOURCE)/valconv.cc
+	cp $^ $@
+
+LIB_SOURCE_H=$(wildcard $(LIB_SOURCE)/*.h)
+
+cobol/charmaps.o: cobol/charmaps.cc $(LIB_SOURCE_H)
+
+cobol/valconv.o: cobol/valconv.cc $(LIB_SOURCE_H)
+
+#
+# These are the object files for creating the gcobol.exe "driver"
+#
+GCOBOL_D_OBJS = $(GCC_OBJS) cobol/gcobolspec.o
+
+#
+# These get combined to provide a dependency relationship that ensures all
+# of the "generated-files" are generated before we need them.  See the root
+# Makefile.in code that looks like this:
+#       ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
+#
+cobol_OBJS = \
+   $(cobol1_OBJS) \
+   cobol/gcobolspec.o \
+   $(END)
+
+#
+# Frankly, I can't figure out what this does:
+#
+CFLAGS-cobol/gcobolspec.o += $(DRIVER_DEFINES)
+
+#
+# This controls the build of the gcobol.exe "driver"
+#
+gcobol$(exeext): \
+	 $(GCOBOL_D_OBJS) \
+	 $(EXTRA_GCC_OBJS) \
+     libcommon-target.a \
+     $(LIBDEPS)
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@		\
+	 $(GCOBOL_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a	\
+	 $(EXTRA_GCC_LIBS) $(LIBS)
+
+#
+# These control the build of the cobol1.exe source-to-GENERIC converter
+#
+
+# First, files needed for parsing:
+
+cobol/parse.c: cobol/parse.y
+	$(BISON) -o $@ $(YFLAGS)				\
+		--defines=cobol/parse.h			\
+		--report-file=cobol/parser.out $<
+
+cobol/cdf.c: cobol/cdf.y
+	$(BISON) -o $@ $(YFLAGS)						\
+		--defines=cobol/cdf.h --report-file=cobol/cdf.out $<
+
+# See "Trailing context is getting confused with trailing optional patterns"
+# in Flex manual. We suppress those messages, as a convenience.
+FLEX_WARNING = warning, dangerous trailing context
+
+cobol/scan.c: cobol/scan.l
+	$(FLEX) -o$@ $(LFLAGS) $< >$@~ 2>&1
+	awk  '! /$(FLEX_WARNING)/ {print > "/dev/stderr"; nerr++}	\
+	     END {print "$(FLEX):", NR, "messages" > "/dev/stderr";	\
+		  exit nerr}' $@~
+	@rm $@~
+
+
+# To establish prerequisites for parse.o, cdf.o, and scan.o,
+#   1. capture the "make -n" output
+#   2. eliminate compiler options, leaving only preprocessor options (-D and -I)
+#   3. add -E -MM
+#
+# The below lists of include files for the the generated files is
+# postprocessed: the files are one per line, used "realpath
+# --relative-to=$PWD" to rationalize them, and sorted.  We include
+# parse.c in the list for scan.o because that's the one make(1) knows about.
+
+cobol/cdf.o: cobol/cdf.c			\
+	$(srcdir)/cobol/cbldiag.h		\
+	$(srcdir)/cobol/cdfval.h		\
+	$(srcdir)/cobol/copybook.h		\
+	$(srcdir)/cobol/exceptg.h		\
+	$(srcdir)/cobol/symbols.h		\
+	$(srcdir)/cobol/util.h			\
+	$(srcdir)/../libgcobol/common-defs.h	\
+	$(srcdir)/../libgcobol/ec.h		\
+	$(srcdir)/../libgcobol/exceptl.h
+
+cobol/parse.o: cobol/parse.c			\
+	$(srcdir)/cobol/cbldiag.h		\
+	$(srcdir)/cobol/cdfval.h		\
+	$(srcdir)/cobol/cobol-system.h		\
+	$(srcdir)/cobol/exceptg.h		\
+	$(srcdir)/cobol/genapi.h		\
+	$(srcdir)/cobol/inspect.h		\
+	$(srcdir)/cobol/parse_ante.h		\
+	$(srcdir)/cobol/parse_util.h		\
+	$(srcdir)/cobol/symbols.h		\
+	$(srcdir)/cobol/util.h			\
+	$(srcdir)/hwint.h			\
+	$(srcdir)/system.h			\
+	$(srcdir)/../include/ansidecl.h		\
+	$(srcdir)/../include/filenames.h	\
+	$(srcdir)/../include/hashtab.h		\
+	$(srcdir)/../include/libiberty.h	\
+	$(srcdir)/../include/safe-ctype.h	\
+	$(srcdir)/../libgcobol/common-defs.h	\
+	$(srcdir)/../libgcobol/ec.h		\
+	$(srcdir)/../libgcobol/exceptl.h	\
+	$(srcdir)/../libgcobol/io.h		\
+	auto-host.h				\
+	config.h
+
+cobol/scan.o: cobol/scan.c			\
+	$(srcdir)/cobol/cbldiag.h		\
+	$(srcdir)/cobol/cdfval.h		\
+	$(srcdir)/cobol/cobol-system.h		\
+	$(srcdir)/cobol/copybook.h		\
+	$(srcdir)/cobol/dts.h			\
+	$(srcdir)/cobol/exceptg.h		\
+	$(srcdir)/cobol/inspect.h		\
+	$(srcdir)/cobol/lexio.h			\
+	$(srcdir)/cobol/scan_ante.h		\
+	$(srcdir)/cobol/scan_post.h		\
+	$(srcdir)/cobol/symbols.h		\
+	$(srcdir)/cobol/util.h			\
+	$(srcdir)/hwint.h			\
+	$(srcdir)/system.h			\
+	$(srcdir)/../include/ansidecl.h		\
+	$(srcdir)/../include/filenames.h	\
+	$(srcdir)/../include/hashtab.h		\
+	$(srcdir)/../include/libiberty.h	\
+	$(srcdir)/../include/safe-ctype.h	\
+	$(srcdir)/../libgcobol/common-defs.h	\
+	$(srcdir)/../libgcobol/ec.h		\
+	$(srcdir)/../libgcobol/exceptl.h	\
+	$(srcdir)/../libgcobol/io.h		\
+	auto-host.h				\
+	config.h 				\
+	cobol/cdf.c				\
+	cobol/parse.c
+
+#
+# The src<foo> targets are executed if
+# ‘--enable-generated-files-in-srcdir’ was specified as a configure
+# option.
+#
+# srcextra copies generated dependencies into the source
+# directory. This is used for files such as Flex/Bison output: files
+# that are not version-controlled but should be included in any
+# release tarballs.
+#
+# Although versioned snapshots require Flex to be installed, they do
+# not require Bison.  Release tarballs always include Flex/Bison
+# output, and do not require those tools to be installed.
+#
+cobol.srcextra: cobol/parse.c cobol/cdf.c cobol/scan.c
+	ln -f $^ cobol/parse.h cobol/cdf.h $(srcdir)/cobol/
+
+
+# And the cobol1.exe front end
+
+cobol1$(exeext): $(cobol1_OBJS) 	$(BACKEND) $(LIBDEPS) attribs.o
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) attribs.o -o $@	\
+	      $(cobol1_OBJS) $(BACKEND) $(LIBS) $(BACKENDLIBS)
+
+# FIXME
+cobol.all.cross:
+
+cobol.start.encap: gcobol$(exeext)
+
+cobol.rest.encap:
+
+cobol.install-common: installdirs
+	$(INSTALL_PROGRAM) gcobol$(exeext)      $(DESTDIR)$(bindir)/
+	$(INSTALL_PROGRAM) cobol1$(exeext)      $(DESTDIR)$(libexecsubdir)/
+	$(INSTALL) -m 755 $(srcdir)/cobol/gcobc $(DESTDIR)$(bindir)/
+	mkdir -p $(DESTDIR)$(datadir)/gcobol/udf
+	$(INSTALL_DATA) $(srcdir)/cobol/udf/*   $(DESTDIR)$(datadir)/gcobol/udf/
+
+cobol.install-man: installdirs
+	$(INSTALL_DATA) $(srcdir)/cobol/gcobol.1 $(DESTDIR)$(man1dir)/
+	$(INSTALL_DATA) $(srcdir)/cobol/gcobol.3 $(DESTDIR)$(man3dir)/
+
+cobol.install-info:
+
+cobol.install-pdf: installdirs gcobol.pdf gcobol-io.pdf
+	mkdir -p $(DESTDIR)$(datadir)/gcobol/pdf
+	$(INSTALL_DATA) gcobol.pdf gcobol-io.pdf $(DESTDIR)$(pdfdir)/
+
+cobol.install-plugin:
+
+cobol.install-html: installdirs gcobol.html gcobol-io.html
+	$(INSTALL_DATA) gcobol.html gcobol-io.html $(DESTDIR)$(htmldir)/
+
+cobol.info:
+cobol.srcinfo:
+
+cobol.dvi:
+cobol.srcdvi:
+
+cobol.pdf: gcobol.pdf gcobol-io.pdf
+cobol.srcpdf: gcobol.pdf gcobol-io.pdf
+	ln $^ $(srcdir)/cobol/
+
+gcobol.pdf: $(srcdir)/cobol/gcobol.1
+	groff -mdoc -T pdf  $^ > $@~
+	@mv $@~ $@
+gcobol-io.pdf: $(srcdir)/cobol/gcobol.3
+	groff -mdoc -T pdf  $^ > $@~
+	@mv $@~ $@
+
+cobol.html: gcobol.html gcobol-io.html
+cobol.srchtml: gcobol.html gcobol-io.html
+	ln $^ $(srcdir)/cobol/
+
+gcobol.html: $(srcdir)/cobol/gcobol.1
+	mandoc -T html $^ > $@~
+	@mv $@~ $@
+gcobol-io.html: $(srcdir)/cobol/gcobol.3
+	mandoc -T html $^ > $@~
+	@mv $@~ $@
+
+# "make uninstall" is not expected to work.  It's not clear how to name
+# the installed location of the cobol1 compiler.
+cobol.uninstall:
+	rm -rf 	$(DESTDIR)$(bindir)/$(gcobol_INSTALL_NAME)$(exeext)	\
+		$(DESTDIR)$(bindir)/gcobc				\
+		$(DESTDIR)$(datadir)/gcobol/				\
+		$(DESTDIR)$(man1dir)/gcobol.1				\
+		$(DESTDIR)$(man3dir)/gcobol.3
+
+cobol.man:
+cobol.srcman:
+
+cobol.mostlyclean:
+
+cobol.clean:
+	rm -fr gcobol cobol1 cobol/*		\
+	../*/libgcobol/*
+
+cobol.distclean:
+
+cobol.maintainer-clean:
+
+# The main makefile has already created stage?/cobol.
+cobol.stage1: stage1-start
+	-mv cobol/*$(objext) stage1/cobol
+cobol.stage2: stage2-start
+	-mv cobol/*$(objext) stage2/cobol
+cobol.stage3: stage3-start
+	-mv cobol/*$(objext) stage3/cobol
+cobol.stage4: stage4-start
+	-mv cobol/*$(objext) stage4/cobol
+cobol.stageprofile: stageprofile-start
+	-mv cobol/*$(objext) stageprofile/cobol
+cobol.stagefeedback: stagefeedback-start
+	-mv cobol/*$(objext) stagefeedback/cobol
+
+selftest-cobol:
