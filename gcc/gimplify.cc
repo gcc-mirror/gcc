@@ -556,7 +556,7 @@ is_gimple_mem_rhs_or_call (tree t)
   else
     return (is_gimple_val (t)
 	    || is_gimple_lvalue (t)
-	    || TREE_CLOBBER_P (t)
+	    || (TREE_CODE (t) == CONSTRUCTOR && CONSTRUCTOR_NELTS (t) == 0)
 	    || TREE_CODE (t) == CALL_EXPR);
 }
 
