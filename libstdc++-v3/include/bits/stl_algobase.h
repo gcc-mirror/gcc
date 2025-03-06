@@ -359,27 +359,13 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 #endif // HOSTED
 
 #if __cpp_lib_concepts
-  // N.B. this is not the same as nothrow-forward-iterator, which doesn't
-  // require noexcept operations, it just says it's undefined if they throw.
-  // Here we require them to be actually noexcept.
-  template<typename _Iter>
-    concept __nothrow_contiguous_iterator
-      = contiguous_iterator<_Iter> && requires (_Iter __i) {
-	// If this operation can throw then the iterator could cause
-	// the algorithm to exit early via an exception, in which case
-	// we can't use memcpy.
-	{ *__i } noexcept;
-      };
-
   template<typename _OutIter, typename _InIter, typename _Sent = _InIter>
     concept __memcpyable_iterators
-      = __nothrow_contiguous_iterator<_OutIter>
-	  && __nothrow_contiguous_iterator<_InIter>
+      = contiguous_iterator<_OutIter> && contiguous_iterator<_InIter>
 	  && sized_sentinel_for<_Sent, _InIter>
-	  && requires (_OutIter __o, _InIter __i, _Sent __s) {
+	  && requires (_OutIter __o, _InIter __i) {
 	    requires !!__memcpyable<decltype(std::to_address(__o)),
 				    decltype(std::to_address(__i))>::__value;
-	    { __i != __s } noexcept;
 	  };
 #endif
 
@@ -457,9 +443,10 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	      void* __dest = std::to_address(__result);
 	      const void* __src = std::to_address(__first);
 	      size_t __nbytes = __n * sizeof(iter_value_t<_InIter>);
-	      // Advance the iterators first, in case doing so throws.
-	      __result += __n;
-	      __first += __n;
+	      // Advance the iterators and convert to pointers first.
+	      // This gives the iterators a chance to do bounds checking.
+	      (void) std::to_address(__result += __n);
+	      (void) std::to_address(__first += __n);
 	      __builtin_memmove(__dest, __src, __nbytes);
 	    }
 	  else if (__n == 1)
@@ -579,9 +566,10 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	      void* __dest = std::to_address(__result);
 	      const void* __src = std::to_address(__first);
 	      size_t __nbytes = __n * sizeof(iter_value_t<_InputIterator>);
-	      // Advance the iterators first, in case doing so throws.
-	      __result += __n;
-	      __first += __n;
+	      // Advance the iterators and convert to pointers first.
+	      // This gives the iterators a chance to do bounds checking.
+	      (void) std::to_address(__result += __n);
+	      (void) std::to_address(__first += __n);
 	      __builtin_memmove(__dest, __src, __nbytes);
 	    }
 	  else if (__n == 1)
@@ -727,9 +715,10 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	  if (auto __n = __last - __first; __n > 1) [[likely]]
 	    {
 	      const void* __src = std::to_address(__first);
-	      // Advance the iterators first, in case doing so throws.
-	      __result -= __n;
-	      __first += __n;
+	      // Advance the iterators and convert to pointers first.
+	      // This gives the iterators a chance to do bounds checking.
+	      (void) std::to_address(__result -= __n);
+	      (void) std::to_address(__first += __n);
 	      void* __dest = std::to_address(__result);
 	      size_t __nbytes = __n * sizeof(iter_value_t<_BI1>);
 	      __builtin_memmove(__dest, __src, __nbytes);
