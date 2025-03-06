@@ -841,6 +841,20 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	fld_worklist_push (tem, fld);
       fld_worklist_push (BLOCK_ABSTRACT_ORIGIN (t), fld);
     }
+  /* walk_tree does not visit ce->index which can be a FIELD_DECL, pulling
+     in otherwise unused structure fields so handle CTORs explicitly.  */
+  else if (TREE_CODE (t) == CONSTRUCTOR)
+    {
+      unsigned HOST_WIDE_INT idx;
+      constructor_elt *ce;
+      for (idx = 0; vec_safe_iterate (CONSTRUCTOR_ELTS (t), idx, &ce); idx++)
+	{
+	  if (ce->index)
+	    fld_worklist_push (ce->index, fld);
+	  fld_worklist_push (ce->value, fld);
+	}
+      *ws = 0;
+    }
 
   if (TREE_CODE (t) != IDENTIFIER_NODE
       && CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPED))
