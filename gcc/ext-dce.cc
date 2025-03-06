@@ -1089,16 +1089,9 @@ ext_dce_rd_transfer_n (int bb_index)
 
   ext_dce_process_bb (bb);
 
-  /* We may have narrowed the set of live objects at the start
-     of this block.  If so, update the bitmaps and indicate to
-     the generic dataflow code that something changed.  */
-  if (!bitmap_equal_p (&livein[bb_index], livenow))
-    {
-      bitmap_copy (&livein[bb_index], livenow);
-      return true;
-    }
-
-  return false;
+  /* We only allow widening the set of objects live at the start
+     of a block.  Otherwise we run the risk of not converging.  */
+  return bitmap_ior_into (&livein[bb_index], livenow);
 }
 
 /* Dummy function for the df_simple_dataflow API.  */
