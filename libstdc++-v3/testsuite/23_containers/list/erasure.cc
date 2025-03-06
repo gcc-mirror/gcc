@@ -52,6 +52,28 @@ test02()
   VERIFY( num == 0 );
 }
 
+// LWG 4135.
+// The helper lambda of std::erase for list should specify return type as bool
+void
+test_lwg4135()
+{
+  struct Bool {
+    Bool() = default;
+    Bool(const Bool&) = delete;
+    operator bool() const { return false; }
+  };
+
+  static Bool b;
+
+  struct Int {
+    Bool& operator==(Int) const { return b; }
+    void operator==(Int) = delete;
+  };
+
+  std::list<Int> l;
+  std::erase(l, Int{});
+}
+
 int
 main()
 {
