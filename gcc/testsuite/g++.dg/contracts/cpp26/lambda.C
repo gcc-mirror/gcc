@@ -2,5 +2,4 @@
 // { dg-do compile }
 // { dg-options "-std=c++2b -fcontracts -fcontracts-nonattr  " }
 void f(int i, int j) pre( [i, &j](){ return true;} ( ))
-{
-};
+{}
