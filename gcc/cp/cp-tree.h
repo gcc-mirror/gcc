@@ -9001,6 +9001,29 @@ set_contract_const (tree t, bool constify)
   TREE_LANG_FLAG_4 (CONTRACT_CHECK (t)) = constify;
 }
 
+/* Test if EXP is a contract const wrapper node.  */
+
+inline bool
+contract_const_wrapper_p (const_tree exp)
+{
+  /* A wrapper node has code VIEW_CONVERT_EXPR, and the flag base.private_flag
+     is set. The wrapper node is used to Used to constify entities inside
+     contract assertions.  */
+  return ((TREE_CODE (exp) == VIEW_CONVERT_EXPR) && exp->base.private_flag);
+}
+
+/* If EXP is a contract_const_wrapper_p, return the wrapped expression.
+   Otherwise, do nothing. */
+
+inline tree
+strip_contract_const_wrapper (tree exp)
+{
+  if (contract_const_wrapper_p (exp))
+    return TREE_OPERAND (exp, 0);
+  else
+    return exp;
+}
+
 /* Inline bodies.  */
 
 inline tree
