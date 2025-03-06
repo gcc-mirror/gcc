@@ -1,6 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-rtl-ext_dce" } */
+/* { dg-options "-fext-dce -fdump-rtl-ext_dce" } */
 /* { dg-final { scan-rtl-dump {Successfully transformed} "ext_dce" } } */
+/* { dg-skip-if "" { *-*-* } { "-O0"} } */
 
 unsigned short
 core_list_init (int size, short seed) {
