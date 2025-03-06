@@ -43,7 +43,9 @@ test01()
     test01_impl<char>({'a', 'b', 'c'}) &&
     test01_impl<int>({1, 2, 3, 4}) &&
     test01_impl<double>({1.0, 2.0, 3.0, 4.0}) &&
+#if _GLIBCXX_USE_CXX11_ABI
     test01_impl<std::string>({"a", "b", "cc", "dddd", "eeeeeeeeeeeeeeee"}) &&
+#endif
     test01_impl<std::vector<int>>({ {0}, {0, 1}, {0, 1, 2}}) &&
     test01_impl<std::unique_ptr<int>>(std::vector<std::unique_ptr<int>>(10));
 }

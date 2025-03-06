@@ -58,8 +58,10 @@ test01()
     test01_impl<int>(0) &&
     test01_impl<int>(42) &&
     test01_impl<double>(3.14) &&
+#if _GLIBCXX_USE_CXX11_ABI
     test01_impl<std::string>() &&
     test01_impl<std::string>(std::string("test")) &&
+#endif
     test01_impl<std::vector<int>>() &&
     test01_impl<std::vector<int>>({1, 2, 3, 4}) &&
     test01_impl<std::unique_ptr<int>>(nullptr);

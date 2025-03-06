@@ -59,7 +59,9 @@ test01()
     test01_impl<char>() &&
     test01_impl<int>() &&
     test01_impl<double>() &&
+#if _GLIBCXX_USE_CXX11_ABI
     test01_impl<std::string>() &&
+#endif
     test01_impl<std::vector<int>>() &&
     test01_impl<std::unique_ptr<int>>();
 }
