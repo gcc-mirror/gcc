@@ -15873,118 +15873,6 @@ aarch64_memory_move_cost (machine_mode mode, reg_class_t rclass_i, bool in)
 	  : base + aarch64_tune_params.memmov_cost.store_int);
 }
 
-/* CALLEE_SAVED_REGS is the set of callee-saved registers that the
-   RA has already decided to use.  Return the total number of registers
-   in class RCLASS that need to be saved and restored, including the
-   frame link registers.  */
-static int
-aarch64_count_saves (const HARD_REG_SET &callee_saved_regs, reg_class rclass)
-{
-  auto saved_gprs = callee_saved_regs & reg_class_contents[rclass];
-  auto nregs = hard_reg_set_popcount (saved_gprs);
-
-  if (TEST_HARD_REG_BIT (reg_class_contents[rclass], LR_REGNUM))
-    {
-      if (aarch64_needs_frame_chain ())
-	nregs += 2;
-      else if (!crtl->is_leaf || df_regs_ever_live_p (LR_REGNUM))
-	nregs += 1;
-    }
-  return nregs;
-}
-
-/* CALLEE_SAVED_REGS is the set of callee-saved registers that the
-   RA has already decided to use.  Return the total number of registers
-   that need to be saved above the hard frame pointer, including the
-   frame link registers.  */
-static int
-aarch64_count_above_hard_fp_saves (const HARD_REG_SET &callee_saved_regs)
-{
-  /* FP and Advanced SIMD registers are saved above the frame pointer
-     but SVE registers are saved below it.  */
-  if (known_le (GET_MODE_SIZE (aarch64_reg_save_mode (V8_REGNUM)), 16U))
-    return aarch64_count_saves (callee_saved_regs, POINTER_AND_FP_REGS);
-  return aarch64_count_saves (callee_saved_regs, POINTER_REGS);
-}
-
-/* Implement TARGET_CALLEE_SAVE_COST.  */
-static int
-aarch64_callee_save_cost (spill_cost_type spill_type, unsigned int regno,
-			  machine_mode mode, unsigned int nregs, int mem_cost,
-			  const HARD_REG_SET &callee_saved_regs,
-			  bool existing_spill_p)
-{
-  /* If we've already committed to saving an odd number of GPRs, assume that
-     saving one more will involve turning an STR into an STP and an LDR
-     into an LDP.  This should still be more expensive than not spilling
-     (meaning that the minimum cost is 1), but it should usually be cheaper
-     than a separate store or load.  */
-  if (GP_REGNUM_P (regno)
-      && nregs == 1
-      && (aarch64_count_saves (callee_saved_regs, GENERAL_REGS) & 1))
-    return 1;
-
-  /* Similarly for saving FP registers, if we only need to save the low
-     64 bits.  (We can also use STP/LDP instead of STR/LDR for Q registers,
-     but that is less likely to be a saving.)  */
-  if (FP_REGNUM_P (regno)
-      && nregs == 1
-      && known_eq (GET_MODE_SIZE (aarch64_reg_save_mode (regno)), 8U)
-      && (aarch64_count_saves (callee_saved_regs, FP_REGS) & 1))
-    return 1;
-
-  /* If this would be the first register that we save, add the cost of
-     allocating or deallocating the frame.  For GPR, FPR, and Advanced SIMD
-     saves, the allocation and deallocation can be folded into the save and
-     restore.  */
-  if (!existing_spill_p
-      && !GP_REGNUM_P (regno)
-      && !(FP_REGNUM_P (regno)
-	   && known_le (GET_MODE_SIZE (aarch64_reg_save_mode (regno)), 16U)))
-    return default_callee_save_cost (spill_type, regno, mode, nregs, mem_cost,
-				     callee_saved_regs, existing_spill_p);
-
-  return mem_cost;
-}
-
-/* Implement TARGET_FRAME_ALLOCATION_COST.  */
-static int
-aarch64_frame_allocation_cost (frame_cost_type,
-			       const HARD_REG_SET &callee_saved_regs)
-{
-  /* The intention is to model the relative costs of different approaches
-     to storing data on the stack, rather than to model the cost of saving
-     data vs not saving it.  This means that we should return 0 if:
-
-     - any frame is going to be allocated with:
-
-	  stp x29, x30, [sp, #-...]!
-
-       to create a frame link.
-
-     - any frame is going to be allocated with:
-
-	  str x30, [sp, #-...]!
-
-       to save the link register.
-
-     In both cases, the allocation and deallocation instructions are the
-     same however we store data to the stack.  (In the second case, the STR
-     could be converted to an STP by saving an extra call-preserved register,
-     but that is modeled by aarch64_callee_save_cost.)
-
-     In other cases, assume that a frame would need to be allocated with a
-     separate subtraction and deallocated with a separate addition.  Saves
-     of call-clobbered registers can then reclaim this cost using a
-     predecrement store and a postincrement load.
-
-     For simplicity, give this addition or subtraction the same cost as
-     a GPR move.  We could parameterize this if necessary.  */
-  if (aarch64_count_above_hard_fp_saves (callee_saved_regs) == 0)
-    return aarch64_tune_params.regmove_cost->GP2GP;
-  return 0;
-}
-
 /* Implement TARGET_INSN_COST.  We have the opportunity to do something
    much more productive here, such as using insn attributes to cost things.
    But we don't, not yet.
@@ -31679,12 +31567,6 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_MEMORY_MOVE_COST
 #define TARGET_MEMORY_MOVE_COST aarch64_memory_move_cost
-
-#undef TARGET_CALLEE_SAVE_COST
-#define TARGET_CALLEE_SAVE_COST aarch64_callee_save_cost
-
-#undef TARGET_FRAME_ALLOCATION_COST
-#define TARGET_FRAME_ALLOCATION_COST aarch64_frame_allocation_cost
 
 #undef TARGET_MIN_DIVISIONS_FOR_RECIP_MUL
 #define TARGET_MIN_DIVISIONS_FOR_RECIP_MUL aarch64_min_divisions_for_recip_mul
