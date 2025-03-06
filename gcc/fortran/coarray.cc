@@ -265,6 +265,8 @@ move_coarray_ref (gfc_ref **from, gfc_expr *expr)
   (*from)->u.ar.stat = nullptr;
   to->u.ar.team = (*from)->u.ar.team;
   (*from)->u.ar.team = nullptr;
+  to->u.ar.team_type = (*from)->u.ar.team_type;
+  (*from)->u.ar.team_type = TEAM_UNSET;
   for (i = 0; i < to->u.ar.dimen; ++i)
     {
       to->u.ar.start[i] = nullptr;

@@ -4198,6 +4198,15 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
   gfc_symbol * sym = expr->symtree->n.sym;
   char *var_name = NULL;
 
+  if (ar->stat)
+    {
+      gfc_se statse;
+
+      gfc_init_se (&statse, NULL);
+      gfc_conv_expr_lhs (&statse, ar->stat);
+      gfc_add_block_to_block (&se->pre, &statse.pre);
+      gfc_add_modify (&se->pre, statse.expr, integer_zero_node);
+    }
   if (ar->dimen == 0)
     {
       gcc_assert (ar->codimen || sym->attr.select_rank_temporary

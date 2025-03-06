@@ -5458,6 +5458,81 @@ resolve_array_ref (gfc_array_ref *ar)
 	ar->dimen_type[n] = DIMEN_THIS_IMAGE;
     }
 
+  if (ar->codimen)
+    {
+      if (ar->team_type == TEAM_NUMBER)
+	{
+	  if (!gfc_resolve_expr (ar->team))
+	    return false;
+
+	  if (ar->team->rank != 0)
+	    {
+	      gfc_error ("TEAM_NUMBER argument at %L must be scalar",
+			 &ar->team->where);
+	      return false;
+	    }
+
+	  if (ar->team->ts.type != BT_INTEGER)
+	    {
+	      gfc_error ("TEAM_NUMBER argument at %L must be of INTEGER "
+			 "type, found %s",
+			 &ar->team->where,
+			 gfc_basic_typename (ar->team->ts.type));
+	      return false;
+	    }
+	}
+      else if (ar->team_type == TEAM_TEAM)
+	{
+	  if (!gfc_resolve_expr (ar->team))
+	    return false;
+
+	  if (ar->team->rank != 0)
+	    {
+	      gfc_error ("TEAM argument at %L must be scalar",
+			 &ar->team->where);
+	      return false;
+	    }
+
+	  if (ar->team->ts.type != BT_DERIVED
+	      || ar->team->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV
+	      || ar->team->ts.u.derived->intmod_sym_id != ISOFORTRAN_TEAM_TYPE)
+	    {
+	      gfc_error ("TEAM argument at %L must be of TEAM_TYPE from "
+			 "the intrinsic module ISO_FORTRAN_ENV, found %s",
+			 &ar->team->where,
+			 gfc_basic_typename (ar->team->ts.type));
+	      return false;
+	    }
+	}
+      if (ar->stat)
+	{
+	  if (!gfc_resolve_expr (ar->stat))
+	    return false;
+
+	  if (ar->stat->rank != 0)
+	    {
+	      gfc_error ("STAT argument at %L must be scalar",
+			 &ar->stat->where);
+	      return false;
+	    }
+
+	  if (ar->stat->ts.type != BT_INTEGER)
+	    {
+	      gfc_error ("STAT argument at %L must be of INTEGER "
+			 "type, found %s",
+			 &ar->stat->where,
+			 gfc_basic_typename (ar->stat->ts.type));
+	      return false;
+	    }
+
+	  if (ar->stat->expr_type != EXPR_VARIABLE)
+	    {
+	      gfc_error ("STAT's expression at %L must be a variable",
+			 &ar->stat->where);
+	      return false;
+	    }
+	}
+    }
   return true;
 }
 

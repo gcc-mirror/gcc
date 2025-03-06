@@ -1160,7 +1160,8 @@ conv_shape_to_cst (gfc_expr *e)
 }
 
 static void
-conv_stat_and_team (stmtblock_t *block, gfc_expr *expr, tree *stat, tree *team)
+conv_stat_and_team (stmtblock_t *block, gfc_expr *expr, tree *stat, tree *team,
+		    tree *team_no)
 {
   gfc_expr *stat_e, *team_e;
 
@@ -1177,7 +1178,7 @@ conv_stat_and_team (stmtblock_t *block, gfc_expr *expr, tree *stat, tree *team)
   else
     *stat = null_pointer_node;
 
-  team_e = gfc_find_team_co (expr);
+  team_e = gfc_find_team_co (expr, TEAM_TEAM);
   if (team_e)
     {
       gfc_se team_se;
@@ -1189,6 +1190,19 @@ conv_stat_and_team (stmtblock_t *block, gfc_expr *expr, tree *stat, tree *team)
     }
   else
     *team = null_pointer_node;
+
+  team_e = gfc_find_team_co (expr, TEAM_NUMBER);
+  if (team_e)
+    {
+      gfc_se team_se;
+      gfc_init_se (&team_se, NULL);
+      gfc_conv_expr_reference (&team_se, team_e);
+      *team_no = team_se.expr;
+      gfc_add_block_to_block (block, &team_se.pre);
+      gfc_add_block_to_block (block, &team_se.post);
+    }
+  else
+    *team_no = null_pointer_node;
 }
 
 /* Get data from a remote coarray.  */
@@ -1200,7 +1214,7 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs,
   gfc_expr *array_expr;
   tree caf_decl, token, image_index, tmp, res_var, type, stat, dest_size,
     dest_data, opt_dest_desc, get_fn_index_tree, add_data_tree, add_data_size,
-    opt_src_desc, opt_src_charlen, opt_dest_charlen, team;
+    opt_src_desc, opt_src_charlen, opt_dest_charlen, team, team_no;
   symbol_attribute caf_attr_store;
   gfc_namespace *ns;
   gfc_expr *get_fn_hash = expr->value.function.actual->next->expr,
@@ -1231,7 +1245,7 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs,
 
   res_var = lhs;
 
-  conv_stat_and_team (&se->pre, expr, &stat, &team);
+  conv_stat_and_team (&se->pre, expr, &stat, &team, &team_no);
 
   get_fn_index_tree
     = conv_caf_func_index (&se->pre, ns, "__caf_get_from_remote_fn_index_%d",
@@ -1335,8 +1349,7 @@ gfc_conv_intrinsic_caf_get (gfc_se *se, gfc_expr *expr, tree lhs,
     input_location, gfor_fndecl_caf_get_from_remote, 15, token, opt_src_desc,
     opt_src_charlen, image_index, dest_size, dest_data, opt_dest_charlen,
     opt_dest_desc, constant_boolean_node (may_realloc, boolean_type_node),
-    get_fn_index_tree, add_data_tree, add_data_size, stat, team,
-    null_pointer_node);
+    get_fn_index_tree, add_data_tree, add_data_size, stat, team, team_no);
 
   gfc_add_expr_to_block (&se->pre, tmp);
 
@@ -1397,7 +1410,7 @@ conv_caf_send_to_remote (gfc_code *code)
   stmtblock_t block;
   gfc_namespace *ns;
   tree caf_decl, token, rhs_size, image_index, tmp, rhs_data;
-  tree lhs_stat, lhs_team, opt_lhs_charlen, opt_rhs_charlen;
+  tree lhs_stat, lhs_team, lhs_team_no, opt_lhs_charlen, opt_rhs_charlen;
   tree opt_lhs_desc = NULL_TREE, opt_rhs_desc = NULL_TREE;
   tree receiver_fn_index_tree, add_data_tree, add_data_size;
 
@@ -1529,7 +1542,7 @@ conv_caf_send_to_remote (gfc_code *code)
     }
   gfc_add_block_to_block (&block, &rhs_se.pre);
 
-  conv_stat_and_team (&block, lhs_expr, &lhs_stat, &lhs_team);
+  conv_stat_and_team (&block, lhs_expr, &lhs_stat, &lhs_team, &lhs_team_no);
 
   receiver_fn_index_tree
     = conv_caf_func_index (&block, ns, "__caf_send_to_remote_fn_index_%d",
@@ -1539,12 +1552,11 @@ conv_caf_send_to_remote (gfc_code *code)
 			      add_data_sym, &add_data_size);
   ++caf_call_cnt;
 
-  tmp
-    = build_call_expr_loc (input_location, gfor_fndecl_caf_send_to_remote, 14,
-			   token, opt_lhs_desc, opt_lhs_charlen, image_index,
-			   rhs_size, rhs_data, opt_rhs_charlen, opt_rhs_desc,
-			   receiver_fn_index_tree, add_data_tree, add_data_size,
-			   lhs_stat, lhs_team, null_pointer_node);
+  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_send_to_remote, 14,
+			     token, opt_lhs_desc, opt_lhs_charlen, image_index,
+			     rhs_size, rhs_data, opt_rhs_charlen, opt_rhs_desc,
+			     receiver_fn_index_tree, add_data_tree,
+			     add_data_size, lhs_stat, lhs_team, lhs_team_no);
 
   gfc_add_expr_to_block (&block, tmp);
   gfc_add_block_to_block (&block, &lhs_se.post);
@@ -1572,7 +1584,7 @@ conv_caf_sendget (gfc_code *code)
   gfc_se lhs_se;
   tree lhs_caf_decl, lhs_token, opt_lhs_charlen,
     opt_lhs_desc = NULL_TREE, receiver_fn_index_tree, lhs_image_index,
-    lhs_add_data_tree, lhs_add_data_size, lhs_stat, lhs_team;
+    lhs_add_data_tree, lhs_add_data_size, lhs_stat, lhs_team, lhs_team_no;
   int transfer_rank;
 
   /* rhs stuff  */
@@ -1581,7 +1593,7 @@ conv_caf_sendget (gfc_code *code)
   gfc_se rhs_se;
   tree rhs_caf_decl, rhs_token, opt_rhs_charlen,
     opt_rhs_desc = NULL_TREE, sender_fn_index_tree, rhs_image_index,
-    rhs_add_data_tree, rhs_add_data_size, rhs_stat, rhs_team;
+    rhs_add_data_tree, rhs_add_data_size, rhs_stat, rhs_team, rhs_team_no;
 
   /* shared  */
   stmtblock_t block;
@@ -1758,8 +1770,8 @@ conv_caf_sendget (gfc_code *code)
 			    rhs_expr);
 
   /* stat and team.  */
-  conv_stat_and_team (&block, lhs_expr, &lhs_stat, &lhs_team);
-  conv_stat_and_team (&block, rhs_expr, &rhs_stat, &rhs_team);
+  conv_stat_and_team (&block, lhs_expr, &lhs_stat, &lhs_team, &lhs_team_no);
+  conv_stat_and_team (&block, rhs_expr, &rhs_stat, &rhs_team, &rhs_team_no);
 
   sender_fn_index_tree
     = conv_caf_func_index (&block, ns, "__caf_transfer_from_fn_index_%d",
@@ -1784,7 +1796,7 @@ conv_caf_sendget (gfc_code *code)
     opt_rhs_charlen, rhs_image_index, sender_fn_index_tree, rhs_add_data_tree,
     rhs_add_data_size, rhs_size,
     transfer_rank == 0 ? boolean_true_node : boolean_false_node, lhs_stat,
-    lhs_team, null_pointer_node, rhs_stat, rhs_team, null_pointer_node);
+    lhs_team, lhs_team_no, rhs_stat, rhs_team, rhs_team_no);
 
   gfc_add_expr_to_block (&block, tmp);
   gfc_add_block_to_block (&block, &lhs_se.post);
