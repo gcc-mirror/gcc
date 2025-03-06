@@ -284,6 +284,18 @@ enum poly_value_estimate_kind
   POLY_VALUE_LIKELY
 };
 
+enum class spill_cost_type
+{
+  SAVE,
+  RESTORE
+};
+
+enum class frame_cost_type
+{
+  ALLOCATION,
+  DEALLOCATION
+};
+
 typedef void (*emit_support_tinfos_callback) (tree);
 
 extern bool verify_type_context (location_t, type_context_kind, const_tree,

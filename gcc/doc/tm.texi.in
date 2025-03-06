@@ -2388,8 +2388,6 @@ in the reload pass.
 
 @hook TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS
 
-@hook TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE
-
 @hook TARGET_LRA_P
 
 @hook TARGET_REGISTER_PRIORITY
@@ -4583,6 +4581,10 @@ These macros are obsolete, new ports should use the target hook
 @end defmac
 
 @hook TARGET_MEMORY_MOVE_COST
+
+@hook TARGET_CALLEE_SAVE_COST
+
+@hook TARGET_FRAME_ALLOCATION_COST
 
 @defmac BRANCH_COST (@var{speed_p}, @var{predictable_p})
 A C expression for the cost of a branch instruction.  A value of 1 is

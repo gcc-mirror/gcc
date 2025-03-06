@@ -191,6 +191,12 @@ hard_reg_set_empty_p (const_hard_reg_set x)
   return x == HARD_CONST (0);
 }
 
+inline int
+hard_reg_set_popcount (const_hard_reg_set x)
+{
+  return popcount_hwi (x);
+}
+
 #else
 
 inline void
@@ -253,6 +259,15 @@ hard_reg_set_empty_p (const_hard_reg_set x)
   for (unsigned int i = 0; i < ARRAY_SIZE (x.elts); ++i)
     bad |= x.elts[i];
   return bad == 0;
+}
+
+inline int
+hard_reg_set_popcount (const_hard_reg_set x)
+{
+  int count = 0;
+  for (unsigned int i = 0; i < ARRAY_SIZE (x.elts); ++i)
+    count += popcount_hwi (x.elts[i]);
+  return count;
 }
 #endif
 

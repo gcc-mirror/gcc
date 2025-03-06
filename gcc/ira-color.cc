@@ -1195,9 +1195,15 @@ finish_update_cost_records (void)
   update_cost_record_pool.release ();
 }
 
+/* True if we have allocated memory, or intend to do so.  */
+static bool allocated_memory_p;
+
 /* Array whose element value is TRUE if the corresponding hard
    register was already allocated for an allocno.  */
 static bool allocated_hardreg_p[FIRST_PSEUDO_REGISTER];
+
+/* Which callee-saved hard registers we've decided to save.  */
+static HARD_REG_SET allocated_callee_save_regs;
 
 /* Describes one element in a queue of allocnos whose costs need to be
    updated.  Each allocno in the queue is known to have an allocno
@@ -1740,6 +1746,20 @@ check_hard_reg_p (ira_allocno_t a, int hard_regno,
   return j == nregs;
 }
 
+/* Record that we have allocated NREGS registers starting at HARD_REGNO.  */
+
+static void
+record_allocation (int hard_regno, int nregs)
+{
+  for (int i = 0; i < nregs; ++i)
+    if (!allocated_hardreg_p[hard_regno + i])
+      {
+	allocated_hardreg_p[hard_regno + i] = true;
+	if (!crtl->abi->clobbers_full_reg_p (hard_regno + i))
+	  SET_HARD_REG_BIT (allocated_callee_save_regs, hard_regno + i);
+      }
+}
+
 /* Return number of registers needed to be saved and restored at
    function prologue/epilogue if we allocate HARD_REGNO to hold value
    of MODE.  */
@@ -1961,6 +1981,12 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 #endif
   auto_bitmap allocnos_to_spill;
   HARD_REG_SET soft_conflict_regs = {};
+  int entry_freq = REG_FREQ_FROM_BB (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  int exit_freq = REG_FREQ_FROM_BB (EXIT_BLOCK_PTR_FOR_FN (cfun));
+  int spill_cost = 0;
+  /* Whether we have spilled pseudos or used caller-saved registers for values
+     that are live across a call.  */
+  bool existing_spills_p = allocated_memory_p || caller_save_needed;
 
   ira_assert (! ALLOCNO_ASSIGNED_P (a));
   get_conflict_and_start_profitable_regs (a, retry_p,
@@ -1978,6 +2004,18 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
   if (! retry_p)
     start_update_cost ();
   mem_cost += ALLOCNO_UPDATED_MEMORY_COST (a);
+
+  if (!existing_spills_p)
+    {
+      auto entry_cost = targetm.frame_allocation_cost
+	(frame_cost_type::ALLOCATION, allocated_callee_save_regs);
+      spill_cost += entry_cost * entry_freq;
+
+      auto exit_cost = targetm.frame_allocation_cost
+	(frame_cost_type::DEALLOCATION, allocated_callee_save_regs);
+      spill_cost += exit_cost * exit_freq;
+    }
+  mem_cost += spill_cost;
 
   ira_allocate_and_copy_costs (&ALLOCNO_UPDATED_HARD_REG_COSTS (a),
 			       aclass, ALLOCNO_HARD_REG_COSTS (a));
@@ -2175,15 +2213,36 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 	  /* We need to save/restore the hard register in
 	     epilogue/prologue.  Therefore we increase the cost.  */
 	  {
+	    int nregs = hard_regno_nregs (hard_regno, mode);
+	    add_cost = 0;
 	    rclass = REGNO_REG_CLASS (hard_regno);
-	    add_cost = ((ira_memory_move_cost[mode][rclass][0]
-		         + ira_memory_move_cost[mode][rclass][1])
-		        * saved_nregs / hard_regno_nregs (hard_regno,
-							  mode) - 1)
-		       * targetm.ira_callee_saved_register_cost_scale (hard_regno);
+
+	    auto entry_cost = targetm.callee_save_cost
+	      (spill_cost_type::SAVE, hard_regno, mode, saved_nregs,
+	       ira_memory_move_cost[mode][rclass][0] * saved_nregs / nregs,
+	       allocated_callee_save_regs, existing_spills_p);
+	    /* In the event of a tie between caller-save and callee-save,
+	       prefer callee-save.  We apply this to the entry cost rather
+	       than the exit cost since the entry frequency must be at
+	       least as high as the exit frequency.  */
+	    if (entry_cost > 1)
+	      entry_cost -= 1;
+	    add_cost += entry_cost * entry_freq;
+
+	    auto exit_cost = targetm.callee_save_cost
+	      (spill_cost_type::RESTORE, hard_regno, mode, saved_nregs,
+	       ira_memory_move_cost[mode][rclass][1] * saved_nregs / nregs,
+	       allocated_callee_save_regs, existing_spills_p);
+	    add_cost += exit_cost * exit_freq;
+
 	    cost += add_cost;
 	    full_cost += add_cost;
 	  }
+	}
+      if (ira_need_caller_save_p (a, hard_regno))
+	{
+	  cost += spill_cost;
+	  full_cost += spill_cost;
 	}
       if (min_cost > cost)
 	min_cost = cost;
@@ -2211,11 +2270,13 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
  fail:
   if (best_hard_regno >= 0)
     {
-      for (i = hard_regno_nregs (best_hard_regno, mode) - 1; i >= 0; i--)
-	allocated_hardreg_p[best_hard_regno + i] = true;
+      record_allocation (best_hard_regno,
+			 hard_regno_nregs (best_hard_regno, mode));
       spill_soft_conflicts (a, allocnos_to_spill, soft_conflict_regs,
 			    best_hard_regno);
     }
+  else
+    allocated_memory_p = true;
   if (! retry_p)
     restore_costs_from_copies (a);
   ALLOCNO_HARD_REGNO (a) = best_hard_regno;
@@ -3368,8 +3429,7 @@ improve_allocation (void)
       /* Assign the best chosen hard register to A.  */
       ALLOCNO_HARD_REGNO (a) = best;
 
-      for (j = nregs - 1; j >= 0; j--)
-	allocated_hardreg_p[best + j] = true;
+      record_allocation (best, nregs);
 
       if (internal_flag_ira_verbose > 2 && ira_dump_file != NULL)
 	fprintf (ira_dump_file, "Assigning %d to a%dr%d\n",
@@ -5199,6 +5259,7 @@ color (void)
 {
   allocno_stack_vec.create (ira_allocnos_num);
   memset (allocated_hardreg_p, 0, sizeof (allocated_hardreg_p));
+  CLEAR_HARD_REG_SET (allocated_callee_save_regs);
   ira_initiate_assign ();
   do_coloring ();
   ira_finish_assign ();
@@ -5327,10 +5388,14 @@ ira_color (void)
   ira_allocno_iterator ai;
 
   /* Setup updated costs.  */
+  allocated_memory_p = false;
   FOR_EACH_ALLOCNO (a, ai)
     {
       ALLOCNO_UPDATED_MEMORY_COST (a) = ALLOCNO_MEMORY_COST (a);
       ALLOCNO_UPDATED_CLASS_COST (a) = ALLOCNO_CLASS_COST (a);
+      if (ALLOCNO_CLASS (a) == NO_REGS
+	  && !ira_equiv_no_lvalue_p (ALLOCNO_REGNO (a)))
+	allocated_memory_p = true;
     }
   if (ira_conflicts_p)
     color ();

@@ -20600,12 +20600,26 @@ ix86_class_likely_spilled_p (reg_class_t rclass)
   return false;
 }
 
-/* Implement TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE.  */
+/* Implement TARGET_CALLEE_SAVE_COST.  */
 
 static int
-ix86_ira_callee_saved_register_cost_scale (int)
+ix86_callee_save_cost (spill_cost_type, unsigned int hard_regno, machine_mode,
+		       unsigned int, int mem_cost, const HARD_REG_SET &, bool)
 {
-  return 1;
+  /* Account for the fact that push and pop are shorter and do their
+     own allocation and deallocation.  */
+  if (GENERAL_REGNO_P (hard_regno))
+    {
+      /* push is 1 byte while typical spill is 4-5 bytes.
+	 ??? We probably should adjust size costs accordingly.
+	 Costs are relative to reg-reg move that has 2 bytes for 32bit
+	 and 3 bytes otherwise.	 Be sure that no cost table sets cost
+	 to 2, so we end up with 0.  */
+      if (mem_cost <= 2 || optimize_function_for_size_p (cfun))
+	return 1;
+      return mem_cost - 2;
+    }
+  return mem_cost;
 }
 
 /* Return true if a set of DST by the expression SRC should be allowed.
@@ -27092,9 +27106,8 @@ ix86_libgcc_floating_mode_supported_p
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 #undef TARGET_CLASS_LIKELY_SPILLED_P
 #define TARGET_CLASS_LIKELY_SPILLED_P ix86_class_likely_spilled_p
-#undef TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE
-#define TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE \
-  ix86_ira_callee_saved_register_cost_scale
+#undef TARGET_CALLEE_SAVE_COST
+#define TARGET_CALLEE_SAVE_COST ix86_callee_save_cost
 
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
