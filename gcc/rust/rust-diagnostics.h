@@ -25,7 +25,7 @@
 #include "util/optional.h"
 
 // This macro is used to specify the position of format string & it's
-// arguments within the function's paramter list.
+// arguments within the function's parameter list.
 // 'm' specifies the position of the format string parameter.
 // 'n' specifies the position of the first argument for the format string.
 #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 1)

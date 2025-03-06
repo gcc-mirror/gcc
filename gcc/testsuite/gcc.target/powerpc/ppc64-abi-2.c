@@ -124,7 +124,7 @@ typedef union
 #define MAKE_SLOT(x, y) ((long)y | ((long)x << 32))
 #endif
 
-/* Paramter passing.
+/* Parameter passing.
    s : gpr 3
    v : vpr 2
    i : gpr 7
@@ -143,7 +143,7 @@ fcvi (char *s, vector int v, int i)
   if ((long) i != lparms.gprs[4])
     abort();
 }
-/* Paramter passing.
+/* Parameter passing.
    s : gpr 3
    v : vpr 2
    w : vpr 3
@@ -170,7 +170,7 @@ fcvv (char *s, vector int v, vector int w)
     abort ();
 }
 
-/* Paramter passing.
+/* Parameter passing.
    s : gpr 3
    i : gpr 4
    v : vpr 2
@@ -200,7 +200,7 @@ fcivv (char *s, int i, vector int v, vector int w)
     abort ();
 }
 
-/* Paramter passing.
+/* Parameter passing.
    s : gpr 3
    v : slot 2-3
    w : slot 4-5
@@ -236,7 +236,7 @@ fcevv (char *s, ...)
     abort();
 }
 
-/* Paramter passing.
+/* Parameter passing.
    s : gpr 3
    i : gpr 4
    j : gpr 5
@@ -334,7 +334,7 @@ main()
   return main1 ();
 }
 
-/* Paramter passing.
+/* Parameter passing.
    Function called with no prototype.
    s : gpr 3
    v : vpr 2 gpr 5-6

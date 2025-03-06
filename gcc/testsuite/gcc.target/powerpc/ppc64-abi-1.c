@@ -102,7 +102,7 @@ typedef struct sf
 } stack_frame_t;
 
 
-/* Paramter passing.
+/* Parameter passing.
    s : gpr 3
    l : gpr 4
    d : fpr 1
@@ -124,7 +124,7 @@ void __attribute__ ((noinline)) fcld_check (char *s, long l, double d)
     abort ();
 }
 
-/* Paramter passing.
+/* Parameter passing.
    s : gpr 3
    l : gpr 4
    d : fpr 2
@@ -152,7 +152,7 @@ fcldi_check (char *s, long l, double d, signed int i)
     abort ();
 }
 
-/* Paramter passing.
+/* Parameter passing.
    s : gpr 3
    l : gpr 4
    d : fpr 2
@@ -180,7 +180,7 @@ fcldu_check (char *s, long l, float d, unsigned int i)
     abort ();
 }
 
-/* Paramter passing.
+/* Parameter passing.
    s : gpr 3
    l : slot 1
    d : slot 2
@@ -216,7 +216,7 @@ void __attribute__ ((noinline)) fceld_check (char *s, ...)
     abort ();
 }
 
-/* Paramter passing.
+/* Parameter passing.
    s : gpr 3
    i : gpr 4
    j : gpr 5
@@ -288,7 +288,7 @@ typedef union
 } double_t;
 
 /* Example from ABI documentation with slight changes.
-   Paramter passing. 
+   Parameter passing. 
    c  : gpr 3
    ff : fpr 1
    d  : gpr 5

@@ -633,7 +633,7 @@ ix86_fuse_mov_alu_p (rtx_insn *mov, rtx_insn *alu)
       && !REG_P (op1)
       && !x86_64_immediate_operand (op1, VOIDmode))
     return false;
-  /* Only one of two paramters must be move destination.  */
+  /* Only one of two parameters must be move destination.  */
   if (op1 && REG_P (op1) && REGNO (op1) == REGNO (reg))
     return false;
   return true;
@@ -786,4 +786,3 @@ ix86_macro_fusion_pair_p (rtx_insn *condgen, rtx_insn *condjmp)
 
   return true;
 }
-

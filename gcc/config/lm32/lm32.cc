@@ -831,7 +831,7 @@ lm32_builtin_va_start (tree valist, rtx nextarg)
 
 /*
  * This was copied from "standard" implementation of va_arg, and then
- * handling for overflow of the register paramters added
+ * handling for overflow of the register parameters added.
  */
 
 static tree
