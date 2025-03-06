@@ -76,6 +76,8 @@ check_vect (void)
   }
 #elif defined(__mips_msa)
   asm volatile ("or.v $w0,$w0,$w0");
+#elif defined(__loongarch__)
+  asm volatile ("vor.v\t$vr0,$vr0,$vr0");
 #endif
   signal (SIGILL, SIG_DFL);
 }
