@@ -8819,6 +8819,8 @@ package body Exp_Ch6 is
       Constraint_Check_Needed : constant Boolean :=
         (Has_Discriminants (Obj_Typ) or else Is_Array_Type (Obj_Typ))
          and then Is_Tagged_Type (Obj_Typ)
+         and then Nkind (Original_Node (Obj_Decl)) /=
+                    N_Object_Renaming_Declaration
          and then Is_Constrained (Obj_Typ);
       --  We are processing a call in the context of something like
       --  "X : T := F (...);". This is True if we need to do a constraint
@@ -8828,6 +8830,10 @@ package body Exp_Ch6 is
       --  which is possible only in the callee-allocates case,
       --  which is why we have Is_Tagged_Type above.
       --  ???The check is missing in the untagged caller-allocates case.
+      --  ???The check for renaming declarations above is needed because
+      --  Sem_Ch8.Analyze_Object_Renaming sometimes changes a renaming
+      --  into an object declaration. We probably shouldn't do that,
+      --  but for now, we need this check.
 
    --  Start of processing for Make_Build_In_Place_Call_In_Object_Declaration
 
