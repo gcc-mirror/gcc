@@ -491,6 +491,8 @@ build_capture_proxy (tree member, tree init)
 	    init = PACK_EXPANSION_PATTERN (init);
 	}
 
+      init = strip_contract_const_wrapper (init);
+
       if (INDIRECT_REF_P (init))
 	init = TREE_OPERAND (init, 0);
       STRIP_NOPS (init);
