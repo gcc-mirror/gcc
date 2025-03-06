@@ -1607,8 +1607,13 @@ package body Ch4 is
          --  Improper use of WITH
 
          elsif Token = Tok_With then
-            Error_Msg_SC ("WITH must be preceded by single expression in " &
-                          "extension aggregate");
+            if Inside_Abstract_State then
+               Error_Msg_SC ("state name with options must be enclosed in " &
+                             "parentheses");
+            else
+               Error_Msg_SC ("WITH must be preceded by single expression in " &
+                             "extension aggregate");
+            end if;
             raise Error_Resync;
 
          --  Range attribute can only appear as part of a discrete choice list

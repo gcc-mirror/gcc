@@ -80,6 +80,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    --  True within a delta aggregate (but only after the "delta" token has
    --  been scanned). Used to distinguish syntax errors from syntactically
    --  correct "deep" delta aggregates (enabled via -gnatX0).
+
+   Inside_Abstract_State : Boolean := False;
+   --  True within an Abstract_State contract. Used to distinguish syntax error
+   --  about extended aggregates and about a malformed contract.
+
    Save_Style_Checks : Style_Check_Options;
    Save_Style_Check  : Boolean;
    --  Variables for storing the original state of whether style checks should
