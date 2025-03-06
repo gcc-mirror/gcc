@@ -11476,7 +11476,19 @@ reopen_tinst_level (struct tinst_level *level)
   pop_tinst_level ();
   if (current_tinst_level)
     current_tinst_level->errors = errorcount+sorrycount;
-  return level->maybe_get_node ();
+
+  tree decl = level->maybe_get_node ();
+  if (decl && modules_p ())
+    {
+      /* An instantiation is in module purview only if it had an explicit
+	 instantiation definition in module purview; mark_decl_instantiated uses
+	 set_instantiating_module to set the flag in that case.  */
+      if (DECL_MODULE_PURVIEW_P (decl))
+	module_kind |= MK_PURVIEW;
+      else
+	module_kind &= ~MK_PURVIEW;
+    }
+  return decl;
 }
 
 /* Returns the TINST_LEVEL which gives the original instantiation
@@ -25969,6 +25981,7 @@ mark_decl_instantiated (tree result, int extern_p)
     {
       mark_definable (result);
       mark_needed (result);
+      set_instantiating_module (result);
       /* Always make artificials weak.  */
       if (DECL_ARTIFICIAL (result) && flag_weak)
 	comdat_linkage (result);
@@ -27930,6 +27943,7 @@ instantiate_pending_templates (int retries)
 {
   int reconsider;
   location_t saved_loc = input_location;
+  unsigned saved_module_kind = module_kind;
 
   /* Instantiating templates may trigger vtable generation.  This in turn
      may require further template instantiations.  We place a limit here
@@ -28020,6 +28034,7 @@ instantiate_pending_templates (int retries)
   while (reconsider);
 
   input_location = saved_loc;
+  module_kind = saved_module_kind;
 }
 
 /* Substitute ARGVEC into T, which is a list of initializers for
