@@ -26050,6 +26050,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
     {
       tree decl;
       tree class_type = NULL_TREE;
+      tree class_type_fields = NULL_TREE;
       tree pushed_scope = NULL_TREE;
       unsigned ix;
       cp_default_arg_entry *e;
@@ -26062,6 +26063,33 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  vec_safe_truncate (unparsed_nsdmis, 0);
 	  vec_safe_truncate (unparsed_funs_with_definitions, 0);
 	}
+
+      auto switch_to_class = [&] (tree t)
+	{
+	  if (class_type != t)
+	    {
+	      /* cp_parser_late_parsing_default_args etc. could have changed
+		 TYPE_FIELDS (class_type), propagate that to all variants.  */
+	      if (class_type
+		  && RECORD_OR_UNION_TYPE_P (class_type)
+		  && TYPE_FIELDS (class_type) != class_type_fields)
+		for (tree variant = TYPE_NEXT_VARIANT (class_type);
+		     variant; variant = TYPE_NEXT_VARIANT (variant))
+		  TYPE_FIELDS (variant) = TYPE_FIELDS (class_type);
+	      if (pushed_scope)
+		pop_scope (pushed_scope);
+	      class_type = t;
+	      class_type_fields = NULL_TREE;
+	      if (t)
+		{
+		  if (RECORD_OR_UNION_TYPE_P (class_type))
+		    class_type_fields = TYPE_FIELDS (class_type);
+		  pushed_scope = push_scope (class_type);
+		}
+	      else
+		pushed_scope = NULL_TREE;
+	    }
+	};
 
       /* In a first pass, parse default arguments to the functions.
 	 Then, in a second pass, parse the bodies of the functions.
@@ -26078,13 +26106,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
 	  decl = e->decl;
 	  /* If there are default arguments that have not yet been processed,
 	     take care of them now.  */
-	  if (class_type != e->class_type)
-	    {
-	      if (pushed_scope)
-		pop_scope (pushed_scope);
-	      class_type = e->class_type;
-	      pushed_scope = push_scope (class_type);
-	    }
+	  switch_to_class (e->class_type);
 	  /* Make sure that any template parameters are in scope.  */
 	  maybe_begin_member_template_processing (decl);
 	  /* Parse the default argument expressions.  */
@@ -26100,13 +26122,7 @@ cp_parser_class_specifier_1 (cp_parser* parser)
       FOR_EACH_VEC_SAFE_ELT (unparsed_noexcepts, ix, decl)
 	{
 	  tree ctx = DECL_CONTEXT (decl);
-	  if (class_type != ctx)
-	    {
-	      if (pushed_scope)
-		pop_scope (pushed_scope);
-	      class_type = ctx;
-	      pushed_scope = push_scope (class_type);
-	    }
+	  switch_to_class (ctx);
 
 	  tree def_parse = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl));
 	  def_parse = TREE_PURPOSE (def_parse);
@@ -26161,21 +26177,14 @@ cp_parser_class_specifier_1 (cp_parser* parser)
       /* Now parse any NSDMIs.  */
       FOR_EACH_VEC_SAFE_ELT (unparsed_nsdmis, ix, decl)
 	{
-	  if (class_type != DECL_CONTEXT (decl))
-	    {
-	      if (pushed_scope)
-		pop_scope (pushed_scope);
-	      class_type = DECL_CONTEXT (decl);
-	      pushed_scope = push_scope (class_type);
-	    }
+	  switch_to_class (DECL_CONTEXT (decl));
 	  inject_this_parameter (class_type, TYPE_UNQUALIFIED);
 	  cp_parser_late_parsing_nsdmi (parser, decl);
 	}
       vec_safe_truncate (unparsed_nsdmis, 0);
       current_class_ptr = NULL_TREE;
       current_class_ref = NULL_TREE;
-      if (pushed_scope)
-	pop_scope (pushed_scope);
+      switch_to_class (NULL_TREE);
 
       /* Now parse the body of the functions.  */
       if (flag_openmp)
