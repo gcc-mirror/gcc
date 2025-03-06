@@ -2,7 +2,8 @@
 
 #include <complex>
 #include <ranges>
-#include <string>
+#include <algorithm>
+#include <string_view>
 #include <type_traits>
 #include <tuple>
 #include <utility>
@@ -83,10 +84,10 @@ void
 test_tuple_cat()
 {
   std::complex<T> cpx(T(1), T(2));
-  std::pair<int, std::string> p(42, "hello");
+  std::pair<int, std::string_view> p(42, "hello");
 
   auto r = std::tuple_cat(cpx, p, cpx);
-  static_assert(std::is_same_v<decltype(r), std::tuple<T, T, int, std::string, T, T>>);
+  static_assert(std::is_same_v<decltype(r), std::tuple<T, T, int, std::string_view, T, T>>);
   VERIFY(std::get<0>(r) == T(1));
   VERIFY(std::get<1>(r) == T(2));
   VERIFY(std::get<2>(r) == 42);
@@ -176,4 +177,4 @@ TEST(__gnu_cxx::__bfloat16_t)
 TEST(char)
 TEST(int)
 TEST(unsigned int)
-TEST(size_t)
+TEST(long)
