@@ -3157,35 +3157,45 @@
 
 (define_expand "vec_widen_<su><optab>_<hi_lo>_<mode>"
   [(match_operand:<VDMODE> 0 "register_operand")
-   (match_operand:ILSX_HB 1 "register_operand")
-   (match_operand:ILSX_HB 2 "register_operand")
+   (match_operand:ILSX_WHB 1 "register_operand")
+   (match_operand:ILSX_WHB 2 "register_operand")
    (any_extend (const_int 0))
    (addsub (const_int 0) (const_int 0))
    (const_int zero_one)]
   "ISA_HAS_LSX"
 {
-  rtx (*fn_even) (rtx, rtx, rtx) =
-gen_lsx_v<optab>wev_<dlsxfmt>_<lsxfmt><u>;
-  rtx (*fn_odd) (rtx, rtx, rtx) =
-gen_lsx_v<optab>wod_<dlsxfmt>_<lsxfmt><u>;
-  loongarch_expand_vec_widen_hilo (operands[0], operands[1], operands[2],
-                        <zero_one>, fn_even, fn_odd);
+  rtx t_even = gen_reg_rtx (<VDMODE>mode);
+  rtx t_odd = gen_reg_rtx (<VDMODE>mode);
+  emit_insn (gen_lsx_v<optab>wev_<dlsxfmt>_<lsxfmt><u> (t_even, operands[1],
+	operands[2]));
+  emit_insn (gen_lsx_v<optab>wod_<dlsxfmt>_<lsxfmt><u> (t_odd, operands[1],
+	operands[2]));
+  if (<zero_one>)
+    emit_insn (gen_lsx_vilvh_<dlsxfmt> (operands[0], t_even, t_odd));
+  else
+    emit_insn (gen_lsx_vilvl_<dlsxfmt> (operands[0], t_even, t_odd));
+
   DONE;
 })
 
 (define_expand "vec_widen_<su>mult_<hi_lo>_<mode>"
   [(match_operand:<VDMODE> 0 "register_operand")
-   (match_operand:ILSX_HB 1 "register_operand")
-   (match_operand:ILSX_HB 2 "register_operand")
+   (match_operand:ILSX_WHB 1 "register_operand")
+   (match_operand:ILSX_WHB 2 "register_operand")
    (any_extend (const_int 0))
    (const_int zero_one)]
   "ISA_HAS_LSX"
 {
-  rtx (*fn_even) (rtx, rtx, rtx) =
-gen_lsx_vmulwev_<dlsxfmt>_<lsxfmt><u>;
-  rtx (*fn_odd) (rtx, rtx, rtx) =
-gen_lsx_vmulwod_<dlsxfmt>_<lsxfmt><u>;
-  loongarch_expand_vec_widen_hilo (operands[0], operands[1], operands[2],
-                        <zero_one>, fn_even, fn_odd);
+  rtx t_even = gen_reg_rtx (<VDMODE>mode);
+  rtx t_odd = gen_reg_rtx (<VDMODE>mode);
+  emit_insn (gen_lsx_vmulwev_<dlsxfmt>_<lsxfmt><u> (t_even, operands[1],
+	operands[2]));
+  emit_insn (gen_lsx_vmulwod_<dlsxfmt>_<lsxfmt><u> (t_odd, operands[1],
+	operands[2]));
+  if (<zero_one>)
+    emit_insn (gen_lsx_vilvh_<dlsxfmt> (operands[0], t_even, t_odd));
+  else
+    emit_insn (gen_lsx_vilvl_<dlsxfmt> (operands[0], t_even, t_odd));
+
   DONE;
 })

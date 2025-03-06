@@ -8908,47 +8908,18 @@ loongarch_expand_vec_widen_hilo (rtx dest, rtx op1, rtx op2,
 {
   machine_mode wmode = GET_MODE (dest);
   machine_mode mode = GET_MODE (op1);
+
+  gcc_assert (ISA_HAS_LASX
+	      && GET_MODE_SIZE (mode) == 32
+	      && mode != V4DImode);
+
   rtx t1 = gen_reg_rtx (wmode);
   rtx t2 = gen_reg_rtx (wmode);
   rtx t3 = gen_reg_rtx (wmode);
 
-  switch (mode)
-    {
-    case V16HImode:
-    case V32QImode:
-	{
-	  emit_insn (fn_even (t1, op1, op2));
-	  emit_insn (fn_odd (t2, op1, op2));
-	  loongarch_expand_vec_interleave (t3, t1, t2, high_p);
-	}
-      break;
-
-    case V8HImode:
-	{
-	  emit_insn (fn_even (t1, op1, op2));
-	  emit_insn (fn_odd (t2, op1, op2));
-	  if (high_p)
-	    emit_insn (gen_lsx_vilvh_w (t3, t1, t2));
-	  else
-	    emit_insn (gen_lsx_vilvl_w (t3, t1, t2));
-	}
-      break;
-
-    case V16QImode:
-	{
-	  emit_insn (fn_even (t1, op1, op2));
-	  emit_insn (fn_odd (t2, op1, op2));
-	  if (high_p)
-	    emit_insn (gen_lsx_vilvh_h (t3, t1, t2));
-	  else
-	    emit_insn (gen_lsx_vilvl_h (t3, t1, t2));
-	}
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
+  emit_insn (fn_even (t1, op1, op2));
+  emit_insn (fn_odd (t2, op1, op2));
+  loongarch_expand_vec_interleave (t3, t1, t2, high_p);
   emit_move_insn (dest, gen_lowpart (wmode, t3));
 }
 

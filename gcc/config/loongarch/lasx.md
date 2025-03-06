@@ -3569,8 +3569,8 @@
 
 (define_expand "vec_widen_<su><optab>_<hi_lo>_<mode>"
   [(match_operand:<VDMODE256> 0 "register_operand")
-   (match_operand:ILASX_HB 1 "register_operand")
-   (match_operand:ILASX_HB 2 "register_operand")
+   (match_operand:ILASX_WHB 1 "register_operand")
+   (match_operand:ILASX_WHB 2 "register_operand")
    (any_extend (const_int 0))
    (addsub (const_int 0) (const_int 0))
    (const_int zero_one)]
@@ -3587,8 +3587,8 @@ gen_lasx_xv<optab>wod_<dlasxfmt>_<lasxfmt><u>;
 
 (define_expand "vec_widen_<su>mult_<hi_lo>_<mode>"
   [(match_operand:<VDMODE256> 0 "register_operand")
-   (match_operand:ILASX_HB 1 "register_operand")
-   (match_operand:ILASX_HB 2 "register_operand")
+   (match_operand:ILASX_WHB 1 "register_operand")
+   (match_operand:ILASX_WHB 2 "register_operand")
    (any_extend (const_int 0))
    (const_int zero_one)]
   "ISA_HAS_LASX"
