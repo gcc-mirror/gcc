@@ -3115,6 +3115,10 @@ namespace __detail
 
 namespace __detail
 {
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3956. chrono::parse uses from_stream as a customization point
+  void from_stream() = delete;
+
   template<typename _Parsable, typename _CharT,
 	   typename _Traits = std::char_traits<_CharT>,
 	   typename... _OptArgs>
