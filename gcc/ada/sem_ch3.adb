@@ -4552,7 +4552,6 @@ package body Sem_Ch3 is
             Error_Msg_N
               ("\declaration requires an initialization expression",
                 N);
-            Set_Constant_Present (N, False);
 
          --  In Ada 83, deferred constant must be of private type
 
