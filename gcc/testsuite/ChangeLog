@@ -1,3 +1,25 @@
+2025-03-05  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-03-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115580
+	* g++.dg/warn/Wnonnull16.C: New test.
+
+2025-03-05  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/118320
+	* g++.dg/torture/pr118320.C: New test.
+
+2025-03-05  Hannes Braun  <hannes@hannesbraun.net>
+
+	Backported from master:
+	2025-03-05  Hannes Braun  <hannes@hannesbraun.net>
+
+	PR target/118942
+	* gcc.target/arm/simd/vld1q_base_xN_1.c: Add -Wpointer-sign.
+
 2025-03-04  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,14 @@
+2025-03-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2025-03-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119121
+	* include/bits/ranges_util.h (__detail::__pair_like_convertible_from):
+	Use `_Tp` in `is_reference_v` check
+	* testsuite/std/ranges/subrange/tuple_like.cc: New tests for
+	pair-like conversion
+
 2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

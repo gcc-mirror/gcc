@@ -1,3 +1,23 @@
+2025-03-05  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/118320
+	* config/aarch64/aarch64-ldp-fusion.cc (ldp_bb_info::fuse_pair):
+	Commonize the merge of input_uses and return early if it
+	fails.
+
+2025-03-05  Hannes Braun  <hannes@hannesbraun.net>
+
+	Backported from master:
+	2025-03-05  Hannes Braun  <hannes@hannesbraun.net>
+
+	PR target/118942
+	* config/arm/arm_neon.h (vld1q_s8_x3): Use int8_t instead of
+	uint16_t.
+	(vld1q_s16_x3): Use int16_t instead of uint16_t.
+	(vld1q_s8_x4): Likewise.
+	(vld1q_s16_x4): Likewise.
+
 2025-03-04  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
