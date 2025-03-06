@@ -291,11 +291,39 @@ Ada runtime libraries. You can check that your build environment is clean
 by verifying that @samp{gnatls -v} lists only one explicit path in each
 section.
 
+@cindex cobol
+@item @anchor{GCOBOL-prerequisite}GCOBOL
+
+The COBOL compiler, gcobol, first appeared in GCC 15.  To build the
+COBOL parser, you need GNU Bison 3.5.1 or later (but not 3.8.0). To build
+the lexer requires GNU Flex 2.6.4, the current version as of this writing,
+released on 2017-05-06.
+
+The gcobol documentation is maintained as manpages using troff
+mdoc. GNU groff is required to convert them to PDF format.  Conversion
+to HTML is done with mandoc, available at
+@uref{http://mdocml.bsd.lv/}.
+
+Because ISO COBOL defines strict requirements for numerical precision,
+gcobol requires hardware with 128-bit computation instructions.  This
+requirement applies to both host and target. For integer and
+fixed-point computation, gcobol uses
+@deftp {Data type} __int128
+@end deftp
+meaning @code{16 == sizeof(long long int)}.
+For floating point, gcobol uses
+@deftp {Data type} _Float128
+@end deftp
+(On some architectures, GCC supports 128-bit floating point in software.)
+
+gcobol has so far been tested on two architectures only: x86_64 and
+aarch64 with little-endian encoding.
+
 @item @anchor{GDC-prerequisite}GDC
 
-In order to build GDC, the D compiler, you need a working GDC
-compiler (GCC version 9.4 or later) and D runtime library,
-@samp{libphobos}, as the D front end is written in D.
+In order to build GDC, the D compiler, you need a working GDC compiler
+(GCC version 9.4 or later) and D runtime library, @samp{libphobos}, as
+the D front end is written in D.
 
 Versions of GDC prior to 12 can be built with an ISO C++11 compiler, which can
 then be installed and used to bootstrap newer versions of the D front end.
@@ -568,6 +596,14 @@ Necessary to build GCC during development because the generated output
 files are not included in the version-controlled source repository.
 They are included in releases.
 
+@item Bison version 3.5.1 or later (but not 3.8.0)
+
+Necessary when modifying @file{*.y} files in the COBOL front end.
+
+Necessary to build GCC during development because the generated output
+files are not included in the version-controlled source repository.
+They are included in releases.
+
 @item Texinfo version 4.7 (or later)
 
 Necessary for running @command{makeinfo} when modifying @file{*.texi}
@@ -644,13 +680,14 @@ HTTPS as tarballs compressed with @command{gzip} or @command{bzip2}.
 Please refer to the @uref{https://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.
 
-The source distribution includes the Ada, C, C++, Objective-C, D (GCC 9
-and later), Fortran, Go, and Modula-2 (GCC 13 and later) compilers, as
-well as runtime libraries for C++, Objective-C, and Fortran.
-For previous versions these were downloadable as separate components such
-as the core GCC distribution, which included the C language front end and
-shared components, and language-specific distributions including the
-language front end and the language runtime (where appropriate).
+The source distribution includes the Ada, C, C++, Objective-C, COBOL
+(GCC 15 and later), D (GCC 9 and later), Fortran, Go, and Modula-2
+(GCC 13 and later) compilers, as well as runtime libraries for C++,
+Objective-C, COBOL, and Fortran.  For previous versions these were
+downloadable as separate components such as the core GCC distribution,
+which included the C language front end and shared components, and
+language-specific distributions including the language front end and
+the language runtime (where appropriate).
 
 If you also intend to build binutils (either to upgrade an existing
 installation or for use in place of the corresponding tools of your
@@ -2049,13 +2086,13 @@ their runtime libraries should be built.  For a list of valid values for
 grep ^language= */config-lang.in
 @end smallexample
 Currently, you can use any of the following:
-@code{all}, @code{default}, @code{ada}, @code{c}, @code{c++}, @code{d},
-@code{fortran}, @code{go}, @code{jit}, @code{lto}, @code{m2},
-@code{objc}, @code{obj-c++}.
+@code{all}, @code{default}, @code{ada}, @code{c}, @code{c++},
+@code{cobol}, @code{d}, @code{fortran}, @code{go}, @code{jit},
+@code{lto}, @code{m2}, @code{objc}, @code{obj-c++}.
 Building the Ada compiler has special requirements, see below.
 If you do not pass this flag, or specify the option @code{default}, then the
 default languages available in the @file{gcc} sub-tree will be configured.
-Ada, D, Go, Jit, Objective-C++ and Modula-2 are not default languages.
+Ada, COBOL, D, Go, Jit, Objective-C++ and Modula-2 are not default languages.
 LTO is not a
 default language, but is built by default because @option{--enable-lto} is
 enabled by default.  The other languages are default languages.  If

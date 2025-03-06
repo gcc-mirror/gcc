@@ -336,6 +336,13 @@ The authoritative manual on Objective-C 2.0 is available from Apple:
 For more information concerning the history of Objective-C that is
 available online, see @uref{https://gcc.gnu.org/readings.html}
 
+@cindex COBOL
+@section COBOL Language
+
+As of the GCC 15 release, GCC supports the ISO COBOL language standard
+(ISO/IEC 1989:2023). It includes some support for compatibility with
+other COBOL compilers via the @option{-dialect} option.
+
 @section Go Language
 
 As of the GCC 4.7.1 release, GCC supports the Go 1 language standard,

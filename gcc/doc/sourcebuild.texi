@@ -94,6 +94,9 @@ The @code{libffi} library, used as part of the Go runtime library.
 @item libgcc
 The GCC runtime library.
 
+@item libgcobol
+The COBOL runtime library.
+
 @item libgfortran
 The Fortran runtime library.
 
