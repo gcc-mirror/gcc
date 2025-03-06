@@ -1,3 +1,18 @@
+2025-03-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118998
+	* gm2-gcc/m2expr.cc (m2expr_BuildLRotate): Convert nBits
+	to the return type.
+	(m2expr_BuildRRotate): Ditto.
+	(m2expr_BuildLogicalRotate): Convert op3 to an integer type.
+	Replace op3 aith rotateCount.
+	Negate rotateCount if it is negative and call rotate right.
+	* gm2-gcc/m2pp.cc (m2pp_bit_and_expr): New function.
+	(m2pp_binary_function): Ditto.
+	(m2pp_simple_expression): BIT_AND_EXPR new case clause.
+	LROTATE_EXPR ditto.
+	RROTATE_EXPR ditto.
+
 2025-03-02  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/119088

@@ -1,3 +1,80 @@
+2025-03-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118998
+	* gm2/iso/pass/testrotate.mod: New test.
+	* gm2/pim/fail/tinyconst.mod: New test.
+	* gm2/sets/run/pass/simplepacked.mod: New test.
+
+2025-03-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115580
+	* g++.dg/warn/Wnonnull16.C: New test.
+
+2025-03-05  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117364
+	PR c++/118874
+	* g++.dg/coroutines/torture/pr118874.C: New test.
+
+2025-03-05  Hannes Braun  <hannes@hannesbraun.net>
+
+	PR target/118942
+	* gcc.target/arm/simd/vld1q_base_xN_1.c: Add -Wpointer-sign.
+
+2025-03-05  Da Xie  <xxie_xd@163.com>
+
+	PR c++/100589
+	* g++.dg/cpp2a/concepts-pr100589.C: New test.
+
+2025-03-05  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/119046
+	* gcc.target/aarch64/pr119046.c: New test.
+
+2025-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118953
+	* gcc.dg/torture/pr118953.c: New test.
+
+2025-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97323
+	* gcc.dg/pr97323.c: New testcase.
+
+2025-03-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/104684
+	* gfortran.dg/coarray/ptr_comp_6.f08: New test.
+
+2025-03-05  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/116740
+	* g++.dg/parse/crash80.C: New test.
+
+2025-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119102
+	* g++.dg/modules/pr119102_a.H: New test.
+	* g++.dg/modules/pr119102_b.C: New test.
+	* g++.dg/modules/omp-3_a.C: New test.
+	* g++.dg/modules/omp-3_b.C: New test.
+	* g++.dg/modules/omp-3_c.C: New test.
+	* g++.dg/modules/omp-3_d.C: New test.
+	* g++.dg/modules/oacc-1_a.C: New test.
+	* g++.dg/modules/oacc-1_b.C: New test.
+	* g++.dg/modules/oacc-1_c.C: New test.
+
+2025-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118787
+	* g++.dg/cpp0x/alignas22.C: New test.
+
+2025-03-05  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/119084
+	* gcc.target/loongarch/pr119084.c: New test.
+
 2025-03-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/119073

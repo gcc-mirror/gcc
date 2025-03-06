@@ -1,3 +1,93 @@
+2025-03-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (enumerate_view::_Iterator::operator-):
+	Add noexcept, as per LWG 3912.
+	* testsuite/std/ranges/adaptors/enumerate/1.cc: Check iterator
+	difference is noexcept.
+
+2025-03-05  yxj-github-437  <2457369732@qq.com>
+
+	* src/c++23/std-clib.cc.in (timespec): Move within preprocessor
+	group guarded by _GLIBCXX_HAVE_TIMESPEC_GET.
+
+2025-03-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/119110
+	* testsuite/25_algorithms/move/constrained.cc: Move test06
+	function to ...
+	* testsuite/25_algorithms/move/105609.cc: New test.
+	* testsuite/25_algorithms/move_backward/constrained.cc: Move
+	test04 function to ...
+	* testsuite/25_algorithms/move_backward/105609.cc: New test.
+
+2025-03-05  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/version.def (ranges_cache_latest): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/ranges (__detail::__non_propagating_cache::_M_reset):
+	Export from base class _Optional_base.
+	(cache_latest_view): Define for C++26.
+	(cache_latest_view::_Iterator): Likewise.
+	(cache_latest_view::_Sentinel): Likewise.
+	(views::__detail::__can_cache_latest): Likewise.
+	(views::_CacheLatest, views::cache_latest): Likewise.
+	* testsuite/std/ranges/adaptors/cache_latest/1.cc: New test.
+
+2025-03-05  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/bits/stl_algo.h (__stable_sort): Use if consteval
+	instead of is_constant_evaluated.
+
+2025-03-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/115215
+	PR libstdc++/115218
+	* include/std/ranges
+	(concat_view::iterator::_S_invoke_with_runtime_index): Use
+	__builtin_unreachable in recursive lambda to certify it always
+	exits via 'return'.
+	(concat_view::iterator::iterator): In the const-converting
+	constructor, direct initialize _M_it.
+	(views::_Concat::operator()): Adjust constraints in the
+	single-argument case as per LWG 4082.
+	* testsuite/std/ranges/concat/1.cc (test01): Call it at runtime
+	too.
+	(test04): New test.
+
+2025-03-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119121
+	* include/bits/ranges_util.h (__detail::__pair_like_convertible_from):
+	Use `_Tp` in `is_reference_v` check
+	* testsuite/std/ranges/subrange/tuple_like.cc: New tests for
+	pair-like conversion
+
+2025-03-05  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/bits/ranges_uninitialized.h: Mark the specialized
+	memory algorithms as constexpr in C++26. Also mark the members
+	of the _DestroyGuard helper class.
+	* include/bits/stl_uninitialized.h: Ditto.
+	* include/bits/stl_construct.h: (_Construct_novalue) Mark it
+	as constexpr in C++26.
+	* include/bits/version.def (raw_memory_algorithms): Bump the
+	feature-testing macro for C++26.
+	* include/bits/version.h: Regenerate.
+	* testsuite/20_util/headers/memory/synopsis.cc: Add constexpr to
+	the uninitialized_* algorithms (when in C++26) in the test.
+	* testsuite/20_util/specialized_algorithms/feature_test_macro.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/constexpr.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_default_construct/constexpr.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/constexpr.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_move/constexpr.cc:
+	New test.
+	* testsuite/20_util/specialized_algorithms/uninitialized_value_construct/constexpr.cc:
+	New test.
+
 2025-03-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/test.xml: Remove stray comma.

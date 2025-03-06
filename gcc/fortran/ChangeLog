@@ -1,3 +1,14 @@
+2025-03-05  Mark Wielaard  <mark@klomp.org>
+
+	* lang.opt.urls: Regenerated.
+
+2025-03-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/104684
+	* trans-array.cc (gfc_conv_expr_descriptor): Look at the
+	lang-specific akind and do a view convert when only the akind
+	attribute differs between pointer and allocatable array.
+
 2025-03-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/119049

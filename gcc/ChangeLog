@@ -1,3 +1,53 @@
+2025-03-05  Hannes Braun  <hannes@hannesbraun.net>
+
+	PR target/118942
+	* config/arm/arm_neon.h (vld1q_s8_x3): Use int8_t instead of
+	uint16_t.
+	(vld1q_s16_x3): Use int16_t instead of uint16_t.
+	(vld1q_s8_x4): Likewise.
+	(vld1q_s16_x4): Likewise.
+
+2025-03-05  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/119046
+	* config/aarch64/aarch64.cc (aarch64_evpc_dup): Use VOIDmode for
+	PARALLEL.
+
+2025-03-05  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/119046
+	* rtlanal.cc (may_trap_p_1): Don't mark FP-mode PARALLELs as trapping.
+
+2025-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118953
+	* value-range.cc (irange::union_bitmask): Update m_bitmask if
+	get_bitmask () is unknown_p and m_bitmask is not even when the
+	semantic bitmask didn't change and returning false.
+
+2025-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97323
+	* tree.cc (gimple_canonical_types_compatible_p): Ignore
+	TYPE_MODE also for ARRAY_TYPE.
+	(verify_type): Likewise.
+
+2025-03-05  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/119084
+	* config/loongarch/lasx.md (UNSPEC_LASX_XVLDX): Remove.
+	(lasx_xvldx): Remove.
+	* config/loongarch/lsx.md (UNSPEC_LSX_VLDX): Remove.
+	(lsx_vldx): Remove.
+	* config/loongarch/simd.md (QIVEC): New define_mode_iterator.
+	(<simd_isa>_<x>vldx): New define_expand.
+	* config/loongarch/loongarch.cc (loongarch_address_insns_1): New
+	static function with most logic factored out from ...
+	(loongarch_address_insns): ... here.  Call
+	loongarch_address_insns_1 with reg_reg_cost = 1.
+	(loongarch_address_cost): Call loongarch_address_insns_1 with
+	reg_reg_cost = la_addr_reg_reg_cost.
+
 2025-03-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	* doc/invoke.texi (AVR Optimization Options): New @subsubsection

@@ -1,3 +1,53 @@
+2025-03-05  Jason Merrill  <jason@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117364
+	PR c++/118874
+	* coroutines.cc (cp_coroutine_transform::build_ramp_function): For
+	!aggregate_value_p return force return value into a local temp.
+
+2025-03-05  Da Xie  <xxie_xd@163.com>
+
+	PR c++/100589
+	* decl.cc (grokdeclarator): Issue an error for a declarator with
+	constrained auto type specifier and trailing return types. Include
+	function names if available.
+
+2025-03-05  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/116740
+	* name-lookup.cc (set_identifier_type_value_with_scope): Don't
+	fail assert with ill-formed input.
+
+2025-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119102
+	* module.cc (enum streamed_extensions): Add SE_OPENMP_SIMD
+	and SE_OPENACC, change value of SE_OPENMP and SE_BITS.
+	(CASE_OMP_SIMD_CODE, CASE_OMP_CODE, CASE_OACC_CODE): Define.
+	(trees_out::start): Don't set SE_OPENMP extension for OMP_CLAUSE.
+	Set SE_OPENMP_SIMD extension for CASE_OMP_SIMD_CODE, SE_OPENMP
+	for CASE_OMP_CODE and SE_OPENACC for CASE_OACC_CODE.
+	(trees_in::start): Don't fail for OMP_CLAUSE with missing
+	SE_OPENMP extension.  Do fail for CASE_OMP_SIMD_CODE and missing
+	SE_OPENMP_SIMD extension, or CASE_OMP_CODE and missing SE_OPENMP
+	extension, or CASE_OACC_CODE and missing SE_OPENACC extension.
+	(module_state::write_readme): Write all of SE_OPENMP_SIMD, SE_OPENMP
+	and SE_OPENACC extensions.
+	(module_state::read_config): Diagnose missing -fopenmp, -fopenmp-simd
+	and/or -fopenacc depending on extensions used.
+
+2025-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* typeck.cc (check_return_expr): Fix comment typo, rom -> from.
+
+2025-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/118787
+	* pt.cc (tsubst) <case ARRAY_TYPE>: Use return t; only if it doesn't
+	have any TYPE_ATTRIBUTES.  Call apply_late_template_attributes.
+	<case POINTER_TYPE, case REFERENCE_TYPE>: Likewise.  Formatting fix.
+
 2025-03-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/119073

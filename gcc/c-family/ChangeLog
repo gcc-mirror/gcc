@@ -1,3 +1,9 @@
+2025-03-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/115580
+	* c-common.cc (check_function_arguments): Return early if
+	c_inhibit_evaluation_warnings.
+
 2025-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt (Wc++26-extensions): Add CppReason(CPP_W_CXX26_EXTENSIONS).
