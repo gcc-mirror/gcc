@@ -235,6 +235,11 @@ extern tree default_builtin_tm_load_store (tree);
 extern int default_memory_move_cost (machine_mode, reg_class_t, bool);
 extern int default_register_move_cost (machine_mode, reg_class_t,
 				       reg_class_t);
+extern int default_callee_save_cost (spill_cost_type, unsigned int,
+				     machine_mode, unsigned int, int,
+				     const HARD_REG_SET &, bool);
+extern int default_frame_allocation_cost (frame_cost_type,
+					  const HARD_REG_SET &);
 extern bool default_slow_unaligned_access (machine_mode, unsigned int);
 extern HOST_WIDE_INT default_estimated_poly_value (poly_int64,
 						   poly_value_estimate_kind);

@@ -1,5 +1,5 @@
 /* { dg-do run { target le } } */
-/* { dg-additional-options "-Os -fno-tree-ter -save-temps -fdump-rtl-ree-all -free -std=c99 -w" } */
+/* { dg-additional-options "-Os -fno-tree-ter -save-temps -fdump-rtl-ree-all -free -std=c99 -w -fno-caller-saves" } */
 
 typedef unsigned char u8;
 typedef unsigned char __attribute__((__vector_size__ (8))) v64u8;
