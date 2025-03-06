@@ -1888,6 +1888,87 @@ contains_forall_index_p (gfc_expr *expr)
   return false;
 }
 
+
+/* Traverse expr, checking all EXPR_VARIABLE symbols for their
+   implied_index attribute.  Return true if any variable may be
+   used as an implied-do index.  It is safe to pessimistically
+   return true, and assume a dependency.  */
+
+bool
+gfc_contains_implied_index_p (gfc_expr *expr)
+{
+  gfc_actual_arglist *arg;
+  gfc_constructor *c;
+  gfc_ref *ref;
+  int i;
+
+  if (!expr)
+    return false;
+
+  switch (expr->expr_type)
+    {
+    case EXPR_VARIABLE:
+      if (expr->symtree->n.sym->attr.implied_index)
+	return true;
+      break;
+
+    case EXPR_OP:
+      if (gfc_contains_implied_index_p (expr->value.op.op1)
+	  || gfc_contains_implied_index_p (expr->value.op.op2))
+	return true;
+      break;
+
+    case EXPR_FUNCTION:
+      for (arg = expr->value.function.actual; arg; arg = arg->next)
+	if (gfc_contains_implied_index_p (arg->expr))
+	  return true;
+      break;
+
+    case EXPR_CONSTANT:
+    case EXPR_NULL:
+    case EXPR_SUBSTRING:
+      break;
+
+    case EXPR_STRUCTURE:
+    case EXPR_ARRAY:
+      for (c = gfc_constructor_first (expr->value.constructor);
+	   c; gfc_constructor_next (c))
+	if (gfc_contains_implied_index_p (c->expr))
+	  return true;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  for (ref = expr->ref; ref; ref = ref->next)
+    switch (ref->type)
+      {
+      case REF_ARRAY:
+	for (i = 0; i < ref->u.ar.dimen; i++)
+	  if (gfc_contains_implied_index_p (ref->u.ar.start[i])
+	      || gfc_contains_implied_index_p (ref->u.ar.end[i])
+	      || gfc_contains_implied_index_p (ref->u.ar.stride[i]))
+	    return true;
+	break;
+
+      case REF_COMPONENT:
+	break;
+
+      case REF_SUBSTRING:
+	if (gfc_contains_implied_index_p (ref->u.ss.start)
+	    || gfc_contains_implied_index_p (ref->u.ss.end))
+	  return true;
+	break;
+
+      default:
+	gcc_unreachable ();
+      }
+
+  return false;
+}
+
+
 /* Determines overlapping for two single element array references.  */
 
 static gfc_dependency
