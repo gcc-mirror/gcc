@@ -1087,12 +1087,14 @@ remap_contract (tree src, tree dst, tree contract, bool duplicate_p)
   bool do_remap = false;
 
   /* Insert parameter remappings.  */
-  if (TREE_CODE (src) == FUNCTION_DECL)
-    src = DECL_ARGUMENTS (src);
-  if (TREE_CODE (dst) == FUNCTION_DECL)
-    dst = DECL_ARGUMENTS (dst);
+  gcc_assert(TREE_CODE (src) == FUNCTION_DECL);
+  gcc_assert(TREE_CODE (dst) == FUNCTION_DECL);
 
-  for (tree sp = src, dp = dst;
+  int src_num_artificial_args = num_artificial_parms_for (src);
+  int dst_num_artificial_args = num_artificial_parms_for (dst);
+
+
+  for (tree sp = DECL_ARGUMENTS (src), dp = DECL_ARGUMENTS (dst);
        sp || dp;
        sp = DECL_CHAIN (sp), dp = DECL_CHAIN (dp))
     {
@@ -1116,6 +1118,20 @@ remap_contract (tree src, tree dst, tree contract, bool duplicate_p)
 
       insert_decl_map (&id, sp, dp);
       do_remap = true;
+
+      /* First artificial arg is *this. We want to remap that. However, we
+	 want to skip _in_charge param and __vtt_parm. Do so now.  */
+      if (src_num_artificial_args > 0)
+	{
+	  while (--src_num_artificial_args,src_num_artificial_args > 0)
+	    sp = DECL_CHAIN (sp);
+	}
+      if (dst_num_artificial_args > 0)
+	{
+	  while (--dst_num_artificial_args,dst_num_artificial_args > 0)
+	    dp = DECL_CHAIN (dp);
+	}
+
     }
   if (!do_remap)
     return;

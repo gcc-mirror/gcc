@@ -61,7 +61,7 @@ enum contract_inheritance
 {
   CONTRACT_INHERITANCE_NONE = 0,
   CONTRACT_INHERITANCE_P2900R13 = 1,
-  CONTRACT_INHERITANCE_VILLE = 2,
+  CONTRACT_INHERITANCE_P3653 = 2,
 };
 
 /* True if the contract is unchecked.  */
