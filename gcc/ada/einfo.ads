@@ -3927,9 +3927,8 @@ package Einfo is
 --         Points to the component in the base type.
 
 --    Overlays_Constant
---       Defined in all entities. Set only for E_Constant or E_Variable for
---       which there is an address clause that causes the entity to overlay
---       a constant object.
+--       Defined in constants and variables. Set if there is an address clause
+--       that causes the entity to overlay a constant object.
 
 --    Overridden_Operation
 --       Defined in subprograms. For overriding operations, points to the
@@ -4961,7 +4960,6 @@ package Einfo is
    --    Materialize_Entity
    --    Needs_Debug_Info
    --    Never_Set_In_Source
-   --    Overlays_Constant
    --    Referenced
    --    Referenced_As_LHS
    --    Referenced_As_Out_Parameter
@@ -5288,7 +5286,7 @@ package Einfo is
    --    Interface_Name                        (constants only)
    --    Related_Type                          (constants only)
    --    Initialization_Statements
-   --    BIP_Initialization_Call
+   --    BIP_Initialization_Call               (constants only)
    --    Finalization_Master_Node
    --    Last_Aggregate_Assignment
    --    Activation_Record_Component
@@ -5318,6 +5316,7 @@ package Einfo is
    --    Is_Volatile_Full_Access
    --    Optimize_Alignment_Space              (constants only)
    --    Optimize_Alignment_Time               (constants only)
+   --    Overlays_Constant                     (constants only)
    --    SPARK_Pragma_Inherited                (constants only)
    --    Stores_Attribute_Old_Prefix           (constants only)
    --    Treat_As_Volatile
@@ -6205,6 +6204,7 @@ package Einfo is
    --    OK_To_Rename
    --    Optimize_Alignment_Space
    --    Optimize_Alignment_Time
+   --    Overlays_Constant
    --    SPARK_Pragma_Inherited
    --    Suppress_Initialization
    --    Treat_As_Volatile

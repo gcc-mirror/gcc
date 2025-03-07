@@ -25586,6 +25586,7 @@ package body Sem_Util is
 
             if Sure
               and then Modification_Comes_From_Source
+              and then Ekind (Ent) in E_Constant | E_Variable
               and then Overlays_Constant (Ent)
               and then Address_Clause_Overlay_Warnings
             then
