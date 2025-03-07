@@ -1,10 +1,10 @@
 /* PR c/117178 */
 /* { dg-do compile } */
-/* { dg-options "-Wunterminated-string-initialization" } */
+/* { dg-options "-Wc++-compat -Wunterminated-string-initialization" } */
 
 char a1[] = "a";
-char a2[1] = "a";	/* { dg-warning "initializer-string for array of 'char' truncates" } */
-char a2nonstring[1] __attribute__((nonstring)) = "a";
+char a2[1] = "a";	/* { dg-warning "initializer-string for array of 'char' is too long for C\\\+\\\+" } */
+char a2nonstring[1] __attribute__((nonstring)) = "a";	/* { dg-warning "initializer-string for array of 'char' is too long for C\\\+\\\+" } */
 char a3[1] = "aa";	/* { dg-warning "initializer-string for array of 'char' is too long" } */
 char a4[2] = "a";
 
@@ -23,11 +23,11 @@ struct has_str {
 
 struct has_str foo = {
   .str1 = "111",
-  .str2 = "2222",	/* { dg-warning "initializer-string for array of 'char' truncates" } */
+  .str2 = "2222",	/* { dg-warning "initializer-string for array of 'char' is too long for C\\\+\\\+" } */
   .str3 = "33333",	/* { dg-warning "initializer-string for array of 'char' is too long" } */
   .str4 = { '4', '4', '4', '4' },
   .tag1 = "AAA",
-  .tag2 = "BBBB",
+  .tag2 = "BBBB",	/* { dg-warning "initializer-string for array of 'char' is too long for C\\\+\\\+" } */
   .tag3 = "CCCCC",	/* { dg-warning "initializer-string for array of 'char' is too long" } */
   .tag4 = { 'D', 'D', 'D', 'D' }
 };

@@ -8689,17 +8689,20 @@ give a larger number of false positives and is deactivated by default.
 @opindex Wunterminated-string-initialization
 @opindex Wno-unterminated-string-initialization
 @item -Wunterminated-string-initialization @r{(C and Objective-C only)}
-Warn about character arrays
-initialized as unterminated character sequences
-with a string literal.
+Warn about character arrays initialized as unterminated character sequences
+with a string literal, unless the declaration being initialized has
+the @code{nonstring} attribute.
 For example:
 
 @smallexample
-char arr[3] = "foo";
+char arr[3] = "foo"; /* Warning.  */
+char arr2[3] __attribute__((nonstring)) = "bar"; /* No warning.  */
 @end smallexample
 
-This warning is enabled by @option{-Wextra} and @option{-Wc++-compat}.
-In C++, such initializations are an error.
+This warning is enabled by @option{-Wextra}.  If @option{-Wc++-compat}
+is enabled, the warning has slightly different wording and warns even
+if the declaration being initialized has the @code{nonstring} warning,
+as in C++ such initializations are an error.
 
 @opindex Warray-compare
 @opindex Wno-array-compare
