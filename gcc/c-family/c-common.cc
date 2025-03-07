@@ -533,7 +533,6 @@ const struct c_common_resword c_common_reswords[] =
   { "friend",		RID_FRIEND,	D_CXXONLY | D_CXXWARN },
   { "goto",		RID_GOTO,	0 },
   { "if",		RID_IF,		0 },
-//  { "inherited",	RID_INHERITED,	D_CXXONLY | D_CXXWARN }, // no D_CXX20 in order for contracts to work out of the box
   { "inline",		RID_INLINE,	D_EXT89 },
   { "int",		RID_INT,	0 },
   { "long",		RID_LONG,	0 },
