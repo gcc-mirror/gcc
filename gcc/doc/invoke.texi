@@ -8229,20 +8229,28 @@ void f (char *d)
 @item -Wno-stringop-overflow
 @item -Wstringop-overflow
 @itemx -Wstringop-overflow=@var{type}
-Warn for calls to string manipulation functions such as @code{memcpy} and
-@code{strcpy} that are determined to overflow the destination buffer.  The
+Warn for code that can be statically determined to cause buffer overflows or
+memory overruns, such as calls to @code{memcpy} and
+@code{strcpy} that overflow the destination buffer.  The
 optional argument is one greater than the type of Object Size Checking to
 perform to determine the size of the destination.  @xref{Object Size Checking}.
-The argument is meaningful only for functions that operate on character arrays
-but not for raw memory functions like @code{memcpy} which always make use
-of Object Size type-0.  The option also warns for calls that specify a size
+The argument is meaningful only for string functions
+that operate on character arrays; raw memory functions like @code{memcpy}
+always use type-zero Object Size Checking.
+
+The option also warns for calls that specify a size
 in excess of the largest possible object or at most @code{SIZE_MAX / 2} bytes.
+
 The option produces the best results with optimization enabled but can detect
 a small subset of simple buffer overflows even without optimization in
 calls to the GCC built-in functions like @code{__builtin_memcpy} that
 correspond to the standard functions.  In any case, the option warns about
 just a subset of buffer overflows detected by the corresponding overflow
-checking built-ins.  For example, the option issues a warning for
+checking built-ins, such as @code{__builtin___memcpy_chk}, which can perform
+run-time checking if the access cannot be identified as safe
+at compile time.
+
+For example, the option issues a warning for
 the @code{strcpy} call below because it copies at least 5 characters
 (the string @code{"blue"} including the terminating NUL) into the buffer
 of size 4.
@@ -8261,6 +8269,21 @@ const char* f (enum Color clr)
     @}
 
   return strcpy (buf, str);   // warning here
+@}
+@end smallexample
+
+The effect of this option is not limited to string or memory
+manipulation functions.  In this example, a warning is diagnosed
+because a 1-element array is passed to a function requiring at least a
+4-element array argument:
+
+@smallexample
+void f (int[static 4]);
+
+void g (void)
+@{
+  int *p = (int *) malloc (1 * sizeof(int));
+  f (p);   // warning here
 @}
 @end smallexample
 
