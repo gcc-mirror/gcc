@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on -fcontracts-nonattr" }
+// { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on -fcontracts-nonattr -fcontracts-nonattr-inheritance-mode=P2900R13" }
 
 struct BaseA {
   virtual int fun(int n) pre ( n > 0 ) { return -n; }
