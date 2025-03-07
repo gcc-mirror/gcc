@@ -5117,8 +5117,9 @@ handle_nonstring_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       if (POINTER_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
 	{
 	  /* Accept the attribute on arrays and pointers to all three
-	     narrow character types.  */
-	  tree eltype = TREE_TYPE (type);
+	     narrow character types, including multi-dimensional arrays
+	     or pointers to them.  */
+	  tree eltype = strip_array_types (TREE_TYPE (type));
 	  eltype = TYPE_MAIN_VARIANT (eltype);
 	  if (eltype == char_type_node
 	      || eltype == signed_char_type_node
