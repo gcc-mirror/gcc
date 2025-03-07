@@ -18375,6 +18375,7 @@ package body Sem_Util is
 
       case Nkind (N) is
          when N_Indexed_Component
+            | N_Selected_Component
             | N_Slice
          =>
             return
@@ -18385,13 +18386,6 @@ package body Sem_Util is
 
          when N_Attribute_Reference =>
             return Attribute_Name (N) in Name_Input | Name_Old | Name_Result;
-
-         when N_Selected_Component =>
-            return
-              Is_Name_Reference (Selector_Name (N))
-                and then
-                  (Is_Name_Reference (Prefix (N))
-                    or else Is_Access_Type (Etype (Prefix (N))));
 
          when N_Explicit_Dereference =>
             return True;
@@ -28514,12 +28508,6 @@ package body Sem_Util is
          when N_Selected_Component =>
             if Is_Access_Type (Etype (Prefix (N))) then
                --  treat implicit dereference same as explicit
-               return False;
-            end if;
-
-            if Ekind (Entity (Selector_Name (N))) not in
-                 E_Component | E_Discriminant
-            then
                return False;
             end if;
 
