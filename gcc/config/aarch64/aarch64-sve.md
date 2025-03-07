@@ -3107,12 +3107,12 @@
   [(set (match_operand:<VEL> 0 "register_operand")
 	(unspec:<VEL>
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (match_operand:SVE_FULL 2 "register_operand")]
+	   (match_operand:SVE_ALL 2 "register_operand")]
 	  LAST))]
   "TARGET_SVE"
   {@ [ cons: =0 , 1   , 2  ]
-     [ ?r       , Upl , w  ] last<ab>\t%<vwcore>0, %1, %2.<Vetype>
-     [ w        , Upl , w  ] last<ab>\t%<Vetype>0, %1, %2.<Vetype>
+     [ ?r       , Upl , w  ] last<ab>\t%<vccore>0, %1, %2.<Vctype>
+     [ w        , Upl , w  ] last<ab>\t%<Vctype>0, %1, %2.<Vctype>
   }
 )
 
@@ -8899,26 +8899,26 @@
 	(unspec:<VEL>
 	  [(match_operand:<VEL> 1 "register_operand")
 	   (match_operand:<VPRED> 2 "register_operand")
-	   (match_operand:SVE_FULL 3 "register_operand")]
+	   (match_operand:SVE_ALL 3 "register_operand")]
 	  CLAST))]
   "TARGET_SVE"
   {@ [ cons: =0 , 1 , 2   , 3  ]
-     [ ?r       , 0 , Upl , w  ] clast<ab>\t%<vwcore>0, %2, %<vwcore>0, %3.<Vetype>
-     [ w        , 0 , Upl , w  ] clast<ab>\t%<Vetype>0, %2, %<Vetype>0, %3.<Vetype>
+     [ ?r       , 0 , Upl , w  ] clast<ab>\t%<vccore>0, %2, %<vccore>0, %3.<Vctype>
+     [ w        , 0 , Upl , w  ] clast<ab>\t%<Vctype>0, %2, %<Vctype>0, %3.<Vctype>
   }
 )
 
 (define_insn "@aarch64_fold_extract_vector_<last_op>_<mode>"
-  [(set (match_operand:SVE_FULL 0 "register_operand")
-	(unspec:SVE_FULL
-	  [(match_operand:SVE_FULL 1 "register_operand")
+  [(set (match_operand:SVE_ALL 0 "register_operand")
+	(unspec:SVE_ALL
+	  [(match_operand:SVE_ALL 1 "register_operand")
 	   (match_operand:<VPRED> 2 "register_operand")
-	   (match_operand:SVE_FULL 3 "register_operand")]
+	   (match_operand:SVE_ALL 3 "register_operand")]
 	  CLAST))]
   "TARGET_SVE"
   {@ [ cons: =0 , 1 , 2   , 3  ]
-     [ w        , 0 , Upl , w  ] clast<ab>\t%0.<Vetype>, %2, %0.<Vetype>, %3.<Vetype>
-     [ ?&w      , w , Upl , w  ] movprfx\t%0, %1\;clast<ab>\t%0.<Vetype>, %2, %0.<Vetype>, %3.<Vetype>
+     [ w        , 0 , Upl , w  ] clast<ab>\t%0.<Vctype>, %2, %0.<Vctype>, %3.<Vctype>
+     [ ?&w      , w , Upl , w  ] movprfx\t%0, %1\;clast<ab>\t%0.<Vctype>, %2, %0.<Vctype>, %3.<Vctype>
   }
 )
 
