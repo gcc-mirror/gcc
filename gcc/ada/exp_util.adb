@@ -1552,7 +1552,6 @@ package body Exp_Util is
                      pragma Assert (Nkind (Call_Node) = N_Function_Call);
 
                      Actual           : Node_Id := First_Actual (Call_Node);
-                     Actual_Type      : Entity_Id;
                      Actual_Or_Prefix : Node_Id;
 
                   begin
@@ -1579,11 +1578,11 @@ package body Exp_Util is
                               Actual_Or_Prefix := Actual;
                            end if;
 
-                           Actual_Type := Etype (Actual);
-
-                           if Is_Anonymous_Access_Type (Actual_Type) then
-                              Actual_Type := Designated_Type (Actual_Type);
-                           end if;
+                           --  If at least one actual is a controlling formal
+                           --  parameter of a class-wide Pre/Post aspect's
+                           --  subprogram, the rule in RM 6.1.1(7) applies,
+                           --  and we want to map the call to target the
+                           --  corresponding function of the derived type.
 
                            if Nkind (Actual_Or_Prefix)
                                 in N_Identifier
@@ -1592,11 +1591,17 @@ package body Exp_Util is
 
                              and then Is_Formal (Entity (Actual_Or_Prefix))
 
-                             and then Covers (Ctrl_Type, Actual_Type)
+                             and then Is_Controlling_Formal
+                                        (Entity (Actual_Or_Prefix))
                            then
-                              --  At least one actual is a formal parameter of
-                              --  Par_Subp with type Ctrl_Type.
+                              return True;
 
+                           --  RM 6.1.1(7) also applies to Result attributes
+                           --  of primitive functions with controlling results.
+
+                           elsif Is_Attribute_Result (Actual)
+                             and then Has_Controlling_Result (Subp)
+                           then
                               return True;
                            end if;
 
