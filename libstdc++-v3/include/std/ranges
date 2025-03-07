@@ -5333,15 +5333,21 @@ namespace views::__adaptor
 
     struct _ZipTransform
     {
+      template<typename _Fp>
+	requires move_constructible<decay_t<_Fp>> && regular_invocable<decay_t<_Fp>&>
+	  && is_object_v<decay_t<invoke_result_t<decay_t<_Fp>&>>>
+	constexpr auto
+	operator() [[nodiscard]] (_Fp&& __f) const
+	{
+	  return views::empty<decay_t<invoke_result_t<decay_t<_Fp>&>>>;
+	}
+
       template<typename _Fp, typename... _Ts>
-	requires (sizeof...(_Ts) == 0) || __detail::__can_zip_transform_view<_Fp, _Ts...>
+	requires (sizeof...(_Ts) != 0) && __detail::__can_zip_transform_view<_Fp, _Ts...>
 	constexpr auto
 	operator() [[nodiscard]] (_Fp&& __f, _Ts&&... __ts) const
 	{
-	  if constexpr (sizeof...(_Ts) == 0)
-	    return views::empty<decay_t<invoke_result_t<decay_t<_Fp>&>>>;
-	  else
-	    return zip_transform_view(std::forward<_Fp>(__f), std::forward<_Ts>(__ts)...);
+          return zip_transform_view(std::forward<_Fp>(__f), std::forward<_Ts>(__ts)...);
 	}
     };
 
