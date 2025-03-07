@@ -35924,6 +35924,11 @@ These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and
 disabled by these switches.
 
+Note that @option{-msse4} enables both SSE4.1 and SSE4.2 support,
+while @option{-mno-sse4} turns off those features; neither form of the
+option affects SSE4A support, controlled separately by
+@option{-msse4a}.
+
 To generate SSE/SSE2 instructions automatically from floating-point
 code (as opposed to 387 instructions), see @option{-mfpmath=sse}.
 
