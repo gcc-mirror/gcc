@@ -1,7 +1,7 @@
 // Test that non trivial types work ok with a contract wrapper for virtual
 // functions.
 // { dg-do compile }
-// { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on -fcontracts-nonattr -g3" }
+// { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on -fcontracts-nonattr -g3 -fcontracts-nonattr-inheritance-mode=P2900R13" }
 
 struct NonTrivial{
   NonTrivial(){};
