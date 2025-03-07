@@ -8904,7 +8904,15 @@ vectorizable_store (vec_info *vinfo,
 		    }
 		}
 	    }
-	  ltype = build_aligned_type (ltype, TYPE_ALIGN (elem_type));
+	  unsigned align;
+	  if (alignment_support_scheme == dr_aligned)
+	    align = known_alignment (DR_TARGET_ALIGNMENT (first_dr_info));
+	  else
+	    align = dr_alignment (vect_dr_behavior (vinfo, first_dr_info));
+	  /* Alignment is at most the access size if we do multiple stores.  */
+	  if (nstores > 1)
+	    align = MIN (tree_to_uhwi (TYPE_SIZE_UNIT (ltype)), align);
+	  ltype = build_aligned_type (ltype, align * BITS_PER_UNIT);
 	  ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	}
 
@@ -10851,7 +10859,7 @@ vectorizable_load (vec_info *vinfo,
 						  &ptype);
 	      if (vtype != NULL_TREE)
 		{
-		  dr_alignment_support dr_align = dr_aligned;
+		  dr_alignment_support dr_align;
 		  int mis_align = 0;
 		  if (VECTOR_TYPE_P (ptype))
 		    {
@@ -10860,6 +10868,8 @@ vectorizable_load (vec_info *vinfo,
 			= vect_supportable_dr_alignment (vinfo, dr_info, ptype,
 							 mis_align);
 		    }
+		  else
+		    dr_align = dr_unaligned_supported;
 		  if (dr_align == dr_aligned
 		      || dr_align == dr_unaligned_supported)
 		    {
@@ -10872,8 +10882,15 @@ vectorizable_load (vec_info *vinfo,
 		    }
 		}
 	    }
-	  /* Else fall back to the default element-wise access.  */
-	  ltype = build_aligned_type (ltype, TYPE_ALIGN (TREE_TYPE (vectype)));
+	  unsigned align;
+	  if (alignment_support_scheme == dr_aligned)
+	    align = known_alignment (DR_TARGET_ALIGNMENT (first_dr_info));
+	  else
+	    align = dr_alignment (vect_dr_behavior (vinfo, first_dr_info));
+	  /* Alignment is at most the access size if we do multiple loads.  */
+	  if (nloads > 1)
+	    align = MIN (tree_to_uhwi (TYPE_SIZE_UNIT (ltype)), align);
+	  ltype = build_aligned_type (ltype, align * BITS_PER_UNIT);
 	}
 
       if (slp)
