@@ -17285,7 +17285,7 @@ Maximum number of relations the oracle will register in a basic block.
 Work bound when discovering transitive relations from existing relations.
 
 @item min-pagesize
-Minimum page size for warning purposes.
+Minimum page size for warning and early break vectorization purposes.
 
 @item openacc-kernels
 Specify mode of OpenACC `kernels' constructs handling.

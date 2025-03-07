@@ -55,7 +55,9 @@ int main()
 	  }
     }
   rephase ();
+#pragma GCC novector
   for (i = 0; i < 32; ++i)
+#pragma GCC novector
     for (j = 0; j < 3; ++j)
 #pragma GCC novector
       for (k = 0; k < 3; ++k)

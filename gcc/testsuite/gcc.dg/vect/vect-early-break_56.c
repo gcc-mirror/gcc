@@ -4,6 +4,7 @@
 /* { dg-require-effective-target vect_int } */
 /* { dg-add-options bind_pic_locally } */
 /* { dg-require-effective-target vect_early_break_hw } */
+/* { dg-require-effective-target vect_partial_vectors } */
 
 #include <stdarg.h>
 #include "tree-vect.h"

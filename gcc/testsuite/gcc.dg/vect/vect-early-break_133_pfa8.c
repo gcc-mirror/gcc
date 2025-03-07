@@ -5,25 +5,22 @@
 
 /* { dg-additional-options "-Ofast" } */
 
-/* This will fail because we cannot SLP the load groups yet.  */
 /* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target vect_partial_vectors } } } */
 /* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! vect_partial_vectors } } } } */
 
-#define N 1024
-unsigned vect_a[N];
-unsigned vect_b[N];
-  
-unsigned test4(unsigned x)
-{
+char vect_a[1025];
+char vect_b[1025];
+
+unsigned test4(char x, int n)
+{  
  unsigned ret = 0;
- for (int i = 0; i < (N/2); i+=2)
+ for (int i = 1; i < (n - 2); i+=2)
  {
-   vect_b[i] = x + i;
-   vect_b[i+1] = x + i+1;
    if (vect_a[i] > x || vect_a[i+1] > x)
-     break;
-   vect_a[i] += x * vect_b[i];
-   vect_a[i+1] += x * vect_b[i+1]; 
+     return 1;
+
+   vect_b[i] = x;
+   vect_b[i+1] = x+1;
  }
  return ret;
 }

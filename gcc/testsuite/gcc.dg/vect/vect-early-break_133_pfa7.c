@@ -5,25 +5,19 @@
 
 /* { dg-additional-options "-Ofast" } */
 
+/* This should be vectorizable through load_lanes and linear targets.  */
 /* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target vect_load_lanes } } } */
-/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! vect_load_lanes } } } } */
 
-#ifndef N
-#define N 803
-#endif
-unsigned vect_a[N];
-unsigned vect_b[N];
-  
-unsigned test4(unsigned x)
-{
+unsigned test4(char x, char * restrict vect_a, char * restrict vect_b, int n)
+{  
  unsigned ret = 0;
- for (int i = 0; i < N; i+=2)
+ for (int i = 0; i < n; i+=2)
  {
-   vect_b[i] = x + i;
-   if (vect_a[i] > x)
-     break;
-   vect_a[i] = x;
-   
+   if (vect_a[i] > x || vect_a[i+1] > x)
+     return 1;
+
+   vect_b[i] = x;
+   vect_b[i+1] = x+1;
  }
  return ret;
 }

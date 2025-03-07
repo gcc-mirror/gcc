@@ -2597,6 +2597,128 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
       return false;
     }
 
+
+  /* Checks if all scalar iterations are known to be inbounds.  */
+  bool inbounds = DR_SCALAR_KNOWN_BOUNDS (STMT_VINFO_DR_INFO (stmt_info));
+
+  /* Check if we support the operation if early breaks are needed.  Here we
+     must ensure that we don't access any more than the scalar code would
+     have.  A masked operation would ensure this, so for these load types
+     force masking.  */
+  if (loop_vinfo
+      && dr_safe_speculative_read_required (stmt_info)
+      && LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
+      && (*memory_access_type == VMAT_GATHER_SCATTER
+	  || *memory_access_type == VMAT_STRIDED_SLP))
+    {
+      if (dump_enabled_p ())
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "early break not supported: cannot peel for "
+			   "alignment. With non-contiguous memory vectorization"
+			   " could read out of bounds at %G ",
+			   STMT_VINFO_STMT (stmt_info));
+	if (inbounds)
+	  LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo) = true;
+	else
+	  return false;
+    }
+
+  /* If this DR needs alignment for correctness, we must ensure the target
+     alignment is a constant power-of-two multiple of the amount read per
+     vector iteration or force masking.  */
+  if (dr_safe_speculative_read_required (stmt_info)
+      && *alignment_support_scheme == dr_aligned)
+    {
+      /* We can only peel for loops, of course.  */
+      gcc_checking_assert (loop_vinfo);
+
+      auto target_alignment
+	= DR_TARGET_ALIGNMENT (STMT_VINFO_DR_INFO (stmt_info));
+      unsigned HOST_WIDE_INT target_align;
+
+      bool group_aligned = false;
+      if (target_alignment.is_constant (&target_align)
+	  && nunits.is_constant ())
+	{
+	  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+	  auto vectype_size
+	    = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
+	  poly_uint64 required_alignment = vf * vectype_size;
+	  /* If we have a grouped access we require that the alignment be N * elem.  */
+	  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+	    required_alignment *=
+		DR_GROUP_SIZE (DR_GROUP_FIRST_ELEMENT (stmt_info));
+	  if (!multiple_p (target_alignment, required_alignment))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "desired alignment %wu not met. Instead got %wu "
+			     "for DR alignment at %G",
+			     required_alignment.to_constant (),
+			     target_align, STMT_VINFO_STMT (stmt_info));
+	      return false;
+	    }
+
+	  if (!pow2p_hwi (target_align))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "non-power-of-two vector alignment %wd "
+			     "for DR alignment at %G",
+			     target_align, STMT_VINFO_STMT (stmt_info));
+	      return false;
+	    }
+
+	  /* For VLA we have to insert a runtime check that the vector loads
+	     per iterations don't exceed a page size.  For now we can use
+	     POLY_VALUE_MAX as a proxy as we can't peel for VLA.  */
+	  if (known_gt (required_alignment, (unsigned)param_min_pagesize))
+	    {
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "alignment required for correctness (");
+		  dump_dec (MSG_MISSED_OPTIMIZATION, required_alignment);
+		  dump_printf (MSG_NOTE, ") may exceed page size\n");
+		}
+	      return false;
+	    }
+
+	  group_aligned = true;
+	}
+
+      /* There are multiple loads that have a misalignment that we couldn't
+	 align.  We would need LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P to
+	 vectorize. */
+      if (!group_aligned)
+	{
+	  if (inbounds)
+	    LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo) = true;
+	  else
+	    return false;
+	}
+
+      /* When using a group access the first element may be aligned but the
+	 subsequent loads may not be.  For LOAD_LANES since the loads are based
+	 on the first DR then all loads in the group are aligned.  For
+	 non-LOAD_LANES this is not the case. In particular a load + blend when
+	 there are gaps can have the non first loads issued unaligned, even
+	 partially overlapping the memory of the first load in order to simplify
+	 the blend.  This is what the x86_64 backend does for instance.  As
+	 such only the first load in the group is aligned, the rest are not.
+	 Because of this the permutes may break the alignment requirements that
+	 have been set, and as such we should for now, reject them.  */
+      if (SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "loads with load permutations not supported for "
+			     "speculative early break loads for %G",
+			     STMT_VINFO_STMT (stmt_info));
+	  return false;
+	}
+    }
+
   if (*alignment_support_scheme == dr_unaligned_unsupported)
     {
       if (dump_enabled_p ())

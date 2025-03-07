@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_early_break } */
 /* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_partial_vectors } */
 
 void abort ();
 int a[64], b[64];

@@ -1281,7 +1281,11 @@ public:
 
   /* Set by early break vectorization when this DR needs peeling for alignment
      for correctness.  */
-  bool need_peeling_for_alignment;
+  bool safe_speculative_read_required;
+
+  /* Set by early break vectorization when this DR's scalar accesses are known
+     to be inbounds of a known bounds loop.  */
+  bool scalar_access_known_in_bounds;
 
   tree base_decl;
 
@@ -1997,6 +2001,35 @@ dr_target_alignment (dr_vec_info *dr_info)
   return dr_info->target_alignment;
 }
 #define DR_TARGET_ALIGNMENT(DR) dr_target_alignment (DR)
+#define DR_SCALAR_KNOWN_BOUNDS(DR) (DR)->scalar_access_known_in_bounds
+
+/* Return if the stmt_vec_info requires peeling for alignment.  */
+inline bool
+dr_safe_speculative_read_required (stmt_vec_info stmt_info)
+{
+  dr_vec_info *dr_info;
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+    dr_info = STMT_VINFO_DR_INFO (DR_GROUP_FIRST_ELEMENT (stmt_info));
+  else
+    dr_info = STMT_VINFO_DR_INFO (stmt_info);
+
+  return dr_info->safe_speculative_read_required;
+}
+
+/* Set the safe_speculative_read_required for the the stmt_vec_info, if group
+   access then set on the fist element otherwise set on DR directly.  */
+inline void
+dr_set_safe_speculative_read_required (stmt_vec_info stmt_info,
+				       bool requires_alignment)
+{
+  dr_vec_info *dr_info;
+  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
+    dr_info = STMT_VINFO_DR_INFO (DR_GROUP_FIRST_ELEMENT (stmt_info));
+  else
+    dr_info = STMT_VINFO_DR_INFO (stmt_info);
+
+  dr_info->safe_speculative_read_required = requires_alignment;
+}
 
 inline void
 set_dr_target_alignment (dr_vec_info *dr_info, poly_uint64 val)

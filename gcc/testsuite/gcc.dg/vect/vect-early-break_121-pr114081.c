@@ -5,7 +5,8 @@
 /* { dg-additional-options "-O3" } */
 /* { dg-additional-options "-mavx2" { target { x86_64-*-* i?86-*-* } } } */
 
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
+/* Arm and -m32 create a group size of 3 here, which we can't support yet. AArch64 makes elementwise accesses here.  */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { aarch64*-*-* } } } } */
 
 typedef struct filter_list_entry {
   const char *name;

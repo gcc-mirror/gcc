@@ -23,4 +23,5 @@ unsigned test4(unsigned x)
  return ret;
 }
 
-/* { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" { target vect_load_lanes } } } */
+/* { dg-final { scan-tree-dump-not "vectorized 1 loops in function" "vect" { target { ! vect_load_lanes } } } } */

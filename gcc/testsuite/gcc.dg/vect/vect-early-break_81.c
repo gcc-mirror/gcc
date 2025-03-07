@@ -5,8 +5,9 @@
 
 /* { dg-additional-options "-Ofast" } */
 
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
-/* { dg-final { scan-tree-dump "epilog loop required" "vect" } } */
+/* Multiple loads with different misalignments.  Can't peel need partial loop support.  */
+/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" } } */
+/* { dg-final { scan-tree-dump-not "epilog loop required" "vect" } } */
 void abort ();
 
 unsigned short sa[32];
