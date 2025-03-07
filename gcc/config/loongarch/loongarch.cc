@@ -4575,8 +4575,22 @@ loongarch_reassoc_shift_bitwise (bool is_and, rtx shamt, rtx mask,
   if (ctz_hwi (INTVAL (mask)) < INTVAL (shamt))
     return NULL_RTX;
 
+  /* When trying alsl.w, deliberately ignore the high bits.  */
+  mask = gen_int_mode (UINTVAL (mask), mode);
+
   rtx new_mask = simplify_const_binary_operation (LSHIFTRT, mode, mask,
 						  shamt);
+
+  /* Do an arithmetic shift for checking ins_zero_bitmask_operand or -1:
+     ashiftrt (0xffffffff00000000, 2) is 0xffffffff60000000 which is an
+     ins_zero_bitmask_operand, but lshiftrt will produce
+     0x3fffffff60000000.  */
+  rtx new_mask_1 = simplify_const_binary_operation (ASHIFTRT, mode, mask,
+						    shamt);
+
+  if (is_and && const_m1_operand (new_mask_1, mode))
+    return new_mask_1;
+
   if (const_uns_arith_operand (new_mask, mode))
     return new_mask;
 
@@ -4586,13 +4600,7 @@ loongarch_reassoc_shift_bitwise (bool is_and, rtx shamt, rtx mask,
   if (low_bitmask_operand (new_mask, mode))
     return new_mask;
 
-  /* Do an arithmetic shift for checking ins_zero_bitmask_operand:
-     ashiftrt (0xffffffff00000000, 2) is 0xffffffff60000000 which is an
-     ins_zero_bitmask_operand, but lshiftrt will produce
-     0x3fffffff60000000.  */
-  new_mask = simplify_const_binary_operation (ASHIFTRT, mode, mask,
-					      shamt);
-  return ins_zero_bitmask_operand (new_mask, mode) ? new_mask : NULL_RTX;
+  return ins_zero_bitmask_operand (new_mask_1, mode) ? new_mask_1 : NULL_RTX;
 }
 
 /* Implement TARGET_CONSTANT_ALIGNMENT.  */
