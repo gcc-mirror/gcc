@@ -990,19 +990,24 @@ have real and imaginary parts of type @code{short int}; this is not
 likely to be useful, but it shows that the set of complex types is
 complete.
 
-To write a constant with a complex data type, use the suffix @samp{i} or
-@samp{j} (either one; they are equivalent).  For example, @code{2.5fi}
-has type @code{_Complex float} and @code{3i} has type
+To write a constant with a complex data type, use the suffix @samp{i},
+@samp{I}, @samp{j} or @samp{J} (any one; they are equivalent).  For
+example, @code{2.5fi} has type @code{_Complex float} and @code{3i} has type
 @code{_Complex int}.  Such a constant always has a pure imaginary
 value, but you can form any complex value you like by adding one to a
-real constant.  This is a GNU extension; if you have an ISO C99
-conforming C library (such as the GNU C Library), and want to construct complex
-constants of floating type, you should include @code{<complex.h>} and
-use the macros @code{I} or @code{_Complex_I} instead.
+real constant.  This is part of ISO C2Y and for older C revisions
+a GNU extension.  If you have an ISO C99 conforming C library
+(such as the GNU C Library), and want to construct complex
+constants of floating type when using standard versions before ISO C2Y,
+you should include @code{<complex.h>} and use the macros @code{I} or
+@code{_Complex_I} instead.
 
-The ISO C++14 library also defines the @samp{i} suffix, so C++14 code
-that includes the @samp{<complex>} header cannot use @samp{i} for the
-GNU extension.  The @samp{j} suffix still has the GNU meaning.
+For C++ if @code{-fext-numeric-literals} option is enabled, it is also
+a GNU extension, otherwise it is handled like any other C++ user-defined
+literal.  The ISO C++14 library also defines the @samp{i} suffix, so C++14
+code that includes the @samp{<complex>} header cannot use @samp{i} for the
+GNU extension.  The @samp{I}, @samp{j} or @samp{J} suffixes still have
+the GNU meaning.
 
 GCC handles both implicit and explicit casts between the
 @code{_Complex} types with different scalar base types by casting both
