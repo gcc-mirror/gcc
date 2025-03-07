@@ -1,3 +1,122 @@
+2025-03-06  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR rtl-optimization/119099
+	* ext-dce.cc (ext_dce_rd_transfer_n): Do not allow the livein
+	set to shrink.
+
+2025-03-06  Simon Martin  <simon@nasilyan.com>
+
+	* config/i386/x86-tune-sched.cc (ix86_fuse_mov_alu_p): Fix
+	comment typo, paramter -> parameter.
+	* config/lm32/lm32.cc (lm32_std_gimplify_va_arg_expr): Likewise.
+
+2025-03-06  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/118351
+	PR other/38768
+	* common/config/aarch64/aarch64-common.cc: Enable early scheduling with
+	-O3 and higher.
+	* doc/invoke.texi (-fschedule-insns): Update comment.
+
+2025-03-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Revert:
+	2025-03-06  Richard Sandiford  <richard.sandiford@arm.com>
+		    Jan Hubicka  <hubicka@ucw.cz>
+
+	PR rtl-optimization/117477
+	* config/aarch64/aarch64.cc (aarch64_count_saves): New function.
+	(aarch64_count_above_hard_fp_saves, aarch64_callee_save_cost)
+	(aarch64_frame_allocation_cost): Likewise.
+	(TARGET_CALLEE_SAVE_COST): Define.
+	(TARGET_FRAME_ALLOCATION_COST): Likewise.
+	* config/i386/i386.cc (ix86_ira_callee_saved_register_cost_scale):
+	Replace with...
+	(ix86_callee_save_cost): ...this new hook.
+	(TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE): Delete.
+	(TARGET_CALLEE_SAVE_COST): Define.
+	* target.h (spill_cost_type, frame_cost_type): New enums.
+	* target.def (callee_save_cost, frame_allocation_cost): New hooks.
+	(ira_callee_saved_register_cost_scale): Delete.
+	* doc/tm.texi.in (TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE): Delete.
+	(TARGET_CALLEE_SAVE_COST, TARGET_FRAME_ALLOCATION_COST): New hooks.
+	* doc/tm.texi: Regenerate.
+	* hard-reg-set.h (hard_reg_set_popcount): New function.
+	* ira-color.cc (allocated_memory_p): New variable.
+	(allocated_callee_save_regs): Likewise.
+	(record_allocation): New function.
+	(assign_hard_reg): Use targetm.frame_allocation_cost to model
+	the cost of the first spill or first caller save.  Use
+	targetm.callee_save_cost to model the cost of using new callee-saved
+	registers.  Apply the exit rather than entry frequency to the cost
+	of restoring a register or deallocating the frame.  Update the
+	new variables above.
+	(improve_allocation): Use record_allocation.
+	(color): Initialize allocated_callee_save_regs.
+	(ira_color): Initialize allocated_memory_p.
+	* targhooks.h (default_callee_save_cost): Declare.
+	(default_frame_allocation_cost): Likewise.
+	* targhooks.cc (default_callee_save_cost): New function.
+	(default_frame_allocation_cost): Likewise.
+
+2025-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR lto/114501
+	* ipa-free-lang-data.cc (find_decls_types_r): Explicitly
+	handle CONSTRUCTORs as walk_tree handling of those is
+	incomplete.
+
+2025-03-06  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/114492
+	* pair-fusion.cc (pair_fusion_bb_info::fuse_pair): Check for singleton
+	move range before calling restrict_movement.
+	(pair_fusion::try_promote_writeback): Likewise.
+
+2025-03-06  Richard Sandiford  <richard.sandiford@arm.com>
+	    Jan Hubicka  <hubicka@ucw.cz>
+
+	PR rtl-optimization/117477
+	* config/aarch64/aarch64.cc (aarch64_count_saves): New function.
+	(aarch64_count_above_hard_fp_saves, aarch64_callee_save_cost)
+	(aarch64_frame_allocation_cost): Likewise.
+	(TARGET_CALLEE_SAVE_COST): Define.
+	(TARGET_FRAME_ALLOCATION_COST): Likewise.
+	* config/i386/i386.cc (ix86_ira_callee_saved_register_cost_scale):
+	Replace with...
+	(ix86_callee_save_cost): ...this new hook.
+	(TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE): Delete.
+	(TARGET_CALLEE_SAVE_COST): Define.
+	* target.h (spill_cost_type, frame_cost_type): New enums.
+	* target.def (callee_save_cost, frame_allocation_cost): New hooks.
+	(ira_callee_saved_register_cost_scale): Delete.
+	* doc/tm.texi.in (TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE): Delete.
+	(TARGET_CALLEE_SAVE_COST, TARGET_FRAME_ALLOCATION_COST): New hooks.
+	* doc/tm.texi: Regenerate.
+	* hard-reg-set.h (hard_reg_set_popcount): New function.
+	* ira-color.cc (allocated_memory_p): New variable.
+	(allocated_callee_save_regs): Likewise.
+	(record_allocation): New function.
+	(assign_hard_reg): Use targetm.frame_allocation_cost to model
+	the cost of the first spill or first caller save.  Use
+	targetm.callee_save_cost to model the cost of using new callee-saved
+	registers.  Apply the exit rather than entry frequency to the cost
+	of restoring a register or deallocating the frame.  Update the
+	new variables above.
+	(improve_allocation): Use record_allocation.
+	(color): Initialize allocated_callee_save_regs.
+	(ira_color): Initialize allocated_memory_p.
+	* targhooks.h (default_callee_save_cost): Declare.
+	(default_frame_allocation_cost): Likewise.
+	* targhooks.cc (default_callee_save_cost): New function.
+	(default_frame_allocation_cost): Likewise.
+
+2025-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119119
+	* gimplify.cc (is_gimple_mem_rhs_or_call): All empty CTORs
+	are OK when not a register type.
+
 2025-03-05  Hannes Braun  <hannes@hannesbraun.net>
 
 	PR target/118942

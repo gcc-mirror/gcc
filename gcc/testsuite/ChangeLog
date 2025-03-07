@@ -1,3 +1,85 @@
+2025-03-06  Co-authored-by: Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/119099
+	* gcc.dg/torture/pr119099.c: New test.
+
+2025-03-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119118
+	* gfortran.dg/bounds_check_23.f90: Generalize test.
+	* gfortran.dg/bounds_check_26.f90: New test.
+
+2025-03-06  Simon Martin  <simon@nasilyan.com>
+
+	* gcc.target/powerpc/ppc64-abi-1.c: Fix comment typos, paramter
+	-> parameter.
+	* gcc.target/powerpc/ppc64-abi-2.c: Likewise.
+
+2025-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98533
+	PR c++/119123
+	* g++.dg/cpp0x/pr98533.C: New test.
+	* g++.dg/cpp0x/pr119123.C: New test.
+
+2025-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119138
+	* g++.dg/template/pr119138.C: New test.
+
+2025-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/104826
+	* gfortran.dg/gomp/pr104826.f90: New test.
+
+2025-03-06  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Revert:
+	2025-03-06  Richard Sandiford  <richard.sandiford@arm.com>
+		    Jan Hubicka  <hubicka@ucw.cz>
+
+	PR rtl-optimization/117477
+	* gcc.target/aarch64/callee_save_1.c: New test.
+	* gcc.target/aarch64/callee_save_2.c: Likewise.
+	* gcc.target/aarch64/callee_save_3.c: Likewise.
+	* gcc.target/aarch64/pr103350-1.c: Add -fno-caller-saves.
+
+2025-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR lto/114501
+	* g++.dg/pr114501_0.C: New testcase.
+
+2025-03-06  Richard Sandiford  <richard.sandiford@arm.com>
+	    Jan Hubicka  <hubicka@ucw.cz>
+
+	PR rtl-optimization/117477
+	* gcc.target/aarch64/callee_save_1.c: New test.
+	* gcc.target/aarch64/callee_save_2.c: Likewise.
+	* gcc.target/aarch64/callee_save_3.c: Likewise.
+	* gcc.target/aarch64/pr103350-1.c: Add -fno-caller-saves.
+
+2025-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119119
+	* g++.dg/torture/pr11911.C: New testcase.
+
+2025-03-06  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117504
+	* g++.dg/cpp2a/constexpr-117504.C: New test.
+	* g++.dg/cpp2a/constexpr-117504a.C: New test.
+
+2025-03-06  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/partial/multiple_rgroup_zbb.c: Tweak
+	the asm check for vsetvl.
+
+2025-03-06  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/core_list_init.c: Use -fext-dce rather than
+	-O1.  Skip for -O0.
+	* gcc.target/riscv/pr111384.c: Ditto.
+
 2025-03-05  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/118998

@@ -1,3 +1,34 @@
+2025-03-06  Simon Martin  <simon@nasilyan.com>
+
+	* cp-tree.h (processing_contract_condition): Fix comment typo,
+	paramter -> parameter.
+	* parser.cc (cp_parser_requires_expression): Fix comment typo,
+	delared -> declared.
+
+2025-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98533
+	PR c++/119123
+	* parser.cc (cp_parser_class_specifier): Update TYPE_FIELDS of
+	variant types in case cp_parser_late_parsing_default_args etc. change
+	TYPE_FIELDS on the main variant.  Add switch_to_class lambda and
+	use it to simplify repeated class switching code.
+
+2025-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119138
+	* pt.cc (apply_late_template_attributes): Set p to NULL if
+	ATTR_FLAG_TYPE_IN_PLACE is not set in attr_flags.
+	(tsubst) <case POINTER_TYPE, case REFERENCE_TYPE, case ARRAY_TYPE>:
+	Reuse original type even if TYPE_ATTRIBUTES is non-NULL, but all
+	the attributes are non-dependent.
+
+2025-03-06  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117504
+	* call.cc (perform_implicit_conversion_flags): Don't call
+	mark_{l,r}value_use.
+
 2025-03-05  Jason Merrill  <jason@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

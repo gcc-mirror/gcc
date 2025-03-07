@@ -1,3 +1,91 @@
+2025-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_lock.h (unique_lock::operator=): Fix for
+	self-move-assignment.
+	* include/std/shared_mutex (shared_lock::operator=): Add
+	comment.
+	* testsuite/30_threads/shared_lock/cons/lwg4172.cc: New test.
+	* testsuite/30_threads/unique_lock/cons/lwg4172.cc: New test.
+
+2025-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_list.h (list::pop_front, list::pop_back):
+	Add non-empty assertions.
+
+2025-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_util.h: Include <bits/stl_pair.h>.
+
+2025-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/span (span::~span): Remove, as per LWG 3903.
+
+2025-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/119144
+	* testsuite/26_numerics/complex/tuple_like.cc: Include
+	<algorithm>, replace std::string with std::string_view,
+	instantiate tests for long instead of size_t.
+
+2025-03-06  Jonathan Wakely  <jwakely@redhat.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* src/c++20/tzdb.cc [__GTHREADS && !__GTHREADS_CXX0X]: Use
+	'__gnu_cxx::__mutex'.
+
+2025-03-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* src/c++20/format.cc (conv): Tag 'out' as '[[maybe_unused]]'.
+
+2025-03-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* src/c++17/fs_dir.cc (do_unlink): Tag 'is_directory' as
+	'[[maybe_unused]]'.
+
+2025-03-06  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* src/filesystem/dir-common.h (openat): Tag 'nofollow' as
+	'[[maybe_unused]]'.
+
+2025-03-06  Thomas Schwinge  <tschwinge@baylibre.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config [!__cpp_exceptions]
+	(_GLIBCXX_THROW_OR_ABORT): Reference '_EXC'.
+
+2025-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/constexpr.cc:
+	Do not test COW std::string in constexpr contexts.
+	* testsuite/20_util/specialized_algorithms/uninitialized_default_construct/constexpr.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_fill/constexpr.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_move/constexpr.cc:
+	Likewise.
+	* testsuite/20_util/specialized_algorithms/uninitialized_value_construct/constexpr.cc:
+	Likewise.
+
+2025-03-06  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	PR libstdc++/113310
+	* include/bits/stl_pair.h (get): Forward-declare std::get for
+	std::complex.
+	* include/bits/version.def (tuple_like): Bump the value of
+	the feature-testing macro in C++26.
+	* include/bits/version.h: Regenerate.
+	* include/std/complex: Implement the tuple protocol for
+	std::complex.
+	(tuple_size): Specialize for std::complex.
+	(tuple_element): Ditto.
+	(__is_tuple_like_v): Ditto.
+	(complex): Add a private getter to obtain references to the real
+	and the imaginary part, on the primary class template and on its
+	specializations.
+	(get): Add overloads of std::get for std::complex.
+	* testsuite/20_util/tuple/tuple_like_ftm.cc: New test.
+	* testsuite/26_numerics/complex/tuple_like.cc: New test.
+
 2025-03-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/ranges (enumerate_view::_Iterator::operator-):

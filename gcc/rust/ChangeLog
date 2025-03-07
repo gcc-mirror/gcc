@@ -1,3 +1,8 @@
+2025-03-06  Simon Martin  <simon@nasilyan.com>
+
+	* rust-diagnostics.h (RUST_ATTRIBUTE_GCC_DIAG): Fix comment
+	typo, paramter -> parameter.
+
 2024-12-02  Owen Avery  <powerboat9.gamer@gmail.com>
 	    Thomas Schwinge  <tschwinge@baylibre.com>
 

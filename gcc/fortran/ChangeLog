@@ -1,3 +1,13 @@
+2025-03-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119118
+	* dependency.cc (gfc_contains_implied_index_p): Helper function to
+	determine if an expression has a dependence on an implied-do index.
+	* dependency.h (gfc_contains_implied_index_p): Add prototype.
+	* trans-expr.cc (gfc_conv_substring): Adjust logic to not generate
+	substring bounds checks before implied-do indices have been
+	substituted.
+
 2025-03-05  Mark Wielaard  <mark@klomp.org>
 
 	* lang.opt.urls: Regenerated.
