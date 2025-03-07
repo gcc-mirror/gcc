@@ -1,3 +1,8 @@
+2025-03-06  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/119084
+	* gcc.target/loongarch/pr119084.c: New test.
+
 2025-03-05  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
