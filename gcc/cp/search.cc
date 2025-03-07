@@ -2230,15 +2230,15 @@ check_override_contracts (tree fndecl)
 {
 
   if (!flag_contracts || !flag_contracts_nonattr
-      || flag_contract_nonattr_inheritance_mode != CONTRACT_INHERITANCE_P3653 )
+      || flag_contract_nonattr_inheritance_mode != CONTRACT_INHERITANCE_P3653)
     return;
 
   /* A constructor for a class T does not override a function T
-     in a base class.  */
+   in a base class.  */
   if (DECL_CONSTRUCTOR_P (fndecl))
     return;
 
-  bool explicit_contracts = DECL_HAS_CONTRACTS_P(fndecl);
+  bool explicit_contracts = DECL_HAS_CONTRACTS_P (fndecl);
   tree binfo = TYPE_BINFO (DECL_CONTEXT (fndecl));
   tree base_binfo;
 
@@ -2247,13 +2247,13 @@ check_override_contracts (tree fndecl)
       tree basetype = BINFO_TYPE (base_binfo);
 
       if (!TYPE_POLYMORPHIC_P (basetype))
-  	continue;
+	continue;
 
       tree basefn = look_for_overrides_here (basetype, fndecl);
       if (!basefn)
 	continue;
 
-      if (!explicit_contracts && DECL_HAS_CONTRACTS_P(basefn))
+      if (!explicit_contracts && DECL_HAS_CONTRACTS_P (basefn))
 	{
 	  /* We're inheriting basefn's contracts; create a copy of them but
 	   * replace references to their parms to our parms.  */
@@ -2263,19 +2263,18 @@ check_override_contracts (tree fndecl)
 	      /* remap post conditions */true);
 	  tree contracts = chainon (DECL_CONTRACTS (fndecl), base_contracts);
 
-	  set_decl_contracts(fndecl, contracts);
+	  set_decl_contracts (fndecl, contracts);
 
 	  if (suggest_explicit_contract)
 	    {
-	      warning_at (DECL_SOURCE_LOCATION(fndecl),
+	      warning_at (DECL_SOURCE_LOCATION (fndecl),
 			  suggest_explicit_contract,
 			  "Function implicitly inherits a contract");
-	      inform (DECL_SOURCE_LOCATION(basefn),
+	      inform (DECL_SOURCE_LOCATION (basefn),
 		      "overridden function is %qD", basefn);
 	    }
 	}
     }
-
 }
 
 /* Given a class TYPE, and a function decl FNDECL, look for
