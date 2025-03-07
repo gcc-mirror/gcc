@@ -1979,11 +1979,11 @@ EnumValue
 Enum(contract_inheritance) String(P2900R13) Value(1)
 
 EnumValue
-Enum(contract_inheritance) String(Ville) Value(2)
+Enum(contract_inheritance) String(P3653) Value(2)
 
 fcontracts-nonattr-inheritance-mode=
 C++ Joined RejectNegative Enum(contract_inheritance) Var(flag_contract_nonattr_inheritance_mode) Init(1)
--fcontracts-nonattr-inheritance-mode=[none|P2900R13|Ville] Select how contracts are inherited for virtual functions
+-fcontracts-nonattr-inheritance-mode=[none|P2900R13|P3653] Select how contracts are inherited for virtual functions
 
 Wsuggest-explicit-contract
 C++ ObjC++ Var(suggest_explicit_contract) Warning
