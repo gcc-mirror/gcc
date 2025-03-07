@@ -4638,7 +4638,8 @@ adjust_clone_incoming_counts (cgraph_node *node,
 	cs->count = cs->count.combine_with_ipa_count (sum);
       }
     else if (!desc->processed_edges->contains (cs)
-	     && cs->caller->clone_of == desc->orig)
+	     && cs->caller->clone_of == desc->orig
+	     && cs->count.compatible_p (desc->count))
       {
 	cs->count += desc->count;
 	if (dump_file)
