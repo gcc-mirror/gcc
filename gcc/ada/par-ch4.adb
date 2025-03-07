@@ -668,13 +668,13 @@ package body Ch4 is
 
       --   (discrete_range)
 
-      --      This is a slice. This case is handled in LP_State_Init
+      --      This is a slice
 
       --   (expression, expression, ..)
 
       --      This is interpreted as an indexed component, i.e. as a
       --      case of a name which can be extended in the normal manner.
-      --      This case is handled by LP_State_Name or LP_State_Expr.
+      --      This case is handled by LP_State_Expr.
 
       --      Note: if and case expressions (without an extra level of
       --      parentheses) are permitted in this context).
@@ -999,65 +999,8 @@ package body Ch4 is
    --  Error recovery: cannot raise Error_Resync
 
    function P_Qualified_Simple_Name return Node_Id is
-      Designator_Node : Node_Id;
-      Prefix_Node     : Node_Id;
-      Selector_Node   : Node_Id;
-      Dot_Sloc        : Source_Ptr := No_Location;
-
    begin
-      --  Prefix node is set to the gathered prefix so far, Empty means that
-      --  no prefix has been scanned. This allows us to build up the result
-      --  in the required right recursive manner.
-
-      Prefix_Node := Empty;
-
-      --  Loop through prefixes
-
-      loop
-         Designator_Node := Token_Node;
-
-         if Token = Tok_Identifier then
-            Scan; -- past identifier
-            exit when Token /= Tok_Dot;
-
-         elsif Token not in Token_Class_Desig then
-            return P_Identifier; -- let P_Identifier issue the error message
-
-         else
-            Scan; -- past designator
-
-            if Token /= Tok_Dot then
-               Error_Msg_SP ("identifier expected");
-               return Error;
-            end if;
-         end if;
-
-         --  Here at a dot, with token just before it in Designator_Node
-
-         if No (Prefix_Node) then
-            Prefix_Node := Designator_Node;
-         else
-            Selector_Node := New_Node (N_Selected_Component, Dot_Sloc);
-            Set_Prefix (Selector_Node, Prefix_Node);
-            Set_Selector_Name (Selector_Node, Designator_Node);
-            Prefix_Node := Selector_Node;
-         end if;
-
-         Dot_Sloc := Token_Ptr;
-         Scan; -- past dot
-      end loop;
-
-      --  Fall out of the loop having just scanned an identifier
-
-      if No (Prefix_Node) then
-         return Designator_Node;
-      else
-         Selector_Node := New_Node (N_Selected_Component, Dot_Sloc);
-         Set_Prefix (Selector_Node, Prefix_Node);
-         Set_Selector_Name (Selector_Node, Designator_Node);
-         return Selector_Node;
-      end if;
-
+      return P_Qualified_Simple_Name_Resync;
    exception
       when Error_Resync =>
          return Error;
@@ -1076,6 +1019,10 @@ package body Ch4 is
       Dot_Sloc        : Source_Ptr := No_Location;
 
    begin
+      --  Prefix node is set to the gathered prefix so far, Empty means that
+      --  no prefix has been scanned. This allows us to build up the result
+      --  in the required right recursive manner.
+
       Prefix_Node := Empty;
 
       --  Loop through prefixes
@@ -1112,7 +1059,7 @@ package body Ch4 is
          end if;
 
          Dot_Sloc := Token_Ptr;
-         Scan; -- past period
+         Scan; -- past dot
       end loop;
 
       --  Fall out of the loop having just scanned an identifier
