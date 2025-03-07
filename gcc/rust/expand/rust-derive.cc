@@ -22,6 +22,7 @@
 #include "rust-derive-debug.h"
 #include "rust-derive-default.h"
 #include "rust-derive-eq.h"
+#include "rust-derive-ord.h"
 #include "rust-derive-partial-eq.h"
 #include "rust-derive-hash.h"
 
@@ -59,10 +60,11 @@ DeriveVisitor::derive (Item &item, const Attribute &attr,
     case BuiltinMacro::Hash:
       return vec (DeriveHash (loc).go (item));
     case BuiltinMacro::Ord:
+      return vec (DeriveOrd (DeriveOrd::Ordering::Total, loc).go (item));
     case BuiltinMacro::PartialOrd:
+      return vec (DeriveOrd (DeriveOrd::Ordering::Partial, loc).go (item));
     default:
-      rust_sorry_at (loc, "unimplemented builtin derive macro");
-      return {};
+      rust_unreachable ();
     };
 }
 

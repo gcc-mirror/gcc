@@ -100,6 +100,7 @@ GRS_OBJS = \
     rust/rust-derive-default.o \
     rust/rust-derive-partial-eq.o \
     rust/rust-derive-eq.o \
+    rust/rust-derive-ord.o \
     rust/rust-derive-hash.o \
     rust/rust-proc-macro.o \
     rust/rust-macro-invoc-lexer.o \
