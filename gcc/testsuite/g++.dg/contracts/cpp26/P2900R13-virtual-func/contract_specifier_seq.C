@@ -2,7 +2,7 @@
 // behaves as if the function exited via an exception.
 // This tests the behaviour of a pre condition on a destructor
 // { dg-do run }
-// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=observe " }
+// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontract-evaluation-semantic=observe -fcontracts-nonattr-inheritance-mode=P2900R13" }
 
 #include <experimental/contract>
 #include <exception>

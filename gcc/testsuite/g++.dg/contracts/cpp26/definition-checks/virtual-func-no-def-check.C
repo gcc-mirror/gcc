@@ -1,7 +1,7 @@
 // check that an invocation of a virtual function through the base class does not
 // check contracts of the derived function, which are definition side contracts
 // { dg-do run }
-// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontracts-nonattr-definition-check=off " }
+// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontracts-nonattr-definition-check=off -fcontracts-nonattr-inheritance-mode=P2900R13" }
 
 struct Base
 {

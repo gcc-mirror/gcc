@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=c++2b -fcontracts -fcontracts-nonattr -fcontracts-nonattr-inheritance-mode=none " }
+// { dg-options "-std=c++2b -fcontracts -fcontracts-nonattr " }
 
 struct Base
 {

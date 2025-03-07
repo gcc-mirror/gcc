@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr" }
+// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontracts-nonattr-inheritance-mode=P2900R13" }
 
 bool y_f4_called = false;
 bool y2_f4_called = false;

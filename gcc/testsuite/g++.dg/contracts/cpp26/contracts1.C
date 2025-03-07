@@ -62,9 +62,10 @@ void postcond5(int y, const int x) post(x >= 0);
 template <typename T>
 struct Base
 {
-  virtual int f(const int a) pre( a  > 5 ) post( a > 7) { return a;};
+  virtual int f(const int a) pre( a  > 5 ) post( a > 7) { return a;}; // { dg-error "Contracts can not be added to virtual functions" }
   int g(const int a) pre( a  > 5 ) post( a > 7) { return a;};
   virtual int h(int a) pre( a  > 5 ) post( a > 7) { return a;}; // { dg-error "a value parameter used in a postcondition must be const" }
+  // { dg-error {Contracts can not be added to virtual functions} "" { target *-*-* } .-1 }
   int i(int a) pre( a  > 5 ) post( a > 7) { return a;}; // { dg-error "a value parameter used in a postcondition must be const" }
 };
 
