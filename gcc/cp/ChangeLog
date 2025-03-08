@@ -1,3 +1,20 @@
+2025-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118775
+	* constexpr.cc (cxx_eval_call_expression): Check tree_fits_uhwi_p.
+
+2025-03-07  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* constexpr.cc (potential_constant_expression_1): Handle
+	TU_LOCAL_ENTITY.
+	* pt.cc (expr_contains_tu_local_entity): Remove.
+	(function_contains_tu_local_entity): Remove.
+	(dependent_operand_p): Remove special handling for
+	TU_LOCAL_ENTITY.
+	(tsubst_expr): Handle TU_LOCAL_ENTITY when tsubsting OVERLOADs;
+	remove now-unnecessary extra handling.
+	(type_dependent_expression_p): Handle TU_LOCAL_ENTITY.
+
 2025-03-06  Simon Martin  <simon@nasilyan.com>
 
 	* cp-tree.h (processing_contract_condition): Fix comment typo,

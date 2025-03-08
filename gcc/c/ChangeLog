@@ -1,3 +1,24 @@
+2025-03-07  Kees Cook  <kees@kernel.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117178
+	* c-typeck.cc (digest_init): Add DECL argument.  Adjust wording of
+	pedwarn_init for too long strings and provide details on the lengths,
+	for string literals where just the trailing NULL doesn't fit warn for
+	warn_cxx_compat with OPT_Wc___compat, wording which mentions "for C++"
+	and provides details on lengths, otherwise for
+	warn_unterminated_string_initialization adjust the warning, provide
+	details on lengths and don't warn if get_attr_nonstring_decl (decl).
+	(build_c_cast, store_init_value, output_init_element): Adjust
+	digest_init callers.
+
+2025-03-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c/60440
+	* c-typeck.cc (c_finish_return): Mark the current function
+	for supression of the -Wreturn-type if there was an error
+	on the return statement.
+
 2025-02-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/119001

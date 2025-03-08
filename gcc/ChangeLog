@@ -1,3 +1,176 @@
+2025-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117178
+	* tree.cc (get_attr_nonstring_decl): Look through all ARRAY_REFs, not
+	just one and handle COMPONENT_REF and MEM_REF after skipping those
+	rather than only when there wasn't ARRAY_REF.  Formatting fix.
+
+2025-03-07  Kees Cook  <kees@kernel.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117178
+	* doc/invoke.texi (Wunterminated-string-initialization): Document
+	the new interaction between this warning and -Wc++-compat and that
+	initialization of decls with nonstring attribute aren't warned about.
+
+2025-03-07  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR sanitizer/56682
+	* doc/invoke.texi (Instrumentation Options): Document that -g
+	is useful with -fsanitize=thread and -fsanitize=address.
+	Also mention -fno-omit-frame-pointer per the asan wiki.
+
+2025-03-07  Richard Sandiford  <richard.sandiford@arm.com>
+	    Jan Hubicka  <hubicka@ucw.cz>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR rtl-optimization/117477
+	* config/aarch64/aarch64.cc (aarch64_count_saves): New function.
+	(aarch64_count_above_hard_fp_saves, aarch64_callee_save_cost)
+	(aarch64_frame_allocation_cost): Likewise.
+	(TARGET_CALLEE_SAVE_COST): Define.
+	(TARGET_FRAME_ALLOCATION_COST): Likewise.
+	* config/i386/i386.cc (ix86_ira_callee_saved_register_cost_scale):
+	Replace with...
+	(ix86_callee_save_cost): ...this new hook.
+	(TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE): Delete.
+	(TARGET_CALLEE_SAVE_COST): Define.
+	* target.h (spill_cost_type, frame_cost_type): New enums.
+	* target.def (callee_save_cost, frame_allocation_cost): New hooks.
+	(ira_callee_saved_register_cost_scale): Delete.
+	* doc/tm.texi.in (TARGET_IRA_CALLEE_SAVED_REGISTER_COST_SCALE): Delete.
+	(TARGET_CALLEE_SAVE_COST, TARGET_FRAME_ALLOCATION_COST): New hooks.
+	* doc/tm.texi: Regenerate.
+	* hard-reg-set.h (hard_reg_set_popcount): New function.
+	* ira-color.cc (allocated_memory_p): New variable.
+	(allocated_callee_save_regs): Likewise.
+	(record_allocation): New function.
+	(assign_hard_reg): Use targetm.frame_allocation_cost to model
+	the cost of the first spill or first caller save.  Use
+	targetm.callee_save_cost to model the cost of using new callee-saved
+	registers.  Apply the exit rather than entry frequency to the cost
+	of restoring a register or deallocating the frame.  Update the
+	new variables above.
+	(improve_allocation): Use record_allocation.
+	(color): Initialize allocated_callee_save_regs.
+	(ira_color): Initialize allocated_memory_p.
+	* targhooks.h (default_callee_save_cost): Declare.
+	(default_frame_allocation_cost): Likewise.
+	* targhooks.cc (default_callee_save_cost): New function.
+	(default_frame_allocation_cost): Likewise.
+
+2025-03-07  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR target/116708
+	* doc/invoke.texi (x86 Options): Clarify how -msse4 and -mno-sse4
+	interact with other SSE options.
+
+2025-03-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118318
+	* ipa-cp.cc (adjust_clone_incoming_counts): Add a compatible_p check.
+
+2025-03-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm_neon.h: Try harder to detect if we have
+	the softfp ABI enabled.
+
+2025-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/112960
+	PR c/117029
+	* doc/extend.texi (Complex): Add I and J suffixes to the list of
+	complex suffixes, adjust for all of those being part of ISO C2Y,
+	clarify that for -fno-ext-numeric-literals none of those are
+	recognized as GNU extensions and for C++14 i is considered UDL
+	even for -fext-numeric-literals when <complex> is included.
+
+2025-03-07  Simon Martin  <simon@nasilyan.com>
+
+	* tree-vect-data-refs.cc: Define INCLUDE_ALGORITHM.
+
+2025-03-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/118464
+	PR tree-optimization/116855
+	* doc/invoke.texi (min-pagesize): Update docs with vectorizer use.
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences): Delay
+	checks.
+	(vect_compute_data_ref_alignment): Remove alignment checks and move to
+	get_load_store_type, increase group access alignment.
+	(vect_enhance_data_refs_alignment): Add note to comment needing
+	investigating.
+	(vect_analyze_data_refs_alignment): Likewise.
+	(vect_supportable_dr_alignment): For group loads look at first DR.
+	* tree-vect-stmts.cc (get_load_store_type):
+	Perform safety checks for early break pfa.
+	* tree-vectorizer.h (dr_set_safe_speculative_read_required,
+	dr_safe_speculative_read_required, DR_SCALAR_KNOWN_BOUNDS): New.
+	(need_peeling_for_alignment): Renamed to...
+	(safe_speculative_read_required): .. This
+	(class dr_vec_info): Add scalar_access_known_in_bounds.
+
+2025-03-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/118464
+	PR tree-optimization/116855
+	* config/aarch64/aarch64-sve.md (@extract_<last_op>_<mode>,
+	@fold_extract_<last_op>_<mode>,
+	@aarch64_fold_extract_vector_<last_op>_<mode>): Change SVE_FULL to
+	SVE_ALL.
+	* config/aarch64/iterators.md (vccore): Add more partial types.
+
+2025-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119145
+	* tree-vectorizer.cc (try_vectorize_loop_1): Avoid BB
+	vectorizing an if-converted loop body when there's a .MASK_CALL
+	in the loop body.
+
+2025-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/115485
+	* config/arm/arm.cc (require_pic_register): Fix typos in
+	comment. Handle fixed arm_pic_register.
+
+2025-03-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/116125
+	* tree-vect-data-refs.cc (vect_prune_runtime_alias_test_list): Make
+	the dr_with_seg_len alignment fields describe tha access sizes as
+	well as the pointer alignment.
+	* tree-data-ref.cc (create_intersect_range_checks): Don't compensate
+	for invalid alignment fields here.
+
+2025-03-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/119133
+	* config/aarch64/aarch64.md
+	(*aarch64_bfi<GPI:mode><ALLX:mode>_<SUBDI_BITS>): Use
+	force_lowpart_subreg.
+
+2025-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118801
+	* tree-ssa-dce.cc (eliminate_unnecessary_stmts): Prune
+	sequences of uninterrupted DEBUG BEGIN_STMTs, keeping only
+	the last of a set with unique location.
+
+2025-03-07  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/113515
+	* doc/invoke.texi (Warning Options): Improve -Wstringop-overflow
+	documentation.
+
+2025-03-07  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx10_2-512convertintrin.h
+	(_mm512_mask_cvtbf8_ph): Correct mask width.
+	(_mm512_maskz_cvtbf8_ph): Ditto.
+	* config/i386/avx10_2convertintrin.h
+	(_mm256_mask_cvtbf8_ph): Ditto.
+	(_mm256_maskz_cvtbf8_ph): Ditto.
+
 2025-03-06  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
 
 	PR rtl-optimization/119099

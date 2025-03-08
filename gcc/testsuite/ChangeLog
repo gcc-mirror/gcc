@@ -1,3 +1,131 @@
+2025-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117178
+	* c-c++-common/attr-nonstring-7.c: Remove one xfail.
+	* c-c++-common/attr-nonstring-9.c: New test.
+	* c-c++-common/attr-nonstring-10.c: New test.
+	* c-c++-common/attr-nonstring-11.c: New test.
+	* c-c++-common/attr-nonstring-12.c: New test.
+	* c-c++-common/attr-nonstring-13.c: New test.
+	* c-c++-common/attr-nonstring-14.c: New test.
+	* c-c++-common/attr-nonstring-15.c: New test.
+	* c-c++-common/attr-nonstring-16.c: New test.
+
+2025-03-07  Kees Cook  <kees@kernel.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117178
+	* gcc.dg/Wunterminated-string-initialization.c: Add additional test
+	coverage.
+	* gcc.dg/Wcxx-compat-14.c: Check in dg-warning for "for C++" part of
+	the diagnostics.
+	* gcc.dg/Wcxx-compat-23.c: New test.
+	* gcc.dg/Wcxx-compat-24.c: New test.
+
+2025-03-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/Wreturn-mismatch-2a.c: Change dg-warning
+	for the last -Wreturn-type to dg-bogus.
+	* gcc.dg/Wreturn-mismatch-6.c: Likewise.
+
+2025-03-07  Richard Sandiford  <richard.sandiford@arm.com>
+	    Jan Hubicka  <hubicka@ucw.cz>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR rtl-optimization/117477
+	* gcc.target/aarch64/callee_save_1.c: New test.
+	* gcc.target/aarch64/callee_save_2.c: Likewise.
+	* gcc.target/aarch64/callee_save_3.c: Likewise.
+	* gcc.target/aarch64/pr103350-1.c: Add -fno-caller-saves.
+
+2025-03-07  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c/60440
+	* gcc.dg/Wreturn-mismatch-2.c: Change dg-warning
+	for the last -Wreturn-type to dg-bogus.
+	* gcc.dg/pr60440-1.c: New test.
+
+2025-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118775
+	* g++.dg/cpp2a/constexpr-new24.C: New test.
+	* g++.dg/cpp2a/constexpr-new25.C: New test.
+
+2025-03-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_h_ok_nocache): New function.
+	(check_effective_target_arm_neon_h_ok): Likewise.
+	(add_options_for_arm_neon_h): Likewise.
+	(check_effective_target_arm_libc_fp_abi_ok_nocache): Allow any
+	Arm target, not just arm32.
+	* gcc.target/arm/attr-neon-builtin-fail.c: Use it.
+	* gcc.target/arm/attr-neon-builtin-fail2.c: Likewise.
+	* gcc.target/arm/attr-neon-fp16.c: Likewise.
+	* gcc.target/arm/attr-neon2.c: Likewise.
+
+2025-03-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/118464
+	PR tree-optimization/116855
+	* gcc.dg/vect/bb-slp-pr65935.c: Update, it now vectorizes because the
+	load type is relaxed later.
+	* gcc.dg/vect/vect-early-break_121-pr114081.c: Update.
+	* gcc.dg/vect/vect-early-break_22.c: Require partial vectors.
+	* gcc.dg/vect/vect-early-break_128.c: Likewise.
+	* gcc.dg/vect/vect-early-break_26.c: Likewise.
+	* gcc.dg/vect/vect-early-break_43.c: Likewise.
+	* gcc.dg/vect/vect-early-break_44.c: Likewise.
+	* gcc.dg/vect/vect-early-break_2.c: Require load_lanes.
+	* gcc.dg/vect/vect-early-break_7.c: Likewise.
+	* gcc.dg/vect/vect-early-break_132-pr118464.c: New test.
+	* gcc.dg/vect/vect-early-break_133_pfa1.c: New test.
+	* gcc.dg/vect/vect-early-break_133_pfa11.c: New test.
+	* gcc.dg/vect/vect-early-break_133_pfa10.c: New test.
+	* gcc.dg/vect/vect-early-break_133_pfa2.c: New test.
+	* gcc.dg/vect/vect-early-break_133_pfa3.c: New test.
+	* gcc.dg/vect/vect-early-break_133_pfa4.c: New test.
+	* gcc.dg/vect/vect-early-break_133_pfa5.c: New test.
+	* gcc.dg/vect/vect-early-break_133_pfa6.c: New test.
+	* gcc.dg/vect/vect-early-break_133_pfa7.c: New test.
+	* gcc.dg/vect/vect-early-break_133_pfa8.c: New test.
+	* gcc.dg/vect/vect-early-break_133_pfa9.c: New test.
+	* gcc.dg/vect/vect-early-break_39.c: Update testcase for misalignment.
+	* gcc.dg/vect/vect-early-break_18.c: Likewise.
+	* gcc.dg/vect/vect-early-break_20.c: Likewise.
+	* gcc.dg/vect/vect-early-break_21.c: Likewise.
+	* gcc.dg/vect/vect-early-break_38.c: Likewise.
+	* gcc.dg/vect/vect-early-break_6.c: Likewise.
+	* gcc.dg/vect/vect-early-break_53.c: Likewise.
+	* gcc.dg/vect/vect-early-break_56.c: Likewise.
+	* gcc.dg/vect/vect-early-break_57.c: Likewise.
+	* gcc.dg/vect/vect-early-break_81.c: Likewise.
+
+2025-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119145
+	* gcc.dg/vect/pr119145.c: New testcase.
+
+2025-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/115485
+	* g++.target/arm/pr115485.C: New test.
+
+2025-03-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/116125
+	* gcc.dg/vect/pr116125.c: New test.
+
+2025-03-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/119133
+	* gcc.dg/torture/pr119133.c: New test.
+
+2025-03-07  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_2-512-convert-1.c: Change function call.
+	* gcc.target/i386/avx10_2-convert-1.c: Ditto.
+
 2025-03-06  Co-authored-by: Jeff Law  <jlaw@ventanamicro.com>
 
 	PR rtl-optimization/119099

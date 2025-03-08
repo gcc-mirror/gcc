@@ -1,3 +1,17 @@
+2025-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117178
+	* c-attribs.cc (handle_nonstring_attribute): Allow the attribute also
+	on multi-dimensional arrays with char/signed char/unsigned char
+	element type or pointers to such single and multi-dimensional arrays.
+
+2025-03-07  Kees Cook  <kees@kernel.org>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117178
+	* c.opt (Wunterminated-string-initialization): Don't depend on
+	-Wc++-compat.
+
 2025-03-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/115580

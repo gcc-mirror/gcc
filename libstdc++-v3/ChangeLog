@@ -1,3 +1,23 @@
+2025-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/forward_list (erase): Change lambda to have
+	explicit return type and const parameter type.
+	* include/std/list (erase): Likewise.
+	* testsuite/23_containers/forward_list/erasure.cc: Check lambda
+	is correct.
+	* testsuite/23_containers/list/erasure.cc: Likewise.
+
+2025-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (chrono::__detail::from_stream): Add
+	deleted function as poison pill for unqualified lookup.
+
+2025-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected<cv void,E>::value()&&):
+	Add missing static_assert for LWG 3940.
+	* testsuite/20_util/expected/lwg3843.cc: New test.
+
 2025-03-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/unique_lock.h (unique_lock::operator=): Fix for
