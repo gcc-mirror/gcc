@@ -7503,10 +7503,19 @@ package body Exp_Aggr is
          Set_Assignment_OK (Lhs);
 
          Aggr_Code := Build_Container_Aggr_Code (N, Typ, Lhs, Init);
+
+         --  Use the unconstrained base subtype of the subtype provided by
+         --  the context for declaring the temporary object (which may come
+         --  from a constrained assignment target), to ensure that the
+         --  aggregate can be successfully expanded and assigned to the
+         --  temporary without exceeding its capacity. (Later assignment
+         --  of the temporary to a target object may result in failing
+         --  a discriminant check.)
+
          Prepend_To (Aggr_Code,
            Make_Object_Declaration (Loc,
              Defining_Identifier => Obj_Id,
-             Object_Definition   => New_Occurrence_Of (Typ, Loc),
+             Object_Definition   => New_Occurrence_Of (Base_Type (Typ), Loc),
              Expression          => Init));
 
          Insert_Actions (N, Aggr_Code);
