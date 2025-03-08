@@ -2409,7 +2409,9 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
 	  for (a = arg0; a; a = a->next)
 	    if (a != arg
 		&& a->expr->rank == arg->expr->rank
-		&& !a->expr->symtree->n.sym->attr.optional)
+		&& (a->expr->expr_type != EXPR_VARIABLE
+		    || (a->expr->expr_type == EXPR_VARIABLE
+			&& !a->expr->symtree->n.sym->attr.optional)))
 	      {
 		t = true;
 		break;
