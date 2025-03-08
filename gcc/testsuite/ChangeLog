@@ -1,3 +1,11 @@
+2025-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2025-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/115485
+	* g++.target/arm/pr115485.C: New test.
+
 2025-03-06  Xi Ruoyao  <xry111@xry111.site>
 
 	PR target/119084

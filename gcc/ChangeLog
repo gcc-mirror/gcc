@@ -1,3 +1,12 @@
+2025-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2025-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/115485
+	* config/arm/arm.cc (require_pic_register): Fix typos in
+	comment. Handle fixed arm_pic_register.
+
 2025-03-06  Xi Ruoyao  <xry111@xry111.site>
 
 	PR target/119084
