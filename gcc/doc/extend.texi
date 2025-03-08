@@ -11473,10 +11473,11 @@ Operands are separated by commas.  Each operand has this format:
 
 @table @var
 @item asmSymbolicName
-Specifies a symbolic name for the operand.
-Reference the name in the assembler template 
-by enclosing it in square brackets 
-(i.e.@: @samp{%[Value]}). The scope of the name is the @code{asm} statement 
+Specifies an optional symbolic name for the operand.  The literal square
+brackets @samp{[]} around the @var{asmSymbolicName} are required both
+in the operand specification and references to the operand in the assembler
+template, i.e.@: @samp{%[Value]}.
+The scope of the name is the @code{asm} statement
 that contains the definition. Any valid C variable name is acceptable, 
 including names already defined in the surrounding code. No two operands 
 within the same @code{asm} statement can use the same symbolic name.
@@ -11762,10 +11763,11 @@ Operands are separated by commas.  Each operand has this format:
 
 @table @var
 @item asmSymbolicName
-Specifies a symbolic name for the operand.
-Reference the name in the assembler template 
-by enclosing it in square brackets 
-(i.e.@: @samp{%[Value]}). The scope of the name is the @code{asm} statement 
+Specifies an optional symbolic name for the operand.  The literal square
+brackets @samp{[]} around the @var{asmSymbolicName} are required both
+in the operand specification and references to the operand in the assembler
+template, i.e.@: @samp{%[Value]}.
+The scope of the name is the @code{asm} statement
 that contains the definition. Any valid C variable name is acceptable, 
 including names already defined in the surrounding code. No two operands 
 within the same @code{asm} statement can use the same symbolic name.
