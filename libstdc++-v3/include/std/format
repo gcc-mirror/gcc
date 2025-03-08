@@ -4338,6 +4338,9 @@ namespace __format
     constexpr void
     basic_format_parse_context<_CharT>::check_dynamic_spec(size_t __id) noexcept
     {
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4142. check_dynamic_spec should require at least one type
+      static_assert(sizeof...(_Ts) >= 1);
       // This call enforces the Mandates: condition that _Ts contains valid
       // types and each type appears at most once. It could be a static_assert
       // but this way failures give better diagnostics, due to calling the

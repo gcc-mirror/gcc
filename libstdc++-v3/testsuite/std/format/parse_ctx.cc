@@ -491,7 +491,6 @@ test_dynamic_type_check()
   std::format_parse_context pc("{1}.{2}");
 
   // None of these calls should do anything at runtime, only during consteval:
-  pc.check_dynamic_spec<>(0);
   pc.check_dynamic_spec<int, const char*>(0);
   pc.check_dynamic_spec_integral(0);
   pc.check_dynamic_spec_string(0);
