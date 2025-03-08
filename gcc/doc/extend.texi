@@ -10984,10 +10984,14 @@ of an asm}).
 @table @var
 
 @item AssemblerInstructions
-This is a literal string that specifies the assembler code. The string can 
-contain any instructions recognized by the assembler, including directives. 
-GCC does not parse the assembler instructions themselves and 
-does not know what they mean or even whether they are valid assembler input. 
+This is a literal string that specifies the assembler code.
+In C++ with @option{-std=gnu++11} or later, it can
+also be a constant expression inside parentheses (see @ref{Asm constexprs}).
+
+The string can contain any instructions recognized by the assembler,
+including directives.  GCC does not parse the assembler instructions
+themselves and does not know what they mean or even whether they are
+valid assembler input.
 
 You may place multiple assembler instructions together in a single @code{asm}
 string, separated by the characters normally used in assembly code for the
@@ -11128,27 +11132,22 @@ perform a jump to one of the labels listed in the @var{GotoLabels}.
 @item AssemblerTemplate
 This is a literal string that is the template for the assembler code. It is a 
 combination of fixed text and tokens that refer to the input, output, 
-and goto parameters. @xref{AssemblerTemplate}. With gnu++11 or later it can
-also be a constant expression inside parens (see @ref{Asm constexprs}).
+and goto parameters. @xref{AssemblerTemplate}.
 
 @item OutputOperands
-A comma-separated list of the C variables modified by the instructions in the 
-@var{AssemblerTemplate}.  An empty list is permitted.  @xref{OutputOperands}.
-With gnu++11 or later the strings can also be constant expressions inside parens
-(see @ref{Asm constexprs})
+A comma-separated list describing the C variables modified by the
+instructions in the @var{AssemblerTemplate}.  An empty list is permitted.
+@xref{OutputOperands}.
 
 @item InputOperands
-A comma-separated list of C expressions read by the instructions in the 
-@var{AssemblerTemplate}.  An empty list is permitted.  @xref{InputOperands}.
-With gnu++11 or later the strings can also be constant expressions inside parens
-(see @ref{Asm constexprs})
+A comma-separated list describing the C expressions read by the
+instructions in the @var{AssemblerTemplate}.  An empty list is permitted.
+@xref{InputOperands}.
 
 @item Clobbers
 A comma-separated list of registers or other values changed by the 
 @var{AssemblerTemplate}, beyond those listed as outputs.
 An empty list is permitted.  @xref{Clobbers and Scratch Registers}.
-With gnu++11 or later the strings can also be constant expressions inside parens
-(see @ref{Asm constexprs})
 
 @item GotoLabels
 When you are using the @code{goto} form of @code{asm}, this section contains 
@@ -11330,6 +11329,9 @@ Using @samp{%=}
 @cindex @code{asm} assembler template
 
 An assembler template is a literal string containing assembler instructions.
+In C++ with @option{-std=gnu++11} or later, the assembler template can
+also be a constant expression inside parentheses (see @ref{Asm constexprs}).
+
 The compiler replaces tokens in the template that refer 
 to inputs, outputs, and goto labels,
 and then outputs the resulting string to the assembler. The 
@@ -11478,7 +11480,7 @@ brackets @samp{[]} around the @var{asmSymbolicName} are required both
 in the operand specification and references to the operand in the assembler
 template, i.e.@: @samp{%[Value]}.
 The scope of the name is the @code{asm} statement
-that contains the definition. Any valid C variable name is acceptable, 
+that contains the definition. Any valid C identifier is acceptable,
 including names already defined in the surrounding code. No two operands 
 within the same @code{asm} statement can use the same symbolic name.
 
@@ -11491,6 +11493,8 @@ three output operands, use @samp{%0} in the template to refer to the first,
 @item constraint
 A string constant specifying constraints on the placement of the operand; 
 @xref{Constraints}, for details.
+In C++ with @option{-std=gnu++11} or later, the constraint can
+also be a constant expression inside parentheses (see @ref{Asm constexprs}).
 
 Output constraints must begin with either @samp{=} (a variable overwriting an 
 existing value) or @samp{+} (when reading and writing). When using 
@@ -11768,7 +11772,7 @@ brackets @samp{[]} around the @var{asmSymbolicName} are required both
 in the operand specification and references to the operand in the assembler
 template, i.e.@: @samp{%[Value]}.
 The scope of the name is the @code{asm} statement
-that contains the definition. Any valid C variable name is acceptable, 
+that contains the definition. Any valid C identifier is acceptable,
 including names already defined in the surrounding code. No two operands 
 within the same @code{asm} statement can use the same symbolic name.
 
@@ -11782,6 +11786,8 @@ use @samp{%2} in the template to refer to the first input operand,
 @item constraint
 A string constant specifying constraints on the placement of the operand; 
 @xref{Constraints}, for details.
+In C++ with @option{-std=gnu++11} or later, the constraint can
+also be a constant expression inside parentheses (see @ref{Asm constexprs}).
 
 Input constraint strings may not begin with either @samp{=} or @samp{+}.
 When you list more than one possible location (for example, @samp{"irm"}), 
@@ -11871,6 +11877,8 @@ In order to inform the compiler of these changes, list them in the clobber
 list. Clobber list items are either register names or the special clobbers 
 (listed below). Each clobber list item is a string constant 
 enclosed in double quotes and separated by commas.
+In C++ with @option{-std=gnu++11} or later, a clobber list item can
+also be a constant expression inside parentheses (see @ref{Asm constexprs}).
 
 Clobber descriptions may not in any way overlap with an input or output 
 operand. For example, you may not have an operand describing a register class 
@@ -12707,14 +12715,20 @@ The list below describes the supported modifiers and their effects for the SH fa
 @raisesections
 
 @node Asm constexprs
-@subsection C++11 constant expressions instead of string literals
+@subsection C++11 Constant Expressions instead of String Literals
 
-With gnu++11 or later the string can also be a compile time constant expression
-inside parens.  The constant expression can return a container with data and size
-member functions, following similar rules as C++26 @code{static_assert}
+In C++ with @option{-std=gnu++11} or later, strings that appear in asm
+syntax---specifically, the assembler template, constraints, and
+clobbers---can be specified as parenthesized compile-time constant
+expressions as well as by string literals.  The parentheses around such
+an expression are a required part of the syntax.  The constant expression
+can return a container with @code{data ()} and @code{size ()}
+member functions, following similar rules as the C++26 @code{static_assert}
 message.  Any string is converted to the character set of the source code.
 When this feature is available the @code{__GXX_CONSTEXPR_ASM__} preprocessor
 macro is predefined.
+
+This extension is supported for both the basic and extended asm syntax.
 
 @example
 #include <string>

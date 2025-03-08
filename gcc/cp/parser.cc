@@ -23420,7 +23420,7 @@ cp_parser_asm_definition (cp_parser* parser)
   /* Look for the opening `('.  */
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return;
-  /* Look for the string.  */
+  /* Look for the asm template string.  */
   tree string = cp_parser_asm_string_expression (parser);
   if (string == error_mark_node)
     {
@@ -30310,12 +30310,12 @@ cp_parser_asm_specification_opt (cp_parser* parser)
 
    asm-operand:
      asm-string-expr ( expression )
-     [ asm-string-expr ] asm-string-expr ( expression )
+     [ identifier ] asm-string-expr ( expression )
 
    Returns a TREE_LIST representing the operands.  The TREE_VALUE of
    each node is the expression.  The TREE_PURPOSE is itself a
    TREE_LIST whose TREE_PURPOSE is a STRING_CST for the bracketed
-   string-literal (or NULL_TREE if not present) and whose TREE_VALUE
+   identifier (or NULL_TREE if not present) and whose TREE_VALUE
    is a STRING_CST for the string literal before the parenthesis. Returns
    ERROR_MARK_NODE if any of the operands are invalid.  */
 
@@ -30343,7 +30343,7 @@ cp_parser_asm_operand_list (cp_parser* parser)
 	}
       else
 	name = NULL_TREE;
-      /* Look for the string.  */
+      /* Look for the constraint string.  */
       tree string_literal = cp_parser_asm_string_expression (parser);
 
       /* Look for the `('.  */
