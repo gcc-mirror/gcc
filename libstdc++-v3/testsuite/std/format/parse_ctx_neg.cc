@@ -38,7 +38,5 @@ test_invalid()
   wpc.check_dynamic_spec<char32_t>(0); // { dg-error "here" }
 }
 
-// Each failure above will point to a call to this non-constexpr function:
-// { dg-error "__invalid_dynamic_spec" "" { target *-*-* } 0 }
-// Except the check_dynamic_spec<>(0) one for LWG 4142 which matches this:
-// { dg-error "static assertion failed" "" { target *-*-* } 0 }
+// Each failure above will trigger this static_assert:
+// { dg-error "allowed types" "" { target *-*-* } 0 }

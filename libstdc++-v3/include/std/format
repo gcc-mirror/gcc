@@ -294,54 +294,72 @@ namespace __format
 #if __cpp_lib_format >= 202305L
       template<typename... _Ts>
 	constexpr void
-	check_dynamic_spec(size_t __id) noexcept;
+	check_dynamic_spec(size_t __id) noexcept
+	{
+	  static_assert(__valid_types_for_check_dynamic_spec<_Ts...>(),
+			"template arguments for check_dynamic_spec<Ts...>(id) "
+			"must be unique and must be one of the allowed types");
+	  if consteval {
+	    __check_dynamic_spec<_Ts...>(__id);
+	  }
+	}
 
       constexpr void
       check_dynamic_spec_integral(size_t __id) noexcept
       {
-	check_dynamic_spec<int, unsigned, long long, unsigned long long>(__id);
+	if consteval {
+	  __check_dynamic_spec<int, unsigned, long long,
+			       unsigned long long>(__id);
+	}
       }
 
       constexpr void
       check_dynamic_spec_string(size_t __id) noexcept
       {
-	check_dynamic_spec<const char_type*, basic_string_view<_CharT>>(__id);
+	if consteval {
+	  __check_dynamic_spec<const _CharT*, basic_string_view<_CharT>>(__id);
+	}
       }
 
     private:
-      // Check the Mandates: condition for check_dynamic_spec<Ts...>(n)
+      // True if _Tp occurs exactly once in _Ts.
+      template<typename _Tp, typename... _Ts>
+	static constexpr bool __once = (is_same_v<_Tp, _Ts> + ...) == 1;
+
       template<typename... _Ts>
-	static consteval bool
-	__check_dynamic_spec_types()
+	consteval bool
+	__valid_types_for_check_dynamic_spec()
 	{
-	  if constexpr (sizeof...(_Ts))
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 4142. check_dynamic_spec should require at least one type
+	  if constexpr (sizeof...(_Ts) == 0)
+	    return false;
+	  else
 	    {
-	      int __counts[] = {
-		(is_same_v<bool, _Ts> + ...),
-		(is_same_v<_CharT, _Ts> + ...),
-		(is_same_v<int, _Ts> + ...),
-		(is_same_v<unsigned, _Ts> + ...),
-		(is_same_v<long long, _Ts> + ...),
-		(is_same_v<unsigned long long, _Ts> + ...),
-		(is_same_v<float, _Ts> + ...),
-		(is_same_v<double, _Ts> + ...),
-		(is_same_v<long double, _Ts> + ...),
-		(is_same_v<const _CharT*, _Ts> + ...),
-		(is_same_v<basic_string_view<_CharT>, _Ts> + ...),
-		(is_same_v<const void*, _Ts> + ...)
-	      };
-	      int __sum = 0;
-	      for (int __c : __counts)
-		{
-		  __sum += __c;
-		  if (__c > 1)
-		    __invalid_dynamic_spec("non-unique template argument type");
-		}
-	      if (__sum != sizeof...(_Ts))
-		__invalid_dynamic_spec("disallowed template argument type");
+	      // The types in Ts... are unique. Each type in Ts... is one of
+	      // bool, char_type, int, unsigned int, long long int,
+	      // unsigned long long int, float, double, long double,
+	      // const char_type*, basic_string_view<char_type>, or const void*.
+	      unsigned __sum
+		= __once<bool, _Ts...>
+		+ __once<char_type, _Ts...>
+		+ __once<int, _Ts...>
+		+ __once<unsigned int, _Ts...>
+		+ __once<long long int, _Ts...>
+		+ __once<unsigned long long int, _Ts...>
+		+ __once<float, _Ts...>
+		+ __once<double, _Ts...>
+		+ __once<long double, _Ts...>
+		+ __once<const char_type*, _Ts...>
+		+ __once<basic_string_view<char_type>, _Ts...>
+		+ __once<const void*, _Ts...>;
+	      return __sum == sizeof...(_Ts);
 	    }
-	  return true;
 	}
+
+      template<typename... _Ts>
+	consteval void
+	__check_dynamic_spec(size_t __id) noexcept;
 
       // This must not be constexpr.
       static void __invalid_dynamic_spec(const char*);
@@ -4316,29 +4334,21 @@ namespace __format
 } // namespace __format
 /// @endcond
 
-#if __cpp_lib_format >= 202305L
+#if __cpp_lib_format >= 202305L // >= C++26
+  /// @cond undocumented
+  // Common implementation of check_dynamic_spec{,_string,_integral}
   template<typename _CharT>
-  template<typename... _Ts>
-    constexpr void
-    basic_format_parse_context<_CharT>::check_dynamic_spec(size_t __id) noexcept
-    {
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 4142. check_dynamic_spec should require at least one type
-      static_assert(sizeof...(_Ts) >= 1);
-      // This call enforces the Mandates: condition that _Ts contains valid
-      // types and each type appears at most once. It could be a static_assert
-      // but this way failures give better diagnostics, due to calling the
-      // non-constexpr __invalid_dynamic_spec function.
-      [[maybe_unused]]
-      constexpr bool __ok = __check_dynamic_spec_types<_Ts...>();
-
-      if consteval {
+    template<typename... _Ts>
+      consteval void
+      basic_format_parse_context<_CharT>::
+      __check_dynamic_spec(size_t __id) noexcept
+      {
 	if (__id >= _M_num_args)
 	  __format::__invalid_arg_id_in_format_string();
 	if constexpr (sizeof...(_Ts) != 0)
 	  {
-	    using _Parse_context = __format::_Scanner<_CharT>::_Parse_context;
-	    auto __arg = static_cast<_Parse_context*>(this)->_M_types[__id];
+	    using _Parse_ctx = __format::_Scanner<_CharT>::_Parse_context;
+	    auto __arg = static_cast<_Parse_ctx*>(this)->_M_types[__id];
 	    __format::_Arg_t __types[] = {
 	      __format::__to_arg_t_enum<_CharT, _Ts>()...
 	    };
@@ -4348,7 +4358,7 @@ namespace __format
 	  }
 	__invalid_dynamic_spec("arg(id) type does not match");
       }
-    }
+  /// @endcond
 #endif
 
   template<typename _CharT, typename... _Args>
