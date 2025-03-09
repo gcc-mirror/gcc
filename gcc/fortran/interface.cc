@@ -5836,8 +5836,6 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
 	{
 	  snprintf (name, GFC_MAX_SYMBOL_LEN, "_formal_%d", var_num ++);
 	  gfc_get_symbol (name, gfc_current_ns, &s);
-	  /* We do not need this in an undo table.  */
-	  gfc_pop_undo_symbol();
 	  if (a->expr->ts.type == BT_PROCEDURE)
 	    {
 	      gfc_symbol *asym = a->expr->symtree->n.sym;
@@ -5878,12 +5876,14 @@ gfc_get_formal_from_actual_arglist (gfc_symbol *sym,
 	  s->declared_at = a->expr->where;
 	  s->attr.intent = INTENT_UNKNOWN;
 	  (*f)->sym = s;
+	  gfc_commit_symbol (s);
 	}
       else  /* If a->expr is NULL, this is an alternate rerturn.  */
 	(*f)->sym = NULL;
 
       f = &((*f)->next);
     }
+
 }
 
 

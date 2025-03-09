@@ -3898,11 +3898,6 @@ enforce_single_undo_checkpoint (void)
   gcc_checking_assert (single_undo_checkpoint_p ());
 }
 
-void
-gfc_pop_undo_symbol ()
-{
-  latest_undo_chgset->syms.pop();
-}
 
 /* Undoes all the changes made to symbols in the current statement.  */
 
