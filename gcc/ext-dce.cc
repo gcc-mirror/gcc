@@ -643,6 +643,18 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 	  /* The code of the RHS of a SET.  */
 	  enum rtx_code code = GET_CODE (src);
 
+	  /* If we break the main loop below, then we will continue processing
+	     sub-components of this RTX, including the SET_DEST.
+
+	     That is not necessary if the SET_DEST is a REG.  We can just bump the
+	     iterator to the next element to skip handling the SET_DEST.
+
+	     We can probably do this for ZERO_EXTRACT, STRICT_LOW_PART and SUBREG
+	     destinations as well.  But I want to rewrite all this code and keep
+	     this fix conservative given we're deep into the gcc-15 release cycle.  */
+	  if (REG_P (dst))
+	    iter.next ();
+
 	  /* ?!? How much of this should mirror SET handling, potentially
 	     being shared?   */
 	  if (SUBREG_P (dst) && SUBREG_BYTE (dst).is_constant ())
