@@ -1364,6 +1364,10 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	empty_or_with_defined_p = false;
     }
 
+  /* The middle bb is not empty if there are any phi nodes. */
+  if (phi_nodes (middle_bb))
+    empty_or_with_defined_p = false;
+
   cond = last_stmt (cond_bb);
   code = gimple_cond_code (cond);
 
