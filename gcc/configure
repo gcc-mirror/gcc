@@ -30674,6 +30674,7 @@ if test x"$ld64_flag" = x"yes"; then
   # Set defaults for possibly untestable items.
   gcc_cv_ld64_export_dynamic=0
   gcc_cv_ld64_platform_version=0
+  gcc_cv_ld64_macos_version_min=0
 
   if test "$build" = "$host"; then
     darwin_try_test=1
@@ -30702,6 +30703,7 @@ $as_echo "$gcc_cv_ld64_major" >&6; }
     fi
     if test "$gcc_cv_ld64_major" -ge 512; then
       gcc_cv_ld64_platform_version=1
+      gcc_cv_ld64_macos_version_min=1
     fi
   elif test -x "$gcc_cv_ld" -a "$darwin_try_test" -eq 1; then
     # If the version was not specified, try to find it.
@@ -30731,6 +30733,15 @@ $as_echo_n "checking linker for -platform_version support... " >&6; }
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld64_platform_version" >&5
 $as_echo "$gcc_cv_ld64_platform_version" >&6; }
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker for -macos_version_min" >&5
+$as_echo_n "checking linker for -macos_version_min... " >&6; }
+    gcc_cv_ld64_macos_version_min=1
+    if $gcc_cv_ld -macos_version_min 10.5 < /dev/null 2>&1 | grep 'unknown option' > /dev/null; then
+      gcc_cv_ld64_macos_version_min=0
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld64_macos_version_min" >&5
+$as_echo "$gcc_cv_ld64_macos_version_min" >&6; }
   fi
 
   if test x"${gcc_cv_ld64_version}" != x; then
@@ -30750,6 +30761,12 @@ _ACEOF
 
 cat >>confdefs.h <<_ACEOF
 #define LD64_HAS_PLATFORM_VERSION $gcc_cv_ld64_platform_version
+_ACEOF
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define LD64_HAS_MACOS_VERSION_MIN $gcc_cv_ld64_macos_version_min
 _ACEOF
 
 fi
