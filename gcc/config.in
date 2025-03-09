@@ -2296,6 +2296,12 @@
 #endif
 
 
+/* Define to 1 if ld64 supports '-macos_version_min'. */
+#ifndef USED_FOR_TARGET
+#undef LD64_HAS_MACOS_VERSION_MIN
+#endif
+
+
 /* Define to 1 if ld64 supports '-platform_version'. */
 #ifndef USED_FOR_TARGET
 #undef LD64_HAS_PLATFORM_VERSION
