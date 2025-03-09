@@ -1,3 +1,23 @@
+2025-03-08  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/extend.texi (Basic Asm): Document that AssemblerInstructions
+	can be an asm constexpr.
+	(Extended Asm): Move the notes about asm constexprs for
+	AssemblerTemplate and Clobbers to the corresponding subsections.
+	Remove the notes for OutputOperands and InputOperands and reword
+	misleading descriptions of the list item syntax.  Note that
+	constraint strings can be asm constexprs.
+	(Asm constexprs): Use "title case" for subsection name.  Be
+	explicit about what parts of the asm syntax this applies to and
+	that the parentheses are required.  Correct markup and terminology.
+
+2025-03-08  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/67301
+	* doc/extend.texi (Extended Asm): Clarify that the square brackets
+	around the asmSymbolicName of operands are a required part of
+	the syntax.
+
 2025-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/117178

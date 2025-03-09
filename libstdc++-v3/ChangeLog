@@ -1,3 +1,31 @@
+2025-03-08  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/bits/version.def (atomic_value_initialization):
+	Guard the FTM with the language concepts FTM.
+	* include/bits/version.h: Regenerate.
+	* include/std/atomic (atomic): When atomic value init is
+	defined, change the defaulted default constructor to
+	a non-defaulted one, constraining it as per LWG4169.
+	Otherwise, keep the existing constructor.
+	Remove the NSDMI for the _M_i member.
+	(_GLIBCXX20_INIT): Drop the macro, as it is not needed any more.
+	* testsuite/29_atomics/atomic/69301.cc: Test that
+	an atomic wrapping a non-default-constructible type is
+	always itself non-default-constructible (in all language
+	modes).
+	* testsuite/29_atomics/atomic/cons/trivial.cc: New test.
+
+2025-03-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (__nothrow_contiguous_iterator):
+	Remove.
+	(__memcpyable_iterators): Simplify.
+	(__copy_move_a2, __copy_n_a, __copy_move_backward_a2): Call
+	std::to_address on the iterators after advancing them.
+	* testsuite/25_algorithms/copy/contiguous.cc: New test.
+	* testsuite/25_algorithms/copy_backward/contiguous.cc: New test.
+	* testsuite/25_algorithms/copy_n/contiguous.cc: New test.
+
 2025-03-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/forward_list (erase): Change lambda to have

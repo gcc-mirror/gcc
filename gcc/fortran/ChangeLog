@@ -1,3 +1,20 @@
+2025-03-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119157
+	* gfortran.h (gfc_symbol): Make ext_dummy_arglist_mismatch a
+	one-bit bitfield
+	(gfc_pop_undo_symbol): Declare prototype.
+	* symbol.cc (gfc_pop_undo_symbol): New function.
+	* interface.cc (gfc_get_formal_from_actual_arglist): Call it
+	for artificially introduced formal variables.
+
+2025-03-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/119054
+	* resolve.cc (resolve_elemental_actual): When checking other
+	actual arguments to elemental procedures, don't check
+	attributes of literals and function calls.
+
 2025-03-06  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/119118

@@ -1,3 +1,19 @@
+2025-03-08  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* parser.cc (cp_parser_asm_definition): Make comment more explicit.
+	(cp_parser_asm_operand_list): Likewise.  Also correct the comment
+	block at the top of the function to reflect reality.
+
+2025-03-08  Jason Merrill  <jason@redhat.com>
+	    Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/114630
+	PR c++/114795
+	* pt.cc (reopen_tinst_level): Set or clear MK_PURVIEW.
+	(mark_decl_instantiated): Call set_instantiating_module.
+	(instantiate_pending_templates): Save and restore module_kind so
+	it isn't affected by reopen_tinst_level.
+
 2025-03-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/118775
