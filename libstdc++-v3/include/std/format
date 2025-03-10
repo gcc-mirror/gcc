@@ -3308,10 +3308,12 @@ namespace __format
   template<typename _Context, typename... _Args>
     class _Arg_store;
 
+  template<typename _Visitor, typename _Ctx>
+    decltype(auto) __visit_format_arg(_Visitor&&, basic_format_arg<_Ctx>);
+
   template<typename _Ch, typename _Tp>
     consteval _Arg_t
     __to_arg_t_enum() noexcept;
-
 } // namespace __format
 /// @endcond
 
@@ -3383,12 +3385,12 @@ namespace __format
       template<typename _Visitor>
 	decltype(auto)
 	visit(this basic_format_arg __arg, _Visitor&& __vis)
-	{ return __arg._M_visit(std::forward<_Visitor>(__vis), __arg._M_type); }
+	{ return __arg._M_visit_user(std::forward<_Visitor>(__vis), __arg._M_type); }
 
       template<typename _Res, typename _Visitor>
 	_Res
 	visit(this basic_format_arg __arg, _Visitor&& __vis)
-	{ return __arg._M_visit(std::forward<_Visitor>(__vis), __arg._M_type); }
+	{ return __arg._M_visit_user(std::forward<_Visitor>(__vis), __arg._M_type); }
 #endif
 
     private:
@@ -3589,6 +3591,10 @@ namespace __format
 	friend decltype(auto)
 	visit_format_arg(_Visitor&& __vis, basic_format_arg<_Ctx>);
 
+      template<typename _Visitor, typename _Ctx>
+	friend decltype(auto)
+	__format::__visit_format_arg(_Visitor&&, basic_format_arg<_Ctx>);
+
       template<typename _Ch, typename _Tp>
 	friend consteval __format::_Arg_t
 	__format::__to_arg_t_enum() noexcept;
@@ -3657,6 +3663,28 @@ namespace __format
 	      __builtin_unreachable();
 	  }
 	}
+
+      template<typename _Visitor>
+	decltype(auto)
+	_M_visit_user(_Visitor&& __vis, __format::_Arg_t __type)
+	{
+	  return _M_visit([&__vis]<typename _Tp>(_Tp& __val) -> decltype(auto)
+	    {
+	      constexpr bool __user_facing = __is_one_of<_Tp,
+	        monostate, bool, _CharT,
+	        int, unsigned int, long long int, unsigned long long int,
+	        float, double, long double,
+	        const _CharT*, basic_string_view<_CharT>,
+	        const void*, handle>::value;
+	     if constexpr (__user_facing)
+	       return std::forward<_Visitor>(__vis)(__val);
+	     else
+	       {
+	         handle __h(__val);
+	         return std::forward<_Visitor>(__vis)(__h);
+	       }
+	   }, __type);
+	}
     };
 
   template<typename _Visitor, typename _Context>
@@ -3664,12 +3692,19 @@ namespace __format
     inline decltype(auto)
     visit_format_arg(_Visitor&& __vis, basic_format_arg<_Context> __arg)
     {
-      return __arg._M_visit(std::forward<_Visitor>(__vis), __arg._M_type);
+      return __arg._M_visit_user(std::forward<_Visitor>(__vis), __arg._M_type);
     }
 
 /// @cond undocumented
 namespace __format
 {
+  template<typename _Visitor, typename _Ctx>
+    inline decltype(auto)
+    __visit_format_arg(_Visitor&& __vis, basic_format_arg<_Ctx> __arg)
+    {
+      return __arg._M_visit(std::forward<_Visitor>(__vis), __arg._M_type);
+    }
+
   struct _WidthPrecVisitor
   {
     template<typename _Tp>
@@ -3701,7 +3736,7 @@ namespace __format
   template<typename _Context>
     inline size_t
     __int_from_arg(const basic_format_arg<_Context>& __arg)
-    { return std::visit_format_arg(_WidthPrecVisitor(), __arg); }
+    { return __format::__visit_format_arg(_WidthPrecVisitor(), __arg); }
 
   // Pack _Arg_t enum values into a single 60-bit integer.
   template<int _Bits, size_t _Nm>
@@ -4154,7 +4189,7 @@ namespace __format
 	using _Context = basic_format_context<_Out, _CharT>;
 	using handle = typename basic_format_arg<_Context>::handle;
 
-	std::visit_format_arg([this](auto& __arg) {
+	__format::__visit_format_arg([this](auto& __arg) {
 	  using _Type = remove_reference_t<decltype(__arg)>;
 	  using _Formatter = typename _Context::template formatter_type<_Type>;
 	  if constexpr (is_same_v<_Type, monostate>)
@@ -4256,7 +4291,7 @@ namespace __format
 	if (__fmt.size() == 2 && __fmt[0] == '{' && __fmt[1] == '}')
 	  {
 	    bool __done = false;
-	    std::visit_format_arg([&](auto& __arg) {
+	    __format::__visit_format_arg([&](auto& __arg) {
 	      using _Tp = remove_cvref_t<decltype(__arg)>;
 	      if constexpr (is_same_v<_Tp, bool>)
 		{
