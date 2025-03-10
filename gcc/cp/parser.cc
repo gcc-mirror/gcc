@@ -2992,6 +2992,9 @@ static tree cp_parser_function_contract_specifier_seq
 static void cp_parser_late_contract_condition
   (cp_parser *, tree, tree);
 
+static bool cp_parser_should_constify_contract
+  (const contract_modifier&);
+
 enum pragma_context {
   pragma_external,
   pragma_member,
@@ -13278,12 +13281,8 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 						     0);
 
 	      /* Do we have an override for const-ification?  */
-	      bool should_constify = !flag_contracts_nonattr_noconst;
-	      if (!modifier.error_p
-		  && (modifier.mutable_p
-		      || (flag_contracts_nonattr_const_keyword
-			  && !modifier.const_p)))
-		should_constify = false;
+	      bool should_constify
+		= cp_parser_should_constify_contract (modifier);
 
 	      /* If we have a current class object, see if we need to consider
 		 it const when processing the contract condition.  */
@@ -31820,6 +31819,41 @@ cp_parser_function_contract_modifier_opt (cp_parser * parser)
   return mod;
 }
 
+/* Decide on whether this contract is const-ified, which depends on both
+   the global choice (flag_contracts_nonattr_noconst) and local MODIFIER
+   settings.
+
+   Precedence:
+     'const' keyword
+     'mutable' keyword
+     -fcontracts-nonattr-noconst.  */
+
+static bool
+cp_parser_should_constify_contract (const contract_modifier& modifier)
+{
+  /* Start with the user's base choice.  */
+  bool should_constify = !flag_contracts_nonattr_noconst;
+
+  /* We do not need to check for mutable/const conflicts that was done when
+     parsing the modifier.  */
+
+  /* Do we have an override that makes this mutable?  */
+  if (!modifier.error_p
+      && (modifier.mutable_p
+	  || (flag_contracts_nonattr_const_keyword && !modifier.const_p)))
+    should_constify = false;
+
+  /* Do we have an override that makes this const?
+     This would apply when the base choice is 'no' but we have the const
+     keyword applied to this specific contract.  */
+  if (!modifier.error_p
+      && flag_contracts_nonattr_const_keyword
+      && modifier.const_p)
+    should_constify = true;
+
+  return should_constify;
+}
+
 /* Parse a natural syntax contract specifier seq.
 
   function-contract-specifier :
@@ -31834,8 +31868,8 @@ cp_parser_function_contract_modifier_opt (cp_parser * parser)
 
    Return void_list_node if the current token doesn't start a
    contract specifier.
-
 */
+
 static tree
 cp_parser_function_contract_specifier (cp_parser *parser)
 {
@@ -31885,11 +31919,7 @@ cp_parser_function_contract_specifier (cp_parser *parser)
     cp_parser_require (parser, CPP_COLON, RT_COLON);
 
   /* Do we have an override for const-ification?  */
-  bool should_constify = !flag_contracts_nonattr_noconst;
-  if (!modifier.error_p
-      && (modifier.mutable_p
-	  || (flag_contracts_nonattr_const_keyword && !modifier.const_p)))
-    should_constify = false;
+  bool should_constify = cp_parser_should_constify_contract (modifier);
 
   tree contract;
   if (current_class_type &&
@@ -31974,7 +32004,7 @@ cp_parser_function_contract_specifier (cp_parser *parser)
   if (!flag_contracts || !flag_contracts_nonattr)
     {
       error_at (loc, "P2900 contracts are only available with %<-fcontracts%>"
-	" and %<-fcontracts-nonattr%>");
+		" and %<-fcontracts-nonattr%>");
       return error_mark_node;
     }
 
