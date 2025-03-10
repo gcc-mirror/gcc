@@ -17864,7 +17864,7 @@ The option cannot be combined with @option{-fsanitize=thread} or
 (only with @code{-mlam=u48} or @code{-mlam=u57} options) and AArch64,
 in both cases only in ABIs with 64-bit pointers.
 
-When compiling with @option{-fsanitize=address}, you should also also
+When compiling with @option{-fsanitize=address}, you should also
 use @option{-g} to produce more meaningful output.
 To get more accurate stack traces, it is possible to use options such as
 @option{-O0}, @option{-O1}, or @option{-Og} (which, for instance, prevent
