@@ -1970,6 +1970,8 @@ package body Exp_Ch11 is
          when CE_Tag_Check_Failed =>
             Add_Str_To_Name_Buffer ("CE_Tag_Check");
 
+         when PE_Abstract_Type_Component =>
+            Add_Str_To_Name_Buffer ("PE_Abstract_Type_Component");
          when PE_Access_Before_Elaboration =>
             Add_Str_To_Name_Buffer ("PE_Access_Before_Elaboration");
          when PE_Accessibility_Check_Failed =>

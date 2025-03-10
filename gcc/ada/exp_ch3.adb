@@ -671,7 +671,8 @@ package body Exp_Ch3 is
       --------------------
 
       function Init_Component return List_Id is
-         Comp : Node_Id;
+         Comp   : Node_Id;
+         Result : List_Id;
 
       begin
          Comp :=
@@ -681,7 +682,7 @@ package body Exp_Ch3 is
 
          if Has_Default_Aspect (A_Type) then
             Set_Assignment_OK (Comp);
-            return New_List (
+            Result := New_List (
               Make_Assignment_Statement (Loc,
                 Name       => Comp,
                 Expression =>
@@ -690,7 +691,7 @@ package body Exp_Ch3 is
 
          elsif Comp_Simple_Init then
             Set_Assignment_OK (Comp);
-            return New_List (
+            Result := New_List (
               Make_Assignment_Statement (Loc,
                 Name       => Comp,
                 Expression =>
@@ -701,7 +702,7 @@ package body Exp_Ch3 is
 
          else
             Clean_Task_Names (Comp_Type, Proc_Id);
-            return
+            Result :=
               Build_Initialization_Call
                 (N            => Nod,
                  Id_Ref       => Comp,
@@ -709,6 +710,19 @@ package body Exp_Ch3 is
                  In_Init_Proc => True,
                  Enclos_Type  => A_Type);
          end if;
+
+         --  Raise Program_Error in the init procedure of arrays when the type
+         --  of their components is a mutably tagged abstract class-wide type.
+
+         if Is_Class_Wide_Equivalent_Type (Component_Type (A_Type))
+           and then Is_Abstract_Type (Comp_Type)
+         then
+            Append_To (Result,
+              Make_Raise_Program_Error (Loc,
+                Reason => PE_Abstract_Type_Component));
+         end if;
+
+         return Result;
       end Init_Component;
 
       ------------------------
@@ -3325,6 +3339,17 @@ package body Exp_Ch3 is
                  Make_Tag_Assignment_From_Type
                    (Loc, Make_Identifier (Loc, Name_uInit), Rec_Type));
 
+               --  Ensure that Program_Error is raised if a mutably class-wide
+               --  abstract tagged type is initialized by default.
+
+               if Is_Abstract_Type (Rec_Type)
+                 and then Is_Mutably_Tagged_Type (Class_Wide_Type (Rec_Type))
+               then
+                  Append_To (Init_Tags_List,
+                    Make_Raise_Program_Error (Loc,
+                      Reason => PE_Abstract_Type_Component));
+               end if;
+
                --  Ada 2005 (AI-251): Initialize the secondary tags components
                --  located at fixed positions (tags whose position depends on
                --  variable size components are initialized later ---see below)
@@ -3746,6 +3771,16 @@ package body Exp_Ch3 is
                --  Explicit initialization
 
                if Present (Expression (Decl)) then
+
+                  --  Ensure that the type of the expression initializing a
+                  --  mutably tagged class-wide type component is frozen.
+
+                  if Nkind (Expression (Decl)) = N_Qualified_Expression
+                    and then Is_Class_Wide_Equivalent_Type (Etype (Id))
+                  then
+                     Freeze_Before (N, Etype (Expression (Decl)));
+                  end if;
+
                   if Is_CPP_Constructor_Call (Expression (Decl)) then
                      Actions :=
                        Build_Initialization_Call
@@ -3916,6 +3951,15 @@ package body Exp_Ch3 is
                           Enclos_Type         => Rec_Type,
                           Discr_Map           => Discr_Map,
                           Init_Control_Actual => Init_Control_Actual);
+
+                     if Is_Mutably_Tagged_CW_Equivalent_Type (Etype (Id))
+                       and then not Is_Parent
+                       and then Is_Abstract_Type (Typ)
+                     then
+                        Append_To (Init_Call_Stmts,
+                          Make_Raise_Program_Error (Comp_Loc,
+                            Reason => PE_Abstract_Type_Component));
+                     end if;
 
                      if Is_Parent then
                         --  This is tricky. At first it looks like
@@ -4537,6 +4581,11 @@ package body Exp_Ch3 is
             if Present (Expression (Comp_Decl))
               or else Has_Non_Null_Base_Init_Proc (Typ)
               or else Component_Needs_Simple_Initialization (Typ)
+
+               --  Mutably tagged class-wide types require the init-proc since
+               --  it takes care of their default initialization.
+
+              or else Is_Mutably_Tagged_CW_Equivalent_Type (Typ)
             then
                return True;
             end if;

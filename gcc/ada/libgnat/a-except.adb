@@ -450,6 +450,8 @@ package body Ada.Exceptions is
      (File : System.Address; Line : Integer);
    procedure Rcheck_CE_Tag_Check
      (File : System.Address; Line : Integer);
+   procedure Rcheck_PE_Abstract_Type_Component
+     (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Access_Before_Elaboration
      (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Accessibility_Check
@@ -542,6 +544,8 @@ package body Ada.Exceptions is
                   "__gnat_rcheck_CE_Range_Check");
    pragma Export (C, Rcheck_CE_Tag_Check,
                   "__gnat_rcheck_CE_Tag_Check");
+   pragma Export (C, Rcheck_PE_Abstract_Type_Component,
+                  "__gnat_rcheck_PE_Abstract_Type_Component");
    pragma Export (C, Rcheck_PE_Access_Before_Elaboration,
                   "__gnat_rcheck_PE_Access_Before_Elaboration");
    pragma Export (C, Rcheck_PE_Accessibility_Check,
@@ -620,6 +624,7 @@ package body Ada.Exceptions is
    pragma No_Return (Rcheck_CE_Partition_Check);
    pragma No_Return (Rcheck_CE_Range_Check);
    pragma No_Return (Rcheck_CE_Tag_Check);
+   pragma No_Return (Rcheck_PE_Abstract_Type_Component);
    pragma No_Return (Rcheck_PE_Access_Before_Elaboration);
    pragma No_Return (Rcheck_PE_Accessibility_Check);
    pragma No_Return (Rcheck_PE_Address_Of_Intrinsic);
@@ -682,6 +687,8 @@ package body Ada.Exceptions is
    pragma Machine_Attribute (Rcheck_CE_Range_Check,
                              "expected_throw");
    pragma Machine_Attribute (Rcheck_CE_Tag_Check,
+                             "expected_throw");
+   pragma Machine_Attribute (Rcheck_PE_Abstract_Type_Component,
                              "expected_throw");
    pragma Machine_Attribute (Rcheck_PE_Access_Before_Elaboration,
                              "expected_throw");
@@ -774,6 +781,8 @@ package body Ada.Exceptions is
    pragma Machine_Attribute (Rcheck_CE_Range_Check,
                              "strub", "callable");
    pragma Machine_Attribute (Rcheck_CE_Tag_Check,
+                             "strub", "callable");
+   pragma Machine_Attribute (Rcheck_PE_Abstract_Type_Component,
                              "strub", "callable");
    pragma Machine_Attribute (Rcheck_PE_Access_Before_Elaboration,
                              "strub", "callable");
@@ -885,6 +894,8 @@ package body Ada.Exceptions is
    Rmsg_36 : constant String := "stream operation not allowed"     & NUL;
    Rmsg_37 : constant String := "build-in-place mismatch"          & NUL;
    Rmsg_38 : constant String := "raise check failed"               & NUL;
+   Rmsg_39 : constant String := "initialization of abstract type"  &
+                                " component not allowed"           & NUL;
 
    ---------
    -- AAA --
@@ -1470,6 +1481,13 @@ package body Ada.Exceptions is
    begin
       Raise_Constraint_Error_Msg (File, Line, 0, Rmsg_13'Address);
    end Rcheck_CE_Tag_Check;
+
+   procedure Rcheck_PE_Abstract_Type_Component
+     (File : System.Address; Line : Integer)
+   is
+   begin
+      Raise_Program_Error_Msg (File, Line, Rmsg_39'Address);
+   end Rcheck_PE_Abstract_Type_Component;
 
    procedure Rcheck_PE_Access_Before_Elaboration
      (File : System.Address; Line : Integer)

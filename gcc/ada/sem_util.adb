@@ -23200,11 +23200,6 @@ package body Sem_Util is
       then
          return True;
 
-      --  Mutably tagged types require default initialization
-
-      elsif Is_Mutably_Tagged_CW_Equivalent_Type (Typ) then
-         return True;
-
       --  If Initialize/Normalize_Scalars is in effect, string objects also
       --  need initialization, unless they are created in the course of
       --  expanding an aggregate (since in the latter case they will be

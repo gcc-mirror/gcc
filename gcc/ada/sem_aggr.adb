@@ -6355,7 +6355,12 @@ package body Sem_Aggr is
                & "has unknown discriminants", N, Typ);
          end if;
 
-         if Has_Unknown_Discriminants (Typ)
+         --  Mutably tagged class-wide types do not have discriminants;
+         --  however, all class-wide types are considered to have unknown
+         --  discriminants.
+
+         if not Is_Mutably_Tagged_Type (Typ)
+           and then Has_Unknown_Discriminants (Typ)
            and then Present (Underlying_Record_View (Typ))
          then
             Discrim := First_Discriminant (Underlying_Record_View (Typ));
@@ -6427,7 +6432,13 @@ package body Sem_Aggr is
       --  STEP 4: Set the Etype of the record aggregate
 
       if Has_Discriminants (Typ)
-        or else (Has_Unknown_Discriminants (Typ)
+
+         --  Handle types with unknown discriminants, excluding mutably tagged
+         --  class-wide types because, although they do not have discriminants,
+         --  all class-wide types are considered to have unknown discriminants.
+
+        or else (not Is_Mutably_Tagged_Type (Typ)
+                  and then Has_Unknown_Discriminants (Typ)
                   and then Present (Underlying_Record_View (Typ)))
       then
          Build_Constrained_Itype (N, Typ, New_Assoc_List);
@@ -6598,7 +6609,13 @@ package body Sem_Aggr is
             if Null_Present (Record_Def) then
                null;
 
-            elsif not Has_Unknown_Discriminants (Typ) then
+            --  Explicitly add here mutably class-wide types because they do
+            --  not have discriminants; however, all class-wide types are
+            --  considered to have unknown discriminants.
+
+            elsif not Has_Unknown_Discriminants (Typ)
+              or else Is_Mutably_Tagged_Type (Typ)
+            then
                Gather_Components
                  (Base_Type (Typ),
                   Component_List (Record_Def),
@@ -6784,6 +6801,11 @@ package body Sem_Aggr is
                   Set_Has_Self_Reference (N);
 
                elsif Needs_Simple_Initialization (Ctyp)
+
+                  --  Mutably tagged class-wide type components are initialized
+                  --  by the expander calling their IP subprogram.
+
+                 or else Is_Mutably_Tagged_CW_Equivalent_Type (Ctyp)
                  or else Has_Non_Null_Base_Init_Proc (Ctyp)
                  or else not Expander_Active
                then

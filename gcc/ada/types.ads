@@ -947,7 +947,8 @@ package Types is
       SE_Object_Too_Large,               -- 35
       PE_Stream_Operation_Not_Allowed,   -- 36
       PE_Build_In_Place_Mismatch,        -- 37
-      PE_Raise_Check_Failed);            -- 38
+      PE_Raise_Check_Failed,             -- 38
+      PE_Abstract_Type_Component);       -- 39
    pragma Convention (C, RT_Exception_Code);
 
    Last_Reason_Code : constant :=
@@ -973,6 +974,7 @@ package Types is
               CE_Range_Check_Failed             => CE_Reason,
               CE_Tag_Check_Failed               => CE_Reason,
 
+              PE_Abstract_Type_Component        => PE_Reason,
               PE_Access_Before_Elaboration      => PE_Reason,
               PE_Accessibility_Check_Failed     => PE_Reason,
               PE_Address_Of_Intrinsic           => PE_Reason,
