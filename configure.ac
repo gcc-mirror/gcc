@@ -161,6 +161,7 @@ target_libraries="target-libgcc \
 		target-libgfortran \
 		target-libffi \
 		target-libobjc \
+		target-libgcobol \
 		target-libada \
 		target-libgm2 \
 		target-libgo \
@@ -760,6 +761,23 @@ if test -d ${srcdir}/libphobos; then
     fi
 fi
 
+# Disable libgcobol on unsupported systems.
+# For testing, you can override this with --enable-libgcobol.
+if test -d ${srcdir}/libgcobol; then
+    if test x$enable_libgcobol = x; then
+	AC_MSG_CHECKING([for libgcobol support])
+	if (srcdir=${srcdir}/libgcobol; \
+		. ${srcdir}/configure.tgt; \
+		test "$LIBGCOBOL_SUPPORTED" != "yes")
+	then
+	    AC_MSG_RESULT([no])
+	    noconfigdirs="$noconfigdirs target-libgcobol"
+	else
+	    AC_MSG_RESULT([yes])
+	fi
+    fi
+fi
+
 # Disable Fortran for some systems.
 case "${target}" in
   mmix-*-*)
@@ -768,6 +786,38 @@ case "${target}" in
     ;;
   bpf-*-*)
     unsupported_languages="$unsupported_languages fortran"
+    ;;
+esac
+
+# Always enable COBOL for --enable-languages=*cobol*
+# Otherwise, enable COBOL only for known architectures
+case ,${enable_languages}, in
+  *,cobol,*)
+    case ,${enable_languages}, in
+      *,c++,*)
+      ;;
+      *)
+        # We have an explicit cobol, but no c++.  We need c++, because cobol
+        # requires libstdc++
+        enable_languages="$enable_languages,c++"
+      ;;
+    esac
+    ;;
+  *)
+    case "${target}" in
+      x86_64-*-*|aarch64-*-*)
+        ;;
+      *-*-*)
+    unsupported_languages="$unsupported_languages cobol"
+    ;;
+    esac
+    case "${host}" in
+      x86_64-*-*|aarch64-*-*)
+        ;;
+      *-*-*)
+    unsupported_languages="$unsupported_languages cobol"
+    ;;
+    esac
     ;;
 esac
 
