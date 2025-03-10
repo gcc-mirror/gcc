@@ -770,7 +770,7 @@ package body Sem is
               and then Present (Scope (E))
               and then Ekind (Scope (E)) = E_Record_Type
             then
-               null; -- Set it later, in Analyze_Component_Declaration
+               null; -- Set it later, in Record_Type_Definition
             elsif not Is_Not_Self_Hidden (E) then
                Set_Is_Not_Self_Hidden (E);
             end if;
