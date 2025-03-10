@@ -28,7 +28,7 @@ struct M { constexpr K size () const { return {}; }
 	   constexpr L data () const { return {}; } };
 #if  __cpp_constexpr_dynamic_alloc >= 201907L
 struct N { constexpr int size () const { return 3; }
-	   constexpr const char *data () const { return new char[3] { 'b', 'a', 'd' }; } }; // { dg-error "'\\\* N\\\(\\\).N::data\\\(\\\)' is not a constant expression because allocated storage has not been deallocated" "" { target c++20 } }
+	   constexpr const char *data () const { return new char[3] { 'b', 'a', 'd' }; } };
 #endif
 constexpr const char a[] = { 't', 'e', 's', 't' };
 struct O { constexpr int size () const { return 4; }
@@ -117,6 +117,7 @@ foo ()
   asm ((M {}));
 #if __cpp_constexpr_dynamic_alloc >= 201907L
   asm ((N {}));			// { dg-error "constexpr string 'data\\\(\\\)\\\[0\\\]' must be a constant expression" "" { target c++20 } }
+ // { dg-error "'\\\* N\\\(\\\).N::data\\\(\\\)' is not a constant expression because allocated storage has not been deallocated" "" { target c++20 } .-1 }
 #endif
   asm ((O {}));
   asm ((P (0)));
@@ -190,6 +191,7 @@ bar ()
   asm ((M {}));
 #if __cpp_constexpr_dynamic_alloc >= 201907L
   asm ((N {}));			// { dg-error "constexpr string 'data\\\(\\\)\\\[0\\\]' must be a constant expression" "" { target c++20 } }
+ // { dg-error "'\\\* N\\\(\\\).N::data\\\(\\\)' is not a constant expression because allocated storage has not been deallocated" "" { target c++20 } .-1 }
 #endif
   asm ((O {}));
   asm ((P (0)));

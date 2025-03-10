@@ -9262,9 +9262,11 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
       if (heap_var)
 	{
 	  if (!allow_non_constant && !non_constant_p)
-	    error_at (DECL_SOURCE_LOCATION (heap_var),
-		      "%qE is not a constant expression because it refers to "
-		      "a result of %<operator new%>", t);
+	    {
+	      error ("%qE is not a constant expression because it refers to "
+		     "a result of %<operator new%>", t);
+	      inform (DECL_SOURCE_LOCATION (heap_var), "allocated here");
+	    }
 	  r = t;
 	  non_constant_p = true;
 	}
@@ -9273,9 +9275,11 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	  if (DECL_NAME (heap_var) != heap_deleted_identifier)
 	    {
 	      if (!allow_non_constant && !non_constant_p)
-		error_at (DECL_SOURCE_LOCATION (heap_var),
-			  "%qE is not a constant expression because allocated "
-			  "storage has not been deallocated", t);
+		{
+		  error ("%qE is not a constant expression because allocated "
+			 "storage has not been deallocated", t);
+		  inform (DECL_SOURCE_LOCATION (heap_var), "allocated here");
+		}
 	      r = t;
 	      non_constant_p = true;
 	    }

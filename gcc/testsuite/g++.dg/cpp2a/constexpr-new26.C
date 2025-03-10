@@ -4,7 +4,7 @@
 constexpr int *
 f7 ()
 {
-  int *p = new int (2);	// { dg-error "is not a constant expression because it refers to a result of" }
+  int *p = new int (2);		// { dg-message "allocated here" }
   delete p;
   return p;
 }
@@ -12,6 +12,5 @@ f7 ()
 void
 g ()
 {
-  constexpr auto v7 = f7 ();
+  constexpr auto v7 = f7 (); // { dg-error "is not a constant expression because it refers to a result of" }
 }
-
