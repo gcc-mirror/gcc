@@ -1788,11 +1788,27 @@ validate_autoinc_and_mem_addr_p (rtx x)
 					  MEM_ADDR_SPACE (x)));
 }
 
-/* Check that reg REGNO can be changed by TO in INSN.  Return true in case the
-   result insn would be valid one.  */
+/* Check that reg REGNO in INSN can be changed by TO (which is an invariant
+   equiv when INVARIANT_P is true).  Return true in case the result insn would
+   be valid one.  */
 static bool
-equiv_can_be_consumed_p (int regno, rtx to, rtx_insn *insn)
+equiv_can_be_consumed_p (int regno, rtx to, rtx_insn *insn, bool invariant_p)
 {
+  if (invariant_p)
+    {
+      /* We use more expensive code for the invariant because we need to
+	 simplify the result insn as the invariant can be arithmetic rtx
+	 inserted into another arithmetic rtx.  */
+      rtx pat = PATTERN (insn);
+      int code = INSN_CODE (insn);
+      PATTERN (insn) = copy_rtx (pat);
+      PATTERN (insn)
+	= simplify_replace_rtx (PATTERN (insn), regno_reg_rtx[regno], to);
+      bool res = !insn_invalid_p (insn, false);
+      PATTERN (insn) = pat;
+      INSN_CODE (insn) = code;
+      return res;
+    }
   validate_replace_src_group (regno_reg_rtx[regno], to, insn);
   /* We can change register to equivalent memory in autoinc rtl.  Some code
      including verify_changes assumes that autoinc contains only a register.
@@ -1910,6 +1926,14 @@ calculate_equiv_gains (void)
 	      || !get_equiv_regno (PATTERN (insn), regno, subreg)
 	      || !bitmap_bit_p (&equiv_pseudos, regno))
 	    continue;
+
+	  rtx_insn_list *x;
+	  for (x = ira_reg_equiv[regno].init_insns; x != NULL; x = x->next ())
+	    if (insn == x->insn ())
+	      break;
+	  if (x != NULL)
+	    continue; /* skip equiv init insn */
+
 	  rtx subst = ira_reg_equiv[regno].memory;
 
 	  if (subst == NULL)
@@ -1919,13 +1943,17 @@ calculate_equiv_gains (void)
 	  ira_assert (subst != NULL);
 	  mode = PSEUDO_REGNO_MODE (regno);
 	  ira_init_register_move_cost_if_necessary (mode);
-	  bool consumed_p = equiv_can_be_consumed_p (regno, subst, insn);
+	  bool consumed_p
+	    = equiv_can_be_consumed_p (regno, subst, insn,
+				       subst == ira_reg_equiv[regno].invariant);
 
 	  rclass = pref[COST_INDEX (regno)];
 	  if (MEM_P (subst)
 	      /* If it is a change of constant into double for example, the
 		 result constant probably will be placed in memory.  */
-	      || (subreg != NULL_RTX && !INTEGRAL_MODE_P (GET_MODE (subreg))))
+	      || (ira_reg_equiv[regno].invariant == NULL
+		  && subreg != NULL_RTX
+		  && !INTEGRAL_MODE_P (GET_MODE (subreg))))
 	    cost = ira_memory_move_cost[mode][rclass][1] + (consumed_p ? 0 : 1);
 	  else if (consumed_p)
 	    continue;
