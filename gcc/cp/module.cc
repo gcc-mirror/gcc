@@ -5657,10 +5657,10 @@ trees_out::core_bools (tree t, bits_out& bits)
 
       {
 	/* This is DECL_INTERFACE_KNOWN: We should redetermine whether
-	   we need to import or export any vtables or typeinfo objects
-	   on stream-in.  */
+	   we need to import or export any vague-linkage entities on
+	   stream-in.  */
 	bool interface_known = t->decl_common.lang_flag_5;
-	if (VAR_P (t) && (DECL_VTABLE_OR_VTT_P (t) || DECL_TINFO_P (t)))
+	if (interface_known && vague_linkage_p (t))
 	  interface_known = false;
 	WB (interface_known);
       }
@@ -12616,6 +12616,7 @@ trees_in::read_var_def (tree decl, tree maybe_template)
   bool installing = maybe_dup && !initialized;
   if (installing)
     {
+      DECL_INITIAL (decl) = init;
       if (DECL_EXTERNAL (decl))
 	DECL_NOT_REALLY_EXTERN (decl) = true;
       if (VAR_P (decl))
@@ -12623,13 +12624,13 @@ trees_in::read_var_def (tree decl, tree maybe_template)
 	  DECL_INITIALIZED_P (decl) = true;
 	  if (maybe_dup && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (maybe_dup))
 	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = true;
+	  tentative_decl_linkage (decl);
 	  if (DECL_IMPLICIT_INSTANTIATION (decl)
 	      || (DECL_CLASS_SCOPE_P (decl)
 		  && !DECL_VTABLE_OR_VTT_P (decl)
 		  && !DECL_TEMPLATE_INFO (decl)))
 	    note_vague_linkage_variable (decl);
 	}
-      DECL_INITIAL (decl) = init;
       if (!dyn_init)
 	;
       else if (CP_DECL_THREAD_LOCAL_P (decl))
@@ -16534,12 +16535,7 @@ module_state::read_cluster (unsigned snum)
 	  cfun->returns_pcc_struct = aggr;
 #endif
 	  cfun->returns_struct = aggr;
-
-	  if (DECL_COMDAT (decl))
-	    // FIXME: Comdat grouping?
-	    comdat_linkage (decl);
-	  note_vague_linkage_fn (decl);
-	  cgraph_node::finalize_function (decl, true);
+	  expand_or_defer_fn (decl);
 	}
 
     }
@@ -19018,22 +19014,7 @@ post_load_processing ()
       dump () && dump ("Post-load processing of %N", decl);
 
       gcc_checking_assert (DECL_MAYBE_IN_CHARGE_CDTOR_P (decl));
-
-      if (DECL_COMDAT (decl))
-	comdat_linkage (decl);
-      if (!TREE_ASM_WRITTEN (decl))
-	{
-	  /* Cloning can cause loading -- specifically operator delete for
-	     the deleting dtor.  */
-	  if (maybe_clone_body (decl))
-	    TREE_ASM_WRITTEN (decl) = 1;
-	  else
-	    {
-	      /* We didn't clone the cdtor, make sure we emit it.  */
-	      note_vague_linkage_fn (decl);
-	      cgraph_node::finalize_function (decl, true);
-	    }
-	}
+      expand_or_defer_fn (decl);
     }
 
   cfun = old_cfun;

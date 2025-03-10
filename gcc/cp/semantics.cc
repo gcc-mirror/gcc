@@ -5502,7 +5502,7 @@ expand_or_defer_fn_1 (tree fn)
 	 need it anymore.  */
       if (!DECL_DECLARED_CONSTEXPR_P (fn)
 	  && !(module_maybe_has_cmi_p () && vague_linkage_p (fn)))
-	DECL_SAVED_TREE (fn) = NULL_TREE;
+	DECL_SAVED_TREE (fn) = void_node;
       return false;
     }
 
