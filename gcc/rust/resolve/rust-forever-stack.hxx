@@ -704,7 +704,12 @@ ForeverStack<N>::to_canonical_path (NodeId id) const
       return KeepGoing::Yes;
     });
 
-    auto path = Resolver::CanonicalPath::create_empty ();
+    auto &mappings = Analysis::Mappings::get ();
+    CrateNum crate_num = mappings.lookup_crate_num (root.id).value ();
+    auto path = Resolver::CanonicalPath::new_seg (
+      root.id, mappings.get_crate_name (crate_num).value ());
+    path.set_crate_num (crate_num);
+
     for (const auto &segment : segments)
       path = path.append (segment);
 
