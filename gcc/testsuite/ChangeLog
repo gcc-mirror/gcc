@@ -1,3 +1,29 @@
+2025-03-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-11-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/109066
+	* gfortran.dg/defined_assignment_12.f90: New test.
+
+2025-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2025-03-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/119054
+	* gfortran.dg/pr95446.f90: Expand test case to literals and
+	function calls.
+	Signed-off-by: Peter Hill <peter.hill@york.ac.uk>
+
+2025-03-09  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backported from master:
+	2025-03-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103391
+	* gfortran.dg/assign_12.f90: New test.
+
 2025-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:
