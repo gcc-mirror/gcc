@@ -2046,6 +2046,7 @@ package body Sem_Ch3 is
    --  Start of processing for Analyze_Component_Declaration
 
    begin
+      Mutate_Ekind (Id, E_Component);
       Generate_Definition (Id);
       Enter_Name (Id);
 
@@ -19833,7 +19834,9 @@ package body Sem_Ch3 is
    --  Start of processing for Is_Visible_Component
 
    begin
-      if Ekind (C) in E_Component | E_Discriminant then
+      if Ekind (C) in E_Component | E_Discriminant
+        and then Is_Not_Self_Hidden (C)
+      then
          Original_Comp := Original_Record_Component (C);
       end if;
 
@@ -23123,10 +23126,8 @@ package body Sem_Ch3 is
 
       Component := First_Entity (Current_Scope);
       while Present (Component) loop
-         if Ekind (Component) = E_Void
-           and then not Is_Itype (Component)
+         if Ekind (Component) = E_Component and then not Is_Itype (Component)
          then
-            Mutate_Ekind (Component, E_Component);
             Reinit_Component_Location (Component);
             Set_Is_Not_Self_Hidden (Component);
          end if;
