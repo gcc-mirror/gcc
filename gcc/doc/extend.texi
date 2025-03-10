@@ -8158,7 +8158,7 @@ to be excluded from such automatical initialization in order to reduce runtime
 overhead.
 
 This attribute has no effect when the option @code{-ftrivial-auto-var-init}
-does not present.
+is not present.
 
 @cindex @code{vector_size} variable attribute
 @item vector_size (@var{bytes})
