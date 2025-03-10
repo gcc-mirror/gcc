@@ -148,6 +148,16 @@ Mappings::get_crate_name (CrateNum crate_num) const
   return it->second;
 }
 
+tl::optional<CrateNum>
+Mappings::lookup_crate_num (NodeId node_id) const
+{
+  auto it = crate_node_to_crate_num.find (node_id);
+  if (it == crate_node_to_crate_num.end ())
+    return tl::nullopt;
+
+  return it->second;
+}
+
 void
 Mappings::set_crate_name (CrateNum crate_num, const std::string &name)
 {
@@ -184,13 +194,7 @@ Mappings::crate_num_to_nodeid (const CrateNum &crate_num) const
 bool
 Mappings::node_is_crate (NodeId node_id) const
 {
-  for (const auto &it : ast_crate_mappings)
-    {
-      NodeId crate_node_id = it.second->get_node_id ();
-      if (crate_node_id == node_id)
-	return true;
-    }
-  return false;
+  return lookup_crate_num (node_id).has_value ();
 }
 
 NodeId
@@ -262,6 +266,7 @@ Mappings::insert_ast_crate (std::unique_ptr<AST::Crate> &&crate,
   rust_assert (it == ast_crate_mappings.end ());
 
   // store it
+  crate_node_to_crate_num.insert ({crate->get_node_id (), crate_num});
   ast_crate_mappings.insert ({crate_num, crate.release ()});
 
   // return the reference to it
