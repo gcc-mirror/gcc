@@ -748,6 +748,7 @@ datadir = @datadir@
 localedir = $(datadir)/locale
 # Extension (if any) to put in installed man-page filename.
 man1ext = .1
+man3ext = .3
 man7ext = .7
 objext = .o
 exeext = @host_exeext@
@@ -756,6 +757,7 @@ build_exeext = @build_exeext@
 # Directory in which to put man pages.
 mandir = @mandir@
 man1dir = $(mandir)/man1
+man3dir = $(mandir)/man3
 man7dir = $(mandir)/man7
 # Dir for temp files.
 tmpdir = /tmp
@@ -4031,6 +4033,7 @@ installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(includedir)
 	$(mkinstalldirs) $(DESTDIR)$(infodir)
 	$(mkinstalldirs) $(DESTDIR)$(man1dir)
+	$(mkinstalldirs) $(DESTDIR)$(man3dir)
 	$(mkinstalldirs) $(DESTDIR)$(man7dir)
 
 PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
