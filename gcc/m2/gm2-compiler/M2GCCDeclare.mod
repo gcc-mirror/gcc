@@ -1901,6 +1901,33 @@ END TryDeclareConstant ;
 
 
 (*
+   IsAnyType - return TRUE if sym is any Modula-2 type.
+*)
+
+PROCEDURE IsAnyType (sym: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN (IsRecord(sym) OR IsType(sym) OR IsRecordField(sym) OR
+           IsPointer(sym) OR IsArray(sym) OR IsSet (sym) OR IsEnumeration (sym) OR
+           IsPointer (sym))
+END IsAnyType ;
+
+
+(*
+   TryDeclareType - try and declare a type.  If sym is a
+                    type try and declare it, if we cannot
+                    then enter it into the to do list.
+*)
+
+PROCEDURE TryDeclareType (tokenno: CARDINAL; type: CARDINAL) ;
+BEGIN
+   IF (type#NulSym) AND IsAnyType (type)
+   THEN
+      TraverseDependants (type)
+   END
+END TryDeclareType ;
+
+
+(*
    DeclareConstant - checks to see whether, sym, is a constant and
                      declares the constant to gcc.
 *)

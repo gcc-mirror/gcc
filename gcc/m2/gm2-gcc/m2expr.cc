@@ -2818,7 +2818,9 @@ m2expr_calcNbits (location_t location, tree min, tree max)
   return t;
 }
 
-/* BuildTBitSize return the minimum number of bits to represent, type.  */
+/* BuildTBitSize return the minimum number of bits to represent type.
+   This function is called internally by cc1gm2 to calculate the bits
+   size of a type and is used to position record fields.  */
 
 tree
 m2expr_BuildTBitSize (location_t location, tree type)
@@ -2847,6 +2849,19 @@ m2expr_BuildTBitSize (location_t location, tree type)
                                m2decl_BuildIntegerConstant (BITS_PER_UNIT),
                                false);
     }
+}
+
+/* BuildSystemTBitSize return the minimum number of bits to represent type.
+   This function is called when evaluating SYSTEM.TBITSIZE.  */
+
+tree
+m2expr_BuildSystemTBitSize (location_t location, tree type)
+{
+  enum tree_code code = TREE_CODE (type);
+  m2assert_AssertLocation (location);
+  if (code == TYPE_DECL)
+    return m2expr_BuildTBitSize (location, TREE_TYPE (type));
+  return TYPE_SIZE (type);
 }
 
 /* BuildSize build a SIZE function expression and returns the tree.  */

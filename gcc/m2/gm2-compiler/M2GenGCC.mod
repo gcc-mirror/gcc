@@ -61,7 +61,7 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         ForeachProcedureDo,
                         ForeachInnerModuleDo,
                         ForeachLocalSymDo,
-			GetLType,
+			GetLType, GetDType,
                         GetType, GetNth, GetNthParamAny,
                         SkipType, SkipTypeAndSubrange,
                         GetUnboundedHighOffset,
@@ -148,7 +148,7 @@ FROM M2ALU IMPORT PtrToValue,
                   ConvertToType ;
 
 FROM M2GCCDeclare IMPORT WalkAction,
-                         DeclareConstant, TryDeclareConstant,
+                         DeclareConstant, TryDeclareConstant, TryDeclareType,
                          DeclareConstructor, TryDeclareConstructor,
                          StartDeclareScope, EndDeclareScope,
                          PromoteToString, PromoteToCString, DeclareLocalVariable,
@@ -194,7 +194,8 @@ FROM m2expr IMPORT GetIntegerZero, GetIntegerOne,
                    BuildLogicalOr, BuildLogicalAnd, BuildSymmetricDifference,
                    BuildLogicalDifference,
                    BuildLogicalShift, BuildLogicalRotate,
-                   BuildNegate, BuildNegateCheck, BuildAddr, BuildSize, BuildTBitSize,
+                   BuildNegate, BuildNegateCheck, BuildAddr, BuildSize,
+                   BuildTBitSize, BuildSystemTBitSize,
                    BuildOffset, BuildOffset1,
                    BuildLessThan, BuildGreaterThan,
                    BuildLessThanOrEqual, BuildGreaterThanOrEqual,
@@ -4810,11 +4811,37 @@ END FoldBuiltinTypeInfo ;
 
 
 (*
+   FoldTBitsize - attempt to fold the standard function SYSTEM.TBITSIZE
+                  quadruple.  If the quadruple is folded it is removed.
+*)
+
+PROCEDURE FoldTBitsize  (tokenno: CARDINAL; p: WalkAction;
+                         quad: CARDINAL;
+                         op1, op2, op3: CARDINAL) ;
+VAR
+   type    : CARDINAL ;
+   location: location_t ;
+BEGIN
+   location := TokenToLocation(tokenno) ;
+   TryDeclareType (tokenno, op3) ;
+   type := GetDType (op3) ;
+   IF CompletelyResolved (type)
+   THEN
+      AddModGcc (op1, BuildSystemTBitSize (location, Mod2Gcc (type))) ;
+      p (op1) ;
+      NoChange := FALSE ;
+      SubQuad (quad)
+   END
+END FoldTBitsize ;
+
+
+(*
    FoldStandardFunction - attempts to fold a standard function.
 *)
 
 PROCEDURE FoldStandardFunction (tokenno: CARDINAL; p: WalkAction;
-                                quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+                                quad: CARDINAL;
+                                op1, op2, op3: CARDINAL) ;
 VAR
    s       : String ;
    type,
@@ -4940,13 +4967,7 @@ BEGIN
       END
    ELSIF op2=TBitSize
    THEN
-      IF GccKnowsAbout(op3)
-      THEN
-         AddModGcc(op1, BuildTBitSize(location, Mod2Gcc(op3))) ;
-         p(op1) ;
-         NoChange := FALSE ;
-         SubQuad(quad)
-      END
+      FoldTBitsize (tokenno, p, quad, op1, op2, op3)
    ELSE
       InternalError ('only expecting LENGTH, CAP, ABS, IM, RE')
    END

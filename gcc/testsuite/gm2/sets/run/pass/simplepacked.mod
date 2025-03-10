@@ -24,7 +24,10 @@ VAR
 BEGIN
    a := settype {1} ;
    b := a ;
-   (* assert (TBITSIZE (a) = 4, __LINE__, "TBITSIZE = 4") ; *)
+   (* Assumes that the bitset will be contained in <= 64 bits, most likely
+      32.  But probably safe to assume <= 64 bits for some time.  *)
+   printf ("TBITSIZE (a) = %d\n", TBITSIZE (a));
+   assert (TBITSIZE (a) <= 64, __LINE__, "TBITSIZE <= 64") ;
    assert (a = b, __LINE__, "comparision between variable sets") ;
    assert (a = settype {1}, __LINE__, "comparision between variable and constant sets") ;
    assert (b = settype {1}, __LINE__, "comparision between variable and constant sets") ;
@@ -43,7 +46,9 @@ VAR
 BEGIN
    a := psettype {1} ;
    b := a ;
-   (* assert (TBITSIZE (a) = 4, __LINE__, "TBITSIZE = 4 packed set") ; *)
+   (* Packed set should be stored in a BYTE.  *)
+   printf ("TBITSIZE (a) = %d\n", TBITSIZE (a));
+   assert (TBITSIZE (a) <= 32, __LINE__, "TBITSIZE <= 32 ( packed set )") ;
    assert (a = b, __LINE__, "comparision between variable packed sets") ;
    assert (a = psettype {1}, __LINE__, "comparision between variable and constant packed sets") ;
    assert (b = psettype {1}, __LINE__, "comparision between variable and constant packed sets") ;
