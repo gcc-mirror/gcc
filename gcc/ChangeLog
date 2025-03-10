@@ -1,3 +1,38 @@
+2025-03-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/117467
+	* ext-dce.cc (ext_dce_process_sets): Handle FP destinations better.
+
+2025-03-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/117467
+	* ext-dce.cc (ext_dce_process_uses): When trivially possible advance
+	the iterator over the destination of a SET.
+
+2025-03-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118922
+	* tree-ssa-phiopt.cc (value_replacement): Set empty_or_with_defined_p
+	to false when there is phi nodes for the middle bb.
+
+2025-03-09  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/118457
+	* gimplify.cc (modify_call_for_omp_dispatch): New, containing
+	code split from gimplify_call_expr and modified to emit tree
+	instead of gimple.  Remove the error for falling through to a call
+	to the base function.
+	(expand_variant_call_expr): New, split from gimplify_variant_call_expr.
+	Call modify_call_for_omp_dispatch on calls to
+	variants in a dispatch construct context.
+	(gimplify_variant_call_expr): Make it call expand_variant_call_expr
+	to do the actual work.
+	(gimplify_call_expr): Remove sorry for calls involving both
+	dynamic/late selectors and adjust_args/append_args, and adjust
+	for new interface.  Move adjust_args/append_args code to
+	modify_call_for_omp_dispatch.
+	(gimplify_omp_dispatch): Add some comments.
+
 2025-03-08  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* doc/extend.texi (Basic Asm): Document that AssemblerInstructions

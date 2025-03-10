@@ -1,3 +1,23 @@
+2025-03-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118922
+	* gcc.dg/torture/pr118922-1.c: New test.
+
+2025-03-09  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/119133
+	* gcc.dg/torture/pr119133.c: Require effective target float16.
+
+2025-03-09  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/118457
+	* c-c++-common/gomp/adjust-args-6.c: Remove xfails and adjust
+	expected output.
+	* c-c++-common/gomp/append-args-5.c: Adjust expected output.
+	* c-c++-common/gomp/append-args-dynamic.c: New.
+	* c-c++-common/gomp/dispatch-11.c: Adjust expected output.
+	* gfortran.dg/gomp/dispatch-11.f90: Likewise.
+
 2025-03-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/119157

@@ -1,3 +1,11 @@
+2025-03-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119157
+	* gfortran.h (gfc_pop_undo_symbol): Remove prototype.
+	* interface.cc (gfc_get_formal_from_actual_arglist): Use
+	gfc_commit_symbol() instead of gfc_pop_undo_symbol().
+	* symbol.cc (gfc_pop_undo_symbol): Remove.
+
 2025-03-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/119157
