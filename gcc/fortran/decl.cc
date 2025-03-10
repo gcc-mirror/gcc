@@ -9795,6 +9795,15 @@ gfc_match_save (void)
       if (m == MATCH_NO)
 	goto syntax;
 
+      /* F2023:C1108: A SAVE statement in a BLOCK construct shall contain a
+	 saved-entity-list that does not specify a common-block-name.  */
+      if (gfc_current_state () == COMP_BLOCK)
+	{
+	  gfc_error ("SAVE of COMMON block %qs at %C is not allowed "
+		     "in a BLOCK construct", n);
+	  return MATCH_ERROR;
+	}
+
       c = gfc_get_common (n, 0);
       c->saved = 1;
 
