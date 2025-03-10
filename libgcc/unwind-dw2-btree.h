@@ -474,7 +474,8 @@ btree_handle_root_split (struct btree *t, struct btree_node **node,
 // Split an inner node.
 static void
 btree_split_inner (struct btree *t, struct btree_node **inner,
-		   struct btree_node **parent, uintptr_type target)
+		   struct btree_node **parent, uintptr_type target,
+		   uintptr_type size)
 {
   // Check for the root.
   btree_handle_root_split (t, inner, parent);
@@ -490,6 +491,9 @@ btree_split_inner (struct btree *t, struct btree_node **inner,
       = left_inner->content.children[split + index];
   left_inner->entry_count = split;
   uintptr_type left_fence = btree_node_get_fence_key (left_inner);
+  if (left_fence >= target && left_fence < target + size - 1)
+    // See the PR119151 comment in btree_insert.
+    left_fence = target + size - 1;
   btree_node_update_separator_after_split (*parent, right_fence, left_fence,
 					   right_inner);
   if (target <= left_fence)
@@ -753,13 +757,28 @@ btree_insert (struct btree *t, uintptr_type base, uintptr_type size,
     {
       // Use eager splits to avoid lock coupling up.
       if (iter->entry_count == max_fanout_inner)
-	btree_split_inner (t, &iter, &parent, base);
+	btree_split_inner (t, &iter, &parent, base, size);
 
       unsigned slot = btree_node_find_inner_slot (iter, base);
       if (parent)
 	btree_node_unlock_exclusive (parent);
       parent = iter;
       fence = iter->content.children[slot].separator;
+      if (fence < base + size - 1)
+	// The separator was set to the base - 1 of the leftmost leaf child
+	// at some point but such an entry could have been removed afterwards.
+	// As both insertion and removal are just walking down the tree with
+	// only a few current nodes locked at a time, updating the separator
+	// on removal is not possible, especially because btree_remove does
+	// not know the size until it reaches leaf node.  We must ensure that
+	// the separator is not in a middle of some entry though, as
+	// btree_lookup can look up any address in the entry's range and if
+	// the separator is in the middle, addresses below it or equal to it
+	// would be found while addresses above it would result in failed
+	// lookup.  Update the separator now.  Assumption that users
+	// ensure no overlapping registered ranges, there should be no
+	// current entry for any address in the range.  See PR119151.
+	fence = iter->content.children[slot].separator = base + size - 1;
       iter = iter->content.children[slot].child;
       btree_node_lock_exclusive (iter);
     }
