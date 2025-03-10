@@ -8238,6 +8238,21 @@ s390_delegitimize_address (rtx orig_x)
 	return plus_constant (Pmode, XVECEXP (y, 0, 0), offset);
     }
 
+  if (GET_CODE (x) == CONST)
+    {
+      /* Extract the symbol ref from:
+	 (const:DI (unspec:DI [(symbol_ref:DI ("foo"))]
+				       UNSPEC_PLT/GOTENT))  */
+
+      y = XEXP (x, 0);
+      if (GET_CODE (y) == UNSPEC
+	  && (XINT (y, 1) == UNSPEC_GOTENT
+	      || XINT (y, 1) == UNSPEC_PLT31))
+	return XVECEXP (y, 0, 0);
+      else
+	return orig_x;
+    }
+
   if (GET_CODE (x) != MEM)
     return orig_x;
 
