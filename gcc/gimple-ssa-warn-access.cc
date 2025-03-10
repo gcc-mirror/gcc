@@ -602,6 +602,10 @@ maybe_warn_nonstring_arg (tree fndecl, GimpleOrTree exp)
       bool known_size = false;
       tree type = TREE_TYPE (decl);
 
+      while (TREE_CODE (type) == ARRAY_TYPE
+	     && TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
+	type = TREE_TYPE (type);
+
       /* Determine the array size.  For arrays of unknown bound and
 	 pointers reset BOUND to trigger the appropriate warning.  */
       if (TREE_CODE (type) == ARRAY_TYPE)

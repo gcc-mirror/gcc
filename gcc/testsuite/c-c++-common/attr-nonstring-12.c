@@ -26,12 +26,22 @@ enum { X = sizeof ar5[2] + 1 };
 
 int warn_strcmp_cst_1 (void)
 {
-  return strcmp ("bar", arx[3]);       /* { dg-warning "argument 2 declared attribute .nonstring." } */
+  return strcmp ("bar", arx[3]);
 }
 
 int warn_strcmp_cst_2 (void)
 {
-  return strcmp (arx[3], "foo");       /* { dg-warning "argument 1 declared attribute .nonstring." } */
+  return strcmp (arx[3], "foo");
+}
+
+int warn_strcmp_cst_3 (void)
+{
+  return strcmp ("barfoobazquxcorge1", arx[3]);       /* { dg-warning "argument 2 declared attribute .nonstring." } */
+}
+
+int warn_strcmp_cst_4 (void)
+{
+  return strcmp (arx[3], "foobarbazquxcorge1");       /* { dg-warning "argument 1 declared attribute .nonstring." } */
 }
 
 

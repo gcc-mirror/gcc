@@ -165,8 +165,8 @@ void test_strcmp (struct MemArrays *p)
 void test_strncmp_warn (struct MemArrays *p)
 {
   enum { N = sizeof arr[2] };
-  T (strncmp (str[2], arr[2], N));	/* { dg-bogus "argument 2 declared attribute 'nonstring' is smaller than the specified bound 4" "" { xfail *-*-* } } */
-  T (strncmp (arr[2], str[2], N));	/* { dg-bogus "argument 1 declared attribute 'nonstring' is smaller than the specified bound 4" "" { xfail *-*-* } } */
+  T (strncmp (str[2], arr[2], N));
+  T (strncmp (arr[2], str[2], N));
 
   T (strncmp (str[2], arr[2], N + 1));   /* { dg-warning "argument 2 declared attribute .nonstring. is smaller than the specified bound 5" } */
   T (strncmp (arr[2], str[2], N + 1));   /* { dg-warning "argument 1 declared attribute .nonstring. is smaller than the specified bound 5" } */
@@ -237,7 +237,7 @@ void test_stpncpy_warn (struct MemArrays *p, unsigned n)
   enum { N = sizeof arr[2] };
 
   T (stpncpy (str[2], str[2], N));
-  T (stpncpy (str[2], arr[2], N));	/* { dg-bogus "argument 2 declared attribute 'nonstring' is smaller than the specified bound 4" "" { xfail *-*-* } } */
+  T (stpncpy (str[2], arr[2], N));
   T (stpncpy (arr[2], str[2], N));
 
   T (stpncpy (str[2], *ptr, N));
@@ -370,7 +370,7 @@ void test_stnrdup_warn (struct MemArrays *p)
   enum { N = sizeof arr[2] };
 
   T (strndup (str[2], N));
-  T (strndup (arr[2], N));	/* { dg-bogus "argument 1 declared attribute 'nonstring' is smaller than the specified bound 4" "" { xfail *-*-* } } */
+  T (strndup (arr[2], N));
 
   T (strndup (*ptr, N));
   T (strndup (*parr, N));
