@@ -830,7 +830,6 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       function P_Aggregate                            return Node_Id;
       function P_Expression                           return Node_Id;
       function P_Expression_Or_Range_Attribute        return Node_Id;
-      function P_Function_Name                        return Node_Id;
       function P_Name                                 return Node_Id;
       function P_Qualified_Simple_Name                return Node_Id;
       function P_Qualified_Simple_Name_Resync         return Node_Id;

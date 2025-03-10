@@ -935,69 +935,6 @@ package body Ch4 is
 
    --  Error recovery: cannot raise Error_Resync
 
-   function P_Function_Name return Node_Id is
-      Designator_Node : Node_Id;
-      Prefix_Node     : Node_Id;
-      Selector_Node   : Node_Id;
-      Dot_Sloc        : Source_Ptr := No_Location;
-
-   begin
-      --  Prefix_Node is set to the gathered prefix so far, Empty means that
-      --  no prefix has been scanned. This allows us to build up the result
-      --  in the required right recursive manner.
-
-      Prefix_Node := Empty;
-
-      --  Loop through prefixes
-
-      loop
-         Designator_Node := Token_Node;
-
-         if Token not in Token_Class_Desig then
-            return P_Identifier; -- let P_Identifier issue the error message
-
-         else -- Token in Token_Class_Desig
-            Scan; -- past designator
-            exit when Token /= Tok_Dot;
-         end if;
-
-         --  Here at a dot, with token just before it in Designator_Node
-
-         if No (Prefix_Node) then
-            Prefix_Node := Designator_Node;
-         else
-            Selector_Node := New_Node (N_Selected_Component, Dot_Sloc);
-            Set_Prefix (Selector_Node, Prefix_Node);
-            Set_Selector_Name (Selector_Node, Designator_Node);
-            Prefix_Node := Selector_Node;
-         end if;
-
-         Dot_Sloc := Token_Ptr;
-         Scan; -- past dot
-      end loop;
-
-      --  Fall out of the loop having just scanned a designator
-
-      if No (Prefix_Node) then
-         return Designator_Node;
-      else
-         Selector_Node := New_Node (N_Selected_Component, Dot_Sloc);
-         Set_Prefix (Selector_Node, Prefix_Node);
-         Set_Selector_Name (Selector_Node, Designator_Node);
-         return Selector_Node;
-      end if;
-
-   exception
-      when Error_Resync =>
-         return Error;
-   end P_Function_Name;
-
-   --  This function parses a restricted form of Names which are either
-   --  identifiers, or identifiers preceded by a sequence of prefixes
-   --  that are direct names.
-
-   --  Error recovery: cannot raise Error_Resync
-
    function P_Qualified_Simple_Name return Node_Id is
    begin
       return P_Qualified_Simple_Name_Resync;
@@ -1019,7 +956,7 @@ package body Ch4 is
       Dot_Sloc        : Source_Ptr := No_Location;
 
    begin
-      --  Prefix node is set to the gathered prefix so far, Empty means that
+      --  Prefix_Node is set to the gathered prefix so far, Empty means that
       --  no prefix has been scanned. This allows us to build up the result
       --  in the required right recursive manner.
 
@@ -1030,21 +967,13 @@ package body Ch4 is
       loop
          Designator_Node := Token_Node;
 
-         if Token = Tok_Identifier then
-            Scan; -- past identifier
-            exit when Token /= Tok_Dot;
-
-         elsif Token not in Token_Class_Desig then
+         if Token not in Token_Class_Desig then
             Discard_Junk_Node (P_Identifier); -- to issue the error message
             raise Error_Resync;
 
          else
             Scan; -- past designator
-
-            if Token /= Tok_Dot then
-               Error_Msg_SP ("identifier expected");
-               raise Error_Resync;
-            end if;
+            exit when Token /= Tok_Dot;
          end if;
 
          --  Here at a dot, with token just before it in Designator_Node
