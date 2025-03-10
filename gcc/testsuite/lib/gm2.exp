@@ -281,12 +281,35 @@ proc gm2_link_flags { paths } {
     set shlib_ext [get_shlib_extension]
     verbose "shared lib extension: $shlib_ext"
 
+
+    # We need to add options to locate gm2 libs and libstdc++
+    # Usually '-L' options are added to point to the relevant directories for
+    # the uninstalled libraries.
+
+    # In cases where libraries are available as both shared and convenience
+    # some additional checks are made.
+
+    # For some targets -static-xxxx options are handled by specs substitution
+    # and need a '-B' option rather than '-L'.  For Darwin, when embedded
+    # runpaths are in use (the default for all versions after macOS 10.11),
+    # '-B' is also needed to provide the runpath.
+    # When '-B' is used, this results in a '-L' for each path that exists (so
+    # that appending a '-L' as well is a needless duplicate).  There are also
+    # cases where tools warn for duplicates, leading to spurious fails.
+    # Therefore the objective of the code below is to add just one '-L' or
+    # '-B' for each of the libraries.
+
+    set target_wants_B_option 0
+    if { [istarget *-*-darwin9* ] || [istarget *-*-darwin\[12\]* ] } {
+      set target_wants_B_option 1
+    }
+
     if { $gccpath == "" } {
       global tool_root_dir
 
       set libstdcpp [lookfor_file ${tool_root_dir} libstdc++]
       if { $libstdcpp != "" } {
-          append flags "-L${libstdcpp} "
+          append flags " -L${libstdcpp} "
           append ld_library_path ":${libstdcpp}"
       }
     } else {
@@ -294,19 +317,22 @@ proc gm2_link_flags { paths } {
 	    append ld_library_path ":${gccpath}/lib"
 	}
 	if [file exists "${gccpath}/libstdc++/libstdc++.a"] {
-	    append flags "-L${gccpath}/libstdc++ "
+	    append flags " -L${gccpath}/libstdc++ "
 	    append ld_library_path ":${gccpath}/libstdc++"
 	}
-	if [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"] {
-	    append flags " -L${gccpath}/libstdc++-v3/src/.libs "
-	    append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
-	}
-	# Look for libstdc++.${shlib_ext}.
-	if [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] {
-	    append flags " -L${gccpath}/libstdc++-v3/src/.libs "
+	# Look for libstdc++.<a,${shlib_ext}>.
+        if { [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"] \
+	     || [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] } {
+            if { $target_wants_B_option } {
+	        append flags " -B${gccpath}/libstdc++-v3/src/.libs "
+            } else {
+	        append flags " -L${gccpath}/libstdc++-v3/src/.libs "
+            }
 	    append ld_library_path ":${gccpath}/libstdc++-v3/src/.libs"
 	}
 
+	# Here we are forcing the static libraries, with complete paths so 
+	# there's no -L/-B logic needed
 	# puts stderr "${gm2_link_libraries}  before foreach"
 	foreach d [list {*}${gm2_link_libraries}] {
 	    # puts stderr "${d}  XXXX"
@@ -315,7 +341,7 @@ proc gm2_link_flags { paths } {
 	    if [file exists "${gccpath}/libgm2/lib${d}/.libs/lib${d}.a"] {
 		send_log "good found ${gccpath}/libgm2/lib${d}/.libs/lib${d}.a\n"
 		# append flags " -L${gccpath}/libgm2/lib${d}/.libs -l${d}"
-		append flags " ${gccpath}/libgm2/lib${d}/.libs/lib${d}.a"
+		append flags " ${gccpath}/libgm2/lib${d}/.libs/lib${d}.a "
 		append ld_library_path ":${gccpath}/libgm2/lib${d}/.libs"
 	    }
 	    send_log "ld_library_path is ${ld_library_path}\n"
