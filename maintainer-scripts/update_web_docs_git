@@ -143,6 +143,7 @@ rm -rf gcc/.git
 # not .texi files (Makefile, .rst and .png), and the jit docs use
 # include directives to pull in content from jit/jit-common.h and
 # Similar considerations apply for libgdiagnostics.
+# Preserve the cobol man pages, which are converted to HTML and PDF.
 find gcc -type f \( -name '*.texi' \
   -o -path gcc/gcc/doc/install.texi2html \
   -o -path gcc/gcc/doc/include/texinfo.tex \
@@ -155,6 +156,7 @@ find gcc -type f \( -name '*.texi' \
   -o -path "gcc/gcc/testsuite/jit.dg/*" \
   -o -path "gcc/gcc/doc/libgdiagnostics/*" \
   -o -path "gcc/gcc/testsuite/libgdiagnostics.dg/*" \
+  -o -path "gcc/gcc/cobol/gcobol*[13]" \
   -o -print0 \) | xargs -0 rm -f
 
 # Build a tarball of the sources.
@@ -199,6 +201,33 @@ for file in $MANUALS; do
     mkdir -p $DOCSDIR/$file
   fi
 done
+
+#
+# The COBOL FE maintains man pages.  Convert them to HTML and PDF.
+#
+mdoc2pdf_html() {
+    input="$1"
+    d="${input%/*}"
+    pdf="$d/$2"
+    html="$d/$3"
+    groff -mdoc -T pdf "$input" > "${pdf}~"
+    mv "${pdf}~" "${pdf}"
+    mandoc -T html "$filename" > "${html}~"
+    mv "${html}~" "${html}"
+}
+
+find . -name gcobol.[13] |
+    while read filename
+    do
+        case ${filename##*.} in
+            1)
+                mdoc2pdf_html "$filename" gcobol.pdf gcobol.html
+                ;;
+            3)
+                mdoc2pdf_html "$filename" gcobol_io.pdf gcobol_io.html
+                ;;
+        esac
+    done
 
 # jit and libgdiagnostics are a special-case, using Sphinx rather than texinfo.
 # Specifically, they need Sphinx 3.0 or later.
