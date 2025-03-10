@@ -1124,8 +1124,9 @@ struct GTY((for_user)) constexpr_call {
   tree bindings;
   /* Result of the call.
        NULL means the call is being evaluated.
-       error_mark_node means that the evaluation was erroneous;
-       otherwise, the actuall value of the call.  */
+       error_mark_node means that the evaluation was erroneous or otherwise
+       uncacheable (e.g. because it depends on the caller).
+       Otherwise, the actual value of the call.  */
   tree result;
   /* The hash of this call; we remember it here to avoid having to
      recalculate it when expanding the hash table.  */
@@ -1520,6 +1521,7 @@ static tree cxx_eval_bare_aggregate (const constexpr_ctx *, tree,
 static tree cxx_fold_indirect_ref (const constexpr_ctx *, location_t, tree, tree,
 				   bool * = NULL);
 static tree find_heap_var_refs (tree *, int *, void *);
+static tree find_deleted_heap_var (tree *, int *, void *);
 
 /* Attempt to evaluate T which represents a call to a builtin function.
    We assume here that all builtin functions evaluate to scalar types
@@ -3414,6 +3416,11 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		      cacheable = false;
 		      break;
 		    }
+	      /* And don't cache a ref to a deleted heap variable (119162).  */
+	      if (cacheable
+		  && (cp_walk_tree_without_duplicates
+		      (&result, find_deleted_heap_var, NULL)))
+		cacheable = false;
 	    }
 
 	    /* Rewrite all occurrences of the function's RESULT_DECL with the
@@ -8958,6 +8965,20 @@ find_heap_var_refs (tree *tp, int *walk_subtrees, void */*data*/)
 	  || DECL_NAME (*tp) == heap_vec_uninit_identifier
 	  || DECL_NAME (*tp) == heap_vec_identifier
 	  || DECL_NAME (*tp) == heap_deleted_identifier))
+    return *tp;
+
+  if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+  return NULL_TREE;
+}
+
+/* Look for deleted heap variables in the expression *TP.  */
+
+static tree
+find_deleted_heap_var (tree *tp, int *walk_subtrees, void */*data*/)
+{
+  if (VAR_P (*tp)
+      && DECL_NAME (*tp) == heap_deleted_identifier)
     return *tp;
 
   if (TYPE_P (*tp))
