@@ -9747,6 +9747,103 @@ default_arg (const char *p, int len)
   return 0;
 }
 
+/* Use multilib_dir as key to find corresponding multilib_os_dir and
+   multiarch_dir.  */
+
+static void
+find_multilib_os_dir_by_multilib_dir (const char *multilib_dir,
+				      const char **p_multilib_os_dir,
+				      const char **p_multiarch_dir)
+{
+  const char *p = multilib_select;
+  unsigned int this_path_len;
+  const char *this_path;
+  int ok = 0;
+
+  while (*p != '\0')
+    {
+      /* Ignore newlines.  */
+      if (*p == '\n')
+	{
+	  ++p;
+	  continue;
+	}
+
+      /* Get the initial path.  */
+      this_path = p;
+      while (*p != ' ')
+	{
+	  if (*p == '\0')
+	    {
+	      fatal_error (input_location, "multilib select %qs %qs is invalid",
+			   multilib_select, multilib_reuse);
+	    }
+	  ++p;
+	}
+      this_path_len = p - this_path;
+
+      ok = 0;
+
+      /* Skip any arguments, we don't care at this stage.  */
+      while (*++p != ';');
+
+      if (this_path_len != 1
+	  || this_path[0] != '.')
+	{
+	  char *new_multilib_dir = XNEWVEC (char, this_path_len + 1);
+	  char *q;
+
+	  strncpy (new_multilib_dir, this_path, this_path_len);
+	  new_multilib_dir[this_path_len] = '\0';
+	  q = strchr (new_multilib_dir, ':');
+	  if (q != NULL)
+	    *q = '\0';
+
+	  if (strcmp (new_multilib_dir, multilib_dir) == 0)
+	    ok = 1;
+	}
+
+      /* Found matched multilib_dir, update multilib_os_dir and
+	 multiarch_dir.  */
+      if (ok)
+	{
+	  const char *q = this_path, *end = this_path + this_path_len;
+
+	  while (q < end && *q != ':')
+	    q++;
+	  if (q < end)
+	    {
+	      const char *q2 = q + 1, *ml_end = end;
+	      char *new_multilib_os_dir;
+
+	      while (q2 < end && *q2 != ':')
+		q2++;
+	      if (*q2 == ':')
+		ml_end = q2;
+	      if (ml_end - q == 1)
+		*p_multilib_os_dir = xstrdup (".");
+	      else
+		{
+		  new_multilib_os_dir = XNEWVEC (char, ml_end - q);
+		  memcpy (new_multilib_os_dir, q + 1, ml_end - q - 1);
+		  new_multilib_os_dir[ml_end - q - 1] = '\0';
+		  *p_multilib_os_dir = new_multilib_os_dir;
+		}
+
+	      if (q2 < end && *q2 == ':')
+		{
+		  char *new_multiarch_dir = XNEWVEC (char, end - q2);
+		  memcpy (new_multiarch_dir, q2 + 1, end - q2 - 1);
+		  new_multiarch_dir[end - q2 - 1] = '\0';
+		  *p_multiarch_dir = new_multiarch_dir;
+		}
+	      break;
+	    }
+	}
+      ++p;
+    }
+}
+
 /* Work out the subdirectory to use based on the options. The format of
    multilib_select is a list of elements. Each element is a subdirectory
    name followed by a list of options followed by a semicolon. The format
@@ -10025,7 +10122,16 @@ set_multilib_dir (void)
       multilib_os_dir = NULL;
     }
   else if (multilib_dir != NULL && multilib_os_dir == NULL)
-    multilib_os_dir = multilib_dir;
+    {
+      /* Give second chance to search matched multilib_os_dir again by matching
+	 the multilib_dir since some target may use TARGET_COMPUTE_MULTILIB
+	 hook rather than the builtin way.  */
+      find_multilib_os_dir_by_multilib_dir (multilib_dir, &multilib_os_dir,
+					    &multiarch_dir);
+
+      if (multilib_os_dir == NULL)
+	multilib_os_dir = multilib_dir;
+    }
 }
 
 /* Print out the multiple library subdirectory selection
