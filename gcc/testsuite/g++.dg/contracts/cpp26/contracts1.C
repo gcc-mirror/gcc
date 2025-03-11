@@ -13,17 +13,10 @@ int g1(int a) pre(f(a) > a)
 	return 2 * r;
 }
 
-int g2(int a) [[pre: f(a) > a ]]
-{
-	int r = a - f(a);
-	return 2 * r;
-}
-
 int fun(int n)  pre (n > 0 );
 void fun2(int n)  pre  n > 0 ; // { dg-error {expected '\(' before } }
  // { dg-error {expected '\)' before ';' token} "" { target *-*-* } .-1 }
 void fun2(int n)  pre (: n > 0 ]]; // { dg-error  }
-int fun3(int n)  [[ pre : n > 0 ); // { dg-error {expected '\]' before } }
 
 int main()
 {
@@ -99,6 +92,6 @@ void postcond7()
 {
   PostCond p;
   p.postcond2 (2);
-  postcond3 (4); // { dg-error "a value parameter used in a postcondition must be const" "" {target *-*-* } 63 }
+  postcond3 (4); // { dg-error "a value parameter used in a postcondition must be const" "" {target *-*-* } 56 }
 
 }

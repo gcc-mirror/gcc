@@ -39,8 +39,6 @@ void foo(int x) pre (x>10){};
 
 int main()
 {
-  VERIFY_ASSERT([[assert: false]], true);
-  VERIFY_ASSERT([[assert: true]], false);
 
   VERIFY_ASSERT(contract_assert(true), false);
   VERIFY_ASSERT(contract_assert(false), true);
