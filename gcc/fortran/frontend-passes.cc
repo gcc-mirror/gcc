@@ -5799,7 +5799,8 @@ check_against_globals (gfc_symbol *sym)
   char buf  [200];
 
   if (sym->attr.if_source != IFSRC_IFBODY || sym->attr.flavor != FL_PROCEDURE
-      || sym->attr.generic || sym->error)
+      || sym->attr.generic || sym->error || sym->attr.abstract
+      || sym->attr.dummy)
     return;
 
   if (sym->binding_label)

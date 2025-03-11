@@ -13883,7 +13883,8 @@ gfc_verify_DTIO_procedures (gfc_symbol *sym)
 
 /* Verify that any binding labels used in a given namespace do not collide
    with the names or binding labels of any global symbols.  Multiple INTERFACE
-   for the same procedure are permitted.  */
+   for the same procedure are permitted.  Abstract interfaces and dummy
+   arguments are not checked.  */
 
 static void
 gfc_verify_binding_labels (gfc_symbol *sym)
@@ -13892,7 +13893,8 @@ gfc_verify_binding_labels (gfc_symbol *sym)
   const char *module;
 
   if (!sym || !sym->attr.is_bind_c || sym->attr.is_iso_c
-      || sym->attr.flavor == FL_DERIVED || !sym->binding_label)
+      || sym->attr.flavor == FL_DERIVED || !sym->binding_label
+      || sym->attr.abstract || sym->attr.dummy)
     return;
 
   gsym = gfc_find_case_gsymbol (gfc_gsym_root, sym->binding_label);
