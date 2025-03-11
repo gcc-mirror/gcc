@@ -1,3 +1,8 @@
+2025-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_commit.py (default_changelog_locations):
+	Add gcc/cobol and libgcobol entries.
+
 2025-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* update-copyright.py (GCCFilter): Ignore gen-evolution.awk and

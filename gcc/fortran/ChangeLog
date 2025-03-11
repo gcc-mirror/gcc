@@ -1,3 +1,9 @@
+2025-03-10  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107143
+	* dependency.cc (check_data_pointer_types): Do not just compare
+	for derived type, but for same derived type.
+
 2025-03-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/119157

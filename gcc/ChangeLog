@@ -1,3 +1,46 @@
+2025-03-10  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	PR target/115258
+	* config/aarch64/aarch64.cc (aarch64_vectorize_vec_perm_const): Use
+	d.one_vector_p to decide whether op1 should be a copy of op0.
+
+2025-03-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/114991
+	* ira-costs.cc (equiv_can_be_consumed_p): Add new argument invariant_p.
+	Add code for dealing with the invariant.
+	(calculate_equiv_gains): Don't consider init insns.  Pass the new
+	argument to equiv_can_be_consumed_p.  Don't treat invariant as
+	memory.
+
+2025-03-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/invoke.texi (Instrumentation Options): Fix typo introduced
+	in commit 313edeeeb607fe32da5633cfb6f91977add446f6.
+
+2025-03-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/115439
+	* config/arm/mve.md (vec_vcmp, vec_vcmpu, vcond_mask): Use
+	vpr_register_operand predicate for MVE_VPRED operands.
+
+2025-03-10  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/119127
+	* config/loongarch/loongarch.cc
+	(loongarch_reassoc_shift_bitwise): Sign extend mask to mode,
+	specially handle the case it's extended to -1.
+	* config/loongarch/loongarch.md
+	(loongarch_reassoc_shift_bitwise): Update the comment for the
+	special case.
+
+2025-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117178
+	* gimple-ssa-warn-access.cc (maybe_warn_nonstring_arg): Look through
+	multi-dimensional array types, stop at the innermost ARRAY_TYPE.
+
 2025-03-09  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR rtl-optimization/117467

@@ -1,3 +1,63 @@
+2025-03-10  Richard Sandiford  <richard.sandiford@arm.com>
+	    Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	PR target/115258
+	* gcc.target/aarch64/pr115258_2.c: New test.
+
+2025-03-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/114991
+	* gcc.target/aarch64/pr114991.c: New test.
+
+2025-03-10  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119192
+	* gm2/sets/run/pass/simplepacked.mod: Uncomment asserts.
+
+2025-03-10  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/internal-10.C: New test.
+
+2025-03-10  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107143
+	* gfortran.dg/forall_20.f90: New test.
+
+2025-03-10  Jakub Jelinek  <jakub@redhat.com>
+	    Michael Leuchtenburg  <michael@slashhome.org>
+
+	PR libgcc/119151
+	* gcc.dg/pr119151.c: New test.
+
+2025-03-10  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/119127
+	* gcc.target/loongarch/pr119127.c: New file.
+
+2025-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117178
+	* c-c++-common/attr-nonstring-11.c: Remove xfails.
+	* c-c++-common/attr-nonstring-12.c (warn_strcmp_cst_1,
+	warn_strcmp_cst_2): Don't expect any warnings here.
+	(warn_strcmp_cst_3, warn_strcmp_cst_4): New functions with expected
+	warnings.
+
+2025-03-10  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.dg/vect/slp-26.c: Adjust.
+
+2025-03-10  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.dg/vect/bb-slp-77.c: Add loongarch*-*-* to the list
+	of expected failing targets.
+
+2025-03-10  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.dg/vect/pr112325.c: Add the vector compilation
+	option '-mlsx' for LoongArch.
+	* gcc.dg/vect/pr117888-1.c: Likewise.
+
 2025-03-09  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/118922

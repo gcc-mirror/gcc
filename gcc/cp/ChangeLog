@@ -1,3 +1,13 @@
+2025-03-10  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (trees_out::has_tu_local_dep): Also look at the
+	TI_TEMPLATE if we don't find a dep for a decl.
+	(depset::hash::is_tu_local_entity): Handle unnamed template
+	types, treat lambdas specially.
+	(is_exposure_of_member_type): New function.
+	(depset::hash::add_dependency): Use it.
+	(depset::hash::finalize_dependencies): Likewise.
+
 2025-03-08  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* parser.cc (cp_parser_asm_definition): Make comment more explicit.

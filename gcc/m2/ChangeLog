@@ -1,3 +1,18 @@
+2025-03-10  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119192
+	* gm2-compiler/M2GCCDeclare.def (TryDeclareType): New procedure.
+	* gm2-compiler/M2GCCDeclare.mod (IsAnyType): New procedure.
+	(TryDeclareType): Ditto.
+	* gm2-compiler/M2GenGCC.mod (FoldTBitsize): New procedure.
+	(FoldStandardFunction): Call FoldTBitsize.
+	* gm2-gcc/m2expr.cc (BuildTBitSize): Improve comment.
+	(m2expr_BuildSystemTBitSize): New function.
+	* gm2-gcc/m2expr.def (BuildSystemTBitSize): New procedure
+	function.
+	* gm2-gcc/m2expr.h (m2expr_BuildSystemTBitSize): New function
+	prototype.
+
 2025-03-05  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/118998
