@@ -1,3 +1,11 @@
+2025-03-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2025-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/118640
+	* gfortran.dg/pr118640.f90: New test.
+
 2025-03-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

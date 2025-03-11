@@ -1,3 +1,13 @@
+2025-03-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2025-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/118640
+	* resolve.cc (generate_component_assignments): Make sure that
+	the rhs temporary does not pick up the optional attribute from
+	the lhs.
+
 2025-03-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

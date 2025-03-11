@@ -1,3 +1,12 @@
+2025-03-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119112
+	* libdruntime/core/sys/freebsd/unistd.d (closefrom): Add binding.
+	* libdruntime/core/sys/linux/unistd.d (closefrom): Likewise.
+	* libdruntime/core/sys/openbsd/unistd.d (closefrom): Likewise.
+	* src/std/process.d (enum InternalError): Add closefds_dup2.
+	(spawnProcessPosix): Use closefrom when available.
+
 2024-08-01  Release Manager
 
 	* GCC 14.2.0 released.
