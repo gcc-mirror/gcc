@@ -406,6 +406,18 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
         n_mains += 1;
         break;
 
+      case OPT_print_search_dirs:
+      case OPT_print_file_name_:
+      case OPT_print_prog_name_:
+      case OPT_print_multi_lib:
+      case OPT_print_multi_directory:
+      case OPT_print_sysroot:
+      case OPT_print_multi_os_directory:
+      case OPT_print_multiarch:
+      case OPT_print_sysroot_headers_suffix:
+	no_files_error = false;
+	break;
+
       case OPT_v:
         no_files_error = false;
         verbose = true;
