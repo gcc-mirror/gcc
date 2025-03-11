@@ -1273,7 +1273,7 @@ assume_handler (Context *ctx, TyTy::FnType *fntype)
   TREE_SIDE_EFFECTS (assume_expr) = 1;
 
   ctx->add_statement (assume_expr);
-  // BUILTIN size_of FN BODY END
+  // BUILTIN assume FN BODY END
 
   finalize_intrinsic_block (ctx, fndecl);
 

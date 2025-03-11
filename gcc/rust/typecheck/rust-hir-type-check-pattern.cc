@@ -109,7 +109,7 @@ TypeCheckPattern::visit (HIR::PathInExpression &pattern)
 	      rich_location rich_locus (
 		line_table, pattern.get_final_segment ().get_locus ());
 	      rich_locus.add_fixit_replace (
-		"not a unit struct, unit variant or constatnt");
+		"not a unit struct, unit variant or constant");
 	      rust_error_at (rich_locus, ErrorCode::E0532,
 			     "expected unit struct, unit variant or constant, "
 			     "found %s %<%s%>",
