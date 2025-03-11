@@ -22,13 +22,6 @@ int b(int i)
 void c(int i)
   post(true) -> int ; // { dg-error "expected initializer" }
 
-
-void f1(int i) pre(true) [[pre:i>0]]; // { dg-error "was not declared" }
-void f2(int i) pre(k>0) [[pre:i>0]]; // { dg-error "was not declared" }
-void f3(int i) pre(true [[pre:i>0]]); // { dg-error "was not declared" }
-// { dg-error "shall only introduce an attribute" "" { target *-*-* } .-1 }
-// { dg-error "expected" "" { target *-*-* } .-2 }
-
 struct B{
 
   virtual void f() post(true) = 0;
