@@ -150,12 +150,12 @@ gcobol$(exeext): \
 
 # First, files needed for parsing:
 
-cobol/parse.c: cobol/parse.y
+cobol/parse.cc: cobol/parse.y
 	$(BISON) -o $@ $(YFLAGS)				\
 		--defines=cobol/parse.h			\
 		--report-file=cobol/parser.out $<
 
-cobol/cdf.c: cobol/cdf.y
+cobol/cdf.cc: cobol/cdf.y
 	$(BISON) -o $@ $(YFLAGS)						\
 		--defines=cobol/cdf.h --report-file=cobol/cdf.out $<
 
@@ -163,7 +163,7 @@ cobol/cdf.c: cobol/cdf.y
 # in Flex manual. We suppress those messages, as a convenience.
 FLEX_WARNING = warning, dangerous trailing context
 
-cobol/scan.c: cobol/scan.l
+cobol/scan.cc: cobol/scan.l
 	$(FLEX) -o$@ $(LFLAGS) $< >$@~ 2>&1
 	awk  '! /$(FLEX_WARNING)/ {print > "/dev/stderr"; nerr++}	\
 	     END {print "$(FLEX):", NR, "messages" > "/dev/stderr";	\
@@ -179,9 +179,9 @@ cobol/scan.c: cobol/scan.l
 # The below lists of include files for the the generated files is
 # postprocessed: the files are one per line, used "realpath
 # --relative-to=$PWD" to rationalize them, and sorted.  We include
-# parse.c in the list for scan.o because that's the one make(1) knows about.
+# parse.cc in the list for scan.o because that's the one make(1) knows about.
 
-cobol/cdf.o: cobol/cdf.c			\
+cobol/cdf.o: cobol/cdf.cc			\
 	$(srcdir)/cobol/cbldiag.h		\
 	$(srcdir)/cobol/cdfval.h		\
 	$(srcdir)/cobol/copybook.h		\
@@ -192,7 +192,7 @@ cobol/cdf.o: cobol/cdf.c			\
 	$(srcdir)/../libgcobol/ec.h		\
 	$(srcdir)/../libgcobol/exceptl.h
 
-cobol/parse.o: cobol/parse.c			\
+cobol/parse.o: cobol/parse.cc			\
 	$(srcdir)/cobol/cbldiag.h		\
 	$(srcdir)/cobol/cdfval.h		\
 	$(srcdir)/cobol/cobol-system.h		\
@@ -217,7 +217,7 @@ cobol/parse.o: cobol/parse.c			\
 	auto-host.h				\
 	config.h
 
-cobol/scan.o: cobol/scan.c			\
+cobol/scan.o: cobol/scan.cc			\
 	$(srcdir)/cobol/cbldiag.h		\
 	$(srcdir)/cobol/cdfval.h		\
 	$(srcdir)/cobol/cobol-system.h		\
@@ -243,8 +243,8 @@ cobol/scan.o: cobol/scan.c			\
 	$(srcdir)/../libgcobol/io.h		\
 	auto-host.h				\
 	config.h 				\
-	cobol/cdf.c				\
-	cobol/parse.c
+	cobol/cdf.cc				\
+	cobol/parse.cc
 
 #
 # The src<foo> targets are executed if
@@ -260,7 +260,7 @@ cobol/scan.o: cobol/scan.c			\
 # not require Bison.  Release tarballs always include Flex/Bison
 # output, and do not require those tools to be installed.
 #
-cobol.srcextra: cobol/parse.c cobol/cdf.c cobol/scan.c
+cobol.srcextra: cobol/parse.cc cobol/cdf.cc cobol/scan.cc
 	ln -f $^ cobol/parse.h cobol/cdf.h $(srcdir)/cobol/
 
 
