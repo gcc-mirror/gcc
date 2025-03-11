@@ -2708,7 +2708,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	 such only the first load in the group is aligned, the rest are not.
 	 Because of this the permutes may break the alignment requirements that
 	 have been set, and as such we should for now, reject them.  */
-      if (SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
+      if (slp_node && SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
