@@ -1,18 +1,18 @@
 // { dg-do run }
 // { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on -fcontracts-nonattr" }
 
-void gfn3(int n) [[ pre: n > 0 ]];
+void gfn3(int n) pre (n > 0 );
 
 struct Outer {
   struct Inner {
-    void fn(int n) [[ pre: n > 0 && bob > 1 ]];
+    void fn(int n) pre (n > 0 && bob > 1);
   };
 
-  void fn(int m) [[ pre: m > 1 ]];
+  void fn(int m) pre (m > 1);
 
-  friend void gfn1(int p) [[ pre: p > 0 ]] { }
+  friend void gfn1(int p) pre (p > 0) { }
 
-  friend void gfn2(int p, Outer *) [[ pre: p > 0 ]] { }
+  friend void gfn2(int p, Outer *) pre (p > 0) { }
 
   friend void gfn3(int n);
 

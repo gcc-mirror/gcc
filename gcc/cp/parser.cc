@@ -31636,6 +31636,13 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute)
       return error_mark_node;
     }
 
+  if (flag_contracts_nonattr)
+    {
+      error_at (loc, "C++2x contracts are not available with "
+		"%<-fcontracts-nonattr%>");
+      return error_mark_node;
+    }
+
   return finish_contract_attribute (attribute, contract);
 }
 
