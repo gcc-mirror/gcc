@@ -405,16 +405,28 @@
 
 ;; Provide a vec_init for mask registers by initializing
 ;; a QImode vector and comparing it against 0.
+;; As we need to ignore all but the lowest bit apply an AND mask
+;; before doing the comparison.
 (define_expand "vec_init<mode>qi"
   [(match_operand:VB 0 "register_operand")
    (match_operand 1 "")]
   "TARGET_VECTOR"
   {
+    /* Expand into a QImode vector.  */
     machine_mode qimode = riscv_vector::get_vector_mode
 	(QImode, GET_MODE_NUNITS (<MODE>mode)).require ();
     rtx tmp = gen_reg_rtx (qimode);
     riscv_vector::expand_vec_init (tmp, operands[1]);
-    riscv_vector::expand_vec_cmp (operands[0], NE, tmp, CONST0_RTX (qimode));
+
+    /* & 0x1.  */
+    insn_code icode = code_for_pred (AND, qimode);
+    rtx tmp2 = gen_reg_rtx (qimode);
+    rtx ones = gen_const_vec_duplicate (qimode, GEN_INT (1));
+    rtx ops[] = {tmp2, tmp, ones};
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops);
+
+    /* Compare against zero.  */
+    riscv_vector::expand_vec_cmp (operands[0], NE, tmp2, CONST0_RTX (qimode));
     DONE;
   }
 )
