@@ -19,5 +19,7 @@ foo (void)
 /* We should operate on aligned vectors.  */
 /* { dg-final { scan-assembler {\t(adrp|adr)\tx[0-9]+, (x|\.LANCHOR0)\n} } } */
 /* We should unroll the loop three times.  */
-/* { dg-final { scan-assembler-times "\tst1w\t" 3 } } */
+/* { dg-final { scan-assembler-times "\tst1w\t" 3 { target aarch64_big_endian } } } */
+/* { dg-final { scan-assembler-times "\tst1w\t" 2 { target aarch64_little_endian } } } */
+/* { dg-final { scan-assembler-times "\tstr\t" 1 { target aarch64_little_endian } } } */
 /* { dg-final { scan-assembler {\tptrue\t(p[0-9]+)\.s, vl7\n.*\teor\tp[0-9]+\.b, (p[0-9]+)/z, (\1\.b, \2\.b|\2\.b, \1\.b)\n} } } */

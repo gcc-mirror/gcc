@@ -6,11 +6,20 @@
 #include <stdarg.h>
 
 /*
-** callee_0:
+** callee_0: {target aarch64_big_endian}
 **	...
 **	ld1h	(z[0-9]+\.h), (p[0-7])/z, \[x1\]
 **	...
 **	st1h	\1, \2, \[x0\]
+**	...
+**	ret
+*/
+/*
+** callee_0: {target aarch64_little_endian}
+**	...
+**	ldr	(z[0-9]+), \[x1\]
+**	...
+**	str	\1, \[x0\]
 **	...
 **	ret
 */
@@ -27,11 +36,20 @@ callee_0 (int16_t *ptr, ...)
 }
 
 /*
-** caller_0:
+** caller_0: {target aarch64_big_endian}
 **	...
 **	fmov	(z[0-9]+\.h), #9\.0[^\n]*
 **	...
 **	st1h	\1, p[0-7], \[x1\]
+**	...
+**	ret
+*/
+/*
+** caller_0: {target aarch64_little_endian}
+**	...
+**	fmov	(z[0-9]+)\.h, #9\.0[^\n]*
+**	...
+**	str	\1, \[x1\]
 **	...
 **	ret
 */
@@ -42,11 +60,20 @@ caller_0 (int16_t *ptr)
 }
 
 /*
-** callee_1:
+** callee_1: {target aarch64_big_endian}
 **	...
 **	ld1h	(z[0-9]+\.h), (p[0-7])/z, \[x2\]
 **	...
 **	st1h	\1, p[0-7], \[x0\]
+**	...
+**	ret
+*/
+/*
+** callee_1: {target aarch64_little_endian}
+**	...
+**	ldr	(z[0-9]+), \[x2\]
+**	...
+**	str	\1, \[x0\]
 **	...
 **	ret
 */
@@ -64,11 +91,20 @@ callee_1 (int16_t *ptr, ...)
 }
 
 /*
-** caller_1:
+** caller_1: {target aarch64_big_endian}
 **	...
 **	fmov	(z[0-9]+\.h), #9\.0[^\n]*
 **	...
 **	st1h	\1, p[0-7], \[x2\]
+**	...
+**	ret
+*/
+/*
+** caller_1: {target aarch64_little_endian}
+**	...
+**	fmov	(z[0-9]+)\.h, #9\.0[^\n]*
+**	...
+**	str	\1, \[x2\]
 **	...
 **	ret
 */
@@ -79,11 +115,20 @@ caller_1 (int16_t *ptr)
 }
 
 /*
-** callee_7:
+** callee_7: {target aarch64_big_endian}
 **	...
 **	ld1h	(z[0-9]+\.h), (p[0-7])/z, \[x7\]
 **	...
 **	st1h	\1, p[0-7], \[x0\]
+**	...
+**	ret
+*/
+/*
+** callee_7: {target aarch64_little_endian}
+**	...
+**	ldr	(z[0-9]+), \[x7\]
+**	...
+**	str	\1, \[x0\]
 **	...
 **	ret
 */
@@ -106,11 +151,20 @@ callee_7 (int16_t *ptr, ...)
 }
 
 /*
-** caller_7:
+** caller_7: {target aarch64_big_endian}
 **	...
 **	fmov	(z[0-9]+\.h), #9\.0[^\n]*
 **	...
 **	st1h	\1, p[0-7], \[x7\]
+**	...
+**	ret
+*/
+/*
+** caller_7: {target aarch64_little_endian}
+**	...
+**	fmov	(z[0-9]+)\.h, #9\.0[^\n]*
+**	...
+**	str	\1, \[x7\]
 **	...
 **	ret
 */
@@ -122,7 +176,7 @@ caller_7 (int16_t *ptr)
 
 /* FIXME: We should be able to get rid of the va_list object.  */
 /*
-** callee_8:
+** callee_8: {target aarch64_big_endian}
 **	sub	sp, sp, #([0-9]+)
 **	...
 **	ldr	(x[0-9]+), \[sp, \1\]
@@ -130,6 +184,18 @@ caller_7 (int16_t *ptr)
 **	ld1h	(z[0-9]+\.h), (p[0-7])/z, \[\2\]
 **	...
 **	st1h	\3, \4, \[x0\]
+**	...
+**	ret
+*/
+/*
+** callee_8: {target aarch64_little_endian}
+**	sub	sp, sp, #([0-9]+)
+**	...
+**	ldr	(x[0-9]+), \[sp, \1\]
+**	...
+**	ldr	(z[0-9]+), \[\2\]
+**	...
+**	str	\3, \[x0\]
 **	...
 **	ret
 */
@@ -153,11 +219,22 @@ callee_8 (int16_t *ptr, ...)
 }
 
 /*
-** caller_8:
+** caller_8: {target aarch64_big_endian}
 **	...
 **	fmov	(z[0-9]+\.h), #9\.0[^\n]*
 **	...
 **	st1h	\1, p[0-7], \[(x[0-9]+)\]
+**	...
+**	str	\2, \[sp\]
+**	...
+**	ret
+*/
+/*
+** caller_8: {target aarch64_little_endian}
+**	...
+**	fmov	(z[0-9]+)\.h, #9\.0[^\n]*
+**	...
+**	str	\1, \[(x[0-9]+)\]
 **	...
 **	str	\2, \[sp\]
 **	...

@@ -702,6 +702,23 @@
   }
 )
 
+;; Fold predicated loads/stores with a PTRUE predicate to unpredicated
+;; loads/stores after RA.
+(define_insn_and_split "*aarch64_sve_ptrue<mode>_ldr_str"
+  [(set (match_operand:SVE_FULL 0 "aarch64_sve_nonimmediate_operand" "=Utr,w")
+	(unspec:SVE_FULL
+	  [(match_operand:<VPRED> 1 "aarch64_simd_imm_one")
+	   (match_operand:SVE_FULL 2 "aarch64_sve_nonimmediate_operand" "w,Utr")]
+	   UNSPEC_PRED_X))]
+  "TARGET_SVE && reload_completed
+   && (<MODE>mode == VNx16QImode || !BYTES_BIG_ENDIAN)
+   && ((REG_P (operands[0]) && MEM_P (operands[2]))
+       || (REG_P (operands[2]) && MEM_P (operands[0])))"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(match_dup 2))])
+
 ;; Unpredicated moves that cannot use LDR and STR, i.e. partial vectors
 ;; or vectors for which little-endian ordering isn't acceptable.  Memory
 ;; accesses require secondary reloads.
