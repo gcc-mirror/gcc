@@ -25448,7 +25448,7 @@ gen_compile_unit_die (const char *filename)
     }
   else if (strcmp (language_string, "GNU F77") == 0)
     language = DW_LANG_Fortran77;
-  else if (strcmp (language_string, "Cobol") == 0)
+  else if (strcmp (language_string, "GCC COBOL") == 0)
     language = DW_LANG_Cobol85;
   else if (strcmp (language_string, "GNU Modula-2") == 0)
     language = DW_LANG_Modula2;
