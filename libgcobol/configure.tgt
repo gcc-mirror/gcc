@@ -39,4 +39,7 @@ case "${target}" in
 		LIBGCOBOL_SUPPORTED=yes
 	fi
 	;;
+    *)
+	UNSUPPORTED=1
+	;;
 esac

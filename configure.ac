@@ -768,7 +768,7 @@ if test -d ${srcdir}/libgcobol; then
 	AC_MSG_CHECKING([for libgcobol support])
 	if (srcdir=${srcdir}/libgcobol; \
 		. ${srcdir}/configure.tgt; \
-		test "$LIBGCOBOL_SUPPORTED" != "yes")
+		test -n "$UNSUPPORTED")
 	then
 	    AC_MSG_RESULT([no])
 	    noconfigdirs="$noconfigdirs target-libgcobol"

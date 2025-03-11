@@ -34,8 +34,6 @@ AM_ENABLE_MULTILIB(, ..)
 # exported.
 ORIGINAL_LD_FOR_MULTILIBS=$LD
 
-####. ${srcdir}/configure.tgt
-
 GCC_NO_EXECUTABLES
 
 AC_USE_SYSTEM_EXTENSIONS
@@ -61,6 +59,12 @@ AC_CANONICAL_HOST
 ACX_NONCANONICAL_HOST
 ACX_NONCANONICAL_TARGET
 GCC_TOPLEV_SUBDIRS
+
+AC_CHECK_SIZEOF([void *])
+
+# Get target configury.
+unset LIBGCOBOL_SUPPORTED
+. ${srcdir}/configure.tgt
 
 # -----------------
 # __int128 support
@@ -90,7 +94,7 @@ AC_CACHE_CHECK([whether __int128 is supported], [libgcobol_cv_have_int128],
 # The following conditional is useful when this creates a Makefile.am file that
 # is subsequently processed into a Makefile.in file.  At the present time,
 # however the libgcobol build uses a hardcoded Makefile.in file.
-AM_CONDITIONAL(BUILD_LIBGCOBOL, [test "x$libgcobol_cv_have_int128" = xyes])
+AM_CONDITIONAL(BUILD_LIBGCOBOL, [test "x$LIBGCOBOL_SUPPORTED" = xyes && test "x$libgcobol_cv_have_int128" = xyes])
 
 GCC_WITH_TOOLEXECLIBDIR
 

@@ -168,6 +168,7 @@ libgcobol_la_LIBADD =
 am_libgcobol_la_OBJECTS = charmaps.lo constants.lo gfileio.lo gmath.lo \
 	intrinsic.lo io.lo libgcobol.lo valconv.lo
 libgcobol_la_OBJECTS = $(am_libgcobol_la_OBJECTS)
+@BUILD_LIBGCOBOL_TRUE@am_libgcobol_la_rpath = -rpath $(toolexeclibdir)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -402,7 +403,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = 1.8 foreign
 ACLOCAL_AMFLAGS = -I .. -I ../config
-toolexeclib_LTLIBRARIES = libgcobol.la
+@BUILD_LIBGCOBOL_TRUE@toolexeclib_LTLIBRARIES = libgcobol.la
 libgcobol_la_SOURCES = \
 	charmaps.cc				\
 	constants.cc				\
@@ -423,7 +424,7 @@ libgcobol_la_LINK = $(LIBTOOL) --mode=link --tag=CXX $(CXX)	\
 WARN_CFLAGS = -W -Wall -Wwrite-strings
 
 # not defined: DEFS, MAX_ERRORS, LTLDFLAGS
-ALL_CFLAGS = -I. -I$(srcdir) $(AM_CPPFLAGS) $(DEFS)		\
+ALL_CXXFLAGS = -I. -I$(srcdir) $(AM_CPPFLAGS) $(DEFS)		\
 	$(XCFLAGS) $(AM_CXXFLAGS) $(WARN_CFLAGS) $(MAX_ERRORS)	\
 	-DIN_GCC -DIN_TARGET_LIBS -fno-strict-aliasing
 
@@ -517,7 +518,7 @@ clean-toolexeclibLTLIBRARIES:
 	}
 
 libgcobol.la: $(libgcobol_la_OBJECTS) $(libgcobol_la_DEPENDENCIES) $(EXTRA_libgcobol_la_DEPENDENCIES) 
-	$(AM_V_GEN)$(libgcobol_la_LINK) -rpath $(toolexeclibdir) $(libgcobol_la_OBJECTS) $(libgcobol_la_LIBADD) $(LIBS)
+	$(AM_V_GEN)$(libgcobol_la_LINK) $(am_libgcobol_la_rpath) $(libgcobol_la_OBJECTS) $(libgcobol_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -923,7 +924,7 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 %.lo: %.cc
 	$(LIBTOOL) --mode=compile --tag=CXX $(CXX) -c	\
-		-o $@ $(INCLUDES) $(ALL_CFLAGS) $<
+		-o $@ $(INCLUDES) $(ALL_CXXFLAGS) $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

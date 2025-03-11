@@ -22,7 +22,9 @@
 AUTOMAKE_OPTIONS = 1.8 foreign
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
+if BUILD_LIBGCOBOL
 toolexeclib_LTLIBRARIES  = libgcobol.la
+endif
 
 ##
 ## 2.2.12 Automatic Dependency Tracking
@@ -48,10 +50,10 @@ libgcobol_la_LINK = $(LIBTOOL) --mode=link --tag=CXX $(CXX)	\
 WARN_CFLAGS = -W -Wall -Wwrite-strings
 
 # not defined: DEFS, MAX_ERRORS, LTLDFLAGS
-ALL_CFLAGS = -I. -I$(srcdir) $(AM_CPPFLAGS) $(DEFS)		\
+ALL_CXXFLAGS = -I. -I$(srcdir) $(AM_CPPFLAGS) $(DEFS)		\
 	$(XCFLAGS) $(AM_CXXFLAGS) $(WARN_CFLAGS) $(MAX_ERRORS)	\
 	-DIN_GCC -DIN_TARGET_LIBS -fno-strict-aliasing
 
 %.lo: %.cc
 	$(LIBTOOL) --mode=compile --tag=CXX $(CXX) -c	\
-		-o $@ $(INCLUDES) $(ALL_CFLAGS) $<
+		-o $@ $(INCLUDES) $(ALL_CXXFLAGS) $<
