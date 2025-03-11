@@ -686,7 +686,7 @@ ForeverStack<N>::to_canonical_path (NodeId id) const
 	  auto &link = kv.first;
 	  auto &child = kv.second;
 
-	  if (link.id == child.id)
+	  if (current.id == child.id)
 	    {
 	      outer_link = &link;
 	      break;
