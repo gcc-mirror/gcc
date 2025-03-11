@@ -11419,7 +11419,11 @@ output_init_element (location_t loc, tree value, tree origtype,
   if (!require_constexpr_value
       || !npc
       || TREE_CODE (constructor_type) != POINTER_TYPE)
-    new_value = digest_init (loc, field, type, new_value, origtype, npc,
+    new_value = digest_init (loc,
+			     RECORD_OR_UNION_TYPE_P (constructor_type)
+			     ? field : constructor_fields
+			     ? constructor_fields : constructor_decl,
+			     type, new_value, origtype, npc,
 			     int_const_expr, arith_const_expr, strict_string,
 			     require_constant_value, require_constexpr_value);
   if (new_value == error_mark_node)
