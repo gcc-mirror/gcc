@@ -162,6 +162,7 @@ Ada front end           Arnaud Charlet          <charlet@adacore.com>
 Ada front end           Eric Botcazou           <ebotcazou@libertysurf.fr>
 Ada front end           Marc Poulhiès           <poulhies@adacore.com>
 Ada front end           Pierre-Marie de Rodat   <derodat@adacore.com>
+COBOL front end         Robert Dubner           <rdubner@symas.com>
 c++                     Jason Merrill           <jason@redhat.com>
 c++                     Nathan Sidwell          <nathan@acm.org>
 D front end             Iain Buclaw             <ibuclaw@gdcproject.org>
@@ -276,6 +277,7 @@ check in changes outside of the parts of the compiler they maintain.
 arm port (MVE)          Christophe Lyon         <christophe.lyon@arm.com>
 callgraph               Martin Jambor           <mjambor@suse.cz>
 C front end             Marek Polacek           <polacek@redhat.com>
+COBOL front end         Robert Dubner           <rdubner@symas.com>
 CTF, BTF                Indu Bhagat             <indu.bhagat@oracle.com>
 CTF, BTF, bpf port      David Faust             <david.faust@oracle.com>
 dataflow                Paolo Bonzini           <bonzini@gnu.org>
@@ -445,6 +447,7 @@ Dimitar Dimitrov                dimitar         <dimitar@dinux.eu>
 Benoit Dupont de Dinechin       bd3             <benoit.dupont-de-dinechin@st.com>
 Lehua Ding                      -               <lehua.ding@rivai.ai>
 Ulrich Drepper                  drepper         <drepper@gmail.com>
+Robert Dubner                   rdubner         <rdubner@symas.com>
 François Dumont                 fdumont         <fdumont@gcc.gnu.org>
 Zdenek Dvorak                   rakdver         <ook@ucw.cz>
 Michael Eager                   eager           <eager@eagercon.com>
