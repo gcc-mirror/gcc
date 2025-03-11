@@ -102,6 +102,7 @@
 #include "cbldiag.h"
 #include "symbols.h"
 #include "gengen.h"
+#include "dumpfile.h"
 
 // We are limiting the programmer to functions with 512 or fewer arguments.
 // Don't like it?  Cry me a river.
@@ -2925,6 +2926,8 @@ gg_finalize_function()
     // This makes the function visible on the source code module level.
     cgraph_node::finalize_function (current_function->function_decl, true);
     }
+
+  dump_function (TDI_original, current_function->function_decl);
 
   if( gg_trans_unit.function_stack.back().context_count )
     {
