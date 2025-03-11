@@ -10378,7 +10378,7 @@ fold_builtin_strcspn (location_t loc, tree expr, tree s1, tree s2)
     {
       /* Evaluate and ignore argument s2 in case it has
 	 side-effects.  */
-      return omit_one_operand_loc (loc, size_type_node,
+      return omit_one_operand_loc (loc, TREE_TYPE (expr),
 				   size_zero_node, s2);
     }
 
@@ -10393,7 +10393,8 @@ fold_builtin_strcspn (location_t loc, tree expr, tree s1, tree s2)
       if (!fn)
 	return NULL_TREE;
 
-      return build_call_expr_loc (loc, fn, 1, s1);
+      return fold_convert_loc (loc, TREE_TYPE (expr),
+			       build_call_expr_loc (loc, fn, 1, s1));
     }
   return NULL_TREE;
 }
