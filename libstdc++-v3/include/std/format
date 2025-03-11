@@ -2979,22 +2979,16 @@ namespace __format
 
 	  // TODO bfloat16 and float16
 
-#ifdef __FLT32_DIG__
+#if defined(__FLT32_DIG__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
 	  else if constexpr (is_same_v<_Td, _Float32>)
-# ifdef _GLIBCXX_FLOAT_IS_IEEE_BINARY32
 	    return type_identity<float>();
-# else
-	    return type_identity<_Float32>();
-# endif
 #endif
-#ifdef __FLT64_DIG__
+
+#if defined(__FLT64_DIG__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
 	  else if constexpr (is_same_v<_Td, _Float64>)
-# ifdef _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
 	    return type_identity<double>();
-# else
-	    return type_identity<_Float64>();
-# endif
 #endif
+
 #if _GLIBCXX_FORMAT_F128
 # if __FLT128_DIG__
 	  else if constexpr (is_same_v<_Td, _Float128>)
@@ -3074,16 +3068,6 @@ namespace __format
 	    return _Arg_u128;
 #endif
 
-	  // N.B. some of these types will never actually be used here,
-	  // because they get normalized to a standard floating-point type.
-#if defined __FLT32_DIG__ && ! _GLIBCXX_FLOAT_IS_IEEE_BINARY32
-	  else if constexpr (is_same_v<_Tp, _Float32>)
-	    return _Arg_f32;
-#endif
-#if defined __FLT64_DIG__ && ! _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
-	  else if constexpr (is_same_v<_Tp, _Float64>)
-	    return _Arg_f64;
-#endif
 #if _GLIBCXX_FORMAT_F128 == 2
 	  else if constexpr (is_same_v<_Tp, __format::__float128_t>)
 	    return _Arg_f128;
