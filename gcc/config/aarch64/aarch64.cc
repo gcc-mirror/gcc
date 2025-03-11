@@ -27541,6 +27541,16 @@ aarch64_test_fractional_cost ()
   ASSERT_EQ (cf (1, 2).as_double (), 0.5);
 }
 
+/* Test SVE arithmetic folding.  */
+
+static void
+aarch64_test_sve_folding ()
+{
+  tree res = fold_unary (BIT_NOT_EXPR, ssizetype,
+			 ssize_int (poly_int64 (1, 1)));
+  ASSERT_TRUE (operand_equal_p (res, ssize_int (poly_int64 (-2, -1))));
+}
+
 /* Run all target-specific selftests.  */
 
 static void
@@ -27548,6 +27558,7 @@ aarch64_run_selftests (void)
 {
   aarch64_test_loading_full_dump ();
   aarch64_test_fractional_cost ();
+  aarch64_test_sve_folding ();
 }
 
 } // namespace selftest
