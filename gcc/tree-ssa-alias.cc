@@ -4292,12 +4292,13 @@ ao_compare::compare_ao_refs (ao_ref *ref1, ao_ref *ref2,
 	c1 = p1, nskipped1 = i;
       i++;
     }
+  i = 0;
   for (tree p2 = ref2->ref; handled_component_p (p2); p2 = TREE_OPERAND (p2, 0))
     {
       if (component_ref_to_zero_sized_trailing_array_p (p2))
 	end_struct_ref2 = p2;
       if (ends_tbaa_access_path_p (p2))
-	c2 = p2, nskipped1 = i;
+	c2 = p2, nskipped2 = i;
       i++;
     }
 
