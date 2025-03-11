@@ -367,3 +367,5 @@ cobol.stagefeedback: stagefeedback-start
 	-mv cobol/*$(objext) stagefeedback/cobol
 
 selftest-cobol:
+
+lang_checks += check-cobol
