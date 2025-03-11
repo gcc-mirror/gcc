@@ -4794,7 +4794,8 @@ proc add_options_for_arm_libc_fp_abi { flags } {
 proc check_effective_target_arm_neon_h_ok_nocache { } {
     # none-arm or thumb1 cannot support neon, so there's no point in
     # looking further.
-    if { [istarget arm*-*-*] } {
+    if { [istarget arm*-*-*]
+	 && [check_effective_target_arm_libc_fp_abi_ok]} {
 	global et_arm_neon_h_flags
 	set base_flags [add_options_for_arm_libc_fp_abi ""]
 	foreach flags {"" "-mfpu=auto" "-marm" "-marm -mfpu=auto" \
