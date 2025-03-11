@@ -9227,11 +9227,6 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   if (r == void_node && !constexpr_dtor && ctx.ctor)
     r = ctx.ctor;
 
-  if (!constexpr_dtor)
-    verify_constant (r, allow_non_constant, &non_constant_p, &overflow_p);
-  else
-    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (object) = true;
-
   unsigned int i;
   tree cleanup;
   /* Evaluate the cleanups.  */
@@ -9247,15 +9242,6 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
       if (!allow_non_constant)
 	error ("%qE is not a constant expression because it refers to "
 	       "mutable subobjects of %qT", t, type);
-      non_constant_p = true;
-    }
-
-  if (TREE_CODE (r) == CONSTRUCTOR && CONSTRUCTOR_NO_CLEARING (r))
-    {
-      if (!allow_non_constant)
-	error ("%qE is not a constant expression because it refers to "
-	       "an incompletely initialized variable", t);
-      TREE_CONSTANT (r) = false;
       non_constant_p = true;
     }
 
@@ -9315,6 +9301,21 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
       non_constant_p = true;
     }
 
+  if (!non_constant_p && !constexpr_dtor)
+    verify_constant (r, allow_non_constant, &non_constant_p, &overflow_p);
+
+  /* After verify_constant because reduced_constant_expression_p can unset
+     CONSTRUCTOR_NO_CLEARING.  */
+  if (!non_constant_p
+      && TREE_CODE (r) == CONSTRUCTOR && CONSTRUCTOR_NO_CLEARING (r))
+    {
+      if (!allow_non_constant)
+	error ("%qE is not a constant expression because it refers to "
+	       "an incompletely initialized variable", t);
+      TREE_CONSTANT (r) = false;
+      non_constant_p = true;
+    }
+
   if (non_constant_p)
     /* If we saw something bad, go back to our argument.  The wrapping below is
        only for the cases of TREE_CONSTANT argument or overflow.  */
@@ -9331,12 +9332,16 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 
   if (non_constant_p && !allow_non_constant)
     return error_mark_node;
-  else if (constexpr_dtor)
-    return r;
   else if (non_constant_p && TREE_CONSTANT (r))
     r = mark_non_constant (r);
   else if (non_constant_p)
     return t;
+
+  if (constexpr_dtor)
+    {
+      DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (object) = true;
+      return r;
+    }
 
   /* Check we are not trying to return the wrong type.  */
   if (!same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (r)))
