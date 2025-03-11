@@ -1,3 +1,11 @@
+2025-03-18  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	Backported from master:
+	2025-03-11  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/118579
+	* c-c++-common/gomp/pr118579.c: New testcase.
+
 2025-02-28  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:

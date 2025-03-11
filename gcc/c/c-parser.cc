@@ -15479,8 +15479,9 @@ c_array_type_nelts_total (tree type)
    decl in OMP_CLAUSE_DECL and add the node to the head of the list.
    If KIND is nonzero, CLAUSE_LOC is the location of the clause.
 
-   If KIND is zero, create a TREE_LIST with the decl in TREE_PURPOSE;
-   return the list created.
+   If KIND is zero (= OMP_CLAUSE_ERROR), create a TREE_LIST with the decl
+   in TREE_PURPOSE and the location in TREE_VALUE (accessible using
+   EXPR_LOCATION); return the list created.
 
    The optional MAP_LVALUE argument is true if list items can use the deref
    (->) operator.  */
@@ -15511,6 +15512,7 @@ c_parser_omp_variable_list (c_parser *parser,
   while (1)
     {
       tree t = NULL_TREE;
+      location_t tloc = c_parser_peek_token (parser)->location;
 
       if (kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)
 	{
@@ -15838,7 +15840,7 @@ c_parser_omp_variable_list (c_parser *parser,
 
       if (t == error_mark_node)
 	;
-      else if (kind != 0)
+      else if (kind != 0)  /* kind != OMP_CLAUSE_ERROR */
 	{
 	  switch (kind)
 	    {
@@ -16014,8 +16016,8 @@ c_parser_omp_variable_list (c_parser *parser,
 	      list = u;
 	    }
 	}
-      else
-	list = tree_cons (t, NULL_TREE, list);
+      else  /* kind == OMP_CLAUSE_ERROR */
+	list = tree_cons (t, build_empty_stmt (tloc), list);
 
       if (kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)
 	{
@@ -16179,7 +16181,6 @@ c_parser_oacc_data_clause (c_parser *parser, pragma_omp_clause c_kind,
 static tree
 c_parser_oacc_data_clause_deviceptr (c_parser *parser, tree list)
 {
-  location_t loc = c_parser_peek_token (parser)->location;
   tree vars, t;
 
   /* Can't use OMP_CLAUSE_MAP here (that is, can't use the generic
@@ -16190,12 +16191,7 @@ c_parser_oacc_data_clause_deviceptr (c_parser *parser, tree list)
   for (t = vars; t && t; t = TREE_CHAIN (t))
     {
       tree v = TREE_PURPOSE (t);
-
-      /* FIXME diagnostics: Ideally we should keep individual
-	 locations for all the variables in the var list to make the
-	 following errors more precise.  Perhaps
-	 c_parser_omp_var_list_parens() should construct a list of
-	 locations to go along with the var list.  */
+      location_t loc = EXPR_LOCATION (TREE_VALUE (t));
 
       if (!VAR_P (v) && TREE_CODE (v) != PARM_DECL)
 	error_at (loc, "%qD is not a variable", v);
@@ -26855,6 +26851,7 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 		    for (tree c = list; c != NULL_TREE; c = TREE_CHAIN (c))
 		      {
 			tree decl = TREE_PURPOSE (c);
+			location_t arg_loc = EXPR_LOCATION (TREE_VALUE (c));
 			int idx;
 			for (arg = parms, idx = 0; arg != NULL;
 			     arg = TREE_CHAIN (arg), idx++)
@@ -26862,14 +26859,15 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 			    break;
 			if (arg == NULL_TREE)
 			  {
-			    error_at (loc, "%qD is not a function argument",
+			    error_at (arg_loc,
+				      "%qD is not a function argument",
 				      decl);
 			    goto fail;
 			  }
 			if (adjust_args_list.contains (arg))
 			  {
-			    // TODO fix location
-			    error_at (loc, "%qD is specified more than once",
+			    error_at (arg_loc,
+				      "%qD is specified more than once",
 				      decl);
 			    goto fail;
 			  }
@@ -29634,19 +29632,13 @@ c_parser_omp_threadprivate (c_parser *parser)
   location_t loc;
 
   c_parser_consume_pragma (parser);
-  loc = c_parser_peek_token (parser)->location;
   vars = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_ERROR, NULL);
 
   /* Mark every variable in VARS to be assigned thread local storage.  */
   for (t = vars; t; t = TREE_CHAIN (t))
     {
       tree v = TREE_PURPOSE (t);
-
-      /* FIXME diagnostics: Ideally we should keep individual
-	 locations for all the variables in the var list to make the
-	 following errors more precise.  Perhaps
-	 c_parser_omp_var_list_parens() should construct a list of
-	 locations to go along with the var list.  */
+      loc = EXPR_LOCATION (TREE_VALUE (t));
 
       /* If V had already been marked threadprivate, it doesn't matter
 	 whether it had been used prior to this point.  */
