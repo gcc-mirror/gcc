@@ -9917,22 +9917,29 @@ pointer_may_wrap_p (tree base, tree offset, poly_int64 bitpos)
 static int
 maybe_nonzero_address (tree decl)
 {
+  if (!DECL_P (decl))
+    return -1;
+
   /* Normally, don't do anything for variables and functions before symtab is
      built; it is quite possible that DECL will be declared weak later.
      But if folding_initializer, we need a constant answer now, so create
      the symtab entry and prevent later weak declaration.  */
-  if (DECL_P (decl) && decl_in_symtab_p (decl))
-    if (struct symtab_node *symbol
-	= (folding_initializer
-	   ? symtab_node::get_create (decl)
-	   : symtab_node::get (decl)))
-      return symbol->nonzero_address ();
+  if (decl_in_symtab_p (decl))
+    {
+      if (struct symtab_node *symbol
+	  = (folding_initializer
+	     ? symtab_node::get_create (decl)
+	     : symtab_node::get (decl)))
+	return symbol->nonzero_address ();
+    }
+  else if (folding_cxx_constexpr)
+    /* Anything that doesn't go in the symtab has non-zero address.  */
+    return 1;
 
   /* Function local objects are never NULL.  */
-  if (DECL_P (decl)
-      && (DECL_CONTEXT (decl)
+  if (DECL_CONTEXT (decl)
       && TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL
-      && auto_var_in_fn_p (decl, DECL_CONTEXT (decl))))
+      && auto_var_in_fn_p (decl, DECL_CONTEXT (decl)))
     return 1;
 
   return -1;
