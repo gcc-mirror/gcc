@@ -3900,6 +3900,26 @@ s390_memory_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
   return 2;
 }
 
+/* Implement TARGET_INSN_COST.  */
+
+static int
+s390_insn_cost (rtx_insn *insn, bool speed)
+{
+  /* For stores also consider the destination.  Penalize if the address
+     contains a SYMBOL_REF since this has to be fixed up by reload.  */
+  rtx pat = single_set (insn);
+  if (pat && MEM_P (SET_DEST (pat)))
+    {
+      rtx mem = SET_DEST (pat);
+      rtx addr = XEXP (mem, 0);
+      int penalty = contains_symbol_ref_p (addr) ? COSTS_N_INSNS (1) : 0;
+      int src_cost = set_src_cost (SET_SRC (pat), GET_MODE (mem), speed);
+      src_cost = src_cost > 0 ? src_cost : COSTS_N_INSNS (1);
+      return penalty + src_cost;
+    }
+  return pattern_cost (PATTERN (insn), speed);
+}
+
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  The
@@ -18355,6 +18375,8 @@ s390_c_mode_for_floating_type (enum tree_index ti)
 
 #undef TARGET_CANNOT_COPY_INSN_P
 #define TARGET_CANNOT_COPY_INSN_P s390_cannot_copy_insn_p
+#undef TARGET_INSN_COST
+#define TARGET_INSN_COST s390_insn_cost
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS s390_rtx_costs
 #undef TARGET_ADDRESS_COST
