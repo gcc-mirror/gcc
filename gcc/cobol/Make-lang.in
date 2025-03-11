@@ -38,6 +38,7 @@ gcobol_INSTALL_NAME := $(shell echo gcobol|sed '$(program_transform_name)')
 gcobol_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcobol|sed '$(program_transform_name)')
 
 cobol: cobol1$(exeext)
+cobol.serial = cobol1$(exeext)
 .PHONY: cobol
 
 BINCLUDE ?= ./gcc
@@ -67,7 +68,7 @@ YFLAGS = -Werror -Wmidrule-values -Wno-yacc \
 LFLAGS = -d -Ca
 
 #
-# These are the object files for creating the cobol1.exe compiler:
+# These are the object files for creating the cobol1 compiler:
 #
 cobol1_OBJS =    \
  cobol/cdf.o        \
@@ -112,7 +113,7 @@ cobol/charmaps.o: cobol/charmaps.cc $(LIB_SOURCE_H)
 cobol/valconv.o: cobol/valconv.cc $(LIB_SOURCE_H)
 
 #
-# These are the object files for creating the gcobol.exe "driver"
+# These are the object files for creating the gcobol "driver"
 #
 GCOBOL_D_OBJS = $(GCC_OBJS) cobol/gcobolspec.o
 
@@ -133,7 +134,7 @@ cobol_OBJS = \
 CFLAGS-cobol/gcobolspec.o += $(DRIVER_DEFINES)
 
 #
-# This controls the build of the gcobol.exe "driver"
+# This controls the build of the gcobol "driver"
 #
 gcobol$(exeext): \
 	 $(GCOBOL_D_OBJS) \
@@ -145,7 +146,7 @@ gcobol$(exeext): \
 	 $(EXTRA_GCC_LIBS) $(LIBS)
 
 #
-# These control the build of the cobol1.exe source-to-GENERIC converter
+# These control the build of the cobol1 source-to-GENERIC converter
 #
 
 # First, files needed for parsing:
@@ -264,11 +265,13 @@ cobol.srcextra: cobol/parse.cc cobol/cdf.cc cobol/scan.cc
 	ln -f $^ cobol/parse.h cobol/cdf.h $(srcdir)/cobol/
 
 
-# And the cobol1.exe front end
+# And the cobol1 front end
 
-cobol1$(exeext): $(cobol1_OBJS) 	$(BACKEND) $(LIBDEPS) attribs.o
+cobol1$(exeext): $(cobol1_OBJS) $(BACKEND) $(LIBDEPS) attribs.o $(cobol.prev)
+	@$(call LINK_PROGRESS,$(INDEX.cobol),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) attribs.o -o $@	\
 	      $(cobol1_OBJS) $(BACKEND) $(LIBS) $(BACKENDLIBS)
+	@$(call LINK_PROGRESS,$(INDEX.cobol),end)
 
 # FIXME
 cobol.all.cross:
