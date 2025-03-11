@@ -3978,7 +3978,19 @@ skip_simple_arithmetic (tree expr)
 	expr = TREE_OPERAND (expr, 0);
       else if (BINARY_CLASS_P (expr))
 	{
-	  if (tree_invariant_p (TREE_OPERAND (expr, 1)))
+	  /* Before commutative binary operands are canonicalized,
+	     it is quite common to have constants in the first operand.
+	     Check for that common case first so that we don't walk
+	     large expressions with tree_invariant_p unnecessarily.
+	     This can still have terrible compile time complexity,
+	     we should limit the depth of the tree_invariant_p and
+	     skip_simple_arithmetic recursion.  */
+	  if ((TREE_CONSTANT (TREE_OPERAND (expr, 0))
+	       || (TREE_READONLY (TREE_OPERAND (expr, 0))
+		   && !TREE_SIDE_EFFECTS (TREE_OPERAND (expr, 0))))
+	      && tree_invariant_p (TREE_OPERAND (expr, 0)))
+	    expr = TREE_OPERAND (expr, 1);
+	  else if (tree_invariant_p (TREE_OPERAND (expr, 1)))
 	    expr = TREE_OPERAND (expr, 0);
 	  else if (tree_invariant_p (TREE_OPERAND (expr, 0)))
 	    expr = TREE_OPERAND (expr, 1);
