@@ -32,8 +32,6 @@ sizeof-stray-infer-var-bug.rs
 struct-expr-parse.rs
 undeclared_label.rs
 use_1.rs
-v0-mangle1.rs
-v0-mangle2.rs
 while_break_expr.rs
 issue-3139-2.rs
 issue-2953-2.rs
