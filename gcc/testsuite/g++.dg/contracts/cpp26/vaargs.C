@@ -2,7 +2,7 @@
 // { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr" }
 #include <stdio.h>
 #include <stdarg.h>
-int simple_printf(const char* fmt, ...) [[pre : fmt != 0]] [[ post r: r > 0]]
+int simple_printf(const char* fmt, ...) pre (fmt != 0) post (r: r > 0)
 {
     va_list args;
     va_start(args, fmt);

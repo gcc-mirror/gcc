@@ -30,7 +30,6 @@ int main()
     contract_assert int i = 0; // // { dg-error "expected primary-expression before|before .int." }
 
     i = 7;
-    [[assert: i == 0]] contract_assert(x==0); // { dg-error "assertions must be followed by" }
 
     int j = 4;
 
