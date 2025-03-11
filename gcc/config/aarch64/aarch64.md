@@ -1762,8 +1762,7 @@
 	      && aarch64_float_const_zero_rtx_p (operands[1])))
       operands[1] = force_reg (<MODE>mode, operands[1]);
 
-    if (!DECIMAL_FLOAT_MODE_P (<MODE>mode)
-	&& GET_CODE (operands[1]) == CONST_DOUBLE
+    if (GET_CODE (operands[1]) == CONST_DOUBLE
 	&& can_create_pseudo_p ()
 	&& !aarch64_can_const_movi_rtx_p (operands[1], <MODE>mode)
 	&& !aarch64_float_const_representable_p (operands[1])

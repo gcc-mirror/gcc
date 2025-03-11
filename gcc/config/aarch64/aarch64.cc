@@ -11328,17 +11328,14 @@ aarch64_valid_fp_move (rtx dst, rtx src, machine_mode mode)
   if (MEM_P (src))
     return true;
 
-  if (!DECIMAL_FLOAT_MODE_P (mode))
-    {
-      if (aarch64_can_const_movi_rtx_p (src, mode)
-	  || aarch64_float_const_representable_p (src)
-	  || aarch64_float_const_zero_rtx_p (src))
-	return true;
+  if (aarch64_can_const_movi_rtx_p (src, mode)
+      || aarch64_float_const_representable_p (src)
+      || aarch64_float_const_zero_rtx_p (src))
+    return true;
 
-      /* Block FP immediates which are split during expand.  */
-      if (aarch64_float_const_rtx_p (src))
-	return false;
-    }
+  /* Block FP immediates which are split during expand.  */
+  if (aarch64_float_const_rtx_p (src))
+    return false;
 
   return can_create_pseudo_p ();
 }
@@ -25611,6 +25608,10 @@ aarch64_float_const_representable_p (rtx x)
 {
   x = unwrap_const_vec_duplicate (x);
   machine_mode mode = GET_MODE (x);
+
+  if (DECIMAL_FLOAT_MODE_P (mode))
+    return false;
+
   if (!CONST_DOUBLE_P (x))
     return false;
 
