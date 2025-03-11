@@ -1323,7 +1323,7 @@ get_symbol_decl (Declaration *decl)
       /* `const` applies to data that cannot be changed by the const reference
 	 to that data. It may, however, be changed by another reference to that
 	 same data.  */
-      if (vd->isConst () && !vd->isDataseg ())
+      if (vd->isConst () && !vd->isResult () && !vd->isDataseg ())
 	TREE_READONLY (decl->csym) = 1;
     }
 
