@@ -805,6 +805,9 @@ case ,${enable_languages}, in
     ;;
   *)
     case "${target}" in
+      *-*-darwin*)
+        unsupported_languages="$unsupported_languages cobol"
+        ;;
       x86_64-*-*|aarch64-*-*)
         ;;
       *-*-*)

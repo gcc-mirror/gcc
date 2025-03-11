@@ -3585,11 +3585,14 @@ case ,${enable_languages}, in
     ;;
   *)
     case "${target}" in
+      *-*-darwin*)
+        unsupported_languages="$unsupported_languages cobol"
+        ;;
       x86_64-*-*|aarch64-*-*)
         ;;
       *-*-*)
-	unsupported_languages="$unsupported_languages cobol"
-	;;
+    unsupported_languages="$unsupported_languages cobol"
+    ;;
     esac
     case "${host}" in
       x86_64-*-*|aarch64-*-*)
