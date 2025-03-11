@@ -93,6 +93,7 @@ bug_components = {
     'bootstrap',
     'c',
     'c++',
+    'cobol',
     'd',
     'debug',
     'demangler',
