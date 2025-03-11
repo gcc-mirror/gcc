@@ -266,8 +266,6 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
-
-# Overrides and custom 
 CC = @CC@
 CCAS = @CCAS@
 CCASDEPMODE = @CCASDEPMODE@
@@ -303,7 +301,7 @@ LDFLAGS = @LDFLAGS@
 LIBGCOBOL_VERSION = @LIBGCOBOL_VERSION@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
-LIBTOOL = @LIBTOOL@ $(LIBTOOLFLAGS)
+LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
@@ -344,8 +342,6 @@ am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
-
-# Installation
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -417,25 +413,6 @@ libgcobol_la_SOURCES = \
 	libgcobol.cc				\
 	valconv.cc
 
-
-#
-# configure varables
-#
-
-# Automatic
-AM_CFLAGS = @CFLAGS@
-configure_input = @configure_input@
-AM_CPPFLAGS = @CPPFLAGS@
-AM_CXXFLAGS = @CXXFLAGS@
-ERLCFLAGS = @ERLCFLAGS@
-FCFLAGS = @FCFLAGS@
-FFLAGS = @FFLAGS@
-AM_LDFLAGS = @LDFLAGS@
-OBJCFLAGS = @OBJCFLAGS@
-OBJCXXFLAGS = @OBJCXXFLAGS@
-GOFLAGS = @GOFLAGS@
-AS = @AS@
-libgcobol_la_LFLAGS = -lstdc++
 libgcobol_la_LINK = $(LIBTOOL) --mode=link --tag=CXX $(CXX)	\
 		-o libgcobol$(libsuffix).la			\
 		-Wc,-shared-libgcc				\
@@ -538,6 +515,9 @@ clean-toolexeclibLTLIBRARIES:
 	  echo rm -f $${locs}; \
 	  rm -f $${locs}; \
 	}
+
+libgcobol.la: $(libgcobol_la_OBJECTS) $(libgcobol_la_DEPENDENCIES) $(EXTRA_libgcobol_la_DEPENDENCIES) 
+	$(AM_V_GEN)$(libgcobol_la_LINK) -rpath $(toolexeclibdir) $(libgcobol_la_OBJECTS) $(libgcobol_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -813,6 +793,7 @@ installdirs:
 	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
+install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -940,36 +921,9 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 .PRECIOUS: Makefile
 
 
-libgcobol.la:   $(libgcobol_la_OBJECTS)			\
-		$(libgcobol_la_DEPENDENCIES)		\
-		$(EXTRA_libgcobol_la_DEPENDENCIES)
-	$(AM_V_GEN)$(libgcobol_la_LINK)		\
-		-rpath $(libdir)/../lib64	\
-		$(libgcobol_la_OBJECTS)		\
-		$(libgcobol_la_LIBADD) $(LIBS)
-
-# The 'all' rule must be the first one so that it is executed if
-# nothing is specified on the command-line.
-all: $(LIBGCOBOL_LA)
-
-.PHONY: install install-html install-pdf install-info
-
-###include $(top_srcdir)/../multilib.am
-install: libgcobol$(libsuffix).la
-	$(LIBTOOL) --mode=install $(INSTALL) $^ $(DESTDIR)$(libdir)/../lib64
-
-%.lo: %.c
-	$(LIBTOOL) --mode=compile  $(CC) -c		\
-		-o $@ $(ALL_CFLAGS) $(INCLUDES) $<
-
 %.lo: %.cc
 	$(LIBTOOL) --mode=compile --tag=CXX $(CXX) -c	\
 		-o $@ $(INCLUDES) $(ALL_CFLAGS) $<
-
-doc: info dvi pdf html
-
-# No install-html or install-pdf support
-install-html install-pdf install-info:
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
