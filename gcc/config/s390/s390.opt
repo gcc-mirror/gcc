@@ -136,7 +136,7 @@ Target Mask(DEBUG_ARG) Save
 Additional debug prints.
 
 mesa
-Target RejectNegative Negative(mzarch) InverseMask(ZARCH)
+Target RejectNegative Negative(mzarch) InverseMask(ZARCH) Warn(%<-mesa%> is deprecated and support for ESA/390 will be removed; use %<-mzarch%> instead)
 ESA/390 architecture.
 
 mhard-dfp

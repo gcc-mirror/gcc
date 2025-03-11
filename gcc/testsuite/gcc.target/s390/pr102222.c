@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -m31 -mesa" } */
+/* { dg-excess-errors "-mesa is deprecated" } */
 
 struct squashfs_reg_inode_header_1 read_inode_inode;
 

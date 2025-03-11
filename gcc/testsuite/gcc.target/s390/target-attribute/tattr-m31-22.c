@@ -3,6 +3,7 @@
 /* { dg-do assemble { target { ! lp64 } } } */
 /* { dg-require-effective-target target_attribute } */
 /* { dg-options "-save-temps -mdebug -m31 -march=z13 -mtune=z13 -mstack-size=2048 -mstack-guard=16 -mbranch-cost=1 -mwarn-framesize=512 -mno-hard-dfp -mbackchain -mhard-float -mno-vx -mno-htm -mno-packed-stack -msmall-exec -mno-zvector -mmvcle -mesa -mno-warn-dynamicstack" } */
+/* { dg-excess-errors "-mesa is deprecated" } */
 
 /**
  **

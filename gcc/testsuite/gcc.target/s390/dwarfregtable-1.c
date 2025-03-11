@@ -2,6 +2,7 @@
 
 /* { dg-do compile { target { ! lp64 } } } */
 /* { dg-options "-mesa" } */
+/* { dg-excess-errors "-mesa is deprecated" } */
 
 #define DWARF_FRAME_REGISTERS 34
 

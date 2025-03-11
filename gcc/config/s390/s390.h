@@ -302,7 +302,7 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 #define DRIVER_SELF_SPECS					\
   MARCH_MTUNE_NATIVE_SPECS,					\
   "%{!m31:%{!m64:-m" S390_TARGET_BITS_STRING "}}",		\
-  "%{!mesa:%{!mzarch:%{m31:-mesa}%{m64:-mzarch}}}",		\
+  "%{!mesa:%{!mzarch:-mzarch}}",				\
   "%{!march=*:-march=z900}"
 
 /* Target machine storage layout.  */
