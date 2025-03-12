@@ -1,3 +1,19 @@
+2025-03-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2025-03-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119139
+	* gdc.dg/pr119139.d: New test.
+
+2025-03-11  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-02-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118243
+	* g++.dg/ipa/pr118243.C: New test.
+
 2025-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:

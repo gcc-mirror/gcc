@@ -1,3 +1,15 @@
+2025-03-11  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-02-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118243
+	* ipa-sra.cc (pull_accesses_from_callee): New parameters
+	caller_ipcp_ts and param_idx.  Check that scalar pulled accesses would
+	not clash with a known IPA-CP aggregate constant.
+	(param_splitting_across_edge): Pass IPA-CP transformation summary and
+	caller parameter index to pull_accesses_from_callee.
+
 2025-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:
