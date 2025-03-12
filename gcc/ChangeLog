@@ -1,3 +1,34 @@
+2025-03-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-03-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118976
+	* fold-const.cc (const_unop): Use ~ rather than - for BIT_NOT_EXPR.
+	* config/aarch64/aarch64.cc (aarch64_test_sve_folding): New function.
+	(aarch64_run_selftests): Run it.
+
+2025-03-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-10-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116999
+	PR target/117045
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svwhilelx_impl::fold): Check for WHILELTs of the minimum value
+	and WHILELEs of the maximum value.  Fold them to all-false and
+	all-true respectively.
+
+2025-03-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/116238
+	* config/aarch64/aarch64.cc (aarch64_hard_regno_caller_save_mode):
+	Only return SImode if we can convert to and from it.
+
 2025-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:
