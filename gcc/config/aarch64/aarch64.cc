@@ -17498,7 +17498,8 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
 
   /* Calculate the minimum cycles per iteration imposed by a reduction
      operation.  */
-  if ((kind == scalar_stmt || kind == vector_stmt || kind == vec_to_scalar)
+  if (stmt_info
+      && (kind == scalar_stmt || kind == vector_stmt || kind == vec_to_scalar)
       && vect_is_reduction (stmt_info))
     {
       unsigned int base
@@ -17534,7 +17535,8 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
      costing when we see a vec_to_scalar on a stmt with VMAT_GATHER_SCATTER we
      are dealing with an emulated instruction and should adjust costing
      properly.  */
-  if (kind == vec_to_scalar
+  if (stmt_info
+      && kind == vec_to_scalar
       && (m_vec_flags & VEC_ADVSIMD)
       && vect_mem_access_type (stmt_info, node) == VMAT_GATHER_SCATTER)
     {
@@ -17590,7 +17592,8 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
     case vector_load:
     case unaligned_load:
       ops->loads += count;
-      if (m_vec_flags || FLOAT_TYPE_P (aarch64_dr_type (stmt_info)))
+      if (m_vec_flags
+	  || (stmt_info && FLOAT_TYPE_P (aarch64_dr_type (stmt_info))))
 	ops->general_ops += base_issue->fp_simd_load_general_ops * count;
       break;
 
@@ -17598,24 +17601,29 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
     case unaligned_store:
     case scalar_store:
       ops->stores += count;
-      if (m_vec_flags || FLOAT_TYPE_P (aarch64_dr_type (stmt_info)))
+      if (m_vec_flags
+	  || (stmt_info && FLOAT_TYPE_P (aarch64_dr_type (stmt_info))))
 	ops->general_ops += base_issue->fp_simd_store_general_ops * count;
       break;
     }
 
   /* Add any embedded comparison operations.  */
-  if ((kind == scalar_stmt || kind == vector_stmt || kind == vec_to_scalar)
+  if (stmt_info
+      && (kind == scalar_stmt || kind == vector_stmt || kind == vec_to_scalar)
       && vect_embedded_comparison_type (stmt_info))
     ops->general_ops += count;
 
   /* COND_REDUCTIONS need two sets of VEC_COND_EXPRs, whereas so far we
      have only accounted for one.  */
-  if ((kind == vector_stmt || kind == vec_to_scalar)
+  if (stmt_info
+      && (kind == vector_stmt || kind == vec_to_scalar)
       && vect_reduc_type (m_vinfo, stmt_info) == COND_REDUCTION)
     ops->general_ops += count;
 
   /* Count the predicate operations needed by an SVE comparison.  */
-  if (sve_issue && (kind == vector_stmt || kind == vec_to_scalar))
+  if (stmt_info
+      && sve_issue
+      && (kind == vector_stmt || kind == vec_to_scalar))
     if (tree type = vect_comparison_type (stmt_info))
       {
 	unsigned int base = (FLOAT_TYPE_P (type)
@@ -17625,7 +17633,7 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
       }
 
   /* Add any extra overhead associated with LD[234] and ST[234] operations.  */
-  if (simd_issue)
+  if (stmt_info && simd_issue)
     switch (aarch64_ld234_st234_vectors (kind, stmt_info, node))
       {
       case 2:
@@ -17642,7 +17650,8 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
       }
 
   /* Add any overhead associated with gather loads and scatter stores.  */
-  if (sve_issue
+  if (stmt_info
+      && sve_issue
       && (kind == scalar_load || kind == scalar_store)
       && vect_mem_access_type (stmt_info, node) == VMAT_GATHER_SCATTER)
     {
@@ -17852,16 +17861,6 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
       stmt_cost = aarch64_adjust_stmt_cost (m_vinfo, kind, stmt_info, node,
 					    vectype, m_vec_flags, stmt_cost);
 
-      /* If we're recording a nonzero vector loop body cost for the
-	 innermost loop, also estimate the operations that would need
-	 to be issued by all relevant implementations of the loop.  */
-      if (loop_vinfo
-	  && (m_costing_for_scalar || where == vect_body)
-	  && (!LOOP_VINFO_LOOP (loop_vinfo)->inner || in_inner_loop_p)
-	  && stmt_cost != 0)
-	for (auto &ops : m_ops)
-	  count_ops (count, kind, stmt_info, node, &ops);
-
       /* If we're applying the SVE vs. Advanced SIMD unrolling heuristic,
 	 estimate the number of statements in the unrolled Advanced SIMD
 	 loop.  For simplicitly, we assume that one iteration of the
@@ -17885,6 +17884,16 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	    }
 	}
     }
+
+  /* If we're recording a nonzero vector loop body cost for the
+     innermost loop, also estimate the operations that would need
+     to be issued by all relevant implementations of the loop.  */
+  if (loop_vinfo
+      && (m_costing_for_scalar || where == vect_body)
+      && (!LOOP_VINFO_LOOP (loop_vinfo)->inner || in_inner_loop_p)
+      && stmt_cost != 0)
+    for (auto &ops : m_ops)
+      count_ops (count, kind, stmt_info, node, &ops);
 
   /* If the statement stores to a decl that is known to be the argument
      to a vld1 in the same function, ignore the store for costing purposes.
