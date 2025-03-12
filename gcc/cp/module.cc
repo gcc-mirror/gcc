@@ -5379,6 +5379,30 @@ trees_out::start (tree t, bool code_streamed)
       str (TREE_STRING_POINTER (t), TREE_STRING_LENGTH (t));
       break;
 
+    case RAW_DATA_CST:
+      if (RAW_DATA_OWNER (t) == NULL_TREE)
+	{
+	  /* Stream RAW_DATA_CST with no owner (i.e. data pointing
+	     into libcpp buffers) as something we can stream in as
+	     STRING_CST which owns the data.  */
+	  u (0);
+	  /* Can't use str (RAW_DATA_POINTER (t), RAW_DATA_LENGTH (t));
+	     here as there isn't a null termination after it.  */
+	  z (RAW_DATA_LENGTH (t));
+	  if (RAW_DATA_LENGTH (t))
+	    if (void *ptr = buf (RAW_DATA_LENGTH (t) + 1))
+	      {
+		memcpy (ptr, RAW_DATA_POINTER (t), RAW_DATA_LENGTH (t));
+		((char *) ptr)[RAW_DATA_LENGTH (t)] = '\0';
+	      }
+	}
+      else
+	{
+	  gcc_assert (RAW_DATA_LENGTH (t));
+	  u (RAW_DATA_LENGTH (t));
+	}
+      break;
+
     case VECTOR_CST:
       u (VECTOR_CST_LOG2_NPATTERNS (t));
       u (VECTOR_CST_NELTS_PER_PATTERN (t));
@@ -5469,6 +5493,24 @@ trees_in::start (unsigned code)
 	size_t l;
 	const char *chars = str (&l);
 	t = build_string (l, chars);
+      }
+      break;
+
+    case RAW_DATA_CST:
+      {
+	size_t l = u ();
+	if (l == 0)
+	  {
+	    /* Stream in RAW_DATA_CST with no owner as STRING_CST
+	       which owns the data.  */
+	    const char *chars = str (&l);
+	    t = build_string (l, chars);
+	  }
+	else
+	  {
+	    t = make_node (RAW_DATA_CST);
+	    RAW_DATA_LENGTH (t) = l;
+	  }
       }
       break;
 
@@ -6383,6 +6425,22 @@ trees_out::core_vals (tree t)
       /* Streamed during start.  */
       break;
 
+    case RAW_DATA_CST:
+      if (RAW_DATA_OWNER (t) == NULL_TREE)
+	break; /* Streamed as STRING_CST during start.  */
+      WT (RAW_DATA_OWNER (t));
+      if (streaming_p ())
+	{
+	  if (TREE_CODE (RAW_DATA_OWNER (t)) == RAW_DATA_CST)
+	    z (RAW_DATA_POINTER (t) - RAW_DATA_POINTER (RAW_DATA_OWNER (t)));
+	  else if (TREE_CODE (RAW_DATA_OWNER (t)) == STRING_CST)
+	    z (RAW_DATA_POINTER (t)
+	       - TREE_STRING_POINTER (RAW_DATA_OWNER (t)));
+	  else
+	    gcc_unreachable ();
+	}
+      break;
+
     case VECTOR_CST:
       for (unsigned ix = vector_cst_encoded_nelts (t); ix--;)
 	WT (VECTOR_CST_ENCODED_ELT (t, ix));
@@ -6915,6 +6973,13 @@ trees_in::core_vals (tree t)
 
     case STRING_CST:
       /* Streamed during start.  */
+      break;
+
+    case RAW_DATA_CST:
+      RT (RAW_DATA_OWNER (t));
+      gcc_assert (TREE_CODE (RAW_DATA_OWNER (t)) == STRING_CST
+		  && TREE_STRING_LENGTH (RAW_DATA_OWNER (t)));
+      RAW_DATA_POINTER (t) = TREE_STRING_POINTER (RAW_DATA_OWNER (t)) + z ();
       break;
 
     case VECTOR_CST:
