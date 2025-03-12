@@ -10,20 +10,27 @@ UrlSuffix(gcc/Preprocessor-Options.html#index-D-1)
 I
 UrlSuffix(gcc/Directory-Options.html#index-I) LangUrlSuffix_D(gdc/Directory-Options.html#index-I)
 
+ffixed-form
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-ffixed-form)
+
 fsyntax-only
-UrlSuffix(gcc/Warning-Options.html#index-fsyntax-only) LangUrlSuffix_D(gdc/Warnings.html#index-fno-syntax-only)
+UrlSuffix(gcc/Warning-Options.html#index-fsyntax-only) LangUrlSuffix_D(gdc/Warnings.html#index-fno-syntax-only) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-fsyntax-only)
+
+ffree-form
+LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-ffree-form)
 
 fmax-errors
 UrlSuffix(gcc/Warning-Options.html#index-fmax-errors) LangUrlSuffix_D(gdc/Warnings.html#index-fmax-errors)
 
 iprefix
-UrlSuffix(gcc/Directory-Options.html#index-iprefix) LangUrlSuffix_D(gdc/Directory-Options.html#index-iprefix)
+UrlSuffix(gcc/Directory-Options.html#index-iprefix) LangUrlSuffix_D(gdc/Directory-Options.html#index-iprefix) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-iprefix)
 
 include
 UrlSuffix(gcc/Preprocessor-Options.html#index-include)
 
 isysroot
-UrlSuffix(gcc/Directory-Options.html#index-isysroot)
+UrlSuffix(gcc/Directory-Options.html#index-isysroot) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-isysroot)
 
 isystem
-UrlSuffix(gcc/Directory-Options.html#index-isystem)
+UrlSuffix(gcc/Directory-Options.html#index-isystem) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-isystem)
+
