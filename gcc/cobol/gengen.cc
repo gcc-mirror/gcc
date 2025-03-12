@@ -1012,13 +1012,9 @@ gg_declare_variable(tree type_decl,
       break;
     case vs_external_reference:
       // This is for referencing variables defined elsewhere
-      // TODO: Figure out why this is working.  For accessing "stderr", it
-      // doesn't matter if TREE_PUBLIC is on, but TREE_STATIC has to be on. This
-      // does *not* match what is seen when compiling a C program that accesses
-      // "stderr".
       DECL_CONTEXT (var_decl) = gg_trans_unit.trans_unit_decl;
       TREE_USED(var_decl)   = 1;
-      TREE_STATIC(var_decl) = 1;
+      DECL_EXTERNAL (var_decl) = 1;
       TREE_PUBLIC(var_decl) = 1;
       break;
     }
