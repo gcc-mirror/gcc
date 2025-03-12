@@ -58,6 +58,8 @@ public:
 
   static TraitReference *Lookup (HIR::TypePath &path);
 
+  static HIR::Trait *ResolveHirItem (const HIR::TypePath &path);
+
 private:
   TraitResolver ();
 

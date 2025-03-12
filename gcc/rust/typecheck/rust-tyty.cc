@@ -1566,9 +1566,6 @@ VariantDef::is_equal (const VariantDef &other) const
   if (identifier.compare (other.identifier) != 0)
     return false;
 
-  if (discriminant != other.discriminant)
-    return false;
-
   if (fields.size () != other.fields.size ())
     return false;
 

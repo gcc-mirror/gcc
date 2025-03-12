@@ -107,6 +107,16 @@ TraitResolver::Lookup (HIR::TypePath &path)
   return resolver.lookup_path (path);
 }
 
+HIR::Trait *
+TraitResolver::ResolveHirItem (const HIR::TypePath &path)
+{
+  TraitResolver resolver;
+
+  HIR::Trait *lookup = nullptr;
+  bool ok = resolver.resolve_path_to_trait (path, &lookup);
+  return ok ? lookup : nullptr;
+}
+
 TraitResolver::TraitResolver () : TypeCheckBase () {}
 
 bool

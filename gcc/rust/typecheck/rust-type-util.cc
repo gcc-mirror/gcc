@@ -87,8 +87,11 @@ query_type (HirId reference, TyTy::BaseType **result)
   // is it an impl_type?
   if (auto impl_block_by_type = mappings.lookup_impl_block_type (reference))
     {
-      *result
-	= TypeCheckItem::ResolveImplBlockSelf (*impl_block_by_type.value ());
+      // found an impl item
+      HIR::ImplBlock *impl = impl_block_by_type.value ();
+      rust_debug_loc (impl->get_locus (), "resolved impl block type {%u} to",
+		      reference);
+      *result = TypeCheckItem::ResolveImplBlockSelf (*impl);
       context->query_completed (reference);
       return true;
     }
