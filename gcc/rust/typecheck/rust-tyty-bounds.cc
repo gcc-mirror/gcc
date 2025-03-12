@@ -20,6 +20,7 @@
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-substitution-mapper.h"
+#include "rust-hir-trait-resolve.h"
 #include "rust-type-util.h"
 
 namespace Rust {
@@ -69,6 +70,14 @@ TypeBoundsProbe::scan ()
     [&] (HirId id, HIR::ImplBlock *impl) mutable -> bool {
       // we are filtering for trait-impl-blocks
       if (!impl->has_trait_ref ())
+	return true;
+
+      // can be recursive trait resolution
+      HIR::Trait *t = TraitResolver::ResolveHirItem (impl->get_trait_ref ());
+      if (t == nullptr)
+	return true;
+      DefId trait_id = t->get_mappings ().get_defid ();
+      if (context->trait_query_in_progress (trait_id))
 	return true;
 
       HirId impl_ty_id = impl->get_type ().get_mappings ().get_hirid ();
