@@ -5745,7 +5745,7 @@ host_makefile_frag=${frag}
 # It's OK to check for header files.  Although the compiler may not be
 # able to link anything, it had better be able to at least compile
 # something.
-for ac_header in sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h process.h sys/prctl.h spawn.h
+for ac_header in sys/file.h sys/param.h limits.h stdlib.h malloc.h string.h unistd.h strings.h sys/time.h time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h alloca.h sys/pstat.h sys/sysmp.h sys/sysinfo.h machine/hal_sysinfo.h sys/table.h sys/sysctl.h sys/systemcfg.h stdint.h stdio_ext.h process.h sys/prctl.h spawn.h libgen.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_preproc "$LINENO" "$ac_header" "$as_ac_Header"
@@ -7389,7 +7389,12 @@ fi
 done
 
   as_ac_Symbol=`$as_echo "ac_cv_have_decl_basename(char *)" | $as_tr_sh`
-ac_fn_c_check_decl "$LINENO" "basename(char *)" "$as_ac_Symbol" "$ac_includes_default"
+ac_fn_c_check_decl "$LINENO" "basename(char *)" "$as_ac_Symbol" "
+$ac_includes_default
+#ifdef HAVE_LIBGEN_H
+# include <libgen.h>
+#endif
+"
 if eval test \"x\$"$as_ac_Symbol"\" = x"yes"; then :
   ac_have_decl=1
 else
@@ -7399,7 +7404,8 @@ fi
 cat >>confdefs.h <<_ACEOF
 #define HAVE_DECL_BASENAME $ac_have_decl
 _ACEOF
-ac_fn_c_check_decl "$LINENO" "ffs" "ac_cv_have_decl_ffs" "$ac_includes_default"
+
+  ac_fn_c_check_decl "$LINENO" "ffs" "ac_cv_have_decl_ffs" "$ac_includes_default"
 if test "x$ac_cv_have_decl_ffs" = xyes; then :
   ac_have_decl=1
 else
