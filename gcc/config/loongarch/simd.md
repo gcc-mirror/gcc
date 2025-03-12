@@ -809,18 +809,20 @@
    (any_extend (const_int 0))]
   ""
 {
-  auto [op0, op1, op2, op3] = operands;
+  rtx *op = operands;
 
-  if (op3 == CONST0_RTX (<WVEC_HALF>mode))
+  if (op[3] == CONST0_RTX (<WVEC_HALF>mode))
     emit_insn (
-      gen_<simd_isa>_<x>vmulwev_<simdfmt_w>_<simdfmt><u> (op0, op1, op2));
+      gen_<simd_isa>_<x>vmulwev_<simdfmt_w>_<simdfmt><u> (op[0], op[1],
+							  op[2]));
   else
     emit_insn (
-      gen_<simd_isa>_<x>vmaddwev_<simdfmt_w>_<simdfmt><u> (op0, op3, op1,
-							   op2));
+      gen_<simd_isa>_<x>vmaddwev_<simdfmt_w>_<simdfmt><u> (op[0], op[3],
+							   op[1], op[2]));
 
   emit_insn (
-    gen_<simd_isa>_<x>vmaddwod_<simdfmt_w>_<simdfmt><u> (op0, op0, op1, op2));
+    gen_<simd_isa>_<x>vmaddwod_<simdfmt_w>_<simdfmt><u> (op[0], op[0],
+							 op[1], op[2]));
   DONE;
 })
 
