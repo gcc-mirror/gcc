@@ -3030,6 +3030,15 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       ctx->global->put_value (new_ctx.object, ctor);
       ctx = &new_ctx;
     }
+  /* An immediate invocation is manifestly constant evaluated including the
+     arguments of the call, so use mce_true even for the argument
+     evaluation.  */
+  if (DECL_IMMEDIATE_FUNCTION_P (fun))
+    {
+      new_ctx.manifestly_const_eval = mce_true;
+      new_call.manifestly_const_eval = mce_true;
+      ctx = &new_ctx;
+    }
 
   /* We used to shortcut trivial constructor/op= here, but nowadays
      we can only get a trivial function here with -fno-elide-constructors.  */
