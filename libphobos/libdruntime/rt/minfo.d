@@ -12,9 +12,12 @@
 
 module rt.minfo;
 
-import core.stdc.stdlib;  // alloca
-import core.stdc.string;  // memcpy
+import core.stdc.stdio : fprintf, stderr;
+import core.stdc.stdlib : free, malloc, realloc;
+import core.stdc.string : memcpy, memset;
 import rt.sections;
+
+debug (printModuleDependencies) import core.stdc.stdio : printf;
 
 enum
 {
@@ -179,7 +182,6 @@ struct ModuleGroup
         switch (cycleHandling) with(OnCycle)
         {
         case "deprecate":
-            import core.stdc.stdio : fprintf, stderr;
             // Option deprecated in 2.101, remove in 2.111
             fprintf(stderr, "`--DRT-oncycle=deprecate` is no longer supported, using `abort` instead\n");
             break;
@@ -202,8 +204,6 @@ struct ModuleGroup
 
         debug (printModuleDependencies)
         {
-            import core.stdc.stdio : printf;
-
             foreach (_m; _modules)
             {
                 printf("%s%s%s:", _m.name.ptr, (_m.flags & MIstandalone)
@@ -375,7 +375,6 @@ struct ModuleGroup
                                 case print:
                                     // print the message
                                     buildCycleMessage(idx, midx, (string x) {
-                                                      import core.stdc.stdio : fprintf, stderr;
                                                       fprintf(stderr, "%.*s", cast(int) x.length, x.ptr);
                                                       });
                                     // continue on as if this is correct.
@@ -518,7 +517,6 @@ struct ModuleGroup
             !doSort(MItlsctor | MItlsdtor, _tlsctors))
         {
             // print a warning
-            import core.stdc.stdio : fprintf, stderr;
             fprintf(stderr, "Deprecation 16211 warning:\n"
                 ~ "A cycle has been detected in your program that was undetected prior to DMD\n"
                 ~ "2.072. This program will continue, but will not operate when using DMD 2.074\n"

@@ -11,12 +11,9 @@
 
 module rt.adi;
 
-//debug=adi;            // uncomment to turn on debugging printf's
+// debug = adi; // uncomment to turn on debugging printf's
 
-private
-{
-    debug(adi) import core.stdc.stdio;
-}
+debug (adi) import core.stdc.stdio : printf;
 
 /***************************************
  * Support for array equality test.

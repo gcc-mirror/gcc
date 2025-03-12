@@ -10,7 +10,7 @@ module core.internal.util.array;
 
 
 import core.internal.string;
-import core.stdc.stdint;
+import core.stdc.stdint : uintptr_t;
 
 
 // TLS storage shared for all error messages.

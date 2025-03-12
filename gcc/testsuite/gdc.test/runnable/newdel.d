@@ -42,10 +42,29 @@ void test1()
 }
 
 /*********************************************/
+// delete is no longer a keyword and can be used as an identifier
+
+enum E
+{
+    add, delete
+}
+
+E delete()
+{
+    return E.delete;
+}
+
+void test2()
+{
+    assert(delete() == E.delete);
+}
+
+/*********************************************/
 
 int main()
 {
     test1();
+    test2();
 
     printf("Success\n");
     return 0;

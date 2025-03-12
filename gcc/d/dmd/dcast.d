@@ -4144,20 +4144,6 @@ Expression typeCombine(BinExp be, Scope* sc)
         return ErrorExp.get();
     }
 
-    Type t1 = be.e1.type.toBasetype();
-    Type t2 = be.e2.type.toBasetype();
-
-    if (be.op == EXP.min || be.op == EXP.add)
-    {
-        // struct+struct, and class+class are errors
-        if (t1.ty == Tstruct && t2.ty == Tstruct)
-            return errorReturn();
-        if (t1.ty == Tclass && t2.ty == Tclass)
-            return errorReturn();
-        if (t1.ty == Taarray && t2.ty == Taarray)
-            return errorReturn();
-    }
-
     if (auto result = typeMerge(sc, be.op, be.e1, be.e2))
     {
         if (be.type is null)

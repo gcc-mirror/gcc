@@ -1789,8 +1789,8 @@ extern (Windows) nothrow @nogc {
 
     alias RtlMoveMemory = memmove;
     alias RtlCopyMemory = memcpy;
-    pragma(inline, true) void RtlFillMemory(PVOID Destination, SIZE_T Length, BYTE Fill) { memset(Destination, Fill, Length); }
-    pragma(inline, true) void RtlZeroMemory(PVOID Destination, SIZE_T Length) { memset(Destination, 0, Length); }
+    pragma(inline, true) void RtlFillMemory(PVOID Destination, SIZE_T Length, BYTE Fill) pure { memset(Destination, Fill, Length); }
+    pragma(inline, true) void RtlZeroMemory(PVOID Destination, SIZE_T Length) pure { memset(Destination, 0, Length); }
     alias MoveMemory = RtlMoveMemory;
     alias CopyMemory = RtlCopyMemory;
     alias FillMemory = RtlFillMemory;

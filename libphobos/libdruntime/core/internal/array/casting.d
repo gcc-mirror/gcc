@@ -136,7 +136,7 @@ TTo[] __ArrayCast(TFrom, TTo)(return scope TFrom[] from) @nogc pure @trusted
 
     if (msg != expected)
     {
-        import core.stdc.stdio;
+        import core.stdc.stdio : printf;
         printf("Expected: |%.*s|\n", cast(int) expected.length, expected.ptr);
         printf("Actual  : |%.*s|\n", cast(int) msg.length, msg.ptr);
         assert(false);

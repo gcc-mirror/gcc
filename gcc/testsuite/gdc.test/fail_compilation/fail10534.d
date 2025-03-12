@@ -1,22 +1,18 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail10534.d(28): Error: illegal operator `+` for `a` of type `int delegate()`
-fail_compilation/fail10534.d(28): Error: illegal operator `+` for `b` of type `int delegate()`
-fail_compilation/fail10534.d(29): Error: illegal operator `-` for `a` of type `int delegate()`
-fail_compilation/fail10534.d(29): Error: illegal operator `-` for `b` of type `int delegate()`
-fail_compilation/fail10534.d(30): Error: illegal operator `/` for `a` of type `int delegate()`
-fail_compilation/fail10534.d(30): Error: illegal operator `/` for `b` of type `int delegate()`
-fail_compilation/fail10534.d(31): Error: illegal operator `*` for `a` of type `int delegate()`
-fail_compilation/fail10534.d(31): Error: illegal operator `*` for `b` of type `int delegate()`
-fail_compilation/fail10534.d(36): Error: illegal operator `+` for `a` of type `int function()`
-fail_compilation/fail10534.d(36): Error: illegal operator `+` for `b` of type `int function()`
-fail_compilation/fail10534.d(37): Error: illegal operator `-` for `a` of type `int function()`
-fail_compilation/fail10534.d(37): Error: illegal operator `-` for `b` of type `int function()`
-fail_compilation/fail10534.d(38): Error: illegal operator `/` for `a` of type `int function()`
-fail_compilation/fail10534.d(38): Error: illegal operator `/` for `b` of type `int function()`
-fail_compilation/fail10534.d(39): Error: illegal operator `*` for `a` of type `int function()`
-fail_compilation/fail10534.d(39): Error: illegal operator `*` for `b` of type `int function()`
+fail_compilation/fail10534.d(24): Error: illegal operator `+` for `a` of type `int delegate()`
+fail_compilation/fail10534.d(24): Error: illegal operator `+` for `b` of type `int delegate()`
+fail_compilation/fail10534.d(25): Error: illegal operator `-` for `a` of type `int delegate()`
+fail_compilation/fail10534.d(25): Error: illegal operator `-` for `b` of type `int delegate()`
+fail_compilation/fail10534.d(26): Error: illegal operator `/` for `a` of type `int delegate()`
+fail_compilation/fail10534.d(27): Error: illegal operator `*` for `a` of type `int delegate()`
+fail_compilation/fail10534.d(32): Error: illegal operator `+` for `a` of type `int function()`
+fail_compilation/fail10534.d(32): Error: illegal operator `+` for `b` of type `int function()`
+fail_compilation/fail10534.d(33): Error: illegal operator `-` for `a` of type `int function()`
+fail_compilation/fail10534.d(33): Error: illegal operator `-` for `b` of type `int function()`
+fail_compilation/fail10534.d(34): Error: illegal operator `/` for `a` of type `int function()`
+fail_compilation/fail10534.d(35): Error: illegal operator `*` for `a` of type `int function()`
 ---
 */
 

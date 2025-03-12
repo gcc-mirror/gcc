@@ -384,16 +384,6 @@ void test6714()
 }
 
 /***************************************************/
-// https://issues.dlang.org/show_bug.cgi?id=7193
-
-void test7193()
-{
-    static assert(!__traits(compiles, {
-        delete a => a;
-    }));
-}
-
-/***************************************************/
 // https://issues.dlang.org/show_bug.cgi?id=7207
 // on CastExp
 
@@ -1331,7 +1321,6 @@ int main()
     test11();
     test3235();
     test6714();
-    test7193();
     test7202();
     test7288();
     test7499();

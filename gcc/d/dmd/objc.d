@@ -714,8 +714,8 @@ extern(C++) private final class Supported : Objc
     {
         if (cd.classKind == ClassKind.objc && fd.isStatic && !cd.objc.isMeta)
             return cd.objc.metaclass;
-        else
-            return cd;
+
+        return cd;
     }
 
     override void addToClassMethodList(FuncDeclaration fd, ClassDeclaration cd) const
@@ -805,11 +805,10 @@ extern(C++) private final class Supported : Objc
         {
             if (classDeclaration.baseClass)
                 return getRuntimeMetaclass(classDeclaration.baseClass);
-            else
-                return classDeclaration;
+
+            return classDeclaration;
         }
-        else
-            return classDeclaration.objc.metaclass;
+        return classDeclaration.objc.metaclass;
     }
 
     override void addSymbols(AttribDeclaration attribDeclaration,

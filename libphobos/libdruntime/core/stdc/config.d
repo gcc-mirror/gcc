@@ -11,9 +11,6 @@
  * Standards: ISO/IEC 9899:1999 (E)
  */
 
-/* NOTE: This file has been patched from the original DMD distribution to
- * work with the GDC compiler.
- */
 module core.stdc.config;
 
 version (StdDdoc)

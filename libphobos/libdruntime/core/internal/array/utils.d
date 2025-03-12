@@ -55,7 +55,7 @@ version (D_ProfileGC)
             // FIXME: use rt.tracegc.accumulator when it is accessable in the future.
             version (tracegc)
         } ~ "{\n" ~ q{
-                import core.stdc.stdio;
+                import core.stdc.stdio : printf;
 
                 printf("%sTrace file = '%.*s' line = %d function = '%.*s' type = %.*s\n",
                 } ~ "\"" ~ Hook ~ "\".ptr," ~ q{

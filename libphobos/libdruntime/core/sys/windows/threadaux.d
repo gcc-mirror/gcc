@@ -9,9 +9,6 @@
  * Authors:   Rainer Schuetze
  */
 
-/* NOTE: This file has been patched from the original DMD distribution to
- * work with the GDC compiler.
- */
 module core.sys.windows.threadaux;
 version (Windows):
 
@@ -166,42 +163,35 @@ struct thread_aux
     // get linear address of TEB of current thread
     static void** getTEB() nothrow @nogc
     {
-        version (Win32)
+        version (D_InlineAsm_X86)
         {
-            version (GNU_InlineAsm)
+            asm pure nothrow @nogc
             {
-                void** teb;
-                asm pure nothrow @nogc { "movl %%fs:0x18, %0;" : "=r" (teb); }
-                return teb;
-            }
-            else
-            {
-                asm pure nothrow @nogc
-                {
-                    naked;
-                    mov EAX,FS:[0x18];
-                    ret;
-                }
+                naked;
+                mov EAX,FS:[0x18];
+                ret;
             }
         }
-        else version (Win64)
+        else version (D_InlineAsm_X86_64)
         {
-            version (GNU_InlineAsm)
+            asm pure nothrow @nogc
             {
-                void** teb;
+                naked;
+                mov RAX,0x30;
+                mov RAX,GS:[RAX]; // immediate value causes fixup
+                ret;
+            }
+        }
+        else version (GNU_InlineAsm)
+        {
+            void** teb;
+            version (X86)
+                asm pure nothrow @nogc { "movl %%fs:0x18, %0;" : "=r" (teb); }
+            else version (X86_64)
                 asm pure nothrow @nogc { "movq %%gs:0x30, %0;" : "=r" (teb); }
-                return teb;
-            }
             else
-            {
-                asm pure nothrow @nogc
-                {
-                    naked;
-                    mov RAX,0x30;
-                    mov RAX,GS:[RAX]; // immediate value causes fixup
-                    ret;
-                }
-            }
+                static assert(false);
+            return teb;
         }
         else
         {

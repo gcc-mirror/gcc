@@ -3061,7 +3061,7 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
 
         if (sd.ctor)
         {
-            Dsymbol scall = sd.search(Loc.initial, Id.call);
+            Dsymbol scall = sd.search(Loc.initial, Id.opCall);
             if (scall)
             {
                 const xerrors = global.startGagging();

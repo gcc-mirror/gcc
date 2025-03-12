@@ -15,7 +15,7 @@ module core.internal.gc.impl.conservative.gc;
 //debug = PARALLEL_PRINTF;      // turn on printf's
 //debug = COLLECT_PRINTF;       // turn on printf's
 //debug = MARK_PRINTF;          // turn on printf's
-//debug = PRINTF_TO_FILE;       // redirect printf's ouptut to file "gcx.log"
+//debug = PRINTF_TO_FILE;       // redirect printf's output to file "gcx.log"
 //debug = LOGGING;              // log allocations / frees
 //debug = MEMSTOMP;             // stomp on memory
 //debug = SENTINEL;             // add underrun/overrrun protection
@@ -43,7 +43,7 @@ import core.internal.spinlock;
 import core.internal.gc.pooltable;
 import core.internal.gc.blkcache;
 
-import cstdlib = core.stdc.stdlib : calloc, free, malloc, realloc;
+import cstdlib = core.stdc.stdlib;
 import core.stdc.string : memcpy, memset, memmove;
 import core.bitop;
 import core.thread;
@@ -4800,7 +4800,7 @@ debug(PRINTF_TO_FILE)
         }
         len += fprintf(gcx_fh, fmt, args);
         fflush(gcx_fh);
-        import core.stdc.string;
+        import core.stdc.string : strlen;
         hadNewline = fmt && fmt[0] && fmt[strlen(fmt) - 1] == '\n';
         return len;
     }
@@ -5266,8 +5266,8 @@ version (D_LP64) unittest
             catch (OutOfMemoryError)
             {
                 // ignore if the system still doesn't have enough virtual memory
-                import core.stdc.stdio;
-                printf("%s(%d): out-of-memory execption ignored, phys_mem = %zd",
+                import core.stdc.stdio : printf;
+                printf("%s(%d): out-of-memory exception ignored, phys_mem = %zd",
                        __FILE__.ptr, __LINE__, phys_mem);
             }
         }
@@ -5321,7 +5321,7 @@ unittest
 unittest
 {
     import core.memory;
-    import core.stdc.stdio;
+    import core.stdc.stdio : printf;
 
     // allocate from large pool
     auto o = GC.malloc(10);

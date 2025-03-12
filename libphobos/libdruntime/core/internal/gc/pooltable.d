@@ -7,7 +7,7 @@
  */
 module core.internal.gc.pooltable;
 
-static import cstdlib=core.stdc.stdlib;
+static import cstdlib = core.stdc.stdlib;
 
 struct PoolTable(Pool)
 {

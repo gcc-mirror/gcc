@@ -7,7 +7,7 @@ struct S
     @disable this(this);
     this (scope ref inout S) inout
     {
-    	this.b = b;
+    	this.b = 0;
     }
 }
 

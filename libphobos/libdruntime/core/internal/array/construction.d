@@ -13,7 +13,7 @@ import core.internal.traits : Unqual;
 
 debug(PRINTF)
 {
-    import core.stdc.stdio;
+    import core.stdc.stdio : printf;
 }
 
 /**
@@ -46,7 +46,6 @@ Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from, char* ma
     import core.lifetime : copyEmplace;
     import core.stdc.string : memcpy;
     import core.stdc.stdint : uintptr_t;
-    debug(PRINTF) import core.stdc.stdio : printf;
 
     debug(PRINTF) printf("_d_arrayctor(from = %p,%zd) size = %zd\n", from.ptr, from.length, T.sizeof);
 

@@ -4091,30 +4091,30 @@ void test4258() {
 
 struct Foo4258 {
     // binary ++/--
-    int opPostInc()() if (false) { return 0; }
+    int opUnary(string op)() if (false) { return 0; }
 
     // binary 1st
-    int opAdd(R)(R rhs) if (false) { return 0; }
-    int opAdd_r(R)(R rhs) if (false) { return 0; }
+    int opBinary(string op, R)(R rhs) if (false) { return 0; }
+    int opBinaryRight(string op, R)(R rhs) if (false) { return 0; }
 
     // compare
-    int opCmp(R)(R rhs) if (false) { return 0; }
+    int opCmp(R)(const(R) rhs) const if (false) { return 0; }
 
     // binary-op assign
-    int opAddAssign(R)(R rhs) if (false) { return 0; }
+    int opOpAssign(string op, R)(R rhs) if (false) { return 0; }
 }
 struct Bar4258 {
     // binary commutive 1
-    int opAdd_r(R)(R rhs) if (false) { return 0; }
+    int opBinary(string op, R)(R rhs) if (false) { return 0; }
 
     // binary-op assign
     int opOpAssign(string op, R)(R rhs) if (false) { return 0; }
 }
 struct Baz4258 {
     // binary commutive 2
-    int opAdd(R)(R rhs) if (false) { return 0; }
+    int opBinaryRight(string op, R)(R rhs) if (false) { return 0; }
 }
-static assert(!is(typeof(Foo4258.init++)));
+static assert(!is(typeof(++Foo4258.init)));
 static assert(!is(typeof(Foo4258.init + 1)));
 static assert(!is(typeof(1 + Foo4258.init)));
 static assert(!is(typeof(Foo4258.init < Foo4258.init)));

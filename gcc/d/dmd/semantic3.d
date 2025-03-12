@@ -270,7 +270,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
         //{ static int x; if (++x == 2) *(char*)0=0; }
         //printf("\tlinkage = %d\n", sc.linkage);
 
-        if (funcdecl.ident == Id.assign && !funcdecl.inuse)
+        if (funcdecl.ident == Id.opAssign && !funcdecl.inuse)
         {
             if (funcdecl.storage_class & STC.inference)
             {

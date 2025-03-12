@@ -581,8 +581,7 @@ extern (C++) class FuncDeclaration : Declaration
     {
         if (isMain())
             return "D main";
-        else
-            return Dsymbol.toPrettyChars(QualifyTypes);
+        return Dsymbol.toPrettyChars(QualifyTypes);
     }
 
     /** for diagnostics, e.g. 'int foo(int x, int y) pure' */

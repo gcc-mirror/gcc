@@ -54,7 +54,6 @@ enum class TOK : unsigned char
     false_,
     throw_,
     new_,
-    delete_,
     variable,
     slice,
     version_,

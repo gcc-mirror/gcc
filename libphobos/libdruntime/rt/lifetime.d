@@ -13,10 +13,16 @@
 module rt.lifetime;
 
 import core.attribute : weak;
-import core.memory;
+import core.checkedint : mulu;
+import core.exception : onFinalizeError, onOutOfMemoryError, onUnicodeError;
 import core.internal.gc.blockmeta : PAGESIZE;
-debug(PRINTF) import core.stdc.stdio;
+import core.memory;
+import core.stdc.stdlib : malloc;
+import core.stdc.string : memcpy, memset;
 static import rt.tlsgc;
+
+debug (PRINTF) import core.stdc.stdio : printf;
+debug (VALGRIND) import etc.valgrind.valgrind;
 
 alias BlkInfo = GC.BlkInfo;
 alias BlkAttr = GC.BlkAttr;
@@ -81,8 +87,6 @@ Returns: newly created object
 */
 extern (C) Object _d_newclass(const ClassInfo ci) @weak
 {
-    import core.stdc.stdlib;
-    import core.exception : onOutOfMemoryError;
     void* p;
     auto init = ci.initializer;
 
@@ -268,7 +272,6 @@ extern(C) void _d_arrayshrinkfit(const TypeInfo ti, void[] arr) nothrow
             }
             catch (Exception e)
             {
-                import core.exception : onFinalizeError;
                 onFinalizeError(sti, e);
             }
         }
@@ -336,9 +339,6 @@ in
 }
 do
 {
-    import core.stdc.string;
-    import core.exception : onOutOfMemoryError;
-
     auto isshared = typeid(ti) is typeid(TypeInfo_Shared);
     auto tinext = unqualify(ti.next);
     auto size = tinext.tsize;
@@ -368,8 +368,6 @@ do
     }
     else
     {
-        import core.checkedint : mulu;
-
         bool overflow = false;
         size_t reqsize = mulu(size, newcapacity, overflow);
         if (!overflow)
@@ -444,8 +442,6 @@ Returns: newly allocated array
 */
 extern (C) void[] _d_newarrayU(const scope TypeInfo ti, size_t length) pure nothrow @weak
 {
-    import core.exception : onOutOfMemoryError;
-
     auto tinext = unqualify(ti.next);
     auto size = tinext.tsize;
 
@@ -475,8 +471,6 @@ extern (C) void[] _d_newarrayU(const scope TypeInfo ti, size_t length) pure noth
     }
     else
     {
-        import core.checkedint : mulu;
-
         bool overflow = false;
         size = mulu(size, length, overflow);
         if (!overflow)
@@ -497,8 +491,6 @@ Lcontinue:
 /// ditto
 extern (C) void[] _d_newarrayT(const TypeInfo ti, size_t length) pure nothrow @weak
 {
-    import core.stdc.string;
-
     void[] result = _d_newarrayU(ti, length);
     auto tinext = unqualify(ti.next);
     auto size = tinext.tsize;
@@ -533,7 +525,6 @@ extern (C) void[] _d_newarrayiT(const TypeInfo ti, size_t length) pure nothrow @
 
     default:
     {
-        import core.stdc.string;
         immutable sz = init.length;
         for (size_t u = 0; u < size * length; u += sz)
             memcpy(result.ptr + u, init.ptr, sz);
@@ -650,8 +641,6 @@ extern (C) int rt_hasFinalizerInSegment(void* p, size_t size, uint attr, scope c
     return false;
 }
 
-debug (VALGRIND) import etc.valgrind.valgrind;
-
 void finalize_array(void* p, size_t size, const TypeInfo_Struct si)
 {
     // Due to the fact that the delete operator calls destructors
@@ -676,7 +665,6 @@ void finalize_struct(void* p, TypeInfo_Struct ti) nothrow
     }
     catch (Exception e)
     {
-        import core.exception : onFinalizeError;
         onFinalizeError(ti, e);
     }
 }
@@ -717,7 +705,6 @@ extern (C) void rt_finalize2(void* p, bool det = true, bool resetMemory = true) 
     }
     catch (Exception e)
     {
-        import core.exception : onFinalizeError;
         onFinalizeError(*pc, e);
     }
     finally
@@ -760,7 +747,6 @@ extern (C) void rt_finalizeFromGC(void* p, size_t size, uint attr) nothrow
         }
         catch (Exception e)
         {
-            import core.exception : onFinalizeError;
             onFinalizeError(si, e);
         }
     }
@@ -801,9 +787,6 @@ in
 }
 do
 {
-    import core.stdc.string;
-    import core.exception : onOutOfMemoryError;
-
     debug(PRINTF)
     {
         //printf("_d_arraysetlengthT(p = %p, sizeelem = %d, newlength = %d)\n", p, sizeelem, newlength);
@@ -848,7 +831,6 @@ do
     }
     else
     {
-        import core.checkedint : mulu;
         const size_t newsize = mulu(sizeelem, newlength, overflow);
     }
     if (overflow)
@@ -911,9 +893,6 @@ in
 }
 do
 {
-    import core.stdc.string;
-    import core.exception : onOutOfMemoryError;
-
     debug(PRINTF)
     {
         //printf("_d_arraysetlengthT(p = %p, sizeelem = %d, newlength = %d)\n", p, sizeelem, newlength);
@@ -958,7 +937,6 @@ do
     }
     else
     {
-        import core.checkedint : mulu;
         const size_t newsize = mulu(sizeelem, newlength, overflow);
     }
     if (overflow)
@@ -1111,8 +1089,6 @@ Returns: `px` after being appended to
 extern (C)
 byte[] _d_arrayappendcTX(const TypeInfo ti, return scope ref byte[] px, size_t n) @weak
 {
-    import core.stdc.string;
-    import core.exception : onOutOfMemoryError;
     // This is a cut&paste job from _d_arrayappendT(). Should be refactored.
 
     // Short circuit if no data is being appended.
@@ -1218,7 +1194,6 @@ extern (C) void[] _d_arrayappendcd(ref byte[] x, dchar c) @weak
     }
     else
     {
-        import core.exception : onUnicodeError;
         onUnicodeError("Invalid UTF-8 sequence", 0);      // invalid utf character
     }
 

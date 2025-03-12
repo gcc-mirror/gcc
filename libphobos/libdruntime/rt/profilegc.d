@@ -15,10 +15,9 @@ module rt.profilegc;
 
 private:
 
-import core.stdc.errno;
-import core.stdc.stdio;
-import core.stdc.stdlib;
-import core.stdc.string;
+import core.stdc.errno : errno;
+import core.stdc.stdio : fclose, FILE, fopen, fprintf, snprintf, stderr, stdout;
+import core.stdc.stdlib : free, malloc, qsort, realloc;
 
 import core.exception : onOutOfMemoryError;
 import core.internal.container.hashtab;

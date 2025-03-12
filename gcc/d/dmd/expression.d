@@ -535,98 +535,6 @@ extern (C++) abstract class Expression : ASTNode
         return false;
     }
 
-    extern (D) final bool checkScalar()
-    {
-        if (op == EXP.error)
-            return true;
-        if (type.toBasetype().ty == Terror)
-            return true;
-        if (!type.isScalar())
-        {
-            error(loc, "`%s` is not a scalar, it is a `%s`", toChars(), type.toChars());
-            return true;
-        }
-        return checkValue();
-    }
-
-    extern (D) final bool checkNoBool()
-    {
-        if (op == EXP.error)
-            return true;
-        if (type.toBasetype().ty == Terror)
-            return true;
-        if (type.toBasetype().ty == Tbool)
-        {
-            error(loc, "operation not allowed on `bool` `%s`", toChars());
-            return true;
-        }
-        return false;
-    }
-
-    extern (D) final bool checkIntegral()
-    {
-        if (op == EXP.error)
-            return true;
-        if (type.toBasetype().ty == Terror)
-            return true;
-        if (!type.isIntegral())
-        {
-            error(loc, "`%s` is not of integral type, it is a `%s`", toChars(), type.toChars());
-            return true;
-        }
-        return checkValue();
-    }
-
-    extern (D) final bool checkArithmetic(EXP op)
-    {
-        if (op == EXP.error)
-            return true;
-        if (type.toBasetype().ty == Terror)
-            return true;
-        if (!type.isIntegral() && !type.isFloating())
-        {
-            // unary aggregate ops error here
-            const char* msg = type.isAggregate() ?
-                "operator `%s` is not defined for `%s` of type `%s`" :
-                "illegal operator `%s` for `%s` of type `%s`";
-            error(loc, msg, EXPtoString(op).ptr, toChars(), type.toChars());
-            return true;
-        }
-        return checkValue();
-    }
-
-    /*******************************
-     * Check whether the expression allows RMW operations, error with rmw operator diagnostic if not.
-     * ex is the RHS expression, or NULL if ++/-- is used (for diagnostics)
-     * Returns true if error occurs.
-     */
-    extern (D) final bool checkReadModifyWrite(EXP rmwOp, Expression ex = null)
-    {
-        //printf("Expression::checkReadModifyWrite() %s %s", toChars(), ex ? ex.toChars() : "");
-        if (!type || !type.isShared() || type.isTypeStruct() || type.isTypeClass())
-            return false;
-
-        // atomicOp uses opAssign (+=/-=) rather than opOp (++/--) for the CT string literal.
-        switch (rmwOp)
-        {
-        case EXP.plusPlus:
-        case EXP.prePlusPlus:
-            rmwOp = EXP.addAssign;
-            break;
-        case EXP.minusMinus:
-        case EXP.preMinusMinus:
-            rmwOp = EXP.minAssign;
-            break;
-        default:
-            break;
-        }
-
-        error(loc, "read-modify-write operations are not allowed for `shared` variables");
-        errorSupplemental(loc, "Use `core.atomic.atomicOp!\"%s\"(%s, %s)` instead",
-                          EXPtoString(rmwOp).ptr, toChars(), ex ? ex.toChars() : "1");
-        return true;
-    }
-
     /******************************
      * Take address of expression.
      */
@@ -3039,8 +2947,6 @@ extern (C++) abstract class BinExp : Expression
 {
     Expression e1;
     Expression e2;
-    Type att1;      // Save alias this type to detect recursion
-    Type att2;      // Save alias this type to detect recursion
 
     extern (D) this(const ref Loc loc, EXP op, Expression e1, Expression e2) scope @safe
     {
@@ -3056,20 +2962,6 @@ extern (C++) abstract class BinExp : Expression
         e.e1 = e.e1.syntaxCopy();
         e.e2 = e.e2.syntaxCopy();
         return e;
-    }
-
-    extern (D) final bool checkIntegralBin()
-    {
-        bool r1 = e1.checkIntegral();
-        bool r2 = e2.checkIntegral();
-        return (r1 || r2);
-    }
-
-    extern (D) final bool checkArithmeticBin()
-    {
-        bool r1 = e1.checkArithmetic(this.op);
-        bool r2 = e2.checkArithmetic(this.op);
-        return (r1 || r2);
     }
 
     /*********************

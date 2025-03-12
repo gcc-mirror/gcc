@@ -101,7 +101,7 @@ StorageClass mergeFuncAttrs(StorageClass s1, const FuncDeclaration f) pure @safe
  */
 FuncDeclaration hasIdentityOpAssign(AggregateDeclaration ad, Scope* sc)
 {
-    Dsymbol assign = search_function(ad, Id.assign);
+    Dsymbol assign = search_function(ad, Id.opAssign);
     if (!assign)
         return null;
 
@@ -303,7 +303,7 @@ FuncDeclaration buildOpAssign(StructDeclaration sd, Scope* sc)
     auto fparams = new Parameters();
     fparams.push(new Parameter(loc, STC.nodtor, sd.type, Id.p, null, null));
     auto tf = new TypeFunction(ParameterList(fparams), sd.handleType(), LINK.d, stc | STC.ref_);
-    auto fop = new FuncDeclaration(declLoc, Loc.initial, Id.assign, stc, tf);
+    auto fop = new FuncDeclaration(declLoc, Loc.initial, Id.opAssign, stc, tf);
     fop.storage_class |= STC.inference;
     fop.isGenerated = true;
     Expression e;
@@ -482,7 +482,7 @@ bool needOpEquals(StructDeclaration sd)
 private FuncDeclaration hasIdentityOpEquals(AggregateDeclaration ad, Scope* sc)
 {
     FuncDeclaration f;
-    Dsymbol eq = search_function(ad, Id.eq);
+    Dsymbol eq = search_function(ad, Id.opEquals);
     if (!eq)
         return null;
 
@@ -537,7 +537,7 @@ private FuncDeclaration hasIdentityOpEquals(AggregateDeclaration ad, Scope* sc)
  * opEquals is changed to be never implicitly generated.
  * Now, struct objects comparison s1 == s2 is translated to:
  *      s1.tupleof == s2.tupleof
- * to calculate structural equality. See EqualExp.op_overload.
+ * to calculate structural equality. See `opOverloadEquals`.
  */
 FuncDeclaration buildOpEquals(StructDeclaration sd, Scope* sc)
 {
@@ -564,7 +564,7 @@ FuncDeclaration buildXopEquals(StructDeclaration sd, Scope* sc)
         return null; // bitwise comparison would work
 
     //printf("StructDeclaration::buildXopEquals() %s\n", sd.toChars());
-    if (Dsymbol eq = search_function(sd, Id.eq))
+    if (Dsymbol eq = search_function(sd, Id.opEquals))
     {
         if (FuncDeclaration fd = eq.isFuncDeclaration())
         {
@@ -639,7 +639,7 @@ FuncDeclaration buildXopEquals(StructDeclaration sd, Scope* sc)
 FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
 {
     //printf("StructDeclaration::buildXopCmp() %s\n", toChars());
-    if (Dsymbol cmp = search_function(sd, Id.cmp))
+    if (Dsymbol cmp = search_function(sd, Id.opCmp))
     {
         if (FuncDeclaration fd = cmp.isFuncDeclaration())
         {
@@ -667,7 +667,7 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
              * Consider 'alias this', but except opDispatch.
              */
             Expression e = new DsymbolExp(sd.loc, sd);
-            e = new DotIdExp(sd.loc, e, Id.cmp);
+            e = new DotIdExp(sd.loc, e, Id.opCmp);
             Scope* sc2 = sc.push();
             e = e.trySemantic(sc2);
             sc2.pop();
@@ -688,7 +688,7 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
                 default:
                     break;
                 }
-                if (!s || s.ident != Id.cmp)
+                if (!s || s.ident != Id.opCmp)
                     e = null; // there's no valid member 'opCmp'
             }
             if (!e)
@@ -736,7 +736,7 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
     fop.parent = sd;
     Expression e1 = new IdentifierExp(loc, Id.This);
     Expression e2 = new IdentifierExp(loc, Id.p);
-    Expression e = new CallExp(loc, new DotIdExp(loc, e1, Id.cmp), e2);
+    Expression e = new CallExp(loc, new DotIdExp(loc, e1, Id.opCmp), e2);
     fop.fbody = new ReturnStatement(loc, e);
     const errors = global.startGagging(); // Do not report errors
     Scope* sc2 = sc.push();

@@ -2759,35 +2759,10 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             error("`new` allocator must be annotated with `@disabled`");
         }
         nextToken();
-
-        /* @@@DEPRECATED_2.108@@@
-         * After deprecation period (2.108), remove all code in the version(all) block.
-         */
-        version (all)
-        {
-            auto parameterList = parseParameterList(null);  // parameterList ignored
-            if (parameterList.parameters.length > 0 || parameterList.varargs != VarArg.none)
-                deprecation("`new` allocator with non-empty parameter list is deprecated");
-            auto f = new AST.NewDeclaration(loc, stc);
-            if (token.value != TOK.semicolon)
-            {
-                deprecation("`new` allocator with function definition is deprecated");
-                parseContracts(f);  // body ignored
-                f.fbody = null;
-                f.fensures = null;
-                f.frequires = null;
-            }
-            else
-                nextToken();
-            return f;
-        }
-        else
-        {
-            check(TOK.leftParenthesis);
-            check(TOK.rightParenthesis);
-            check(TOK.semicolon);
-            return new AST.NewDeclaration(loc, stc);
-        }
+        check(TOK.leftParenthesis);
+        check(TOK.rightParenthesis);
+        check(TOK.semicolon);
+        return new AST.NewDeclaration(loc, stc);
     }
 
     /**********************************************
@@ -5844,7 +5819,6 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         case TOK.plusPlus:
         case TOK.minusMinus:
         case TOK.new_:
-        case TOK.delete_:
         case TOK.delegate_:
         case TOK.function_:
         case TOK.typeid_:
@@ -8713,15 +8687,6 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             e = new AST.ComExp(loc, e);
             break;
 
-        case TOK.delete_:
-            // @@@DEPRECATED_2.109@@@
-            // Use of `delete` keyword has been an error since 2.099.
-            // Remove from the parser after 2.109.
-            nextToken();
-            e = parseUnaryExp();
-            e = new AST.DeleteExp(loc, e, false);
-            break;
-
         case TOK.cast_: // cast(type) expression
             {
                 nextToken();
@@ -8839,7 +8804,6 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                         case TOK.dot:
                         case TOK.plusPlus:
                         case TOK.minusMinus:
-                        case TOK.delete_:
                         case TOK.new_:
                         case TOK.leftParenthesis:
                         case TOK.identifier:

@@ -6240,9 +6240,9 @@ struct Coord13831
 
 struct Chunk13831
 {
-    this(Coord13831)
+    this(Coord13831 coord)
     {
-        coord = coord;
+        this.coord = coord;
     }
 
     Coord13831 coord;

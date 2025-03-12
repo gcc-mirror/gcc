@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail297.d(30): Error: incompatible types for `(Bar()) + (baz())`: `Bar` and `const(Bar)`
+fail_compilation/fail297.d(30): Error: operator `+` is not defined for `Bar()` of type `Bar`
 ---
 */
 

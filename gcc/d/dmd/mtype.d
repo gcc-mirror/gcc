@@ -1295,17 +1295,15 @@ extern (C++) abstract class Type : ASTNode
             {
                 if (t.isWildConst())
                     return MODFlags.wild;
-                else
-                    return MODFlags.wildconst;
+                return MODFlags.wildconst;
             }
-            else if (isWild())
+            if (isWild())
                 return MODFlags.wild;
-            else if (isConst())
+            if (isConst())
                 return MODFlags.const_;
-            else if (isMutable())
+            if (isMutable())
                 return MODFlags.mutable;
-            else
-                assert(0);
+            assert(0);
         }
         return 0;
     }

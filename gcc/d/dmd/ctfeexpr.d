@@ -1529,11 +1529,9 @@ Expression ctfeCast(UnionExp* pue, const ref Loc loc, Type type, Type to, Expres
                                   : tclass.implicitConvTo(to.mutableOf());
         if (match)
             return paint();
-        else
-        {
-            emplaceExp!(NullExp)(pue, loc, to);
-            return pue.exp();
-        }
+
+        emplaceExp!(NullExp)(pue, loc, to);
+        return pue.exp();
     }
 
     // Allow TypeInfo type painting

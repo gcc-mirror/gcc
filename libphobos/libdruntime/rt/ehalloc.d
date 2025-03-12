@@ -13,10 +13,7 @@ module rt.ehalloc;
 
 //debug = PRINTF;
 
-debug(PRINTF)
-{
-    import core.stdc.stdio;
-}
+debug (PRINTF) import core.stdc.stdio : printf;
 
 
 /********************************************

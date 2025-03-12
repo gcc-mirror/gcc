@@ -679,9 +679,6 @@ public:
     Expression *e1;
     Expression *e2;
 
-    Type *att1; // Save alias this type to detect recursion
-    Type *att2; // Save alias this type to detect recursion
-
     BinExp *syntaxCopy() override;
 
     void accept(Visitor *v) override { v->visit(this); }

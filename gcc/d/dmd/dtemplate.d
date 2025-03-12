@@ -217,17 +217,12 @@ Dsymbol getDsymbol(RootObject oarg)
             return te.td;
         if (auto te = ea.isScopeExp())
             return te.sds;
-        else
-            return null;
+        return null;
     }
-    else
-    {
-        // Try to convert Type to symbol
-        if (auto ta = isType(oarg))
-            return ta.toDsymbol(null);
-        else
-            return isDsymbol(oarg); // if already a symbol
-    }
+    // Try to convert Type to symbol
+    if (auto ta = isType(oarg))
+        return ta.toDsymbol(null);
+    return isDsymbol(oarg); // if already a symbol
 }
 
 
@@ -5752,8 +5747,8 @@ MATCH matchArg(TemplateParameter tp, Loc instLoc, Scope* sc, Objects* tiargs, si
 
     if (auto ttp = tp.isTemplateTupleParameter())
         return matchArgTuple(ttp);
-    else
-        return matchArgParameter();
+
+    return matchArgParameter();
 }
 
 MATCH matchArg(TemplateParameter tp, Scope* sc, RootObject oarg, size_t i, TemplateParameters* parameters, ref Objects dedtypes, Declaration* psparam)
@@ -6221,8 +6216,8 @@ void printTemplateStats(bool listInstances, ErrorSink eSink)
             auto diff = b.ts.uniqueInstantiations - a.ts.uniqueInstantiations;
             if (diff)
                 return diff;
-            else
-                return b.ts.numInstantiations - a.ts.numInstantiations;
+
+            return b.ts.numInstantiations - a.ts.numInstantiations;
         }
     }
 

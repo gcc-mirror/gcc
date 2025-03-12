@@ -489,7 +489,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
                 else
                     i.exp = e.optimize(WANTvalue);
             }
-            else if (search_function(sd, Id.call))
+            else if (search_function(sd, Id.opCall))
             {
                 /* https://issues.dlang.org/show_bug.cgi?id=1547
                  *
@@ -499,7 +499,7 @@ Initializer initializerSemantic(Initializer init, Scope* sc, ref Type tx, NeedIn
                  *  i.exp = typeof(sd).opCall(arguments)
                  */
 
-                Expression e = typeDotIdExp(i.loc, sd.type, Id.call);
+                Expression e = typeDotIdExp(i.loc, sd.type, Id.opCall);
                 e = new CallExp(i.loc, e, i.exp);
                 e = e.expressionSemantic(sc);
                 e = resolveProperties(sc, e);

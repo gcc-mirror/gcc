@@ -29,10 +29,12 @@ version (GNU)
     // It does however prevent the unittest SEGV handler to be installed,
     // which is desireable as it uses backtrace directly.
     private enum hasExecinfo = false;
+    version = LibBacktrace_TraceHandler;
 }
 else version (DRuntime_Use_Libunwind)
 {
-    import core.internal.backtrace.libunwind;
+    version = DefineBacktrace_using_UnwindBacktrace;
+
     // This shouldn't be necessary but ensure that code doesn't get mixed
     // It does however prevent the unittest SEGV handler to be installed,
     // which is desireable as it uses backtrace directly.
@@ -611,7 +613,9 @@ extern (C) UnitTestResult runModuleUnitTests()
     }
     else static if (hasExecinfo)
     {
-        import core.sys.posix.signal; // segv handler
+        // segv handler
+        import core.sys.posix.signal : SA_RESETHAND, SA_SIGINFO, sigaction, sigaction_t, SIGBUS, sigfillset, siginfo_t,
+            SIGSEGV;
 
         static extern (C) void unittestSegvHandler( int signum, siginfo_t* info, void* ptr ) nothrow
         {
@@ -715,6 +719,44 @@ extern (C) UnitTestResult runModuleUnitTests()
     }
 
     return results;
+}
+
+version (DefineBacktrace_using_UnwindBacktrace)
+{
+    import core.internal.backtrace.unwind;
+
+    private int backtrace(void** buffer, int maxSize) nothrow
+    {
+        if (maxSize < 0) return 0;
+
+        struct State
+        {
+            void** buffer;
+            int maxSize;
+            int entriesWritten = 0;
+        }
+
+        static extern(C) int handler(_Unwind_Context* context, void* statePtr)
+        {
+            auto state = cast(State*)statePtr;
+            if (state.entriesWritten >= state.maxSize) return _URC_END_OF_STACK;
+
+            auto instructionPtr = _Unwind_GetIP(context);
+            if (!instructionPtr) return _URC_END_OF_STACK;
+
+            state.buffer[state.entriesWritten] = cast(void*)instructionPtr;
+            ++state.entriesWritten;
+
+            return _URC_NO_REASON;
+        }
+
+        State state;
+        state.buffer = buffer;
+        state.maxSize = maxSize;
+        _Unwind_Backtrace(&handler, &state);
+
+        return state.entriesWritten;
+    }
 }
 
 /**
@@ -833,14 +875,11 @@ void defaultTraceDeallocator(Throwable.TraceInfo info) nothrow
     free(cast(void *)obj);
 }
 
-version (DRuntime_Use_Libunwind)
+version (LibBacktrace_TraceHandler)
 {
-    import core.internal.backtrace.handler;
-
-    alias DefaultTraceInfo = LibunwindHandler;
 }
 /// Default implementation for most POSIX systems
-else static if (hasExecinfo) private class DefaultTraceInfo : Throwable.TraceInfo
+else version (Posix) private class DefaultTraceInfo : Throwable.TraceInfo
 {
     import core.demangle;
     import core.stdc.stdlib : free;
@@ -907,30 +946,100 @@ else static if (hasExecinfo) private class DefaultTraceInfo : Throwable.TraceInf
         else version (Darwin) enum enableDwarf = true;
         else enum enableDwarf = false;
 
-        const framelist = backtrace_symbols( callstack.ptr, numframes );
-        scope(exit) free(cast(void*) framelist);
-
-        static if (enableDwarf)
+        static if (hasExecinfo)
         {
-            import core.internal.backtrace.dwarf;
-            return traceHandlerOpApplyImpl(numframes,
-                i => callstack[i],
-                (i) { auto str = framelist[i][0 .. strlen(framelist[i])]; return getMangledSymbolName(str); },
-                dg);
+            const framelist = backtrace_symbols( callstack.ptr, numframes );
+            scope(exit) free(cast(void*) framelist);
+
+            static if (enableDwarf)
+            {
+                import core.internal.backtrace.dwarf;
+                return traceHandlerOpApplyImpl(numframes,
+                    i => callstack[i],
+                    (i) { auto str = framelist[i][0 .. strlen(framelist[i])]; return getMangledSymbolName(str); },
+                    dg);
+            }
+            else
+            {
+                int ret = 0;
+                for (size_t pos = 0; pos < numframes; ++pos)
+                {
+                    char[4096] fixbuf = void;
+                    auto buf = framelist[pos][0 .. strlen(framelist[pos])];
+                    buf = fixline( buf, fixbuf );
+                    ret = dg( pos, buf );
+                    if ( ret )
+                        break;
+                }
+                return ret;
+            }
         }
         else
         {
-            int ret = 0;
-            for (size_t pos = 0; pos < numframes; ++pos)
+            // https://code.woboq.org/userspace/glibc/debug/backtracesyms.c.html
+            // The logic that glibc's backtrace use is to check for for `dli_fname`,
+            // the file name, and error if not present, then check for `dli_sname`.
+            // In case `dli_fname` is present but not `dli_sname`, the address is
+            // printed related to the file. We just print the file.
+            static const(char)[] getFrameName (const(void)* ptr)
             {
-                char[4096] fixbuf = void;
-                auto buf = framelist[pos][0 .. strlen(framelist[pos])];
-                buf = fixline( buf, fixbuf );
-                ret = dg( pos, buf );
-                if ( ret )
-                    break;
+                import core.sys.posix.dlfcn;
+                Dl_info info = void;
+                // Note: See the module documentation about `-L--export-dynamic`
+                if (dladdr(ptr, &info))
+                {
+                    // Return symbol name if possible
+                    if (info.dli_sname !is null && info.dli_sname[0] != '\0')
+                        return info.dli_sname[0 .. strlen(info.dli_sname)];
+
+                    // Fall back to file name
+                    if (info.dli_fname !is null && info.dli_fname[0] != '\0')
+                        return info.dli_fname[0 .. strlen(info.dli_fname)];
+                }
+
+                // `dladdr` failed
+                return "<ERROR: Unable to retrieve function name>";
             }
-            return ret;
+
+            static if (enableDwarf)
+            {
+                import core.internal.backtrace.dwarf;
+                return traceHandlerOpApplyImpl(numframes,
+                    i => callstack[i],
+                    i => getFrameName(callstack[i]),
+                    dg);
+            }
+            else
+            {
+                // Poor man solution. Does not show line numbers, but does (potentially) show a backtrace of function names.
+                import core.internal.container.array;
+                Array!(const(char)[]) frameNames;
+                frameNames.length = numframes;
+                size_t startIdx;
+                foreach (idx; 0 .. numframes)
+                {
+                    frameNames[idx] = getFrameName(callstack[idx]);
+
+                    // NOTE: The first few frames with the current implementation are
+                    //       inside core.runtime and the object code, so eliminate
+                    //       these for readability.
+                    // They also might depend on build parameters, which would make
+                    // using a fixed number of frames otherwise brittle.
+                    version (LDC) enum BaseExceptionFunctionName = "_d_throw_exception";
+                    else          enum BaseExceptionFunctionName = "_d_throwdwarf";
+                    if (!startIdx && frameNames[idx] == BaseExceptionFunctionName)
+                        startIdx = idx + 1;
+                }
+
+                int ret = 0;
+                foreach (idx; startIdx .. numframes)
+                {
+                    ret = dg( idx, frameNames[idx] );
+                    if ( ret )
+                        break;
+                }
+                return ret;
+            }
         }
     }
 
@@ -948,40 +1057,43 @@ private:
     void*[MAXFRAMES]  callstack = void;
 
 private:
-    const(char)[] fixline( const(char)[] buf, return ref char[4096] fixbuf ) const
+    static if (hasExecinfo)
     {
-        size_t symBeg, symEnd;
-
-        getMangledSymbolName(buf, symBeg, symEnd);
-
-        enum min = (size_t a, size_t b) => a <= b ? a : b;
-        if (symBeg == symEnd || symBeg >= fixbuf.length)
+        const(char)[] fixline( const(char)[] buf, return ref char[4096] fixbuf ) const
         {
-            immutable len = min(buf.length, fixbuf.length);
-            fixbuf[0 .. len] = buf[0 .. len];
-            return fixbuf[0 .. len];
-        }
-        else
-        {
-            fixbuf[0 .. symBeg] = buf[0 .. symBeg];
+            size_t symBeg, symEnd;
 
-            auto sym = demangle(buf[symBeg .. symEnd], fixbuf[symBeg .. $], getCXXDemangler());
+            getMangledSymbolName(buf, symBeg, symEnd);
 
-            if (sym.ptr !is fixbuf.ptr + symBeg)
+            enum min = (size_t a, size_t b) => a <= b ? a : b;
+            if (symBeg == symEnd || symBeg >= fixbuf.length)
             {
-                // demangle reallocated the buffer, copy the symbol to fixbuf
-                immutable len = min(fixbuf.length - symBeg, sym.length);
-                memmove(fixbuf.ptr + symBeg, sym.ptr, len);
-                if (symBeg + len == fixbuf.length)
-                    return fixbuf[];
+                immutable len = min(buf.length, fixbuf.length);
+                fixbuf[0 .. len] = buf[0 .. len];
+                return fixbuf[0 .. len];
             }
+            else
+            {
+                fixbuf[0 .. symBeg] = buf[0 .. symBeg];
 
-            immutable pos = symBeg + sym.length;
-            assert(pos < fixbuf.length);
-            immutable tail = buf.length - symEnd;
-            immutable len = min(fixbuf.length - pos, tail);
-            fixbuf[pos .. pos + len] = buf[symEnd .. symEnd + len];
-            return fixbuf[0 .. pos + len];
+                auto sym = demangle(buf[symBeg .. symEnd], fixbuf[symBeg .. $], getCXXDemangler());
+
+                if (sym.ptr !is fixbuf.ptr + symBeg)
+                {
+                    // demangle reallocated the buffer, copy the symbol to fixbuf
+                    immutable len = min(fixbuf.length - symBeg, sym.length);
+                    memmove(fixbuf.ptr + symBeg, sym.ptr, len);
+                    if (symBeg + len == fixbuf.length)
+                        return fixbuf[];
+                }
+
+                immutable pos = symBeg + sym.length;
+                assert(pos < fixbuf.length);
+                immutable tail = buf.length - symEnd;
+                immutable len = min(fixbuf.length - pos, tail);
+                fixbuf[pos .. pos + len] = buf[symEnd .. symEnd + len];
+                return fixbuf[0 .. pos + len];
+            }
         }
     }
 }
