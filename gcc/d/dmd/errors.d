@@ -11,7 +11,8 @@
 
 module dmd.errors;
 
-import core.stdc.stdarg;
+public import core.stdc.stdarg;
+public import dmd.root.string: fTuple;
 import dmd.errorsink;
 import dmd.globals;
 import dmd.location;
@@ -384,7 +385,7 @@ else
  * see verrorReport for arguments
  * Returns: true if error handling is done, false to continue printing to stderr
  */
-alias DiagnosticHandler = bool delegate(const ref Loc location, Color headerColor, const(char)* header, const(char)* messageFormat, va_list args, const(char)* prefix1, const(char)* prefix2);
+alias DiagnosticHandler = bool delegate(const ref SourceLoc location, Color headerColor, const(char)* header, const(char)* messageFormat, va_list args, const(char)* prefix1, const(char)* prefix2);
 
 /**
  * The diagnostic handler.

@@ -1379,16 +1379,6 @@ extern (C++) class TypeInfoDeclaration : VarDeclaration
         assert(0); // should never be produced by syntax
     }
 
-    override final const(char)* toChars() const
-    {
-        //printf("TypeInfoDeclaration::toChars() tinfo = %s\n", tinfo.toChars());
-        OutBuffer buf;
-        buf.writestring("typeid(");
-        buf.writestring(tinfo.toChars());
-        buf.writeByte(')');
-        return buf.extractChars();
-    }
-
     override final inout(TypeInfoDeclaration) isTypeInfoDeclaration() inout @nogc nothrow pure @safe
     {
         return this;

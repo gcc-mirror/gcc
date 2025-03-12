@@ -140,6 +140,42 @@ public const(char)* toChars(const Type t)
     return buf.extractChars();
 }
 
+public const(char)* toChars(const Dsymbol d)
+{
+    if (auto td = d.isTemplateDeclaration())
+    {
+        HdrGenState hgs;
+        OutBuffer buf;
+        toCharsMaybeConstraints(td, buf, hgs);
+        return buf.extractChars();
+    }
+
+    if (auto ti = d.isTemplateInstance())
+    {
+        OutBuffer buf;
+        toCBufferInstance(ti, buf);
+        return buf.extractChars();
+    }
+
+    if (auto tm = d.isTemplateMixin())
+    {
+        OutBuffer buf;
+        toCBufferInstance(tm, buf);
+        return buf.extractChars();
+    }
+
+    if (auto tid = d.isTypeInfoDeclaration())
+    {
+        OutBuffer buf;
+        buf.writestring("typeid(");
+        buf.writestring(tid.tinfo.toChars());
+        buf.writeByte(')');
+        return buf.extractChars();
+    }
+
+    return d.ident ? d.ident.toHChars2() : "__anonymous";
+}
+
 public const(char)[] toString(const Initializer i)
 {
     OutBuffer buf;
@@ -880,10 +916,7 @@ void toCBuffer(Dsymbol s, ref OutBuffer buf, ref HdrGenState hgs)
     void visitDebugSymbol(DebugSymbol s)
     {
         buf.writestring("debug = ");
-        if (s.ident)
-            buf.writestring(s.ident.toString());
-        else
-            buf.print(s.level);
+        buf.writestring(s.ident.toString());
         buf.writeByte(';');
         buf.writenl();
     }
@@ -891,10 +924,7 @@ void toCBuffer(Dsymbol s, ref OutBuffer buf, ref HdrGenState hgs)
     void visitVersionSymbol(VersionSymbol s)
     {
         buf.writestring("version = ");
-        if (s.ident)
-            buf.writestring(s.ident.toString());
-        else
-            buf.print(s.level);
+        buf.writestring(s.ident.toString());
         buf.writeByte(';');
         buf.writenl();
     }
@@ -2237,9 +2267,20 @@ private void expressionPrettyPrint(Expression e, ref OutBuffer buf, ref HdrGenSt
             buf.writestring(e.ident.toString());
     }
 
-    void visitDsymbol(DsymbolExp e)
+    void visitDsymbol(Dsymbol s)
     {
-        buf.writestring(e.s.toChars());
+        // For -vcg-ast, print internal names such as __invariant, __ctor etc.
+        // This condition is a bit kludge, and can be cleaned up if the
+        // mutual dependency `AST.toChars <> hdrgen.d` gets refactored
+        if (hgs.vcg_ast && s.ident && !s.isTemplateInstance() && !s.isTemplateDeclaration())
+            buf.writestring(s.ident.toChars());
+        else
+            buf.writestring(s.toChars());
+    }
+
+    void visitDsymbolExp(DsymbolExp e)
+    {
+        visitDsymbol(e.s);
     }
 
     void visitThis(ThisExp e)
@@ -2444,7 +2485,7 @@ private void expressionPrettyPrint(Expression e, ref OutBuffer buf, ref HdrGenSt
 
     void visitVar(VarExp e)
     {
-        buf.writestring(e.var.toChars());
+        visitDsymbol(e.var);
     }
 
     void visitOver(OverExp e)
@@ -2678,7 +2719,7 @@ private void expressionPrettyPrint(Expression e, ref OutBuffer buf, ref HdrGenSt
     {
         expToBuffer(e.e1, PREC.primary, buf, hgs);
         buf.writeByte('.');
-        buf.writestring(e.var.toChars());
+        visitDsymbol(e.var);
     }
 
     void visitDotTemplateInstance(DotTemplateInstanceExp e)
@@ -2893,7 +2934,7 @@ private void expressionPrettyPrint(Expression e, ref OutBuffer buf, ref HdrGenSt
         case EXP.float64:       return visitReal(e.isRealExp());
         case EXP.complex80:     return visitComplex(e.isComplexExp());
         case EXP.identifier:    return visitIdentifier(e.isIdentifierExp());
-        case EXP.dSymbol:       return visitDsymbol(e.isDsymbolExp());
+        case EXP.dSymbol:       return visitDsymbolExp(e.isDsymbolExp());
         case EXP.this_:         return visitThis(e.isThisExp());
         case EXP.super_:        return visitSuper(e.isSuperExp());
         case EXP.null_:         return visitNull(e.isNullExp());
@@ -3112,20 +3153,14 @@ public:
     override void visit(DebugCondition c)
     {
         buf.writestring("debug (");
-        if (c.ident)
-            buf.writestring(c.ident.toString());
-        else
-            buf.print(c.level);
+        buf.writestring(c.ident.toString());
         buf.writeByte(')');
     }
 
     override void visit(VersionCondition c)
     {
         buf.writestring("version (");
-        if (c.ident)
-            buf.writestring(c.ident.toString());
-        else
-            buf.print(c.level);
+        buf.writestring(c.ident.toString());
         buf.writeByte(')');
     }
 
@@ -4505,7 +4540,15 @@ string EXPtoString(EXP op)
         EXP.declaration : "declaration",
 
         EXP.interval : "interval",
-        EXP.loweredAssignExp : "="
+        EXP.loweredAssignExp : "=",
+
+        EXP.thrownException : "CTFE ThrownException",
+        EXP.cantExpression :  "<cant>",
+        EXP.voidExpression : "cast(void)0",
+        EXP.showCtfeContext : "<error>",
+        EXP.break_ : "<break>",
+        EXP.continue_ : "<continue>",
+        EXP.goto_ : "<goto>",
     ];
     const p = strings[op];
     if (!p)

@@ -1,7 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/operator_undefined.d(19): Error: operator `-` is not defined for `toJson(2)` of type `Json`
+fail_compilation/operator_undefined.d(20): Error: operator `-` is not defined for `Json`
+fail_compilation/operator_undefined.d(11):        perhaps overload the operator with `auto opUnary(string op : "-")() {}`
 ---
 */
 

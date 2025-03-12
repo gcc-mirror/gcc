@@ -48,7 +48,6 @@ class ThrownExceptionExp final : public Expression
 {
 public:
     ClassReferenceExp *thrown; // the thing being tossed
-    const char *toChars() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -58,6 +57,4 @@ public:
 
 class CTFEExp final : public Expression
 {
-public:
-    const char *toChars() const override;
 };

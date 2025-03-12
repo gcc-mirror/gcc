@@ -166,7 +166,7 @@ Expression carraySemantic(ArrayExp ae, Scope* sc)
      * So, rewrite as an IndexExp if we can.
      */
     auto t1 = e1.type.toBasetype();
-    if (t1.isTypeDArray() || t1.isTypeSArray())
+    if (t1.isStaticOrDynamicArray())
     {
         e2 = e2.expressionSemantic(sc).arrayFuncConv(sc);
         // C doesn't do array bounds checking, so `true` turns it off
@@ -176,7 +176,7 @@ Expression carraySemantic(ArrayExp ae, Scope* sc)
     e1 = e1.arrayFuncConv(sc);   // e1 might still be a function call
     e2 = e2.expressionSemantic(sc);
     auto t2 = e2.type.toBasetype();
-    if (t2.isTypeDArray() || t2.isTypeSArray())
+    if (t2.isStaticOrDynamicArray())
     {
         return new IndexExp(ae.loc, e2, e1, true).expressionSemantic(sc); // swap operands
     }

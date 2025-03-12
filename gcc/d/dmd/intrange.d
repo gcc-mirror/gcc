@@ -141,7 +141,7 @@ struct SignExtendedNumber
 
     SignExtendedNumber opBinary(string op : "*")(SignExtendedNumber rhs)
     {
-        // perform *saturated* multiplication, otherwise we may get bogus ranges
+        // perform* saturated* multiplication, otherwise we may get bogus ranges
         //  like 0x10 * 0x10 == 0x100 == 0.
 
         /* Special handling for zeros:

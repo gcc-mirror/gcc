@@ -142,7 +142,7 @@ private bool hasPackageAccess(Module mod, Dsymbol s)
 /****************************************
  * Determine if scope sc has protected level access to cd.
  */
-private bool hasProtectedAccess(Scope *sc, Dsymbol s)
+private bool hasProtectedAccess(Scope* sc, Dsymbol s)
 {
     if (auto cd = s.isClassMember()) // also includes interfaces
     {
@@ -273,7 +273,7 @@ bool symbolIsVisible(Dsymbol origin, Dsymbol s)
  *  s = symbol to check for visibility
  * Returns: true if s is visible by origin
  */
-bool symbolIsVisible(Scope *sc, Dsymbol s)
+bool symbolIsVisible(Scope* sc, Dsymbol s)
 {
     s = mostVisibleOverload(s);
     return checkSymbolAccess(sc, s);
@@ -288,7 +288,7 @@ bool symbolIsVisible(Scope *sc, Dsymbol s)
  *  s = symbol to check for visibility
  * Returns: true if s is visible by origin
  */
-bool checkSymbolAccess(Scope *sc, Dsymbol s)
+bool checkSymbolAccess(Scope* sc, Dsymbol s)
 {
     final switch (s.visible().kind)
     {

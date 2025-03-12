@@ -67,7 +67,6 @@ public:
 
     static LinkDeclaration *create(const Loc &loc, LINK p, Dsymbols *decl);
     LinkDeclaration *syntaxCopy(Dsymbol *s) override;
-    const char *toChars() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -77,7 +76,6 @@ public:
     CPPMANGLE cppmangle;
 
     CPPMangleDeclaration *syntaxCopy(Dsymbol *s) override;
-    const char *toChars() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -87,7 +85,6 @@ public:
     Expression *exp;
 
     CPPNamespaceDeclaration *syntaxCopy(Dsymbol *s) override;
-    const char *toChars() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 

@@ -166,7 +166,7 @@ extern (C++) final class StaticForeach : RootObject
             return;
         }
 
-        Expressions *es;
+        Expressions* es;
         if (auto ale = aggr.isArrayLiteralExp())
         {
             // Directly use the elements of the array for the TupleExp creation
@@ -493,15 +493,13 @@ extern (C++) final class StaticForeach : RootObject
  */
 extern (C++) class DVCondition : Condition
 {
-    uint level;
     Identifier ident;
     Module mod;
 
-    extern (D) this(const ref Loc loc, Module mod, uint level, Identifier ident) @safe
+    extern (D) this(const ref Loc loc, Module mod, Identifier ident) @safe
     {
         super(loc);
         this.mod = mod;
-        this.level = level;
         this.ident = ident;
     }
 
@@ -556,15 +554,13 @@ extern (C++) final class DebugCondition : DVCondition
      *
      * Params:
      *   mod = Module this node belongs to
-     *   level = Minimum global level this condition needs to pass.
-     *           Only used if `ident` is `null`.
      *   ident = Identifier required for this condition to pass.
      *           If `null`, this conditiion will use an integer level.
      *  loc = Location in the source file
      */
-    extern (D) this(const ref Loc loc, Module mod, uint level, Identifier ident) @safe
+    extern (D) this(const ref Loc loc, Module mod, Identifier ident) @safe
     {
-        super(loc, mod, level, ident);
+        super(loc, mod, ident);
     }
 
     override int include(Scope* sc)
@@ -592,8 +588,9 @@ extern (C++) final class DebugCondition : DVCondition
                 mod.debugidsNot.push(ident);
             }
         }
-        else if (level <= global.params.debuglevel || level <= mod.debuglevel)
+        else if (global.params.debugEnabled)
             inc = Include.yes;
+
         if (!definedInModule)
             printDepsConditional(sc, this, "depsDebug ");
         return (inc == Include.yes);
@@ -607,11 +604,6 @@ extern (C++) final class DebugCondition : DVCondition
     override void accept(Visitor v)
     {
         v.visit(this);
-    }
-
-    override const(char)* toChars() const
-    {
-        return ident ? ident.toChars() : "debug".ptr;
     }
 }
 
@@ -837,15 +829,13 @@ extern (C++) final class VersionCondition : DVCondition
      *
      * Params:
      *   mod = Module this node belongs to
-     *   level = Minimum global level this condition needs to pass.
-     *           Only used if `ident` is `null`.
      *   ident = Identifier required for this condition to pass.
      *           If `null`, this conditiion will use an integer level.
      *  loc = Location in the source file
      */
-    extern (D) this(const ref Loc loc, Module mod, uint level, Identifier ident) @safe
+    extern (D) this(const ref Loc loc, Module mod, Identifier ident) @safe
     {
-        super(loc, mod, level, ident);
+        super(loc, mod, ident);
     }
 
     override int include(Scope* sc)
@@ -875,8 +865,6 @@ extern (C++) final class VersionCondition : DVCondition
                 mod.versionidsNot.push(ident);
             }
         }
-        else if (level <= global.params.versionlevel || level <= mod.versionlevel)
-            inc = Include.yes;
         if (!definedInModule &&
             (!ident || (!isReserved(ident.toString()) && ident != Id._unittest && ident != Id._assert)))
         {
@@ -893,11 +881,6 @@ extern (C++) final class VersionCondition : DVCondition
     override void accept(Visitor v)
     {
         v.visit(this);
-    }
-
-    override const(char)* toChars() const
-    {
-        return ident ? ident.toChars() : "version".ptr;
     }
 }
 
@@ -968,11 +951,6 @@ extern (C++) final class StaticIfCondition : Condition
     {
         return this;
     }
-
-    override const(char)* toChars() const
-    {
-        return exp ? exp.toChars() : "static if".ptr;
-    }
 }
 
 
@@ -1010,7 +988,5 @@ private void printDepsConditional(Scope* sc, DVCondition condition, const(char)[
     ob.writestring(") : ");
     if (condition.ident)
         ob.writestring(condition.ident.toString());
-    else
-        ob.print(condition.level);
     ob.writeByte('\n');
 }

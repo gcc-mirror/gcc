@@ -626,7 +626,7 @@ MATCH implicitConvTo(Expression e, Type t)
         if (!e.committed && t.ty == Tpointer && t.nextOf().ty == Tvoid)
             return MATCH.nomatch;
 
-        if (!(e.type.ty == Tsarray || e.type.ty == Tarray || e.type.ty == Tpointer))
+        if (!(e.type.isStaticOrDynamicArray() || e.type.ty == Tpointer))
             return visit(e);
 
         TY tyn = e.type.nextOf().ty;
@@ -758,8 +758,7 @@ MATCH implicitConvTo(Expression e, Type t)
         Type typeb = e.type.toBasetype();
 
         auto result = MATCH.nomatch;
-        if ((tb.ty == Tarray || tb.ty == Tsarray) &&
-            (typeb.ty == Tarray || typeb.ty == Tsarray))
+        if (tb.isStaticOrDynamicArray() && typeb.isStaticOrDynamicArray())
         {
             result = MATCH.exact;
             Type typen = typeb.nextOf().toBasetype();
@@ -802,7 +801,7 @@ MATCH implicitConvTo(Expression e, Type t)
 
             return result;
         }
-        else if (tb.ty == Tvector && (typeb.ty == Tarray || typeb.ty == Tsarray || typeb.ty == Tpointer))
+        else if (tb.ty == Tvector && (typeb.isStaticOrDynamicArray() || typeb.ty == Tpointer))
         {   // Tpointer because ImportC eagerly converts Tsarray to Tpointer
             result = MATCH.exact;
             // Convert array literal to vector type
@@ -2724,8 +2723,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         }
         Type typeb = e.type.toBasetype();
 
-        if ((tb.ty == Tarray || tb.ty == Tsarray) &&
-            (typeb.ty == Tarray || typeb.ty == Tsarray))
+        if (tb.isStaticOrDynamicArray() && typeb.isStaticOrDynamicArray())
         {
             if (tb.nextOf().toBasetype().ty == Tvoid && typeb.nextOf().toBasetype().ty != Tvoid)
             {
@@ -2768,7 +2766,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 ae.type = tp;
             }
         }
-        else if (tb.ty == Tvector && (typeb.ty == Tarray || typeb.ty == Tsarray || typeb.ty == Tpointer))
+        else if (tb.ty == Tvector && (typeb.isStaticOrDynamicArray() || typeb.ty == Tpointer))
         {
             // Convert array literal to vector type
             // The Tpointer case comes from C eagerly converting Tsarray to Tpointer
@@ -3140,7 +3138,7 @@ Expression inferType(Expression e, Type t, int flag = 0)
     Expression visitAle(ArrayLiteralExp ale)
     {
         Type tb = t.toBasetype();
-        if (tb.ty == Tarray || tb.ty == Tsarray)
+        if (tb.isStaticOrDynamicArray())
         {
             Type tn = tb.nextOf();
             if (ale.basis)
@@ -3284,7 +3282,7 @@ private bool isVoidArrayLiteral(Expression e, Type other)
     {
         auto ale = e.isArrayLiteralExp();
         e = ale[0];
-        if (other.ty == Tsarray || other.ty == Tarray)
+        if (other.isStaticOrDynamicArray())
             other = other.nextOf();
         else
             return false;
@@ -3550,7 +3548,7 @@ Lagain:
         return null;
     }
 
-    if ((t1.ty == Tsarray || t1.ty == Tarray) && (e2.op == EXP.null_ && t2.ty == Tpointer && t2.nextOf().ty == Tvoid || e2.op == EXP.arrayLiteral && t2.ty == Tsarray && t2.nextOf().ty == Tvoid && t2.isTypeSArray().dim.toInteger() == 0 || isVoidArrayLiteral(e2, t1)))
+    if (t1.isStaticOrDynamicArray() && (e2.op == EXP.null_ && t2.ty == Tpointer && t2.nextOf().ty == Tvoid || e2.op == EXP.arrayLiteral && t2.ty == Tsarray && t2.nextOf().ty == Tvoid && t2.isTypeSArray().dim.toInteger() == 0 || isVoidArrayLiteral(e2, t1)))
     {
         /*  (T[n] op void*)   => T[]
          *  (T[]  op void*)   => T[]
@@ -3562,7 +3560,9 @@ Lagain:
         return coerce(t1.nextOf().arrayOf());
     }
 
-    if ((t2.ty == Tsarray || t2.ty == Tarray) && (e1.op == EXP.null_ && t1.ty == Tpointer && t1.nextOf().ty == Tvoid || e1.op == EXP.arrayLiteral && t1.ty == Tsarray && t1.nextOf().ty == Tvoid && t1.isTypeSArray().dim.toInteger() == 0 || isVoidArrayLiteral(e1, t2)))
+    if (t2.isStaticOrDynamicArray() &&
+        (e1.op == EXP.null_ && t1.ty == Tpointer && t1.nextOf().ty == Tvoid || e1.op == EXP.arrayLiteral
+        && t1.ty == Tsarray && t1.nextOf().ty == Tvoid && t1.isTypeSArray().dim.toInteger() == 0 || isVoidArrayLiteral(e1, t2)))
     {
         /*  (void*   op T[n]) => T[]
          *  (void*   op T[])  => T[]
@@ -3574,7 +3574,7 @@ Lagain:
         return coerce(t2.nextOf().arrayOf());
     }
 
-    if ((t1.ty == Tsarray || t1.ty == Tarray) && (m = t1.implicitConvTo(t2)) != MATCH.nomatch)
+    if (t1.isStaticOrDynamicArray() && (m = t1.implicitConvTo(t2)) != MATCH.nomatch)
     {
         // https://issues.dlang.org/show_bug.cgi?id=7285
         // Tsarray op [x, y, ...] should to be Tsarray
@@ -3590,7 +3590,7 @@ Lagain:
         return convert(e1, t2);
     }
 
-    if ((t2.ty == Tsarray || t2.ty == Tarray) && t2.implicitConvTo(t1))
+    if (t2.isStaticOrDynamicArray() && t2.implicitConvTo(t1))
     {
         // https://issues.dlang.org/show_bug.cgi?id=7285
         // https://issues.dlang.org/show_bug.cgi?id=14737
@@ -3599,7 +3599,8 @@ Lagain:
         return convert(e2, t1);
     }
 
-    if ((t1.ty == Tsarray || t1.ty == Tarray || t1.ty == Tpointer) && (t2.ty == Tsarray || t2.ty == Tarray || t2.ty == Tpointer) && t1.nextOf().mod != t2.nextOf().mod)
+    if ((t1.isStaticOrDynamicArray() || t1.ty == Tpointer) && (t2.isStaticOrDynamicArray() || t2.ty == Tpointer)
+        && t1.nextOf().mod != t2.nextOf().mod)
     {
         /* If one is mutable and the other immutable, then retry
          * with both of them as const
@@ -3919,7 +3920,7 @@ LmodCompare:
         return convert(e1, t2);
 
     /// Covers array operations for user-defined types
-    Type checkArrayOpType(Expression e1, Expression e2, EXP op, Scope *sc)
+    Type checkArrayOpType(Expression e1, Expression e2, EXP op, Scope* sc)
     {
         // scalar op scalar - we shouldn't be here
         if (e1.type.ty != Tarray && e1.type.ty != Tsarray && e2.type.ty != Tarray && e2.type.ty != Tsarray)
@@ -4138,7 +4139,7 @@ Expression typeCombine(BinExp be, Scope* sc)
 {
     Expression errorReturn()
     {
-        Expression ex = be.incompatibleTypes();
+        Expression ex = be.incompatibleTypes(sc);
         if (ex.op == EXP.error)
             return ex;
         return ErrorExp.get();
@@ -4240,7 +4241,7 @@ extern (D) bool arrayTypeCompatibleWithoutCasting(Type t1, Type t2)
     t1 = t1.toBasetype();
     t2 = t2.toBasetype();
 
-    if ((t1.ty == Tarray || t1.ty == Tsarray || t1.ty == Tpointer) && t2.ty == t1.ty)
+    if ((t1.isStaticOrDynamicArray() || t1.ty == Tpointer) && t2.ty == t1.ty)
     {
         if (t1.nextOf().implicitConvTo(t2.nextOf()) >= MATCH.constant || t2.nextOf().implicitConvTo(t1.nextOf()) >= MATCH.constant)
             return true;

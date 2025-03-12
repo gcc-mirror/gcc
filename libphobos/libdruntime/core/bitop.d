@@ -704,6 +704,11 @@ private int softPopcnt(N)(N x) pure
     return cast(int) x;
 }
 
+version (DigitalMars) version (AArch64)
+{
+    int _popcnt(ulong x) pure;
+}
+
 version (DigitalMars) version (AnyX86)
 {
     /**

@@ -19,11 +19,11 @@ void main()
 {
     T2!().F x = T1!().F();
 }
-
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/bug9631.d(41): Error: incompatible types for `(x) == (y)`: `bug9631.S` and `bug9631.tem!().S`
+fail_compilation/bug9631.d(41): Error: no operator `==` for type `S`
+fail_compilation/bug9631.d(30):        perhaps overload it with `bool opEquals(S other) const {}`
 ---
 */
 

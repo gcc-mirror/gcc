@@ -250,8 +250,7 @@ struct Param
     Output mixinOut;          // write expanded mixins for debugging
     Output moduleDeps;        // Generate `.deps` module dependencies
 
-    unsigned debuglevel;   // debug level
-    unsigned versionlevel; // version level
+    d_bool debugEnabled;   // -debug flag is passed
 
     d_bool run;           // run resulting executable
     Strings runargs;    // arguments for executable

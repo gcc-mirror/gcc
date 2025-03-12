@@ -271,17 +271,6 @@ extern (C++) final class LinkDeclaration : AttribDeclaration
         return new LinkDeclaration(loc, linkage, Dsymbol.arraySyntaxCopy(decl));
     }
 
-
-    override const(char)* toChars() const
-    {
-        return toString().ptr;
-    }
-
-    extern(D) override const(char)[] toString() const
-    {
-        return "extern ()";
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -311,16 +300,6 @@ extern (C++) final class CPPMangleDeclaration : AttribDeclaration
     {
         assert(!s);
         return new CPPMangleDeclaration(loc, cppmangle, Dsymbol.arraySyntaxCopy(decl));
-    }
-
-    override const(char)* toChars() const
-    {
-        return toString().ptr;
-    }
-
-    extern(D) override const(char)[] toString() const
-    {
-        return "extern ()";
     }
 
     override void accept(Visitor v)
@@ -381,16 +360,6 @@ extern (C++) final class CPPNamespaceDeclaration : AttribDeclaration
         assert(!s);
         return new CPPNamespaceDeclaration(
             this.loc, this.ident, this.exp, Dsymbol.arraySyntaxCopy(this.decl), this.cppnamespace);
-    }
-
-    override const(char)* toChars() const
-    {
-        return toString().ptr;
-    }
-
-    extern(D) override const(char)[] toString() const
-    {
-        return "extern (C++, `namespace`)";
     }
 
     override void accept(Visitor v)

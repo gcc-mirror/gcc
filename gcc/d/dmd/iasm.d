@@ -39,7 +39,7 @@ else
 
 /************************ AsmStatement ***************************************/
 
-Statement asmSemantic(AsmStatement s, Scope *sc)
+Statement asmSemantic(AsmStatement s, Scope* sc)
 {
     //printf("AsmStatement.semantic()\n");
 
@@ -89,7 +89,7 @@ Statement asmSemantic(AsmStatement s, Scope *sc)
 
 /************************ CAsmDeclaration ************************************/
 
-void asmSemantic(CAsmDeclaration ad, Scope *sc)
+void asmSemantic(CAsmDeclaration ad, Scope* sc)
 {
     version (NoBackend)
     {

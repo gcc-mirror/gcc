@@ -447,7 +447,8 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
                   s.isTemplateDeclaration() ||
                   s.isOverloadSet()))
             {
-                .error(s.loc, "%s `%s` is not a constructor; identifiers starting with `__` are reserved for the implementation", s.kind(), s.toPrettyChars());
+                error(s.loc, "%s name `__ctor` is not allowed", s.kind);
+                errorSupplemental(s.loc, "identifiers starting with `__` are reserved for internal use");
                 errors = true;
                 s = null;
             }

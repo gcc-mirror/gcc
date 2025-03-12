@@ -29,21 +29,17 @@ import dmd.visitor;
 /***********************************************************
  * DebugSymbol's happen for statements like:
  *      debug = identifier;
- *      debug = integer;
  */
 extern (C++) final class DebugSymbol : Dsymbol
 {
-    uint level;
-
     extern (D) this(const ref Loc loc, Identifier ident) @safe
     {
         super(loc, ident);
     }
 
-    extern (D) this(const ref Loc loc, uint level) @safe
+    extern (D) this(const ref Loc loc) @safe
     {
         super(loc, null);
-        this.level = level;
     }
 
     override DebugSymbol syntaxCopy(Dsymbol s)
@@ -51,17 +47,7 @@ extern (C++) final class DebugSymbol : Dsymbol
         assert(!s);
         auto ds = new DebugSymbol(loc, ident);
         ds.comment = comment;
-        ds.level = level;
         return ds;
-    }
-
-    override const(char)* toChars() const nothrow
-    {
-        if (ident)
-            return ident.toChars();
-        OutBuffer buf;
-        buf.print(level);
-        return buf.extractChars();
     }
 
     override const(char)* kind() const nothrow
@@ -83,39 +69,26 @@ extern (C++) final class DebugSymbol : Dsymbol
 /***********************************************************
  * VersionSymbol's happen for statements like:
  *      version = identifier;
- *      version = integer;
  */
 extern (C++) final class VersionSymbol : Dsymbol
 {
-    uint level;
 
     extern (D) this(const ref Loc loc, Identifier ident) @safe
     {
         super(loc, ident);
     }
 
-    extern (D) this(const ref Loc loc, uint level) @safe
+    extern (D) this(const ref Loc loc) @safe
     {
         super(loc, null);
-        this.level = level;
     }
 
     override VersionSymbol syntaxCopy(Dsymbol s)
     {
         assert(!s);
-        auto ds = ident ? new VersionSymbol(loc, ident)
-                        : new VersionSymbol(loc, level);
+        auto ds = new VersionSymbol(loc, ident);
         ds.comment = comment;
         return ds;
-    }
-
-    override const(char)* toChars() const nothrow
-    {
-        if (ident)
-            return ident.toChars();
-        OutBuffer buf;
-        buf.print(level);
-        return buf.extractChars();
     }
 
     override const(char)* kind() const nothrow

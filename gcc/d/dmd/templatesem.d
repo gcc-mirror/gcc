@@ -1425,7 +1425,7 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
                             Expression e;
                             Type t;
                             Dsymbol s;
-                            Scope *sco;
+                            Scope* sco;
 
                             const errors = global.startGagging();
                             /* ref: https://issues.dlang.org/show_bug.cgi?id=11118

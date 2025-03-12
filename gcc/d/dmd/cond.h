@@ -58,7 +58,6 @@ public:
 class DVCondition : public Condition
 {
 public:
-    unsigned level;
     Identifier *ident;
     Module *mod;
 

@@ -450,7 +450,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fdebug:
-      global.params.debuglevel = value ? 1 : 0;
+      global.params.debugEnabled = value ? true : false;
       break;
 
     case OPT_fdebug_:

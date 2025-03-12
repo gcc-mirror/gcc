@@ -1,9 +1,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail3672.d(28): Error: read-modify-write operations are not allowed for `shared` variables
-fail_compilation/fail3672.d(28):        Use `core.atomic.atomicOp!"+="(*p, 1)` instead
-fail_compilation/fail3672.d(32): Error: none of the `opOpAssign` overloads of `SF` are callable for `*sfp` of type `shared(SF)`
+fail_compilation/fail3672.d(29): Error: read-modify-write operations are not allowed for `shared` variables
+fail_compilation/fail3672.d(29):        Use `core.atomic.atomicOp!"+="(*p, 1)` instead
+fail_compilation/fail3672.d(33): Error: template `opOpAssign` is not callable using argument types `!("+")(int) shared`
+fail_compilation/fail3672.d(13):        Candidate is: `opOpAssign(string op, T)(T rhs)`
 ---
 */
 

@@ -688,7 +688,7 @@ Expression getAggregateFromPointer(Expression e, dinteger_t* ofs)
     if (auto ie = e.isIndexExp())
     {
         // Note that each AA element is part of its own memory block
-        if ((ie.e1.type.ty == Tarray || ie.e1.type.ty == Tsarray || ie.e1.op == EXP.string_ || ie.e1.op == EXP.arrayLiteral) && ie.e2.op == EXP.int64)
+        if ((ie.e1.type.isStaticOrDynamicArray() || ie.e1.op == EXP.string_ || ie.e1.op == EXP.arrayLiteral) && ie.e2.op == EXP.int64)
         {
             *ofs = ie.e2.toInteger();
             return ie.e1;
@@ -697,7 +697,7 @@ Expression getAggregateFromPointer(Expression e, dinteger_t* ofs)
     if (auto se = e.isSliceExp())
     {
         if (se && e.type.toBasetype().ty == Tsarray &&
-           (se.e1.type.ty == Tarray || se.e1.type.ty == Tsarray || se.e1.op == EXP.string_ || se.e1.op == EXP.arrayLiteral) && se.lwr.op == EXP.int64)
+           (se.e1.type.isStaticOrDynamicArray() || se.e1.op == EXP.string_ || se.e1.op == EXP.arrayLiteral) && se.lwr.op == EXP.int64)
         {
             *ofs = se.lwr.toInteger();
             return se.e1;
@@ -1841,7 +1841,7 @@ bool isCtfeValueValid(Expression newval)
             const SliceExp se = newval.isSliceExp();
             assert(se.lwr && se.lwr.op == EXP.int64);
             assert(se.upr && se.upr.op == EXP.int64);
-            return (tb.ty == Tarray || tb.ty == Tsarray) && (se.e1.op == EXP.string_ || se.e1.op == EXP.arrayLiteral);
+            return tb.isStaticOrDynamicArray() && (se.e1.op == EXP.string_ || se.e1.op == EXP.arrayLiteral);
         }
 
         case EXP.void_:

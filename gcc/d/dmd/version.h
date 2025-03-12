@@ -15,11 +15,8 @@
 class DebugSymbol final : public Dsymbol
 {
 public:
-    unsigned level;
-
     DebugSymbol *syntaxCopy(Dsymbol *) override;
 
-    const char *toChars() const override;
     const char *kind() const override;
     DebugSymbol *isDebugSymbol() override;
     void accept(Visitor *v) override { v->visit(this); }
@@ -28,11 +25,8 @@ public:
 class VersionSymbol final : public Dsymbol
 {
 public:
-    unsigned level;
-
     VersionSymbol *syntaxCopy(Dsymbol *) override;
 
-    const char *toChars() const override;
     const char *kind() const override;
     VersionSymbol *isVersionSymbol() override;
     void accept(Visitor *v) override { v->visit(this); }

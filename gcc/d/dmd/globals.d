@@ -242,8 +242,7 @@ extern (C++) struct Param
     Output mixinOut;                    // write expanded mixins for debugging
     Output moduleDeps;                  // Generate `.deps` module dependencies
 
-    uint debuglevel;                    // debug level
-    uint versionlevel;                  // version level
+    bool debugEnabled;                  // Global -debug flag (no -debug=XXX) is active
 
     bool run; // run resulting executable
     Strings runargs; // arguments for executable

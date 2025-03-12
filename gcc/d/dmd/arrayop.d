@@ -44,12 +44,12 @@ bool isArrayOpValid(Expression e)
     if (e.op == EXP.arrayLiteral)
     {
         Type t = e.type.toBasetype();
-        while (t.ty == Tarray || t.ty == Tsarray)
+        while (t.isStaticOrDynamicArray())
             t = t.nextOf().toBasetype();
         return (t.ty != Tvoid);
     }
     Type tb = e.type.toBasetype();
-    if (tb.ty == Tarray || tb.ty == Tsarray)
+    if (tb.isStaticOrDynamicArray())
     {
         if (isUnaArrayOp(e.op))
         {
@@ -80,7 +80,7 @@ bool isNonAssignmentArrayOp(Expression e)
         return isNonAssignmentArrayOp(e.isSliceExp().e1);
 
     Type tb = e.type.toBasetype();
-    if (tb.ty == Tarray || tb.ty == Tsarray)
+    if (tb.isStaticOrDynamicArray())
     {
         return (isUnaArrayOp(e.op) || isBinArrayOp(e.op));
     }
@@ -119,7 +119,7 @@ Expression arrayOp(BinExp e, Scope* sc)
 {
     //printf("BinExp.arrayOp() %s\n", e.toChars());
     Type tb = e.type.toBasetype();
-    assert(tb.ty == Tarray || tb.ty == Tsarray);
+    assert(tb.isStaticOrDynamicArray());
     Type tbn = tb.nextOf().toBasetype();
     if (tbn.ty == Tvoid)
     {
@@ -346,7 +346,7 @@ bool isArrayOpOperand(Expression e)
     if (e.op == EXP.arrayLiteral)
     {
         Type t = e.type.toBasetype();
-        while (t.ty == Tarray || t.ty == Tsarray)
+        while (t.isStaticOrDynamicArray())
             t = t.nextOf().toBasetype();
         return (t.ty != Tvoid);
     }

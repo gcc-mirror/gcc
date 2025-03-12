@@ -1885,7 +1885,7 @@ public:
         // Check for taking an address of a shared variable.
         // If the shared variable is an array, the offset might not be zero.
         Type fromType = null;
-        if (e.var.type.ty == Tarray || e.var.type.ty == Tsarray)
+        if (e.var.type.isStaticOrDynamicArray())
         {
             fromType = (cast(TypeArray)e.var.type).next;
         }
@@ -1900,7 +1900,7 @@ public:
         Expression val = getVarExp(e.loc, istate, e.var, goal);
         if (exceptionOrCant(val))
             return;
-        if (val.type.ty == Tarray || val.type.ty == Tsarray)
+        if (val.type.isStaticOrDynamicArray())
         {
             // Check for unsupported type painting operations
             Type elemtype = (cast(TypeArray)val.type).next;
@@ -3354,7 +3354,7 @@ public:
             // a[] = e can have const e. So we compare the naked types.
             Type tdst = e1.type.toBasetype();
             Type tsrc = e.e2.type.toBasetype();
-            while (tdst.ty == Tsarray || tdst.ty == Tarray)
+            while (tdst.isStaticOrDynamicArray())
             {
                 tdst = (cast(TypeArray)tdst).next.toBasetype();
                 if (tsrc.equivalent(tdst))
@@ -4302,7 +4302,7 @@ public:
                 Expression assignTo(ArrayLiteralExp ae, size_t lwr, size_t upr)
                 {
                     Expressions* w = ae.elements;
-                    assert(ae.type.ty == Tsarray || ae.type.ty == Tarray || ae.type.ty == Tpointer);
+                    assert(ae.type.isStaticOrDynamicArray() || ae.type.ty == Tpointer);
                     bool directblk = (cast(TypeNext)ae.type).next.equivalent(newval.type);
                     for (size_t k = lwr; k < upr; k++)
                     {
@@ -5804,8 +5804,7 @@ public:
             auto expTb = exp.type.toBasetype();
 
             if (exp.type.implicitConvTo(tbNext) >= MATCH.convert &&
-                (tb.ty == Tarray || tb.ty == Tsarray) &&
-                (expTb.ty == Tarray || expTb.ty == Tsarray))
+                tb.isStaticOrDynamicArray() && expTb.isStaticOrDynamicArray())
                 return new ArrayLiteralExp(exp.loc, e.type, exp);
             return exp;
         }
@@ -5921,7 +5920,7 @@ public:
 
             bool castToSarrayPointer = false;
             bool castBackFromVoid = false;
-            if (e1.type.ty == Tarray || e1.type.ty == Tsarray || e1.type.ty == Tpointer)
+            if (e1.type.isStaticOrDynamicArray() || e1.type.ty == Tpointer)
             {
                 // Check for unsupported type painting operations
                 // For slices, we need the type being sliced,
@@ -6101,7 +6100,7 @@ public:
 
         // Disallow array type painting, except for conversions between built-in
         // types of identical size.
-        if ((e.to.ty == Tsarray || e.to.ty == Tarray) && (e1.type.ty == Tsarray || e1.type.ty == Tarray) && !isSafePointerCast(e1.type.nextOf(), e.to.nextOf()))
+        if (e.to.isStaticOrDynamicArray() && e1.type.isStaticOrDynamicArray() && !isSafePointerCast(e1.type.nextOf(), e.to.nextOf()))
         {
             auto se = e1.isStringExp();
             // Allow casting a hex string literal to short[], int[] or long[]

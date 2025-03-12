@@ -55,7 +55,7 @@ import dmd.visitor;
 import dmd.common.outbuffer;
 
 /***************************************
- * Calls dg(Dsymbol *sym) for each Dsymbol.
+ * Calls dg(Dsymbol* sym) for each Dsymbol.
  * If dg returns !=0, stops and returns that value else returns 0.
  * Params:
  *    symbols = Dsymbols
@@ -84,7 +84,7 @@ int foreachDsymbol(Dsymbols* symbols, scope int delegate(Dsymbol) dg)
 }
 
 /***************************************
- * Calls dg(Dsymbol *sym) for each Dsymbol.
+ * Calls dg(Dsymbol* sym) for each Dsymbol.
  * Params:
  *    symbols = Dsymbols
  *    dg = delegate to call for each Dsymbol
@@ -297,9 +297,10 @@ extern (C++) class Dsymbol : ASTNode
         return new Dsymbol(ident);
     }
 
-    override const(char)* toChars() const
+    final override const(char)* toChars() const
     {
-        return ident ? ident.toChars() : "__anonymous";
+        import dmd.hdrgen : toChars;
+        return toChars(this);
     }
 
     // Getters / setters for fields stored in `DsymbolAttributes`

@@ -2990,7 +2990,7 @@ final class CParser(AST) : Parser!AST
                             if (isStatic || mod)
                                 error("static or type qualifier used outside of function prototype");
                         }
-                        if (ts.isTypeSArray() || ts.isTypeDArray())
+                        if (ts.isStaticOrDynamicArray())
                         {
                             /* C11 6.7.6.2-1: type qualifiers and 'static' shall only appear
                              * in the outermost array type derivation.

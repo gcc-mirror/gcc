@@ -1683,7 +1683,7 @@ void genKill(ref ObState obstate, ObNode* ob)
             override void visit(ArrayLiteralExp e)
             {
                 Type tb = e.type.toBasetype();
-                if (tb.ty == Tsarray || tb.ty == Tarray)
+                if (tb.isStaticOrDynamicArray())
                 {
                     if (e.basis)
                         e.basis.accept(this);
@@ -2424,7 +2424,7 @@ void checkObErrors(ref ObState obstate)
             override void visit(ArrayLiteralExp e)
             {
                 Type tb = e.type.toBasetype();
-                if (tb.ty == Tsarray || tb.ty == Tarray)
+                if (tb.isStaticOrDynamicArray())
                 {
                     if (e.basis)
                         e.basis.accept(this);

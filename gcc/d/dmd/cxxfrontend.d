@@ -338,13 +338,13 @@ const(char)* parametersTypeToChars(ParameterList pl)
 /***********************************************************
  * iasm.d
  */
-Statement asmSemantic(AsmStatement s, Scope *sc)
+Statement asmSemantic(AsmStatement s, Scope* sc)
 {
     import dmd.iasm;
     return dmd.iasm.asmSemantic(s, sc);
 }
 
-void asmSemantic(CAsmDeclaration d, Scope *sc)
+void asmSemantic(CAsmDeclaration d, Scope* sc)
 {
     import dmd.iasm;
     return dmd.iasm.asmSemantic(d, sc);
@@ -353,13 +353,13 @@ void asmSemantic(CAsmDeclaration d, Scope *sc)
 /***********************************************************
  * iasmgcc.d
  */
-Statement gccAsmSemantic(GccAsmStatement s, Scope *sc)
+Statement gccAsmSemantic(GccAsmStatement s, Scope* sc)
 {
     import dmd.iasmgcc;
     return dmd.iasmgcc.gccAsmSemantic(s, sc);
 }
 
-void gccAsmSemantic(CAsmDeclaration d, Scope *sc)
+void gccAsmSemantic(CAsmDeclaration d, Scope* sc)
 {
     import dmd.iasmgcc;
     return dmd.iasmgcc.gccAsmSemantic(d, sc);

@@ -1622,7 +1622,7 @@ public:
 	if (dve->e1->op == EXP::structLiteral)
 	  {
 	    StructLiteralExp *sle = dve->e1->isStructLiteralExp ();
-	    sle->useStaticInit = false;
+	    sle->useStaticInit (false);
 	  }
 
 	FuncDeclaration *fd = dve->var->isFuncDeclaration ();
@@ -2773,7 +2773,7 @@ public:
 
     /* Building sinit trees are delayed until after frontend semantic
        processing has complete.  Build the static initializer now.  */
-    if (e->useStaticInit && !this->constp_ && !e->sd->isCsymbol ())
+    if (e->useStaticInit () && !this->constp_ && !e->sd->isCsymbol ())
       {
 	tree init = aggregate_initializer_decl (e->sd);
 
@@ -2841,7 +2841,7 @@ public:
 	tree field = get_symbol_decl (e->sd->vthis);
 	tree value = build_vthis (e->sd);
 	CONSTRUCTOR_APPEND_ELT (ve, field, value);
-	gcc_assert (e->useStaticInit == false);
+	gcc_assert (e->useStaticInit () == false);
       }
 
     /* Build a constructor in the correct shape of the aggregate type.  */

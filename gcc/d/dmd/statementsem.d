@@ -2089,7 +2089,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
         // Make a copy of all the cases so that qsort doesn't scramble the actual
         // data we pass to codegen (the order of the cases in the switch).
-        CaseStatements *csCopy = (*ss.cases).copy();
+        CaseStatements* csCopy = (*ss.cases).copy();
 
         if (numcases)
         {

@@ -430,11 +430,9 @@ extern (C++) final class Module : Package
 
     Modules aimports;           // all imported modules
 
-    uint debuglevel;            // debug level
     Identifiers* debugids;      // debug identifiers
     Identifiers* debugidsNot;   // forward referenced debug identifiers
 
-    uint versionlevel;          // version level
     Identifiers* versionids;    // version identifiers
     Identifiers* versionidsNot; // forward referenced version identifiers
 

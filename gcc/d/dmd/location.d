@@ -96,6 +96,16 @@ nothrow:
         return _linnum = num;
     }
 
+    /// Advance this location to the first column of the next line
+    void nextLine()
+    {
+        if (this._linnum)
+        {
+            this._linnum++;
+            this.charnum = 0;
+        }
+    }
+
     /***
      * Returns: filename for this location, null if none
      */
@@ -126,9 +136,7 @@ nothrow:
         bool showColumns = Loc.showColumns,
         MessageStyle messageStyle = Loc.messageStyle) const nothrow
     {
-        OutBuffer buf;
-        writeSourceLoc(buf, SourceLoc(this), showColumns, messageStyle);
-        return buf.extractChars();
+        return SourceLoc(this).toChars(showColumns, messageStyle);
     }
 
     /**
@@ -140,9 +148,11 @@ nothrow:
      */
     extern (C++) bool equals(ref const(Loc) loc) const
     {
-        return (!showColumns || charnum == loc.charnum) &&
-               linnum == loc.linnum &&
-               FileName.equals(filename, loc.filename);
+        SourceLoc lhs = SourceLoc(this);
+        SourceLoc rhs = SourceLoc(loc);
+        return (!showColumns || lhs.column == rhs.column) &&
+               lhs.line == rhs.line &&
+               FileName.equals(lhs.filename, rhs.filename);
     }
 
     /**
@@ -198,6 +208,8 @@ void writeSourceLoc(ref OutBuffer buf,
     bool showColumns,
     MessageStyle messageStyle) nothrow
 {
+    if (loc.filename.length == 0)
+        return;
     buf.writestring(loc.filename);
     if (loc.line == 0)
         return;
@@ -257,5 +269,19 @@ struct SourceLoc
         this.filename = loc.filename.toDString();
         this.line = loc.linnum;
         this.column = loc.charnum;
+    }
+
+    extern (C++) const(char)* toChars(
+        bool showColumns = Loc.showColumns,
+        MessageStyle messageStyle = Loc.messageStyle) const nothrow
+    {
+        OutBuffer buf;
+        writeSourceLoc(buf, this, showColumns, messageStyle);
+        return buf.extractChars();
+    }
+
+    bool opEquals(SourceLoc other) const nothrow
+    {
+        return this.filename == other.filename && this.line == other.line && this.column == other.column;
     }
 }

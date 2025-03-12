@@ -637,7 +637,7 @@ static bool
 can_elide_copy_p (Expression *exp)
 {
   /* Explicit `__rvalue(exp)'.  */
-  if (exp->rvalue)
+  if (exp->rvalue ())
     return true;
 
   /* Look for variable expression.  */

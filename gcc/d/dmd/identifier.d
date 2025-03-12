@@ -108,7 +108,8 @@ nothrow:
         const(char)* p = null;
         if (this == Id.ctor)
             p = "this";
-        else if (this == Id.dtor)
+        else if (this == Id.dtor || this == Id.__xdtor || this == Id.__fieldDtor ||
+            this == Id.__aggrDtor || this == Id.cppdtor || this == Id.ticppdtor)
             p = "~this";
         else if (this == Id.unitTest)
             p = "unittest";
@@ -120,6 +121,8 @@ nothrow:
             p = "result";
         else if (this == Id.returnLabel)
             p = "return";
+        else if (this == Id.postblit)
+            p = "this(this)";
         else
         {
             p = toChars();

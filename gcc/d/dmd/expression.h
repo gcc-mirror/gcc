@@ -77,8 +77,12 @@ public:
     Type *type;                 // !=NULL means that semantic() has been run
     Loc loc;                    // file location
     EXP op;                     // to minimize use of dynamic_cast
-    d_bool parens;              // if this is a parenthesized expression
-    d_bool rvalue;              // consider this an rvalue, even if it is an lvalue
+    uint8_t bitFields;
+
+    bool parens() const;
+    bool parens(bool v);
+    bool rvalue() const;
+    bool rvalue(bool v);
 
     size_t size() const;
     static void _init();
@@ -87,7 +91,7 @@ public:
     // kludge for template.isExpression()
     DYNCAST dyncast() const override final { return DYNCAST_EXPRESSION; }
 
-    const char *toChars() const override;
+    const char* toChars() const final override;
 
     virtual dinteger_t toInteger();
     virtual uinteger_t toUInteger();
@@ -97,7 +101,6 @@ public:
     virtual StringExp *toStringExp();
     virtual bool isLvalue();
     virtual bool checkType();
-    virtual bool checkValue();
     Expression *addressOf();
     Expression *deref();
 
@@ -431,6 +434,24 @@ public:
 class StructLiteralExp final : public Expression
 {
 public:
+    uint8_t bitFields;
+
+    // if this is true, use the StructDeclaration's init symbol
+    bool useStaticInit() const;
+    bool useStaticInit(bool v);
+    // used when moving instances to indicate `this is this.origin`
+    bool isOriginal() const;
+    bool isOriginal(bool v);
+    OwnedBy ownedByCtfe() const;
+    OwnedBy ownedByCtfe(OwnedBy v);
+
+    /** anytime when recursive function is calling, 'stageflags' marks with bit flag of
+     * current stage and unmarks before return from this function.
+     * 'inlinecopy' uses similar 'stageflags' and from multiple evaluation 'doInline'
+     * (with infinite recursion) of this expression.
+     */
+    uint8_t stageflags;
+
     StructDeclaration *sd;      // which aggregate this is for
     Expressions *elements;      // parallels sd->fields[] with NULL entries for fields to skip
     Type *stype;                // final type of result (can be different from sd's type)
@@ -451,17 +472,6 @@ public:
     StructLiteralExp *origin;
 
 
-    /** anytime when recursive function is calling, 'stageflags' marks with bit flag of
-     * current stage and unmarks before return from this function.
-     * 'inlinecopy' uses similar 'stageflags' and from multiple evaluation 'doInline'
-     * (with infinite recursion) of this expression.
-     */
-    uint8_t stageflags;
-
-    d_bool useStaticInit;         // if this is true, use the StructDeclaration's init symbol
-    d_bool isOriginal;            // used when moving instances to indicate `this is this.origin`
-    OwnedBy ownedByCtfe;
-
     static StructLiteralExp *create(const Loc &loc, StructDeclaration *sd, void *elements, Type *stype = nullptr);
     bool equals(const RootObject * const o) const override;
     StructLiteralExp *syntaxCopy() override;
@@ -474,7 +484,6 @@ class TypeExp final : public Expression
 public:
     TypeExp *syntaxCopy() override;
     bool checkType() override;
-    bool checkValue() override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -485,7 +494,6 @@ public:
 
     ScopeExp *syntaxCopy() override;
     bool checkType() override;
-    bool checkValue() override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -497,7 +505,6 @@ public:
 
     bool isLvalue() override;
     bool checkType() override;
-    bool checkValue() override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -595,9 +602,7 @@ public:
 
     bool equals(const RootObject * const o) const override;
     FuncExp *syntaxCopy() override;
-    const char *toChars() const override;
     bool checkType() override;
-    bool checkValue() override;
 
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -741,7 +746,6 @@ public:
     TemplateDeclaration *td;
 
     bool checkType() override;
-    bool checkValue() override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -762,7 +766,6 @@ public:
 
     DotTemplateInstanceExp *syntaxCopy() override;
     bool checkType() override;
-    bool checkValue() override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -1045,7 +1048,6 @@ class LoweredAssignExp final : public AssignExp
 public:
     Expression *lowering;
 
-    const char *toChars() const override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 

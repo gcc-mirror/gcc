@@ -79,7 +79,6 @@ public:
     bool overloadInsert(Dsymbol *s) override;
     bool hasStaticCtorOrDtor() override;
     const char *kind() const override;
-    const char *toChars() const override;
 
     Visibility visible() override;
 
@@ -272,7 +271,6 @@ public:
     Dsymbol *toAlias() override final;   // resolve real symbol
     const char *kind() const override;
     bool oneMember(Dsymbol *&ps, Identifier *ident) override;
-    const char *toChars() const override;
     const char* toPrettyCharsHelper() override final;
     Identifier *getIdent() override final;
 
@@ -292,7 +290,6 @@ public:
     const char *kind() const override;
     bool oneMember(Dsymbol *&ps, Identifier *ident) override;
     bool hasPointers() override;
-    const char *toChars() const override;
 
     TemplateMixin *isTemplateMixin() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }

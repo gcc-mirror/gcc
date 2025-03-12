@@ -342,7 +342,6 @@ public:
 
     static TypeInfoDeclaration *create(Type *tinfo);
     TypeInfoDeclaration *syntaxCopy(Dsymbol *) override final;
-    const char *toChars() const override final;
 
     TypeInfoDeclaration *isTypeInfoDeclaration() override final { return this; }
     void accept(Visitor *v) override { v->visit(this); }
@@ -787,7 +786,6 @@ public:
     d_bool isMoveCtor;
     CtorDeclaration *syntaxCopy(Dsymbol *) override;
     const char *kind() const override;
-    const char *toChars() const override;
     bool isVirtual() const override;
     bool addPreInvariant() override;
     bool addPostInvariant() override;
@@ -814,7 +812,6 @@ class DtorDeclaration final : public FuncDeclaration
 public:
     DtorDeclaration *syntaxCopy(Dsymbol *) override;
     const char *kind() const override;
-    const char *toChars() const override;
     bool isVirtual() const override;
     bool addPreInvariant() override;
     bool addPostInvariant() override;

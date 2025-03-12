@@ -301,8 +301,14 @@ extern (C++) abstract class Expression : ASTNode
 
     Loc loc;        // file location
     const EXP op;   // to minimize use of dynamic_cast
-    bool parens;    // if this is a parenthesized expression
-    bool rvalue;    // true if this is considered to be an rvalue, even if it is an lvalue
+
+    static struct BitFields
+    {
+        bool parens;    // if this is a parenthesized expression
+        bool rvalue;    // true if this is considered to be an rvalue, even if it is an lvalue
+    }
+    import dmd.common.bitfields;
+    mixin(generateBitFields!(BitFields, ubyte));
 
     extern (D) this(const ref Loc loc, EXP op) scope @safe
     {
@@ -375,8 +381,13 @@ extern (C++) abstract class Expression : ASTNode
         return DYNCAST.expression;
     }
 
-    override const(char)* toChars() const
+    final override const(char)* toChars() const
     {
+        // FIXME: Test suite relies on lambda's being printed as __lambdaXXX in errors and .stringof
+        // Printing a (truncated) lambda body is more user friendly
+        if (auto fe = isFuncExp())
+            return fe.fd.toChars();
+
         return .toChars(this);
     }
 
@@ -513,25 +524,6 @@ extern (C++) abstract class Expression : ASTNode
      */
     bool checkType()
     {
-        return false;
-    }
-
-    /****************************************
-     * Check that the expression has a valid value.
-     * If not, generates an error "... has no value".
-     * Returns:
-     *      true if the expression is not valid or has void type.
-     */
-    bool checkValue()
-    {
-        if (type && type.toBasetype().ty == Tvoid)
-        {
-            error(loc, "expression `%s` is `void` and has no value", toChars());
-            //print(); assert(0);
-            if (!global.gag)
-                type = Type.terror;
-            return true;
-        }
         return false;
     }
 
@@ -2126,6 +2118,16 @@ extern (C++) final class AssocArrayLiteralExp : Expression
  */
 extern (C++) final class StructLiteralExp : Expression
 {
+    struct BitFields
+    {
+        bool useStaticInit;     /// if this is true, use the StructDeclaration's init symbol
+        bool isOriginal = false; /// used when moving instances to indicate `this is this.origin`
+        OwnedBy ownedByCtfe = OwnedBy.code;
+    }
+    import dmd.common.bitfields;
+    mixin(generateBitFields!(BitFields, ubyte));
+    StageFlags stageflags;
+
     StructDeclaration sd;   /// which aggregate this is for
     Expressions* elements;  /// parallels sd.fields[] with null entries for fields to skip
     Type stype;             /// final type of result (can be different from sd's type)
@@ -2163,11 +2165,6 @@ extern (C++) final class StructLiteralExp : Expression
         inlineScan        = 0x10, /// inlineScan is running
         toCBuffer         = 0x20 /// toCBuffer is running
     }
-    StageFlags stageflags;
-
-    bool useStaticInit;     /// if this is true, use the StructDeclaration's init symbol
-    bool isOriginal = false; /// used when moving instances to indicate `this is this.origin`
-    OwnedBy ownedByCtfe = OwnedBy.code;
 
     extern (D) this(const ref Loc loc, StructDeclaration sd, Expressions* elements, Type stype = null) @safe
     {
@@ -2349,12 +2346,6 @@ extern (C++) final class TypeExp : Expression
         return true;
     }
 
-    override bool checkValue()
-    {
-        error(loc, "type `%s` has no value", toChars());
-        return true;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -2408,12 +2399,6 @@ extern (C++) final class ScopeExp : Expression
         return false;
     }
 
-    override bool checkValue()
-    {
-        error(loc, "%s `%s` has no value", sds.kind(), sds.toChars());
-        return true;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -2444,12 +2429,6 @@ extern (C++) final class TemplateExp : Expression
     override bool checkType()
     {
         error(loc, "%s `%s` has no type", td.kind(), toChars());
-        return true;
-    }
-
-    override bool checkValue()
-    {
-        error(loc, "%s `%s` has no value", td.kind(), toChars());
         return true;
     }
 
@@ -2720,26 +2699,11 @@ extern (C++) final class FuncExp : Expression
         return new FuncExp(loc, fd);
     }
 
-    override const(char)* toChars() const
-    {
-        return fd.toChars();
-    }
-
     override bool checkType()
     {
         if (td)
         {
             error(loc, "template lambda has no type");
-            return true;
-        }
-        return false;
-    }
-
-    override bool checkValue()
-    {
-        if (td)
-        {
-            error(loc, "template lambda has no value");
             return true;
         }
         return false;
@@ -3168,12 +3132,6 @@ extern (C++) final class DotTemplateExp : UnaExp
         return true;
     }
 
-    override bool checkValue()
-    {
-        error(loc, "%s `%s` has no value", td.kind(), toChars());
-        return true;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -3250,18 +3208,6 @@ extern (C++) final class DotTemplateInstanceExp : UnaExp
             return true;
         }
         return false;
-    }
-
-    override bool checkValue()
-    {
-        if (ti.tempdecl &&
-            ti.semantictiargsdone &&
-            ti.semanticRun == PASS.initial)
-
-            error(loc, "partial %s `%s` has no value", ti.kind(), toChars());
-        else
-            error(loc, "%s `%s` has no value", ti.kind(), ti.toChars());
-        return true;
     }
 
     override void accept(Visitor v)
@@ -4180,10 +4126,6 @@ extern (C++) final class LoweredAssignExp : AssignExp
         this.lowering = lowering;
     }
 
-    override const(char)* toChars() const
-    {
-        return lowering.toChars();
-    }
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -5089,27 +5031,6 @@ extern (C++) final class CTFEExp : Expression
         type = Type.tvoid;
     }
 
-    override const(char)* toChars() const
-    {
-        switch (op)
-        {
-        case EXP.cantExpression:
-            return "<cant>";
-        case EXP.voidExpression:
-            return "cast(void)0";
-        case EXP.showCtfeContext:
-            return "<error>";
-        case EXP.break_:
-            return "<break>";
-        case EXP.continue_:
-            return "<continue>";
-        case EXP.goto_:
-            return "<goto>";
-        default:
-            assert(0);
-        }
-    }
-
     extern (D) __gshared CTFEExp cantexp;
     extern (D) __gshared CTFEExp voidexp;
     extern (D) __gshared CTFEExp breakexp;
@@ -5144,11 +5065,6 @@ extern (C++) final class ThrownExceptionExp : Expression
         super(loc, EXP.thrownException);
         this.thrown = victim;
         this.type = victim.type;
-    }
-
-    override const(char)* toChars() const
-    {
-        return "CTFE ThrownException";
     }
 
     override void accept(Visitor v)

@@ -3128,7 +3128,7 @@ Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                 else
                 {
                     /* struct S { int a; };
-                     * struct S *s;
+                     * struct S* s;
                      */
                 }
                 mtype.resolved = sd.type;
@@ -3159,14 +3159,14 @@ Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
                      mtype.tok == TOK.struct_ && s.isStructDeclaration())
             {
                 /* struct S;
-                 * { struct S *s; }
+                 * { struct S* s; }
                  */
                 mtype.resolved = s.isStructDeclaration().type;
             }
             else
             {
                 /* union S;
-                 * { struct S *s; }
+                 * { struct S* s; }
                  */
                 .error(mtype.loc, "redeclaring `%s %s` as `%s %s`",
                     s.kind(), s.toChars(), Token.toChars(mtype.tok), mtype.id.toChars());
@@ -7606,6 +7606,18 @@ bool checkRetType(TypeFunction tf, const ref Loc loc)
     }
     if (tb.ty == Terror)
         return true;
+    return false;
+}
+
+/// Returns: whether `t` is a struct/class/enum without a body
+bool isOpaqueType(Type t)
+{
+    if (auto te = t.isTypeEnum())
+        return te.sym.members is null;
+    if (auto ts = t.isTypeStruct())
+        return ts.sym.members is null;
+    if (auto tc = t.isTypeClass())
+        return tc.sym.members is null;
     return false;
 }
 

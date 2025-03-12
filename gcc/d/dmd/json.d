@@ -351,19 +351,18 @@ public:
     {
         if (loc.isValid())
         {
-            if (auto filename = loc.filename.toDString)
+            SourceLoc sl = SourceLoc(loc);
+            if (sl.filename.length > 0 && sl.filename != this.filename)
             {
-                if (filename != this.filename)
-                {
-                    this.filename = filename;
-                    property("file", filename);
-                }
+                this.filename = sl.filename;
+                property("file", sl.filename);
             }
-            if (loc.linnum)
+
+            if (sl.linnum)
             {
-                property(linename, loc.linnum);
-                if (loc.charnum)
-                    property(charname, loc.charnum);
+                property(linename, sl.linnum);
+                if (sl.charnum)
+                    property(charname, sl.charnum);
             }
         }
     }

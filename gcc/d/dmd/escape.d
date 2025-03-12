@@ -1607,7 +1607,7 @@ void escapeExp(Expression e, ref scope EscapeByResults er, int deref)
     void visitArrayLiteral(ArrayLiteralExp e)
     {
         Type tb = e.type.toBasetype();
-        if (tb.isTypeSArray() || tb.isTypeDArray())
+        if (tb.isStaticOrDynamicArray())
         {
             if (e.basis)
                 escapeExp(e.basis, er, deref);
@@ -2245,7 +2245,7 @@ private bool isTypesafeVariadicArray(VarDeclaration v)
     if (v.storage_class & STC.variadic)
     {
         Type tb = v.type.toBasetype();
-        if (tb.ty == Tarray || tb.ty == Tsarray)
+        if (tb.isStaticOrDynamicArray())
             return true;
     }
     return false;

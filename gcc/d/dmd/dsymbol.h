@@ -187,7 +187,7 @@ public:
     PASS semanticRun;
     unsigned short localNum;        // perturb mangled name to avoid collisions with those in FuncDeclaration.localsymtab
     static Dsymbol *create(Identifier *);
-    const char *toChars() const override;
+    const char *toChars() const final override;
     DeprecatedDeclaration* depdecl();
     CPPNamespaceDeclaration* cppnamespace();
     UserAttributeDeclaration* userAttribDecl();

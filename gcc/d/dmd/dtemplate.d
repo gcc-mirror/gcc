@@ -57,7 +57,7 @@ import dmd.dsymbolsem : dsymbolSemantic, checkDeprecated, aliasSemantic, search,
 import dmd.errors;
 import dmd.errorsink;
 import dmd.expression;
-import dmd.expressionsem : resolveLoc, expressionSemantic, resolveProperties;
+import dmd.expressionsem : resolveLoc, expressionSemantic, resolveProperties, checkValue;
 import dmd.func;
 import dmd.funcsem : functionSemantic, leastAsSpecialized, overloadApply;
 import dmd.globals;
@@ -744,14 +744,6 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
     override const(char)* kind() const
     {
         return (onemember && onemember.isAggregateDeclaration()) ? onemember.kind() : "template";
-    }
-
-    override const(char)* toChars() const
-    {
-        HdrGenState hgs;
-        OutBuffer buf;
-        toCharsMaybeConstraints(this, buf, hgs);
-        return buf.extractChars();
     }
 
     /****************************
@@ -3830,13 +3822,6 @@ extern (C++) class TemplateInstance : ScopeDsymbol
         return true;
     }
 
-    override const(char)* toChars() const
-    {
-        OutBuffer buf;
-        toCBufferInstance(this, buf);
-        return buf.extractChars();
-    }
-
     override final const(char)* toPrettyCharsHelper()
     {
         OutBuffer buf;
@@ -5522,13 +5507,6 @@ extern (C++) final class TemplateMixin : TemplateInstance
     {
         //printf("TemplateMixin.hasPointers() %s\n", toChars());
         return members.foreachDsymbol( (s) { return s.hasPointers(); } ) != 0;
-    }
-
-    override const(char)* toChars() const
-    {
-        OutBuffer buf;
-        toCBufferInstance(this, buf);
-        return buf.extractChars();
     }
 
     extern (D) bool findTempDecl(Scope* sc)
