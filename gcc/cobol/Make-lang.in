@@ -56,7 +56,6 @@ LIB_SOURCE ?= $(srcdir)/../libgcobol
 #
 CPPFLAGS =					\
  -std=c++14					\
- -Iinclude					\
  -I$(BINCLUDE)					\
  -I$(LIB_INCLUDE)				\
  -DEXEC_LIB=\"$(prefix)/lib64\"		\
