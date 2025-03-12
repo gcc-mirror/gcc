@@ -2969,10 +2969,11 @@
   {
     poly_int64 val;
     if (poly_int_rtx_p (operands[2], &val)
-	&& known_eq (val, GET_MODE_NUNITS (<MODE>mode) - 1))
+	&& known_eq (val, GET_MODE_NUNITS (<MODE>mode) - 1)
+	&& !val.is_constant ())
       {
-	/* The last element can be extracted with a LASTB and a false
-	   predicate.  */
+	/* For VLA, extract the last element with a LASTB and a false
+	   predicate. */
 	rtx sel = aarch64_pfalse_reg (<VPRED>mode);
 	emit_insn (gen_extract_last_<mode> (operands[0], sel, operands[1]));
 	DONE;
