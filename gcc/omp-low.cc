@@ -13669,8 +13669,8 @@ lower_omp_map_iterator_expr (tree expr, tree c, gomp_target *stmt)
     return expr;
 
   tree iterator = OMP_CLAUSE_ITERATORS (c);
-  tree index = TREE_VEC_ELT (iterator, 7);
-  tree elems = TREE_VEC_ELT (iterator, 8);
+  tree index = OMP_ITERATORS_INDEX (iterator);
+  tree elems = OMP_ITERATORS_ELEMS (iterator);
   gimple_seq *loop_body_p = enter_omp_iterator_loop_context (c, stmt);
 
    /* IN LOOP BODY:  */
@@ -13706,8 +13706,8 @@ lower_omp_map_iterator_size (tree size, tree c, gomp_target *stmt)
     return size;
 
   tree iterator = OMP_CLAUSE_ITERATORS (c);
-  tree index = TREE_VEC_ELT (iterator, 7);
-  tree elems = TREE_VEC_ELT (iterator, 8);
+  tree index = OMP_ITERATORS_INDEX (iterator);
+  tree elems = OMP_ITERATORS_ELEMS (iterator);
   gimple_seq *loop_body_p = enter_omp_iterator_loop_context (c, stmt);
 
   /* IN LOOP BODY:  */
@@ -13741,10 +13741,11 @@ allocate_omp_iterator_elems (tree clauses, gimple_seq loops_seq)
       if (!OMP_CLAUSE_HAS_ITERATORS (c))
 	continue;
       tree iters = OMP_CLAUSE_ITERATORS (c);
-      tree elems = TREE_VEC_ELT (iters, 8);
+      tree elems = OMP_ITERATORS_ELEMS (iters);
       if (!POINTER_TYPE_P (TREE_TYPE (elems)))
 	continue;
-      tree arr_length = omp_iterator_elems_length (TREE_VEC_ELT (iters, 9));
+      tree arr_length
+	= omp_iterator_elems_length (OMP_ITERATORS_COUNT (iters));
       tree call = builtin_decl_explicit (BUILT_IN_MALLOC);
       tree size = fold_build2_loc (OMP_CLAUSE_LOCATION (c), MULT_EXPR,
 				   size_type_node, arr_length,
@@ -13753,7 +13754,7 @@ allocate_omp_iterator_elems (tree clauses, gimple_seq loops_seq)
 				      size);
 
       /* Find the first statement '<index> = -1' in the pre-loop statements.  */
-      tree index = TREE_VEC_ELT (iters, 7);
+      tree index = OMP_ITERATORS_INDEX (iters);
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start (loops_seq); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -13778,7 +13779,7 @@ free_omp_iterator_elems (tree clauses, gimple_seq *seq)
     {
       if (!OMP_CLAUSE_HAS_ITERATORS (c))
 	continue;
-      tree elems = TREE_VEC_ELT (OMP_CLAUSE_ITERATORS (c), 8);
+      tree elems = OMP_ITERATORS_ELEMS (OMP_CLAUSE_ITERATORS (c));
       if (!POINTER_TYPE_P (TREE_TYPE (elems)))
 	continue;
       tree call = builtin_decl_explicit (BUILT_IN_FREE);

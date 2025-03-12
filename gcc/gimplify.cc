@@ -9441,19 +9441,19 @@ gimplify_omp_affinity (tree *list_p, gimple_seq *pre_p)
 		  }
 		for (tree it = TREE_PURPOSE (t); it; it = TREE_CHAIN (it))
 		  {
-		    if (gimplify_expr (&TREE_VEC_ELT (it, 1), pre_p, NULL,
+		    if (gimplify_expr (&OMP_ITERATORS_BEGIN (it), pre_p, NULL,
 				       is_gimple_val, fb_rvalue) == GS_ERROR
-			|| gimplify_expr (&TREE_VEC_ELT (it, 2), pre_p, NULL,
+			|| gimplify_expr (&OMP_ITERATORS_END (it), pre_p, NULL,
 					  is_gimple_val, fb_rvalue) == GS_ERROR
-			|| gimplify_expr (&TREE_VEC_ELT (it, 3), pre_p, NULL,
+			|| gimplify_expr (&OMP_ITERATORS_STEP (it), pre_p, NULL,
 					  is_gimple_val, fb_rvalue) == GS_ERROR
-			|| (gimplify_expr (&TREE_VEC_ELT (it, 4), pre_p, NULL,
-					   is_gimple_val, fb_rvalue)
+			|| (gimplify_expr (&OMP_ITERATORS_ORIG_STEP (it), pre_p,
+					   NULL, is_gimple_val, fb_rvalue)
 			    == GS_ERROR))
 		      return;
 		  }
 	    last_iter = TREE_PURPOSE (t);
-	    tree block = TREE_VEC_ELT (TREE_PURPOSE (t), 5);
+	    tree block = OMP_ITERATORS_BLOCK (TREE_PURPOSE (t));
 	    last_bind = build3 (BIND_EXPR, void_type_node, BLOCK_VARS (block),
 				NULL, block);
 	    last_body = &BIND_EXPR_BODY (last_bind);
@@ -9461,10 +9461,10 @@ gimplify_omp_affinity (tree *list_p, gimple_seq *pre_p)
 	    location_t loc = OMP_CLAUSE_LOCATION (c);
 	    for (tree it = TREE_PURPOSE (t); it; it = TREE_CHAIN (it))
 	      {
-		tree var = TREE_VEC_ELT (it, 0);
-		tree begin = TREE_VEC_ELT (it, 1);
-		tree end = TREE_VEC_ELT (it, 2);
-		tree step = TREE_VEC_ELT (it, 3);
+		tree var = OMP_ITERATORS_VAR (it);
+		tree begin = OMP_ITERATORS_BEGIN (it);
+		tree end = OMP_ITERATORS_END (it);
+		tree step = OMP_ITERATORS_STEP (it);
 		loc = DECL_SOURCE_LOCATION (var);
 		tree tem = build2_loc (loc, MODIFY_EXPR, void_type_node,
 				       var, begin);
@@ -9541,20 +9541,20 @@ compute_omp_iterator_count (tree it, gimple_seq *pre_p)
   tree tcnt = size_one_node;
   for (; it; it = TREE_CHAIN (it))
     {
-      if (gimplify_expr (&TREE_VEC_ELT (it, 1), pre_p, NULL,
+      if (gimplify_expr (&OMP_ITERATORS_BEGIN (it), pre_p, NULL,
 			 is_gimple_val, fb_rvalue) == GS_ERROR
-	  || gimplify_expr (&TREE_VEC_ELT (it, 2), pre_p, NULL,
+	  || gimplify_expr (&OMP_ITERATORS_END (it), pre_p, NULL,
 			    is_gimple_val, fb_rvalue) == GS_ERROR
-	  || gimplify_expr (&TREE_VEC_ELT (it, 3), pre_p, NULL,
+	  || gimplify_expr (&OMP_ITERATORS_STEP (it), pre_p, NULL,
 			    is_gimple_val, fb_rvalue) == GS_ERROR
-	  || (gimplify_expr (&TREE_VEC_ELT (it, 4), pre_p, NULL,
+	  || (gimplify_expr (&OMP_ITERATORS_ORIG_STEP (it), pre_p, NULL,
 			     is_gimple_val, fb_rvalue) == GS_ERROR))
 	return NULL_TREE;
-      tree var = TREE_VEC_ELT (it, 0);
-      tree begin = TREE_VEC_ELT (it, 1);
-      tree end = TREE_VEC_ELT (it, 2);
-      tree step = TREE_VEC_ELT (it, 3);
-      tree orig_step = TREE_VEC_ELT (it, 4);
+      tree var = OMP_ITERATORS_VAR (it);
+      tree begin = OMP_ITERATORS_BEGIN (it);
+      tree end = OMP_ITERATORS_END (it);
+      tree step = OMP_ITERATORS_STEP (it);
+      tree orig_step = OMP_ITERATORS_ORIG_STEP (it);
       tree type = TREE_TYPE (var);
       tree stype = TREE_TYPE (step);
       location_t loc = DECL_SOURCE_LOCATION (var);
@@ -9622,7 +9622,7 @@ build_omp_iterator_loop (tree it, gimple_seq *pre_p, tree *last_bind)
 {
   if (*last_bind)
     gimplify_and_add (*last_bind, pre_p);
-  tree block = TREE_VEC_ELT (it, 5);
+  tree block = OMP_ITERATORS_BLOCK (it);
   tree block_stmts = lang_GNU_Fortran () ? BLOCK_SUBBLOCKS (block) : NULL_TREE;
   *last_bind = build3 (BIND_EXPR, void_type_node,
 		       BLOCK_VARS (block), NULL, block);
@@ -9630,12 +9630,12 @@ build_omp_iterator_loop (tree it, gimple_seq *pre_p, tree *last_bind)
   tree *p = &BIND_EXPR_BODY (*last_bind);
   for (; it; it = TREE_CHAIN (it))
     {
-      tree var = TREE_VEC_ELT (it, 0);
-      tree begin = TREE_VEC_ELT (it, 1);
-      tree end = TREE_VEC_ELT (it, 2);
-      tree step = TREE_VEC_ELT (it, 3);
-      tree orig_step = TREE_VEC_ELT (it, 4);
-      block = TREE_VEC_ELT (it, 5);
+      tree var = OMP_ITERATORS_VAR (it);
+      tree begin = OMP_ITERATORS_BEGIN (it);
+      tree end = OMP_ITERATORS_END (it);
+      tree step = OMP_ITERATORS_STEP (it);
+      tree orig_step = OMP_ITERATORS_ORIG_STEP (it);
+      block = OMP_ITERATORS_BLOCK (it);
       tree type = TREE_TYPE (var);
       location_t loc = DECL_SOURCE_LOCATION (var);
       /* Emit:
@@ -9766,7 +9766,7 @@ remove_unused_omp_iterator_vars (tree *list_p)
       bool need_new_iterators = false;
       for (tree it = OMP_CLAUSE_ITERATORS (c); it; it = TREE_CHAIN (it))
 	{
-	  tree var = TREE_VEC_ELT (it, 0);
+	  tree var = OMP_ITERATORS_VAR (it);
 	  tree t = walk_tree (&OMP_CLAUSE_DECL (c), find_var_decl, var, NULL);
 	  if (t == NULL_TREE)
 	    t = walk_tree (&OMP_CLAUSE_SIZE (c), find_var_decl, var, NULL);
@@ -9819,7 +9819,7 @@ remove_unused_omp_iterator_vars (tree *list_p)
 	  for (tree it = OMP_CLAUSE_ITERATORS (c); it && i < vars.length();
 	       it = TREE_CHAIN (it))
 	    {
-	      tree var = TREE_VEC_ELT (it, 0);
+	      tree var = OMP_ITERATORS_VAR (it);
 	      if (var == vars[i])
 		{
 		  *new_iters_p = copy_omp_iterator (it);
@@ -9827,13 +9827,13 @@ remove_unused_omp_iterator_vars (tree *list_p)
 					    DECL_NAME (var), TREE_TYPE (var));
 		  DECL_ARTIFICIAL (*new_vars_p) = 1;
 		  DECL_CONTEXT (*new_vars_p) = DECL_CONTEXT (var);
-		  TREE_VEC_ELT (*new_iters_p, 0) = *new_vars_p;
+		  OMP_ITERATORS_VAR (*new_iters_p) = *new_vars_p;
 		  new_iters_p = &TREE_CHAIN (*new_iters_p);
 		  new_vars_p = &DECL_CHAIN (*new_vars_p);
 		  i++;
 		}
 	    }
-	  tree old_block = TREE_VEC_ELT (OMP_CLAUSE_ITERATORS (c), 5);
+	  tree old_block = OMP_ITERATORS_BLOCK (OMP_CLAUSE_ITERATORS (c));
 	  tree new_block = make_node (BLOCK);
 	  BLOCK_VARS (new_block) = new_vars;
 	  if (BLOCK_SUBBLOCKS (old_block))
@@ -9841,7 +9841,7 @@ remove_unused_omp_iterator_vars (tree *list_p)
 	      BLOCK_SUBBLOCKS (new_block) = BLOCK_SUBBLOCKS (old_block);
 	      BLOCK_SUBBLOCKS (old_block) = NULL_TREE;
 	    }
-	  TREE_VEC_ELT (new_iters, 5) = new_block;
+	  OMP_ITERATORS_BLOCK (new_iters) = new_block;
 	  new_iterators.safe_push (new_iters);
 	  iter_vars.safe_push (vars.copy ());
 	  OMP_CLAUSE_ITERATORS (c) = new_iters;
@@ -9852,7 +9852,7 @@ remove_unused_omp_iterator_vars (tree *list_p)
       for (tree it = OMP_CLAUSE_ITERATORS (c); it; it = TREE_CHAIN (it))
 	{
 	  tree old_var = vars[i++];
-	  tree new_var = TREE_VEC_ELT (it, 0);
+	  tree new_var = OMP_ITERATORS_VAR (it);
 	  remap_omp_iterator_var (&OMP_CLAUSE_DECL (c), old_var, new_var);
 	  remap_omp_iterator_var (&OMP_CLAUSE_SIZE (c), old_var, new_var);
 	}
@@ -9958,10 +9958,10 @@ build_omp_iterators_loops (tree *list_p, gimple_seq *loops_seq_p)
       int elem_count = TREE_VEC_LENGTH (OMP_CLAUSE_ITERATORS (c));
       tree new_iterator = copy_omp_iterator (OMP_CLAUSE_ITERATORS (c),
 					     elem_count + 4);
-      TREE_VEC_ELT (new_iterator, elem_count) = loop.body_label;
-      TREE_VEC_ELT (new_iterator, elem_count + 1) = loop.index;
-      TREE_VEC_ELT (new_iterator, elem_count + 2) = elems;
-      TREE_VEC_ELT (new_iterator, elem_count + 3) = loop.count;
+      OMP_ITERATORS_LABEL (new_iterator) = loop.body_label;
+      OMP_ITERATORS_INDEX (new_iterator) = loop.index;
+      OMP_ITERATORS_ELEMS (new_iterator) = elems;
+      OMP_ITERATORS_COUNT (new_iterator) = loop.count;
       TREE_CHAIN (new_iterator) = TREE_CHAIN (OMP_CLAUSE_ITERATORS (c));
       OMP_CLAUSE_ITERATORS (c) = new_iterator;
 
@@ -10012,7 +10012,7 @@ enter_omp_iterator_loop_context_1 (tree iterator, gimple_seq *loops_seq_p)
 	  {
 	    glabel *label_stmt = as_a<glabel *> (stmt);
 	    tree label = gimple_label_label (label_stmt);
-	    if (label == TREE_VEC_ELT (iterator, 6))
+	    if (label == OMP_ITERATORS_LABEL (iterator))
 	      return loops_seq_p;
 	  }
 	  break;
@@ -10584,8 +10584,8 @@ extract_base_bit_offset (tree base, poly_int64 *bitposp,
 	 E.g. "array[i].field" gives "16" (say), not "i * 32 + 16".  */
       tree it;
       for (it = iterator; it; it = TREE_CHAIN (it))
-	base = simplify_replace_tree (base, TREE_VEC_ELT (it, 0),
-				      TREE_VEC_ELT (it, 1));
+	base = simplify_replace_tree (base, OMP_ITERATORS_VAR (it),
+				      OMP_ITERATORS_BEGIN (it));
     }
 
   base = get_inner_reference (base, &bitsize, &bitpos, &offset, &mode,

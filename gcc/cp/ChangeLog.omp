@@ -1,5 +1,15 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* parser.cc (cp_parser_omp_iterators): Use macros for accessing
+	iterator elements.
+	(cp_parser_omp_clause_affinity): Likewise.
+	(cp_parser_omp_clause_depend): Likewise.
+	(cp_parser_omp_clause_from_to): Likewise.
+	(cp_parser_omp_clause_map): Likewise.
+	* semantics.cc (cp_omp_finish_iterators): Likewise.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* semantics.cc (handle_omp_array_sections): Add extra argument.  Set
 	argument to true if array section has a stride that is not one.
 	(finish_omp_clauses): Disable strided updates when iterators are

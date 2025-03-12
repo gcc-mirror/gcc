@@ -1,5 +1,26 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* gimplify.cc (gimplify_omp_affinity): Use macros for accessing
+	iterator elements.
+	(compute_omp_iterator_count): Likewise.
+	(build_omp_iterator_loop): Likewise.
+	(remove_unused_omp_iterator_vars): Likewise.
+	(build_omp_iterators_loops): Likewise.
+	(enter_omp_iterator_loop_context_1): Likewise.
+	(extract_base_bit_offset): Likewise.
+	* omp-low.cc (lower_omp_map_iterator_expr): Likewise.
+	(lower_omp_map_iterator_size): Likewise.
+	(allocate_omp_iterator_elems): Likewise.
+	(free_omp_iterator_elems): Likewise.
+	* tree-inline.cc (copy_tree_body_r): Likewise.
+	* tree-pretty-print.cc (dump_omp_iterators): Likewise.
+	* tree.h (OMP_ITERATORS_VAR, OMP_ITERATORS_BEGIN, OMP_ITERATORS_END,
+	OMP_ITERATORS_STEP, OMP_ITERATORS_ORIG_STEP, OMP_ITERATORS_BLOCK,
+	OMP_ITERATORS_LABEL, OMP_ITERATORS_INDEX, OMP_ITERATORS_ELEMS,
+	OMP_ITERATORS_COUNT, OMP_ITERATORS_EXPANDED_P): New macros.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* gimplify.cc (omp_iterator_elems_length): New.
 	(build_omp_iterators_loops): Change type of elements
 	array to pointer of pointers if array length is non-constant, and

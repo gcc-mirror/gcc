@@ -1,5 +1,12 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* trans-openmp.cc (gfc_trans_omp_array_section): Use macros for
+	accessing iterator elements.
+	(handle_iterator): Likewise.
+	(gfc_trans_omp_clauses): Likewise.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* trans-openmp.cc (gfc_trans_omp_clauses): Disable strided updates
 	when iterators are used in the clause.
 
