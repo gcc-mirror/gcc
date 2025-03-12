@@ -2386,39 +2386,6 @@ accepts:
 In C mode, this is equivalent to @option{-std=c90}. In C++ mode, it is
 equivalent to @option{-std=c++98}.
 
-This turns off certain features of GCC that are incompatible with ISO
-C90 (when compiling C code), or of standard C++ (when compiling C++ code),
-such as the @code{asm} and @code{typeof} keywords, and
-predefined macros such as @code{unix} and @code{vax} that identify the
-type of system you are using.  It also enables the undesirable and
-rarely used ISO trigraph feature.  For the C compiler,
-it disables recognition of C++ style @samp{//} comments as well as
-the @code{inline} keyword.
-
-The alternate keywords @code{__asm__}, @code{__extension__},
-@code{__inline__} and @code{__typeof__} continue to work despite
-@option{-ansi}.  You would not want to use them in an ISO C program, of
-course, but it is useful to put them in header files that might be included
-in compilations done with @option{-ansi}.  Alternate predefined macros
-such as @code{__unix__} and @code{__vax__} are also available, with or
-without @option{-ansi}.
-
-The @option{-ansi} option does not cause non-ISO programs to be
-rejected gratuitously.  For that, @option{-Wpedantic} is required in
-addition to @option{-ansi}.  @xref{Warning Options}.
-
-The macro @code{__STRICT_ANSI__} is predefined when the @option{-ansi}
-option is used.  Some header files may notice this macro and refrain
-from declaring certain functions or defining certain macros that the
-ISO standard doesn't call for; this is to avoid interfering with any
-programs that might use these names for other things.
-
-Functions that are normally built in but do not have semantics
-defined by ISO C (such as @code{alloca} and @code{ffs}) are not built-in
-functions when @option{-ansi} is used.  @xref{Other Builtins,,Other
-built-in functions provided by GCC}, for details of the functions
-affected.
-
 @opindex std
 @item -std=
 Determine the language standard. @xref{Standards,,Language Standards

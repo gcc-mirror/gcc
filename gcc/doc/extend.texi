@@ -13049,17 +13049,13 @@ is taken as the minimum size, ignoring how many instructions GCC thinks it is.
 @cindex keywords, alternate
 
 @option{-ansi} and the various @option{-std} options disable certain
-keywords.  This causes trouble when you want to use GNU C extensions, or
-a general-purpose header file that should be usable by all programs,
-including ISO C programs.  The keywords @code{asm}, @code{typeof} and
+keywords that are GNU C extensions.
+Specifically, the keywords @code{asm}, @code{typeof} and
 @code{inline} are not available in programs compiled with
-@option{-ansi} or @option{-std} (although @code{inline} can be used in a
-program compiled with @option{-std=c99} or a later standard).  The
-ISO C99 keyword
-@code{restrict} is only available when @option{-std=gnu99} (which will
-eventually be the default) or @option{-std=c99} (or the equivalent
-@option{-std=iso9899:1999}), or an option for a later standard
-version, is used.
+@option{-ansi} or a @option{-std=} option specifying an ISO standard that
+doesn't define the keyword.  This causes trouble when you want to use
+these extensions in a header file that can be included in programs that may
+be compiled with with such options.
 
 The way to solve these problems is to put @samp{__} at the beginning and
 end of each problematical keyword.  For example, use @code{__asm__}
