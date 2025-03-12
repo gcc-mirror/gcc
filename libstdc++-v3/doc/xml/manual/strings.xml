@@ -66,10 +66,12 @@
    <para>
      <emphasis>Note</emphasis> that these calls all
       involve the global C locale through the use of the C functions
-      <code>toupper/tolower</code>.  This is absolutely guaranteed to work --
-      but <emphasis>only</emphasis> if the string contains <emphasis>only</emphasis> characters
-      from the basic source character set, and there are <emphasis>only</emphasis>
-      96 of those.  Which means that not even all English text can be
+      <code>toupper</code>/<code>tolower</code>.
+      This is absolutely guaranteed to work
+      -- but <emphasis>only</emphasis> if the string contains
+      <emphasis>only</emphasis> characters from the basic source character set,
+      and there are <emphasis>only</emphasis> 96 of those.
+      Which means that not even all English text can be
       represented (certain British spellings, proper names, and so forth).
       So, if all your input forevermore consists of only those 96
       characters (hahahahahaha), then you're done.
@@ -93,6 +95,15 @@
    } </programlisting>
    <para>(Thanks to James Kanze for assistance and suggestions on all of this.)
    </para>
+   <para>
+     Since C++11 the wrapper can be replaced with a lambda expression,
+     which can perform the conversion to <code>unsigned char</code> and
+     also ensure the single-argument form of <code>std::lower</code> is used:
+   </para>
+   <programlisting>
+     std::transform (s.begin(), s.end(), capital_s.begin(),
+                     [](unsigned char c) { return std::tolower(c); });
+   </programlisting>
    <para>Another common operation is trimming off excess whitespace.  Much
       like transformations, this task is trivial with the use of string's
       <code>find</code> family.  These examples are broken into multiple

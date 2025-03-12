@@ -50,10 +50,12 @@
    </pre><p>
      <span class="emphasis"><em>Note</em></span> that these calls all
       involve the global C locale through the use of the C functions
-      <code class="code">toupper/tolower</code>.  This is absolutely guaranteed to work --
-      but <span class="emphasis"><em>only</em></span> if the string contains <span class="emphasis"><em>only</em></span> characters
-      from the basic source character set, and there are <span class="emphasis"><em>only</em></span>
-      96 of those.  Which means that not even all English text can be
+      <code class="code">toupper</code>/<code class="code">tolower</code>.
+      This is absolutely guaranteed to work
+      -- but <span class="emphasis"><em>only</em></span> if the string contains
+      <span class="emphasis"><em>only</em></span> characters from the basic source character set,
+      and there are <span class="emphasis"><em>only</em></span> 96 of those.
+      Which means that not even all English text can be
       represented (certain British spellings, proper names, and so forth).
       So, if all your input forevermore consists of only those 96
       characters (hahahahahaha), then you're done.
@@ -73,7 +75,14 @@
       // std::tolower(c) is undefined if c &lt; 0 so cast to unsigned char.
       return std::tolower((unsigned char)c);
    } </pre><p>(Thanks to James Kanze for assistance and suggestions on all of this.)
-   </p><p>Another common operation is trimming off excess whitespace.  Much
+   </p><p>
+     Since C++11 the wrapper can be replaced with a lambda expression,
+     which can perform the conversion to <code class="code">unsigned char</code> and
+     also ensure the single-argument form of <code class="code">std::lower</code> is used:
+   </p><pre class="programlisting">
+     std::transform (s.begin(), s.end(), capital_s.begin(),
+                     [](unsigned char c) { return std::tolower(c); });
+   </pre><p>Another common operation is trimming off excess whitespace.  Much
       like transformations, this task is trivial with the use of string's
       <code class="code">find</code> family.  These examples are broken into multiple
       statements for readability:
