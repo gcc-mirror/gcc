@@ -4528,6 +4528,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
   tree lambda_stack = NULL_TREE;
   tree lambda_expr = NULL_TREE;
   tree initializer = convert_from_reference (decl);
+  tree var = strip_normal_capture_proxy (decl);
 
   /* Mark it as used now even if the use is ill-formed.  */
   if (!mark_used (decl, complain))
@@ -4539,9 +4540,6 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
   if (containing_function && LAMBDA_FUNCTION_P (containing_function))
     {
       /* Check whether we've already built a proxy.  */
-      tree var = decl;
-      while (is_normal_capture_proxy (var))
-	var = DECL_CAPTURED_VARIABLE (var);
       tree d = retrieve_local_specialization (var);
 
       if (d && d != decl && is_capture_proxy (d))
@@ -4601,8 +4599,8 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain, bool odr_use)
   /* Only an odr-use of an outer automatic variable causes an
      error, and a constant variable can decay to a prvalue
      constant without odr-use.  So don't complain yet.  */
-  else if (!odr_use && decl_constant_var_p (decl))
-    return decl;
+  else if (!odr_use && decl_constant_var_p (var))
+    return var;
   else if (lambda_expr)
     {
       if (complain & tf_error)

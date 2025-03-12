@@ -295,6 +295,17 @@ is_normal_capture_proxy (tree decl)
 	  && DECL_CAPTURED_VARIABLE (decl));
 }
 
+/* If DECL is a normal capture proxy, return the variable it captures.
+   Otherwise, just return DECL.  */
+
+tree
+strip_normal_capture_proxy (tree decl)
+{
+  while (is_normal_capture_proxy (decl))
+    decl = DECL_CAPTURED_VARIABLE (decl);
+  return decl;
+}
+
 /* Returns true iff DECL is a capture proxy for a normal capture
    of a constant variable.  */
 
@@ -469,8 +480,7 @@ build_capture_proxy (tree member, tree init)
       STRIP_NOPS (init);
 
       gcc_assert (VAR_P (init) || TREE_CODE (init) == PARM_DECL);
-      while (is_normal_capture_proxy (init))
-	init = DECL_CAPTURED_VARIABLE (init);
+      init = strip_normal_capture_proxy (init);
       retrofit_lang_decl (var);
       DECL_CAPTURED_VARIABLE (var) = init;
     }
