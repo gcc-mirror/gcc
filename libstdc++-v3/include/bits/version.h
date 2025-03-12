@@ -2120,6 +2120,16 @@
 #endif /* !defined(__cpp_lib_text_encoding) && defined(__glibcxx_want_text_encoding) */
 #undef __glibcxx_want_text_encoding
 
+#if !defined(__cpp_lib_ranges_to_input)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_ranges_to_input 202502L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_ranges_to_input)
+#   define __cpp_lib_ranges_to_input 202502L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_ranges_to_input) && defined(__glibcxx_want_ranges_to_input) */
+#undef __glibcxx_want_ranges_to_input
+
 #if !defined(__cpp_lib_to_string)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED && (__glibcxx_to_chars)
 #  define __glibcxx_to_string 202306L

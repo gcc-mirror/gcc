@@ -69,6 +69,7 @@
 #define __glibcxx_want_ranges_slide
 #define __glibcxx_want_ranges_stride
 #define __glibcxx_want_ranges_to_container
+#define __glibcxx_want_ranges_to_input
 #define __glibcxx_want_ranges_zip
 #include <bits/version.h>
 
@@ -10389,6 +10390,175 @@ namespace ranges
   }
 } // namespace ranges
 #endif // __cpp_lib_ranges_cache_latest
+
+#if __cpp_lib_ranges_to_input // C++ >= 26
+namespace ranges
+{
+  template<input_range _Vp>
+    requires view<_Vp>
+  class to_input_view : public view_interface<to_input_view<_Vp>>
+  {
+    _Vp _M_base = _Vp();
+
+    template<bool _Const>
+    class _Iterator;
+
+  public:
+    to_input_view() requires default_initializable<_Vp> = default;
+
+    constexpr explicit
+    to_input_view(_Vp __base)
+    : _M_base(std::move(__base))
+    { }
+
+    constexpr _Vp
+    base() const & requires copy_constructible<_Vp>
+    { return _M_base; }
+
+    constexpr _Vp
+    base() &&
+    { return std::move(_M_base); }
+
+    constexpr auto
+    begin() requires (!__detail::__simple_view<_Vp>)
+    { return _Iterator<false>(ranges::begin(_M_base)); }
+
+    constexpr auto
+    begin() const requires range<const _Vp>
+    { return _Iterator<true>(ranges::begin(_M_base)); }
+
+    constexpr auto
+    end() requires (!__detail::__simple_view<_Vp>)
+    { return ranges::end(_M_base); }
+
+    constexpr auto
+    end() const requires range<const _Vp>
+    { return ranges::end(_M_base); }
+
+    constexpr auto
+    size() requires sized_range<_Vp>
+    { return ranges::size(_M_base); }
+
+    constexpr auto
+    size() const requires sized_range<const _Vp>
+    { return ranges::size(_M_base); }
+  };
+
+  template<typename _Range>
+    to_input_view(_Range&&) -> to_input_view<views::all_t<_Range>>;
+
+  template<input_range _Vp>
+    requires view<_Vp>
+  template<bool _Const>
+  class to_input_view<_Vp>::_Iterator
+  {
+    using _Base = __maybe_const_t<_Const, _Vp>;
+
+    iterator_t<_Base> _M_current = iterator_t<_Base>();
+
+    constexpr explicit
+    _Iterator(iterator_t<_Base> __current)
+    : _M_current(std::move(__current))
+    { }
+
+    friend to_input_view;
+    friend _Iterator<!_Const>;
+
+  public:
+    using difference_type = range_difference_t<_Base>;
+    using value_type = range_value_t<_Base>;
+    using iterator_concept = input_iterator_tag;
+
+    _Iterator() requires default_initializable<iterator_t<_Base>> = default;
+
+    _Iterator(_Iterator&&) = default;
+    _Iterator& operator=(_Iterator&&) = default;
+
+    constexpr
+    _Iterator(_Iterator<!_Const> __i)
+      requires _Const && convertible_to<iterator_t<_Vp>, iterator_t<_Base>>
+    : _M_current(std::move(__i._M_current))
+    { }
+
+    constexpr iterator_t<_Base>
+    base() &&
+    { return std::move(_M_current); }
+
+    constexpr const iterator_t<_Base>&
+    base() const & noexcept
+    { return _M_current; }
+
+    constexpr decltype(auto)
+    operator*() const
+    { return *_M_current; }
+
+    constexpr _Iterator&
+    operator++()
+    {
+      ++_M_current;
+      return *this;
+    }
+
+    constexpr void
+    operator++(int)
+    { ++*this; }
+
+    friend constexpr bool
+    operator==(const _Iterator& __x, const sentinel_t<_Base>& __y)
+    { return __x._M_current == __y; }
+
+    friend constexpr difference_type
+    operator-(const sentinel_t<_Base>& __y, const _Iterator& __x)
+      requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>>
+    { return __y - __x._M_current; }
+
+    friend constexpr difference_type
+    operator-(const _Iterator& __x, const sentinel_t<_Base>& __y)
+      requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base>>
+    { return __x._M_current - __y; }
+
+    friend constexpr range_rvalue_reference_t<_Base>
+    iter_move(const _Iterator& __i)
+      noexcept(noexcept(ranges::iter_move(__i._M_current)))
+    { return ranges::iter_move(__i._M_current); }
+
+    friend constexpr void
+    iter_swap(const _Iterator& __x, const _Iterator& __y)
+      noexcept(noexcept(ranges::iter_swap(__x._M_current, __y._M_current)))
+      requires indirectly_swappable<iterator_t<_Base>>
+    { ranges::iter_swap(__x._M_current, __y._M_current); }
+  };
+
+  namespace views
+  {
+    namespace __detail
+    {
+      template<typename _Tp>
+	concept __can_to_input = requires { to_input_view(std::declval<_Tp>()); };
+    }
+
+    struct _ToInput : __adaptor::_RangeAdaptorClosure<_ToInput>
+    {
+      template<viewable_range _Range>
+	requires __detail::__can_to_input<_Range>
+	constexpr auto
+	operator() [[nodiscard]] (_Range&& __r) const
+	{
+	  if constexpr (input_range<_Range>
+			&& !common_range<_Range>
+			&& !forward_range<_Range>)
+	    return views::all(std::forward<_Range>(__r));
+	  else
+	    return to_input_view(std::forward<_Range>(__r));
+	}
+
+      static constexpr bool _S_has_simple_call_op = true;
+    };
+
+    inline constexpr _ToInput to_input;
+  }
+} // namespace ranges
+#endif // __cpp_lib_ranges_to_input
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

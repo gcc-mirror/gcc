@@ -1912,6 +1912,14 @@ ftms = {
 };
 
 ftms = {
+  name = ranges_to_input;
+  values = {
+    v = 202502;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = to_string;
   values = {
     v = 202306;
