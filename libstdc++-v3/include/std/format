@@ -51,7 +51,7 @@
 #include <span>
 #include <string_view>
 #include <string>
-#include <variant>	       // monostate (TODO: move to bits/utility.h?)
+#include <bits/monostate.h>
 #include <bits/ranges_base.h>  // input_range, range_reference_t
 #include <bits/ranges_util.h>  // subrange
 #include <bits/ranges_algobase.h> // ranges::copy
