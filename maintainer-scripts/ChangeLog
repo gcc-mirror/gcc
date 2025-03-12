@@ -1,3 +1,7 @@
+2025-03-11  James K. Lowden  <jklowden@symas.com>
+
+	* update_web_docs_git: Add libgcobol module and cobol language.
+
 2024-12-03  David Malcolm  <dmalcolm@redhat.com>
 
 	PR web/117883

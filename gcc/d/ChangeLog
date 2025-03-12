@@ -1,3 +1,9 @@
+2025-03-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119139
+	* decl.cc (get_symbol_decl): Don't set TREE_READONLY for __result
+	declarations.
+
 2025-02-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/116961

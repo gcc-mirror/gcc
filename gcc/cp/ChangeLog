@@ -1,3 +1,10 @@
+2025-03-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119162
+	* constexpr.cc (find_deleted_heap_var): New.
+	(cxx_eval_call_expression): Don't cache a
+	reference to heap_deleted.
+
 2025-03-10  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* module.cc (trees_out::has_tu_local_dep): Also look at the

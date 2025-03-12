@@ -1,3 +1,12 @@
+2025-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-git-customization.sh: Delete outdated commands for
+	migrating from very old git setups.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_commit.py (bug_components): Add cobol.
+
 2025-03-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-changelog/git_commit.py (default_changelog_locations):

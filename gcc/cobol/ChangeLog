@@ -1,3 +1,79 @@
+2025-03-11  Richard Biener  <rguenther@suse.de>
+
+	* gcobolspec.cc (lang_specific_driver): For OPT_print_* do
+	not error on no input files.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in: Remove .exe extension from comments.
+	(cobol.serial): Set to cobol1$(exeext).
+	(cobol1$(exeext)): Depend on $(cobol.prev).  Add
+	LINK_PROGRESS calls before/after the link command.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (cobol/parse.c, cobol/cdf.c, cobol/scan.c): Remove.
+	(cobol/parse.cc, cobol/cdf.cc, cobol/scan.cc): New goals.
+	(cobol/cdf.o): Depend on cobol/cdf.cc rather than cobol/cdf.c.
+	(cobol/parse.o): Depend on cobol/parse.cc rather than cobol/parse.c.
+	(cobol/scan.o): Depend on cobol/scan.cc rather than cobol/scan.c,
+	on cobol/cdf.cc rather than cobol/cdf.c and on cobol/parse.cc rather
+	than cobol/parse.c.
+	(cobol.srcextra): Depend on cobol/parse.cc cobol/cdf.cc cobol/scan.cc
+	rather than cobol/parse.c cobol/cdf.c cobol/scan.c.
+
+2025-03-11  James K. Lowden  <jklowden@symas.com>
+
+	* LICENSE: New file.
+	* Make-lang.in: New file.
+	* config-lang.in: New file.
+	* lang.opt: New file.
+	* lang.opt.urls: New file.
+	* cbldiag.h: New file.
+	* cdfval.h: New file.
+	* cobol-system.h: New file.
+	* copybook.h: New file.
+	* dts.h: New file.
+	* exceptg.h: New file.
+	* gengen.h: New file.
+	* genmath.h: New file.
+	* genutil.h: New file.
+	* inspect.h: New file.
+	* lang-specs.h: New file.
+	* lexio.h: New file.
+	* parse_ante.h: New file.
+	* parse_util.h: New file.
+	* scan_ante.h: New file.
+	* scan_post.h: New file.
+	* show_parse.h: New file.
+	* structs.h: New file.
+	* symbols.h: New file.
+	* token_names.h: New file.
+	* util.h: New file.
+	* cdf-copy.cc: New file.
+	* lexio.cc: New file.
+	* scan.l: New file.
+	* parse.y: New file.
+	* genapi.cc: New file.
+	* genapi.h: New file.
+	* gengen.cc: New file.
+	* genmath.cc: New file.
+	* genutil.cc: New file.
+	* cdf.y: New file.
+	* cobol1.cc: New file.
+	* convert.cc: New file.
+	* except.cc: New file.
+	* gcobolspec.cc: New file.
+	* structs.cc: New file.
+	* symbols.cc: New file.
+	* symfind.cc: New file.
+	* util.cc: New file.
+	* gcobc: New file.
+	* gcobol.1: New file.
+	* gcobol.3: New file.
+	* help.gen: New file.
+	* udf/stored-char-length.cbl: New file.
+
 
 Copyright (C) 2025 Free Software Foundation, Inc.
 

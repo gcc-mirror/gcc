@@ -1,3 +1,109 @@
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117178
+	* gcc.dg/Wunterminated-string-initialization-2.c: New test.
+
+2025-03-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/119131
+	* gcc.dg/torture/pr119131-1.c: New test.
+
+2025-03-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119162
+	* g++.dg/cpp2a/constexpr-new26.C: New test.
+
+2025-03-11  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/118579
+	* c-c++-common/gomp/pr118579.c: New testcase.
+
+2025-03-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119139
+	* gdc.dg/pr119139.d: New test.
+
+2025-03-11  Oscar Gustafsson  <oscar.gustafsson@gmail.com>
+
+	* gcc.dg/builtin-bswap-5.c: Improve test vector to avoid nibble
+	swaps passing.
+
+2025-03-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119199
+	* gfortran.dg/common_30.f90: New test.
+	* gfortran.dg/common_31.f90: New test.
+
+2025-03-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118956
+	* gcc.target/aarch64/sve/pred-not-gen-1.c: Add XFAILs.
+	* gcc.target/aarch64/sve/pred-not-gen-4.c: Likewise.
+
+2025-03-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119078
+	* gfortran.dg/interface_58.f90: New test.
+
+2025-03-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/tbz_2.c: Accept both 32-bit and 64-bit registers.
+
+2025-03-11  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/delegitimize-1.c: New test.
+
+2025-03-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/119171
+	* gcc.target/i386/pr119171-1.c: New test.
+	* gcc.target/i386/pr119171-2.c: Likewise.
+
+2025-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119204
+	* gcc.dg/pr119204.c: New testcase.
+
+2025-03-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_neon_h_ok_nocache): Return zero if
+	check_effective_target_arm_libc_fp_abi_ok reports failure.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119183
+	* gcc.dg/pr119183.c: New test.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/119190
+	* gfortran.dg/guality/pr119190.f90: New test.
+
+2025-03-11  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/20020926-1.c: Deal with deprecation warning.
+	* gcc.target/s390/dwarfregtable-1.c: Ditto.
+	* gcc.target/s390/fp2int1.c: Ditto.
+	* gcc.target/s390/pr102222.c: Ditto.
+	* gcc.target/s390/pr106355-3.c: Ditto.
+	* gcc.target/s390/pr61078.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-10.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-12.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-14.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-18.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-2.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-20.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-22.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-24.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-26.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-28.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-30.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-32.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-4.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-6.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-8.c: Ditto.
+
 2025-03-10  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 

@@ -1,3 +1,19 @@
+2025-03-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119199
+	* decl.cc (gfc_match_save): Reject SAVE statement of a COMMON block
+	when in a BLOCK construct.
+	* trans-common.cc (translate_common): Avoid NULL pointer dereference.
+
+2025-03-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119078
+	* frontend-passes.cc (check_against_globals): Do not check
+	for abstract interfaces or dummy arguments.
+	* resolve.cc (gfc_verify_binding_labels): Adjust comment.
+	Do not put abstract interfaces or dummy argument into global
+	namespace.
+
 2025-03-10  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/107143

@@ -1,3 +1,27 @@
+2025-03-11  Bob Dubner  <rdubner@symas.com>
+
+	* MAINTAINERS: Add myself.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR cobol/119216
+	* configure.ac: Check for UNSUPPORTED set by libgcobol/configure.tgt
+	rather than LIBGCOBOL_SUPPORTED.
+	* configure: Regenerate.
+
+2025-03-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Do not build COBOL on Darwin by default,
+	even for --enable-languages=all.
+
+2025-03-11  James K. Lowden  <jklowden@symas.com>
+
+	* Makefile.def: Add libgcobol module and cobol language.
+	* Makefile.in: Regenerate.
+	* configure.ac: Add libgcobol module and cobol language.
+	* configure: Regenerate.
+
 2025-03-05  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* MAINTAINERS: Add myself.

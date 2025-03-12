@@ -1,3 +1,95 @@
+2025-03-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2025-03-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/117467
+	* ext-dce.cc (ext_dce_process_uses): When trivially possible advance
+	the iterator over the destination of a SET.
+
+2025-03-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/119131
+	* config/aarch64/aarch64.cc (aarch64_valid_fp_move): Remove check
+	for !DECIMAL_FLOAT_MODE_P.
+	(aarch64_float_const_representable_p): Reject decimal floating modes.
+	* config/aarch64/aarch64.md (mov<mode>): Likewise.
+
+2025-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Common Variable Attributes): Fix grammar in
+	final sentence of -ftrivial-auto-var-init description.
+
+2025-03-11  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_delegitimize_address): Add missing case.
+
+2025-03-11  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-ssa-alias.cc (ao_compare::compare_ao_refs): Fix a
+	copy-and-paste error.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.cc (gen_compile_unit_die): Use DW_LANG_Cobol85 if
+	language_string is "GCC COBOL" rather than "Cobol".
+
+2025-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119204
+	* builtins.cc (fold_builtin_strcspn): Preserve the original
+	expression type.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119183
+	* tree.cc (skip_simple_arithmetic): If first operand of binary
+	expr is TREE_CONSTANT or TREE_READONLY with no side-effects, call
+	tree_invariant_p on that operand first instead of on the second.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/119190
+	* tree-complex.cc (update_complex_assignment, tree_lower_complex):
+	Perform simple dce on dce_worklist only if optimize.
+
+2025-03-11  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config.gcc: Fail in case of option --with-mode=esa.
+	* config/s390/s390.cc (s390_option_override_internal): Default
+	to z/Architecture mode.
+	* config/s390/s390.h (DRIVER_SELF_SPECS): Ditto.
+	* config/s390/s390.opt: Emit a warning for option -mesa.
+	* doc/invoke.texi: Document the change.
+
+2025-03-11  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/115835
+	* config/s390/s390.cc (s390_insn_cost): Implement.
+	(TARGET_INSN_COST): Define.
+
+2025-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119166
+	* tree-vect-stmts.cc (get_load_store_type): Guard SLP tree
+	access.
+
+2025-03-11  James K. Lowden  <jklowden@symas.com>
+
+	* doc/contrib.texi: Update for gcobol.
+	* doc/frontends.texi: Likewise.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/sourcebuild.texi: Likewise.
+	* doc/standards.texi: Likewise.
+
+2025-03-11  James K. Lowden  <jklowden@symas.com>
+
+	* Makefile.in (installdirs): Create man3 directory.
+	* common.opt (static-libgcobol): New driver option.
+	* dwarf2out.cc (gen_compile_unit_die): Support Cobol as
+	source language.
+
 2025-03-10  Richard Sandiford  <richard.sandiford@arm.com>
 	    Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 

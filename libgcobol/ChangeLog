@@ -1,3 +1,75 @@
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* config.h.in: Regenerate.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR cobol/119216
+	* configure.tgt: On fully unsupported targets set UNSUPPORTED=1.
+	* configure.ac: Add AC_CHECK_SIZEOF([void *]), source in
+	configure.tgt and set BUILD_LIBGCOBOL also based on
+	LIBGCOBOL_SUPPORTED.
+	* Makefile.am (toolexeclib_LTLIBRARIES): Conditionalize on
+	BUILD_LIBGCOBOL.
+	(AM_CFLAGS): Rename to ...
+	(AM_CXXFLAGS): ... this.
+	(%.lo: %.cc): Use $(AM_CXXFLAGS) rather than $(AM_CFLAGS).
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am: Remove tons of VAR = @VAR@ style lines.
+	(libgcobol.la): Remove.
+	(libgcobol_la_LFLAGS): Remove.
+	(all): Remove.
+	(.PHONY): Remove.
+	(install): Remove.
+	(%.lo: %.c): Remove.
+	(doc): Remove.
+	(install-html install-pdf install-info): Remove.
+	* Makefile.in: Regenerate.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.tgt: Remove x86_64-*-linux*x32 special case.
+
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.tgt: Only set LIBGCOBOL_SUPPORTED for lp64
+	multilibs of powerpc64le-*-linux* and x86_64-*-linux*.  Handle
+	i?86-*-linux* the same as x86_64-*-linux*.
+
+2025-03-11  James K. Lowden  <jklowden@symas.com>
+
+	* Makefile.am: New file.
+	* Makefile.in: Autogenerate.
+	* acinclude.m4: Likewise.
+	* aclocal.m4: Likewise.
+	* configure.ac: New file.
+	* configure: Autogenerate.
+	* configure.tgt: New file.
+	* README: New file.
+	* charmaps.cc: New file.
+	* config.h.in: New file.
+	* constants.cc: New file.
+	* gfileio.cc: New file.
+	* gmath.cc: New file.
+	* io.cc: New file.
+	* valconv.cc: New file.
+	* charmaps.h: New file.
+	* common-defs.h: New file.
+	* ec.h: New file.
+	* exceptl.h: New file.
+	* gcobolio.h: New file.
+	* gfileio.h: New file.
+	* gmath.h: New file.
+	* io.h: New file.
+	* libgcobol.h: New file.
+	* valconv.h: New file.
+	* libgcobol.cc: New file.
+	* intrinsic.cc: New file.
+
 
 Copyright (C) 2025 Free Software Foundation, Inc.
 

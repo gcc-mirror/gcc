@@ -1,3 +1,20 @@
+2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117178
+	* c-typeck.cc (output_init_element): Pass field to digest_init
+	only for record/union types, otherwise pass constructor_fields
+	if non-NULL and constructor_decl if constructor_fields is NULL.
+
+2025-03-11  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/118579
+	* c-parser.cc (c_parser_omp_variable_list): Capture location
+	information when KIND is OMP_CLAUSE_ERROR.
+	(c_parser_oacc_data_clause_deviceptr): Use the improved location
+	for diagnostics, and remove the FIXME.
+	(c_finish_omp_declare_variant): Likewise.
+	(c_parser_omp_threadprivate): Likewise.
+
 2025-03-07  Kees Cook  <kees@kernel.org>
 	    Jakub Jelinek  <jakub@redhat.com>
 
