@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize" } */
+/* { dg-options "-O2 -ftree-vectorize -fno-vect-cost-model" } */
 
 double mat[100][8];
 

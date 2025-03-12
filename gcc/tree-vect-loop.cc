@@ -8180,7 +8180,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
     return false;
 
   if (slp_node)
-    ncopies = 1;
+    ncopies = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
   else
     ncopies = vect_get_num_copies (loop_vinfo, vectype_in);
 
@@ -8288,7 +8288,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
        || reduction_type == CONST_COND_REDUCTION
        || reduction_type == EXTRACT_LAST_REDUCTION)
       && slp_node
-      && SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) > 1)
+      && ncopies > 1)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -8297,6 +8297,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
     }
 
   if ((double_reduc || reduction_type != TREE_CODE_REDUCTION)
+      && !slp_node
       && ncopies > 1)
     {
       if (dump_enabled_p ())
@@ -8523,11 +8524,10 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
    participating.  When unrolling we want each unrolled iteration to have its
    own reduction accumulator since one of the main goals of unrolling a
    reduction is to reduce the aggregate loop-carried latency.  */
-  if ((ncopies > 1
-       || (slp_node
-	   && !REDUC_GROUP_FIRST_ELEMENT (stmt_info)
-	   && SLP_TREE_LANES (slp_node) == 1
-	   && vect_get_num_copies (loop_vinfo, vectype_in) > 1))
+  if (ncopies > 1
+      && (!slp_node
+	  || (!REDUC_GROUP_FIRST_ELEMENT (stmt_info)
+	      && SLP_TREE_LANES (slp_node) == 1))
       && (STMT_VINFO_RELEVANT (stmt_info) <= vect_used_only_live)
       && reduc_chain_length == 1
       && loop_vinfo->suggested_unroll_factor == 1)
