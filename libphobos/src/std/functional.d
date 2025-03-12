@@ -51,6 +51,9 @@ $(TR $(TH Function Name) $(TH Description)
     $(TR $(TD $(LREF bind))
         $(TD Passes the fields of a struct as arguments to a function.
     ))
+    $(TR $(TD $(LREF ctEval))
+        $(TD Enforces the evaluation of an expression during compile-time.
+    ))
 ))
 
 Copyright: Copyright Andrei Alexandrescu 2008 - 2009.
@@ -1886,16 +1889,21 @@ private template buildDelegate(F)
 
 @safe unittest
 {
-    static int inc(ref uint num) {
+    static int inc(ref int num) {
         num++;
         return 8675309;
     }
 
-    uint myNum = 0x1337;
-    struct S1 { int opCall() { inc(myNum); return myNum; } }
-    static assert(!is(typeof(&s1.opCall) == delegate));
+    struct S1
+    {
+        static int myNum = 0x1337;
+        static int opCall() { inc(myNum); return myNum; }
+    }
+
     S1 s1;
     auto getvals1 = toDelegate(s1);
+    static assert(!is(typeof(&s1.opCall)     == delegate));
+    static assert( is(typeof(toDelegate(s1)) == delegate));
     assert(getvals1() == 0x1338);
 }
 
@@ -1924,15 +1932,18 @@ private template buildDelegate(F)
     assert(getvali() == 3);
 
     struct S1 { int opCall() { inc(myNum); return myNum; } }
-    static assert(!is(typeof(&s1.opCall) == delegate));
     S1 s1;
     auto getvals1 = toDelegate(s1);
+    static assert(is(typeof(&s1.opCall) == delegate));
+    static assert(is(typeof(getvals1)   == delegate));
+    assert(&s1.opCall is getvals1);
     assert(getvals1() == 4);
 
     struct S2 { static int opCall() { return 123456; } }
-    static assert(!is(typeof(&S2.opCall) == delegate));
     S2 s2;
-    auto getvals2 =&S2.opCall;
+    auto getvals2 = toDelegate(s2);
+    static assert(!is(typeof(&S2.opCall) == delegate));
+    static assert( is(typeof(getvals2)   == delegate));
     assert(getvals2() == 123456);
 
     /* test for attributes */
@@ -2166,4 +2177,51 @@ template bind(alias fun)
     tuple(123).bind!((auto ref x) {
         static assert(!__traits(isRef, x));
     });
+}
+
+/**
+ * Enforces the evaluation of an expression during compile-time.
+ *
+ * Computes the value of an expression during compilation (CTFE).
+ *
+ * This is useful for call chains in functional programming
+ * where declaring an `enum` constant would require splitting
+ * the pipeline.
+ *
+ * Params:
+ *   expr = expression to evaluate
+ * See_also:
+ *   $(LINK https://dlang.org/spec/function.html#interpretation)
+ */
+enum ctEval(alias expr) = expr;
+
+///
+@safe unittest
+{
+    import std.math : abs;
+
+    // No explicit `enum` needed.
+    float result = ctEval!(abs(-3));
+    assert(result == 3);
+
+    // Can be statically asserted.
+    static assert(ctEval!(abs(-4)) == 4);
+    static assert(ctEval!(abs( 9)) == 9);
+}
+
+///
+@safe unittest
+{
+    import core.stdc.math : round;
+    import std.conv : to;
+    import std.math : abs, PI, sin;
+
+    // `round` from the C standard library cannot be interpreted at compile
+    // time, because it has no available source code. However the function
+    // calls preceding `round` can be evaluated during compile time.
+    int result = ctEval!(abs(sin(1.0)) * 180 / PI)
+        .round()
+        .to!int();
+
+    assert(result == 48);
 }

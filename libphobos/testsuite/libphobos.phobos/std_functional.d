@@ -358,3 +358,36 @@ pure @safe @nogc nothrow unittest
     assert(overForty.equal(["Bob", "Eve"]));
 }
 
+@safe unittest
+{
+    import std.functional;
+
+    import std.math : abs;
+
+    // No explicit `enum` needed.
+    float result = ctEval!(abs(-3));
+    assert(result == 3);
+
+    // Can be statically asserted.
+    static assert(ctEval!(abs(-4)) == 4);
+    static assert(ctEval!(abs( 9)) == 9);
+}
+
+@safe unittest
+{
+    import std.functional;
+
+    import core.stdc.math : round;
+    import std.conv : to;
+    import std.math : abs, PI, sin;
+
+    // `round` from the C standard library cannot be interpreted at compile
+    // time, because it has no available source code. However the function
+    // calls preceding `round` can be evaluated during compile time.
+    int result = ctEval!(abs(sin(1.0)) * 180 / PI)
+        .round()
+        .to!int();
+
+    assert(result == 48);
+}
+

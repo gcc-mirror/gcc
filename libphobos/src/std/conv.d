@@ -13,6 +13,7 @@ $(TR $(TD Generic) $(TD
         $(LREF parse)
         $(LREF to)
         $(LREF toChars)
+        $(LREF bitCast)
 ))
 $(TR $(TD Strings) $(TD
         $(LREF text)
@@ -6046,4 +6047,39 @@ package enum toCtString(ulong n) = n.stringof[0 .. $ - "LU".length];
 {
     assert(toCtString!0 == "0");
     assert(toCtString!123456 == "123456");
+}
+
+/**
+ * Takes the raw bits of a value and reinterprets them as a different type.
+ *
+ * Params:
+ *   T = the new type.
+ *   value = the value to reinterpret.
+ *
+ * Returns: a reference to the reinterpreted value.
+ */
+pragma(inline, true)
+ref T bitCast(T, S)(ref S value)
+if (T.sizeof <= S.sizeof)
+{
+    return *cast(T*) &value;
+}
+
+///
+@safe unittest
+{
+    uint n = 0xDEADBEEF;
+
+    version (LittleEndian)
+        assert(n.bitCast!(ubyte[4]) == [0xEF, 0xBE, 0xAD, 0xDE]);
+    version (BigEndian)
+        assert(n.bitCast!(ubyte[4]) == [0xDE, 0xAD, 0xBE, 0xEF]);
+}
+
+// Sizes must be compatible
+@safe unittest
+{
+    uint n;
+
+    assert(!__traits(compiles, n.bitCast!ulong));
 }

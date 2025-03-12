@@ -377,6 +377,16 @@ if (!isType!fmt && isSomeString!(typeof(fmt)))
     assert(t[0] == 1 && t[1] == 2.125);
 }
 
+@safe pure unittest
+{
+    string hello;
+    string world;
+
+    assert("hello ignore world".formattedRead("%s %*s %s", hello, world) == 2);
+    assert(hello == "hello");
+    assert(world == "world");
+}
+
 // https://issues.dlang.org/show_bug.cgi?id=23600
 @safe pure unittest
 {

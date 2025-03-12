@@ -299,3 +299,156 @@
     assert(!canMatch!(handleInt, string));
 }
 
+@safe unittest
+{
+    import std.sumtype;
+
+    SumType!(string, double) example = "hello";
+
+    assert( example.has!string);
+    assert(!example.has!double);
+
+    // If T isn't part of the SumType, has!T will always return false.
+    assert(!example.has!int);
+}
+
+@safe unittest
+{
+    import std.sumtype;
+
+    alias Example = SumType!(string, double);
+
+    Example m = "mutable";
+    const Example c = "const";
+    immutable Example i = "immutable";
+
+    assert( m.has!string);
+    assert(!m.has!(const(string)));
+    assert(!m.has!(immutable(string)));
+
+    assert(!c.has!string);
+    assert( c.has!(const(string)));
+    assert(!c.has!(immutable(string)));
+
+    assert(!i.has!string);
+    assert(!i.has!(const(string)));
+    assert( i.has!(immutable(string)));
+}
+
+@safe unittest
+{
+    import std.sumtype;
+
+    import std.algorithm.iteration : filter;
+    import std.algorithm.comparison : equal;
+
+    alias Example = SumType!(string, double);
+
+    auto arr = [
+        Example("foo"),
+        Example(0),
+        Example("bar"),
+        Example(1),
+        Example(2),
+        Example("baz")
+    ];
+
+    auto strings = arr.filter!(has!string);
+    auto nums = arr.filter!(has!double);
+
+    assert(strings.equal([Example("foo"), Example("bar"), Example("baz")]));
+    assert(nums.equal([Example(0), Example(1), Example(2)]));
+}
+
+@safe unittest
+{
+    import std.sumtype;
+
+    SumType!(string, double) example1 = "hello";
+    SumType!(string, double) example2 = 3.14;
+
+    assert(example1.get!string == "hello");
+    assert(example2.get!double == 3.14);
+}
+
+@safe unittest
+{
+    import std.sumtype;
+
+    alias Example = SumType!(string, double);
+
+    Example m = "mutable";
+    const(Example) c = "const";
+    immutable(Example) i = "immutable";
+
+    assert(m.get!string == "mutable");
+    assert(c.get!(const(string)) == "const");
+    assert(i.get!(immutable(string)) == "immutable");
+}
+
+@safe unittest
+{
+    import std.sumtype;
+
+    import std.algorithm.iteration : map;
+    import std.algorithm.comparison : equal;
+
+    alias Example = SumType!(string, double);
+
+    auto arr = [Example(0), Example(1), Example(2)];
+    auto values = arr.map!(get!double);
+
+    assert(values.equal([0, 1, 2]));
+}
+
+@safe unittest
+{
+    import std.sumtype;
+
+    SumType!(string, double) example = "hello";
+
+    assert(example.tryGet!string == "hello");
+
+    double result = double.nan;
+    try
+        result = example.tryGet!double;
+    catch (MatchException e)
+        result = 0;
+
+    // Exception was thrown
+    assert(result == 0);
+}
+
+@safe unittest
+{
+    import std.sumtype;
+
+    import std.exception : assertThrown;
+
+    const(SumType!(string, double)) example = "const";
+
+    // Qualifier mismatch; throws exception
+    assertThrown!MatchException(example.tryGet!string);
+    // Qualifier matches; no exception
+    assert(example.tryGet!(const(string)) == "const");
+}
+
+@safe unittest
+{
+    import std.sumtype;
+
+    import std.algorithm.iteration : map, sum;
+    import std.functional : pipe;
+    import std.exception : assertThrown;
+
+    alias Example = SumType!(string, double);
+
+    auto arr1 = [Example(0), Example(1), Example(2)];
+    auto arr2 = [Example("foo"), Example("bar"), Example("baz")];
+
+    alias trySum = pipe!(map!(tryGet!double), sum);
+
+    assert(trySum(arr1) == 0 + 1 + 2);
+    assertThrown!MatchException(trySum(arr2));
+}
+

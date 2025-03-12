@@ -18,6 +18,7 @@ $(TR $(TD Reading) $(TD
     $(MYREF chunks)
     $(MYREF lines)
     $(MYREF readf)
+    $(MYREF readfln)
     $(MYREF readln)
 ))
 $(TR $(TD Writing) $(TD
@@ -2092,6 +2093,85 @@ $(CONSOLE
         import std.exception : collectException;
         assert(collectException!ConvException(f.readf("%s", &input)).msg ==
             "Unexpected '\\n' when converting from type LockingTextReader to type int");
+    }
+
+    /**
+    Reads a line from the file and parses it using $(REF formattedRead, std,format,read).
+
+    Params:
+      format = The $(MREF_ALTTEXT format string, std,format). When passed as a
+      compile-time argument, the string will be statically checked against the
+      argument types passed.
+      data = Items to be read.
+
+    Returns: Same as `formattedRead`: the number of variables filled. If the
+    input ends early, this number will be less that the number of variables
+    provided.
+
+    Example:
+    ---
+    // sum_rows.d
+    void main()
+    {
+        import std.stdio;
+        auto f = File("input");
+        int a, b, c;
+        while (f.readfln("%d %d %d", a, b, c) == 3)
+        {
+            writeln(a + b + c);
+        }
+    }
+    ---
+    $(CONSOLE
+% cat << EOF > input
+1 2 3
+4 5 6
+7 8 9
+EOF
+% rdmd sum_rows.d
+6
+15
+24
+    )
+    */
+    uint readfln(alias format, Data...)(auto ref Data data)
+    if (isSomeString!(typeof(format)))
+    {
+        import std.format : checkFormatException;
+
+        alias e = checkFormatException!(format, Data);
+        static assert(!e, e);
+        return this.readfln(format, data);
+    }
+
+    /// ditto
+    uint readfln(Data...)(scope const(char)[] format, auto ref Data data)
+    {
+        import std.format.read : formattedRead;
+        import std.string : stripRight;
+
+        string line = this.readln.stripRight("\r\n");
+        return formattedRead(line, format, data);
+    }
+
+    @system unittest
+    {
+        static import std.file;
+
+        auto deleteme = testFilename();
+        std.file.write(deleteme, "hello\nworld\ntrue\nfalse\n");
+        scope(exit) std.file.remove(deleteme);
+        string s;
+        auto f = File(deleteme);
+        f.readfln!"%s"(s);
+        assert(s == "hello", "["~s~"]");
+        f.readfln("%s", s);
+        assert(s == "world", "["~s~"]");
+
+        bool b1, b2;
+        f.readfln("%s", b1);
+        f.readfln("%s", b2);
+        assert(b1 == true && b2 == false);
     }
 
 /**
@@ -4487,6 +4567,70 @@ if (isSomeChar!C && is(Unqual!C == C) && !is(C == enum) &&
             readln(buf, "<br />");
         }}
     }
+}
+
+/**
+Reads a line from `stdin` and parses it using $(REF formattedRead, std,format,read).
+
+Params:
+  format = The $(MREF_ALTTEXT format string, std,format). When passed as a
+  compile-time argument, the string will be statically checked against the
+  argument types passed.
+  data = Items to be read.
+
+Returns: Same as `formattedRead`: the number of variables filled. If the
+input ends early, this number will be less that the number of variables
+provided.
+
+Example:
+---
+// sum_rows.d
+void main()
+{
+    import std.stdio;
+    int a, b, c;
+    while (readfln("%d %d %d", a, b, c) == 3)
+    {
+        writeln(a + b + c);
+    }
+}
+---
+$(CONSOLE
+% cat << EOF > input
+1 2 3
+4 5 6
+7 8 9
+EOF
+% rdmd sum_rows.d < input
+6
+15
+24
+)
+*/
+uint readfln(alias format, Data...)(auto ref Data data)
+{
+    import std.format : checkFormatException;
+
+    alias e = checkFormatException!(format, Data);
+    static assert(!e, e);
+    return .readfln(format, data);
+}
+
+/// ditto
+uint readfln(Data...)(scope const(char)[] format, auto ref Data data)
+{
+    return stdin.readfln(format, data);
+}
+
+@system unittest
+{
+    float f;
+    string s;
+    char c;
+    int n;
+    if (false) readfln("%f %s %c %d", f, s, c, n);
+    if (false) readfln!"%f %s %c %d"(f, s, c, n);
+
 }
 
 /*

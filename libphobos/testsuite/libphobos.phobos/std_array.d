@@ -451,6 +451,23 @@
     int[] a = [ 1, 2 ];
     auto app2 = appender(a);
     app2.put(3);
+    app2.put([ 4, 5, 6 ]);
+    assert(app2[] == [ 1, 2, 3, 4, 5, 6 ]);
+}
+
+@safe pure nothrow unittest
+{
+    import std.array;
+
+    auto app = appender!string();
+    string b = "abcdefg";
+    foreach (char c; b)
+        app.put(c);
+    assert(app[] == "abcdefg");
+
+    int[] a = [ 1, 2 ];
+    auto app2 = appender(a);
+    app2.put(3);
     assert(app2.length == 3);
     app2.put([ 4, 5, 6 ]);
     assert(app2[] == [ 1, 2, 3, 4, 5, 6 ]);

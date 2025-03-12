@@ -1042,7 +1042,7 @@ if (Ranges.length > 0 &&
                 // We do this separately to avoid invoking `empty` needlessly.
                 // While not recommended, a range may depend on side effects of
                 // `empty` call.
-                foreach (i, ref v; input) if (!v.empty)
+                foreach (i, ref v; source) if (!v.empty)
                 {
                     frontIndex = i;
                     static if (bidirectional) backIndex = i+1;
@@ -1056,7 +1056,7 @@ if (Ranges.length > 0 &&
                     static foreach_reverse (i; 1 .. R.length + 1)
                 {
                     if (i <= frontIndex + 1) return;
-                    if (!input[i-1].empty)
+                    if (!source[i-1].empty)
                     {
                         backIndex = i;
                         return;
@@ -11017,6 +11017,23 @@ auto only()()
     static assert(!__traits(compiles, r3.back = 789));
     // Workaround https://issues.dlang.org/show_bug.cgi?id=24383
     static assert(!__traits(compiles, () { r3[0] = 789; }));
+}
+
+// https://github.com/dlang/phobos/issues/10561
+@safe unittest
+{
+    static struct Range
+    {
+        private int i;
+
+        enum bool empty = false;
+        int front() => i;
+        void popFront() { ++i; }
+    }
+    import std.algorithm;
+
+    assert(Range().take(10).filter!"a>8".chain(only(100)).equal([9,100]));
+    assert((new Range()).take(10).filter!"a>8".chain(only(100)).equal([9,100]));
 }
 
 /**

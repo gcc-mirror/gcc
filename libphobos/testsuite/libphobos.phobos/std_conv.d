@@ -509,3 +509,15 @@
     assert(toChars!(16, char, LetterCase.upper)(255U).equal("FF"));
 }
 
+@safe unittest
+{
+    import std.conv;
+
+    uint n = 0xDEADBEEF;
+
+    version (LittleEndian)
+        assert(n.bitCast!(ubyte[4]) == [0xEF, 0xBE, 0xAD, 0xDE]);
+    version (BigEndian)
+        assert(n.bitCast!(ubyte[4]) == [0xDE, 0xAD, 0xBE, 0xEF]);
+}
+
