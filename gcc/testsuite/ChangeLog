@@ -1,3 +1,11 @@
+2025-03-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2025-03-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119139
+	* gdc.dg/pr119139.d: New test.
+
 2025-03-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
