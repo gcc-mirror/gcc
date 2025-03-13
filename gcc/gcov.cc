@@ -1366,7 +1366,7 @@ get_md5sum (const char *input)
 static string
 get_gcov_intermediate_filename (const char *input_file_name)
 {
-  string base = basename (input_file_name);
+  string base = lbasename (input_file_name);
   string str = strip_extention (base);
 
   if (flag_hash_filenames)
