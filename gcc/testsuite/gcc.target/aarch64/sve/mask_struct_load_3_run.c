@@ -18,7 +18,7 @@
 	asm volatile ("" ::: "memory");			\
       }							\
     for (int i = 0; i < N * 4; ++i)			\
-      in[i] = i * 9 / 2;				\
+      in[i] = i * 5 / 3;				\
     NAME##_4 (out, in, mask, N);			\
     for (int i = 0; i < N; ++i)				\
       {							\
