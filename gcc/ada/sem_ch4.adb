@@ -728,7 +728,8 @@ package body Sem_Ch4 is
             end;
          end if;
 
-         Type_Id := Process_Subtype (E, N);
+         Type_Id :=
+           Process_Subtype (E, N, Excludes_Null => Null_Exclusion_Present (N));
          Acc_Type := Create_Itype (E_Allocator_Type, N);
          Set_Etype (Acc_Type, Acc_Type);
          Set_Directly_Designated_Type (Acc_Type, Type_Id);

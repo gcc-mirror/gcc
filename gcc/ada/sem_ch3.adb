@@ -5769,7 +5769,13 @@ package body Sem_Ch3 is
          Enter_Name (Id);
       end if;
 
-      T := Process_Subtype (Subtype_Indication (N), N, Id, 'P');
+      T :=
+        Process_Subtype
+          (Subtype_Indication (N),
+           N,
+           Id,
+           'P',
+           Excludes_Null => Null_Exclusion_Present (N));
 
       --  Class-wide equivalent types of records with unknown discriminants
       --  involve the generation of an itype which serves as the private view
@@ -6586,7 +6592,13 @@ package body Sem_Ch3 is
       --  Process subtype indication if one is present
 
       if Present (Component_Typ) then
-         Element_Type := Process_Subtype (Component_Typ, P, Related_Id, 'C');
+         Element_Type :=
+           Process_Subtype
+             (Component_Typ,
+              P,
+              Related_Id,
+              'C',
+              Excludes_Null => Null_Exclusion_Present (Component_Def));
          Set_Etype (Component_Typ, Element_Type);
 
       --  Ada 2005 (AI-230): Access Definition case
@@ -7202,7 +7214,11 @@ package body Sem_Ch3 is
       Set_Directly_Designated_Type
         (Derived_Type, Designated_Type (Parent_Type));
 
-      Subt := Process_Subtype (S, N);
+      Subt :=
+        Process_Subtype
+          (S,
+           N,
+           Excludes_Null => Null_Exclusion_Present (Type_Definition (N)));
 
       if Nkind (S) /= N_Subtype_Indication
         and then Subt /= Base_Type (Subt)
@@ -18826,7 +18842,11 @@ package body Sem_Ch3 is
       --  Otherwise, the object definition is just a subtype_mark
 
       else
-         T := Process_Subtype (Obj_Def, Related_Nod);
+         T :=
+           Process_Subtype
+             (Obj_Def,
+              Related_Nod,
+              Excludes_Null => Null_Exclusion_Present (Parent (Obj_Def)));
       end if;
 
       return T;
@@ -22501,10 +22521,11 @@ package body Sem_Ch3 is
    ---------------------
 
    function Process_Subtype
-     (S           : Node_Id;
-      Related_Nod : Node_Id;
-      Related_Id  : Entity_Id := Empty;
-      Suffix      : Character := ' ') return Entity_Id
+     (S             : Node_Id;
+      Related_Nod   : Node_Id;
+      Related_Id    : Entity_Id := Empty;
+      Suffix        : Character := ' ';
+      Excludes_Null : Boolean := False) return Entity_Id
    is
       procedure Check_Incomplete (T : Node_Id);
       --  Called to verify that an incomplete type is not used prematurely
@@ -22538,8 +22559,6 @@ package body Sem_Ch3 is
       Full_View_Id    : Entity_Id;
       Subtype_Mark_Id : Entity_Id;
 
-      May_Have_Null_Exclusion : Boolean;
-
    --  Start of processing for Process_Subtype
 
    begin
@@ -22560,33 +22579,10 @@ package body Sem_Ch3 is
          Check_Incomplete (S);
          P := Parent (S);
 
-         --  The following mirroring of assertion in Null_Exclusion_Present is
-         --  ugly, can't we have a range, a static predicate or even a flag???
-
-         May_Have_Null_Exclusion :=
-           Present (P)
-             and then
-           Nkind (P) in N_Access_Definition
-                      | N_Access_Function_Definition
-                      | N_Access_Procedure_Definition
-                      | N_Access_To_Object_Definition
-                      | N_Allocator
-                      | N_Component_Definition
-                      | N_Derived_Type_Definition
-                      | N_Discriminant_Specification
-                      | N_Formal_Object_Declaration
-                      | N_Function_Specification
-                      | N_Object_Declaration
-                      | N_Object_Renaming_Declaration
-                      | N_Parameter_Specification
-                      | N_Subtype_Declaration;
-
          --  Ada 2005 (AI-231): Static check
 
          if Ada_Version >= Ada_2005
-           and then May_Have_Null_Exclusion
-           and then Null_Exclusion_Present (P)
-           and then Nkind (P) /= N_Access_To_Object_Definition
+           and then Excludes_Null
            and then not Is_Access_Type (Entity (S))
          then
             Error_Msg_N ("`NOT NULL` only allowed for an access type", S);
@@ -22595,19 +22591,7 @@ package body Sem_Ch3 is
          --  Create an Itype that is a duplicate of Entity (S) but with the
          --  null-exclusion attribute.
 
-         if May_Have_Null_Exclusion
-           and then Is_Access_Type (Entity (S))
-           and then Null_Exclusion_Present (P)
-
-            --  No need to check the case of an access to object definition.
-            --  It is correct to define double not-null pointers.
-
-            --  Example:
-            --     type Not_Null_Int_Ptr is not null access Integer;
-            --     type Acc is not null access Not_Null_Int_Ptr;
-
-           and then Nkind (P) /= N_Access_To_Object_Definition
-         then
+         if Is_Access_Type (Entity (S)) and then Excludes_Null then
             if Can_Never_Be_Null (Entity (S)) then
                case Nkind (Related_Nod) is
                   when N_Full_Type_Declaration =>

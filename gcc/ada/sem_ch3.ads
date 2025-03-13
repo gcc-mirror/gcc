@@ -301,10 +301,11 @@ package Sem_Ch3 is
    --  in this case the bounds are captured if necessary using this name.
 
    function Process_Subtype
-     (S           : Node_Id;
-      Related_Nod : Node_Id;
-      Related_Id  : Entity_Id := Empty;
-      Suffix      : Character := ' ') return Entity_Id;
+     (S             : Node_Id;
+      Related_Nod   : Node_Id;
+      Related_Id    : Entity_Id := Empty;
+      Suffix        : Character := ' ';
+      Excludes_Null : Boolean := False) return Entity_Id;
    --  Process a subtype indication S and return corresponding entity.
    --  Related_Nod is the node where the potential generated implicit types
    --  will be inserted. The Related_Id and Suffix parameters are used to
