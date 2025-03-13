@@ -1,3 +1,9 @@
+2025-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/119202
+	* charset.cc (convert_oct): Fix up typo in diagnostics about \o
+	not followed by {.
+
 2025-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/cpplib.h (enum cpp_warning_reason): Add

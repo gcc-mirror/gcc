@@ -1,3 +1,92 @@
+2025-03-12  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/version.def (ranges_to_input): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/ranges (ranges::to_input_view): Define for C++26.
+	(views::__detail::__can_to_input): Likewise.
+	(views::_ToInput, views::to_input): Likewise.
+	* testsuite/std/ranges/adaptors/to_input/1.cc: New test.
+
+2025-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format: Include <bits/monostate.h> instead of
+	<variant>.
+
+2025-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (basic_format_parse_context::__once): New
+	variable template.
+	(basic_format_parse_context::__valid_types_for_check_dynamic_spec):
+	New function template for checking argument types.
+	(basic_format_parse_context::__check_dynamic_spec): New function
+	template to implement the common check_dynamic_spec logic.
+	(basic_format_parse_context::check_dynamic_spec_integral): Call
+	__check_dynamic_spec instead of check_dynamic_spec.
+	(basic_format_parse_context::check_dynamic_spec_string):
+	Likewise. Use _CharT instead of char_type consistently.
+	(basic_format_parse_context::check_dynamic_spec): Use
+	__valid_types_for_check_dynamic_spec for precondition checks and
+	call __check_dynamic_spec for checking the arg id.
+	* testsuite/std/format/parse_ctx_neg.cc: Adjust expected errors.
+
+2025-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (packaged_task::packaged_task(F&&)): Add
+	static_assert.
+	* testsuite/30_threads/packaged_task/cons/dangling_ref.cc: Add
+	dg-error for new static assertion.
+	* testsuite/30_threads/packaged_task/cons/lwg4154_neg.cc: New
+	test.
+
+2025-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (__detail::__get_leap_second_info): Update
+	expiry date for leap seconds list.
+	* src/c++20/tzdata.zi: Import new file from 2025a release.
+	* src/c++20/tzdb.cc (tzdb_list::_Node::_S_read_leap_seconds)
+	Update expiry date for leap seconds list.
+
+2025-03-12  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/format (formatter<_Float16, _CharT>): Define only if
+	_GLIBCXX_FLOAT_IS_IEEE_BINARY32 macro is defined.
+	(formatter<_Float16, _CharT>): As above.
+	(formatter<__gnu_cxx::__bfloat16_t, _CharT>): As above.
+	(formatter<_Float64, _CharT>): Define only if
+	_GLIBCXX_DOUBLE_IS_IEEE_BINARY64 is defined.
+	(basic_format_arg::_S_to_arg_type): Normalize _Float32 and _Float64
+	only to float and double respectivelly.
+	(basic_format_arg::_S_to_enum): Remove handling of _Float32 and _Float64.
+
+2025-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/strings.xml: Tweak formatting. Add example
+	using lambda.
+	* doc/html/manual/strings.html: Regenerate.
+
+2025-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_ptr.h (unique_ptr::operator*): Add
+	static_assert to check for dangling reference, as per LWG 4148.
+	* testsuite/20_util/unique_ptr/lwg4148.cc: New test.
+
+2025-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_util.h (ranges::_detail::__has_arrow):
+	Require operator->() to be valid on const-qualified type, as per
+	LWG 4112.
+	* testsuite/std/ranges/adaptors/lwg4112.cc: New test.
+
+2025-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format
+	(basic_format_parse_context::check_dynamic_spec): Require a
+	non-empty parameter pack, as per LWG 4142.
+	* testsuite/std/format/parse_ctx.cc: Remove call of
+	check_dynamic_spec with empty template argument list.
+	* testsuite/std/format/parse_ctx_neg.cc: Add dg-error to call of
+	check_dynamic_spec with empty template argument list.
+
 2025-03-08  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
 
 	* include/bits/version.def (atomic_value_initialization):

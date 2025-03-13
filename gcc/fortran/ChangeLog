@@ -1,3 +1,27 @@
+2025-03-12  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/98903
+	* array.cc (gfc_copy_array_ref): Copy team, team_type and stat.
+	(match_team_or_stat): Match a single team(_number)= or stat=.
+	(gfc_match_array_ref): Add switching to image_selector_parsing
+	and error handling when indices come after named arguments.
+	* coarray.cc (move_coarray_ref): Move also team_type.
+	* expr.cc (gfc_free_ref_list): Free team and stat expression.
+	(gfc_find_team_co): Find team or team_number in array-ref.
+	* gfortran.h (enum gfc_array_ref_team_type): New enum to
+	distinguish unset, team or team_number expression.
+	(gfc_find_team_co): Default searching to team= expressions.
+	* resolve.cc (resolve_array_ref): Check for type correctness of
+	team(_number) and stats in coindices.
+	* trans-array.cc (gfc_conv_array_ref): Ensure stat is cleared
+	when fcoarray=single is used.
+	* trans-intrinsic.cc (conv_stat_and_team): Including team_number
+	in conversion.
+	(gfc_conv_intrinsic_caf_get): Propagate team_number to ABI
+	routine.
+	(conv_caf_send_to_remote): Same.
+	(conv_caf_sendget): Same.
+
 2025-03-11  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/119199

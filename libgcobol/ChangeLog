@@ -1,3 +1,7 @@
+2025-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* charmaps.cc: Fix typo in comment.
+
 2025-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* config.h.in: Regenerate.

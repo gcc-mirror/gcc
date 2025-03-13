@@ -1,3 +1,15 @@
+2025-03-12  Mark Wielaard  <mark@klomp.org>
+
+	* lang.opt.urls: Regenerated.
+
+2025-03-12  Simon Martin  <simon@nasilyan.com>
+
+	* Make-lang.in: Remove unnecessary CPPFLAGS update.
+
+2025-03-12  Richard Biener  <rguenther@suse.de>
+
+	* Make-lang.in (lang_checks): Add check-cobol.
+
 2025-03-11  Richard Biener  <rguenther@suse.de>
 
 	* gcobolspec.cc (lang_specific_driver): For OPT_print_* do

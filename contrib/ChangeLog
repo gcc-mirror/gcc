@@ -1,3 +1,8 @@
+2025-03-12  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/119081
+	* relpath.sh: Give relative path even at /.
+
 2025-03-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* gcc-git-customization.sh: Delete outdated commands for

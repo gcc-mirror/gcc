@@ -1,3 +1,46 @@
+2025-03-12  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/116564
+	* df-problems.cc (df_simulate_defs): For partial defs, mark the
+	register live (treat it as a RMW operation).
+
+2025-03-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/115439
+	* config/arm/predicates.md (vpr_register_operand): Allow type-punning
+	subregs.
+
+2025-03-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/116901
+	* config/aarch64/aarch64.cc (aarch64_vector_costs::count_ops): Allow
+	stmt_info to be null.
+	(aarch64_vector_costs::add_stmt_cost): Call count_ops even if
+	stmt_info is null.
+
+2025-03-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/116901
+	* tree-vect-loop.cc (vectorizable_reduction): Set ncopies to
+	SLP_TREE_NUMBER_OF_VEC_STMTS for SLP.
+
+2025-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.def (RAW_DATA_CST): Document meaning of NULL RAW_DATA_OWNER.
+	(CONSTRUCTOR): Document meaning of RAW_DATA_CST used as element
+	value.
+
+2025-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/119204
+	PR middle-end/119219
+	* builtins.cc (fold_builtin_2): Pass type as another argument
+	to fold_builtin_strspn and fold_builtin_strcspn.
+	(fold_builtin_strspn): Add type argument, use it instead of
+	size_type_node.
+	(fold_builtin_strcspn): Add type argument, use it instead of
+	TREE_TYPE (expr).
+
 2025-03-12  Jeff Law  <jlaw@ventanamicro.com>
 
 	Revert:

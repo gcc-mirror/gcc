@@ -1,3 +1,65 @@
+2025-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119150
+	* constexpr.cc (cxx_eval_call_expression): For
+	DECL_IMMEDIATE_FUNCTION_P (fun) set manifestly_const_eval in new_ctx
+	and new_call to mce_true and set ctx to &new_ctx.
+
+2025-03-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118799
+	* module.cc (depset::hash::is_tu_local_entity): Only types,
+	functions, variables, and template (specialisations) can be
+	TU-local.  Explicit type aliases are TU-local iff the type they
+	refer to are.
+	(module_state::write_namespaces): Allow unnamed namespaces in
+	named modules.
+	(check_module_decl_linkage): Error for all exported declarations
+	in an unnamed namespace.
+
+2025-03-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119154
+	* decl2.cc (vague_linkage_p): Don't treat gnu_inline functions
+	as having vague linkage.
+	* module.cc (trees_out::core_bools): Clear DECL_INTERFACE_KNOWN
+	for vague-linkage entities.
+	(read_var_def): Maybe set comdat linkage for imported var
+	definitions.
+	(module_state::read_cluster): Use expand_or_defer_fn instead of
+	ad-hoc linkage management.
+	(post_load_processing): Likewise.
+	* semantics.cc (expand_or_defer_fn_1): Don't forget that we had
+	a definition at all.
+
+2025-03-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117512
+	* typeck.cc (cp_build_indirect_ref_1): Only do the *&e -> e
+	folding if the result would be an lvalue.
+
+2025-03-12  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/110584
+	* cp-tree.h (strip_normal_capture_proxy): Declare.
+	* lambda.cc (strip_normal_capture_proxy): New function to look
+	through normal capture proxies.
+	(build_capture_proxy): Use it.
+	* semantics.cc (process_outer_var_ref): Likewise.
+
+2025-03-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119134
+	* pt.cc (check_for_bare_parameter_packs): Check DECL_CONTEXT.
+
+2025-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119076
+	* module.cc (trees_out::start): Handle RAW_DATA_CST.
+	(trees_in::start): Likewise.
+	(trees_out::core_vals): Likewise.
+	(trees_in::core_vals): Likewise.
+
 2025-03-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/119162

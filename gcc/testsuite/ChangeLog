@@ -1,3 +1,103 @@
+2025-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119150
+	* g++.dg/cpp2a/consteval41.C: New test.
+
+2025-03-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118799
+	* g++.dg/modules/export-6.C: Adjust error message, add check for
+	no-linkage decls in namespace.
+	* g++.dg/modules/internal-4_b.C: Allow exposing a namespace with
+	internal linkage.  Type aliases are not entities and so never
+	exposures.
+	* g++.dg/modules/using-30_a.C: New test.
+	* g++.dg/modules/using-30_b.C: New test.
+	* g++.dg/modules/using-30_c.C: New test.
+
+2025-03-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119154
+	* g++.dg/modules/linkage-3_a.C: New test.
+	* g++.dg/modules/linkage-3_b.C: New test.
+	* g++.dg/modules/pr119154_a.C: New test.
+	* g++.dg/modules/pr119154_b.C: New test.
+
+2025-03-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117512
+	* g++.dg/cpp0x/alignas23.C: New test.
+	* g++.dg/ext/align3.C: New test.
+	* g++.dg/ext/align4.C: New test.
+	* g++.dg/ext/align5.C: New test.
+
+2025-03-12  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/110584
+	* g++.dg/cpp0x/lambda/lambda-nested10.C: New test.
+
+2025-03-12  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/117931
+	* gcc.target/arm/lp1243022.c: Delete non-functional test.
+
+2025-03-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119078
+	* gfortran.dg/binding_label_tests_26b.f90: Remove bogus dg-error
+	statements.
+
+2025-03-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119134
+	* g++.dg/cpp2a/lambda-uneval24.C: New test.
+
+2025-03-12  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/116564
+	* gcc.target/aarch64/torture/pr116564.c: New test.
+
+2025-03-12  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/98903
+	* gfortran.dg/coarray/coindexed_2.f90: New test.
+	* gfortran.dg/coarray/coindexed_3.f08: New test.
+	* gfortran.dg/coarray/coindexed_4.f08: New test.
+
+2025-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/119226
+	* gcc.c-torture/compile/pr119226.c: New test.
+
+2025-03-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/116901
+	* gcc.target/aarch64/sve/reduc_strict_4.c: Turn off costing.
+	* gcc.target/aarch64/sve/reduc_strict_5.c: Likewise.
+
+2025-03-12  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/pr110625_1.c: Turn into a positive test for
+	a vector latency of 2, rather than a negative test for a vector
+	latency of 8.
+
+2025-03-12  Richard Biener  <rguenther@suse.de>
+
+	* lib/cobol-dg.exp: New, based on gfortran-dg.exp.
+	* lib/cobol.exp: New, based on gfortran.exp.
+	* cobol.dg/dg.exp: New.
+	* cobol.dg/pass.cob: New test.
+	* cobol.dg/fail.cob: Likewise.
+	* cobol.dg/error-1.cob: Likewise.
+
+2025-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119076
+	* g++.dg/modules/pr119076-1_a.H: New test.
+	* g++.dg/modules/pr119076-1_b.C: New test.
+	* g++.dg/modules/pr119076-2_a.H: New test.
+	* g++.dg/modules/pr119076-2_b.C: New test.
+
 2025-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/117178
