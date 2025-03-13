@@ -2999,12 +2999,11 @@ extern tree vector_element_bits_tree (const_tree);
   (DECL_P (DECL)		\
    && (lookup_attribute ("persistent", DECL_ATTRIBUTES (DECL)) != NULL_TREE))
 
-/* For function local variables of COMPLEX and VECTOR types,
-   indicates that the variable is not aliased, and that all
-   modifications to the variable have been adjusted so that
-   they are killing assignments.  Thus the variable may now
-   be treated as a GIMPLE register, and use real instead of
-   virtual ops in SSA form.  */
+/* For function local variables indicates that the variable
+   should not be treated as a GIMPLE register.  In particular
+   this means that partial definitions can appear and the
+   variable cannot be written into SSA form and instead uses
+   virtual operands to represent the use-def dataflow.  */
 #define DECL_NOT_GIMPLE_REG_P(DECL) \
   DECL_COMMON_CHECK (DECL)->decl_common.not_gimple_reg_flag
 
