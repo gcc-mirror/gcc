@@ -32,25 +32,15 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Typeof::              @code{typeof}: referring to the type of an expression.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
 * Additional Numeric Types::  Additional sizes and formats, plus complex numbers.
+* Aggregate Types::	Extensions to arrays, structs, and unions.
 * Hex Floats::          Hexadecimal floating-point constants.
 * Named Address Spaces::Named address spaces.
-* Zero Length::         Zero-length arrays.
-* Empty Structures::    Structures with no members.
-* Flexible Array Members in Unions::  Unions with Flexible Array Members.
-* Flexible Array Members alone in Structures::  Structures with only Flexible Array Members.
-* Variable Length::     Arrays whose length is computed at run time.
 * Variadic Macros::     Macros with a variable number of arguments.
 * Escaped Newlines::    Slightly looser rules for escaped newlines.
-* Subscripting::        Any array can be subscripted, even if not an lvalue.
 * Pointer Arith::       Arithmetic on @code{void}-pointers and function pointers.
 * Variadic Pointer Args::  Pointer arguments to variadic functions.
 * Pointers to Arrays::  Pointers to arrays with qualifiers work as expected.
-* Initializers::        Non-constant initializers.
-* Compound Literals::   Compound literals give structures, unions
-                        or arrays as values.
-* Designated Inits::    Labeling elements of initializers.
 * Case Ranges::         `case 1 ... 9' and such.
-* Cast to Union::       Casting to union type from any member of the union.
 * Mixed Labels and Declarations::  Mixing declarations, labels and code.
 * Function Attributes:: Declaring that functions have no side effects,
                         or that they can never return.
@@ -89,7 +79,6 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Target Builtins::     Built-in functions specific to particular targets.
 * Target Format Checks:: Format checks specific to particular targets.
 * Pragmas::             Pragmas accepted by GCC.
-* Unnamed Fields::      Unnamed struct/union fields within structs/unions.
 * Thread-Local::        Per-thread variables.
 * Binary constants::    Binary constants using the @samp{0b} prefix.
 * OpenMP::              Multiprocessing extensions.
@@ -1451,6 +1440,763 @@ Pragmas to control overflow and rounding behaviors are not implemented.
 
 Fixed-point types are supported by the DWARF debug information format.
 
+@node Aggregate Types
+@section Array, Union, and Struct Extensions
+
+GCC supports several extensions relating to array, union, and struct types,
+including extensions for aggregate initializers for objects of these types.
+
+@menu
+* Variable Length::     Arrays whose length is computed at run time.
+* Zero Length::         Zero-length arrays.
+* Empty Structures::    Structures with no members.
+* Flexible Array Members in Unions::  Unions with Flexible Array Members.
+* Flexible Array Members alone in Structures::  Structures with only Flexible Array Members.
+* Unnamed Fields::      Unnamed struct/union fields within structs/unions.
+* Cast to Union::       Casting to union type from any member of the union.
+* Subscripting::        Any array can be subscripted, even if not an lvalue.
+* Initializers::        Non-constant initializers.
+* Compound Literals::   Compound literals give structures, unions
+                        or arrays as values.
+* Designated Inits::    Labeling elements of initializers.
+@end menu
+
+@node Variable Length
+@subsection Arrays of Variable Length
+@cindex variable-length arrays
+@cindex arrays of variable length
+@cindex VLAs
+
+Variable-length automatic arrays are allowed in ISO C99, and as an
+extension GCC accepts them in C90 mode and in C++.  These arrays are
+declared like any other automatic arrays, but with a length that is not
+a constant expression.  The storage is allocated at the point of
+declaration and deallocated when the block scope containing the declaration
+exits.  For
+example:
+
+@smallexample
+FILE *
+concat_fopen (char *s1, char *s2, char *mode)
+@{
+  char str[strlen (s1) + strlen (s2) + 1];
+  strcpy (str, s1);
+  strcat (str, s2);
+  return fopen (str, mode);
+@}
+@end smallexample
+
+@cindex scope of a variable length array
+@cindex variable-length array scope
+@cindex deallocating variable length arrays
+Jumping or breaking out of the scope of the array name deallocates the
+storage.  Jumping into the scope is not allowed; you get an error
+message for it.
+
+@cindex variable-length array in a structure
+As an extension, GCC accepts variable-length arrays as a member of
+a structure or a union.  For example:
+
+@smallexample
+void
+foo (int n)
+@{
+  struct S @{ int x[n]; @};
+@}
+@end smallexample
+
+@cindex @code{alloca} vs variable-length arrays
+You can use the function @code{alloca} to get an effect much like
+variable-length arrays.  The function @code{alloca} is available in
+many other C implementations (but not in all).  On the other hand,
+variable-length arrays are more elegant.
+
+There are other differences between these two methods.  Space allocated
+with @code{alloca} exists until the containing @emph{function} returns.
+The space for a variable-length array is deallocated as soon as the array
+name's scope ends, unless you also use @code{alloca} in this scope.
+
+You can also use variable-length arrays as arguments to functions:
+
+@smallexample
+struct entry
+tester (int len, char data[len][len])
+@{
+  /* @r{@dots{}} */
+@}
+@end smallexample
+
+The length of an array is computed once when the storage is allocated
+and is remembered for the scope of the array in case you access it with
+@code{sizeof}.
+
+If you want to pass the array first and the length afterward, you can
+use a forward declaration in the parameter list---another GNU extension.
+
+@smallexample
+struct entry
+tester (int len; char data[len][len], int len)
+@{
+  /* @r{@dots{}} */
+@}
+@end smallexample
+
+@cindex parameter forward declaration
+The @samp{int len} before the semicolon is a @dfn{parameter forward
+declaration}, and it serves the purpose of making the name @code{len}
+known when the declaration of @code{data} is parsed.
+
+You can write any number of such parameter forward declarations in the
+parameter list.  They can be separated by commas or semicolons, but the
+last one must end with a semicolon, which is followed by the ``real''
+parameter declarations.  Each forward declaration must match a ``real''
+declaration in parameter name and data type.  ISO C99 does not support
+parameter forward declarations.
+
+@node Zero Length
+@subsection Arrays of Length Zero
+@cindex arrays of length zero
+@cindex zero-length arrays
+@cindex length-zero arrays
+@cindex flexible array members
+
+Declaring zero-length arrays is allowed in GNU C as an extension.
+A zero-length array can be useful as the last element of a structure
+that is really a header for a variable-length object:
+
+@smallexample
+struct line @{
+  int length;
+  char contents[0];
+@};
+
+struct line *thisline = (struct line *)
+  malloc (sizeof (struct line) + this_length);
+thisline->length = this_length;
+@end smallexample
+
+In this example, @code{thisline->contents} is an array of @code{char} that
+can hold up to @code{thisline->length} bytes.
+
+Although the size of a zero-length array is zero, an array member of
+this kind may increase the size of the enclosing type as a result of tail
+padding.  The offset of a zero-length array member from the beginning
+of the enclosing structure is the same as the offset of an array with
+one or more elements of the same type.  The alignment of a zero-length
+array is the same as the alignment of its elements.
+
+Declaring zero-length arrays in other contexts, including as interior
+members of structure objects or as non-member objects, is discouraged.
+Accessing elements of zero-length arrays declared in such contexts is
+undefined and may be diagnosed.
+
+In the absence of the zero-length array extension, in ISO C90
+the @code{contents} array in the example above would typically be declared
+to have a single element.  Unlike a zero-length array which only contributes
+to the size of the enclosing structure for the purposes of alignment,
+a one-element array always occupies at least as much space as a single
+object of the type.  Although using one-element arrays this way is
+discouraged, GCC handles accesses to trailing one-element array members
+analogously to zero-length arrays.
+
+The preferred mechanism to declare variable-length types like
+@code{struct line} above is the ISO C99 @dfn{flexible array member},
+with slightly different syntax and semantics:
+
+@itemize @bullet
+@item
+Flexible array members are written as @code{contents[]} without
+the @code{0}.
+
+@item
+Flexible array members have incomplete type, and so the @code{sizeof}
+operator may not be applied.  As a quirk of the original implementation
+of zero-length arrays, @code{sizeof} evaluates to zero.
+
+@item
+Flexible array members may only appear as the last member of a
+@code{struct} that is otherwise non-empty.
+
+@item
+A structure containing a flexible array member, or a union containing
+such a structure (possibly recursively), may not be a member of a
+structure or an element of an array.  (However, these uses are
+permitted by GCC as extensions, see details below.)
+@end itemize
+
+The GCC extension accepts a structure containing an ISO C99 @dfn{flexible array
+member}, or a union containing such a structure (possibly recursively)
+to be a member of a structure.
+
+There are two situations:
+
+@itemize @bullet
+@item
+A structure containing a C99 flexible array member, or a union containing
+such a structure, is the last field of another structure, for example:
+
+@smallexample
+struct flex  @{ int length; char data[]; @};
+union union_flex @{ int others; struct flex f; @};
+
+struct out_flex_struct @{ int m; struct flex flex_data; @};
+struct out_flex_union @{ int n; union union_flex flex_data; @};
+@end smallexample
+
+In the above, both @code{out_flex_struct.flex_data.data[]} and
+@code{out_flex_union.flex_data.f.data[]} are considered as flexible arrays too.
+
+@item
+A structure containing a C99 flexible array member, or a union containing
+such a structure, is not the last field of another structure, for example:
+
+@smallexample
+struct flex  @{ int length; char data[]; @};
+
+struct mid_flex @{ int m; struct flex flex_data; int n; @};
+@end smallexample
+
+In the above, accessing a member of the array @code{mid_flex.flex_data.data[]}
+might have undefined behavior.  Compilers do not handle such a case
+consistently.  Any code relying on this case should be modified to ensure
+that flexible array members only end up at the ends of structures.
+
+Please use the warning option @option{-Wflex-array-member-not-at-end} to
+identify all such cases in the source code and modify them.  This extension
+is now deprecated.
+@end itemize
+
+Non-empty initialization of zero-length
+arrays is treated like any case where there are more initializer
+elements than the array holds, in that a suitable warning about ``excess
+elements in array'' is given, and the excess elements (all of them, in
+this case) are ignored.
+
+GCC allows static initialization of flexible array members.
+This is equivalent to defining a new structure containing the original
+structure followed by an array of sufficient size to contain the data.
+E.g.@: in the following, @code{f1} is constructed as if it were declared
+like @code{f2}.
+
+@smallexample
+struct f1 @{
+  int x; int y[];
+@} f1 = @{ 1, @{ 2, 3, 4 @} @};
+
+struct f2 @{
+  struct f1 f1; int data[3];
+@} f2 = @{ @{ 1 @}, @{ 2, 3, 4 @} @};
+@end smallexample
+
+@noindent
+The convenience of this extension is that @code{f1} has the desired
+type, eliminating the need to consistently refer to @code{f2.f1}.
+
+This has symmetry with normal static arrays, in that an array of
+unknown size is also written with @code{[]}.
+
+Of course, this extension only makes sense if the extra data comes at
+the end of a top-level object, as otherwise we would be overwriting
+data at subsequent offsets.  To avoid undue complication and confusion
+with initialization of deeply nested arrays, we simply disallow any
+non-empty initialization except when the structure is the top-level
+object.  For example:
+
+@smallexample
+struct foo @{ int x; int y[]; @};
+struct bar @{ struct foo z; @};
+
+struct foo a = @{ 1, @{ 2, 3, 4 @} @};        // @r{Valid.}
+struct bar b = @{ @{ 1, @{ 2, 3, 4 @} @} @};    // @r{Invalid.}
+struct bar c = @{ @{ 1, @{ @} @} @};            // @r{Valid.}
+struct foo d[1] = @{ @{ 1, @{ 2, 3, 4 @} @} @};  // @r{Invalid.}
+@end smallexample
+
+@node Empty Structures
+@subsection Structures with No Members
+@cindex empty structures
+@cindex zero-size structures
+
+GCC permits a C structure to have no members:
+
+@smallexample
+struct empty @{
+@};
+@end smallexample
+
+The structure has size zero.  In C++, empty structures are part
+of the language.  G++ treats empty structures as if they had a single
+member of type @code{char}.
+
+@node Flexible Array Members in Unions
+@subsection Unions with Flexible Array Members
+@cindex unions with flexible array members
+@cindex unions with FAMs
+
+GCC permits a C99 flexible array member (FAM) to be in a union:
+
+@smallexample
+union with_fam @{
+  int a;
+  int b[];
+@};
+@end smallexample
+
+If every member of a union is a flexible array member, the size of
+such a union is zero.
+
+@node Flexible Array Members alone in Structures
+@subsection Structures with only Flexible Array Members
+@cindex structures with only flexible array members
+@cindex structures with only FAMs
+
+GCC permits a C99 flexible array member (FAM) to be alone in a structure:
+
+@smallexample
+struct only_fam @{
+  int b[];
+@};
+@end smallexample
+
+The size of such a structure is zero.
+
+@node Unnamed Fields
+@subsection Unnamed Structure and Union Fields
+@cindex @code{struct}
+@cindex @code{union}
+
+As permitted by ISO C11 and for compatibility with other compilers,
+GCC allows you to define
+a structure or union that contains, as fields, structures and unions
+without names.  For example:
+
+@smallexample
+struct @{
+  int a;
+  union @{
+    int b;
+    float c;
+  @};
+  int d;
+@} foo;
+@end smallexample
+
+@noindent
+In this example, you are able to access members of the unnamed
+union with code like @samp{foo.b}.  Note that only unnamed structs and
+unions are allowed, you may not have, for example, an unnamed
+@code{int}.
+
+You must never create such structures that cause ambiguous field definitions.
+For example, in this structure:
+
+@smallexample
+struct @{
+  int a;
+  struct @{
+    int a;
+  @};
+@} foo;
+@end smallexample
+
+@noindent
+it is ambiguous which @code{a} is being referred to with @samp{foo.a}.
+The compiler gives errors for such constructs.
+
+@opindex fms-extensions
+Unless @option{-fms-extensions} is used, the unnamed field must be a
+structure or union definition without a tag (for example, @samp{struct
+@{ int a; @};}).  If @option{-fms-extensions} is used, the field may
+also be a definition with a tag such as @samp{struct foo @{ int a;
+@};}, a reference to a previously defined structure or union such as
+@samp{struct foo;}, or a reference to a @code{typedef} name for a
+previously defined structure or union type.
+
+@opindex fplan9-extensions
+The option @option{-fplan9-extensions} enables
+@option{-fms-extensions} as well as two other extensions.  First, a
+pointer to a structure is automatically converted to a pointer to an
+anonymous field for assignments and function calls.  For example:
+
+@smallexample
+struct s1 @{ int a; @};
+struct s2 @{ struct s1; @};
+extern void f1 (struct s1 *);
+void f2 (struct s2 *p) @{ f1 (p); @}
+@end smallexample
+
+@noindent
+In the call to @code{f1} inside @code{f2}, the pointer @code{p} is
+converted into a pointer to the anonymous field.
+
+Second, when the type of an anonymous field is a @code{typedef} for a
+@code{struct} or @code{union}, code may refer to the field using the
+name of the @code{typedef}.
+
+@smallexample
+typedef struct @{ int a; @} s1;
+struct s2 @{ s1; @};
+s1 f1 (struct s2 *p) @{ return p->s1; @}
+@end smallexample
+
+These usages are only permitted when they are not ambiguous.
+
+@node Cast to Union
+@subsection Cast to a Union Type
+@cindex cast to a union
+@cindex union, casting to a
+
+A cast to a union type is a C extension not available in C++.  It looks
+just like ordinary casts with the constraint that the type specified is
+a union type.  You can specify the type either with the @code{union}
+keyword or with a @code{typedef} name that refers to a union.  The result
+of a cast to a union is a temporary rvalue of the union type with a member
+whose type matches that of the operand initialized to the value of
+the operand.  The effect of a cast to a union is similar to a compound
+literal except that it yields an rvalue like standard casts do.
+@xref{Compound Literals}.
+
+Expressions that may be cast to the union type are those whose type matches
+at least one of the members of the union.  Thus, given the following union
+and variables:
+
+@smallexample
+union foo @{ int i; double d; @};
+int x;
+double y;
+union foo z;
+@end smallexample
+
+@noindent
+both @code{x} and @code{y} can be cast to type @code{union foo} and
+the following assignments
+@smallexample
+  z = (union foo) x;
+  z = (union foo) y;
+@end smallexample
+are shorthand equivalents of these
+@smallexample
+  z = (union foo) @{ .i = x @};
+  z = (union foo) @{ .d = y @};
+@end smallexample
+
+However, @code{(union foo) FLT_MAX;} is not a valid cast because the union
+has no member of type @code{float}.
+
+Using the cast as the right-hand side of an assignment to a variable of
+union type is equivalent to storing in a member of the union with
+the same type
+
+@smallexample
+union foo u;
+/* @r{@dots{}} */
+u = (union foo) x  @equiv{}  u.i = x
+u = (union foo) y  @equiv{}  u.d = y
+@end smallexample
+
+You can also use the union cast as a function argument:
+
+@smallexample
+void hack (union foo);
+/* @r{@dots{}} */
+hack ((union foo) x);
+@end smallexample
+
+@node Subscripting
+@subsection Non-Lvalue Arrays May Have Subscripts
+@cindex subscripting
+@cindex arrays, non-lvalue
+
+@cindex subscripting and function values
+In ISO C99, arrays that are not lvalues still decay to pointers, and
+may be subscripted, although they may not be modified or used after
+the next sequence point and the unary @samp{&} operator may not be
+applied to them.  As an extension, GNU C allows such arrays to be
+subscripted in C90 mode, though otherwise they do not decay to
+pointers outside C99 mode.  For example,
+this is valid in GNU C though not valid in C90:
+
+@smallexample
+@group
+struct foo @{int a[4];@};
+
+struct foo f();
+
+bar (int index)
+@{
+  return f().a[index];
+@}
+@end group
+@end smallexample
+
+@node Initializers
+@subsection Non-Constant Initializers
+@cindex initializers, non-constant
+@cindex non-constant initializers
+
+As in standard C++ and ISO C99, the elements of an aggregate initializer for an
+automatic variable are not required to be constant expressions in GNU C@.
+Here is an example of an initializer with run-time varying elements:
+
+@smallexample
+foo (float f, float g)
+@{
+  float beat_freqs[2] = @{ f-g, f+g @};
+  /* @r{@dots{}} */
+@}
+@end smallexample
+
+@node Compound Literals
+@subsection Compound Literals
+@cindex constructor expressions
+@cindex initializations in expressions
+@cindex structures, constructor expression
+@cindex expressions, constructor
+@cindex compound literals
+@c The GNU C name for what C99 calls compound literals was "constructor expressions".
+
+A compound literal looks like a cast of a brace-enclosed aggregate
+initializer list.  Its value is an object of the type specified in
+the cast, containing the elements specified in the initializer.
+Unlike the result of a cast, a compound literal is an lvalue.  ISO
+C99 and later support compound literals.  As an extension, GCC
+supports compound literals also in C90 mode and in C++, although
+as explained below, the C++ semantics are somewhat different.
+
+Usually, the specified type of a compound literal is a structure.  Assume
+that @code{struct foo} and @code{structure} are declared as shown:
+
+@smallexample
+struct foo @{int a; char b[2];@} structure;
+@end smallexample
+
+@noindent
+Here is an example of constructing a @code{struct foo} with a compound literal:
+
+@smallexample
+structure = ((struct foo) @{x + y, 'a', 0@});
+@end smallexample
+
+@noindent
+This is equivalent to writing the following:
+
+@smallexample
+@{
+  struct foo temp = @{x + y, 'a', 0@};
+  structure = temp;
+@}
+@end smallexample
+
+You can also construct an array, though this is dangerous in C++, as
+explained below.  If all the elements of the compound literal are
+(made up of) simple constant expressions suitable for use in
+initializers of objects of static storage duration, then the compound
+literal can be coerced to a pointer to its first element and used in
+such an initializer, as shown here:
+
+@smallexample
+char **foo = (char *[]) @{ "x", "y", "z" @};
+@end smallexample
+
+Compound literals for scalar types and union types are also allowed.  In
+the following example the variable @code{i} is initialized to the value
+@code{2}, the result of incrementing the unnamed object created by
+the compound literal.
+
+@smallexample
+int i = ++(int) @{ 1 @};
+@end smallexample
+
+As a GNU extension, GCC allows initialization of objects with static storage
+duration by compound literals (which is not possible in ISO C99 because
+the initializer is not a constant).
+It is handled as if the object were initialized only with the brace-enclosed
+list if the types of the compound literal and the object match.
+The elements of the compound literal must be constant.
+If the object being initialized has array type of unknown size, the size is
+determined by the size of the compound literal.
+
+@smallexample
+static struct foo x = (struct foo) @{1, 'a', 'b'@};
+static int y[] = (int []) @{1, 2, 3@};
+static int z[] = (int [3]) @{1@};
+@end smallexample
+
+@noindent
+The above lines are equivalent to the following:
+@smallexample
+static struct foo x = @{1, 'a', 'b'@};
+static int y[] = @{1, 2, 3@};
+static int z[] = @{1, 0, 0@};
+@end smallexample
+
+In C, a compound literal designates an unnamed object with static or
+automatic storage duration.  In C++, a compound literal designates a
+temporary object that only lives until the end of its full-expression.
+As a result, well-defined C code that takes the address of a subobject
+of a compound literal can be undefined in C++, so G++ rejects
+the conversion of a temporary array to a pointer.  For instance, if
+the array compound literal example above appeared inside a function,
+any subsequent use of @code{foo} in C++ would have undefined behavior
+because the lifetime of the array ends after the declaration of @code{foo}.
+
+As an optimization, G++ sometimes gives array compound literals longer
+lifetimes: when the array either appears outside a function or has
+a @code{const}-qualified type.  If @code{foo} and its initializer had
+elements of type @code{char *const} rather than @code{char *}, or if
+@code{foo} were a global variable, the array would have static storage
+duration.  But it is probably safest just to avoid the use of array
+compound literals in C++ code.
+
+@node Designated Inits
+@subsection Designated Initializers
+@cindex initializers with labeled elements
+@cindex labeled elements in initializers
+@cindex case labels in initializers
+@cindex designated initializers
+
+Standard C90 requires the elements of an initializer to appear in a fixed
+order, the same as the order of the elements in the array or structure
+being initialized.
+
+In ISO C99 you can give the elements in any order, specifying the array
+indices or structure field names they apply to, and GNU C allows this as
+an extension in C90 mode as well.  This extension is not
+implemented in GNU C++.
+
+To specify an array index, write
+@samp{[@var{index}] =} before the element value.  For example,
+
+@smallexample
+int a[6] = @{ [4] = 29, [2] = 15 @};
+@end smallexample
+
+@noindent
+is equivalent to
+
+@smallexample
+int a[6] = @{ 0, 0, 15, 0, 29, 0 @};
+@end smallexample
+
+@noindent
+The index values must be constant expressions, even if the array being
+initialized is automatic.
+
+An alternative syntax for this that has been obsolete since GCC 2.5 but
+GCC still accepts is to write @samp{[@var{index}]} before the element
+value, with no @samp{=}.
+
+To initialize a range of elements to the same value, write
+@samp{[@var{first} ... @var{last}] = @var{value}}.  This is a GNU
+extension.  For example,
+
+@smallexample
+int widths[] = @{ [0 ... 9] = 1, [10 ... 99] = 2, [100] = 3 @};
+@end smallexample
+
+@noindent
+If the value in it has side effects, the side effects happen only once,
+not for each initialized field by the range initializer.
+
+@noindent
+Note that the length of the array is the highest value specified
+plus one.
+
+In a structure initializer, specify the name of a field to initialize
+with @samp{.@var{fieldname} =} before the element value.  For example,
+given the following structure,
+
+@smallexample
+struct point @{ int x, y; @};
+@end smallexample
+
+@noindent
+the following initialization
+
+@smallexample
+struct point p = @{ .y = yvalue, .x = xvalue @};
+@end smallexample
+
+@noindent
+is equivalent to
+
+@smallexample
+struct point p = @{ xvalue, yvalue @};
+@end smallexample
+
+Another syntax that has the same meaning, obsolete since GCC 2.5, is
+@samp{@var{fieldname}:}, as shown here:
+
+@smallexample
+struct point p = @{ y: yvalue, x: xvalue @};
+@end smallexample
+
+Omitted fields are implicitly initialized the same as for objects
+that have static storage duration.
+
+@cindex designators
+The @samp{[@var{index}]} or @samp{.@var{fieldname}} is known as a
+@dfn{designator}.  You can also use a designator (or the obsolete colon
+syntax) when initializing a union, to specify which element of the union
+should be used.  For example,
+
+@smallexample
+union foo @{ int i; double d; @};
+
+union foo f = @{ .d = 4 @};
+@end smallexample
+
+@noindent
+converts 4 to a @code{double} to store it in the union using
+the second element.  By contrast, casting 4 to type @code{union foo}
+stores it into the union as the integer @code{i}, since it is
+an integer.  @xref{Cast to Union}.
+
+You can combine this technique of naming elements with ordinary C
+initialization of successive elements.  Each initializer element that
+does not have a designator applies to the next consecutive element of the
+array or structure.  For example,
+
+@smallexample
+int a[6] = @{ [1] = v1, v2, [4] = v4 @};
+@end smallexample
+
+@noindent
+is equivalent to
+
+@smallexample
+int a[6] = @{ 0, v1, v2, 0, v4, 0 @};
+@end smallexample
+
+Labeling the elements of an array initializer is especially useful
+when the indices are characters or belong to an @code{enum} type.
+For example:
+
+@smallexample
+int whitespace[256]
+  = @{ [' '] = 1, ['\t'] = 1, ['\h'] = 1,
+      ['\f'] = 1, ['\n'] = 1, ['\r'] = 1 @};
+@end smallexample
+
+@cindex designator lists
+You can also write a series of @samp{.@var{fieldname}} and
+@samp{[@var{index}]} designators before an @samp{=} to specify a
+nested subobject to initialize; the list is taken relative to the
+subobject corresponding to the closest surrounding brace pair.  For
+example, with the @samp{struct point} declaration above:
+
+@smallexample
+struct point ptarray[10] = @{ [2].y = yv2, [2].x = xv2, [0].x = xv0 @};
+@end smallexample
+
+If the same field is initialized multiple times, or overlapping
+fields of a union are initialized, the value from the last
+initialization is used.  When a field of a union is itself a structure,
+the entire structure from the last field initialized is used.  If any previous
+initializer has side effect, it is unspecified whether the side effect
+happens or not.  Currently, GCC discards the side-effecting
+initializer expressions and issues a warning.
+
 @node Hex Floats
 @section Hex Floats
 @cindex hex floats
@@ -1727,305 +2473,6 @@ The preprocessor symbols @code{__SEG_FS} and @code{__SEG_GS} are
 defined when these address spaces are supported.
 @end table
 
-@node Zero Length
-@section Arrays of Length Zero
-@cindex arrays of length zero
-@cindex zero-length arrays
-@cindex length-zero arrays
-@cindex flexible array members
-
-Declaring zero-length arrays is allowed in GNU C as an extension.
-A zero-length array can be useful as the last element of a structure
-that is really a header for a variable-length object:
-
-@smallexample
-struct line @{
-  int length;
-  char contents[0];
-@};
-
-struct line *thisline = (struct line *)
-  malloc (sizeof (struct line) + this_length);
-thisline->length = this_length;
-@end smallexample
-
-In this example, @code{thisline->contents} is an array of @code{char} that
-can hold up to @code{thisline->length} bytes.
-
-Although the size of a zero-length array is zero, an array member of
-this kind may increase the size of the enclosing type as a result of tail
-padding.  The offset of a zero-length array member from the beginning
-of the enclosing structure is the same as the offset of an array with
-one or more elements of the same type.  The alignment of a zero-length
-array is the same as the alignment of its elements.
-
-Declaring zero-length arrays in other contexts, including as interior
-members of structure objects or as non-member objects, is discouraged.
-Accessing elements of zero-length arrays declared in such contexts is
-undefined and may be diagnosed.
-
-In the absence of the zero-length array extension, in ISO C90
-the @code{contents} array in the example above would typically be declared
-to have a single element.  Unlike a zero-length array which only contributes
-to the size of the enclosing structure for the purposes of alignment,
-a one-element array always occupies at least as much space as a single
-object of the type.  Although using one-element arrays this way is
-discouraged, GCC handles accesses to trailing one-element array members
-analogously to zero-length arrays.
-
-The preferred mechanism to declare variable-length types like
-@code{struct line} above is the ISO C99 @dfn{flexible array member},
-with slightly different syntax and semantics:
-
-@itemize @bullet
-@item
-Flexible array members are written as @code{contents[]} without
-the @code{0}.
-
-@item
-Flexible array members have incomplete type, and so the @code{sizeof}
-operator may not be applied.  As a quirk of the original implementation
-of zero-length arrays, @code{sizeof} evaluates to zero.
-
-@item
-Flexible array members may only appear as the last member of a
-@code{struct} that is otherwise non-empty.
-
-@item
-A structure containing a flexible array member, or a union containing
-such a structure (possibly recursively), may not be a member of a
-structure or an element of an array.  (However, these uses are
-permitted by GCC as extensions, see details below.)
-@end itemize
-
-The GCC extension accepts a structure containing an ISO C99 @dfn{flexible array
-member}, or a union containing such a structure (possibly recursively)
-to be a member of a structure.
-
-There are two situations:
-
-@itemize @bullet
-@item
-A structure containing a C99 flexible array member, or a union containing
-such a structure, is the last field of another structure, for example:
-
-@smallexample
-struct flex  @{ int length; char data[]; @};
-union union_flex @{ int others; struct flex f; @};
-
-struct out_flex_struct @{ int m; struct flex flex_data; @};
-struct out_flex_union @{ int n; union union_flex flex_data; @};
-@end smallexample
-
-In the above, both @code{out_flex_struct.flex_data.data[]} and
-@code{out_flex_union.flex_data.f.data[]} are considered as flexible arrays too.
-
-@item
-A structure containing a C99 flexible array member, or a union containing
-such a structure, is not the last field of another structure, for example:
-
-@smallexample
-struct flex  @{ int length; char data[]; @};
-
-struct mid_flex @{ int m; struct flex flex_data; int n; @};
-@end smallexample
-
-In the above, accessing a member of the array @code{mid_flex.flex_data.data[]}
-might have undefined behavior.  Compilers do not handle such a case
-consistently.  Any code relying on this case should be modified to ensure
-that flexible array members only end up at the ends of structures.
-
-Please use the warning option @option{-Wflex-array-member-not-at-end} to
-identify all such cases in the source code and modify them.  This extension
-is now deprecated.
-@end itemize
-
-Non-empty initialization of zero-length
-arrays is treated like any case where there are more initializer
-elements than the array holds, in that a suitable warning about ``excess
-elements in array'' is given, and the excess elements (all of them, in
-this case) are ignored.
-
-GCC allows static initialization of flexible array members.
-This is equivalent to defining a new structure containing the original
-structure followed by an array of sufficient size to contain the data.
-E.g.@: in the following, @code{f1} is constructed as if it were declared
-like @code{f2}.
-
-@smallexample
-struct f1 @{
-  int x; int y[];
-@} f1 = @{ 1, @{ 2, 3, 4 @} @};
-
-struct f2 @{
-  struct f1 f1; int data[3];
-@} f2 = @{ @{ 1 @}, @{ 2, 3, 4 @} @};
-@end smallexample
-
-@noindent
-The convenience of this extension is that @code{f1} has the desired
-type, eliminating the need to consistently refer to @code{f2.f1}.
-
-This has symmetry with normal static arrays, in that an array of
-unknown size is also written with @code{[]}.
-
-Of course, this extension only makes sense if the extra data comes at
-the end of a top-level object, as otherwise we would be overwriting
-data at subsequent offsets.  To avoid undue complication and confusion
-with initialization of deeply nested arrays, we simply disallow any
-non-empty initialization except when the structure is the top-level
-object.  For example:
-
-@smallexample
-struct foo @{ int x; int y[]; @};
-struct bar @{ struct foo z; @};
-
-struct foo a = @{ 1, @{ 2, 3, 4 @} @};        // @r{Valid.}
-struct bar b = @{ @{ 1, @{ 2, 3, 4 @} @} @};    // @r{Invalid.}
-struct bar c = @{ @{ 1, @{ @} @} @};            // @r{Valid.}
-struct foo d[1] = @{ @{ 1, @{ 2, 3, 4 @} @} @};  // @r{Invalid.}
-@end smallexample
-
-@node Empty Structures
-@section Structures with No Members
-@cindex empty structures
-@cindex zero-size structures
-
-GCC permits a C structure to have no members:
-
-@smallexample
-struct empty @{
-@};
-@end smallexample
-
-The structure has size zero.  In C++, empty structures are part
-of the language.  G++ treats empty structures as if they had a single
-member of type @code{char}.
-
-@node Flexible Array Members in Unions
-@section Unions with Flexible Array Members
-@cindex unions with flexible array members
-@cindex unions with FAMs
-
-GCC permits a C99 flexible array member (FAM) to be in a union:
-
-@smallexample
-union with_fam @{
-  int a;
-  int b[];
-@};
-@end smallexample
-
-If every member of a union is a flexible array member, the size of
-such a union is zero.
-
-@node Flexible Array Members alone in Structures
-@section Structures with only Flexible Array Members
-@cindex structures with only flexible array members
-@cindex structures with only FAMs
-
-GCC permits a C99 flexible array member (FAM) to be alone in a structure:
-
-@smallexample
-struct only_fam @{
-  int b[];
-@};
-@end smallexample
-
-The size of such a structure is zero.
-
-@node Variable Length
-@section Arrays of Variable Length
-@cindex variable-length arrays
-@cindex arrays of variable length
-@cindex VLAs
-
-Variable-length automatic arrays are allowed in ISO C99, and as an
-extension GCC accepts them in C90 mode and in C++.  These arrays are
-declared like any other automatic arrays, but with a length that is not
-a constant expression.  The storage is allocated at the point of
-declaration and deallocated when the block scope containing the declaration
-exits.  For
-example:
-
-@smallexample
-FILE *
-concat_fopen (char *s1, char *s2, char *mode)
-@{
-  char str[strlen (s1) + strlen (s2) + 1];
-  strcpy (str, s1);
-  strcat (str, s2);
-  return fopen (str, mode);
-@}
-@end smallexample
-
-@cindex scope of a variable length array
-@cindex variable-length array scope
-@cindex deallocating variable length arrays
-Jumping or breaking out of the scope of the array name deallocates the
-storage.  Jumping into the scope is not allowed; you get an error
-message for it.
-
-@cindex variable-length array in a structure
-As an extension, GCC accepts variable-length arrays as a member of
-a structure or a union.  For example:
-
-@smallexample
-void
-foo (int n)
-@{
-  struct S @{ int x[n]; @};
-@}
-@end smallexample
-
-@cindex @code{alloca} vs variable-length arrays
-You can use the function @code{alloca} to get an effect much like
-variable-length arrays.  The function @code{alloca} is available in
-many other C implementations (but not in all).  On the other hand,
-variable-length arrays are more elegant.
-
-There are other differences between these two methods.  Space allocated
-with @code{alloca} exists until the containing @emph{function} returns.
-The space for a variable-length array is deallocated as soon as the array
-name's scope ends, unless you also use @code{alloca} in this scope.
-
-You can also use variable-length arrays as arguments to functions:
-
-@smallexample
-struct entry
-tester (int len, char data[len][len])
-@{
-  /* @r{@dots{}} */
-@}
-@end smallexample
-
-The length of an array is computed once when the storage is allocated
-and is remembered for the scope of the array in case you access it with
-@code{sizeof}.
-
-If you want to pass the array first and the length afterward, you can
-use a forward declaration in the parameter list---another GNU extension.
-
-@smallexample
-struct entry
-tester (int len; char data[len][len], int len)
-@{
-  /* @r{@dots{}} */
-@}
-@end smallexample
-
-@cindex parameter forward declaration
-The @samp{int len} before the semicolon is a @dfn{parameter forward
-declaration}, and it serves the purpose of making the name @code{len}
-known when the declaration of @code{data} is parsed.
-
-You can write any number of such parameter forward declarations in the
-parameter list.  They can be separated by commas or semicolons, but the
-last one must end with a semicolon, which is followed by the ``real''
-parameter declarations.  Each forward declaration must match a ``real''
-declaration in parameter name and data type.  ISO C99 does not support
-parameter forward declarations.
-
 @node Variadic Macros
 @section Macros with a Variable Number of Arguments.
 @cindex variable number of arguments
@@ -2110,33 +2557,6 @@ tokens, as well as between tokens.  Comments are @emph{not} treated as
 whitespace for the purposes of this relaxation, since they have not
 yet been replaced with spaces.
 
-@node Subscripting
-@section Non-Lvalue Arrays May Have Subscripts
-@cindex subscripting
-@cindex arrays, non-lvalue
-
-@cindex subscripting and function values
-In ISO C99, arrays that are not lvalues still decay to pointers, and
-may be subscripted, although they may not be modified or used after
-the next sequence point and the unary @samp{&} operator may not be
-applied to them.  As an extension, GNU C allows such arrays to be
-subscripted in C90 mode, though otherwise they do not decay to
-pointers outside C99 mode.  For example,
-this is valid in GNU C though not valid in C90:
-
-@smallexample
-@group
-struct foo @{int a[4];@};
-
-struct foo f();
-
-bar (int index)
-@{
-  return f().a[index];
-@}
-@end group
-@end smallexample
-
 @node Pointer Arith
 @section Arithmetic on @code{void}- and Function-Pointers
 @cindex void pointers, arithmetic
@@ -2192,274 +2612,6 @@ double y[2][3];
 transpose(3, 2, y, x);
 @end smallexample
 
-@node Initializers
-@section Non-Constant Initializers
-@cindex initializers, non-constant
-@cindex non-constant initializers
-
-As in standard C++ and ISO C99, the elements of an aggregate initializer for an
-automatic variable are not required to be constant expressions in GNU C@.
-Here is an example of an initializer with run-time varying elements:
-
-@smallexample
-foo (float f, float g)
-@{
-  float beat_freqs[2] = @{ f-g, f+g @};
-  /* @r{@dots{}} */
-@}
-@end smallexample
-
-@node Compound Literals
-@section Compound Literals
-@cindex constructor expressions
-@cindex initializations in expressions
-@cindex structures, constructor expression
-@cindex expressions, constructor
-@cindex compound literals
-@c The GNU C name for what C99 calls compound literals was "constructor expressions".
-
-A compound literal looks like a cast of a brace-enclosed aggregate
-initializer list.  Its value is an object of the type specified in
-the cast, containing the elements specified in the initializer.
-Unlike the result of a cast, a compound literal is an lvalue.  ISO
-C99 and later support compound literals.  As an extension, GCC
-supports compound literals also in C90 mode and in C++, although
-as explained below, the C++ semantics are somewhat different.
-
-Usually, the specified type of a compound literal is a structure.  Assume
-that @code{struct foo} and @code{structure} are declared as shown:
-
-@smallexample
-struct foo @{int a; char b[2];@} structure;
-@end smallexample
-
-@noindent
-Here is an example of constructing a @code{struct foo} with a compound literal:
-
-@smallexample
-structure = ((struct foo) @{x + y, 'a', 0@});
-@end smallexample
-
-@noindent
-This is equivalent to writing the following:
-
-@smallexample
-@{
-  struct foo temp = @{x + y, 'a', 0@};
-  structure = temp;
-@}
-@end smallexample
-
-You can also construct an array, though this is dangerous in C++, as
-explained below.  If all the elements of the compound literal are
-(made up of) simple constant expressions suitable for use in
-initializers of objects of static storage duration, then the compound
-literal can be coerced to a pointer to its first element and used in
-such an initializer, as shown here:
-
-@smallexample
-char **foo = (char *[]) @{ "x", "y", "z" @};
-@end smallexample
-
-Compound literals for scalar types and union types are also allowed.  In
-the following example the variable @code{i} is initialized to the value
-@code{2}, the result of incrementing the unnamed object created by
-the compound literal.
-
-@smallexample
-int i = ++(int) @{ 1 @};
-@end smallexample
-
-As a GNU extension, GCC allows initialization of objects with static storage
-duration by compound literals (which is not possible in ISO C99 because
-the initializer is not a constant).
-It is handled as if the object were initialized only with the brace-enclosed
-list if the types of the compound literal and the object match.
-The elements of the compound literal must be constant.
-If the object being initialized has array type of unknown size, the size is
-determined by the size of the compound literal.
-
-@smallexample
-static struct foo x = (struct foo) @{1, 'a', 'b'@};
-static int y[] = (int []) @{1, 2, 3@};
-static int z[] = (int [3]) @{1@};
-@end smallexample
-
-@noindent
-The above lines are equivalent to the following:
-@smallexample
-static struct foo x = @{1, 'a', 'b'@};
-static int y[] = @{1, 2, 3@};
-static int z[] = @{1, 0, 0@};
-@end smallexample
-
-In C, a compound literal designates an unnamed object with static or
-automatic storage duration.  In C++, a compound literal designates a
-temporary object that only lives until the end of its full-expression.
-As a result, well-defined C code that takes the address of a subobject
-of a compound literal can be undefined in C++, so G++ rejects
-the conversion of a temporary array to a pointer.  For instance, if
-the array compound literal example above appeared inside a function,
-any subsequent use of @code{foo} in C++ would have undefined behavior
-because the lifetime of the array ends after the declaration of @code{foo}.
-
-As an optimization, G++ sometimes gives array compound literals longer
-lifetimes: when the array either appears outside a function or has
-a @code{const}-qualified type.  If @code{foo} and its initializer had
-elements of type @code{char *const} rather than @code{char *}, or if
-@code{foo} were a global variable, the array would have static storage
-duration.  But it is probably safest just to avoid the use of array
-compound literals in C++ code.
-
-@node Designated Inits
-@section Designated Initializers
-@cindex initializers with labeled elements
-@cindex labeled elements in initializers
-@cindex case labels in initializers
-@cindex designated initializers
-
-Standard C90 requires the elements of an initializer to appear in a fixed
-order, the same as the order of the elements in the array or structure
-being initialized.
-
-In ISO C99 you can give the elements in any order, specifying the array
-indices or structure field names they apply to, and GNU C allows this as
-an extension in C90 mode as well.  This extension is not
-implemented in GNU C++.
-
-To specify an array index, write
-@samp{[@var{index}] =} before the element value.  For example,
-
-@smallexample
-int a[6] = @{ [4] = 29, [2] = 15 @};
-@end smallexample
-
-@noindent
-is equivalent to
-
-@smallexample
-int a[6] = @{ 0, 0, 15, 0, 29, 0 @};
-@end smallexample
-
-@noindent
-The index values must be constant expressions, even if the array being
-initialized is automatic.
-
-An alternative syntax for this that has been obsolete since GCC 2.5 but
-GCC still accepts is to write @samp{[@var{index}]} before the element
-value, with no @samp{=}.
-
-To initialize a range of elements to the same value, write
-@samp{[@var{first} ... @var{last}] = @var{value}}.  This is a GNU
-extension.  For example,
-
-@smallexample
-int widths[] = @{ [0 ... 9] = 1, [10 ... 99] = 2, [100] = 3 @};
-@end smallexample
-
-@noindent
-If the value in it has side effects, the side effects happen only once,
-not for each initialized field by the range initializer.
-
-@noindent
-Note that the length of the array is the highest value specified
-plus one.
-
-In a structure initializer, specify the name of a field to initialize
-with @samp{.@var{fieldname} =} before the element value.  For example,
-given the following structure,
-
-@smallexample
-struct point @{ int x, y; @};
-@end smallexample
-
-@noindent
-the following initialization
-
-@smallexample
-struct point p = @{ .y = yvalue, .x = xvalue @};
-@end smallexample
-
-@noindent
-is equivalent to
-
-@smallexample
-struct point p = @{ xvalue, yvalue @};
-@end smallexample
-
-Another syntax that has the same meaning, obsolete since GCC 2.5, is
-@samp{@var{fieldname}:}, as shown here:
-
-@smallexample
-struct point p = @{ y: yvalue, x: xvalue @};
-@end smallexample
-
-Omitted fields are implicitly initialized the same as for objects
-that have static storage duration.
-
-@cindex designators
-The @samp{[@var{index}]} or @samp{.@var{fieldname}} is known as a
-@dfn{designator}.  You can also use a designator (or the obsolete colon
-syntax) when initializing a union, to specify which element of the union
-should be used.  For example,
-
-@smallexample
-union foo @{ int i; double d; @};
-
-union foo f = @{ .d = 4 @};
-@end smallexample
-
-@noindent
-converts 4 to a @code{double} to store it in the union using
-the second element.  By contrast, casting 4 to type @code{union foo}
-stores it into the union as the integer @code{i}, since it is
-an integer.  @xref{Cast to Union}.
-
-You can combine this technique of naming elements with ordinary C
-initialization of successive elements.  Each initializer element that
-does not have a designator applies to the next consecutive element of the
-array or structure.  For example,
-
-@smallexample
-int a[6] = @{ [1] = v1, v2, [4] = v4 @};
-@end smallexample
-
-@noindent
-is equivalent to
-
-@smallexample
-int a[6] = @{ 0, v1, v2, 0, v4, 0 @};
-@end smallexample
-
-Labeling the elements of an array initializer is especially useful
-when the indices are characters or belong to an @code{enum} type.
-For example:
-
-@smallexample
-int whitespace[256]
-  = @{ [' '] = 1, ['\t'] = 1, ['\h'] = 1,
-      ['\f'] = 1, ['\n'] = 1, ['\r'] = 1 @};
-@end smallexample
-
-@cindex designator lists
-You can also write a series of @samp{.@var{fieldname}} and
-@samp{[@var{index}]} designators before an @samp{=} to specify a
-nested subobject to initialize; the list is taken relative to the
-subobject corresponding to the closest surrounding brace pair.  For
-example, with the @samp{struct point} declaration above:
-
-@smallexample
-struct point ptarray[10] = @{ [2].y = yv2, [2].x = xv2, [0].x = xv0 @};
-@end smallexample
-
-If the same field is initialized multiple times, or overlapping
-fields of a union are initialized, the value from the last
-initialization is used.  When a field of a union is itself a structure, 
-the entire structure from the last field initialized is used.  If any previous
-initializer has side effect, it is unspecified whether the side effect
-happens or not.  Currently, GCC discards the side-effecting
-initializer expressions and issues a warning.
-
 @node Case Ranges
 @section Case Ranges
 @cindex case ranges
@@ -2495,67 +2647,6 @@ rather than this:
 
 @smallexample
 case 1...5:
-@end smallexample
-
-@node Cast to Union
-@section Cast to a Union Type
-@cindex cast to a union
-@cindex union, casting to a
-
-A cast to a union type is a C extension not available in C++.  It looks
-just like ordinary casts with the constraint that the type specified is
-a union type.  You can specify the type either with the @code{union}
-keyword or with a @code{typedef} name that refers to a union.  The result
-of a cast to a union is a temporary rvalue of the union type with a member
-whose type matches that of the operand initialized to the value of
-the operand.  The effect of a cast to a union is similar to a compound
-literal except that it yields an rvalue like standard casts do.
-@xref{Compound Literals}.
-
-Expressions that may be cast to the union type are those whose type matches
-at least one of the members of the union.  Thus, given the following union
-and variables:
-
-@smallexample
-union foo @{ int i; double d; @};
-int x;
-double y;
-union foo z;
-@end smallexample
-
-@noindent
-both @code{x} and @code{y} can be cast to type @code{union foo} and
-the following assignments
-@smallexample
-  z = (union foo) x;
-  z = (union foo) y;
-@end smallexample
-are shorthand equivalents of these
-@smallexample
-  z = (union foo) @{ .i = x @};
-  z = (union foo) @{ .d = y @};
-@end smallexample
-
-However, @code{(union foo) FLT_MAX;} is not a valid cast because the union
-has no member of type @code{float}.
-
-Using the cast as the right-hand side of an assignment to a variable of
-union type is equivalent to storing in a member of the union with
-the same type
-
-@smallexample
-union foo u;
-/* @r{@dots{}} */
-u = (union foo) x  @equiv{}  u.i = x
-u = (union foo) y  @equiv{}  u.d = y
-@end smallexample
-
-You can also use the union cast as a function argument:
-
-@smallexample
-void hack (union foo);
-/* @r{@dots{}} */
-hack ((union foo) x);
 @end smallexample
 
 @node Mixed Labels and Declarations
@@ -29148,87 +29239,6 @@ loop or a @code{#pragma GCC ivdep}, and applies only to the loop that follows.
 The values of @math{0} and @math{1} block any unrolling of the loop.
 
 @end table
-
-@node Unnamed Fields
-@section Unnamed Structure and Union Fields
-@cindex @code{struct}
-@cindex @code{union}
-
-As permitted by ISO C11 and for compatibility with other compilers,
-GCC allows you to define
-a structure or union that contains, as fields, structures and unions
-without names.  For example:
-
-@smallexample
-struct @{
-  int a;
-  union @{
-    int b;
-    float c;
-  @};
-  int d;
-@} foo;
-@end smallexample
-
-@noindent
-In this example, you are able to access members of the unnamed
-union with code like @samp{foo.b}.  Note that only unnamed structs and
-unions are allowed, you may not have, for example, an unnamed
-@code{int}.
-
-You must never create such structures that cause ambiguous field definitions.
-For example, in this structure:
-
-@smallexample
-struct @{
-  int a;
-  struct @{
-    int a;
-  @};
-@} foo;
-@end smallexample
-
-@noindent
-it is ambiguous which @code{a} is being referred to with @samp{foo.a}.
-The compiler gives errors for such constructs.
-
-@opindex fms-extensions
-Unless @option{-fms-extensions} is used, the unnamed field must be a
-structure or union definition without a tag (for example, @samp{struct
-@{ int a; @};}).  If @option{-fms-extensions} is used, the field may
-also be a definition with a tag such as @samp{struct foo @{ int a;
-@};}, a reference to a previously defined structure or union such as
-@samp{struct foo;}, or a reference to a @code{typedef} name for a
-previously defined structure or union type.
-
-@opindex fplan9-extensions
-The option @option{-fplan9-extensions} enables
-@option{-fms-extensions} as well as two other extensions.  First, a
-pointer to a structure is automatically converted to a pointer to an
-anonymous field for assignments and function calls.  For example:
-
-@smallexample
-struct s1 @{ int a; @};
-struct s2 @{ struct s1; @};
-extern void f1 (struct s1 *);
-void f2 (struct s2 *p) @{ f1 (p); @}
-@end smallexample
-
-@noindent
-In the call to @code{f1} inside @code{f2}, the pointer @code{p} is
-converted into a pointer to the anonymous field.
-
-Second, when the type of an anonymous field is a @code{typedef} for a
-@code{struct} or @code{union}, code may refer to the field using the
-name of the @code{typedef}.
-
-@smallexample
-typedef struct @{ int a; @} s1;
-struct s2 @{ s1; @};
-s1 f1 (struct s2 *p) @{ return p->s1; @}
-@end smallexample
-
-These usages are only permitted when they are not ambiguous.
 
 @node Thread-Local
 @section Thread-Local Storage
