@@ -242,7 +242,12 @@ region_model_manager::get_or_create_constant_svalue (tree type, tree cst_expr)
 const svalue *
 region_model_manager::get_or_create_constant_svalue (tree cst_expr)
 {
-  return get_or_create_constant_svalue (TREE_TYPE (cst_expr), cst_expr);
+  tree type = TREE_TYPE (cst_expr);
+  if (TREE_CODE (cst_expr) == RAW_DATA_CST)
+    /* The type of a RAW_DATA_CST is the type of each element, rather than
+       that of the constant as a whole, so use NULL_TREE for simplicity.  */
+    type = NULL_TREE;
+  return get_or_create_constant_svalue (type, cst_expr);
 }
 
 /* Return the svalue * for a constant_svalue for the INTEGER_CST
@@ -972,9 +977,10 @@ region_model_manager::maybe_fold_sub_svalue (tree type,
 	    }
     }
 
-  /* Handle getting individual chars from a STRING_CST.  */
+  /* Handle getting individual chars from a STRING_CST or RAW_DATA_CST.  */
   if (tree cst = parent_svalue->maybe_get_constant ())
-    if (TREE_CODE (cst) == STRING_CST)
+    if (TREE_CODE (cst) == STRING_CST
+	|| TREE_CODE (cst) == RAW_DATA_CST)
       {
 	/* If we have a concrete 1-byte access within the parent region... */
 	byte_range subregion_bytes (0, 0);
@@ -982,13 +988,13 @@ region_model_manager::maybe_fold_sub_svalue (tree type,
 	    && subregion_bytes.m_size_in_bytes == 1
 	    && type)
 	  {
-	    /* ...then attempt to get that char from the STRING_CST.  */
+	    /* ...then attempt to get that char from the constant.  */
 	    HOST_WIDE_INT hwi_start_byte
 	      = subregion_bytes.m_start_byte_offset.to_shwi ();
 	    tree cst_idx
 	      = build_int_cst_type (size_type_node, hwi_start_byte);
 	    if (const svalue *char_sval
-		= maybe_get_char_from_string_cst (cst, cst_idx))
+		  = maybe_get_char_from_cst (cst, cst_idx))
 	      return get_or_create_cast (type, char_sval);
 	  }
       }
@@ -1505,6 +1511,24 @@ get_or_create_const_fn_result_svalue (tree type,
   return const_fn_result_sval;
 }
 
+/* Given DATA_CST (a STRING_CST or RAW_DATA_CST) and BYTE_OFFSET_CST a constant,
+   attempt to get the character at that offset, returning either
+   the svalue for the character constant, or NULL if unsuccessful.  */
+
+const svalue *
+region_model_manager::maybe_get_char_from_cst (tree data_cst,
+					       tree byte_offset_cst)
+{
+  switch (TREE_CODE (data_cst))
+    {
+    default: gcc_unreachable ();
+    case STRING_CST:
+      return maybe_get_char_from_string_cst (data_cst, byte_offset_cst);
+    case RAW_DATA_CST:
+      return maybe_get_char_from_raw_data_cst (data_cst, byte_offset_cst);
+    }
+}
+
 /* Get a tree for the size of STRING_CST, or NULL_TREE.
    Note that this may be larger than TREE_STRING_LENGTH (implying
    a run of trailing zero bytes from TREE_STRING_LENGTH up to this
@@ -1556,6 +1580,25 @@ region_model_manager::maybe_get_char_from_string_cst (tree string_cst,
       return get_or_create_constant_svalue (char_cst);
     }
   return NULL;
+}
+
+/* Given RAW_DATA_CST, a RAW_DATA_CST and BYTE_OFFSET_CST a constant,
+   attempt to get the character at that offset, returning either
+   the svalue for the character constant, or NULL if unsuccessful.  */
+
+const svalue *
+region_model_manager::maybe_get_char_from_raw_data_cst (tree raw_data_cst,
+							tree byte_offset_cst)
+{
+  gcc_assert (TREE_CODE (raw_data_cst) == RAW_DATA_CST);
+  gcc_assert (TREE_CODE (byte_offset_cst) == INTEGER_CST);
+
+  offset_int o = (wi::to_offset (byte_offset_cst));
+  if (o >= 0 && o < RAW_DATA_LENGTH (raw_data_cst))
+    return get_or_create_int_cst
+      (TREE_TYPE (raw_data_cst),
+       RAW_DATA_UCHAR_ELT (raw_data_cst, o.to_uhwi ()));
+  return nullptr;
 }
 
 /* region consolidation.  */

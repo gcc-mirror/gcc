@@ -905,6 +905,37 @@ get_subregion_within_ctor (const region *parent_reg, tree index,
     }
 }
 
+/* Get the child region of PARENT_REG based upon (INDEX, VALUE) within a
+   CONSTRUCTOR.   */
+
+static const region *
+get_subregion_within_ctor_for_ctor_pair (const region *parent_reg,
+					 tree index,
+					 tree value,
+					 region_model_manager *mgr)
+{
+  if (TREE_CODE (index) == INTEGER_CST
+      && TREE_CODE (value) == RAW_DATA_CST)
+    {
+      /* Special-case; see tree.def's description of CONSTRUCTOR.
+	 We have RAW_DATA_LENGTH of bytes, starting at INDEX's start.  */
+      const region *start_reg
+	= get_subregion_within_ctor (parent_reg, index, mgr);
+      /* Build a bit range, relative to PARENT_REG.  */
+      region_offset start_offset = start_reg->get_offset (mgr);
+
+      if (!start_offset.concrete_p ())
+	return nullptr;
+      bit_offset_t start_bit_offset = start_offset.get_bit_offset ();
+      int length = RAW_DATA_LENGTH (value);
+      bit_range bits (start_bit_offset, length * BITS_PER_UNIT);
+
+      return mgr->get_bit_range (parent_reg, NULL_TREE, bits);
+    }
+
+  return get_subregion_within_ctor (parent_reg, index, mgr);
+}
+
 /* Get the svalue for VAL, a non-CONSTRUCTOR value within a CONSTRUCTOR.  */
 
 static const svalue *
@@ -1035,7 +1066,9 @@ binding_map::apply_ctor_pair_to_child_region (const region *parent_reg,
 					      tree index, tree val)
 {
   const region *child_reg
-    = get_subregion_within_ctor (parent_reg, index, mgr);
+    = get_subregion_within_ctor_for_ctor_pair (parent_reg, index, val, mgr);
+  if (!child_reg)
+    return false;
   if (TREE_CODE (val) == CONSTRUCTOR)
     return apply_ctor_to_region (child_reg, val, mgr);
   else

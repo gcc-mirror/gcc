@@ -2801,6 +2801,7 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt) const
     case COMPLEX_CST:
     case VECTOR_CST:
     case STRING_CST:
+    case RAW_DATA_CST:
       return m_mgr->get_or_create_constant_svalue (pv.m_tree);
 
     case POINTER_PLUS_EXPR:
