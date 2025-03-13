@@ -1251,6 +1251,19 @@ gimple_build_omp_dispatch (gimple_seq body, tree clauses)
   return p;
 }
 
+/* Build a GIMPLE_OMP_INTEROP statement.
+
+   CLAUSES are any of the OMP interop construct's clauses.  */
+
+gimple *
+gimple_build_omp_interop (tree clauses)
+{
+  gimple *p = gimple_alloc (GIMPLE_OMP_INTEROP, 0);
+  gimple_omp_interop_set_clauses (p, clauses);
+
+  return p;
+}
+
 /* Build a GIMPLE_OMP_TARGET statement.
 
    BODY is the sequence of statements that will be executed.
@@ -2203,6 +2216,11 @@ gimple_copy (gimple *stmt)
 	  t = unshare_expr (gimple_omp_dispatch_clauses (stmt));
 	  gimple_omp_dispatch_set_clauses (copy, t);
 	  goto copy_omp_body;
+
+	case GIMPLE_OMP_INTEROP:
+	  t = unshare_expr (gimple_omp_interop_clauses (stmt));
+	  gimple_omp_interop_set_clauses (copy, t);
+	  break;
 
 	case GIMPLE_OMP_TARGET:
 	  {

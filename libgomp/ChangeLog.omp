@@ -1,3 +1,35 @@
+2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
+		    Tobias Burnus  <tburnus@baylibre.com>
+
+	* icv-device.c (omp_set_default_device): Check
+	GOMP_DEVICE_DEFAULT_OMP_61.
+	* libgomp-plugin.h (struct interop_obj_t): New.
+	(enum gomp_interop_flag): New.
+	(GOMP_OFFLOAD_interop): Declare.
+	(GOMP_OFFLOAD_get_interop_int): Declare.
+	(GOMP_OFFLOAD_get_interop_ptr): Declare.
+	(GOMP_OFFLOAD_get_interop_str): Declare.
+	(GOMP_OFFLOAD_get_interop_type_desc): Declare.
+	* libgomp.h (_LIBGOMP_OMP_LOCK_DEFINED): Define.
+	(struct gomp_device_descr): Add interop_func, get_interop_int_func,
+	get_interop_ptr_func, get_interop_str_func, get_interop_type_desc_func.
+	* libgomp.map: Add GOMP_interop.
+	* libgomp_g.h (GOMP_interop): Declare.
+	* target.c (resolve_device): Handle GOMP_DEVICE_DEFAULT_OMP_61.
+	(omp_get_interop_int): Replace stub with actual implementation.
+	(omp_get_interop_ptr): Likewise.
+	(omp_get_interop_str): Likewise.
+	(omp_get_interop_type_desc): Likewise.
+	(struct interop_data_t): Define.
+	(gomp_interop_internal): New function.
+	(GOMP_interop): Likewise.
+	(gomp_load_plugin_for_device): Load symbols for get_interop_int,
+	get_interop_ptr, get_interop_str and get_interop_type_desc.
+	* testsuite/libgomp.c-c++-common/interop-1.c: New test.
+
 2025-03-18  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

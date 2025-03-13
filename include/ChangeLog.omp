@@ -1,3 +1,12 @@
+2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
+		    Tobias Burnus  <tburnus@baylibre.com>
+
+	* gomp-constants.h (GOMP_DEVICE_DEFAULT_OMP_61, GOMP_INTEROP_TARGET,
+	GOMP_INTEROP_TARGETSYNC, GOMP_INTEROP_FLAG_NOWAIT): Define.
+
 2025-01-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

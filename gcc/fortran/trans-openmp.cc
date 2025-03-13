@@ -4803,9 +4803,6 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	case OMP_LIST_USE:
 	  clause_code = OMP_CLAUSE_USE;
 	  goto add_clause;
-	case OMP_LIST_DESTROY:
-	  clause_code = OMP_CLAUSE_DESTROY;
-	  goto add_clause;
 	case OMP_LIST_INTEROP:
 	  clause_code = OMP_CLAUSE_INTEROP;
 	  goto add_clause;
@@ -4814,6 +4811,22 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	  omp_clauses
 	    = gfc_trans_omp_variable_list (clause_code, n, omp_clauses,
 					   declare_simd);
+	  break;
+
+	case OMP_LIST_DESTROY:
+	  for (; n != NULL; n = n->next)
+	    if (n->sym->attr.referenced)
+	      {
+		tree t = gfc_trans_omp_variable (n->sym, declare_simd);
+		if (t != error_mark_node)
+		  {
+		    tree node
+		      = build_omp_clause (input_location, OMP_CLAUSE_DESTROY);
+		    OMP_CLAUSE_DECL (node) = t;
+		    TREE_ADDRESSABLE (OMP_CLAUSE_DECL (node)) = 1;
+		    omp_clauses = gfc_trans_add_clause (node, omp_clauses);
+		  }
+	      }
 	  break;
 
 	case OMP_LIST_INIT:
@@ -4829,6 +4842,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  tree node = build_omp_clause (input_location,
 						OMP_CLAUSE_INIT);
 		  OMP_CLAUSE_DECL (node) = t;
+		  TREE_ADDRESSABLE (OMP_CLAUSE_DECL (node)) = 1;
 		  if (n->u.init.target)
 		    OMP_CLAUSE_INIT_TARGET (node) = 1;
 		  if (n->u.init.targetsync)

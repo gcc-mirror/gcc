@@ -1,3 +1,34 @@
+2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
+		    Tobias Burnus  <tburnus@baylibre.com>
+
+	* builtin-types.def
+	(BT_FN_VOID_INT_INT_PTR_PTR_PTR_INT_PTR_INT_PTR_UINT_PTR): New.
+	* gimple-low.cc (lower_stmt): Handle GIMPLE_OMP_INTEROP.
+	* gimple-pretty-print.cc (dump_gimple_omp_interop): New function.
+	(pp_gimple_stmt_1): Handle GIMPLE_OMP_INTEROP.
+	* gimple.cc (gimple_build_omp_interop): New function.
+	(gimple_copy): Handle GIMPLE_OMP_INTEROP.
+	* gimple.def (GIMPLE_OMP_INTEROP): Define.
+	* gimple.h (gimple_build_omp_interop): Declare.
+	(gimple_omp_interop_clauses): New function.
+	(gimple_omp_interop_clauses_ptr): Likewise.
+	(gimple_omp_interop_set_clauses): Likewise.
+	(gimple_return_set_retval): Handle GIMPLE_OMP_INTEROP.
+	* gimplify.cc (gimplify_scan_omp_clauses): Handle OMP_CLAUSE_INIT,
+	OMP_CLAUSE_USE and OMP_CLAUSE_DESTROY.
+	(gimplify_omp_interop): New function.
+	(gimplify_expr): Replace sorry with call to gimplify_omp_interop.
+	* omp-builtins.def (BUILT_IN_GOMP_INTEROP): Define.
+	* omp-low.cc (scan_sharing_clauses): Handle OMP_CLAUSE_INIT,
+	OMP_CLAUSE_USE and OMP_CLAUSE_DESTROY.
+	(scan_omp_1_stmt): Handle GIMPLE_OMP_INTEROP.
+	(lower_omp_interop_action_clauses): New function.
+	(lower_omp_interop): Likewise.
+	(lower_omp_1): Handle GIMPLE_OMP_INTEROP.
+
 2025-03-19  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:

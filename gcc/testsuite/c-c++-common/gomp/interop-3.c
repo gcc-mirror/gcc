@@ -1,5 +1,3 @@
-/* { dg-prune-output "sorry, unimplemented: '#pragma omp interop' not yet supported" }  */
-
 /* The following definitions are in omp_lib, which cannot be included
    in gcc/testsuite/  */
 

@@ -1,3 +1,14 @@
+2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
+		    Tobias Burnus  <tburnus@baylibre.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): Make OMP_CLAUSE_DESTROY and
+	OMP_CLAUSE_INIT addressable.
+	* types.def (BT_FN_VOID_INT_INT_PTR_PTR_PTR_INT_PTR_INT_PTR_UINT_PTR):
+	New.
+
 2025-03-18  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
