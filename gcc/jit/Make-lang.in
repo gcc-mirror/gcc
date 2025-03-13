@@ -40,7 +40,7 @@
 # into the jit rule, but that needs a little bit of work
 # to do the right thing within all.cross.
 
-LIBGCCJIT_VERSION_NUM = 0
+# LIBGCCJIT_VERSION_NUM is set in ../Makefile.in
 LIBGCCJIT_MINOR_NUM = 0
 LIBGCCJIT_RELEASE_NUM = 1
 

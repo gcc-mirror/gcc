@@ -1148,6 +1148,10 @@ This option is required when building the libgccjit.so library.
 Contrast with @option{--enable-shared}, which affects @emph{target}
 libraries.
 
+@item --enable-versioned-jit
+Specify that the @samp{libgccjit} library is built with a soname matching
+the GCC major version.
+
 @item --enable-host-pie
 Specify that the @emph{host} executables should be built into
 position-independent executables (with @option{-fPIE} and @option{-pie}),

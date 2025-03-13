@@ -1218,6 +1218,7 @@ LANG_CONFIGUREFRAGS  = @all_lang_configurefrags@
 LANG_MAKEFRAGS = @all_lang_makefrags@
 
 # Used by gcc/jit/Make-lang.in
+LIBGCCJIT_VERSION_NUM = @libgccjit_version@
 LD_VERSION_SCRIPT_OPTION = @ld_version_script_option@
 LD_SONAME_OPTION = @ld_soname_option@
 @ENABLE_DARWIN_AT_RPATH_TRUE@DARWIN_RPATH = @rpath
