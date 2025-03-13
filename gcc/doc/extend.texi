@@ -23,8 +23,6 @@ Some features that are in ISO C99 but not C90 or C++ are also, as
 extensions, accepted by GCC in C90 mode and in C++.
 
 @menu
-* Nonlocal Gotos::      Nonlocal gotos.
-* Constructing Calls::  Dispatching a call to another function.
 * Additional Numeric Types::  Additional sizes and formats, plus complex numbers.
 * Aggregate Types::	Extensions to arrays, structs, and unions.
 * Named Address Spaces::Named address spaces.
@@ -36,11 +34,17 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Enumerator Attributes:: Specifying attributes on enumerators.
 * Statement Attributes:: Specifying attributes on statements.
 * Attribute Syntax::    Formal syntax for attributes.
+* Pragmas::             Pragmas accepted by GCC.
+* Thread-Local::        Per-thread variables.
+* OpenMP::              Multiprocessing extensions.
+* OpenACC::             Extensions for offloading code to accelerator devices.
 * Inline::              Defining inline functions (as fast as macros).
 * Volatiles::           What constitutes an access to a volatile object.
 * Using Assembly Language with C:: Instructions and extensions for interfacing C with assembler.
 * Syntax Extensions::   Other extensions to C syntax.
 * Semantic Extensions:: GNU C defines behavior for some non-standard constructs.
+* Nonlocal Gotos::      Built-ins for nonlocal gotos.
+* Constructing Calls::  Built-ins for dispatching a call to another function.
 * Return Address::      Getting the return or frame address of a function.
 * Stack Scrubbing::     Stack scrubbing internal interfaces.
 * Vector Extensions::   Using vector instructions through built-in functions.
@@ -55,183 +59,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Other Builtins::      Other built-in functions.
 * Target Builtins::     Built-in functions specific to particular targets.
 * Target Format Checks:: Format checks specific to particular targets.
-* Pragmas::             Pragmas accepted by GCC.
-* Thread-Local::        Per-thread variables.
-* OpenMP::              Multiprocessing extensions.
-* OpenACC::             Extensions for offloading code to accelerator devices.
 @end menu
-
-@node Nonlocal Gotos
-@section Nonlocal Gotos
-@cindex nonlocal gotos
-
-GCC provides the built-in functions @code{__builtin_setjmp} and
-@code{__builtin_longjmp} which are similar to, but not interchangeable
-with, the C library functions @code{setjmp} and @code{longjmp}.  
-The built-in versions are used internally by GCC's libraries
-to implement exception handling on some targets.  You should use the 
-standard C library functions declared in @code{<setjmp.h>} in user code
-instead of the builtins.
-
-The built-in versions of these functions use GCC's normal
-mechanisms to save and restore registers using the stack on function
-entry and exit.  The jump buffer argument @var{buf} holds only the
-information needed to restore the stack frame, rather than the entire 
-set of saved register values.  
-
-An important caveat is that GCC arranges to save and restore only
-those registers known to the specific architecture variant being
-compiled for.  This can make @code{__builtin_setjmp} and
-@code{__builtin_longjmp} more efficient than their library
-counterparts in some cases, but it can also cause incorrect and
-mysterious behavior when mixing with code that uses the full register
-set.
-
-You should declare the jump buffer argument @var{buf} to the
-built-in functions as:
-
-@smallexample
-#include <stdint.h>
-intptr_t @var{buf}[5];
-@end smallexample
-
-@defbuiltin{{int} __builtin_setjmp (intptr_t *@var{buf})}
-This function saves the current stack context in @var{buf}.  
-@code{__builtin_setjmp} returns 0 when returning directly,
-and 1 when returning from @code{__builtin_longjmp} using the same
-@var{buf}.
-@enddefbuiltin
-
-@defbuiltin{{void} __builtin_longjmp (intptr_t *@var{buf}, int @var{val})}
-This function restores the stack context in @var{buf}, 
-saved by a previous call to @code{__builtin_setjmp}.  After
-@code{__builtin_longjmp} is finished, the program resumes execution as
-if the matching @code{__builtin_setjmp} returns the value @var{val},
-which must be 1.
-
-Because @code{__builtin_longjmp} depends on the function return
-mechanism to restore the stack context, it cannot be called
-from the same function calling @code{__builtin_setjmp} to
-initialize @var{buf}.  It can only be called from a function called
-(directly or indirectly) from the function calling @code{__builtin_setjmp}.
-@enddefbuiltin
-
-@node Constructing Calls
-@section Constructing Function Calls
-@cindex constructing calls
-@cindex forwarding calls
-
-Using the built-in functions described below, you can record
-the arguments a function received, and call another function
-with the same arguments, without knowing the number or types
-of the arguments.
-
-You can also record the return value of that function call,
-and later return that value, without knowing what data type
-the function tried to return (as long as your caller expects
-that data type).
-
-However, these built-in functions may interact badly with some
-sophisticated features or other extensions of the language.  It
-is, therefore, not recommended to use them outside very simple
-functions acting as mere forwarders for their arguments.
-
-@defbuiltin{{void *} __builtin_apply_args ()}
-This built-in function returns a pointer to data
-describing how to perform a call with the same arguments as are passed
-to the current function.
-
-The function saves the arg pointer register, structure value address,
-and all registers that might be used to pass arguments to a function
-into a block of memory allocated on the stack.  Then it returns the
-address of that block.
-@enddefbuiltin
-
-@defbuiltin{{void *} __builtin_apply (void (*@var{function})(), void *@var{arguments}, size_t @var{size})}
-This built-in function invokes @var{function}
-with a copy of the parameters described by @var{arguments}
-and @var{size}.
-
-The value of @var{arguments} should be the value returned by
-@code{__builtin_apply_args}.  The argument @var{size} specifies the size
-of the stack argument data, in bytes.
-
-This function returns a pointer to data describing
-how to return whatever value is returned by @var{function}.  The data
-is saved in a block of memory allocated on the stack.
-
-It is not always simple to compute the proper value for @var{size}.  The
-value is used by @code{__builtin_apply} to compute the amount of data
-that should be pushed on the stack and copied from the incoming argument
-area.
-@enddefbuiltin
-
-@defbuiltin{{void} __builtin_return (void *@var{result})}
-This built-in function returns the value described by @var{result} from
-the containing function.  You should specify, for @var{result}, a value
-returned by @code{__builtin_apply}.
-@enddefbuiltin
-
-@defbuiltin{{} __builtin_va_arg_pack ()}
-This built-in function represents all anonymous arguments of an inline
-function.  It can be used only in inline functions that are always
-inlined, never compiled as a separate function, such as those using
-@code{__attribute__ ((__always_inline__))} or
-@code{__attribute__ ((__gnu_inline__))} extern inline functions.
-It must be only passed as last argument to some other function
-with variable arguments.  This is useful for writing small wrapper
-inlines for variable argument functions, when using preprocessor
-macros is undesirable.  For example:
-@smallexample
-extern int myprintf (FILE *f, const char *format, ...);
-extern inline __attribute__ ((__gnu_inline__)) int
-myprintf (FILE *f, const char *format, ...)
-@{
-  int r = fprintf (f, "myprintf: ");
-  if (r < 0)
-    return r;
-  int s = fprintf (f, format, __builtin_va_arg_pack ());
-  if (s < 0)
-    return s;
-  return r + s;
-@}
-@end smallexample
-@enddefbuiltin
-
-@defbuiltin{int __builtin_va_arg_pack_len ()}
-This built-in function returns the number of anonymous arguments of
-an inline function.  It can be used only in inline functions that
-are always inlined, never compiled as a separate function, such
-as those using @code{__attribute__ ((__always_inline__))} or
-@code{__attribute__ ((__gnu_inline__))} extern inline functions.
-For example following does link- or run-time checking of open
-arguments for optimized code:
-@smallexample
-#ifdef __OPTIMIZE__
-extern inline __attribute__((__gnu_inline__)) int
-myopen (const char *path, int oflag, ...)
-@{
-  if (__builtin_va_arg_pack_len () > 1)
-    warn_open_too_many_arguments ();
-
-  if (__builtin_constant_p (oflag))
-    @{
-      if ((oflag & O_CREAT) != 0 && __builtin_va_arg_pack_len () < 1)
-        @{
-          warn_open_missing_mode ();
-          return __open_2 (path, oflag);
-        @}
-      return open (path, oflag, __builtin_va_arg_pack ());
-    @}
-
-  if (__builtin_va_arg_pack_len () < 1)
-    return __open_2 (path, oflag);
-
-  return open (path, oflag, __builtin_va_arg_pack ());
-@}
-#endif
-@end smallexample
-@enddefbuiltin
 
 @node Additional Numeric Types
 @section Additional Numeric Types
@@ -9751,6 +9579,990 @@ target type; if such an attribute is applied to a function return type
 that is not a pointer-to-function type, it is treated as applying
 to the function type.
 
+@node Pragmas
+@section Pragmas Accepted by GCC
+@cindex pragmas
+@cindex @code{#pragma}
+
+GCC supports several types of pragmas, primarily in order to compile
+code originally written for other compilers.  Note that in general
+we do not recommend the use of pragmas; @xref{Function Attributes},
+for further explanation.
+
+The GNU C preprocessor recognizes several pragmas in addition to the
+compiler pragmas documented here.  Refer to the CPP manual for more
+information.
+
+GCC additionally recognizes OpenMP pragmas when the @option{-fopenmp}
+option is specified, and OpenACC pragmas when the @option{-fopenacc}
+option is specified.  @xref{OpenMP}, and @ref{OpenACC}.
+
+@menu
+* AArch64 Pragmas::
+* ARM Pragmas::
+* LoongArch Pragmas::
+* M32C Pragmas::
+* PRU Pragmas::
+* RS/6000 and PowerPC Pragmas::
+* S/390 Pragmas::
+* Darwin Pragmas::
+* Solaris Pragmas::
+* Symbol-Renaming Pragmas::
+* Structure-Layout Pragmas::
+* Weak Pragmas::
+* Diagnostic Pragmas::
+* Visibility Pragmas::
+* Push/Pop Macro Pragmas::
+* Function Specific Option Pragmas::
+* Loop-Specific Pragmas::
+@end menu
+
+@node AArch64 Pragmas
+@subsection AArch64 Pragmas
+
+The pragmas defined by the AArch64 target correspond to the AArch64
+target function attributes.  They can be specified as below:
+@smallexample
+#pragma GCC target("string")
+@end smallexample
+
+where @code{@var{string}} can be any string accepted as an AArch64 target
+attribute.  @xref{AArch64 Function Attributes}, for more details
+on the permissible values of @code{string}.
+
+@node ARM Pragmas
+@subsection ARM Pragmas
+
+The ARM target defines pragmas for controlling the default addition of
+@code{long_call} and @code{short_call} attributes to functions.
+@xref{Function Attributes}, for information about the effects of these
+attributes.
+
+@table @code
+@cindex pragma, long_calls
+@item long_calls
+Set all subsequent functions to have the @code{long_call} attribute.
+
+@cindex pragma, no_long_calls
+@item no_long_calls
+Set all subsequent functions to have the @code{short_call} attribute.
+
+@cindex pragma, long_calls_off
+@item long_calls_off
+Do not affect the @code{long_call} or @code{short_call} attributes of
+subsequent functions.
+@end table
+
+@node LoongArch Pragmas
+@subsection LoongArch Pragmas
+
+The list of attributes supported by Pragma is the same as that of target
+function attributes.  @xref{LoongArch Function Attributes}.
+
+Example:
+
+@smallexample
+#pragma GCC target("strict-align")
+@end smallexample
+
+@node M32C Pragmas
+@subsection M32C Pragmas
+
+@table @code
+@cindex pragma, memregs
+@item GCC memregs @var{number}
+Overrides the command-line option @code{-memregs=} for the current
+file.  Use with care!  This pragma must be before any function in the
+file, and mixing different memregs values in different objects may
+make them incompatible.  This pragma is useful when a
+performance-critical function uses a memreg for temporary values,
+as it may allow you to reduce the number of memregs used.
+
+@cindex pragma, address
+@item ADDRESS @var{name} @var{address}
+For any declared symbols matching @var{name}, this does three things
+to that symbol: it forces the symbol to be located at the given
+address (a number), it forces the symbol to be volatile, and it
+changes the symbol's scope to be static.  This pragma exists for
+compatibility with other compilers, but note that the common
+@code{1234H} numeric syntax is not supported (use @code{0x1234}
+instead).  Example:
+
+@smallexample
+#pragma ADDRESS port3 0x103
+char port3;
+@end smallexample
+
+@end table
+
+@node PRU Pragmas
+@subsection PRU Pragmas
+
+@table @code
+
+@cindex pragma, ctable_entry
+@item ctable_entry @var{index} @var{constant_address}
+Specifies that the PRU CTABLE entry given by @var{index} has the value
+@var{constant_address}.  This enables GCC to emit LBCO/SBCO instructions
+when the load/store address is known and can be addressed with some CTABLE
+entry.  For example:
+
+@smallexample
+/* will compile to "sbco Rx, 2, 0x10, 4" */
+#pragma ctable_entry 2 0x4802a000
+*(unsigned int *)0x4802a010 = val;
+@end smallexample
+
+@end table
+
+@node RS/6000 and PowerPC Pragmas
+@subsection RS/6000 and PowerPC Pragmas
+
+The RS/6000 and PowerPC targets define one pragma for controlling
+whether or not the @code{longcall} attribute is added to function
+declarations by default.  This pragma overrides the @option{-mlongcall}
+option, but not the @code{longcall} and @code{shortcall} attributes.
+@xref{RS/6000 and PowerPC Options}, for more information about when long
+calls are and are not necessary.
+
+@table @code
+@cindex pragma, longcall
+@item longcall (1)
+Apply the @code{longcall} attribute to all subsequent function
+declarations.
+
+@item longcall (0)
+Do not apply the @code{longcall} attribute to subsequent function
+declarations.
+@end table
+
+@c Describe h8300 pragmas here.
+@c Describe sh pragmas here.
+@c Describe v850 pragmas here.
+
+@node S/390 Pragmas
+@subsection S/390 Pragmas
+
+The pragmas defined by the S/390 target correspond to the S/390
+target function attributes and some the additional options:
+
+@table @samp
+@item zvector
+@itemx no-zvector
+@end table
+
+Note that options of the pragma, unlike options of the target
+attribute, do change the value of preprocessor macros like
+@code{__VEC__}.  They can be specified as below:
+
+@smallexample
+#pragma GCC target("string[,string]...")
+#pragma GCC target("string"[,"string"]...)
+@end smallexample
+
+@node Darwin Pragmas
+@subsection Darwin Pragmas
+
+The following pragmas are available for all architectures running the
+Darwin operating system.  These are useful for compatibility with other
+macOS compilers.
+
+@table @code
+@cindex pragma, mark
+@item mark @var{tokens}@dots{}
+This pragma is accepted, but has no effect.
+
+@cindex pragma, options align
+@item options align=@var{alignment}
+This pragma sets the alignment of fields in structures.  The values of
+@var{alignment} may be @code{mac68k}, to emulate m68k alignment, or
+@code{power}, to emulate PowerPC alignment.  Uses of this pragma nest
+properly; to restore the previous setting, use @code{reset} for the
+@var{alignment}.
+
+@cindex pragma, segment
+@item segment @var{tokens}@dots{}
+This pragma is accepted, but has no effect.
+
+@cindex pragma, unused
+@item unused (@var{var} [, @var{var}]@dots{})
+This pragma declares variables to be possibly unused.  GCC does not
+produce warnings for the listed variables.  The effect is similar to
+that of the @code{unused} attribute, except that this pragma may appear
+anywhere within the variables' scopes.
+@end table
+
+@node Solaris Pragmas
+@subsection Solaris Pragmas
+
+The Solaris target supports @code{#pragma redefine_extname}
+(@pxref{Symbol-Renaming Pragmas}).  It also supports additional
+@code{#pragma} directives for compatibility with the system compiler.
+
+@table @code
+@cindex pragma, align
+@item align @var{alignment} (@var{variable} [, @var{variable}]...)
+
+Increase the minimum alignment of each @var{variable} to @var{alignment}.
+This is the same as GCC's @code{aligned} attribute @pxref{Variable
+Attributes}).  Macro expansion occurs on the arguments to this pragma
+when compiling C and Objective-C@.  It does not currently occur when
+compiling C++, but this is a bug which may be fixed in a future
+release.
+
+@cindex pragma, fini
+@item fini (@var{function} [, @var{function}]...)
+
+This pragma causes each listed @var{function} to be called after
+main, or during shared module unloading, by adding a call to the
+@code{.fini} section.
+
+@cindex pragma, init
+@item init (@var{function} [, @var{function}]...)
+
+This pragma causes each listed @var{function} to be called during
+initialization (before @code{main}) or during shared module loading, by
+adding a call to the @code{.init} section.
+
+@end table
+
+@node Symbol-Renaming Pragmas
+@subsection Symbol-Renaming Pragmas
+
+GCC supports a @code{#pragma} directive that changes the name used in
+assembly for a given declaration. While this pragma is supported on all
+platforms, it is intended primarily to provide compatibility with the
+Solaris system headers. This effect can also be achieved using the asm
+labels extension (@pxref{Asm Labels}).
+
+@table @code
+@cindex pragma, redefine_extname
+@item redefine_extname @var{oldname} @var{newname}
+
+This pragma gives the C function @var{oldname} the assembly symbol
+@var{newname}.  The preprocessor macro @code{__PRAGMA_REDEFINE_EXTNAME}
+is defined if this pragma is available (currently on all platforms).
+@end table
+
+This pragma and the @code{asm} labels extension interact in a complicated
+manner.  Here are some corner cases you may want to be aware of:
+
+@enumerate
+@item This pragma silently applies only to declarations with external
+linkage.  The @code{asm} label feature does not have this restriction.
+
+@item In C++, this pragma silently applies only to declarations with
+``C'' linkage.  Again, @code{asm} labels do not have this restriction.
+
+@item If either of the ways of changing the assembly name of a
+declaration are applied to a declaration whose assembly name has
+already been determined (either by a previous use of one of these
+features, or because the compiler needed the assembly name in order to
+generate code), and the new name is different, a warning issues and
+the name does not change.
+
+@item The @var{oldname} used by @code{#pragma redefine_extname} is
+always the C-language name.
+@end enumerate
+
+@node Structure-Layout Pragmas
+@subsection Structure-Layout Pragmas
+
+For compatibility with Microsoft Windows compilers, GCC supports a
+set of @code{#pragma} directives that change the maximum alignment of
+members of structures (other than zero-width bit-fields), unions, and
+classes subsequently defined. The @var{n} value below always is required
+to be a small power of two and specifies the new alignment in bytes.
+
+@enumerate
+@item @code{#pragma pack(@var{n})} simply sets the new alignment.
+@item @code{#pragma pack()} sets the alignment to the one that was in
+effect when compilation started (see also command-line option
+@option{-fpack-struct[=@var{n}]} @pxref{Code Gen Options}).
+@item @code{#pragma pack(push[,@var{n}])} pushes the current alignment
+setting on an internal stack and then optionally sets the new alignment.
+@item @code{#pragma pack(pop)} restores the alignment setting to the one
+saved at the top of the internal stack (and removes that stack entry).
+Note that @code{#pragma pack([@var{n}])} does not influence this internal
+stack; thus it is possible to have @code{#pragma pack(push)} followed by
+multiple @code{#pragma pack(@var{n})} instances and finalized by a single
+@code{#pragma pack(pop)}.
+@end enumerate
+
+Some targets, e.g.@: x86 and PowerPC, support the @code{#pragma ms_struct}
+directive which lays out structures and unions subsequently defined as the
+documented @code{__attribute__ ((ms_struct))}.
+
+@enumerate
+@item @code{#pragma ms_struct on} turns on the Microsoft layout.
+@item @code{#pragma ms_struct off} turns off the Microsoft layout.
+@item @code{#pragma ms_struct reset} goes back to the default layout.
+@end enumerate
+
+Most targets also support the @code{#pragma scalar_storage_order} directive
+which lays out structures and unions subsequently defined as the documented
+@code{__attribute__ ((scalar_storage_order))}.
+
+@enumerate
+@item @code{#pragma scalar_storage_order big-endian} sets the storage order
+of the scalar fields to big-endian.
+@item @code{#pragma scalar_storage_order little-endian} sets the storage order
+of the scalar fields to little-endian.
+@item @code{#pragma scalar_storage_order default} goes back to the endianness
+that was in effect when compilation started (see also command-line option
+@option{-fsso-struct=@var{endianness}} @pxref{C Dialect Options}).
+@end enumerate
+
+@node Weak Pragmas
+@subsection Weak Pragmas
+
+For compatibility with SVR4, GCC supports a set of @code{#pragma}
+directives for declaring symbols to be weak, and defining weak
+aliases.
+
+@table @code
+@cindex pragma, weak
+@item #pragma weak @var{symbol}
+This pragma declares @var{symbol} to be weak, as if the declaration
+had the attribute of the same name.  The pragma may appear before
+or after the declaration of @var{symbol}.  It is not an error for
+@var{symbol} to never be defined at all.
+
+@item #pragma weak @var{symbol1} = @var{symbol2}
+This pragma declares @var{symbol1} to be a weak alias of @var{symbol2}.
+It is an error if @var{symbol2} is not defined in the current
+translation unit.
+@end table
+
+@node Diagnostic Pragmas
+@subsection Diagnostic Pragmas
+
+GCC allows the user to selectively enable or disable certain types of
+diagnostics, and change the kind of the diagnostic.  For example, a
+project's policy might require that all sources compile with
+@option{-Werror} but certain files might have exceptions allowing
+specific types of warnings.  Or, a project might selectively enable
+diagnostics and treat them as errors depending on which preprocessor
+macros are defined.
+
+@table @code
+@cindex pragma, diagnostic
+@item #pragma GCC diagnostic @var{kind} @var{option}
+
+Modifies the disposition of a diagnostic.  Note that not all
+diagnostics are modifiable; at the moment only warnings (normally
+controlled by @samp{-W@dots{}}) can be controlled, and not all of them.
+Use @option{-fdiagnostics-show-option} to determine which diagnostics
+are controllable and which option controls them.
+
+@var{kind} is @samp{error} to treat this diagnostic as an error,
+@samp{warning} to treat it like a warning (even if @option{-Werror} is
+in effect), or @samp{ignored} if the diagnostic is to be ignored.
+@var{option} is a double quoted string that matches the command-line
+option.
+
+@smallexample
+#pragma GCC diagnostic warning "-Wformat"
+#pragma GCC diagnostic error "-Wformat"
+#pragma GCC diagnostic ignored "-Wformat"
+@end smallexample
+
+Note that these pragmas override any command-line options.  GCC keeps
+track of the location of each pragma, and issues diagnostics according
+to the state as of that point in the source file.  Thus, pragmas occurring
+after a line do not affect diagnostics caused by that line.
+
+@item #pragma GCC diagnostic push
+@itemx #pragma GCC diagnostic pop
+
+Causes GCC to remember the state of the diagnostics as of each
+@code{push}, and restore to that point at each @code{pop}.  If a
+@code{pop} has no matching @code{push}, the command-line options are
+restored.
+
+@smallexample
+#pragma GCC diagnostic error "-Wuninitialized"
+  foo(a);                       /* error is given for this one */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+  foo(b);                       /* no diagnostic for this one */
+#pragma GCC diagnostic pop
+  foo(c);                       /* error is given for this one */
+#pragma GCC diagnostic pop
+  foo(d);                       /* depends on command-line options */
+@end smallexample
+
+@item #pragma GCC diagnostic ignored_attributes
+
+Similarly to @option{-Wno-attributes=}, this pragma allows users to suppress
+warnings about unknown scoped attributes (in C++11 and C23).  For example,
+@code{#pragma GCC diagnostic ignored_attributes "vendor::attr"} disables
+warning about the following declaration:
+
+@smallexample
+[[vendor::attr]] void f();
+@end smallexample
+
+whereas @code{#pragma GCC diagnostic ignored_attributes "vendor::"} prevents
+warning about both of these declarations:
+
+@smallexample
+[[vendor::safe]] void f();
+[[vendor::unsafe]] void f2();
+@end smallexample
+
+@end table
+
+GCC also offers a simple mechanism for printing messages during
+compilation.
+
+@table @code
+@cindex pragma, diagnostic
+@item #pragma message @var{string}
+
+Prints @var{string} as a compiler message on compilation.  The message
+is informational only, and is neither a compilation warning nor an
+error.  Newlines can be included in the string by using the @samp{\n}
+escape sequence.
+
+@smallexample
+#pragma message "Compiling " __FILE__ "..."
+@end smallexample
+
+@var{string} may be parenthesized, and is printed with location
+information.  For example,
+
+@smallexample
+#define DO_PRAGMA(x) _Pragma (#x)
+#define TODO(x) DO_PRAGMA(message ("TODO - " #x))
+
+TODO(Remember to fix this)
+@end smallexample
+
+@noindent
+prints @samp{/tmp/file.c:4: note: #pragma message:
+TODO - Remember to fix this}.
+
+@cindex pragma, diagnostic
+@item #pragma GCC error @var{message}
+Generates an error message.  This pragma @emph{is} considered to
+indicate an error in the compilation, and it will be treated as such.
+
+Newlines can be included in the string by using the @samp{\n}
+escape sequence.  They will be displayed as newlines even if the
+@option{-fmessage-length} option is set to zero.
+
+The error is only generated if the pragma is present in the code after
+pre-processing has been completed.  It does not matter however if the
+code containing the pragma is unreachable:
+
+@smallexample
+#if 0
+#pragma GCC error "this error is not seen"
+#endif
+void foo (void)
+@{
+  return;
+#pragma GCC error "this error is seen"
+@}
+@end smallexample
+
+@cindex pragma, diagnostic
+@item #pragma GCC warning @var{message}
+This is just like @samp{pragma GCC error} except that a warning
+message is issued instead of an error message.  Unless
+@option{-Werror} is in effect, in which case this pragma will generate
+an error as well.
+
+@end table
+
+@node Visibility Pragmas
+@subsection Visibility Pragmas
+
+@table @code
+@cindex pragma, visibility
+@item #pragma GCC visibility push(@var{visibility})
+@itemx #pragma GCC visibility pop
+
+This pragma allows the user to set the visibility for multiple
+declarations without having to give each a visibility attribute
+(@pxref{Function Attributes}).
+
+In C++, @samp{#pragma GCC visibility} affects only namespace-scope
+declarations.  Class members and template specializations are not
+affected; if you want to override the visibility for a particular
+member or instantiation, you must use an attribute.
+
+@end table
+
+
+@node Push/Pop Macro Pragmas
+@subsection Push/Pop Macro Pragmas
+
+For compatibility with Microsoft Windows compilers, GCC supports
+@samp{#pragma push_macro(@var{"macro_name"})}
+and @samp{#pragma pop_macro(@var{"macro_name"})}.
+
+@table @code
+@cindex pragma, push_macro
+@item #pragma push_macro(@var{"macro_name"})
+This pragma saves the value of the macro named as @var{macro_name} to
+the top of the stack for this macro.
+
+@cindex pragma, pop_macro
+@item #pragma pop_macro(@var{"macro_name"})
+This pragma sets the value of the macro named as @var{macro_name} to
+the value on top of the stack for this macro. If the stack for
+@var{macro_name} is empty, the value of the macro remains unchanged.
+@end table
+
+For example:
+
+@smallexample
+#define X  1
+#pragma push_macro("X")
+#undef X
+#define X -1
+#pragma pop_macro("X")
+int x [X];
+@end smallexample
+
+@noindent
+In this example, the definition of X as 1 is saved by @code{#pragma
+push_macro} and restored by @code{#pragma pop_macro}.
+
+@node Function Specific Option Pragmas
+@subsection Function Specific Option Pragmas
+
+@table @code
+@cindex pragma GCC target
+@item #pragma GCC target (@var{string}, @dots{})
+
+This pragma allows you to set target-specific options for functions
+defined later in the source file.  One or more strings can be
+specified.  Each function that is defined after this point is treated
+as if it had been declared with one @code{target(}@var{string}@code{)}
+attribute for each @var{string} argument.  The parentheses around
+the strings in the pragma are optional.  @xref{Function Attributes},
+for more information about the @code{target} attribute and the attribute
+syntax.
+
+The @code{#pragma GCC target} pragma is presently implemented for
+x86, ARM, AArch64, PowerPC, and S/390 targets only.
+
+@cindex pragma GCC optimize
+@item #pragma GCC optimize (@var{string}, @dots{})
+
+This pragma allows you to set global optimization options for functions
+defined later in the source file.  One or more strings can be
+specified.  Each function that is defined after this point is treated
+as if it had been declared with one @code{optimize(}@var{string}@code{)}
+attribute for each @var{string} argument.  The parentheses around
+the strings in the pragma are optional.  @xref{Function Attributes},
+for more information about the @code{optimize} attribute and the attribute
+syntax.
+
+@cindex pragma GCC push_options
+@cindex pragma GCC pop_options
+@item #pragma GCC push_options
+@itemx #pragma GCC pop_options
+
+These pragmas maintain a stack of the current target and optimization
+options.  It is intended for include files where you temporarily want
+to switch to using a different @samp{#pragma GCC target} or
+@samp{#pragma GCC optimize} and then to pop back to the previous
+options.
+
+@cindex pragma GCC reset_options
+@item #pragma GCC reset_options
+
+This pragma clears the current @code{#pragma GCC target} and
+@code{#pragma GCC optimize} to use the default switches as specified
+on the command line.
+
+@end table
+
+@node Loop-Specific Pragmas
+@subsection Loop-Specific Pragmas
+
+@table @code
+@cindex pragma GCC ivdep
+@item #pragma GCC ivdep
+
+With this pragma, the programmer asserts that there are no loop-carried
+dependencies which would prevent consecutive iterations of
+the following loop from executing concurrently with SIMD
+(single instruction multiple data) instructions.
+
+For example, the compiler can only unconditionally vectorize the following
+loop with the pragma:
+
+@smallexample
+void foo (int n, int *a, int *b, int *c)
+@{
+  int i, j;
+#pragma GCC ivdep
+  for (i = 0; i < n; ++i)
+    a[i] = b[i] + c[i];
+@}
+@end smallexample
+
+@noindent
+In this example, using the @code{restrict} qualifier had the same
+effect. In the following example, that would not be possible. Assume
+@math{k < -m} or @math{k >= m}. Only with the pragma, the compiler knows
+that it can unconditionally vectorize the following loop:
+
+@smallexample
+void ignore_vec_dep (int *a, int k, int c, int m)
+@{
+#pragma GCC ivdep
+  for (int i = 0; i < m; i++)
+    a[i] = a[i + k] * c;
+@}
+@end smallexample
+
+@cindex pragma GCC novector
+@item #pragma GCC novector
+
+With this pragma, the programmer asserts that the following loop should be
+prevented from executing concurrently with SIMD (single instruction multiple
+data) instructions.
+
+For example, the compiler cannot vectorize the following loop with the pragma:
+
+@smallexample
+void foo (int n, int *a, int *b, int *c)
+@{
+  int i, j;
+#pragma GCC novector
+  for (i = 0; i < n; ++i)
+    a[i] = b[i] + c[i];
+@}
+@end smallexample
+
+@cindex pragma GCC unroll @var{n}
+@item #pragma GCC unroll @var{n}
+
+You can use this pragma to control how many times a loop should be unrolled.
+It must be placed immediately before a @code{for}, @code{while} or @code{do}
+loop or a @code{#pragma GCC ivdep}, and applies only to the loop that follows.
+@var{n} is an integer constant expression specifying the unrolling factor.
+The values of @math{0} and @math{1} block any unrolling of the loop.
+
+@end table
+
+@node Thread-Local
+@section Thread-Local Storage
+@cindex Thread-Local Storage
+@cindex @acronym{TLS}
+@cindex @code{__thread}
+
+Thread-local storage (@acronym{TLS}) is a mechanism by which variables
+are allocated such that there is one instance of the variable per extant
+thread.  The runtime model GCC uses to implement this originates
+in the IA-64 processor-specific ABI, but has since been migrated
+to other processors as well.  It requires significant support from
+the linker (@command{ld}), dynamic linker (@command{ld.so}), and
+system libraries (@file{libc.so} and @file{libpthread.so}), so it
+is not available everywhere.
+
+At the user level, the extension is visible with a new storage
+class keyword: @code{__thread}.  For example:
+
+@smallexample
+__thread int i;
+extern __thread struct state s;
+static __thread char *p;
+@end smallexample
+
+The @code{__thread} specifier may be used alone, with the @code{extern}
+or @code{static} specifiers, but with no other storage class specifier.
+When used with @code{extern} or @code{static}, @code{__thread} must appear
+immediately after the other storage class specifier.
+
+The @code{__thread} specifier may be applied to any global, file-scoped
+static, function-scoped static, or static data member of a class.  It may
+not be applied to block-scoped automatic or non-static data member.
+
+When the address-of operator is applied to a thread-local variable, it is
+evaluated at run time and returns the address of the current thread's
+instance of that variable.  An address so obtained may be used by any
+thread.  When a thread terminates, any pointers to thread-local variables
+in that thread become invalid.
+
+No static initialization may refer to the address of a thread-local variable.
+
+In C++, if an initializer is present for a thread-local variable, it must
+be a @var{constant-expression}, as defined in 5.19.2 of the ANSI/ISO C++
+standard.
+
+See @uref{https://www.akkadia.org/drepper/tls.pdf,
+ELF Handling For Thread-Local Storage} for a detailed explanation of
+the four thread-local storage addressing models, and how the runtime
+is expected to function.
+
+@menu
+* C99 Thread-Local Edits::
+* C++98 Thread-Local Edits::
+@end menu
+
+@node C99 Thread-Local Edits
+@subsection ISO/IEC 9899:1999 Edits for Thread-Local Storage
+
+The following are a set of changes to ISO/IEC 9899:1999 (aka C99)
+that document the exact semantics of the language extension.
+
+@itemize @bullet
+@item
+@cite{5.1.2  Execution environments}
+
+Add new text after paragraph 1
+
+@quotation
+Within either execution environment, a @dfn{thread} is a flow of
+control within a program.  It is implementation defined whether
+or not there may be more than one thread associated with a program.
+It is implementation defined how threads beyond the first are
+created, the name and type of the function called at thread
+startup, and how threads may be terminated.  However, objects
+with thread storage duration shall be initialized before thread
+startup.
+@end quotation
+
+@item
+@cite{6.2.4  Storage durations of objects}
+
+Add new text before paragraph 3
+
+@quotation
+An object whose identifier is declared with the storage-class
+specifier @w{@code{__thread}} has @dfn{thread storage duration}.
+Its lifetime is the entire execution of the thread, and its
+stored value is initialized only once, prior to thread startup.
+@end quotation
+
+@item
+@cite{6.4.1  Keywords}
+
+Add @code{__thread}.
+
+@item
+@cite{6.7.1  Storage-class specifiers}
+
+Add @code{__thread} to the list of storage class specifiers in
+paragraph 1.
+
+Change paragraph 2 to
+
+@quotation
+With the exception of @code{__thread}, at most one storage-class
+specifier may be given [@dots{}].  The @code{__thread} specifier may
+be used alone, or immediately following @code{extern} or
+@code{static}.
+@end quotation
+
+Add new text after paragraph 6
+
+@quotation
+The declaration of an identifier for a variable that has
+block scope that specifies @code{__thread} shall also
+specify either @code{extern} or @code{static}.
+
+The @code{__thread} specifier shall be used only with
+variables.
+@end quotation
+@end itemize
+
+@node C++98 Thread-Local Edits
+@subsection ISO/IEC 14882:1998 Edits for Thread-Local Storage
+
+The following are a set of changes to ISO/IEC 14882:1998 (aka C++98)
+that document the exact semantics of the language extension.
+
+@itemize @bullet
+@item
+@b{[intro.execution]}
+
+New text after paragraph 4
+
+@quotation
+A @dfn{thread} is a flow of control within the abstract machine.
+It is implementation defined whether or not there may be more than
+one thread.
+@end quotation
+
+New text after paragraph 7
+
+@quotation
+It is unspecified whether additional action must be taken to
+ensure when and whether side effects are visible to other threads.
+@end quotation
+
+@item
+@b{[lex.key]}
+
+Add @code{__thread}.
+
+@item
+@b{[basic.start.main]}
+
+Add after paragraph 5
+
+@quotation
+The thread that begins execution at the @code{main} function is called
+the @dfn{main thread}.  It is implementation defined how functions
+beginning threads other than the main thread are designated or typed.
+A function so designated, as well as the @code{main} function, is called
+a @dfn{thread startup function}.  It is implementation defined what
+happens if a thread startup function returns.  It is implementation
+defined what happens to other threads when any thread calls @code{exit}.
+@end quotation
+
+@item
+@b{[basic.start.init]}
+
+Add after paragraph 4
+
+@quotation
+The storage for an object of thread storage duration shall be
+statically initialized before the first statement of the thread startup
+function.  An object of thread storage duration shall not require
+dynamic initialization.
+@end quotation
+
+@item
+@b{[basic.start.term]}
+
+Add after paragraph 3
+
+@quotation
+The type of an object with thread storage duration shall not have a
+non-trivial destructor, nor shall it be an array type whose elements
+(directly or indirectly) have non-trivial destructors.
+@end quotation
+
+@item
+@b{[basic.stc]}
+
+Add ``thread storage duration'' to the list in paragraph 1.
+
+Change paragraph 2
+
+@quotation
+Thread, static, and automatic storage durations are associated with
+objects introduced by declarations [@dots{}].
+@end quotation
+
+Add @code{__thread} to the list of specifiers in paragraph 3.
+
+@item
+@b{[basic.stc.thread]}
+
+New section before @b{[basic.stc.static]}
+
+@quotation
+The keyword @code{__thread} applied to a non-local object gives the
+object thread storage duration.
+
+A local variable or class data member declared both @code{static}
+and @code{__thread} gives the variable or member thread storage
+duration.
+@end quotation
+
+@item
+@b{[basic.stc.static]}
+
+Change paragraph 1
+
+@quotation
+All objects that have neither thread storage duration, dynamic
+storage duration nor are local [@dots{}].
+@end quotation
+
+@item
+@b{[dcl.stc]}
+
+Add @code{__thread} to the list in paragraph 1.
+
+Change paragraph 1
+
+@quotation
+With the exception of @code{__thread}, at most one
+@var{storage-class-specifier} shall appear in a given
+@var{decl-specifier-seq}.  The @code{__thread} specifier may
+be used alone, or immediately following the @code{extern} or
+@code{static} specifiers.  [@dots{}]
+@end quotation
+
+Add after paragraph 5
+
+@quotation
+The @code{__thread} specifier can be applied only to the names of objects
+and to anonymous unions.
+@end quotation
+
+@item
+@b{[class.mem]}
+
+Add after paragraph 6
+
+@quotation
+Non-@code{static} members shall not be @code{__thread}.
+@end quotation
+@end itemize
+
+@node OpenMP
+@section OpenMP
+@cindex OpenMP extension support
+
+OpenMP (Open Multi-Processing) is an application programming
+interface (API) that supports multi-platform shared memory
+multiprocessing programming in C/C++ and Fortran on many
+architectures, including Unix and Microsoft Windows platforms.
+It consists of a set of compiler directives, library routines,
+and environment variables that influence run-time behavior.
+
+GCC implements all of the @uref{https://www.openmp.org/specifications/,
+OpenMP Application Program Interface v4.5}, and many features from later
+versions of the OpenMP specification.
+@xref{OpenMP Implementation Status,,,libgomp,
+GNU Offloading and Multi Processing Runtime Library},
+for more details about currently supported OpenMP features.
+
+To enable the processing of OpenMP directives @samp{#pragma omp},
+@samp{[[omp::directive(...)]]}, @samp{[[omp::decl(...)]]},
+and @samp{[[omp::sequence(...)]]} in C and C++,
+GCC needs to be invoked with the @option{-fopenmp} option.
+This option also arranges for automatic linking of the OpenMP
+runtime library.
+@xref{,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
+
+@xref{OpenMP and OpenACC Options}, for additional options useful with
+@option{-fopenmp}.
+
+@node OpenACC
+@section OpenACC
+@cindex OpenACC extension support
+
+OpenACC is an application programming interface (API) that supports
+offloading of code to accelerator devices.  It consists of a set of
+compiler directives, library routines, and environment variables that
+influence run-time behavior.
+
+GCC strives to be compatible with the
+@uref{https://www.openacc.org/, OpenACC Application Programming
+Interface v2.6}.
+
+To enable the processing of OpenACC directives @samp{#pragma acc}
+in C and C++, GCC needs to be invoked with the @option{-fopenacc} option.
+This option also arranges for automatic linking of the OpenACC runtime
+library.
+@xref{,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
+
+@xref{OpenMP and OpenACC Options}, for additional options useful with
+@option{-fopenacc}.
+
 @node Inline
 @section An Inline Function is As Fast As a Macro
 @cindex inline functions
@@ -13359,6 +14171,178 @@ attributes make both the intent of the code and its reliance on a GNU
 extension explicit.  Additionally, using @code{const} and
 @code{volatile} in this way is specific to GNU C and does not work in
 GNU C++.
+
+@node Nonlocal Gotos
+@section Nonlocal Gotos
+@cindex nonlocal gotos
+
+GCC provides the built-in functions @code{__builtin_setjmp} and
+@code{__builtin_longjmp} which are similar to, but not interchangeable
+with, the C library functions @code{setjmp} and @code{longjmp}.
+The built-in versions are used internally by GCC's libraries
+to implement exception handling on some targets.  You should use the
+standard C library functions declared in @code{<setjmp.h>} in user code
+instead of the builtins.
+
+The built-in versions of these functions use GCC's normal
+mechanisms to save and restore registers using the stack on function
+entry and exit.  The jump buffer argument @var{buf} holds only the
+information needed to restore the stack frame, rather than the entire
+set of saved register values.
+
+An important caveat is that GCC arranges to save and restore only
+those registers known to the specific architecture variant being
+compiled for.  This can make @code{__builtin_setjmp} and
+@code{__builtin_longjmp} more efficient than their library
+counterparts in some cases, but it can also cause incorrect and
+mysterious behavior when mixing with code that uses the full register
+set.
+
+You should declare the jump buffer argument @var{buf} to the
+built-in functions as:
+
+@smallexample
+#include <stdint.h>
+intptr_t @var{buf}[5];
+@end smallexample
+
+@defbuiltin{{int} __builtin_setjmp (intptr_t *@var{buf})}
+This function saves the current stack context in @var{buf}.
+@code{__builtin_setjmp} returns 0 when returning directly,
+and 1 when returning from @code{__builtin_longjmp} using the same
+@var{buf}.
+@enddefbuiltin
+
+@defbuiltin{{void} __builtin_longjmp (intptr_t *@var{buf}, int @var{val})}
+This function restores the stack context in @var{buf},
+saved by a previous call to @code{__builtin_setjmp}.  After
+@code{__builtin_longjmp} is finished, the program resumes execution as
+if the matching @code{__builtin_setjmp} returns the value @var{val},
+which must be 1.
+
+Because @code{__builtin_longjmp} depends on the function return
+mechanism to restore the stack context, it cannot be called
+from the same function calling @code{__builtin_setjmp} to
+initialize @var{buf}.  It can only be called from a function called
+(directly or indirectly) from the function calling @code{__builtin_setjmp}.
+@enddefbuiltin
+
+@node Constructing Calls
+@section Constructing Function Calls
+@cindex constructing calls
+@cindex forwarding calls
+
+Using the built-in functions described below, you can record
+the arguments a function received, and call another function
+with the same arguments, without knowing the number or types
+of the arguments.
+
+You can also record the return value of that function call,
+and later return that value, without knowing what data type
+the function tried to return (as long as your caller expects
+that data type).
+
+However, these built-in functions may interact badly with some
+sophisticated features or other extensions of the language.  It
+is, therefore, not recommended to use them outside very simple
+functions acting as mere forwarders for their arguments.
+
+@defbuiltin{{void *} __builtin_apply_args ()}
+This built-in function returns a pointer to data
+describing how to perform a call with the same arguments as are passed
+to the current function.
+
+The function saves the arg pointer register, structure value address,
+and all registers that might be used to pass arguments to a function
+into a block of memory allocated on the stack.  Then it returns the
+address of that block.
+@enddefbuiltin
+
+@defbuiltin{{void *} __builtin_apply (void (*@var{function})(), void *@var{arguments}, size_t @var{size})}
+This built-in function invokes @var{function}
+with a copy of the parameters described by @var{arguments}
+and @var{size}.
+
+The value of @var{arguments} should be the value returned by
+@code{__builtin_apply_args}.  The argument @var{size} specifies the size
+of the stack argument data, in bytes.
+
+This function returns a pointer to data describing
+how to return whatever value is returned by @var{function}.  The data
+is saved in a block of memory allocated on the stack.
+
+It is not always simple to compute the proper value for @var{size}.  The
+value is used by @code{__builtin_apply} to compute the amount of data
+that should be pushed on the stack and copied from the incoming argument
+area.
+@enddefbuiltin
+
+@defbuiltin{{void} __builtin_return (void *@var{result})}
+This built-in function returns the value described by @var{result} from
+the containing function.  You should specify, for @var{result}, a value
+returned by @code{__builtin_apply}.
+@enddefbuiltin
+
+@defbuiltin{{} __builtin_va_arg_pack ()}
+This built-in function represents all anonymous arguments of an inline
+function.  It can be used only in inline functions that are always
+inlined, never compiled as a separate function, such as those using
+@code{__attribute__ ((__always_inline__))} or
+@code{__attribute__ ((__gnu_inline__))} extern inline functions.
+It must be only passed as last argument to some other function
+with variable arguments.  This is useful for writing small wrapper
+inlines for variable argument functions, when using preprocessor
+macros is undesirable.  For example:
+@smallexample
+extern int myprintf (FILE *f, const char *format, ...);
+extern inline __attribute__ ((__gnu_inline__)) int
+myprintf (FILE *f, const char *format, ...)
+@{
+  int r = fprintf (f, "myprintf: ");
+  if (r < 0)
+    return r;
+  int s = fprintf (f, format, __builtin_va_arg_pack ());
+  if (s < 0)
+    return s;
+  return r + s;
+@}
+@end smallexample
+@enddefbuiltin
+
+@defbuiltin{int __builtin_va_arg_pack_len ()}
+This built-in function returns the number of anonymous arguments of
+an inline function.  It can be used only in inline functions that
+are always inlined, never compiled as a separate function, such
+as those using @code{__attribute__ ((__always_inline__))} or
+@code{__attribute__ ((__gnu_inline__))} extern inline functions.
+For example following does link- or run-time checking of open
+arguments for optimized code:
+@smallexample
+#ifdef __OPTIMIZE__
+extern inline __attribute__((__gnu_inline__)) int
+myopen (const char *path, int oflag, ...)
+@{
+  if (__builtin_va_arg_pack_len () > 1)
+    warn_open_too_many_arguments ();
+
+  if (__builtin_constant_p (oflag))
+    @{
+      if ((oflag & O_CREAT) != 0 && __builtin_va_arg_pack_len () < 1)
+        @{
+          warn_open_missing_mode ();
+          return __open_2 (path, oflag);
+        @}
+      return open (path, oflag, __builtin_va_arg_pack ());
+    @}
+
+  if (__builtin_va_arg_pack_len () < 1)
+    return __open_2 (path, oflag);
+
+  return open (path, oflag, __builtin_va_arg_pack ());
+@}
+#endif
+@end smallexample
+@enddefbuiltin
 
 @node Return Address
 @section Getting the Return or Frame Address of a Function
@@ -28611,990 +29595,6 @@ also be used as format arguments.  Note that the relevant headers are only likel
 available on Darwin (OSX) installations.  On such installations, the XCode and system
 documentation provide descriptions of @code{CFString}, @code{CFStringRefs} and
 associated functions.
-
-@node Pragmas
-@section Pragmas Accepted by GCC
-@cindex pragmas
-@cindex @code{#pragma}
-
-GCC supports several types of pragmas, primarily in order to compile
-code originally written for other compilers.  Note that in general
-we do not recommend the use of pragmas; @xref{Function Attributes},
-for further explanation.
-
-The GNU C preprocessor recognizes several pragmas in addition to the
-compiler pragmas documented here.  Refer to the CPP manual for more
-information.
-
-GCC additionally recognizes OpenMP pragmas when the @option{-fopenmp}
-option is specified, and OpenACC pragmas when the @option{-fopenacc}
-option is specified.  @xref{OpenMP}, and @ref{OpenACC}.
-
-@menu
-* AArch64 Pragmas::
-* ARM Pragmas::
-* LoongArch Pragmas::
-* M32C Pragmas::
-* PRU Pragmas::
-* RS/6000 and PowerPC Pragmas::
-* S/390 Pragmas::
-* Darwin Pragmas::
-* Solaris Pragmas::
-* Symbol-Renaming Pragmas::
-* Structure-Layout Pragmas::
-* Weak Pragmas::
-* Diagnostic Pragmas::
-* Visibility Pragmas::
-* Push/Pop Macro Pragmas::
-* Function Specific Option Pragmas::
-* Loop-Specific Pragmas::
-@end menu
-
-@node AArch64 Pragmas
-@subsection AArch64 Pragmas
-
-The pragmas defined by the AArch64 target correspond to the AArch64
-target function attributes.  They can be specified as below:
-@smallexample
-#pragma GCC target("string")
-@end smallexample
-
-where @code{@var{string}} can be any string accepted as an AArch64 target
-attribute.  @xref{AArch64 Function Attributes}, for more details
-on the permissible values of @code{string}.
-
-@node ARM Pragmas
-@subsection ARM Pragmas
-
-The ARM target defines pragmas for controlling the default addition of
-@code{long_call} and @code{short_call} attributes to functions.
-@xref{Function Attributes}, for information about the effects of these
-attributes.
-
-@table @code
-@cindex pragma, long_calls
-@item long_calls
-Set all subsequent functions to have the @code{long_call} attribute.
-
-@cindex pragma, no_long_calls
-@item no_long_calls
-Set all subsequent functions to have the @code{short_call} attribute.
-
-@cindex pragma, long_calls_off
-@item long_calls_off
-Do not affect the @code{long_call} or @code{short_call} attributes of
-subsequent functions.
-@end table
-
-@node LoongArch Pragmas
-@subsection LoongArch Pragmas
-
-The list of attributes supported by Pragma is the same as that of target
-function attributes.  @xref{LoongArch Function Attributes}.
-
-Example:
-
-@smallexample
-#pragma GCC target("strict-align")
-@end smallexample
-
-@node M32C Pragmas
-@subsection M32C Pragmas
-
-@table @code
-@cindex pragma, memregs
-@item GCC memregs @var{number}
-Overrides the command-line option @code{-memregs=} for the current
-file.  Use with care!  This pragma must be before any function in the
-file, and mixing different memregs values in different objects may
-make them incompatible.  This pragma is useful when a
-performance-critical function uses a memreg for temporary values,
-as it may allow you to reduce the number of memregs used.
-
-@cindex pragma, address
-@item ADDRESS @var{name} @var{address}
-For any declared symbols matching @var{name}, this does three things
-to that symbol: it forces the symbol to be located at the given
-address (a number), it forces the symbol to be volatile, and it
-changes the symbol's scope to be static.  This pragma exists for
-compatibility with other compilers, but note that the common
-@code{1234H} numeric syntax is not supported (use @code{0x1234}
-instead).  Example:
-
-@smallexample
-#pragma ADDRESS port3 0x103
-char port3;
-@end smallexample
-
-@end table
-
-@node PRU Pragmas
-@subsection PRU Pragmas
-
-@table @code
-
-@cindex pragma, ctable_entry
-@item ctable_entry @var{index} @var{constant_address}
-Specifies that the PRU CTABLE entry given by @var{index} has the value
-@var{constant_address}.  This enables GCC to emit LBCO/SBCO instructions
-when the load/store address is known and can be addressed with some CTABLE
-entry.  For example:
-
-@smallexample
-/* will compile to "sbco Rx, 2, 0x10, 4" */
-#pragma ctable_entry 2 0x4802a000
-*(unsigned int *)0x4802a010 = val;
-@end smallexample
-
-@end table
-
-@node RS/6000 and PowerPC Pragmas
-@subsection RS/6000 and PowerPC Pragmas
-
-The RS/6000 and PowerPC targets define one pragma for controlling
-whether or not the @code{longcall} attribute is added to function
-declarations by default.  This pragma overrides the @option{-mlongcall}
-option, but not the @code{longcall} and @code{shortcall} attributes.
-@xref{RS/6000 and PowerPC Options}, for more information about when long
-calls are and are not necessary.
-
-@table @code
-@cindex pragma, longcall
-@item longcall (1)
-Apply the @code{longcall} attribute to all subsequent function
-declarations.
-
-@item longcall (0)
-Do not apply the @code{longcall} attribute to subsequent function
-declarations.
-@end table
-
-@c Describe h8300 pragmas here.
-@c Describe sh pragmas here.
-@c Describe v850 pragmas here.
-
-@node S/390 Pragmas
-@subsection S/390 Pragmas
-
-The pragmas defined by the S/390 target correspond to the S/390
-target function attributes and some the additional options:
-
-@table @samp
-@item zvector
-@itemx no-zvector
-@end table
-
-Note that options of the pragma, unlike options of the target
-attribute, do change the value of preprocessor macros like
-@code{__VEC__}.  They can be specified as below:
-
-@smallexample
-#pragma GCC target("string[,string]...")
-#pragma GCC target("string"[,"string"]...)
-@end smallexample
-
-@node Darwin Pragmas
-@subsection Darwin Pragmas
-
-The following pragmas are available for all architectures running the
-Darwin operating system.  These are useful for compatibility with other
-macOS compilers.
-
-@table @code
-@cindex pragma, mark
-@item mark @var{tokens}@dots{}
-This pragma is accepted, but has no effect.
-
-@cindex pragma, options align
-@item options align=@var{alignment}
-This pragma sets the alignment of fields in structures.  The values of
-@var{alignment} may be @code{mac68k}, to emulate m68k alignment, or
-@code{power}, to emulate PowerPC alignment.  Uses of this pragma nest
-properly; to restore the previous setting, use @code{reset} for the
-@var{alignment}.
-
-@cindex pragma, segment
-@item segment @var{tokens}@dots{}
-This pragma is accepted, but has no effect.
-
-@cindex pragma, unused
-@item unused (@var{var} [, @var{var}]@dots{})
-This pragma declares variables to be possibly unused.  GCC does not
-produce warnings for the listed variables.  The effect is similar to
-that of the @code{unused} attribute, except that this pragma may appear
-anywhere within the variables' scopes.
-@end table
-
-@node Solaris Pragmas
-@subsection Solaris Pragmas
-
-The Solaris target supports @code{#pragma redefine_extname}
-(@pxref{Symbol-Renaming Pragmas}).  It also supports additional
-@code{#pragma} directives for compatibility with the system compiler.
-
-@table @code
-@cindex pragma, align
-@item align @var{alignment} (@var{variable} [, @var{variable}]...)
-
-Increase the minimum alignment of each @var{variable} to @var{alignment}.
-This is the same as GCC's @code{aligned} attribute @pxref{Variable
-Attributes}).  Macro expansion occurs on the arguments to this pragma
-when compiling C and Objective-C@.  It does not currently occur when
-compiling C++, but this is a bug which may be fixed in a future
-release.
-
-@cindex pragma, fini
-@item fini (@var{function} [, @var{function}]...)
-
-This pragma causes each listed @var{function} to be called after
-main, or during shared module unloading, by adding a call to the
-@code{.fini} section.
-
-@cindex pragma, init
-@item init (@var{function} [, @var{function}]...)
-
-This pragma causes each listed @var{function} to be called during
-initialization (before @code{main}) or during shared module loading, by
-adding a call to the @code{.init} section.
-
-@end table
-
-@node Symbol-Renaming Pragmas
-@subsection Symbol-Renaming Pragmas
-
-GCC supports a @code{#pragma} directive that changes the name used in
-assembly for a given declaration. While this pragma is supported on all
-platforms, it is intended primarily to provide compatibility with the
-Solaris system headers. This effect can also be achieved using the asm
-labels extension (@pxref{Asm Labels}).
-
-@table @code
-@cindex pragma, redefine_extname
-@item redefine_extname @var{oldname} @var{newname}
-
-This pragma gives the C function @var{oldname} the assembly symbol
-@var{newname}.  The preprocessor macro @code{__PRAGMA_REDEFINE_EXTNAME}
-is defined if this pragma is available (currently on all platforms).
-@end table
-
-This pragma and the @code{asm} labels extension interact in a complicated
-manner.  Here are some corner cases you may want to be aware of:
-
-@enumerate
-@item This pragma silently applies only to declarations with external
-linkage.  The @code{asm} label feature does not have this restriction.
-
-@item In C++, this pragma silently applies only to declarations with
-``C'' linkage.  Again, @code{asm} labels do not have this restriction.
-
-@item If either of the ways of changing the assembly name of a
-declaration are applied to a declaration whose assembly name has
-already been determined (either by a previous use of one of these
-features, or because the compiler needed the assembly name in order to
-generate code), and the new name is different, a warning issues and
-the name does not change.
-
-@item The @var{oldname} used by @code{#pragma redefine_extname} is
-always the C-language name.
-@end enumerate
-
-@node Structure-Layout Pragmas
-@subsection Structure-Layout Pragmas
-
-For compatibility with Microsoft Windows compilers, GCC supports a
-set of @code{#pragma} directives that change the maximum alignment of
-members of structures (other than zero-width bit-fields), unions, and
-classes subsequently defined. The @var{n} value below always is required
-to be a small power of two and specifies the new alignment in bytes.
-
-@enumerate
-@item @code{#pragma pack(@var{n})} simply sets the new alignment.
-@item @code{#pragma pack()} sets the alignment to the one that was in
-effect when compilation started (see also command-line option
-@option{-fpack-struct[=@var{n}]} @pxref{Code Gen Options}).
-@item @code{#pragma pack(push[,@var{n}])} pushes the current alignment
-setting on an internal stack and then optionally sets the new alignment.
-@item @code{#pragma pack(pop)} restores the alignment setting to the one
-saved at the top of the internal stack (and removes that stack entry).
-Note that @code{#pragma pack([@var{n}])} does not influence this internal
-stack; thus it is possible to have @code{#pragma pack(push)} followed by
-multiple @code{#pragma pack(@var{n})} instances and finalized by a single
-@code{#pragma pack(pop)}.
-@end enumerate
-
-Some targets, e.g.@: x86 and PowerPC, support the @code{#pragma ms_struct}
-directive which lays out structures and unions subsequently defined as the
-documented @code{__attribute__ ((ms_struct))}.
-
-@enumerate
-@item @code{#pragma ms_struct on} turns on the Microsoft layout.
-@item @code{#pragma ms_struct off} turns off the Microsoft layout.
-@item @code{#pragma ms_struct reset} goes back to the default layout.
-@end enumerate
-
-Most targets also support the @code{#pragma scalar_storage_order} directive
-which lays out structures and unions subsequently defined as the documented
-@code{__attribute__ ((scalar_storage_order))}.
-
-@enumerate
-@item @code{#pragma scalar_storage_order big-endian} sets the storage order
-of the scalar fields to big-endian.
-@item @code{#pragma scalar_storage_order little-endian} sets the storage order
-of the scalar fields to little-endian.
-@item @code{#pragma scalar_storage_order default} goes back to the endianness
-that was in effect when compilation started (see also command-line option
-@option{-fsso-struct=@var{endianness}} @pxref{C Dialect Options}).
-@end enumerate
-
-@node Weak Pragmas
-@subsection Weak Pragmas
-
-For compatibility with SVR4, GCC supports a set of @code{#pragma}
-directives for declaring symbols to be weak, and defining weak
-aliases.
-
-@table @code
-@cindex pragma, weak
-@item #pragma weak @var{symbol}
-This pragma declares @var{symbol} to be weak, as if the declaration
-had the attribute of the same name.  The pragma may appear before
-or after the declaration of @var{symbol}.  It is not an error for
-@var{symbol} to never be defined at all.
-
-@item #pragma weak @var{symbol1} = @var{symbol2}
-This pragma declares @var{symbol1} to be a weak alias of @var{symbol2}.
-It is an error if @var{symbol2} is not defined in the current
-translation unit.
-@end table
-
-@node Diagnostic Pragmas
-@subsection Diagnostic Pragmas
-
-GCC allows the user to selectively enable or disable certain types of
-diagnostics, and change the kind of the diagnostic.  For example, a
-project's policy might require that all sources compile with
-@option{-Werror} but certain files might have exceptions allowing
-specific types of warnings.  Or, a project might selectively enable
-diagnostics and treat them as errors depending on which preprocessor
-macros are defined.
-
-@table @code
-@cindex pragma, diagnostic
-@item #pragma GCC diagnostic @var{kind} @var{option}
-
-Modifies the disposition of a diagnostic.  Note that not all
-diagnostics are modifiable; at the moment only warnings (normally
-controlled by @samp{-W@dots{}}) can be controlled, and not all of them.
-Use @option{-fdiagnostics-show-option} to determine which diagnostics
-are controllable and which option controls them.
-
-@var{kind} is @samp{error} to treat this diagnostic as an error,
-@samp{warning} to treat it like a warning (even if @option{-Werror} is
-in effect), or @samp{ignored} if the diagnostic is to be ignored.
-@var{option} is a double quoted string that matches the command-line
-option.
-
-@smallexample
-#pragma GCC diagnostic warning "-Wformat"
-#pragma GCC diagnostic error "-Wformat"
-#pragma GCC diagnostic ignored "-Wformat"
-@end smallexample
-
-Note that these pragmas override any command-line options.  GCC keeps
-track of the location of each pragma, and issues diagnostics according
-to the state as of that point in the source file.  Thus, pragmas occurring
-after a line do not affect diagnostics caused by that line.
-
-@item #pragma GCC diagnostic push
-@itemx #pragma GCC diagnostic pop
-
-Causes GCC to remember the state of the diagnostics as of each
-@code{push}, and restore to that point at each @code{pop}.  If a
-@code{pop} has no matching @code{push}, the command-line options are
-restored.
-
-@smallexample
-#pragma GCC diagnostic error "-Wuninitialized"
-  foo(a);                       /* error is given for this one */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wuninitialized"
-  foo(b);                       /* no diagnostic for this one */
-#pragma GCC diagnostic pop
-  foo(c);                       /* error is given for this one */
-#pragma GCC diagnostic pop
-  foo(d);                       /* depends on command-line options */
-@end smallexample
-
-@item #pragma GCC diagnostic ignored_attributes
-
-Similarly to @option{-Wno-attributes=}, this pragma allows users to suppress
-warnings about unknown scoped attributes (in C++11 and C23).  For example,
-@code{#pragma GCC diagnostic ignored_attributes "vendor::attr"} disables
-warning about the following declaration:
-
-@smallexample
-[[vendor::attr]] void f();
-@end smallexample
-
-whereas @code{#pragma GCC diagnostic ignored_attributes "vendor::"} prevents
-warning about both of these declarations:
-
-@smallexample
-[[vendor::safe]] void f();
-[[vendor::unsafe]] void f2();
-@end smallexample
-
-@end table
-
-GCC also offers a simple mechanism for printing messages during
-compilation.
-
-@table @code
-@cindex pragma, diagnostic
-@item #pragma message @var{string}
-
-Prints @var{string} as a compiler message on compilation.  The message
-is informational only, and is neither a compilation warning nor an
-error.  Newlines can be included in the string by using the @samp{\n}
-escape sequence.
-
-@smallexample
-#pragma message "Compiling " __FILE__ "..."
-@end smallexample
-
-@var{string} may be parenthesized, and is printed with location
-information.  For example,
-
-@smallexample
-#define DO_PRAGMA(x) _Pragma (#x)
-#define TODO(x) DO_PRAGMA(message ("TODO - " #x))
-
-TODO(Remember to fix this)
-@end smallexample
-
-@noindent
-prints @samp{/tmp/file.c:4: note: #pragma message:
-TODO - Remember to fix this}.
-
-@cindex pragma, diagnostic
-@item #pragma GCC error @var{message}
-Generates an error message.  This pragma @emph{is} considered to
-indicate an error in the compilation, and it will be treated as such.
-
-Newlines can be included in the string by using the @samp{\n}
-escape sequence.  They will be displayed as newlines even if the
-@option{-fmessage-length} option is set to zero.
-
-The error is only generated if the pragma is present in the code after
-pre-processing has been completed.  It does not matter however if the
-code containing the pragma is unreachable:
-
-@smallexample
-#if 0
-#pragma GCC error "this error is not seen"
-#endif
-void foo (void)
-@{
-  return;
-#pragma GCC error "this error is seen"
-@}
-@end smallexample
-
-@cindex pragma, diagnostic
-@item #pragma GCC warning @var{message}
-This is just like @samp{pragma GCC error} except that a warning
-message is issued instead of an error message.  Unless
-@option{-Werror} is in effect, in which case this pragma will generate
-an error as well.
-
-@end table
-
-@node Visibility Pragmas
-@subsection Visibility Pragmas
-
-@table @code
-@cindex pragma, visibility
-@item #pragma GCC visibility push(@var{visibility})
-@itemx #pragma GCC visibility pop
-
-This pragma allows the user to set the visibility for multiple
-declarations without having to give each a visibility attribute
-(@pxref{Function Attributes}).
-
-In C++, @samp{#pragma GCC visibility} affects only namespace-scope
-declarations.  Class members and template specializations are not
-affected; if you want to override the visibility for a particular
-member or instantiation, you must use an attribute.
-
-@end table
-
-
-@node Push/Pop Macro Pragmas
-@subsection Push/Pop Macro Pragmas
-
-For compatibility with Microsoft Windows compilers, GCC supports
-@samp{#pragma push_macro(@var{"macro_name"})}
-and @samp{#pragma pop_macro(@var{"macro_name"})}.
-
-@table @code
-@cindex pragma, push_macro
-@item #pragma push_macro(@var{"macro_name"})
-This pragma saves the value of the macro named as @var{macro_name} to
-the top of the stack for this macro.
-
-@cindex pragma, pop_macro
-@item #pragma pop_macro(@var{"macro_name"})
-This pragma sets the value of the macro named as @var{macro_name} to
-the value on top of the stack for this macro. If the stack for
-@var{macro_name} is empty, the value of the macro remains unchanged.
-@end table
-
-For example:
-
-@smallexample
-#define X  1
-#pragma push_macro("X")
-#undef X
-#define X -1
-#pragma pop_macro("X")
-int x [X];
-@end smallexample
-
-@noindent
-In this example, the definition of X as 1 is saved by @code{#pragma
-push_macro} and restored by @code{#pragma pop_macro}.
-
-@node Function Specific Option Pragmas
-@subsection Function Specific Option Pragmas
-
-@table @code
-@cindex pragma GCC target
-@item #pragma GCC target (@var{string}, @dots{})
-
-This pragma allows you to set target-specific options for functions
-defined later in the source file.  One or more strings can be
-specified.  Each function that is defined after this point is treated
-as if it had been declared with one @code{target(}@var{string}@code{)}
-attribute for each @var{string} argument.  The parentheses around
-the strings in the pragma are optional.  @xref{Function Attributes},
-for more information about the @code{target} attribute and the attribute
-syntax.
-
-The @code{#pragma GCC target} pragma is presently implemented for
-x86, ARM, AArch64, PowerPC, and S/390 targets only.
-
-@cindex pragma GCC optimize
-@item #pragma GCC optimize (@var{string}, @dots{})
-
-This pragma allows you to set global optimization options for functions
-defined later in the source file.  One or more strings can be
-specified.  Each function that is defined after this point is treated
-as if it had been declared with one @code{optimize(}@var{string}@code{)}
-attribute for each @var{string} argument.  The parentheses around
-the strings in the pragma are optional.  @xref{Function Attributes},
-for more information about the @code{optimize} attribute and the attribute
-syntax.
-
-@cindex pragma GCC push_options
-@cindex pragma GCC pop_options
-@item #pragma GCC push_options
-@itemx #pragma GCC pop_options
-
-These pragmas maintain a stack of the current target and optimization
-options.  It is intended for include files where you temporarily want
-to switch to using a different @samp{#pragma GCC target} or
-@samp{#pragma GCC optimize} and then to pop back to the previous
-options.
-
-@cindex pragma GCC reset_options
-@item #pragma GCC reset_options
-
-This pragma clears the current @code{#pragma GCC target} and
-@code{#pragma GCC optimize} to use the default switches as specified
-on the command line.
-
-@end table
-
-@node Loop-Specific Pragmas
-@subsection Loop-Specific Pragmas
-
-@table @code
-@cindex pragma GCC ivdep
-@item #pragma GCC ivdep
-
-With this pragma, the programmer asserts that there are no loop-carried
-dependencies which would prevent consecutive iterations of
-the following loop from executing concurrently with SIMD
-(single instruction multiple data) instructions.
-
-For example, the compiler can only unconditionally vectorize the following
-loop with the pragma:
-
-@smallexample
-void foo (int n, int *a, int *b, int *c)
-@{
-  int i, j;
-#pragma GCC ivdep
-  for (i = 0; i < n; ++i)
-    a[i] = b[i] + c[i];
-@}
-@end smallexample
-
-@noindent
-In this example, using the @code{restrict} qualifier had the same
-effect. In the following example, that would not be possible. Assume
-@math{k < -m} or @math{k >= m}. Only with the pragma, the compiler knows
-that it can unconditionally vectorize the following loop:
-
-@smallexample
-void ignore_vec_dep (int *a, int k, int c, int m)
-@{
-#pragma GCC ivdep
-  for (int i = 0; i < m; i++)
-    a[i] = a[i + k] * c;
-@}
-@end smallexample
-
-@cindex pragma GCC novector
-@item #pragma GCC novector
-
-With this pragma, the programmer asserts that the following loop should be
-prevented from executing concurrently with SIMD (single instruction multiple
-data) instructions.
-
-For example, the compiler cannot vectorize the following loop with the pragma:
-
-@smallexample
-void foo (int n, int *a, int *b, int *c)
-@{
-  int i, j;
-#pragma GCC novector
-  for (i = 0; i < n; ++i)
-    a[i] = b[i] + c[i];
-@}
-@end smallexample
-
-@cindex pragma GCC unroll @var{n}
-@item #pragma GCC unroll @var{n}
-
-You can use this pragma to control how many times a loop should be unrolled.
-It must be placed immediately before a @code{for}, @code{while} or @code{do}
-loop or a @code{#pragma GCC ivdep}, and applies only to the loop that follows.
-@var{n} is an integer constant expression specifying the unrolling factor.
-The values of @math{0} and @math{1} block any unrolling of the loop.
-
-@end table
-
-@node Thread-Local
-@section Thread-Local Storage
-@cindex Thread-Local Storage
-@cindex @acronym{TLS}
-@cindex @code{__thread}
-
-Thread-local storage (@acronym{TLS}) is a mechanism by which variables
-are allocated such that there is one instance of the variable per extant
-thread.  The runtime model GCC uses to implement this originates
-in the IA-64 processor-specific ABI, but has since been migrated
-to other processors as well.  It requires significant support from
-the linker (@command{ld}), dynamic linker (@command{ld.so}), and
-system libraries (@file{libc.so} and @file{libpthread.so}), so it
-is not available everywhere.
-
-At the user level, the extension is visible with a new storage
-class keyword: @code{__thread}.  For example:
-
-@smallexample
-__thread int i;
-extern __thread struct state s;
-static __thread char *p;
-@end smallexample
-
-The @code{__thread} specifier may be used alone, with the @code{extern}
-or @code{static} specifiers, but with no other storage class specifier.
-When used with @code{extern} or @code{static}, @code{__thread} must appear
-immediately after the other storage class specifier.
-
-The @code{__thread} specifier may be applied to any global, file-scoped
-static, function-scoped static, or static data member of a class.  It may
-not be applied to block-scoped automatic or non-static data member.
-
-When the address-of operator is applied to a thread-local variable, it is
-evaluated at run time and returns the address of the current thread's
-instance of that variable.  An address so obtained may be used by any
-thread.  When a thread terminates, any pointers to thread-local variables
-in that thread become invalid.
-
-No static initialization may refer to the address of a thread-local variable.
-
-In C++, if an initializer is present for a thread-local variable, it must
-be a @var{constant-expression}, as defined in 5.19.2 of the ANSI/ISO C++
-standard.
-
-See @uref{https://www.akkadia.org/drepper/tls.pdf,
-ELF Handling For Thread-Local Storage} for a detailed explanation of
-the four thread-local storage addressing models, and how the runtime
-is expected to function.
-
-@menu
-* C99 Thread-Local Edits::
-* C++98 Thread-Local Edits::
-@end menu
-
-@node C99 Thread-Local Edits
-@subsection ISO/IEC 9899:1999 Edits for Thread-Local Storage
-
-The following are a set of changes to ISO/IEC 9899:1999 (aka C99)
-that document the exact semantics of the language extension.
-
-@itemize @bullet
-@item
-@cite{5.1.2  Execution environments}
-
-Add new text after paragraph 1
-
-@quotation
-Within either execution environment, a @dfn{thread} is a flow of
-control within a program.  It is implementation defined whether
-or not there may be more than one thread associated with a program.
-It is implementation defined how threads beyond the first are
-created, the name and type of the function called at thread
-startup, and how threads may be terminated.  However, objects
-with thread storage duration shall be initialized before thread
-startup.
-@end quotation
-
-@item
-@cite{6.2.4  Storage durations of objects}
-
-Add new text before paragraph 3
-
-@quotation
-An object whose identifier is declared with the storage-class
-specifier @w{@code{__thread}} has @dfn{thread storage duration}.
-Its lifetime is the entire execution of the thread, and its
-stored value is initialized only once, prior to thread startup.
-@end quotation
-
-@item
-@cite{6.4.1  Keywords}
-
-Add @code{__thread}.
-
-@item
-@cite{6.7.1  Storage-class specifiers}
-
-Add @code{__thread} to the list of storage class specifiers in
-paragraph 1.
-
-Change paragraph 2 to
-
-@quotation
-With the exception of @code{__thread}, at most one storage-class
-specifier may be given [@dots{}].  The @code{__thread} specifier may
-be used alone, or immediately following @code{extern} or
-@code{static}.
-@end quotation
-
-Add new text after paragraph 6
-
-@quotation
-The declaration of an identifier for a variable that has
-block scope that specifies @code{__thread} shall also
-specify either @code{extern} or @code{static}.
-
-The @code{__thread} specifier shall be used only with
-variables.
-@end quotation
-@end itemize
-
-@node C++98 Thread-Local Edits
-@subsection ISO/IEC 14882:1998 Edits for Thread-Local Storage
-
-The following are a set of changes to ISO/IEC 14882:1998 (aka C++98)
-that document the exact semantics of the language extension.
-
-@itemize @bullet
-@item
-@b{[intro.execution]}
-
-New text after paragraph 4
-
-@quotation
-A @dfn{thread} is a flow of control within the abstract machine.
-It is implementation defined whether or not there may be more than
-one thread.
-@end quotation
-
-New text after paragraph 7
-
-@quotation
-It is unspecified whether additional action must be taken to
-ensure when and whether side effects are visible to other threads.
-@end quotation
-
-@item
-@b{[lex.key]}
-
-Add @code{__thread}.
-
-@item
-@b{[basic.start.main]}
-
-Add after paragraph 5
-
-@quotation
-The thread that begins execution at the @code{main} function is called
-the @dfn{main thread}.  It is implementation defined how functions
-beginning threads other than the main thread are designated or typed.
-A function so designated, as well as the @code{main} function, is called
-a @dfn{thread startup function}.  It is implementation defined what
-happens if a thread startup function returns.  It is implementation
-defined what happens to other threads when any thread calls @code{exit}.
-@end quotation
-
-@item
-@b{[basic.start.init]}
-
-Add after paragraph 4
-
-@quotation
-The storage for an object of thread storage duration shall be
-statically initialized before the first statement of the thread startup
-function.  An object of thread storage duration shall not require
-dynamic initialization.
-@end quotation
-
-@item
-@b{[basic.start.term]}
-
-Add after paragraph 3
-
-@quotation
-The type of an object with thread storage duration shall not have a
-non-trivial destructor, nor shall it be an array type whose elements
-(directly or indirectly) have non-trivial destructors.
-@end quotation
-
-@item
-@b{[basic.stc]}
-
-Add ``thread storage duration'' to the list in paragraph 1.
-
-Change paragraph 2
-
-@quotation
-Thread, static, and automatic storage durations are associated with
-objects introduced by declarations [@dots{}].
-@end quotation
-
-Add @code{__thread} to the list of specifiers in paragraph 3.
-
-@item
-@b{[basic.stc.thread]}
-
-New section before @b{[basic.stc.static]}
-
-@quotation
-The keyword @code{__thread} applied to a non-local object gives the
-object thread storage duration.
-
-A local variable or class data member declared both @code{static}
-and @code{__thread} gives the variable or member thread storage
-duration.
-@end quotation
-
-@item
-@b{[basic.stc.static]}
-
-Change paragraph 1
-
-@quotation
-All objects that have neither thread storage duration, dynamic
-storage duration nor are local [@dots{}].
-@end quotation
-
-@item
-@b{[dcl.stc]}
-
-Add @code{__thread} to the list in paragraph 1.
-
-Change paragraph 1
-
-@quotation
-With the exception of @code{__thread}, at most one
-@var{storage-class-specifier} shall appear in a given
-@var{decl-specifier-seq}.  The @code{__thread} specifier may
-be used alone, or immediately following the @code{extern} or
-@code{static} specifiers.  [@dots{}]
-@end quotation
-
-Add after paragraph 5
-
-@quotation
-The @code{__thread} specifier can be applied only to the names of objects
-and to anonymous unions.
-@end quotation
-
-@item
-@b{[class.mem]}
-
-Add after paragraph 6
-
-@quotation
-Non-@code{static} members shall not be @code{__thread}.
-@end quotation
-@end itemize
-
-@node OpenMP
-@section OpenMP
-@cindex OpenMP extension support
-
-OpenMP (Open Multi-Processing) is an application programming
-interface (API) that supports multi-platform shared memory
-multiprocessing programming in C/C++ and Fortran on many
-architectures, including Unix and Microsoft Windows platforms.
-It consists of a set of compiler directives, library routines,
-and environment variables that influence run-time behavior.
-
-GCC implements all of the @uref{https://www.openmp.org/specifications/,
-OpenMP Application Program Interface v4.5}, and many features from later
-versions of the OpenMP specification.
-@xref{OpenMP Implementation Status,,,libgomp,
-GNU Offloading and Multi Processing Runtime Library},
-for more details about currently supported OpenMP features.
-
-To enable the processing of OpenMP directives @samp{#pragma omp},
-@samp{[[omp::directive(...)]]}, @samp{[[omp::decl(...)]]},
-and @samp{[[omp::sequence(...)]]} in C and C++,
-GCC needs to be invoked with the @option{-fopenmp} option.
-This option also arranges for automatic linking of the OpenMP
-runtime library.
-@xref{,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
-
-@xref{OpenMP and OpenACC Options}, for additional options useful with
-@option{-fopenmp}.
-
-@node OpenACC
-@section OpenACC
-@cindex OpenACC extension support
-
-OpenACC is an application programming interface (API) that supports
-offloading of code to accelerator devices.  It consists of a set of
-compiler directives, library routines, and environment variables that
-influence run-time behavior.
-
-GCC strives to be compatible with the
-@uref{https://www.openacc.org/, OpenACC Application Programming
-Interface v2.6}.
-
-To enable the processing of OpenACC directives @samp{#pragma acc}
-in C and C++, GCC needs to be invoked with the @option{-fopenacc} option.
-This option also arranges for automatic linking of the OpenACC runtime
-library.
-@xref{,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
-
-@xref{OpenMP and OpenACC Options}, for additional options useful with
-@option{-fopenacc}.
 
 @node C++ Extensions
 @chapter Extensions to the C++ Language
