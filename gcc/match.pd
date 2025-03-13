@@ -3037,6 +3037,33 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (with { tree algn = wide_int_to_tree (TREE_TYPE (@0), ~wi::to_wide (@1)); }
    (bit_and @0 { algn; })))
 
+/* Also match cases in which a constant is applied:
+
+   (1) tem = (sizetype) ptr;  ---> tem = (sizetype) (ptr + CST);
+   (2) tem = -tem             ---> tem = CST - tem;
+
+   and where "& align" masks only trailing zeros of CST.  (1) then has no
+   effect, whereas (2) adds CST to the result.  */
+(simplify
+ (pointer_plus @0 (negate (bit_and (convert (pointer_plus @0 INTEGER_CST@1))
+				   INTEGER_CST@2)))
+ (if (tree_int_cst_min_precision (@2, UNSIGNED) <= tree_ctz (@1))
+  (with { tree algn = wide_int_to_tree (TREE_TYPE (@0), ~wi::to_wide (@2)); }
+   (bit_and @0 { algn; }))))
+(simplify
+ (pointer_plus @0 (minus:s INTEGER_CST@1 (bit_and (convert @0) INTEGER_CST@2)))
+ (if (tree_int_cst_min_precision (@2, UNSIGNED) <= tree_ctz (@1))
+  (with { tree algn = wide_int_to_tree (TREE_TYPE (@0), ~wi::to_wide (@2)); }
+   (pointer_plus (bit_and @0 { algn; }) @1))))
+(simplify
+ (pointer_plus @0 (minus:s INTEGER_CST@1
+			   (bit_and (convert (pointer_plus @0 INTEGER_CST@2))
+				    INTEGER_CST@3)))
+ (with { auto mask_width = tree_int_cst_min_precision (@3, UNSIGNED); }
+  (if (mask_width <= tree_ctz (@1) && mask_width <= tree_ctz (@2))
+   (with { tree algn = wide_int_to_tree (TREE_TYPE (@0), ~wi::to_wide (@3)); }
+    (pointer_plus (bit_and @0 { algn; }) @1)))))
+
 /* Try folding difference of addresses.  */
 (simplify
  (minus (convert ADDR_EXPR@0) (convert (pointer_plus @1 @2)))
