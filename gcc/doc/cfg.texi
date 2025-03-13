@@ -297,10 +297,12 @@ edge.  The opposite conversion is difficult, but should not happen
 anyway.  The edges can be eliminated via @code{purge_dead_edges} call.
 
 @findex REG_EH_REGION, EDGE_ABNORMAL_CALL
-In the RTL representation, the destination of an exception edge is
-specified by @code{REG_EH_REGION} note attached to the insn.
-In case of a trapping call the @code{EDGE_ABNORMAL_CALL} flag is set
-too.  In the @code{GIMPLE} representation, this extra flag is not set.
+In the RTL representation, a @code{REG_EH_REGION} note is attached to
+an instruction that can throw an exception.  The destination of the
+exception edge originating at such an instruction is specified by the
+value of the @code{REG_EH_REGION} note.  In case of a trapping call
+the @code{EDGE_ABNORMAL_CALL} flag is set too.  In the @code{GIMPLE}
+representation, this extra flag is not set.
 
 @findex may_trap_p, tree_could_trap_p
 In the RTL representation, the predicate @code{may_trap_p} may be used
