@@ -125,23 +125,5 @@ GlobbingVisitor::visit (AST::UseDeclaration &use)
   // Handle cycles ?
 }
 
-FinalizeImports::FinalizeImports (Early::ImportMappings &&data,
-				  TopLevel &toplevel,
-				  NameResolutionContext &ctx)
-  : DefaultResolver (ctx), data (std::move (data)), toplevel (toplevel),
-    ctx (ctx)
-{}
-
-void
-FinalizeImports::go (AST::Crate &crate)
-{
-  for (auto &item : crate.items)
-    item->accept_vis (*this);
-}
-
-void
-FinalizeImports::visit (AST::UseDeclaration &use)
-{}
-
 } // namespace Resolver2_0
 } // namespace Rust
