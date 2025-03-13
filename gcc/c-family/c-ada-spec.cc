@@ -2255,8 +2255,8 @@ dump_ada_node (pretty_printer *pp, tree node, tree type, int spc,
     case BOOLEAN_TYPE:
       if (TYPE_NAME (node)
 	  && !(TREE_CODE (TYPE_NAME (node)) == TYPE_DECL
-	       && !strcmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (node))),
-			   "__int128")))
+	       && !strncmp (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (node))),
+			   "__int128", 8)))
 	{
 	  if (TREE_CODE (TYPE_NAME (node)) == IDENTIFIER_NODE)
 	    pp_ada_tree_identifier (pp, TYPE_NAME (node), node,
