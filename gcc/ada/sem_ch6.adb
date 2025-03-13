@@ -225,7 +225,10 @@ package body Sem_Ch6 is
    --  Create the declaration for an inequality operator that is implicitly
    --  created by a user-defined equality operator that yields a boolean.
 
-   procedure Set_Formal_Mode (Formal_Id : Entity_Id);
+   procedure Set_Formal_Mode
+     (Formal_Id : Entity_Id;
+      Spec      : N_Parameter_Specification_Id;
+      Subp_Id   : Entity_Id);
    --  Set proper Ekind to reflect formal mode (in, out, in out), and set
    --  miscellaneous other attributes.
 
@@ -13066,13 +13069,10 @@ package body Sem_Ch6 is
    --  Start of processing for Process_Formals
 
    begin
-      --  In order to prevent premature use of the formals in the same formal
-      --  part, the Ekind is left undefined until all default expressions are
-      --  analyzed. The Ekind is established in a separate loop at the end.
-
       Param_Spec := First (T);
       while Present (Param_Spec) loop
          Formal := Defining_Identifier (Param_Spec);
+         Set_Formal_Mode (Formal, Param_Spec, Current_Scope);
          Set_Never_Set_In_Source (Formal, True);
          Enter_Name (Formal);
 
@@ -13390,12 +13390,48 @@ package body Sem_Ch6 is
          Analyze_Return_Type (Related_Nod);
       end if;
 
-      --  Now set the kind (mode) of each formal
-
       Param_Spec := First (T);
       while Present (Param_Spec) loop
          Formal := Defining_Identifier (Param_Spec);
-         Set_Formal_Mode (Formal);
+         Set_Is_Not_Self_Hidden (Formal);
+
+         --  Set Is_Known_Non_Null for access parameters since the language
+         --  guarantees that access parameters are always non-null. We also set
+         --  Can_Never_Be_Null, since there is no way to change the value.
+
+         if Nkind (Parameter_Type (Param_Spec)) = N_Access_Definition then
+
+            --  Ada 2005 (AI-231): In Ada 95, access parameters are always non-
+            --  null; In Ada 2005, only if then null_exclusion is explicit.
+
+            if Ada_Version < Ada_2005
+              or else Can_Never_Be_Null (Etype (Formal))
+            then
+               Set_Is_Known_Non_Null (Formal);
+               Set_Can_Never_Be_Null (Formal);
+            end if;
+
+         --  Ada 2005 (AI-231): Null-exclusion access subtype
+
+         elsif Is_Access_Type (Etype (Formal))
+           and then Can_Never_Be_Null (Etype (Formal))
+         then
+            Set_Is_Known_Non_Null (Formal);
+
+            --  We can also set Can_Never_Be_Null (thus preventing some junk
+            --  access checks) for the case of an IN parameter, which cannot
+            --  be changed, or for an IN OUT parameter, which can be changed
+            --  but not to a null value. But for an OUT parameter, the initial
+            --  value passed in can be null, so we can't set this flag in that
+            --  case.
+
+            if Ekind (Formal) /= E_Out_Parameter then
+               Set_Can_Never_Be_Null (Formal);
+            end if;
+         end if;
+
+         Set_Mechanism (Formal, Default_Mechanism);
+         Set_Formal_Validity (Formal);
 
          if Ekind (Formal) = E_In_Parameter then
             Default := Expression (Param_Spec);
@@ -13666,23 +13702,23 @@ package body Sem_Ch6 is
    -- Set_Formal_Mode --
    ---------------------
 
-   procedure Set_Formal_Mode (Formal_Id : Entity_Id) is
-      Spec : constant Node_Id   := Parent (Formal_Id);
-      Id   : constant Entity_Id := Scope (Formal_Id);
-
+   procedure Set_Formal_Mode
+     (Formal_Id : Entity_Id;
+      Spec      : N_Parameter_Specification_Id;
+      Subp_Id   : Entity_Id) is
    begin
       --  Note: we set Is_Known_Valid for IN parameters and IN OUT parameters
       --  since we ensure that corresponding actuals are always valid at the
       --  point of the call.
 
       if Out_Present (Spec) then
-         if Is_Entry (Id)
-           or else Is_Subprogram_Or_Generic_Subprogram (Id)
+         if Is_Entry (Subp_Id)
+           or else Is_Subprogram_Or_Generic_Subprogram (Subp_Id)
          then
-            Set_Has_Out_Or_In_Out_Parameter (Id, True);
+            Set_Has_Out_Or_In_Out_Parameter (Subp_Id, True);
          end if;
 
-         if Ekind (Id) in E_Function | E_Generic_Function then
+         if Ekind (Subp_Id) in E_Function | E_Generic_Function then
 
             --  [IN] OUT parameters allowed for functions in Ada 2012
 
@@ -13719,45 +13755,6 @@ package body Sem_Ch6 is
       else
          Mutate_Ekind (Formal_Id, E_In_Parameter);
       end if;
-
-      Set_Is_Not_Self_Hidden (Formal_Id);
-
-      --  Set Is_Known_Non_Null for access parameters since the language
-      --  guarantees that access parameters are always non-null. We also set
-      --  Can_Never_Be_Null, since there is no way to change the value.
-
-      if Nkind (Parameter_Type (Spec)) = N_Access_Definition then
-
-         --  Ada 2005 (AI-231): In Ada 95, access parameters are always non-
-         --  null; In Ada 2005, only if then null_exclusion is explicit.
-
-         if Ada_Version < Ada_2005
-           or else Can_Never_Be_Null (Etype (Formal_Id))
-         then
-            Set_Is_Known_Non_Null (Formal_Id);
-            Set_Can_Never_Be_Null (Formal_Id);
-         end if;
-
-      --  Ada 2005 (AI-231): Null-exclusion access subtype
-
-      elsif Is_Access_Type (Etype (Formal_Id))
-        and then Can_Never_Be_Null (Etype (Formal_Id))
-      then
-         Set_Is_Known_Non_Null (Formal_Id);
-
-         --  We can also set Can_Never_Be_Null (thus preventing some junk
-         --  access checks) for the case of an IN parameter, which cannot
-         --  be changed, or for an IN OUT parameter, which can be changed but
-         --  not to a null value. But for an OUT parameter, the initial value
-         --  passed in can be null, so we can't set this flag in that case.
-
-         if Ekind (Formal_Id) /= E_Out_Parameter then
-            Set_Can_Never_Be_Null (Formal_Id);
-         end if;
-      end if;
-
-      Set_Mechanism (Formal_Id, Default_Mechanism);
-      Set_Formal_Validity (Formal_Id);
    end Set_Formal_Mode;
 
    -------------------------
