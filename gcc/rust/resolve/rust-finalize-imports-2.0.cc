@@ -125,67 +125,6 @@ GlobbingVisitor::visit (AST::UseDeclaration &use)
   // Handle cycles ?
 }
 
-void
-finalize_simple_import (TopLevel &toplevel, const Early::ImportPair &mapping)
-{
-  // FIXME: We probably need to store namespace information
-
-  auto locus = mapping.import_kind.to_resolve.get_locus ();
-  auto data = mapping.data;
-  auto identifier
-    = mapping.import_kind.to_resolve.get_final_segment ().get_segment_name ();
-
-  for (auto &&definition : data.definitions ())
-    toplevel
-      .insert_or_error_out (
-	identifier, locus, definition.first.get_node_id (), definition.second /* TODO: This isn't clear - it would be better if it was called .ns or something */);
-}
-
-void
-finalize_glob_import (NameResolutionContext &ctx,
-		      const Early::ImportPair &mapping)
-{
-  auto module = Analysis::Mappings::get ().lookup_ast_module (
-    mapping.data.module ().get_node_id ());
-  rust_assert (module);
-
-  GlobbingVisitor glob_visitor (ctx);
-  glob_visitor.go (module.value ());
-}
-
-void
-finalize_rebind_import (TopLevel &toplevel, const Early::ImportPair &mapping)
-{
-  // We can fetch the value here as `resolve_rebind` will only be called on
-  // imports of the right kind
-  auto &path = mapping.import_kind.to_resolve;
-  auto &rebind = mapping.import_kind.rebind.value ();
-  auto data = mapping.data;
-
-  location_t locus = UNKNOWN_LOCATION;
-  std::string declared_name;
-
-  // FIXME: This needs to be done in `FinalizeImports`
-  switch (rebind.get_new_bind_type ())
-    {
-    case AST::UseTreeRebind::NewBindType::IDENTIFIER:
-      declared_name = rebind.get_identifier ().as_string ();
-      locus = rebind.get_identifier ().get_locus ();
-      break;
-    case AST::UseTreeRebind::NewBindType::NONE:
-      declared_name = path.get_final_segment ().as_string ();
-      locus = path.get_final_segment ().get_locus ();
-      break;
-    case AST::UseTreeRebind::NewBindType::WILDCARD:
-      rust_unreachable ();
-      break;
-    }
-
-  for (auto &&definition : data.definitions ())
-    toplevel.insert_or_error_out (
-      declared_name, locus, definition.first.get_node_id (), definition.second /* TODO: This isn't clear - it would be better if it was called .ns or something */);
-}
-
 FinalizeImports::FinalizeImports (Early::ImportMappings &&data,
 				  TopLevel &toplevel,
 				  NameResolutionContext &ctx)
@@ -202,23 +141,7 @@ FinalizeImports::go (AST::Crate &crate)
 
 void
 FinalizeImports::visit (AST::UseDeclaration &use)
-{
-  auto import_mappings = data.get (use.get_node_id ());
-
-  for (const auto &mapping : import_mappings)
-    switch (mapping.import_kind.kind)
-      {
-      case TopLevel::ImportKind::Kind::Glob:
-	finalize_glob_import (ctx, mapping);
-	break;
-      case TopLevel::ImportKind::Kind::Simple:
-	finalize_simple_import (toplevel, mapping);
-	break;
-      case TopLevel::ImportKind::Kind::Rebind:
-	finalize_rebind_import (toplevel, mapping);
-	break;
-      }
-}
+{}
 
 } // namespace Resolver2_0
 } // namespace Rust
