@@ -1,6 +1,6 @@
 // test that contracts on overriding functions are found correctly
 // { dg-do run }
-// { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on -fcontracts-nonattr" }
+// { dg-options "-std=c++2a -fcontracts -fcontract-continuation-mode=on -fcontracts-nonattr -fcontracts-nonattr-inheritance-mode=P2900R13" }
 
 #include <cstdio>
 

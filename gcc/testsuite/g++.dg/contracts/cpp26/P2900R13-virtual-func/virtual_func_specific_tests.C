@@ -8,19 +8,7 @@
 //   ensure that an invalid contract role 'invalid' errors
 //   ensure that a missing colon after contract role errors
 // { dg-do compile }
-// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr" }
-
-// one erroneous contract
-int a() pre(f(3) > 2);  // { dg-error "was not declared" }
-
-// erroneous contract in the middle
-int b(int i)
-  pre(true)
-  pre(f(3) > 2) // { dg-error "was not declared" "" { target *-*-* } }
-  post(true);
-
-void c(int i)
-  post(true) -> int ; // { dg-error "expected initializer" }
+// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontracts-nonattr-inheritance-mode=P2900R13" }
 
 struct B{
 
@@ -41,14 +29,6 @@ struct E : D {
 
 namespace other{
 
-  static_assert (__cpp_contracts >= 201906);
-
-
-  auto f(int x) -> int pre(x >= 0);
-
-  auto f(int x) pre(x >= 0) -> int pre(x >= 0); // { dg-error "expected initializer before" }
-
-  auto f(int x) pre(x >= 0) -> int; // { dg-error "expected initializer before" }
 
   struct X
   {
@@ -90,15 +70,34 @@ namespace other{
     virtual void f(int x) pre(x >= 0) final pre(x >= 0); // { dg-error "expected .;. at end of member declaration|does not name a type" }
   };
 
-  template <class T>
-  void g(int x) requires(true) pre(x >= 0);
 
-  template <class T>
-  void g2(int x) pre(x >= 0) requires(true); // { dg-error "expected initializer" }
+}
 
-  template <class T>
-  void g3(int x) pre(x >= 0) requires(true) pre(x >= 0); // { dg-error "expected initializer" }
+namespace parsing_virtual_test {
+  struct A {
+    virtual void f(int i)
+      pre(i >= 0);
+  };
 
+  struct B : A {
+    void f(int i) override final
+      pre(i >= 0);
+  };
+
+  struct C : A {
+    void f(int i) override
+      pre(i >= 0) = 0;
+  };
+}
+
+namespace parsing_default_delete_pure_test {
+  const bool a = true, b = true, c = true;
+
+  struct X {
+    X() pre(a) = default;
+    X(const X&) pre(b) = delete;
+    virtual void f() pre(c) = 0;
+  };
 }
 
 int main()

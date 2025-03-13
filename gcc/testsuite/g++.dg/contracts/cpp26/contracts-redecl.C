@@ -43,12 +43,12 @@ int f1(int a) pre ( a < 0 ); // { dg-error "mismatched contract" }
 
 struct Base
 {
-  virtual int f(int a) pre (a > 0);
+  virtual int f(int a) pre (a > 0); // { dg-error "Contracts can not be added to virtual functions" }
 };
 
 struct Child : Base
 {
-  int f(int a) pre (a < 0); // ok, does not inherit contracts
+  int f(int a) pre (a < 0); // { dg-error "Contracts can not be added to virtual functions" }
 };
 
 struct F1
@@ -75,11 +75,11 @@ void T1::vfun(int m, double n)
 void T1::vfun(int m, double n) pre(true); // { dg-error "declaration adds contracts" }
 
 struct Foo {
-  virtual void f10 (int)  pre ( false ) {}
+  virtual void f10 (int)  pre ( false ) {} // { dg-error "Contracts can not be added to virtual functions" }
 };
 
 struct Bar : Foo {
-  void f10 (int n = 0) override pre ( false );
+  void f10 (int n = 0) override pre ( false ); // { dg-error "Contracts can not be added to virtual functions" }
 };
 
 // we currently don't diagnose an error here if the original contract was erroneous.
