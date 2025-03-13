@@ -63,6 +63,10 @@ test03()
   std::vector<int> v;
   std::same_as<ranges::ref_view<const std::vector<int>>>
     auto r = views::as_const(v);
+
+  // PR libstdc++/119135
+  std::same_as<ranges::ref_view<const std::vector<int>>>
+    auto r2 = views::as_const(views::all(v));
 }
 
 int

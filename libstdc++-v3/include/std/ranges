@@ -48,6 +48,7 @@
 #include <string_view>
 #include <tuple>
 #if __cplusplus > 202002L
+#include <utility>
 #include <variant>
 #endif
 #include <bits/ranges_util.h>
@@ -9324,10 +9325,11 @@ namespace views::__adaptor
     namespace __detail
     {
       template<typename _Tp>
-	inline constexpr bool __is_ref_view = false;
+	inline constexpr bool __is_constable_ref_view = false;
 
       template<typename _Range>
-	inline constexpr bool __is_ref_view<ref_view<_Range>> = true;
+	inline constexpr bool __is_constable_ref_view<ref_view<_Range>>
+	  = constant_range<const _Range>;
 
       template<typename _Range>
 	concept __can_as_const_view = requires { as_const_view(std::declval<_Range>()); };
@@ -9349,10 +9351,8 @@ namespace views::__adaptor
 	  return views::empty<const element_type>;
 	else if constexpr (std::__detail::__is_span<_Tp>)
 	  return span<const element_type, _Tp::extent>(std::forward<_Range>(__r));
-	else if constexpr (__detail::__is_ref_view<_Tp>
-			   && constant_range<const element_type>)
-	  return ref_view(static_cast<const element_type&>
-			  (std::forward<_Range>(__r).base()));
+	else if constexpr (__detail::__is_constable_ref_view<_Tp>)
+	  return ref_view(std::as_const(std::forward<_Range>(__r).base()));
 	else if constexpr (is_lvalue_reference_v<_Range>
 			   && constant_range<const _Tp>
 			   && !view<_Tp>)
