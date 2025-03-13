@@ -116,7 +116,7 @@ bool __setArrayAllocLengthImpl(ref BlkInfo info, size_t newlength, bool isshared
             *length = cast(ubyte)newlength;
         }
     }
-    else if (info.size < PAGESIZE)
+    else if (info.size <= PAGESIZE / 2)
     {
         if (newlength + MEDPAD + typeInfoSize > info.size)
             // new size does not fit inside block
@@ -180,7 +180,7 @@ bool __setArrayAllocLengthImpl(ref BlkInfo info, size_t newlength, bool isshared
   */
 void __setBlockFinalizerInfo(ref BlkInfo info, const TypeInfo ti) pure nothrow
 {
-    if ((info.attr & BlkAttr.APPENDABLE) && info.size >= PAGESIZE)
+    if ((info.attr & BlkAttr.APPENDABLE) && info.size > PAGESIZE / 2)
     {
         // if the structfinal bit is not set, we don't have a finalizer. But we
         // should still zero out the finalizer slot.
@@ -207,14 +207,24 @@ void __setBlockFinalizerInfo(ref BlkInfo info, const TypeInfo ti) pure nothrow
 
 /**
   Get the finalizer info from the block (typeinfo).
-  Must be called on a block with STRUCTFINAL set.
+  If called on a block, without STRUCTFINAL set, returns null.
   */
 const(TypeInfo) __getBlockFinalizerInfo(ref BlkInfo info) pure nothrow
 {
-    bool isLargeArray = (info.attr & BlkAttr.APPENDABLE) && info.size >= PAGESIZE;
+    return __getBlockFinalizerInfo(info.base, info.size, info.attr);
+}
+
+/// ditto
+const(TypeInfo) __getBlockFinalizerInfo(void* base, size_t size, uint attr) pure nothrow
+{
+    if (!(attr & BlkAttr.STRUCTFINAL))
+        return null;
+
+    bool isLargeArray = (attr & BlkAttr.APPENDABLE) && size > PAGESIZE / 2;
     auto typeInfo = isLargeArray ?
-        info.base + size_t.sizeof :
-        info.base + info.size - size_t.sizeof;
+        base + size_t.sizeof :
+        base + size - size_t.sizeof;
+    assert(*cast(size_t*)typeInfo != 0);
     return *cast(TypeInfo*)typeInfo;
 }
 
@@ -228,7 +238,7 @@ size_t __arrayAllocLength(ref BlkInfo info) pure nothrow
     if (info.size <= 256)
         return *cast(ubyte *)(info.base + info.size - typeInfoSize - SMALLPAD);
 
-    if (info.size < PAGESIZE)
+    if (info.size <= PAGESIZE / 2)
         return *cast(ushort *)(info.base + info.size - typeInfoSize - MEDPAD);
 
     return *cast(size_t *)(info.base);
@@ -245,7 +255,7 @@ size_t __arrayAllocLengthAtomic(ref BlkInfo info) pure nothrow
     if (info.size <= 256)
         return atomicLoad(*cast(shared(ubyte)*)(info.base + info.size - typeInfoSize - SMALLPAD));
 
-    if (info.size < PAGESIZE)
+    if (info.size <= PAGESIZE / 2)
         return atomicLoad(*cast(shared(ushort)*)(info.base + info.size - typeInfoSize - MEDPAD));
 
     return atomicLoad(*cast(shared(size_t)*)(info.base));
@@ -258,7 +268,7 @@ size_t __arrayAllocCapacity(ref BlkInfo info) pure nothrow
     in(info.attr & BlkAttr.APPENDABLE)
 {
     // Capacity is a calculation based solely on the block info.
-    if (info.size >= PAGESIZE)
+    if (info.size > PAGESIZE / 2)
         return info.size - LARGEPAD;
 
     auto typeInfoSize = (info.attr & BlkAttr.STRUCTFINAL) ? size_t.sizeof : 0;
@@ -299,10 +309,52 @@ size_t __allocPad(size_t size, uint bits) nothrow pure @trusted
  *
  * Params:
  *  info = array metadata
+ *  base = pointer to base of memory block
+ *  size = size of memory block.
  * Returns:
  *  pointer to the start of the array
  */
 void *__arrayStart()(return scope BlkInfo info) nothrow pure
 {
-    return info.base + ((info.size & BIGLENGTHMASK) ? LARGEPREFIX : 0);
+    return __arrayStart(info.base, info.size);
+}
+/// Ditto
+void *__arrayStart()(return scope void* base, size_t size) nothrow pure
+{
+    return base + ((size & BIGLENGTHMASK) ? LARGEPREFIX : 0);
+}
+
+/**
+ * Trim a block's extents to the known valid data that is not metadata. This
+ * takes into account the finalizer and array metadata.
+ */
+void __trimExtents(ref scope void* base, ref size_t blockSize, uint attr) nothrow pure @nogc
+{
+    if (attr & BlkAttr.APPENDABLE)
+    {
+        if (blockSize > PAGESIZE / 2)
+        {
+            // large block, it's always LARGEPREFIX bytes at the front.
+            blockSize = *(cast(size_t*)base);
+            base += LARGEPREFIX;
+            return;
+        }
+
+        void *pend = base + blockSize;
+        if (attr & BlkAttr.STRUCTFINAL)
+            // skip the finalizer
+            pend -= (void*).sizeof;
+
+        // get the actual length
+        if (blockSize <= 256)
+            blockSize = *(cast(ubyte*)pend - 1);
+        else // medium array block
+            blockSize = *(cast(ushort*)pend - 1);
+    }
+    else if (attr & BlkAttr.STRUCTFINAL)
+    {
+        // not appendable, but has a finalizer in the block. This is always
+        // stored at the end.
+        blockSize -= (void*).sizeof;
+    }
 }

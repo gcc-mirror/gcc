@@ -758,7 +758,7 @@ private Expression interpretFunction(UnionExp* pue, FuncDeclaration fd, InterSta
 }
 
 /// used to collect coverage information in ctfe
-void incUsageCtfe(InterState* istate, const ref Loc loc)
+void incUsageCtfe(InterState* istate, Loc loc)
 {
     if (global.params.ctfe_cov && istate)
     {
@@ -2052,7 +2052,7 @@ public:
         }
     }
 
-    static Expression getVarExp(const ref Loc loc, InterState* istate, Declaration d, CTFEGoal goal)
+    static Expression getVarExp(Loc loc, InterState* istate, Declaration d, CTFEGoal goal)
     {
         Expression e = CTFEExp.cantexp;
         if (VarDeclaration v = d.isVarDeclaration())
@@ -2752,7 +2752,7 @@ public:
 
     // Create an array literal of type 'newtype' with dimensions given by
     // 'arguments'[argnum..$]
-    static Expression recursivelyCreateArrayLiteral(UnionExp* pue, const ref Loc loc, Type newtype, InterState* istate, Expressions* arguments, int argnum)
+    static Expression recursivelyCreateArrayLiteral(UnionExp* pue, Loc loc, Type newtype, InterState* istate, Expressions* arguments, int argnum)
     {
         Expression lenExpr = interpret(pue, (*arguments)[argnum], istate);
         if (exceptionOrCantInterpret(lenExpr))
@@ -3005,8 +3005,8 @@ public:
         }
     }
 
-    private alias fp_t = extern (D) UnionExp function(const ref Loc loc, Type, Expression, Expression);
-    private alias fp2_t = extern (D) bool function(const ref Loc loc, EXP, Expression, Expression);
+    private alias fp_t = extern (D) UnionExp function(Loc loc, Type, Expression, Expression);
+    private alias fp2_t = extern (D) bool function(Loc loc, EXP, Expression, Expression);
 
     extern (D) private void interpretCommon(BinExp e, fp_t fp)
     {
@@ -6530,7 +6530,7 @@ public:
 
 /// Interpret `throw <exp>` found at the specified location `loc`
 private
-void interpretThrow(ref Expression result, Expression exp, const ref Loc loc, InterState* istate)
+void interpretThrow(ref Expression result, Expression exp, Loc loc, InterState* istate)
 {
     incUsageCtfe(istate, loc);
 
@@ -6671,7 +6671,7 @@ Expressions* copyArrayOnWrite(Expressions* exps, Expressions* original)
     true if it is safe to return, false if an error was generated.
  */
 private
-bool stopPointersEscaping(const ref Loc loc, Expression e)
+bool stopPointersEscaping(Loc loc, Expression e)
 {
     import dmd.typesem : hasPointers;
     if (!e.type.hasPointers())
@@ -6721,7 +6721,7 @@ bool stopPointersEscaping(const ref Loc loc, Expression e)
 
 // Check all elements of an array for escaping local variables. Return false if error
 private
-bool stopPointersEscapingFromArray(const ref Loc loc, Expressions* elems)
+bool stopPointersEscapingFromArray(Loc loc, Expressions* elems)
 {
     foreach (e; *elems)
     {
@@ -6785,7 +6785,7 @@ ThrownExceptionExp chainExceptions(ThrownExceptionExp oldest, ThrownExceptionExp
  * 1. all slices must be resolved.
  * 2. all .ownedByCtfe set to OwnedBy.code
  */
-private Expression scrubReturnValue(const ref Loc loc, Expression e)
+private Expression scrubReturnValue(Loc loc, Expression e)
 {
     /* Returns: true if e is void,
      * or is an array literal or struct literal of void elements.
@@ -7505,7 +7505,7 @@ private Expression foreachApplyUtf(UnionExp* pue, InterState* istate, Expression
 /* If this is a built-in function, return the interpreted result,
  * Otherwise, return NULL.
  */
-private Expression evaluateIfBuiltin(UnionExp* pue, InterState* istate, const ref Loc loc, FuncDeclaration fd, Expressions* arguments, Expression pthis)
+private Expression evaluateIfBuiltin(UnionExp* pue, InterState* istate, Loc loc, FuncDeclaration fd, Expressions* arguments, Expression pthis)
 {
     Expression e = null;
     size_t nargs = arguments ? arguments.length : 0;

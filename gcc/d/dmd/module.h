@@ -123,10 +123,10 @@ public:
 
     static Module* create(const char *arg, Identifier *ident, int doDocComment, int doHdrGen);
     static const char *find(const char *filename);
-    static Module *load(const Loc &loc, Identifiers *packages, Identifier *ident);
+    static Module *load(Loc loc, Identifiers *packages, Identifier *ident);
 
     const char *kind() const override;
-    bool read(const Loc &loc); // read file, returns 'true' if succeed, 'false' otherwise.
+    bool read(Loc loc); // read file, returns 'true' if succeed, 'false' otherwise.
     Module *parse();    // syntactic parse
     int needModuleInfo();
     bool isPackageAccessible(Package *p, Visibility visibility, SearchOptFlags flags = (SearchOptFlags)SearchOpt::all) override;

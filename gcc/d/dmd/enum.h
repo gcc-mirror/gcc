@@ -20,7 +20,7 @@ class Expression;
 namespace dmd
 {
     // in enumsem.d
-    Expression *getDefaultValue(EnumDeclaration *ed, const Loc &loc);
+    Expression *getDefaultValue(EnumDeclaration *ed, Loc loc);
 }
 
 class EnumDeclaration final : public ScopeDsymbol

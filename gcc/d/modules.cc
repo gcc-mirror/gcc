@@ -146,7 +146,7 @@ get_internal_fn (tree ident, const Visibility &visibility)
   FuncDeclaration *fd = FuncDeclaration::genCfunc (NULL, Type::tvoid,
 						   Identifier::idPool (name));
   fd->isGenerated (true);
-  fd->loc = Loc (mod->srcfile.toChars (), 1, 0);
+  fd->loc = Loc::singleFilename (mod->srcfile.toChars ());
   fd->parent = mod;
   fd->visibility = visibility;
   fd->semanticRun = PASS::semantic3done;

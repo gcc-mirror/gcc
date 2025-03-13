@@ -326,7 +326,7 @@ extern (C++) struct Global
     ErrorSink errorSink;       /// where the error messages go
     ErrorSink errorSinkNull;   /// where the error messages are ignored
 
-    extern (C++) DArray!ubyte function(FileName, ref const Loc, ref OutBuffer) preprocess;
+    extern (C++) DArray!ubyte function(FileName, Loc, ref OutBuffer) preprocess;
 
   nothrow:
 

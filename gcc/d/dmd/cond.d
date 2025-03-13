@@ -64,7 +64,7 @@ extern (C++) abstract class Condition : ASTNode
         return DYNCAST.condition;
     }
 
-    extern (D) this(const ref Loc loc) @safe
+    extern (D) this(Loc loc) @safe
     {
         this.loc = loc;
     }
@@ -126,7 +126,7 @@ extern (C++) final class StaticForeach : RootObject
      */
     bool needExpansion = false;
 
-    extern (D) this(const ref Loc loc, ForeachStatement aggrfe, ForeachRangeStatement rangefe) @safe
+    extern (D) this(Loc loc, ForeachStatement aggrfe, ForeachRangeStatement rangefe) @safe
     {
         assert(!!aggrfe ^ !!rangefe);
 
@@ -198,7 +198,7 @@ extern (C++) final class StaticForeach : RootObject
      * Returns:
      *     AST of the expression `(){ s; }()` with location loc.
      */
-    private extern(D) Expression wrapAndCall(const ref Loc loc, Statement s)
+    private extern(D) Expression wrapAndCall(Loc loc, Statement s)
     {
         auto tf = new TypeFunction(ParameterList(), null, LINK.default_, 0);
         auto fd = new FuncLiteralDeclaration(loc, loc, tf, TOK.reserved, null);
@@ -221,7 +221,7 @@ extern (C++) final class StaticForeach : RootObject
      *     `foreach (parameters; lower .. upper) s;`
      *     Where aggregate/lower, upper are as for the current StaticForeach.
      */
-    private extern(D) Statement createForeach(const ref Loc loc, Parameters* parameters, Statement s)
+    private extern(D) Statement createForeach(Loc loc, Parameters* parameters, Statement s)
     {
         if (aggrfe)
         {
@@ -254,7 +254,7 @@ extern (C++) final class StaticForeach : RootObject
      *         }
      */
 
-    private extern(D) TypeStruct createTupleType(const ref Loc loc, Expressions* e, Scope* sc)
+    private extern(D) TypeStruct createTupleType(Loc loc, Expressions* e, Scope* sc)
     {   // TODO: move to druntime?
         auto sid = Identifier.generateId("Tuple");
         auto sdecl = new StructDeclaration(loc, sid, false);
@@ -280,7 +280,7 @@ extern (C++) final class StaticForeach : RootObject
      *     An AST for the expression `Tuple(e)`.
      */
 
-    private extern(D) Expression createTuple(const ref Loc loc, TypeStruct type, Expressions* e) @safe
+    private extern(D) Expression createTuple(Loc loc, TypeStruct type, Expressions* e) @safe
     {   // TODO: move to druntime?
         return new CallExp(loc, new TypeExp(loc, type), e);
     }
@@ -496,7 +496,7 @@ extern (C++) class DVCondition : Condition
     Identifier ident;
     Module mod;
 
-    extern (D) this(const ref Loc loc, Module mod, Identifier ident) @safe
+    extern (D) this(Loc loc, Module mod, Identifier ident) @safe
     {
         super(loc);
         this.mod = mod;
@@ -558,7 +558,7 @@ extern (C++) final class DebugCondition : DVCondition
      *           If `null`, this conditiion will use an integer level.
      *  loc = Location in the source file
      */
-    extern (D) this(const ref Loc loc, Module mod, Identifier ident) @safe
+    extern (D) this(Loc loc, Module mod, Identifier ident) @safe
     {
         super(loc, mod, ident);
     }
@@ -757,7 +757,7 @@ extern (C++) final class VersionCondition : DVCondition
      *   loc = Where the identifier is set
      *   ident = identifier being checked (ident[$] must be '\0')
      */
-    extern(D) static void checkReserved(const ref Loc loc, const(char)[] ident)
+    extern(D) static void checkReserved(Loc loc, const(char)[] ident)
     {
         if (isReserved(ident))
             error(loc, "version identifier `%s` is reserved and cannot be set",
@@ -833,7 +833,7 @@ extern (C++) final class VersionCondition : DVCondition
      *           If `null`, this conditiion will use an integer level.
      *  loc = Location in the source file
      */
-    extern (D) this(const ref Loc loc, Module mod, Identifier ident) @safe
+    extern (D) this(Loc loc, Module mod, Identifier ident) @safe
     {
         super(loc, mod, ident);
     }
@@ -890,7 +890,7 @@ extern (C++) final class StaticIfCondition : Condition
 {
     Expression exp;
 
-    extern (D) this(const ref Loc loc, Expression exp) @safe
+    extern (D) this(Loc loc, Expression exp) @safe
     {
         super(loc);
         this.exp = exp;

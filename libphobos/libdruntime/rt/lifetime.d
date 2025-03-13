@@ -24,7 +24,6 @@ static import rt.tlsgc;
 debug (PRINTF) import core.stdc.stdio : printf;
 debug (VALGRIND) import etc.valgrind.valgrind;
 
-alias BlkInfo = GC.BlkInfo;
 alias BlkAttr = GC.BlkAttr;
 
 // for now, all GC array functions are not exposed via core.memory.
@@ -225,7 +224,7 @@ private uint __typeAttrs(const scope TypeInfo ti, void *copyAttrsFrom = null) pu
     if (typeid(ti) is typeid(TypeInfo_Struct)) {
         auto sti = cast(TypeInfo_Struct)cast(void*)ti;
         if (sti.xdtor)
-            attrs |= BlkAttr.STRUCTFINAL | BlkAttr.FINALIZE;
+            attrs |= BlkAttr.FINALIZE;
     }
     return attrs;
 }
@@ -607,21 +606,16 @@ extern (C) CollectHandler rt_getCollectHandler()
 /**
  *
  */
-extern (C) int rt_hasFinalizerInSegment(void* p, size_t size, uint attr, scope const(void)[] segment) nothrow
+extern (C) int rt_hasFinalizerInSegment(void* p, size_t size, TypeInfo typeInfo, scope const(void)[] segment) nothrow
 {
     if (!p)
         return false;
 
-    if (attr & BlkAttr.STRUCTFINAL)
+    if (typeInfo !is null)
     {
-        import core.internal.gc.blockmeta;
-        auto info = BlkInfo(
-            base: p,
-            size: size,
-            attr: attr
-        );
+        assert(typeid(typeInfo) is typeid(TypeInfo_Struct));
 
-        auto ti = cast(TypeInfo_Struct)cast(void*)__getBlockFinalizerInfo(info);
+        auto ti = cast(TypeInfo_Struct)cast(void*)typeInfo;
         return cast(size_t)(cast(void*)ti.xdtor - segment.ptr) < segment.length;
     }
 
@@ -719,39 +713,31 @@ extern (C) void rt_finalize(void* p, bool det = true) nothrow
     rt_finalize2(p, det, true);
 }
 
-extern (C) void rt_finalizeFromGC(void* p, size_t size, uint attr) nothrow
+extern (C) void rt_finalizeFromGC(void* p, size_t size, uint attr, TypeInfo typeInfo) nothrow
 {
     // to verify: reset memory necessary?
-    if (!(attr & BlkAttr.STRUCTFINAL)) {
+    if (typeInfo is null) {
         rt_finalize2(p, false, false); // class
         return;
     }
 
-    // get the struct typeinfo from the block, and the used size.
-    import core.internal.gc.blockmeta;
-    auto info = BlkInfo(
-            base: p,
-            size: size,
-            attr: attr
-    );
+    assert(typeid(typeInfo) is typeid(TypeInfo_Struct));
 
-    auto si = cast(TypeInfo_Struct)cast(void*)__getBlockFinalizerInfo(info);
+    auto si = cast(TypeInfo_Struct)cast(void*)typeInfo;
 
-    if (attr & BlkAttr.APPENDABLE)
+    try
     {
-        auto usedsize = __arrayAllocLength(info);
-        auto arrptr = __arrayStart(info);
-        try
+        if (attr & BlkAttr.APPENDABLE)
         {
-            finalize_array(arrptr, usedsize, si);
+            finalize_array(p, size, si);
         }
-        catch (Exception e)
-        {
-            onFinalizeError(si, e);
-        }
+        else
+            finalize_struct(p, si); // struct
     }
-    else
-        finalize_struct(p, si); // struct
+    catch (Exception e)
+    {
+        onFinalizeError(si, e);
+    }
 }
 
 
@@ -1583,7 +1569,7 @@ deprecated unittest
 
     dtorCount = 0;
     const(S1)[] carr1 = new const(S1)[5];
-    BlkInfo blkinf1 = GC.query(carr1.ptr);
+    auto blkinf1 = GC.query(carr1.ptr);
     GC.runFinalizers((cast(char*)(typeid(S1).xdtor))[0..1]);
     assert(dtorCount == 5);
     GC.free(blkinf1.base);
@@ -1595,7 +1581,7 @@ deprecated unittest
     assert(dtorCount == 4); // destructors run explicitely?
 
     dtorCount = 0;
-    BlkInfo blkinf = GC.query(arr2.ptr);
+    auto blkinf = GC.query(arr2.ptr);
     GC.runFinalizers((cast(char*)(typeid(S1).xdtor))[0..1]);
     assert(dtorCount == 6);
     GC.free(blkinf.base);

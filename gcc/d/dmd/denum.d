@@ -64,7 +64,7 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
 
     Symbol* sinit;
 
-    extern (D) this(const ref Loc loc, Identifier ident, Type memtype)
+    extern (D) this(Loc loc, Identifier ident, Type memtype)
     {
         super(loc, ident);
         //printf("EnumDeclaration() %p %s : %s\n", this, toChars(), memtype.toChars());
@@ -154,7 +154,7 @@ extern (C++) final class EnumMember : VarDeclaration
 
     EnumDeclaration ed;
 
-    extern (D) this(const ref Loc loc, Identifier id, Expression value, Type origType)
+    extern (D) this(Loc loc, Identifier id, Expression value, Type origType)
     {
         super(loc, null, id ? id : Id.empty, new ExpInitializer(loc, value));
         this.origValue = value;

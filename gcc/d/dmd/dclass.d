@@ -198,7 +198,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
 
     Symbol* cpp_type_info_ptr_sym;      // cached instance of class Id.cpp_type_info_ptr
 
-    final extern (D) this(const ref Loc loc, Identifier id, BaseClasses* baseclasses, Dsymbols* members, bool inObject)
+    final extern (D) this(Loc loc, Identifier id, BaseClasses* baseclasses, Dsymbols* members, bool inObject)
     {
         objc = ObjcClassDeclaration(this);
 
@@ -375,7 +375,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
         .error(loc, fmt, kind, toPrettyChars, arg);
     }
 
-    static ClassDeclaration create(const ref Loc loc, Identifier id, BaseClasses* baseclasses, Dsymbols* members, bool inObject)
+    static ClassDeclaration create(Loc loc, Identifier id, BaseClasses* baseclasses, Dsymbols* members, bool inObject)
     {
         return new ClassDeclaration(loc, id, baseclasses, members, inObject);
     }
@@ -956,7 +956,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
  */
 extern (C++) final class InterfaceDeclaration : ClassDeclaration
 {
-    extern (D) this(const ref Loc loc, Identifier id, BaseClasses* baseclasses)
+    extern (D) this(Loc loc, Identifier id, BaseClasses* baseclasses)
     {
         super(loc, id, baseclasses, null, false);
         if (id == Id.IUnknown) // IUnknown is the root of all COM interfaces

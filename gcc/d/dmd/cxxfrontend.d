@@ -153,7 +153,7 @@ void addMember(Dsymbol dsym, Scope* sc, ScopeDsymbol sds)
     return dmd.dsymbolsem.addMember(dsym, sc, sds);
 }
 
-Dsymbol search(Dsymbol d, const ref Loc loc, Identifier ident, SearchOptFlags
+Dsymbol search(Dsymbol d, Loc loc, Identifier ident, SearchOptFlags
                flags = SearchOpt.all)
 {
     import dmd.dsymbolsem;
@@ -233,7 +233,7 @@ void genCppHdrFiles(ref Modules ms)
 /***********************************************************
  * enumsem.d
  */
-Expression getDefaultValue(EnumDeclaration ed, const ref Loc loc)
+Expression getDefaultValue(EnumDeclaration ed, Loc loc)
 {
     import dmd.enumsem;
     return dmd.enumsem.getDefaultValue(ed, loc);
@@ -256,7 +256,7 @@ Expression expressionSemantic(Expression e, Scope* sc)
     return dmd.expressionsem.expressionSemantic(e, sc);
 }
 
-bool fill(StructDeclaration sd, const ref Loc loc,
+bool fill(StructDeclaration sd, Loc loc,
           ref Expressions elements, bool ctorinit)
 {
     import dmd.expressionsem;
@@ -470,13 +470,13 @@ bool hasPointers(Type t)
     return dmd.typesem.hasPointers(t);
 }
 
-Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
+Type typeSemantic(Type type, Loc loc, Scope* sc)
 {
     import dmd.typesem;
     return dmd.typesem.typeSemantic(type, loc, sc);
 }
 
-Type trySemantic(Type type, const ref Loc loc, Scope* sc)
+Type trySemantic(Type type, Loc loc, Scope* sc)
 {
     import dmd.typesem;
     return dmd.typesem.trySemantic(type, loc, sc);
@@ -494,7 +494,7 @@ Type merge2(Type type)
     return dmd.typesem.merge2(type);
 }
 
-Expression defaultInit(Type mt, const ref Loc loc, const bool isCfile = false)
+Expression defaultInit(Type mt, Loc loc, const bool isCfile = false)
 {
     import dmd.typesem;
     return dmd.typesem.defaultInit(mt, loc, isCfile);
@@ -513,7 +513,7 @@ Covariant covariant(Type src, Type t, StorageClass* pstc = null, bool
     return dmd.typesem.covariant(src, t, pstc, cppCovariant);
 }
 
-bool isZeroInit(Type t, const ref Loc loc)
+bool isZeroInit(Type t, Loc loc)
 {
     import dmd.typesem;
     return dmd.typesem.isZeroInit(t, loc);
@@ -663,7 +663,7 @@ uinteger_t size(Type type)
     return dmd.typesem.size(type);
 }
 
-uinteger_t size(Type type, const ref Loc loc)
+uinteger_t size(Type type, Loc loc)
 {
     import dmd.typesem;
     return dmd.typesem.size(type, loc);
@@ -684,7 +684,7 @@ MATCH constConv(Type from, Type to)
 /***********************************************************
  * typinf.d
  */
-bool genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope* sc)
+bool genTypeInfo(Expression e, Loc loc, Type torig, Scope* sc)
 {
     import dmd.typinf;
     return dmd.typinf.genTypeInfo(e, loc, torig, sc);

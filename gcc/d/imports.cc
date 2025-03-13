@@ -77,7 +77,7 @@ public:
   void visit (Module *m) final override
   {
     Loc loc = (m->md != NULL) ? m->md->loc
-      : Loc (m->srcfile.toChars (), 1, 0);
+      : Loc::singleFilename (m->srcfile.toChars ());
 
     this->result_ = build_decl (make_location_t (loc), NAMESPACE_DECL,
 				get_identifier (m->toPrettyChars ()),

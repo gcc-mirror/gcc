@@ -285,7 +285,7 @@ extern (C++) class Dsymbol : ASTNode
         this.ident = ident;
     }
 
-    final extern (D) this(const ref Loc loc, Identifier ident) nothrow @safe
+    final extern (D) this(Loc loc, Identifier ident) nothrow @safe
     {
         //printf("Dsymbol::Dsymbol(%p, ident)\n", this);
         this.loc = loc;
@@ -701,7 +701,7 @@ extern (C++) class Dsymbol : ASTNode
      * Returns:
      *  SIZE_INVALID when the size cannot be determined
      */
-    uinteger_t size(const ref Loc loc)
+    uinteger_t size(Loc loc)
     {
         .error(loc, "%s `%s` symbol `%s` has no size", kind, toPrettyChars, toChars());
         return SIZE_INVALID;
@@ -1099,7 +1099,7 @@ public:
         super(ident);
     }
 
-    final extern (D) this(const ref Loc loc, Identifier ident) nothrow @safe
+    final extern (D) this(Loc loc, Identifier ident) nothrow @safe
     {
         super(loc, ident);
     }
@@ -1241,7 +1241,7 @@ public:
         return (members is null);
     }
 
-    static void multiplyDefined(const ref Loc loc, Dsymbol s1, Dsymbol s2)
+    static void multiplyDefined(Loc loc, Dsymbol s1, Dsymbol s2)
     {
         version (none)
         {
@@ -1559,7 +1559,7 @@ extern (C++) final class AliasAssign : Dsymbol
     Dsymbol aliassym; /// replace previous RHS of AliasDeclaration with `aliassym`
                       /// only one of type and aliassym can be != null
 
-    extern (D) this(const ref Loc loc, Identifier ident, Type type, Dsymbol aliassym) nothrow @safe
+    extern (D) this(Loc loc, Identifier ident, Type type, Dsymbol aliassym) nothrow @safe
     {
         super(loc, null);
         this.ident = ident;

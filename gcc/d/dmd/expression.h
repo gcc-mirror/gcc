@@ -51,7 +51,7 @@ namespace dmd
     // in expressionsem.d
     Expression *expressionSemantic(Expression *e, Scope *sc);
     // in typesem.d
-    Expression *defaultInit(Type *mt, const Loc &loc, const bool isCfile = false);
+    Expression *defaultInit(Type *mt, Loc loc, const bool isCfile = false);
 
     // Entry point for CTFE.
     // A compile-time result is required. Give an error if not possible
@@ -233,7 +233,7 @@ class IntegerExp final : public Expression
 public:
     dinteger_t value;
 
-    static IntegerExp *create(const Loc &loc, dinteger_t value, Type *type);
+    static IntegerExp *create(Loc loc, dinteger_t value, Type *type);
     bool equals(const RootObject * const o) const override;
     dinteger_t toInteger() override;
     real_t toReal() override;
@@ -259,7 +259,7 @@ class RealExp final : public Expression
 public:
     real_t value;
 
-    static RealExp *create(const Loc &loc, real_t value, Type *type);
+    static RealExp *create(Loc loc, real_t value, Type *type);
     bool equals(const RootObject * const o) const override;
     bool isIdentical(const Expression *e) const override;
     dinteger_t toInteger() override;
@@ -276,7 +276,7 @@ class ComplexExp final : public Expression
 public:
     complex_t value;
 
-    static ComplexExp *create(const Loc &loc, complex_t value, Type *type);
+    static ComplexExp *create(Loc loc, complex_t value, Type *type);
     bool equals(const RootObject * const o) const override;
     bool isIdentical(const Expression *e) const override;
     dinteger_t toInteger() override;
@@ -293,7 +293,7 @@ class IdentifierExp : public Expression
 public:
     Identifier *ident;
 
-    static IdentifierExp *create(const Loc &loc, Identifier *ident);
+    static IdentifierExp *create(Loc loc, Identifier *ident);
     bool isLvalue() override final;
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -353,8 +353,8 @@ public:
     d_bool committed;   // if type is committed
     d_bool hexString;   // if string is parsed from a hex string literal
 
-    static StringExp *create(const Loc &loc, const char *s);
-    static StringExp *create(const Loc &loc, const void *s, d_size_t len);
+    static StringExp *create(Loc loc, const char *s);
+    static StringExp *create(Loc loc, const void *s, d_size_t len);
     bool equals(const RootObject * const o) const override;
     char32_t getCodeUnit(d_size_t i) const;
     dinteger_t getIndex(d_size_t i) const;
@@ -391,7 +391,7 @@ public:
      */
     Expressions *exps;
 
-    static TupleExp *create(const Loc &loc, Expressions *exps);
+    static TupleExp *create(Loc loc, Expressions *exps);
     TupleExp *syntaxCopy() override;
     bool equals(const RootObject * const o) const override;
 
@@ -406,7 +406,7 @@ public:
     Expression *basis;
     Expressions *elements;
 
-    static ArrayLiteralExp *create(const Loc &loc, Expressions *elements);
+    static ArrayLiteralExp *create(Loc loc, Expressions *elements);
     ArrayLiteralExp *syntaxCopy() override;
     bool equals(const RootObject * const o) const override;
     Expression *getElement(d_size_t i);
@@ -472,7 +472,7 @@ public:
     StructLiteralExp *origin;
 
 
-    static StructLiteralExp *create(const Loc &loc, StructDeclaration *sd, void *elements, Type *stype = nullptr);
+    static StructLiteralExp *create(Loc loc, StructDeclaration *sd, void *elements, Type *stype = nullptr);
     bool equals(const RootObject * const o) const override;
     StructLiteralExp *syntaxCopy() override;
 
@@ -526,7 +526,7 @@ public:
 
     Expression *lowering;       // lowered druntime hook: `_d_newclass`
 
-    static NewExp *create(const Loc &loc, Expression *thisexp, Type *newtype, Expressions *arguments);
+    static NewExp *create(Loc loc, Expression *thisexp, Type *newtype, Expressions *arguments);
     NewExp *syntaxCopy() override;
 
     void accept(Visitor *v) override { v->visit(this); }
@@ -573,7 +573,7 @@ class VarExp final : public SymbolExp
 {
 public:
     d_bool delegateWasExtracted;
-    static VarExp *create(const Loc &loc, Declaration *var, bool hasOverloads = true);
+    static VarExp *create(Loc loc, Declaration *var, bool hasOverloads = true);
     bool equals(const RootObject * const o) const override;
     bool isLvalue() override;
 
@@ -736,7 +736,7 @@ public:
     d_bool wantsym;       // do not replace Symbol with its initializer during semantic()
     d_bool arrow;         // ImportC: if -> instead of .
 
-    static DotIdExp *create(const Loc &loc, Expression *e, Identifier *ident);
+    static DotIdExp *create(Loc loc, Expression *e, Identifier *ident);
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -815,10 +815,10 @@ public:
     d_bool isUfcsRewrite;       // the first argument was pushed in here by a UFCS rewrite
     VarDeclaration *vthis2;     // container for multi-context
 
-    static CallExp *create(const Loc &loc, Expression *e, Expressions *exps);
-    static CallExp *create(const Loc &loc, Expression *e);
-    static CallExp *create(const Loc &loc, Expression *e, Expression *earg1);
-    static CallExp *create(const Loc &loc, FuncDeclaration *fd, Expression *earg1);
+    static CallExp *create(Loc loc, Expression *e, Expressions *exps);
+    static CallExp *create(Loc loc, Expression *e);
+    static CallExp *create(Loc loc, Expression *e, Expression *earg1);
+    static CallExp *create(Loc loc, FuncDeclaration *fd, Expression *earg1);
 
     CallExp *syntaxCopy() override;
     bool isLvalue() override;
@@ -892,7 +892,7 @@ public:
     unsigned dim;               // number of elements in the vector
     OwnedBy ownedByCtfe;
 
-    static VectorExp *create(const Loc &loc, Expression *e, Type *t);
+    static VectorExp *create(Loc loc, Expression *e, Type *t);
     VectorExp *syntaxCopy() override;
     void accept(Visitor *v) override { v->visit(this); }
 };

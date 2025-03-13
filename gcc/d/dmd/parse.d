@@ -54,7 +54,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
      * Input:
      *      loc = location in source file of mixin
      */
-    extern (D) this(const ref Loc loc, AST.Module _module, const(char)[] input, bool doDocComment,
+    extern (D) this(Loc loc, AST.Module _module, const(char)[] input, bool doDocComment,
         ErrorSink errorSink, const CompileEnv* compileEnv, const bool doUnittests) scope
     {
         //printf("Parser::Parser()1 %d\n", doUnittests);
@@ -1311,7 +1311,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             return 0;
         }
 
-        AST.Expression templateArgToExp(RootObject o, const ref Loc loc)
+        AST.Expression templateArgToExp(RootObject o, Loc loc)
         {
             switch (o.dyncast)
             {

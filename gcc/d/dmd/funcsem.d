@@ -1333,7 +1333,7 @@ extern (D) void declareThis(FuncDeclaration fd, Scope* sc)
  * Check that this function type is properly resolved.
  * If not, report "forward reference error" and return true.
  */
-extern (D) bool checkForwardRef(FuncDeclaration fd, const ref Loc loc)
+extern (D) bool checkForwardRef(FuncDeclaration fd, Loc loc)
 {
     if (!functionSemantic(fd))
         return true;
@@ -1526,7 +1526,7 @@ enum FuncResolveFlag : ubyte
  * Returns:
  *      if match is found, then function symbol, else null
  */
-FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
+FuncDeclaration resolveFuncCall(Loc loc, Scope* sc, Dsymbol s,
     Objects* tiargs, Type tthis, ArgumentList argumentList, FuncResolveFlag flags)
 {
     //printf("resolveFuncCall() %s\n", s.toChars());
@@ -1809,7 +1809,7 @@ FuncDeclaration resolveFuncCall(const ref Loc loc, Scope* sc, Dsymbol s,
  *      declaration =    the declaration to print overload candidates for
  *      showDeprecated = If `false`, `deprecated` function won't be shown
  */
-private void printCandidates(Decl)(const ref Loc loc, Decl declaration, bool showDeprecated)
+private void printCandidates(Decl)(Loc loc, Decl declaration, bool showDeprecated)
 {
     // max num of overloads to print (-v or -verror-supplements overrides this).
     const uint DisplayLimit = global.params.v.errorSupplementCount();
@@ -2146,7 +2146,7 @@ L1:
  * 4. If there's no candidates, it's "no match" and returns null with error report.
  *      e.g. If 'tthis' is const but there's no const methods.
  */
-FuncDeclaration overloadModMatch(FuncDeclaration thisfd, const ref Loc loc, Type tthis, ref bool hasOverloads)
+FuncDeclaration overloadModMatch(FuncDeclaration thisfd, Loc loc, Type tthis, ref bool hasOverloads)
 {
     //printf("FuncDeclaration::overloadModMatch('%s')\n", toChars());
     MatchAccumulator m;
@@ -2246,7 +2246,7 @@ FuncDeclaration overloadModMatch(FuncDeclaration thisfd, const ref Loc loc, Type
  *      -1      increase nesting by 1 (`target` is nested within 'fd')
  *      LevelError  error
  */
-int getLevelAndCheck(FuncDeclaration fd, const ref Loc loc, Scope* sc, FuncDeclaration target,
+int getLevelAndCheck(FuncDeclaration fd, Loc loc, Scope* sc, FuncDeclaration target,
                      Declaration decl)
 {
     int level = fd.getLevel(target, sc.intypeof);
@@ -2315,7 +2315,7 @@ bool canInferAttributes(FuncDeclaration fd, Scope* sc)
  *    then mark it as a delegate.
  * Returns true if error occurs.
  */
-bool checkNestedFuncReference(FuncDeclaration fd, Scope* sc, const ref Loc loc)
+bool checkNestedFuncReference(FuncDeclaration fd, Scope* sc, Loc loc)
 {
     //printf("FuncDeclaration::checkNestedFuncReference() %s\n", toPrettyChars());
     if (auto fld = fd.isFuncLiteralDeclaration())

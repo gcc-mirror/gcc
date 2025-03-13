@@ -194,7 +194,7 @@ extern (C++) struct Target
      * Returns:
      *      `Type` that represents `va_list`.
      */
-    extern (C++) Type va_listType(const ref Loc loc, Scope* sc);
+    extern (C++) Type va_listType(Loc loc, Scope* sc);
 
     /**
      * Checks whether the target supports a vector type.
@@ -267,7 +267,7 @@ extern (C++) struct Target
      * Returns:
      *  Expression for the requested targetInfo
      */
-    extern (C++) Expression getTargetInfo(const(char)* name, const ref Loc loc);
+    extern (C++) Expression getTargetInfo(const(char)* name, Loc loc);
 
     /**
      * Params:

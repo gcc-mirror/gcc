@@ -1804,7 +1804,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
         //printf("SwitchStatement::semantic(%p)\n", ss);
         ss.tryBody = sc.tryBody;
-        ss.tf = sc.tf;
+        ss.tryFinally = sc.tryFinally;
         if (ss.cases)
         {
             result = ss; // already run
@@ -1898,7 +1898,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
         sc = sc.push();
         sc.sbreak = ss;
-        sc.sw = ss;
+        sc.switchStatement = ss;
 
         ss.cases = new CaseStatements();
         const inLoopSave = sc.inLoop;
@@ -1925,9 +1925,9 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
             for (Scope* scx = sc; scx; scx = scx.enclosing)
             {
-                if (!scx.sw)
+                if (!scx.switchStatement)
                     continue;
-                foreach (cs; *scx.sw.cases)
+                foreach (cs; *scx.switchStatement.cases)
                 {
                     if (cs.exp.equals(gcs.exp))
                     {
@@ -1986,7 +1986,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 needswitcherror = true;
         }
 
-        ss.hasDefault = sc.sw.sdefault ||
+        ss.hasDefault = sc.switchStatement.sdefault ||
             !(!ss.isFinal || needswitcherror || global.params.useAssert == CHECKENABLE.on || sc.func.isSafe || sc.func.isSaferD);
         if (!ss.hasDefault)
         {
@@ -2040,11 +2040,11 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 s = new ExpStatement(ss.loc, new HaltExp(ss.loc));
 
             a.reserve(2);
-            sc.sw.sdefault = new DefaultStatement(ss.loc, s);
+            sc.switchStatement.sdefault = new DefaultStatement(ss.loc, s);
             a.push(ss._body);
             if (ss._body.blockExit(sc.func, null) & BE.fallthru)
                 a.push(new BreakStatement(Loc.initial, null));
-            a.push(sc.sw.sdefault);
+            a.push(sc.switchStatement.sdefault);
             cs = new CompoundStatement(ss.loc, a);
             ss._body = cs;
         }
@@ -2141,7 +2141,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
     void visitCase(CaseStatement cs)
     {
-        SwitchStatement sw = sc.sw;
+        SwitchStatement sw = sc.switchStatement;
         bool errors = false;
 
         //printf("CaseStatement::semantic() %s\n", toChars());
@@ -2197,9 +2197,9 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                     */
                     for (Scope* scx = sc; scx; scx = scx.enclosing)
                     {
-                        if (scx.enclosing && scx.enclosing.sw == sw)
+                        if (scx.enclosing && scx.enclosing.switchStatement == sw)
                             continue;
-                        assert(scx.sw == sw);
+                        assert(scx.switchStatement == sw);
 
                         Dsymbol pscopesym;
                         if (!scx.search(cs.exp.loc, v.ident, pscopesym))
@@ -2254,12 +2254,12 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 i++;
             }
 
-            if (sc.sw.tf != sc.tf)
+            if (sc.switchStatement.tryFinally != sc.tryFinally)
             {
                 error(cs.loc, "`switch` and `case` are in different `finally` blocks");
                 errors = true;
             }
-            if (sc.sw.tryBody != sc.tryBody)
+            if (sc.switchStatement.tryBody != sc.tryBody)
             {
                 error(cs.loc, "case cannot be in different `try` block level from `switch`");
                 errors = true;
@@ -2287,7 +2287,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
     void visitCaseRange(CaseRangeStatement crs)
     {
-        SwitchStatement sw = sc.sw;
+        SwitchStatement sw = sc.switchStatement;
         if (sw is null)
         {
             error(crs.loc, "case range not in `switch` statement");
@@ -2372,26 +2372,26 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
     {
         //printf("DefaultStatement::semantic()\n");
         bool errors = false;
-        if (sc.sw)
+        if (sc.switchStatement)
         {
-            if (sc.sw.sdefault)
+            if (sc.switchStatement.sdefault)
             {
                 error(ds.loc, "`switch` statement already has a default");
                 errors = true;
             }
-            sc.sw.sdefault = ds;
+            sc.switchStatement.sdefault = ds;
 
-            if (sc.sw.tf != sc.tf)
+            if (sc.switchStatement.tryFinally != sc.tryFinally)
             {
                 error(ds.loc, "`switch` and `default` are in different `finally` blocks");
                 errors = true;
             }
-            if (sc.sw.tryBody != sc.tryBody)
+            if (sc.switchStatement.tryBody != sc.tryBody)
             {
                 error(ds.loc, "default cannot be in different `try` block level from `switch`");
                 errors = true;
             }
-            if (sc.sw.isFinal)
+            if (sc.switchStatement.isFinal)
             {
                 error(ds.loc, "`default` statement not allowed in `final switch` statement");
                 errors = true;
@@ -2417,7 +2417,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         /* https://dlang.org/spec/statement.html#goto-statement
          */
 
-        gds.sw = sc.sw;
+        gds.sw = sc.switchStatement;
         if (!gds.sw)
         {
             error(gds.loc, "`goto default` not in `switch` statement");
@@ -2436,7 +2436,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         /* https://dlang.org/spec/statement.html#goto-statement
          */
 
-        if (!sc.sw)
+        if (!sc.switchStatement)
         {
             error(gcs.loc, "`goto case` not in `switch` statement");
             return setError();
@@ -2445,13 +2445,13 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         if (gcs.exp)
         {
             gcs.exp = gcs.exp.expressionSemantic(sc);
-            gcs.exp = gcs.exp.implicitCastTo(sc, sc.sw.condition.type);
+            gcs.exp = gcs.exp.implicitCastTo(sc, sc.switchStatement.condition.type);
             gcs.exp = gcs.exp.optimize(WANTvalue);
             if (gcs.exp.op == EXP.error)
                 return setError();
         }
 
-        sc.sw.gotoCases.push(gcs);
+        sc.switchStatement.gotoCases.push(gcs);
         result = gcs;
     }
 
@@ -2505,22 +2505,22 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             error(rs.loc, "`return` statements cannot be in contracts");
             errors = true;
         }
-        if (sc.os)
+        if (sc.scopeGuard)
         {
             // @@@DEPRECATED_2.112@@@
             // Deprecated in 2.100, transform into an error in 2.112
-            if (sc.os.tok == TOK.onScopeFailure)
+            if (sc.scopeGuard.tok == TOK.onScopeFailure)
             {
                 deprecation(rs.loc, "`return` statements cannot be in `scope(failure)` bodies.");
                 deprecationSupplemental(rs.loc, "Use try-catch blocks for this purpose");
             }
             else
             {
-                error(rs.loc, "`return` statements cannot be in `%s` bodies", Token.toChars(sc.os.tok));
+                error(rs.loc, "`return` statements cannot be in `%s` bodies", Token.toChars(sc.scopeGuard.tok));
                 errors = true;
             }
         }
-        if (sc.tf)
+        if (sc.tryFinally)
         {
             error(rs.loc, "`return` statements cannot be in `finally` bodies");
             errors = true;
@@ -2901,7 +2901,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                     Statement s = ls.statement;
                     if (!s || !s.hasBreak())
                         error(bs.loc, "label `%s` has no `break`", bs.ident.toChars());
-                    else if (ls.tf != sc.tf)
+                    else if (ls.tf != sc.tryFinally)
                         error(bs.loc, "cannot break out of `finally` block");
                     else
                     {
@@ -2917,9 +2917,9 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         }
         else if (!sc.sbreak)
         {
-            if (sc.os && sc.os.tok != TOK.onScopeFailure)
+            if (sc.scopeGuard && sc.scopeGuard.tok != TOK.onScopeFailure)
             {
-                error(bs.loc, "`break` is not allowed inside `%s` bodies", Token.toChars(sc.os.tok));
+                error(bs.loc, "`break` is not allowed inside `%s` bodies", Token.toChars(sc.scopeGuard.tok));
             }
             else if (sc.fes)
             {
@@ -2989,7 +2989,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                     Statement s = ls.statement;
                     if (!s || !s.hasContinue())
                         error(cs.loc, "label `%s` has no `continue`", cs.ident.toChars());
-                    else if (ls.tf != sc.tf)
+                    else if (ls.tf != sc.tryFinally)
                         error(cs.loc, "cannot continue out of `finally` block");
                     else
                     {
@@ -3004,9 +3004,9 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         }
         else if (!sc.scontinue)
         {
-            if (sc.os && sc.os.tok != TOK.onScopeFailure)
+            if (sc.scopeGuard && sc.scopeGuard.tok != TOK.onScopeFailure)
             {
-                error(cs.loc, "`continue` is not allowed inside `%s` bodies", Token.toChars(sc.os.tok));
+                error(cs.loc, "`continue` is not allowed inside `%s` bodies", Token.toChars(sc.scopeGuard.tok));
             }
             else if (sc.fes)
             {
@@ -3382,7 +3382,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         tfs._body = tfs._body.semanticScope(sc, null, null, tfs);
 
         sc = sc.push();
-        sc.tf = tfs;
+        sc.tryFinally = tfs;
         sc.sbreak = null;
         sc.scontinue = null; // no break or continue out of finally block
         tfs.finalbody = tfs.finalbody.semanticNoScope(sc);
@@ -3435,13 +3435,13 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             // scope(success) and scope(failure) are rewritten to try-catch(-finally) statement,
             // so the generated catch block cannot be placed in finally block.
             // See also Catch::semantic.
-            if (sc.os && sc.os.tok != TOK.onScopeFailure)
+            if (sc.scopeGuard && sc.scopeGuard.tok != TOK.onScopeFailure)
             {
                 // If enclosing is scope(success) or scope(exit), this will be placed in finally block.
-                error(oss.loc, "cannot put `%s` statement inside `%s`", Token.toChars(oss.tok), Token.toChars(sc.os.tok));
+                error(oss.loc, "cannot put `%s` statement inside `%s`", Token.toChars(oss.tok), Token.toChars(sc.scopeGuard.tok));
                 return setError();
             }
-            if (sc.tf)
+            if (sc.tryFinally)
             {
                 error(oss.loc, "cannot put `%s` statement inside `finally` block", Token.toChars(oss.tok));
                 return setError();
@@ -3449,8 +3449,8 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         }
 
         sc = sc.push();
-        sc.tf = null;
-        sc.os = oss;
+        sc.tryFinally = null;
+        sc.scopeGuard = oss;
         if (oss.tok != TOK.onScopeFailure)
         {
             // Jump out from scope(failure) block is allowed.
@@ -3504,8 +3504,8 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         gs.ident = fixupLabelName(sc, gs.ident);
         gs.label = fd.searchLabel(gs.ident, gs.loc);
         gs.tryBody = sc.tryBody;
-        gs.tf = sc.tf;
-        gs.os = sc.os;
+        gs.tf = sc.tryFinally;
+        gs.os = sc.scopeGuard;
         gs.lastVar = sc.lastVar;
         gs.inCtfeBlock = sc.ctfeBlock;
 
@@ -3544,8 +3544,8 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
         ls.ident = fixupLabelName(sc, ls.ident);
         ls.tryBody = sc.tryBody;
-        ls.tf = sc.tf;
-        ls.os = sc.os;
+        ls.tf = sc.tryFinally;
+        ls.os = sc.scopeGuard;
         ls.lastVar = sc.lastVar;
         ls.inCtfeBlock = sc.ctfeBlock;
 
@@ -3696,7 +3696,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
  *
  * Returns: true if the `throw` is valid, or false if an error was found
  */
-public bool throwSemantic(const ref Loc loc, ref Expression exp, Scope* sc)
+public bool throwSemantic(Loc loc, ref Expression exp, Scope* sc)
 {
     if (!global.params.useExceptions)
     {
@@ -3945,7 +3945,7 @@ private extern(D) Expression applyAssocArray(ForeachStatement fs, Expression fld
     return ec;
 }
 
-private extern(D) Statement loopReturn(Expression e, Statements* cases, const ref Loc loc)
+private extern(D) Statement loopReturn(Expression e, Statements* cases, Loc loc)
 {
     if (!cases.length)
     {
@@ -4053,13 +4053,13 @@ void catchSemantic(Catch c, Scope* sc)
 {
     //printf("Catch::semantic(%s)\n", ident.toChars());
 
-    if (sc.os && sc.os.tok != TOK.onScopeFailure)
+    if (sc.scopeGuard && sc.scopeGuard.tok != TOK.onScopeFailure)
     {
         // If enclosing is scope(success) or scope(exit), this will be placed in finally block.
-        error(c.loc, "cannot put `catch` statement inside `%s`", Token.toChars(sc.os.tok));
+        error(c.loc, "cannot put `catch` statement inside `%s`", Token.toChars(sc.scopeGuard.tok));
         c.errors = true;
     }
-    if (sc.tf)
+    if (sc.tryFinally)
     {
         /* This is because the _d_local_unwind() gets the stack munged
          * up on this. The workaround is to place any try-catches into
@@ -4835,8 +4835,9 @@ private Statements* flatten(Statement statement, Scope* sc)
             buf.writeByte(0);
             const str = buf.extractSlice()[0 .. len];
             const bool doUnittests = global.params.parsingUnittestsRequired();
-            auto loc = adjustLocForMixin(str, cs.loc, global.params.mixinOut);
-            scope p = new Parser!ASTCodegen(loc, sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
+            scope p = new Parser!ASTCodegen(sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
+            adjustLocForMixin(str, cs.loc, *p.baseLoc, global.params.mixinOut);
+            p.linnum = p.baseLoc.startLine;
             p.nextToken();
 
             auto a = new Statements();

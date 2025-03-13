@@ -220,7 +220,7 @@ public:
     virtual Dsymbol *toAlias();                 // resolve real symbol
     virtual Dsymbol *toAlias2();
     virtual bool overloadInsert(Dsymbol *s);
-    virtual uinteger_t size(const Loc &loc);
+    virtual uinteger_t size(Loc loc);
     virtual bool isforwardRef();
     virtual AggregateDeclaration *isThis();     // is a 'this' required to access the member
     virtual bool isExport() const;              // is Dsymbol exported?
@@ -329,7 +329,7 @@ public:
     virtual void importScope(Dsymbol *s, Visibility visibility);
     virtual bool isPackageAccessible(Package *p, Visibility visibility, SearchOptFlags flags = (SearchOptFlags)SearchOpt::all);
     bool isforwardRef() override final;
-    static void multiplyDefined(const Loc &loc, Dsymbol *s1, Dsymbol *s2);
+    static void multiplyDefined(Loc loc, Dsymbol *s1, Dsymbol *s2);
     const char *kind() const override;
     virtual Dsymbol *symtabInsert(Dsymbol *s);
     virtual Dsymbol *symtabLookup(Dsymbol *s, Identifier *id);
@@ -429,7 +429,7 @@ public:
 namespace dmd
 {
     void addMember(Dsymbol *dsym, Scope *sc, ScopeDsymbol *sds);
-    Dsymbol *search(Dsymbol *d, const Loc &loc, Identifier *ident, SearchOptFlags flags = (SearchOptFlags)SearchOpt::localsOnly);
+    Dsymbol *search(Dsymbol *d, Loc loc, Identifier *ident, SearchOptFlags flags = (SearchOptFlags)SearchOpt::localsOnly);
     Dsymbols *include(Dsymbol *d, Scope *sc);
     void setScope(Dsymbol *d, Scope *sc);
     void importAll(Dsymbol *d, Scope *sc);

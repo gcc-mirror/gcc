@@ -1564,7 +1564,7 @@ Expression resolvePropertiesOnly(Scope* sc, Expression e1)
  * Returns:
  *      `s` turned into an expression, `ErrorExp` if an error occurred
  */
-Expression symbolToExp(Dsymbol s, const ref Loc loc, Scope* sc, bool hasOverloads)
+Expression symbolToExp(Dsymbol s, Loc loc, Scope* sc, bool hasOverloads)
 {
     static if (LOGSEMANTIC)
     {
@@ -1793,7 +1793,7 @@ Lagain:
  * Returns:
  *      Expression representing the `this` for the var
  */
-private Expression getRightThis(const ref Loc loc, Scope* sc, AggregateDeclaration ad, Expression e1, Dsymbol var, int flag = 0)
+private Expression getRightThis(Loc loc, Scope* sc, AggregateDeclaration ad, Expression e1, Dsymbol var, int flag = 0)
 {
     //printf("\ngetRightThis(e1 = %s, ad = %s, var = %s)\n", e1.toChars(), ad.toChars(), var.toChars());
 L1:
@@ -1960,7 +1960,7 @@ private bool haveSameThis(FuncDeclaration outerFunc, FuncDeclaration calledFunc)
  * we can only call other pure functions.
  * Returns true if error occurs.
  */
-private bool checkPurity(FuncDeclaration f, const ref Loc loc, Scope* sc)
+private bool checkPurity(FuncDeclaration f, Loc loc, Scope* sc)
 {
     if (!sc.func)
         return false;
@@ -2001,7 +2001,7 @@ private bool checkPurity(FuncDeclaration f, const ref Loc loc, Scope* sc)
  *   check = current check (e.g. whether it's pure)
  *   checkName = the kind of check (e.g. `"pure"`)
  */
-void checkOverriddenDtor(FuncDeclaration f, Scope* sc, const ref Loc loc,
+void checkOverriddenDtor(FuncDeclaration f, Scope* sc, Loc loc,
             scope bool function(DtorDeclaration) check, const string checkName)
 {
     auto dd = f.isDtorDeclaration();
@@ -2122,7 +2122,7 @@ public void errorSupplementalInferredAttr(FuncDeclaration fd, int maxDepth, bool
  * Check for purity and safety violations.
  * Returns true if error occurs.
  */
-private bool checkPurity(VarDeclaration v, const ref Loc loc, Scope* sc)
+private bool checkPurity(VarDeclaration v, Loc loc, Scope* sc)
 {
     //printf("v = %s %s\n", v.type.toChars(), v.toChars());
     /* Look for purity and safety violations when accessing variable v
@@ -2794,7 +2794,7 @@ private Type arrayExpressionToCommonType(Scope* sc, ref Expressions exps)
     return t0;
 }
 
-private Expression opAssignToOp(const ref Loc loc, EXP op, Expression e1, Expression e2) @safe
+private Expression opAssignToOp(Loc loc, EXP op, Expression e1, Expression e2) @safe
 {
     Expression e;
     switch (op)
@@ -2979,7 +2979,7 @@ private bool checkDefCtor(Loc loc, Type t)
  * Returns:
  *      true    errors happened
  */
-private bool functionParameters(const ref Loc loc, Scope* sc,
+private bool functionParameters(Loc loc, Scope* sc,
     TypeFunction tf, Expression ethis, Type tthis, ArgumentList argumentList, FuncDeclaration fd,
     Type* prettype, Expression* peprefix)
 {
@@ -7659,8 +7659,9 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         const len = buf.length;
         const str = buf.extractChars()[0 .. len];
         const bool doUnittests = global.params.parsingUnittestsRequired();
-        auto loc = adjustLocForMixin(str, exp.loc, global.params.mixinOut);
-        scope p = new Parser!ASTCodegen(loc, sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
+        scope p = new Parser!ASTCodegen(sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
+        adjustLocForMixin(str, exp.loc, *p.baseLoc, global.params.mixinOut);
+        p.linnum = p.baseLoc.startLine;
         p.nextToken();
         //printf("p.loc.linnum = %d\n", p.loc.linnum);
 
@@ -13901,7 +13902,7 @@ private Expression dotIdSemanticPropX(DotIdExp exp, Scope* sc)
         // symbol.mangleof
 
         // return mangleof as an Expression
-        static Expression dotMangleof(const ref Loc loc, Scope* sc, Dsymbol ds, bool hasOverloads)
+        static Expression dotMangleof(Loc loc, Scope* sc, Dsymbol ds, bool hasOverloads)
         {
             Expression e;
 
@@ -15110,7 +15111,7 @@ bool checkSharedAccess(Expression e, Scope* sc, bool returnRef = false)
 /****************************************
  * Resolve __FILE__, __LINE__, __MODULE__, __FUNCTION__, __PRETTY_FUNCTION__, __FILE_FULL_PATH__ to loc.
  */
-Expression resolveLoc(Expression exp, const ref Loc loc, Scope* sc)
+Expression resolveLoc(Expression exp, Loc loc, Scope* sc)
 {
     // Don't replace the special keywords, while we are inside a default
     // argument. They are replaced later when copied to the call site.
@@ -16185,7 +16186,7 @@ private bool checkFunctionAttributes(Expression exp, Scope* sc, FuncDeclaration 
  * Returns:
  *      Expression representing the `this` for the var
  */
-Expression getThisSkipNestedFuncs(const ref Loc loc, Scope* sc, Dsymbol s, AggregateDeclaration ad, Expression e1, Type t, Dsymbol var, bool flag = false)
+Expression getThisSkipNestedFuncs(Loc loc, Scope* sc, Dsymbol s, AggregateDeclaration ad, Expression e1, Type t, Dsymbol var, bool flag = false)
 {
     int n = 0;
     while (s && s.isFuncDeclaration())
@@ -16246,7 +16247,7 @@ Expression getThisSkipNestedFuncs(const ref Loc loc, Scope* sc, Dsymbol s, Aggre
  *      newly created variable such that a closure is made for the variable when
  *      the address of `fd` is taken.
  */
-private VarDeclaration makeThis2Argument(const ref Loc loc, Scope* sc, FuncDeclaration fd)
+private VarDeclaration makeThis2Argument(Loc loc, Scope* sc, FuncDeclaration fd)
 {
     Type tthis2 = Type.tvoidptr.sarrayOf(2);
     VarDeclaration vthis2 = new VarDeclaration(loc, tthis2, Identifier.generateId("__this"), null);
@@ -16272,7 +16273,7 @@ private VarDeclaration makeThis2Argument(const ref Loc loc, Scope* sc, FuncDecla
  * Returns:
  *      a `bool` indicating if the hook is present.
  */
-bool verifyHookExist(const ref Loc loc, ref Scope sc, Identifier id, string description, Identifier module_ = Id.object)
+bool verifyHookExist(Loc loc, ref Scope sc, Identifier id, string description, Identifier module_ = Id.object)
 {
     Dsymbol pscopesym;
     auto rootSymbol = sc.search(loc, Id.empty, pscopesym);
@@ -16296,7 +16297,7 @@ bool verifyHookExist(const ref Loc loc, ref Scope sc, Identifier id, string desc
  *      false if any errors occur,
  *      otherwise true and elements[] are rewritten for the output.
  */
-private bool fit(StructDeclaration sd, const ref Loc loc, Scope* sc, Expressions* elements, Type stype)
+private bool fit(StructDeclaration sd, Loc loc, Scope* sc, Expressions* elements, Type stype)
 {
     if (!elements)
         return true;
@@ -16407,7 +16408,7 @@ private bool fit(StructDeclaration sd, const ref Loc loc, Scope* sc, Expressions
  * Returns:
  *     VarExp referenceing `em` or ErrorExp if `em` if disabled/deprecated
  */
-Expression getVarExp(EnumMember em, const ref Loc loc, Scope* sc)
+Expression getVarExp(EnumMember em, Loc loc, Scope* sc)
 {
     dsymbolSemantic(em, sc);
     if (em.errors)
@@ -17256,7 +17257,7 @@ private bool needsTypeInference(TemplateInstance ti, Scope* sc, int flag = 0)
  *      false if any errors occur.
  *      Otherwise, returns true and the missing arguments will be pushed in elements[].
  */
-bool fill(StructDeclaration sd, const ref Loc loc, ref Expressions elements, bool ctorinit)
+bool fill(StructDeclaration sd, Loc loc, ref Expressions elements, bool ctorinit)
 {
     //printf("AggregateDeclaration::fill() %s\n", toChars());
     assert(sd.sizeok == Sizeok.done);

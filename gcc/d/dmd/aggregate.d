@@ -154,7 +154,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
     bool disableNew;                /// disallow allocations using `new`
     Sizeok sizeok = Sizeok.none;    /// set when structsize contains valid data
 
-    final extern (D) this(const ref Loc loc, Identifier id)
+    final extern (D) this(Loc loc, Identifier id)
     {
         super(loc, id);
         visibility = Visibility(Visibility.Kind.public_);
@@ -189,7 +189,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
 
     abstract void finalizeSize();
 
-    override final uinteger_t size(const ref Loc loc)
+    override final uinteger_t size(Loc loc)
     {
         //printf("+AggregateDeclaration::size() %s, scope = %p, sizeok = %d\n", toChars(), _scope, sizeok);
         bool ok = determineSize(this, loc);

@@ -1113,7 +1113,7 @@ d_parse_file (void)
 
 	  if (count < 0)
 	    {
-	      error (Loc ("stdin", 0, 0), "%s", xstrerror (errno));
+	      error (Loc::singleFilename ("stdin"), "%s", xstrerror (errno));
 	      free (buffer);
 	      continue;
 	    }

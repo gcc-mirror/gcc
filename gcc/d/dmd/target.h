@@ -197,7 +197,7 @@ public:
     // Type sizes and support.
     unsigned alignsize(Type *type);
     unsigned fieldalign(Type *type);
-    Type *va_listType(const Loc &loc, Scope *sc);  // get type of va_list
+    Type *va_listType(Loc loc, Scope *sc);  // get type of va_list
     int isVectorTypeSupported(int sz, Type *type);
     bool isVectorOpSupported(Type *type, EXP op, Type *t2 = nullptr);
     // ABI and backend.
@@ -205,7 +205,7 @@ public:
     TypeTuple *toArgTypes(Type *t);
     bool isReturnOnStack(TypeFunction *tf, bool needsThis);
     bool preferPassByRef(Type *t);
-    Expression *getTargetInfo(const char* name, const Loc& loc);
+    Expression *getTargetInfo(const char* name, Loc loc);
     bool isCalleeDestroyingArgs(TypeFunction* tf);
     bool libraryObjectMonitors(FuncDeclaration *fd, Statement *fbody);
     bool supportsLinkerDirective() const;

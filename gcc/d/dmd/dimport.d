@@ -40,7 +40,7 @@ extern (C++) final class Import : Dsymbol
     // corresponding AliasDeclarations for alias=name pairs
     AliasDeclarations aliasdecls;
 
-    extern (D) this(const ref Loc loc, Identifier[] packages, Identifier id, Identifier aliasId, int isstatic)
+    extern (D) this(Loc loc, Identifier[] packages, Identifier id, Identifier aliasId, int isstatic)
     {
         Identifier selectIdent()
         {

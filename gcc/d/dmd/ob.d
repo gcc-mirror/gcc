@@ -1336,7 +1336,7 @@ void genKill(ref ObState obstate, ObNode* ob)
         }
     }
 
-    void dgReadVar(const ref Loc loc, ObNode* ob, VarDeclaration v, bool mutable)
+    void dgReadVar(Loc loc, ObNode* ob, VarDeclaration v, bool mutable)
     {
         if (log)
             printf("dgReadVar() %s %d\n", v.toChars(), mutable);
@@ -1351,12 +1351,12 @@ void genKill(ref ObState obstate, ObNode* ob)
         {
             alias visit = typeof(super).visit;
             extern (D) void delegate(ObNode*, VarDeclaration, Expression, bool) dgWriteVar;
-            extern (D) void delegate(const ref Loc loc, ObNode* ob, VarDeclaration v, bool mutable) dgReadVar;
+            extern (D) void delegate(Loc loc, ObNode* ob, VarDeclaration v, bool mutable) dgReadVar;
             ObNode* ob;
             ObState* obstate;
 
             extern (D) this(void delegate(ObNode*, VarDeclaration, Expression, bool) dgWriteVar,
-                            void delegate(const ref Loc loc, ObNode* ob, VarDeclaration v, bool mutable) dgReadVar,
+                            void delegate(Loc loc, ObNode* ob, VarDeclaration v, bool mutable) dgReadVar,
                             ObNode* ob, ref ObState obstate) scope
             {
                 this.dgWriteVar = dgWriteVar;
@@ -2085,7 +2085,7 @@ void checkObErrors(ref ObState obstate)
         }
     }
 
-    void dgReadVar(const ref Loc loc, ObNode* ob, VarDeclaration v, bool mutable, PtrVarState[] gen)
+    void dgReadVar(Loc loc, ObNode* ob, VarDeclaration v, bool mutable, PtrVarState[] gen)
     {
         if (log) printf("dgReadVar() %s\n", v.toChars());
         const vi = obstate.vars.find(v);
@@ -2103,12 +2103,12 @@ void checkObErrors(ref ObState obstate)
         {
             alias visit = typeof(super).visit;
             extern (D) void delegate(ObNode*, PtrVarState[], VarDeclaration, Expression) dgWriteVar;
-            extern (D) void delegate(const ref Loc loc, ObNode* ob, VarDeclaration v, bool mutable, PtrVarState[]) dgReadVar;
+            extern (D) void delegate(Loc loc, ObNode* ob, VarDeclaration v, bool mutable, PtrVarState[]) dgReadVar;
             PtrVarState[] cpvs;
             ObNode* ob;
             ObState* obstate;
 
-            extern (D) this(void delegate(const ref Loc loc, ObNode* ob, VarDeclaration v, bool mutable, PtrVarState[]) dgReadVar,
+            extern (D) this(void delegate(Loc loc, ObNode* ob, VarDeclaration v, bool mutable, PtrVarState[]) dgReadVar,
                             void delegate(ObNode*, PtrVarState[], VarDeclaration, Expression) dgWriteVar,
                             PtrVarState[] cpvs, ObNode* ob, ref ObState obstate) scope
             {

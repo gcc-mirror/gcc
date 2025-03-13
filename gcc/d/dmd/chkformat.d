@@ -63,7 +63,7 @@ import dmd.target;
  * https://www.cplusplus.com/reference/cstdio/printf/
  */
 public
-bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expression[] args, bool isVa_list, ErrorSink eSink)
+bool checkPrintfFormat(Loc loc, scope const char[] format, scope Expression[] args, bool isVa_list, ErrorSink eSink)
 {
     //printf("checkPrintFormat('%.*s')\n", cast(int)format.length, format.ptr);
     size_t n;    // index in args
@@ -339,7 +339,7 @@ bool checkPrintfFormat(ref const Loc loc, scope const char[] format, scope Expre
  * https://www.cplusplus.com/reference/cstdio/scanf/
  */
 public
-bool checkScanfFormat(ref const Loc loc, scope const char[] format, scope Expression[] args, bool isVa_list, ErrorSink eSink)
+bool checkScanfFormat(Loc loc, scope const char[] format, scope Expression[] args, bool isVa_list, ErrorSink eSink)
 {
     size_t n = 0;
     for (size_t i = 0; i < format.length;)

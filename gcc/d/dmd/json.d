@@ -347,7 +347,7 @@ public:
         }
     }
 
-    extern(D) void property(const char[] linename, const char[] charname, const ref Loc loc)
+    extern(D) void property(const char[] linename, const char[] charname, Loc loc)
     {
         if (loc.isValid())
         {

@@ -175,7 +175,7 @@ extern (C++) class Package : ScopeDsymbol
     uint tag;        // auto incremented tag, used to mask package tree in scopes
     Module mod;     // !=null if isPkgMod == PKG.module_
 
-    final extern (D) this(const ref Loc loc, Identifier ident) nothrow
+    final extern (D) this(Loc loc, Identifier ident) nothrow
     {
         super(loc, ident);
         __gshared uint packageTag;
@@ -442,7 +442,7 @@ extern (C++) final class Module : Package
     size_t nameoffset;          // offset of module name from start of ModuleInfo
     size_t namelen;             // length of module name in characters
 
-    extern (D) this(const ref Loc loc, const(char)[] filename, Identifier ident, int doDocComment, int doHdrGen)
+    extern (D) this(Loc loc, const(char)[] filename, Identifier ident, int doDocComment, int doHdrGen)
     {
         super(loc, ident);
         const(char)[] srcfilename;
@@ -512,12 +512,12 @@ extern (C++) final class Module : Package
         return ret;
     }
 
-    extern (C++) static Module load(const ref Loc loc, Identifiers* packages, Identifier ident)
+    extern (C++) static Module load(Loc loc, Identifiers* packages, Identifier ident)
     {
         return load(loc, packages ? (*packages)[] : null, ident);
     }
 
-    extern (D) static Module load(const ref Loc loc, Identifier[] packages, Identifier ident, ImportPathInfo pathInfo = ImportPathInfo.init)
+    extern (D) static Module load(Loc loc, Identifier[] packages, Identifier ident, ImportPathInfo pathInfo = ImportPathInfo.init)
     {
         //printf("Module::load(ident = '%s')\n", ident.toChars());
         // Build module filename by turning:
@@ -638,7 +638,7 @@ extern (C++) final class Module : Package
      * Params:
      *  loc = The location at which the file read originated (e.g. import)
      */
-    private void onFileReadError(const ref Loc loc)
+    private void onFileReadError(Loc loc)
     {
         const name = srcfile.toString();
         if (FileName.equals(name, "object.d"))
@@ -695,7 +695,7 @@ extern (C++) final class Module : Package
      *
      * Returns: `true` if successful
      */
-    bool read(const ref Loc loc)
+    bool read(Loc loc)
     {
         if (this.src)
             return true; // already read
@@ -805,7 +805,7 @@ extern (C++) final class Module : Package
             checkCompiledImport();
             members = p.parseModule();
             assert(!p.md); // C doesn't have module declarations
-            numlines = p.scanloc.linnum;
+            numlines = p.linnum;
         }
         else
         {
@@ -829,7 +829,7 @@ extern (C++) final class Module : Package
             checkCompiledImport();
 
             members = p.parseModuleContent();
-            numlines = p.scanloc.linnum;
+            numlines = p.linnum;
         }
 
         /* The symbol table into which the module is to be inserted.
@@ -969,7 +969,7 @@ extern (C++) final class Module : Package
      *  sc = the scope into which we are imported
      *  loc = the location of the import statement
      */
-    void checkImportDeprecation(const ref Loc loc, Scope* sc)
+    void checkImportDeprecation(Loc loc, Scope* sc)
     {
         if (md && md.isdeprecated && !sc.isDeprecated)
         {
@@ -1294,7 +1294,7 @@ extern (C++) struct ModuleDeclaration
     bool isdeprecated;      // if it is a deprecated module
     Expression msg;
 
-    extern (D) this(const ref Loc loc, Identifier[] packages, Identifier id, Expression msg, bool isdeprecated) @safe
+    extern (D) this(Loc loc, Identifier[] packages, Identifier id, Expression msg, bool isdeprecated) @safe
     {
         this.loc = loc;
         this.packages = packages;

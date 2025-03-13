@@ -1114,7 +1114,7 @@ build_decl_tree (Dsymbol *d)
   if (d->loc.filename ())
     input_location = make_location_t (d->loc);
   else
-    input_location = make_location_t (Loc ("<no_file>", 1, 0));
+    input_location = make_location_t (Loc::singleFilename ("<no_file>"));
 
   DeclVisitor v = DeclVisitor ();
   v.build_dsymbol (d);

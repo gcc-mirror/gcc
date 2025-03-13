@@ -1157,7 +1157,7 @@ private Expression compare_overload(BinExp e, Scope* sc, Identifier id, ref EXP 
 /***********************************
  * Utility to build a function call out of this reference and argument.
  */
-Expression build_overload(const ref Loc loc, Scope* sc, Expression ethis, Expression earg, Dsymbol d)
+Expression build_overload(Loc loc, Scope* sc, Expression ethis, Expression earg, Dsymbol d)
 {
     assert(d);
     Expression e;

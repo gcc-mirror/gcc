@@ -510,7 +510,7 @@ int blockExit(Statement s, FuncDeclaration func, ErrorSink eSink)
  +
  + Returns: `BE.[err]throw` depending on the type of `exp`
  +/
-BE checkThrow(ref const Loc loc, Expression exp, FuncDeclaration func, ErrorSink eSink)
+BE checkThrow(Loc loc, Expression exp, FuncDeclaration func, ErrorSink eSink)
 {
     Type t = exp.type.toBasetype();
     ClassDeclaration cd = t.isClassHandle();

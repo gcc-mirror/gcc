@@ -2123,8 +2123,8 @@ version (Windows)
 
             obj.initDataStorage();
 
-            Thread.setThis(obj);
-            Thread.add(obj);
+            Thread.registerThis(obj);
+
             scope (exit)
             {
                 Thread.remove(obj);
@@ -2218,8 +2218,9 @@ else version (Posix)
             obj.initDataStorage();
 
             atomicStore!(MemoryOrder.raw)(obj.m_isRunning, true);
-            Thread.setThis(obj); // allocates lazy TLS (see Issue 11981)
-            Thread.add(obj);     // can only receive signals from here on
+
+            Thread.registerThis(obj); // can only receive signals from here on
+
             scope (exit)
             {
                 Thread.remove(obj);

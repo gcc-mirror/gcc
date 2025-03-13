@@ -18,8 +18,8 @@ struct Scope;
 
 namespace dmd
 {
-    bool genTypeInfo(Expression *e, const Loc &loc, Type *torig, Scope *sc);
+    bool genTypeInfo(Expression *e, Loc loc, Type *torig, Scope *sc);
     bool isSpeculativeType(Type *t);
     bool builtinTypeInfo(Type *t);
 }
-Type *getTypeInfoType(const Loc &loc, Type *t, Scope *sc);
+Type *getTypeInfoType(Loc loc, Type *t, Scope *sc);

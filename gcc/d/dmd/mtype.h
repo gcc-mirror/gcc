@@ -42,7 +42,7 @@ typedef struct TYPE type;
 
 namespace dmd
 {
-    Type *typeSemantic(Type *t, const Loc &loc, Scope *sc);
+    Type *typeSemantic(Type *t, Loc loc, Scope *sc);
     Type *merge(Type *type);
 }
 
@@ -268,7 +268,7 @@ public:
 
     virtual ClassDeclaration *isClassHandle();
     virtual structalign_t alignment();
-    virtual Expression *defaultInitLiteral(const Loc &loc);
+    virtual Expression *defaultInitLiteral(Loc loc);
     virtual int hasWild() const;
     virtual bool hasVoidInitPointers();
     virtual bool hasUnsafeBitpatterns();
@@ -318,7 +318,7 @@ public:
     const char *kind() override;
     TypeError *syntaxCopy() override;
 
-    Expression *defaultInitLiteral(const Loc &loc) override;
+    Expression *defaultInitLiteral(Loc loc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -379,7 +379,7 @@ public:
     bool isScalar() override;
     bool isUnsigned() override;
     bool isBoolean() override;
-    Expression *defaultInitLiteral(const Loc &loc) override;
+    Expression *defaultInitLiteral(Loc loc) override;
     TypeBasic *elementType();
 
     void accept(Visitor *v) override { v->visit(this); }
@@ -403,7 +403,7 @@ public:
     unsigned alignsize() override;
     bool isString() override;
     structalign_t alignment() override;
-    Expression *defaultInitLiteral(const Loc &loc) override;
+    Expression *defaultInitLiteral(Loc loc) override;
     bool hasUnsafeBitpatterns() override;
     bool hasVoidInitPointers() override;
     bool hasInvariant() override;
@@ -498,7 +498,7 @@ public:
     Expression *defaultArg;
     UserAttributeDeclaration *userAttribDecl;   // user defined attributes
 
-    static Parameter *create(const Loc &loc, StorageClass storageClass, Type *type, Identifier *ident,
+    static Parameter *create(Loc loc, StorageClass storageClass, Type *type, Identifier *ident,
                              Expression *defaultArg, UserAttributeDeclaration *userAttribDecl);
     Parameter *syntaxCopy();
     Type *isLazyArray();
@@ -632,7 +632,7 @@ public:
     Identifier *ident;
     Dsymbol *originalSymbol; // The symbol representing this identifier, before alias resolution
 
-    static TypeIdentifier *create(const Loc &loc, Identifier *ident);
+    static TypeIdentifier *create(Loc loc, Identifier *ident);
     const char *kind() override;
     TypeIdentifier *syntaxCopy() override;
     void accept(Visitor *v) override { v->visit(this); }
@@ -693,7 +693,7 @@ public:
     unsigned alignsize() override;
     TypeStruct *syntaxCopy() override;
     structalign_t alignment() override;
-    Expression *defaultInitLiteral(const Loc &loc) override;
+    Expression *defaultInitLiteral(Loc loc) override;
     bool isAssignable() override;
     bool isBoolean() override;
     bool needsDestruction() override;
@@ -715,7 +715,7 @@ public:
     const char *kind() override;
     TypeEnum *syntaxCopy() override;
     unsigned alignsize() override;
-    Type *memType(const Loc &loc);
+    Type *memType(Loc loc);
     bool isIntegral() override;
     bool isFloating() override;
     bool isReal() override;
@@ -825,8 +825,8 @@ namespace dmd
     bool equivalent(Type *src, Type *t);
     Covariant covariant(Type *, Type *, StorageClass * = nullptr, bool = false);
     bool isBaseOf(Type *tthis, Type *t, int *poffset);
-    bool isZeroInit(Type *t, const Loc &loc = Loc());
-    Type *trySemantic(Type *type, const Loc &loc, Scope *sc);
+    bool isZeroInit(Type *t, Loc loc = Loc());
+    Type *trySemantic(Type *type, Loc loc, Scope *sc);
     Type *pointerTo(Type *type);
     Type *referenceTo(Type *type);
     Type *merge2(Type *type);
@@ -850,7 +850,7 @@ namespace dmd
     Type *addStorageClass(Type *type, StorageClass stc);
     Type *substWildTo(Type *type, unsigned mod);
     uinteger_t size(Type *type);
-    uinteger_t size(Type *type, const Loc &loc);
+    uinteger_t size(Type *type, Loc loc);
     MATCH implicitConvTo(Type* from, Type* to);
     MATCH constConv(Type* from, Type* to);
 }

@@ -60,13 +60,13 @@ extern (C++) abstract class AttribDeclaration : Dsymbol
         this.decl = decl;
     }
 
-    extern (D) this(const ref Loc loc, Dsymbols* decl) @safe
+    extern (D) this(Loc loc, Dsymbols* decl) @safe
     {
         super(loc, null);
         this.decl = decl;
     }
 
-    extern (D) this(const ref Loc loc, Identifier ident, Dsymbols* decl) @safe
+    extern (D) this(Loc loc, Identifier ident, Dsymbols* decl) @safe
     {
         super(loc, ident);
         this.decl = decl;
@@ -163,7 +163,7 @@ extern (C++) class StorageClassDeclaration : AttribDeclaration
         this.stc = stc;
     }
 
-    extern (D) this(const ref Loc loc, StorageClass stc, Dsymbols* decl) @safe
+    extern (D) this(Loc loc, StorageClass stc, Dsymbols* decl) @safe
     {
         super(loc, decl);
         this.stc = stc;
@@ -253,14 +253,14 @@ extern (C++) final class LinkDeclaration : AttribDeclaration
 {
     LINK linkage; /// either explicitly set or `default_`
 
-    extern (D) this(const ref Loc loc, LINK linkage, Dsymbols* decl) @safe
+    extern (D) this(Loc loc, LINK linkage, Dsymbols* decl) @safe
     {
         super(loc, null, decl);
         //printf("LinkDeclaration(linkage = %d, decl = %p)\n", linkage, decl);
         this.linkage = linkage;
     }
 
-    static LinkDeclaration create(const ref Loc loc, LINK p, Dsymbols* decl) @safe
+    static LinkDeclaration create(Loc loc, LINK p, Dsymbols* decl) @safe
     {
         return new LinkDeclaration(loc, p, decl);
     }
@@ -289,7 +289,7 @@ extern (C++) final class CPPMangleDeclaration : AttribDeclaration
 {
     CPPMANGLE cppmangle;
 
-    extern (D) this(const ref Loc loc, CPPMANGLE cppmangle, Dsymbols* decl) @safe
+    extern (D) this(Loc loc, CPPMANGLE cppmangle, Dsymbols* decl) @safe
     {
         super(loc, null, decl);
         //printf("CPPMangleDeclaration(cppmangle = %d, decl = %p)\n", cppmangle, decl);
@@ -336,18 +336,18 @@ extern (C++) final class CPPNamespaceDeclaration : AttribDeclaration
     /// CTFE-able expression, resolving to `TupleExp` or `StringExp`
     Expression exp;
 
-    extern (D) this(const ref Loc loc, Identifier ident, Dsymbols* decl) @safe
+    extern (D) this(Loc loc, Identifier ident, Dsymbols* decl) @safe
     {
         super(loc, ident, decl);
     }
 
-    extern (D) this(const ref Loc loc, Expression exp, Dsymbols* decl) @safe
+    extern (D) this(Loc loc, Expression exp, Dsymbols* decl) @safe
     {
         super(loc, null, decl);
         this.exp = exp;
     }
 
-    extern (D) this(const ref Loc loc, Identifier ident, Expression exp, Dsymbols* decl,
+    extern (D) this(Loc loc, Identifier ident, Expression exp, Dsymbols* decl,
                     CPPNamespaceDeclaration parent) @safe
     {
         super(loc, ident, decl);
@@ -387,7 +387,7 @@ extern (C++) final class VisibilityDeclaration : AttribDeclaration
      *  visibility = visibility attribute data
      *  decl = declarations which are affected by this visibility attribute
      */
-    extern (D) this(const ref Loc loc, Visibility visibility, Dsymbols* decl) @safe
+    extern (D) this(Loc loc, Visibility visibility, Dsymbols* decl) @safe
     {
         super(loc, null, decl);
         this.visibility = visibility;
@@ -400,7 +400,7 @@ extern (C++) final class VisibilityDeclaration : AttribDeclaration
      *  pkg_identifiers = list of identifiers for a qualified package name
      *  decl = declarations which are affected by this visibility attribute
      */
-    extern (D) this(const ref Loc loc, Identifier[] pkg_identifiers, Dsymbols* decl)
+    extern (D) this(Loc loc, Identifier[] pkg_identifiers, Dsymbols* decl)
     {
         super(loc, null, decl);
         this.visibility.kind = Visibility.Kind.package_;
@@ -462,7 +462,7 @@ extern (C++) final class AlignDeclaration : AttribDeclaration
     structalign_t salign;
 
 
-    extern (D) this(const ref Loc loc, Expression exp, Dsymbols* decl)
+    extern (D) this(Loc loc, Expression exp, Dsymbols* decl)
     {
         super(loc, null, decl);
         if (exp)
@@ -472,13 +472,13 @@ extern (C++) final class AlignDeclaration : AttribDeclaration
         }
     }
 
-    extern (D) this(const ref Loc loc, Expressions* exps, Dsymbols* decl) @safe
+    extern (D) this(Loc loc, Expressions* exps, Dsymbols* decl) @safe
     {
         super(loc, null, decl);
         this.exps = exps;
     }
 
-    extern (D) this(const ref Loc loc, structalign_t salign, Dsymbols* decl) @safe
+    extern (D) this(Loc loc, structalign_t salign, Dsymbols* decl) @safe
     {
         super(loc, null, decl);
         this.salign = salign;
@@ -509,7 +509,7 @@ extern (C++) final class AnonDeclaration : AttribDeclaration
     uint anonstructsize;    /// size of anonymous struct
     uint anonalignsize;     /// size of anonymous struct for alignment purposes
 
-    extern (D) this(const ref Loc loc, bool isunion, Dsymbols* decl) @safe
+    extern (D) this(Loc loc, bool isunion, Dsymbols* decl) @safe
     {
         super(loc, null, decl);
         this.isunion = isunion;
@@ -547,7 +547,7 @@ extern (C++) final class PragmaDeclaration : AttribDeclaration
 {
     Expressions* args;      /// parameters of this pragma
 
-    extern (D) this(const ref Loc loc, Identifier ident, Expressions* args, Dsymbols* decl) @safe
+    extern (D) this(Loc loc, Identifier ident, Expressions* args, Dsymbols* decl) @safe
     {
         super(loc, ident, decl);
         this.args = args;
@@ -582,7 +582,7 @@ extern (C++) class ConditionalDeclaration : AttribDeclaration
     Condition condition;    /// condition deciding whether decl or elsedecl applies
     Dsymbols* elsedecl;     /// array of Dsymbol's for else block
 
-    extern (D) this(const ref Loc loc, Condition condition, Dsymbols* decl, Dsymbols* elsedecl) @safe
+    extern (D) this(Loc loc, Condition condition, Dsymbols* decl, Dsymbols* elsedecl) @safe
     {
         super(loc, null, decl);
         //printf("ConditionalDeclaration::ConditionalDeclaration()\n");
@@ -629,7 +629,7 @@ extern (C++) final class StaticIfDeclaration : ConditionalDeclaration
     bool addisdone = false; /// true if members have been added to scope
     bool onStack = false;   /// true if a call to `include` is currently active
 
-    extern (D) this(const ref Loc loc, Condition condition, Dsymbols* decl, Dsymbols* elsedecl) @safe
+    extern (D) this(Loc loc, Condition condition, Dsymbols* decl, Dsymbols* elsedecl) @safe
     {
         super(loc, condition, decl, elsedecl);
         //printf("StaticIfDeclaration::StaticIfDeclaration()\n");
@@ -779,7 +779,7 @@ extern (C++) final class MixinDeclaration : AttribDeclaration
     ScopeDsymbol scopesym;
     bool compiled;
 
-    extern (D) this(const ref Loc loc, Expressions* exps) @safe
+    extern (D) this(Loc loc, Expressions* exps) @safe
     {
         super(loc, null, null);
         //printf("MixinDeclaration(loc = %d)\n", loc.linnum);

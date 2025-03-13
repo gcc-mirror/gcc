@@ -347,7 +347,7 @@ void enumSemantic(Scope* sc, EnumDeclaration ed)
     //printf("members = %s\n", members.toChars());
 }
 
-Expression getDefaultValue(EnumDeclaration ed, const ref Loc loc)
+Expression getDefaultValue(EnumDeclaration ed, Loc loc)
 {
     Expression handleErrors(){
         ed.defaultval = ErrorExp.get();
@@ -399,7 +399,7 @@ Expression getDefaultValue(EnumDeclaration ed, const ref Loc loc)
     return handleErrors();
 }
 
-Type getMemtype(EnumDeclaration ed, const ref Loc loc)
+Type getMemtype(EnumDeclaration ed, Loc loc)
 {
     if (ed._scope)
     {

@@ -45,7 +45,7 @@ namespace dmd
 {
     FuncDeclaration *search_toString(StructDeclaration *sd);
     void semanticTypeInfoMembers(StructDeclaration *sd);
-    bool fill(StructDeclaration* sd, const Loc &loc, Expressions &elements, bool ctorinit);
+    bool fill(StructDeclaration* sd, Loc loc, Expressions &elements, bool ctorinit);
 }
 
 enum class ClassKind : uint8_t
@@ -119,7 +119,7 @@ public:
 
     virtual Scope *newScope(Scope *sc);
     virtual void finalizeSize() = 0;
-    uinteger_t size(const Loc &loc) override final;
+    uinteger_t size(Loc loc) override final;
     Type *getType() override final;
     bool isDeprecated() const override final; // is aggregate deprecated?
     bool isNested() const;
@@ -168,7 +168,7 @@ public:
 private:
     uint16_t bitFields;
 public:
-    static StructDeclaration *create(const Loc &loc, Identifier *id, bool inObject);
+    static StructDeclaration *create(Loc loc, Identifier *id, bool inObject);
     StructDeclaration *syntaxCopy(Dsymbol *s) override;
     const char *kind() const override;
     void finalizeSize() override final;
@@ -278,7 +278,7 @@ public:
     ObjcClassDeclaration objc;          // Data for a class declaration that is needed for the Objective-C integration
     Symbol *cpp_type_info_ptr_sym;      // cached instance of class Id.cpp_type_info_ptr
 
-    static ClassDeclaration *create(const Loc &loc, Identifier *id, BaseClasses *baseclasses, Dsymbols *members, bool inObject);
+    static ClassDeclaration *create(Loc loc, Identifier *id, BaseClasses *baseclasses, Dsymbols *members, bool inObject);
     const char *toPrettyChars(bool QualifyTypes = false) override;
     ClassDeclaration *syntaxCopy(Dsymbol *s) override;
     Scope *newScope(Scope *sc) override;

@@ -46,7 +46,7 @@ extern (C++) class Initializer : ASTNode
     }
 
 
-    extern (D) this(const ref Loc loc, InitKind kind) @safe
+    extern (D) this(Loc loc, InitKind kind) @safe
     {
         this.loc = loc;
         this.kind = kind;
@@ -100,7 +100,7 @@ extern (C++) final class VoidInitializer : Initializer
 {
     Type type;      // type that this will initialize to
 
-    extern (D) this(const ref Loc loc) @safe
+    extern (D) this(Loc loc) @safe
     {
         super(loc, InitKind.void_);
     }
@@ -118,7 +118,7 @@ extern (C++) final class DefaultInitializer : Initializer
 {
     Type type;      // type that this will initialize to
 
-    extern (D) this(const ref Loc loc) @safe
+    extern (D) this(Loc loc) @safe
     {
         super(loc, InitKind.default_);
     }
@@ -151,7 +151,7 @@ extern (C++) final class StructInitializer : Initializer
     Identifiers field;      // of Identifier *'s
     Initializers value;     // parallel array of Initializer *'s
 
-    extern (D) this(const ref Loc loc)
+    extern (D) this(Loc loc)
     {
         super(loc, InitKind.struct_);
     }
@@ -179,7 +179,7 @@ extern (C++) final class ArrayInitializer : Initializer
     Type type;              // type that array will be used to initialize
     bool isCarray;          // C array semantics
 
-    extern (D) this(const ref Loc loc)
+    extern (D) this(Loc loc)
     {
         super(loc, InitKind.array);
     }
@@ -215,7 +215,7 @@ extern (C++) final class ExpInitializer : Initializer
     bool expandTuples;
     Expression exp;
 
-    extern (D) this(const ref Loc loc, Expression exp) @safe
+    extern (D) this(Loc loc, Expression exp) @safe
     {
         super(loc, InitKind.exp);
         this.exp = exp;
@@ -257,7 +257,7 @@ extern (C++) final class CInitializer : Initializer
     DesigInits initializerList; /// initializer-list
     Type type;              /// type that array will be used to initialize
 
-    extern (D) this(const ref Loc loc)
+    extern (D) this(Loc loc)
     {
         super(loc, InitKind.C_);
     }

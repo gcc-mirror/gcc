@@ -159,7 +159,7 @@ void[] __arrayAlloc(T)(size_t arrSize) @trusted
      * so the GC can't finalize them.
      */
     static if (typeInfoSize)
-        attr |= BlkAttr.STRUCTFINAL | BlkAttr.FINALIZE;
+        attr |= BlkAttr.FINALIZE;
     static if (!hasIndirections!T)
         attr |= BlkAttr.NO_SCAN;
 

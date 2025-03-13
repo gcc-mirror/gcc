@@ -107,7 +107,7 @@ extern (C++) abstract class Declaration : Dsymbol
         visibility = Visibility(Visibility.Kind.undefined);
     }
 
-    final extern (D) this(const ref Loc loc, Identifier ident) @safe
+    final extern (D) this(Loc loc, Identifier ident) @safe
     {
         super(loc, ident);
         visibility = Visibility(Visibility.Kind.undefined);
@@ -118,7 +118,7 @@ extern (C++) abstract class Declaration : Dsymbol
         return "declaration";
     }
 
-    override final uinteger_t size(const ref Loc loc)
+    override final uinteger_t size(Loc loc)
     {
         assert(type);
         const sz = type.size();
@@ -289,7 +289,7 @@ extern (C++) final class TupleDeclaration : Declaration
     bool isexp;             // true: expression tuple
     bool building;          // it's growing in AliasAssign semantic
 
-    extern (D) this(const ref Loc loc, Identifier ident, Objects* objects) @safe
+    extern (D) this(Loc loc, Identifier ident, Objects* objects) @safe
     {
         super(loc, ident);
         this.objects = objects;
@@ -440,7 +440,7 @@ extern (C++) final class AliasDeclaration : Declaration
     Dsymbol overnext;   // next in overload list
     Dsymbol _import;    // !=null if unresolved internal alias for selective import
 
-    extern (D) this(const ref Loc loc, Identifier ident, Type type) @safe
+    extern (D) this(Loc loc, Identifier ident, Type type) @safe
     {
         super(loc, ident);
         //debug printf("AliasDeclaration(id = '%s', type = `%s`, %p)\n", ident.toChars(), dmd.hdrgen.toChars(type), type.isTypeIdentifier());
@@ -448,7 +448,7 @@ extern (C++) final class AliasDeclaration : Declaration
         assert(type);
     }
 
-    extern (D) this(const ref Loc loc, Identifier ident, Dsymbol s) @safe
+    extern (D) this(Loc loc, Identifier ident, Dsymbol s) @safe
     {
         super(loc, ident);
         //debug printf("AliasDeclaration(id = '%s', s = `%s`)\n", ident.toChars(), s.toChars());
@@ -457,7 +457,7 @@ extern (C++) final class AliasDeclaration : Declaration
         assert(s);
     }
 
-    static AliasDeclaration create(const ref Loc loc, Identifier id, Type type) @safe
+    static AliasDeclaration create(Loc loc, Identifier id, Type type) @safe
     {
         return new AliasDeclaration(loc, id, type);
     }
@@ -882,7 +882,7 @@ extern (C++) class VarDeclaration : Declaration
     byte canassign;                 // it can be assigned to
     ubyte isdataseg;                // private data for isDataseg 0 unset, 1 true, 2 false
 
-    final extern (D) this(const ref Loc loc, Type type, Identifier ident, Initializer _init, StorageClass storage_class = STC.undefined_)
+    final extern (D) this(Loc loc, Type type, Identifier ident, Initializer _init, StorageClass storage_class = STC.undefined_)
     in
     {
         assert(ident);
@@ -907,7 +907,7 @@ extern (C++) class VarDeclaration : Declaration
         this.storage_class = storage_class;
     }
 
-    static VarDeclaration create(const ref Loc loc, Type type, Identifier ident, Initializer _init, StorageClass storage_class = STC.undefined_)
+    static VarDeclaration create(Loc loc, Type type, Identifier ident, Initializer _init, StorageClass storage_class = STC.undefined_)
     {
         return new VarDeclaration(loc, type, ident, _init, storage_class);
     }
@@ -1244,7 +1244,7 @@ extern (C++) class BitFieldDeclaration : VarDeclaration
     uint fieldWidth;
     uint bitOffset;
 
-    final extern (D) this(const ref Loc loc, Type type, Identifier ident, Expression width)
+    final extern (D) this(Loc loc, Type type, Identifier ident, Expression width)
     {
         super(loc, type, ident, null);
 
@@ -1305,7 +1305,7 @@ extern (C++) final class SymbolDeclaration : Declaration
 {
     AggregateDeclaration dsym;
 
-    extern (D) this(const ref Loc loc, AggregateDeclaration dsym) @safe
+    extern (D) this(Loc loc, AggregateDeclaration dsym) @safe
     {
         super(loc, dsym.ident);
         this.dsym = dsym;
@@ -1795,7 +1795,7 @@ extern (C++) final class TypeInfoVectorDeclaration : TypeInfoDeclaration
  */
 extern (C++) final class ThisDeclaration : VarDeclaration
 {
-    extern (D) this(const ref Loc loc, Type t)
+    extern (D) this(Loc loc, Type t)
     {
         super(loc, t, Id.This, null);
         storage_class |= STC.nodtor;

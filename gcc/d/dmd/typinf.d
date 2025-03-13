@@ -35,7 +35,7 @@ import core.stdc.stdio;
  * Returns:
  *      true if `TypeInfo` was generated and needs compiling to object file
  */
-bool genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope* sc)
+bool genTypeInfo(Expression e, Loc loc, Type torig, Scope* sc)
 {
     // printf("genTypeInfo() %s\n", torig.toChars());
 
@@ -103,7 +103,7 @@ bool genTypeInfo(Expression e, const ref Loc loc, Type torig, Scope* sc)
  * Returns:
  *      The type of the `TypeInfo` object associated with `t`
  */
-extern (C++) Type getTypeInfoType(const ref Loc loc, Type t, Scope* sc);
+extern (C++) Type getTypeInfoType(Loc loc, Type t, Scope* sc);
 
 private TypeInfoDeclaration getTypeInfoDeclaration(Type t)
 {

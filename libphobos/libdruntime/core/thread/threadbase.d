@@ -750,6 +750,25 @@ package(core.thread):
         //       to ensure that.
         slock.unlock_nothrow();
     }
+
+    //
+    // Add a thread to the global thread list, and also register This thread
+    // for use in `getThis`. This does both operations while protected by the
+    // static lock. This helps alternative GCs that use `thread_preSuspend` to
+    // determine whether druntime will provide scanning details during
+    // `thread_scanAll`. Without holding the lock for both operations, it's
+    // possible a `thread_preSuspend` would return true, but the scanning
+    // details would not be handled.
+    //
+    static void registerThis(ThreadBase t, bool rmAboutToStart = true) nothrow @nogc
+    {
+        slock.lock_nothrow();
+        scope(exit) slock.unlock_nothrow();
+
+        setThis(t);
+        add(t, rmAboutToStart);
+    }
+
 }
 
 

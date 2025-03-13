@@ -128,7 +128,7 @@ public:
     DString mangleOverride;     // overridden symbol with pragma(mangle, "...")
 
     const char *kind() const override;
-    uinteger_t size(const Loc &loc) override final;
+    uinteger_t size(Loc loc) override final;
 
 
     bool isStatic() const { return (storage_class & STCstatic) != 0; }
@@ -194,7 +194,7 @@ public:
     Dsymbol *overnext;          // next in overload list
     Dsymbol *_import;           // !=NULL if unresolved internal alias for selective import
 
-    static AliasDeclaration *create(const Loc &loc, Identifier *id, Type *type);
+    static AliasDeclaration *create(Loc loc, Identifier *id, Type *type);
     AliasDeclaration *syntaxCopy(Dsymbol *) override;
     bool overloadInsert(Dsymbol *s) override;
     const char *kind() const override;
@@ -284,7 +284,7 @@ public:
 #endif
     bool systemInferred() const;
     bool systemInferred(bool v);
-    static VarDeclaration *create(const Loc &loc, Type *t, Identifier *id, Initializer *init, StorageClass storage_class = STCundefined);
+    static VarDeclaration *create(Loc loc, Type *t, Identifier *id, Initializer *init, StorageClass storage_class = STCundefined);
     VarDeclaration *syntaxCopy(Dsymbol *) override;
     const char *kind() const override;
     AggregateDeclaration *isThis() override final;
@@ -535,7 +535,7 @@ enum class BUILTIN : unsigned char
     toPrecReal
 };
 
-Expression *eval_builtin(const Loc &loc, FuncDeclaration *fd, Expressions *arguments);
+Expression *eval_builtin(Loc loc, FuncDeclaration *fd, Expressions *arguments);
 BUILTIN isBuiltin(FuncDeclaration *fd);
 
 struct ContractInfo;
@@ -684,7 +684,7 @@ public:
     // integration.
     ObjcFuncDeclaration objc;
 
-    static FuncDeclaration *create(const Loc &loc, const Loc &endloc, Identifier *id, StorageClass storage_class, Type *type, bool noreturn = false);
+    static FuncDeclaration *create(Loc loc, Loc endloc, Identifier *id, StorageClass storage_class, Type *type, bool noreturn = false);
     FuncDeclaration *syntaxCopy(Dsymbol *) override;
     Statements *frequires();
     Ensures *fensures();
@@ -706,7 +706,7 @@ public:
 
     bool overloadInsert(Dsymbol *s) override;
     bool inUnittest();
-    LabelDsymbol *searchLabel(Identifier *ident, const Loc &loc);
+    LabelDsymbol *searchLabel(Identifier *ident, Loc loc);
     const char *toPrettyChars(bool QualifyTypes = false) override;
     const char *toFullSignature();  // for diagnostics, e.g. 'int foo(int x, int y) pure'
     bool isMain() const;

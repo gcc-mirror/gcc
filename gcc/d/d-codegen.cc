@@ -43,22 +43,31 @@ along with GCC; see the file COPYING3.  If not see
 #include "d-tree.h"
 
 
-/* Return the GCC location for the D frontend location LOC.  */
+/* Return the GCC location for the D frontend source location LOC.  */
 
 location_t
-make_location_t (const Loc &loc)
+make_location_t (const SourceLoc &loc)
 {
   location_t gcc_location = input_location;
 
-  if (const char *filename = loc.filename ())
+  if (loc.filename.length != 0)
     {
-      linemap_add (line_table, LC_ENTER, 0, filename, loc.linnum ());
-      linemap_line_start (line_table, loc.linnum (), 0);
-      gcc_location = linemap_position_for_column (line_table, loc.charnum ());
+      linemap_add (line_table, LC_ENTER, 0, loc.filename.ptr, loc.line);
+      linemap_line_start (line_table, loc.line, 0);
+      gcc_location = linemap_position_for_column (line_table, loc.column);
       linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
     }
 
   return gcc_location;
+}
+
+/* Likewise, but converts LOC from a compact opaque location.  */
+
+location_t
+make_location_t (const Loc loc)
+{
+  const SourceLoc sloc = loc.toSourceLoc ();
+  return make_location_t (sloc);
 }
 
 /* Return the DECL_CONTEXT for symbol DSYM.  */

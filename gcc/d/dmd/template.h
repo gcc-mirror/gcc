@@ -127,7 +127,7 @@ public:
     virtual bool declareParameter(Scope *sc) = 0;
     virtual void print(RootObject *oarg, RootObject *oded) = 0;
     virtual RootObject *specialization() = 0;
-    virtual RootObject *defaultArg(const Loc &instLoc, Scope *sc) = 0;
+    virtual RootObject *defaultArg(Loc instLoc, Scope *sc) = 0;
     virtual bool hasDefaultArg() = 0;
 
     DYNCAST dyncast() const override { return DYNCAST_TEMPLATEPARAMETER; }
@@ -149,7 +149,7 @@ public:
     bool declareParameter(Scope *sc) override final;
     void print(RootObject *oarg, RootObject *oded) override final;
     RootObject *specialization() override final;
-    RootObject *defaultArg(const Loc &instLoc, Scope *sc) override final;
+    RootObject *defaultArg(Loc instLoc, Scope *sc) override final;
     bool hasDefaultArg() override final;
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -180,7 +180,7 @@ public:
     bool declareParameter(Scope *sc) override;
     void print(RootObject *oarg, RootObject *oded) override;
     RootObject *specialization() override;
-    RootObject *defaultArg(const Loc &instLoc, Scope *sc) override;
+    RootObject *defaultArg(Loc instLoc, Scope *sc) override;
     bool hasDefaultArg() override;
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -200,7 +200,7 @@ public:
     bool declareParameter(Scope *sc) override;
     void print(RootObject *oarg, RootObject *oded) override;
     RootObject *specialization() override;
-    RootObject *defaultArg(const Loc &instLoc, Scope *sc) override;
+    RootObject *defaultArg(Loc instLoc, Scope *sc) override;
     bool hasDefaultArg() override;
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -216,7 +216,7 @@ public:
     bool declareParameter(Scope *sc) override;
     void print(RootObject *oarg, RootObject *oded) override;
     RootObject *specialization() override;
-    RootObject *defaultArg(const Loc &instLoc, Scope *sc) override;
+    RootObject *defaultArg(Loc instLoc, Scope *sc) override;
     bool hasDefaultArg() override;
     void accept(Visitor *v) override { v->visit(this); }
 };

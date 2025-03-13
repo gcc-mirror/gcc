@@ -5620,7 +5620,7 @@ final class CParser(AST) : Parser!AST
      * Params:
      *  startloc = location to use for error messages
      */
-    private void uupragmaDirective(const ref Loc startloc)
+    private void uupragmaDirective(Loc startloc)
     {
         const loc = startloc;
         nextToken();    // move past __pragma
@@ -5668,7 +5668,7 @@ final class CParser(AST) : Parser!AST
      * the preprocessed output. Ignore them.
      * Upon return, p is at start of next line.
      */
-    private void pragmaDirective(const ref Loc loc)
+    private void pragmaDirective(Loc loc)
     {
         Token n;
         scan(&n);
@@ -5689,7 +5689,7 @@ final class CParser(AST) : Parser!AST
      *  startloc = location to use for error messages
      *  useScan = use scan() to retrieve next token, instead of nextToken()
      */
-    private void pragmaPack(const ref Loc startloc, bool useScan)
+    private void pragmaPack(Loc startloc, bool useScan)
     {
         const loc = startloc;
 
@@ -5889,7 +5889,7 @@ final class CParser(AST) : Parser!AST
      * Params:
      *  startloc = location to use for error messages
      */
-    private void pragmaAttribute(const ref Loc startloc)
+    private void pragmaAttribute(Loc startloc)
     {
         const loc = startloc;
 
@@ -6324,7 +6324,6 @@ final class CParser(AST) : Parser!AST
             while (*p)
                 ++p;
             ++p; // advance to start of next line
-            scanloc.linnum = scanloc.linnum + 1;
         }
 
         if (newSymbols.length)

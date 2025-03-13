@@ -534,7 +534,8 @@ extern Expression *d_eval_constant_expression (const Loc &, tree);
 extern void d_init_versions (void);
 
 /* In d-codegen.cc.  */
-extern location_t make_location_t (const Loc &);
+extern location_t make_location_t (const SourceLoc &);
+extern location_t make_location_t (const Loc);
 extern tree d_decl_context (Dsymbol *);
 extern tree copy_aggregate_type (tree);
 extern bool declaration_reference_p (Declaration *);

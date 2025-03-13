@@ -83,7 +83,7 @@ import dmd.tokens;
  *      ps = set if s[oindex] is a Dsymbol, otherwise null
  *      oindex = index into s
  */
-private void resolveTupleIndex(const ref Loc loc, Scope* sc, Dsymbol s, out Expression pe, out Type pt, out Dsymbol ps, RootObject oindex)
+private void resolveTupleIndex(Loc loc, Scope* sc, Dsymbol s, out Expression pe, out Type pt, out Dsymbol ps, RootObject oindex)
 {
     auto tup = s.isTupleDeclaration();
 
@@ -153,7 +153,7 @@ private void resolveTupleIndex(const ref Loc loc, Scope* sc, Dsymbol s, out Expr
  *      ps = set if symbol otherwise null
  *      typeid = set if in TypeidExpression https://dlang.org/spec/expression.html#TypeidExpression
  */
-private void resolveHelper(TypeQualified mt, const ref Loc loc, Scope* sc, Dsymbol s, Dsymbol scopesym,
+private void resolveHelper(TypeQualified mt, Loc loc, Scope* sc, Dsymbol s, Dsymbol scopesym,
     out Expression pe, out Type pt, out Dsymbol ps, bool intypeid = false)
 {
     version (none)
@@ -388,7 +388,7 @@ private void resolveHelper(TypeQualified mt, const ref Loc loc, Scope* sc, Dsymb
  * Returns:
  *      symbol found, NULL if not
  */
-private Dsymbol searchX(Dsymbol dsym, const ref Loc loc, Scope* sc, RootObject id, SearchOptFlags flags)
+private Dsymbol searchX(Dsymbol dsym, Loc loc, Scope* sc, RootObject id, SearchOptFlags flags)
 {
     //printf("Dsymbol::searchX(this=%p,%s, ident='%s')\n", this, toChars(), ident.toChars());
     Dsymbol s = dsym.toAlias();
@@ -615,7 +615,7 @@ Expression typeToExpression(Type t)
  *  loc = The source location.
  *  sc = scope of the type
  */
-extern (D) bool checkComplexTransition(Type type, const ref Loc loc, Scope* sc)
+extern (D) bool checkComplexTransition(Type type, Loc loc, Scope* sc)
 {
     if (sc.isDeprecated())
         return false;
@@ -1365,7 +1365,7 @@ uinteger_t size(Type t)
     return size(t, Loc.initial);
 }
 
-uinteger_t size(Type t, const ref Loc loc)
+uinteger_t size(Type t, Loc loc)
 {
 
     uinteger_t visitType(Type t)
@@ -1673,7 +1673,7 @@ MATCH constConv(Type from, Type to)
  *      `Type` with completed semantic analysis, `Terror` if errors
  *      were encountered
  */
-Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
+Type typeSemantic(Type type, Loc loc, Scope* sc)
 {
     static Type error()
     {
@@ -3205,7 +3205,7 @@ Type typeSemantic(Type type, const ref Loc loc, Scope* sc)
     }
 }
 
-Type trySemantic(Type type, const ref Loc loc, Scope* sc)
+Type trySemantic(Type type, Loc loc, Scope* sc)
 {
     //printf("+trySemantic(%s) %d\n", toChars(), global.errors);
 
@@ -3340,7 +3340,7 @@ Type merge2(Type type)
  * Returns:
  *      expression representing the property, or null if not a property and (flag & 1)
  */
-Expression getProperty(Type t, Scope* scope_, const ref Loc loc, Identifier ident, int flag,
+Expression getProperty(Type t, Scope* scope_, Loc loc, Identifier ident, int flag,
     Expression src = null)
 {
     Expression visitType(Type mt)
@@ -3825,7 +3825,7 @@ private void resolveExp(Expression exp, out Type t, out Expression e, out Dsymbo
  *  ps = is set if t is a symbol
  *  intypeid = true if in type id
  */
-void resolve(Type mt, const ref Loc loc, Scope* sc, out Expression pe, out Type pt, out Dsymbol ps, bool intypeid = false)
+void resolve(Type mt, Loc loc, Scope* sc, out Expression pe, out Type pt, out Dsymbol ps, bool intypeid = false)
 {
     void returnExp(Expression e)
     {
@@ -5800,7 +5800,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
 }
 
 // if initializer is 0
-bool isZeroInit(Type t, const ref Loc loc)
+bool isZeroInit(Type t, Loc loc)
 {
     bool visitType(Type _)
     {
@@ -5878,7 +5878,7 @@ bool isZeroInit(Type t, const ref Loc loc)
  * Returns:
  *  The initialization expression for the type.
  */
-Expression defaultInit(Type mt, const ref Loc loc, const bool isCfile = false)
+Expression defaultInit(Type mt, Loc loc, const bool isCfile = false)
 {
     Expression visitBasic(TypeBasic mt)
     {
@@ -6254,7 +6254,7 @@ Type addStorageClass(Type type, StorageClass stc)
  *      Complex!float, Complex!double, Complex!real or null for error
  */
 
-Type getComplexLibraryType(const ref Loc loc, Scope* sc, TY ty)
+Type getComplexLibraryType(Loc loc, Scope* sc, TY ty)
 {
     // singleton
     __gshared Type complex_float;
@@ -7561,7 +7561,7 @@ MATCH implicitConvToThroughAliasThis(TypeStruct from, Type to)
  * Returns:
  *  number of elements, uint.max on overflow
  */
-uint numberOfElems(Type t, const ref Loc loc)
+uint numberOfElems(Type t, Loc loc)
 {
     //printf("Type::numberOfElems()\n");
     uinteger_t n = 1;
@@ -7580,7 +7580,7 @@ uint numberOfElems(Type t, const ref Loc loc)
     return cast(uint)n;
 }
 
-bool checkRetType(TypeFunction tf, const ref Loc loc)
+bool checkRetType(TypeFunction tf, Loc loc)
 {
     Type tb = tf.next.toBasetype();
     if (tb.ty == Tfunction)
@@ -7820,11 +7820,11 @@ Type stripDefaultArgs(Type t)
  * Returns:
  *      corresponding value of .max/.min
  */
-Expression getMaxMinValue(EnumDeclaration ed, const ref Loc loc, Identifier id)
+Expression getMaxMinValue(EnumDeclaration ed, Loc loc, Identifier id)
 {
     //printf("EnumDeclaration::getMaxValue()\n");
 
-    static Expression pvalToResult(Expression e, const ref Loc loc)
+    static Expression pvalToResult(Expression e, Loc loc)
     {
         if (e.op != EXP.error)
         {
@@ -7931,7 +7931,7 @@ Expression getMaxMinValue(EnumDeclaration ed, const ref Loc loc, Identifier id)
  * Return:
  *      null if error, else RootObject AST as parsed
  */
-RootObject compileTypeMixin(TypeMixin tm, ref const Loc loc, Scope* sc)
+RootObject compileTypeMixin(TypeMixin tm, Loc loc, Scope* sc)
 {
     OutBuffer buf;
     if (expressionsToString(buf, sc, tm.exps, tm.loc, null, true))
@@ -7942,8 +7942,9 @@ RootObject compileTypeMixin(TypeMixin tm, ref const Loc loc, Scope* sc)
     buf.writeByte(0);
     const str = buf.extractSlice()[0 .. len];
     const bool doUnittests = global.params.parsingUnittestsRequired();
-    auto locm = adjustLocForMixin(str, loc, global.params.mixinOut);
-    scope p = new Parser!ASTCodegen(locm, sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
+    scope p = new Parser!ASTCodegen(sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
+    adjustLocForMixin(str, loc, *p.baseLoc, global.params.mixinOut);
+    p.linnum = p.baseLoc.startLine;
     p.nextToken();
     //printf("p.loc.linnum = %d\n", p.loc.linnum);
 

@@ -65,7 +65,7 @@ class LinkDeclaration final : public AttribDeclaration
 public:
     LINK linkage;
 
-    static LinkDeclaration *create(const Loc &loc, LINK p, Dsymbols *decl);
+    static LinkDeclaration *create(Loc loc, LINK p, Dsymbols *decl);
     LinkDeclaration *syntaxCopy(Dsymbol *s) override;
     void accept(Visitor *v) override { v->visit(this); }
 };

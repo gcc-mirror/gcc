@@ -131,10 +131,10 @@ extern (C++) struct Scope
     VarDeclaration varDecl;         /// variable we are in during semantic2
     Dsymbol parent;                 /// parent to use
     LabelStatement slabel;          /// enclosing labelled statement
-    SwitchStatement sw;             /// enclosing switch statement
+    SwitchStatement switchStatement;/// enclosing switch statement
     Statement tryBody;              /// enclosing _body of TryCatchStatement or TryFinallyStatement
-    TryFinallyStatement tf;         /// enclosing try finally statement
-    ScopeGuardStatement os;            /// enclosing scope(xxx) statement
+    TryFinallyStatement tryFinally; /// enclosing try finally statement
+    ScopeGuardStatement scopeGuard; /// enclosing scope(xxx) statement
     Statement sbreak;               /// enclosing statement that supports "break"
     Statement scontinue;            /// enclosing statement that supports "continue"
     ForeachStatement fes;           /// if nested function for ForeachStatement, this is it
@@ -382,7 +382,7 @@ extern (C++) struct Scope
      *   loc = for error messages
      *   ctorflow = flow results to merge in
      */
-    extern (D) void merge(const ref Loc loc, const ref CtorFlow ctorflow)
+    extern (D) void merge(Loc loc, const ref CtorFlow ctorflow)
     {
         if (!mergeCallSuper(this.ctorflow.callSuper, ctorflow.callSuper))
             error(loc, "one path skips constructor");
@@ -422,7 +422,7 @@ extern (C++) struct Scope
      * Returns:
      *  symbol if found, null if not
      */
-    extern (C++) Dsymbol search(const ref Loc loc, Identifier ident, out Dsymbol pscopesym, SearchOptFlags flags = SearchOpt.all)
+    extern (C++) Dsymbol search(Loc loc, Identifier ident, out Dsymbol pscopesym, SearchOptFlags flags = SearchOpt.all)
     {
         version (LOGSEARCH)
         {

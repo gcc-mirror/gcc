@@ -116,7 +116,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
     import dmd.common.bitfields : generateBitFields;
     mixin(generateBitFields!(BitFields, ushort));
 
-    extern (D) this(const ref Loc loc, Identifier id, bool inObject)
+    extern (D) this(Loc loc, Identifier id, bool inObject)
     {
         super(loc, id);
         zeroInit = false; // assume false until we do semantic processing
@@ -131,7 +131,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         }
     }
 
-    static StructDeclaration create(const ref Loc loc, Identifier id, bool inObject)
+    static StructDeclaration create(Loc loc, Identifier id, bool inObject)
     {
         return new StructDeclaration(loc, id, inObject);
     }
@@ -540,7 +540,7 @@ bool _isZeroInit(Expression exp)
  */
 extern (C++) final class UnionDeclaration : StructDeclaration
 {
-    extern (D) this(const ref Loc loc, Identifier id)
+    extern (D) this(Loc loc, Identifier id)
     {
         super(loc, id, false);
     }

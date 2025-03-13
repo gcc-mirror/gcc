@@ -174,7 +174,7 @@ const(char)* getMessage(DeprecatedDeclaration dd)
     return dd.msgstr;
 }
 
-bool checkDeprecated(Dsymbol d, const ref Loc loc, Scope* sc)
+bool checkDeprecated(Dsymbol d, Loc loc, Scope* sc)
 {
     if (global.params.useDeprecated == DiagnosticReporting.off)
         return false;
@@ -211,7 +211,7 @@ bool checkDeprecated(Dsymbol d, const ref Loc loc, Scope* sc)
 /*********************************
  * Check type to see if it is based on a deprecated symbol.
  */
-private void checkDeprecated(Type type, const ref Loc loc, Scope* sc)
+private void checkDeprecated(Type type, Loc loc, Scope* sc)
 {
     if (Dsymbol s = type.toDsymbol(sc))
     {
@@ -396,7 +396,7 @@ Expression resolveAliasThis(Scope* sc, Expression e, bool gag = false, bool find
  * Returns:
  *   Whether the alias this was reported as deprecated.
  */
-private bool checkDeprecatedAliasThis(AliasThis at, const ref Loc loc, Scope* sc)
+private bool checkDeprecatedAliasThis(AliasThis at, Loc loc, Scope* sc)
 {
     if (global.params.useDeprecated != DiagnosticReporting.off
         && at.isDeprecated() && !sc.isDeprecated())
@@ -1848,8 +1848,9 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         buf.writeByte(0);
         const str = buf.extractSlice()[0 .. len];
         const bool doUnittests = global.params.parsingUnittestsRequired();
-        auto loc = adjustLocForMixin(str, cd.loc, global.params.mixinOut);
-        scope p = new Parser!ASTCodegen(loc, sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
+        scope p = new Parser!ASTCodegen(sc._module, str, false, global.errorSink, &global.compileEnv, doUnittests);
+        adjustLocForMixin(str, cd.loc, *p.baseLoc, global.params.mixinOut);
+        p.linnum = p.baseLoc.startLine;
         p.nextToken();
 
         auto d = p.parseDeclDefs(0);
@@ -5895,34 +5896,40 @@ private CallExp doAtomicOp (string op, Identifier var, Expression arg)
  * Set up loc for a parse of a mixin. Append the input text to the mixin.
  * Params:
  *      input = mixin text
- *      loc = location to adjust
+ *      loc = location of expansion
+ *      baseLoc = location to adjust
  *      mixinOut = sink for mixin text data
  * Returns:
  *      adjusted loc suitable for Parser
  */
 
-Loc adjustLocForMixin(const(char)[] input, ref const Loc loc, ref Output mixinOut)
+void adjustLocForMixin(const(char)[] input, Loc loc, ref BaseLoc baseLoc, ref Output mixinOut)
 {
-    Loc result;
     if (mixinOut.doOutput)
     {
         const lines = mixinOut.bufferLines;
         writeMixin(input, loc, mixinOut.bufferLines, *mixinOut.buffer);
-        result = Loc(mixinOut.name.ptr, lines + 2, loc.charnum);
+        baseLoc.startLine = lines + 2;
+        baseLoc.filename = mixinOut.name;
+        return;
     }
-    else if (loc.filename)
+
+    SourceLoc sl = SourceLoc(loc);
+    if (sl.filename.length == 0)
     {
-        /* Create a pseudo-filename for the mixin string, as it may not even exist
-         * in the source file.
-         */
-        auto len = strlen(loc.filename) + 7 + (loc.linnum).sizeof * 3 + 1;
-        char* filename = cast(char*)mem.xmalloc(len);
-        snprintf(filename, len, "%s-mixin-%d", loc.filename, cast(int)loc.linnum);
-        result = Loc(filename, loc.linnum, loc.charnum);
+        // Rare case of compiler-generated mixin exp, e.g. __xtoHash
+        baseLoc.filename = "";
+        return;
     }
-    else
-        result = loc;
-    return result;
+
+    /* Create a pseudo-filename for the mixin string, as it may not even exist
+     * in the source file.
+     */
+    auto len = sl.filename.length + 7 + (sl.linnum).sizeof * 3 + 1;
+    char* filename = cast(char*) mem.xmalloc(len);
+    snprintf(filename, len, "%.*s-mixin-%d", cast(int) sl.filename.length, sl.filename.ptr, cast(int) sl.linnum);
+    baseLoc.startLine = sl.line;
+    baseLoc.filename = filename.toDString;
 }
 
 /**************************************
@@ -5934,7 +5941,7 @@ Loc adjustLocForMixin(const(char)[] input, ref const Loc loc, ref Output mixinOu
  *      lines = line count to update
  *      output = sink for output
  */
-private void writeMixin(const(char)[] s, ref const Loc loc, ref int lines, ref OutBuffer buf)
+private void writeMixin(const(char)[] s, Loc loc, ref int lines, ref OutBuffer buf)
 {
     buf.writestring("// expansion at ");
     buf.writestring(loc.toChars());
@@ -5981,7 +5988,7 @@ private void writeMixin(const(char)[] s, ref const Loc loc, ref int lines, ref O
  * Returns:
  *  null if not found
  */
-Dsymbol search(Dsymbol d, const ref Loc loc, Identifier ident, SearchOptFlags flags = SearchOpt.all)
+Dsymbol search(Dsymbol d, Loc loc, Identifier ident, SearchOptFlags flags = SearchOpt.all)
 {
     scope v = new SearchVisitor(loc, ident, flags);
     d.accept(v);
@@ -6028,7 +6035,7 @@ private extern(C++) class SearchVisitor : Visitor
     SearchOptFlags flags;
     Dsymbol result;
 
-    this(const ref Loc loc, Identifier ident, SearchOptFlags flags) @safe
+    this(Loc loc, Identifier ident, SearchOptFlags flags) @safe
     {
         this.loc = loc;
         this.ident = ident;
@@ -6244,7 +6251,7 @@ private extern(C++) class SearchVisitor : Visitor
         VarDeclaration* pvar;
         Expression ce;
 
-        static Dsymbol dollarFromTypeTuple(const ref Loc loc, TypeTuple tt, Scope* sc)
+        static Dsymbol dollarFromTypeTuple(Loc loc, TypeTuple tt, Scope* sc)
         {
 
             /* $ gives the number of type entries in the type tuple
@@ -7827,7 +7834,7 @@ private Expression callScopeDtor(VarDeclaration vd, Scope* sc)
  * Returns:
  *      false if failed to determine the size.
  */
-bool determineSize(AggregateDeclaration ad, const ref Loc loc)
+bool determineSize(AggregateDeclaration ad, Loc loc)
 {
     //printf("AggregateDeclaration::determineSize() %s, sizeok = %d\n", toChars(), sizeok);
 

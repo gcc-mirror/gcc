@@ -242,7 +242,7 @@ Expression checkGC(Scope* sc, Expression e)
     return e;
 }
 
-extern (D) void printGCUsage(FuncDeclaration fd, const ref Loc loc, const(char)* warn)
+extern (D) void printGCUsage(FuncDeclaration fd, Loc loc, const(char)* warn)
 {
     if (!global.params.v.gc)
         return;

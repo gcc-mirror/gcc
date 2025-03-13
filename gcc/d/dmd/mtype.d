@@ -1327,7 +1327,7 @@ extern (C++) abstract class Type : ASTNode
      * Use when we prefer the default initializer to be a literal,
      * rather than a global immutable variable.
      */
-    Expression defaultInitLiteral(const ref Loc loc)
+    Expression defaultInitLiteral(Loc loc)
     {
         static if (LOGDEFAULTINIT)
         {
@@ -1572,7 +1572,7 @@ extern (C++) final class TypeError : Type
         return this;
     }
 
-    override Expression defaultInitLiteral(const ref Loc loc)
+    override Expression defaultInitLiteral(Loc loc)
     {
         return ErrorExp.get();
     }
@@ -2118,7 +2118,7 @@ extern (C++) final class TypeVector : Type
         return false;
     }
 
-    override Expression defaultInitLiteral(const ref Loc loc)
+    override Expression defaultInitLiteral(Loc loc)
     {
         //printf("TypeVector::defaultInitLiteral()\n");
         assert(basetype.ty == Tsarray);
@@ -2219,7 +2219,7 @@ extern (C++) final class TypeSArray : TypeArray
         return next.alignment();
     }
 
-    override Expression defaultInitLiteral(const ref Loc loc)
+    override Expression defaultInitLiteral(Loc loc)
     {
         static if (LOGDEFAULTINIT)
         {
@@ -2814,7 +2814,7 @@ extern (C++) final class TypeTraits : Type
     /// Cached type/symbol after semantic analysis.
     RootObject obj;
 
-    final extern (D) this(const ref Loc loc, TraitsExp exp) @safe
+    final extern (D) this(Loc loc, TraitsExp exp) @safe
     {
         super(Ttraits);
         this.loc = loc;
@@ -2851,7 +2851,7 @@ extern (C++) final class TypeMixin : Type
     Expressions* exps;
     RootObject obj; // cached result of semantic analysis.
 
-    extern (D) this(const ref Loc loc, Expressions* exps) @safe
+    extern (D) this(Loc loc, Expressions* exps) @safe
     {
         super(Tmixin);
         this.loc = loc;
@@ -2962,13 +2962,13 @@ extern (C++) final class TypeIdentifier : TypeQualified
     // The symbol representing this identifier, before alias resolution
     Dsymbol originalSymbol;
 
-    extern (D) this(const ref Loc loc, Identifier ident)
+    extern (D) this(Loc loc, Identifier ident)
     {
         super(Tident, loc);
         this.ident = ident;
     }
 
-    static TypeIdentifier create(const ref Loc loc, Identifier ident)
+    static TypeIdentifier create(Loc loc, Identifier ident)
     {
         return new TypeIdentifier(loc, ident);
     }
@@ -2999,7 +2999,7 @@ extern (C++) final class TypeInstance : TypeQualified
 {
     TemplateInstance tempinst;
 
-    extern (D) this(const ref Loc loc, TemplateInstance tempinst)
+    extern (D) this(Loc loc, TemplateInstance tempinst)
     {
         super(Tinstance, loc);
         this.tempinst = tempinst;
@@ -3032,7 +3032,7 @@ extern (C++) final class TypeTypeof : TypeQualified
     Expression exp;
     int inuse;
 
-    extern (D) this(const ref Loc loc, Expression exp)
+    extern (D) this(Loc loc, Expression exp)
     {
         super(Ttypeof, loc);
         this.exp = exp;
@@ -3062,7 +3062,7 @@ extern (C++) final class TypeTypeof : TypeQualified
  */
 extern (C++) final class TypeReturn : TypeQualified
 {
-    extern (D) this(const ref Loc loc)
+    extern (D) this(Loc loc)
     {
         super(Treturn, loc);
     }
@@ -3132,7 +3132,7 @@ extern (C++) final class TypeStruct : Type
      * Use when we prefer the default initializer to be a literal,
      * rather than a global immutable variable.
      */
-    override Expression defaultInitLiteral(const ref Loc loc)
+    override Expression defaultInitLiteral(Loc loc)
     {
         static if (LOGDEFAULTINIT)
         {
@@ -3769,7 +3769,7 @@ extern (C++) final class TypeTag : Type
                             ///   struct S { int a; } s1, *s2;
     MOD mod;                /// modifiers to apply after type is resolved (only MODFlags.const_ at the moment)
 
-    extern (D) this(const ref Loc loc, TOK tok, Identifier id, structalign_t packalign, Type base, Dsymbols* members) @safe
+    extern (D) this(Loc loc, TOK tok, Identifier id, structalign_t packalign, Type base, Dsymbols* members) @safe
     {
         //printf("TypeTag ctor %s %p\n", id ? id.toChars() : "null".ptr, this);
         super(Ttag);
@@ -3917,7 +3917,7 @@ extern (C++) final class Parameter : ASTNode
     Expression defaultArg;
     UserAttributeDeclaration userAttribDecl; // user defined attributes
 
-    extern (D) this(const ref Loc loc, StorageClass storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl) @safe
+    extern (D) this(Loc loc, StorageClass storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl) @safe
     {
         this.loc = loc;
         this.type = type;
@@ -3927,7 +3927,7 @@ extern (C++) final class Parameter : ASTNode
         this.userAttribDecl = userAttribDecl;
     }
 
-    static Parameter create(const ref Loc loc, StorageClass storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl) @safe
+    static Parameter create(Loc loc, StorageClass storageClass, Type type, Identifier ident, Expression defaultArg, UserAttributeDeclaration userAttribDecl) @safe
     {
         return new Parameter(loc, storageClass, type, ident, defaultArg, userAttribDecl);
     }

@@ -55,7 +55,8 @@ public Statement gccAsmSemantic(GccAsmStatement s, Scope* sc)
         *ptoklist = null;
     }
     p.token = *toklist;
-    p.scanloc = s.loc;
+    p.baseLoc.startLine = s.loc.linnum;
+    p.linnum = s.loc.linnum;
 
     // Parse the gcc asm statement.
     const errors = global.errors;

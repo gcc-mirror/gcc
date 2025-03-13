@@ -28,7 +28,7 @@ extern (C++) final class StaticAssert : Dsymbol
     Expression exp;
     Expressions* msgs;
 
-    extern (D) this(const ref Loc loc, Expression exp, Expression msg)
+    extern (D) this(Loc loc, Expression exp, Expression msg)
     {
         super(loc, Id.empty);
         this.exp = exp;
@@ -36,7 +36,7 @@ extern (C++) final class StaticAssert : Dsymbol
         (*this.msgs)[0] = msg;
     }
 
-    extern (D) this(const ref Loc loc, Expression exp, Expressions* msgs)
+    extern (D) this(Loc loc, Expression exp, Expressions* msgs)
     {
         super(loc, Id.empty);
         this.exp = exp;

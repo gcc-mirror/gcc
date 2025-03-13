@@ -32,12 +32,12 @@ import dmd.visitor;
  */
 extern (C++) final class DebugSymbol : Dsymbol
 {
-    extern (D) this(const ref Loc loc, Identifier ident) @safe
+    extern (D) this(Loc loc, Identifier ident) @safe
     {
         super(loc, ident);
     }
 
-    extern (D) this(const ref Loc loc) @safe
+    extern (D) this(Loc loc) @safe
     {
         super(loc, null);
     }
@@ -73,12 +73,12 @@ extern (C++) final class DebugSymbol : Dsymbol
 extern (C++) final class VersionSymbol : Dsymbol
 {
 
-    extern (D) this(const ref Loc loc, Identifier ident) @safe
+    extern (D) this(Loc loc, Identifier ident) @safe
     {
         super(loc, ident);
     }
 
-    extern (D) this(const ref Loc loc) @safe
+    extern (D) this(Loc loc) @safe
     {
         super(loc, null);
     }

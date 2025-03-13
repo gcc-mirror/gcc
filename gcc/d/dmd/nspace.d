@@ -62,7 +62,7 @@ extern (C++) final class Nspace : ScopeDsymbol
      */
     Expression identExp;
 
-    extern (D) this(const ref Loc loc, Identifier ident, Expression identExp, Dsymbols* members)
+    extern (D) this(Loc loc, Identifier ident, Expression identExp, Dsymbols* members)
     {
         super(loc, ident);
         //printf("Nspace::Nspace(ident = %s)\n", ident.toChars());

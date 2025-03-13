@@ -241,7 +241,7 @@ Target::fieldalign (Type *type)
 /* Returns a Type for the va_list type of the target.  */
 
 Type *
-Target::va_listType (const Loc &, Scope *)
+Target::va_listType (Loc, Scope *)
 {
   if (this->tvalist)
     return this->tvalist;
@@ -517,7 +517,7 @@ d_handle_target_object_format (void)
    LOC is the location to use for the returned expression.  */
 
 Expression *
-Target::getTargetInfo (const char *key, const Loc &loc)
+Target::getTargetInfo (const char *key, Loc loc)
 {
   unsigned ix;
   d_target_info_spec *spec;

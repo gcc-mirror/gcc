@@ -595,7 +595,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
     Array!Expression lastConstraintNegs; /// its negative parts
     Objects* lastConstraintTiargs; /// template instance arguments for `lastConstraint`
 
-    extern (D) this(const ref Loc loc, Identifier ident, TemplateParameters* parameters, Expression constraint, Dsymbols* decldefs, bool ismixin = false, bool literal = false)
+    extern (D) this(Loc loc, Identifier ident, TemplateParameters* parameters, Expression constraint, Dsymbols* decldefs, bool ismixin = false, bool literal = false)
     {
         super(loc, ident);
         static if (LOG)
@@ -3171,7 +3171,7 @@ extern (C++) class TemplateParameter : ASTNode
     bool dependent;
 
     /* ======================== TemplateParameter =============================== */
-    extern (D) this(const ref Loc loc, Identifier ident) @safe
+    extern (D) this(Loc loc, Identifier ident) @safe
     {
         this.loc = loc;
         this.ident = ident;
@@ -3210,7 +3210,7 @@ extern (C++) class TemplateParameter : ASTNode
 
     abstract RootObject specialization();
 
-    abstract RootObject defaultArg(const ref Loc instLoc, Scope* sc);
+    abstract RootObject defaultArg(Loc instLoc, Scope* sc);
 
     abstract bool hasDefaultArg();
 
@@ -3242,7 +3242,7 @@ extern (C++) class TemplateTypeParameter : TemplateParameter
 
     extern (D) __gshared Type tdummy = null;
 
-    extern (D) this(const ref Loc loc, Identifier ident, Type specType, Type defaultType) @safe
+    extern (D) this(Loc loc, Identifier ident, Type specType, Type defaultType) @safe
     {
         super(loc, ident);
         this.specType = specType;
@@ -3288,7 +3288,7 @@ extern (C++) class TemplateTypeParameter : TemplateParameter
         return specType;
     }
 
-    override final RootObject defaultArg(const ref Loc instLoc, Scope* sc)
+    override final RootObject defaultArg(Loc instLoc, Scope* sc)
     {
         Type t = defaultType;
         if (t)
@@ -3317,7 +3317,7 @@ extern (C++) class TemplateTypeParameter : TemplateParameter
  */
 extern (C++) final class TemplateThisParameter : TemplateTypeParameter
 {
-    extern (D) this(const ref Loc loc, Identifier ident, Type specType, Type defaultType) @safe
+    extern (D) this(Loc loc, Identifier ident, Type specType, Type defaultType) @safe
     {
         super(loc, ident, specType, defaultType);
     }
@@ -3351,7 +3351,7 @@ extern (C++) final class TemplateValueParameter : TemplateParameter
 
     extern (D) __gshared Expression[void*] edummies;
 
-    extern (D) this(const ref Loc loc, Identifier ident, Type valType,
+    extern (D) this(Loc loc, Identifier ident, Type valType,
         Expression specValue, Expression defaultValue) @safe
     {
         super(loc, ident);
@@ -3408,7 +3408,7 @@ extern (C++) final class TemplateValueParameter : TemplateParameter
         return specValue;
     }
 
-    override RootObject defaultArg(const ref Loc instLoc, Scope* sc)
+    override RootObject defaultArg(Loc instLoc, Scope* sc)
     {
         Expression e = defaultValue;
         if (!e)
@@ -3467,7 +3467,7 @@ extern (C++) final class TemplateAliasParameter : TemplateParameter
 
     extern (D) __gshared Dsymbol sdummy = null;
 
-    extern (D) this(const ref Loc loc, Identifier ident, Type specType, RootObject specAlias, RootObject defaultAlias) @safe
+    extern (D) this(Loc loc, Identifier ident, Type specType, RootObject specAlias, RootObject defaultAlias) @safe
     {
         super(loc, ident);
         this.specType = specType;
@@ -3505,7 +3505,7 @@ extern (C++) final class TemplateAliasParameter : TemplateParameter
         return specAlias;
     }
 
-    override RootObject defaultArg(const ref Loc instLoc, Scope* sc)
+    override RootObject defaultArg(Loc instLoc, Scope* sc)
     {
         RootObject da = defaultAlias;
         if (auto ta = isType(defaultAlias))
@@ -3546,7 +3546,7 @@ extern (C++) final class TemplateAliasParameter : TemplateParameter
  */
 extern (C++) final class TemplateTupleParameter : TemplateParameter
 {
-    extern (D) this(const ref Loc loc, Identifier ident) @safe
+    extern (D) this(Loc loc, Identifier ident) @safe
     {
         super(loc, ident);
     }
@@ -3600,7 +3600,7 @@ extern (C++) final class TemplateTupleParameter : TemplateParameter
         return null;
     }
 
-    override RootObject defaultArg(const ref Loc instLoc, Scope* sc)
+    override RootObject defaultArg(Loc instLoc, Scope* sc)
     {
         return null;
     }
@@ -3724,7 +3724,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
         }
     }
 
-    extern (D) this(const ref Loc loc, Identifier ident, Objects* tiargs) scope
+    extern (D) this(Loc loc, Identifier ident, Objects* tiargs) scope
     {
         super(loc, null);
         static if (LOG)
@@ -3739,7 +3739,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
      * This constructor is only called when we figured out which function
      * template to instantiate.
      */
-    extern (D) this(const ref Loc loc, TemplateDeclaration td, Objects* tiargs) scope
+    extern (D) this(Loc loc, TemplateDeclaration td, Objects* tiargs) scope
     {
         super(loc, null);
         static if (LOG)
@@ -4477,7 +4477,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
      * Returns:
      *      false if one or more arguments have errors.
      */
-    extern (D) static bool semanticTiargs(const ref Loc loc, Scope* sc, Objects* tiargs, int flags, TupleDeclaration atd = null)
+    extern (D) static bool semanticTiargs(Loc loc, Scope* sc, Objects* tiargs, int flags, TupleDeclaration atd = null)
     {
         // Run semantic on each argument, place results in tiargs[]
         //printf("+TemplateInstance.semanticTiargs()\n");
@@ -5477,7 +5477,7 @@ extern (C++) final class TemplateMixin : TemplateInstance
 {
     TypeQualified tqual;
 
-    extern (D) this(const ref Loc loc, Identifier ident, TypeQualified tqual, Objects* tiargs)
+    extern (D) this(Loc loc, Identifier ident, TypeQualified tqual, Objects* tiargs)
     {
         super(loc,
               tqual.idents.length ? cast(Identifier)tqual.idents[tqual.idents.length - 1] : (cast(TypeIdentifier)tqual).ident,

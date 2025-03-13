@@ -90,8 +90,8 @@ private
     {
         // to allow compilation of this module without access to the rt package,
         //  make these functions available from rt.lifetime
-        void rt_finalizeFromGC(void* p, size_t size, uint attr) nothrow;
-        int rt_hasFinalizerInSegment(void* p, size_t size, uint attr, const scope void[] segment) nothrow;
+        void rt_finalizeFromGC(void* p, size_t size, uint attr, const(TypeInfo) typeInfo) nothrow;
+        int rt_hasFinalizerInSegment(void* p, size_t size, const(TypeInfo) typeInfo, const scope void[] segment) nothrow;
 
         // Declared as an extern instead of importing core.exception
         // to avoid inlining - see https://issues.dlang.org/show_bug.cgi?id=13725.
@@ -2880,9 +2880,13 @@ struct Gcx
 
                         if (pool.finals.nbits && pool.finals.clear(biti))
                         {
+                            import core.internal.gc.blockmeta;
                             size_t size = npages * PAGESIZE - SENTINEL_EXTRA;
+                            size = sentinel_size(q, size);
                             uint attr = pool.getBits(biti);
-                            rt_finalizeFromGC(q, sentinel_size(q, size), attr);
+                            auto ti = __getBlockFinalizerInfo(q, size, attr);
+                            __trimExtents(q, size, attr);
+                            rt_finalizeFromGC(q, size, attr, ti);
                         }
 
                         pool.clrBits(biti, ~BlkAttr.NONE ^ BlkAttr.FINALIZE);
@@ -2997,21 +3001,28 @@ struct Gcx
                             {
                                 immutable biti = base + i;
 
-                                if (!pool.mark.test(biti))
+                                if (pool.mark.test(biti))
+                                    continue;
+
+                                void* q = sentinel_add(p);
+                                sentinel_Invariant(q);
+
+                                if (pool.finals.nbits && pool.finals.test(biti))
                                 {
-                                    void* q = sentinel_add(p);
-                                    sentinel_Invariant(q);
-
-                                    if (pool.finals.nbits && pool.finals.test(biti))
-                                        rt_finalizeFromGC(q, sentinel_size(q, size), pool.getBits(biti));
-
-                                    assert(core.bitop.bt(toFree.ptr, i));
-
-                                    debug(COLLECT_PRINTF) printf("\tcollecting %p\n", p);
-                                    leakDetector.log_free(q, sentinel_size(q, size));
-
-                                    invalidate(p[0 .. size], 0xF3, false);
+                                    import core.internal.gc.blockmeta;
+                                    size_t ssize = sentinel_size(q, size);
+                                    uint attr = pool.getBits(biti);
+                                    auto ti = __getBlockFinalizerInfo(q, ssize, attr);
+                                    __trimExtents(q, ssize, attr);
+                                    rt_finalizeFromGC(q, ssize, attr, ti);
                                 }
+
+                                assert(core.bitop.bt(toFree.ptr, i));
+
+                                debug(COLLECT_PRINTF) printf("\tcollecting %p\n", p);
+                                leakDetector.log_free(q, sentinel_size(q, size));
+
+                                invalidate(p[0 .. size], 0xF3, false);
                             }
                         }
 
@@ -4523,10 +4534,13 @@ struct LargeObjectPool
             size_t size = sentinel_size(p, getSize(pn));
             uint attr = getBits(biti);
 
-            if (!rt_hasFinalizerInSegment(p, size, attr, segment))
+            import core.internal.gc.blockmeta;
+            auto ti = __getBlockFinalizerInfo(p, size, attr);
+            if (!rt_hasFinalizerInSegment(p, size, ti, segment))
                 continue;
 
-            rt_finalizeFromGC(p, size, attr);
+            __trimExtents(p, size, attr);
+            rt_finalizeFromGC(p, size, attr, ti);
 
             clrBits(biti, ~BlkAttr.NONE);
 
@@ -4647,11 +4661,14 @@ struct SmallObjectPool
 
                 auto q = sentinel_add(p);
                 uint attr = getBits(biti);
-                const ssize = sentinel_size(q, size);
-                if (!rt_hasFinalizerInSegment(q, ssize, attr, segment))
+                auto ssize = sentinel_size(q, size);
+                import core.internal.gc.blockmeta;
+                auto ti = __getBlockFinalizerInfo(q, ssize, attr);
+                if (!rt_hasFinalizerInSegment(q, ssize, ti, segment))
                     continue;
 
-                rt_finalizeFromGC(q, ssize, attr);
+                __trimExtents(q, ssize, attr);
+                rt_finalizeFromGC(q, ssize, attr, ti);
 
                 freeBits = true;
                 toFree.set(i);

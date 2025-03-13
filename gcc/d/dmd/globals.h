@@ -349,7 +349,7 @@ struct Global
     ErrorSink* errorSink;       // where the error messages go
     ErrorSink* errorSinkNull;   // where the error messages disappear
 
-    DArray<unsigned char> (*preprocess)(FileName, const Loc&, OutBuffer&);
+    DArray<unsigned char> (*preprocess)(FileName, Loc, OutBuffer&);
 
     /* Start gagging. Return the current number of gagged errors
      */
@@ -413,43 +413,45 @@ typedef unsigned long long uinteger_t;
 #endif
 
 // file location
+struct SourceLoc
+{
+    DString filename;
+    uint32_t line;
+    uint32_t column;
+    uint32_t fileOffset;
+};
+
 struct Loc
 {
 private:
-    unsigned _linnum;
-    unsigned _charnum;
-    unsigned fileIndex;
+
+    unsigned int index;
+
+#if MARS && defined(__linux__) && defined(__i386__)
+    unsigned int dummy;
+#endif
+
 public:
     static void set(bool showColumns, MessageStyle messageStyle);
+    static Loc singleFilename(const char* const filename);
 
     static bool showColumns;
     static MessageStyle messageStyle;
 
     Loc()
     {
-        _linnum = 0;
-        _charnum = 0;
-        fileIndex = 0;
-    }
-
-    Loc(const char *filename, unsigned linnum, unsigned charnum)
-    {
-        this->linnum(linnum);
-        this->charnum(charnum);
-        this->filename(filename);
+        index = 0;
     }
 
     uint32_t charnum() const;
-    uint32_t charnum(uint32_t num);
     uint32_t linnum() const;
-    uint32_t linnum(uint32_t num);
     const char *filename() const;
-    void filename(const char *name);
+    SourceLoc toSourceLoc() const;
 
     const char *toChars(
         bool showColumns = Loc::showColumns,
         MessageStyle messageStyle = Loc::messageStyle) const;
-    bool equals(const Loc& loc) const;
+    bool equals(Loc loc) const;
 };
 
 enum class LINK : uint8_t

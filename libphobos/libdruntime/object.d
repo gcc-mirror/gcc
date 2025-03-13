@@ -3769,15 +3769,10 @@ template RTInfoImpl(size_t[] pointerBitmap)
     immutable size_t[pointerBitmap.length] RTInfoImpl = pointerBitmap[];
 }
 
-template NoPointersBitmapPayload(size_t N)
-{
-    enum size_t[N] NoPointersBitmapPayload = 0;
-}
-
 template RTInfo(T)
 {
     enum pointerBitmap = __traits(getPointerBitmap, T);
-    static if (pointerBitmap[1 .. $] == NoPointersBitmapPayload!(pointerBitmap.length - 1))
+    static if (pointerBitmap[1 .. $] == size_t[pointerBitmap.length - 1].init)
         enum RTInfo = rtinfoNoPointers;
     else
         enum RTInfo = RTInfoImpl!(pointerBitmap).ptr;

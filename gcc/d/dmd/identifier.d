@@ -221,15 +221,16 @@ nothrow:
      *      Identifier (inside Identifier.idPool) with deterministic name based
      *      on the source location.
      */
-    extern (D) static Identifier generateIdWithLoc(string prefix, const ref Loc loc, string parent = "")
+    extern (D) static Identifier generateIdWithLoc(string prefix, Loc loc, string parent = "")
     {
         // generate `<prefix>_L<line>_C<col>`
+        auto sl = SourceLoc(loc);
         OutBuffer idBuf;
         idBuf.writestring(prefix);
         idBuf.writestring("_L");
-        idBuf.print(loc.linnum);
+        idBuf.print(sl.line);
         idBuf.writestring("_C");
-        idBuf.print(loc.charnum);
+        idBuf.print(sl.column);
 
         /**
          * Make sure the identifiers are unique per filename, i.e., per module/mixin
@@ -247,13 +248,13 @@ nothrow:
          * directly, but that would unnecessary lengthen symbols names. See issue:
          * https://issues.dlang.org/show_bug.cgi?id=23722
          */
-        static struct Key { Loc loc; string prefix; string parent; }
+        static struct Key { uint fileOffset; string prefix; string parent; }
         __gshared uint[Key] counters;
 
         static if (__traits(compiles, counters.update(Key.init, () => 0u, (ref uint a) => 0u)))
         {
             // 2.082+
-            counters.update(Key(loc, prefix, parent),
+            counters.update(Key(loc.fileOffset, prefix, parent),
                 () => 1u,          // insertion
                 (ref uint counter) // update
                 {
@@ -265,7 +266,7 @@ nothrow:
         }
         else
         {
-            const key = Key(loc, prefix, parent);
+            const key = Key(loc.fileOffset, prefix, parent);
             if (auto pCounter = key in counters)
             {
                 idBuf.writestring("_");

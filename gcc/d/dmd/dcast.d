@@ -2738,7 +2738,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 if (auto tsa = tb.isTypeSArray())
                 {
                     if (e.elements.length != tsa.dim.toInteger())
-                        goto L1;
+                        return visit(ae);
                 }
 
                 ae = e.copy().isArrayLiteralExp();
@@ -2776,7 +2776,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             const edim = e.elements.length;
             const tbasedim = tbase.dim.toInteger();
             if (edim > tbasedim)
-                goto L1;
+                return visit(ae);
 
             ae = e.copy().isArrayLiteralExp();
             ae.type = tbase; // https://issues.dlang.org/show_bug.cgi?id=12642
@@ -2800,7 +2800,6 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
             ev = ev.expressionSemantic(sc);
             return ev;
         }
-    L1:
         return visit(ae);
     }
 

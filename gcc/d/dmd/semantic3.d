@@ -338,7 +338,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
             sc2.ctorflow.callSuper = CSX.none;
             sc2.sbreak = null;
             sc2.scontinue = null;
-            sc2.sw = null;
+            sc2.switchStatement = null;
             sc2.fes = funcdecl.fes;
             sc2.linkage = funcdecl.isCsymbol() ? LINK.c : LINK.d;
             sc2.stc &= STC.flowThruFunction;
@@ -350,8 +350,8 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 sc2.copyFlagsFrom(sc);
                 sc2.contract = Contract.none;
             }
-            sc2.tf = null;
-            sc2.os = null;
+            sc2.tryFinally = null;
+            sc2.scopeGuard = null;
             sc2.inLoop = false;
             sc2.inDefaultArg = false;
             sc2.userAttribDecl = null;
