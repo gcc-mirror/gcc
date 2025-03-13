@@ -966,12 +966,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _Inherited()
       { }
 
-      constexpr explicit(!__convertible<const _Elements&...>())
-      tuple(const _Elements&... __elements)
-      noexcept(__nothrow_constructible<const _Elements&...>())
-      requires (__constructible<const _Elements&...>())
-      : _Inherited(__elements...)
-      { }
+      // Defined as a template to work around PR libstdc++/116440.
+      template<typename = void>
+	constexpr explicit(!__convertible<const _Elements&...>())
+	tuple(const _Elements&... __elements)
+	noexcept(__nothrow_constructible<const _Elements&...>())
+	requires (__constructible<const _Elements&...>())
+	: _Inherited(__elements...)
+	{ }
 
       template<typename... _UTypes>
 	requires (__disambiguating_constraint<_UTypes...>())
