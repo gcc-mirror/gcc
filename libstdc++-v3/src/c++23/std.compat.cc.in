@@ -53,6 +53,14 @@ _GLIBCXX_STDBIT_FUNC(stdc_bit_ceil);
 #undef _GLIBCXX_STDBIT_FUNC
 }
 
+// <stdckdint.h>
+export
+{
+  using __gnu_cxx::ckd_add;
+  using __gnu_cxx::ckd_sub;
+  using __gnu_cxx::ckd_mul;
+}
+
 #define STD_COMPAT 1
 
 // C library exports are appended from std-clib.cc.in.

@@ -1249,6 +1249,7 @@ c_compatibility_builddir = .
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/math.h \
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/stdatomic.h \
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/stdbit.h \
+@GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/stdckdint.h \
 @GLIBCXX_C_HEADERS_C_GLOBAL_TRUE@	${c_compatibility_srcdir}/stdlib.h
 
 @GLIBCXX_C_HEADERS_C_STD_TRUE@c_compatibility_headers = 
