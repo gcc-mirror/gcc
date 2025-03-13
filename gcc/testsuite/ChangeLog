@@ -1,3 +1,11 @@
+2025-03-12  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-03-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119134
+	* g++.dg/cpp2a/lambda-uneval24.C: New test.
+
 2025-03-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
