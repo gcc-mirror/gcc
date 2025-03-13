@@ -33,6 +33,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef _LIBGOMP_PLUGIN_INCLUDE
+  /* Include 'omp.h' for the interop definitions.  */
+  #define _LIBGOMP_OMP_LOCK_DEFINED 1
+  typedef struct omp_lock_t omp_lock_t;
+  typedef struct omp_nest_lock_t omp_nest_lock_t;
+  #include "omp.h.in"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -100,6 +108,25 @@ struct addr_pair
   uintptr_t start;
   uintptr_t end;
 };
+
+
+#ifdef _LIBGOMP_OMP_LOCK_DEFINED
+/* Only define when omp.h.in was included, as in plugin/ and in libgomp.h.   */
+struct interop_obj_t
+{
+  void *stream;
+  void *device_data;
+  omp_interop_fr_t fr;
+  int device_num;
+};
+
+enum gomp_interop_flag
+{
+  gomp_interop_flag_init,
+  gomp_interop_flag_use,
+  gomp_interop_flag_destroy
+};
+#endif
 
 /* This following symbol is used to name the target side variable struct that
    holds the designated ICVs of the target device. The symbol needs to be
@@ -180,6 +207,23 @@ extern int GOMP_OFFLOAD_openacc_cuda_set_stream (struct goacc_asyncqueue *,
 						 void *);
 extern union goacc_property_value
   GOMP_OFFLOAD_openacc_get_property (int, enum goacc_property);
+
+#ifdef _LIBGOMP_OMP_LOCK_DEFINED
+/* Only define when omp.h.in was included, as in plugin/ and in libgomp.h.   */
+extern void GOMP_OFFLOAD_interop (struct interop_obj_t *, int,
+				  enum gomp_interop_flag, bool, const char *);
+extern intptr_t GOMP_OFFLOAD_get_interop_int (struct interop_obj_t *,
+					      omp_interop_property_t,
+					      omp_interop_rc_t *);
+extern void *GOMP_OFFLOAD_get_interop_ptr (struct interop_obj_t *,
+					   omp_interop_property_t,
+					   omp_interop_rc_t *);
+extern const char *GOMP_OFFLOAD_get_interop_str (struct interop_obj_t *obj,
+						 omp_interop_property_t,
+						 omp_interop_rc_t *);
+extern const char *GOMP_OFFLOAD_get_interop_type_desc (struct interop_obj_t *,
+						       omp_interop_property_t);
+#endif
 
 #ifdef __cplusplus
 }

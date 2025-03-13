@@ -13853,6 +13853,9 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_INTEROP:
+	case OMP_CLAUSE_INIT:
+	case OMP_CLAUSE_USE:
+	case OMP_CLAUSE_DESTROY:
 	  break;
 
 	case OMP_CLAUSE_ORDER:
@@ -18480,6 +18483,21 @@ gimplify_omp_ordered (tree expr, gimple_seq body)
   return gimple_build_omp_ordered (body, OMP_ORDERED_CLAUSES (expr));
 }
 
+/* Gimplify an OMP_INTEROP statement.  */
+
+static enum gimplify_status
+gimplify_omp_interop (tree *expr_p, gimple_seq *pre_p)
+{
+  tree expr = *expr_p;
+
+  gimplify_scan_omp_clauses (&OMP_INTEROP_CLAUSES (expr), pre_p, ORT_TASK,
+			     OMP_INTEROP);
+  gimple *stmt = gimple_build_omp_interop (OMP_INTEROP_CLAUSES (expr));
+  gimplify_seq_add_stmt (pre_p, stmt);
+  *expr_p = NULL_TREE;
+  return GS_ALL_DONE;
+}
+
 /* Callback for walk_tree to find an IFN_GOMP_DISPATCH.  */
 
 static tree
@@ -19953,9 +19971,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  }
 
 	case OMP_INTEROP:
-	  sorry_at (EXPR_LOCATION (*expr_p),
-		    "%<#pragma omp interop%> not yet supported");
-	  ret = GS_ERROR;
+	  ret = gimplify_omp_interop (expr_p, pre_p);
 	  break;
 	case OMP_ATOMIC:
 	case OMP_ATOMIC_READ:

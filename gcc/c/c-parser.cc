@@ -20519,7 +20519,10 @@ c_parser_omp_clause_detach (c_parser *parser, tree list)
 static tree
 c_parser_omp_clause_destroy (c_parser *parser, tree list)
 {
-  return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_DESTROY, list);
+  tree nl = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_DESTROY, list);
+  for (tree c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
+    TREE_ADDRESSABLE (OMP_CLAUSE_DECL (c)) = 1;
+  return nl;
 }
 
 /* OpenMP 5.1:
@@ -20901,6 +20904,7 @@ c_parser_omp_clause_init (c_parser *parser, tree list)
 
   for (tree c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
     {
+      TREE_ADDRESSABLE (OMP_CLAUSE_DECL (c)) = 1;
       if (target)
 	OMP_CLAUSE_INIT_TARGET (c) = 1;
       if (targetsync)

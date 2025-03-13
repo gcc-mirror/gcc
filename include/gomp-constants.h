@@ -280,10 +280,14 @@ enum gomp_map_kind
    omp_invalid_device) to -3 (so that for dev_num >= -2U we can
    subtract 1).  -4 is then what we use for omp_invalid_device,
    which unlike the other non-conforming device numbers results
-   in fatal error regardless of OMP_TARGET_OFFLOAD.  */
+   in fatal error regardless of OMP_TARGET_OFFLOAD.
+   Furthermore, OpenMP 6.1 exposes the default device to the user; hence,
+   GOMP_DEVICE_DEFAULT_OMP_61 can be used for it,
+   with and without remapped device numbers.  */
 #define GOMP_DEVICE_ICV			-1
 #define GOMP_DEVICE_HOST_FALLBACK	-2
 #define GOMP_DEVICE_INVALID		-4
+#define GOMP_DEVICE_DEFAULT_OMP_61	-5
 
 /* GOMP_task/GOMP_taskloop* flags argument.  */
 #define GOMP_TASK_FLAG_UNTIED		(1 << 0)
@@ -405,6 +409,13 @@ enum gomp_map_kind
 #define GOMP_INTEROP_IFR_LAST	7
 #define GOMP_INTEROP_IFR_SEPARATOR ((char)(-__INT8_MAX__-1))
 #define GOMP_INTEROP_IFR_UNKNOWN ((char)(-__INT8_MAX__))
+
+/* GOMP_interop target_targetsync argument.  */
+#define GOMP_INTEROP_TARGET	(1 << 0)
+#define GOMP_INTEROP_TARGETSYNC	(1 << 1)
+
+/* GOMP_interop flags argument.  */
+#define GOMP_INTEROP_FLAG_NOWAIT	(1 << 0)
 
 /* HSA specific data structures.  */
 
