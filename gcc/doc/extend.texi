@@ -23,25 +23,11 @@ Some features that are in ISO C99 but not C90 or C++ are also, as
 extensions, accepted by GCC in C90 mode and in C++.
 
 @menu
-* Statement Exprs::     Putting statements and declarations inside expressions.
-* Local Labels::        Labels local to a block.
-* Labels as Values::    Getting pointers to labels, and computed gotos.
-* Nested Functions::    Nested function in GNU C.
 * Nonlocal Gotos::      Nonlocal gotos.
 * Constructing Calls::  Dispatching a call to another function.
-* Typeof::              @code{typeof}: referring to the type of an expression.
-* Conditionals::        Omitting the middle operand of a @samp{?:} expression.
 * Additional Numeric Types::  Additional sizes and formats, plus complex numbers.
 * Aggregate Types::	Extensions to arrays, structs, and unions.
-* Hex Floats::          Hexadecimal floating-point constants.
 * Named Address Spaces::Named address spaces.
-* Variadic Macros::     Macros with a variable number of arguments.
-* Escaped Newlines::    Slightly looser rules for escaped newlines.
-* Pointer Arith::       Arithmetic on @code{void}-pointers and function pointers.
-* Variadic Pointer Args::  Pointer arguments to variadic functions.
-* Pointers to Arrays::  Pointers to arrays with qualifiers work as expected.
-* Case Ranges::         `case 1 ... 9' and such.
-* Mixed Labels and Declarations::  Mixing declarations, labels and code.
 * Function Attributes:: Declaring that functions have no side effects,
                         or that they can never return.
 * Variable Attributes:: Specifying attributes of variables.
@@ -50,23 +36,14 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Enumerator Attributes:: Specifying attributes on enumerators.
 * Statement Attributes:: Specifying attributes on statements.
 * Attribute Syntax::    Formal syntax for attributes.
-* Function Prototypes:: Prototype declarations and old-style definitions.
-* C++ Comments::        C++ comments are recognized.
-* Dollar Signs::        Dollar sign is allowed in identifiers.
-* Character Escapes::   @samp{\e} stands for the character @key{ESC}.
-* Alignment::           Determining the alignment of a function, type or variable.
 * Inline::              Defining inline functions (as fast as macros).
-* Const and Volatile Functions :: GCC interprets these specially in C.
 * Volatiles::           What constitutes an access to a volatile object.
 * Using Assembly Language with C:: Instructions and extensions for interfacing C with assembler.
-* Alternate Keywords::  @code{__const__}, @code{__asm__}, etc., for header files.
-* Incomplete Enums::    @code{enum foo;}, with details to follow.
-* Function Names::      Printable strings which are the name of the current
-                        function.
+* Syntax Extensions::   Other extensions to C syntax.
+* Semantic Extensions:: GNU C defines behavior for some non-standard constructs.
 * Return Address::      Getting the return or frame address of a function.
 * Stack Scrubbing::     Stack scrubbing internal interfaces.
 * Vector Extensions::   Using vector instructions through built-in functions.
-* Offsetof::            Special syntax for implementing @code{offsetof}.
 * __sync Builtins::     Legacy built-in functions for atomic memory access.
 * __atomic Builtins::   Atomic built-in functions with memory model.
 * Integer Overflow Builtins:: Built-in functions to perform arithmetics and
@@ -80,469 +57,9 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Target Format Checks:: Format checks specific to particular targets.
 * Pragmas::             Pragmas accepted by GCC.
 * Thread-Local::        Per-thread variables.
-* Binary constants::    Binary constants using the @samp{0b} prefix.
 * OpenMP::              Multiprocessing extensions.
 * OpenACC::             Extensions for offloading code to accelerator devices.
 @end menu
-
-@node Statement Exprs
-@section Statements and Declarations in Expressions
-@cindex statements inside expressions
-@cindex declarations inside expressions
-@cindex expressions containing statements
-@cindex macros, statements in expressions
-
-@c the above section title wrapped and causes an underfull hbox.. i
-@c changed it from "within" to "in". --mew 4feb93
-A compound statement enclosed in parentheses may appear as an expression
-in GNU C@.  This allows you to use loops, switches, and local variables
-within an expression.
-
-Recall that a compound statement is a sequence of statements surrounded
-by braces; in this construct, parentheses go around the braces.  For
-example:
-
-@smallexample
-(@{ int y = foo (); int z;
-   if (y > 0) z = y;
-   else z = - y;
-   z; @})
-@end smallexample
-
-@noindent
-is a valid (though slightly more complex than necessary) expression
-for the absolute value of @code{foo ()}.
-
-The last thing in the compound statement should be an expression
-followed by a semicolon; the value of this subexpression serves as the
-value of the entire construct.  (If you use some other kind of statement
-last within the braces, the construct has type @code{void}, and thus
-effectively no value.)
-
-This feature is especially useful in making macro definitions ``safe'' (so
-that they evaluate each operand exactly once).  For example, the
-``maximum'' function is commonly defined as a macro in standard C as
-follows:
-
-@smallexample
-#define max(a,b) ((a) > (b) ? (a) : (b))
-@end smallexample
-
-@noindent
-@cindex side effects, macro argument
-But this definition computes either @var{a} or @var{b} twice, with bad
-results if the operand has side effects.  In GNU C, if you know the
-type of the operands (here taken as @code{int}), you can avoid this
-problem by defining the macro as follows:
-
-@smallexample
-#define maxint(a,b) \
-  (@{int _a = (a), _b = (b); _a > _b ? _a : _b; @})
-@end smallexample
-
-Note that introducing variable declarations (as we do in @code{maxint}) can
-cause variable shadowing, so while this example using the @code{max} macro
-produces correct results:
-@smallexample
-int _a = 1, _b = 2, c;
-c = max (_a, _b);
-@end smallexample
-@noindent
-this example using maxint will not:
-@smallexample
-int _a = 1, _b = 2, c;
-c = maxint (_a, _b);
-@end smallexample
-
-This problem may for instance occur when we use this pattern recursively, like
-so:
-
-@smallexample
-#define maxint3(a, b, c) \
-  (@{int _a = (a), _b = (b), _c = (c); maxint (maxint (_a, _b), _c); @})
-@end smallexample
-
-Embedded statements are not allowed in constant expressions, such as
-the value of an enumeration constant, the width of a bit-field, or
-the initial value of a static variable.
-
-If you don't know the type of the operand, you can still do this, but you
-must use @code{typeof} or @code{__auto_type} (@pxref{Typeof}).
-
-In G++, the result value of a statement expression undergoes array and
-function pointer decay, and is returned by value to the enclosing
-expression.  For instance, if @code{A} is a class, then
-
-@smallexample
-        A a;
-
-        (@{a;@}).Foo ()
-@end smallexample
-
-@noindent
-constructs a temporary @code{A} object to hold the result of the
-statement expression, and that is used to invoke @code{Foo}.
-Therefore the @code{this} pointer observed by @code{Foo} is not the
-address of @code{a}.
-
-In a statement expression, any temporaries created within a statement
-are destroyed at that statement's end.  This makes statement
-expressions inside macros slightly different from function calls.  In
-the latter case temporaries introduced during argument evaluation are
-destroyed at the end of the statement that includes the function
-call.  In the statement expression case they are destroyed during
-the statement expression.  For instance,
-
-@smallexample
-#define macro(a)  (@{__typeof__(a) b = (a); b + 3; @})
-template<typename T> T function(T a) @{ T b = a; return b + 3; @}
-
-void foo ()
-@{
-  macro (X ());
-  function (X ());
-@}
-@end smallexample
-
-@noindent
-has different places where temporaries are destroyed.  For the
-@code{macro} case, the temporary @code{X} is destroyed just after
-the initialization of @code{b}.  In the @code{function} case that
-temporary is destroyed when the function returns.
-
-These considerations mean that it is probably a bad idea to use
-statement expressions of this form in header files that are designed to
-work with C++.  (Note that some versions of the GNU C Library contained
-header files using statement expressions that lead to precisely this
-bug.)
-
-Jumping into a statement expression with @code{goto} or using a
-@code{switch} statement outside the statement expression with a
-@code{case} or @code{default} label inside the statement expression is
-not permitted.  Jumping into a statement expression with a computed
-@code{goto} (@pxref{Labels as Values}) has undefined behavior.
-Jumping out of a statement expression is permitted, but if the
-statement expression is part of a larger expression then it is
-unspecified which other subexpressions of that expression have been
-evaluated except where the language definition requires certain
-subexpressions to be evaluated before or after the statement
-expression.  A @code{break} or @code{continue} statement inside of
-a statement expression used in @code{while}, @code{do} or @code{for}
-loop or @code{switch} statement condition
-or @code{for} statement init or increment expressions jumps to an
-outer loop or @code{switch} statement if any (otherwise it is an error),
-rather than to the loop or @code{switch} statement in whose condition
-or init or increment expression it appears.
-In any case, as with a function call, the evaluation of a
-statement expression is not interleaved with the evaluation of other
-parts of the containing expression.  For example,
-
-@smallexample
-  foo (), ((@{ bar1 (); goto a; 0; @}) + bar2 ()), baz();
-@end smallexample
-
-@noindent
-calls @code{foo} and @code{bar1} and does not call @code{baz} but
-may or may not call @code{bar2}.  If @code{bar2} is called, it is
-called after @code{foo} and before @code{bar1}.
-
-@node Local Labels
-@section Locally Declared Labels
-@cindex local labels
-@cindex macros, local labels
-
-GCC allows you to declare @dfn{local labels} in any nested block
-scope.  A local label is just like an ordinary label, but you can
-only reference it (with a @code{goto} statement, or by taking its
-address) within the block in which it is declared.
-
-A local label declaration looks like this:
-
-@smallexample
-__label__ @var{label};
-@end smallexample
-
-@noindent
-or
-
-@smallexample
-__label__ @var{label1}, @var{label2}, /* @r{@dots{}} */;
-@end smallexample
-
-Local label declarations must come at the beginning of the block,
-before any ordinary declarations or statements.
-
-The label declaration defines the label @emph{name}, but does not define
-the label itself.  You must do this in the usual way, with
-@code{@var{label}:}, within the statements of the statement expression.
-
-The local label feature is useful for complex macros.  If a macro
-contains nested loops, a @code{goto} can be useful for breaking out of
-them.  However, an ordinary label whose scope is the whole function
-cannot be used: if the macro can be expanded several times in one
-function, the label is multiply defined in that function.  A
-local label avoids this problem.  For example:
-
-@smallexample
-#define SEARCH(value, array, target)              \
-do @{                                              \
-  __label__ found;                                \
-  typeof (target) _SEARCH_target = (target);      \
-  typeof (*(array)) *_SEARCH_array = (array);     \
-  int i, j;                                       \
-  int value;                                      \
-  for (i = 0; i < max; i++)                       \
-    for (j = 0; j < max; j++)                     \
-      if (_SEARCH_array[i][j] == _SEARCH_target)  \
-        @{ (value) = i; goto found; @}              \
-  (value) = -1;                                   \
- found:;                                          \
-@} while (0)
-@end smallexample
-
-This could also be written using a statement expression:
-
-@smallexample
-#define SEARCH(array, target)                     \
-(@{                                                \
-  __label__ found;                                \
-  typeof (target) _SEARCH_target = (target);      \
-  typeof (*(array)) *_SEARCH_array = (array);     \
-  int i, j;                                       \
-  int value;                                      \
-  for (i = 0; i < max; i++)                       \
-    for (j = 0; j < max; j++)                     \
-      if (_SEARCH_array[i][j] == _SEARCH_target)  \
-        @{ value = i; goto found; @}                \
-  value = -1;                                     \
- found:                                           \
-  value;                                          \
-@})
-@end smallexample
-
-Local label declarations also make the labels they declare visible to
-nested functions, if there are any.  @xref{Nested Functions}, for details.
-
-@node Labels as Values
-@section Labels as Values
-@cindex labels as values
-@cindex computed gotos
-@cindex goto with computed label
-@cindex address of a label
-
-You can get the address of a label defined in the current function
-(or a containing function) with the unary operator @samp{&&}.  The
-value has type @code{void *}.  This value is a constant and can be used
-wherever a constant of that type is valid.  For example:
-
-@smallexample
-void *ptr;
-/* @r{@dots{}} */
-ptr = &&foo;
-@end smallexample
-
-To use these values, you need to be able to jump to one.  This is done
-with the computed goto statement@footnote{The analogous feature in
-Fortran is called an assigned goto, but that name seems inappropriate in
-C, where one can do more than simply store label addresses in label
-variables.}, @code{goto *@var{exp};}.  For example,
-
-@smallexample
-goto *ptr;
-@end smallexample
-
-@noindent
-Any expression of type @code{void *} is allowed.
-
-One way of using these constants is in initializing a static array that
-serves as a jump table:
-
-@smallexample
-static void *array[] = @{ &&foo, &&bar, &&hack @};
-@end smallexample
-
-@noindent
-Then you can select a label with indexing, like this:
-
-@smallexample
-goto *array[i];
-@end smallexample
-
-@noindent
-Note that this does not check whether the subscript is in bounds---array
-indexing in C never does that.
-
-Such an array of label values serves a purpose much like that of the
-@code{switch} statement.  The @code{switch} statement is cleaner, so
-use that rather than an array unless the problem does not fit a
-@code{switch} statement very well.
-
-Another use of label values is in an interpreter for threaded code.
-The labels within the interpreter function can be stored in the
-threaded code for super-fast dispatching.
-
-You may not use this mechanism to jump to code in a different function.
-If you do that, totally unpredictable things happen.  The best way to
-avoid this is to store the label address only in automatic variables and
-never pass it as an argument.
-
-An alternate way to write the above example is
-
-@smallexample
-static const int array[] = @{ &&foo - &&foo, &&bar - &&foo,
-                             &&hack - &&foo @};
-goto *(&&foo + array[i]);
-@end smallexample
-
-@noindent
-This is more friendly to code living in shared libraries, as it reduces
-the number of dynamic relocations that are needed, and by consequence,
-allows the data to be read-only.
-This alternative with label differences is not supported for the AVR target,
-please use the first approach for AVR programs.
-
-The @code{&&foo} expressions for the same label might have different
-values if the containing function is inlined or cloned.  If a program
-relies on them being always the same,
-@code{__attribute__((__noinline__,__noclone__))} should be used to
-prevent inlining and cloning.  If @code{&&foo} is used in a static
-variable initializer, inlining and cloning is forbidden.
-
-Unlike a normal goto, in GNU C++ a computed goto will not call
-destructors for objects that go out of scope.
-
-@node Nested Functions
-@section Nested Functions
-@cindex nested functions
-@cindex downward funargs
-@cindex thunks
-
-A @dfn{nested function} is a function defined inside another function.
-Nested functions are supported as an extension in GNU C, but are not
-supported by GNU C++.
-
-The nested function's name is local to the block where it is defined.
-For example, here we define a nested function named @code{square}, and
-call it twice:
-
-@smallexample
-@group
-foo (double a, double b)
-@{
-  double square (double z) @{ return z * z; @}
-
-  return square (a) + square (b);
-@}
-@end group
-@end smallexample
-
-The nested function can access all the variables of the containing
-function that are visible at the point of its definition.  This is
-called @dfn{lexical scoping}.  For example, here we show a nested
-function which uses an inherited variable named @code{offset}:
-
-@smallexample
-@group
-bar (int *array, int offset, int size)
-@{
-  int access (int *array, int index)
-    @{ return array[index + offset]; @}
-  int i;
-  /* @r{@dots{}} */
-  for (i = 0; i < size; i++)
-    /* @r{@dots{}} */ access (array, i) /* @r{@dots{}} */
-@}
-@end group
-@end smallexample
-
-Nested function definitions are permitted within functions in the places
-where variable definitions are allowed; that is, in any block, mixed
-with the other declarations and statements in the block.
-
-It is possible to call the nested function from outside the scope of its
-name by storing its address or passing the address to another function:
-
-@smallexample
-hack (int *array, int size)
-@{
-  void store (int index, int value)
-    @{ array[index] = value; @}
-
-  intermediate (store, size);
-@}
-@end smallexample
-
-Here, the function @code{intermediate} receives the address of
-@code{store} as an argument.  If @code{intermediate} calls @code{store},
-the arguments given to @code{store} are used to store into @code{array}.
-But this technique works only so long as the containing function
-(@code{hack}, in this example) does not exit.
-
-If you try to call the nested function through its address after the
-containing function exits, all hell breaks loose.  If you try
-to call it after a containing scope level exits, and if it refers
-to some of the variables that are no longer in scope, you may be lucky,
-but it's not wise to take the risk.  If, however, the nested function
-does not refer to anything that has gone out of scope, you should be
-safe.
-
-GCC implements taking the address of a nested function using a technique
-called @dfn{trampolines}.  This technique was described in
-@cite{Lexical Closures for C++} (Thomas M. Breuel, USENIX
-C++ Conference Proceedings, October 17-21, 1988).
-
-A nested function can jump to a label inherited from a containing
-function, provided the label is explicitly declared in the containing
-function (@pxref{Local Labels}).  Such a jump returns instantly to the
-containing function, exiting the nested function that did the
-@code{goto} and any intermediate functions as well.  Here is an example:
-
-@smallexample
-@group
-bar (int *array, int offset, int size)
-@{
-  __label__ failure;
-  int access (int *array, int index)
-    @{
-      if (index > size)
-        goto failure;
-      return array[index + offset];
-    @}
-  int i;
-  /* @r{@dots{}} */
-  for (i = 0; i < size; i++)
-    /* @r{@dots{}} */ access (array, i) /* @r{@dots{}} */
-  /* @r{@dots{}} */
-  return 0;
-
- /* @r{Control comes here from @code{access}
-    if it detects an error.}  */
- failure:
-  return -1;
-@}
-@end group
-@end smallexample
-
-A nested function always has no linkage.  Declaring one with
-@code{extern} or @code{static} is erroneous.  If you need to declare the nested function
-before its definition, use @code{auto} (which is otherwise meaningless
-for function declarations).
-
-@smallexample
-bar (int *array, int offset, int size)
-@{
-  __label__ failure;
-  auto int access (int *, int);
-  /* @r{@dots{}} */
-  int access (int *array, int index)
-    @{
-      if (index > size)
-        goto failure;
-      return array[index + offset];
-    @}
-  /* @r{@dots{}} */
-@}
-@end smallexample
 
 @node Nonlocal Gotos
 @section Nonlocal Gotos
@@ -715,201 +232,6 @@ myopen (const char *path, int oflag, ...)
 #endif
 @end smallexample
 @enddefbuiltin
-
-@node Typeof
-@section Referring to a Type with @code{typeof}
-@findex typeof
-@findex sizeof
-@cindex macros, types of arguments
-
-Another way to refer to the type of an expression is with @code{typeof}.
-The syntax of using of this keyword looks like @code{sizeof}, but the
-construct acts semantically like a type name defined with @code{typedef}.
-
-There are two ways of writing the argument to @code{typeof}: with an
-expression or with a type.  Here is an example with an expression:
-
-@smallexample
-typeof (x[0](1))
-@end smallexample
-
-@noindent
-This assumes that @code{x} is an array of pointers to functions;
-the type described is that of the values of the functions.
-
-Here is an example with a typename as the argument:
-
-@smallexample
-typeof (int *)
-@end smallexample
-
-@noindent
-Here the type described is that of pointers to @code{int}.
-
-If you are writing a header file that must work when included in ISO C
-programs, write @code{__typeof__} instead of @code{typeof}.
-@xref{Alternate Keywords}.
-
-A @code{typeof} construct can be used anywhere a typedef name can be
-used.  For example, you can use it in a declaration, in a cast, or inside
-of @code{sizeof} or @code{typeof}.
-
-The operand of @code{typeof} is evaluated for its side effects if and
-only if it is an expression of variably modified type or the name of
-such a type.
-
-@code{typeof} is often useful in conjunction with
-statement expressions (@pxref{Statement Exprs}).
-Here is how the two together can
-be used to define a safe ``maximum'' macro which operates on any
-arithmetic type and evaluates each of its arguments exactly once:
-
-@smallexample
-#define max(a,b) \
-  (@{ typeof (a) _a = (a); \
-      typeof (b) _b = (b); \
-    _a > _b ? _a : _b; @})
-@end smallexample
-
-@cindex underscores in variables in macros
-@cindex @samp{_} in variables in macros
-@cindex local variables in macros
-@cindex variables, local, in macros
-@cindex macros, local variables in
-
-The reason for using names that start with underscores for the local
-variables is to avoid conflicts with variable names that occur within the
-expressions that are substituted for @code{a} and @code{b}.  Eventually we
-hope to design a new form of declaration syntax that allows you to declare
-variables whose scopes start only after their initializers; this will be a
-more reliable way to prevent such conflicts.
-
-@noindent
-Some more examples of the use of @code{typeof}:
-
-@itemize @bullet
-@item
-This declares @code{y} with the type of what @code{x} points to.
-
-@smallexample
-typeof (*x) y;
-@end smallexample
-
-@item
-This declares @code{y} as an array of such values.
-
-@smallexample
-typeof (*x) y[4];
-@end smallexample
-
-@item
-This declares @code{y} as an array of pointers to characters:
-
-@smallexample
-typeof (typeof (char *)[4]) y;
-@end smallexample
-
-@noindent
-It is equivalent to the following traditional C declaration:
-
-@smallexample
-char *y[4];
-@end smallexample
-
-To see the meaning of the declaration using @code{typeof}, and why it
-might be a useful way to write, rewrite it with these macros:
-
-@smallexample
-#define pointer(T)  typeof(T *)
-#define array(T, N) typeof(T [N])
-@end smallexample
-
-@noindent
-Now the declaration can be rewritten this way:
-
-@smallexample
-array (pointer (char), 4) y;
-@end smallexample
-
-@noindent
-Thus, @code{array (pointer (char), 4)} is the type of arrays of 4
-pointers to @code{char}.
-@end itemize
-
-The ISO C23 operator @code{typeof_unqual} is available in ISO C23 mode
-and its result is the non-atomic unqualified version of what @code{typeof}
-operator returns.  Alternate spelling @code{__typeof_unqual__} is
-available in all C modes and provides non-atomic unqualified version of
-what @code{__typeof__} operator returns.
-@xref{Alternate Keywords}.
-
-@cindex @code{__auto_type} in GNU C
-In GNU C, but not GNU C++, you may also declare the type of a variable
-as @code{__auto_type}.  In that case, the declaration must declare
-only one variable, whose declarator must just be an identifier, the
-declaration must be initialized, and the type of the variable is
-determined by the initializer; the name of the variable is not in
-scope until after the initializer.  (In C++, you should use C++11
-@code{auto} for this purpose.)  Using @code{__auto_type}, the
-``maximum'' macro above could be written as:
-
-@smallexample
-#define max(a,b) \
-  (@{ __auto_type _a = (a); \
-      __auto_type _b = (b); \
-    _a > _b ? _a : _b; @})
-@end smallexample
-
-Using @code{__auto_type} instead of @code{typeof} has two advantages:
-
-@itemize @bullet
-@item Each argument to the macro appears only once in the expansion of
-the macro.  This prevents the size of the macro expansion growing
-exponentially when calls to such macros are nested inside arguments of
-such macros.
-
-@item If the argument to the macro has variably modified type, it is
-evaluated only once when using @code{__auto_type}, but twice if
-@code{typeof} is used.
-@end itemize
-
-@node Conditionals
-@section Conditionals with Omitted Operands
-@cindex conditional expressions, extensions
-@cindex omitted middle-operands
-@cindex middle-operands, omitted
-@cindex extensions, @code{?:}
-@cindex @code{?:} extensions
-
-The middle operand in a conditional expression may be omitted.  Then
-if the first operand is nonzero, its value is the value of the conditional
-expression.
-
-Therefore, the expression
-
-@smallexample
-x ? : y
-@end smallexample
-
-@noindent
-has the value of @code{x} if that is nonzero; otherwise, the value of
-@code{y}.
-
-This example is perfectly equivalent to
-
-@smallexample
-x ? x : y
-@end smallexample
-
-@cindex side effect in @code{?:}
-@cindex @code{?:} side effect
-@noindent
-In this simple case, the ability to omit the middle operand is not
-especially useful.  When it becomes useful is when the first operand does,
-or may (if it is a macro argument), contain a side effect.  Then repeating
-the operand in the middle would perform the side effect twice.  Omitting
-the middle operand uses the value already computed without the undesirable
-effects of recomputing it.
 
 @node Additional Numeric Types
 @section Additional Numeric Types
@@ -2197,33 +1519,6 @@ initializer has side effect, it is unspecified whether the side effect
 happens or not.  Currently, GCC discards the side-effecting
 initializer expressions and issues a warning.
 
-@node Hex Floats
-@section Hex Floats
-@cindex hex floats
-
-ISO C99 and ISO C++17 support floating-point numbers written not only in
-the usual decimal notation, such as @code{1.55e1}, but also numbers such as
-@code{0x1.fp3} written in hexadecimal format.  As a GNU extension, GCC
-supports this in C90 mode (except in some cases when strictly
-conforming) and in C++98, C++11 and C++14 modes.  In that format the
-@samp{0x} hex introducer and the @samp{p} or @samp{P} exponent field are
-mandatory.  The exponent is a decimal number that indicates the power of
-2 by which the significant part is multiplied.  Thus @samp{0x1.f} is
-@tex
-$1 {15\over16}$,
-@end tex
-@ifnottex
-1 15/16,
-@end ifnottex
-@samp{p3} multiplies it by 8, and the value of @code{0x1.fp3}
-is the same as @code{1.55e1}.
-
-Unlike for floating-point numbers in the decimal notation the exponent
-is always required in the hexadecimal notation.  Otherwise the compiler
-would not be able to resolve the ambiguity of, e.g., @code{0x1.f}.  This
-could mean @code{1.0f} or @code{1.9375} since @samp{f} is also the
-extension for floating-point constants of type @code{float}.
-
 @node Named Address Spaces
 @section Named Address Spaces
 @cindex Named Address Spaces
@@ -2472,204 +1767,6 @@ that it installed previously.
 The preprocessor symbols @code{__SEG_FS} and @code{__SEG_GS} are
 defined when these address spaces are supported.
 @end table
-
-@node Variadic Macros
-@section Macros with a Variable Number of Arguments.
-@cindex variable number of arguments
-@cindex macro with variable arguments
-@cindex rest argument (in macro)
-@cindex variadic macros
-
-In the ISO C standard of 1999, a macro can be declared to accept a
-variable number of arguments much as a function can.  The syntax for
-defining the macro is similar to that of a function.  Here is an
-example:
-
-@smallexample
-#define debug(format, ...) fprintf (stderr, format, __VA_ARGS__)
-@end smallexample
-
-@noindent
-Here @samp{@dots{}} is a @dfn{variable argument}.  In the invocation of
-such a macro, it represents the zero or more tokens until the closing
-parenthesis that ends the invocation, including any commas.  This set of
-tokens replaces the identifier @code{__VA_ARGS__} in the macro body
-wherever it appears.  See the CPP manual for more information.
-
-GCC has long supported variadic macros, and used a different syntax that
-allowed you to give a name to the variable arguments just like any other
-argument.  Here is an example:
-
-@smallexample
-#define debug(format, args...) fprintf (stderr, format, args)
-@end smallexample
-
-@noindent
-This is in all ways equivalent to the ISO C example above, but arguably
-more readable and descriptive.
-
-GNU CPP has two further variadic macro extensions, and permits them to
-be used with either of the above forms of macro definition.
-
-In standard C, you are not allowed to leave the variable argument out
-entirely; but you are allowed to pass an empty argument.  For example,
-this invocation is invalid in ISO C, because there is no comma after
-the string:
-
-@smallexample
-debug ("A message")
-@end smallexample
-
-GNU CPP permits you to completely omit the variable arguments in this
-way.  In the above examples, the compiler would complain, though since
-the expansion of the macro still has the extra comma after the format
-string.
-
-To help solve this problem, CPP behaves specially for variable arguments
-used with the token paste operator, @samp{##}.  If instead you write
-
-@smallexample
-#define debug(format, ...) fprintf (stderr, format, ## __VA_ARGS__)
-@end smallexample
-
-@noindent
-and if the variable arguments are omitted or empty, the @samp{##}
-operator causes the preprocessor to remove the comma before it.  If you
-do provide some variable arguments in your macro invocation, GNU CPP
-does not complain about the paste operation and instead places the
-variable arguments after the comma.  Just like any other pasted macro
-argument, these arguments are not macro expanded.
-
-@node Escaped Newlines
-@section Slightly Looser Rules for Escaped Newlines
-@cindex escaped newlines
-@cindex newlines (escaped)
-
-The preprocessor treatment of escaped newlines is more relaxed 
-than that specified by the C90 standard, which requires the newline
-to immediately follow a backslash.  
-GCC's implementation allows whitespace in the form
-of spaces, horizontal and vertical tabs, and form feeds between the
-backslash and the subsequent newline.  The preprocessor issues a
-warning, but treats it as a valid escaped newline and combines the two
-lines to form a single logical line.  This works within comments and
-tokens, as well as between tokens.  Comments are @emph{not} treated as
-whitespace for the purposes of this relaxation, since they have not
-yet been replaced with spaces.
-
-@node Pointer Arith
-@section Arithmetic on @code{void}- and Function-Pointers
-@cindex void pointers, arithmetic
-@cindex void, size of pointer to
-@cindex function pointers, arithmetic
-@cindex function, size of pointer to
-
-In GNU C, addition and subtraction operations are supported on pointers to
-@code{void} and on pointers to functions.  This is done by treating the
-size of a @code{void} or of a function as 1.
-
-A consequence of this is that @code{sizeof} is also allowed on @code{void}
-and on function types, and returns 1.
-
-@opindex Wpointer-arith
-The option @option{-Wpointer-arith} requests a warning if these extensions
-are used.
-
-@node Variadic Pointer Args
-@section Pointer Arguments in Variadic Functions
-@cindex pointer arguments in variadic functions
-@cindex variadic functions, pointer arguments
-
-Standard C requires that pointer types used with @code{va_arg} in
-functions with variable argument lists either must be compatible with
-that of the actual argument, or that one type must be a pointer to
-@code{void} and the other a pointer to a character type.  GNU C
-implements the POSIX XSI extension that additionally permits the use
-of @code{va_arg} with a pointer type to receive arguments of any other
-pointer type.
-
-In particular, in GNU C @samp{va_arg (ap, void *)} can safely be used
-to consume an argument of any pointer type.
-
-@node Pointers to Arrays
-@section Pointers to Arrays with Qualifiers Work as Expected
-@cindex pointers to arrays
-@cindex const qualifier
-
-In GNU C, pointers to arrays with qualifiers work similar to pointers
-to other qualified types. For example, a value of type @code{int (*)[5]}
-can be used to initialize a variable of type @code{const int (*)[5]}.
-These types are incompatible in ISO C because the @code{const} qualifier
-is formally attached to the element type of the array and not the
-array itself.
-
-@smallexample
-extern void
-transpose (int N, int M, double out[M][N], const double in[N][M]);
-double x[3][2];
-double y[2][3];
-@r{@dots{}}
-transpose(3, 2, y, x);
-@end smallexample
-
-@node Case Ranges
-@section Case Ranges
-@cindex case ranges
-@cindex ranges in case statements
-
-You can specify a range of consecutive values in a single @code{case} label,
-like this:
-
-@smallexample
-case @var{low} ... @var{high}:
-@end smallexample
-
-@noindent
-This has the same effect as the proper number of individual @code{case}
-labels, one for each integer value from @var{low} to @var{high}, inclusive.
-
-This feature is especially useful for ranges of ASCII character codes:
-
-@smallexample
-case 'A' ... 'Z':
-@end smallexample
-
-@strong{Be careful:} Write spaces around the @code{...}, for otherwise
-it may be parsed wrong when you use it with integer values.  For example,
-write this:
-
-@smallexample
-case 1 ... 5:
-@end smallexample
-
-@noindent
-rather than this:
-
-@smallexample
-case 1...5:
-@end smallexample
-
-@node Mixed Labels and Declarations
-@section Mixed Declarations, Labels and Code
-@cindex mixed declarations and code
-@cindex declarations, mixed with code
-@cindex code, mixed with declarations
-
-ISO C99 and ISO C++ allow declarations and code to be freely mixed
-within compound statements.  ISO C23 allows labels to be
-placed before declarations and at the end of a compound statement.
-As an extension, GNU C also allows all this in C90 mode.  For example,
-you could do:
-
-@smallexample
-int i;
-/* @r{@dots{}} */
-i++;
-int j = i + 2;
-@end smallexample
-
-Each identifier is visible from where it is declared until the end of
-the enclosing block.
 
 @node Function Attributes
 @section Declaring Attributes of Functions
@@ -10654,135 +9751,6 @@ target type; if such an attribute is applied to a function return type
 that is not a pointer-to-function type, it is treated as applying
 to the function type.
 
-@node Function Prototypes
-@section Prototypes and Old-Style Function Definitions
-@cindex function prototype declarations
-@cindex old-style function definitions
-@cindex promotion of formal parameters
-
-GNU C extends ISO C to allow a function prototype to override a later
-old-style non-prototype definition.  Consider the following example:
-
-@smallexample
-/* @r{Use prototypes unless the compiler is old-fashioned.}  */
-#ifdef __STDC__
-#define P(x) x
-#else
-#define P(x) ()
-#endif
-
-/* @r{Prototype function declaration.}  */
-int isroot P((uid_t));
-
-/* @r{Old-style function definition.}  */
-int
-isroot (x)   /* @r{??? lossage here ???} */
-     uid_t x;
-@{
-  return x == 0;
-@}
-@end smallexample
-
-Suppose the type @code{uid_t} happens to be @code{short}.  ISO C does
-not allow this example, because subword arguments in old-style
-non-prototype definitions are promoted.  Therefore in this example the
-function definition's argument is really an @code{int}, which does not
-match the prototype argument type of @code{short}.
-
-This restriction of ISO C makes it hard to write code that is portable
-to traditional C compilers, because the programmer does not know
-whether the @code{uid_t} type is @code{short}, @code{int}, or
-@code{long}.  Therefore, in cases like these GNU C allows a prototype
-to override a later old-style definition.  More precisely, in GNU C, a
-function prototype argument type overrides the argument type specified
-by a later old-style definition if the former type is the same as the
-latter type before promotion.  Thus in GNU C the above example is
-equivalent to the following:
-
-@smallexample
-int isroot (uid_t);
-
-int
-isroot (uid_t x)
-@{
-  return x == 0;
-@}
-@end smallexample
-
-@noindent
-GNU C++ does not support old-style function definitions, so this
-extension is irrelevant.
-
-@node C++ Comments
-@section C++ Style Comments
-@cindex @code{//}
-@cindex C++ comments
-@cindex comments, C++ style
-
-In GNU C, you may use C++ style comments, which start with @samp{//} and
-continue until the end of the line.  Many other C implementations allow
-such comments, and they are included in the 1999 C standard.  However,
-C++ style comments are not recognized if you specify an @option{-std}
-option specifying a version of ISO C before C99, or @option{-ansi}
-(equivalent to @option{-std=c90}).
-
-@node Dollar Signs
-@section Dollar Signs in Identifier Names
-@cindex $
-@cindex dollar signs in identifier names
-@cindex identifier names, dollar signs in
-
-In GNU C, you may normally use dollar signs in identifier names.
-This is because many traditional C implementations allow such identifiers.
-However, dollar signs in identifiers are not supported on a few target
-machines, typically because the target assembler does not allow them.
-
-@node Character Escapes
-@section The Character @key{ESC} in Constants
-
-You can use the sequence @samp{\e} in a string or character constant to
-stand for the ASCII character @key{ESC}.
-
-@node Alignment
-@section Determining the Alignment of Functions, Types or Variables
-@cindex alignment
-@cindex type alignment
-@cindex variable alignment
-
-The keyword @code{__alignof__} determines the alignment requirement of
-a function, object, or a type, or the minimum alignment usually required
-by a type.  Its syntax is just like @code{sizeof} and C11 @code{_Alignof}.
-
-For example, if the target machine requires a @code{double} value to be
-aligned on an 8-byte boundary, then @code{__alignof__ (double)} is 8.
-This is true on many RISC machines.  On more traditional machine
-designs, @code{__alignof__ (double)} is 4 or even 2.
-
-Some machines never actually require alignment; they allow references to any
-data type even at an odd address.  For these machines, @code{__alignof__}
-reports the smallest alignment that GCC gives the data type, usually as
-mandated by the target ABI.
-
-If the operand of @code{__alignof__} is an lvalue rather than a type,
-its value is the required alignment for its type, taking into account
-any minimum alignment specified by attribute @code{aligned}
-(@pxref{Common Variable Attributes}).  For example, after this
-declaration:
-
-@smallexample
-struct foo @{ int x; char y; @} foo1;
-@end smallexample
-
-@noindent
-the value of @code{__alignof__ (foo1.y)} is 1, even though its actual
-alignment is probably 2 or 4, the same as @code{__alignof__ (int)}.
-It is an error to ask for the alignment of an incomplete type other
-than @code{void}.
-
-If the operand of the @code{__alignof__} expression is a function,
-the expression evaluates to the alignment of the function which may
-be specified by attribute @code{aligned} (@pxref{Common Function Attributes}).
-
 @node Inline
 @section An Inline Function is As Fast As a Macro
 @cindex inline functions
@@ -10906,40 +9874,6 @@ definition (lacking @code{inline} and @code{extern}) in a library file.
 The definition in the header file causes most calls to the function
 to be inlined.  If any uses of the function remain, they refer to
 the single copy in the library.
-
-@node Const and Volatile Functions
-@section Const and Volatile Functions
-@cindex @code{const} applied to function
-@cindex @code{volatile} applied to function
-
-The C standard explicitly leaves the behavior of the @code{const} and
-@code{volatile} type qualifiers applied to functions undefined; these
-constructs can only arise through the use of @code{typedef}.  As an extension,
-GCC defines this use of the @code{const} qualifier to have the same meaning
-as the GCC @code{const} function attribute, and the @code{volatile} qualifier
-to be equivalent to the @code{noreturn} attribute.
-@xref{Common Function Attributes}, for more information.
-
-As examples of this usage,
-
-@smallexample
-
-/* @r{Equivalent to:}
-   void fatal () __attribute__ ((noreturn));  */
-typedef void voidfn ();
-volatile voidfn fatal;
-
-/* @r{Equivalent to:}
-   extern int square (int) __attribute__ ((const));  */
-typedef int intfn (int);
-extern const intfn square;
-@end smallexample
-
-In general, using function attributes instead is preferred, since the
-attributes make both the intent of the code and its reliance on a GNU
-extension explicit.  Additionally, using @code{const} and
-@code{volatile} in this way is specific to GNU C and does not work in
-GNU C++.
 
 @node Volatiles
 @section When is a Volatile Object Accessed?
@@ -13150,8 +12084,1002 @@ This size is also used for inlining decisions.  If you use @code{asm inline}
 instead of just @code{asm}, then for inlining purposes the size of the asm
 is taken as the minimum size, ignoring how many instructions GCC thinks it is.
 
+@node Syntax Extensions
+@section Other Extensions to C Syntax
+
+GNU C has traditionally supported numerous extensions to standard C
+syntax.  Some of these features were originally intended for
+compatibility with other compilers or to ease traditional C
+compatibility, some have been adopted into subsequent versions of the
+C and/or C++ standards, while others remain specific to GNU C.
+
+@menu
+* Statement Exprs::     Putting statements and declarations inside expressions.
+* Local Labels::        Labels local to a block.
+* Labels as Values::    Getting pointers to labels, and computed gotos.
+* Nested Functions::    Nested functions in GNU C.
+* Typeof::              @code{typeof}: referring to the type of an expression.
+* Offsetof::            Special syntax for @code{offsetof}.
+* Alignment::           Determining the alignment of a function, type or variable.
+* Incomplete Enums::    @code{enum foo;}, with details to follow.
+* Variadic Macros::     Macros with a variable number of arguments.
+* Conditionals::        Omitting the middle operand of a @samp{?:} expression.
+* Case Ranges::         `case 1 ... 9' and such.
+* Mixed Labels and Declarations::  Mixing declarations, labels and code.
+* C++ Comments::        C++ comments are recognized.
+* Escaped Newlines::    Slightly looser rules for escaped newlines.
+* Hex Floats::          Hexadecimal floating-point constants.
+* Binary constants::    Binary constants using the @samp{0b} prefix.
+* Dollar Signs::        Dollar sign is allowed in identifiers.
+* Character Escapes::   @samp{\e} stands for the character @key{ESC}.
+* Alternate Keywords::  @code{__const__}, @code{__asm__}, etc., for header files.
+* Function Names::      Printable strings which are the name of the current
+                        function.
+@end menu
+
+@node Statement Exprs
+@subsection Statements and Declarations in Expressions
+@cindex statements inside expressions
+@cindex declarations inside expressions
+@cindex expressions containing statements
+@cindex macros, statements in expressions
+
+@c the above section title wrapped and causes an underfull hbox.. i
+@c changed it from "within" to "in". --mew 4feb93
+A compound statement enclosed in parentheses may appear as an expression
+in GNU C@.  This allows you to use loops, switches, and local variables
+within an expression.
+
+Recall that a compound statement is a sequence of statements surrounded
+by braces; in this construct, parentheses go around the braces.  For
+example:
+
+@smallexample
+(@{ int y = foo (); int z;
+   if (y > 0) z = y;
+   else z = - y;
+   z; @})
+@end smallexample
+
+@noindent
+is a valid (though slightly more complex than necessary) expression
+for the absolute value of @code{foo ()}.
+
+The last thing in the compound statement should be an expression
+followed by a semicolon; the value of this subexpression serves as the
+value of the entire construct.  (If you use some other kind of statement
+last within the braces, the construct has type @code{void}, and thus
+effectively no value.)
+
+This feature is especially useful in making macro definitions ``safe'' (so
+that they evaluate each operand exactly once).  For example, the
+``maximum'' function is commonly defined as a macro in standard C as
+follows:
+
+@smallexample
+#define max(a,b) ((a) > (b) ? (a) : (b))
+@end smallexample
+
+@noindent
+@cindex side effects, macro argument
+But this definition computes either @var{a} or @var{b} twice, with bad
+results if the operand has side effects.  In GNU C, if you know the
+type of the operands (here taken as @code{int}), you can avoid this
+problem by defining the macro as follows:
+
+@smallexample
+#define maxint(a,b) \
+  (@{int _a = (a), _b = (b); _a > _b ? _a : _b; @})
+@end smallexample
+
+Note that introducing variable declarations (as we do in @code{maxint}) can
+cause variable shadowing, so while this example using the @code{max} macro
+produces correct results:
+@smallexample
+int _a = 1, _b = 2, c;
+c = max (_a, _b);
+@end smallexample
+@noindent
+this example using maxint will not:
+@smallexample
+int _a = 1, _b = 2, c;
+c = maxint (_a, _b);
+@end smallexample
+
+This problem may for instance occur when we use this pattern recursively, like
+so:
+
+@smallexample
+#define maxint3(a, b, c) \
+  (@{int _a = (a), _b = (b), _c = (c); maxint (maxint (_a, _b), _c); @})
+@end smallexample
+
+Embedded statements are not allowed in constant expressions, such as
+the value of an enumeration constant, the width of a bit-field, or
+the initial value of a static variable.
+
+If you don't know the type of the operand, you can still do this, but you
+must use @code{typeof} or @code{__auto_type} (@pxref{Typeof}).
+
+In G++, the result value of a statement expression undergoes array and
+function pointer decay, and is returned by value to the enclosing
+expression.  For instance, if @code{A} is a class, then
+
+@smallexample
+        A a;
+
+        (@{a;@}).Foo ()
+@end smallexample
+
+@noindent
+constructs a temporary @code{A} object to hold the result of the
+statement expression, and that is used to invoke @code{Foo}.
+Therefore the @code{this} pointer observed by @code{Foo} is not the
+address of @code{a}.
+
+In a statement expression, any temporaries created within a statement
+are destroyed at that statement's end.  This makes statement
+expressions inside macros slightly different from function calls.  In
+the latter case temporaries introduced during argument evaluation are
+destroyed at the end of the statement that includes the function
+call.  In the statement expression case they are destroyed during
+the statement expression.  For instance,
+
+@smallexample
+#define macro(a)  (@{__typeof__(a) b = (a); b + 3; @})
+template<typename T> T function(T a) @{ T b = a; return b + 3; @}
+
+void foo ()
+@{
+  macro (X ());
+  function (X ());
+@}
+@end smallexample
+
+@noindent
+has different places where temporaries are destroyed.  For the
+@code{macro} case, the temporary @code{X} is destroyed just after
+the initialization of @code{b}.  In the @code{function} case that
+temporary is destroyed when the function returns.
+
+These considerations mean that it is probably a bad idea to use
+statement expressions of this form in header files that are designed to
+work with C++.  (Note that some versions of the GNU C Library contained
+header files using statement expressions that lead to precisely this
+bug.)
+
+Jumping into a statement expression with @code{goto} or using a
+@code{switch} statement outside the statement expression with a
+@code{case} or @code{default} label inside the statement expression is
+not permitted.  Jumping into a statement expression with a computed
+@code{goto} (@pxref{Labels as Values}) has undefined behavior.
+Jumping out of a statement expression is permitted, but if the
+statement expression is part of a larger expression then it is
+unspecified which other subexpressions of that expression have been
+evaluated except where the language definition requires certain
+subexpressions to be evaluated before or after the statement
+expression.  A @code{break} or @code{continue} statement inside of
+a statement expression used in @code{while}, @code{do} or @code{for}
+loop or @code{switch} statement condition
+or @code{for} statement init or increment expressions jumps to an
+outer loop or @code{switch} statement if any (otherwise it is an error),
+rather than to the loop or @code{switch} statement in whose condition
+or init or increment expression it appears.
+In any case, as with a function call, the evaluation of a
+statement expression is not interleaved with the evaluation of other
+parts of the containing expression.  For example,
+
+@smallexample
+  foo (), ((@{ bar1 (); goto a; 0; @}) + bar2 ()), baz();
+@end smallexample
+
+@noindent
+calls @code{foo} and @code{bar1} and does not call @code{baz} but
+may or may not call @code{bar2}.  If @code{bar2} is called, it is
+called after @code{foo} and before @code{bar1}.
+
+@node Local Labels
+@subsection Locally Declared Labels
+@cindex local labels
+@cindex macros, local labels
+
+GCC allows you to declare @dfn{local labels} in any nested block
+scope.  A local label is just like an ordinary label, but you can
+only reference it (with a @code{goto} statement, or by taking its
+address) within the block in which it is declared.
+
+A local label declaration looks like this:
+
+@smallexample
+__label__ @var{label};
+@end smallexample
+
+@noindent
+or
+
+@smallexample
+__label__ @var{label1}, @var{label2}, /* @r{@dots{}} */;
+@end smallexample
+
+Local label declarations must come at the beginning of the block,
+before any ordinary declarations or statements.
+
+The label declaration defines the label @emph{name}, but does not define
+the label itself.  You must do this in the usual way, with
+@code{@var{label}:}, within the statements of the statement expression.
+
+The local label feature is useful for complex macros.  If a macro
+contains nested loops, a @code{goto} can be useful for breaking out of
+them.  However, an ordinary label whose scope is the whole function
+cannot be used: if the macro can be expanded several times in one
+function, the label is multiply defined in that function.  A
+local label avoids this problem.  For example:
+
+@smallexample
+#define SEARCH(value, array, target)              \
+do @{                                              \
+  __label__ found;                                \
+  typeof (target) _SEARCH_target = (target);      \
+  typeof (*(array)) *_SEARCH_array = (array);     \
+  int i, j;                                       \
+  int value;                                      \
+  for (i = 0; i < max; i++)                       \
+    for (j = 0; j < max; j++)                     \
+      if (_SEARCH_array[i][j] == _SEARCH_target)  \
+        @{ (value) = i; goto found; @}              \
+  (value) = -1;                                   \
+ found:;                                          \
+@} while (0)
+@end smallexample
+
+This could also be written using a statement expression:
+
+@smallexample
+#define SEARCH(array, target)                     \
+(@{                                                \
+  __label__ found;                                \
+  typeof (target) _SEARCH_target = (target);      \
+  typeof (*(array)) *_SEARCH_array = (array);     \
+  int i, j;                                       \
+  int value;                                      \
+  for (i = 0; i < max; i++)                       \
+    for (j = 0; j < max; j++)                     \
+      if (_SEARCH_array[i][j] == _SEARCH_target)  \
+        @{ value = i; goto found; @}                \
+  value = -1;                                     \
+ found:                                           \
+  value;                                          \
+@})
+@end smallexample
+
+Local label declarations also make the labels they declare visible to
+nested functions, if there are any.  @xref{Nested Functions}, for details.
+
+@node Labels as Values
+@subsection Labels as Values
+@cindex labels as values
+@cindex computed gotos
+@cindex goto with computed label
+@cindex address of a label
+
+You can get the address of a label defined in the current function
+(or a containing function) with the unary operator @samp{&&}.  The
+value has type @code{void *}.  This value is a constant and can be used
+wherever a constant of that type is valid.  For example:
+
+@smallexample
+void *ptr;
+/* @r{@dots{}} */
+ptr = &&foo;
+@end smallexample
+
+To use these values, you need to be able to jump to one.  This is done
+with the computed goto statement@footnote{The analogous feature in
+Fortran is called an assigned goto, but that name seems inappropriate in
+C, where one can do more than simply store label addresses in label
+variables.}, @code{goto *@var{exp};}.  For example,
+
+@smallexample
+goto *ptr;
+@end smallexample
+
+@noindent
+Any expression of type @code{void *} is allowed.
+
+One way of using these constants is in initializing a static array that
+serves as a jump table:
+
+@smallexample
+static void *array[] = @{ &&foo, &&bar, &&hack @};
+@end smallexample
+
+@noindent
+Then you can select a label with indexing, like this:
+
+@smallexample
+goto *array[i];
+@end smallexample
+
+@noindent
+Note that this does not check whether the subscript is in bounds---array
+indexing in C never does that.
+
+Such an array of label values serves a purpose much like that of the
+@code{switch} statement.  The @code{switch} statement is cleaner, so
+use that rather than an array unless the problem does not fit a
+@code{switch} statement very well.
+
+Another use of label values is in an interpreter for threaded code.
+The labels within the interpreter function can be stored in the
+threaded code for super-fast dispatching.
+
+You may not use this mechanism to jump to code in a different function.
+If you do that, totally unpredictable things happen.  The best way to
+avoid this is to store the label address only in automatic variables and
+never pass it as an argument.
+
+An alternate way to write the above example is
+
+@smallexample
+static const int array[] = @{ &&foo - &&foo, &&bar - &&foo,
+                             &&hack - &&foo @};
+goto *(&&foo + array[i]);
+@end smallexample
+
+@noindent
+This is more friendly to code living in shared libraries, as it reduces
+the number of dynamic relocations that are needed, and by consequence,
+allows the data to be read-only.
+This alternative with label differences is not supported for the AVR target,
+please use the first approach for AVR programs.
+
+The @code{&&foo} expressions for the same label might have different
+values if the containing function is inlined or cloned.  If a program
+relies on them being always the same,
+@code{__attribute__((__noinline__,__noclone__))} should be used to
+prevent inlining and cloning.  If @code{&&foo} is used in a static
+variable initializer, inlining and cloning is forbidden.
+
+Unlike a normal goto, in GNU C++ a computed goto will not call
+destructors for objects that go out of scope.
+
+@node Nested Functions
+@subsection Nested Functions
+@cindex nested functions
+@cindex downward funargs
+@cindex thunks
+
+A @dfn{nested function} is a function defined inside another function.
+Nested functions are supported as an extension in GNU C, but are not
+supported by GNU C++.
+
+The nested function's name is local to the block where it is defined.
+For example, here we define a nested function named @code{square}, and
+call it twice:
+
+@smallexample
+@group
+foo (double a, double b)
+@{
+  double square (double z) @{ return z * z; @}
+
+  return square (a) + square (b);
+@}
+@end group
+@end smallexample
+
+The nested function can access all the variables of the containing
+function that are visible at the point of its definition.  This is
+called @dfn{lexical scoping}.  For example, here we show a nested
+function which uses an inherited variable named @code{offset}:
+
+@smallexample
+@group
+bar (int *array, int offset, int size)
+@{
+  int access (int *array, int index)
+    @{ return array[index + offset]; @}
+  int i;
+  /* @r{@dots{}} */
+  for (i = 0; i < size; i++)
+    /* @r{@dots{}} */ access (array, i) /* @r{@dots{}} */
+@}
+@end group
+@end smallexample
+
+Nested function definitions are permitted within functions in the places
+where variable definitions are allowed; that is, in any block, mixed
+with the other declarations and statements in the block.
+
+It is possible to call the nested function from outside the scope of its
+name by storing its address or passing the address to another function:
+
+@smallexample
+hack (int *array, int size)
+@{
+  void store (int index, int value)
+    @{ array[index] = value; @}
+
+  intermediate (store, size);
+@}
+@end smallexample
+
+Here, the function @code{intermediate} receives the address of
+@code{store} as an argument.  If @code{intermediate} calls @code{store},
+the arguments given to @code{store} are used to store into @code{array}.
+But this technique works only so long as the containing function
+(@code{hack}, in this example) does not exit.
+
+If you try to call the nested function through its address after the
+containing function exits, all hell breaks loose.  If you try
+to call it after a containing scope level exits, and if it refers
+to some of the variables that are no longer in scope, you may be lucky,
+but it's not wise to take the risk.  If, however, the nested function
+does not refer to anything that has gone out of scope, you should be
+safe.
+
+GCC implements taking the address of a nested function using a technique
+called @dfn{trampolines}.  This technique was described in
+@cite{Lexical Closures for C++} (Thomas M. Breuel, USENIX
+C++ Conference Proceedings, October 17-21, 1988).
+
+A nested function can jump to a label inherited from a containing
+function, provided the label is explicitly declared in the containing
+function (@pxref{Local Labels}).  Such a jump returns instantly to the
+containing function, exiting the nested function that did the
+@code{goto} and any intermediate functions as well.  Here is an example:
+
+@smallexample
+@group
+bar (int *array, int offset, int size)
+@{
+  __label__ failure;
+  int access (int *array, int index)
+    @{
+      if (index > size)
+        goto failure;
+      return array[index + offset];
+    @}
+  int i;
+  /* @r{@dots{}} */
+  for (i = 0; i < size; i++)
+    /* @r{@dots{}} */ access (array, i) /* @r{@dots{}} */
+  /* @r{@dots{}} */
+  return 0;
+
+ /* @r{Control comes here from @code{access}
+    if it detects an error.}  */
+ failure:
+  return -1;
+@}
+@end group
+@end smallexample
+
+A nested function always has no linkage.  Declaring one with
+@code{extern} or @code{static} is erroneous.  If you need to declare the nested function
+before its definition, use @code{auto} (which is otherwise meaningless
+for function declarations).
+
+@smallexample
+bar (int *array, int offset, int size)
+@{
+  __label__ failure;
+  auto int access (int *, int);
+  /* @r{@dots{}} */
+  int access (int *array, int index)
+    @{
+      if (index > size)
+        goto failure;
+      return array[index + offset];
+    @}
+  /* @r{@dots{}} */
+@}
+@end smallexample
+
+@node Typeof
+@subsection Referring to a Type with @code{typeof}
+@findex typeof
+@findex sizeof
+@cindex macros, types of arguments
+
+Another way to refer to the type of an expression is with @code{typeof}.
+The syntax of using of this keyword looks like @code{sizeof}, but the
+construct acts semantically like a type name defined with @code{typedef}.
+
+There are two ways of writing the argument to @code{typeof}: with an
+expression or with a type.  Here is an example with an expression:
+
+@smallexample
+typeof (x[0](1))
+@end smallexample
+
+@noindent
+This assumes that @code{x} is an array of pointers to functions;
+the type described is that of the values of the functions.
+
+Here is an example with a typename as the argument:
+
+@smallexample
+typeof (int *)
+@end smallexample
+
+@noindent
+Here the type described is that of pointers to @code{int}.
+
+If you are writing a header file that must work when included in ISO C
+programs, write @code{__typeof__} instead of @code{typeof}.
+@xref{Alternate Keywords}.
+
+A @code{typeof} construct can be used anywhere a typedef name can be
+used.  For example, you can use it in a declaration, in a cast, or inside
+of @code{sizeof} or @code{typeof}.
+
+The operand of @code{typeof} is evaluated for its side effects if and
+only if it is an expression of variably modified type or the name of
+such a type.
+
+@code{typeof} is often useful in conjunction with
+statement expressions (@pxref{Statement Exprs}).
+Here is how the two together can
+be used to define a safe ``maximum'' macro which operates on any
+arithmetic type and evaluates each of its arguments exactly once:
+
+@smallexample
+#define max(a,b) \
+  (@{ typeof (a) _a = (a); \
+      typeof (b) _b = (b); \
+    _a > _b ? _a : _b; @})
+@end smallexample
+
+@cindex underscores in variables in macros
+@cindex @samp{_} in variables in macros
+@cindex local variables in macros
+@cindex variables, local, in macros
+@cindex macros, local variables in
+
+The reason for using names that start with underscores for the local
+variables is to avoid conflicts with variable names that occur within the
+expressions that are substituted for @code{a} and @code{b}.  Eventually we
+hope to design a new form of declaration syntax that allows you to declare
+variables whose scopes start only after their initializers; this will be a
+more reliable way to prevent such conflicts.
+
+@noindent
+Some more examples of the use of @code{typeof}:
+
+@itemize @bullet
+@item
+This declares @code{y} with the type of what @code{x} points to.
+
+@smallexample
+typeof (*x) y;
+@end smallexample
+
+@item
+This declares @code{y} as an array of such values.
+
+@smallexample
+typeof (*x) y[4];
+@end smallexample
+
+@item
+This declares @code{y} as an array of pointers to characters:
+
+@smallexample
+typeof (typeof (char *)[4]) y;
+@end smallexample
+
+@noindent
+It is equivalent to the following traditional C declaration:
+
+@smallexample
+char *y[4];
+@end smallexample
+
+To see the meaning of the declaration using @code{typeof}, and why it
+might be a useful way to write, rewrite it with these macros:
+
+@smallexample
+#define pointer(T)  typeof(T *)
+#define array(T, N) typeof(T [N])
+@end smallexample
+
+@noindent
+Now the declaration can be rewritten this way:
+
+@smallexample
+array (pointer (char), 4) y;
+@end smallexample
+
+@noindent
+Thus, @code{array (pointer (char), 4)} is the type of arrays of 4
+pointers to @code{char}.
+@end itemize
+
+The ISO C23 operator @code{typeof_unqual} is available in ISO C23 mode
+and its result is the non-atomic unqualified version of what @code{typeof}
+operator returns.  Alternate spelling @code{__typeof_unqual__} is
+available in all C modes and provides non-atomic unqualified version of
+what @code{__typeof__} operator returns.
+@xref{Alternate Keywords}.
+
+@cindex @code{__auto_type} in GNU C
+In GNU C, but not GNU C++, you may also declare the type of a variable
+as @code{__auto_type}.  In that case, the declaration must declare
+only one variable, whose declarator must just be an identifier, the
+declaration must be initialized, and the type of the variable is
+determined by the initializer; the name of the variable is not in
+scope until after the initializer.  (In C++, you should use C++11
+@code{auto} for this purpose.)  Using @code{__auto_type}, the
+``maximum'' macro above could be written as:
+
+@smallexample
+#define max(a,b) \
+  (@{ __auto_type _a = (a); \
+      __auto_type _b = (b); \
+    _a > _b ? _a : _b; @})
+@end smallexample
+
+Using @code{__auto_type} instead of @code{typeof} has two advantages:
+
+@itemize @bullet
+@item Each argument to the macro appears only once in the expansion of
+the macro.  This prevents the size of the macro expansion growing
+exponentially when calls to such macros are nested inside arguments of
+such macros.
+
+@item If the argument to the macro has variably modified type, it is
+evaluated only once when using @code{__auto_type}, but twice if
+@code{typeof} is used.
+@end itemize
+
+@node Offsetof
+@subsection Support for @code{offsetof}
+@findex __builtin_offsetof
+
+GCC implements for both C and C++ a syntactic extension to implement
+the @code{offsetof} macro.
+
+@smallexample
+primary:
+        "__builtin_offsetof" "(" @code{typename} "," offsetof_member_designator ")"
+
+offsetof_member_designator:
+          @code{identifier}
+        | offsetof_member_designator "." @code{identifier}
+        | offsetof_member_designator "[" @code{expr} "]"
+@end smallexample
+
+This extension is sufficient such that
+
+@smallexample
+#define offsetof(@var{type}, @var{member})  __builtin_offsetof (@var{type}, @var{member})
+@end smallexample
+
+@noindent
+is a suitable definition of the @code{offsetof} macro.  In C++, @var{type}
+may be dependent.  In either case, @var{member} may consist of a single
+identifier, or a sequence of member accesses and array references.
+
+@node Alignment
+@subsection Determining the Alignment of Functions, Types or Variables
+@cindex alignment
+@cindex type alignment
+@cindex variable alignment
+
+The keyword @code{__alignof__} determines the alignment requirement of
+a function, object, or a type, or the minimum alignment usually required
+by a type.  Its syntax is just like @code{sizeof} and C11 @code{_Alignof}.
+
+For example, if the target machine requires a @code{double} value to be
+aligned on an 8-byte boundary, then @code{__alignof__ (double)} is 8.
+This is true on many RISC machines.  On more traditional machine
+designs, @code{__alignof__ (double)} is 4 or even 2.
+
+Some machines never actually require alignment; they allow references to any
+data type even at an odd address.  For these machines, @code{__alignof__}
+reports the smallest alignment that GCC gives the data type, usually as
+mandated by the target ABI.
+
+If the operand of @code{__alignof__} is an lvalue rather than a type,
+its value is the required alignment for its type, taking into account
+any minimum alignment specified by attribute @code{aligned}
+(@pxref{Common Variable Attributes}).  For example, after this
+declaration:
+
+@smallexample
+struct foo @{ int x; char y; @} foo1;
+@end smallexample
+
+@noindent
+the value of @code{__alignof__ (foo1.y)} is 1, even though its actual
+alignment is probably 2 or 4, the same as @code{__alignof__ (int)}.
+It is an error to ask for the alignment of an incomplete type other
+than @code{void}.
+
+If the operand of the @code{__alignof__} expression is a function,
+the expression evaluates to the alignment of the function which may
+be specified by attribute @code{aligned} (@pxref{Common Function Attributes}).
+
+@node Incomplete Enums
+@subsection Incomplete @code{enum} Types
+
+You can define an @code{enum} tag without specifying its possible values.
+This results in an incomplete type, much like what you get if you write
+@code{struct foo} without describing the elements.  A later declaration
+that does specify the possible values completes the type.
+
+You cannot allocate variables or storage using the type while it is
+incomplete.  However, you can work with pointers to that type.
+
+This extension may not be very useful, but it makes the handling of
+@code{enum} more consistent with the way @code{struct} and @code{union}
+are handled.
+
+This extension is not supported by GNU C++.
+
+@node Variadic Macros
+@subsection Macros with a Variable Number of Arguments.
+@cindex variable number of arguments
+@cindex macro with variable arguments
+@cindex rest argument (in macro)
+@cindex variadic macros
+
+In the ISO C standard of 1999, a macro can be declared to accept a
+variable number of arguments much as a function can.  The syntax for
+defining the macro is similar to that of a function.  Here is an
+example:
+
+@smallexample
+#define debug(format, ...) fprintf (stderr, format, __VA_ARGS__)
+@end smallexample
+
+@noindent
+Here @samp{@dots{}} is a @dfn{variable argument}.  In the invocation of
+such a macro, it represents the zero or more tokens until the closing
+parenthesis that ends the invocation, including any commas.  This set of
+tokens replaces the identifier @code{__VA_ARGS__} in the macro body
+wherever it appears.  See the CPP manual for more information.
+
+GCC has long supported variadic macros, and used a different syntax that
+allowed you to give a name to the variable arguments just like any other
+argument.  Here is an example:
+
+@smallexample
+#define debug(format, args...) fprintf (stderr, format, args)
+@end smallexample
+
+@noindent
+This is in all ways equivalent to the ISO C example above, but arguably
+more readable and descriptive.
+
+GNU CPP has two further variadic macro extensions, and permits them to
+be used with either of the above forms of macro definition.
+
+In standard C, you are not allowed to leave the variable argument out
+entirely; but you are allowed to pass an empty argument.  For example,
+this invocation is invalid in ISO C, because there is no comma after
+the string:
+
+@smallexample
+debug ("A message")
+@end smallexample
+
+GNU CPP permits you to completely omit the variable arguments in this
+way.  In the above examples, the compiler would complain, though since
+the expansion of the macro still has the extra comma after the format
+string.
+
+To help solve this problem, CPP behaves specially for variable arguments
+used with the token paste operator, @samp{##}.  If instead you write
+
+@smallexample
+#define debug(format, ...) fprintf (stderr, format, ## __VA_ARGS__)
+@end smallexample
+
+@noindent
+and if the variable arguments are omitted or empty, the @samp{##}
+operator causes the preprocessor to remove the comma before it.  If you
+do provide some variable arguments in your macro invocation, GNU CPP
+does not complain about the paste operation and instead places the
+variable arguments after the comma.  Just like any other pasted macro
+argument, these arguments are not macro expanded.
+
+@node Conditionals
+@subsection Conditionals with Omitted Operands
+@cindex conditional expressions, extensions
+@cindex omitted middle-operands
+@cindex middle-operands, omitted
+@cindex extensions, @code{?:}
+@cindex @code{?:} extensions
+
+The middle operand in a conditional expression may be omitted.  Then
+if the first operand is nonzero, its value is the value of the conditional
+expression.
+
+Therefore, the expression
+
+@smallexample
+x ? : y
+@end smallexample
+
+@noindent
+has the value of @code{x} if that is nonzero; otherwise, the value of
+@code{y}.
+
+This example is perfectly equivalent to
+
+@smallexample
+x ? x : y
+@end smallexample
+
+@cindex side effect in @code{?:}
+@cindex @code{?:} side effect
+@noindent
+In this simple case, the ability to omit the middle operand is not
+especially useful.  When it becomes useful is when the first operand does,
+or may (if it is a macro argument), contain a side effect.  Then repeating
+the operand in the middle would perform the side effect twice.  Omitting
+the middle operand uses the value already computed without the undesirable
+effects of recomputing it.
+
+@node Case Ranges
+@subsection Case Ranges
+@cindex case ranges
+@cindex ranges in case statements
+
+You can specify a range of consecutive values in a single @code{case} label,
+like this:
+
+@smallexample
+case @var{low} ... @var{high}:
+@end smallexample
+
+@noindent
+This has the same effect as the proper number of individual @code{case}
+labels, one for each integer value from @var{low} to @var{high}, inclusive.
+
+This feature is especially useful for ranges of ASCII character codes:
+
+@smallexample
+case 'A' ... 'Z':
+@end smallexample
+
+@strong{Be careful:} Write spaces around the @code{...}, for otherwise
+it may be parsed wrong when you use it with integer values.  For example,
+write this:
+
+@smallexample
+case 1 ... 5:
+@end smallexample
+
+@noindent
+rather than this:
+
+@smallexample
+case 1...5:
+@end smallexample
+
+@node Mixed Labels and Declarations
+@subsection Mixed Declarations, Labels and Code
+@cindex mixed declarations and code
+@cindex declarations, mixed with code
+@cindex code, mixed with declarations
+
+ISO C99 and ISO C++ allow declarations and code to be freely mixed
+within compound statements.  ISO C23 allows labels to be
+placed before declarations and at the end of a compound statement.
+As an extension, GNU C also allows all this in C90 mode.  For example,
+you could do:
+
+@smallexample
+int i;
+/* @r{@dots{}} */
+i++;
+int j = i + 2;
+@end smallexample
+
+Each identifier is visible from where it is declared until the end of
+the enclosing block.
+
+@node C++ Comments
+@subsection C++ Style Comments
+@cindex @code{//}
+@cindex C++ comments
+@cindex comments, C++ style
+
+In GNU C, you may use C++ style comments, which start with @samp{//} and
+continue until the end of the line.  Many other C implementations allow
+such comments, and they are included in the 1999 C standard.  However,
+C++ style comments are not recognized if you specify an @option{-std}
+option specifying a version of ISO C before C99, or @option{-ansi}
+(equivalent to @option{-std=c90}).
+
+@node Escaped Newlines
+@subsection Slightly Looser Rules for Escaped Newlines
+@cindex escaped newlines
+@cindex newlines (escaped)
+
+The preprocessor treatment of escaped newlines is more relaxed
+than that specified by the C90 standard, which requires the newline
+to immediately follow a backslash.
+GCC's implementation allows whitespace in the form
+of spaces, horizontal and vertical tabs, and form feeds between the
+backslash and the subsequent newline.  The preprocessor issues a
+warning, but treats it as a valid escaped newline and combines the two
+lines to form a single logical line.  This works within comments and
+tokens, as well as between tokens.  Comments are @emph{not} treated as
+whitespace for the purposes of this relaxation, since they have not
+yet been replaced with spaces.
+
+@node Hex Floats
+@subsection Hex Floats
+@cindex hex floats
+
+ISO C99 and ISO C++17 support floating-point numbers written not only in
+the usual decimal notation, such as @code{1.55e1}, but also numbers such as
+@code{0x1.fp3} written in hexadecimal format.  As a GNU extension, GCC
+supports this in C90 mode (except in some cases when strictly
+conforming) and in C++98, C++11 and C++14 modes.  In that format the
+@samp{0x} hex introducer and the @samp{p} or @samp{P} exponent field are
+mandatory.  The exponent is a decimal number that indicates the power of
+2 by which the significant part is multiplied.  Thus @samp{0x1.f} is
+@tex
+$1 {15\over16}$,
+@end tex
+@ifnottex
+1 15/16,
+@end ifnottex
+@samp{p3} multiplies it by 8, and the value of @code{0x1.fp3}
+is the same as @code{1.55e1}.
+
+Unlike for floating-point numbers in the decimal notation the exponent
+is always required in the hexadecimal notation.  Otherwise the compiler
+would not be able to resolve the ambiguity of, e.g., @code{0x1.f}.  This
+could mean @code{1.0f} or @code{1.9375} since @samp{f} is also the
+extension for floating-point constants of type @code{float}.
+
+@node Binary constants
+@subsection Binary Constants using the @samp{0b} Prefix
+@cindex Binary constants using the @samp{0b} prefix
+
+Integer constants can be written as binary constants, consisting of a
+sequence of @samp{0} and @samp{1} digits, prefixed by @samp{0b} or
+@samp{0B}.  This is particularly useful in environments that operate a
+lot on the bit level (like microcontrollers).
+
+The following statements are identical:
+
+@smallexample
+i =       42;
+i =     0x2a;
+i =      052;
+i = 0b101010;
+@end smallexample
+
+The type of these constants follows the same rules as for octal or
+hexadecimal integer constants, so suffixes like @samp{L} or @samp{UL}
+can be applied.
+
+@node Dollar Signs
+@subsection Dollar Signs in Identifier Names
+@cindex $
+@cindex dollar signs in identifier names
+@cindex identifier names, dollar signs in
+
+In GNU C, you may normally use dollar signs in identifier names.
+This is because many traditional C implementations allow such identifiers.
+However, dollar signs in identifiers are not supported on a few target
+machines, typically because the target assembler does not allow them.
+
+@node Character Escapes
+@subsection The Character @key{ESC} in Constants
+
+You can use the sequence @samp{\e} in a string or character constant to
+stand for the ASCII character @key{ESC}.
+
 @node Alternate Keywords
-@section Alternate Keywords
+@subsection Alternate Keywords
 @cindex alternate keywords
 @cindex keywords, alternate
 
@@ -13202,25 +13130,8 @@ that predate C23@.
 
 @code{__extension__} has no effect aside from this.
 
-@node Incomplete Enums
-@section Incomplete @code{enum} Types
-
-You can define an @code{enum} tag without specifying its possible values.
-This results in an incomplete type, much like what you get if you write
-@code{struct foo} without describing the elements.  A later declaration
-that does specify the possible values completes the type.
-
-You cannot allocate variables or storage using the type while it is
-incomplete.  However, you can work with pointers to that type.
-
-This extension may not be very useful, but it makes the handling of
-@code{enum} more consistent with the way @code{struct} and @code{union}
-are handled.
-
-This extension is not supported by GNU C++.
-
 @node Function Names
-@section Function Names as Strings
+@subsection Function Names as Strings
 @cindex @code{__func__} identifier
 @cindex @code{__FUNCTION__} identifier
 @cindex @code{__PRETTY_FUNCTION__} identifier
@@ -13286,6 +13197,168 @@ __PRETTY_FUNCTION__ = void a::sub(int)
 These identifiers are variables, not preprocessor macros, and may not
 be used to initialize @code{char} arrays or be concatenated with string
 literals.
+
+@node Semantic Extensions
+@section Extensions to C Semantics
+
+GNU C defines useful behavior for some constructs that are not allowed or
+well-defined in standard C.
+
+@menu
+* Function Prototypes::    Prototype declarations and old-style definitions.
+* Pointer Arith::          Arithmetic on @code{void}-pointers and function pointers.
+* Variadic Pointer Args::  Pointer arguments to variadic functions.
+* Pointers to Arrays::     Pointers to arrays with qualifiers work as expected.
+* Const and Volatile Functions:: GCC interprets these specially in C.
+@end menu
+
+@node Function Prototypes
+@subsection Prototypes and Old-Style Function Definitions
+@cindex function prototype declarations
+@cindex old-style function definitions
+@cindex promotion of formal parameters
+
+GNU C extends ISO C to allow a function prototype to override a later
+old-style non-prototype definition.  Consider the following example:
+
+@smallexample
+/* @r{Use prototypes unless the compiler is old-fashioned.}  */
+#ifdef __STDC__
+#define P(x) x
+#else
+#define P(x) ()
+#endif
+
+/* @r{Prototype function declaration.}  */
+int isroot P((uid_t));
+
+/* @r{Old-style function definition.}  */
+int
+isroot (x)   /* @r{??? lossage here ???} */
+     uid_t x;
+@{
+  return x == 0;
+@}
+@end smallexample
+
+Suppose the type @code{uid_t} happens to be @code{short}.  ISO C does
+not allow this example, because subword arguments in old-style
+non-prototype definitions are promoted.  Therefore in this example the
+function definition's argument is really an @code{int}, which does not
+match the prototype argument type of @code{short}.
+
+This restriction of ISO C makes it hard to write code that is portable
+to traditional C compilers, because the programmer does not know
+whether the @code{uid_t} type is @code{short}, @code{int}, or
+@code{long}.  Therefore, in cases like these GNU C allows a prototype
+to override a later old-style definition.  More precisely, in GNU C, a
+function prototype argument type overrides the argument type specified
+by a later old-style definition if the former type is the same as the
+latter type before promotion.  Thus in GNU C the above example is
+equivalent to the following:
+
+@smallexample
+int isroot (uid_t);
+
+int
+isroot (uid_t x)
+@{
+  return x == 0;
+@}
+@end smallexample
+
+@noindent
+GNU C++ does not support old-style function definitions, so this
+extension is irrelevant.
+
+@node Pointer Arith
+@subsection Arithmetic on @code{void}- and Function-Pointers
+@cindex void pointers, arithmetic
+@cindex void, size of pointer to
+@cindex function pointers, arithmetic
+@cindex function, size of pointer to
+
+In GNU C, addition and subtraction operations are supported on pointers to
+@code{void} and on pointers to functions.  This is done by treating the
+size of a @code{void} or of a function as 1.
+
+A consequence of this is that @code{sizeof} is also allowed on @code{void}
+and on function types, and returns 1.
+
+@opindex Wpointer-arith
+The option @option{-Wpointer-arith} requests a warning if these extensions
+are used.
+
+@node Variadic Pointer Args
+@subsection Pointer Arguments in Variadic Functions
+@cindex pointer arguments in variadic functions
+@cindex variadic functions, pointer arguments
+
+Standard C requires that pointer types used with @code{va_arg} in
+functions with variable argument lists either must be compatible with
+that of the actual argument, or that one type must be a pointer to
+@code{void} and the other a pointer to a character type.  GNU C
+implements the POSIX XSI extension that additionally permits the use
+of @code{va_arg} with a pointer type to receive arguments of any other
+pointer type.
+
+In particular, in GNU C @samp{va_arg (ap, void *)} can safely be used
+to consume an argument of any pointer type.
+
+@node Pointers to Arrays
+@subsection Pointers to Arrays with Qualifiers Work as Expected
+@cindex pointers to arrays
+@cindex const qualifier
+
+In GNU C, pointers to arrays with qualifiers work similar to pointers
+to other qualified types. For example, a value of type @code{int (*)[5]}
+can be used to initialize a variable of type @code{const int (*)[5]}.
+These types are incompatible in ISO C because the @code{const} qualifier
+is formally attached to the element type of the array and not the
+array itself.
+
+@smallexample
+extern void
+transpose (int N, int M, double out[M][N], const double in[N][M]);
+double x[3][2];
+double y[2][3];
+@r{@dots{}}
+transpose(3, 2, y, x);
+@end smallexample
+
+@node Const and Volatile Functions
+@subsection Const and Volatile Functions
+@cindex @code{const} applied to function
+@cindex @code{volatile} applied to function
+
+The C standard explicitly leaves the behavior of the @code{const} and
+@code{volatile} type qualifiers applied to functions undefined; these
+constructs can only arise through the use of @code{typedef}.  As an extension,
+GCC defines this use of the @code{const} qualifier to have the same meaning
+as the GCC @code{const} function attribute, and the @code{volatile} qualifier
+to be equivalent to the @code{noreturn} attribute.
+@xref{Common Function Attributes}, for more information.
+
+As examples of this usage,
+
+@smallexample
+
+/* @r{Equivalent to:}
+   void fatal () __attribute__ ((noreturn));  */
+typedef void voidfn ();
+volatile voidfn fatal;
+
+/* @r{Equivalent to:}
+   extern int square (int) __attribute__ ((const));  */
+typedef int intfn (int);
+extern const intfn square;
+@end smallexample
+
+In general, using function attributes instead is preferred, since the
+attributes make both the intent of the code and its reliance on a GNU
+extension explicit.  Additionally, using @code{const} and
+@code{volatile} in this way is specific to GNU C and does not work in
+GNU C++.
 
 @node Return Address
 @section Getting the Return or Frame Address of a Function
@@ -13728,34 +13801,6 @@ x = foo ((v128) @{_mm_adds_epu8 (x.mm, y.mm)@});
 @c This could be done implicitly with __attribute__((transparent_union)),
 @c but GCC does not accept it for unions of vector types (PR 88955).
 @end smallexample
-
-@node Offsetof
-@section Support for @code{offsetof}
-@findex __builtin_offsetof
-
-GCC implements for both C and C++ a syntactic extension to implement
-the @code{offsetof} macro.
-
-@smallexample
-primary:
-        "__builtin_offsetof" "(" @code{typename} "," offsetof_member_designator ")"
-
-offsetof_member_designator:
-          @code{identifier}
-        | offsetof_member_designator "." @code{identifier}
-        | offsetof_member_designator "[" @code{expr} "]"
-@end smallexample
-
-This extension is sufficient such that
-
-@smallexample
-#define offsetof(@var{type}, @var{member})  __builtin_offsetof (@var{type}, @var{member})
-@end smallexample
-
-@noindent
-is a suitable definition of the @code{offsetof} macro.  In C++, @var{type}
-may be dependent.  In either case, @var{member} may consist of a single
-identifier, or a sequence of member accesses and array references.
 
 @node __sync Builtins
 @section Legacy @code{__sync} Built-in Functions for Atomic Memory Access
@@ -29499,28 +29544,6 @@ Add after paragraph 6
 Non-@code{static} members shall not be @code{__thread}.
 @end quotation
 @end itemize
-
-@node Binary constants
-@section Binary Constants using the @samp{0b} Prefix
-@cindex Binary constants using the @samp{0b} prefix
-
-Integer constants can be written as binary constants, consisting of a
-sequence of @samp{0} and @samp{1} digits, prefixed by @samp{0b} or
-@samp{0B}.  This is particularly useful in environments that operate a
-lot on the bit level (like microcontrollers).
-
-The following statements are identical:
-
-@smallexample
-i =       42;
-i =     0x2a;
-i =      052;
-i = 0b101010;
-@end smallexample
-
-The type of these constants follows the same rules as for octal or
-hexadecimal integer constants, so suffixes like @samp{L} or @samp{UL}
-can be applied.
 
 @node OpenMP
 @section OpenMP
