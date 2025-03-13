@@ -2196,8 +2196,8 @@ check_final_overrider (tree overrider, tree basefn)
 	set_decl_contracts( overrider,
 			    remap_contracts (overrider,
 					     basefn,
-					     /* don't remap result */ false,
-					     /* remap post conditions */ true));
+					     /*remap_result*/ false,
+					     /*remap_post*/ true));
       }
     else if (DECL_HAS_CONTRACTS_P (basefn) && DECL_HAS_CONTRACTS_P (overrider))
       {
