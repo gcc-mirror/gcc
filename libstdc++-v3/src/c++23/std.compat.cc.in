@@ -24,6 +24,35 @@
 export module std.compat;
 export import std;
 
+#include <stdbit.h>
+
+// <stdbit.h>
+export
+{
+#define _GLIBCXX_STDBIT_FUNC(F) \
+  using __gnu_cxx::F ## _uc; \
+  using __gnu_cxx::F ## _us; \
+  using __gnu_cxx::F ## _ui; \
+  using __gnu_cxx::F ## _ul; \
+  using __gnu_cxx::F ## _ull; \
+  using __gnu_cxx::F
+_GLIBCXX_STDBIT_FUNC(stdc_leading_zeros);
+_GLIBCXX_STDBIT_FUNC(stdc_leading_ones);
+_GLIBCXX_STDBIT_FUNC(stdc_trailing_zeros);
+_GLIBCXX_STDBIT_FUNC(stdc_trailing_ones);
+_GLIBCXX_STDBIT_FUNC(stdc_first_leading_zero);
+_GLIBCXX_STDBIT_FUNC(stdc_first_leading_one);
+_GLIBCXX_STDBIT_FUNC(stdc_first_trailing_zero);
+_GLIBCXX_STDBIT_FUNC(stdc_first_trailing_one);
+_GLIBCXX_STDBIT_FUNC(stdc_count_zeros);
+_GLIBCXX_STDBIT_FUNC(stdc_count_ones);
+_GLIBCXX_STDBIT_FUNC(stdc_has_single_bit);
+_GLIBCXX_STDBIT_FUNC(stdc_bit_width);
+_GLIBCXX_STDBIT_FUNC(stdc_bit_floor);
+_GLIBCXX_STDBIT_FUNC(stdc_bit_ceil);
+#undef _GLIBCXX_STDBIT_FUNC
+}
+
 #define STD_COMPAT 1
 
 // C library exports are appended from std-clib.cc.in.
