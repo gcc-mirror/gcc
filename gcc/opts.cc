@@ -3831,9 +3831,7 @@ gen_command_line_string (cl_decoded_option *options,
       case OPT_v:
       case OPT_w:
       case OPT_L:
-      case OPT_D:
       case OPT_I:
-      case OPT_U:
       case OPT_SPECIAL_unknown:
       case OPT_SPECIAL_ignore:
       case OPT_SPECIAL_warn_removed:
@@ -3868,6 +3866,18 @@ gen_command_line_string (cl_decoded_option *options,
       case OPT_fchecking:
       case OPT_fchecking_:
 	/* Ignore these.  */
+	continue;
+      case OPT_D:
+      case OPT_U:
+	if (startswith (options[i].arg, "_FORTIFY_SOURCE")
+	    && (options[i].arg[sizeof ("_FORTIFY_SOURCE") - 1] == '\0'
+		|| (options[i].opt_index == OPT_D
+		    && options[i].arg[sizeof ("_FORTIFY_SOURCE") - 1] == '=')))
+	  {
+	    switches.safe_push (options[i].orig_option_with_args_text);
+	    len += strlen (options[i].orig_option_with_args_text) + 1;
+	  }
+	/* Otherwise ignore these. */
 	continue;
       case OPT_flto_:
 	{
