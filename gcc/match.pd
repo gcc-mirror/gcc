@@ -5231,6 +5231,34 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (if (mask)
       (bit_op (shift (convert @0) @1) { mask; })))))))
 
+/* Fold ((X >> C1) & C2) * (1 << C1) into X & (C2 << C1), including cases where
+   the & happens in a different type.  It is the conversion case that isn't
+   a composition of other folds.
+
+   Let the type of the * and >> be T1 and the type of the & be T2.
+   The fold is valid if the conversion to T2 preserves all information;
+   that is, if T2 is wider than T1 or drops no more than C1 bits from T1.
+   In that case, the & might operate on bits that are dropped by the
+   later conversion to T1 and the multiplication by (1 << C1), but those
+   bits are also dropped by ANDing with C2 << C1 (converted to T1).
+
+   If the conversion to T2 is not information-preserving, we have to be
+   careful about the later conversion to T1 acting as a sign extension.
+   We need either T2 to be unsigned or the top (sign) bit of C2 to be clear.
+   That is equivalent to testing whether C2 is nonnegative.  */
+(simplify
+ (mult (convert? (bit_and (convert? (rshift @0 INTEGER_CST@1)) INTEGER_CST@2))
+       INTEGER_CST@3)
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
+      && wi::ltu_p (wi::to_widest (@1), TYPE_PRECISION (type)))
+  (with { unsigned int shift = tree_to_uhwi (@1);
+	  unsigned int prec = TYPE_PRECISION (type); }
+   (if ((prec <= TYPE_PRECISION (TREE_TYPE (@2)) + shift
+	 || tree_int_cst_sgn (@2) >= 0)
+	&& wi::to_wide (@3) == wi::set_bit_in_zero (shift, prec))
+    (with { auto mask = wide_int::from (wi::to_wide (@2), prec, UNSIGNED); }
+     (bit_and @0 { wide_int_to_tree (type, mask << shift); }))))))
+
 /* ~(~X >> Y) -> X >> Y (for arithmetic shift).  */
 (simplify
  (bit_not (convert1?:s (rshift:s (convert2?@0 (bit_not @1)) @2)))
