@@ -108,10 +108,9 @@ public:
     {}
   };
 
-  std::unordered_map<NodeId, std::vector<ImportKind>> &&
-  get_imports_to_resolve ()
+  std::unordered_map<NodeId, std::vector<ImportKind>> &get_imports_to_resolve ()
   {
-    return std::move (imports_to_resolve);
+    return imports_to_resolve;
   }
 
   void check_multiple_insertion_error (

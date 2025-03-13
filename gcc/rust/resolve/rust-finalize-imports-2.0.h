@@ -96,10 +96,10 @@ public:
 
   void go (AST::Crate &crate);
 
+  void visit (AST::UseDeclaration &) override;
+
 private:
   using AST::DefaultASTVisitor::visit;
-
-  void visit (AST::UseDeclaration &) override;
 
   Early::ImportMappings data;
   TopLevel &toplevel;

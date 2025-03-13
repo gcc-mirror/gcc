@@ -34,6 +34,7 @@ class Early : public DefaultResolver
 {
   using DefaultResolver::visit;
 
+  TopLevel toplevel;
   bool dirty;
 
 public:
@@ -59,6 +60,7 @@ public:
 
   void visit (AST::Function &) override;
   void visit (AST::StructStruct &) override;
+  void visit (AST::UseDeclaration &) override;
 
   struct ImportData
   {
@@ -246,6 +248,13 @@ private:
   std::vector<Error> macro_resolve_errors;
 
   void collect_error (Error e) { macro_resolve_errors.push_back (e); }
+
+  void finalize_simple_import (const Early::ImportPair &mapping);
+
+  void finalize_glob_import (NameResolutionContext &ctx,
+			     const Early::ImportPair &mapping);
+
+  void finalize_rebind_import (const Early::ImportPair &mapping);
 };
 
 } // namespace Resolver2_0
