@@ -1853,7 +1853,7 @@ contains_forall_index_p (gfc_expr *expr)
     case EXPR_STRUCTURE:
     case EXPR_ARRAY:
       for (c = gfc_constructor_first (expr->value.constructor);
-	   c; gfc_constructor_next (c))
+	   c; c = gfc_constructor_next (c))
 	if (contains_forall_index_p (c->expr))
 	  return true;
       break;
@@ -1874,6 +1874,7 @@ contains_forall_index_p (gfc_expr *expr)
 	break;
 
       case REF_COMPONENT:
+      case REF_INQUIRY:
 	break;
 
       case REF_SUBSTRING:
@@ -1933,7 +1934,7 @@ gfc_contains_implied_index_p (gfc_expr *expr)
     case EXPR_STRUCTURE:
     case EXPR_ARRAY:
       for (c = gfc_constructor_first (expr->value.constructor);
-	   c; gfc_constructor_next (c))
+	   c; c = gfc_constructor_next (c))
 	if (gfc_contains_implied_index_p (c->expr))
 	  return true;
       break;
@@ -1954,6 +1955,7 @@ gfc_contains_implied_index_p (gfc_expr *expr)
 	break;
 
       case REF_COMPONENT:
+      case REF_INQUIRY:
 	break;
 
       case REF_SUBSTRING:

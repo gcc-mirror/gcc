@@ -19,6 +19,8 @@ program main
   print *,      str(-n:11)  ! 2 checked bounds
   print *, len (str(-n:11)) ! 2 checked bounds
 
+  print *,      str(-n*n%kind:sum(n-[0,n%kind])) ! 2 checked bounds
+
 end program main
 
-! { dg-final { scan-tree-dump-times "Substring out of bounds:" 10 "original" } }
+! { dg-final { scan-tree-dump-times "Substring out of bounds:" 12 "original" } }
