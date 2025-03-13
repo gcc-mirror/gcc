@@ -34,8 +34,10 @@
 # - the compiler proper (eg: cc1plus)
 # - define the names for selecting the language in LANGUAGES.
 
-gcobol_INSTALL_NAME := $(shell echo gcobol|sed '$(program_transform_name)')
-gcobol_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcobol|sed '$(program_transform_name)')
+GCOBOL_INSTALL_NAME := $(shell echo gcobol|sed '$(program_transform_name)')
+GCOBOL_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcobol|sed '$(program_transform_name)')
+
+GCOBC_INSTALL_NAME := $(shell echo gcobc|sed '$(program_transform_name)')
 
 cobol: cobol1$(exeext)
 cobol.serial = cobol1$(exeext)
@@ -280,14 +282,14 @@ cobol.start.encap: gcobol$(exeext)
 cobol.rest.encap:
 
 cobol.install-common: installdirs
-	$(INSTALL_PROGRAM) gcobol$(exeext)      $(DESTDIR)$(bindir)/
+	$(INSTALL_PROGRAM) gcobol$(exeext)      $(DESTDIR)$(bindir)/$(GCOBOL_INSTALL_NAME)$(exeext)
 	$(INSTALL_PROGRAM) cobol1$(exeext)      $(DESTDIR)$(libexecsubdir)/
-	$(INSTALL) -m 755 $(srcdir)/cobol/gcobc $(DESTDIR)$(bindir)/
+	$(INSTALL) -m 755 $(srcdir)/cobol/gcobc $(DESTDIR)$(bindir)/$(GCOBC_INSTALL_NAME)$(exeext)
 	mkdir -p $(DESTDIR)$(datadir)/gcobol/udf
 	$(INSTALL_DATA) $(srcdir)/cobol/udf/*   $(DESTDIR)$(datadir)/gcobol/udf/
 
 cobol.install-man: installdirs
-	$(INSTALL_DATA) $(srcdir)/cobol/gcobol.1 $(DESTDIR)$(man1dir)/
+	$(INSTALL_DATA) $(srcdir)/cobol/gcobol.1 $(DESTDIR)$(man1dir)/$(GCOBOL_INSTALL_NAME)$(man1ext)
 	$(INSTALL_DATA) $(srcdir)/cobol/gcobol.3 $(DESTDIR)$(man3dir)/
 
 cobol.install-info:
@@ -332,7 +334,7 @@ gcobol-io.html: $(srcdir)/cobol/gcobol.3
 # "make uninstall" is not expected to work.  It's not clear how to name
 # the installed location of the cobol1 compiler.
 cobol.uninstall:
-	rm -rf 	$(DESTDIR)$(bindir)/$(gcobol_INSTALL_NAME)$(exeext)	\
+	rm -rf 	$(DESTDIR)$(bindir)/$(GCOBOL_INSTALL_NAME)$(exeext)	\
 		$(DESTDIR)$(bindir)/gcobc				\
 		$(DESTDIR)$(datadir)/gcobol/				\
 		$(DESTDIR)$(man1dir)/gcobol.1				\
