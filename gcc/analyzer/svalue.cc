@@ -467,8 +467,21 @@ cmp_csts_same_type (const_tree cst1, const_tree cst2)
     case INTEGER_CST:
       return tree_int_cst_compare (cst1, cst2);
     case STRING_CST:
-      return strcmp (TREE_STRING_POINTER (cst1),
-		     TREE_STRING_POINTER (cst2));
+      if (TREE_STRING_LENGTH (cst1) < TREE_STRING_LENGTH (cst2))
+	return -1;
+      if (TREE_STRING_LENGTH (cst1) > TREE_STRING_LENGTH (cst2))
+	return 1;
+      return memcmp (TREE_STRING_POINTER (cst1),
+		     TREE_STRING_POINTER (cst2),
+		     TREE_STRING_LENGTH (cst1));
+    case RAW_DATA_CST:
+      if (RAW_DATA_LENGTH (cst1) < RAW_DATA_LENGTH (cst2))
+	return -1;
+      if (RAW_DATA_LENGTH (cst1) > RAW_DATA_LENGTH (cst2))
+	return 1;
+      return memcmp (RAW_DATA_POINTER (cst1),
+		     RAW_DATA_POINTER (cst2),
+		     RAW_DATA_LENGTH (cst1));
     case REAL_CST:
       /* Impose an arbitrary but deterministic order.  */
       return memcmp (TREE_REAL_CST_PTR (cst1),
