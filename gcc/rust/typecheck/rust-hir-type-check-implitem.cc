@@ -86,9 +86,20 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
 	    case HIR::GenericParam::GenericKind::CONST:
 	      // FIXME: Skipping Lifetime and Const completely until better
 	      // handling.
+	      if (parent.get_abi () != Rust::ABI::INTRINSIC)
+		{
+		  rust_error_at (function.get_locus (), ErrorCode::E0044,
+				 "foreign items may not have const parameters");
+		}
 	      break;
 
 	      case HIR::GenericParam::GenericKind::TYPE: {
+		if (parent.get_abi () != Rust::ABI::INTRINSIC)
+		  {
+		    rust_error_at (
+		      function.get_locus (), ErrorCode::E0044,
+		      "foreign items may not have type parameters");
+		  }
 		auto param_type
 		  = TypeResolveGenericParam::Resolve (*generic_param);
 		context->insert_type (generic_param->get_mappings (),
