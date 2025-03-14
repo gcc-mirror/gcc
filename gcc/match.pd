@@ -5284,7 +5284,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 || tree_int_cst_sgn (@2) >= 0)
 	&& wi::to_wide (@3) == wi::set_bit_in_zero (shift, prec))
     (with { auto mask = wide_int::from (wi::to_wide (@2), prec, UNSIGNED); }
-     (bit_and @0 { wide_int_to_tree (type, mask << shift); }))))))
+     (bit_and (convert @0) { wide_int_to_tree (type, mask << shift); }))))))
 
 /* ~(~X >> Y) -> X >> Y (for arithmetic shift).  */
 (simplify
