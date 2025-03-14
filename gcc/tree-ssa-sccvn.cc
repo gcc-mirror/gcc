@@ -5169,6 +5169,34 @@ dominated_by_p_w_unex (basic_block bb1, basic_block bb2, bool allow_back)
 	    }
 	}
     }
+  /* Iterate to the single successor of bb2 with only a single executable
+     incoming edge.  */
+  else if (EDGE_COUNT (bb2->succs) == 1
+	   && EDGE_COUNT (single_succ (bb2)->preds) > 1)
+    {
+      edge prede = NULL;
+      FOR_EACH_EDGE (e, ei, single_succ (bb2)->preds)
+	if ((e->flags & EDGE_EXECUTABLE)
+	    || (!allow_back && (e->flags & EDGE_DFS_BACK)))
+	  {
+	    if (prede)
+	      {
+		prede = NULL;
+		break;
+	      }
+	    prede = e;
+	  }
+      /* We might actually get to a query with BB2 not visited yet when
+	 we're querying for a predicated value.  */
+      if (prede && prede->src == bb2)
+	{
+	  bb2 = prede->dest;
+
+	  /* Re-do the dominance check with changed bb2.  */
+	  if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
+	    return true;
+	}
+    }
 
   /* We could now iterate updating bb1 / bb2.  */
   return false;
