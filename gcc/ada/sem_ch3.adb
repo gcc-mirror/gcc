@@ -22579,63 +22579,59 @@ package body Sem_Ch3 is
          Check_Incomplete (S);
          P := Parent (S);
 
-         --  Ada 2005 (AI-231): Static check
+         if Excludes_Null then
+            --  Create an Itype that is a duplicate of Entity (S) but with the
+            --  null-exclusion attribute.
+            if Is_Access_Type (Entity (S)) then
+               if Can_Never_Be_Null (Entity (S)) then
+                  case Nkind (Related_Nod) is
+                     when N_Full_Type_Declaration =>
+                        if Nkind (Type_Definition (Related_Nod))
+                           in N_Array_Type_Definition
+                        then
+                           Error_Node :=
+                             Subtype_Indication
+                               (Component_Definition
+                                  (Type_Definition (Related_Nod)));
+                        else
+                           Error_Node :=
+                             Subtype_Indication
+                               (Type_Definition (Related_Nod));
+                        end if;
 
-         if Ada_Version >= Ada_2005
-           and then Excludes_Null
-           and then not Is_Access_Type (Entity (S))
-         then
-            Error_Msg_N ("`NOT NULL` only allowed for an access type", S);
-         end if;
+                     when N_Subtype_Declaration =>
+                        Error_Node := Subtype_Indication (Related_Nod);
 
-         --  Create an Itype that is a duplicate of Entity (S) but with the
-         --  null-exclusion attribute.
+                     when N_Object_Declaration =>
+                        Error_Node := Object_Definition (Related_Nod);
 
-         if Is_Access_Type (Entity (S)) and then Excludes_Null then
-            if Can_Never_Be_Null (Entity (S)) then
-               case Nkind (Related_Nod) is
-                  when N_Full_Type_Declaration =>
-                     if Nkind (Type_Definition (Related_Nod))
-                       in N_Array_Type_Definition
-                     then
+                     when N_Component_Declaration =>
                         Error_Node :=
                           Subtype_Indication
-                            (Component_Definition
-                             (Type_Definition (Related_Nod)));
-                     else
-                        Error_Node :=
-                          Subtype_Indication (Type_Definition (Related_Nod));
-                     end if;
+                            (Component_Definition (Related_Nod));
 
-                  when N_Subtype_Declaration =>
-                     Error_Node := Subtype_Indication (Related_Nod);
+                     when N_Allocator =>
+                        Error_Node := Expression (Related_Nod);
 
-                  when N_Object_Declaration =>
-                     Error_Node := Object_Definition (Related_Nod);
+                     when others =>
+                        pragma Assert (False);
+                        Error_Node := Related_Nod;
+                  end case;
 
-                  when N_Component_Declaration =>
-                     Error_Node :=
-                       Subtype_Indication (Component_Definition (Related_Nod));
+                  Error_Msg_NE
+                    ("`NOT NULL` not allowed (& already excludes null)",
+                     Error_Node,
+                     Entity (S));
+               end if;
 
-                  when N_Allocator =>
-                     Error_Node := Expression (Related_Nod);
-
-                  when others =>
-                     pragma Assert (False);
-                     Error_Node := Related_Nod;
-               end case;
-
-               Error_Msg_NE
-                 ("`NOT NULL` not allowed (& already excludes null)",
-                  Error_Node,
-                  Entity (S));
+               Set_Etype
+                 (S,
+                  Create_Null_Excluding_Itype
+                    (T => Entity (S), Related_Nod => P));
+               Set_Entity (S, Etype (S));
+            elsif Ada_Version >= Ada_2005 then
+               Error_Msg_N ("`NOT NULL` only allowed for an access type", S);
             end if;
-
-            Set_Etype  (S,
-              Create_Null_Excluding_Itype
-                (T           => Entity (S),
-                 Related_Nod => P));
-            Set_Entity (S, Etype (S));
          end if;
 
          return Entity (S);
