@@ -83,3 +83,14 @@ proc cobol-dg-runtest { testcases flags default-extra-flags } {
 	torture-finish
     }
 }
+
+proc check_effective_target_cobol {} {
+    # Check if the COBOL FE can compile trivial programs.
+    return [check_no_compiler_messages cobol assembly {
+*> COBOL
+IDENTIFICATION DIVISION.
+PROGRAM-ID. pass.
+PROCEDURE DIVISION.
+    STOP RUN.
+    }]
+}

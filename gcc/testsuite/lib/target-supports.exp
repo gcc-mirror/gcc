@@ -38,6 +38,7 @@
 # "// ObjC++" for ObjC++
 # "// Go" for Go
 # "// Rust" for Rust
+# "*> COBOL" for COBOL
 # and "(* Modula-2" for Modula-2
 # If the tool is ObjC/ObjC++ then we overide the extension to .m/.mm to
 # allow for ObjC/ObjC++ specific flags.
@@ -72,6 +73,7 @@ proc check_compile {basename type contents args} {
 	"*/\\* ObjC*" { set src ${basename}[pid].m }
 	"*// Go*" { set src ${basename}[pid].go }
 	"*// Rust*" { set src ${basename}[pid].rs }
+	"*\\*> COBOL*" { set src ${basename}[pid].cob }
 	"*(\\* Modula-2*" { set src ${basename}[pid].mod }
 	default {
 	    switch -- $tool {

@@ -34,8 +34,10 @@ set cobol_test_path $srcdir/$subdir
 set all_flags $DEFAULT_COBFLAGS
 
 # Main loop.
-cobol-dg-runtest [lsort \
+if [check_effective_target_cobol] {
+    cobol-dg-runtest [lsort \
        [glob -nocomplain $srcdir/$subdir/*.cob ] ] "" $all_flags
+}
 
 # All done.
 dg-finish
