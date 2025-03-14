@@ -2277,6 +2277,18 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 			    TREE_TYPE (stmt), TREE_OPERAND (stmt, 0));
       break;
 
+    case MODIFY_EXPR:
+      /* Mark stores to parts of complex automatic non-addressable
+	 variables as DECL_NOT_GIMPLE_REG_P for -O0.  This can't be
+	 done during gimplification.  See PR119120.  */
+      if ((TREE_CODE (TREE_OPERAND (stmt, 0)) == REALPART_EXPR
+	   || TREE_CODE (TREE_OPERAND (stmt, 0)) == IMAGPART_EXPR)
+	  && !optimize
+	  && DECL_P (TREE_OPERAND (TREE_OPERAND (stmt, 0), 0))
+	  && is_gimple_reg (TREE_OPERAND (TREE_OPERAND (stmt, 0), 0)))
+	DECL_NOT_GIMPLE_REG_P (TREE_OPERAND (TREE_OPERAND (stmt, 0), 0)) = 1;
+      break;
+
     default:
       if (IS_TYPE_OR_DECL_P (stmt))
 	*walk_subtrees = 0;

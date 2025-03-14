@@ -727,6 +727,18 @@ c_genericize_control_stmt (tree *stmt_p, int *walk_subtrees, void *data,
 static tree
 c_genericize_control_r (tree *stmt_p, int *walk_subtrees, void *data)
 {
+  tree stmt = *stmt_p;
+  /* Mark stores to parts of complex automatic non-addressable
+     variables as DECL_NOT_GIMPLE_REG_P for -O0.  This can't be
+     done during gimplification.  See PR119120.  */
+  if (TREE_CODE (stmt) == MODIFY_EXPR
+      && (TREE_CODE (TREE_OPERAND (stmt, 0)) == REALPART_EXPR
+	  || TREE_CODE (TREE_OPERAND (stmt, 0)) == IMAGPART_EXPR)
+      && !optimize
+      && DECL_P (TREE_OPERAND (TREE_OPERAND (stmt, 0), 0))
+      && is_gimple_reg (TREE_OPERAND (TREE_OPERAND (stmt, 0), 0)))
+    DECL_NOT_GIMPLE_REG_P (TREE_OPERAND (TREE_OPERAND (stmt, 0), 0)) = 1;
+
   c_genericize_control_stmt (stmt_p, walk_subtrees, data,
 			     c_genericize_control_r, NULL);
   return NULL;
