@@ -452,14 +452,11 @@ i[34567]86-*-* | x86_64-*-*)
 		       cmpccxaddintrin.h amxfp16intrin.h prfchiintrin.h
 		       raointintrin.h amxcomplexintrin.h avxvnniint16intrin.h
 		       sm3intrin.h sha512intrin.h sm4intrin.h usermsrintrin.h
-		       avx10_2mediaintrin.h avx10_2-512mediaintrin.h
-		       avx10_2convertintrin.h avx10_2-512convertintrin.h
-		       avx10_2bf16intrin.h avx10_2-512bf16intrin.h
-		       avx10_2satcvtintrin.h avx10_2-512satcvtintrin.h
-		       avx10_2minmaxintrin.h avx10_2-512minmaxintrin.h
-		       avx10_2copyintrin.h amxavx512intrin.h amxtf32intrin.h
-		       amxtransposeintrin.h amxfp8intrin.h movrsintrin.h
-		       amxmovrsintrin.h"
+		       avx10_2mediaintrin.h avx10_2convertintrin.h
+		       avx10_2bf16intrin.h avx10_2satcvtintrin.h
+		       avx10_2minmaxintrin.h avx10_2copyintrin.h
+		       amxavx512intrin.h amxtf32intrin.h amxtransposeintrin.h
+		       amxfp8intrin.h movrsintrin.h amxmovrsintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h
