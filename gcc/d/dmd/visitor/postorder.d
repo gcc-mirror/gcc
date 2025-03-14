@@ -82,13 +82,13 @@ public:
     override void visit(NewExp e)
     {
         //printf("NewExp::apply(): %s\n", toChars());
-        doCond(e.thisexp) || doCond(e.arguments.peekSlice()) || applyTo(e);
+        doCond(e.placement) || doCond(e.thisexp) || doCond(e.arguments.peekSlice()) || applyTo(e);
     }
 
     override void visit(NewAnonClassExp e)
     {
         //printf("NewAnonClassExp::apply(): %s\n", toChars());
-        doCond(e.thisexp) || doCond(e.arguments.peekSlice()) || applyTo(e);
+        doCond(e.placement) || doCond(e.thisexp) || doCond(e.arguments.peekSlice()) || applyTo(e);
     }
 
     override void visit(TypeidExp e)

@@ -304,8 +304,8 @@ extern (C++) abstract class Expression : ASTNode
 
     static struct BitFields
     {
-        bool parens;    // if this is a parenthesized expression
-        bool rvalue;    // true if this is considered to be an rvalue, even if it is an lvalue
+    bool parens;    // if this is a parenthesized expression
+    bool rvalue;    // true if this is considered to be an rvalue, even if it is an lvalue
     }
     import dmd.common.bitfields;
     mixin(generateBitFields!(BitFields, ubyte));
@@ -2446,6 +2446,7 @@ extern (C++) final class NewExp : Expression
     Type newtype;
     Expressions* arguments;     // Array of Expression's
     Identifiers* names;         // Array of names corresponding to expressions
+    Expression placement;       // if !=null, then PlacementExpression
 
     Expression argprefix;       // expression to be evaluated just before arguments[]
     CtorDeclaration member;     // constructor function
@@ -2458,23 +2459,25 @@ extern (C++) final class NewExp : Expression
     /// The fields are still separate for backwards compatibility
     extern (D) ArgumentList argumentList() { return ArgumentList(arguments, names); }
 
-    extern (D) this(Loc loc, Expression thisexp, Type newtype, Expressions* arguments, Identifiers* names = null) @safe
+    extern (D) this(Loc loc, Expression placement, Expression thisexp, Type newtype, Expressions* arguments, Identifiers* names = null) @safe
     {
         super(loc, EXP.new_);
+        this.placement = placement;
         this.thisexp = thisexp;
         this.newtype = newtype;
         this.arguments = arguments;
         this.names = names;
     }
 
-    static NewExp create(Loc loc, Expression thisexp, Type newtype, Expressions* arguments) @safe
+    static NewExp create(Loc loc, Expression placement, Expression thisexp, Type newtype, Expressions* arguments) @safe
     {
-        return new NewExp(loc, thisexp, newtype, arguments);
+        return new NewExp(loc, placement, thisexp, newtype, arguments);
     }
 
     override NewExp syntaxCopy()
     {
         return new NewExp(loc,
+            placement ? placement.syntaxCopy() : null,
             thisexp ? thisexp.syntaxCopy() : null,
             newtype.syntaxCopy(),
             arraySyntaxCopy(arguments),
@@ -2495,10 +2498,12 @@ extern (C++) final class NewAnonClassExp : Expression
     Expression thisexp;     // if !=null, 'this' for class being allocated
     ClassDeclaration cd;    // class being instantiated
     Expressions* arguments; // Array of Expression's to call class constructor
+    Expression placement;   // if !=null, then PlacementExpression
 
-    extern (D) this(Loc loc, Expression thisexp, ClassDeclaration cd, Expressions* arguments) @safe
+    extern (D) this(Loc loc, Expression placement, Expression thisexp, ClassDeclaration cd, Expressions* arguments) @safe
     {
         super(loc, EXP.newAnonymousClass);
+        this.placement = placement;
         this.thisexp = thisexp;
         this.cd = cd;
         this.arguments = arguments;
@@ -2506,7 +2511,9 @@ extern (C++) final class NewAnonClassExp : Expression
 
     override NewAnonClassExp syntaxCopy()
     {
-        return new NewAnonClassExp(loc, thisexp ? thisexp.syntaxCopy() : null, cd.syntaxCopy(null), arraySyntaxCopy(arguments));
+        return new NewAnonClassExp(loc, placement ? placement.syntaxCopy : null,
+                                        thisexp ? thisexp.syntaxCopy() : null,
+                                        cd.syntaxCopy(null), arraySyntaxCopy(arguments));
     }
 
     override void accept(Visitor v)

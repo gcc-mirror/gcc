@@ -119,6 +119,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
     extern (D) this(Loc loc, Identifier id, bool inObject)
     {
         super(loc, id);
+        this.dsym = DSYM.structDeclaration;
         zeroInit = false; // assume false until we do semantic processing
         ispod = ThreeState.none;
         // For forward references
@@ -374,11 +375,6 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         return postblit || hasCopyCtor;
     }
 
-    override final inout(StructDeclaration) isStructDeclaration() inout @nogc nothrow pure @safe
-    {
-        return this;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -543,6 +539,7 @@ extern (C++) final class UnionDeclaration : StructDeclaration
     extern (D) this(Loc loc, Identifier id)
     {
         super(loc, id, false);
+        this.dsym = DSYM.unionDeclaration;
     }
 
     override UnionDeclaration syntaxCopy(Dsymbol s)
@@ -556,11 +553,6 @@ extern (C++) final class UnionDeclaration : StructDeclaration
     override const(char)* kind() const
     {
         return "union";
-    }
-
-    override inout(UnionDeclaration) isUnionDeclaration() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)

@@ -2348,7 +2348,7 @@ Type typeSemantic(Type type, Loc loc, Scope* sc)
             /* Create a scope for evaluating the default arguments for the parameters
              */
             Scope* argsc = sc.push();
-            argsc.stc = 0; // don't inherit storage class
+            argsc.stc = STC.none; // don't inherit storage class
             argsc.visibility = Visibility(Visibility.Kind.public_);
             argsc.func = null;
 
@@ -2404,12 +2404,12 @@ Type typeSemantic(Type type, Loc loc, Scope* sc)
                             // https://issues.dlang.org/show_bug.cgi?id=12744
                             // If the storage classes of narg
                             // conflict with the ones in fparam, it's ignored.
-                            StorageClass stc  = fparam.storageClass | narg.storageClass;
-                            StorageClass stc1 = fparam.storageClass & (STC.ref_ | STC.out_ | STC.lazy_);
-                            StorageClass stc2 =   narg.storageClass & (STC.ref_ | STC.out_ | STC.lazy_);
+                            STC stc  = fparam.storageClass | narg.storageClass;
+                            STC stc1 = fparam.storageClass & (STC.ref_ | STC.out_ | STC.lazy_);
+                            STC stc2 =   narg.storageClass & (STC.ref_ | STC.out_ | STC.lazy_);
                             if (stc1 && stc2 && stc1 != stc2)
                             {
-                                OutBuffer buf1;  stcToBuffer(buf1, stc1 | ((stc1 & STC.ref_) ? (fparam.storageClass & STC.auto_) : 0));
+                                OutBuffer buf1;  stcToBuffer(buf1, stc1 | ((stc1 & STC.ref_) ? (fparam.storageClass & STC.auto_) : STC.none));
                                 OutBuffer buf2;  stcToBuffer(buf2, stc2);
 
                                 .error(loc, "incompatible parameter storage classes `%s` and `%s`",
@@ -2985,8 +2985,14 @@ Type typeSemantic(Type type, Loc loc, Scope* sc)
     Type visitTag(TypeTag mtype)
     {
         //printf("TypeTag.semantic() %s\n", mtype.toChars());
-        Type returnType(Type t)
+        Type returnType(TypeTag tt)
         {
+            Type t = tt.resolved;
+            // To make const checking work, the const STC needs to be added:
+            // t = t.resolved.addSTC(mtype.mod.ModToStc);
+            // However, this currently fails compilable/test22875.i
+            // Apparently there's some aliasing going on, where mutable
+            // versions of the type also get const applied to them.
             return t.deco ? t : t.merge();
         }
 
@@ -2994,7 +3000,7 @@ Type typeSemantic(Type type, Loc loc, Scope* sc)
         {
             /* struct S s, *p;
              */
-            return returnType(mtype.resolved.addSTC(mtype.mod));
+            return returnType(mtype);
         }
 
         /* Find the current scope by skipping tag scopes.
@@ -3067,7 +3073,7 @@ Type typeSemantic(Type type, Loc loc, Scope* sc)
         {
             mtype.id = Identifier.generateId("__tag"[]);
             declareTag();
-            return returnType(mtype.resolved.addSTC(mtype.mod));
+            return returnType(mtype);
         }
 
         /* look for pre-existing declaration
@@ -3080,7 +3086,7 @@ Type typeSemantic(Type type, Loc loc, Scope* sc)
             if (mtype.tok == TOK.enum_ && !mtype.members)
                 .error(mtype.loc, "`enum %s` is incomplete without members", mtype.id.toChars()); // C11 6.7.2.3-3
             declareTag();
-            return returnType(mtype.resolved.addSTC(mtype.mod));
+            return returnType(mtype);
         }
 
         /* A redeclaration only happens if both declarations are in
@@ -3180,7 +3186,7 @@ Type typeSemantic(Type type, Loc loc, Scope* sc)
                 declareTag();
             }
         }
-        return returnType(mtype.resolved.addSTC(mtype.mod));
+        return returnType(mtype);
     }
 
     switch (type.ty)
@@ -6182,7 +6188,7 @@ Dsymbol toDsymbol(Type type, Scope* sc)
 /************************************
  * Add storage class modifiers to type.
  */
-Type addStorageClass(Type type, StorageClass stc)
+Type addStorageClass(Type type, STC stc)
 {
     Type visitType(Type t)
     {
@@ -6214,7 +6220,7 @@ Type addStorageClass(Type type, StorageClass stc)
             (stc & STC.safe && t.trust < TRUST.trusted))
         {
             // Klunky to change these
-            auto tf = new TypeFunction(t.parameterList, t.next, t.linkage, 0);
+            auto tf = new TypeFunction(t.parameterList, t.next, t.linkage, STC.none);
             tf.mod = t.mod;
             tf.inferenceArguments = tf_src.inferenceArguments;
             tf.purity = t.purity;
@@ -6345,7 +6351,7 @@ Type getComplexLibraryType(Loc loc, Scope* sc, TY ty)
  * Returns:
  *     An enum value of either `Covariant.yes` or a reason it's not covariant.
  */
-Covariant covariant(Type src, Type t, StorageClass* pstc = null, bool cppCovariant = false)
+Covariant covariant(Type src, Type t, STC* pstc = null, bool cppCovariant = false)
 {
     version (none)
     {
@@ -6355,8 +6361,8 @@ Covariant covariant(Type src, Type t, StorageClass* pstc = null, bool cppCovaria
         printf("mod = %x, %x\n", src.mod, t.mod);
     }
     if (pstc)
-        *pstc = 0;
-    StorageClass stc = 0;
+        *pstc = STC.none;
+    STC stc = STC.none;
 
     bool notcovariant = false;
 
@@ -6506,8 +6512,8 @@ Lcovariant:
 
     if (!t1.isRef && (t1.isScopeQual || t2.isScopeQual))
     {
-        StorageClass stc1 = t1.isScopeQual ? STC.scope_ : 0;
-        StorageClass stc2 = t2.isScopeQual ? STC.scope_ : 0;
+        STC stc1 = t1.isScopeQual ? STC.scope_ : STC.none;
+        STC stc2 = t2.isScopeQual ? STC.scope_ : STC.none;
         if (t1.isReturn)
         {
             stc1 |= STC.return_;
@@ -6605,7 +6611,7 @@ Lnotcovariant:
  * Returns:
  *  storage class with STC.scope_ or STC.return_ OR'd in
  */
-StorageClass parameterStorageClass(TypeFunction tf, Type tthis, Parameter p, VarDeclarations* outerVars = null,
+STC parameterStorageClass(TypeFunction tf, Type tthis, Parameter p, VarDeclarations* outerVars = null,
     bool indirect = false)
 {
     //printf("parameterStorageClass(p: %s)\n", p.toChars());

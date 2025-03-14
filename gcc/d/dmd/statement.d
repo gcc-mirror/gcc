@@ -1715,7 +1715,7 @@ extern (C++) final class LabelDsymbol : Dsymbol
 
     extern (D) this(Identifier ident, Loc loc = Loc.initial) @safe
     {
-        super(loc, ident);
+        super(DSYM.labelDsymbol, loc, ident);
     }
 
     static LabelDsymbol create(Identifier ident) @safe
@@ -1799,7 +1799,7 @@ extern (C++) final class InlineAsmStatement : AsmStatement
  */
 extern (C++) final class GccAsmStatement : AsmStatement
 {
-    StorageClass stc;           // attributes of the asm {} block
+    STC stc;           // attributes of the asm {} block
     Expression insn;            // string expression that is the template for assembler code
     Expressions* args;          // input and output operands of the statement
     uint outputargs;            // of the operands in 'args', the number of output operands
@@ -1830,9 +1830,9 @@ extern (C++) final class GccAsmStatement : AsmStatement
  */
 extern (C++) final class CompoundAsmStatement : CompoundStatement
 {
-    StorageClass stc; // postfix attributes like nothrow/pure/@trusted
+    STC stc; // postfix attributes like nothrow/pure/@trusted
 
-    extern (D) this(Loc loc, Statements* statements, StorageClass stc) @safe
+    extern (D) this(Loc loc, Statements* statements, STC stc) @safe
     {
         super(loc, statements, STMT.CompoundAsm);
         this.stc = stc;

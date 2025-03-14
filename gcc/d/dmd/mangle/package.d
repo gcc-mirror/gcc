@@ -451,7 +451,7 @@ void mangleParameter(Parameter p, ref OutBuffer buf, ref Backref backref)
 
     switch (stc & ((STC.IOR | STC.lazy_) & ~STC.constscoperef))
     {
-    case 0:
+    case STC.none:
         break;
     case STC.in_:
         buf.writeByte('I');

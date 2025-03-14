@@ -333,7 +333,7 @@ public:
         }
     }
 
-    extern(D) void propertyStorageClass(const char[] name, StorageClass stc)
+    extern(D) void propertyStorageClass(const char[] name, STC stc)
     {
         stc &= STC.visibleStorageClasses;
         if (stc)

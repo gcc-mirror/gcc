@@ -96,7 +96,7 @@ struct MangleOverride
 extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
 {
     Type type;                  ///
-    StorageClass storage_class; ///
+    STC storage_class;          ///
     uint structsize;            /// size of struct
     uint alignsize;             /// size of struct for alignment purposes
     VarDeclarations fields;     /// VarDeclaration fields including flattened AnonDeclaration members
@@ -494,11 +494,6 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
 
     // Back end
     void* sinit;  /// initializer symbol
-
-    override final inout(AggregateDeclaration) isAggregateDeclaration() inout
-    {
-        return this;
-    }
 
     override void accept(Visitor v)
     {

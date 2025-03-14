@@ -13,6 +13,7 @@ print dstring
 foo_str
 foo_wstr
 foo_dstr
+X%nY
 ---
 */
 
@@ -33,4 +34,7 @@ void main()
     pragma(msg, a);
     pragma(msg, b);
     pragma(msg, c);
+
+    // https://github.com/dlang/dmd/issues/20894
+    pragma(msg, "X%nY");
 }

@@ -40,6 +40,7 @@ class OverloadSet;
 class StringExp;
 class InterpExp;
 class LoweredAssignExp;
+class StaticForeach;
 #ifdef IN_GCC
 typedef union tree_node Symbol;
 #else
@@ -50,6 +51,7 @@ namespace dmd
 {
     // in expressionsem.d
     Expression *expressionSemantic(Expression *e, Scope *sc);
+    void lowerNonArrayAggregate(StaticForeach *sfe, Scope *sc);
     // in typesem.d
     Expression *defaultInit(Type *mt, Loc loc, const bool isCfile = false);
 
@@ -517,6 +519,7 @@ public:
     Type *newtype;
     Expressions *arguments;     // Array of Expression's
     Identifiers *names;         // Array of names corresponding to expressions
+    Expression *placement;      // if !NULL, placement expression
 
     Expression *argprefix;      // expression to be evaluated just before arguments[]
 
@@ -526,7 +529,7 @@ public:
 
     Expression *lowering;       // lowered druntime hook: `_d_newclass`
 
-    static NewExp *create(Loc loc, Expression *thisexp, Type *newtype, Expressions *arguments);
+    static NewExp *create(Loc loc, Expression *placement, Expression *thisexp, Type *newtype, Expressions *arguments);
     NewExp *syntaxCopy() override;
 
     void accept(Visitor *v) override { v->visit(this); }
@@ -540,6 +543,7 @@ public:
     Expression *thisexp;        // if !NULL, 'this' for class being allocated
     ClassDeclaration *cd;       // class being instantiated
     Expressions *arguments;     // Array of Expression's to call class constructor
+    Expression *placement;      // if !NULL, placement expression
 
     NewAnonClassExp *syntaxCopy() override;
     void accept(Visitor *v) override { v->visit(this); }

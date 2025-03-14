@@ -429,7 +429,7 @@ private void statementToBuffer(Statement s, ref OutBuffer buf, ref HdrGenState h
         if (p)
         {
             // Print condition assignment
-            StorageClass stc = p.storageClass;
+            STC stc = p.storageClass;
             if (!p.type && !stc)
                 stc = STC.auto_;
             if (stcToBuffer(buf, stc))
@@ -2531,6 +2531,13 @@ private void expressionPrettyPrint(Expression e, ref OutBuffer buf, ref HdrGenSt
             buf.writeByte('.');
         }
         buf.writestring("new ");
+        if (e.placement)
+        {
+            buf.writeByte('(');
+            expToBuffer(e.placement, PREC.assign, buf, hgs);
+            buf.writeByte(')');
+            buf.writeByte(' ');
+        }
         typeToBuffer(e.newtype, null, buf, hgs);
         if (e.arguments && e.arguments.length)
         {
@@ -2548,6 +2555,13 @@ private void expressionPrettyPrint(Expression e, ref OutBuffer buf, ref HdrGenSt
             buf.writeByte('.');
         }
         buf.writestring("new");
+        if (e.placement)
+        {
+            buf.writeByte(' ');
+            buf.writeByte('(');
+            expToBuffer(e.placement, PREC.assign, buf, hgs);
+            buf.writeByte(')');
+        }
         buf.writestring(" class ");
         if (e.arguments && e.arguments.length)
         {
@@ -3283,7 +3297,7 @@ void toCBuffer(const Initializer iz, ref OutBuffer buf, ref HdrGenState hgs)
     initializerToBuffer(cast() iz, buf, hgs);
 }
 
-bool stcToBuffer(ref OutBuffer buf, StorageClass stc) @safe
+bool stcToBuffer(ref OutBuffer buf, STC stc) @safe
 {
     //printf("stc: %llx\n", stc);
     bool result = false;
@@ -3349,11 +3363,11 @@ bool stcToBuffer(ref OutBuffer buf, StorageClass stc) @safe
  * and return a string representation of it.
  * stc is reduced by the one picked.
  */
-string stcToString(ref StorageClass stc) @safe
+string stcToString(ref STC stc) @safe
 {
     static struct SCstring
     {
-        StorageClass stc;
+        STC stc;
         string id;
     }
 
@@ -3396,7 +3410,7 @@ string stcToString(ref StorageClass stc) @safe
     ];
     foreach (ref entry; table)
     {
-        const StorageClass tbl = entry.stc;
+        const STC tbl = entry.stc;
         assert(tbl & STC.visibleStorageClasses);
         if (stc & tbl)
         {
@@ -3629,7 +3643,7 @@ private void parameterToBuffer(Parameter p, ref OutBuffer buf, ref HdrGenState h
     if (p.storageClass & STC.auto_)
         buf.writestring("auto ");
 
-    StorageClass stc = p.storageClass;
+    STC stc = p.storageClass;
     if (p.storageClass & STC.in_)
     {
         buf.writestring("in ");

@@ -137,6 +137,8 @@ public:
 
     override void visit(NewExp e)
     {
+        if (e.placement)
+            return;     // placement new doesn't use the GC
         if (e.member && !e.member.isNogc() && f.setGC(e.loc, null))
         {
             // @nogc-ness is already checked in NewExp::semantic

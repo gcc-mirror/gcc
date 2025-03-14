@@ -59,7 +59,7 @@ extern (C++) final class Import : Dsymbol
             return id;
         }
 
-        super(loc, selectIdent());
+        super(DSYM.import_, loc, selectIdent());
 
         assert(id);
         version (none)
@@ -159,11 +159,6 @@ extern (C++) final class Import : Dsymbol
             return false;
         const imp = s.isImport();
         return imp && !imp.aliasId;
-    }
-
-    override inout(Import) isImport() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)

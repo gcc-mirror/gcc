@@ -23,7 +23,7 @@ import dmd.gluelayer;
 import dmd.declaration;
 import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem : dsymbolSemantic, addMember, search, setFieldOffset;
+import dmd.dsymbolsem : dsymbolSemantic, addMember, setFieldOffset;
 import dmd.errors;
 import dmd.func;
 import dmd.id;
@@ -206,6 +206,7 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
             id = Identifier.generateAnonymousId("class");
 
         super(loc, id);
+        this.dsym = DSYM.classDeclaration;
 
         static immutable msg = "only object.d can define this reserved class name";
 
@@ -613,40 +614,6 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
         return classKind == ClassKind.d;
     }
 
-    final bool isFuncHidden(FuncDeclaration fd)
-    {
-        import dmd.funcsem : overloadApply;
-        //printf("ClassDeclaration.isFuncHidden(class = %s, fd = %s)\n", toChars(), fd.toPrettyChars());
-        Dsymbol s = this.search(Loc.initial, fd.ident, SearchOpt.ignoreAmbiguous | SearchOpt.ignoreErrors);
-        if (!s)
-        {
-            //printf("not found\n");
-            /* Because, due to a hack, if there are multiple definitions
-             * of fd.ident, NULL is returned.
-             */
-            return false;
-        }
-        s = s.toAlias();
-        if (auto os = s.isOverloadSet())
-        {
-            foreach (sm; os.a)
-            {
-                auto fm = sm.isFuncDeclaration();
-                if (overloadApply(fm, s => fd == s.isFuncDeclaration()))
-                    return false;
-            }
-            return true;
-        }
-        else
-        {
-            auto f = s.isFuncDeclaration();
-            //printf("%s fdstart = %p\n", s.kind(), fdstart);
-            if (overloadApply(f, s => fd == s.isFuncDeclaration()))
-                return false;
-            return !fd.parent.isTemplateMixin();
-        }
-    }
-
     /****************
      * Find virtual function matching identifier and type.
      * Used to build virtual function tables for interface implementations.
@@ -921,29 +888,9 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
     // Back end
     Dsymbol vtblsym;
 
-    final Dsymbol vtblSymbol()
-    {
-        if (!vtblsym)
-        {
-            auto vtype = Type.tvoidptr.immutableOf().sarrayOf(vtbl.length);
-            auto var = new VarDeclaration(loc, vtype, Identifier.idPool("__vtbl"), null, STC.immutable_ | STC.static_);
-            var.addMember(null, this);
-            var.isdataseg = 1;
-            var._linkage = LINK.d;
-            var.semanticRun = PASS.semanticdone; // no more semantic wanted
-            vtblsym = var;
-        }
-        return vtblsym;
-    }
-
     extern (D) final bool isErrorException()
     {
         return errorException && (this == errorException || errorException.isBaseOf(this, null));
-    }
-
-    override final inout(ClassDeclaration) isClassDeclaration() inout @nogc nothrow pure @safe
-    {
-        return this;
     }
 
     override void accept(Visitor v)
@@ -959,6 +906,7 @@ extern (C++) final class InterfaceDeclaration : ClassDeclaration
     extern (D) this(Loc loc, Identifier id, BaseClasses* baseclasses)
     {
         super(loc, id, baseclasses, null, false);
+        this.dsym = DSYM.interfaceDeclaration;
         if (id == Id.IUnknown) // IUnknown is the root of all COM interfaces
         {
             com = true;
@@ -1056,11 +1004,6 @@ extern (C++) final class InterfaceDeclaration : ClassDeclaration
     override bool isCOMinterface() const
     {
         return com;
-    }
-
-    override inout(InterfaceDeclaration) isInterfaceDeclaration() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)

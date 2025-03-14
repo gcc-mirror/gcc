@@ -120,7 +120,7 @@ void templateDeclarationSemantic(Scope* sc, TemplateDeclaration tempdecl)
     auto paramsym = new ScopeDsymbol();
     paramsym.parent = tempdecl.parent;
     Scope* paramscope = sc.push(paramsym);
-    paramscope.stc = 0;
+    paramscope.stc = STC.none;
 
     if (global.params.ddoc.doOutput)
     {
@@ -603,7 +603,7 @@ Scope* createScopeForTemplateParameters(TemplateDeclaration td, TemplateInstance
     paramscope.tinst = ti;
     paramscope.minst = sc.minst;
     paramscope.callsc = sc;
-    paramscope.stc = 0;
+    paramscope.stc = STC.none;
     return paramscope;
 }
 
@@ -905,7 +905,7 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
         // Match attributes of tthis against attributes of fd
         if (fd.type && !fd.isCtorDeclaration() && !(td._scope.stc & STC.static_))
         {
-            StorageClass stc = td._scope.stc | fd.storage_class2;
+            STC stc = td._scope.stc | fd.storage_class2;
             // Propagate parent storage class, https://issues.dlang.org/show_bug.cgi?id=5504
             Dsymbol p = td.parent;
             while (p.isTemplateDeclaration() || p.isTemplateInstance())
@@ -2491,7 +2491,7 @@ private extern(C++) class DummyArgVisitor : Visitor
             return;
         }
         if (!tap.sdummy)
-            tap.sdummy = new Dsymbol();
+            tap.sdummy = new Dsymbol(DSYM.dsymbol);
         result = tap.sdummy;
     }
 

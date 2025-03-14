@@ -2796,6 +2796,13 @@ public:
             printf("%s NewExp::interpret() %s\n", e.loc.toChars(), e.toChars());
         }
 
+        if (e.placement)
+        {
+            error(e.placement.loc, "`new ( %s )` PlacementExpression cannot be evaluated at compile time", e.placement.toChars());
+            result = CTFEExp.cantexp;
+            return;
+        }
+
         Expression epre = interpret(pue, e.argprefix, istate, CTFEGoal.Nothing);
         if (exceptionOrCant(epre))
             return;
@@ -5042,7 +5049,7 @@ public:
             auto ce = e.e2.isCallExp();
             assert(ce);
 
-            auto ne = new NewExp(e.loc, null, e.type, ce.arguments);
+            auto ne = new NewExp(e.loc, null, null, e.type, ce.arguments);
             ne.type = e.e1.type;
 
             result = interpret(ne, istate);

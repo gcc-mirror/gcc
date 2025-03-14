@@ -46,6 +46,8 @@ namespace dmd
     FuncDeclaration *search_toString(StructDeclaration *sd);
     void semanticTypeInfoMembers(StructDeclaration *sd);
     bool fill(StructDeclaration* sd, Loc loc, Expressions &elements, bool ctorinit);
+    bool isFuncHidden(ClassDeclaration* cd, FuncDeclaration* fd);
+    Dsymbol* vtblSymbol(ClassDeclaration *cd);
 }
 
 enum class ClassKind : uint8_t
@@ -135,7 +137,6 @@ public:
     // Back end
     void *sinit;
 
-    AggregateDeclaration *isAggregateDeclaration() override final { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -191,7 +192,6 @@ public:
     bool requestTypeInfo() const;
     bool requestTypeInfo(bool v);
 
-    StructDeclaration *isStructDeclaration() override final { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 
     unsigned numArgTypes() const;
@@ -205,7 +205,6 @@ public:
     UnionDeclaration *syntaxCopy(Dsymbol *s) override;
     const char *kind() const override;
 
-    UnionDeclaration *isUnionDeclaration() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -290,7 +289,6 @@ public:
     bool isBaseInfoComplete();
     void finalizeSize() override;
     bool hasMonitor();
-    bool isFuncHidden(FuncDeclaration *fd);
     bool isCOMclass() const;
     virtual bool isCOMinterface() const;
     bool isCPPclass() const;
@@ -303,9 +301,7 @@ public:
 
     // Back end
     Dsymbol *vtblsym;
-    Dsymbol *vtblSymbol();
 
-    ClassDeclaration *isClassDeclaration() override final { return (ClassDeclaration *)this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -320,6 +316,5 @@ public:
     bool isCPPinterface() const override;
     bool isCOMinterface() const override;
 
-    InterfaceDeclaration *isInterfaceDeclaration() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };

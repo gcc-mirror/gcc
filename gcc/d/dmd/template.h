@@ -77,12 +77,10 @@ public:
 
     TemplateDeclaration *syntaxCopy(Dsymbol *) override;
     bool overloadInsert(Dsymbol *s) override;
-    bool hasStaticCtorOrDtor() override;
     const char *kind() const override;
 
     Visibility visible() override;
 
-    TemplateDeclaration *isTemplateDeclaration() override { return this; }
 
     bool isDeprecated() const override;
     bool isOverloadable() const override;
@@ -270,14 +268,12 @@ public:
     TemplateInstance *syntaxCopy(Dsymbol *) override;
     Dsymbol *toAlias() override final;   // resolve real symbol
     const char *kind() const override;
-    bool oneMember(Dsymbol *&ps, Identifier *ident) override;
     const char* toPrettyCharsHelper() override final;
     Identifier *getIdent() override final;
 
     bool isDiscardable();
     bool needsCodegen();
 
-    TemplateInstance *isTemplateInstance() override final { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -288,10 +284,8 @@ public:
 
     TemplateMixin *syntaxCopy(Dsymbol *s) override;
     const char *kind() const override;
-    bool oneMember(Dsymbol *&ps, Identifier *ident) override;
     bool hasPointers() override;
 
-    TemplateMixin *isTemplateMixin() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 

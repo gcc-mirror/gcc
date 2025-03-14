@@ -18,7 +18,6 @@ public:
     DebugSymbol *syntaxCopy(Dsymbol *) override;
 
     const char *kind() const override;
-    DebugSymbol *isDebugSymbol() override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -28,6 +27,5 @@ public:
     VersionSymbol *syntaxCopy(Dsymbol *) override;
 
     const char *kind() const override;
-    VersionSymbol *isVersionSymbol() override;
     void accept(Visitor *v) override { v->visit(this); }
 };

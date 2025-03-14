@@ -34,12 +34,12 @@ extern (C++) final class DebugSymbol : Dsymbol
 {
     extern (D) this(Loc loc, Identifier ident) @safe
     {
-        super(loc, ident);
+        super(DSYM.debugSymbol, loc, ident);
     }
 
     extern (D) this(Loc loc) @safe
     {
-        super(loc, null);
+        super(DSYM.aliasDeclaration, loc, null);
     }
 
     override DebugSymbol syntaxCopy(Dsymbol s)
@@ -53,11 +53,6 @@ extern (C++) final class DebugSymbol : Dsymbol
     override const(char)* kind() const nothrow
     {
         return "debug";
-    }
-
-    override inout(DebugSymbol) isDebugSymbol() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)
@@ -75,12 +70,12 @@ extern (C++) final class VersionSymbol : Dsymbol
 
     extern (D) this(Loc loc, Identifier ident) @safe
     {
-        super(loc, ident);
+        super(DSYM.versionSymbol, loc, ident);
     }
 
     extern (D) this(Loc loc) @safe
     {
-        super(loc, null);
+        super(DSYM.versionSymbol, loc, null);
     }
 
     override VersionSymbol syntaxCopy(Dsymbol s)
@@ -94,11 +89,6 @@ extern (C++) final class VersionSymbol : Dsymbol
     override const(char)* kind() const nothrow
     {
         return "version";
-    }
-
-    override inout(VersionSymbol) isVersionSymbol() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)

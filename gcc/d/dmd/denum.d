@@ -70,6 +70,7 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
         //printf("EnumDeclaration() %p %s : %s\n", this, toChars(), memtype.toChars());
         type = new TypeEnum(this);
         this.memtype = memtype;
+        this.dsym = DSYM.enumDeclaration;
         visibility = Visibility(Visibility.Kind.undefined);
     }
 
@@ -79,13 +80,6 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
         auto ed = new EnumDeclaration(loc, ident, memtype ? memtype.syntaxCopy() : null);
         ScopeDsymbol.syntaxCopy(ed);
         return ed;
-    }
-
-    override bool oneMember(out Dsymbol ps, Identifier ident)
-    {
-        if (isAnonymous())
-            return Dsymbol.oneMembers(members, ps, ident);
-        return Dsymbol.oneMember(ps, ident);
     }
 
     override Type getType()
@@ -118,11 +112,6 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
     bool isSpecial() const nothrow @nogc
     {
         return isSpecialEnumIdent(ident) && memtype;
-    }
-
-    override inout(EnumDeclaration) isEnumDeclaration() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)
@@ -159,10 +148,11 @@ extern (C++) final class EnumMember : VarDeclaration
         super(loc, null, id ? id : Id.empty, new ExpInitializer(loc, value));
         this.origValue = value;
         this.origType = origType;
+        this.dsym = DSYM.enumMember;
     }
 
     extern(D) this(Loc loc, Identifier id, Expression value, Type memtype,
-        StorageClass stc, UserAttributeDeclaration uad, DeprecatedDeclaration dd)
+        STC stc, UserAttributeDeclaration uad, DeprecatedDeclaration dd)
     {
         this(loc, id, value, memtype);
         storage_class = stc;
@@ -185,11 +175,6 @@ extern (C++) final class EnumMember : VarDeclaration
     override const(char)* kind() const
     {
         return "enum member";
-    }
-
-    override inout(EnumMember) isEnumMember() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)

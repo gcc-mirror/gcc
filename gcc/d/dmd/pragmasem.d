@@ -567,7 +567,7 @@ private bool pragmaMsgSemantic(Loc loc, Scope* sc, Expressions* args)
         return false;
 
     buf.writestring("\n");
-    fprintf(stderr, buf.extractChars);
+    fprintf(stderr, "%s", buf.extractChars);
     return true;
 }
 

@@ -23,6 +23,5 @@ class Nspace final : public ScopeDsymbol
     Nspace *syntaxCopy(Dsymbol *s) override;
     bool hasPointers() override;
     const char *kind() const override;
-    Nspace *isNspace() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };

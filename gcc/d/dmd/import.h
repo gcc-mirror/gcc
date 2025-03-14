@@ -44,6 +44,5 @@ public:
     Dsymbol *toAlias() override;
     bool overloadInsert(Dsymbol *s) override;
 
-    Import *isImport() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };

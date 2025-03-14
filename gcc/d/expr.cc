@@ -1783,7 +1783,7 @@ public:
 
   void visit (DelegateExp *e) final override
   {
-    if (e->func->semanticRun == PASS::semantic3done)
+    if (e->func->semanticRun () == PASS::semantic3done)
       {
 	/* Add the function as nested function if it belongs to this module.
 	   ie: it is a member of this module, or it is a template instance.  */
@@ -2246,6 +2246,15 @@ public:
 	    new_call = build_nop (type, build_address (var));
 	    setup_exp = modify_expr (var, aggregate_initializer_decl (cd));
 	  }
+	else if (e->placement != NULL)
+	  {
+	    /* Generate: placement_expr = typeid(class).init  */
+	    tree placement_expr = build_expr (e->placement);
+	    new_call = build_nop (type, build_address (placement_expr));
+	    tree class_init = build_vconvert (TREE_TYPE (placement_expr),
+					      aggregate_initializer_decl (cd));
+	    setup_exp = modify_expr (placement_expr, class_init);
+	  }
 	else
 	  {
 	    /* Generate: _d_newclass()
@@ -2318,12 +2327,22 @@ public:
 	    return;
 	  }
 
-	/* This case should have been rewritten to `_d_newitemT' during the
-	   semantic phase.  */
-	gcc_assert (e->lowering);
+	if (e->placement != NULL)
+	  {
+	    /* Generate: &placement_expr  */
+	    tree placement_expr = build_expr (e->placement);
+	    new_call = build_nop (build_ctype (tb),
+				  build_address (placement_expr));
+	  }
+	else
+	  {
+	    /* This case should have been rewritten to `_d_newitemT' during the
+	       semantic phase.  */
+	    gcc_assert (e->lowering);
 
-	/* Generate: _d_newitemT()  */
-	new_call = build_expr (e->lowering);
+	    /* Generate: _d_newitemT()  */
+	    new_call = build_expr (e->lowering);
+	  }
 
 	if (e->member || !e->arguments)
 	  {
@@ -2396,12 +2415,22 @@ public:
 	    return;
 	  }
 
-	/* This case should have been rewritten to `_d_newitemT' during the
-	   semantic phase.  */
-	gcc_assert (e->lowering);
+	if (e->placement != NULL)
+	  {
+	    /* Generate: &placement_expr  */
+	    tree placement_expr = build_expr (e->placement);
+	    result = build_nop (build_ctype (tb),
+				build_address (placement_expr));
+	  }
+	else
+	  {
+	    /* This case should have been rewritten to `_d_newitemT' during the
+	       semantic phase.  */
+	    gcc_assert (e->lowering);
 
-	/* Generate: _d_newitemT()  */
-	result = build_expr (e->lowering);
+	    /* Generate: _d_newitemT()  */
+	    result = build_expr (e->lowering);
+	  }
 
 	if (e->arguments && e->arguments->length == 1)
 	  {

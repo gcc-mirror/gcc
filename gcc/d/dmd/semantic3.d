@@ -478,7 +478,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 foreach (i, fparam; f.parameterList)
                 {
                     Identifier id = fparam.ident;
-                    StorageClass stc = 0;
+                    STC stc = STC.none;
                     if (!id)
                     {
                         /* Generate identifier for un-named parameter,
@@ -1349,7 +1349,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
             sc = sc.push();
             if (funcdecl.isCtorDeclaration()) // https://issues.dlang.org/show_bug.cgi?id=#15665
                 f.isCtor = true;
-            sc.stc = 0;
+            sc.stc = STC.none;
             sc.linkage = funcdecl._linkage; // https://issues.dlang.org/show_bug.cgi?id=8496
             funcdecl.type = f.typeSemantic(funcdecl.loc, sc);
             sc = sc.pop();
@@ -1489,9 +1489,9 @@ private extern(C++) final class Semantic3Visitor : Visitor
                 // storage_class is apparently not set for dtor & ctor
                 OutBuffer ob;
                 stcToBuffer(ob,
-                    (ngErr ? STC.nogc : 0) |
-                    (puErr ? STC.pure_ : 0) |
-                    (saErr ? STC.system : 0)
+                    (ngErr ? STC.nogc : STC.none) |
+                    (puErr ? STC.pure_ : STC.none) |
+                    (saErr ? STC.system : STC.none)
                 );
                 ctor.loc.error("`%s` has stricter attributes than its destructor (`%s`)", ctor.toPrettyChars(), ob.peekChars());
                 ctor.loc.errorSupplemental("The destructor will be called if an exception is thrown");

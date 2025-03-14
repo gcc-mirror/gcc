@@ -277,7 +277,15 @@ void testHexstring()
     static immutable ulong[] z0 = cast(immutable ulong[]) x"1111 1111 1111 1111 0000 000F 0000 0000";
     static immutable ulong[] z1 = [0x1111_1111_1111_1111, 0x0000_000E_0000_0000];
     static assert(z0 !is z1);
+
+    // https://github.com/dlang/dmd/issues/20635
+    f20635(cast(ubyte[]) x"00");
+    f20635(cast(const ubyte[]) x"00");
+    f20635(cast(immutable ubyte[]) x"00");
 }
+
+void f20635(const ubyte[] value){}
+void f20635(const string value){}
 
 /***************************************************/
 

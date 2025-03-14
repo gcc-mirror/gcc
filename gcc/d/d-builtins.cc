@@ -279,7 +279,7 @@ build_frontend_type (tree type)
 						       NULL);
 	  vd->parent = sdecl;
 	  vd->offset = tree_to_uhwi (byte_position (field));
-	  vd->semanticRun = PASS::semanticdone;
+	  vd->semanticRun (PASS::semanticdone);
 	  vd->csym = field;
 	  sdecl->members->push (vd);
 	  sdecl->fields.push (vd);

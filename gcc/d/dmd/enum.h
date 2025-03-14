@@ -52,14 +52,12 @@ public:
     bool inuse(bool v);
 
     EnumDeclaration *syntaxCopy(Dsymbol *s) override;
-    bool oneMember(Dsymbol *&ps, Identifier *ident) override;
     Type *getType() override;
     const char *kind() const override;
     bool isDeprecated() const override;       // is Dsymbol deprecated?
     Visibility visible() override;
     bool isSpecial() const;
 
-    EnumDeclaration *isEnumDeclaration() override { return this; }
 
     Symbol *sinit;
     void accept(Visitor *v) override { v->visit(this); }
@@ -87,6 +85,5 @@ public:
     EnumMember *syntaxCopy(Dsymbol *s) override;
     const char *kind() const override;
 
-    EnumMember *isEnumMember() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };

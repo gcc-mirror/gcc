@@ -51,11 +51,11 @@ import dmd.tokens;
  * Returns:
  *      merged storage class
  */
-StorageClass mergeFuncAttrs(StorageClass s1, const FuncDeclaration f) pure @safe
+STC mergeFuncAttrs(STC s1, const FuncDeclaration f) pure @safe
 {
     if (!f)
         return s1;
-    StorageClass s2 = (f.storage_class & STC.disable);
+    STC s2 = (f.storage_class & STC.disable);
 
     auto tf = f.type.isTypeFunction();
     if (tf.trust == TRUST.safe)
@@ -75,7 +75,7 @@ StorageClass mergeFuncAttrs(StorageClass s1, const FuncDeclaration f) pure @safe
     const sa = s1 & s2;
     const so = s1 | s2;
 
-    StorageClass stc = (sa & (STC.pure_ | STC.nothrow_ | STC.nogc)) | (so & STC.disable);
+    STC stc = (sa & (STC.pure_ | STC.nothrow_ | STC.nogc)) | (so & STC.disable);
 
     if (so & STC.system)
         stc |= STC.system;
@@ -269,7 +269,7 @@ FuncDeclaration buildOpAssign(StructDeclaration sd, Scope* sc)
         return null;
 
     //printf("StructDeclaration::buildOpAssign() %s\n", sd.toChars());
-    StorageClass stc = STC.safe;
+    STC stc = STC.safe;
     Loc declLoc = sd.loc;
     Loc loc; // internal code should have no loc to prevent coverage
 
@@ -387,7 +387,7 @@ FuncDeclaration buildOpAssign(StructDeclaration sd, Scope* sc)
     sd.hasIdentityAssign = true; // temporary mark identity assignable
     const errors = global.startGagging(); // Do not report errors, even if the template opAssign fbody makes it.
     Scope* sc2 = sc.push();
-    sc2.stc = 0;
+    sc2.stc = STC.none;
     sc2.linkage = LINK.d;
     fop.dsymbolSemantic(sc2);
     fop.semantic2(sc2);
@@ -607,7 +607,7 @@ FuncDeclaration buildXopEquals(StructDeclaration sd, Scope* sc)
     auto tf = new TypeFunction(ParameterList(parameters), Type.tbool, LINK.d, STC.const_);
     tf = tf.addSTC(STC.const_).toTypeFunction();
     Identifier id = Id.xopEquals;
-    auto fop = new FuncDeclaration(declLoc, Loc.initial, id, 0, tf);
+    auto fop = new FuncDeclaration(declLoc, Loc.initial, id, STC.none, tf);
     fop.isGenerated = true;
     fop.parent = sd;
     Expression e1 = new IdentifierExp(loc, Id.This);
@@ -616,7 +616,7 @@ FuncDeclaration buildXopEquals(StructDeclaration sd, Scope* sc)
     fop.fbody = new ReturnStatement(loc, e);
     const errors = global.startGagging(); // Do not report errors
     Scope* sc2 = sc.push();
-    sc2.stc = 0;
+    sc2.stc = STC.none;
     sc2.linkage = LINK.d;
     fop.dsymbolSemantic(sc2);
     fop.semantic2(sc2);
@@ -731,7 +731,7 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
     auto tf = new TypeFunction(ParameterList(parameters), Type.tint32, LINK.d, STC.const_);
     tf = tf.addSTC(STC.const_).toTypeFunction();
     Identifier id = Id.xopCmp;
-    auto fop = new FuncDeclaration(declLoc, Loc.initial, id, 0, tf);
+    auto fop = new FuncDeclaration(declLoc, Loc.initial, id, STC.none, tf);
     fop.isGenerated = true;
     fop.parent = sd;
     Expression e1 = new IdentifierExp(loc, Id.This);
@@ -740,7 +740,7 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
     fop.fbody = new ReturnStatement(loc, e);
     const errors = global.startGagging(); // Do not report errors
     Scope* sc2 = sc.push();
-    sc2.stc = 0;
+    sc2.stc = STC.none;
     sc2.linkage = LINK.d;
     fop.dsymbolSemantic(sc2);
     fop.semantic2(sc2);
@@ -877,7 +877,7 @@ FuncDeclaration buildXtoHash(StructDeclaration sd, Scope* sc)
         "return h;";
     fop.fbody = new MixinStatement(loc, new StringExp(loc, code));
     Scope* sc2 = sc.push();
-    sc2.stc = 0;
+    sc2.stc = STC.none;
     sc2.linkage = LINK.d;
     fop.dsymbolSemantic(sc2);
     fop.semantic2(sc2);
@@ -905,7 +905,7 @@ void buildDtors(AggregateDeclaration ad, Scope* sc)
     if (ad.isUnionDeclaration())
         return;                    // unions don't have destructors
 
-    StorageClass stc = STC.safe | STC.nothrow_ | STC.pure_ | STC.nogc;
+    STC stc = STC.safe | STC.nothrow_ | STC.pure_ | STC.nogc;
     Loc declLoc = ad.userDtors.length ? ad.userDtors[0].loc : ad.loc;
     Loc loc; // internal code should have no loc to prevent coverage
     FuncDeclaration xdtor_fwd = null;
@@ -1109,7 +1109,7 @@ private DtorDeclaration buildWindowsCppDtor(AggregateDeclaration ad, DtorDeclara
     //   // TODO: if (del) delete (char*)this;
     //   return (void*) this;
     // }
-    Parameter delparam = new Parameter(Loc.initial, STC.undefined_, Type.tuns32, Identifier.idPool("del"), new IntegerExp(dtor.loc, 0, Type.tuns32), null);
+    Parameter delparam = new Parameter(Loc.initial, STC.none, Type.tuns32, Identifier.idPool("del"), new IntegerExp(dtor.loc, 0, Type.tuns32), null);
     Parameters* params = new Parameters;
     params.push(delparam);
     const stc = dtor.storage_class & ~STC.scope_; // because we add the `return this;` later
@@ -1224,8 +1224,8 @@ FuncDeclaration buildInv(AggregateDeclaration ad, Scope* sc)
 
     default:
         Expression e = null;
-        StorageClass stcx = 0;
-        StorageClass stc = STC.safe | STC.nothrow_ | STC.pure_ | STC.nogc;
+        STC stcx = STC.none;
+        STC stc = STC.safe | STC.nothrow_ | STC.pure_ | STC.nogc;
         foreach (i, inv; ad.invs)
         {
             stc = mergeFuncAttrs(stc, inv);
@@ -1234,7 +1234,7 @@ FuncDeclaration buildInv(AggregateDeclaration ad, Scope* sc)
                 // What should do?
             }
             const stcy = (inv.storage_class & STC.synchronized_) |
-                         (inv.type.mod & MODFlags.shared_ ? STC.shared_ : 0);
+                         (inv.type.mod & MODFlags.shared_ ? STC.shared_ : STC.none);
             if (i == 0)
                 stcx = stcy;
             else if (stcx ^ stcy)
@@ -1278,7 +1278,7 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
     const hasUserDefinedPosblit = sd.postblits.length && !sd.postblits[0].isDisabled ? true : false;
 
     // by default, the storage class of the created postblit
-    StorageClass stc = STC.safe;
+    STC stc = STC.safe;
     Loc declLoc = sd.postblits.length ? sd.postblits[0].loc : sd.loc;
     Loc loc; // internal code should have no loc to prevent coverage
 
@@ -1559,11 +1559,11 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
  * Returns:
  *  The copy constructor declaration for struct `sd`.
  */
-private CtorDeclaration generateCtorDeclaration(StructDeclaration sd, const StorageClass paramStc, const StorageClass funcStc, bool move)
+private CtorDeclaration generateCtorDeclaration(StructDeclaration sd, const STC paramStc, const STC funcStc, bool move)
 {
     auto fparams = new Parameters();
     auto structType = sd.type;
-    StorageClass stc = move ? 0 : STC.ref_;     // the only difference between copy or move
+    STC stc = move ? STC.none : STC.ref_;     // the only difference between copy or move
     fparams.push(new Parameter(Loc.initial, paramStc | stc, structType, Id.p, null, null));
     ParameterList pList = ParameterList(fparams);
     auto tf = new TypeFunction(pList, structType, LINK.d, STC.ref_);
@@ -1773,7 +1773,7 @@ void buildCopyOrMoveCtor(StructDeclaration sd, Scope* sc, bool move)
     ccd.addMember(sc, sd);
     const errors = global.startGagging();
     Scope* sc2 = sc.push();
-    sc2.stc = 0;
+    sc2.stc = STC.none;
     sc2.linkage = LINK.d;
     ccd.dsymbolSemantic(sc2);
     ccd.semantic2(sc2);

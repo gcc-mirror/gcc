@@ -180,6 +180,7 @@ extern (C++) class Package : ScopeDsymbol
         super(loc, ident);
         __gshared uint packageTag;
         this.tag = packageTag++;
+        this.dsym = DSYM.package_;
     }
 
     override const(char)* kind() const nothrow
@@ -251,11 +252,6 @@ extern (C++) class Package : ScopeDsymbol
         if (pparent)
             *pparent = parent;
         return dst;
-    }
-
-    override final inout(Package) isPackage() inout
-    {
-        return this;
     }
 
     /**
@@ -445,6 +441,7 @@ extern (C++) final class Module : Package
     extern (D) this(Loc loc, const(char)[] filename, Identifier ident, int doDocComment, int doHdrGen)
     {
         super(loc, ident);
+        this.dsym = DSYM.module_;
         const(char)[] srcfilename;
         //printf("Module::Module(filename = '%.*s', ident = '%s')\n", cast(int)filename.length, filename.ptr, ident.toChars());
         this.arg = filename;
@@ -1177,11 +1174,6 @@ extern (C++) final class Module : Package
     Symbol* sfilename; // symbol for filename
 
     uint[uint] ctfe_cov; /// coverage information from ctfe execution_count[line]
-
-    override inout(Module) isModule() inout nothrow
-    {
-        return this;
-    }
 
     override void accept(Visitor v)
     {

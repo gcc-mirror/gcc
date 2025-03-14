@@ -1523,7 +1523,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         if (!fparams.parameters)
             return ErrorExp.get();
 
-        StorageClass stc;
+        STC stc;
 
         // Set stc to storage class of the ith parameter
         auto ex = isExpression((*e.args)[1]);

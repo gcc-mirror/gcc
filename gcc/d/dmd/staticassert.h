@@ -21,8 +21,6 @@ public:
     Expressions *msg;
 
     StaticAssert *syntaxCopy(Dsymbol *s) override;
-    bool oneMember(Dsymbol *&ps, Identifier *ident) override;
     const char *kind() const override;
-    StaticAssert *isStaticAssert() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };

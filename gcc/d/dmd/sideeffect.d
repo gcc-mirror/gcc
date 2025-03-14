@@ -374,7 +374,7 @@ bool discardValue(Expression e)
  * Returns:
  *  Newly created temporary variable.
  */
-VarDeclaration copyToTemp(StorageClass stc, const char[] name, Expression e)
+VarDeclaration copyToTemp(STC stc, const char[] name, Expression e)
 {
     assert(name[0] == '_' && name[1] == '_');
     auto vd = new VarDeclaration(e.loc, e.type,
@@ -413,7 +413,7 @@ Expression extractSideEffect(Scope* sc, const char[] name,
         (sc.ctfe ? !hasSideEffect(e) : isTrivialExp(e)))
         return e;
 
-    auto vd = copyToTemp(0, name, e);
+    auto vd = copyToTemp(STC.none, name, e);
     vd.storage_class |= e.isLvalue() ? STC.ref_ : STC.rvalue;
 
     e0 = Expression.combine(e0, new DeclarationExp(vd.loc, vd)

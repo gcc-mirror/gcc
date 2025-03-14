@@ -30,7 +30,7 @@ extern (C++) final class StaticAssert : Dsymbol
 
     extern (D) this(Loc loc, Expression exp, Expression msg)
     {
-        super(loc, Id.empty);
+        super(DSYM.staticAssert, loc, Id.empty);
         this.exp = exp;
         this.msgs = new Expressions(1);
         (*this.msgs)[0] = msg;
@@ -38,7 +38,7 @@ extern (C++) final class StaticAssert : Dsymbol
 
     extern (D) this(Loc loc, Expression exp, Expressions* msgs)
     {
-        super(loc, Id.empty);
+        super(DSYM.staticAssert, loc, Id.empty);
         this.exp = exp;
         this.msgs = msgs;
     }
@@ -49,21 +49,9 @@ extern (C++) final class StaticAssert : Dsymbol
         return new StaticAssert(loc, exp.syntaxCopy(), msgs ? Expression.arraySyntaxCopy(msgs) : null);
     }
 
-    override bool oneMember(out Dsymbol ps, Identifier ident)
-    {
-        //printf("StaticAssert::oneMember())\n");
-        ps = null;
-        return true;
-    }
-
     override const(char)* kind() const
     {
         return "static assert";
-    }
-
-    override inout(StaticAssert) isStaticAssert() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)

@@ -47,8 +47,6 @@ public:
 
     bool equals(const RootObject * const o) const override;
 
-    Package *isPackage() override final { return this; }
-
     bool isAncestorPackageOf(const Package * const pkg) const;
 
     void accept(Visitor *v) override { v->visit(this); }
@@ -158,7 +156,6 @@ public:
 
     void *ctfe_cov;             // stores coverage information from ctfe
 
-    Module *isModule() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 

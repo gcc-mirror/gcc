@@ -143,13 +143,13 @@ get_internal_fn (tree ident, const Visibility &visibility)
       name = IDENTIFIER_POINTER (s);
     }
 
-  FuncDeclaration *fd = FuncDeclaration::genCfunc (NULL, Type::tvoid,
-						   Identifier::idPool (name));
+  FuncDeclaration *fd = dmd::genCfunc (NULL, Type::tvoid,
+				       Identifier::idPool (name));
   fd->isGenerated (true);
   fd->loc = Loc::singleFilename (mod->srcfile.toChars ());
   fd->parent = mod;
   fd->visibility = visibility;
-  fd->semanticRun = PASS::semantic3done;
+  fd->semanticRun (PASS::semantic3done);
 
   return fd;
 }

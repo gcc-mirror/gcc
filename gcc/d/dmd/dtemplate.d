@@ -53,7 +53,7 @@ import dmd.dinterpret;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem : dsymbolSemantic, checkDeprecated, aliasSemantic, search, search_correct, setScope, importAll, include;
+import dmd.dsymbolsem : dsymbolSemantic, checkDeprecated, aliasSemantic, search, search_correct, setScope, importAll, include, hasStaticCtorOrDtor;
 import dmd.errors;
 import dmd.errorsink;
 import dmd.expression;
@@ -605,6 +605,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
     extern (D) this(Loc loc, Identifier ident, TemplateParameters* parameters, Expression constraint, Dsymbols* decldefs, bool ismixin = false, bool literal = false)
     {
         super(loc, ident);
+        this.dsym = DSYM.templateDeclaration;
         static if (LOG)
         {
             printf("TemplateDeclaration(this = %p, id = '%s')\n", this, ident.toChars());
@@ -741,11 +742,6 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
             printf("\ttrue: no conflict\n");
         }
         return true;
-    }
-
-    override bool hasStaticCtorOrDtor()
-    {
-        return false; // don't scan uninstantiated templates
     }
 
     override const(char)* kind() const
@@ -888,11 +884,6 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
         auto tibox = TemplateInstanceBox(ti);
         debug (FindExistingInstance) ++nRemoved;
         instances.remove(tibox);
-    }
-
-    override inout(TemplateDeclaration) isTemplateDeclaration() inout
-    {
-        return this;
     }
 
     /**
@@ -3002,6 +2993,8 @@ private bool reliesOnTemplateParameters(Expression e, TemplateParameter[] tparam
         override void visit(NewExp e)
         {
             //printf("NewExp.reliesOnTemplateParameters('%s')\n", e.toChars());
+            if (e.placement)
+                e.placement.accept(this);
             if (e.thisexp)
                 e.thisexp.accept(this);
             result = e.newtype.reliesOnTemplateParameters(tparams);
@@ -3738,6 +3731,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
         {
             printf("TemplateInstance(this = %p, ident = '%s')\n", this, ident ? ident.toChars() : "null");
         }
+        this.dsym = DSYM.templateInstance;
         this.name = ident;
         this.tiargs = tiargs;
     }
@@ -3753,6 +3747,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
         {
             printf("TemplateInstance(this = %p, tempdecl = '%s')\n", this, td.toChars());
         }
+        this.dsym = DSYM.templateInstance;
         this.name = td.ident;
         this.tiargs = tiargs;
         this.tempdecl = td;
@@ -3821,12 +3816,6 @@ extern (C++) class TemplateInstance : ScopeDsymbol
     override const(char)* kind() const
     {
         return "template instance";
-    }
-
-    override bool oneMember(out Dsymbol ps, Identifier ident)
-    {
-        ps = null;
-        return true;
     }
 
     override final const(char)* toPrettyCharsHelper()
@@ -5342,11 +5331,6 @@ extern (C++) class TemplateInstance : ScopeDsymbol
         --nest;
     }
 
-    override final inout(TemplateInstance) isTemplateInstance() inout
-    {
-        return this;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -5490,6 +5474,7 @@ extern (C++) final class TemplateMixin : TemplateInstance
               tqual.idents.length ? cast(Identifier)tqual.idents[tqual.idents.length - 1] : (cast(TypeIdentifier)tqual).ident,
               tiargs ? tiargs : new Objects());
         //printf("TemplateMixin(ident = '%s')\n", ident ? ident.toChars() : "");
+        this.dsym = DSYM.templateMixin;
         this.ident = ident;
         this.tqual = tqual;
     }
@@ -5503,11 +5488,6 @@ extern (C++) final class TemplateMixin : TemplateInstance
     override const(char)* kind() const
     {
         return "mixin";
-    }
-
-    override bool oneMember(out Dsymbol ps, Identifier ident)
-    {
-        return Dsymbol.oneMember(ps, ident);
     }
 
     override bool hasPointers()
@@ -5588,11 +5568,6 @@ extern (C++) final class TemplateMixin : TemplateInstance
                 return false;
         }
         return true;
-    }
-
-    override inout(TemplateMixin) isTemplateMixin() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)

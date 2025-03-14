@@ -15,6 +15,7 @@ import dmd.arraytypes;
 import dmd.astenums;
 import dmd.attrib;
 import dmd.common.outbuffer : OutBuffer;
+import dmd.dclass : ClassDeclaration;
 import dmd.declaration : TypeInfoDeclaration;
 import dmd.denum : EnumDeclaration;
 import dmd.dmodule /*: Module*/;
@@ -179,6 +180,18 @@ Dsymbols* include(Dsymbol d, Scope* sc)
     return dmd.dsymbolsem.include(d, sc);
 }
 
+bool isFuncHidden(ClassDeclaration cd, FuncDeclaration fd)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.isFuncHidden(cd, fd);
+}
+
+Dsymbol vtblSymbol(ClassDeclaration cd)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.vtblSymbol(cd);
+}
+
 /***********************************************************
  * dtemplate.d
  */
@@ -262,6 +275,19 @@ bool fill(StructDeclaration sd, Loc loc,
 {
     import dmd.expressionsem;
     return dmd.expressionsem.fill(sd, loc, elements, ctorinit);
+}
+
+/***********************************************************
+ * func.d
+ */
+FuncDeclaration genCfunc(Parameters* fparams, Type treturn, const(char)* name, StorageClass stc = STC.none)
+{
+    return FuncDeclaration.genCfunc(fparams, treturn, name, cast(STC) stc);
+}
+
+FuncDeclaration genCfunc(Parameters* fparams, Type treturn, Identifier id, StorageClass stc = STC.none)
+{
+    return FuncDeclaration.genCfunc(fparams, treturn, id, cast(STC) stc);
 }
 
 /***********************************************************
@@ -511,7 +537,7 @@ Covariant covariant(Type src, Type t, StorageClass* pstc = null, bool
                     cppCovariant = false)
 {
     import dmd.typesem;
-    return dmd.typesem.covariant(src, t, pstc, cppCovariant);
+    return dmd.typesem.covariant(src, t, cast(STC*) pstc, cppCovariant);
 }
 
 bool isZeroInit(Type t, Loc loc)
@@ -643,7 +669,7 @@ Type addMod(Type type, MOD mod)
 Type addStorageClass(Type type, StorageClass stc)
 {
     import dmd.typesem;
-    return dmd.typesem.addStorageClass(type, stc);
+    return dmd.typesem.addStorageClass(type, cast(STC) stc);
 }
 
 Type pointerTo(Type type)

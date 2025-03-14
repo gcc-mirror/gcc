@@ -176,7 +176,7 @@ extern (C++) struct Scope
     Visibility visibility = Visibility(Visibility.Kind.public_);
     int explicitVisibility;         /// set if in an explicit visibility attribute
 
-    StorageClass stc;               /// storage class
+    STC stc;                        /// storage class
 
     DeprecatedDeclaration depdecl;  /// customized deprecation message
 

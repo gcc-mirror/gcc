@@ -25,6 +25,7 @@ import dmd.astcodegen;
 import dmd.astenums;
 import dmd.canthrow;
 import dmd.chkformat;
+import dmd.cond;
 import dmd.ctorflow;
 import dmd.dscope;
 import dmd.dsymbol;
@@ -1452,11 +1453,6 @@ private Expression resolveUFCSProperties(Scope* sc, Expression e1, Expression e2
         auto arguments = new Expressions(1);
         (*arguments)[0] = eleft;
         e = new CallExp(loc, e, arguments);
-
-        // https://issues.dlang.org/show_bug.cgi?id=24017
-        if (sc.debug_)
-            e.isCallExp().inDebugStatement = true;
-
         e = e.expressionSemantic(sc);
         return e;
     }
@@ -3161,7 +3157,7 @@ private bool functionParameters(Loc loc, Scope* sc,
                     auto args = new Expressions(nargs - i);
                     foreach (u; i .. nargs)
                         (*args)[u - i] = (*arguments)[u];
-                    arg = new NewExp(loc, null, p.type, args);
+                    arg = new NewExp(loc, null, null, p.type, args);
                     break;
                 }
             default:
@@ -3324,7 +3320,7 @@ private bool functionParameters(Loc loc, Scope* sc,
                 {   /* allow rvalues to be passed to ref parameters by copying
                      * them to a temp, then pass the temp as the argument
                      */
-                    auto v = copyToTemp(0, "__rvalue", arg);
+                    auto v = copyToTemp(STC.none, "__rvalue", arg);
                     Expression ev = new DeclarationExp(arg.loc, v);
                     ev = new CommaExp(arg.loc, ev, new VarExp(arg.loc, v));
                     arg = ev.expressionSemantic(sc);
@@ -3406,7 +3402,7 @@ private bool functionParameters(Loc loc, Scope* sc,
                 {
                     // allocate the array literal as temporary static array on the stack
                     ale.type = ale.type.nextOf().sarrayOf(ale.elements.length);
-                    auto tmp = copyToTemp(0, "__arrayliteral_on_stack", ale);
+                    auto tmp = copyToTemp(STC.none, "__arrayliteral_on_stack", ale);
                     tmp.storage_class |= STC.exptemp;
                     auto declareTmp = new DeclarationExp(ale.loc, tmp);
                     auto castToSlice = new CastExp(ale.loc, new VarExp(ale.loc, tmp),
@@ -4879,6 +4875,28 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             printf("\tnewtype: %s\n", exp.newtype.toChars());
         }
 
+        if (exp.placement)
+        {
+            exp.placement = exp.placement.expressionSemantic(sc);
+            auto p = exp.placement;
+            if (p.op == EXP.error)
+                return setError();
+            if (!p.isLvalue())
+            {
+                error(p.loc, "PlacementExpression `%s` is an rvalue, but must be an lvalue", p.toChars());
+                return setError();
+            }
+            if (sc.setUnsafe(false, p.loc, "`@safe` function `%s` cannot use placement `new`", sc.func))
+            {
+                return setError();
+            }
+            if (!exp.placement.type.isNaked())
+            {
+                error(p.loc, "PlacementExpression `%s` of type `%s` be unshared and mutable", p.toChars(), toChars(p.type));
+                return setError();
+            }
+        }
+
         //for error messages if the argument in [] is not convertible to size_t
         const originalNewtype = exp.newtype;
 
@@ -4965,6 +4983,19 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return setError();
         }
 
+        uinteger_t placementSize;
+        if (exp.placement)
+        {
+            placementSize = size(exp.placement.type, exp.placement.loc);
+            auto objectSize = size(tb, exp.placement.loc);
+            //printf("placementSize: %lld objectSize: %lld\n", placementSize, objectSize);
+            if (!tb.isTypeClass && placementSize < objectSize)
+            {
+                error(exp.placement.loc, "new placement size %llu must be >= object size %llu", placementSize, objectSize);
+                return setError();
+            }
+        }
+
         const size_t nargs = exp.arguments ? exp.arguments.length : 0;
         Expression newprefix = null;
 
@@ -4973,9 +5004,14 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             auto cd = tc.sym;
             if (cd.errors)
                 return setError();
-            cd.size(exp.loc);
+            auto objectSize = cd.size(exp.loc);
             if (cd.sizeok != Sizeok.done)
                 return setError();
+            if (exp.placement && placementSize < objectSize)
+            {
+                error(exp.placement.loc, "new placement size %llu must be >= class object size %llu", placementSize, objectSize);
+                return setError();
+            }
             if (!cd.ctor)
                 cd.ctor = cd.searchCtor();
             if (cd.noDefaultCtor && !nargs && !cd.defaultCtor)
@@ -5185,6 +5221,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 return;
             }
             else if (sc.needsCodegen() && // interpreter doesn't need this lowered
+                     !exp.placement &&
                      !exp.onstack && !exp.type.isScopeClass()) // these won't use the GC
             {
                 /* replace `new T(arguments)` with `core.lifetime._d_newclassT!T(arguments)`
@@ -5290,10 +5327,16 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             }
 
             exp.type = exp.type.pointerTo();
-            tryLowerToNewItem(exp);
+            if (!exp.placement)
+                tryLowerToNewItem(exp);
         }
         else if (tb.ty == Tarray)
         {
+            if (exp.placement)
+            {
+                error(exp.placement.loc, "placement new cannot be used with dynamic arrays");
+                return setError();
+            }
             if (!nargs)
             {
                 // https://issues.dlang.org/show_bug.cgi?id=20422
@@ -5364,7 +5407,10 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                     goto LskipNewArrayLowering;
             }
 
-            if (nargs == 1)
+            if (exp.placement)  // no need to lower
+            {
+            }
+            else if (nargs == 1)
             {
                 auto hook = global.params.tracegc ? Id._d_newarrayTTrace : Id._d_newarrayT;
                 if (!verifyHookExist(exp.loc, *sc, hook, "new array"))
@@ -5448,10 +5494,16 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             }
 
             exp.type = exp.type.pointerTo();
-            tryLowerToNewItem(exp);
+            if (!exp.placement)
+                tryLowerToNewItem(exp);
         }
         else if (tb.ty == Taarray)
         {
+            if (exp.placement)
+            {
+                error(exp.placement.loc, "placement new cannot be used with associative arrays");
+                return setError();
+            }
             // e.g. `new Alias(args)`
             if (nargs)
             {
@@ -5501,7 +5553,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             sds.members.push(e.cd);
         }
 
-        Expression n = new NewExp(e.loc, e.thisexp, e.cd.type, e.arguments);
+        Expression n = new NewExp(e.loc, e.placement, e.thisexp, e.cd.type, e.arguments);
 
         Expression c = new CommaExp(e.loc, d, n);
         result = c.expressionSemantic(sc);
@@ -5839,6 +5891,19 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         static if (LOGSEMANTIC)
         {
             printf("CallExp::semantic() %s\n", exp.toChars());
+        }
+
+        scope (exit)
+        {
+            if (TypeFunction tf = exp.f ? cast(TypeFunction)exp.f.type : null)
+            {
+                result.rvalue = tf.isRvalue;
+                if (tf.isRvalue && !tf.isRef)
+                {
+                    error(exp.f.loc, "`__rvalue` only valid on functions that return by `ref`");
+                    setError();
+                }
+            }
         }
 
         Objects* tiargs = null; // initial list of template arguments
@@ -6369,7 +6434,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 tthis = ue.e1.type;
                 if (!(exp.f.type.ty == Tfunction && (cast(TypeFunction)exp.f.type).isScopeQual))
                 {
-                    if (checkParamArgumentEscape(*sc, exp.f, Id.This, exp.f.vthis, STC.undefined_, ethis, false, false))
+                    if (checkParamArgumentEscape(*sc, exp.f, Id.This, exp.f.vthis, STC.none, ethis, false, false))
                         return setError();
                 }
             }
@@ -6851,10 +6916,10 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 Loc loc = exp.loc;
 
                 auto vptr = new DotIdExp(loc, new ThisExp(loc), Id.__vptr);
-                auto vptrTmpDecl = copyToTemp(0, "__vptrTmp", vptr);
+                auto vptrTmpDecl = copyToTemp(STC.none, "__vptrTmp", vptr);
                 auto declareVptrTmp = new DeclarationExp(loc, vptrTmpDecl);
 
-                auto superTmpDecl = copyToTemp(0, "__superTmp", result);
+                auto superTmpDecl = copyToTemp(STC.none, "__superTmp", result);
                 auto declareSuperTmp = new DeclarationExp(loc, superTmpDecl);
 
                 auto declareTmps = new CommaExp(loc, declareVptrTmp, declareSuperTmp);
@@ -7871,7 +7936,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                         return res.expressionSemantic(sc);
                     }
 
-                    const stc = op.isLvalue() ? STC.ref_ : 0;
+                    const stc = op.isLvalue() ? STC.ref_ : STC.none;
                     auto tmp = copyToTemp(stc, "__assertOp", op);
                     tmp.dsymbolSemantic(sc);
 
@@ -8039,7 +8104,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             exp.msg = resolveProperties(sc, exp.msg);
             exp.msg = exp.msg.implicitCastTo(sc, Type.tchar.constOf().arrayOf());
             exp.msg = exp.msg.optimize(WANTvalue);
-            checkParamArgumentEscape(*sc, null, null, null, STC.undefined_, exp.msg, true, false);
+            checkParamArgumentEscape(*sc, null, null, null, STC.none, exp.msg, true, false);
         }
 
         if (exp.msg && exp.msg.op == EXP.error)
@@ -10149,7 +10214,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             /* Rewrite as:
              * auto tmp = e1; ++e1; tmp
              */
-            auto tmp = copyToTemp(0, "__pitmp", exp.e1);
+            auto tmp = copyToTemp(STC.none, "__pitmp", exp.e1);
             Expression ea = new DeclarationExp(exp.loc, tmp);
 
             Expression eb = exp.e1.syntaxCopy();
@@ -10787,7 +10852,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                                 return;
                             }
                         }
-                        else if (sd.hasMoveCtor && !e2x.isCallExp() && !e2x.isStructLiteralExp())
+                        else if (sd.hasMoveCtor && (!e2x.isCallExp() || e2x.rvalue) && !e2x.isStructLiteralExp())
                         {
                             // #move
                             /* The !e2x.isCallExp() is because it is already an rvalue
@@ -11677,7 +11742,7 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             // `__assigntmp` will be destroyed together with the array `ae.e1`.
             // When `ae.e2` is a variadic arg array, it is also `scope`, so
             // `__assigntmp` may also be scope.
-            StorageClass stc = STC.nodtor;
+            STC stc = STC.nodtor;
             if (isArrayAssign)
                 stc |= STC.rvalue | STC.scope_;
 
@@ -13020,6 +13085,11 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             error(exp.loc, "compare not defined for complex operands");
             return setError();
         }
+        else if (t1.isTypeFunction() || t2.isTypeFunction())
+        {
+            error(exp.loc, "comparison is not defined for function types");
+            return setError();
+        }
         else if (t1.ty == Taarray || t2.ty == Taarray)
         {
             error(exp.loc, "`%s` is not defined for associative arrays", EXPtoString(exp.op).ptr);
@@ -13325,6 +13395,12 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             return;
         }
 
+        if (t1.isTypeFunction() || t2.isTypeFunction())
+        {
+            error(exp.loc, "operator `==` is not defined for function types");
+            return setError();
+        }
+
         if (auto tv = t1.isTypeVector())
             exp.type = tv.toBooleanVector();
 
@@ -13380,6 +13456,12 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
             exp.e1 = (cast(CallExp)exp.e1).addDtorHook(sc);
         if (exp.e2.op == EXP.call)
             exp.e2 = (cast(CallExp)exp.e2).addDtorHook(sc);
+
+        if (exp.e1.type.isTypeFunction() || exp.e2.type.isTypeFunction())
+        {
+            error(exp.loc, "operator `is` is not defined for function types");
+            return setError();
+        }
 
         if (exp.e1.type.toBasetype().ty == Tsarray ||
             exp.e2.type.toBasetype().ty == Tsarray)
@@ -14611,7 +14693,7 @@ MATCH matchType(FuncExp funcExp, Type to, Scope* sc, FuncExp* presult, ErrorSink
         convertMatch = true;
 
         auto tfy = new TypeFunction(tfx.parameterList, tof.next,
-                    tfx.linkage, STC.undefined_);
+                    tfx.linkage, STC.none);
         tfy.mod = tfx.mod;
         tfy.trust = tfx.trust;
         tfy.isNothrow = tfx.isNothrow;
@@ -14928,6 +15010,8 @@ bool checkSharedAccess(Expression e, Scope* sc, bool returnRef = false)
 
         bool visitNew(NewExp e)
         {
+            if (e.placement)
+                check(e.placement, false);
             if (e.thisexp)
                 check(e.thisexp, false);
             return false;
@@ -15111,6 +15195,8 @@ Expression resolveLoc(Expression exp, Loc loc, Scope* sc)
 
     Expression visitNew(NewExp exp)
     {
+        if (exp.placement)
+            exp.placement = exp.placement.resolveLoc(loc, sc);
         if (exp.thisexp)
             exp.thisexp = exp.thisexp.resolveLoc(loc, sc);
         if (exp.argprefix)
@@ -15332,7 +15418,7 @@ Expression addDtorHook(Expression e, Scope* sc)
             buf[0 .. prefix.length] = prefix;
             buf[prefix.length .. len] = ident[0 .. len - prefix.length];
 
-            auto tmp = copyToTemp(0, buf[0 .. len], exp);
+            auto tmp = copyToTemp(STC.none, buf[0 .. len], exp);
             Expression ae = new DeclarationExp(exp.loc, tmp);
             Expression e = new CommaExp(exp.loc, ae, new VarExp(exp.loc, tmp));
             e = e.expressionSemantic(sc);
@@ -15365,7 +15451,7 @@ Expression addDtorHook(Expression e, Scope* sc)
                 /* Type needs destruction, so declare a tmp
                  * which the back end will recognize and call dtor on
                  */
-                auto tmp = copyToTemp(0, Id.__tmpfordtor.toString(), exp);
+                auto tmp = copyToTemp(STC.none, Id.__tmpfordtor.toString(), exp);
                 auto de = new DeclarationExp(exp.loc, tmp);
                 auto ve = new VarExp(exp.loc, tmp);
                 Expression e = new CommaExp(exp.loc, de, ve);
@@ -17345,4 +17431,244 @@ bool fill(StructDeclaration sd, Loc loc, ref Expressions elements, bool ctorinit
     }
 
     return !errors;
+}
+
+/*****************************************
+* Lower any aggregate that is not an array to an array using a
+* regular foreach loop within CTFE.  If there are multiple
+* `static foreach` loop variables, an array of tuples is
+* generated. In thise case, the field `needExpansion` is set to
+* true to indicate that the static foreach loop expansion will
+* need to expand the tuples into multiple variables.
+*
+* For example, `static foreach (x; range) { ... }` is lowered to:
+*
+*     static foreach (x; {
+*         typeof({
+*             foreach (x; range) return x;
+*         }())[] __res;
+*         foreach (x; range) __res ~= x;
+*         return __res;
+*     }()) { ... }
+*
+* Finally, call `lowerArrayAggregate` to turn the produced
+* array into an expression tuple.
+*
+* Params:
+*     sfe = The 'static foreach'.
+*     sc = The current scope.
+*/
+extern (C++) void lowerNonArrayAggregate(StaticForeach sfe, Scope* sc)
+{
+    import dmd.statement;
+
+    auto nvars = sfe.aggrfe ? sfe.aggrfe.parameters.length : 1;
+    auto aloc = sfe.aggrfe ? sfe.aggrfe.aggr.loc : sfe.rangefe.lwr.loc;
+    // We need three sets of foreach loop variables because the
+    // lowering contains three foreach loops.
+    Parameters*[3] pparams = [new Parameters(), new Parameters(), new Parameters()];
+    foreach (i; 0 .. nvars)
+    {
+        foreach (params; pparams)
+        {
+            auto p = sfe.aggrfe ? (*sfe.aggrfe.parameters)[i] : sfe.rangefe.param;
+            params.push(new Parameter(aloc, p.storageClass, p.type, p.ident, null, null));
+        }
+    }
+    Expression[2] res;
+    TypeStruct tplty = null;
+    if (nvars == 1) // only one `static foreach` variable, generate identifiers.
+    {
+        foreach (i; 0 .. 2)
+        {
+            res[i] = new IdentifierExp(aloc, (*pparams[i])[0].ident);
+        }
+    }
+    else // multiple `static foreach` variables, generate tuples.
+    {
+        foreach (i; 0 .. 2)
+        {
+            auto e = new Expressions(pparams[0].length);
+            foreach (j, ref elem; *e)
+            {
+                auto p = (*pparams[i])[j];
+                elem = new IdentifierExp(aloc, p.ident);
+            }
+            if (!tplty)
+            {
+                tplty = sfe.createTupleType(aloc, e, sc);
+            }
+            res[i] = sfe.createTuple(aloc, tplty, e);
+        }
+        sfe.needExpansion = true; // need to expand the tuples later
+    }
+    // generate remaining code for the new aggregate which is an
+    // array (see documentation comment).
+    if (sfe.rangefe)
+    {
+        sc = sc.startCTFE();
+        sfe.rangefe.lwr = sfe.rangefe.lwr.expressionSemantic(sc);
+        sfe.rangefe.lwr = resolveProperties(sc, sfe.rangefe.lwr);
+        sfe.rangefe.upr = sfe.rangefe.upr.expressionSemantic(sc);
+        sfe.rangefe.upr = resolveProperties(sc, sfe.rangefe.upr);
+        sc = sc.endCTFE();
+        sfe.rangefe.lwr = sfe.rangefe.lwr.optimize(WANTvalue);
+        sfe.rangefe.lwr = sfe.rangefe.lwr.ctfeInterpret();
+        sfe.rangefe.upr = sfe.rangefe.upr.optimize(WANTvalue);
+        sfe.rangefe.upr = sfe.rangefe.upr.ctfeInterpret();
+    }
+    auto s1 = new Statements();
+    auto stmts = new Statements();
+    if (tplty) stmts.push(new ExpStatement(sfe.loc, tplty.sym));
+    stmts.push(new ReturnStatement(aloc, res[0]));
+    s1.push(sfe.createForeach(aloc, pparams[0], new CompoundStatement(aloc, stmts)));
+    s1.push(new ExpStatement(aloc, new AssertExp(aloc, IntegerExp.literal!0)));
+    Type ety = new TypeTypeof(aloc, sfe.wrapAndCall(aloc, new CompoundStatement(aloc, s1)));
+    auto aty = ety.arrayOf();
+    auto idres = Identifier.generateId("__res");
+    auto vard = new VarDeclaration(aloc, aty, idres, null, STC.temp);
+    auto s2 = new Statements();
+
+    // Run 'typeof' gagged to avoid duplicate errors and if it fails just create
+    // an empty foreach to expose them.
+    const olderrors = global.startGagging();
+    ety = ety.typeSemantic(aloc, sc);
+    if (global.endGagging(olderrors))
+        s2.push(sfe.createForeach(aloc, pparams[1], null));
+    else
+    {
+        s2.push(new ExpStatement(aloc, vard));
+        auto catass = new CatAssignExp(aloc, new IdentifierExp(aloc, idres), res[1]);
+        s2.push(sfe.createForeach(aloc, pparams[1], new ExpStatement(aloc, catass)));
+        s2.push(new ReturnStatement(aloc, new IdentifierExp(aloc, idres)));
+    }
+
+    Expression aggr = void;
+    Type indexty = void;
+
+    if (sfe.rangefe && (indexty = ety).isIntegral())
+    {
+        sfe.rangefe.lwr.type = indexty;
+        sfe.rangefe.upr.type = indexty;
+        auto lwrRange = getIntRange(sfe.rangefe.lwr);
+        auto uprRange = getIntRange(sfe.rangefe.upr);
+
+        const lwr = sfe.rangefe.lwr.toInteger();
+        auto  upr = sfe.rangefe.upr.toInteger();
+        size_t length = 0;
+
+        if (lwrRange.imin <= uprRange.imax)
+                length = cast(size_t) (upr - lwr);
+
+        auto exps = new Expressions(length);
+
+        if (sfe.rangefe.op == TOK.foreach_)
+        {
+            foreach (i; 0 .. length)
+                (*exps)[i] = new IntegerExp(aloc, lwr + i, indexty);
+        }
+        else
+        {
+            --upr;
+            foreach (i; 0 .. length)
+                (*exps)[i] = new IntegerExp(aloc, upr - i, indexty);
+        }
+        aggr = new ArrayLiteralExp(aloc, indexty.arrayOf(), exps);
+    }
+    else
+    {
+        aggr = sfe.wrapAndCall(aloc, new CompoundStatement(aloc, s2));
+        sc = sc.startCTFE();
+        aggr = aggr.expressionSemantic(sc);
+        aggr = resolveProperties(sc, aggr);
+        sc = sc.endCTFE();
+        aggr = aggr.optimize(WANTvalue);
+        aggr = aggr.ctfeInterpret();
+    }
+
+    assert(!!sfe.aggrfe ^ !!sfe.rangefe);
+    sfe.aggrfe = new ForeachStatement(sfe.loc, TOK.foreach_, pparams[2], aggr,
+                                    sfe.aggrfe ? sfe.aggrfe._body : sfe.rangefe._body,
+                                    sfe.aggrfe ? sfe.aggrfe.endloc : sfe.rangefe.endloc);
+    sfe.rangefe = null;
+    sfe.lowerArrayAggregate(sc); // finally, turn generated array into expression tuple
+}
+
+/*****************************************
+* Perform `static foreach` lowerings that are necessary in order
+* to finally expand the `static foreach` using
+* `dmd.statementsem.makeTupleForeach`.
+*/
+extern(D) void prepare(StaticForeach sfe, Scope* sc)
+{
+    assert(sc);
+
+    if (sfe.aggrfe)
+    {
+        sc = sc.startCTFE();
+        sfe.aggrfe.aggr = sfe.aggrfe.aggr.expressionSemantic(sc);
+        sc = sc.endCTFE();
+    }
+
+    if (sfe.aggrfe && sfe.aggrfe.aggr.type.toBasetype().ty == Terror)
+    {
+        return;
+    }
+
+    if (!sfe.ready())
+    {
+        if (sfe.aggrfe && sfe.aggrfe.aggr.type.toBasetype().ty == Tarray)
+        {
+            sfe.lowerArrayAggregate(sc);
+        }
+        else
+        {
+            sfe.lowerNonArrayAggregate(sc);
+        }
+    }
+}
+
+/*****************************************
+    * Turn an aggregate which is an array into an expression tuple
+    * of its elements. I.e., lower
+    *     static foreach (x; [1, 2, 3, 4]) { ... }
+    * to
+    *     static foreach (x; AliasSeq!(1, 2, 3, 4)) { ... }
+    */
+extern(D) void lowerArrayAggregate(StaticForeach sfe, Scope* sc)
+{
+    auto aggr = sfe.aggrfe.aggr;
+    Expression el = new ArrayLengthExp(aggr.loc, aggr);
+    sc = sc.startCTFE();
+    el = el.expressionSemantic(sc);
+    sc = sc.endCTFE();
+    el = el.optimize(WANTvalue);
+    el = el.ctfeInterpret();
+    if (el.op != EXP.int64)
+    {
+        sfe.aggrfe.aggr = ErrorExp.get();
+        return;
+    }
+
+    Expressions* es;
+    if (auto ale = aggr.isArrayLiteralExp())
+    {
+        // Directly use the elements of the array for the TupleExp creation
+        es = ale.elements;
+    }
+    else
+    {
+        const length = cast(size_t)el.toInteger();
+        es = new Expressions(length);
+        foreach (i; 0 .. length)
+        {
+            auto index = new IntegerExp(sfe.loc, i, Type.tsize_t);
+            auto value = new IndexExp(aggr.loc, aggr, index);
+            (*es)[i] = value;
+        }
+    }
+    sfe.aggrfe.aggr = new TupleExp(aggr.loc, es);
+    sfe.aggrfe.aggr = sfe.aggrfe.aggr.expressionSemantic(sc);
+    sfe.aggrfe.aggr = sfe.aggrfe.aggr.optimize(WANTvalue);
+    sfe.aggrfe.aggr = sfe.aggrfe.aggr.ctfeInterpret();
 }

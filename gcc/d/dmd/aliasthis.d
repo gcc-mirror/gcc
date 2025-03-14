@@ -33,7 +33,7 @@ extern (C++) final class AliasThis : Dsymbol
 
     extern (D) this(Loc loc, Identifier ident) @safe
     {
-        super(loc, null);    // it's anonymous (no identifier)
+        super(DSYM.aliasThis, loc, null);    // it's anonymous (no identifier)
         this.ident = ident;
     }
 

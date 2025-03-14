@@ -751,6 +751,7 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
 
     void visitNew(NewExp e)
     {
+        expOptimize(e.placement, WANTvalue);
         expOptimize(e.thisexp, WANTvalue);
         // Optimize parameters
         if (e.arguments)

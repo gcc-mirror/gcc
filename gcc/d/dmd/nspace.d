@@ -66,6 +66,7 @@ extern (C++) final class Nspace : ScopeDsymbol
     {
         super(loc, ident);
         //printf("Nspace::Nspace(ident = %s)\n", ident.toChars());
+        this.dsym = DSYM.nspace;
         this.members = members;
         this.identExp = identExp;
     }
@@ -86,11 +87,6 @@ extern (C++) final class Nspace : ScopeDsymbol
     override const(char)* kind() const
     {
         return "namespace";
-    }
-
-    override inout(Nspace) isNspace() inout
-    {
-        return this;
     }
 
     override void accept(Visitor v)

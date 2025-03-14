@@ -71,7 +71,6 @@ public:
     static void addGlobalIdent(const char *ident);
 
     int include(Scope *sc) override;
-    DebugCondition *isDebugCondition() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -82,7 +81,6 @@ public:
     static void addPredefinedGlobalIdent(const char *ident);
 
     int include(Scope *sc) override;
-    VersionCondition *isVersionCondition() override { return this; }
     void accept(Visitor *v) override { v->visit(this); }
 };
 
