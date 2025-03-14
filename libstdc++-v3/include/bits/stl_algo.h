@@ -1447,6 +1447,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
   /// move-assign an element onto itself.
   template<typename _ForwardIterator, typename _Pointer, typename _Predicate,
 	   typename _Distance>
+    _GLIBCXX26_CONSTEXPR
     _ForwardIterator
     __stable_partition_adaptive(_ForwardIterator __first,
 				_ForwardIterator __last,
@@ -1507,6 +1508,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     }
 
   template<typename _ForwardIterator, typename _Predicate>
+    _GLIBCXX26_CONSTEXPR
     _ForwardIterator
     __stable_partition(_ForwardIterator __first, _ForwardIterator __last,
 		       _Predicate __pred)
@@ -1521,11 +1523,25 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       typedef typename iterator_traits<_ForwardIterator>::difference_type
 	_DistanceType;
 
+      const _DistanceType __len = std::distance(__first, __last);
+
+#if __glibcxx_constexpr_algorithms >= 202306L // >= C++26
+      if consteval {
+	// Simulate a _Temporary_buffer of length 1:
+	_ValueType __buf = std::move(*__first);
+	*__first = std::move(__buf);
+	return std::__stable_partition_adaptive(__first, __last, __pred,
+						__len,
+						&__buf,
+						_DistanceType(1));
+      }
+#endif
+
       _Temporary_buffer<_ForwardIterator, _ValueType>
-	__buf(__first, std::distance(__first, __last));
+	__buf(__first, __len);
       return
 	std::__stable_partition_adaptive(__first, __last, __pred,
-					 _DistanceType(__buf.requested_size()),
+					 __len,
 					 __buf.begin(),
 					 _DistanceType(__buf.size()));
     }
@@ -1548,6 +1564,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    *  relative ordering after calling @p stable_partition().
   */
   template<typename _ForwardIterator, typename _Predicate>
+    _GLIBCXX26_CONSTEXPR
     inline _ForwardIterator
     stable_partition(_ForwardIterator __first, _ForwardIterator __last,
 		     _Predicate __pred)

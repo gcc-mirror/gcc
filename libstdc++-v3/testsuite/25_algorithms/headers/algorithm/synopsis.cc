@@ -349,6 +349,7 @@ namespace std
     partition(_BIter, _BIter, _Predicate);
 
   template<typename _BIter, typename _Predicate>
+    _GLIBCXX26_CONSTEXPR
     _BIter
     stable_partition(_BIter, _BIter, _Predicate);
 
