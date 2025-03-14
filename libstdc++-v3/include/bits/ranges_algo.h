@@ -2598,6 +2598,7 @@ namespace ranges
 	     typename _Comp = ranges::less,
 	     typename _Proj = identity>
       requires sortable<_Iter, _Comp, _Proj>
+      _GLIBCXX26_CONSTEXPR
       _Iter
       operator()(_Iter __first, _Iter __middle, _Sent __last,
 		 _Comp __comp = {}, _Proj __proj = {}) const
@@ -2611,6 +2612,7 @@ namespace ranges
     template<bidirectional_range _Range,
 	     typename _Comp = ranges::less, typename _Proj = identity>
       requires sortable<iterator_t<_Range>, _Comp, _Proj>
+      _GLIBCXX26_CONSTEXPR
       borrowed_iterator_t<_Range>
       operator()(_Range&& __r, iterator_t<_Range> __middle,
 		 _Comp __comp = {}, _Proj __proj = {}) const

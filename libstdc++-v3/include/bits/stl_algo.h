@@ -2465,6 +2465,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     }
 
   template<typename _BidirectionalIterator, typename _Compare>
+    _GLIBCXX26_CONSTEXPR
     void
     __inplace_merge(_BidirectionalIterator __first,
 		    _BidirectionalIterator __middle,
@@ -2483,6 +2484,12 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       const _DistanceType __len2 = std::distance(__middle, __last);
 
 #if _GLIBCXX_HOSTED
+# if __glibcxx_constexpr_algorithms >= 202306L // >= C++26
+      if consteval {
+	return std::__merge_without_buffer
+	  (__first, __middle, __last, __len1, __len2, __comp);
+      }
+# endif
       typedef _Temporary_buffer<_BidirectionalIterator, _ValueType> _TmpBuf;
       // __merge_adaptive will use a buffer for the smaller of
       // [first,middle) and [middle,last).
@@ -2523,6 +2530,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    *  distance(__first,__last).
   */
   template<typename _BidirectionalIterator>
+    _GLIBCXX26_CONSTEXPR
     inline void
     inplace_merge(_BidirectionalIterator __first,
 		  _BidirectionalIterator __middle,
@@ -2564,6 +2572,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
    *  the function used for the initial sort.
   */
   template<typename _BidirectionalIterator, typename _Compare>
+    _GLIBCXX26_CONSTEXPR
     inline void
     inplace_merge(_BidirectionalIterator __first,
 		  _BidirectionalIterator __middle,

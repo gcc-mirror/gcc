@@ -315,10 +315,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     includes(_IIter1, _IIter1, _IIter2, _IIter2, _Compare);
 
   template<typename _BIter>
+    _GLIBCXX26_CONSTEXPR
     void
     inplace_merge(_BIter, _BIter, _BIter);
 
   template<typename _BIter, typename _Compare>
+    _GLIBCXX26_CONSTEXPR
     void
     inplace_merge(_BIter, _BIter, _BIter, _Compare);
 
