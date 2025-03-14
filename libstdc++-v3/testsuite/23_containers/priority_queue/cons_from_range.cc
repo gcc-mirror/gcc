@@ -1,5 +1,6 @@
 // { dg-do run { target c++23 } }
 
+#include <algorithm>
 #include <queue>
 #include <ranges>
 #include <span>
