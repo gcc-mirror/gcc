@@ -778,7 +778,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      // but will not destroy elements. This RAII type destroys them.
 	      struct _Clear
 	      {
-		~_Clear() { if (_M_this) _M_this->clear(); }
+		constexpr ~_Clear() { if (_M_this) _M_this->clear(); }
 		vector* _M_this;
 	      } __guard{this};
 

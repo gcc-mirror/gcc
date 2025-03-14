@@ -466,6 +466,18 @@ test_composition()
   auto str = adaptor(" ");
 }
 
+constexpr bool
+test_pr119282()
+{
+  // PR libstdc++/119282
+  auto v = std::array{1, 2, 3}
+    | std::views::transform([](auto x) { return std::array{x}; })
+    | std::views::join
+    | std::ranges::to<std::vector>();
+  VERIFY( std::ranges::size(v) == 3 );
+  return true;
+}
+
 int main()
 {
   test_p1206r7_examples();
@@ -480,4 +492,5 @@ int main()
   test_constexpr();
   test_sfinae();
   test_composition();
+  static_assert(test_pr119282());
 }
