@@ -22,6 +22,9 @@
 AUTOMAKE_OPTIONS = 1.8 foreign
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
+# May be used by various substitution variables.
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
+
 if BUILD_LIBGCOBOL
 toolexeclib_LTLIBRARIES  = libgcobol.la
 endif

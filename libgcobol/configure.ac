@@ -170,6 +170,9 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
+# Determine what GCC version number to use in filesystem paths.
+GCC_BASE_VER
+
 AH_TEMPLATE(PACKAGE, [Name of package])
 AH_TEMPLATE(VERSION, [Version number of package])
 

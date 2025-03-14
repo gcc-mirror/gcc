@@ -403,6 +403,9 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 AUTOMAKE_OPTIONS = 1.8 foreign
 ACLOCAL_AMFLAGS = -I .. -I ../config
+
+# May be used by various substitution variables.
+gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@toolexeclib_LTLIBRARIES = libgcobol.la
 libgcobol_la_SOURCES = \
 	charmaps.cc				\

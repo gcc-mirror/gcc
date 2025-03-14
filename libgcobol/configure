@@ -635,7 +635,6 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 extra_darwin_ldflags_libgcobol
-get_gcc_base_ver
 VERSION_SUFFIX
 LIBGCOBOL_VERSION
 SPEC_LIBGCOBOL_DEPS
@@ -674,6 +673,7 @@ CXXFLAGS
 CXX
 MAINTAINER_MODE_FALSE
 MAINTAINER_MODE_TRUE
+get_gcc_base_ver
 toolexeclibdir
 toolexecdir
 MAINT
@@ -796,6 +796,7 @@ with_toolexeclibdir
 enable_version_specific_runtime_libs
 with_slibdir
 enable_maintainer_mode
+with_gcc_major_version_only
 enable_shared
 enable_static
 with_pic
@@ -803,7 +804,6 @@ enable_fast_install
 with_gnu_ld
 enable_libtool_lock
 enable_darwin_at_rpath
-with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1466,11 +1466,11 @@ Optional Packages:
                           install libraries built with a cross compiler within
                           DIR
   --with-slibdir=DIR      shared libraries in DIR LIBDIR
+  --with-gcc-major-version-only
+                          use only GCC major number in filesystem paths
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
-  --with-gcc-major-version-only
-                          use only GCC major number in filesystem paths
 
 Some influential environment variables:
   CC          C compiler command
@@ -5188,6 +5188,21 @@ case ${version_specific_libs} in
     esac
     ;;
 esac
+
+
+
+
+# Determine what GCC version number to use in filesystem paths.
+
+  get_gcc_base_ver="cat"
+
+# Check whether --with-gcc-major-version-only was given.
+if test "${with_gcc_major_version_only+set}" = set; then :
+  withval=$with_gcc_major_version_only; if test x$with_gcc_major_version_only = xyes ; then
+        get_gcc_base_ver="sed -e 's/^\([0-9]*\).*/\1/'"
+      fi
+
+fi
 
 
 
@@ -12876,7 +12891,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12879 "configure"
+#line 12894 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12982,7 +12997,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12985 "configure"
+#line 13000 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
