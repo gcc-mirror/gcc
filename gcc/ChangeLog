@@ -1,3 +1,60 @@
+2025-03-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/119147
+	* ipa-inline.cc: Include ipa-modref-tree.h and
+	ipa-modref.h.
+	(speculation_useful_p): If target is a clone, speculation is usef;
+	fix mixup of caller and callee; speculate also calls not considered
+	hot; consider modref summary also possibly useful for optimization.
+	* ipa-profile.cc (ipa_profile): Keep non-hot speculations.
+
+2025-03-13  Richard Biener  <rguenther@suse.de>
+
+	* tree.h (DECL_NOT_GIMPLE_REG_P): Update description.
+
+2025-03-13  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* common/config/aarch64/cpuinfo.h: Remove FEAT_PREDRES and FEAT_LS64*.
+	* config/aarch64/aarch64-option-extensions.def: Remove FMV support
+	for PREDRES.
+
+2025-03-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* match.pd: Extend pointer alignment folds so that they handle
+	the case where a constant is added before or after the alignment.
+
+2025-03-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* match.pd: Fold ((X >> C1) & C2) * (1 << C1) to X & (C2 << C1).
+
+2025-03-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/119115
+	* config/riscv/riscv-vsetvl.cc (reg_used): New function.
+	(reg_single_use_in_avl): Ditto.
+	(pre_vsetvl::fuse_local_vsetvl_info): Use reg_single_use_in_avl
+	when checking if vsetvl can be deleted.
+
+2025-03-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/117955
+	* config/riscv/riscv-vsetvl.cc: Use LMUL/ratio from vsetvl with
+	larger SEW.
+
+2025-03-13  Matthias Klose  <doko@ubuntu.com>
+
+	* configure.ac: Add option --enable-versioned-jit.
+	* configure: Regenerate.
+	* Makefile.in: Move from jit/Make-lang.in, setting value from
+	configure.ac.
+	* doc/install.texi: Document option --enable-versioned-jit.
+
+2025-03-13  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/119238
+	* config/loongarch/simd.md (<su>dot_prod<wvec_half><mode>):
+	Stop using structured binding.
+
 2025-03-12  Alex Coplan  <alex.coplan@arm.com>
 
 	PR rtl-optimization/116564

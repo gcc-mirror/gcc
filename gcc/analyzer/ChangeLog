@@ -1,3 +1,23 @@
+2025-03-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/117262
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_constant_svalue): Use
+	NULL_TREE for the types of constant_svalue for RAW_DATA_CST.
+	(region_model_manager::maybe_fold_sub_svalue): Generalize
+	STRING_CST logic to also handle RAW_DATA_CST.
+	(region_model_manager::maybe_get_char_from_cst): New.
+	(region_model_manager::maybe_get_char_from_raw_data_cst): New.
+	* region-model-manager.h
+	(region_model_manager::maybe_get_char_from_cst): New decl.
+	(region_model_manager::maybe_get_char_from_raw_data_cst): New decl.
+	* region-model.cc (region_model::get_rvalue_1): Handle
+	RAW_DATA_CST.
+	* store.cc (get_subregion_within_ctor_for_ctor_pair): New.
+	(binding_map::apply_ctor_pair_to_child_region): Call
+	get_subregion_within_ctor_for_ctor_pair so that we handle
+	RAW_DATA_CST.
+
 2025-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/117023

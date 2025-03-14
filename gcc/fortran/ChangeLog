@@ -1,3 +1,11 @@
+2025-03-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119118
+	* dependency.cc (contains_forall_index_p): Let loop over elements
+	of a constructor update its control variable.  Handle REF_INQUIRY
+	in switch statement.
+	(gfc_contains_implied_index_p): Likewise.
+
 2025-03-12  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/98903

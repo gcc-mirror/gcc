@@ -1,3 +1,7 @@
+2025-03-13  Matthias Klose  <doko@ubuntu.com>
+
+	* config-ml.in (multi-do): Remove extra argument from subst macro.
+
 2025-03-12  Robert Dubner  <rdubner@symas.com>
 
 	* MAINTAINERS: Remove extraneous entries for "Robert Dubner"

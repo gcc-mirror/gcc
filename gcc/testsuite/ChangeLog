@@ -1,3 +1,71 @@
+2025-03-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119118
+	* gfortran.dg/bounds_check_26.f90: Update test.
+
+2025-03-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/gm2.exp: Arrange for a '-B' option to be added for the
+	libstdc++ paths on targets that need it.
+
+2025-03-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/113965
+	* gcc.target/aarch64/sve/mask_struct_load_3_run.c: Use an
+	input range that is suitable for _Float16.
+
+2025-03-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pr96357.c: Add -fno-tree-sink.
+
+2025-03-13  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/117092
+	* gcc.target/aarch64/pr109072_1.c: xfail s16x4_2.
+
+2025-03-13  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* lib/gcc-dg.exp (find-dg-do-what): Move...
+	* lib/target-supports-dg.exp: ... here.
+
+2025-03-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/pointer-arith-11.c: New test.
+	* gcc.dg/pointer-arith-12.c: Likewise.
+
+2025-03-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/fold-mul-and-lshift-1.c: New test.
+	* gcc.dg/fold-mul-and-lshift-2.c: Likewise.
+
+2025-03-13  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/115248
+	* gcc.target/aarch64/sve/pre_cond_share_1.c: Delete
+
+2025-03-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/119115
+	* gcc.target/riscv/rvv/base/pr119115.c: New test.
+
+2025-03-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/117955
+	* gcc.target/riscv/rvv/base/bug-10.c: Convert to run test.
+	* gcc.target/riscv/rvv/base/bug-10-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr117955.c: New test.
+
+2025-03-13  Richard Biener  <rguenther@suse.de>
+
+	PR cobol/119229
+	* cobol.dg/pr119229.cob: New testcase.
+
+2025-03-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/117262
+	* c-c++-common/analyzer/raw-data-cst-pr117262-1.c: New test.
+	* c-c++-common/analyzer/raw-data-cst-pr117262-2.c: New test.
+
 2025-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/119150

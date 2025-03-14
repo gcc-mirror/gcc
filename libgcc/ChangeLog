@@ -1,3 +1,8 @@
+2025-03-13  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/cpuinfo.c (__init_cpu_features_constructor):
+	Remove FEAT_PREDRES and FEAT_LS64* support.
+
 2025-03-10  Jakub Jelinek  <jakub@redhat.com>
 	    Michael Leuchtenburg  <michael@slashhome.org>
 

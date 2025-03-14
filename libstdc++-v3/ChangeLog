@@ -1,3 +1,82 @@
+2025-03-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/116440
+	* include/std/tuple (tuple::tuple(const _Elements&...))
+	[C++20]: Turn into a template.
+	* testsuite/20_util/tuple/116440.C: New test.
+
+2025-03-13  Jonathan Wakely  <jwakely@redhat.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/111055
+	* include/bits/stl_queue.h (queue(from_range_t, _Rg&&))
+	(queue(from_range_t, _Rg&&, const _Alloc&), push_range):
+	Define.
+	(priority_queue(from_range_t, R&&, const Compare&))
+	(push_range): Define.
+	* include/bits/stl_stack.h (stack(from_range_t, R&&))
+	(stack(from_range_t, R&&, const Alloc&), push_range): Define.
+	* testsuite/util/testsuite_iterators.h (test_range_nocopy): Define.
+	* testsuite/23_containers/priority_queue/cons_from_range.cc: New test.
+	* testsuite/23_containers/priority_queue/members/push_range.cc: New test.
+	* testsuite/23_containers/queue/cons_from_range.cc: New test.
+	* testsuite/23_containers/queue/members/push_range.cc: New test.
+	* testsuite/23_containers/stack/cons_from_range.cc: New test.
+	* testsuite/23_containers/stack/members/push_range.cc: New test.
+
+2025-03-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add stdckdint.h.
+	* include/Makefile.in: Regenerate.
+	* src/c++23/std.compat.cc.in: Export <stdckdint.h> functions.
+	* include/c_compatibility/stdckdint.h: New file.
+	* testsuite/26_numerics/stdckdint/1.cc: New test.
+	* testsuite/26_numerics/stdckdint/2_neg.cc: New test.
+
+2025-03-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add stdbit.h.
+	* include/Makefile.in: Regenerate.
+	* src/c++23/std.compat.cc.in: Export <stdbit.h> functions.
+	* include/c_compatibility/stdbit.h: New file.
+	* testsuite/20_util/stdbit/1.cc: New test.
+	* testsuite/20_util/stdbit/2_neg.cc: New test.
+
+2025-03-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/119135
+	* include/std/ranges: Include <utility>.
+	(views::__detail::__is_ref_view): Replace with ...
+	(views::__detail::__is_constable_ref_view): ... this.
+	(views::_AsConst::operator()): Replace bogus use of element_type
+	in the ref_view branch.
+	* testsuite/std/ranges/adaptors/as_const/1.cc (test03): Extend
+	test.
+
+2025-03-13  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_CXX_FLAGS): Append to
+	'EXTRA_CXX_FLAGS' any additional flags.
+	* configure: Regenerate.
+	* configure.host: Document 'EXTRA_CFLAGS', 'EXTRA_CXX_FLAGS'.
+
+2025-03-13  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/108053
+	* include/std/format (basic_format_arg::_M_visit_user):
+	Helper function for wrapping extension types into handle.
+	(visit_format_arg): Call `_M_visit_user` instead of `_M_visit`.
+	(basic_format_arg::visit): As above.
+	(__format::__visit_format_arg): Provides direct access to
+	values stored in basic_format_arg.
+	(__format::__int_from_arg): Use __format::__visit_format_arg
+	instead of std::visit_format_arg.
+	(_Formatting_scanner::_M_format_arg): As above.
+	(_Checking_scanner::__do_vformat_to): As above.
+	* testsuite/std/format/arguments/args.cc: New tests.
+	* testsuite/std/format/string.cc: Test for using __int128
+	as width/precision.
+
 2025-03-12  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/version.def (ranges_to_input): Define.
