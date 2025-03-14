@@ -41,10 +41,13 @@ import dmd.root.string;
 import dmd.target;
 import dmd.visitor;
 
-version(Windows) {
+version(Windows)
+{
     extern (C) char* _getcwd(char* buffer, size_t maxlen);
     alias getcwd = _getcwd;
-} else {
+}
+else
+{
     import core.sys.posix.unistd : getcwd;
 }
 

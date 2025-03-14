@@ -54,6 +54,7 @@ else version = MARS;
  */
 void ObjectNotFound(Loc loc, Identifier id)
 {
+    global.gag = 0; // never gag the fatal error
     error(loc, "`%s` not found. object.d may be incorrectly installed or corrupt.", id.toChars());
     version (IN_LLVM)
     {
@@ -87,19 +88,23 @@ extern (C++) abstract class Declaration : Dsymbol
     Type type;
     Type originalType;  // before semantic analysis
     StorageClass storage_class = STC.undefined_;
-    Visibility visibility;
-    LINK _linkage = LINK.default_; // may be `LINK.system`; use `resolvedLinkage()` to resolve it
-    short inuse;          // used to detect cycles
-
-    ubyte adFlags;         // control re-assignment of AliasDeclaration (put here for packing reasons)
-      enum wasRead    = 1; // set if AliasDeclaration was read
-      enum ignoreRead = 2; // ignore any reads of AliasDeclaration
-      enum nounderscore = 4; // don't prepend _ to mangled name
-      enum hidden       = 8; // don't print this in .di files
-      enum nrvo = 0x10;      /// forward to fd.nrvo_var when generating code
-
     // overridden symbol with pragma(mangle, "...")
     const(char)[] mangleOverride;
+    Visibility visibility;
+    short inuse;          // used to detect cycles
+
+    private extern (D) static struct BitFields
+    {
+        LINK _linkage = LINK.default_; // may be `LINK.system`; use `resolvedLinkage()` to resolve it
+        bool wasRead;      // set if AliasDeclaration was read
+        bool ignoreRead;   // ignore any reads of AliasDeclaration
+        bool noUnderscore; // don't prepend _ to mangled name
+        bool hidden;       // don't print this in .di files
+        bool nrvo;         /// forward to fd.nrvo_var when generating code
+    }
+
+    import dmd.common.bitfields;
+    mixin(generateBitFields!(BitFields, ubyte));
 
     final extern (D) this(Identifier ident) @safe
     {
@@ -628,8 +633,8 @@ extern (C++) final class AliasDeclaration : Declaration
             return aliassym;
         }
         // Reading the AliasDeclaration
-        if (!(adFlags & ignoreRead))
-            adFlags |= wasRead;                 // can never assign to this AliasDeclaration again
+        if (!this.ignoreRead)
+            this.wasRead = true;                 // can never assign to this AliasDeclaration again
 
         if (inuse == 1 && type && _scope)
         {
@@ -1124,16 +1129,6 @@ extern (C++) class VarDeclaration : Declaration
         return e;
     }
 
-    override final void checkCtorConstInit()
-    {
-        version (none)
-        {
-            /* doesn't work if more than one static ctor */
-            if (ctorinit == 0 && isCtorinit() && !isField())
-                error("missing initializer in static constructor for const variable");
-        }
-    }
-
     /************************************
      * Check to see if this variable is actually in an enclosing function
      * rather than the current one.
@@ -1544,6 +1539,8 @@ extern (C++) final class TypeInfoStaticArrayDeclaration : TypeInfoDeclaration
  */
 extern (C++) final class TypeInfoAssociativeArrayDeclaration : TypeInfoDeclaration
 {
+    Type entry; // type of TypeInfo_AssociativeArray.Entry!(t.index, t.next)
+
     extern (D) this(Type tinfo)
     {
         super(tinfo);

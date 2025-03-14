@@ -150,7 +150,7 @@ Expression implicitCastTo(Expression e, Scope* sc, Type t)
                 //printf("type %s t %s\n", type.deco, t.deco);
                 auto ts = toAutoQualChars(e.type, t);
                 error(e.loc, "cannot implicitly convert expression `%s` of type `%s` to `%s`",
-                    e.toChars(), ts[0], ts[1]);
+                    e.toErrMsg(), ts[0], ts[1]);
             }
         }
         return ErrorExp.get();
@@ -2832,6 +2832,7 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
                 (*ae.keys)[i] = ex;
             }
             ae.type = t;
+            semanticTypeInfo(sc, ae.type);
             return ae;
         }
         return visit(e);

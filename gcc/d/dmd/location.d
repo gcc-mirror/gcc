@@ -64,7 +64,7 @@ nothrow:
     extern (C++) static Loc singleFilename(const char* filename)
     {
         Loc result;
-        locFileTable ~= BaseLoc(filename.toDString, locIndex, 0, [0]);
+        locFileTable ~= new BaseLoc(filename.toDString, locIndex, 0, [0]);
         result.index = locIndex++;
         return result;
     }
@@ -95,7 +95,19 @@ nothrow:
      */
     extern (C++) const(char)* filename() const @nogc
     {
-        return SourceLoc(this).filename.ptr; // _filename;
+        if (this.index == 0)
+            return null;
+
+        const i = fileTableIndex(this.index);
+        if (locFileTable[i].substitutions.length > 0)
+        {
+            const si = locFileTable[i].getSubstitutionIndex(this.index - locFileTable[i].startIndex);
+            const fname = locFileTable[i].substitutions[si].filename;
+            if (fname.length > 0)
+                return fname.ptr;
+        }
+
+        return locFileTable[i].filename.ptr;
     }
 
     extern (C++) const(char)* toChars(
@@ -293,11 +305,11 @@ private size_t fileTableIndex(uint index) nothrow @nogc
  */
 BaseLoc* newBaseLoc(const(char)* filename, size_t size) nothrow
 {
-    locFileTable ~= BaseLoc(filename.toDString, locIndex, 1, [0]);
+    locFileTable ~= new BaseLoc(filename.toDString, locIndex, 1, [0]);
     // Careful: the endloc of a FuncDeclaration can
     // point to 1 past the very last byte in the file, so account for that
     locIndex += size + 1;
-    return &locFileTable[$ - 1];
+    return locFileTable[$ - 1];
 }
 
 /**
@@ -385,7 +397,23 @@ struct BaseLoc
         if (substitutions.length == 0)
             return loc;
 
-        const offset = loc.fileOffset;
+        const i = getSubstitutionIndex(loc.fileOffset);
+        if (substitutions[i].filename.length > 0)
+            loc.filename = substitutions[i].filename;
+        loc.linnum += substitutions[i].startLine;
+        return loc;
+    }
+
+    /// Resolve an offset into this file to a filename + line + column
+    private SourceLoc getSourceLoc(uint offset) @nogc
+    {
+        const i = getLineIndex(offset);
+        const sl = SourceLoc(filename, cast(int) (i + startLine), cast(int) (1 + offset - lines[i]), offset);
+        return substitute(sl);
+    }
+
+    private size_t getSubstitutionIndex(uint offset) @nogc
+    {
         size_t lo = 0;
         size_t hi = substitutions.length + -1;
         size_t mid = 0;
@@ -395,12 +423,7 @@ struct BaseLoc
             if (substitutions[mid].startIndex <= offset)
             {
                 if (mid == substitutions.length - 1 || substitutions[mid + 1].startIndex > offset)
-                {
-                    if (substitutions[mid].filename.length > 0)
-                        loc.filename = substitutions[mid].filename;
-                    loc.linnum += substitutions[mid].startLine;
-                    return loc;
-                }
+                    return mid;
 
                 lo = mid + 1;
             }
@@ -410,14 +433,6 @@ struct BaseLoc
             }
         }
         assert(0);
-    }
-
-    /// Resolve an offset into this file to a filename + line + column
-    private SourceLoc getSourceLoc(uint offset) @nogc
-    {
-        const i = getLineIndex(offset);
-        const sl = SourceLoc(filename, cast(int) (i + startLine), cast(int) (1 + offset - lines[i]), offset);
-        return substitute(sl);
     }
 
     /// Binary search the index in `this.lines` corresponding to `offset`
@@ -449,4 +464,4 @@ struct BaseLoc
 private __gshared uint locIndex = 1;
 
 // Global mapping of Loc indices to source file offset/line/column, see `BaseLoc`
-private __gshared BaseLoc[] locFileTable;
+private __gshared BaseLoc*[] locFileTable;

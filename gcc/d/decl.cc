@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dmd/nspace.h"
 #include "dmd/target.h"
 #include "dmd/template.h"
+#include "dmd/typinf.h"
 
 #include "tree.h"
 #include "tree-iterator.h"
@@ -899,7 +900,7 @@ public:
     if (d->semanticRun >= PASS::obj)
       return;
 
-    if (speculative_type_p (d->tinfo))
+    if (dmd::isSpeculativeType (d->tinfo))
       return;
 
     tree t = get_typeinfo_decl (d);

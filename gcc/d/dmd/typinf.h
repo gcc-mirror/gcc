@@ -14,6 +14,8 @@
 
 class Expression;
 class Type;
+class TypeAArray;
+class TypeInfoDeclaration;
 struct Scope;
 
 namespace dmd
@@ -21,5 +23,7 @@ namespace dmd
     bool genTypeInfo(Expression *e, Loc loc, Type *torig, Scope *sc);
     bool isSpeculativeType(Type *t);
     bool builtinTypeInfo(Type *t);
+    Type *makeNakedAssociativeArray(TypeAArray *t);
+    TypeInfoDeclaration *getTypeInfoAssocArrayDeclaration(TypeAArray *t, Scope *sc);
 }
 Type *getTypeInfoType(Loc loc, Type *t, Scope *sc);

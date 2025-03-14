@@ -916,10 +916,6 @@ extern (C++) class Dsymbol : ASTNode
     {
     }
 
-    void checkCtorConstInit()
-    {
-    }
-
     /****************************************
      * Add documentation comment to Dsymbol.
      * Ignore NULL comments.

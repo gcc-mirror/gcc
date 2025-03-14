@@ -664,7 +664,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             const olderrors = global.startGagging();
             discardValue(fs.increment);
             if (global.endGagging(olderrors))
-                deprecation(fs.increment.loc, "`%s` has no effect", fs.increment.toChars());
+                deprecation(fs.increment.loc, "`%s` has no effect", fs.increment.toErrMsg());
             if (checkNonAssignmentArrayOp(fs.increment))
                 fs.increment = ErrorExp.get();
             fs.increment = fs.increment.optimize(WANTvalue);
@@ -2604,7 +2604,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                     //errors = true;
                 }
                 if (global.endGagging(olderrors))
-                    deprecation(rs.exp.loc, "`%s` has no effect", rs.exp.toChars());
+                    deprecation(rs.exp.loc, "`%s` has no effect", rs.exp.toErrMsg());
 
                 /* Replace:
                  *      return exp;

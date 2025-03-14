@@ -11,12 +11,14 @@ $(RED Warning:
  */
 
 module core.sys.windows.sql;
+
+enum ODBCVER = 0x0400;
+
+deprecated ("The ODBC 3.5 modules are deprecated. Please use the ODBC4 modules in the `etc.c.odbc` package."):
 version (Windows):
 
 public import core.sys.windows.sqltypes;
 import core.sys.windows.windef;
-
-enum ODBCVER = 0x0351;
 
 enum SQL_ACCESSIBLE_PROCEDURES=20;
 enum SQL_ACCESSIBLE_TABLES=19;

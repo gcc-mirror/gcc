@@ -101,8 +101,10 @@ private struct PathCache
          */
         bool exists = true;
         auto st = PathStack(filespec);
-        while (st.up) {
-            if (auto cached = pathStatus.lookup(st.cur)) {
+        while (st.up)
+        {
+            if (auto cached = pathStatus.lookup(st.cur))
+            {
                 exists = cached.value;
                 break;
             }
@@ -112,7 +114,8 @@ private struct PathCache
          * Once a directory is found to not exist, all the directories
          * to the right of it do not exist
          */
-        while (st.down) {
+        while (st.down)
+        {
             if (!exists)
                 pathStatus.insert(st.cur, false);
             else
@@ -218,17 +221,19 @@ nothrow:
 
             const(char)[] n = FileName.combine(p, sdi);
 
-            if (!pathCache.pathExists(n)) {
+            if (!pathCache.pathExists(n))
+            {
                 FileName.free(n.ptr);
                 continue; // no need to check for anything else.
             }
-            if (FileName.exists(n) == 1) {
+            if (FileName.exists(n) == 1)
                 return n;
-            }
+
             FileName.free(n.ptr);
 
             n = FileName.combine(p, sd);
-            if (FileName.exists(n) == 1) {
+            if (FileName.exists(n) == 1)
+            {
                 whichPathFoundThis = pathIndex;
                 return n;
             }
@@ -241,14 +246,16 @@ nothrow:
             if (pathCache.isExistingPath(n))
             {
                 const n2i = FileName.combine(n, package_di);
-                if (FileName.exists(n2i) == 1) {
+                if (FileName.exists(n2i) == 1)
+                {
                     whichPathFoundThis = pathIndex;
                     return n2i;
                 }
 
                 FileName.free(n2i.ptr);
                 const n2 = FileName.combine(n, package_d);
-                if (FileName.exists(n2) == 1) {
+                if (FileName.exists(n2) == 1)
+                {
                     whichPathFoundThis = pathIndex;
                     return n2;
                 }
@@ -272,14 +279,16 @@ nothrow:
             const p = entry.path.toDString();
 
             const(char)[] n = FileName.combine(p, si);
-            if (FileName.exists(n) == 1) {
+            if (FileName.exists(n) == 1)
+            {
                 whichPathFoundThis = pathIndex;
                 return n;
             }
             FileName.free(n.ptr);
 
             n = FileName.combine(p, sc);
-            if (FileName.exists(n) == 1) {
+            if (FileName.exists(n) == 1)
+            {
                 whichPathFoundThis = pathIndex;
                 return n;
             }

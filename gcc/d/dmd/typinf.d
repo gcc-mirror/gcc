@@ -22,6 +22,7 @@ import dmd.expression;
 import dmd.globals;
 import dmd.location;
 import dmd.mtype;
+import dmd.typesem;
 import core.stdc.stdio;
 
 /****************************************************
@@ -67,6 +68,9 @@ bool genTypeInfo(Expression e, Loc loc, Type torig, Scope* sc)
 
     import dmd.typesem : merge2;
     Type t = torig.merge2(); // do this since not all Type's are merge'd
+    if (t.ty == Taarray)
+        t = makeNakedAssociativeArray(cast(TypeAArray)t);
+
     bool needsCodegen = false;
     if (!t.vtinfo)
     {
@@ -79,7 +83,7 @@ bool genTypeInfo(Expression e, Loc loc, Type torig, Scope* sc)
         else if (t.isWild())
             t.vtinfo = TypeInfoWildDeclaration.create(t);
         else
-            t.vtinfo = getTypeInfoDeclaration(t);
+            t.vtinfo = getTypeInfoDeclaration(t, sc);
         assert(t.vtinfo);
 
         // ClassInfos are generated as part of ClassDeclaration codegen
@@ -105,7 +109,7 @@ bool genTypeInfo(Expression e, Loc loc, Type torig, Scope* sc)
  */
 extern (C++) Type getTypeInfoType(Loc loc, Type t, Scope* sc);
 
-private TypeInfoDeclaration getTypeInfoDeclaration(Type t)
+private TypeInfoDeclaration getTypeInfoDeclaration(Type t, Scope* sc)
 {
     //printf("Type::getTypeInfoDeclaration() %s\n", t.toChars());
     switch (t.ty)
@@ -117,7 +121,7 @@ private TypeInfoDeclaration getTypeInfoDeclaration(Type t)
     case Tsarray:
         return TypeInfoStaticArrayDeclaration.create(t);
     case Taarray:
-        return TypeInfoAssociativeArrayDeclaration.create(t);
+        return getTypeInfoAssocArrayDeclaration(cast(TypeAArray)t, sc);
     case Tstruct:
         return TypeInfoStructDeclaration.create(t);
     case Tvector:
@@ -139,6 +143,70 @@ private TypeInfoDeclaration getTypeInfoDeclaration(Type t)
     default:
         return TypeInfoDeclaration.create(t);
     }
+}
+
+/******************************************
+ * Instantiate TypeInfoAssociativeArrayDeclaration and fill
+ * the entry with TypeInfo_AssociativeArray.Entry!(t.index, t.next)
+ *
+ * Params:
+ *      t = TypeAArray to generate TypeInfo_AssociativeArray for
+ *      sc = context
+ * Returns:
+ *      a TypeInfoAssociativeArrayDeclaration with field entry initialized
+ */
+TypeInfoDeclaration getTypeInfoAssocArrayDeclaration(TypeAArray t, Scope* sc)
+{
+    import dmd.arraytypes;
+    import dmd.expressionsem;
+    import dmd.id;
+
+    assert(sc); // must not be called in the code generation phase
+
+    auto ti = TypeInfoAssociativeArrayDeclaration.create(t);
+    t.vtinfo = ti; // assign it early to avoid recursion in expressionSemantic
+    Loc loc = t.loc;
+    auto tiargs = new Objects();
+    tiargs.push(t.index); // always called with naked types
+    tiargs.push(t.next);
+
+    Expression id = new IdentifierExp(loc, Id.empty);
+    id = new DotIdExp(loc, id, Id.object);
+    id = new DotIdExp(loc, id, Id.TypeInfo_AssociativeArray);
+    auto tempinst = new DotTemplateInstanceExp(loc, id, Id.Entry, tiargs);
+    auto e = expressionSemantic(tempinst, sc);
+    assert(e.type);
+    ti.entry = e.type;
+    if (auto ts = ti.entry.isTypeStruct())
+    {
+        ts.sym.requestTypeInfo = true;
+        if (auto tmpl = ts.sym.isInstantiated())
+            tmpl.minst = sc._module.importedFrom; // ensure it get's emitted
+    }
+    getTypeInfoType(loc, ti.entry, sc);
+    assert(ti.entry.vtinfo);
+
+    return ti;
+}
+
+/******************************************
+ * Find or create a TypeAArray with index and next without
+ * any head modifiers, tail `inout` is replaced with `const`
+ *
+ * Params:
+ *      t = TypeAArray to convert
+ * Returns:
+ *      t = found type
+ */
+Type makeNakedAssociativeArray(TypeAArray t)
+{
+    Type tindex = t.index.toBasetype().nakedOf().substWildTo(MODFlags.const_);
+    Type tnext = t.next.toBasetype().nakedOf().substWildTo(MODFlags.const_);
+    if (tindex == t.index && tnext == t.next)
+        return t;
+
+    t = new TypeAArray(tnext, tindex);
+    return t.merge();
 }
 
 /**************************************************

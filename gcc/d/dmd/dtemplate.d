@@ -136,6 +136,13 @@ inout(Parameter) isParameter(inout RootObject o)
     return cast(inout(Parameter))o;
 }
 
+inout(Identifier) isIdentifier(inout RootObject o)
+{
+    if (!o || o.dyncast() != DYNCAST.identifier)
+        return null;
+    return cast(inout(Identifier))o;
+}
+
 inout(TemplateParameter) isTemplateParameter(inout RootObject o)
 {
     if (!o || o.dyncast() != DYNCAST.templateparameter)
@@ -3884,7 +3891,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
         if (n_instantiations <= max_shown)
         {
             for (TemplateInstance cur = this; cur; cur = cur.tinst)
-                printFn(cur.loc, format, cur.toChars());
+                printFn(cur.loc, format, cur.toErrMsg());
         }
         else if (n_instantiations - n_totalrecursions <= max_shown)
         {
@@ -6265,6 +6272,9 @@ void write(ref OutBuffer buf, RootObject obj)
 {
     if (obj)
     {
-        buf.writestring(obj.toChars());
+        if (auto e = isExpression(obj))
+            buf.writestring(e.toErrMsg());
+        else
+            buf.writestring(obj.toChars());
     }
 }

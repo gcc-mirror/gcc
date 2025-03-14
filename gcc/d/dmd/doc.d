@@ -2061,9 +2061,9 @@ string toLowercase(string s) pure @safe
 // TODO: maybe unicode lowercase, somehow
         if (c >= 'A' && c <= 'Z')
         {
-            if (!lower.length) {
+            if (!lower.length)
                 lower.reserve(s.length);
-            }
+
             lower ~= s[lower.length..i];
             c += 'a' - 'A';
             lower ~= c;

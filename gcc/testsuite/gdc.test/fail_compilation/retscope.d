@@ -55,7 +55,7 @@ void test2(scope int* p, int[] a ...) @safe
 TEST_OUTPUT:
 ---
 fail_compilation/retscope.d(75): Error: function `retscope.HTTP.Impl.onReceive` is `@nogc` yet allocates closure for `onReceive()` with the GC
-fail_compilation/retscope.d(77):        delegate `retscope.HTTP.Impl.onReceive.__lambda_L77_C23` closes over variable `this`
+fail_compilation/retscope.d(77):        delegate `() => this.x` closes over variable `this`
 ---
 */
 
@@ -164,6 +164,7 @@ class C11
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope.d(177): Error: assigning address of variable `i` to `p` with longer lifetime is not allowed in a `@safe` function
 ---
 */
 
@@ -180,6 +181,7 @@ void foo11() @safe
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope.d(197): Error: returning scope variable `e` is not allowed in a `@safe` function
 ---
 */
 
@@ -199,8 +201,6 @@ void* escapeDg1(scope void* d) @safe
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(176): Error: assigning address of variable `i` to `p` with longer lifetime is not allowed in a `@safe` function
-fail_compilation/retscope.d(195): Error: returning scope variable `e` is not allowed in a `@safe` function
 fail_compilation/retscope.d(212): Error: assigning scope variable `p` to non-scope `e.e` is not allowed in a `@safe` function
 ---
 */
@@ -234,10 +234,10 @@ void* funretscope(scope dg_t ptr) @safe
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(248): Error: cannot implicitly convert expression `__lambda_L248_C21` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
-fail_compilation/retscope.d(248): Error: cannot implicitly convert expression `__lambda_L248_C21` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
-fail_compilation/retscope.d(249): Error: cannot implicitly convert expression `__lambda_L249_C21` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
-fail_compilation/retscope.d(249): Error: cannot implicitly convert expression `__lambda_L249_C21` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
+fail_compilation/retscope.d(248): Error: cannot implicitly convert expression `() => & x` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
+fail_compilation/retscope.d(248): Error: cannot implicitly convert expression `() => & x` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
+fail_compilation/retscope.d(249): Error: cannot implicitly convert expression `() => & x` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
+fail_compilation/retscope.d(249): Error: cannot implicitly convert expression `() => & x` of type `void* delegate() pure nothrow @nogc @safe` to `void* delegate() scope @safe`
 ---
 */
 
@@ -254,6 +254,7 @@ void escape4() @safe
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope.d(266): Error: taking address of `scope` variable `p` with pointers is not allowed in a `@safe` function
 ---
 */
 
@@ -270,7 +271,6 @@ void escape5() @safe
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(265): Error: taking address of `scope` variable `p` with pointers is not allowed in a `@safe` function
 fail_compilation/retscope.d(286): Error: escaping a reference to local variable `b` by returning `foo6(& b)`  is not allowed in a `@safe` function
 ---
 */
@@ -323,6 +323,7 @@ ref int[3] asStatic2(      scope int[] p) @safe { return p[0 .. 3]; }
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope.d(335): Error: assigning reference to local variable `i` to non-scope `f` is not allowed in a `@safe` function
 ---
 */
 
@@ -346,7 +347,6 @@ int* bar10( scope int** ptr ) @safe
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(334): Error: assigning reference to local variable `i` to non-scope `f` is not allowed in a `@safe` function
 fail_compilation/retscope.d(358): Error: taking address of `scope` variable `aa` with pointers is not allowed in a `@safe` function
 ---
 */
@@ -399,6 +399,7 @@ struct Foo12
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope.d(1103): Error: returning scope variable `f` is not allowed in a `@safe` function
 ---
 */
 
@@ -418,6 +419,7 @@ class Foo13
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope.d(1205): Error: scope variable `f14` calling non-scope member function `Foo14.foo()` is not allowed in a `@safe` function
 ---
 */
 
@@ -440,6 +442,7 @@ struct Foo14
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope.d(1311): Error: assigning scope variable `u2` to `ek` with longer lifetime is not allowed in a `@safe` function
 ---
 */
 
@@ -467,6 +470,7 @@ TEST_OUTPUT:
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope.d(1405): Error: assigning reference to local variable `buf` to non-scope anonymous parameter calling `myprintf` is not allowed in a `@safe` function
 ---
 */
 
@@ -484,10 +488,6 @@ TEST_OUTPUT:
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope.d(1103): Error: returning scope variable `f` is not allowed in a `@safe` function
-fail_compilation/retscope.d(1205): Error: scope variable `f14` calling non-scope member function `Foo14.foo()` is not allowed in a `@safe` function
-fail_compilation/retscope.d(1311): Error: assigning scope variable `u2` to `ek` with longer lifetime is not allowed in a `@safe` function
-fail_compilation/retscope.d(1405): Error: assigning reference to local variable `buf` to non-scope anonymous parameter calling `myprintf` is not allowed in a `@safe` function
 fail_compilation/retscope.d(1509): Error: assigning reference to stack allocated value returned by `(*fp15)()` to non-scope anonymous parameter is not allowed in a `@safe` function
 ---
 */

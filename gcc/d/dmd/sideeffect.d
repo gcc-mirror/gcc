@@ -20,6 +20,7 @@ import dmd.expressionsem;
 import dmd.func;
 import dmd.funcsem;
 import dmd.globals;
+import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.init;
@@ -346,12 +347,13 @@ bool discardValue(Expression e)
         BinExp tmp = e.isBinExp();
         assert(tmp);
 
-        error(e.loc, "the result of the equality expression `%s` is discarded", e.toChars());
+        error(e.loc, "the result of the equality expression `%s` is discarded", e.toErrMsg());
         bool seenSideEffect = false;
         foreach(expr; [tmp.e1, tmp.e2])
         {
-            if (hasSideEffect(expr)) {
-                errorSupplemental(expr.loc, "note that `%s` may have a side effect", expr.toChars());
+            if (hasSideEffect(expr))
+            {
+                errorSupplemental(expr.loc, "note that `%s` may have a side effect", expr.toErrMsg());
                 seenSideEffect |= true;
             }
         }
@@ -359,7 +361,7 @@ bool discardValue(Expression e)
     default:
         break;
     }
-    error(e.loc, "`%s` has no effect", e.toChars());
+    error(e.loc, "`%s` has no effect", e.toErrMsg());
     return true;
 }
 

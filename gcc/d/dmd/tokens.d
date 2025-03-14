@@ -436,8 +436,10 @@ enum FirstCKeyword = TOK.inline;
 // Assert that all token enum members have consecutive values and
 // that none of them overlap
 static assert(() {
-    foreach (idx, enumName; __traits(allMembers, TOK)) {
-       static if (idx != __traits(getMember, TOK, enumName)) {
+    foreach (idx, enumName; __traits(allMembers, TOK))
+    {
+       static if (idx != __traits(getMember, TOK, enumName))
+       {
            pragma(msg, "Error: Expected TOK.", enumName, " to be ", idx, " but is ", __traits(getMember, TOK, enumName));
            static assert(0);
        }
@@ -925,13 +927,18 @@ nothrow:
         return 0;
     }
 
-    extern(D) void appendInterpolatedPart(const ref OutBuffer buf) {
+    extern(D) void appendInterpolatedPart(const ref OutBuffer buf)
+    {
         appendInterpolatedPart(cast(const(char)*)buf[].ptr, buf.length);
     }
-    extern(D) void appendInterpolatedPart(const(char)[] str) {
+
+    extern(D) void appendInterpolatedPart(const(char)[] str)
+    {
         appendInterpolatedPart(str.ptr, str.length);
     }
-    extern(D) void appendInterpolatedPart(const(char)* ptr, size_t length) {
+
+    extern(D) void appendInterpolatedPart(const(char)* ptr, size_t length)
+    {
         assert(value == TOK.interpolated);
         if (interpolatedSet is null)
             interpolatedSet = new InterpolatedSet;

@@ -241,7 +241,6 @@ public:
     virtual bool hasPointers();
     virtual bool hasStaticCtorOrDtor();
     virtual void addObjcSymbols(ClassDeclarations *, ClassDeclarations *) { }
-    virtual void checkCtorConstInit() { }
 
     virtual void addComment(const utf8_t *comment);
     const utf8_t *comment();                      // current value of comment

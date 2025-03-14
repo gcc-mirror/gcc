@@ -383,8 +383,7 @@ extern (C++) abstract class Expression : ASTNode
 
     final override const(char)* toChars() const
     {
-        // FIXME: Test suite relies on lambda's being printed as __lambdaXXX in errors and .stringof
-        // Printing a (truncated) lambda body is more user friendly
+        // FIXME: mangling (see runnable/mangle.d) relies on toChars outputting __lambdaXXX here
         if (auto fe = isFuncExp())
             return fe.fd.toChars();
 

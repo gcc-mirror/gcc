@@ -3,7 +3,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail20376.d(17): Error: cannot implicitly convert expression `Foo()` of type `Foo` to `ubyte`
+fail_compilation/fail20376.d(17): Error: return value `Foo()` of type `Foo` does not match return type `ubyte`, and cannot be implicitly converted
 ---
 */
 

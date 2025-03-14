@@ -42,7 +42,8 @@ struct IdentifierCharLookup
         // Awful solution to require these lambdas.
         // However without them the extern(C++) ABI issues crop up for isInRange,
         //  and then it can't access the tables.
-        final switch(table) {
+        final switch(table)
+        {
             case IdentifierTable.UAX31:
                 return IdentifierCharLookup(
                         (c) => isInRange!UAX31_Start(c),

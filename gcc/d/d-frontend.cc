@@ -83,7 +83,7 @@ getTypeInfoType (Loc loc, Type *type, Scope *sc)
 {
   gcc_assert (type->ty != TY::Terror);
   check_typeinfo_type (loc, sc);
-  create_typeinfo (type, sc ? sc->_module->importedFrom : NULL);
+  create_typeinfo (type, sc);
   return type->vtinfo->type;
 }
 

@@ -32,7 +32,7 @@ import dmd.declaration;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem : setScope, addMember, include;
+import dmd.dsymbolsem : include;
 import dmd.expression;
 import dmd.func;
 import dmd.globals;
@@ -123,11 +123,6 @@ extern (C++) abstract class AttribDeclaration : Dsymbol
     override final bool hasStaticCtorOrDtor()
     {
         return this.include(null).foreachDsymbol( (s) { return s.hasStaticCtorOrDtor(); } ) != 0;
-    }
-
-    override final void checkCtorConstInit()
-    {
-        this.include(null).foreachDsymbol( s => s.checkCtorConstInit() );
     }
 
     /****************************************

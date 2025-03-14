@@ -2,6 +2,8 @@
 REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
+fail_compilation/retscope2.d(102): Error: assigning scope variable `s` to `ref` variable `p` with longer lifetime is not allowed in a `@safe` function
+fail_compilation/retscope2.d(107): Error: assigning address of variable `s` to `p` with longer lifetime is not allowed in a `@safe` function
 ---
 */
 
@@ -34,6 +36,7 @@ void test200()
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope2.d(302): Error: assigning scope variable `a` to return scope `b` is not allowed in a `@safe` function
 ---
 */
 
@@ -49,6 +52,7 @@ TEST_OUTPUT:
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope2.d(403): Error: assigning scope variable `a` to return scope `c` is not allowed in a `@safe` function
 ---
 */
 
@@ -65,6 +69,7 @@ TEST_OUTPUT:
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope2.d(504): Error: returning scope variable `c` is not allowed in a `@safe` function
 ---
 */
 
@@ -81,11 +86,6 @@ TEST_OUTPUT:
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope2.d(102): Error: assigning scope variable `s` to `ref` variable `p` with longer lifetime is not allowed in a `@safe` function
-fail_compilation/retscope2.d(107): Error: assigning address of variable `s` to `p` with longer lifetime is not allowed in a `@safe` function
-fail_compilation/retscope2.d(302): Error: assigning scope variable `a` to return scope `b` is not allowed in a `@safe` function
-fail_compilation/retscope2.d(403): Error: assigning scope variable `a` to return scope `c` is not allowed in a `@safe` function
-fail_compilation/retscope2.d(504): Error: returning scope variable `c` is not allowed in a `@safe` function
 fail_compilation/retscope2.d(604): Error: assigning scope variable `__param_0` to non-scope anonymous parameter calling `foo600` is not allowed in a `@safe` function
 fail_compilation/retscope2.d(604): Error: assigning scope variable `__param_1` to non-scope anonymous parameter calling `foo600` is not allowed in a `@safe` function
 fail_compilation/retscope2.d(614): Error: template instance `retscope2.test600!(int*, int*)` error instantiating
@@ -115,6 +115,8 @@ fail_compilation/retscope2.d(614): Error: template instance `retscope2.test600!(
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope2.d(719): Error: returning `get2(s)` escapes a reference to local variable `s`
+fail_compilation/retscope2.d(721): Error: returning `s.get1()` escapes a reference to local variable `s`
 ---
 */
 
@@ -148,6 +150,7 @@ S700* escape700(int i) @safe
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope2.d(804): Error: throwing scope variable `e` is not allowed in a `@safe` function
 ---
 */
 
@@ -164,6 +167,7 @@ void foo800() @safe
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope2.d(907): Error: assigning address of variable `this` to `p17568` with longer lifetime is not allowed in a `@safe` function
 ---
 */
 
@@ -184,6 +188,9 @@ struct T17568
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope2.d(1005): Error: assigning scope variable `p` to non-scope `this._p` is not allowed in a `@safe` function
+fail_compilation/retscope2.d(1021): Error: assigning scope variable `p` to non-scope `c._p` is not allowed in a `@safe` function
+fail_compilation/retscope2.d(1024): Error: assigning scope variable `p` to non-scope `d._p` is not allowed in a `@safe` function
 ---
 */
 
@@ -222,6 +229,7 @@ void test17428() @safe
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope2.d(1107): Error: returning scope variable `dg` is not allowed in a `@safe` function
 ---
 */
 
@@ -241,6 +249,8 @@ void delegate() test17430() @safe
 /*
 TEST_OUTPUT:
 ---
+fail_compilation/retscope2.d(1216): Error: returning `s.foo()` escapes a reference to local variable `s`
+fail_compilation/retscope2.d(1233): Error: returning `t.foo()` escapes a reference to local variable `t`
 ---
 */
 
@@ -286,16 +296,6 @@ struct T17388
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/retscope2.d(719): Error: returning `get2(s)` escapes a reference to local variable `s`
-fail_compilation/retscope2.d(721): Error: returning `s.get1()` escapes a reference to local variable `s`
-fail_compilation/retscope2.d(804): Error: throwing scope variable `e` is not allowed in a `@safe` function
-fail_compilation/retscope2.d(907): Error: assigning address of variable `this` to `p17568` with longer lifetime is not allowed in a `@safe` function
-fail_compilation/retscope2.d(1005): Error: assigning scope variable `p` to non-scope `this._p` is not allowed in a `@safe` function
-fail_compilation/retscope2.d(1021): Error: assigning scope variable `p` to non-scope `c._p` is not allowed in a `@safe` function
-fail_compilation/retscope2.d(1024): Error: assigning scope variable `p` to non-scope `d._p` is not allowed in a `@safe` function
-fail_compilation/retscope2.d(1107): Error: returning scope variable `dg` is not allowed in a `@safe` function
-fail_compilation/retscope2.d(1216): Error: returning `s.foo()` escapes a reference to local variable `s`
-fail_compilation/retscope2.d(1233): Error: returning `t.foo()` escapes a reference to local variable `t`
 fail_compilation/retscope2.d(1306): Error: escaping a reference to local variable `i` by copying `& i` into allocated memory is not allowed in a `@safe` function
 ---
 */

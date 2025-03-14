@@ -248,13 +248,14 @@ nothrow:
          * directly, but that would unnecessary lengthen symbols names. See issue:
          * https://issues.dlang.org/show_bug.cgi?id=23722
          */
-        static struct Key { uint fileOffset; string prefix; string parent; }
+        static struct Key { string locKey; string prefix; string parent; }
         __gshared uint[Key] counters;
 
+        string locKey = cast(string) (sl.filename ~ idBuf[]);
         static if (__traits(compiles, counters.update(Key.init, () => 0u, (ref uint a) => 0u)))
         {
             // 2.082+
-            counters.update(Key(loc.fileOffset, prefix, parent),
+            counters.update(Key(locKey, prefix, parent),
                 () => 1u,          // insertion
                 (ref uint counter) // update
                 {
@@ -266,7 +267,7 @@ nothrow:
         }
         else
         {
-            const key = Key(loc.fileOffset, prefix, parent);
+            const key = Key(locKey, prefix, parent);
             if (auto pCounter = key in counters)
             {
                 idBuf.writestring("_");

@@ -1041,6 +1041,30 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                 nextToken();
                 continue;
 
+            // The following are all errors, the cases are just for better error messages than the default case
+            case TOK.return_:
+            case TOK.goto_:
+            case TOK.break_:
+            case TOK.continue_:
+                error("`%s` statement must be inside function scope", token.toChars());
+                goto Lerror;
+            case TOK.asm_:
+            case TOK.do_:
+            case TOK.for_:
+            case TOK.foreach_:
+            case TOK.foreach_reverse_:
+            case TOK.if_:
+            case TOK.switch_:
+            case TOK.try_:
+            case TOK.while_:
+                error("`%s` statement must be inside function scope", token.toChars());
+                if (peekNext() == TOK.leftParenthesis || peekNext() == TOK.leftCurly)
+                {
+                    parseStatement(0);
+                    s = null;
+                    continue;
+                }
+                goto Lerror;
             default:
                 error("declaration expected, not `%s`", token.toChars());
             Lerror:
@@ -1504,28 +1528,26 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         if (token.value != TOK.identifier)
         {
             error("identifier expected following `template`");
-            goto Lerr;
+            return null;
         }
         id = token.ident;
         nextToken();
         tpl = parseTemplateParameterList();
         if (!tpl)
-            goto Lerr;
+            return null;
 
         constraint = parseConstraint();
 
         if (token.value != TOK.leftCurly)
         {
             error("`{` expected after template parameter list, not `%s`", token.toChars()); /* } */
-            goto Lerr;
+            nextToken();
+            return null;
         }
         decldefs = parseBlock(null);
 
         tempdecl = new AST.TemplateDeclaration(loc, id, tpl, constraint, decldefs, ismixin);
         return tempdecl;
-
-    Lerr:
-        return null;
     }
 
     /******************************************
@@ -4509,7 +4531,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             if (ident)
                 checkCstyleTypeSyntax(loc, t, alt, ident);
             else if (!isThis && (t != AST.Type.terror))
-                noIdentifierForDeclarator(t);
+                noIdentifierForDeclarator(t, token);
 
             if (isAliasDeclaration)
             {
@@ -4571,6 +4593,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
                 default:
                     error("semicolon expected to close `alias` declaration, not `%s`", token.toChars());
+                    nextToken();
                     break;
                 }
             }
@@ -4734,11 +4757,12 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
         return a;
     }
 
-    /// Report an error that a declaration of type `t` is missing an identifier
+    /// Report an error that a declaration of type `t` is missing an identifier and got `tok` instead
     /// The parser is expected to sit on the next token after the type.
-    private void noIdentifierForDeclarator(AST.Type t)
+    private void noIdentifierForDeclarator(AST.Type t, Token tok)
     {
-        error("no identifier for declarator `%s`", t.toChars());
+        error("variable name expected after type `%s`, not `%s`", t.toChars(), tok.toChars);
+
         // A common mistake is to use a reserved keyword as an identifier, e.g. `in` or `out`
         if (token.isKeyword)
         {
@@ -5016,6 +5040,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
 
                 default:
                     error("semicolon expected to close `alias` declaration, not `%s`", token.toChars());
+                    nextToken();
                     break;
                 }
                 break;
@@ -5356,9 +5381,14 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
                         error("template constraint must follow parameter lists and attributes");
                     else
                         error("cannot use function constraints for non-template functions. Use `static if` instead");
+
+                    parseConstraint();
                 }
                 else
+                {
                     error("semicolon expected following function declaration, not `%s`", token.toChars());
+                    nextToken();
+                }
             }
             break;
         }
@@ -5542,7 +5572,7 @@ class Parser(AST, Lexer = dmd.lexer.Lexer) : Lexer
             }
             at = parseType(&ai);
             if (!ai)
-                noIdentifierForDeclarator(at);
+                noIdentifierForDeclarator(at, token);
         Larg:
             auto p = new AST.Parameter(aloc, storageClass, at, ai, null, null);
             parameters.push(p);

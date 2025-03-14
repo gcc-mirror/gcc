@@ -32,7 +32,6 @@ public:
     bool oneMember(Dsymbol *&ps, Identifier *ident) override;
     bool hasPointers() override final;
     bool hasStaticCtorOrDtor() override final;
-    void checkCtorConstInit() override final;
     AttribDeclaration *isAttribDeclaration() override { return this; }
 
     void accept(Visitor *v) override { v->visit(this); }

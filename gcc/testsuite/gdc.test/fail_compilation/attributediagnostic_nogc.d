@@ -2,8 +2,8 @@
 TEST_OUTPUT:
 ---
 fail_compilation/attributediagnostic_nogc.d(21): Error: `@nogc` function `attributediagnostic_nogc.layer2` cannot call non-@nogc function `attributediagnostic_nogc.layer1`
-fail_compilation/attributediagnostic_nogc.d(22):        which calls `attributediagnostic_nogc.layer0`
-fail_compilation/attributediagnostic_nogc.d(23):        which calls `attributediagnostic_nogc.gc`
+fail_compilation/attributediagnostic_nogc.d(22):        which calls `layer0`
+fail_compilation/attributediagnostic_nogc.d(23):        which calls `gc`
 fail_compilation/attributediagnostic_nogc.d(27):        and executing an `asm` statement without `@nogc` annotation makes it fail to infer `@nogc`
 fail_compilation/attributediagnostic_nogc.d(43): Error: `@nogc` function `D main` cannot call non-@nogc function `attributediagnostic_nogc.gc1`
 fail_compilation/attributediagnostic_nogc.d(32):        and allocating with `new` makes it fail to infer `@nogc`

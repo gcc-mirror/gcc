@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail100.d(24): Error: cannot implicitly convert expression `f` of type `Class[]` to `I[]`
+fail_compilation/fail100.d(24): Error: return value `f` of type `Class[]` does not match return type `I[]`, and cannot be implicitly converted
 ---
 */
 

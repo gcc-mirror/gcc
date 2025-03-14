@@ -121,11 +121,10 @@ public:
     Type *type;
     Type *originalType;         // before semantic analysis
     StorageClass storage_class;
-    Visibility visibility;
-    LINK _linkage;              // may be `LINK::system`; use `resolvedLinkage()` to resolve it
-    short inuse;                // used to detect cycles
-    uint8_t adFlags;
     DString mangleOverride;     // overridden symbol with pragma(mangle, "...")
+    Visibility visibility;
+    short inuse;                // used to detect cycles
+    uint8_t bitFields;
 
     const char *kind() const override;
     uinteger_t size(Loc loc) override final;
@@ -299,7 +298,6 @@ public:
     bool hasPointers() override final;
     bool canTakeAddressOf();
     bool needsScopeDtor();
-    void checkCtorConstInit() override final;
     Dsymbol *toAlias() override final;
     // Eliminate need for dynamic_cast
     VarDeclaration *isVarDeclaration() override final { return (VarDeclaration *)this; }
@@ -398,6 +396,8 @@ public:
 class TypeInfoAssociativeArrayDeclaration final : public TypeInfoDeclaration
 {
 public:
+    Type* entry;
+
     static TypeInfoAssociativeArrayDeclaration *create(Type *tinfo);
 
     void accept(Visitor *v) override { v->visit(this); }

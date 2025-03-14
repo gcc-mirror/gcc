@@ -70,6 +70,10 @@ alias long   ODBCINT64, SQLBIGINT;
 alias ulong  SQLUBIGINT;
 //}
 
+//Everything above this line may by used by odbcinst.d
+//Everything below this line is deprecated
+deprecated ("The ODBC 3.5 modules are deprecated. Please use the ODBC4 modules in the `etc.c.odbc` package."):
+
 struct DATE_STRUCT {
     SQLSMALLINT year;
     SQLUSMALLINT month;

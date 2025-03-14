@@ -52,7 +52,7 @@ version (D_ProfileGC)
     /**
      * TraceGC wrapper around $(REF _d_arrayappendT, core,internal,array,appending).
      */
-    ref Tarr _d_arrayappendcTXTrace(Tarr : T[], T)(string file, int line, string funcname, return ref scope Tarr px, size_t n) @trusted
+    ref Tarr _d_arrayappendcTXTrace(Tarr : T[], T)(return ref scope Tarr px, size_t n, string file = __FILE__, int line = __LINE__, string funcname = __FUNCTION__) @trusted
     {
         version (D_TypeInfo)
         {
@@ -115,7 +115,7 @@ version (D_ProfileGC)
     /**
      * TraceGC wrapper around $(REF _d_arrayappendT, core,internal,array,appending).
      */
-    ref Tarr _d_arrayappendTTrace(Tarr : T[], T)(string file, int line, string funcname, return ref scope Tarr x, scope Tarr y) @trusted
+    ref Tarr _d_arrayappendTTrace(Tarr : T[], T)(return ref scope Tarr x, scope Tarr y, string file = __FILE__, int line = __LINE__, string funcname = __FUNCTION__) @trusted
     {
         version (D_TypeInfo)
         {

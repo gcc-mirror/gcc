@@ -1587,16 +1587,13 @@ deprecated unittest
     GC.free(blkinf.base);
 
     // associative arrays
-    import rt.aaA : entryDtor;
-    // throw away all existing AA entries with dtor
-    GC.runFinalizers((cast(char*)&entryDtor)[0..1]);
-
     S1[int] aa1;
     aa1[0] = S1(0);
     aa1[1] = S1(1);
     dtorCount = 0;
     aa1 = null;
-    GC.runFinalizers((cast(char*)&entryDtor)[0..1]);
+    auto dtor1 = typeid(TypeInfo_AssociativeArray.Entry!(int, S1)).xdtor;
+    GC.runFinalizers((cast(char*)dtor1)[0..1]);
     assert(dtorCount == 2);
 
     int[S1] aa2;
@@ -1605,7 +1602,8 @@ deprecated unittest
     aa2[S1(2)] = 2;
     dtorCount = 0;
     aa2 = null;
-    GC.runFinalizers((cast(char*)&entryDtor)[0..1]);
+    auto dtor2 = typeid(TypeInfo_AssociativeArray.Entry!(S1, int)).xdtor;
+    GC.runFinalizers((cast(char*)dtor2)[0..1]);
     assert(dtorCount == 3);
 
     S1[2][int] aa3;
@@ -1613,7 +1611,8 @@ deprecated unittest
     aa3[1] = [S1(1),S1(3)];
     dtorCount = 0;
     aa3 = null;
-    GC.runFinalizers((cast(char*)&entryDtor)[0..1]);
+    auto dtor3 = typeid(TypeInfo_AssociativeArray.Entry!(int, S1[2])).xdtor;
+    GC.runFinalizers((cast(char*)dtor3)[0..1]);
     assert(dtorCount == 4);
 }
 

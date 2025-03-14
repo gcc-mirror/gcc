@@ -1324,8 +1324,16 @@ class TypeInfo_AssociativeArray : TypeInfo
     override @property inout(TypeInfo) next() nothrow pure inout { return value; }
     override @property uint flags() nothrow pure const { return 1; }
 
+    // TypeInfo entry is generated from the type of this template to help rt/aaA.d
+    static struct Entry(K, V)
+    {
+        K key;
+        V value;
+    }
+
     TypeInfo value;
     TypeInfo key;
+    TypeInfo entry;
 
     override @property size_t talign() nothrow pure const
     {

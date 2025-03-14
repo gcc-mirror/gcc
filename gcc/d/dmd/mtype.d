@@ -299,12 +299,15 @@ extern (C++) abstract class Type : ASTNode
         Type wcto;      // MODFlags.wildconst
         Type swto;      // MODFlags.shared_ | MODFlags.wild
         Type swcto;     // MODFlags.shared_ | MODFlags.wildconst
+        Type pto;       // merged pointer to this type
+        Type rto;       // reference to this type
+        Type arrayof;   // array of this type
+
+        // ImportC: store the name of the typedef resolving to this type
+        // So `uint8_t x;` will be printed as `uint8_t x;` and not as the resolved `ubyte x;`
+        Identifier typedefIdent;
     }
     Mcache* mcache;
-
-    Type pto;       // merged pointer to this type
-    Type rto;       // reference to this type
-    Type arrayof;   // array of this type
 
     TypeInfoDeclaration vtinfo;     // TypeInfo object for this Type
 
@@ -762,9 +765,6 @@ extern (C++) abstract class Type : ASTNode
         memcpy(cast(void*)t, cast(void*)this, sz);
         // t.mod = NULL;  // leave mod unchanged
         t.deco = null;
-        t.arrayof = null;
-        t.pto = null;
-        t.rto = null;
         t.vtinfo = null;
         t.ctype = null;
         t.mcache = null;
@@ -2959,9 +2959,6 @@ extern (C++) final class TypeIdentifier : TypeQualified
 {
     Identifier ident;
 
-    // The symbol representing this identifier, before alias resolution
-    Dsymbol originalSymbol;
-
     extern (D) this(Loc loc, Identifier ident)
     {
         super(Tident, loc);
@@ -3870,7 +3867,8 @@ extern (C++) struct ParameterList
         foreach (_, p1; cast() this)
         {
             auto p2 = other[idx++];
-            if (!p2 || p1 != p2) {
+            if (!p2 || p1 != p2)
+            {
                 diff = true;
                 break;
             }

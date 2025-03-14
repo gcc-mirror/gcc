@@ -146,9 +146,6 @@ public:
     MOD mod;  // modifiers MODxxxx
     char *deco;
     void* mcache;
-    Type *pto;          // merged pointer to this type
-    Type *rto;          // reference to this type
-    Type *arrayof;      // array of this type
     TypeInfoDeclaration *vtinfo;        // TypeInfo object for this Type
 
     type *ctype;        // for back end
@@ -630,7 +627,6 @@ class TypeIdentifier final : public TypeQualified
 {
 public:
     Identifier *ident;
-    Dsymbol *originalSymbol; // The symbol representing this identifier, before alias resolution
 
     static TypeIdentifier *create(Loc loc, Identifier *ident);
     const char *kind() override;

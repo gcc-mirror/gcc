@@ -852,6 +852,8 @@ private extern(C++) final class StaticAAVisitor : SemanticTimeTransitiveVisitor
         loweredExp = loweredExp.ctfeInterpret();
 
         aaExp.lowering = loweredExp;
+
+        semanticTypeInfo(sc, loweredExp.type);
     }
 
     // https://issues.dlang.org/show_bug.cgi?id=24602

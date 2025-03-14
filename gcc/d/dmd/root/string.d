@@ -377,9 +377,9 @@ auto splitLines(const char[] text)
         public const(char)[] front()
         {
             advance();
-            if (index > eolIndex || index >= text.length) {
+            if (index > eolIndex || index >= text.length)
                 return "";
-            }
+
             return text[index .. eolIndex];
         }
 

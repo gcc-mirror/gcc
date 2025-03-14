@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/parse14285.d(10): Error: no identifier for declarator `this`
+fail_compilation/parse14285.d(10): Error: variable name expected after type `this`, not `;`
 ---
 */
 

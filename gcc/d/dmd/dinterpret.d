@@ -1989,13 +1989,15 @@ public:
             Declaration decl = ve.var;
 
             // We cannot take the address of an imported symbol at compile time
-            if (decl.isImportedSymbol()) {
+            if (decl.isImportedSymbol())
+            {
                 error(e.loc, "cannot take address of imported symbol `%s` at compile time", decl.toChars());
                 result = CTFEExp.cantexp;
                 return;
             }
 
-            if (decl.isDataseg()) {
+            if (decl.isDataseg())
+            {
                 // Normally this is already done by optimize()
                 // Do it here in case optimize(WANTvalue) wasn't run before CTFE
                 emplaceExp!(SymOffExp)(pue, e.loc, e.e1.isVarExp().var, 0);

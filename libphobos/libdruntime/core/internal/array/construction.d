@@ -470,7 +470,7 @@ version (D_ProfileGC)
     /**
     * TraceGC wrapper around $(REF _d_newitemT, core,lifetime).
     */
-    T[] _d_newarrayTTrace(T)(string file, int line, string funcname, size_t length, bool isShared) @trusted
+    T[] _d_newarrayTTrace(T)(size_t length, bool isShared, string file = __FILE__, int line = __LINE__, string funcname = __FUNCTION__) @trusted
     {
         version (D_TypeInfo)
         {
@@ -602,7 +602,7 @@ version (D_ProfileGC)
     /**
     * TraceGC wrapper around $(REF _d_newarraymT, core,internal,array,construction).
     */
-    Tarr _d_newarraymTXTrace(Tarr : U[], T, U)(string file, int line, string funcname, size_t[] dims, bool isShared=false) @trusted
+    Tarr _d_newarraymTXTrace(Tarr : U[], T, U)(size_t[] dims, bool isShared=false, string file = __FILE__, int line = __LINE__, string funcname = __FUNCTION__) @trusted
     {
         version (D_TypeInfo)
         {

@@ -976,7 +976,8 @@ public:
         {
             EnumKind kind = getEnumKind(type);
 
-            if (vd.visibility.kind == AST.Visibility.Kind.none || vd.visibility.kind == AST.Visibility.Kind.private_) {
+            if (vd.visibility.kind == AST.Visibility.Kind.none || vd.visibility.kind == AST.Visibility.Kind.private_)
+            {
                 ignored("enum `%s` because it is `%s`.", vd.toPrettyChars(), AST.visibilityToChars(vd.visibility.kind));
                 return;
             }

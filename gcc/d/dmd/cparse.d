@@ -2006,7 +2006,7 @@ final class CParser(AST) : Parser!AST
                     //printf("AliasDeclaration %s %s\n", id.toChars(), dt.toChars());
                     auto ad = new AST.AliasDeclaration(token.loc, id, dt);
                     if (id == idt)
-                        ad.adFlags |= ad.hidden; // do not print when generating .di files
+                        ad.hidden = true; // do not print when generating .di files
                     s = ad;
                 }
 
@@ -2088,8 +2088,7 @@ final class CParser(AST) : Parser!AST
                     {
                         auto str = asmName.peekString();
                         p.mangleOverride = str;
-//                      p.adFlags |= AST.VarDeclaration.nounderscore;
-                        p.adFlags |= 4; // cannot get above line to compile on Ubuntu
+                        p.noUnderscore = true;
                     }
                 }
                 s = applySpecifier(s, specifier);
@@ -5527,6 +5526,12 @@ final class CParser(AST) : Parser!AST
             if (pt && *pt)
                 t = *pt;
         }
+        if (t.mcache && t.mcache.typedefIdent)
+        {
+            t = t.copy();
+            t.mcache = null;
+        }
+        t.getMcache().typedefIdent = id;
         auto tab = cast(void*[void*])(typedefTab[$ - 1]);
         tab[cast(void*)id] = cast(void*)t;
         typedefTab[$ - 1] = cast(void*)tab;

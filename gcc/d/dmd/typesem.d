@@ -1187,7 +1187,7 @@ private const(char)* getParamError(TypeFunction tf, Expression arg, Parameter pa
     // only mention rvalue if it's relevant
     const rv = !arg.isLvalue() && par.isReference();
     buf.printf("cannot pass %sargument `%s` of type `%s` to parameter `%s`",
-        rv ? "rvalue ".ptr : "".ptr, arg.toChars(), at,
+        rv ? "rvalue ".ptr : "".ptr, arg.toErrMsg(), at,
         parameterToChars(par, tf, qual));
     return buf.extractChars();
 }
@@ -2329,7 +2329,7 @@ Type typeSemantic(Type type, Loc loc, Scope* sc)
             {
                 const(char)* errTxt = fparam.storageClass & STC.ref_ ? "ref" : "out";
                 .error(e.loc, "expression `%s` of type `%s` is not implicitly convertible to type `%s %s` of parameter `%s`",
-                      e.toChars(), e.type.toChars(), errTxt, fparam.type.toChars(), fparam.toChars());
+                      e.toErrMsg(), e.type.toChars(), errTxt, fparam.type.toChars(), fparam.toChars());
             }
             e = e.implicitCastTo(sc, fparam.type);
 
@@ -2493,10 +2493,17 @@ Type typeSemantic(Type type, Loc loc, Scope* sc)
                     errors = true;
                 }
 
-                const bool isTypesafeVariadic = i + 1 == dim &&
-                                                tf.parameterList.varargs == VarArg.typesafe &&
-                                                (t.isTypeDArray() || t.isTypeClass());
-                if (isTypesafeVariadic)
+                const bool isTypesafeVariadic = i + 1 == dim && tf.parameterList.varargs == VarArg.typesafe;
+                const bool isStackAllocatedVariadic = isTypesafeVariadic && (t.isTypeDArray() || t.isTypeClass());
+
+                if (isTypesafeVariadic && t.isTypeClass())
+                {
+                    // Deprecated in 2.111, kept as a legacy feature for compatibility (currently no plan to turn it into an error)
+                    .deprecation(loc, "typesafe variadic parameters with a `class` type (`%s %s...`) are deprecated",
+                        t.isTypeClass().sym.ident.toChars(), fparam.toChars());
+                }
+
+                if (isStackAllocatedVariadic)
                 {
                     /* typesafe variadic arguments are constructed on the stack, so must be `scope`
                      */
@@ -2518,7 +2525,7 @@ Type typeSemantic(Type type, Loc loc, Scope* sc)
                         }
                     }
 
-                    if (isTypesafeVariadic)
+                    if (isStackAllocatedVariadic)
                     {
                         /* This is because they can be constructed on the stack
                          * https://dlang.org/spec/function.html#typesafe_variadic_functions
@@ -3454,10 +3461,26 @@ Expression getProperty(Type t, Scope* scope_, Loc loc, Identifier ident, int fla
             {
                 if (auto sym = dsym.isAggregateDeclaration())
                 {
-                    if (auto fd = search_function(sym, Id.opDispatch))
-                        errorSupplemental(loc, "potentially malformed `opDispatch`. Use an explicit instantiation to get a better error message");
-                    else if (!sym.members)
+                    if (!sym.members)
+                    {
                         errorSupplemental(sym.loc, "`%s %s` is opaque and has no members.", sym.kind, mt.toPrettyChars(true));
+                        return ErrorExp.get();
+                    }
+
+                    if (auto fd = search_function(sym, Id.opDispatch))
+                    {
+                        if (auto td = fd.isTemplateDeclaration())
+                        {
+                            e = mt.defaultInitLiteral(loc);
+                            auto se = new StringExp(e.loc, ident.toString());
+                            auto tiargs = new Objects();
+                            tiargs.push(se);
+                            auto dti = new DotTemplateInstanceExp(e.loc, e, Id.opDispatch, tiargs);
+                            dti.ti.tempdecl = td;
+                            dti.dotTemplateSemanticProp(scope_, DotExpFlag.none);
+                            return ErrorExp.get();
+                        }
+                    }
                 }
                 errorSupplemental(dsym.loc, "%s `%s` defined here",
                     dsym.kind, dsym.toChars());
@@ -4731,7 +4754,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
         {
             if (e.op == EXP.type)
             {
-                error(e.loc, "`%s` is not an expression", e.toChars());
+                error(e.loc, "`%s` is not an expression", e.toErrMsg());
                 return ErrorExp.get();
             }
             else if (mt.dim.toUInteger() < 1 && checkUnsafeDotExp(sc, e, ident, flag))
@@ -4780,7 +4803,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
         }
         if (e.op == EXP.type && (ident == Id.length || ident == Id.ptr))
         {
-            error(e.loc, "`%s` is not an expression", e.toChars());
+            error(e.loc, "`%s` is not an expression", e.toErrMsg());
             return ErrorExp.get();
         }
         if (ident == Id.length)
@@ -5207,7 +5230,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
         Declaration d = s.isDeclaration();
         if (!d)
         {
-            error(e.loc, "`%s.%s` is not a declaration", e.toChars(), ident.toChars());
+            error(e.loc, "`%s.%s` is not a declaration", e.toErrMsg(), ident.toChars());
             return ErrorExp.get();
         }
 
@@ -5640,7 +5663,7 @@ Expression dotExp(Type mt, Scope* sc, Expression e, Identifier ident, DotExpFlag
         Declaration d = s.isDeclaration();
         if (!d)
         {
-            error(e.loc, "`%s.%s` is not a declaration", e.toChars(), ident.toChars());
+            error(e.loc, "`%s.%s` is not a declaration", e.toErrMsg(), ident.toChars());
             return ErrorExp.get();
         }
 
@@ -6715,30 +6738,32 @@ Type pointerTo(Type type)
 {
     if (type.ty == Terror)
         return type;
-    if (!type.pto)
+    auto mcache = type.getMcache();
+    if (!mcache.pto)
     {
         Type t = new TypePointer(type);
         if (type.ty == Tfunction)
         {
             t.deco = t.merge().deco;
-            type.pto = t;
+            mcache.pto = t;
         }
         else
-            type.pto = t.merge();
+            mcache.pto = t.merge();
     }
-    return type.pto;
+    return mcache.pto;
 }
 
 Type referenceTo(Type type)
 {
     if (type.ty == Terror)
         return type;
-    if (!type.rto)
+    auto mcache = type.getMcache();
+    if (!mcache.rto)
     {
         Type t = new TypeReference(type);
-        type.rto = t.merge();
+        mcache.rto = t.merge();
     }
-    return type.rto;
+    return mcache.rto;
 }
 
 // Make corresponding static array type without semantic
@@ -6756,12 +6781,13 @@ Type arrayOf(Type type)
 {
     if (type.ty == Terror)
         return type;
-    if (!type.arrayof)
+    auto mcache = type.getMcache();
+    if (!mcache.arrayof)
     {
         Type t = new TypeDArray(type);
-        type.arrayof = t.merge();
+        mcache.arrayof = t.merge();
     }
-    return type.arrayof;
+    return mcache.arrayof;
 }
 
 /********************************
@@ -7007,6 +7033,39 @@ Type sharedWildConstOf(Type type)
         return type.mcache.swcto;
     }
     Type t = type.makeSharedWildConst();
+    t = t.merge();
+    t.fixTo(type);
+    //printf("\t%p %s\n", t, t.toChars());
+    return t;
+}
+
+Type nakedOf(Type type)
+{
+    //printf("Type::nakedOf() %p, %s\n", type, type.toChars());
+    if (type.mod == 0)
+        return type;
+    if (type.mcache) with(type.mcache)
+    {
+        // the cache has the naked type at the "identity" position, try to find it
+        if (cto && cto.mod == 0)
+            return cto;
+        if (ito && ito.mod == 0)
+            return ito;
+        if (sto && sto.mod == 0)
+            return sto;
+        if (scto && scto.mod == 0)
+            return scto;
+        if (wto && wto.mod == 0)
+            return wto;
+        if (wcto && wcto.mod == 0)
+            return wcto;
+        if (swto && swto.mod == 0)
+            return swto;
+        if (swcto && swcto.mod == 0)
+            return swcto;
+    }
+    Type t = type.nullAttributes();
+    t.mod = 0;
     t = t.merge();
     t.fixTo(type);
     //printf("\t%p %s\n", t, t.toChars());

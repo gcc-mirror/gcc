@@ -59,10 +59,12 @@ struct HdrGenState
     bool ddoc;          /// true if generating Ddoc file
     bool fullDump;      /// true if generating a full AST dump file
     bool importcHdr;    /// true if generating a .di file from an ImportC file
+    bool inCAlias;      /// Set to prevent ImportC translating typedefs as `alias X = X`
     bool doFuncBodies;  /// include function bodies in output
     bool vcg_ast;       /// write out codegen-ast
     bool skipConstraints;  // skip constraints when doing templates
     bool showOneMember = true;
+    bool errorMsg;      /// true if formatting for inside an error message
 
     bool fullQual;      /// fully qualify types when printing
     int tpltMember;
@@ -94,6 +96,87 @@ void genhdrfile(Module m, bool doFuncBodies, ref OutBuffer buf)
     hgs.importcHdr = (m.filetype == FileType.c);
     hgs.doFuncBodies = doFuncBodies;
     toCBuffer(m, buf, hgs);
+}
+
+/**
+ * Convert `o` to a string for error messages.
+ * Params:
+ *      e = object to convert
+ * Returns: string representation of `e`
+ */
+const(char)* toErrMsg(const RootObject o)
+{
+    if (auto e = o.isExpression())
+        return toErrMsg(e);
+    if (auto d = o.isDsymbol())
+        return toErrMsg(d);
+    if (auto t = o.isType())
+        return t.toChars();
+    if (auto id = o.isIdentifier())
+        return id.toChars();
+    assert(0);
+}
+
+/// ditto
+const(char)* toErrMsg(const Expression e)
+{
+    HdrGenState hgs;
+    hgs.errorMsg = true;
+    OutBuffer buf;
+    toCBuffer(e, buf, hgs);
+    truncateForError(buf, 60);
+
+    return buf.extractChars();
+}
+
+/// ditto
+const(char)* toErrMsg(const Dsymbol d)
+{
+    if (d.isFuncDeclaration() || d.isTemplateInstance())
+    {
+        if (d.ident && d.ident.toString.startsWith("__") && !d.isCtorDeclaration())
+        {
+            HdrGenState hgs;
+            hgs.errorMsg = true;
+            OutBuffer buf;
+            toCBuffer(cast() d, buf, hgs);
+            truncateForError(buf, 80);
+            return buf.extractChars();
+        }
+    }
+
+    return d.toChars();
+}
+
+/**
+ * Make the content of `buf` fit inline for an error message.
+ * Params:
+ *   buf = buffer with text to modify
+ *   maxLength = truncate text when it exceeds this length
+ */
+private void truncateForError(ref OutBuffer buf, size_t maxLength)
+{
+    // Remove newlines, escape backticks ` by doubling them
+    for (size_t i = 0; i < buf.length; i++)
+    {
+        if (buf[i] == '\r')
+            buf.remove(i, 1);
+        if (buf[i] == '\n')
+            buf.peekSlice[i] = ' ';
+        if (buf[i] == '`')
+            i = buf.insert(i, "`");
+    }
+
+    // Strip trailing whitespace
+    while (buf.length && buf[$-1] == ' ')
+        buf.setsize(buf.length - 1);
+
+    // Truncate
+    if (buf.length > maxLength)
+    {
+        buf.setsize(maxLength - 3);
+        buf.writestring("...");
+    }
 }
 
 /***************************************
@@ -1658,7 +1741,7 @@ void toCBuffer(Dsymbol s, ref OutBuffer buf, ref HdrGenState hgs)
     {
         if (d.storage_class & STC.local)
             return;
-        if (d.adFlags & d.hidden)
+        if (d.hidden)
             return;
         buf.writestring("alias ");
         if (d.aliassym)
@@ -1695,7 +1778,9 @@ void toCBuffer(Dsymbol s, ref OutBuffer buf, ref HdrGenState hgs)
             buf.writestring(" = ");
             if (stcToBuffer(buf, d.storage_class))
                 buf.writeByte(' ');
+            hgs.inCAlias = hgs.importcHdr;
             typeToBuffer(d.type, null, buf, hgs);
+            hgs.inCAlias = false;
             hgs.declstring = false;
         }
         buf.writeByte(';');
@@ -1772,7 +1857,7 @@ void toCBuffer(Dsymbol s, ref OutBuffer buf, ref HdrGenState hgs)
             buf.writestring("__error");
             return;
         }
-        if (f.tok != TOK.reserved)
+        if (f.tok != TOK.reserved && !hgs.errorMsg)
         {
             buf.writestring(f.kind());
             buf.writeByte(' ');
@@ -1789,8 +1874,9 @@ void toCBuffer(Dsymbol s, ref OutBuffer buf, ref HdrGenState hgs)
             buf.writeByte(' ');
             buf.writestring(str);
         }
-        tf.attributesApply(&printAttribute);
 
+        if (!hgs.errorMsg)
+            tf.attributesApply(&printAttribute);
 
         CompoundStatement cs = f.fbody.isCompoundStatement();
         Statement s1;
@@ -4366,6 +4452,11 @@ private void typeToBufferx(Type t, ref OutBuffer buf, ref HdrGenState hgs)
         buf.writestring("noreturn");
     }
 
+    if (hgs.importcHdr && !hgs.inCAlias && t.mcache && t.mcache.typedefIdent)
+    {
+        buf.writestring(t.mcache.typedefIdent.toString());
+        return;
+    }
 
     switch (t.ty)
     {

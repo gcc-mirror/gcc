@@ -445,7 +445,8 @@ public:
             visitType(p.type);
     }
 
-    override void visit(StructLiteralExp e) {
+    override void visit(StructLiteralExp e)
+    {
         static if (LOG)
             printf("StructLiteralExp: %s\n", e.toChars);
 

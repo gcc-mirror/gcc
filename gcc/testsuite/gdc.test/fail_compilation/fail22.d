@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail22.d(13): Error: no identifier for declarator `char`
+fail_compilation/fail22.d(13): Error: variable name expected after type `char`, not `;`
 ---
 */
 

@@ -2,8 +2,8 @@
 TEST_OUTPUT:
 ---
 fail_compilation/attributediagnostic.d(21): Error: `@safe` function `attributediagnostic.layer2` cannot call `@system` function `attributediagnostic.layer1`
-fail_compilation/attributediagnostic.d(23):        which calls `attributediagnostic.layer0`
-fail_compilation/attributediagnostic.d(25):        which calls `attributediagnostic.system`
+fail_compilation/attributediagnostic.d(23):        which calls `layer0`
+fail_compilation/attributediagnostic.d(25):        which calls `system`
 fail_compilation/attributediagnostic.d(27):        and executing an `asm` statement without `@trusted` annotation makes it fail to infer `@safe`
 fail_compilation/attributediagnostic.d(22):        `attributediagnostic.layer1` is declared here
 fail_compilation/attributediagnostic.d(43): Error: `@safe` function `D main` cannot call `@system` function `attributediagnostic.system1`

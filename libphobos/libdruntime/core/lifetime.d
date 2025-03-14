@@ -2788,7 +2788,7 @@ if (is(T == class))
 /**
  * TraceGC wrapper around $(REF _d_newclassT, core,lifetime).
  */
-T _d_newclassTTrace(T)(string file, int line, string funcname) @trusted
+T _d_newclassTTrace(T)(string file = __FILE__, int line = __LINE__, string funcname = __FUNCTION__) @trusted
 {
     version (D_TypeInfo)
     {
@@ -2985,7 +2985,7 @@ version (D_ProfileGC)
     /**
     * TraceGC wrapper around $(REF _d_newitemT, core,lifetime).
     */
-    T* _d_newitemTTrace(T)(string file, int line, string funcname) @trusted
+    T* _d_newitemTTrace(T)(string file = __FILE__, int line = __LINE__, string funcname = __FUNCTION__) @trusted
     {
         version (D_TypeInfo)
         {
