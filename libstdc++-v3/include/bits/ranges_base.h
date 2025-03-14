@@ -1083,6 +1083,9 @@ namespace ranges
   inline constexpr from_range_t from_range{};
 
 /// @cond undocumented
+  template<typename _T1, typename _T2>
+    struct pair;
+
 namespace __detail
 {
   template<typename _Rg, typename _Tp>
@@ -1097,6 +1100,11 @@ namespace __detail
   template<ranges::input_range _Range>
     using __range_mapped_type
       = typename ranges::range_value_t<_Range>::second_type;
+
+  // The allocator's value_type for map-like containers.
+  template<ranges::input_range _Range>
+    using __range_to_alloc_type
+      = pair<const __range_key_type<_Range>, __range_mapped_type<_Range>>;
 }
 /// @endcond
 #endif
