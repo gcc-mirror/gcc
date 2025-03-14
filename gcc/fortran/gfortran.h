@@ -3162,6 +3162,11 @@ enum locality_type
   LOCALITY_NUM
 };
 
+struct sync_stat
+{
+  gfc_expr *stat, *errmsg;
+};
+
 typedef struct gfc_code
 {
   gfc_exec_op op;
@@ -3197,6 +3202,7 @@ typedef struct gfc_code
     gfc_omp_variant *omp_variants;
     bool omp_bool;
     int stop_code;
+    struct sync_stat sync_stat;
 
     struct
     {
@@ -3207,6 +3213,7 @@ typedef struct gfc_code
       unsigned arr_spec_from_expr3:1;
       /* expr3 is not explicit  */
       unsigned expr3_not_explicit:1;
+      struct sync_stat sync_stat;
     }
     alloc;
 
@@ -3215,6 +3222,7 @@ typedef struct gfc_code
       gfc_namespace *ns;
       gfc_association_list *assoc;
       gfc_case *case_list;
+      struct sync_stat sync_stat;
     }
     block;
 
@@ -3985,6 +3993,7 @@ bool gfc_resolve_index (gfc_expr *, int);
 bool gfc_resolve_dim_arg (gfc_expr *);
 bool gfc_resolve_substring (gfc_ref *, bool *);
 void gfc_resolve_substring_charlen (gfc_expr *);
+void gfc_resolve_sync_stat (struct sync_stat *);
 gfc_expr *gfc_expr_to_initialize (gfc_expr *);
 bool gfc_type_is_extensible (gfc_symbol *);
 bool gfc_resolve_intrinsic (gfc_symbol *, locus *);

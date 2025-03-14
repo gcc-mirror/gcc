@@ -12970,6 +12970,9 @@ gfc_conv_intrinsic_mvbits (gfc_se *se, gfc_actual_arglist *actual_args,
 			      void_type_node, to, se->expr);
 }
 
+/* Comes from trans-stmt.cc, but we don't want the whole header included.  */
+extern void gfc_trans_sync_stat (struct sync_stat *sync_stat, gfc_se *se,
+				 tree *stat, tree *errmsg, tree *errmsg_len);
 
 static tree
 conv_intrinsic_move_alloc (gfc_code *code)
@@ -12977,16 +12980,36 @@ conv_intrinsic_move_alloc (gfc_code *code)
   stmtblock_t block;
   gfc_expr *from_expr, *to_expr;
   gfc_se from_se, to_se;
-  tree tmp, to_tree, from_tree;
+  tree tmp, to_tree, from_tree, stat, errmsg, errmsg_len, fin_label = NULL_TREE;
   bool coarray, from_is_class, from_is_scalar;
+  gfc_actual_arglist *arg = code->ext.actual;
+  sync_stat tmp_sync_stat = {nullptr, nullptr};
 
   gfc_start_block (&block);
 
-  from_expr = code->ext.actual->expr;
-  to_expr = code->ext.actual->next->expr;
+  from_expr = arg->expr;
+  arg = arg->next;
+  to_expr = arg->expr;
+  arg = arg->next;
+
+  while (arg)
+    {
+      if (arg->expr)
+	{
+	  if (!strcmp ("stat", arg->name))
+	    tmp_sync_stat.stat = arg->expr;
+	  else if (!strcmp ("errmsg", arg->name))
+	    tmp_sync_stat.errmsg = arg->expr;
+	}
+      arg = arg->next;
+    }
 
   gfc_init_se (&from_se, NULL);
   gfc_init_se (&to_se, NULL);
+
+  gfc_trans_sync_stat (&tmp_sync_stat, &from_se, &stat, &errmsg, &errmsg_len);
+  if (stat != null_pointer_node)
+    fin_label = gfc_build_label_decl (NULL_TREE);
 
   gcc_assert (from_expr->ts.type != BT_CLASS || to_expr->ts.type == BT_CLASS);
   coarray = from_expr->corank != 0;
@@ -13030,9 +13053,10 @@ conv_intrinsic_move_alloc (gfc_code *code)
       /* Deallocate "to".  */
       if (to_expr->rank == 0)
 	{
-	  tmp
-	    = gfc_deallocate_scalar_with_status (to_tree, NULL_TREE, NULL_TREE,
-						 true, to_expr, to_expr->ts);
+	  tmp = gfc_deallocate_scalar_with_status (to_tree, stat, fin_label,
+						   true, to_expr, to_expr->ts,
+						   NULL_TREE, false, true,
+						   errmsg, errmsg_len);
 	  gfc_add_expr_to_block (&block, tmp);
 	}
 
@@ -13105,9 +13129,12 @@ conv_intrinsic_move_alloc (gfc_code *code)
     {
       tree cond;
 
-      tmp = gfc_deallocate_with_status (to_se.expr, NULL_TREE, NULL_TREE,
-					NULL_TREE, NULL_TREE, true, to_expr,
-					GFC_CAF_COARRAY_DEALLOCATE_ONLY);
+      tmp = gfc_deallocate_with_status (to_se.expr, stat, errmsg, errmsg_len,
+					fin_label, true, to_expr,
+					GFC_CAF_COARRAY_DEALLOCATE_ONLY,
+					NULL_TREE, NULL_TREE,
+					gfc_conv_descriptor_token (to_se.expr),
+					true);
       gfc_add_expr_to_block (&block, tmp);
 
       tmp = gfc_conv_descriptor_data_get (to_se.expr);
@@ -13133,9 +13160,10 @@ conv_intrinsic_move_alloc (gfc_code *code)
 	  gfc_add_expr_to_block (&block, tmp);
 	}
 
-      tmp = gfc_deallocate_with_status (to_se.expr, NULL_TREE, NULL_TREE,
-					NULL_TREE, NULL_TREE, true, to_expr,
-					GFC_CAF_COARRAY_NOCOARRAY);
+      tmp = gfc_deallocate_with_status (to_se.expr, stat, errmsg, errmsg_len,
+					fin_label, true, to_expr,
+					GFC_CAF_COARRAY_NOCOARRAY, NULL_TREE,
+					NULL_TREE, NULL_TREE, true);
       gfc_add_expr_to_block (&block, tmp);
     }
 
@@ -13147,6 +13175,13 @@ conv_intrinsic_move_alloc (gfc_code *code)
   gfc_add_modify_loc (input_location, &block, tmp,
 		      fold_convert (TREE_TYPE (tmp), null_pointer_node));
 
+  if (coarray && flag_coarray == GFC_FCOARRAY_LIB)
+    {
+      /* Copy the array descriptor data has overwritten the to-token and cleared
+	 from.data.  Now also clear the from.token.  */
+      gfc_add_modify (&block, gfc_conv_descriptor_token (from_se.expr),
+		      null_pointer_node);
+    }
 
   if (to_expr->ts.type == BT_CHARACTER && to_expr->ts.deferred)
     {
@@ -13157,6 +13192,8 @@ conv_intrinsic_move_alloc (gfc_code *code)
         gfc_add_modify_loc (input_location, &block, from_se.string_length,
 			build_int_cst (TREE_TYPE (from_se.string_length), 0));
     }
+  if (fin_label)
+    gfc_add_expr_to_block (&block, build1_v (LABEL_EXPR, fin_label));
 
   return gfc_finish_block (&block);
 }

@@ -3835,11 +3835,11 @@ add_subroutines (void)
 	      st, BT_INTEGER, di, OPTIONAL, INTENT_OUT,
 	      trim_name, BT_LOGICAL, dl, OPTIONAL, INTENT_IN);
 
-  add_sym_2s ("move_alloc", GFC_ISYM_MOVE_ALLOC, CLASS_PURE, BT_UNKNOWN, 0,
-	      GFC_STD_F2003,
-	      gfc_check_move_alloc, NULL, NULL,
-	      f, BT_UNKNOWN, 0, REQUIRED, INTENT_INOUT,
-	      t, BT_UNKNOWN, 0, REQUIRED, INTENT_OUT);
+  add_sym_4s ("move_alloc", GFC_ISYM_MOVE_ALLOC, CLASS_PURE, BT_UNKNOWN, 0,
+	      GFC_STD_F2003, gfc_check_move_alloc, NULL, NULL, f, BT_UNKNOWN, 0,
+	      REQUIRED, INTENT_INOUT, t, BT_UNKNOWN, 0, REQUIRED, INTENT_OUT,
+	      stat, BT_INTEGER, di, OPTIONAL, INTENT_OUT, errmsg, BT_CHARACTER,
+	      dc, OPTIONAL, INTENT_INOUT);
 
   add_sym_5s ("mvbits", GFC_ISYM_MVBITS, CLASS_ELEMENTAL, BT_UNKNOWN, 0,
 	      GFC_STD_F95, gfc_check_mvbits, NULL, gfc_resolve_mvbits,

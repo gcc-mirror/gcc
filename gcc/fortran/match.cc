@@ -1814,12 +1814,53 @@ gfc_free_iterator (gfc_iterator *iter, int flag)
     free (iter);
 }
 
+static match
+match_named_arg (const char *pat, const char *name, gfc_expr **e,
+		 gfc_statement st_code)
+{
+  match m;
+  gfc_expr *tmp;
+
+  m = gfc_match (pat, &tmp);
+  if (m == MATCH_ERROR)
+    {
+      gfc_syntax_error (st_code);
+      return m;
+    }
+  if (m == MATCH_YES)
+    {
+      if (*e)
+	{
+	  gfc_error ("Duplicate %s attribute in %C", name);
+	  gfc_free_expr (tmp);
+	  return MATCH_ERROR;
+	}
+      *e = tmp;
+
+      return MATCH_YES;
+    }
+  return MATCH_NO;
+}
+
+static match
+match_stat_errmsg (struct sync_stat *sync_stat, gfc_statement st_code)
+{
+  match m;
+
+  m = match_named_arg (" stat = %v", "STAT", &sync_stat->stat, st_code);
+  if (m != MATCH_NO)
+    return m;
+
+  m = match_named_arg (" errmsg = %v", "ERRMSG", &sync_stat->errmsg, st_code);
+  return m;
+}
 
 /* Match a CRITICAL statement.  */
 match
 gfc_match_critical (void)
 {
   gfc_st_label *label = NULL;
+  match m;
 
   if (gfc_match_label () == MATCH_ERROR)
     return MATCH_ERROR;
@@ -1830,11 +1871,28 @@ gfc_match_critical (void)
   if (gfc_match_st_label (&label) == MATCH_ERROR)
     return MATCH_ERROR;
 
-  if (gfc_match_eos () != MATCH_YES)
+  if (gfc_match_eos () == MATCH_YES)
+    goto done;
+
+  if (gfc_match_char ('(') != MATCH_YES)
+    goto syntax;
+
+  for (;;)
     {
-      gfc_syntax_error (ST_CRITICAL);
-      return MATCH_ERROR;
+      m = match_stat_errmsg (&new_st.ext.sync_stat, ST_CRITICAL);
+      if (m == MATCH_ERROR)
+	goto cleanup;
+
+      if (gfc_match_char (',') == MATCH_YES)
+	continue;
+
+      break;
     }
+
+  if (gfc_match (" )%t") != MATCH_YES)
+    goto syntax;
+
+done:
 
   if (gfc_pure (NULL))
     {
@@ -1856,9 +1914,9 @@ gfc_match_critical (void)
 
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
-       gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to "
-			"enable");
-       return MATCH_ERROR;
+      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to "
+		       "enable");
+      return MATCH_ERROR;
     }
 
   if (gfc_find_state (COMP_CRITICAL))
@@ -1869,13 +1927,21 @@ gfc_match_critical (void)
 
   new_st.op = EXEC_CRITICAL;
 
-  if (label != NULL
-      && !gfc_reference_st_label (label, ST_LABEL_TARGET))
-    return MATCH_ERROR;
+  if (label != NULL && !gfc_reference_st_label (label, ST_LABEL_TARGET))
+    goto cleanup;
 
   return MATCH_YES;
-}
 
+syntax:
+  gfc_syntax_error (ST_CRITICAL);
+
+cleanup:
+  gfc_free_expr (new_st.ext.sync_stat.stat);
+  gfc_free_expr (new_st.ext.sync_stat.errmsg);
+  new_st.ext.sync_stat = {NULL, NULL};
+
+  return MATCH_ERROR;
+}
 
 /* Match a BLOCK statement.  */
 
@@ -3941,7 +4007,7 @@ match
 gfc_match_sync_team (void)
 {
   match m;
-  gfc_expr *team;
+  gfc_expr *team = NULL;
 
   if (!gfc_notify_std (GFC_STD_F2018, "SYNC TEAM statement at %C"))
     return MATCH_ERROR;
@@ -3954,9 +4020,33 @@ gfc_match_sync_team (void)
   if (gfc_match ("%e", &team) != MATCH_YES)
     goto syntax;
 
-  m = gfc_match_char (')');
-  if (m == MATCH_NO)
+  m = gfc_match_char (',');
+  if (m == MATCH_ERROR)
     goto syntax;
+  if (m == MATCH_NO)
+    {
+      m = gfc_match_char (')');
+      if (m == MATCH_YES)
+	goto done;
+      goto syntax;
+    }
+
+  for (;;)
+    {
+      m = match_stat_errmsg (&new_st.ext.sync_stat, ST_SYNC_TEAM);
+      if (m == MATCH_ERROR)
+	goto cleanup;
+
+      if (gfc_match_char (',') == MATCH_YES)
+	continue;
+
+      break;
+    }
+
+  if (gfc_match (" )%t") != MATCH_YES)
+    goto syntax;
+
+done:
 
   new_st.expr1 = team;
 
@@ -3964,6 +4054,13 @@ gfc_match_sync_team (void)
 
 syntax:
   gfc_syntax_error (ST_SYNC_TEAM);
+
+cleanup:
+  gfc_free_expr (new_st.ext.sync_stat.stat);
+  gfc_free_expr (new_st.ext.sync_stat.errmsg);
+  new_st.ext.sync_stat = {NULL, NULL};
+
+  gfc_free_expr (team);
 
   return MATCH_ERROR;
 }

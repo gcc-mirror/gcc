@@ -721,6 +721,15 @@ gfc_trans_stop (gfc_code *code, bool error_stop)
   return gfc_finish_block (&se.pre);
 }
 
+tree
+trans_exit ()
+{
+  const char *name = gfc_get_string (PREFIX ("exit_i%d"), 4);
+  gfc_symbol *exsym = gfc_get_intrinsic_sub_symbol (name);
+  tree tmp = gfc_get_symbol_decl (exsym);
+  return build_call_expr_loc (input_location, tmp, 1, integer_zero_node);
+}
+
 /* Translate the FAIL IMAGE statement.  */
 
 tree
@@ -730,11 +739,49 @@ gfc_trans_fail_image (gfc_code *code ATTRIBUTE_UNUSED)
     return build_call_expr_loc (input_location,
 				gfor_fndecl_caf_fail_image, 0);
   else
+    return trans_exit ();
+}
+
+void
+gfc_trans_sync_stat (struct sync_stat *sync_stat, gfc_se *se, tree *stat,
+		     tree *errmsg, tree *errmsg_len)
+{
+  gfc_se argse;
+
+  if (sync_stat->stat)
     {
-      const char *name = gfc_get_string (PREFIX ("exit_i%d"), 4);
-      gfc_symbol *exsym = gfc_get_intrinsic_sub_symbol (name);
-      tree tmp = gfc_get_symbol_decl (exsym);
-      return build_call_expr_loc (input_location, tmp, 1, integer_zero_node);
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr (&argse, sync_stat->stat);
+      gfc_add_block_to_block (&se->pre, &argse.pre);
+
+      if (TREE_TYPE (argse.expr) != integer_type_node)
+	{
+	  tree tstat = gfc_create_var (integer_type_node, "stat");
+	  TREE_THIS_VOLATILE (tstat) = 1;
+	  gfc_add_modify (&se->pre, tstat,
+			  fold_convert (integer_type_node, argse.expr));
+	  gfc_add_modify (&se->post, argse.expr,
+			  fold_convert (TREE_TYPE (argse.expr), tstat));
+	  *stat = build_fold_addr_expr (tstat);
+	}
+      else
+	*stat = build_fold_addr_expr (argse.expr);
+    }
+  else
+    *stat = null_pointer_node;
+
+  if (sync_stat->errmsg)
+    {
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_reference (&argse, sync_stat->errmsg);
+      gfc_add_block_to_block (&se->pre, &argse.pre);
+      *errmsg = argse.expr;
+      *errmsg_len = fold_convert (size_type_node, argse.string_length);
+    }
+  else
+    {
+      *errmsg = null_pointer_node;
+      *errmsg_len = build_zero_cst (size_type_node);
     }
 }
 
@@ -812,21 +859,27 @@ gfc_trans_change_team (gfc_code *code)
 /* Translate the END TEAM statement.  */
 
 tree
-gfc_trans_end_team (gfc_code *code ATTRIBUTE_UNUSED)
+gfc_trans_end_team (gfc_code *code)
 {
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
-      return build_call_expr_loc (input_location,
-				  gfor_fndecl_caf_end_team, 1,
-				  build_int_cst (pchar_type_node, 0));
+      gfc_se se;
+      tree stat, errmsg, errmsg_len, tmp;
+
+      gfc_init_se (&se, NULL);
+      gfc_start_block (&se.pre);
+
+      gfc_trans_sync_stat (&code->ext.sync_stat, &se, &stat, &errmsg,
+			   &errmsg_len);
+
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_end_team, 3,
+				 stat, errmsg, errmsg_len);
+      gfc_add_expr_to_block (&se.pre, tmp);
+      gfc_add_block_to_block (&se.pre, &se.post);
+      return gfc_finish_block (&se.pre);
     }
   else
-    {
-      const char *name = gfc_get_string (PREFIX ("exit_i%d"), 4);
-      gfc_symbol *exsym = gfc_get_intrinsic_sub_symbol (name);
-      tree tmp = gfc_get_symbol_decl (exsym);
-      return build_call_expr_loc (input_location, tmp, 1, integer_zero_node);
-    }
+    return trans_exit ();
 }
 
 /* Translate the SYNC TEAM statement.  */
@@ -836,28 +889,25 @@ gfc_trans_sync_team (gfc_code *code)
 {
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
-      gfc_se argse;
-      tree team_type, tmp;
+      gfc_se se;
+      tree team_type, stat, errmsg, errmsg_len, tmp;
 
-      gfc_init_se (&argse, NULL);
-      gfc_conv_expr_val (&argse, code->expr1);
-      team_type = gfc_build_addr_expr (ppvoid_type_node, argse.expr);
+      gfc_init_se (&se, NULL);
 
-      tmp = build_call_expr_loc (input_location,
-				 gfor_fndecl_caf_sync_team, 2,
-				 team_type,
-				 integer_zero_node);
-      gfc_add_expr_to_block (&argse.pre, tmp);
-      gfc_add_block_to_block (&argse.pre, &argse.post);
-      return gfc_finish_block (&argse.pre);
+      gfc_conv_expr_val (&se, code->expr1);
+      team_type = se.expr;
+
+      gfc_trans_sync_stat (&code->ext.sync_stat, &se, &stat, &errmsg,
+			   &errmsg_len);
+
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_sync_team, 4,
+				 team_type, stat, errmsg, errmsg_len);
+      gfc_add_expr_to_block (&se.pre, tmp);
+      gfc_add_block_to_block (&se.pre, &se.post);
+      return gfc_finish_block (&se.pre);
     }
   else
-    {
-      const char *name = gfc_get_string (PREFIX ("exit_i%d"), 4);
-      gfc_symbol *exsym = gfc_get_intrinsic_sub_symbol (name);
-      tree tmp = gfc_get_symbol_decl (exsym);
-      return build_call_expr_loc (input_location, tmp, 1, integer_zero_node);
-    }
+    return trans_exit ();
 }
 
 tree
@@ -1609,35 +1659,41 @@ gfc_trans_arithmetic_if (gfc_code * code)
 
 
 /* Translate a CRITICAL block.  */
+
 tree
 gfc_trans_critical (gfc_code *code)
-{
-  stmtblock_t block;
-  tree tmp, token = NULL_TREE;
+ {
+   stmtblock_t block;
+   tree tmp, token = NULL_TREE;
+   tree stat = NULL_TREE, errmsg, errmsg_len;
 
-  gfc_start_block (&block);
+   gfc_start_block (&block);
 
-  if (flag_coarray == GFC_FCOARRAY_LIB)
-    {
-      tree zero_size = build_zero_cst (size_type_node);
-      token = gfc_get_symbol_decl (code->resolved_sym);
-      token = GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE (token));
-      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_lock, 7,
-				 token, zero_size, integer_one_node,
-				 null_pointer_node, null_pointer_node,
-				 null_pointer_node, zero_size);
-      gfc_add_expr_to_block (&block, tmp);
+   if (flag_coarray == GFC_FCOARRAY_LIB)
+     {
+       gfc_se se;
 
-      /* It guarantees memory consistency within the same segment */
-      tmp = gfc_build_string_const (strlen ("memory")+1, "memory"),
-	tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
-			  gfc_build_string_const (1, ""),
-			  NULL_TREE, NULL_TREE,
-			  tree_cons (NULL_TREE, tmp, NULL_TREE),
-			  NULL_TREE);
-      ASM_VOLATILE_P (tmp) = 1;
+       gfc_init_se (&se, NULL);
+       gfc_trans_sync_stat (&code->ext.sync_stat, &se, &stat, &errmsg,
+			    &errmsg_len);
+       gfc_add_block_to_block (&block, &se.pre);
 
-      gfc_add_expr_to_block (&block, tmp);
+       token = gfc_get_symbol_decl (code->resolved_sym);
+       token = GFC_TYPE_ARRAY_CAF_TOKEN (TREE_TYPE (token));
+       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_lock, 7,
+				  token, integer_zero_node, integer_one_node,
+				  null_pointer_node, stat, errmsg, errmsg_len);
+       gfc_add_expr_to_block (&block, tmp);
+       gfc_add_block_to_block (&block, &se.post);
+
+       /* It guarantees memory consistency within the same segment.  */
+       tmp = gfc_build_string_const (strlen ("memory") + 1, "memory"),
+       tmp = build5_loc (input_location, ASM_EXPR, void_type_node,
+			 gfc_build_string_const (1, ""), NULL_TREE, NULL_TREE,
+			 tree_cons (NULL_TREE, tmp, NULL_TREE), NULL_TREE);
+       ASM_VOLATILE_P (tmp) = 1;
+
+       gfc_add_expr_to_block (&block, tmp);
     }
 
   tmp = gfc_trans_code (code->block->next);
@@ -1645,11 +1701,19 @@ gfc_trans_critical (gfc_code *code)
 
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
-      tree zero_size = build_zero_cst (size_type_node);
-      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_unlock, 6,
-				 token, zero_size, integer_one_node,
-				 null_pointer_node, null_pointer_node,
-				 zero_size);
+      /* END CRITICAL does not accept STAT or ERRMSG arguments.
+       * If STAT= is specified for CRITICAL, pass a stat argument to
+       * _gfortran_caf_lock_unlock to prevent termination in the event of an
+       * error, but ignore any value assigned to it.
+       */
+      tmp = build_call_expr_loc (
+	input_location, gfor_fndecl_caf_unlock, 6, token, integer_zero_node,
+	integer_one_node,
+	stat != NULL_TREE
+	  ? gfc_build_addr_expr (NULL,
+				 gfc_create_var (integer_type_node, "stat"))
+	  : null_pointer_node,
+	null_pointer_node, integer_zero_node);
       gfc_add_expr_to_block (&block, tmp);
 
       /* It guarantees memory consistency within the same segment */
@@ -1981,7 +2045,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  GFC_DECL_PTR_ARRAY_P (sym->backend_decl) = 1;
 	}
 
-      if (sym->attr.codimension && !sym->attr.dimension)
+      if (sym->attr.codimension)
 	se.want_coarray = 1;
 
       gfc_conv_expr_descriptor (&se, e);

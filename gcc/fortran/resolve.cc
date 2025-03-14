@@ -11484,6 +11484,53 @@ resolve_lock_unlock_event (gfc_code *code)
     }
 }
 
+static void
+resolve_team_argument (gfc_expr *team)
+{
+  gfc_resolve_expr (team);
+  if (team->rank != 0 || team->ts.type != BT_DERIVED
+      || team->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV
+      || team->ts.u.derived->intmod_sym_id != ISOFORTRAN_TEAM_TYPE)
+    {
+      gfc_error ("TEAM argument at %L must be a scalar expression "
+		 "of type TEAM_TYPE from the intrinsic module ISO_FORTRAN_ENV",
+		 &team->where);
+    }
+}
+
+static void
+resolve_scalar_variable_as_arg (const char *name, bt exp_type, int exp_kind,
+				gfc_expr *e)
+{
+  gfc_resolve_expr (e);
+  if (e
+      && (e->ts.type != exp_type || e->ts.kind < exp_kind || e->rank != 0
+	  || e->expr_type != EXPR_VARIABLE))
+    gfc_error ("%s argument at %L must be a scalar %s variable of at least "
+	       "kind %d", name, &e->where, gfc_basic_typename (exp_type),
+	       exp_kind);
+}
+
+void
+gfc_resolve_sync_stat (struct sync_stat *sync_stat)
+{
+  resolve_scalar_variable_as_arg ("STAT=", BT_INTEGER, 2, sync_stat->stat);
+  resolve_scalar_variable_as_arg ("ERRMSG=", BT_CHARACTER,
+				  gfc_default_character_kind,
+				  sync_stat->errmsg);
+}
+static void
+resolve_sync_team (gfc_code *code)
+{
+  resolve_team_argument (code->expr1);
+  gfc_resolve_sync_stat (&code->ext.sync_stat);
+}
+
+static void
+resolve_end_team (gfc_code *code)
+{
+  gfc_resolve_sync_stat (&code->ext.sync_stat);
+}
 
 static void
 resolve_critical (gfc_code *code)
@@ -11492,6 +11539,8 @@ resolve_critical (gfc_code *code)
   gfc_symbol *lock_type;
   char name[GFC_MAX_SYMBOL_LEN];
   static int serial = 0;
+
+  gfc_resolve_sync_stat (&code->ext.sync_stat);
 
   if (flag_coarray != GFC_FCOARRAY_LIB)
     return;
@@ -13493,10 +13542,11 @@ start:
 	  break;
 
 	case EXEC_END_TEAM:
+	  resolve_end_team (code);
 	  break;
 
 	case EXEC_SYNC_TEAM:
-	  check_team (code->expr1, "SYNC TEAM");
+	  resolve_sync_team (code);
 	  break;
 
 	case EXEC_ENTRY:

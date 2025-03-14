@@ -4683,8 +4683,18 @@ gfc_check_merge_bits (gfc_expr *i, gfc_expr *j, gfc_expr *mask)
 
 
 bool
-gfc_check_move_alloc (gfc_expr *from, gfc_expr *to)
+gfc_check_move_alloc (gfc_expr *from, gfc_expr *to, gfc_expr *stat,
+		      gfc_expr *errmsg)
 {
+  struct sync_stat sync_stat = {stat, errmsg};
+
+  if ((stat || errmsg)
+      && !gfc_notify_std (GFC_STD_F2008, "STAT= or ERRMSG= at %L not supported",
+			  &to->where))
+    return false;
+
+  gfc_resolve_sync_stat (&sync_stat);
+
   if (!variable_check (from, 0, false))
     return false;
   if (!allocatable_check (from, 0))

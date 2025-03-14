@@ -859,14 +859,14 @@ _gfortran_caf_lock (caf_token_t token, size_t index,
     {
       *acquired_lock = (int) false;
       if (stat)
-	*stat = 0;
-    return;
+	*stat = GFC_STAT_LOCKED;
+      return;
     }
 
 
   if (stat)
     {
-      *stat = 1;
+      *stat = GFC_STAT_LOCKED;
       if (errmsg_len > 0)
 	{
 	  size_t len = (sizeof (msg) > errmsg_len) ? errmsg_len
@@ -899,7 +899,7 @@ _gfortran_caf_unlock (caf_token_t token, size_t index,
 
   if (stat)
     {
-      *stat = 1;
+      *stat = GFC_STAT_UNLOCKED;
       if (errmsg_len > 0)
 	{
 	  size_t len = (sizeof (msg) > errmsg_len) ? errmsg_len

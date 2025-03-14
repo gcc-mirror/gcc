@@ -774,12 +774,13 @@ void gfc_allocate_using_malloc (stmtblock_t *, tree, tree, tree,
 				tree = NULL_TREE);
 
 /* Generate code to deallocate an array.  */
-tree gfc_deallocate_with_status (tree, tree, tree, tree, tree, bool,
-				 gfc_expr *, int, tree = NULL_TREE,
-				 tree a = NULL_TREE, tree c = NULL_TREE);
-tree gfc_deallocate_scalar_with_status (tree, tree, tree, bool, gfc_expr*,
+tree gfc_deallocate_with_status (tree, tree, tree, tree, tree, bool, gfc_expr *,
+				 int, tree = NULL_TREE, tree a = NULL_TREE,
+				 tree c = NULL_TREE, bool u = false);
+tree gfc_deallocate_scalar_with_status (tree, tree, tree, bool, gfc_expr *,
 					gfc_typespec, tree = NULL_TREE,
-					bool c = false);
+					bool c = false, bool u = false,
+					tree = NULL_TREE, tree = NULL_TREE);
 
 /* Generate code to call realloc().  */
 tree gfc_call_realloc (stmtblock_t *, tree, tree);

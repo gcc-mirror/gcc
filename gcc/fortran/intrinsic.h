@@ -208,7 +208,8 @@ bool gfc_check_fstat_sub (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_gerror (gfc_expr *);
 bool gfc_check_getarg (gfc_expr *, gfc_expr *);
 bool gfc_check_getlog (gfc_expr *);
-bool gfc_check_move_alloc (gfc_expr *, gfc_expr *);
+bool gfc_check_move_alloc (gfc_expr *, gfc_expr *, gfc_expr *stat,
+			   gfc_expr *errmsg);
 bool gfc_check_mvbits (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 		      gfc_expr *);
 bool gfc_check_random_init (gfc_expr *, gfc_expr *);

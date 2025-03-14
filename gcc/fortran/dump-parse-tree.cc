@@ -2607,6 +2607,20 @@ show_omp_node (int level, gfc_code *c)
     fprintf (dumpfile, " (%s)", c->ext.omp_clauses->critical_name);
 }
 
+static void
+show_sync_stat (struct sync_stat *sync_stat)
+{
+  if (sync_stat->stat)
+    {
+      fputs (" stat=", dumpfile);
+      show_expr (sync_stat->stat);
+    }
+  if (sync_stat->errmsg)
+    {
+      fputs (" errmsg=", dumpfile);
+      show_expr (sync_stat->errmsg);
+    }
+}
 
 /* Show a single code node and everything underneath it if necessary.  */
 
@@ -2761,6 +2775,7 @@ show_code_node (int level, gfc_code *c)
 
     case EXEC_END_TEAM:
       fputs ("END TEAM", dumpfile);
+      show_sync_stat (&c->ext.sync_stat);
       break;
 
     case EXEC_FORM_TEAM:
@@ -2768,7 +2783,9 @@ show_code_node (int level, gfc_code *c)
       break;
 
     case EXEC_SYNC_TEAM:
-      fputs ("SYNC TEAM", dumpfile);
+      fputs ("SYNC TEAM ", dumpfile);
+      show_expr (c->expr1);
+      show_sync_stat (&c->ext.sync_stat);
       break;
 
     case EXEC_SYNC_ALL:
@@ -3048,7 +3065,9 @@ show_code_node (int level, gfc_code *c)
       break;
 
     case EXEC_CRITICAL:
-      fputs ("CRITICAL\n", dumpfile);
+      fputs ("CRITICAL", dumpfile);
+      show_sync_stat (&c->ext.sync_stat);
+      fputc ('\n', dumpfile);
       show_code (level + 1, c->block->next);
       code_indent (level, 0);
       fputs ("END CRITICAL", dumpfile);
