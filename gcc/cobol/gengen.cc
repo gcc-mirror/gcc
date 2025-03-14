@@ -3429,30 +3429,35 @@ gg_trans_unit_var_decl(const char *var_name)
 void
 gg_insert_into_assembler(const char *format, ...)
   {
-  // This routine inserts text directly into the assembly language stream.
+  // Temporarily defeat all ASM_EXPR for optimized code per PR119214
+  // The correct solution using LABEL_DECL is forthcoming
+  if( !optimize )
+    {
+    // This routine inserts text directly into the assembly language stream.
 
-  // Note that if for some reason your text has to have a '%' character, it
-  // needs to be doubled in the GENERIC tag.  And that means if it is in the
-  // 'format' variable, it needs to be quadrupled.
+    // Note that if for some reason your text has to have a '%' character, it
+    // needs to be doubled in the GENERIC tag.  And that means if it is in the
+    // 'format' variable, it needs to be quadrupled.
 
-  // Create the string to be inserted:
-  char ach[256];
-  va_list ap;
-  va_start(ap, format);
-  vsnprintf(ach, sizeof(ach), format, ap);
-  va_end(ap);
+    // Create the string to be inserted:
+    char ach[256];
+    va_list ap;
+    va_start(ap, format);
+    vsnprintf(ach, sizeof(ach), format, ap);
+    va_end(ap);
 
-  // Create the required generic tag
-  tree asm_expr = build5_loc( location_from_lineno(),
-                          ASM_EXPR,
-                          VOID,
-                          build_string(strlen(ach), ach),
-                          NULL_TREE,
-                          NULL_TREE,
-                          NULL_TREE,
-                          NULL_TREE);
-  //SET_EXPR_LOCATION (asm_expr, UNKNOWN_LOCATION);
+    // Create the required generic tag
+    tree asm_expr = build5_loc( location_from_lineno(),
+                            ASM_EXPR,
+                            VOID,
+                            build_string(strlen(ach), ach),
+                            NULL_TREE,
+                            NULL_TREE,
+                            NULL_TREE,
+                            NULL_TREE);
+    //SET_EXPR_LOCATION (asm_expr, UNKNOWN_LOCATION);
 
-  // And insert it as a statement
-  gg_append_statement(asm_expr);
+    // And insert it as a statement
+    gg_append_statement(asm_expr);
+    }
   }
