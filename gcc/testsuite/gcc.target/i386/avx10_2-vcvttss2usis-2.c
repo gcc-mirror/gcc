@@ -30,8 +30,32 @@ TEST (void)
   if (res1 != res1_ref)
     abort();
 
+  res1 = _mm_cvttsss_epu32 (s.x);
+
+  if (s.a[0] > UINT_MAX)
+    res1_ref = UINT_MAX;
+  else if (s.a[0] < 0)
+    res1_ref = 0;
+  else
+    res1_ref = s.a[0];
+
+  if (res1 != res1_ref)
+    abort();
+
 #ifdef __x86_64__
   res2 = _mm_cvtts_roundss_epu64 (s.x, 8);
+
+  if (s.a[0] > ULONG_MAX)
+    res2_ref = ULONG_MAX;
+  else if (s.a[0] < 0)
+    res2_ref = 0;
+  else
+    res2_ref = s.a[0];
+
+  if (res2 != res2_ref)
+    abort();
+
+  res2 = _mm_cvttsss_epu64 (s.x);
 
   if (s.a[0] > ULONG_MAX)
     res2_ref = ULONG_MAX;

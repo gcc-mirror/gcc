@@ -48,15 +48,9 @@ TEST (void)
   for (i = 0; i < SIZE; i++)
     res2.a[i] = DEFAULT_VALUE;
 
-#if AVX512F_LEN == 128
   res1.x = INTRINSIC (_cvttsps_epu64) (s.x);
   res2.x = INTRINSIC (_mask_cvttsps_epu64) (res2.x, mask, s.x);
   res3.x = INTRINSIC (_maskz_cvttsps_epu64) (mask, s.x);
-#else
-  res1.x = INTRINSIC (_cvtts_roundps_epu64) (s.x, 8);
-  res2.x = INTRINSIC (_mask_cvtts_roundps_epu64) (res2.x, mask, s.x, 8);
-  res3.x = INTRINSIC (_maskz_cvtts_roundps_epu64) (mask, s.x, 8);
-#endif
 
   CALC (s.a, res_ref);
 
@@ -70,4 +64,21 @@ TEST (void)
   MASK_ZERO (i_uq) (res_ref, mask, SRC_SIZE);
   if (UNION_CHECK (AVX512F_LEN, i_uq) (res3, res_ref))
     abort ();
+
+#if AVX512F_LEN != 128
+  res1.x = INTRINSIC (_cvtts_roundps_epu64) (s.x, 8);
+  res2.x = INTRINSIC (_mask_cvtts_roundps_epu64) (res2.x, mask, s.x, 8);
+  res3.x = INTRINSIC (_maskz_cvtts_roundps_epu64) (mask, s.x, 8);
+
+  if (UNION_CHECK (AVX512F_LEN, i_uq) (res1, res_ref))
+    abort ();
+
+  MASK_MERGE (i_uq) (res_ref, mask, SRC_SIZE);
+  if (UNION_CHECK (AVX512F_LEN, i_uq) (res2, res_ref))
+    abort ();
+
+  MASK_ZERO (i_uq) (res_ref, mask, SRC_SIZE);
+  if (UNION_CHECK (AVX512F_LEN, i_uq) (res3, res_ref))
+    abort ();
+#endif
 }
