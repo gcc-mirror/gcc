@@ -1,5 +1,4 @@
 /* We haven't implemented these intrinsics for arm yet.  */
-/* { dg-do run } */
 /* { dg-skip-if "unimplemented" { arm*-*-* } } */
 /* { dg-options "-O3" } */
 

@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-skip-if "" { arm*-*-* } } */
 
 #include <arm_neon.h>
