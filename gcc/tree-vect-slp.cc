@@ -4161,7 +4161,7 @@ vect_build_slp_instance (vec_info *vinfo,
 	       && ! STMT_VINFO_SLP_VECT_ONLY (stmt_info)
 	       && compare_step_with_zero (vinfo, stmt_info) > 0
 	       && vect_slp_prefer_store_lanes_p (vinfo, stmt_info, NULL_TREE,
-						 masked_p, group_size, 1));
+						 masked_p, group_size, i));
 	  if (want_store_lanes || force_single_lane)
 	    i = 1;
 
@@ -5095,7 +5095,7 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 	  && !SLP_INSTANCE_TREE (instance)->ldst_lanes)
 	{
 	  slp_tree slp_root = SLP_INSTANCE_TREE (instance);
-	  int group_size = SLP_TREE_LANES (slp_root);
+	  unsigned int group_size = SLP_TREE_LANES (slp_root);
 	  tree vectype = SLP_TREE_VECTYPE (slp_root);
 
 	  stmt_vec_info rep_info = SLP_TREE_REPRESENTATIVE (slp_root);
@@ -5138,6 +5138,7 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 	  if (loads_permuted)
 	    {
 	      bool can_use_lanes = true;
+	      bool prefer_load_lanes = false;
 	      FOR_EACH_VEC_ELT (loads, j, load_node)
 		if (STMT_VINFO_GROUPED_ACCESS
 		      (SLP_TREE_REPRESENTATIVE (load_node)))
@@ -5165,9 +5166,21 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 			can_use_lanes = false;
 			break;
 		      }
+		    /* Make sure that the target would prefer store-lanes
+		       for at least one of the loads.
+
+		       ??? Perhaps we should instead require this for
+		       all loads?  */
+		    prefer_load_lanes
+		      = (prefer_load_lanes
+			 || SLP_TREE_LANES (load_node) == group_size
+			 || (vect_slp_prefer_store_lanes_p
+			     (vinfo, stmt_vinfo,
+			      STMT_VINFO_VECTYPE (stmt_vinfo), masked,
+			      group_size, SLP_TREE_LANES (load_node))));
 		  }
 
-	      if (can_use_lanes)
+	      if (can_use_lanes && prefer_load_lanes)
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_NOTE, vect_location,
