@@ -1,3 +1,10 @@
+2025-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119120
+	* c-gimplify.cc (c_genericize_control_r): Set DECL_NOT_GIMPLE_REG_P
+	on {REAL,IMAG}PART_EXPR is_gimple_reg operand at -O0 if it is lhs
+	of a MODIFY_EXPR.
+
 2025-03-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/119265

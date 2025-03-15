@@ -1,3 +1,10 @@
+2025-03-14  Richard Biener  <rguenther@suse.de>
+
+	* Makefile.am: Define gcc_version.
+	* configure.ac: Execute GCC_BASE_VER.
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+
 2025-03-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* charmaps.cc: Fix typo in comment.

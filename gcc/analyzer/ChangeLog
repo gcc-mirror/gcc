@@ -1,3 +1,10 @@
+2025-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR analyzer/119278
+	* svalue.cc (cmp_csts_same_type): For STRING_CST, compare
+	TREE_STRING_LENGTH first just in case and use memcmp rather
+	than strcmp.  Handle RAW_DATA_CST.
+
 2025-03-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/117262

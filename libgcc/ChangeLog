@@ -1,3 +1,13 @@
+2025-03-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Revert:
+	2023-12-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c++-minimal/README: New.
+	* c++-minimal/guard.c: New.
+	* config/gcn/t-amdgcn (LIB2ADD): Add it.
+	* config/nvptx/t-nvptx (LIB2ADD): Likewise.
+
 2025-03-13  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* config/aarch64/cpuinfo.c (__init_cpu_features_constructor):

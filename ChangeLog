@@ -1,3 +1,11 @@
+2025-03-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/92713
+	PR target/101544
+	* configure.ac [GCN, nvptx] (noconfigdirs): Don't add
+	'target-libstdc++-v3'.  Add 'target-libgrust'.
+	* configure: Regenerate.
+
 2025-03-13  Matthias Klose  <doko@ubuntu.com>
 
 	* config-ml.in (multi-do): Remove extra argument from subst macro.

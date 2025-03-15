@@ -1,3 +1,51 @@
+2025-03-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/116572
+	* cgraph.cc (cgraph_update_edges_for_call_stmt): Do not update
+	edges of clones that are unexpanded thunk.  Assert that the node
+	passed as the parameter is not an unexpanded thunk.
+
+2025-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119287
+	* match.pd (((X >> C1) & C2) * (1 << C1) to X & (C2 << C1)): Use
+	(convert @0) instead of @0 in the substitution.
+
+2025-03-14  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/92713
+	PR target/101544
+	* config/gcn/gcn.h (LIBSTDCXX): Don't set.
+	* config/nvptx/nvptx.h (LIBSTDCXX): Likewise.
+
+2025-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119274
+	* tree-ssa-sccvn.cc (dominated_by_p_w_unex): Handle the
+	top block being the only executable forwarder to a CFG
+	merge.
+
+2025-03-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* tree-vect-slp.cc (vect_build_slp_instance): Pass the new group
+	size (i) rather than 1 to vect_slp_prefer_store_lanes_p.
+	(vect_analyze_slp): Only force the use of load-lanes and
+	store-lanes if that is preferred for at least one load/store pair.
+
+2025-03-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119155
+	* tree-vect-stmts.cc (vectorizable_store): Do not always
+	use vector element alignment for VMAT_STRIDED_SLP but
+	a more correct alignment towards both ends.
+	(vectorizable_load): Likewise.
+
+2025-03-14  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/extend.texi (Alternate Keywords): Clean up text and remove
+	discussion of "restrict", which is not a GNU extension at all.
+	* doc/invoke.texi (C Dialect Options): Remove detailed discussion.
+
 2025-03-13  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/119147
