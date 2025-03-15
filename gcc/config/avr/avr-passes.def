@@ -74,6 +74,18 @@ INSERT_PASS_BEFORE (pass_free_cfg, 1, avr_pass_recompute_notes);
 
 INSERT_PASS_AFTER (pass_expand, 1, avr_pass_casesi);
 
+/* Some combine insns have nonzero_bits() in their condition, though insns
+   should not use such stuff in their condition.  Therefore, we split such
+   insn into something without nonzero_bits() in their condition right after
+   insn combine.
+
+   Since neither split_all_insns() nor split_all_insns_noflow() work at that
+   point (presumably since there are splits involving branches), we split
+   respective insns (and only such insns) by hand.  Respective insns are
+   tagged with insn attribute nzb = "yes" so that they are easy to spot.  */
+
+INSERT_PASS_AFTER (pass_combine, 1, avr_pass_split_nzb);
+
 /* If-else decision trees generated for switch / case may produce sequences
    like
 

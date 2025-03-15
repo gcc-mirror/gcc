@@ -136,6 +136,7 @@ extern bool reg_unused_after (rtx_insn *insn, rtx reg);
 extern int avr_jump_mode (rtx x, rtx_insn *insn, int = 0);
 extern bool test_hard_reg_class (enum reg_class rclass, rtx x);
 extern bool jump_over_one_insn_p (rtx_insn *insn, rtx dest);
+extern bool avr_nonzero_bits_lsr_operands_p (rtx_code, rtx *);
 
 extern void avr_final_prescan_insn (rtx_insn *insn, rtx *operand,
 				    int num_operands);
@@ -205,6 +206,7 @@ extern rtl_opt_pass *make_avr_pass_pre_proep (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_recompute_notes (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_casesi (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_ifelse (gcc::context *);
+extern rtl_opt_pass *make_avr_pass_split_nzb (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_split_after_peephole2 (gcc::context *);
 #ifdef RTX_CODE
 extern bool avr_casei_sequence_check_operands (rtx *xop);

@@ -29,6 +29,7 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "diagnostic-core.h"
 #include "cfghooks.h"
 #include "cfganal.h"
 #include "df.h"
@@ -4848,6 +4849,70 @@ avr_pass_fuse_add::execute1 (function *func)
 
 
 //////////////////////////////////////////////////////////////////////////////
+// Split insns with nonzero_bits() after combine.
+
+static const pass_data avr_pass_data_split_nzb =
+{
+  RTL_PASS,	    // type
+  "",		    // name (will be patched)
+  OPTGROUP_NONE,    // optinfo_flags
+  TV_DF_SCAN,	    // tv_id
+  0,		    // properties_required
+  0,		    // properties_provided
+  0,		    // properties_destroyed
+  0,		    // todo_flags_start
+  0		    // todo_flags_finish
+};
+
+class avr_pass_split_nzb : public rtl_opt_pass
+{
+public:
+  avr_pass_split_nzb (gcc::context *ctxt, const char *name)
+    : rtl_opt_pass (avr_pass_data_split_nzb, ctxt)
+  {
+    this->name = name;
+  }
+
+  unsigned int execute (function *) final override
+  {
+    if (avropt_use_nonzero_bits)
+      split_nzb_insns ();
+    return 0;
+  }
+
+  void split_nzb_insns ();
+
+}; // avr_pass_split_nzb
+
+
+void
+avr_pass_split_nzb::split_nzb_insns ()
+{
+  rtx_insn *next;
+
+  for (rtx_insn *insn = get_insns (); insn; insn = next)
+    {
+      next = NEXT_INSN (insn);
+
+      if (INSN_P (insn)
+	  && single_set (insn)
+	  && get_attr_nzb (insn) == NZB_YES)
+	{
+	  rtx_insn *last = try_split (PATTERN (insn), insn, 1 /*last*/);
+
+	  // The nonzero_bits() insns *must* split.  If not: ICE.
+	  if (last == insn)
+	    {
+	      debug_rtx (insn);
+	      internal_error ("failed to split insn");
+	    }
+	}
+    }
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////
 // Split shift insns after peephole2 / befor avr-fuse-move.
 
 static const pass_data avr_pass_data_split_after_peephole2 =
@@ -5643,6 +5708,12 @@ rtl_opt_pass *
 make_avr_pass_casesi (gcc::context *ctxt)
 {
   return new avr_pass_casesi (ctxt, "avr-casesi");
+}
+
+rtl_opt_pass *
+make_avr_pass_split_nzb (gcc::context *ctxt)
+{
+  return new avr_pass_split_nzb (ctxt, "avr-split-nzb");
 }
 
 // Try to replace 2 cbranch insns with 1 comparison and 2 branches.
