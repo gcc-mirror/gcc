@@ -78,4 +78,5 @@ def parse_git_revisions(repo_path, revisions, ref_name=None):
                                commit_to_info_hook=commit_to_info,
                                ref_name=ref_name)
         parsed_commits.append(git_commit)
+    repo.close()
     return parsed_commits
