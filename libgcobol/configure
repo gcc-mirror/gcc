@@ -630,11 +630,11 @@ ac_includes_default="\
 #endif"
 
 ac_func_list=
-ac_unique_file="Makefile.am"
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+SPEC_LIBGCOBOL_DEPS
 get_gcc_base_ver
 extra_ldflags_libgcobol
 LIBGCOBOL_VERSION
@@ -16992,14 +16992,13 @@ fi
 
 
 
-# Add dependencies for libgcobol.spec file
-#SPEC_LIBGCOBOL_DEPS="$LIBS"
-#AC_SUBST(SPEC_LIBGCOBOL_DEPS)
+# Add dependencies for libgcobol.spec file, this might be excessive - since
+# the spec file might not use all of them.
+SPEC_LIBGCOBOL_DEPS="$LIBS"
 
 
-ac_config_files="$ac_config_files Makefile"
+ac_config_files="$ac_config_files Makefile libgcobol.spec"
 
-####AC_CONFIG_FILES(libgcobol.spec)
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: libgcobol has been configured." >&5
 $as_echo "$as_me: libgcobol has been configured." >&6;}
@@ -18124,6 +18123,7 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "libgcobol.spec") CONFIG_FILES="$CONFIG_FILES libgcobol.spec" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

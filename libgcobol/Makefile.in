@@ -35,6 +35,7 @@
 
 # Written de novo for libgcobol.
 
+
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -141,7 +142,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = libgcobol.spec
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -170,7 +171,8 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
+am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
+	"$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libgcobol_la_LIBADD =
 @BUILD_LIBGCOBOL_TRUE@am_libgcobol_la_OBJECTS = charmaps.lo \
@@ -223,6 +225,7 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+DATA = $(toolexeclib_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) \
 	$(LISP)config.h.in
 # Read a list of newline-separated strings from the standard input,
@@ -312,6 +315,7 @@ RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SPEC_LIBGCOBOL_DEPS = @SPEC_LIBGCOBOL_DEPS@
 STRIP = @STRIP@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
@@ -386,6 +390,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
 # Skip the whole process if we are not building libgcobol.
 @BUILD_LIBGCOBOL_TRUE@toolexeclib_LTLIBRARIES = libgcobol.la
+@BUILD_LIBGCOBOL_TRUE@toolexeclib_DATA = libgcobol.spec
 @BUILD_LIBGCOBOL_TRUE@libgcobol_la_SOURCES = \
 @BUILD_LIBGCOBOL_TRUE@	charmaps.cc				\
 @BUILD_LIBGCOBOL_TRUE@	constants.cc				\
@@ -409,6 +414,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@	$(extra_ldflags_libgcobol) $(LIBS) \
 @BUILD_LIBGCOBOL_TRUE@	$(version_arg)
 
+@BUILD_LIBGCOBOL_TRUE@libgcobol_la_DEPENDENCIES = libgcobol.spec
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -462,6 +468,8 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
+libgcobol.spec: $(top_builddir)/config.status $(srcdir)/libgcobol.spec.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
@@ -545,6 +553,27 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool config.lt
+install-toolexeclibDATA: $(toolexeclib_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(toolexeclib_DATA)'; test -n "$(toolexeclibdir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibdir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibdir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclib_DATA)'; test -n "$(toolexeclibdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(toolexeclibdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -606,9 +635,9 @@ distclean-tags:
 	-rm -f cscope.out cscope.in.out cscope.po.out cscope.files
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) config.h
+all-am: Makefile $(LTLIBRARIES) $(DATA) config.h
 installdirs:
-	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -671,7 +700,8 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-toolexeclibLTLIBRARIES
+install-exec-am: install-toolexeclibDATA \
+	install-toolexeclibLTLIBRARIES
 
 install-html: install-html-am
 
@@ -713,7 +743,8 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-toolexeclibLTLIBRARIES
+uninstall-am: uninstall-toolexeclibDATA \
+	uninstall-toolexeclibLTLIBRARIES
 
 .MAKE: all install-am install-strip
 
@@ -726,12 +757,13 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
 	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip \
+	install-ps install-ps-am install-strip install-toolexeclibDATA \
 	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-toolexeclibLTLIBRARIES
+	uninstall-am uninstall-toolexeclibDATA \
+	uninstall-toolexeclibLTLIBRARIES
 
 .PRECIOUS: Makefile
 

@@ -203,13 +203,15 @@ fi
 # Determine what GCC version number to use in filesystem paths.
 GCC_BASE_VER
 
-# Add dependencies for libgcobol.spec file
-#SPEC_LIBGCOBOL_DEPS="$LIBS"
-#AC_SUBST(SPEC_LIBGCOBOL_DEPS)
+# Add dependencies for libgcobol.spec file, this might be excessive - since
+# the spec file might not use all of them.
+SPEC_LIBGCOBOL_DEPS="$LIBS"
+AC_SUBST(SPEC_LIBGCOBOL_DEPS)
 
-AC_CONFIG_SRCDIR([Makefile.am])
-AC_CONFIG_FILES([Makefile])
-####AC_CONFIG_FILES(libgcobol.spec)
+AC_CONFIG_FILES([
+Makefile
+libgcobol.spec
+])
 
 AC_MSG_NOTICE([libgcobol has been configured.])
 

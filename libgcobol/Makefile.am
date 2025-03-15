@@ -28,6 +28,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 # Skip the whole process if we are not building libgcobol.
 if BUILD_LIBGCOBOL
 toolexeclib_LTLIBRARIES  = libgcobol.la
+toolexeclib_DATA = libgcobol.spec
 
 ##
 ## 2.2.12 Automatic Dependency Tracking
@@ -64,5 +65,6 @@ version_arg = -version-info $(LIBGCOBOL_VERSION)
 libgcobol_la_LDFLAGS = $(LTLDFLAGS) $(LTLIBICONV) \
 	$(extra_ldflags_libgcobol) $(LIBS) \
 	$(version_arg)
+libgcobol_la_DEPENDENCIES = libgcobol.spec
 
 endif BUILD_LIBGCOBOL
