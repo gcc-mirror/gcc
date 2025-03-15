@@ -167,7 +167,7 @@ static edge gimple_try_redirect_by_replacing_jump (edge, basic_block);
 static inline bool stmt_starts_bb_p (gimple *, gimple *);
 static int gimple_verify_flow_info (void);
 static void gimple_make_forwarder_block (edge);
-static gimple *first_non_label_stmt (basic_block);
+static gimple *first_non_label_nondebug_stmt (basic_block);
 static bool verify_gimple_transaction (gtransaction *);
 static bool call_can_make_abnormal_goto (gimple *);
 
@@ -1246,7 +1246,7 @@ assign_discriminators (void)
 
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  gimple *first = first_non_label_stmt (e->dest);
+	  gimple *first = first_non_label_nondebug_stmt (e->dest);
 	  gimple *last = last_stmt (e->dest);
 
 	  gimple *stmt_on_same_line = NULL;
@@ -2936,14 +2936,13 @@ first_stmt (basic_block bb)
   return stmt;
 }
 
-/* Return the first non-label statement in basic block BB.  */
+/* Return the first non-label/non-debug statement in basic block BB.  */
 
 static gimple *
-first_non_label_stmt (basic_block bb)
+first_non_label_nondebug_stmt (basic_block bb)
 {
-  gimple_stmt_iterator i = gsi_start_bb (bb);
-  while (!gsi_end_p (i) && gimple_code (gsi_stmt (i)) == GIMPLE_LABEL)
-    gsi_next (&i);
+  gimple_stmt_iterator i;
+  i = gsi_start_nondebug_after_labels_bb (bb);
   return !gsi_end_p (i) ? gsi_stmt (i) : NULL;
 }
 
