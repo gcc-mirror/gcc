@@ -7,7 +7,7 @@
 module testgc;
 
 import core.memory;
-import core.stdc.stdio;
+import core.stdc.stdio : printf;
 
 class C
 {

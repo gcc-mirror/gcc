@@ -11,7 +11,7 @@ class C
 {
     ~this()
     {
-        import core.stdc.stdlib;
+        import core.stdc.stdlib : abort;
         abort();    // this gets triggered although the instance always stays referenced
     }
 }

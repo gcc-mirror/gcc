@@ -40,6 +40,7 @@ void main()
     testZeroSizedValue();
     testTombstonePurging();
     testClear();
+    testTypeInfoCollect();
 }
 
 void testKeysValues1()
@@ -585,8 +586,6 @@ void issue13078() nothrow pure
 
 void issue14104()
 {
-    import core.stdc.stdio;
-
     alias K = const(ubyte)*;
     size_t[K] aa;
     immutable key = cast(K)(cast(size_t) uint.max + 1);
@@ -906,4 +905,45 @@ void testClear()
     aa2[5] = 6;
     assert(aa.length == 1);
     assert(aa[5] == 6);
+}
+
+// https://github.com/dlang/dmd/issues/17503
+void testTypeInfoCollect()
+{
+    import core.memory;
+
+    static struct S
+    {
+        int x;
+        ~this() {}
+    }
+
+    static struct AAHolder
+    {
+        S[int] aa;
+    }
+
+    static S* getBadS()
+    {
+        auto aaholder = new AAHolder;
+        aaholder.aa[0] = S();
+        auto s = 0 in aaholder.aa; // keep a pointer to the entry
+        GC.free(aaholder); // but not a pointer to the AA.
+        return s;
+    }
+
+    static void stackStomp()
+    {
+        import core.stdc.string : memset;
+        ubyte[4 * 4096] x;
+        memset(x.ptr, 0, x.sizeof);
+    }
+
+    auto s = getBadS();
+    stackStomp(); // destroy any stale references to the AA or s except in the current frame;
+    GC.collect(); // BUG: this used to invalidate the fake type info, should no longer do this.
+    foreach(i; 0 .. 1000) // try to reallocate the freed type info
+        auto p = new void*[1];
+    s = null; // clear any reference to the entry
+    GC.collect(); // used to segfault.
 }
