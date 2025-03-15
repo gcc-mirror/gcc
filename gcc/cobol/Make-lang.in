@@ -35,6 +35,7 @@
 # - define the names for selecting the language in LANGUAGES.
 
 GCOBOL_INSTALL_NAME := $(shell echo gcobol|sed '$(program_transform_name)')
+GCOBOLIO_INSTALL_NAME := $(shell echo gcobol-io|sed '$(program_transform_name)')
 GCOBOL_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcobol|sed '$(program_transform_name)')
 
 GCOBC_INSTALL_NAME := $(shell echo gcobc|sed '$(program_transform_name)')
@@ -293,7 +294,7 @@ cobol.install-common: installdirs
 
 cobol.install-man: installdirs
 	$(INSTALL_DATA) $(srcdir)/cobol/gcobol.1 $(DESTDIR)$(man1dir)/$(GCOBOL_INSTALL_NAME)$(man1ext)
-	$(INSTALL_DATA) $(srcdir)/cobol/gcobol.3 $(DESTDIR)$(man3dir)/
+	$(INSTALL_DATA) $(srcdir)/cobol/gcobol.3 $(DESTDIR)$(man3dir)/$(GCOBOLIO_INSTALL_NAME)$(man3ext)
 
 cobol.install-info:
 
@@ -342,8 +343,8 @@ cobol.uninstall:
 	rm -rf 	$(DESTDIR)$(bindir)/$(GCOBOL_INSTALL_NAME)$(exeext)	\
 		$(DESTDIR)$(bindir)/$(GCOBC_INSTALL_NAME)		\
 		$(DESTDIR)$(datadir)/gcobol/				\
-		$(DESTDIR)$(man1dir)/$(GCOBOL_INSTALL_NAME).1		\
-		$(DESTDIR)$(man3dir)/gcobol.3
+		$(DESTDIR)$(man1dir)/$(GCOBOL_INSTALL_NAME)$(man1ext)	\
+		$(DESTDIR)$(man3dir)/$(GCOBOLIO_INSTALL_NAME)$(man3ext)
 
 cobol.man:
 cobol.srcman:
