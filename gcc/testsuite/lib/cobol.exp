@@ -107,8 +107,11 @@ proc cobol_link_flags { paths } {
     }
 
     if { $gccpath != "" } {
+      if [file exists "${gccpath}/libgcobol/libgcobol.spec"] {
+          append flags "-B${gccpath}/libgcobol "
+      }
       if [file exists "${gccpath}/libgcobol/libgcobol.a"] {
-          append flags "-L${gccpath}/libgcobol"
+          append flags "-L${gccpath}/libgcobol "
       }
       if { [file exists "${gccpath}/libgcobol/.libs/libgcobol.a"] ||
 	 [file exists "${gccpath}/libgobol/.libs/libgcobol.${shlib_ext}"] } {
