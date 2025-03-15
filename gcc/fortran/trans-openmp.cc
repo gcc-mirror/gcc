@@ -11345,9 +11345,11 @@ gfc_trans_omp_set_selector (gfc_omp_set_selector *gfc_selectors, locus where)
   return set_selectors;
 }
 
+/* If 'ns' points to a formal namespace in an interface, ns->parent == NULL;
+   hence, parent_ns is used instead.  */
 
 void
-gfc_trans_omp_declare_variant (gfc_namespace *ns)
+gfc_trans_omp_declare_variant (gfc_namespace *ns, gfc_namespace *parent_ns)
 {
   tree base_fn_decl = ns->proc_name->backend_decl;
   gfc_namespace *search_ns = ns;
@@ -11360,7 +11362,10 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
 	 current namespace.  */
       if (!odv)
 	{
-	  search_ns = search_ns->parent;
+	  if (!search_ns->parent && search_ns == ns)
+	    search_ns = parent_ns;
+	  else
+	    search_ns = search_ns->parent;
 	  if (search_ns)
 	    next = search_ns->omp_declare_variant;
 	  continue;
@@ -11388,6 +11393,7 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
       else
 	{
 	  if (!search_ns->contained
+	      && !odv->base_proc_symtree->n.sym->attr.use_assoc
 	      && strcmp (odv->base_proc_symtree->name,
 			 ns->proc_name->name))
 	    gfc_error ("The base name at %L does not match the name of the "
@@ -11418,7 +11424,12 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns)
       /* Ignore directives that do not apply to the current procedure.  */
       if ((odv->base_proc_symtree == NULL && search_ns != ns)
 	  || (odv->base_proc_symtree != NULL
-	      && strcmp (odv->base_proc_symtree->name, ns->proc_name->name)))
+	      && !ns->proc_name->attr.use_assoc
+	      && strcmp (odv->base_proc_symtree->name, ns->proc_name->name))
+	  || (odv->base_proc_symtree != NULL
+	      && ns->proc_name->attr.use_assoc
+	      && strcmp (odv->base_proc_symtree->n.sym->name,
+			 ns->proc_name->name)))
 	continue;
 
       tree set_selectors = gfc_trans_omp_set_selector (odv->set_selectors,

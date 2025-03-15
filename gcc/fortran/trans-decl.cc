@@ -2423,7 +2423,7 @@ module_sym:
 	  // We need DECL_ARGUMENTS to put attributes on, in case some arguments
 	  // need adjustment
 	  create_function_arglist (sym->formal_ns->proc_name);
-	  gfc_trans_omp_declare_variant (sym->formal_ns);
+	  gfc_trans_omp_declare_variant (sym->formal_ns, sym->ns);
 	}
     }
 
@@ -3213,7 +3213,7 @@ gfc_create_function_decl (gfc_namespace * ns, bool global)
      be declared in a parent namespace, so this needs to be called even if
      there are no local directives.  */
   if (flag_openmp)
-    gfc_trans_omp_declare_variant (ns);
+    gfc_trans_omp_declare_variant (ns, NULL);
 }
 
 /* Return the decl used to hold the function return value.  If
