@@ -34,12 +34,12 @@
 //
 // We regret any confusion engendered.
 
+#include <glob.h>
+
 #include "cobol-system.h"
 #include "cbldiag.h"
 #include "util.h"
 #include "copybook.h"
-
-#include <glob.h>
 
 #define COUNT_OF(X) (sizeof(X) / sizeof(X[0]))
 
