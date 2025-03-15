@@ -87,13 +87,15 @@ PHOBOS_DSOURCES =
 
 else
 
-PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
-	std/algorithm/internal.d std/algorithm/iteration.d \
-	std/algorithm/mutation.d std/algorithm/package.d \
-	std/algorithm/searching.d std/algorithm/setops.d \
-	std/algorithm/sorting.d std/array.d std/ascii.d std/base64.d \
-	std/bigint.d std/bitmanip.d std/checkedint.d std/compiler.d \
-	std/complex.d std/concurrency.d std/container/array.d \
+PHOBOS_DSOURCES = etc/c/curl.d etc/c/odbc/odbc32.d etc/c/odbc/odbc64.d \
+	etc/c/odbc/package.d etc/c/odbc/sql.d etc/c/odbc/sqlext.d \
+	etc/c/odbc/sqltypes.d etc/c/odbc/sqlucode.d etc/c/sqlite3.d \
+	etc/c/zlib.d std/algorithm/comparison.d std/algorithm/internal.d \
+	std/algorithm/iteration.d std/algorithm/mutation.d \
+	std/algorithm/package.d std/algorithm/searching.d \
+	std/algorithm/setops.d std/algorithm/sorting.d std/array.d std/ascii.d \
+	std/base64.d std/bigint.d std/bitmanip.d std/checkedint.d \
+	std/compiler.d std/complex.d std/concurrency.d std/container/array.d \
 	std/container/binaryheap.d std/container/dlist.d \
 	std/container/package.d std/container/rbtree.d std/container/slist.d \
 	std/container/util.d std/conv.d std/csv.d std/datetime/date.d \

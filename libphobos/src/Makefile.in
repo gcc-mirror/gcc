@@ -148,7 +148,14 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@am__objects_1 = etc/c/curl.lo \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	etc/c/zlib.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	etc/c/odbc/odbc32.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	etc/c/odbc/odbc64.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	etc/c/odbc/package.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	etc/c/odbc/sql.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	etc/c/odbc/sqlext.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	etc/c/odbc/sqltypes.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	etc/c/odbc/sqlucode.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	etc/c/sqlite3.lo etc/c/zlib.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/comparison.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/internal.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/iteration.lo \
@@ -548,13 +555,15 @@ libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(GDC) $(AM_CFLAGS) $(CFLAGS) \
 	$(libgphobos_la_LDFLAGS) $(LDFLAGS) -o $@
 
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@PHOBOS_DSOURCES = etc/c/curl.d etc/c/zlib.d std/algorithm/comparison.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/internal.d std/algorithm/iteration.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/mutation.d std/algorithm/package.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/searching.d std/algorithm/setops.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/sorting.d std/array.d std/ascii.d std/base64.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/bigint.d std/bitmanip.d std/checkedint.d std/compiler.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/complex.d std/concurrency.d std/container/array.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@PHOBOS_DSOURCES = etc/c/curl.d etc/c/odbc/odbc32.d etc/c/odbc/odbc64.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	etc/c/odbc/package.d etc/c/odbc/sql.d etc/c/odbc/sqlext.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	etc/c/odbc/sqltypes.d etc/c/odbc/sqlucode.d etc/c/sqlite3.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	etc/c/zlib.d std/algorithm/comparison.d std/algorithm/internal.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/iteration.d std/algorithm/mutation.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/package.d std/algorithm/searching.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/algorithm/setops.d std/algorithm/sorting.d std/array.d std/ascii.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/base64.d std/bigint.d std/bitmanip.d std/checkedint.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/compiler.d std/complex.d std/concurrency.d std/container/array.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/binaryheap.d std/container/dlist.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/package.d std/container/rbtree.d std/container/slist.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/container/util.d std/conv.d std/csv.d std/datetime/date.d \
@@ -703,6 +712,17 @@ etc/c/$(am__dirstamp):
 	@$(MKDIR_P) etc/c
 	@: > etc/c/$(am__dirstamp)
 etc/c/curl.lo: etc/c/$(am__dirstamp)
+etc/c/odbc/$(am__dirstamp):
+	@$(MKDIR_P) etc/c/odbc
+	@: > etc/c/odbc/$(am__dirstamp)
+etc/c/odbc/odbc32.lo: etc/c/odbc/$(am__dirstamp)
+etc/c/odbc/odbc64.lo: etc/c/odbc/$(am__dirstamp)
+etc/c/odbc/package.lo: etc/c/odbc/$(am__dirstamp)
+etc/c/odbc/sql.lo: etc/c/odbc/$(am__dirstamp)
+etc/c/odbc/sqlext.lo: etc/c/odbc/$(am__dirstamp)
+etc/c/odbc/sqltypes.lo: etc/c/odbc/$(am__dirstamp)
+etc/c/odbc/sqlucode.lo: etc/c/odbc/$(am__dirstamp)
+etc/c/sqlite3.lo: etc/c/$(am__dirstamp)
 etc/c/zlib.lo: etc/c/$(am__dirstamp)
 std/algorithm/$(am__dirstamp):
 	@$(MKDIR_P) std/algorithm
@@ -974,6 +994,8 @@ mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f etc/c/*.$(OBJEXT)
 	-rm -f etc/c/*.lo
+	-rm -f etc/c/odbc/*.$(OBJEXT)
+	-rm -f etc/c/odbc/*.lo
 	-rm -f std/*.$(OBJEXT)
 	-rm -f std/*.lo
 	-rm -f std/algorithm/*.$(OBJEXT)
@@ -1030,6 +1052,7 @@ mostlyclean-libtool:
 clean-libtool:
 	-rm -rf .libs _libs
 	-rm -rf etc/c/.libs etc/c/_libs
+	-rm -rf etc/c/odbc/.libs etc/c/odbc/_libs
 	-rm -rf std/.libs std/_libs
 	-rm -rf std/algorithm/.libs std/algorithm/_libs
 	-rm -rf std/container/.libs std/container/_libs
@@ -1160,6 +1183,7 @@ distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
 	-rm -f etc/c/$(am__dirstamp)
+	-rm -f etc/c/odbc/$(am__dirstamp)
 	-rm -f std/$(am__dirstamp)
 	-rm -f std/algorithm/$(am__dirstamp)
 	-rm -f std/container/$(am__dirstamp)
