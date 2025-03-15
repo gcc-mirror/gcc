@@ -1960,6 +1960,12 @@
 #endif
 
 
+/* Define to 1 if you have the `memrchr' function. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_MEMRCHR
+#endif
+
+
 /* Define to 1 if you have the `mmap' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_MMAP

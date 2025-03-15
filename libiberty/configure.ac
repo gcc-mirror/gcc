@@ -370,6 +370,7 @@ funcs="$funcs gettimeofday"
 funcs="$funcs index"
 funcs="$funcs insque"
 funcs="$funcs memchr"
+funcs="$funcs memrchr"
 funcs="$funcs memcmp"
 funcs="$funcs memcpy"
 funcs="$funcs memmem"
@@ -436,7 +437,7 @@ if test "x" = "y"; then
     ffs __fsetlocking \
     getcwd getpagesize getrlimit getrusage getsysinfo gettimeofday \
     index insque \
-    memchr memcmp memcpy memmem memmove memset mkstemps \
+    memchr memrchr memcmp memcpy memmem memmove memset mkstemps \
     on_exit \
     pipe2 posix_spawn posix_spawnp psignal \
     pstat_getdynamic pstat_getstatic putenv \
@@ -555,7 +556,7 @@ if test -n "${with_target_subdir}"; then
 
     for f in atexit basename bcmp bcopy bsearch bzero calloc clock ffs \
              getcwd getpagesize getrusage gettimeofday \
-             index insque memchr memcmp memcpy memmove memset psignal \
+             index insque memchr memrchr memcmp memcpy memmove memset psignal \
              putenv random rename rindex sbrk setenv stpcpy strcasecmp \
              strchr strdup strerror strncasecmp strrchr strstr strtod \
              strtol strtoul sysconf times tmpnam vfprintf vprintf \

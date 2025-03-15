@@ -139,8 +139,8 @@ CFILES = alloca.c argv.c asprintf.c atexit.c				\
 	ldirname.c							\
 	lrealpath.c							\
 	make-relative-prefix.c						\
-	make-temp-file.c md5.c memchr.c memcmp.c memcpy.c memmem.c	\
-	 memmove.c mempcpy.c memset.c mkstemps.c			\
+	make-temp-file.c md5.c memchr.c memrchr.c memcmp.c memcpy.c     \
+	memmem.c memmove.c mempcpy.c memset.c mkstemps.c		\
 	objalloc.c obstack.c						\
 	partition.c pexecute.c						\
 	 pex-common.c pex-djgpp.c pex-msdos.c pex-one.c			\
@@ -213,8 +213,8 @@ CONFIGURED_OFILES = ./asprintf.$(objext) ./atexit.$(objext)		\
 	./getcwd.$(objext) ./getpagesize.$(objext)			\
 	 ./gettimeofday.$(objext)					\
 	./index.$(objext) ./insque.$(objext)				\
-	./memchr.$(objext) ./memcmp.$(objext) ./memcpy.$(objext) 	\
-	./memmem.$(objext) ./memmove.$(objext)				\
+	./memchr.$(objext) ./memrchr.$(objext) ./memcmp.$(objext) 	\
+	./memcpy.$(objext) ./memmem.$(objext) ./memmove.$(objext)	\
 	 ./mempcpy.$(objext) ./memset.$(objext) ./mkstemps.$(objext)	\
 	./pex-djgpp.$(objext) ./pex-msdos.$(objext)			\
 	 ./pex-unix.$(objext) ./pex-win32.$(objext)			\
@@ -1024,6 +1024,15 @@ $(CONFIGURED_OFILES): stamp-picdir stamp-noasandir
 	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/memchr.c -o noasan/$@; \
 	else true; fi
 	$(COMPILE.c) $(srcdir)/memchr.c $(OUTPUT_OPTION)
+
+./memrchr.$(objext): $(srcdir)/memrchr.c $(INCDIR)/ansidecl.h
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(srcdir)/memrchr.c -o pic/$@; \
+	else true; fi
+	if [ x"$(NOASANFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $(NOASANFLAG) $(srcdir)/memrchr.c -o noasan/$@; \
+	else true; fi
+	$(COMPILE.c) $(srcdir)/memrchr.c $(OUTPUT_OPTION)
 
 ./memcmp.$(objext): $(srcdir)/memcmp.c $(INCDIR)/ansidecl.h
 	if [ x"$(PICFLAG)" != x ]; then \
