@@ -72,6 +72,25 @@ extern int yyparse(void);
 
 extern int demonstration_administrator(int N);
 
+#if !defined (HAVE_GET_CURRENT_DIR_NAME)
+/* Posix platforms might not have get_current_dir_name but should have
+   getcwd() and PATH_MAX.  */
+#if __has_include (<limits.h>)
+# include <limits.h>
+#endif
+/* The Hurd doesn't define PATH_MAX.  */
+#if !defined (PATH_MAX) && defined(__GNU__)
+# define PATH_MAX 4096
+#endif
+static inline char *
+get_current_dir_name ()
+{
+  /* Use libiberty's allocator here.  */
+  char *buf = (char *) xmalloc (PATH_MAX);
+  return getcwd (buf, PATH_MAX);
+}
+#endif
+
 const char *
 symbol_type_str( enum symbol_type_t type )
 {
