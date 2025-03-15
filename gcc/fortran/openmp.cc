@@ -6535,7 +6535,8 @@ gfc_match_omp_context_selector (gfc_omp_set_selector *oss,
 		  {
 		    /* FIXME: The "requires" selector was added in OpenMP 5.1.
 		       Currently only the now-deprecated syntax
-		       from OpenMP 5.0 is supported.  */
+		       from OpenMP 5.0 is supported.
+		       TODO: When implementing, update modules.cc as well.  */
 		    sorry_at (gfc_get_location (&gfc_current_locus),
 			      "%<requires%> selector is not supported yet");
 		    return MATCH_ERROR;

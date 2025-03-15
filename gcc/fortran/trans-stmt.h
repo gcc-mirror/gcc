@@ -70,7 +70,7 @@ tree gfc_trans_deallocate (gfc_code *);
 /* trans-openmp.cc */
 tree gfc_trans_omp_directive (gfc_code *);
 void gfc_trans_omp_declare_simd (gfc_namespace *);
-void gfc_trans_omp_declare_variant (gfc_namespace *);
+void gfc_trans_omp_declare_variant (gfc_namespace *, gfc_namespace *);
 tree gfc_trans_omp_metadirective (gfc_code *code);
 tree gfc_trans_oacc_directive (gfc_code *);
 tree gfc_trans_oacc_declare (gfc_namespace *);
