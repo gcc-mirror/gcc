@@ -288,6 +288,10 @@ LIBGCOBOL_VERSION = @LIBGCOBOL_VERSION@
 LIBICONV = @LIBICONV@
 LIBM = @LIBM@
 LIBOBJS = @LIBOBJS@
+LIBQUADINCLUDE = @LIBQUADINCLUDE@
+LIBQUADLIB = @LIBQUADLIB@
+LIBQUADLIB_DEP = @LIBQUADLIB_DEP@
+LIBQUADSPEC = @LIBQUADSPEC@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
@@ -317,6 +321,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 SPEC_LIBGCOBOL_DEPS = @SPEC_LIBGCOBOL_DEPS@
 STRIP = @STRIP@
+USE_IEC_60559 = @USE_IEC_60559@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -402,7 +407,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@	valconv.cc
 
 @BUILD_LIBGCOBOL_TRUE@WARN_CFLAGS = -W -Wall -Wwrite-strings
-@BUILD_LIBGCOBOL_TRUE@AM_CPPFLAGS = -I. -I$(srcdir)
+@BUILD_LIBGCOBOL_TRUE@AM_CPPFLAGS = -I. -I$(srcdir) $(LIBQUADINCLUDE)
 @BUILD_LIBGCOBOL_TRUE@AM_CFLAGS = $(XCFLAGS)
 @BUILD_LIBGCOBOL_TRUE@AM_CXXFLAGS = $(XCFLAGS) $(WARN_CFLAGS) \
 @BUILD_LIBGCOBOL_TRUE@	-DIN_TARGET_LIBS -fno-strict-aliasing
@@ -410,11 +415,10 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 # We want to link with the c++ runtime.
 @BUILD_LIBGCOBOL_TRUE@libgcobol_la_LINK = $(CXXLINK) $(libgcobol_la_LDFLAGS)
 @BUILD_LIBGCOBOL_TRUE@version_arg = -version-info $(LIBGCOBOL_VERSION)
-@BUILD_LIBGCOBOL_TRUE@libgcobol_la_LDFLAGS = $(LTLDFLAGS) $(LTLIBICONV) \
-@BUILD_LIBGCOBOL_TRUE@	$(extra_ldflags_libgcobol) $(LIBS) \
-@BUILD_LIBGCOBOL_TRUE@	$(version_arg)
+@BUILD_LIBGCOBOL_TRUE@libgcobol_la_LDFLAGS = $(LTLDFLAGS) $(LIBQUADLIB) $(LTLIBICONV) \
+@BUILD_LIBGCOBOL_TRUE@	$(extra_ldflags_libgcobol) $(LIBS) $(version_arg)
 
-@BUILD_LIBGCOBOL_TRUE@libgcobol_la_DEPENDENCIES = libgcobol.spec
+@BUILD_LIBGCOBOL_TRUE@libgcobol_la_DEPENDENCIES = libgcobol.spec $(LIBQUADLIB_DEP)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

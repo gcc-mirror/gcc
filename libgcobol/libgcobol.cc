@@ -50,6 +50,7 @@
 #include <sys/resource.h>
 
 #include "config.h"
+#include "libgcobol-fp.h"
 
 #include "ec.h"
 #include "common-defs.h"
@@ -89,6 +90,20 @@ strfromf64 (char *s, size_t n, const char *f, double v)
 }
 # else
 #  error "It looks like double on this platform is not IEEE754"
+# endif
+#endif
+
+#if !defined (HAVE_STRFROMF128)
+# if !USE_QUADMATH
+#  error "no available float 128 to string"
+# endif
+#endif
+
+#if !defined (HAVE_STRTOF128)
+# if USE_QUADMATH
+#  define strtof128 strtoflt128
+# else
+#  error "no available string to float 128"
 # endif
 #endif
 
@@ -881,10 +896,12 @@ int128_to_int128_rounded( cbl_round_t rounded,
                           int        *compute_error)
   {
   // value is signed, and is scaled to the target
-  _Float128 fpart = _Float128(remainder) / _Float128(factor);
+  GCOB_FP128 fpart = ((GCOB_FP128)remainder) / ((GCOB_FP128)factor);
   __int128 retval = value;
 
-  if(rounded == nearest_even_e && fpart != -0.5Q && fpart != 0.5Q )
+  if(rounded == nearest_even_e
+     && fpart != GCOB_FP128_LITERAL (-0.5)
+     && fpart != GCOB_FP128_LITERAL (0.5))
     {
     // "bankers rounding" has been requested.
     //
@@ -905,14 +922,14 @@ int128_to_int128_rounded( cbl_round_t rounded,
       // 0.5 through 0.9 becomes 1
       if( value < 0 )
         {
-        if( fpart <= -0.5Q )
+        if( fpart <= GCOB_FP128_LITERAL(-0.5) )
           {
           retval -= 1;
           }
         }
       else
         {
-        if( fpart >= 0.5Q )
+        if( fpart >= GCOB_FP128_LITERAL(0.5) )
           {
           retval += 1;
           }
@@ -946,14 +963,14 @@ int128_to_int128_rounded( cbl_round_t rounded,
       // 0.6 through 0.9 becomes 1
       if( value < 0 )
         {
-        if( fpart < -0.5Q )
+        if( fpart < GCOB_FP128_LITERAL(-0.5) )
           {
           retval -= 1;
           }
         }
       else
         {
-        if( fpart > 0.5Q )
+        if( fpart > GCOB_FP128_LITERAL(0.5) )
           {
           retval += 1;
           }
@@ -1035,15 +1052,17 @@ int128_to_int128_rounded( cbl_round_t rounded,
 
 static __int128
 f128_to_i128_rounded( cbl_round_t rounded,
-                    _Float128   value,
+                    GCOB_FP128   value,
                     int        *compute_error)
   {
   // value is signed, and is scaled to the target
-  _Float128 ipart;
-  _Float128 fpart = modff128(value, &ipart);
+  GCOB_FP128 ipart;
+  GCOB_FP128 fpart = FP128_FUNC(modf)(value, &ipart);
   __int128 retval = (__int128)ipart;
 
-  if(rounded == nearest_even_e &&  fpart != -0.5Q && fpart != 0.5Q )
+  if(rounded == nearest_even_e
+     && fpart != GCOB_FP128_LITERAL (-0.5)
+     && fpart != GCOB_FP128_LITERAL (0.5))
     {
     // "bankers rounding" has been requested.
     //
@@ -1064,14 +1083,14 @@ f128_to_i128_rounded( cbl_round_t rounded,
       // 0.5 through 0.9 becomes 1
       if( value < 0 )
         {
-        if( fpart <= -0.5Q )
+        if( fpart <= GCOB_FP128_LITERAL (-0.5) )
           {
           retval -= 1;
           }
         }
       else
         {
-        if( fpart >= 0.5Q )
+        if( fpart >= GCOB_FP128_LITERAL (0.5) )
           {
           retval += 1;
           }
@@ -1105,14 +1124,14 @@ f128_to_i128_rounded( cbl_round_t rounded,
       // 0.6 through 0.9 becomes 1
       if( value < 0 )
         {
-        if( fpart < -0.5Q )
+        if( fpart < GCOB_FP128_LITERAL (-0.5) )
           {
           retval -= 1;
           }
         }
       else
         {
-        if( fpart > 0.5Q )
+        if( fpart > GCOB_FP128_LITERAL (0.5) )
           {
           retval += 1;
           }
@@ -1276,8 +1295,8 @@ int128_to_field(cblc_field_t   *var,
             {
             value = -value;
             }
-          _Float128 tvalue = (_Float128 )value;
-          tvalue /= (_Float128 )__gg__power_of_ten(source_rdigits);
+          GCOB_FP128 tvalue = (GCOB_FP128 )value;
+          tvalue /= (GCOB_FP128 )__gg__power_of_ten(source_rdigits);
           // *(_Float128  *)location = tvalue;
           // memcpy because *(_Float128  *) requires a 16-byte boundary.
           memcpy(location, &tvalue, 16);
@@ -2573,7 +2592,7 @@ __gg__dirty_to_binary_internal( const char *dirty,
   }
 
 extern "C"
-_Float128
+GCOB_FP128
 __gg__dirty_to_float( const char *dirty,
                       int length)
   {
@@ -2589,7 +2608,7 @@ __gg__dirty_to_float( const char *dirty,
 
   // It also can handle 12345E-2 notation.
 
-  _Float128 retval = 0;
+  GCOB_FP128 retval = 0;
 
   int rdigits = 0;
   int hyphen  = 0;
@@ -3244,9 +3263,13 @@ format_for_display_internal(char **dest,
           // We can't use *(_Float64 *)actual_location;
           // That uses the SSE registers, which won't work if the source isn't
           // on a 16-bit boundary.
-          _Float128 floatval;
+          GCOB_FP128 floatval;
           memcpy(&floatval, actual_location, 16);
+#if !defined (HAVE_STRFROMF128) && USE_QUADMATH
+          quadmath_snprintf(ach, sizeof(ach), "%.36QE", floatval);
+#else
           strfromf128(ach, sizeof(ach), "%.36E", floatval);
+#endif
           char *p = strchr(ach, 'E');
           if( !p )
             {
@@ -3268,8 +3291,13 @@ format_for_display_internal(char **dest,
 
               int precision = 36 - exp;
               char achFormat[24];
+#if !defined (HAVE_STRFROMF128) && USE_QUADMATH
+              sprintf(achFormat, "%%.%dQf", precision);
+              quadmath_snprintf(ach, sizeof(ach), achFormat, floatval);
+#else
               sprintf(achFormat, "%%.%df", precision);
               strfromf128(ach, sizeof(ach), achFormat, floatval);
+#endif
               }
             __gg__remove_trailing_zeroes(ach);
             __gg__realloc_if_necessary(dest, dest_size, strlen(ach)+1);
@@ -3481,11 +3509,11 @@ compare_88( const char    *list,
   return cmpval;
   }
 
-static _Float128
+static GCOB_FP128
 get_float128( cblc_field_t *field,
               unsigned char *location )
   {
-  _Float128 retval=0;
+  GCOB_FP128 retval=0;
   if(field->type == FldFloat )
     {
     switch( field->capacity )
@@ -3710,7 +3738,7 @@ compare_field_class(cblc_field_t  *conditional,
 
     case FldFloat:
       {
-      _Float128 value = get_float128(conditional, conditional_location) ;
+      GCOB_FP128 value = get_float128(conditional, conditional_location) ;
       char *walker = list->initial;
       while(*walker)
         {
@@ -3734,7 +3762,7 @@ compare_field_class(cblc_field_t  *conditional,
 
         walker = right + right_len;
 
-        _Float128 left_value;
+        GCOB_FP128 left_value;
         if( left_flag == 'F' && left[0] == 'Z' )
           {
           left_value = 0;
@@ -3745,7 +3773,7 @@ compare_field_class(cblc_field_t  *conditional,
                                             left_len);
           }
 
-        _Float128 right_value;
+        GCOB_FP128 right_value;
         if( right_flag == 'F' && right[0] == 'Z' )
           {
           right_value = 0;
@@ -4100,7 +4128,7 @@ __gg__compare_2(cblc_field_t *left_side,
 
           case FldFloat:
             {
-            _Float128 value = __gg__float128_from_location(left_side,
+            GCOB_FP128 value = __gg__float128_from_location(left_side,
                                                            left_location);
             retval = 0;
             retval = value < 0 ? -1 : retval;
@@ -4157,8 +4185,8 @@ __gg__compare_2(cblc_field_t *left_side,
       if( left_side->type == FldFloat && right_side->type == FldFloat )
         {
         // One or the other of the numerics is a FldFloat
-        _Float128 left_value  = __gg__float128_from_location(left_side,  left_location);
-        _Float128 right_value = __gg__float128_from_location(right_side, right_location);
+        GCOB_FP128 left_value  = __gg__float128_from_location(left_side,  left_location);
+        GCOB_FP128 right_value = __gg__float128_from_location(right_side, right_location);
         retval = 0;
         retval = left_value < right_value ? -1 : retval;
         retval = left_value > right_value ?  1 : retval;
@@ -4170,8 +4198,8 @@ __gg__compare_2(cblc_field_t *left_side,
         {
         // The left side is a FldFloat; the other is another type of numeric:
         int rdecimals;
-        _Float128 left_value;
-        _Float128 right_value;
+        GCOB_FP128 left_value;
+        GCOB_FP128 right_value;
 
         if( right_side->type == FldLiteralN)
           {
@@ -4203,7 +4231,7 @@ __gg__compare_2(cblc_field_t *left_side,
             case 4:
               {
               _Float32 left_value  = *(_Float32 *)left_location;
-              _Float32 right_value = strtof32(buffer, NULL);
+              _Float32 right_value = strtof(buffer, NULL);
               retval = 0;
               retval = left_value < right_value ? -1 : retval;
               retval = left_value > right_value ?  1 : retval;
@@ -4212,7 +4240,7 @@ __gg__compare_2(cblc_field_t *left_side,
             case 8:
               {
               _Float64 left_value  = *(_Float64 *)left_location;
-              _Float64 right_value = strtof64(buffer, NULL);
+              _Float64 right_value = strtod(buffer, NULL);
               retval = 0;
               retval = left_value < right_value ? -1 : retval;
               retval = left_value > right_value ?  1 : retval;
@@ -4221,9 +4249,9 @@ __gg__compare_2(cblc_field_t *left_side,
             case 16:
               {
               //_Float128 left_value  = *(_Float128 *)left_location;
-              _Float128 left_value;
+              GCOB_FP128 left_value;
               memcpy(&left_value, left_location, 16);
-              _Float128 right_value = strtof128(buffer, NULL);
+              GCOB_FP128 right_value = strtof128(buffer, NULL);
               retval = 0;
               retval = left_value < right_value ? -1 : retval;
               retval = left_value > right_value ?  1 : retval;
@@ -5725,7 +5753,7 @@ __gg__move( cblc_field_t        *fdest,
               case 16:
                 {
                 //_Float128 val = *(_Float128 *)(fsource->data+source_offset);
-                _Float128 val;
+                GCOB_FP128 val;
                 memcpy(&val, fsource->data+source_offset, 16);
                 if(val < 0)
                   {
@@ -5813,7 +5841,7 @@ __gg__move( cblc_field_t        *fdest,
             // We are converted a floating-point value fixed-point
 
             rdigits = get_scaled_rdigits(fdest);
-            _Float128 value=0;
+            GCOB_FP128 value=0;
             switch(fsource->capacity)
               {
               case 4:
@@ -5963,18 +5991,18 @@ __gg__move( cblc_field_t        *fdest,
               {
               case 4:
                 {
-                *(float *)(fdest->data+dest_offset) = strtof32(ach, NULL);
+                *(float *)(fdest->data+dest_offset) = strtof(ach, NULL);
                 break;
                 }
               case 8:
                 {
-                *(double *)(fdest->data+dest_offset) = strtof64(ach, NULL);
+                *(double *)(fdest->data+dest_offset) = strtod(ach, NULL);
                 break;
                 }
               case 16:
                 {
                 //*(_Float128 *)(fdest->data+dest_offset) = strtof128(ach, NULL);
-                _Float128 t = strtof128(ach, NULL);
+                GCOB_FP128 t = strtof128(ach, NULL);
                 memcpy(fdest->data+dest_offset, &t, 16);
                 break;
                 }
@@ -6133,17 +6161,17 @@ __gg__move_literala(cblc_field_t *field,
         {
         case 4:
           {
-          *(float *)(field->data+field_offset) = strtof32(ach, NULL);
+          *(float *)(field->data+field_offset) = strtof(ach, NULL);
           break;
           }
         case 8:
           {
-          *(double *)(field->data+field_offset) = strtof64(ach, NULL);
+          *(double *)(field->data+field_offset) = strtod(ach, NULL);
           break;
           }
         case 16:
           {
-          _Float128 t = strtof128(ach, NULL);
+          GCOB_FP128 t = strtof128(ach, NULL);
           memcpy(field->data+field_offset, &t, 16);
           break;
           }
@@ -9127,10 +9155,10 @@ __gg__binary_value_from_qualified_field(int          *rdigits,
   }
 
 extern "C"
-_Float128
+GCOB_FP128
 __gg__float128_from_field( cblc_field_t *field )
   {
-  _Float128 retval=0;
+  GCOB_FP128 retval=0;
   if( field->type == FldFloat || field->type == FldLiteralN )
     {
     retval = get_float128(field, field->data);
@@ -9138,20 +9166,20 @@ __gg__float128_from_field( cblc_field_t *field )
   else
     {
     int rdigits;
-    retval = (_Float128)__gg__binary_value_from_field(&rdigits, field);
+    retval = (GCOB_FP128)__gg__binary_value_from_field(&rdigits, field);
     if( rdigits )
       {
-      retval /= (_Float128)__gg__power_of_ten(rdigits);
+      retval /= (GCOB_FP128)__gg__power_of_ten(rdigits);
       }
     }
   return retval;
   }
 
 extern "C"
-_Float128
+GCOB_FP128
 __gg__float128_from_qualified_field( cblc_field_t *field, size_t offset, size_t size)
   {
-  _Float128 retval=0;
+  GCOB_FP128 retval=0;
   if( field->type == FldFloat || field->type == FldLiteralN )
     {
     retval = get_float128(field, field->data+offset);
@@ -9159,10 +9187,10 @@ __gg__float128_from_qualified_field( cblc_field_t *field, size_t offset, size_t 
   else
     {
     int rdigits;
-    retval = (_Float128)__gg__binary_value_from_qualified_field(&rdigits, field, offset, size);
+    retval = (GCOB_FP128)__gg__binary_value_from_qualified_field(&rdigits, field, offset, size);
     if( rdigits )
       {
-      retval /= (_Float128)__gg__power_of_ten(rdigits);
+      retval /= (GCOB_FP128)__gg__power_of_ten(rdigits);
       }
     }
   return retval;
@@ -9228,7 +9256,7 @@ __gg__int128_to_qualified_field(cblc_field_t   *tgt,
 static __int128
 float128_to_int128( int          *rdigits,
                     cblc_field_t *field,
-                    _Float128     value,
+                    GCOB_FP128     value,
                     cbl_round_t   rounded,
                     int          *compute_error)
   {
@@ -9253,7 +9281,7 @@ float128_to_int128( int          *rdigits,
       // get away with.
 
       // Calculate the number of digits to the left of the decimal point:
-      int digits = (int)(floorf128(logf128(fabsf128(value)))+1);
+      int digits = (int)(FP128_FUNC(floor)(FP128_FUNC(log)(FP128_FUNC(fabs)(value)))+1);
 
       // Make sure it is not a negative number
       digits = std::max(0, digits);
@@ -9270,12 +9298,12 @@ float128_to_int128( int          *rdigits,
     // We now multiply our value by 10**rdigits, in order to make the
     // floating-point value have the same magnitude as our target __int128
 
-    value *= powf128(10.0Q, (_Float128)(*rdigits));
+    value *= FP128_FUNC(pow)(GCOB_FP128_LITERAL (10.0), (GCOB_FP128)(*rdigits));
 
     // We are ready to cast value to an __int128.  But this value could be
     // too large to fit, which is an error condition we want to flag:
 
-    if( fabsf128(value) >= 1.0E38Q )
+    if( FP128_FUNC(fabs)(value) >= GCOB_FP128_LITERAL (1.0E38) )
       {
       *compute_error = compute_error_overflow;
       }
@@ -9292,7 +9320,7 @@ static void
 float128_to_location( cblc_field_t   *tgt,
                       unsigned char  *data,
                       size_t          size,
-                      _Float128       value,
+                      GCOB_FP128       value,
                       enum cbl_round_t  rounded,
                       int            *compute_error)
   {
@@ -9303,8 +9331,8 @@ float128_to_location( cblc_field_t   *tgt,
       switch(tgt->capacity)
         {
         case 4:
-          if(    fabsf128(value) == (_Float128)INFINITY
-              || fabsf128(value) > 3.4028235E38Q )
+          if(    FP128_FUNC(fabs)(value) == (GCOB_FP128)INFINITY
+              || FP128_FUNC(fabs)(value) > GCOB_FP128_LITERAL (3.4028235E38) )
             {
             if( compute_error )
               {
@@ -9326,8 +9354,8 @@ float128_to_location( cblc_field_t   *tgt,
           break;
 
         case 8:
-          if(    fabsf128(value) == (_Float128)INFINITY
-              || fabsf128(value) > 1.7976931348623157E308Q )
+          if(    FP128_FUNC(fabs)(value) == (GCOB_FP128)INFINITY
+              || FP128_FUNC(fabs)(value) > GCOB_FP128_LITERAL (1.7976931348623157E308) )
             {
             if( compute_error )
               {
@@ -9349,7 +9377,7 @@ float128_to_location( cblc_field_t   *tgt,
           break;
 
         case 16:
-          if( fabsf128(value) == (_Float128)INFINITY )
+          if( FP128_FUNC(fabs)(value) == (GCOB_FP128)INFINITY )
             {
             if( compute_error )
               {
@@ -9378,7 +9406,7 @@ float128_to_location( cblc_field_t   *tgt,
           digits = tgt->digits;
           }
 
-        _Float128 maximum;
+        GCOB_FP128 maximum;
 
         if( digits )
           {
@@ -9387,7 +9415,7 @@ float128_to_location( cblc_field_t   *tgt,
 
         // When digits is zero, this is a binary value without a PICTURE string.
         // we don't truncate in that case
-        if( digits && fabsf128(value) >= maximum )
+        if( digits && FP128_FUNC(fabs)(value) >= maximum )
           {
           *compute_error |= compute_error_truncate;
           }
@@ -9415,7 +9443,7 @@ float128_to_location( cblc_field_t   *tgt,
 extern "C"
 void
 __gg__float128_to_field(cblc_field_t   *tgt,
-                        _Float128       value,
+                        GCOB_FP128       value,
                         enum cbl_round_t  rounded,
                         int            *compute_error)
   {
@@ -9431,7 +9459,7 @@ extern "C"
 void
 __gg__float128_to_qualified_field(cblc_field_t   *tgt,
                                   size_t          tgt_offset,
-                                  _Float128       value,
+                                  GCOB_FP128       value,
                                   enum cbl_round_t  rounded,
                                   int            *compute_error)
   {
@@ -10409,7 +10437,7 @@ __gg__fetch_call_by_value_value(cblc_field_t *field,
 
         case 16:
           // *(_Float128 *)(&retval) = double(*(_Float128 *)data);
-          _Float128 t;
+          GCOB_FP128 t;
           memcpy(&t, data, 16);
           memcpy(&retval, &t, 16);
           break;
@@ -10470,7 +10498,7 @@ __gg__assign_value_from_stack(cblc_field_t *dest, __int128 parameter)
 
         case 16:
           // *(_Float128 *)(dest->data) = *(_Float128 *)&parameter;
-          _Float128 t;
+          GCOB_FP128 t;
           memcpy(&t, &parameter, 16);
           memcpy(dest->data, &t, 16);
           break;
@@ -11306,10 +11334,10 @@ __gg__pseudo_return_flush()
   }
 
 extern "C"
-_Float128
+GCOB_FP128
 __gg__float128_from_location(cblc_field_t *var, unsigned char *location)
   {
-  _Float128 retval = 0;
+  GCOB_FP128 retval = 0;
   switch( var->capacity )
     {
     case 4:
@@ -11338,9 +11366,9 @@ extern "C"
 __int128
 __gg__integer_from_float128(cblc_field_t *field)
   {
-  _Float128 fvalue = __gg__float128_from_location(field, field->data);
+  GCOB_FP128 fvalue = __gg__float128_from_location(field, field->data);
   // we round() to take care of the possible 2.99999999999... problem.
-  fvalue = roundf128(fvalue);
+  fvalue = FP128_FUNC(round)(fvalue);
   return (__int128)fvalue;
   }
 
@@ -11566,13 +11594,13 @@ __gg__float32_from_int128(cblc_field_t *destination,
                           int *size_error)
   {
   int rdigits;
-  _Float128 value = get_binary_value_local( &rdigits,
+  GCOB_FP128 value = get_binary_value_local( &rdigits,
                                             source,
                                             source->data + source_offset,
                                             source->capacity);
   value /= __gg__power_of_ten(rdigits);
 
-  if( fabsf128(value) > 3.4028235E38Q )
+  if( FP128_FUNC(fabs)(value) > GCOB_FP128_LITERAL (3.4028235E38) )
     {
     if(size_error)
       {
@@ -11607,7 +11635,7 @@ __gg__float64_from_int128(cblc_field_t *destination,
     *size_error = 0;
     }
   int rdigits;
-  _Float128 value = get_binary_value_local( &rdigits,
+  GCOB_FP128 value = get_binary_value_local( &rdigits,
                                             source,
                                             source->data + source_offset,
                                             source->capacity);
@@ -11630,7 +11658,7 @@ __gg__float128_from_int128(cblc_field_t *destination,
   {
   if(size_error) *size_error = 0;
   int rdigits;
-  _Float128 value = get_binary_value_local( &rdigits,
+  GCOB_FP128 value = get_binary_value_local( &rdigits,
                                             source,
                                             source->data + source_offset,
                                             source->capacity);
@@ -11657,7 +11685,7 @@ __gg__is_float_infinite(cblc_field_t *source, size_t offset)
       break;
     case 16:
       // retval = *(_Float128*)(source->data+offset) == INFINITY;
-      _Float128 t;
+      GCOB_FP128 t;
       memcpy(&t, source->data+offset, 16);
       retval = t == INFINITY;
       break;
@@ -11674,9 +11702,9 @@ __gg__float32_from_128( cblc_field_t *dest,
   {
   int retval = 0;
   //_Float128 value = *(_Float128*)(source->data+source_offset);
-  _Float128 value;
+  GCOB_FP128 value;
   memcpy(&value, source->data+source_offset, 16);
-  if( fabsf128(value) > 3.4028235E38Q )
+  if( FP128_FUNC(fabs)(value) > GCOB_FP128_LITERAL (3.4028235E38) )
     {
     retval = 1;
     }
@@ -11696,7 +11724,7 @@ __gg__float32_from_64(  cblc_field_t *dest,
   {
   int retval = 0;
   _Float64 value = *(_Float64*)(source->data+source_offset);
-  if( fabsf128(value) > 3.4028235E38Q )
+  if( FP128_FUNC(fabs)(value) > GCOB_FP128_LITERAL (3.4028235E38) )
     {
     retval = 1;
     }
@@ -11716,9 +11744,9 @@ __gg__float64_from_128( cblc_field_t *dest,
   {
   int retval = 0;
   // _Float128 value = *(_Float128*)(source->data+source_offset);
-  _Float128 value;
+  GCOB_FP128 value;
   memcpy(&value, source->data+source_offset, 16);
-  if( fabsf128(value) > 1.7976931348623157E308 )
+  if( FP128_FUNC(fabs)(value) > 1.7976931348623157E308 )
     {
     retval = 1;
     }

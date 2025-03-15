@@ -169,7 +169,6 @@ AM_CONDITIONAL(BUILD_LIBGCOBOL, [test "x$LIBGCOBOL_SUPPORTED" = xyes && test "x$
 # Check if functions are available in libc before adding extra libs.
 AC_SEARCH_LIBS([malloc], [c])
 AC_SEARCH_LIBS([clock_gettime], [c rt])
-AC_SEARCH_LIBS([cosf128], [c m])
 
 # libgcobol soname version
 LIBGCOBOL_VERSION=1:0:0
@@ -188,11 +187,49 @@ case $host in
 esac
 AC_SUBST(extra_ldflags_libgcobol)
 
+AC_CHECK_HEADERS_ONCE(floatingpoint.h ieeefp.h fenv.h fptrap.h \
+complex.h stdlib.h)
+
 # These are GLIBC
 AC_CHECK_FUNCS_ONCE(random_r srandom_r initstate_r setstate_r)
 
-# These are C23, and might not be available in libc.
+# Some functions we check to figure out if the libc Float128 support
+# is adequate.
+
+# These are C23.
 AC_CHECK_FUNCS_ONCE(strfromf32 strfromf64)
+
+# These are GLIBC.
+AC_CHECK_FUNCS_ONCE(strtof128 strfromf128)
+# We need to make sure to check libc before adding libm.
+libgcobol_have_sinf128=no
+AC_SEARCH_LIBS([sinf128], [c m], libgcobol_have_sinf128=yes)
+libgcobol_have_cacosf128=no
+AC_SEARCH_LIBS([cacosf128], [c m], libgcobol_have_cacosf128=yes)
+
+have_iec_60559_libc_support=no
+if test "x$ac_cv_func_strtof128$ac_cv_func_strfromf128" = xyesyes \
+   && test "x$libgcobol_have_sinf128$libgcobol_have_cacosf128" = xyesyes; then
+  have_iec_60559_libc_support=yes
+fi
+
+# Check whether libquadmath should be used
+AC_ARG_ENABLE(libquadmath,
+AS_HELP_STRING([--disable-libquadmath],
+  [disable libquadmath support for libgcobol]),
+ENABLE_LIBQUADMATH_SUPPORT=$enableval,
+if test "x$have_iec_60559_libc_support" = xyes; then
+  ENABLE_LIBQUADMATH_SUPPORT=default
+else
+  ENABLE_LIBQUADMATH_SUPPORT=yes
+fi)
+enable_libquadmath_support=
+if test "${ENABLE_LIBQUADMATH_SUPPORT}" = "no" ; then
+  enable_libquadmath_support=no
+elif test "${ENABLE_LIBQUADMATH_SUPPORT}" = "default" ; then
+  enable_libquadmath_support=default
+fi
+LIBGCOBOL_CHECK_FLOAT128
 
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"

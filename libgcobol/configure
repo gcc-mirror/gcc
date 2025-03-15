@@ -629,13 +629,21 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
+ac_header_list=
 ac_func_list=
+ac_cxx_werror_flag=
+ac_cxx_werror_flag=
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 SPEC_LIBGCOBOL_DEPS
 get_gcc_base_ver
+USE_IEC_60559
+LIBQUADINCLUDE
+LIBQUADLIB_DEP
+LIBQUADLIB
+LIBQUADSPEC
 extra_ldflags_libgcobol
 LIBGCOBOL_VERSION
 BUILD_LIBGCOBOL_FALSE
@@ -793,6 +801,7 @@ with_toolexeclibdir
 enable_rpath
 with_libiconv_prefix
 with_libiconv_type
+enable_libquadmath
 with_gcc_major_version_only
 '
       ac_precious_vars='build_alias
@@ -1445,6 +1454,7 @@ Optional Features:
                           install libraries with @rpath/library-name, requires
                           rpaths to be added to executables
   --disable-rpath         do not hardcode runtime library paths
+  --disable-libquadmath   disable libquadmath support for libgcobol
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -2339,6 +2349,37 @@ rm -f conftest.val
 
 } # ac_fn_cxx_compute_int
 
+# ac_fn_cxx_check_header_compile LINENO HEADER VAR INCLUDES
+# ---------------------------------------------------------
+# Tests whether HEADER exists and can be compiled using the include files in
+# INCLUDES, setting the cache variable VAR accordingly.
+ac_fn_cxx_check_header_compile ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
+$as_echo_n "checking for $2... " >&6; }
+if eval \${$3+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+#include <$2>
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  eval "$3=yes"
+else
+  eval "$3=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_cxx_check_header_compile
+
 # ac_fn_cxx_check_func LINENO FUNC VAR
 # ------------------------------------
 # Tests whether FUNC exists, setting the cache variable VAR accordingly
@@ -2692,12 +2733,20 @@ $as_echo "$as_me: creating cache $cache_file" >&6;}
   >$cache_file
 fi
 
+as_fn_append ac_header_list " floatingpoint.h"
+as_fn_append ac_header_list " ieeefp.h"
+as_fn_append ac_header_list " fenv.h"
+as_fn_append ac_header_list " fptrap.h"
+as_fn_append ac_header_list " complex.h"
+as_fn_append ac_header_list " stdlib.h"
 as_fn_append ac_func_list " random_r"
 as_fn_append ac_func_list " srandom_r"
 as_fn_append ac_func_list " initstate_r"
 as_fn_append ac_func_list " setstate_r"
 as_fn_append ac_func_list " strfromf32"
 as_fn_append ac_func_list " strfromf64"
+as_fn_append ac_func_list " strtof128"
+as_fn_append ac_func_list " strfromf128"
 # Check that the precious variables saved in the cache have kept the same
 # value.
 ac_cache_corrupted=false
@@ -11644,7 +11693,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11647 "configure"
+#line 11696 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11750,7 +11799,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11753 "configure"
+#line 11802 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16861,65 +16910,6 @@ if test "$ac_res" != no; then :
 
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing cosf128" >&5
-$as_echo_n "checking for library containing cosf128... " >&6; }
-if ${ac_cv_search_cosf128+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char cosf128 ();
-int
-main ()
-{
-return cosf128 ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' c m; do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-if ac_fn_cxx_try_link "$LINENO"; then :
-  ac_cv_search_cosf128=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext
-  if ${ac_cv_search_cosf128+:} false; then :
-  break
-fi
-done
-if ${ac_cv_search_cosf128+:} false; then :
-
-else
-  ac_cv_search_cosf128=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_cosf128" >&5
-$as_echo "$ac_cv_search_cosf128" >&6; }
-ac_res=$ac_cv_search_cosf128
-if test "$ac_res" != no; then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-fi
-
 
 # libgcobol soname version
 LIBGCOBOL_VERSION=1:0:0
@@ -16936,6 +16926,37 @@ case $host in
     extra_ldflags_libgcobol=-Wl,-U,___cobol_main ;;
   *) ;;
 esac
+
+
+
+
+
+  for ac_header in $ac_header_list
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_cxx_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default
+"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # These are GLIBC
@@ -16964,7 +16985,441 @@ done
 
 
 
-# These are C23, and might not be available in libc.
+# Some functions we check to figure out if the libc Float128 support
+# is adequate.
+
+# These are C23.
+
+
+
+
+
+
+# These are GLIBC.
+
+
+
+
+
+# We need to make sure to check libc before adding libm.
+libgcobol_have_sinf128=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing sinf128" >&5
+$as_echo_n "checking for library containing sinf128... " >&6; }
+if ${ac_cv_search_sinf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char sinf128 ();
+int
+main ()
+{
+return sinf128 ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' c m; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_sinf128=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_sinf128+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_sinf128+:} false; then :
+
+else
+  ac_cv_search_sinf128=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_sinf128" >&5
+$as_echo "$ac_cv_search_sinf128" >&6; }
+ac_res=$ac_cv_search_sinf128
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+  libgcobol_have_sinf128=yes
+fi
+
+libgcobol_have_cacosf128=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing cacosf128" >&5
+$as_echo_n "checking for library containing cacosf128... " >&6; }
+if ${ac_cv_search_cacosf128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char cacosf128 ();
+int
+main ()
+{
+return cacosf128 ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' c m; do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_search_cacosf128=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext
+  if ${ac_cv_search_cacosf128+:} false; then :
+  break
+fi
+done
+if ${ac_cv_search_cacosf128+:} false; then :
+
+else
+  ac_cv_search_cacosf128=no
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_cacosf128" >&5
+$as_echo "$ac_cv_search_cacosf128" >&6; }
+ac_res=$ac_cv_search_cacosf128
+if test "$ac_res" != no; then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+  libgcobol_have_cacosf128=yes
+fi
+
+
+have_iec_60559_libc_support=no
+if test "x$ac_cv_func_strtof128$ac_cv_func_strfromf128" = xyesyes \
+   && test "x$libgcobol_have_sinf128$libgcobol_have_cacosf128" = xyesyes; then
+  have_iec_60559_libc_support=yes
+fi
+
+# Check whether libquadmath should be used
+# Check whether --enable-libquadmath was given.
+if test "${enable_libquadmath+set}" = set; then :
+  enableval=$enable_libquadmath; ENABLE_LIBQUADMATH_SUPPORT=$enableval
+else
+  if test "x$have_iec_60559_libc_support" = xyes; then
+  ENABLE_LIBQUADMATH_SUPPORT=default
+else
+  ENABLE_LIBQUADMATH_SUPPORT=yes
+fi
+fi
+
+enable_libquadmath_support=
+if test "${ENABLE_LIBQUADMATH_SUPPORT}" = "no" ; then
+  enable_libquadmath_support=no
+elif test "${ENABLE_LIBQUADMATH_SUPPORT}" = "default" ; then
+  enable_libquadmath_support=default
+fi
+
+  LIBQUADSPEC=
+  LIBQUADLIB=
+  LIBQUADLIB_DEP=
+  LIBQUADINCLUDE=
+  USE_IEC_60559=no
+
+  if test "x$enable_libquadmath_support" = "xno"; then
+    if test "x$have_iec_60559_libc_support" = "xyes"; then
+
+$as_echo "#define USE_IEC_60559 1" >>confdefs.h
+
+    fi
+  else
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether we have a usable _Float128 type" >&5
+$as_echo_n "checking whether we have a usable _Float128 type... " >&6; }
+if ${libgcob_cv_have_float128+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+   if test x$gcc_no_link = xyes; then
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    _Float128 foo (_Float128 x)
+    {
+     _Complex _Float128 z1, z2;
+
+     z1 = x;
+     z2 = x / 7.F128;
+     z2 /= z1;
+
+     return __real__ z2;
+    }
+
+    _Float128 bar (_Float128 x)
+    {
+      return x * __builtin_huge_valf128 ();
+    }
+
+    __float128 baz (__float128 x)
+    {
+      return x * __builtin_huge_valf128 ();
+    }
+
+int
+main ()
+{
+
+    foo (1.2F128);
+    bar (1.2F128);
+    baz (1.2F128);
+    foo (1.2Q);
+    bar (1.2Q);
+    baz (1.2Q);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+
+    libgcob_cv_have_float128=yes
+
+else
+
+    libgcob_cv_have_float128=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+else
+  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    _Float128 foo (_Float128 x)
+    {
+     _Complex _Float128 z1, z2;
+
+     z1 = x;
+     z2 = x / 7.F128;
+     z2 /= z1;
+
+     return __real__ z2;
+    }
+
+    _Float128 bar (_Float128 x)
+    {
+      return x * __builtin_huge_valf128 ();
+    }
+
+    __float128 baz (__float128 x)
+    {
+      return x * __builtin_huge_valf128 ();
+    }
+
+int
+main ()
+{
+
+    foo (1.2F128);
+    bar (1.2F128);
+    baz (1.2F128);
+    foo (1.2Q);
+    bar (1.2Q);
+    baz (1.2Q);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+
+    libgcob_cv_have_float128=yes
+
+else
+
+    libgcob_cv_have_float128=no
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcob_cv_have_float128" >&5
+$as_echo "$libgcob_cv_have_float128" >&6; }
+
+    if test "x$have_iec_60559_libc_support$enable_libquadmath_support$libgcob_cv_have_float128" = xyesdefaultyes; then
+      USE_IEC_60559=yes
+    fi
+
+  if test "x$libgcob_cv_have_float128" = xyes; then
+
+    if test "x$USE_IEC_60559" = xyes; then
+
+$as_echo "#define USE_IEC_60559 1" >>confdefs.h
+
+    else
+
+$as_echo "#define USE_QUADMATH 1" >>confdefs.h
+
+    fi
+
+$as_echo "#define HAVE_FLOAT128 1" >>confdefs.h
+
+
+                                ac_xsave_cxx_werror_flag=$ac_cxx_werror_flag
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether --as-needed/-z ignore works" >&5
+$as_echo_n "checking whether --as-needed/-z ignore works... " >&6; }
+if ${libgcob_cv_have_as_needed+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+      # Test for native Solaris options first.
+      # No whitespace after -z to pass it through -Wl.
+      libgcob_cv_as_needed_option="-zignore"
+      libgcob_cv_no_as_needed_option="-zrecord"
+      save_LDFLAGS="$LDFLAGS"
+      LDFLAGS="$LDFLAGS -Wl,$libgcob_cv_as_needed_option -lm -Wl,$libgcob_cv_no_as_needed_option"
+      libgcob_cv_have_as_needed=no
+
+ac_cxx_werror_flag=yes
+      if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  libgcob_cv_have_as_needed=yes
+else
+  libgcob_cv_have_as_needed=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+      LDFLAGS="$save_LDFLAGS"
+      if test "x$libgcob_cv_have_as_needed" = xno; then
+	libgcob_cv_as_needed_option="--as-needed"
+	libgcob_cv_no_as_needed_option="--no-as-needed"
+	save_LDFLAGS="$LDFLAGS"
+	LDFLAGS="$LDFLAGS -Wl,$libgcob_cv_as_needed_option -lm -Wl,$libgcob_cv_no_as_needed_option"
+	libgcob_cv_have_as_needed=no
+
+ac_cxx_werror_flag=yes
+	if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  libgcob_cv_have_as_needed=yes
+else
+  libgcob_cv_have_as_needed=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	LDFLAGS="$save_LDFLAGS"
+      fi
+      ac_cxx_werror_flag=$ac_xsave_cxx_werror_flag
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcob_cv_have_as_needed" >&5
+$as_echo "$libgcob_cv_have_as_needed" >&6; }
+
+        touch conftest1.$ac_objext conftest2.$ac_objext
+    LQUADMATH=-lquadmath
+    $CXX -static-libgcobol -### -o conftest \
+	conftest1.$ac_objext -lgcobol conftest2.$ac_objext 2>&1 >/dev/null \
+	| grep "conftest1.$ac_objext.*conftest2.$ac_objext" > conftest.cmd
+    if grep "conftest1.$ac_objext.* -Bstatic -lgcobol -Bdynamic .*conftest2.$ac_objext" \
+       conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:-Bstatic} -lquadmath %{static-libquadmath:-Bdynamic}"
+    elif grep "conftest1.$ac_objext.* -bstatic -lgcobol -bdynamic .*conftest2.$ac_objext" \
+         conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:-bstatic} -lquadmath %{static-libquadmath:-bdynamic}"
+    elif grep "conftest1.$ac_objext.* -aarchive_shared -lgcobol -adefault .*conftest2.$ac_objext" \
+         conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:-aarchive_shared} -lquadmath %{static-libquadmath:-adefault}"
+    elif grep "conftest1.$ac_objext.*libgcobol.a .*conftest2.$ac_objext" \
+         conftest.cmd >/dev/null 2>&1; then
+      LQUADMATH="%{static-libquadmath:libquadmath.a%s;:-lquadmath}"
+    fi
+    rm -f conftest1.$ac_objext conftest2.$ac_objext conftest conftest.cmd
+
+                    if test "x$libgcob_cv_have_as_needed" = xyes; then
+      if test "x$USE_IEC_60559" = xyes; then
+	LIBQUADSPEC="$libgcob_cv_as_needed_option $LQUADMATH $libgcob_cv_no_as_needed_option"
+      else
+	LIBQUADSPEC="%{static-libgcobol:$libgcob_cv_as_needed_option} $LQUADMATH %{static-libgcobol:$libgcob_cv_no_as_needed_option}"
+      fi
+    else
+      LIBQUADSPEC="$LQUADMATH"
+    fi
+    if test "x$USE_IEC_60559" != xyes; then
+      if test -f ../libquadmath/libquadmath.la; then
+	LIBQUADLIB=../libquadmath/libquadmath.la
+	LIBQUADLIB_DEP=../libquadmath/libquadmath.la
+	LIBQUADINCLUDE='-I$(srcdir)/../libquadmath'
+      else
+	LIBQUADLIB="-lquadmath"
+      fi
+    fi
+  else
+    if test "x$USE_IEC_60559" = xyes; then
+
+$as_echo "#define USE_IEC_60559 1" >>confdefs.h
+
+    fi
+  fi
+
+  fi
+
+
 
 
 

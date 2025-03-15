@@ -46,7 +46,7 @@ libgcobol_la_SOURCES =				\
 
 WARN_CFLAGS = -W -Wall -Wwrite-strings
 
-AM_CPPFLAGS = -I. -I$(srcdir)
+AM_CPPFLAGS = -I. -I$(srcdir) $(LIBQUADINCLUDE)
 AM_CFLAGS = $(XCFLAGS)
 AM_CXXFLAGS = $(XCFLAGS)
 AM_CXXFLAGS += $(WARN_CFLAGS)
@@ -62,9 +62,8 @@ endif
 # We want to link with the c++ runtime.
 libgcobol_la_LINK = $(CXXLINK) $(libgcobol_la_LDFLAGS)
 version_arg = -version-info $(LIBGCOBOL_VERSION)
-libgcobol_la_LDFLAGS = $(LTLDFLAGS) $(LTLIBICONV) \
-	$(extra_ldflags_libgcobol) $(LIBS) \
-	$(version_arg)
-libgcobol_la_DEPENDENCIES = libgcobol.spec
+libgcobol_la_LDFLAGS = $(LTLDFLAGS) $(LIBQUADLIB) $(LTLIBICONV) \
+	$(extra_ldflags_libgcobol) $(LIBS) $(version_arg)
+libgcobol_la_DEPENDENCIES = libgcobol.spec $(LIBQUADLIB_DEP)
 
 endif BUILD_LIBGCOBOL

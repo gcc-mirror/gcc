@@ -41,6 +41,7 @@
 #include <algorithm>
 
 #include "config.h"
+#include "libgcobol-fp.h"
 
 #include "ec.h"
 #include "io.h"

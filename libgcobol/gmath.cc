@@ -40,6 +40,7 @@
 #include <algorithm>
 
 #include "config.h"
+#include "libgcobol-fp.h"
 
 #include "ec.h"
 #include "common-defs.h"
@@ -53,10 +54,6 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
-#ifdef __aarch64__
-#define __float128 _Float128
-#endif
 
 #define MAX_INTERMEDIATE_BITS 126
 #define MAX_INTERMEDIATE_DECIMALS 16
@@ -114,7 +111,7 @@ conditional_stash(  cblc_field_t *destination,
                     size_t        destination_o,
                     size_t        destination_s,
                     bool          on_error_flag,
-                    _Float128     value,
+                    GCOB_FP128    value,
                     cbl_round_t     rounded)
   {
   int retval = compute_error_none;
@@ -150,15 +147,10 @@ conditional_stash(  cblc_field_t *destination,
   return retval;
   }
 
-
-#if defined(__aarch64__)
-# define __float128 _Float128 /* double */
-#endif
-
 static
-_Float128
-divide_helper_float(_Float128 a_value,
-                    _Float128 b_value,
+GCOB_FP128
+divide_helper_float(GCOB_FP128 a_value,
+                    GCOB_FP128 b_value,
                     int      *compute_error)
   {
   if( b_value == 0 )
@@ -187,9 +179,9 @@ divide_helper_float(_Float128 a_value,
   }
 
 static
-_Float128
-multiply_helper_float(_Float128 a_value,
-                      _Float128 b_value,
+GCOB_FP128
+multiply_helper_float(GCOB_FP128 a_value,
+                      GCOB_FP128 b_value,
                       int      *compute_error)
   {
   a_value *= b_value;
@@ -210,9 +202,9 @@ multiply_helper_float(_Float128 a_value,
   }
 
 static
-_Float128
-addition_helper_float(_Float128 a_value,
-                      _Float128 b_value,
+GCOB_FP128
+addition_helper_float(GCOB_FP128 a_value,
+                      GCOB_FP128 b_value,
                       int      *compute_error)
   {
   a_value += b_value;
@@ -233,9 +225,9 @@ addition_helper_float(_Float128 a_value,
   }
 
 static
-_Float128
-subtraction_helper_float(_Float128 a_value,
-                         _Float128 b_value,
+GCOB_FP128
+subtraction_helper_float(GCOB_FP128 a_value,
+                         GCOB_FP128 b_value,
                          int      *compute_error)
   {
   a_value -= b_value;
@@ -276,9 +268,9 @@ __gg__pow(  cbl_arith_format_t,
   size_t       *C_o = __gg__treeplet_3o;
   size_t       *C_s = __gg__treeplet_3s;
 
-  _Float128 avalue = __gg__float128_from_qualified_field(A[0], A_o[0], A_s[0]);
-  _Float128 bvalue = __gg__float128_from_qualified_field(B[0], B_o[0], B_s[0]);
-  _Float128 tgt_value;
+  GCOB_FP128 avalue = __gg__float128_from_qualified_field(A[0], A_o[0], A_s[0]);
+  GCOB_FP128 bvalue = __gg__float128_from_qualified_field(B[0], B_o[0], B_s[0]);
+  GCOB_FP128 tgt_value;
 
   if( avalue == 0 && bvalue == 0 )
     {
@@ -295,7 +287,7 @@ __gg__pow(  cbl_arith_format_t,
     // Calculate our answer, in floating point:
     errno = 0;
     feclearexcept(FE_ALL_EXCEPT);
-    tgt_value = powf128(avalue, bvalue);
+    tgt_value = FP128_FUNC(pow)(avalue, bvalue);
     if( errno || fetestexcept(FE_INVALID | FE_DIVBYZERO | FE_OVERFLOW | FE_UNDERFLOW) )
       {
       // One of a large number of errors took place. See math_error(7) and
@@ -568,7 +560,7 @@ get_int256_from_qualified_field(int256 &var,
 static int256 phase1_result;
 static int    phase1_rdigits;
 
-static _Float128 phase1_result_float;
+static GCOB_FP128 phase1_result_float;
 
 extern "C"
 void
@@ -654,11 +646,11 @@ __gg__addf1_fixed_phase2( cbl_arith_format_t ,
     // proceed accordingly.
 
     // Convert the intermediate
-    _Float128 value_a = (_Float128)phase1_result.i128[0];
+    GCOB_FP128 value_a = (GCOB_FP128)phase1_result.i128[0];
     value_a /= __gg__power_of_ten(phase1_rdigits);
 
     // Pick up the target
-    _Float128 value_b = __gg__float128_from_qualified_field(C[0], C_o[0], C_s[0]);
+    GCOB_FP128 value_b = __gg__float128_from_qualified_field(C[0], C_o[0], C_s[0]);
 
     value_a += value_b;
 
@@ -740,7 +732,7 @@ __gg__fixed_phase2_assign_to_c( cbl_arith_format_t ,
     // proceed accordingly.
 
     // Convert the intermediate
-    _Float128 value_a = (_Float128)phase1_result.i128[0];
+    GCOB_FP128 value_a = (GCOB_FP128)phase1_result.i128[0];
     value_a /= __gg__power_of_ten(phase1_rdigits);
 
     *compute_error |= conditional_stash(C[0], C_o[0], C_s[0],
@@ -796,7 +788,7 @@ __gg__add_float_phase1( cbl_arith_format_t ,
 
   for( size_t i=1; i<nA; i++ )
     {
-    _Float128 temp = __gg__float128_from_qualified_field(A[i], A_o[i], A_s[i]);
+    GCOB_FP128 temp = __gg__float128_from_qualified_field(A[i], A_o[i], A_s[i]);
     phase1_result_float = addition_helper_float(phase1_result_float,
                                                 temp,
                                                 compute_error);
@@ -822,7 +814,7 @@ __gg__addf1_float_phase2( cbl_arith_format_t ,
   // This is the assignment phase of an ADD Format 2
   // We take phase1_result and accumulate it into C
 
-  _Float128 temp = __gg__float128_from_qualified_field(C[0], C_o[0], C_s[0]);
+  GCOB_FP128 temp = __gg__float128_from_qualified_field(C[0], C_o[0], C_s[0]);
   temp = addition_helper_float(temp, phase1_result_float, compute_error);
   *compute_error |= conditional_stash(C[0], C_o[0], C_s[0],
                                       on_size_error,
@@ -883,8 +875,8 @@ __gg__addf3(cbl_arith_format_t ,
     {
     if( A[i]->type == FldFloat || C[i]->type == FldFloat )
       {
-      _Float128 value_a = __gg__float128_from_qualified_field(A[i], A_o[i], A_s[i]);
-      _Float128 value_b = __gg__float128_from_qualified_field(C[i], C_o[i], C_s[i]);
+      GCOB_FP128 value_a = __gg__float128_from_qualified_field(A[i], A_o[i], A_s[i]);
+      GCOB_FP128 value_b = __gg__float128_from_qualified_field(C[i], C_o[i], C_s[i]);
 
       value_a = addition_helper_float(value_a, value_b, compute_error);
 
@@ -966,11 +958,11 @@ __gg__subtractf1_fixed_phase2(cbl_arith_format_t ,
     // proceed accordingly.
 
     // Convert the intermediate
-    _Float128 value_a = (_Float128)phase1_result.i128[0];
+    GCOB_FP128 value_a = (GCOB_FP128)phase1_result.i128[0];
     value_a /= __gg__power_of_ten(phase1_rdigits);
 
     // Pick up the target
-    _Float128 value_b = __gg__float128_from_qualified_field(C[0], C_o[0], C_s[0]);
+    GCOB_FP128 value_b = __gg__float128_from_qualified_field(C[0], C_o[0], C_s[0]);
 
     value_b -= value_a;
 
@@ -1106,7 +1098,7 @@ __gg__subtractf1_float_phase2(cbl_arith_format_t ,
   // This is the assignment phase of an ADD Format 2
   // We take phase1_result and subtract it from C
 
-  _Float128 temp = __gg__float128_from_qualified_field(C[0], C_o[0], C_s[0]);
+  GCOB_FP128 temp = __gg__float128_from_qualified_field(C[0], C_o[0], C_s[0]);
   temp = subtraction_helper_float(temp, phase1_result_float, compute_error);
   *compute_error |= conditional_stash(C[0], C_o[0], C_s[0],
                                       on_size_error,
@@ -1143,7 +1135,7 @@ __gg__subtractf2_float_phase1(cbl_arith_format_t ,
                           );
 
   // Subtract that from the B value:
-  _Float128 value_b = __gg__float128_from_qualified_field(B[0], B_o[0], B_s[0]);
+  GCOB_FP128 value_b = __gg__float128_from_qualified_field(B[0], B_o[0], B_s[0]);
 
   // The two numbers have the same number of rdigits.  It's now safe to add
   // them.
@@ -1177,8 +1169,8 @@ __gg__subtractf3( cbl_arith_format_t ,
     {
     if( A[i]->type == FldFloat || C[i]->type == FldFloat)
       {
-      _Float128 value_a = __gg__float128_from_qualified_field(A[i], A_o[i], A_s[i]);
-      _Float128 value_b = __gg__float128_from_qualified_field(C[i], C_o[i], C_s[i]);
+      GCOB_FP128 value_a = __gg__float128_from_qualified_field(A[i], A_o[i], A_s[i]);
+      GCOB_FP128 value_b = __gg__float128_from_qualified_field(C[i], C_o[i], C_s[i]);
 
       value_b = subtraction_helper_float(value_b, value_a, compute_error);
 
@@ -1235,7 +1227,7 @@ __gg__subtractf3( cbl_arith_format_t ,
   }
 
 static bool multiply_intermediate_is_float;
-static _Float128 multiply_intermediate_float;
+static GCOB_FP128 multiply_intermediate_float;
 static __int128  multiply_intermediate_int128;
 static int       multiply_intermediate_rdigits;
 
@@ -1351,8 +1343,8 @@ __gg__multiplyf1_phase2(cbl_arith_format_t ,
   bool on_size_error = !!(on_error_flag & ON_SIZE_ERROR);
   int error_this_time=0;
 
-  _Float128 a_value;
-  _Float128 b_value;
+  GCOB_FP128 a_value;
+  GCOB_FP128 b_value;
 
   if( multiply_intermediate_is_float )
     {
@@ -1374,10 +1366,10 @@ __gg__multiplyf1_phase2(cbl_arith_format_t ,
     if( C[0]->type == FldFloat )
       {
       // gixed * float
-      a_value = (_Float128) multiply_intermediate_int128;
+      a_value = (GCOB_FP128) multiply_intermediate_int128;
       if( multiply_intermediate_rdigits )
         {
-        a_value /= (_Float128)__gg__power_of_ten(multiply_intermediate_rdigits);
+        a_value /= (GCOB_FP128)__gg__power_of_ten(multiply_intermediate_rdigits);
         }
       b_value = __gg__float128_from_qualified_field(C[0], C_o[0], C_s[0]);
       goto float_float;
@@ -1457,14 +1449,14 @@ __gg__multiplyf2( cbl_arith_format_t ,
   bool on_size_error = !!(on_error_flag & ON_SIZE_ERROR);
 
   bool      got_float = false;
-  _Float128 product_float;
+  GCOB_FP128 product_float;
   int256    product_fix;
   int       product_fix_digits;
 
   if( A[0]->type == FldFloat || B[0]->type == FldFloat )
     {
-    _Float128 a_value = __gg__float128_from_qualified_field(A[0], A_o[0], A_s[0]);
-    _Float128 b_value = __gg__float128_from_qualified_field(B[0], B_o[0], B_s[0]);
+    GCOB_FP128 a_value = __gg__float128_from_qualified_field(A[0], A_o[0], A_s[0]);
+    GCOB_FP128 b_value = __gg__float128_from_qualified_field(B[0], B_o[0], B_s[0]);
     product_float = multiply_helper_float(a_value, b_value, compute_error);
     got_float = true;
     }
@@ -1834,8 +1826,8 @@ __gg__dividef1_phase2(cbl_arith_format_t ,
   bool on_size_error = !!(on_error_flag & ON_SIZE_ERROR);
   int error_this_time=0;
 
-  _Float128 a_value;
-  _Float128 b_value;
+  GCOB_FP128 a_value;
+  GCOB_FP128 b_value;
 
   if( multiply_intermediate_is_float )
     {
@@ -1857,10 +1849,10 @@ __gg__dividef1_phase2(cbl_arith_format_t ,
     if( C[0]->type == FldFloat )
       {
       // gixed * float
-      a_value = (_Float128) multiply_intermediate_int128;
+      a_value = (GCOB_FP128) multiply_intermediate_int128;
       if( multiply_intermediate_rdigits )
         {
-        a_value /= (_Float128)__gg__power_of_ten(multiply_intermediate_rdigits);
+        a_value /= (GCOB_FP128)__gg__power_of_ten(multiply_intermediate_rdigits);
         }
       b_value = __gg__float128_from_qualified_field(C[0], C_o[0], C_s[0]);
       goto float_float;
@@ -1948,9 +1940,9 @@ __gg__dividef23(cbl_arith_format_t ,
 
   if( A[0]->type == FldFloat ||  B[0]->type == FldFloat  )
     {
-    _Float128 a_value;
-    _Float128 b_value;
-    _Float128 c_value;
+    GCOB_FP128 a_value;
+    GCOB_FP128 b_value;
+    GCOB_FP128 c_value;
     a_value = __gg__float128_from_qualified_field(A[0], A_o[0], A_s[0]);
     b_value = __gg__float128_from_qualified_field(B[0], B_o[0], B_s[0]);
     c_value = divide_helper_float(a_value, b_value, &error_this_time);
@@ -2029,9 +2021,9 @@ __gg__dividef45(cbl_arith_format_t ,
 
   if( A[0]->type == FldFloat ||  B[0]->type == FldFloat  )
     {
-    _Float128 a_value;
-    _Float128 b_value;
-    _Float128 c_value;
+    GCOB_FP128 a_value;
+    GCOB_FP128 b_value;
+    GCOB_FP128 c_value;
     a_value = __gg__float128_from_qualified_field(A[0], A_o[0], A_s[0]);
     b_value = __gg__float128_from_qualified_field(B[0], B_o[0], B_s[0]);
     c_value = divide_helper_float(a_value, b_value, &error_this_time);
