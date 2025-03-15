@@ -5488,11 +5488,14 @@ gfc_traverse_expr (gfc_expr *expr, gfc_symbol *sym,
   if ((*func) (expr, sym, &f))
     return true;
 
-  if (expr->ts.type == BT_CHARACTER
-	&& expr->ts.u.cl
-	&& expr->ts.u.cl->length
-	&& expr->ts.u.cl->length->expr_type != EXPR_CONSTANT
-	&& gfc_traverse_expr (expr->ts.u.cl->length, sym, func, f))
+  /* Descend into length type parameter of character expressions only for
+     non-negative f.  */
+  if (f >= 0
+      && expr->ts.type == BT_CHARACTER
+      && expr->ts.u.cl
+      && expr->ts.u.cl->length
+      && expr->ts.u.cl->length->expr_type != EXPR_CONSTANT
+      && gfc_traverse_expr (expr->ts.u.cl->length, sym, func, f))
     return true;
 
   switch (expr->expr_type)
@@ -5572,13 +5575,14 @@ gfc_traverse_expr (gfc_expr *expr, gfc_symbol *sym,
 	  break;
 
 	case REF_COMPONENT:
-	  if (ref->u.c.component->ts.type == BT_CHARACTER
-		&& ref->u.c.component->ts.u.cl
-		&& ref->u.c.component->ts.u.cl->length
-		&& ref->u.c.component->ts.u.cl->length->expr_type
-		     != EXPR_CONSTANT
-		&& gfc_traverse_expr (ref->u.c.component->ts.u.cl->length,
-				      sym, func, f))
+	  if (f >= 0
+	      && ref->u.c.component->ts.type == BT_CHARACTER
+	      && ref->u.c.component->ts.u.cl
+	      && ref->u.c.component->ts.u.cl->length
+	      && ref->u.c.component->ts.u.cl->length->expr_type
+	      != EXPR_CONSTANT
+	      && gfc_traverse_expr (ref->u.c.component->ts.u.cl->length,
+				    sym, func, f))
 	    return true;
 
 	  if (ref->u.c.component->as)
