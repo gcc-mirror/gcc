@@ -1,7 +1,7 @@
 /**
  * Compile-time checks associated with the @mustuse attribute.
  *
- * Copyright: Copyright (C) 2022-2024 by The D Language Foundation, All Rights Reserved
+ * Copyright: Copyright (C) 2022-2025 by The D Language Foundation, All Rights Reserved
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/mustuse.d, _mustuse.d)
  * Documentation:  https://dlang.org/phobos/dmd_mustuse.html
