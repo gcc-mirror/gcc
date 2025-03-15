@@ -30,9 +30,6 @@
 %code requires {
   #include <fstream>  // Before cobol-system because it uses poisoned functions
   #include "cobol-system.h"
-  #include <cmath>
-  #include <algorithm>
-  #include <map>
   #include "../../libgcobol/io.h"
   #include "../../libgcobol/ec.h"
 
@@ -215,9 +212,6 @@
   static inline cbl_field_t *
   new_literal( const char initial[], enum radix_t radix );
 #pragma GCC diagnostic pop
-
-
-  #include <list>
 
   enum select_clause_t {
     access_clause_e        = 0x0001,
