@@ -33,10 +33,23 @@ set cobol_test_path $srcdir/$subdir
 
 set all_flags $DEFAULT_COBFLAGS
 
+# Recursively find files in $dir and subdirs, do not walk into subdirs 
+# that contain their own .exp file.
+proc find-cob-tests { dir suffix } {
+    set tests [lsort [glob -nocomplain -directory $dir "*.$suffix" ]]
+    foreach subdir [lsort [glob -nocomplain -type d -directory $dir *]] {
+        if { [glob -nocomplain -directory $subdir *.exp] eq "" } {
+            eval lappend tests [find-cob-tests $subdir $suffix]
+        }
+    }
+    return $tests
+}
+
+set tests [find-cob-tests $srcdir/$subdir {cob}]
+
 # Main loop.
 if [check_effective_target_cobol] {
-    cobol-dg-runtest [lsort \
-       [glob -nocomplain $srcdir/$subdir/*.cob ] ] "" $all_flags
+    cobol-dg-runtest $tests "" $all_flags
 }
 
 # All done.
