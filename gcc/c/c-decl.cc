@@ -2788,6 +2788,9 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 		  break;
 		}
 	}
+
+      /* Make sure we refer to the same type as the olddecl.  */
+      DECL_ORIGINAL_TYPE (newdecl) = DECL_ORIGINAL_TYPE (olddecl);
     }
 
   /* Merge the data types specified in the two decls.  */

@@ -1812,6 +1812,10 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
      to go look at the original type.  */
   t1 = c_type_original (t1);
   t2 = c_type_original (t2);
+  gcc_checking_assert (!TYPE_NAME (t1)
+		       || TREE_CODE (TYPE_NAME (t1)) == IDENTIFIER_NODE);
+  gcc_checking_assert (!TYPE_NAME (t2)
+		       || TREE_CODE (TYPE_NAME (t2)) == IDENTIFIER_NODE);
 
   if (TYPE_NAME (t1) != TYPE_NAME (t2))
     return false;
