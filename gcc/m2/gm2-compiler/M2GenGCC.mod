@@ -1032,6 +1032,10 @@ END FoldStatementNote ;
 
 PROCEDURE CodeStatementNote (tokenno: CARDINAL) ;
 BEGIN
+   IF Debugging
+   THEN
+      MetaErrorT0 (tokenno, '{%W} statement note')
+   END ;
    CurrentQuadToken := tokenno ;
    addStmtNote (TokenToLocation (tokenno))
 END CodeStatementNote ;

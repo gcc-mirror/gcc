@@ -2362,6 +2362,18 @@ m2pp_asm_expr (pretty *state, tree node)
   m2pp_print (state, ");\n");
 }
 
+/* m2pp_nop_expr display the nop_expr node.  */
+
+static void
+m2pp_nop_expr (pretty *state, tree t)
+{
+  enum tree_code code = TREE_CODE (t);
+  m2pp_begin (state);
+  m2pp_print (state, "(* NOP for debug location *)");
+  m2pp_needspace (state);
+  m2pp_loc (state, t);
+}
+  
 /* m2pp_statement attempts to reconstruct a statement.  */
 
 static void
@@ -2429,6 +2441,9 @@ m2pp_statement (pretty *s, tree t)
       break;
     case IF_STMT:
       m2pp_if_stmt (s, t);
+      break;
+    case NOP_EXPR:
+      m2pp_nop_expr (s, t);
       break;
     case ERROR_MARK:
       m2pp_print (s, "<ERROR CODE>\n");
