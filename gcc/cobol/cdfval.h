@@ -79,7 +79,7 @@ struct cdfval_t : public cdfval_base_t {
     cdfval_base_t::string = NULL;
     cdfval_base_t::number = value;
   }
-  cdfval_t( int64_t value )
+  cdfval_t( long value )
     : lineno(yylineno), filename(cobol_filename())
   {
     cdfval_base_t::off  = false;
