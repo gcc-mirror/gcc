@@ -141,21 +141,6 @@ append_rdynamic()
   }
 
 static void
-append_rpath()
-  {
-#ifdef EXEC_LIB
-  // Handing append_option() something on the stack Just Doesn't Work
-  if( strlen(EXEC_LIB) )
-    {
-    static char ach[256];
-    snprintf(ach, sizeof(ach), "-rpath=%s", EXEC_LIB);
-    append_option (OPT_Wl_, ach, 1);
-    }
-#endif
-  return;
-  }
-
-static void
 append_allow_multiple_definition()
   {
   append_option (OPT_Wl_, "--allow-multiple-definition", 1);
@@ -250,9 +235,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   int index_libgcobol_a = 0;
 
-  // This is for the -Wl,-rpath=<EXEC_LIB>
-  bool need_rpath = true;
-
   bool no_files_error = true;
 
 #ifdef NOISY
@@ -338,16 +320,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
             "--allow-multiple-definitions") )
           {
           need_allow_multiple_definition = false;
-          }
-        if( strstr(decoded_options[i].orig_option_with_args_text, "-rpath") )
-          {
-          // The caller is doing something with -rpath.  Assume they know what
-          // they are doing
-
-          // On second thought, always install our rpath.  It goes at the end,
-          // so if the user specifies and rpath that they prefer, it'll get
-          // taken first.
-          need_rpath = true;
           }
         break;
 
@@ -616,12 +588,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   if( need_libgcobol )
     {
-#ifdef EXEC_LIB
-    append_option(OPT_L, EXEC_LIB, 1);
-#endif
     add_arg_lib(COBOL_LIBRARY, static_libgcobol);
     }
-  if( need_libmath   )
+  if( need_libmath)
     {
     add_arg_lib(MATH_LIBRARY, static_in_general);
     }
@@ -647,11 +616,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   if( need_allow_multiple_definition && (n_infiles || n_outfiles) )
     {
     append_allow_multiple_definition();
-    }
-
-  if( need_rpath && (n_infiles || n_outfiles) )
-    {
-    append_rpath();
     }
 
   if( prior_main )
