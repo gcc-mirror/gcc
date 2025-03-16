@@ -4684,10 +4684,22 @@
   "(TARGET_64BIT && riscv_const_insns (operands[3], false) == 1)"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0) (ashift:DI (match_dup 1) (match_dup 2)))
-   (set (match_dup 4) (match_dup 3))
-   (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 4)))]
-  ""
+  [(const_int 0)]
+  "{
+     rtx x = gen_rtx_ASHIFT (DImode, operands[1], operands[2]);
+     emit_insn (gen_rtx_SET (operands[0], x));
+
+     /* If the constant fits in a simm12, use it directly as we do not
+	get another good chance to optimize things again.  */
+     if (!SMALL_OPERAND (INTVAL (operands[3])))
+       emit_move_insn (operands[4], operands[3]);
+     else
+       operands[4] = operands[3];
+
+     x = gen_rtx_PLUS (DImode, operands[0], operands[4]);
+     emit_insn (gen_rtx_SET (operands[0], x));
+     DONE;
+   }"
   [(set_attr "type" "arith")])
 
 (define_insn_and_split ""
@@ -4700,13 +4712,26 @@
   "(TARGET_64BIT && riscv_const_insns (operands[3], false) == 1)"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0) (ashift:DI (match_dup 1) (match_dup 2)))
-   (set (match_dup 4) (match_dup 3))
-   (set (match_dup 0) (sign_extend:DI (plus:SI (match_dup 5) (match_dup 6))))]
+  [(const_int 0)]
   "{
      operands[1] = gen_lowpart (DImode, operands[1]);
      operands[5] = gen_lowpart (SImode, operands[0]);
      operands[6] = gen_lowpart (SImode, operands[4]);
+
+     rtx x = gen_rtx_ASHIFT (DImode, operands[1], operands[2]);
+     emit_insn (gen_rtx_SET (operands[0], x));
+
+     /* If the constant fits in a simm12, use it directly as we do not
+	get another good chance to optimize things again.  */
+     if (!SMALL_OPERAND (INTVAL (operands[3])))
+       emit_move_insn (operands[4], operands[3]);
+     else
+       operands[6] = operands[3];
+
+     x = gen_rtx_PLUS (SImode, operands[5], operands[6]);
+     x = gen_rtx_SIGN_EXTEND (DImode, x);
+     emit_insn (gen_rtx_SET (operands[0], x));
+     DONE;
    }"
   [(set_attr "type" "arith")])
 
