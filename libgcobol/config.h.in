@@ -9,6 +9,9 @@
 /* Define if you have the iconv() function and it works. */
 #undef HAVE_ICONV
 
+/* Define to 1 if you have the `initstate_r' function. */
+#undef HAVE_INITSTATE_R
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
@@ -17,6 +20,15 @@
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `random_r' function. */
+#undef HAVE_RANDOM_R
+
+/* Define to 1 if you have the `setstate_r' function. */
+#undef HAVE_SETSTATE_R
+
+/* Define to 1 if you have the `srandom_r' function. */
+#undef HAVE_SRANDOM_R
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H

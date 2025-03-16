@@ -44,6 +44,8 @@
 #include <langinfo.h>
 #include <string.h>
 
+#include "config.h"
+
 #include "ec.h"
 #include "common-defs.h"
 #include "io.h"
@@ -3409,9 +3411,13 @@ __gg__trim( cblc_field_t *dest,
     }
   }
 
+#if HAVE_INITSTATE_R && HAVE_SRANDOM_R && HAVE_RANDOM_R
 static struct random_data *buf = NULL;
 static char *state = NULL;
 static const size_t state_len = 256;
+#else
+static unsigned seed = 0;
+#endif
 
 extern "C"
 void
@@ -3420,6 +3426,9 @@ __gg__random( cblc_field_t *dest,
               size_t        input_offset,
               size_t        input_size)
   {
+  int32_t retval_31;
+  int rdigits;
+#if HAVE_INITSTATE_R && HAVE_SRANDOM_R && HAVE_RANDOM_R
   // This creates a thread-safe pseudo-random number generator
   // using input as the seed
 
@@ -3436,16 +3445,21 @@ __gg__random( cblc_field_t *dest,
     __gg__clock_gettime(CLOCK_REALTIME, &ts);
     initstate_r( ts.tv_nsec, state, state_len, buf);
     }
-
-  int rdigits;
   int seed = (int)__gg__binary_value_from_qualified_field(&rdigits,
                                                           input,
                                                           input_offset,
                                                           input_size);
   srandom_r(seed, buf);
 
-  int32_t retval_31;
   random_r(buf, &retval_31);
+#else
+  seed = (unsigned)__gg__binary_value_from_qualified_field(&rdigits,
+                                                          input,
+                                                          input_offset,
+                                                          input_size);
+  srandom (seed);
+  retval_31 = random ();
+#endif
   // We are going to convert this to a value between zero and not quite one:
   double retval = double(retval_31) / double(0x80000000UL);
   __gg__double_to_target( dest,
@@ -3457,6 +3471,8 @@ extern "C"
 void
 __gg__random_next(cblc_field_t *dest)
   {
+  int32_t retval_31;
+#if HAVE_INITSTATE_R && HAVE_SRANDOM_R && HAVE_RANDOM_R
   // The return value is between zero and not quite one
 
   if( !buf )
@@ -3469,9 +3485,10 @@ __gg__random_next(cblc_field_t *dest)
     __gg__clock_gettime(CLOCK_REALTIME, &ts);
     initstate_r( ts.tv_nsec, state, state_len, buf);
     }
-  int32_t retval_31;
   random_r(buf, &retval_31);
-
+#else
+  retval_31 = random ();
+#endif
   // We are going to convert this to a value between zero and not quite one:
   double retval = double(retval_31) / double(0x80000000UL);
   __gg__double_to_target( dest,
