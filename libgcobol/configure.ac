@@ -266,6 +266,9 @@ case $host in
 esac
 AC_SUBST(extra_darwin_ldflags_libgcobol)
 
+# For iconv support.
+AM_ICONV
+
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_FILES([Makefile])
 ####AC_CONFIG_FILES(libgcobol.spec)
