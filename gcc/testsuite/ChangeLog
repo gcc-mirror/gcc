@@ -1,3 +1,24 @@
+2025-03-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115271
+	* gfortran.dg/gomp/declare-variant-mod-1-use.f90: New test.
+	* gfortran.dg/gomp/declare-variant-mod-1.f90: New test.
+	* gfortran.dg/gomp/declare-variant-mod-2-use.f90: New test.
+	* gfortran.dg/gomp/declare-variant-mod-2.f90: New test.
+
+2025-03-15  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3.c: Removed.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-u8.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3.h: New test.
+
 2025-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR cobol/119290

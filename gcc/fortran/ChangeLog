@@ -1,3 +1,20 @@
+2025-03-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115271
+	* module.cc (mio_omp_declare_simd_clauses): New, moved from ...
+	(mio_omp_declare_simd): ... here. Update call, write empty '( )'
+	if there is no declare simd but a declare variant.
+	(mio_omp_declare_variant): New.
+	(mio_symbol): Call it.
+	* openmp.cc (gfc_match_omp_context_selector): Add comment about
+	module.cc to TODO note.
+	* trans-stmt.h (gfc_trans_omp_declare_variant): Take additional
+	parent_ns argument.
+	* trans-decl.cc (create_function_arglist,
+	gfc_create_function_decl): Update call.
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Take new
+	argument, add some special case handling for attr.use_assoc.
+
 2025-03-13  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/119118

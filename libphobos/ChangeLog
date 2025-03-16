@@ -1,3 +1,22 @@
+2025-03-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime d29e3eca45.
+
+2025-03-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream b7e3b3b617.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_WINDOWS): Add
+	core/sys/windows/bcrypt.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/gcc/sections/elf.d (sizeofTLS): Give function the same
+	mangling as gcc.sections.sizeofTLS.
+	* libdruntime/gcc/sections/package.d: Import core.internal.traits.
+	(pinLoadedLibraries): Mangle as function from rt.sections_elf_shared.
+	(unpinLoadedLibraries): Likewise.
+	(inheritLoadedLibraries): Likewise.
+	(cleanupLoadedLibraries): Likewise.
+	(sizeOfTLS): Add forward declaration.
+
 2025-03-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* src/MERGE: Merge upstream phobos 0faae92d6.
