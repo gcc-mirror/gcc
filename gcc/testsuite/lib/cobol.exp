@@ -122,6 +122,15 @@ proc cobol_link_flags { paths } {
 	}
 	append ld_library_path ":${gccpath}/libgcobol/.libs"
       }
+      if { [file exists "${gccpath}/libquadmath/.libs/libquadmath.a"] ||
+	 [file exists "${gccpath}/libquadmath/.libs/libquadmath.${shlib_ext}"] } {
+	if { $target_wants_B_option } {
+          append flags "-B${gccpath}/libquadmath/.libs "
+	} else {
+          append flags "-L${gccpath}/libquadmath/.libs "
+	}
+	append ld_library_path ":${gccpath}/libquadmath/.libs"
+      }
       if { [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.a"] ||
           [file exists "${gccpath}/libstdc++-v3/src/.libs/libstdc++.${shlib_ext}"] } {
 	if { $target_wants_B_option } {
