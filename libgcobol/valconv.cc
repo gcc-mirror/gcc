@@ -30,30 +30,14 @@
  */
 
 #include <ctype.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <math.h>
-#include <fenv.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include <time.h>
-#include <unistd.h>
 #include <algorithm>
 #include <unordered_map>
-#include <set>
 
 #include "ec.h"
 #include "common-defs.h"
-#include "io.h"
-#include "gcobolio.h"
-#include "libgcobol.h"
-#include "gfileio.h"
 #include "charmaps.h"
-
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 #include "valconv.h"
 #include "exceptl.h"

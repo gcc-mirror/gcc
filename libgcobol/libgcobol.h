@@ -33,7 +33,6 @@
 #include <stdio.h>
 
 #include <map>
-#include <unordered_map>
 #include <vector>
 
 #define MIN_FIELD_BLOCK_SIZE (16)
