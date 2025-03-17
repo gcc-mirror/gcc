@@ -1,6 +1,16 @@
 2025-03-18  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
+	2025-03-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115271
+	* gfortran.dg/gomp/declare-variant-mod-1-use.f90: Move to
+	libgomp/testsuite/libgomp.fortran/.
+	* gfortran.dg/gomp/declare-variant-mod-1.f90: Likewise.
+
+2025-03-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
 	2025-03-15  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/115271
