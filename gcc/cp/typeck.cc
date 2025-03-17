@@ -5431,7 +5431,7 @@ cp_build_binary_op (const op_location_t &location,
           case stv_firstarg:
             {
               op0 = convert (TREE_TYPE (type1), op0);
-	      op0 = save_expr (op0);
+	      op0 = cp_save_expr (op0);
               op0 = build_vector_from_val (type1, op0);
 	      orig_type0 = type0 = TREE_TYPE (op0);
               code0 = TREE_CODE (type0);
@@ -5441,7 +5441,7 @@ cp_build_binary_op (const op_location_t &location,
           case stv_secondarg:
             {
               op1 = convert (TREE_TYPE (type0), op1);
-	      op1 = save_expr (op1);
+	      op1 = cp_save_expr (op1);
               op1 = build_vector_from_val (type0, op1);
 	      orig_type1 = type1 = TREE_TYPE (op1);
               code1 = TREE_CODE (type1);
@@ -5965,9 +5965,9 @@ cp_build_binary_op (const op_location_t &location,
 	    return error_mark_node;
 
 	  if (TREE_SIDE_EFFECTS (op0))
-	    op0 = save_expr (op0);
+	    op0 = cp_save_expr (op0);
 	  if (TREE_SIDE_EFFECTS (op1))
-	    op1 = save_expr (op1);
+	    op1 = cp_save_expr (op1);
 
 	  pfn0 = pfn_from_ptrmemfunc (op0);
 	  pfn0 = cp_fully_fold (pfn0);
@@ -6203,8 +6203,8 @@ cp_build_binary_op (const op_location_t &location,
 	  && !processing_template_decl
 	  && sanitize_flags_p (SANITIZE_POINTER_COMPARE))
 	{
-	  op0 = save_expr (op0);
-	  op1 = save_expr (op1);
+	  op0 = cp_save_expr (op0);
+	  op1 = cp_save_expr (op1);
 
 	  tree tt = builtin_decl_explicit (BUILT_IN_ASAN_POINTER_COMPARE);
 	  instrument_expr = build_call_expr_loc (location, tt, 2, op0, op1);
@@ -6464,14 +6464,14 @@ cp_build_binary_op (const op_location_t &location,
 	    return error_mark_node;
 	  if (first_complex)
 	    {
-	      op0 = save_expr (op0);
+	      op0 = cp_save_expr (op0);
 	      real = cp_build_unary_op (REALPART_EXPR, op0, true, complain);
 	      imag = cp_build_unary_op (IMAGPART_EXPR, op0, true, complain);
 	      switch (code)
 		{
 		case MULT_EXPR:
 		case TRUNC_DIV_EXPR:
-		  op1 = save_expr (op1);
+		  op1 = cp_save_expr (op1);
 		  imag = build2 (resultcode, real_type, imag, op1);
 		  /* Fall through.  */
 		case PLUS_EXPR:
@@ -6484,13 +6484,13 @@ cp_build_binary_op (const op_location_t &location,
 	    }
 	  else
 	    {
-	      op1 = save_expr (op1);
+	      op1 = cp_save_expr (op1);
 	      real = cp_build_unary_op (REALPART_EXPR, op1, true, complain);
 	      imag = cp_build_unary_op (IMAGPART_EXPR, op1, true, complain);
 	      switch (code)
 		{
 		case MULT_EXPR:
-		  op0 = save_expr (op0);
+		  op0 = cp_save_expr (op0);
 		  imag = build2 (resultcode, real_type, op0, imag);
 		  /* Fall through.  */
 		case PLUS_EXPR:
