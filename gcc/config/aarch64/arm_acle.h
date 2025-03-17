@@ -129,6 +129,20 @@ __jcvt (double __a)
 
 #pragma GCC pop_options
 
+__extension__ extern __inline double
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__fma (double __x, double __y, double __z)
+{
+  return __builtin_fma (__x, __y, __z);
+}
+
+__extension__ extern __inline float
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__fmaf (float __x, float __y, float __z)
+{
+  return __builtin_fmaf (__x, __y, __z);
+}
+
 #pragma GCC push_options
 #pragma GCC target ("+nothing+frintts")
 __extension__ extern __inline float
