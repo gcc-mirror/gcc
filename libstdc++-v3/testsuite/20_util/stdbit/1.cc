@@ -16,7 +16,7 @@
 #endif
 
 #include <testsuite_hooks.h>
-#include <limits.h>
+#include <climits>
 
 void
 test_leading_zeros()
