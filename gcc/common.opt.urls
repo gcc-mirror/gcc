@@ -935,6 +935,12 @@ UrlSuffix(gcc/Optimize-Options.html#index-flto)
 flto=
 UrlSuffix(gcc/Optimize-Options.html#index-flto)
 
+flto-incremental=
+UrlSuffix(gcc/Optimize-Options.html#index-flto-incremental)
+
+flto-incremental-cache-size=
+UrlSuffix(gcc/Optimize-Options.html#index-flto-incremental-cache-size)
+
 flto-partition=
 UrlSuffix(gcc/Optimize-Options.html#index-flto-partition)
 
