@@ -22555,7 +22555,7 @@ package body Sem_Ch3 is
 
       --  Local variables
 
-      P               : Node_Id;
+      P               : constant Node_Id := Parent (S);
       Def_Id          : Entity_Id;
       Error_Node      : Node_Id;
       Full_View_Id    : Entity_Id;
@@ -22579,7 +22579,6 @@ package body Sem_Ch3 is
          end if;
 
          Check_Incomplete (S);
-         P := Parent (S);
 
          if Excludes_Null then
             --  Create an Itype that is a duplicate of Entity (S) but with the
@@ -22652,7 +22651,6 @@ package body Sem_Ch3 is
             Check_Incomplete (Subtype_Mark (S));
          end if;
 
-         P := Parent (S);
          Subtype_Mark_Id := Entity (Subtype_Mark (S));
 
          --  Explicit subtype declaration case
