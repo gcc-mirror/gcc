@@ -15099,7 +15099,8 @@ package body Sem_Ch3 is
       --  If this is a range for a fixed-lower-bound subtype, then set the
       --  index itype's low bound to the FLB and the index itype's upper bound
       --  to the high bound of the parent array type's index subtype. Also,
-      --  mark the itype as an FLB index subtype.
+      --  set the Etype of the new scalar range and mark the itype as an FLB
+      --  index subtype.
 
       if Nkind (S) = N_Range and then Is_FLB_Index then
          Set_Scalar_Range
@@ -15107,6 +15108,7 @@ package body Sem_Ch3 is
             Make_Range (Sloc (S),
               Low_Bound  => Low_Bound (S),
               High_Bound => Type_High_Bound (T)));
+         Set_Etype (Scalar_Range (Def_Id), Etype (Index));
          Set_Is_Fixed_Lower_Bound_Index_Subtype (Def_Id);
 
       else

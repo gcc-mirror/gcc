@@ -14129,6 +14129,16 @@ package body Sem_Ch12 is
                T2 := Etype (I2);
             end if;
 
+            --  In the case of a fixed-lower-bound subtype, we want to check
+            --  against the index type's range rather than the range of the
+            --  subtype (which will be seen as unconstrained, and whose bounds
+            --  won't generally match those of the formal unconstrained array
+            --  type's corresponding index type).
+
+            if Is_Fixed_Lower_Bound_Index_Subtype (T2) then
+               T2 := Etype (Scalar_Range (T2));
+            end if;
+
             if not Subtypes_Match
                      (Find_Actual_Type (Etype (I1), A_Gen_T), T2)
             then
