@@ -43,25 +43,7 @@ cobol: cobol1$(exeext)
 cobol.serial = cobol1$(exeext)
 .PHONY: cobol
 
-BINCLUDE ?= ./gcc
-LIB_INCLUDE ?= $(srcdir)/../libgcobol
 LIB_SOURCE ?= $(srcdir)/../libgcobol
-
-#
-# At this point, as of 2022-10-21, CPPFLAGS is an empty string and can be
-# altered.  CFLAGS and CXXFLAGS are being established upstream, and thus
-# cannot, at this point, be changed.
-#
-# Note further that we are producing only a 64-bit version of libgcobol.so, so
-# it is safe to hard-code the lib64 location.  This obviously has to match the
-# installation code in libgcobol/Makefile.in
-#
-CPPFLAGS =					\
- -std=c++14					\
- -I$(BINCLUDE)					\
- -I$(LIB_INCLUDE)				\
- -DEXEC_LIB=\"$(prefix)/lib64\"		\
- $(END)
 
 YFLAGS = -Werror -Wmidrule-values -Wno-yacc \
 	--debug --verbose
@@ -96,16 +78,37 @@ cobol1_OBJS =    \
 # There is source code in libgcobol/charmaps.cc and
 # libgcobol/valconv.cc that needs to be compiled into both libgcobol
 # and cobol1.  We copy those two source code files from libgcobol to
-# here to avoid the nightmare of one file appearing in more than one
-# place.  For simplicity, we make those compilations dependent on all
-# of the libgcobol/*.h files, which might lead to the occasional
+# build/gcc/cobol to avoid the nightmare of one file appearing in more
+# than one place.  For simplicity, we make those compilations dependent
+# on all of the libgcobol/*.h files, which might lead to the occasional
 # unnecessary compilation.  The impact of that is negligible.
 #
+# Various #includes in the files copied from gcc/libgcobol need to be modified
+# so that the .h files can be found.
+
 cobol/charmaps.cc: $(LIB_SOURCE)/charmaps.cc
 	cp $^ $@
+	sed -i "s|\"ec[.]h\"|\"$(LIB_SOURCE)/ec.h\"|g" $@
+	sed -i "s|\"common-defs[.]h\"|\"$(LIB_SOURCE)/common-defs.h\"|g" $@
+	sed -i "s|\"io[.]h\"|\"$(LIB_SOURCE)/io.h\"|g" $@
+	sed -i "s|\"gcobolio[.]h\"|\"$(LIB_SOURCE)/gcobolio.h\"|g" $@
+	sed -i "s|\"libgcobol[.]h\"|\"$(LIB_SOURCE)/libgcobol.h\"|g" $@
+	sed -i "s|\"gfileio[.]h\"|\"$(LIB_SOURCE)/gfileio.h\"|g" $@
+	sed -i "s|\"charmaps[.]h\"|\"$(LIB_SOURCE)/charmaps.h\"|g" $@
+	sed -i "s|\"valconv[.]h\"|\"$(LIB_SOURCE)/valconv.h\"|g" $@
+	sed -i "s|\"exceptl[.]h\"|\"$(LIB_SOURCE)/exceptl.h\"|g" $@
 
 cobol/valconv.cc: $(LIB_SOURCE)/valconv.cc
 	cp $^ $@
+	sed -i "s|\"ec[.]h\"|\"$(LIB_SOURCE)/ec.h\"|g" $@
+	sed -i "s|\"common-defs[.]h\"|\"$(LIB_SOURCE)/common-defs.h\"|g" $@
+	sed -i "s|\"io[.]h\"|\"$(LIB_SOURCE)/io.h\"|g" $@
+	sed -i "s|\"gcobolio[.]h\"|\"$(LIB_SOURCE)/gcobolio.h\"|g" $@
+	sed -i "s|\"libgcobol[.]h\"|\"$(LIB_SOURCE)/libgcobol.h\"|g" $@
+	sed -i "s|\"gfileio[.]h\"|\"$(LIB_SOURCE)/gfileio.h\"|g" $@
+	sed -i "s|\"charmaps[.]h\"|\"$(LIB_SOURCE)/charmaps.h\"|g" $@
+	sed -i "s|\"valconv[.]h\"|\"$(LIB_SOURCE)/valconv.h\"|g" $@
+	sed -i "s|\"exceptl[.]h\"|\"$(LIB_SOURCE)/exceptl.h\"|g" $@
 
 LIB_SOURCE_H=$(wildcard $(LIB_SOURCE)/*.h)
 

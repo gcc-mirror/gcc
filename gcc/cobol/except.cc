@@ -33,16 +33,16 @@
 #include "coretypes.h"
 #include "tree.h"
 #define HOWEVER_GCC_DEFINES_TREE 1
-#include "ec.h"
-#include "common-defs.h"
+#include "../../libgcobol/ec.h"
+#include "../../libgcobol/common-defs.h"
 #include "util.h"
 #include "cbldiag.h"
 #include "symbols.h"
 #include "inspect.h"
-#include "io.h"
+#include "../../libgcobol/io.h"
 #include "genapi.h"
 #include "gengen.h"
-#include "exceptl.h"
+#include "../../libgcobol/exceptl.h"
 #include "util.h"
 
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -310,7 +310,7 @@ symbol_declaratives_add( size_t program,
  * section is PERFORMed, and control branches to the end of this
  * section, and thence back to the statement it came from.
  */
-#include "io.h"
+#include "../../libgcobol/io.h"
 size_t current_file_index();
 file_status_t current_file_handled_status();
 

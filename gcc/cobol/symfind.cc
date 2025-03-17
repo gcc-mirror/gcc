@@ -31,13 +31,13 @@
 
 #include "cobol-system.h"
 
-#include "ec.h"
-#include "common-defs.h"
+#include "../../libgcobol/ec.h"
+#include "../../libgcobol/common-defs.h"
 #include "util.h"
 #include "cbldiag.h"
 #include "symbols.h"
 #include "inspect.h"
-#include "io.h"
+#include "../../libgcobol/io.h"
 #include "genapi.h"
 
 extern int yydebug;

@@ -56,11 +56,11 @@
 #include "lexio.h"
 
 #define HOWEVER_GCC_DEFINES_TREE
-#include "ec.h"
-#include "common-defs.h"
+#include "../../libgcobol/ec.h"
+#include "../../libgcobol/common-defs.h"
 #include "symbols.h"
 #include "inspect.h"
-#include "io.h"
+#include "../../libgcobol/io.h"
 #include "genapi.h"
 
 #pragma GCC diagnostic ignored "-Wunused-result"

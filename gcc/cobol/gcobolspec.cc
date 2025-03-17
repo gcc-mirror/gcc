@@ -616,10 +616,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   if( need_libgcobol )
     {
-    if( 0 != strcmp(EXEC_LIB, "/usr/lib") )
-      {
-      append_option(OPT_L, EXEC_LIB, 1);
-      }
+#ifdef EXEC_LIB
+    append_option(OPT_L, EXEC_LIB, 1);
+#endif
     add_arg_lib(COBOL_LIBRARY, static_libgcobol);
     }
   if( need_libmath   )

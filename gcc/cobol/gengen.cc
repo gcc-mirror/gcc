@@ -96,8 +96,8 @@
 #include "function.h"
 #include "fold-const.h"
 #define HOWEVER_GCC_DEFINES_TREE 1
-#include "ec.h"
-#include "common-defs.h"
+#include "../../libgcobol/ec.h"
+#include "../../libgcobol/common-defs.h"
 #include "util.h"
 #include "cbldiag.h"
 #include "symbols.h"

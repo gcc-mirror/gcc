@@ -37,22 +37,22 @@
 
 #define HOWEVER_GCC_DEFINES_TREE 1
 
-#include "ec.h"
-#include "common-defs.h"
+#include "../../libgcobol/ec.h"
+#include "../../libgcobol/common-defs.h"
 #include "util.h"
 #include "cbldiag.h"
 #include "symbols.h"
 #include "gengen.h"
 #include "inspect.h"
-#include "io.h"
+#include "../../libgcobol/io.h"
 #include "genapi.h"
 #include "genutil.h"
 #include "genmath.h"
 #include "structs.h"
-#include "gcobolio.h"
-#include "libgcobol.h"
-#include "charmaps.h"
-#include "valconv.h"
+#include "../../libgcobol/gcobolio.h"
+#include "../../libgcobol/libgcobol.h"
+#include "../../libgcobol/charmaps.h"
+#include "../../libgcobol/valconv.h"
 #include "show_parse.h"
 
 extern int yylineno;

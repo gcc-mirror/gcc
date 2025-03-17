@@ -30,13 +30,13 @@
 %{
 
 #include "cobol-system.h"
-#include "ec.h"
-#include "common-defs.h"
+#include "../../libgcobol/ec.h"
+#include "../../libgcobol/common-defs.h"
 #include "util.h"
 #include "cbldiag.h"
 #include "symbols.h"
 #include "copybook.h"
-#include "exceptl.h"
+#include "../../libgcobol/exceptl.h"
 #include "exceptg.h"
 
 #define COUNT_OF(X) (sizeof(X) / sizeof(X[0]))

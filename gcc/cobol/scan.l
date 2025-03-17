@@ -31,8 +31,8 @@
 #include <fstream>  // Before cobol-system because it uses poisoned functions
 #include "cobol-system.h"
 
-#include "ec.h"
-#include "common-defs.h"
+#include "../../libgcobol/ec.h"
+#include "../../libgcobol/common-defs.h"
 #include "util.h"
 #include "cbldiag.h"
 #include "symbols.h"
@@ -41,7 +41,7 @@
 #include "copybook.h"
 #include "scan_ante.h"
 #include "lexio.h"
-#include "exceptl.h"
+#include "../../libgcobol/exceptl.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wsign-compare"

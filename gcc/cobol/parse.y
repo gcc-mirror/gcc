@@ -33,8 +33,8 @@
   #include <cmath>
   #include <algorithm>
   #include <map>
-  #include "io.h"
-  #include "ec.h"
+  #include "../../libgcobol/io.h"
+  #include "../../libgcobol/ec.h"
 
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
@@ -277,8 +277,8 @@
 
   bool set_debug(bool);
 
-#include "ec.h"
-#include "common-defs.h"
+#include "../../libgcobol/ec.h"
+#include "../../libgcobol/common-defs.h"
 #include "inspect.h"
 }
 
@@ -286,15 +286,15 @@
 #include <fstream>  // Before cobol-system because it uses poisoned functions
 #include "cobol-system.h"
 #include "cdfval.h"
-#include "ec.h"
-#include "common-defs.h"
+#include "../../libgcobol/ec.h"
+#include "../../libgcobol/common-defs.h"
 #include "util.h"
 #include "cbldiag.h"
 #include "symbols.h"
 #include "inspect.h"
-#include "io.h"
+#include "../../libgcobol/io.h"
 #include "genapi.h"
-#include "exceptl.h"
+#include "../../libgcobol/exceptl.h"
 #include "exceptg.h"
 #include "parse_ante.h"
 %}
