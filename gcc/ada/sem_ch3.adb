@@ -22725,6 +22725,8 @@ package body Sem_Ch3 is
                      Error_Msg_N
                        ("constraint on class-wide type ignored??",
                         Constraint (S));
+                  else
+                     pragma Assert (False);
                   end if;
 
                   if Nkind (P) = N_Subtype_Declaration then
