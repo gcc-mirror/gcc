@@ -525,5 +525,5 @@ rust/%.o: rust/metadata/%.cc
 rust/libffi_polonius.a: \
 	rust/checks/errors/borrowck/ffi-polonius/Cargo.toml \
 	$(wildcard $(srcdir)/rust/checks/errors/borrowck/ffi-polonius/src/*)
-	cargo build --manifest-path $(srcdir)/rust/checks/errors/borrowck/ffi-polonius/Cargo.toml --release --target-dir rust/ffi-polonius
+	cd $(srcdir)/rust/checks/errors/borrowck/ffi-polonius/ && cargo build --offline --release --target-dir $(objdir)/rust/ffi-polonius
 	cp rust/ffi-polonius/release/libffi_polonius.a rust/libffi_polonius.a
