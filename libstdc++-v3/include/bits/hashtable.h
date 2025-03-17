@@ -798,6 +798,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_equal_range_tr(const _Kt& __k) const;
 #endif // __glibcxx_generic_unordered_lookup
 
+      void _M_rehash_insert(size_type __n);
+
     private:
       // Bucket index computation helpers.
       size_type
@@ -2392,28 +2394,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _ExtractKey, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
 	   typename _RehashPolicy, typename _Traits>
+   void
+  _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+	     _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
+  _M_rehash_insert(size_type __n)
+  {
+    using __pair_type = std::pair<bool, std::size_t>;
+    if (__n == 0)
+      return;
+
+    __rehash_guard_t __rehash_guard(_M_rehash_policy);
+    __pair_type __do_rehash
+      = _M_rehash_policy._M_need_rehash(_M_bucket_count, _M_element_count, __n);
+
+    if (__do_rehash.first)
+      _M_rehash(__do_rehash.second, false_type{});
+
+    __rehash_guard._M_guarded_obj = nullptr;
+  }
+
+
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _Hash, typename _RangeHash, typename _Unused,
+	   typename _RehashPolicy, typename _Traits>
     template<typename _InputIterator>
       void
       _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
 		 _Hash, _RangeHash, _Unused, _RehashPolicy, _Traits>::
       _M_insert_range_multi(_InputIterator __first, _InputIterator __last)
       {
-	using __pair_type = std::pair<bool, std::size_t>;
-
-	size_type __n_elt = __detail::__distance_fw(__first, __last);
-	if (__n_elt == 0)
-	  return;
-
-	__rehash_guard_t __rehash_guard(_M_rehash_policy);
-	__pair_type __do_rehash
-	  = _M_rehash_policy._M_need_rehash(_M_bucket_count,
-					    _M_element_count,
-					    __n_elt);
-
-	if (__do_rehash.first)
-	  _M_rehash(__do_rehash.second, false_type{});
-
-	__rehash_guard._M_guarded_obj = nullptr;
+	_M_rehash_insert(__detail::__distance_fw(__first, __last));
 	for (; __first != __last; ++__first)
 	  _M_emplace_multi(cend(), *__first);
       }
