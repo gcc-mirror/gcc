@@ -16,7 +16,7 @@
 
 /* Explicitly use dwarf-5 which uses DW_FORM_implicit_const.  */
 /* { dg-do compile } */
-/* { dg-options "-O -g3 -gdwarf-5 -dA -fgnu89-inline -gno-as-loc-support" } */
+/* { dg-options "-O -g3 -gdwarf-5 -gno-strict-dwarf -dA -fgnu89-inline -gno-as-loc-support" } */
 
 /* There are 6 inlined subroutines:
    - One for each subroutine inlined into main, that's 3.

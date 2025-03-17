@@ -16,7 +16,7 @@
 
 /* Explicitly use dwarf-2 because dwarf-5 might use DW_FORM_implicit_const
    which is hard to scan for. */
-/* { dg-options "-O -g3 -gdwarf-2 -dA -fgnu89-inline" } */
+/* { dg-options "-O -g3 -gdwarf-2 -gno-strict-dwarf -dA -fgnu89-inline" } */
 /* { dg-do compile } */
 
 /* There are 6 inlined subroutines:
