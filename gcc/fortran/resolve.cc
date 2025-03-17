@@ -8987,6 +8987,22 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
       goto failure;
     }
 
+  /* F2003:C626 (R623) A type-param-value in a type-spec shall be an asterisk
+     if and only if each allocate-object is a dummy argument for which the
+     corresponding type parameter is assumed.  */
+  if (code->ext.alloc.ts.type == BT_CHARACTER
+      && code->ext.alloc.ts.u.cl->length != NULL
+      && e->ts.type == BT_CHARACTER && !e->ts.deferred
+      && e->ts.u.cl->length == NULL
+      && e->symtree->n.sym->attr.dummy)
+    {
+      gfc_error ("The type parameter in ALLOCATE statement with type-spec "
+		 "shall be an asterisk as allocate object %qs at %L is a "
+		 "dummy argument with assumed type parameter",
+		 sym->name, &e->where);
+      goto failure;
+    }
+
   /* Check F08:C632.  */
   if (code->ext.alloc.ts.type == BT_CHARACTER && !e->ts.deferred
       && !UNLIMITED_POLY (e))
