@@ -14708,7 +14708,9 @@ package body Sem_Prag is
             then
                --  The flag is set on the base type, or on the object
 
-               if Nkind (D) = N_Full_Type_Declaration then
+               if Nkind (D) in N_Full_Type_Declaration
+                             | N_Formal_Type_Declaration
+               then
                   E := Base_Type (E);
                end if;
 
