@@ -7351,8 +7351,9 @@ resolve_compcall (gfc_expr* e, const char **name)
   /* Check that's really a FUNCTION.  */
   if (!e->value.compcall.tbp->function)
     {
-      gfc_error ("%qs at %L should be a FUNCTION",
-		 e->value.compcall.name, &e->where);
+      if (e->symtree && e->symtree->n.sym->resolve_symbol_called)
+	gfc_error ("%qs at %L should be a FUNCTION", e->value.compcall.name,
+		   &e->where);
       return false;
     }
 
