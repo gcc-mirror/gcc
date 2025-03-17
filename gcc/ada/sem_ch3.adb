@@ -22855,8 +22855,8 @@ package body Sem_Ch3 is
          --  Size, Alignment, Representation aspects and Convention are always
          --  inherited from the base type.
 
-         Set_Size_Info  (Def_Id,            (Subtype_Mark_Id));
-         Set_Rep_Info   (Def_Id,            (Subtype_Mark_Id));
+         Set_Size_Info (Def_Id, Subtype_Mark_Id);
+         Set_Rep_Info (Def_Id, Subtype_Mark_Id);
          Set_Convention (Def_Id, Convention (Subtype_Mark_Id));
 
          --  The anonymous subtype created for the subtype indication
