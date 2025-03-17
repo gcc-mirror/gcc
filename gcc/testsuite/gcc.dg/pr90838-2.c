@@ -26,9 +26,9 @@ static const char table[128] = {
     57, 58, 59, 60, 61, 62, 63, 64
 };
 
-int ctz4 (unsigned long x)
+int ctz4 (unsigned long long x)
 {
-  unsigned long lsb = x & -x;
+  unsigned long long lsb = x & -x;
   return table[(lsb * magic) >> 58];
 }
 
