@@ -115,6 +115,9 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zicfiss", "zimop"},
   {"zicfilp", "zicsr"},
 
+  {"zclsd", "zilsd"},
+  {"zclsd", "zca"},
+
   {"zk", "zkn"},
   {"zk", "zkr"},
   {"zk", "zkt"},
@@ -376,6 +379,9 @@ static const struct riscv_ext_version riscv_ext_version_table[] =
 
   {"zicntr", ISA_SPEC_CLASS_NONE, 2, 0},
   {"zihpm",  ISA_SPEC_CLASS_NONE, 2, 0},
+
+  {"zilsd",  ISA_SPEC_CLASS_NONE, 1, 0},
+  {"zclsd",  ISA_SPEC_CLASS_NONE, 1, 0},
 
   {"zk",    ISA_SPEC_CLASS_NONE, 1, 0},
   {"zkn",   ISA_SPEC_CLASS_NONE, 1, 0},
@@ -1439,6 +1445,14 @@ riscv_subset_list::check_conflict_ext ()
   if (lookup ("zcf") && m_xlen == 64)
     error_at (m_loc, "%<-march=%s%>: zcf extension supports in rv32 only",
 	      m_arch);
+  
+  if (lookup ("zilsd") && m_xlen == 64)
+    error_at (m_loc, "%<-march=%s%>: zilsd extension supports in rv32 only",
+	      m_arch);
+
+  if (lookup ("zclsd") && m_xlen == 64)
+    error_at (m_loc, "%<-march=%s%>: zclsd extension supports in rv32 only",
+	      m_arch);
 
   if (lookup ("zfinx") && lookup ("f"))
     error_at (m_loc,
@@ -1782,6 +1796,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   RISCV_EXT_FLAG_ENTRY ("ziccif",      x_riscv_zi_subext, MASK_ZICCIF),
   RISCV_EXT_FLAG_ENTRY ("zicclsm",     x_riscv_zi_subext, MASK_ZICCLSM),
   RISCV_EXT_FLAG_ENTRY ("ziccrse",     x_riscv_zi_subext, MASK_ZICCRSE),
+  RISCV_EXT_FLAG_ENTRY ("zilsd",       x_riscv_zi_subext, MASK_ZILSD),
 
   RISCV_EXT_FLAG_ENTRY ("zicboz", x_riscv_zicmo_subext, MASK_ZICBOZ),
   RISCV_EXT_FLAG_ENTRY ("zicbom", x_riscv_zicmo_subext, MASK_ZICBOM),
@@ -1865,6 +1880,7 @@ static const riscv_ext_flag_table_t riscv_ext_flag_table[] =
   RISCV_EXT_FLAG_ENTRY ("zcd",  x_riscv_zc_subext, MASK_ZCD),
   RISCV_EXT_FLAG_ENTRY ("zcmp", x_riscv_zc_subext, MASK_ZCMP),
   RISCV_EXT_FLAG_ENTRY ("zcmt", x_riscv_zc_subext, MASK_ZCMT),
+  RISCV_EXT_FLAG_ENTRY ("zclsd", x_riscv_zc_subext, MASK_ZCLSD),
 
   RISCV_EXT_FLAG_ENTRY ("svade",       x_riscv_sv_subext, MASK_SVADE),
   RISCV_EXT_FLAG_ENTRY ("svadu",       x_riscv_sv_subext, MASK_SVADU),
