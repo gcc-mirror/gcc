@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 12.1-b20220213\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2025-02-14 22:50+0000\n"
+"POT-Creation-Date: 2025-03-14 22:05+0000\n"
 "PO-Revision-Date: 2023-01-08 14:43-0300\n"
 "Last-Translator: Felipe Castro <fefcas@gmail.com>\n"
 "Language-Team: Esperanto <translation-team-eo@lists.sourceforge.net>\n"
@@ -224,7 +224,7 @@ msgstr "deksesuma eskapa sekvo estas for de intervalo"
 
 #: charset.cc:2247
 #, gcc-internal-format
-msgid "%<\\o%> not followed by %<}%>"
+msgid "%<\\o%> not followed by %<{%>"
 msgstr ""
 
 #: charset.cc:2305
@@ -320,20 +320,20 @@ msgstr "kromaj ĵetonoj ĉe la fino de la direktivo #%s"
 msgid "extra tokens at end of #%s directive"
 msgstr "kromaj ĵetonoj ĉe la fino de la direktivo #%s"
 
-#: directives.cc:396 directives.cc:1370
+#: directives.cc:396
 #, fuzzy, gcc-internal-format
 #| msgid "#%s is a GCC extension"
 msgid "%<#%s%> is a GCC extension"
 msgstr "#%s estas aldono de GCC"
 
-#: directives.cc:404 directives.cc:2681 directives.cc:2720
+#: directives.cc:404 directives.cc:2686 directives.cc:2725
 #, fuzzy, gcc-internal-format
 #| msgid "#%s before C++23 is a GCC extension"
 msgid "%<#%s%> before C++23 is a GCC extension"
 msgstr "#%s antaŭ C++23 estas aldono de GCC"
 
-#: directives.cc:409 directives.cc:415 directives.cc:1373 directives.cc:2685
-#: directives.cc:2725
+#: directives.cc:409 directives.cc:415 directives.cc:1374 directives.cc:2690
+#: directives.cc:2730
 #, fuzzy, gcc-internal-format
 #| msgid "#%s before C++23 is a GCC extension"
 msgid "%<#%s%> before C23 is a GCC extension"
@@ -421,7 +421,7 @@ msgstr "mankas finiganta signo >"
 msgid "%<#%s%> expects %<\"FILENAME\"%> or %<<FILENAME>%>"
 msgstr "#%s atendas \"DOSIERNOMO\" aŭ <DOSIERNOMO>"
 
-#: directives.cc:911 directives.cc:1386
+#: directives.cc:911 directives.cc:1391
 #, gcc-internal-format, gfc-internal-format
 msgid "empty filename in #%s"
 msgstr "malplena dosiernomo en #%s"
@@ -503,209 +503,221 @@ msgstr "nul-signo(j) tenitaj en literaĵo"
 msgid "%<#embed%> not supported in traditional C"
 msgstr "sugesti ne uzi #elif en tradicia C"
 
-#: directives.cc:1431
+#: directives.cc:1370
+#, fuzzy, gcc-internal-format
+#| msgid "#%s before C++23 is a GCC extension"
+msgid "%<#%s%> before C++26 is a GCC extension"
+msgstr "#%s antaŭ C++23 estas aldono de GCC"
+
+#: directives.cc:1379
+#, fuzzy, gcc-internal-format
+#| msgid "#%s is a GCC extension"
+msgid "%<#%s%> is a C23 feature"
+msgstr "#%s estas aldono de GCC"
+
+#: directives.cc:1436
 #, fuzzy, gcc-internal-format
 #| msgid "invalid flag \"%s\" in line directive"
 msgid "invalid flag %qs in line directive"
 msgstr "malvalida flago \"%s\" en lini-direktivo"
 
-#: directives.cc:1499
+#: directives.cc:1504
 #, fuzzy, gcc-internal-format
 #| msgid "unexpected end of file after #line"
 msgid "unexpected end of file after %<#line%>"
 msgstr "neatendita dosierfino post #line"
 
-#: directives.cc:1502
+#: directives.cc:1507
 #, fuzzy, gcc-internal-format
 #| msgid "\"%s\" after #line is not a positive integer"
 msgid "%qs after %<#line%> is not a positive integer"
 msgstr "\"%s\" post #line ne estas pozitiva entjero"
 
-#: directives.cc:1508 directives.cc:1511
+#: directives.cc:1513 directives.cc:1516
 msgid "line number out of range"
 msgstr "lininumero estas for de intervalo"
 
-#: directives.cc:1524 directives.cc:1605
+#: directives.cc:1529 directives.cc:1610
 #, fuzzy, gcc-internal-format
 #| msgid "\"%s\" is not a valid filename"
 msgid "%qs is not a valid filename"
 msgstr "\"%s\" ne estas valida dosiernomo"
 
-#: directives.cc:1565
+#: directives.cc:1570
 #, fuzzy, gcc-internal-format
 #| msgid "\"%s\" after # is not a positive integer"
 msgid "%qs after %<#%> is not a positive integer"
 msgstr "\"%s\" post # ne estas pozitiva entjero"
 
-#: directives.cc:1632
+#: directives.cc:1637
 #, fuzzy, gcc-internal-format
 #| msgid "file \"%s\" linemarker ignored due to incorrect nesting"
 msgid "file %qs linemarker ignored due to incorrect nesting"
 msgstr "linimarkilo de dosiero \"%s\" estis preteratentata pro malkorekta nesto"
 
-#: directives.cc:1710 directives.cc:1712 directives.cc:1714 directives.cc:2321
+#: directives.cc:1715 directives.cc:1717 directives.cc:1719 directives.cc:2326
 #, gcc-internal-format, gfc-internal-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.cc:1738
+#: directives.cc:1743
 #, gcc-internal-format, gfc-internal-format
 msgid "invalid #%s directive"
 msgstr "malvalida direktivo #%s"
 
-#: directives.cc:1801
+#: directives.cc:1806
 #, fuzzy, gcc-internal-format
 #| msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgid "registering pragmas in namespace %qs with mismatched name expansion"
 msgstr "registro de pragma en nomspaco \"%s\" kun nekongrua nom-disvolviĝo"
 
-#: directives.cc:1810
+#: directives.cc:1815
 #, fuzzy, gcc-internal-format
 #| msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgid "registering pragma %qs with name expansion and no namespace"
 msgstr "registro de pragma \"%s\" kun nom-disvolviĝo kaj sen nomspaco"
 
-#: directives.cc:1828
+#: directives.cc:1833
 #, fuzzy, gcc-internal-format
 #| msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgid "registering %qs as both a pragma and a pragma namespace"
 msgstr "registro de \"%s\" kaj kiel pragma kaj kiel pragma-nomspaco"
 
-#: directives.cc:1831
+#: directives.cc:1836
 #, fuzzy, gcc-internal-format
 #| msgid "#pragma %s %s is already registered"
 msgid "%<#pragma %s %s%> is already registered"
 msgstr "#pragma %s %s jam estas registrita"
 
-#: directives.cc:1834
+#: directives.cc:1839
 #, fuzzy, gcc-internal-format
 #| msgid "#pragma %s is already registered"
 msgid "%<#pragma %s%> is already registered"
 msgstr "#pragma %s jam estas registrita"
 
-#: directives.cc:1865
+#: directives.cc:1870
 msgid "registering pragma with NULL handler"
 msgstr "registro de pragma kun traktilo de NULL"
 
-#: directives.cc:2083
+#: directives.cc:2088
 #, fuzzy, gcc-internal-format
 #| msgid "#pragma once in main file"
 msgid "%<#pragma once%> in main file"
 msgstr "#pragma unufoje en ĉefdosiero"
 
-#: directives.cc:2153
+#: directives.cc:2158
 #, fuzzy, gcc-internal-format
 #| msgid "invalid #pragma push_macro directive"
 msgid "invalid %<#pragma %s_macro%> directive"
 msgstr "malvalida direktivo #pragma push_macro"
 
-#: directives.cc:2232
+#: directives.cc:2237
 #, fuzzy, gcc-internal-format
 #| msgid "invalid #pragma GCC poison directive"
 msgid "invalid %<#pragma GCC poison%> directive"
 msgstr "malvalida direktivo #pragma GCC poison"
 
-#: directives.cc:2241
+#: directives.cc:2246
 #, fuzzy, gcc-internal-format
 #| msgid "poisoning existing macro \"%s\""
 msgid "poisoning existing macro %qs"
 msgstr "venenigo de ekzistanta makroo \"%s\""
 
-#: directives.cc:2263
+#: directives.cc:2268
 #, fuzzy, gcc-internal-format
 #| msgid "#pragma system_header ignored outside include file"
 msgid "%<#pragma system_header%> ignored outside include file"
 msgstr "#pragma system_header estis preteratentata for de inkluziv-dosiero"
 
-#: directives.cc:2288
+#: directives.cc:2293
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot find source file %s"
 msgstr "ne eblas trovi la fontan dosieron %s"
 
-#: directives.cc:2292
+#: directives.cc:2297
 #, gcc-internal-format, gfc-internal-format
 msgid "current file is older than %s"
 msgstr "nuna dosiero estas pli malnova ol %s"
 
-#: directives.cc:2316
+#: directives.cc:2321
 #, fuzzy, gcc-internal-format
 #| msgid "invalid \"#pragma GCC %s\" directive"
 msgid "invalid %<#pragma GCC %s%> directive"
 msgstr "malvalida direktivo \"#pragma GCC %s\""
 
-#: directives.cc:2536
+#: directives.cc:2541
 #, fuzzy, gcc-internal-format
 #| msgid "_Pragma takes a parenthesized string literal"
 msgid "%<_Pragma%> takes a parenthesized string literal"
 msgstr "_Pragma prenas kurbkrampitan ĉenan literaĵon"
 
-#: directives.cc:2619
+#: directives.cc:2624
 #, fuzzy, gcc-internal-format
 #| msgid "#else without #if"
 msgid "%<#else%> without %<#if%>"
 msgstr "#else sen #if"
 
-#: directives.cc:2624
+#: directives.cc:2629
 #, fuzzy, gcc-internal-format
 #| msgid "#else after #else"
 msgid "%<#else%> after %<#else%>"
 msgstr "#else post #else"
 
-#: directives.cc:2626 directives.cc:2661
+#: directives.cc:2631 directives.cc:2666
 msgid "the conditional began here"
 msgstr "la kondiĉo komencis ĉi tie"
 
-#: directives.cc:2652
+#: directives.cc:2657
 #, fuzzy, gcc-internal-format
 #| msgid "#%s without #if"
 msgid "%<#%s%> without %<#if%>"
 msgstr "#%s sen #if"
 
-#: directives.cc:2658
+#: directives.cc:2663
 #, fuzzy, gcc-internal-format
 #| msgid "#%s after #else"
 msgid "%<#%s%> after %<#else%>"
 msgstr "#%s post #else"
 
-#: directives.cc:2762
+#: directives.cc:2767
 #, fuzzy, gcc-internal-format
 #| msgid "#endif without #if"
 msgid "%<#endif%> without %<#if%>"
 msgstr "#endif sen #if"
 
-#: directives.cc:2847
+#: directives.cc:2852
 #, fuzzy, gcc-internal-format
 #| msgid "missing '(' after predicate"
 msgid "missing %<(%> after predicate"
 msgstr "mankas '(' post predikato"
 
-#: directives.cc:2865
+#: directives.cc:2870
 #, fuzzy, gcc-internal-format
 #| msgid "missing ')' to complete answer"
 msgid "missing %<)%> to complete answer"
 msgstr "mankas ')' por kompletigi respondon"
 
-#: directives.cc:2877
+#: directives.cc:2882
 #, fuzzy, gcc-internal-format
 #| msgid "predicate's answer is empty"
 msgid "predicate%'s answer is empty"
 msgstr "respondo de predikato estas malplena"
 
-#: directives.cc:2907
+#: directives.cc:2912
 msgid "assertion without predicate"
 msgstr "aserto sen predikato"
 
-#: directives.cc:2910
+#: directives.cc:2915
 msgid "predicate must be an identifier"
 msgstr "predikato devas esti identiganto"
 
-#: directives.cc:2992
+#: directives.cc:2997
 #, fuzzy, gcc-internal-format
 #| msgid "\"%s\" re-asserted"
 msgid "%qs re-asserted"
 msgstr "\"%s\" estas re-asertita"
 
-#: directives.cc:3300
+#: directives.cc:3305
 #, gcc-internal-format, gfc-internal-format
 msgid "unterminated #%s"
 msgstr "nefinigita #%s"

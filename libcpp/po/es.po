@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 14.1-b20240218\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2025-02-14 22:50+0000\n"
+"POT-Creation-Date: 2025-03-14 22:05+0000\n"
 "PO-Revision-Date: 2024-02-19 11:47-0600\n"
 "Last-Translator: Cristian Othón Martínez Vera <cfuga@cfuga.mx>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -228,7 +228,7 @@ msgstr "secuencia de escape hexadecimal fuera de rango"
 #: charset.cc:2247
 #, fuzzy, gcc-internal-format
 #| msgid "'\\o' not followed by '{'"
-msgid "%<\\o%> not followed by %<}%>"
+msgid "%<\\o%> not followed by %<{%>"
 msgstr "'\\o' no tiene una '{' a continuación"
 
 #: charset.cc:2305
@@ -325,20 +325,20 @@ msgstr "elementos extra al final de la directiva #%s"
 msgid "extra tokens at end of #%s directive"
 msgstr "elementos extra al final de la directiva #%s"
 
-#: directives.cc:396 directives.cc:1370
+#: directives.cc:396
 #, fuzzy, gcc-internal-format
 #| msgid "#%s is a GCC extension"
 msgid "%<#%s%> is a GCC extension"
 msgstr "#%s es una extensión de GCC"
 
-#: directives.cc:404 directives.cc:2681 directives.cc:2720
+#: directives.cc:404 directives.cc:2686 directives.cc:2725
 #, fuzzy, gcc-internal-format
 #| msgid "#%s before C++23 is a GCC extension"
 msgid "%<#%s%> before C++23 is a GCC extension"
 msgstr "#%s antes de C++23 es una extensión de GCC"
 
-#: directives.cc:409 directives.cc:415 directives.cc:1373 directives.cc:2685
-#: directives.cc:2725
+#: directives.cc:409 directives.cc:415 directives.cc:1374 directives.cc:2690
+#: directives.cc:2730
 #, fuzzy, gcc-internal-format
 #| msgid "#%s before C23 is a GCC extension"
 msgid "%<#%s%> before C23 is a GCC extension"
@@ -426,7 +426,7 @@ msgstr "falta el carácter de terminación >"
 msgid "%<#%s%> expects %<\"FILENAME\"%> or %<<FILENAME>%>"
 msgstr "#%s espera «NOMBREFICHERO» o <NOMBREFICHERO>"
 
-#: directives.cc:911 directives.cc:1386
+#: directives.cc:911 directives.cc:1391
 #, gcc-internal-format, gfc-internal-format
 msgid "empty filename in #%s"
 msgstr "nombre de fichero vacío en #%s"
@@ -508,209 +508,221 @@ msgstr "caracter(es) nulo(s) preservados en la literal"
 msgid "%<#embed%> not supported in traditional C"
 msgstr "se sugiere no usar #elif en C tradicional"
 
-#: directives.cc:1431
+#: directives.cc:1370
+#, fuzzy, gcc-internal-format
+#| msgid "#%s before C++23 is a GCC extension"
+msgid "%<#%s%> before C++26 is a GCC extension"
+msgstr "#%s antes de C++23 es una extensión de GCC"
+
+#: directives.cc:1379
+#, fuzzy, gcc-internal-format
+#| msgid "#%s is a GCC extension"
+msgid "%<#%s%> is a C23 feature"
+msgstr "#%s es una extensión de GCC"
+
+#: directives.cc:1436
 #, fuzzy, gcc-internal-format
 #| msgid "invalid flag \"%s\" in line directive"
 msgid "invalid flag %qs in line directive"
 msgstr "indicador «%s» inválido en la línea de directiva"
 
-#: directives.cc:1499
+#: directives.cc:1504
 #, fuzzy, gcc-internal-format
 #| msgid "unexpected end of file after #line"
 msgid "unexpected end of file after %<#line%>"
 msgstr "fin de fichero inesperado después de #line"
 
-#: directives.cc:1502
+#: directives.cc:1507
 #, fuzzy, gcc-internal-format
 #| msgid "\"%s\" after #line is not a positive integer"
 msgid "%qs after %<#line%> is not a positive integer"
 msgstr "«%s» después de #line no es un entero positivo"
 
-#: directives.cc:1508 directives.cc:1511
+#: directives.cc:1513 directives.cc:1516
 msgid "line number out of range"
 msgstr "número de línea fuera de rango"
 
-#: directives.cc:1524 directives.cc:1605
+#: directives.cc:1529 directives.cc:1610
 #, fuzzy, gcc-internal-format
 #| msgid "\"%s\" is not a valid filename"
 msgid "%qs is not a valid filename"
 msgstr "«%s» no es un nombre de fichero válido"
 
-#: directives.cc:1565
+#: directives.cc:1570
 #, fuzzy, gcc-internal-format
 #| msgid "\"%s\" after # is not a positive integer"
 msgid "%qs after %<#%> is not a positive integer"
 msgstr "«%s» después de # no es un entero positivo"
 
-#: directives.cc:1632
+#: directives.cc:1637
 #, fuzzy, gcc-internal-format
 #| msgid "file \"%s\" linemarker ignored due to incorrect nesting"
 msgid "file %qs linemarker ignored due to incorrect nesting"
 msgstr "se descarta la marca lineal de fichero «%s» debido a anidación incorrecta"
 
-#: directives.cc:1710 directives.cc:1712 directives.cc:1714 directives.cc:2321
+#: directives.cc:1715 directives.cc:1717 directives.cc:1719 directives.cc:2326
 #, gcc-internal-format, gfc-internal-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.cc:1738
+#: directives.cc:1743
 #, gcc-internal-format, gfc-internal-format
 msgid "invalid #%s directive"
 msgstr "directiva #%s inválida"
 
-#: directives.cc:1801
+#: directives.cc:1806
 #, fuzzy, gcc-internal-format
 #| msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgid "registering pragmas in namespace %qs with mismatched name expansion"
 msgstr "se registran pragmas en el espacio de nombres «%s» con una expansión de nombre que no coincide"
 
-#: directives.cc:1810
+#: directives.cc:1815
 #, fuzzy, gcc-internal-format
 #| msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgid "registering pragma %qs with name expansion and no namespace"
 msgstr "se registra el pragma «%s» con expansión de nombre y sin un espacio de nombres"
 
-#: directives.cc:1828
+#: directives.cc:1833
 #, fuzzy, gcc-internal-format
 #| msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgid "registering %qs as both a pragma and a pragma namespace"
 msgstr "se registra «%s» como un pragma y como un espacio de nombres de pragma"
 
-#: directives.cc:1831
+#: directives.cc:1836
 #, fuzzy, gcc-internal-format
 #| msgid "#pragma %s %s is already registered"
 msgid "%<#pragma %s %s%> is already registered"
 msgstr "#pragma %s %s ya está registrado"
 
-#: directives.cc:1834
+#: directives.cc:1839
 #, fuzzy, gcc-internal-format
 #| msgid "#pragma %s is already registered"
 msgid "%<#pragma %s%> is already registered"
 msgstr "#pragma %s ya está registrado"
 
-#: directives.cc:1865
+#: directives.cc:1870
 msgid "registering pragma with NULL handler"
 msgstr "se registra un pragma con manejador NULL"
 
-#: directives.cc:2083
+#: directives.cc:2088
 #, fuzzy, gcc-internal-format
 #| msgid "#pragma once in main file"
 msgid "%<#pragma once%> in main file"
 msgstr "#pragma una vez en el fichero principal"
 
-#: directives.cc:2153
+#: directives.cc:2158
 #, fuzzy, gcc-internal-format
 #| msgid "invalid #pragma push_macro directive"
 msgid "invalid %<#pragma %s_macro%> directive"
 msgstr "directiva #pragma push_macro inválida"
 
-#: directives.cc:2232
+#: directives.cc:2237
 #, fuzzy, gcc-internal-format
 #| msgid "invalid #pragma GCC poison directive"
 msgid "invalid %<#pragma GCC poison%> directive"
 msgstr "directiva #pragma de GCC envenenada inválida"
 
-#: directives.cc:2241
+#: directives.cc:2246
 #, fuzzy, gcc-internal-format
 #| msgid "poisoning existing macro \"%s\""
 msgid "poisoning existing macro %qs"
 msgstr "se envenena el macro existente «%s»"
 
-#: directives.cc:2263
+#: directives.cc:2268
 #, fuzzy, gcc-internal-format
 #| msgid "#pragma system_header ignored outside include file"
 msgid "%<#pragma system_header%> ignored outside include file"
 msgstr "se descarta #pragma system_header fuera del fichero a incluir"
 
-#: directives.cc:2288
+#: directives.cc:2293
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot find source file %s"
 msgstr "no se puede encontrar el fichero fuente %s"
 
-#: directives.cc:2292
+#: directives.cc:2297
 #, gcc-internal-format, gfc-internal-format
 msgid "current file is older than %s"
 msgstr "el fichero actual es más antiguo que %s"
 
-#: directives.cc:2316
+#: directives.cc:2321
 #, fuzzy, gcc-internal-format
 #| msgid "invalid \"#pragma GCC %s\" directive"
 msgid "invalid %<#pragma GCC %s%> directive"
 msgstr "directiva «#pragma GCC %s» inválida"
 
-#: directives.cc:2536
+#: directives.cc:2541
 #, fuzzy, gcc-internal-format
 #| msgid "_Pragma takes a parenthesized string literal"
 msgid "%<_Pragma%> takes a parenthesized string literal"
 msgstr "_Pragma lleva una cadena literal entre paréntesis"
 
-#: directives.cc:2619
+#: directives.cc:2624
 #, fuzzy, gcc-internal-format
 #| msgid "#else without #if"
 msgid "%<#else%> without %<#if%>"
 msgstr "#else sin #if"
 
-#: directives.cc:2624
+#: directives.cc:2629
 #, fuzzy, gcc-internal-format
 #| msgid "#else after #else"
 msgid "%<#else%> after %<#else%>"
 msgstr "#else después de #else"
 
-#: directives.cc:2626 directives.cc:2661
+#: directives.cc:2631 directives.cc:2666
 msgid "the conditional began here"
 msgstr "el condicional empezó aquí"
 
-#: directives.cc:2652
+#: directives.cc:2657
 #, fuzzy, gcc-internal-format
 #| msgid "#%s without #if"
 msgid "%<#%s%> without %<#if%>"
 msgstr "#%s sin #if"
 
-#: directives.cc:2658
+#: directives.cc:2663
 #, fuzzy, gcc-internal-format
 #| msgid "#%s after #else"
 msgid "%<#%s%> after %<#else%>"
 msgstr "#%s después de #else"
 
-#: directives.cc:2762
+#: directives.cc:2767
 #, fuzzy, gcc-internal-format
 #| msgid "#endif without #if"
 msgid "%<#endif%> without %<#if%>"
 msgstr "#endif sin #if"
 
-#: directives.cc:2847
+#: directives.cc:2852
 #, fuzzy, gcc-internal-format
 #| msgid "missing '(' after predicate"
 msgid "missing %<(%> after predicate"
 msgstr "falta '(' después del predicado"
 
-#: directives.cc:2865
+#: directives.cc:2870
 #, fuzzy, gcc-internal-format
 #| msgid "missing ')' to complete answer"
 msgid "missing %<)%> to complete answer"
 msgstr "falta ')' para completar la respuesta"
 
-#: directives.cc:2877
+#: directives.cc:2882
 #, fuzzy, gcc-internal-format
 #| msgid "predicate's answer is empty"
 msgid "predicate%'s answer is empty"
 msgstr "la respuesta del predicado está vacía"
 
-#: directives.cc:2907
+#: directives.cc:2912
 msgid "assertion without predicate"
 msgstr "afirmación sin predicado"
 
-#: directives.cc:2910
+#: directives.cc:2915
 msgid "predicate must be an identifier"
 msgstr "el predicado debe ser un identificador"
 
-#: directives.cc:2992
+#: directives.cc:2997
 #, fuzzy, gcc-internal-format
 #| msgid "\"%s\" re-asserted"
 msgid "%qs re-asserted"
 msgstr "«%s» reafirmado"
 
-#: directives.cc:3300
+#: directives.cc:3305
 #, gcc-internal-format, gfc-internal-format
 msgid "unterminated #%s"
 msgstr "#%s sin terminar"

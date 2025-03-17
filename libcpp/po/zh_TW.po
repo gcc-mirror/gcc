@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib 12.1-b20220213\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2025-02-14 22:50+0000\n"
+"POT-Creation-Date: 2025-03-14 22:05+0000\n"
 "PO-Revision-Date: 2022-02-16 00:36+0800\n"
 "Last-Translator: Yi-Jyun Pan <pan93412@gmail.com>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@lists.linux.org.tw>\n"
@@ -227,7 +227,7 @@ msgstr "十六進位逸出序列越界"
 
 #: charset.cc:2247
 #, gcc-internal-format
-msgid "%<\\o%> not followed by %<}%>"
+msgid "%<\\o%> not followed by %<{%>"
 msgstr ""
 
 #: charset.cc:2305
@@ -323,20 +323,20 @@ msgstr "#%s 指令的末尾有多餘的符記"
 msgid "extra tokens at end of #%s directive"
 msgstr "#%s 指令的末尾有多餘的符記"
 
-#: directives.cc:396 directives.cc:1370
+#: directives.cc:396
 #, fuzzy, gcc-internal-format
 #| msgid "#%s is a GCC extension"
 msgid "%<#%s%> is a GCC extension"
 msgstr "#%s 是 GCC 擴充功能"
 
-#: directives.cc:404 directives.cc:2681 directives.cc:2720
+#: directives.cc:404 directives.cc:2686 directives.cc:2725
 #, fuzzy, gcc-internal-format
 #| msgid "#%s before C++23 is a GCC extension"
 msgid "%<#%s%> before C++23 is a GCC extension"
 msgstr "C++23 之前的 #%s 是 GCC 擴充功能"
 
-#: directives.cc:409 directives.cc:415 directives.cc:1373 directives.cc:2685
-#: directives.cc:2725
+#: directives.cc:409 directives.cc:415 directives.cc:1374 directives.cc:2690
+#: directives.cc:2730
 #, fuzzy, gcc-internal-format
 #| msgid "#%s before C++23 is a GCC extension"
 msgid "%<#%s%> before C23 is a GCC extension"
@@ -424,7 +424,7 @@ msgstr "缺少結尾的 > 字元"
 msgid "%<#%s%> expects %<\"FILENAME\"%> or %<<FILENAME>%>"
 msgstr "#%s 需要 \"FILENAME\" 或 <FILENAME>"
 
-#: directives.cc:911 directives.cc:1386
+#: directives.cc:911 directives.cc:1391
 #, gcc-internal-format, gfc-internal-format
 msgid "empty filename in #%s"
 msgstr "#%s 中檔案名稱為空"
@@ -506,209 +506,221 @@ msgstr "空字元將保留在原文中"
 msgid "%<#embed%> not supported in traditional C"
 msgstr "建議在傳統 C 中不要使用 #elif"
 
-#: directives.cc:1431
+#: directives.cc:1370
+#, fuzzy, gcc-internal-format
+#| msgid "#%s before C++23 is a GCC extension"
+msgid "%<#%s%> before C++26 is a GCC extension"
+msgstr "C++23 之前的 #%s 是 GCC 擴充功能"
+
+#: directives.cc:1379
+#, fuzzy, gcc-internal-format
+#| msgid "#%s is a GCC extension"
+msgid "%<#%s%> is a C23 feature"
+msgstr "#%s 是 GCC 擴充功能"
+
+#: directives.cc:1436
 #, fuzzy, gcc-internal-format
 #| msgid "invalid flag \"%s\" in line directive"
 msgid "invalid flag %qs in line directive"
 msgstr "line 指令中有無效的標記「%s」"
 
-#: directives.cc:1499
+#: directives.cc:1504
 #, fuzzy, gcc-internal-format
 #| msgid "unexpected end of file after #line"
 msgid "unexpected end of file after %<#line%>"
 msgstr "#line 之後未預期的檔案結束"
 
-#: directives.cc:1502
+#: directives.cc:1507
 #, fuzzy, gcc-internal-format
 #| msgid "\"%s\" after #line is not a positive integer"
 msgid "%qs after %<#line%> is not a positive integer"
 msgstr "#line 後的「%s」不是一個正整數"
 
-#: directives.cc:1508 directives.cc:1511
+#: directives.cc:1513 directives.cc:1516
 msgid "line number out of range"
 msgstr "列號超出範圍"
 
-#: directives.cc:1524 directives.cc:1605
+#: directives.cc:1529 directives.cc:1610
 #, fuzzy, gcc-internal-format
 #| msgid "\"%s\" is not a valid filename"
 msgid "%qs is not a valid filename"
 msgstr "「%s」不是一個有效的檔案名稱"
 
-#: directives.cc:1565
+#: directives.cc:1570
 #, fuzzy, gcc-internal-format
 #| msgid "\"%s\" after # is not a positive integer"
 msgid "%qs after %<#%> is not a positive integer"
 msgstr "# 後的「%s」不是一個正整數"
 
-#: directives.cc:1632
+#: directives.cc:1637
 #, fuzzy, gcc-internal-format
 #| msgid "file \"%s\" linemarker ignored due to incorrect nesting"
 msgid "file %qs linemarker ignored due to incorrect nesting"
 msgstr "因為巢狀項目不正確，因此忽略了「%s」檔案的行標記 (linemarker)"
 
-#: directives.cc:1710 directives.cc:1712 directives.cc:1714 directives.cc:2321
+#: directives.cc:1715 directives.cc:1717 directives.cc:1719 directives.cc:2326
 #, gcc-internal-format, gfc-internal-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.cc:1738
+#: directives.cc:1743
 #, gcc-internal-format, gfc-internal-format
 msgid "invalid #%s directive"
 msgstr "無效的 #%s 指令"
 
-#: directives.cc:1801
+#: directives.cc:1806
 #, fuzzy, gcc-internal-format
 #| msgid "registering pragmas in namespace \"%s\" with mismatched name expansion"
 msgid "registering pragmas in namespace %qs with mismatched name expansion"
 msgstr "以不匹配的名稱擴展去註冊命名空間「%s」中的編譯指示"
 
-#: directives.cc:1810
+#: directives.cc:1815
 #, fuzzy, gcc-internal-format
 #| msgid "registering pragma \"%s\" with name expansion and no namespace"
 msgid "registering pragma %qs with name expansion and no namespace"
 msgstr "以名稱擴展以及無命名空間去註冊編譯指示「%s」"
 
-#: directives.cc:1828
+#: directives.cc:1833
 #, fuzzy, gcc-internal-format
 #| msgid "registering \"%s\" as both a pragma and a pragma namespace"
 msgid "registering %qs as both a pragma and a pragma namespace"
 msgstr "「%s」既被註冊為一個編譯指示又被註冊為一個編譯指示命名空間"
 
-#: directives.cc:1831
+#: directives.cc:1836
 #, fuzzy, gcc-internal-format
 #| msgid "#pragma %s %s is already registered"
 msgid "%<#pragma %s %s%> is already registered"
 msgstr "#pragma %s %s 已經被註冊"
 
-#: directives.cc:1834
+#: directives.cc:1839
 #, fuzzy, gcc-internal-format
 #| msgid "#pragma %s is already registered"
 msgid "%<#pragma %s%> is already registered"
 msgstr "#pragma %s 已經被註冊"
 
-#: directives.cc:1865
+#: directives.cc:1870
 msgid "registering pragma with NULL handler"
 msgstr "以空值處理常式去註冊編譯指示"
 
-#: directives.cc:2083
+#: directives.cc:2088
 #, fuzzy, gcc-internal-format
 #| msgid "#pragma once in main file"
 msgid "%<#pragma once%> in main file"
 msgstr "#pragma 出現在主檔案中一次"
 
-#: directives.cc:2153
+#: directives.cc:2158
 #, fuzzy, gcc-internal-format
 #| msgid "invalid #pragma push_macro directive"
 msgid "invalid %<#pragma %s_macro%> directive"
 msgstr "無效的 #pragma push_macro 指令"
 
-#: directives.cc:2232
+#: directives.cc:2237
 #, fuzzy, gcc-internal-format
 #| msgid "invalid #pragma GCC poison directive"
 msgid "invalid %<#pragma GCC poison%> directive"
 msgstr "無效的 #pragma GCC poison 指令"
 
-#: directives.cc:2241
+#: directives.cc:2246
 #, fuzzy, gcc-internal-format
 #| msgid "poisoning existing macro \"%s\""
 msgid "poisoning existing macro %qs"
 msgstr "對已存在的巨集「%s」加料"
 
-#: directives.cc:2263
+#: directives.cc:2268
 #, fuzzy, gcc-internal-format
 #| msgid "#pragma system_header ignored outside include file"
 msgid "%<#pragma system_header%> ignored outside include file"
 msgstr "#pragma system_header 在包含檔案外被忽略"
 
-#: directives.cc:2288
+#: directives.cc:2293
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot find source file %s"
 msgstr "找不到來源檔案 %s"
 
-#: directives.cc:2292
+#: directives.cc:2297
 #, gcc-internal-format, gfc-internal-format
 msgid "current file is older than %s"
 msgstr "目前檔案早於 %s"
 
-#: directives.cc:2316
+#: directives.cc:2321
 #, fuzzy, gcc-internal-format
 #| msgid "invalid \"#pragma GCC %s\" directive"
 msgid "invalid %<#pragma GCC %s%> directive"
 msgstr "無效的 #pragma GCC %s 指令"
 
-#: directives.cc:2536
+#: directives.cc:2541
 #, fuzzy, gcc-internal-format
 #| msgid "_Pragma takes a parenthesized string literal"
 msgid "%<_Pragma%> takes a parenthesized string literal"
 msgstr "_Pragma 需要一個括起的字串原文"
 
-#: directives.cc:2619
+#: directives.cc:2624
 #, fuzzy, gcc-internal-format
 #| msgid "#else without #if"
 msgid "%<#else%> without %<#if%>"
 msgstr "#else 沒有匹配的 #if"
 
-#: directives.cc:2624
+#: directives.cc:2629
 #, fuzzy, gcc-internal-format
 #| msgid "#else after #else"
 msgid "%<#else%> after %<#else%>"
 msgstr "#else 出現在 #else 後"
 
-#: directives.cc:2626 directives.cc:2661
+#: directives.cc:2631 directives.cc:2666
 msgid "the conditional began here"
 msgstr "條件自此開始"
 
-#: directives.cc:2652
+#: directives.cc:2657
 #, fuzzy, gcc-internal-format
 #| msgid "#%s without #if"
 msgid "%<#%s%> without %<#if%>"
 msgstr "#%s 缺少 #if"
 
-#: directives.cc:2658
+#: directives.cc:2663
 #, fuzzy, gcc-internal-format
 #| msgid "#%s after #else"
 msgid "%<#%s%> after %<#else%>"
 msgstr "#%s 在 #else 後"
 
-#: directives.cc:2762
+#: directives.cc:2767
 #, fuzzy, gcc-internal-format
 #| msgid "#endif without #if"
 msgid "%<#endif%> without %<#if%>"
 msgstr "#endif 沒有匹配的 #if"
 
-#: directives.cc:2847
+#: directives.cc:2852
 #, fuzzy, gcc-internal-format
 #| msgid "missing '(' after predicate"
 msgid "missing %<(%> after predicate"
 msgstr "述語後缺少「(」"
 
-#: directives.cc:2865
+#: directives.cc:2870
 #, fuzzy, gcc-internal-format
 #| msgid "missing ')' to complete answer"
 msgid "missing %<)%> to complete answer"
 msgstr "完整的答案缺少「)」"
 
-#: directives.cc:2877
+#: directives.cc:2882
 #, fuzzy, gcc-internal-format
 #| msgid "predicate's answer is empty"
 msgid "predicate%'s answer is empty"
 msgstr "述語的答案為空"
 
-#: directives.cc:2907
+#: directives.cc:2912
 msgid "assertion without predicate"
 msgstr "判定語後沒有述語"
 
-#: directives.cc:2910
+#: directives.cc:2915
 msgid "predicate must be an identifier"
 msgstr "述語必須是一個識別字"
 
-#: directives.cc:2992
+#: directives.cc:2997
 #, fuzzy, gcc-internal-format
 #| msgid "\"%s\" re-asserted"
 msgid "%qs re-asserted"
 msgstr "已再判定「%s」"
 
-#: directives.cc:3300
+#: directives.cc:3305
 #, gcc-internal-format, gfc-internal-format
 msgid "unterminated #%s"
 msgstr "未終止的 #%s"
