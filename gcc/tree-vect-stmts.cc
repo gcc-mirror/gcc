@@ -2134,6 +2134,14 @@ get_group_load_store_type (vec_info *vinfo, stmt_vec_info stmt_info,
 			    : vect_store_lanes_supported (vectype, group_size,
 							  masked_p))) != IFN_LAST)
 	    *memory_access_type = VMAT_LOAD_STORE_LANES;
+	  else if (!loop_vinfo && slp_node->avoid_stlf_fail)
+	    {
+	      *memory_access_type = VMAT_ELEMENTWISE;
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "using element-wise load to avoid disrupting "
+				 "cross iteration store-to-load forwarding\n");
+	    }
 	  else
 	    *memory_access_type = VMAT_CONTIGUOUS;
 

@@ -266,6 +266,9 @@ struct _slp_tree {
   /* Whether uses of this load or feeders of this store are suitable
      for load/store-lanes.  */
   bool ldst_lanes;
+  /* For BB vect, flag to indicate this load node should be vectorized
+     as to avoid STLF fails because of related stores.  */
+  bool avoid_stlf_fail;
 
   int vertex;
 

@@ -122,6 +122,7 @@ _slp_tree::_slp_tree ()
   SLP_TREE_DEF_TYPE (this) = vect_uninitialized_def;
   SLP_TREE_CODE (this) = ERROR_MARK;
   this->ldst_lanes = false;
+  this->avoid_stlf_fail = false;
   SLP_TREE_VECTYPE (this) = NULL_TREE;
   SLP_TREE_REPRESENTATIVE (this) = NULL;
   SLP_TREE_MEMORY_ACCESS_TYPE (this) = VMAT_INVARIANT;
@@ -3104,7 +3105,8 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 					 SLP_TREE_REF_COUNT (node));
   if (SLP_TREE_VECTYPE (node))
     dump_printf (metadata, " %T", SLP_TREE_VECTYPE (node));
-  dump_printf (metadata, "\n");
+  dump_printf (metadata, "%s\n",
+	       node->avoid_stlf_fail ? " (avoid-stlf-fail)" : "");
   if (SLP_TREE_DEF_TYPE (node) == vect_internal_def)
     {
       if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
