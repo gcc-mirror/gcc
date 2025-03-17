@@ -40,7 +40,6 @@
 #include "copybook.h"
 
 #include <glob.h>
-#include <libgen.h>
 
 #define COUNT_OF(X) (sizeof(X) / sizeof(X[0]))
 
@@ -268,24 +267,33 @@ int
 copybook_elem_t::open_file( const char directory[], bool literally ) {
   int erc;
   char  *pattern, *copier = xstrdup(cobol_filename());
-  if( ! directory ) {
-    directory = dirname(copier);
-    if( 0 == strcmp(".", directory) ) directory = NULL;
+  char *dname = NULL;
+
+  if ( directory ) {
+    dname = xstrdup(directory);
+  } else {
+    dname = ldirname(copier);
+    gcc_assert (dname != NULL); /* out of memory  */
+    if( '\0' == dname[0] ) {
+      free (dname);
+      dname = NULL;
+    }
   }
 
   char *path = NULL;
 
-  if( directory || library.name ) {
-    if( directory && library.name ) {
-      path = xasprintf( "%s/%s/%s", directory, library.name, source.name );
+  if( dname || library.name ) {
+    if( dname && library.name ) {
+      path = xasprintf( "%s/%s/%s", dname, library.name, source.name );
     } else {
-      const char *dir = directory? directory : library.name;
+      const char *dir = dname? dname : library.name;
       path = xasprintf( "%s/%s", dir, source.name );
     }
   } else {
     path = xasprintf( "%s", source.name );
   }
 
+  free(dname);
   gcc_assert(path);
 
   if( literally ) {
