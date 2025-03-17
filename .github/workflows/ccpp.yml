@@ -61,8 +61,9 @@ jobs:
       run: |
            cd gccrs-build; \
            # Add cargo to our path quickly
-           . "$HOME/.cargo/env";
-           make -Otarget -j $(nproc) 2>&1 | tee log
+           . "$HOME/.cargo/env"; \
+           # Build without network access
+           unshare --net --ipc -r /bin/bash -c "make -Otarget -j $(nproc) 2>&1 | tee log ; exit \${PIPESTATUS[0]}"
 
     - name: Check for new warnings
       run: |
