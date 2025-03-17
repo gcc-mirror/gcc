@@ -1017,17 +1017,17 @@
   [(set (match_operand:X 0 "register_operand" "=r")
 	(any_or:X (match_operand:X 1 "register_operand" "r")
 	          (match_operand:X 2 "uimm_extra_bit_or_twobits" "i")))]
-  "TARGET_ZBS"
+  "TARGET_ZBS && !single_bit_mask_operand (operands[2], VOIDmode)"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (<or_optab>:X (match_dup 1) (match_dup 3)))
    (set (match_dup 0) (<or_optab>:X (match_dup 0) (match_dup 4)))]
 {
-	unsigned HOST_WIDE_INT bits = UINTVAL (operands[2]);
-	unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (bits);
+  unsigned HOST_WIDE_INT bits = UINTVAL (operands[2]);
+  unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (bits);
 
-	operands[3] = GEN_INT (bits &~ topbit);
-	operands[4] = GEN_INT (topbit);
+  operands[3] = GEN_INT (bits &~ topbit);
+  operands[4] = GEN_INT (topbit);
 }
 [(set_attr "type" "bitmanip")])
 
@@ -1036,17 +1036,17 @@
   [(set (match_operand:X 0 "register_operand" "=r")
 	(and:X (match_operand:X 1 "register_operand" "r")
 	       (match_operand:X 2 "not_uimm_extra_bit_or_nottwobits" "i")))]
-  "TARGET_ZBS"
+  "TARGET_ZBS && !not_single_bit_mask_operand (operands[2], VOIDmode)"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (and:X (match_dup 1) (match_dup 3)))
    (set (match_dup 0) (and:X (match_dup 0) (match_dup 4)))]
 {
-	unsigned HOST_WIDE_INT bits = UINTVAL (operands[2]);
-	unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (~bits);
+  unsigned HOST_WIDE_INT bits = UINTVAL (operands[2]);
+  unsigned HOST_WIDE_INT topbit = HOST_WIDE_INT_1U << floor_log2 (~bits);
 
-	operands[3] = GEN_INT (bits | topbit);
-	operands[4] = GEN_INT (~topbit);
+  operands[3] = GEN_INT (bits | topbit);
+  operands[4] = GEN_INT (~topbit);
 }
 [(set_attr "type" "bitmanip")])
 
