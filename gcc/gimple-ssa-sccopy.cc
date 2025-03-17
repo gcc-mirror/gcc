@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "tree-ssa-dce.h"
 #include "fold-const.h"
+#include "tree-pretty-print.h"
 
 /* Strongly connected copy propagation pass.
 
@@ -485,6 +486,15 @@ scc_copy_prop::replace_scc_by_value (vec<gimple *> scc, tree val)
   for (gimple *stmt : scc)
     {
       tree name = gimple_get_lhs (stmt);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Replacing ");
+	  print_generic_expr (dump_file, name);
+	  fprintf (dump_file, " with ");
+	  print_generic_expr (dump_file, val);
+	  fprintf (dump_file, "\n");
+	  
+	}
       replace_uses_by (name, val);
       bitmap_set_bit (dead_stmts, SSA_NAME_VERSION (name));
     }
