@@ -1,3 +1,13 @@
+2025-03-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/60560
+	* expr.cc (gfc_traverse_expr): Do not descend into length type
+	parameter for negative values of auxiliary parameter f.
+	* resolve.cc (gfc_find_var_in_expr): New helper function to check
+	dependence of an expression on given variable.
+	(resolve_allocate_expr): Use it to determine if array bounds in an
+	ALLOCATE statement depend explicitly on a variable.
+
 2025-03-15  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/115271

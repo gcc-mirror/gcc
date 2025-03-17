@@ -1,3 +1,49 @@
+2025-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 603225372b.
+	* dmd/VERSION: Bump version to v2.111.0-beta.1.
+	* d-builtins.cc (build_frontend_type): Update for new front-end
+	interface.
+	* decl.cc (Class DeclVisitor): Likewise.
+	(maybe_build_decl_tree): Likewise.
+	(get_vtable_decl): Likewise.
+	(layout_class_initializer): Likewise.
+	* expr.cc (class ExprVisitor): Likewise.
+	(ExprVisitor::visit (NewExp *)): Implement placement new for class,
+	struct, and pointer types.
+	* modules.cc (get_internal_fn): Update for new front-end interface.
+
+2025-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 53a1cc8d13.
+	* d-tree.h (create_typeinfo): Change second parameter to Scope *.
+	(speculative_type_p): Remove prototype.
+	* d-frontend.cc (getTypeInfoType): Adjust.
+	* decl.cc: Include dmd/typinf.h.
+	(DeclVisitor::visit (TypeInfoDeclaration *)): Update for new front-end
+	interface.
+	* typeinfo.cc (create_typeinfo): Likewise.
+	(class SpeculativeTypeVisitor): Remove class.
+	(speculative_type_p): Remove function.
+
+2025-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd ffbad272b6.
+	* d-tree.h (make_location_t): Add overload taking a const SourceLoc &.
+	* d-codegen.cc (make_location_t): Likewise.
+	* d-diagnostic.cc (d_diagnostic_report_diagnostic): Change first
+	parameter type to const SourceLoc &.
+	(verrorReport): Update for new front-end interface.
+	(verrorReportSupplemental): Likewise.
+	* d-frontend.cc (eval_builtin): Likewise.
+	(getTypeInfoType): Likewise.
+	* d-lang.cc (d_parse_file): Likewise.
+	* d-target.cc (Target::va_listType): Likewise.
+	(Target::getTargetInfo): Likewise.
+	* decl.cc (build_decl_tree): Likewise.
+	* imports.cc (ImportVisitor::visit (Module *)): Likewise.
+	* modules.cc (get_internal_fn): Likewise.
+
 2025-03-15  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd d29e3eca45.

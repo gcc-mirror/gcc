@@ -1,3 +1,28 @@
+2025-03-16  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116256
+	* config/riscv/riscv.md (reassociation splitters): Do not load the
+	adjusted addend into a register if it fits in a simm12.
+
+2025-03-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/113546
+	* tree-cfg.cc (first_non_label_stmt): Rename to ...
+	(first_non_label_nondebug_stmt): This and use gsi_start_nondebug_after_labels_bb.
+	(assign_discriminators): Update call to first_non_label_nondebug_stmt.
+
+2025-03-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2025-03-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/119172
+	* config.in: Regenerate.
+	* config/darwin.h (DARWIN_PLATFORM_ID): Add the option to
+	use -macos_version_min where available.
+	* configure: Regenerate.
+	* configure.ac: Check for ld64 support of -macos_version_min.
+
 2025-03-14  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/116572

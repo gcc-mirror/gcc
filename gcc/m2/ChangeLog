@@ -1,3 +1,17 @@
+2025-03-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115111
+	* gm2-compiler/M2GenGCC.mod (CodeStatementNote): Add debugging.
+	* gm2-compiler/M2Quads.def (BuildEndWhile): New parameter reltokpos.
+	* gm2-compiler/M2Quads.mod (BuildEndWhile): Reimplement using new parameter.
+	* gm2-compiler/P3Build.bnf (WhileStatement): Call BuildEndWhile
+	with -1 relative position.
+	* gm2-gcc/m2block.cc (do_add_stmt): Tidy comment.
+	(GetGlobals): Ditto.
+	(flush_pending_note): Remove #if 0 code.
+	* gm2-gcc/m2pp.cc (m2pp_nop_expr): New function.
+	(m2pp_statement): New case clause call m2pp_nop_expr.
+
 2025-03-10  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/119192
