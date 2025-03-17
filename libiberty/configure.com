@@ -17,7 +17,7 @@ $DECK
 $ FILES="getopt,obstack,xexit,xmalloc,hex,getopt1,cplus-dem,cp-demangle,"+-
     "cp-demint,asprintf,vasprintf,mkstemps,concat,getruntime,getpagesize,"+-
     "getpwd,xstrerror,xmemdup,xstrdup,xatexit,choose-temp,fnmatch,objalloc,"+-
-    "safe-ctype,hashtab,lbasename,argv,lrealpath,make-temp-file,"+-
+    "safe-ctype,hashtab,lbasename,ldirname,argv,lrealpath,make-temp-file,"+-
     "stpcpy,unlink-if-ordinary"
 $ OPT="/noopt/debug/warnings=disable=(missingreturn)"
 $ CFLAGS=OPT + "/include=([],[-.include])/name=(as_is,shortened)" +-

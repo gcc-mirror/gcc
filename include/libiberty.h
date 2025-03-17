@@ -133,6 +133,18 @@ extern const char *dos_lbasename (const char *) ATTRIBUTE_RETURNS_NONNULL ATTRIB
 
 extern const char *unix_lbasename (const char *) ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_NONNULL(1);
 
+/* A dirname () that is always compiled in.  */
+
+extern char *ldirname (const char *) ATTRIBUTE_NONNULL(1);
+
+/* Same, but assumes DOS semantics regardless of host.  */
+
+extern char *dos_ldirname (const char *) ATTRIBUTE_NONNULL(1);
+
+/* Same, but assumes Unix semantics regardless of host.  */
+
+extern char *unix_ldirname (const char *) ATTRIBUTE_NONNULL(1);
+
 /* A well-defined realpath () that is always compiled in.  */
 
 extern char *lrealpath (const char *);
