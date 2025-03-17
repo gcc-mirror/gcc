@@ -850,7 +850,7 @@ cbl_field_t::report_invalid_initial_value(const YYLTYPE& loc) const {
         /*
          * Check fraction for excess precision
          */
-        auto p = strchr(data.initial, symbol_decimal_point());
+        const char *p = strchr(data.initial, symbol_decimal_point());
         if( p ) {
           auto pend = std::find(p, p + strlen(p), 0x20);
           int n = std::count_if( ++p, pend, isdigit );
