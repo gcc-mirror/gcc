@@ -39,13 +39,15 @@ package body System.Value_D is
    --  We need an unsigned type large enough to represent the mantissa
 
    package Impl is new Value_R (Uns, 1, 2**(Int'Size - 1), Round => False);
-   --  We do not use the Extra digit for decimal fixed-point types
+   --  We do not use the Extra digit for decimal fixed-point types, except to
+   --  effectively ensure that overflow is detected near the boundaries.
 
    function Integer_to_Decimal
      (Str    : String;
       Val    : Uns;
       Base   : Unsigned;
       ScaleB : Integer;
+      Extra  : Unsigned;
       Minus  : Boolean;
       Scale  : Integer) return Int;
    --  Convert the real value from integer to decimal representation
@@ -59,6 +61,7 @@ package body System.Value_D is
       Val    : Uns;
       Base   : Unsigned;
       ScaleB : Integer;
+      Extra  : Unsigned;
       Minus  : Boolean;
       Scale  : Integer) return Int
    is
@@ -126,6 +129,10 @@ package body System.Value_D is
          end if;
       end Unsigned_To_Signed;
 
+      --  Local variables
+
+      E : Uns := Uns (Extra);
+
    begin
       --  If the base of the value is 10 or its scaling factor is zero, then
       --  add the scales (they are defined in the opposite sense) and apply
@@ -143,9 +150,10 @@ package body System.Value_D is
             end loop;
 
             while S > 0 loop
-               if V <= Uns'Last / 10 then
-                  V := V * 10;
+               if V <= (Uns'Last - E) / 10 then
+                  V := V * 10 + E;
                   S := S - 1;
+                  E := 0;
                else
                   Bad_Value (Str);
                end if;
@@ -193,8 +201,9 @@ package body System.Value_D is
                   Z := 10 ** Integer'Max (0, -Scale);
 
                   for J in 1 .. LS loop
-                     if V <= Uns'Last / Uns (B) then
-                        V := V * Uns (B);
+                     if V <= (Uns'Last - E) / Uns (B) then
+                        V := V * Uns (B) + E;
+                        E := 0;
                      else
                         Bad_Value (Str);
                      end if;
@@ -207,7 +216,7 @@ package body System.Value_D is
                raise Program_Error;
             end if;
 
-            --  Perform a scale divide operation with rounding to match 'Image
+            --  Perform a scaled divide operation with rounding to match 'Image
 
             Scaled_Divide (Unsigned_To_Signed (V), Y, Z, Q, R, Round => True);
 
@@ -238,7 +247,8 @@ package body System.Value_D is
    begin
       Val := Impl.Scan_Raw_Real (Str, Ptr, Max, Base, Scl, Extra, Minus);
 
-      return Integer_to_Decimal (Str, Val (1), Base, Scl (1), Minus, Scale);
+      return
+        Integer_to_Decimal (Str, Val (1), Base, Scl (1), Extra, Minus, Scale);
    end Scan_Decimal;
 
    -------------------
@@ -255,7 +265,8 @@ package body System.Value_D is
    begin
       Val := Impl.Value_Raw_Real (Str, Base, Scl, Extra, Minus);
 
-      return Integer_to_Decimal (Str, Val (1), Base, Scl (1), Minus, Scale);
+      return
+        Integer_to_Decimal (Str, Val (1), Base, Scl (1), Extra, Minus, Scale);
    end Value_Decimal;
 
 end System.Value_D;
