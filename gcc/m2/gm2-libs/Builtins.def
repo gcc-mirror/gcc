@@ -229,6 +229,11 @@ PROCEDURE __BUILTIN__ strcspn (s, accept: ADDRESS) : CARDINAL ;
 PROCEDURE __BUILTIN__ strchr (s: ADDRESS; c: INTEGER) : ADDRESS ;
 PROCEDURE __BUILTIN__ strrchr (s: ADDRESS; c: INTEGER) : ADDRESS ;
 
+PROCEDURE __BUILTIN__ clz (value: CARDINAL) : INTEGER ;
+PROCEDURE __BUILTIN__ clzll (value: LONGCARD) : INTEGER ;
+PROCEDURE __BUILTIN__ ctz (value: CARDINAL) : INTEGER ;
+PROCEDURE __BUILTIN__ ctzll (value: LONGCARD) : INTEGER ;
+
 (*
    longjmp - this GCC builtin restricts the val to always 1.
 *)

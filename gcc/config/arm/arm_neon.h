@@ -10854,7 +10854,7 @@ vld1q_s64_x2 (const int64_t * __a)
 
 __extension__ extern __inline int8x16x3_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vld1q_s8_x3 (const uint8_t * __a)
+vld1q_s8_x3 (const int8_t * __a)
 {
   union { int8x16x3_t __i; __builtin_neon_ci __o; } __rv;
   __rv.__o = __builtin_neon_vld1q_x3v16qi ((const __builtin_neon_qi *) __a);
@@ -10863,7 +10863,7 @@ vld1q_s8_x3 (const uint8_t * __a)
 
 __extension__ extern __inline int16x8x3_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vld1q_s16_x3 (const uint16_t * __a)
+vld1q_s16_x3 (const int16_t * __a)
 {
   union { int16x8x3_t __i; __builtin_neon_ci __o; } __rv;
   __rv.__o = __builtin_neon_vld1q_x3v8hi ((const __builtin_neon_hi *) __a);
@@ -10890,7 +10890,7 @@ vld1q_s64_x3 (const int64_t * __a)
 
 __extension__ extern __inline int8x16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vld1q_s8_x4 (const uint8_t * __a)
+vld1q_s8_x4 (const int8_t * __a)
 {
   union { int8x16x4_t __i; __builtin_neon_xi __o; } __rv;
   __rv.__o = __builtin_neon_vld1q_x4v16qi ((const __builtin_neon_qi *) __a);
@@ -10899,7 +10899,7 @@ vld1q_s8_x4 (const uint8_t * __a)
 
 __extension__ extern __inline int16x8x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
-vld1q_s16_x4 (const uint16_t * __a)
+vld1q_s16_x4 (const int16_t * __a)
 {
   union { int16x8x4_t __i; __builtin_neon_xi __o; } __rv;
   __rv.__o = __builtin_neon_vld1q_x4v8hi ((const __builtin_neon_hi *) __a);

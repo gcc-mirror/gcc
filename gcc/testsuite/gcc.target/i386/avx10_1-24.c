@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=x86-64 -mavx10.1" } */
+/* { dg-options "-O2 -march=x86-64 -mavx10.1-256" } */
 /* { dg-final { scan-assembler-not "%zmm" } } */
 
 typedef float __m512 __attribute__ ((__vector_size__ (64), __may_alias__));

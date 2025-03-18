@@ -975,7 +975,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     uninitialized_default_construct(_ForwardIterator __first,
 				    _ForwardIterator __last)
     {
-      __uninitialized_default_novalue(__first, __last);
+      std::__uninitialized_default_novalue(__first, __last);
     }
 
   /**
@@ -989,7 +989,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _ForwardIterator
     uninitialized_default_construct_n(_ForwardIterator __first, _Size __count)
     {
-      return __uninitialized_default_novalue_n(__first, __count);
+      return std::__uninitialized_default_novalue_n(__first, __count);
     }
 
   /**
@@ -1003,7 +1003,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     uninitialized_value_construct(_ForwardIterator __first,
 				  _ForwardIterator __last)
     {
-      return __uninitialized_default(__first, __last);
+      return std::__uninitialized_default(__first, __last);
     }
 
   /**
@@ -1017,7 +1017,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _ForwardIterator
     uninitialized_value_construct_n(_ForwardIterator __first, _Size __count)
     {
-      return __uninitialized_default_n(__first, __count);
+      return std::__uninitialized_default_n(__first, __count);
     }
 
   /**

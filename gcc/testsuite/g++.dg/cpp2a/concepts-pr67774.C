@@ -1,4 +1,4 @@
-// { dg-do compile { target c++20 } }
+// { dg-do compile { target c++20_only } }
 // { dg-additional-options "-fconcepts-ts" }
 
 #include <type_traits>

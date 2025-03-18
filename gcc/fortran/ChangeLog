@@ -1,3 +1,74 @@
+2025-03-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2025-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/118640
+	* resolve.cc (generate_component_assignments): Make sure that
+	the rhs temporary does not pick up the optional attribute from
+	the lhs.
+
+2025-03-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2024-11-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/109066
+	* resolve.cc (generate_component_assignments): If the temporary
+	for 'var' is a pointer and 'expr' is neither a constant or
+	a variable, change its attribute from pointer to allocatable.
+	This avoids assignment to a temporary point that has neither
+	been allocated or associated.
+
+2025-03-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2025-03-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/119054
+	* resolve.cc (resolve_elemental_actual): When checking other
+	actual arguments to elemental procedures, don't check
+	attributes of literals and function calls.
+
+2025-03-09  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	Backported from master:
+	2025-03-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103391
+	* trans-expr.cc (gfc_trans_assignment_1): Do not use poly assign
+	for pointer arrays on lhs (as it is done for allocatables
+	already).
+
+2025-02-22  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-02-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118080
+	* gfortran.texi: Adjust documentation.
+	* trans-decl.cc (create_function_arglist): Adjust to pass hidden
+	presence flag also for derived type dummies with VALUE,OPTIONAL
+	attribute.
+	* trans-expr.cc (gfc_conv_expr_present): Expect hidden presence
+	flag also for derived type dummies with VALUE,OPTIONAL attribute.
+	(conv_cond_temp): Adjust to allow derived types.
+	(conv_dummy_value): Extend to handle derived type dummies with
+	VALUE,OPTIONAL attribute.
+	(gfc_conv_procedure_call): Adjust for actual arguments passed to
+	derived type dummies with VALUE,OPTIONAL attribute.
+	* trans-types.cc (gfc_get_function_type): Adjust fndecl for
+	hidden presence flag.
+
+2025-02-14  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-02-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/59252
+	* trans-expr.cc (gfc_trans_subcomponent_assign): Initialize
+	allocatable non-deferred character with NULL properly.
+
 2025-02-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

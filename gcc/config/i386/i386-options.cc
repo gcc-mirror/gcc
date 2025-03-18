@@ -1135,7 +1135,6 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("apxf", OPT_mapxf),
     IX86_ATTR_ISA ("evex512", OPT_mevex512),
     IX86_ATTR_ISA ("usermsr", OPT_musermsr),
-    IX86_ATTR_ISA ("avx10.1", OPT_mavx10_1_256),
     IX86_ATTR_ISA ("avx10.1-256", OPT_mavx10_1_256),
     IX86_ATTR_ISA ("avx10.1-512", OPT_mavx10_1_512),
 
@@ -2725,6 +2724,7 @@ ix86_option_override_internal (bool main_args_p,
 			"using 512 as max vector size");
 	}
       else if (TARGET_AVX512F_P (opts->x_ix86_isa_flags)
+	       && (opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512F)
 	       && !(OPTION_MASK_ISA2_EVEX512
 		    & opts->x_ix86_isa_flags2_explicit))
 	warning (0, "Vector size conflicts between AVX10.1 and AVX512, using "
@@ -2745,7 +2745,7 @@ ix86_option_override_internal (bool main_args_p,
 	  && ((OPTION_MASK_ISA2_AVX10_1_256 | OPTION_MASK_ISA2_AVX10_1_512)
 	      & opts->x_ix86_isa_flags2_explicit))
 	{
-	  warning (0, "%<-mno-avx10.1, -mno-avx10.1-256, -mno-avx10.1-512%> "
+	  warning (0, "%<-mno-avx10.1-256, -mno-avx10.1-512%> "
 		      "cannot disable AVX512 instructions when "
 		      "%<-mavx512XXX%>");
 	  /* Reset those unset AVX512 flags set by AVX10 options when AVX10 is

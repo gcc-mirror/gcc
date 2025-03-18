@@ -1,3 +1,315 @@
+2025-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2025-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/115485
+	* config/arm/arm.cc (require_pic_register): Fix typos in
+	comment. Handle fixed arm_pic_register.
+
+2025-03-06  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/119084
+	* config/loongarch/lasx.md (UNSPEC_LASX_XVLDX): Remove.
+	(lasx_xvldx): Remove.
+	* config/loongarch/lsx.md (UNSPEC_LSX_VLDX): Remove.
+	(lsx_vldx): Remove.
+	* config/loongarch/simd.md (QIVEC): New define_mode_iterator.
+	(<simd_isa>_<x>vldx): New define_expand.
+
+2025-03-05  Richard Sandiford  <richard.sandiford@arm.com>
+	    Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/118320
+	* config/aarch64/aarch64-ldp-fusion.cc (ldp_bb_info::fuse_pair):
+	Commonize the merge of input_uses and return early if it
+	fails.
+
+2025-03-05  Hannes Braun  <hannes@hannesbraun.net>
+
+	Backported from master:
+	2025-03-05  Hannes Braun  <hannes@hannesbraun.net>
+
+	PR target/118942
+	* config/arm/arm_neon.h (vld1q_s8_x3): Use int8_t instead of
+	uint16_t.
+	(vld1q_s16_x3): Use int16_t instead of uint16_t.
+	(vld1q_s8_x4): Likewise.
+	(vld1q_s16_x4): Likewise.
+
+2025-03-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118531
+	* config/aarch64/aarch64.md (*insv_reg<mode>_<SUBDI_BITS>)
+	(*aarch64_bfi<GPI:mode><ALLX:mode>_<SUBDI_BITS>)
+	(*aarch64_bfidi<ALLX:mode>_subreg_<SUBDI_BITS>): Add missing
+	simd requirements.
+
+2025-03-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-03-04  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118976
+	* fold-const.cc (const_unop): Use ~ rather than - for BIT_NOT_EXPR.
+	* config/aarch64/aarch64.cc (aarch64_test_sve_folding): New function.
+	(aarch64_run_selftests): Run it.
+
+2025-03-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2025-03-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/118739
+	* combine.cc (distribute_notes) <case REG_UNUSED>: Correct the
+	logic when the register is used by I3.
+
+2025-03-04  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-02-28  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118243
+	* ipa-sra.cc (pull_accesses_from_callee): New parameters
+	caller_ipcp_ts and param_idx.  Check that scalar pulled accesses would
+	not clash with a known IPA-CP aggregate constant.
+	(param_splitting_across_edge): Pass IPA-CP transformation summary and
+	caller parameter index to pull_accesses_from_callee.
+
+2025-03-03  Filip Kastl  <fkastl@suse.cz>
+
+	Backported from master:
+	2025-03-02  Filip Kastl  <fkastl@suse.cz>
+
+	PR tree-optimization/117919
+	* gimple-ssa-sccopy.cc (scc_copy_prop::propagate): Prune
+	statements that 'replace_uses_by ()' removed.
+
+2025-03-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2024-12-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116720
+	* config/riscv/thead.cc (th_mempair_operands_p): Test for
+	aligned memory after swapping operands.  Simplify test for
+	first memory access as well.
+
+2025-02-27  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/x86-tune.def
+	(X86_TUNE_DEST_FALSE_DEP_FOR_GLC): Add GNR, GNR-D.
+	(X86_TUNE_AVOID_256FMA_CHAINS): Ditto.
+	(X86_TUNE_AVX512_MOVE_BY_PIECES): Ditto.
+	(X86_TUNE_AVX512_STORE_BY_PIECES): Ditto.
+
+2025-02-25  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2025-02-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/118835
+	* config/s390/s390.cc (s390_valid_shift_count): Reject shift
+	count operands which do not trivially fit the scheme of
+	address operands.
+
+2025-02-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-07  Richard Biener  <rguenther@suse.de>
+
+	PR jit/118780
+	* system.h: Check INCLUDE_DLFCN_H for including dlfcn.h instead
+	of ENABLE_PLUGIN.
+	* plugin.cc: Define INCLUDE_DLFCN_H.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118717
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement_1):
+	Do not common stores referencing abnormal SSA names.
+	* tree-ssa-sink.cc (sink_common_stores_to_bb): Likewise.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/118653
+	* tree-vect-loop.cc (vectorizable_live_operation): Also allow
+	out-of-loop debug uses.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117979
+	* tree-ssa-dce.cc (make_forwarders_with_degenerate_phis):
+	Properly update the irreducible region state.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-13  Richard Biener  <rguenther@suse.de>
+		    Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR tree-optimization/117119
+	* tree-data-ref.cc (initialize_matrix_A): Check whether
+	an INTEGER_CST fits in HWI, otherwise return chrec_dont_know.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117113
+	* gimple-loop-jam.cc (unroll_jam_possible_p): Detect when
+	we cannot handle virtual SSA update.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR lto/113207
+	* ipa-free-lang-data.cc (free_lang_data_in_type): First drop
+	const/volatile qualifiers from function argument types,
+	then build a simplified type.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/118662
+	* combine.cc (try_combine): When re-materializing a load
+	from an extended reg by a lowpart subreg make sure we're
+	not dealing with vector or complex modes.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117424
+	* tree-eh.cc (tree_could_trap_p): Verify the base is
+	fully contained within a decl.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116906
+	* tree-ssa-pre.cc (prune_clobbered_mems): Add clean_traps
+	argument.
+	(compute_antic_aux): Direct prune_clobbered_mems to prune
+	all traps when any MAX solution was involved in the ANTIC
+	computation.
+	(compute_partial_antic_aux): Adjust.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-16  Richard Biener  <rguenther@suse.de>
+		    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR tree-optimization/115494
+	* tree-ssa-pre.cc (phi_translate_1): Always generate a
+	representative for translated dependent expressions.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114052
+	* tree-ssa-loop-niter.cc (maybe_lower_iteration_bound): Check
+	for infinite subloops we might not exit.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112859
+	* tree-loop-distribution.cc
+	(loop_distribution::pg_add_dependence_edges): Add comment.
+
+2025-02-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112859
+	PR tree-optimization/115347
+	* tree-loop-distribution.cc
+	(loop_distribution::pg_add_dependence_edges): For a zero
+	distance vector still make sure to not have an inner
+	loop with zero distance.
+
+2025-02-17  Andreas Tobler  <andreast@gcc.gnu.org>
+
+	* config/freebsd-spec.h: Change fbsd-lib-spec for FreeBSD > 13,
+	do not link against profiled system libraries if -pg is invoked.
+	Add a define to note about this change.
+	* config/aarch64/aarch64-freebsd.h: Use the note to inform if
+	-pg is invoked on FreeBSD > 13.
+	* config/arm/freebsd.h: Likewise.
+	* config/i386/freebsd.h: Likewise.
+	* config/i386/freebsd64.h: Likewise.
+	* config/riscv/freebsd.h: Likewise.
+	* config/rs6000/freebsd64.h: Likewise.
+	* config/rs6000/sysv4.h: Likeise.
+
+2025-02-17  Lulu Cheng  <chenglulu@loongson.cn>
+
+	Backported from master:
+	2025-02-14  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/118843
+	* config/loongarch/loongarch-c.cc
+	(loongarch_update_cpp_builtins): Fix macro definition issues.
+
+2025-02-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AVX2_UNSET): Change AVX10.1 unset macro.
+	(OPTION_MASK_ISA2_AVX10_1_256_UNSET): Removed.
+	(OPTION_MASK_ISA2_AVX10_1_512_UNSET): Removed.
+	(OPTION_MASK_ISA2_AVX10_1_UNSET): New.
+	(ix86_handle_option): Adjust AVX10.1 unset macro.
+	* common/config/i386/i386-isas.h: Remove avx10.1.
+	* config/i386/i386-options.cc
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	(ix86_option_override_internal): Adjust warning message.
+	* config/i386/i386.opt: Remove mavx10.1.
+	* config/i386/i386.opt.urls: Regenerated.
+	* doc/extend.texi: Remove avx10.1 and adjust doc.
+	* doc/sourcebuild.texi: Ditto.
+
+2025-02-17  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/118815
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Do not check vector size conflict when AVX512 is not explicitly
+	set.
+
+2025-02-13  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-02-13  Marek Polacek  <polacek@redhat.com>
+
+	PR driver/117739
+	* doc/invoke.texi: Tweak wording for -Whardened.
+	* gcc.cc (driver_handle_option): If -z lazy or -z norelro was
+	specified, don't enable linker hardening.
+	(process_command): Don't check warn_hardened.
+
 2025-02-11  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

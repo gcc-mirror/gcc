@@ -1,3 +1,49 @@
+2025-02-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-02-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118761
+	* gm2spec.cc (lang_specific_driver): Add case clauses for
+	OPT__help, OPT__help_ set in_added_libraries to 0 and early
+	return.
+
+2025-02-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-02-04  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115112
+	* gm2-compiler/M2Quads.mod (BuildPseudoProcedureCall): Pass
+	tokno to each build procedure.
+	(BuildThrowProcedure): New parameter functok.
+	(BuildIncProcedure): New parameter proctok.
+	Pass proctok on the quad stack during every push.
+	(BuildDecProcedure): Ditto.
+	(BuildInclProcedure): New parameter proctok.
+	(BuildExclProcedure): New parameter proctok.
+
+2025-02-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-02-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118703
+	* gm2-gcc/m2builtins.cc (define_builtin_gcc): New function.
+	(m2builtins_init): Call define_builtin_gcc.
+	* gm2-libs/Builtins.def (clz): New procedure function.
+	(clzll): Ditto.
+	(ctz): Ditto.
+	(ctzll): Ditto.
+	* gm2-libs/Builtins.mod (clz): New procedure function.
+	(clzll): Ditto.
+	(ctz): Ditto.
+	(ctzll): Ditto.
+	* gm2-libs/cbuiltin.def (clz): New procedure function.
+	(clzll): Ditto.
+	(ctz): Ditto.
+	(ctzll): Ditto.
+
 2025-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

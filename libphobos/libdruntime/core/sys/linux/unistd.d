@@ -5,6 +5,7 @@ public import core.sys.posix.unistd;
 version (linux):
 extern(C):
 nothrow:
+@nogc:
 
 // Additional seek constants for sparse file handling
 // from Linux's unistd.h, stdio.h, and linux/fs.h
@@ -21,3 +22,6 @@ char* getpass(const(char)* prompt);
 
 // Exit all threads in a process
 void exit_group(int status);
+
+/// Close all open file descriptors greater or equal to `lowfd`
+void closefrom(int lowfd);
