@@ -565,6 +565,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_SELF_REFERENCE_P (in a TYPE_DECL)
       DECL_INVALID_OVERRIDER_P (in a FUNCTION_DECL)
       DECL_UNINSTANIATED_TEMPLATE_FRIEND_P (in TEMPLATE_DECL)
+      parm_used_in_post_p (in PARM_DECL)
    5: DECL_INTERFACE_KNOWN.
    6: DECL_THIS_STATIC (in VAR_DECL, FUNCTION_DECL or PARM_DECL)
       DECL_FIELD_IS_BASE (in FIELD_DECL)
@@ -8943,8 +8944,8 @@ extern tree grok_contract			(tree, tree, tree, cp_expr, location_t);
 extern tree finish_contract_condition		(cp_expr);
 extern void update_late_contract		(tree, tree, cp_expr);
 extern tree constify_contract_access            (tree);
-extern bool maybe_reject_param_in_postcondition (tree);
-
+extern void maybe_reject_param_in_postcondition (tree, location_t);
+extern void check_param_in_redecl 		(tree, tree);
 extern tree view_as_const                       (tree);
 extern tree maybe_contract_wrap_call	        (tree, tree);
 extern bool emit_contract_wrapper_func          (bool);
@@ -9023,6 +9024,24 @@ strip_contract_const_wrapper (tree exp)
     return TREE_OPERAND (exp, 0);
   else
     return exp;
+}
+
+/* Indicate if PARM_DECL DECL is ODR used in a postcondition.  */
+
+inline void
+set_parm_used_in_post (tree decl, bool constify = true)
+{
+  gcc_checking_assert (TREE_CODE (decl) == PARM_DECL);
+  DECL_LANG_FLAG_4 (decl) = constify;
+}
+
+/* Test if PARM_DECL is ODR used in a postcondition.  */
+
+inline bool
+parm_used_in_post_p (const_tree decl)
+{
+  /* Check if this parameter is odr used within a function's postcondition  */
+  return ((TREE_CODE (decl) == PARM_DECL) && DECL_LANG_FLAG_4 (decl));
 }
 
 /* Inline bodies.  */
