@@ -32,6 +32,7 @@
 --  This is why this package is part of GNARL:
 
 with System.Tasking.Debug;
+with System.Tasking.Stages;
 with System.Task_Primitives.Operations;
 
 with System.IO;
@@ -103,7 +104,9 @@ package body System.Stack_Usage.Tasking is
 
             --  Calculate the task usage for a given task
 
-            Report_For_Task (Id);
+            if not System.Tasking.Stages.Terminated (Id) then
+               Report_For_Task (Id);
+            end if;
          end loop;
 
       end if;
