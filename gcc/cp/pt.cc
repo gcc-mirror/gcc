@@ -22568,7 +22568,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  /* force_paren_expr can also create a VIEW_CONVERT_EXPR.  */
 	  RETURN (finish_parenthesized_expr (op));
 
-	maybe_reject_param_in_postcondition (op);
+	maybe_reject_param_in_postcondition (op, EXPR_LOCATION (t));
 
 	if (flag_contracts_nonattr && should_constify_contract
 	    && processing_contract_condition)
