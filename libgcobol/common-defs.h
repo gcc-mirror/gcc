@@ -444,11 +444,7 @@ class cbl_enabled_exceptions_t : protected std::set<cbl_enabled_exception_t>
   bool   empty() const { return std::set<cbl_enabled_exception_t>::empty(); }
   size_t  size() const { return std::set<cbl_enabled_exception_t>::size(); }
 
-  cbl_enabled_exceptions_t& operator=( const cbl_enabled_exceptions_t& that ) {
-    std::set<cbl_enabled_exception_t>& self(*this);
-    self = that;
-    return *this;
-  }
+  cbl_enabled_exceptions_t& operator=( const cbl_enabled_exceptions_t& ) = default;
 };
 
 extern cbl_enabled_exceptions_t enabled_exceptions;
