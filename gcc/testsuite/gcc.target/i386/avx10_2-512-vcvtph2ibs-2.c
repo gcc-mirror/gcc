@@ -50,13 +50,13 @@ TEST (void)
     res2.a[i] = DEFAULT_VALUE;
 
 #if AVX512F_LEN == 128
-  res1.x = INTRINSIC (_ipcvtph_epi16) (s.x);
-  res2.x = INTRINSIC (_mask_ipcvtph_epi16) (res2.x, mask, s.x);
-  res3.x = INTRINSIC (_maskz_ipcvtph_epi16) (mask, s.x);
+  res1.x = INTRINSIC (_ipcvtph_epi8) (s.x);
+  res2.x = INTRINSIC (_mask_ipcvtph_epi8) (res2.x, mask, s.x);
+  res3.x = INTRINSIC (_maskz_ipcvtph_epi8) (mask, s.x);
 #else
-  res1.x = INTRINSIC (_ipcvt_roundph_epi16) (s.x, 8);
-  res2.x = INTRINSIC (_mask_ipcvt_roundph_epi16) (res2.x, mask, s.x, 8);
-  res3.x = INTRINSIC (_maskz_ipcvt_roundph_epi16) (mask, s.x, 8);
+  res1.x = INTRINSIC (_ipcvt_roundph_epi8) (s.x, 8);
+  res2.x = INTRINSIC (_mask_ipcvt_roundph_epi8) (res2.x, mask, s.x, 8);
+  res3.x = INTRINSIC (_maskz_ipcvt_roundph_epi8) (mask, s.x, 8);
 #endif
 
   CALC (s.a, res_ref);

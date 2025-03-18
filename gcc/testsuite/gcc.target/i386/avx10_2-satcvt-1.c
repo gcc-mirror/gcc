@@ -151,101 +151,101 @@ volatile unsigned long long ull;
 void extern
 avx10_2_test (void)
 {
-  xi = _mm256_ipcvt_roundph_epi16 (xh, 4);
-  xi = _mm256_mask_ipcvt_roundph_epi16 (xi, m16, xh, 8);
-  xi = _mm256_maskz_ipcvt_roundph_epi16 (m16, xh, 11);
+  xi = _mm256_ipcvt_roundph_epi8 (xh, 4);
+  xi = _mm256_mask_ipcvt_roundph_epi8 (xi, m16, xh, 8);
+  xi = _mm256_maskz_ipcvt_roundph_epi8 (m16, xh, 11);
 
-  xi = _mm256_ipcvt_roundph_epu16 (xh, 4);
-  xi = _mm256_mask_ipcvt_roundph_epu16 (xi, m16, xh, 8);
-  xi = _mm256_maskz_ipcvt_roundph_epu16 (m16, xh, 11);
+  xi = _mm256_ipcvt_roundph_epu8 (xh, 4);
+  xi = _mm256_mask_ipcvt_roundph_epu8 (xi, m16, xh, 8);
+  xi = _mm256_maskz_ipcvt_roundph_epu8 (m16, xh, 11);
 
-  xi = _mm256_ipcvtt_roundph_epi16 (xh, 4);
-  xi = _mm256_mask_ipcvtt_roundph_epi16 (xi, m16, xh, 8);
-  xi = _mm256_maskz_ipcvtt_roundph_epi16 (m16, xh, 8);
+  xi = _mm256_ipcvtt_roundph_epi8 (xh, 4);
+  xi = _mm256_mask_ipcvtt_roundph_epi8 (xi, m16, xh, 8);
+  xi = _mm256_maskz_ipcvtt_roundph_epi8 (m16, xh, 8);
 
-  xi = _mm256_ipcvtt_roundph_epu16 (xh, 4);
-  xi = _mm256_mask_ipcvtt_roundph_epu16 (xi, m16, xh, 8);
-  xi = _mm256_maskz_ipcvtt_roundph_epu16 (m16, xh, 8);
+  xi = _mm256_ipcvtt_roundph_epu8 (xh, 4);
+  xi = _mm256_mask_ipcvtt_roundph_epu8 (xi, m16, xh, 8);
+  xi = _mm256_maskz_ipcvtt_roundph_epu8 (m16, xh, 8);
 
-  xi = _mm256_ipcvt_roundps_epi32 (x, 4);
-  xi = _mm256_mask_ipcvt_roundps_epi32 (xi, m8, x, 8);
-  xi = _mm256_maskz_ipcvt_roundps_epi32 (m8, x, 11);
+  xi = _mm256_ipcvt_roundps_epi8 (x, 4);
+  xi = _mm256_mask_ipcvt_roundps_epi8 (xi, m8, x, 8);
+  xi = _mm256_maskz_ipcvt_roundps_epi8 (m8, x, 11);
 
-  xi = _mm256_ipcvt_roundps_epu32 (x, 4);
-  xi = _mm256_mask_ipcvt_roundps_epu32 (xi, m8, x, 8);
-  xi = _mm256_maskz_ipcvt_roundps_epu32 (m8, x, 11);
+  xi = _mm256_ipcvt_roundps_epu8 (x, 4);
+  xi = _mm256_mask_ipcvt_roundps_epu8 (xi, m8, x, 8);
+  xi = _mm256_maskz_ipcvt_roundps_epu8 (m8, x, 11);
 
-  xi = _mm256_ipcvtt_roundps_epi32 (x, 4);
-  xi = _mm256_mask_ipcvtt_roundps_epi32 (xi, m8, x, 8);
-  xi = _mm256_maskz_ipcvtt_roundps_epi32 (m8, x, 8);
+  xi = _mm256_ipcvtt_roundps_epi8 (x, 4);
+  xi = _mm256_mask_ipcvtt_roundps_epi8 (xi, m8, x, 8);
+  xi = _mm256_maskz_ipcvtt_roundps_epi8 (m8, x, 8);
 
-  xi = _mm256_ipcvtt_roundps_epu32 (x, 4);
-  xi = _mm256_mask_ipcvtt_roundps_epu32 (xi, m8, x, 8);
-  xi = _mm256_maskz_ipcvtt_roundps_epu32 (m8, x, 8);
+  xi = _mm256_ipcvtt_roundps_epu8 (x, 4);
+  xi = _mm256_mask_ipcvtt_roundps_epu8 (xi, m8, x, 8);
+  xi = _mm256_maskz_ipcvtt_roundps_epu8 (m8, x, 8);
 
-  xi = _mm256_ipcvtbf16_epi16 (xbh);
-  xi = _mm256_mask_ipcvtbf16_epi16 (xi, m16, xbh);
-  xi = _mm256_maskz_ipcvtbf16_epi16 (m16, xbh);
+  xi = _mm256_ipcvtbf16_epi8 (xbh);
+  xi = _mm256_mask_ipcvtbf16_epi8 (xi, m16, xbh);
+  xi = _mm256_maskz_ipcvtbf16_epi8 (m16, xbh);
 
-  xi = _mm256_ipcvtbf16_epu16 (xbh);
-  xi = _mm256_mask_ipcvtbf16_epu16 (xi, m16, xbh);
-  xi = _mm256_maskz_ipcvtbf16_epu16 (m16, xbh);
+  xi = _mm256_ipcvtbf16_epu8 (xbh);
+  xi = _mm256_mask_ipcvtbf16_epu8 (xi, m16, xbh);
+  xi = _mm256_maskz_ipcvtbf16_epu8 (m16, xbh);
 
-  xi = _mm256_ipcvttbf16_epi16 (xbh);
-  xi = _mm256_mask_ipcvttbf16_epi16 (xi, m16, xbh);
-  xi = _mm256_maskz_ipcvttbf16_epi16 (m16, xbh);
+  xi = _mm256_ipcvttbf16_epi8 (xbh);
+  xi = _mm256_mask_ipcvttbf16_epi8 (xi, m16, xbh);
+  xi = _mm256_maskz_ipcvttbf16_epi8 (m16, xbh);
 
-  xi = _mm256_ipcvttbf16_epu16 (xbh);
-  xi = _mm256_mask_ipcvttbf16_epu16 (xi, m16, xbh);
-  xi = _mm256_maskz_ipcvttbf16_epu16 (m16, xbh);
+  xi = _mm256_ipcvttbf16_epu8 (xbh);
+  xi = _mm256_mask_ipcvttbf16_epu8 (xi, m16, xbh);
+  xi = _mm256_maskz_ipcvttbf16_epu8 (m16, xbh);
 
-  hxi = _mm_ipcvtph_epi16 (hxh);
-  hxi = _mm_mask_ipcvtph_epi16 (hxi, m8, hxh);
-  hxi = _mm_maskz_ipcvtph_epi16 (m8, hxh);
+  hxi = _mm_ipcvtph_epi8 (hxh);
+  hxi = _mm_mask_ipcvtph_epi8 (hxi, m8, hxh);
+  hxi = _mm_maskz_ipcvtph_epi8 (m8, hxh);
 
-  hxi = _mm_ipcvtph_epu16 (hxh);
-  hxi = _mm_mask_ipcvtph_epu16 (hxi, m8, hxh);
-  hxi = _mm_maskz_ipcvtph_epu16 (m8, hxh);
+  hxi = _mm_ipcvtph_epu8 (hxh);
+  hxi = _mm_mask_ipcvtph_epu8 (hxi, m8, hxh);
+  hxi = _mm_maskz_ipcvtph_epu8 (m8, hxh);
 
-  hxi = _mm_ipcvttph_epi16 (hxh);
-  hxi = _mm_mask_ipcvttph_epi16 (hxi, m8, hxh);
-  hxi = _mm_maskz_ipcvttph_epi16 (m8, hxh);
+  hxi = _mm_ipcvttph_epi8 (hxh);
+  hxi = _mm_mask_ipcvttph_epi8 (hxi, m8, hxh);
+  hxi = _mm_maskz_ipcvttph_epi8 (m8, hxh);
 
-  hxi = _mm_ipcvttph_epu16 (hxh);
-  hxi = _mm_mask_ipcvttph_epu16 (hxi, m8, hxh);
-  hxi = _mm_maskz_ipcvttph_epu16 (m8, hxh);
+  hxi = _mm_ipcvttph_epu8 (hxh);
+  hxi = _mm_mask_ipcvttph_epu8 (hxi, m8, hxh);
+  hxi = _mm_maskz_ipcvttph_epu8 (m8, hxh);
 
-  hxi = _mm_ipcvtps_epi32 (hx);
-  hxi = _mm_mask_ipcvtps_epi32 (hxi, m8, hx);
-  hxi = _mm_maskz_ipcvtps_epi32 (m8, hx);
+  hxi = _mm_ipcvtps_epi8 (hx);
+  hxi = _mm_mask_ipcvtps_epi8 (hxi, m8, hx);
+  hxi = _mm_maskz_ipcvtps_epi8 (m8, hx);
 
-  hxi = _mm_ipcvtps_epu32 (hx);
-  hxi = _mm_mask_ipcvtps_epu32 (hxi, m8, hx);
-  hxi = _mm_maskz_ipcvtps_epu32 (m8, hx);
+  hxi = _mm_ipcvtps_epu8 (hx);
+  hxi = _mm_mask_ipcvtps_epu8 (hxi, m8, hx);
+  hxi = _mm_maskz_ipcvtps_epu8 (m8, hx);
 
-  hxi = _mm_ipcvttps_epi32 (hx);
-  hxi = _mm_mask_ipcvttps_epi32 (hxi, m8, hx);
-  hxi = _mm_maskz_ipcvttps_epi32 (m8, hx);
+  hxi = _mm_ipcvttps_epi8 (hx);
+  hxi = _mm_mask_ipcvttps_epi8 (hxi, m8, hx);
+  hxi = _mm_maskz_ipcvttps_epi8 (m8, hx);
 
-  hxi = _mm_ipcvttps_epu32 (hx);
-  hxi = _mm_mask_ipcvttps_epu32 (hxi, m8, hx);
-  hxi = _mm_maskz_ipcvttps_epu32 (m8, hx);
+  hxi = _mm_ipcvttps_epu8 (hx);
+  hxi = _mm_mask_ipcvttps_epu8 (hxi, m8, hx);
+  hxi = _mm_maskz_ipcvttps_epu8 (m8, hx);
 
-  hxi = _mm_ipcvtbf16_epi16 (hxbh);
-  hxi = _mm_mask_ipcvtbf16_epi16 (hxi, m8, hxbh);
-  hxi = _mm_maskz_ipcvtbf16_epi16 (m8, hxbh);
+  hxi = _mm_ipcvtbf16_epi8 (hxbh);
+  hxi = _mm_mask_ipcvtbf16_epi8 (hxi, m8, hxbh);
+  hxi = _mm_maskz_ipcvtbf16_epi8 (m8, hxbh);
 
-  hxi = _mm_ipcvtbf16_epu16 (hxbh);
-  hxi = _mm_mask_ipcvtbf16_epu16 (hxi, m8, hxbh);
-  hxi = _mm_maskz_ipcvtbf16_epu16 (m8, hxbh);
+  hxi = _mm_ipcvtbf16_epu8 (hxbh);
+  hxi = _mm_mask_ipcvtbf16_epu8 (hxi, m8, hxbh);
+  hxi = _mm_maskz_ipcvtbf16_epu8 (m8, hxbh);
 
-  hxi = _mm_ipcvttbf16_epi16 (hxbh);
-  hxi = _mm_mask_ipcvttbf16_epi16 (hxi, m8, hxbh);
-  hxi = _mm_maskz_ipcvttbf16_epi16 (m8, hxbh);
+  hxi = _mm_ipcvttbf16_epi8 (hxbh);
+  hxi = _mm_mask_ipcvttbf16_epi8 (hxi, m8, hxbh);
+  hxi = _mm_maskz_ipcvttbf16_epi8 (m8, hxbh);
 
-  hxi = _mm_ipcvttbf16_epu16 (hxbh);
-  hxi = _mm_mask_ipcvttbf16_epu16 (hxi, m8, hxbh);
-  hxi = _mm_maskz_ipcvttbf16_epu16 (m8, hxbh);
+  hxi = _mm_ipcvttbf16_epu8 (hxbh);
+  hxi = _mm_mask_ipcvttbf16_epu8 (hxi, m8, hxbh);
+  hxi = _mm_maskz_ipcvttbf16_epu8 (m8, hxbh);
 
   hxi = _mm256_cvtts_roundpd_epi32 (xd, 8);
   hxi = _mm256_mask_cvtts_roundpd_epi32 (hxi, m8, xd, 8);
