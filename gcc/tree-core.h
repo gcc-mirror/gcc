@@ -1288,6 +1288,7 @@ struct GTY(()) tree_base {
        MUST_TAIL_CALL in
 	   CALL_EXPR
 
+
    public_flag:
 
        TREE_OVERFLOW in
@@ -1341,6 +1342,10 @@ struct GTY(()) tree_base {
 
        EXPR_LOCATION_WRAPPER_P in
 	   NON_LVALUE_EXPR, VIEW_CONVERT_EXPR
+
+       parm_used_in_postcondition_p in
+	   PARM_DECL
+
 
    private_flag:
 
