@@ -1899,11 +1899,11 @@ package body Ch5 is
      (Block_Name : Node_Id := Empty)
       return       Node_Id
    is
-      Block_Node   : Node_Id;
+      Block        : Node_Id;
       Created_Name : Node_Id;
 
    begin
-      Block_Node := New_Node (N_Block_Statement, Token_Ptr);
+      Block := New_Node (N_Block_Statement, Token_Ptr);
 
       Push_Scope_Stack;
       Scopes (Scope.Last).Etyp := E_Name;
@@ -1916,18 +1916,18 @@ package body Ch5 is
 
       if No (Block_Name) then
          Created_Name :=
-           Make_Identifier (Sloc (Block_Node), Set_Loop_Block_Name ('B'));
+           Make_Identifier (Sloc (Block), Set_Loop_Block_Name ('B'));
          Set_Comes_From_Source (Created_Name, False);
-         Set_Has_Created_Identifier (Block_Node, True);
-         Set_Identifier (Block_Node, Created_Name);
+         Set_Has_Created_Identifier (Block, True);
+         Set_Identifier (Block, Created_Name);
          Scopes (Scope.Last).Labl := Created_Name;
       else
-         Set_Identifier (Block_Node, Block_Name);
+         Set_Identifier (Block, Block_Name);
       end if;
 
-      Append_Elmt (Block_Node, Label_List);
-      Parse_Decls_Begin_End (Block_Node);
-      return Block_Node;
+      Append_Elmt (Block, Label_List);
+      Parse_Decls_Begin_End (Block);
+      return Block;
    end P_Declare_Statement;
 
    --  P_Begin_Statement
@@ -1942,11 +1942,11 @@ package body Ch5 is
      (Block_Name : Node_Id := Empty)
       return       Node_Id
    is
-      Block_Node   : Node_Id;
+      Block        : Node_Id;
       Created_Name : Node_Id;
 
    begin
-      Block_Node := New_Node (N_Block_Statement, Token_Ptr);
+      Block := New_Node (N_Block_Statement, Token_Ptr);
 
       Push_Scope_Stack;
       Scopes (Scope.Last).Etyp := E_Name;
@@ -1957,24 +1957,24 @@ package body Ch5 is
 
       if No (Block_Name) then
          Created_Name :=
-           Make_Identifier (Sloc (Block_Node), Set_Loop_Block_Name ('B'));
+           Make_Identifier (Sloc (Block), Set_Loop_Block_Name ('B'));
          Set_Comes_From_Source (Created_Name, False);
-         Set_Has_Created_Identifier (Block_Node, True);
-         Set_Identifier (Block_Node, Created_Name);
+         Set_Has_Created_Identifier (Block, True);
+         Set_Identifier (Block, Created_Name);
          Scopes (Scope.Last).Labl := Created_Name;
       else
-         Set_Identifier (Block_Node, Block_Name);
+         Set_Identifier (Block, Block_Name);
       end if;
 
-      Append_Elmt (Block_Node, Label_List);
+      Append_Elmt (Block, Label_List);
 
       Scopes (Scope.Last).Ecol := Start_Column;
       Scopes (Scope.Last).Sloc := Token_Ptr;
       Scan; -- past BEGIN
       Set_Handled_Statement_Sequence
-        (Block_Node, P_Handled_Sequence_Of_Statements);
-      End_Statements (Handled_Statement_Sequence (Block_Node));
-      return Block_Node;
+        (Block, P_Handled_Sequence_Of_Statements);
+      End_Statements (Handled_Statement_Sequence (Block));
+      return Block;
    end P_Begin_Statement;
 
    -------------------------
