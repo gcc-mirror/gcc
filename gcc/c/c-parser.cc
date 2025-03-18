@@ -8545,8 +8545,8 @@ c_parser_if_body (c_parser *parser, bool *if_p,
   token_indent_info body_tinfo
     = get_token_indent_info (c_parser_peek_token (parser));
   tree before_labels = get_before_labels ();
+  attr_state a = c_parser_all_labels (parser);
 
-  c_parser_all_labels (parser);
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
     {
       location_t loc = c_parser_peek_token (parser)->location;
@@ -8561,7 +8561,7 @@ c_parser_if_body (c_parser *parser, bool *if_p,
   else
     {
       body_loc_after_labels = c_parser_peek_token (parser)->location;
-      c_parser_statement_after_labels (parser, if_p, before_labels);
+      c_parser_statement_after_labels (parser, if_p, before_labels, NULL, a);
     }
 
   token_indent_info next_tinfo
@@ -8590,8 +8590,8 @@ c_parser_else_body (c_parser *parser, const token_indent_info &else_tinfo,
     = get_token_indent_info (c_parser_peek_token (parser));
   location_t body_loc_after_labels = UNKNOWN_LOCATION;
   tree before_labels = get_before_labels ();
+  attr_state a = c_parser_all_labels (parser);
 
-  c_parser_all_labels (parser);
   if (c_parser_next_token_is (parser, CPP_SEMICOLON))
     {
       location_t loc = c_parser_peek_token (parser)->location;
@@ -8605,7 +8605,7 @@ c_parser_else_body (c_parser *parser, const token_indent_info &else_tinfo,
     {
       if (!c_parser_next_token_is (parser, CPP_OPEN_BRACE))
 	body_loc_after_labels = c_parser_peek_token (parser)->location;
-      c_parser_statement_after_labels (parser, NULL, before_labels, chain);
+      c_parser_statement_after_labels (parser, NULL, before_labels, chain, a);
     }
 
   token_indent_info next_tinfo
