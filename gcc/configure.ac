@@ -6422,11 +6422,11 @@ if test x"$ld64_flag" = x"yes"; then
     AC_MSG_RESULT($gcc_cv_ld64_platform_version)
 
     AC_MSG_CHECKING(linker for -macos_version_min)
-    gcc_cv_ld64_macosx_version_min=1
+    gcc_cv_ld64_macos_version_min=1
     if $gcc_cv_ld -macos_version_min 10.5 < /dev/null 2>&1 | grep 'unknown option' > /dev/null; then
-      gcc_cv_ld64_macosx_version_min=0
+      gcc_cv_ld64_macos_version_min=0
     fi
-    AC_MSG_RESULT($gcc_cv_ld64_macosx_version_min)
+    AC_MSG_RESULT($gcc_cv_ld64_macos_version_min)
   fi
 
   if test x"${gcc_cv_ld64_version}" != x; then
@@ -6443,7 +6443,7 @@ if test x"$ld64_flag" = x"yes"; then
   AC_DEFINE_UNQUOTED(LD64_HAS_PLATFORM_VERSION, $gcc_cv_ld64_platform_version,
   [Define to 1 if ld64 supports '-platform_version'.])
 
-  AC_DEFINE_UNQUOTED(LD64_HAS_MACOS_VERSION_MIN, $gcc_cv_ld64_macosx_version_min,
+  AC_DEFINE_UNQUOTED(LD64_HAS_MACOS_VERSION_MIN, $gcc_cv_ld64_macos_version_min,
   [Define to 1 if ld64 supports '-macos_version_min'.])
 fi
 
