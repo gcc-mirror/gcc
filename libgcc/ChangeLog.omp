@@ -3,6 +3,14 @@
 	Backported from trunk:
 	2025-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* config/gcn/unwind-gcn.c (_Unwind_RaiseException)
+	(_Unwind_Resume_or_Rethrow): New.
+	* config/nvptx/unwind-nvptx.c (_Unwind_RaiseException)
+	(_Unwind_Resume_or_Rethrow): Likewise.
+
+	Backported from trunk:
+	2025-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* config/gcn/unwind-gcn.c (_Unwind_DeleteException): New.
 	* config/nvptx/unwind-nvptx.c (_Unwind_DeleteException): Likewise.
 
