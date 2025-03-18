@@ -1,3 +1,51 @@
+2025-03-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (*<or_optab>i<mode>_extrabit): Reject cases
+	where we only need to twiddle one bit.  Fix formatting.
+	(*andi<mode>extrabit): Likewise.
+
+2025-03-17  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/119285
+	* ira-costs.cc (equiv_can_be_consumed_p): Use 2 ways for
+	recognizing a valid insn after equiv insertion.
+
+2025-03-17  Michael Matz  <matz@suse.de>
+
+	PR target/112980
+	* config/rs6000/rs6000.opt (msplit-patch-nops): New option.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document it.
+	* config/rs6000/rs6000.h (machine_function.stop_patch_area_print):
+	New member.
+	* config/rs6000/rs6000.cc (rs6000_print_patchable_function_entry):
+	Emit split nops under control of that one.
+	* config/rs6000/rs6000-logue.cc (rs6000_output_function_prologue):
+	Add handling of split patch nops.
+
+2025-03-17  Michal Jires  <mjires@suse.cz>
+
+	* common.opt.urls: Regenerate.
+
+2025-03-17  Michal Jires  <mjires@suse.cz>
+
+	* doc/invoke.texi: (Optimize Options):
+	Add incremental LTO flags.
+
+2025-03-17  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/119114
+	* config/riscv/autovec.md: Apply & 0x1 mask when initializing
+	bitmask vector.
+
+2025-03-17  Ayan Shafqat  <ayan.x.shafqat@gmail.com>
+
+	* config/aarch64/arm_acle.h (__fma, __fmaf): New functions.
+
+2025-03-17  Richard Biener  <rguenther@suse.de>
+
+	* opts.cc (gen_producer_string): Record -D and -U
+	with _FORTIFY_SOURCE prefix.
+
 2025-03-16  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/116256

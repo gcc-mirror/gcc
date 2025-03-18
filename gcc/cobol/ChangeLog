@@ -1,3 +1,22 @@
+2025-03-17  Bob Dubner  <rdubner@symas.com>
+
+	PR cobol/119213
+	* Make-lang.in: Eliminate CPPFLAGS= assignment.
+	* cdf.y: Modify #includes that reference libgcobol.
+	* cobol1.cc: Modify #includes that reference libgcobol.
+	* except.cc: Modify #includes that reference libgcobol.
+	* gcobolspec.cc: Modify #includes that reference libgcobol.
+	* genapi.cc: Modify #includes that reference libgcobol.
+	* gengen.cc: Modify #includes that reference libgcobol.
+	* genmath.cc: Modify #includes that reference libgcobol.
+	* genutil.cc: Modify #includes that reference libgcobol.
+	* parse.y: Modify #includes that reference libgcobol.
+	* scan.l: Modify #includes that reference libgcobol.
+	* structs.cc: Modify #includes that reference libgcobol.
+	* symbols.cc: Modify #includes that reference libgcobol.
+	* symfind.cc: Modify #includes that reference libgcobol.
+	* util.cc: Modify #includes that reference libgcobol.
+
 2025-03-14  Robert Dubner  <rdubner@symas.com>
 
 	PR cobol/119214

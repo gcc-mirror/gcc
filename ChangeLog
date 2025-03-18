@@ -1,3 +1,7 @@
+2025-03-17  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* .gitignore: Add libgrust target folders to the ignore list.
+
 2025-03-14  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR target/92713

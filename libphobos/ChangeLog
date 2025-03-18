@@ -1,3 +1,19 @@
+2025-03-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/Makefile.am (PHOBOS_DSOURCES): Add etc/c/odbc/odbc32.d,
+	etc/c/odbc/odbc64.d, etc/c/odbc/package.d, etc/c/odbc/sql.d,
+	etc/c/odbc/sqlext.d, etc/c/odbc/sqltypes.d, etc/c/odbc/sqlucode.d,
+	etc/c/sqlite3.d.
+	* src/Makefile.in: Regenerate.
+	* src/etc/c/odbc/odbc32.d: New file.
+	* src/etc/c/odbc/odbc64.d: New file.
+	* src/etc/c/odbc/package.d: New file.
+	* src/etc/c/odbc/sql.d: New file.
+	* src/etc/c/odbc/sqlext.d: New file.
+	* src/etc/c/odbc/sqltypes.d: New file.
+	* src/etc/c/odbc/sqlucode.d: New file.
+	* src/etc/c/sqlite3.d: New file.
+
 2025-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime 603225372b.

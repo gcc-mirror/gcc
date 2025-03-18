@@ -1,3 +1,10 @@
+2025-03-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115271
+	* testsuite/libgomp.fortran/declare-variant-mod-1-use.f90: Moved
+	from gcc/testsuite/gfortran.dg/gomp/.
+	* testsuite/libgomp.fortran/declare-variant-mod-1.f90: Likewise.
+
 2025-02-22  shynur  <shynur@outlook.com>
 
 	* oacc-mem.c (acc_unmap_data, goacc_exit_datum_1, find_group_last,

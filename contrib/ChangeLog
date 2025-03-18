@@ -1,3 +1,7 @@
+2025-03-17  Sahil Yeole  <sahilyeole93@gmail.com>
+
+	* update-copyright.py: Add libgrust folder.
+
 2025-03-15  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gcc-changelog/git_repository.py (parse_git_revisions): Destroy the

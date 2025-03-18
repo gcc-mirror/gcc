@@ -1,3 +1,203 @@
+2025-03-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/redundant-andi.c: New test.
+	* gcc.target/riscv/redundant-ori.c: Likewise
+
+2025-03-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.dg/pr90838-2.c (ctz4): Replace long with long long.
+
+2025-03-17  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/unknown-associated-item.rs: New test.
+
+2025-03-17  Liam Naddell  <liam.naddell@mail.utoronto.ca>
+
+	* rust/compile/issue-2987.rs:
+	Add test for deriving Clone and Copy at the same time
+
+2025-03-17  Liam Naddell  <liam.naddell@mail.utoronto.ca>
+
+	* rust/compile/issue-3046.rs:
+	Add test for new error message
+
+2025-03-17  badumbatish  <tanghocle456@gmail.com>
+
+	* rust/execute/torture/issue-2187.rs:
+	Update pattern with \r* for dg-output tests
+	* rust/execute/xfail/macro1.rs: Likewise
+
+2025-03-17  Antonio Gomes  <antoniospg100@gmail.com>
+
+	* rust/compile/shadow1.rs: Fix test for new error message
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_illegal_options.rs: new test
+	* rust/compile/inline_asm_illegal_operands.rs: New test.
+	This is expected to fail but we couldn't resolve parse_expr()'s
+	general functionality yet
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_outside_unsafe.rs: New test.
+
+2025-03-17  dave  <dave@dmetwo.org>
+
+	* rust/compile/issue-2725.rs: New test.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_parse_operand.rs: fix warnings
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_parse_operand.rs: New test.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_illegal_options.rs:
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_faulty_clobber.rs: compress
+	the test
+	* rust/compile/inline_asm_nop.rs: compress
+	the test
+	* rust/compile/inline_asm_faulty_clobber_1.rs: Removed.
+	* rust/compile/inline_asm_faulty_clobber_2.rs: Removed.
+	* rust/compile/inline_asm_nop_2.rs: Removed.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_faulty_clobber.rs: Likewise.
+	* rust/compile/inline_asm_faulty_clobber_1.rs: Likewise.
+	* rust/compile/inline_asm_faulty_clobber_2.rs: Likewise.
+	* rust/compile/inline_asm_illegal_options.rs: Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_illegal_options.rs: New test.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_faulty_clobber.rs:
+	Wraps inline_asm tests in unsafe {}
+	* rust/compile/inline_asm_faulty_clobber_1.rs: likewise.
+	* rust/compile/inline_asm_faulty_clobber_2.rs: likewise.
+	* rust/compile/inline_asm_ident_first.rs: likewise.
+	* rust/compile/inline_asm_nop.rs: likewise.
+	* rust/compile/inline_asm_nop_2.rs: likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_legal_options.rs: New test.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_faulty_clobber.rs: New test.
+	* rust/compile/inline_asm_faulty_clobber_1.rs: New test.
+	* rust/compile/inline_asm_faulty_clobber_2.rs: New test.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_nop_2.rs: New test.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_ident_first.rs: New test.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_nop.rs: Simple test for asm!
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/exclusive_range_pattern.rs: New test.
+	* rust/compile/exclusive_range_pattern_feature_gate.rs: New test.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/not_raw_ref_op.rs: New test.
+	* rust/compile/raw_ref_op.rs: New test.
+	* rust/compile/raw_ref_op_feature_gate.rs: New test.
+	* rust/compile/raw_ref_op_invalid.rs: New test.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/struct_expr_field_attributes.rs: New test.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/dropck_eyepatch_feature_gate.rs: New test.
+	* rust/compile/may_dangle.rs: New test.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/box_syntax.rs: New test.
+	* rust/compile/box_syntax_feature_gate.rs: New test.
+
+2025-03-17  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/rustc_const_stable.rs:
+	Enable feature rustc_attrs, expect no errors.
+	* rust/compile/rustc_const_unstable.rs: New test.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/negative_impls.rs: New test.
+	* rust/compile/negative_impls_2.rs: New test.
+
+2025-03-17  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/match-struct-path.rs: New test.
+
+2025-03-17  Nobel Singh  <nobel2073@gmail.com>
+
+	* rust/compile/issue-2906.rs: New test.
+	* rust/execute/torture/issue-2906.rs: New test.
+
+2025-03-17  Jakub Dupak  <dev@jakubdupak.com>
+
+	* rust/borrowck/borrowck.exp: New test.
+	* rust/borrowck/position_dependant_outlives.rs: New test.
+	* rust/borrowck/reference.rs: New test.
+	* rust/borrowck/return_ref_to_local.rs: New test.
+	* rust/borrowck/subset.rs: New test.
+	* rust/borrowck/test_move.rs: New test.
+	* rust/borrowck/test_move_behind_reference.rs: New test.
+	* rust/borrowck/test_move_conditional.rs: New test.
+	* rust/borrowck/tmp.rs: New test.
+	* rust/borrowck/use_while_mut.rs: New test.
+	* rust/borrowck/use_while_mut_fr.rs: New test.
+	* rust/borrowck/well_formed_function_inputs.rs: New test.
+
+2025-03-17  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/119220
+	* gcc.dg/debug/dwarf2/inline2.c: Add -gno-strict-dwarf option.
+	* gcc.dg/debug/dwarf2/inline6.c: Likewise.
+
+2025-03-17  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.dg/vect/bb-slp-77.c: Skip on s390.
+
+2025-03-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115271
+	* gfortran.dg/gomp/declare-variant-mod-1-use.f90: Move to
+	libgomp/testsuite/libgomp.fortran/.
+	* gfortran.dg/gomp/declare-variant-mod-1.f90: Likewise.
+
+2025-03-17  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/119114
+	* gcc.target/riscv/rvv/autovec/pr119114.c: New test.
+
+2025-03-17  Ayan Shafqat  <ayan.x.shafqat@gmail.com>
+
+	* gcc.target/aarch64/acle/acle_fma.c: New test.
+
 2025-03-16  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/116256

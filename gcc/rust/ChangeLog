@@ -1,3 +1,1587 @@
+2025-03-17  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit):
+	Add rich error message and error code similiar to rustc with
+	associaed type and trait name
+
+2025-03-17  Liam Naddell  <liam.naddell@mail.utoronto.ca>
+
+	* expand/rust-expand-visitor.cc:
+	Fix ICE caused by unique_ptr UB and buggy iterator use
+
+2025-03-17  badumbatish  <tanghocle456@gmail.com>
+
+	* ast/rust-fmt.h (enum ParseMode):
+	Drop typedef in Cpp
+
+2025-03-17  badumbatish  <tanghocle456@gmail.com>
+
+	* ast/rust-fmt.cc (Pieces::collect):
+	Added options for ParseMode
+	* ast/rust-fmt.h (collect_pieces): Likewise.
+	(struct Pieces): Likewise.
+	* expand/rust-macro-builtins-format-args.cc (MacroBuiltin::format_args_handler):
+	Likewise.
+
+2025-03-17  badumbatish  <tanghocle456@gmail.com>
+
+	* ast/rust-expr.h (struct AnonConst):
+	Change assertion of constructor
+	(struct InlineAsmOperand):
+	Change assertion of constructor
+
+2025-03-17  Liam Naddell  <liam.naddell@mail.utoronto.ca>
+
+	* typecheck/rust-hir-type-check-expr.cc:
+	Fix ICE caused by not finding enum variant by adding new error
+	message
+
+2025-03-17  Antonio Gomes  <antoniospg100@gmail.com>
+
+	* hir/tree/rust-hir-expr.h: Add new get_operator_str method in
+	ArithmeticOrLogicalExpr and CompoundAssignmentExpr
+	* hir/tree/rust-hir.cc: Likewise
+	* typecheck/rust-hir-type-check-expr.cc: Improve error message for
+	operator expressions to display the correct operator symbol
+
+2025-03-17  Kushal Pal  <kushalpal109@gmail.com>
+
+	* Make-lang.in: Compile new file.
+	* checks/errors/borrowck/rust-borrow-checker.cc (BorrowChecker::go):
+	Use new class to report errors.
+	* checks/errors/borrowck/rust-borrow-checker-diagnostics.cc: New file.
+	* checks/errors/borrowck/rust-borrow-checker-diagnostics.h:
+	New file, adds new class.
+
+2025-03-17  Kushal Pal  <kushalpal109@gmail.com>
+
+	* Make-lang.in: Compile new file, rust-polonius.cc
+	* checks/errors/borrowck/ffi-polonius/src/gccrs_ffi.rs: Opaque
+	type to represent FFIVector from C++.
+	* checks/errors/borrowck/ffi-polonius/src/gccrs_ffi_generated.rs:
+	Change types of fields in Output.
+	* checks/errors/borrowck/ffi-polonius/src/lib.rs: Added helper
+	functions to contruct Polonius output on C++ side,
+	used helpers to contruct Polonius output on C++ side.
+	* checks/errors/borrowck/polonius/rust-polonius-ffi.h (make_vector):
+	FFIVector is a wrapper around std::vector for transfering data
+	from Rust to C++.
+	(struct Output): Use pointers to FFIVector instead of bool to
+	store Polonius output data.
+	* checks/errors/borrowck/polonius/rust-polonius.h (FFIVector__new):
+	Helper function.
+	(FFIVector__new_vec_pair): Likewise.
+	(FFIVector__new_vec_triple): Likewise.
+	(FFIVector__push): Likewise.
+	(FFIVector__push_vec_pair): Likewise.
+	(FFIVector__push_vec_triple): Likewise.
+	* checks/errors/borrowck/rust-borrow-checker.cc (BorrowChecker::go):
+	Convert FFIVector to std::vector representation for easier
+	navigation.
+	* checks/errors/borrowck/polonius/rust-polonius.cc: New file,
+	implementation of helper functions.
+
+2025-03-17  Marc Poulhiès  <dkm@kataplop.net>
+
+	* hir/rust-hir-dump.cc (Dump::do_matcharm): New.
+	(Dump::do_matchcase): New.
+	(Dump::visit(MatchExpr)): Adjust, don't use as_string.
+	* hir/rust-hir-dump.h (Dump::do_matcharm, Dump::do_matchcase): New.
+
+2025-03-17  Liam Naddell  <liam.naddell@mail.utoronto.ca>
+
+	* ast/rust-expr.h:
+	Remove unnecessary include.
+
+2025-03-17  badumbatish  <tanghocle456@gmail.com>
+
+	* ast/rust-expr.h (struct AnonConst):
+	Safe-guard InlineAsm structs
+	(struct InlineAsmOperand): Likewise.
+	* expand/rust-macro-builtins-asm.cc (parse_reg_operand_in):
+	Likewise.
+	(parse_reg_operand_out): Likewise.
+	(parse_reg_operand_inout): Likewise.
+
+2025-03-17  badumbatish  <tanghocle456@gmail.com>
+
+	* ast/rust-expr.h (struct TupleTemplateStr):
+	Store parse result of parse_format_string(s)
+	* expand/rust-macro-builtins-asm.cc (parse_format_strings):
+	Likewise
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_asm):
+	Clean up monadic operations on expected<>
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_reg_operand):
+	Addresses warning, put warn unused in right place
+	(parse_reg_operand_inout): Likewise.
+	(parse_asm_arg): Likewise.
+	* expand/rust-macro-builtins-asm.h (enum WARN_UNUSED_RESULT): Likewise.
+	(enum InlineAsmParseError): Likewise.
+	(validate): Likewise.
+	(parse_asm_arg): Likewise.
+	(parse_format_strings): Likewise.
+	(parse_clobber_abi): Likewise.
+	(parse_reg_operand): Likewise.
+	(parse_reg_operand_in): Likewise.
+	(parse_reg_operand_out): Likewise.
+	(parse_reg_operand_lateout): Likewise.
+	(parse_reg_operand_inout): Likewise.
+	(parse_reg_operand_inlateout): Likewise.
+	(parse_reg_operand_const): Likewise.
+	(parse_reg_operand_sym): Likewise.
+	(parse_reg_operand_unexpected): Likewise.
+	(parse_asm): Likewise.
+	(check_and_set): Likewise.
+	(parse_options): Likewise.
+	(parse_reg): Likewise.
+	(parse_format_string): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.h (enum InlineAsmParseError):
+	Add WARN_UNUSED_RESULT parse error
+	(enum WARN_UNUSED_RESULT): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_clobber_abi):
+	added comments
+	(parse_options): Likewise
+	(parse_asm_arg): Likewise
+	(parse_asm): Likewise
+	* expand/rust-macro-builtins-asm.h: Likewise
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-expr.h:
+	Added tl::expected to parse_operand
+	* expand/rust-macro-builtins-asm.cc (parse_reg): Likewise.
+	(parse_reg_operand): Likewise.
+	(parse_reg_operand_const): Likewise.
+	(parse_reg_operand_inout): Likewise.
+	(parse_asm_arg): Likewise.
+	* expand/rust-macro-builtins-asm.h: Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (check_and_set):
+	Scaffold expected on parse_options and asm_arg
+	(parse_options): Likewise
+	(parse_asm_arg): Likewise
+	* expand/rust-macro-builtins-asm.h (check_and_set): Likewise
+	(parse_label): Likewise
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_reg_operand_in):
+	Finish expected parse_reg_operand
+	(parse_reg_operand_unexpected): Likewise
+	* expand/rust-macro-builtins-asm.h (parse_reg_operand_unexpected): Likewise
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_clobber_abi):
+	Finish incorporating expected of parse_reg_operand
+	(parse_reg): Likewise.
+	(parse_reg_operand): Likewise.
+	(parse_reg_operand_in): Likewise.
+	(parse_reg_operand_out): Likewise.
+	(parse_reg_operand_lateout): Likewise.
+	(parse_reg_operand_const): Likewise.
+	(parse_reg_operand_inout): Likewise.
+	(parse_reg_operand_sym): Likewise.
+	(MacroBuiltin::asm_handler): Likewise.
+	(parse_asm_arg): Likewise.
+	(parse_asm): Likewise.
+	(parse_format_strings): Likewise.
+	(validate): Likewise.
+	* expand/rust-macro-builtins-asm.h (class InlineAsmParseError): Likewise.
+	(enum InlineAsmParseError): Likewise.
+	(validate): Likewise.
+	(parse_format_strings): Likewise.
+	(parse_reg_operand_in): Likewise.
+	(parse_reg_operand_out): Likewise.
+	(parse_reg_operand_lateout): Likewise.
+	(parse_reg_operand_inout): Likewise.
+	(parse_reg_operand_inlateout): Likewise.
+	(parse_reg_operand_const): Likewise.
+	(parse_reg_operand_sym): Likewise.
+
+2025-03-17  ansh  <anshmalik2002@gmail.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit):
+	Handle case for RAW_STRING_LITERAL.
+	* ast/rust-ast.cc (AttributeParser::parse_meta_item_inner):
+	Likewise.
+	(AttributeParser::parse_literal): Likewise.
+	* ast/rust-ast.h: Likewise.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::lower_literal):
+	Likewise.
+	* lex/rust-lex.cc (Lexer::parse_raw_string): Likewise.
+	* lex/rust-token.cc (Token::as_string): Likewise.
+	* lex/rust-token.h (enum PrimitiveCoreType): Likewise.
+	* parse/rust-parse-impl.h (Parser::parse_attr_input): Likewise.
+	(Parser::parse_literal_expr): Likewise.
+	(Parser::parse_pattern_no_alt): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* hir/tree/rust-hir-expr.h:
+	Added ExprType::InlineAsm
+	* hir/tree/rust-hir.h:
+	Added ExprType::InlineAsm
+
+2025-03-17  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-fragment.h (enum class): Add InvocKind and AsmKind enums.
+	* ast/rust-macro.h: Switch semicolon boolean to InvocKind enum.
+	* expand/rust-expand-visitor.cc (ExpandVisitor::visit): Likewise.
+	* expand/rust-macro-builtins-asm.cc (MacroBuiltin::asm_handler): Likewise.
+	(parse_asm): Likewise.
+	* expand/rust-macro-builtins-asm.h (parse_asm): Likewise.
+	* expand/rust-macro-builtins-format-args.cc (MacroBuiltin::format_args_handler): Likewise.
+	* expand/rust-macro-builtins-include.cc (MacroBuiltin::include_bytes_handler): Likewise.
+	(MacroBuiltin::include_str_handler): Likewise.
+	(MacroBuiltin::include_handler): Likewise.
+	* expand/rust-macro-builtins-location.cc (MacroBuiltin::file_handler): Likewise.
+	(MacroBuiltin::column_handler): Likewise.
+	(MacroBuiltin::line_handler): Likewise.
+	* expand/rust-macro-builtins-log-debug.cc (MacroBuiltin::assert_handler): Likewise.
+	* expand/rust-macro-builtins-utility.cc (MacroBuiltin::compile_error_handler): Likewise.
+	(MacroBuiltin::concat_handler): Likewise.
+	(MacroBuiltin::env_handler): Likewise.
+	(MacroBuiltin::cfg_handler): Likewise.
+	(MacroBuiltin::stringify_handler): Likewise.
+	* expand/rust-macro-builtins.cc (format_args_maker): Likewise.
+	(enum class): Likewise.
+	(inline_asm_maker): Likewise.
+	(MacroBuiltin::sorry): Likewise.
+	(MacroBuiltin::proc_macro_builtin): Likewise.
+	* expand/rust-macro-builtins.h: Likewise.
+	* expand/rust-macro-expand.cc (MacroExpander::expand_decl_macro): Likewise.
+	(MacroExpander::expand_eager_invocations): Likewise.
+	(MacroExpander::expand_invoc): Likewise.
+	* expand/rust-macro-expand.h (struct MacroExpander): Likewise.
+
+2025-03-17  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-fragment.h: Pass `is_semicolon` information to builtin
+	macro transcribers.
+	* ast/rust-macro.h: Pass semicolon information to transcriber..
+	* expand/rust-macro-builtins-asm.cc (MacroBuiltin::asm_handler): Likewise.
+	(parse_asm): Likewise.
+	* expand/rust-macro-builtins-asm.h (parse_asm): Likewise.
+	* expand/rust-macro-builtins-format-args.cc (MacroBuiltin::format_args_handler): Likewise.
+	* expand/rust-macro-builtins-include.cc (MacroBuiltin::include_bytes_handler): Likewise.
+	(MacroBuiltin::include_str_handler): Likewise.
+	(MacroBuiltin::include_handler): Likewise.
+	* expand/rust-macro-builtins-location.cc (MacroBuiltin::file_handler): Likewise.
+	(MacroBuiltin::column_handler): Likewise.
+	(MacroBuiltin::line_handler): Likewise.
+	* expand/rust-macro-builtins-log-debug.cc (MacroBuiltin::assert_handler): Likewise.
+	* expand/rust-macro-builtins-utility.cc (MacroBuiltin::compile_error_handler): Likewise.
+	(MacroBuiltin::concat_handler): Likewise.
+	(MacroBuiltin::env_handler): Likewise.
+	(MacroBuiltin::cfg_handler): Likewise.
+	(MacroBuiltin::stringify_handler): Likewise.
+	* expand/rust-macro-builtins.cc (format_args_maker): Likewise.
+	(inline_asm_maker): Likewise.
+	(MacroBuiltin::sorry): Likewise.
+	(MacroBuiltin::proc_macro_builtin): Likewise.
+	* expand/rust-macro-builtins.h: Likewise.
+	* expand/rust-macro-expand.cc (MacroExpander::expand_decl_macro): Likewise.
+	(MacroExpander::expand_invoc): Likewise.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Remove rust_unreachable.
+	* ast/rust-ast.cc (InlineAsm::accept_vis): Likewise.
+	* hir/tree/rust-hir.cc (InlineAsm::accept_vis): Likewise.
+
+2025-03-17  dave  <dave@dmetwo.org>
+
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit): Check for ?Trait in visitor
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parseDirSpec):
+	Partial second layer of expected in parsing asm
+	(parse_clobber_abi): Likewise
+	(parse_operand): Likewise
+	(parse_reg_operand): Likewise
+	(parse_asm_arg): Likewise
+	* expand/rust-macro-builtins-asm.h (parse_clobber_abi): Likewise
+	(parse_reg_operand): Likewise
+	(parse_operand): Likewise
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_reg):
+	Expected first layer done
+	(parse_reg_operand): Likewise.
+	(parse_asm_arg): Likewise.
+	(parse_format_strings): Likewise.
+	(parse_asm): Likewise.
+	(validate): Likewise.
+	* expand/rust-macro-builtins-asm.h (parse_asm_arg): Likewise.
+	(validate): Likewise.
+	(parse_format_strings): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_clobber_abi):
+	Move parser and last_token_id to InlineAsmCtx to prepapre
+	for tl::expected.
+	(parse_reg): Likewise.
+	(parse_operand): Likewise.
+	(parse_reg_operand): Likewise.
+	(check_and_set): Likewise.
+	(parse_options): Likewise.
+	(parse_format_string): Likewise.
+	(parse_asm_arg): Likewise.
+	(parse_asm): Likewise.
+	* expand/rust-macro-builtins-asm.h (class InlineAsmParseError): Likewise.
+	(parse_asm_arg): Likewise.
+	(check_and_set): Likewise.
+	(parse_operand): Likewise.
+	(parse_reg_operand): Likewise.
+	(parse_options): Likewise.
+	(parse_reg): Likewise.
+	(parse_clobber_abi): Likewise.
+	(parse_format_string): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_reg_operand):
+	Update parser to parse strings in the first stage
+	(parse_label): not needed right now
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_asm):
+	Scaffolding validation of asm!
+	(validate): Likewise
+	* expand/rust-macro-builtins-asm.h (validate): Likewise
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-expr.h (struct InlineAsmOperand):
+	Partial support for operand
+	* expand/rust-macro-builtins-asm.cc (parse_reg_operand): Likewise.
+	(parse_label): Likewise.
+	* expand/rust-macro-builtins-asm.h (parse_label): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-expr.h (struct InlineAsmOperand):
+	Refactoring and supporting more parse_reg_operand
+	* expand/rust-macro-builtins-asm.cc (parse_reg_operand):
+	Likewise.
+	(rust_debug): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit):
+	Fix visitor-related warnings
+	* ast/rust-ast-collector.h: Likewise.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Likewise.
+	* ast/rust-ast-visitor.h: Likewise.
+	* checks/errors/borrowck/rust-bir-builder-struct.h: Likewise.
+	* checks/errors/borrowck/rust-function-collector.h: Likewise.
+	* checks/errors/rust-const-checker.cc (ConstChecker::visit): Likewise.
+	* checks/errors/rust-const-checker.h: Likewise.
+	* expand/rust-derive.h: Likewise.
+	* expand/rust-macro-builtins-asm.cc (parse_reg_operand): Likewise.
+	* hir/rust-hir-dump.cc (Dump::visit): Likewise.
+	* hir/rust-hir-dump.h: Likewise.
+	* hir/tree/rust-hir-visitor.h: Likewise.
+	* resolve/rust-ast-resolve-base.cc (ResolverBase::visit): Likewise.
+	* resolve/rust-ast-resolve-base.h: Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_reg_operand):
+	Add potentially_nonpromoted_keywords set str
+	(check_identifier): likewise
+	* expand/rust-macro-builtins-asm.h (parse_format_string):
+	likewise
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_reg_operand):
+	Successful parse of in and inout, albeit with str
+	(check_identifier): Likewise.
+	(parse_asm_arg): Likewise.
+	* expand/rust-macro-builtins-asm.h (parse_format_string): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-ast-visitor.h:
+	Scaffolding HIRFullVisitor for inline asm
+	* ast/rust-ast.cc (InlineAsm::accept_vis): Likewise.
+	* hir/tree/rust-hir-visitor.h (RUST_HIR_VISITOR_H): Likewise.
+	* hir/tree/rust-hir.cc (InlineAsm::accept_vis): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-ast-visitor.h:
+	Scaffolding ast visitor for InlineAsm
+	* ast/rust-ast.cc (InlineAsm::accept_vis): Likewise.
+	* ast/rust-expr.h: Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_reg_operand):
+	Fix compile warnings.
+	(parse_options): Likewise.
+	(parse_asm): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::visit):
+	Partial unsafe support for inline asm
+	* checks/errors/rust-unsafe-checker.h: Likewise.
+	* hir/tree/rust-hir-expr.h: Likewise.
+	* hir/tree/rust-hir.cc (InlineAsm::accept_vis): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-expr.h:
+	Add support for AST to HIR inline asm translation
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::visit): Likewise.
+	* hir/rust-ast-lower-base.h: Likewise.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Likewise.
+	* hir/rust-ast-lower-expr.h: Likewise.
+	* hir/tree/rust-hir-expr.h (class InlineAsm): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-expr.h (struct AnonConst):
+	major refactoring of inline asm, mostly concerns
+	naming convention, trinary conditionals, warnings,
+	adding rust_unreachables in not-yet supported errors.
+	(struct InlineAsmRegOrRegClass): Likewise.
+	(struct InlineAsmOperand): Likewise.
+	* expand/rust-macro-builtins-asm.cc (parse_clobber_abi): Likewise.
+	(parse_reg): Likewise.
+	(parse_operand): Likewise.
+	(parse_reg_operand): Likewise.
+	(check_and_set): Likewise.
+	(parse_options): Likewise.
+	(parse_format_string): Likewise.
+	(parse_asm_arg): Likewise.
+	(parse_asm): Likewise.
+	* expand/rust-macro-builtins-asm.h (parse_asm_arg): Likewise.
+	(check_identifier): Likewise.
+	(check_and_set): Likewise.
+	(parse_operand): Likewise.
+	(parse_reg_operand): Likewise.
+	(parse_options): Likewise.
+	(parse_reg): Likewise.
+	(parse_clobber_abi): Likewise.
+	* expand/rust-macro-builtins.cc (enum class): Likewise.
+	(inline_asm_maker): Likewise.
+	* checks/errors/borrowck/ffi-polonius/Cargo.lock: Removed. Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-expr.h (struct AnonConst):
+	Got AST::Fragment to be created from InlineAsm.
+	(struct InlineAsmOperand): Likewise.
+	(class InlineAsm): Likewise.
+	* expand/rust-macro-builtins-asm.cc (parse_reg_operand): Likewise.
+	(parse_asm): likewise
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_reg):
+	Working towards parse_reg and parse_reg_operand
+	(parse_reg_operand):
+	Working towards parse_reg and parse_reg_operand
+	(parse_asm_arg):
+	Add todo about errors
+	* expand/rust-macro-builtins-asm.h (parse_global_asm):
+	remove dead code.
+	(parse_nonglobal_asm):
+	remove dead code.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parseAsmArg):
+	Renamed parseAsmArg to conform to other function names
+	(parse_asm_arg): Likewise.
+	(parse_asm): Likewise.
+	* expand/rust-macro-builtins-asm.h (parseAsmArg): Likewise.
+	(parse_asm_arg): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-expr.h (struct InlineAsmRegOrRegClass):
+	Remove union
+	(struct InlineAsmOperand): Make instances of inside struct.
+	* expand/rust-macro-builtins-asm.cc (parse_clobber_abi):
+	Change signature with inlineAsmCtx.
+	(parse_reg): Likewise.
+	(parse_operand): Likewise.
+	(parse_reg_operand): Likewise.
+	(check_and_set): Likewise.
+	(parse_options): Likewise.
+	(parse_format_string): Likewise.
+	(parseAsmArg): Likewise.
+	(parse_asm): Likewise.
+	* expand/rust-macro-builtins-asm.h (class InlineAsmContext): Likewise.
+	(parseAsmArg): Likewise.
+	(check_and_set): Likewise.
+	(parse_reg_operand): Likewise.
+	(parse_options): Likewise.
+	(parse_reg): Likewise.
+	(parse_clobber_abi): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc
+	(MacroBuiltin::global_asm_handler):
+	Remove global_asm and non_global_asm handler
+	(MacroBuiltin::nonglobal_asm_handler): Likewise.
+	(MacroBuiltin::asm_handler): Likewise.
+	* expand/rust-macro-builtins.cc (enum class): Likewise.
+	(inline_asm_maker): Likewise.
+	* expand/rust-macro-builtins.h: Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-expr.h:
+	Safegaurd InlineAsm's clone_expr_... with unreachable.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-ast-full-decls.h (enum class):
+	Rename InlineAsmOptions to InlineAsmOption for clarity
+	* ast/rust-expr.h (enum class): Likewise.
+	* expand/rust-macro-builtins-asm.cc (check_and_set): Likewise.
+	(parse_options): Likewise.
+	* expand/rust-macro-builtins-asm.h (check_and_set): Likewise.
+	* hir/tree/rust-hir-expr.h: Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-expr.h (struct InlineAsmRegOrRegClass):
+	Scaffolding parse_reg
+	* expand/rust-macro-builtins-asm.cc (parse_reg): Likewise.
+	(parse_operand): Likewise.
+	(parseAsmArg): Likewise.
+	* checks/errors/borrowck/ffi-polonius/Cargo.lock: New file.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.h (parseAsmArg):
+	Resolve static decl warning
+	(parse_nonglobal_asm):
+	Resolve static decl warning
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (check_and_set):
+	Add checks for duplicate options in inline asm
+	(parse_options): likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-expr.h: parsing of options(...)
+	* expand/rust-macro-builtins-asm.cc (check_and_set):
+	likewise.
+	(parse_options): likewise.
+	(parseAsmArg): likewise.
+	* expand/rust-macro-builtins-asm.h (check_and_set):
+	likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_clobber_abi):
+	implemented parse_clobber_abi
+	(parse_format_string): likewise.
+	(parseAsmArg): likewise.
+	(parse_asm): likewise.
+	* expand/rust-macro-builtins-asm.h (parseAsmArg): likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parseDirSpec): replace
+	scaffolded InlineAsm with real InlineAsm.
+	(parse_clobber_abi): likewise.
+	(check_and_set): likewise.
+	(parse_options): likewise.
+	(parseAsmArg): likewise.
+	(parse_asm): likewise.
+	* expand/rust-macro-builtins-asm.h (struct AsmParseError): likewise.
+	(enum InlineAsmDirSpec): likewise.
+	(enum InlineAsmRegOrRegClass): likewise.
+	(struct AsmArg): likewise.
+	(parseAsmArg): likewise.
+	(check_and_set): likewise.
+	(parse_operand): likewise.
+	(parse_options): likewise.
+	(parse_reg): likewise.
+	(parse_clobber_abi): likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-expr.h: Make InlineAsm non-abstract for usage in parsing.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-expr.h: Introduced is_global_asm to InlineAsm AST
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_clobber_abi): format
+	(check_and_set): helper function, is try_set_option equivalent
+	(parse_options): new function
+	* expand/rust-macro-builtins-asm.h (enum InlineAsmOptions):
+	removed
+	(check_and_set): decl of helper function
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_clobber_abi): title.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_options): title.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_clobber_abi): title.
+	(parseAsmArg): title.
+	* expand/rust-macro-builtins-asm.h (parse_clobber_abi): title.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (enum InlineAsmRegOrRegClass): title.
+	(parseAsmArg): title.
+	(check_identifier): title.
+	(parse_operand): title.
+	(parse_options): title.
+	(parse_reg): title.
+	(parseDirSpec): title.
+	(parse_asm): title.
+	* expand/rust-macro-builtins-asm.h: New file.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (struct AsmParseError): title.
+	(enum InlineAsmDirSpec): title.
+	(enum InlineAsmOptions): title.
+	(struct AsmArg): title.
+	(parseAsmArg): title.
+	(parse_global_asm): title.
+	(parse_nonglobal_asm): title.
+	(parse_asm): title.
+	(parseDirSpec): title.
+	(parse_format_string): title.
+	(MacroBuiltin::global_asm_handler): title.
+	(MacroBuiltin::nonglobal_asm_handler): title.
+	* expand/rust-macro-builtins.cc: title.
+	* expand/rust-macro-builtins.h: title.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* checks/errors/rust-feature-gate.cc (FeatureGate::visit): Gate the
+	excluded pattern.
+	* checks/errors/rust-feature-gate.h: Update the function prototype
+	and delete two empty implementations in order to use default visitor
+	behavior.
+	* checks/errors/rust-feature.cc (Feature::create): Add the new
+	exclusive range pattern feature gate.
+	* checks/errors/rust-feature.h: Add new feature enum variant for
+	exclusive range patterns.
+	* parse/rust-parse-impl.h (Parser::parse_pattern_no_alt): Forward the
+	token location to the AST.
+	(Parser::parse_ident_leading_pattern): Likewise.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-pattern.cc (tokenid_to_rangekind): Add a new function to
+	get a range kind from the current token type.
+	(RangePattern::as_string): Change the string representation for range
+	pattern in order to handle excluded ranges.
+	* ast/rust-pattern.h (enum class): Add new enum class to differentiate
+	range kinds.
+	(tokenid_to_rangekind): New prototype for a function that converts a
+	token id to it's corresponding range kind.
+	(class RangePattern): Change the class to accept a range kind instead
+	of an ellipsis boolean.
+	* hir/rust-ast-lower-pattern.cc (ASTLoweringPattern::visit): Abort
+	when an excluded pattern has been found as we do not handle their
+	lowering yet.
+	* parse/rust-parse-impl.h (Parser::parse_literal_or_range_pattern):
+	Parse excluded range patterns.
+	(Parser::parse_pattern_no_alt): Likewise.
+	(Parser::parse_ident_leading_pattern): Likewise.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* checks/errors/rust-feature-gate.cc (FeatureGate::visit): Gate raw
+	borrow.
+	* checks/errors/rust-feature-gate.h: Update function prototype.
+	* checks/errors/rust-feature.cc: Add raw_ref_op gate.
+	* checks/errors/rust-feature.h: Likewise.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-expr.h: Add a getter for mutability.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Panic when a
+	raw reference is met.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-builder.cc (Builder::ref): Adapt constructor to the new
+	API.
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Emit a raw weak
+	keyword when required.
+	* ast/rust-ast.cc (BorrowExpr::as_string): Change as_string
+	representation to handle raw ref operator.
+	* ast/rust-expr.h (class BorrowExpr): Add raw discriminant.
+	* expand/rust-macro-builtins-include.cc: Adapt constructor to the new
+	API.
+	* parse/rust-parse-impl.h: Handle the raw weak keyword.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Output field
+	attributes.
+	* ast/rust-expr.h (class StructExprField): Add outer attributes member.
+	* parse/rust-parse-impl.h (Parser::parse_struct_expr_field): Parse
+	outer attributes and store them in the appropriate AST node.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* checks/errors/rust-feature-gate.cc: Visit and gate may_dangle
+	attributes.
+	* checks/errors/rust-feature-gate.h: Update visit function prototype
+	and add a new member function to check on a set of attributes whether
+	one is may_dangle.
+	* checks/errors/rust-feature.cc (Feature::create): Add new
+	dropck_eyepatch feature.
+	* checks/errors/rust-feature.h: Likewise.
+	* util/rust-attribute-values.h: Add new may_dangle attribute value.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Visit outer
+	attributes.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Change outer
+	attribute visit, we need to visit all of them.
+	* ast/rust-ast.cc (LifetimeParam::as_string): Change as_string
+	implementation to allow multiple outer attributes.
+	(TypeParam::as_string): Likewise.
+	* ast/rust-ast.h (class LifetimeParam): Allow multiple outer
+	attributes.
+	* ast/rust-item.h (class TypeParam): Likewise.
+	* ast/rust-path.h: Likewise.
+	* parse/rust-parse-impl.h (Parser::parse_generic_param): Change call
+	to outer attribute parsing to collect several attributes.
+	(Parser::parse_lifetime_param): Likewise.
+	(Parser::parse_type_param): Likewise.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* parse/rust-parse-impl.h (Parser::parse_generic_param): Change token
+	reference to be the last token after all outer attributes have been
+	parsed.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* checks/errors/rust-feature-gate.cc (FeatureGate::visit): Allow
+	visitor recursion in functions. Also add the gate for the box syntax.
+	* checks/errors/rust-feature-gate.h: Remove several recursion fences
+	in the feature gate visitor.
+	* checks/errors/rust-feature.cc (Feature::create): Add a new feature.
+	(Feature::as_name): Likewise.
+	* checks/errors/rust-feature.h: Add box_syntax gate.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Add visit member
+	function for BoxExpr nodes.
+	* ast/rust-ast-collector.h: Add visit function prototype.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Add visit member
+	function to default ast visitor.
+	* ast/rust-ast-visitor.h: Add visit function's prototype.
+	* ast/rust-ast.cc (BoxExpr::as_string): Add as_string function
+	implementation for BoxExpr.
+	(BoxExpr::accept_vis): Add accept_vis implementation to BoxExpr.
+	* ast/rust-expr.h (class BoxExpr): Add BoxExpr class to represent boxed
+	expressions.
+	* expand/rust-derive.h: Add BoxExpr visit function prototype.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::visit): Add BoxExpr
+	visitor implementation.
+	* hir/rust-ast-lower-base.h: Add visit function's prototype.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Add BoxExpr
+	visitor implementation.
+	* hir/rust-ast-lower-expr.h: Add visit function's prototype.
+	* parse/rust-parse-impl.h (Parser::parse_box_expr): Add parse_box_expr
+	function's implementation.
+	* parse/rust-parse.h: Add parse_box_expr function's prototype.
+	* resolve/rust-ast-resolve-base.cc (ResolverBase::visit): Add resolver
+	visit implementation.
+	* resolve/rust-ast-resolve-base.h: Add resolver's visit function
+	prototype.
+
+2025-03-17  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-default-resolver.cc
+	(DefaultResolver::visit):
+	Scope with Rib::Kind::ConstantItem instead
+	of Rib::Kind::Item.
+	* resolve/rust-toplevel-name-resolver-2.0.cc
+	(TopLevel::visit): Remove redundancy in override of
+	ConstantItem visitor.
+
+2025-03-17  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* expand/rust-macro-builtins.cc
+	(MacroBuiltin::builtin_transcribers):
+	Add entries for "rustc_const_stable" and "rustc_const_unstable".
+	* util/rust-attributes.cc
+	(__definitions): Add entries for RUSTC_CONST_STABLE and
+	RUSTC_CONST_UNSTABLE.
+	* util/rust-attribute-values.h
+	(Attributes::RUSTC_CONST_STABLE): New.
+	(Attributes::RUSTC_CONST_UNSTABLE): New.
+
+2025-03-17  Kushal Pal  <kushalpal109@gmail.com>
+
+	* ast/rust-expr.h (class OperatorExpr):
+	Location should be private.
+	* hir/tree/rust-hir-expr.h (class OperatorExpr): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* checks/errors/rust-feature-gate.cc (FeatureGate::visit): make
+	gccrs recognize negative_impls
+	* checks/errors/rust-feature-gate.h: likewise.
+	* checks/errors/rust-feature.cc (Feature::create): likewise.
+	* checks/errors/rust-feature.h: likewise.
+
+2025-03-17  SIGMazer  <mazinasd7@gmail.com>
+
+	* rust-system.h: Add system include <stack>
+
+2025-03-17  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-default-resolver.cc
+	(DefaultResolver::visit):
+	New for AST::CallExpr and AST::MethodCallExpr.
+	* resolve/rust-default-resolver.h
+	(DefaultResolver::visit): Likewise.
+
+2025-03-17  jjasmine  <tanghocle456@gmail.com>
+
+	* ast/rust-fmt.h:  Remove useless cstddef header from rust-fmt
+
+2025-03-17  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* checks/errors/borrowck/rust-borrow-checker.cc (mkdir_wrapped): Remove.
+	(BorrowChecker::go): Use `mkdir` instead.
+	* expand/rust-proc-macro.cc (register_callback): Use Windows APIs to
+	open dynamic proc macro library.
+	(load_macros_array): Likewise.
+	* parse/rust-parse.cc (defined): Replace separators in paths using
+	std::replace.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* metadata/rust-export-metadata.cc (ExportContext::emit_trait):
+	Adapt call site to the new return type.
+	(ExportContext::emit_function): Likewise.
+	(ExportContext::emit_macro): Likewise.
+	* util/rust-hir-map.cc (Mappings::lookup_ast_item): Change the
+	function's return type.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* checks/errors/privacy/rust-privacy-reporter.cc: Change call site
+	to accomodate new return type.
+	* checks/errors/privacy/rust-pub-restricted-visitor.cc: Likewise.
+	* util/rust-hir-map.cc (Mappings::lookup_visibility): Change the
+	function's return type.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* expand/rust-macro-expand.cc (MacroExpander::expand_invoc): Adapt
+	the function call to match its new prototype.
+	* resolve/rust-early-name-resolver-2.0.cc (Early::insert_once):
+	Likewise.
+	(Early::visit): Likewise.
+	* resolve/rust-early-name-resolver.cc (EarlyNameResolver::visit):
+	Likewise.
+	* util/rust-hir-map.cc (Mappings::lookup_macro_invocation): Change the
+	function's return type.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-early-name-resolver-2.0.cc (Early::insert_once): Change
+	call site to accomodate the new return type.
+	(Early::visit): Likewise.
+	* resolve/rust-early-name-resolver.cc (EarlyNameResolver::visit):
+	Likewise.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit):
+	Likewise.
+	* util/rust-hir-map.cc (Mappings::lookup_macro_def): Change the
+	function's return type.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* backend/rust-compile-base.cc: Change call site to accomodate new
+	return type.
+	* backend/rust-compile-base.h: Change parameter to use a reference.
+	* backend/rust-compile-extern.h: Likewise.
+	* backend/rust-compile-implitem.cc (CompileTraitItem::visit):
+	Change call site for new return type.
+	* backend/rust-compile-item.cc (CompileItem::visit): Likewise.
+	* resolve/rust-ast-resolve-type.cc (ResolveTypeToCanonicalPath::visit):
+	Likewise.
+	* typecheck/rust-hir-type-check-enumitem.cc (TypeCheckEnumItem::visit):
+	Likewise.
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckImplItem::visit):
+	Likewise.
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit):
+	Likewise.
+	* typecheck/rust-hir-type-check.cc (TraitItemReference::get_type_from_fn):
+	Likewise.
+	* util/rust-hir-map.h: Update the function's prototype and change the
+	function's return type.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/rust-hir-map.cc (Mappings::insert_hir_pattern): Change call site
+	in order to accomodate new return type.
+	(Mappings::lookup_hir_pattern): Change the function's return type.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/rust-hir-map.cc (Mappings::insert_hir_struct_field): Change
+	call site to accomodate new return type.
+	(Mappings::lookup_hir_struct_field): Change the function's return
+	type.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/rust-hir-map.cc (Mappings::insert_hir_self_param): Adapt call
+	site to new return type.
+	(Mappings::lookup_hir_self_param): Change the function's return type.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/rust-hir-map.cc (Mappings::insert_hir_param): Change call site
+	to accomodate new return type.
+	(Mappings::lookup_hir_param): Change the function's return type.
+	* util/rust-hir-map.h: Updat ethe function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/rust-hir-map.cc (Mappings::insert_hir_stmt): Change call site
+	to accomodate new return type.
+	(Mappings::lookup_hir_stmt): Change the function's return type.
+	(Mappings::resolve_nodeid_to_stmt): Adapt call site to new return type.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/rust-hir-map.cc (Mappings::insert_hir_type): Change call site
+	to accomodate the new return type.
+	(Mappings::lookup_hir_type): Change the function's return type.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/rust-hir-map.cc (Mappings::insert_hir_generic_param): Change
+	call site to accomodate the new return type.
+	(Mappings::lookup_hir_generic_param): Wrap the function's return type
+	with an optional.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/rust-hir-map.cc (Mappings::insert_hir_path_expr_seg): Change
+	call site to accomodate the new return type.
+	(Mappings::lookup_hir_path_expr_seg): Wrap the function's return type
+	with an optional.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* backend/rust-mangle-v0.cc (v0_path): Adapt call site to new returned
+	type.
+	* util/rust-hir-map.cc (Mappings::lookup_hir_expr): Change the
+	function's return type.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* backend/rust-compile-item.cc (CompileItem::visit): Change call site
+	to accept new return type.
+	* backend/rust-compile-resolve-path.cc (HIRCompileBase::query_compile):
+	Likewise.
+	* backend/rust-mangle-v0.cc (v0_path): Likewise.
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::visit):
+	Likewise.
+	* checks/lints/rust-lint-marklive.cc (MarkLive::go): Likewise.
+	(MarkLive::visit): Likewise.
+	* typecheck/rust-type-util.cc (query_type): Likewise.
+	* util/rust-hir-map.cc (Mappings::insert_hir_implitem): Likewise.
+	(Mappings::lookup_hir_implitem): Change return type.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* typecheck/rust-autoderef.cc: Adapt calling code to new return type.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit):
+	Likewise.
+	(TypeCheckExpr::resolve_operator_overload): Likewise.
+	* typecheck/rust-tyty-bounds.cc (TypeBoundsProbe::assemble_builtin_candidate):
+	Likewise.
+	* typecheck/rust-tyty.cc (ClosureType::setup_fn_once_output): Likewise.
+	* util/rust-hir-map.cc (Mappings::get_lang_item): Change return type.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* checks/errors/privacy/rust-visibility-resolver.cc: Update function
+	call to match the new return type.
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_root_path):
+	Likewise.
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::resolve_root_path):
+	Likewise.
+	* util/rust-hir-map.cc (Mappings::insert_module): Likewise.
+	(Mappings::lookup_module): Change the function's return type.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* backend/rust-compile-resolve-path.cc (HIRCompileBase::query_compile):
+	Adapt code around new return type.
+	* checks/errors/rust-const-checker.cc (ConstChecker::check_function_call):
+	Likewise.
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::check_use_of_static):
+	Likewise.
+	(UnsafeChecker::check_function_call): Likewise.
+	* typecheck/rust-type-util.cc (query_type): Likewise.
+	* util/rust-hir-map.cc (Mappings::insert_hir_extern_item): Likewise.
+	(Mappings::lookup_hir_extern_item): Change return type.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* backend/rust-compile-base.cc (HIRCompileBase::resolve_method_address):
+	Update code around lookup return type.
+	* typecheck/rust-tyty-bounds.cc (TypeCheckBase::get_predicate_from_bound):
+	Likewise.
+	* typecheck/rust-tyty.cc (ClosureType::setup_fn_once_output):
+	Likewise.
+	* util/rust-hir-map.cc (Mappings::insert_defid_mapping): Likewise.
+	(Mappings::lookup_trait_item_defid): Update return type with an
+	optional.
+	(Mappings::get_lang_item): Likewise.
+	* util/rust-hir-map.h: Update the functions prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/rust-hir-map.cc (Mappings::insert_defid_mapping): Adapt call
+	to new return type.
+	(Mappings::insert_local_defid_mapping): Likewise.
+	(Mappings::lookup_local_defid): Change return type to wrap it with an
+	optional.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* backend/rust-compile-base.cc (HIRCompileBase::resolve_method_address):
+	Change calling code to accomodate new return type.
+	* checks/errors/privacy/rust-privacy-reporter.cc:
+	Likewise.
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::get_marker_predicate):
+	Likewise.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit):
+	Likewise.
+	* typecheck/rust-tyty-bounds.cc (TypeBoundsProbe::assemble_builtin_candidate):
+	Likewise.
+	* typecheck/rust-tyty.cc (ClosureType::setup_fn_once_output): Likewise.
+	* util/rust-hir-map.cc (Mappings::lookup_defid): Change function's
+	return type.
+	* util/rust-hir-map.h: Update function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* checks/errors/borrowck/rust-borrow-checker.cc (BorrowChecker::go):
+	Adapt the code to the new return types.
+	* resolve/rust-ast-resolve.cc (NameResolution::go): Likewise.
+	* util/rust-hir-map.cc (Mappings::get_crate_name): Change return type
+	to const string reference optional.
+	(Mappings::get_current_crate_name): Likewise.
+	* util/rust-hir-map.h: Update function prototypes.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-ast-resolve-toplevel.h: Adapt the code to the new
+	return type.
+	* rust-session-manager.cc (Session::load_extern_crate): Likewise.
+	* util/rust-hir-map.cc (Mappings::crate_num_to_nodeid): Change the
+	return type.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-ast-resolve-toplevel.h: Adapt the code to the new
+	return type.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit):
+	Likewise.
+	* rust-session-manager.cc (Session::load_extern_crate): Likewise.
+	* util/rust-hir-map.cc (Mappings::lookup_crate_name): Change the return
+	type to an optional.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* typecheck/rust-type-util.cc (query_type): Adapt code to accomodate
+	the new return type.
+	* util/rust-hir-map.cc (Mappings::lookup_impl_block_type): Change
+	the function's return type and remove the out pointer argument.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* typecheck/rust-type-util.cc (query_type): Change call to the function
+	in order to accomodate the new return type.
+	* util/rust-hir-map.cc (Mappings::lookup_hir_impl_block): Change the
+	function's return type to an optional.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::check_function_call):
+	Adapt function call to new return type.
+	* typecheck/rust-type-util.cc (query_type): Likewise.
+	* util/rust-hir-map.cc (Mappings::insert_hir_extern_block): Likewise.
+	(Mappings::lookup_hir_extern_block): Change return type to an optional.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* backend/rust-compile-resolve-path.cc (HIRCompileBase::query_compile):
+	Adapt return type to new optional.
+	* backend/rust-mangle-v0.cc (v0_function_path): Change prototype to use
+	the generic arguments vector instead of the whole HIR function.
+	(v0_path): Fix a bug with a null pointer being used to create the
+	trait function mangling.
+	* util/rust-hir-map.cc (Mappings::insert_hir_trait_item): Adapt code
+	to new return type.
+	(Mappings::lookup_hir_trait_item): Change the return type of the
+	function to an optional.
+	* util/rust-hir-map.h: Update the function's prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* backend/rust-compile-resolve-path.cc (HIRCompileBase::query_compile):
+	Adapt function call to new return type.
+	* backend/rust-mangle-v0.cc (v0_path): Likewise.
+	* checks/errors/rust-const-checker.cc (ConstChecker::check_function_call):
+	Likewise.
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::check_use_of_static):
+	Likewise.
+	(UnsafeChecker::check_function_call): Likewise.
+	(UnsafeChecker::check_function_attr): Likewise.
+	* checks/lints/rust-lint-marklive.cc (MarkLive::go): Likewise.
+	(MarkLive::visit): Likewise.
+	* typecheck/rust-hir-trait-resolve.cc (TraitResolver::resolve_path_to_trait):
+	Likewise.
+	* typecheck/rust-type-util.cc (query_type): Likewise.
+	* util/rust-hir-map.cc (Mappings::insert_hir_item): Likewise.
+	(Mappings::lookup_hir_item): Change function return type to use
+	optional.
+	* util/rust-hir-map.h: Update function prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/rust-hir-map.cc (Mappings::resolve_nodeid_to_stmt): Change the
+	return type and remove pointer out argument.
+	* util/rust-hir-map.h: Update function prototype.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::generate_closure_function):
+	Adapt code for new optional return type.
+	* checks/errors/privacy/rust-privacy-reporter.cc (PrivacyReporter::check_base_type_privacy):
+	Likewise.
+	* util/rust-hir-map.cc (Mappings::lookup_hir_to_node): Change return
+	type to an optional.
+	* util/rust-hir-map.h: Adapt function prototype with the new return
+	type.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Change call to use
+	the returned optional.
+	(CompileExpr::generate_closure_function): Likewise.
+	* backend/rust-compile-resolve-path.cc (ResolvePathRef::resolve):
+	Likewise.
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): Likewise.
+	* backend/rust-mangle-v0.cc (v0_path): Likewise.
+	* checks/errors/privacy/rust-visibility-resolver.cc:
+	Likewise.
+	* checks/errors/rust-const-checker.cc (ConstChecker::visit): Likewise.
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::visit):
+	Likewise.
+	* checks/lints/rust-lint-marklive.cc (MarkLive::visit): Likewise.
+	(MarkLive::visit_path_segment): Likewise.
+	* typecheck/rust-hir-trait-resolve.cc (TraitResolver::resolve_path_to_trait):
+	Likewise.
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_root_path):
+	Likewise.
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::resolve_root_path):
+	Likewise.
+	(ResolveWhereClauseItem::visit): Likewise.
+	* util/rust-hir-map.cc (Mappings::lookup_node_to_hir): Return an
+	optional instead of a boolean.
+	* util/rust-hir-map.h: Change function prototype to match the new
+	return type.
+
+2025-03-17  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-default-resolver.cc
+	(DefaultResolver::visit):
+	Verify constant item has expression before attempting to visit
+	the later.
+
+2025-03-17  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* backend/rust-compile-expr.cc
+	(check_match_scrutinee): Add assertion.
+	* backend/rust-compile-pattern.cc
+	(CompilePatternCheckExpr::visit):
+	Handle HIR::PathInExpression matching a non-enum.
+
+2025-03-17  Nobel Singh  <nobel2073@gmail.com>
+
+	* backend/rust-compile-expr.cc (check_match_scrutinee): Handle structs
+
+2025-03-17  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* backend/rust-compile-base.cc
+	(HIRCompileBase::compile_function_body):
+	Adjust unit_expression calls.
+	(HIRCompileBase::unit_expression):
+	Remove unused Context parameter.
+	* backend/rust-compile-base.h
+	(HIRCompileBase::unit_expression): Likewise.
+	* backend/rust-compile-block.cc
+	(CompileBlock::visit): Adjust unit_expression calls.
+	* backend/rust-compile-expr.cc
+	(CompileExpr::visit): Likewise.
+	* backend/rust-compile-pattern.cc
+	(CompilePatternLet::visit): Likewise.
+	* backend/rust-compile-resolve-path.cc
+	(ResolvePathRef::attempt_constructor_expression_lookup):
+	Likewise.
+	* backend/rust-compile-type.cc
+	(TyTyResolveCompile::get_implicit_enumeral_node_type):
+	Remove unused Context parameter.
+	(TyTyResolveCompile::get_unit_type):
+	Likewise.
+	(TyTyResolveCompile::visit):
+	Adjust get_implicit_enumeral_node_type and get_unit_type calls.
+	* backend/rust-compile-type.h
+	(TyTyResolveCompile::get_implicit_enumeral_node_type):
+	Remove unused Context parameter.
+	(TyTyResolveCompile::get_unit_type):
+	Likewise.
+
+2025-03-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast.h: Change dereference from a pointer to a reference
+	accessor.
+	* ast/rust-expr.h: Likewise.
+	* ast/rust-item.h: Likewise.
+	* ast/rust-macro.h: Likewise.
+	* ast/rust-path.h: Likewise.
+	* ast/rust-pattern.h: Likewise.
+	* ast/rust-type.h: Likewise.
+	* backend/rust-compile-base.cc (HIRCompileBase::resolve_method_address):
+	Likewise.
+	* backend/rust-compile-context.h: Likewise.
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Likewise.
+	(CompileExpr::generate_closure_function): Likewise.
+	* backend/rust-compile-extern.h: Likewise.
+	* backend/rust-compile-implitem.cc (CompileTraitItem::visit): Likewise.
+	* backend/rust-compile-intrinsic.cc (Intrinsics::compile): Likewise.
+	* backend/rust-compile-item.cc (CompileItem::visit): Likewise.
+	* backend/rust-compile-resolve-path.cc (ResolvePathRef::resolve):
+	Likewise.
+	(HIRCompileBase::query_compile): Likewise.
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): Likewise.
+	(TyTyResolveCompile::create_dyn_obj_record): Likewise.
+	* backend/rust-compile.cc (HIRCompileBase::coerce_to_dyn_object):
+	Likewise.
+	* backend/rust-mangle-v0.cc (v0_path): Likewise.
+	(v0_mangle_item): Likewise.
+	* checks/errors/borrowck/rust-borrow-checker.cc (BorrowChecker::go):
+	Likewise.
+	* checks/errors/privacy/rust-privacy-check.cc (Resolver::resolve):
+	Likewise.
+	* checks/errors/rust-const-checker.cc (ConstChecker::ConstChecker):
+	Likewise.
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::UnsafeChecker):
+	Likewise.
+	* checks/lints/rust-lint-marklive-base.h: Likewise.
+	* checks/lints/rust-lint-marklive.cc (MarkLive::go): Likewise.
+	(MarkLive::visit): Likewise.
+	(MarkLive::visit_path_segment): Likewise.
+	* checks/lints/rust-lint-marklive.h: Likewise.
+	* checks/lints/rust-lint-scan-deadcode.h: Likewise.
+	* expand/rust-macro-expand.cc (MacroExpander::expand_invoc): Likewise.
+	* expand/rust-macro-expand.h (struct MacroExpander): Change mapping
+	from pointer to a reference.
+	* expand/rust-proc-macro.cc (BangProcMacro::BangProcMacro): Replace
+	pointer accessor with reference accessor.
+	(AttributeProcMacro::AttributeProcMacro): Likewise.
+	(CustomDeriveProcMacro::CustomDeriveProcMacro): Likewise.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::lower_lifetime):
+	Likewise.
+	(ASTLoweringBase::lower_loop_label): Likewise.
+	(ASTLoweringBase::lower_path_expr_seg): Likewise.
+	(ASTLoweringBase::lower_self): Likewise.
+	(ASTLoweringBase::handle_lang_item_attribute): Likewise.
+	(ASTLoweringBase::lower_extern_block): Likewise.
+	(ASTLoweringBase::lower_macro_definition): Likewise.
+	* hir/rust-ast-lower-base.h: Likewise.
+	* hir/rust-ast-lower-block.h: Likewise.
+	* hir/rust-ast-lower-enumitem.h: Likewise.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::translate): Likewise.
+	(ASTLoweringExpr::visit): Likewise.
+	* hir/rust-ast-lower-extern.h: Likewise.
+	* hir/rust-ast-lower-implitem.cc (ASTLowerImplItem::translate):
+	Likewise.
+	(ASTLowerImplItem::visit): Likewise.
+	(ASTLowerTraitItem::translate): Likewise.
+	(ASTLowerTraitItem::visit): Likewise.
+	* hir/rust-ast-lower-item.cc (ASTLoweringItem::translate): Likewise.
+	(ASTLoweringItem::visit): Likewise.
+	(ASTLoweringSimplePath::lower): Likewise.
+	* hir/rust-ast-lower-pattern.cc (ASTLoweringPattern::translate):
+	Likewise.
+	(ASTLoweringPattern::visit): Likewise.
+	* hir/rust-ast-lower-stmt.cc (ASTLoweringStmt::translate): Likewise.
+	(ASTLoweringStmt::visit): Likewise.
+	* hir/rust-ast-lower-struct-field-expr.h: Likewise.
+	* hir/rust-ast-lower-type.cc (ASTLowerTypePath::visit): Likewise.
+	(ASTLowerQualifiedPathInType::visit): Likewise.
+	(ASTLoweringType::translate): Likewise.
+	(ASTLoweringType::visit): Likewise.
+	(ASTLowerGenericParam::translate): Likewise.
+	(ASTLowerGenericParam::visit): Likewise.
+	(ASTLoweringTypeBounds::translate): Likewise.
+	(ASTLoweringTypeBounds::visit): Likewise.
+	(ASTLowerWhereClauseItem::translate): Likewise.
+	(ASTLowerWhereClauseItem::visit): Likewise.
+	* hir/rust-ast-lower.cc (ASTLowering::go): Likewise.
+	(ASTLoweringBlock::visit): Likewise.
+	(ASTLoweringIfBlock::visit): Likewise.
+	(ASTLoweringIfLetBlock::visit): Likewise.
+	(ASTLowerStructExprField::visit): Likewise.
+	(ASTLoweringExprWithBlock::visit): Likewise.
+	(ASTLowerPathInExpression::visit): Likewise.
+	(ASTLoweringBase::lower_qual_path_type): Likewise.
+	(ASTLowerQualPathInExpression::visit): Likewise.
+	* metadata/rust-export-metadata.cc (ExportContext::emit_trait):
+	Likewise.
+	(ExportContext::emit_function): Likewise.
+	(ExportContext::emit_macro): Likewise.
+	(PublicInterface::PublicInterface): Likewise.
+	(PublicInterface::expected_metadata_filename): Likewise.
+	* metadata/rust-export-metadata.h: Likewise.
+	* resolve/rust-ast-resolve-base.h: Likewise.
+	* resolve/rust-ast-resolve-implitem.h: Likewise.
+	* resolve/rust-ast-resolve-item.cc (ResolveTraitItems::visit):
+	Likewise.
+	(ResolveItem::visit): Likewise.
+	(ResolveExternItem::visit): Likewise.
+	* resolve/rust-ast-resolve-path.cc (ResolvePath::resolve_path):
+	Likewise.
+	* resolve/rust-ast-resolve-stmt.h: Likewise.
+	* resolve/rust-ast-resolve-toplevel.h: Likewise.
+	* resolve/rust-ast-resolve-type.cc (ResolveRelativeTypePath::go):
+	Likewise.
+	(ResolveTypeToCanonicalPath::visit): Likewise.
+	* resolve/rust-ast-resolve-type.h: Likewise.
+	* resolve/rust-ast-resolve.cc (NameResolution::NameResolution):
+	Likewise.
+	(NameResolution::go): Likewise.
+	* resolve/rust-ast-resolve.h: Likewise.
+	* resolve/rust-early-name-resolver-2.0.cc (Early::visit_attributes):
+	Likewise.
+	* resolve/rust-early-name-resolver.cc (EarlyNameResolver::EarlyNameResolver):
+	Likewise.
+	* resolve/rust-late-name-resolver-2.0.cc (next_node_id): Likewise.
+	(next_hir_id): Likewise.
+	* resolve/rust-name-resolution-context.cc (NameResolutionContext::NameResolutionContext):
+	Likewise.
+	* resolve/rust-name-resolver.cc (Resolver::Resolver): Likewise.
+	(Resolver::generate_builtins): Likewise.
+	(Resolver::setup_builtin): Likewise.
+	* resolve/rust-name-resolver.h: Likewise.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit):
+	Likewise.
+	(TopLevel::handle_use_glob): Likewise.
+	* rust-session-manager.cc (Session::get_instance): Likewise.
+	(Session::handle_input_files): Likewise.
+	(Session::handle_crate_name): Likewise.
+	(Session::compile_crate): Likewise.
+	(Session::load_extern_crate): Likewise.
+	* rust-session-manager.h: Likewise.
+	* typecheck/rust-autoderef.cc (Adjuster::try_unsize_type): Likewise.
+	* typecheck/rust-coercion.cc (TypeCoercionRules::do_coercion):
+	Likewise.
+	(TypeCoercionRules::coerce_unsafe_ptr): Likewise.
+	(TypeCoercionRules::coerce_borrowed_pointer): Likewise.
+	(TypeCoercionRules::coerce_unsized): Likewise.
+	* typecheck/rust-coercion.h: Likewise.
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::select):
+	Likewise.
+	* typecheck/rust-hir-inherent-impl-overlap.h: Likewise.
+	* typecheck/rust-hir-path-probe.cc (PathProbeType::process_enum_item_for_candiates):
+	Likewise.
+	(PathProbeType::process_impl_items_for_candidates): Likewise.
+	(PathProbeImplTrait::process_trait_impl_items_for_candidates):
+	Likewise.
+	* typecheck/rust-hir-trait-resolve.cc (TraitResolver::resolve_path_to_trait):
+	Likewise.
+	(TraitItemReference::get_parent_trait_mappings): Likewise.
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::resolve_literal):
+	Likewise.
+	(TypeCheckBase::get_marker_predicate): Likewise.
+	* typecheck/rust-hir-type-check-base.h: Likewise.
+	* typecheck/rust-hir-type-check-enumitem.cc (TypeCheckEnumItem::visit):
+	Likewise.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit):
+	Likewise.
+	(TypeCheckExpr::resolve_operator_overload): Likewise.
+	(TypeCheckExpr::resolve_fn_trait_call): Likewise.
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckTopLevelExternItem::visit):
+	Likewise.
+	(TypeCheckImplItem::visit): Likewise.
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit):
+	Likewise.
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_root_path):
+	Likewise.
+	(TypeCheckExpr::resolve_segments): Likewise.
+	* typecheck/rust-hir-type-check-pattern.cc (TypeCheckPattern::emit_pattern_size_error):
+	Likewise.
+	(ClosureParamInfer::Resolve): Likewise.
+	* typecheck/rust-hir-type-check-struct.cc (TypeCheckStructExpr::resolve):
+	Likewise.
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit): Likewise.
+	(TypeCheckType::resolve_root_path): Likewise.
+	(TypeResolveGenericParam::visit): Likewise.
+	(ResolveWhereClauseItem::visit): Likewise.
+	* typecheck/rust-hir-type-check.cc (TraitItemReference::get_type_from_fn):
+	Likewise.
+	* typecheck/rust-type-util.cc (query_type): Likewise.
+	* typecheck/rust-typecheck-context.cc (TypeCheckContext::compute_inference_variables):
+	Likewise.
+	* typecheck/rust-tyty-bounds.cc (TypeBoundsProbe::scan): Likewise.
+	(TypeBoundsProbe::assemble_builtin_candidate): Likewise.
+	(TypeCheckBase::get_predicate_from_bound): Likewise.
+	* typecheck/rust-tyty-call.cc (TypeCheckCallExpr::visit): Likewise.
+	(TypeCheckMethodCallExpr::check): Likewise.
+	* typecheck/rust-tyty-call.h: Likewise.
+	* typecheck/rust-tyty-cmp.h: Likewise.
+	* typecheck/rust-tyty-subst.cc (SubstitutionParamMapping::override_context):
+	Likewise.
+	(SubstitutionRef::monomorphize): Likewise.
+	* typecheck/rust-tyty-util.cc (TyVar::get_implicit_infer_var):
+	Likewise.
+	(TyVar::monomorphized_clone): Likewise.
+	(TyWithLocation::TyWithLocation): Likewise.
+	* typecheck/rust-tyty.cc (BaseType::satisfies_bound): Likewise.
+	(InferType::clone): Likewise.
+	(ADTType::handle_substitions): Likewise.
+	(TupleType::handle_substitions): Likewise.
+	(FnType::handle_substitions): Likewise.
+	(ClosureType::setup_fn_once_output): Likewise.
+	(ArrayType::handle_substitions): Likewise.
+	(SliceType::handle_substitions): Likewise.
+	(ReferenceType::handle_substitions): Likewise.
+	(PointerType::handle_substitions): Likewise.
+	(ParamType::handle_substitions): Likewise.
+	* typecheck/rust-tyty.h: Likewise.
+	* typecheck/rust-unify.cc (UnifyRules::UnifyRules): Likewise.
+	(UnifyRules::commit): Likewise.
+	* util/rust-hir-map.cc: Change getter return type to a reference.
+	* util/rust-hir-map.h: Update function's prototype.
+
+2025-03-17  Mael Cravero  <mael.cravero@embecosm.com>
+
+	* rust-gcc.cc: remove unnecessary TREE_SIDE_EFFECTS and TREE_READONLY
+	macros used in arithmetic overflow checks.
+
+2025-03-17  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/rust-bir-builder-expr-stmt.cc
+	(ExprStmtBuilder::visit): Use std::ignore.
+
+2025-03-17  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/ffi-polonius/src/gccrs_ffi_generated.rs: Error reporting.
+	* checks/errors/borrowck/ffi-polonius/src/lib.rs: Error reporting.
+	* checks/errors/borrowck/polonius/rust-polonius-ffi.h (struct FactsView):
+	Error reporting.
+	(struct Output): Error reporting.
+	* checks/errors/borrowck/polonius/rust-polonius.h (struct Facts): Error reporting.
+	* checks/errors/borrowck/rust-borrow-checker.cc: Error reporting.
+
+2025-03-17  Jakub Dupak  <dev@jakubdupak.com>
+
+	* Make-lang.in: Link Polonius.
+	* checks/errors/borrowck/rust-borrow-checker.cc: Run Polonius.
+
+2025-03-17  Jakub Dupak  <dev@jakubdupak.com>
+
+	* Make-lang.in: Build Polonius.
+
+2025-03-17  Jakub Dupak  <dev@jakubdupak.com>
+
+	* checks/errors/borrowck/polonius/rust-polonius.h (struct FullPoint):
+	Polonius facts dump.
+	(struct Facts): Polonius facts dump.
+	* checks/errors/borrowck/rust-bir-dump.cc (Dump::go):
+	Polonius facts dump.
+	(Dump::visit): Polonius facts dump.
+	(Dump::visit_place): Polonius facts dump.
+	(Dump::visit_move_place): Polonius facts dump.
+	(Dump::visit_scope): Polonius facts dump.
+	* checks/errors/borrowck/rust-borrow-checker.cc (BorrowChecker::go): Polonius facts dump.
+
+2025-03-17  Kushal Pal  <kushalpal109@gmail.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Lines
+	removed as the objects are unused.
+
+2025-03-17  zhanghe9702  <zhanghe9702@163.com>
+
+	* backend/rust-tree.h: removing the CLASSTYPE_VBASECLASSES macro
+	which is duplicated three times.
+
 2025-03-06  Simon Martin  <simon@nasilyan.com>
 
 	* rust-diagnostics.h (RUST_ATTRIBUTE_GCC_DIAG): Fix comment
