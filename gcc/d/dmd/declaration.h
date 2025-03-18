@@ -128,6 +128,10 @@ public:
     short inuse;                // used to detect cycles
     uint8_t bitFields;
 
+    LINK _linkage() const;
+    LINK _linkage(LINK v);
+    bool noUnderscore() const;
+
     const char *kind() const override;
     uinteger_t size(Loc loc) override final;
 
