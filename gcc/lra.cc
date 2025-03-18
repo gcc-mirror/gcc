@@ -1730,6 +1730,12 @@ lra_rtx_hash (rtx x)
     case CONST_INT:
       return val + UINTVAL (x);
 
+    case SUBREG:
+      val += lra_rtx_hash (SUBREG_REG (x));
+      for (int i = 0; i < NUM_POLY_INT_COEFFS; ++i)
+	val += SUBREG_BYTE (x).coeffs[i];
+      return val;
+
     default:
       break;
     }
