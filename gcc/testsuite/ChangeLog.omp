@@ -1,3 +1,10 @@
+2025-03-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-03-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/alias-unsupported-1.c: New.
+
 2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:
