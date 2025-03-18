@@ -2205,9 +2205,6 @@ memento_t::apply (const ply_t &p)
     }
   else if (p.size == 1)
     {
-      int x = values[p.regno];
-      int y = values[p.arg];
-
       switch (p.code)
 	{
 	default:
@@ -2234,29 +2231,42 @@ memento_t::apply (const ply_t &p)
 	    gcc_unreachable ();
 	  break;
 
-#define DO_ARITH(n_args, code, expr)					\
+#define DO_ARITH1(code, expr)						\
 	  case code:							\
 	    gcc_assert (knows (p.regno));				\
-	    if (n_args == 2)						\
-	      gcc_assert (knows (p.arg));				\
-	    set_value (p.regno, expr);					\
+	    {								\
+	      const int x = values[p.regno];				\
+	      set_value (p.regno, expr);				\
+	    }								\
 	    break
 
-	  DO_ARITH (1, NEG, -x);
-	  DO_ARITH (1, NOT, ~x);
-	  DO_ARITH (1, PRE_INC, x + 1);
-	  DO_ARITH (1, PRE_DEC, x - 1);
-	  DO_ARITH (1, ROTATE, (x << 4) | (x >> 4));
-	  DO_ARITH (1, ASHIFT, x << 1);
-	  DO_ARITH (1, LSHIFTRT, x >> 1);
-	  DO_ARITH (1, ASHIFTRT, (x >> 1) | (x & 0x80));
+#define DO_ARITH2(code, expr)						\
+	  case code:							\
+	    gcc_assert (knows (p.regno));				\
+	    gcc_assert (knows (p.arg));					\
+	    {								\
+	      const int x = values[p.regno];				\
+	      const int y = values[p.arg];				\
+	      set_value (p.regno, expr);				\
+	    }								\
+	    break
 
-	  DO_ARITH (2, AND, x & y);
-	  DO_ARITH (2, IOR, x | y);
-	  DO_ARITH (2, XOR, x ^ y);
-	  DO_ARITH (2, PLUS, x + y);
-	  DO_ARITH (2, MINUS, x - y);
-#undef DO_ARITH
+	  DO_ARITH1 (NEG, -x);
+	  DO_ARITH1 (NOT, ~x);
+	  DO_ARITH1 (PRE_INC, x + 1);
+	  DO_ARITH1 (PRE_DEC, x - 1);
+	  DO_ARITH1 (ROTATE, (x << 4) | (x >> 4));
+	  DO_ARITH1 (ASHIFT, x << 1);
+	  DO_ARITH1 (LSHIFTRT, x >> 1);
+	  DO_ARITH1 (ASHIFTRT, (x >> 1) | (x & 0x80));
+
+	  DO_ARITH2 (AND, x & y);
+	  DO_ARITH2 (IOR, x | y);
+	  DO_ARITH2 (XOR, x ^ y);
+	  DO_ARITH2 (PLUS, x + y);
+	  DO_ARITH2 (MINUS, x - y);
+#undef DO_ARITH1
+#undef DO_ARITH2
 	}
     } // size == 1
   else
