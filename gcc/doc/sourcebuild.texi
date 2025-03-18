@@ -1315,6 +1315,10 @@ Prune messages matching @var{regexp} from the test output.
 @item @{ dg-output @var{regexp} [@{ target/xfail @var{selector} @}] @}
 This DejaGnu directive compares @var{regexp} to the combined output
 that the test executable writes to @file{stdout} and @file{stderr}.
+
+@item @{ dg-output-file @var{file} [@{ target/xfail @var{selector} @}] @}
+Compares the content of @var{file} against the combined output that the
+test executable writes to @file{stdout} and @file{stderr}.
 @end table
 
 @subsubsection Specify environment variables for a test

@@ -45,6 +45,7 @@ if { [info procs saved-dg-test] == [list] } {
 	global multiline_expected_outputs
 	global freeform_regexps
 	global save_linenr_varnames
+	global output-file
 
 	set additional_files ""
 	set additional_sources ""
@@ -69,6 +70,9 @@ if { [info procs saved-dg-test] == [list] } {
 	}
 	if [info exists testname_with_flags] {
 	    unset testname_with_flags
+	}
+	if [info exists output-file] {
+	    unset output-file
 	}
 	set nn_line_numbers_enabled 0
 	set multiline_expected_outputs []
