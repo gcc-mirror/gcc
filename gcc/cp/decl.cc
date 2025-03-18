@@ -2273,6 +2273,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		 declaration of the function or function template in the
 		 translation unit."  */
 	      check_no_redeclaration_friend_default_args (olddecl, newdecl);
+
 	    }
 	}
     }
