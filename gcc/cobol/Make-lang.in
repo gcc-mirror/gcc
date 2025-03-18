@@ -38,6 +38,7 @@ GCOBOL_INSTALL_NAME := $(shell echo gcobol|sed '$(program_transform_name)')
 GCOBOL_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcobol|sed '$(program_transform_name)')
 
 GCOBC_INSTALL_NAME := $(shell echo gcobc|sed '$(program_transform_name)')
+GCOBC_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcobc|sed '$(program_transform_name)')
 
 cobol: cobol1$(exeext)
 cobol.serial = cobol1$(exeext)
@@ -148,6 +149,11 @@ gcobol$(exeext): \
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@		\
 	 $(GCOBOL_D_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a	\
 	 $(EXTRA_GCC_LIBS) $(LIBS)
+
+# Create a version of the gcobol driver which calls the cross-compiler.
+gcobol-cross$(exeext): gcobol$(exeext)
+	-rm -f gcobol-cross$(exeext)
+	cp gcobol$(exeext) gcobol-cross$(exeext)
 
 #
 # These control the build of the cobol1 source-to-GENERIC converter
@@ -277,17 +283,29 @@ cobol1$(exeext): $(cobol1_OBJS) $(BACKEND) $(LIBDEPS) attribs.o $(cobol.prev)
 	      $(cobol1_OBJS) $(BACKEND) $(LIBS) $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.cobol),end)
 
-# FIXME
-cobol.all.cross:
+cobol.all.cross: gcobol-cross$(exeext)
 
 cobol.start.encap: gcobol$(exeext)
 
 cobol.rest.encap:
 
 cobol.install-common: installdirs
+	-rm -f $(DESTDIR)$(bindir)/$(GCOBOL_INSTALL_NAME)$(exeext)
+	-rm -f $(DESTDIR)$(bindir)/$(GCOBC_INSTALL_NAME)$(exeext)
 	$(INSTALL_PROGRAM) gcobol$(exeext)      $(DESTDIR)$(bindir)/$(GCOBOL_INSTALL_NAME)$(exeext)
 	$(INSTALL_PROGRAM) cobol1$(exeext)      $(DESTDIR)$(libexecsubdir)/
 	$(INSTALL) -m 755 $(srcdir)/cobol/gcobc $(DESTDIR)$(bindir)/$(GCOBC_INSTALL_NAME)$(exeext)
+	-if test -f cobol1$(exeext); then \
+	  if test -f gcobol-cross$(exeext); then \
+	    :; \
+	  else \
+	    rm -f $(DESTDIR)$(bindir)/$(GCOBOL_TARGET_INSTALL_NAME)$(exeext); \
+	    rm -f $(DESTDIR)$(bindir)/$(GCOBC_TARGET_INSTALL_NAME)$(exeext); \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $(GCOBOL_INSTALL_NAME)$(exeext) $(GCOBOL_TARGET_INSTALL_NAME)$(exeext) ); \
+	      $(LN) $(GCOBC_INSTALL_NAME)$(exeext) $(GCOBC_TARGET_INSTALL_NAME)$(exeext) ); \
+	  fi; \
+	fi
 	mkdir -p $(DESTDIR)$(datadir)/gcobol/udf
 	$(INSTALL_DATA) $(srcdir)/cobol/udf/*   $(DESTDIR)$(datadir)/gcobol/udf/
 
@@ -338,9 +356,9 @@ gcobol-io.html: $(srcdir)/cobol/gcobol.3
 # the installed location of the cobol1 compiler.
 cobol.uninstall:
 	rm -rf 	$(DESTDIR)$(bindir)/$(GCOBOL_INSTALL_NAME)$(exeext)	\
-		$(DESTDIR)$(bindir)/gcobc				\
+		$(DESTDIR)$(bindir)/$(GCOBC_INSTALL_NAME)		\
 		$(DESTDIR)$(datadir)/gcobol/				\
-		$(DESTDIR)$(man1dir)/gcobol.1				\
+		$(DESTDIR)$(man1dir)/$(GCOBOL_INSTALL_NAME).1		\
 		$(DESTDIR)$(man3dir)/gcobol.3
 
 cobol.man:
