@@ -20,11 +20,13 @@ struct Base
 struct Derived : Base
 {
   virtual void f (const NTClass i)  post (check (i));
+  virtual void g (const NTClass i) pre ( check (i)) post (true);
 };
 
 struct DerivedV : virtual Base
 {
   virtual void f (const NTClass i)  post (check (i));
+  virtual void g (const NTClass i) pre ( check (i)) post (true);
 };
 
 void
@@ -32,3 +34,9 @@ Derived::f (NTClass i){} // { dg-error "used in a postcondition must be const" }
 
 void
 DerivedV::f (NTClass i){} // { dg-error "used in a postcondition must be const" }
+
+void
+Derived::g (NTClass i){}
+
+void
+DerivedV::g (NTClass i){}
