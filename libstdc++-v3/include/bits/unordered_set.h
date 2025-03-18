@@ -294,6 +294,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  : _M_h(__n, __hf, __eql, __a)
 	  { insert_range(std::forward<_Rg>(__rg)); }
 
+       // _GLIBCXX_RESOLVE_LIB_DEFECTS
+       // 2713. More missing allocator-extended constructors for unordered container
+       template<__detail::__container_compatible_range<_Value> _Rg>
+	 unordered_set(from_range_t, _Rg&& __rg, const allocator_type& __a)
+	  : _M_h(0, hasher(), key_equal(), __a)
+	  { insert_range(std::forward<_Rg>(__rg)); }
+
        template<__detail::__container_compatible_range<_Value> _Rg>
 	 unordered_set(from_range_t, _Rg&& __rg, size_type __n,
 		       const allocator_type& __a)
@@ -1263,6 +1270,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			    const key_equal& __eql = key_equal(),
 			    const allocator_type& __a = allocator_type())
 	  : _M_h(__n, __hf, __eql, __a)
+	  { insert_range(std::forward<_Rg>(__rg)); }
+
+
+       // _GLIBCXX_RESOLVE_LIB_DEFECTS
+       // 2713. More missing allocator-extended constructors for unordered container
+       template<__detail::__container_compatible_range<_Value> _Rg>
+	 unordered_multiset(from_range_t, _Rg&& __rg, const allocator_type& __a)
+	  : _M_h(0, hasher(), key_equal(), __a)
 	  { insert_range(std::forward<_Rg>(__rg)); }
 
        template<__detail::__container_compatible_range<_Value> _Rg>

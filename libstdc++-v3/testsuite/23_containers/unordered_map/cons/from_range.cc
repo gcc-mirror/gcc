@@ -49,12 +49,11 @@ test_deduction_guide()
 
   using Alloc = __gnu_test::SimpleAllocator<std::pair<const long, float>>;
   Alloc alloc;
-  // LWG2713: there is no matching constructor
-  // std::unordered_map m5(std::from_range, r, alloc);
-  // static_assert(std::is_same_v<
-  //   decltype(m5),
-  //   std::unordered_map<long, float,
-  //                      std::hash<long>, std::equal_to<long>, Alloc>>);
+  std::unordered_map m5(std::from_range, r, alloc);
+  static_assert(std::is_same_v<
+    decltype(m5),
+    std::unordered_map<long, float,
+		       std::hash<long>, std::equal_to<long>, Alloc>>);
 
   std::unordered_map m6(std::from_range, r, 0, alloc);
   static_assert(std::is_same_v<
@@ -154,13 +153,12 @@ do_test(Alloc alloc, Hash hf, Equal eqf)
   VERIFY( is_equal(m9.hash_function(), hf) );
   VERIFY( is_equal(m9.key_eq(), eqf) );
 
-  // LWG2713: there is no matching constructor
-  // std::unordered_map<K, V, Hash, Equal, Alloc>
-  //   ma1(std::from_range, Range(a, a+14), alloc);
-  // VERIFY( eq(ma1, {a, 9}) );
-  // VERIFY( is_equal(ma1.hash_function(), Hash()) );
-  // VERIFY( is_equal(ma1.key_eq(), Equal()) );
-  // VERIFY( ma1.get_allocator() == alloc );
+  std::unordered_map<K, V, Hash, Equal, Alloc>
+    ma1(std::from_range, Range(a, a+14), alloc);
+  VERIFY( eq(ma1, {a, 9}) );
+  VERIFY( is_equal(ma1.hash_function(), Hash()) );
+  VERIFY( is_equal(ma1.key_eq(), Equal()) );
+  VERIFY( ma1.get_allocator() == alloc );
 
   std::unordered_map<K, V, Hash, Equal, Alloc>
     ma2(std::from_range, Range(a, a+14), 2, alloc);

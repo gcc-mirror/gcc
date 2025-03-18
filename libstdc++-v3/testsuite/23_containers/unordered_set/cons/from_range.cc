@@ -49,11 +49,10 @@ test_deduction_guide(long* p)
 
   using Alloc = __gnu_test::SimpleAllocator<long>;
   Alloc alloc;
-  // LWG2713: there is no matching constructor
-  // std::unordered_set s5(std::from_range, r, alloc);
-  // static_assert(std::is_same_v<
-  //   decltype(s5),
-  //   std::unordered_set<long, std::hash<long>, std::equal_to<long>, Alloc>>);
+  std::unordered_set s5(std::from_range, r, alloc);
+  static_assert(std::is_same_v<
+    decltype(s5),
+    std::unordered_set<long, std::hash<long>, std::equal_to<long>, Alloc>>);
 
   std::unordered_set s6(std::from_range, r, 0, alloc);
   static_assert(std::is_same_v<
@@ -136,13 +135,12 @@ do_test(Alloc alloc, Hash hf, Equal eqf)
   VERIFY( is_equal(s9.hash_function(), hf) );
   VERIFY( is_equal(s9.key_eq(), eqf) );
 
-  // LWG2713: there is no matching constructor
-  // std::unordered_set<V, Hash, Equal, Alloc>
-  //   sa(std::from_range, Range(a, a+14), alloc);
-  // VERIFY( eq(sa1, {a, 9}) );
-  // VERIFY( is_equal(sa1.hash_function(), Hash()) );
-  // VERIFY( is_equal(sa1.key_eq(), Equal()) );
-  // VERIFY( sa1.get_allocator() == alloc );
+  std::unordered_set<V, Hash, Equal, Alloc>
+    sa1(std::from_range, Range(a, a+14), alloc);
+  VERIFY( eq(sa1, {a, 9}) );
+  VERIFY( is_equal(sa1.hash_function(), Hash()) );
+  VERIFY( is_equal(sa1.key_eq(), Equal()) );
+  VERIFY( sa1.get_allocator() == alloc );
 
   std::unordered_set<V, Hash, Equal, Alloc>
     sa2(std::from_range, Range(a, a+14), 2, alloc);
