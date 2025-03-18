@@ -12992,7 +12992,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
        c++11 attributes, or a nested objc-message-expression.  So
        let's parse the c++11 attributes tentatively.  */
     cp_parser_parse_tentatively (parser);
-  std_attrs = cp_parser_std_attribute_spec_seq (parser);
+  std_attrs = cp_parser_attributes_opt (parser);
   if (std_attrs)
     attrs_loc = make_location (attrs_loc, attrs_loc, parser->lexer);
   if (c_dialect_objc ())
@@ -15332,8 +15332,13 @@ cp_parser_jump_statement (cp_parser* parser, tree &std_attrs)
 	if (keyword == RID_RETURN)
 	  {
 	    bool musttail_p = false;
-	    if (lookup_attribute ("gnu", "musttail", std_attrs))
+	    if (tree a = lookup_attribute ("gnu", "musttail", std_attrs))
 	      {
+		for (; a; a = lookup_attribute ("gnu", "musttail",
+						TREE_CHAIN (a)))
+		  if (TREE_VALUE (a))
+		    error ("%qs attribute does not take any arguments",
+			   "musttail");
 		musttail_p = true;
 		std_attrs = remove_attribute ("gnu", "musttail", std_attrs);
 	      }

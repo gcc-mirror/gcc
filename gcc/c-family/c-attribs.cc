@@ -651,7 +651,9 @@ const struct scoped_attribute_specs c_common_gnu_attribute_table =
 /* Attributes also recognized in the clang:: namespace.  */
 const struct attribute_spec c_common_clang_attributes[] = {
   { "flag_enum",	      0, 0, false, true, false, false,
-			      handle_flag_enum_attribute, NULL }
+			      handle_flag_enum_attribute, NULL },
+  { "musttail",		      0, 0, false, false, false,
+			      false, handle_musttail_attribute, NULL }
 };
 
 const struct scoped_attribute_specs c_common_clang_attribute_table =

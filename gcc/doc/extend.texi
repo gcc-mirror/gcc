@@ -10241,18 +10241,22 @@ have to optimize it to just @code{return 42 + 42;}.
 @cindex @code{musttail} statement attribute
 @item musttail
 
-The @code{gnu::musttail} or @code{clang::musttail} attribute
-can be applied to a @code{return} statement with a return-value expression
-that is a function call.  It asserts that the call must be a tail call that
-does not allocate extra stack space, so it is safe to use tail recursion
-to implement long running loops.
+The @code{gnu::musttail} or @code{clang::musttail} standard attribute
+or @code{musttail} GNU attribute can be applied to a @code{return} statement
+with a return-value expression that is a function call.  It asserts that the
+call must be a tail call that does not allocate extra stack space, so it is
+safe to use tail recursion to implement long running loops.
 
 @smallexample
 [[gnu::musttail]] return foo();
 @end smallexample
 
+@smallexample
+__attribute__((musttail)) return bar();
+@end smallexample
+
 If the compiler cannot generate a @code{musttail} tail call it will report
-an error. On some targets tail calls may never be supported.
+an error.  On some targets tail calls may never be supported.
 Tail calls cannot reference locals in memory, which may affect
 builds without optimization when passing small structures, or passing
 or returning large structures.  Enabling @option{-O1} or @option{-O2} can
