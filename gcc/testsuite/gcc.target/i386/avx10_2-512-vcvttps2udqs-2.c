@@ -47,9 +47,9 @@ TEST (void)
   for (i = 0; i < SIZE; i++)
     res2.a[i] = DEFAULT_VALUE;
 
-  res1.x = INTRINSIC (_cvttsps_epu32) (s.x);
-  res2.x = INTRINSIC (_mask_cvttsps_epu32) (res2.x, mask, s.x);
-  res3.x = INTRINSIC (_maskz_cvttsps_epu32) (mask, s.x);
+  res1.x = INTRINSIC (_cvtts_ps_epu32) (s.x);
+  res2.x = INTRINSIC (_mask_cvtts_ps_epu32) (res2.x, mask, s.x);
+  res3.x = INTRINSIC (_maskz_cvtts_ps_epu32) (mask, s.x);
 
   CALC (s.a, res_ref);
 

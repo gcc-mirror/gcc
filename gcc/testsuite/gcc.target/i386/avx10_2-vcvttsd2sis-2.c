@@ -31,7 +31,7 @@ TEST (void)
   if (res1 != res1_ref)
     abort();
 
-  res1 = _mm_cvttssd_epi32 (s.x);
+  res1 = _mm_cvtts_sd_epi32 (s.x);
 
   if (s.a[0] > INT_MAX)
     res1_ref = INT_MAX;
@@ -56,7 +56,7 @@ TEST (void)
   if (res2 != res2_ref)
     abort();
 
-  res2 = _mm_cvttssd_epi64 (s.x);
+  res2 = _mm_cvtts_sd_epi64 (s.x);
 
   if (s.a[0] > LLONG_MAX)
     res2_ref = LLONG_MAX;

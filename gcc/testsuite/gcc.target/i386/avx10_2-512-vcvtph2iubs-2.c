@@ -49,9 +49,9 @@ TEST (void)
   for (i = 0; i < SIZE; i++)
     res2.a[i] = DEFAULT_VALUE;
 
-  res1.x = INTRINSIC (_ipcvtph_epu8) (s.x);
-  res2.x = INTRINSIC (_mask_ipcvtph_epu8) (res2.x, mask, s.x);
-  res3.x = INTRINSIC (_maskz_ipcvtph_epu8) (mask, s.x);
+  res1.x = INTRINSIC (_ipcvts_ph_epu8) (s.x);
+  res2.x = INTRINSIC (_mask_ipcvts_ph_epu8) (res2.x, mask, s.x);
+  res3.x = INTRINSIC (_maskz_ipcvts_ph_epu8) (mask, s.x);
 
   CALC (s.a, res_ref);
 
@@ -67,9 +67,9 @@ TEST (void)
     abort ();
 
 #if AVX512F_LEN != 128
-  res1.x = INTRINSIC (_ipcvt_roundph_epu8) (s.x, 8);
-  res2.x = INTRINSIC (_mask_ipcvt_roundph_epu8) (res2.x, mask, s.x, 8);
-  res3.x = INTRINSIC (_maskz_ipcvt_roundph_epu8) (mask, s.x, 8);
+  res1.x = INTRINSIC (_ipcvts_roundph_epu8) (s.x, 8);
+  res2.x = INTRINSIC (_mask_ipcvts_roundph_epu8) (res2.x, mask, s.x, 8);
+  res3.x = INTRINSIC (_maskz_ipcvts_roundph_epu8) (mask, s.x, 8);
 
   if (UNION_CHECK (AVX512F_LEN, i_w) (res1, res_ref))
     abort ();

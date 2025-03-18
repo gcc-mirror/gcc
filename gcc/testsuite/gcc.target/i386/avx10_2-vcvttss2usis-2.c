@@ -30,7 +30,7 @@ TEST (void)
   if (res1 != res1_ref)
     abort();
 
-  res1 = _mm_cvttsss_epu32 (s.x);
+  res1 = _mm_cvtts_ss_epu32 (s.x);
 
   if (s.a[0] > UINT_MAX)
     res1_ref = UINT_MAX;
@@ -55,7 +55,7 @@ TEST (void)
   if (res2 != res2_ref)
     abort();
 
-  res2 = _mm_cvttsss_epu64 (s.x);
+  res2 = _mm_cvtts_ss_epu64 (s.x);
 
   if (s.a[0] > ULONG_MAX)
     res2_ref = ULONG_MAX;
