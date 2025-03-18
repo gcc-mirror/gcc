@@ -111,10 +111,10 @@ extern int yydebug;
 
 const char *
 consistent_encoding_check( const YYLTYPE& loc, const char input[] ) {
-  cbl_field_t faux = {
-    .type = FldAlphanumeric,
-    .data = { .capacity = capacity_cast(strlen(input)), .initial = input }
-  };
+  cbl_field_t faux = {};
+  faux.type = FldAlphanumeric;
+  faux.data.capacity = capacity_cast(strlen(input));
+  faux.data.initial = input;
 
   auto s = faux.internalize();
   if( !s ) {
@@ -320,7 +320,7 @@ struct evaluate_elem_t {
     , result( keep_temporary(FldConditional) )
     , pcase( cases.end() )
   {
-    static const cbl_label_t protolabel = { .type = LblEvaluate };
+    static const cbl_label_t protolabel = { LblEvaluate };
     label = protolabel;
     label.line = yylineno;
     if( -1 == snprintf(label.name, sizeof(label.name),
@@ -576,6 +576,15 @@ static T* use_any( list<T>& src, T *tgt) {
   src.clear();
 
   return tgt;
+}
+template <typename T>
+static T* use_any( list<T>& src, std::vector<T>& tgt) {
+  if( src.empty() ) return NULL;
+
+  std::copy(src.begin(), src.end(), tgt.begin());
+  src.clear();
+
+  return tgt.data();
 }
 
 class evaluate_t;
@@ -1251,10 +1260,10 @@ struct unstring_tgt_list_t {
   size_t size() const { return unstring_tgts.size(); }
 
   typedef cbl_refer_t xform_t( const unstring_tgt_t& that );
-  void use_list( cbl_refer_t *output, xform_t func ) {
+  void use_list( std::vector<cbl_refer_t>& output, xform_t func ) {
     std::transform( unstring_tgts.begin(),
                     unstring_tgts.end(),
-                    output, func );
+                    output.begin(), func );
   }
 };
 
@@ -1977,14 +1986,13 @@ static class current_t {
                      bool common, bool initial )
   {
     size_t  parent = programs.empty()? 0 : programs.top().program_index;
-    cbl_label_t label = {
-      .type = type,
-      .parent = parent,
-      .line = yylineno,
-      .common = common,
-      .initial = initial,
-      .os_name = os_name
-    };
+    cbl_label_t label = {};
+    label.type = type;
+    label.parent = parent;
+    label.line = yylineno;
+    label.common = common;
+    label.initial = initial;
+    label.os_name = os_name;
     if( !namcpy(loc, label.name, name) ) { gcc_unreachable(); }
 
     const cbl_label_t *L;
@@ -2963,19 +2971,19 @@ value_encoding_check( const YYLTYPE& loc, cbl_field_t *field ) {
 
 static struct cbl_field_t *
 field_alloc( const YYLTYPE& loc, cbl_field_type_t type, size_t parent, const char name[] ) {
-  cbl_field_t *f, field = { .type = type, .usage = FldInvalid,
-                            .parent = parent, .line = yylineno };
+  cbl_field_t *f, field = {};
+  field.type = type;
+  field.usage = FldInvalid;
+  field.parent = parent;
+  field.line = yylineno;
+  
   if( !namcpy(loc, field.name, name) ) return NULL;
   f = field_add(loc, &field);
   assert(f);
   return f;
 }
 
-static cbl_file_key_t no_key;
-static const struct
-cbl_file_t protofile = { .org = file_disorganized_e,
-                         .access = file_access_seq_e,
-                         .keys = &no_key };
+static const cbl_file_t protofile;
 
 // Add a file to the symbol table with its record area field.
 // The default organization is sequential.
@@ -2984,10 +2992,8 @@ cbl_file_t protofile = { .org = file_disorganized_e,
 static cbl_file_t *
 file_add( YYLTYPE loc, cbl_file_t *file ) {
   gcc_assert(file);
-  struct cbl_field_t area = { .type = FldAlphanumeric,
-                              .level = 1,
-                              .line = yylineno,
-                              .data = { .capacity = 0 } },
+  enum { level = 1 };
+  struct cbl_field_t area = { 0, FldAlphanumeric, FldInvalid, 0, 0,0, level, {}, yylineno },
                      *field = field_add(loc, &area);
   file->default_record = field_index(field);
 
@@ -3108,10 +3114,10 @@ parser_move_carefully( const char */*F*/, int /*L*/,
     }
   }
   size_t ntgt = tgt_list->targets.size();
-  cbl_refer_t tgts[ntgt];
-  std::transform( tgt_list->targets.begin(), tgt_list->targets.end(), tgts,
+  std::vector <cbl_refer_t>  tgts(ntgt);
+  std::transform( tgt_list->targets.begin(), tgt_list->targets.end(), tgts.begin(),
                   []( const cbl_num_result_t& res ) { return res.refer; } );
-  parser_move(ntgt, tgts, src);
+  parser_move(ntgt, tgts.data(), src);
   delete tgt_list;
   return true;
 }
@@ -3125,14 +3131,11 @@ ast_set_pointers( const list<cbl_num_result_t>& tgts, cbl_refer_t src ) {
   assert(!tgts.empty());
   assert(src.field || src.prog_func);
   size_t nptr = tgts.size();
-  cbl_refer_t ptrs[nptr];
+  std::vector <cbl_refer_t> ptrs(nptr);
 
-  std::transform( tgts.begin(), tgts.end(), ptrs, cbl_num_result_t::refer_of );
-  parser_set_pointers(nptr, ptrs, src);
+  std::transform( tgts.begin(), tgts.end(), ptrs.begin(), cbl_num_result_t::refer_of );
+  parser_set_pointers(nptr, ptrs.data(), src);
 }
-
-static struct cbl_refer_t *
-use_vargs( struct vargs_t *v, struct cbl_refer_t *tgt);
 
 void
 stringify( refer_collection_t *inputs,
@@ -3300,9 +3303,11 @@ procedure_division_ready( YYLTYPE loc, cbl_field_t *returning, ffi_args_t *ffi_a
 
   // Start the Procedure Division.
   size_t narg = ffi_args? ffi_args->elems.size() : 0;
-  cbl_ffi_arg_t args[1 + narg], *pargs = NULL;
+  std::vector <cbl_ffi_arg_t> args(narg);
+  cbl_ffi_arg_t*pargs = NULL;
   if( narg > 0 ) {
-    pargs = use_list(ffi_args, args);
+    std::copy(ffi_args->elems.begin(), ffi_args->elems.end(), args.begin());
+    pargs = args.data();
   }
 
   // Create program initialization section.  We build it on an island,

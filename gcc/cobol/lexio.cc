@@ -1358,19 +1358,21 @@ include_file_add(const char filename[]) {
 
 bool
 preprocess_filter_add( const char input[] ) {
-  char filter[ strlen(input) + 1 ];
-  strcpy(filter, input);
-  char *optstr = strchr(filter, ',');
   std::list <std::string> options;
+  std::string filter(input);
+  size_t pos = filter.find(",");
 
-  if( optstr ) {
+  if( pos != filter.npos ) {
+    std::vector<char> others( filter.size() - pos, '\0' );
+    std::copy( filter.begin() + pos + 1, filter.end(), others.begin() );
+    filter.resize(pos);
+    char *optstr = others.data();
     for( char *opt = optstr + 1; (opt = strtok(opt, ",")); opt = NULL ) {
       options.push_back(opt);
     }
-    *optstr = '\0';
   }
 
-  auto filename = find_filter(filter);
+  auto filename = find_filter(filter.c_str());
   if( !filename ) {
     yywarn("preprocessor '%s/%s' not found", getcwd(NULL, 0), filter);
     return false;
@@ -1447,9 +1449,10 @@ cdftext::lex_open( const char filename[] ) {
     char *filter = filter_pair.first;
     std::list<std::string>& options = filter_pair.second;
 
-    char * argv[2 + options.size()] = { filter };
+    std::vector <char*> argv(2 + options.size(), NULL);
+    argv[0] = filter;
 
-    auto last_argv = std::transform( options.begin(), options.end(), argv + 1,
+    auto last_argv = std::transform( options.begin(), options.end(), argv.begin() + 1,
                                      []( std::string& opt ) {
                                        return xstrdup(opt.c_str());
                                      } );
@@ -1471,7 +1474,7 @@ cdftext::lex_open( const char filename[] ) {
         cbl_err( "%s: could not seek to start of file", __func__);
       }
       int erc;
-      if( -1 == (erc = execv(filter, argv)) ) {
+      if( -1 == (erc = execv(filter, argv.data())) ) {
         yywarn("could not execute %s", filter);
       }
       _exit(erc);

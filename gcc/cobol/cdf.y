@@ -702,7 +702,9 @@ suppress:	%empty
 		;
 
 name_any:	namelit
-	|	PSEUDOTEXT { $$ = (cdf_arg_t){YDF_PSEUDOTEXT, $1}; }
+	|	PSEUDOTEXT {
+		  $$ = cdf_arg_t{YDF_PSEUDOTEXT, $1};
+		}
 		;
 
 name_one:	NAME
@@ -715,8 +717,8 @@ name_one:	NAME
 		  }
 		  $$ = arg;
 		}
-	|	NUMSTR  { $$ = (cdf_arg_t){YDF_NUMSTR, $1}; }
-	|	LITERAL { $$ = (cdf_arg_t){YDF_LITERAL, $1}; }
+	|	NUMSTR  { $$ = cdf_arg_t{YDF_NUMSTR, $1}; }
+	|	LITERAL { $$ = cdf_arg_t{YDF_LITERAL, $1}; }
 		;
 
 namelit:	name
@@ -738,8 +740,8 @@ namelit:	name
 		  cdf_arg_t arg = { YDF_NAME, s };
 		  $$ = arg;
 		}
-	|	NUMSTR  { $$ = (cdf_arg_t){YDF_NUMSTR, $1}; }
-	|	LITERAL { $$ = (cdf_arg_t){YDF_LITERAL, $1}; }
+	|	NUMSTR  { $$ = cdf_arg_t{YDF_NUMSTR, $1}; }
+	|	LITERAL { $$ = cdf_arg_t{YDF_LITERAL, $1}; }
 		;
 
 name:		NAME

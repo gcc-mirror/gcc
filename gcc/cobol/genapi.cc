@@ -470,7 +470,7 @@ get_level_88_domain(size_t parent_capacity, cbl_field_t *var, size_t &returned_s
 
   // Loop through the provided domains:
   returned_size = 0;
-  const struct cbl_domain_t *domain = var->data.domain;
+  const struct cbl_domain_t *domain = var->data.domain_of();
   while( domain->first.name() )
     {
     // We have another pair to process
@@ -513,7 +513,7 @@ get_class_condition_string(cbl_field_t *var)
   // We know at this point that var is FldClass
   // The LEVEL is not 88, so this is a CLASS SPECIAL-NAME
 
-  const struct cbl_domain_t *domain = var->data.domain;
+  const struct cbl_domain_t *domain = var->data.domain_of();
 
   /*  There are five possibilities we need to deal with.
 
@@ -1043,7 +1043,7 @@ initialize_variable_internal( cbl_refer_t refer,
           default:
             {
             char ach[128];
-            strfromf128(ach, sizeof(ach), "%.16E", parsed_var->data.value);
+            strfromf128(ach, sizeof(ach), "%.16E", parsed_var->data.value_of());
             SHOW_PARSE_TEXT(ach);
             break;
             }
@@ -2964,9 +2964,9 @@ parser_perform(cbl_label_t *label, bool suppress_nexting)
     SHOW_PARSE_HEADER
     SHOW_PARSE_LABEL(" ", label)
     char ach[32];
-    sprintf(ach, " label is at %p", label);
+    sprintf(ach, " label is at %p", (void*)label);
     SHOW_PARSE_TEXT(ach)
-    sprintf(ach, " label->proc is %p", label->structs.proc);
+    sprintf(ach, " label->proc is %p", (void*)label->structs.proc);
     SHOW_PARSE_TEXT(ach)
     SHOW_PARSE_END
     }
@@ -3075,9 +3075,9 @@ parser_perform_times( cbl_label_t *proc_1, cbl_refer_t count )
     SHOW_PARSE_REF(" ", count)
     SHOW_PARSE_TEXT(" TIMES")
     char ach[32];
-    sprintf(ach, " proc_1 is at %p", proc_1);
+    sprintf(ach, " proc_1 is at %p", (void*)proc_1);
     SHOW_PARSE_TEXT(ach)
-    sprintf(ach, " proc_1->proc is %p", proc_1->structs.proc);
+    sprintf(ach, " proc_1->proc is %p", (void*)proc_1->structs.proc);
     SHOW_PARSE_TEXT(ach)
     SHOW_PARSE_END
     }
@@ -3128,17 +3128,17 @@ internal_perform_through( cbl_label_t *proc_1,
     SHOW_PARSE_HEADER
     SHOW_PARSE_LABEL(" ", proc_1);
     char ach[32];
-    sprintf(ach, " proc_1 is at %p", proc_1);
+    sprintf(ach, " proc_1 is at %p", (void*)proc_1);
     SHOW_PARSE_TEXT(ach)
-    sprintf(ach, " proc_1->proc is %p", proc_1->structs.proc);
+    sprintf(ach, " proc_1->proc is %p", (void*)proc_1->structs.proc);
     SHOW_PARSE_TEXT(ach)
     if( proc_2 )
       {
       SHOW_PARSE_INDENT
       SHOW_PARSE_LABEL("", proc_2);
-      sprintf(ach, " proc_2 is at %p", proc_2);
+      sprintf(ach, " proc_2 is at %p", (void*)proc_2);
       SHOW_PARSE_TEXT(ach)
-      sprintf(ach, " proc_2->proc is %p", proc_2->structs.proc);
+      sprintf(ach, " proc_2->proc is %p", (void*)proc_2->structs.proc);
       SHOW_PARSE_TEXT(ach)
       }
     SHOW_PARSE_END
@@ -3213,17 +3213,17 @@ internal_perform_through_times(   cbl_label_t *proc_1,
     SHOW_PARSE_HEADER
     SHOW_PARSE_LABEL(" ", proc_1);
     char ach[32];
-    sprintf(ach, " proc_1 is at %p", proc_1);
+    sprintf(ach, " proc_1 is at %p", (void*)proc_1);
     SHOW_PARSE_TEXT(ach)
-    sprintf(ach, " proc_1->proc is %p", proc_1->structs.proc);
+    sprintf(ach, " proc_1->proc is %p", (void*)proc_1->structs.proc);
     SHOW_PARSE_TEXT(ach)
     if( proc_2 )
       {
       SHOW_PARSE_INDENT
       SHOW_PARSE_LABEL("", proc_2);
-      sprintf(ach, " proc_2 is at %p", proc_2);
+      sprintf(ach, " proc_2 is at %p", (void*)proc_2);
       SHOW_PARSE_TEXT(ach)
-      sprintf(ach, " proc_2->proc is %p", proc_2->structs.proc);
+      sprintf(ach, " proc_2->proc is %p", (void*)proc_2->structs.proc);
       SHOW_PARSE_TEXT(ach)
       }
     SHOW_PARSE_REF(" ", count);
@@ -3796,7 +3796,10 @@ psa_FldLiteralN(struct cbl_field_t *field )
   // We are constructing a completely static constant structure, based on the
   // text string in .initial
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
   __int128 value = 0;
+#pragma GCC diagnostic pop
 
   do
     {
@@ -4025,7 +4028,7 @@ psa_FldLiteralN(struct cbl_field_t *field )
     TREE_READONLY(field->literal_decl_node) = 1;
     TREE_CONSTANT(field->literal_decl_node) = 1;
     char ach[128];
-    strfromf128(ach, sizeof(ach), "%.36E", field->data.value);
+    strfromf128(ach, sizeof(ach), "%.36E", field->data.value_of());
     REAL_VALUE_TYPE real;
     real_from_string(&real, ach);
     tree initer = build_real (DOUBLE, real);
@@ -4883,7 +4886,7 @@ parser_display_internal(tree file_descriptor,
     // We make use of that here
 
     char ach[128];
-    strfromf128(ach, sizeof(ach), "%.33E", refer.field->data.value);
+    strfromf128(ach, sizeof(ach), "%.33E", refer.field->data.value_of());
     char *p = strchr(ach, 'E');
     if( !p )
       {
@@ -4902,7 +4905,7 @@ parser_display_internal(tree file_descriptor,
         int precision = 32 - exp;
         char achFormat[24];
         sprintf(achFormat, "%%.%df", precision);
-        strfromf128(ach, sizeof(ach), achFormat, refer.field->data.value);
+        strfromf128(ach, sizeof(ach), achFormat, refer.field->data.value_of());
         }
       __gg__remove_trailing_zeroes(ach);
       }
@@ -7351,9 +7354,9 @@ parser_label_label(struct cbl_label_t *label)
     SHOW_PARSE_HEADER
     SHOW_PARSE_LABEL("", label)
     char ach[32];
-    sprintf(ach, " label is at %p", label);
+    sprintf(ach, " label is at %p", (void*)label);
     SHOW_PARSE_TEXT(ach)
-    sprintf(ach, " label->proc is %p", label->structs.proc);
+    sprintf(ach, " label->proc is %p", (void*)label->structs.proc);
     SHOW_PARSE_TEXT(ach)
     SHOW_PARSE_END
     }
@@ -7384,9 +7387,9 @@ parser_label_goto(struct cbl_label_t *label)
     SHOW_PARSE_HEADER
     SHOW_PARSE_LABEL(" ", label)
     char ach[32];
-    sprintf(ach, " label is at %p", label);
+    sprintf(ach, " label is at %p", (void*)label);
     SHOW_PARSE_TEXT(ach)
-    sprintf(ach, " label->proc is %p", label->structs.proc);
+    sprintf(ach, " label->proc is %p", (void*)label->structs.proc);
     SHOW_PARSE_TEXT(ach)
     SHOW_PARSE_END
     }
@@ -7603,7 +7606,7 @@ parser_perform_start( struct cbl_perform_tgt_t *tgt )
       {
       SHOW_PARSE_TEXT(" cbl_perform_tgt_t is at")
       char ach[32];
-      sprintf(ach, " %p", tgt);
+      sprintf(ach, " %p", (void*)tgt);
       SHOW_PARSE_TEXT(ach);
       SHOW_PARSE_LABEL(" ", tgt->from())
       if( tgt->to() )
@@ -7664,7 +7667,7 @@ parser_perform_conditional( struct cbl_perform_tgt_t *tgt )
     SHOW_PARSE_HEADER
     SHOW_PARSE_TEXT(" cbl_perform_tgt_t is at")
     char ach[32];
-    sprintf(ach, " %p", tgt);
+    sprintf(ach, " %p", (void*)tgt);
     SHOW_PARSE_TEXT(ach);
     SHOW_PARSE_END
     }
@@ -7713,7 +7716,7 @@ parser_perform_conditional_end( struct cbl_perform_tgt_t *tgt )
     SHOW_PARSE_HEADER
     SHOW_PARSE_TEXT(" cbl_perform_tgt_t is at")
     char ach[32];
-    sprintf(ach, " %p", tgt);
+    sprintf(ach, " %p", (void*)tgt);
     SHOW_PARSE_TEXT(ach);
     SHOW_PARSE_END
     }
@@ -8632,7 +8635,7 @@ parser_perform_until(   struct cbl_perform_tgt_t *tgt,
     SHOW_PARSE_HEADER
     SHOW_PARSE_TEXT(" cbl_perform_tgt_t is at")
     char ach[32];
-    sprintf(ach, " %p", tgt);
+    sprintf(ach, " %p", (void*)tgt);
     SHOW_PARSE_TEXT(ach);
     SHOW_PARSE_LABEL(" ", tgt->from())
     if( tgt->to() )
@@ -8818,11 +8821,11 @@ parser_set_conditional88( struct cbl_refer_t refer, bool which_way )
 
   if( which_way )
     {
-    src = tgt->data.domain;
+    src = tgt->data.domain_of();
     }
   else
     {
-    src = tgt->data.false_value;
+    src = tgt->data.false_value_of();
     }
 
   // We want to set the LEVEL88 target to TRUE (or FALSE), so we need to set
@@ -13722,6 +13725,8 @@ mh_identical(cbl_refer_t &destref,
   return moved;
   }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
 static bool
 mh_source_is_literalN(cbl_refer_t &destref,
                       cbl_refer_t &sourceref,
@@ -13961,7 +13966,7 @@ mh_source_is_literalN(cbl_refer_t &destref,
             // The following generated code is the exact equivalent
             // of the C code:
             //   *(float *)dest = (float)data.value
-            _Float32 src = (_Float32)sourceref.field->data.value;
+            _Float32 src = (_Float32)sourceref.field->data.value_of();
             tree tsrc    = build_string_literal(sizeof(src), (char *)&src);
             gg_assign(gg_indirect(gg_cast(build_pointer_type(INT), tdest)),
                       gg_indirect(gg_cast(build_pointer_type(INT), tsrc )));
@@ -13969,7 +13974,7 @@ mh_source_is_literalN(cbl_refer_t &destref,
             }
           case 8:
             {
-            _Float64 src = (_Float64)sourceref.field->data.value;
+            _Float64 src = (_Float64)sourceref.field->data.value_of();
             tree tsrc    = build_string_literal(sizeof(src), (char *)&src);
             gg_assign(gg_indirect(gg_cast(build_pointer_type(LONG), tdest)),
                       gg_indirect(gg_cast(build_pointer_type(LONG), tsrc )));
@@ -13977,7 +13982,7 @@ mh_source_is_literalN(cbl_refer_t &destref,
             }
           case 16:
             {
-            _Float128 src = (_Float128)sourceref.field->data.value;
+            _Float128 src = (_Float128)sourceref.field->data.value_of();
             tree tsrc     = build_string_literal(sizeof(src), (char *)&src);
             gg_assign(gg_indirect(gg_cast(build_pointer_type(INT128), tdest)),
                       gg_indirect(gg_cast(build_pointer_type(INT128), tsrc )));
@@ -14000,6 +14005,7 @@ mh_source_is_literalN(cbl_refer_t &destref,
     }
   return moved;
   }
+#pragma GCC diagnostic pop
 
 static
 tree float_type_of(int n)
@@ -15004,7 +15010,7 @@ move_helper(tree size_error,        // This is an INT
 
     if( figconst )
       {
-      char const_char = 0xFF;  // Head off a compiler warning about
+      char const_char = 0x7F;  // Head off a compiler warning about
       //                       // uninitialized variables
       switch(figconst)
         {
@@ -15222,6 +15228,8 @@ parser_print_string(const char *fmt, const char *ach)
   gg_printf(fmt, gg_string_literal(ach), NULL_TREE);
   }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
 char *
 binary_initial_from_float128(cbl_field_t *field, int rdigits, _Float128 value)
   {
@@ -15300,6 +15308,7 @@ binary_initial_from_float128(cbl_field_t *field, int rdigits, _Float128 value)
 
   return retval;
   }
+#pragma GCC diagnostic pop
 
 static void
 digits_from_float128(char *retval, cbl_field_t *field, size_t width, int rdigits, _Float128 value)
@@ -16270,7 +16279,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
             new_var->data.digits,
             new_var->data.rdigits,
             new_var->attr,
-            new_var);
+            (void*)new_var);
 
     if( is_table(new_var) )
       {
@@ -16309,7 +16318,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
       {
       fprintf(stderr,
               " redefines:(%p)%s",
-              symbol_redefines(new_var),
+              (void*)symbol_redefines(new_var),
               symbol_redefines(new_var)->name);
       }
 
@@ -16832,7 +16841,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
 
     if( new_var->data.initial )
       {
-      new_initial = initial_from_float128(new_var, new_var->data.value);
+      new_initial = initial_from_float128(new_var, new_var->data.value_of());
       }
     if( new_initial )
       {

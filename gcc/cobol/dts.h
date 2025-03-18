@@ -93,12 +93,12 @@ namespace dts {
     if( eoinput == NULL ) eoinput = strchr(input, '\0');
     auto ncm = re.size();
     cm.resize(ncm);
-    regmatch_t cms[ncm];
+    std::vector <regmatch_t> cms(ncm);
 
 
-    int erc = regexec( &re, input, ncm, cms, 0 );
+    int erc = regexec( &re, input, ncm, cms.data(), 0 );
     if( erc != 0 ) return false;
-    std::transform( cms, cms+ncm, cm.begin(),
+    std::transform( cms.begin(), cms.end(), cm.begin(),
                     [input]( const regmatch_t& m ) {
                       return csub_match( input, m );
                     } );

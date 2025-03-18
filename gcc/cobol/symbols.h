@@ -44,7 +44,6 @@
 #include <set>
 #include <stack>
 #include <string>
-#include <variant>
 #include <vector>
 
 #define PICTURE_MAX 64
@@ -252,17 +251,98 @@ struct cbl_field_data_t {
   int32_t  rdigits;             // digits to the right
   const char *initial, *picture;
 
-  union {
+  enum etc_type_t { val88_e, upsi_e, value_e } etc_type;
+  const char *
+  etc_type_str() const {
+    switch(etc_type) {
+    case val88_e: return "val88_e";
+    case upsi_e: return "upsi_e";
+    case value_e: return "value_e";
+    }
+    return "???";
+  }
+  
+  union etc_t {
     // "Domain" is an array representing the VALUE of CLASS or 88 type.
-    const struct { cbl_domain_t *false_value; cbl_domain_t *domain; };
-    const struct cbl_upsi_mask_t *upsi_mask;
+    struct val88_t {
+      cbl_domain_t *false_value;
+      cbl_domain_t *domain;
+      val88_t() : false_value(NULL), domain(NULL) {}
+    } val88;
+    struct cbl_upsi_mask_t *upsi_mask;
     _Float128 value;
-  };
 
-  union { // anonymous union allows for other function types later
-    time_now_f time_func;
-  };
-  uint32_t upsi_mask_of() const {
+    explicit etc_t( double v = 0.0 ) : value(v) {}
+  } etc;
+
+  cbl_field_data_t( uint32_t memsize=0,  uint32_t capacity=0 )
+    : memsize(memsize)
+    , capacity(capacity)
+    , digits(0)
+    , rdigits(0)
+    , initial(0)
+    , picture(0)
+    , etc_type(value_e)
+    , etc(0)
+  {}
+
+  cbl_field_data_t( uint32_t memsize,  uint32_t capacity,
+		    uint32_t digits,  uint32_t rdigits,
+		    const char *initial,
+		    const char *picture = NULL ) 
+    : memsize(memsize)
+    , capacity(capacity)
+    , digits(digits)
+    , rdigits(rdigits)
+    , initial(initial)
+    , picture(picture)
+    , etc_type(value_e)
+    , etc(0)
+  {}
+
+  cbl_field_data_t( const cbl_field_data_t& that ) {
+    copy_self(that);
+  }
+  cbl_field_data_t& operator=( const cbl_field_data_t& that ) {
+    return copy_self(that);
+  }
+
+  cbl_domain_t * false_value_of() const { return etc.val88.false_value; }
+  cbl_domain_t * false_value_as( cbl_domain_t * domain ) {
+    etc_type = val88_e;
+    return etc.val88.false_value = domain;
+  }
+  cbl_domain_t * domain_of() const {
+    assert(etc_type == val88_e);
+    return etc.val88.domain;
+  }
+  cbl_domain_t * domain_as(cbl_domain_t * domain) {
+    etc_type = val88_e;
+    return etc.val88.domain = domain;
+  }
+  cbl_upsi_mask_t * upsi_mask_of() const {
+    assert(etc_type == upsi_e);
+    return etc.upsi_mask;
+  }
+  cbl_upsi_mask_t * operator=( cbl_upsi_mask_t * mask) {
+    etc_type = upsi_e;
+    return etc.upsi_mask = mask;
+  }
+  _Float128 value_of() const {
+    if( etc_type != value_e ) {
+      dbgmsg("%s:%d: type is %s", __func__, __LINE__, etc_type_str());
+    }
+////    assert(etc_type == value_e);
+    return etc.value;
+  } 
+  _Float128& operator=( _Float128 v) {
+    etc_type = value_e;
+    return etc.value = v;
+  } 
+
+  time_now_f time_func;
+
+  uint32_t upsi_mask_derive() const {
     assert(initial);
     assert('0' <= initial[0] && initial[0] < '8');
     const uint32_t bitn = initial[0] - '0';
@@ -275,16 +355,17 @@ struct cbl_field_data_t {
   cbl_field_data_t& valify() {
     assert(initial);
     const size_t len = strlen(initial);
-    char input[len + 1];
-    std::copy(initial, initial + len + 1, input); // copy the NUL
+    std::string input(len + 1, '\0'); // add a NUL
+    std::copy(initial, initial + len, input.begin()); 
     if( decimal_is_comma() ) {
-      std::replace(input, input + sizeof(input), ',', '.');
+      std::replace(input.begin(), input.end(), ',', '.');
     }
 
     char *pend = NULL;
-    value = strtof128( input, &pend );
+    
+    etc.value = strtof128(input.c_str(), &pend);
 
-    if( pend != input + len ) {
+    if( pend != input.c_str() + len ) {
       dbgmsg("%s: error: could not interpret '%s' of '%s' as a number",
              __func__, pend, initial);
     }
@@ -295,6 +376,30 @@ struct cbl_field_data_t {
     initial = input;
     capacity = strlen(initial);
     return valify();
+  }
+
+ protected:
+  cbl_field_data_t& copy_self( const cbl_field_data_t& that ) {
+    memsize = that.memsize;
+    capacity = that.capacity;
+    digits = that.digits;
+    rdigits = that.rdigits;
+    initial = that.initial;
+    picture = that.picture;
+    etc_type = that.etc_type;
+
+    switch(etc_type) {
+      case value_e:
+	etc.value = that.etc.value;
+	break;
+      case val88_e:
+	etc.val88 = that.etc.val88;
+	break;
+      case upsi_e:
+	etc.upsi_mask = that.etc.upsi_mask;
+	break;
+      } 
+    return *this;
   }
 };
 
@@ -456,7 +561,7 @@ struct cbl_field_t {
 
     if( ! (is_typedef || that.type == FldClass) ) {
       data.initial = NULL;
-      data.value = 0.0;
+      data = _Float128(0.0);
     }
     return *this;
   }
@@ -1254,7 +1359,7 @@ struct cbl_alphabet_t {
   YYLTYPE loc;
   cbl_name_t name;
   cbl_encoding_t encoding;
-  unsigned char low_index, high_index, last_index, alphabet[256];;
+  unsigned char low_index, high_index, last_index, alphabet[256];
 
   cbl_alphabet_t()
     : loc { 1,1, 1,1 }
@@ -1447,6 +1552,7 @@ struct cbl_file_lock_t {
 };
 
 struct cbl_file_t {
+  static cbl_file_key_t no_key;
   enum cbl_file_org_t org;
   enum file_entry_type_t entry_type;
   uint32_t attr;
@@ -1471,6 +1577,14 @@ struct cbl_file_t {
   cbl_name_t name;
   cbl_sortreturn_t *addresses; // Used during parser_return_start, et al.
   tree var_decl_node;           // GENERIC tag for the run-time FIELD structure
+
+  cbl_file_t()
+    : org(file_disorganized_e),
+      access(file_access_seq_e)
+  {
+    keys = &no_key;
+  }
+  
   bool varies() const { return varying_size.min != varying_size.max; }
   bool validate() const;
   void deforward();
@@ -1512,14 +1626,84 @@ struct symbol_elem_t {
   size_t program;
   union symbol_elem_u {
     char *filename;
-    struct cbl_function_t     function;
-    struct cbl_field_t        field;
-    struct cbl_label_t        label;
-    struct cbl_special_name_t special;
-    struct cbl_alphabet_t     alphabet;
-    struct cbl_file_t         file;
-    struct cbl_section_t      section;
+    cbl_function_t     function;
+    cbl_field_t        field;
+    cbl_label_t        label;
+    cbl_special_name_t special;
+    cbl_alphabet_t     alphabet;
+    cbl_file_t         file;
+    cbl_section_t      section;
+    symbol_elem_u() {
+      static const cbl_field_t empty = {};
+      field = empty;
+    }
   } elem;
+  
+  symbol_elem_t( symbol_type_t type = SymField, size_t program = 0 )
+    : type(type), program(program)
+  {}
+
+  symbol_elem_t( const symbol_elem_t& that )
+    : type(that.type), program(that.program)
+  {
+    copy_by_type(that);
+  }
+  symbol_elem_t& operator=( const symbol_elem_t& that ) {
+    type = that.type;
+    program = that.program;
+    return copy_by_type(that);
+  }
+  explicit symbol_elem_t( size_t program, const cbl_field_t& field )
+    : type(SymField), program(program)
+  {
+    elem.field = field;
+  }
+  explicit symbol_elem_t( size_t program, const cbl_label_t& label )
+    : type(SymLabel), program(program)
+  {
+    elem.label = label;
+  }
+  explicit symbol_elem_t( size_t program, const cbl_special_name_t& special )
+    : type(SymSpecial), program(program)
+  {
+    elem.special = special;
+  }
+  explicit symbol_elem_t( size_t program, const cbl_section_t& section )
+    : type(SymDataSection), program(program)
+  {
+    elem.section = section;
+  }
+  
+ protected:
+  symbol_elem_t& copy_by_type( const symbol_elem_t& that ) {
+    switch(type) {
+    case SymFilename:
+      elem.filename = that.elem.filename;
+      break;
+    case SymFunction:
+      elem.function = that.elem.function;
+      break;
+    case SymField:
+      elem.field = that.elem.field;
+      break;
+    case SymLabel:
+      elem.label = that.elem.label;
+      break;
+    case SymSpecial:
+      elem.special = that.elem.special;
+      break;
+    case SymAlphabet:
+      elem.alphabet = that.elem.alphabet;
+      break;
+    case SymFile:
+      elem.file = that.elem.file;
+      break;
+    case SymDataSection:
+      elem.section = that.elem.section;
+      break;
+    }
+    return *this;
+  }
 };
 
 # define offsetof(TYPE, MEMBER)  __builtin_offsetof (TYPE, MEMBER)

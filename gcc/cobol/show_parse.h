@@ -170,7 +170,7 @@ extern bool cursor_at_sol;
                 } \
             else \
                 { \
-                fprintf(stderr, " %p:%s (%s)", b, b->name, b->type_str()); \
+		fprintf(stderr, " %p:%s (%s)", (void*)b, b->name, b->type_str()); \
                 } \
             show_parse_sol = false; \
             } while(0);

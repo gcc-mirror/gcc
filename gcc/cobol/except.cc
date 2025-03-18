@@ -279,10 +279,11 @@ symbol_declaratives_add( size_t program,
   char achBlob[32];
   sprintf(achBlob, "_DECLARATIVE_BLOB%d_", blob_count++);
 
-  cbl_field_data_t data = { .memsize = capacity_cast(len),
-                            .capacity = capacity_cast(len),
-                            .initial = reinterpret_cast<char*>(blob),
-                            .picture = reinterpret_cast<char*>(blob) };
+  cbl_field_data_t data = {};
+  data.memsize = capacity_cast(len);
+  data.capacity = capacity_cast(len);
+  data.initial = reinterpret_cast<char*>(blob);
+  data.picture = reinterpret_cast<char*>(blob);
   cbl_field_t field = { 0, FldBlob, FldInvalid, constant_e,
                         0, 0, 0, cbl_occurs_t(), 0, "",
                         0, {}, data, NULL };

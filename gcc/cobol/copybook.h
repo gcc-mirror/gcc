@@ -128,24 +128,27 @@ private:
   char *regex_text;
 };
 
+class uppername_t {
+  std::string upper;
+ public:
+  uppername_t( const std::string input ) : upper(input) {
+    std::transform(input.begin(), input.end(), upper.begin(), 
+		   []( char ch ) { return TOUPPER(ch); } );
+  }
+  const char *data() const { return upper.data(); }
+};
+
 class copybook_t {
   std::list<const char *> directories;
   copybook_elem_t book;
 
   // Take copybook name from the environment, if defined, else use it verbatim.
   static const char * transform_name( const char name[] ) {
-    char uname[ strlen(name) ];
+    uppername_t uname(name);
     const char *value = getenv(name);
     if( !value ) {
-      auto ename = name + strlen(name);
-      std::transform( name, ename, uname,
-                      []( char ch ) { return TOUPPER(ch); } );
-      value = getenv(uname); // try uppercase of envar name
+      value = getenv(uname.data()); // try uppercase of envar name
       if( !value ) value = name; // keep original unmodified
-    }
-    if( false && value != uname ) {
-      dbgmsg("using copybook file '%s' from environment variable '%s'",
-             value, name);
     }
     return xstrdup(value);
   }

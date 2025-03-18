@@ -1440,7 +1440,7 @@ program_id:     PROGRAM_ID dot namestr[name] program_as program_attrs[attr] dot
 dot:            %empty
         |       '.'
                 ;
-program_as:     %empty     { $$ = (literal_t){}; }
+program_as:     %empty     { static const literal_t empty {}; $$ = empty; }
         |       AS LITERAL { $$ = $2; }
                 ;
 
@@ -1856,10 +1856,10 @@ selected_name:  external scalar { $$ = $2; }
                     YYERROR;
                   }
                   uint32_t len = $name.len;
-                  cbl_field_t field = {
+                  cbl_field_t field {
                                0, FldLiteralA, FldInvalid, quoted_e | constant_e,
                                0, 0, 0, nonarray, 0, "", 0, cbl_field_t::linkage_t(),
-                            {len,len,0,0, $name.data, NULL, {NULL}, {NULL}}, NULL };
+				 {len,len,0,0, $name.data}, NULL };
                   field.attr |= literal_attr($name.prefix);
                   $$ = new cbl_refer_t( field_add(@name, &field) );
                 }
@@ -1885,7 +1885,7 @@ select_clauses: select_clause { $$.clauses = $1.clause; $$.file = $1.file; }
                     if( $$.file->nkey++ == 0 ) {
                       // If no key yet exists, create room for it and the
                       // present alternate.
-                      assert($$.file->keys == &no_key);
+                      assert($$.file->keys == &cbl_file_t::no_key);
                       $$.file->keys = new cbl_file_key_t[++$$.file->nkey];
                     }
                     {
@@ -2315,10 +2315,11 @@ repo_program:   PROGRAM_kw NAME repo_as
                   assert(program);
                   parent = symbol_index(symbol_elem_of(program));
                   // Literal field whose parent is the the aliased program.
-                  cbl_field_t prog = { .type = FldLiteralA,
-                                       .attr = quoted_e,
-                                       .parent = parent,
-                                       .data = {.initial = $repo_as.data} };
+                  cbl_field_t prog = {};
+		  prog.type = FldLiteralA;
+		  prog.attr = quoted_e;
+		  prog.parent = parent;
+		  prog.data.initial = $repo_as.data;
                   namcpy(@NAME, prog.name, $NAME);
                   if( ! prog.data.initial ) {
                     assert(program);
@@ -2366,7 +2367,7 @@ special_name:   dev_mnemonic
                   struct cbl_field_t field = { 0,
                     FldClass, FldInvalid, 0, 0, 0, 0, nonarray, yylineno, "",
                     0, cbl_field_t::linkage_t(),
-		    { 0,0,0,0, NULL, NULL, { NULL }, { NULL } }, NULL };
+		    {}, NULL };
                   if( !namcpy(@NAME, field.name, $2) ) YYERROR;
 
                   struct cbl_domain_t *domain =
@@ -2374,8 +2375,8 @@ special_name:   dev_mnemonic
 
                   std::copy(domains.begin(), domains.end(), domain);
 
-                  field.data.false_value = $domains;
-                  field.data.domain = domain;
+                  field.data.false_value_as($domains);
+                  field.data.domain_as(domain);
                   domains.clear();
 
                   if( field_add(@2, &field) == NULL ) {
@@ -2425,8 +2426,7 @@ is_alphabet:    ARE NUMSTR
 
 dev_mnemonic:	device_name is NAME
                 {
-                  cbl_special_name_t special = { .token = $1.token,
-                                                 .id = $1.id };
+                  cbl_special_name_t special = { $1.token, $1.id };
                   if( !namcpy(@NAME, special.name, $NAME) ) YYERROR;
 
                   const char *filename;
@@ -2460,15 +2460,15 @@ dev_mnemonic:	device_name is NAME
 		    { "ENVIRONMENT-NAME", ENV_NAME_e },
 		    { "ENVIRONMENT-VALUE", ENV_VALUE_e },
 		  };
-		  char device[ 1 + strlen($device) ];
-		  std::transform($device, $device + strlen($device) + 1,
-		                 device, toupper);
-		  auto p = fujitsus.find(device);
+		  std::string device($device);
+		  std::transform($device, $device + strlen($device),
+		                 device.begin(), toupper);
+		  auto p = fujitsus.find(device.c_str());
 		  if( p == fujitsus.end() ) {
 		    error_msg(@device, "%s is not a device name");
 		  }
 
-                  cbl_special_name_t special = { .id = p->second };
+                  cbl_special_name_t special = { 0, p->second };
                   if( !namcpy(@name, special.name, $name) ) YYERROR;
 
                   symbol_special_add(PROGRAM, &special);
@@ -2634,12 +2634,12 @@ upsi:           UPSI is NAME
                   if( $entry.on ) {
                     cbl_field_t *on = field_alloc(@NAME, FldSwitch, parent, $entry.on);
                     if( !on ) YYERROR;
-                    on->data.upsi_mask = new cbl_upsi_mask_t(true, value);
+                    on->data = new cbl_upsi_mask_t(true, value);
                   }
                   if( $entry.off ) {
                     cbl_field_t *off = field_alloc(@NAME, FldSwitch, parent, $entry.off);
                     if( !off ) YYERROR;
-                    off->data.upsi_mask = new cbl_upsi_mask_t(false, value);
+                    off->data = new cbl_upsi_mask_t(false, value);
                   }
                 }
         |       UPSI upsi_entry[entry]
@@ -2651,12 +2651,12 @@ upsi:           UPSI is NAME
                   if( $entry.on ) {
                     cbl_field_t *on = field_alloc($entry.loc, FldSwitch, parent, $entry.on);
                     if( !on ) YYERROR;
-                    on->data.upsi_mask = new cbl_upsi_mask_t(true, value);
+                    on->data = new cbl_upsi_mask_t(true, value);
                   }
                   if( $entry.off ) {
                     cbl_field_t *off = field_alloc($entry.loc, FldSwitch, parent, $entry.off);
                     if( !off ) YYERROR;
-                    off->data.upsi_mask = new cbl_upsi_mask_t(false, value);
+                    off->data = new cbl_upsi_mask_t(false, value);
                   }
                 }
                 ;
@@ -3098,9 +3098,7 @@ field:          cdf
 
                   // Format data.initial per picture
                   if( 0 == pristine_values.count(field.data.initial) ) {
-                    if( field.data.digits > 0 &&
-                        field.data.value != 0.0 )
-                    {
+                    if( field.data.digits > 0 && field.data.value_of() != 0.0 ) {
                       char *initial;
                       int rdigits = field.data.rdigits < 0?
                                     1 : field.data.rdigits + 1;
@@ -3112,7 +3110,7 @@ field:          cdf
                           rdigits = 0;
                         }
                       }
-                      initial = string_of(field.data.value);
+                      initial = string_of(field.data.value_of());
                       if( !initial ) {
                         error_msg(@1, xstrerror(errno));
                         YYERROR;
@@ -3122,7 +3120,7 @@ field:          cdf
                       free(const_cast<char*>($data_descr->data.initial));
                       $data_descr->data.initial = initial;
                       if( yydebug ) {
-                        const char *value_str = string_of(field.data.value);
+                        const char *value_str = string_of(field.data.value_of());
                         dbgmsg("%s::data.initial is (%%%d.%d) %s ==> '%s'",
 			       field.name,
 			       field.data.digits,
@@ -3147,7 +3145,7 @@ occurs_clause:  OCCURS cardinal_lb             indexed
 		  }
                   cbl_occurs_t *occurs = &current_field()->occurs;
                   occurs->bounds.lower =
-                  occurs->bounds.upper = $name->data.value;
+                  occurs->bounds.upper = $name->data.value_of();
 		}
                 ;
 cardinal_lb:    cardinal times {
@@ -3212,10 +3210,11 @@ index_fields:   index_field1
                 ;
 index_field1:   ctx_name[name]
                 {
-                  static const cbl_field_data_t data { .capacity = 8, .digits = 0 };
-                  cbl_field_t field = { .type = FldIndex,
-                                        .parent = field_index(current_field()),
-                                        .data = data };
+		  static const cbl_field_data_t data { 0, 8 }; // capacity 8
+                  cbl_field_t field = {};
+		  field.type = FldIndex;
+		  field.parent = field_index(current_field());
+		  field.data = data;
                   if( !namcpy(@name, field.name, $name) ) YYERROR;
 
                   auto symbol = symbol_field(PROGRAM, 0, $name);
@@ -3238,12 +3237,12 @@ index_field1:   ctx_name[name]
 level_name:     LEVEL ctx_name
                 {
                   switch($LEVEL) {
-                  case 1 ... 49:
                   case 66:
                   case 77:
                   case 88:
                     break;
                   default:
+		    if( 1 <= $LEVEL && $LEVEL <= 49 ) break;
                     error_msg(@LEVEL, "LEVEL %d not supported", $LEVEL);
                     YYERROR;
                   }
@@ -3251,7 +3250,7 @@ level_name:     LEVEL ctx_name
                     FldInvalid, FldInvalid, 0, 0, 0, capacity_cast($1),
 		    nonarray, yylineno, "",
                     0, cbl_field_t::linkage_t(),
-		    { 0,0,0,0, NULL, NULL, { NULL }, { NULL } }, NULL };
+		    {}, NULL };
                   if( !namcpy(@ctx_name, field.name, $2) ) YYERROR;
 
                   $$ = field_add(@$, &field);
@@ -3263,19 +3262,19 @@ level_name:     LEVEL ctx_name
         |       LEVEL
                 {
                   switch($LEVEL) {
-                  case 1 ... 49:
                   case 66:
                   case 77:
                   case 88:
                     break;
                   default:
+		    if( 1 <= $LEVEL && $LEVEL <= 49 ) break;
                     error_msg(@LEVEL, "LEVEL %d not supported", $LEVEL);
                     YYERROR;
                   }
                   struct cbl_field_t field = { 0,
                     FldInvalid, FldInvalid, 0, 0, 0, capacity_cast($1),
 		    nonarray, yylineno, "",
-                    0, {}, { 0,0,0,0, NULL, NULL, { NULL }, { NULL } }, NULL };
+                    0, {}, {}, NULL };
 
                   $$ = field_add(@1, &field);
                   if( !$$ ) {
@@ -3307,14 +3306,15 @@ const_value:    cce_expr
 
 value78:        literalism
                 {
-                  cbl_field_data_t
-		    data = { .capacity = capacity_cast(strlen($1.data)),
-		             .initial = $1.data };
+                  cbl_field_data_t data = {};
+		    data.capacity = capacity_cast(strlen($1.data));
+		    data.initial = $1.data;
                   $$ = new cbl_field_data_t(data);
                 }
         |       const_value
                 {
-                  cbl_field_data_t data = { .value = $1 };
+                  cbl_field_data_t data = {};
+		  data = $1;
                   $$ = new cbl_field_data_t(data);
                 }
         |       true_false
@@ -3343,7 +3343,7 @@ data_descr1:    level_name
                   field.attr |= constant_e;
                   if( $is_global ) field.attr |= global_e;
                   field.type = FldLiteralN;
-                  field.data.value = $const_value;
+                  field.data = $const_value;
                   field.data.initial = string_of($const_value);
 
                   if( !cdf_value(field.name, static_cast<int64_t>($const_value)) ) {
@@ -3379,9 +3379,9 @@ data_descr1:    level_name
                   cbl_field_t& field = *$1;
                   field.attr |= ($is_global | constant_e);
                   field.data.capacity = cdfval->string ? strlen(cdfval->string)
-                                                  : sizeof(field.data.value);
+                                                  : sizeof(field.data.value_of());
                   field.data.initial  = cdfval->string;
-                  field.data.value = cdfval->number;
+                  field.data = cdfval->number;
                   if( !cdf_value(field.name, *cdfval) ) {
                     error_msg(@1, "%s was defined by CDF", field.name);
                   }
@@ -3404,9 +3404,9 @@ data_descr1:    level_name
                     }
                   } else {
                     field.type = FldLiteralN;
-                    field.data.initial = string_of(field.data.value);
+                    field.data.initial = string_of(field.data.value_of());
                     if( !cdf_value(field.name,
-                                   static_cast<int64_t>(field.data.value)) ) {
+                                   static_cast<int64_t>(field.data.value_of())) ) {
                       yywarn("%s was defined by CDF", field.name);
                     }
                   }
@@ -3421,7 +3421,7 @@ data_descr1:    level_name
                   struct cbl_field_t field = { 0,
                     FldClass, FldInvalid, 0, 0, 0, 88, nonarray, yylineno, "",
                     0, cbl_field_t::linkage_t(),
-		    { 0,0,0,0, NULL, NULL, { NULL }, { NULL } }, NULL };
+		    {}, NULL };
                   if( !namcpy(@NAME, field.name, $2) ) YYERROR;
 
                   auto fig = constant_of(constant_index(NULLS))->data.initial;
@@ -3429,7 +3429,7 @@ data_descr1:    level_name
 
                   domain[0] = cbl_domain_t(@NAME, false, strlen(fig), fig);
 
-                  field.data.domain = domain;
+                  field.data.domain_as(domain);
 
                   if( ($$ = field_add(@2, &field)) == NULL ) {
                     error_msg(@NAME, "failed level 88");
@@ -3447,7 +3447,7 @@ data_descr1:    level_name
                   struct cbl_field_t field = { 0,
                     FldClass, FldInvalid, 0, 0, 0, 88, nonarray, yylineno, "",
                     0, cbl_field_t::linkage_t(),
-		    { 0,0,0,0, NULL, NULL, { NULL }, { NULL } }, NULL };
+		    {}, NULL };
                   if( !namcpy(@NAME, field.name, $2) ) YYERROR;
 
                   struct cbl_domain_t *domain =
@@ -3455,8 +3455,8 @@ data_descr1:    level_name
 
                   std::copy(domains.begin(), domains.end(), domain);
 
-                  field.data.domain = domain;
-                  field.data.false_value = $domains;
+                  field.data.domain_as(domain);
+                  field.data.false_value_as($domains);
                   domains.clear();
 
                   if( ($$ = field_add(@2, &field)) == NULL ) {
@@ -4120,7 +4120,7 @@ count:          %empty           { $$ = 0; }
 		  if( e ) { // verify not floating point with nonzero fraction
 		    auto field = cbl_field_of(e);
 		    assert(is_literal(field));
-		    if( field->data.value != size_t(field->data.value) ) {
+		    if( field->data.value_of() != size_t(field->data.value_of()) ) {
 		      nmsg++;
 		      error_msg(@NAME, "invalid PICTURE count '(%s)'",
 				field->data.initial );
@@ -4324,7 +4324,7 @@ value_clause:   VALUE all LITERAL[lit] {
                   std::replace(initial, initial + strlen(initial), '.', decimal);
 
                   field->data.initial = initial;
-                  field->data.value = $value;
+                  field->data = $value;
 
                   if( $all ) field_value_all(field);
                 }
@@ -4677,11 +4677,6 @@ declaratives:   %empty
                 } [label]
                 sentences END DECLARATIVES '.'
                 {
-                  size_t ndecl = current.declaratives.as_list().size();
-                  cbl_declarative_t decls[ ndecl ];
-                  auto decl_list = current.declaratives.as_list();
-                  std::copy( decl_list.begin(), decl_list.end(), decls );
-                  std::sort( decls, decls + ndecl );
                   current.doing_declaratives(false);
                   /* TODO: if( intradeclarative_reference() ) yyerror;
                    * Test also at paragraph_reference, for non-forward
@@ -5240,7 +5235,7 @@ allocate:       ALLOCATE expr[size] CHARACTERS initialized RETURNING scalar[retu
                 {
                   statement_begin(@1, ALLOCATE);
                   if( $size->field->type == FldLiteralN ) {
-                    if( $size->field->data.value <= 0 ) {
+                    if( $size->field->data.value_of() <= 0 ) {
                       error_msg(@size, "size must be greater than 0");
                       YYERROR;
                     }
@@ -5320,9 +5315,8 @@ compute_expr:   '=' {
 
 display:        disp_body end_display
                 {
-                  size_t len = $1.vargs->args.size();
-                  struct cbl_refer_t args[len];
-
+		  std::vector <cbl_refer_t> args($1.vargs->args.size());
+		  std::copy( $1.vargs->args.begin(), $1.vargs->args.end(), args.begin() );
 		  if( $1.special && $1.special->id == ARG_NUM_e ) {
 		    if( $1.vargs->args.size() != 1 ) {
 		      error_msg(@1, "ARGUMENT-NUMBER can be set to only one value");
@@ -5331,15 +5325,16 @@ display:        disp_body end_display
 		    cbl_field_t *dst = register_find("_ARGI");
 		    parser_move( dst, src );
 		  } else {
-		    parser_display($1.special, use_vargs($1.vargs, args), len,
+		    parser_display($1.special,
+				   args.empty()? NULL : args.data(), args.size(),
 				   DISPLAY_ADVANCE);
 		  }
 		  current.declaratives_evaluate(ec_none_e);
                 }
         |       disp_body NO ADVANCING end_display
                 {
-                  size_t len = $1.vargs->args.size();
-                  struct cbl_refer_t args[len];
+                  std::vector <cbl_refer_t> args($1.vargs->args.size());
+		  std::copy( $1.vargs->args.begin(), $1.vargs->args.end(), args.begin() );
 
 		  if( $1.special && $1.special->id == ARG_NUM_e ) {
 		    if( $1.vargs->args.size() != 1 ) {
@@ -5349,7 +5344,8 @@ display:        disp_body end_display
 		    cbl_field_t *dst = register_find("_ARGI");
 		    parser_move( dst, src );
 		  } else {
-		    parser_display($1.special, use_vargs($1.vargs, args), len,
+		    parser_display($1.special,
+				   args.empty()? NULL : args.data(), args.size(), 
 				   DISPLAY_NO_ADVANCE);
 		  }
 		  current.declaratives_evaluate(ec_none_e);
@@ -5676,8 +5672,8 @@ simple_cond:    kind_of_name
                   cbl_field_t *field = cbl_field_of(symbol_find(@1, $1));
                   assert(field->type == FldSwitch);
                   cbl_field_t *parent = parent_of(field);
-                  size_t value = field->data.upsi_mask->value;
-                  bitop_t op = field->data.upsi_mask->on_off?
+                  size_t value = field->data.upsi_mask_of()->value;
+                  bitop_t op = field->data.upsi_mask_of()->on_off?
                                bit_on_op : bit_off_op;
                    parser_bitop($$->cond(), parent, op, value );
                 }
@@ -6656,8 +6652,9 @@ move_tgt:	scalar[tgt] {
 		  const auto& field(*$1);
 		  static char buf[32];
 		  const char *value_str( name_of($literal) );
-		  if( is_numeric($1) && float(field.data.value) == int(field.data.value) ) {
-		    sprintf(buf, "%d", int(field.data.value));
+		  if( is_numeric($1) &&
+		      float(field.data.value_of()) == int(field.data.value_of()) ) {
+		    sprintf(buf, "%d", int(field.data.value_of()));
 		    value_str = buf;
 		  }
 		  auto litcon = field.name[0] == '_'? "literal" : "constant";
@@ -7154,20 +7151,20 @@ perform:        perform_verb perform_proc   { perform_free(); }
 
 perform_stmts:  perform_until perform_inline[in]
                 {
-                  size_t n = $in->varys.size();
-                  struct cbl_perform_vary_t varys[n];
-                  std::copy( $in->varys.begin(), $in->varys.end(), varys );
+                  std::vector <cbl_perform_vary_t> varys($in->varys.size());
+                  std::copy( $in->varys.begin(), $in->varys.end(), varys.begin() );
 
-                  parser_perform_until(&$in->tgt, $in->before, n, varys);
+                  parser_perform_until(&$in->tgt, $in->before,
+				       varys.size(), varys.data());
                 }
         |       perform_vary perform_inline[in]
                 {
 		  struct perform_t *p = $in;
-                  size_t n = p->varys.size();
-                  struct cbl_perform_vary_t varys[n];
-                  std::copy( p->varys.begin(), p->varys.end(), varys );
+                  std::vector <cbl_perform_vary_t> varys(p->varys.size());
+                  std::copy( p->varys.begin(), p->varys.end(), varys.begin() );
 
-                  parser_perform_until(&$in->tgt, $in->before, n, varys);
+                  parser_perform_until(&$in->tgt, $in->before,
+				       varys.size(), varys.data());
                 }
         |       perform_times perform_inline[in]
                 {
@@ -7203,11 +7200,10 @@ perform_proc:   perform_names %prec NAME
                   struct perform_t *p = perform_current();
                   if( yydebug ) p->tgt.dump();
 
-                  size_t n = p->varys.size();
-                  struct cbl_perform_vary_t varys[n];
-                  std::copy( p->varys.begin(), p->varys.end(), varys );
+                  std::vector <cbl_perform_vary_t> varys(p->varys.size());
+                  std::copy( p->varys.begin(), p->varys.end(), varys.begin() );
 
-                  parser_perform_until( &p->tgt, p->before, n, varys );
+                  parser_perform_until( &p->tgt, p->before, varys.size(), varys.data() );
                 }
                 ;
 
@@ -8183,15 +8179,9 @@ merge:          MERGE { statement_begin(@1, MERGE); }
                 filename[file] sort_keys sort_seq
                   USING filenames[inputs] sort_output
                 {
-                  size_t nkey = $sort_keys->key_list.size();
-                  cbl_key_t keys[nkey], *pkey = keys;
-
-                  for( auto p = $sort_keys->key_list.begin();
-                           p != $sort_keys->key_list.end(); p++, pkey++ )
-                  {
-                    cbl_key_t k(*p);
-                    *pkey = k;
-                  }
+                  std::vector <cbl_key_t> keys($sort_keys->key_list.size());
+		  std::copy( $sort_keys->key_list.begin(),
+			     $sort_keys->key_list.end(), keys.begin() );
 
                   size_t ninput = $inputs->files.size();
                   size_t noutput = $sort_output->nfile();
@@ -8211,7 +8201,7 @@ merge:          MERGE { statement_begin(@1, MERGE); }
                   }
 
                   parser_file_merge( $file, $sort_seq,
-                                     nkey, keys,
+                                     keys.size(), keys.empty()? NULL : keys.data(),
                                      ninput, inputs,
                                      noutput, outputs,
                                      out_proc );
@@ -8379,7 +8369,7 @@ set:            SET set_tgts[tgts] TO set_operand[src]
                    public:
                     set_conditional( int token ) : tf(token == TRUE_kw) {}
                     void operator()(cbl_refer_t& refer) {
-                      if( refer.field->data.false_value == NULL && !tf ) {
+                      if( refer.field->data.false_value_of() == NULL && !tf ) {
 			auto loc = symbol_field_location(field_index(refer.field));
                         error_msg(loc, "%s has no WHEN SET TO FALSE",
                                  refer.field->name);
@@ -8407,7 +8397,7 @@ set_switches:   switches TO on_off
                       assert(sw->type == FldSwitch);
                       assert(sw->data.initial); // not a switch condition
                       parser_bitop(NULL, parent_of(sw),
-                                   op, sw->data.upsi_mask_of());
+                                   op, sw->data.upsi_mask_derive());
                       return *this;
                     }
                   };
@@ -8574,21 +8564,22 @@ sort:           sort_table
 
 sort_table:     SORT tableref[table] sort_keys sort_dup sort_seq {
                   statement_begin(@1, SORT);
-                  size_t nkey = $sort_keys->key_list.size();
-                  cbl_key_t keys[nkey], *pkey = keys;
+                  std::vector <cbl_key_t> keys($sort_keys->key_list.size());
 		  if( ! is_table($table->field) ) {
 		    error_msg(@1, "%s has no OCCURS clause", $table->field->name);
 		  }
                   // 23) If data-name-1 is omitted, the data item referenced by
                   // data-name-2 is the key data item.
+		  int i = 0;
                   for( auto k : $sort_keys->key_list ) {
                     if( k.fields.empty() ) {
                       k.fields.push_back($table->field);
                     }
-                    *pkey++ = cbl_key_t(k);
+                    keys.at(i++) = cbl_key_t(k);
                   }
 
-                  parser_sort( *$table, $sort_dup, $sort_seq, nkey, keys );
+                  parser_sort( *$table, $sort_dup, $sort_seq,
+			       keys.size(), keys.empty()? NULL : keys.data() );
                 }
         |       SORT tableref[table] sort_dup sort_seq {
                   statement_begin(@1, SORT);
@@ -8614,15 +8605,9 @@ sort_file:      SORT FILENAME[file] sort_keys  sort_dup    sort_seq
                     YYERROR;
                   }
                   cbl_file_t *file = cbl_file_of(e);
-                  size_t nkey = $sort_keys->key_list.size();
-                  cbl_key_t keys[nkey], *pkey = keys;
-
-                  for( auto p = $sort_keys->key_list.begin();
-                           p != $sort_keys->key_list.end(); p++, pkey++ )
-                  {
-                    cbl_key_t k(*p);
-                    *pkey = k;
-                  }
+                  std::vector <cbl_key_t> keys($sort_keys->key_list.size());
+		  std::copy( $sort_keys->key_list.begin(),
+			     $sort_keys->key_list.end(), keys.begin() );
 
                   size_t ninput = $sort_input->nfile();
                   size_t noutput = $sort_output->nfile();
@@ -8647,7 +8632,7 @@ sort_file:      SORT FILENAME[file] sort_keys  sort_dup    sort_seq
                   parser_file_sort( file,
                                     $sort_dup,
                                     $sort_seq,
-                                    nkey, keys,
+                                    keys.size(), keys.empty()? NULL : keys.data(),
                                     ninput, inputs,
                                     noutput, outputs,
                                     in_proc, out_proc );
@@ -9241,9 +9226,12 @@ call_impl:      CALL call_body[body]
                   ffi_args_t *params = $body.using_params;
                   if( yydebug && params ) params->dump();
                   size_t narg = params? params->elems.size() : 0;
-                  cbl_ffi_arg_t args[1 + narg], *pargs = NULL;
+                  std::vector <cbl_ffi_arg_t> args(narg);
+		  cbl_ffi_arg_t *pargs = NULL;
                   if( narg > 0 ) {
-                    pargs = use_list(params, args);
+		    std::copy( params->elems.begin(),
+			       params->elems.end(), args.begin() );	 
+                    pargs = args.data();
                   }
                   ast_call( $body.loc, *$body.ffi_name,
                                *$body.ffi_returning, narg, pargs, NULL, NULL, false );
@@ -9255,9 +9243,12 @@ call_cond:      CALL call_body[body] call_excepts[except]
                   ffi_args_t *params = $body.using_params;
                   if( yydebug && params ) params->dump();
                   size_t narg = params? params->elems.size() : 0;
-                  cbl_ffi_arg_t args[1 + narg], *pargs = NULL;
+                  std::vector <cbl_ffi_arg_t> args(narg);
+		  cbl_ffi_arg_t *pargs = NULL;
                   if( narg > 0 ) {
-                    pargs = use_list(params, args);
+		    std::copy( params->elems.begin(),
+			       params->elems.end(), args.begin() );	 
+                    pargs = args.data();
                   }
                   ast_call( $body.loc, *$body.ffi_name,
                                *$body.ffi_returning, narg, pargs,
@@ -9315,9 +9306,12 @@ entry:          ENTRY LITERAL
                   auto name = new_literal($2, quoted_e);
                   ffi_args_t *params = $parameters;
                   size_t narg = params? params->elems.size() : 0;
-                  cbl_ffi_arg_t args[1 + narg], *pargs = NULL;
+		  cbl_ffi_arg_t *pargs = NULL;
+                  std::vector <cbl_ffi_arg_t> args(narg);
                   if( narg > 0 ) {
-                    pargs = use_list(params, args);
+		    std::copy( params->elems.begin(),
+			       params->elems.end(), args.begin() );
+                    pargs = args.data();
                   }
                   parser_entry( name, narg, pargs );
                 }
@@ -9477,9 +9471,10 @@ call_except:    EXCEPTION
 cancel:         CANCEL ffi_names
                 {
                   statement_begin(@1, CANCEL);
-                  auto nprog = $ffi_names->refers.size();
-                  cbl_refer_t progs[nprog];
-                  parser_initialize_programs(nprog, $ffi_names->use_list(progs));
+                  std::vector <cbl_refer_t> progs($ffi_names->refers.size());
+		  std::copy( $ffi_names->refers.begin(),
+			     $ffi_names->refers.end(), progs.begin() );
+                  parser_initialize_programs( progs.size(), progs.empty()? NULL : progs.data() );
                 }
                 ;
 ffi_names:      ffi_name           { $$ = new refer_list_t($1); }
@@ -9520,19 +9515,19 @@ go_to:          GOTO labels[args]
 		  for( auto& label : $args->elems ) {
 		    label->used = yylineno;
 		  }
-                  cbl_label_t *args[narg];
-                  parser_goto( cbl_refer_t(), 1, use_list($args, args) );
+                  cbl_label_t *arg = $args->elems.front();
+                  parser_goto( cbl_refer_t(), 1, &arg );
                 }
         |       GOTO labels[args] DEPENDING on scalar[value]
                 {
                   statement_begin(@1, GOTO);
-                  size_t narg = $args->elems.size();
-                  assert(narg > 0);
+		  assert(! $args->elems.empty());
+                  std::vector <cbl_label_t *> args($args->elems.size());
+		  std::copy($args->elems.begin(), $args->elems.end(), args.begin());
 		  for( auto& label : $args->elems ) {
 		    label->used = yylineno;
 		  }
-                  cbl_label_t *args[narg];
-                  parser_goto( *$value, narg, use_list($args, args) );
+                  parser_goto( *$value, args.size(), args.data() );
                 }
         |       GOTO
                 {
@@ -9889,11 +9884,10 @@ function_udf:   FUNCTION_UDF '(' arg_list[args] ')' {
 		    YYERROR;
 		  }
                   $$ = new_temporary_clone(cbl_field_of(symbol_at(L->returning)));
-                  auto narg = $args->refers.size();
-                  cbl_ffi_arg_t args[narg];
+                  std::vector <cbl_ffi_arg_t> args($args->refers.size());
 		  size_t i = 0;
 		  // Pass parameters as defined by the function.
-                  std::transform( $args->refers.begin(), $args->refers.end(), args,
+                  std::transform( $args->refers.begin(), $args->refers.end(), args.begin(),
 				  [params, &i]( cbl_refer_t& arg ) {
 				    function_descr_arg_t param = params.at(i++);
 				    auto ar = new cbl_refer_t(arg);
@@ -9901,7 +9895,7 @@ function_udf:   FUNCTION_UDF '(' arg_list[args] ')' {
 				    return actual;
 				  } );
 		  auto name = new_literal(strlen(L->name), L->name, quoted_e);
-		  ast_call( @1, name, $$, narg, args, NULL, NULL, true );
+		  ast_call( @1, name, $$, args.size(), args.data(), NULL, NULL, true );
                 }
         |       FUNCTION_UDF_0 {
                   static const size_t narg = 0;
@@ -9935,23 +9929,24 @@ intrinsic:      function_udf
         |       intrinsic0
         |       intrinsic_v '(' arg_list[args] ')' {
                   location_set(@1);
-                  size_t n = $args->size();
-                  assert(n > 0);
-                  cbl_refer_t args[n];
-                  std::copy( $args->begin(), $args->end(), args );
-                  cbl_refer_t *p = intrinsic_inconsistent_parameter(n, args);
+                  std::vector <cbl_refer_t> args($args->size());
+		  assert(! args.empty());
+                  std::copy( $args->begin(), $args->end(), args.begin() );
+                  cbl_refer_t *p = intrinsic_inconsistent_parameter(args.size(),
+								    args.data());
                   if( p != NULL ) {
 		    auto loc = symbol_field_location(field_index(p->field));
                     error_msg(loc, "FUNCTION %s has "
                               "inconsistent parameter type %zu ('%s')",
-                              keyword_str($1), p - args, name_of(p->field) );
+                              keyword_str($1), p - args.data(), name_of(p->field) );
                     YYERROR;
                   }
                   $$ = is_numeric(args[0].field)?
                          new_tempnumeric_float() :
                          new_alphanumeric(args[0].field->data.capacity);
 
-                  parser_intrinsic_callv( $$, intrinsic_cname($1), n, args );
+                  parser_intrinsic_callv( $$, intrinsic_cname($1),
+					  args.size(), args.data() );
                 }
 
         |       PRESENT_VALUE '(' expr_list[args] ')'
@@ -9965,8 +9960,9 @@ intrinsic:      function_udf
                     error_msg(@args, "PRESENT VALUE requires 2 parameters");
                     YYERROR;
                   }
-                  cbl_refer_t args[n];
-                  parser_intrinsic_callv( $$, s, n, $args->use_list(args) );
+                  std::vector <cbl_refer_t> args(n);
+		  std::copy( $args->begin(), $args->end(), args.begin() );
+                  parser_intrinsic_callv( $$, s, args.size(), args.data() );
                 }
 
 	|       BASECONVERT  '(' varg[r1] varg[r2] varg[r3] ')' {
@@ -10206,9 +10202,8 @@ intrinsic:      function_udf
         |       SUBSTITUTE '(' varg[r1] subst_inputs[inputs] ')' {
                   location_set(@1);
                   $$ = new_alphanumeric(64);
-                  auto narg = $inputs->size();
-                  cbl_substitute_t args[narg];
-                  std::transform( $inputs->begin(), $inputs->end(), args,
+                  std::vector <cbl_substitute_t> args($inputs->size());
+                  std::transform( $inputs->begin(), $inputs->end(), args.begin(),
                                   []( const substitution_t& arg ) {
                                     cbl_substitute_t output( arg.anycase,
                                                              char(arg.first_last),
@@ -10216,7 +10211,7 @@ intrinsic:      function_udf
                                                              arg.replacement );
                                   return output; } );
 
-                  parser_intrinsic_subst($$, *$r1, narg, args);
+                  parser_intrinsic_subst($$, *$r1, args.size(), args.data());
                 }
 
 
@@ -10902,9 +10897,8 @@ cdf_use:        USE DEBUGGING on labels
                     YYERROR;
                   }
                   static const cbl_label_t all = {
-                      .type = LblNone,
-		      .name = { ':', 'a', 'l', 'l', ':',  } // workaround for gcc < 11.3
-		  };
+		    LblNone, 0, 0,0,0, false, false, false, 0,0, ":all:" };
+		      ////.name = { ':', 'a', 'l', 'l', ':',  } // workaround for gcc < 11.3
                   add_debugging_declarative(&all);
                  }
 
@@ -11044,8 +11038,7 @@ void ast_call( const YYLTYPE& loc, cbl_refer_t name, cbl_refer_t returning,
   if( is_literal(name.field) ) {
     cbl_field_t called = {      0, FldLiteralA, FldInvalid, quoted_e | constant_e,
                                 0, 0, 77, nonarray, 0, "",
-                                0, cbl_field_t::linkage_t(),
-				{0,0,0,0, NULL, NULL, {NULL}, {NULL}}, NULL };
+                                0, cbl_field_t::linkage_t(), {}, NULL };
     snprintf(called.name, sizeof(called.name), "_%s", name.field->data.initial);
     called.data = name.field->data;
     name.field = cbl_field_of(symbol_field_add(PROGRAM, &called));
@@ -11279,11 +11272,10 @@ classify_of( int token ) {
 static cbl_round_t
 rounded_of( int token ) {
   cbl_round_t mode = current_rounded_mode();
-
+  if( 0 <= token && token <= int(truncation_e) ) {
+    return cbl_round_t(token);
+  }
   switch(token) {
-  case 0 ... int(truncation_e):
-    mode = cbl_round_t(token);
-    break;
   case ROUNDED:
     mode = current.rounded_mode();
     break;
@@ -11594,7 +11586,8 @@ int repository_function_tok( const char name[] ) {
 
 function_descr_t
 function_descr_t::init( int isym ) {
-  function_descr_t descr = { .token = FUNCTION_UDF_0, .ret_type = FldInvalid };
+  function_descr_t descr = { FUNCTION_UDF_0 };
+  descr.ret_type = FldInvalid;
   auto L = cbl_label_of(symbol_at(isym));
   bool ok = namcpy(YYLTYPE(), descr.name, L->name);
   gcc_assert(ok);
@@ -11653,8 +11646,10 @@ ast_op( cbl_refer_t *lhs, char op, cbl_refer_t *rhs ) {
 static void
 ast_add( arith_t *arith ) {
   size_t nC = arith->tgts.size(), nA = arith->A.size();
-  cbl_num_result_t *pC, C[nC];
-  cbl_refer_t *pA, A[nA];
+  std::vector <cbl_num_result_t> C(nC);
+  cbl_num_result_t *pC;
+  std::vector <cbl_refer_t> A(nA);
+  cbl_refer_t *pA;
 
   pC = use_any(arith->tgts, C);
   pA = use_any(arith->A, A);
@@ -11672,12 +11667,13 @@ ast_add( arith_t *arith ) {
 static bool
 ast_subtract( arith_t *arith ) {
   size_t nC = arith->tgts.size(), nA = arith->A.size(), nB = arith->B.size();
-  cbl_num_result_t *pC, C[nC];
-  cbl_refer_t *pA, A[nA], *pB, B[nB];
+  std::vector <cbl_refer_t> A(nA);
+  std::vector <cbl_refer_t> B(nB);
+  std::vector <cbl_num_result_t> C(nC);
 
-  pC = use_any(arith->tgts, C);
-  pA = use_any(arith->A, A);
-  pB = use_any(arith->B, B);
+  cbl_refer_t *pA = use_any(arith->A, A);
+  cbl_refer_t *pB = use_any(arith->B, B);
+  cbl_num_result_t *pC = use_any(arith->tgts, C);
 
   parser_subtract( nC, pC, nA, pA, nB, pB, arith->format, arith->on_error, arith->not_error );
 
@@ -11689,12 +11685,13 @@ ast_subtract( arith_t *arith ) {
 static bool
 ast_multiply( arith_t *arith ) {
   size_t nC = arith->tgts.size(), nA = arith->A.size(), nB = arith->B.size();
-  cbl_num_result_t *pC, C[nC];
-  cbl_refer_t *pA, A[nA], *pB, B[nB];
+  std::vector <cbl_refer_t> A(nA);
+  std::vector <cbl_refer_t> B(nB);
+  std::vector <cbl_num_result_t> C(nC);
 
-  pC = use_any(arith->tgts, C);
-  pA = use_any(arith->A, A);
-  pB = use_any(arith->B, B);
+  cbl_refer_t *pA = use_any(arith->A, A);
+  cbl_refer_t *pB = use_any(arith->B, B);
+  cbl_num_result_t *pC = use_any(arith->tgts, C);
 
   parser_multiply( nC, pC, nA, pA, nB, pB, arith->on_error, arith->not_error );
 
@@ -11706,12 +11703,13 @@ ast_multiply( arith_t *arith ) {
 static bool
 ast_divide( arith_t *arith ) {
   size_t nC = arith->tgts.size(), nA = arith->A.size(), nB = arith->B.size();
-  cbl_num_result_t *pC, C[nC];
-  cbl_refer_t *pA, A[nA], *pB, B[nB];
+  std::vector <cbl_refer_t> A(nA);
+  std::vector <cbl_refer_t> B(nB);
+  std::vector <cbl_num_result_t> C(nC);
 
-  pC = use_any(arith->tgts, C);
-  pA = use_any(arith->A, A);
-  pB = use_any(arith->B, B);
+  cbl_refer_t *pA = use_any(arith->A, A);
+  cbl_refer_t *pB = use_any(arith->B, B);
+  cbl_num_result_t *pC = use_any(arith->tgts, C);
 
   parser_divide( nC, pC, nA, pA, nB, pB,
                  arith->remainder, arith->on_error, arith->not_error );
@@ -11754,18 +11752,17 @@ stringify( refer_collection_t *inputs,
            cbl_label_t  *on_error,
            cbl_label_t *not_error )
 {
-  size_t n = inputs->lists.size();
-  stringify_src_t sources[n];
+  std::vector <stringify_src_t> sources(inputs->lists.size());
 
   if( inputs->lists.back().marker == NULL ) {
     inputs->lists.back().marker = cbl_refer_t::empty();
   }
   assert( inputs->lists.back().marker );
-  std::copy( inputs->lists.begin(), inputs->lists.end(), sources );
-  if( getenv(__func__) ) {
-    std::for_each(sources, sources+n, stringify_src_t::dump);
+  std::copy( inputs->lists.begin(), inputs->lists.end(), sources.begin() );
+  if( yydebug && getenv(__func__) ) {
+    std::for_each(sources.begin(), sources.end(), stringify_src_t::dump);
   }
-  parser_string( into, pointer, n, sources, on_error, not_error );
+  parser_string( into, pointer, sources.size(), sources.data(), on_error, not_error );
 }
 
 void
@@ -11776,26 +11773,26 @@ unstringify( cbl_refer_t& src,
              cbl_label_t *not_error )
 {
   size_t ndelimited = delimited? delimited->size() : 0;
-  cbl_refer_t delimiteds[1 + ndelimited], *pdelimited = NULL;
+  cbl_refer_t *pdelimited = NULL;
+  std::vector <cbl_refer_t> delimiteds(ndelimited);
   if( ndelimited > 0 ) {
-    pdelimited = delimited->use_list( delimiteds );
+    pdelimited = use_any( delimited->refers, delimiteds );
   }
 
-  size_t noutput = into->size();
-  cbl_refer_t outputs[noutput];
+  std::vector <cbl_refer_t> outputs(into->size());
   into->use_list( outputs, unstring_tgt_t::tgt_of );
 
-  cbl_refer_t delimiters[noutput];
+  std::vector <cbl_refer_t> delimiters(into->size());
   into->use_list( delimiters, unstring_tgt_t::delimiter_of );
 
-  cbl_refer_t counts[noutput];
+  std::vector <cbl_refer_t> counts(into->size());
   into->use_list( counts, unstring_tgt_t::count_of );
 
   parser_unstring( src,
                    ndelimited, pdelimited,
                    // into
-                   noutput,
-                   outputs, delimiters, counts,
+                   outputs.size(),
+                   outputs.data(), delimiters.data(), counts.data(),
                    into->pointer, into->tally,
                    on_error, not_error );
   delete into;
@@ -12331,10 +12328,9 @@ initialize_table( cbl_num_result_t target,
   assert( 0 < n );
 
   size_t isym( field_index(src.field) );
-  size_t ntbl = subtables.size();
-  cbl_subtable_t tbls[ntbl], *ptbls = 0 < ntbl? tbls : NULL;
-  std::copy( subtables.begin(), subtables.end(), tbls );
-  parser_initialize_table( n, src, nspan, spans, isym, ntbl, ptbls );
+  std::vector <cbl_subtable_t> tbls(subtables.size());
+  std::copy( subtables.begin(), subtables.end(), tbls.begin() );
+  parser_initialize_table( n, src, nspan, spans, isym, tbls.size(), tbls.data() );
   return true;
 }
 
@@ -12343,7 +12339,7 @@ synthesize_table_refer( cbl_refer_t tgt ) {
   // For a table, use supplied subscripts or start with 1.
   auto ndim( dimensions(tgt.field) );
   if( tgt.nsubscript < ndim ) { // it's an incomplete table
-    cbl_refer_t subscripts[ndim];
+    std::vector <cbl_refer_t> subscripts(ndim);
     for( size_t i=0; i < ndim; i++ ) {
       if( i < tgt.nsubscript ) {
 	subscripts[i] = tgt.subscripts[i];
@@ -12352,7 +12348,7 @@ synthesize_table_refer( cbl_refer_t tgt ) {
       subscripts[i].field = new_tempnumeric();
       parser_set_numeric(subscripts[i].field, 1);
     }
-    return cbl_refer_t( tgt.field, ndim, subscripts );
+    return cbl_refer_t( tgt.field, subscripts.size(), subscripts.data() );
   }
   return tgt;
 }
@@ -12444,11 +12440,11 @@ initialize_statement( const cbl_num_result_t& target, bool with_filler,
 	  field_spans.push_back(span);
 	}
 	// convert field spans to byte ranges
-	cbl_bytespan_t ranges[ field_spans.size() ];
+	std::vector <cbl_bytespan_t> ranges( field_spans.size() );
 	size_t nrange = 0;
 	if( honor_filler ) {
-	  nrange = COUNT_OF(ranges);
-	  std::transform( field_spans.begin(), field_spans.end(), ranges,
+	  nrange = ranges.size();
+	  std::transform( field_spans.begin(), field_spans.end(), ranges.begin(),
 			  []( const auto& span ) {
 			    size_t first, second;
 			    first = second = group_offset(span.first);
@@ -12466,9 +12462,9 @@ initialize_statement( const cbl_num_result_t& target, bool with_filler,
 	}
 	if( getenv("initialize_statement") ) {
 	  dump_spans( field_index(output.refer.field), output.refer.field,
-		      field_spans, nrange, ranges, depth, subtables );
+		      field_spans, ranges.size(), ranges.data(), depth, subtables );
 	}
-	return initialize_table( output, nrange, ranges, subtables );
+	return initialize_table( output, nrange, ranges.data(), subtables );
       }
     }
     return fOK;
@@ -12779,8 +12775,8 @@ cbl_field_t::has_subordinate( const cbl_field_t *that ) const {
 
 bool
 cbl_field_t::value_set( _Float128 value ) {
-  data.value = value;
-  char *initial = string_of(data.value);
+  data = value;
+  char *initial = string_of(data.value_of());
   if( !initial ) return false;
 
   // Trim trailing zeros.
@@ -12801,7 +12797,9 @@ cbl_field_t::value_set( _Float128 value ) {
 
 const char *
 cbl_field_t::value_str() const {
-    return string_of(data.value);
+    if( data.etc_type == cbl_field_data_t::value_e )
+	return string_of( data.value_of() );
+    return "???";
 }
 
 static const cbl_division_t not_syntax_only = cbl_division_t(-1);
@@ -12857,7 +12855,7 @@ literal_refmod_valid( YYLTYPE loc, const cbl_refer_t& r ) {
   if( ! is_literal(refmod.from->field) ) {
     if( ! refmod.len ) return true;
     if( ! is_literal(refmod.len->field) ) return true;
-    auto edge = refmod.len->field->data.value;
+    auto edge = refmod.len->field->data.value_of();
     if( 0 < edge ) {
       if( --edge < r.field->data.capacity ) return true;
     }
@@ -12866,18 +12864,18 @@ literal_refmod_valid( YYLTYPE loc, const cbl_refer_t& r ) {
 	           "size is %u",
 	      r.field->name,
 	      refmod.from->name(),
-	      size_t(refmod.len->field->data.value),
+	      size_t(refmod.len->field->data.value_of()),
 	      static_cast<unsigned int>(r.field->data.capacity) );
     return false;
   }
 
-  if( refmod.from->field->data.value > 0 ) {
-    auto edge = refmod.from->field->data.value;
+  if( refmod.from->field->data.value_of() > 0 ) {
+    auto edge = refmod.from->field->data.value_of();
     if( --edge < r.field->data.capacity ) {
       if( ! refmod.len ) return true;
       if( ! is_literal(refmod.len->field) ) return true;
-      if( refmod.len->field->data.value > 0 ) {
-	edge += refmod.len->field->data.value;
+      if( refmod.len->field->data.value_of() > 0 ) {
+	edge += refmod.len->field->data.value_of();
 	if( --edge < r.field->data.capacity ) return true;
       }
       // len < 0 or not: 0 < from + len <= capacity
@@ -12885,8 +12883,8 @@ literal_refmod_valid( YYLTYPE loc, const cbl_refer_t& r ) {
       error_msg(loc, "%s(%zu:%zu) out of bounds, "
 		"size is %u",
 		r.field->name,
-		size_t(refmod.from->field->data.value),
-		size_t(refmod.len->field->data.value),
+		size_t(refmod.from->field->data.value_of()),
+		size_t(refmod.len->field->data.value_of()),
 		static_cast<unsigned int>(r.field->data.capacity) );
       return false;
     }
@@ -12894,7 +12892,7 @@ literal_refmod_valid( YYLTYPE loc, const cbl_refer_t& r ) {
   // not: 0 < from <= capacity
   error_msg(loc,"%s(%zu) out of bounds, size is %u",
 	    r.field->name,
-	    size_t(refmod.from->field->data.value),
+	    size_t(refmod.from->field->data.value_of()),
 	    static_cast<unsigned int>(r.field->data.capacity) );
   return false;
 }
@@ -12986,7 +12984,7 @@ eval_subject_t::eval_subject_t()
 
 cbl_label_t *
 eval_subject_t::label( const char skel[] ) {
-  static const cbl_label_t protolabel = { .type = LblEvaluate };
+  static const cbl_label_t protolabel = { LblEvaluate };
   cbl_label_t label = protolabel;
   label.line = yylineno;
   size_t n = 1 + symbols_end() - symbols_begin();

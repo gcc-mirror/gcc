@@ -84,9 +84,13 @@ static struct symbol_table_t {
   int fd;
   size_t capacity, nelem;
   size_t first_program, procedures;
-  struct {
+  struct registers_t {
     size_t file_status, linage_counter, return_code,
            exception_condition, very_true, very_false;
+    registers_t() {
+      file_status = linage_counter = return_code =
+	exception_condition = very_true = very_false = 0;
+    }
   } registers;
 
   struct symbol_elem_t *elems;
@@ -95,6 +99,12 @@ static struct symbol_table_t {
   std::map<elem_key_t, std::list<size_t>> labels;
 
   std::vector<symbol_pair_t> mappings;
+
+  symbol_table_t()
+    : fd(-1)
+    , capacity(0), nelem(0), first_program(0), procedures(0)
+    , elems(NULL)
+  {}
 
   /*
    * To compute an offset into the symbol table from an element
@@ -117,7 +127,7 @@ static struct symbol_table_t {
     const char *name = cbl_label_of(e)->name;
     labels[ elem_key_t(e->program, name) ].push_back( symbol_index(e) );
   }
-} symbols { .fd = -1 };
+} symbols;
 
 static symbol_table_t&
 symbol_table_extend() {
@@ -286,14 +296,14 @@ static const struct cbl_field_t empty_float = {
                                 intermediate_e,
                                 0, 0, 0, nonarray, 0, "",
                                 0, cbl_field_t::linkage_t(),
-                                {16, 16, 32, 0, NULL, NULL, {NULL}, {NULL}}, NULL };
+                                {16, 16, 32, 0, NULL}, NULL };
 
 static const struct cbl_field_t empty_comp5 = {
                                 0, FldNumericBin5, FldInvalid,
                                 signable_e | intermediate_e,
                                 0, 0, 0, nonarray, 0, "",
                                 0, cbl_field_t::linkage_t(),
-                                {16, 16, MAX_FIXED_POINT_DIGITS, 0, NULL, NULL, {NULL}, {NULL}}, NULL };
+                                {16, 16, MAX_FIXED_POINT_DIGITS, 0, NULL}, NULL };
 
 #if 0
 # define CONSTANT_E constant_e
@@ -305,13 +315,13 @@ static struct cbl_field_t empty_literal = {
                                 0, FldInvalid, FldInvalid, CONSTANT_E,
                                 0, 0, 0, nonarray, 0, "",
                                 0, cbl_field_t::linkage_t(),
-                                {0,0,0,0, NULL, NULL, {NULL}, {NULL}}, NULL };
+                                {}, NULL };
 
 static const struct cbl_field_t empty_conditional = {
                                 0, FldConditional, FldInvalid, intermediate_e,
                                 0, 0, 0, nonarray, 0, "",
                                 0, cbl_field_t::linkage_t(),
-                                {0,0,0,0, NULL, NULL, {NULL}, {NULL}}, NULL };
+                                {}, NULL };
 
 
 /**
@@ -332,29 +342,29 @@ static const struct cbl_field_t empty_conditional = {
 
 static cbl_field_t debug_registers[] = {
     { 0, FldGroup, FldInvalid, global_e, 0,0,1, nonarray, 0,
-      "DEBUG-ITEM", 0, {}, {132,132,0,0, NULL, NULL, {NULL}, {NULL}}, NULL },
+      "DEBUG-ITEM", 0, {}, {132,132,0,0, NULL}, NULL },
     { 0, FldAlphanumeric, FldInvalid, global_e, 0,0,2, nonarray, 0,
-      "DEBUG-LINE", 0, {}, {6,6,0,0, "      ", NULL, {NULL}, {NULL}}, NULL },
+      "DEBUG-LINE", 0, {}, {6,6,0,0, "      "}, NULL },
     { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
-      "FILLER", 0, {}, {1,1,0,0, " ", NULL, {NULL}, {NULL}}, NULL },
+      "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
     { 0, FldAlphanumeric, FldInvalid, global_e, 0,0,2, nonarray, 0,
-      "DEBUG-NAME", 0, {}, {30,30,0,0, NULL, NULL, {NULL}, {NULL}}, NULL },
+      "DEBUG-NAME", 0, {}, {30,30,0,0, NULL}, NULL },
     { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
-      "FILLER", 0, {}, {1,1,0,0, " ", NULL, {NULL}, {NULL}}, NULL },
+      "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
     { 0, FldNumericDisplay, FldInvalid, signable_e | global_e | leading_e | separate_e, 0,0,2, nonarray, 0,
-      "DEBUG-SUB-1", 0, {}, {5,5,3,0, NULL, NULL, {NULL}, {NULL}}, NULL },
+      "DEBUG-SUB-1", 0, {}, {5,5,3,0, NULL}, NULL },
     { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
-      "FILLER", 0, {}, {1,1,0,0, " ", NULL, {NULL}, {NULL}}, NULL },
+      "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
     { 0, FldNumericDisplay, FldInvalid, signable_e | global_e | leading_e | separate_e, 0,0,2, nonarray, 0,
-      "DEBUG-SUB-2", 0, {}, {5,5,3,0, NULL, NULL, {NULL}, {NULL}}, NULL },
+      "DEBUG-SUB-2", 0, {}, {5,5,3,0, NULL}, NULL },
     { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
-      "FILLER", 0, {}, {1,1,0,0, " ", NULL, {NULL}, {NULL}}, NULL },
+      "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
     { 0, FldNumericDisplay, FldInvalid, signable_e | global_e | leading_e | separate_e, 0,0,2, nonarray, 0,
-      "DEBUG-SUB-3", 0, {}, {5,5,3,0, NULL, NULL, {NULL}, {NULL}}, NULL },
+      "DEBUG-SUB-3", 0, {}, {5,5,3,0, NULL}, NULL },
     { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
-      "FILLER", 0, {}, {1,1,0,0, " ", NULL, {NULL}, {NULL}}, NULL },
+      "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
     { 0, FldAlphanumeric, FldInvalid, signable_e | global_e, 0,0,2, nonarray, 0,
-      "DEBUG-CONTENTS", 0, {}, {76,76,0,0, NULL, NULL, {NULL}, {NULL}}, NULL },
+      "DEBUG-CONTENTS", 0, {}, {76,76,0,0, NULL}, NULL },
 };
 
 class group_size_t {
@@ -372,28 +382,29 @@ enum  { constq = constant_e | quoted_e };
 
 static cbl_field_t special_registers[] = {
     { 0, FldNumericDisplay, FldInvalid, 0, 0, 0, 0, nonarray, 0, "_FILE_STATUS",
-      0, {}, {2,2,2,0, NULL, NULL, {NULL}, {NULL}}, NULL },
+      0, {}, {2,2,2,0, NULL}, NULL },
     { 0, FldNumericBin5, FldInvalid, 0, 0, 0, 0, nonarray, 0, "UPSI-0",
-      0, {}, {2,2,4,0, NULL, NULL, {NULL}, {NULL}}, NULL },
+      0, {}, {2,2,4,0, NULL}, NULL },
     { 0, FldNumericBin5, FldInvalid, 0, 0, 0, 0, nonarray, 0, "RETURN-CODE",
-      0, {}, {2,2,4,0, NULL, NULL, {NULL}, {NULL}}, NULL },
+      0, {}, {2,2,4,0, NULL}, NULL },
     { 0, FldNumericBin5, FldInvalid, 0, 0, 0, 0, nonarray, 0, "LINAGE-COUNTER",
-      0, {}, {2,2,4,0, NULL, NULL, {NULL}, {NULL}}, NULL },
+      0, {}, {2,2,4,0, NULL}, NULL },
     { 0, FldLiteralA, FldInvalid, 0, 0, 0, 0, nonarray, 0, "_dev_stdin",
-      0, {}, {0,0,0,0, "/dev/stdin", NULL, {NULL}, {NULL}}, NULL },
+      0, {}, {0,0,0,0, "/dev/stdin"}, NULL },
     { 0, FldLiteralA, FldInvalid, constq, 0, 0, 0, nonarray, 0, "_dev_stdout",
-      0, {}, {0,0,0,0, "/dev/stdout", NULL, {NULL}, {NULL}}, NULL },
+      0, {}, {0,0,0,0, "/dev/stdout"}, NULL },
     { 0, FldLiteralA, FldInvalid, constq, 0, 0, 0, nonarray, 0, "_dev_stderr",
-      0, {}, {0,0,0,0, "/dev/stderr", NULL, {NULL}, {NULL}}, NULL },
+      0, {}, {0,0,0,0, "/dev/stderr"}, NULL },
     { 0, FldLiteralA, FldInvalid, constq, 0, 0, 0, nonarray, 0, "_dev_null",
-      0, {}, {0,0,0,0, "/dev/null", NULL, {NULL}, {NULL}}, NULL },
+      0, {}, {0,0,0,0, "/dev/null"}, NULL },
 
 };
 
 static symbol_elem_t
 elementize( cbl_field_t& field ) {
-  symbol_elem_t elem = { .type = SymField, .elem = {.field = field} };
-  return elem;
+  symbol_elem_t sym (SymField);
+  sym.elem.field = field;
+  return sym;
 }
 
 size_t
@@ -675,7 +686,8 @@ symbol_label( size_t program, cbl_label_type_t type, size_t section,
   auto p = symbols.labels.find(key);
   if( p == symbols.labels.end()) return NULL;
 
-  cbl_label_t protolabel = { .type = type, .parent = section, .os_name = os_name };
+  cbl_label_t protolabel = { type, section };
+  protolabel.os_name = os_name;
   assert(strlen(name) < sizeof protolabel.name);
   strcpy(protolabel.name, name);
 
@@ -727,7 +739,7 @@ symbol_program( size_t parent, const char name[] )
   assert(strlen(name) < sizeof label.name);
   strcpy(label.name, name);
 
-  struct symbol_elem_t key = { SymLabel, 0, { NULL } }, *e;
+  struct symbol_elem_t key( SymLabel, 0 ), *e;
   key.elem.label = label;
 
   e = static_cast<struct symbol_elem_t *>(lfind( &key, symbols.elems,
@@ -765,7 +777,7 @@ symbol_function( size_t parent, const char name[] )
   assert(strlen(name) < sizeof label.name);
   strcpy(label.name, name);
 
-  struct symbol_elem_t key = { SymLabel, 0, { NULL } }, *e;
+  struct symbol_elem_t key(SymLabel, 0), *e;
   key.elem.label = label;
 
   e = static_cast<struct symbol_elem_t *>(lfind( &key, symbols.elems,
@@ -790,7 +802,7 @@ symbol_alphabet( size_t program, const char name[] )
   assert(strlen(name) < sizeof alphabet.name);
   strcpy(alphabet.name, name);
 
-  struct symbol_elem_t key = { SymAlphabet, program, { NULL } }, *e;
+  struct symbol_elem_t key(SymAlphabet, program), *e;
   key.elem.alphabet = alphabet;
 
   e = static_cast<struct symbol_elem_t *>(lfind( &key, symbols.elems,
@@ -1603,12 +1615,12 @@ field_str( const cbl_field_t *field ) {
     if( field->occurs.ntimes() == 0 ) {
       snprintf(name, sizeof(name), "%s", field->name);
     } else {
-      char updown[1 + field->occurs.nkey] = "";
+      std::vector <char> updown(1 + field->occurs.nkey, '\0');
       for( size_t i=0; i < field->occurs.nkey; i++ ) {
         updown[i] = field->occurs.keys[i].ascending? 'A' : 'D';
       }
       snprintf(name, sizeof(name), "%s[%zu]%s",
-               field->name, field->occurs.ntimes(), updown);
+               field->name, field->occurs.ntimes(), updown.data());
     }
   }
 
@@ -1654,11 +1666,11 @@ field_str( const cbl_field_t *field ) {
   } else {
     data = "NULL";
     if( field->type == FldSwitch ) {
-      data = xasprintf("0x%02x", field->data.upsi_mask->value);
+      data = xasprintf("0x%02x", field->data.upsi_mask_of()->value);
     }
   }
   if( field->level == 88 ) {
-    const auto& dom = *field->data.domain;
+    const auto& dom = *field->data.domain_of();
     data = xasprintf("%s%s %s - %s%s",
                      dom.first.all? "A" : "",
                      value_or_figconst_name(dom.first.name()) ,
@@ -1718,7 +1730,8 @@ struct capacity_of {
 
 static void
 extend_66_capacity( cbl_field_t *alias ) {
-  static_assert(sizeof(symbol_elem_t*) == sizeof(const char *));
+  static_assert(sizeof(symbol_elem_t*) == sizeof(const char *),
+		"all pointers must be same size");
   assert(alias->data.picture);
   assert(alias->type == FldGroup);
   symbol_elem_t *e = symbol_at(alias->parent);
@@ -2207,11 +2220,11 @@ symbol_field_parent_set( struct cbl_field_t *field )
       // verify level 88 domain value
       if( is_numeric(prior) && field->level == 88 ) {
         // domain array terminated by an element with a NULL name (value)
-        auto edom = field->data.domain;
+        auto edom = field->data.domain_of();
         while( edom->first.name() ) edom++;
 
         bool all_numeric =
-          std::all_of( field->data.domain, edom,
+          std::all_of( field->data.domain_of(), edom,
                        []( const cbl_domain_t& domain ) {
                          switch( cbl_figconst_of(domain.first.name()) ) {
                          case normal_value_e:
@@ -2280,74 +2293,75 @@ symbol_table_init(void) {
   // These should match the definitions in libgcobol/constants.cc
   static cbl_field_t constants[] = {
     { 0, FldAlphanumeric, FldInvalid, space_value_e | constq, 0, 0, 0, nonarray, 0,
-      "SPACE", 0, {}, {1,1,0,0, " \0\xFF", NULL, { NULL }, { NULL } }, NULL },
+      "SPACE", 0, {}, {1,1,0,0, " \0\xFF"}, NULL },
     { 0, FldAlphanumeric, FldInvalid, space_value_e | constq , 0, 0, 0, nonarray, 0,
-      "SPACES", 0, {}, {1,1,0,0, " \0\xFF", NULL, { NULL }, { NULL } }, NULL },
+      "SPACES", 0, {}, {1,1,0,0, " \0\xFF"}, NULL },
     { 0, FldAlphanumeric, FldInvalid, low_value_e | constq, 0, 0, 0, nonarray, 0,
-      "LOW_VALUES", 0, {}, {1,1,0,0, "L\0\xFF", NULL, { NULL }, { NULL } }, NULL },
+      "LOW_VALUES", 0, {}, {1,1,0,0, "L\0\xFF"}, NULL },
     { 0, FldAlphanumeric, FldInvalid, zero_value_e | constq, 0, 0, 0, nonarray, 0,
-      "ZEROS", 0, {}, {1,1,0,0, "0", NULL, { NULL }, { NULL } }, NULL },
+      "ZEROS", 0, {}, {1,1,0,0, "0"}, NULL },
     { 0, FldAlphanumeric, FldInvalid, high_value_e | constq, 0, 0, 0, nonarray, 0,
-      "HIGH_VALUES", 0, {}, {1,1,0,0, "H\0\xFF", NULL, { NULL }, { NULL } }, NULL },
+      "HIGH_VALUES", 0, {}, {1,1,0,0, "H\0\xFF"}, NULL },
     // IBM standard: QUOTE is a double-quote unless APOST compiler option
     { 0, FldAlphanumeric, FldInvalid, quote_value_e | constq , 0, 0, 0, nonarray, 0,
-      "QUOTES", 0, {}, {1,1,0,0, "\"\0\xFF", NULL, { NULL }, { NULL } }, NULL },
+      "QUOTES", 0, {}, {1,1,0,0, "\"\0\xFF"}, NULL },
     { 0, FldPointer, FldPointer, constq , 0, 0, 0, nonarray, 0,
-      "NULLS", 0, {}, {8,8,0,0, zeroes_for_null_pointer, NULL, { NULL }, { NULL } }, NULL },
+      "NULLS", 0, {}, {8,8,0,0, zeroes_for_null_pointer}, NULL },
     // IBM defines TALLY
     // 01  TALLY GLOBAL PICTURE 9(5) USAGE BINARY VALUE ZERO.
     { 0, FldNumericBin5, FldInvalid, signable_e, 0, 0, 0, nonarray, 0,
-      "_TALLY", 0, {}, {16, 16, MAX_FIXED_POINT_DIGITS, 0, NULL, NULL, {NULL}, {NULL}}, NULL },
+      "_TALLY", 0, {}, {16, 16, MAX_FIXED_POINT_DIGITS, 0, NULL}, NULL },
     // 01  ARGI is the current index into the argv array
     { 0, FldNumericBin5, FldInvalid, signable_e, 0, 0, 0, nonarray, 0,
-      "_ARGI", 0, {}, {16, 16, MAX_FIXED_POINT_DIGITS, 0, NULL, NULL, {NULL}, {NULL}}, NULL },
+      "_ARGI", 0, {}, {16, 16, MAX_FIXED_POINT_DIGITS, 0, NULL}, NULL },
 
     // These last two don't require actual storage; they get BOOL var_decl_node
     // in parser_symbol_add()
     { 0, FldConditional, FldInvalid, constant_e , 0, 0, 0, nonarray, 0,
-      "_VERY_TRUE", 0, {}, {1,1,0,0, "", NULL, { NULL }, { NULL } }, NULL },
+      "_VERY_TRUE", 0, {}, {1,1,0,0, ""}, NULL },
     { 0, FldConditional, FldInvalid, constant_e , 0, 0, 0, nonarray, 0,
-      "_VERY_FALSE", 0, {}, {1,1,0,0, "", NULL, { NULL }, { NULL } }, NULL },
+      "_VERY_FALSE", 0, {}, {1,1,0,0, ""}, NULL },
   };
   for( struct cbl_field_t *f = constants;
        f < constants + COUNT_OF(constants); f++ ) {
-       f->our_index = table.nelem;
-    struct symbol_elem_t e = { SymField, 0, { .field = *f } };
-    table.elems[table.nelem++] = e;
+    f->our_index = table.nelem;
+    struct symbol_elem_t sym(SymField, 0);
+    sym.elem.field = *f;
+    table.elems[table.nelem++] = sym;
   }
 
   static symbol_elem_t environs[] = {
-    { SymSpecial, 0, {.special = {0, SYSIN_e, "SYSIN", 0, "/dev/stdin"}} },
-    { SymSpecial, 0, {.special = {0, SYSIPT_e, "SYSIPT", 0, "/dev/stdout"}} },
-    { SymSpecial, 0, {.special = {0, SYSOUT_e, "SYSOUT", 0, "/dev/stdout"}} },
-    { SymSpecial, 0, {.special = {0, SYSLIST_e, "SYSLIST", 0, "/dev/stdout"}} },
-    { SymSpecial, 0, {.special = {0, SYSLST_e, "SYSLST", 0, "/dev/stdout"}} },
-    { SymSpecial, 0, {.special = {0, SYSPUNCH_e, "SYSPUNCH", 0, "/dev/stderr"}} },
-    { SymSpecial, 0, {.special = {0, SYSPCH_e, "SYSPCH", 0, "/dev/stderr"}} },
-    { SymSpecial, 0, {.special = {0, CONSOLE_e, "CONSOLE", 0, "/dev/stdout"}} },
-    { SymSpecial, 0, {.special = {0, C01_e, "C01", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, C02_e, "C02", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, C03_e, "C03", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, C04_e, "C04", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, C05_e, "C05", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, C06_e, "C06", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, C07_e, "C07", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, C08_e, "C08", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, C09_e, "C09", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, C10_e, "C10", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, C11_e, "C11", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, C12_e, "C12", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, CSP_e, "CSP", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, S01_e, "S01", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, S02_e, "S02", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, S03_e, "S03", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, S04_e, "S04", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, S05_e, "S05", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, AFP_5A_e, "AFP-5A", 0, "/dev/null"}} },
-    { SymSpecial, 0, {.special = {0, STDIN_e, "STDIN", 0, "/dev/stdin"}} },
-    { SymSpecial, 0, {.special = {0, STDOUT_e, "STDOUT", 0, "/dev/stdout"}} },
-    { SymSpecial, 0, {.special = {0, STDERR_e, "STDERR", 0, "/dev/stderr"}} },
-    { SymSpecial, 0, {.special = {0, SYSERR_e, "SYSERR", 0, "/dev/stderr"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, SYSIN_e, "SYSIN", 0, "/dev/stdin"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, SYSIPT_e, "SYSIPT", 0, "/dev/stdout"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, SYSOUT_e, "SYSOUT", 0, "/dev/stdout"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, SYSLIST_e, "SYSLIST", 0, "/dev/stdout"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, SYSLST_e, "SYSLST", 0, "/dev/stdout"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, SYSPUNCH_e, "SYSPUNCH", 0, "/dev/stderr"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, SYSPCH_e, "SYSPCH", 0, "/dev/stderr"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, CONSOLE_e, "CONSOLE", 0, "/dev/stdout"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, C01_e, "C01", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, C02_e, "C02", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, C03_e, "C03", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, C04_e, "C04", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, C05_e, "C05", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, C06_e, "C06", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, C07_e, "C07", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, C08_e, "C08", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, C09_e, "C09", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, C10_e, "C10", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, C11_e, "C11", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, C12_e, "C12", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, CSP_e, "CSP", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, S01_e, "S01", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, S02_e, "S02", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, S03_e, "S03", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, S04_e, "S04", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, S05_e, "S05", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, AFP_5A_e, "AFP-5A", 0, "/dev/null"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, STDIN_e, "STDIN", 0, "/dev/stdin"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, STDOUT_e, "STDOUT", 0, "/dev/stdout"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, STDERR_e, "STDERR", 0, "/dev/stderr"}} },
+    { symbol_elem_t{ 0, cbl_special_name_t{0, SYSERR_e, "SYSERR", 0, "/dev/stderr"}} },
   };
 
   struct symbol_elem_t *p = table.elems + table.nelem;
@@ -2460,11 +2474,11 @@ cbl_perform_tgt_t::finally( size_t program ) {
   auto p = proto.name + strlen(proto.name);
   auto n = snprintf(p, proto.name + sizeof(proto.name) - p, "%s", fini);
   assert(n < int(sizeof(fini)));
-  symbol_elem_t elem = {
-    .type = SymLabel,
-    .program = program,
-    .elem = { .label = proto } }, *e;
-  e = symbol_add(&elem);
+  symbol_elem_t sym = {}, *e;
+  sym.type = SymLabel;
+  sym.program = program;
+  sym.elem.label = proto;
+  e = symbol_add(&sym);
   ifrom = symbol_index(e);
   return cbl_label_of(e);
 }
@@ -2485,7 +2499,7 @@ symbol_file_add( size_t program, cbl_file_t *file ) {
     return NULL;
   }
 
-  struct symbol_elem_t sym = { SymFile, program, {NULL} };
+  struct symbol_elem_t sym = { SymFile, program };
   sym.elem.file = *file;
 
   e = symbol_add(&sym);
@@ -2500,7 +2514,8 @@ symbol_file_add( size_t program, cbl_file_t *file ) {
 
 struct symbol_elem_t *
 symbol_alphabet_add( size_t program, struct cbl_alphabet_t *alphabet ) {
-  struct symbol_elem_t sym = { SymAlphabet, program, {.alphabet = *alphabet} };
+  struct symbol_elem_t sym{ SymAlphabet, program };
+  sym.elem.alphabet = *alphabet;
   return symbol_add(&sym);
 }
 
@@ -2546,7 +2561,7 @@ symbol_typedef_add( size_t program, struct cbl_field_t *field ) {
     if( f == field ) return e;
   }
 
-  symbol_elem_t elem = { SymField, program, { .field = *field } };
+  symbol_elem_t elem{ program, *field };
 
   e = symbol_add( &elem );
 
@@ -2592,7 +2607,7 @@ symbol_field_add( size_t program, struct cbl_field_t *field )
     if( is_numeric(parent->usage) && parent->data.capacity > 0 ) {
       field->type = parent->usage;
       field->data = parent->data;
-      field->data.value = 0.0;
+      field->data = 0.0;
       field->data.initial = NULL;
     }
   }
@@ -2638,8 +2653,7 @@ symbol_field_add( size_t program, struct cbl_field_t *field )
     field->attr |= filler_e;
   }
 
-  struct symbol_elem_t key = { .type = SymField, .program = program, NULL };
-  key.elem.field = *field;
+  symbol_elem_t key { program, *field };
 
   // Literals must have an initial value;
   assert( !is_literal(field) || field->data.initial );
@@ -2778,7 +2792,7 @@ symbol_field_forward_add( size_t program, size_t parent,
                                FldForward, FldInvalid, 0, parent, 0, 0,
                                nonarray, line, "",
                                0, cbl_field_t::linkage_t(),
-                               {0,0,0,0, " ", NULL, {NULL}, {NULL}}, NULL };
+                               {0,0,0,0, " "}, NULL };
   if( sizeof(field.name) < strlen(name) ) {
     dbgmsg("%s:%d: logic error: name %s too long", __func__, __LINE__, name);
     return NULL;
@@ -2795,7 +2809,7 @@ symbol_literalA( size_t program, const char name[] )
   field.data.initial = name;
   field.attr = constq;
 
-  struct symbol_elem_t key = { SymField, program, { .field = field } };
+  struct symbol_elem_t key { program, field };
 
   symbol_elem_t *start = symbols_begin(key.program), *e;
   size_t nelem = symbols_end() - start;
@@ -2809,7 +2823,7 @@ symbol_literalA( size_t program, const char name[] )
 struct symbol_elem_t *
 symbol_file( size_t program, const char name[] ) {
   size_t nelem = symbols.nelem;
-  struct symbol_elem_t key = { SymFile, program, {NULL} }, *e = &key;
+  struct symbol_elem_t key = { SymFile, program }, *e = &key;
 
   assert(strlen(name) < sizeof(key.elem.file.name));
   strcpy(key.elem.file.name, name);
@@ -2853,8 +2867,7 @@ struct symbol_elem_t *
 symbol_field_alias( struct symbol_elem_t *e, const char name[] )
 {
   cbl_field_t alias = *cbl_field_of(e);
-  cbl_field_data_t data = { .memsize  = alias.data.memsize,
-                            .capacity = alias.data.capacity };
+  cbl_field_data_t data = { alias.data.memsize, alias.data.capacity };
   alias.data = data;
   alias.data.memsize = 0;
 
@@ -2960,7 +2973,9 @@ symbol_field_same_as( cbl_field_t *tgt, const cbl_field_t *src ) {
                         } );
   }
 
-  cbl_field_t dup = { .parent = field_index(tgt), .line = tgt->line };
+  cbl_field_t dup = {};
+  dup.parent = field_index(tgt);
+  dup.line = tgt->line;
 
   elem_group_t group(++bog, eog);
 
@@ -3069,6 +3084,8 @@ class is_section {
 static bool fd_record_size_cmp( const symbol_elem_t& a, const symbol_elem_t& b ) {
   return cbl_field_of(&a)->data.capacity < cbl_field_of(&b)->data.capacity;
 }
+
+cbl_file_key_t cbl_file_t::no_key;
 
 /*
  * Find largest and smallest record defined for a file.  The rule is:
@@ -3243,7 +3260,7 @@ new_temporary_impl( enum cbl_field_type_t type )
                                 0, FldAlphanumeric, FldInvalid,
                                 intermediate_e, 0, 0, 0, nonarray, 0, "",
                                 0, cbl_field_t::linkage_t(),
-                                {0,0,0,0, NULL, NULL, {NULL}, {NULL}}, NULL };
+                                {}, NULL };
   struct cbl_field_t *f = new cbl_field_t;
   f->type = type;
 
@@ -3590,9 +3607,10 @@ cbl_field_t::internalize() {
   if( is_ascii() ) return data.initial;
   assert(data.capacity > 0);
 
-  char output[data.capacity + 2], *out = output;
+  std::vector<char> output(data.capacity + 2, '\0');
+  char *out = output.data();
   char *in = const_cast<char*>(data.initial);
-  size_t n, inbytesleft = data.capacity, outbytesleft = sizeof(output);
+  size_t n, inbytesleft = data.capacity, outbytesleft = output.size();
   if( !is_literal(this) && inbytesleft < strlen(data.initial) ) {
     inbytesleft = strlen(data.initial);
   }
@@ -3624,8 +3642,8 @@ cbl_field_t::internalize() {
   }
 
   // Replace data.initial only if iconv output differs.
-  if( 0 != memcmp(data.initial, output, out - output) ) {
-    assert(out <= output + data.capacity);
+  if( 0 != memcmp(data.initial, output.data(), out - output.data()) ) {
+    assert(out <= output.data() + data.capacity);
 
     if( getenv(__func__) ) {
       const char *eoi = data.initial + data.capacity, *p;
@@ -3640,18 +3658,18 @@ cbl_field_t::internalize() {
     dbgmsg("%s: converted '%.*s' to %s",
                         __func__, data.capacity, data.initial, tocode);
 
-    int len = int(out - output);
-    char *mem = static_cast<char*>( xcalloc(1, sizeof(output)) );
+    int len = int(out - output.data());
+    char *mem = static_cast<char*>( xcalloc(1, output.size()) );
 
     // Set the new memory to all blanks, tacking a '!' on the end.
-    memset(mem, 0x20, sizeof(output) - 1);
-    mem[ sizeof(output) - 2] = '!';
+    memset(mem, 0x20, output.size() - 1);
+    mem[ output.size() - 2] = '!';
 
     if( is_literal(this) ) {
       data.capacity = len; // trailing '!' will be overwritten
     }
 
-    memcpy(mem, output, len); // copy only as much as iconv converted
+    memcpy(mem, output.data(), len); // copy only as much as iconv converted
 
     free(const_cast<char*>(data.initial));
     data.initial = mem;
@@ -3828,7 +3846,7 @@ symbol_label_add( size_t program, cbl_label_t *input )
   }
 
   struct symbol_elem_t
-    elem = { SymLabel, program, { .label = *input } }, *e = &elem;
+    elem { program, *input }, *e = &elem;
 
   assert(0 <= e->elem.label.line);
   e->elem.label.line = -e->elem.label.line; // force insertion
@@ -3895,8 +3913,7 @@ symbol_label_section_exists( size_t program ) {
 cbl_label_t *
 symbol_program_add( size_t program, cbl_label_t *input )
 {
-  symbol_elem_t
-    elem = { SymLabel, program, { .label = *input } }, *e;
+  symbol_elem_t elem { program, *input }, *e;
 
   assert( is_program(elem) );
 
@@ -3927,9 +3944,8 @@ symbol_program_add( size_t program, cbl_label_t *input )
 #if 1
 struct cbl_special_name_t *
 symbol_special( special_name_t id ) {
-  cbl_special_name_t special = { .id = id };
-  struct symbol_elem_t key = { SymSpecial, 0,
-                               { .special = special } }, *e;
+  cbl_special_name_t special = { 0, id };
+  struct symbol_elem_t key { 0, special }, *e;
 
   e = static_cast<struct symbol_elem_t *>(lfind( &key, symbols.elems,
                                                  &symbols.nelem, sizeof(key),
@@ -3954,7 +3970,7 @@ symbol_special_add( size_t program, struct cbl_special_name_t *special )
   }
   assert(e == NULL);
 
-  struct symbol_elem_t elem = { SymSpecial, program, { .special = *special } };
+  struct symbol_elem_t elem { program, *special };
 
   if( (e = symbol_add(&elem)) == NULL ) {
     cbl_errx( "%s:%d: could not add '%s'", __func__, __LINE__, special->name);
@@ -3973,8 +3989,7 @@ symbol_special_add( size_t program, struct cbl_special_name_t *special )
 
 struct cbl_section_t *
 symbol_section( size_t program, struct cbl_section_t *section ) {
-  struct symbol_elem_t key = { SymDataSection, program,
-                               { .section = *section } }, *e;
+  struct symbol_elem_t key { program, *section }, *e;
 
   e = static_cast<struct symbol_elem_t *>(lfind( &key, symbols.elems,
                                                  &symbols.nelem, sizeof(key),
@@ -3990,8 +4005,7 @@ symbol_section_add( size_t program, struct cbl_section_t *section )
     return NULL; // error, exists
   }
 
-  struct symbol_elem_t *e, elem = { SymDataSection,
-                                    program, { .section = *section } };
+  struct symbol_elem_t *e, elem { program, *section };
 
   if( (e = symbol_add(&elem)) == NULL ) {
     cbl_errx( "%s:%d: could not add '%s'", __func__, __LINE__, section->name());
@@ -4497,7 +4511,7 @@ cbl_occurs_t::subscript_ok( const cbl_field_t *subscript ) const {
   // It must be a number.
   if( subscript->type != FldLiteralN ) return false;
 
-  auto sub = subscript->data.value;
+  auto sub = subscript->data.value_of();
 
   if( sub < 1 || sub != size_t(sub) ) {
     return false; // zero/fraction invalid
@@ -4722,12 +4736,12 @@ cbl_file_t::deforward() {
 
 char *
 cbl_file_t::keys_str() const {
-  char *ks[nkey];
-  std::transform(keys, keys + nkey, ks,
+  std::vector <char *> ks(nkey);
+  std::transform(keys, keys + nkey, ks.begin(),
                  []( const cbl_file_key_t& key ) {
                    return key.str();
                  } );
-  size_t n = 4 * nkey + std::accumulate(ks, ks + nkey, 0,
+  size_t n = 4 * nkey + std::accumulate(ks.begin(), ks.end(), 0,
                                         []( int n, const char *s ) {
                                           return n +  strlen(s);
                                         } );
@@ -4804,7 +4818,7 @@ cbl_file_status_cmp( const void *K, const void *E ) {
 static long
 file_status_status_of( file_status_t status ) {
   size_t n = COUNT_OF(file_status_fields);
-  file_status_field_t *fs, key = { .status = status };
+  file_status_field_t *fs, key { status };
 
   fs = (file_status_field_t*)lfind( &key, file_status_fields,
                                     &n, sizeof(*fs), cbl_file_status_cmp );

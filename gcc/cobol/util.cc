@@ -357,16 +357,15 @@ normalize_picture( char picture[] )
             goto irregular;
         }
 
-        char pic[len + 1];
-        memset(pic, *start, len);
-        pic[len] = '\0';
+	std::vector <char> pic(len + 1, '\0');
+        memset(pic.data(), *start, len);
         const char *finish = picture + pmatch[2].rm_eo,
                     *eopicture = picture + strlen(picture);
 
         p = xasprintf( "%*s%s%*s",
-                          (int)(start - picture), picture,
-                          pic,
-                          (int)(eopicture - finish), finish );
+		       (int)(start - picture), picture,
+		       pic.data(),
+		       (int)(eopicture - finish), finish );
 
         free(picture);
         picture = p;
@@ -573,7 +572,7 @@ plausible_usage( cbl_field_type_t usage, cbl_field_type_t candidate ) {
 
 cbl_field_t *
 symbol_field_index_set( cbl_field_t *field ) {
-  static const cbl_field_data_t data { .capacity = 8, .digits = 0 };
+  static const cbl_field_data_t data { 0, 8 };
 
   field->data = data;
 
@@ -596,8 +595,7 @@ symbol_field_type_update( cbl_field_t *field,
       // set the type
       field->type = candidate;
       if( field->data.capacity == 0 ) {
-        static const cbl_field_data_t data = {0, 8, 0, 0,
-                                              NULL, NULL, {NULL}, {NULL}};
+        static const cbl_field_data_t data = {0, 8, 0, 0, NULL};
         field->data = data;
         field->attr &= ~size_t(signable_e);
       }
@@ -926,8 +924,8 @@ literal_subscript_oob( const cbl_refer_t& r, size_t& isub /* output */)  {
   size_t ndim(dimensions(r.field));
   if( ndim == 0 || ndim != r.nsubscript ) return NULL;
   cbl_refer_t *esub = r.subscripts + r.nsubscript;
-  cbl_field_t *dims[ ndim ], **pdim = dims + ndim;
-  std::fill(dims, pdim, (cbl_field_t*)NULL);
+  std::vector<cbl_field_t *> dims( ndim, NULL );
+  auto pdim = dims.end();
 
   for( auto f = r.field; f; f = parent_of(f) ) {
     if( f->occurs.ntimes() ) {
@@ -936,7 +934,7 @@ literal_subscript_oob( const cbl_refer_t& r, size_t& isub /* output */)  {
     }
   }
   assert(dims[0] != NULL);
-  assert(pdim == dims);
+  assert(pdim == dims.begin());
 
   /*
    * For each subscript, if it is a literal, verify it is in bounds
@@ -981,18 +979,21 @@ cbl_refer_t::name() const {
 
 const char *
 cbl_refer_t::deref_str() const {
-  char dimstr[nsubscript * 16] = "(", *p = dimstr + 1;
+  std::vector<char> dimstr(nsubscript * 16, '\0');
+  dimstr.at(0) = '(';
+  auto p = dimstr.begin() + 1;
 
   if( !field ) return name();
 
   for( auto sub = subscripts; sub <  subscripts + nsubscript; sub++ ) {
     auto initial = sub->field->data.initial ? sub->field->data.initial : "?";
-    p += snprintf( p, (dimstr + sizeof(dimstr)) - p, "%s ", initial );
+    size_t len = dimstr.end() - p;
+    p += snprintf( &*p, len, "%s ", initial );
   }
   if( 0 < nsubscript ) {
     *--p = ')';
   }
-  char *output = xasprintf("%s%s", field->name, dimstr);
+  char *output = xasprintf("%s%s", field->name, dimstr.data());
   return output;
 }
 
@@ -1233,16 +1234,24 @@ type_capacity( enum cbl_field_type_t type, uint32_t digits )
         return (digits+2)/2;  // one nybble per digit + a sign nybble
     }
 
-    switch(digits) {
-    case  1 ... 4:
-        return  2;
-    case  5 ... 9:
-        return  4;
-    case 10 ... 18:
-        return  8;
-    case 19 ... 38:
-        return 16;
-    }
+    static const struct sizes_t {
+      std::pair<uint32_t, uint32_t> bounds;
+      size_t size;
+      sizes_t( uint32_t first, uint32_t last, uint32_t size )
+	: bounds(first, last), size(size)
+      {}
+    } sizes[] = {
+      { 1,  4,  2 },
+      { 5,  9,  4 },
+      {10, 18,  8 },
+      {19, 38, 16 },
+    }, *esizes = sizes + COUNT_OF(sizes);
+
+    auto psize = std::find_if( sizes, esizes,
+			  [digits]( sizes_t sizes ) {
+			    return sizes.bounds.first <= digits && digits <= sizes.bounds.second;
+			  } );
+    if( psize != esizes ) return psize->size;
 
     dbgmsg( "%s:%d: invalid size %u for type %s", __func__, __LINE__,
            digits, cbl_field_type_str(type) );
@@ -1258,7 +1267,7 @@ public:
     static char buffer[ sizeof(hex_pair_t) + 1 ] = "";
 
     memcpy( buffer, input, sizeof(buffer) - 1 );
-    int x;
+    unsigned int x;
     sscanf( buffer, "%x", &x );
     return x;
   }
@@ -2254,6 +2263,9 @@ cbl_unimplemented_at( const YYLTYPE& loc, const char *gmsgid, ... ) {
 /* 
  * analogs to err(3) and errx(3). 
  */
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat"
 void
 cbl_err(const char *fmt, ...) {
   auto_diagnostic_group d;
@@ -2264,6 +2276,8 @@ cbl_err(const char *fmt, ...) {
   emit_diagnostic_valist( DK_FATAL, token_location, option_zero, gmsgid, &ap );
   va_end(ap);
 }
+#pragma GCC diagnostic pop
+
 void
 cbl_errx(const char *gmsgid, ...) {
   verify_format(gmsgid);

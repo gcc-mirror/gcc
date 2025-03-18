@@ -1420,6 +1420,9 @@ get_data_address( cbl_field_t *field,
     }
   }
 
+// Ignore pedantic because we know 128-bit computation is not ISO C++14. 
+#pragma GCC diagnostic ignored "-Wpedantic"
+
 __int128
 get_power_of_ten(int n)
   {
