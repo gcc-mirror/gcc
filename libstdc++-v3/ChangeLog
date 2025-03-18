@@ -1,3 +1,19 @@
+2025-03-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-12-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc: Fix typo in comment.
+
+2025-03-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-05-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/strings.xml: Clarify that GCC 4.5 added
+	std::string::shrink_to_fit.
+	* doc/html/manual/strings.html: Regenerate.
+
 2025-01-10  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:
