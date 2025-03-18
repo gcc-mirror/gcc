@@ -22705,7 +22705,9 @@ package body Sem_Ch3 is
 
             --  Make recursive call, having got rid of the bogus constraint
 
-            return Process_Subtype (S, Related_Nod, Related_Id, Suffix);
+            return
+              Process_Subtype
+                (S, Related_Nod, Related_Id, Suffix, Excludes_Null);
          end if;
 
          --  Remaining processing depends on type. Select on Base_Type kind to
