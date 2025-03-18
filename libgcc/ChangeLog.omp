@@ -1,6 +1,12 @@
 2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/gcn/unwind-gcn.c (_Unwind_DeleteException): New.
+	* config/nvptx/unwind-nvptx.c (_Unwind_DeleteException): Likewise.
+
+	Backported from trunk:
 	2025-04-07  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* config/nvptx/alloca.c: New.

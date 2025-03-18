@@ -24,6 +24,13 @@
 
 #include "unwind.h"
 
+void
+_Unwind_DeleteException (struct _Unwind_Exception *exc)
+{
+  if (exc->exception_cleanup)
+    (*exc->exception_cleanup) (_URC_FOREIGN_EXCEPTION_CAUGHT, exc);
+}
+
 _Unwind_Reason_Code
 _Unwind_Backtrace(_Unwind_Trace_Fn trace, void * trace_argument)
 {
