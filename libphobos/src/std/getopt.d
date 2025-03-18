@@ -610,14 +610,14 @@ private template optionValidator(A...)
     alias optionValidator = message;
 }
 
-private void handleConversion(R)(string option, string value, R* receiver,
+private auto getoptTo(R)(string option, string value,
         size_t idx, string file = __FILE__, size_t line = __LINE__)
 {
     import std.conv : to, ConvException;
     import std.format : format;
     try
     {
-        *receiver = to!(typeof(*receiver))(value);
+        return to!R(value);
     }
     catch (ConvException e)
     {
@@ -876,12 +876,18 @@ private bool handleOption(R)(string option, R receiver, ref string[] args,
         // (and potentially args[i + 1] too, but that comes later)
         args = args[0 .. i] ~ args[i + 1 .. $];
 
-        static if (is(typeof(*receiver) == bool))
+        static if (is(typeof(*receiver)))
+            alias Target = typeof(*receiver);
+        else
+            // delegate
+            alias Target = void;
+
+        static if (is(Target == bool))
         {
             if (val.length)
             {
                 // parse '--b=true/false'
-                handleConversion(option, val, receiver, i);
+                *receiver = getoptTo!(Target)(option, val, i);
             }
             else
             {
@@ -894,23 +900,23 @@ private bool handleOption(R)(string option, R receiver, ref string[] args,
             import std.exception : enforce;
             // non-boolean option, which might include an argument
             enum isCallbackWithLessThanTwoParameters =
-                (is(typeof(receiver) == delegate) || is(typeof(*receiver) == function)) &&
+                (is(R == delegate) || is(Target == function)) &&
                 !is(typeof(receiver("", "")));
             if (!isCallbackWithLessThanTwoParameters && !(val.length) && !incremental)
             {
                 // Eat the next argument too.  Check to make sure there's one
                 // to be eaten first, though.
                 enforce!GetOptException(i < args.length,
-                    "Missing value for argument " ~ a ~ ".");
+                        "Missing value for argument " ~ a ~ ".");
                 val = args[i];
                 args = args[0 .. i] ~ args[i + 1 .. $];
             }
-            static if (is(typeof(*receiver) == enum) ||
-                is(typeof(*receiver) == string))
+            static if (is(Target == enum) ||
+                    is(Target == string))
             {
-                handleConversion(option, val, receiver, i);
+                *receiver = getoptTo!Target(option, val, i);
             }
-            else static if (is(typeof(*receiver) : real))
+            else static if (is(Target : real))
             {
                 // numeric receiver
                 if (incremental)
@@ -919,16 +925,16 @@ private bool handleOption(R)(string option, R receiver, ref string[] args,
                 }
                 else
                 {
-                    handleConversion(option, val, receiver, i);
+                    *receiver = getoptTo!Target(option, val, i);
                 }
             }
-            else static if (is(typeof(*receiver) == string))
+            else static if (is(Target == string))
             {
                 // string receiver
-                *receiver = to!(typeof(*receiver))(val);
+                *receiver = getoptTo!(Target)(option, val, i);
             }
-            else static if (is(typeof(receiver) == delegate) ||
-                            is(typeof(*receiver) == function))
+            else static if (is(R == delegate) ||
+                    is(Target == function))
             {
                 static if (is(typeof(receiver("", "")) : void))
                 {
@@ -952,29 +958,25 @@ private bool handleOption(R)(string option, R receiver, ref string[] args,
                     receiver();
                 }
             }
-            else static if (isArray!(typeof(*receiver)))
+            else static if (isArray!(Target))
             {
                 // array receiver
                 import std.range : ElementEncodingType;
-                alias E = ElementEncodingType!(typeof(*receiver));
+                alias E = ElementEncodingType!(Target);
 
                 if (arraySep == "")
                 {
-                    E tmp;
-                    handleConversion(option, val, &tmp, i);
-                    *receiver ~= tmp;
+                    *receiver ~= getoptTo!E(option, val, i);
                 }
                 else
                 {
                     foreach (elem; val.splitter(arraySep))
                     {
-                        E tmp;
-                        handleConversion(option, elem, &tmp, i);
-                        *receiver ~= tmp;
+                        *receiver ~= getoptTo!E(option, elem, i);
                     }
                 }
             }
-            else static if (isAssociativeArray!(typeof(*receiver)))
+            else static if (isAssociativeArray!(Target))
             {
                 // hash receiver
                 alias K = typeof(receiver.keys[0]);
@@ -991,14 +993,7 @@ private bool handleOption(R)(string option, R receiver, ref string[] args,
                         ~ to!string(assignChar) ~ "' in argument '" ~ input ~ "'.");
                     auto key = input[0 .. j];
                     auto value = input[j + 1 .. $];
-
-                    K k;
-                    handleConversion("", key, &k, 0);
-
-                    V v;
-                    handleConversion("", value, &v, 0);
-
-                    return tuple(k,v);
+                    return tuple(getoptTo!K("", key, 0), getoptTo!V("", value, 0));
                 }
 
                 static void setHash(Range)(R receiver, Range range)
@@ -1013,7 +1008,7 @@ private bool handleOption(R)(string option, R receiver, ref string[] args,
                     setHash(receiver, val.splitter(arraySep));
             }
             else
-                static assert(false, "getopt does not know how to handle the type " ~ typeof(receiver).stringof);
+                static assert(false, "getopt does not know how to handle the type " ~ R.stringof);
         }
     }
 
@@ -1098,6 +1093,18 @@ private bool handleOption(R)(string option, R receiver, ref string[] args,
     getopt(args, "values|v", &values);
     assert(values == ["foo":0, "bar":1, "baz":2], to!string(values));
 }
+
+// https://github.com/dlang/phobos/issues/10680
+@safe unittest
+{
+    arraySep = ",";
+    scope(exit) arraySep = "";
+    const(string)[] s;
+    string[] args = ["program.name", "-s", "a", "-s", "b", "-s", "c,d,e"];
+    getopt(args, "values|s", &s);
+    assert(s == ["a", "b", "c", "d", "e"]);
+}
+
 
 /**
    The option character (default '-').
