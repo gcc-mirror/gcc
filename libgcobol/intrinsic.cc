@@ -99,7 +99,7 @@ is_zulu_format(PCHAR left, PCHAR &right)
   bool retval = false;
   if( right > left )
     {
-    retval = toupper(*(right-1)) == internal_Z;
+    retval = std::toupper((unsigned char)*(right-1)) == internal_Z;
     }
   return retval;
   }
@@ -1984,7 +1984,8 @@ __gg__lower_case( cblc_field_t *dest,
   memset(dest->data, internal_space, dest_length);
   memcpy(dest->data, input->data+input_offset, std::min(dest_length, source_length));
   internal_to_ascii((char *)dest->data, dest_length);
-  std::transform(dest->data, dest->data + dest_length, dest->data, tolower);
+  std::transform(dest->data, dest->data + dest_length, dest->data,
+		 [](unsigned char c) { return std::tolower(c); });
   ascii_to_internal_str((char *)dest->data, dest_length);
   }
 
@@ -2431,7 +2432,7 @@ numval( cblc_field_t *dest,
           state = SPACE4;
           break;
           }
-        if( tolower(ch) == 'd' )
+        if( std::tolower(ch) == 'd' )
           {
           if( leading_sign )
             {
@@ -2439,7 +2440,7 @@ numval( cblc_field_t *dest,
             }
           ch = *p++;
           errpos += 1;
-          if( p > pend || tolower(ch) != 'b' )
+          if( p > pend || std::tolower(ch) != 'b' )
             {
             goto done;
             }
@@ -2447,7 +2448,7 @@ numval( cblc_field_t *dest,
           state = SPACE4;
           break;
           }
-        if( tolower(ch) == 'c' )
+        if( std::tolower(ch) == 'c' )
           {
           if( leading_sign )
             {
@@ -2455,7 +2456,7 @@ numval( cblc_field_t *dest,
             }
           ch = *p++;
           errpos += 1;
-          if( p > pend || tolower(ch) != 'r' )
+          if( p > pend || std::tolower(ch) != 'r' )
             {
             goto done;
             }
@@ -2494,7 +2495,7 @@ numval( cblc_field_t *dest,
           state = SPACE4;
           break;
           }
-        if( tolower(ch) == 'd' )
+        if( std::tolower(ch) == 'd' )
           {
           if( leading_sign )
             {
@@ -2502,7 +2503,7 @@ numval( cblc_field_t *dest,
             }
           ch = *p++;
           errpos += 1;
-          if( p > pend || tolower(ch) != 'b' )
+          if( p > pend || std::tolower(ch) != 'b' )
             {
             goto done;
             }
@@ -2510,7 +2511,7 @@ numval( cblc_field_t *dest,
           state = SPACE4;
           break;
           }
-        if( tolower(ch) == 'c' )
+        if( std::tolower(ch) == 'c' )
           {
           if( leading_sign )
             {
@@ -2518,7 +2519,7 @@ numval( cblc_field_t *dest,
             }
           ch = *p++;
           errpos += 1;
-          if( p > pend || tolower(ch) != 'r' )
+          if( p > pend || std::tolower(ch) != 'r' )
             {
             goto done;
             }
@@ -3736,7 +3737,8 @@ __gg__upper_case( cblc_field_t *dest,
   memset(dest->data, internal_space, dest_length);
   memcpy(dest->data, input->data+input_offset, std::min(dest_length, source_length));
   internal_to_ascii((char *)dest->data, dest_length);
-  std::transform(dest->data, dest->data + dest_length, dest->data, toupper);
+  std::transform(dest->data, dest->data + dest_length, dest->data,
+		 [](unsigned char c) { return std::toupper(c); });
   ascii_to_internal_str((char *)dest->data, dest_length);
   }
 
@@ -4551,7 +4553,7 @@ fill_cobol_tm(cobol_tm &ctm,
     if( ch == internal_Z || ch == internal_z )
       {
       // This has to be the end of the road
-      if( toupper(source[0]) != 'Z' )
+      if( std::toupper((unsigned char)source[0]) != 'Z' )
         {
         retval += 0;
         break;
@@ -5054,7 +5056,7 @@ iscasematch(char *a1, char *a2, char *b1, char *b2)
   bool retval = true;
   while( a1 < a2 && b1 < b2 )
     {
-    if( tolower(*a1++) != tolower(*b1++) )
+    if( std::tolower((unsigned char)*a1++) != std::tolower((unsigned char)*b1++) )
       {
       retval = false;
       }

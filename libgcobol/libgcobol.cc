@@ -8826,7 +8826,7 @@ mangler_core(const char *s, const char *eos)
       }
     else
       {
-      *d++ = tolower(ch);
+      *d++ = tolower((unsigned char)ch);
       }
     }
   *d++ = NULLCH;
