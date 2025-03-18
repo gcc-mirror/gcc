@@ -20,6 +20,22 @@ static_assert(std::is_same_v<
 	      std::unordered_multiset<int>>);
 
 static_assert(std::is_same_v<
+	      decltype(std::unordered_multiset{{1, 2, 3}}),
+	      std::unordered_multiset<int>>);
+
+static_assert(std::is_same_v<
+	      decltype(std::unordered_multiset{{1, 2, 3},
+		    std::allocator<int>{}}),
+	      std::unordered_multiset<int>>);
+
+static_assert(std::is_same_v<
+	      decltype(std::unordered_multiset{{1, 2, 3},
+		    SimpleAllocator<int>{}}),
+	      std::unordered_multiset<int, std::hash<int>,
+	      std::equal_to<int>,
+	      SimpleAllocator<int>>>);
+
+static_assert(std::is_same_v<
 	      decltype(std::unordered_multiset{{1, 2, 3},
 		    {}}),
 	      std::unordered_multiset<int>>);
@@ -85,6 +101,18 @@ void f()
 		decltype(std::unordered_multiset{x.begin(), x.end(),
 		      {}, std::hash<int>{}, std::equal_to<int>{}}),
 		std::unordered_multiset<int>>);
+
+  static_assert(std::is_same_v<
+		decltype(std::unordered_multiset{x.begin(), x.end(),
+		      std::allocator<int>{}}),
+		std::unordered_multiset<int>>);
+
+  static_assert(std::is_same_v<
+		decltype(std::unordered_multiset{x.begin(), x.end(),
+		      SimpleAllocator<int>{}}),
+		std::unordered_multiset<int, std::hash<int>,
+		std::equal_to<int>,
+		SimpleAllocator<int>>>);
 
   static_assert(std::is_same_v<
 		decltype(std::unordered_multiset{x.begin(), x.end(),
