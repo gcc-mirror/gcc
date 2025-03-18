@@ -128,11 +128,10 @@ finalize_symbol_map2() {
 
   for( auto& elem : symbol_map2 ) {
     auto& fields( elem.second );
-    std::remove_if( fields.begin(), fields.end(),
-                  []( auto isym ) {
-                    auto f = cbl_field_of(symbol_at(isym));
-                    return f->type == FldInvalid;
-                  } );
+    fields.remove_if( []( auto isym ) {
+			auto f = cbl_field_of(symbol_at(isym));
+			return f->type == FldInvalid;
+		      } );
     if( fields.empty() ) empties.insert(elem.first);
   }
 
