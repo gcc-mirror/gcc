@@ -2710,6 +2710,14 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
       tpvis = type_visibility (TREE_TYPE (t));
       break;
 
+    case ADDR_EXPR:
+      t = TREE_OPERAND (t, 0);
+      if (VAR_P (t))
+	/* If a variable has its address taken, the lvalue-rvalue conversion is
+	   not applied, so skip that case.  */
+	goto addressable;
+      break;
+
     case TEMPLATE_DECL:
       if (DECL_ALIAS_TEMPLATE_P (t) || standard_concept_p (t))
 	/* FIXME: We don't maintain TREE_PUBLIC / DECL_VISIBILITY for
@@ -2723,11 +2731,15 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
       if (decl_constant_var_p (t))
 	/* The ODR allows definitions in different TUs to refer to distinct
 	   constant variables with internal or no linkage, so such a reference
-	   shouldn't affect visibility (PR110323).  FIXME but only if the
-	   lvalue-rvalue conversion is applied.  We still want to restrict
-	   visibility according to the type of the declaration however.  */
-	tpvis = type_visibility (TREE_TYPE (t));
-      else if (! TREE_PUBLIC (t))
+	   shouldn't affect visibility if the lvalue-rvalue conversion is
+	   applied (PR110323).  We still want to restrict visibility according
+	   to the type of the declaration however.  */
+	{
+	  tpvis = type_visibility (TREE_TYPE (t));
+	  break;
+	}
+    addressable:
+      if (! TREE_PUBLIC (t))
 	tpvis = VISIBILITY_ANON;
       else
 	tpvis = DECL_VISIBILITY (t);
