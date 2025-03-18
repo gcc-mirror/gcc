@@ -1414,7 +1414,9 @@ package body Sem_Ch3 is
          end if;
 
       else
-         Setup_Access_Type (Desig_Typ => Process_Subtype (S, P, T, 'P'));
+         Setup_Access_Type
+           (Desig_Typ =>
+              Process_Subtype (S, P, T, 'P', Incomplete_Type_OK => True));
       end if;
 
       if not Error_Posted (T) then
@@ -5775,7 +5777,9 @@ package body Sem_Ch3 is
            N,
            Id,
            'P',
-           Excludes_Null => Null_Exclusion_Present (N));
+           Excludes_Null      => Null_Exclusion_Present (N),
+           Incomplete_Type_OK =>
+             Ada_Version >= Ada_2005 or else Is_Itype (Id));
 
       --  Class-wide equivalent types of records with unknown discriminants
       --  involve the generation of an itype which serves as the private view
@@ -22523,11 +22527,12 @@ package body Sem_Ch3 is
    ---------------------
 
    function Process_Subtype
-     (S             : Node_Id;
-      Related_Nod   : Node_Id;
-      Related_Id    : Entity_Id := Empty;
-      Suffix        : Character := ' ';
-      Excludes_Null : Boolean := False) return Entity_Id
+     (S                  : Node_Id;
+      Related_Nod        : Node_Id;
+      Related_Id         : Entity_Id := Empty;
+      Suffix             : Character := ' ';
+      Excludes_Null      : Boolean := False;
+      Incomplete_Type_OK : Boolean := False) return Entity_Id
    is
       procedure Check_Incomplete (T : Node_Id);
       --  Called to verify that an incomplete type is not used prematurely
@@ -22541,13 +22546,7 @@ package body Sem_Ch3 is
          --  Ada 2005 (AI-412): Incomplete subtypes are legal
 
          if Ekind (Root_Type (Entity (T))) = E_Incomplete_Type
-           and then
-             not (Ada_Version >= Ada_2005
-                   and then
-                     (Nkind (Parent (T)) = N_Subtype_Declaration
-                       or else (Nkind (Parent (T)) = N_Subtype_Indication
-                                 and then Nkind (Parent (Parent (T))) =
-                                                   N_Subtype_Declaration)))
+           and then not Incomplete_Type_OK
          then
             Error_Msg_N ("invalid use of type before its full declaration", T);
          end if;
@@ -22643,13 +22642,7 @@ package body Sem_Ch3 is
       else
          Find_Type (Subtype_Mark (S));
 
-         if Nkind (Parent (S)) /= N_Access_To_Object_Definition
-           and then not
-            (Nkind (Parent (S)) = N_Subtype_Declaration
-              and then Is_Itype (Defining_Identifier (Parent (S))))
-         then
-            Check_Incomplete (Subtype_Mark (S));
-         end if;
+         Check_Incomplete (Subtype_Mark (S));
 
          Subtype_Mark_Id := Entity (Subtype_Mark (S));
 
@@ -22707,7 +22700,12 @@ package body Sem_Ch3 is
 
             return
               Process_Subtype
-                (S, Related_Nod, Related_Id, Suffix, Excludes_Null);
+                (S,
+                 Related_Nod,
+                 Related_Id,
+                 Suffix,
+                 Excludes_Null,
+                 Incomplete_Type_OK);
          end if;
 
          --  Remaining processing depends on type. Select on Base_Type kind to
