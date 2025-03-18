@@ -1485,7 +1485,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    return;
 
 	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
-	    _M_h._M_rehash_insert(ranges::distance(__rg));
+	    _M_h._M_rehash_insert(size_type(ranges::distance(__rg)));
 	  else
 	    _M_h._M_rehash_insert(1);
 

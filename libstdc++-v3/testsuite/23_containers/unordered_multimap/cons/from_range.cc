@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <unordered_map>
+#include <ranges>
 #include <span>
 #include <testsuite_allocator.h>
 #include <testsuite_hooks.h>
@@ -232,7 +233,18 @@ test_ranges()
   return true;
 }
 
+void test_PR119358() {
+#ifdef __SIZEOF_INT128__
+  auto r = std::views::iota(__int128(0))
+	 | std::views::take(5);
+  auto z = std::views::zip(r, r);
+  std::unordered_multimap<__int128, __int128> m(std::from_range, z);
+  VERIFY( std::ranges::is_permutation(m, z) );
+#endif
+}
+
 int main()
 {
   test_ranges();
+  test_PR119358();
 }

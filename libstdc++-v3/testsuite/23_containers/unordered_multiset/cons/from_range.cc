@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <unordered_set>
+#include <ranges>
 #include <span>
 #include <testsuite_allocator.h>
 #include <testsuite_hooks.h>
@@ -195,7 +196,17 @@ test_ranges()
   return true;
 }
 
+void test_PR119358() {
+#ifdef __SIZEOF_INT128__
+  auto r = std::views::iota(__int128(0))
+	 | std::views::take(5);
+  std::unordered_multiset<__int128> s(std::from_range, r);
+  VERIFY( std::ranges::is_permutation(s, r) );
+#endif
+}
+
 int main()
 {
   test_ranges();
+  test_PR119358();
 }
