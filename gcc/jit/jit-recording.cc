@@ -1498,6 +1498,18 @@ recording::context::set_output_ident (const char *ident)
   record (memento);
 }
 
+bool
+recording::context::get_abort_on_unsupported_target_builtin ()
+{
+  return m_abort_on_unsupported_target_builtin;
+}
+
+void
+recording::context::set_abort_on_unsupported_target_builtin ()
+{
+  m_abort_on_unsupported_target_builtin = true;
+}
+
 /* Set the given integer option for this context, or add an error if
    it's not recognized.
 

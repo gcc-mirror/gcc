@@ -334,3 +334,8 @@ LIBGCCJIT_ABI_35 {
     gcc_jit_target_info_arch;
     gcc_jit_target_info_supports_target_dependent_type;
 } LIBGCCJIT_ABI_34;
+
+LIBGCCJIT_ABI_36 {
+  global:
+    gcc_jit_context_set_abort_on_unsupported_target_builtin;
+} LIBGCCJIT_ABI_35;

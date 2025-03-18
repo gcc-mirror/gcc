@@ -466,3 +466,11 @@ information:
   * :func:`gcc_jit_target_info_cpu_supports`
   * :func:`gcc_jit_target_info_arch`
   * :func:`gcc_jit_target_info_supports_target_dependent_type`
+
+.. _LIBGCCJIT_ABI_36:
+
+``LIBGCCJIT_ABI_36``
+--------------------
+``LIBGCCJIT_ABI_36`` covers the addition of
+
+ * :func:`gcc_jit_context_set_abort_on_unsupported_target_builtin`

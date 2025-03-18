@@ -3951,6 +3951,14 @@ gcc_jit_target_info_supports_target_dependent_type (gcc_jit_target_info *info,
     != info->m_supported_target_dependent_types.end ();
 }
 
+void
+gcc_jit_context_set_abort_on_unsupported_target_builtin (gcc_jit_context *ctxt)
+{
+  RETURN_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+
+  ctxt->set_abort_on_unsupported_target_builtin ();
+}
+
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the

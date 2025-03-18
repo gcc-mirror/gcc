@@ -340,6 +340,11 @@ public:
     return info;
   }
 
+  bool get_abort_on_unsupported_target_builtin () const
+  {
+    return m_recording_ctxt->get_abort_on_unsupported_target_builtin ();
+  }
+
 private:
   void dump_generated_code ();
 

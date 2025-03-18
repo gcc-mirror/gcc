@@ -239,16 +239,25 @@ _gcc_jit_global_set_readonly
 # LIBGCCJIT_ABI_30
 _gcc_jit_context_convert_vector
 
-# LIBGCCJIT_ABI_31 
+# LIBGCCJIT_ABI_31
 _gcc_jit_context_new_vector_access
 _gcc_jit_context_new_rvalue_vector_perm
 
-# LIBGCCJIT_ABI_32 
+# LIBGCCJIT_ABI_32
 _gcc_jit_context_get_target_builtin_function
 
-# LIBGCCJIT_ABI_33 
+# LIBGCCJIT_ABI_33
 _gcc_jit_function_new_temp
 
-# LIBGCCJIT_ABI_34 
+# LIBGCCJIT_ABI_34
 _gcc_jit_context_set_output_ident
 
+# LIBGCCJIT_ABI_35
+_gcc_jit_context_get_target_info
+_gcc_jit_target_info_release
+_gcc_jit_target_info_cpu_supports
+_gcc_jit_target_info_arch
+_gcc_jit_target_info_supports_target_dependent_type
+
+# LIBGCCJIT_ABI_36
+_gcc_jit_context_set_abort_on_unsupported_target_builtin

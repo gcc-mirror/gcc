@@ -1170,6 +1170,9 @@ jit_langhook_type_for_mode (machine_mode mode, int unsignedp)
 
 recording::type* tree_type_to_jit_type (tree type)
 {
+  gcc_assert (gcc::jit::active_playback_ctxt);
+  gcc::jit::playback::context* ctxt = gcc::jit::active_playback_ctxt;
+
   if (TREE_CODE (type) == VECTOR_TYPE)
   {
     tree inner_type = TREE_TYPE (type);
@@ -1282,6 +1285,39 @@ recording::type* tree_type_to_jit_type (tree type)
       return nullptr;
     return element_type->get_pointer ();
   }
+  else if (type == unsigned_intTI_type_node)
+    return new recording::memento_of_get_type (&target_builtins_ctxt,
+      GCC_JIT_TYPE_UINT128_T);
+  else if (INTEGRAL_TYPE_P (type))
+  {
+    unsigned int size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+    return target_builtins_ctxt.get_int_type (size, TYPE_UNSIGNED (type));
+  }
+  else if (SCALAR_FLOAT_TYPE_P (type))
+  {
+    unsigned int size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+    enum gcc_jit_types type;
+    switch (size)
+    {
+      case 2:
+	type = GCC_JIT_TYPE_BFLOAT16;
+	break;
+      case 4:
+	type = GCC_JIT_TYPE_FLOAT;
+	break;
+      case 8:
+	type = GCC_JIT_TYPE_DOUBLE;
+	break;
+      default:
+	if (ctxt->get_abort_on_unsupported_target_builtin ())
+	{
+	  fprintf (stderr, "Unexpected float size: %d\n", size);
+	  abort ();
+	}
+	return NULL;
+    }
+    return new recording::memento_of_get_type (&target_builtins_ctxt, type);
+  }
   else
   {
     // Attempt to find an unqualified type when the current type has qualifiers.
@@ -1300,6 +1336,13 @@ recording::type* tree_type_to_jit_type (tree type)
 	  return result;
 	}
       }
+    }
+
+    if (ctxt->get_abort_on_unsupported_target_builtin ())
+    {
+      fprintf (stderr, "Unknown type:\n");
+      debug_tree (type);
+      abort ();
     }
   }
 

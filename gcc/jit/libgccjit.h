@@ -2216,6 +2216,11 @@ gcc_jit_context_set_output_ident (gcc_jit_context *ctxt,
 
 #define LIBGCCJIT_HAVE_gcc_jit_context_set_output_ident
 
+extern void
+gcc_jit_context_set_abort_on_unsupported_target_builtin (gcc_jit_context *ctxt);
+
+#define LIBGCCJIT_HAVE_gcc_jit_context_set_abort_on_unsupported_target_builtin
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

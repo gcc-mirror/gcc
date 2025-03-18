@@ -509,6 +509,22 @@ Boolean options
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_bool_print_errors_to_stderr
 
+.. function:: void \
+              gcc_jit_context_set_abort_on_unsupported_target_builtin (gcc_jit_context *ctxt)
+
+   By default, libgccjit will silently ignore when a target builtin has an
+   unsupported type.
+
+   This entrypoint can be used to make it abort when the specified context
+   encounters such a target builtin.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_36`; you can test for
+   its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_context_set_abort_on_unsupported_target_builtin
+
 Integer options
 ***************
 
