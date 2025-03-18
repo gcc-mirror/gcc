@@ -177,3 +177,69 @@ namespace nonFirstDeclaration
   void PostCondT<T>::f (U i){} // { dg-error "used in a postcondition must be const" }
 
 }
+
+namespace nonFirstDeclarationNegative
+{
+
+  int f (const NTClass i)
+    post ( check (true))
+    pre ( check (i));
+
+  template <class T>
+  int f (const T i)
+    post ( check (true))
+    pre ( check (i));
+
+  struct PostCond {
+    void f (const NTClass i)
+      post ( check (true))
+      pre ( check (i));
+
+    template <class T>
+    void f (const T i)
+      post ( check (true))
+      pre ( check (i));
+  };
+
+  template <typename T>
+  struct PostCondT
+  {
+    void f (const NTClass i)
+      post ( check (true))
+      pre ( check (i));
+
+    void f (const T i)
+      post ( check (true))
+      pre ( check (i));
+
+    template <class U>
+    void f (const U i)
+      post ( check (true))
+      pre ( check (i));
+  };
+
+  int
+  f (NTClass i);
+
+  template<class T>
+  int
+  f (T i);
+
+  void
+  PostCond::f (NTClass i){}
+
+  template<class T>
+  void
+  PostCond::f (T i){}
+
+  template<typename T>
+  void PostCondT<T>::f (NTClass i){}
+
+  template<typename T>
+  void PostCondT<T>::f (T i){}
+
+  template<typename T>
+  template<typename U>
+  void PostCondT<T>::f (U i){}
+
+}
