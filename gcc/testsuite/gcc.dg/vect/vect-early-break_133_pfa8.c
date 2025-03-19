@@ -5,8 +5,8 @@
 
 /* { dg-additional-options "-Ofast" } */
 
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target vect_partial_vectors } } } */
-/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! vect_partial_vectors } } } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { vect_partial_vectors && vect_load_lanes } } } } */
+/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { { ! vect_partial_vectors } || { ! vect_load_lanes } } } } } */
 
 char vect_a[1025];
 char vect_b[1025];

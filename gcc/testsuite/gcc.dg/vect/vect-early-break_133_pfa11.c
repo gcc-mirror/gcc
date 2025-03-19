@@ -3,9 +3,8 @@
 /* { dg-require-effective-target vect_early_break } */
 /* { dg-require-effective-target vect_int } */
 
-/* Gathers and scatters are not save to speculate across early breaks.  */
-/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! vect_partial_vectors } } } } */
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target vect_partial_vectors } } } */
+/* Gathers and scatters are not safe to speculate across early breaks.  */
+/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" } } */
 
 #define N 1024
 int vect_a[N];

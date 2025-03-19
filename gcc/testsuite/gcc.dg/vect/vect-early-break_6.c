@@ -6,8 +6,8 @@
 /* { dg-additional-options "-Ofast" } */
 
 /* This will fail because we cannot SLP the load groups yet.  */
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target vect_partial_vectors } } } */
-/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! vect_partial_vectors } } } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { vect_partial_vectors && vect_load_lanes } } } } */
+/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { { ! vect_partial_vectors } || { ! vect_load_lanes } } } } } */
 
 #define N 1024
 unsigned vect_a[N];

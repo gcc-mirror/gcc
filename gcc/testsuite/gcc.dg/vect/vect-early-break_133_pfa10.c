@@ -6,9 +6,9 @@
 /* { dg-additional-options "-Ofast" } */
 
 /* Alignment requirement too big, load lanes targets can't safely vectorize this.  */
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { vect_partial_vectors || vect_load_lanes } } } } */
-/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! { vect_partial_vectors || vect_load_lanes } } } } } */
-/* { dg-final { scan-tree-dump-not "Alignment of access forced using peeling" "vect" { target { ! { vect_partial_vectors || vect_load_lanes } } } } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { vect_load_lanes } } } } */
+/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! vect_load_lanes } } } } */
+/* { dg-final { scan-tree-dump-not "Alignment of access forced using peeling" "vect" { target { ! vect_load_lanes } } } } */
 
 unsigned test4(char x, char *restrict vect_a, char *restrict vect_b, int n)
 {  
