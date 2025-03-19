@@ -35,6 +35,10 @@
  */
 
 #include "cobol-system.h"
+#include "coretypes.h"
+#include "tree.h"
+#undef yy_flex_debug
+
 #include <langinfo.h>
 
 #include "coretypes.h"
@@ -55,7 +59,6 @@
 #include "cbldiag.h"
 #include "lexio.h"
 
-#define HOWEVER_GCC_DEFINES_TREE
 #include "../../libgcobol/ec.h"
 #include "../../libgcobol/common-defs.h"
 #include "symbols.h"

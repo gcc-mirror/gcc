@@ -31,6 +31,9 @@
 
 #include "cobol-system.h"
 
+#include "coretypes.h"
+#include "tree.h"
+
 #include "../../libgcobol/ec.h"
 #include "../../libgcobol/common-defs.h"
 #include "util.h"

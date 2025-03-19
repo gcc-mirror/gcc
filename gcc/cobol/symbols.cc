@@ -30,6 +30,10 @@
 
 #include <fstream> // Before cobol-system because it uses poisoned functions
 #include "cobol-system.h"
+
+#include "coretypes.h"
+#include "tree.h"
+
 #include <search.h>
 #include <iconv.h>
 #include "../../libgcobol/ec.h"

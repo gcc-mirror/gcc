@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks-def.h"
 #include "target.h"
 #include "stringpool.h"
-#define HOWEVER_GCC_DEFINES_TREE 1
 #include "../../libgcobol/ec.h"
 #include "../../libgcobol/common-defs.h"
 #include "util.h"

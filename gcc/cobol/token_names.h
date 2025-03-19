@@ -219,7 +219,7 @@ tokens = {
         { "bit-of", BIT_OF }, // 470
         { "bit-to-char", BIT_TO_CHAR }, // 471
         { "blank", BLANK }, // 472
-        { "block", BLOCK }, // 473
+        { "block", COB_BLOCK }, // 473
         { "boolean-of-integer", BOOLEAN_OF_INTEGER }, // 474
         { "bottom", BOTTOM }, // 475
         { "by", BY }, // 476
@@ -642,7 +642,7 @@ tokens = {
         { "seconds", SECONDS }, // 891
         { "secure", SECURE }, // 892
         { "short", SHORT }, // 893
-        { "signed", SIGNED }, // 894
+        { "signed", COB_SIGNED }, // 894
         { "standard-binary", STANDARD_BINARY }, // 895
         { "standard-decimal", STANDARD_DECIMAL }, // 896
         { "statement", STATEMENT }, // 897
@@ -653,7 +653,7 @@ tokens = {
         { "truncation", TRUNCATION }, // 902
         { "ucs-4", UCS_4 }, // 903
         { "underline", UNDERLINE }, // 904
-        { "unsigned", UNSIGNED }, // 905
+        { "unsigned", COB_UNSIGNED }, // 905
         { "utf-16", UTF_16 }, // 906
         { "utf-8", UTF_8 }, // 907
         { "address", ADDRESS }, // 908

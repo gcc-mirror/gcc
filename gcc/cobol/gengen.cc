@@ -95,7 +95,6 @@
 #include "toplev.h"
 #include "function.h"
 #include "fold-const.h"
-#define HOWEVER_GCC_DEFINES_TREE 1
 #include "../../libgcobol/ec.h"
 #include "../../libgcobol/common-defs.h"
 #include "util.h"

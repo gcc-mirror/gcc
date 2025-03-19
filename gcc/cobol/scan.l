@@ -30,6 +30,9 @@
 %{
 #include <fstream>  // Before cobol-system because it uses poisoned functions
 #include "cobol-system.h"
+#include "coretypes.h"
+#include "tree.h"
+#undef yy_flex_debug
 
 #include "../../libgcobol/ec.h"
 #include "../../libgcobol/common-defs.h"
@@ -371,7 +374,7 @@ ROUNDING			{ return ROUNDING; }
 SECONDS				{ return SECONDS; }
 SECURE				{ return SECURE; }
 SHORT				{ return SHORT; }
-SIGNED				{ return SIGNED; }
+SIGNED				{ return COB_SIGNED; }
 STANDARD-BINARY			{ return STANDARD_BINARY; }
 STANDARD-DECIMAL		{ return STANDARD_DECIMAL; }
 STATEMENT			{ return STATEMENT; }
@@ -391,7 +394,7 @@ TOWARD-LESSER			{ return TOWARD_LESSER; }
 TRUNCATION			{ return TRUNCATION; }
 UCS-4				{ return UCS_4; }
 UNDERLINE			{ return UNDERLINE; }
-UNSIGNED			{ return UNSIGNED; }
+UNSIGNED			{ return COB_UNSIGNED; }
 UTF-16				{ return UTF_16; }
 UTF-8				{ return UTF_8; }
 
@@ -834,7 +837,7 @@ CALL		{ return CALL; }
 BY		{ return BY; }
 BOTTOM		{ return BOTTOM; }
 BEFORE		{ return BEFORE; }
-BLOCK		{ return BLOCK; }
+BLOCK		{ return COB_BLOCK; }
 BACKWARD	{ return BACKWARD; }
 
 AT		{ return AT; }
@@ -1039,7 +1042,7 @@ USE({SPC}FOR)?		{ return USE; }
   AS			{ return AS; }
   ASCENDING		{ return ASCENDING; }
   BLANK    		{ return BLANK; }
-  BLOCK			{ return BLOCK; }
+  BLOCK			{ return COB_BLOCK; }
   BY			{ return BY; }
   BYTE-LENGTH		{ return BYTE_LENGTH; }
   CHARACTER		{ return CHARACTER; }
@@ -2161,7 +2164,7 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   BINARY	{ return BINARY; }
   BIT	{ return BIT; }
   BLANK	{ return BLANK; }
-  BLOCK	{ return BLOCK; }
+  BLOCK	{ return COB_BLOCK; }
   BOTTOM	{ return BOTTOM; }
   BY	{ return BY; }
   CALL	{ return CALL; }

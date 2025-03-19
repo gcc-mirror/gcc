@@ -30,7 +30,6 @@
 #include "cobol-system.h"
 #include "coretypes.h"
 #include "tree.h"
-#define HOWEVER_GCC_DEFINES_TREE 1
 #include "../../libgcobol/ec.h"
 #include "../../libgcobol/common-defs.h"
 #include "util.h"

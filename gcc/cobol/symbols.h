@@ -48,11 +48,6 @@
 
 #define PICTURE_MAX 64
 
-// Define a tree type as void pointer outside the generator code.
-#ifndef HOWEVER_GCC_DEFINES_TREE
-typedef void *tree;
-#endif
-
 #if ! (__HAVE_FLOAT128 && __GLIBC_USE (IEC_60559_TYPES_EXT))
 static_assert( sizeof(output) == sizeof(long double), "long doubles?" );
 
