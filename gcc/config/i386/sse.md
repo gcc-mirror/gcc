@@ -22414,7 +22414,8 @@
   [(set (reg:CCZ FLAGS_REG)
 	(unspec:CCZ [(match_dup 0)
 		     (match_dup 0)]
-		    UNSPEC_PTEST))])
+		    UNSPEC_PTEST))]
+  "operands[0] = force_reg (<MODE>mode, operands[0]);")
 
 (define_insn_and_split "*pmovsk_mask_cmp_<mode>_avx512"
   [(set (reg:CCZ FLAGS_REG)
@@ -22455,7 +22456,8 @@
   [(set (reg:CCZ FLAGS_REG)
 	(unspec:CCZ [(match_dup 0)
 		     (match_dup 0)]
-		    UNSPEC_PTEST))])
+		    UNSPEC_PTEST))]
+  "operands[0] = force_reg (<MODE>mode, operands[0]);")
 
 (define_expand "sse2_maskmovdqu"
   [(set (match_operand:V16QI 0 "memory_operand")
