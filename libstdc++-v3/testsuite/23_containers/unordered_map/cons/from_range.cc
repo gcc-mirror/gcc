@@ -81,9 +81,11 @@ test_deduction_guide()
   // __gnu_test::test_input_range<std::pair<const long&, float&>> r3(0, 0);
   // std::unordered_map m10(std::from_range, r3);
 
-  // LWG4223: no deduction guide
-  // __gnu_test::test_input_range<std::tuple<long, float>> r4(0, 0);
-  // std::unordered_map m11(std::from_range, r4);
+  __gnu_test::test_input_range<std::tuple<long, float>> r4(0, 0);
+  std::unordered_map m11(std::from_range, r4);
+  static_assert(std::is_same_v<decltype(m11), std::unordered_map<long, float>>);
+  std::unordered_map it11(r4.begin(), r4.begin());
+  static_assert(std::is_same_v<decltype(it11), std::unordered_map<long, float>>);
 }
 
 template<typename T, typename U>

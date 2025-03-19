@@ -44,9 +44,11 @@ test_deduction_guide()
   //__gnu_test::test_input_range<std::pair<const long&, float&>> r3(0, 0);
   // std::map m6(std::from_range, r3);
 
-  // LWG4223: no deduction guide
-  // __gnu_test::test_input_range<std::tuple<long, float>> r4(0, 0);
-  // std::map m7(std::from_range, r4);
+  __gnu_test::test_input_range<std::tuple<long, float>> r4(0, 0);
+  std::map m7(std::from_range, r4);
+  static_assert(std::is_same_v<decltype(m7), std::map<long, float>>);
+  std::map it7(r4.begin(), r4.begin());
+  static_assert(std::is_same_v<decltype(it7), std::map<long, float>>);
 }
 
 template<typename T, typename U>
