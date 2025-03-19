@@ -1926,12 +1926,15 @@ calculate_equiv_gains (void)
 	      || !bitmap_bit_p (&equiv_pseudos, regno))
 	    continue;
 
-	  rtx_insn_list *x;
-	  for (x = ira_reg_equiv[regno].init_insns; x != NULL; x = x->next ())
-	    if (insn == x->insn ())
-	      break;
-	  if (x != NULL)
-	    continue; /* skip equiv init insn */
+	  if (ira_reg_equiv[regno].invariant != NULL)
+	    {
+	      rtx_insn_list *x = ira_reg_equiv[regno].init_insns;
+	      for (; x != NULL; x = x->next ())
+		if (insn == x->insn ())
+		  break;
+	      if (x != NULL)
+		continue; /* skip equiv init insn for invariant */
+	    }
 
 	  rtx subst = ira_reg_equiv[regno].memory;
 
