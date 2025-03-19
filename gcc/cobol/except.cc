@@ -115,31 +115,27 @@ cbl_enabled_exceptions_t::turn_on_off( bool enabled,
     return true;
   }
 
-  /*
-   * std::remove_if cannot be used with std::set because its elements are const.
-   * std::set::erase_if became available only in C++20.
-   */
+  // std::set::erase_if became available only in C++20.
   if( enabled ) { // remove any disabled
     if( files.empty() ) {
       auto p = begin();
-      while( end() != (p = std::find_if( begin(), end(),
-                                         [ec = type]( const auto& elem ) {
-                                           return
-                                             !elem.enabled &&
-                                             ec_cmp(ec, elem.ec); } )) ) {
-        erase(p);
+      while( p != end() ) {
+	if( !p->enabled && ec_cmp(type, p->ec) ) {
+	  p = erase(p);
+	} else {
+	  ++p;
+	}
       }
     } else {
       for( size_t file: files ) {
         auto p = begin();
-        while( end() != (p = std::find_if( begin(), end(),
-                                           [ec = type, file]( const auto& elem ) {
-                                             return
-                                               !elem.enabled &&
-                                               file == elem.file &&
-                                               ec_cmp(ec, elem.ec); } )) ) {
-          erase(p);
-        }
+        while( p != end() ) {
+	  if( !p->enabled && file == p->file && ec_cmp(type, p->ec) ) {
+	    p = erase(p);
+	  } else {
+	    ++p;
+	  }
+	}
       }
     }
     auto elem = cbl_enabled_exception_t(enabled, location, type);
