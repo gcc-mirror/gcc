@@ -13504,7 +13504,7 @@ proc check_effective_target_arm_v8_1_lob_ok { } {
 		  asm goto ("le lr, %l0" : : : "lr" : loop);
 		  return i != 10;
 		}
-	} "-mcpu=unset -mcpu=unset -march=armv8.1-m.main -mthumb" ]
+	} "-mcpu=unset -march=armv8.1-m.main -mthumb" ]
     }
 }
 
