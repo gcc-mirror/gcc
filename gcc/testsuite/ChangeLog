@@ -1,3 +1,35 @@
+2025-03-18  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-03-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119194
+	* g++.dg/template/linkage7.C: New test.
+
+2025-03-18  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-03-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119344
+	* g++.dg/conversion/ptrmem10.C: New test.
+
+2025-03-18  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-03-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118104
+	* g++.dg/cpp0x/alias-decl-variadic3.C: New test.
+
+2025-03-18  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116731
+	* g++.dg/warn/Wrange-loop-construct3.C: New test.
+
 2025-03-12  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

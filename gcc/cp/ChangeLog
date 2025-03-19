@@ -1,3 +1,36 @@
+2025-03-18  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-03-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119194
+	* decl2.cc (min_vis_expr_r) [ADDR_EXPR]: New case.
+
+2025-03-18  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-03-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119344
+	* typeck.cc (cp_build_binary_op): Use cp_save_expr instead of save_expr.
+
+2025-03-18  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-03-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118104
+	* pt.cc (use_pack_expansion_extra_args_p): Remove an assert.
+
+2025-03-18  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2024-09-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116731
+	* parser.cc (warn_for_range_copy): Check if TYPE is trivially
+	constructible, not copyable.
+
 2025-03-12  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
