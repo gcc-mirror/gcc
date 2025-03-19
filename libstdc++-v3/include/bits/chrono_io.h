@@ -1697,6 +1697,7 @@ namespace __format
 		      char __fmt, char __mod) const
 	{
 	  basic_ostringstream<_CharT> __os;
+	  __os.imbue(__loc);
 	  const auto& __tp = use_facet<time_put<_CharT>>(__loc);
 	  __tp.put(__os, __os, _S_space, &__tm, __fmt, __mod);
 	  if (__os)

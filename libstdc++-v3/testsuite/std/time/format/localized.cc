@@ -13,6 +13,7 @@
 
 #include <chrono>
 #include <format>
+#include <locale>
 #include <stdio.h>
 #include <testsuite_hooks.h>
 
@@ -81,10 +82,42 @@ test_en()
     }
 }
 
+void
+test_locale_imbued()
+{
+  // Custom time_put facet which returns %b string for %Om.
+  // The %b string will come from io.getloc() which should be
+  // the formatting locale using by std::format.
+  struct TimePut : std::time_put<char>
+  {
+    iter_type
+    do_put(iter_type out, std::ios_base& io, char_type fill, const tm* t,
+	   char format, char modifier) const override
+    {
+      if (format == 'm' && modifier == 'O')
+	format = 'b';
+      return std::time_put<char>::do_put(out, io, fill, t, format, 0);
+    }
+  };
+
+  auto m = std::chrono::March;
+
+  std::locale fr(ISO_8859(1,fr_FR));
+  std::locale fr2(fr, new TimePut);
+  auto s1 = std::format(fr2, "{:L%Om}", m); // should be %b in fr_FR locale
+  VERIFY( s1 == std::format(fr, "{:L}", m) );
+
+  std::locale es(ISO_8859(1,es_ES));
+  std::locale es2(es, new TimePut);
+  auto s2 = std::format(es2, "{:L%Om}", m); // should be %b in es_ES locale
+  VERIFY( s2 == std::format(es, "{:L}", m) );
+}
+
 int main()
 {
   test_ru();
   test_es();
   test_fr();
   test_en();
+  test_locale_imbued();
 }
