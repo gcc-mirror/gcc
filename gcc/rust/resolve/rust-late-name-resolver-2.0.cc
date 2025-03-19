@@ -232,20 +232,28 @@ Late::visit (AST::IdentifierExpr &expr)
     }
   else
     {
-      if (auto typ = ctx.types.get_prelude (expr.get_ident ()))
-	resolved = typ;
+      if (auto type = ctx.types.get_prelude (expr.get_ident ()))
+	{
+	  resolved = type;
+	}
       else
-	rust_error_at (expr.get_locus (),
-		       "could not resolve identifier expression: %qs",
-		       expr.get_ident ().as_string ().c_str ());
+	{
+	  rust_error_at (expr.get_locus (), ErrorCode::E0425,
+			 "cannot find value %qs in this scope",
+			 expr.get_ident ().as_string ().c_str ());
+	  return;
+	}
+    }
+
+  if (resolved->is_ambiguous ())
+    {
+      rust_error_at (expr.get_locus (), ErrorCode::E0659, "%qs is ambiguous",
+		     expr.as_string ().c_str ());
+      return;
     }
 
   ctx.map_usage (Usage (expr.get_node_id ()),
 		 Definition (resolved->get_node_id ()));
-
-  // in the old resolver, resolutions are kept in the resolver, not the mappings
-  // :/ how do we deal with that?
-  // ctx.mappings.insert_resolved_name(expr, resolved);
 
   // For empty types, do we perform a lookup in ctx.types or should the
   // toplevel instead insert a name in ctx.values? (like it currently does)
