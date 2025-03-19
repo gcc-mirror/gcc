@@ -203,7 +203,7 @@ ENTRY_TERNARY (vbslq_mf8, mf8q, u8q, mf8q, mf8q, UNSPEC_BSL, QUIET)
 #undef REQUIRED_EXTENSIONS
 
 // combine
-#define REQUIRED_EXTENSIONS nonstreaming_only (NONE)
+#define REQUIRED_EXTENSIONS nonstreaming_only (0)
 ENTRY_BINARY (vcombine_mf8, mf8q, mf8, mf8, UNSPEC_COMBINE, QUIET)
 #undef REQUIRED_EXTENSIONS
 
