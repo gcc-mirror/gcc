@@ -1,9 +1,9 @@
 /* { dg-do compile } */
-/* { dg-options "-std=gnu17 -O2 -Wfree-nonheap-object" } */
+/* { dg-options "-O2 -Wfree-nonheap-object" } */
 
 struct local_caches *get_local_caches_lcs;
-void *calloc(long, long);
-void *realloc();
+void *calloc(__SIZE_TYPE__, __SIZE_TYPE__);
+void *realloc(void *, __SIZE_TYPE__);
 
 struct local_caches {
   int *t_mem_caches;
