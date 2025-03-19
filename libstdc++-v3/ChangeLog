@@ -1,3 +1,68 @@
+2025-03-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/111055
+	* include/bits/unordered_map.h (unordered_map): Define from_range
+	constructors and insert_range member.
+	(unordered_multimap): Likewise.
+	* testsuite/23_containers/unordered_multimap/cons/from_range.cc:
+	New test.
+	* testsuite/23_containers/unordered_multimap/modifiers/insert_range.cc:
+	New test.
+	* testsuite/23_containers/unordered_map/cons/from_range.cc:
+	New test.
+	* testsuite/23_containers/unordered_map/modifiers/insert_range.cc:
+	New test.
+
+2025-03-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/111055
+	* include/bits/hashtable.h (_M_rehash_insert)
+	(_M_insert_range_multi): Extracted rehashing for range insertion
+	to separate function.
+	* include/bits/unordered_set.h (unordered_set): Define from_range
+	constructors and insert_range member.
+	(unordered_multiset) Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/from_range.cc:
+	New test.
+	* testsuite/23_containers/unordered_multiset/modifiers/insert_range.cc:
+	New test.
+	* testsuite/23_containers/unordered_set/cons/from_range.cc:
+	New test.
+	* testsuite/23_containers/unordered_set/modifiers/insert_range.cc:
+	New test.
+
+2025-03-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/111055
+	* include/bits/stl_multiset.h: (inser_range)
+	(multiset(from_range_t, _Rg&&, const _Compare&, const _Alloc&))
+	(multiset(from_range_t, _Rg&&, const _Alloc&)):	Define.
+	* include/bits/stl_set.h: (set(from_range_t, _Rg&&, const _Alloc&))
+	(set(from_range_t, _Rg&&, const _Compare&, const _Alloc&), insert_range):
+	Define.
+	* testsuite/23_containers/multiset/cons/from_range.cc: New test.
+	* testsuite/23_containers/multiset/modifiers/insert/insert_range.cc:
+	New test.
+	* testsuite/23_containers/set/cons/from_range.cc: New test.
+	* testsuite/23_containers/set/modifiers/insert/insert_range.cc:
+	New test.
+
+2025-03-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/111055
+	* include/bits/ranges_base.h (__detail::__range_to_alloc_type):
+	Define.
+	* include/bits/stl_multimap.h: (inser_range)
+	(multimap(from_range_t, _Rg&&, const _Compare&, const _Alloc&))
+	(multimap(from_range_t, _Rg&&, const _Alloc&)): Define.
+	* include/bits/stl_map.h: (map(from_range_t, _Rg&&, const _Alloc&)) i
+	(map(from_range_t, _Rg&&, const _Compare&, const _Alloc&), insert_range):
+	Define.
+	* testsuite/23_containers/multimap/cons/from_range.cc: New test.
+	* testsuite/23_containers/multimap/modifiers/insert/insert_range.cc: New test.
+	* testsuite/23_containers/map/cons/from_range.cc: New test.
+	* testsuite/23_containers/map/modifiers/insert/insert_range.cc: New test.
+
 2025-03-14  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/119282

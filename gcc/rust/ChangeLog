@@ -1,3 +1,65 @@
+2025-03-18  Marc Poulhiès  <dkm@kataplop.net>
+
+	PR rust/119333
+	* Make-lang.in: Force offline mode for cargo
+
+2025-03-18  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* checks/errors/borrowck/ffi-polonius/.cargo/config.toml: New file, force vendored deps.
+	* checks/errors/borrowck/ffi-polonius/vendor/datafrog/.cargo-checksum.json: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/datafrog/CODE_OF_CONDUCT.md: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/datafrog/Cargo.toml: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/datafrog/LICENSE-APACHE: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/datafrog/LICENSE-MIT: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/datafrog/README.md: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/datafrog/RELEASES.md: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/datafrog/examples/borrow_check.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/datafrog/examples/graspan1.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/datafrog/src/join.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/datafrog/src/lib.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/datafrog/src/map.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/datafrog/src/test.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/datafrog/src/treefrog.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/.cargo-checksum.json: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/CHANGELOG.md: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/Cargo.toml: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/LICENSE-APACHE: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/LICENSE-MIT: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/README.md: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/benches/value.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/src/__private_api.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/src/kv/error.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/src/kv/key.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/src/kv/mod.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/src/kv/source.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/src/kv/value.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/src/lib.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/src/macros.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/src/serde.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/triagebot.toml: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/polonius-engine/.cargo-checksum.json: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/polonius-engine/Cargo.toml: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/polonius-engine/README.md: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/polonius-engine/src/facts.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/polonius-engine/src/lib.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/polonius-engine/src/output/datafrog_opt.rs:
+	New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/polonius-engine/src/output/initialization.rs:
+	New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/polonius-engine/src/output/liveness.rs:
+	New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/polonius-engine/src/output/location_insensitive.rs:
+	New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/polonius-engine/src/output/mod.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/polonius-engine/src/output/naive.rs: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/rustc-hash/.cargo-checksum.json: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/rustc-hash/CODE_OF_CONDUCT.md: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/rustc-hash/Cargo.toml: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/rustc-hash/LICENSE-APACHE: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/rustc-hash/LICENSE-MIT: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/rustc-hash/README.md: New file.
+	* checks/errors/borrowck/ffi-polonius/vendor/rustc-hash/src/lib.rs: New file.
+
 2025-03-17  Muhammad Mahad  <mahadtxt@gmail.com>
 
 	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit):

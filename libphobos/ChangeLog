@@ -1,3 +1,35 @@
+2025-03-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos 79cbde1ab.
+
+2025-03-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos cafe86453.
+
+2025-03-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime d2ee11364c.
+	* testsuite/libphobos.aa/test_aa.d: Add new test.
+	* testsuite/libphobos.betterc/test19933.d: Adjust imports.
+	* testsuite/libphobos.config/test22523.d: Likewise.
+	* testsuite/libphobos.exceptions/assert_fail.d: Adjust test.
+	* testsuite/libphobos.exceptions/chain.d: Adjust imports.
+	* testsuite/libphobos.exceptions/future_message.d: Likewise.
+	* testsuite/libphobos.exceptions/line_trace.d: Likewise.
+	* testsuite/libphobos.exceptions/long_backtrace_trunc.d: Likewise.
+	* testsuite/libphobos.exceptions/static_dtor.d: Likewise.
+	* testsuite/libphobos.gc/forkgc.d: Likewise.
+	* testsuite/libphobos.gc/precisegc.d: Likewise.
+	* testsuite/libphobos.gc/recoverfree.d: Likewise.
+	* testsuite/libphobos.hash/test_hash.d: Likewise.
+	* testsuite/libphobos.init_fini/custom_gc.d: Likewise.
+	* testsuite/libphobos.init_fini/thread_join.d: Likewise.
+	* testsuite/libphobos.thread/external_threads.d: Likewise.
+	* testsuite/libphobos.thread/fiber_guard_page.d: Likewise.
+	* testsuite/libphobos.thread/tlsgc_sections.d: Likewise.
+	* testsuite/libphobos.thread/tlsstack.d: Likewise.
+	* testsuite/libphobos.unittest/customhandler.d: Likewise.
+
 2025-03-17  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* src/Makefile.am (PHOBOS_DSOURCES): Add etc/c/odbc/odbc32.d,

@@ -1,3 +1,57 @@
+2025-03-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/119355
+	* config/avr/avr-passes.cc (memento_t::apply): Only
+	read values[p.arg] when it is actually used.
+
+2025-03-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR cobol/119301
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add check for get_current_dir_name.
+
+2025-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/116545
+	* doc/extend.texi (musttail statement attribute): Document
+	that musttail GNU attribute can be used as well.
+
+2025-03-18  Michael Matz  <matz@suse.de>
+
+	* config/rs6000/rs6000.opt.urls: Regenerate.
+
+2025-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/sourcebuild.texi (dg-output-file): Document.
+
+2025-03-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-ssa-sccopy.cc (scc_copy_prop::replace_scc_by_value): Dump
+	what is being replaced with what.
+
+2025-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119307
+	* lra.cc (lra_rtx_hash): Handle SUBREG.
+
+2025-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/101533
+	* dwarf2out.cc (gen_type_die_with_usage): When we have
+	output the typedef already do nothing for a typedef variant.
+	Do not set TREE_ASM_WRITTEN on the type.
+
+2025-03-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.md (equality shifted-arith splitter): Do not
+	create op AND -1 as it won't be cleaned up post-reload.
+
+2025-03-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* configure: Regenerate.
+	* configure.ac: s/gcc_cv_ld64_macosx_version_min/gcc_cv_ld64_macos_version_min/.
+
 2025-03-17  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/bitmanip.md (*<or_optab>i<mode>_extrabit): Reject cases

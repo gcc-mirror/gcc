@@ -1,3 +1,8 @@
+2025-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/116545
+	* c-attribs.cc (c_common_clang_attributes): Add musttail.
+
 2025-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/119120

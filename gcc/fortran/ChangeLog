@@ -1,3 +1,10 @@
+2025-03-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119338
+	* resolve.cc (resolve_allocate_expr): Check F2003:C626: Type-spec
+	in ALLOCATE of an assumed-length character dummy argument shall be
+	an asterisk.
+
 2025-03-16  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/60560

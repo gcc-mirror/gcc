@@ -1,3 +1,108 @@
+2025-03-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119344
+	* g++.dg/conversion/ptrmem10.C: New test.
+
+2025-03-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119194
+	* g++.dg/template/linkage7.C: New test.
+
+2025-03-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118104
+	* g++.dg/cpp0x/alias-decl-variadic3.C: New test.
+
+2025-03-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119338
+	* gfortran.dg/deferred_character_18.f90: Adjust testcase.
+	* gfortran.dg/allocate_assumed_charlen_5.f90: New test.
+
+2025-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119311
+	* c-c++-common/musttail14.c: Use * instead of \* in the regexps.
+	* c-c++-common/musttail25.c: New test.
+
+2025-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/116545
+	* c-c++-common/attr-fallthrough-2.c: Adjust expected diagnostics
+	for C++.
+	* c-c++-common/musttail15.c: New test.
+	* c-c++-common/musttail16.c: New test.
+	* c-c++-common/musttail17.c: New test.
+	* c-c++-common/musttail18.c: New test.
+	* c-c++-common/musttail19.c: New test.
+	* c-c++-common/musttail20.c: New test.
+	* c-c++-common/musttail21.c: New test.
+	* c-c++-common/musttail22.c: New test.
+	* c-c++-common/musttail23.c: New test.
+	* c-c++-common/musttail24.c: New test.
+	* g++.dg/musttail7.C: New test.
+	* g++.dg/musttail8.C: New test.
+	* g++.dg/musttail12.C: New test.
+	* g++.dg/musttail13.C: New test.
+	* g++.dg/musttail14.C: New test.
+	* g++.dg/ext/pr116545.C: New test.
+
+2025-03-18  Bob Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group1/check_88.cob: New testcase.
+	* cobol.dg/group1/comp5.cob: Likewise.
+	* cobol.dg/group1/declarative_1.cob: Likewise.
+	* cobol.dg/group1/display.cob: Likewise.
+	* cobol.dg/group1/display2.cob: Likewise.
+	* cobol.dg/group1/line-sequential.cob: Likewise.
+	* cobol.dg/group1/multiple-compares.cob: Likewise.
+	* cobol.dg/group1/multiply2.cob: Likewise.
+	* cobol.dg/group1/packed.cob: Likewise.
+	* cobol.dg/group1/perform-nested-exit.cob: Likewise.
+	* cobol.dg/group1/pointer1.cob: Likewise.
+	* cobol.dg/group1/simple-arithmetic.cob: Likewise.
+	* cobol.dg/group1/simple-classes.cob: Likewise.
+	* cobol.dg/group1/simple-if.cob: Likewise.
+	* cobol.dg/group1/simple-perform.cob: Likewise.
+
+2025-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/gcc-dg.exp (${tool}-load): If output-file is set, compare
+	combined output against content of the [lindex ${output-file} 1]
+	file.
+	(dg-output-file): New directive.
+	* lib/dg-test-cleanup.exp (cleanup-after-saved-dg-test): Clear
+	output-file variable.
+	* gcc.dg/dg-output-file-1.c: New test.
+	* gcc.dg/dg-output-file-1-lp64.txt: New test.
+	* gcc.dg/dg-output-file-1-ilp32.txt: New test.
+
+2025-03-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119233
+	* g++.dg/template/fn-ptr5.C: New test.
+
+2025-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119307
+	* gcc.target/i386/pr119307.c: New test.
+
+2025-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/101533
+	* g++.dg/debug/pr101533.C: New testcase.
+
+2025-03-18  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx512f-pr103750-1.c: Remove XFAIL.
+	* gcc.target/i386/avx512f-pr103750-2.c: Ditto.
+	* gcc.target/i386/avx512fp16-pr103750-1.c: Ditto.
+	* gcc.target/i386/avx512fp16-pr103750-2.c: Ditto.
+
+2025-03-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/redundant-andi-2.c: New test.
+
 2025-03-17  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/riscv/redundant-andi.c: New test.

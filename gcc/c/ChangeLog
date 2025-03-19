@@ -1,3 +1,19 @@
+2025-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119311
+	* c-parser.cc (c_parser_if_body): Pass result of c_parser_all_labels
+	as last argument to c_parser_statement_after_labels.
+	(c_parser_else_body): Likewise.
+
+2025-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/116545
+	* c-parser.cc (c_parser_declaration_or_fndef): Parse
+	__attribute__((musttail)) return.
+	(c_parser_handle_musttail): Diagnose attribute arguments.
+	(c_parser_statement_after_labels): Parse
+	__attribute__((musttail)) return.
+
 2025-03-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/117178
