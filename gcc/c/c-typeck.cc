@@ -10277,24 +10277,29 @@ pop_init_level (location_t loc, int implicit,
       && !TYPE_MAX_VALUE (TYPE_DOMAIN (constructor_type)))
     {
       /* Silently discard empty initializations.  The parser will
-	 already have pedwarned for empty brackets.  */
+	 already have pedwarned for empty brackets for C17 and earlier.  */
       if (integer_zerop (constructor_unfilled_index))
 	constructor_type = NULL_TREE;
-      else
+      if (constructor_type || flag_isoc23)
 	{
-	  gcc_assert (!TYPE_SIZE (constructor_type));
+	  gcc_assert (!constructor_type || !TYPE_SIZE (constructor_type));
 
-	  if (constructor_depth > 2)
+	  if (constructor_depth <= 2)
+	    pedwarn_init (loc, OPT_Wpedantic,
+			  "initialization of a flexible array member");
+	  else if (constructor_type)
 	    error_init (loc, "initialization of flexible array member "
 			     "in a nested context");
 	  else
 	    pedwarn_init (loc, OPT_Wpedantic,
-			  "initialization of a flexible array member");
+			  "initialization of flexible array member "
+			  "in a nested context");
 
 	  /* We have already issued an error message for the existence
 	     of a flexible array member not at the end of the structure.
 	     Discard the initializer so that we do not die later.  */
-	  if (DECL_CHAIN (constructor_fields) != NULL_TREE
+	  if (constructor_type
+	      && DECL_CHAIN (constructor_fields) != NULL_TREE
 	      && (!p->type || TREE_CODE (p->type) != UNION_TYPE))
 	    constructor_type = NULL_TREE;
 	}
