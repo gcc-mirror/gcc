@@ -3629,10 +3629,15 @@ write_expression (tree expr)
 
       if (nelts)
 	{
-	  tree domain;
 	  ++processing_template_decl;
-	  domain = compute_array_index_type (NULL_TREE, nelts,
-					     tf_warning_or_error);
+	  /* Avoid compute_array_index_type complaints about
+	     non-constant nelts.  */
+	  tree max = cp_build_binary_op (input_location, MINUS_EXPR,
+					 fold_convert (sizetype, nelts),
+					 size_one_node,
+					 tf_warning_or_error);
+	  max = maybe_constant_value (max);
+	  tree domain = build_index_type (max);
 	  type = build_cplus_array_type (type, domain);
 	  --processing_template_decl;
 	}
@@ -4196,6 +4201,8 @@ write_array_type (const tree type)
 	    }
 	  else
 	    {
+	      gcc_checking_assert (TREE_CODE (max) == MINUS_EXPR
+				   && integer_onep (TREE_OPERAND (max, 1)));
 	      max = TREE_OPERAND (max, 0);
 	      write_expression (max);
 	    }
