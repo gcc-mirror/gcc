@@ -894,13 +894,42 @@ namespace __format
 	  // %Ec Locale's alternate date and time representation.
 
 	  using namespace chrono;
+	  using ::std::chrono::__detail::__utc_leap_second;
+	  using ::std::chrono::__detail::__local_time_fmt;
+
+	  struct tm __tm{};
+
+	  // Some locales use %Z in their %c format but we don't want strftime
+	  // to use the system's local time zone (from /etc/localtime or $TZ)
+	  // as the output for %Z. Setting tm_isdst to -1 says there is no
+	  // time zone info available for the time in __tm.
+	  __tm.tm_isdst = -1;
+
+#ifdef _GLIBCXX_HAVE_STRUCT_TM_TM_ZONE
+	  // POSIX.1-2024 adds tm.tm_zone which will be used for %Z.
+	  if constexpr (__is_time_point_v<_Tp>)
+	    {
+	      // One of sys_time, utc_time, or local_time.
+	      if constexpr (!is_same_v<typename _Tp::clock, local_t>)
+		__tm.tm_zone = "UTC";
+	    }
+	  else if constexpr (__is_specialization_of<_Tp, __local_time_fmt>)
+	    {
+	      // local-time-format-t is used to provide time zone info for
+	      // one of zoned_time, tai_time, gps_time, or local_time.
+	      if (__t._M_abbrev)
+		__tm.tm_zone = __t._M_abbrev->c_str();
+	    }
+	  else
+	    __tm.tm_zone = "UTC";
+#endif
+
 	  auto __d = _S_days(__t); // Either sys_days or local_days.
 	  using _TDays = decltype(__d);
 	  const year_month_day __ymd(__d);
 	  const auto __y = __ymd.year();
 	  const auto __hms = _S_hms(__t);
 
-	  struct tm __tm{};
 	  __tm.tm_year = (int)__y - 1900;
 	  __tm.tm_yday = (__d - _TDays(__y/January/1)).count();
 	  __tm.tm_mon = (unsigned)__ymd.month() - 1;
@@ -909,6 +938,7 @@ namespace __format
 	  __tm.tm_hour = __hms.hours().count();
 	  __tm.tm_min = __hms.minutes().count();
 	  __tm.tm_sec = __hms.seconds().count();
+
 	  return _M_locale_fmt(std::move(__out), _M_locale(__ctx), __tm, 'c',
 			       __mod ? 'E' : '\0');
 	}
