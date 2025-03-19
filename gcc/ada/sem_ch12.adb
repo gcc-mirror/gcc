@@ -11551,6 +11551,7 @@ package body Sem_Ch12 is
 
       function Get_Formal_Entity (N : Node_Id) return Entity_Id is
          Kind : constant Node_Kind := Nkind (Original_Node (N));
+
       begin
          case Kind is
             when N_Formal_Object_Declaration =>
@@ -11563,9 +11564,6 @@ package body Sem_Ch12 is
                return Defining_Unit_Name (Specification (N));
 
             when N_Formal_Package_Declaration =>
-               return Defining_Identifier (Original_Node (N));
-
-            when N_Generic_Package_Declaration =>
                return Defining_Identifier (Original_Node (N));
 
             --  All other declarations are introduced by semantic analysis and
@@ -11806,6 +11804,26 @@ package body Sem_Ch12 is
                   end if;
 
                   Next_Non_Pragma (Formal_Node);
+
+                  --  If the actual of the local package created for the formal
+                  --  is itself an instantiated formal package, then it could
+                  --  have given rise to additional declarations, see the code
+                  --  dealing with conformance checking below.
+
+                  if Nkind (Actual_Of_Formal) = N_Package_Renaming_Declaration
+                    and then Requires_Conformance_Checking
+                               (Declaration_Node
+                                 (Associated_Formal_Package
+                                   (Defining_Entity (Actual_Of_Formal))))
+                  then
+                     Next (Actual_Of_Formal);
+                     pragma Assert
+                       (Nkind (Actual_Of_Formal) = N_Package_Declaration);
+                     Next (Actual_Of_Formal);
+                     pragma Assert
+                       (Nkind (Actual_Of_Formal) = N_Package_Instantiation);
+                  end if;
+
                   Next (Actual_Of_Formal);
 
                   --  A formal subprogram may be overloaded, so advance in
@@ -11861,10 +11879,15 @@ package body Sem_Ch12 is
          --  checking, because it contains formal declarations for those
          --  defaulted parameters, and those should not reach the back-end.
 
+         --  This processing needs to be synchronized with the pattern matching
+         --  done in the main loop of the above block that starts with the test
+         --  on Requires_Conformance_Checking.
+
          if Requires_Conformance_Checking (Formal) then
             declare
                I_Pack : constant Entity_Id := Make_Temporary (Loc, 'P');
-               I_Nam : Node_Id;
+               I_Nam  : Node_Id;
+
             begin
                Set_Is_Internal (I_Pack);
                Mutate_Ekind (I_Pack, E_Package);
