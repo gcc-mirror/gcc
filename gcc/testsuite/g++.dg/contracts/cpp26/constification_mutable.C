@@ -28,7 +28,7 @@ void f6(int i) pre mutable(i++);
 void f7(int &i) pre mutable(i++);
 void f8(int *i) pre mutable(i++);
 void f9(int *i) pre mutable(gi++);
-
+void f10(int i) post mutable(i > 5); // { dg-error "used in a postcondition must be const" }
 // todo structured binding test
 // lambda tests
 // template tests
