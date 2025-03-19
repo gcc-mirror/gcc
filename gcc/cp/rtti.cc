@@ -186,7 +186,7 @@ build_headof (tree exp)
 
 /* Get a bad_cast node for the program to throw...
 
-   See libstdc++/exception.cc for __throw_bad_cast */
+   See 'libstdc++-v3/libsupc++/eh_aux_runtime.cc' for '__cxa_bad_cast'.  */
 
 static tree
 throw_bad_cast (void)
@@ -198,7 +198,7 @@ throw_bad_cast (void)
       fn = get_global_binding (name);
       if (!fn)
 	fn = push_throw_library_fn
-	  (name, build_function_type_list (ptr_type_node, NULL_TREE));
+	  (name, build_function_type_list (void_type_node, NULL_TREE));
     }
 
   return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
