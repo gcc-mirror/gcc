@@ -254,7 +254,7 @@ diagnostic_context::initialize (int n_opts)
   m_text_callbacks.m_start_span = default_diagnostic_start_span_fn;
   m_text_callbacks.m_end_diagnostic = default_diagnostic_text_finalizer;
   m_option_mgr = nullptr;
-  m_urlifier = nullptr;
+  m_urlifier_stack = new auto_vec<urlifier_stack_node> ();
   m_last_location = UNKNOWN_LOCATION;
   m_client_aux_data = nullptr;
   m_lock = 0;
@@ -424,8 +424,13 @@ diagnostic_context::finish ()
   delete m_option_mgr;
   m_option_mgr = nullptr;
 
-  delete m_urlifier;
-  m_urlifier = nullptr;
+  if (m_urlifier_stack)
+    {
+      while (!m_urlifier_stack->is_empty ())
+	pop_urlifier ();
+      delete m_urlifier_stack;
+      m_urlifier_stack = nullptr;
+    }
 
   freeargv (m_original_argv);
   m_original_argv = nullptr;
@@ -549,12 +554,42 @@ set_option_manager (std::unique_ptr<diagnostic_option_manager> mgr,
 }
 
 void
-diagnostic_context::set_urlifier (std::unique_ptr<urlifier> urlifier)
+diagnostic_context::push_owned_urlifier (std::unique_ptr<urlifier> ptr)
 {
-  delete m_urlifier;
-  /* Ideally the field would be a std::unique_ptr here.  */
-  m_urlifier = urlifier.release ();
+  gcc_assert (m_urlifier_stack);
+  const urlifier_stack_node node = { ptr.release (), true };
+  m_urlifier_stack->safe_push (node);
 }
+
+void
+diagnostic_context::push_borrowed_urlifier (const urlifier &loan)
+{
+  gcc_assert (m_urlifier_stack);
+  const urlifier_stack_node node = { const_cast <urlifier *> (&loan), false };
+  m_urlifier_stack->safe_push (node);
+}
+
+void
+diagnostic_context::pop_urlifier ()
+{
+  gcc_assert (m_urlifier_stack);
+  gcc_assert (m_urlifier_stack->length () > 0);
+
+  const urlifier_stack_node node = m_urlifier_stack->pop ();
+  if (node.m_owned)
+    delete node.m_urlifier;
+}
+
+const urlifier *
+diagnostic_context::get_urlifier () const
+{
+  if (!m_urlifier_stack)
+    return nullptr;
+  if (m_urlifier_stack->is_empty ())
+    return nullptr;
+  return m_urlifier_stack->last ().m_urlifier;
+}
+
 
 /* Set PP as the reference printer for this context.
    Refresh all output sinks.  */
@@ -603,14 +638,6 @@ diagnostic_context::set_prefixing_rule (diagnostic_prefixing_rule_t rule)
   for (auto sink : m_output_sinks)
     if (sink->follows_reference_printer_p ())
       pp_prefixing_rule (sink->get_printer ()) = rule;
-}
-
-/* Set the urlifier without deleting the existing one.  */
-
-void
-diagnostic_context::override_urlifier (urlifier *urlifier)
-{
-  m_urlifier = urlifier;
 }
 
 void

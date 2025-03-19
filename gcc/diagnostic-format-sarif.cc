@@ -4365,7 +4365,7 @@ test_message_with_embedded_link (enum sarif_version version)
     };
 
     test_sarif_diagnostic_context dc ("test.c", version);
-    dc.set_urlifier (::make_unique<test_urlifier> ());
+    dc.push_owned_urlifier (::make_unique<test_urlifier> ());
     rich_location richloc (line_table, UNKNOWN_LOCATION);
     dc.report (DK_ERROR, richloc, nullptr, 0,
 	       "foo %<-foption%> %<unrecognized%> bar");

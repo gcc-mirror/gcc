@@ -8356,7 +8356,7 @@ driver::global_initializations ()
   diagnostic_initialize (global_dc, 0);
   diagnostic_color_init (global_dc);
   diagnostic_urls_init (global_dc);
-  global_dc->set_urlifier (make_gcc_urlifier (0));
+  global_dc->push_owned_urlifier (make_gcc_urlifier (0));
 
 #ifdef GCC_DRIVER_HOST_INITIALIZATION
   /* Perform host dependent initialization when needed.  */

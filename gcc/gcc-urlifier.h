@@ -33,11 +33,8 @@ extern char *make_doc_url (const char *doc_url_suffix);
 class auto_override_urlifier
 {
 public:
-  auto_override_urlifier (urlifier *new_urlifier);
+  auto_override_urlifier (const urlifier &new_urlifier);
   ~auto_override_urlifier ();
-
-protected:
-  urlifier * const m_old_urlifier;
 };
 
 /* Subclass of urlifier that attempts to add URLs to quoted strings
@@ -71,7 +68,7 @@ class auto_urlify_attributes
 {
 public:
   auto_urlify_attributes ()
-  : m_override (&m_urlifier)
+  : m_override (m_urlifier)
   {
   }
 

@@ -609,8 +609,11 @@ public:
   void set_output_format (std::unique_ptr<diagnostic_output_format> output_format);
   void set_text_art_charset (enum diagnostic_text_art_charset charset);
   void set_client_data_hooks (std::unique_ptr<diagnostic_client_data_hooks> hooks);
-  void set_urlifier (std::unique_ptr<urlifier>);
-  void override_urlifier (urlifier *);
+
+  void push_owned_urlifier (std::unique_ptr<urlifier>);
+  void push_borrowed_urlifier (const urlifier &);
+  void pop_urlifier ();
+
   void create_edit_context ();
   void set_warning_as_error_requested (bool val)
   {
@@ -667,7 +670,8 @@ public:
   {
     return m_client_data_hooks;
   }
-  urlifier *get_urlifier () const { return m_urlifier; }
+
+  const urlifier *get_urlifier () const;
 
   text_art::theme *get_diagram_theme () const { return m_diagrams.m_theme; }
 
@@ -888,11 +892,16 @@ private:
   diagnostic_option_manager *m_option_mgr;
   unsigned m_lang_mask;
 
-  /* An optional hook for adding URLs to quoted text strings in
+  /* A stack of optional hooks for adding URLs to quoted text strings in
      diagnostics.  Only used for the main diagnostic message.
-     Owned by the context; this would be a std::unique_ptr if
-     diagnostic_context had a proper ctor.  */
-  urlifier *m_urlifier;
+     Typically a single one owner by the context, but can be temporarily
+     overridden by a borrowed urlifier (e.g. on-stack).  */
+  struct urlifier_stack_node
+  {
+    urlifier *m_urlifier;
+    bool m_owned;
+  };
+  auto_vec<urlifier_stack_node> *m_urlifier_stack;
 
 public:
   /* Auxiliary data for client.  */

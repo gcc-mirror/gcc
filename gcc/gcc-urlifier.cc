@@ -220,15 +220,14 @@ make_gcc_urlifier (unsigned int lang_mask)
 
 /* class auto_override_urlifier.  */
 
-auto_override_urlifier::auto_override_urlifier (urlifier *new_urlifier)
-: m_old_urlifier (global_dc->get_urlifier ())
+auto_override_urlifier::auto_override_urlifier (const urlifier &new_urlifier)
 {
-  global_dc->override_urlifier (new_urlifier);
+  global_dc->push_borrowed_urlifier (new_urlifier);
 }
 
 auto_override_urlifier::~auto_override_urlifier ()
 {
-  global_dc->override_urlifier (m_old_urlifier);
+  global_dc->pop_urlifier ();
 }
 
 #if CHECKING_P
