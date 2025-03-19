@@ -246,15 +246,15 @@ build_integer_cst (dinteger_t value, tree type)
 tree
 build_float_cst (const real_t &value, Type *totype)
 {
-  real_t new_value;
+  real_value new_value;
   TypeBasic *tb = totype->isTypeBasic ();
 
   gcc_assert (tb != NULL);
 
   tree type_node = build_ctype (tb);
-  real_convert (&new_value.rv (), TYPE_MODE (type_node), &value.rv ());
+  real_convert (&new_value, TYPE_MODE (type_node), &value.rv ());
 
-  return build_real (type_node, new_value.rv ());
+  return build_real (type_node, new_value);
 }
 
 /* Returns the .length component from the D dynamic array EXP.  */

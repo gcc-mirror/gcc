@@ -5525,7 +5525,11 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	  if (init == void_node)
 	    /* Trivial default-init, don't do anything to the CONSTRUCTOR.  */
 	    return ctx->ctor;
-	  eltinit = cxx_eval_constant_expression (&new_ctx, init, lval,
+	  eltinit = init;
+	  if (CLASS_TYPE_P (elttype) && new_ctx.object)
+	    /* Clarify what object is being initialized (118285).  */
+	    eltinit = build2 (INIT_EXPR, elttype, new_ctx.object, eltinit);
+	  eltinit = cxx_eval_constant_expression (&new_ctx, eltinit, lval,
 						  non_constant_p, overflow_p);
 	  reuse = i == 0;
 	}
@@ -5538,6 +5542,9 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	  eltinit = (perform_implicit_conversion_flags
 		     (elttype, eltinit, complain,
 		      LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING));
+	  if (CLASS_TYPE_P (elttype) && new_ctx.object)
+	    /* Clarify what object is being initialized (118285).  */
+	    eltinit = build2 (INIT_EXPR, elttype, new_ctx.object, eltinit);
 	  eltinit = cxx_eval_constant_expression (&new_ctx, eltinit, lval,
 						  non_constant_p, overflow_p);
 	}
@@ -7456,18 +7463,19 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		 definition, so don't try to look at the closure.  But if the
 		 captured variable is constant, try to evaluate it directly. */
 	      r = DECL_CAPTURED_VARIABLE (t);
-	      tree type = TREE_TYPE (t);
-	      if (TYPE_REF_P (type) != TYPE_REF_P (TREE_TYPE (r)))
-		{
-		  /* Adjust r to match the reference-ness of t.  */
-		  if (TYPE_REF_P (type))
-		    r = build_address (r);
-		  else
-		    r = convert_from_reference (r);
-		}
 	    }
 	  else
 	    r = DECL_VALUE_EXPR (t);
+
+	  tree type = TREE_TYPE (t);
+	  if (TYPE_REF_P (type) != TYPE_REF_P (TREE_TYPE (r)))
+	    {
+	      /* Adjust r to match the reference-ness of t.  */
+	      if (TYPE_REF_P (type))
+		r = build_address (r);
+	      else
+		r = convert_from_reference (r);
+	    }
 	  return cxx_eval_constant_expression (ctx, r, lval, non_constant_p,
 					       overflow_p);
 	}

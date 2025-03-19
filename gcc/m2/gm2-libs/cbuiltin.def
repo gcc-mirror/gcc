@@ -65,7 +65,10 @@ EXPORT UNQUALIFIED alloca, memcpy,
                    index, rindex,
                    memcmp, memset, memmove,
                    strcat, strncat, strcpy, strncpy, strcmp, strncmp,
-                   strlen, strstr, strpbrk, strspn, strcspn, strchr, strrchr ;
+                   strlen, strstr, strpbrk, strspn, strcspn, strchr, strrchr,
+
+                   clz, clzll,
+                   ctz, ctzll ;
 
 PROCEDURE alloca (i: CARDINAL) : ADDRESS ;
 PROCEDURE memcpy (dest, src: ADDRESS; n: CARDINAL) : ADDRESS ;
@@ -204,5 +207,11 @@ PROCEDURE strspn (s, accept: ADDRESS) : CARDINAL ;
 PROCEDURE strcspn (s, accept: ADDRESS) : CARDINAL ;
 PROCEDURE strchr (s: ADDRESS; c: INTEGER) : ADDRESS ;
 PROCEDURE strrchr (s: ADDRESS; c: INTEGER) : ADDRESS ;
+
+PROCEDURE clz (value: CARDINAL) : INTEGER ;
+PROCEDURE clzll (value: CARDINAL) : INTEGER ;
+PROCEDURE ctz (value: CARDINAL) : INTEGER ;
+PROCEDURE ctzll (value: CARDINAL) : INTEGER ;
+
 
 END cbuiltin.

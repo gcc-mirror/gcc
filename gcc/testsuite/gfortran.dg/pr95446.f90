@@ -22,6 +22,20 @@ program elemental_optional
 
   end function outer
 
+  function outer_literal(o) result(l)
+    integer, intent(in), optional :: o(5)
+    integer :: l(5)
+
+    l = inner(o, [1,2,3,4,5])
+  end function outer_literal
+
+  function outer_func(o) result(l)
+    integer, intent(in), optional :: o(5)
+    integer :: l(5)
+
+    l = inner(o, outer())
+  end function outer_func
+
   elemental function inner(a,b) result(x)
     integer, intent(in), optional :: a
     integer, intent(in) :: b

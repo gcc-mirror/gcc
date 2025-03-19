@@ -3904,6 +3904,9 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      copy.  This saves at least one insn, more if register allocation can
      eliminate the copy.
 
+     We cannot do this if the involved modes have more than one elements,
+     like for vector or complex modes.
+
      We cannot do this if the destination of the first assignment is a
      condition code register.  We eliminate this case by making sure
      the SET_DEST and SET_SRC have the same mode.
@@ -3919,6 +3922,8 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	   && GET_CODE (SET_SRC (XVECEXP (newpat, 0, 0))) == SIGN_EXTEND
 	   && (GET_MODE (SET_DEST (XVECEXP (newpat, 0, 0)))
 	       == GET_MODE (SET_SRC (XVECEXP (newpat, 0, 0))))
+	   && ! VECTOR_MODE_P (GET_MODE (SET_DEST (XVECEXP (newpat, 0, 0))))
+	   && ! COMPLEX_MODE_P (GET_MODE (SET_DEST (XVECEXP (newpat, 0, 0))))
 	   && GET_CODE (XVECEXP (newpat, 0, 1)) == SET
 	   && rtx_equal_p (SET_SRC (XVECEXP (newpat, 0, 1)),
 			   XEXP (SET_SRC (XVECEXP (newpat, 0, 0)), 0))
@@ -14480,14 +14485,15 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 	  /* Otherwise, if this register is used by I3, then this register
 	     now dies here, so we must put a REG_DEAD note here unless there
 	     is one already.  */
-	  else if (reg_referenced_p (XEXP (note, 0), PATTERN (i3))
-		   && ! (REG_P (XEXP (note, 0))
-			 ? find_regno_note (i3, REG_DEAD,
-					    REGNO (XEXP (note, 0)))
-			 : find_reg_note (i3, REG_DEAD, XEXP (note, 0))))
+	  else if (reg_referenced_p (XEXP (note, 0), PATTERN (i3)))
 	    {
-	      PUT_REG_NOTE_KIND (note, REG_DEAD);
-	      place = i3;
+	      if (! (REG_P (XEXP (note, 0))
+		     ? find_regno_note (i3, REG_DEAD, REGNO (XEXP (note, 0)))
+		     : find_reg_note (i3, REG_DEAD, XEXP (note, 0))))
+		{
+		  PUT_REG_NOTE_KIND (note, REG_DEAD);
+		  place = i3;
+		}
 	    }
 
 	  /* A SET or CLOBBER of the REG_UNUSED reg has been removed,

@@ -6,6 +6,35 @@
 	* lib/gcc-dg.exp (find-dg-do-what): Move...
 	* lib/target-supports-dg.exp: ... here.
 
+2025-03-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-03-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115271
+	* gfortran.dg/gomp/declare-variant-mod-1-use.f90: Move to
+	libgomp/testsuite/libgomp.fortran/.
+	* gfortran.dg/gomp/declare-variant-mod-1.f90: Likewise.
+
+2025-03-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-03-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115271
+	* gfortran.dg/gomp/declare-variant-mod-1-use.f90: New test.
+	* gfortran.dg/gomp/declare-variant-mod-1.f90: New test.
+	* gfortran.dg/gomp/declare-variant-mod-2-use.f90: New test.
+	* gfortran.dg/gomp/declare-variant-mod-2.f90: New test.
+
+2025-03-18  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	Backported from master:
+	2025-03-11  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/118579
+	* c-c++-common/gomp/pr118579.c: New testcase.
+
 2025-02-28  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:

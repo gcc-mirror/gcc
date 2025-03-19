@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=x86-64 -mavx10.1" } */
+/* { dg-options "-march=x86-64 -mavx10.1-256" } */
 /* { dg-final { scan-assembler "%zmm" } } */
 
 typedef double __m512d __attribute__ ((__vector_size__ (64), __may_alias__));

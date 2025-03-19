@@ -2411,7 +2411,9 @@ resolve_elemental_actual (gfc_expr *expr, gfc_code *c)
 	  for (a = arg0; a; a = a->next)
 	    if (a != arg
 		&& a->expr->rank == arg->expr->rank
-		&& !a->expr->symtree->n.sym->attr.optional)
+		&& (a->expr->expr_type != EXPR_VARIABLE
+		    || (a->expr->expr_type == EXPR_VARIABLE
+			&& !a->expr->symtree->n.sym->attr.optional)))
 	      {
 		t = true;
 		break;
@@ -12160,6 +12162,16 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
     {
       /* Assign the rhs to the temporary.  */
       tmp_expr = get_temp_from_expr ((*code)->expr1, ns);
+      if (tmp_expr->symtree->n.sym->attr.pointer)
+	{
+	  /* Use allocate on assignment for the sake of simplicity. The
+	     temporary must not take on the optional attribute. Assume
+	     that the assignment is guarded by a PRESENT condition if the
+	     lhs is optional.  */
+	  tmp_expr->symtree->n.sym->attr.pointer = 0;
+	  tmp_expr->symtree->n.sym->attr.optional = 0;
+	  tmp_expr->symtree->n.sym->attr.allocatable = 1;
+	}
       this_code = build_assignment (EXEC_ASSIGN,
 				    tmp_expr, (*code)->expr2,
 				    NULL, NULL, (*code)->loc);

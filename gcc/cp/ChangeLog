@@ -1,3 +1,74 @@
+2025-03-12  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-03-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/117512
+	* typeck.cc (cp_build_indirect_ref_1): Only do the *&e -> e
+	folding if the result would be an lvalue.
+
+2025-03-12  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-03-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119134
+	* pt.cc (check_for_bare_parameter_packs): Check DECL_CONTEXT.
+
+2025-03-04  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-02-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119038
+	* lambda.cc (maybe_generic_this_capture): Consider xobj
+	member functions as well, not just iobj.  Update function
+	comment.
+
+2025-02-27  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-02-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118053
+	* constexpr.cc (cxx_eval_constant_expression): Generalize
+	DECL_VALUE_EXPR invisiref handling.
+
+2025-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118673
+	PR c++/118285
+	* call.cc (convert_like_internal) [ck_list]: Stop using
+	maybe_init_list_as_array for GCC 14.
+
+2025-02-27  Iain Sandoe  <iains.gcc@gmail.com>
+
+	PR c++/118673
+	* tree.cc (lvalue_kind): Mark CONST_DECLs as mergable
+	when they are also TREE_STATIC.
+
+2025-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118673
+	* call.cc (maybe_init_list_as_array): Check for lvalue
+	initializers.
+	* cp-tree.h (enum cp_lvalue_kind_flags): Add clk_mergeable.
+	* tree.cc (lvalue_kind): Return it.
+	(non_mergeable_glvalue_p): New.
+	(test_lvalue_kind): Adjust.
+
+2025-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118285
+	* constexpr.cc (cxx_eval_vec_init_1): Build INIT_EXPR for
+	initializing a class.
+
+2025-02-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118849
+	* decl2.cc (min_vis_expr_r): Constrain visibility according to
+	the type of decl_constant_var_p decls.
+
 2025-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

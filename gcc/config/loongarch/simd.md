@@ -113,6 +113,16 @@
 ;; instruction here so we can avoid duplicating logics.
 ;; =======================================================================
 
+;; REG + REG load
+
+(define_mode_iterator QIVEC [(V16QI "ISA_HAS_LSX") (V32QI "ISA_HAS_LASX")])
+(define_expand "<simd_isa>_<x>vldx"
+  [(set (match_operand:QIVEC 0 "register_operand" "=f")
+	(mem:QIVEC (plus:DI (match_operand:DI 1 "register_operand")
+			    (match_operand:DI 2 "register_operand"))))]
+  "TARGET_64BIT")
+
+
 ;;
 ;; FP vector rounding instructions
 ;;

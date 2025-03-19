@@ -2423,7 +2423,7 @@ module_sym:
 	  // We need DECL_ARGUMENTS to put attributes on, in case some arguments
 	  // need adjustment
 	  create_function_arglist (sym->formal_ns->proc_name);
-	  gfc_trans_omp_declare_variant (sym->formal_ns);
+	  gfc_trans_omp_declare_variant (sym->formal_ns, sym->ns);
 	}
     }
 
@@ -2708,8 +2708,7 @@ create_function_arglist (gfc_symbol * sym)
   for (f = gfc_sym_get_dummy_args (sym); f; f = f->next)
     if (f->sym != NULL
 	&& f->sym->attr.optional && f->sym->attr.value
-	&& !f->sym->attr.dimension && f->sym->ts.type != BT_CLASS
-	&& !gfc_bt_struct (f->sym->ts.type))
+	&& !f->sym->attr.dimension && f->sym->ts.type != BT_CLASS)
       hidden_typelist = TREE_CHAIN (hidden_typelist);
 
   for (f = gfc_sym_get_dummy_args (sym); f; f = f->next)
@@ -2791,12 +2790,11 @@ create_function_arglist (gfc_symbol * sym)
 		type = gfc_sym_type (f->sym);
 	    }
 	}
-      /* For scalar intrinsic types, VALUE passes the value,
+      /* For scalar intrinsic types or derived types, VALUE passes the value,
 	 hence, the optional status cannot be transferred via a NULL pointer.
 	 Thus, we will use a hidden argument in that case.  */
       if (f->sym->attr.optional && f->sym->attr.value
-	  && !f->sym->attr.dimension && f->sym->ts.type != BT_CLASS
-	  && !gfc_bt_struct (f->sym->ts.type))
+	  && !f->sym->attr.dimension && f->sym->ts.type != BT_CLASS)
 	{
           tree tmp;
           strcpy (&name[1], f->sym->name);
@@ -3213,7 +3211,7 @@ gfc_create_function_decl (gfc_namespace * ns, bool global)
      be declared in a parent namespace, so this needs to be called even if
      there are no local directives.  */
   if (flag_openmp)
-    gfc_trans_omp_declare_variant (ns);
+    gfc_trans_omp_declare_variant (ns, NULL);
 }
 
 /* Return the decl used to hold the function return value.  If

@@ -44,7 +44,7 @@ int main(void)
       VERIFY( results.first == 0 );
   }
 
-  std::return_temporary_buffer(results.first);
+  std::return_temporary_buffer(results.first); // { dg-warning "deprecated" "" { target c++17 } }
 
   return 0;
 }

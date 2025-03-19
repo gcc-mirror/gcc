@@ -1,3 +1,188 @@
+2025-03-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2025-03-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119121
+	* include/bits/ranges_util.h (__detail::__pair_like_convertible_from):
+	Use `_Tp` in `is_reference_v` check
+	* testsuite/std/ranges/subrange/tuple_like.cc: New tests for
+	pair-like conversion
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-02-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118811
+	* src/c++20/tzdb.cc (tzdb_list::_Node): Move definitions of
+	static data members to new header.
+	* src/c++20/tzdb_globals.h: New header. Use init_priority
+	attribute on static data members.
+	* testsuite/std/time/tzdb_list/pr118811.cc: New test.
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/tuple: Do not include implementation details in
+	Doxygen documentation.
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-02-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (_Impl::_M_allocate): Fix outdated
+	comment.
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (basic_stacktrace::_Impl::_M_allocate):
+	Use __detail::__get_temporary_buffer.
+	(basic_stacktrace::_Impl::_M_deallocate): Use
+	__detail::__return_temporary_buffer.
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view (starts_with(basic_string_view)):
+	Compare lengths first and then call traits_type::compare
+	directly.
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104395
+	* include/bits/new_allocator.h: Disable extended alignment
+	support in C++98 mode.
+	* include/bits/stl_tempbuf.h: Likewise.
+	* include/ext/bitmap_allocator.h: Likewise.
+	* include/ext/malloc_allocator.h: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/pool_allocator.h: Likewise.
+	* testsuite/ext/104395.cc: New test.
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_tempbuf.h (__get_temporary_buffer): Cast
+	argument to size_t to handle negative values and suppress
+	-Wsign-compare warning.
+	(_Temporary_buffer): Move diagnostic pragmas to new location of
+	call to std::get_temporary_buffer.
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105258
+	* include/bits/stl_tempbuf.h (__detail::__get_temporary_buffer):
+	New function to do allocation for get_temporary_buffer, with
+	extended alignment support.
+	(__detail::__return_temporary_buffer): Support extended
+	alignment.
+	(get_temporary_buffer): Use __get_temporary_buffer.
+	(return_temporary_buffer): Support extended alignment. Add
+	deprecated attribute.
+	(_Temporary_buffer): Move allocation and deallocation into a
+	subobject and remove try-catch block in constructor.
+	(__uninitialized_construct_buf): Use argument deduction for
+	value type.
+	* testsuite/20_util/temporary_buffer.cc: Add dg-warning for new
+	deprecated warning.
+	* testsuite/25_algorithms/stable_sort/overaligned.cc: New test.
+
+2025-02-28  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	Backported from master:
+	2025-02-07  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	PR libstdc++/118160
+	PR libstdc++/100249
+	* include/bits/ranges_algo.h (__is_permutation_fn): Avoid a
+	dangling reference by storing the result of the iterator
+	dereference and the result of the projection in two distinct
+	variables, in order to lifetime-extend each one.
+	Forward the projected value to the predicate.
+	* testsuite/25_algorithms/is_permutation/constrained.cc: Add a
+	test with a range returning prvalues. Test it in a constexpr
+	context, in order to rely on the compiler to catch UB.
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_uninitialized.h (uninitialized_default_construct)
+	(uninitialized_default_construct_n, uninitialized_value_construct)
+	(uninitialized_value_construct_n): Qualify calls to prevent ADL.
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-12-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (__to_wstring_numeric): Add 'i'
+	and 'I' to mapping.
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117921
+	* testsuite/23_containers/set/modifiers/swap/adl.cc: Add
+	equality comparison for Allocator.
+	* testsuite/23_containers/unordered_set/modifiers/swap-2.cc:
+	Likewise.
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-12-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117921
+	* include/bits/hashtable_policy.h (_Hash_code_base::_M_swap):
+	Use ADL swap for Hash members.
+	(_Hashtable_base::_M_swap): Use ADL swap for _Equal members.
+	* include/bits/stl_tree.h (_Rb_tree::swap): Use ADL swap for
+	_Compare members.
+	* testsuite/23_containers/set/modifiers/swap/adl.cc: New test.
+	* testsuite/23_containers/unordered_set/modifiers/swap-2.cc: New
+	test.
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/forward_list.h (forward_list::front): Add
+	non-empty assertions.
+	* include/bits/stl_list.h (list::front, list::back): Add
+	non-empty assertions.
+
+2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118158
+	* src/c++17/fs_ops.cc (fs::equivalent): Remove error reporting
+	for is_other(s1) && is_other(s2) case, as per LWG 2937.
+	* testsuite/27_io/filesystem/operations/pr118158.cc: New test.
+
 2025-01-29  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

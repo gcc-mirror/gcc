@@ -1396,7 +1396,10 @@ namespace __detail
 
       void
       _M_swap(_Hash_code_base& __x)
-      { std::swap(__ebo_hash::_M_get(), __x.__ebo_hash::_M_get()); }
+      {
+	using std::swap;
+	swap(__ebo_hash::_M_get(), __x.__ebo_hash::_M_get());
+      }
 
       const _Hash&
       _M_hash() const { return __ebo_hash::_M_cget(); }
@@ -1780,7 +1783,8 @@ namespace __detail
       _M_swap(_Hashtable_base& __x)
       {
 	__hash_code_base::_M_swap(__x);
-	std::swap(_EqualEBO::_M_get(), __x._EqualEBO::_M_get());
+	using std::swap;
+	swap(_EqualEBO::_M_get(), __x._EqualEBO::_M_get());
       }
 
       const _Equal&
