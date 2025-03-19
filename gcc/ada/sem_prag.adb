@@ -8087,9 +8087,25 @@ package body Sem_Prag is
       --  the test below also permits use in a configuration pragma file.
 
       function Is_Configuration_Pragma return Boolean is
+         function Is_Pragma_Node (Prg : Node_Id) return Boolean is
+           (Nkind (Prg) = N_Pragma
+            or else
+            (Present (Original_Node (Prg))
+             and then Nkind (Original_Node (Prg)) = N_Pragma));
+         --  Returns true whether the node is a pragma or was originally a
+         --  pragma.
+         --
+         --  Note that some pragmas like Assertion_Policy are rewritten as
+         --  Null_Statment nodes but we still need to make sure here that the
+         --  original node was a pragma node.
+
+         --  Local variables
+
          Lis : List_Id;
          Par : constant Node_Id := Parent (N);
          Prg : Node_Id;
+
+      --  Start of processing for Is_Configuration_Pragma
 
       begin
          --  Don't evaluate List_Containing (N) if Parent (N) could be
@@ -8119,7 +8135,7 @@ package body Sem_Prag is
             loop
                if Prg = N then
                   return True;
-               elsif Nkind (Prg) /= N_Pragma then
+               elsif not Is_Pragma_Node (Prg) then
                   return False;
                end if;
 
