@@ -243,3 +243,67 @@ namespace nonFirstDeclarationNegative
   void PostCondT<T>::f (U i){}
 
 }
+
+namespace checkNonOdr{
+
+int f (int i, int *j)
+  post ( sizeof(i) )
+  post ( noexcept(check (&j)));
+
+
+template <class T>
+int f (T i, T *j)
+  post ( sizeof(i) )
+  post ( noexcept(check (&j)));
+
+struct PostCond {
+
+  PostCond (int i, int *j)
+  post ( sizeof(i) )
+  post ( noexcept(check (&j)));
+
+
+  template <class T>
+  PostCond  (T i, T *j)
+  post ( sizeof(i) )
+  post ( noexcept(check (&j)));
+
+  int f (int i, int *j)
+  post ( sizeof(i) )
+  post ( noexcept(check (&j)));
+
+  template <class T>
+  int f (T i, T *j)
+  post ( sizeof(i) )
+  post ( noexcept(check (&j)));
+};
+
+template <typename T>
+struct PostCondT
+{
+
+  PostCondT (int i, int *j)
+   post ( sizeof(i) )
+   post ( noexcept(check (&j)));
+
+  template <class U>
+  PostCondT (U i, U *j)
+  post ( sizeof(i) )
+  post ( noexcept(check (&j)));
+
+  int f (int i, int *j)
+  post ( sizeof(i) )
+  post ( noexcept(check (&j)));
+
+  int f (T i, T *j)
+  post ( sizeof(i) )
+  post ( noexcept(check (&j)));
+
+  template <class U>
+  int f (U i, U *j)
+  post ( sizeof(i) )
+  post ( noexcept(check (&j)));
+};
+
+
+}
