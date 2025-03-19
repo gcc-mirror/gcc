@@ -1,3 +1,11 @@
+2025-03-18  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-03-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118104
+	* pt.cc (use_pack_expansion_extra_args_p): Remove an assert.
+
 2025-03-12  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
