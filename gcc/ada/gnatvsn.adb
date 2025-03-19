@@ -41,10 +41,11 @@ package body Gnatvsn is
    function Gnat_Free_Software return String is
    begin
       return
-        "This is free software; see the source for copying conditions." &
+        "This is free software; see the source for copying conditions.  " &
+        "There is NO" &
         ASCII.LF &
-        "There is NO warranty; not even for MERCHANTABILITY or FITNESS" &
-        " FOR A PARTICULAR PURPOSE.";
+        "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR " &
+        "PURPOSE.";
    end Gnat_Free_Software;
 
    type char_array is array (Natural range <>) of aliased Character;
