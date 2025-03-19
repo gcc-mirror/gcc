@@ -2798,8 +2798,8 @@ maybe_reject_param_in_postcondition (tree decl, location_t location)
 {
   if (flag_contracts_nonattr
       && TREE_CODE (decl) == PARM_DECL
-      && should_constify_contract
       && processing_postcondition
+      && !cp_unevaluated_operand
       && !(REFERENCE_REF_P (decl)
 	   && TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL)
 	   /* Return value parameter has DECL_ARTIFICIAL flag set. The flag
