@@ -1,6 +1,11 @@
 2025-03-25  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-03-21  Jason Merrill  <jason@redhat.com>
+
+	* init.cc (throw_bad_array_new_length): Returns void.
+
+	Backported from trunk:
 	2025-03-21  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* rtti.cc (throw_bad_cast): Adjust implicit '__cxa_bad_cast'
