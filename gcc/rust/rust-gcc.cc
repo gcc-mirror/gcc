@@ -1021,12 +1021,12 @@ operator_to_tree_code (LazyBooleanOperator op)
     }
 }
 
-/* Helper function for deciding if a tree is a floating point node. */
+/* Returns true if the type of EXP is a floating point type.
+   False otherwise.  */
 bool
-is_floating_point (tree t)
+is_floating_point (tree exp)
 {
-  auto tree_type = TREE_CODE (TREE_TYPE (t));
-  return tree_type == REAL_TYPE || tree_type == COMPLEX_TYPE;
+  return FLOAT_TYPE_P (TREE_TYPE (exp));
 }
 
 // Return an expression for the negation operation OP EXPR.
