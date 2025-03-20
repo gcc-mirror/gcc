@@ -21,11 +21,15 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+module;
+
+#include <stdbit.h>
+#include <stdckdint.h>
+
 export module std.compat;
 export import std;
 
-#include <stdbit.h>
-
+#ifdef __STDC_VERSION_STDBIT_H__
 // <stdbit.h>
 export
 {
@@ -52,7 +56,9 @@ _GLIBCXX_STDBIT_FUNC(stdc_bit_floor);
 _GLIBCXX_STDBIT_FUNC(stdc_bit_ceil);
 #undef _GLIBCXX_STDBIT_FUNC
 }
+#endif
 
+#ifdef __STDC_VERSION_STDCKDINT_H__
 // <stdckdint.h>
 export
 {
@@ -60,6 +66,7 @@ export
   using __gnu_cxx::ckd_sub;
   using __gnu_cxx::ckd_mul;
 }
+#endif
 
 #define STD_COMPAT 1
 
