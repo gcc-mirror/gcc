@@ -460,7 +460,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	  break;
 	}
 
-      error ("bad argument for %<-fdebug%>: %qs", arg);
+      error ("bad argument for %<-fdebug=%>: %qs", arg);
       break;
 
     case OPT_fdoc:
@@ -533,7 +533,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_fmodule_file_:
       global.params.modFileAliasStrings.push (arg);
       if (!strchr (arg, '='))
-	error ("bad argument for %<-fmodule-file%>: %qs", arg);
+	error ("bad argument for %<-fmodule-file=%>: %qs", arg);
       break;
 
     case OPT_fmoduleinfo:
@@ -700,7 +700,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	  break;
 	}
 
-      error ("bad argument for %<-fversion%>: %qs", arg);
+      error ("bad argument for %<-fversion=%>: %qs", arg);
       break;
 
     case OPT_H:
