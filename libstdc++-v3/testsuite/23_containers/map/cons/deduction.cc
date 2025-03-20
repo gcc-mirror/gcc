@@ -258,3 +258,49 @@ test_p1518r2()
   std::map s2(std::move(m), p);
   check_type<Map>(s2);
 }
+
+struct MyPred
+{
+  template<typename T, typename U>
+  bool operator()(T const&, U const&) const;
+};
+
+template<typename K, typename V>
+constexpr bool test_lwg4223()
+{
+  using KD = std::remove_cv_t<std::remove_reference_t<K>>;
+  using VD = std::remove_cv_t<std::remove_reference_t<V>>;
+  using Alloc = __gnu_test::SimpleAllocator<std::pair<const KD, VD>>;
+
+  std::initializer_list<std::pair<K, V>> il = {};
+  Alloc a;
+  MyPred p;
+
+  // The remove_cvref_t is not applied here.
+  // static_assert(std::is_same_v<
+  //   decltype(std::map(il)),
+  //   std::map<KD, VD>>);
+
+  static_assert(std::is_same_v<
+    decltype(std::map(il.begin(), il.end())),
+    std::map<KD, VD>>);
+
+  static_assert(std::is_same_v<
+    decltype(std::map(il.begin(), il.end(), p)),
+    std::map<KD, VD, MyPred>>);
+
+  static_assert(std::is_same_v<
+    decltype(std::map(il.begin(), il.end(), a)),
+    std::map<KD, VD, std::less<KD>, Alloc>>);
+
+  static_assert(std::is_same_v<
+    decltype(std::map(il.begin(), il.end(), p, a)),
+    std::map<KD, VD, MyPred, Alloc>>);
+
+  return true;
+}
+
+static_assert(test_lwg4223<const int, const float>());
+static_assert(test_lwg4223<int&, float&>());
+static_assert(test_lwg4223<int&&, float&&>());
+static_assert(test_lwg4223<const int&, const float&>());

@@ -1103,11 +1103,11 @@ namespace __detail
   // 4223. Deduction guides for maps are mishandling tuples and references
   template<ranges::input_range _Range>
     using __range_key_type
-      = remove_const_t<tuple_element_t<0, ranges::range_value_t<_Range>>>;
+      = remove_cvref_t<tuple_element_t<0, ranges::range_value_t<_Range>>>;
 
   template<ranges::input_range _Range>
     using __range_mapped_type
-      = tuple_element_t<1, ranges::range_value_t<_Range>>;
+      = remove_cvref_t<tuple_element_t<1, ranges::range_value_t<_Range>>>;
 
   // The allocator's value_type for map-like containers.
   template<ranges::input_range _Range>

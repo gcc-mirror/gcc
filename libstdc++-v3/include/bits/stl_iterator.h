@@ -3086,8 +3086,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cpp_deduction_guides >= 201606
   // These helper traits are used for deduction guides
   // of associative containers.
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4223. Deduction guides for maps are mishandling tuples and references
   template<typename _InputIterator>
-    using __iter_key_t = remove_const_t<
+    using __iter_key_t = __remove_cvref_t<
 #ifdef __glibcxx_tuple_like // >= C++23
       tuple_element_t<0, typename iterator_traits<_InputIterator>::value_type>>;
 #else
@@ -3095,11 +3098,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template<typename _InputIterator>
-    using __iter_val_t
+    using __iter_val_t = __remove_cvref_t<
 #ifdef __glibcxx_tuple_like // >= C++23
-      = tuple_element_t<1, typename iterator_traits<_InputIterator>::value_type>;
+      tuple_element_t<1, typename iterator_traits<_InputIterator>::value_type>>;
 #else
-      = typename iterator_traits<_InputIterator>::value_type::second_type;
+      typename iterator_traits<_InputIterator>::value_type::second_type>;
 #endif
 
   template<typename _T1, typename _T2>

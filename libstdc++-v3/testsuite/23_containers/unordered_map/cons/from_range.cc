@@ -78,13 +78,11 @@ test_deduction_guide()
 
   __gnu_test::test_input_range<std::pair<const long, const float>> r2(0, 0);
   std::unordered_map m9(std::from_range, r2);
-  static_assert(std::is_same_v<
-    decltype(m9),
-    std::unordered_map<long, const float>>);
+  static_assert(std::is_same_v<decltype(m9), std::unordered_map<long, float>>);
 
-  // LWG4223: deduces map<const long&, float&>
-  // __gnu_test::test_input_range<std::pair<const long&, float&>> r3(0, 0);
-  // std::unordered_map m10(std::from_range, r3);
+  __gnu_test::test_input_range<std::pair<const long&, float&>> r3(0, 0);
+  std::unordered_map m10(std::from_range, r3);
+  static_assert(std::is_same_v<decltype(m10), std::unordered_map<long, float>>);
 
   __gnu_test::test_input_range<std::tuple<long, float>> r4(0, 0);
   std::unordered_map m11(std::from_range, r4);

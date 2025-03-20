@@ -43,11 +43,11 @@ test_deduction_guide()
 
   __gnu_test::test_input_range<std::pair<const long, const float>> r2(0, 0);
   std::map m5(std::from_range, r2);
-  static_assert(std::is_same_v<decltype(m5), std::map<long, const float>>);
+  static_assert(std::is_same_v<decltype(m5), std::map<long, float>>);
 
-  // LWG4223: deduces map<const long&, float&>
-  //__gnu_test::test_input_range<std::pair<const long&, float&>> r3(0, 0);
-  // std::map m6(std::from_range, r3);
+  __gnu_test::test_input_range<std::pair<const long&, float&>> r3(0, 0);
+  std::map m6(std::from_range, r3);
+  static_assert(std::is_same_v<decltype(m6), std::map<long, float>>);
 
   __gnu_test::test_input_range<std::tuple<long, float>> r4(0, 0);
   std::map m7(std::from_range, r4);

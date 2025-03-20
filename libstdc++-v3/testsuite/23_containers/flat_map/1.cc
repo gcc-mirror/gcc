@@ -56,16 +56,17 @@ test_deduction_guide()
 		   std::vector<long, __gnu_test::SimpleAllocator<long>>,
 		   std::vector<float, __gnu_test::SimpleAllocator<float>>>>);
 
-  // LWG4223: deduces flat_map<long, float const>, which in turn instantiates
-  // std::vector<cosnt float> that is ill-formed.
-  // __gnu_test::test_input_range<std::pair<const long, const float>> r2(0, 0);
-  // std::flat_map it5(r2.begin(), r2.begin());
-  // std::flat_map fr5(std::from_range, r2);
+  __gnu_test::test_input_range<std::pair<const long, const float>> r2(0, 0);
+  std::flat_map it5(r2.begin(), r2.begin());
+  static_assert(std::is_same_v<decltype(it5), std::flat_map<long, float>>);
+  std::flat_map fr5(std::from_range, r2);
+  static_assert(std::is_same_v<decltype(fr5), std::flat_map<long, float>>);
 
-  // LWG4223: deduces flat_map<const long&, float&>
-  //__gnu_test::test_input_range<std::pair<const long&, float&>> r3(0, 0);
-  // std::flat_map it6(r3.begin(), r3.begin());
-  // std::flat_map fr6(std::from_range, r3);
+  __gnu_test::test_input_range<std::pair<const long&, float&>> r3(0, 0);
+  std::flat_map it6(r3.begin(), r3.begin());
+  static_assert(std::is_same_v<decltype(it6), std::flat_map<long, float>>);
+  std::flat_map fr6(std::from_range, r3);
+  static_assert(std::is_same_v<decltype(fr6), std::flat_map<long, float>>);
 
   __gnu_test::test_input_range<std::tuple<long, float>> r4(0, 0);
   std::flat_map it7(r4.begin(), r4.begin());
