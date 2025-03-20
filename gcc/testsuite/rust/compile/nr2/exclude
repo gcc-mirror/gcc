@@ -1,6 +1,5 @@
 canonical_paths1.rs
 cfg1.rs
-const_generics_3.rs
 generics9.rs
 issue-2043.rs
 issue-2330.rs

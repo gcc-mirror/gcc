@@ -1,10 +1,12 @@
-// { dg-additional-options "-w" }
+// { dg-additional-options "-w -frust-name-resolution-2.0" }
+
+#[lang = "sized"]
+trait Sized {}
 
 const M: usize = 4;
 
 struct Foo<T, const N: usize = 1> {
-    // FIXME: This error is bogus. But having it means parsing is valid!
-    value: [i32; N], // { dg-error "cannot find value .N. in this scope" }
+    value: [T; N],
 }
 
 fn main() {
