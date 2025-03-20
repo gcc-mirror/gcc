@@ -251,7 +251,7 @@ default_ptx_version_option (void)
      warp convergence.  */
   res = MAX (res, PTX_VERSION_6_0);
 
-  /* Pick at least 6.3.  */
+  /* Pick at least 6.3, to enable PTX '.alias'.  */
   res = MAX (res, PTX_VERSION_6_3);
 
   /* For sm_52+, pick at least 7.3, to enable PTX 'alloca'.  */
@@ -8426,6 +8426,30 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name,
 {
   if (nvptx_alias == 0 || !TARGET_PTX_6_3)
     {
+      /* Symbol aliases are not supported here.  */
+
+#ifdef ACCEL_COMPILER
+      if (DECL_CXX_CONSTRUCTOR_P (name)
+	  || DECL_CXX_DESTRUCTOR_P (name))
+	{
+	  /* ..., but symbol aliases are supported and used in the host system,
+	     via 'gcc/cp/optimize.cc:can_alias_cdtor'.  */
+
+	  gcc_assert (!lookup_attribute ("weak", DECL_ATTRIBUTES (name)));
+	  gcc_assert (TREE_CODE (name) == FUNCTION_DECL);
+
+	  /* In this specific case, use PTX '.alias', if available, even for
+	     (default) '-mno-alias'.  */
+	  if (TARGET_PTX_6_3)
+	    {
+	      DECL_ATTRIBUTES (name)
+		= tree_cons (get_identifier ("symbol alias handled"),
+			     NULL_TREE, DECL_ATTRIBUTES (name));
+	      goto emit_ptx_alias;
+	    }
+	}
+#endif
+
       /* Copied from assemble_alias.  */
       error_at (DECL_SOURCE_LOCATION (name),
 		"alias definitions not supported in this configuration");
@@ -8456,6 +8480,8 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name,
       TREE_ASM_WRITTEN (name) = 1;
       return;
     }
+
+ emit_ptx_alias:
 
   cgraph_node *cnode = cgraph_node::get (name);
   if (!cnode->referred_to_p ())

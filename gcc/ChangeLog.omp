@@ -3,6 +3,14 @@
 	Backported from trunk:
 	2025-03-24  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	PR target/101544
+	* config/nvptx/nvptx.cc (nvptx_asm_output_def_from_decls)
+	[ACCEL_COMPILER]: Special-case certain host-setup symbol aliases.
+	* varasm.cc (do_assemble_alias) [ACCEL_COMPILER]: Adjust.
+
+	Backported from trunk:
+	2025-03-24  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* config/nvptx/nvptx.cc (default_ptx_version_option): Default at
 	least to '-mptx=6.3'.
 	* doc/invoke.texi (Nvidia PTX Options): Update '-mptx=[...]'.

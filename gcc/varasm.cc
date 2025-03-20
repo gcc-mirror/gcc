@@ -6339,7 +6339,12 @@ do_assemble_alias (tree decl, tree target)
 		  IDENTIFIER_POINTER (target));
 # endif
   /* If symbol aliases aren't actually supported...  */
-  if (!TARGET_SUPPORTS_ALIASES)
+  if (!TARGET_SUPPORTS_ALIASES
+# ifdef ACCEL_COMPILER
+      /* ..., and unless special-cased...  */
+      && !lookup_attribute ("symbol alias handled", DECL_ATTRIBUTES (decl))
+# endif
+      )
     /* ..., 'ASM_OUTPUT_DEF{,_FROM_DECLS}' better have raised an error.  */
     gcc_checking_assert (seen_error ());
 #elif defined (ASM_OUTPUT_WEAK_ALIAS) || defined (ASM_WEAKEN_DECL)
