@@ -13,14 +13,14 @@ mod ptr {
     #[lang = "const_ptr"]
     impl<T> *const T {
         pub unsafe fn offset(self, count: isize) -> *const T {
-            intrinsics::offset(self, count)
+            crate::intrinsics::offset(self, count)
         }
     }
 
     #[lang = "mut_ptr"]
     impl<T> *mut T {
         pub unsafe fn offset(self, count: isize) -> *mut T {
-            intrinsics::offset(self, count) as *mut T
+            crate::intrinsics::offset(self, count) as *mut T
         }
     }
 }

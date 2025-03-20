@@ -98,30 +98,30 @@ mod ptr {
     #[lang = "const_ptr"]
     impl<T> *const T {
         pub unsafe fn offset(self, count: isize) -> *const T {
-            intrinsics::offset(self, count)
+            crate::intrinsics::offset(self, count)
         }
     }
 
     #[lang = "mut_ptr"]
     impl<T> *mut T {
         pub unsafe fn offset(self, count: isize) -> *mut T {
-            intrinsics::offset(self, count) as *mut T
+            crate::intrinsics::offset(self, count) as *mut T
         }
     }
 
     pub unsafe fn swap_nonoverlapping<T>(x: *mut T, y: *mut T, count: usize) {
         let x = x as *mut u8;
         let y = y as *mut u8;
-        let len = mem::size_of::<T>() * count;
+        let len = crate::mem::size_of::<T>() * count;
         swap_nonoverlapping_bytes(x, y, len)
     }
 
     pub unsafe fn swap_nonoverlapping_one<T>(x: *mut T, y: *mut T) {
         // For types smaller than the block optimization below,
         // just swap directly to avoid pessimizing codegen.
-        if mem::size_of::<T>() < 32 {
+        if crate::mem::size_of::<T>() < 32 {
             let z = read(x);
-            intrinsics::copy_nonoverlapping(y, x, 1);
+            crate::intrinsics::copy_nonoverlapping(y, x, 1);
             write(y, z);
         } else {
             swap_nonoverlapping(x, y, 1);
@@ -129,12 +129,12 @@ mod ptr {
     }
 
     pub unsafe fn write<T>(dst: *mut T, src: T) {
-        intrinsics::move_val_init(&mut *dst, src)
+        crate::intrinsics::move_val_init(&mut *dst, src)
     }
 
     pub unsafe fn read<T>(src: *const T) -> T {
-        let mut tmp: T = mem::uninitialized();
-        intrinsics::copy_nonoverlapping(src, &mut tmp, 1);
+        let mut tmp: T = crate::mem::uninitialized();
+        crate::intrinsics::copy_nonoverlapping(src, &mut tmp, 1);
         tmp
     }
 
@@ -142,7 +142,7 @@ mod ptr {
         struct Block(u64, u64, u64, u64);
         struct UnalignedBlock(u64, u64, u64, u64);
 
-        let block_size = mem::size_of::<Block>();
+        let block_size = crate::mem::size_of::<Block>();
 
         // Loop through x & y, copying them `Block` at a time
         // The optimizer should unroll the loop fully for most types
@@ -151,31 +151,31 @@ mod ptr {
         while i + block_size <= len {
             // Create some uninitialized memory as scratch space
             // Declaring `t` here avoids aligning the stack when this loop is unused
-            let mut t: Block = mem::uninitialized();
+            let mut t: Block = crate::mem::uninitialized();
             let t = &mut t as *mut _ as *mut u8;
             let x = x.offset(i as isize);
             let y = y.offset(i as isize);
 
             // Swap a block of bytes of x & y, using t as a temporary buffer
             // This should be optimized into efficient SIMD operations where available
-            intrinsics::copy_nonoverlapping(x, t, block_size);
-            intrinsics::copy_nonoverlapping(y, x, block_size);
-            intrinsics::copy_nonoverlapping(t, y, block_size);
+            crate::intrinsics::copy_nonoverlapping(x, t, block_size);
+            crate::intrinsics::copy_nonoverlapping(y, x, block_size);
+            crate::intrinsics::copy_nonoverlapping(t, y, block_size);
             i += block_size;
         }
 
         if i < len {
             // Swap any remaining bytes
-            let mut t: UnalignedBlock = mem::uninitialized();
+            let mut t: UnalignedBlock = crate::mem::uninitialized();
             let rem = len - i;
 
             let t = &mut t as *mut _ as *mut u8;
             let x = x.offset(i as isize);
             let y = y.offset(i as isize);
 
-            intrinsics::copy_nonoverlapping(x, t, rem);
-            intrinsics::copy_nonoverlapping(y, x, rem);
-            intrinsics::copy_nonoverlapping(t, y, rem);
+            crate::intrinsics::copy_nonoverlapping(x, t, rem);
+            crate::intrinsics::copy_nonoverlapping(y, x, rem);
+            crate::intrinsics::copy_nonoverlapping(t, y, rem);
         }
     }
 }
@@ -190,7 +190,7 @@ mod mem {
 
     pub fn swap<T>(x: &mut T, y: &mut T) {
         unsafe {
-            ptr::swap_nonoverlapping_one(x, y);
+            crate::ptr::swap_nonoverlapping_one(x, y);
         }
     }
 
@@ -200,7 +200,7 @@ mod mem {
     }
 
     pub unsafe fn uninitialized<T>() -> T {
-        intrinsics::uninit()
+        crate::intrinsics::uninit()
     }
 }
 
@@ -210,30 +210,30 @@ macro_rules! impl_uint {
             impl $ty {
                 pub fn wrapping_add(self, rhs: Self) -> Self {
                     unsafe {
-                        intrinsics::wrapping_add(self, rhs)
+                        crate::intrinsics::wrapping_add(self, rhs)
                     }
                 }
 
                 pub fn wrapping_sub(self, rhs: Self) -> Self {
                     unsafe {
-                        intrinsics::wrapping_sub(self, rhs)
+                        crate::intrinsics::wrapping_sub(self, rhs)
                     }
                 }
 
                 pub fn rotate_left(self, n: u32) -> Self {
                     unsafe {
-                        intrinsics::rotate_left(self, n as Self)
+                        crate::intrinsics::rotate_left(self, n as Self)
                     }
                 }
 
                 pub fn rotate_right(self, n: u32) -> Self {
                     unsafe {
-                        intrinsics::rotate_right(self, n as Self)
+                        crate::intrinsics::rotate_right(self, n as Self)
                     }
                 }
 
-                pub const fn from_ne_bytes(bytes: [u8; mem::size_of::<Self>()]) -> Self {
-                    unsafe { mem::transmute(bytes) }
+                pub const fn from_ne_bytes(bytes: [u8; crate::mem::size_of::<Self>()]) -> Self {
+                    unsafe { crate::mem::transmute(bytes) }
                 }
 
                 pub fn checked_add(self, rhs: Self) -> Option<Self> {
@@ -246,7 +246,7 @@ macro_rules! impl_uint {
                 }
 
                 pub fn overflowing_add(self, rhs: Self) -> (Self, bool) {
-                    let (a, b) = unsafe { intrinsics::add_with_overflow(self as $ty, rhs as $ty) };
+                    let (a, b) = unsafe { crate::intrinsics::add_with_overflow(self as $ty, rhs as $ty) };
                     (a as Self, b)
                 }
             }
@@ -362,12 +362,12 @@ macro_rules! step_identical_methods {
     () => {
         #[inline]
         fn replace_one(&mut self) -> Self {
-            mem::replace(self, 1)
+            crate::mem::replace(self, 1)
         }
 
         #[inline]
         fn replace_zero(&mut self) -> Self {
-            mem::replace(self, 0)
+            crate::mem::replace(self, 0)
         }
 
         #[inline]
@@ -482,7 +482,7 @@ impl<A: Step> Iterator for Range<A> {
             // and this won't actually result in an extra check in an optimized build.
             match self.start.add_usize(1) {
                 Option::Some(mut n) => {
-                    mem::swap(&mut n, &mut self.start);
+                    crate::mem::swap(&mut n, &mut self.start);
                     Option::Some(n)
                 }
                 Option::None => Option::None,
