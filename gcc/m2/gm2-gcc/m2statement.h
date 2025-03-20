@@ -108,6 +108,7 @@ EXTERN tree m2statement_BuildBuiltinCallTree (tree func);
 EXTERN tree m2statement_BuildTryFinally (location_t location, tree call,
                                          tree cleanups);
 EXTERN tree m2statement_BuildCleanUp (tree param);
+EXTERN void m2statement_CopyByField (location_t location, tree des, tree expr);
 
 #undef EXTERN
 #endif /* m2statement_h.  */

@@ -3105,10 +3105,68 @@ m2type_gm2_signed_or_unsigned_type (int unsignedp, tree type)
 
 /* IsAddress returns true if the type is an ADDRESS.  */
 
-int
+bool
 m2type_IsAddress (tree type)
 {
   return type == ptr_type_node;
+}
+
+/* check_record_fields return true if all the fields in left and right
+   are GCC equivalent.  */
+
+static
+bool
+check_record_fields (tree left, tree right)
+{
+  unsigned int i;
+  tree right_value;
+  vec<constructor_elt, va_gc> *values = CONSTRUCTOR_ELTS (right);
+  FOR_EACH_CONSTRUCTOR_VALUE (values, i, right_value)
+    {
+      tree left_field = TREE_TYPE (m2treelib_get_field_no (left, NULL_TREE, false, i));
+      if (! m2type_IsGccStrictTypeEquivalent (left_field, right_value))
+	return false;
+    }
+  return true;
+}
+
+/* check_array_types return true if left and right have the same type and right
+   is not a CST_STRING.  */
+
+static
+bool
+check_array_types (tree right)
+{
+  unsigned int i;
+  tree value;
+  vec<constructor_elt, va_gc> *values = CONSTRUCTOR_ELTS (right);
+  FOR_EACH_CONSTRUCTOR_VALUE (values, i, value)
+    {
+      enum tree_code right_code = TREE_CODE (value);
+      if (right_code == STRING_CST)
+	return false;
+    }
+  return true;
+}
+
+bool
+m2type_IsGccStrictTypeEquivalent (tree left, tree right)
+{
+  enum tree_code right_code = TREE_CODE (right);
+  enum tree_code left_code = TREE_CODE (left);
+  if (left_code == VAR_DECL)
+    return m2type_IsGccStrictTypeEquivalent (TREE_TYPE (left), right);
+  if (right_code == VAR_DECL)
+    return m2type_IsGccStrictTypeEquivalent (left, TREE_TYPE (right));
+  if (left_code == RECORD_TYPE && right_code == CONSTRUCTOR)
+    return check_record_fields (left, right);
+  if (left_code == UNION_TYPE && right_code == CONSTRUCTOR)
+    return false;
+  if (left_code == ARRAY_TYPE && right_code == CONSTRUCTOR)
+    return check_array_types (right);
+  if (right_code == STRING_CST)
+    return false;
+  return true;
 }
 
 #include "gt-m2-m2type.h"
