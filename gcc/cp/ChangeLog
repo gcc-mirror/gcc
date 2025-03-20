@@ -1,3 +1,22 @@
+2025-03-19  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-03-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119316
+	* mangle.cc (write_expression) [NEW_EXPR]: Avoid using
+	compute_array_index_type.
+	(write_array_type): Add checking_assert.
+
+2025-03-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-03-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119233
+	* pt.cc (mark_template_arguments_used): Also handle member
+	function pointers.
+
 2025-03-18  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
