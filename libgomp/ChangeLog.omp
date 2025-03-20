@@ -3,6 +3,13 @@
 	Backported from trunk:
 	2025-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	PR target/106445
+	* testsuite/libgomp.c++/pr106445-1.C: New.
+	* testsuite/libgomp.c++/pr106445-1-O0.C: Likewise.
+
+	Backported from trunk:
+	2025-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	PR target/97106
 	* testsuite/libgomp.c++/pr96390.C: Un-XFAIL nvptx offloading.
 	* testsuite/libgomp.c-c++-common/pr96390.c: Adjust.
