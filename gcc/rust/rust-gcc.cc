@@ -478,10 +478,9 @@ function_type (const typed_identifier &receiver,
       pp = &TREE_CHAIN (*pp);
     }
 
-  for (std::vector<typed_identifier>::const_iterator p = parameters.begin ();
-       p != parameters.end (); ++p)
+  for (const auto &p : parameters)
     {
-      tree t = p->type;
+      tree t = p.type;
       if (error_operand_p (t))
 	return error_mark_node;
       *pp = tree_cons (NULL_TREE, t, NULL_TREE);
@@ -527,10 +526,9 @@ function_type_variadic (const typed_identifier &receiver,
   if (receiver.type != NULL_TREE)
     args[offs++] = receiver.type;
 
-  for (std::vector<typed_identifier>::const_iterator p = parameters.begin ();
-       p != parameters.end (); ++p)
+  for (const auto &p : parameters)
     {
-      tree t = p->type;
+      tree t = p.type;
       if (error_operand_p (t))
 	return error_mark_node;
       args[offs++] = t;
@@ -609,14 +607,13 @@ fill_in_fields (tree fill, const std::vector<typed_identifier> &fields,
 {
   tree field_trees = NULL_TREE;
   tree *pp = &field_trees;
-  for (std::vector<typed_identifier>::const_iterator p = fields.begin ();
-       p != fields.end (); ++p)
+  for (const auto &p : fields)
     {
-      tree name_tree = get_identifier_from_string (p->name);
-      tree type_tree = p->type;
+      tree name_tree = get_identifier_from_string (p.name);
+      tree type_tree = p.type;
       if (error_operand_p (type_tree))
 	return error_mark_node;
-      tree field = build_decl (p->location, FIELD_DECL, name_tree, type_tree);
+      tree field = build_decl (p.location, FIELD_DECL, name_tree, type_tree);
       DECL_CONTEXT (field) = fill;
       *pp = field;
       pp = &DECL_CHAIN (field);
@@ -1741,10 +1738,8 @@ tree
 statement_list (const std::vector<tree> &statements)
 {
   tree stmt_list = NULL_TREE;
-  for (std::vector<tree>::const_iterator p = statements.begin ();
-       p != statements.end (); ++p)
+  for (tree t : statements)
     {
-      tree t = (*p);
       if (error_operand_p (t))
 	return error_mark_node;
       append_to_statement_list (t, &stmt_list);
@@ -1798,10 +1793,9 @@ block (tree fndecl, tree enclosing, const std::vector<Bvariable *> &vars,
     }
 
   tree *pp = &BLOCK_VARS (block_tree);
-  for (std::vector<Bvariable *>::const_iterator pv = vars.begin ();
-       pv != vars.end (); ++pv)
+  for (Bvariable *bv : vars)
     {
-      *pp = (*pv)->get_decl ();
+      *pp = bv->get_decl ();
       if (!error_operand_p (*pp))
 	pp = &DECL_CHAIN (*pp);
     }
@@ -1821,10 +1815,8 @@ void
 block_add_statements (tree bind_tree, const std::vector<tree> &statements)
 {
   tree stmt_list = NULL_TREE;
-  for (std::vector<tree>::const_iterator p = statements.begin ();
-       p != statements.end (); ++p)
+  for (tree s : statements)
     {
-      tree s = (*p);
       if (!error_operand_p (s))
 	append_to_statement_list (s, &stmt_list);
     }
@@ -2268,10 +2260,9 @@ function_set_parameters (tree function,
 
   tree params = NULL_TREE;
   tree *pp = &params;
-  for (std::vector<Bvariable *>::const_iterator pv = param_vars.begin ();
-       pv != param_vars.end (); ++pv)
+  for (Bvariable *bv : param_vars)
     {
-      *pp = (*pv)->get_decl ();
+      *pp = bv->get_decl ();
       gcc_assert (!error_operand_p (*pp));
       pp = &DECL_CHAIN (*pp);
     }
@@ -2297,10 +2288,9 @@ write_global_definitions (const std::vector<tree> &type_decls,
 
   // Convert all non-erroneous declarations into Gimple form.
   size_t i = 0;
-  for (std::vector<Bvariable *>::const_iterator p = variable_decls.begin ();
-       p != variable_decls.end (); ++p)
+  for (Bvariable *bv : variable_decls)
     {
-      tree v = (*p)->get_decl ();
+      tree v = bv->get_decl ();
       if (error_operand_p (v))
 	continue;
       defs[i] = v;
@@ -2308,10 +2298,8 @@ write_global_definitions (const std::vector<tree> &type_decls,
       ++i;
     }
 
-  for (std::vector<tree>::const_iterator p = type_decls.begin ();
-       p != type_decls.end (); ++p)
+  for (tree type_tree : type_decls)
     {
-      tree type_tree = (*p);
       if (!error_operand_p (type_tree) && IS_TYPE_OR_DECL_P (type_tree))
 	{
 	  defs[i] = TYPE_NAME (type_tree);
@@ -2320,20 +2308,17 @@ write_global_definitions (const std::vector<tree> &type_decls,
 	  ++i;
 	}
     }
-  for (std::vector<tree>::const_iterator p = constant_decls.begin ();
-       p != constant_decls.end (); ++p)
+  for (tree t : constant_decls)
     {
-      if (!error_operand_p (*p))
+      if (!error_operand_p (t))
 	{
-	  defs[i] = (*p);
+	  defs[i] = t;
 	  rust_preserve_from_gc (defs[i]);
 	  ++i;
 	}
     }
-  for (std::vector<tree>::const_iterator p = function_decls.begin ();
-       p != function_decls.end (); ++p)
+  for (tree decl : function_decls)
     {
-      tree decl = (*p);
       if (!error_operand_p (decl))
 	{
 	  rust_preserve_from_gc (decl);
