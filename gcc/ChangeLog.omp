@@ -1,3 +1,12 @@
+2025-03-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-03-24  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.cc (default_ptx_version_option): Default at
+	least to '-mptx=6.3'.
+	* doc/invoke.texi (Nvidia PTX Options): Update '-mptx=[...]'.
+
 2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:

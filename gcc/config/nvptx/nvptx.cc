@@ -251,6 +251,9 @@ default_ptx_version_option (void)
      warp convergence.  */
   res = MAX (res, PTX_VERSION_6_0);
 
+  /* Pick at least 6.3.  */
+  res = MAX (res, PTX_VERSION_6_3);
+
   /* For sm_52+, pick at least 7.3, to enable PTX 'alloca'.  */
   if (ptx_isa_option >= PTX_ISA_SM52)
     res = MAX (res, PTX_VERSION_7_3);

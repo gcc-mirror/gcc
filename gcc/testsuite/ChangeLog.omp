@@ -1,6 +1,18 @@
 2025-03-25  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-03-24  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/march-map=sm_30.c: Adjust.
+	* gcc.target/nvptx/march-map=sm_32.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_35.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_37.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_50.c: Likewise.
+	* gcc.target/nvptx/march=sm_30.c: Likewise.
+	* gcc.target/nvptx/march=sm_35.c: Likewise.
+	* gcc.target/nvptx/march=sm_37.c: Likewise.
+
+	Backported from trunk:
 	2025-03-21  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* g++.target/nvptx/alias-g++.dg_init_dtor2-2.C: New.
