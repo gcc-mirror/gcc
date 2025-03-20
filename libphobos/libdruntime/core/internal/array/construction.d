@@ -526,7 +526,7 @@ Tarr _d_newarraymTX(Tarr : U[], T, U)(size_t[] dims, bool isShared=false) @trust
 
         auto dim = dims[0];
 
-        debug(PRINTF) printf("__allocateInnerArray(ti = %p, ti.next = %p, dim = %d, ndims = %d\n", ti, ti.next, dim, dims.length);
+        debug(PRINTF) printf("__allocateInnerArray(UnqT = %s, dim = %lu, ndims = %lu\n", UnqT.stringof.ptr, dim, dims.length);
         if (dims.length == 1)
         {
             auto r = _d_newarrayT!UnqT(dim, isShared);
@@ -534,8 +534,9 @@ Tarr _d_newarraymTX(Tarr : U[], T, U)(size_t[] dims, bool isShared=false) @trust
         }
 
         auto allocSize = (void[]).sizeof * dim;
-        auto info = __arrayAlloc!UnqT(allocSize);
-        __setArrayAllocLength!UnqT(info, allocSize, isShared);
+        // the array-of-arrays holds pointers! Don't use UnqT here!
+        auto info = __arrayAlloc!(void[])(allocSize);
+        __setArrayAllocLength!(void[])(info, allocSize, isShared);
         auto p = __arrayStart(info)[0 .. dim];
 
         foreach (i; 0..dim)
@@ -577,6 +578,16 @@ unittest
         for (size_t j = 0; j < a[i].length; j++)
             assert(a[i][j].x == 1);
     }
+}
+
+// https://issues.dlang.org/show_bug.cgi?id=24436
+@system unittest
+{
+    import core.memory : GC;
+
+    int[][] a = _d_newarraymTX!(int[][], int)([2, 2]);
+
+    assert(!(GC.getAttr(a.ptr) & GC.BlkAttr.NO_SCAN));
 }
 
 version (D_ProfileGC)
