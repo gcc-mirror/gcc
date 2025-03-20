@@ -3,7 +3,6 @@
 
 /* { dg-do compile { target { s390-*-* } } } */
 /* { dg-options "-O2 -mesa" } */
-/* { dg-excess-errors "-mesa is deprecated" } */
 
 int test (int *addr)
 {

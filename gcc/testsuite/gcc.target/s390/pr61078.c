@@ -3,7 +3,6 @@
 
 /* { dg-do run { target { ! lp64 } } } */
 /* { dg-options "-O2 -mesa" } */
-/* { dg-excess-errors "-mesa is deprecated" } */
 
 extern void abort (void);
 

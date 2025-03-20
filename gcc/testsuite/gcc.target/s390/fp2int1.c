@@ -7,7 +7,6 @@
 /* { dg-do run { target s390-*-* } } */
 /* { dg-options "-O3 -mesa" } */
 /* { dg-require-effective-target fenv_exceptions } */
-/* { dg-excess-errors "-mesa is deprecated" } */
 
 #define _GNU_SOURCE
 #include <stdlib.h>

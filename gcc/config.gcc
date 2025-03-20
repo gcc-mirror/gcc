@@ -5768,12 +5768,8 @@ case "${target}" in
 		done
 
 		case ${with_mode} in
-		"" | zarch)
+		"" | esa | zarch)
 			# OK
-			;;
-		esa)
-			echo "Support for ESA/390 is deprecated; use z/Architecture instead." 1>&2
-			exit 1
 			;;
 		*)
 			echo "Unknown architecture mode used in --with-mode=$with_mode." 1>&2
