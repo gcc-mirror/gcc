@@ -2588,6 +2588,8 @@ symbol_table::finalize_compilation_unit (void)
 
   if (!seen_error ())
     {
+      timevar_push (TV_SYMOUT);
+
       /* Give the frontends the chance to emit early debug based on
 	 what is still reachable in the TU.  */
       (*lang_hooks.finalize_early_debug) ();
@@ -2597,6 +2599,8 @@ symbol_table::finalize_compilation_unit (void)
       debuginfo_early_start ();
       (*debug_hooks->early_finish) (main_input_filename);
       debuginfo_early_stop ();
+
+      timevar_pop (TV_SYMOUT);
     }
 
   /* Finally drive the pass manager.  */
