@@ -58,6 +58,7 @@ public:
   static constexpr auto &RUSTC_CONST_UNSTABLE = "rustc_const_unstable";
   static constexpr auto &MAY_DANGLE = "may_dangle";
   static constexpr auto &PRELUDE_IMPORT = "prelude_import";
+  static constexpr auto &TRACK_CALLER = "track_caller";
 };
 } // namespace Values
 } // namespace Rust

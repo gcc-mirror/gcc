@@ -75,7 +75,8 @@ static const BuiltinAttrDefinition __definitions[]
      // assuming we keep these for static analysis
      {Attrs::RUSTC_CONST_STABLE, STATIC_ANALYSIS},
      {Attrs::RUSTC_CONST_UNSTABLE, STATIC_ANALYSIS},
-     {Attrs::PRELUDE_IMPORT, NAME_RESOLUTION}};
+     {Attrs::PRELUDE_IMPORT, NAME_RESOLUTION},
+     {Attrs::TRACK_CALLER, CODE_GENERATION}};
 
 BuiltinAttributeMappings *
 BuiltinAttributeMappings::get ()
