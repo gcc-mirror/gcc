@@ -1792,6 +1792,8 @@ block (tree fndecl, tree enclosing, const std::vector<Bvariable *> &vars,
       *pp = block_tree;
     }
 
+  // Chain the variables of the scope together so they are all connected
+  // to the block.
   tree *pp = &BLOCK_VARS (block_tree);
   for (Bvariable *bv : vars)
     {
