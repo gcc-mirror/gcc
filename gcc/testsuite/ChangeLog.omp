@@ -1,6 +1,12 @@
 2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119370
+	* g++.dg/gomp/pr119370.C: New test.
+
+	Backported from trunk:
 	2025-02-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/118876
