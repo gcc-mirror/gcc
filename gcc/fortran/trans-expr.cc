@@ -7994,7 +7994,11 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      gfc_add_expr_to_block (&se->post, local_tmp);
 	    }
 
-	  if (!finalized && !e->must_finalize)
+	  /* Items of array expressions passed to a polymorphic formal arguments
+	     create their own clean up, so prevent double free.  */
+	  if (!finalized && !e->must_finalize
+	      && !(e->expr_type == EXPR_ARRAY && fsym
+		   && fsym->ts.type == BT_CLASS))
 	    {
 	      bool scalar_res_outside_loop;
 	      scalar_res_outside_loop = e->expr_type == EXPR_FUNCTION
