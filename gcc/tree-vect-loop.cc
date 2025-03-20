@@ -10059,7 +10059,7 @@ vect_update_nonlinear_iv (gimple_seq* stmts, tree vectype,
 
 }
 
-/* Function vectorizable_induction
+/* Function vectorizable_nonlinear_induction
 
    Check if STMT_INFO performs an nonlinear induction computation that can be
    vectorized. If VEC_STMT is also passed, vectorize the induction PHI: create
@@ -10408,6 +10408,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
   poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   unsigned i;
   tree expr;
+  tree index_vectype = NULL_TREE;
   gimple_stmt_iterator si;
   enum vect_induction_op_type induction_type
     = STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (stmt_info);
@@ -10519,12 +10520,29 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 			 "supported.\n");
       return false;
     }
-  tree step_vectype = get_same_sized_vectype (TREE_TYPE (step_expr), vectype);
+  tree stept = TREE_TYPE (step_expr);
+  tree step_vectype = get_same_sized_vectype (stept, vectype);
 
-  /* Check for backend support of PLUS/MINUS_EXPR. */
-  if (!directly_supported_p (PLUS_EXPR, step_vectype)
-      || !directly_supported_p (MINUS_EXPR, step_vectype))
-    return false;
+  /* Check for target support of the vectorized arithmetic used here.  */
+  if (!target_supports_op_p (step_vectype, PLUS_EXPR, optab_default)
+      || !target_supports_op_p (step_vectype, MINUS_EXPR, optab_default))
+      return false;
+  if (!nunits.is_constant ())
+    {
+      if (!target_supports_op_p (step_vectype, MULT_EXPR, optab_default))
+	return false;
+      /* FLOAT_EXPR when computing VEC_INIT for float inductions.  */
+      if (SCALAR_FLOAT_TYPE_P (stept))
+	{
+	  tree index_type = build_nonstandard_integer_type
+		(GET_MODE_BITSIZE (SCALAR_TYPE_MODE (stept)), 1);
+
+	  index_vectype = build_vector_type (index_type, nunits);
+	  if (!can_float_p (TYPE_MODE (step_vectype),
+			    TYPE_MODE (index_vectype), 1))
+	    return false;
+	}
+    }
 
   if (!vec_stmt) /* transformation not required.  */
     {
@@ -10643,7 +10661,6 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	  nivs = 1;
 	}
       gimple_seq init_stmts = NULL;
-      tree stept = TREE_TYPE (step_vectype);
       tree lupdate_mul = NULL_TREE;
       if (!nested_in_vect_loop)
 	{
@@ -10795,7 +10812,9 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 		       + (vectype) [0, 1, 2, ...] * [step, step, step, ...].  */
 		  gcc_assert (SCALAR_FLOAT_TYPE_P (TREE_TYPE (steps[0])));
 		  gcc_assert (flag_associative_math);
-		  tree index = build_index_vector (step_vectype, 0, 1);
+		  gcc_assert (index_vectype != NULL_TREE);
+
+		  tree index = build_index_vector (index_vectype, 0, 1);
 		  new_name = gimple_convert (&init_stmts, TREE_TYPE (steps[0]),
 					     inits[0]);
 		  tree base_vec = gimple_build_vector_from_val (&init_stmts,
@@ -11070,7 +11089,9 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 		+ (vectype) [0, 1, 2, ...] * [step, step, step, ...].  */
 	  gcc_assert (SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr)));
 	  gcc_assert (flag_associative_math);
-	  tree index = build_index_vector (step_vectype, 0, 1);
+	  gcc_assert (index_vectype != NULL_TREE);
+
+	  tree index = build_index_vector (index_vectype, 0, 1);
 	  tree base_vec = gimple_build_vector_from_val (&stmts, step_vectype,
 							new_name);
 	  tree step_vec = gimple_build_vector_from_val (&stmts, step_vectype,
