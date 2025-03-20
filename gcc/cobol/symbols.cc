@@ -295,81 +295,12 @@ symbol_valid_udf_args( size_t function, std::list<cbl_refer_t> args ) {
 
 static const struct cbl_occurs_t nonarray = cbl_occurs_t();
 
-static const struct cbl_field_t empty_float = {
-                                0, FldFloat, FldInvalid,
-                                intermediate_e,
-                                0, 0, 0, nonarray, 0, "",
-                                0, cbl_field_t::linkage_t(),
-                                {16, 16, 32, 0, NULL}, NULL };
-
-static const struct cbl_field_t empty_comp5 = {
-                                0, FldNumericBin5, FldInvalid,
-                                signable_e | intermediate_e,
-                                0, 0, 0, nonarray, 0, "",
-                                0, cbl_field_t::linkage_t(),
-                                {16, 16, MAX_FIXED_POINT_DIGITS, 0, NULL}, NULL };
-
 #if 0
 # define CONSTANT_E constant_e
 #else
 # define CONSTANT_E intermediate_e
 #endif
 
-static struct cbl_field_t empty_literal = {
-                                0, FldInvalid, FldInvalid, CONSTANT_E,
-                                0, 0, 0, nonarray, 0, "",
-                                0, cbl_field_t::linkage_t(),
-                                {}, NULL };
-
-static const struct cbl_field_t empty_conditional = {
-                                0, FldConditional, FldInvalid, intermediate_e,
-                                0, 0, 0, nonarray, 0, "",
-                                0, cbl_field_t::linkage_t(),
-                                {}, NULL };
-
-
-/**
- * Debug register record
-     01 DEBUG-ITEM.
-        02 DEBUG-LINE PIC X(6).
-        02 FILLER PIC X VALUE SPACE.
-        02 DEBUG-NAME PIC X(30).
-        02 FILLER PIC X VALUE SPACE.
-        02 DEBUG-SUB-1 PIC S9999 SIGN IS LEADING SEPARATE CHARACTER.
-        02 FILLER PIC X VALUE SPACE.
-        02 DEBUG-SUB-2 PIC S9999 SIGN IS LEADING SEPARATE CHARACTER.
-        02 FILLER PIC X VALUE SPACE.
-        02 DEBUG-SUB-3 PIC S9999 SIGN IS LEADING SEPARATE CHARACTER.
-        02 FILLER PIC X VALUE SPACE.
-        02 DEBUG-CONTENTS PIC X(76).
- **/
-
-static cbl_field_t debug_registers[] = {
-    { 0, FldGroup, FldInvalid, global_e, 0,0,1, nonarray, 0,
-      "DEBUG-ITEM", 0, {}, {132,132,0,0, NULL}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, global_e, 0,0,2, nonarray, 0,
-      "DEBUG-LINE", 0, {}, {6,6,0,0, "      "}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
-      "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, global_e, 0,0,2, nonarray, 0,
-      "DEBUG-NAME", 0, {}, {30,30,0,0, NULL}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
-      "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
-    { 0, FldNumericDisplay, FldInvalid, signable_e | global_e | leading_e | separate_e, 0,0,2, nonarray, 0,
-      "DEBUG-SUB-1", 0, {}, {5,5,3,0, NULL}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
-      "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
-    { 0, FldNumericDisplay, FldInvalid, signable_e | global_e | leading_e | separate_e, 0,0,2, nonarray, 0,
-      "DEBUG-SUB-2", 0, {}, {5,5,3,0, NULL}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
-      "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
-    { 0, FldNumericDisplay, FldInvalid, signable_e | global_e | leading_e | separate_e, 0,0,2, nonarray, 0,
-      "DEBUG-SUB-3", 0, {}, {5,5,3,0, NULL}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
-      "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, signable_e | global_e, 0,0,2, nonarray, 0,
-      "DEBUG-CONTENTS", 0, {}, {76,76,0,0, NULL}, NULL },
-};
 
 class group_size_t {
   size_t size;
@@ -383,26 +314,6 @@ class group_size_t {
 };
 
 enum  { constq = constant_e | quoted_e };
-
-static cbl_field_t special_registers[] = {
-    { 0, FldNumericDisplay, FldInvalid, 0, 0, 0, 0, nonarray, 0, "_FILE_STATUS",
-      0, {}, {2,2,2,0, NULL}, NULL },
-    { 0, FldNumericBin5, FldInvalid, 0, 0, 0, 0, nonarray, 0, "UPSI-0",
-      0, {}, {2,2,4,0, NULL}, NULL },
-    { 0, FldNumericBin5, FldInvalid, 0, 0, 0, 0, nonarray, 0, "RETURN-CODE",
-      0, {}, {2,2,4,0, NULL}, NULL },
-    { 0, FldNumericBin5, FldInvalid, 0, 0, 0, 0, nonarray, 0, "LINAGE-COUNTER",
-      0, {}, {2,2,4,0, NULL}, NULL },
-    { 0, FldLiteralA, FldInvalid, 0, 0, 0, 0, nonarray, 0, "_dev_stdin",
-      0, {}, {0,0,0,0, "/dev/stdin"}, NULL },
-    { 0, FldLiteralA, FldInvalid, constq, 0, 0, 0, nonarray, 0, "_dev_stdout",
-      0, {}, {0,0,0,0, "/dev/stdout"}, NULL },
-    { 0, FldLiteralA, FldInvalid, constq, 0, 0, 0, nonarray, 0, "_dev_stderr",
-      0, {}, {0,0,0,0, "/dev/stderr"}, NULL },
-    { 0, FldLiteralA, FldInvalid, constq, 0, 0, 0, nonarray, 0, "_dev_null",
-      0, {}, {0,0,0,0, "/dev/null"}, NULL },
-
-};
 
 static symbol_elem_t
 elementize( cbl_field_t& field ) {
@@ -2375,6 +2286,49 @@ symbol_table_init(void) {
 
   assert(table.nelem < table.capacity);
 
+  /**
+   * Debug register record
+     01 DEBUG-ITEM.
+        02 DEBUG-LINE PIC X(6).
+        02 FILLER PIC X VALUE SPACE.
+        02 DEBUG-NAME PIC X(30).
+        02 FILLER PIC X VALUE SPACE.
+        02 DEBUG-SUB-1 PIC S9999 SIGN IS LEADING SEPARATE CHARACTER.
+        02 FILLER PIC X VALUE SPACE.
+        02 DEBUG-SUB-2 PIC S9999 SIGN IS LEADING SEPARATE CHARACTER.
+        02 FILLER PIC X VALUE SPACE.
+        02 DEBUG-SUB-3 PIC S9999 SIGN IS LEADING SEPARATE CHARACTER.
+        02 FILLER PIC X VALUE SPACE.
+        02 DEBUG-CONTENTS PIC X(76).
+   **/
+
+  static cbl_field_t debug_registers[] = {
+    { 0, FldGroup, FldInvalid, global_e, 0,0,1, nonarray, 0,
+      "DEBUG-ITEM", 0, {}, {132,132,0,0, NULL}, NULL },
+    { 0, FldAlphanumeric, FldInvalid, global_e, 0,0,2, nonarray, 0,
+      "DEBUG-LINE", 0, {}, {6,6,0,0, "      "}, NULL },
+    { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
+      "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
+    { 0, FldAlphanumeric, FldInvalid, global_e, 0,0,2, nonarray, 0,
+      "DEBUG-NAME", 0, {}, {30,30,0,0, NULL}, NULL },
+    { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
+      "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
+    { 0, FldNumericDisplay, FldInvalid, signable_e | global_e | leading_e | separate_e, 0,0,2, nonarray, 0,
+      "DEBUG-SUB-1", 0, {}, {5,5,3,0, NULL}, NULL },
+    { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
+      "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
+    { 0, FldNumericDisplay, FldInvalid, signable_e | global_e | leading_e | separate_e, 0,0,2, nonarray, 0,
+      "DEBUG-SUB-2", 0, {}, {5,5,3,0, NULL}, NULL },
+    { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
+      "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
+    { 0, FldNumericDisplay, FldInvalid, signable_e | global_e | leading_e | separate_e, 0,0,2, nonarray, 0,
+      "DEBUG-SUB-3", 0, {}, {5,5,3,0, NULL}, NULL },
+    { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
+      "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
+    { 0, FldAlphanumeric, FldInvalid, signable_e | global_e, 0,0,2, nonarray, 0,
+      "DEBUG-CONTENTS", 0, {}, {76,76,0,0, NULL}, NULL },
+};
+
   // debug registers
   assert(table.nelem + COUNT_OF(debug_registers) < table.capacity);
 
@@ -2390,6 +2344,25 @@ symbol_table_init(void) {
   table.nelem = p - table.elems;
   assert(table.nelem < table.capacity);
   std::for_each(debug_start+1, p, parent_elem_set(debug_start - table.elems));
+
+  static cbl_field_t special_registers[] = {
+    { 0, FldNumericDisplay, FldInvalid, 0, 0, 0, 0, nonarray, 0, "_FILE_STATUS",
+      0, {}, {2,2,2,0, NULL}, NULL },
+    { 0, FldNumericBin5, FldInvalid, 0, 0, 0, 0, nonarray, 0, "UPSI-0",
+      0, {}, {2,2,4,0, NULL}, NULL },
+    { 0, FldNumericBin5, FldInvalid, 0, 0, 0, 0, nonarray, 0, "RETURN-CODE",
+      0, {}, {2,2,4,0, NULL}, NULL },
+    { 0, FldNumericBin5, FldInvalid, 0, 0, 0, 0, nonarray, 0, "LINAGE-COUNTER",
+      0, {}, {2,2,4,0, NULL}, NULL },
+    { 0, FldLiteralA, FldInvalid, 0, 0, 0, 0, nonarray, 0, "_dev_stdin",
+      0, {}, {0,0,0,0, "/dev/stdin"}, NULL },
+    { 0, FldLiteralA, FldInvalid, constq, 0, 0, 0, nonarray, 0, "_dev_stdout",
+      0, {}, {0,0,0,0, "/dev/stdout"}, NULL },
+    { 0, FldLiteralA, FldInvalid, constq, 0, 0, 0, nonarray, 0, "_dev_stderr",
+      0, {}, {0,0,0,0, "/dev/stderr"}, NULL },
+    { 0, FldLiteralA, FldInvalid, constq, 0, 0, 0, nonarray, 0, "_dev_null",
+      0, {}, {0,0,0,0, "/dev/null"}, NULL },
+  };
 
   // special registers
   assert(table.nelem + COUNT_OF(special_registers) < table.capacity);
@@ -3263,6 +3236,28 @@ new_temporary_impl( enum cbl_field_type_t type )
   static const struct cbl_field_t empty_alpha = {
                                 0, FldAlphanumeric, FldInvalid,
                                 intermediate_e, 0, 0, 0, nonarray, 0, "",
+                                0, cbl_field_t::linkage_t(),
+                                {}, NULL };
+  static const struct cbl_field_t empty_float = {
+                                0, FldFloat, FldInvalid,
+                                intermediate_e,
+                                0, 0, 0, nonarray, 0, "",
+                                0, cbl_field_t::linkage_t(),
+                                {16, 16, 32, 0, NULL}, NULL };
+  static const struct cbl_field_t empty_comp5 = {
+                                0, FldNumericBin5, FldInvalid,
+                                signable_e | intermediate_e,
+                                0, 0, 0, nonarray, 0, "",
+                                0, cbl_field_t::linkage_t(),
+                                {16, 16, MAX_FIXED_POINT_DIGITS, 0, NULL}, NULL };
+  static const struct cbl_field_t empty_conditional = {
+                                0, FldConditional, FldInvalid, intermediate_e,
+                                0, 0, 0, nonarray, 0, "",
+                                0, cbl_field_t::linkage_t(),
+                                {}, NULL };
+  static struct cbl_field_t empty_literal = {
+                                0, FldInvalid, FldInvalid, CONSTANT_E,
+                                0, 0, 0, nonarray, 0, "",
                                 0, cbl_field_t::linkage_t(),
                                 {}, NULL };
   struct cbl_field_t *f = new cbl_field_t;
