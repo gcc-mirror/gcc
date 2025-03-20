@@ -582,9 +582,11 @@ scc_copy_prop::propagate ()
 	 get removed.  That means parts of CFG get removed.  Those may
 	 contain copy statements.  For that reason we prune SCCs here.  */
       unsigned i;
-      for (i = 0; i < scc.length (); i++)
+      for (i = 0; i < scc.length ();)
 	if (gimple_bb (scc[i]) == NULL)
 	  scc.unordered_remove (i);
+	else
+	  i++;
       if (scc.is_empty ())
 	{
 	  scc.release ();
