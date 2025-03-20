@@ -9,10 +9,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 15-b20250216\n"
+"Project-Id-Version: cpplib 15.1-b20250316\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2025-03-14 22:05+0000\n"
-"PO-Revision-Date: 2025-03-10 22:32+0100\n"
+"PO-Revision-Date: 2025-03-20 07:49+0100\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -211,10 +211,8 @@ msgstr "%<\\x{%> ohne dazugehöriges %<}%> nach %.*s"
 msgid "hex escape sequence out of range"
 msgstr "Hex-Escape-Sequenz außerhalb des Wertebereiches"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=119202
 #: charset.cc:2247
-#, fuzzy, gcc-internal-format
-#| msgid "%<\\o%> not followed by %<}%>"
+#, gcc-internal-format
 msgid "%<\\o%> not followed by %<{%>"
 msgstr "%<\\o%> ohne folgendes %<{%>"
 
@@ -467,16 +465,14 @@ msgid "%<#embed%> not supported in traditional C"
 msgstr "%<#embed%> wird in traditionellem C nicht unterstützt"
 
 #: directives.cc:1370
-#, fuzzy, gcc-internal-format
-#| msgid "%<#%s%> before C++23 is a GCC extension"
+#, gcc-internal-format
 msgid "%<#%s%> before C++26 is a GCC extension"
-msgstr "%<#%s%> vor C++23 ist eine GCC-Erweiterung"
+msgstr "%<#%s%> vor C++26 ist eine GCC-Erweiterung"
 
 #: directives.cc:1379
-#, fuzzy, gcc-internal-format
-#| msgid "%<#%s%> is a GCC extension"
+#, gcc-internal-format
 msgid "%<#%s%> is a C23 feature"
-msgstr "%<#%s%> ist eine GCC-Erweiterung"
+msgstr "%<#%s%> ist ein C23-Feature"
 
 #: directives.cc:1436
 #, gcc-internal-format
