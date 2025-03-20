@@ -2,8 +2,6 @@ canonical_paths1.rs
 cfg1.rs
 const_generics_3.rs
 generics9.rs
-issue-1901.rs
-issue-1981.rs
 issue-2043.rs
 issue-2330.rs
 issue-2812.rs
@@ -21,7 +19,6 @@ privacy8.rs
 pub_restricted_1.rs
 pub_restricted_2.rs
 pub_restricted_3.rs
-sizeof-stray-infer-var-bug.rs
 undeclared_label.rs
 use_1.rs
 while_break_expr.rs
@@ -37,9 +34,7 @@ issue-3403.rs
 derive-eq-invalid.rs
 derive-hash1.rs
 torture/alt_patterns1.rs
-torture/builtin_abort.rs
 torture/loop4.rs
 torture/loop8.rs
 torture/name_resolve1.rs
-torture/uninit-intrinsic-1.rs
 # please don't delete the trailing newline
