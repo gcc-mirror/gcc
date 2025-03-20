@@ -758,7 +758,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<__detail::__container_compatible_range<_Tp> _Rg>
 	constexpr
 	vector(from_range_t, _Rg&& __rg, const _Alloc& __a = _Alloc())
-	: _Base(__a)
+	: vector(__a)
 	{
 	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
 	    {
@@ -766,28 +766,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      pointer __start =
 		this->_M_allocate(_S_check_init_len(__n,
 						    _M_get_Tp_allocator()));
-	      _Guard_alloc __guard(__start, __n, *this);
 	      this->_M_impl._M_finish = this->_M_impl._M_start = __start;
 	      this->_M_impl._M_end_of_storage = __start + __n;
 	      _Base::_M_append_range(__rg);
-	      (void) __guard._M_release();
 	    }
 	  else
-	    {
-	      // If an exception is thrown ~_Base() will deallocate storage,
-	      // but will not destroy elements. This RAII type destroys them.
-	      struct _Clear
-	      {
-		constexpr ~_Clear() { if (_M_this) _M_this->clear(); }
-		vector* _M_this;
-	      } __guard{this};
-
-	      auto __first = ranges::begin(__rg);
-	      const auto __last = ranges::end(__rg);
-	      for (; __first != __last; ++__first)
-		emplace_back(*__first);
-	      __guard._M_this = nullptr;
-	    }
+	    append_range(std::move(__rg));
 	}
 #endif
 
