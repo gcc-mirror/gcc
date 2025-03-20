@@ -5172,7 +5172,11 @@ dominated_by_p_w_unex (basic_block bb1, basic_block bb2, bool allow_back)
   /* Iterate to the single successor of bb2 with only a single executable
      incoming edge.  */
   else if (EDGE_COUNT (bb2->succs) == 1
-	   && EDGE_COUNT (single_succ (bb2)->preds) > 1)
+	   && EDGE_COUNT (single_succ (bb2)->preds) > 1
+	   /* Limit the number of edges we check, we should bring in
+	      context from the iteration and compute the single
+	      executable incoming edge when visiting a block.  */
+	   && EDGE_COUNT (single_succ (bb2)->preds) < 8)
     {
       edge prede = NULL;
       FOR_EACH_EDGE (e, ei, single_succ (bb2)->preds)
