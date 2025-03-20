@@ -2810,8 +2810,7 @@ diagnose_uninitialized_cst_or_ref_member (tree type, bool using_new, bool compla
 }
 
 /* Call __cxa_bad_array_new_length to indicate that the size calculation
-   overflowed.  Pretend it returns sizetype so that it plays nicely in the
-   COND_EXPR.  */
+   overflowed.  */
 
 tree
 throw_bad_array_new_length (void)
@@ -2823,7 +2822,7 @@ throw_bad_array_new_length (void)
       fn = get_global_binding (name);
       if (!fn)
 	fn = push_throw_library_fn
-	  (name, build_function_type_list (sizetype, NULL_TREE));
+	  (name, build_function_type_list (void_type_node, NULL_TREE));
     }
 
   return build_cxx_call (fn, 0, NULL, tf_warning_or_error);
