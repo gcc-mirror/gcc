@@ -5335,7 +5335,8 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
                 lowering = new DotIdExp(exp.loc, lowering, Id.object);
 
                 auto tbn = exp.type.nextOf();
-                while (tbn.ty == Tarray)
+                size_t i = nargs;
+                while (tbn.ty == Tarray && --i)
                     tbn = tbn.nextOf();
                 auto unqualTbn = tbn.unqualify(MODFlags.wild | MODFlags.const_ |
                     MODFlags.immutable_ | MODFlags.shared_);

@@ -1245,7 +1245,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             // @@@DEPRECATION 2.100.2
             if (auto td = s.isTemplateDeclaration())
             {
-                if (td.overnext || td.overroot)
+                if (td.overnext)
                 {
                     deprecation(e.loc, "`__traits(getAttributes)` may only be used for individual functions, not the overload set `%s`", td.ident.toChars());
                     deprecationSupplemental(e.loc, "the result of `__traits(getOverloads)` may be used to select the desired function to extract attributes from");

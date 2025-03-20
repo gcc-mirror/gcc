@@ -1542,7 +1542,7 @@ private bool inferReturn(FuncDeclaration fd, VarDeclaration v, bool returnScope)
  *      e = expression to be returned by value
  *      er = where to place collected data
  *      live = if @live semantics apply, i.e. expressions `p`, `*p`, `**p`, etc., all return `p`.
-  *     retRefTransition = if `e` is returned through a `return ref scope` function call
+  *     retRefTransition = if `e` is returned through a `return (ref) scope` function call
  */
 public
 void escapeByValue(Expression e, EscapeByResults* er, bool live = false, bool retRefTransition = false)
@@ -1786,7 +1786,7 @@ void escapeByValue(Expression e, EscapeByResults* er, bool live = false, bool re
                                     }
                         }
                         else
-                            escapeByValue(arg, er, live, retRefTransition);
+                            escapeByValue(arg, er, live, true);
                     }
                     else if (psr == ScopeRef.ReturnRef || psr == ScopeRef.ReturnRef_Scope)
                     {
@@ -1941,7 +1941,7 @@ void escapeByValue(Expression e, EscapeByResults* er, bool live = false, bool re
  *      e = expression to be returned by 'ref'
  *      er = where to place collected data
  *      live = if @live semantics apply, i.e. expressions `p`, `*p`, `**p`, etc., all return `p`.
- *      retRefTransition = if `e` is returned through a `return ref scope` function call
+ *      retRefTransition = if `e` is returned through a `return (ref) scope` function call
  */
 private
 void escapeByRef(Expression e, EscapeByResults* er, bool live = false, bool retRefTransition = false)
@@ -2189,7 +2189,7 @@ struct EscapeByResults
     import dmd.root.array: Array;
 
     /**
-     * Whether the variable / expression went through a `return ref scope` function call
+     * Whether the variable / expression went through a `return (ref) scope` function call
      *
      * This is needed for the dip1000 by default transition, since the rules for
      * disambiguating `return scope ref` have changed. Therefore, functions in legacy code
@@ -2197,6 +2197,10 @@ struct EscapeByResults
      * are being escaped, which is an error even in `@system` code. By keeping track of this
      * information, variables escaped through `return ref` can be treated as a deprecation instead
      * of error, see test/fail_compilation/dip1000_deprecation.d
+     *
+     * Additionally, return scope can be inferred wrongly instead of scope, in which
+     * case the code could give false positives even without @safe or dip1000:
+     * https://issues.dlang.org/show_bug.cgi?id=23657
      */
     private Array!bool refRetRefTransition;
     private Array!bool expRetRefTransition;
@@ -2218,7 +2222,7 @@ struct EscapeByResults
      * Escape variable `v` by reference
      * Params:
      *   v = variable to escape
-     *   retRefTransition = `v` is escaped through a `return ref scope` function call
+     *   retRefTransition = `v` is escaped through a `return (ref) scope` function call
      */
     void pushRef(VarDeclaration v, bool retRefTransition)
     {
@@ -2230,7 +2234,7 @@ struct EscapeByResults
      * Escape a reference to expression `e`
      * Params:
      *   e = expression to escape
-     *   retRefTransition = `e` is escaped through a `return ref scope` function call
+     *   retRefTransition = `e` is escaped through a `return (ref) scope` function call
      */
     void pushExp(Expression e, bool retRefTransition)
     {
