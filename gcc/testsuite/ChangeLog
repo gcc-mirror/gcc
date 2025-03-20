@@ -1,3 +1,25 @@
+2025-03-19  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-03-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119316
+	* g++.dg/abi/mangle-new1.C: New test.
+
+2025-03-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-03-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119233
+	* g++.dg/template/fn-ptr5.C: New test.
+
+2025-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/generic_inst14.adb: New test.
+	* gnat.dg/generic_inst14_pkg.ads: New helper.
+	* gnat.dg/generic_inst14_pkg-child.ads: Likewise.
+
 2025-03-18  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
