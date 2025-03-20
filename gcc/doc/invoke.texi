@@ -30410,7 +30410,7 @@ Valid version strings are
 @samp{7.0}, @samp{7.3}, and @samp{7.8}.
 The default PTX ISA version is the one that added support for the
 selected PTX ISA target architecture, see @option{-march=}, but at
-least @samp{6.0}, or @samp{7.3} for @option{-march=sm_52} and higher.
+least @samp{6.3}, or @samp{7.3} for @option{-march=sm_52} and higher.
 
 This option sets the values of the preprocessor macros
 @code{__PTX_ISA_VERSION_MAJOR__} and @code{__PTX_ISA_VERSION_MINOR__};
