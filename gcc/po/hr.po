@@ -1,15 +1,15 @@
 # Translation of gcc to Croatian.
-# Copyright (C) 2012 Free Software Foundation, Inc.
+# Copyright (C) 2025 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 #
 # Tomislav Krznar <tomislav.krznar@gmail.com>, 2012, 2022.
-# Božidar Putanec <bozidarp@yahoo.com>, 2022, 2023, 2024.
+# Božidar Putanec <bozidarp@yahoo.com>, 2022-2025.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 14.2.0\n"
+"Project-Id-Version: gcc-15.1-b20250316\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2025-03-14 22:06+0000\n"
-"PO-Revision-Date: 2024-08-02 17:19+0200\n"
+"PO-Revision-Date: 2025-03-20 12:26-0700\n"
 "Last-Translator: Božidar Putanec <bozidarp@yahoo.com>\n"
 "Language-Team: Croatian <lokalizacija@linux.hr>\n"
 "Language: hr\n"
@@ -144,7 +144,7 @@ msgstr "fatalna greška: "
 #. when reporting fatal signal in the compiler.
 #: diagnostic.def:34 diagnostic.def:55
 msgid "internal compiler error: "
-msgstr "interna greška kompajlera: "
+msgstr "interna greška kompilatora: "
 
 #. This one is just for counting DK_WARNING promoted to DK_ERROR
 #. due to -Werror and -Werror=warning.
@@ -202,7 +202,7 @@ msgstr "Fatalna greška"
 #. when reporting fatal signal in the compiler.
 #: fortran/gfc-diagnostic.def:34 fortran/gfc-diagnostic.def:50
 msgid "internal compiler error"
-msgstr "interna greška kompajlera"
+msgstr "interna greška kompilatora"
 
 #: fortran/gfc-diagnostic.def:35
 msgid "Error"
@@ -278,7 +278,7 @@ msgstr "-fvtable-verify=preinit nije podržan u ovoj konfiguraciji"
 
 #: gcc.cc:1283 ada/gcc-interface/lang-specs.h:37
 msgid "-pg and -fomit-frame-pointer are incompatible"
-msgstr "-pg i -fomit-frame-pointer su nekompatibilni"
+msgstr "-pg i -fomit-frame-pokazivač su nekompatibilni"
 
 #: gcc.cc:1458
 msgid "GNU C no longer supports -traditional without -E"
@@ -4778,7 +4778,7 @@ msgstr ""
 #: analyzer/analyzer.opt:139
 #, no-c-format
 msgid "Warn about code paths which appear to lead to an infinite loop."
-msgstr "Upozori na kodne puteve koje bi mogle dovesti do beskonačnih petlji."
+msgstr "Upozori na kodove puteve koje bi mogle dovesti do beskonačnih petlji."
 
 #: analyzer/analyzer.opt:143
 #, no-c-format
@@ -4886,10 +4886,9 @@ msgid "Warn about code paths in which an unsanitized value is used as a size."
 msgstr ""
 
 #: analyzer/analyzer.opt:227
-#, fuzzy, no-c-format
-#| msgid "Warn about code paths which appear to lead to an infinite loop."
+#, no-c-format
 msgid "Warn about code paths in which pointer subtraction involves undefined behavior."
-msgstr "Upozori na kodne puteve koje bi mogle dovesti do beskonačnih petlji."
+msgstr "Upozori na staze koda u kojima oduzimanje pokazivača može uzrokovati medfinirano ponašanje."
 
 #: analyzer/analyzer.opt:231
 #, no-c-format
@@ -6035,10 +6034,9 @@ msgid "-mbranch-cost=N\tSet the cost of branches to roughly N instructions."
 msgstr ""
 
 #: config/riscv/riscv.opt:38
-#, fuzzy, no-c-format
-#| msgid "This switch is deprecated; use -Wextra instead."
+#, no-c-format
 msgid "This option is deprecated; use -fplt or -fno-plt instead."
-msgstr "taj šalter je zastario; koristite -Wextra"
+msgstr "Ova opcija je zastarjela; umjesto nje koristite -fplt ili -fno-plt"
 
 #: config/riscv/riscv.opt:42
 #, no-c-format
@@ -7022,10 +7020,9 @@ msgid "Target the software simulator."
 msgstr ""
 
 #: config/ft32/ft32.opt:27
-#, fuzzy, no-c-format
-#| msgid "Does nothing.  Preserved for backward compatibility."
+#, no-c-format
 msgid "Ignored, but preserved for backward compatibility."
-msgstr "Ne radi ništa. Zadržano radi kompatibilnosti s ranijim inačicama."
+msgstr "Zanemareno, ali je zadržano radi kompatibilnosti s starijim inačicama."
 
 #: config/ft32/ft32.opt:31
 #, no-c-format
@@ -8311,52 +8308,44 @@ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and AVX10
 msgstr ""
 
 #: config/i386/i386.opt:1378
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and SHA512 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1 and AVX10.2 built-in functions and code generation."
-msgstr "Podržava MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX i SHA512 ugrađene funkcije i generiranje koda."
+msgstr "Podržava MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1 i AVX10.2 ugrađene funkcije i generiranje koda."
 
 #: config/i386/i386.opt:1383 config/i386/i386.opt:1388
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and SHA512 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512 and AVX10.2-512 built-in functions and code generation."
-msgstr "Podržava MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX i SHA512 ugrađene funkcije i generiranje koda."
+msgstr "Podržava MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512 i AVX10.2-512 ugrađena funkcije i generiranje koda."
 
 #: config/i386/i386.opt:1393
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and SHA512 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512, AVX10.2-512 and AMX-AVX512 built-in functions and code generation."
-msgstr "Podržava MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX i SHA512 ugrađene funkcije i generiranje koda."
+msgstr "Podržava MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512, AVX10.2-512 i AMX-AVX512 ugrađene funkcije i generiranje koda."
 
 #: config/i386/i386.opt:1398
-#, fuzzy, no-c-format
-#| msgid "Support AMX-COMPLEX built-in functions and code generation."
+#, no-c-format
 msgid "Support AMX-TF32 built-in functions and code generation."
-msgstr "Podržava AMX-COMPLEX ugrađene funkcije i generiranje koda."
+msgstr "Podržava AMX-TF32 ugrađene funkcije i generiranje koda."
 
 #: config/i386/i386.opt:1402
-#, fuzzy, no-c-format
-#| msgid "Support AMX-COMPLEX built-in functions and code generation."
+#, no-c-format
 msgid "Support AMX-TRANSPOSE built-in functions and code generation."
-msgstr "Podržava AMX-COMPLEX ugrađene funkcije i generiranje koda."
+msgstr "Podržava AMX-TRANSPOSE ugrađene funkcije i generiranje koda."
 
 #: config/i386/i386.opt:1406
-#, fuzzy, no-c-format
-#| msgid "Support AMX-COMPLEX built-in functions and code generation."
+#, no-c-format
 msgid "Support AMX-FP8 built-in functions and code generation."
-msgstr "Podržava AMX-COMPLEX ugrađene funkcije i generiranje koda."
+msgstr "Podržava AMX-FP8 ugrađene funkcije i generiranje koda."
 
 #: config/i386/i386.opt:1410
-#, fuzzy, no-c-format
-#| msgid "Support USER_MSR built-in functions and code generation."
+#, no-c-format
 msgid "Support MOVRS built-in functions and code generation."
-msgstr "Podržava USER_MSR ugrađene funkcije i generiranje koda."
+msgstr "Podržava MOVRS ugrađene funkcije i generiranje koda."
 
 #: config/i386/i386.opt:1414
-#, fuzzy, no-c-format
-#| msgid "Support AMX-COMPLEX built-in functions and code generation."
+#, no-c-format
 msgid "Support AMX-MOVRS built-in functions and code generation."
-msgstr "Podržava AMX-COMPLEX ugrađene funkcije i generiranje koda."
+msgstr "Podržava AMX-MOVRS ugrađene funkcije i generiranje koda."
 
 #: config/pa/pa64-hpux.opt:23
 #, no-c-format
@@ -13620,7 +13609,7 @@ msgstr "-aux-info <file>\tinformacije o deklaraciji pošalje u datoteku <file>"
 #: common.opt:927
 #, no-c-format
 msgid "-d<letters>\tEnable dumps from specific passes of the compiler."
-msgstr "-d<letters>\tomogući dumpove specifičnih prolaza kompajlera"
+msgstr "-d<letters>\tomogući dumpove specifičnih prolaza kompilatora"
 
 #: common.opt:931
 #, no-c-format
@@ -13670,7 +13659,7 @@ msgstr "poravna početak petlji"
 #: common.opt:1084
 #, no-c-format
 msgid "Allow the compiler to introduce new data races on stores."
-msgstr "dopusti kompajleru uvesti novu konkurenciju podataka (data races) pri pohrani"
+msgstr "dopusti kompilatoru uvesti novu konkurenciju podataka (data races) pri pohrani"
 
 #: common.opt:1088
 #, no-c-format
@@ -17447,10 +17436,8 @@ msgid "a callee-copied argument is stored in the current function's frame"
 msgstr ""
 
 #: calls.cc:1520
-#, fuzzy
-#| msgid "second argument must be a const"
 msgid "argument must be passed by copying"
-msgstr "drugi argument mora biti konstanta (const)"
+msgstr "argument mora biti proslijeđen kopiranjem"
 
 #: calls.cc:2539
 msgid "machine description does not have a sibcall_epilogue instruction pattern"
@@ -17473,26 +17460,20 @@ msgid "callee does not return"
 msgstr ""
 
 #: calls.cc:2579
-#, fuzzy
-#| msgid "compound literal has function type"
 msgid "volatile function type"
-msgstr "složeni literal ima tip funkcije"
+msgstr "tip nestabilne funkcije"
 
 #: calls.cc:2598
-#, fuzzy
-#| msgid "expected function name"
 msgid "nested function"
-msgstr "očekivano je ime funkcije"
+msgstr "ugniježđena funkcije"
 
 #: calls.cc:2610
 msgid "callee required more stack slots than the caller"
 msgstr ""
 
 #: calls.cc:2625
-#, fuzzy
-#| msgid "wrong number of arguments to %qs"
 msgid "inconsistent number of popped arguments"
-msgstr "loš, krivi broj argumenata za %qs"
+msgstr "nedosljedan broj izbačenih argumenata"
 
 #: calls.cc:2632
 msgid "frontend does not support sibling call"
@@ -17507,10 +17488,8 @@ msgid "inside another call"
 msgstr ""
 
 #: calls.cc:3071
-#, fuzzy
-#| msgid "invalid arguments"
 msgid "variable size arguments"
-msgstr "nevaljani argumenti"
+msgstr "argumenti različitih veličina"
 
 #: calls.cc:3096
 msgid "hidden string length argument passed on stack"
@@ -17600,7 +17579,7 @@ msgstr ""
 #: diagnostic-format-json.cc:487
 #, c-format
 msgid "error: unable to open '%s' for writing: %s\n"
-msgstr "greška: ‘%s’ se ne može otvoriti za pisanje: %s\n"
+msgstr "greška: ‘%s’ nije moguće otvoriti za pisanje: %s\n"
 
 #. Print a header for the remaining output to stderr, and
 #. return, attempting to print the usual ICE messages to
@@ -17610,7 +17589,7 @@ msgstr "greška: ‘%s’ se ne može otvoriti za pisanje: %s\n"
 #: diagnostic-format-sarif.cc:1752
 #, c-format
 msgid "Internal compiler error:\n"
-msgstr "Interna greška kompajlera:\n"
+msgstr "Interna greška kompilatora:\n"
 
 #: diagnostic-format-text.cc:141
 #, c-format
@@ -17696,7 +17675,7 @@ msgstr "%s:%d: zbunjeni prethodnim greškama, odustajemo\n"
 #: diagnostic.cc:1672
 #, c-format
 msgid "internal compiler error: error reporting routines re-entered.\n"
-msgstr "Interna greška kompajlera: rutine za prijavu grešaka iznova prozvane.\n"
+msgstr "Interna greška kompilatora: rutine za prijavu grešaka iznova prozvane.\n"
 
 #: diagnostic.cc:1703 diagnostic.cc:1722
 #, gcc-internal-format, gfc-internal-format
@@ -17852,7 +17831,7 @@ msgstr "  (Koristite ‘-v --help’ za ispis opcija naredbenog retka za potproc
 
 #: gcc.cc:3745
 msgid "  --version                Display compiler version information.\n"
-msgstr "  --version                Informacije o inačici kompajlera.\n"
+msgstr "  --version                Informacije o inačici kompilatora.\n"
 
 #: gcc.cc:3746
 msgid "  -dumpspecs               Display all of the built in spec strings.\n"
@@ -17860,11 +17839,11 @@ msgstr "  -dumpspecs               Pokaže sve ugrađene specifikacijske stringo
 
 #: gcc.cc:3747
 msgid "  -dumpversion             Display the version of the compiler.\n"
-msgstr "  -dumpversion             Inačica kompajlera.\n"
+msgstr "  -dumpversion             Inačica kompilatora.\n"
 
 #: gcc.cc:3748
 msgid "  -dumpmachine             Display the compiler's target processor.\n"
-msgstr "  -dumpmachine             Pokaže ciljani procesor kompajlera.\n"
+msgstr "  -dumpmachine             Pokaže ciljani procesor kompilatora.\n"
 
 #: gcc.cc:3749
 msgid "  -foffload=<targets>      Specify offloading targets.\n"
@@ -17872,11 +17851,11 @@ msgstr "  -foffload=<targets>      Specificira offloading <targets> ciljeve.\n"
 
 #: gcc.cc:3750
 msgid "  -print-search-dirs       Display the directories in the compiler's search path.\n"
-msgstr "  -print-search-dirs       Pokaže direktorije na stazi pretraživanja kompajlera.\n"
+msgstr "  -print-search-dirs       Pokaže direktorije na stazi pretraživanja kompilatora.\n"
 
 #: gcc.cc:3751
 msgid "  -print-libgcc-file-name  Display the name of the compiler's companion library.\n"
-msgstr "  -print-libgcc-file-name  Pokaže ime popratne biblioteke kompajlera.\n"
+msgstr "  -print-libgcc-file-name  Pokaže ime popratne biblioteke kompilatora.\n"
 
 #: gcc.cc:3752
 msgid "  -print-file-name=<lib>   Display the full path to library <lib>.\n"
@@ -17884,7 +17863,7 @@ msgstr "  -print-file-name=<lib>   Potpuna staza do biblioteke <lib>.\n"
 
 #: gcc.cc:3753
 msgid "  -print-prog-name=<prog>  Display the full path to compiler component <prog>.\n"
-msgstr "  -print-prog-name=<prog>  Potpuna staza do <prog> komponente kompajlera.\n"
+msgstr "  -print-prog-name=<prog>  Potpuna staza do <prog> komponente kompilatora.\n"
 
 #: gcc.cc:3754
 msgid ""
@@ -17986,11 +17965,11 @@ msgstr ""
 
 #: gcc.cc:3782
 msgid "  -B <directory>           Add <directory> to the compiler's search paths.\n"
-msgstr "  -B <directory>           Doda <directory> stazama koje pretražuje kompajler.\n"
+msgstr "  -B <directory>           Doda <directory> stazama koje pretražuje kompilator.\n"
 
 #: gcc.cc:3783
 msgid "  -v                       Display the programs invoked by the compiler.\n"
-msgstr "  -v                       Izlista programe pokrenute (pozvane) kompajlerom.\n"
+msgstr "  -v                       Izlista programe pokrenute (pozvane) kompilatorom.\n"
 
 #: gcc.cc:3784
 msgid "  -###                     Like -v but options quoted and commands not executed.\n"
@@ -18099,7 +18078,7 @@ msgstr "inačica drajvera %s %s izvršava gcc inačicu %s\n"
 #: gcc.cc:7812 gcc.cc:8022
 #, c-format
 msgid "The bug is not reproducible, so it is likely a hardware or OS problem.\n"
-msgstr "Greška se ne može reproducirati, pa je vjerojatno problem hardvera ili OS-a.\n"
+msgstr "Grešku nije moguće reproducirati, pa je vjerojatno problem hardvera ili OS-a.\n"
 
 #: gcc.cc:7946
 #, c-format
@@ -18351,10 +18330,9 @@ msgstr ""
 "%s.\n"
 
 #: gcov-tool.cc:595
-#, fuzzy, c-format
-#| msgid "Copyright %s 2024 Free Software Foundation, Inc.\n"
+#, c-format
 msgid "Copyright %s 2025 Free Software Foundation, Inc.\n"
-msgstr "Copyright %s 2024 Free Software Foundation, Inc.\n"
+msgstr "Copyright %s 2025 Free Software Foundation, Inc.\n"
 
 #: gcov.cc:1025
 #, c-format
@@ -18394,16 +18372,13 @@ msgid ""
 msgstr "  -c, --branch-counts             ispiše količine (broj) grana a ne postotak\n"
 
 #: gcov.cc:1031
-#, fuzzy, c-format
-#| msgid ""
-#| "  -g, --conditions                Include modified condition/decision\n"
-#| "                                    coverage in output\n"
+#, c-format
 msgid ""
 "  -g, --conditions                Include modified condition/decision\n"
 "                                    coverage (masking MC/DC) in output\n"
 msgstr ""
-"  -g, --conditions                uključi pokrivenost modificiranih\n"
-"                                    uvjeta/odluka na izlazu\n"
+"  -g, --conditions                obuhvati modificirane uvjete/odluke\n"
+"                                    pokrivenosti (maskiranje MC/DC) u izlazu\n"
 
 #: gcov.cc:1033
 #, c-format
@@ -18421,16 +18396,18 @@ msgid "  -f, --function-summaries        Output summaries for each function\n"
 msgstr "  -f, --function-summaries        ispiše sažetke za svaku funkciju\n"
 
 #: gcov.cc:1036
-#, fuzzy, c-format
-#| msgid "    -f, --function                      Print function level info\n"
+#, c-format
 msgid "      --include                   Include functions matching this regex\n"
-msgstr "    -f, --function                      ispiše informaciju razine funkcije\n"
+msgstr ""
+"      --include                   obuhvati funkcije koje poduraraju\n"
+"                                    ovaj regularni izraz\n"
 
 #: gcov.cc:1037
-#, fuzzy, c-format
-#| msgid "  -h, --help                      Print this help, then exit\n"
+#, c-format
 msgid "      --exclude                   Exclude functions matching this regex\n"
-msgstr "  -h, --help                      ispiše ovu pomoć, pa iziđe\n"
+msgstr ""
+"      --exclude                   isključi funkcije koje poduraraju\n"
+"                                    ovaj regularni izraz\n"
 
 #: gcov.cc:1038
 #, c-format
@@ -18471,14 +18448,13 @@ msgstr ""
 "\n"
 
 #: gcov.cc:1046
-#, fuzzy, c-format
-#| msgid ""
-#| "  -l, --long-file-names           Use long output file names for included\n"
-#| "                                    source files\n"
+#, c-format
 msgid ""
 "  -M, --filter-on-demangled       Make --include/--exclude match on demangled\n"
 "                                    names. This does not imply -m\n"
-msgstr "  -l, --long-file-names           ispiše puna imena uključenih izvornih kódova\n"
+msgstr ""
+"  -M, --filter-on-demangled       učini da --include/--exclude podudara neuređena\n"
+"                                    imena -- ne implicira -m\n"
 
 #: gcov.cc:1048
 #, c-format
@@ -18840,16 +18816,14 @@ msgid "End of search list.\n"
 msgstr "Kraj popisa pretrage.\n"
 
 #: incpath.cc:408
-#, fuzzy, c-format
-#| msgid "#include <...> search starts here:\n"
+#, c-format
 msgid "#embed <...> search starts here:\n"
-msgstr "#include <...> pretraga započinje ovdje:\n"
+msgstr "#embed <...> pretraga započinje ovdje:\n"
 
 #: incpath.cc:411
-#, fuzzy, c-format
-#| msgid "End of search list.\n"
+#, c-format
 msgid "End of #embed search list.\n"
-msgstr "Kraj popisa pretrage.\n"
+msgstr "Kraj #embed popisa pretraživanja.\n"
 
 #: input.cc:35
 msgid "<built-in>"
@@ -19004,7 +18978,7 @@ msgstr "Sljedeće opcije su specifične za cilj"
 
 #: opts.cc:2010
 msgid "The following options control compiler warning messages"
-msgstr "Sljedeće opcije upravljaju porukama upozorenja kompajlera"
+msgstr "Sljedeće opcije upravljaju porukama upozorenja kompilatora"
 
 #: opts.cc:2013
 msgid "The following options control optimizations"
@@ -19562,22 +19536,16 @@ msgid "invalid address mode"
 msgstr "nevaljani način adresiranja"
 
 #: config/aarch64/aarch64.cc:22751
-#, fuzzy
-#| msgid "invalid conversion from type %<bfloat16_t%>"
 msgid "invalid conversion from type %<mfloat8_t%>"
-msgstr "nevaljana konverzija od tipa %<bfloat16_t%>"
+msgstr "nevaljana konverzija od tipa %<mfloat8_t%>"
 
 #: config/aarch64/aarch64.cc:22753
-#, fuzzy
-#| msgid "invalid conversion to type %<bfloat16_t%>"
 msgid "invalid conversion to type %<mfloat8_t%>"
-msgstr "nevaljana konverzija u tip %<bfloat16_t%>"
+msgstr "nevaljana konverzija u tip %<mfloat8_t%>"
 
 #: config/aarch64/aarch64.cc:29716 config/aarch64/aarch64.cc:29739
-#, fuzzy
-#| msgid "operation not permitted on type %<bfloat16_t%>"
 msgid "operation not permitted on type %<mfloat8_t%>"
-msgstr "nelegalna operacija na tipu %<bfloat16_t%>"
+msgstr "operacija nije dopuštena na tipu %<mfloat8_t%>"
 
 #: config/aarch64/aarch64.cc:29734
 msgid "cannot combine GNU and SVE vectors in a binary operation"
@@ -19805,10 +19773,9 @@ msgstr "instrukcija nije nikada izvršena"
 #. Former FPA support, effectively unused after GCC-4.7, but not
 #. removed until gcc-15.
 #: config/arm/arm.cc:24544
-#, fuzzy, c-format
-#| msgid "obsolete Maverick format code '%c'"
+#, c-format
 msgid "obsolete FPA format code '%c'"
-msgstr "zastarjela Maverick format kȏd ‘%c’"
+msgstr "zastarjeli FPA format koda ‘%c’"
 
 #. Former Maverick support, removed after GCC-4.7.
 #: config/arm/arm.cc:24553
@@ -19830,14 +19797,12 @@ msgstr "nelegalna operacija na tipu %<bfloat16_t%>"
 
 #. Also runs recog().
 #: config/avr/avr-passes.cc:62
-#, fuzzy
-#| msgid "unrecognizable insn:"
 msgid "emit unrecognizable insn"
-msgstr "neprepoznati insn:"
+msgstr "Interna greška: emit unrecognizable insn"
 
 #: config/avr/avr-passes.cc:1190
 msgid "incomplete application of insn"
-msgstr ""
+msgstr "Interna greška: incomplete application of insn"
 
 #: config/avr/avr.cc:2524
 #, c-format
@@ -19872,7 +19837,7 @@ msgstr "loša adresa, nije post_inc ili pre_dec:"
 
 #: config/avr/avr.cc:2856
 msgid "internal compiler error.  Bad address:"
-msgstr "interna greška kompajlera. Loša adresa:"
+msgstr "interna greška kompilatora. Loša adresa:"
 
 #: config/avr/avr.cc:2885
 #, c-format
@@ -19881,7 +19846,7 @@ msgstr "Nepodržani kȏd ‘%c’ za nepomični zarez (fixed-point):"
 
 #: config/avr/avr.cc:2904
 msgid "internal compiler error.  Unknown mode:"
-msgstr "interna greška kompajlera. Nepozat način rada:"
+msgstr "interna greška kompilatora. Nepozat način rada:"
 
 #: config/avr/avr.cc:4277 config/avr/avr.cc:5263 config/avr/avr.cc:5710
 msgid "invalid insn:"
@@ -19906,7 +19871,7 @@ msgstr "loš pomak (shift) insn:"
 
 #: config/avr/avr.cc:7091 config/avr/avr.cc:7628 config/avr/avr.cc:8102
 msgid "internal compiler error.  Incorrect shift:"
-msgstr "interna greška kompajlera. Netočni pomak (shift):"
+msgstr "interna greška kompilatora. Netočni pomak (shift):"
 
 #: config/avr/avr.cc:10394
 msgid "unsupported fixed-point conversion"
@@ -19930,7 +19895,7 @@ msgstr "vrati tip funkcije"
 
 #: config/avr/avr.cc:11687
 msgid "pointer"
-msgstr "kazaljka (pointer)"
+msgstr "pokazivač"
 
 #: config/avr/driver-avr.cc:50
 #, c-format
@@ -20603,13 +20568,12 @@ msgstr "nevaljani vektorski operand"
 #: config/riscv/riscv.cc:7159
 #, c-format
 msgid "modifier 'N' require register operand"
-msgstr ""
+msgstr "modifikator ‘N’ zahtijeva operand registra"
 
 #: config/riscv/riscv.cc:7172
-#, fuzzy, c-format
-#| msgid "invalid operand for %%N code"
+#, c-format
 msgid "invalid register number for 'N' modifier"
-msgstr "nevaljani operand za %%N kȏd"
+msgstr "nevaljani broj registra za ‘N’ modifikator"
 
 #: config/rl78/rl78.cc:1999 config/rl78/rl78.cc:2085
 #, c-format
@@ -21467,59 +21431,56 @@ msgid "In function %qD"
 msgstr "U funkciji %qD"
 
 #: cp/error.cc:3869
-#, fuzzy, c-format
-#| msgid "%s: In substitution of %qS:\n"
+#, c-format
 msgid "%s%s%sIn substitution of %qS:\n"
-msgstr "%s: In supstituciji %qS:\n"
+msgstr "%s%s%sIn supstitucija od %qS:\n"
 
 #: cp/error.cc:3870
-#, fuzzy
-#| msgid "%s: In instantiation of %q#D:\n"
 msgid "%s%s%sIn instantiation of %q#D:\n"
-msgstr "%s: U instanci %q#D:\n"
+msgstr "%s%s%sIn instance od %q#D:\n"
 
 #: cp/error.cc:3890
 msgid "%r%s:%d:%d:%R   "
-msgstr ""
+msgstr "%r%s:%d:%d:%R   "
 
 #: cp/error.cc:3893
 msgid "%r%s:%d:%R   "
-msgstr ""
+msgstr "%r%s:%d:%R   "
 
 #: cp/error.cc:3986
 #, c-format
 msgid "recursively required by substitution of %qS\n"
-msgstr ""
+msgstr "rekurzivni zahtjev substitucije %qS\n"
 
 #: cp/error.cc:3987
 #, c-format
 msgid "required by substitution of %qS\n"
-msgstr ""
+msgstr "zahtjev substitucije %qS\n"
 
 #: cp/error.cc:3992
 msgid "recursively required from %q#D\n"
-msgstr ""
+msgstr "rekurzivni zahtjev od %q#D\n"
 
 #: cp/error.cc:3993
 msgid "required from %q#D\n"
-msgstr ""
+msgstr "zahtjev od %q#D\n"
 
 #: cp/error.cc:4000
 msgid "recursively required from here\n"
-msgstr ""
+msgstr "rekurzivni zahtjev odavde\n"
 
 #: cp/error.cc:4001
 msgid "required from here\n"
-msgstr ""
+msgstr "zahtjev odavde\n"
 
 #: cp/error.cc:4051
 #, c-format
 msgid "[ skipping %d instantiation contexts, use -ftemplate-backtrace-limit=0 to disable ]\n"
-msgstr ""
+msgstr "[ preskačemo %d konteksta instantacije, upotrebite -ftemplate-backtrace-limit=0 da to onemogućite ]\n"
 
 #: cp/error.cc:4103
 msgid "in %<constexpr%> expansion of %qs"
-msgstr ""
+msgstr "u %<constexpr%> zamijeni %qs"
 
 #: cp/pt.cc:2062 cp/semantics.cc:6704
 msgid "candidates are:"
@@ -21642,10 +21603,8 @@ msgid "NULL() is not interoperable"
 msgstr ""
 
 #: fortran/check.cc:5724
-#, fuzzy
-#| msgid "invalid constant"
 msgid "BOZ literal constant"
-msgstr "nevaljana konstanta"
+msgstr "BOZ literalna konstanta"
 
 #: fortran/check.cc:5730
 msgid "Expression is polymorphic"
@@ -21656,10 +21615,8 @@ msgid "Expression is a noninteroperable derived type"
 msgstr ""
 
 #: fortran/check.cc:5743
-#, fuzzy
-#| msgid "unexpected argument"
 msgid "Procedure unexpected as argument"
-msgstr "neočekivani argument"
+msgstr "Neočekivani postupak (procedura) kao argument"
 
 #: fortran/check.cc:5753
 msgid "Extension to use a non-C_Bool-kind LOGICAL"
@@ -23002,18 +22959,17 @@ msgstr ""
 #: cobol/parse_ante.h:2447 cobol/genapi.cc:5829
 #, gcc-internal-format, gfc-internal-format
 msgid "%s:%d: invalid symbol_type_t %d"
-msgstr ""
+msgstr "%s:%d: nevaljani symbol_type_t %d"
 
 #: cobol/parse_ante.h:2789
 #, gcc-internal-format, gfc-internal-format
 msgid "%s:%d: no symbol '%s' found"
-msgstr ""
+msgstr "%s:%d:  '%s' found"
 
 #: cobol/parse_util.h:351
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s:no functions found\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: intrinsic function  %s not found"
-msgstr "%s:nijedna funkcija nije pronađena\n"
+msgstr "%s: intrinsična funkcija %s nije pronađena"
 
 #: cobol/parse_util.h:383
 #, gcc-internal-format, gfc-internal-format
@@ -23021,10 +22977,9 @@ msgid "%s: invalid function descr type '%c'"
 msgstr ""
 
 #: cobol/scan_ante.h:38
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "close: %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "scan.o: %s"
-msgstr "zatvori: %s"
+msgstr "scan.o: %s"
 
 #. A general purpose syntax error.
 #: fortran/gfortran.h:3557 fortran/io.cc:3727 fortran/io.cc:4413
@@ -23206,10 +23161,9 @@ msgid "unrecognized scalar storage order value %qs"
 msgstr ""
 
 #: cobol/lang.opt:46
-#, fuzzy, gcc-internal-format
-#| msgid "Unrecognized option: %qs"
+#, gcc-internal-format
 msgid "Unrecognized COBOL dialect name: %qs"
-msgstr "Neprepoznata opcija: %qs"
+msgstr "Neprepoznato ime COBOL dijalekta: %qs"
 
 #: d/lang.opt:201
 #, gcc-internal-format
@@ -23232,10 +23186,9 @@ msgid "unknown pointer size model %qs"
 msgstr ""
 
 #: config/aarch64/aarch64.opt:363
-#, fuzzy, gcc-internal-format
-#| msgid "unknown spec function %qs"
+#, gcc-internal-format
 msgid "unknown autovec preference %qs"
-msgstr "nepoznata spec funkcija %qs"
+msgstr "nepoznata autovec postavka %qs"
 
 #: config/aarch64/aarch64.opt:408
 #, gcc-internal-format
@@ -23391,10 +23344,9 @@ msgid "unknown offload ABI %qs"
 msgstr ""
 
 #: common.opt:2398
-#, fuzzy, gcc-internal-format
-#| msgid "missing format after %qs"
+#, gcc-internal-format
 msgid "option missing after %qs"
-msgstr "nema formata iza %qs"
+msgstr "nedostaje opcija iza %qs"
 
 #: common.opt:2571
 #, gcc-internal-format
@@ -23447,10 +23399,9 @@ msgid "unknown vtable verify initialization priority %qs"
 msgstr ""
 
 #: common.opt:3552
-#, fuzzy, gcc-internal-format
-#| msgid "unrecognized command-line option %qs"
+#, gcc-internal-format
 msgid "unrecognized zero init padding bits kind %qs"
-msgstr "neprepoznata opcija na naredbenom retku %qs"
+msgstr "neprepoznati zero-init-padding bitovi vrste %qs"
 
 #: params.opt:909
 #, gcc-internal-format
@@ -25228,10 +25179,9 @@ msgid "aggregate value used where a fixed-point was expected"
 msgstr ""
 
 #: coroutine-passes.cc:311
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is not supported in this configuration"
+#, gcc-internal-format
 msgid "%<alloca%> is not yet supported in coroutines"
-msgstr "%qs nije podržan u ovoj konfiguraciji"
+msgstr "%<alloca%> još nije podržan u ‘coroutines’"
 
 #: coverage.cc:193
 #, gcc-internal-format
@@ -25364,10 +25314,9 @@ msgid "unable to determine filename for SARIF output"
 msgstr ""
 
 #: diagnostic-format-sarif.cc:3786
-#, fuzzy, gcc-internal-format
-#| msgid "unable to open %s for writing: %m"
+#, gcc-internal-format
 msgid "unable to open %qs for SARIF output: %m"
-msgstr "ne može otvoriti %s za pisanje: %m"
+msgstr "ne može otvoriti %qs za SARIF izlaz: %m"
 
 #: diagnostic-macro-unwinding.cc:182
 #, gcc-internal-format
@@ -25437,16 +25386,14 @@ msgid "ignoring possibly conflicting option %<-fopt-info-%s%>"
 msgstr ""
 
 #: dwarf2codeview.cc:1751
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unable to open %s for reading: %m"
+#, gcc-internal-format, gfc-internal-format
 msgid "could not open %s for reading"
-msgstr "ne može otvoriti %s za čitanje: %m"
+msgstr "nije (bilo) moguće otvoriti %s za čitanje"
 
 #: dwarf2codeview.cc:1756
-#, fuzzy, gcc-internal-format
-#| msgid "atexit failed"
+#, gcc-internal-format
 msgid "md5_stream failed"
-msgstr "atexit nije uspio"
+msgstr "md5_stream nije uspio"
 
 #: dwarf2out.cc:1144
 #, gcc-internal-format
@@ -28077,7 +28024,7 @@ msgstr "neočekivani čvor (mapping node)"
 #: gimplify.cc:10559
 #, gcc-internal-format
 msgid "unexpected pointer mapping node"
-msgstr "neočekivan čvor (pointer mapping node)"
+msgstr "neočekivani čvor mapiranja pokazivača (pointer mapping node)"
 
 #: gimplify.cc:10772
 #, gcc-internal-format
@@ -28292,10 +28239,9 @@ msgid "%qD is a virtual function but only a direct call is allowed in a dispatch
 msgstr ""
 
 #: gimplify.cc:19957
-#, fuzzy, gcc-internal-format
-#| msgid "%<-pipe%> not supported"
+#, gcc-internal-format
 msgid "%<#pragma omp interop%> not yet supported"
-msgstr "%<-pipe%> nije podržan"
+msgstr "%<#pragma omp interop%> još nije podržana"
 
 #: gimplify.cc:20366
 #, gcc-internal-format
@@ -28512,28 +28458,27 @@ msgstr ""
 #: ipa-devirt.cc:1265
 #, gcc-internal-format
 msgid "a type with different precision is defined in another translation unit"
-msgstr ""
+msgstr "tip s različitom preciznošću definiran je u drugoj prevodilačkoj jedinici"
 
 #: ipa-devirt.cc:1273
-#, fuzzy, gcc-internal-format
-#| msgid "variable of same assembler name as the virtual table is defined in another translation unit"
+#, gcc-internal-format
 msgid "a vector type with different number of elements is defined in another translation unit"
-msgstr "varijabla s istim imenom asemblera kao i virtualna tablica definirana je u drugoj prijevodnoj jedinici"
+msgstr "tip vektora s različitim brojem elemenata je definiran u drugoj prevodilačkoj jedinici"
 
 #: ipa-devirt.cc:1280
 #, gcc-internal-format
 msgid "a type with different signedness is defined in another translation unit"
-msgstr ""
+msgstr "tip s različitim ‘signedness’ definiran je u drugoj prevodilačkoj jedinici"
 
 #: ipa-devirt.cc:1305
 #, gcc-internal-format
 msgid "it is defined as a pointer in different address space in another translation unit"
-msgstr ""
+msgstr "to je definirano kao pokazivač u različitom adresnom prostoru u drugoj prevodilačkoj jedinici"
 
 #: ipa-devirt.cc:1314
 #, gcc-internal-format
 msgid "it is defined as a pointer to different type in another translation unit"
-msgstr ""
+msgstr "to je definirano kao pokazivač na drugačiji način u drugoj prevodilačkoj jedinici"
 
 #: ipa-devirt.cc:1374
 #, gcc-internal-format
@@ -28904,10 +28849,9 @@ msgid "maximum nesting depth exceeded: %i"
 msgstr ""
 
 #: json-parsing.cc:1145
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid JSON syntax"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid JSON token: %s"
-msgstr "nevaljana JSON sintaksa"
+msgstr "nevaljani JSON token: %s"
 
 #: json-parsing.cc:1148
 #, gcc-internal-format, gfc-internal-format
@@ -28925,28 +28869,24 @@ msgid "expected string for object key after ','; got %s"
 msgstr ""
 
 #: json-parsing.cc:1297
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected %qs or %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected %s; got bad token: %s"
-msgstr "očekivano je %qs ili %qs"
+msgstr "očekivan je %s; dobiven je loš token: %s"
 
 #: json-parsing.cc:1301
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected %qs or %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected %s; got %s"
-msgstr "očekivano je %qs ili %qs"
+msgstr "očekivan je %s; dobiven je %s"
 
 #: json-parsing.cc:1320
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected %<for%> after %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected %s or %s; got bad token: %s"
-msgstr "očekivano je %<for%> iza %qs"
+msgstr "očekivan je %s ili %s; dobiven je loš tokens %s"
 
 #: json-parsing.cc:1324
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected %qs or %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected %s or %s; got %s"
-msgstr "očekivano je %qs ili %qs"
+msgstr "očekivan je %s ili %s; dobiven je %s"
 
 #: lazy-diagnostic-path.cc:179
 #, gcc-internal-format
@@ -28954,10 +28894,9 @@ msgid "this warning should be skipped"
 msgstr ""
 
 #: lazy-diagnostic-path.cc:194
-#, fuzzy, gcc-internal-format
-#| msgid "this is the insn:"
+#, gcc-internal-format
 msgid "this is a test"
-msgstr "ovo je insn:"
+msgstr "ovo je test:"
 
 #: lra-assigns.cc:1694
 #, gcc-internal-format, gfc-internal-format
@@ -29251,10 +29190,9 @@ msgid "environment variable %<COLLECT_GCC_OPTIONS%> must be set"
 msgstr "varijabla okoline %<COLLECT_GCC_OPTIONS%> mora biti postavljena"
 
 #: lto-wrapper.cc:1575
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Nonexistent include directory %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "missing directory: %s"
-msgstr "nepostojeći ‘include’ direktorij %qs”"
+msgstr "nedostaje directorij: %s"
 
 #: lto-wrapper.cc:1768 lto-wrapper.cc:1828 c-family/c-pch.cc:215
 #: c-family/c-pch.cc:250 c-family/c-pch.cc:288 c-family/c-pch.cc:366
@@ -29408,10 +29346,9 @@ msgid "%qD used as a variant with incompatible %<construct%> selector sets"
 msgstr ""
 
 #: omp-general.cc:1751
-#, fuzzy, gcc-internal-format
-#| msgid "%<target_device%> selector set is not supported yet"
+#, gcc-internal-format
 msgid "%<target_device%> selector set inside of %<target%> directive"
-msgstr "skup selectora %<target_device%> još uvijek nije podržan"
+msgstr "selektor %<target_device%> postavljen je unutar %<target%> direktive"
 
 #: omp-general.cc:3626
 #, gcc-internal-format
@@ -30001,10 +29938,9 @@ msgid "%<%s%s%>: unrecognized format %qs; known formats: %e"
 msgstr ""
 
 #: opts-diagnostic.cc:424
-#, fuzzy, gcc-internal-format
-#| msgid "unable to open %s for writing: %m"
+#, gcc-internal-format
 msgid "unable to open %qs: %m"
-msgstr "ne može otvoriti %s za pisanje: %m"
+msgstr "nije moguće otvoriti %qs: %m"
 
 #: opts-global.cc:107
 #, gcc-internal-format
@@ -30920,10 +30856,9 @@ msgid "matching constraint not valid in output operand"
 msgstr ""
 
 #: stmt.cc:281
-#, fuzzy, gcc-internal-format
-#| msgid "invalid constraints for operand"
+#, gcc-internal-format
 msgid "%<:%> constraint used for output operand"
-msgstr "nevaljano ograničenje za operand"
+msgstr "%<:%> ograničenje izkorišteno je izlazni operand"
 
 #: stmt.cc:346
 #, gcc-internal-format
@@ -31889,7 +31824,7 @@ msgstr ""
 #: tree-cfg.cc:4067
 #, gcc-internal-format
 msgid "invalid (pointer) operands %qs"
-msgstr "nevaljani (pointer) operandi %qs"
+msgstr "nevaljani operandi (pokazivača) %qs"
 
 #: tree-cfg.cc:4302
 #, gcc-internal-format
@@ -33458,10 +33393,9 @@ msgid "%+qD causes a section type conflict for section %qs"
 msgstr ""
 
 #: varasm.cc:373
-#, fuzzy, gcc-internal-format
-#| msgid "return type of function"
+#, gcc-internal-format
 msgid "section type conflict for section %qs"
-msgstr "vrati tip funkcije"
+msgstr "konflikt tipa odjeljka za odjeljak %qs"
 
 #: varasm.cc:1112
 #, gcc-internal-format
@@ -34013,10 +33947,9 @@ msgid "%qE attribute argument %qE is not an integer constant between 0 and 3"
 msgstr ""
 
 #: c-family/c-attribs.cc:2895
-#, fuzzy, gcc-internal-format
-#| msgid "%<target%> attribute is not supported on this machine"
+#, gcc-internal-format
 msgid "%qE attribute is not supported for C++ for now, ignored"
-msgstr "atribut %<target%> nije podržan na ovom računalu"
+msgstr "atribut %qE nije za sada podržan za C++, zanemaren je"
 
 #: c-family/c-attribs.cc:2903
 #, gcc-internal-format
@@ -34034,10 +33967,9 @@ msgid "%qE attribute is not allowed for a non-flexible array member field"
 msgstr ""
 
 #: c-family/c-attribs.cc:2927
-#, fuzzy, gcc-internal-format
-#| msgid "%<score%> argument must be non-negative"
+#, gcc-internal-format
 msgid "%<counted_by%> argument is not an identifier"
-msgstr "argument %<score%> ne smije biti negativan"
+msgstr "argument %<counted_by%> nije identifikator"
 
 #: c-family/c-attribs.cc:2939
 #, gcc-internal-format
@@ -34441,10 +34373,9 @@ msgid "%qE attribute without arguments on a non-prototype"
 msgstr ""
 
 #: c-family/c-attribs.cc:5081
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute ignored"
+#, gcc-internal-format
 msgid "%qE attribute ignored on non-enum"
-msgstr "zanemareni atribut %qE"
+msgstr "zanemareni atribut %qE na ‘non-enumeration’"
 
 #: c-family/c-attribs.cc:5131
 #, gcc-internal-format
@@ -34796,10 +34727,8 @@ msgid "GCC cannot support operators with integer types and fixed-point types tha
 msgstr ""
 
 #: c-family/c-common.cc:2978
-#, fuzzy
-#| msgid "invalid operands to %%c code"
 msgid "invalid operands to binary %s (have %e and %e)"
-msgstr "nevaljani operandi za %%c kȏd"
+msgstr "nevaljani operandi za %s (ima %e i %e)"
 
 #: c-family/c-common.cc:3227
 #, gcc-internal-format
@@ -35989,16 +35918,14 @@ msgid "non-standard suffix on floating constant before C23"
 msgstr ""
 
 #: c-family/c-lex.cc:1309
-#, fuzzy, gcc-internal-format
-#| msgid "%<static_assert%> with non-string message only available with %<-std=c++2c%> or %<-std=gnu++2c%>"
+#, gcc-internal-format
 msgid "%<f%d%> or %<F%d%> suffix on floating constant only available with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "%<static_assert%> s non-string porukom je dostupna samo s %<-std=c++2c%> ili %<-std=gnu++2c%>"
+msgstr "%<f%d%> ili %<F%d%> sufiks na konstanti s pomičnim zarezom moguće je samo s %<-std=c++23%> ili %<-std=gnu++23%>"
 
 #: c-family/c-lex.cc:1330
-#, fuzzy, gcc-internal-format
-#| msgid "%<static_assert%> with non-string message only available with %<-std=c++2c%> or %<-std=gnu++2c%>"
+#, gcc-internal-format
 msgid "%<bf16%> or %<BF16%> suffix on floating constant only available with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "%<static_assert%> s non-string porukom je dostupna samo s %<-std=c++2c%> ili %<-std=gnu++2c%>"
+msgstr "%<bf16%> ili %<BF16%> sufiks na konstanti s pomičnim zarezom moguće je samo s %<-std=c++23%> ili %<-std=gnu++23%>"
 
 #: c-family/c-lex.cc:1417 c-family/c-lex.cc:1420
 #, gcc-internal-format
@@ -36268,10 +36195,9 @@ msgid "output filename specified twice"
 msgstr ""
 
 #: c-family/c-opts.cc:783
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument %<%s%> for %<%s%>"
+#, gcc-internal-format
 msgid "invalid argument %qs to %<-fsearch-include-path%>"
-msgstr "nevaljani argument %<%s%> za %<%s%>"
+msgstr "nevaljani argument %qs za %<-fsearch-include-path%>"
 
 #: c-family/c-opts.cc:927
 #, gcc-internal-format
@@ -39223,10 +39149,9 @@ msgid "%qs must be by itself for %<-mharden-sls=%>"
 msgstr ""
 
 #: config/aarch64/aarch64.cc:18962
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument %<%s%> for %<%s%>"
+#, gcc-internal-format
 msgid "invalid argument %qs for %<-mharden-sls=%>"
-msgstr "nevaljani argument %<%s%> za %<%s%>"
+msgstr "nevaljani argument %qs za %<-mharden-sls=%>"
 
 #: config/aarch64/aarch64.cc:19118
 #, gcc-internal-format
@@ -39843,16 +39768,14 @@ msgid "invalid type for %<asm%> flag output"
 msgstr ""
 
 #: config/arm/aarch-common.cc:714
-#, fuzzy, gcc-internal-format
-#| msgid "missing feature or flag for %<%s%>"
+#, gcc-internal-format
 msgid "missing feature or flag for %qs"
-msgstr "nema značajke ili flaga za %<%s%>"
+msgstr "nedostaje značajka ili flag za %qs"
 
 #: config/arm/aarch-common.cc:716
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument %<%s%> for %<%s%>"
+#, gcc-internal-format
 msgid "invalid argument %qs for %qs"
-msgstr "nevaljani argument %<%s%> za %<%s%>"
+msgstr "nevaljani argument %qs za %qs"
 
 #: config/arm/aarch-common.cc:727
 #, gcc-internal-format
@@ -40361,10 +40284,9 @@ msgid "%<asm%> flags not supported in thumb1 mode"
 msgstr ""
 
 #: config/avr/avr-c.cc:59
-#, fuzzy, gcc-internal-format
-#| msgid "built-in function %qD is not enabled"
+#, gcc-internal-format
 msgid "built-in function is only supported for GNU-C"
-msgstr "ugrađena funkcija %qD nije omogućena"
+msgstr "ugrađena funkcija podržana je samo za GNU-C"
 
 #: config/avr/avr-c.cc:70
 #, gcc-internal-format
@@ -40466,10 +40388,9 @@ msgid "%qs appears to be a misspelled %qs handler, missing %<__vector%> prefix"
 msgstr ""
 
 #: config/avr/avr.cc:1004
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute ignored"
+#, gcc-internal-format
 msgid "%qs attribute ignored on non-ISR function"
-msgstr "zanemareni atribut %qE"
+msgstr "atribut %qs je zanemaren na non-ISR funkcijama"
 
 #: config/avr/avr.cc:1014
 #, gcc-internal-format
@@ -40877,17 +40798,15 @@ msgid "stackframe too big: %d bytes"
 msgstr ""
 
 #: config/csky/csky.cc:2544
-#, fuzzy, gcc-internal-format
-#| msgid "argument %qs is not supported for %qs on this target"
+#, gcc-internal-format
 msgid "cpu %qs is not based on arch %qs, ignoring the arch"
-msgstr "argument %qs nije podržan za %qs na ovom cilju"
+msgstr "CPU %qs nije baziran na %qs arhitekturi, ignoriramo arhitekturu"
 
 #: config/csky/csky.cc:2610 config/csky/csky.cc:2648 config/csky/csky.cc:2713
 #: config/csky/csky.cc:2736 config/csky/csky.cc:2753
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is not supported, now cmodel is set to %qs"
+#, gcc-internal-format
 msgid "%qs is not supported by arch %qs"
-msgstr "%qs nije podržan, pa je sada ‘cmodel’ postavljen na %qs"
+msgstr "%qs nije podržan arhitekturom %qs"
 
 #: config/csky/csky.cc:2651
 #, gcc-internal-format
@@ -43642,16 +43561,14 @@ msgid "%<target()%> attribute: unknown TUNE %qs"
 msgstr ""
 
 #: config/riscv/riscv-target-attr.cc:241
-#, fuzzy, gcc-internal-format
-#| msgid "%<target%> attribute is not supported on this machine"
+#, gcc-internal-format
 msgid "%<target()%> attribute: priority appears more than once"
-msgstr "atribut %<target%> nije podržan na ovom računalu"
+msgstr "atribut %<target()%>: prioritet se javlja više of jedamput"
 
 #: config/riscv/riscv-target-attr.cc:246
-#, fuzzy, gcc-internal-format
-#| msgid "%<target%> attribute is not supported on this machine"
+#, gcc-internal-format
 msgid "%<target()%> attribute: invalid priority %qs"
-msgstr "atribut %<target%> nije podržan na ovom računalu"
+msgstr "atribut %<target()%>: nevaljani prioritet %qs"
 
 #: config/riscv/riscv-target-attr.cc:297
 #, gcc-internal-format
@@ -44319,10 +44236,9 @@ msgid "%qs is not supported on little endian systems"
 msgstr ""
 
 #: config/rs6000/rs6000.cc:3838
-#, fuzzy, gcc-internal-format
-#| msgid "-pg and -fomit-frame-pointer are incompatible"
+#, gcc-internal-format
 msgid "%<-mvsx%> and %<-msoft-float%> are incompatible"
-msgstr "-pg i -fomit-frame-pointer su nekompatibilni"
+msgstr "%<-mvsx%> i %<-msoft-float%> nisu kompatibilni"
 
 #: config/rs6000/rs6000.cc:3848
 #, gcc-internal-format
@@ -47107,16 +47023,14 @@ msgid "duplicate %qE"
 msgstr ""
 
 #: c/c-decl.cc:12499
-#, fuzzy, gcc-internal-format
-#| msgid "cannot find %<ldd%>"
+#, gcc-internal-format
 msgid "%qs cannot be defined via %<typedef%>"
-msgstr "ne može naći %<ldd%>"
+msgstr "%qs se ne može definrati pomoću %<typedef%>"
 
 #: c/c-decl.cc:12503
-#, fuzzy, gcc-internal-format
-#| msgid "%qD cannot be %qs"
+#, gcc-internal-format
 msgid "%qs cannot be used here"
-msgstr "%qD ne može bit %qs"
+msgstr "ovdje se ne može koristiti %qs"
 
 #: c/c-decl.cc:12556
 #, gcc-internal-format
@@ -47336,10 +47250,9 @@ msgid "%<continue%> statement operand %qE refers to a named %<switch%>"
 msgstr ""
 
 #: c/c-decl.cc:14043 c/c-decl.cc:14060
-#, fuzzy, gcc-internal-format
-#| msgid "%q+D defined here"
+#, gcc-internal-format
 msgid "%<switch%> name defined here"
-msgstr "%q+D je ovdje definiran"
+msgstr "ime %<switch%> je definirano ovdje"
 
 #: c/c-decl.cc:14051
 #, gcc-internal-format
@@ -47347,10 +47260,9 @@ msgid "%qs statement operand %qE refers to a loop outside of its body"
 msgstr ""
 
 #: c/c-decl.cc:14053
-#, fuzzy, gcc-internal-format
-#| msgid "%q+D defined here"
+#, gcc-internal-format
 msgid "loop name defined here"
-msgstr "%q+D je ovdje definiran"
+msgstr "ime petlje je definirano ovdje"
 
 #: c/c-decl.cc:14057
 #, gcc-internal-format
@@ -48362,10 +48274,9 @@ msgid "%<__builtin_complex%> operands of different types"
 msgstr ""
 
 #: c/c-parser.cc:12522
-#, fuzzy, gcc-internal-format
-#| msgid "wrong number of arguments to %qs"
+#, gcc-internal-format
 msgid "wrong number of arguments to %<__builtin_counted_by_ref%>"
-msgstr "loš, krivi broj argumenata za %qs"
+msgstr "pogrešni broj argumenata za %<__builtin_counted_by_ref%>"
 
 #: c/c-parser.cc:12533
 #, gcc-internal-format
@@ -48679,7 +48590,7 @@ msgstr ""
 #: c/c-parser.cc:16910 cp/parser.cc:39824
 #, gcc-internal-format
 msgid "collapse argument needs positive constant integer expression"
-msgstr ""
+msgstr "‘collapse’ argument treba biti pozitivni, cjelobrojni izraz"
 
 #: c/c-parser.cc:17005 cp/parser.cc:39902
 #, gcc-internal-format
@@ -48830,7 +48741,7 @@ msgstr "očekivano je %<teams%>, %<parallel%> ili %<thread%>"
 #: c/c-parser.cc:18372 cp/parser.cc:40772
 #, gcc-internal-format
 msgid "ordered argument needs positive constant integer expression"
-msgstr ""
+msgstr "‘ordered’ argument treba biti pozitivni, cjelobrojni izraz"
 
 #: c/c-parser.cc:18497 c/c-parser.cc:27838 cp/parser.cc:51939
 #, gcc-internal-format
@@ -48998,10 +48909,9 @@ msgid "expected %<host%>, %<nohost%> or %<any%>"
 msgstr "očekivano je %<host%>, %<nohost%> ili %<any%>"
 
 #: c/c-parser.cc:20354 cp/semantics.cc:9664 cp/semantics.cc:9682
-#, fuzzy, gcc-internal-format
-#| msgid "%<score%> argument must be constant integer expression"
+#, gcc-internal-format
 msgid "%<partial%> argument needs positive constant integer expression"
-msgstr "argument %<score%> mora biti konstantan cjelobrojni izraz"
+msgstr "argument %<partial%> treba biti pozitivni, cjelobrojni izraz"
 
 #: c/c-parser.cc:20455 cp/semantics.cc:8836
 #, gcc-internal-format
@@ -49016,17 +48926,15 @@ msgstr ""
 
 #: c/c-parser.cc:20532 c/c-parser.cc:20653 cp/parser.cc:42809
 #: cp/parser.cc:42949
-#, fuzzy, gcc-internal-format
-#| msgid "unknown rust compile-until %qs"
+#, gcc-internal-format
 msgid "unknown foreign runtime identifier %qs"
-msgstr "%qs je nepoznata ‘rust’ opcija za ugađanje"
+msgstr "nepoznati strani ‘runtime’ identifikator %qs"
 
 #: c/c-parser.cc:20547 c/c-parser.cc:20676 cp/parser.cc:42824
 #: cp/parser.cc:42971
-#, fuzzy, gcc-internal-format
-#| msgid "%<score%> argument must be constant integer expression"
+#, gcc-internal-format
 msgid "expected string literal or constant integer expression"
-msgstr "argument %<score%> mora biti konstantan cjelobrojni izraz"
+msgstr "očekivan je literalni string ili konstantni cjelobrojni izraz"
 
 #: c/c-parser.cc:20555 c/c-parser.cc:20684 cp/parser.cc:42832
 #: cp/parser.cc:42979 cp/semantics.cc:7512
@@ -49035,10 +48943,9 @@ msgid "unknown foreign runtime identifier %qwd"
 msgstr ""
 
 #: c/c-parser.cc:20593 cp/parser.cc:42891
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<none%> or %<present%>"
+#, gcc-internal-format
 msgid "expected %<fr%> or %<attr%> preference selector"
-msgstr "očekivano je %<none%> ili %<present%>"
+msgstr "očekivan je %<fr%> ili selektor preferencija %<attr%>"
 
 #: c/c-parser.cc:20601 cp/parser.cc:42899
 #, gcc-internal-format
@@ -49066,10 +48973,9 @@ msgid "duplicate %<targetsync%> modifier"
 msgstr ""
 
 #: c/c-parser.cc:20764 cp/parser.cc:43089
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<target%>"
+#, gcc-internal-format
 msgid "duplicate %<target%> modifier"
-msgstr "očekivano je %<target%>"
+msgstr "duplicirani modifikator %<target%>"
 
 #: c/c-parser.cc:20771 cp/parser.cc:43096
 #, gcc-internal-format
@@ -49434,10 +49340,9 @@ msgstr ""
 #. provided message with a more confusing one if there was
 #. a bad pragma or attribute directive.
 #: c/c-parser.cc:23945 cp/parser.cc:46195 cp/parser.cc:46197 cp/parser.cc:46382
-#, fuzzy, gcc-internal-format
-#| msgid "Not expected TAG."
+#, gcc-internal-format
 msgid "loop nest expected"
-msgstr "TAG nije očekivan."
+msgstr "petlja nije očekivana"
 
 #: c/c-parser.cc:23997 cp/parser.cc:46270
 #, gcc-internal-format
@@ -49496,16 +49401,14 @@ msgid "expected %<for%> after %qs"
 msgstr "očekivano je %<for%> iza %qs"
 
 #: c/c-parser.cc:25352 c/c-parser.cc:25360
-#, fuzzy, gcc-internal-format
-#| msgid "expected function name"
+#, gcc-internal-format
 msgid "expected a function name"
 msgstr "očekivano je ime funkcije"
 
 #: c/c-parser.cc:25373 cp/parser.cc:50211
-#, fuzzy, gcc-internal-format
-#| msgid "expected function name"
+#, gcc-internal-format
 msgid "expected target-function call"
-msgstr "očekivano je ime funkcije"
+msgstr "očekivan je poziv ciljane funkcije (target-function) "
 
 #: c/c-parser.cc:25443
 #, gcc-internal-format
@@ -49603,10 +49506,9 @@ msgid "expected identifier or string literal"
 msgstr ""
 
 #: c/c-parser.cc:26753 cp/parser.cc:49835 cp/pt.cc:18215
-#, fuzzy, gcc-internal-format
-#| msgid "%<score%> argument must be constant integer expression"
+#, gcc-internal-format
 msgid "property must be integer expression"
-msgstr "argument %<score%> mora biti konstantan cjelobrojni izraz"
+msgstr "svojstvo (property) mora biti cjelobrojni izraz"
 
 #: c/c-parser.cc:26766 cp/parser.cc:49846
 #, gcc-internal-format
@@ -49624,10 +49526,9 @@ msgid "expected context selector set name"
 msgstr "očekivano je ime konteksta skupa selektora"
 
 #: c/c-parser.cc:26958 cp/parser.cc:50429
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<at%>, %<severity%> or %<message%> clause"
+#, gcc-internal-format
 msgid "expected %<match%>, %<adjust_args%> or %<append_args%> clause"
-msgstr "očekivano je %<at%>, %<severity%> ili %<message%> klauzula"
+msgstr "očekivano je %<match%>, %<adjust_args%> ili %<append_args%> klauzula"
 
 #: c/c-parser.cc:26974 cp/parser.cc:50442
 #, gcc-internal-format
@@ -49650,16 +49551,14 @@ msgid "%qD is specified more than once"
 msgstr ""
 
 #: c/c-parser.cc:27053
-#, fuzzy, gcc-internal-format
-#| msgid "  %qT is not an object type"
+#, gcc-internal-format
 msgid "%qD is not of pointer type"
-msgstr "  %qT nije tip objekta"
+msgstr "%qD nije tip pokazivača>"
 
 #: c/c-parser.cc:27073 cp/parser.cc:50537
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<ancestor%> or %<device_num%>"
+#, gcc-internal-format
 msgid "expected %<nothing%> or %<need_device_ptr%>"
-msgstr "očekivano je %<ancestor%> ili %<device_num%>"
+msgstr "očekivano je %<nothing%> ili %<need_device_ptr%>"
 
 #: c/c-parser.cc:27076
 #, gcc-internal-format
@@ -49667,16 +49566,14 @@ msgid "%<need_device_addr%> is not valid for C"
 msgstr ""
 
 #: c/c-parser.cc:27083 cp/parser.cc:50544
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<ancestor%> or %<device_num%>"
+#, gcc-internal-format
 msgid "expected %<nothing%> or %<need_device_ptr%> followed by %<:%>"
-msgstr "očekivano je %<ancestor%> ili %<device_num%>"
+msgstr "očekivano je %<nothing%> ili %<need_device_ptr%> slijeđen s/sa %<:%>"
 
 #: c/c-parser.cc:27103 cp/parser.cc:50561
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<point%>"
+#, gcc-internal-format
 msgid "expected %<interop%>"
-msgstr "očekivano je %<point%>"
+msgstr "očekivano je %<interop%>"
 
 #: c/c-parser.cc:27197 cp/decl.cc:8601
 #, gcc-internal-format
@@ -49862,10 +49759,9 @@ msgid "variable sized type %qT in %<reduction%> clause"
 msgstr ""
 
 #: c/c-parser.cc:28474 cp/parser.cc:48878
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<else%>"
+#, gcc-internal-format
 msgid "expected %<sizes%>"
-msgstr "očekivano %<else%>"
+msgstr "očekivano je %<sizes%>"
 
 #: c/c-parser.cc:28503 cp/semantics.cc:9566 cp/semantics.cc:9583
 #, gcc-internal-format
@@ -49939,10 +49835,9 @@ msgid "expected assumption clause"
 msgstr "očekivana je klauzula pretpostavki"
 
 #: c/c-parser.cc:29050 cp/parser.cc:51385
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<depend%>, %<destroy%> or %<update%> clause"
+#, gcc-internal-format
 msgid "expected %<when%>, %<otherwise%>, or %<default%> clause"
-msgstr "očekivano je %<depend%>, %<destroy%> ili %<update%> klauzula"
+msgstr "očekivano je %<when%>, %<otherwise%> ili %<default%> klauzula"
 
 #: c/c-parser.cc:29064 cp/parser.cc:51400
 #, gcc-internal-format
@@ -49955,10 +49850,9 @@ msgid "%<otherwise%> or %<default%> clause must appear last in %<metadirective%>
 msgstr ""
 
 #: c/c-parser.cc:29163 cp/parser.cc:51501
-#, fuzzy, gcc-internal-format
-#| msgid "unknown relocation unspec"
+#, gcc-internal-format
 msgid "unknown directive name"
-msgstr "nepoznata relokacija unspec"
+msgstr "nepoznato ime direktive"
 
 #: c/c-parser.cc:29178 cp/parser.cc:51521
 #, gcc-internal-format
@@ -50694,10 +50588,8 @@ msgid "array initialized from parenthesized string constant"
 msgstr ""
 
 #: c/c-typeck.cc:7617
-#, fuzzy
-#| msgid "expected %qT but pointer is of type %qT"
 msgid "expected %e but argument is of type %e"
-msgstr "očekivan %qT ali pokazivač je tipa %qT"
+msgstr "očekivan je %e ali argument je tip %e"
 
 #: c/c-typeck.cc:7651
 #, gcc-internal-format
@@ -50715,10 +50607,8 @@ msgid "built-in %qD declared here"
 msgstr ""
 
 #: c/c-typeck.cc:7716 c/c-typeck.cc:8624
-#, fuzzy
-#| msgid "redeclared here"
 msgid "%e declared here"
-msgstr "ponovno deklarirano ovdje"
+msgstr "%e je deklariran ovdje"
 
 #: c/c-typeck.cc:7909
 #, gcc-internal-format
@@ -51904,10 +51794,9 @@ msgid "%qD must be of %<omp_interop_t%>"
 msgstr ""
 
 #: c/c-typeck.cc:17458 cp/semantics.cc:9727
-#, fuzzy, gcc-internal-format
-#| msgid "%qD cannot be %qs"
+#, gcc-internal-format
 msgid "%qD shall not be const"
-msgstr "%qD ne može bit %qs"
+msgstr "%qD ne smije biti konstanta"
 
 #: c/c-typeck.cc:17507 cp/semantics.cc:10080
 #, gcc-internal-format
@@ -52216,22 +52105,19 @@ msgid "COBOL requires a 64-bit configuration"
 msgstr ""
 
 #: cobol/cobol1.cc:327
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Creating '%s'\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "exception '%s'"
-msgstr "Stvaramo ‘%s”\n"
+msgstr "iznimka ‘%s’"
 
 #: cobol/cobol1.cc:413
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot execute %qs: %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "could not execute preprocessor %s"
-msgstr "ne može izvršiti %qs: %s"
+msgstr "nije (bilo) moguće izvršiti predprocesor %s"
 
 #: cobol/cobol1.cc:418
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "could not find specs file %s\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "could not include %s"
-msgstr "nije bilo moguće naći specs datoteku %s\n"
+msgstr "nije (bilo) moguće uključiti %s"
 
 #. This isn't right.  All OPT_main should be replaced
 #: cobol/cobol1.cc:424
@@ -52486,10 +52372,9 @@ msgid "The given type is not a DECL or a TYPE"
 msgstr ""
 
 #: cobol/gengen.cc:412
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unknown lam type %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "Unknown type %d"
-msgstr "nepoznati ‘lam’ tip %qs"
+msgstr "Nepoznati tip %d"
 
 #: cobol/gengen.cc:2931
 #, gcc-internal-format
@@ -52507,16 +52392,14 @@ msgid "Too many subscripts"
 msgstr ""
 
 #: cobol/lexio.cc:1485
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s signal terminated program %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s pid %d terminated by %s"
-msgstr "signal %s je prekinuo (završio) program %s"
+msgstr "%s PID %d prekinut s %s"
 
 #: cobol/lexio.cc:1490
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qD is defined with tls model %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s exited with status %d"
-msgstr "%qD je definiran s TLS modelom %s"
+msgstr "%s je završio sa statusom %d"
 
 #: cobol/symbols.cc:530
 msgid "%s:%d: LblNone '%s' has parent #%zu"
@@ -52538,10 +52421,9 @@ msgid "logic error: MOVE %s %s invalid type:"
 msgstr ""
 
 #: cobol/util.cc:1695
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s: %s: %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: regcomp: %s"
-msgstr "%s: %s: %s"
+msgstr "%s: regcomp: %s"
 
 #: cobol/util.cc:1805
 #, gcc-internal-format, gfc-internal-format
@@ -52549,10 +52431,9 @@ msgid "logic error: missing inode for %s"
 msgstr ""
 
 #: cobol/util.cc:2143
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "collect: recompiling %s\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "failed compiling %s"
-msgstr "collect: ponovo kompajliram %s\n"
+msgstr "nije uspjelo kompilirati %s"
 
 #: cp/call.cc:2106
 #, gcc-internal-format
@@ -52650,10 +52531,9 @@ msgid "%s%#qD"
 msgstr ""
 
 #: cp/call.cc:4058
-#, fuzzy, gcc-internal-format
-#| msgid "modified here"
+#, gcc-internal-format
 msgid "inherited here"
-msgstr "izmijenjeno ovdje"
+msgstr "naslijeđeno ovdje"
 
 #: cp/call.cc:4080
 #, gcc-internal-format
@@ -53030,10 +52910,9 @@ msgid "converting %<false%> to pointer type %qT"
 msgstr ""
 
 #: cp/call.cc:8547
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument %<%s%> for %<%s%>"
+#, gcc-internal-format
 msgid "initializing argument %P of %qD"
-msgstr "nevaljani argument %<%s%> za %<%s%>"
+msgstr "inicijaliziramo argument %P of %qD"
 
 #: cp/call.cc:8569
 #, gcc-internal-format
@@ -54027,10 +53906,9 @@ msgid "the type %qT of %<constexpr%> variable %qD is not literal"
 msgstr ""
 
 #: cp/constexpr.cc:123
-#, fuzzy, gcc-internal-format
-#| msgid "function-try-block body of %<constexpr%> constructor only available with %<-std=c++20%> or %<-std=gnu++20%>"
+#, gcc-internal-format
 msgid "variable %qD of non-literal type %qT in %<constexpr%> function only available with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "tijelo function-try-block  u %<constexpr%> konstruktoru dostupno je samo s %<-std=c++20%> ili %<-std=gnu++20%>"
+msgstr "varijabla %qD neliteralnog tipa %qT u funkciji %<constexpr%> je samo dostupna s/sa %<-std=c++23%> or %<-std=gnu++23%>"
 
 #: cp/constexpr.cc:136
 #, gcc-internal-format
@@ -54204,10 +54082,9 @@ msgid "expression %qE does not designate a %<constexpr%> function"
 msgstr ""
 
 #: cp/constexpr.cc:2940
-#, fuzzy, gcc-internal-format
-#| msgid "cannot allocate vl register for %qs on this target"
+#, gcc-internal-format
 msgid "cannot allocate array: size not constant"
-msgstr "ne može dodijeliti vl registar za %qs na ovoom cilju"
+msgstr "ne moguće dodijeliti polje: veličina nije konstanta"
 
 #: cp/constexpr.cc:2981
 #, gcc-internal-format
@@ -54786,10 +54663,9 @@ msgid "non-constant array initialization"
 msgstr ""
 
 #: cp/constexpr.cc:10965
-#, fuzzy, gcc-internal-format
-#| msgid "explicit object member function only available with %<-std=c++23%> or %<-std=gnu++23%>"
+#, gcc-internal-format
 msgid "label definition in %<constexpr%> function only available with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "eksplicitna funkcija člana objekta dostupna je samo s %<-std=c++23%> ili %<-std=gnu++23%>"
+msgstr "definicija oznake u funkciji %<constexpr%> je dostupna samo s %<-std=c++23%> or %<-std=gnu++23%>"
 
 #: cp/constexpr.cc:11001 rust/backend/rust-constexpr.cc:6438
 #, gcc-internal-format, gfc-internal-format
@@ -54921,12 +54797,12 @@ msgstr "  %qT ne može dodijeliti kopiju pomoću ‘nothrow’"
 #: cp/constraint.cc:3045 cp/constraint.cc:3139
 #, gcc-internal-format
 msgid "  %qT is not nothrow default constructible"
-msgstr "  %qT se ne može sagraditi prema zadanim postavkama s ‘nothrow’"
+msgstr "  %qT nije moguće sagraditi prema zadanim postavkama s ‘nothrow’"
 
 #: cp/constraint.cc:3048
 #, gcc-internal-format
 msgid "  %qT is not nothrow copy constructible"
-msgstr "  %qT se ne može konstruirati kopiranjem s ‘nothrow’"
+msgstr "  %qT nije moguće konstruirati kopiranjem s ‘nothrow’"
 
 #: cp/constraint.cc:3051
 #, gcc-internal-format
@@ -54976,7 +54852,7 @@ msgstr "  %qT nije polje"
 #: cp/constraint.cc:3078
 #, gcc-internal-format
 msgid "  %qT is not assignable from %qT"
-msgstr "  %qT se ne može dodijeliti iz %qT"
+msgstr "  %qT nije moguće dodijeliti iz %qT"
 
 #: cp/constraint.cc:3081
 #, gcc-internal-format
@@ -54994,10 +54870,9 @@ msgid "  %qT is not a class"
 msgstr ""
 
 #: cp/constraint.cc:3090
-#, fuzzy, gcc-internal-format
-#| msgid "  %qT is not an object type"
+#, gcc-internal-format
 msgid "  %qT is not a const type"
-msgstr "  %qT nije tip objekta"
+msgstr "  %qT nije tip konstante"
 
 #: cp/constraint.cc:3094
 #, gcc-internal-format
@@ -55007,12 +54882,12 @@ msgstr "  %qT nema upotrebljiv zadani konstruktor"
 #: cp/constraint.cc:3096
 #, gcc-internal-format
 msgid "  %qT is not constructible from %qE"
-msgstr "  %qT se ne može konstruirati iz %qE"
+msgstr "  %qT nije moguće konstruirati iz %qE"
 
 #: cp/constraint.cc:3099
 #, gcc-internal-format
 msgid "  %qT is not convertible from %qE"
-msgstr "  %qT se ne može pretvoriti iz %qE"
+msgstr "  %qT nije moguće pretvoriti iz %qE"
 
 #: cp/constraint.cc:3102
 #, gcc-internal-format
@@ -55035,16 +54910,14 @@ msgid "  %qT is not a function"
 msgstr "%qT nije funkcija"
 
 #: cp/constraint.cc:3115
-#, fuzzy, gcc-internal-format
-#| msgid "  %qT is not trivially copyable"
+#, gcc-internal-format
 msgid "  %qT is not invocable"
-msgstr "  %qT se ne može trivijalno kopirati"
+msgstr "  %qT nije moguće pozvati"
 
 #: cp/constraint.cc:3117
-#, fuzzy, gcc-internal-format
-#| msgid "  %qT is not assignable from %qT"
+#, gcc-internal-format
 msgid "  %qT is not invocable by %qE"
-msgstr "  %qT se ne može dodijeliti iz %qT"
+msgstr "  %qT nije moguće pozvati s/sa %qE"
 
 #: cp/constraint.cc:3120
 #, gcc-internal-format
@@ -55059,44 +54932,42 @@ msgstr ""
 #: cp/constraint.cc:3126
 #, gcc-internal-format
 msgid "  %qT is not a member function pointer"
-msgstr "%qT nije član pointera funkcije"
+msgstr "%qT nije član pokazivača> funkcije"
 
 #: cp/constraint.cc:3129
 #, gcc-internal-format
 msgid "  %qT is not a member object pointer"
-msgstr "  %qT nije član pointera objekta"
+msgstr "  %qT nije član pokazivača> objekta"
 
 #: cp/constraint.cc:3132
 #, gcc-internal-format
 msgid "  %qT is not a member pointer"
-msgstr "  %qT nije član pointera"
+msgstr "  %qT nije član pokazivača>"
 
 #: cp/constraint.cc:3135
 #, gcc-internal-format
 msgid "  %qT is not nothrow assignable from %qT"
-msgstr "  %qT se ne može dodijeliti s ‘nothrow’ od %qT"
+msgstr "  %qT nije moguće dodijeliti s ‘nothrow’ od %qT"
 
 #: cp/constraint.cc:3141
 #, gcc-internal-format
 msgid "  %qT is not nothrow constructible from %qE"
-msgstr "  %qT se ne može izgraditi s ‘nothrow’ iz %qE"
+msgstr "  %qT nije moguće izgraditi s ‘nothrow’ iz %qE"
 
 #: cp/constraint.cc:3144
 #, gcc-internal-format
 msgid "  %qT is not nothrow convertible from %qE"
-msgstr "  %qT se ne može pretvoriti s ‘nothrow’ iz %qE"
+msgstr "  %qT nije moguće pretvoriti s ‘nothrow’ iz %qE"
 
 #: cp/constraint.cc:3148
-#, fuzzy, gcc-internal-format
-#| msgid "  %qT is not nothrow copy assignable"
+#, gcc-internal-format
 msgid "  %qT is not nothrow invocable"
-msgstr "  %qT ne može dodijeliti kopiju pomoću ‘nothrow’"
+msgstr "  %qT nije moguće ‘nothrow’ pozvati"
 
 #: cp/constraint.cc:3150
-#, fuzzy, gcc-internal-format
-#| msgid "  %qT is not nothrow assignable from %qT"
+#, gcc-internal-format
 msgid "  %qT is not nothrow invocable by %qE"
-msgstr "  %qT se ne može dodijeliti s ‘nothrow’ od %qT"
+msgstr "  %qT nije moguće s/sa %qE ‘nothrow’ pozvati"
 
 #: cp/constraint.cc:3153
 #, gcc-internal-format
@@ -55114,10 +54985,9 @@ msgid "  %qT is not a POD type"
 msgstr ""
 
 #: cp/constraint.cc:3163
-#, fuzzy, gcc-internal-format
-#| msgid "  %qT is not a member pointer"
+#, gcc-internal-format
 msgid "  %qT is not a pointer"
-msgstr "  %qT nije član pointera"
+msgstr "  %qT nije pokazivač"
 
 #: cp/constraint.cc:3166
 #, gcc-internal-format
@@ -55152,23 +55022,22 @@ msgstr ""
 #: cp/constraint.cc:3184
 #, gcc-internal-format
 msgid "  %qT is not trivially assignable from %qT"
-msgstr "  %qT se ne može trivijalno dodijeliti iz %qT"
+msgstr "  %qT nije moguće trivijalno dodijeliti iz %qT"
 
 #: cp/constraint.cc:3190
 #, gcc-internal-format
 msgid "  %qT is not trivially constructible from %qE"
-msgstr "  %qT se ne može trivijalno konstruirati iz %qE"
+msgstr "  %qT nije moguće trivijalno konstruirati iz %qE"
 
 #: cp/constraint.cc:3193
 #, gcc-internal-format
 msgid "  %qT is not trivially copyable"
-msgstr "  %qT se ne može trivijalno kopirati"
+msgstr "  %qT nije moguće trivijalno kopirati"
 
 #: cp/constraint.cc:3196
-#, fuzzy, gcc-internal-format
-#| msgid "  %qT is not a bounded array"
+#, gcc-internal-format
 msgid "  %qT is not an unbounded array"
-msgstr "  %qT nije ograničeno polje"
+msgstr "  %qT nije neograničeno polje"
 
 #: cp/constraint.cc:3199
 #, gcc-internal-format
@@ -55176,22 +55045,19 @@ msgid "  %qT is not a union"
 msgstr ""
 
 #: cp/constraint.cc:3202
-#, fuzzy, gcc-internal-format
-#| msgid "  %qT is not assignable from %qT"
+#, gcc-internal-format
 msgid "  %qT is not a virtual base of %qT"
-msgstr "  %qT se ne može dodijeliti iz %qT"
+msgstr "  %qT nije virtualna baza od %qT"
 
 #: cp/constraint.cc:3205
-#, fuzzy, gcc-internal-format
-#| msgid "  %qT is not an object type"
+#, gcc-internal-format
 msgid "  %qT is not a volatile type"
-msgstr "  %qT nije tip objekta"
+msgstr "  %qT nije nepostojan tip"
 
 #: cp/constraint.cc:3208
-#, fuzzy, gcc-internal-format
-#| msgid "  %qT is not an array"
+#, gcc-internal-format
 msgid "  %qT cannot yield a rank"
-msgstr "  %qT nije polje"
+msgstr "  %qT ne može dato ramg"
 
 #: cp/constraint.cc:3211
 #, gcc-internal-format
@@ -55206,7 +55072,7 @@ msgstr ""
 #: cp/constraint.cc:3219
 #, gcc-internal-format
 msgid "  %qD is not deducible from %qT"
-msgstr "  %qD se ne može izvesti iz %qT"
+msgstr "  %qD nije moguće izvesti iz %qT"
 
 #: cp/constraint.cc:3246
 #, gcc-internal-format
@@ -55415,10 +55281,9 @@ msgid "%qE must be a non-overloaded method"
 msgstr ""
 
 #: cp/coroutines.cc:547
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a function argument"
+#, gcc-internal-format
 msgid "%qE must take no arguments"
-msgstr "%qD nije argument funkcije"
+msgstr "%qE ne smije primati argumente"
 
 #: cp/coroutines.cc:554 cp/coroutines.cc:599
 #, gcc-internal-format
@@ -55426,10 +55291,9 @@ msgid "%qE must return %qT, not %qT"
 msgstr ""
 
 #: cp/coroutines.cc:581
-#, fuzzy, gcc-internal-format
-#| msgid "%qD must be a member function"
+#, gcc-internal-format
 msgid "%qE must be a non-overloaded static function"
-msgstr "%qD mora biti član funkcije"
+msgstr "%qE mora biti statička, ‘non-overloaded’ funkcija"
 
 #: cp/coroutines.cc:592
 #, gcc-internal-format
@@ -56050,10 +55914,9 @@ msgid "with"
 msgstr ""
 
 #: cp/decl.cc:733
-#, fuzzy, gcc-internal-format
-#| msgid "In function %qD"
+#, gcc-internal-format
 msgid "unused using-declaration %qD"
-msgstr "U funkciji %qD"
+msgstr "nekorištena ‘using-declaration’ %qD"
 
 #: cp/decl.cc:737
 #, gcc-internal-format
@@ -56789,16 +56652,14 @@ msgid "block-scope extern declaration %q#D must not be attached to a named modul
 msgstr ""
 
 #: cp/decl.cc:6205
-#, fuzzy, gcc-internal-format
-#| msgid "explicit object member function only available with %<-std=c++23%> or %<-std=gnu++23%>"
+#, gcc-internal-format
 msgid "%qD defined %<thread_local%> in %qs function only available with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "eksplicitna funkcija člana objekta dostupna je samo s %<-std=c++23%> ili %<-std=gnu++23%>"
+msgstr "%qD definiran %<thread_local%> u funkciji %qs dostupan je samo s/sa %<-std=c++23%> ili %<-std=gnu++23%>"
 
 #: cp/decl.cc:6211
-#, fuzzy, gcc-internal-format
-#| msgid "explicit object member function only available with %<-std=c++23%> or %<-std=gnu++23%>"
+#, gcc-internal-format
 msgid "%qD defined %<static%> in %qs function only available with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "eksplicitna funkcija člana objekta dostupna je samo s %<-std=c++23%> ili %<-std=gnu++23%>"
+msgstr "%qD definiran %<static%> u funkciji %qs dostupan je samo s/sa %<-std=c++23%> ili %<-std=gnu++23%>"
 
 #: cp/decl.cc:6277
 #, gcc-internal-format
@@ -57124,10 +56985,9 @@ msgid "cannot decompose lambda closure type %qT"
 msgstr ""
 
 #: cp/decl.cc:9579
-#, fuzzy, gcc-internal-format
-#| msgid "redeclared here"
+#, gcc-internal-format
 msgid "lambda declared here"
-msgstr "ponovno deklarirano ovdje"
+msgstr "lambda je deklarirana ovdje"
 
 #: cp/decl.cc:9595
 #, gcc-internal-format
@@ -58120,10 +57980,9 @@ msgid "%qs function with trailing return type has constrained %<auto%> type spec
 msgstr ""
 
 #: cp/decl.cc:14050
-#, fuzzy, gcc-internal-format
-#| msgid "invalid constraints for operand"
+#, gcc-internal-format
 msgid "invalid use of constrained %<auto%> type"
-msgstr "nevaljano ograničenje za operand"
+msgstr "nevaljana upotreba ograničenog %<auto%> tipa"
 
 #: cp/decl.cc:14062
 #, gcc-internal-format
@@ -59514,10 +59373,9 @@ msgid "converting lambda that uses %<...%> to function pointer"
 msgstr ""
 
 #: cp/decl2.cc:6317
-#, fuzzy, gcc-internal-format
-#| msgid "unknown spec function %qs"
+#, gcc-internal-format
 msgid "use of deleted function %qD: %s"
-msgstr "nepoznata spec funkcija %qs"
+msgstr "korištenje izbrisane funkcije %qD: %s"
 
 #: cp/decl2.cc:6321
 #, gcc-internal-format
@@ -60685,10 +60543,9 @@ msgid "conflicting default argument for %#qD"
 msgstr ""
 
 #: cp/module.cc:12188 cp/module.cc:12215
-#, fuzzy, gcc-internal-format
-#| msgid "virtual function declared here"
+#, gcc-internal-format
 msgid "existing default declared here"
-msgstr "virtualna funkcija ranije je ovdje deklarirana"
+msgstr "postojeća zadana vrijednost (default) deklarirana je ovdje"
 
 #: cp/module.cc:12212
 #, gcc-internal-format
@@ -60863,7 +60720,7 @@ msgstr "kompilirani modul je %sversion %s"
 #: cp/module.cc:19279
 #, gcc-internal-format, gfc-internal-format
 msgid "compiler is %sversion %s%s%s"
-msgstr "kompajler je %sversion %s%s%s"
+msgstr "kompilator je %sversion %s%s%s"
 
 #: cp/module.cc:19309
 #, gcc-internal-format
@@ -61003,13 +60860,12 @@ msgstr ""
 #: cp/module.cc:20611
 #, gcc-internal-format
 msgid "exporting declaration %qD declared in unnamed namespace"
-msgstr ""
+msgstr "izvozimo deklariraciju %qD deklariranu u neimenovanom imeskom prostoru"
 
 #: cp/module.cc:20618
-#, fuzzy, gcc-internal-format
-#| msgid "redeclaration of %qD with different constraints"
+#, gcc-internal-format
 msgid "exporting declaration %qD with internal linkage"
-msgstr "ponovna deklaracija %qD s drukčijim ograničenjima"
+msgstr "izvozimo deklariraciju %qD s internim povezivajem"
 
 #: cp/module.cc:20771
 #, gcc-internal-format
@@ -61079,10 +60935,9 @@ msgid "mismatching compiled module interface: had %qs, got %qs"
 msgstr ""
 
 #: cp/module.cc:21293
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "compiled module is %sversion %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "unknown compiled module interface: %s"
-msgstr "kompilirani modul je %sversion %s"
+msgstr "nepoznato sučelje kompiliranog modula: %s"
 
 #: cp/module.cc:21337
 #, gcc-internal-format
@@ -61494,10 +61349,9 @@ msgid "%<#pragma%> is not allowed here"
 msgstr ""
 
 #: cp/parser.cc:3356
-#, fuzzy, gcc-internal-format
-#| msgid "expected directive name"
+#, gcc-internal-format
 msgid "unexpected module directive"
-msgstr "očekivano je ime direktive"
+msgstr "neočekivana direktiva modula"
 
 #: cp/parser.cc:3358
 #, gcc-internal-format
@@ -61901,10 +61755,9 @@ msgid "mismatched operator in fold-expression"
 msgstr ""
 
 #: cp/parser.cc:5918
-#, fuzzy, gcc-internal-format
-#| msgid "name-independent declarations only available with %<-std=c++2c%> or %<-std=gnu++2c%>"
+#, gcc-internal-format
 msgid "pack indexing only available with %<-std=c++2c%> or %<-std=gnu++2c%>"
-msgstr "deklaracije neovisne o imenu dostupne su samo s %<-std=c++2c%> ili %<-std=gnu++2c%>"
+msgstr "‘pack’ indeksiranje dostupno je samo s/sa %<-std=c++2c%> ili %<-std=gnu++2c%>"
 
 #: cp/parser.cc:5928
 #, gcc-internal-format
@@ -62082,10 +61935,9 @@ msgid "call to %<__builtin_operator_delete%> does not select replaceable global 
 msgstr ""
 
 #: cp/parser.cc:8078 cp/pt.cc:21583
-#, fuzzy, gcc-internal-format
-#| msgid "virtual function declared here"
+#, gcc-internal-format
 msgid "selected function declared here"
-msgstr "virtualna funkcija ranije je ovdje deklarirana"
+msgstr "odabrana funkcija deklarirana je ovdje"
 
 #: cp/parser.cc:8211
 #, gcc-internal-format
@@ -62329,10 +62181,9 @@ msgid "default argument specified for lambda parameter"
 msgstr ""
 
 #: cp/parser.cc:12282
-#, fuzzy, gcc-internal-format
-#| msgid "name-independent declarations only available with %<-std=c++2c%> or %<-std=gnu++2c%>"
+#, gcc-internal-format
 msgid "parameter declaration before lambda declaration specifiers only optional with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "deklaracije neovisne o imenu dostupne su samo s %<-std=c++2c%> ili %<-std=gnu++2c%>"
+msgstr "deklaracija parametara prije specifikaora lambda deklaracije nije obavezna samo s/sa %<-std=c++23%> ili %<-std=gnu++23%>"
 
 #: cp/parser.cc:12312 cp/pt.cc:14954
 #, gcc-internal-format
@@ -62370,22 +62221,19 @@ msgid "%<static%> lambda specifier with lambda capture"
 msgstr ""
 
 #: cp/parser.cc:12379
-#, fuzzy, gcc-internal-format
-#| msgid "explicit object member function only available with %<-std=c++23%> or %<-std=gnu++23%>"
+#, gcc-internal-format
 msgid "parameter declaration before lambda transaction qualifier only optional with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "eksplicitna funkcija člana objekta dostupna je samo s %<-std=c++23%> ili %<-std=gnu++23%>"
+msgstr "deklaracija parametra prije kvalifikatora lambda transakcije nije obvezna samo s/sa %<-std=c++23%> ili %<-std=gnu++23%>"
 
 #: cp/parser.cc:12392
-#, fuzzy, gcc-internal-format
-#| msgid "explicit object member function only available with %<-std=c++23%> or %<-std=gnu++23%>"
+#, gcc-internal-format
 msgid "parameter declaration before lambda exception specification only optional with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "eksplicitna funkcija člana objekta dostupna je samo s %<-std=c++23%> ili %<-std=gnu++23%>"
+msgstr "deklaracija parametra prije specifikacije lambda iznimke nije obvezna samo s/sa %<-std=c++23%> ili %<-std=gnu++23%>"
 
 #: cp/parser.cc:12410
-#, fuzzy, gcc-internal-format
-#| msgid "explicit object member function only available with %<-std=c++23%> or %<-std=gnu++23%>"
+#, gcc-internal-format
 msgid "parameter declaration before lambda trailing return type only optional with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "eksplicitna funkcija člana objekta dostupna je samo s %<-std=c++23%> ili %<-std=gnu++23%>"
+msgstr "deklaracija parametra prije lambda zaostajućeg tipa povrata nije obvezna samo s/sa %<-std=c++23%> ili %<-std=gnu++23%>"
 
 #: cp/parser.cc:12452
 #, gcc-internal-format
@@ -62408,10 +62256,9 @@ msgid "assertions must be followed by %<;%>"
 msgstr ""
 
 #: cp/parser.cc:13186
-#, fuzzy, gcc-internal-format
-#| msgid "explicit object member function only available with %<-std=c++23%> or %<-std=gnu++23%>"
+#, gcc-internal-format
 msgid "label at end of compound statement only available with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "eksplicitna funkcija člana objekta dostupna je samo s %<-std=c++23%> ili %<-std=gnu++23%>"
+msgstr "oznaka na kraju složene naredbe (statement) dostupna je samo s/sa %<-std=c++23%> or %<-std=gnu++23%>"
 
 #: cp/parser.cc:13366 cp/parser.cc:13611
 #, gcc-internal-format
@@ -62455,10 +62302,9 @@ msgid "%<if constexpr%> only available with %<-std=c++17%> or %<-std=gnu++17%>"
 msgstr ""
 
 #: cp/parser.cc:13974
-#, fuzzy, gcc-internal-format
-#| msgid "explicit object member function only available with %<-std=c++23%> or %<-std=gnu++23%>"
+#, gcc-internal-format
 msgid "%<if consteval%> only available with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "eksplicitna funkcija člana objekta dostupna je samo s %<-std=c++23%> ili %<-std=gnu++23%>"
+msgstr "%<if consteval%> je dostupan samo s/sa %<-std=c++23%> ili %<-std=gnu++23%>"
 
 #: cp/parser.cc:13999 cp/parser.cc:14034
 #, gcc-internal-format
@@ -62548,10 +62394,9 @@ msgid "range-based %<for%> loops only available with %<-std=c++11%> or %<-std=gn
 msgstr ""
 
 #: cp/parser.cc:15374
-#, fuzzy, gcc-internal-format
-#| msgid "explicit object member function only available with %<-std=c++23%> or %<-std=gnu++23%>"
+#, gcc-internal-format
 msgid "%<goto%> in %<constexpr%> function only available with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "eksplicitna funkcija člana objekta dostupna je samo s %<-std=c++23%> ili %<-std=gnu++23%>"
+msgstr "%<goto%> u funkciji %<constexpr%> dostupno je samo s/sa %<-std=c++23%> ili %<-std=gnu++23%>"
 
 #. Issue a warning about this use of a GNU extension.
 #: cp/parser.cc:15383
@@ -62585,10 +62430,9 @@ msgid "module-declaration must be at global scope"
 msgstr ""
 
 #: cp/parser.cc:15628
-#, fuzzy, gcc-internal-format
-#| msgid "previously defined here"
+#, gcc-internal-format
 msgid "scope opened here"
-msgstr "ranije definiran ovdje"
+msgstr "doseg je otvoren ovdje"
 
 #: cp/parser.cc:15654
 #, gcc-internal-format
@@ -62657,10 +62501,9 @@ msgid "extra %<;%> outside of a function only allowed in C++11"
 msgstr ""
 
 #: cp/parser.cc:15855
-#, fuzzy, gcc-internal-format
-#| msgid "return type of function"
+#, gcc-internal-format
 msgid "extra %<;%> outside of a function"
-msgstr "vrati tip funkcije"
+msgstr "dodatni %<;%> je izvan funkcije"
 
 #: cp/parser.cc:15864
 #, gcc-internal-format
@@ -62688,10 +62531,9 @@ msgid "attributes may be inserted here"
 msgstr ""
 
 #: cp/parser.cc:16088
-#, fuzzy, gcc-internal-format
-#| msgid "await expressions are not permitted in handlers"
+#, gcc-internal-format
 msgid "explicit specializations are not permitted here"
-msgstr "‘await’ izraz nije dopušten u rukovateljima (handlers)"
+msgstr "eksplicitne specijalizacije ovdje nisu dopuštene"
 
 #: cp/parser.cc:16090 cp/parser.cc:28230
 #, gcc-internal-format
@@ -62699,16 +62541,14 @@ msgid "a specialization is always exported alongside its primary template"
 msgstr ""
 
 #: cp/parser.cc:16103
-#, fuzzy, gcc-internal-format
-#| msgid "await expressions are not permitted in handlers"
+#, gcc-internal-format
 msgid "explicit instantiations are not permitted here"
-msgstr "‘await’ izraz nije dopušten u rukovateljima (handlers)"
+msgstr "eksplicitne instancije ovdje nisu dopuštene"
 
 #: cp/parser.cc:16119
-#, fuzzy, gcc-internal-format
-#| msgid "await expressions are not permitted in handlers"
+#, gcc-internal-format
 msgid "export-declarations are not permitted here"
-msgstr "‘await’ izraz nije dopušten u rukovateljima (handlers)"
+msgstr "izvozne deklaracije ovdje nisu dopuštene"
 
 #: cp/parser.cc:16290
 #, gcc-internal-format
@@ -62746,16 +62586,14 @@ msgid "multiple declarations in range-based %<for%> loop"
 msgstr ""
 
 #: cp/parser.cc:16701
-#, fuzzy, gcc-internal-format
-#| msgid "name-independent declarations only available with %<-std=c++2c%> or %<-std=gnu++2c%>"
+#, gcc-internal-format
 msgid "structured bindings with attributed identifiers only available with %<-std=c++2c%> or %<-std=gnu++2c%>"
-msgstr "deklaracije neovisne o imenu dostupne su samo s %<-std=c++2c%> ili %<-std=gnu++2c%>"
+msgstr "strukturirana povezivanja s pripisanim identifikatorima dostupna su samo s/sa %<-std=c++2c%> ili %<-std=gnu++2c%>"
 
 #: cp/parser.cc:16738
-#, fuzzy, gcc-internal-format
-#| msgid "name-independent declarations only available with %<-std=c++2c%> or %<-std=gnu++2c%>"
+#, gcc-internal-format
 msgid "structured bindings in conditions only available with %<-std=c++2c%> or %<-std=gnu++2c%>"
-msgstr "deklaracije neovisne o imenu dostupne su samo s %<-std=c++2c%> ili %<-std=gnu++2c%>"
+msgstr "strukturirana povezivanja u uvjetima dostupna su samo s/sa %<-std=c++2c%> ili %<-std=gnu++2c%>"
 
 #: cp/parser.cc:16742
 #, gcc-internal-format
@@ -62945,7 +62783,7 @@ msgstr ""
 #: cp/parser.cc:18755
 #, gcc-internal-format
 msgid "invalid encoding prefix in literal operator"
-msgstr "nevaljani prefiks kodiranja u doslovnom (literal) operatoru"
+msgstr "nevaljani prefiks kodiranja u literalnom"
 
 #: cp/parser.cc:18789
 #, gcc-internal-format
@@ -63129,10 +62967,9 @@ msgid "concept defined here"
 msgstr ""
 
 #: cp/parser.cc:21354
-#, fuzzy, gcc-internal-format
-#| msgid "invalid system register name %qs"
+#, gcc-internal-format
 msgid "invalid use of concept-name %qD"
-msgstr "nevaljano ime sustavnog registra %qs"
+msgstr "nevaljana upotreba %<concept-name%> %qD"
 
 #: cp/parser.cc:21370
 #, gcc-internal-format
@@ -63790,10 +63627,9 @@ msgid "in C++03 a class-key must be used when declaring a friend"
 msgstr ""
 
 #: cp/parser.cc:28816
-#, fuzzy, gcc-internal-format
-#| msgid "name-independent declarations only available with %<-std=c++2c%> or %<-std=gnu++2c%>"
+#, gcc-internal-format
 msgid "variadic friends or friend type declarations with multiple types only available with %<-std=c++2c%> or %<-std=gnu++2c%>"
-msgstr "deklaracije neovisne o imenu dostupne su samo s %<-std=c++2c%> ili %<-std=gnu++2c%>"
+msgstr "promjenjivi prijatelji ili deklaracije tipa prijatelja s više vrsta dostupni su samo s/sa %<-std=c++2c%> ili %<-std=gnu++2c%>"
 
 #: cp/parser.cc:28857
 #, gcc-internal-format
@@ -63841,10 +63677,9 @@ msgid "expected %<;%> at end of member declaration"
 msgstr ""
 
 #: cp/parser.cc:29386
-#, fuzzy, gcc-internal-format
-#| msgid "name-independent declarations only available with %<-std=c++2c%> or %<-std=gnu++2c%>"
+#, gcc-internal-format
 msgid "%<delete%> reason only available with %<-std=c++2c%> or %<-std=gnu++2c%>"
-msgstr "deklaracije neovisne o imenu dostupne su samo s %<-std=c++2c%> ili %<-std=gnu++2c%>"
+msgstr "%<delete%> razlog su dostupni samo s/sa %<-std=c++2c%> ili %<-std=gnu++2c%>"
 
 #: cp/parser.cc:29409
 #, gcc-internal-format
@@ -64492,10 +64327,9 @@ msgid "%<#pragma omp dispatch%> must be followed by a direct function call with 
 msgstr ""
 
 #: cp/parser.cc:50515
-#, fuzzy, gcc-internal-format
-#| msgid "  %qT is not a member pointer"
+#, gcc-internal-format
 msgid "%qD is not a C pointer"
-msgstr "  %qT nije član pointera"
+msgstr "%qD nije C pokazivač"
 
 #: cp/parser.cc:50637
 #, gcc-internal-format
@@ -65537,10 +65371,9 @@ msgid "instantiating erroneous template"
 msgstr ""
 
 #: cp/pt.cc:12462
-#, fuzzy, gcc-internal-format
-#| msgid "redeclared here"
+#, gcc-internal-format
 msgid "first error appeared here"
-msgstr "ponovno deklarirano ovdje"
+msgstr "ovdje se pojavila prva greška"
 
 #: cp/pt.cc:12813
 #, gcc-internal-format
@@ -66363,10 +66196,9 @@ msgid "%<auto{x}%> cannot be constrained"
 msgstr ""
 
 #: cp/semantics.cc:3838
-#, fuzzy, gcc-internal-format
-#| msgid "explicit object member function only available with %<-std=c++23%> or %<-std=gnu++23%>"
+#, gcc-internal-format
 msgid "%<auto{x}%> only available with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "eksplicitna funkcija člana objekta dostupna je samo s %<-std=c++23%> ili %<-std=gnu++23%>"
+msgstr "%<auto{x}%> je dostupno samo s/sa %<-std=c++23%> ili %<-std=gnu++23%>"
 
 #: cp/semantics.cc:4030
 #, gcc-internal-format
@@ -66469,10 +66301,9 @@ msgid "%qT is not an enumeration type"
 msgstr ""
 
 #: cp/semantics.cc:5093
-#, fuzzy, gcc-internal-format
-#| msgid "%qs requires an integer constant"
+#, gcc-internal-format
 msgid "pack index is not an integral constant"
-msgstr "%qs zahtijeva cijelobrojnu (integer) konstantu"
+msgstr "‘pack’ indeks nije integralna konstanta"
 
 #: cp/semantics.cc:5099
 #, gcc-internal-format
@@ -66480,10 +66311,9 @@ msgid "pack index is negative"
 msgstr ""
 
 #: cp/semantics.cc:5105
-#, fuzzy, gcc-internal-format
-#| msgid "%<__type_pack_element%> index is out of range"
+#, gcc-internal-format
 msgid "pack index is out of range"
-msgstr "index %<__type_pack_element%> je izvan raspona"
+msgstr "‘pack’ indeks je izvan raspona"
 
 #. Parameter packs can only be used in templates
 #: cp/semantics.cc:5242
@@ -66808,10 +66638,9 @@ msgid "constexpr string %<data()%> must be implicitly convertible to %<const cha
 msgstr ""
 
 #: cp/semantics.cc:12309
-#, fuzzy, gcc-internal-format
-#| msgid "%<score%> argument must be constant integer expression"
+#, gcc-internal-format
 msgid "constexpr string %<size()%> must be a constant expression"
-msgstr "argument %<score%> mora biti konstantan cjelobrojni izraz"
+msgstr "‘constexpr’ string %<size()%> mora biti 'constant expression’"
 
 #: cp/semantics.cc:12317
 #, gcc-internal-format
@@ -66819,16 +66648,14 @@ msgid "constexpr string message %<size()%> %qE too large"
 msgstr ""
 
 #: cp/semantics.cc:12344
-#, fuzzy, gcc-internal-format
-#| msgid "%<score%> argument must be constant integer expression"
+#, gcc-internal-format
 msgid "constexpr string %<data()[%d]%> must be a constant expression"
-msgstr "argument %<score%> mora biti konstantan cjelobrojni izraz"
+msgstr "‘constexpr’ string %<data()[%d]%> mora biti 'constant expression’"
 
 #: cp/semantics.cc:12370
-#, fuzzy, gcc-internal-format
-#| msgid "%<score%> argument must be constant integer expression"
+#, gcc-internal-format
 msgid "constexpr string %<data()%> must be a core constant expression"
-msgstr "argument %<score%> mora biti konstantan cjelobrojni izraz"
+msgstr "‘constexpr’ string %<data()%> mora biti 'constant expression’"
 
 #: cp/semantics.cc:12469
 #, gcc-internal-format
@@ -68437,10 +68264,9 @@ msgid "%<auto(x)%> cannot be constrained"
 msgstr ""
 
 #: cp/typeck2.cc:2513
-#, fuzzy, gcc-internal-format
-#| msgid "explicit object member function only available with %<-std=c++23%> or %<-std=gnu++23%>"
+#, gcc-internal-format
 msgid "%<auto(x)%> only available with %<-std=c++23%> or %<-std=gnu++23%>"
-msgstr "eksplicitna funkcija člana objekta dostupna je samo s %<-std=c++23%> ili %<-std=gnu++23%>"
+msgstr "%<auto(x)%> su dostupni samo s/sa %<-std=c++23%> ili %<-std=gnu++23%>"
 
 #: cp/typeck2.cc:2538
 #, gcc-internal-format
@@ -68942,7 +68768,7 @@ msgstr ""
 #: fortran/arith.cc:132
 #, gcc-internal-format, gfc-internal-format
 msgid "Invalid type in arithmetic operation at %L"
-msgstr "Nevaljan tip u aritmetičkom operandu kod %L"
+msgstr "Nevaljan tip u aritmetičkom operandu pri %L"
 
 #: fortran/arith.cc:135
 #, gcc-internal-format, gfc-internal-format
@@ -71036,7 +70862,7 @@ msgstr ""
 #: fortran/decl.cc:2163
 #, gcc-internal-format, gfc-internal-format
 msgid "Bad shape of initializer at %L"
-msgstr "Loš oblik inicijalizatora kod %L"
+msgstr "Loš oblik inicijalizatora pri %L"
 
 #: fortran/decl.cc:2170
 #, gcc-internal-format, gfc-internal-format
@@ -71169,10 +70995,9 @@ msgid "%qs at %L is a redefinition of the declaration in the corresponding inter
 msgstr ""
 
 #: fortran/decl.cc:2919
-#, fuzzy, gcc-internal-format
-#| msgid "Bad shape of initializer at %L"
+#, gcc-internal-format
 msgid "%qs entity cannot have an initializer at %L"
-msgstr "Loš oblik inicijalizatora kod %L"
+msgstr "%qs entitet ne može imati inicijalizator pri  %L"
 
 #: fortran/decl.cc:2945
 #, gcc-internal-format, gfc-internal-format
@@ -75479,10 +75304,9 @@ msgid "Expected association list at %C"
 msgstr ""
 
 #: fortran/match.cc:1930
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected name at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected associate name at %C"
-msgstr "očekivano je ime pri %C"
+msgstr "Očekivano je asocijativno ime pri %C"
 
 #: fortran/match.cc:1940
 #, gcc-internal-format, gfc-internal-format
@@ -75525,10 +75349,9 @@ msgid "The associate name %s with an assumed rank target at %L must have a bound
 msgstr ""
 
 #: fortran/match.cc:2018
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "the arguments to %qE must be constant strings"
+#, gcc-internal-format, gfc-internal-format
 msgid "The assumed rank target at %C must be contiguous"
-msgstr "argumenti za %qE moraju biti konstantni stringovi"
+msgstr "Pretpostavljeni ciljni rang na %C mora biti međašni"
 
 #: fortran/match.cc:2037
 #, gcc-internal-format
@@ -75566,10 +75389,9 @@ msgid "DEFAULT (NONE) specified more than once in DO CONCURRENT at %C"
 msgstr ""
 
 #: fortran/match.cc:2915
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected context selector set name at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected reduction operator or function name at %C"
-msgstr "očekivano je ime konteksta skupa selektora za %C"
+msgstr "Očekivan je operator redukcije ili naziv funkcije pri %C"
 
 #: fortran/match.cc:2935 fortran/openmp.cc:2446 fortran/openmp.cc:2482
 #: fortran/openmp.cc:2892 fortran/openmp.cc:2917
@@ -75578,10 +75400,9 @@ msgid "Expected %<:%> at %C"
 msgstr "Očekivano je %<:%> pri %C"
 
 #: fortran/match.cc:2945
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unexpected file name %s in linker resolution file. Expected %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected variable name in reduction list at %C"
-msgstr "neočekivano ime datoteke %s u resolution datoteci linkera. Očekivano %s"
+msgstr "Očekivano je ime  varijable u redukcijskom popisu pri %C"
 
 #: fortran/match.cc:2964
 #, gcc-internal-format, gfc-internal-format
@@ -76210,27 +76031,27 @@ msgstr ""
 #: fortran/match.cc:6334
 #, gcc-internal-format, gfc-internal-format
 msgid "Invalid use of statement function argument at %L"
-msgstr "Nevaljana upotreba argumenta funkcije iskaza kod %L"
+msgstr "Nevaljana upotreba argumenta ‘statement funkcije’ za %L"
 
 #: fortran/match.cc:6401
 #, gcc-internal-format, gfc-internal-format
 msgid "Statement function at %L is recursive"
-msgstr ""
+msgstr "’Statement funkcija’ pri %L je rekurzivna"
 
 #: fortran/match.cc:6407
 #, gcc-internal-format
 msgid "Statement function %qs at %L conflicts with function name"
-msgstr ""
+msgstr "‘Statement funkcija’ %qs pri %L je u konfliktu s imenom funkcije"
 
 #: fortran/match.cc:6421
 #, gcc-internal-format, gfc-internal-format
 msgid "Statement function at %L cannot appear within an INTERFACE"
-msgstr ""
+msgstr "‘Statement funkcija’ pri %L ne smije se pojaviti unutar INTERFACE"
 
 #: fortran/match.cc:6426
 #, gcc-internal-format, gfc-internal-format
 msgid "Statement function at %C"
-msgstr ""
+msgstr "‘Statement funkcija’ pri %C’"
 
 #: fortran/match.cc:6553 fortran/match.cc:6571 fortran/match.cc:6592
 #, gcc-internal-format, gfc-internal-format
@@ -76841,10 +76662,9 @@ msgid "Unexpected %<(%> at %C"
 msgstr "Neočekivan %<(%> pri %C"
 
 #: fortran/openmp.cc:1909
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<{%> at %C"
+#, gcc-internal-format
 msgid "Expected %<{%> at %C"
-msgstr "očekivano je %<{%> at %C"
+msgstr "Očekivano je %<{%> pri %C"
 
 #: fortran/openmp.cc:1919
 #, gcc-internal-format
@@ -76862,10 +76682,9 @@ msgid "Unknown foreign runtime identifier %qd at %L"
 msgstr ""
 
 #: fortran/openmp.cc:1972 fortran/openmp.cc:2107
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unexpected coarray %qs in %<allocate%> at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Unexpected null character in character literal at %L"
-msgstr "Neočekivano polje (coarray) %qs u %<allocate%> pri %L"
+msgstr "Neočekivani null-znak u znakovnom literalu pri %L"
 
 #: fortran/openmp.cc:1979 fortran/openmp.cc:2114
 #, gcc-internal-format
@@ -76873,10 +76692,9 @@ msgid "Unknown foreign runtime identifier %qs at %L"
 msgstr ""
 
 #: fortran/openmp.cc:1986 fortran/openmp.cc:7085
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<)%> at %C"
+#, gcc-internal-format
 msgid "Expected %<)%> at %C"
-msgstr "očekivano je %<)%> kod %C"
+msgstr "Očekivano je %<)%> pri %C"
 
 #: fortran/openmp.cc:2002
 #, gcc-internal-format, gfc-internal-format
@@ -76894,16 +76712,14 @@ msgid "Unexpected null or %<,%> character in character literal at %L"
 msgstr ""
 
 #: fortran/openmp.cc:2038
-#, fuzzy, gcc-internal-format
-#| msgid "Expected %<)%> or %<,%> at %C"
+#, gcc-internal-format
 msgid "Expected %<fr(%> or %<attr(%> at %C"
-msgstr "Očekivano je %<)%> ili %<,%> pri %C"
+msgstr "Očekivano je %<fr(%> ili %<attr(%> pri %C"
 
 #: fortran/openmp.cc:2045
-#, fuzzy, gcc-internal-format
-#| msgid "Expected %<,%> or %<)%> at %C"
+#, gcc-internal-format
 msgid "Expected %<,%> or %<}%> at %C"
-msgstr "Očekivano je %<,%> ili %<)%> kod %C"
+msgstr "Očekivano je %%<,%> or %<}%> pri %C"
 
 #: fortran/openmp.cc:2162
 #, gcc-internal-format
@@ -76911,30 +76727,26 @@ msgid "Duplicate %<prefer_type%> modifier at %C"
 msgstr ""
 
 #: fortran/openmp.cc:2174 fortran/openmp.cc:2212 fortran/openmp.cc:2241
-#, fuzzy, gcc-internal-format
-#| msgid "Expected %<,%> or %<)%> at %C"
+#, gcc-internal-format
 msgid "Expected %<,%> or %<:%> at %C"
-msgstr "Očekivano je %<,%> ili %<)%> kod %C"
+msgstr "Očekivano je %<,%> ili %<%> pri %C"
 
 #. Avoid the word 'modifier' as it could be also be no clauses and
 #. twice a variable named 'targetsync', which is also invalid.
 #: fortran/openmp.cc:2190
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<match%> at %C"
+#, gcc-internal-format
 msgid "Duplicate %<targetsync%> at %C"
-msgstr "očekivano je %<match%> pri %C"
+msgstr "Duplikat %<targetsync%> pri %C"
 
 #: fortran/openmp.cc:2219
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<match%> at %C"
+#, gcc-internal-format
 msgid "Duplicate %<target%> at %C"
-msgstr "očekivano je %<match%> pri %C"
+msgstr "Duplikat %<target%> pri %C"
 
 #: fortran/openmp.cc:2246
-#, fuzzy, gcc-internal-format
-#| msgid "Expected %<)%> or %<,%> at %C"
+#, gcc-internal-format
 msgid "Expected %<target%> or %<targetsync%> at %C"
-msgstr "Očekivano je %<)%> ili %<,%> pri %C"
+msgstr "Očekivano je %<target%> ili %<targetsync%> pri %C"
 
 #: fortran/openmp.cc:2302
 #, gcc-internal-format
@@ -77465,28 +77277,24 @@ msgid "expected expression at %C"
 msgstr ""
 
 #: fortran/openmp.cc:6484
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected constant logical expression"
+#, gcc-internal-format, gfc-internal-format
 msgid "property must be a logical expression at %L"
-msgstr "očekivan je konstantni logički izraz"
+msgstr "svojstvo mora biti logički izraz pri %L"
 
 #: fortran/openmp.cc:6488
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%<score%> argument must be constant integer expression"
+#, gcc-internal-format, gfc-internal-format
 msgid "property must be an integer expression at %L"
-msgstr "argument %<score%> mora biti konstantan cjelobrojni izraz"
+msgstr "svojstvo mora biti cjelobrojni izraz prior %L"
 
 #: fortran/openmp.cc:6495
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected constant logical expression"
+#, gcc-internal-format, gfc-internal-format
 msgid "property must be a constant logical expression at %L"
-msgstr "očekivan je konstantni logički izraz"
+msgstr "svojstvo mora biti konstantni logički izraz pri %L"
 
 #: fortran/openmp.cc:6499
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%<score%> argument must be constant integer expression"
+#, gcc-internal-format, gfc-internal-format
 msgid "property must be a constant integer expression at %L"
-msgstr "argument %<score%> mora biti konstantan cjelobrojni izraz"
+msgstr "svojstvo mora biti konstantni cjelobrojni izraz pri %L"
 
 #: fortran/openmp.cc:6513
 #, gcc-internal-format, gfc-internal-format
@@ -77534,28 +77342,24 @@ msgid "%qs clause at %L specified more than once"
 msgstr ""
 
 #: fortran/openmp.cc:6782
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<construct%>, %<device%>, %<implementation%> or %<user%> at %C"
+#, gcc-internal-format
 msgid "expected %<nothing%>, %<need_device_ptr%> or %<need_device_addr%> at %C"
-msgstr "očekivano je %<construct%>, %<device%>, %<implementation%> ili %<user%> pri %C"
+msgstr "očekivano je %<nothing%>, %<need_device_ptr%> ili %<need_device_addr%> pri %C"
 
 #: fortran/openmp.cc:6788 fortran/openmp.cc:6906 fortran/openmp.cc:7061
-#, fuzzy, gcc-internal-format
-#| msgid "Expected %<:%> at %C"
+#, gcc-internal-format
 msgid "expected %<:%> at %C"
-msgstr "Očekivano je %<:%> pri %C"
+msgstr "očekivano je %<:%> pri %C"
 
 #: fortran/openmp.cc:6821
-#, fuzzy, gcc-internal-format
-#| msgid "Unexpected %<(%> at %C"
+#, gcc-internal-format
 msgid "unexpected %<:%> at %C"
-msgstr "Neočekivan %<(%> pri %C"
+msgstr "neočekivano %<:%> pri %C"
 
 #: fortran/openmp.cc:6868
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected constant logical expression"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected constant integer expression at %C"
-msgstr "očekivan je konstantni logički izraz"
+msgstr "očekivan je  konstantni cjelobrojni izraz pri %C"
 
 #: fortran/openmp.cc:6890
 #, gcc-internal-format
@@ -77563,16 +77367,14 @@ msgid "expected dummy parameter name, %<omp_num_args%> or constant positive inte
 msgstr ""
 
 #: fortran/openmp.cc:6937
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<)%> at %C"
+#, gcc-internal-format
 msgid "expected %<interop%> at %C"
-msgstr "očekivano je %<)%> kod %C"
+msgstr "očekivano je %<interop%> pri %C"
 
 #: fortran/openmp.cc:6987
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<at%>, %<severity%> or %<message%> clause"
+#, gcc-internal-format
 msgid "expected %<match%>, %<adjust_args%> or %<append_args%> at %C"
-msgstr "očekivano je %<at%>, %<severity%> ili %<message%> klauzula"
+msgstr "očekivan je %<match%>, %<adjust_args%> ili %<append_args%> pri %C"
 
 #: fortran/openmp.cc:6993
 #, gcc-internal-format
@@ -77580,10 +77382,9 @@ msgid "the %qs clause at %L can only be specified if the %<dispatch%> selector o
 msgstr ""
 
 #: fortran/openmp.cc:7033
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<host%>, %<nohost%> or %<any%>"
+#, gcc-internal-format
 msgid "expected %<when%>, %<otherwise%>, or %<default%> at %C"
-msgstr "očekivano je %<host%>, %<nohost%> ili %<any%>"
+msgstr "očekivan je %<when%>, %<otherwise%> ili %<default%> pri %C"
 
 #: fortran/openmp.cc:7040
 #, gcc-internal-format
@@ -77606,10 +77407,9 @@ msgid "variant directive used in OMP BEGIN METADIRECTIVE at %C must have a corre
 msgstr ""
 
 #: fortran/openmp.cc:7130
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unexpected junk at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Unexpected junk after OMP METADIRECTIVE at %C"
-msgstr "Neočekivano smeće pri %C"
+msgstr "Neočekivano smeće iza OMP METADIRECTIVE pri %C"
 
 #: fortran/openmp.cc:7189
 #, gcc-internal-format, gfc-internal-format
@@ -78879,10 +78679,9 @@ msgid "!$OMP DECLARE SIMD should refer to containing procedure %qs at %L"
 msgstr ""
 
 #: fortran/openmp.cc:13125
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected constant logical expression"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected constant non-negative scalar integer offset expression at %L"
-msgstr "očekivan je konstantni logički izraz"
+msgstr "Očekivan je ne-negativan skalarni cjelobrojni odmak (offset) izraz pri %L"
 
 #: fortran/openmp.cc:13128
 #, gcc-internal-format
@@ -78892,7 +78691,7 @@ msgstr ""
 #: fortran/openmp.cc:13142
 #, gcc-internal-format, gfc-internal-format
 msgid "Expected dummy parameter name or a positive integer at %L"
-msgstr ""
+msgstr "Očekivano je lažno ime parametra ili pozitivnog cijelog broja pri %L"
 
 #: fortran/openmp.cc:13168
 #, gcc-internal-format, gfc-internal-format
@@ -79035,10 +78834,9 @@ msgid "The value of n in %<-finit-character=n%> must be between 0 and 127"
 msgstr ""
 
 #: fortran/options.cc:889
-#, fuzzy, gcc-internal-format
-#| msgid "command-line option %qs is valid for the driver but not for %s"
+#, gcc-internal-format
 msgid "command-line option %<-fno-builtin-%s%> is not valid for Fortran"
-msgstr "opcija naredbenog retka %qs valjana je za drajver, ali ne i za %s"
+msgstr "opcija naredbenog retka %<-fno-builtin-%s%> nije valjana za Fortran"
 
 #: fortran/parse.cc:665
 #, gcc-internal-format, gfc-internal-format
@@ -79662,10 +79460,9 @@ msgid "Integer too big for its kind at %C. This check can be disabled with the o
 msgstr ""
 
 #: fortran/primary.cc:388
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "function body not available"
+#, gcc-internal-format, gfc-internal-format
 msgid "Unsigned kind %d at %C not available"
-msgstr "tijelo funkcije nije dostupno"
+msgstr "Objekt (vrsta) bez predznaka %d pri %C nije dostupan"
 
 #: fortran/primary.cc:419
 #, gcc-internal-format, gfc-internal-format
@@ -79941,10 +79738,9 @@ msgid "Procedure pointer component %qs requires an argument list at %C"
 msgstr ""
 
 #: fortran/primary.cc:2833
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unexpected junk at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Unexpected array/substring ref at %C"
-msgstr "Neočekivano smeće pri %C"
+msgstr "Neočekivano referencija na polje/podstring pri %C"
 
 #: fortran/primary.cc:2855
 #, gcc-internal-format, gfc-internal-format
@@ -80794,10 +80590,9 @@ msgid "BOZ literal constant at %L cannot be an operand of unary operator %qs"
 msgstr ""
 
 #: fortran/resolve.cc:4332
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "await expressions are not permitted in handlers"
+#, gcc-internal-format, gfc-internal-format
 msgid "Negation of unsigned expression at %L not permitted "
-msgstr "‘await’ izraz nije dopušten u rukovateljima (handlers)"
+msgstr "Negacija izraza bez predznaka pri %L nije dopuštena"
 
 #: fortran/resolve.cc:4353
 #, gcc-internal-format
@@ -81035,10 +80830,9 @@ msgid "TEAM_NUMBER argument at %L must be of INTEGER type, found %s"
 msgstr ""
 
 #: fortran/resolve.cc:5491
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "the arguments to %qE must be constant strings"
+#, gcc-internal-format, gfc-internal-format
 msgid "TEAM argument at %L must be scalar"
-msgstr "argumenti za %qE moraju biti konstantni stringovi"
+msgstr "Argument za TEAM pri %L mora biti skalar"
 
 #: fortran/resolve.cc:5500
 #, gcc-internal-format, gfc-internal-format
@@ -81046,10 +80840,9 @@ msgid "TEAM argument at %L must be of TEAM_TYPE from the intrinsic module ISO_FO
 msgstr ""
 
 #: fortran/resolve.cc:5514
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "the arguments to %qE must be constant strings"
+#, gcc-internal-format, gfc-internal-format
 msgid "STAT argument at %L must be scalar"
-msgstr "argumenti za %qE moraju biti konstantni stringovi"
+msgstr "Argument za STAT pri %L mora biti skalar"
 
 #: fortran/resolve.cc:5521
 #, gcc-internal-format, gfc-internal-format
@@ -81296,10 +81089,9 @@ msgid "Variable %qs at %L not specified in a locality spec of DO CONCURRENT at %
 msgstr ""
 
 #: fortran/resolve.cc:8198
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unexpected coarray %qs in %<allocate%> at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected variable name in %s locality spec at %L"
-msgstr "Neočekivano polje (coarray) %qs u %<allocate%> pri %L"
+msgstr "Očekivano je ime varijable u specifikaciji lokaliteta %s pri %L"
 
 #: fortran/resolve.cc:8207
 #, gcc-internal-format
@@ -81332,10 +81124,9 @@ msgid "Nonpointer polymorphic dummy argument not permitted for %qs in %s localit
 msgstr ""
 
 #: fortran/resolve.cc:8260
-#, fuzzy, gcc-internal-format
-#| msgid "Unexpected coarray %qs in %<allocate%> at %L"
+#, gcc-internal-format
 msgid "Coarray not permitted for %qs in %s locality-spec at %L"
-msgstr "Neočekivano polje (coarray) %qs u %<allocate%> pri %L"
+msgstr "Coarray nije dopušten za %qs u specifikaciji lokaliteta %s pri %L"
 
 #: fortran/resolve.cc:8266
 #, gcc-internal-format
@@ -81912,10 +81703,9 @@ msgid "Variable in the ordinary assignment at %L is a procedure pointer componen
 msgstr ""
 
 #: fortran/resolve.cc:12265
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Cannot find symbol %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "Cannot assign %s to %s at %L"
-msgstr "Ne može naći simbol %qs"
+msgstr "%s nije moguće odijeliti %s pri %L"
 
 #: fortran/resolve.cc:12313
 #, gcc-internal-format
@@ -84191,10 +83981,9 @@ msgid "Sorry, !$ACC DECLARE at %L is not allowed in BLOCK construct"
 msgstr ""
 
 #: fortran/trans-decl.cc:7198 fortran/trans-expr.cc:6117
-#, fuzzy, gcc-internal-format
-#| msgid "sorry, unimplemented"
+#, gcc-internal-format
 msgid "Unsigned not yet implemented"
-msgstr "nije implementirano:"
+msgstr "Objekt bez predznaka (unsigned) još nije implementiran"
 
 #: fortran/trans-decl.cc:8316
 #, gcc-internal-format
@@ -84403,10 +84192,9 @@ msgid "the %qs clause can only be specified if the %<dispatch%> selector of the 
 msgstr ""
 
 #: fortran/trans-openmp.cc:9010 fortran/trans-openmp.cc:9049
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected identifier at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected positive argument index at %L"
-msgstr "očekivano je identifikator pri %C"
+msgstr "Očekivan je pozitivni argument indeka pri %L"
 
 #: fortran/trans-openmp.cc:9021
 #, gcc-internal-format, gfc-internal-format
@@ -84421,7 +84209,7 @@ msgstr ""
 #: fortran/trans-openmp.cc:9085
 #, gcc-internal-format
 msgid "List item %qs at %L, declared at %L, is not a dummy argument"
-msgstr ""
+msgstr "Stavka popisa %qs pri %L, deklarirana pri %L, nije lažni argument"
 
 #: fortran/trans-openmp.cc:9099
 #, gcc-internal-format
@@ -84444,10 +84232,9 @@ msgid "%qs at %L is specified more than once"
 msgstr ""
 
 #: fortran/trans-openmp.cc:9139
-#, fuzzy, gcc-internal-format
-#| msgid "%<-pipe%> not supported"
+#, gcc-internal-format
 msgid "%<need_device_addr%> not yet supported"
-msgstr "%<-pipe%> nije podržan"
+msgstr "%<need_device_addr%> nije podržana"
 
 #: fortran/trans-stmt.cc:576
 #, gcc-internal-format, gfc-internal-format
@@ -84631,16 +84418,14 @@ msgid "unexpected EOF"
 msgstr "neočekivani EOF"
 
 #: go/gofrontend/expressions.cc:985
-#, fuzzy, gcc-internal-format
-#| msgid "invalid slice of map"
+#, gcc-internal-format
 msgid "invalid use of type"
-msgstr "nevaljani iskječak mape"
+msgstr "nevaljana upotreba tipa"
 
 #: go/gofrontend/statements.cc:2670
-#, fuzzy, gcc-internal-format
-#| msgid "expected constant logical expression"
+#, gcc-internal-format
 msgid "expected call expression"
-msgstr "očekivan je konstantni logički izraz"
+msgstr "očekivan je izraz poziva"
 
 #: lto/lto-common.cc:2041
 #, gcc-internal-format
@@ -84685,7 +84470,7 @@ msgstr "rezolucija Sub-ID %wx nije u objektnoj datoteci"
 #: lto/lto-common.cc:2285
 #, gcc-internal-format
 msgid "bytecode stream in file %qs generated with GCC compiler older than 10.0"
-msgstr "bytecode struju u datoteci %qs generirao je GCC kompajler stariji od 10.0"
+msgstr "bytecode struju u datoteci %qs generirao je GCC kompilator stariji od 10.0"
 
 #: lto/lto-common.cc:2305
 #, gcc-internal-format
@@ -85154,7 +84939,7 @@ msgstr "atributi kategorije nisu dostupni u Objective-C 1.0"
 #: objc/objc-act.cc:597
 #, gcc-internal-format
 msgid "category attributes are not available in this version of the compiler, (ignored)"
-msgstr "atributi kategorije nisu dostupni u ovoj inačici kompajlera, zanemareno"
+msgstr "atributi kategorije nisu dostupni u ovoj inačici kompilatora, zanemareno"
 
 #: objc/objc-act.cc:603
 #, gcc-internal-format
@@ -86169,7 +85954,13 @@ msgstr ""
 msgid "are you trying to break %s? how dare you?"
 msgstr ""
 
-#~ msgid "bad address, not an I/O address:"
+#, gcc-internal-format, gfc-internal-format
+#~ msgid " %s"
+#~ msgstr "Globalna deklaracija %s za %s"
+
+#, fuzzy, c-format
+#~| msgid "bad address, not an I/O address:"
+#~ msgid "bad I/O address 0x"
 #~ msgstr "loša adresa, nije U/I (I/O) adresa:"
 
 #, gcc-internal-format
@@ -86187,6 +85978,10 @@ msgstr ""
 #, gcc-internal-format
 #~ msgid "expected %<seq_cst%>, %<relaxed%> or %<acq_rel%>"
 #~ msgstr "očekivano je %<seq_cst%>, %<relaxed%> ili %<acq_rel%>"
+
+#, gcc-internal-format
+#~ msgid "expected %<construct%>, %<device%>, %<implementation%> or %<user%> at %C"
+#~ msgstr "očekivano je %<construct%>, %<device%>, %<implementation%> ili %<user%> pri %C"
 
 #~ msgid "invalid operand size for operand code 'Z'"
 #~ msgstr "nevaljana veličina operanda za operand kȏd ‘Z’"
