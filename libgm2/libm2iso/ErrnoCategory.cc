@@ -50,7 +50,10 @@ EXPORT(IsErrnoHard) (int e)
 {
 #if defined(HAVE_ERRNO_H) || defined(HAVE_SYS_ERRNO_H)
   return ((e == EPERM) || (e == ENOENT) || (e == EIO) || (e == ENXIO)
-          || (e == EACCES) || (e == ENOTBLK) || (e == ENODEV) || (e == EINVAL)
+          || (e == EACCES) || (e == ENODEV) || (e == EINVAL)
+#ifdef ENOTBLK
+          || (e == ENOTBLK)
+#endif
           || (e == ENFILE) || (e == EROFS) || (e == EMLINK));
 #else
   return false;
@@ -79,7 +82,10 @@ EXPORT(UnAvailable) (int e)
 {
 #if defined(HAVE_ERRNO_H) || defined(HAVE_SYS_ERRNO_H)
   return ((e == ENOENT) || (e == ESRCH) || (e == ENXIO) || (e == ECHILD)
-          || (e == ENOTBLK) || (e == ENODEV) || (e == ENOTDIR));
+#ifdef ENOTBLK
+          || (e == ENOTBLK)
+#endif
+          || (e == ENODEV) || (e == ENOTDIR));
 #else
   return false;
 #endif
@@ -108,9 +114,11 @@ EXPORT(GetOpenResults) (int e)
     case EACCES:
       return wrongPermissions;
       break;
+#ifdef ENOTBLK
     case ENOTBLK:
       return wrongFileType;
       break;
+#endif
     case EEXIST:
       return fileExists;
       break;
