@@ -1,3 +1,642 @@
+2025-03-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/116706
+	* gfortran.dg/bounds_check_27.f90: New test.
+
+2025-03-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119316
+	* g++.dg/abi/mangle-new1.C: New test.
+
+2025-03-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/119366
+	* gcc.dg/Wfatal-bad-attr-pr119366.c: New test.
+
+2025-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119350
+	* gcc.dg/pr119350-1.c: New test.
+	* gcc.dg/pr119350-2.c: New test.
+	* gcc.dg/pr119350-3.c: New test.
+
+2025-03-19  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/113634
+	* gcc.dg/Wfree-nonheap-object-7.c: Adjust calloc and realloc
+	declarations, remove -std=gnu17.
+
+2025-03-19  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/zvector/autovec-double-signaling-eq-z13.c:
+	Honour sNaNs.
+
+2025-03-19  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/vcond-shift.c: Adapt to new match.pd
+	rule and change scan-assembler-times for shifts.
+
+2025-03-19  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-19  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove issue-1089.rs.
+
+2025-03-19  badumbatish  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_parse_operand.rs:
+	Remove inout, functionality not supported. Remove redundant {}
+	* rust/execute/torture/inline_asm_mov_x_5_ARM.rs: Add operand in
+	* rust/execute/torture/inline_asm_mov_x_5_x86_64.rs: Likewise
+
+2025-03-19  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-19  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove
+	inline_asm_parse_output_operand.rs.
+
+2025-03-19  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-19  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove type-alias1.rs.
+
+2025-03-19  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-19  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove shadow1.rs.
+
+2025-03-19  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-2499.rs: New test.
+
+2025-03-19  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude:
+	* rust/compile/issue-2203.rs: New test.
+
+2025-03-19  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 is crashing here
+	* rust/compile/issue-2951.rs: New test.
+
+2025-03-19  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-3036.rs: New test.
+
+2025-03-19  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3139-1.rs: New test.
+	* rust/compile/issue-3139-2.rs: New test.
+	* rust/compile/issue-3139-3.rs: New test.
+	* rust/compile/nr2/exclude: these all break nr2
+
+2025-03-19  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove cast_generics.rs, issue-1131.rs,
+	issue-1383.rs and unsafe10.rs
+
+2025-03-19  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/box_syntax_feature_gate.rs: Add box land item
+	definition.
+
+2025-03-19  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/functions_without_body.rs: Add compile step argument.
+
+2025-03-19  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove working tests from nr2 exclude list.
+
+2025-03-19  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/name_resolution21.rs: Move to...
+	* rust/compile/xfail/name_resolution21.rs: ...here.
+
+2025-03-19  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-3082.rs: New test.
+
+2025-03-19  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-3035.rs: New test.
+
+2025-03-19  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-19  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-3030.rs: New test.
+
+2025-03-19  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/compile.exp: New test.
+	* rust/compile/nr2/exclude: New.
+
+2025-03-19  JoanVC  <github-91yu@joanvc.cat>
+
+	* rust/compile/issue-3141.rs: New test.
+
+2025-03-19  benjamin.thos  <benjamin.thos@epita.fr>
+
+	* rust/compile/auto_trait_super_trait.rs: Add feature attribute.
+	* rust/compile/generic_auto_trait.rs: likewise.
+	* rust/compile/auto_trait.rs: add test for error without
+	feature attribute
+
+2025-03-19  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust/compile/exhaustiveness1.rs: New test.
+	* rust/compile/exhaustiveness2.rs: New test.
+	* rust/compile/exhaustiveness3.rs: New test.
+
+2025-03-19  Liam Naddell  <liam.naddell@mail.utoronto.ca>
+
+	* rust/compile/trait13.rs:
+	Add test for supertraits of supertraits
+	* rust/compile/trait14.rs:
+	Diamond problem with supertraits test
+	* rust/execute/torture/trait14.rs:
+	Add test for dynamic dispatch with supertraits
+	* rust/execute/torture/trait15.rs:
+	Add test for dynamic dispatch with generics
+	* rust/execute/torture/trait16.rs:
+	Add test for dynamic dispatch with lifetime params 1
+	* rust/execute/torture/trait17.rs:
+	Add test for dynamic dispatch with lifetime params 2
+	* rust/execute/torture/trait18.rs:
+	Add test for default implementations with dynamic dispatch and
+	supertraits
+
+2025-03-19  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/v0-mangle1.rs: Make v0-mangle test more crate_num
+	agnostic.
+
+2025-03-19  badumbatish  <tanghocle456@gmail.com>
+
+	* rust/execute/torture/inline_asm_mov_x_5.rs: Move to...
+	* rust/execute/torture/inline_asm_mov_x_5_ARM.rs: ...here.
+	* rust/execute/torture/inline_asm_mov_x_5_x86_64.rs: New test.
+
+2025-03-19  badumbatish  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_typecheck.rs: Change comments
+
+2025-03-19  badumbatish  <tanghocle456@gmail.com>
+
+	* rust/execute/inline_asm_mov_x_5.rs: Move to...
+	* rust/execute/torture/inline_asm_mov_x_5.rs: ...here.
+
+2025-03-19  badumbatish  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_parse_operand.rs: Fix format asm
+	* rust/compile/inline_asm_parse_output_operand.rs:
+	Fix format asm
+	* rust/execute/torture/inline_asm_mov_x_5.rs: Move to...
+	* rust/execute/inline_asm_mov_x_5.rs: ...here.
+
+2025-03-19  badumbatish  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_typecheck.rs: New test.
+
+2025-03-19  badumbatish  <tanghocle456@gmail.com>
+
+	* rust/execute/torture/inline_asm_mov_x_5.rs: New test.
+
+2025-03-19  badumbatish  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_parse_output_operand.rs: New test.
+
+2025-03-19  jjasmine  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_compile_nop.rs: New test.
+
+2025-03-19  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust/compile/issue-2324-2.rs: Fix error message.
+	* rust/compile/match9.rs: New test.
+
+2025-03-19  Raiki Tamura  <tamaron1203@gmail.com>
+
+	* rust/compile/match8.rs: New test.
+
+2025-03-19  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/assume.rs: Add missing feature attribute.
+	* rust/compile/issue-1901.rs: Likewise.
+	* rust/compile/issue-1981.rs: Likewise.
+	* rust/compile/sizeof-stray-infer-var-bug.rs: Likewise.
+	* rust/compile/torture/intrinsics-8.rs: Likewise.
+	* rust/compile/torture/transmute-size-check-1.rs: Likewise.
+	* rust/compile/torture/transmute1.rs: Likewise.
+	* rust/compile/torture/uninit-intrinsic-1.rs: Likewise.
+	* rust/execute/torture/issue-1436.rs: Likewise.
+	* rust/execute/torture/issue-2583.rs: Likewise.
+
+2025-03-19  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/prelude_import.rs: New test.
+
+2025-03-19  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/compile/nonexistent-field.rs: New test.
+
+2025-03-19  Kushal Pal  <kushalpal109@gmail.com>
+
+	* rust/borrowck/test_move.rs: Test rich-errors related to moves.
+	* rust/borrowck/test_move_conditional.rs: Likewise.
+
+2025-03-19  Kushal Pal  <kushalpal109@gmail.com>
+
+	* rust/borrowck/subset.rs: Better subset errors.
+
+2025-03-19  Kushal Pal  <kushalpal109@gmail.com>
+
+	* rust/borrowck/test_move.rs: Assigning `a` to `c` is the
+	correct way to test the behaviour.
+
+2025-03-19  Liam Naddell  <liam.naddell@mail.utoronto.ca>
+
+	* rust/compile/issue-2324-1.rs:
+	add test for E0532 with tuple enum variant
+	* rust/compile/issue-2324-2.rs:
+	add test for E0532 with struct enum variant
+
+2025-03-19  Liam Naddell  <liam.naddell@mail.utoronto.ca>
+
+	* rust/compile/macros/builtin/include1.rs:
+	add basic include test at global scope
+	* rust/compile/macros/builtin/include2.rs:
+	add basic include test at local scope with expression
+	* rust/compile/macros/builtin/include3.rs:
+	add eager expansion test at global scope
+	* rust/compile/macros/builtin/include4.rs:
+	add eager expansion test at local scope with expression
+	* rust/compile/macros/builtin/include_bytes.rs:
+	add eager expansion test at global scope
+	* rust/compile/macros/builtin/include_rs:
+	supporting test file with dummy function
+	* rust/compile/macros/builtin/include_rs2:
+	supporting test file with dummy string
+	* rust/compile/macros/builtin/include_str.rs:
+	add eager expansion test at global scope
+	* rust/execute/torture/builtin_macro_include_bytes.rs:
+	clean up old test logic, add permutations for eager expansion
+	* rust/execute/torture/builtin_macro_include_str.rs:
+	add eager expansion permutations
+
+2025-03-19  Kushal Pal  <kushalpal109@gmail.com>
+
+	* rust/borrowck/reference.rs: Test rich errors for
+	borrow-checker.
+	* rust/borrowck/return_ref_to_local.rs: Likewise.
+	* rust/borrowck/tmp.rs: Likewise.
+	* rust/borrowck/use_while_mut.rs: Likewise.
+	* rust/borrowck/use_while_mut_fr.rs: Likewise.
+	* rust/borrowck/well_formed_function_inputs.rs: Likewise.
+
+2025-03-19  badumbatish  <tanghocle456@gmail.com>
+
+	* rust/compile/inline_asm_illegal_operands.rs: Test now passing
+	* rust/compile/inline_asm_parse_operand.rs: Remove _, not
+	supported right now
+
+2025-03-19  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/macro-delim.rs: Move to...
+	* rust/compile/macros/mbe/macro-delim.rs: ...here.
+	* rust/compile/macro-issue1053-2.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue1053-2.rs: ...here.
+	* rust/compile/macro-issue1053.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue1053.rs: ...here.
+	* rust/compile/macro-issue1224.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue1224.rs: ...here.
+	* rust/compile/macro-issue1233.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue1233.rs: ...here.
+	* rust/compile/macro-issue1395-2.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue1395-2.rs: ...here.
+	* rust/compile/macro-issue1395.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue1395.rs: ...here.
+	* rust/compile/macro-issue1400-2.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue1400-2.rs: ...here.
+	* rust/compile/macro-issue1400.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue1400.rs: ...here.
+	* rust/compile/macro-issue2092.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue2092.rs: ...here.
+	* rust/compile/macro-issue2192.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue2192.rs: ...here.
+	* rust/compile/macro-issue2194.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue2194.rs: ...here.
+	* rust/compile/macro-issue2229.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue2229.rs: ...here.
+	* rust/compile/macro-issue2264.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue2264.rs: ...here.
+	* rust/compile/macro-issue2268.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue2268.rs: ...here.
+	* rust/compile/macro-issue2273.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue2273.rs: ...here.
+	* rust/compile/macro-issue2653.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue2653.rs: ...here.
+	* rust/compile/macro-issue2983_2984.rs: Move to...
+	* rust/compile/macros/mbe/macro-issue2983_2984.rs: ...here.
+	* rust/compile/macro1.rs: Move to...
+	* rust/compile/macros/mbe/macro1.rs: ...here.
+	* rust/compile/macro10.rs: Move to...
+	* rust/compile/macros/mbe/macro10.rs: ...here.
+	* rust/compile/macro11.rs: Move to...
+	* rust/compile/macros/mbe/macro11.rs: ...here.
+	* rust/compile/macro12.rs: Move to...
+	* rust/compile/macros/mbe/macro12.rs: ...here.
+	* rust/compile/macro13.rs: Move to...
+	* rust/compile/macros/mbe/macro13.rs: ...here.
+	* rust/compile/macro14.rs: Move to...
+	* rust/compile/macros/mbe/macro14.rs: ...here.
+	* rust/compile/macro15.rs: Move to...
+	* rust/compile/macros/mbe/macro15.rs: ...here.
+	* rust/compile/macro16.rs: Move to...
+	* rust/compile/macros/mbe/macro16.rs: ...here.
+	* rust/compile/macro17.rs: Move to...
+	* rust/compile/macros/mbe/macro17.rs: ...here.
+	* rust/compile/macro18.rs: Move to...
+	* rust/compile/macros/mbe/macro18.rs: ...here.
+	* rust/compile/macro19.rs: Move to...
+	* rust/compile/macros/mbe/macro19.rs: ...here.
+	* rust/compile/macro2.rs: Move to...
+	* rust/compile/macros/mbe/macro2.rs: ...here.
+	* rust/compile/macro20.rs: Move to...
+	* rust/compile/macros/mbe/macro20.rs: ...here.
+	* rust/compile/macro21.rs: Move to...
+	* rust/compile/macros/mbe/macro21.rs: ...here.
+	* rust/compile/macro22.rs: Move to...
+	* rust/compile/macros/mbe/macro22.rs: ...here.
+	* rust/compile/macro23.rs: Move to...
+	* rust/compile/macros/mbe/macro23.rs: ...here.
+	* rust/compile/macro25.rs: Move to...
+	* rust/compile/macros/mbe/macro25.rs: ...here.
+	* rust/compile/macro26.rs: Move to...
+	* rust/compile/macros/mbe/macro26.rs: ...here.
+	* rust/compile/macro27.rs: Move to...
+	* rust/compile/macros/mbe/macro27.rs: ...here.
+	* rust/compile/macro28.rs: Move to...
+	* rust/compile/macros/mbe/macro28.rs: ...here.
+	* rust/compile/macro29.rs: Move to...
+	* rust/compile/macros/mbe/macro29.rs: ...here.
+	* rust/compile/macro3.rs: Move to...
+	* rust/compile/macros/mbe/macro3.rs: ...here.
+	* rust/compile/macro30.rs: Move to...
+	* rust/compile/macros/mbe/macro30.rs: ...here.
+	* rust/compile/macro31.rs: Move to...
+	* rust/compile/macros/mbe/macro31.rs: ...here.
+	* rust/compile/macro32.rs: Move to...
+	* rust/compile/macros/mbe/macro32.rs: ...here.
+	* rust/compile/macro33.rs: Move to...
+	* rust/compile/macros/mbe/macro33.rs: ...here.
+	* rust/compile/macro34.rs: Move to...
+	* rust/compile/macros/mbe/macro34.rs: ...here.
+	* rust/compile/macro35.rs: Move to...
+	* rust/compile/macros/mbe/macro35.rs: ...here.
+	* rust/compile/macro36.rs: Move to...
+	* rust/compile/macros/mbe/macro36.rs: ...here.
+	* rust/compile/macro37.rs: Move to...
+	* rust/compile/macros/mbe/macro37.rs: ...here.
+	* rust/compile/macro38.rs: Move to...
+	* rust/compile/macros/mbe/macro38.rs: ...here.
+	* rust/compile/macro39.rs: Move to...
+	* rust/compile/macros/mbe/macro39.rs: ...here.
+	* rust/compile/macro4.rs: Move to...
+	* rust/compile/macros/mbe/macro4.rs: ...here.
+	* rust/compile/macro40.rs: Move to...
+	* rust/compile/macros/mbe/macro40.rs: ...here.
+	* rust/compile/macro41.rs: Move to...
+	* rust/compile/macros/mbe/macro41.rs: ...here.
+	* rust/compile/macro42.rs: Move to...
+	* rust/compile/macros/mbe/macro42.rs: ...here.
+	* rust/compile/macro43.rs: Move to...
+	* rust/compile/macros/mbe/macro43.rs: ...here.
+	* rust/compile/macro44.rs: Move to...
+	* rust/compile/macros/mbe/macro44.rs: ...here.
+	* rust/compile/macro45.rs: Move to...
+	* rust/compile/macros/mbe/macro45.rs: ...here.
+	* rust/compile/macro46.rs: Move to...
+	* rust/compile/macros/mbe/macro46.rs: ...here.
+	* rust/compile/macro47.rs: Move to...
+	* rust/compile/macros/mbe/macro47.rs: ...here.
+	* rust/compile/macro48.rs: Move to...
+	* rust/compile/macros/mbe/macro48.rs: ...here.
+	* rust/compile/macro49.rs: Move to...
+	* rust/compile/macros/mbe/macro49.rs: ...here.
+	* rust/compile/macro5.rs: Move to...
+	* rust/compile/macros/mbe/macro5.rs: ...here.
+	* rust/compile/macro50.rs: Move to...
+	* rust/compile/macros/mbe/macro50.rs: ...here.
+	* rust/compile/macro51.rs: Move to...
+	* rust/compile/macros/mbe/macro51.rs: ...here.
+	* rust/compile/macro52.rs: Move to...
+	* rust/compile/macros/mbe/macro52.rs: ...here.
+	* rust/compile/macro53.rs: Move to...
+	* rust/compile/macros/mbe/macro53.rs: ...here.
+	* rust/compile/macro54.rs: Move to...
+	* rust/compile/macros/mbe/macro54.rs: ...here.
+	* rust/compile/macro55.rs: Move to...
+	* rust/compile/macros/mbe/macro55.rs: ...here.
+	* rust/compile/macro56.rs: Move to...
+	* rust/compile/macros/mbe/macro56.rs: ...here.
+	* rust/compile/macro57.rs: Move to...
+	* rust/compile/macros/mbe/macro57.rs: ...here.
+	* rust/compile/macro6.rs: Move to...
+	* rust/compile/macros/mbe/macro6.rs: ...here.
+	* rust/compile/macro7.rs: Move to...
+	* rust/compile/macros/mbe/macro7.rs: ...here.
+	* rust/compile/macro8.rs: Move to...
+	* rust/compile/macros/mbe/macro8.rs: ...here.
+	* rust/compile/macro9.rs: Move to...
+	* rust/compile/macros/mbe/macro9.rs: ...here.
+	* rust/compile/macro_call_statement.rs: Move to...
+	* rust/compile/macros/mbe/macro_call_statement.rs: ...here.
+	* rust/compile/macro_export_1.rs: Move to...
+	* rust/compile/macros/mbe/macro_export_1.rs: ...here.
+	* rust/compile/macro_return.rs: Move to...
+	* rust/compile/macros/mbe/macro_return.rs: ...here.
+	* rust/compile/macro_rules_macro_rules.rs: Move to...
+	* rust/compile/macros/mbe/macro_rules_macro_rules.rs: ...here.
+	* rust/compile/macro_use1.rs: Move to...
+	* rust/compile/macros/mbe/macro_use1.rs: ...here.
+	* rust/compile/macros/mbe/mbe_macro.exp: New test.
+
+2025-03-19  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/builtin_macro_compile_error.rs: Move to...
+	* rust/compile/macros/builtin/compile_error.rs: ...here.
+	* rust/compile/builtin_macro_concat.rs: Move to...
+	* rust/compile/macros/builtin/concat.rs: ...here.
+	* rust/compile/builtin_macro_eager1.rs: Move to...
+	* rust/compile/macros/builtin/eager1.rs: ...here.
+	* rust/compile/builtin_macro_eager2.rs: Move to...
+	* rust/compile/macros/builtin/eager2.rs: ...here.
+	* rust/compile/builtin_macro_eager3.rs: Move to...
+	* rust/compile/macros/builtin/eager3.rs: ...here.
+	* rust/compile/builtin_macro_env.rs: Move to...
+	* rust/compile/macros/builtin/env.rs: ...here.
+	* rust/compile/builtin_macro_include_bytes.rs: Move to...
+	* rust/compile/macros/builtin/include_bytes.rs: ...here.
+	* rust/compile/builtin_macro_include_bytes_location_info.rs: Move to...
+	* rust/compile/macros/builtin/include_bytes_location_info.rs: ...here.
+	* rust/compile/builtin_macro_include_str.rs: Move to...
+	* rust/compile/macros/builtin/include_str.rs: ...here.
+	* rust/compile/builtin_macro_include_str_location_info.rs: Move to...
+	* rust/compile/macros/builtin/include_str_location_info.rs: ...here.
+	* rust/compile/builtin_macro_not_found.rs: Move to...
+	* rust/compile/macros/builtin/not_found.rs: ...here.
+	* rust/compile/builtin_macro_recurse2.rs: Move to...
+	* rust/compile/macros/builtin/recurse2.rs: ...here.
+	* rust/compile/macros/builtin/builtin_macro.exp: New test.
+	* rust/compile/invalid_utf8: Move invalid-utf8 data to...
+	* rust/compile/macros/builtin/invalid_utf8: ...here.
+
+2025-03-19  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/macros/proc/proc_macro.exp: New deja gnu file to execute
+	proc-macro tests.
+	* rust/compile/proc_macro_attribute_crate_type.rs: Move to...
+	* rust/compile/macros/proc/attribute_crate_type.rs: ...here.
+	* rust/compile/proc_macro_attribute_non_function.rs: Move to...
+	* rust/compile/macros/proc/attribute_non_function.rs: ...here.
+	* rust/compile/proc_macro_attribute_non_root_function.rs: Move to...
+	* rust/compile/macros/proc/attribute_non_root_function.rs: ...here.
+	* rust/compile/proc_macro_attribute_non_root_method.rs: Move to...
+	* rust/compile/macros/proc/attribute_non_root_method.rs: ...here.
+	* rust/compile/proc_macro_attribute_non_root_module.rs: Move to...
+	* rust/compile/macros/proc/attribute_non_root_module.rs: ...here.
+	* rust/compile/proc_macro_attribute_private.rs: Move to...
+	* rust/compile/macros/proc/attribute_private.rs: ...here.
+	* rust/compile/proc_macro_crate_type.rs: Move to...
+	* rust/compile/macros/proc/crate_type.rs: ...here.
+	* rust/compile/proc_macro_derive_crate_type.rs: Move to...
+	* rust/compile/macros/proc/derive_crate_type.rs: ...here.
+	* rust/compile/proc_macro_derive_malformed.rs: Move to...
+	* rust/compile/macros/proc/derive_malformed.rs: ...here.
+	* rust/compile/proc_macro_derive_non_function.rs: Move to...
+	* rust/compile/macros/proc/derive_non_function.rs: ...here.
+	* rust/compile/proc_macro_derive_non_root_function.rs: Move to...
+	* rust/compile/macros/proc/derive_non_root_function.rs: ...here.
+	* rust/compile/proc_macro_derive_non_root_module.rs: Move to...
+	* rust/compile/macros/proc/derive_non_root_module.rs: ...here.
+	* rust/compile/proc_macro_derive_private.rs: Move to...
+	* rust/compile/macros/proc/derive_private.rs: ...here.
+	* rust/compile/proc_macro_non_function.rs: Move to...
+	* rust/compile/macros/proc/non_function.rs: ...here.
+	* rust/compile/proc_macro_non_root_function.rs: Move to...
+	* rust/compile/macros/proc/non_root_function.rs: ...here.
+	* rust/compile/proc_macro_non_root_method.rs: Move to...
+	* rust/compile/macros/proc/non_root_method.rs: ...here.
+	* rust/compile/proc_macro_non_root_module.rs: Move to...
+	* rust/compile/macros/proc/non_root_module.rs: ...here.
+	* rust/compile/proc_macro_derive_non_root_method.rs: Move to...
+	* rust/compile/macros/proc/non_root_trait_method.rs: ...here.
+	* rust/compile/proc_macro_private.rs: Move to...
+	* rust/compile/macros/proc/private.rs: ...here.
+	* rust/compile/proc_macro_pub_function.rs: Move to...
+	* rust/compile/macros/proc/pub_function.rs: ...here.
+	* rust/compile/proc_macro_pub_module.rs: Move to...
+	* rust/compile/macros/proc/pub_module.rs: ...here.
+
+2025-03-19  Liam Naddell  <liam.naddell@mail.utoronto.ca>
+
+	* rust/compile/issue-3045-1.rs:
+	Add test for #[may_dangle] Generic Type triggering error
+	* rust/compile/issue-3045-2.rs:
+	Add test for #[may_dangle] Lifetime triggering error
+
+2025-03-19  Muhammad Mahad  <mahadtxt@gmail.com>
+
+	* rust/rustc/README.md: information about
+	rustc external directory.
+	* rust/rustc/rustc.exp: New test.
+
+2025-03-19  Antonio Gomes  <antoniospg100@gmail.com>
+
+	* rust/compile/macro-issue2983_2984.rs:
+	Add test to check for correct stripped fields
+
+2025-03-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119272
+	* gfortran.dg/associate_74.f90: New test.
+
+2025-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119357
+	* gcc.target/i386/avx512vlbw-pr119357.c: New test.
+
+2025-03-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/119286
+	* gcc.dg/vect/bb-slp-41.c: Add pragma novector.
+	* gcc.dg/vect/vect-early-break_133_pfa11.c: Should never vectorize today
+	as indexes can be out of range.
+	* gcc.dg/vect/vect-early-break_128.c: Require load_lanes as well.
+	* gcc.dg/vect/vect-early-break_133_pfa10.c: Likewise.
+	* gcc.dg/vect/vect-early-break_133_pfa8.c: Likewise.
+	* gcc.dg/vect/vect-early-break_133_pfa9.c: Likewise.
+	* gcc.dg/vect/vect-early-break_22.c: Likewise.
+	* gcc.dg/vect/vect-early-break_26.c: Likewise.
+	* gcc.dg/vect/vect-early-break_43.c: Likewise.
+	* gcc.dg/vect/vect-early-break_44.c: Likewise.
+	* gcc.dg/vect/vect-early-break_6.c: Likewise.
+	* gcc.dg/vect/vect-early-break_56.c: Expect failures on group misalign.
+
+2025-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/pr: Remove.
+
+2025-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118068
+	* g++.target/i386/pr118068.C: New test.
+
+2025-03-19  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/118765
+	* gcc.dg/pr118765.c: New test.
+
+2025-03-19  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/118061
+	* gcc.dg/pr118061.c: New test.
+
+2025-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/generic_inst14.adb: New test.
+	* gnat.dg/generic_inst14_pkg.ads: New helper.
+	* gnat.dg/generic_inst14_pkg-child.ads: Likewise.
+
+2025-03-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/regname-float-abi.c: New test.
+
+2025-03-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/117069
+	* gcc.target/i386/apx-ndd-tls-1b.c: Add xfail.
+
 2025-03-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/119344

@@ -1,3 +1,22 @@
+2025-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119350
+	* c-typeck.cc (pop_init_level): Don't ignore empty brackets for
+	flag_isoc23, still set constructor_type to NULL in that case but
+	emit a pedwarn_init in that case.
+
+2025-03-19  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/118765
+	* c-decl.cc (finish_struct,finish_enum): Swap direction when
+	copying TYPE_STRUB_DECL in redefinitions.
+
+2025-03-19  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/118061
+	* c-typeck.cc (tagged_types_tu_compatible_p): Handle
+	errors in types of struct members.
+
 2025-03-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/119311

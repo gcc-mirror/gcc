@@ -1,3 +1,61 @@
+2025-03-19  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/119270
+	* ira-costs.cc (calculate_equiv_gains): Ignore equiv init insns
+	only for invariants.
+
+2025-03-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/119366
+	* diagnostic-format-sarif.cc (test_message_with_embedded_link):
+	Convert diagnostic_context from one urlifier to a stack of
+	urlifiers, where each node in the stack tracks whether the
+	urlifier is owned or borrowed.
+	* diagnostic.cc (diagnostic_context::initialize): Likewise.
+	(diagnostic_context::finish): Likewise.
+	(diagnostic_context::set_urlifier): Delete.
+	(diagnostic_context::push_owned_urlifier): New.
+	(diagnostic_context::push_borrowed_urlifier): New.
+	(diagnostic_context::pop_urlifier): New.
+	(diagnostic_context::get_urlifier): Reimplement in terms of stack.
+	(diagnostic_context::override_urlifier): Delete.
+	* diagnostic.h (diagnostic_context::set_urlifier): Delete decl.
+	(diagnostic_context::override_urlifier): Delete decl.
+	(diagnostic_context::push_owned_urlifier): New decl.
+	(diagnostic_context::push_borrowed_urlifier): New decl.
+	(diagnostic_context::pop_urlifier): New decl.
+	(diagnostic_context::get_urlifier): Make return value const; hide
+	implementation.
+	(diagnostic_context::m_urlifier): Replace with...
+	(diagnostic_context::urlifier_stack_node): ... this and...
+	(diagnostic_context::m_urlifier_stack): ...this.
+	* gcc-urlifier.cc
+	(auto_override_urlifier::auto_override_urlifier): Reimplement.
+	(auto_override_urlifier::~auto_override_urlifier): Reimplement.
+	* gcc-urlifier.h (class auto_override_urlifier): Reimplement.
+	(auto_urlify_attributes::auto_urlify_attributes): Update for
+	pass-by-reference.
+	* gcc.cc (driver::global_initializations): Update for
+	reimplementation of urlifiers in terms of a stack.
+	* toplev.cc (general_init): Likewise.
+
+2025-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119357
+	* config/i386/sse.md (pmovmskb 0xffff to ptest splitter,
+	*pmovsk_ptest_<mode>_avx512): Force operands[0] into a REG.
+
+2025-03-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-arches.def (...): Add SVE2p1.
+	* doc/invoke.texi (AArch64 Options): Document +sve2p1 in
+	-march=armv9.4-a.
+
+2025-03-19  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.h (ADDITIONAL_REGISTER_NAMES): Add
+	fa0-fa7, ft0-ft16, and fs0-fs7.
+
 2025-03-18  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/119355

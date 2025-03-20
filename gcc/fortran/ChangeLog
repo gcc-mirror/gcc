@@ -1,3 +1,15 @@
+2025-03-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/116706
+	* trans-array.cc (gfc_is_reallocatable_lhs): Fix check on
+	allocatable components of derived type or class objects.
+
+2025-03-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119272
+	* resolve.cc (resolve_compcall): Postpone error report when
+	symbol is not resolved yet for component call resolve.
+
 2025-03-18  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/119338

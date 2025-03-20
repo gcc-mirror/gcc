@@ -1,3 +1,69 @@
+2025-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Fix default for -std option.
+	* doc/html/manual/test.html: Regenerate.
+
+2025-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_facets_nonio.tcc (time_put::do_put): Fix
+	typo in comment.
+
+2025-03-19  François Dumont  <frs.dumont@gmail.com>
+
+	* testsuite/23_containers/set/requirements/explicit_instantiation/alloc_ptr.cc:
+	Activate the template member tests involving __cpp_lib_ranges_to_container
+	support.
+
+2025-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/stdbit/1.cc: Include <climits> instead of
+	<limits.h>.
+
+2025-03-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/ranges_base.h (__detail::__range_key_type):
+	Replace RV::first_type with tuple_element_t<0, RV>.
+	(__detail::__range_mapped_type) Replace RV::second_type
+	with tuple_element_t<1, RV>.
+	* testsuite/23_containers/flat_map/1.cc: New tests.
+	* testsuite/23_containers/flat_multimap/1.cc: New tests.
+	* testsuite/23_containers/map/cons/from_range.cc: New tests.
+	* testsuite/23_containers/multimap/cons/from_range.cc: New tests.
+	* testsuite/23_containers/unordered_map/cons/from_range.cc: New tests.
+	* testsuite/23_containers/unordered_multimap/cons/from_range.cc:
+	New tests.
+
+2025-03-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/unordered_map.h
+	(unordered_map(from_range_t, _Rg&&, const allocator_type&))
+	(unordered_multimap(from_range_t, _Rg&&, const allocator_type&)):
+	Define.
+	* include/bits/unordered_set.h
+	(unordered_set(from_range_t, _Rg&&, const allocator_type&))
+	(unordered_multiset(from_range_t, _Rg&&, const allocator_type&)):
+	Define.
+	* testsuite/23_containers/unordered_map/cons/from_range.cc: New tests.
+	New tests.
+	* testsuite/23_containers/unordered_multimap/cons/from_range.cc:
+	New tests.
+	* testsuite/23_containers/unordered_multiset/cons/from_range.cc:
+	New tests.
+	* testsuite/23_containers/unordered_set/cons/from_range.cc: New tests.
+	* testsuite/std/ranges/conv/1.cc: New tests.
+
+2025-03-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119358
+	* include/bits/unordered_map.h (unordered_multimap::insert_range):
+	Cast ranges::distance to size_type before passing to _M_rehash_insert.
+	* include/bits/unordered_set.h (unordered_multiset::insert_range):
+	Same as unordered_multimap::insert_range.
+	* testsuite/23_containers/unordered_multimap/cons/from_range.cc:
+	New tests.
+	* testsuite/23_containers/unordered_multiset/cons/from_range.cc:
+	New tests.
+
 2025-03-18  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/111055

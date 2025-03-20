@@ -1,3 +1,21 @@
+2025-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatvsn.adb (Gnat_Free_Software): Fix message formatting.
+
+2025-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity) <E_Record_Subtype>: Set
+	the may_alias attribute if a specific GCC type is built.
+
+2025-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gen_il-gen-gen_nodes.adb (N_Formal_Package_Declaration): Use
+	N_Declaration instead of Node_Kind as ancestor.
+	* sem_ch12.adb (Get_Formal_Entity): Remove obsolete alternative.
+	(Instantiate_Formal_Package): Take into account the abbreviated
+	instances in the main loop running over the actuals of the local
+	package created for the formal package.
+
 2025-02-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/118731
