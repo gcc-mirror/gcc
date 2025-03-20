@@ -924,6 +924,13 @@ export namespace std
   using std::sqrt;
   using std::tan;
   using std::tanh;
+#if __cpp_lib_tuple_like >= 202311L
+  using std::tuple_element;
+  using std::tuple_element_t;
+  using std::tuple_size;
+  using std::tuple_size_v;
+  using std::get;
+#endif
 }
 export namespace std::inline literals::inline complex_literals
 {
@@ -2383,14 +2390,24 @@ export namespace std
     using ranges::enumerate_view;
     namespace views { using views::enumerate; }
 #endif
-#if __cpp_lib_ranges_to_container // C++ >= 23
-    using ranges::to;
-#endif // __cpp_lib_ranges_to_container
 #if __cpp_lib_ranges_concat // C++ >= C++26
     using ranges::concat_view;
     namespace views { using views::concat; }
 #endif
+#if __cpp_lib_ranges_cache_latest // C++ >= C++26
+    using ranges::cache_latest_view;
+    namespace views { using views::cache_latest; }
+#endif
+#if __glibcxx_ranges_to_input // C++ >= 26
+    using ranges::to_input_view;
+    namespace views { using views::to_input; }
+#endif
   }
+#if __glibcxx_ranges_to_container // C++ >= 23
+  namespace ranges { using ranges::to; }
+  using std::from_range_t;
+  using std::from_range;
+#endif
 }
 
 // <ratio>
