@@ -1368,8 +1368,7 @@ avoid_expensive_constant (machine_mode mode, optab binoptab,
 static rtx
 expand_binop_directly (enum insn_code icode, machine_mode mode, optab binoptab,
 		       rtx op0, rtx op1,
-		       rtx target, int unsignedp, enum optab_methods methods,
-		       rtx_insn *last)
+		       rtx target, int unsignedp, enum optab_methods methods)
 {
   machine_mode xmode0 = insn_data[(int) icode].operand[1].mode;
   machine_mode xmode1 = insn_data[(int) icode].operand[2].mode;
@@ -1379,6 +1378,7 @@ expand_binop_directly (enum insn_code icode, machine_mode mode, optab binoptab,
   rtx_insn *pat;
   rtx xop0 = op0, xop1 = op1;
   bool canonicalize_op1 = false;
+  rtx_insn *last = get_last_insn ();
 
   /* If it is a commutative operator and the modes would match
      if we would swap the operands, we can save the conversions.  */
@@ -1443,10 +1443,7 @@ expand_binop_directly (enum insn_code icode, machine_mode mode, optab binoptab,
       tmp_mode = insn_data[(int) icode].operand[0].mode;
       if (VECTOR_MODE_P (mode)
 	  && maybe_ne (GET_MODE_NUNITS (tmp_mode), 2 * GET_MODE_NUNITS (mode)))
-	{
-	  delete_insns_since (last);
-	  return NULL_RTX;
-	}
+	return NULL_RTX;
     }
   else
     tmp_mode = mode;
@@ -1466,14 +1463,14 @@ expand_binop_directly (enum insn_code icode, machine_mode mode, optab binoptab,
 			       ops[1].value, ops[2].value, mode0))
 	{
 	  delete_insns_since (last);
-	  return expand_binop (mode, binoptab, op0, op1, NULL_RTX,
-			       unsignedp, methods);
+	  return expand_binop_directly (icode, mode, binoptab, op0, op1,
+					NULL_RTX, unsignedp, methods);
 	}
 
       emit_insn (pat);
       return ops[0].value;
     }
-  delete_insns_since (last);
+
   return NULL_RTX;
 }
 
@@ -1542,9 +1539,10 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       if (icode != CODE_FOR_nothing)
 	{
 	  temp = expand_binop_directly (icode, mode, binoptab, op0, op1,
-					target, unsignedp, methods, last);
+					target, unsignedp, methods);
 	  if (temp)
 	    return temp;
+	  delete_insns_since (last);
 	}
     }
 
@@ -1570,9 +1568,10 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 			       NULL_RTX, unsignedp, OPTAB_DIRECT);
 
       temp = expand_binop_directly (icode, int_mode, otheroptab, op0, newop1,
-				    target, unsignedp, methods, last);
+				    target, unsignedp, methods);
       if (temp)
 	return temp;
+      delete_insns_since (last);
     }
 
   /* If this is a multiply, see if we can do a widening operation that
@@ -1636,9 +1635,10 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	  if (vop1)
 	    {
 	      temp = expand_binop_directly (icode, mode, otheroptab, op0, vop1,
-					    target, unsignedp, methods, last);
+					    target, unsignedp, methods);
 	      if (temp)
 		return temp;
+	      delete_insns_since (last);
 	    }
 	}
     }
