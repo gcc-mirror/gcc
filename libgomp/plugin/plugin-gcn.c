@@ -41,7 +41,9 @@
 #include <hsa_ext_amd.h>
 #include <dlfcn.h>
 #include <signal.h>
+#define _LIBGOMP_PLUGIN_INCLUDE 1
 #include "libgomp-plugin.h"
+#undef _LIBGOMP_PLUGIN_INCLUDE
 #include "config/gcn/libgomp-gcn.h"  /* For struct output.  */
 #include "gomp-constants.h"
 #include <elf.h>
@@ -190,6 +192,8 @@ struct hsa_runtime_fn_info
   uint64_t (*hsa_queue_add_write_index_release_fn) (const hsa_queue_t *queue,
 						    uint64_t value);
   uint64_t (*hsa_queue_load_read_index_acquire_fn) (const hsa_queue_t *queue);
+  uint64_t (*hsa_queue_load_read_index_relaxed_fn) (const hsa_queue_t *queue);
+  uint64_t (*hsa_queue_load_write_index_relaxed_fn) (const hsa_queue_t *queue);
   void (*hsa_signal_store_relaxed_fn) (hsa_signal_t signal,
 				       hsa_signal_value_t value);
   void (*hsa_signal_store_release_fn) (hsa_signal_t signal,
@@ -214,6 +218,25 @@ struct hsa_runtime_fn_info
      const hsa_dim3_t *range, hsa_agent_t copy_agent,
      hsa_amd_copy_direction_t dir, uint32_t num_dep_signals,
      const hsa_signal_t *dep_signals, hsa_signal_t completion_signal);
+};
+
+/* As an HIP runtime is dlopened, following structure defines function
+   pointers utilized by the interop feature of this plugin.
+   Add suffient type declarations to get this work.  */
+
+typedef int hipError_t;  /* Actually an enum; 0 == success. */
+typedef void* hipCtx_t;
+struct hipStream_s;
+typedef struct hipStream_s* hipStream_t;
+
+struct hip_runtime_fn_info
+{
+  hipError_t (*hipStreamCreate_fn) (hipStream_t *);
+  hipError_t (*hipStreamDestroy_fn) (hipStream_t);
+  hipError_t (*hipStreamSynchronize_fn) (hipStream_t);
+  hipError_t (*hipCtxGetCurrent_fn) (hipCtx_t *ctx);
+  hipError_t (*hipSetDevice_fn) (int deviceId);
+  hipError_t (*hipGetDevice_fn) (int *deviceId);
 };
 
 /* Structure describing the run-time and grid properties of an HSA kernel
@@ -553,8 +576,10 @@ struct hsa_context_info
 static struct hsa_context_info hsa_context;
 
 /* HSA runtime functions that are initialized in init_hsa_context.  */
-
 static struct hsa_runtime_fn_info hsa_fns;
+
+/* HIP runtime functions that are initialized in init_hip_runtime_functions.  */
+static struct hip_runtime_fn_info hip_fns;
 
 /* Heap space, allocated target-side, provided for use of newlib malloc.
    Each module should have it's own heap allocated.
@@ -578,10 +603,11 @@ static bool debug;
 
 static bool suppress_host_fallback;
 
-/* Flag to locate HSA runtime shared library that is dlopened
+/* Flag to locate HSA and HIP runtime shared libraries that are dlopened
    by this plug-in.  */
 
 static const char *hsa_runtime_lib;
+static const char *hip_runtime_lib;
 
 /* Flag to decide if the runtime should support also CPU devices (can be
    a simulator).  */
@@ -1068,6 +1094,10 @@ init_environment_variables (void)
   if (hsa_runtime_lib == NULL)
     hsa_runtime_lib = "libhsa-runtime64.so.1";
 
+  hip_runtime_lib = secure_getenv ("HIP_RUNTIME_LIB");
+  if (hip_runtime_lib == NULL)
+    hip_runtime_lib = "libamdhip64.so";
+
   support_cpu_devices = secure_getenv ("GCN_SUPPORT_CPU_DEVICES");
 
   const char *x = secure_getenv ("GCN_NUM_TEAMS");
@@ -1418,6 +1448,8 @@ init_hsa_runtime_functions (void)
   DLSYM_FN (hsa_executable_iterate_symbols)
   DLSYM_FN (hsa_queue_add_write_index_release)
   DLSYM_FN (hsa_queue_load_read_index_acquire)
+  DLSYM_FN (hsa_queue_load_read_index_relaxed)
+  DLSYM_FN (hsa_queue_load_write_index_relaxed)
   DLSYM_FN (hsa_signal_wait_acquire)
   DLSYM_FN (hsa_signal_store_relaxed)
   DLSYM_FN (hsa_signal_store_release)
@@ -4363,6 +4395,434 @@ unlock:
     hsa_fatal ("Could not unlock host memory", status);
 
   return retval;
+}
+
+
+static bool
+init_hip_runtime_functions (void)
+{
+  bool inited = false;
+  if (inited)
+    return hip_fns.hipStreamCreate_fn != NULL;
+  inited = true;
+
+  void *handle = dlopen (hip_runtime_lib, RTLD_LAZY);
+  if (handle == NULL)
+    return false;
+
+#define DLSYM_OPT_FN(function) \
+  hip_fns.function##_fn = dlsym (handle, #function)
+
+  DLSYM_OPT_FN (hipStreamCreate);
+  DLSYM_OPT_FN (hipStreamDestroy);
+  DLSYM_OPT_FN (hipStreamSynchronize);
+  DLSYM_OPT_FN (hipCtxGetCurrent);
+  DLSYM_OPT_FN (hipGetDevice);
+  DLSYM_OPT_FN (hipSetDevice);
+#undef DLSYM_OPT_FN
+
+  if (!hip_fns.hipStreamCreate_fn
+      || !hip_fns.hipStreamDestroy_fn
+      || !hip_fns.hipStreamSynchronize_fn
+      || !hip_fns.hipCtxGetCurrent_fn
+      || !hip_fns.hipGetDevice_fn
+      || !hip_fns.hipSetDevice_fn)
+    {
+      hip_fns.hipStreamCreate_fn = NULL;
+      return false;
+    }
+
+  return true;
+}
+
+
+void
+GOMP_OFFLOAD_interop (struct interop_obj_t *obj, int ord,
+		      enum gomp_interop_flag action, bool targetsync,
+		      const char *prefer_type)
+{
+  if ((action == gomp_interop_flag_destroy || action == gomp_interop_flag_use)
+      && !obj->stream)
+    return;
+  if ((action == gomp_interop_flag_destroy || action == gomp_interop_flag_use)
+      && obj->fr == omp_ifr_hsa)
+    {
+      /* Wait until the queue is is empty.   */
+      bool is_empty;
+      uint64_t read_index, write_index;
+      hsa_queue_t *queue = (hsa_queue_t *) obj->stream;
+      do
+	{
+	  read_index = hsa_fns.hsa_queue_load_read_index_relaxed_fn (queue);
+	  write_index = hsa_fns.hsa_queue_load_write_index_relaxed_fn (queue);
+	  is_empty = (read_index == write_index);
+	}
+      while (!is_empty);
+
+      if (action == gomp_interop_flag_destroy)
+	{
+	  hsa_status_t status = hsa_fns.hsa_queue_destroy_fn (queue);
+	  if (status != HSA_STATUS_SUCCESS)
+	    hsa_fatal ("Error destroying interop hsa_queue_t", status);
+	}
+      return;
+    }
+  if (action == gomp_interop_flag_destroy)
+    {
+      hipError_t err = hip_fns.hipStreamDestroy_fn ((hipStream_t) obj->stream);
+      if (err != 0)
+	GOMP_PLUGIN_fatal ("Error destroying interop hipStream_t: %d", err);
+      return;
+    }
+  if (action == gomp_interop_flag_use)
+    {
+      hipError_t err
+	= hip_fns.hipStreamSynchronize_fn ((hipStream_t) obj->stream);
+      if (err != 0)
+	GOMP_PLUGIN_fatal ("Error synchronizing interop hipStream_t: %d", err);
+      return;
+    }
+
+  bool fr_set = false;
+
+  /* Check for the preferred type; cf. parser in C/C++/Fortran or
+     dump_omp_init_prefer_type for the format.
+     Accept the first '{...}' block that specifies a 'fr' that we support.
+     Currently, no 'attr(...)' are supported.  */
+  if (prefer_type)
+    while (prefer_type[0] == (char) GOMP_INTEROP_IFR_SEPARATOR)
+      {
+	/* '{' item block starts.  */
+	prefer_type++;
+	/* 'fr(...)' block  */
+	while (prefer_type[0] != (char) GOMP_INTEROP_IFR_SEPARATOR)
+	  {
+	    omp_interop_fr_t fr = (omp_interop_fr_t) prefer_type[0];
+	    if (fr == omp_ifr_hip)
+	      {
+		obj->fr = omp_ifr_hip;
+		fr_set = true;
+	      }
+	    if (fr == omp_ifr_hsa)
+	      {
+		obj->fr = omp_ifr_hsa;
+		fr_set = true;
+	      }
+	    prefer_type++;
+	  }
+	prefer_type++;
+	/* 'attr(...)' block  */
+	while (prefer_type[0] != '\0')
+	  {
+	    /* const char *attr = prefer_type;  */
+	    prefer_type += strlen (prefer_type) + 1;
+	  }
+	prefer_type++;
+	/* end of '}'.  */
+	if (fr_set)
+	  break;
+      }
+
+  /* Prefer HIP, use HSA as fallback.  The warning is only printed if GCN_DEBUG
+     is set and does not distinguishes between on prefer_type or hip prefer_type
+     nor whether a later/lower preference also specifies 'hsa'.
+     The assumption is that the user code handles HSA gracefully, but likely
+     just by falling back to the host version.  On the other hand, have_hip is
+     likely true if HSA is available.  */
+  if (!fr_set || obj->fr == omp_ifr_hip)
+    {
+      bool have_hip = init_hip_runtime_functions ();
+      if (have_hip)
+	obj->fr = omp_ifr_hip;
+      else
+	{
+	  GCN_WARNING ("interop object requested, using HSA instead of HIP "
+		       "as %s could not be loaded", hip_runtime_lib);
+	  obj->fr = omp_ifr_hsa;
+	}
+    }
+
+  _Static_assert (sizeof (uint64_t) == sizeof (hsa_agent_t),
+		  "sizeof (uint64_t) == sizeof (hsa_agent_t)");
+  struct agent_info *agent = get_agent_info (ord);
+  obj->device_data = agent;
+
+  if (targetsync && obj->fr == omp_ifr_hsa)
+    {
+      hsa_status_t status;
+      /* Queue size must be (for GPUs) a power of 2 >= 40, i.e. at least 64 and
+	 maximally HSA_AGENT_INFO_QUEUE_MAX_SIZE. Arbitrary choice:  */
+      uint32_t queue_size = ASYNC_QUEUE_SIZE;
+      status = hsa_fns.hsa_queue_create_fn (agent->id, queue_size,
+					    HSA_QUEUE_TYPE_MULTI,
+					    NULL, NULL, UINT32_MAX, UINT32_MAX,
+					    (hsa_queue_t **) &obj->stream);
+      if (status != HSA_STATUS_SUCCESS)
+	hsa_fatal ("Error creating interop hsa_queue_t", status);
+    }
+  else if (targetsync)
+    {
+      hipError_t err;
+      int dev_curr;
+      err = hip_fns.hipGetDevice_fn (&dev_curr);
+      if (!err && ord != dev_curr)
+	err = hip_fns.hipSetDevice_fn (ord);
+      if (!err)
+	err = hip_fns.hipStreamCreate_fn ((hipStream_t *) &obj->stream);
+      if (!err && ord != dev_curr)
+	err = hip_fns.hipSetDevice_fn (dev_curr);
+      if (err != 0)
+	GOMP_PLUGIN_fatal ("Error creating interop hipStream_t: %d", err);
+    }
+}
+
+intptr_t
+GOMP_OFFLOAD_get_interop_int (struct interop_obj_t *obj,
+			      omp_interop_property_t property_id,
+			      omp_interop_rc_t *ret_code)
+{
+  if (obj->fr != omp_ifr_hip && obj->fr != omp_ifr_hsa)
+    {
+      if (ret_code)
+	*ret_code = omp_irc_no_value;  /* Hmm. */
+      return 0;
+    }
+  switch (property_id)
+    {
+    case omp_ipr_fr_id:
+      if (ret_code)
+	*ret_code = omp_irc_success;
+      return obj->fr;
+    case omp_ipr_fr_name:
+      if (ret_code)
+	*ret_code = omp_irc_type_str;
+      return 0;
+    case omp_ipr_vendor:
+      if (ret_code)
+	*ret_code = omp_irc_success;
+      return 1; /* amd */
+    case omp_ipr_vendor_name:
+      if (ret_code)
+	*ret_code = omp_irc_type_str;
+      return 0;
+    case omp_ipr_device_num:
+      if (ret_code)
+	*ret_code = omp_irc_success;
+      return obj->device_num;
+    case omp_ipr_platform:
+      if (ret_code)
+	*ret_code = omp_irc_no_value;
+      return 0;
+    case omp_ipr_device:
+      if (obj->fr == omp_ifr_hsa)
+	{
+	  if (ret_code)
+	    *ret_code = omp_irc_type_ptr;
+	  return 0;
+	}
+	if (ret_code)
+	  *ret_code = omp_irc_success;
+	return ((struct agent_info *) obj->device_data)->device_id;
+    case omp_ipr_device_context:
+      if (ret_code && obj->fr == omp_ifr_hsa)
+	*ret_code = omp_irc_no_value;
+      else if (ret_code)
+	*ret_code = omp_irc_type_ptr;
+      return 0;
+    case omp_ipr_targetsync:
+      if (ret_code && !obj->stream)
+	*ret_code = omp_irc_no_value;
+      else if (ret_code)
+	*ret_code = omp_irc_type_ptr;
+      return 0;
+    default:
+      break;
+    }
+  __builtin_unreachable ();
+  return 0;
+}
+
+void *
+GOMP_OFFLOAD_get_interop_ptr (struct interop_obj_t *obj,
+			      omp_interop_property_t property_id,
+			      omp_interop_rc_t *ret_code)
+{
+  if (obj->fr != omp_ifr_hip && obj->fr != omp_ifr_hsa)
+    {
+      if (ret_code)
+	*ret_code = omp_irc_no_value;  /* Hmm. */
+      return 0;
+    }
+  switch (property_id)
+    {
+    case omp_ipr_fr_id:
+      if (ret_code)
+	*ret_code = omp_irc_type_int;
+      return NULL;
+    case omp_ipr_fr_name:
+      if (ret_code)
+	*ret_code = omp_irc_type_str;
+      return NULL;
+    case omp_ipr_vendor:
+      if (ret_code)
+	*ret_code = omp_irc_type_str;
+      return NULL;
+    case omp_ipr_vendor_name:
+      if (ret_code)
+	*ret_code = omp_irc_type_str;
+      return NULL;
+    case omp_ipr_device_num:
+      if (ret_code)
+	*ret_code = omp_irc_type_int;
+      return NULL;
+    case omp_ipr_platform:
+      if (ret_code)
+	*ret_code = omp_irc_no_value;
+      return NULL;
+    case omp_ipr_device:
+      if (obj->fr == omp_ifr_hsa)
+	{
+	  if (ret_code)
+	    *ret_code = omp_irc_success;
+	  /* hsa_agent_t is an struct containing a single uint64_t. */
+	  return &((struct agent_info *) obj->device_data)->id;
+	}
+      else
+	{
+	  if (ret_code)
+	    *ret_code = omp_irc_type_int;
+	  return NULL;
+	}
+    case omp_ipr_device_context:
+      if (obj->fr == omp_ifr_hsa)
+	{
+	  if (ret_code)
+	    *ret_code = omp_irc_no_value;
+	  return NULL;
+	}
+      else
+	{
+	  hipCtx_t ctx;
+	  int dev_curr;
+	  int dev = ((struct agent_info *) obj->device_data)->device_id;
+	  hipError_t err;
+	  err = hip_fns.hipGetDevice_fn (&dev_curr);
+	  if (!err && dev != dev_curr)
+	    err = hip_fns.hipSetDevice_fn (dev);
+	  if (!err)
+	    err = hip_fns.hipCtxGetCurrent_fn (&ctx);
+	  if (!err && dev != dev_curr)
+	    err = hip_fns.hipSetDevice_fn (dev_curr);
+	  if (err)
+	    GOMP_PLUGIN_fatal ("Error obtaining hipCtx_t for device %d: %d",
+			       obj->device_num, err);
+	  if (ret_code)
+	    *ret_code = omp_irc_success;
+	  return ctx;
+	}
+    case omp_ipr_targetsync:
+      if (!obj->stream)
+	{
+	  if (ret_code)
+	    *ret_code = omp_irc_no_value;
+	  return NULL;
+	}
+      if (ret_code)
+	*ret_code = omp_irc_success;
+      return obj->stream;
+    default:
+      break;
+    }
+  __builtin_unreachable ();
+  return NULL;
+}
+
+const char *
+GOMP_OFFLOAD_get_interop_str (struct interop_obj_t *obj,
+			      omp_interop_property_t property_id,
+			      omp_interop_rc_t *ret_code)
+{
+  if (obj->fr != omp_ifr_hip && obj->fr != omp_ifr_hsa)
+    {
+      if (ret_code)
+	*ret_code = omp_irc_no_value;  /* Hmm. */
+      return 0;
+    }
+  switch (property_id)
+    {
+    case omp_ipr_fr_id:
+      if (ret_code)
+	*ret_code = omp_irc_type_int;
+      return NULL;
+    case omp_ipr_fr_name:
+      if (ret_code)
+	*ret_code = omp_irc_success;
+      if (obj->fr == omp_ifr_hip)
+	return "hip";
+      if (obj->fr == omp_ifr_hsa)
+	return "hsa";
+    case omp_ipr_vendor:
+      if (ret_code)
+	*ret_code = omp_irc_type_int;
+      return NULL;
+    case omp_ipr_vendor_name:
+      if (ret_code)
+	*ret_code = omp_irc_success;
+      return "amd";
+    case omp_ipr_device_num:
+      if (ret_code)
+	*ret_code = omp_irc_type_int;
+      return NULL;
+    case omp_ipr_platform:
+      if (ret_code)
+	*ret_code = omp_irc_no_value;
+      return NULL;
+    case omp_ipr_device:
+      if (ret_code && obj->fr == omp_ifr_hsa)
+	*ret_code = omp_irc_type_ptr;
+      else if (ret_code)
+	*ret_code = omp_irc_type_int;
+      return NULL;
+    case omp_ipr_device_context:
+      if (ret_code && obj->fr == omp_ifr_hsa)
+	*ret_code = omp_irc_no_value;
+      else if (ret_code)
+	*ret_code = omp_irc_type_ptr;
+      return NULL;
+    case omp_ipr_targetsync:
+      if (ret_code && !obj->stream)
+	*ret_code = omp_irc_no_value;
+      else if (ret_code)
+	*ret_code = omp_irc_type_ptr;
+      return NULL;
+    default:
+      break;
+    }
+  __builtin_unreachable ();
+  return 0;
+}
+
+const char *
+GOMP_OFFLOAD_get_interop_type_desc (struct interop_obj_t *obj,
+				    omp_interop_property_t property_id)
+{
+  _Static_assert (omp_ipr_targetsync == omp_ipr_first,
+		  "omp_ipr_targetsync == omp_ipr_first");
+  _Static_assert (omp_ipr_platform - omp_ipr_first + 1 == 4,
+		  "omp_ipr_platform - omp_ipr_first + 1 == 4");
+  static const char *desc_hip[] = {"N/A",		/* platform */
+				   "hipDevice_t",	/* device */
+				   "hipCtx_t",		/* device_context */
+				   "hipStream_t"};	/* targetsync */
+  static const char *desc_hsa[] = {"N/A",		/* platform */
+				   "hsa_agent_t *",	/* device */
+				   "N/A",		/* device_context */
+				   "hsa_queue_t *"};	/* targetsync */
+  if (obj->fr == omp_ifr_hip)
+    return desc_hip[omp_ipr_platform - property_id];
+  else
+    return desc_hsa[omp_ipr_platform - property_id];
+  return NULL;
 }
 
 /* }}}  */

@@ -21,7 +21,7 @@ main ()
   if (omp_target_associate_ptr (q, p, sizeof (int), 0, d) != 0)
     return 0;
 
-  if (omp_get_mapped_ptr (q, -5) != NULL)
+  if (omp_get_mapped_ptr (q, -6) != NULL)
     abort ();
 
   if (omp_get_mapped_ptr (q, omp_get_num_devices () + 1) != NULL)
