@@ -116,8 +116,8 @@ add_arg_lib(const char *library, bool force_static ATTRIBUTE_UNUSED)
     {
     append_option (OPT_Wl_, LD_STATIC_OPTION, 1);
     }
-  append_option (OPT_l, library, 1);
 #endif
+  append_option (OPT_l, library, 1);
 #ifdef HAVE_LD_STATIC_DYNAMIC
   if( force_static )
     {
@@ -339,10 +339,8 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
         break;
 
       case OPT_static_libgcobol:
-#ifdef HAVE_LD_STATIC_DYNAMIC
         static_libgcobol = true;
         need_libgcobol   = true;
-#endif
         break;
 
       case OPT_l:
@@ -548,7 +546,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
         break;
 
       case OPT_static_libgcobol:
-        // Don't pass this one on to cobol1
+#if !defined (HAVE_LD_STATIC_DYNAMIC)
+        // Allow the target to use spec substitution.
+        append_arg(decoded_options[i]);
+#endif
+        // Else don't pass this one on to cobol1
         break;
 
 ////#ifdef __x86_64__
