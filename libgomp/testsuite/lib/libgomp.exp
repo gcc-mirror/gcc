@@ -233,11 +233,8 @@ proc libgomp_init { args } {
     # error-message parsing machinery.
     lappend ALWAYS_CFLAGS "additional_flags=-fmessage-length=0"
 
-    # Disable caret
-    lappend ALWAYS_CFLAGS "additional_flags=-fno-diagnostics-show-caret"
-
-    # Disable color diagnostics
-    lappend ALWAYS_CFLAGS "additional_flags=-fdiagnostics-color=never"
+    # Disable caret, color, URL diagnostics
+    lappend ALWAYS_CFLAGS "additional_flags=-fdiagnostics-plain-output"
 
     # Help GCC to find offload compilers' 'mkoffload'.
     global offload_additional_options
