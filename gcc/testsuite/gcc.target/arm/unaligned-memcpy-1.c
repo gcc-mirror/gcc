@@ -1,19 +1,31 @@
-/* { dg-do compile } */
-/* { dg-require-effective-target arm_unaligned } */
-/* { dg-options "-O2" } */
+/* { dg-do run } */
+/* { dg-options "-O2 -save-temps" } */
 
 #include <string.h>
 
-void unknown_alignment (char *dest, char *src)
+char src[17] __attribute__ ((aligned(8))) = "abcdefghijklmnopq";
+char result[17] __attribute__ ((aligned(8))) = {0};
+
+void __attribute__ ((noinline,noclone))
+unknown_alignment (char *dest, char *src)
 {
   memcpy (dest, src, 15);
 }
 
-/* We should see three unaligned word loads and store pairs, one unaligned
-   ldrh/strh pair, and an ldrb/strb pair.  Sanity check that.  */
+int main ()
+{
+  int i;
+  unknown_alignment (result+1, src+2);
+  for (i = 0; i < 15; i++)
+    if (result[i+1] != src[i+2])
+      __builtin_abort ();
+  if (result[16] != 0)
+    __builtin_abort ();
+  return 0;
+}
 
-/* { dg-final { scan-assembler-times "@ unaligned" 8 } } */
-/* { dg-final { scan-assembler-times "ldrh" 1 } } */
-/* { dg-final { scan-assembler-times "strh" 1 } } */
-/* { dg-final { scan-assembler-times "ldrb" 1 } } */
-/* { dg-final { scan-assembler-times "strb" 1 } } */
+/* Check that we don't use any instructions that assume an aligned source.  */
+/* { dg-final { scan-assembler-not {(ldm(ia)?\tr[0-9]|ldrd\t.*\[r[0-9]|vldr)} } } */
+
+/* Check that we don't use any instructions that assume an aligned dest.  */
+/* { dg-final { scan-assembler-not {(stm(ia)?\tr[0-9]|strd\t.*\[r[0-9]|vstr)} } } */
