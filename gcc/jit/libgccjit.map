@@ -325,3 +325,12 @@ LIBGCCJIT_ABI_34 {
   global:
     gcc_jit_context_set_output_ident;
 } LIBGCCJIT_ABI_33;
+
+LIBGCCJIT_ABI_35 {
+  global:
+    gcc_jit_context_get_target_info;
+    gcc_jit_target_info_release;
+    gcc_jit_target_info_cpu_supports;
+    gcc_jit_target_info_arch;
+    gcc_jit_target_info_supports_target_dependent_type;
+} LIBGCCJIT_ABI_34;

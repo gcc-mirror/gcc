@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "jit-common.h"
 #include "jit-logging.h"
+#include "jit-target.h"
 #include "libgccjit.h"
 
 #include <string>
@@ -329,6 +330,16 @@ public:
 		   const char *output_path);
 
   void
+  populate_target_info ();
+
+  target_info *move_target_info ()
+  {
+    target_info *info = m_target_info;
+    m_target_info = nullptr;
+    return info;
+  }
+
+  void
   add_error (location *loc, const char *fmt, ...)
       GNU_PRINTF(3, 4);
 
@@ -412,7 +423,11 @@ private:
   type *m_basic_types[NUM_GCC_JIT_TYPES];
   type *m_FILE_type;
 
+  bool m_populated_target_info = false;
+
   builtins_manager *m_builtins_manager; // lazily created
+
+  target_info *m_target_info;
 };
 
 

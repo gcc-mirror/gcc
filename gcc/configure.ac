@@ -2443,6 +2443,17 @@ for f in $tm_rust_file; do
   esac
 done
 
+tm_jit_file_list=
+tm_jit_include_list=
+for f in $tm_jit_file; do
+  case $f in
+    * )
+       tm_jit_file_list="${tm_jit_file_list} \$(srcdir)/config/$f"
+       tm_jit_include_list="${tm_jit_include_list} config/$f"
+       ;;
+  esac
+done
+
 xm_file_list=
 xm_include_list=
 for f in $xm_file; do
@@ -7596,6 +7607,8 @@ AC_SUBST(tm_d_file_list)
 AC_SUBST(tm_d_include_list)
 AC_SUBST(tm_rust_file_list)
 AC_SUBST(tm_rust_include_list)
+AC_SUBST(tm_jit_file_list)
+AC_SUBST(tm_jit_include_list)
 AC_SUBST(xm_file_list)
 AC_SUBST(xm_include_list)
 AC_SUBST(xm_defines)
@@ -7605,6 +7618,7 @@ AC_SUBST(cxx_target_objs)
 AC_SUBST(fortran_target_objs)
 AC_SUBST(d_target_objs)
 AC_SUBST(rust_target_objs)
+AC_SUBST(jit_target_objs)
 AC_SUBST(target_cpu_default)
 
 AC_SUBST_FILE(language_hooks)

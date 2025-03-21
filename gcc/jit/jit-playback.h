@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 
 #include "jit-recording.h"
+#include "jit-target.h"
 
 namespace diagnostics
 {
@@ -57,9 +58,10 @@ set_variable_string_attribute (
 
 /* playback::context is an abstract base class.
 
-   The two concrete subclasses are:
+   The three concrete subclasses are:
    - playback::compile_to_memory
-   - playback::compile_to_file.  */
+   - playback::compile_to_file.
+   - playback::populate_target_info  */
 
 class context : public log_user
 {
@@ -326,6 +328,18 @@ public:
 
   void add_top_level_asm (const char *asm_stmts);
 
+  target_info *get_target_info ()
+  {
+      return &m_target_info;
+  }
+
+  target_info *move_target_info ()
+  {
+    target_info *info = new target_info {std::move (m_target_info)};
+    m_target_info = target_info{};
+    return info;
+  }
+
 private:
   void dump_generated_code ();
 
@@ -429,6 +443,8 @@ private:
   auto_vec<source_file *> m_source_files;
 
   auto_vec<std::pair<tree, location *> > m_cached_locations;
+
+  target_info m_target_info;
 };
 
 class compile_to_memory : public context
@@ -459,6 +475,18 @@ class compile_to_file : public context
  private:
   enum gcc_jit_output_kind m_output_kind;
   const char *m_output_path;
+};
+
+class populate_target_info : public context
+{
+ public:
+  populate_target_info (recording::context *ctxt) : context (ctxt)
+  {
+  }
+
+  void postprocess (const char *) final override
+  {
+  }
 };
 
 

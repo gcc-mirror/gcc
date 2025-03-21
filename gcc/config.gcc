@@ -149,6 +149,9 @@
 #  d_target_objs	List of extra target-dependent objects that be
 #			linked into the D compiler only.
 #
+#  jit_target_objs	List of extra target-dependent objects that be
+#			linked into the jit compiler only.
+#
 #  fortran_target_objs	List of extra target-dependent objects that be
 #			linked into the fortran compiler only.
 #
@@ -210,6 +213,9 @@
 #
 #  target_has_targetrustm	Set to yes or no depending on whether the target
 #			has its own definition of targetrustm.
+#
+#  target_has_targetjitm	Set to yes or no depending on whether the target
+#			has its own definition of targetjitm.
 
 out_file=
 common_out_file=
@@ -226,12 +232,14 @@ extra_options=
 c_target_objs=
 cxx_target_objs=
 d_target_objs=
+jit_target_objs=
 fortran_target_objs=
 rust_target_objs=
 target_has_targetcm=no
 target_has_targetm_common=yes
 target_has_targetdm=no
 target_has_targetrustm=no
+target_has_targetjitm=no
 tm_defines=
 xm_defines=
 # Set this to force installation and use of collect2.
@@ -416,6 +424,7 @@ i[34567]86-*-* | x86_64-*-*)
 	c_target_objs="i386-c.o"
 	cxx_target_objs="i386-c.o"
 	d_target_objs="i386-d.o"
+	jit_target_objs="i386-jit.o"
 	extra_objs="x86-tune-sched.o x86-tune-sched-bd.o x86-tune-sched-atom.o x86-tune-sched-core.o i386-options.o i386-builtins.o i386-expand.o i386-features.o"
 	target_gtfiles="\$(srcdir)/config/i386/i386-builtins.cc \$(srcdir)/config/i386/i386-expand.cc \$(srcdir)/config/i386/i386-options.cc"
 	extra_options="${extra_options} fused-madd.opt"
@@ -618,6 +627,12 @@ fi
 if test -f ${srcdir}/config/${cpu_type}/${cpu_type}-rust.cc
 then
 	rust_target_objs="${rust_target_objs} ${cpu_type}-rust.o"
+fi
+
+tm_jit_file=
+if test -f ${srcdir}/config/${cpu_type}/${cpu_type}-jit.h
+then
+	tm_jit_file="${tm_jit_file} ${cpu_type}/${cpu_type}-jit.h"
 fi
 
 extra_modes=
@@ -3714,6 +3729,10 @@ if [ "$target_has_targetrustm" = "no" ]; then
   rust_target_objs="$rust_target_objs default-rust.o"
 fi
 
+if [ "$target_has_targetjitm" = "no" ]; then
+  jit_target_objs="$jit_target_objs default-jit.o"
+fi
+
 # Support for --with-cpu and related options (and a few unrelated options,
 # too).
 case ${with_cpu} in
@@ -6087,6 +6106,7 @@ case ${target} in
 		c_target_objs="${c_target_objs} ${cpu_type}-c.o"
 		cxx_target_objs="${cxx_target_objs} ${cpu_type}-c.o"
 		d_target_objs="${d_target_objs} ${cpu_type}-d.o"
+		jit_target_objs="${jit_target_objs} ${cpu_type}-jit.o"
 		tmake_file="${cpu_type}/t-${cpu_type} ${tmake_file}"
 		;;
 

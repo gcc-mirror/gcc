@@ -130,7 +130,7 @@ jit.serial = $(LIBGCCJIT_FILENAME)
 # Tell GNU make to ignore these if they exist.
 .PHONY: jit
 
-jit_OBJS = attribs.o \
+JIT_OBJS = attribs.o \
 	jit/dummy-frontend.o \
 	jit/libgccjit.o \
 	jit/jit-logging.o \
@@ -139,12 +139,16 @@ jit_OBJS = attribs.o \
 	jit/jit-result.o \
 	jit/jit-tempdir.o \
 	jit/jit-builtins.o \
+	jit/jit-target.o \
 	jit/jit-spec.o \
 	gcc.o
 
 ifneq (,$(findstring mingw,$(target)))
-jit_OBJS += jit/jit-w32.o
+JIT_OBJS += jit/jit-w32.o
 endif
+
+# All language-specific object files for jit.
+jit_OBJS = $(JIT_OBJS) $(JIT_TARGET_OBJS)
 
 # Use strict warnings for this front end.
 jit-warn = $(STRICT_WARN)

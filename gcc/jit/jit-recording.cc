@@ -1629,6 +1629,13 @@ recording::context::enable_dump (const char *dumpname,
 result *
 recording::context::compile ()
 {
+  if (m_populated_target_info)
+  {
+    add_error (NULL,
+      "cannot compile after calling gcc_jit_context_get_target_info");
+    return NULL;
+  }
+
   JIT_LOG_SCOPE (get_logger ());
 
   log_all_options ();
@@ -1659,6 +1666,13 @@ void
 recording::context::compile_to_file (enum gcc_jit_output_kind output_kind,
 				     const char *output_path)
 {
+  if (m_populated_target_info)
+  {
+    add_error (NULL,
+      "cannot compile after calling gcc_jit_context_get_target_info");
+    return;
+  }
+
   JIT_LOG_SCOPE (get_logger ());
 
   log_all_options ();
@@ -1675,6 +1689,28 @@ recording::context::compile_to_file (enum gcc_jit_output_kind output_kind,
 
   /* Use it.  */
   replayer.compile ();
+}
+
+void
+recording::context::populate_target_info ()
+{
+  JIT_LOG_SCOPE (get_logger ());
+
+  log_all_options ();
+
+  if (errors_occurred ())
+    return;
+
+  add_driver_option ("-fsyntax-only");
+  m_populated_target_info = true;
+
+  /* Set up a populate_target_info playback context.  */
+  ::gcc::jit::playback::populate_target_info replayer (this);
+
+  /* Use it.  */
+  replayer.compile ();
+
+  m_target_info = replayer.move_target_info ();
 }
 
 /* Format the given error using printf's conventions, print

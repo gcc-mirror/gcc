@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MUTEX
+#define INCLUDE_STRING
 #include "system.h"
 #include "coretypes.h"
 #include "timevar.h"
@@ -29,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "libgccjit.h"
 #include "jit-recording.h"
 #include "jit-result.h"
+#include "jit-target.h"
 
 /* The opaque types used by the public API are actually subclasses
    of the gcc::jit::recording classes.  */
@@ -41,6 +43,10 @@ struct gcc_jit_context : public gcc::jit::recording::context
 };
 
 struct gcc_jit_result : public gcc::jit::result
+{
+};
+
+struct gcc_jit_target_info : public target_info
 {
 };
 
@@ -3898,6 +3904,51 @@ gcc_jit_context_set_output_ident (gcc_jit_context *ctxt,
   JIT_LOG_FUNC (ctxt->get_logger ());
 
   ctxt->set_output_ident (output_ident);
+}
+
+gcc_jit_target_info *
+gcc_jit_context_get_target_info (gcc_jit_context *ctxt)
+{
+  RETURN_NULL_IF_FAIL (ctxt, NULL, NULL, "NULL context");
+  JIT_LOG_FUNC (ctxt->get_logger ());
+
+  ctxt->log ("populate_target_info of ctxt: %p", (void *)ctxt);
+
+  ctxt->populate_target_info ();
+
+  return (gcc_jit_target_info*) ctxt->move_target_info ();
+}
+
+void
+gcc_jit_target_info_release (gcc_jit_target_info *info)
+{
+  RETURN_IF_FAIL (info, NULL, NULL, "NULL info");
+  delete info;
+}
+
+int
+gcc_jit_target_info_cpu_supports (gcc_jit_target_info *info,
+				  const char *feature)
+{
+  RETURN_VAL_IF_FAIL (info, 0, NULL, NULL, "NULL info");
+  RETURN_VAL_IF_FAIL (feature, 0, NULL, NULL, "NULL feature");
+  return info->has_target_value ("target_feature", feature);
+}
+
+const char *
+gcc_jit_target_info_arch (gcc_jit_target_info *info)
+{
+  RETURN_NULL_IF_FAIL (info, NULL, NULL, "NULL info");
+  return info->m_arch.c_str ();
+}
+
+int
+gcc_jit_target_info_supports_target_dependent_type (gcc_jit_target_info *info,
+						    enum gcc_jit_types type)
+{
+  RETURN_VAL_IF_FAIL (info, 0, NULL, NULL, "NULL info");
+  return info->m_supported_target_dependent_types.find (type)
+    != info->m_supported_target_dependent_types.end ();
 }
 
 /* Public entrypoint.  See description in libgccjit.h.

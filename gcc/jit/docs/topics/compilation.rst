@@ -199,3 +199,59 @@ The available kinds of output are:
 .. c:macro:: GCC_JIT_OUTPUT_KIND_EXECUTABLE
 
    Compile the context to an executable.
+
+Getting information about a target
+**********************************
+
+You can query the target information by using the following API:
+
+.. function:: gcc_jit_target_info * \
+              gcc_jit_context_get_target_info (gcc_jit_context *ctxt)
+
+   Compute the information about a target.
+
+   If the result is non-NULL, the caller becomes responsible for
+   calling :func:`gcc_jit_target_info_release` on it once they're done
+   with it.
+
+.. function:: void \
+              gcc_jit_target_info_release (gcc_jit_target_info *info)
+
+   This function releases all resources associated with the given target info.
+
+.. function:: int \
+              gcc_jit_target_info_cpu_supports (gcc_jit_target_info *info,
+                                                const char *feature)
+
+   Check if the specified target INFO supports the cpu FEATURE.
+
+.. function:: const char * \
+              gcc_jit_target_info_arch (gcc_jit_target_info *info)
+
+   Get the architecture of the currently running CPU, e.g. the value of -march
+   equivalent to -march=native. Ex.: znver3
+
+   The underlying buffer is only valid until the gcc_jit_target_info is
+   released.
+
+.. function:: int \
+              gcc_jit_target_info_supports_target_dependent_type (gcc_jit_target_info *info,
+                                                                  enum gcc_jit_types type)
+
+   Check if the specified target INFO supports target-dependent types like
+   128-bit integers.
+
+   The API entrypoints relating to the target info:
+
+      * :c:func:`gcc_jit_context_get_target_info`
+      * :c:func:`gcc_jit_target_info_release`
+      * :c:func:`gcc_jit_target_info_cpu_supports`
+      * :c:func:`gcc_jit_target_info_arch`
+      * :c:func:`gcc_jit_target_info_supports_target_dependent_type`
+
+   were added in :ref:`LIBGCCJIT_ABI_35`; you can test for their presence
+   using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_TARGET_INFO_API

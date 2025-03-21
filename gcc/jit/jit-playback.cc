@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "jit-result.h"
 #include "jit-builtins.h"
 #include "jit-tempdir.h"
+#include "jit-target.h"
 
 #ifdef _WIN32
 #include "jit-w32.h"
@@ -3605,6 +3606,7 @@ replay ()
   JIT_LOG_SCOPE (get_logger ());
 
   init_types ();
+  jit_target_init ();
 
   /* Replay the recorded events:  */
   timevar_push (TV_JIT_REPLAY);
