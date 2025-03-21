@@ -2494,7 +2494,7 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 	    {
 	      if (formal->attr.artificial)
 		gfc_error_opt (0, "Interface mismatch in dummy procedure "
-			       "at %L conflichts with %L: %s", &actual->where,
+			       "at %L conflicts with %L: %s", &actual->where,
 			       &formal->declared_at, err);
 	      else
 		gfc_error_opt (0, "Interface mismatch in dummy procedure %qs at "
