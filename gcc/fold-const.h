@@ -35,6 +35,8 @@ extern bool folding_cxx_constexpr;
 extern int native_encode_expr (const_tree, unsigned char *, int, int off = -1);
 extern int native_encode_initializer (tree, unsigned char *, int,
 				      int off = -1, unsigned char * = nullptr);
+extern int native_encode_real (scalar_float_mode, const REAL_VALUE_TYPE *,
+			       unsigned char *, int, int off = -1);
 extern tree native_interpret_expr (tree, const unsigned char *, int);
 extern tree native_interpret_real (tree, const unsigned char *, int);
 extern bool can_native_interpret_type_p (tree);

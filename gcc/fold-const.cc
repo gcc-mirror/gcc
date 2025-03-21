@@ -7572,11 +7572,11 @@ native_encode_fixed (const_tree expr, unsigned char *ptr, int len, int off)
    Return the number of bytes placed in the buffer, or zero
    upon failure.  */
 
-static int
-native_encode_real (const_tree expr, unsigned char *ptr, int len, int off)
+int
+native_encode_real (scalar_float_mode mode, const REAL_VALUE_TYPE *val,
+		    unsigned char *ptr, int len, int off)
 {
-  tree type = TREE_TYPE (expr);
-  int total_bytes = GET_MODE_SIZE (SCALAR_FLOAT_TYPE_MODE (type));
+  int total_bytes = GET_MODE_SIZE (mode);
   int byte, offset, word, words, bitpos;
   unsigned char value;
 
@@ -7596,7 +7596,7 @@ native_encode_real (const_tree expr, unsigned char *ptr, int len, int off)
 
   words = (32 / BITS_PER_UNIT) / UNITS_PER_WORD;
 
-  real_to_target (tmp, TREE_REAL_CST_PTR (expr), TYPE_MODE (type));
+  real_to_target (tmp, val, mode);
 
   for (bitpos = 0; bitpos < total_bytes * BITS_PER_UNIT;
        bitpos += BITS_PER_UNIT)
@@ -7836,7 +7836,8 @@ native_encode_expr (const_tree expr, unsigned char *ptr, int len, int off)
       return native_encode_int (expr, ptr, len, off);
 
     case REAL_CST:
-      return native_encode_real (expr, ptr, len, off);
+      return native_encode_real (SCALAR_FLOAT_TYPE_MODE (TREE_TYPE (expr)),
+				 TREE_REAL_CST_PTR (expr), ptr, len, off);
 
     case FIXED_CST:
       return native_encode_fixed (expr, ptr, len, off);
