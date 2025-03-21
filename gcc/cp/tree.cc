@@ -5663,6 +5663,7 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 		  && !TREE_STATIC (TREE_OPERAND (*tp, 0)))))
 	{
 	  tree decl = TREE_OPERAND (*tp, 0);
+	  WALK_SUBTREE (TREE_TYPE (decl));
 	  WALK_SUBTREE (DECL_INITIAL (decl));
 	  WALK_SUBTREE (DECL_SIZE (decl));
 	  WALK_SUBTREE (DECL_SIZE_UNIT (decl));
@@ -5711,6 +5712,15 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
     case STATIC_ASSERT:
       WALK_SUBTREE (STATIC_ASSERT_CONDITION (*tp));
       WALK_SUBTREE (STATIC_ASSERT_MESSAGE (*tp));
+      break;
+
+    case INTEGER_TYPE:
+      if (processing_template_decl)
+	{
+	  /* Removed from walk_type_fields in r119481.  */
+	  WALK_SUBTREE (TYPE_MIN_VALUE (*tp));
+	  WALK_SUBTREE (TYPE_MAX_VALUE (*tp));
+	}
       break;
 
     default:
