@@ -71,7 +71,7 @@ test_ranges()
     bool val;
   };
   using rvalue_input_range = test_range<C, input_iterator_wrapper_rval>;
-  do_test<rvalue_input_range>(std::allocator<int>());
+  do_test<rvalue_input_range>(std::allocator<bool>());
 
   return true;
 }

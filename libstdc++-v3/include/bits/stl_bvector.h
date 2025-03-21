@@ -751,6 +751,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus >= 201103L
       friend struct std::hash<vector>;
+# if __cplusplus > 201703L // || defined __STRICT_ANSI__
+      static_assert(is_same<typename _Alloc::value_type, bool>::value,
+	  "std::vector must have the same value_type as its allocator");
+# endif
 #endif
 
     public:
