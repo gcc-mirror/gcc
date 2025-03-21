@@ -26,4 +26,4 @@ bar (long a)
 
 /* { dg-final { scan-rtl-dump "Will split live ranges of parameters" "ira" } } */
 /* { dg-final { scan-rtl-dump "Split live-range of register" "ira" { xfail { ! aarch64*-*-* } } } } */
-/* { dg-final { scan-rtl-dump "Performing shrink-wrapping" "pro_and_epilogue" { xfail powerpc*-*-* } } } */
+/* { dg-final { scan-rtl-dump "Performing shrink-wrapping" "pro_and_epilogue" } } */
