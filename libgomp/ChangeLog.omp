@@ -3,6 +3,14 @@
 	Backported from master:
 	2025-03-21  Tobias Burnus  <tburnus@baylibre.com>
 
+	* testsuite/libgomp.fortran/get-mapped-ptr-1.f90: Use -6
+	not -5 as non-conforming device number.
+
+2025-03-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-03-21  Tobias Burnus  <tburnus@baylibre.com>
+
 	* plugin/plugin-gcn.c (_LIBGOMP_PLUGIN_INCLUDE): Define.
 	(struct hsa_runtime_fn_info): Add two queue functions.
 	(hipError_t, hipCtx_t, hipStream_s, hipStream_t): New types.
