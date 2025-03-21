@@ -19,7 +19,7 @@ program main
   if (omp_target_associate_ptr (c_loc (q), p, c_sizeof (q), &
                                 0_c_size_t, d) == 0) then
 
-    if(c_associated (omp_get_mapped_ptr (c_loc (q), -5))) &
+    if(c_associated (omp_get_mapped_ptr (c_loc (q), -6))) &
       stop 1
 
     if(c_associated (omp_get_mapped_ptr (c_loc (q), &
