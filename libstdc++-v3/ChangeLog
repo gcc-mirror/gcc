@@ -1,3 +1,25 @@
+2025-03-20  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/debug/unordered_map (unordered_map): Add from_range
+	constructors and deduction guides.
+	(unordered_multimap): Likewise.
+	* include/debug/unordered_set (unordered_set): Add from_range
+	constructors and deduction guides.
+	(unordered_multiset): Likewise.
+
+2025-03-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/map.h (map): Add from_range constructors and
+	deduction guides.
+	* include/debug/multimap.h (multimap): Likewise.
+	* include/debug/multiset.h (multiset): Likewise.
+	* include/debug/set.h (set): Likewise.
+
+2025-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/18_support/numeric_limits/traps.cc (main): Fix comment
+	typo.
+
 2025-03-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/test.xml: Fix default for -std option.

@@ -1,3 +1,133 @@
+2025-03-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Revert:
+	2025-03-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/20020926-1.c: Deal with deprecation warning.
+	* gcc.target/s390/dwarfregtable-1.c: Ditto.
+	* gcc.target/s390/fp2int1.c: Ditto.
+	* gcc.target/s390/pr102222.c: Ditto.
+	* gcc.target/s390/pr106355-3.c: Ditto.
+	* gcc.target/s390/pr61078.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-10.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-12.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-14.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-18.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-2.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-20.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-22.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-24.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-26.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-28.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-30.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-32.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-4.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-6.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-m31-8.c: Ditto.
+
+2025-03-20  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx10_2-512-vcvtph2ibs-2.c: Fix testcase.
+	* gcc.target/i386/avx10_2-512-vcvtph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2uqqs-2.c: Ditto.
+
+2025-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119370
+	* g++.dg/gomp/pr119370.C: New test.
+
+2025-03-20  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr117452.c: New test.
+
+2025-03-20  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx10_2-512-satcvt-1.c: Modify intrinsic name.
+	* gcc.target/i386/avx10_2-512-vcvtbf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttbf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttbf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-satcvt-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttsd2sis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttsd2usis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttss2sis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttss2usis-2.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+
+2025-03-20  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx10_2-512-satcvt-1.c: Add testcase.
+	* gcc.target/i386/avx10_2-512-vcvtph2ibs-2.c: Ditto
+	* gcc.target/i386/avx10_2-512-vcvtph2iubs-2.c: Ditto
+	* gcc.target/i386/avx10_2-512-vcvtps2ibs-2.c: Ditto
+	* gcc.target/i386/avx10_2-512-vcvtps2iubs-2.c: Ditto
+	* gcc.target/i386/avx10_2-512-vcvttpd2dqs-2.c: Ditto
+	* gcc.target/i386/avx10_2-512-vcvttpd2qqs-2.c: Ditto
+	* gcc.target/i386/avx10_2-512-vcvttpd2udqs-2.c: Ditto
+	* gcc.target/i386/avx10_2-512-vcvttpd2uqqs-2.c: Ditto
+	* gcc.target/i386/avx10_2-512-vcvttph2ibs-2.c: Ditto
+	* gcc.target/i386/avx10_2-512-vcvttph2iubs-2.c: Ditto
+	* gcc.target/i386/avx10_2-512-vcvttps2dqs-2.c: Ditto
+	* gcc.target/i386/avx10_2-512-vcvttps2ibs-2.c: Ditto
+	* gcc.target/i386/avx10_2-512-vcvttps2iubs-2.c: Ditto
+	* gcc.target/i386/avx10_2-512-vcvttps2qqs-2.c: Ditto
+	* gcc.target/i386/avx10_2-512-vcvttps2udqs-2.c: Ditto
+	* gcc.target/i386/avx10_2-512-vcvttps2uqqs-2.c: Ditto
+	* gcc.target/i386/avx10_2-satcvt-1.c: Ditto
+	* gcc.target/i386/avx10_2-vcvttsd2sis-2.c: Ditto
+	* gcc.target/i386/avx10_2-vcvttsd2usis-2.c: Ditto
+	* gcc.target/i386/avx10_2-vcvttss2sis-2.c: Ditto
+	* gcc.target/i386/avx10_2-vcvttss2usis-2.c: Ditto
+	* gcc.target/i386/avx10_2-vcvtps2iubs-2.c: New file.
+
+2025-03-20  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx10_2-512-satcvt-1.c: Modify intrin name.
+	* gcc.target/i386/avx10_2-512-vcvtbf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttbf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttbf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-satcvt-1.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+
 2025-03-19  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/116706

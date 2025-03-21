@@ -1,3 +1,32 @@
+2025-03-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118600
+	* gm2-compiler/M2GenGCC.mod (PerformCodeBecomes): New procedure.
+	(CodeBecomes): Refactor and call PerformCodeBecomes.
+	* gm2-gcc/m2builtins.cc (gm2_strncpy_node): New global variable.
+	(DoBuiltinStrNCopy): New function.
+	(m2builtins_BuiltinStrNCopy): New function.
+	(m2builtins_init): Initialize gm2_strncpy_node.
+	* gm2-gcc/m2builtins.def (BuiltinStrNCopy): New procedure
+	function.
+	* gm2-gcc/m2builtins.h (m2builtins_BuiltinStrNCopy): New
+	function.
+	* gm2-gcc/m2statement.cc (copy_record_fields): New function.
+	(copy_array): Ditto.
+	(copy_strncpy): Ditto.
+	(copy_memcpy): Ditto.
+	(CopyByField_Lower): Ditto.
+	(m2statement_CopyByField): Ditto.
+	* gm2-gcc/m2statement.def (CopyByField): New procedure function.
+	* gm2-gcc/m2statement.h (m2statement_CopyByField): New function.
+	* gm2-gcc/m2type.cc (check_record_fields): Ditto.
+	(check_array_types): Ditto.
+	(m2type_IsGccStrictTypeEquivalent): Ditto.
+	* gm2-gcc/m2type.def (IsGccStrictTypeEquivalent): New procedure
+	function.
+	* gm2-gcc/m2type.h (m2type_IsAddress): Replace return type int
+	with bool.
+
 2025-03-16  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/115111

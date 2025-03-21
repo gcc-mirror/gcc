@@ -1,3 +1,7 @@
+2025-03-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* cdfval.h (struct cdfval_t): Overload long instead of int64_t.
+
 2025-03-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcobolspec.cc (append_rpath): Remove.

@@ -1,3 +1,89 @@
+2025-03-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/118914
+	* combine.cc (recog_for_combine): Add old_nregs and new_nregs
+	argument (defaulting to 0). Update call to recog_for_combine_1.
+	(combine_split_insns): Add old_nregs and new_nregs arguments,
+	store the old and new max registers to them.
+	(try_combine): Update calls to combine_split_insns and
+	pass old_nregs and new_nregs for the i3 call to recog_for_combine.
+	(find_split_point): Update call to combine_split_insns; ignoring
+	the values there.
+	(recog_for_combine_1): Add old_nregs and new_nregs arguments,
+	if the insn was recognized (and not to no-op move), add the
+	REG_DEAD notes to pnotes argument.
+
+2025-03-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119389
+	* tree-ssa-sccvn.cc (dominated_by_p_w_unex): Limit the number
+	of predecessors of a CFG merge we try to skip.
+
+2025-03-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Revert:
+	2025-03-11  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config.gcc: Fail in case of option --with-mode=esa.
+	* config/s390/s390.cc (s390_option_override_internal): Default
+	to z/Architecture mode.
+	* config/s390/s390.h (DRIVER_SELF_SPECS): Ditto.
+	* config/s390/s390.opt: Emit a warning for option -mesa.
+	* doc/invoke.texi: Document the change.
+
+2025-03-20  Filip Kastl  <fkastl@suse.cz>
+
+	* gimple-ssa-sccopy.cc (scc_copy_prop::propagate): Don't
+	increment after vec::unordered_remove().
+
+2025-03-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-core.h (function_decl_type): Make a scoped enum.
+	* tree.h (set_function_decl_type): Adjust.
+	(DECL_IS_OPERATOR_NEW_P): Likewise.
+	(DECL_SET_IS_OPERATOR_NEW): Likewise.
+	(DECL_IS_OPERATOR_DELETE_P): Likewise.
+	(DECL_SET_IS_OPERATOR_DELETE): Likewise.
+	(DECL_LAMBDA_FUNCTION_P): Likewise.
+	(DECL_SET_LAMBDA_FUNCTION): Likewise.
+	* lto-streamer-out.cc (hash_tree): Hash all of
+	FUNCTION_DECL_DECL_TYPE.
+	* tree-streamer-out.cc (pack_ts_function_decl_value_fields):
+	Adjust.
+	* config/aarch64/aarch64-simd-pragma-builtins.def (vcombine_mf8):
+	Use literal zero instead of NONE.
+
+2025-03-20  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/117452
+	* config/i386/i386.md (cbranchbf4): Use
+	ix86_fp_comparison_operator instead of comparison_operator.
+
+2025-03-20  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/avx10_2-512satcvtintrin.h: Add "s_" before
+	intrinsics' core name.
+	* config/i386/avx10_2satcvtintrin.h: Ditto.
+
+2025-03-20  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/avx10_2-512satcvtintrin.h: Add new intrinsics.
+	* config/i386/avx10_2satcvtintrin.h: Ditto.
+	* config/i386/i386-builtin-types.def:
+	Add DEF_FUNCTION_TYPE (V32HI, V32HF, V32HI, USI),
+	(V16SI, V16SF, V16SI, UHI), (V8DI, V8SF, V8DI, UQI),
+	(V8DI, V8DF, V8DI, UQI), (V8SI, V8DF, V8SI, UQI).
+	* config/i386/i386-builtin.def: Add new builtins.
+	* config/i386/i386-expand.cc: Handle V16SI_FTYPE_V16SF_V16SI_UHI,
+	V32HI_FTYPE_V32HF_V32HI_USI, V8DI_FTYPE_V8SF_V8DI_UQI,
+	V8DI_FTYPE_V8DF_V8DI_UQI, V8SI_FTYPE_V8DF_V8SI_UQI.
+
+2025-03-20  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/avx10_2-512satcvtintrin.h: Change *i[u]bs's type suffix
+	of intrin name.
+	* config/i386/avx10_2satcvtintrin.h: Ditto.
+
 2025-03-19  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR target/119270

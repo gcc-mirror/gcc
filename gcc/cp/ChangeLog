@@ -1,3 +1,15 @@
+2025-03-20  Richard Biener  <rguenther@suse.de>
+
+	* module.cc (trees_out::core_bools): Convert scoped enum
+	explicitly.
+
+2025-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119370
+	* decl2.cc (set_context_for_auto_vars_r): New function.
+	(emit_partial_init_fini_fn): Call walk_tree with that function
+	on &init before walk_tree with copy_tree_body_r.
+
 2025-03-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/119316

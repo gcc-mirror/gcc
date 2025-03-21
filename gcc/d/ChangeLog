@@ -1,3 +1,8 @@
+2025-03-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/118545
+	* d-lang.cc (d_handle_option): Adjust quoted options.
+
 2025-03-18  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd fde0f8c40a.

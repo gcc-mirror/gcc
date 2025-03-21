@@ -1,3 +1,10 @@
+2025-03-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* libm2iso/ErrnoCategory.cc (IsErrnoHard): Defend against
+	lack of ENOTBLK.
+	(UnAvailable): Ditto.
+	(GetOpenResults): Ditto.
+
 2024-11-20  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/117703
