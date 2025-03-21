@@ -305,6 +305,7 @@ LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBGCOBOL_VERSION = @LIBGCOBOL_VERSION@
 LIBICONV = @LIBICONV@
+LIBM = @LIBM@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -428,7 +429,7 @@ libgcobol_la_LINK = $(LIBTOOL) --mode=link --tag=CXX $(CXX)	\
 		-Wc,-shared-libgcc				\
 		-version-info $(LIBGCOBOL_VERSION)		\
 		-lstdc++					\
-		$(LTLDFLAGS) $(LTLIBICONV)
+		$(LTLDFLAGS) $(LTLIBICONV) $(LIBM)
 
 WARN_CFLAGS = -W -Wall -Wwrite-strings
 AM_CXXFLAGS = $(CXXFLAGS_FOR_TARGET)

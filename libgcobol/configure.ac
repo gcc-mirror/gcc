@@ -209,6 +209,7 @@ AM_PROG_LIBTOOL
 LT_INIT
 
 AC_LIBTOOL_DLOPEN
+LT_LIB_M
 
 AM_CONDITIONAL([ENABLE_DARWIN_AT_RPATH], [test x$enable_darwin_at_rpath = xyes])
 

@@ -48,7 +48,7 @@ libgcobol_la_LINK = $(LIBTOOL) --mode=link --tag=CXX $(CXX)	\
 		-Wc,-shared-libgcc				\
 		-version-info $(LIBGCOBOL_VERSION)		\
 		-lstdc++					\
-		$(LTLDFLAGS) $(LTLIBICONV)
+		$(LTLDFLAGS) $(LTLIBICONV) $(LIBM)
 
 WARN_CFLAGS = -W -Wall -Wwrite-strings
 
