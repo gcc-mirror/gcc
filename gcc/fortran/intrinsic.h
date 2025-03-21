@@ -144,6 +144,8 @@ bool gfc_check_rand (gfc_expr *);
 bool gfc_check_range (gfc_expr *);
 bool gfc_check_rank (gfc_expr *);
 bool gfc_check_real (gfc_expr *, gfc_expr *);
+bool gfc_check_reduce (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
+		       gfc_expr *, gfc_expr *);
 bool gfc_check_rename (gfc_expr *, gfc_expr *);
 bool gfc_check_repeat (gfc_expr *, gfc_expr *);
 bool gfc_check_reshape (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
@@ -589,6 +591,8 @@ void gfc_resolve_parity (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_product (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_real (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_realpart (gfc_expr *, gfc_expr *);
+void gfc_resolve_reduce (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
+			 gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_rename (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_repeat (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_reshape (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,

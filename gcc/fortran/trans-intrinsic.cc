@@ -10806,6 +10806,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
 	    case GFC_ISYM_EOSHIFT:
 	    case GFC_ISYM_PACK:
 	    case GFC_ISYM_RESHAPE:
+	    case GFC_ISYM_REDUCE:
 	      /* For all of those the first argument specifies the type and the
 		 third is optional.  */
 	      conv_generic_with_optional_char_arg (se, expr, 1, 3);
@@ -11478,6 +11479,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_MCLOCK:
     case GFC_ISYM_MCLOCK8:
     case GFC_ISYM_RAND:
+    case GFC_ISYM_REDUCE:
     case GFC_ISYM_RENAME:
     case GFC_ISYM_SECOND:
     case GFC_ISYM_SECNDS:
@@ -11934,6 +11936,7 @@ gfc_is_intrinsic_libcall (gfc_expr * expr)
     case GFC_ISYM_FAILED_IMAGES:
     case GFC_ISYM_STOPPED_IMAGES:
     case GFC_ISYM_PACK:
+    case GFC_ISYM_REDUCE:
     case GFC_ISYM_RESHAPE:
     case GFC_ISYM_UNPACK:
       /* Pass absent optional parameters.  */

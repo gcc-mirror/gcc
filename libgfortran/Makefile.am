@@ -149,6 +149,7 @@ intrinsics/spread_generic.c \
 intrinsics/string_intrinsics.c \
 intrinsics/rand.c \
 intrinsics/random.c \
+intrinsics/reduce.c \
 intrinsics/reshape_generic.c \
 intrinsics/reshape_packed.c \
 intrinsics/selected_int_kind.f90 \

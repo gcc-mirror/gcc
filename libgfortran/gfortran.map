@@ -2023,4 +2023,8 @@ GFORTRAN_15 {
     _gfortran_pow_m16_m4;
     _gfortran_pow_m16_m8;
     _gfortran_pow_m16_m16;
+    _gfortran_reduce;
+    _gfortran_reduce_scalar;
+    _gfortran_reduce_c;
+    _gfortran_reduce_scalar_c;
 } GFORTRAN_14;

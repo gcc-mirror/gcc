@@ -612,7 +612,7 @@ am__objects_59 = intrinsics/associated.lo intrinsics/abort.lo \
 	intrinsics/move_alloc.lo intrinsics/pack_generic.lo \
 	intrinsics/selected_char_kind.lo intrinsics/size.lo \
 	intrinsics/spread_generic.lo intrinsics/string_intrinsics.lo \
-	intrinsics/rand.lo intrinsics/random.lo \
+	intrinsics/rand.lo intrinsics/random.lo intrinsics/reduce.lo \
 	intrinsics/reshape_generic.lo intrinsics/reshape_packed.lo \
 	intrinsics/selected_int_kind.lo \
 	intrinsics/selected_real_kind.lo intrinsics/trigd.lo \
@@ -1028,7 +1028,7 @@ gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
 	intrinsics/move_alloc.c intrinsics/pack_generic.c \
 	intrinsics/selected_char_kind.c intrinsics/size.c \
 	intrinsics/spread_generic.c intrinsics/string_intrinsics.c \
-	intrinsics/rand.c intrinsics/random.c \
+	intrinsics/rand.c intrinsics/random.c intrinsics/reduce.c \
 	intrinsics/reshape_generic.c intrinsics/reshape_packed.c \
 	intrinsics/selected_int_kind.f90 \
 	intrinsics/selected_real_kind.f90 intrinsics/trigd.c \
@@ -3476,6 +3476,8 @@ intrinsics/rand.lo: intrinsics/$(am__dirstamp) \
 	intrinsics/$(DEPDIR)/$(am__dirstamp)
 intrinsics/random.lo: intrinsics/$(am__dirstamp) \
 	intrinsics/$(DEPDIR)/$(am__dirstamp)
+intrinsics/reduce.lo: intrinsics/$(am__dirstamp) \
+	intrinsics/$(DEPDIR)/$(am__dirstamp)
 intrinsics/reshape_generic.lo: intrinsics/$(am__dirstamp) \
 	intrinsics/$(DEPDIR)/$(am__dirstamp)
 intrinsics/reshape_packed.lo: intrinsics/$(am__dirstamp) \
@@ -4591,6 +4593,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@intrinsics/$(DEPDIR)/perror.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@intrinsics/$(DEPDIR)/rand.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@intrinsics/$(DEPDIR)/random.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@intrinsics/$(DEPDIR)/reduce.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@intrinsics/$(DEPDIR)/rename.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@intrinsics/$(DEPDIR)/reshape_generic.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@intrinsics/$(DEPDIR)/reshape_packed.Plo@am__quote@

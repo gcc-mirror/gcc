@@ -647,6 +647,7 @@ enum gfc_isym_id
   GFC_ISYM_RANK,
   GFC_ISYM_REAL,
   GFC_ISYM_REALPART,
+  GFC_ISYM_REDUCE,
   GFC_ISYM_RENAME,
   GFC_ISYM_REPEAT,
   GFC_ISYM_RESHAPE,
@@ -2543,6 +2544,8 @@ typedef union
 	    struct gfc_expr *);
   bool (*f5)(struct gfc_expr *, struct gfc_expr *, struct gfc_expr *,
 	    struct gfc_expr *, struct gfc_expr *);
+  bool (*f6)(struct gfc_expr *, struct gfc_expr *, struct gfc_expr *,
+	    struct gfc_expr *, struct gfc_expr *, struct gfc_expr *);
 }
 gfc_check_f;
 
