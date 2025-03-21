@@ -60,7 +60,7 @@
 #if __cplusplus >= 201103L
 #include <initializer_list>
 #endif
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
 # include <bits/ranges_base.h> // ranges::begin, ranges::distance etc.
 #endif
 
@@ -297,7 +297,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	: _M_t(__comp, _Pair_alloc_type(__a))
 	{ _M_t._M_insert_range_equal(__first, __last); }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Builds a %multimap from a range.
        * @since C++23
@@ -655,7 +655,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { this->insert(__l.begin(), __l.end()); }
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        *  @brief Inserts a range of elements.
        *  @since C++23
@@ -1159,7 +1159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     multimap(initializer_list<pair<_Key, _Tp>>, _Allocator)
     -> multimap<_Key, _Tp, less<_Key>, _Allocator>;
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg,
 	   __not_allocator_like _Compare = less<__detail::__range_key_type<_Rg>>,
 	   __allocator_like _Alloc =

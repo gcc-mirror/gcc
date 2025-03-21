@@ -131,7 +131,7 @@ namespace __debug
 		  __glibcxx_check_valid_constructor_range(__first, __last)),
 		__gnu_debug::__base(__last), __a) { }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Construct a set from a range.
        * @since C++23
@@ -623,7 +623,7 @@ namespace __debug
     set(initializer_list<_Key>, _Allocator)
     -> set<_Key, less<_Key>, _Allocator>;
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg,
 	   __not_allocator_like _Compare = less<ranges::range_value_t<_Rg>>,
 	   __allocator_like _Alloc = std::allocator<ranges::range_value_t<_Rg>>>

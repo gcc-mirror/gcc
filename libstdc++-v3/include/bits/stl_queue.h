@@ -61,7 +61,7 @@
 #if __cplusplus >= 201103L
 # include <bits/uses_allocator.h>
 #endif
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
 # include <ranges> // ranges::to
 # include <bits/ranges_algobase.h> // ranges::copy
 #endif
@@ -213,7 +213,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: c(__first, __last, __a) { }
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Construct a queue from a range.
        * @since C++23
@@ -326,7 +326,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       template<__detail::__container_compatible_range<_Tp> _Rg>
 	void
 	push_range(_Rg&& __rg)
@@ -397,7 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     -> queue<_ValT, deque<_ValT, _Allocator>>;
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg>
     queue(from_range_t, _Rg&&) -> queue<ranges::range_value_t<_Rg>>;
 
@@ -766,7 +766,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Construct a priority_queue from a range.
        * @since C++23
@@ -849,7 +849,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       template<__detail::__container_compatible_range<_Tp> _Rg>
 	void
 	push_range(_Rg&& __rg)
@@ -924,7 +924,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     priority_queue(_Compare, _Container, _Allocator)
     -> priority_queue<typename _Container::value_type, _Container, _Compare>;
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg,
 	   __not_allocator_like _Compare = less<ranges::range_value_t<_Rg>>,
 	   __allocator_like _Alloc = std::allocator<ranges::range_value_t<_Rg>>>

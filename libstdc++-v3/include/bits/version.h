@@ -1669,6 +1669,16 @@
 #endif /* !defined(__cpp_lib_reference_from_temporary) && defined(__glibcxx_want_reference_from_temporary) */
 #undef __glibcxx_want_reference_from_temporary
 
+#if !defined(__cpp_lib_containers_ranges)
+# if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
+#  define __glibcxx_containers_ranges 202202L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_containers_ranges)
+#   define __cpp_lib_containers_ranges 202202L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_containers_ranges) && defined(__glibcxx_want_containers_ranges) */
+#undef __glibcxx_want_containers_ranges
+
 #if !defined(__cpp_lib_ranges_to_container)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_ranges_to_container 202202L

@@ -1,11 +1,15 @@
 // { dg-do run { target c++23 } }
 
 #include <forward_list>
+
+#if __cpp_lib_containers_ranges != 202202L
+# error "Feature-test macro __cpp_lib_containers_ranges has wrong value in <forward_list>"
+#endif
+
 #include <span>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 #include <testsuite_allocator.h>
-
 void
 test_deduction_guide(long* p)
 {

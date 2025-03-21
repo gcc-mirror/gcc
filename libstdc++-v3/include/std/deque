@@ -72,6 +72,7 @@
 
 #define __glibcxx_want_algorithm_default_value_type
 #define __glibcxx_want_allocator_traits_is_always_equal
+#define __glibcxx_want_containers_ranges
 #define __glibcxx_want_erase_if
 #define __glibcxx_want_nonmember_container_access
 #include <bits/version.h>

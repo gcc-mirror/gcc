@@ -68,7 +68,7 @@
 #if __glibcxx_concepts // C++ >= C++20
 # include <bits/ranges_base.h>          // ranges::distance
 #endif
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
 # include <bits/ranges_algobase.h>      // ranges::copy
 # include <bits/ranges_util.h>          // ranges::subrange
 #endif
@@ -407,7 +407,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
       }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       // Called by insert_range, and indirectly by assign_range, append_range.
       // Initializes new elements in storage at __ptr and updates __ptr to
       // point after the last new element.
@@ -763,7 +763,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Construct a vector from a range.
        * @param __rg A range of values that are convertible to `bool`.
@@ -926,7 +926,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Assign a range to the vector.
        * @param __rg A range of values that are convertible to `value_type`.
@@ -982,7 +982,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		}
 	    }
 	}
-#endif // ranges_to_container
+#endif // containers_ranges
 
       /// Get a copy of the memory allocation object.
       using _Base::get_allocator;
@@ -1648,7 +1648,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Insert a range into the vector.
        * @param __rg A range of values that are convertible to `value_type`.
@@ -1769,7 +1769,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      append_range(__r); // This will take the fast path above.
 	    }
 	}
-#endif // ranges_to_container
+#endif // containers_ranges
 
       /**
        *  @brief  Remove element at given position.
@@ -2313,7 +2313,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     vector(_InputIterator, _InputIterator, _Allocator = _Allocator())
       -> vector<_ValT, _Allocator>;
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg,
 	   typename _Alloc = allocator<ranges::range_value_t<_Rg>>>
     vector(from_range_t, _Rg&&, _Alloc = _Alloc())

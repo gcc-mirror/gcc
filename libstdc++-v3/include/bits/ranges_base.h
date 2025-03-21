@@ -41,7 +41,7 @@
 #include <bits/max_size_type.h>
 #include <bits/version.h>
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
 # include <bits/utility.h> // for tuple_element_t
 #endif
 
@@ -1085,7 +1085,9 @@ namespace ranges
 #if __glibcxx_ranges_to_container // C++ >= 23
   struct from_range_t { explicit from_range_t() = default; };
   inline constexpr from_range_t from_range{};
+#endif
 
+#if __glibcxx_containers_ranges // C++ >= 23
 /// @cond undocumented
   template<typename _T1, typename _T2>
     struct pair;

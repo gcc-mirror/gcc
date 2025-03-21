@@ -1022,7 +1022,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Construct a deque from a range.
        * @param __rg A range of values that are convertible to `value_type`.
@@ -1150,7 +1150,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { _M_assign_aux(__l.begin(), __l.end(), random_access_iterator_tag()); }
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Assign a range to the deque.
        * @param __rg A range of values that are convertible to `value_type`.
@@ -1194,7 +1194,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		emplace_back(*__first);
 	    }
 	}
-#endif // ranges_to_container
+#endif // containers_ranges
 
 
       /// Get a copy of the memory allocation object.
@@ -1824,7 +1824,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Insert a range into the deque.
        * @param __rg A range of values that are convertible to `value_type`.
@@ -1854,7 +1854,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<__detail::__container_compatible_range<_Tp> _Rg>
 	void
 	append_range(_Rg&& __rg);
-#endif // ranges_to_container
+#endif // containers_ranges
 
       /**
        *  @brief  Remove element at given position.
@@ -2386,7 +2386,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     deque(_InputIterator, _InputIterator, _Allocator = _Allocator())
       -> deque<_ValT, _Allocator>;
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg,
 	   typename _Alloc = allocator<ranges::range_value_t<_Rg>>>
     deque(from_range_t, _Rg&&, _Alloc = _Alloc())

@@ -873,7 +873,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
       }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::forward_range _Rg>
     auto __advance_dist(_Rg& __rg)
     {
@@ -1022,7 +1022,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	     __guard.__n = size();
 	   }
 	}
-#endif // ranges_to_container
+#endif // containers_ranges
 
    template<typename _Tp, typename _Alloc>
      void

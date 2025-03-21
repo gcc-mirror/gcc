@@ -244,7 +244,7 @@ namespace __debug
 	     const allocator_type& __a = allocator_type())
       : _Base(__l, __a) { }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Construct a vector from a range.
        * @since C++23
@@ -871,7 +871,7 @@ namespace __debug
       const _Base&
       _M_base() const _GLIBCXX_NOEXCEPT { return *this; }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       template<std::__detail::__container_compatible_range<_Tp> _Rg>
 	constexpr void
 	assign_range(_Rg&& __rg)
@@ -999,7 +999,7 @@ namespace __debug
     vector(size_t, _Tp, _Allocator = _Allocator())
       -> vector<_Tp, _Allocator>;
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg,
 	   typename _Alloc = allocator<ranges::range_value_t<_Rg>>>
     vector(from_range_t, _Rg&&, _Alloc = _Alloc())

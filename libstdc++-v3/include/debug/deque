@@ -155,7 +155,7 @@ namespace __debug
 		__gnu_debug::__base(__last), __a)
 	{ }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       template<__detail::__container_compatible_range<_Tp> _Rg>
 	deque(from_range_t, _Rg&& __rg, const _Allocator& __a = _Allocator())
 	: _Base(from_range, std::forward<_Rg>(__rg), __a)
@@ -217,7 +217,7 @@ namespace __debug
       }
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       template<std::__detail::__container_compatible_range<_Tp> _Rg>
 	void
 	assign_range(_Rg&& __rg)
@@ -561,7 +561,7 @@ namespace __debug
 	}
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       template<__detail::__container_compatible_range<_Tp> _Rg>
 	iterator
 	insert_range(const_iterator __pos, _Rg&& __rg)
@@ -712,7 +712,7 @@ namespace __debug
     deque(size_t, _Tp, _Allocator = _Allocator())
       -> deque<_Tp, _Allocator>;
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg,
 	   typename _Alloc = allocator<ranges::range_value_t<_Rg>>>
     deque(from_range_t, _Rg&&, _Alloc = _Alloc())

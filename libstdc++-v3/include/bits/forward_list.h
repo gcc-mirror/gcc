@@ -46,7 +46,7 @@
 #include <ext/alloc_traits.h>
 #include <ext/aligned_buffer.h>
 #include <debug/assertions.h>
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
 # include <bits/ranges_base.h> // ranges::begin, ranges::distance etc.
 # include <bits/ranges_util.h> // ranges::subrange
 #endif
@@ -896,7 +896,7 @@ namespace __fwdlist
 	: _Base(_Node_alloc_type(__al))
 	{ _M_range_initialize(__first, __last); }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Construct a forward_list from a range.
        * @param __rg An input range with elements that are convertible to
@@ -918,7 +918,7 @@ namespace __fwdlist
 	      __to = __to->_M_next;
 	    }
 	}
-#endif // ranges_to_container
+#endif // containers_ranges
 
       /**
        *  @brief  The %forward_list copy constructor.
@@ -1071,7 +1071,7 @@ namespace __fwdlist
 	}
 #pragma GCC diagnostic pop
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Assign a range to a forward_list.
        * @since C++23
@@ -1102,7 +1102,7 @@ namespace __fwdlist
 	    insert_range_after(__prev,
 			       ranges::subrange(std::move(__first), __last));
 	}
-#endif // ranges_to_container
+#endif // containers_ranges
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
@@ -1345,7 +1345,7 @@ namespace __fwdlist
       push_front(_Tp&& __val)
       { this->_M_insert_after(cbefore_begin(), std::move(__val)); }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Insert a range at the beginning of a forward_list.
        * @param __rg An input range with elements that are convertible to
@@ -1370,7 +1370,7 @@ namespace __fwdlist
 	  if (!__tmp.empty())
 	    splice_after(before_begin(), __tmp);
 	}
-#endif // ranges_to_container
+#endif // containers_ranges
 
       /**
        *  @brief  Removes first element.
@@ -1491,7 +1491,7 @@ namespace __fwdlist
       insert_after(const_iterator __pos, std::initializer_list<_Tp> __il)
       { return insert_after(__pos, __il.begin(), __il.end()); }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Insert a rangeinto a forward_list.
        * @param  __position An iterator.
@@ -1515,7 +1515,7 @@ namespace __fwdlist
 			     get_allocator());
 	  return _M_splice_after(__position, __tmp.before_begin(), __tmp.end());
 	}
-#endif // ranges_to_container
+#endif // containers_ranges
 
       /**
        *  @brief  Removes the element pointed to by the iterator following
@@ -1953,7 +1953,7 @@ namespace __fwdlist
     forward_list(_InputIterator, _InputIterator, _Allocator = _Allocator())
       -> forward_list<_ValT, _Allocator>;
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg,
 	   typename _Allocator = allocator<ranges::range_value_t<_Rg>>>
     forward_list(from_range_t, _Rg&&, _Allocator = _Allocator())

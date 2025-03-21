@@ -68,6 +68,7 @@
 #include <bits/stl_queue.h>
 
 #define __glibcxx_want_adaptor_iterator_pair_constructor
+#define __glibcxx_want_containers_ranges
 #include <bits/version.h>
 
 #endif /* _GLIBCXX_QUEUE */

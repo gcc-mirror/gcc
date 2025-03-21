@@ -639,7 +639,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
       }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Construct a string from a range.
        * @since C++23
@@ -1349,7 +1349,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       basic_string&
       append(size_type __n, _CharT __c);
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Append a range to the string.
        * @since C++23
@@ -1536,7 +1536,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	assign(_InputIterator __first, _InputIterator __last)
 	{ return this->replace(_M_ibegin(), _M_iend(), __first, __last); }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief  Set value to a range of characters.
        * @since C++23
@@ -1629,7 +1629,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	insert(iterator __p, _InputIterator __beg, _InputIterator __end)
 	{ this->replace(__p, __p, __beg, __end); }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Insert a range into the string.
        * @since C++23
@@ -2166,7 +2166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			     __k1.base(), __k2 - __k1);
       }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Replace part of the string with a range.
        * @since C++23

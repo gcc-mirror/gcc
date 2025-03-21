@@ -1,8 +1,13 @@
 // { dg-do run { target c++23 } }
 
+#include <set>
+
+#if __cpp_lib_containers_ranges != 202202L
+# error "Feature-test macro __cpp_lib_containers_ranges has wrong value in <set>"
+#endif
+
 #include <algorithm>
 #include <ranges>
-#include <set>
 #include <span>
 #include <testsuite_allocator.h>
 #include <testsuite_hooks.h>

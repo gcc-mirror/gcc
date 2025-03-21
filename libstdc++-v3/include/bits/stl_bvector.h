@@ -896,7 +896,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Construct a vector from a range.
        * @param __rg A range of values that are convertible to `value_type`.
@@ -1026,7 +1026,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { _M_assign_aux(__l.begin(), __l.end(), random_access_iterator_tag()); }
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Assign a range to the vector.
        * @param __rg A range of values that are convertible to `value_type`.
@@ -1347,7 +1347,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return this->insert(__p, __l.begin(), __l.end()); }
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Insert a range into the vector.
        * @param __rg A range of values that are convertible to `bool`.
@@ -1458,7 +1458,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      insert(end(), __tmp.begin(), __tmp.end());
 	    }
 	}
-#endif // ranges_to_container
+#endif // containers_ranges
 
       _GLIBCXX20_CONSTEXPR
       void

@@ -977,7 +977,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  }
       }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<typename _Tp, typename _Alloc>
     template<__detail::__container_compatible_range<_Tp> _Rg>
       constexpr auto
@@ -1100,7 +1100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  return insert_range(__pos, vector(from_range, std::forward<_Rg>(__rg),
 					    _M_get_Tp_allocator()));
       }
-#endif // ranges_to_container
+#endif // containers_ranges
 
   // vector<bool>
   template<typename _Alloc>

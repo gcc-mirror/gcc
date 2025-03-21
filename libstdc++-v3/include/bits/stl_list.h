@@ -66,7 +66,7 @@
 #include <bits/ptr_traits.h>
 #include <ext/aligned_buffer.h>
 #endif
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
 # include <bits/ranges_base.h> // ranges::begin, ranges::distance etc.
 # include <bits/ranges_util.h> // ranges::subrange
 #endif
@@ -1263,7 +1263,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	}
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Construct a list from a range.
        * @since C++23
@@ -1360,7 +1360,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       }
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Assign a range to a list.
        * @since C++23
@@ -1726,7 +1726,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	}
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Insert a range at the beginning of a list.
        * @param  __rg An input range of elements that can be converted to
@@ -1964,7 +1964,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	}
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Insert a range into a list.
        * @param  __position An iterator.
@@ -2594,7 +2594,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     list(_InputIterator, _InputIterator, _Allocator = _Allocator())
       -> list<_ValT, _Allocator>;
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg,
 	   typename _Allocator = allocator<ranges::range_value_t<_Rg>>>
     list(from_range_t, _Rg&&, _Allocator = _Allocator())

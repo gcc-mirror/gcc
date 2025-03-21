@@ -60,7 +60,7 @@
 #if __cplusplus >= 201103L
 #include <initializer_list>
 #endif
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
 # include <bits/ranges_base.h> // ranges::begin, ranges::distance etc.
 #endif
 
@@ -274,7 +274,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	: _M_t(_Key_alloc_type(__a))
 	{ _M_t._M_insert_range_equal(__first, __last); }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Builds a %multiset from a range.
        * @since C++23
@@ -588,7 +588,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { this->insert(__l.begin(), __l.end()); }
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        *  @brief Inserts a range of elements.
        *  @since C++23
@@ -996,7 +996,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     multiset(initializer_list<_Key>, _Allocator)
     -> multiset<_Key, less<_Key>, _Allocator>;
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg,
 	   __not_allocator_like _Compare = less<ranges::range_value_t<_Rg>>,
 	   __allocator_like _Alloc = std::allocator<ranges::range_value_t<_Rg>>>

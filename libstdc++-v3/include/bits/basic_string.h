@@ -51,7 +51,7 @@
 # include <string_view>
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
 # include <bits/ranges_algobase.h>      // ranges::copy
 # include <bits/ranges_util.h>          // ranges::subrange
 #endif
@@ -506,7 +506,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       _GLIBCXX_NOEXCEPT
       { _S_copy(__p, __k1, __k2 - __k1); }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       // pre: __n == ranges::distance(__rg). __p+[0,__n) is a valid range.
       template<typename _Rg>
 	static constexpr void
@@ -737,7 +737,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	__str._M_set_length(0);
       }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Construct a string from a range.
        * @since C++23
@@ -1573,7 +1573,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       append(size_type __n, _CharT __c)
       { return _M_replace_aux(this->size(), size_type(0), __n, __c); }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Append a range to the string.
        * @param __rg A range of values that are convertible to `value_type`.
@@ -1884,7 +1884,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	{ return this->replace(begin(), end(), __first, __last); }
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Assign a range to the string.
        * @param __rg A range of values that are convertible to `value_type`.
@@ -2052,7 +2052,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
         { this->replace(__p, __p, __beg, __end); }
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Insert a range into the string.
        * @param __rg A range of values that are convertible to `value_type`.
@@ -2671,7 +2671,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 			     __k1.base(), __k2 - __k1);
       }
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Replace part of the string with a range.
        * @param __rg A range of values that are convertible to `value_type`.
@@ -3773,7 +3773,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 		 const _Allocator& = _Allocator())
       -> basic_string<_CharT, _Traits, _Allocator>;
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg,
 	   typename _Allocator = allocator<ranges::range_value_t<_Rg>>>
     basic_string(from_range_t, _Rg&&, _Allocator = _Allocator())

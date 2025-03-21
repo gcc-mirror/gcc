@@ -61,7 +61,7 @@
 #if __cplusplus >= 201103L
 # include <bits/uses_allocator.h>
 #endif
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
 # include <ranges> // ranges::to
 # include <bits/ranges_algobase.h> // ranges::copy
 #endif
@@ -181,7 +181,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: c(__first, __last) { }
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       /**
        * @brief Construct a stack from a range.
        * @since C++23
@@ -300,7 +300,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
       template<__detail::__container_compatible_range<_Tp> _Rg>
 	void
 	push_range(_Rg&& __rg)
@@ -371,7 +371,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     -> stack<_ValT, deque<_ValT, _Allocator>>;
 #endif
 
-#if __glibcxx_ranges_to_container // C++ >= 23
+#if __glibcxx_containers_ranges // C++ >= 23
   template<ranges::input_range _Rg>
     stack(from_range_t, _Rg&&) -> stack<ranges::range_value_t<_Rg>>;
 
