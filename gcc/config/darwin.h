@@ -45,8 +45,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define OBJECT_FORMAT_MACHO 1
 
-/* Suppress g++ attempt to link in the math library automatically. */
+/* Suppress language-specific specs attempt to link in libm automatically. */
 #define MATH_LIBRARY ""
+
+/* Likewise libdl.  */
+#define DL_LIBRARY ""
 
 /* We have atexit.  */
 
