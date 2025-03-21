@@ -408,7 +408,7 @@
 
 			BASED BASECONVERT
 			BEFORE BINARY BIT BIT_OF "BIT-OF" BIT_TO_CHAR "BIT-TO-CHAR"
-			BLANK COB_BLOCK
+			BLANK BLOCK_kw
 			BOOLEAN_OF_INTEGER "BOOLEAN-OF-INTEGER"
 			BOTTOM BY
 			BYTE BYTE_LENGTH "BYTE-LENGTH"
@@ -613,7 +613,7 @@
 			NONE NORMAL NUMBERS
 			PREFIXED PREVIOUS PROHIBITED RELATION REQUIRED
 			REVERSE_VIDEO ROUNDING
-			SECONDS SECURE SHORT COB_SIGNED
+			SECONDS SECURE SHORT SIGNED_kw
 			STANDARD_BINARY "STANDARD-BINARY"
 			STANDARD_DECIMAL "STANDARD-DECIMAL"
 			STATEMENT STEP STRUCTURE
@@ -621,7 +621,7 @@
 			TOWARD_LESSER "TOWARD-LESSER"
 			TRUNCATION
 			UCS_4 "UCS-4"
-			UNDERLINE COB_UNSIGNED
+			UNDERLINE UNSIGNED_kw
 			UTF_16 "UTF-16"
 			UTF_8 "UTF-8"
 
@@ -1014,7 +1014,7 @@
 
                         BACKWARD BASED BASECONVERT
 			BEFORE BINARY BIT BIT_OF BIT_TO_CHAR
-                        BLANK COB_BLOCK
+                        BLANK BLOCK_kw
 			BOOLEAN_OF_INTEGER
 			BOTTOM BY
 			BYTE BYTE_LENGTH
@@ -1228,7 +1228,7 @@
                         NONE NORMAL NUMBERS
                         PREFIXED PREVIOUS PROHIBITED RELATION REQUIRED
                         REVERSE_VIDEO ROUNDING
-                        SECONDS SECURE SHORT COB_SIGNED
+                        SECONDS SECURE SHORT SIGNED_kw
 			STANDARD_BINARY
                         STANDARD_DECIMAL
 			STATEMENT STEP STRUCTURE
@@ -1236,7 +1236,7 @@
 			TOWARD_LESSER
 			TRUNCATION
                         UCS_4
-			UNDERLINE COB_UNSIGNED
+			UNDERLINE UNSIGNED_kw
 			UTF_16
 			UTF_8
 
@@ -2907,7 +2907,7 @@ fd_clause:      record_desc
                 }
                 ;
 
-block_desc:     COB_BLOCK contains rec_contains chars_recs
+block_desc:     BLOCK_kw contains rec_contains chars_recs
                 ;
 rec_contains:   NUMSTR[min] {
                   ssize_t n;
@@ -6528,7 +6528,7 @@ context_word:   APPLY                   { static char s[] ="APPLY";
                                          $$ = s; } // screen description entry
         |       SHORT                  { static char s[] ="SHORT";
                                          $$ = s; } // DYNAMIC LENGTH STRUCTURE clause
-        |       COB_SIGNED             { static char s[] ="SIGNED";
+        |       SIGNED_kw              { static char s[] ="SIGNED";
                                          $$ = s; } // DYNAMIC LENGTH STRUCTURE clause and USAGE clause
         |       STANDARD_BINARY        { static char s[] ="STANDARD-BINARY";
                                          $$ = s; } // ARITHMETIC clause
@@ -6554,7 +6554,7 @@ context_word:   APPLY                   { static char s[] ="APPLY";
                                          $$ = s; } // ALPHABET clause
         |       UNDERLINE              { static char s[] ="UNDERLINE";
                                          $$ = s; } // screen description entry and SET attribute statement
-        |       COB_UNSIGNED           { static char s[] ="UNSIGNED";
+        |       UNSIGNED_kw            { static char s[] ="UNSIGNED";
                                          $$ = s; } // USAGE clause
         |       UTF_8                  { static char s[] ="UTF-8";
                                          $$ = s; } // ALPHABET clause

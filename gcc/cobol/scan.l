@@ -374,7 +374,7 @@ ROUNDING			{ return ROUNDING; }
 SECONDS				{ return SECONDS; }
 SECURE				{ return SECURE; }
 SHORT				{ return SHORT; }
-SIGNED				{ return COB_SIGNED; }
+SIGNED				{ return SIGNED_kw; }
 STANDARD-BINARY			{ return STANDARD_BINARY; }
 STANDARD-DECIMAL		{ return STANDARD_DECIMAL; }
 STATEMENT			{ return STATEMENT; }
@@ -394,7 +394,7 @@ TOWARD-LESSER			{ return TOWARD_LESSER; }
 TRUNCATION			{ return TRUNCATION; }
 UCS-4				{ return UCS_4; }
 UNDERLINE			{ return UNDERLINE; }
-UNSIGNED			{ return COB_UNSIGNED; }
+UNSIGNED			{ return UNSIGNED_kw; }
 UTF-16				{ return UTF_16; }
 UTF-8				{ return UTF_8; }
 
@@ -837,7 +837,7 @@ CALL		{ return CALL; }
 BY		{ return BY; }
 BOTTOM		{ return BOTTOM; }
 BEFORE		{ return BEFORE; }
-BLOCK		{ return COB_BLOCK; }
+BLOCK		{ return BLOCK_kw; }
 BACKWARD	{ return BACKWARD; }
 
 AT		{ return AT; }
@@ -1042,7 +1042,7 @@ USE({SPC}FOR)?		{ return USE; }
   AS			{ return AS; }
   ASCENDING		{ return ASCENDING; }
   BLANK    		{ return BLANK; }
-  BLOCK			{ return COB_BLOCK; }
+  BLOCK			{ return BLOCK_kw; }
   BY			{ return BY; }
   BYTE-LENGTH		{ return BYTE_LENGTH; }
   CHARACTER		{ return CHARACTER; }
@@ -2164,7 +2164,7 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   BINARY	{ return BINARY; }
   BIT	{ return BIT; }
   BLANK	{ return BLANK; }
-  BLOCK	{ return COB_BLOCK; }
+  BLOCK	{ return BLOCK_kw; }
   BOTTOM	{ return BOTTOM; }
   BY	{ return BY; }
   CALL	{ return CALL; }
