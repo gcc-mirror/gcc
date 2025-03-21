@@ -11736,6 +11736,23 @@ avr_handle_isr_attribute (tree node, tree *attrs, const char *name)
 }
 
 
+/* Helper for `avr_insert_attributes'.
+   Return the section name from attribute "section" in attribute list ATTRS.
+   When no "section" attribute is present, then return nullptr.  */
+
+static const char *
+avr_attrs_section_name (tree attrs)
+{
+  if (tree a_sec = lookup_attribute ("section", attrs))
+    if (TREE_VALUE (a_sec))
+      if (tree t_section_name = TREE_VALUE (TREE_VALUE (a_sec)))
+	if (TREE_CODE (t_section_name) == STRING_CST)
+	  return TREE_STRING_POINTER (t_section_name);
+
+  return nullptr;
+}
+
+
 /* Implement `TARGET_INSERT_ATTRIBUTES'.  */
 
 static void
@@ -11768,25 +11785,31 @@ avr_insert_attributes (tree node, tree *attributes)
 			       NULL, *attributes);
     }
 
+  const char *section_name = avr_attrs_section_name (*attributes);
+
+  // When the function is in an .initN or .finiN section, then add "used"
+  // since such functions are never called.
+  if (section_name
+      && strlen (section_name) == strlen (".init*")
+      && IN_RANGE (section_name[5], '0', '9')
+      && (startswith (section_name, ".init")
+	  || startswith (section_name, ".fini"))
+      && !lookup_attribute ("used", *attributes))
+    {
+      *attributes = tree_cons (get_identifier ("used"), NULL, *attributes);
+    }
+
 #if defined WITH_AVRLIBC
   if (avropt_call_main == 0
       && TREE_CODE (node) == FUNCTION_DECL
       && MAIN_NAME_P (DECL_NAME (node)))
     {
-      const char *s_section_name = nullptr;
+      bool in_init9_p = section_name && !strcmp (section_name, ".init9");
 
-      if (tree a_sec = lookup_attribute ("section", *attributes))
-	if (TREE_VALUE (a_sec))
-	  if (tree t_section_name = TREE_VALUE (TREE_VALUE (a_sec)))
-	    if (TREE_CODE (t_section_name) == STRING_CST)
-	      s_section_name = TREE_STRING_POINTER (t_section_name);
-
-      bool in_init9_p = s_section_name && !strcmp (s_section_name, ".init9");
-
-      if (s_section_name && !in_init9_p)
+      if (section_name && !in_init9_p)
 	{
 	  warning (OPT_Wattributes, "%<section(\"%s\")%> attribute on main"
-		   " function inhibits %<-mno-call-main%>", s_section_name);
+		   " function inhibits %<-mno-call-main%>", section_name);
 	}
       else
 	{
