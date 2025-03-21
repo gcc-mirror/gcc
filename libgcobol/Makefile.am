@@ -52,6 +52,8 @@ libgcobol_la_LINK = $(LIBTOOL) --mode=link --tag=CXX $(CXX)	\
 
 WARN_CFLAGS = -W -Wall -Wwrite-strings
 
+AM_CXXFLAGS = $(CXXFLAGS_FOR_TARGET)
+
 # not defined: DEFS, MAX_ERRORS, LTLDFLAGS
 ALL_CXXFLAGS = -I. -I$(srcdir) $(AM_CPPFLAGS) $(DEFS)		\
 	$(XCFLAGS) $(AM_CXXFLAGS) $(WARN_CFLAGS) $(MAX_ERRORS)	\
