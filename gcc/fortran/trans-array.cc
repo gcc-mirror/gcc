@@ -10109,7 +10109,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	  else
 	    {
 	      attr = &c->attr;
-	      if (attr->pointer)
+	      if (attr->pointer || attr->proc_pointer)
 		continue;
 	    }
 
