@@ -7010,7 +7010,7 @@ package body Exp_Aggr is
       begin
          return UI_To_Int ((if Nkind (Expr) = N_Integer_Literal
                             then Intval (Expr)
-                            else Enumeration_Pos (Expr)));
+                            else Enumeration_Pos (Entity (Expr))));
       end To_Int;
 
       --  Local variables
