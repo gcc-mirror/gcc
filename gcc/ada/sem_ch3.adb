@@ -382,7 +382,7 @@ package body Sem_Ch3 is
    --  created in the procedure and attached to Related_Nod.
 
    procedure Constrain_Array
-     (Def_Id      : in out Entity_Id;
+     (Def_Id      : Entity_Id;
       SI          : Node_Id;
       Related_Nod : Node_Id;
       Related_Id  : Entity_Id;
@@ -13980,7 +13980,7 @@ package body Sem_Ch3 is
    ---------------------
 
    procedure Constrain_Array
-     (Def_Id      : in out Entity_Id;
+     (Def_Id      : Entity_Id;
       SI          : Node_Id;
       Related_Nod : Node_Id;
       Related_Id  : Entity_Id;
@@ -14080,14 +14080,7 @@ package body Sem_Ch3 is
          end if;
       end if;
 
-      if No (Def_Id) then
-         Def_Id :=
-           Create_Itype (E_Array_Subtype, Related_Nod, Related_Id, Suffix);
-         Set_Parent (Def_Id, Related_Nod);
-
-      else
-         Mutate_Ekind (Def_Id, E_Array_Subtype);
-      end if;
+      Mutate_Ekind (Def_Id, E_Array_Subtype);
 
       Set_Size_Info      (Def_Id,                (T));
       Set_First_Rep_Item (Def_Id, First_Rep_Item (T));
@@ -22664,8 +22657,7 @@ package body Sem_Ch3 is
          --  has not yet been called to create Def_Id.
 
          else
-            if Is_Array_Type (Subtype_Mark_Id)
-              or else Is_Concurrent_Type (Subtype_Mark_Id)
+            if Is_Concurrent_Type (Subtype_Mark_Id)
               or else Is_Access_Type (Subtype_Mark_Id)
             then
                Def_Id := Empty;
