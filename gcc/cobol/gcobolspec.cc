@@ -600,7 +600,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     {
     add_arg_lib(DL_LIBRARY, static_in_general);
     }
-  if( need_libstdc && static_in_general )
+  if( need_libstdc )
     {
     add_arg_lib(STDCPP_LIBRARY, static_in_general);
     }
