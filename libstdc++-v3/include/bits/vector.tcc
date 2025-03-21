@@ -1094,7 +1094,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    return begin() + __ins_idx;
 	  }
 	else
-	  return insert_range(__pos, vector(from_range, std::move(__rg),
+	  return insert_range(__pos, vector(from_range, std::forward<_Rg>(__rg),
 					    _M_get_Tp_allocator()));
       }
 #endif // ranges_to_container

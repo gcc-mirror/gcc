@@ -899,6 +899,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __glibcxx_ranges_to_container // C++ >= 23
       /**
        * @brief Construct a vector from a range.
+       * @param __rg A range of values that are convertible to `value_type`.
        * @since C++23
        */
       template<__detail::__container_compatible_range<bool> _Rg>
@@ -1028,6 +1029,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __glibcxx_ranges_to_container // C++ >= 23
       /**
        * @brief Assign a range to the vector.
+       * @param __rg A range of values that are convertible to `value_type`.
+       * @pre `__rg` and `*this` do not overlap.
        * @since C++23
        */
       template<__detail::__container_compatible_range<bool> _Rg>
@@ -1035,8 +1038,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	assign_range(_Rg&& __rg)
 	{
 	  static_assert(assignable_from<bool&, ranges::range_reference_t<_Rg>>);
-	  clear();
-	  append_range(std::forward<_Rg>(__rg));
+	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
+	    {
+	      if (auto __n = size_type(ranges::distance(__rg)))
+		{
+		  reserve(__n);
+		  this->_M_impl._M_finish
+		      = ranges::copy(std::forward<_Rg>(__rg), begin()).out;
+		}
+	      else
+		clear();
+	    }
+	  else
+	    {
+	      clear();
+	      auto __first = ranges::begin(__rg);
+	      const auto __last = ranges::end(__rg);
+	      for (; __first != __last; ++__first)
+		emplace_back(*__first);
+	    }
 	}
 #endif
 
@@ -1330,6 +1350,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __glibcxx_ranges_to_container // C++ >= 23
       /**
        * @brief Insert a range into the vector.
+       * @param __rg A range of values that are convertible to `bool`.
+       * @return An iterator that points to the first new element inserted,
+       *         or to `__pos` if `__rg` is an empty range.
+       * @pre `__rg` and `*this` do not overlap.
        * @since C++23
        */
       template<__detail::__container_compatible_range<bool> _Rg>
@@ -1385,24 +1409,53 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	constexpr void
 	append_range(_Rg&& __rg)
 	{
+	  // N.B. __rg may overlap with *this, so we must copy from __rg before
+	  // existing elements or iterators referring to *this are invalidated.
+	  // e.g. in v.append_range(views::concat(v, foo)) rg overlaps v.
 	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
 	    {
-	      reserve(size() + size_type(ranges::distance(__rg)));
-	      this->_M_impl._M_finish = ranges::copy(__rg, end()).out;
+	      const auto __n = size_type(ranges::distance(__rg));
+
+	      // If there is no existing storage, there are no iterators that
+	      // can be referring to our storage, so it's safe to allocate now.
+	      if (capacity() == 0)
+		reserve(__n);
+
+	      const auto __sz = size();
+	      const auto __capacity = capacity();
+	      if ((__capacity - __sz) >= __n)
+		{
+		  this->_M_impl._M_finish
+		      = ranges::copy(std::forward<_Rg>(__rg), end()).out;
+		  return;
+		}
+
+	      vector __tmp(get_allocator());
+	      __tmp.reserve(_M_check_len(__n, "vector::append_range"));
+	      __tmp._M_impl._M_finish
+		   = _M_copy_aligned(cbegin(), cend(), __tmp.begin());
+	      __tmp._M_impl._M_finish
+		   = ranges::copy(std::forward<_Rg>(__rg), __tmp.end()).out;
+	      swap(__tmp);
 	    }
 	  else
 	    {
 	      auto __first = ranges::begin(__rg);
 	      const auto __last = ranges::end(__rg);
-	      size_type __n = size();
-	      const size_type __cap = capacity();
-	      for (; __first != __last && __n < __cap; ++__first, (void)++__n)
+
+	      // Fill up to the end of current capacity.
+	      for (auto __free = capacity() - size();
+		   __first != __last && __free > 0;
+		   ++__first, (void) --__free)
 		emplace_back(*__first);
-	      if (__first != __last)
-		{
-		  ranges::subrange __rest(std::move(__first), __last);
-		  append_range(vector(from_range, __rest, get_allocator()));
-		}
+
+	      if (__first == __last)
+		return;
+
+	      // Copy the rest of the range to a new vector.
+	      ranges::subrange __rest(std::move(__first), __last);
+	      vector __tmp(from_range, __rest, get_allocator());
+	      insert(end(), __tmp.begin(), __tmp.end());
 	    }
 	}
 #endif // ranges_to_container
