@@ -8215,7 +8215,7 @@ resolve_locality_spec (gfc_code *code, gfc_namespace *ns)
 	    {
 	      if (iter->var->symtree->n.sym == sym)
 		{
-		  gfc_error ("Index variable %qs at %L cannot be specified in a"
+		  gfc_error ("Index variable %qs at %L cannot be specified in a "
 			     "locality-spec", sym->name, &expr->where);
 		  continue;
 		}
