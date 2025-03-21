@@ -1,3 +1,8 @@
+2025-03-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd af92b68a81.
+	* dmd/VERSION: Bump version to v2.108.1.
+
 2025-03-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
