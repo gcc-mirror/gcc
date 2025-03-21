@@ -8,10 +8,10 @@
 # Roland Illig <roland.illig@gmx.de>, 2015, 2017-2025.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 15-b20250216\n"
+"Project-Id-Version: gcc 15.1-b20250316\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2025-03-14 22:06+0000\n"
-"PO-Revision-Date: 2025-03-13 23:51+0100\n"
+"PO-Revision-Date: 2025-03-20 23:43+0100\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -575,10 +575,9 @@ msgid "Warn about possibly incorrect subscripts in do loops."
 msgstr "Bei möglicherweise falschen Arrayindexen in do-Schleifen warnen."
 
 #: fortran/lang.opt:246
-#, fuzzy, no-c-format
-#| msgid "Warn in case profiles in -fprofile-use do not match."
+#, no-c-format
 msgid "Warn when arguments of external procedures do not match."
-msgstr "Warnen, wenn Profile in -fprofile-use nicht zueinander passen."
+msgstr "Warnen, wenn die Argumente von externen Prozeduren nicht passen."
 
 #: fortran/lang.opt:254
 #, no-c-format
@@ -3796,76 +3795,72 @@ msgstr "Keine system- oder GCC-spezifischen Makros vordefinieren."
 #: cobol/lang.opt:43
 #, no-c-format
 msgid "Accept COBOL constructs used by non-ISO compilers"
-msgstr ""
+msgstr "COBOL-Konstrukte, die von Nicht-ISO-Compilern verwendet werden, akzeptieren"
 
 #: cobol/lang.opt:62
-#, fuzzy, no-c-format
-#| msgid "%<-fhandle-exceptions%> has been renamed %<-fexceptions%> (and is now on by default)"
+#, no-c-format
 msgid "-fcobol-exceptions=<n>\tEnable some exceptions by default"
-msgstr "%<-fhandle-exceptions%> wurde in %<-fexceptions%> umbenannt (und ist nun voreingestellt)"
+msgstr "-fcobol-exceptions=<n>\tEinige Ausnahmen standardmäßig aktivieren"
 
 #: cobol/lang.opt:66
 #, no-c-format
 msgid "Define alternative implicit copybook filename extension"
-msgstr ""
+msgstr "Alternative implizite Kopierbuch-Dateinamenerweiterung definieren"
 
 #: cobol/lang.opt:70
 #, no-c-format
 msgid "Set Working-Storage data items to the supplied value"
-msgstr ""
+msgstr "Working-Storage-Datenelemente auf den angegebenen Wert setzen"
 
 #: cobol/lang.opt:74
-#, fuzzy, no-c-format
-#| msgid "Enable backend debugging."
+#, no-c-format
 msgid "Enable Cobol lex debugging"
-msgstr "Backend-Fehlersuche einschalten."
+msgstr "Cobol-Lex-Debugging einschalten"
 
 #: cobol/lang.opt:90
 #, no-c-format
 msgid "-findicator-column=<n>\tColumn after which Region A begins"
-msgstr ""
+msgstr "-findicator-column=<n>\tSpalte, nach der Region A beginnt"
 
 #: cobol/lang.opt:94
 #, no-c-format
 msgid "-finternal-ebcdic\tInternal processing is in EBCDIC Code Page 1140"
-msgstr ""
+msgstr "-finternal-ebcdic\tDie interne Verarbeitung erfolgt in EBCDIC-Codepage 1140"
 
 #: cobol/lang.opt:102
 #, no-c-format
 msgid "Enable/disable static linkage for CALL literals"
-msgstr ""
+msgstr "Einschalten/Ausschalten der statischen Bindung für CALL-Literale"
 
 #: cobol/lang.opt:106
-#, fuzzy, no-c-format
-#| msgid "Enable backend debugging."
+#, no-c-format
 msgid "Enable Cobol parser debugging"
-msgstr "Backend-Fehlersuche einschalten."
+msgstr "Fehlersuche im Cobol-Parser einschalten"
 
 #: cobol/lang.opt:110
-#, fuzzy, no-c-format
-#| msgid "Enable backend debugging."
+#, no-c-format
 msgid "Enable Cobol yacc debugging"
-msgstr "Backend-Fehlersuche einschalten."
+msgstr "Fehlersuche im Cobol-Yacc einschalten"
 
 #: cobol/lang.opt:114
 #, no-c-format
 msgid "preprocess <source_filter> before compiling"
-msgstr ""
+msgstr "<source_filter> vor der Kompilierung vorverarbeiten"
 
 #: cobol/lang.opt:134
 #, no-c-format
 msgid "-main\tThe first program-id in the next source file is called by a generated main() entry point"
-msgstr ""
+msgstr "-main\tDie erste Programm-ID in der nächsten Quelldatei wird von einem generierten main()-Einstiegspunkt aufgerufen"
 
 #: cobol/lang.opt:138
 #, no-c-format
 msgid "-main=<source_file> source_file/PROGRAM-ID is called by the generated main()"
-msgstr ""
+msgstr "-main=<Quelldatei> Quelldatei/PROGRAMM-ID wird von der generierten main() aufgerufen"
 
 #: cobol/lang.opt:142
 #, no-c-format
 msgid "-nomain\tNo main() function is created from COBOL source files"
-msgstr ""
+msgstr "-nomain\tEs wird keine main()-Funktion aus COBOL-Quelldateien erstellt"
 
 #: ada/gcc-interface/lang.opt:61
 #, no-c-format
@@ -19828,7 +19823,7 @@ msgstr "Operanden für %T/%t müssen reg + const_int sein:"
 #: config/avr/avr.cc:2762
 #, c-format
 msgid "bad I/O address 0x%s outside of valid range [0x%x, 0x%x] for %%i operand"
-msgstr ""
+msgstr "falsche E/A-Adresse 0x%s außerhalb des gültigen Bereichs [0x%x, 0x%x] für Operand %%i"
 
 #: config/avr/avr.cc:2788
 #, c-format
@@ -21245,10 +21240,9 @@ msgid "expected label"
 msgstr "Sprungmarke erwartet"
 
 #: cobol/gcobolspec.cc:680
-#, fuzzy, c-format
-#| msgid "Driving:"
+#, c-format
 msgid "Driving: (%ld)\n"
-msgstr "Angesteuert:"
+msgstr "Ausführen: (%ld)\n"
 
 #: cp/call.cc:4225
 #, c-format
@@ -21678,6 +21672,12 @@ msgid ""
 "\n"
 "   Use another -std option to compile.  */\n"
 msgstr ""
+"\n"
+"\n"
+"/* WARNUNG: Wegen abweichender Argumente für eine externe\n"
+"   Prozedur ist diese Header-Datei nicht kompatibel mit -std=c23.\n"
+"\n"
+"   Verwenden Sie eine andere -std-Option zum Kompilieren. */\n"
 
 #: fortran/error.cc:324
 msgid "Prohibited in Fortran 2023:"
@@ -22973,38 +22973,34 @@ msgid "%<-mrelax%> is only supported for RTP PIC"
 msgstr "%<-mrelax%> wird nur für RTP PIC unterstützt"
 
 #: cobol/parse_ante.h:1718
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "old declaration %q#D"
+#, gcc-internal-format, gfc-internal-format
 msgid "Global declarative %s for %s"
-msgstr "alte Deklaration %q#D"
+msgstr "Global deklarative %s für %s"
 
 #: cobol/parse_ante.h:2447 cobol/genapi.cc:5829
 #, gcc-internal-format, gfc-internal-format
 msgid "%s:%d: invalid symbol_type_t %d"
-msgstr ""
+msgstr "%s:%d: ungültiger symbol_type_t %d"
 
 #: cobol/parse_ante.h:2789
 #, gcc-internal-format, gfc-internal-format
 msgid "%s:%d: no symbol '%s' found"
-msgstr ""
+msgstr "%s:%d: kein Symbol »%s« gefunden"
 
 #: cobol/parse_util.h:351
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Intrinsic function %qs (%d) not recognized"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: intrinsic function  %s not found"
-msgstr "Intrinsische Funktion %qs (%d) nicht erkannt"
+msgstr "%s: intrinsische Funktion »%s« nicht gefunden"
 
 #: cobol/parse_util.h:383
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid cast to function type %qT"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: invalid function descr type '%c'"
-msgstr "ungültige Umwandlung in Funktionstyp %qT"
+msgstr "%s: ungültiger Funktionsbeschreibungstyp »%c«"
 
 #: cobol/scan_ante.h:38
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "close: %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "scan.o: %s"
-msgstr "close: %s"
+msgstr "scan.o: %s"
 
 #. A general purpose syntax error.
 #: fortran/gfortran.h:3557 fortran/io.cc:3727 fortran/io.cc:4413
@@ -23186,10 +23182,9 @@ msgid "unrecognized scalar storage order value %qs"
 msgstr "unbekannter Wert %qs für Speicherreihenfolge von Skalaren"
 
 #: cobol/lang.opt:46
-#, fuzzy, gcc-internal-format
-#| msgid "Unrecognized MCU name %qs."
+#, gcc-internal-format
 msgid "Unrecognized COBOL dialect name: %qs"
-msgstr "Unbekannter MCU-Name %qs."
+msgstr "Nicht erkannter COBOL-Dialektname: %qs"
 
 #: d/lang.opt:201
 #, gcc-internal-format
@@ -23247,10 +23242,9 @@ msgid "missing device or architecture after %qs"
 msgstr "fehlendes Gerät oder Architektur hinter %qs"
 
 #: config/s390/s390.opt:139
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mcpu=%> is deprecated; use %<-mtune=%> or %<-march=%> instead"
+#, gcc-internal-format
 msgid "%<-mesa%> is deprecated and support for ESA/390 will be removed; use %<-mzarch%> instead"
-msgstr "%<-mcpu=%> ist veraltet. Verwenden Sie stattdessen %<-mtune=%> oder %<-march=%>"
+msgstr "%<-mesa%> ist veraltet und die Unterstützung für ESA/390 wird demnächst entfernt; verwenden Sie stattdessen %<-mzarch%>"
 
 #: config/rs6000/rs6000.opt:308
 #, gcc-internal-format
@@ -28108,8 +28102,7 @@ msgid "with %<ancestor%>, only the %<device%>, %<firstprivate%>, %<private%>, %<
 msgstr "mit %<ancestor%> dürfen nur die Klauseln %<device%>, %<firstprivate%>, %<private%>, %<defaultmap%> und %<map%> in dem Konstrukt erscheinen"
 
 #: gimplify.cc:13974
-#, fuzzy, gcc-internal-format
-#| msgid "allocator with access trait set to %<thread%> results in undfined behavior for %qs directive"
+#, gcc-internal-format
 msgid "allocator with access trait set to %<thread%> results in undefined behavior for %qs directive"
 msgstr "Allokator mit der Zugriffseigenschaft %<thread%> führt zu undefiniertem Verhalten für die %qs-Direktive"
 
@@ -28468,10 +28461,9 @@ msgid "a type with different precision is defined in another translation unit"
 msgstr "ein Typ mit unterschiedlicher Genauigkeit ist in einer anderen Übersetzungseinheit definiert"
 
 #: ipa-devirt.cc:1273
-#, fuzzy, gcc-internal-format
-#| msgid "a type with different number of fields is defined in another translation unit"
+#, gcc-internal-format
 msgid "a vector type with different number of elements is defined in another translation unit"
-msgstr "ein Typ mit unterschiedlicher Anzahl von Feldern ist in einer anderen Übersetzungseinheit definiert"
+msgstr "ein Vektortyp mit unterschiedlicher Anzahl von Elementen ist in einer anderen Übersetzungseinheit definiert"
 
 #: ipa-devirt.cc:1280
 #, gcc-internal-format
@@ -40378,16 +40370,14 @@ msgid "%<asm%> flags not supported in thumb1 mode"
 msgstr "%<asm%>-Schalter werden im Thumb1-Modus nicht unterstützt"
 
 #: config/avr/avr-c.cc:59
-#, fuzzy, gcc-internal-format
-#| msgid "built-in function %qE not supported for MIPS16"
+#, gcc-internal-format
 msgid "built-in function is only supported for GNU-C"
-msgstr "eingebaute Funktion %qE nicht für MIPS16 unterstützt"
+msgstr "eingebaute Funktion wird nur für GNU-C unterstützt"
 
 #: config/avr/avr-c.cc:70
-#, fuzzy, gcc-internal-format
-#| msgid "address spaces are not supported for reduced Tiny devices"
+#, gcc-internal-format
 msgid "built-in function for named address-space is not supported for reduced Tiny devices"
-msgstr "Adressräume werden auf reduzierten Tiny-Kernen nicht unterstützt"
+msgstr "die eingebaute Funktion für benannten Adressraum wird für Geräte mit reduziertem Tiny nicht unterstützt"
 
 #: config/avr/avr-c.cc:101 config/avr/avr-c.cc:226
 #, gcc-internal-format
@@ -41733,10 +41723,9 @@ msgid "%<-mno-avx512XXX%> cannot disable AVX10 instructions when AVX10 is availa
 msgstr "%<-mno-avx512XXX%> kann AVX10-Anweisungen nicht deaktivieren, wenn AVX10 verfügbar ist"
 
 #: config/i386/i386-options.cc:2734
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mno-avx10.1, -mno-avx10.1-256, -mno-avx10.1-512%> cannot disable AVX512 instructions when %<-mavx512XXX%>"
+#, gcc-internal-format
 msgid "%<-mno-avx10.1-256, -mno-avx10.1-512%> cannot disable AVX512 instructions when %<-mavx512XXX%>"
-msgstr "%<-mno-avx10.1, -mno-avx10.1-256, -mno-avx10.1-512%> können AVX512-Anweisungen nicht deaktivieren, wenn %<-mavx512XXX%> gewählt ist"
+msgstr "%<-mno-avx10.1-256, -mno-avx10.1-512%> können AVX512-Befehle nicht deaktivieren, wenn %<-mavx512XXX%> gewählt ist"
 
 #: config/i386/i386-options.cc:2780
 #, gcc-internal-format
@@ -43551,17 +43540,14 @@ msgstr "Ausschuss am Ende von %<#pragma CTABLE_ENTRY%>"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93836
 #: config/pru/pru-pragma.cc:61
-#, fuzzy, gcc-internal-format
-#| msgid "%<CTABLE_ENTRY%> index %"
+#, gcc-internal-format
 msgid "%<CTABLE_ENTRY%> index %wd is not valid"
-msgstr "N/A"
+msgstr "Index %wd für %<CTABLE_ENTRY%> ist nicht gültig"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93836
 #: config/pru/pru-pragma.cc:63
-#, fuzzy, gcc-internal-format
-#| msgid "redefinition of %<CTABLE_ENTRY %"
+#, gcc-internal-format
 msgid "redefinition of %<CTABLE_ENTRY %wd%>"
-msgstr "N/A"
+msgstr "Neudefinition von %<CTABLE_ENTRY %wd%>"
 
 #: config/pru/pru-pragma.cc:67
 #, gcc-internal-format
@@ -43624,16 +43610,14 @@ msgid "unknown %<#pragma riscv intrinsic%> option %qs"
 msgstr "unbekannte Option %qs für %<#pragma riscv intrinsic%>"
 
 #: config/riscv/riscv-target-attr.cc:105
-#, fuzzy, gcc-internal-format
-#| msgid "unexpected arch for %<target()%> attribute: must start with + or rv"
+#, gcc-internal-format
 msgid "unexpected arch for %<target()%> attribute: must start with rv64 but found %qs"
-msgstr "unerwartete Architektur für %<target()%>-Attribut: muss mit + oder rv beginnen"
+msgstr "unerwartete Architektur für %<target()%>-Attribut: muss mit rv64 beginnen, ist jedoch %qs"
 
 #: config/riscv/riscv-target-attr.cc:112
-#, fuzzy, gcc-internal-format
-#| msgid "unexpected arch for %<target()%> attribute: must start with + or rv"
+#, gcc-internal-format
 msgid "unexpected arch for %<target()%> attribute: must start with rv32 but found %qs"
-msgstr "unerwartete Architektur für %<target()%>-Attribut: muss mit + oder rv beginnen"
+msgstr "unerwartete Architektur für %<target()%>-Attribut: muss mit rv32 beginnen, ist jedoch %qs"
 
 #: config/riscv/riscv-target-attr.cc:145
 #, gcc-internal-format
@@ -51044,21 +51028,19 @@ msgid "cannot initialize array of %qT from a string literal with type array of %
 msgstr "Array von %qT kann nicht aus einem Zeichenkettenliteral mit Typ %<Array von %T%> initialisiert werden"
 
 #: c/c-typeck.cc:9380
-#, fuzzy, gcc-internal-format
-#| msgid "initializer-string for %qT is too long"
+#, gcc-internal-format
 msgid "initializer-string for array of %qT is too long (%wu chars into %wu available)"
-msgstr "Initialisierungs-Zeichenkette für %qT ist zu lang"
+msgstr "Initialisierungs-Zeichenkette für Array von %qT ist zu lang (%wu Zeichen passen nicht in %wu verfügbare)"
 
 #: c/c-typeck.cc:9385
-#, fuzzy, gcc-internal-format
-#| msgid "initializer-string for %qT is too long"
+#, gcc-internal-format
 msgid "initializer-string for array of %qT is too long for C++ (%wu chars into %wu available)"
-msgstr "Initialisierungs-Zeichenkette für %qT ist zu lang"
+msgstr "Initialisierungs-Zeichenkette für Array von %qT ist zu lang für C++ (%wu Zeichen passen nicht in %wu verfügbare)"
 
 #: c/c-typeck.cc:9392
 #, gcc-internal-format
 msgid "initializer-string for array of %qT truncates NUL terminator but destination lacks %qs attribute (%wu chars into %wu available)"
-msgstr ""
+msgstr "Initialisierer-Zeichenkette für Array von %qT schneidet NUL-Terminator ab, aber dem Ziel fehlt das %qs-Attribut (%wu Zeichen passen nicht in %wu verfügbare)"
 
 #: c/c-typeck.cc:9404
 #, gcc-internal-format
@@ -52217,356 +52199,344 @@ msgstr "Interner Fehler: expected case label"
 
 #: cobol/cdf-copy.cc:110
 msgid "REPLACING %zu characters exceeds system capacity'%s'"
-msgstr ""
+msgstr "REPLACING von %zu Zeichen überschreitet die Systemkapazität »%s«"
 
 #: cobol/cobol1.cc:276
 #, gcc-internal-format
 msgid "COBOL requires a 64-bit configuration"
-msgstr ""
+msgstr "COBOL erfordert eine 64-Bit-Konfiguration"
 
 #: cobol/cobol1.cc:327
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Creating '%s'\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "exception '%s'"
-msgstr "»%s« wird erzeugt\n"
+msgstr "Ausnahme »%s«"
 
 #: cobol/cobol1.cc:413
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "could not close response file %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "could not execute preprocessor %s"
-msgstr "Antwortdatei %s konnte nicht geschlossen werden"
+msgstr "Präprozessor »%s« konnte nicht ausgeführt werden"
 
 #: cobol/cobol1.cc:418
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "could not find specs file %s\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "could not include %s"
-msgstr "Spezifikationsdatei %s konnte nicht gefunden werden\n"
+msgstr "»%s« konnte nicht eingebunden werden"
 
 #. This isn't right.  All OPT_main should be replaced
 #: cobol/cobol1.cc:424
 #, gcc-internal-format
 msgid "We should never see a non-equal dash-main in cobol1.c"
-msgstr ""
+msgstr "In cobol1.c sollte niemals ein ungleiches dash-main erscheinen"
 
 #: cobol/except.cc:54
 msgid "no such exception: 0x%04x"
-msgstr ""
+msgstr "keine solche Ausnahme: 0x%04x"
 
 #: cobol/genapi.cc:332
 #, gcc-internal-format
 msgid "Probable cause: it was referenced without being defined."
-msgstr ""
+msgstr "Wahrscheinliche Ursache: Es wurde darauf verwiesen, ist aber nicht definiert."
 
 #: cobol/genapi.cc:571
 #, gcc-internal-format
 msgid "Nice try, but you can't fire me. I quit!"
-msgstr ""
+msgstr "Interner Fehler: Nice try, but you can't fire me. I quit!"
 
 #: cobol/genapi.cc:1484
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qE does not have a mappable type in %qs clause"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s(): Knows not the variable type %s for %s"
-msgstr "%qE in %qs-Klausel hat keinen zuordenbaren Typ"
+msgstr "Interner Fehler: %s(): Knows not the variable type %s for %s"
 
 #: cobol/genapi.cc:2171
 #, gcc-internal-format, gfc-internal-format
 msgid "I don't know how to MOVE an alphabetical string to %s(%s) \n"
-msgstr ""
+msgstr "Interner Fehler: I don't know how to MOVE an alphabetical string to %s(%s) \n"
 
 #: cobol/genapi.cc:2239
 #, gcc-internal-format, gfc-internal-format
 msgid "%s(): field->type %s must be literal or alphanumeric"
-msgstr ""
+msgstr "Interner Fehler: %s(): field->type %s must be literal or alphanumeric"
 
 #: cobol/genapi.cc:5773
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid receiver type %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s(): Invalid field type %s:"
-msgstr "ungültiger Empfängertyp %qs"
+msgstr "Interner Fehler: %s(): Invalid field type %s:"
 
 #: cobol/genapi.cc:6987 cobol/genapi.cc:6993 cobol/genapi.cc:6999
 #, gcc-internal-format, gfc-internal-format
 msgid "parser_logop() was called with variable %s on line %d, which is not a FldConditional\n"
-msgstr ""
+msgstr "Interner Fehler: parser_logop() was called with variable %s on line %d, which is not a FldConditional\n"
 
 #: cobol/genapi.cc:7106 cobol/genapi.cc:7170
 #, gcc-internal-format, gfc-internal-format
 msgid "parser_relop() was called with variable %s, which is not a FldConditional\n"
-msgstr ""
+msgstr "Interner Fehler: parser_relop() was called with variable %s, which is not a FldConditional\n"
 
 #: cobol/genapi.cc:7216
 #, gcc-internal-format, gfc-internal-format
 msgid "parser_if() was called with variable %s, which is not a FldConditional\n"
-msgstr ""
+msgstr "Interner Fehler: parser_if() was called with variable %s, which is not a FldConditional\n"
 
 #: cobol/genapi.cc:7469
 #, gcc-internal-format, gfc-internal-format
 msgid "###### candidate %s has unimplemented CVT_type %d(%s)\n"
-msgstr ""
+msgstr "###### candidate %s has unimplemented CVT_type %d(%s)\n"
 
 #: cobol/genapi.cc:7480
 #, gcc-internal-format, gfc-internal-format
 msgid "###### unknown setop_t code %d\n"
-msgstr ""
+msgstr "###### unknown setop_t code %d\n"
 
 #: cobol/genapi.cc:7676
 msgid "%s:%d: %zu exceeds MAXIMUM_UNTILS of %d, line %d"
-msgstr ""
+msgstr "Interner Fehler: %s:%d: %zu exceeds MAXIMUM_UNTILS of %d, line %d"
 
 #: cobol/genapi.cc:8682
 #, gcc-internal-format, gfc-internal-format
 msgid "%s:%d: ignoring subscripts"
-msgstr ""
+msgstr "Interner Fehler: %s:%d: ignoring subscripts"
 
 #: cobol/genapi.cc:8900 cobol/genapi.cc:9360
 #, gcc-internal-format, gfc-internal-format
 msgid "%s(): called with NULL *file"
-msgstr ""
+msgstr "Interner Fehler: %s(): called with NULL *file"
 
 #: cobol/genapi.cc:9025
 #, gcc-internal-format, gfc-internal-format
 msgid "%s:%d file %s access mode is 'file_inaccessible_e' in %s"
-msgstr ""
+msgstr "Interner Fehler: %s:%d file %s access mode is 'file_inaccessible_e' in %s"
 
 #: cobol/genapi.cc:9098
 #, gcc-internal-format
 msgid "parser_file_open called with NULL *file"
-msgstr ""
+msgstr "Interner Fehler: parser_file_open called with NULL *file"
 
 #: cobol/genapi.cc:9103
 #, gcc-internal-format, gfc-internal-format
 msgid "parser_file_open for %s called with NULL var_decl_node"
-msgstr ""
+msgstr "Interner Fehler: parser_file_open for %s called with NULL var_decl_node"
 
 #: cobol/genapi.cc:9108
 #, gcc-internal-format, gfc-internal-format
 msgid "EXTEND can only be used where %s is ACCESS MODE SEQUENTIAL"
-msgstr ""
+msgstr "Interner Fehler: EXTEND can only be used where %s is ACCESS MODE SEQUENTIAL"
 
 #: cobol/genapi.cc:9176
 #, gcc-internal-format
 msgid "parser_file_close called with NULL *file"
-msgstr ""
+msgstr "Interner Fehler: parser_file_close called with NULL *file"
 
 #: cobol/genapi.cc:9181
 #, gcc-internal-format, gfc-internal-format
 msgid "parser_file_close for %s called with NULL file->var_decl_node"
-msgstr ""
+msgstr "Interner Fehler: parser_file_close for %s called with NULL file->var_decl_node"
 
 #: cobol/genapi.cc:9234
 #, gcc-internal-format, gfc-internal-format
 msgid "%s:%d file %s 'where' is zero in %s"
-msgstr ""
+msgstr "Interner Fehler: %s:%d file %s 'where' is zero in %s"
 
 #: cobol/genapi.cc:9244
 #, gcc-internal-format
 msgid "parser_file_read called with NULL *file"
-msgstr ""
+msgstr "Interner Fehler: parser_file_read called with NULL *file"
 
 #: cobol/genapi.cc:9249
 #, gcc-internal-format, gfc-internal-format
 msgid "parser_file_read for %s called with NULL file->var_decl_node"
-msgstr ""
+msgstr "Interner Fehler: parser_file_read for %s called with NULL file->var_decl_node"
 
 #: cobol/genapi.cc:9254
 #, gcc-internal-format
 msgid "parser_file_read called with NULL *field"
-msgstr ""
+msgstr "Interner Fehler: parser_file_read called with NULL *field"
 
 #: cobol/genapi.cc:9259
 #, gcc-internal-format, gfc-internal-format
 msgid "parser_file_read for %s called with NULL field->var_decl_node"
-msgstr ""
+msgstr "Interner Fehler: parser_file_read for %s called with NULL field->var_decl_node"
 
 #: cobol/genapi.cc:9264
 #, gcc-internal-format, gfc-internal-format
 msgid "%s:%d file %s is RELATIVE/SEQUENTIAL, but 'where' >= 0"
-msgstr ""
+msgstr "Interner Fehler: %s:%d file %s is RELATIVE/SEQUENTIAL, but 'where' >= 0"
 
 #: cobol/genapi.cc:9273
 #, gcc-internal-format, gfc-internal-format
 msgid "%s:%d file %s is RELATIVE/RANDOM, but 'where' < 0"
-msgstr ""
+msgstr "Interner Fehler: %s:%d file %s is RELATIVE/RANDOM, but 'where' < 0"
 
 #: cobol/genapi.cc:9316
 #, gcc-internal-format, gfc-internal-format
 msgid "%s:%d file %s 'sequentially' is %d in %s"
-msgstr ""
+msgstr "Interner Fehler: %s:%d file %s 'sequentially' is %d in %s"
 
 #: cobol/genapi.cc:9365
 #, gcc-internal-format, gfc-internal-format
 msgid "%s(): for %s called with NULL file->var_decl_node"
-msgstr ""
+msgstr "Interner Fehler: %s(): for %s called with NULL file->var_decl_node"
 
 #: cobol/genapi.cc:9371
 #, gcc-internal-format, gfc-internal-format
 msgid "%s(): called with NULL *field"
-msgstr ""
+msgstr "Interner Fehler: %s(): called with NULL *field"
 
 #: cobol/genapi.cc:9376
 #, gcc-internal-format, gfc-internal-format
 msgid "%s(): for %s called with NULL field->var_decl_node"
-msgstr ""
+msgstr "Interner Fehler: %s(): for %s called with NULL field->var_decl_node"
 
 #: cobol/genapi.cc:9511
 #, gcc-internal-format, gfc-internal-format
 msgid "%s:%d file %s is INDEXED/SEQUENTIAL, but 'sequentially' is false"
-msgstr ""
+msgstr "Interner Fehler: %s:%d file %s is INDEXED/SEQUENTIAL, but 'sequentially' is false"
 
 #: cobol/genapi.cc:11163
 #, gcc-internal-format, gfc-internal-format
 msgid "%s(): asked to sort %s, but it's not a table"
-msgstr ""
+msgstr "Interner Fehler: %s(): asked to sort %s, but it's not a table"
 
 #. Having both or neither violates SORT syntax
 #: cobol/genapi.cc:11291
 #, gcc-internal-format, gfc-internal-format
 msgid "%s(): syntax error -- both (or neither) USING and input-proc are specified"
-msgstr ""
+msgstr "Interner Fehler: %s(): syntax error -- both (or neither) USING and input-proc are specified"
 
 #: cobol/genapi.cc:11420
 #, gcc-internal-format, gfc-internal-format
 msgid "%s(): syntax error -- both (or neither) GIVING and output-proc are specified"
-msgstr ""
+msgstr "Interner Fehler: %s(): syntax error -- both (or neither) GIVING and output-proc are specified"
 
 #: cobol/genapi.cc:11826
 #, gcc-internal-format, gfc-internal-format
 msgid "%s(): syntax error -- both (or neither) files and output-proc are specified"
-msgstr ""
+msgstr "Interner Fehler: %s(): syntax error -- both (or neither) files and output-proc are specified"
 
 #: cobol/genapi.cc:12227
 #, gcc-internal-format
 msgid "CALL USING BY CONTENT <temporary> would require REPOSITORY PROTOTYPES."
-msgstr ""
+msgstr "CALL USING BY CONTENT <temporary> würde REPOSITORY PROTOTYPES erfordern."
 
 #: cobol/genapi.cc:12478
 #, gcc-internal-format, gfc-internal-format
 msgid "%s(): What in the name of Nero's fiddle are we doing here?"
-msgstr ""
+msgstr "Interner Fehler: %s(): What in the name of Nero's fiddle are we doing here?"
 
 #: cobol/genapi.cc:13993
 #, gcc-internal-format, gfc-internal-format
 msgid "In parser_move(%s to %s), the move of FldLiteralN to %s hasn't been implemented"
-msgstr ""
+msgstr "Interner Fehler: In parser_move(%s to %s), the move of FldLiteralN to %s hasn't been implemented"
 
 #: cobol/genapi.cc:14229
 #, gcc-internal-format, gfc-internal-format
 msgid "In mh_dest_is_float(%s to %s), the move of %s to %s hasn't been implemented"
-msgstr ""
+msgstr "Interner Fehler: In mh_dest_is_float(%s to %s), the move of %s to %s hasn't been implemented"
 
 #: cobol/genapi.cc:16323
 #, gcc-internal-format, gfc-internal-format
 msgid "LEVEL 01 (%s) OCCURS has insufficient data.memsize"
-msgstr ""
+msgstr "Interner Fehler: LEVEL 01 (%s) OCCURS has insufficient data.memsize"
 
 #: cobol/genapi.cc:16395
 #, gcc-internal-format
 msgid "parser_symbol_add() was called with a NULL new_var\n"
-msgstr ""
+msgstr "Interner Fehler: parser_symbol_add() was called with a NULL new_var\n"
 
 #: cobol/genapi.cc:16423
 msgid "%s(): %2.2d %s is a table, but it improperly has a capacity of zero"
-msgstr ""
+msgstr "Interner Fehler: %s(): %2.2d %s is a table, but it improperly has a capacity of zero"
 
 #: cobol/genapi.cc:16463
 #, gcc-internal-format, gfc-internal-format
 msgid "parser_symbol_add(): %s is its own ancestor"
-msgstr ""
+msgstr "Interner Fehler: parser_symbol_add(): %s is its own ancestor"
 
 #: cobol/genapi.cc:16469
 msgid "parser_symbol_add(): %2.2d %s has null ancestor"
-msgstr ""
+msgstr "Interner Fehler: parser_symbol_add(): %2.2d %s has null ancestor"
 
 #: cobol/genapi.cc:16477
 #, gcc-internal-format, gfc-internal-format
 msgid "parser_symbol_add( %s ) improperly has a non-null var_decl_node\n"
-msgstr ""
+msgstr "Interner Fehler: parser_symbol_add( %s ) improperly has a non-null var_decl_node\n"
 
 #: cobol/genapi.cc:16682
 msgid "%s(): %2.2d %s<%s> improperly has a data.capacity of zero"
-msgstr ""
+msgstr "Interner Fehler: %s(): %2.2d %s<%s> improperly has a data.capacity of zero"
 
 #: cobol/gengen.cc:363
 #, gcc-internal-format
 msgid "The given type is not NULL, and that's just not fair"
-msgstr ""
+msgstr "Interner Fehler: The given type is not NULL, and that's just not fair"
 
 #: cobol/gengen.cc:372
 #, gcc-internal-format
 msgid "The given type is not a DECL or a TYPE"
-msgstr ""
+msgstr "Interner Fehler: The given type is not a DECL or a TYPE"
 
 #: cobol/gengen.cc:412
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "unknown lam type %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "Unknown type %d"
-msgstr "unbekannter lam-Typ %qs"
+msgstr "Interner Fehler: Unknown type %d"
 
 #: cobol/gengen.cc:2931
 #, gcc-internal-format
 msgid "Residual context count!"
-msgstr ""
+msgstr "Interner Fehler: Residual context count!"
 
 #: cobol/genmath.cc:1394
 #, gcc-internal-format, gfc-internal-format
 msgid "parser_op() doesn't know how to evaluate \"%s = %s %c %s\"\n"
-msgstr ""
+msgstr "Interner Fehler: parser_op() doesn't know how to evaluate \"%s = %s %c %s\"\n"
 
 #: cobol/genutil.cc:324 cobol/genutil.cc:603
-#, fuzzy, gcc-internal-format
-#| msgid "too many input files"
+#, gcc-internal-format
 msgid "Too many subscripts"
-msgstr "zu viele Eingabedateien"
+msgstr "Interner Fehler: Too many subscripts"
 
 #: cobol/lexio.cc:1485
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s signal terminated program %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s pid %d terminated by %s"
-msgstr "Signal %s hat Programm %s beendet"
+msgstr "»%s« mit PID %d wurde beendet durch %s"
 
 #: cobol/lexio.cc:1490
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s returned %d exit status"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s exited with status %d"
-msgstr "%s gab Ende-Status %d zurück"
+msgstr "»%s« mit Status %d beendet"
 
 #: cobol/symbols.cc:530
 msgid "%s:%d: LblNone '%s' has parent #%zu"
-msgstr ""
+msgstr "Interner Fehler: %s:%d: LblNone '%s' has parent #%zu"
 
 #: cobol/symbols.cc:2040
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qs value must be positive"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: key must be field"
-msgstr "Wert %qs muss positiv sein"
+msgstr "%s: Schlüssel muss Feld sein"
 
 #: cobol/symbols.cc:3837 cobol/symbols.cc:3960 cobol/symbols.cc:3997
 #, gcc-internal-format, gfc-internal-format
 msgid "%s:%d: could not add '%s'"
-msgstr ""
+msgstr "%s:%d: »%s« konnte nicht hinzugefügt werden"
 
 #: cobol/util.cc:1085
 #, gcc-internal-format, gfc-internal-format
 msgid "logic error: MOVE %s %s invalid type:"
-msgstr ""
+msgstr "Interner Fehler: logic error: MOVE %s %s invalid type:"
 
 #: cobol/util.cc:1695
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s: %s: %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: regcomp: %s"
-msgstr "%s: %s: %s"
+msgstr "%s: regcomp: %s"
 
 #: cobol/util.cc:1805
 #, gcc-internal-format, gfc-internal-format
 msgid "logic error: missing inode for %s"
-msgstr ""
+msgstr "Interner Fehler: logic error: missing inode for %s"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=104876
 #: cobol/util.cc:2143
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "failed %s mapper %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "failed compiling %s"
-msgstr "Fehler beim »%s« des Mappers %qs"
+msgstr "Fehler beim Kompilieren von »%s«"
 
 #: cp/call.cc:2106
 #, gcc-internal-format
@@ -54214,10 +54184,9 @@ msgid "expression %qE does not designate a %<constexpr%> function"
 msgstr "Ausdruck %qE bezeichnet keine %<constexpr%>-Funktion"
 
 #: cp/constexpr.cc:2940
-#, fuzzy, gcc-internal-format
-#| msgid "'o' operand is not constant"
+#, gcc-internal-format
 msgid "cannot allocate array: size not constant"
-msgstr "»o«-Operand ist nicht konstant"
+msgstr "Array kann nicht alloziert werden: Größe nicht konstant"
 
 #: cp/constexpr.cc:2981
 #, gcc-internal-format
@@ -58109,16 +58078,14 @@ msgid "invalid use of %<decltype(auto)%>"
 msgstr "ungültige Verwendung von %<decltype(auto)%>"
 
 #: cp/decl.cc:14044
-#, fuzzy, gcc-internal-format
-#| msgid "%qs function with trailing return type has %qT as its type rather than plain %<auto%>"
+#, gcc-internal-format
 msgid "%qs function with trailing return type has constrained %<auto%> type specifier rather than plain %<auto%>"
-msgstr "Funktion %qs mit folgendem Rückgabetypen hat %qT als seinen Typ statt einfaches %<auto%>"
+msgstr "Funktion %qs mit nachfolgendem Rückgabetypen hat eingeschränkte %<auto%>-Typangabe statt des einfachen %<auto%>"
 
 #: cp/decl.cc:14050
-#, fuzzy, gcc-internal-format
-#| msgid "invalid use of constructor as a template"
+#, gcc-internal-format
 msgid "invalid use of constrained %<auto%> type"
-msgstr "ungültige Verwendung des Konstruktors als Template"
+msgstr "ungültige Verwendung eines eingeschränkten %<auto%>-Typs"
 
 #: cp/decl.cc:14062
 #, gcc-internal-format
@@ -60722,10 +60689,9 @@ msgid "enumeration range differs"
 msgstr "Aufzählungsbereich unterscheidet sich"
 
 #: cp/module.cc:13504
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is a specialization of TU-local template %qD"
+#, gcc-internal-format
 msgid "%qD is an alias of TU-local type %qT"
-msgstr "%qD ist eine Spezialisierung des TU-lokalen Templates %qD"
+msgstr "%qD ist ein Alias des TU-lokalen Typen %qT"
 
 #: cp/module.cc:13522
 #, gcc-internal-format
@@ -60755,7 +60721,7 @@ msgstr "%qD hat keine Bindung und ist innerhalb der TU-lokalen Entität %qD dekl
 #: cp/module.cc:13619
 #, gcc-internal-format
 msgid "%qT has no name and cannot be differentiated from similar lambdas in other TUs"
-msgstr ""
+msgstr "%qT hat keinen Namen und kann nicht von ähnlichen Lambdas in anderen TUs unterschieden werden"
 
 #: cp/module.cc:13628
 #, gcc-internal-format
@@ -60899,16 +60865,14 @@ msgid "module contains OpenMP, use %<-fopenmp%> to enable"
 msgstr "Modul enthält OpenMP, verwenden Sie %<-fopenmp%>, um es einzuschalten"
 
 #: cp/module.cc:19375
-#, fuzzy, gcc-internal-format
-#| msgid "module contains OpenMP, use %<-fopenmp%> to enable"
+#, gcc-internal-format
 msgid "module contains OpenMP, use %<-fopenmp%> or %<-fopenmp-simd%> to enable"
-msgstr "Modul enthält OpenMP, verwenden Sie %<-fopenmp%>, um es einzuschalten"
+msgstr "Modul enthält OpenMP, verwenden Sie %<-fopenmp%> oder %<-fopenmp-simd%>, um es einzuschalten"
 
 #: cp/module.cc:19378
-#, fuzzy, gcc-internal-format
-#| msgid "module contains OpenMP, use %<-fopenmp%> to enable"
+#, gcc-internal-format
 msgid "module contains OpenACC, use %<-fopenacc%> to enable"
-msgstr "Modul enthält OpenMP, verwenden Sie %<-fopenmp%>, um es einzuschalten"
+msgstr "Modul enthält OpenACC, verwenden Sie %<-fopenacc%>, um es einzuschalten"
 
 #: cp/module.cc:19396
 #, gcc-internal-format
@@ -61002,10 +60966,9 @@ msgid "external linkage definition of %qD in header module must be declared %<in
 msgstr "externe Bindungsdefinition von %qD im Header-Modul muss als %<inline%> deklariert sein"
 
 #: cp/module.cc:20611
-#, fuzzy, gcc-internal-format
-#| msgid "exporting declaration %qD with internal linkage"
+#, gcc-internal-format
 msgid "exporting declaration %qD declared in unnamed namespace"
-msgstr "die Deklaration %qD wird mit interner Bindung exportiert"
+msgstr "die Deklaration %qD, die in einem unbenannten Namensraum deklariert wurde, wird exportiert"
 
 #: cp/module.cc:20618
 #, gcc-internal-format
@@ -69139,38 +69102,34 @@ msgid "Expected array subscript stride at %C"
 msgstr "Feldindexsprung erwartet bei %C"
 
 #: fortran/array.cc:195
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Duplicate POINTER attribute at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Duplicate TEAM= attribute in %C"
-msgstr "Doppeltes POINTER-Attribut bei %C"
+msgstr "Doppeltes »TEAM=«-Attribut bei %C"
 
 #: fortran/array.cc:203
 #, gcc-internal-format, gfc-internal-format
 msgid "TEAM_NUMBER= not supported at %C"
-msgstr ""
+msgstr "»TEAM_NUMBER=« nicht unterstützt bei %C"
 
 #: fortran/array.cc:212
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Duplicate POINTER attribute at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Duplicate TEAM_NUMBER= attribute in %C"
-msgstr "Doppeltes POINTER-Attribut bei %C"
+msgstr "Doppeltes »TEAM_NUMBER=«-Attribut bei %C"
 
 #: fortran/array.cc:224
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Association target at %C must not be coindexed"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expression in STAT= at %C must not be coindexed"
-msgstr "Verknüpfungsziel bei %C darf nicht koindiziert sein"
+msgstr "Ausdruck in »STAT=« bei %C darf nicht koindiziert sein"
 
 #: fortran/array.cc:232
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Duplicate POINTER attribute at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Duplicate STAT= attribute in %C"
-msgstr "Doppeltes POINTER-Attribut bei %C"
+msgstr "Doppeltes »STAT=«-Attribut bei %C"
 
 #: fortran/array.cc:241
 #, gcc-internal-format, gfc-internal-format
 msgid "Only one of TEAM= or TEAM_NUMBER= may appear in a coarray reference at %C"
-msgstr ""
+msgstr "Nur eines von TEAM= oder TEAM_NUMBER= darf in einer Koarray-Referenz bei %C erscheinen"
 
 #: fortran/array.cc:301
 #, gcc-internal-format, gfc-internal-format
@@ -72242,10 +72201,9 @@ msgid "SAVE statement at %C follows blanket SAVE statement"
 msgstr "SAVE-Anweisung bei %C folgt umfassender SAVE-Anweisung"
 
 #: fortran/decl.cc:9802
-#, fuzzy, gcc-internal-format
-#| msgid "Sorry, !$ACC DECLARE at %L is not allowed in BLOCK construct"
+#, gcc-internal-format
 msgid "SAVE of COMMON block %qs at %C is not allowed in a BLOCK construct"
-msgstr "Entschuldigung, !$ACC DECLARE bei %L ist in einem BLOCK-Konstrukt nicht erlaubt"
+msgstr "SAVE des COMMON-Blocks %qs bei %C ist in einem BLOCK-Konstrukt nicht erlaubt"
 
 #: fortran/decl.cc:9824
 #, gcc-internal-format, gfc-internal-format
@@ -77569,10 +77527,9 @@ msgid "%qs clause at %L specified more than once"
 msgstr "%qs-Klausel bei %L ist mehrfach angegeben"
 
 #: fortran/openmp.cc:6782
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<nothing%> or %<need_device_ptr%> at %C"
+#, gcc-internal-format
 msgid "expected %<nothing%>, %<need_device_ptr%> or %<need_device_addr%> at %C"
-msgstr "%<nothing%> oder %<need_device_ptr%> bei %C erwartet"
+msgstr "%<nothing%>, %<need_device_ptr%> oder %<need_device_addr%> bei %C erwartet"
 
 #: fortran/openmp.cc:6788 fortran/openmp.cc:6906 fortran/openmp.cc:7061
 #, gcc-internal-format
@@ -77580,22 +77537,19 @@ msgid "expected %<:%> at %C"
 msgstr "%<:%> bei %C erwartet"
 
 #: fortran/openmp.cc:6821
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<:%> at %C"
+#, gcc-internal-format
 msgid "unexpected %<:%> at %C"
-msgstr "%<:%> bei %C erwartet"
+msgstr "unerwartetes %<:%> bei %C"
 
 #: fortran/openmp.cc:6868
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Expected integer expression at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "expected constant integer expression at %C"
-msgstr "Ganzzahlausdruck bei %C erwartet"
+msgstr "konstanter Ganzzahlausdruck bei %C erwartet"
 
 #: fortran/openmp.cc:6890
-#, fuzzy, gcc-internal-format
-#| msgid "ORDERED clause argument not constant positive integer at %C"
+#, gcc-internal-format
 msgid "expected dummy parameter name, %<omp_num_args%> or constant positive integer at %C"
-msgstr "Argument der ORDERED-Klausel bei %C ist keine konstante positive Ganzzahl"
+msgstr "Dummy-Parametername, %<omp_num_args%> oder konstante positive Ganzzahl bei %C erwartet"
 
 #: fortran/openmp.cc:6937
 #, gcc-internal-format
@@ -78914,21 +78868,19 @@ msgid "!$OMP DECLARE SIMD should refer to containing procedure %qs at %L"
 msgstr "!$OMP DECLARE SIMD bei %2$L sollte auf die enthaltende Prozedur %1$qs verweisen"
 
 #: fortran/openmp.cc:13125
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected constant logical expression"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected constant non-negative scalar integer offset expression at %L"
-msgstr "Interner Fehler: expected constant logical expression"
+msgstr "Konstanter nichtnegativer skalarer ganzzahliger Offset-Ausdruck bei %L erwartet"
 
 #: fortran/openmp.cc:13128
 #, gcc-internal-format
 msgid "For range-based %<adjust_args%>, a constant positive scalar integer expression is required at %L"
-msgstr ""
+msgstr "Für bereichsbasierte %<adjust_args%> ist ein konstanter positiver skalarer ganzzahliger Ausdruck bei %L erforderlich"
 
 #: fortran/openmp.cc:13142
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unexpected null character in character literal at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected dummy parameter name or a positive integer at %L"
-msgstr "Unerwartetes null-Zeichen in Zeichenliteral bei %L"
+msgstr "Dummyparametername oder eine positive Ganzzahl bei %L erwartet"
 
 #: fortran/openmp.cc:13168
 #, gcc-internal-format, gfc-internal-format
@@ -80706,10 +80658,9 @@ msgid "Function %qs is declared CHARACTER(*) and cannot be used at %L since it i
 msgstr "Funktion %qs ist als CHARACTER(*) deklariert und kann nicht bei %L verwendet werden, da es kein Scheinargument ist"
 
 #: fortran/resolve.cc:3447
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Missing argument list in function %qs at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Different argument lists in external dummy function %s at %L and %L"
-msgstr "Fehlende Argumentliste in Funktion %qs bei %C"
+msgstr "Unterschiedliche Argumentlisten in externer Dummy-Funktion %s bei %L und %L"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79596
 #: fortran/resolve.cc:3486
@@ -80800,7 +80751,7 @@ msgstr "SUBROUTINE %qs bei %L kann nicht rekursiv aufgerufen werden, da sie nich
 #: fortran/resolve.cc:3995
 #, gcc-internal-format, gfc-internal-format
 msgid "Different argument lists in external dummy subroutine %s at %L and %L"
-msgstr ""
+msgstr "Unterschiedliche Argumentlisten im externen Dummy-Unterprogramm %s bei %L und %L"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79596
 #: fortran/resolve.cc:4026
@@ -81074,45 +81025,39 @@ msgid "Array index at %L is an array of rank %d"
 msgstr "Feldindex bei %L ist ein Feld mit Rang %d"
 
 #: fortran/resolve.cc:5470
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Argument dim at %L must be scalar"
+#, gcc-internal-format, gfc-internal-format
 msgid "TEAM_NUMBER argument at %L must be scalar"
-msgstr "Argument dim bei %L muss skalar sein"
+msgstr "Argument TEAM_NUMBER bei %L muss skalar sein"
 
 #: fortran/resolve.cc:5477
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Expression at %L must be of INTEGER type, found %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "TEAM_NUMBER argument at %L must be of INTEGER type, found %s"
-msgstr "Ausdruck bei %L muss INTEGER-Typ haben, %s gefunden"
+msgstr "Argument TEAM_NUMBER bei %L muss vom Typ INTEGER sein, ist jedoch %s"
 
 #: fortran/resolve.cc:5491
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Argument dim at %L must be scalar"
+#, gcc-internal-format, gfc-internal-format
 msgid "TEAM argument at %L must be scalar"
-msgstr "Argument dim bei %L muss skalar sein"
+msgstr "Argument TEAM bei %L muss skalar sein"
 
 #: fortran/resolve.cc:5500
 #, gcc-internal-format, gfc-internal-format
 msgid "TEAM argument at %L must be of TEAM_TYPE from the intrinsic module ISO_FORTRAN_ENV, found %s"
-msgstr ""
+msgstr "Argument TEAM bei %L muss vom TEAM_TYPE des intrinsischen Moduls ISO_FORTRAN_ENV sein, ist jedoch %s"
 
 #: fortran/resolve.cc:5514
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Argument dim at %L must be scalar"
+#, gcc-internal-format, gfc-internal-format
 msgid "STAT argument at %L must be scalar"
-msgstr "Argument dim bei %L muss skalar sein"
+msgstr "Argument STAT bei %L muss skalar sein"
 
 #: fortran/resolve.cc:5521
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Expression at %L must be of INTEGER type, found %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "STAT argument at %L must be of INTEGER type, found %s"
-msgstr "Ausdruck bei %L muss INTEGER-Typ haben, %s gefunden"
+msgstr "Argument für STAT bei %L muss INTEGER-Typ haben, ist jedoch %s"
 
 #: fortran/resolve.cc:5530
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Expression at %L must be scalar"
+#, gcc-internal-format, gfc-internal-format
 msgid "STAT's expression at %L must be a variable"
-msgstr "Ausdruck bei %L muss skalar sein"
+msgstr "Der Ausdruck von STAT bei %L muss eine Variable sein"
 
 #: fortran/resolve.cc:5552
 #, gcc-internal-format, gfc-internal-format
@@ -84004,10 +83949,9 @@ msgid "Derived type %qs declared at %L must have the BIND attribute to be C inte
 msgstr "Abgeleiteter Typ %qs, bei %L deklariert, muss BIND-Attribut haben, um C-kompatibel zu sein"
 
 #: fortran/symbol.cc:4640
-#, fuzzy, gcc-internal-format
-#| msgid "Derived type %qs with BIND(C) attribute at %L is empty, and may be inaccessible by the C companion processor"
+#, gcc-internal-format
 msgid "Derived type %qs with BIND(C) attribute at %L has no components"
-msgstr "Abgeleiteter Typ %qs mit Attribut BIND(C) bei %L ist leer und könnte für entsprechenden C-Prozessor unzugreifbar sein"
+msgstr "Abgeleiteter Typ %qs mit Attribut BIND(C) bei %L hat keine Komponenten"
 
 #. Generally emit warning, but not twice if -pedantic is given.
 #: fortran/symbol.cc:4646
@@ -84488,47 +84432,40 @@ msgid "the %qs clause can only be specified if the %<dispatch%> selector of the 
 msgstr "die %qs-Klausel kann nur angegeben werden, wenn der %<dispatch%>-Selektor der Konstruktionsselektormenge in der %<match%>-Klausel bei %L vorkommt"
 
 #: fortran/trans-openmp.cc:9010 fortran/trans-openmp.cc:9049
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Expected argument list at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Expected positive argument index at %L"
-msgstr "Argumentliste bei %C erwartet"
+msgstr "Positiver Argumentindex bei %L erwartet"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=93855
 #: fortran/trans-openmp.cc:9021
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "attribute %qs positional argument %i value %wi exceeds number of function arguments %u"
+#, gcc-internal-format, gfc-internal-format
 msgid "Argument index at %L exceeds number of arguments %d"
-msgstr "beim Attribut %qs hat das positionelle Argument %i den Wert %wi, der die Anzahl der Funktionsparameter %u übersteigt"
+msgstr "Argumentindex bei %L übersteigt Anzahl der Argumente %d"
 
 #: fortran/trans-openmp.cc:9059
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Upper cobound is less than lower cobound at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Upper argument index smaller than lower one at %L"
-msgstr "Obere Kogrenze ist kleiner als untere Kogrenze bei %L"
+msgstr "Oberer Argumentindex ist kleiner als der untere bei %L"
 
 #: fortran/trans-openmp.cc:9085
-#, fuzzy, gcc-internal-format
-#| msgid "list item %qs at %L is not a dummy argument"
+#, gcc-internal-format
 msgid "List item %qs at %L, declared at %L, is not a dummy argument"
-msgstr "Listeneintrag %qs bei %L ist kein Scheinargument"
+msgstr "Listeneintrag %qs bei %L ist bei %L deklariert, ist jedoch kein Scheinargument"
 
 #: fortran/trans-openmp.cc:9099
-#, fuzzy, gcc-internal-format
-#| msgid "argument list item %qs in %<need_device_ptr%> at %L must be of TYPE(C_PTR)"
+#, gcc-internal-format
 msgid "Argument %qs at %L to list item in %<need_device_ptr%> at %L must be a scalar of TYPE(C_PTR)"
-msgstr "Argumentlistenelement %qs in %<need_device_ptr%> bei %L muss von TYPE(C_PTR) sein"
+msgstr "Das Argument %qs bei %L zum Listenelement in %<need_device_ptr%> bei %L muss ein Skalar vom TYP(C_PTR) sein"
 
 #: fortran/trans-openmp.cc:9106
-#, fuzzy, gcc-internal-format
-#| msgid "%<need_device_addr%> is not valid for C"
+#, gcc-internal-format
 msgid "Consider using %<need_device_addr%> instead"
-msgstr "%<need_device_addr%> ist für C ungültig"
+msgstr "Erwägen Sie, stattdessen %<need_device_addr%> zu verwenden"
 
 #: fortran/trans-openmp.cc:9113
-#, fuzzy, gcc-internal-format
-#| msgid "Argument %qs of elemental procedure at %L cannot have the ALLOCATABLE attribute"
+#, gcc-internal-format
 msgid "Argument %qs at %L to list item in %<need_device_addr%> at %L must not have the VALUE attribute"
-msgstr "Argument %qs der elementaren Prozedur bei %L kann kein ALLOCATABLE-Attribut haben"
+msgstr "Argument %qs bei %L zu Listenelement in %<need_device_addr%> bei %L darf nicht das Attribut VALUE haben"
 
 #: fortran/trans-openmp.cc:9122
 #, gcc-internal-format
@@ -84536,10 +84473,9 @@ msgid "%qs at %L is specified more than once"
 msgstr "%qs bei %L ist mehrfach angegeben"
 
 #: fortran/trans-openmp.cc:9139
-#, fuzzy, gcc-internal-format
-#| msgid "%<need_device_addr%> is not valid for C"
+#, gcc-internal-format
 msgid "%<need_device_addr%> not yet supported"
-msgstr "%<need_device_addr%> ist für C ungültig"
+msgstr "%<need_device_addr%> ist noch nicht unterstützt"
 
 #: fortran/trans-stmt.cc:576
 #, gcc-internal-format, gfc-internal-format
