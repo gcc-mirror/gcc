@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_unaligned } */
 /* { dg-options "-O2 -save-temps" } */
 
 void *memcpy (void *dest, const void *src, unsigned int n);
