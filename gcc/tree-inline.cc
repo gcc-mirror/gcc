@@ -1892,6 +1892,15 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	    gimple_call_set_tail (call_stmt, false);
 	  if (gimple_call_from_thunk_p (call_stmt))
 	    gimple_call_set_from_thunk (call_stmt, false);
+	  /* Silently clear musttail flag when inlining a function
+	     with must tail call from a non-musttail call.  The inlining
+	     removes one frame so acts like musttail's intent, and we
+	     can be inlining a function with musttail calls in the middle
+	     of caller where musttail will always error.  */
+	  if (gimple_call_must_tail_p (call_stmt)
+	      && id->call_stmt
+	      && !gimple_call_must_tail_p (id->call_stmt))
+	    gimple_call_set_must_tail (call_stmt, false);
 	  if (gimple_call_internal_p (call_stmt))
 	    switch (gimple_call_internal_fn (call_stmt))
 	      {
