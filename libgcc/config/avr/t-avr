@@ -33,8 +33,7 @@ LIB1ASMFUNCS = \
 	_popcountsi2 \
 	_popcountqi2 \
 	_bswapsi2 \
-	_fmul _fmuls _fmulsu \
-	_strlen_memx
+	_fmul _fmuls _fmulsu
 
 # The below functions either use registers that are not present
 # in tiny core, or use a different register convention (don't save
@@ -45,16 +44,15 @@ LIB1ASMFUNCS = \
 # _load, __fload and _xload variations - expect lpm and elpm support
 # _movmemx and _movmemf - expect elpm/lpm
 
-ifneq ($(MULTIFLAGS),-mmcu=avrtiny)
-LIB1ASMFUNCS += \
-    _mulsqipsi3 \
+FUNCS_notiny = \
+	_mulsqipsi3 \
 	_mulhisi3 \
 	_umulhisi3 \
 	_usmulhisi3 \
 	_muluhisi3 \
 	_mulshisi3 \
-    _muldi3 _muldi3_6 \
-    _mulsidi3 _umulsidi3 \
+	_muldi3 _muldi3_6 \
+	_mulsidi3 _umulsidi3 \
 	_divdi3 _udivdi3 \
 	_udivmod64 \
 	_negdi2 \
@@ -64,6 +62,7 @@ LIB1ASMFUNCS += \
 	_xload_1 _xload_2 _xload_3 _xload_4 \
 	_fload_1 _fload_2 _fload_3 _fload_4 \
 	_movmemx _movmemf \
+	_strlen_memx \
 	_clzdi2 \
 	_paritydi2 \
 	_popcountdi2 \
@@ -72,11 +71,9 @@ LIB1ASMFUNCS += \
 	_adddi3 _adddi3_s8 _subdi3 \
 	_cmpdi2 _cmpdi2_s8 \
 	_powif
-endif
 
 # Fixed point routines in avr/lib1funcs-fixed.S
-ifneq ($(MULTIFLAGS),-mmcu=avrtiny)
-LIB1ASMFUNCS += \
+FUNCS_notiny += \
 	_fractqqsf _fractuqqsf \
 	_fracthqsf _fractuhqsf _fracthasf _fractuhasf \
 	_fractsasf _fractusasf _fractsqsf _fractusqsf \
@@ -107,6 +104,9 @@ LIB1ASMFUNCS += \
 	_rounddq3 _roundudq3 \
 	_roundda3 _rounduda3 \
 	_roundta3 _rounduta3
+
+ifeq (,$(findstring avrtiny,$(MULTIDIR)))
+LIB1ASMFUNCS += $(FUNCS_notiny)
 endif
 
 LIB2FUNCS_EXCLUDE = \
@@ -115,6 +115,9 @@ LIB2FUNCS_EXCLUDE = \
 	_clrsbdi2 \
 	_powisf2
 
+ifneq (,$(findstring avrtiny,$(MULTIDIR)))
+LIB2FUNCS_EXCLUDE += $(FUNCS_notiny)
+endif
 
 ifeq ($(long_double_type_size),32)
 # We do not have the DFtype.

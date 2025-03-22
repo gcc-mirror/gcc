@@ -127,7 +127,9 @@ iter-labels := $(f7_parts)
 
 -include $(patsubst %,$(libf7)/libf7-c-object.mk,$(iter-items))
 
+ifeq (,$(findstring avrtiny,$(MULTIDIR)))
 libgcc-objects += $(patsubst %,f7_c_%$(objext),$(F7_C_PARTS))
+endif
 
 # Build the libf7 ASM objects and add them to libgcc.a.
 
@@ -138,7 +140,9 @@ iter-labels := $(f7_parts)
 
 -include $(patsubst %,$(libf7)/libf7-asm-object.mk,$(iter-items))
 
+ifeq (,$(findstring avrtiny,$(MULTIDIR)))
 libgcc-objects += $(patsubst %,f7_asm_%$(objext),$(F7_ASM_PARTS))
+endif
 
 .PHONY: clean-f7
 
