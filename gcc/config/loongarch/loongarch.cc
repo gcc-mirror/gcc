@@ -11206,6 +11206,16 @@ loongarch_asm_code_end (void)
 #undef DUMP_FEATURE
 }
 
+/* Target hook for c_mode_for_suffix.  */
+static machine_mode
+loongarch_c_mode_for_suffix (char suffix)
+{
+  if (suffix == 'q')
+    return TFmode;
+
+  return VOIDmode;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -11476,6 +11486,9 @@ loongarch_asm_code_end (void)
 
 #undef TARGET_OPTION_VALID_ATTRIBUTE_P
 #define TARGET_OPTION_VALID_ATTRIBUTE_P loongarch_option_valid_attribute_p
+
+#undef TARGET_C_MODE_FOR_SUFFIX
+#define TARGET_C_MODE_FOR_SUFFIX loongarch_c_mode_for_suffix
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
