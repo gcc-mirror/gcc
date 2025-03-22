@@ -567,6 +567,7 @@ avr_option_override (void)
   {
     opt_pass *extra_peephole2
       = g->get_passes ()->get_pass_peephole2 ()->clone ();
+    extra_peephole2->name = "avr-peep2-after-fuse-move";
     register_pass_info peep2_2_info
       = { extra_peephole2, "avr-fuse-move", 1, PASS_POS_INSERT_AFTER };
 
