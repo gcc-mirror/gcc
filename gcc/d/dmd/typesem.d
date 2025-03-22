@@ -3444,8 +3444,16 @@ Expression getProperty(Type t, Scope* scope_, Loc loc, Identifier ident, int fla
                 auto s2 = scope_.search_correct(ident);
                 // UFCS
                 if (s2 && s2.isFuncDeclaration)
-                    errorSupplemental(loc, "did you mean %s `%s`?",
-                        s2.kind(), s2.toChars());
+                {
+                    if (s2.ident == ident)
+                    {
+                        errorSupplemental(s2.loc, "cannot call %s `%s` with UFCS because it is not declared at module scope",
+                            s2.kind(), s2.toChars());
+                    }
+                    else
+                        errorSupplemental(s2.loc, "did you mean %s `%s`?",
+                            s2.kind(), s2.toChars());
+                }
                 else if (src.type.ty == Tpointer)
                 {
                     // structPtr.field
@@ -3454,7 +3462,7 @@ Expression getProperty(Type t, Scope* scope_, Loc loc, Identifier ident, int fla
                     {
                         if (auto s3 = as.search_correct(ident))
                         {
-                            errorSupplemental(loc, "did you mean %s `%s`?",
+                            errorSupplemental(s3.loc, "did you mean %s `%s`?",
                                 s3.kind(), s3.toChars());
                         }
                     }
