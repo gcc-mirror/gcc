@@ -248,7 +248,7 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	gcc/unwind/generic.lo gcc/unwind/package.lo gcc/unwind/pe.lo \
 	object.lo rt/aApply.lo rt/aApplyR.lo rt/aaA.lo rt/adi.lo \
 	rt/arraycat.lo rt/cast_.lo rt/config.lo rt/critical_.lo \
-	rt/deh.lo rt/dmain2.lo rt/ehalloc.lo rt/invariant.lo \
+	rt/deh.lo rt/dmain2.lo rt/ehalloc.lo rt/invariant_.lo \
 	rt/lifetime.lo rt/memory.lo rt/minfo.lo rt/monitor_.lo \
 	rt/profilegc.lo rt/sections.lo rt/tlsgc.lo rt/util/typeinfo.lo \
 	rt/util/utility.lo
@@ -903,7 +903,7 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	gcc/unwind/generic.d gcc/unwind/package.d gcc/unwind/pe.d object.d \
 	rt/aApply.d rt/aApplyR.d rt/aaA.d rt/adi.d rt/arraycat.d rt/cast_.d \
 	rt/config.d rt/critical_.d rt/deh.d rt/dmain2.d rt/ehalloc.d \
-	rt/invariant.d rt/lifetime.d rt/memory.d rt/minfo.d rt/monitor_.d \
+	rt/invariant_.d rt/lifetime.d rt/memory.d rt/minfo.d rt/monitor_.d \
 	rt/profilegc.d rt/sections.d rt/tlsgc.d rt/util/typeinfo.d \
 	rt/util/utility.d
 
@@ -1413,7 +1413,7 @@ rt/critical_.lo: rt/$(am__dirstamp)
 rt/deh.lo: rt/$(am__dirstamp)
 rt/dmain2.lo: rt/$(am__dirstamp)
 rt/ehalloc.lo: rt/$(am__dirstamp)
-rt/invariant.lo: rt/$(am__dirstamp)
+rt/invariant_.lo: rt/$(am__dirstamp)
 rt/lifetime.lo: rt/$(am__dirstamp)
 rt/memory.lo: rt/$(am__dirstamp)
 rt/minfo.lo: rt/$(am__dirstamp)

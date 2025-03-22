@@ -4,15 +4,10 @@
  * Copyright: Copyright Digital Mars 2007 - 2010.
  * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   Walter Bright
- * Source: $(DRUNTIMESRC rt/_invariant.d)
+ * Source: $(DRUNTIMESRC rt/_invariant_.d)
  */
 
-/*          Copyright Digital Mars 2007 - 2010.
- * Distributed under the Boost Software License, Version 1.0.
- *    (See accompanying file LICENSE or copy at
- *          http://www.boost.org/LICENSE_1_0.txt)
- */
-
+module rt.invariant_;
 
 /**
  *
