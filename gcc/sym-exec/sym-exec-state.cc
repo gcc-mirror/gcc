@@ -265,7 +265,7 @@ state::check_args_compatibility (tree arg1, tree arg2, tree dest)
 	   || TREE_CODE (arg2) == INTEGER_CST))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "Sym-Exec: Incompatible destination"
+	fprintf (dump_file, "Sym-Exec: Incompatible destination "
 			    "and argument sizes.\n");
 
       return false;
