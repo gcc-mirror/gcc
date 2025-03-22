@@ -4399,7 +4399,7 @@ c_parser_typeof_specifier (c_parser *parser)
 	  else if (FUNCTION_POINTER_TYPE_P (ret.spec)
 		   && TYPE_QUALS (TREE_TYPE (ret.spec)) != TYPE_UNQUALIFIED)
 	    ret.spec
-	      = build_pointer_type (TYPE_MAIN_VARIANT (TREE_TYPE (ret.spec)));
+	      = c_build_pointer_type (TYPE_MAIN_VARIANT (TREE_TYPE (ret.spec)));
 	}
     }
   return ret;

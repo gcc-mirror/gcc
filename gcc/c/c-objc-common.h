@@ -74,6 +74,8 @@ extern void c_register_features ();
 #define LANG_HOOKS_EMITS_BEGIN_STMT true
 #undef LANG_HOOKS_FINALIZE_EARLY_DEBUG
 #define LANG_HOOKS_FINALIZE_EARLY_DEBUG c_common_finalize_early_debug
+#undef LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE
+#define LANG_HOOKS_RECONSTRUCT_COMPLEX_TYPE c_reconstruct_complex_type
 
 static const scoped_attribute_specs *const c_objc_attribute_table[] =
 {
