@@ -2129,7 +2129,7 @@ warn_switch_unreachable_and_auto_init_r (gimple_stmt_iterator *gsi_p,
 	  const char *var_name_str = TREE_STRING_POINTER (var_name);
 
 	  warning_at (gimple_location (stmt), OPT_Wtrivial_auto_var_init,
-		      "%qs cannot be initialized with"
+		      "%qs cannot be initialized with "
 		      "%<-ftrivial-auto-var_init%>",
 		      var_name_str);
 	  break;
