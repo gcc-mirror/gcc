@@ -11916,7 +11916,7 @@ vectorizable_load (vec_info *vinfo,
 
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_NOTE, vect_location,
-				     "vect_model_load_cost:"
+				     "vect_model_load_cost: "
 				     "strided group_size = %d .\n",
 				     group_size);
 		}
