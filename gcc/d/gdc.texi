@@ -273,6 +273,8 @@ Sets @code{__traits(getTargetInfo, "cppStd")} to @code{201703}.
 This is the default.
 @item c++20
 Sets @code{__traits(getTargetInfo, "cppStd")} to @code{202002}.
+@item c++23
+Sets @code{__traits(getTargetInfo, "cppStd")} to @code{202302}.
 @end table
 
 @opindex finvariants

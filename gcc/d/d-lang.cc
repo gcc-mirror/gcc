@@ -510,6 +510,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 	case CppStdRevisionCpp14:
 	case CppStdRevisionCpp17:
 	case CppStdRevisionCpp20:
+	case CppStdRevisionCpp23:
 	  global.params.cplusplus = (CppStdRevision) value;
 	  break;
 

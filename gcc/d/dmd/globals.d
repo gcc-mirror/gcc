@@ -62,6 +62,7 @@ enum CppStdRevision : uint
     cpp14 = 2014_02,
     cpp17 = 2017_03,
     cpp20 = 2020_02,
+    cpp23 = 2023_02,
 }
 
 /// Trivalent boolean to represent the state of a `revert`able change
