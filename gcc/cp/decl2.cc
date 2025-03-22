@@ -2482,9 +2482,7 @@ vague_linkage_p (tree decl)
      DECL_COMDAT.  */
   if (DECL_COMDAT (decl)
       || (TREE_CODE (decl) == FUNCTION_DECL
-	  && DECL_DECLARED_INLINE_P (decl)
-	  /* But gnu_inline functions are always external.  */
-	  && !lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (decl)))
+	  && DECL_DECLARED_INLINE_P (decl))
       || (DECL_LANG_SPECIFIC (decl)
 	  && DECL_TEMPLATE_INSTANTIATION (decl))
       || (VAR_P (decl) && DECL_INLINE_VAR_P (decl)))

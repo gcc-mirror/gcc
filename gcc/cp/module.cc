@@ -5541,6 +5541,50 @@ trees_in::start (unsigned code)
   return t;
 }
 
+/* The kinds of interface an importer could have for a decl.  */
+
+enum class importer_interface {
+  unknown,	  /* The definition may or may not need to be emitted.  */
+  always_import,  /* The definition can always be found in another TU.  */
+  always_emit,	  /* The definition must be emitted in the importer's TU. */
+};
+
+/* Returns what kind of interface an importer will have of DECL.  */
+
+static importer_interface
+get_importer_interface (tree decl)
+{
+  /* Internal linkage entities must be emitted in each importer if
+     there is a definition available.  */
+  if (!TREE_PUBLIC (decl))
+    return importer_interface::always_emit;
+
+  /* Entities that aren't vague linkage are either not definitions or
+     will be emitted in this TU, so importers can just refer to an
+     external definition.  */
+  if (!vague_linkage_p (decl))
+    return importer_interface::always_import;
+
+  /* For explicit instantiations, importers can always rely on there
+     being a definition in another TU, unless this is a definition
+     in a header module: in which case the importer will always need
+     to emit it.  */
+  if (DECL_LANG_SPECIFIC (decl)
+      && DECL_EXPLICIT_INSTANTIATION (decl))
+    return (header_module_p () && !DECL_EXTERNAL (decl)
+	    ? importer_interface::always_emit
+	    : importer_interface::always_import);
+
+  /* A gnu_inline function is never emitted in any TU.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_DECLARED_INLINE_P (decl)
+      && lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (decl)))
+    return importer_interface::always_import;
+
+  /* Everything else has vague linkage.  */
+  return importer_interface::unknown;
+}
+
 /* The structure streamers access the raw fields, because the
    alternative, of using the accessor macros can require using
    different accessors for the same underlying field, depending on the
@@ -5660,7 +5704,8 @@ trees_out::core_bools (tree t, bits_out& bits)
 	   we need to import or export any vague-linkage entities on
 	   stream-in.  */
 	bool interface_known = t->decl_common.lang_flag_5;
-	if (interface_known && vague_linkage_p (t))
+	if (interface_known
+	    && get_importer_interface (t) == importer_interface::unknown)
 	  interface_known = false;
 	WB (interface_known);
       }
@@ -5694,8 +5739,8 @@ trees_out::core_bools (tree t, bits_out& bits)
 		is_external = true;
 	      gcc_fallthrough ();
 	    case FUNCTION_DECL:
-	      if (TREE_PUBLIC (t)
-		  && !vague_linkage_p (t))
+	      if (get_importer_interface (t)
+		  == importer_interface::always_import)
 		is_external = true;
 	      break;
 	    }
@@ -12159,7 +12204,21 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 
   if (TREE_CODE (d_inner) == FUNCTION_DECL
       && DECL_DECLARED_INLINE_P (d_inner))
-    DECL_DECLARED_INLINE_P (e_inner) = true;
+    {
+      DECL_DECLARED_INLINE_P (e_inner) = true;
+      if (!DECL_SAVED_TREE (e_inner)
+	  && lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (d_inner))
+	  && !lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (e_inner)))
+	{
+	  DECL_INTERFACE_KNOWN (e_inner)
+	    |= DECL_INTERFACE_KNOWN (d_inner);
+	  DECL_DISREGARD_INLINE_LIMITS (e_inner)
+	    |= DECL_DISREGARD_INLINE_LIMITS (d_inner);
+	  // TODO: we will eventually want to merge all decl attributes
+	  duplicate_one_attribute (&DECL_ATTRIBUTES (e_inner),
+				   DECL_ATTRIBUTES (d_inner), "gnu_inline");
+	}
+    }
   if (!DECL_EXTERNAL (d_inner))
     DECL_EXTERNAL (e_inner) = false;
 
@@ -12626,6 +12685,8 @@ trees_in::read_var_def (tree decl, tree maybe_template)
 	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = true;
 	  tentative_decl_linkage (decl);
 	  if (DECL_IMPLICIT_INSTANTIATION (decl)
+	      || (DECL_EXPLICIT_INSTANTIATION (decl)
+		  && !DECL_EXTERNAL (decl))
 	      || (DECL_CLASS_SCOPE_P (decl)
 		  && !DECL_VTABLE_OR_VTT_P (decl)
 		  && !DECL_TEMPLATE_INFO (decl)))
