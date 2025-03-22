@@ -37,7 +37,7 @@ public enum CustomFloatFlags
      * Store values in normalized form by default. The actual precision of the
      * significand is extended by 1 bit by assuming an implicit leading bit of 1
      * instead of 0. i.e. `1.nnnn` instead of `0.nnnn`.
-     * True for all $(LINK2 https://en.wikipedia.org/wiki/IEEE_floating_point, IEE754) types
+     * True for all $(LINK2 https://en.wikipedia.org/wiki/IEEE_floating_point, IEEE754) types
      */
     storeNormalized = 2,
 
