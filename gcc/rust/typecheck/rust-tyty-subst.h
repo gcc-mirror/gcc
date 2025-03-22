@@ -253,6 +253,7 @@ private:
   bool error_flag;
 };
 
+class TypeBoundPredicateItem;
 class SubstitutionRef
 {
 public:
@@ -319,7 +320,8 @@ public:
   // we have bindings for X Y Z and need to propagate the binding Y,Z into Foo
   // Which binds to A,B
   SubstitutionArgumentMappings
-  adjust_mappings_for_this (SubstitutionArgumentMappings &mappings);
+  adjust_mappings_for_this (SubstitutionArgumentMappings &mappings,
+			    bool trait_mode = false);
 
   // Are the mappings here actually bound to this type. For example imagine the
   // case:

@@ -788,7 +788,7 @@ SubstitutionRef::infer_substitions (location_t locus)
 
 SubstitutionArgumentMappings
 SubstitutionRef::adjust_mappings_for_this (
-  SubstitutionArgumentMappings &mappings)
+  SubstitutionArgumentMappings &mappings, bool trait_mode)
 {
   std::vector<SubstitutionArg> resolved_mappings;
   for (size_t i = 0; i < substitutions.size (); i++)
@@ -816,7 +816,7 @@ SubstitutionRef::adjust_mappings_for_this (
 	}
 
       bool ok = !arg.is_error ();
-      if (ok)
+      if (ok || (trait_mode && i == 0))
 	{
 	  SubstitutionArg adjusted (&subst, arg.get_tyty ());
 	  resolved_mappings.push_back (std::move (adjusted));

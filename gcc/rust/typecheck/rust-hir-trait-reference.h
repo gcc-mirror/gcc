@@ -144,7 +144,7 @@ class TraitReference
 public:
   TraitReference (const HIR::Trait *hir_trait_ref,
 		  std::vector<TraitItemReference> item_refs,
-		  std::vector<const TraitReference *> super_traits,
+		  std::vector<TyTy::TypeBoundPredicate> super_traits,
 		  std::vector<TyTy::SubstitutionParamMapping> substs);
 
   TraitReference (TraitReference const &other);
@@ -196,7 +196,8 @@ public:
 			      const TraitItemReference **ref) const;
 
   bool lookup_trait_item (const std::string &ident,
-			  const TraitItemReference **ref) const;
+			  const TraitItemReference **ref,
+			  bool lookup_supers = true) const;
 
   const TraitItemReference *
   lookup_trait_item (const std::string &ident,
@@ -217,7 +218,7 @@ public:
 
   bool is_equal (const TraitReference &other) const;
 
-  const std::vector<const TraitReference *> get_super_traits () const;
+  std::vector<TyTy::TypeBoundPredicate> get_super_traits () const;
 
   bool is_object_safe (bool emit_error, location_t locus) const;
 
@@ -230,7 +231,7 @@ public:
 private:
   const HIR::Trait *hir_trait_ref;
   std::vector<TraitItemReference> item_refs;
-  std::vector<const TraitReference *> super_traits;
+  std::vector<TyTy::TypeBoundPredicate> super_traits;
   std::vector<TyTy::SubstitutionParamMapping> trait_substs;
 };
 

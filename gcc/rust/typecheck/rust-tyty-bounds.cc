@@ -345,7 +345,8 @@ TypeBoundPredicate::TypeBoundPredicate (
   location_t locus)
   : SubstitutionRef ({}, SubstitutionArgumentMappings::empty (), {}),
     reference (trait_reference.get_mappings ().get_defid ()), locus (locus),
-    error_flag (false), polarity (polarity)
+    error_flag (false), polarity (polarity),
+    super_traits (trait_reference.get_super_traits ())
 {
   rust_assert (!trait_reference.get_trait_substs ().empty ());
 
@@ -385,7 +386,8 @@ TypeBoundPredicate::TypeBoundPredicate (mark_is_error)
 TypeBoundPredicate::TypeBoundPredicate (const TypeBoundPredicate &other)
   : SubstitutionRef ({}, SubstitutionArgumentMappings::empty (), {}),
     reference (other.reference), locus (other.locus),
-    error_flag (other.error_flag), polarity (other.polarity)
+    error_flag (other.error_flag), polarity (other.polarity),
+    super_traits (other.super_traits)
 {
   substitutions.clear ();
   for (const auto &p : other.get_substs ())
@@ -455,6 +457,7 @@ TypeBoundPredicate::operator= (const TypeBoundPredicate &other)
     = SubstitutionArgumentMappings (copied_arg_mappings, {},
 				    other.used_arguments.get_regions (),
 				    other.used_arguments.get_locus ());
+  super_traits = other.super_traits;
 
   return *this;
 }
@@ -521,11 +524,19 @@ TypeBoundPredicate::apply_generic_arguments (HIR::GenericArgs *generic_args,
     }
 
   // now actually perform a substitution
-  used_arguments = get_mappings_from_generic_args (
+  auto args = get_mappings_from_generic_args (
     *generic_args,
     Resolver::TypeCheckContext::get ()->regions_from_generic_args (
       *generic_args));
 
+  apply_argument_mappings (args);
+}
+
+void
+TypeBoundPredicate::apply_argument_mappings (
+  SubstitutionArgumentMappings &arguments)
+{
+  used_arguments = arguments;
   error_flag |= used_arguments.is_error ();
   auto &subst_mappings = used_arguments;
   for (auto &sub : get_substs ())
@@ -549,6 +560,14 @@ TypeBoundPredicate::apply_generic_arguments (HIR::GenericArgs *generic_args,
       const auto item_ref = item.get_raw_item ();
       item_ref->associated_type_set (type);
     }
+
+  for (auto &super_trait : super_traits)
+    {
+      auto adjusted
+	= super_trait.adjust_mappings_for_this (used_arguments,
+						true /*trait mode*/);
+      super_trait.apply_argument_mappings (adjusted);
+    }
 }
 
 bool
@@ -564,34 +583,56 @@ TypeBoundPredicate::lookup_associated_item (const std::string &search) const
 {
   auto trait_ref = get ();
   const Resolver::TraitItemReference *trait_item_ref = nullptr;
-  if (!trait_ref->lookup_trait_item (search, &trait_item_ref))
-    return TypeBoundPredicateItem::error ();
+  if (trait_ref->lookup_trait_item (search, &trait_item_ref,
+				    false /*lookup supers*/))
+    return TypeBoundPredicateItem (*this, trait_item_ref);
 
-  return TypeBoundPredicateItem (this, trait_item_ref);
+  for (auto &super_trait : super_traits)
+    {
+      auto lookup = super_trait.lookup_associated_item (search);
+      if (!lookup.is_error ())
+	return lookup;
+    }
+
+  return TypeBoundPredicateItem::error ();
 }
 
 TypeBoundPredicateItem::TypeBoundPredicateItem (
-  const TypeBoundPredicate *parent,
+  const TypeBoundPredicate parent,
   const Resolver::TraitItemReference *trait_item_ref)
   : parent (parent), trait_item_ref (trait_item_ref)
 {}
 
+TypeBoundPredicateItem::TypeBoundPredicateItem (
+  const TypeBoundPredicateItem &other)
+  : parent (other.parent), trait_item_ref (other.trait_item_ref)
+{}
+
+TypeBoundPredicateItem &
+TypeBoundPredicateItem::operator= (const TypeBoundPredicateItem &other)
+{
+  parent = other.parent;
+  trait_item_ref = other.trait_item_ref;
+
+  return *this;
+}
+
 TypeBoundPredicateItem
 TypeBoundPredicateItem::error ()
 {
-  return TypeBoundPredicateItem (nullptr, nullptr);
+  return TypeBoundPredicateItem (TypeBoundPredicate::error (), nullptr);
 }
 
 bool
 TypeBoundPredicateItem::is_error () const
 {
-  return parent == nullptr || trait_item_ref == nullptr;
+  return parent.is_error () || trait_item_ref == nullptr;
 }
 
 const TypeBoundPredicate *
 TypeBoundPredicateItem::get_parent () const
 {
-  return parent;
+  return &parent;
 }
 
 TypeBoundPredicateItem
@@ -605,7 +646,7 @@ BaseType *
 TypeBoundPredicateItem::get_tyty_for_receiver (const TyTy::BaseType *receiver)
 {
   TyTy::BaseType *trait_item_tyty = get_raw_item ()->get_tyty ();
-  if (parent->get_substitution_arguments ().is_empty ())
+  if (parent.get_substitution_arguments ().is_empty ())
     return trait_item_tyty;
 
   const Resolver::TraitItemReference *tref = get_raw_item ();
@@ -614,7 +655,7 @@ TypeBoundPredicateItem::get_tyty_for_receiver (const TyTy::BaseType *receiver)
     return trait_item_tyty;
 
   // set up the self mapping
-  SubstitutionArgumentMappings gargs = parent->get_substitution_arguments ();
+  SubstitutionArgumentMappings gargs = parent.get_substitution_arguments ();
   rust_assert (!gargs.is_empty ());
 
   // setup the adjusted mappings
@@ -746,7 +787,7 @@ TypeBoundPredicate::get_associated_type_items ()
 	  == Resolver::TraitItemReference::TraitItemType::TYPE;
       if (is_associated_type)
 	{
-	  TypeBoundPredicateItem item (this, &trait_item);
+	  TypeBoundPredicateItem item (*this, &trait_item);
 	  items.push_back (std::move (item));
 	}
     }

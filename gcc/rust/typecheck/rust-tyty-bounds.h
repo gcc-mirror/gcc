@@ -34,31 +34,6 @@ namespace TyTy {
 
 class BaseType;
 class TypeBoundPredicate;
-class TypeBoundPredicateItem
-{
-public:
-  TypeBoundPredicateItem (const TypeBoundPredicate *parent,
-			  const Resolver::TraitItemReference *trait_item_ref);
-
-  static TypeBoundPredicateItem error ();
-
-  bool is_error () const;
-
-  BaseType *get_tyty_for_receiver (const TyTy::BaseType *receiver);
-
-  const Resolver::TraitItemReference *get_raw_item () const;
-
-  bool needs_implementation () const;
-
-  const TypeBoundPredicate *get_parent () const;
-
-  location_t get_locus () const;
-
-private:
-  const TypeBoundPredicate *parent;
-  const Resolver::TraitItemReference *trait_item_ref;
-};
-
 class TypeBoundsMappings
 {
 protected:
