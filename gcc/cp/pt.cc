@@ -15920,6 +15920,11 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain,
 	    if (TYPE_USER_ALIGN (TREE_TYPE (t)))
 	      TREE_TYPE (r) = build_aligned_type (TREE_TYPE (r),
 						  TYPE_ALIGN (TREE_TYPE (t)));
+
+	    /* Preserve structural-ness of a partially instantiated typedef.  */
+	    if (TYPE_STRUCTURAL_EQUALITY_P (TREE_TYPE (t))
+		&& dependent_type_p (TREE_TYPE (r)))
+	      SET_TYPE_STRUCTURAL_EQUALITY (TREE_TYPE (r));
 	  }
 
 	layout_decl (r, 0);
