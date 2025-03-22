@@ -266,7 +266,7 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
   specified_bounds.push_back (self_hrtb);
 
   // look for any
-  std::vector<const TraitReference *> super_traits;
+  std::vector<TyTy::TypeBoundPredicate> super_traits;
   if (trait_reference->has_type_param_bounds ())
     {
       for (auto &bound : trait_reference->get_type_param_bounds ())
@@ -284,7 +284,7 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
 		return &TraitReference::error_node ();
 
 	      specified_bounds.push_back (predicate);
-	      super_traits.push_back (predicate.get ());
+	      super_traits.push_back (predicate);
 	    }
 	}
     }
@@ -305,8 +305,7 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
       item_refs.push_back (std::move (trait_item_ref));
     }
 
-  TraitReference trait_object (trait_reference, item_refs,
-			       std::move (super_traits),
+  TraitReference trait_object (trait_reference, item_refs, super_traits,
 			       std::move (substitutions));
   context->insert_trait_reference (
     trait_reference->get_mappings ().get_defid (), std::move (trait_object));

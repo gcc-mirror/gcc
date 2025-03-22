@@ -545,6 +545,8 @@ public:
   void apply_generic_arguments (HIR::GenericArgs *generic_args,
 				bool has_associated_self);
 
+  void apply_argument_mappings (SubstitutionArgumentMappings &arguments);
+
   bool contains_item (const std::string &search) const;
 
   TypeBoundPredicateItem
@@ -587,6 +589,36 @@ private:
   location_t locus;
   bool error_flag;
   BoundPolarity polarity;
+  std::vector<TyTy::TypeBoundPredicate> super_traits;
+};
+
+class TypeBoundPredicateItem
+{
+public:
+  TypeBoundPredicateItem (const TypeBoundPredicate parent,
+			  const Resolver::TraitItemReference *trait_item_ref);
+
+  TypeBoundPredicateItem (const TypeBoundPredicateItem &other);
+
+  TypeBoundPredicateItem &operator= (const TypeBoundPredicateItem &other);
+
+  static TypeBoundPredicateItem error ();
+
+  bool is_error () const;
+
+  BaseType *get_tyty_for_receiver (const TyTy::BaseType *receiver);
+
+  const Resolver::TraitItemReference *get_raw_item () const;
+
+  bool needs_implementation () const;
+
+  const TypeBoundPredicate *get_parent () const;
+
+  location_t get_locus () const;
+
+private:
+  TypeBoundPredicate parent;
+  const Resolver::TraitItemReference *trait_item_ref;
 };
 
 // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.VariantDef.html
