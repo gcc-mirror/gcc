@@ -110,6 +110,10 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+
+# Handle embedded rpaths for Darwin.
+@BUILD_LIBGCOBOL_TRUE@@ENABLE_DARWIN_AT_RPATH_TRUE@am__append_1 = -Wc,-nodefaultrpaths \
+@BUILD_LIBGCOBOL_TRUE@@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wl,-rpath,@loader_path
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
@@ -132,7 +136,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/depstand.m4 \
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
-	$(am__configure_deps) $(am__DIST_COMMON)
+	$(am__configure_deps)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
@@ -169,8 +173,10 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libgcobol_la_LIBADD =
-am_libgcobol_la_OBJECTS = charmaps.lo constants.lo gfileio.lo gmath.lo \
-	intrinsic.lo io.lo libgcobol.lo valconv.lo
+@BUILD_LIBGCOBOL_TRUE@am_libgcobol_la_OBJECTS = charmaps.lo \
+@BUILD_LIBGCOBOL_TRUE@	constants.lo gfileio.lo gmath.lo \
+@BUILD_LIBGCOBOL_TRUE@	intrinsic.lo io.lo libgcobol.lo \
+@BUILD_LIBGCOBOL_TRUE@	valconv.lo
 libgcobol_la_OBJECTS = $(am_libgcobol_la_OBJECTS)
 @BUILD_LIBGCOBOL_TRUE@am_libgcobol_la_rpath = -rpath $(toolexeclibdir)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -212,7 +218,6 @@ am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
 SOURCES = $(libgcobol_la_SOURCES)
-DIST_SOURCES = $(libgcobol_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -240,29 +245,6 @@ ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
 AM_RECURSIVE_TARGETS = cscope
-am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
-	$(top_srcdir)/../compile $(top_srcdir)/../config.guess \
-	$(top_srcdir)/../config.sub $(top_srcdir)/../depcomp \
-	$(top_srcdir)/../install-sh $(top_srcdir)/../ltmain.sh \
-	$(top_srcdir)/../missing $(top_srcdir)/../mkinstalldirs \
-	ChangeLog README
-DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-distdir = $(PACKAGE)-$(VERSION)
-top_distdir = $(distdir)
-am__remove_distdir = \
-  if test -d "$(distdir)"; then \
-    find "$(distdir)" -type d ! -perm -200 -exec chmod u+w {} ';' \
-      && rm -rf "$(distdir)" \
-      || { sleep 5 && rm -rf "$(distdir)"; }; \
-  else :; fi
-am__post_remove_distdir = $(am__remove_distdir)
-DIST_ARCHIVES = $(distdir).tar.gz
-GZIP_ENV = --best
-DIST_TARGETS = dist-gzip
-distuninstallcheck_listfiles = find . -type f -print
-am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
-  | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
-distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
@@ -272,11 +254,7 @@ AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
 CC = @CC@
-CCAS = @CCAS@
-CCASDEPMODE = @CCASDEPMODE@
-CCASFLAGS = @CCASFLAGS@
 CCDEPMODE = @CCDEPMODE@
-CC_FOR_BUILD = @CC_FOR_BUILD@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
@@ -334,10 +312,8 @@ RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
-SPEC_LIBGCOBOL_DEPS = @SPEC_LIBGCOBOL_DEPS@
 STRIP = @STRIP@
 VERSION = @VERSION@
-VERSION_SUFFIX = @VERSION_SUFFIX@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -354,9 +330,7 @@ bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
 build_cpu = @build_cpu@
-build_libsubdir = @build_libsubdir@
 build_os = @build_os@
-build_subdir = @build_subdir@
 build_vendor = @build_vendor@
 builddir = @builddir@
 datadir = @datadir@
@@ -366,14 +340,12 @@ dvidir = @dvidir@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 exec_prefix = @exec_prefix@
-extra_darwin_ldflags_libgcobol = @extra_darwin_ldflags_libgcobol@
+extra_ldflags_libgcobol = @extra_ldflags_libgcobol@ $(am__append_1)
 get_gcc_base_ver = @get_gcc_base_ver@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
-host_noncanonical = @host_noncanonical@
 host_os = @host_os@
-host_subdir = @host_subdir@
 host_vendor = @host_vendor@
 htmldir = @htmldir@
 includedir = @includedir@
@@ -393,7 +365,6 @@ program_transform_name = @program_transform_name@
 psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
-slibdir = @slibdir@
 srcdir = @srcdir@
 sysconfdir = @sysconfdir@
 target = @target@
@@ -401,7 +372,6 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_noncanonical = @target_noncanonical@
 target_os = @target_os@
-target_subdir = @target_subdir@
 target_vendor = @target_vendor@
 toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
@@ -413,31 +383,31 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 
 # May be used by various substitution variables.
 gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
+
+# Skip the whole process if we are not building libgcobol.
 @BUILD_LIBGCOBOL_TRUE@toolexeclib_LTLIBRARIES = libgcobol.la
-libgcobol_la_SOURCES = \
-	charmaps.cc				\
-	constants.cc				\
-	gfileio.cc				\
-	gmath.cc				\
-	intrinsic.cc				\
-	io.cc					\
-	libgcobol.cc				\
-	valconv.cc
+@BUILD_LIBGCOBOL_TRUE@libgcobol_la_SOURCES = \
+@BUILD_LIBGCOBOL_TRUE@	charmaps.cc				\
+@BUILD_LIBGCOBOL_TRUE@	constants.cc				\
+@BUILD_LIBGCOBOL_TRUE@	gfileio.cc				\
+@BUILD_LIBGCOBOL_TRUE@	gmath.cc				\
+@BUILD_LIBGCOBOL_TRUE@	intrinsic.cc				\
+@BUILD_LIBGCOBOL_TRUE@	io.cc					\
+@BUILD_LIBGCOBOL_TRUE@	libgcobol.cc				\
+@BUILD_LIBGCOBOL_TRUE@	valconv.cc
 
-libgcobol_la_LINK = $(LIBTOOL) --mode=link --tag=CXX $(CXX)	\
-		-o libgcobol$(libsuffix).la			\
-		-Wc,-shared-libgcc				\
-		-version-info $(LIBGCOBOL_VERSION)		\
-		-lstdc++					\
-		$(LTLDFLAGS) $(LTLIBICONV) $(LIBM)
+@BUILD_LIBGCOBOL_TRUE@WARN_CFLAGS = -W -Wall -Wwrite-strings
+@BUILD_LIBGCOBOL_TRUE@AM_CPPFLAGS = -I. -I$(srcdir)
+@BUILD_LIBGCOBOL_TRUE@AM_CFLAGS = $(XCFLAGS)
+@BUILD_LIBGCOBOL_TRUE@AM_CXXFLAGS = $(XCFLAGS) $(WARN_CFLAGS) \
+@BUILD_LIBGCOBOL_TRUE@	-DIN_TARGET_LIBS -fno-strict-aliasing
 
-WARN_CFLAGS = -W -Wall -Wwrite-strings
-AM_CXXFLAGS = $(CXXFLAGS_FOR_TARGET)
-
-# not defined: DEFS, MAX_ERRORS, LTLDFLAGS
-ALL_CXXFLAGS = -I. -I$(srcdir) $(AM_CPPFLAGS) $(DEFS)		\
-	$(XCFLAGS) $(AM_CXXFLAGS) $(WARN_CFLAGS) $(MAX_ERRORS)	\
-	-DIN_GCC -DIN_TARGET_LIBS -fno-strict-aliasing
+# We want to link with the c++ runtime.
+@BUILD_LIBGCOBOL_TRUE@libgcobol_la_LINK = $(CXXLINK) $(libgcobol_la_LDFLAGS)
+@BUILD_LIBGCOBOL_TRUE@version_arg = -version-info $(LIBGCOBOL_VERSION)
+@BUILD_LIBGCOBOL_TRUE@libgcobol_la_LDFLAGS = $(LTLDFLAGS) $(LTLIBICONV) \
+@BUILD_LIBGCOBOL_TRUE@	$(extra_ldflags_libgcobol) $(LIBS) \
+@BUILD_LIBGCOBOL_TRUE@	$(version_arg)
 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -634,170 +604,6 @@ cscopelist-am: $(am__tagged_files)
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 	-rm -f cscope.out cscope.in.out cscope.po.out cscope.files
-
-distdir: $(DISTFILES)
-	$(am__remove_distdir)
-	test -d "$(distdir)" || mkdir "$(distdir)"
-	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
-	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
-	list='$(DISTFILES)'; \
-	  dist_files=`for file in $$list; do echo $$file; done | \
-	  sed -e "s|^$$srcdirstrip/||;t" \
-	      -e "s|^$$topsrcdirstrip/|$(top_builddir)/|;t"`; \
-	case $$dist_files in \
-	  */*) $(MKDIR_P) `echo "$$dist_files" | \
-			   sed '/\//!d;s|^|$(distdir)/|;s,/[^/]*$$,,' | \
-			   sort -u` ;; \
-	esac; \
-	for file in $$dist_files; do \
-	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
-	  if test -d $$d/$$file; then \
-	    dir=`echo "/$$file" | sed -e 's,/[^/]*$$,,'`; \
-	    if test -d "$(distdir)/$$file"; then \
-	      find "$(distdir)/$$file" -type d ! -perm -700 -exec chmod u+rwx {} \;; \
-	    fi; \
-	    if test -d $(srcdir)/$$file && test $$d != $(srcdir); then \
-	      cp -fpR $(srcdir)/$$file "$(distdir)$$dir" || exit 1; \
-	      find "$(distdir)/$$file" -type d ! -perm -700 -exec chmod u+rwx {} \;; \
-	    fi; \
-	    cp -fpR $$d/$$file "$(distdir)$$dir" || exit 1; \
-	  else \
-	    test -f "$(distdir)/$$file" \
-	    || cp -p $$d/$$file "$(distdir)/$$file" \
-	    || exit 1; \
-	  fi; \
-	done
-	-test -n "$(am__skip_mode_fix)" \
-	|| find "$(distdir)" -type d ! -perm -755 \
-		-exec chmod u+rwx,go+rx {} \; -o \
-	  ! -type d ! -perm -444 -links 1 -exec chmod a+r {} \; -o \
-	  ! -type d ! -perm -400 -exec chmod a+r {} \; -o \
-	  ! -type d ! -perm -444 -exec $(install_sh) -c -m a+r {} {} \; \
-	|| chmod -R a+r "$(distdir)"
-dist-gzip: distdir
-	tardir=$(distdir) && $(am__tar) | eval GZIP= gzip $(GZIP_ENV) -c >$(distdir).tar.gz
-	$(am__post_remove_distdir)
-
-dist-bzip2: distdir
-	tardir=$(distdir) && $(am__tar) | BZIP2=$${BZIP2--9} bzip2 -c >$(distdir).tar.bz2
-	$(am__post_remove_distdir)
-
-dist-lzip: distdir
-	tardir=$(distdir) && $(am__tar) | lzip -c $${LZIP_OPT--9} >$(distdir).tar.lz
-	$(am__post_remove_distdir)
-
-dist-xz: distdir
-	tardir=$(distdir) && $(am__tar) | XZ_OPT=$${XZ_OPT--e} xz -c >$(distdir).tar.xz
-	$(am__post_remove_distdir)
-
-dist-tarZ: distdir
-	@echo WARNING: "Support for distribution archives compressed with" \
-		       "legacy program 'compress' is deprecated." >&2
-	@echo WARNING: "It will be removed altogether in Automake 2.0" >&2
-	tardir=$(distdir) && $(am__tar) | compress -c >$(distdir).tar.Z
-	$(am__post_remove_distdir)
-
-dist-shar: distdir
-	@echo WARNING: "Support for shar distribution archives is" \
-	               "deprecated." >&2
-	@echo WARNING: "It will be removed altogether in Automake 2.0" >&2
-	shar $(distdir) | eval GZIP= gzip $(GZIP_ENV) -c >$(distdir).shar.gz
-	$(am__post_remove_distdir)
-
-dist-zip: distdir
-	-rm -f $(distdir).zip
-	zip -rq $(distdir).zip $(distdir)
-	$(am__post_remove_distdir)
-
-dist dist-all:
-	$(MAKE) $(AM_MAKEFLAGS) $(DIST_TARGETS) am__post_remove_distdir='@:'
-	$(am__post_remove_distdir)
-
-# This target untars the dist file and tries a VPATH configuration.  Then
-# it guarantees that the distribution is self-contained by making another
-# tarfile.
-distcheck: dist
-	case '$(DIST_ARCHIVES)' in \
-	*.tar.gz*) \
-	  eval GZIP= gzip $(GZIP_ENV) -dc $(distdir).tar.gz | $(am__untar) ;;\
-	*.tar.bz2*) \
-	  bzip2 -dc $(distdir).tar.bz2 | $(am__untar) ;;\
-	*.tar.lz*) \
-	  lzip -dc $(distdir).tar.lz | $(am__untar) ;;\
-	*.tar.xz*) \
-	  xz -dc $(distdir).tar.xz | $(am__untar) ;;\
-	*.tar.Z*) \
-	  uncompress -c $(distdir).tar.Z | $(am__untar) ;;\
-	*.shar.gz*) \
-	  eval GZIP= gzip $(GZIP_ENV) -dc $(distdir).shar.gz | unshar ;;\
-	*.zip*) \
-	  unzip $(distdir).zip ;;\
-	esac
-	chmod -R a-w $(distdir)
-	chmod u+w $(distdir)
-	mkdir $(distdir)/_build $(distdir)/_build/sub $(distdir)/_inst
-	chmod a-w $(distdir)
-	test -d $(distdir)/_build || exit 0; \
-	dc_install_base=`$(am__cd) $(distdir)/_inst && pwd | sed -e 's,^[^:\\/]:[\\/],/,'` \
-	  && dc_destdir="$${TMPDIR-/tmp}/am-dc-$$$$/" \
-	  && am__cwd=`pwd` \
-	  && $(am__cd) $(distdir)/_build/sub \
-	  && ../../configure \
-	    $(AM_DISTCHECK_CONFIGURE_FLAGS) \
-	    $(DISTCHECK_CONFIGURE_FLAGS) \
-	    --srcdir=../.. --prefix="$$dc_install_base" \
-	  && $(MAKE) $(AM_MAKEFLAGS) \
-	  && $(MAKE) $(AM_MAKEFLAGS) dvi \
-	  && $(MAKE) $(AM_MAKEFLAGS) check \
-	  && $(MAKE) $(AM_MAKEFLAGS) install \
-	  && $(MAKE) $(AM_MAKEFLAGS) installcheck \
-	  && $(MAKE) $(AM_MAKEFLAGS) uninstall \
-	  && $(MAKE) $(AM_MAKEFLAGS) distuninstallcheck_dir="$$dc_install_base" \
-	        distuninstallcheck \
-	  && chmod -R a-w "$$dc_install_base" \
-	  && ({ \
-	       (cd ../.. && umask 077 && mkdir "$$dc_destdir") \
-	       && $(MAKE) $(AM_MAKEFLAGS) DESTDIR="$$dc_destdir" install \
-	       && $(MAKE) $(AM_MAKEFLAGS) DESTDIR="$$dc_destdir" uninstall \
-	       && $(MAKE) $(AM_MAKEFLAGS) DESTDIR="$$dc_destdir" \
-	            distuninstallcheck_dir="$$dc_destdir" distuninstallcheck; \
-	      } || { rm -rf "$$dc_destdir"; exit 1; }) \
-	  && rm -rf "$$dc_destdir" \
-	  && $(MAKE) $(AM_MAKEFLAGS) dist \
-	  && rm -rf $(DIST_ARCHIVES) \
-	  && $(MAKE) $(AM_MAKEFLAGS) distcleancheck \
-	  && cd "$$am__cwd" \
-	  || exit 1
-	$(am__post_remove_distdir)
-	@(echo "$(distdir) archives ready for distribution: "; \
-	  list='$(DIST_ARCHIVES)'; for i in $$list; do echo $$i; done) | \
-	  sed -e 1h -e 1s/./=/g -e 1p -e 1x -e '$$p' -e '$$x'
-distuninstallcheck:
-	@test -n '$(distuninstallcheck_dir)' || { \
-	  echo 'ERROR: trying to run $@ with an empty' \
-	       '$$(distuninstallcheck_dir)' >&2; \
-	  exit 1; \
-	}; \
-	$(am__cd) '$(distuninstallcheck_dir)' || { \
-	  echo 'ERROR: cannot chdir into $(distuninstallcheck_dir)' >&2; \
-	  exit 1; \
-	}; \
-	test `$(am__distuninstallcheck_listfiles) | wc -l` -eq 0 \
-	   || { echo "ERROR: files left after uninstall:" ; \
-	        if test -n "$(DESTDIR)"; then \
-	          echo "  (check DESTDIR support)"; \
-	        fi ; \
-	        $(distuninstallcheck_listfiles) ; \
-	        exit 1; } >&2
-distcleancheck: distclean
-	@if test '$(srcdir)' = . ; then \
-	  echo "ERROR: distcleancheck can only run from a VPATH build" ; \
-	  exit 1 ; \
-	fi
-	@test `$(distcleancheck_listfiles) | wc -l` -eq 0 \
-	  || { echo "ERROR: files left in build directory after distclean:" ; \
-	       $(distcleancheck_listfiles) ; \
-	       exit 1; } >&2
 check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES) config.h
@@ -914,28 +720,21 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 .PHONY: CTAGS GTAGS TAGS all all-am am--refresh check check-am clean \
 	clean-cscope clean-generic clean-libtool \
 	clean-toolexeclibLTLIBRARIES cscope cscopelist-am ctags \
-	ctags-am dist dist-all dist-bzip2 dist-gzip dist-lzip \
-	dist-shar dist-tarZ dist-xz dist-zip distcheck distclean \
-	distclean-compile distclean-generic distclean-hdr \
-	distclean-libtool distclean-tags distcleancheck distdir \
-	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip install-toolexeclibLTLIBRARIES installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am \
-	uninstall-toolexeclibLTLIBRARIES
+	ctags-am distclean distclean-compile distclean-generic \
+	distclean-hdr distclean-libtool distclean-tags dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip \
+	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
+	uninstall-am uninstall-toolexeclibLTLIBRARIES
 
 .PRECIOUS: Makefile
 
-
-%.lo: %.cc
-	$(LIBTOOL) --mode=compile --tag=CXX $(CXX) -c	\
-		-o $@ $(INCLUDES) $(ALL_CXXFLAGS) $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

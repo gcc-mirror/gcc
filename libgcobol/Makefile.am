@@ -25,9 +25,9 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 # May be used by various substitution variables.
 gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 
+# Skip the whole process if we are not building libgcobol.
 if BUILD_LIBGCOBOL
 toolexeclib_LTLIBRARIES  = libgcobol.la
-endif
 
 ##
 ## 2.2.12 Automatic Dependency Tracking
@@ -43,22 +43,26 @@ libgcobol_la_SOURCES =				\
 	libgcobol.cc				\
 	valconv.cc
 
-libgcobol_la_LINK = $(LIBTOOL) --mode=link --tag=CXX $(CXX)	\
-		-o libgcobol$(libsuffix).la			\
-		-Wc,-shared-libgcc				\
-		-version-info $(LIBGCOBOL_VERSION)		\
-		-lstdc++					\
-		$(LTLDFLAGS) $(LTLIBICONV) $(LIBM)
-
 WARN_CFLAGS = -W -Wall -Wwrite-strings
 
-AM_CXXFLAGS = $(CXXFLAGS_FOR_TARGET)
+AM_CPPFLAGS = -I. -I$(srcdir)
+AM_CFLAGS = $(XCFLAGS)
+AM_CXXFLAGS = $(XCFLAGS)
+AM_CXXFLAGS += $(WARN_CFLAGS)
+AM_CXXFLAGS += -DIN_TARGET_LIBS
+AM_CXXFLAGS += -fno-strict-aliasing
 
-# not defined: DEFS, MAX_ERRORS, LTLDFLAGS
-ALL_CXXFLAGS = -I. -I$(srcdir) $(AM_CPPFLAGS) $(DEFS)		\
-	$(XCFLAGS) $(AM_CXXFLAGS) $(WARN_CFLAGS) $(MAX_ERRORS)	\
-	-DIN_GCC -DIN_TARGET_LIBS -fno-strict-aliasing
+if ENABLE_DARWIN_AT_RPATH
+# Handle embedded rpaths for Darwin.
+extra_ldflags_libgcobol += -Wc,-nodefaultrpaths
+extra_ldflags_libgcobol += -Wl,-rpath,@loader_path
+endif
 
-%.lo: %.cc
-	$(LIBTOOL) --mode=compile --tag=CXX $(CXX) -c	\
-		-o $@ $(INCLUDES) $(ALL_CXXFLAGS) $<
+# We want to link with the c++ runtime.
+libgcobol_la_LINK = $(CXXLINK) $(libgcobol_la_LDFLAGS)
+version_arg = -version-info $(LIBGCOBOL_VERSION)
+libgcobol_la_LDFLAGS = $(LTLDFLAGS) $(LTLIBICONV) \
+	$(extra_ldflags_libgcobol) $(LIBS) \
+	$(version_arg)
+
+endif BUILD_LIBGCOBOL
