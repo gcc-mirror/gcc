@@ -5086,7 +5086,7 @@ finish_underlying_type (tree type)
 static tree
 finish_type_pack_element (tree idx, tree types, tsubst_flags_t complain)
 {
-  idx = maybe_constant_value (idx);
+  idx = maybe_constant_value (idx, NULL_TREE, mce_true);
   if (TREE_CODE (idx) != INTEGER_CST || !INTEGRAL_TYPE_P (TREE_TYPE (idx)))
     {
       if (complain & tf_error)
