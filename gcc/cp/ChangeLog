@@ -1,3 +1,13 @@
+2025-03-21  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2025-03-20  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/114292
+	* tree.cc (cp_walk_subtrees): Walk the type of DECL_EXPR
+	declarations, as well as the TYPE_{MIN,MAX}_VALUE of
+	INTEGER_TYPEs for template declarations.
+
 2025-03-18  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

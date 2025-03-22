@@ -1,3 +1,19 @@
+2025-03-21  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-03-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114992
+	* g++.target/i386/mangling-alias1.C: New test.
+
+2025-03-21  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2025-03-20  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/114292
+	* g++.dg/cpp1y/lambda-ice4.C: New test.
+
 2025-03-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/generic_inst14.adb: New test.
