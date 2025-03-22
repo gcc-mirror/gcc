@@ -1,3 +1,27 @@
+2025-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Fix default for -std option.
+	* doc/html/manual/test.html: Regenerate.
+
+2025-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/18_support/numeric_limits/traps.cc (main): Fix comment
+	typo.
+
+2025-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_facets_nonio.tcc (time_put::do_put): Fix
+	typo in comment.
+
 2025-03-18  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
