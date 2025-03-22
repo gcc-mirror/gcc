@@ -1,3 +1,13 @@
+2025-03-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR libfortran/85836
+	* Makefile.am : Add reduce.c
+	* Makefile.in : Regenerated
+	* gfortran.map : Add _gfortran_reduce, _gfortran_reduce_scalar,
+	_gfortran_reduce_c and _gfortran_reduce_scalar_c to the list.
+	* intrinsics/reduce.c (reduce, reduce_scalar, reduce_c,
+	reduce_scalar_c): New functions and prototypes
+
 2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/107635

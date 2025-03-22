@@ -1,3 +1,48 @@
+2025-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117214
+	* configure.ac: Use AC_STRUCT_TIMEZONE.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* include/bits/chrono_io.h (__formatter_chrono::_M_c): Set
+	tm_isdst and tm_zone.
+	* testsuite/std/time/format/pr117214.cc: Check %c formatting of
+	zoned_time and local time.
+
+2025-03-21  XU Kailiang  <xu2k3l4@outlook.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117214
+	* include/bits/chrono_io.h (__formatter_chrono::_M_c): Use
+	_M_locale_fmt to format %c time point.
+	* testsuite/std/time/format/pr117214.cc: New test.
+
+2025-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_locale_fmt):
+	Imbue locale into ostringstream.
+	* testsuite/std/time/format/localized.cc: Check that correct
+	locale is used for call to time_put::put.
+
+2025-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_vector.h (vector(from_range_t, Alloc)): Use
+	delegating constructor instead of RAII guards. Use append_range
+	for unsized input range case.
+
+2025-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++23/std.compat.cc.in: Only export <stdbit.h> and
+	<stdckdint.h> contents for C++26 and later.
+
+2025-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++23/std.cc.in (tuple_element, tuple_element_t)
+	(tuple_size, tuple_size_v, get): Export.
+	(ranges::cache_latest_view, views::cache_latest): Export.
+	(ranges::to_input_view, views::to_input): Export.
+	(from_range_t, from_range): Export.
+
 2025-03-20  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* include/debug/unordered_map (unordered_map): Add from_range

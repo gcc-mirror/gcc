@@ -1,3 +1,102 @@
+2025-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.cc (warn_switch_unreachable_and_auto_init_r): Add missing
+	space in the middle of diagnostics.
+	* tree-vect-stmts.cc (vectorizable_load): Add missing space in the
+	middle of debug dump message.
+	* sym-exec/sym-exec-state.cc (state::check_args_compatibility):
+	Likewise.
+
+2025-03-21  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/116028
+	PR rtl-optimization/118615
+	* lra-constraints.cc (first_call_insn): New variable.
+	(split_reg): Spill register before first_call_insn if call_save_p
+	and the call is in a different bb in the ebb.
+	(split_if_necessary): Formatting fix.
+	(inherit_in_ebb): Set first_call_insn when handling a CALL_INSN.
+	For successful split_if_necessary with before_p, only change
+	use_insn if it emitted any new instructions before curr_insn.
+	Clear first_call_insn before returning.
+
+2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* builtin-types.def
+	(BT_FN_VOID_INT_INT_PTR_PTR_PTR_INT_PTR_INT_PTR_UINT_PTR): New.
+	* gimple-low.cc (lower_stmt): Handle GIMPLE_OMP_INTEROP.
+	* gimple-pretty-print.cc (dump_gimple_omp_interop): New function.
+	(pp_gimple_stmt_1): Handle GIMPLE_OMP_INTEROP.
+	* gimple.cc (gimple_build_omp_interop): New function.
+	(gimple_copy): Handle GIMPLE_OMP_INTEROP.
+	* gimple.def (GIMPLE_OMP_INTEROP): Define.
+	* gimple.h (gimple_build_omp_interop): Declare.
+	(gimple_omp_interop_clauses): New function.
+	(gimple_omp_interop_clauses_ptr): Likewise.
+	(gimple_omp_interop_set_clauses): Likewise.
+	(gimple_return_set_retval): Handle GIMPLE_OMP_INTEROP.
+	* gimplify.cc (gimplify_scan_omp_clauses): Handle OMP_CLAUSE_INIT,
+	OMP_CLAUSE_USE and OMP_CLAUSE_DESTROY.
+	(gimplify_omp_interop): New function.
+	(gimplify_expr): Replace sorry with call to gimplify_omp_interop.
+	* omp-builtins.def (BUILT_IN_GOMP_INTEROP): Define.
+	* omp-low.cc (scan_sharing_clauses): Handle OMP_CLAUSE_INIT,
+	OMP_CLAUSE_USE and OMP_CLAUSE_DESTROY.
+	(scan_omp_1_stmt): Handle GIMPLE_OMP_INTEROP.
+	(lower_omp_interop_action_clauses): New function.
+	(lower_omp_interop): Likewise.
+	(lower_omp_1): Handle GIMPLE_OMP_INTEROP.
+
+2025-03-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114992
+	* multiple_target.cc (create_dispatcher_calls):
+	remove_from_same_comdat_group before add_to_same_comdat_group.
+
+2025-03-21  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/aarch64-cores.def (olympus): New entry.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi (AArch64 Options): Document the above.
+
+2025-03-21  Antoni Boucher  <bouanto@zoho.com>
+
+	* config/i386/i386-rust-and-jit.inc: New file.
+	* config/i386/i386-rust.cc: Move code to i386-rust-and-jit.inc.
+
+2025-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/119376
+	* ipa-icf-gimple.cc (func_checker::compare_gimple_call): Return false
+	for gimple_call_must_tail_p mismatches.
+
+2025-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/119376
+	* ipa-split.cc (split_function): Call gimple_call_set_must_tail
+	on the call to outlined partition if has_musttail and
+	!add_tsan_func_exit.
+
+2025-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/119376
+	* tree-inline.cc (remap_gimple_stmt): Silently clear
+	gimple_call_must_tail_p on inlined call stmts if id->call_stmt
+	is a call without that flag set.
+
+2025-03-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/119235
+	* config/s390/s390.cc (s390_hard_regno_mode_ok): Accept only
+	Pmode for registers AP/FP/RA.
+
+2025-03-21  Richard Biener  <rguenther@suse.de>
+
+	* cgraphunit.cc (symbol_table::finalize_compilation_unit):
+	Put early debug generation under TV_SYMOUT.
+
 2025-03-21  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR rtl-optimization/118914

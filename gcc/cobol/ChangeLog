@@ -1,3 +1,50 @@
+2025-03-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcobolspec.cc (lang_specific_driver): Add libstdc++
+	for any link line.
+
+2025-03-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcobolspec.cc (add_arg_lib): Fix typo.
+	(lang_specific_driver): Arrange to append both -lgcobol
+	and -static-libgcobol for targets without
+	HAVE_LD_STATIC_DYNAMIC.
+
+2025-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* parse.y: Rename COB_BLOCK to BLOCK_kw, COB_SIGNED to SIGNED_kw and
+	COB_UNSIGNED to UNSIGNED_kw.
+	* scan.l: Likewise.
+	* token_names.h: Regenerate.
+
+2025-03-21  Richard Biener  <rguenther@suse.de>
+
+	* symbols.cc (empty_float, empty_comp5, empty_literal,
+	empty_conditional, debug_registers, special_registers): Move
+	global cbl_field_t typed data to ...
+	(symbol_table_init): ... local scope here.
+
+2025-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR cobol/119241
+	* symbols.h: Do not typedef tree.
+	* cdf.y: Include coretypes.h and tree.h.
+	* symbols.cc: Likewise.
+	* symfind.cc: Likewise.
+	* util.cc: Likewise.
+	* parse.y: Include coretypes.h and tree.h where appropriate.
+	Rename BLOCK to COB_BLOCK, SIGNED to COB_SIGNED, UNSIGNED
+	to COB_UNSIGNED.
+	* scan.l: Likewise.
+	* token_names.h: Likewise.
+	* cobol1.cc: Do not define HOWEVER_GCC_DEFINES_TREE.
+	* except.cc: Likewise.
+	* genapi.cc: Likewise.
+	* gengen.cc: Likewise.
+	* genmath.cc: Likewise.
+	* genutil.cc: Likewise.
+	* structs.cc: Likewise.
+
 2025-03-20  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* cdfval.h (struct cdfval_t): Overload long instead of int64_t.

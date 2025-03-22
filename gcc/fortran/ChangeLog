@@ -1,3 +1,69 @@
+2025-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* resolve.cc (resolve_procedure_expression): Remove extraneous space
+	from the middle of diagnostics.
+
+2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): Make OMP_CLAUSE_DESTROY and
+	OMP_CLAUSE_INIT addressable.
+	* types.def (BT_FN_VOID_INT_INT_PTR_PTR_PTR_INT_PTR_INT_PTR_UINT_PTR):
+	New.
+
+2025-03-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/119406
+	* resolve.cc (resolve_locality_spec): Add space in error
+	message.
+
+2025-03-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/119403
+	* interface.cc (compare_parameter): Fix typo.
+
+2025-03-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/85836
+	* check.cc (get_ul_from_cst_cl): New function used in
+	check_operation.
+	(check_operation): New function used in check_reduce and
+	check_co_reduce.
+	(gfc_check_co_reduce): Use it.
+	(gfc_check_reduce): New function.
+	(gfc_check_rename): Add prototype for intrinsic with 6 arguments.
+	* gfortran.h : Add isym id for reduce and prototype for f6.
+	* intrinsic.cc (do_check): Add another argument expression and use
+	it in the call to the six argument specific check.
+	(add_sym_6): New function.
+	(add_functions): Add the discription of the reduce intrinsic and
+	add it to the intrinsic list.
+	* intrinsic.h : Add prototypes for gfc_check_reduce and
+	gfc_resolve_reduce.
+	* iresolve.cc (generate_reduce_op_wrapper): Generate a wrapper
+	subroutine for the 'operation' function to enable the library
+	implementation to be type agnostic and use pointer arithmetic
+	throughout.
+	(gfc_resolve_reduce): New function.
+	* trans-expr.cc (gfc_conv_procedure_call): Add flag for scalar
+	reduce. Generate a return variable 'sr' for scalar reduce, pass its
+	address to the library function and return it as the scalar result.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_function): Array valued
+	reduce is called in same way as reshape. Fall through for call to
+	the scalar version.
+
+2025-03-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119380
+	* trans-array.cc (structure_alloc_comps): Prevent freeing of
+	procedure pointer components.
+
+2025-03-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119349
+	* trans-expr.cc (gfc_conv_procedure_call): Prevent deallocation
+	of array temporary for polymorphic temporary argument.
+
 2025-03-19  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/116706

@@ -1,3 +1,9 @@
+2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_clause_destroy): Make addressable.
+	(c_parser_omp_clause_init): Make addressable.
+
 2025-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/119350

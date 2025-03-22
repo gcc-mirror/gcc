@@ -1,3 +1,349 @@
+2025-03-21  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/116028
+	PR rtl-optimization/118615
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Remove xfail for powerpc.
+	* gcc.dg/pr10474.c: Remove xfail for powerpc and arm.
+	* gcc.dg/pr118615.c: New test.
+
+2025-03-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119378
+	* g++.dg/template/friend85.C: New test.
+
+2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/interop-1.c: Remove dg-prune-output "sorry".
+	* c-c++-common/gomp/interop-2.c: Likewise.
+	* c-c++-common/gomp/interop-3.c: Likewise.
+	* c-c++-common/gomp/interop-4.c: Remove dg-message "not supported".
+	* g++.dg/gomp/interop-5.C: Likewise.
+	* gfortran.dg/gomp/interop-4.f90: Likewise.
+	* c-c++-common/gomp/interop-5.c: New test.
+	* gfortran.dg/gomp/interop-5.f90: New test.
+
+2025-03-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114992
+	* g++.target/i386/mangling-alias1.C: New test.
+
+2025-03-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/85836
+	* gfortran.dg/reduce_1.f90: New test
+	* gfortran.dg/reduce_2.f90: New test
+
+2025-03-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/91614
+	* gcc.target/arm/unaligned-memcpy-1.c: Make the test executable.
+	Only scan for the absence of instructions that cannot access
+	misaligned data.  Remove constraint of having unaligned accesses.
+	* gcc.target/arm/unaligned-memcpy-2.c: Likewise.
+	* gcc.target/arm/unaligned-memcpy-3.c: Likewise.
+	* gcc.target/arm/unaligned-memcpy-4.c: Likewise.
+
+2025-03-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/memcpy-aligned-1.c: Require unaligned accesses.
+
+2025-03-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* g++.target/nvptx/alias-g++.dg_init_dtor2-2.C: New.
+
+2025-03-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/alias-unsupported-1.c: New.
+
+2025-03-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119380
+	* gfortran.dg/proc_ptr_comp_54.f90: New test.
+
+2025-03-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/nr2/exclude: Add failing lang item typepaths tests.
+	* rust/execute/torture/derive_macro4.rs: Mark Clone as lang item.
+
+2025-03-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/nr2/exclude:
+	* rust/compile/derive_clone_enum1.rs: New test.
+	* rust/compile/derive_clone_enum2.rs: New test.
+	* rust/compile/derive_clone_enum3.rs: New test.
+	* rust/execute/torture/derive_clone_enum1.rs: New test.
+
+2025-03-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/derive_macro4.rs: Mark Copy and Clone as lang items.
+
+2025-03-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/derive_macro4.rs: Make PhantomData a lang item.
+
+2025-03-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/derive_macro1.rs: Add #[lang = "clone"] to Clone trait.
+	* rust/compile/derive_macro3.rs: Likewise.
+	* rust/compile/derive_macro6.rs: Likewise.
+	* rust/execute/torture/derive_macro3.rs: Likewise.
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3350.rs: New test.
+
+2025-03-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/macros/builtin/eager1.rs: Switch to scan-assembler directive as the
+	GIMPLE dump does not contain strings on LE.
+	* rust/compile/macros/builtin/recurse2.rs: Likewise.
+
+2025-03-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/issue-1446.rs: Add swap_bytes function.
+	* rust/compile/iterators1.rs: Remove unused {to, from}_le functions.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/builtin_macro_include_bytes.rs: needs mut
+	* rust/compile/mutability_checks1.rs: New test.
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-21  liushuyu  <liushuyu011@gmail.com>
+
+	* rust/compile/try-catch-unwind-old.rs: add a test to test the older
+	try intrinsics from plain old Rust to v1.78.0
+	* rust/compile/try-catch-unwind-new.rs: add a test to test the newer
+	catch_unwind instrinsics since Rust v1.78.0
+
+2025-03-21  Nobel  <nobel2073@gmail.com>
+
+	* rust/compile/cast_float_as_integer.rs: New test.
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/cmp1.rs: New test.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3046.rs: remove old error message
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-3140.rs: New test.
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/auto_traits2.rs: New test.
+	* rust/compile/auto_traits3.rs: New test.
+	* rust/compile/nr2/exclude: Add auto_traits2 test.
+
+2025-03-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/auto_traits1.rs: New test.
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-21  Liam Naddell  <liamnprg@gmail.com>
+
+	* rust/compile/issue-3304.rs:
+	Add small test for generics+enums combination for NR2.0
+
+2025-03-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/nr2/exclude: Exclude additional-trait-bounds2 for different error message.
+	* rust/compile/additional-trait-bounds1.rs: New test.
+	* rust/compile/additional-trait-bounds2.rs: New test.
+	* rust/compile/additional-trait-bounds2nr2.rs: New test.
+
+2025-03-21  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/multiline-string.rs: New test.
+	* rust/execute/torture/multiline-string.rs: New test.
+
+2025-03-21  Nobel  <nobel2073@gmail.com>
+
+	* rust/compile/ptr_int_cast.rs: New test.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2847.rs: New test.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-266.rs: New test.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2394.rs: New test.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1525.rs: New test.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 can't handle this
+	* rust/compile/issue-2423.rs: New test.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3261.rs: New test.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-2907.rs: New test.
+
+2025-03-21  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove passing tests from exclude list.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/exhaustiveness1.rs: remove bad check
+	* rust/compile/issue-2567-1.rs: New test.
+	* rust/compile/issue-2567-2.rs: New test.
+	* rust/compile/issue-2567-3.rs: New test.
+	* rust/compile/issue-3231.rs: New test.
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-2905-1.rs: New test.
+	* rust/compile/issue-2905-2.rs: New test.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1773.rs: new test case
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-3242.rs: old test ranamed to match issue.
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+	* rust/link/generic_function_0.rs: No longer expect failure.
+	* rust/link/trait_import_0.rs: Likewise.
+	* rust/link/trait_import_1.rs
+	(trait Sized): Add.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle these
+	* rust/compile/issue-2953-1.rs: New test.
+	* rust/compile/issue-2953-2.rs: New test.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-2323.rs: New test.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-3009.rs: New test.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr can't handle this
+	* rust/compile/issue-3033.rs: New test.
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-21  Marc Poulhiès  <dkm@kataplop.net>
+
+	* rust/compile/if_let_expr.rs: Adjust.
+	* rust/compile/if_let_expr_simple.rs: New test.
+	* rust/compile/iflet.rs: New test.
+	* rust/execute/torture/iflet.rs: New test.
+	* rust/compile/nr2/exclude: Add iflet.rs and if_let_expr_simple.rs
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/compile.exp: Handle paths using "file join"
+	and "file split".
+	* rust/compile/nr2/exclude: Remove debug-diagnostics-on.rs.
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Add trailing newline along with
+	comment.
+
+2025-03-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-21  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-3032-1.rs: New test.
+	* rust/compile/issue-3032-2.rs: New test.
+
+2025-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/119376
+	* c-c++-common/musttail27.c: New test.
+
+2025-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/119376
+	* g++.dg/opt/musttail1.C: New test.
+
+2025-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/119376
+	* c-c++-common/musttail26.c: New test.
+
+2025-03-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119349
+	* gfortran.dg/class_79.f90: New test.
+
 2025-03-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	Revert:
