@@ -163,6 +163,7 @@ Ada front end           Eric Botcazou           <ebotcazou@libertysurf.fr>
 Ada front end           Marc Poulhiès           <poulhies@adacore.com>
 Ada front end           Pierre-Marie de Rodat   <derodat@adacore.com>
 COBOL front end         Robert Dubner           <rdubner@symas.com>
+COBOL front end         James K. Lowden         <jklowden@cobolworx.com>
 c++                     Jason Merrill           <jason@redhat.com>
 c++                     Nathan Sidwell          <nathan@acm.org>
 D front end             Iain Buclaw             <ibuclaw@gdcproject.org>
