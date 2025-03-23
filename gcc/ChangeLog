@@ -1,3 +1,42 @@
+2025-03-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_option_override): Use
+	"avr-peep2-after-fuse-move" as dump name instead of "peephole2".
+
+2025-03-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt.urls: Add -muse-nonzero-bits.
+
+2025-03-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/119421
+	* config/avr/avr.opt (-muse-nonzero-bits): New option.
+	* config/avr/avr-protos.h (avr_nonzero_bits_lsr_operands_p): New.
+	(make_avr_pass_split_nzb): New.
+	* config/avr/avr.cc (avr_nonzero_bits_lsr_operands_p): New function.
+	(avr_rtx_costs_1): Return costs for the new insns.
+	* config/avr/avr.md (nzb): New insn attribute.
+	(*nzb=1.<code>...): New insns to better support some bit
+	operations for <code> in AND, IOR, XOR.
+	* config/avr/avr-passes.def (avr_pass_split_nzb): Insert pass
+	atfer combine.
+	* config/avr/avr-passes.cc (avr_pass_data_split_nzb). New pass data.
+	(avr_pass_split_nzb): New pass.
+	(make_avr_pass_split_nzb): New function.
+	* common/config/avr/avr-common.cc (avr_option_optimization_table):
+	Enable -muse-nonzero-bits for -O2 and higher.
+	* doc/invoke.texi (AVR Options): Document -muse-nonzero-bits.
+
+2025-03-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_attrs_section_name): New function.
+	(avr_insert_attributes): Add "used" attribute to functions
+	in .initN and .finiN.
+
+2025-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (DL_LIBRARY): New.
+
 2025-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.cc (warn_switch_unreachable_and_auto_init_r): Add missing

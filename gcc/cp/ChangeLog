@@ -1,3 +1,9 @@
+2025-03-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119379
+	* pt.cc (tsubst_decl) <case TYPE_DECL>: Preserve structural-ness
+	of a partially instantiated typedef.
+
 2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
 	    Tobias Burnus  <tburnus@baylibre.com>
 

@@ -1,3 +1,27 @@
+2025-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 032e24446b.
+	* dmd/VERSION: Bump version to v2.111.0-rc.1.
+
+2025-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 9d2f034398.
+
+2025-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 94950cae58.
+	* d-lang.cc (d_handle_option): Add case for CppStdRevisionCpp23.
+	* gdc.texi: Document -fextern-std=c++23.
+	* lang.opt (fextern-std=): Add c++23.
+
+2025-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 8db14cf846.
+
+2025-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* runtime.def (INVARIANT): Update signature of run-time function.
+
 2025-03-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/118545

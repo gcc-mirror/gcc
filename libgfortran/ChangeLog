@@ -1,3 +1,7 @@
+2025-03-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* intrinsics/reduce.c (reduce_scalar_c): Correct type of parameter DIM.
+
 2025-03-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR libfortran/85836
