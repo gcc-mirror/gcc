@@ -1,3 +1,42 @@
+2025-03-22  Martin Uecker  <uecker@tugraz.at>
+
+	Backported from master:
+	2024-11-30  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117806
+	* gcc.dg/pr117806.c: New test.
+
+2025-03-22  Martin Uecker  <uecker@tugraz.at>
+
+	Backported from master:
+	2024-11-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/116284
+	PR c/117391
+	* gcc.dg/pr116284.c: New test.
+	* gcc.dg/pr117391.c: New test.
+
+2025-03-22  Martin Uecker  <uecker@tugraz.at>
+
+	Backported from master:
+	2024-10-31  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117145
+	PR c/117245
+	PR c/100420
+	* gcc.dg/c23-tag-composite-11.c: New test.
+	* gcc.dg/Warray-parameter-4.c: Resolve xfails.
+	* gcc.dg/Wvla-parameter-2.c: Resolve xfails.
+	* gcc.dg/Wvla-parameter-3.c: Resolve xfails.
+	* gcc.dg/pr117145-1.c: New test.
+	* gcc.dg/pr117145-2.c: New test.
+	* gcc.dg/pr117245.c: New test.
+
+2025-03-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119378
+	* g++.dg/template/friend85.C: New test.
+
 2025-03-21  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

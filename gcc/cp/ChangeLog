@@ -1,3 +1,9 @@
+2025-03-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119378
+	* pt.cc (tsubst) <case UNBOUND_CLASS_TEMPLATE>: Set
+	processing_template_decl when substituting the context.
+
 2025-03-20  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/114292
