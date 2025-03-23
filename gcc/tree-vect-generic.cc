@@ -1759,6 +1759,7 @@ expand_vector_conversion (gimple_stmt_iterator *gsi)
 					      converts))
     {
       new_rhs = arg;
+      gcc_assert (!converts.is_empty ());
       for (unsigned int i = 0; i < converts.length () - 1; i++)
 	{
 	  new_lhs = make_ssa_name (converts[i].first);
