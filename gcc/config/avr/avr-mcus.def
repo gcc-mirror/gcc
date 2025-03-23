@@ -326,6 +326,9 @@ AVR_MCU ("avr64du32",        ARCH_AVRXMEGA2, AVR_CVT | AVR_ISA_FLMAP, "__AVR_AVR
 AVR_MCU ("avr64ea28",        ARCH_AVRXMEGA2, AVR_CVT | AVR_ISA_FLMAP, "__AVR_AVR64EA28__",   0x6800, 0x0, 0x10000, 0)
 AVR_MCU ("avr64ea32",        ARCH_AVRXMEGA2, AVR_CVT | AVR_ISA_FLMAP, "__AVR_AVR64EA32__",   0x6800, 0x0, 0x10000, 0)
 AVR_MCU ("avr64ea48",        ARCH_AVRXMEGA2, AVR_CVT | AVR_ISA_FLMAP, "__AVR_AVR64EA48__",   0x6800, 0x0, 0x10000, 0)
+AVR_MCU ("avr64sd28",        ARCH_AVRXMEGA2, AVR_CVT | AVR_ISA_FLMAP, "__AVR_AVR64SD28__",   0x6000, 0x0, 0x10000, 0)
+AVR_MCU ("avr64sd32",        ARCH_AVRXMEGA2, AVR_CVT | AVR_ISA_FLMAP, "__AVR_AVR64SD32__",   0x6000, 0x0, 0x10000, 0)
+AVR_MCU ("avr64sd48",        ARCH_AVRXMEGA2, AVR_CVT | AVR_ISA_FLMAP, "__AVR_AVR64SD48__",   0x6000, 0x0, 0x10000, 0)
 /* Xmega, Flash + RAM < 64K, flash visible in RAM address space */
 AVR_MCU ("avrxmega3",        ARCH_AVRXMEGA3, AVR_ISA_NONE,            NULL,                  0x3f00, 0x0, 0x8000, 0)
 AVR_MCU ("attiny202",        ARCH_AVRXMEGA3, AVR_CVT | AVR_ISA_RCALL, "__AVR_ATtiny202__",   0x3f80, 0x0, 0x800,  0x8000)
@@ -407,6 +410,9 @@ AVR_MCU ("avr16ea48",        ARCH_AVRXMEGA3, AVR_CVT,                 "__AVR_AVR
 AVR_MCU ("avr32ea28",        ARCH_AVRXMEGA3, AVR_CVT,                 "__AVR_AVR32EA28__",   0x7000, 0x0, 0x8000, 0x8000)
 AVR_MCU ("avr32ea32",        ARCH_AVRXMEGA3, AVR_CVT,                 "__AVR_AVR32EA32__",   0x7000, 0x0, 0x8000, 0x8000)
 AVR_MCU ("avr32ea48",        ARCH_AVRXMEGA3, AVR_CVT,                 "__AVR_AVR32EA48__",   0x7000, 0x0, 0x8000, 0x8000)
+AVR_MCU ("avr32sd20",        ARCH_AVRXMEGA3, AVR_CVT,                 "__AVR_AVR32SD20__",   0x7000, 0x0, 0x8000, 0x8000)
+AVR_MCU ("avr32sd28",        ARCH_AVRXMEGA3, AVR_CVT,                 "__AVR_AVR32SD28__",   0x7000, 0x0, 0x8000, 0x8000)
+AVR_MCU ("avr32sd32",        ARCH_AVRXMEGA3, AVR_CVT,                 "__AVR_AVR32SD32__",   0x7000, 0x0, 0x8000, 0x8000)
 /* Xmega, 64K < Flash <= 128K, RAM <= 64K */
 AVR_MCU ("avrxmega4",        ARCH_AVRXMEGA4, AVR_ISA_NONE, NULL,                   0x2000, 0x0, 0x11000, 0)
 AVR_MCU ("atxmega64a3",      ARCH_AVRXMEGA4, AVR_ISA_NONE, "__AVR_ATxmega64A3__",  0x2000, 0x0, 0x11000, 0)
