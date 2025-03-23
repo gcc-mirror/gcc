@@ -704,7 +704,7 @@ finish_aggregate_type (unsigned structsize, unsigned alignsize, tree type)
       TYPE_LANG_SPECIFIC (t) = TYPE_LANG_SPECIFIC (type);
       TYPE_SIZE (t) = TYPE_SIZE (type);
       TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (type);
-      TYPE_PACKED (type) = TYPE_PACKED (type);
+      TYPE_PACKED (t) = TYPE_PACKED (type);
       SET_TYPE_ALIGN (t, TYPE_ALIGN (type));
       TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (type);
     }
