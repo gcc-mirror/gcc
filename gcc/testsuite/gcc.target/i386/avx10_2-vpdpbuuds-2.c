@@ -3,14 +3,19 @@
 /* { dg-require-effective-target avx10_2 } */
 
 #define AVX10_2
+#include "avx10_2-vpdpbuuds-2.h"
+
+#undef AVX512F_LEN
+#undef AVX512F_LEN_HALF
+
 #define AVX512VL
 #define AVX512F_LEN 256
 #define AVX512F_LEN_HALF 128
-#include "avx10_2-512-vpdpbuuds-2.c"
+#include "avx10_2-vpdpbuuds-2.h"
 
 #undef AVX512F_LEN
 #undef AVX512F_LEN_HALF
 
 #define AVX512F_LEN 128
 #define AVX512F_LEN_HALF 128
-#include "avx10_2-512-vpdpbuuds-2.c"
+#include "avx10_2-vpdpbuuds-2.h"

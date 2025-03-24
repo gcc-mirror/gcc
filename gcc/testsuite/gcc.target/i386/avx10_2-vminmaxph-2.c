@@ -3,13 +3,15 @@
 /* { dg-require-effective-target avx10_2 } */
 
 #define AVX10_2
+#include "avx10_2-vminmaxph-2.h"
+
+#undef AVX512F_LEN
+
 #define AVX512VL
 #define AVX512F_LEN 256
-typedef _Float16 __m256h __attribute__ ((__vector_size__ (32), __may_alias__));
-#include "avx10_2-512-vminmaxph-2.c"
+#include "avx10_2-vminmaxph-2.h"
 
 #undef AVX512F_LEN
 
 #define AVX512F_LEN 128
-typedef _Float16 __m128h __attribute__ ((__vector_size__ (16), __may_alias__));
-#include "avx10_2-512-vminmaxph-2.c"
+#include "avx10_2-vminmaxph-2.h"

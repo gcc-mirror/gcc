@@ -3,11 +3,15 @@
 /* { dg-require-effective-target avx10_2 } */
 
 #define AVX10_2
+#include "avx10_2-vminmaxpd-2.h"
+
+#undef AVX512F_LEN
+
 #define AVX512VL
 #define AVX512F_LEN 256
-#include "avx10_2-512-vminmaxpd-2.c"
+#include "avx10_2-vminmaxpd-2.h"
 
 #undef AVX512F_LEN
 
 #define AVX512F_LEN 128
-#include "avx10_2-512-vminmaxpd-2.c"
+#include "avx10_2-vminmaxpd-2.h"

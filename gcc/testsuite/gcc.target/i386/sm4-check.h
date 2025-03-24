@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include "m512-check.h"
 
-#ifdef AVX10_2_512
-static void sm4_avx512f_test (void);
+#ifdef AVX10_2
+static void sm4_avx10_test (void);
 #else
 static void sm4_test (void);
 #endif
@@ -160,7 +160,7 @@ compute_sm4##name##4 (int *dst, int *src1, int *src2, int vl) \
   if (check_union256i_d (res2, dst2))			      \
     abort ();
 
-#define SM4_AVX512F_SIMULATE(name)			      \
+#define SM4_AVX10_SIMULATE(name)			      \
   union512i_d src5, src6, res3;				      \
   int dst3[16] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};    \
 							      \
@@ -181,8 +181,8 @@ static void
 __attribute__ ((noinline))
 do_test (void)
 {
-#ifdef AVX10_512BIT
-  sm4_avx512f_test ();
+#ifdef AVX10_2
+  sm4_avx10_test ();
 #else
   sm4_test ();
 #endif
