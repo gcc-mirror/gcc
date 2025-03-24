@@ -480,7 +480,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  typename container_type::iterator __it;
 	  if constexpr (requires { _M_cont.insert_range(_M_cont.end(), __rg); })
 	    __it = _M_cont.insert_range(_M_cont.end(), __rg);
-	  else if constexpr (ranges::common_range<_Rg>)
+	  else if constexpr (ranges::common_range<_Rg>
+			     && __detail::__cpp17_input_iterator<ranges::iterator_t<_Rg>>)
 	    __it = _M_cont.insert(_M_cont.end(), ranges::begin(__rg), ranges::end(__rg));
 	  else
 	    {

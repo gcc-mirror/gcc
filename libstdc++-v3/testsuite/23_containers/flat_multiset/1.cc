@@ -143,6 +143,32 @@ test06()
   VERIFY( std::ranges::equal(s, (int[]){1, 2, 3, 4, 5}) );
 }
 
+template<typename T>
+struct NoInsertRange : std::vector<T>
+{
+  using std::vector<T>::vector;
+
+  template<typename It, typename R>
+  void insert_range(typename std::vector<T>::const_iterator, R&&) = delete;
+};
+
+void test07()
+{
+#ifdef __SIZEOF_INT128__
+  // PR libstdc++/119415 - flat_foo::insert_range cannot handle common ranges
+  // on c++20 only iterators
+  auto r = std::views::iota(__int128(1), __int128(6));
+
+  std::flat_multiset<int> s;
+  s.insert_range(r);
+  VERIFY( std::ranges::equal(s, (int[]){1, 2, 3, 4, 5}) );
+
+  std::flat_multiset<int, std::less<int>, NoInsertRange<int>> s2;
+  s2.insert_range(r);
+  VERIFY( std::ranges::equal(s2, (int[]){1, 2, 3, 4, 5}) );
+#endif
+}
+
 int
 main()
 {
@@ -153,4 +179,5 @@ main()
   test04();
   test05();
   test06();
+  test07();
 }
