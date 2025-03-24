@@ -14118,6 +14118,25 @@ riscv_common_function_versions (tree fn1, tree fn2)
   return riscv_compare_version_priority (fn1, fn2) != 0;
 }
 
+/* Checks if the function version specifying string STR parses correctly.
+   If it is an invalid string, currently emits a diagnostic at LOC.
+   Always returns true.  */
+
+bool
+riscv_check_target_clone_version (string_slice str, location_t *loc_p)
+{
+  struct riscv_feature_bits mask;
+  int prio;
+
+  /* Currently it is not possible to parse without emitting errors on failure
+     so do not reject on a failed parse, as this would then emit two
+     diagnostics.  Instead let errors be emitted which will halt
+     compilation.  */
+  parse_features_for_version (str, loc_p, mask, prio);
+
+  return true;
+}
+
 /* Implement TARGET_MANGLE_DECL_ASSEMBLER_NAME, to add function multiversioning
    suffixes.  */
 
@@ -15966,6 +15985,9 @@ riscv_prefetch_offset_address_p (rtx x, machine_mode mode)
 
 #undef TARGET_COMPARE_VERSION_PRIORITY
 #define TARGET_COMPARE_VERSION_PRIORITY riscv_compare_version_priority
+
+#undef TARGET_CHECK_TARGET_CLONE_VERSION
+#define TARGET_CHECK_TARGET_CLONE_VERSION riscv_check_target_clone_version
 
 #undef TARGET_OPTION_FUNCTION_VERSIONS
 #define TARGET_OPTION_FUNCTION_VERSIONS riscv_common_function_versions

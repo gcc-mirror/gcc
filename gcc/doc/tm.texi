@@ -12290,6 +12290,15 @@ function version at run-time for a given set of function versions.
 body must be generated.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_CHECK_TARGET_CLONE_VERSION (string_slice @var{str}, location_t *@var{loc})
+This hook is used to check if a version specified in a @code{target_clones}
+annotation is valid. @var{str} is the version to be considered.
+If @var{loc} is not @code{NULL} then emit warnings for invalid versions at
+that location.  Otherwise emit no diagnostics.
+Returns @code{true} if @var{str} is a valid version string, and @code{false}
+otherwise
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_PREDICT_DOLOOP_P (class loop *@var{loop})
 Return true if we can predict it is possible to use a low-overhead loop
 for a particular loop.  The parameter @var{loop} is a pointer to the loop.

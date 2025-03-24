@@ -15425,10 +15425,13 @@ get_attr_nonstring_decl (tree expr, tree *ref)
 }
 
 /* Returns an auto_vec of string_slices containing the version strings from
-   ARGLIST.  DEFAULT_COUNT is incremented for each default version found.  */
+   ARGLIST.  DEFAULT_COUNT is incremented for each default version found.
+   If FILTER is true then any invalid versions strings are not included.  */
 
 auto_vec<string_slice>
-get_clone_attr_versions (const tree arglist, int *default_count)
+get_clone_attr_versions (const tree arglist,
+			 int *default_count,
+			 bool filter)
 {
   gcc_assert (TREE_CODE (arglist) == TREE_LIST);
   auto_vec<string_slice> versions;
@@ -15444,6 +15447,9 @@ get_clone_attr_versions (const tree arglist, int *default_count)
 	  string_slice attr = string_slice::tokenize (&str, separators);
 	  attr = attr.strip ();
 
+	  if (filter && !targetm.check_target_clone_version (attr, NULL))
+	    continue;
+
 	  if (attr == "default" && default_count)
 	    (*default_count)++;
 	  versions.safe_push (attr);
@@ -15454,15 +15460,16 @@ get_clone_attr_versions (const tree arglist, int *default_count)
 
 /* Returns an auto_vec of string_slices containing the version strings from
    the target_clone attribute from DECL.  DEFAULT_COUNT is incremented for each
-   default version found.  */
+   default version found.  If FILTER is true then any invalid versions strings
+   are not included.  */
 auto_vec<string_slice>
-get_clone_versions (const tree decl, int *default_count)
+get_clone_versions (const tree decl, int *default_count, bool filter)
 {
   tree attr = lookup_attribute ("target_clones", DECL_ATTRIBUTES (decl));
   if (!attr)
     return auto_vec<string_slice> ();
   tree arglist = TREE_VALUE (attr);
-  return get_clone_attr_versions (arglist, default_count);
+  return get_clone_attr_versions (arglist, default_count, filter);
 }
 
 /* If DECL has a target_version attribute, returns a string_slice containing the

@@ -585,3 +585,11 @@ hook_optmode_mode_uhwi_none (machine_mode, unsigned HOST_WIDE_INT)
 {
   return opt_machine_mode ();
 }
+
+/* Generic hook that takes a string_slice and a locations and returns false.  */
+
+bool
+hook_stringslice_locationtptr_true (string_slice, location_t *)
+{
+  return true;
+}

@@ -7105,10 +7105,15 @@ extern tree get_attr_nonstring_decl (tree, tree * = NULL);
    Returns an invalid string_slice if no attribute is present.  */
 extern string_slice get_target_version (const tree);
 /* Returns a vector of the version strings from a target_clones attribute on
-   a decl.  Can also record the number of default versions found.  */
-extern auto_vec<string_slice> get_clone_versions (const tree, int * = NULL);
+   a decl.  Can also record the number of default versions found.
+   Use bool to control whether or not the results should
+   be filtered with TARGET_CHECK_TARGET_CLONE_VERSION.  */
+extern auto_vec<string_slice> get_clone_versions
+  (const tree,int * = NULL, bool = true);
 /* Returns a vector of the version strings from a target_clones attribute
-   directly.  */
-extern auto_vec<string_slice> get_clone_attr_versions (const tree, int *);
+   directly.  Additionally takes a bool to control whether or not the results
+   should be filtered with TARGET_CHECK_TARGET_CLONE_VERSION.  */
+extern auto_vec<string_slice> get_clone_attr_versions
+  (const tree, int *, bool = true);
 
 #endif  /* GCC_TREE_H  */

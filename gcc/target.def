@@ -2606,6 +2606,19 @@ version at run-time. @var{decl} is one version from a set of semantically\n\
 identical versions.",
  tree, (void *decl), NULL)
 
+/* Target hook is used to ignore certain versions specified in a target_clones
+   annoration.  STR is the version to be considered.  */
+DEFHOOK
+(check_target_clone_version ,
+ "This hook is used to check if a version specified in a @code{target_clones}\n\
+annotation is valid. @var{str} is the version to be considered.\n\
+If @var{loc} is not @code{NULL} then emit warnings for invalid versions at\n\
+that location.  Otherwise emit no diagnostics.\n\
+Returns @code{true} if @var{str} is a valid version string, and @code{false}\n\
+otherwise",
+ bool, (string_slice str, location_t *loc),
+ hook_stringslice_locationtptr_true)
+
 /* Returns a code for a target-specific builtin that implements
    reciprocal of a target-specific function, or NULL_TREE if not available.  */
 DEFHOOK

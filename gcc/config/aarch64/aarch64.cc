@@ -31945,6 +31945,56 @@ aarch64_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx hint)
     }
 }
 
+/* Implement TARGET_CHECK_TARGET_CLONE_VERSION.  */
+
+bool
+aarch64_check_target_clone_version (string_slice str, location_t *loc)
+{
+  str = str.strip ();
+
+  if (str == "default")
+    return true;
+
+  enum aarch_parse_opt_result parse_res;
+  auto isa_flags = aarch64_asm_isa_flags;
+  std::string invalid_extension;
+
+  parse_res
+    = aarch64_parse_fmv_features (str, &isa_flags, NULL, &invalid_extension);
+
+  if (loc == NULL)
+    return parse_res == AARCH_PARSE_OK;
+
+  switch (parse_res)
+    {
+    case AARCH_PARSE_OK:
+      return true;
+    case AARCH_PARSE_MISSING_ARG:
+      warning_at (*loc, OPT_Wattributes,
+		  "empty string not valid for a %<target_clones%> version");
+      return false;
+    case AARCH_PARSE_INVALID_FEATURE:
+      warning_at (*loc, OPT_Wattributes,
+		  "invalid feature modifier %qs in version %qB for "
+		  "%<target_clones%> attribute",
+		  invalid_extension.c_str (), &str);
+      return false;
+    case AARCH_PARSE_DUPLICATE_FEATURE:
+      warning_at (*loc, OPT_Wattributes,
+		  "duplicate feature modifier %qs in version %qB for "
+		  "%<target_clones%> attribute",
+		  invalid_extension.c_str (), &str);
+      return false;
+    case AARCH_PARSE_INVALID_ARG:
+      warning_at (*loc, OPT_Wattributes,
+		  "invalid feature %qs in version %qB for "
+		  "%<target_clones%> attribute",
+		  invalid_extension.c_str (), &str);
+      return false;
+    }
+  gcc_unreachable ();
+}
+
 /* Target-specific selftests.  */
 
 #if CHECKING_P
@@ -32801,6 +32851,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_OPTION_FUNCTION_VERSIONS
 #define TARGET_OPTION_FUNCTION_VERSIONS aarch64_common_function_versions
+
+#undef TARGET_CHECK_TARGET_CLONE_VERSION
+#define TARGET_CHECK_TARGET_CLONE_VERSION aarch64_check_target_clone_version
 
 #undef TARGET_COMPARE_VERSION_PRIORITY
 #define TARGET_COMPARE_VERSION_PRIORITY aarch64_compare_version_priority
