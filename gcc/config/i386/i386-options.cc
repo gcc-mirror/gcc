@@ -1137,6 +1137,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("usermsr", OPT_musermsr),
     IX86_ATTR_ISA ("avx10.1-256", OPT_mavx10_1_256),
     IX86_ATTR_ISA ("avx10.1-512", OPT_mavx10_1_512),
+    IX86_ATTR_ISA ("avx10.1", OPT_mavx10_1_512),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),

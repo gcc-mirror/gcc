@@ -7395,6 +7395,12 @@ Disable the generation of the AVX10.1 instructions.
 Enable the generation of the AVX10.1 instructions with 512 bit support.
 Disable the generation of the AVX10.1 instructions.
 
+@cindex @code{target("avx10.1")} function attribute, x86
+@item avx10.1
+@itemx no-avx10.1
+Enable the generation of the AVX10.1 instructions with 512 bit support.
+Disable the generation of the AVX10.1 instructions.
+
 @cindex @code{target("cld")} function attribute, x86
 @item cld
 @itemx no-cld
