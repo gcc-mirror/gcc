@@ -876,12 +876,12 @@ namespace __debug
 	constexpr void
 	assign_range(_Rg&& __rg)
 	{
-	  auto __old_begin = _Base::begin();
+	  auto __old_capacity = _Base::capacity();
 	  auto __old_size = _Base::size();
 	  _Base::assign_range(__rg);
 	  if (!std::__is_constant_evaluated())
 	    {
-	      if (_Base::begin() != __old_begin)
+	      if (_Base::capacity() != __old_capacity)
 		this->_M_invalidate_all();
 	      else if (_Base::size() < __old_size)
 		this->_M_invalidate_after_nth(_Base::size());
@@ -893,12 +893,11 @@ namespace __debug
 	constexpr iterator
 	insert_range(const_iterator __pos, _Rg&& __rg)
 	{
-	  auto __old_begin = _Base::begin();
-	  auto __old_size = _Base::size();
+	  auto __old_capacity = _Base::capacity();
 	  auto __res = _Base::insert_range(__pos.base(), __rg);
 	  if (!std::__is_constant_evaluated())
 	    {
-	      if (_Base::begin() != __old_begin)
+	      if (_Base::capacity() != __old_capacity)
 		this->_M_invalidate_all();
 	      this->_M_update_guaranteed_capacity();
 	    }
@@ -909,12 +908,11 @@ namespace __debug
 	constexpr void
 	append_range(_Rg&& __rg)
 	{
-	  auto __old_begin = _Base::begin();
-	  auto __old_size = _Base::size();
+	  auto __old_capacity = _Base::capacity();
 	  _Base::append_range(__rg);
 	  if (!std::__is_constant_evaluated())
 	    {
-	      if (_Base::begin() != __old_begin)
+	      if (_Base::capacity() != __old_capacity)
 		this->_M_invalidate_all();
 	      this->_M_update_guaranteed_capacity();
 	    }
