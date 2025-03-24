@@ -205,17 +205,11 @@
 (define_subst_attr "bcst_round_nimm_predicate" "round" "bcst_vector_operand" "register_operand")
 (define_subst_attr "round_nimm_scalar_predicate" "round" "nonimmediate_operand" "register_operand")
 (define_subst_attr "round_prefix" "round" "vex" "evex")
-(define_subst_attr "round_mode_condition" "round" "1" "((<MODE>mode == V16SFmode
-							       || <MODE>mode == V8DFmode
-							       || <MODE>mode == V8DImode
-							       || <MODE>mode == V16SImode
-							       || <MODE>mode == V32HFmode)
-							       || (TARGET_AVX10_2_256
-								   && (<MODE>mode == V8SFmode
-								       || <MODE>mode == V4DFmode
-								       || <MODE>mode == V4DImode
-								       || <MODE>mode == V8SImode
-								       || <MODE>mode == V16HFmode)))")
+(define_subst_attr "round_mode512bit_condition" "round" "1" "(<MODE>mode == V16SFmode
+							      || <MODE>mode == V8DFmode
+							      || <MODE>mode == V8DImode
+							      || <MODE>mode == V16SImode
+							      || <MODE>mode == V32HFmode)")
 
 (define_subst_attr "round_modev4sf_condition" "round" "1" "(<MODE>mode == V4SFmode)")
 (define_subst_attr "round_codefor" "round" "*" "")
@@ -256,17 +250,11 @@
 (define_subst_attr "round_saeonly_constraint2" "round_saeonly" "m" "v")
 (define_subst_attr "round_saeonly_nimm_predicate" "round_saeonly" "vector_operand" "register_operand")
 (define_subst_attr "round_saeonly_nimm_scalar_predicate" "round_saeonly" "nonimmediate_operand" "register_operand")
-(define_subst_attr "round_saeonly_mode_condition" "round_saeonly" "1" "((<MODE>mode == V16SFmode
-									       || <MODE>mode == V8DFmode
-									       || <MODE>mode == V8DImode
-									       || <MODE>mode == V16SImode
-									       || <MODE>mode == V32HFmode)
-									       || (TARGET_AVX10_2_256
-										   && (<MODE>mode == V8SFmode
-										       || <MODE>mode == V4DFmode
-										       || <MODE>mode == V4DImode
-										       || <MODE>mode == V8SImode
-										       || <MODE>mode == V16HFmode)))")
+(define_subst_attr "round_saeonly_mode512bit_condition" "round_saeonly" "1" "(<MODE>mode == V16SFmode
+									      || <MODE>mode == V8DFmode
+									      || <MODE>mode == V8DImode
+									      || <MODE>mode == V16SImode
+									      || <MODE>mode == V32HFmode)")
 
 
 (define_subst "round_saeonly"
