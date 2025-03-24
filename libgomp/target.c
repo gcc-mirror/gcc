@@ -5324,6 +5324,7 @@ gomp_interop_internal (void *data)
 	    }
 	  *obj =
 	    (struct interop_obj_t *) calloc (1, sizeof (struct interop_obj_t));
+	  (*obj)->device_num = devicep->target_id;
 	  devicep->interop_func (*obj, devicep->target_id,
 				 gomp_interop_flag_init, targetsync,
 				 prefer_type);
