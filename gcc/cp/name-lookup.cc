@@ -8675,6 +8675,9 @@ store_class_bindings (vec<cp_class_binding, va_gc> *names,
 
 static GTY((deletable)) struct saved_scope *free_saved_scope;
 
+/* Temporarily make the current scope the global namespace, saving away
+   the current scope for pop_from_top_level.  */
+
 void
 push_to_top_level (void)
 {
@@ -8716,18 +8719,19 @@ push_to_top_level (void)
     store_class_bindings (previous_class_level->class_shadowed,
 			  &s->old_bindings);
 
-  /* Have to include the global scope, because class-scope decls
-     aren't listed anywhere useful.  */
+  /* Save and clear any IDENTIFIER_BINDING from local scopes.  */
   for (; b; b = b->level_chain)
     {
       tree t;
 
-      /* Template IDs are inserted into the global level. If they were
-	 inserted into namespace level, finish_file wouldn't find them
-	 when doing pending instantiations. Therefore, don't stop at
-	 namespace level, but continue until :: .  */
-      if (global_scope_p (b))
-	break;
+      /* We don't need to consider namespace scopes, they don't affect
+	 IDENTIFIER_BINDING.  */
+      if (b->kind == sk_namespace)
+	{
+	  /* Jump straight to '::'.  */
+	  b = NAMESPACE_LEVEL (global_namespace);
+	  break;
+	}
 
       store_bindings (b->names, &s->old_bindings);
       /* We also need to check class_shadowed to save class-level type
