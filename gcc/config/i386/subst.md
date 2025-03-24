@@ -197,7 +197,6 @@
 (define_subst_attr "round_sd_mask_op4" "round" "" "<round_sd_mask_operand4>")
 (define_subst_attr "round_sdc_mask_op4" "round" "" "<round_sdc_mask_operand4>")
 (define_subst_attr "round_constraint" "round" "vm" "v")
-(define_subst_attr "round_suff" "round" "{y}" "")
 (define_subst_attr "round_qq2phsuff" "round" "<qq2phsuff>" "")
 (define_subst_attr "bcst_round_constraint" "round" "vmBr" "v")
 (define_subst_attr "round_constraint2" "round" "m" "v")
@@ -210,7 +209,6 @@
 							       || <MODE>mode == V8DFmode
 							       || <MODE>mode == V8DImode
 							       || <MODE>mode == V16SImode
-							       || <MODE>mode == V32HImode
 							       || <MODE>mode == V32HFmode)
 							       || (TARGET_AVX10_2_256
 								   && (<MODE>mode == V8SFmode
@@ -218,7 +216,6 @@
 								       || <MODE>mode == V4DImode
 								       || <MODE>mode == V8SImode
 								       || <MODE>mode == V16HFmode)))")
-(define_subst_attr "round_applied" "round" "false" "true")
 
 (define_subst_attr "round_modev4sf_condition" "round" "1" "(<MODE>mode == V4SFmode)")
 (define_subst_attr "round_codefor" "round" "*" "")
@@ -263,7 +260,6 @@
 									       || <MODE>mode == V8DFmode
 									       || <MODE>mode == V8DImode
 									       || <MODE>mode == V16SImode
-									       || <MODE>mode == V32HImode
 									       || <MODE>mode == V32HFmode)
 									       || (TARGET_AVX10_2_256
 										   && (<MODE>mode == V8SFmode

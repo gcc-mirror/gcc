@@ -7643,7 +7643,7 @@
   [(set (match_operand:<ssePHmode> 0 "register_operand" "=v")
 	(any_float:<ssePHmode>
 	  (match_operand:VI2H_AVX512VL 1 "<round_nimm_predicate>" "<round_constraint>")))]
-  "TARGET_AVX512FP16 && <round_mode_condition>"
+  "TARGET_AVX512FP16"
   "vcvt<floatsuffix><sseintconvert>2ph<round_qq2phsuff>\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
@@ -8148,19 +8148,6 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_expand "avx512fp16_vcvtpd2ph_v4df_mask_round"
-  [(match_operand:V8HF 0 "register_operand")
-   (match_operand:V4DF 1 "register_operand")
-   (match_operand:V8HF 2 "nonimm_or_0_operand")
-   (match_operand:QI 3 "register_operand")
-   (unspec [(match_operand:SI 4 "const_4_or_8_to_11_operand")] UNSPEC_EMBEDDED_ROUNDING)]
-  "TARGET_AVX10_2_256"
-{
-  emit_insn (gen_avx512fp16_vcvtpd2ph_v4df_mask_round_1 (
-    operands[0], operands[1], operands[2], operands[3], CONST0_RTX (V4HFmode), operands[4]));
-  DONE;
-})
-
 (define_expand "avx512fp16_vcvt<castmode>2ph_<mode>_mask"
   [(set (match_operand:V8HF 0 "register_operand" "=v")
 	(vec_concat:V8HF
@@ -8176,20 +8163,20 @@
   "TARGET_AVX512FP16 && TARGET_AVX512VL"
   "operands[4] = CONST0_RTX (V4HFmode);")
 
-(define_insn "avx512fp16_vcvt<castmode>2ph_<mode>_mask<round_name>_1"
+(define_insn "*avx512fp16_vcvt<castmode>2ph_<mode>_mask"
   [(set (match_operand:V8HF 0 "register_operand" "=v")
 	(vec_concat:V8HF
 	  (vec_merge:V4HF
 	    (float_truncate:V4HF
-	      (match_operand:VF4_128_8_256 1 "<round_nimm_predicate>" "<round_constraint>"))
+	      (match_operand:VF4_128_8_256 1 "vector_operand" "vm"))
 	    (vec_select:V4HF
 	      (match_operand:V8HF 2 "nonimm_or_0_operand" "0C")
 	      (parallel [(const_int 0) (const_int 1)
 			 (const_int 2) (const_int 3)]))
 	    (match_operand:QI 3 "register_operand" "Yk"))
 	  (match_operand:V4HF 4 "const0_operand")))]
-  "TARGET_AVX512FP16 && TARGET_AVX512VL && <round_mode_condition>"
-  "vcvt<castmode>2ph<ph2pssuffix><round_qq2phsuff>\t{<round_op5>%1, %0%{%3%}%N2|%0%{%3%}%N2, %1<round_op5>}"
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+  "vcvt<castmode>2ph<ph2pssuffix><qq2phsuff>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -10085,13 +10072,12 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "V8SF")])
 
-(define_insn "avx_cvtpd2ps256<mask_name><round_name>"
+(define_insn "avx_cvtpd2ps256<mask_name>"
   [(set (match_operand:V4SF 0 "register_operand" "=v")
 	(float_truncate:V4SF
-	  (match_operand:V4DF 1 "<round_nimm_predicate>" "<round_constraint>")))]
-  "TARGET_AVX && <mask_avx512vl_condition>
-   && (!<round_applied> || TARGET_AVX10_2_256)"
-  "vcvtpd2ps<round_suff>\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
+	  (match_operand:V4DF 1 "nonimmediate_operand" "vm")))]
+  "TARGET_AVX && <mask_avx512vl_condition>"
+  "vcvtpd2ps{y}\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "maybe_evex")
    (set_attr "btver2_decode" "vector")
