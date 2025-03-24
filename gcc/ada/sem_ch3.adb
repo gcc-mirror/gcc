@@ -18838,7 +18838,8 @@ package body Sem_Ch3 is
                    or else Nkind (P) /= N_Object_Declaration
                    or else Is_Library_Level_Entity (Defining_Identifier (P)));
 
-      --  Otherwise, the object definition is just a subtype_mark
+      --  Otherwise, either the object definition is just a subtype_mark or we
+      --  are analyzing a component declaration.
 
       else
          T :=
