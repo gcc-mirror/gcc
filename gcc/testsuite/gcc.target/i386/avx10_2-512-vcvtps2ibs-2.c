@@ -69,7 +69,7 @@ TEST (void)
   if (UNION_CHECK (AVX512F_LEN, i_d) (res3, res_ref))
     abort ();
 
-#if AVX512F_LEN != 128
+#if AVX512F_LEN == 512
   for (i = 0; i < SIZE; i++)
     res2.a[i] = DEFAULT_VALUE;
 
