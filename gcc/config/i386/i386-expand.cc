@@ -12709,7 +12709,6 @@ ix86_expand_round_builtin (const struct builtin_description *d,
       nargs = 2;
       break;
     case V32HF_FTYPE_V32HF_V32HF_INT:
-    case V16HF_FTYPE_V16HF_V16HF_INT:
     case V8HF_FTYPE_V8HF_V8HF_INT:
     case V8HF_FTYPE_V8HF_INT_INT:
     case V8HF_FTYPE_V8HF_UINT_INT:
@@ -12747,7 +12746,6 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V16SI_FTYPE_V16SF_V16SI_HI_INT:
     case V16SI_FTYPE_V16SF_V16SI_UHI_INT:
     case V16SI_FTYPE_V16HF_V16SI_UHI_INT:
-    case V16HF_FTYPE_V16HF_V16HF_V16HF_INT:
     case V16HF_FTYPE_V16SI_V16HF_UHI_INT:
     case V16HI_FTYPE_V16HF_V16HI_UHI_INT:
     case V8DF_FTYPE_V8SF_V8DF_QI_INT:
@@ -12795,7 +12793,6 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V8SF_FTYPE_V8SF_V8SF_V8SF_UQI_INT:
     case V16SF_FTYPE_V16SF_V16SF_V16SF_HI_INT:
     case V16HF_FTYPE_V16HF_V16HF_V16HF_UHI_INT:
-    case V16HF_FTYPE_V16HF_V16HF_V16HF_UQI_INT:
     case V32HF_FTYPE_V32HF_V32HF_V32HF_UHI_INT:
     case V32HF_FTYPE_V32HF_V32HF_V32HF_USI_INT:
     case V2DF_FTYPE_V8HF_V2DF_V2DF_UQI_INT:
@@ -12845,9 +12842,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
       nargs_constant = 4;
       break;
     case V8DF_FTYPE_V8DF_V8DF_V8DI_INT_QI_INT:
-    case V4DF_FTYPE_V4DF_V4DF_V4DI_INT_UQI_INT:
     case V16SF_FTYPE_V16SF_V16SF_V16SI_INT_HI_INT:
-    case V8SF_FTYPE_V8SF_V8SF_V8SI_INT_UQI_INT:
     case V2DF_FTYPE_V2DF_V2DF_V2DI_INT_QI_INT:
     case V4SF_FTYPE_V4SF_V4SF_V4SI_INT_QI_INT:
       nargs = 6;

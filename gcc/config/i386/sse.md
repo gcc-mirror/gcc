@@ -14156,7 +14156,7 @@
            (match_operand:<sseintvecmode> 3 "nonimmediate_operand" "<round_saeonly_constraint>")
            (match_operand:SI 4 "const_0_to_255_operand")]
            UNSPEC_FIXUPIMM))]
-  "TARGET_AVX512F && <round_saeonly_mode_condition>"
+  "TARGET_AVX512F"
   "vfixupimm<ssemodesuffix>\t{%4, <round_saeonly_sd_mask_op5>%3, %2, %0<sd_mask_op5>|%0<sd_mask_op5>, %2, %3<round_saeonly_sd_mask_op5>, %4}";
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
@@ -14172,7 +14172,7 @@
              UNSPEC_FIXUPIMM)
 	  (match_dup 1)
 	  (match_operand:<avx512fmaskmode> 5 "register_operand" "Yk")))]
-  "TARGET_AVX512F && <round_saeonly_mode_condition>"
+  "TARGET_AVX512F"
   "vfixupimm<ssemodesuffix>\t{%4, <round_saeonly_op6>%3, %2, %0%{%5%}|%0%{%5%}, %2, %3<round_saeonly_op6>, %4}";
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<MODE>")])
