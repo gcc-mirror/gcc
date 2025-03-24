@@ -49,6 +49,8 @@
 #include <dirent.h>
 #include <sys/resource.h>
 
+#include "config.h"
+
 #include "ec.h"
 #include "common-defs.h"
 #include "io.h"

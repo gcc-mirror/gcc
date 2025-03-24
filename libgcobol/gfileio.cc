@@ -40,6 +40,8 @@
 #include <unistd.h>
 #include <algorithm>
 
+#include "config.h"
+
 #include "ec.h"
 #include "io.h"
 #include "common-defs.h"

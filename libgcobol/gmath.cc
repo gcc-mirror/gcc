@@ -39,6 +39,8 @@
 #include <unistd.h>
 #include <algorithm>
 
+#include "config.h"
+
 #include "ec.h"
 #include "common-defs.h"
 #include "io.h"
