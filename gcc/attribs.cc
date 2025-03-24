@@ -1086,8 +1086,6 @@ make_attribute (string_slice name, string_slice arg_name, tree chain)
   return attr;
 }
 
-/* Common functions used for target clone support.  */
-
 /* Comparator function to be used in qsort routine to sort attribute
    specification strings to "target".  */
 
@@ -1175,71 +1173,6 @@ sorted_attr_string (tree arglist)
   XDELETEVEC (args);
   XDELETEVEC (attr_str);
   return ret_str;
-}
-
-
-/* This function returns true if FN1 and FN2 are versions of the same function,
-   that is, the target strings of the function decls are different.  This assumes
-   that FN1 and FN2 have the same signature.  */
-
-bool
-common_function_versions (tree fn1, tree fn2)
-{
-  tree attr1, attr2;
-  char *target1, *target2;
-  bool result;
-
-  if (TREE_CODE (fn1) != FUNCTION_DECL
-      || TREE_CODE (fn2) != FUNCTION_DECL)
-    return false;
-
-  attr1 = lookup_attribute ("target", DECL_ATTRIBUTES (fn1));
-  attr2 = lookup_attribute ("target", DECL_ATTRIBUTES (fn2));
-
-  /* At least one function decl should have the target attribute specified.  */
-  if (attr1 == NULL_TREE && attr2 == NULL_TREE)
-    return false;
-
-  /* Diagnose missing target attribute if one of the decls is already
-     multi-versioned.  */
-  if (attr1 == NULL_TREE || attr2 == NULL_TREE)
-    {
-      if (DECL_FUNCTION_VERSIONED (fn1) || DECL_FUNCTION_VERSIONED (fn2))
-	{
-	  if (attr2 != NULL_TREE)
-	    {
-	      std::swap (fn1, fn2);
-	      attr1 = attr2;
-	    }
-	  auto_diagnostic_group d;
-	  error_at (DECL_SOURCE_LOCATION (fn2),
-		    "missing %<target%> attribute for multi-versioned %qD",
-		    fn2);
-	  inform (DECL_SOURCE_LOCATION (fn1),
-		  "previous declaration of %qD", fn1);
-	  /* Prevent diagnosing of the same error multiple times.  */
-	  DECL_ATTRIBUTES (fn2)
-	    = tree_cons (get_identifier ("target"),
-			 copy_node (TREE_VALUE (attr1)),
-			 DECL_ATTRIBUTES (fn2));
-	}
-      return false;
-    }
-
-  target1 = sorted_attr_string (TREE_VALUE (attr1));
-  target2 = sorted_attr_string (TREE_VALUE (attr2));
-
-  /* The sorted target strings must be different for fn1 and fn2
-     to be versions.  */
-  if (strcmp (target1, target2) == 0)
-    result = false;
-  else
-    result = true;
-
-  XDELETEVEC (target1);
-  XDELETEVEC (target2);
-
-  return result;
 }
 
 /* Make a dispatcher declaration for the multi-versioned function DECL.

@@ -9127,8 +9127,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	 decls_match will return false as they are different.  */
       for (match = TREE_CHAIN (matches); match; match = TREE_CHAIN (match))
 	if (!decls_match (fn, TREE_PURPOSE (match))
-	    && !targetm.target_option.function_versions
-	       (fn, TREE_PURPOSE (match)))
+	    && !disjoint_version_decls (fn, TREE_PURPOSE (match)))
           break;
 
       if (match)

@@ -6925,19 +6925,14 @@ changed via the optimize attribute or pragma, see\n\
  void, (void),
  hook_void_void)
 
-/* This function returns true if DECL1 and DECL2 are versions of the same
-   function.  DECL1 and DECL2 are function versions if and only if they
-   have the same function signature and different target specific attributes,
-   that is, they are compiled for different target machines.  */
+/* This function returns true if FN1 and FN2 define the same version of a
+   function.  */
 DEFHOOK
-(function_versions,
- "This target hook returns @code{true} if @var{DECL1} and @var{DECL2} are\n\
-versions of the same function.  @var{DECL1} and @var{DECL2} are function\n\
-versions if and only if they have the same function signature and\n\
-different target specific attributes, that is, they are compiled for\n\
-different target machines.",
- bool, (tree decl1, tree decl2),
- hook_bool_tree_tree_false)
+(same_function_versions,
+ "This target hook returns @code{true} if the target/target-version strings\n\
+@var{fn1} and @var{fn2} imply the same function version.",
+ bool, (string_slice fn1, string_slice fn2),
+ hook_stringslice_stringslice_unreachable)
 
 /* Function to determine if one function can inline another function.  */
 #undef HOOK_PREFIX

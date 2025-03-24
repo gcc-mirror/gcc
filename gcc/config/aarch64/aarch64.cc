@@ -21160,18 +21160,23 @@ aarch64_get_function_versions_dispatcher (void *decl)
   return dispatch_decl;
 }
 
-/* This function returns true if FN1 and FN2 are versions of the same function,
-   that is, the target_version attributes of the function decls are different.
-   This assumes that FN1 and FN2 have the same signature.  */
+/* This function returns true if STR1 and STR2 are version strings for the same
+   function.  */
 
 bool
-aarch64_common_function_versions (tree fn1, tree fn2)
+aarch64_same_function_versions (string_slice str1, string_slice str2)
 {
-  if (TREE_CODE (fn1) != FUNCTION_DECL
-      || TREE_CODE (fn2) != FUNCTION_DECL)
-    return false;
+  enum aarch_parse_opt_result parse_res;
+  aarch64_fmv_feature_mask feature_mask1;
+  aarch64_fmv_feature_mask feature_mask2;
+  parse_res = aarch64_parse_fmv_features (str1, NULL,
+					  &feature_mask1, NULL);
+  gcc_assert (parse_res == AARCH_PARSE_OK);
+  parse_res = aarch64_parse_fmv_features (str2, NULL,
+					  &feature_mask2, NULL);
+  gcc_assert (parse_res == AARCH_PARSE_OK);
 
-  return (aarch64_compare_version_priority (fn1, fn2) != 0);
+  return feature_mask1 == feature_mask2;
 }
 
 /* Implement TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P.  Use an opt-out
@@ -32836,8 +32841,8 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_EMIT_EPILOGUE_FOR_SIBCALL
 #define TARGET_EMIT_EPILOGUE_FOR_SIBCALL aarch64_expand_epilogue
 
-#undef TARGET_OPTION_FUNCTION_VERSIONS
-#define TARGET_OPTION_FUNCTION_VERSIONS aarch64_common_function_versions
+#undef TARGET_OPTION_SAME_FUNCTION_VERSIONS
+#define TARGET_OPTION_SAME_FUNCTION_VERSIONS aarch64_same_function_versions
 
 #undef TARGET_CHECK_TARGET_CLONE_VERSION
 #define TARGET_CHECK_TARGET_CLONE_VERSION aarch64_check_target_clone_version

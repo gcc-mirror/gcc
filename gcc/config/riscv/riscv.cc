@@ -14080,6 +14080,23 @@ compare_fmv_features (const struct riscv_feature_bits &mask1,
   return 0;
 }
 
+/* This function returns true if V1 and V2 specify the same function
+   version.  */
+
+bool
+riscv_same_function_versions (string_slice v1, string_slice v2)
+{
+  struct riscv_feature_bits mask1, mask2;
+  int prio1, prio2;
+
+  /* Invalid features should have already been rejected by this point so
+     providing no location should be okay.  */
+  parse_features_for_version (v1, UNKNOWN_LOCATION, mask1, prio1);
+  parse_features_for_version (v2, UNKNOWN_LOCATION, mask2, prio2);
+
+  return compare_fmv_features (mask1, mask2, prio1, prio2) == 0;
+}
+
 /* Compare priorities of two version decls.  Return:
      1: mask1 is higher priority
     -1: mask2 is higher priority
@@ -14102,20 +14119,6 @@ riscv_compare_version_priority (tree decl1, tree decl2)
   parse_features_for_version (v2, nullptr, mask2, prio2);
 
   return compare_fmv_features (mask1, mask2, prio1, prio2);
-}
-
-/* This function returns true if FN1 and FN2 are versions of the same function,
-   that is, the target_version attributes of the function decls are different.
-   This assumes that FN1 and FN2 have the same signature.  */
-
-bool
-riscv_common_function_versions (tree fn1, tree fn2)
-{
-  if (TREE_CODE (fn1) != FUNCTION_DECL
-      || TREE_CODE (fn2) != FUNCTION_DECL)
-    return false;
-
-  return riscv_compare_version_priority (fn1, fn2) != 0;
 }
 
 /* Checks if the function version specifying string STR parses correctly.
@@ -15976,8 +15979,8 @@ riscv_prefetch_offset_address_p (rtx x, machine_mode mode)
 #undef TARGET_CHECK_TARGET_CLONE_VERSION
 #define TARGET_CHECK_TARGET_CLONE_VERSION riscv_check_target_clone_version
 
-#undef TARGET_OPTION_FUNCTION_VERSIONS
-#define TARGET_OPTION_FUNCTION_VERSIONS riscv_common_function_versions
+#undef TARGET_OPTION_SAME_FUNCTION_VERSIONS
+#define TARGET_OPTION_SAME_FUNCTION_VERSIONS riscv_same_function_versions
 
 #undef TARGET_MANGLE_DECL_ASSEMBLER_NAME
 #define TARGET_MANGLE_DECL_ASSEMBLER_NAME riscv_mangle_decl_assembler_name

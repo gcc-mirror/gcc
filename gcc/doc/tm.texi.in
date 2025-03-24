@@ -7140,7 +7140,7 @@ with the target specific attributes.  The default value is @code{','}.
 
 @hook TARGET_OPTION_OVERRIDE
 
-@hook TARGET_OPTION_FUNCTION_VERSIONS
+@hook TARGET_OPTION_SAME_FUNCTION_VERSIONS
 
 @hook TARGET_CAN_INLINE_P
 

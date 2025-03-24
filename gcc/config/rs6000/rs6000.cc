@@ -1730,9 +1730,6 @@ static const scoped_attribute_specs *const rs6000_attribute_table[] =
 #define TARGET_GET_FUNCTION_VERSIONS_DISPATCHER				\
   rs6000_get_function_versions_dispatcher
 
-#undef TARGET_OPTION_FUNCTION_VERSIONS
-#define TARGET_OPTION_FUNCTION_VERSIONS common_function_versions
-
 #undef TARGET_HARD_REGNO_NREGS
 #define TARGET_HARD_REGNO_NREGS rs6000_hard_regno_nregs_hook
 #undef TARGET_HARD_REGNO_MODE_OK

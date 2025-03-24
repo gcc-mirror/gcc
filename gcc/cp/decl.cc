@@ -1212,7 +1212,7 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
       if (types_match
 	  && !DECL_EXTERN_C_P (newdecl)
 	  && !DECL_EXTERN_C_P (olddecl)
-	  && targetm.target_option.function_versions (newdecl, olddecl))
+	  && disjoint_version_decls (newdecl, olddecl))
 	{
 	  if (record_versions)
 	    maybe_version_functions (newdecl, olddecl);
@@ -1295,7 +1295,7 @@ maybe_mark_function_versioned (tree decl)
 bool
 maybe_version_functions (tree newdecl, tree olddecl)
 {
-  if (!targetm.target_option.function_versions (newdecl, olddecl))
+  if (!disjoint_version_decls (newdecl, olddecl))
     return false;
 
   maybe_mark_function_versioned (olddecl);
@@ -2107,6 +2107,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       /* Leave it to update_binding to merge or report error.  */
       return NULL_TREE;
     }
+  /* Check if the two decls are non-mergeable versioned decls.  */
+  else if (!TARGET_HAS_FMV_TARGET_ATTRIBUTE
+	   && diagnose_versioned_decls (olddecl, newdecl))
+    return error_mark_node;
   else
     {
       const char *errmsg = redeclaration_error_message (newdecl, olddecl);

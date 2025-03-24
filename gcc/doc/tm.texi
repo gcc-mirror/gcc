@@ -10978,12 +10978,9 @@ changed via the optimize attribute or pragma, see
 @code{TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE}
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_OPTION_FUNCTION_VERSIONS (tree @var{decl1}, tree @var{decl2})
-This target hook returns @code{true} if @var{DECL1} and @var{DECL2} are
-versions of the same function.  @var{DECL1} and @var{DECL2} are function
-versions if and only if they have the same function signature and
-different target specific attributes, that is, they are compiled for
-different target machines.
+@deftypefn {Target Hook} bool TARGET_OPTION_SAME_FUNCTION_VERSIONS (string_slice @var{fn1}, string_slice @var{fn2})
+This target hook returns @code{true} if the target/target-version strings
+@var{fn1} and @var{fn2} imply the same function version.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_CAN_INLINE_P (tree @var{caller}, tree @var{callee})

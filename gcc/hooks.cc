@@ -593,3 +593,9 @@ hook_stringslice_locationtptr_true (string_slice, location_t *)
 {
   return true;
 }
+
+bool
+hook_stringslice_stringslice_unreachable (string_slice, string_slice)
+{
+  gcc_unreachable ();
+}

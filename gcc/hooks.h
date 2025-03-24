@@ -139,5 +139,6 @@ extern opt_machine_mode hook_optmode_mode_uhwi_none (machine_mode,
 						     unsigned HOST_WIDE_INT);
 
 extern bool hook_stringslice_locationtptr_true (string_slice, location_t *);
+extern bool hook_stringslice_stringslice_unreachable (string_slice, string_slice);
 
 #endif
