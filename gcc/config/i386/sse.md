@@ -14041,7 +14041,7 @@
   [(set (match_operand:VFH_AVX512VL 0 "register_operand" "=v")
         (unspec:VFH_AVX512VL [(match_operand:VFH_AVX512VL 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")]
                         UNSPEC_GETEXP))]
-   "TARGET_AVX512F && <round_saeonly_mode_condition>"
+   "TARGET_AVX512F"
    "vgetexp<ssemodesuffix>\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}";
     [(set_attr "prefix" "evex")
      (set_attr "mode" "<MODE>")])
@@ -29894,7 +29894,7 @@
 	  [(match_operand:VFH_AVX512VL 1 "nonimmediate_operand" "<round_saeonly_constraint>")
 	   (match_operand:SI 2 "const_0_to_15_operand")]
 	  UNSPEC_GETMANT))]
-  "TARGET_AVX512F && <round_saeonly_mode_condition>"
+  "TARGET_AVX512F"
 {
   if (TARGET_DEST_FALSE_DEP_FOR_GLC
       && <mask3_dest_false_dep_for_glc_cond>

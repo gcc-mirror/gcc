@@ -105,24 +105,6 @@
 /* { dg-final { scan-assembler-times "vfnmsub...ph\[ \\t\]+\[^\n\]*\{rd-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vfnmsub231ph\[ \\t\]+\[^\n\]*\{ru-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vfnmsub...ph\[ \\t\]+\[^\n\]*\{rz-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vgetexppd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetexppd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetexppd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetexpph\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetexpph\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetexpph\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetexpps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetexpps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetexpps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetmantpd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetmantpd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetmantpd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetmantph\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetmantph\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetmantph\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetmantps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetmantps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vgetmantps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 }  } */
 
 #include <immintrin.h>
 
@@ -339,45 +321,4 @@ avx10_2_test_15 (void)
   x = _mm256_mask_fnmsub_round_ps (x, m8, x, x, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC);
   x = _mm256_mask3_fnmsub_round_ps (x, x, x, m8, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC);
   x = _mm256_maskz_fnmsub_round_ps (m8, x, x, x, _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC);
-}
-
-void extern
-avx10_2_test_16 (void)
-{
-  xd = _mm256_getexp_round_pd (xd, _MM_FROUND_NO_EXC);
-  xd = _mm256_mask_getexp_round_pd (xd, m8, xd, _MM_FROUND_NO_EXC);
-  xd = _mm256_maskz_getexp_round_pd (m8, xd, _MM_FROUND_NO_EXC);
-
-  xh = _mm256_getexp_round_ph (xh, _MM_FROUND_NO_EXC);
-  xh = _mm256_mask_getexp_round_ph (xh, m16, xh, _MM_FROUND_NO_EXC);
-  xh = _mm256_maskz_getexp_round_ph (m16, xh, _MM_FROUND_NO_EXC);
-
-  x = _mm256_getexp_round_ps (x, _MM_FROUND_NO_EXC);
-  x = _mm256_mask_getexp_round_ps (x, m8, x, _MM_FROUND_NO_EXC);
-  x = _mm256_maskz_getexp_round_ps (m8, x, _MM_FROUND_NO_EXC);
-}
-
-void extern
-avx10_2_test_17 (void)
-{
-  xd = _mm256_getmant_round_pd (xd, _MM_MANT_NORM_p75_1p5, _MM_MANT_SIGN_src,
-			        _MM_FROUND_NO_EXC);
-  xd = _mm256_mask_getmant_round_pd (xd, m8, xd, _MM_MANT_NORM_p75_1p5,
-				     _MM_MANT_SIGN_src, _MM_FROUND_NO_EXC);
-  xd = _mm256_maskz_getmant_round_pd (m8, xd, _MM_MANT_NORM_p75_1p5,
-				      _MM_MANT_SIGN_src, _MM_FROUND_NO_EXC);
-
-  xh = _mm256_getmant_round_ph (xh, _MM_MANT_NORM_p75_1p5, _MM_MANT_SIGN_src,
-			        _MM_FROUND_NO_EXC);
-  xh = _mm256_mask_getmant_round_ph (xh, m16, xh, _MM_MANT_NORM_p75_1p5,
-				     _MM_MANT_SIGN_src, _MM_FROUND_NO_EXC);
-  xh = _mm256_maskz_getmant_round_ph (m16, xh, _MM_MANT_NORM_p75_1p5,
-				      _MM_MANT_SIGN_src, _MM_FROUND_NO_EXC);
-
-  x = _mm256_getmant_round_ps (x, _MM_MANT_NORM_p75_1p5, _MM_MANT_SIGN_src,
-			       _MM_FROUND_NO_EXC);
-  x = _mm256_mask_getmant_round_ps (x, m8, x, _MM_MANT_NORM_p75_1p5,
-				    _MM_MANT_SIGN_src, _MM_FROUND_NO_EXC);
-  x = _mm256_maskz_getmant_round_ps (m8, x, _MM_MANT_NORM_p75_1p5,
-				     _MM_MANT_SIGN_src, _MM_FROUND_NO_EXC);
 }
