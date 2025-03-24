@@ -1356,7 +1356,7 @@ Target Var(ix86_apx_inline_asm_use_gpr32) Init(0)
 Enable GPR32 in inline asm when APX_F enabled.
 
 mevex512
-Target Mask(ISA2_EVEX512) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_EVEX512) Var(ix86_isa_flags2) Save Warn(%<-mevex512%> will be deprecated in GCC 16 due to all machines 512 bit vector size supported)
 Support 512 bit vector built-in functions and code generation.
 
 musermsr
@@ -1364,12 +1364,17 @@ Target Mask(ISA2_USER_MSR) Var(ix86_isa_flags2) Save
 Support USER_MSR built-in functions and code generation.
 
 mavx10.1-256
-Target Mask(ISA2_AVX10_1_256) Var(ix86_isa_flags2) Save
+Target Mask(ISA2_AVX10_1_256) Var(ix86_isa_flags2) Save Warn(%<-mavx10.1%> is aliased to 512 bit since GCC14.3 and GCC15.1 while %<-mavx10.1-256%> and %<-mavx10.1-512%> will be deprecated in GCC 16 due to all machines 512 bit vector size supported)
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
 and AVX10.1-256 built-in functions and code generation.
 
+mavx10.1
+Target Mask(ISA2_AVX10_1) Var(ix86_isa_flags2) Save Warn(%<-mavx10.1%> is aliased to 512 bit since GCC14.3 and GCC15.1 while %<-mavx10.1-256%> and %<-mavx10.1-512%> will be deprecated in GCC 16 due to all machines 512 bit vector size supported)
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+and AVX10.1-512 built-in functions and code generation.
+
 mavx10.1-512
-Target Mask(ISA2_AVX10_1_512) Var(ix86_isa_flags2) Save
+Target Alias(mavx10.1)
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
 and AVX10.1-512 built-in functions and code generation.
 
