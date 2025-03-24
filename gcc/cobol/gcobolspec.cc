@@ -126,41 +126,6 @@ add_arg_lib(const char *library, bool force_static ATTRIBUTE_UNUSED)
 #endif
   }
 
-static void
-append_rdynamic()
-  {
-  // This is a bit ham-handed, but I was in a hurry.
-  struct cl_decoded_option decoded = {};
-  decoded.opt_index = OPT_rdynamic;
-  decoded.orig_option_with_args_text = "-rdynamic";
-  decoded.canonical_option[0] = "-rdynamic";
-  decoded.canonical_option_num_elements = 1;
-  decoded.value = 1;
-  append_arg(decoded);
-  return;
-  }
-
-static void
-append_allow_multiple_definition()
-  {
-  append_option (OPT_Wl_, "--allow-multiple-definition", 1);
-  return;
-  }
-
-static void
-append_fpic()
-  {
-  // This is a bit ham-handed, but I was in a hurry.
-  struct cl_decoded_option decoded = {};
-  decoded.opt_index = OPT_rdynamic;
-  decoded.orig_option_with_args_text = "-fPIC";
-  decoded.canonical_option[0] = "-fPIC";
-  decoded.canonical_option_num_elements = 1;
-  decoded.value = 1;
-  append_arg(decoded);
-  return;
-  }
-
 void
 lang_specific_driver (struct cl_decoded_option **in_decoded_options,
                       unsigned int *in_decoded_options_count,
@@ -188,8 +153,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   bool saw_OPT_c = false;
   bool saw_OPT_shared = false;
-  bool saw_OPT_pic = false;
-  bool saw_OPT_PIC = false;
 
   bool verbose = false;
 
@@ -197,9 +160,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   bool need_libdl       = (DL_LIBRARY[0] != '\0');
   bool need_libstdc     = (STDCPP_LIBRARY[0] != '\0');
-  // bool need_libquadmath = (QUADMATH_LIBRARY[0] != '\0');
-  bool need_rdynamic    = true;
-  bool need_allow_multiple_definition = true;
 
   // Separate flags for a couple of static libraries
   bool static_libgcobol  = false;
@@ -290,36 +250,10 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
         saw_OPT_shared = true;
         break;
 
-      case OPT_fpic:
-        saw_OPT_pic = true;
-        break;
-
-      case OPT_fPIC:
-        saw_OPT_PIC = true;
-        break;
-
-      case OPT_c:
-        // With this option, no libraries need be loaded
+	case OPT_c:
+        // Note -c specially.
         saw_OPT_c = true;
-        need_libgcobol   = false;
-        need_libdl       = false;
-        need_libstdc     = false;
-        // need_libquadmath = false;
-        need_rdynamic    = false;
-        break;
-
-      case OPT_rdynamic:
-        need_rdynamic  = false;
-        break;
-
-      case OPT_Wl_:
-        if( strstr(decoded_options[i].orig_option_with_args_text,
-            "--allow-multiple-definitions") )
-          {
-          need_allow_multiple_definition = false;
-          }
-        break;
-
+        // FALLTHROUGH
       case OPT_nostdlib:
       case OPT_nodefaultlibs:
       case OPT_r:
@@ -330,8 +264,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
         need_libgcobol   = false;
         need_libdl       = false;
         need_libstdc     = false;
-        // need_libquadmath = false;
-        need_rdynamic    = false;
         break;
 
       case OPT_static_libgcobol:
@@ -449,7 +381,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     need_libgcobol   = false;
     need_libdl       = false;
     need_libstdc     = false;
-    // need_libquadmath = false;
     }
 
   /* Second pass through arglist, transforming arguments as appropriate.  */
@@ -586,21 +517,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   if( need_libstdc )
     {
     add_arg_lib(STDCPP_LIBRARY, static_in_general);
-    }
-
-  if( saw_OPT_shared && !saw_OPT_pic && !saw_OPT_PIC )
-    {
-    append_fpic();
-    }
-
-  if( need_rdynamic )
-    {
-    append_rdynamic();
-    }
-
-  if( need_allow_multiple_definition && (n_infiles || n_outfiles) )
-    {
-    append_allow_multiple_definition();
     }
 
   if( prior_main )
