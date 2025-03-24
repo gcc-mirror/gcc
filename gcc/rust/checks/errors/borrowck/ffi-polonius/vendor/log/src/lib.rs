@@ -397,20 +397,13 @@ mod serde;
 #[cfg(feature = "kv")]
 pub mod kv;
 
-#[cfg(target_has_atomic = "ptr")]
-use std::sync::atomic::{AtomicUsize, Ordering};
-
-#[cfg(not(target_has_atomic = "ptr"))]
 use std::cell::Cell;
-#[cfg(not(target_has_atomic = "ptr"))]
 use std::sync::atomic::Ordering;
 
-#[cfg(not(target_has_atomic = "ptr"))]
 struct AtomicUsize {
     v: Cell<usize>,
 }
 
-#[cfg(not(target_has_atomic = "ptr"))]
 impl AtomicUsize {
     const fn new(v: usize) -> AtomicUsize {
         AtomicUsize { v: Cell::new(v) }
@@ -423,26 +416,10 @@ impl AtomicUsize {
     fn store(&self, val: usize, _order: Ordering) {
         self.v.set(val)
     }
-
-    #[cfg(target_has_atomic = "ptr")]
-    fn compare_exchange(
-        &self,
-        current: usize,
-        new: usize,
-        _success: Ordering,
-        _failure: Ordering,
-    ) -> Result<usize, usize> {
-        let prev = self.v.get();
-        if current == prev {
-            self.v.set(new);
-        }
-        Ok(prev)
-    }
 }
 
 // Any platform without atomics is unlikely to have multiple cores, so
 // writing via Cell will not be a race condition.
-#[cfg(not(target_has_atomic = "ptr"))]
 unsafe impl Sync for AtomicUsize {}
 
 // The LOGGER static holds a pointer to the global logger. It is protected by
@@ -1258,17 +1235,6 @@ where
     }
 }
 
-/// Sets the global maximum log level.
-///
-/// Generally, this should only be called by the active logging implementation.
-///
-/// Note that `Trace` is the maximum level, because it provides the maximum amount of detail in the emitted logs.
-#[inline]
-#[cfg(target_has_atomic = "ptr")]
-pub fn set_max_level(level: LevelFilter) {
-    MAX_LOG_LEVEL_FILTER.store(level as usize, Ordering::Relaxed);
-}
-
 /// A thread-unsafe version of [`set_max_level`].
 ///
 /// This function is available on all platforms, even those that do not have
@@ -1318,110 +1284,6 @@ pub fn max_level() -> LevelFilter {
     // is by `set_max_level` above, i.e. by casting a `LevelFilter` to `usize`.
     // So any usize stored in `MAX_LOG_LEVEL_FILTER` is a valid discriminant.
     unsafe { mem::transmute(MAX_LOG_LEVEL_FILTER.load(Ordering::Relaxed)) }
-}
-
-/// Sets the global logger to a `Box<Log>`.
-///
-/// This is a simple convenience wrapper over `set_logger`, which takes a
-/// `Box<Log>` rather than a `&'static Log`. See the documentation for
-/// [`set_logger`] for more details.
-///
-/// Requires the `std` feature.
-///
-/// # Errors
-///
-/// An error is returned if a logger has already been set.
-///
-/// [`set_logger`]: fn.set_logger.html
-#[cfg(all(feature = "std", target_has_atomic = "ptr"))]
-pub fn set_boxed_logger(logger: Box<dyn Log>) -> Result<(), SetLoggerError> {
-    set_logger_inner(|| Box::leak(logger))
-}
-
-/// Sets the global logger to a `&'static Log`.
-///
-/// This function may only be called once in the lifetime of a program. Any log
-/// events that occur before the call to `set_logger` completes will be ignored.
-///
-/// This function does not typically need to be called manually. Logger
-/// implementations should provide an initialization method that installs the
-/// logger internally.
-///
-/// # Availability
-///
-/// This method is available even when the `std` feature is disabled. However,
-/// it is currently unavailable on `thumbv6` targets, which lack support for
-/// some atomic operations which are used by this function. Even on those
-/// targets, [`set_logger_racy`] will be available.
-///
-/// # Errors
-///
-/// An error is returned if a logger has already been set.
-///
-/// # Examples
-///
-/// ```
-/// use log::{error, info, warn, Record, Level, Metadata, LevelFilter};
-///
-/// static MY_LOGGER: MyLogger = MyLogger;
-///
-/// struct MyLogger;
-///
-/// impl log::Log for MyLogger {
-///     fn enabled(&self, metadata: &Metadata) -> bool {
-///         metadata.level() <= Level::Info
-///     }
-///
-///     fn log(&self, record: &Record) {
-///         if self.enabled(record.metadata()) {
-///             println!("{} - {}", record.level(), record.args());
-///         }
-///     }
-///     fn flush(&self) {}
-/// }
-///
-/// # fn main(){
-/// log::set_logger(&MY_LOGGER).unwrap();
-/// log::set_max_level(LevelFilter::Info);
-///
-/// info!("hello log");
-/// warn!("warning");
-/// error!("oops");
-/// # }
-/// ```
-///
-/// [`set_logger_racy`]: fn.set_logger_racy.html
-#[cfg(target_has_atomic = "ptr")]
-pub fn set_logger(logger: &'static dyn Log) -> Result<(), SetLoggerError> {
-    set_logger_inner(|| logger)
-}
-
-#[cfg(target_has_atomic = "ptr")]
-fn set_logger_inner<F>(make_logger: F) -> Result<(), SetLoggerError>
-where
-    F: FnOnce() -> &'static dyn Log,
-{
-    match STATE.compare_exchange(
-        UNINITIALIZED,
-        INITIALIZING,
-        Ordering::Acquire,
-        Ordering::Relaxed,
-    ) {
-        Ok(UNINITIALIZED) => {
-            unsafe {
-                LOGGER = make_logger();
-            }
-            STATE.store(INITIALIZED, Ordering::Release);
-            Ok(())
-        }
-        Err(INITIALIZING) => {
-            while STATE.load(Ordering::Relaxed) == INITIALIZING {
-                std::hint::spin_loop();
-            }
-            Err(SetLoggerError(()))
-        }
-        _ => Err(SetLoggerError(())),
-    }
 }
 
 /// A thread-unsafe version of [`set_logger`].

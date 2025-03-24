@@ -32,6 +32,20 @@ use std::iter;
 use std::str;
 use std::string;
 
+// Extension trait for `Option<T>::is_some_and()` which was not a feature in Rust 1.49
+pub trait OptionIsSomeAndExt<T> {
+    fn is_some_and(self, f: impl FnOnce(T) -> bool) -> bool;
+}
+
+impl<T> OptionIsSomeAndExt<T> for Option<T> {
+    fn is_some_and(self, f: impl FnOnce(T) -> bool) -> bool {
+        match self {
+            None => false,
+            Some(x) => f(x),
+        }
+    }
+}
+
 // Note: copied from rustc_span
 /// Range inside of a `Span` used for diagnostics when we only have access to relative positions.
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]

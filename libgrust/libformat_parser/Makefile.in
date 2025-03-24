@@ -263,6 +263,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 LIBFORMAT_PARSER = debug/liblibformat_parser.a
+RUST_BUILD_DIR = $(PWD)
 all: all-am
 
 .SUFFIXES:
@@ -428,13 +429,8 @@ all-local: $(LIBFORMAT_PARSER)
 
 # TODO: Improve `cargo` invocation with host specific flags, possibly creating a $(CARGO) variable?
 $(LIBFORMAT_PARSER): $(srcdir)/Cargo.toml $(srcdir)/src/*.rs
-	cargo \
-	  --config $(srcdir)/.cargo/config \
-	  build \
-	    --offline \
-	    --target-dir . \
-	    --manifest-path $(srcdir)/Cargo.toml \
-	    # FIXME: Not always '--release', right?
+	cd $(srcdir) && \
+	cargo build --offline --target-dir $(RUST_BUILD_DIR)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
