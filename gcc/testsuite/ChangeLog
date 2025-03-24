@@ -1,3 +1,11 @@
+2025-03-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2025-03-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/117621
+	* gdc.dg/pr117621.d: New test.
+
 2025-03-22  Martin Uecker  <uecker@tugraz.at>
 
 	Backported from master:

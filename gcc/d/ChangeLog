@@ -1,3 +1,11 @@
+2025-03-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2025-03-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/117621
+	* types.cc (finish_aggregate_type): Propagate TYPE_PACKED to variants.
+
 2025-03-20  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd af92b68a81.
