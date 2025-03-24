@@ -8109,7 +8109,7 @@
   [(set (match_operand:<ssePHmode> 0 "register_operand" "=v")
 	(float_truncate:<ssePHmode>
 	  (match_operand:VF48H_AVX512VL 1 "<round_nimm_predicate>" "<round_constraint>")))]
-  "TARGET_AVX512FP16 && <round_mode_condition>"
+  "TARGET_AVX512FP16"
   "vcvt<castmode>2ph<ph2pssuffix><round_qq2phsuff>\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")

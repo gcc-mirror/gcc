@@ -218,7 +218,6 @@
 								       || <MODE>mode == V4DFmode
 								       || <MODE>mode == V4DImode
 								       || <MODE>mode == V8SImode
-								       || <MODE>mode == V16HImode
 								       || <MODE>mode == V16HFmode)))")
 (define_subst_attr "round_applied" "round" "false" "true")
 

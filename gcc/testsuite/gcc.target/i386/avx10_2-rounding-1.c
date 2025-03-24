@@ -60,18 +60,6 @@
 /* { dg-final { scan-assembler-times "vcvtph2uqq\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vcvtph2uqq\[ \\t\]+\{rn-sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vcvtph2uqq\[ \\t\]+\{rz-sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtph2uw\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtph2uw\[ \\t\]+\{rn-sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtph2uw\[ \\t\]+\{rz-sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtph2w\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtph2w\[ \\t\]+\{rn-sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtph2w\[ \\t\]+\{rz-sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtps2pd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%xmm\[0-9\]+\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtps2pd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%xmm\[0-9\]+\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtps2pd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%xmm\[0-9\]+\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtps2phxy\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtps2phx\[ \\t\]+\{rn-sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvtps2phx\[ \\t\]+\{rz-sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
 
 #include <immintrin.h>
 
@@ -193,28 +181,4 @@ avx10_2_test_7 (void)
   x = _mm256_cvtx_roundph_ps (hxh, 4);
   x = _mm256_mask_cvtx_roundph_ps (x, m8, hxh, 8);
   x = _mm256_maskz_cvtx_roundph_ps (m8, hxh, 8);
-}
-
-void extern
-avx10_2_test_8 (void)
-{
-  xi = _mm256_cvt_roundph_epu16 (xh, 4);
-  xi = _mm256_mask_cvt_roundph_epu16 (xi, m16, xh, 8);
-  xi = _mm256_maskz_cvt_roundph_epu16 (m16, xh, 11);
-
-  xi = _mm256_cvt_roundph_epi16 (xh, 4);
-  xi = _mm256_mask_cvt_roundph_epi16 (xi, m16, xh, 8);
-  xi = _mm256_maskz_cvt_roundph_epi16 (m16, xh, 11);
-}
-
-void extern
-avx10_2_test_9 (void)
-{
-  xd = _mm256_cvt_roundps_pd (hx, _MM_FROUND_NO_EXC);
-  xd = _mm256_mask_cvt_roundps_pd (xd, m8, hx, _MM_FROUND_NO_EXC);
-  xd = _mm256_maskz_cvt_roundps_pd (m8, hx, _MM_FROUND_NO_EXC);
-
-  hxh = _mm256_cvtx_roundps_ph (x, 4);
-  hxh = _mm256_mask_cvtx_roundps_ph (hxh, m8, x, 8);
-  hxh = _mm256_maskz_cvtx_roundps_ph (m8, x, 11);
 }
