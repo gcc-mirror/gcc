@@ -14649,12 +14649,14 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 @item -fstrict-aliasing
 Allow the compiler to assume the strictest aliasing rules applicable to
 the language being compiled.  For C (and C++), this activates
-optimizations based on the type of expressions.  In particular, an
-object of one type is assumed never to reside at the same address as an
-object of a different type, unless the types are almost the same.  For
-example, an @code{unsigned int} can alias an @code{int}, but not a
-@code{void*} or a @code{double}.  A character type may alias any other
-type.
+optimizations based on the type of expressions.  In particular, accessing
+an object of one type via an expression of a different type is not allowed,
+unless the types are @dfn{compatible types}, differ only in signedness or
+qualifiers, or the expression has a character type.  Accessing scalar
+objects via a corresponding vector type is also allowed.
+
+For example, an @code{unsigned int} can alias an @code{int}, but not a
+@code{void*} or a @code{double}.  A character type may alias any other type.
 
 @anchor{Type-punning}Pay special attention to code like this:
 @smallexample
