@@ -21,6 +21,14 @@
 	Backported from master:
 	2025-03-24  Tobias Burnus  <tburnus@baylibre.com>
 
+	* target.c (gomp_interop_internal): Set the 'device_num' member
+	when initializing an interop object.
+
+2025-03-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-03-24  Tobias Burnus  <tburnus@baylibre.com>
+
 	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_interop): Set context for
 	stream creation to use the specified device.
 
