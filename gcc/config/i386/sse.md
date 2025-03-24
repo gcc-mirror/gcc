@@ -8671,13 +8671,13 @@
 (define_mode_attr sf2simodelower
   [(V16SI "v16sf") (V8SI "v8sf") (V4SI "v4sf")])
 
-(define_insn "<sse2_avx_avx512f>_fix_notrunc<sf2simodelower><mode><mask_name><round_name>"
+(define_insn "<sse2_avx_avx512f>_fix_notrunc<sf2simodelower><mode><mask_name>"
   [(set (match_operand:VI4_AVX 0 "register_operand" "=v")
 	(unspec:VI4_AVX
-	  [(match_operand:<ssePSmode> 1 "<round_nimm_predicate>" "<round_constraint4>")]
+	  [(match_operand:<ssePSmode> 1 "vector_operand" "vBm")]
 	  UNSPEC_FIX_NOTRUNC))]
-  "TARGET_SSE2 && <mask_mode512bit_condition> && <round_mode_condition>"
-  "%vcvtps2dq\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
+  "TARGET_SSE2 && <mask_mode512bit_condition>"
+  "%vcvtps2dq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssecvt")
    (set (attr "prefix_data16")
      (if_then_else
@@ -8703,7 +8703,7 @@
 	(unspec:VI4_AVX512VL
 	  [(match_operand:<ssePSmode> 1 "nonimmediate_operand" "<round_constraint>")]
 	  UNSPEC_UNSIGNED_FIX_NOTRUNC))]
-  "TARGET_AVX512F && <round_mode_condition>"
+  "TARGET_AVX512F"
   "vcvtps2udq\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")

@@ -850,10 +850,6 @@
 #define __builtin_ia32_vcvtph2w256_mask_round(A, B, C, D) __builtin_ia32_vcvtph2w256_mask_round(A, B, C, 8)
 #define __builtin_ia32_vcvtps2pd256_mask_round(A, B, C, D) __builtin_ia32_vcvtps2pd256_mask_round(A, B, C, 8)
 #define __builtin_ia32_vcvtps2phx256_mask_round(A, B, C, D) __builtin_ia32_vcvtps2phx256_mask_round(A, B, C, 8)
-#define __builtin_ia32_vcvtps2dq256_mask_round(A, B, C, D) __builtin_ia32_vcvtps2dq256_mask_round(A, B, C, 8)
-#define __builtin_ia32_cvtps2qq256_mask_round(A, B, C, D) __builtin_ia32_cvtps2qq256_mask_round(A, B, C, 8)
-#define __builtin_ia32_cvtps2udq256_mask_round(A, B, C, D) __builtin_ia32_cvtps2udq256_mask_round(A, B, C, 8)
-#define __builtin_ia32_cvtps2uqq256_mask_round(A, B, C, D) __builtin_ia32_cvtps2uqq256_mask_round(A, B, C, 8)
 
 /* avx10_2-512mediaintrin.h  */
 #define __builtin_ia32_mpsadbw512(A, B, C) __builtin_ia32_mpsadbw512 (A, B, 1)
