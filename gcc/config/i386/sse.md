@@ -8660,7 +8660,7 @@
   [(set (match_operand:VF1_AVX512VL 0 "register_operand" "=v")
 	(unsigned_float:VF1_AVX512VL
 	  (match_operand:<sseintvecmode> 1 "nonimmediate_operand" "<round_constraint>")))]
-  "TARGET_AVX512F && <round_mode_condition>"
+  "TARGET_AVX512F"
   "vcvtudq2ps\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
@@ -8789,13 +8789,12 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_insn "unspec_fix_truncv8sfv8si2<mask_name><round_saeonly_name>"
+(define_insn "unspec_fix_truncv8sfv8si2<mask_name>"
   [(set (match_operand:V8SI 0 "register_operand" "=v")
-	(unspec:V8SI [(match_operand:V8SF 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")]
+	(unspec:V8SI [(match_operand:V8SF 1 "nonimmediate_operand" "vm")]
 	 UNSPEC_VCVTT))]
-  "TARGET_AVX && <mask_avx512vl_condition>
-  && (!<round_saeonly_applied> || TARGET_AVX10_2_256)"
-  "vcvttps2dq\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}"
+  "TARGET_AVX && <mask_avx512vl_condition>"
+  "vcvttps2dq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "<mask_prefix>")
    (set_attr "mode" "OI")])
@@ -9748,12 +9747,12 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "fix<fixunssuffix>_trunc<ssePSmode2lower><mode>2<mask_name>"
+(define_insn "fix<fixunssuffix>_trunc<ssePSmode2lower><mode>2<mask_name><round_saeonly_name>"
   [(set (match_operand:VI8_256_512 0 "register_operand" "=v")
 	(any_fix:VI8_256_512
-	  (match_operand:<ssePSmode2> 1 "nonimmediate_operand" "vm")))]
-  "TARGET_AVX512DQ"
-  "vcvttps2<fixsuffix>qq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+	  (match_operand:<ssePSmode2> 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")))]
+  "TARGET_AVX512DQ && <round_saeonly_mode_condition>"
+  "vcvttps2<fixsuffix>qq\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
@@ -9908,13 +9907,13 @@
   DONE;
 })
 
-(define_insn "<mask_codefor>unspec_fixuns_trunc<mode><sseintvecmodelower>2<mask_name><round_saeonly_name>"
+(define_insn "<mask_codefor>unspec_fixuns_trunc<mode><sseintvecmodelower>2<mask_name>"
   [(set (match_operand:<sseintvecmode> 0 "register_operand" "=v")
 	(unspec:<sseintvecmode>
-	  [(match_operand:VF1_128_256 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")]
+	  [(match_operand:VF1_128_256 1 "nonimmediate_operand" "vm")]
 	  UNSPEC_VCVTTU))]
-  "TARGET_AVX512VL && <round_saeonly_mode_condition>"
-  "vcvttps2udq\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}"
+  "TARGET_AVX512VL"
+  "vcvttps2udq\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseintvecmode2>")])
