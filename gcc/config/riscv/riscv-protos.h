@@ -840,6 +840,8 @@ extern bool
 riscv_option_valid_version_attribute_p (tree, tree, tree, int);
 extern bool
 riscv_process_target_version_attr (tree, location_t *);
+extern bool
+riscv_process_target_version_str (string_slice, location_t *);
 extern void
 riscv_override_options_internal (struct gcc_options *);
 extern void riscv_option_override (void);

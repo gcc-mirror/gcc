@@ -356,11 +356,11 @@ num_occurrences_in_str (char c, char *str)
    diagnostics against location *LOC, otherwise remain silent.  */
 
 bool
-riscv_process_target_attr (const char *args,
-			   location_t *loc,
-			   const struct riscv_attribute_info *attrs)
+riscv_process_target_str (string_slice args,
+			  location_t *loc,
+			  const struct riscv_attribute_info *attrs)
 {
-  size_t len = strlen (args);
+  size_t len = args.size ();
 
   /* No need to emit warning or error on empty string here, generic code already
      handle this case.  */
@@ -371,7 +371,7 @@ riscv_process_target_attr (const char *args,
 
   std::unique_ptr<char[]> buf (new char[len+1]);
   char *str_to_check = buf.get ();
-  strcpy (str_to_check, args);
+  strncpy (str_to_check, args.begin (), args.size ());
 
   /* Used to catch empty spaces between semi-colons i.e.
      attribute ((target ("attr1;;attr2"))).  */
@@ -394,7 +394,7 @@ riscv_process_target_attr (const char *args,
   if (num_attrs != num_semicolons + 1)
     {
       if (loc)
-	error_at (*loc, "malformed %<target(\"%s\")%> attribute", args);
+	error_at (*loc, "malformed %<target(\"%B\")%> attribute", &args);
       return false;
     }
 
@@ -436,7 +436,7 @@ riscv_process_target_attr (tree args,
       return false;
     }
 
-  return riscv_process_target_attr (TREE_STRING_POINTER (args), loc, attrs);
+  return riscv_process_target_str (TREE_STRING_POINTER (args), loc, attrs);
 }
 
 /* Implement TARGET_OPTION_VALID_ATTRIBUTE_P.
@@ -518,9 +518,18 @@ riscv_process_target_version_attr (tree args, location_t *loc)
   if (strcmp (str, "default") == 0)
     return true;
 
-  return riscv_process_target_attr (str, loc, riscv_target_version_attrs);
+  return riscv_process_target_str (str, loc, riscv_target_version_attrs);
 }
 
+/* Parse the version string in STR and update the global target options space.
+   If LOC is nonnull, report diagnostics against location *LOC, otherwise
+   remain silent.  */
+
+bool
+riscv_process_target_version_str (string_slice str, location_t *loc)
+{
+  return riscv_process_target_str (str, loc, riscv_target_version_attrs);
+}
 
 /* Implement TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P.  This is used to
    process attribute ((target_version ("..."))).  */
