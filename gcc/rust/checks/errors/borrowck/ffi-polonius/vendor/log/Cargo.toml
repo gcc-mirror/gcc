@@ -10,7 +10,7 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2021"
+edition = "2018"
 rust-version = "1.60.0"
 name = "log"
 version = "0.4.22"

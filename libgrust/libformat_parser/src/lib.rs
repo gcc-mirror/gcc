@@ -21,6 +21,17 @@ where
     }
 }
 
+// Extension trait to provide `String::leak` which did not exist in Rust 1.49
+pub trait StringLeakExt {
+    fn leak<'a>(self) -> &'a mut str;
+}
+
+impl StringLeakExt for String {
+    fn leak<'a>(self) -> &'a mut str {
+        Box::leak(self.into_boxed_str())
+    }
+}
+
 // FIXME: Make an ffi module in a separate file
 // FIXME: Remember to leak the boxed type somehow
 // FIXME: How to encode the Option type? As a pointer? Option<T> -> Option<&T> -> *const T could work maybe?
