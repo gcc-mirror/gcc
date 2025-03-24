@@ -1,3 +1,13 @@
+2025-03-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libitm/88319
+	* Makefile.in: Regenerate.
+	* Makefile.tpl: Add CXX_FOR_TARGET to NORMAL_TARGET_EXPORTS.
+
+2025-03-23  James K. Lowden  <jklowden@cobolworx.com>
+
+	* MAINTAINERS: Add myself.
+
 2025-03-17  Arthur Cohen  <arthur.cohen@embecosm.com>
 
 	* .gitignore: Add libgrust target folders to the ignore list.

@@ -1,3 +1,85 @@
+2025-03-23  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/42270
+	* doc/extend.texi (Nonlocal Gotos): Group with other built-ins
+	sections.
+	(Constructing Calls): Likewise.
+	(Pragmas): Move earlier in the section, before the built-ins docs.
+	(Thread-Local): Likewise.
+	(OpenMP): Likewise.
+	(OpenACC): Likewise.
+
+2025-03-23  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/42270
+	* doc/extend.texi (Syntax Extensions): New section.
+	(Statement Exprs): Make it a subsection of the above.
+	(Local Labels): Likewise.
+	(Labels as Values): Likewise.
+	(Nested Functions): Likewise.
+	(Typeof): Likewise.
+	(Offsetof): Likewise.
+	(Alignment): Likewise.
+	(Incomplete Enums): Likewise.
+	(Variadic Macros): Likewise.
+	(Conditionals): Likewise.
+	(Case Ranges): Likewise.
+	(Mixed Labels and Declarations): Likewise.
+	(C++ Comments): Likewise.
+	(Escaped Newlines): Likewise.
+	(Hex Floats): Likewise.
+	(Binary constants): Likewise.
+	(Dollar Signs): Likewise.
+	(Character Escapes): Likewise.
+	(Alternate Keywords): Likewise.
+	(Function Names): Likewise.
+	(Semantic Extensions): New section.
+	(Function Prototypes): Make it a subsection of the above.
+	(Pointer Arith): Likewise.
+	(Variadic Pointer Args): Likewise.
+	(Pointers to Arrays): Likewise.
+	(Const and Volatile Functions): Likewise.
+
+2025-03-23  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/42270
+	* doc/extend.texi (Aggregate Types): New section.
+	(Variable Length): Make it a subsection of the above.
+	(Zero Length): Likewise.
+	(Empty Structures): Likewise.
+	(Flexible Array Members in Unions): Likewise.
+	(Flexible Array Members alone in Structures): Likewise.
+	(Unnamed Fields): Likewise.
+	(Cast to Union): Likewise.
+	(Subscripting): Likewise.
+	(Initializers): Likewise.
+	(Compound Literals): Likewise.
+	(Designated Inits): Likewise.
+
+2025-03-23  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/42270
+	* doc/extend.texi (Additional Numeric Types): New section.
+	(__int128): Make it a subsection of the above.
+	(Long Long): Likewise.
+	(Complex): Likewise.
+	(Floating Types): Likewise.
+	(Half-Precision): Likewise.
+	(Decimal Float): Likewise.
+	(Fixed-Point): Likewise.
+
+2025-03-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def: Add AVR32SD20, AVR32SD28, AVR32SD32,
+	AVR64SD28, AVR64SD32, AVR64SD48.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2025-03-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Optimization Options)
+	<-maccumulate-args>: Refer to -fdefer-pop.
+	<-muse-nonzero-bits>: Re-formulate what the option does.
+
 2025-03-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.cc (avr_option_override): Use

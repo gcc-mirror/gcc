@@ -1,3 +1,25 @@
+2025-03-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119154
+	* g++.dg/modules/pr119154_a.C: Move to...
+	* g++.dg/modules/gnu-inline-1_a.C: ...here, and add decl.
+	* g++.dg/modules/pr119154_b.C: Move to...
+	* g++.dg/modules/gnu-inline-1_b.C: here, and add check.
+	* g++.dg/modules/gnu-inline-1_c.C: New test.
+	* g++.dg/modules/gnu-inline-1_d.C: New test.
+	* g++.dg/modules/gnu-inline-2_a.C: New test.
+	* g++.dg/modules/gnu-inline-2_b.C: New test.
+	* g++.dg/modules/extern-tpl-3_a.C: New test.
+	* g++.dg/modules/extern-tpl-3_b.C: New test.
+	* g++.dg/modules/extern-tpl-4_a.H: New test.
+	* g++.dg/modules/extern-tpl-4_b.C: New test.
+	* g++.dg/modules/extern-tpl-4_c.C: New test.
+
+2025-03-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/117621
+	* gdc.dg/pr117621.d: New test.
+
 2025-03-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/119421

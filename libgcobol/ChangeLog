@@ -1,3 +1,8 @@
+2025-03-23  Bob Dubner  <rdubner@symas.com>
+
+	* Makefile.am: Incorporate AM_CXXFLAGS = $(CXXFLAGS_FOR_TARGET).
+	* Makefile.in: Regenerated.
+
 2025-03-20  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Makefile.am: Use LIBICONV.
