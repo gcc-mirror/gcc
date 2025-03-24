@@ -272,7 +272,6 @@
 										       || <MODE>mode == V4DImode
 										       || <MODE>mode == V8SImode
 										       || <MODE>mode == V16HFmode)))")
-(define_subst_attr "round_saeonly_applied" "round_saeonly" "false" "true")
 
 
 (define_subst "round_saeonly"
