@@ -36,7 +36,7 @@ case "${target}" in
   arm*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
-  hppa-*-linux*)
+  hppa-*-linux* | hppa[12]*-*-linux*)
 	LIBPHOBOS_SUPPORTED=yes
 	;;
   loongarch*-*-linux*)
