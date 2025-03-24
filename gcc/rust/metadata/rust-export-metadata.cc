@@ -234,7 +234,7 @@ PublicInterface::write_to_path (const std::string &path) const
 {
   // validate path contains correct extension
   const std::string expected_file_name = expected_metadata_filename ();
-  const char *path_base_name = basename (path.c_str ());
+  const char *path_base_name = lbasename (path.c_str ());
   if (strcmp (path_base_name, expected_file_name.c_str ()) != 0)
     {
       rust_error_at (UNDEF_LOCATION,
