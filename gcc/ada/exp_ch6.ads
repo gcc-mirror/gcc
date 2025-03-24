@@ -105,7 +105,16 @@ package Exp_Ch6 is
    --  Create the extra actuals of the given call and add them to its
    --  actual parameters list.
 
+   procedure Apply_Access_Discrims_Accessibility_Check
+     (Exp : Node_Id; Func : Entity_Id);
+   --  Exp is an expression being returned from a function Func.
+   --  If the result type of the function has access discriminants, insert
+   --  checks that the accessibility level of each entity designated by an
+   --  access discriminant of the result is not deeper than the level of the
+   --  master of the call.
+
    procedure Apply_CW_Accessibility_Check (Exp : Node_Id; Func : Entity_Id);
+   --  Exp is an expression being returned from a function Func.
    --  Ada 2005 (AI95-344): If the result type is class-wide, insert a check
    --  that the level of the return expression's underlying type is not deeper
    --  than the level of the master enclosing the function. Always generate the

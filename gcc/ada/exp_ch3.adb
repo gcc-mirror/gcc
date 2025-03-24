@@ -7501,6 +7501,12 @@ package body Exp_Ch3 is
                Apply_CW_Accessibility_Check (Expr, Func_Id);
             end if;
 
+            if Has_Anonymous_Access_Discriminant (Etype (Expr)) then
+               --  Check that access discrims do not designate entities
+               --  that the function result could outlive.
+               Apply_Access_Discrims_Accessibility_Check (Expr, Func_Id);
+            end if;
+
             Alloc_Expr := New_Copy_Tree (Expr);
 
             if Etype (Alloc_Expr) /= Alloc_Typ then
@@ -9059,6 +9065,10 @@ package body Exp_Ch3 is
                if Is_Class_Wide_Type (Etype (Func_Id)) then
                   Apply_CW_Accessibility_Check (Expr_Q, Func_Id);
                end if;
+
+               --  ??? Usually calls to Apply_CW_Accessibility_Check and to
+               --  Apply_Access_Discrims_Accessibility_Check come in pairs.
+               --  Do we need a (conditional) call here to A_A_D_A_C ?
             end;
          end if;
 

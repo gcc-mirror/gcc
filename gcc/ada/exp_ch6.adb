@@ -734,6 +734,237 @@ package body Exp_Ch6 is
       Add_Extra_Actual_To_Call (Function_Call, Chain_Formal, Chain_Actual);
    end Add_Task_Actuals_To_Build_In_Place_Call;
 
+   ----------------------------------------------
+   -- Apply_Access_Discrims_Accesibility_Check --
+   ----------------------------------------------
+
+   procedure Apply_Access_Discrims_Accessibility_Check
+     (Exp : Node_Id; Func : Entity_Id)
+   is
+      Loc : constant Source_Ptr := Sloc (Exp);
+
+      --  Some of the code here in this procedure may need to be factored
+      --  out at some point because it seems like some of the same
+      --  functionality would be needed for accessibility checking of a
+      --  return statement when the function result type is an anonymous
+      --  access type (as opposed to a type that has an anonymous access
+      --  discriminant).
+      --
+      --  Another case that is not addressed today is the case where
+      --  we need to check an access discriminant subcomponent of the
+      --  function result other than a discriminant of the function result.
+      --  This can only happen if the function result type has an unconstrained
+      --  subcomponent subtype that has an access discriminant (which implies
+      --  that the function result type must be limited).
+      --
+      --  A further corner case of that corner case arises if the limited
+      --  function result type is class-wide and it is not known statically
+      --  that this access-discriminant-bearing subcomponent exists. The
+      --  easiest way to address this properly would probably involve adding
+      --  a new compiler-generated dispatching procedure; a dispatching call
+      --  could then be used to perform the check in a context where we know
+      --  statically the specific type of the function result. Finding a
+      --  less important unimplemented case would be challenging.
+
+      function Constraint_Bearing_Subtype_If_Any
+        (Exp : Node_Id) return Node_Id;
+      --  If we can locate a constrained subtype whose constraint applies
+      --  to Exp, then return that. Otherwise, return Etype (Exp).
+
+      function Discr_Expression
+        (Typ : Entity_Id; Discr_Index : Positive) return Node_Id;
+      --  Typ is a constrained discriminated subtype.
+      --  Return the constraint expression for the indexed discriminant.
+
+      function Has_Level_Tied_To_Explicitly_Aliased_Param
+        (Constraint_Exp : Node_Id) return Boolean;
+      --  Constraint_Exp is the value given for an access discriminant
+      --  in a discriminant constraint for Exp. Return True iff the
+      --  accessibility of the type of that discriminant of Exp is the level
+      --  of an explicitly aliased parameter of Func. If true, this indicates
+      --  that no check should be performed for this discriminant.
+
+      ---------------------------------------
+      -- Constraint_Bearing_Subtype_If_Any --
+      ---------------------------------------
+
+      function Constraint_Bearing_Subtype_If_Any
+        (Exp : Node_Id) return Entity_Id
+      is
+         Result : Entity_Id := Etype (Exp);
+      begin
+         if Is_Constrained (Result) then
+            return Result;
+         end if;
+
+         --  Look through expansion-generated levels of indirection
+         --  to find a constrained subtype. Yuck. This comes up in
+         --  some cases when the unexpanded source returns an aggregate.
+
+         if Nkind (Exp) = N_Explicit_Dereference
+           and then Nkind (Prefix (Exp)) = N_Identifier
+           and then Ekind (Entity (Prefix (Exp))) = E_Constant
+         then
+            declare
+               Acc_Const       : Entity_Id := Entity (Prefix (Exp));
+               Acc_Const_Value : Node_Id := Empty;
+            begin
+               --  look through constants initialized to constants
+               loop
+                  exit when Nkind (Parent (Acc_Const)) /= N_Object_Declaration;
+
+                  Acc_Const_Value := Expression (Parent (Acc_Const));
+
+                  if Nkind (Acc_Const_Value) = N_Identifier
+                    and then Ekind (Entity (Acc_Const_Value)) = E_Constant
+                  then
+                     Acc_Const := Entity (Acc_Const_Value);
+                  else
+                     exit;
+                  end if;
+               end loop;
+
+               if Nkind (Acc_Const_Value) = N_Allocator
+                 and then Nkind (Expression (Acc_Const_Value))
+                             = N_Qualified_Expression
+               then
+                  Result :=
+                    Etype (Expression (Acc_Const_Value));
+               end if;
+            end;
+         end if;
+
+         if Is_Constrained (Result) then
+            return Result;
+         end if;
+
+         --  no constrained subtype found
+         return Etype (Exp);
+      end Constraint_Bearing_Subtype_If_Any;
+
+      ----------------------
+      -- Discr_Expression --
+      ----------------------
+
+      function Discr_Expression
+        (Typ : Entity_Id; Discr_Index : Positive) return Node_Id
+      is
+         Constraint_Elmt : Elmt_Id :=
+           First_Elmt (Discriminant_Constraint (Typ));
+      begin
+         for Skip in 1 .. Discr_Index - 1 loop
+            Next_Elmt (Constraint_Elmt);
+         end loop;
+         return Node (Constraint_Elmt);
+      end Discr_Expression;
+
+      -------------------------------------------------
+      --  Has_Level_Tied_To_Explicitly_Aliased_Param --
+      -------------------------------------------------
+
+      function Has_Level_Tied_To_Explicitly_Aliased_Param
+        (Constraint_Exp : Node_Id) return Boolean
+      is
+         Discr_Exp   : Node_Id := Constraint_Exp;
+         Attr_Prefix : Node_Id;
+      begin
+         --  look through constants
+         while Nkind (Discr_Exp) = N_Identifier
+           and then Ekind (Entity (Discr_Exp)) = E_Constant
+           and then Nkind (Parent (Entity (Discr_Exp))) = N_Object_Declaration
+         loop
+            Discr_Exp := Expression (Parent (Entity (Discr_Exp)));
+         end loop;
+
+         if Nkind (Discr_Exp) = N_Attribute_Reference
+           and then Get_Attribute_Id
+                      (Attribute_Name (Discr_Exp)) = Attribute_Access
+         then
+            Attr_Prefix := Ultimate_Prefix (Prefix (Discr_Exp));
+            if Is_Entity_Name (Attr_Prefix)
+              and then Is_Explicitly_Aliased (Entity (Attr_Prefix))
+              and then Scope (Entity (Attr_Prefix)) = Func
+            then
+               return True;
+            end if;
+         end if;
+
+         return False;
+      end Has_Level_Tied_To_Explicitly_Aliased_Param;
+
+      Discr       : Entity_Id := First_Discriminant (Etype (Exp));
+      Discr_Index : Positive  := 1;
+      Discr_Exp   : Node_Id;
+
+      Constrained_Subtype : constant Entity_Id :=
+        Constraint_Bearing_Subtype_If_Any (Exp);
+   begin
+      --  If we are returning a function call then that function will
+      --  perform the needed check.
+
+      if Nkind (Unqualify (Exp)) = N_Function_Call then
+         return;
+      end if;
+
+      Remove_Side_Effects (Exp);
+
+      while Present (Discr) loop
+         if Is_Anonymous_Access_Type (Etype (Discr)) then
+            if Is_Constrained (Constrained_Subtype) then
+               Discr_Exp :=
+                 New_Copy_Tree
+                   (Discr_Expression (Constrained_Subtype, Discr_Index));
+            else
+               Discr_Exp :=
+                 Make_Selected_Component (Loc,
+                   Prefix => New_Copy_Tree (Exp),
+                   Selector_Name => New_Occurrence_Of (Discr, Loc));
+            end if;
+
+            if not Has_Level_Tied_To_Explicitly_Aliased_Param (Discr_Exp) then
+               declare
+                  --  We could do this min operation earlier, as is done
+                  --  for other implicit level parameters. Motivation for
+                  --  doing this min operation (earlier or not) is as for
+                  --  Generate_Minimum_Accessibility (see sem_ch6.adb):
+                  --  if a level value is too big, then the caller and the
+                  --  callee disagree about what it means.
+
+                  Level_Of_Master_Of_Call : constant Node_Id :=
+                    Make_Attribute_Reference (Loc,
+                      Prefix => New_Occurrence_Of (Standard_Natural, Loc),
+                      Attribute_Name => Name_Min,
+                      Expressions => New_List (
+                        Make_Integer_Literal (Loc, Scope_Depth (Func)),
+                        New_Occurrence_Of
+                          (Extra_Accessibility_Of_Result (Func), Loc)));
+
+                  Discrim_Level : Node_Id;
+               begin
+                  Analyze (Level_Of_Master_Of_Call);
+                  Analyze (Discr_Exp);
+
+                  Discrim_Level :=
+                    Accessibility_Level (Discr_Exp, Level => Dynamic_Level);
+                  Analyze (Discrim_Level);
+
+                  Insert_Action (Exp,
+                    Make_Raise_Program_Error (Loc,
+                      Condition =>
+                        Make_Op_Gt (Loc,
+                          Left_Opnd  => Discrim_Level,
+                          Right_Opnd => Level_Of_Master_Of_Call),
+                      Reason    => PE_Accessibility_Check_Failed),
+                    Suppress => Access_Check);
+               end;
+            end if;
+         end if;
+
+         Next_Discriminant (Discr);
+         Discr_Index := Discr_Index + 1;
+      end loop;
+   end Apply_Access_Discrims_Accessibility_Check;
+
    ----------------------------------
    -- Apply_CW_Accessibility_Check --
    ----------------------------------
@@ -7316,6 +7547,16 @@ package body Exp_Ch6 is
         and then not Is_Thunk (Scope_Id)
       then
          Apply_CW_Accessibility_Check (Exp, Scope_Id);
+
+      --  Check that result's access discrims (if any) do not designate
+      --  entities that the function result could outlive. See preceding
+      --  comment about extended return statements and thunks.
+
+      elsif Has_Anonymous_Access_Discriminant (Exp_Typ)
+        and then not Comes_From_Extended_Return_Statement (N)
+        and then not Is_Thunk (Scope_Id)
+      then
+         Apply_Access_Discrims_Accessibility_Check (Exp, Scope_Id);
 
       --  Ada 2012 (AI05-0073): If the result subtype of the function is
       --  defined by an access_definition designating a specific tagged
