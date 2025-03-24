@@ -594,6 +594,26 @@ ForeverStack<N>::resolve_segments (
   return *current_node;
 }
 
+template <>
+inline tl::optional<Rib::Definition>
+ForeverStack<Namespace::Types>::resolve_final_segment (Node &final_node,
+						       std::string &seg_name,
+						       bool is_lower_self)
+{
+  if (is_lower_self)
+    return Rib::Definition::NonShadowable (final_node.id);
+  else
+    return final_node.rib.get (seg_name);
+}
+
+template <Namespace N>
+tl::optional<Rib::Definition>
+ForeverStack<N>::resolve_final_segment (Node &final_node, std::string &seg_name,
+					bool is_lower_self)
+{
+  return final_node.rib.get (seg_name);
+}
+
 template <Namespace N>
 template <typename S>
 tl::optional<Rib::Definition>
@@ -643,12 +663,13 @@ ForeverStack<N>::resolve_path (
       if (final_node.rib.kind == Rib::Kind::TraitOrImpl)
 	return tl::nullopt;
 
-      std::string seg_name
-	= unwrap_type_segment (segments.back ()).as_string ();
+      auto &seg = unwrap_type_segment (segments.back ());
+      std::string seg_name = seg.as_string ();
 
       // assuming this can't be a lang item segment
-      tl::optional<Rib::Definition> res = final_node.rib.get (seg_name);
-
+      tl::optional<Rib::Definition> res
+	= resolve_final_segment (final_node, seg_name,
+				 seg.is_lower_self_seg ());
       // Ok we didn't find it in the rib, Lets try the prelude...
       if (!res)
 	res = get_prelude (seg_name);

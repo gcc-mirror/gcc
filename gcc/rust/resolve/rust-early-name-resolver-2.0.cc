@@ -417,10 +417,19 @@ Early::finalize_rebind_import (const Early::ImportPair &mapping)
       declared_name = rebind.get_identifier ().as_string ();
       locus = rebind.get_identifier ().get_locus ();
       break;
-    case AST::UseTreeRebind::NewBindType::NONE:
-      declared_name = path.get_final_segment ().as_string ();
-      locus = path.get_final_segment ().get_locus ();
-      break;
+      case AST::UseTreeRebind::NewBindType::NONE: {
+	const auto &segments = path.get_segments ();
+	// We don't want to insert `self` with `use module::self`
+	if (path.get_final_segment ().is_lower_self_seg ())
+	  {
+	    rust_assert (segments.size () > 1);
+	    declared_name = segments[segments.size () - 2].as_string ();
+	  }
+	else
+	  declared_name = path.get_final_segment ().as_string ();
+	locus = path.get_final_segment ().get_locus ();
+	break;
+      }
     case AST::UseTreeRebind::NewBindType::WILDCARD:
       rust_unreachable ();
       break;

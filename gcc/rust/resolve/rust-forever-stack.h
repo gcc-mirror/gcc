@@ -795,6 +795,10 @@ private:
     SegIterator<S> iterator,
     std::function<void (const S &, NodeId)> insert_segment_resolution);
 
+  tl::optional<Rib::Definition> resolve_final_segment (Node &final_node,
+						       std::string &seg_name,
+						       bool is_lower_self);
+
   /* Helper functions for forward resolution (to_canonical_path, to_rib...) */
   struct DfsResult
   {
