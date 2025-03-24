@@ -13633,7 +13633,7 @@
 	  [(match_operand:VFH_AVX512VL 1 "register_operand" "v")
 	   (match_operand:VFH_AVX512VL 2 "nonimmediate_operand" "<round_constraint>")]
 	  UNSPEC_SCALEF))]
-  "TARGET_AVX512F && <round_mode_condition>"
+  "TARGET_AVX512F"
   "vscalef<ssemodesuffix>\t{<round_mask_op3>%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2<round_mask_op3>}"
   [(set_attr "prefix" "evex")
    (set_attr "mode"  "<MODE>")])
