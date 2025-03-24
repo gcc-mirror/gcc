@@ -1953,7 +1953,7 @@ package body Sem_Ch3 is
    procedure Analyze_Component_Declaration (N : Node_Id) is
       Id  : constant Entity_Id  := Defining_Identifier (N);
       E   : constant Node_Id    := Expression (N);
-      Typ : constant Node_Id    :=
+      Ind : constant Node_Id    :=
               Subtype_Indication (Component_Definition (N));
       T   : Entity_Id;
       P   : Entity_Id;
@@ -2052,7 +2052,7 @@ package body Sem_Ch3 is
       Generate_Definition (Id);
       Enter_Name (Id);
 
-      if Present (Typ) then
+      if Present (Ind) then
          T := Find_Type_Of_Object
                 (Subtype_Indication (Component_Definition (N)), N);
 
