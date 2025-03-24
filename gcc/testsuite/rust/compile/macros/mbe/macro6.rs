@@ -1,6 +1,6 @@
 macro_rules! zero_or_one {
     ($($a:literal)?) => {
-        f();
+        1 + 2;
     }
 }
 
