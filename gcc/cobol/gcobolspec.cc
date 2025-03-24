@@ -498,15 +498,11 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
           if( prior_main )
             {
-            char ach[128];
-            if( entry_point )
-              {
-              strcpy(ach, entry_point);
-              }
+            const char *ach;
+            if (entry_point)
+	      ach = entry_point;
             else
-              {
-              strcpy(ach, decoded_options[i].arg);
-              }
+	      ach = decoded_options[i].arg;
             append_option(OPT_main_, ach, 1);
             prior_main = false;
             entry_point = NULL;
