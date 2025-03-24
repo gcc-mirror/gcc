@@ -1018,9 +1018,6 @@
 #define __builtin_ia32_mpsadbw128_mask(A, B, C, D, E) __builtin_ia32_mpsadbw128_mask (A, B, 1, D, E)
 #define __builtin_ia32_mpsadbw256_mask(A, B, C, D, E) __builtin_ia32_mpsadbw256_mask (A, B, 1, D, E)
 
-/* avx10_2convertintrin.h */
-#define __builtin_ia32_vcvt2ps2phx256_mask_round(A, B, C, D, E) __builtin_ia32_vcvt2ps2phx256_mask_round(A, B, C, D, 8)
-
 /* avx10_2-512convertintrin.h */
 #define __builtin_ia32_vcvt2ps2phx512_mask_round(A, B, C, D, E) __builtin_ia32_vcvt2ps2phx512_mask_round(A, B, C, D, 8)
 
@@ -1102,10 +1099,10 @@
 #define __builtin_ia32_minmaxbf16128_mask(A, B, C, D, E) __builtin_ia32_minmaxbf16128_mask (A, B, 4, D, E)
 #define __builtin_ia32_minmaxbf16256_mask(A, B, C, D, E) __builtin_ia32_minmaxbf16256_mask (A, B, 4, D, E)
 #define __builtin_ia32_minmaxpd128_mask(A, B, C, D, E) __builtin_ia32_minmaxpd128_mask (A, B, 4, D, E)
-#define __builtin_ia32_minmaxpd256_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxpd256_mask_round (A, B, 4, D, E, 4)
+#define __builtin_ia32_minmaxpd256_mask(A, B, C, D, E) __builtin_ia32_minmaxpd256_mask (A, B, 4, D, E)
 #define __builtin_ia32_minmaxph128_mask(A, B, C, D, E) __builtin_ia32_minmaxph128_mask (A, B, 4, D, E)
-#define __builtin_ia32_minmaxph256_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxph256_mask_round (A, B, 4, D, E, 4)
+#define __builtin_ia32_minmaxph256_mask(A, B, C, D, E) __builtin_ia32_minmaxph256_mask (A, B, 4, D, E)
 #define __builtin_ia32_minmaxps128_mask(A, B, C, D, E) __builtin_ia32_minmaxps128_mask (A, B, 4, D, E)
-#define __builtin_ia32_minmaxps256_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxps256_mask_round (A, B, 4, D, E, 4)
+#define __builtin_ia32_minmaxps256_mask(A, B, C, D, E) __builtin_ia32_minmaxps256_mask (A, B, 4, D, E)
 
 #include <x86intrin.h>

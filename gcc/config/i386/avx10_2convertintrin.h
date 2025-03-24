@@ -70,99 +70,33 @@ extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_cvtx2ps_ph (__m256 __A, __m256 __B)
 {
-  return (__m256h) __builtin_ia32_vcvt2ps2phx256_mask_round ((__v8sf) __A,
-							     (__v8sf) __B,
-							     (__v16hf)
-							     _mm256_setzero_ph (),
-							     (__mmask16) -1,
-							     _MM_FROUND_CUR_DIRECTION);
+  return (__m256h) __builtin_ia32_vcvt2ps2phx256_mask ((__v8sf) __A,
+						       (__v8sf) __B,
+						       (__v16hf)
+						       _mm256_setzero_ph (),
+						       (__mmask16) -1);
 }
 
 extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_cvtx2ps_ph (__m256h __W, __mmask16 __U, __m256 __A, __m256 __B)
 {
-  return (__m256h) __builtin_ia32_vcvt2ps2phx256_mask_round ((__v8sf) __A,
-							     (__v8sf) __B,
-							     (__v16hf) __W,
-							     (__mmask16) __U,
-							     _MM_FROUND_CUR_DIRECTION);
+  return (__m256h) __builtin_ia32_vcvt2ps2phx256_mask ((__v8sf) __A,
+						       (__v8sf) __B,
+						       (__v16hf) __W,
+						       (__mmask16) __U);
 }
 
 extern __inline __m256h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_maskz_cvtx2ps_ph ( __mmask16 __U, __m256 __A, __m256 __B)
 {
-  return (__m256h) __builtin_ia32_vcvt2ps2phx256_mask_round ((__v8sf) __A,
-							     (__v8sf) __B,
-							     (__v16hf)
-							     _mm256_setzero_ph (),
-							     (__mmask16) __U,
-							     _MM_FROUND_CUR_DIRECTION);
+  return (__m256h) __builtin_ia32_vcvt2ps2phx256_mask ((__v8sf) __A,
+						       (__v8sf) __B,
+						       (__v16hf)
+						       _mm256_setzero_ph (),
+						       (__mmask16) __U);
 }
-
-#ifdef __OPTIMIZE__
-extern __inline __m256h
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_cvtx_round2ps_ph (__m256 __A, __m256 __B, const int __R)
-{
-  return (__m256h) __builtin_ia32_vcvt2ps2phx256_mask_round ((__v8sf) __A,
-							     (__v8sf) __B,
-							     (__v16hf)
-							     _mm256_setzero_ph (),
-							     (__mmask16) -1,
-							     __R);
-}
-
-extern __inline __m256h
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_mask_cvtx_round2ps_ph (__m256h __W, __mmask16 __U, __m256 __A,
-			      __m256 __B, const int __R)
-{
-  return (__m256h) __builtin_ia32_vcvt2ps2phx256_mask_round ((__v8sf) __A,
-							     (__v8sf) __B,
-							     (__v16hf) __W,
-							     (__mmask16) __U,
-							     __R);
-}
-
-extern __inline __m256h
-__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_cvtx_round2ps_ph (__mmask16 __U, __m256 __A,
-			       __m256 __B, const int __R)
-{
-  return (__m256h) __builtin_ia32_vcvt2ps2phx256_mask_round ((__v8sf) __A,
-							     (__v8sf) __B,
-							     (__v16hf)
-							     _mm256_setzero_ph (),
-							     (__mmask16) __U,
-							     __R);
-}
-
-#else
-#define _mm256_cvtx_round2ps_ph(A, B, R) \
-  ((__m256h) __builtin_ia32_vcvt2ps2phx256_mask_round ((__v8sf) (A), \
-						       (__v8sf) (B), \
-						       (__v16hf) \
-						       (_mm256_setzero_ph ()), \
-						       (__mmask16) (-1), \
-						       (R)))
-
-#define _mm256_mask_cvtx_round2ps_ph(W, U, A, B, R) \
-  ((__m256h) __builtin_ia32_vcvt2ps2phx256_mask_round ((__v8sf) (A), \
-						       (__v8sf) (B),  \
-						       (__v16hf) (W), \
-						       (__mmask16) (U), \
-						       (R)))
-
-#define _mm256_maskz_cvtx_round2ps_ph(U, A, B, R) \
-  ((__m256h) __builtin_ia32_vcvt2ps2phx256_mask_round ((__v8sf) (A), \
-						       (__v8sf) (B),  \
-						       (__v16hf) \
-						       (_mm256_setzero_ph ()),  \
-						       (__mmask16) (U), \
-						       (R)))
-#endif  /* __OPTIMIZE__  */
 
 extern __inline__ __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
