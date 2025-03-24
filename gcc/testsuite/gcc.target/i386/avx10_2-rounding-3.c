@@ -123,24 +123,6 @@
 /* { dg-final { scan-assembler-times "vgetmantps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 }  } */
 /* { dg-final { scan-assembler-times "vgetmantps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)"  1 }  } */
 /* { dg-final { scan-assembler-times "vgetmantps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)"  1 }  } */
-/* { dg-final { scan-assembler-times "vmaxpd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1  }  } */
-/* { dg-final { scan-assembler-times "vmaxpd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vmaxpd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vmaxph\[ \\t\]+\{sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vmaxph\[ \\t\]+\{sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 2  }  } */
-/* { dg-final { scan-assembler-times "vmaxph\[ \\t\]+\{sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vmaxps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1  }  } */
-/* { dg-final { scan-assembler-times "vmaxps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vmaxps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vminpd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1  }  } */
-/* { dg-final { scan-assembler-times "vminpd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vminpd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vminph\[ \\t\]+\{sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vminph\[ \\t\]+\{sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 2  }  } */
-/* { dg-final { scan-assembler-times "vminph\[ \\t\]+\{sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vminps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1  }  } */
-/* { dg-final { scan-assembler-times "vminps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vminps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
 
 #include <immintrin.h>
 
@@ -398,36 +380,4 @@ avx10_2_test_17 (void)
 				    _MM_MANT_SIGN_src, _MM_FROUND_NO_EXC);
   x = _mm256_maskz_getmant_round_ps (m8, x, _MM_MANT_NORM_p75_1p5,
 				     _MM_MANT_SIGN_src, _MM_FROUND_NO_EXC);
-}
-
-void extern
-avx10_2_test_18 (void)
-{
-  xd = _mm256_max_round_pd (xd, xd, _MM_FROUND_NO_EXC);
-  xd = _mm256_mask_max_round_pd (xd, m8, xd, xd, _MM_FROUND_NO_EXC);
-  xd = _mm256_maskz_max_round_pd (m8, xd, xd, _MM_FROUND_NO_EXC);
-
-  xh = _mm256_max_round_ph (xh, xh, _MM_FROUND_NO_EXC);
-  xh = _mm256_mask_max_round_ph (xh, m16, xh, xh, _MM_FROUND_NO_EXC);
-  xh = _mm256_maskz_max_round_ph (m16, xh, xh, _MM_FROUND_NO_EXC);
-
-  x = _mm256_max_round_ps (x, x, _MM_FROUND_NO_EXC);
-  x = _mm256_mask_max_round_ps (x, m8, x, x, _MM_FROUND_NO_EXC);
-  x = _mm256_maskz_max_round_ps (m8, x, x, _MM_FROUND_NO_EXC);
-}
-
-void extern
-avx10_2_test_19 (void)
-{
-  xd = _mm256_min_round_pd (xd, xd, _MM_FROUND_NO_EXC);
-  xd = _mm256_mask_min_round_pd (xd, m8, xd, xd, _MM_FROUND_NO_EXC);
-  xd = _mm256_maskz_min_round_pd (m8, xd, xd, _MM_FROUND_NO_EXC);
-
-  xh = _mm256_min_round_ph (xh, xh, _MM_FROUND_NO_EXC);
-  xh = _mm256_mask_min_round_ph (xh, m16, xh, xh, _MM_FROUND_NO_EXC);
-  xh = _mm256_maskz_min_round_ph (m16, xh, xh, _MM_FROUND_NO_EXC);
-
-  x = _mm256_min_round_ps (x, x, _MM_FROUND_NO_EXC);
-  x = _mm256_mask_min_round_ps (x, m8, x, x, _MM_FROUND_NO_EXC);
-  x = _mm256_maskz_min_round_ps (m8, x, x, _MM_FROUND_NO_EXC);
 }

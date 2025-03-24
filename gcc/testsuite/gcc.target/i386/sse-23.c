@@ -957,12 +957,6 @@
 #define __builtin_ia32_getmantpd256_mask_round(A, F, C, D, E) __builtin_ia32_getmantpd256_mask_round(A, 1, C, D, 8)
 #define __builtin_ia32_getmantph256_mask_round(A, F, C, D, E) __builtin_ia32_getmantph256_mask_round(A, 1, C, D, 8)
 #define __builtin_ia32_getmantps256_mask_round(A, F, C, D, E) __builtin_ia32_getmantps256_mask_round(A, 1, C, D, 8)
-#define __builtin_ia32_maxpd256_mask_round(A, B, C, D, E) __builtin_ia32_maxpd256_mask_round(A, B, C, D, 8)
-#define __builtin_ia32_maxph256_mask_round(A, B, C, D, E) __builtin_ia32_maxph256_mask_round(A, B, C, D, 8)
-#define __builtin_ia32_maxps256_mask_round(A, B, C, D, E) __builtin_ia32_maxps256_mask_round(A, B, C, D, 8)
-#define __builtin_ia32_minpd256_mask_round(A, B, C, D, E) __builtin_ia32_minpd256_mask_round(A, B, C, D, 8)
-#define __builtin_ia32_minph256_mask_round(A, B, C, D, E) __builtin_ia32_minph256_mask_round(A, B, C, D, 8)
-#define __builtin_ia32_minps256_mask_round(A, B, C, D, E) __builtin_ia32_minps256_mask_round(A, B, C, D, 8)
 
 /* avx10_2-512mediaintrin.h  */
 #define __builtin_ia32_mpsadbw512(A, B, C) __builtin_ia32_mpsadbw512 (A, B, 1)
