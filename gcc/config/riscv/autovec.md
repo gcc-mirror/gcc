@@ -2975,7 +2975,8 @@
   [(match_operand:V_VLSI 0 "register_operand")
    (match_operand:V_VLSI 1 "register_operand")
    (match_operand:V_VLSI 2 "register_operand")]
-  "TARGET_VECTOR"
+  ;; Disabled until PR119224 is resolved
+  "TARGET_VECTOR && 0"
   {
     rtx max = gen_reg_rtx (<MODE>mode);
     insn_code icode = code_for_pred (UMAX, <MODE>mode);
