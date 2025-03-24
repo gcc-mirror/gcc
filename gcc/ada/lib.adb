@@ -1129,15 +1129,6 @@ package body Lib is
       Units.Locked := True;
    end Lock;
 
-   ---------------
-   -- Num_Units --
-   ---------------
-
-   function Num_Units return Nat is
-   begin
-      return Int (Units.Last) - Int (Main_Unit) + 1;
-   end Num_Units;
-
    -----------------
    -- Remove_Unit --
    -----------------

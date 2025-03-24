@@ -633,10 +633,8 @@ package Lib is
    --  Same as above, but for Source_Ptr
 
    function ipu (N : Node_Or_Entity_Id) return Boolean;
-   --  Same as In_Predefined_Unit, but renamed so it can assist debugging.
-   --  Otherwise, there is a disambiguous name conflict in the two versions of
-   --  In_Predefined_Unit which makes it inconvient to set as a breakpoint
-   --  condition.
+   --  Same as In_Predefined_Unit, but renamed to this unambiguous name for use
+   --  in the debugger.
 
    function In_Predefined_Unit (N : Node_Or_Entity_Id) return Boolean;
    --  Returns True if the given node or entity appears within the source text
@@ -720,12 +718,9 @@ package Lib is
    procedure Lock;
    --  Lock internal tables before calling back end
 
-   function Num_Units return Nat;
-   --  Number of units currently in unit table
-
    procedure Remove_Unit (U : Unit_Number_Type);
-   --  Remove unit U from unit table. Currently this is effective only if U is
-   --  the last unit currently stored in the unit table.
+   --  Remove unit U from unit table. U must be the last unit currently stored
+   --  in the unit table.
 
    procedure Replace_Linker_Option_String
      (S            : String_Id;

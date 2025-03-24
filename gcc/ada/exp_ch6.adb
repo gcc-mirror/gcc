@@ -9938,14 +9938,14 @@ package body Exp_Ch6 is
    --  Start of processing for Validate_Subprogram_Calls
 
    begin
-      --  No action required if we are not generating code or compiling sources
-      --  that have errors.
+      --  No action if we are not generating code (including if we have
+      --  errors).
 
-      if Serious_Errors_Detected > 0
-        or else Operating_Mode /= Generate_Code
-      then
+      if Operating_Mode /= Generate_Code then
          return;
       end if;
+
+      pragma Assert (Serious_Errors_Detected = 0);
 
       Check_Calls (N);
    end Validate_Subprogram_Calls;
