@@ -3513,7 +3513,7 @@ namespace __format
       basic_format_parse_context<_CharT> _M_pc;
 
       constexpr explicit
-      _Scanner(basic_string_view<_CharT> __str, size_t __nargs = -1)
+      _Scanner(basic_string_view<_CharT> __str, size_t __nargs = (size_t)-1)
       : _M_pc(__str, __nargs)
       { }
 
