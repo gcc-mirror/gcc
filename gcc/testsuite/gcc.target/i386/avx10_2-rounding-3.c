@@ -39,21 +39,6 @@
 /* { dg-final { scan-assembler-times "vfmadd...ps\[ \\t\]+\[^\n\]*\{rd-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vfmadd231ps\[ \\t\]+\[^\n\]*\{ru-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vfmadd...ps\[ \\t\]+\[^\n\]*\{rz-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfmaddcph\[ \\t\]+\{rn-sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfmaddcph\[ \\t\]+\{rn-sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 2  }  } */
-/* { dg-final { scan-assembler-times "vfmaddcph\[ \\t\]+\{rz-sae\}\[^\{\n\]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfmaddsub...pd\[ \\t\]+\[^\n\]*\{rn-sae\}\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfmaddsub...pd\[ \\t\]+\[^\n\]*\{rd-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfmaddsub231pd\[ \\t\]+\[^\n\]*\{ru-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfmaddsub...pd\[ \\t\]+\[^\n\]*\{rz-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfmaddsub...ph\[ \\t\]+\[^\n\]*\{rn-sae\}\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfmaddsub...ph\[ \\t\]+\[^\n\]*\{rd-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfmaddsub231ph\[ \\t\]+\[^\n\]*\{ru-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfmaddsub...ph\[ \\t\]+\[^\n\]*\{rz-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfmaddsub...ps\[ \\t\]+\[^\n\]*\{rn-sae\}\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfmaddsub...ps\[ \\t\]+\[^\n\]*\{rd-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfmaddsub231ps\[ \\t\]+\[^\n\]*\{ru-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfmaddsub...ps\[ \\t\]+\[^\n\]*\{rz-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
 
 #include <immintrin.h>
 
@@ -150,32 +135,4 @@ avx10_2_test_7 (void)
   x = _mm256_mask_fmadd_round_ps (x, m8, x, x, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC);
   x = _mm256_mask3_fmadd_round_ps (x, x, x, m8, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC);
   x = _mm256_maskz_fmadd_round_ps (m8, x, x, x, _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC);
-}
-
-void extern
-avx10_2_test_8 (void)
-{
-  xh = _mm256_fmadd_round_pch (xh, xh, xh, 8);
-  xh = _mm256_mask_fmadd_round_pch (xh, m8, xh, xh, 8);
-  xh = _mm256_mask3_fmadd_round_pch (xh, xh, xh, m8, 8);
-  xh = _mm256_maskz_fmadd_round_pch (m8, xh, xh, xh, 11);
-}
-
-void extern
-avx10_2_test_9 (void)
-{
-  xd = _mm256_fmaddsub_round_pd (xd, xd, xd, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
-  xd = _mm256_mask_fmaddsub_round_pd (xd, m8, xd, xd, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC);
-  xd = _mm256_mask3_fmaddsub_round_pd (xd, xd, xd, m8, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC);
-  xd = _mm256_maskz_fmaddsub_round_pd (m8, xd, xd, xd, _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC);
-
-  xh = _mm256_fmaddsub_round_ph (xh, xh, xh, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
-  xh = _mm256_mask_fmaddsub_round_ph (xh, m8, xh, xh, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC);
-  xh = _mm256_mask3_fmaddsub_round_ph (xh, xh, xh, m8, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC);
-  xh = _mm256_maskz_fmaddsub_round_ph (m8, xh, xh, xh, _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC);
-
-  x = _mm256_fmaddsub_round_ps (x, x, x, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
-  x = _mm256_mask_fmaddsub_round_ps (x, m8, x, x, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC);
-  x = _mm256_mask3_fmaddsub_round_ps (x, x, x, m8, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC);
-  x = _mm256_maskz_fmaddsub_round_ps (m8, x, x, x, _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC);
 }
