@@ -1,3 +1,10 @@
+use Option::{None, Some};
+
+enum Option<T> {
+    None,
+    Some(T)
+}
+
 macro_rules! nonzero_integers {
     ( $( $Ty: ident($Int: ty); )+ ) => {
         $(
@@ -14,7 +21,7 @@ macro_rules! nonzero_integers {
             // not all derive macros are implemented yet, and this test does not test these anyways
             // #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
             #[repr(transparent)]
-            pub struct $Ty(NonZero<$Int>);
+            pub struct $Ty($Int);
 
             impl $Ty {
                 /// Create a non-zero without checking the value.
@@ -25,7 +32,7 @@ macro_rules! nonzero_integers {
                 #[stable(feature = "nonzero", since = "1.28.0")]
                 #[inline]
                 pub const unsafe fn new_unchecked(n: $Int) -> Self {
-                    $Ty(NonZero(n))
+                    $Ty(n)
                 }
 
                 /// Create a non-zero if the given value is not zero.
@@ -33,7 +40,7 @@ macro_rules! nonzero_integers {
                 #[inline]
                 pub fn new(n: $Int) -> Option<Self> {
                     if n != 0 {
-                        Some($Ty(NonZero(n)))
+                        Some($Ty(n))
                     } else {
                         None
                     }
@@ -43,7 +50,7 @@ macro_rules! nonzero_integers {
                 #[stable(feature = "nonzero", since = "1.28.0")]
                 #[inline]
                 pub fn get(self) -> $Int {
-                    self.0 .0
+                    self.0
                 }
 
             }
