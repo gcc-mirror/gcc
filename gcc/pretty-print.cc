@@ -2044,6 +2044,16 @@ format_phase_2 (pretty_printer *pp,
 	    pp_string (pp, va_arg (*text.m_args_ptr, const char *));
 	  break;
 
+	case 'B':
+	  {
+	    string_slice s = *va_arg (*text.m_args_ptr, string_slice *);
+	    if (quote)
+	      pp_quoted_string (pp, s.begin (), s.size ());
+	    else
+	      pp_string_n (pp, s.begin (), s.size ());
+	    break;
+	  }
+
 	case 'p':
 	  pp_pointer (pp, va_arg (*text.m_args_ptr, void *));
 	  break;

@@ -70,6 +70,7 @@ static GTY(()) tree local_event_ptr_node;
 static GTY(()) tree local_pp_element_ptr_node;
 static GTY(()) tree local_gimple_ptr_node;
 static GTY(()) tree local_cgraph_node_ptr_node;
+static GTY(()) tree local_string_slice_node;
 static GTY(()) tree locus;
 
 static bool decode_format_attr (const_tree, tree, tree, function_format_info *,
@@ -770,6 +771,7 @@ static const format_char_info asm_fprintf_char_table[] =
   { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "c",  NULL }, \
   { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "//cR",   NULL }, \
   { "@",   1, STD_C89, { T_EVENT_PTR,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL }, \
+  { "B",   1, STD_C89, { T_STRING_SLICE,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q", "",   NULL }, \
   { "e",   1, STD_C89, { T_PP_ELEMENT_PTR,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"", NULL }, \
   { "<",   0, STD_C89, NOARGUMENTS, "",      "<",   NULL }, \
   { ">",   0, STD_C89, NOARGUMENTS, "",      ">",   NULL }, \
@@ -5210,6 +5212,11 @@ init_dynamic_diag_info (void)
   if (!local_cgraph_node_ptr_node
       || local_cgraph_node_ptr_node == void_type_node)
     local_cgraph_node_ptr_node = get_named_type ("cgraph_node");
+
+  /* Similar to the above but for string_slice*.  */
+  if (!local_string_slice_node
+      || local_string_slice_node == void_type_node)
+    local_string_slice_node = get_named_type ("string_slice");
 
   /* Similar to the above but for diagnostic_event_id_t*.  */
   if (!local_event_ptr_node

@@ -29,6 +29,8 @@ typedef struct diagnostic_event_id_t diagnostic_event_id_t;
 namespace pp_markup { class element; }
 typedef pp_markup::element pp_element;
 
+typedef class string_slice string_slice;
+
 #define FORMAT(kind) __attribute__ ((format (__gcc_## kind ##__, 1, 2)))
 
 void diag (const char*, ...) FORMAT (diag);
@@ -63,7 +65,7 @@ void test_diag (tree t, gimple *gc, diagnostic_event_id_t *event_id_ptr,
   diag ("%e", 42); /* { dg-warning "format" } */
 }
 
-void test_cdiag (tree t, gimple *gc)
+void test_cdiag (tree t, gimple *gc, string_slice *s)
 {
   cdiag ("%<");   /* { dg-warning "unterminated quoting directive" } */
   cdiag ("%>");   /* { dg-warning "unmatched quoting directive " } */
@@ -74,6 +76,7 @@ void test_cdiag (tree t, gimple *gc)
   cdiag ("%F", t);       /* { dg-warning ".F. conversion used unquoted" } */
   cdiag ("%G", gc);      /* { dg-warning "format" } */
   cdiag ("%K", t);       /* { dg-warning "format" } */
+  cdiag ("%B", s);
 
   cdiag ("%R");       /* { dg-warning "unmatched color reset directive" } */
   cdiag ("%r", "");   /* { dg-warning "unterminated color directive" } */
@@ -90,6 +93,7 @@ void test_cdiag (tree t, gimple *gc)
   cdiag ("%<%F%>", t);
   cdiag ("%<%G%>", gc);  /* { dg-warning "format" } */
   cdiag ("%<%K%>", t);   /* { dg-warning "format" } */
+  cdiag ("%<%B%>", s);
 
   cdiag ("%<%R%>");      /* { dg-warning "unmatched color reset directive" } */
   cdiag ("%<%r%>", "");  /* { dg-warning "unterminated color directive" } */
@@ -101,9 +105,10 @@ void test_cdiag (tree t, gimple *gc)
   cdiag ("%<%qD%>", t);  /* { dg-warning ".q. flag used within a quoted sequence" } */
   cdiag ("%<%qE%>", t);  /* { dg-warning ".q. flag used within a quoted sequence" } */
   cdiag ("%<%qT%>", t);  /* { dg-warning ".q. flag used within a quoted sequence" } */
+  cdiag ("%<%qB%>", s);  /* { dg-warning ".q. flag used within a quoted sequence" } */
 }
 
-void test_tdiag (tree t, gimple *gc)
+void test_tdiag (tree t, gimple *gc, string_slice *s)
 {
   tdiag ("%<");       /* { dg-warning "unterminated quoting directive" } */
   tdiag ("%>");       /* { dg-warning "unmatched quoting directive " } */
@@ -113,6 +118,7 @@ void test_tdiag (tree t, gimple *gc)
   tdiag ("%E", t);
   tdiag ("%G", gc);     /* { dg-warning "format" } */
   tdiag ("%K", t);      /* { dg-warning "format" } */
+  tdiag ("%B", s);
 
   tdiag ("%R");          /* { dg-warning "unmatched color reset directive" } */
   tdiag ("%r", "");   /* { dg-warning "unterminated color directive" } */
@@ -138,9 +144,10 @@ void test_tdiag (tree t, gimple *gc)
   tdiag ("%<%qD%>", t);  /* { dg-warning ".q. flag used within a quoted sequence" } */
   tdiag ("%<%qE%>", t);  /* { dg-warning ".q. flag used within a quoted sequence" } */
   tdiag ("%<%qT%>", t);  /* { dg-warning ".q. flag used within a quoted sequence" } */
+  tdiag ("%<%qB%>", s);  /* { dg-warning ".q. flag used within a quoted sequence" } */
 }
 
-void test_cxxdiag (tree t, gimple *gc)
+void test_cxxdiag (tree t, gimple *gc, string_slice *s)
 {
   cxxdiag ("%A", t);     /* { dg-warning ".A. conversion used unquoted" } */
   cxxdiag ("%D", t);     /* { dg-warning ".D. conversion used unquoted" } */
@@ -148,6 +155,7 @@ void test_cxxdiag (tree t, gimple *gc)
   cxxdiag ("%F", t);     /* { dg-warning ".F. conversion used unquoted" } */
   cxxdiag ("%G", gc);    /* { dg-warning "format" } */
   cxxdiag ("%K", t);     /* { dg-warning "format" } */
+  cxxdiag ("%B", s);
 
   cxxdiag ("%R");        /* { dg-warning "unmatched color reset directive" } */
   cxxdiag ("%r", "");    /* { dg-warning "unterminated color directive" } */
@@ -172,9 +180,10 @@ void test_cxxdiag (tree t, gimple *gc)
   cxxdiag ("%<%T%>", t);
   cxxdiag ("%<%V%>", t);
   cxxdiag ("%<%X%>", t);
+  cxxdiag ("%<%B%>", s);
 }
 
-void test_dump (tree t, gimple *stmt, cgraph_node *node)
+void test_dump (tree t, gimple *stmt, cgraph_node *node, string_slice *s)
 {
   dump ("%<");   /* { dg-warning "unterminated quoting directive" } */
   dump ("%>");   /* { dg-warning "unmatched quoting directive " } */
@@ -197,4 +206,5 @@ void test_dump (tree t, gimple *stmt, cgraph_node *node)
   dump ("%C", node);
   dump ("%f", 1.0);
   dump ("%4.2f", 1.0); /* { dg-warning "format" } */
+  dump ("%B", s);
 }
