@@ -23,4 +23,4 @@ int main ()
 }
 
 /* There should be no 'unaligned' comments.  */
-/* { dg-final { scan-assembler-not "unaligned" } } */
+/* { dg-final { scan-assembler-not "@ unaligned" } } */
