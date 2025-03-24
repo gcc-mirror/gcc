@@ -199,7 +199,6 @@
 (define_subst_attr "round_constraint" "round" "vm" "v")
 (define_subst_attr "round_suff" "round" "{y}" "")
 (define_subst_attr "round_qq2phsuff" "round" "<qq2phsuff>" "")
-(define_subst_attr "round_pd2udqsuff" "round" "<pd2udqsuff>" "")
 (define_subst_attr "bcst_round_constraint" "round" "vmBr" "v")
 (define_subst_attr "round_constraint2" "round" "m" "v")
 (define_subst_attr "round_constraint3" "round" "rm" "r")

@@ -9400,13 +9400,12 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "OI")])
 
-(define_insn "avx_cvtpd2dq256<mask_name><round_name>"
+(define_insn "avx_cvtpd2dq256<mask_name>"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
-	(unspec:V4SI [(match_operand:V4DF 1 "<round_nimm_predicate>" "<round_constraint>")]
+	(unspec:V4SI [(match_operand:V4DF 1 "nonimmediate_operand" "vm")]
 		     UNSPEC_FIX_NOTRUNC))]
-  "TARGET_AVX && <mask_avx512vl_condition>
-   && (!<round_applied> || TARGET_AVX10_2_256)"
-  "vcvtpd2dq<round_suff>\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
+  "TARGET_AVX && <mask_avx512vl_condition>"
+  "vcvtpd2dq{y}\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "<mask_prefix>")
    (set_attr "mode" "OI")])
@@ -9496,8 +9495,8 @@
 	(unspec:<si2dfmode>
 	  [(match_operand:VF2_512_256VL 1 "nonimmediate_operand" "<round_constraint>")]
 	  UNSPEC_UNSIGNED_FIX_NOTRUNC))]
-  "TARGET_AVX512F && <round_mode_condition>"
-  "vcvtpd2udq<round_pd2udqsuff>\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
+  "TARGET_AVX512F"
+  "vcvtpd2udq<pd2udqsuff>\t{<round_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_mask_op2>}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])

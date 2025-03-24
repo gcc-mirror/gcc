@@ -12750,9 +12750,7 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V8DF_FTYPE_V8SF_V8DF_QI_INT:
     case V16SF_FTYPE_V16HI_V16SF_HI_INT:
     case V8SF_FTYPE_V8SI_V8SF_UQI_INT:
-    case V4DI_FTYPE_V4DF_V4DI_UQI_INT:
     case V2DF_FTYPE_V2DF_V2DF_V2DF_INT:
-    case V4SI_FTYPE_V4DF_V4SI_UQI_INT:
     case V4SF_FTYPE_V4DF_V4SF_UQI_INT:
     case V4SF_FTYPE_V4SF_V4SF_V4SF_INT:
     case V8HF_FTYPE_V8DI_V8HF_UQI_INT:
