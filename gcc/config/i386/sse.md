@@ -7865,7 +7865,7 @@
 	(unspec:VI2H_AVX512VL
 	  [(match_operand:<ssePHmode> 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")]
 	  UNSPEC_VCVTT_U))]
-  "TARGET_AVX512FP16 && <round_saeonly_mode_condition>"
+  "TARGET_AVX512FP16"
   "vcvttph2<vcvtt_suffix><sseintconvert>\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
@@ -7875,7 +7875,7 @@
   [(set (match_operand:VI2H_AVX512VL 0 "register_operand" "=v")
 	(any_fix:VI2H_AVX512VL
 	  (match_operand:<ssePHmode> 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")))]
-  "TARGET_AVX512FP16 && <round_saeonly_mode_condition>"
+  "TARGET_AVX512FP16"
   "vcvttph2<fixsuffix><sseintconvert>\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
@@ -7898,13 +7898,13 @@
     }
 })
 
-(define_insn "unspec_avx512fp16_fix<vcvtt_uns_suffix>_trunc<mode>2<mask_name><round_saeonly_name>"
+(define_insn "unspec_avx512fp16_fix<vcvtt_uns_suffix>_trunc<mode>2<mask_name>"
   [(set (match_operand:VI4_128_8_256 0 "register_operand" "=v")
 	(unspec:VI4_128_8_256
 	    [(match_operand:V8HF 1 "register_operand" "v")]
 	    UNSPEC_VCVTT_U))]
-  "TARGET_AVX512FP16 && TARGET_AVX512VL && <round_saeonly_mode_condition>"
-  "vcvttph2<vcvtt_suffix><sseintconvert>\t{<round_saeonly_mask_op2>%1, %0<mask_operand2>|%0<mask_operand2>, %1<round_saeonly_mask_op2>}"
+  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+  "vcvttph2<vcvtt_suffix><sseintconvert>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "type" "ssecvt")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
