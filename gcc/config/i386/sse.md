@@ -4021,7 +4021,7 @@
 	  [(match_operand:VFH_AVX512VL 1 "<round_saeonly_nimm_predicate>" "<round_saeonly_constraint>")
 	   (match_operand:SI 2 "const_0_to_255_operand")]
 	  UNSPEC_REDUCE))]
-  "(TARGET_AVX512DQ || (VALID_AVX512FP16_REG_MODE (<MODE>mode))) && <round_saeonly_mode_condition>"
+  "TARGET_AVX512DQ || (VALID_AVX512FP16_REG_MODE (<MODE>mode))"
   "vreduce<ssemodesuffix>\t{%2, <round_saeonly_mask_op3>%1, %0<mask_operand3>|%0<mask_operand3>, %1<round_saeonly_mask_op3>, %2}"
   [(set_attr "type" "sse")
    (set_attr "prefix" "evex")
@@ -14234,7 +14234,7 @@
 	  [(match_operand:VFH_AVX512VL 1 "nonimmediate_operand" "<round_saeonly_constraint>")
 	   (match_operand:SI 2 "const_0_to_255_operand")]
 	  UNSPEC_ROUND))]
-  "TARGET_AVX512F && <round_saeonly_mode_condition>"
+  "TARGET_AVX512F"
   "vrndscale<ssemodesuffix>\t{%2, <round_saeonly_mask_op3>%1, %0<mask_operand3>|%0<mask_operand3>, %1<round_saeonly_mask_op3>, %2}"
   [(set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")

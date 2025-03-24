@@ -156,24 +156,6 @@
 /* { dg-final { scan-assembler-times "vrangeps\[ \\t\]+\[^\$\n\]*\\$\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1  }  } */
 /* { dg-final { scan-assembler-times "vrangeps\[ \\t\]+\[^\$\n\]*\\$\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vrangeps\[ \\t\]+\[^\$\n\]*\\$\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vreducepd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1  }  } */
-/* { dg-final { scan-assembler-times "vreducepd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vreducepd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vreduceph\[ \\t\]+\[^\{\n\]*\{sae\}\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1  }  } */
-/* { dg-final { scan-assembler-times "vreduceph\[ \\t\]+\[^\{\n\]*\{sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vreduceph\[ \\t\]+\[^\{\n\]*\{sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vreduceps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1  }  } */
-/* { dg-final { scan-assembler-times "vreduceps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vreduceps\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vrndscalepd\[ \\t\]+\\S*,\[ \\t\]+\{sae\}\[^\n\]*%ymm\[0-9\]+\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vrndscalepd\[ \\t\]+\\S*,\[ \\t\]+\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vrndscalepd\[ \\t\]+\\S*,\[ \\t\]+\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vrndscaleph\[ \\t\]+\[^\n\]*\{sae\}\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1  }  } */
-/* { dg-final { scan-assembler-times "vrndscaleph\[ \\t\]+\[^\n\]*\{sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vrndscaleph\[ \\t\]+\[^\n\]*\{sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vrndscaleps\[ \\t\]+\\S*,\[ \\t\]+\{sae\}\[^\n\]*%ymm\[0-9\]+\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vrndscaleps\[ \\t\]+\\S*,\[ \\t\]+\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vrndscaleps\[ \\t\]+\\S*,\[ \\t\]+\{sae\}\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
 
 #include <immintrin.h>
 
@@ -491,36 +473,4 @@ avx10_2_test_21 (void)
   x = _mm256_range_round_ps (x, x, 15, _MM_FROUND_NO_EXC);
   x = _mm256_mask_range_round_ps (x, m16, x, x, 15, _MM_FROUND_NO_EXC);
   x = _mm256_maskz_range_round_ps (m16, x, x, 15, _MM_FROUND_NO_EXC);
-}
-
-void extern
-avx10_2_test_22 (void)
-{
-  xd = _mm256_reduce_round_pd (xd, 123, _MM_FROUND_NO_EXC);
-  xd = _mm256_mask_reduce_round_pd (xd, m8, xd, 123, _MM_FROUND_NO_EXC);
-  xd = _mm256_maskz_reduce_round_pd (m8, xd, 123, _MM_FROUND_NO_EXC);
-
-  xh = _mm256_reduce_round_ph (xh, 123, _MM_FROUND_NO_EXC);
-  xh = _mm256_mask_reduce_round_ph (xh, m16, xh, 123, _MM_FROUND_NO_EXC);
-  xh = _mm256_maskz_reduce_round_ph (m16, xh, 123, _MM_FROUND_NO_EXC);
-
-  x = _mm256_reduce_round_ps (x, 123, _MM_FROUND_NO_EXC);
-  x = _mm256_mask_reduce_round_ps (x, m8, x, 123, _MM_FROUND_NO_EXC);
-  x = _mm256_maskz_reduce_round_ps (m8, x, 123, _MM_FROUND_NO_EXC);
-}
-
-void extern
-avx10_2_test_23 (void)
-{
-  xd = _mm256_roundscale_round_pd (xd, 0x42, _MM_FROUND_NO_EXC);
-  xd = _mm256_mask_roundscale_round_pd (xd, 2, xd, 0x42, _MM_FROUND_NO_EXC);
-  xd = _mm256_maskz_roundscale_round_pd (2, xd, 0x42, _MM_FROUND_NO_EXC);
-
-  xh = _mm256_roundscale_round_ph (xh, 123, 8);
-  xh = _mm256_mask_roundscale_round_ph (xh, m16, xh, 123, 8);
-  xh = _mm256_maskz_roundscale_round_ph (m16, xh, 123, 8);
-
-  x = _mm256_roundscale_round_ps (x, 0x42, _MM_FROUND_NO_EXC);
-  x = _mm256_mask_roundscale_round_ps (x, 2, x, 0x42, _MM_FROUND_NO_EXC);
-  x = _mm256_maskz_roundscale_round_ps (2, x, 0x42, _MM_FROUND_NO_EXC);
 }

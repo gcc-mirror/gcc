@@ -986,12 +986,6 @@
 #define __builtin_ia32_mulps256_mask_round(A, B, C, D, E) __builtin_ia32_mulps256_mask_round(A, B, C, D, 8)
 #define __builtin_ia32_rangeps256_mask_round(A, B, I, D, E, F) __builtin_ia32_rangeps256_mask_round(A, B, 1, D, E, 8)
 #define __builtin_ia32_rangepd256_mask_round(A, B, I, D, E, F) __builtin_ia32_rangepd256_mask_round(A, B, 1, D, E, 8)
-#define __builtin_ia32_reducepd256_mask_round(A, B, C, D, E) __builtin_ia32_reducepd256_mask_round(A, 8, C, D, 8)
-#define __builtin_ia32_reduceph256_mask_round(A, B, C, D, E) __builtin_ia32_reduceph256_mask_round(A, 8, C, D, 8)
-#define __builtin_ia32_reduceps256_mask_round(A, B, C, D, E) __builtin_ia32_reduceps256_mask_round(A, 8, C, D, 8)
-#define __builtin_ia32_rndscalepd256_mask_round(A, B, C, D, E) __builtin_ia32_rndscalepd256_mask_round(A, 1, C, D, 8)
-#define __builtin_ia32_rndscaleph256_mask_round(A, B, C, D, E) __builtin_ia32_rndscaleph256_mask_round(A, 1, C, D, 8)
-#define __builtin_ia32_rndscaleps256_mask_round(A, B, C, D, E) __builtin_ia32_rndscaleps256_mask_round(A, 1, C, D, 8)
 
 /* avx10_2-512mediaintrin.h */
 #define __builtin_ia32_mpsadbw512(A, B, C) __builtin_ia32_mpsadbw512 (A, B, 1)
