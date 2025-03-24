@@ -79,7 +79,7 @@ _movrs_i64 (void const * __P)
 
 #ifdef __x86_64__
 
-#if !defined (__AVX10_2_256__) || !defined (__MOVRS__)
+#if !defined (__AVX10_2__) || !defined (__MOVRS__)
 #pragma GCC push_options
 #pragma GCC target("avx10.2,movrs")
 #define __DISABLE_MOVRS_AVX10_2__
@@ -317,17 +317,6 @@ _mm_maskz_loadrs_epi16 (__mmask8 __U, void const *__A)
 						   (__mmask8) __U);
 }
 
-#ifdef __DISABLE_MOVRS_AVX10_2__
-#undef __DISABLE_MOVRS_AVX10_2__
-#pragma GCC pop_options
-#endif /* __DISABLE_MOVRS_AVX10_2__ */
-
-#if !defined (__AVX10_2_512__) || !defined (__MOVRS__)
-#pragma GCC push_options
-#pragma GCC target("avx10.2-512,movrs")
-#define __DISABLE_MOVRS_AVX10_2_512__
-#endif /* __MOVRS_AVX10_2_512__ */
-
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_loadrs_epi8 (void const *__A)
@@ -443,10 +432,10 @@ _mm512_maskz_loadrs_epi16 (__mmask32 __U, void const *__A)
 						   (__mmask32) __U);
 }
 
-#ifdef __DISABLE_MOVRS_AVX10_2_512__
-#undef __DISABLE_MOVRS_AVX10_2_512__
+#ifdef __DISABLE_MOVRS_AVX10_2__
+#undef __DISABLE_MOVRS_AVX10_2__
 #pragma GCC pop_options
-#endif /* __DISABLE_MOVRS_AVX10_2_512__ */
+#endif /* __DISABLE_MOVRS_AVX10_2__ */
 
 #endif /* __x86_64__ */
 

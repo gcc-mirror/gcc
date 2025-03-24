@@ -28,11 +28,11 @@
 #ifndef _AVX10_2SATCVTINTRIN_H_INCLUDED
 #define _AVX10_2SATCVTINTRIN_H_INCLUDED
 
-#if !defined (__AVX10_2_256__)
+#if !defined (__AVX10_2__)
 #pragma GCC push_options
 #pragma GCC target("avx10.2")
-#define __DISABLE_AVX10_2_256__
-#endif /* __AVX10_2_256__ */
+#define __DISABLE_AVX10_2__
+#endif /* __AVX10_2__ */
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -1401,9 +1401,9 @@ _mm_cvtts_roundss_epu64 (__m128 __A, const int __R)
 #endif
 #endif /* __x86_64__ */
 
-#ifdef __DISABLE_AVX10_2_256__
-#undef __DISABLE_AVX10_2_256__
+#ifdef __DISABLE_AVX10_2__
+#undef __DISABLE_AVX10_2__
 #pragma GCC pop_options
-#endif /* __DISABLE_AVX10_2_256__ */
+#endif /* __DISABLE_AVX10_2__ */
 
 #endif /* _AVX10_2SATCVTINTRIN_H_INCLUDED */

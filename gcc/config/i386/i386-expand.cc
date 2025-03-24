@@ -2531,7 +2531,7 @@ ix86_expand_branch (enum rtx_code code, rtx op0, rtx op1, rtx label)
       return;
 
     case E_BFmode:
-      gcc_assert (TARGET_AVX10_2_256 && !flag_trapping_math);
+      gcc_assert (TARGET_AVX10_2 && !flag_trapping_math);
       goto simple;
 
     case E_DImode:
@@ -2802,7 +2802,7 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
   machine_mode op_mode = GET_MODE (op0);
   bool is_sse = SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (op_mode);
 
-  if (op_mode == BFmode && (!TARGET_AVX10_2_256 || flag_trapping_math))
+  if (op_mode == BFmode && (!TARGET_AVX10_2 || flag_trapping_math))
     {
       rtx op = gen_lowpart (HImode, op0);
       if (CONST_INT_P (op))
@@ -2924,7 +2924,7 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1)
       /* We only have vcomisbf16, No vcomubf16 nor vcomxbf16 */
       if (GET_MODE (op0) != E_BFmode)
 	{
-	  if (TARGET_AVX10_2_256 && (code == EQ || code == NE))
+	  if (TARGET_AVX10_2 && (code == EQ || code == NE))
 	    tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_OPTCOMX);
 	  if (unordered_compare)
 	    tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_NOTRAP);
@@ -10779,7 +10779,7 @@ ix86_ssecom_setcc (const enum rtx_code comparison,
 
   /* NB: For ordered EQ or unordered NE, check ZF alone isn't sufficient
      with NAN operands.
-     Under TARGET_AVX10_2_256, VCOMX/VUCOMX are generated instead of
+     Under TARGET_AVX10_2, VCOMX/VUCOMX are generated instead of
      COMI/UCOMI.  VCOMX/VUCOMX will not set ZF for NAN operands.  */
   if (check_unordered)
     {
@@ -10852,12 +10852,12 @@ ix86_expand_sse_comi (const struct builtin_description *d, tree exp,
     case GE:
       break;
     case EQ:
-      if (!TARGET_AVX10_2_256 || !comx_ok)
+      if (!TARGET_AVX10_2 || !comx_ok)
 	check_unordered = true;
       mode = CCZmode;
       break;
     case NE:
-      if (!TARGET_AVX10_2_256 || !comx_ok)
+      if (!TARGET_AVX10_2 || !comx_ok)
 	check_unordered = true;
       mode = CCZmode;
       const_val = const1_rtx;
@@ -10878,7 +10878,7 @@ ix86_expand_sse_comi (const struct builtin_description *d, tree exp,
     op1 = copy_to_mode_reg (mode1, op1);
 
   if ((comparison == EQ || comparison == NE)
-      && TARGET_AVX10_2_256 && comx_ok)
+      && TARGET_AVX10_2 && comx_ok)
     {
       switch (icode)
 	{
@@ -12474,7 +12474,7 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
     case ORDERED:
       if (!ordered)
 	{
-	  if (TARGET_AVX10_2_256 && comx_ok)
+	  if (TARGET_AVX10_2 && comx_ok)
 	    {
 	      /* Unlike VCOMI{SH,SS,SD}, VCOMX{SH,SS,SD} will set SF
 		 differently. So directly return true here.  */
@@ -12502,7 +12502,7 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
     case UNORDERED:
       if (ordered)
 	{
-	  if (TARGET_AVX10_2_256 && comx_ok)
+	  if (TARGET_AVX10_2 && comx_ok)
 	    {
 	      /* Unlike VCOMI{SH,SS,SD}, VCOMX{SH,SS,SD} will set SF
 		 differently. So directly return false here.  */
@@ -12549,20 +12549,20 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
       break;
       /* NB: COMI/UCOMI will set ZF with NAN operands.  Use CCZmode for
 	 _CMP_EQ_OQ/_CMP_EQ_OS.
-	 Under TARGET_AVX10_2_256, VCOMX/VUCOMX are always generated instead
+	 Under TARGET_AVX10_2, VCOMX/VUCOMX are always generated instead
 	 of COMI/UCOMI, VCOMX/VUCOMX will not set ZF with NAN.  */
     case EQ:
-      if (!TARGET_AVX10_2_256 || !comx_ok)
+      if (!TARGET_AVX10_2 || !comx_ok)
 	check_unordered = true;
       mode = CCZmode;
       break;
     case NE:
       /* NB: COMI/UCOMI will set ZF with NAN operands.  Use CCZmode for
 	 _CMP_NEQ_UQ/_CMP_NEQ_US.
-	 Under TARGET_AVX10_2_256, VCOMX/VUCOMX are always generated instead
+	 Under TARGET_AVX10_2, VCOMX/VUCOMX are always generated instead
 	 of COMI/UCOMI, VCOMX/VUCOMX will not set ZF with NAN.  */
       gcc_assert (!ordered);
-      if (!TARGET_AVX10_2_256 || !comx_ok)
+      if (!TARGET_AVX10_2 || !comx_ok)
 	check_unordered = true;
       mode = CCZmode;
       const_val = const1_rtx;
@@ -12585,7 +12585,7 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
     /* Generate comx instead of comi when EQ/NE to avoid NAN checks.
        Use orig_comp to exclude ORDERED/UNORDERED cases.  */
   if ((orig_comp == EQ || orig_comp == NE)
-      && TARGET_AVX10_2_256 && comx_ok)
+      && TARGET_AVX10_2 && comx_ok)
     {
       switch (icode)
 	{
@@ -12606,7 +12606,7 @@ ix86_expand_sse_comi_round (const struct builtin_description *d,
 
   /* Generate comi instead of comx when UNEQ/LTGT to avoid NAN checks.  */
   if ((comparison == UNEQ || comparison == LTGT)
-       && TARGET_AVX10_2_256 && comx_ok)
+       && TARGET_AVX10_2 && comx_ok)
     {
       switch (icode)
 	{
@@ -13582,9 +13582,9 @@ ix86_check_builtin_isa_match (unsigned int fcode,
   SHARE_BUILTIN (OPTION_MASK_ISA_AES, 0, OPTION_MASK_ISA_AVX512VL,
 		 OPTION_MASK_ISA2_VAES);
   SHARE_BUILTIN (0, OPTION_MASK_ISA2_AVXVNNIINT8, 0,
-		 OPTION_MASK_ISA2_AVX10_2_256);
+		 OPTION_MASK_ISA2_AVX10_2);
   SHARE_BUILTIN (0, OPTION_MASK_ISA2_AVXVNNIINT16, 0,
-		 OPTION_MASK_ISA2_AVX10_2_256);
+		 OPTION_MASK_ISA2_AVX10_2);
   isa = tmp_isa;
   isa2 = tmp_isa2;
 

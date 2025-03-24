@@ -1629,7 +1629,7 @@
 ;; Return true if this comparison only requires testing one flag bit.
 ;; VCOMX/VUCOMX set ZF, SF, OF, differently from COMI/UCOMI.
 (define_predicate "ix86_trivial_fp_comparison_operator"
-  (if_then_else (match_test "TARGET_AVX10_2_256")
+  (if_then_else (match_test "TARGET_AVX10_2")
 		(match_code "gt,ge,unlt,unle,eq,uneq,ne,ltgt,ordered,unordered")
 		(match_code "gt,ge,unlt,unle,uneq,ltgt,ordered,unordered")))
 

@@ -28,11 +28,11 @@
 #ifndef _AVX10_2MEDIAINTRIN_H_INCLUDED
 #define _AVX10_2MEDIAINTRIN_H_INCLUDED
 
-#if !defined(__AVX10_2_256__)
+#if !defined(__AVX10_2__)
 #pragma GCC push_options
-#pragma GCC target("avx10.2-256")
-#define __DISABLE_AVX10_2_256__
-#endif /* __AVX10_2_256__ */
+#pragma GCC target("avx10.2")
+#define __DISABLE_AVX10_2__
+#endif /* __AVX10_2__ */
 
 #define _mm_dpbssd_epi32(W, A, B) \
   (__m128i) __builtin_ia32_vpdpbssd128 ((__v4si) (W), (__v4si) (A), (__v4si) (B))
@@ -831,9 +831,9 @@ _mm256_maskz_mpsadbw_epu8 (__mmask16 __U, __m256i __X,
 
 #endif
 
-#ifdef __DISABLE_AVX10_2_256__
-#undef __DISABLE_AVX10_2_256__
+#ifdef __DISABLE_AVX10_2__
+#undef __DISABLE_AVX10_2__
 #pragma GCC pop_options
-#endif /* __DISABLE_AVX10_2_256__ */
+#endif /* __DISABLE_AVX10_2__ */
 
 #endif /* __AVX10_2MEDIAINTRIN_H_INCLUDED */

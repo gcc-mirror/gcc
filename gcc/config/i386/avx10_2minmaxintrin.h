@@ -23,11 +23,11 @@
 #ifndef _AVX10_2MINMAXINTRIN_H_INCLUDED
 #define _AVX10_2MINMAXINTRIN_H_INCLUDED
 
-#if !defined(__AVX10_2_256__)
+#if !defined(__AVX10_2__)
 #pragma GCC push_options
 #pragma GCC target("avx10.2")
-#define __DISABLE_AVX10_2_256__
-#endif /* __AVX10_2_256__ */
+#define __DISABLE_AVX10_2__
+#endif /* __AVX10_2__ */
 
 #ifdef __OPTIMIZE__
 extern __inline __m128bh
@@ -876,9 +876,9 @@ _mm_maskz_minmax_round_ss (__mmask8 __U, __m128 __A, __m128 __B,
 
 #endif
 
-#ifdef __DISABLE_AVX10_2_256__
-#undef __DISABLE_AVX10_2_256__
+#ifdef __DISABLE_AVX10_2__
+#undef __DISABLE_AVX10_2__
 #pragma GCC pop_options
-#endif /* __DISABLE_AVX10_2_256__ */
+#endif /* __DISABLE_AVX10_2__ */
 
 #endif /* _AVX10_2MINMAXINTRIN_H_INCLUDED */

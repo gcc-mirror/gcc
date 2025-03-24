@@ -28,10 +28,10 @@
 #ifndef _AVX10_2CONVERTINTRIN_H_INCLUDED
 #define _AVX10_2CONVERTINTRIN_H_INCLUDED
 
-#if !defined(__AVX10_2_256__)
+#if !defined(__AVX10_2__)
 #pragma GCC push_options
 #pragma GCC target("avx10.2")
-#define __DISABLE_AVX10_2_256__
+#define __DISABLE_AVX10_2__
 #endif /* __AVX10_2__ */
 
 extern __inline __m128h
@@ -952,9 +952,9 @@ _mm256_maskz_cvtbf8_ph (__mmask16 __U, __m128i __A)
 	 (__m256i) _mm256_maskz_cvtepi8_epi16 (__U, __A), 8));
 }
 
-#ifdef __DISABLE_AVX10_2_256__
-#undef __DISABLE_AVX10_2_256__
+#ifdef __DISABLE_AVX10_2__
+#undef __DISABLE_AVX10_2__
 #pragma GCC pop_options
-#endif /* __DISABLE_AVX10_2_256__ */
+#endif /* __DISABLE_AVX10_2__ */
 
 #endif /* __AVX10_2CONVERTINTRIN_H_INCLUDED */

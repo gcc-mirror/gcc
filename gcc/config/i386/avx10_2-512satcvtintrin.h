@@ -28,11 +28,11 @@
 #ifndef _AVX10_2_512SATCVTINTRIN_H_INCLUDED
 #define _AVX10_2_512SATCVTINTRIN_H_INCLUDED
 
-#if !defined (__AVX10_2_512__)
+#if !defined (__AVX10_2__)
 #pragma GCC push_options
-#pragma GCC target("avx10.2-512")
-#define __DISABLE_AVX10_2_512__
-#endif /* __AVX10_2_512__ */
+#pragma GCC target("avx10.2")
+#define __DISABLE_AVX10_2__
+#endif /* __AVX10_2__ */
 
 extern __inline __m512i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
@@ -1567,9 +1567,9 @@ _mm512_maskz_cvtts_roundps_epu64 (__mmask8 __U, __m256 __A, const int __R)
 					     (R)))
 #endif
 
-#ifdef __DISABLE_AVX10_2_512__
-#undef __DISABLE_AVX10_2_512__
+#ifdef __DISABLE_AVX10_2__
+#undef __DISABLE_AVX10_2__
 #pragma GCC pop_options
-#endif /* __DISABLE_AVX10_2_512__ */
+#endif /* __DISABLE_AVX10_2__ */
 
 #endif /* _AVX10_2_512SATCVTINTRIN_H_INCLUDED */
