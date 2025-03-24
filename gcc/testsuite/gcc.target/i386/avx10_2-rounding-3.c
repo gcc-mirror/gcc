@@ -93,18 +93,6 @@
 /* { dg-final { scan-assembler-times "vfnmadd...ps\[ \\t\]+\[^\n\]*\{rd-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vfnmadd231ps\[ \\t\]+\[^\n\]*\{ru-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vfnmadd...ps\[ \\t\]+\[^\n\]*\{rz-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfnmsub...ps\[ \\t\]+\[^\n\]*\{rn-sae\}\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfnmsub...ps\[ \\t\]+\[^\n\]*\{rd-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfnmsub231ps\[ \\t\]+\[^\n\]*\{ru-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfnmsub...ps\[ \\t\]+\[^\n\]*\{rz-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfnmsub...pd\[ \\t\]+\[^\n\]*\{rn-sae\}\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfnmsub...pd\[ \\t\]+\[^\n\]*\{rd-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfnmsub231pd\[ \\t\]+\[^\n\]*\{ru-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfnmsub...pd\[ \\t\]+\[^\n\]*\{rz-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfnmsub...ph\[ \\t\]+\[^\n\]*\{rn-sae\}\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfnmsub...ph\[ \\t\]+\[^\n\]*\{rd-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfnmsub231ph\[ \\t\]+\[^\n\]*\{ru-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vfnmsub...ph\[ \\t\]+\[^\n\]*\{rz-sae\}\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
 
 #include <immintrin.h>
 
@@ -302,23 +290,4 @@ avx10_2_test_14 (void)
   x = _mm256_mask_fnmadd_round_ps (x, m8, x, x, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC);
   x = _mm256_mask3_fnmadd_round_ps (x, x, x, m8, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC);
   x = _mm256_maskz_fnmadd_round_ps (m8, x, x, x, _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC);
-}
-
-void extern
-avx10_2_test_15 (void)
-{
-  xd = _mm256_fnmsub_round_pd (xd, xd, xd, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
-  xd = _mm256_mask_fnmsub_round_pd (xd, m8, xd, xd, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC);
-  xd = _mm256_mask3_fnmsub_round_pd (xd, xd, xd, m8, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC);
-  xd = _mm256_maskz_fnmsub_round_pd (m8, xd, xd, xd, _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC);
-
-  xh = _mm256_fnmsub_round_ph (xh, xh, xh, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
-  xh = _mm256_mask_fnmsub_round_ph (xh, m8, xh, xh, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC);
-  xh = _mm256_mask3_fnmsub_round_ph (xh, xh, xh, m8, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC);
-  xh = _mm256_maskz_fnmsub_round_ph (m8, xh, xh, xh, _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC);
-
-  x = _mm256_fnmsub_round_ps (x, x, x, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
-  x = _mm256_mask_fnmsub_round_ps (x, m8, x, x, _MM_FROUND_TO_NEG_INF | _MM_FROUND_NO_EXC);
-  x = _mm256_mask3_fnmsub_round_ps (x, x, x, m8, _MM_FROUND_TO_POS_INF | _MM_FROUND_NO_EXC);
-  x = _mm256_maskz_fnmsub_round_ps (m8, x, x, x, _MM_FROUND_TO_ZERO | _MM_FROUND_NO_EXC);
 }
