@@ -2,7 +2,7 @@
 /* { dg-options "-O2 -march=x86-64-v3" } */
 
 #pragma GCC push_options
-#pragma GCC target("avx10.2-256")
+#pragma GCC target("avx10.2")
 
 void foo();
 

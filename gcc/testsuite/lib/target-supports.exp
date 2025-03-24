@@ -11018,9 +11018,9 @@ proc check_effective_target_apxf { } {
     } "-mapxf" ]
 }
 
-# Return 1 if avx10.2-256 instructions can be compiled.
-proc check_effective_target_avx10_2_256 { } {
-    return [check_no_compiler_messages avx10.2-256 object {
+# Return 1 if avx10.2 instructions can be compiled.
+proc check_effective_target_avx10_2 { } {
+    return [check_no_compiler_messages avx10.2 object {
 	void
 	foo ()
 	{
@@ -11029,16 +11029,6 @@ proc check_effective_target_avx10_2_256 { } {
 	  __asm__ volatile ("vaddbf16\t%ymm4, %ymm5, %ymm6");
 	  __asm__ volatile ("vcvtph2ibs\t%ymm5, %ymm6");
 	  __asm__ volatile ("vminmaxpd\t$123, %ymm4, %ymm5, %ymm6");
-	}
-    } "" ]
-}
-
-# Return 1 if avx10.2-512 instructions can be compiled.
-proc check_effective_target_avx10_2_512 { } {
-    return [check_no_compiler_messages avx10.2-512 object {
-	void
-	foo ()
-	{
 	  __asm__ volatile ("vdpphps\t%zmm4, %zmm5, %zmm6");
 	  __asm__ volatile ("vcvthf82ph\t%ymm5, %zmm6");
 	  __asm__ volatile ("vaddbf16\t%zmm4, %zmm5, %zmm6");

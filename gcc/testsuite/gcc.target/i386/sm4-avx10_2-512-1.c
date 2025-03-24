@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=x86-64-v3 -msm4 -mavx10.2-512" } */
+/* { dg-options "-O2 -march=x86-64-v3 -msm4 -mavx10.2" } */
 /* { dg-final { scan-assembler "vsm4key4\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\]" } } */
 /* { dg-final { scan-assembler "vsm4rnds4\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\]+\[^\n\]*%zmm\[0-9\]" } } */
 
