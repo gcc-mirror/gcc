@@ -21,8 +21,6 @@ issue-266.rs
 derive_clone_enum3.rs
 derive-debug1.rs
 derive-default1.rs
-issue-3402-1.rs
-issue-3403.rs
 derive-eq-invalid.rs
 derive-hash1.rs
 torture/alt_patterns1.rs

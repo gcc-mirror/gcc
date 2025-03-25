@@ -307,8 +307,7 @@ Late::visit (AST::PathInExpression &expr)
       return;
     }
 
-  auto resolved = ctx.resolve_path (expr.get_segments (), Namespace::Values,
-				    Namespace::Types);
+  auto resolved = ctx.resolve_path (expr, Namespace::Values, Namespace::Types);
 
   if (!resolved)
     {
@@ -340,13 +339,9 @@ Late::visit (AST::TypePath &type)
 
   DefaultResolver::visit (type);
 
-  // take care of only simple cases
-  // TODO: remove this?
-  rust_assert (!type.has_opening_scope_resolution_op ());
-
   // this *should* mostly work
   // TODO: make sure typepath-like path resolution (?) is working
-  auto resolved = ctx.resolve_path (type.get_segments (), Namespace::Types);
+  auto resolved = ctx.resolve_path (type, Namespace::Types);
 
   if (!resolved.has_value ())
     {
@@ -394,8 +389,7 @@ Late::visit (AST::StructExprStruct &s)
   visit_inner_attrs (s);
   DefaultResolver::visit (s.get_struct_name ());
 
-  auto resolved
-    = ctx.resolve_path (s.get_struct_name ().get_segments (), Namespace::Types);
+  auto resolved = ctx.resolve_path (s.get_struct_name (), Namespace::Types);
 
   ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
 		 Definition (resolved->get_node_id ()));
@@ -409,8 +403,7 @@ Late::visit (AST::StructExprStructBase &s)
   DefaultResolver::visit (s.get_struct_name ());
   visit (s.get_struct_base ());
 
-  auto resolved
-    = ctx.resolve_path (s.get_struct_name ().get_segments (), Namespace::Types);
+  auto resolved = ctx.resolve_path (s.get_struct_name (), Namespace::Types);
 
   ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
 		 Definition (resolved->get_node_id ()));
@@ -427,8 +420,7 @@ Late::visit (AST::StructExprStructFields &s)
   for (auto &field : s.get_fields ())
     visit (field);
 
-  auto resolved
-    = ctx.resolve_path (s.get_struct_name ().get_segments (), Namespace::Types);
+  auto resolved = ctx.resolve_path (s.get_struct_name (), Namespace::Types);
 
   ctx.map_usage (Usage (s.get_struct_name ().get_node_id ()),
 		 Definition (resolved->get_node_id ()));

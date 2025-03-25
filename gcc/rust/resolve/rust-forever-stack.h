@@ -549,6 +549,7 @@ public:
   ForeverStack ()
     : root (Node (Rib (Rib::Kind::Normal), UNKNOWN_NODEID)),
       lang_prelude (Node (Rib (Rib::Kind::Prelude), UNKNOWN_NODEID, root)),
+      extern_prelude (Node (Rib (Rib::Kind::Prelude), UNKNOWN_NODEID)),
       cursor_reference (root)
   {
     rust_assert (root.is_root ());
@@ -671,7 +672,7 @@ public:
    */
   template <typename S>
   tl::optional<Rib::Definition> resolve_path (
-    const std::vector<S> &segments,
+    const std::vector<S> &segments, bool has_opening_scope_resolution,
     std::function<void (const S &, NodeId)> insert_segment_resolution);
 
   // FIXME: Documentation
@@ -768,6 +769,10 @@ private:
    * resolution
    */
   Node lang_prelude;
+  /*
+   * The extern prelude, used for resolving external crates
+   */
+  Node extern_prelude;
 
   std::reference_wrapper<Node> cursor_reference;
 
