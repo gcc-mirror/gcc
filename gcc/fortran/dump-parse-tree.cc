@@ -4038,6 +4038,7 @@ static void write_interop_decl (gfc_symbol *);
 static void write_proc (gfc_symbol *, bool);
 static void show_external_symbol (gfc_gsymbol *, void *);
 static void write_type (gfc_symbol *sym);
+static void write_funptr_fcn (gfc_symbol *);
 
 /* Do we need to write out an #include <ISO_Fortran_binding.h> or not?  */
 
@@ -4379,9 +4380,10 @@ write_type (gfc_symbol *sym)
 {
   gfc_component *c;
 
-  /* Don't dump our iso c module.  */
+  /* Don't dump our iso c module, nor vtypes.  */
 
-  if (sym->from_intmod == INTMOD_ISO_C_BINDING || sym->attr.flavor != FL_DERIVED)
+  if (sym->from_intmod == INTMOD_ISO_C_BINDING || sym->attr.flavor != FL_DERIVED
+      || sym->attr.vtype)
     return;
 
   fprintf (dumpfile, "typedef struct %s {\n", sym->name);
@@ -4495,6 +4497,18 @@ write_formal_arglist (gfc_symbol *sym, bool bind_c)
 
 }
 
+/* Write out an interoperable function returning a function pointer.  Better
+   handled separately.  As we know nothing about the type, assume void.
+   Function ponters can be freely converted in C anyway.  */
+
+static void
+write_funptr_fcn (gfc_symbol *sym)
+{
+  fprintf (dumpfile, "void (*%s (", sym->binding_label);
+  write_formal_arglist (sym, 1);
+  fputs (")) ();\n", dumpfile);
+}
+
 /* Write out a procedure, including its arguments.  */
 static void
 write_proc (gfc_symbol *sym, bool bind_c)
@@ -4552,7 +4566,13 @@ write_interop_decl (gfc_symbol *sym)
   else if (sym->attr.flavor == FL_DERIVED)
     write_type (sym);
   else if (sym->attr.flavor == FL_PROCEDURE)
-    write_proc (sym, true);
+    {
+      if (sym->ts.type == BT_DERIVED
+	  && sym->ts.u.derived->intmod_sym_id == ISOCBINDING_FUNPTR)
+	write_funptr_fcn (sym);
+      else
+	write_proc (sym, true);
+    }
 }
 
 /* This section deals with dumping the global symbol tree.  */
