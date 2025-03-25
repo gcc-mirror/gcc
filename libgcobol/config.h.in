@@ -36,6 +36,12 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
+/* Define to 1 if you have the `strfromf32' function. */
+#undef HAVE_STRFROMF32
+
+/* Define to 1 if you have the `strfromf64' function. */
+#undef HAVE_STRFROMF64
+
 /* Define to 1 if you have the <strings.h> header file. */
 #undef HAVE_STRINGS_H
 

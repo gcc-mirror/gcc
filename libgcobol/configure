@@ -2520,6 +2520,8 @@ as_fn_append ac_func_list " random_r"
 as_fn_append ac_func_list " srandom_r"
 as_fn_append ac_func_list " initstate_r"
 as_fn_append ac_func_list " setstate_r"
+as_fn_append ac_func_list " strfromf32"
+as_fn_append ac_func_list " strfromf64"
 # Check that the precious variables saved in the cache have kept the same
 # value.
 ac_cache_corrupted=false
@@ -12906,7 +12908,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12909 "configure"
+#line 12911 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13012,7 +13014,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13015 "configure"
+#line 13017 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16379,6 +16381,13 @@ done
 
 
 
+
+
+
+
+
+
+# These are C23, and might not be available in libc.
 
 
 
