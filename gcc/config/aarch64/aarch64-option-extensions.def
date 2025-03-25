@@ -128,7 +128,9 @@ AARCH64_OPT_FMV_EXTENSION("sha2", SHA2, (SIMD), (), (), "sha1 sha2")
 
 AARCH64_FMV_FEATURE("sha3", SHA3, (SHA3))
 
-AARCH64_OPT_FMV_EXTENSION("aes", AES, (SIMD), (), (), "aes")
+AARCH64_OPT_EXTENSION("aes", AES, (SIMD), (), (), "aes")
+
+AARCH64_FMV_FEATURE("aes", PMULL, (AES))
 
 /* +nocrypto disables AES, SHA2 and SM4, and anything that depends on them
    (such as SHA3 and the SVE2 crypto extensions).  */
@@ -171,8 +173,6 @@ AARCH64_OPT_FMV_EXTENSION("i8mm", I8MM, (SIMD), (), (), "i8mm")
    instructions.  */
 AARCH64_OPT_FMV_EXTENSION("bf16", BF16, (FP), (SIMD), (), "bf16")
 
-AARCH64_FMV_FEATURE("rpres", RPRES, ())
-
 AARCH64_OPT_FMV_EXTENSION("sve", SVE, (SIMD, F16, FCMA), (), (), "sve")
 
 /* This specifically does not imply +sve.  */
@@ -190,7 +190,7 @@ AARCH64_OPT_FMV_EXTENSION("sve2", SVE2, (SVE), (), (), "sve2")
 
 AARCH64_OPT_EXTENSION("sve2-aes", SVE2_AES, (SVE2, AES), (), (), "sveaes")
 
-AARCH64_FMV_FEATURE("sve2-aes", SVE_AES, (SVE2_AES))
+AARCH64_FMV_FEATURE("sve2-aes", SVE_PMULL128, (SVE2_AES))
 
 AARCH64_OPT_EXTENSION("sve2-bitperm", SVE2_BITPERM, (SVE2), (), (),
 		      "svebitperm")
@@ -245,9 +245,9 @@ AARCH64_OPT_EXTENSION("sme-b16b16", SME_B16B16, (SME2, SVE_B16B16), (), (), "sme
 
 AARCH64_OPT_EXTENSION("sme-f16f16", SME_F16F16, (SME2), (), (), "smef16f16")
 
-AARCH64_OPT_EXTENSION("mops", MOPS, (), (), (), "mops")
+AARCH64_OPT_FMV_EXTENSION("mops", MOPS, (), (), (), "mops")
 
-AARCH64_OPT_EXTENSION("cssc", CSSC, (), (), (), "cssc")
+AARCH64_OPT_FMV_EXTENSION("cssc", CSSC, (), (), (), "cssc")
 
 AARCH64_OPT_EXTENSION("cmpbr", CMPBR, (), (), (), "cmpbr")
 

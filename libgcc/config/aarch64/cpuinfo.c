@@ -143,10 +143,6 @@ __init_cpu_features_constructor (unsigned long hwcap,
     setCPUFeature(FEAT_DIT);
   if (hwcap & HWCAP_ASIMDRDM)
     setCPUFeature(FEAT_RDM);
-  if (hwcap & HWCAP_AES)
-    setCPUFeature(FEAT_AES);
-  if (hwcap & HWCAP_SHA1)
-    setCPUFeature(FEAT_SHA1);
   if (hwcap & HWCAP_SHA2)
     setCPUFeature(FEAT_SHA2);
   if (hwcap & HWCAP_JSCVT)
@@ -156,19 +152,9 @@ __init_cpu_features_constructor (unsigned long hwcap,
   if (hwcap & HWCAP_SB)
     setCPUFeature(FEAT_SB);
   if (hwcap & HWCAP_SSBS)
-    {
-      setCPUFeature(FEAT_SSBS);
-      setCPUFeature(FEAT_SSBS2);
-    }
+    setCPUFeature(FEAT_SSBS2);
   if (hwcap2 & HWCAP2_MTE)
-    {
-      setCPUFeature(FEAT_MEMTAG);
-      setCPUFeature(FEAT_MEMTAG2);
-    }
-  if (hwcap2 & HWCAP2_MTE3)
-    setCPUFeature(FEAT_MEMTAG3);
-  if (hwcap2 & HWCAP2_SVEAES)
-    setCPUFeature(FEAT_SVE_AES);
+    setCPUFeature(FEAT_MEMTAG2);
   if (hwcap2 & HWCAP2_SVEPMULL)
     setCPUFeature(FEAT_SVE_PMULL128);
   if (hwcap2 & HWCAP2_SVEBITPERM)
@@ -185,24 +171,14 @@ __init_cpu_features_constructor (unsigned long hwcap,
     setCPUFeature(FEAT_RNG);
   if (hwcap2 & HWCAP2_I8MM)
     setCPUFeature(FEAT_I8MM);
-  if (hwcap2 & HWCAP2_EBF16)
-    setCPUFeature(FEAT_EBF16);
-  if (hwcap2 & HWCAP2_SVE_EBF16)
-    setCPUFeature(FEAT_SVE_EBF16);
-  if (hwcap2 & HWCAP2_DGH)
-    setCPUFeature(FEAT_DGH);
   if (hwcap2 & HWCAP2_FRINT)
     setCPUFeature(FEAT_FRINTTS);
-  if (hwcap2 & HWCAP2_SVEI8MM)
-    setCPUFeature(FEAT_SVE_I8MM);
   if (hwcap2 & HWCAP2_SVEF32MM)
     setCPUFeature(FEAT_SVE_F32MM);
   if (hwcap2 & HWCAP2_SVEF64MM)
     setCPUFeature(FEAT_SVE_F64MM);
   if (hwcap2 & HWCAP2_BTI)
     setCPUFeature(FEAT_BTI);
-  if (hwcap2 & HWCAP2_RPRES)
-    setCPUFeature(FEAT_RPRES);
   if (hwcap2 & HWCAP2_WFXT)
     setCPUFeature(FEAT_WFXT);
   if (hwcap2 & HWCAP2_SME)
@@ -213,6 +189,10 @@ __init_cpu_features_constructor (unsigned long hwcap,
     setCPUFeature(FEAT_SME_I64);
   if (hwcap2 & HWCAP2_SME_F64F64)
     setCPUFeature(FEAT_SME_F64);
+  if (hwcap2 & HWCAP2_MOPS)
+    setCPUFeature(FEAT_MOPS);
+  if (hwcap2 & HWCAP2_CSSC)
+    setCPUFeature(FEAT_CSSC);
   if (hwcap & HWCAP_FP)
     {
       setCPUFeature(FEAT_FP);
@@ -229,8 +209,6 @@ __init_cpu_features_constructor (unsigned long hwcap,
     setCPUFeature(FEAT_RCPC3);
   if (hwcap2 & HWCAP2_BF16)
     setCPUFeature(FEAT_BF16);
-  if (hwcap2 & HWCAP2_SVEBF16)
-    setCPUFeature(FEAT_SVE_BF16);
   if (hwcap & HWCAP_SVE)
     setCPUFeature(FEAT_SVE);
   if (hwcap2 & HWCAP2_SVE2)
