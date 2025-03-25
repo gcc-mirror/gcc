@@ -51,7 +51,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, type.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "defined multiple times");
+	redefined_error (r);
       });
   }
 
@@ -67,7 +67,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, constant.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "defined multiple times");
+	redefined_error (r);
       });
   }
 
@@ -84,7 +84,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, function.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "defined multiple times");
+	redefined_error (r);
       });
   }
 
@@ -124,7 +124,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, function.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "defined multiple times");
+	redefined_error (r);
       });
 
     mappings.insert_canonical_path (function.get_node_id (), cpath);
@@ -144,7 +144,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, constant.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "defined multiple times");
+	redefined_error (r);
       });
 
     mappings.insert_canonical_path (constant.get_node_id (), cpath);
@@ -162,7 +162,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, type.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "defined multiple times");
+	redefined_error (r);
       });
 
     mappings.insert_canonical_path (type.get_node_id (), cpath);
@@ -202,7 +202,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, function.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "defined multiple times");
+	redefined_error (r);
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
@@ -221,7 +221,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, item.get_locus ());
 	r.add_range (locus);
-	rust_error_at (r, "defined multiple times");
+	redefined_error (r);
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
@@ -239,8 +239,7 @@ public:
       [&] (const CanonicalPath &, NodeId, location_t locus) -> void {
 	rich_location r (line_table, type.get_locus ());
 	r.add_range (locus);
-
-	rust_error_at (r, "defined multiple times");
+	redefined_error (r);
       });
 
     NodeId current_module = resolver->peek_current_module_scope ();
