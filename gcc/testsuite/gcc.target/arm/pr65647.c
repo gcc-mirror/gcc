@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_arch_v6m_ok } */
-/* { dg-options "-O3 -w -fpermissive" } */
+/* { dg-options "-O3 -w -fpermissive -std=gnu17" } */
 /* { dg-add-options arm_arch_v6m } */
 
 a, b, c, e, g = &e, h, i = 7, l = 1, m, n, o, q = &m, r, s = &r, u, w = 9, x,
