@@ -2387,7 +2387,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 				      (cp_type_quals (type)
 				       | cp_type_quals (TREE_TYPE (datum))));
 
-      datum = build_address (datum);
+      datum = cp_build_addr_expr (datum, complain);
 
       /* Convert object to the correct base.  */
       if (binfo)
