@@ -11121,7 +11121,7 @@ and,
     (with
      {
        vec_perm_indices sel0 (builder0, 2, nelts);
-       vec_perm_indices sel1 (builder1, 1, nelts);
+       vec_perm_indices sel1 (builder1, 2, nelts);
 
        for (int i = 0; i < nelts; i++)
 	 builder2.quick_push (sel0[sel1[i].to_constant ()]);
