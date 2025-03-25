@@ -87,12 +87,9 @@ test (int *a, int *b)
     base3 (a, b);
   /* { dg-error "number of list items in 'interop' clause \\(2\\) exceeds the number of 'append_args' items \\(1\\) for 'declare variant' candidate 'repl3'" "" { target c } .-2 } */
   /* { dg-error "number of list items in 'interop' clause \\(2\\) exceeds the number of 'append_args' items \\(1\\) for 'declare variant' candidate 'void repl3\\(int\\*, int\\*, omp_interop_t\\)'" "" { target c++ } .-3 } */
-  /* { dg-note "required by 'dispatch' construct" "" { target *-*-* } .-4 } */
 
   #pragma omp dispatch interop(obj3)
     base3 (a, b);
-  /* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'repl3'" "" { target c } 28 }  */
-  /* { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'void repl3\\(int\\*, int\\*, omp_interop_t\\)'" "" { target c++ } 28 }  */
   return x + y;
 }
 

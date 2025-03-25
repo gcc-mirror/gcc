@@ -8980,8 +8980,8 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns, gfc_namespace *parent_ns)
 			  tree pref = NULL_TREE;
 			  if (n->u.init.len)
 			    {
-			      tree pref = build_string (n->u.init.len,
-							n->u2.init_interop);
+			      pref = build_string (n->u.init.len,
+						   n->u2.init_interop);
 			      TREE_TYPE (pref) = build_array_type_nelts (
 						   unsigned_char_type_node,
 						   n->u.init.len);
