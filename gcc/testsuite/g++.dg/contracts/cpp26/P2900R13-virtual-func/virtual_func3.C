@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontract-continuation-mode=on -fcontracts-nonattr-inheritance-mode=P2900R13" }
+// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontract-continuation-mode=on -fcontracts-on-virtual-functions=P2900R13" }
 template<typename T>
 struct Base
 {
