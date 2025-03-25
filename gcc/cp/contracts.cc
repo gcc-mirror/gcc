@@ -3460,8 +3460,8 @@ should_contract_wrap_call (bool do_pre, bool do_post, bool is_virt)
   /* We always wrap virtual function calls, and non-virtual calls when
      client-side checking is enabled for all contracts.  */
   if ((is_virt
-       && (flag_contract_nonattr_inheritance_mode
-	   != CONTRACT_INHERITANCE_NONE))
+       && (flag_contracts_on_virtual_functions
+	   != CONTRACTS_ON_VIRTUALS_NONE))
       || (flag_contract_nonattr_client_check > 1))
     return true;
 
@@ -3540,8 +3540,8 @@ define_contract_wrapper_func (const tree& fndecl, const tree& wrapdecl, void*)
   bool check_post
     = (flag_contract_nonattr_client_check > 1)
       || (is_virtual
-	  && (flag_contract_nonattr_inheritance_mode
-	      == CONTRACT_INHERITANCE_P2900R13));
+	  && (flag_contracts_on_virtual_functions
+	      == CONTRACTS_ON_VIRTUALS_P2900R13));
   /* For wrappers on CDTORs we need to refer to the original contracts,
      when the wrapper is around a clone.  */
   set_decl_contracts( wrapdecl,
