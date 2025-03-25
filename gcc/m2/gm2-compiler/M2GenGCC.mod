@@ -4837,18 +4837,17 @@ END FoldBuiltinTypeInfo ;
 
 PROCEDURE FoldTBitsize  (tokenno: CARDINAL; p: WalkAction;
                          quad: CARDINAL;
-                         op1, op2, op3: CARDINAL) ;
+                         res, type: CARDINAL) ;
 VAR
-   type    : CARDINAL ;
    location: location_t ;
 BEGIN
    location := TokenToLocation(tokenno) ;
-   TryDeclareType (tokenno, op3) ;
-   type := GetDType (op3) ;
+   TryDeclareType (type) ;
+   type := GetDType (type) ;
    IF CompletelyResolved (type)
    THEN
-      AddModGcc (op1, BuildSystemTBitSize (location, Mod2Gcc (type))) ;
-      p (op1) ;
+      AddModGcc (res, BuildSystemTBitSize (location, Mod2Gcc (type))) ;
+      p (res) ;
       NoChange := FALSE ;
       SubQuad (quad)
    END
@@ -4987,7 +4986,7 @@ BEGIN
       END
    ELSIF op2=TBitSize
    THEN
-      FoldTBitsize (tokenno, p, quad, op1, op2, op3)
+      FoldTBitsize (tokenno, p, quad, op1, op3)
    ELSE
       InternalError ('only expecting LENGTH, CAP, ABS, IM, RE')
    END

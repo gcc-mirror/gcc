@@ -98,7 +98,7 @@ PROCEDURE TryDeclareConstant (tokenno: CARDINAL; sym: CARDINAL) ;
                     then enter it into the to do list.
 *)
 
-PROCEDURE TryDeclareType (tokenno: CARDINAL; type: CARDINAL) ;
+PROCEDURE TryDeclareType (type: CARDINAL) ;
 
 
 (*

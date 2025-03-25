@@ -1257,6 +1257,7 @@ END FoldAssignment ;
    CheckCancelled - check to see if the range has been cancelled and if so remove quad.
 *)
 
+(*
 PROCEDURE CheckCancelled (range: CARDINAL; quad: CARDINAL) ;
 BEGIN
    IF IsCancelled (range)
@@ -1264,6 +1265,7 @@ BEGIN
       SubQuad (quad)
    END
 END CheckCancelled ;
+*)
 
 
 (*

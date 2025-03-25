@@ -9776,10 +9776,29 @@ END CheckBaseTypeValue ;
 
 
 (*
-   GetTypeMin - returns the minimium value of type.
+   GetTypeMin - returns the minimium value of type and generate an error
+                if this is unavailable.
 *)
 
 PROCEDURE GetTypeMin (tok: CARDINAL; func, type: CARDINAL) : CARDINAL ;
+VAR
+   min: CARDINAL ;
+BEGIN
+   min := GetTypeMinLower (tok, func, type) ;
+   IF min = NulSym
+   THEN
+      MetaErrorT1 (tok,
+                   'unable to obtain the {%AkMIN} value for type {%1ad}', type)
+   END ;
+   RETURN min
+END GetTypeMin ;
+
+
+(*
+   GetTypeMinLower - obtain the maximum value for type.
+*)
+
+PROCEDURE GetTypeMinLower (tok: CARDINAL; func, type: CARDINAL) : CARDINAL ;
 VAR
    min, max: CARDINAL ;
 BEGIN
@@ -9803,21 +9822,37 @@ BEGIN
       RETURN min
    ELSIF GetSType (type) = NulSym
    THEN
-      MetaErrorT1 (tok,
-                   'unable to obtain the {%AkMIN} value for type {%1ad}', type) ;
-      (* non recoverable error.  *)
-      InternalError ('MetaErrorT1 {%AkMIN} should call abort')
+      RETURN NulSym
    ELSE
       RETURN GetTypeMin (tok, func, GetSType (type))
    END
-END GetTypeMin ;
+END GetTypeMinLower ;
 
 
 (*
-   GetTypeMax - returns the maximum value of type.
+   GetTypeMax - returns the maximum value of type and generate an error
+                if this is unavailable.
 *)
 
 PROCEDURE GetTypeMax (tok: CARDINAL; func, type: CARDINAL) : CARDINAL ;
+VAR
+   max: CARDINAL ;
+BEGIN
+   max := GetTypeMaxLower (tok, func, type) ;
+   IF max = NulSym
+   THEN
+      MetaErrorT1 (tok,
+                   'unable to obtain the {%AkMAX} value for type {%1ad}', type)
+   END ;
+   RETURN max
+END GetTypeMax ;
+
+
+(*
+   GetTypeMaxLower - obtain the maximum value for type.
+*)
+
+PROCEDURE GetTypeMaxLower (tok: CARDINAL; func, type: CARDINAL) : CARDINAL ;
 VAR
    min, max: CARDINAL ;
 BEGIN
@@ -9841,14 +9876,11 @@ BEGIN
       RETURN max
    ELSIF GetSType (type) = NulSym
    THEN
-      MetaErrorT1 (tok,
-                   'unable to obtain the {%AkMAX} value for type {%1ad}', type) ;
-      (* non recoverable error.  *)
-      InternalError ('MetaErrorT1 {%AkMAX} should call abort')
+      RETURN NulSym
    ELSE
       RETURN GetTypeMax (tok, func, GetSType (type))
    END
-END GetTypeMax ;
+END GetTypeMaxLower ;
 
 
 (*

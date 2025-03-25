@@ -144,7 +144,7 @@ FROM M2Base IMPORT IsPseudoBaseProcedure, IsPseudoBaseFunction,
                    Boolean, True, False, Nil,
                    IsRealType, IsNeededAtRunTime, IsComplexType ;
 
-FROM M2System IMPORT IsPseudoSystemFunction, IsSystemType,
+FROM M2System IMPORT IsPseudoSystemFunction, IsSystemType, IsRealN,
                      GetSystemTypeMinMax, Address, Word, Byte, Loc,
                      System, IntegerN, CardinalN, WordN, RealN, SetN, ComplexN,
 		     CSizeT, CSSizeT, COffT ;
@@ -1918,7 +1918,7 @@ END IsAnyType ;
                     then enter it into the to do list.
 *)
 
-PROCEDURE TryDeclareType (tokenno: CARDINAL; type: CARDINAL) ;
+PROCEDURE TryDeclareType (type: CARDINAL) ;
 BEGIN
    IF (type#NulSym) AND IsAnyType (type)
    THEN
@@ -2013,7 +2013,7 @@ BEGIN
          ELSIF IsConstructor(sym)
          THEN
             DeclareConstantFromTree(sym, PopConstructorTree(tokenno))
-         ELSIF IsRealType(GetDType(sym))
+         ELSIF IsRealType (GetDType (sym)) OR IsRealN (GetDType (sym))
          THEN
             type := GetDType(sym) ;
             DeclareConstantFromTree(sym, BuildConvert(TokenToLocation(tokenno), Mod2Gcc(type), PopRealTree(), TRUE))

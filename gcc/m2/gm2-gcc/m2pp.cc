@@ -2367,7 +2367,6 @@ m2pp_asm_expr (pretty *state, tree node)
 static void
 m2pp_nop_expr (pretty *state, tree t)
 {
-  enum tree_code code = TREE_CODE (t);
   m2pp_begin (state);
   m2pp_print (state, "(* NOP for debug location *)");
   m2pp_needspace (state);

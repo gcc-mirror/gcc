@@ -1891,6 +1891,22 @@ m2type_GetDefaultType (location_t location, char *name, tree type)
     return id;
 }
 
+/* IsGccRealType return true if type is a GCC realtype.  */
+  
+static
+bool
+IsGccRealType (tree type)
+{
+  return (type == m2_real_type_node || type == m2type_GetRealType () ||
+	  type == m2_long_real_type_node || type == m2type_GetLongRealType () ||
+	  type == m2_short_real_type_node || type == m2type_GetShortRealType () ||
+	  type == m2type_GetM2Real32 () ||
+	  type == m2type_GetM2Real64 () ||
+	  type == m2type_GetM2Real96 () ||
+	  type == m2type_GetM2Real128 ());
+}
+
+static
 tree
 do_min_real (tree type)
 {
@@ -1911,11 +1927,7 @@ m2type_GetMinFrom (location_t location, tree type)
 {
   m2assert_AssertLocation (location);
 
-  if (type == m2_real_type_node || type == m2type_GetRealType ())
-    return do_min_real (type);
-  if (type == m2_long_real_type_node || type == m2type_GetLongRealType ())
-    return do_min_real (type);
-  if (type == m2_short_real_type_node || type == m2type_GetShortRealType ())
+  if (IsGccRealType (type))
     return do_min_real (type);
   if (type == ptr_type_node)
     return m2expr_GetPointerZero (location);
@@ -1923,6 +1935,7 @@ m2type_GetMinFrom (location_t location, tree type)
   return TYPE_MIN_VALUE (m2tree_skip_type_decl (type));
 }
 
+static      
 tree
 do_max_real (tree type)
 {
@@ -1943,11 +1956,7 @@ m2type_GetMaxFrom (location_t location, tree type)
 {
   m2assert_AssertLocation (location);
 
-  if (type == m2_real_type_node || type == m2type_GetRealType ())
-    return do_max_real (type);
-  if (type == m2_long_real_type_node || type == m2type_GetLongRealType ())
-    return do_max_real (type);
-  if (type == m2_short_real_type_node || type == m2type_GetShortRealType ())
+  if (IsGccRealType (type))
     return do_max_real (type);
   if (type == ptr_type_node)
     return fold (m2expr_BuildSub (location, m2expr_GetPointerZero (location),
