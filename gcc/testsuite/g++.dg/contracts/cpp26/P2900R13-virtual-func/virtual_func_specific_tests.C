@@ -8,7 +8,7 @@
 //   ensure that an invalid contract role 'invalid' errors
 //   ensure that a missing colon after contract role errors
 // { dg-do compile }
-// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontracts-nonattr-inheritance-mode=P2900R13" }
+// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontracts-on-virtual-functions=P2900R13" }
 
 struct B{
 
