@@ -58,7 +58,6 @@ extensions, accepted by GCC in C90 mode and in C++.
 * New/Delete Builtins:: Built-in functions for C++ allocations and deallocations.
 * Other Builtins::      Other built-in functions.
 * Target Builtins::     Built-in functions specific to particular targets.
-* Target Format Checks:: Format checks specific to particular targets.
 @end menu
 
 @node Additional Numeric Types
@@ -2219,18 +2218,43 @@ for consistency with the @code{printf} style format string argument
 @code{my_format}.
 
 The parameter @var{archetype} determines how the format string is
-interpreted, and should be @code{printf}, @code{scanf}, @code{strftime},
+interpreted.
+Valid archetypes include @code{printf}, @code{scanf}, @code{strftime},
 @code{gnu_printf}, @code{gnu_scanf}, @code{gnu_strftime} or
 @code{strfmon}.  (You can also use @code{__printf__},
-@code{__scanf__}, @code{__strftime__} or @code{__strfmon__}.)  On
-MinGW targets, @code{ms_printf}, @code{ms_scanf}, and
-@code{ms_strftime} are also present.
+@code{__scanf__}, @code{__strftime__} or @code{__strfmon__}.)
 @var{archetype} values such as @code{printf} refer to the formats accepted
 by the system's C runtime library,
 while values prefixed with @samp{gnu_} always refer
-to the formats accepted by the GNU C Library.  On Microsoft Windows
-targets, values prefixed with @samp{ms_} refer to the formats accepted by the
+to the formats accepted by the GNU C Library.
+
+@anchor{Target Format Checks}
+On MinGW and Microsoft Windows targets, @code{ms_printf},
+@code{ms_scanf}, and @code{ms_strftime} are also present.  Values
+prefixed with @samp{ms_} refer to the formats accepted by the
 @file{msvcrt.dll} library.
+
+@anchor{Solaris Format Checks}
+Solaris targets also support the @code{cmn_err} (or @code{__cmn_err__})
+archetype.
+@code{cmn_err} accepts a subset of the standard @code{printf}
+conversions, and the two-argument @code{%b} conversion for displaying
+bit-fields.  See the Solaris man page for @code{cmn_err} for more information.
+
+@anchor{Darwin Format Checks}
+Darwin targets also support the @code{CFString} (or
+@code{__CFString__}) archetype in the @code{format} attribute.
+Declarations with this archetype are parsed for correct syntax
+and argument types.  However, parsing of the format string itself and
+validating arguments against it in calls to such functions is currently
+not performed.
+
+For Objective-C dialects, @code{NSString} (or @code{__NSString__}) is
+recognized in the same context.  Declarations including these format attributes
+are parsed for correct syntax, however the result of checking of such format
+strings is not yet defined, and is not carried out by this version of the
+compiler.
+
 The parameter @var{string-index}
 specifies which argument is the format string argument (starting
 from 1), while @var{first-to-check} is the number of the first
@@ -2265,15 +2289,7 @@ standard modes, the X/Open function @code{strfmon} is also checked as
 are @code{printf_unlocked} and @code{fprintf_unlocked}.
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 
-For Objective-C dialects, @code{NSString} (or @code{__NSString__}) is
-recognized in the same context.  Declarations including these format attributes
-are parsed for correct syntax, however the result of checking of such format
-strings is not yet defined, and is not carried out by this version of the
-compiler.
 
-The target may also provide additional types of format checks.
-@xref{Target Format Checks,,Format Checks Specific to Particular
-Target Machines}.
 
 @cindex @code{format_arg} function attribute
 @opindex Wformat-nonliteral
@@ -2328,13 +2344,17 @@ requested by @option{-ansi} or an appropriate @option{-std} option, or
 is used.  @xref{C Dialect Options,,Options
 Controlling C Dialect}.
 
-For Objective-C dialects, the @code{format-arg} attribute may refer to an
+For Objective-C dialects, the @code{format_arg} attribute may refer to an
 @code{NSString} reference for compatibility with the @code{format} attribute
 above.
 
-The target may also allow additional types in @code{format-arg} attributes.
-@xref{Target Format Checks,,Format Checks Specific to Particular
-Target Machines}.
+Similarly, on Darwin targets @code{CFStringRefs} (defined by the
+@code{CoreFoundation} headers) may also be used as format arguments.
+Note that the relevant headers are only likely to be available on
+Darwin (OSX) installations.  On such installations, the XCode and
+system documentation provide descriptions of @code{CFString},
+@code{CFStringRefs} and associated functions.
+
 
 @cindex @code{gnu_inline} function attribute
 @item gnu_inline
@@ -29555,43 +29575,6 @@ The shadow stack unwind code looks like:
 This code runs unconditionally on all 64-bit processors.  For 32-bit
 processors the code runs on those that support multi-byte NOP instructions.
 
-@node Target Format Checks
-@section Format Checks Specific to Particular Target Machines
-
-For some target machines, GCC supports additional options to the
-format attribute
-(@pxref{Function Attributes,,Declaring Attributes of Functions}).
-
-@menu
-* Solaris Format Checks::
-* Darwin Format Checks::
-@end menu
-
-@node Solaris Format Checks
-@subsection Solaris Format Checks
-
-Solaris targets support the @code{cmn_err} (or @code{__cmn_err__}) format
-check.  @code{cmn_err} accepts a subset of the standard @code{printf}
-conversions, and the two-argument @code{%b} conversion for displaying
-bit-fields.  See the Solaris man page for @code{cmn_err} for more information.
-
-@node Darwin Format Checks
-@subsection Darwin Format Checks
-
-In addition to the full set of format archetypes (attribute format style
-arguments such as @code{printf}, @code{scanf}, @code{strftime}, and
-@code{strfmon}), Darwin targets also support the @code{CFString} (or
-@code{__CFString__}) archetype in the @code{format} attribute.
-Declarations with this archetype are parsed for correct syntax
-and argument types.  However, parsing of the format string itself and
-validating arguments against it in calls to such functions is currently
-not performed.
-
-Additionally, @code{CFStringRefs} (defined by the @code{CoreFoundation} headers) may
-also be used as format arguments.  Note that the relevant headers are only likely to be
-available on Darwin (OSX) installations.  On such installations, the XCode and system
-documentation provide descriptions of @code{CFString}, @code{CFStringRefs} and
-associated functions.
 
 @node C++ Extensions
 @chapter Extensions to the C++ Language
