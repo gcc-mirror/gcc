@@ -73,6 +73,15 @@ package body System.Value_U is
       end if;
 
       P := Ptr.all;
+
+      --  Exit when the initial string to parse is empty
+
+      if Max < P then
+         raise Program_Error with
+            "Scan end Max=" & Max'Img &
+            " is smaller than scan end Ptr=" & P'Img;
+      end if;
+
       Uval := Character'Pos (Str (P)) - Character'Pos ('0');
       pragma Assert (Str (P) in '0' .. '9');
       P := P + 1;

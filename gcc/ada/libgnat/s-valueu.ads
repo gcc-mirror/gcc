@@ -102,11 +102,9 @@ package System.Value_U is
    --  This string results in a Constraint_Error with the pointer pointing
    --  past the second 2.
    --
-   --  Note: if Str is empty, i.e. if Max is less than Ptr, then this is a
-   --  special case of an all-blank string, and Ptr is unchanged, and hence
-   --  is greater than Max as required in this case.
-   --  ??? This is not the case. We will read Str (Ptr.all) without checking
-   --  and increase Ptr.all by one.
+   --  Note: If Max is less than Ptr, then Ptr is left unchanged and
+   --  Program_Error is raised to indicate that a valid integer cannot
+   --  be parsed.
    --
    --  Note: this routine should not be called with Str'Last = Positive'Last.
    --  If this occurs Program_Error is raised with a message noting that this
