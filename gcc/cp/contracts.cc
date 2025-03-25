@@ -3461,7 +3461,7 @@ should_contract_wrap_call (bool do_pre, bool do_post, bool is_virt)
      client-side checking is enabled for all contracts.  */
   if ((is_virt
        && (flag_contract_nonattr_inheritance_mode
-	   == CONTRACT_INHERITANCE_P2900R13))
+	   != CONTRACT_INHERITANCE_NONE))
       || (flag_contract_nonattr_client_check > 1))
     return true;
 
