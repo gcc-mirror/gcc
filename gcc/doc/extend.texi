@@ -36,21 +36,6 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Using Assembly Language with C:: Instructions and extensions for interfacing C with assembler.
 * Syntax Extensions::   Other extensions to C syntax.
 * Semantic Extensions:: GNU C defines behavior for some non-standard constructs.
-* Nonlocal Gotos::      Built-ins for nonlocal gotos.
-* Constructing Calls::  Built-ins for dispatching a call to another function.
-* Return Address::      Getting the return or frame address of a function.
-* Stack Scrubbing::     Stack scrubbing internal interfaces.
-* Vector Extensions::   Using vector instructions through built-in functions.
-* __sync Builtins::     Legacy built-in functions for atomic memory access.
-* __atomic Builtins::   Atomic built-in functions with memory model.
-* Integer Overflow Builtins:: Built-in functions to perform arithmetics and
-                        arithmetic overflow checking.
-* x86 specific memory model extensions for transactional memory:: x86 memory models.
-* Object Size Checking:: Built-in functions for limited buffer overflow
-                        checking.
-* New/Delete Builtins:: Built-in functions for C++ allocations and deallocations.
-* Other Builtins::      Other built-in functions.
-* Target Builtins::     Built-in functions specific to particular targets.
 @end menu
 
 @node Additional Numeric Types
@@ -14216,6 +14201,42 @@ attributes make both the intent of the code and its reliance on a GNU
 extension explicit.  Additionally, using @code{const} and
 @code{volatile} in this way is specific to GNU C and does not work in
 GNU C++.
+
+@node Built-in Functions
+@chapter Built-in Functions Provided by GCC
+@cindex Built-in Functions
+
+GCC provides a very large number of implicitly-declared built-in
+functions that are typically inlined by the compiler.  Some of these
+builtins directly correspond to standard library routines, while
+others provide the underlying functionality needed to implement
+features provided by library functions or similar ``glue'' between GCC
+and other programming languages or libraries.  Others are
+target-specific, providing direct access to instructions that have no
+direct C equivalents without the need to write assembly language.  There
+are also builtins to support various kinds of runtime error checking.
+
+Most builtins have names prefixed with @samp{__builtin_}.  Except as
+otherwise documented, all built-in functions are available from any
+of the C family languages supported by GCC.
+
+@menu
+* Nonlocal Gotos::      Built-ins for nonlocal gotos.
+* Constructing Calls::  Built-ins for dispatching a call to another function.
+* Return Address::      Getting the return or frame address of a function.
+* Stack Scrubbing::     Stack scrubbing internal interfaces.
+* Vector Extensions::   Using vector instructions through built-in functions.
+* __sync Builtins::     Legacy built-in functions for atomic memory access.
+* __atomic Builtins::   Atomic built-in functions with memory model.
+* Integer Overflow Builtins:: Built-in functions to perform arithmetics and
+                        arithmetic overflow checking.
+* x86 specific memory model extensions for transactional memory:: x86 memory models.
+* Object Size Checking:: Built-in functions for limited buffer overflow
+                        checking.
+* New/Delete Builtins:: Built-in functions for C++ allocations and deallocations.
+* Other Builtins::      Other built-in functions.
+* Target Builtins::     Built-in functions specific to particular targets.
+@end menu
 
 @node Nonlocal Gotos
 @section Nonlocal Gotos
