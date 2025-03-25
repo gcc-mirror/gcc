@@ -3228,8 +3228,8 @@ check_for_override (tree decl, tree ctype)
 
       if (DECL_HAS_CONTRACTS_P(decl)
 	  && flag_contracts_nonattr
-	  && flag_contract_nonattr_inheritance_mode
-	      == CONTRACT_INHERITANCE_NONE)
+	  && flag_contracts_on_virtual_functions
+	      == CONTRACTS_ON_VIRTUALS_NONE)
 	{
 	  error_at (DECL_SOURCE_LOCATION(decl),
 		    "Contracts can not be added to virtual functions.");
