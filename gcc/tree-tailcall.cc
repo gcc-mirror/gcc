@@ -139,18 +139,18 @@ static tree m_acc, a_acc;
 
 static bitmap tailr_arg_needs_copy;
 
-static void maybe_error_musttail (gcall *call, const char *err);
+static void maybe_error_musttail (gcall *call, const char *err, bool);
 
 /* Returns false when the function is not suitable for tail call optimization
    from some reason (e.g. if it takes variable number of arguments). CALL
    is call to report for.  */
 
 static bool
-suitable_for_tail_opt_p (gcall *call)
+suitable_for_tail_opt_p (gcall *call, bool diag_musttail)
 {
   if (cfun->stdarg)
     {
-      maybe_error_musttail (call, _("caller uses stdargs"));
+      maybe_error_musttail (call, _("caller uses stdargs"), diag_musttail);
       return false;
     }
 
@@ -163,7 +163,7 @@ suitable_for_tail_opt_p (gcall *call)
    tail call discovery happen. CALL is call to report error for.  */
 
 static bool
-suitable_for_tail_call_opt_p (gcall *call)
+suitable_for_tail_call_opt_p (gcall *call, bool diag_musttail)
 {
   tree param;
 
@@ -171,7 +171,7 @@ suitable_for_tail_call_opt_p (gcall *call)
      sibling call optimizations, but not tail recursion.  */
   if (cfun->calls_alloca)
     {
-      maybe_error_musttail (call, _("caller uses alloca"));
+      maybe_error_musttail (call, _("caller uses alloca"), diag_musttail);
       return false;
     }
 
@@ -181,7 +181,8 @@ suitable_for_tail_call_opt_p (gcall *call)
   if (targetm_common.except_unwind_info (&global_options) == UI_SJLJ
       && current_function_has_exception_handlers ())
     {
-      maybe_error_musttail (call, _("caller uses sjlj exceptions"));
+      maybe_error_musttail (call, _("caller uses sjlj exceptions"),
+			    diag_musttail);
       return false;
     }
 
@@ -190,7 +191,7 @@ suitable_for_tail_call_opt_p (gcall *call)
      properly in the CFG so that this needn't be special cased.  */
   if (cfun->calls_setjmp)
     {
-      maybe_error_musttail (call, _("caller uses setjmp"));
+      maybe_error_musttail (call, _("caller uses setjmp"), diag_musttail);
       return false;
     }
 
@@ -198,7 +199,8 @@ suitable_for_tail_call_opt_p (gcall *call)
      that call __builtin_eh_return.  */
   if (cfun->calls_eh_return)
     {
-      maybe_error_musttail (call, _("caller uses __builtin_eh_return"));
+      maybe_error_musttail (call, _("caller uses __builtin_eh_return"),
+			    diag_musttail);
       return false;
     }
 
@@ -209,7 +211,8 @@ suitable_for_tail_call_opt_p (gcall *call)
        param = DECL_CHAIN (param))
     if (TREE_ADDRESSABLE (param))
       {
-	maybe_error_musttail (call, _("address of caller arguments taken"));
+	maybe_error_musttail (call, _("address of caller arguments taken"),
+			      diag_musttail);
 	return false;
       }
 
@@ -436,9 +439,9 @@ propagate_through_phis (tree var, edge e)
    errors.  */
 
 static void
-maybe_error_musttail (gcall *call, const char *err)
+maybe_error_musttail (gcall *call, const char *err, bool diag_musttail)
 {
-  if (gimple_call_must_tail_p (call))
+  if (gimple_call_must_tail_p (call) && diag_musttail)
     {
       error_at (call->location, "cannot tail-call: %s", err);
       /* Avoid another error. ??? If there are multiple reasons why tail
@@ -461,12 +464,13 @@ static live_vars_map *live_vars;
 static vec<bitmap_head> live_vars_vec;
 
 /* Finds tailcalls falling into basic block BB. The list of found tailcalls is
-   added to the start of RET. When ONLY_MUSTTAIL is set only handle musttail.
-   Update OPT_TAILCALLS as output parameter.  */
+   added to the start of RET.  When ONLY_MUSTTAIL is set only handle musttail.
+   Update OPT_TAILCALLS as output parameter.  If DIAG_MUSTTAIL, diagnose
+   failures for musttail calls.  */
 
 static void
 find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
-		 bool &opt_tailcalls)
+		 bool &opt_tailcalls, bool diag_musttail)
 {
   tree ass_var = NULL_TREE, ret_var, func, param;
   gimple *stmt;
@@ -524,7 +528,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	    {
 	      maybe_error_musttail (call,
 				    _("memory reference or volatile after "
-				      "call"));
+				      "call"), diag_musttail);
 	      return;
 	    }
 	  ass_var = gimple_call_lhs (call);
@@ -561,15 +565,16 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
       edge_iterator ei;
       /* Recurse to the predecessors.  */
       FOR_EACH_EDGE (e, ei, bb->preds)
-	find_tail_calls (e->src, ret, only_musttail, opt_tailcalls);
+	find_tail_calls (e->src, ret, only_musttail, opt_tailcalls,
+			 diag_musttail);
 
       return;
     }
 
-  if (!suitable_for_tail_opt_p (call))
+  if (!suitable_for_tail_opt_p (call, diag_musttail))
     return;
 
-  if (!suitable_for_tail_call_opt_p (call))
+  if (!suitable_for_tail_call_opt_p (call, diag_musttail))
     opt_tailcalls = false;
 
   /* If the LHS of our call is not just a simple register or local
@@ -587,13 +592,13 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
       && !is_gimple_reg (ass_var)
       && !auto_var_in_fn_p (ass_var, cfun->decl))
     {
-      maybe_error_musttail (call, _("return value in memory"));
+      maybe_error_musttail (call, _("return value in memory"), diag_musttail);
       return;
     }
 
   if (cfun->calls_setjmp)
     {
-      maybe_error_musttail (call, _("caller uses setjmp"));
+      maybe_error_musttail (call, _("caller uses setjmp"), diag_musttail);
       return;
     }
 
@@ -605,9 +610,10 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
     if (stmt == last_stmt)
       maybe_error_musttail (call,
 			    _("call may throw exception that does not "
-			      "propagate"));
+			      "propagate"), diag_musttail);
     else
-      maybe_error_musttail (call, _("code between call and return"));
+      maybe_error_musttail (call, _("code between call and return"),
+			    diag_musttail);
     return;
   }
 
@@ -639,7 +645,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
       && may_be_aliased (result_decl)
       && ref_maybe_used_by_stmt_p (call, result_decl, false))
     {
-      maybe_error_musttail (call, _("return value used after call"));
+      maybe_error_musttail (call, _("return value used after call"),
+			    diag_musttail);
       return;
     }
 
@@ -723,7 +730,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	      if (local_live_vars)
 		BITMAP_FREE (local_live_vars);
 	      maybe_error_musttail (call,
-				    _("call invocation refers to locals"));
+				    _("call invocation refers to locals"),
+				    diag_musttail);
 	      return;
 	    }
 	  else
@@ -733,7 +741,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 		{
 		  BITMAP_FREE (local_live_vars);
 		  maybe_error_musttail (call,
-					_("call invocation refers to locals"));
+					_("call invocation refers to locals"),
+					diag_musttail);
 		  return;
 		}
 	    }
@@ -780,7 +789,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 
       if (gimple_code (stmt) != GIMPLE_ASSIGN)
 	{
-	  maybe_error_musttail (call, _("unhandled code after call"));
+	  maybe_error_musttail (call, _("unhandled code after call"),
+				diag_musttail);
 	  return;
 	}
 
@@ -789,7 +799,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 				    &tmp_m, &tmp_a, &ass_var, to_move_defs);
       if (ret == FAIL || (ret == TRY_MOVE && !tail_recursion))
 	{
-	  maybe_error_musttail (call, _("return value changed after call"));
+	  maybe_error_musttail (call, _("return value changed after call"),
+				diag_musttail);
 	  return;
 	}
       else if (ret == TRY_MOVE)
@@ -864,7 +875,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
       if (!ok)
 	{
 	  maybe_error_musttail (call,
-				_("call and return value are different"));
+				_("call and return value are different"),
+				diag_musttail);
 	  return;
 	}
     }
@@ -874,7 +886,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
   if (!tail_recursion && (m || a))
     {
       maybe_error_musttail (call,
-			    _("operations after non tail recursive call"));
+			    _("operations after non tail recursive call"),
+			    diag_musttail);
       return;
     }
 
@@ -883,7 +896,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
     {
       maybe_error_musttail (call,
 			    _("tail recursion with pointers can only use "
-			      "additions"));
+			      "additions"), diag_musttail);
       return;
     }
 
@@ -1258,11 +1271,13 @@ create_tailcall_accumulator (const char *label, basic_block bb, tree init)
 }
 
 /* Optimizes tail calls in the function, turning the tail recursion
-   into iteration. When ONLY_MUSTCALL is true only optimize mustcall
-   marked calls.  */
+   into iteration.  When ONLY_MUSTTAIL is true only optimize musttail
+   marked calls.  When DIAG_MUSTTAIL, diagnose if musttail calls can't
+   be tail call optimized.  */
 
 static unsigned int
-tree_optimize_tail_calls_1 (bool opt_tailcalls, bool only_mustcall)
+tree_optimize_tail_calls_1 (bool opt_tailcalls, bool only_musttail,
+			    bool diag_musttail)
 {
   edge e;
   bool phis_constructed = false;
@@ -1277,7 +1292,8 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls, bool only_mustcall)
       /* Only traverse the normal exits, i.e. those that end with return
 	 statement.  */
       if (safe_is_a <greturn *> (*gsi_last_bb (e->src)))
-	find_tail_calls (e->src, &tailcalls, only_mustcall, opt_tailcalls);
+	find_tail_calls (e->src, &tailcalls, only_musttail, opt_tailcalls,
+			 diag_musttail);
     }
 
   if (live_vars)
@@ -1374,6 +1390,9 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls, bool only_mustcall)
   if (tailr_arg_needs_copy)
     BITMAP_FREE (tailr_arg_needs_copy);
 
+  if (diag_musttail)
+    cfun->has_musttail = false;
+
   if (changed)
     return TODO_cleanup_cfg | TODO_update_ssa_only_virtuals;
   return 0;
@@ -1388,7 +1407,7 @@ gate_tail_calls (void)
 static unsigned int
 execute_tail_calls (void)
 {
-  return tree_optimize_tail_calls_1 (true, false);
+  return tree_optimize_tail_calls_1 (true, false, true);
 }
 
 namespace {
@@ -1421,7 +1440,7 @@ public:
   bool gate (function *) final override { return gate_tail_calls (); }
   unsigned int execute (function *) final override
     {
-      return tree_optimize_tail_calls_1 (false, false);
+      return tree_optimize_tail_calls_1 (false, false, false);
     }
 
 }; // class pass_tail_recursion
@@ -1497,15 +1516,15 @@ public:
 
   /* opt_pass methods: */
   /* This pass is only used when the other tail call pass
-     doesn't run to make [[musttail]] still work. But only
+     doesn't run to make [[musttail]] still work.  But only
      run it when there is actually a musttail in the function.  */
   bool gate (function *f) final override
   {
-    return !flag_optimize_sibling_calls && f->has_musttail;
+    return f->has_musttail;
   }
   unsigned int execute (function *) final override
   {
-    return tree_optimize_tail_calls_1 (true, true);
+    return tree_optimize_tail_calls_1 (true, true, true);
   }
 
 }; // class pass_musttail
