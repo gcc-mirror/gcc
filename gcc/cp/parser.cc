@@ -11773,6 +11773,9 @@ cp_parser_lambda_expression (cp_parser* parser)
     parser->auto_is_implicit_function_template_parm_p = false;
     parser->omp_array_section_p = false;
 
+    /* Inside the lambda, outside unevaluated context do not apply.  */
+    cp_evaluated ev;
+
     /* The body of a lambda in a discarded statement is not discarded.  */
     bool discarded = in_discarded_stmt;
     in_discarded_stmt = 0;
