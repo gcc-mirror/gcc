@@ -142,6 +142,20 @@
 				   (eq_attr "memory" "load"))))
 			 "znver4-double,znver5-load,znver5-ieu")
 
+(define_insn_reservation "znver4_imov_double_store" 5
+			(and (eq_attr "cpu" "znver4")
+				 (and (eq_attr "znver1_decode" "double")
+				  (and (eq_attr "type" "imov")
+				   (eq_attr "memory" "store"))))
+			 "znver4-double,znver4-store,znver4-ieu")
+
+(define_insn_reservation "znver5_imov_double_store" 5
+			(and (eq_attr "cpu" "znver5")
+				 (and (eq_attr "znver1_decode" "double")
+				  (and (eq_attr "type" "imov")
+				   (eq_attr "memory" "store"))))
+			 "znver4-double,znver5-store,znver5-ieu")
+
 ;; imov, imovx
 (define_insn_reservation "znver4_imov" 1
             (and (eq_attr "cpu" "znver4")
@@ -166,6 +180,18 @@
 				 (and (eq_attr "type" "imov,imovx")
 				  (eq_attr "memory" "load")))
 			 "znver4-direct,znver5-load,znver5-ieu")
+
+(define_insn_reservation "znver4_imov_store" 5
+			(and (eq_attr "cpu" "znver4")
+				 (and (eq_attr "type" "imov,imovx")
+				  (eq_attr "memory" "store")))
+			 "znver4-direct,znver4-store,znver4-ieu")
+
+(define_insn_reservation "znver5_imov_store" 5
+			(and (eq_attr "cpu" "znver5")
+				 (and (eq_attr "type" "imov,imovx")
+				  (eq_attr "memory" "store")))
+			 "znver4-direct,znver5-store,znver5-ieu")
 
 ;; Push Instruction
 (define_insn_reservation "znver4_push" 1
