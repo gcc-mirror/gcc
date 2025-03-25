@@ -1,3 +1,883 @@
+2025-03-24  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp26/pack-indexing16.C: New test.
+
+2025-03-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/Wbuiltin_declaration_mismatch2.d: Split test into ...
+	* gdc.dg/Wbuiltin_declaration_mismatch3.d: New test.
+	* gdc.dg/Wbuiltin_declaration_mismatch4.d: New test.
+	* gdc.dg/Wbuiltin_declaration_mismatch5.d: New test.
+	* gdc.dg/Wbuiltin_declaration_mismatch6.d: New test.
+
+2025-03-24  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/issue-3502.rs: New test.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+	* rust/compile/redef_error2.rs: Modify expected error.
+	* rust/compile/redef_error5.rs: Likewise.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove self-path2.rs
+	* rust/compile/self-path2.rs: Adjust expected errors.
+
+2025-03-24  Ryutaro Okada  <1015ryu88@gmail.com>
+
+	* rust/compile/extern_generics.rs: New test.
+
+2025-03-24  Liam Naddell  <liamnprg@gmail.com>
+
+	* rust/compile/issue-3315-1.rs: Add test for module with same name
+	as builtin
+	* rust/compile/issue-3315-2.rs: Test with utilization of i32
+	type
+	* rust/compile/nr2/exclude: issue-3315-2.rs Does not work with
+	NR2.0
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/compile.exp: Adjust to cover tests in the
+	torture subdirectory.
+	* rust/compile/nr2/exclude: Add entries.
+
+2025-03-24  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove two mangling tests from exclusion
+	file.
+
+2025-03-24  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove issue-1786 and issue-3033 from
+	exclusion list.
+
+2025-03-24  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/issue-3126.rs: New test.
+
+2025-03-24  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/enum_variant_name.rs: New test.
+
+2025-03-24  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove test.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-24  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/execute/crate-metavar1.rs: New test.
+	* rust/compile/crate-metavar1.rs: New test.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-24  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/try-expr1.rs: New test.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macros/mbe/macro43.rs: Adjust expected errors.
+	* rust/compile/macros/mbe/macro44.rs: Likewise.
+	* rust/compile/nested_macro_use2.rs: Likewise.
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-24  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/issue-2015.rs: New test.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/additional-trait-bounds2.rs: Adjust expected
+	errors.
+	* rust/compile/const_generics_4.rs: Likewise.
+	* rust/compile/const_generics_7.rs: Likewise.
+	* rust/compile/generic-default1.rs: Likewise.
+	* rust/compile/generics5.rs: Likewise.
+	* rust/compile/generics9.rs: Likewise.
+	* rust/compile/issue-2423.rs: Likewise.
+	* rust/compile/method2.rs: Likewise.
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-24  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/derive-hash1.rs: New test.
+	* rust/compile/nr2/exclude: Add testcase to exclusion list.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macros/mbe/macro-expand-module.rs: New test.
+
+2025-03-24  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/derive-eq-invalid.rs: Declare StructuralPartialEq.
+	* rust/compile/derive-partialeq1.rs: Likewise.
+	* rust/execute/torture/derive-partialeq1.rs: Likewise.
+
+2025-03-24  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/derive-eq-invalid.rs: Mark PartialEq def as a lang item.
+	* rust/compile/derive-partialeq1.rs: New test.
+	* rust/execute/torture/derive-partialeq1.rs: New test.
+	* rust/compile/nr2/exclude: Exclude all of them.
+
+2025-03-24  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/derive-eq-invalid.rs: New test.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-24  Benjamin Thos  <benjamin.thos@epita.fr>
+
+	* rust/compile/implicit_returns_err3.rs: Change test to be valid.
+	* rust/compile/torture/if.rs: Likewise.
+	* rust/compile/if-without-else.rs: New test.
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-24  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/generics4.rs: cleanup
+	* rust/compile/generics6.rs: likewise
+	* rust/compile/type-bindings1.rs: likewise
+	* rust/compile/unconstrained_type_param.rs: likewise
+	* rust/compile/issue-2035.rs: New test.
+
+2025-03-24  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3022.rs: New test.
+
+2025-03-24  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3031.rs: New test.
+
+2025-03-24  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2369.rs: New test.
+
+2025-03-24  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/enum_intrinsics2.rs: New test.
+
+2025-03-24  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/enum_intrinsics1.rs: New test.
+
+2025-03-24  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-3403.rs: New test.
+
+2025-03-24  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/for-loop1.rs: New test.
+	* rust/compile/for-loop2.rs: New test.
+	* rust/execute/torture/for-loop1.rs: New test.
+	* rust/execute/torture/for-loop2.rs: New test.
+	* rust/compile/nr2/exclude: Exclude for-loop1.rs
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-24  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-3402-1.rs: New test.
+	* rust/compile/issue-3402-2.rs: New test.
+
+2025-03-24  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/derive-default1.rs: New test.
+	* rust/execute/torture/derive-default1.rs: New test.
+	* rust/compile/nr2/exclude: Exclude them.
+
+2025-03-24  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/issue-3381.rs: New test.
+
+2025-03-24  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this.
+	* rust/compile/issue-3382.rs: New test.
+
+2025-03-24  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/reference1.rs: fix error message
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-03-24  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/derive-debug1.rs: New test.
+	* rust/compile/nr2/exclude: Exclude it.
+
+2025-03-24  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/structural-eq-peq.rs: New test.
+
+2025-03-24  Liam Naddell  <liamnprg@gmail.com>
+
+	* rust/compile/macros/builtin/option_env1.rs: Add success case for option_env
+	* rust/compile/macros/builtin/option_env2.rs: Add failure case for option_env
+	* rust/execute/torture/builtin_macro_option_env.rs: Add
+	execution case for option_env
+	* rust/compile/macros/builtin/option_env3.rs: New file.
+
+2025-03-24  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 cant handle this
+	* rust/compile/issue-3174.rs: New test.
+
+2025-03-24  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove some tests.
+
+2025-03-24  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove passing tests.
+
+2025-03-24  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: these tests now work it seems
+
+2025-03-24  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Add entries.
+
+2025-03-24  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/try-trait.rs: New test.
+
+2025-03-24  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove break-rust3.rs from exclude list.
+
+2025-03-24  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/derive_macro6.rs: Add lang item attribute to Copy trait.
+
+2025-03-24  lishin  <lishin1008@gmail.com>
+
+	* rust/compile/issue-2954.rs: New test.
+
+2025-03-24  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/nr2/exclude: Some parts of nr2.0 can't handle auto traits yet.
+	* rust/compile/auto_traits3.rs: Removed in favor of...
+	* rust/compile/auto_traits2.rs: ...this one.
+	* rust/compile/auto_traits4.rs: New test.
+
+2025-03-24  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/unaligned-memcpy-4.c: Tighten scan-assembler-not
+	pattern.
+
+2025-03-24  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/march-map=sm_30.c: Adjust.
+	* gcc.target/nvptx/march-map=sm_32.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_35.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_37.c: Likewise.
+	* gcc.target/nvptx/march-map=sm_50.c: Likewise.
+	* gcc.target/nvptx/march=sm_30.c: Likewise.
+	* gcc.target/nvptx/march=sm_35.c: Likewise.
+	* gcc.target/nvptx/march=sm_37.c: Likewise.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10-check.h: Change to avx10.1.
+	* gcc.target/i386/avx10_1-1.c: Add warning check.
+	* gcc.target/i386/avx10_1-10.c: Ditto.
+	* gcc.target/i386/avx10_1-11.c: Ditto.
+	* gcc.target/i386/avx10_1-12.c: Ditto.
+	* gcc.target/i386/avx10_1-13.c: Ditto.
+	* gcc.target/i386/avx10_1-15.c: Ditto.
+	* gcc.target/i386/avx10_1-16.c: Ditto.
+	* gcc.target/i386/avx10_1-18.c: Ditto.
+	* gcc.target/i386/avx10_1-19.c: Ditto.
+	* gcc.target/i386/avx10_1-2.c: Ditto.
+	* gcc.target/i386/avx10_1-20.c: Ditto.
+	* gcc.target/i386/avx10_1-21.c: Ditto.
+	* gcc.target/i386/avx10_1-22.c: Ditto.
+	* gcc.target/i386/avx10_1-23.c: Ditto.
+	* gcc.target/i386/avx10_1-26.c: Ditto.
+	* gcc.target/i386/avx10_1-3.c: Ditto.
+	* gcc.target/i386/avx10_1-4.c: Ditto.
+	* gcc.target/i386/avx10_1-7.c: Ditto.
+	* gcc.target/i386/avx10_1-8.c: Ditto.
+	* gcc.target/i386/avx10_1-9.c: Ditto.
+	* gcc.target/i386/noevex512-1.c: Ditto.
+	* gcc.target/i386/noevex512-2.c: Ditto.
+	* gcc.target/i386/pr111068.c: Ditto.
+	* gcc.target/i386/pr111907.c: Ditto.
+	* gcc.target/i386/pr117240_avx512f.c: Ditto.
+	* gcc.target/i386/pr117304-1.c: Ditto.
+	* gcc.target/i386/pr117946.c: Ditto.
+	* gcc.target/i386/avx10_1-24.c: Removed.
+	* gcc.target/i386/avx10_1-25.c: Removed.
+	* gcc.target/i386/avx10_1-5.c: Removed.
+	* gcc.target/i386/avx10_1-6.c: Removed.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Use -mavx10.2.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/avx-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-bf16-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-bf16-vector-cmp-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-bf16-vector-fma-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-bf16-vector-operations-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-bf16-vector-smaxmin-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-convert-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-media-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-minmax-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-movrs-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-satcvt-1.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vaddbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcmpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvt2ph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvt2ph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvt2ph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvt2ph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvt2ps2phx-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvthf82ph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttbf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttbf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vdivbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vdpphps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfmaddXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfmsubXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfnmaddXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfnmsubXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vfpclassbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vgetexpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vgetmantbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vmaxbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxpd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vminmaxps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vmpsadbw-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vmulbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbssd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbssds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpbuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwusd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwusds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vpdpwuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vrcpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vreducebf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vrndscalebf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vrsqrtbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vscalefbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vsqrtbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vsubbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-bf16-1.c: Ditto.
+	* gcc.target/i386/avx10_2-bf16-vector-cmp-1.c: Ditto.
+	* gcc.target/i386/avx10_2-bf16-vector-fma-1.c: Ditto.
+	* gcc.target/i386/avx10_2-bf16-vector-operations-1.c: Ditto.
+	* gcc.target/i386/avx10_2-bf16-vector-smaxmin-1.c: Ditto.
+	* gcc.target/i386/avx10_2-builtin-1.c: Ditto.
+	* gcc.target/i386/avx10_2-builtin-2.c: Ditto.
+	* gcc.target/i386/avx10_2-comibf-1.c: Ditto.
+	* gcc.target/i386/avx10_2-comibf-2.c: Ditto.
+	* gcc.target/i386/avx10_2-comibf-3.c: Ditto.
+	* gcc.target/i386/avx10_2-comibf-4.c: Ditto.
+	* gcc.target/i386/avx10_2-compare-1.c: Ditto.
+	* gcc.target/i386/avx10_2-compare-1b.c: Ditto.
+	* gcc.target/i386/avx10_2-convert-1.c: Ditto.
+	* gcc.target/i386/avx10_2-media-1.c: Ditto.
+	* gcc.target/i386/avx10_2-minmax-1.c: Ditto.
+	* gcc.target/i386/avx10_2-movrs-1.c: Ditto.
+	* gcc.target/i386/avx10_2-partial-bf16-vector-fast-math-1.c: Ditto.
+	* gcc.target/i386/avx10_2-partial-bf16-vector-fma-1.c: Ditto.
+	* gcc.target/i386/avx10_2-partial-bf16-vector-operations-1.c: Ditto.
+	* gcc.target/i386/avx10_2-partial-bf16-vector-smaxmin-1.c: Ditto.
+	* gcc.target/i386/avx10_2-satcvt-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vaddbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcmpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcomisbf16-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vcomisbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvt2ps2phx-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtbiasph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvthf82ph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2bf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2hf8-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvtps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttbf162ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttbf162iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttpd2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttps2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttsd2sis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttsd2usis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttss2sis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttss2usis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vdivbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vdpphps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfmaddXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfmsubXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfnmaddXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfnmsubXXXbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vfpclassbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vgetexpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vgetmantbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmaxbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxpd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxph-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxps-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxsd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxsh-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vminmaxss-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmovd-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vmovd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmovw-1.c: Ditto.
+	* gcc.target/i386/avx10_2-vmovw-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmpsadbw-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vmulbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbssd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbssds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpbuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwsud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwsuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwusd-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwusds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwuud-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vpdpwuuds-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vrcpbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vreducebf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vrndscalebf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vrsqrtbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vscalefbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vsqrtbf16-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vsubbf16-2.c: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Ditto.
+	* gcc.target/i386/part-vect-vec_cmpbf.c: Ditto.
+	* gcc.target/i386/pr117495.c: Ditto.
+	* gcc.target/i386/pr118815.c: Ditto.
+	* gcc.target/i386/sm4-avx10_2-1.c: Ditto.
+	* gcc.target/i386/sm4-avx10_2-512-1.c: Ditto.
+	* gcc.target/i386/sm4key4-avx10_2-512-2.c: Ditto.
+	* gcc.target/i386/sm4rnds4-avx10_2-512-2.c: Ditto.
+	* gcc.target/i386/sse-12.c: Ditto.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/vnniint16-auto-vectorize-3.c: Ditto.
+	* gcc.target/i386/vnniint16-auto-vectorize-4.c: Ditto.
+	* gcc.target/i386/vnniint8-auto-vectorize-3.c: Ditto.
+	* gcc.target/i386/vnniint8-auto-vectorize-4.c: Ditto.
+	* gcc.target/i386/avx10-check.h: Remove avx10.2-512 and
+	use avx10.2.
+	* gcc.target/i386/sm4-check.h: Ditto.
+	* lib/target-supports.exp: Ditto.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add -mavx10.2 and new builtin test.
+	* gcc.target/i386/avx-2.c: Ditto.
+	* gcc.target/i386/sse-13.c: Add new tests.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-1.c: New test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add new macro test.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-1.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/sse-14.c: Add new macro test.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-1.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-1.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-1.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-1.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-2.c: New test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-2.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-2.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: New test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: New test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: New test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Revert:
+	2025-03-24  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx-1.c: Add new builtin test.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Add new macro test.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/avx10_2-rounding-3.c: Add test.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_2-512-vcvtph2ibs-2.c: Adjust condition
+	for rounding test.
+	* gcc.target/i386/avx10_2-512-vcvtph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttpd2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttph2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttph2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2dqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2ibs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2iubs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2qqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2udqs-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvttps2uqqs-2.c: Ditto.
+	* gcc.target/i386/avx-1.c: Remove rounding tests.
+	* gcc.target/i386/avx10_2-satcvt-1.c: Ditto.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx-1.c: Remove rounding tests.
+	* gcc.target/i386/avx10_2-convert-1.c: Ditto.
+	* gcc.target/i386/avx10_2-minmax-1.c: Ditto.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+
 2025-03-23  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/119154

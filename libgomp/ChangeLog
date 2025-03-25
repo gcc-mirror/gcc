@@ -1,3 +1,27 @@
+2025-03-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* target.c (gomp_interop_internal): Set the 'device_num' member
+	when initializing an interop object.
+
+2025-03-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_interop): Set context for
+	stream creation to use the specified device.
+
+2025-03-24  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR libgomp/96835
+	* testsuite/libgomp.c++/pr96835-1.C: New.
+	* testsuite/libgomp.c++/pr96835-1-O0.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr96835-1.C: Likewise.
+
+2025-03-24  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/101544
+	* testsuite/libgomp.c++/pr101544-1.C: New.
+	* testsuite/libgomp.c++/pr101544-1-O0.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr101544-1.C: Likewise.
+
 2025-03-21  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/libgomp.fortran/get-mapped-ptr-1.f90: Use -6

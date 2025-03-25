@@ -1,3 +1,13 @@
+2025-03-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* cdf-copy.cc: Move host include before system.h
+
+2025-03-24  Andreas Schwab  <schwab@suse.de>
+
+	PR cobol/119390
+	* gcobolspec.cc (lang_specific_driver): Use pointer instead of
+	copying into fixed array.
+
 2025-03-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcobolspec.cc (lang_specific_driver): Add libstdc++

@@ -1,3 +1,23 @@
+2025-03-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Fix two
+	broken links.
+	* doc/html/manual/policy_data_structures.html: Regenerate.
+
+2025-03-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101527
+	* testsuite/24_iterators/common_iterator/101527.cc: New test.
+	* testsuite/24_iterators/counted_iterator/101527.cc: New test.
+
+2025-03-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (vector<bool, A>): Enforce the
+	C++20 requirement that the allocator's value_type matches the
+	container.
+	* testsuite/23_containers/vector/bool/cons/from_range.cc: Fix
+	incorrect allocator type.
+
 2025-03-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/117214
