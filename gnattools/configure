@@ -585,6 +585,8 @@ ac_unique_file="Makefile.in"
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 default_gnattools_target
+LD_PICFLAG
+PICFLAG
 warn_cflags
 OBJEXT
 EXEEXT
@@ -657,6 +659,8 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_maintainer_mode
+enable_host_pie
+enable_host_bind_now
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1281,6 +1285,8 @@ Optional Features:
   --enable-maintainer-mode
                           enable make rules and dependencies not useful (and
                           sometimes confusing) to the casual installer
+  --enable-host-pie       build host code as PIE
+  --enable-host-bind-now  link host code as BIND_NOW
 
 Some influential environment variables:
   CC          C compiler command
@@ -2882,6 +2888,24 @@ warn_cflags=
 if test "x$GCC" = "xyes"; then
   warn_cflags='$(GCC_WARN_CFLAGS)'
 fi
+
+
+# Enable --enable-host-pie
+# Check whether --enable-host-pie was given.
+if test "${enable_host_pie+set}" = set; then :
+  enableval=$enable_host_pie; PICFLAG=-fPIE; LD_PICFLAG=-pie
+else
+  PICFLAG=-fno-PIE; LD_PICFLAG=-no-pie
+fi
+
+
+
+# Enable --enable-host-bind-now
+# Check whether --enable-host-bind-now was given.
+if test "${enable_host_bind_now+set}" = set; then :
+  enableval=$enable_host_bind_now; LD_PICFLAG="$LD_PICFLAG -Wl,-z,now"
+fi
+
 
 
 # Determine what to build for 'gnattools'.  Test after the above,

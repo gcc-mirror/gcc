@@ -51,6 +51,9 @@ WARN_CFLAGS = @warn_cflags@
 
 ADA_CFLAGS=@ADA_CFLAGS@
 
+PICFLAG = @PICFLAG@
+LD_PICFLAG = @LD_PICFLAG@
+
 # Variables for gnattools.
 ADAFLAGS= -gnatpg -gnata
 
@@ -79,12 +82,12 @@ CXX_LFLAGS = \
 TOOLS_FLAGS_TO_PASS_NATIVE= \
 	"CC=../../xgcc -B../../" \
 	"CXX=../../xg++ -B../../ $(CXX_LFLAGS)" \
-	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS)" \
-	"LDFLAGS=$(LDFLAGS)" \
+	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS) $(PICFLAG)" \
+	"LDFLAGS=$(LDFLAGS) $(LD_PICFLAG)" \
 	"ADAFLAGS=$(ADAFLAGS)" \
 	"ADA_CFLAGS=$(ADA_CFLAGS)" \
 	"INCLUDES=$(INCLUDES_FOR_SUBDIR)" \
-	"ADA_INCLUDES=-I- -I../rts $(ADA_INCLUDES_FOR_SUBDIR)"\
+	"ADA_INCLUDES=-I../rts $(ADA_INCLUDES_FOR_SUBDIR)"\
 	"exeext=$(exeext)" \
 	"fsrcdir=$(fsrcdir)" \
 	"srcdir=$(fsrcdir)" \
@@ -97,8 +100,8 @@ TOOLS_FLAGS_TO_PASS_NATIVE= \
 TOOLS_FLAGS_TO_PASS_RE= \
 	"CC=../../xgcc -B../../" \
 	"CXX=../../xg++ -B../../ $(CXX_LFLAGS)" \
-	"CFLAGS=$(CFLAGS)" \
-	"LDFLAGS=$(LDFLAGS)" \
+	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS) $(PICFLAG)" \
+	"LDFLAGS=$(LDFLAGS) $(LD_PICFLAG)" \
 	"ADAFLAGS=$(ADAFLAGS)" \
 	"ADA_CFLAGS=$(ADA_CFLAGS)" \
 	"INCLUDES=$(INCLUDES_FOR_SUBDIR)" \
