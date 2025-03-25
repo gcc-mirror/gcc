@@ -2508,12 +2508,26 @@ GOMP_OFFLOAD_interop (struct interop_obj_t *obj, int ord,
 	  break;
       }
 
-  obj->device_data = ptx_devices[ord];
+  struct ptx_device *ptx_dev = obj->device_data = ptx_devices[ord];
 
   if (targetsync)
     {
       CUstream stream = NULL;
-      CUDA_CALL_ASSERT (cuStreamCreate, &stream, CU_STREAM_DEFAULT);
+      CUdevice cur_ctx_dev;
+      CUresult res = CUDA_CALL_NOCHECK (cuCtxGetDevice, &cur_ctx_dev);
+      if (res != CUDA_SUCCESS && res != CUDA_ERROR_INVALID_CONTEXT)
+	GOMP_PLUGIN_fatal ("cuCtxGetDevice error: %s", cuda_error (res));
+      if (res != CUDA_ERROR_INVALID_CONTEXT && ptx_dev->dev == cur_ctx_dev)
+	CUDA_CALL_ASSERT (cuStreamCreate, &stream, CU_STREAM_DEFAULT);
+      else
+	{
+	  CUcontext old_ctx;
+	  assert (ptx_dev->ctx);
+	  CUDA_CALL_ASSERT (cuCtxPushCurrent, ptx_dev->ctx);
+	  CUDA_CALL_ASSERT (cuStreamCreate, &stream, CU_STREAM_DEFAULT);
+	  if (res != CUDA_ERROR_INVALID_CONTEXT)
+	    CUDA_CALL_ASSERT (cuCtxPopCurrent, &old_ctx);
+	}
       obj->stream = stream;
     }
 }
