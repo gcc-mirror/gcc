@@ -1,7 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-march=*" } { "-march=armv7ve" } } */
-/* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-mthumb" } { "" } } */
-/* { dg-skip-if "-mpure-code supports M-profile only" { *-*-* } { "-mpure-code" } } */
+/* { dg-require-effective-target arm_arch_v7ve_ok }
 /* { dg-options "-marm" } */
 /* { dg-add-options arm_arch_v7ve } */
 
