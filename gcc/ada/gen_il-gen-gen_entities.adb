@@ -426,9 +426,8 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Discriminant_Default_Value, Node_Id),
         Sm (Is_Activation_Record, Flag)));
 
-   Ab (Formal_Object_Kind, Object_Kind,
-       --  Generic formal objects are also objects
-       (Sm (Entry_Component, Node_Id)));
+   Ab (Formal_Object_Kind, Object_Kind);
+   --  Generic formal objects are also objects
 
    Cc (E_Generic_In_Out_Parameter, Formal_Object_Kind,
        --  A generic in out parameter, created by the use of a generic in out
