@@ -9421,7 +9421,7 @@ namespace __detail
     to [[nodiscard]] (_Rg&& __r, _Args&&... __args)
     {
       static_assert(!is_const_v<_Cont> && !is_volatile_v<_Cont>);
-      static_assert(is_class_v<_Cont>);
+      static_assert(is_class_v<_Cont> || is_union_v<_Cont>);
 
       if constexpr (__detail::__toable<_Cont, _Rg>)
 	{
@@ -9580,7 +9580,7 @@ namespace __detail
     to [[nodiscard]] (_Args&&... __args)
     {
       static_assert(!is_const_v<_Cont> && !is_volatile_v<_Cont>);
-      static_assert(is_class_v<_Cont>);
+      static_assert(is_class_v<_Cont> || is_union_v<_Cont>);
 
       using __detail::_To;
       using views::__adaptor::_Partial;
