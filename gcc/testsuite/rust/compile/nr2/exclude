@@ -2,12 +2,8 @@ canonical_paths1.rs
 cfg1.rs
 generics9.rs
 issue-2043.rs
-issue-2330.rs
 issue-2812.rs
-issue-850.rs
-issue-855.rs
 issue-3315-2.rs
-iterators1.rs
 lookup_err1.rs
 macros/mbe/macro43.rs
 macros/mbe/macro6.rs
@@ -27,8 +23,6 @@ derive_clone_enum3.rs
 derive-debug1.rs
 derive-default1.rs
 issue-3402-1.rs
-for-loop1.rs
-for-loop2.rs
 issue-3403.rs
 derive-eq-invalid.rs
 derive-hash1.rs
