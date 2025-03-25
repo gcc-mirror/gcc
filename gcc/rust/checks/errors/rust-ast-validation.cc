@@ -56,7 +56,7 @@ ASTValidation::visit (AST::LoopLabel &label)
 void
 ASTValidation::visit (AST::ConstantItem &const_item)
 {
-  if (!const_item.has_expr () && ctx.peek () != Kind::TRAIT_IMPL)
+  if (!const_item.has_expr () && ctx.peek () != Kind::TRAIT)
     {
       rust_error_at (const_item.get_locus (),
 		     "associated constant in %<impl%> without body");
