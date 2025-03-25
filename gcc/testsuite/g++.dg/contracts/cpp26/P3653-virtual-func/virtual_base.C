@@ -101,15 +101,20 @@ int main(int, char**)
   clear_checks ();
   fooBase (&b0);
   assert (a.checked > 0);
+  assert (b.checked == 0);
+  assert (c.checked == 0);
 
   clear_checks ();
   fooBase (&c0);
   assert (a.checked > 0);
+  assert (b.checked == 0);
+  assert (c.checked == 0);
 
   clear_checks ();
   fooBase (&c1);
-  assert (a.checked == 0);
+  assert (a.checked > 0);
   assert (b.checked > 0);
+  assert (c.checked == 0);
 
   clear_checks ();
   fooBase (&g0);
@@ -119,7 +124,7 @@ int main(int, char**)
 
   clear_checks ();
   fooBase (&g1);
-  assert (a.checked == 0);
+  assert (a.checked > 0);
   assert (b.checked == 0);
   assert (c.checked > 0);
 
@@ -131,26 +136,30 @@ int main(int, char**)
 
   clear_checks ();
   fooBase (&g3);
-  assert (a.checked == 0);
+  assert (a.checked > 0);
   assert (b.checked > 0);
   assert (c.checked > 0);
 
   clear_checks ();
   b0.f ();
   assert (a.checked > 0);
+  assert (b.checked == 0);
+  assert (c.checked == 0);
 
   clear_checks ();
   c0.f ();
   assert (a.checked > 0);
+  assert (b.checked == 0);
+  assert (c.checked == 0);
 
   clear_checks ();
   c1.f ();
   assert (a.checked == 0);
   assert (b.checked > 0);
+  assert (c.checked == 0);
 
   clear_checks ();
   g0.f ();
-  ;
   assert (a.checked > 0);
   assert (b.checked == 0);
   assert (c.checked == 0);
