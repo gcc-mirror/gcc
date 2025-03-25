@@ -1367,7 +1367,6 @@ sem_function::init (ipa_icf_gimple::func_checker *checker)
   gcc_assert (SSANAMES (func));
 
   ssa_names_size = SSANAMES (func)->length ();
-  node = node;
 
   decl = fndecl;
   region_tree = func->eh->region_tree;
