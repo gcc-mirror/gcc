@@ -3838,13 +3838,11 @@ cp_build_indirect_ref_1 (location_t loc, tree ptr, ref_operator errorstring,
 	  return error_mark_node;
 	}
       else if (do_fold && TREE_CODE (pointer) == ADDR_EXPR
-	       && same_type_p (t, TREE_TYPE (TREE_OPERAND (pointer, 0)))
-	       /* Don't let this change the value category.  '*&TARGET_EXPR'
-		  is an lvalue, but folding it into 'TARGET_EXPR' would turn
-		  it into a prvalue of class type.  */
-	       && lvalue_p (TREE_OPERAND (pointer, 0)))
+	       && same_type_p (t, TREE_TYPE (TREE_OPERAND (pointer, 0))))
 	/* The POINTER was something like `&x'.  We simplify `*&x' to
-	   `x'.  */
+	   `x'.  This can change the value category: '*&TARGET_EXPR'
+	   is an lvalue and folding it into 'TARGET_EXPR' turns it into
+	   a prvalue of class type.  */
 	return TREE_OPERAND (pointer, 0);
       else
 	{

@@ -6948,6 +6948,7 @@ extern tree convert_to_reference		(tree, tree, int, int, tree,
 						 tsubst_flags_t);
 extern tree convert_from_reference		(tree);
 extern tree force_rvalue			(tree, tsubst_flags_t);
+extern tree force_lvalue			(tree, tsubst_flags_t);
 extern tree ocp_convert				(tree, tree, int, int,
 						 tsubst_flags_t);
 extern tree cp_convert				(tree, tree, tsubst_flags_t);

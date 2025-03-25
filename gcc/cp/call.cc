@@ -10519,10 +10519,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       if (is_really_empty_class (type, /*ignore_vptr*/true))
 	{
 	  /* Avoid copying empty classes, but ensure op= returns an lvalue even
-	     if the object argument isn't one. This isn't needed in other cases
-	     since MODIFY_EXPR is always considered an lvalue.  */
-	  to = cp_build_addr_expr (to, tf_none);
-	  to = cp_build_indirect_ref (input_location, to, RO_ARROW, complain);
+	     if the object argument isn't one.  */
+	  to = force_lvalue (to, complain);
 	  val = build2 (COMPOUND_EXPR, type, arg, to);
 	  suppress_warning (val, OPT_Wunused);
 	}
@@ -10543,6 +10541,9 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  tree array_type, alias_set;
 
 	  arg2 = TYPE_SIZE_UNIT (as_base);
+	  /* Ensure op= returns an lvalue even if the object argument isn't
+	     one.  */
+	  to = force_lvalue (to, complain);
 	  to = cp_stabilize_reference (to);
 	  arg0 = cp_build_addr_expr (to, complain);
 
