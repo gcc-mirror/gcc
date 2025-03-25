@@ -221,6 +221,7 @@ public:
 
   template <typename S>
   tl::optional<Rib::Definition> resolve_path (const std::vector<S> &segments,
+					      bool has_opening_scope_resolution,
 					      Namespace ns)
   {
     std::function<void (const S &, NodeId)> insert_segment_resolution
@@ -232,13 +233,17 @@ public:
     switch (ns)
       {
       case Namespace::Values:
-	return values.resolve_path (segments, insert_segment_resolution);
+	return values.resolve_path (segments, has_opening_scope_resolution,
+				    insert_segment_resolution);
       case Namespace::Types:
-	return types.resolve_path (segments, insert_segment_resolution);
+	return types.resolve_path (segments, has_opening_scope_resolution,
+				   insert_segment_resolution);
       case Namespace::Macros:
-	return macros.resolve_path (segments, insert_segment_resolution);
+	return macros.resolve_path (segments, has_opening_scope_resolution,
+				    insert_segment_resolution);
       case Namespace::Labels:
-	return labels.resolve_path (segments, insert_segment_resolution);
+	return labels.resolve_path (segments, has_opening_scope_resolution,
+				    insert_segment_resolution);
       default:
 	rust_unreachable ();
       }
@@ -246,17 +251,43 @@ public:
 
   template <typename S, typename... Args>
   tl::optional<Rib::Definition> resolve_path (const std::vector<S> &segments,
+					      bool has_opening_scope_resolution,
 					      Args... ns_args)
   {
     std::initializer_list<Namespace> namespaces = {ns_args...};
 
     for (auto ns : namespaces)
       {
-	if (auto ret = resolve_path (segments, ns))
+	if (auto ret
+	    = resolve_path (segments, has_opening_scope_resolution, ns))
 	  return ret;
       }
 
     return tl::nullopt;
+  }
+
+  template <typename... Args>
+  tl::optional<Rib::Definition> resolve_path (const AST::SimplePath &path,
+					      Args... ns_args)
+  {
+    return resolve_path (path.get_segments (),
+			 path.has_opening_scope_resolution (), ns_args...);
+  }
+
+  template <typename... Args>
+  tl::optional<Rib::Definition> resolve_path (const AST::PathInExpression &path,
+					      Args... ns_args)
+  {
+    return resolve_path (path.get_segments (), path.opening_scope_resolution (),
+			 ns_args...);
+  }
+
+  template <typename... Args>
+  tl::optional<Rib::Definition> resolve_path (const AST::TypePath &path,
+					      Args... ns_args)
+  {
+    return resolve_path (path.get_segments (),
+			 path.has_opening_scope_resolution_op (), ns_args...);
   }
 
 private:
