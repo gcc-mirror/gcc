@@ -13403,11 +13403,6 @@ perform_implicit_conversion_flags (tree type, tree expr,
   void *p;
   location_t loc = cp_expr_loc_or_input_loc (expr);
 
-  if (TYPE_REF_P (type))
-    expr = mark_lvalue_use (expr);
-  else
-    expr = mark_rvalue_use (expr);
-
   if (error_operand_p (expr))
     return error_mark_node;
 
