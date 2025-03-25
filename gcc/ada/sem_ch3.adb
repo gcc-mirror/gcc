@@ -290,6 +290,15 @@ package body Sem_Ch3 is
    --  Check that the expression represented by E is suitable for use as a
    --  digits expression, i.e. it is of integer type, positive and static.
 
+   procedure Check_Discriminant_Conformance
+     (N        : Node_Id;
+      Prev     : Entity_Id;
+      Prev_Loc : Node_Id);
+   --  Check that the discriminants of a full type N fully conform to the
+   --  discriminants of the corresponding partial view Prev. Prev_Loc indicates
+   --  the source location of the partial view, which may be different than
+   --  Prev in the case of private types.
+
    procedure Check_Initialization (T : Entity_Id; Exp : Node_Id);
    --  Validate the initialization of an object declaration. T is the required
    --  type, and Exp is the initialization expression.
@@ -12677,6 +12686,249 @@ package body Sem_Ch3 is
       Analyze_And_Resolve (E, Standard_Integer);
 
    end Check_Digits_Expression;
+
+   ------------------------------------
+   -- Check_Discriminant_Conformance --
+   ------------------------------------
+
+   procedure Check_Discriminant_Conformance
+     (N        : Node_Id;
+      Prev     : Entity_Id;
+      Prev_Loc : Node_Id)
+   is
+      Old_Discr      : Entity_Id := First_Discriminant (Prev);
+      New_Discr      : Node_Id   := First (Discriminant_Specifications (N));
+      New_Discr_Id   : Entity_Id;
+      New_Discr_Type : Entity_Id;
+
+      procedure Conformance_Error (Msg : String; N : Node_Id);
+      --  Post error message for conformance error on given node. Two messages
+      --  are output. The first points to the previous declaration with a
+      --  general "no conformance" message. The second is the detailed reason,
+      --  supplied as Msg. The parameter N provide information for a possible
+      --  & insertion in the message.
+
+      -----------------------
+      -- Conformance_Error --
+      -----------------------
+
+      procedure Conformance_Error (Msg : String; N : Node_Id) is
+      begin
+         Error_Msg_Sloc := Sloc (Prev_Loc);
+         Error_Msg_N -- CODEFIX
+           ("not fully conformant with declaration#!", N);
+         Error_Msg_NE (Msg, N, N);
+      end Conformance_Error;
+
+   --  Start of processing for Check_Discriminant_Conformance
+
+   begin
+      while Present (Old_Discr) and then Present (New_Discr) loop
+         New_Discr_Id := Defining_Identifier (New_Discr);
+
+         --  The subtype mark of the discriminant on the full type has not
+         --  been analyzed so we do it here. For an access discriminant a new
+         --  type is created.
+
+         if Nkind (Discriminant_Type (New_Discr)) = N_Access_Definition then
+            New_Discr_Type :=
+              Access_Definition (N, Discriminant_Type (New_Discr));
+
+         else
+            Find_Type (Discriminant_Type (New_Discr));
+            New_Discr_Type := Etype (Discriminant_Type (New_Discr));
+
+            --  Ada 2005: if the discriminant definition carries a null
+            --  exclusion, create an itype to check properly for consistency
+            --  with partial declaration.
+
+            if Is_Access_Type (New_Discr_Type)
+              and then Null_Exclusion_Present (New_Discr)
+            then
+               New_Discr_Type :=
+                 Create_Null_Excluding_Itype
+                   (T           => New_Discr_Type,
+                    Related_Nod => New_Discr,
+                    Scope_Id    => Current_Scope);
+            end if;
+         end if;
+
+         if not Conforming_Types
+                  (Etype (Old_Discr), New_Discr_Type, Fully_Conformant)
+         then
+            Conformance_Error ("type of & does not match!", New_Discr_Id);
+            return;
+         else
+            --  Treat the new discriminant as an occurrence of the old one,
+            --  for navigation purposes, and fill in some semantic
+            --  information, for completeness.
+
+            Generate_Reference (Old_Discr, New_Discr_Id, 'r');
+            Set_Etype (New_Discr_Id, Etype (Old_Discr));
+            Set_Scope (New_Discr_Id, Scope (Old_Discr));
+         end if;
+
+         --  Names must match
+
+         if Chars (Old_Discr) /= Chars (Defining_Identifier (New_Discr)) then
+            Conformance_Error ("name & does not match!", New_Discr_Id);
+            return;
+         end if;
+
+         --  Default expressions must match
+
+         declare
+            NewD : constant Boolean :=
+                     Present (Expression (New_Discr));
+            OldD : constant Boolean :=
+                     Present (Expression (Parent (Old_Discr)));
+
+            function Has_Tagged_Limited_Partial_View
+              (Typ : Entity_Id) return Boolean;
+            --  Returns True iff Typ has a tagged limited partial view.
+
+            function Is_Derived_From_Immutably_Limited_Type
+              (Typ : Entity_Id) return Boolean;
+            --  Returns True iff Typ is a derived type (tagged or not)
+            --  whose ancestor type is immutably limited. The unusual
+            --  ("unusual" is one word for it) thing about this function
+            --  is that it handles the case where the ancestor name's Entity
+            --  attribute has not been set yet.
+
+            -------------------------------------
+            -- Has_Tagged_Limited_Partial_View --
+            -------------------------------------
+
+            function Has_Tagged_Limited_Partial_View
+              (Typ : Entity_Id) return Boolean
+            is
+               Priv : constant Entity_Id := Incomplete_Or_Partial_View (Typ);
+            begin
+               return Present (Priv)
+                 and then not Is_Incomplete_Type (Priv)
+                 and then Is_Tagged_Type (Priv)
+                 and then Limited_Present (Parent (Priv));
+            end Has_Tagged_Limited_Partial_View;
+
+            --------------------------------------------
+            -- Is_Derived_From_Immutably_Limited_Type --
+            --------------------------------------------
+
+            function Is_Derived_From_Immutably_Limited_Type
+              (Typ : Entity_Id) return Boolean
+            is
+               Type_Def : constant Node_Id := Type_Definition (Parent (Typ));
+               Parent_Name : Node_Id;
+            begin
+               if Nkind (Type_Def) /= N_Derived_Type_Definition then
+                  return False;
+               end if;
+               Parent_Name := Subtype_Indication (Type_Def);
+               if Nkind (Parent_Name) = N_Subtype_Indication then
+                  Parent_Name := Subtype_Mark (Parent_Name);
+               end if;
+               if Parent_Name not in N_Has_Entity_Id
+                 or else No (Entity (Parent_Name))
+               then
+                  Find_Type (Parent_Name);
+               end if;
+               return Is_Immutably_Limited_Type (Entity (Parent_Name));
+            end Is_Derived_From_Immutably_Limited_Type;
+
+         begin
+            if NewD or OldD then
+
+               --  The old default value has been analyzed and expanded,
+               --  because the current full declaration will have frozen
+               --  everything before. The new default values have not been
+               --  expanded, so expand now to check conformance.
+
+               if NewD then
+                  Preanalyze_And_Resolve_Spec_Expression
+                    (Expression (New_Discr), New_Discr_Type);
+               end if;
+
+               if not (NewD and OldD)
+                 or else not Fully_Conformant_Expressions
+                              (Expression (Parent (Old_Discr)),
+                               Expression (New_Discr))
+
+               then
+                  Conformance_Error
+                    ("default expression for & does not match!",
+                     New_Discr_Id);
+                  return;
+               end if;
+
+               if NewD
+                 and then Ada_Version >= Ada_2005
+                 and then Nkind (Discriminant_Type (New_Discr)) =
+                            N_Access_Definition
+                 and then not Is_Immutably_Limited_Type
+                                (Defining_Identifier (N))
+
+                 --  Check for a case that would be awkward to handle in
+                 --  Is_Immutably_Limited_Type (because sem_aux can't
+                 --  "with" sem_util).
+
+                 and then not Has_Tagged_Limited_Partial_View
+                                (Defining_Identifier (N))
+
+                 --  Check for another case that would be awkward to handle
+                 --  in Is_Immutably_Limited_Type
+
+                 and then not Is_Derived_From_Immutably_Limited_Type
+                                (Defining_Identifier (N))
+               then
+                  Error_Msg_N
+                    ("(Ada 2005) default value for access discriminant "
+                     & "requires immutably limited type",
+                     Expression (New_Discr));
+                  return;
+               end if;
+            end if;
+         end;
+
+         --  In Ada 83 case, grouping must match: (A,B : X) /= (A : X; B : X)
+
+         if Ada_Version = Ada_83 then
+            declare
+               Old_Disc : constant Node_Id := Declaration_Node (Old_Discr);
+
+            begin
+               --  Grouping (use of comma in param lists) must be the same
+               --  This is where we catch a misconformance like:
+
+               --    A, B : Integer
+               --    A : Integer; B : Integer
+
+               --  which are represented identically in the tree except
+               --  for the setting of the flags More_Ids and Prev_Ids.
+
+               if More_Ids (Old_Disc) /= More_Ids (New_Discr)
+                 or else Prev_Ids (Old_Disc) /= Prev_Ids (New_Discr)
+               then
+                  Conformance_Error
+                    ("grouping of & does not match!", New_Discr_Id);
+                  return;
+               end if;
+            end;
+         end if;
+
+         Next_Discriminant (Old_Discr);
+         Next (New_Discr);
+      end loop;
+
+      if Present (Old_Discr) then
+         Conformance_Error ("too few discriminants!", Defining_Identifier (N));
+         return;
+
+      elsif Present (New_Discr) then
+         Conformance_Error
+           ("too many discriminants!", Defining_Identifier (New_Discr));
+         return;
+      end if;
+   end Check_Discriminant_Conformance;
 
    --------------------------
    -- Check_Initialization --

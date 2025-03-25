@@ -68,15 +68,6 @@ package Sem_Ch6 is
    --  type in its profile depends on a private type without a full
    --  declaration, indicate that the subprogram or type is delayed.
 
-   procedure Check_Discriminant_Conformance
-     (N        : Node_Id;
-      Prev     : Entity_Id;
-      Prev_Loc : Node_Id);
-   --  Check that the discriminants of a full type N fully conform to the
-   --  discriminants of the corresponding partial view Prev. Prev_Loc indicates
-   --  the source location of the partial view, which may be different than
-   --  Prev in the case of private types.
-
    procedure Check_Formal_Subprogram_Conformance
      (New_Id  : Entity_Id;
       Old_Id  : Entity_Id;
