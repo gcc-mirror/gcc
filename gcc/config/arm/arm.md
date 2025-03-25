@@ -2432,11 +2432,11 @@
 )
 
 (define_insn "<US>mull"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,&r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r,&r,&r,&r")
 	(mult:SI
-	 (match_operand:SI 2 "s_register_operand" "%r,r")
-	 (match_operand:SI 3 "s_register_operand" "r,r")))
-   (set (match_operand:SI 1 "s_register_operand" "=r,&r")
+	 (match_operand:SI 2 "s_register_operand" "%r,r,r,r")
+	 (match_operand:SI 3 "s_register_operand" "r,r,0,1")))
+   (set (match_operand:SI 1 "s_register_operand" "=r,&r,&r,&r")
 	(truncate:SI
 	 (lshiftrt:DI
 	  (mult:DI (SE:DI (match_dup 2)) (SE:DI (match_dup 3)))
@@ -2445,7 +2445,7 @@
   "<US>mull%?\\t%0, %1, %2, %3"
   [(set_attr "type" "umull")
    (set_attr "predicable" "yes")
-   (set_attr "arch" "v6,nov6")]
+   (set_attr "arch" "v6,nov6,nov6,nov6")]
 )
 
 (define_expand "<Us>maddsidi4"
