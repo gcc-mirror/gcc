@@ -69170,9 +69170,11 @@ install-target-libitm: maybe-install-target-libgcc
 install-target-libobjc: maybe-install-target-libgcc
 install-target-libstdc++-v3: maybe-install-target-libgcc
 install-target-libgcobol: maybe-install-target-libstdc++-v3
+install-target-libgcobol: maybe-install-target-libquadmath
 all-target-libgloss: maybe-all-target-newlib
 all-target-winsup: maybe-all-target-libtermcap
 configure-target-libgfortran: maybe-all-target-libquadmath
+configure-target-libgcobol: maybe-all-target-libquadmath
 
 
 @if gcc-bootstrap

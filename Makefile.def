@@ -693,6 +693,7 @@ dependencies = { module=install-target-libitm; on=install-target-libgcc; };
 dependencies = { module=install-target-libobjc; on=install-target-libgcc; };
 dependencies = { module=install-target-libstdc++-v3; on=install-target-libgcc; };
 dependencies = { module=install-target-libgcobol; on=install-target-libstdc++-v3; };
+dependencies = { module=install-target-libgcobol; on=install-target-libquadmath; };
 
 // Target modules in the 'src' repository.
 lang_env_dependencies = { module=libtermcap; };
@@ -706,6 +707,7 @@ dependencies = { module=configure-target-newlib; on=all-ld; };
 dependencies = { module=configure-target-libgfortran; on=all-target-libquadmath; };
 dependencies = { module=configure-target-libgfortran; on=all-target-libbacktrace; };
 dependencies = { module=configure-target-libgo; on=all-target-libbacktrace; };
+dependencies = { module=configure-target-libgcobol; on=all-target-libquadmath; };
 
 languages = { language=c;	gcc-check-target=check-gcc; };
 languages = { language=c++;	gcc-check-target=check-c++;
