@@ -13321,9 +13321,19 @@ package body Exp_Ch4 is
       Insert_Action (Expr, Obj_Decl);
 
       --  The object can never be local to an elaboration routine at library
-      --  level since we will take 'Unrestricted_Access of it.
+      --  level since we will take 'Unrestricted_Access of it. Beware that
+      --  Is_Library_Level_Entity always returns False when called from within
+      --  a transient scope, but the associated block will not be materialized
+      --  when the transient scope is finally closed in the case of an object
+      --  declaration (see Exp.Ch7.Wrap_Transient_Declaration).
 
-      Set_Is_Statically_Allocated (Obj_Id, Is_Library_Level_Entity (Obj_Id));
+      if Scope (Obj_Id) = Current_Scope and then Scope_Is_Transient then
+         Set_Is_Statically_Allocated
+           (Obj_Id, Is_Library_Level_Entity (Scope (Obj_Id)));
+      else
+         Set_Is_Statically_Allocated
+           (Obj_Id, Is_Library_Level_Entity (Obj_Id));
+      end if;
 
       --  If the object needs finalization, we need to insert its Master_Node
       --  manually because 1) the machinery in Exp_Ch7 will not pick it since
