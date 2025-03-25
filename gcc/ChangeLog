@@ -1,3 +1,14 @@
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-isas.h: Add avx10.1.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Ditto.
+	* config/i386/i386-options.cc
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	* config/i386/i386.opt: Ditto.
+	* config/i386/i386.opt.urls: Ditto.
+	* doc/extend.texi: Ditto.
+	* doc/sourcebuild.texi: Ditto.
+
 2025-03-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

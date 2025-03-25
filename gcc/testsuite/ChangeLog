@@ -1,3 +1,11 @@
+2025-03-24  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2024-09-14  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/116681
+	* g++.dg/cpp2a/concepts-pr116681.C: New test.
+
 2025-03-23  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
