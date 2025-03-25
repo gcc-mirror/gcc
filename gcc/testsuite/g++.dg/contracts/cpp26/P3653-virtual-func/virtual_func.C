@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontracts-nonattr-inheritance-mode=P3653 -g3" }
+// { dg-options "-std=c++2a -fcontracts -fcontracts-nonattr -fcontracts-on-virtual-functions=P3653 -g3" }
 #include <cassert>
 
 struct contract

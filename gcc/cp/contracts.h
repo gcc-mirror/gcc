@@ -59,9 +59,9 @@ enum contract_semantic
 
 enum contract_inheritance
 {
-  CONTRACT_INHERITANCE_NONE = 0,
-  CONTRACT_INHERITANCE_P2900R13 = 1,
-  CONTRACT_INHERITANCE_P3653 = 2,
+  CONTRACTS_ON_VIRTUALS_NONE = 0,
+  CONTRACTS_ON_VIRTUALS_P2900R13 = 1,
+  CONTRACTS_ON_VIRTUALS_P3653 = 2,
 };
 
 /* True if the contract is unchecked.  */
