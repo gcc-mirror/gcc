@@ -168,6 +168,7 @@ struct ImportPathInfo
 struct Param
 {
     d_bool obj;           // write object file
+    d_bool readStdin;     // read source file from stdin
     d_bool multiobj;      // break one object file into multiple ones
     d_bool trace;         // insert profiling hooks
     d_bool tracegc;       // instrument calls to 'new'

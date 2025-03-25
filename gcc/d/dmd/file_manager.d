@@ -16,7 +16,6 @@ import dmd.root.stringtable : StringTable;
 import dmd.root.file : File, Buffer;
 import dmd.root.filename : FileName, isDirSeparator;
 import dmd.root.string : toDString;
-import dmd.errors;
 import dmd.globals;
 import dmd.identifier;
 import dmd.location;
@@ -184,9 +183,6 @@ nothrow:
         scope(exit) FileName.free(sdi.ptr);
 
         const sd = FileName.forceExt(filename, mars_ext);
-        // Special file name representing `stdin`, always assume its presence
-        if (sd == "__stdin.d")
-            return sd;
         if (checkLocal && FileName.exists(sd) == 1)
             return sd;
         scope(exit) FileName.free(sd.ptr);
@@ -312,20 +308,12 @@ nothrow:
         if (auto val = files.lookup(name))      // if `name` is cached
             return val.value;                   // return its contents
 
-        OutBuffer buf;
-        if (name == "__stdin.d")                // special name for reading from stdin
-        {
-            if (readFromStdin(buf))
-                fatal();
-        }
-        else
-        {
-            if (FileName.exists(name) != 1) // if not an ordinary file
-                return null;
+        if (FileName.exists(name) != 1) // if not an ordinary file
+            return null;
 
-            if (File.read(name, buf))
-                return null;        // failed
-        }
+        OutBuffer buf;
+        if (File.read(name, buf))
+            return null;        // failed
 
         buf.write32(0);         // terminating dchar 0
 
@@ -350,37 +338,4 @@ nothrow:
         auto val = files.insert(filename.toString, buffer);
         return val == null ? null : val.value;
     }
-}
-
-private bool readFromStdin(ref OutBuffer sink) nothrow
-{
-    import core.stdc.stdio;
-    import dmd.errors;
-
-    enum BufIncrement = 128 * 1024;
-
-    for (size_t j; 1; ++j)
-    {
-        char[] buffer = sink.allocate(BufIncrement);
-
-        // Fill up buffer
-        size_t filled = 0;
-        do
-        {
-            filled += fread(buffer.ptr + filled, 1, buffer.length - filled, stdin);
-            if (ferror(stdin))
-            {
-                import core.stdc.errno;
-                error(Loc.initial, "cannot read from stdin, errno = %d", errno);
-                return true;
-            }
-            if (feof(stdin)) // successful completion
-            {
-                sink.setsize(j * BufIncrement + filled);
-                return false;
-            }
-        } while (filled < BufIncrement);
-    }
-
-    assert(0);
 }

@@ -58,12 +58,10 @@ import dmd.visitor;
 
 version (Windows)
 {
-    import core.sys.windows.winbase : getpid = GetCurrentProcessId;
     enum PathSeparator = '\\';
 }
 else version (Posix)
 {
-    import core.sys.posix.unistd : getpid;
     enum PathSeparator = '/';
 }
 else
@@ -577,12 +575,6 @@ extern (C++) final class Module : Package
         else
         {
             const(char)[] argdoc;
-            OutBuffer buf;
-            if (arg == "__stdin.d")
-            {
-                buf.printf("__stdin_%d.d", getpid());
-                arg = buf[];
-            }
             if (global.params.preservePaths)
                 argdoc = arg;
             else

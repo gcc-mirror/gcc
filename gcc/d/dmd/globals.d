@@ -160,6 +160,7 @@ extern (C++) struct ImportPathInfo {
 extern (C++) struct Param
 {
     bool obj = true;        // write object file
+    bool readStdin;         // saw "-" on command line, read source file from stdin
     bool multiobj;          // break one object file into multiple ones
     bool trace;             // insert profiling hooks
     bool tracegc;           // instrument calls to 'new'
