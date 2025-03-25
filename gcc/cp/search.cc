@@ -2230,7 +2230,7 @@ check_override_contracts (tree fndecl)
 {
 
   if (!flag_contracts || !flag_contracts_nonattr
-      || flag_contract_nonattr_inheritance_mode != CONTRACT_INHERITANCE_P3653)
+      || flag_contracts_on_virtual_functions != CONTRACTS_ON_VIRTUALS_P3653)
     return;
 
   /* A constructor for a class T does not override a function T

@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=c++23 -fcontracts -fcontracts-nonattr -fcontracts-nonattr-inheritance-mode=P3653 " }
+// { dg-options "-std=c++23 -fcontracts -fcontracts-nonattr -fcontracts-on-virtual-functions=P3653 " }
 
 struct NTClass {
   //TODO, make non trivial when https://github.com/NinaRanns/gcc/issues/21 is solved
