@@ -385,8 +385,8 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
       case OPT_print_multi_os_directory:
       case OPT_print_multiarch:
       case OPT_print_sysroot_headers_suffix:
-	no_files_error = false;
-	break;
+        no_files_error = false;
+        break;
 
       case OPT_v:
         no_files_error = false;
@@ -500,9 +500,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
             {
             const char *ach;
             if (entry_point)
-	      ach = entry_point;
+              ach = entry_point;
             else
-	      ach = decoded_options[i].arg;
+              ach = decoded_options[i].arg;
             append_option(OPT_main_, ach, 1);
             prior_main = false;
             entry_point = NULL;

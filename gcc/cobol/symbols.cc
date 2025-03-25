@@ -93,7 +93,7 @@ static struct symbol_table_t {
            exception_condition, very_true, very_false;
     registers_t() {
       file_status = linage_counter = return_code =
-	exception_condition = very_true = very_false = 0;
+        exception_condition = very_true = very_false = 0;
     }
   } registers;
 
@@ -249,10 +249,10 @@ cbl_ffi_arg_t( cbl_ffi_crv_t crv,
   if( refer && refer != refer->empty() ) delete refer;
 }
 
-#define ERROR_FIELD(F, ...)				\
- do{							\
-  auto loc = symbol_field_location(field_index(F));	\
-  error_msg(loc, __VA_ARGS__);				\
+#define ERROR_FIELD(F, ...)                                \
+ do{                                                        \
+  auto loc = symbol_field_location(field_index(F));        \
+  error_msg(loc, __VA_ARGS__);                                \
  } while(0)
 
 
@@ -1646,7 +1646,7 @@ struct capacity_of {
 static void
 extend_66_capacity( cbl_field_t *alias ) {
   static_assert(sizeof(symbol_elem_t*) == sizeof(const char *),
-		"all pointers must be same size");
+                "all pointers must be same size");
   assert(alias->data.picture);
   assert(alias->type == FldGroup);
   symbol_elem_t *e = symbol_at(alias->parent);
@@ -4510,15 +4510,20 @@ cbl_occurs_t::subscript_ok( const cbl_field_t *subscript ) const {
   // It must be a number.
   if( subscript->type != FldLiteralN ) return false;
 
-  auto sub = subscript->data.value_of();
+  // This only gets us int64_t, which is more than adequate for a table subscript
+  auto sub = real_to_integer (TREE_REAL_CST_PTR (subscript->data.value_of()));
+  REAL_VALUE_TYPE csub;
+  real_from_integer (&csub, VOIDmode, sub, SIGNED);
 
-  if( sub < 1 || sub != size_t(sub) ) {
+  if( sub < 1
+      || !real_identical (&csub,
+                          TREE_REAL_CST_PTR (subscript->data.value_of())) ) {
     return false; // zero/fraction invalid
   }
   if( bounds.fixed_size() ) {
-    return sub <= bounds.upper;
+    return (size_t)sub <= bounds.upper;
   }
-  return bounds.lower <= sub && sub <= bounds.upper;
+  return bounds.lower <= (size_t)sub && (size_t)sub <= bounds.upper;
 }
 
 cbl_file_key_t::

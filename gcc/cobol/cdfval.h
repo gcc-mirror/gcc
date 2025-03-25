@@ -43,7 +43,7 @@ struct cdfval_base_t {
   bool off;
   const char *string;
   int64_t number;
-  cdfval_base_t& operator()( const YDFLTYPE& loc );
+  const cdfval_base_t& operator()( const YDFLTYPE& loc );
 };
 
 struct cdf_arg_t {
@@ -93,6 +93,14 @@ struct cdfval_t : public cdfval_base_t {
     cdfval_base_t::string = NULL;
     cdfval_base_t::number = value;
   }
+  explicit cdfval_t( const REAL_VALUE_TYPE& r )
+    : lineno(yylineno), filename(cobol_filename())
+  {
+    cdfval_base_t::off  = false;
+    cdfval_base_t::string = NULL;
+    HOST_WIDE_INT value = real_to_integer(&r);
+    cdfval_base_t::number = value;
+  }
   cdfval_t( const cdfval_base_t& value )
     : lineno(yylineno), filename(cobol_filename())
   {
@@ -104,10 +112,10 @@ struct cdfval_t : public cdfval_base_t {
   int64_t as_number() const { assert(is_numeric()); return number; }
 };
 
-bool
-cdf_value( const char name[], cdfval_t value );
-
 const cdfval_t *
 cdf_value( const char name[] );
+
+bool
+cdf_value( const char name[], cdfval_t value );
 
 #endif

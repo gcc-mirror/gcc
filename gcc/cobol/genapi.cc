@@ -52,6 +52,8 @@
 #include "../../libgcobol/charmaps.h"
 #include "../../libgcobol/valconv.h"
 #include "show_parse.h"
+#include "fold-const.h"
+#include "realmpfr.h"
 
 extern int yylineno;
 
@@ -1041,7 +1043,9 @@ initialize_variable_internal( cbl_refer_t refer,
           default:
             {
             char ach[128];
-            strfromf128(ach, sizeof(ach), "%.16E", parsed_var->data.value_of());
+            real_to_decimal (ach,
+                             TREE_REAL_CST_PTR (parsed_var->data.value_of()),
+                             sizeof(ach), 16, 0);
             SHOW_PARSE_TEXT(ach);
             break;
             }
@@ -1296,8 +1300,8 @@ get_binary_value_from_float(tree         value,
   gg_assign(fvalue,
             gg_multiply(fvalue,
                         gg_float(ftype,
-                                 build_int_cst_type(INT,
-                                                    get_power_of_ten(rdigits)))));
+                                 wide_int_to_tree(INT,
+                                                  get_power_of_ten(rdigits)))));
 
   // And we need to throw away any digits to the left of the leftmost digits:
   // At least, we need to do so in principl.  I am deferring this problem until
@@ -4025,11 +4029,7 @@ psa_FldLiteralN(struct cbl_field_t *field )
     field->literal_decl_node = gg_define_variable(DOUBLE, id_string, vs_static);
     TREE_READONLY(field->literal_decl_node) = 1;
     TREE_CONSTANT(field->literal_decl_node) = 1;
-    char ach[128];
-    strfromf128(ach, sizeof(ach), "%.36E", field->data.value_of());
-    REAL_VALUE_TYPE real;
-    real_from_string(&real, ach);
-    tree initer = build_real (DOUBLE, real);
+    tree initer = fold_convert (DOUBLE, field->data.value_of());
     DECL_INITIAL(field->literal_decl_node) = initer;
 
     }
@@ -4884,8 +4884,9 @@ parser_display_internal(tree file_descriptor,
     // We make use of that here
 
     char ach[128];
-    strfromf128(ach, sizeof(ach), "%.33E", refer.field->data.value_of());
-    char *p = strchr(ach, 'E');
+    real_to_decimal (ach, TREE_REAL_CST_PTR (refer.field->data.value_of()),
+                     sizeof(ach), 33, 0);
+    char *p = strchr(ach, 'e');
     if( !p )
       {
       // Probably INF -INF NAN or -NAN, so ach has our result
@@ -4898,12 +4899,27 @@ parser_display_internal(tree file_descriptor,
         {
         // We are going to stick with the E notation, so ach has our result
         }
-      else
+      else if (exp == 0)
         {
-        int precision = 32 - exp;
-        char achFormat[24];
-        sprintf(achFormat, "%%.%df", precision);
-        strfromf128(ach, sizeof(ach), achFormat, refer.field->data.value_of());
+          p[-1] = '\0';
+        }
+      else if (exp < 0)
+        {
+          p[-1] = '\0';
+          char *q = strchr (ach, '.');
+          char dig = q[-1];
+          q[-1] = '\0';
+          char tem[132];
+          snprintf (tem, 132, "%s0.%0*u%c%s", ach, -exp - 1, 0, dig, q + 1);
+          strcpy (ach, tem);
+        }
+      else if (exp > 0)
+        {
+          p[-1] = '\0';
+          char *q = strchr (ach, '.');
+          for (int i = 0; i != exp; ++i)
+            q[i] = q[i + 1];
+          q[exp] = '.';
         }
       __gg__remove_trailing_zeroes(ach);
       }
@@ -13864,9 +13880,9 @@ mh_source_is_literalN(cbl_refer_t &destref,
           Analyzer.Message("Check to see if result fits");
           if( destref.field->data.digits )
             {
-            __int128 power_of_ten = get_power_of_ten(destref.field->data.digits);
-            IF( gg_abs(source), ge_op, build_int_cst_type(calc_type,
-                                                          power_of_ten) )
+            FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten(destref.field->data.digits);
+            IF( gg_abs(source), ge_op, wide_int_to_tree(calc_type,
+                                                        power_of_ten) )
               {
               gg_assign(size_error, gg_bitwise_or(size_error, integer_one_node));
               }
@@ -13964,26 +13980,20 @@ mh_source_is_literalN(cbl_refer_t &destref,
             // The following generated code is the exact equivalent
             // of the C code:
             //   *(float *)dest = (float)data.value
-            _Float32 src = (_Float32)sourceref.field->data.value_of();
-            tree tsrc    = build_string_literal(sizeof(src), (char *)&src);
-            gg_assign(gg_indirect(gg_cast(build_pointer_type(INT), tdest)),
-                      gg_indirect(gg_cast(build_pointer_type(INT), tsrc )));
+            gg_assign(gg_indirect(gg_cast(build_pointer_type(FLOAT), tdest)),
+                      fold_convert (FLOAT, sourceref.field->data.value_of()));
             break;
             }
           case 8:
             {
-            _Float64 src = (_Float64)sourceref.field->data.value_of();
-            tree tsrc    = build_string_literal(sizeof(src), (char *)&src);
-            gg_assign(gg_indirect(gg_cast(build_pointer_type(LONG), tdest)),
-                      gg_indirect(gg_cast(build_pointer_type(LONG), tsrc )));
+            gg_assign(gg_indirect(gg_cast(build_pointer_type(DOUBLE), tdest)),
+                      fold_convert (DOUBLE, sourceref.field->data.value_of()));
             break;
             }
           case 16:
             {
-            _Float128 src = (_Float128)sourceref.field->data.value_of();
-            tree tsrc     = build_string_literal(sizeof(src), (char *)&src);
-            gg_assign(gg_indirect(gg_cast(build_pointer_type(INT128), tdest)),
-                      gg_indirect(gg_cast(build_pointer_type(INT128), tsrc )));
+            gg_assign(gg_indirect(gg_cast(build_pointer_type(FLOAT128), tdest)),
+                      sourceref.field->data.value_of());
             break;
             }
           }
@@ -15226,20 +15236,31 @@ parser_print_string(const char *fmt, const char *ach)
   gg_printf(fmt, gg_string_literal(ach), NULL_TREE);
   }
 
+REAL_VALUE_TYPE
+real_powi10 (uint32_t x)
+{
+  REAL_VALUE_TYPE ten, pow10;
+  real_from_integer (&ten, TYPE_MODE (FLOAT128), 10, SIGNED);
+  real_powi (&pow10, TYPE_MODE (FLOAT128), &ten, x);
+  return pow10;
+}
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic"
 char *
-binary_initial_from_float128(cbl_field_t *field, int rdigits, _Float128 value)
+binary_initial_from_float128(cbl_field_t *field, int rdigits,
+                             REAL_VALUE_TYPE value)
   {
   // This routine returns an xmalloced buffer designed to replace the
   // data.initial member of the incoming field
   char *retval = NULL;
-  char ach[128] = "";
 
-    // We need to adjust value so that it has no decimal places
+  // We need to adjust value so that it has no decimal places
   if( rdigits )
     {
-    value *= get_power_of_ten(rdigits);
+      REAL_VALUE_TYPE pow10 = real_powi10 (rdigits);
+      real_arithmetic (&value, MULT_EXPR, &value, &pow10);
+      real_convert (&value, TYPE_MODE (float128_type_node), &value);
     }
   // We need to make sure that the resulting string will fit into
   // a number with 'digits' digits
@@ -15247,52 +15268,47 @@ binary_initial_from_float128(cbl_field_t *field, int rdigits, _Float128 value)
   // Keep in mind that pure binary types, like BINARY-CHAR, have no digits
   if( field->data.digits )
     {
-    value = fmodf128(value, (_Float128)get_power_of_ten(field->data.digits));
+      REAL_VALUE_TYPE pow10 = real_powi10 (field->data.digits);
+      mpfr_t m0, m1;
+
+      mpfr_inits2 (REAL_MODE_FORMAT (TYPE_MODE (float128_type_node))->p,
+                   m0, m1, NULL);
+      mpfr_from_real (m0, &value, MPFR_RNDN);
+      mpfr_from_real (m1, &pow10, MPFR_RNDN);
+      mpfr_clear_flags ();
+      mpfr_fmod (m0, m0, m1, MPFR_RNDN);
+      real_from_mpfr (&value, m0,
+                      REAL_MODE_FORMAT (TYPE_MODE (float128_type_node)),
+                      MPFR_RNDN);
+      real_convert (&value, TYPE_MODE (float128_type_node), &value);
+      mpfr_clears (m0, m1, NULL);
     }
 
-  // We convert it to a integer string of digits:
-  strfromf128(ach, sizeof(ach), "%.0f", value);
-  if( strcmp(ach, "-0") == 0 )
-    {
-    // Yes, negative zero can be a thing.  Let's make it go away.
-    strcpy(ach, "0");
-    }
+  real_roundeven (&value, TYPE_MODE (float128_type_node), &value);
 
+  bool fail = false;
+  FIXED_WIDE_INT(128) i
+    = FIXED_WIDE_INT(128)::from (real_to_integer (&value, &fail, 128), SIGNED);
+
+  /* ???  Use native_encode_* below.  */
   retval = (char *)xmalloc(field->data.capacity);
   switch(field->data.capacity)
     {
     case 1:
-      *(signed char *)retval = atoi(ach);
+      *(signed char *)retval = (signed char)i.slow ();
       break;
     case 2:
-      *(signed short *)retval = atoi(ach);
+      *(signed short *)retval = (signed short)i.slow ();
       break;
     case 4:
-      *(signed int *)retval = atoi(ach);
+      *(signed int *)retval = (signed int)i.slow ();
       break;
     case 8:
-      *(signed long *)retval = atol(ach);
+      *(signed long *)retval = (signed long)i.slow ();
       break;
     case 16:
-      {
-      __int128 val = 0;
-      bool negative = false;
-      for(size_t i=0; i<strlen(ach); i++)
-        {
-        if( ach[i] == '-' )
-          {
-          negative = true;
-          continue;
-          }
-        val *= 10;
-        val += ach[i] & 0x0F;
-        }
-      if( negative )
-        {
-        val = -val;
-        }
-      *(__int128 *)retval = val;
-      }
+      *(unsigned long *)retval = (unsigned long)i.ulow ();
+      *((signed long *)retval + 1) = (signed long)i.shigh ();
       break;
     default:
       fprintf(stderr,
@@ -15308,28 +15324,42 @@ binary_initial_from_float128(cbl_field_t *field, int rdigits, _Float128 value)
   }
 #pragma GCC diagnostic pop
 
+
 static void
-digits_from_float128(char *retval, cbl_field_t *field, size_t width, int rdigits, _Float128 value)
+digits_from_float128(char *retval, cbl_field_t *field, size_t width, int rdigits, REAL_VALUE_TYPE value)
   {
   char ach[128];
 
   // We need to adjust value so that it has no decimal places
   if( rdigits )
     {
-    value *= get_power_of_ten(rdigits);
+      REAL_VALUE_TYPE pow10 = real_powi10 (rdigits);
+      real_arithmetic (&value, MULT_EXPR, &value, &pow10);
     }
   // We need to make sure that the resulting string will fit into
   // a number with 'digits' digits
+  REAL_VALUE_TYPE pow10 = real_powi10 (field->data.digits);
+  mpfr_t m0, m1;
 
-  value = fmodf128(value, (_Float128)get_power_of_ten(field->data.digits));
+  mpfr_inits2 (FLOAT_MODE_FORMAT (TYPE_MODE (float128_type_node))->p, m0, m1,
+               NULL);
+  mpfr_from_real (m0, &value, MPFR_RNDN);
+  mpfr_from_real (m1, &pow10, MPFR_RNDN);
+  mpfr_clear_flags ();
+  mpfr_fmod (m0, m0, m1, MPFR_RNDN);
+  real_from_mpfr (&value, m0,
+                  REAL_MODE_FORMAT (TYPE_MODE (float128_type_node)),
+                  MPFR_RNDN);
+  real_convert (&value, TYPE_MODE (float128_type_node), &value);
+  mpfr_clears (m0, m1, NULL);
+  real_roundeven (&value, TYPE_MODE (float128_type_node), &value);
+
+  bool fail = false;
+  FIXED_WIDE_INT(128) i
+    = FIXED_WIDE_INT(128)::from (real_to_integer (&value, &fail, 128), SIGNED);
 
   // We convert it to a integer string of digits:
-  strfromf128(ach, sizeof(ach), "%.0f", value);
-  if( strcmp(ach, "-0") == 0 )
-    {
-    // Yes, negative zero can be a thing.  Let's make it go away.
-    strcpy(ach, "0");
-    }
+  print_dec (i, ach, SIGNED);
 
   //fprintf(stderr, "digits_from_float128() %s %f %s ", field->name, (double)value, ach);
 
@@ -15341,8 +15371,8 @@ digits_from_float128(char *retval, cbl_field_t *field, size_t width, int rdigits
   strcpy(retval + (width-strlen(ach)), ach);
   }
 
-char *
-initial_from_float128(cbl_field_t *field, _Float128 value)
+static char *
+initial_from_float128(cbl_field_t *field)
   {
   Analyze();
   // This routine returns an xmalloced buffer that is intended to replace the
@@ -15410,9 +15440,15 @@ initial_from_float128(cbl_field_t *field, _Float128 value)
       {
       retval = (char *)xmalloc(field->data.capacity);
       memset(retval, const_char, field->data.capacity);
-      goto done;
+      return retval;
       }
     }
+
+  // ???  Refactoring the cases below that do not need 'value' would
+  // make this less ugly
+  REAL_VALUE_TYPE value;
+  if( field->data.etc_type == cbl_field_data_t::value_e )
+    value = TREE_REAL_CST (field->data.value_of ());
 
   // There is always the infuriating possibility of a P-scaled number
   if( field->attr & scaled_e )
@@ -15426,7 +15462,9 @@ initial_from_float128(cbl_field_t *field, _Float128 value)
       // Our result has no decimal places, and we have to multiply the value
       // by 10**9 to get the significant bdigits where they belong.
 
-      value *= get_power_of_ten(field->data.digits + field->data.rdigits);
+      REAL_VALUE_TYPE pow10
+        = real_powi10 (field->data.digits + field->data.rdigits);
+      real_arithmetic (&value, MULT_EXPR, &value, &pow10);
       }
     else
       {
@@ -15436,7 +15474,8 @@ initial_from_float128(cbl_field_t *field, _Float128 value)
       // If our caller gave us 123000000, we need to divide
       // it by 1000000 to line up the 123 with where we want it to go:
 
-      value /= get_power_of_ten(-field->data.rdigits);
+      REAL_VALUE_TYPE pow10 = real_powi10 (-field->data.rdigits);
+      real_arithmetic (&value, RDIV_EXPR, &value, &pow10);
       }
     // Either way, we now have everything aligned for the remainder of the
     // processing to work:
@@ -15473,14 +15512,14 @@ initial_from_float128(cbl_field_t *field, _Float128 value)
       char ach[128];
 
       bool negative;
-      if( value < 0 )
+      if( real_isneg (&value) )
         {
-        negative = true;
-        value = -value;
+          negative = true;
+          value = real_value_negate (&value);
         }
       else
         {
-        negative = false;
+          negative = false;
         }
 
       digits_from_float128(ach, field, field->data.digits, rdigits, value);
@@ -15553,14 +15592,14 @@ initial_from_float128(cbl_field_t *field, _Float128 value)
       char ach[128];
 
       bool negative;
-      if( value < 0 )
+      if( real_isneg (&value) )
         {
-        negative = true;
-        value = -value;
+          negative = true;
+          value = real_value_negate (&value);
         }
       else
         {
-        negative = false;
+          negative = false;
         }
 
       // For COMP-6 (flagged by separate_e), the number of required digits is
@@ -15664,10 +15703,10 @@ initial_from_float128(cbl_field_t *field, _Float128 value)
         {
         // It's not a quoted string, so we use data.value:
         bool negative;
-        if( value < 0 )
+        if( real_isneg (&value) )
           {
           negative = true;
-          value = -value;
+          value = real_value_negate (&value);
           }
         else
           {
@@ -15679,13 +15718,14 @@ initial_from_float128(cbl_field_t *field, _Float128 value)
         memset(retval, 0, field->data.capacity);
         size_t ndigits = field->data.capacity;
 
-        if( (field->attr & blank_zero_e) && value == 0 )
+        if( (field->attr & blank_zero_e) && real_iszero (&value) )
           {
           memset(retval, internal_space, field->data.capacity);
           }
         else
           {
           digits_from_float128(ach, field, ndigits, rdigits, value);
+          /* ???  This resides in libgcobol valconv.cc.  */
           __gg__string_to_numeric_edited( retval,
                                           ach,
                                           field->data.rdigits,
@@ -15698,17 +15738,24 @@ initial_from_float128(cbl_field_t *field, _Float128 value)
 
     case FldFloat:
       {
+      tree tem;
       retval = (char *)xmalloc(field->data.capacity);
       switch( field->data.capacity )
         {
         case 4:
-          *(_Float32 *)retval = (_Float32) value;
+          value = real_value_truncate (TYPE_MODE (FLOAT), value);
+          tem = build_real (FLOAT, value);
+          native_encode_expr (tem, (unsigned char *)retval, 4, 0);
           break;
         case 8:
-          *(_Float64 *)retval = (_Float64) value;
+          value = real_value_truncate (TYPE_MODE (DOUBLE), value);
+          tem = build_real (DOUBLE, value);
+          native_encode_expr (tem, (unsigned char *)retval, 8, 0);
           break;
         case 16:
-          *(_Float128 *)retval = (_Float128) value;
+          value = real_value_truncate (TYPE_MODE (FLOAT128), value);
+          tem = build_real (FLOAT128, value);
+          native_encode_expr (tem, (unsigned char *)retval, 16, 0);
           break;
         }
       break;
@@ -15722,7 +15769,6 @@ initial_from_float128(cbl_field_t *field, _Float128 value)
     default:
       break;
     }
-  done:
   return retval;
   }
 
@@ -16839,7 +16885,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
 
     if( new_var->data.initial )
       {
-      new_initial = initial_from_float128(new_var, new_var->data.value_of());
+      new_initial = initial_from_float128(new_var);
       }
     if( new_initial )
       {

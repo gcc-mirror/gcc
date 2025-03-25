@@ -48,21 +48,6 @@
 
 #define PICTURE_MAX 64
 
-#if ! (__HAVE_FLOAT128 && __GLIBC_USE (IEC_60559_TYPES_EXT))
-static_assert( sizeof(output) == sizeof(long double), "long doubles?" );
-
-static inline _Float128
-strtof128 (const char *__restrict __nptr, char **__restrict __endptr) {
-  return strtold(nptr, endptr);
-}
-
-static inline int
-strfromf128 (char *restrict string, size_t size,
-            const char *restrict format, _Float128 value) {
-  return  strfroml(str, n, format, fp);
-}
-#endif
-
 extern const char *numed_message;
 
 enum cbl_dialect_t {
@@ -265,9 +250,9 @@ struct cbl_field_data_t {
       val88_t() : false_value(NULL), domain(NULL) {}
     } val88;
     struct cbl_upsi_mask_t *upsi_mask;
-    _Float128 value;
+    tree value;
 
-    explicit etc_t( double v = 0.0 ) : value(v) {}
+    explicit etc_t( tree v = build_zero_cst (float128_type_node)) : value(v) {}
   } etc;
 
   cbl_field_data_t( uint32_t memsize=0,  uint32_t capacity=0 )
@@ -278,13 +263,13 @@ struct cbl_field_data_t {
     , initial(0)
     , picture(0)
     , etc_type(value_e)
-    , etc(0)
+    , etc()
   {}
 
   cbl_field_data_t( uint32_t memsize,  uint32_t capacity,
-		    uint32_t digits,  uint32_t rdigits,
-		    const char *initial,
-		    const char *picture = NULL ) 
+                    uint32_t digits,  uint32_t rdigits,
+                    const char *initial,
+                    const char *picture = NULL ) 
     : memsize(memsize)
     , capacity(capacity)
     , digits(digits)
@@ -292,7 +277,7 @@ struct cbl_field_data_t {
     , initial(initial)
     , picture(picture)
     , etc_type(value_e)
-    , etc(0)
+    , etc()
   {}
 
   cbl_field_data_t( const cbl_field_data_t& that ) {
@@ -323,17 +308,20 @@ struct cbl_field_data_t {
     etc_type = upsi_e;
     return etc.upsi_mask = mask;
   }
-  _Float128 value_of() const {
+  tree value_of() const {
     if( etc_type != value_e ) {
       dbgmsg("%s:%d: type is %s", __func__, __LINE__, etc_type_str());
     }
-////    assert(etc_type == value_e);
     return etc.value;
   } 
-  _Float128& operator=( _Float128 v) {
+  tree& operator=( tree v) {
     etc_type = value_e;
     return etc.value = v;
   } 
+
+  void set_real_from_capacity( REAL_VALUE_TYPE *r ) const {
+    real_from_integer (r, VOIDmode, capacity, SIGNED);
+  }
 
   time_now_f time_func;
 
@@ -356,14 +344,19 @@ struct cbl_field_data_t {
       std::replace(input.begin(), input.end(), ',', '.');
     }
 
-    char *pend = NULL;
+    double d;
+    int n;
+    int erc = sscanf(input.c_str(), "%lf%n", &d, &n);
     
-    etc.value = strtof128(input.c_str(), &pend);
-
-    if( pend != input.c_str() + len ) {
+    if( erc < 0 || size_t(n) != input.size() ) {
       dbgmsg("%s: error: could not interpret '%s' of '%s' as a number",
-             __func__, pend, initial);
+             __func__, initial + n, initial);
     }
+
+    REAL_VALUE_TYPE r;
+    real_from_string (&r, input.c_str());
+    r = real_value_truncate (TYPE_MODE (float128_type_node), r);
+    etc.value = build_real (float128_type_node, r);
     return *this;
   }
   cbl_field_data_t& valify( const char *input ) {
@@ -385,14 +378,14 @@ struct cbl_field_data_t {
 
     switch(etc_type) {
       case value_e:
-	etc.value = that.etc.value;
-	break;
+        etc.value = that.etc.value;
+        break;
       case val88_e:
-	etc.val88 = that.etc.val88;
-	break;
+        etc.val88 = that.etc.val88;
+        break;
       case upsi_e:
-	etc.upsi_mask = that.etc.upsi_mask;
-	break;
+        etc.upsi_mask = that.etc.upsi_mask;
+        break;
       } 
     return *this;
   }
@@ -531,6 +524,10 @@ struct cbl_field_t {
       || type == FldLiteralN;
   }
 
+  bool is_zero() const {
+    return real_zerop(data.value_of());
+  }
+
   bool rename_level_ok() const {
     switch( level ) {
     case 0:
@@ -556,7 +553,7 @@ struct cbl_field_t {
 
     if( ! (is_typedef || that.type == FldClass) ) {
       data.initial = NULL;
-      data = _Float128(0.0);
+      data = build_zero_cst (float128_type_node);
     }
     return *this;
   }
@@ -568,6 +565,10 @@ struct cbl_field_t {
 
   bool is_binary_integer() const {
     return type == FldNumericBinary || type == FldNumericBin5;
+  }
+
+  HOST_WIDE_INT as_integer() const {
+    return real_to_integer( TREE_REAL_CST_PTR (data.value_of()) );
   }
 
   void embiggen( size_t eight=8 ) {
@@ -595,7 +596,6 @@ struct cbl_field_t {
   bool has_subordinate( const cbl_field_t *that ) const;
 
   const char * internalize();
-  bool value_set( _Float128 value );
   const char *value_str() const;
 
   bool is_key_name() const { return has_attr(record_key_e); }

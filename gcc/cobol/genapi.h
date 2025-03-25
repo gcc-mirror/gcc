@@ -569,9 +569,6 @@ void parser_print_long(const char *fmt, long N); // fmt needs to have a %ls in i
 void parser_print_string(const char *ach);
 void parser_print_string(const char *fmt, const char *ach); // fmt needs to have a %s in it
 void parser_set_statement(const char *statement);
-
-char *initial_from_float128(cbl_field_t *field, _Float128 value);
-
 void parser_set_handled(ec_type_t ec_handled);
 void parser_set_file_number(int file_number);
 void parser_exception_clear();

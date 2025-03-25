@@ -1422,14 +1422,14 @@ get_data_address( cbl_field_t *field,
 // Ignore pedantic because we know 128-bit computation is not ISO C++14. 
 #pragma GCC diagnostic ignored "-Wpedantic"
 
-__int128
+FIXED_WIDE_INT(128)
 get_power_of_ten(int n)
   {
   // 2** 64 = 1.8E19
   // 2**128 = 3.4E38
-  __int128 retval = 1;
+  FIXED_WIDE_INT(128) retval = 1;
   static const int MAX_POWER = 19 ;
-  static const __int128 pos[MAX_POWER+1] =
+  static const unsigned long long pos[MAX_POWER+1] =
     {
     1ULL,                       // 00
     10ULL,                      // 01
@@ -1500,18 +1500,18 @@ scale_by_power_of_ten_N(tree value,
       gg_assign(var_decl_rdigits, integer_zero_node);
       }
     tree value_type = TREE_TYPE(value);
-    __int128 power_of_ten = get_power_of_ten(N);
-    gg_assign(value, gg_multiply(value, build_int_cst_type( value_type,
+    FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten(N);
+    gg_assign(value, gg_multiply(value, wide_int_to_tree( value_type,
                                   power_of_ten)));
     }
   if( N < 0 )
     {
     tree value_type = TREE_TYPE(value);
-    __int128 power_of_ten = get_power_of_ten(-N);
+    FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten(-N);
     if( check_for_fractional )
       {
-      IF( gg_mod(value, build_int_cst_type( value_type,
-                                  power_of_ten)),
+      IF( gg_mod(value, wide_int_to_tree( value_type,
+                                          power_of_ten)),
           ne_op,
           gg_cast(value_type, integer_zero_node) )
         {
@@ -1521,7 +1521,7 @@ scale_by_power_of_ten_N(tree value,
         gg_assign(var_decl_rdigits, integer_zero_node);
         ENDIF
       }
-    gg_assign(value, gg_divide(value, build_int_cst_type( value_type,
+    gg_assign(value, gg_divide(value, wide_int_to_tree( value_type,
                                   power_of_ten)));
     }
   }
@@ -1864,12 +1864,12 @@ copy_little_endian_into_place(cbl_field_t *dest,
       }
     ENDIF
 
-    __int128 power_of_ten = get_power_of_ten(  dest->data.digits
-                                             - dest->data.rdigits
-                                             + rhs_rdigits );
+    FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten(  dest->data.digits
+                                                        - dest->data.rdigits
+                                                        + rhs_rdigits );
     IF( gg_cast(INT128, abs_value),
         ge_op,
-        build_int_cst_type(INT128, power_of_ten) )
+        wide_int_to_tree(INT128, power_of_ten) )
       {
       // Flag the size error
       gg_assign(size_error, integer_one_node);

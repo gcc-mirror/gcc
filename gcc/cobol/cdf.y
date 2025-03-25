@@ -954,7 +954,7 @@ verify_integer( const YDFLTYPE& loc, const cdfval_base_t& val ) {
   return true;
 }
 
-cdfval_base_t&
+const cdfval_base_t&
 cdfval_base_t::operator()( const YDFLTYPE& loc ) {
   static cdfval_t zero(0);
   return verify_integer(loc, *this) ? *this : zero;
