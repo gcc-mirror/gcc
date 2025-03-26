@@ -14244,8 +14244,6 @@ a function call results in a compile-time error.
 * Stack Scrubbing::     Stack scrubbing internal interfaces.
 * Vector Extensions::   Using vector instructions through built-in functions.
 * Atomic Memory Access:: __atomic and __sync builtins.
-* Integer Overflow Builtins:: Built-in functions to perform arithmetics and
-                        arithmetic overflow checking.
 * Object Size Checking:: Built-in functions for limited buffer overflow
                         checking.
 * New/Delete Builtins:: Built-in functions for C++ allocations and deallocations.
@@ -14831,6 +14829,8 @@ floating-point or integer operand.
 * Bit Operation Builtins::         Counting bits and similar functions.
 * Byte-Swapping Builtins::         Reversing byte order.
 * CRC Builtins::                   Compute cyclic redundancy checks.
+* Integer Overflow Builtins::      Built-in functions to perform arithmetics
+                                   and arithmetic overflow checking.
 @end menu
 
 @node Floating-Point Format Builtins
@@ -15443,6 +15443,157 @@ is 16-bit.
 @defbuiltin{uint64_t __builtin_crc64_data32 (uint64_t @var{crc}, uint32_t @var{data}, uint64_t @var{poly})}
 Similar to @code{__builtin_crc64_data64}, except the @var{data} argument type
 is 32-bit.
+@enddefbuiltin
+
+@node Integer Overflow Builtins
+@subsection Built-in Functions to Perform Arithmetic with Overflow Checking
+@cindex overflow checking builtins
+@cindex integer arithmetic overflow checking builtins
+@cindex builtins for arithmetic overflow checking
+
+The following built-in functions allow performing simple arithmetic operations
+together with checking whether the operations overflowed.
+
+@defbuiltin{bool __builtin_add_overflow (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} *@var{res})}
+@defbuiltinx{bool __builtin_sadd_overflow (int @var{a}, int @var{b}, int *@var{res})}
+@defbuiltinx{bool __builtin_saddl_overflow (long int @var{a}, long int @var{b}, long int *@var{res})}
+@defbuiltinx{bool __builtin_saddll_overflow (long long int @var{a}, long long int @var{b}, long long int *@var{res})}
+@defbuiltinx{bool __builtin_uadd_overflow (unsigned int @var{a}, unsigned int @var{b}, unsigned int *@var{res})}
+@defbuiltinx{bool __builtin_uaddl_overflow (unsigned long int @var{a}, unsigned long int @var{b}, unsigned long int *@var{res})}
+@defbuiltinx{bool __builtin_uaddll_overflow (unsigned long long int @var{a}, unsigned long long int @var{b}, unsigned long long int *@var{res})}
+
+These built-in functions promote the first two operands into infinite precision signed
+type and perform addition on those promoted operands.  The result is then
+cast to the type the third pointer argument points to and stored there.
+If the stored result is equal to the infinite precision result, the built-in
+functions return @code{false}, otherwise they return @code{true}.  As the addition is
+performed in infinite signed precision, these built-in functions have fully defined
+behavior for all argument values.
+
+The first built-in function allows arbitrary integral types for operands and
+the result type must be pointer to some integral type other than enumerated or
+boolean type, the rest of the built-in functions have explicit integer types.
+
+The compiler will attempt to use hardware instructions to implement
+these built-in functions where possible, like conditional jump on overflow
+after addition, conditional jump on carry etc.
+
+@enddefbuiltin
+
+@defbuiltin{bool __builtin_sub_overflow (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} *@var{res})}
+@defbuiltinx{bool __builtin_ssub_overflow (int @var{a}, int @var{b}, int *@var{res})}
+@defbuiltinx{bool __builtin_ssubl_overflow (long int @var{a}, long int @var{b}, long int *@var{res})}
+@defbuiltinx{bool __builtin_ssubll_overflow (long long int @var{a}, long long int @var{b}, long long int *@var{res})}
+@defbuiltinx{bool __builtin_usub_overflow (unsigned int @var{a}, unsigned int @var{b}, unsigned int *@var{res})}
+@defbuiltinx{bool __builtin_usubl_overflow (unsigned long int @var{a}, unsigned long int @var{b}, unsigned long int *@var{res})}
+@defbuiltinx{bool __builtin_usubll_overflow (unsigned long long int @var{a}, unsigned long long int @var{b}, unsigned long long int *@var{res})}
+
+These built-in functions are similar to the add overflow checking built-in
+functions above, except they perform subtraction, subtract the second argument
+from the first one, instead of addition.
+
+@enddefbuiltin
+
+@defbuiltin{bool __builtin_mul_overflow (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} *@var{res})}
+@defbuiltinx{bool __builtin_smul_overflow (int @var{a}, int @var{b}, int *@var{res})}
+@defbuiltinx{bool __builtin_smull_overflow (long int @var{a}, long int @var{b}, long int *@var{res})}
+@defbuiltinx{bool __builtin_smulll_overflow (long long int @var{a}, long long int @var{b}, long long int *@var{res})}
+@defbuiltinx{bool __builtin_umul_overflow (unsigned int @var{a}, unsigned int @var{b}, unsigned int *@var{res})}
+@defbuiltinx{bool __builtin_umull_overflow (unsigned long int @var{a}, unsigned long int @var{b}, unsigned long int *@var{res})}
+@defbuiltinx{bool __builtin_umulll_overflow (unsigned long long int @var{a}, unsigned long long int @var{b}, unsigned long long int *@var{res})}
+
+These built-in functions are similar to the add overflow checking built-in
+functions above, except they perform multiplication, instead of addition.
+
+@enddefbuiltin
+
+The following built-in functions allow checking if simple arithmetic operation
+would overflow.
+
+@defbuiltin{bool __builtin_add_overflow_p (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} @var{c})}
+@defbuiltinx{bool __builtin_sub_overflow_p (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} @var{c})}
+@defbuiltinx{bool __builtin_mul_overflow_p (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} @var{c})}
+
+These built-in functions are similar to @code{__builtin_add_overflow},
+@code{__builtin_sub_overflow}, or @code{__builtin_mul_overflow}, except that
+they don't store the result of the arithmetic operation anywhere and the
+last argument is not a pointer, but some expression with integral type other
+than enumerated or boolean type.
+
+The built-in functions promote the first two operands into infinite precision signed type
+and perform addition on those promoted operands. The result is then
+cast to the type of the third argument.  If the cast result is equal to the infinite
+precision result, the built-in functions return @code{false}, otherwise they return @code{true}.
+The value of the third argument is ignored, just the side effects in the third argument
+are evaluated, and no integral argument promotions are performed on the last argument.
+If the third argument is a bit-field, the type used for the result cast has the
+precision and signedness of the given bit-field, rather than precision and signedness
+of the underlying type.
+
+For example, the following macro can be used to portably check, at
+compile-time, whether or not adding two constant integers will overflow,
+and perform the addition only when it is known to be safe and not to trigger
+a @option{-Woverflow} warning.
+
+@smallexample
+#define INT_ADD_OVERFLOW_P(a, b) \
+   __builtin_add_overflow_p (a, b, (__typeof__ ((a) + (b))) 0)
+
+enum @{
+    A = INT_MAX, B = 3,
+    C = INT_ADD_OVERFLOW_P (A, B) ? 0 : A + B,
+    D = __builtin_add_overflow_p (1, SCHAR_MAX, (signed char) 0)
+@};
+@end smallexample
+
+The compiler will attempt to use hardware instructions to implement
+these built-in functions where possible, like conditional jump on overflow
+after addition, conditional jump on carry etc.
+
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_addc (unsigned int @var{a}, unsigned int @var{b}, unsigned int @var{carry_in}, unsigned int *@var{carry_out})}
+@defbuiltinx{{unsigned long int} __builtin_addcl (unsigned long int @var{a}, unsigned long int @var{b}, unsigned int @var{carry_in}, unsigned long int *@var{carry_out})}
+@defbuiltinx{{unsigned long long int} __builtin_addcll (unsigned long long int @var{a}, unsigned long long int @var{b}, unsigned long long int @var{carry_in}, unsigned long long int *@var{carry_out})}
+
+These built-in functions are equivalent to:
+@smallexample
+  (@{ __typeof__ (@var{a}) s; \
+      __typeof__ (@var{a}) c1 = __builtin_add_overflow (@var{a}, @var{b}, &s); \
+      __typeof__ (@var{a}) c2 = __builtin_add_overflow (s, @var{carry_in}, &s); \
+      *(@var{carry_out}) = c1 | c2; \
+      s; @})
+@end smallexample
+
+i.e.@: they add 3 unsigned values, set what the last argument
+points to to 1 if any of the two additions overflowed (otherwise 0)
+and return the sum of those 3 unsigned values.  Note, while all
+the first 3 arguments can have arbitrary values, better code will be
+emitted if one of them (preferably the third one) has only values
+0 or 1 (i.e.@: carry-in).
+
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_subc (unsigned int @var{a}, unsigned int @var{b}, unsigned int @var{carry_in}, unsigned int *@var{carry_out})}
+@defbuiltinx{{unsigned long int} __builtin_subcl (unsigned long int @var{a}, unsigned long int @var{b}, unsigned int @var{carry_in}, unsigned long int *@var{carry_out})}
+@defbuiltinx{{unsigned long long int} __builtin_subcll (unsigned long long int @var{a}, unsigned long long int @var{b}, unsigned long long int @var{carry_in}, unsigned long long int *@var{carry_out})}
+
+These built-in functions are equivalent to:
+@smallexample
+  (@{ __typeof__ (@var{a}) s; \
+      __typeof__ (@var{a}) c1 = __builtin_sub_overflow (@var{a}, @var{b}, &s); \
+      __typeof__ (@var{a}) c2 = __builtin_sub_overflow (s, @var{carry_in}, &s); \
+      *(@var{carry_out}) = c1 | c2; \
+      s; @})
+@end smallexample
+
+i.e.@: they subtract 2 unsigned values from the first unsigned value,
+set what the last argument points to to 1 if any of the two subtractions
+overflowed (otherwise 0) and return the result of the subtractions.
+Note, while all the first 3 arguments can have arbitrary values, better code
+will be emitted if one of them (preferrably the third one) has only values
+0 or 1 (i.e.@: carry-in).
+
 @enddefbuiltin
 
 @node Stack Allocation
@@ -16670,154 +16821,6 @@ but rather a @dfn{release barrier}.
 This means that all previous memory stores are globally visible, and all
 previous memory loads have been satisfied, but following memory reads
 are not prevented from being speculated to before the barrier.
-@enddefbuiltin
-
-@node Integer Overflow Builtins
-@section Built-in Functions to Perform Arithmetic with Overflow Checking
-
-The following built-in functions allow performing simple arithmetic operations
-together with checking whether the operations overflowed.
-
-@defbuiltin{bool __builtin_add_overflow (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} *@var{res})}
-@defbuiltinx{bool __builtin_sadd_overflow (int @var{a}, int @var{b}, int *@var{res})}
-@defbuiltinx{bool __builtin_saddl_overflow (long int @var{a}, long int @var{b}, long int *@var{res})}
-@defbuiltinx{bool __builtin_saddll_overflow (long long int @var{a}, long long int @var{b}, long long int *@var{res})}
-@defbuiltinx{bool __builtin_uadd_overflow (unsigned int @var{a}, unsigned int @var{b}, unsigned int *@var{res})}
-@defbuiltinx{bool __builtin_uaddl_overflow (unsigned long int @var{a}, unsigned long int @var{b}, unsigned long int *@var{res})}
-@defbuiltinx{bool __builtin_uaddll_overflow (unsigned long long int @var{a}, unsigned long long int @var{b}, unsigned long long int *@var{res})}
-
-These built-in functions promote the first two operands into infinite precision signed
-type and perform addition on those promoted operands.  The result is then
-cast to the type the third pointer argument points to and stored there.
-If the stored result is equal to the infinite precision result, the built-in
-functions return @code{false}, otherwise they return @code{true}.  As the addition is
-performed in infinite signed precision, these built-in functions have fully defined
-behavior for all argument values.
-
-The first built-in function allows arbitrary integral types for operands and
-the result type must be pointer to some integral type other than enumerated or
-boolean type, the rest of the built-in functions have explicit integer types.
-
-The compiler will attempt to use hardware instructions to implement
-these built-in functions where possible, like conditional jump on overflow
-after addition, conditional jump on carry etc.
-
-@enddefbuiltin
-
-@defbuiltin{bool __builtin_sub_overflow (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} *@var{res})}
-@defbuiltinx{bool __builtin_ssub_overflow (int @var{a}, int @var{b}, int *@var{res})}
-@defbuiltinx{bool __builtin_ssubl_overflow (long int @var{a}, long int @var{b}, long int *@var{res})}
-@defbuiltinx{bool __builtin_ssubll_overflow (long long int @var{a}, long long int @var{b}, long long int *@var{res})}
-@defbuiltinx{bool __builtin_usub_overflow (unsigned int @var{a}, unsigned int @var{b}, unsigned int *@var{res})}
-@defbuiltinx{bool __builtin_usubl_overflow (unsigned long int @var{a}, unsigned long int @var{b}, unsigned long int *@var{res})}
-@defbuiltinx{bool __builtin_usubll_overflow (unsigned long long int @var{a}, unsigned long long int @var{b}, unsigned long long int *@var{res})}
-
-These built-in functions are similar to the add overflow checking built-in
-functions above, except they perform subtraction, subtract the second argument
-from the first one, instead of addition.
-
-@enddefbuiltin
-
-@defbuiltin{bool __builtin_mul_overflow (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} *@var{res})}
-@defbuiltinx{bool __builtin_smul_overflow (int @var{a}, int @var{b}, int *@var{res})}
-@defbuiltinx{bool __builtin_smull_overflow (long int @var{a}, long int @var{b}, long int *@var{res})}
-@defbuiltinx{bool __builtin_smulll_overflow (long long int @var{a}, long long int @var{b}, long long int *@var{res})}
-@defbuiltinx{bool __builtin_umul_overflow (unsigned int @var{a}, unsigned int @var{b}, unsigned int *@var{res})}
-@defbuiltinx{bool __builtin_umull_overflow (unsigned long int @var{a}, unsigned long int @var{b}, unsigned long int *@var{res})}
-@defbuiltinx{bool __builtin_umulll_overflow (unsigned long long int @var{a}, unsigned long long int @var{b}, unsigned long long int *@var{res})}
-
-These built-in functions are similar to the add overflow checking built-in
-functions above, except they perform multiplication, instead of addition.
-
-@enddefbuiltin
-
-The following built-in functions allow checking if simple arithmetic operation
-would overflow.
-
-@defbuiltin{bool __builtin_add_overflow_p (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} @var{c})}
-@defbuiltinx{bool __builtin_sub_overflow_p (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} @var{c})}
-@defbuiltinx{bool __builtin_mul_overflow_p (@var{type1} @var{a}, @var{type2} @var{b}, @var{type3} @var{c})}
-
-These built-in functions are similar to @code{__builtin_add_overflow},
-@code{__builtin_sub_overflow}, or @code{__builtin_mul_overflow}, except that
-they don't store the result of the arithmetic operation anywhere and the
-last argument is not a pointer, but some expression with integral type other
-than enumerated or boolean type.
-
-The built-in functions promote the first two operands into infinite precision signed type
-and perform addition on those promoted operands. The result is then
-cast to the type of the third argument.  If the cast result is equal to the infinite
-precision result, the built-in functions return @code{false}, otherwise they return @code{true}.
-The value of the third argument is ignored, just the side effects in the third argument
-are evaluated, and no integral argument promotions are performed on the last argument.
-If the third argument is a bit-field, the type used for the result cast has the
-precision and signedness of the given bit-field, rather than precision and signedness
-of the underlying type.
-
-For example, the following macro can be used to portably check, at
-compile-time, whether or not adding two constant integers will overflow,
-and perform the addition only when it is known to be safe and not to trigger
-a @option{-Woverflow} warning.
-
-@smallexample
-#define INT_ADD_OVERFLOW_P(a, b) \
-   __builtin_add_overflow_p (a, b, (__typeof__ ((a) + (b))) 0)
-
-enum @{
-    A = INT_MAX, B = 3,
-    C = INT_ADD_OVERFLOW_P (A, B) ? 0 : A + B,
-    D = __builtin_add_overflow_p (1, SCHAR_MAX, (signed char) 0)
-@};
-@end smallexample
-
-The compiler will attempt to use hardware instructions to implement
-these built-in functions where possible, like conditional jump on overflow
-after addition, conditional jump on carry etc.
- 
-@enddefbuiltin
-
-@defbuiltin{{unsigned int} __builtin_addc (unsigned int @var{a}, unsigned int @var{b}, unsigned int @var{carry_in}, unsigned int *@var{carry_out})}
-@defbuiltinx{{unsigned long int} __builtin_addcl (unsigned long int @var{a}, unsigned long int @var{b}, unsigned int @var{carry_in}, unsigned long int *@var{carry_out})}
-@defbuiltinx{{unsigned long long int} __builtin_addcll (unsigned long long int @var{a}, unsigned long long int @var{b}, unsigned long long int @var{carry_in}, unsigned long long int *@var{carry_out})}
-
-These built-in functions are equivalent to:
-@smallexample
-  (@{ __typeof__ (@var{a}) s; \
-      __typeof__ (@var{a}) c1 = __builtin_add_overflow (@var{a}, @var{b}, &s); \
-      __typeof__ (@var{a}) c2 = __builtin_add_overflow (s, @var{carry_in}, &s); \
-      *(@var{carry_out}) = c1 | c2; \
-      s; @})
-@end smallexample
-
-i.e.@: they add 3 unsigned values, set what the last argument
-points to to 1 if any of the two additions overflowed (otherwise 0)
-and return the sum of those 3 unsigned values.  Note, while all
-the first 3 arguments can have arbitrary values, better code will be
-emitted if one of them (preferably the third one) has only values
-0 or 1 (i.e.@: carry-in).
-
-@enddefbuiltin
-
-@defbuiltin{{unsigned int} __builtin_subc (unsigned int @var{a}, unsigned int @var{b}, unsigned int @var{carry_in}, unsigned int *@var{carry_out})}
-@defbuiltinx{{unsigned long int} __builtin_subcl (unsigned long int @var{a}, unsigned long int @var{b}, unsigned int @var{carry_in}, unsigned long int *@var{carry_out})}
-@defbuiltinx{{unsigned long long int} __builtin_subcll (unsigned long long int @var{a}, unsigned long long int @var{b}, unsigned long long int @var{carry_in}, unsigned long long int *@var{carry_out})}
-
-These built-in functions are equivalent to:
-@smallexample
-  (@{ __typeof__ (@var{a}) s; \
-      __typeof__ (@var{a}) c1 = __builtin_sub_overflow (@var{a}, @var{b}, &s); \
-      __typeof__ (@var{a}) c2 = __builtin_sub_overflow (s, @var{carry_in}, &s); \
-      *(@var{carry_out}) = c1 | c2; \
-      s; @})
-@end smallexample
-
-i.e.@: they subtract 2 unsigned values from the first unsigned value,
-set what the last argument points to to 1 if any of the two subtractions
-overflowed (otherwise 0) and return the result of the subtractions.
-Note, while all the first 3 arguments can have arbitrary values, better code
-will be emitted if one of them (preferrably the third one) has only values
-0 or 1 (i.e.@: carry-in).
-
 @enddefbuiltin
 
 @node Object Size Checking
