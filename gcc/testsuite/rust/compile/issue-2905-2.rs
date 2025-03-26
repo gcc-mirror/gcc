@@ -17,10 +17,10 @@ pub mod core {
     }
 
     pub mod slice {
-        use core::marker::PhantomData;
-        use core::option::Option;
+        use crate::core::marker::PhantomData;
+        use crate::core::option::Option;
 
-        impl<T> core::iter::IntoIterator for &[T] {
+        impl<T> crate::core::iter::IntoIterator for &[T] {
             type Item = &T;
             type IntoIter = Weird<T>;
 
@@ -108,7 +108,7 @@ pub mod core {
     }
 
     pub mod iter {
-        use option::Option;
+        use crate::core::option::Option;
 
         pub trait IntoIterator {
             type Item;
