@@ -578,6 +578,14 @@ public:
 
   bool is_equal (const TypeBoundPredicate &other) const;
 
+  bool validate_type_implements_super_traits (TyTy::BaseType &self,
+					      HIR::Type &impl_type,
+					      HIR::Type &trait) const;
+
+  bool validate_type_implements_this (TyTy::BaseType &self,
+				      HIR::Type &impl_type,
+				      HIR::Type &trait) const;
+
 private:
   struct mark_is_error
   {
