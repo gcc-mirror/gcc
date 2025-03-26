@@ -308,7 +308,8 @@ dump_module_suffix (cxx_pretty_printer *pp, tree decl)
 	return;
     }
 
-  if (unsigned m = get_originating_module (decl))
+  int m = get_originating_module (decl, /*global=-1*/true);
+  if (m > 0)
     if (const char *n = module_name (m, false))
       {
 	pp_character (pp, '@');

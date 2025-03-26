@@ -4568,7 +4568,7 @@ lookup_imported_hidden_friend (tree friend_tmpl)
 
   tree inner = DECL_TEMPLATE_RESULT (friend_tmpl);
   if (!DECL_LANG_SPECIFIC (inner)
-      || !DECL_MODULE_IMPORT_P (inner))
+      || !DECL_MODULE_ENTITY_P (inner))
     return NULL_TREE;
 
   lazy_load_pendings (friend_tmpl);
@@ -4578,16 +4578,16 @@ lookup_imported_hidden_friend (tree friend_tmpl)
   if (!bind)
     return NULL_TREE;
 
-  /* We're only interested in declarations coming from the same module
-     of the friend class we're attempting to instantiate.  */
-  int m = get_originating_module (friend_tmpl);
+  /* We're only interested in declarations attached to the same module
+     as the friend class we're attempting to instantiate.  */
+  int m = get_originating_module (friend_tmpl, /*global=-1*/true);
   gcc_assert (m != 0);
 
   /* There should be at most one class template from the module we're
      looking for, return it.  */
   for (ovl_iterator iter (bind); iter; ++iter)
     if (DECL_CLASS_TEMPLATE_P (*iter)
-	&& get_originating_module (*iter) == m)
+	&& get_originating_module (*iter, true) == m)
       return *iter;
 
   return NULL_TREE;
