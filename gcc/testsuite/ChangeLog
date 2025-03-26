@@ -1,3 +1,20 @@
+2025-03-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-03-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/116706
+	* gfortran.dg/bounds_check_27.f90: New test.
+
+2025-03-25  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2025-03-06  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117504
+	* g++.dg/cpp2a/constexpr-117504.C: New test.
+	* g++.dg/cpp2a/constexpr-117504a.C: New test.
+
 2025-03-24  Simon Martin  <simon@nasilyan.com>
 
 	Backported from master:
