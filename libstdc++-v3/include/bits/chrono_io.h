@@ -907,21 +907,22 @@ namespace __format
 
 #ifdef _GLIBCXX_HAVE_STRUCT_TM_TM_ZONE
 	  // POSIX.1-2024 adds tm.tm_zone which will be used for %Z.
+	  // BSD has had tm_zone since 1987 but as char* so cast away const.
 	  if constexpr (__is_time_point_v<_Tp>)
 	    {
 	      // One of sys_time, utc_time, or local_time.
 	      if constexpr (!is_same_v<typename _Tp::clock, local_t>)
-		__tm.tm_zone = "UTC";
+		__tm.tm_zone = const_cast<char*>("UTC");
 	    }
 	  else if constexpr (__is_specialization_of<_Tp, __local_time_fmt>)
 	    {
 	      // local-time-format-t is used to provide time zone info for
 	      // one of zoned_time, tai_time, gps_time, or local_time.
 	      if (__t._M_abbrev)
-		__tm.tm_zone = __t._M_abbrev->c_str();
+		__tm.tm_zone = const_cast<char*>(__t._M_abbrev->c_str());
 	    }
 	  else
-	    __tm.tm_zone = "UTC";
+	    __tm.tm_zone = const_cast<char*>("UTC");
 #endif
 
 	  auto __d = _S_days(__t); // Either sys_days or local_days.
