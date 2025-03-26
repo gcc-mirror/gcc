@@ -16985,18 +16985,20 @@ is called and the @var{flag} argument passed to it.
 
 @node New/Delete Builtins
 @section Built-in functions for C++ allocations and deallocations
-@findex __builtin_operator_new
-@findex __builtin_operator_delete
-Calling these C++ built-in functions is similar to calling
-@code{::operator new} or @code{::operator delete} with the same arguments,
-except that it is an error if the selected @code{::operator new} or
-@code{::operator delete} overload is not a replaceable global operator
-and for optimization purposes calls to pairs of these functions can be
-omitted if access to the allocation is optimized out, or could be replaced
-with implementation provided buffer on the stack, or multiple allocation
-calls can be merged into a single allocation.  In C++ such optimizations
-are normally allowed just for calls to such replaceable global operators
-from @code{new} and @code{delete} expressions.
+@cindex builtins for C++ @code{new} and @code{delete} operators
+@cindex @code{new} and @code{delete} builtins
+
+GNU C++ provides builtins that are equivalent to calling
+@code{::operator new} or @code{::operator delete} with the same arguments.
+It is an error if the selected @code{::operator new} or
+@code{::operator delete} overload is not a replaceable global operator.
+For optimization purposes, calls to pairs of these
+builtins can be omitted if access to the allocation is optimized out,
+or could be replaced with an implementation-provided buffer on the stack,
+or multiple allocation calls can be merged into a single allocation.
+In C++ such optimizations are normally allowed just for calls to such
+replaceable global operators from @code{new} and @code{delete}
+expressions.
 
 @smallexample
 void foo () @{
@@ -17009,6 +17011,21 @@ void foo () @{
   __builtin_operator_delete (c); // This one can.
 @}
 @end smallexample
+
+These built-ins are only available in C++.
+
+@defbuiltin{{void *} __builtin_operator_new (std::size_t @var{size}, ...)}
+This is the built-in form of @code{operator new}.  It accepts the same
+argument forms as a ``usual allocation function'', as described in the
+C++ standard.
+@enddefbuiltin
+
+@defbuiltin{void __builtin_operator_delete (void * @var{ptr}, ...)}
+This is the built-in form of @code{operator delete}.  It accepts the same
+argument forms as a ``usual deallocation function'', as described in the
+C++ standard.
+@enddefbuiltin
+
 
 @node Other Builtins
 @section Other Built-in Functions Provided by GCC
