@@ -2614,8 +2614,8 @@ ISO C23.
 @item -fno-builtin
 @itemx -fno-builtin-@var{function}
 Don't recognize built-in functions that do not begin with
-@samp{__builtin_} as prefix.  @xref{Other Builtins,,Other built-in
-functions provided by GCC}, for details of the functions affected,
+@samp{__builtin_} as prefix.  @xref{Library Builtins},
+for details of the functions affected,
 including those which are not built-in functions when @option{-ansi} or
 @option{-std} options for strict ISO C conformance are used because they
 do not have an ISO standard meaning.

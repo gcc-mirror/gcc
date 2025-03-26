@@ -14208,19 +14208,36 @@ GNU C++.
 
 GCC provides a very large number of implicitly-declared built-in
 functions that are typically inlined by the compiler.  Some of these
-builtins directly correspond to standard library routines, while
-others provide the underlying functionality needed to implement
+builtins directly correspond to standard library routines.  Some are
+for internal use in the processing of exceptions or variable-length
+argument lists and are not documented here because they may change
+from time to time; we do not recommend general use of these functions.
+
+The remaining functions are provided either for optimization purposes, or
+to expose low-level functionality needed to implement
 features provided by library functions or similar ``glue'' between GCC
 and other programming languages or libraries.  Others are
 target-specific, providing direct access to instructions that have no
 direct C equivalents without the need to write assembly language.  There
 are also builtins to support various kinds of runtime error checking.
 
-Most builtins have names prefixed with @samp{__builtin_}.  Except as
-otherwise documented, all built-in functions are available from any
-of the C family languages supported by GCC.
+Most builtins have names prefixed with @samp{__builtin_}, although not
+all of them use this convention.  Except as otherwise documented, all
+built-in functions are available from any of the C family languages
+supported by GCC.
+
+With the exception of built-ins that have library equivalents such as
+the standard C library functions discussed below in @ref{Library Builtins},
+or that expand to
+library calls, GCC built-in functions are always expanded inline and
+thus do not have corresponding entry points and their address cannot
+be obtained.  Attempting to use them in an expression other than
+a function call results in a compile-time error.
 
 @menu
+* Library Builtins::	Built-in equivalents for C library functions.
+* Numeric Builtins::	Additional builtins for numeric and bit operations.
+* Stack Allocation::	Built-in alloca variants.
 * Nonlocal Gotos::      Built-ins for nonlocal gotos.
 * Constructing Calls::  Built-ins for dispatching a call to another function.
 * Return Address::      Getting the return or frame address of a function.
@@ -14237,6 +14254,1300 @@ of the C family languages supported by GCC.
 * Other Builtins::      Other built-in functions.
 * Target Builtins::     Built-in functions specific to particular targets.
 @end menu
+
+@node Library Builtins
+@section Builtins for C Library Functions
+@cindex built-in library functions
+@cindex library function builtins
+@cindex C library function builtins
+
+@findex __builtin_iseqsig
+@findex __builtin_isfinite
+@findex __builtin_isnormal
+@findex __builtin_isgreater
+@findex __builtin_isgreaterequal
+@findex __builtin_isunordered
+@findex __builtin_speculation_safe_value
+@findex _Exit
+@findex _exit
+@findex abort
+@findex abs
+@findex acos
+@findex acosf
+@findex acosh
+@findex acoshf
+@findex acoshl
+@findex acosl
+@findex alloca
+@findex asin
+@findex asinf
+@findex asinh
+@findex asinhf
+@findex asinhl
+@findex asinl
+@findex atan
+@findex atan2
+@findex atan2f
+@findex atan2l
+@findex atanf
+@findex atanh
+@findex atanhf
+@findex atanhl
+@findex atanl
+@findex bcmp
+@findex bzero
+@findex cabs
+@findex cabsf
+@findex cabsl
+@findex cacos
+@findex cacosf
+@findex cacosh
+@findex cacoshf
+@findex cacoshl
+@findex cacosl
+@findex calloc
+@findex carg
+@findex cargf
+@findex cargl
+@findex casin
+@findex casinf
+@findex casinh
+@findex casinhf
+@findex casinhl
+@findex casinl
+@findex catan
+@findex catanf
+@findex catanh
+@findex catanhf
+@findex catanhl
+@findex catanl
+@findex cbrt
+@findex cbrtf
+@findex cbrtl
+@findex ccos
+@findex ccosf
+@findex ccosh
+@findex ccoshf
+@findex ccoshl
+@findex ccosl
+@findex ceil
+@findex ceilf
+@findex ceill
+@findex cexp
+@findex cexpf
+@findex cexpl
+@findex cimag
+@findex cimagf
+@findex cimagl
+@findex clog
+@findex clogf
+@findex clogl
+@findex clog10
+@findex clog10f
+@findex clog10l
+@findex conj
+@findex conjf
+@findex conjl
+@findex copysign
+@findex copysignf
+@findex copysignl
+@findex cos
+@findex cosf
+@findex cosh
+@findex coshf
+@findex coshl
+@findex cosl
+@findex cpow
+@findex cpowf
+@findex cpowl
+@findex cproj
+@findex cprojf
+@findex cprojl
+@findex creal
+@findex crealf
+@findex creall
+@findex csin
+@findex csinf
+@findex csinh
+@findex csinhf
+@findex csinhl
+@findex csinl
+@findex csqrt
+@findex csqrtf
+@findex csqrtl
+@findex ctan
+@findex ctanf
+@findex ctanh
+@findex ctanhf
+@findex ctanhl
+@findex ctanl
+@findex dcgettext
+@findex dgettext
+@findex drem
+@findex dremf
+@findex dreml
+@findex erf
+@findex erfc
+@findex erfcf
+@findex erfcl
+@findex erff
+@findex erfl
+@findex exit
+@findex exp
+@findex exp10
+@findex exp10f
+@findex exp10l
+@findex exp2
+@findex exp2f
+@findex exp2l
+@findex expf
+@findex expl
+@findex expm1
+@findex expm1f
+@findex expm1l
+@findex fabs
+@findex fabsf
+@findex fabsl
+@findex fdim
+@findex fdimf
+@findex fdiml
+@findex ffs
+@findex floor
+@findex floorf
+@findex floorl
+@findex fma
+@findex fmaf
+@findex fmal
+@findex fmax
+@findex fmaxf
+@findex fmaxl
+@findex fmin
+@findex fminf
+@findex fminl
+@findex fmod
+@findex fmodf
+@findex fmodl
+@findex fprintf
+@findex fprintf_unlocked
+@findex fputs
+@findex fputs_unlocked
+@findex free
+@findex frexp
+@findex frexpf
+@findex frexpl
+@findex fscanf
+@findex gamma
+@findex gammaf
+@findex gammal
+@findex gamma_r
+@findex gammaf_r
+@findex gammal_r
+@findex gettext
+@findex hypot
+@findex hypotf
+@findex hypotl
+@findex ilogb
+@findex ilogbf
+@findex ilogbl
+@findex imaxabs
+@findex index
+@findex isalnum
+@findex isalpha
+@findex isascii
+@findex isblank
+@findex iscntrl
+@findex isdigit
+@findex isgraph
+@findex islower
+@findex isprint
+@findex ispunct
+@findex isspace
+@findex isupper
+@findex iswalnum
+@findex iswalpha
+@findex iswblank
+@findex iswcntrl
+@findex iswdigit
+@findex iswgraph
+@findex iswlower
+@findex iswprint
+@findex iswpunct
+@findex iswspace
+@findex iswupper
+@findex iswxdigit
+@findex isxdigit
+@findex j0
+@findex j0f
+@findex j0l
+@findex j1
+@findex j1f
+@findex j1l
+@findex jn
+@findex jnf
+@findex jnl
+@findex labs
+@findex ldexp
+@findex ldexpf
+@findex ldexpl
+@findex lgamma
+@findex lgammaf
+@findex lgammal
+@findex lgamma_r
+@findex lgammaf_r
+@findex lgammal_r
+@findex llabs
+@findex llrint
+@findex llrintf
+@findex llrintl
+@findex llround
+@findex llroundf
+@findex llroundl
+@findex log
+@findex log10
+@findex log10f
+@findex log10l
+@findex log1p
+@findex log1pf
+@findex log1pl
+@findex log2
+@findex log2f
+@findex log2l
+@findex logb
+@findex logbf
+@findex logbl
+@findex logf
+@findex logl
+@findex lrint
+@findex lrintf
+@findex lrintl
+@findex lround
+@findex lroundf
+@findex lroundl
+@findex malloc
+@findex memchr
+@findex memcmp
+@findex memcpy
+@findex mempcpy
+@findex memset
+@findex modf
+@findex modff
+@findex modfl
+@findex nearbyint
+@findex nearbyintf
+@findex nearbyintl
+@findex nextafter
+@findex nextafterf
+@findex nextafterl
+@findex nexttoward
+@findex nexttowardf
+@findex nexttowardl
+@findex pow
+@findex pow10
+@findex pow10f
+@findex pow10l
+@findex powf
+@findex powl
+@findex printf
+@findex printf_unlocked
+@findex putchar
+@findex puts
+@findex realloc
+@findex remainder
+@findex remainderf
+@findex remainderl
+@findex remquo
+@findex remquof
+@findex remquol
+@findex rindex
+@findex rint
+@findex rintf
+@findex rintl
+@findex round
+@findex roundf
+@findex roundl
+@findex scalb
+@findex scalbf
+@findex scalbl
+@findex scalbln
+@findex scalblnf
+@findex scalblnf
+@findex scalbn
+@findex scalbnf
+@findex scanfnl
+@findex signbit
+@findex signbitf
+@findex signbitl
+@findex signbitd32
+@findex signbitd64
+@findex signbitd128
+@findex significand
+@findex significandf
+@findex significandl
+@findex sin
+@findex sincos
+@findex sincosf
+@findex sincosl
+@findex sinf
+@findex sinh
+@findex sinhf
+@findex sinhl
+@findex sinl
+@findex snprintf
+@findex sprintf
+@findex sqrt
+@findex sqrtf
+@findex sqrtl
+@findex sscanf
+@findex stpcpy
+@findex stpncpy
+@findex strcasecmp
+@findex strcat
+@findex strchr
+@findex strcmp
+@findex strcpy
+@findex strcspn
+@findex strdup
+@findex strfmon
+@findex strftime
+@findex strlen
+@findex strncasecmp
+@findex strncat
+@findex strncmp
+@findex strncpy
+@findex strndup
+@findex strnlen
+@findex strpbrk
+@findex strrchr
+@findex strspn
+@findex strstr
+@findex tan
+@findex tanf
+@findex tanh
+@findex tanhf
+@findex tanhl
+@findex tanl
+@findex tgamma
+@findex tgammaf
+@findex tgammal
+@findex toascii
+@findex tolower
+@findex toupper
+@findex towlower
+@findex towupper
+@findex trunc
+@findex truncf
+@findex truncl
+@findex vfprintf
+@findex vfscanf
+@findex vprintf
+@findex vscanf
+@findex vsnprintf
+@findex vsprintf
+@findex vsscanf
+@findex y0
+@findex y0f
+@findex y0l
+@findex y1
+@findex y1f
+@findex y1l
+@findex yn
+@findex ynf
+@findex ynl
+
+@opindex fno-builtin
+GCC includes built-in versions of many of the functions in the standard
+C library.  These functions come in two forms: one whose names start with
+the @code{__builtin_} prefix, and the other without.  Both forms have the
+same type (including prototype), the same address (when their address is
+taken), and the same meaning as the C library functions even if you specify
+the @option{-fno-builtin} option @pxref{C Dialect Options}).  Many of these
+functions are only optimized in certain cases; if they are not optimized in
+a particular case, a call to the library function is emitted.
+
+@opindex ansi
+@opindex std
+Outside strict ISO C mode (@option{-ansi}, @option{-std=c90},
+@option{-std=c99} or @option{-std=c11}), the functions
+@code{_exit}, @code{alloca}, @code{bcmp}, @code{bzero},
+@code{dcgettext}, @code{dgettext}, @code{dremf}, @code{dreml},
+@code{drem}, @code{exp10f}, @code{exp10l}, @code{exp10}, @code{ffsll},
+@code{ffsl}, @code{ffs}, @code{fprintf_unlocked},
+@code{fputs_unlocked}, @code{gammaf}, @code{gammal}, @code{gamma},
+@code{gammaf_r}, @code{gammal_r}, @code{gamma_r}, @code{gettext},
+@code{index}, @code{isascii}, @code{j0f}, @code{j0l}, @code{j0},
+@code{j1f}, @code{j1l}, @code{j1}, @code{jnf}, @code{jnl}, @code{jn},
+@code{lgammaf_r}, @code{lgammal_r}, @code{lgamma_r}, @code{mempcpy},
+@code{pow10f}, @code{pow10l}, @code{pow10}, @code{printf_unlocked},
+@code{rindex}, @code{roundeven}, @code{roundevenf}, @code{roundevenl},
+@code{scalbf}, @code{scalbl}, @code{scalb},
+@code{signbit}, @code{signbitf}, @code{signbitl}, @code{signbitd32},
+@code{signbitd64}, @code{signbitd128}, @code{significandf},
+@code{significandl}, @code{significand}, @code{sincosf},
+@code{sincosl}, @code{sincos}, @code{stpcpy}, @code{stpncpy},
+@code{strcasecmp}, @code{strdup}, @code{strfmon}, @code{strncasecmp},
+@code{strndup}, @code{strnlen}, @code{toascii}, @code{y0f}, @code{y0l},
+@code{y0}, @code{y1f}, @code{y1l}, @code{y1}, @code{ynf}, @code{ynl} and
+@code{yn}
+may be handled as built-in functions.
+All these functions have corresponding versions
+prefixed with @code{__builtin_}, which may be used even in strict C90
+mode.
+
+The ISO C99 functions
+@code{_Exit}, @code{acoshf}, @code{acoshl}, @code{acosh}, @code{asinhf},
+@code{asinhl}, @code{asinh}, @code{atanhf}, @code{atanhl}, @code{atanh},
+@code{cabsf}, @code{cabsl}, @code{cabs}, @code{cacosf}, @code{cacoshf},
+@code{cacoshl}, @code{cacosh}, @code{cacosl}, @code{cacos},
+@code{cargf}, @code{cargl}, @code{carg}, @code{casinf}, @code{casinhf},
+@code{casinhl}, @code{casinh}, @code{casinl}, @code{casin},
+@code{catanf}, @code{catanhf}, @code{catanhl}, @code{catanh},
+@code{catanl}, @code{catan}, @code{cbrtf}, @code{cbrtl}, @code{cbrt},
+@code{ccosf}, @code{ccoshf}, @code{ccoshl}, @code{ccosh}, @code{ccosl},
+@code{ccos}, @code{cexpf}, @code{cexpl}, @code{cexp}, @code{cimagf},
+@code{cimagl}, @code{cimag}, @code{clogf}, @code{clogl}, @code{clog},
+@code{conjf}, @code{conjl}, @code{conj}, @code{copysignf}, @code{copysignl},
+@code{copysign}, @code{cpowf}, @code{cpowl}, @code{cpow}, @code{cprojf},
+@code{cprojl}, @code{cproj}, @code{crealf}, @code{creall}, @code{creal},
+@code{csinf}, @code{csinhf}, @code{csinhl}, @code{csinh}, @code{csinl},
+@code{csin}, @code{csqrtf}, @code{csqrtl}, @code{csqrt}, @code{ctanf},
+@code{ctanhf}, @code{ctanhl}, @code{ctanh}, @code{ctanl}, @code{ctan},
+@code{erfcf}, @code{erfcl}, @code{erfc}, @code{erff}, @code{erfl},
+@code{erf}, @code{exp2f}, @code{exp2l}, @code{exp2}, @code{expm1f},
+@code{expm1l}, @code{expm1}, @code{fdimf}, @code{fdiml}, @code{fdim},
+@code{fmaf}, @code{fmal}, @code{fmaxf}, @code{fmaxl}, @code{fmax},
+@code{fma}, @code{fminf}, @code{fminl}, @code{fmin}, @code{hypotf},
+@code{hypotl}, @code{hypot}, @code{ilogbf}, @code{ilogbl}, @code{ilogb},
+@code{imaxabs}, @code{isblank}, @code{iswblank}, @code{lgammaf},
+@code{lgammal}, @code{lgamma}, @code{llabs}, @code{llrintf}, @code{llrintl},
+@code{llrint}, @code{llroundf}, @code{llroundl}, @code{llround},
+@code{log1pf}, @code{log1pl}, @code{log1p}, @code{log2f}, @code{log2l},
+@code{log2}, @code{logbf}, @code{logbl}, @code{logb}, @code{lrintf},
+@code{lrintl}, @code{lrint}, @code{lroundf}, @code{lroundl},
+@code{lround}, @code{nearbyintf}, @code{nearbyintl}, @code{nearbyint},
+@code{nextafterf}, @code{nextafterl}, @code{nextafter},
+@code{nexttowardf}, @code{nexttowardl}, @code{nexttoward},
+@code{remainderf}, @code{remainderl}, @code{remainder}, @code{remquof},
+@code{remquol}, @code{remquo}, @code{rintf}, @code{rintl}, @code{rint},
+@code{roundf}, @code{roundl}, @code{round}, @code{scalblnf},
+@code{scalblnl}, @code{scalbln}, @code{scalbnf}, @code{scalbnl},
+@code{scalbn}, @code{snprintf}, @code{tgammaf}, @code{tgammal},
+@code{tgamma}, @code{truncf}, @code{truncl}, @code{trunc},
+@code{vfscanf}, @code{vscanf}, @code{vsnprintf} and @code{vsscanf}
+are handled as built-in functions
+except in strict ISO C90 mode (@option{-ansi} or @option{-std=c90}).
+
+There are also built-in versions of the ISO C99 functions
+@code{acosf}, @code{acosl}, @code{asinf}, @code{asinl}, @code{atan2f},
+@code{atan2l}, @code{atanf}, @code{atanl}, @code{ceilf}, @code{ceill},
+@code{cosf}, @code{coshf}, @code{coshl}, @code{cosl}, @code{expf},
+@code{expl}, @code{fabsf}, @code{fabsl}, @code{floorf}, @code{floorl},
+@code{fmodf}, @code{fmodl}, @code{frexpf}, @code{frexpl}, @code{ldexpf},
+@code{ldexpl}, @code{log10f}, @code{log10l}, @code{logf}, @code{logl},
+@code{modfl}, @code{modff}, @code{powf}, @code{powl}, @code{sinf},
+@code{sinhf}, @code{sinhl}, @code{sinl}, @code{sqrtf}, @code{sqrtl},
+@code{tanf}, @code{tanhf}, @code{tanhl} and @code{tanl}
+that are recognized in any mode since ISO C90 reserves these names for
+the purpose to which ISO C99 puts them.  All these functions have
+corresponding versions prefixed with @code{__builtin_}.
+
+There are also built-in functions @code{__builtin_fabsf@var{n}},
+@code{__builtin_fabsf@var{n}x}, @code{__builtin_copysignf@var{n}} and
+@code{__builtin_copysignf@var{n}x}, corresponding to the TS 18661-3
+functions @code{fabsf@var{n}}, @code{fabsf@var{n}x},
+@code{copysignf@var{n}} and @code{copysignf@var{n}x}, for supported
+types @code{_Float@var{n}} and @code{_Float@var{n}x}.
+
+There are also GNU extension functions @code{clog10}, @code{clog10f} and
+@code{clog10l} which names are reserved by ISO C99 for future use.
+All these functions have versions prefixed with @code{__builtin_}.
+
+The ISO C94 functions
+@code{iswalnum}, @code{iswalpha}, @code{iswcntrl}, @code{iswdigit},
+@code{iswgraph}, @code{iswlower}, @code{iswprint}, @code{iswpunct},
+@code{iswspace}, @code{iswupper}, @code{iswxdigit}, @code{towlower} and
+@code{towupper}
+are handled as built-in functions
+except in strict ISO C90 mode (@option{-ansi} or @option{-std=c90}).
+
+The ISO C90 functions
+@code{abort}, @code{abs}, @code{acos}, @code{asin}, @code{atan2},
+@code{atan}, @code{calloc}, @code{ceil}, @code{cosh}, @code{cos},
+@code{exit}, @code{exp}, @code{fabs}, @code{floor}, @code{fmod},
+@code{fprintf}, @code{fputs}, @code{free}, @code{frexp}, @code{fscanf},
+@code{isalnum}, @code{isalpha}, @code{iscntrl}, @code{isdigit},
+@code{isgraph}, @code{islower}, @code{isprint}, @code{ispunct},
+@code{isspace}, @code{isupper}, @code{isxdigit}, @code{tolower},
+@code{toupper}, @code{labs}, @code{ldexp}, @code{log10}, @code{log},
+@code{malloc}, @code{memchr}, @code{memcmp}, @code{memcpy},
+@code{memset}, @code{modf}, @code{pow}, @code{printf}, @code{putchar},
+@code{puts}, @code{realloc}, @code{scanf}, @code{sinh}, @code{sin},
+@code{snprintf}, @code{sprintf}, @code{sqrt}, @code{sscanf}, @code{strcat},
+@code{strchr}, @code{strcmp}, @code{strcpy}, @code{strcspn},
+@code{strlen}, @code{strncat}, @code{strncmp}, @code{strncpy},
+@code{strpbrk}, @code{strrchr}, @code{strspn}, @code{strstr},
+@code{tanh}, @code{tan}, @code{vfprintf}, @code{vprintf} and @code{vsprintf}
+are all recognized as built-in functions unless
+@option{-fno-builtin} is specified (or @option{-fno-builtin-@var{function}}
+is specified for an individual function).  All of these functions have
+corresponding versions prefixed with @code{__builtin_}.
+
+GCC provides built-in versions of the ISO C99 floating-point comparison
+macros that avoid raising exceptions for unordered operands.  They have
+the same names as the standard macros ( @code{isgreater},
+@code{isgreaterequal}, @code{isless}, @code{islessequal},
+@code{islessgreater}, and @code{isunordered}) , with @code{__builtin_}
+prefixed.  We intend for a library implementor to be able to simply
+@code{#define} each standard macro to its built-in equivalent.
+In the same fashion, GCC provides @code{fpclassify}, @code{iseqsig},
+@code{isfinite}, @code{isinf_sign}, @code{isnormal} and @code{signbit} built-ins
+used with @code{__builtin_} prefixed.  The @code{isinf} and @code{isnan}
+built-in functions appear both with and without the @code{__builtin_} prefix.
+With @code{-ffinite-math-only} option the @code{isinf} and @code{isnan}
+built-in functions will always return 0.
+
+GCC provides built-in versions of the ISO C99 floating-point rounding and
+exceptions handling functions @code{fegetround}, @code{feclearexcept} and
+@code{feraiseexcept}.  They may not be available for all targets, and because
+they need close interaction with libc internal values, they may not be available
+for all target libcs, but in all cases they will gracefully fallback to libc
+calls.  These built-in functions appear both with and without the
+@code{__builtin_} prefix.
+
+@node Numeric Builtins
+@section Additional Builtins for Numeric Operations
+@cindex built-in numeric functions
+@cindex numeric builtins
+
+GCC provides a large set of built-in functions for operating on GCC's
+extended set of floating-point and integer types (@pxref{Additional
+Numeric Types}).  The floating-point builtins include functions for
+building and testing infinities and NaNs.  On integer types, there are
+additional bit manipulation functions, byte-swapping, and CRC
+functions.
+
+Many of these builtins are type-generic and can operate on any
+floating-point or integer operand.
+
+@menu
+* Floating-Point Format Builtins:: Huge values, infinities, and NaNs.
+* Bit Operation Builtins::         Counting bits and similar functions.
+* Byte-Swapping Builtins::         Reversing byte order.
+* CRC Builtins::                   Compute cyclic redundancy checks.
+@end menu
+
+@node Floating-Point Format Builtins
+@subsection Floating-Point Format Builtins
+@cindex floating-point format builtins
+@cindex NaN builtins
+@cindex infinity builtins
+@cindex huge value builtins
+
+@defbuiltin{double __builtin_huge_val (void)}
+Returns a positive infinity, if supported by the floating-point format,
+else @code{DBL_MAX}.  This function is suitable for implementing the
+ISO C macro @code{HUGE_VAL}.
+@enddefbuiltin
+
+@defbuiltin{float __builtin_huge_valf (void)}
+Similar to @code{__builtin_huge_val}, except the return type is @code{float}.
+@enddefbuiltin
+
+@defbuiltin{{long double} __builtin_huge_vall (void)}
+Similar to @code{__builtin_huge_val}, except the return
+type is @code{long double}.
+@enddefbuiltin
+
+@defbuiltin{_Float@var{n} __builtin_huge_valf@var{n} (void)}
+Similar to @code{__builtin_huge_val}, except the return type is
+@code{_Float@var{n}}.
+@enddefbuiltin
+
+@defbuiltin{_Float@var{n}x __builtin_huge_valf@var{n}x (void)}
+Similar to @code{__builtin_huge_val}, except the return type is
+@code{_Float@var{n}x}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_fpclassify (int, int, int, int, int, ...)}
+This built-in implements the C99 fpclassify functionality.  The first
+five int arguments should be the target library's notion of the
+possible FP classes and are used for return values.  They must be
+constant values and they must appear in this order: @code{FP_NAN},
+@code{FP_INFINITE}, @code{FP_NORMAL}, @code{FP_SUBNORMAL} and
+@code{FP_ZERO}.  The ellipsis is for exactly one floating-point value
+to classify.  GCC treats the last argument as type-generic, which
+means it does not do default promotion from float to double.
+@enddefbuiltin
+
+@defbuiltin{double __builtin_inf (void)}
+Similar to @code{__builtin_huge_val}, except a warning is generated
+if the target floating-point format does not support infinities.
+@enddefbuiltin
+
+@defbuiltin{_Decimal32 __builtin_infd32 (void)}
+Similar to @code{__builtin_inf}, except the return type is @code{_Decimal32}.
+@enddefbuiltin
+
+@defbuiltin{_Decimal64 __builtin_infd64 (void)}
+Similar to @code{__builtin_inf}, except the return type is @code{_Decimal64}.
+@enddefbuiltin
+
+@defbuiltin{_Decimal128 __builtin_infd128 (void)}
+Similar to @code{__builtin_inf}, except the return type is @code{_Decimal128}.
+@enddefbuiltin
+
+@defbuiltin{float __builtin_inff (void)}
+Similar to @code{__builtin_inf}, except the return type is @code{float}.
+This function is suitable for implementing the ISO C99 macro @code{INFINITY}.
+@enddefbuiltin
+
+@defbuiltin{{long double} __builtin_infl (void)}
+Similar to @code{__builtin_inf}, except the return
+type is @code{long double}.
+@enddefbuiltin
+
+@defbuiltin{_Float@var{n} __builtin_inff@var{n} (void)}
+Similar to @code{__builtin_inf}, except the return
+type is @code{_Float@var{n}}.
+@enddefbuiltin
+
+@defbuiltin{_Float@var{n} __builtin_inff@var{n}x (void)}
+Similar to @code{__builtin_inf}, except the return
+type is @code{_Float@var{n}x}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_isinf_sign (...)}
+Similar to @code{isinf}, except the return value is -1 for
+an argument of @code{-Inf} and 1 for an argument of @code{+Inf}.
+Note while the parameter list is an
+ellipsis, this function only accepts exactly one floating-point
+argument.  GCC treats this parameter as type-generic, which means it
+does not do default promotion from float to double.
+@enddefbuiltin
+
+@defbuiltin{double __builtin_nan (const char *@var{str})}
+This is an implementation of the ISO C99 function @code{nan}.
+
+Since ISO C99 defines this function in terms of @code{strtod}, which we
+do not implement, a description of the parsing is in order.  The string
+is parsed as by @code{strtol}; that is, the base is recognized by
+leading @samp{0} or @samp{0x} prefixes.  The number parsed is placed
+in the significand such that the least significant bit of the number
+is at the least significant bit of the significand.  The number is
+truncated to fit the significand field provided.  The significand is
+forced to be a quiet NaN@.
+
+This function, if given a string literal all of which would have been
+consumed by @code{strtol}, is evaluated early enough that it is considered a
+compile-time constant.
+@enddefbuiltin
+
+@defbuiltin{_Decimal32 __builtin_nand32 (const char *@var{str})}
+Similar to @code{__builtin_nan}, except the return type is @code{_Decimal32}.
+@enddefbuiltin
+
+@defbuiltin{_Decimal64 __builtin_nand64 (const char *@var{str})}
+Similar to @code{__builtin_nan}, except the return type is @code{_Decimal64}.
+@enddefbuiltin
+
+@defbuiltin{_Decimal128 __builtin_nand128 (const char *@var{str})}
+Similar to @code{__builtin_nan}, except the return type is @code{_Decimal128}.
+@enddefbuiltin
+
+@defbuiltin{float __builtin_nanf (const char *@var{str})}
+Similar to @code{__builtin_nan}, except the return type is @code{float}.
+@enddefbuiltin
+
+@defbuiltin{{long double} __builtin_nanl (const char *@var{str})}
+Similar to @code{__builtin_nan}, except the return type is @code{long double}.
+@enddefbuiltin
+
+@defbuiltin{_Float@var{n} __builtin_nanf@var{n} (const char *@var{str})}
+Similar to @code{__builtin_nan}, except the return type is
+@code{_Float@var{n}}.
+@enddefbuiltin
+
+@defbuiltin{_Float@var{n}x __builtin_nanf@var{n}x (const char *@var{str})}
+Similar to @code{__builtin_nan}, except the return type is
+@code{_Float@var{n}x}.
+@enddefbuiltin
+
+@defbuiltin{double __builtin_nans (const char *@var{str})}
+Similar to @code{__builtin_nan}, except the significand is forced
+to be a signaling NaN@.  The @code{nans} function is proposed by
+@uref{https://www.open-std.org/jtc1/sc22/wg14/www/docs/n965.htm,,WG14 N965}.
+@enddefbuiltin
+
+@defbuiltin{_Decimal32 __builtin_nansd32 (const char *@var{str})}
+Similar to @code{__builtin_nans}, except the return type is @code{_Decimal32}.
+@enddefbuiltin
+
+@defbuiltin{_Decimal64 __builtin_nansd64 (const char *@var{str})}
+Similar to @code{__builtin_nans}, except the return type is @code{_Decimal64}.
+@enddefbuiltin
+
+@defbuiltin{_Decimal128 __builtin_nansd128 (const char *@var{str})}
+Similar to @code{__builtin_nans}, except the return type is @code{_Decimal128}.
+@enddefbuiltin
+
+@defbuiltin{float __builtin_nansf (const char *@var{str})}
+Similar to @code{__builtin_nans}, except the return type is @code{float}.
+@enddefbuiltin
+
+@defbuiltin{{long double} __builtin_nansl (const char *@var{str})}
+Similar to @code{__builtin_nans}, except the return type is @code{long double}.
+@enddefbuiltin
+
+@defbuiltin{_Float@var{n} __builtin_nansf@var{n} (const char *@var{str})}
+Similar to @code{__builtin_nans}, except the return type is
+@code{_Float@var{n}}.
+@enddefbuiltin
+
+@defbuiltin{_Float@var{n}x __builtin_nansf@var{n}x (const char *@var{str})}
+Similar to @code{__builtin_nans}, except the return type is
+@code{_Float@var{n}x}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_issignaling (...)}
+Return non-zero if the argument is a signaling NaN and zero otherwise.
+Note while the parameter list is an
+ellipsis, this function only accepts exactly one floating-point
+argument.  GCC treats this parameter as type-generic, which means it
+does not do default promotion from float to double.
+This built-in function can work even without the non-default
+@code{-fsignaling-nans} option, although if a signaling NaN is computed,
+stored or passed as argument to some function other than this built-in
+in the current translation unit, it is safer to use @code{-fsignaling-nans}.
+With @code{-ffinite-math-only} option this built-in function will always
+return 0.
+@enddefbuiltin
+
+@defbuiltin{double __builtin_powi (double, int)}
+@defbuiltinx{float __builtin_powif (float, int)}
+@defbuiltinx{{long double} __builtin_powil (long double, int)}
+Returns the first argument raised to the power of the second.  Unlike the
+@code{pow} function no guarantees about precision and rounding are made.
+@enddefbuiltin
+
+@node Bit Operation Builtins
+@subsection Bit Operation Builtins
+@cindex bit operation builtins
+
+@defbuiltin{int __builtin_ffs (int @var{x})}
+Returns one plus the index of the least significant 1-bit of @var{x}, or
+if @var{x} is zero, returns zero.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_clz (unsigned int @var{x})}
+Returns the number of leading 0-bits in @var{x}, starting at the most
+significant bit position.  If @var{x} is 0, the result is undefined.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_ctz (unsigned int @var{x})}
+Returns the number of trailing 0-bits in @var{x}, starting at the least
+significant bit position.  If @var{x} is 0, the result is undefined.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_clrsb (int @var{x})}
+Returns the number of leading redundant sign bits in @var{x}, i.e.@: the
+number of bits following the most significant bit that are identical
+to it.  There are no special cases for 0 or other values.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_popcount (unsigned int @var{x})}
+Returns the number of 1-bits in @var{x}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_parity (unsigned int @var{x})}
+Returns the parity of @var{x}, i.e.@: the number of 1-bits in @var{x}
+modulo 2.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_ffsl (long)}
+Similar to @code{__builtin_ffs}, except the argument type is
+@code{long}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_clzl (unsigned long)}
+Similar to @code{__builtin_clz}, except the argument type is
+@code{unsigned long}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_ctzl (unsigned long)}
+Similar to @code{__builtin_ctz}, except the argument type is
+@code{unsigned long}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_clrsbl (long)}
+Similar to @code{__builtin_clrsb}, except the argument type is
+@code{long}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_popcountl (unsigned long)}
+Similar to @code{__builtin_popcount}, except the argument type is
+@code{unsigned long}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_parityl (unsigned long)}
+Similar to @code{__builtin_parity}, except the argument type is
+@code{unsigned long}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_ffsll (long long)}
+Similar to @code{__builtin_ffs}, except the argument type is
+@code{long long}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_clzll (unsigned long long)}
+Similar to @code{__builtin_clz}, except the argument type is
+@code{unsigned long long}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_ctzll (unsigned long long)}
+Similar to @code{__builtin_ctz}, except the argument type is
+@code{unsigned long long}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_clrsbll (long long)}
+Similar to @code{__builtin_clrsb}, except the argument type is
+@code{long long}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_popcountll (unsigned long long)}
+Similar to @code{__builtin_popcount}, except the argument type is
+@code{unsigned long long}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_parityll (unsigned long long)}
+Similar to @code{__builtin_parity}, except the argument type is
+@code{unsigned long long}.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_ffsg (...)}
+Similar to @code{__builtin_ffs}, except the argument is type-generic
+signed integer (standard, extended or bit-precise).  No integral argument
+promotions are performed on the argument.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_clzg (...)}
+Similar to @code{__builtin_clz}, except the argument is type-generic
+unsigned integer (standard, extended or bit-precise) and there is
+optional second argument with int type.  No integral argument promotions
+are performed on the first argument.  If two arguments are specified,
+and first argument is 0, the result is the second argument.  If only
+one argument is specified and it is 0, the result is undefined.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_ctzg (...)}
+Similar to @code{__builtin_ctz}, except the argument is type-generic
+unsigned integer (standard, extended or bit-precise) and there is
+optional second argument with int type.  No integral argument promotions
+are performed on the first argument.  If two arguments are specified,
+and first argument is 0, the result is the second argument.  If only
+one argument is specified and it is 0, the result is undefined.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_clrsbg (...)}
+Similar to @code{__builtin_clrsb}, except the argument is type-generic
+signed integer (standard, extended or bit-precise).  No integral argument
+promotions are performed on the argument.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_popcountg (...)}
+Similar to @code{__builtin_popcount}, except the argument is type-generic
+unsigned integer (standard, extended or bit-precise).  No integral argument
+promotions are performed on the argument.
+@enddefbuiltin
+
+@defbuiltin{int __builtin_parityg (...)}
+Similar to @code{__builtin_parity}, except the argument is type-generic
+unsigned integer (standard, extended or bit-precise).  No integral argument
+promotions are performed on the argument.
+@enddefbuiltin
+
+@defbuiltin{@var{type} __builtin_stdc_bit_ceil (@var{type} @var{arg})}
+The @code{__builtin_stdc_bit_ceil} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{@var{arg} <= 1 ? (@var{type}) 1
+: (@var{type}) 2 << (@var{prec} - 1 - __builtin_clzg ((@var{type}) (@var{arg} - 1)))}
+where @var{prec} is bit width of @var{type}, except that side-effects
+in @var{arg} are evaluated just once.
+@enddefbuiltin
+
+@defbuiltin{@var{type} __builtin_stdc_bit_floor (@var{type} @var{arg})}
+The @code{__builtin_stdc_bit_floor} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{@var{arg} == 0 ? (@var{type}) 0
+: (@var{type}) 1 << (@var{prec} - 1 - __builtin_clzg (@var{arg}))}
+where @var{prec} is bit width of @var{type}, except that side-effects
+in @var{arg} are evaluated just once.
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_stdc_bit_width (@var{type} @var{arg})}
+The @code{__builtin_stdc_bit_width} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(unsigned int) (@var{prec} - __builtin_clzg (@var{arg}, @var{prec}))}
+where @var{prec} is bit width of @var{type}.
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_stdc_count_ones (@var{type} @var{arg})}
+The @code{__builtin_stdc_count_ones} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(unsigned int) __builtin_popcountg (@var{arg})}
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_stdc_count_zeros (@var{type} @var{arg})}
+The @code{__builtin_stdc_count_zeros} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(unsigned int) __builtin_popcountg ((@var{type}) ~@var{arg})}
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_stdc_first_leading_one (@var{type} @var{arg})}
+The @code{__builtin_stdc_first_leading_one} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{__builtin_clzg (@var{arg}, -1) + 1U}
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_stdc_first_leading_zero (@var{type} @var{arg})}
+The @code{__builtin_stdc_first_leading_zero} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{__builtin_clzg ((@var{type}) ~@var{arg}, -1) + 1U}
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_stdc_first_trailing_one (@var{type} @var{arg})}
+The @code{__builtin_stdc_first_trailing_one} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{__builtin_ctzg (@var{arg}, -1) + 1U}
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_stdc_first_trailing_zero (@var{type} @var{arg})}
+The @code{__builtin_stdc_first_trailing_zero} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{__builtin_ctzg ((@var{type}) ~@var{arg}, -1) + 1U}
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_stdc_has_single_bit (@var{type} @var{arg})}
+The @code{__builtin_stdc_has_single_bit} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(_Bool) (__builtin_popcountg (@var{arg}) == 1)}
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_stdc_leading_ones (@var{type} @var{arg})}
+The @code{__builtin_stdc_leading_ones} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(unsigned int) __builtin_clzg ((@var{type}) ~@var{arg}, @var{prec})}
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_stdc_leading_zeros (@var{type} @var{arg})}
+The @code{__builtin_stdc_leading_zeros} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(unsigned int) __builtin_clzg (@var{arg}, @var{prec})}
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_stdc_trailing_ones (@var{type} @var{arg})}
+The @code{__builtin_stdc_trailing_ones} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(unsigned int) __builtin_ctzg ((@var{type}) ~@var{arg}, @var{prec})}
+@enddefbuiltin
+
+@defbuiltin{{unsigned int} __builtin_stdc_trailing_zeros (@var{type} @var{arg})}
+The @code{__builtin_stdc_trailing_zeros} function is available only
+in C.  It is type-generic, the argument can be any unsigned integer
+(standard, extended or bit-precise).  No integral argument promotions are
+performed on the argument.  It is equivalent to
+@code{(unsigned int) __builtin_ctzg (@var{arg}, @var{prec})}
+@enddefbuiltin
+
+@defbuiltin{@var{type1} __builtin_stdc_rotate_left (@var{type1} @var{arg1}, @var{type2} @var{arg2})}
+The @code{__builtin_stdc_rotate_left} function is available only
+in C.  It is type-generic, the first argument can be any unsigned integer
+(standard, extended or bit-precise) and second argument any signed or
+unsigned integer or @code{char}.  No integral argument promotions are
+performed on the arguments.  It is equivalent to
+@code{(@var{type1}) ((@var{arg1} << (@var{arg2} % @var{prec}))
+| (@var{arg1} >> ((-(unsigned @var{type2}) @var{arg2}) % @var{prec})))}
+where @var{prec} is bit width of @var{type1}, except that side-effects
+in @var{arg1} and @var{arg2} are evaluated just once.  The behavior is
+undefined if @var{arg2} is negative.
+@enddefbuiltin
+
+@defbuiltin{@var{type1} __builtin_stdc_rotate_right (@var{type1} @var{arg1}, @var{type2} @var{arg2})}
+The @code{__builtin_stdc_rotate_right} function is available only
+in C.  It is type-generic, the first argument can be any unsigned integer
+(standard, extended or bit-precise) and second argument any signed or
+unsigned integer or @code{char}.  No integral argument promotions are
+performed on the arguments.  It is equivalent to
+@code{(@var{type1}) ((@var{arg1} >> (@var{arg2} % @var{prec}))
+| (@var{arg1} << ((-(unsigned @var{type2}) @var{arg2}) % @var{prec})))}
+where @var{prec} is bit width of @var{type1}, except that side-effects
+in @var{arg1} and @var{arg2} are evaluated just once.  The behavior is
+undefined if @var{arg2} is negative.
+@enddefbuiltin
+
+@node Byte-Swapping Builtins
+@subsection Byte-Swapping Builtins
+@cindex byte-swapping builtins
+
+@defbuiltin{uint16_t __builtin_bswap16 (uint16_t @var{x})}
+Returns @var{x} with the order of the bytes reversed; for example,
+@code{0xabcd} becomes @code{0xcdab}.  Byte here always means
+exactly 8 bits.
+@enddefbuiltin
+
+@defbuiltin{uint32_t __builtin_bswap32 (uint32_t @var{x})}
+Similar to @code{__builtin_bswap16}, except the argument and return types
+are 32-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_bswap64 (uint64_t @var{x})}
+Similar to @code{__builtin_bswap32}, except the argument and return types
+are 64-bit.
+@enddefbuiltin
+
+@defbuiltin{uint128_t __builtin_bswap128 (uint128_t @var{x})}
+Similar to @code{__builtin_bswap64}, except the argument and return types
+are 128-bit.  Only supported on targets when 128-bit types are supported.
+@enddefbuiltin
+
+@node CRC Builtins
+@subsection CRC Builtins
+@cindex CRC builtins
+
+@defbuiltin{uint8_t __builtin_rev_crc8_data8 (uint8_t @var{crc}, uint8_t @var{data}, uint8_t @var{poly})}
+Returns the calculated 8-bit bit-reversed CRC using the initial CRC (8-bit),
+data (8-bit) and the polynomial (8-bit).
+@var{crc} is the initial CRC, @var{data} is the data and
+@var{poly} is the polynomial without leading 1.
+Table-based or clmul-based CRC may be used for the
+calculation, depending on the target architecture.
+@enddefbuiltin
+
+@defbuiltin{uint16_t __builtin_rev_crc16_data16 (uint16_t @var{crc}, uint16_t @var{data}, uint16_t @var{poly})}
+Similar to @code{__builtin_rev_crc8_data8}, except the argument and return types
+are 16-bit.
+@enddefbuiltin
+
+@defbuiltin{uint16_t __builtin_rev_crc16_data8 (uint16_t @var{crc}, uint8_t @var{data}, uint16_t @var{poly})}
+Similar to @code{__builtin_rev_crc16_data16}, except the @var{data} argument
+type is 8-bit.
+@enddefbuiltin
+
+@defbuiltin{uint32_t __builtin_rev_crc32_data32 (uint32_t @var{crc}, uint32_t @var{data}, uint32_t @var{poly})}
+Similar to @code{__builtin_rev_crc8_data8}, except the argument and return types
+are 32-bit and for the CRC calculation may be also used crc* machine instruction
+depending on the target and the polynomial.
+@enddefbuiltin
+
+@defbuiltin{uint32_t __builtin_rev_crc32_data8 (uint32_t @var{crc}, uint8_t @var{data}, uint32_t @var{poly})}
+Similar to @code{__builtin_rev_crc32_data32}, except the @var{data} argument
+type is 8-bit.
+@enddefbuiltin
+
+@defbuiltin{uint32_t __builtin_rev_crc32_data16 (uint32_t @var{crc}, uint16_t @var{data}, uint32_t @var{poly})}
+Similar to @code{__builtin_rev_crc32_data32}, except the @var{data} argument
+type is 16-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_rev_crc64_data64 (uint64_t @var{crc}, uint64_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_rev_crc8_data8}, except the argument and return types
+are 64-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_rev_crc64_data8 (uint64_t @var{crc}, uint8_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_rev_crc64_data64}, except the @var{data} argument type
+is 8-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_rev_crc64_data16 (uint64_t @var{crc}, uint16_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_rev_crc64_data64}, except the @var{data} argument type
+is 16-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_rev_crc64_data32 (uint64_t @var{crc}, uint32_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_rev_crc64_data64}, except the @var{data} argument type
+is 32-bit.
+@enddefbuiltin
+
+@defbuiltin{uint8_t __builtin_crc8_data8 (uint8_t @var{crc}, uint8_t @var{data}, uint8_t @var{poly})}
+Returns the calculated 8-bit bit-forward CRC using the initial CRC (8-bit),
+data (8-bit) and the polynomial (8-bit).
+@var{crc} is the initial CRC, @var{data} is the data and
+@var{poly} is the polynomial without leading 1.
+Table-based or clmul-based CRC may be used for the
+calculation, depending on the target architecture.
+@enddefbuiltin
+
+@defbuiltin{uint16_t __builtin_crc16_data16 (uint16_t @var{crc}, uint16_t @var{data}, uint16_t @var{poly})}
+Similar to @code{__builtin_crc8_data8}, except the argument and return types
+are 16-bit.
+@enddefbuiltin
+
+@defbuiltin{uint16_t __builtin_crc16_data8 (uint16_t @var{crc}, uint8_t @var{data}, uint16_t @var{poly})}
+Similar to @code{__builtin_crc16_data16}, except the @var{data} argument type
+is 8-bit.
+@enddefbuiltin
+
+@defbuiltin{uint32_t __builtin_crc32_data32 (uint32_t @var{crc}, uint32_t @var{data}, uint32_t @var{poly})}
+Similar to @code{__builtin_crc8_data8}, except the argument and return types
+are 32-bit.
+@enddefbuiltin
+
+@defbuiltin{uint32_t __builtin_crc32_data8 (uint32_t @var{crc}, uint8_t @var{data}, uint32_t @var{poly})}
+Similar to @code{__builtin_crc32_data32}, except the @var{data} argument type
+is 8-bit.
+@enddefbuiltin
+
+@defbuiltin{uint32_t __builtin_crc32_data16 (uint32_t @var{crc}, uint16_t @var{data}, uint32_t @var{poly})}
+Similar to @code{__builtin_crc32_data32}, except the @var{data} argument type
+is 16-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_crc64_data64 (uint64_t @var{crc}, uint64_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_crc8_data8}, except the argument and return types
+are 64-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_crc64_data8 (uint64_t @var{crc}, uint8_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_crc64_data64}, except the @var{data} argument type
+is 8-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_crc64_data16 (uint64_t @var{crc}, uint16_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_crc64_data64}, except the @var{data} argument type
+is 16-bit.
+@enddefbuiltin
+
+@defbuiltin{uint64_t __builtin_crc64_data32 (uint64_t @var{crc}, uint32_t @var{data}, uint64_t @var{poly})}
+Similar to @code{__builtin_crc64_data64}, except the @var{data} argument type
+is 32-bit.
+@enddefbuiltin
+
+@node Stack Allocation
+@section Builtins for Stack Allocation
+@cindex stack allocation builtins
+@cindex builtins for stack allocation
+
+@defbuiltin{{void *} __builtin_alloca (size_t @var{size})}
+The @code{__builtin_alloca} function must be called at block scope.
+The function allocates an object @var{size} bytes large on the stack
+of the calling function.  The object is aligned on the default stack
+alignment boundary for the target determined by the
+@code{__BIGGEST_ALIGNMENT__} macro.  The @code{__builtin_alloca}
+function returns a pointer to the first byte of the allocated object.
+The lifetime of the allocated object ends just before the calling
+function returns to its caller.   This is so even when
+@code{__builtin_alloca} is called within a nested block.
+
+For example, the following function allocates eight objects of @code{n}
+bytes each on the stack, storing a pointer to each in consecutive elements
+of the array @code{a}.  It then passes the array to function @code{g}
+which can safely use the storage pointed to by each of the array elements.
+
+@smallexample
+void f (unsigned n)
+@{
+  void *a [8];
+  for (int i = 0; i != 8; ++i)
+    a [i] = __builtin_alloca (n);
+
+  g (a, n);   // @r{safe}
+@}
+@end smallexample
+
+Since the @code{__builtin_alloca} function doesn't validate its argument
+it is the responsibility of its caller to make sure the argument doesn't
+cause it to exceed the stack size limit.
+The @code{__builtin_alloca} function is provided to make it possible to
+allocate on the stack arrays of bytes with an upper bound that may be
+computed at run time.  Since C99 Variable Length Arrays offer
+similar functionality under a portable, more convenient, and safer
+interface they are recommended instead, in both C99 and C++ programs
+where GCC provides them as an extension.
+@xref{Variable Length}, for details.
+
+@enddefbuiltin
+
+@defbuiltin{{void *} __builtin_alloca_with_align (size_t @var{size}, size_t @var{alignment})}
+The @code{__builtin_alloca_with_align} function must be called at block
+scope.  The function allocates an object @var{size} bytes large on
+the stack of the calling function.  The allocated object is aligned on
+the boundary specified by the argument @var{alignment} whose unit is given
+in bits (not bytes).  The @var{size} argument must be positive and not
+exceed the stack size limit.  The @var{alignment} argument must be a constant
+integer expression that evaluates to a power of 2 greater than or equal to
+@code{CHAR_BIT} and less than some unspecified maximum.  Invocations
+with other values are rejected with an error indicating the valid bounds.
+The function returns a pointer to the first byte of the allocated object.
+The lifetime of the allocated object ends at the end of the block in which
+the function was called.  The allocated storage is released no later than
+just before the calling function returns to its caller, but may be released
+at the end of the block in which the function was called.
+
+For example, in the following function the call to @code{g} is unsafe
+because when @code{overalign} is non-zero, the space allocated by
+@code{__builtin_alloca_with_align} may have been released at the end
+of the @code{if} statement in which it was called.
+
+@smallexample
+void f (unsigned n, bool overalign)
+@{
+  void *p;
+  if (overalign)
+    p = __builtin_alloca_with_align (n, 64 /* bits */);
+  else
+    p = __builtin_alloc (n);
+
+  g (p, n);   // @r{unsafe}
+@}
+@end smallexample
+
+Since the @code{__builtin_alloca_with_align} function doesn't validate its
+@var{size} argument it is the responsibility of its caller to make sure
+the argument doesn't cause it to exceed the stack size limit.
+The @code{__builtin_alloca_with_align} function is provided to make
+it possible to allocate on the stack overaligned arrays of bytes with
+an upper bound that may be computed at run time.  Since C99
+Variable Length Arrays offer the same functionality under
+a portable, more convenient, and safer interface they are recommended
+instead, in both C99 and C++ programs where GCC provides them as
+an extension.  @xref{Variable Length}, for details.
+
+@enddefbuiltin
+
+@defbuiltin{{void *} __builtin_alloca_with_align_and_max (size_t @var{size}, size_t @var{alignment}, size_t @var{max_size})}
+Similar to @code{__builtin_alloca_with_align} but takes an extra argument
+specifying an upper bound for @var{size} in case its value cannot be computed
+at compile time, for use by @option{-fstack-usage}, @option{-Wstack-usage}
+and @option{-Walloca-larger-than}.  @var{max_size} must be a constant integer
+expression, it has no effect on code generation and no attempt is made to
+check its compatibility with @var{size}.
+
+@enddefbuiltin
 
 @node Nonlocal Gotos
 @section Nonlocal Gotos
@@ -14408,6 +15719,18 @@ myopen (const char *path, int oflag, ...)
 @}
 #endif
 @end smallexample
+@enddefbuiltin
+
+@defbuiltin{@var{type} __builtin_call_with_static_chain (@var{call_exp}, @var{pointer_exp})}
+
+The @var{call_exp} expression must be a function call, and the
+@var{pointer_exp} expression must be a pointer.  The @var{pointer_exp}
+is passed to the function call in the target's static chain location.
+The result of builtin is the result of the function call.
+
+@emph{Note:} This builtin is only available for C@.
+This builtin can be used to call Go closures from C.
+
 @enddefbuiltin
 
 @node Return Address
@@ -15501,7 +16824,7 @@ on various optimization passes enabled with @option{-O2}.  However, to
 a limited extent, they can be used without optimization as well.
 
 @defbuiltin{size_t __builtin_object_size (const void * @var{ptr}, int @var{type})}
-is a built-in construct that returns a constant number of bytes from
+This built-in construct returns a constant number of bytes from
 @var{ptr} to the end of the object @var{ptr} pointer points to
 (if known at compile time).  To determine the sizes of dynamically allocated
 objects the function relies on the allocation functions called to obtain
@@ -15540,6 +16863,7 @@ assert (__builtin_object_size (q, 1) == sizeof (var.b));
 @enddefbuiltin
 
 @defbuiltin{{size_t} __builtin_dynamic_object_size (const void * @var{ptr}, int @var{type})}
+This builtin
 is similar to @code{__builtin_object_size} in that it returns a number of bytes
 from @var{ptr} to the end of the object @var{ptr} pointer points to, except
 that the size returned may not be a constant.  This results in successful
@@ -15664,670 +16988,9 @@ void foo () @{
 
 @node Other Builtins
 @section Other Built-in Functions Provided by GCC
-@cindex built-in functions
-@findex __builtin_iseqsig
-@findex __builtin_isfinite
-@findex __builtin_isnormal
-@findex __builtin_isgreater
-@findex __builtin_isgreaterequal
-@findex __builtin_isunordered
-@findex __builtin_speculation_safe_value
-@findex _Exit
-@findex _exit
-@findex abort
-@findex abs
-@findex acos
-@findex acosf
-@findex acosh
-@findex acoshf
-@findex acoshl
-@findex acosl
-@findex alloca
-@findex asin
-@findex asinf
-@findex asinh
-@findex asinhf
-@findex asinhl
-@findex asinl
-@findex atan
-@findex atan2
-@findex atan2f
-@findex atan2l
-@findex atanf
-@findex atanh
-@findex atanhf
-@findex atanhl
-@findex atanl
-@findex bcmp
-@findex bzero
-@findex cabs
-@findex cabsf
-@findex cabsl
-@findex cacos
-@findex cacosf
-@findex cacosh
-@findex cacoshf
-@findex cacoshl
-@findex cacosl
-@findex calloc
-@findex carg
-@findex cargf
-@findex cargl
-@findex casin
-@findex casinf
-@findex casinh
-@findex casinhf
-@findex casinhl
-@findex casinl
-@findex catan
-@findex catanf
-@findex catanh
-@findex catanhf
-@findex catanhl
-@findex catanl
-@findex cbrt
-@findex cbrtf
-@findex cbrtl
-@findex ccos
-@findex ccosf
-@findex ccosh
-@findex ccoshf
-@findex ccoshl
-@findex ccosl
-@findex ceil
-@findex ceilf
-@findex ceill
-@findex cexp
-@findex cexpf
-@findex cexpl
-@findex cimag
-@findex cimagf
-@findex cimagl
-@findex clog
-@findex clogf
-@findex clogl
-@findex clog10
-@findex clog10f
-@findex clog10l
-@findex conj
-@findex conjf
-@findex conjl
-@findex copysign
-@findex copysignf
-@findex copysignl
-@findex cos
-@findex cosf
-@findex cosh
-@findex coshf
-@findex coshl
-@findex cosl
-@findex cpow
-@findex cpowf
-@findex cpowl
-@findex cproj
-@findex cprojf
-@findex cprojl
-@findex creal
-@findex crealf
-@findex creall
-@findex csin
-@findex csinf
-@findex csinh
-@findex csinhf
-@findex csinhl
-@findex csinl
-@findex csqrt
-@findex csqrtf
-@findex csqrtl
-@findex ctan
-@findex ctanf
-@findex ctanh
-@findex ctanhf
-@findex ctanhl
-@findex ctanl
-@findex dcgettext
-@findex dgettext
-@findex drem
-@findex dremf
-@findex dreml
-@findex erf
-@findex erfc
-@findex erfcf
-@findex erfcl
-@findex erff
-@findex erfl
-@findex exit
-@findex exp
-@findex exp10
-@findex exp10f
-@findex exp10l
-@findex exp2
-@findex exp2f
-@findex exp2l
-@findex expf
-@findex expl
-@findex expm1
-@findex expm1f
-@findex expm1l
-@findex fabs
-@findex fabsf
-@findex fabsl
-@findex fdim
-@findex fdimf
-@findex fdiml
-@findex ffs
-@findex floor
-@findex floorf
-@findex floorl
-@findex fma
-@findex fmaf
-@findex fmal
-@findex fmax
-@findex fmaxf
-@findex fmaxl
-@findex fmin
-@findex fminf
-@findex fminl
-@findex fmod
-@findex fmodf
-@findex fmodl
-@findex fprintf
-@findex fprintf_unlocked
-@findex fputs
-@findex fputs_unlocked
-@findex free
-@findex frexp
-@findex frexpf
-@findex frexpl
-@findex fscanf
-@findex gamma
-@findex gammaf
-@findex gammal
-@findex gamma_r
-@findex gammaf_r
-@findex gammal_r
-@findex gettext
-@findex hypot
-@findex hypotf
-@findex hypotl
-@findex ilogb
-@findex ilogbf
-@findex ilogbl
-@findex imaxabs
-@findex index
-@findex isalnum
-@findex isalpha
-@findex isascii
-@findex isblank
-@findex iscntrl
-@findex isdigit
-@findex isgraph
-@findex islower
-@findex isprint
-@findex ispunct
-@findex isspace
-@findex isupper
-@findex iswalnum
-@findex iswalpha
-@findex iswblank
-@findex iswcntrl
-@findex iswdigit
-@findex iswgraph
-@findex iswlower
-@findex iswprint
-@findex iswpunct
-@findex iswspace
-@findex iswupper
-@findex iswxdigit
-@findex isxdigit
-@findex j0
-@findex j0f
-@findex j0l
-@findex j1
-@findex j1f
-@findex j1l
-@findex jn
-@findex jnf
-@findex jnl
-@findex labs
-@findex ldexp
-@findex ldexpf
-@findex ldexpl
-@findex lgamma
-@findex lgammaf
-@findex lgammal
-@findex lgamma_r
-@findex lgammaf_r
-@findex lgammal_r
-@findex llabs
-@findex llrint
-@findex llrintf
-@findex llrintl
-@findex llround
-@findex llroundf
-@findex llroundl
-@findex log
-@findex log10
-@findex log10f
-@findex log10l
-@findex log1p
-@findex log1pf
-@findex log1pl
-@findex log2
-@findex log2f
-@findex log2l
-@findex logb
-@findex logbf
-@findex logbl
-@findex logf
-@findex logl
-@findex lrint
-@findex lrintf
-@findex lrintl
-@findex lround
-@findex lroundf
-@findex lroundl
-@findex malloc
-@findex memchr
-@findex memcmp
-@findex memcpy
-@findex mempcpy
-@findex memset
-@findex modf
-@findex modff
-@findex modfl
-@findex nearbyint
-@findex nearbyintf
-@findex nearbyintl
-@findex nextafter
-@findex nextafterf
-@findex nextafterl
-@findex nexttoward
-@findex nexttowardf
-@findex nexttowardl
-@findex pow
-@findex pow10
-@findex pow10f
-@findex pow10l
-@findex powf
-@findex powl
-@findex printf
-@findex printf_unlocked
-@findex putchar
-@findex puts
-@findex realloc
-@findex remainder
-@findex remainderf
-@findex remainderl
-@findex remquo
-@findex remquof
-@findex remquol
-@findex rindex
-@findex rint
-@findex rintf
-@findex rintl
-@findex round
-@findex roundf
-@findex roundl
-@findex scalb
-@findex scalbf
-@findex scalbl
-@findex scalbln
-@findex scalblnf
-@findex scalblnf
-@findex scalbn
-@findex scalbnf
-@findex scanfnl
-@findex signbit
-@findex signbitf
-@findex signbitl
-@findex signbitd32
-@findex signbitd64
-@findex signbitd128
-@findex significand
-@findex significandf
-@findex significandl
-@findex sin
-@findex sincos
-@findex sincosf
-@findex sincosl
-@findex sinf
-@findex sinh
-@findex sinhf
-@findex sinhl
-@findex sinl
-@findex snprintf
-@findex sprintf
-@findex sqrt
-@findex sqrtf
-@findex sqrtl
-@findex sscanf
-@findex stpcpy
-@findex stpncpy
-@findex strcasecmp
-@findex strcat
-@findex strchr
-@findex strcmp
-@findex strcpy
-@findex strcspn
-@findex strdup
-@findex strfmon
-@findex strftime
-@findex strlen
-@findex strncasecmp
-@findex strncat
-@findex strncmp
-@findex strncpy
-@findex strndup
-@findex strnlen
-@findex strpbrk
-@findex strrchr
-@findex strspn
-@findex strstr
-@findex tan
-@findex tanf
-@findex tanh
-@findex tanhf
-@findex tanhl
-@findex tanl
-@findex tgamma
-@findex tgammaf
-@findex tgammal
-@findex toascii
-@findex tolower
-@findex toupper
-@findex towlower
-@findex towupper
-@findex trunc
-@findex truncf
-@findex truncl
-@findex vfprintf
-@findex vfscanf
-@findex vprintf
-@findex vscanf
-@findex vsnprintf
-@findex vsprintf
-@findex vsscanf
-@findex y0
-@findex y0f
-@findex y0l
-@findex y1
-@findex y1f
-@findex y1l
-@findex yn
-@findex ynf
-@findex ynl
 
-GCC provides a large number of built-in functions other than the ones
-mentioned above.  Some of these are for internal use in the processing
-of exceptions or variable-length argument lists and are not
-documented here because they may change from time to time; we do not
-recommend general use of these functions.
+This section documents miscellaneous built-in functions available in GCC.
 
-The remaining functions are provided for optimization purposes.
-
-With the exception of built-ins that have library equivalents such as
-the standard C library functions discussed below, or that expand to
-library calls, GCC built-in functions are always expanded inline and
-thus do not have corresponding entry points and their address cannot
-be obtained.  Attempting to use them in an expression other than
-a function call results in a compile-time error.
-
-@opindex fno-builtin
-GCC includes built-in versions of many of the functions in the standard
-C library.  These functions come in two forms: one whose names start with
-the @code{__builtin_} prefix, and the other without.  Both forms have the
-same type (including prototype), the same address (when their address is
-taken), and the same meaning as the C library functions even if you specify
-the @option{-fno-builtin} option @pxref{C Dialect Options}).  Many of these
-functions are only optimized in certain cases; if they are not optimized in
-a particular case, a call to the library function is emitted.
-
-@opindex ansi
-@opindex std
-Outside strict ISO C mode (@option{-ansi}, @option{-std=c90},
-@option{-std=c99} or @option{-std=c11}), the functions
-@code{_exit}, @code{alloca}, @code{bcmp}, @code{bzero},
-@code{dcgettext}, @code{dgettext}, @code{dremf}, @code{dreml},
-@code{drem}, @code{exp10f}, @code{exp10l}, @code{exp10}, @code{ffsll},
-@code{ffsl}, @code{ffs}, @code{fprintf_unlocked},
-@code{fputs_unlocked}, @code{gammaf}, @code{gammal}, @code{gamma},
-@code{gammaf_r}, @code{gammal_r}, @code{gamma_r}, @code{gettext},
-@code{index}, @code{isascii}, @code{j0f}, @code{j0l}, @code{j0},
-@code{j1f}, @code{j1l}, @code{j1}, @code{jnf}, @code{jnl}, @code{jn},
-@code{lgammaf_r}, @code{lgammal_r}, @code{lgamma_r}, @code{mempcpy},
-@code{pow10f}, @code{pow10l}, @code{pow10}, @code{printf_unlocked},
-@code{rindex}, @code{roundeven}, @code{roundevenf}, @code{roundevenl},
-@code{scalbf}, @code{scalbl}, @code{scalb},
-@code{signbit}, @code{signbitf}, @code{signbitl}, @code{signbitd32},
-@code{signbitd64}, @code{signbitd128}, @code{significandf},
-@code{significandl}, @code{significand}, @code{sincosf},
-@code{sincosl}, @code{sincos}, @code{stpcpy}, @code{stpncpy},
-@code{strcasecmp}, @code{strdup}, @code{strfmon}, @code{strncasecmp},
-@code{strndup}, @code{strnlen}, @code{toascii}, @code{y0f}, @code{y0l},
-@code{y0}, @code{y1f}, @code{y1l}, @code{y1}, @code{ynf}, @code{ynl} and
-@code{yn}
-may be handled as built-in functions.
-All these functions have corresponding versions
-prefixed with @code{__builtin_}, which may be used even in strict C90
-mode.
-
-The ISO C99 functions
-@code{_Exit}, @code{acoshf}, @code{acoshl}, @code{acosh}, @code{asinhf},
-@code{asinhl}, @code{asinh}, @code{atanhf}, @code{atanhl}, @code{atanh},
-@code{cabsf}, @code{cabsl}, @code{cabs}, @code{cacosf}, @code{cacoshf},
-@code{cacoshl}, @code{cacosh}, @code{cacosl}, @code{cacos},
-@code{cargf}, @code{cargl}, @code{carg}, @code{casinf}, @code{casinhf},
-@code{casinhl}, @code{casinh}, @code{casinl}, @code{casin},
-@code{catanf}, @code{catanhf}, @code{catanhl}, @code{catanh},
-@code{catanl}, @code{catan}, @code{cbrtf}, @code{cbrtl}, @code{cbrt},
-@code{ccosf}, @code{ccoshf}, @code{ccoshl}, @code{ccosh}, @code{ccosl},
-@code{ccos}, @code{cexpf}, @code{cexpl}, @code{cexp}, @code{cimagf},
-@code{cimagl}, @code{cimag}, @code{clogf}, @code{clogl}, @code{clog},
-@code{conjf}, @code{conjl}, @code{conj}, @code{copysignf}, @code{copysignl},
-@code{copysign}, @code{cpowf}, @code{cpowl}, @code{cpow}, @code{cprojf},
-@code{cprojl}, @code{cproj}, @code{crealf}, @code{creall}, @code{creal},
-@code{csinf}, @code{csinhf}, @code{csinhl}, @code{csinh}, @code{csinl},
-@code{csin}, @code{csqrtf}, @code{csqrtl}, @code{csqrt}, @code{ctanf},
-@code{ctanhf}, @code{ctanhl}, @code{ctanh}, @code{ctanl}, @code{ctan},
-@code{erfcf}, @code{erfcl}, @code{erfc}, @code{erff}, @code{erfl},
-@code{erf}, @code{exp2f}, @code{exp2l}, @code{exp2}, @code{expm1f},
-@code{expm1l}, @code{expm1}, @code{fdimf}, @code{fdiml}, @code{fdim},
-@code{fmaf}, @code{fmal}, @code{fmaxf}, @code{fmaxl}, @code{fmax},
-@code{fma}, @code{fminf}, @code{fminl}, @code{fmin}, @code{hypotf},
-@code{hypotl}, @code{hypot}, @code{ilogbf}, @code{ilogbl}, @code{ilogb},
-@code{imaxabs}, @code{isblank}, @code{iswblank}, @code{lgammaf},
-@code{lgammal}, @code{lgamma}, @code{llabs}, @code{llrintf}, @code{llrintl},
-@code{llrint}, @code{llroundf}, @code{llroundl}, @code{llround},
-@code{log1pf}, @code{log1pl}, @code{log1p}, @code{log2f}, @code{log2l},
-@code{log2}, @code{logbf}, @code{logbl}, @code{logb}, @code{lrintf},
-@code{lrintl}, @code{lrint}, @code{lroundf}, @code{lroundl},
-@code{lround}, @code{nearbyintf}, @code{nearbyintl}, @code{nearbyint},
-@code{nextafterf}, @code{nextafterl}, @code{nextafter},
-@code{nexttowardf}, @code{nexttowardl}, @code{nexttoward},
-@code{remainderf}, @code{remainderl}, @code{remainder}, @code{remquof},
-@code{remquol}, @code{remquo}, @code{rintf}, @code{rintl}, @code{rint},
-@code{roundf}, @code{roundl}, @code{round}, @code{scalblnf},
-@code{scalblnl}, @code{scalbln}, @code{scalbnf}, @code{scalbnl},
-@code{scalbn}, @code{snprintf}, @code{tgammaf}, @code{tgammal},
-@code{tgamma}, @code{truncf}, @code{truncl}, @code{trunc},
-@code{vfscanf}, @code{vscanf}, @code{vsnprintf} and @code{vsscanf}
-are handled as built-in functions
-except in strict ISO C90 mode (@option{-ansi} or @option{-std=c90}).
-
-There are also built-in versions of the ISO C99 functions
-@code{acosf}, @code{acosl}, @code{asinf}, @code{asinl}, @code{atan2f},
-@code{atan2l}, @code{atanf}, @code{atanl}, @code{ceilf}, @code{ceill},
-@code{cosf}, @code{coshf}, @code{coshl}, @code{cosl}, @code{expf},
-@code{expl}, @code{fabsf}, @code{fabsl}, @code{floorf}, @code{floorl},
-@code{fmodf}, @code{fmodl}, @code{frexpf}, @code{frexpl}, @code{ldexpf},
-@code{ldexpl}, @code{log10f}, @code{log10l}, @code{logf}, @code{logl},
-@code{modfl}, @code{modff}, @code{powf}, @code{powl}, @code{sinf},
-@code{sinhf}, @code{sinhl}, @code{sinl}, @code{sqrtf}, @code{sqrtl},
-@code{tanf}, @code{tanhf}, @code{tanhl} and @code{tanl}
-that are recognized in any mode since ISO C90 reserves these names for
-the purpose to which ISO C99 puts them.  All these functions have
-corresponding versions prefixed with @code{__builtin_}.
-
-There are also built-in functions @code{__builtin_fabsf@var{n}},
-@code{__builtin_fabsf@var{n}x}, @code{__builtin_copysignf@var{n}} and
-@code{__builtin_copysignf@var{n}x}, corresponding to the TS 18661-3
-functions @code{fabsf@var{n}}, @code{fabsf@var{n}x},
-@code{copysignf@var{n}} and @code{copysignf@var{n}x}, for supported
-types @code{_Float@var{n}} and @code{_Float@var{n}x}.
-
-There are also GNU extension functions @code{clog10}, @code{clog10f} and
-@code{clog10l} which names are reserved by ISO C99 for future use.
-All these functions have versions prefixed with @code{__builtin_}.
-
-The ISO C94 functions
-@code{iswalnum}, @code{iswalpha}, @code{iswcntrl}, @code{iswdigit},
-@code{iswgraph}, @code{iswlower}, @code{iswprint}, @code{iswpunct},
-@code{iswspace}, @code{iswupper}, @code{iswxdigit}, @code{towlower} and
-@code{towupper}
-are handled as built-in functions
-except in strict ISO C90 mode (@option{-ansi} or @option{-std=c90}).
-
-The ISO C90 functions
-@code{abort}, @code{abs}, @code{acos}, @code{asin}, @code{atan2},
-@code{atan}, @code{calloc}, @code{ceil}, @code{cosh}, @code{cos},
-@code{exit}, @code{exp}, @code{fabs}, @code{floor}, @code{fmod},
-@code{fprintf}, @code{fputs}, @code{free}, @code{frexp}, @code{fscanf},
-@code{isalnum}, @code{isalpha}, @code{iscntrl}, @code{isdigit},
-@code{isgraph}, @code{islower}, @code{isprint}, @code{ispunct},
-@code{isspace}, @code{isupper}, @code{isxdigit}, @code{tolower},
-@code{toupper}, @code{labs}, @code{ldexp}, @code{log10}, @code{log},
-@code{malloc}, @code{memchr}, @code{memcmp}, @code{memcpy},
-@code{memset}, @code{modf}, @code{pow}, @code{printf}, @code{putchar},
-@code{puts}, @code{realloc}, @code{scanf}, @code{sinh}, @code{sin},
-@code{snprintf}, @code{sprintf}, @code{sqrt}, @code{sscanf}, @code{strcat},
-@code{strchr}, @code{strcmp}, @code{strcpy}, @code{strcspn},
-@code{strlen}, @code{strncat}, @code{strncmp}, @code{strncpy},
-@code{strpbrk}, @code{strrchr}, @code{strspn}, @code{strstr},
-@code{tanh}, @code{tan}, @code{vfprintf}, @code{vprintf} and @code{vsprintf}
-are all recognized as built-in functions unless
-@option{-fno-builtin} is specified (or @option{-fno-builtin-@var{function}}
-is specified for an individual function).  All of these functions have
-corresponding versions prefixed with @code{__builtin_}.
-
-GCC provides built-in versions of the ISO C99 floating-point comparison
-macros that avoid raising exceptions for unordered operands.  They have
-the same names as the standard macros ( @code{isgreater},
-@code{isgreaterequal}, @code{isless}, @code{islessequal},
-@code{islessgreater}, and @code{isunordered}) , with @code{__builtin_}
-prefixed.  We intend for a library implementor to be able to simply
-@code{#define} each standard macro to its built-in equivalent.
-In the same fashion, GCC provides @code{fpclassify}, @code{iseqsig},
-@code{isfinite}, @code{isinf_sign}, @code{isnormal} and @code{signbit} built-ins
-used with @code{__builtin_} prefixed.  The @code{isinf} and @code{isnan}
-built-in functions appear both with and without the @code{__builtin_} prefix.
-With @code{-ffinite-math-only} option the @code{isinf} and @code{isnan}
-built-in functions will always return 0.
-
-GCC provides built-in versions of the ISO C99 floating-point rounding and
-exceptions handling functions @code{fegetround}, @code{feclearexcept} and
-@code{feraiseexcept}.  They may not be available for all targets, and because
-they need close interaction with libc internal values, they may not be available
-for all target libcs, but in all cases they will gracefully fallback to libc
-calls.  These built-in functions appear both with and without the
-@code{__builtin_} prefix.
-
-@defbuiltin{{void *} __builtin_alloca (size_t @var{size})}
-The @code{__builtin_alloca} function must be called at block scope.
-The function allocates an object @var{size} bytes large on the stack
-of the calling function.  The object is aligned on the default stack
-alignment boundary for the target determined by the
-@code{__BIGGEST_ALIGNMENT__} macro.  The @code{__builtin_alloca}
-function returns a pointer to the first byte of the allocated object.
-The lifetime of the allocated object ends just before the calling
-function returns to its caller.   This is so even when
-@code{__builtin_alloca} is called within a nested block.
-
-For example, the following function allocates eight objects of @code{n}
-bytes each on the stack, storing a pointer to each in consecutive elements
-of the array @code{a}.  It then passes the array to function @code{g}
-which can safely use the storage pointed to by each of the array elements.
-
-@smallexample
-void f (unsigned n)
-@{
-  void *a [8];
-  for (int i = 0; i != 8; ++i)
-    a [i] = __builtin_alloca (n);
-
-  g (a, n);   // @r{safe}
-@}
-@end smallexample
-
-Since the @code{__builtin_alloca} function doesn't validate its argument
-it is the responsibility of its caller to make sure the argument doesn't
-cause it to exceed the stack size limit.
-The @code{__builtin_alloca} function is provided to make it possible to
-allocate on the stack arrays of bytes with an upper bound that may be
-computed at run time.  Since C99 Variable Length Arrays offer
-similar functionality under a portable, more convenient, and safer
-interface they are recommended instead, in both C99 and C++ programs
-where GCC provides them as an extension.
-@xref{Variable Length}, for details.
-
-@enddefbuiltin
-
-@defbuiltin{{void *} __builtin_alloca_with_align (size_t @var{size}, size_t @var{alignment})}
-The @code{__builtin_alloca_with_align} function must be called at block
-scope.  The function allocates an object @var{size} bytes large on
-the stack of the calling function.  The allocated object is aligned on
-the boundary specified by the argument @var{alignment} whose unit is given
-in bits (not bytes).  The @var{size} argument must be positive and not
-exceed the stack size limit.  The @var{alignment} argument must be a constant
-integer expression that evaluates to a power of 2 greater than or equal to
-@code{CHAR_BIT} and less than some unspecified maximum.  Invocations
-with other values are rejected with an error indicating the valid bounds.
-The function returns a pointer to the first byte of the allocated object.
-The lifetime of the allocated object ends at the end of the block in which
-the function was called.  The allocated storage is released no later than
-just before the calling function returns to its caller, but may be released
-at the end of the block in which the function was called.
-
-For example, in the following function the call to @code{g} is unsafe
-because when @code{overalign} is non-zero, the space allocated by
-@code{__builtin_alloca_with_align} may have been released at the end
-of the @code{if} statement in which it was called.
-
-@smallexample
-void f (unsigned n, bool overalign)
-@{
-  void *p;
-  if (overalign)
-    p = __builtin_alloca_with_align (n, 64 /* bits */);
-  else
-    p = __builtin_alloc (n);
-
-  g (p, n);   // @r{unsafe}
-@}
-@end smallexample
-
-Since the @code{__builtin_alloca_with_align} function doesn't validate its
-@var{size} argument it is the responsibility of its caller to make sure
-the argument doesn't cause it to exceed the stack size limit.
-The @code{__builtin_alloca_with_align} function is provided to make
-it possible to allocate on the stack overaligned arrays of bytes with
-an upper bound that may be computed at run time.  Since C99
-Variable Length Arrays offer the same functionality under
-a portable, more convenient, and safer interface they are recommended
-instead, in both C99 and C++ programs where GCC provides them as
-an extension.  @xref{Variable Length}, for details.
-
-@enddefbuiltin
-
-@defbuiltin{{void *} __builtin_alloca_with_align_and_max (size_t @var{size}, size_t @var{alignment}, size_t @var{max_size})}
-Similar to @code{__builtin_alloca_with_align} but takes an extra argument
-specifying an upper bound for @var{size} in case its value cannot be computed
-at compile time, for use by @option{-fstack-usage}, @option{-Wstack-usage}
-and @option{-Walloca-larger-than}.  @var{max_size} must be a constant integer
-expression, it has no effect on code generation and no attempt is made to
-check its compatibility with @var{size}.
-
-@enddefbuiltin
 
 @defbuiltin{bool __builtin_has_attribute (@var{type-or-expression}, @var{attribute})}
 The @code{__builtin_has_attribute} function evaluates to an integer constant
@@ -16510,18 +17173,6 @@ depending on the arguments' types.  For example:
 @end smallexample
 
 @emph{Note:} This construct is only available for C@.
-
-@enddefbuiltin
-
-@defbuiltin{@var{type} __builtin_call_with_static_chain (@var{call_exp}, @var{pointer_exp})}
-
-The @var{call_exp} expression must be a function call, and the
-@var{pointer_exp} expression must be a pointer.  The @var{pointer_exp}
-is passed to the function call in the target's static chain location.
-The result of builtin is the result of the function call.
-
-@emph{Note:} This builtin is only available for C@.
-This builtin can be used to call Go closures from C.
 
 @enddefbuiltin
 
@@ -17057,17 +17708,6 @@ is evaluated if it includes side effects but no other code is generated
 and GCC does not issue a warning.
 @enddefbuiltin
 
-@defbuiltin{{size_t} __builtin_object_size (const void * @var{ptr}, int @var{type})}
-Returns a constant size estimate of an object pointed to by @var{ptr}.
-@xref{Object Size Checking}, for a detailed description of the function.
-@enddefbuiltin
-
-@defbuiltin{{size_t} __builtin_dynamic_object_size (const void * @var{ptr}, int @var{type})}
-Similar to @code{__builtin_object_size} except that the return value
-need not be a constant.  @xref{Object Size Checking}, for a detailed
-description of the function.
-@enddefbuiltin
-
 @defbuiltin{int __builtin_classify_type (@var{arg})}
 @defbuiltinx{int __builtin_classify_type (@var{type})}
 The @code{__builtin_classify_type} returns a small integer with a category
@@ -17092,490 +17732,6 @@ to pointer.  The last two comparisons will be true as they classify
 pointers in the second case and arrays in the last case.
 @enddefbuiltin
 
-@defbuiltin{double __builtin_huge_val (void)}
-Returns a positive infinity, if supported by the floating-point format,
-else @code{DBL_MAX}.  This function is suitable for implementing the
-ISO C macro @code{HUGE_VAL}.
-@enddefbuiltin
-
-@defbuiltin{float __builtin_huge_valf (void)}
-Similar to @code{__builtin_huge_val}, except the return type is @code{float}.
-@enddefbuiltin
-
-@defbuiltin{{long double} __builtin_huge_vall (void)}
-Similar to @code{__builtin_huge_val}, except the return
-type is @code{long double}.
-@enddefbuiltin
-
-@defbuiltin{_Float@var{n} __builtin_huge_valf@var{n} (void)}
-Similar to @code{__builtin_huge_val}, except the return type is
-@code{_Float@var{n}}.
-@enddefbuiltin
-
-@defbuiltin{_Float@var{n}x __builtin_huge_valf@var{n}x (void)}
-Similar to @code{__builtin_huge_val}, except the return type is
-@code{_Float@var{n}x}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_fpclassify (int, int, int, int, int, ...)}
-This built-in implements the C99 fpclassify functionality.  The first
-five int arguments should be the target library's notion of the
-possible FP classes and are used for return values.  They must be
-constant values and they must appear in this order: @code{FP_NAN},
-@code{FP_INFINITE}, @code{FP_NORMAL}, @code{FP_SUBNORMAL} and
-@code{FP_ZERO}.  The ellipsis is for exactly one floating-point value
-to classify.  GCC treats the last argument as type-generic, which
-means it does not do default promotion from float to double.
-@enddefbuiltin
-
-@defbuiltin{double __builtin_inf (void)}
-Similar to @code{__builtin_huge_val}, except a warning is generated
-if the target floating-point format does not support infinities.
-@enddefbuiltin
-
-@defbuiltin{_Decimal32 __builtin_infd32 (void)}
-Similar to @code{__builtin_inf}, except the return type is @code{_Decimal32}.
-@enddefbuiltin
-
-@defbuiltin{_Decimal64 __builtin_infd64 (void)}
-Similar to @code{__builtin_inf}, except the return type is @code{_Decimal64}.
-@enddefbuiltin
-
-@defbuiltin{_Decimal128 __builtin_infd128 (void)}
-Similar to @code{__builtin_inf}, except the return type is @code{_Decimal128}.
-@enddefbuiltin
-
-@defbuiltin{float __builtin_inff (void)}
-Similar to @code{__builtin_inf}, except the return type is @code{float}.
-This function is suitable for implementing the ISO C99 macro @code{INFINITY}.
-@enddefbuiltin
-
-@defbuiltin{{long double} __builtin_infl (void)}
-Similar to @code{__builtin_inf}, except the return
-type is @code{long double}.
-@enddefbuiltin
-
-@defbuiltin{_Float@var{n} __builtin_inff@var{n} (void)}
-Similar to @code{__builtin_inf}, except the return
-type is @code{_Float@var{n}}.
-@enddefbuiltin
-
-@defbuiltin{_Float@var{n} __builtin_inff@var{n}x (void)}
-Similar to @code{__builtin_inf}, except the return
-type is @code{_Float@var{n}x}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_isinf_sign (...)}
-Similar to @code{isinf}, except the return value is -1 for
-an argument of @code{-Inf} and 1 for an argument of @code{+Inf}.
-Note while the parameter list is an
-ellipsis, this function only accepts exactly one floating-point
-argument.  GCC treats this parameter as type-generic, which means it
-does not do default promotion from float to double.
-@enddefbuiltin
-
-@defbuiltin{double __builtin_nan (const char *@var{str})}
-This is an implementation of the ISO C99 function @code{nan}.
-
-Since ISO C99 defines this function in terms of @code{strtod}, which we
-do not implement, a description of the parsing is in order.  The string
-is parsed as by @code{strtol}; that is, the base is recognized by
-leading @samp{0} or @samp{0x} prefixes.  The number parsed is placed
-in the significand such that the least significant bit of the number
-is at the least significant bit of the significand.  The number is
-truncated to fit the significand field provided.  The significand is
-forced to be a quiet NaN@.
-
-This function, if given a string literal all of which would have been
-consumed by @code{strtol}, is evaluated early enough that it is considered a
-compile-time constant.
-@enddefbuiltin
-
-@defbuiltin{_Decimal32 __builtin_nand32 (const char *@var{str})}
-Similar to @code{__builtin_nan}, except the return type is @code{_Decimal32}.
-@enddefbuiltin
-
-@defbuiltin{_Decimal64 __builtin_nand64 (const char *@var{str})}
-Similar to @code{__builtin_nan}, except the return type is @code{_Decimal64}.
-@enddefbuiltin
-
-@defbuiltin{_Decimal128 __builtin_nand128 (const char *@var{str})}
-Similar to @code{__builtin_nan}, except the return type is @code{_Decimal128}.
-@enddefbuiltin
-
-@defbuiltin{float __builtin_nanf (const char *@var{str})}
-Similar to @code{__builtin_nan}, except the return type is @code{float}.
-@enddefbuiltin
-
-@defbuiltin{{long double} __builtin_nanl (const char *@var{str})}
-Similar to @code{__builtin_nan}, except the return type is @code{long double}.
-@enddefbuiltin
-
-@defbuiltin{_Float@var{n} __builtin_nanf@var{n} (const char *@var{str})}
-Similar to @code{__builtin_nan}, except the return type is
-@code{_Float@var{n}}.
-@enddefbuiltin
-
-@defbuiltin{_Float@var{n}x __builtin_nanf@var{n}x (const char *@var{str})}
-Similar to @code{__builtin_nan}, except the return type is
-@code{_Float@var{n}x}.
-@enddefbuiltin
-
-@defbuiltin{double __builtin_nans (const char *@var{str})}
-Similar to @code{__builtin_nan}, except the significand is forced
-to be a signaling NaN@.  The @code{nans} function is proposed by
-@uref{https://www.open-std.org/jtc1/sc22/wg14/www/docs/n965.htm,,WG14 N965}.
-@enddefbuiltin
-
-@defbuiltin{_Decimal32 __builtin_nansd32 (const char *@var{str})}
-Similar to @code{__builtin_nans}, except the return type is @code{_Decimal32}.
-@enddefbuiltin
-
-@defbuiltin{_Decimal64 __builtin_nansd64 (const char *@var{str})}
-Similar to @code{__builtin_nans}, except the return type is @code{_Decimal64}.
-@enddefbuiltin
-
-@defbuiltin{_Decimal128 __builtin_nansd128 (const char *@var{str})}
-Similar to @code{__builtin_nans}, except the return type is @code{_Decimal128}.
-@enddefbuiltin
-
-@defbuiltin{float __builtin_nansf (const char *@var{str})}
-Similar to @code{__builtin_nans}, except the return type is @code{float}.
-@enddefbuiltin
-
-@defbuiltin{{long double} __builtin_nansl (const char *@var{str})}
-Similar to @code{__builtin_nans}, except the return type is @code{long double}.
-@enddefbuiltin
-
-@defbuiltin{_Float@var{n} __builtin_nansf@var{n} (const char *@var{str})}
-Similar to @code{__builtin_nans}, except the return type is
-@code{_Float@var{n}}.
-@enddefbuiltin
-
-@defbuiltin{_Float@var{n}x __builtin_nansf@var{n}x (const char *@var{str})}
-Similar to @code{__builtin_nans}, except the return type is
-@code{_Float@var{n}x}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_issignaling (...)}
-Return non-zero if the argument is a signaling NaN and zero otherwise.
-Note while the parameter list is an
-ellipsis, this function only accepts exactly one floating-point
-argument.  GCC treats this parameter as type-generic, which means it
-does not do default promotion from float to double.
-This built-in function can work even without the non-default
-@code{-fsignaling-nans} option, although if a signaling NaN is computed,
-stored or passed as argument to some function other than this built-in
-in the current translation unit, it is safer to use @code{-fsignaling-nans}.
-With @code{-ffinite-math-only} option this built-in function will always
-return 0.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_ffs (int @var{x})}
-Returns one plus the index of the least significant 1-bit of @var{x}, or
-if @var{x} is zero, returns zero.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_clz (unsigned int @var{x})}
-Returns the number of leading 0-bits in @var{x}, starting at the most
-significant bit position.  If @var{x} is 0, the result is undefined.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_ctz (unsigned int @var{x})}
-Returns the number of trailing 0-bits in @var{x}, starting at the least
-significant bit position.  If @var{x} is 0, the result is undefined.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_clrsb (int @var{x})}
-Returns the number of leading redundant sign bits in @var{x}, i.e.@: the
-number of bits following the most significant bit that are identical
-to it.  There are no special cases for 0 or other values. 
-@enddefbuiltin
-
-@defbuiltin{int __builtin_popcount (unsigned int @var{x})}
-Returns the number of 1-bits in @var{x}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_parity (unsigned int @var{x})}
-Returns the parity of @var{x}, i.e.@: the number of 1-bits in @var{x}
-modulo 2.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_ffsl (long)}
-Similar to @code{__builtin_ffs}, except the argument type is
-@code{long}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_clzl (unsigned long)}
-Similar to @code{__builtin_clz}, except the argument type is
-@code{unsigned long}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_ctzl (unsigned long)}
-Similar to @code{__builtin_ctz}, except the argument type is
-@code{unsigned long}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_clrsbl (long)}
-Similar to @code{__builtin_clrsb}, except the argument type is
-@code{long}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_popcountl (unsigned long)}
-Similar to @code{__builtin_popcount}, except the argument type is
-@code{unsigned long}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_parityl (unsigned long)}
-Similar to @code{__builtin_parity}, except the argument type is
-@code{unsigned long}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_ffsll (long long)}
-Similar to @code{__builtin_ffs}, except the argument type is
-@code{long long}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_clzll (unsigned long long)}
-Similar to @code{__builtin_clz}, except the argument type is
-@code{unsigned long long}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_ctzll (unsigned long long)}
-Similar to @code{__builtin_ctz}, except the argument type is
-@code{unsigned long long}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_clrsbll (long long)}
-Similar to @code{__builtin_clrsb}, except the argument type is
-@code{long long}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_popcountll (unsigned long long)}
-Similar to @code{__builtin_popcount}, except the argument type is
-@code{unsigned long long}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_parityll (unsigned long long)}
-Similar to @code{__builtin_parity}, except the argument type is
-@code{unsigned long long}.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_ffsg (...)}
-Similar to @code{__builtin_ffs}, except the argument is type-generic
-signed integer (standard, extended or bit-precise).  No integral argument
-promotions are performed on the argument.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_clzg (...)}
-Similar to @code{__builtin_clz}, except the argument is type-generic
-unsigned integer (standard, extended or bit-precise) and there is
-optional second argument with int type.  No integral argument promotions
-are performed on the first argument.  If two arguments are specified,
-and first argument is 0, the result is the second argument.  If only
-one argument is specified and it is 0, the result is undefined.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_ctzg (...)}
-Similar to @code{__builtin_ctz}, except the argument is type-generic
-unsigned integer (standard, extended or bit-precise) and there is
-optional second argument with int type.  No integral argument promotions
-are performed on the first argument.  If two arguments are specified,
-and first argument is 0, the result is the second argument.  If only
-one argument is specified and it is 0, the result is undefined.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_clrsbg (...)}
-Similar to @code{__builtin_clrsb}, except the argument is type-generic
-signed integer (standard, extended or bit-precise).  No integral argument
-promotions are performed on the argument.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_popcountg (...)}
-Similar to @code{__builtin_popcount}, except the argument is type-generic
-unsigned integer (standard, extended or bit-precise).  No integral argument
-promotions are performed on the argument.
-@enddefbuiltin
-
-@defbuiltin{int __builtin_parityg (...)}
-Similar to @code{__builtin_parity}, except the argument is type-generic
-unsigned integer (standard, extended or bit-precise).  No integral argument
-promotions are performed on the argument.
-@enddefbuiltin
-
-@defbuiltin{@var{type} __builtin_stdc_bit_ceil (@var{type} @var{arg})}
-The @code{__builtin_stdc_bit_ceil} function is available only
-in C.  It is type-generic, the argument can be any unsigned integer
-(standard, extended or bit-precise).  No integral argument promotions are
-performed on the argument.  It is equivalent to
-@code{@var{arg} <= 1 ? (@var{type}) 1
-: (@var{type}) 2 << (@var{prec} - 1 - __builtin_clzg ((@var{type}) (@var{arg} - 1)))}
-where @var{prec} is bit width of @var{type}, except that side-effects
-in @var{arg} are evaluated just once.
-@enddefbuiltin
-
-@defbuiltin{@var{type} __builtin_stdc_bit_floor (@var{type} @var{arg})}
-The @code{__builtin_stdc_bit_floor} function is available only
-in C.  It is type-generic, the argument can be any unsigned integer
-(standard, extended or bit-precise).  No integral argument promotions are
-performed on the argument.  It is equivalent to
-@code{@var{arg} == 0 ? (@var{type}) 0
-: (@var{type}) 1 << (@var{prec} - 1 - __builtin_clzg (@var{arg}))}
-where @var{prec} is bit width of @var{type}, except that side-effects
-in @var{arg} are evaluated just once.
-@enddefbuiltin
-
-@defbuiltin{{unsigned int} __builtin_stdc_bit_width (@var{type} @var{arg})}
-The @code{__builtin_stdc_bit_width} function is available only
-in C.  It is type-generic, the argument can be any unsigned integer
-(standard, extended or bit-precise).  No integral argument promotions are
-performed on the argument.  It is equivalent to
-@code{(unsigned int) (@var{prec} - __builtin_clzg (@var{arg}, @var{prec}))}
-where @var{prec} is bit width of @var{type}.
-@enddefbuiltin
-
-@defbuiltin{{unsigned int} __builtin_stdc_count_ones (@var{type} @var{arg})}
-The @code{__builtin_stdc_count_ones} function is available only
-in C.  It is type-generic, the argument can be any unsigned integer
-(standard, extended or bit-precise).  No integral argument promotions are
-performed on the argument.  It is equivalent to
-@code{(unsigned int) __builtin_popcountg (@var{arg})}
-@enddefbuiltin
-
-@defbuiltin{{unsigned int} __builtin_stdc_count_zeros (@var{type} @var{arg})}
-The @code{__builtin_stdc_count_zeros} function is available only
-in C.  It is type-generic, the argument can be any unsigned integer
-(standard, extended or bit-precise).  No integral argument promotions are
-performed on the argument.  It is equivalent to
-@code{(unsigned int) __builtin_popcountg ((@var{type}) ~@var{arg})}
-@enddefbuiltin
-
-@defbuiltin{{unsigned int} __builtin_stdc_first_leading_one (@var{type} @var{arg})}
-The @code{__builtin_stdc_first_leading_one} function is available only
-in C.  It is type-generic, the argument can be any unsigned integer
-(standard, extended or bit-precise).  No integral argument promotions are
-performed on the argument.  It is equivalent to
-@code{__builtin_clzg (@var{arg}, -1) + 1U}
-@enddefbuiltin
-
-@defbuiltin{{unsigned int} __builtin_stdc_first_leading_zero (@var{type} @var{arg})}
-The @code{__builtin_stdc_first_leading_zero} function is available only
-in C.  It is type-generic, the argument can be any unsigned integer
-(standard, extended or bit-precise).  No integral argument promotions are
-performed on the argument.  It is equivalent to
-@code{__builtin_clzg ((@var{type}) ~@var{arg}, -1) + 1U}
-@enddefbuiltin
-
-@defbuiltin{{unsigned int} __builtin_stdc_first_trailing_one (@var{type} @var{arg})}
-The @code{__builtin_stdc_first_trailing_one} function is available only
-in C.  It is type-generic, the argument can be any unsigned integer
-(standard, extended or bit-precise).  No integral argument promotions are
-performed on the argument.  It is equivalent to
-@code{__builtin_ctzg (@var{arg}, -1) + 1U}
-@enddefbuiltin
-
-@defbuiltin{{unsigned int} __builtin_stdc_first_trailing_zero (@var{type} @var{arg})}
-The @code{__builtin_stdc_first_trailing_zero} function is available only
-in C.  It is type-generic, the argument can be any unsigned integer
-(standard, extended or bit-precise).  No integral argument promotions are
-performed on the argument.  It is equivalent to
-@code{__builtin_ctzg ((@var{type}) ~@var{arg}, -1) + 1U}
-@enddefbuiltin
-
-@defbuiltin{{unsigned int} __builtin_stdc_has_single_bit (@var{type} @var{arg})}
-The @code{__builtin_stdc_has_single_bit} function is available only
-in C.  It is type-generic, the argument can be any unsigned integer
-(standard, extended or bit-precise).  No integral argument promotions are
-performed on the argument.  It is equivalent to
-@code{(_Bool) (__builtin_popcountg (@var{arg}) == 1)}
-@enddefbuiltin
-
-@defbuiltin{{unsigned int} __builtin_stdc_leading_ones (@var{type} @var{arg})}
-The @code{__builtin_stdc_leading_ones} function is available only
-in C.  It is type-generic, the argument can be any unsigned integer
-(standard, extended or bit-precise).  No integral argument promotions are
-performed on the argument.  It is equivalent to
-@code{(unsigned int) __builtin_clzg ((@var{type}) ~@var{arg}, @var{prec})}
-@enddefbuiltin
-
-@defbuiltin{{unsigned int} __builtin_stdc_leading_zeros (@var{type} @var{arg})}
-The @code{__builtin_stdc_leading_zeros} function is available only
-in C.  It is type-generic, the argument can be any unsigned integer
-(standard, extended or bit-precise).  No integral argument promotions are
-performed on the argument.  It is equivalent to
-@code{(unsigned int) __builtin_clzg (@var{arg}, @var{prec})}
-@enddefbuiltin
-
-@defbuiltin{{unsigned int} __builtin_stdc_trailing_ones (@var{type} @var{arg})}
-The @code{__builtin_stdc_trailing_ones} function is available only
-in C.  It is type-generic, the argument can be any unsigned integer
-(standard, extended or bit-precise).  No integral argument promotions are
-performed on the argument.  It is equivalent to
-@code{(unsigned int) __builtin_ctzg ((@var{type}) ~@var{arg}, @var{prec})}
-@enddefbuiltin
-
-@defbuiltin{{unsigned int} __builtin_stdc_trailing_zeros (@var{type} @var{arg})}
-The @code{__builtin_stdc_trailing_zeros} function is available only
-in C.  It is type-generic, the argument can be any unsigned integer
-(standard, extended or bit-precise).  No integral argument promotions are
-performed on the argument.  It is equivalent to
-@code{(unsigned int) __builtin_ctzg (@var{arg}, @var{prec})}
-@enddefbuiltin
-
-@defbuiltin{@var{type1} __builtin_stdc_rotate_left (@var{type1} @var{arg1}, @var{type2} @var{arg2})}
-The @code{__builtin_stdc_rotate_left} function is available only
-in C.  It is type-generic, the first argument can be any unsigned integer
-(standard, extended or bit-precise) and second argument any signed or
-unsigned integer or @code{char}.  No integral argument promotions are
-performed on the arguments.  It is equivalent to
-@code{(@var{type1}) ((@var{arg1} << (@var{arg2} % @var{prec}))
-| (@var{arg1} >> ((-(unsigned @var{type2}) @var{arg2}) % @var{prec})))}
-where @var{prec} is bit width of @var{type1}, except that side-effects
-in @var{arg1} and @var{arg2} are evaluated just once.  The behavior is
-undefined if @var{arg2} is negative.
-@enddefbuiltin
-
-@defbuiltin{@var{type1} __builtin_stdc_rotate_right (@var{type1} @var{arg1}, @var{type2} @var{arg2})}
-The @code{__builtin_stdc_rotate_right} function is available only
-in C.  It is type-generic, the first argument can be any unsigned integer
-(standard, extended or bit-precise) and second argument any signed or
-unsigned integer or @code{char}.  No integral argument promotions are
-performed on the arguments.  It is equivalent to
-@code{(@var{type1}) ((@var{arg1} >> (@var{arg2} % @var{prec}))
-| (@var{arg1} << ((-(unsigned @var{type2}) @var{arg2}) % @var{prec})))}
-where @var{prec} is bit width of @var{type1}, except that side-effects
-in @var{arg1} and @var{arg2} are evaluated just once.  The behavior is
-undefined if @var{arg2} is negative.
-@enddefbuiltin
-
-@defbuiltin{double __builtin_powi (double, int)}
-@defbuiltinx{float __builtin_powif (float, int)}
-@defbuiltinx{{long double} __builtin_powil (long double, int)}
-Returns the first argument raised to the power of the second.  Unlike the
-@code{pow} function no guarantees about precision and rounding are made.
-@enddefbuiltin
-
-@defbuiltin{uint16_t __builtin_bswap16 (uint16_t @var{x})}
-Returns @var{x} with the order of the bytes reversed; for example,
-@code{0xabcd} becomes @code{0xcdab}.  Byte here always means
-exactly 8 bits.
-@enddefbuiltin
-
-@defbuiltin{uint32_t __builtin_bswap32 (uint32_t @var{x})}
-Similar to @code{__builtin_bswap16}, except the argument and return types
-are 32-bit.
-@enddefbuiltin
-
-@defbuiltin{uint64_t __builtin_bswap64 (uint64_t @var{x})}
-Similar to @code{__builtin_bswap32}, except the argument and return types
-are 64-bit.
-@enddefbuiltin
-
-@defbuiltin{uint128_t __builtin_bswap128 (uint128_t @var{x})}
-Similar to @code{__builtin_bswap64}, except the argument and return types
-are 128-bit.  Only supported on targets when 128-bit types are supported.
-@enddefbuiltin
-
 
 @defbuiltin{Pmode __builtin_extend_pointer (void * @var{x})}
 On targets where the user visible pointer size is smaller than the size
@@ -17595,114 +17751,6 @@ Returns the openacc gang, worker or vector size depending on whether @var{x} is
 0, 1 or 2.
 @enddefbuiltin
 
-@defbuiltin{uint8_t __builtin_rev_crc8_data8 (uint8_t @var{crc}, uint8_t @var{data}, uint8_t @var{poly})}
-Returns the calculated 8-bit bit-reversed CRC using the initial CRC (8-bit),
-data (8-bit) and the polynomial (8-bit).
-@var{crc} is the initial CRC, @var{data} is the data and
-@var{poly} is the polynomial without leading 1.
-Table-based or clmul-based CRC may be used for the
-calculation, depending on the target architecture.
-@enddefbuiltin
-
-@defbuiltin{uint16_t __builtin_rev_crc16_data16 (uint16_t @var{crc}, uint16_t @var{data}, uint16_t @var{poly})}
-Similar to @code{__builtin_rev_crc8_data8}, except the argument and return types
-are 16-bit.
-@enddefbuiltin
-
-@defbuiltin{uint16_t __builtin_rev_crc16_data8 (uint16_t @var{crc}, uint8_t @var{data}, uint16_t @var{poly})}
-Similar to @code{__builtin_rev_crc16_data16}, except the @var{data} argument
-type is 8-bit.
-@enddefbuiltin
-
-@defbuiltin{uint32_t __builtin_rev_crc32_data32 (uint32_t @var{crc}, uint32_t @var{data}, uint32_t @var{poly})}
-Similar to @code{__builtin_rev_crc8_data8}, except the argument and return types
-are 32-bit and for the CRC calculation may be also used crc* machine instruction
-depending on the target and the polynomial.
-@enddefbuiltin
-
-@defbuiltin{uint32_t __builtin_rev_crc32_data8 (uint32_t @var{crc}, uint8_t @var{data}, uint32_t @var{poly})}
-Similar to @code{__builtin_rev_crc32_data32}, except the @var{data} argument
-type is 8-bit.
-@enddefbuiltin
-
-@defbuiltin{uint32_t __builtin_rev_crc32_data16 (uint32_t @var{crc}, uint16_t @var{data}, uint32_t @var{poly})}
-Similar to @code{__builtin_rev_crc32_data32}, except the @var{data} argument
-type is 16-bit.
-@enddefbuiltin
-
-@defbuiltin{uint64_t __builtin_rev_crc64_data64 (uint64_t @var{crc}, uint64_t @var{data}, uint64_t @var{poly})}
-Similar to @code{__builtin_rev_crc8_data8}, except the argument and return types
-are 64-bit.
-@enddefbuiltin
-
-@defbuiltin{uint64_t __builtin_rev_crc64_data8 (uint64_t @var{crc}, uint8_t @var{data}, uint64_t @var{poly})}
-Similar to @code{__builtin_rev_crc64_data64}, except the @var{data} argument type
-is 8-bit.
-@enddefbuiltin
-
-@defbuiltin{uint64_t __builtin_rev_crc64_data16 (uint64_t @var{crc}, uint16_t @var{data}, uint64_t @var{poly})}
-Similar to @code{__builtin_rev_crc64_data64}, except the @var{data} argument type
-is 16-bit.
-@enddefbuiltin
-
-@defbuiltin{uint64_t __builtin_rev_crc64_data32 (uint64_t @var{crc}, uint32_t @var{data}, uint64_t @var{poly})}
-Similar to @code{__builtin_rev_crc64_data64}, except the @var{data} argument type
-is 32-bit.
-@enddefbuiltin
-
-@defbuiltin{uint8_t __builtin_crc8_data8 (uint8_t @var{crc}, uint8_t @var{data}, uint8_t @var{poly})}
-Returns the calculated 8-bit bit-forward CRC using the initial CRC (8-bit),
-data (8-bit) and the polynomial (8-bit).
-@var{crc} is the initial CRC, @var{data} is the data and
-@var{poly} is the polynomial without leading 1.
-Table-based or clmul-based CRC may be used for the
-calculation, depending on the target architecture.
-@enddefbuiltin
-
-@defbuiltin{uint16_t __builtin_crc16_data16 (uint16_t @var{crc}, uint16_t @var{data}, uint16_t @var{poly})}
-Similar to @code{__builtin_crc8_data8}, except the argument and return types
-are 16-bit.
-@enddefbuiltin
-
-@defbuiltin{uint16_t __builtin_crc16_data8 (uint16_t @var{crc}, uint8_t @var{data}, uint16_t @var{poly})}
-Similar to @code{__builtin_crc16_data16}, except the @var{data} argument type
-is 8-bit.
-@enddefbuiltin
-
-@defbuiltin{uint32_t __builtin_crc32_data32 (uint32_t @var{crc}, uint32_t @var{data}, uint32_t @var{poly})}
-Similar to @code{__builtin_crc8_data8}, except the argument and return types
-are 32-bit.
-@enddefbuiltin
-
-@defbuiltin{uint32_t __builtin_crc32_data8 (uint32_t @var{crc}, uint8_t @var{data}, uint32_t @var{poly})}
-Similar to @code{__builtin_crc32_data32}, except the @var{data} argument type
-is 8-bit.
-@enddefbuiltin
-
-@defbuiltin{uint32_t __builtin_crc32_data16 (uint32_t @var{crc}, uint16_t @var{data}, uint32_t @var{poly})}
-Similar to @code{__builtin_crc32_data32}, except the @var{data} argument type
-is 16-bit.
-@enddefbuiltin
-
-@defbuiltin{uint64_t __builtin_crc64_data64 (uint64_t @var{crc}, uint64_t @var{data}, uint64_t @var{poly})}
-Similar to @code{__builtin_crc8_data8}, except the argument and return types
-are 64-bit.
-@enddefbuiltin
-
-@defbuiltin{uint64_t __builtin_crc64_data8 (uint64_t @var{crc}, uint8_t @var{data}, uint64_t @var{poly})}
-Similar to @code{__builtin_crc64_data64}, except the @var{data} argument type
-is 8-bit.
-@enddefbuiltin
-
-@defbuiltin{uint64_t __builtin_crc64_data16 (uint64_t @var{crc}, uint16_t @var{data}, uint64_t @var{poly})}
-Similar to @code{__builtin_crc64_data64}, except the @var{data} argument type
-is 16-bit.
-@enddefbuiltin
-
-@defbuiltin{uint64_t __builtin_crc64_data32 (uint64_t @var{crc}, uint32_t @var{data}, uint64_t @var{poly})}
-Similar to @code{__builtin_crc64_data64}, except the @var{data} argument type
-is 32-bit.
-@enddefbuiltin
 
 @node Target Builtins
 @section Built-in Functions Specific to Particular Target Machines
