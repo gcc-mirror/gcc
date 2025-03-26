@@ -263,6 +263,26 @@ namespace ranges
   inline constexpr __uninitialized_value_construct_n_fn
     uninitialized_value_construct_n;
 
+  namespace __detail
+  {
+    // This is only intended for finding smaller iterator differences below,
+    // not as a general purpose replacement for std::min.
+    struct __mindist_fn
+    {
+      template<typename _Dp1, typename _Dp2>
+	constexpr common_type_t<_Dp1, _Dp2>
+	operator()(_Dp1 __d1, _Dp2 __d2) const noexcept
+	{
+	  // Every C++20 iterator I satisfies weakly_incrementable<I> which
+	  // requires signed-integer-like<iter_difference_t<I>>.
+	  static_assert(std::__detail::__is_signed_integer_like<_Dp1>);
+	  static_assert(std::__detail::__is_signed_integer_like<_Dp2>);
+	  return std::min<common_type_t<_Dp1, _Dp2>>(__d1, __d2);
+	}
+    };
+    inline constexpr __mindist_fn __mindist{};
+  }
+
   template<typename _Iter, typename _Out>
     using uninitialized_copy_result = in_out_result<_Iter, _Out>;
 
@@ -287,8 +307,8 @@ namespace ranges
 	  {
 	    auto __d1 = __ilast - __ifirst;
 	    auto __d2 = __olast - __ofirst;
-	    return ranges::copy_n(std::move(__ifirst), std::min(__d1, __d2),
-				  __ofirst);
+	    return ranges::copy_n(std::move(__ifirst),
+				  __detail::__mindist(__d1, __d2), __ofirst);
 	  }
 	else
 	  {
@@ -337,8 +357,8 @@ namespace ranges
 						 iter_reference_t<_Iter>>)
 	  {
 	    auto __d = __olast - __ofirst;
-	    return ranges::copy_n(std::move(__ifirst), std::min(__n, __d),
-				  __ofirst);
+	    return ranges::copy_n(std::move(__ifirst),
+				  __detail::__mindist(__n, __d), __ofirst);
 	  }
 	else
 	  {
@@ -381,7 +401,7 @@ namespace ranges
 	    auto __d2 = __olast - __ofirst;
 	    auto [__in, __out]
 	      = ranges::copy_n(std::make_move_iterator(std::move(__ifirst)),
-			       std::min(__d1, __d2), __ofirst);
+			       __detail::__mindist(__d1, __d2), __ofirst);
 	    return {std::move(__in).base(), __out};
 	  }
 	else
@@ -435,7 +455,7 @@ namespace ranges
 	    auto __d = __olast - __ofirst;
 	    auto [__in, __out]
 	      = ranges::copy_n(std::make_move_iterator(std::move(__ifirst)),
-			       std::min(__n, __d), __ofirst);
+			       __detail::__mindist(__n, __d), __ofirst);
 	    return {std::move(__in).base(), __out};
 	  }
 	else

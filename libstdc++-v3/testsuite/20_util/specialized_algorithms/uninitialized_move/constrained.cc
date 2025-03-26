@@ -185,6 +185,17 @@ test03()
     }
 }
 
+void
+test_pr101587()
+{
+  short in[1];
+  __gnu_test::test_contiguous_range r(in); // difference_type is integer-like
+  long out[1];
+  std::span<long> o(out); // difference_type is ptrdiff_t
+  ranges::uninitialized_move(r, o);
+  ranges::uninitialized_move_n(ranges::begin(r), 0, o.begin(), o.end());
+}
+
 int
 main()
 {
@@ -198,4 +209,6 @@ main()
 
   test02<false>();
   test02<true>();
+
+  test_pr101587();
 }
