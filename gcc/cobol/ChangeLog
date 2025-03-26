@@ -1,3 +1,86 @@
+2025-03-25  Bob Dubner  <rdubner@symas.com>
+	    Richard Biener  <rguenth@suse.de>
+	    Jakub Jelinek  <jakub@redhat.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+	    Robert Dubner  <rdubher@symas.com>
+
+	PR cobol/119241
+	* cdf.y: (cdfval_base_t::operator()): Return const.
+	* cdfval.h: (struct cdfval_base_t): Add const cdfval_base_t&
+	operator().
+	(struct cdfval_t): Add cdfval_t constructor.  Change cdf_value
+	definitions.
+	* gcobolspec.cc (lang_specific_driver): Formatting fix.
+	* genapi.cc: Include fold-const.h and realmpfr.h.
+	(initialize_variable_internal): Use real_to_decimal instead of
+	strfromf128.
+	(get_binary_value_from_float): Use wide_int_to_tree instead of
+	build_int_cst_type.
+	(psa_FldLiteralN): Use fold_convert instead of strfromf128,
+	real_from_string and build_real.
+	(parser_display_internal): Rewritten to work on REAL_VALUE_TYPE
+	rather than _Float128.
+	(mh_source_is_literalN): Use FIXED_WIDE_INT(128) rather than
+	__int128, wide_int_to_tree rather than build_int_cst_type,
+	fold_convert rather than build_string_literal.
+	(real_powi10): New function.
+	(binary_initial_from_float128): Change type of last argument from
+	_Float128 to REAL_VALUE_TYPE, process it using real.cc and mpfr
+	APIs.
+	(digits_from_float128): Likewise.
+	(initial_from_float128): Make static.  Remove value argument, add
+	local REAL_VALUE_TYPE value variable instead, process it using
+	real.cc and native_encode_expr APIs.
+	(parser_symbol_add): Adjust initial_from_float128 caller.
+	* genapi.h (initial_from_float128): Remove declaration.
+	* genutil.cc (get_power_of_ten): Change return type from __int128
+	to FIXED_WIDE_INT(128), ditto for retval type, change type of pos
+	from __int128 to unsigned long long.
+	(scale_by_power_of_ten_N): Use wide_int_to_tree instead of
+	build_int_cst_type.  Use FIXED_WIDE_INT(128) instead of __int128
+	as power_of_ten variable type.
+	(copy_little_endian_into_place): Likewise.
+	* genutil.h (get_power_of_ten): Change return type from __int128
+	to FIXED_WIDE_INT(128).
+	* parse.y (%union): Change type of float128 from _Float128 to
+	REAL_VALUE_TYPE.
+	(string_of): Change argument type from _Float128 to
+	const REAL_VALUE_TYPE &, use real_to_decimal rather than
+	strfromf128.  Add another overload with tree argument type.
+	(field: cdf): Use real_zerop rather than comparison against 0.0.
+	(occurs_clause, const_value): Use real_to_integer.
+	(value78): Use build_real and real_to_integer.
+	(data_descr1): Use real_to_integer.
+	(count): Use real_to_integer, real_from_integer and real_identical
+	instead of direct comparison.
+	(value_clause): Use real_from_string3 instead of num_str2i.  Use
+	real_identical instead of direct comparison.  Use build_real.
+	(allocate): Use real_isneg and real_iszero instead of <= 0 comparison.
+	(move_tgt): Use real_to_integer, real_value_truncate,
+	real_from_integer and real_identical instead of comparison of casts.
+	(cce_expr): Use real_arithmetic and real_convert or real_value_negate
+	instead of direct arithmetics on _Float128.
+	(cce_factor): Use real_from_string3 instead of numstr2i.
+	(literal_refmod_valid): Use real_to_integer.
+	* symbols.cc (symbol_table_t::registers_t::registers_t): Formatting
+	fix.
+	(ERROR_FIELD): Likewise.
+	(extend_66_capacity): Likewise.
+	(cbl_occurs_t::subscript_ok): Use real_to_integer, real_from_integer
+	and real_identical.
+	* symbols.h (cbl_field_data_t::etc_t::value): Change type from
+	_Float128 to tree.
+	(cbl_field_data_t::etc_t::etc_t): Adjust defaulted argument value.
+	(cbl_field_data_t::cbl_field_data_t): Formatting fix.  Use etc()
+	rather than etc(0).
+	(cbl_field_data_t::value_of): Change return type from _Float128 to
+	tree.
+	(cbl_field_data_t::operator=): Change return and argument type from
+	_Float128 to tree.
+	(cbl_field_data_t::valify): Use real_from_string, real_value_truncate
+	and build_real.
+	(cbl_field_t::same_as): Use build_zero_cst instead of _Float128(0.0).
+
 2025-03-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* cdf-copy.cc: Move host include before system.h

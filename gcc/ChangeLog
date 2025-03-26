@@ -1,3 +1,89 @@
+2025-03-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcov.cc (get_gcov_intermediate_filename): Use lbasename().
+
+2025-03-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR other/119250
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Match the configure test in libiberty when checking
+	the basename decl.
+
+2025-03-25  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (modify_call_for_omp_dispatch): Adjust arguments.
+	Remove the "sorry" for the case where new interop objects must be
+	constructed, and add code to make it work instead.
+	(expand_variant_call_expr): Adjust arguments and call to
+	modify_call_for_omp_dispatch.
+	(gimplify_variant_call_expr): Simplify logic for calling
+	expand_variant_call_expr.
+
+2025-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/96226
+	PR target/119428
+	* config/i386/i386.md (splitter after *<rotate_insn><mode>3_mask,
+	splitter after *<rotate_insn><mode>3_mask_1): Revert 2020-12-05
+	changes.
+
+2025-03-25  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/119224
+	* config/riscv/autovec.md: Disable abd splitter.
+
+2025-03-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/119325
+	* doc/install.texi (gcn): Change ROCm > 6.3.2 to >6.3.3 for generic
+	support; mention Newlib commit that fixes a SIMD math issue.
+
+2025-03-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/118627
+	* omp-general.cc (omp_parse_access_method): Change to return void.
+	(omp_parse_access_methods): Return void; remove 'if' around a
+	function call.
+	(omp_parse_expr): Remove 'if' around a function call.
+
+2025-03-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.md (<US>mull): Add alternatives that allow Rs
+	to be tied to either Rdlo or Rdhi.
+
+2025-03-25  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR middle-end/117811
+	* optabs.cc (expand_binop_directly): Remove LAST as an argument,
+	instead record the last insn on entry.  Only delete insns if
+	we need to restart and restart by calling ourself, not expand_binop.
+	(expand_binop): Update callers to expand_binop_directly.  If it
+	fails to expand the operation, delete back to LAST.
+
+2025-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/119376
+	* tree-tailcall.cc (suitable_for_tail_opt_p): Add DIAG_MUSTTAIL
+	argument, propagate it down to maybe_error_musttail.
+	(suitable_for_tail_call_opt_p): Likewise.
+	(maybe_error_musttail): Add DIAG_MUSTTAIL argument.  Don't emit error
+	for gimple_call_must_tail_p calls if it is false.
+	(find_tail_calls): Add DIAG_MUSTTAIL argument, propagate it down to
+	maybe_error_musttail, suitable_for_tail_opt_p,
+	suitable_for_tail_call_opt_p and find_tail_calls calls.
+	(tree_optimize_tail_calls_1): Add DIAG_MUSTTAIL argument, propagate
+	it down to find_tail_calls and if set, clear cfun->has_musttail flag
+	at the end.  Rename OPT_MUSTCALL argument to OPT_MUSTTAIL.
+	(execute_tail_calls): Pass true to DIAG_MUSTTAIL
+	tree_optimize_tail_calls_1 argument.
+	(pass_tail_recursion::execute): Pass false to DIAG_MUSTTAIL
+	tree_optimize_tail_calls_1 argument.
+	(pass_musttail::gate): Don't test flag_optimize_sibling_calls.
+	(pass_musttail::execute): Pass true to DIAG_MUSTTAIL
+	tree_optimize_tail_calls_1 argument.
+
 2025-03-24  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR tree-optimization/118616

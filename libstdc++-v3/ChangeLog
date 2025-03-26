@@ -1,3 +1,65 @@
+2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (ranges::to): Allow unions as well as
+	non-union class types.
+	* testsuite/std/ranges/conv/lwg4229.cc: New test.
+
+2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108487
+	* include/bits/stl_vector.h (vector(initializer_list)): Call
+	_M_range_initialize_n instead of _M_range_initialize.
+	(vector(InputIterator, InputIterator)): Use _M_range_initialize_n
+	for C++20 sized sentinels and forward iterators.
+	(vector(from_range_t, R&&)): Use _M_range_initialize_n for sized
+	ranges and forward ranges.
+	(vector::_M_range_initialize(FwIt, FwIt, forward_iterator_tag)):
+	Likewise.
+	(vector::_M_range_initialize_n): New function.
+	* testsuite/23_containers/vector/cons/108487.cc: New test.
+
+2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/vector (vector::assign_range): Use change in
+	capacity to detect reallocation.
+	(vector::insert_range, vector::append_range): Likewise. Remove
+	unused variables.
+
+2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (vector::assign_range): More
+	efficient implementation for forward/sized ranges.
+	(vector::append_range): Handle potentially overlapping range.
+	* include/bits/stl_vector.h (vector(from_range_t, R&&, Alloc)):
+	Do not use append_range for non-sized input range case.
+	(vector::append_range): Handle potentially overlapping range.
+	* include/bits/vector.tcc (vector::insert_range): Forward range
+	instead of moving it.
+	* testsuite/23_containers/vector/bool/modifiers/insert/append_range.cc:
+	Test overlapping ranges.
+	* testsuite/23_containers/vector/modifiers/append_range.cc:
+	Likewise.
+
+2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118699
+	* testsuite/27_io/filesystem/operations/copy.cc: Check copying a
+	file to a directory.
+
+2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/119429
+	* include/std/format (__format::_Scanner::_Scanner): Cast
+	default argument to size_t.
+
+2025-03-25  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119415
+	* include/std/flat_set (_Flat_set_impl:insert_range):
+	Add __detail::__cpp17_input_iterator check.
+	* testsuite/23_containers/flat_multiset/1.cc: New tests
+	* testsuite/23_containers/flat_set/1.cc: New tests
+
 2025-03-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/policy_data_structures_biblio.xml: Fix two

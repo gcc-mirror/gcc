@@ -1,3 +1,16 @@
+2025-03-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119419
+	* dump-parse-tree.cc (write_funptr_fcn): New function.
+	(write_type): Invoke it for C_FUNPTR.
+	(write_interop_decl): Do not dump vtabs.
+
+2025-03-25  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Remove accidental
+	redeclaration of pref.
+
 2025-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* resolve.cc (resolve_procedure_expression): Remove extraneous space

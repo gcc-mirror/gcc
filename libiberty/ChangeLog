@@ -1,3 +1,11 @@
+2025-03-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR other/119218
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Append <libgen.h> to AC_INCLUDES_DEFAULT
+	when checking for the 'basename' decl.
+
 2025-03-18  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* ldirname.c: New file.

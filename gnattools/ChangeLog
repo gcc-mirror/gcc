@@ -1,3 +1,16 @@
+2025-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/119440
+	* configure.ac (host-pie): New switch.
+	(host-bind-now): Likewise.
+	Substitute PICFLAG and LD_PICFLAG.
+	* configure: Regenerate.
+	* Makefile.in (PICFLAG): New substituted variable.
+	(LD_PICFLAG): Likewise.
+	(TOOLS_FLAGS_TO_PASS): Pass $(PICFLAG) under CFLAGS & $(LD_PICFLAG)
+	under LDFLAGS.  Do not pass -I- under ADA_INCLUDES.
+	(TOOLS_FLAGS_TO_PASS_RE): Likewise.
+
 2024-07-07  Maciej W. Rozycki  <macro@orcam.me.uk>
 
 	* Makefile.in (gnattools-cross): Also build 'gnattools-cross-mv'

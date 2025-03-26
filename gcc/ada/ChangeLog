@@ -1,3 +1,25 @@
+2025-03-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/119440
+	* gcc-interface/Make-lang.in (GCC_LINK): Filter out -pie in stage 1
+	(GCC_LLINK): Likewise.
+	* gcc-interface/Makefile.in (COMPILER): Delete and replace by CC.
+	(COMPILER_FLAGS): Delete.
+	(ALL_COMPILERFLAGS): Delete and replace by ALL_CFLAGS.
+	(ALL_ADAFLAGS): Move around.
+	(enable_host_pie): New substituted variable.
+	(LD_PICFLAG): Likewise.  Do not add it to TOOLS_LIBS.
+	(LIBIBERTY): Test enable_host_pie.
+	(LIBGNAT): Likewise and use libgnat_pic.a if yes.
+	(TOOLS_FLAGS_TO_PASS): Pass $(PICFLAG) under CFLAGS & $(LD_PICFLAG)
+	under LDFLAGS.  Also pass through ADA_CFLAGS.
+	(common-tools): Add $(ALL_CFLAGS) $(ADA_CFLAGS) to the --GCC string
+	of $(GNATLINK) commands.
+	(../../gnatdll$(exeext)): Likewise.
+	(gnatmake-re): Likewise.
+	(gnatlink-re): Likewise.
+	(gnatlib-shared-dual): Remove all the object files at the end.
+
 2025-03-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnatvsn.adb (Gnat_Free_Software): Fix message formatting.

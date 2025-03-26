@@ -1,3 +1,9 @@
+2025-03-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR cobol/119244
+	* Makefile.def: libgcobol configure depends on libquadmath build.
+	* Makefile.in: Regenerate.
+
 2025-03-23  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR libitm/88319

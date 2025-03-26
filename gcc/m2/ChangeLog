@@ -1,3 +1,33 @@
+2025-03-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119449
+	* gm2-compiler/M2GCCDeclare.def (TryDeclareType): Remove tokenno
+	parameter.
+	* gm2-compiler/M2GCCDeclare.mod (TryDeclareType): Ditto.
+	* gm2-compiler/M2GenGCC.mod (FoldTBitsize): Remove op2 and
+	rename op1 as res and op3 as type.
+	(FoldStandardFunction): Call FoldTBitsize omitting op2.
+	* gm2-compiler/M2Quads.mod (GetTypeMin): Rewrite.
+	(GetTypeMinLower): New procedure function.
+	(GetTypeMax): Rewrite.
+	(GetTypeMaxLower): New procedure function.
+	* gm2-compiler/M2Range.mod (CheckCancelled): Comment out.
+	* gm2-compiler/M2System.mod (CreateMinMaxFor): Add realtype
+	parameter.
+	(MapType): Rewrite to use realtype.
+	(CreateType): Ditto.
+	(AttemptToCreateType): Ditto.
+	(MakeFixedSizedTypes): Add realtype boolean.
+	(InitPIMTypes): Ditto.
+	(InitISOTypes): Ditto.
+	(MakeExtraSystemTypes): Ditto.
+	* gm2-gcc/m2pp.cc (m2pp_nop_expr): Remove code.
+	* gm2-gcc/m2type.cc (IsGccRealType): New function.
+	(m2type_GetMinFrom): Rewrite.
+	(m2type_GetMaxFrom): Ditto.
+	(do_min_real): Declare static.
+	(do_max_real): Declare static.
+
 2025-03-20  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/118600
