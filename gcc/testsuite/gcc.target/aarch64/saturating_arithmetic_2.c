@@ -1,4 +1,4 @@
-/* { dg-do-compile } */
+/* { dg-do compile } */
 /* { dg-options "-O2 --save-temps -fno-schedule-insns2" } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
