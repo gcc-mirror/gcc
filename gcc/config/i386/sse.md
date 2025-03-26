@@ -30849,7 +30849,10 @@
   else
     return "vaesdec\t{%2, %1, %0|%0, %1, %2}";
 }
-[(set_attr "addr" "gpr16,*")])
+[(set_attr "isa" "avx,vaes_avx512vl")
+ (set_attr "type" "sselog1")
+ (set_attr "addr" "gpr16,*")
+ (set_attr "mode" "TI")])
 
 (define_insn "vaesdeclast_<mode>"
   [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=x,v")
@@ -30864,7 +30867,10 @@
   else
     return "vaesdeclast\t{%2, %1, %0|%0, %1, %2}";
 }
-[(set_attr "addr" "gpr16,*")])
+[(set_attr "isa" "avx,vaes_avx512vl")
+ (set_attr "type" "sselog1")
+ (set_attr "addr" "gpr16,*")
+ (set_attr "mode" "TI")])
 
 (define_insn "vaesenc_<mode>"
   [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=x,v")
@@ -30879,7 +30885,10 @@
   else
     return "vaesenc\t{%2, %1, %0|%0, %1, %2}";
 }
-[(set_attr "addr" "gpr16,*")])
+[(set_attr "isa" "avx,vaes_avx512vl")
+ (set_attr "type" "sselog1")
+ (set_attr "addr" "gpr16,*")
+ (set_attr "mode" "TI")])
 
 (define_insn "vaesenclast_<mode>"
   [(set (match_operand:VI1_AVX512VL_F 0 "register_operand" "=x,v")
@@ -30894,7 +30903,10 @@
   else
     return "vaesenclast\t{%2, %1, %0|%0, %1, %2}";
 }
-[(set_attr "addr" "gpr16,*")])
+[(set_attr "isa" "avx,vaes_avx512vl")
+ (set_attr "type" "sselog1")
+ (set_attr "addr" "gpr16,*")
+ (set_attr "mode" "TI")])
 
 (define_insn "vpclmulqdq_<mode>"
   [(set (match_operand:VI8_FVL 0 "register_operand" "=v")
