@@ -133,12 +133,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  struct __result<_Tp>
 	  { using type = decltype(iter_move(std::declval<_Tp>())); };
 
-	// Otherwise, if *E if an lvalue, use std::move(*E).
+	// Otherwise, if *E is an lvalue, use std::move(*E).
 	template<typename _Tp>
 	  requires (!__adl_imove<_Tp>)
 	    && is_lvalue_reference_v<__iter_ref_t<_Tp>>
 	  struct __result<_Tp>
-	  { using type = remove_reference_t<__iter_ref_t<_Tp>>&&; };
+	  {
+	    // Instead of decltype(std::move(*E)) we define the type as the
+	    // return type of std::move, i.e. remove_reference_t<iter_ref>&&.
+	    // N.B. the use of decltype(declval<X>()) instead of just X&& is
+	    // needed for function reference types, see PR libstdc++/119469.
+	    using type
+	      = decltype(std::declval<remove_reference_t<__iter_ref_t<_Tp>>>());
+	  };
 
 	template<typename _Tp>
 	  static constexpr bool
