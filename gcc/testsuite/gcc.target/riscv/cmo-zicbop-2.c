@@ -1,4 +1,4 @@
-/* { dg-do compile target { { rv32-*-*}}} */
+/* { dg-do compile target { { rv32-*-*}} } */
 /* { dg-options "-march=rv32gc_zicbop -mabi=ilp32" } */
 
 void foo (char *p)

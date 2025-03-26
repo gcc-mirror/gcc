@@ -1,4 +1,4 @@
-/* { dg-do compile target { { rv64-*-*}}} */
+/* { dg-do compile target { { rv64-*-*}} } */
 /* { dg-options "-march=rv64gc_zicbop -mabi=lp64" } */
 
 void foo (char *p)
