@@ -1,5 +1,5 @@
-/* { dg-require-effective-target strub } */
 /* { dg-do compile } */
+/* { dg-require-effective-target strub } */
 /* { dg-options "-fstrub=all -O2 -mno-accumulate-outgoing-args" } */
 
 __attribute__((noipa))
