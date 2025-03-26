@@ -69,7 +69,7 @@ void test_2d (void __user *dst, u32 a)
 {
   struct s2 s = {0};
   s.i = a;
-  copy_to_user(dst, &s, sizeof (struct s2)); /* { dg-bogus" } */
+  copy_to_user(dst, &s, sizeof (struct s2)); /* { dg-bogus "" } */
 }
 
 struct empty {};

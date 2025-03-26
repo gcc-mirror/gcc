@@ -1,6 +1,6 @@
+/* { dg-do compile } */
 /* { dg-require-effective-target analyzer } */
 /* { dg-options "-fanalyzer -fdiagnostics-format=sarif-file" } */
-/* { dg-do compile } */
 
 /* Verify that SARIF output can capture chains of include files in
    diagnostic paths within result locations.

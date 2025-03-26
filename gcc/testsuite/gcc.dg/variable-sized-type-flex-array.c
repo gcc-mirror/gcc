@@ -26,6 +26,6 @@ union flex_union_mid1 { int a; struct outer_flex_mid1 b; }; /* { dg-bogus "struc
 
 struct flexn { int n; int data[8]; }; 
 struct out_flex_endn { int m; struct flexn flex_data; }; /* { dg-bogus "structure containing a flexible array member is not at the end of another structure" } */
-struct out_flex_midn { struct flexn flex_data; int m; }; /* { dg-bogus"structure containing a flexible array member is not at the end of another structure" } */ 
-struct outer_flex_midn { struct out_flex_midn out_flex_data; int p; }; /* { dg-bogus"structure containing a flexible array member is not at the end of another structure" } */
+struct out_flex_midn { struct flexn flex_data; int m; }; /* { dg-bogus "structure containing a flexible array member is not at the end of another structure" } */ 
+struct outer_flex_midn { struct out_flex_midn out_flex_data; int p; }; /* { dg-bogus "structure containing a flexible array member is not at the end of another structure" } */
 union flex_union_midn { int a; struct outer_flex_midn b; }; /* { dg-bogus "structure containing a flexible array member is not at the end of another structure" } */
