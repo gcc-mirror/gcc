@@ -3894,8 +3894,8 @@ maybe_fold_stmt (gimple_stmt_iterator *gsi)
 
 /* OpenMP: Handle the append_args and adjust_args clauses of
    declare_variant for EXPR, which is a CALL_EXPR whose CALL_EXPR_FN
-   is the variant, within a dispatch construct with clauses DISPATCH_CLAUSES
-   and location DISPATCH_LOC.
+   is the variant, within a dispatch construct with clauses DISPATCH_CLAUSES.
+   WANT_VALUE and POINTERIZE are as for expand_variant_call_expr.
 
    'append_args' causes interop objects are added after the last regular
    (nonhidden, nonvariadic) arguments of the variant function.
@@ -3905,7 +3905,7 @@ maybe_fold_stmt (gimple_stmt_iterator *gsi)
    address.  */
 static tree
 modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
-			      location_t dispatch_loc)
+			      bool want_value, bool pointerize)
 {
   tree fndecl = get_callee_fndecl (expr);
 
@@ -3913,9 +3913,11 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
   if (!fndecl)
     return expr;
 
+  tree init_code = NULL_TREE;
+  tree cleanup = NULL_TREE;
+  tree clobbers = NULL_TREE;
   int nargs = call_expr_nargs (expr);
   tree dispatch_device_num = NULL_TREE;
-  tree dispatch_device_num_init = NULL_TREE;
   tree dispatch_interop = NULL_TREE;
   tree dispatch_append_args = NULL_TREE;
   int nfirst_args = 0;
@@ -3976,14 +3978,6 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
 		"the %<device%> clause must be present if the %<interop%> "
 		"clause has more than one list item");
     }
-  if (dispatch_append_args && nappend != ninterop)
-    {
-      sorry_at (EXPR_LOCATION (TREE_PURPOSE (dispatch_append_args)),
-		"%<append_args%> clause not yet supported for %qD, except "
-		"when specifying all %d objects in the %<interop%> clause "
-		"of the %<dispatch%> directive", fndecl, nappend);
-      inform (dispatch_loc, "required by %<dispatch%> construct");
-    }
   else if (dispatch_append_args)
     {
       tree *buffer = XALLOCAVEC (tree, nargs + nappend);
@@ -3996,11 +3990,153 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
 	  arg = TREE_CHAIN (arg);
 	  buffer[i] = CALL_EXPR_ARG (expr, i);
 	}
-      int j = nappend;
+      int j = ninterop;
       for (tree t = dispatch_interop; t; t = TREE_CHAIN (t))
 	if (OMP_CLAUSE_CODE (t) == OMP_CLAUSE_INTEROP)
 	  buffer[i + --j] = OMP_CLAUSE_DECL (t);
       gcc_checking_assert (j == 0);
+
+      /* Do we need to create additional interop objects?  */
+      if (ninterop < nappend)
+	{
+	  if (dispatch_device_num == NULL_TREE)
+	    /* Not remapping device number.  */
+	    dispatch_device_num = build_int_cst (integer_type_node,
+						 GOMP_DEVICE_DEFAULT_OMP_61);
+	  int nnew = nappend - ninterop;
+	  tree nobjs = build_int_cst (integer_type_node, nnew);
+	  tree a, t;
+
+	  /* Skip to the append_args clause for the first constructed
+	     interop argument.  */
+	  tree apparg = dispatch_append_args;
+	  for (j = 0; j < ninterop; j++)
+	    apparg = TREE_CHAIN (apparg);
+
+	  /* omp_interop_t *objs[n]; */
+	  tree objtype = build_pointer_type (pointer_sized_int_node);
+	  t = build_array_type_nelts (objtype, nnew);
+	  tree objs = create_tmp_var (t, "interopobjs");
+
+	  /* int target_tgtsync[n]; */
+	  t = build_array_type_nelts (integer_type_node, nnew);
+	  tree target_tgtsync = create_tmp_var (t, "tgt_tgtsync");
+
+	  /* Scan first to determine if we need a prefer_type array.  */
+	  tree prefer_type = NULL_TREE;
+	  tree prefer_type_type = NULL_TREE;
+	  for (j = ninterop, a = apparg; j < nappend; j++, a = TREE_CHAIN (a))
+	    if (TREE_VALUE (a) != NULL_TREE)
+	      {
+		/* const char *prefer_type[n];  */
+		t = build_qualified_type (char_type_node, TYPE_QUAL_CONST);
+		prefer_type_type = build_pointer_type (t);
+		t = build_array_type_nelts (prefer_type_type, nnew);
+		prefer_type = create_tmp_var (t, "pref_type");
+		break;
+	      }
+
+	  /* Initialize the arrays, generating temp vars and clobbers for
+	     the interobject objects.  (The constructed array holding the
+	     pointers to these objects shouldn't need clobbering as there's
+	     no reason for GOMP_interop to modify its contents.)  */
+	  for (j = ninterop, a = apparg; j < nappend; j++, a = TREE_CHAIN (a))
+	    {
+	      /* The allocated temporaries for the interop objects
+		 have type omp_interop_t, which is an integer type that
+		 can encode a pointer.  */
+	      tree objvar = create_tmp_var (pointer_sized_int_node, "interop");
+	      buffer[i + j] = objvar;
+	      TREE_ADDRESSABLE (objvar) = 1;
+	      /* Generate a clobber for the temporary for when we're done
+		 with it.  */
+	      tree c = build_clobber (pointer_sized_int_node,
+				      CLOBBER_OBJECT_END);
+	      c = build2 (MODIFY_EXPR, pointer_sized_int_node, objvar, c);
+	      if (clobbers)
+		clobbers = build2 (COMPOUND_EXPR, TREE_TYPE (clobbers),
+				   c, clobbers);
+	      else
+		clobbers = c;
+
+	      /* objs[offset] = &objvar;  */
+	      tree offset = build_int_cst (integer_type_node, j - ninterop);
+	      tree init = build4 (ARRAY_REF, objtype, objs, offset,
+				  NULL_TREE, NULL_TREE);
+	      init = build2 (MODIFY_EXPR, objtype, init,
+			     build_fold_addr_expr (objvar));
+	      if (init_code)
+		init_code = build2 (COMPOUND_EXPR, TREE_TYPE (init),
+				    init_code, init);
+	      else
+		init_code = init;
+
+	      /* target_tgtsync[offset] = tgt;
+		 (Don't blame me, I didn't design the encoding of this
+		 info into the dispatch interop clause data structure,
+		 but the runtime wants a bit mask.)  */
+	      tree tree_tgt = TREE_OPERAND (TREE_PURPOSE (a), 0);
+	      int tgt = 0;
+	      if (TREE_PURPOSE (tree_tgt) == boolean_true_node)
+		tgt |= GOMP_INTEROP_TARGET;
+	      if (TREE_VALUE (tree_tgt) == boolean_true_node)
+		tgt |= GOMP_INTEROP_TARGETSYNC;
+	      init = build4 (ARRAY_REF, integer_type_node,
+			     target_tgtsync, offset, NULL_TREE, NULL_TREE);
+	      init = build2 (MODIFY_EXPR, integer_type_node, init,
+			     build_int_cst (integer_type_node, tgt));
+	      init_code = build2 (COMPOUND_EXPR, TREE_TYPE (init),
+				  init_code, init);
+
+	      if (prefer_type)
+		{
+		  tree pref = TREE_VALUE (a);
+		  if (pref == NULL_TREE)
+		    pref = null_pointer_node;
+		  else if (TREE_CODE (pref) == TREE_LIST)
+		    {
+		      /* FIXME: this is a bug in the C++ front end.  */
+		      sorry_at (OMP_CLAUSE_LOCATION (dispatch_interop),
+				"%<prefer_type%> with template function");
+		      pref = null_pointer_node;
+		    }
+		  else
+		    pref = build_fold_addr_expr (pref);
+		  init = build4 (ARRAY_REF, prefer_type_type, prefer_type,
+				 offset, NULL_TREE, NULL_TREE);
+		  init = build2 (MODIFY_EXPR, prefer_type_type, init,
+				 pref);
+		  init_code = build2 (COMPOUND_EXPR, TREE_TYPE (init),
+				      init_code, init);
+		}
+	    }
+
+	  tree fn = builtin_decl_explicit (BUILT_IN_GOMP_INTEROP);
+	  tree create
+	    = build_call_expr (fn, 11, dispatch_device_num,
+			       nobjs, objs, target_tgtsync,
+			       prefer_type ? prefer_type : null_pointer_node,
+			       integer_zero_node, null_pointer_node,
+			       integer_zero_node, null_pointer_node,
+			       integer_zero_node, null_pointer_node);
+	  if (init_code)
+	    init_code = build2 (COMPOUND_EXPR, TREE_TYPE (create),
+				init_code, create);
+	  else
+	    init_code = create;
+
+	  cleanup
+	    = build_call_expr (fn, 11, dispatch_device_num,
+			       integer_zero_node, null_pointer_node,
+			       null_pointer_node, null_pointer_node,
+			       integer_zero_node, null_pointer_node,
+			       nobjs, objs,
+			       integer_zero_node, null_pointer_node);
+	  if (clobbers)
+	    cleanup = build2 (COMPOUND_EXPR, TREE_TYPE (clobbers),
+			      cleanup, clobbers);
+	}
+
       for (j = 0; j < nappend; j++)
 	{
 	  /* Fortran permits by-reference or by-value for the dummy arg
@@ -4060,8 +4196,9 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
 
   /* Nothing to do for adjust_args?  */
   if (!dispatch_adjust_args_list || !TYPE_ARG_TYPES (TREE_TYPE (fndecl)))
-    return expr;
+    goto add_cleanup;
 
+  /* Handle adjust_args.  */
   for (int i = 0; i < nargs; i++)
     {
       tree *arg_p = &CALL_EXPR_ARG (expr, i);
@@ -4146,9 +4283,14 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
 		    = builtin_decl_explicit (BUILT_IN_OMP_GET_DEFAULT_DEVICE);
 		  tree call = build_call_expr (fn, 0);
 		  dispatch_device_num = create_tmp_var_raw (TREE_TYPE (call));
-		  dispatch_device_num_init
+		  tree init
 		    = build4 (TARGET_EXPR, TREE_TYPE (call),
 			      dispatch_device_num, call, NULL_TREE, NULL_TREE);
+		  if (init_code)
+		    init_code = build2 (COMPOUND_EXPR, TREE_TYPE (init),
+					init_code, init);
+		  else
+		    init_code = init;
 		}
 
 	      // We want to emit the following statement:
@@ -4183,9 +4325,35 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
 	    }
 	}
     }
-  if (dispatch_device_num_init)
-    expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr),
-		   dispatch_device_num_init, expr);
+
+ add_cleanup:
+  if (cleanup)
+    {
+      tree result = NULL_TREE;
+      if (want_value && pointerize)
+	{
+	  tree tmp = create_tmp_var (build_pointer_type (TREE_TYPE (expr)),
+				     "cleanuptmp");
+	  result = build_simple_mem_ref (tmp);
+	  expr = build2 (INIT_EXPR, TREE_TYPE (tmp), tmp,
+			 build_fold_addr_expr (expr));
+	}
+      else if (want_value)
+	{
+	  tree tmp = create_tmp_var (TREE_TYPE (expr), "cleanuptmp");
+	  result = tmp;
+	  expr = build2 (INIT_EXPR, TREE_TYPE (tmp), tmp, expr);
+	}
+      if (init_code)
+	expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr), init_code, expr);
+      expr = build2 (TRY_FINALLY_EXPR, void_type_node, expr, cleanup);
+
+      if (result)
+	expr = build2 (COMPOUND_EXPR, TREE_TYPE (result), expr, result);
+    }
+  else if (init_code)
+    expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr), init_code, expr);
+
   return expr;
 }
 
@@ -4219,6 +4387,17 @@ gimplify_variant_call_expr (tree *expr_p, gimple_seq *pre_p,
   gcc_assert (!all_candidates.is_empty ());
   vec<struct omp_variant> candidates
     = omp_get_dynamic_candidates (all_candidates, construct_context);
+
+  tree type = TREE_TYPE (*expr_p);
+  bool want_value = (fallback != fb_none && !VOID_TYPE_P (type));
+  bool pointerize = false;
+
+  /* If the result value must be an lvalue or the result type must
+     live in memory, then we have to pointerize it if we need a temporary.  */
+  if (want_value
+      && ((!(fallback & fb_rvalue) && (fallback & fb_lvalue))
+	  || TREE_ADDRESSABLE (type)))
+    pointerize = true;
 
   /* If the variant call could be resolved now, build a nest of COND_EXPRs
      if there are dynamic candidates, and/or a new CALL_EXPR for each
@@ -4254,7 +4433,7 @@ gimplify_variant_call_expr (tree *expr_p, gimple_seq *pre_p,
 		thiscall
 		  = modify_call_for_omp_dispatch (thiscall,
 						  gimplify_omp_ctxp->clauses,
-						  gimplify_omp_ctxp->location);
+						  want_value, pointerize);
 	      if (!tail)
 		tail = thiscall;
 	      else
@@ -4276,9 +4455,6 @@ gimplify_variant_call_expr (tree *expr_p, gimple_seq *pre_p,
       /* If we need a usable return value, we need a temporary
 	 and an assignment in each alternative.  This logic was borrowed
 	 from gimplify_cond_expr.  */
-      tree type = TREE_TYPE (*expr_p);
-      bool want_value = (fallback != fb_none && !VOID_TYPE_P (type));
-      bool pointerize = false;
       tree tmp = NULL_TREE, result = NULL_TREE;
 
       if (want_value)
@@ -4286,8 +4462,7 @@ gimplify_variant_call_expr (tree *expr_p, gimple_seq *pre_p,
 	  /* If either an rvalue is ok or we do not require an lvalue,
 	     create the temporary.  But we cannot do that if the type is
 	     addressable.  */
-	  if (((fallback & fb_rvalue) || !(fallback & fb_lvalue))
-	      && !TREE_ADDRESSABLE (type))
+	  if (!pointerize)
 	    {
 	      tmp = create_tmp_var (type, "iftmp");
 	      result = tmp;
@@ -4296,7 +4471,6 @@ gimplify_variant_call_expr (tree *expr_p, gimple_seq *pre_p,
 	  /* Otherwise, only create and copy references to the values.  */
 	  else
 	    {
-	      pointerize = true;
 	      type = build_pointer_type (type);
 	      tmp = create_tmp_var (type, "iftmp");
 	      result = build_simple_mem_ref_loc (loc, tmp);
@@ -4337,7 +4511,7 @@ gimplify_variant_call_expr (tree *expr_p, gimple_seq *pre_p,
 		thiscall
 		  = modify_call_for_omp_dispatch (thiscall,
 						  gimplify_omp_ctxp->clauses,
-						  gimplify_omp_ctxp->location);
+						  want_value, pointerize);
 	    }
 	  if (pointerize)
 	    thiscall = build_fold_addr_expr_loc (loc, thiscall);

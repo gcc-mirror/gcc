@@ -9,12 +9,6 @@
 
 ! { dg-error "'x' at .1. is specified more than once" "" { target *-*-* } 17 }
 
-! { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'm2_f1', except when specifying all 1 objects in the 'interop' clause of the 'dispatch' directive" "" { target *-*-* } 27 }
-! { dg-note "required by 'dispatch' construct" "" { target *-*-* } 33 }
-! { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'm2_f2', except when specifying all 2 objects in the 'interop' clause of the 'dispatch' directive" "" { target *-*-* } 27 }
-! { dg-note "required by 'dispatch' construct" "" { target *-*-* } 37 }
-! { dg-message "sorry, unimplemented: 'append_args' clause not yet supported for 'm2_f3', except when specifying all 3 objects in the 'interop' clause of the 'dispatch' directive" "" { target *-*-* } 27 }
-! { dg-note "required by 'dispatch' construct" "" { target *-*-* } 43 }
 
 ! Check that module-file handling works for declare_variant
 ! and its match/adjust_args/append_args clauses
