@@ -2738,17 +2738,6 @@
   [(set_attr "type" "neon_fp_minmax_s<q>")]
 )
 
-;; Vector forms for the IEEE-754 fmax()/fmin() functions
-(define_insn "<fmaxmin><mode>3"
-  [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
-	(unspec:VCVTF [(match_operand:VCVTF 1 "s_register_operand" "w")
-		       (match_operand:VCVTF 2 "s_register_operand" "w")]
-		       VMAXMINFNM))]
-  "TARGET_NEON && TARGET_VFP5"
-  "<fmaxmin_op>.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "neon_fp_minmax_s<q>")]
-)
-
 (define_expand "neon_vpadd<mode>"
   [(match_operand:VD 0 "s_register_operand")
    (match_operand:VD 1 "s_register_operand")

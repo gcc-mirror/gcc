@@ -137,6 +137,17 @@
    "ARM_HAVE_<MODE>_ARITH"
 )
 
+;; Vector forms for the IEEE-754 fmax()/fmin() functions
+;; Fixme: Should be enabled for MVE as well, but currently that uses an
+;; incompatible expasion.
+(define_expand "<fmaxmin><mode>3"
+  [(set (match_operand:VF 0 "s_register_operand" "")
+	(unspec:VF [(match_operand:VF 1 "s_register_operand")
+		    (match_operand:VF 2 "s_register_operand")]
+		   VMAXMINFNM))]
+  "TARGET_NEON && TARGET_VFP5 && ARM_HAVE_<MODE>_ARITH"
+)
+
 (define_expand "vec_perm<mode>"
   [(match_operand:VE 0 "s_register_operand")
    (match_operand:VE 1 "s_register_operand")
