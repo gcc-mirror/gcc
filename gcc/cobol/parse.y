@@ -12856,14 +12856,14 @@ literal_refmod_valid( YYLTYPE loc, const cbl_refer_t& r ) {
     if( ! is_literal(refmod.len->field) ) return true;
     auto edge = refmod.len->field->as_integer();
     if( 0 < edge ) {
-      if( --edge < r.field->data.capacity ) return true;
+      if( edge-1 < r.field->data.capacity ) return true;
     }
     // len < 0 or not: 0 < from + len <= capacity
     error_msg(loc, "%s(%s:%zu) out of bounds, "
 	           "size is %u",
 	      r.field->name,
 	      refmod.from->name(),
-	      size_t(refmod.len->field->data.value_of()),
+	      size_t(edge),
 	      static_cast<unsigned int>(r.field->data.capacity) );
     return false;
   }

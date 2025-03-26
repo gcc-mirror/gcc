@@ -4818,14 +4818,34 @@ parser_display_internal(tree file_descriptor,
     if( !p )
       {
       // Probably INF -INF NAN or -NAN, so ach has our result
+      // Except that real_to_decimal prints -0.0 and 0.0 like that with
+      // no e.
+      if( ach[0] == '0' || ( ach[0] == '-' && ach[1] == '0' ))
+        __gg__remove_trailing_zeroes(ach);
       }
     else
       {
-      p += 1;
-      int exp = atoi(p);
+      int exp = atoi(p+1);
       if( exp >= 6 || exp <= -5 )
         {
         // We are going to stick with the E notation, so ach has our result
+        // Except that real_to_decimal prints with e notation rather than E
+        // and doesn't guarantee at least two exponent digits.
+        *p = 'E';
+        if( exp < 0 && exp >= -9 )
+          {
+            p[1] = '-';
+            p[2] = '0';
+            p[3] = '0' - exp;
+            p[4] = '\0';
+          }
+        else if( exp >= 0 && exp <= 9 )
+          {
+            p[1] = '+';
+            p[2] = '0';
+            p[3] = '0' + exp;
+            p[4] = '\0';
+          }
         }
       else if (exp == 0)
         {
