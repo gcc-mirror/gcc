@@ -36,4 +36,5 @@ torture/alt_patterns1.rs
 torture/loop4.rs
 torture/loop8.rs
 torture/name_resolve1.rs
+issue-3568.rs
 # please don't delete the trailing newline

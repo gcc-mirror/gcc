@@ -370,6 +370,12 @@ ResolvePath::resolve_path (AST::SimplePath &expr)
 	}
       else if (segment.is_super_path_seg ())
 	{
+	  if (!is_first_segment)
+	    {
+	      rust_error_at (segment.get_locus (),
+			     "%<super%> can only be used in start position");
+	      return UNKNOWN_NODEID;
+	    }
 	  if (module_scope_id == crate_scope_id)
 	    {
 	      rust_error_at (segment.get_locus (),
