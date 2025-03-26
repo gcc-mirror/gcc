@@ -1,3 +1,17 @@
+2025-03-25  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-03-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/119135
+	* include/std/ranges: Include <utility>.
+	(views::__detail::__is_ref_view): Replace with ...
+	(views::__detail::__is_constable_ref_view): ... this.
+	(views::_AsConst::operator()): Replace bogus use of element_type
+	in the ref_view branch.
+	* testsuite/std/ranges/adaptors/as_const/1.cc (test03): Extend
+	test.
+
 2025-03-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
