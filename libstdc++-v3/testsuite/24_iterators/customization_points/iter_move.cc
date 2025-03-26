@@ -157,9 +157,20 @@ test_pr106612()
   static_assert( std::same_as<decltype(std::ranges::iter_move(I3{})), F> );
 }
 
+void
+test_pr119469()
+{
+  // rvalue references to function types are weird.
+  using F = int();
+  static_assert( std::same_as<std::iter_rvalue_reference_t<F>, F&> );
+  static_assert( std::same_as<std::iter_rvalue_reference_t<F&>, F&> );
+  static_assert( std::same_as<std::iter_rvalue_reference_t<F&&>, F&> );
+}
+
 int
 main()
 {
   test01();
   test_adl();
+  test_pr119469();
 }
