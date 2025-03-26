@@ -17946,7 +17946,8 @@ skip_interfaces:
 	/* Mark the result symbol to be referenced, when it has allocatable
 	   components.  */
 	sym->result->attr.referenced = 1;
-      else if (a->function && !a->pointer && !a->allocatable && sym->result)
+      else if (a->function && !a->pointer && !a->allocatable && !a->use_assoc
+	       && sym->result)
 	/* Default initialization for function results.  */
 	apply_default_init (sym->result);
     }
