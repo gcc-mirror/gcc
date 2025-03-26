@@ -13014,7 +13014,6 @@ package body Sem_Attr is
             --  their Entity attribute to reference their discriminal.
 
             if Expander_Active
-              and then Present (Expressions (N))
               and then Attr_Id /= Attribute_Make
             then
                declare
