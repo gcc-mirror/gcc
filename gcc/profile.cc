@@ -1798,3 +1798,10 @@ end_branch_prob (void)
 	       total_num_conds);
     }
 }
+
+/* Return true if any cfg coverage/profiling is enabled; -fprofile-arcs
+   -fcondition-coverage -fpath-coverage.  */
+bool coverage_instrumentation_p ()
+{
+  return profile_arc_flag || condition_coverage_flag || path_coverage_flag;
+}

@@ -6362,7 +6362,7 @@ expand_builtin_fork_or_exec (tree fn, tree exp, rtx target, int ignore)
   tree call;
 
   /* If we are not profiling, just call the function.  */
-  if (!profile_arc_flag && !condition_coverage_flag && !path_coverage_flag)
+  if (!coverage_instrumentation_p ())
     return NULL_RTX;
 
   /* Otherwise call the wrapper.  This should be equivalent for the rest of
