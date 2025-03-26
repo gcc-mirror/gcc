@@ -238,7 +238,6 @@ static void write_local_name (tree, const tree, const tree);
 static void dump_substitution_candidates (void);
 static tree mangle_decl_string (const tree);
 static void maybe_check_abi_tags (tree, tree = NULL_TREE, int = 10);
-static bool equal_abi_tags (tree, tree);
 
 /* Control functions.  */
 
@@ -1673,7 +1672,7 @@ write_source_name (tree identifier)
 
 /* Compare two TREE_STRINGs like strcmp.  */
 
-int
+static int
 tree_string_cmp (const void *p1, const void *p2)
 {
   if (p1 == p2)
@@ -1728,7 +1727,7 @@ write_abi_tags (tree tags)
 
 /* True iff the TREE_LISTS T1 and T2 of ABI tags are equivalent.  */
 
-static bool
+bool
 equal_abi_tags (tree t1, tree t2)
 {
   releasing_vec v1 = sorted_abi_tags (t1);
@@ -1738,7 +1737,8 @@ equal_abi_tags (tree t1, tree t2)
   if (len1 != v2->length())
     return false;
   for (unsigned i = 0; i < len1; ++i)
-    if (tree_string_cmp (v1[i], v2[i]) != 0)
+    if (strcmp (TREE_STRING_POINTER (v1[i]),
+		TREE_STRING_POINTER (v2[i])) != 0)
       return false;
   return true;
 }
