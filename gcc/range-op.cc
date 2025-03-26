@@ -2220,6 +2220,13 @@ operator_mult::op1_range (irange &r, tree type,
   wide_int offset;
   if (op2.singleton_p (offset) && offset != 0)
     return range_op_handler (TRUNC_DIV_EXPR).fold_range (r, type, lhs, op2);
+
+  //  ~[0, 0] = op1 * op2  defines op1 and op2 as non-zero.
+  if (!lhs.contains_p (wi::zero (TYPE_PRECISION (lhs.type ()))))
+    {
+      r.set_nonzero (type);
+      return true;
+    }
   return false;
 }
 
