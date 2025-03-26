@@ -6,7 +6,8 @@
 ! append_args clause. 
 
 module m
-  use omp_lib, only: omp_interop_kind
+  use iso_c_binding, only: c_intptr_t
+  integer, parameter :: omp_interop_kind = c_intptr_t
 contains
 subroutine g(x,y,z)
   integer(omp_interop_kind) :: x, y, z
