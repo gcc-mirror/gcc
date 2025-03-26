@@ -14243,11 +14243,9 @@ a function call results in a compile-time error.
 * Return Address::      Getting the return or frame address of a function.
 * Stack Scrubbing::     Stack scrubbing internal interfaces.
 * Vector Extensions::   Using vector instructions through built-in functions.
-* __sync Builtins::     Legacy built-in functions for atomic memory access.
-* __atomic Builtins::   Atomic built-in functions with memory model.
+* Atomic Memory Access:: __atomic and __sync builtins.
 * Integer Overflow Builtins:: Built-in functions to perform arithmetics and
                         arithmetic overflow checking.
-* x86 specific memory model extensions for transactional memory:: x86 memory models.
 * Object Size Checking:: Built-in functions for limited buffer overflow
                         checking.
 * New/Delete Builtins:: Built-in functions for C++ allocations and deallocations.
@@ -16175,149 +16173,27 @@ x = foo ((v128) @{_mm_adds_epu8 (x.mm, y.mm)@});
 @c but GCC does not accept it for unions of vector types (PR 88955).
 @end smallexample
 
-@node __sync Builtins
-@section Legacy @code{__sync} Built-in Functions for Atomic Memory Access
+@node Atomic Memory Access
+@section Builtins for Atomic Memory Access
+@cindex atomic memory access builtins
+@cindex builtins for atomic memory access
 
-The following built-in functions
-are intended to be compatible with those described
-in the @cite{Intel Itanium Processor-specific Application Binary Interface},
-section 7.4.  As such, they depart from normal GCC practice by not using
-the @samp{__builtin_} prefix and also by being overloaded so that they
-work on multiple types.
+GCC supports two sets of builtins for atomic memory access primitives.  The
+@code{__atomic} builtins provide the underlying support for the C++11
+atomic operations library, and are the currently-recommended interface when
+the C++11 library functions cannot be used directly.
+The @code{__sync} builtins implement the specification from the Intel IA64
+pSABI and are supported primarily for use in legacy code.
 
-The definition given in the Intel documentation allows only for the use of
-the types @code{int}, @code{long}, @code{long long} or their unsigned
-counterparts.  GCC allows any scalar type that is 1, 2, 4 or 8 bytes in
-size other than the C type @code{_Bool} or the C++ type @code{bool}.
-Operations on pointer arguments are performed as if the operands were
-of the @code{uintptr_t} type.  That is, they are not scaled by the size
-of the type to which the pointer points.
-
-These functions are implemented in terms of the @samp{__atomic}
-builtins (@pxref{__atomic Builtins}).  They should not be used for new
-code which should use the @samp{__atomic} builtins instead.
-
-Not all operations are supported by all target processors.  If a particular
-operation cannot be implemented on the target processor, a call to an
-external function is generated.  The external function carries the same name
-as the built-in version, with an additional suffix
-@samp{_@var{n}} where @var{n} is the size of the data type.
-
-In most cases, these built-in functions are considered a @dfn{full barrier}.
-That is,
-no memory operand is moved across the operation, either forward or
-backward.  Further, instructions are issued as necessary to prevent the
-processor from speculating loads across the operation and from queuing stores
-after the operation.
-
-All of the routines are described in the Intel documentation to take
-``an optional list of variables protected by the memory barrier''.  It's
-not clear what is meant by that; it could mean that @emph{only} the
-listed variables are protected, or it could mean a list of additional
-variables to be protected.  The list is ignored by GCC which treats it as
-empty.  GCC interprets an empty list as meaning that all globally
-accessible variables should be protected.
-
-@defbuiltin{@var{type} __sync_fetch_and_add (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
-@defbuiltinx{@var{type} __sync_fetch_and_sub (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
-@defbuiltinx{@var{type} __sync_fetch_and_or (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
-@defbuiltinx{@var{type} __sync_fetch_and_and (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
-@defbuiltinx{@var{type} __sync_fetch_and_xor (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
-@defbuiltinx{@var{type} __sync_fetch_and_nand (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
-These built-in functions perform the operation suggested by the name, and
-returns the value that had previously been in memory.  That is, operations
-on integer operands have the following semantics.  Operations on pointer
-arguments are performed as if the operands were of the @code{uintptr_t}
-type.  That is, they are not scaled by the size of the type to which
-the pointer points.
-
-@smallexample
-@{ tmp = *ptr; *ptr @var{op}= value; return tmp; @}
-@{ tmp = *ptr; *ptr = ~(tmp & value); return tmp; @}   // nand
-@end smallexample
-
-The object pointed to by the first argument must be of integer or pointer
-type.  It must not be a boolean type.
-
-@emph{Note:} GCC 4.4 and later implement @code{__sync_fetch_and_nand}
-as @code{*ptr = ~(tmp & value)} instead of @code{*ptr = ~tmp & value}.
-@enddefbuiltin
-
-@defbuiltin{@var{type} __sync_add_and_fetch (@var{type} *@var{ptr}, @
-                                             @var{type} @var{value}, ...)}
-@defbuiltinx{@var{type} __sync_sub_and_fetch (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
-@defbuiltinx{@var{type} __sync_or_and_fetch (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
-@defbuiltinx{@var{type} __sync_and_and_fetch (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
-@defbuiltinx{@var{type} __sync_xor_and_fetch (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
-@defbuiltinx{@var{type} __sync_nand_and_fetch (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
-These built-in functions perform the operation suggested by the name, and
-return the new value.  That is, operations on integer operands have
-the following semantics.  Operations on pointer operands are performed as
-if the operand's type were @code{uintptr_t}.
-
-@smallexample
-@{ *ptr @var{op}= value; return *ptr; @}
-@{ *ptr = ~(*ptr & value); return *ptr; @}   // nand
-@end smallexample
-
-The same constraints on arguments apply as for the corresponding
-@code{__sync_op_and_fetch} built-in functions.
-
-@emph{Note:} GCC 4.4 and later implement @code{__sync_nand_and_fetch}
-as @code{*ptr = ~(*ptr & value)} instead of
-@code{*ptr = ~*ptr & value}.
-@enddefbuiltin
-
-@defbuiltin{bool __sync_bool_compare_and_swap (@var{type} *@var{ptr}, @var{type} @var{oldval}, @var{type} @var{newval}, ...)}
-@defbuiltinx{@var{type} __sync_val_compare_and_swap (@var{type} *@var{ptr}, @var{type} @var{oldval}, @var{type} @var{newval}, ...)}
-These built-in functions perform an atomic compare and swap.
-That is, if the current
-value of @code{*@var{ptr}} is @var{oldval}, then write @var{newval} into
-@code{*@var{ptr}}.
-
-The ``bool'' version returns @code{true} if the comparison is successful and
-@var{newval} is written.  The ``val'' version returns the contents
-of @code{*@var{ptr}} before the operation.
-@enddefbuiltin
-
-@defbuiltin{void __sync_synchronize (...)}
-This built-in function issues a full memory barrier.
-@enddefbuiltin
-
-@defbuiltin{@var{type} __sync_lock_test_and_set (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
-This built-in function, as described by Intel, is not a traditional test-and-set
-operation, but rather an atomic exchange operation.  It writes @var{value}
-into @code{*@var{ptr}}, and returns the previous contents of
-@code{*@var{ptr}}.
-
-Many targets have only minimal support for such locks, and do not support
-a full exchange operation.  In this case, a target may support reduced
-functionality here by which the @emph{only} valid value to store is the
-immediate constant 1.  The exact value actually stored in @code{*@var{ptr}}
-is implementation defined.
-
-This built-in function is not a full barrier,
-but rather an @dfn{acquire barrier}.
-This means that references after the operation cannot move to (or be
-speculated to) before the operation, but previous memory stores may not
-be globally visible yet, and previous memory loads may not yet be
-satisfied.
-@enddefbuiltin
-
-@defbuiltin{void __sync_lock_release (@var{type} *@var{ptr}, ...)}
-This built-in function releases the lock acquired by
-@code{__sync_lock_test_and_set}.
-Normally this means writing the constant 0 to @code{*@var{ptr}}.
-
-This built-in function is not a full barrier,
-but rather a @dfn{release barrier}.
-This means that all previous memory stores are globally visible, and all
-previous memory loads have been satisfied, but following memory reads
-are not prevented from being speculated to before the barrier.
-@enddefbuiltin
+@menu
+* __atomic Builtins::   Atomic built-in functions with memory model.
+* __sync Builtins::     Legacy built-in functions for atomic memory access.
+@end menu
 
 @node __atomic Builtins
-@section Built-in Functions for Memory Model Aware Atomic Operations
+@subsection Built-in Functions for Memory Model Aware Atomic Operations
+@cindex C++11 memory model
+@cindex __atomic builtins
 
 The following built-in functions approximately match the requirements
 for the C++11 memory model.  They are all
@@ -16420,6 +16296,39 @@ The memory order parameter is a signed int, but only the lower 16 bits are
 reserved for the memory order.  The remainder of the signed int is reserved
 for target use and should be 0.  Use of the predefined atomic values
 ensures proper usage.
+
+@anchor{x86 specific memory model extensions for transactional memory}
+@cindex x86 transactional memory extensions
+@cindex transactional memory extensions for x86
+The x86 architecture supports additional memory ordering modifiers
+to mark critical sections for hardware lock elision.
+These modifiers can be bitwise or'ed with a standard memory order to
+atomic intrinsics.
+
+@table @code
+@item __ATOMIC_HLE_ACQUIRE
+Start lock elision on a lock variable.
+Memory order must be @code{__ATOMIC_ACQUIRE} or stronger.
+@item __ATOMIC_HLE_RELEASE
+End lock elision on a lock variable.
+Memory order must be @code{__ATOMIC_RELEASE} or stronger.
+@end table
+
+When a lock acquire fails, it is required for good performance to abort
+the transaction quickly. This can be done with a @code{_mm_pause}.
+
+@smallexample
+#include <immintrin.h> // For _mm_pause
+
+int lockvar;
+
+/* Acquire lock with lock elision */
+while (__atomic_exchange_n(&lockvar, 1, __ATOMIC_ACQUIRE|__ATOMIC_HLE_ACQUIRE))
+    _mm_pause(); /* Abort failed transaction */
+...
+/* Free lock with lock elision */
+__atomic_store_n(&lockvar, 0, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
+@end smallexample
 
 @defbuiltin{@var{type} __atomic_load_n (@var{type} *@var{ptr}, int @var{memorder})}
 This built-in function implements an atomic load operation.  It returns the
@@ -16618,6 +16527,151 @@ alignment.  A value of 0 indicates typical alignment should be used.  The
 compiler may also ignore this parameter.
 @enddefbuiltin
 
+
+@node __sync Builtins
+@subsection Legacy @code{__sync} Built-in Functions for Atomic Memory Access
+@cindex legacy builtins for atomic memory access
+@cindex IA64 atomic memory access builtins
+@cindex __sync builtins
+
+The following built-in functions
+are intended to be compatible with those described
+in the @cite{Intel Itanium Processor-specific Application Binary Interface},
+section 7.4.  As such, they depart from normal GCC practice by not using
+the @samp{__builtin_} prefix and also by being overloaded so that they
+work on multiple types.
+
+The definition given in the Intel documentation allows only for the use of
+the types @code{int}, @code{long}, @code{long long} or their unsigned
+counterparts.  GCC allows any scalar type that is 1, 2, 4 or 8 bytes in
+size other than the C type @code{_Bool} or the C++ type @code{bool}.
+Operations on pointer arguments are performed as if the operands were
+of the @code{uintptr_t} type.  That is, they are not scaled by the size
+of the type to which the pointer points.
+
+These functions are implemented in terms of the @samp{__atomic}
+builtins (@pxref{__atomic Builtins}).  They should not be used for new
+code which should use the @samp{__atomic} builtins instead.
+
+Not all operations are supported by all target processors.  If a particular
+operation cannot be implemented on the target processor, a call to an
+external function is generated.  The external function carries the same name
+as the built-in version, with an additional suffix
+@samp{_@var{n}} where @var{n} is the size of the data type.
+
+In most cases, these built-in functions are considered a @dfn{full barrier}.
+That is,
+no memory operand is moved across the operation, either forward or
+backward.  Further, instructions are issued as necessary to prevent the
+processor from speculating loads across the operation and from queuing stores
+after the operation.
+
+All of the routines are described in the Intel documentation to take
+``an optional list of variables protected by the memory barrier''.  It's
+not clear what is meant by that; it could mean that @emph{only} the
+listed variables are protected, or it could mean a list of additional
+variables to be protected.  The list is ignored by GCC which treats it as
+empty.  GCC interprets an empty list as meaning that all globally
+accessible variables should be protected.
+
+@defbuiltin{@var{type} __sync_fetch_and_add (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_fetch_and_sub (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_fetch_and_or (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_fetch_and_and (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_fetch_and_xor (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_fetch_and_nand (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+These built-in functions perform the operation suggested by the name, and
+returns the value that had previously been in memory.  That is, operations
+on integer operands have the following semantics.  Operations on pointer
+arguments are performed as if the operands were of the @code{uintptr_t}
+type.  That is, they are not scaled by the size of the type to which
+the pointer points.
+
+@smallexample
+@{ tmp = *ptr; *ptr @var{op}= value; return tmp; @}
+@{ tmp = *ptr; *ptr = ~(tmp & value); return tmp; @}   // nand
+@end smallexample
+
+The object pointed to by the first argument must be of integer or pointer
+type.  It must not be a boolean type.
+
+@emph{Note:} GCC 4.4 and later implement @code{__sync_fetch_and_nand}
+as @code{*ptr = ~(tmp & value)} instead of @code{*ptr = ~tmp & value}.
+@enddefbuiltin
+
+@defbuiltin{@var{type} __sync_add_and_fetch (@var{type} *@var{ptr}, @
+                                             @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_sub_and_fetch (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_or_and_fetch (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_and_and_fetch (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_xor_and_fetch (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+@defbuiltinx{@var{type} __sync_nand_and_fetch (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+These built-in functions perform the operation suggested by the name, and
+return the new value.  That is, operations on integer operands have
+the following semantics.  Operations on pointer operands are performed as
+if the operand's type were @code{uintptr_t}.
+
+@smallexample
+@{ *ptr @var{op}= value; return *ptr; @}
+@{ *ptr = ~(*ptr & value); return *ptr; @}   // nand
+@end smallexample
+
+The same constraints on arguments apply as for the corresponding
+@code{__sync_op_and_fetch} built-in functions.
+
+@emph{Note:} GCC 4.4 and later implement @code{__sync_nand_and_fetch}
+as @code{*ptr = ~(*ptr & value)} instead of
+@code{*ptr = ~*ptr & value}.
+@enddefbuiltin
+
+@defbuiltin{bool __sync_bool_compare_and_swap (@var{type} *@var{ptr}, @var{type} @var{oldval}, @var{type} @var{newval}, ...)}
+@defbuiltinx{@var{type} __sync_val_compare_and_swap (@var{type} *@var{ptr}, @var{type} @var{oldval}, @var{type} @var{newval}, ...)}
+These built-in functions perform an atomic compare and swap.
+That is, if the current
+value of @code{*@var{ptr}} is @var{oldval}, then write @var{newval} into
+@code{*@var{ptr}}.
+
+The ``bool'' version returns @code{true} if the comparison is successful and
+@var{newval} is written.  The ``val'' version returns the contents
+of @code{*@var{ptr}} before the operation.
+@enddefbuiltin
+
+@defbuiltin{void __sync_synchronize (...)}
+This built-in function issues a full memory barrier.
+@enddefbuiltin
+
+@defbuiltin{@var{type} __sync_lock_test_and_set (@var{type} *@var{ptr}, @var{type} @var{value}, ...)}
+This built-in function, as described by Intel, is not a traditional test-and-set
+operation, but rather an atomic exchange operation.  It writes @var{value}
+into @code{*@var{ptr}}, and returns the previous contents of
+@code{*@var{ptr}}.
+
+Many targets have only minimal support for such locks, and do not support
+a full exchange operation.  In this case, a target may support reduced
+functionality here by which the @emph{only} valid value to store is the
+immediate constant 1.  The exact value actually stored in @code{*@var{ptr}}
+is implementation defined.
+
+This built-in function is not a full barrier,
+but rather an @dfn{acquire barrier}.
+This means that references after the operation cannot move to (or be
+speculated to) before the operation, but previous memory stores may not
+be globally visible yet, and previous memory loads may not yet be
+satisfied.
+@enddefbuiltin
+
+@defbuiltin{void __sync_lock_release (@var{type} *@var{ptr}, ...)}
+This built-in function releases the lock acquired by
+@code{__sync_lock_test_and_set}.
+Normally this means writing the constant 0 to @code{*@var{ptr}}.
+
+This built-in function is not a full barrier,
+but rather a @dfn{release barrier}.
+This means that all previous memory stores are globally visible, and all
+previous memory loads have been satisfied, but following memory reads
+are not prevented from being speculated to before the barrier.
+@enddefbuiltin
+
 @node Integer Overflow Builtins
 @section Built-in Functions to Perform Arithmetic with Overflow Checking
 
@@ -16765,39 +16819,6 @@ will be emitted if one of them (preferrably the third one) has only values
 0 or 1 (i.e.@: carry-in).
 
 @enddefbuiltin
-
-@node x86 specific memory model extensions for transactional memory
-@section x86-Specific Memory Model Extensions for Transactional Memory
-
-The x86 architecture supports additional memory ordering flags
-to mark critical sections for hardware lock elision. 
-These must be specified in addition to an existing memory order to
-atomic intrinsics.
-
-@table @code
-@item __ATOMIC_HLE_ACQUIRE
-Start lock elision on a lock variable.
-Memory order must be @code{__ATOMIC_ACQUIRE} or stronger.
-@item __ATOMIC_HLE_RELEASE
-End lock elision on a lock variable.
-Memory order must be @code{__ATOMIC_RELEASE} or stronger.
-@end table
-
-When a lock acquire fails, it is required for good performance to abort
-the transaction quickly. This can be done with a @code{_mm_pause}.
-
-@smallexample
-#include <immintrin.h> // For _mm_pause
-
-int lockvar;
-
-/* Acquire lock with lock elision */
-while (__atomic_exchange_n(&lockvar, 1, __ATOMIC_ACQUIRE|__ATOMIC_HLE_ACQUIRE))
-    _mm_pause(); /* Abort failed transaction */
-...
-/* Free lock with lock elision */
-__atomic_store_n(&lockvar, 0, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
-@end smallexample
 
 @node Object Size Checking
 @section Object Size Checking
