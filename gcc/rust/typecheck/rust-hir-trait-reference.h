@@ -254,10 +254,9 @@ public:
 
   void setup_raw_associated_types ();
 
-  TyTy::BaseType *
-  setup_associated_types (const TyTy::BaseType *self,
-			  const TyTy::TypeBoundPredicate &bound,
-			  TyTy::SubstitutionArgumentMappings *args = nullptr);
+  TyTy::BaseType *setup_associated_types (
+    const TyTy::BaseType *self, const TyTy::TypeBoundPredicate &bound,
+    TyTy::SubstitutionArgumentMappings *args = nullptr, bool infer = true);
 
   void reset_associated_types ();
 
