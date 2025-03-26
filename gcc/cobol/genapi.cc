@@ -3798,16 +3798,13 @@ psa_FldLiteralN(struct cbl_field_t *field )
   // We are constructing a completely static constant structure, based on the
   // text string in .initial
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
-  __int128 value = 0;
-#pragma GCC diagnostic pop
+  FIXED_WIDE_INT(128) value = 0;
 
   do
     {
     // This is a false do{}while, to isolate the variables:
 
-    // We need to convert data.initial to an __int128 value
+    // We need to convert data.initial to an FIXED_WIDE_INT(128) value
     char *p = const_cast<char *>(field->data.initial);
     int sign = 1;
     if( *p == '-' )
@@ -3903,24 +3900,24 @@ psa_FldLiteralN(struct cbl_field_t *field )
 
     // We now need to calculate the capacity.
 
-    unsigned char *pvalue = (unsigned char *)&value;
+    unsigned int min_prec = wi::min_precision(value, UNSIGNED);
     int capacity;
-    if( *(uint64_t*)(pvalue + 8) )
+    if( min_prec > 64 )
       {
       // Bytes 15 through 8 are non-zero
       capacity = 16;
       }
-    else if( *(uint32_t*)(pvalue + 4) )
+    else if( min_prec > 32 )
       {
       // Bytes 7 through 4 are non-zero
       capacity = 8;
       }
-    else if( *(uint16_t*)(pvalue + 2) )
+    else if( min_prec > 16 )
       {
       // Bytes 3 and 2
       capacity = 4;
       }
-    else if( pvalue[1] )
+    else if( min_prec > 8 )
       {
       // Byte 1 is non-zero
       capacity = 2;
@@ -3940,11 +3937,13 @@ psa_FldLiteralN(struct cbl_field_t *field )
 
     if( capacity < 16 && (field->attr & signable_e) )
       {
-      if( value < 0 && (((pvalue[capacity-1] & 0x80) == 0 )))
+      FIXED_WIDE_INT(128) mask
+        = wi::set_bit_in_zero<FIXED_WIDE_INT(128)>(capacity * 8 - 1);
+      if( wi::neg_p (value) && (value & mask) == 0 )
         {
         capacity *= 2;
         }
-      else if( value >= 0 && (((pvalue[capacity-1] & 0x80) == 0x80 )))
+      else if( !wi::neg_p (value) && (value & mask) != 0 )
         {
         capacity *= 2;
         }
@@ -3964,86 +3963,15 @@ psa_FldLiteralN(struct cbl_field_t *field )
 
   tree var_type;
 
-  if( field->data.capacity == 16 )
-    {
-    /*  GCC-13 has no provision for an int128 constructor.  So, we use a
-        union for our necessary __int128.
-
-        typedef union cblc_int128_t
-            {
-            unsigned char array16[16];
-            __uint128     uval128;
-            __int128      sval128;
-            } cblc_int128_t;
-
-      We build a constructor for the array16[], and then we use that
-      constructor in the constructor for the union.
-      */
-
-    // Build the constructor for array16
-    tree array16_type                   = build_array_type_nelts(UCHAR, 16);
-    tree array_16_constructor           = make_node(CONSTRUCTOR);
-    TREE_TYPE(array_16_constructor)     = array16_type;
-    TREE_STATIC(array_16_constructor)   = 1;
-    TREE_CONSTANT(array_16_constructor) = 1;
-
-    for(int i=0; i<16; i++)
-      {
-      CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(array_16_constructor),
-                              build_int_cst_type(INT, i),
-                              build_int_cst_type(UCHAR,
-                                                 ((unsigned char *)&value)[i]));
-      }
-
-    // The array16 constructor is ready to be used
-
-    // So, we need a constructor for the union:
-    // Now we create the union:
-    var_type = cblc_int128_type_node;
-
-    tree union_constructor            = make_node(CONSTRUCTOR);
-    TREE_TYPE(union_constructor)      = var_type;
-    TREE_STATIC(union_constructor)    = 1;
-    TREE_CONSTANT(union_constructor)  = 1;
-
-    // point next_field to the first field of the union, and
-    // set the value to be the table constructor
-    tree next_field = TYPE_FIELDS(var_type);
-    CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(union_constructor),
-                            next_field,
-                            array_16_constructor );
-
-    tree new_var_decl = gg_define_variable( var_type,
-                                            base_name,
-                                            vs_static);
-    DECL_INITIAL(new_var_decl) = union_constructor;
-
-    field->data_decl_node = member(new_var_decl, "sval128");
-    TREE_READONLY(field->data_decl_node) = 1;
-    TREE_CONSTANT(field->data_decl_node) = 1;
-
-    // Convert the compile-time data.value to a run-time variable decl node:
-    sprintf(id_string, ".%ld", ++our_index);
-    strcpy(base_name, field->name);
-    strcat(base_name, id_string);
-    field->literal_decl_node = gg_define_variable(DOUBLE, id_string, vs_static);
-    TREE_READONLY(field->literal_decl_node) = 1;
-    TREE_CONSTANT(field->literal_decl_node) = 1;
-    tree initer = fold_convert (DOUBLE, field->data.value_of());
-    DECL_INITIAL(field->literal_decl_node) = initer;
-
-    }
-  else
-    {
-    // The value is 1, 2, 4, or 8 bytes, so an ordinary constructor can be used.
-    var_type = tree_type_from_size( field->data.capacity,
-                                    field->attr & signable_e);
-    tree new_var_decl = gg_define_variable( var_type,
-                                            base_name,
-                                            vs_static);
-    DECL_INITIAL(new_var_decl) = build_int_cst_type(var_type, value);
-    field->data_decl_node = new_var_decl;
-    }
+  // The value is 1, 2, 4, 8 or 16 bytes, so an ordinary constructor can be
+  // used.
+  var_type = tree_type_from_size( field->data.capacity,
+                                  field->attr & signable_e);
+  tree new_var_decl = gg_define_variable( var_type,
+                                          base_name,
+                                          vs_static);
+  DECL_INITIAL(new_var_decl) = wide_int_to_tree(var_type, value);
+  field->data_decl_node = new_var_decl;
   }
 
 static void
@@ -13739,8 +13667,6 @@ mh_identical(cbl_refer_t &destref,
   return moved;
   }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
 static bool
 mh_source_is_literalN(cbl_refer_t &destref,
                       cbl_refer_t &sourceref,
@@ -14013,7 +13939,6 @@ mh_source_is_literalN(cbl_refer_t &destref,
     }
   return moved;
   }
-#pragma GCC diagnostic pop
 
 static
 tree float_type_of(int n)
@@ -15245,8 +15170,6 @@ real_powi10 (uint32_t x)
   return pow10;
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
 char *
 binary_initial_from_float128(cbl_field_t *field, int rdigits,
                              REAL_VALUE_TYPE value)
@@ -15322,7 +15245,6 @@ binary_initial_from_float128(cbl_field_t *field, int rdigits,
 
   return retval;
   }
-#pragma GCC diagnostic pop
 
 
 static void
