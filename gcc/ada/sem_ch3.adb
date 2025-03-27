@@ -8133,9 +8133,6 @@ package body Sem_Ch3 is
          Set_Non_Binary_Modulus
            (Implicit_Base, Non_Binary_Modulus (Parent_Base));
 
-         Set_Is_Known_Valid
-           (Implicit_Base, Is_Known_Valid (Parent_Base));
-
       elsif Is_Floating_Point_Type (Parent_Type) then
 
          --  Digits of base type is always copied from the digits value of
