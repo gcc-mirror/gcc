@@ -145,7 +145,7 @@ TEST (xor_load_notreturn, XOR_LOAD_NORETURN)
 /* { dg-final { scan-assembler-times "ldeorlh\t" 8} } */
 /* { dg-final { scan-assembler-times "ldeoralh\t" 16} } */
 
-/* { dg-final { scan-assembler-times "ldeor\t" 16} */
+/* { dg-final { scan-assembler-times "ldeor\t" 16} } */
 /* { dg-final { scan-assembler-times "ldeora\t" 32} } */
 /* { dg-final { scan-assembler-times "ldeorl\t" 16} } */
 /* { dg-final { scan-assembler-times "ldeoral\t" 32} } */
