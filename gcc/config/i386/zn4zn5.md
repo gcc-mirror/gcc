@@ -1054,42 +1054,42 @@
 (define_insn_reservation "znver4_sse_add" 3
 			 (and (eq_attr "cpu" "znver4,znver5")
 			      (and (eq_attr "type" "sseadd")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "none"))))
 			 "znver4-direct,znver4-fpu2|znver4-fpu3")
 
 (define_insn_reservation "znver4_sse_add_load" 8
 			 (and (eq_attr "cpu" "znver4")
 			      (and (eq_attr "type" "sseadd")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "load"))))
 			 "znver4-direct,znver4-load,znver4-fpu2|znver4-fpu3")
 
 (define_insn_reservation "znver5_sse_add_load" 8
 			 (and (eq_attr "cpu" "znver5")
 			      (and (eq_attr "type" "sseadd")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "load"))))
 			 "znver4-direct,znver5-load,znver4-fpu2|znver4-fpu3")
 
 (define_insn_reservation "znver4_sse_add1" 4
 			 (and (eq_attr "cpu" "znver4,znver5")
 			      (and (eq_attr "type" "sseadd1")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "none"))))
 			 "znver4-vector,znver4-fvector*2")
 
 (define_insn_reservation "znver4_sse_add1_load" 9
 			 (and (eq_attr "cpu" "znver4")
 			      (and (eq_attr "type" "sseadd1")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "load"))))
 			 "znver4-vector,znver4-load,znver4-fvector*2")
 
 (define_insn_reservation "znver5_sse_add1_load" 9
 			 (and (eq_attr "cpu" "znver5")
 			      (and (eq_attr "type" "sseadd1")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "load"))))
 			 "znver4-vector,znver5-load,znver4-fvector*2")
 
@@ -1117,21 +1117,21 @@
 (define_insn_reservation "znver4_sse_mul" 3
 			 (and (eq_attr "cpu" "znver4,znver5")
 			      (and (eq_attr "type" "ssemul")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "none"))))
 			 "znver4-direct,znver4-fpu0|znver4-fpu1")
 
 (define_insn_reservation "znver4_sse_mul_load" 8
 			 (and (eq_attr "cpu" "znver4")
 			      (and (eq_attr "type" "ssemul")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "load"))))
 			 "znver4-direct,znver4-load,znver4-fpu0|znver4-fpu1")
 
 (define_insn_reservation "znver5_sse_mul_load" 8
 			 (and (eq_attr "cpu" "znver5")
 			      (and (eq_attr "type" "ssemul")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "load"))))
 			 "znver4-direct,znver5-load,znver4-fpu0|znver4-fpu1")
 
@@ -1225,21 +1225,21 @@
 (define_insn_reservation "znver4_sse_cvt" 3
 			 (and (eq_attr "cpu" "znver4,znver5")
 			      (and (eq_attr "type" "ssecvt")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "none"))))
 			 "znver4-direct,znver4-fpu2|znver4-fpu3")
 
 (define_insn_reservation "znver4_sse_cvt_load" 8
 			 (and (eq_attr "cpu" "znver4")
 			      (and (eq_attr "type" "ssecvt")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "load"))))
 			 "znver4-direct,znver4-load,znver4-fpu2|znver4-fpu3")
 
 (define_insn_reservation "znver5_sse_cvt_load" 8
 			 (and (eq_attr "cpu" "znver5")
 			      (and (eq_attr "type" "ssecvt")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "load"))))
 			 "znver4-direct,znver5-load,znver4-fpu2|znver4-fpu3")
 
@@ -1267,28 +1267,28 @@
 (define_insn_reservation "znver4_sse_shuf" 1
 			 (and (eq_attr "cpu" "znver4")
 			      (and (eq_attr "type" "sseshuf")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "none"))))
 			 "znver4-direct,znver4-fpu1|znver4-fpu2")
 
 (define_insn_reservation "znver5_sse_shuf" 1
 			 (and (eq_attr "cpu" "znver5")
 			      (and (eq_attr "type" "sseshuf")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "none"))))
 			 "znver4-direct,znver4-fpu1|znver4-fpu2|znver4-fpu3")
 
 (define_insn_reservation "znver4_sse_shuf_load" 6
 			 (and (eq_attr "cpu" "znver4")
 			      (and (eq_attr "type" "sseshuf")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "load"))))
 			 "znver4-direct,znver4-load,znver4-fpu")
 
 (define_insn_reservation "znver5_sse_shuf_load" 6
 			 (and (eq_attr "cpu" "znver5")
 			      (and (eq_attr "type" "sseshuf")
-				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "load"))))
 			 "znver4-direct,znver5-load,znver4-fpu")
 
@@ -1583,7 +1583,7 @@
 (define_insn_reservation "znver4_sse_cmp_avx128" 3
 			 (and (eq_attr "cpu" "znver4")
 			      (and (eq_attr "type" "ssecmp")
-				   (and (eq_attr "mode" "V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (and (eq_attr "prefix" "evex")
 					 (eq_attr "memory" "none")))))
 			 "znver4-direct,znver4-fpu0*2|znver4-fpu1*2")
@@ -1591,7 +1591,7 @@
 (define_insn_reservation "znver5_sse_cmp_avx128" 3
 			 (and (eq_attr "cpu" "znver5")
 			      (and (eq_attr "type" "ssecmp")
-				   (and (eq_attr "mode" "V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (and (eq_attr "prefix" "evex")
 					 (eq_attr "memory" "none")))))
 			 "znver4-direct,znver4-fpu1|znver4-fpu2")
@@ -1599,7 +1599,7 @@
 (define_insn_reservation "znver4_sse_cmp_avx128_load" 9
 			 (and (eq_attr "cpu" "znver4")
 			      (and (eq_attr "type" "ssecmp")
-				   (and (eq_attr "mode" "V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (and (eq_attr "prefix" "evex")
 					 (eq_attr "memory" "load")))))
 			 "znver4-direct,znver4-load,znver4-fpu0*2|znver4-fpu1*2")
@@ -1607,7 +1607,7 @@
 (define_insn_reservation "znver5_sse_cmp_avx128_load" 9
 			 (and (eq_attr "cpu" "znver5")
 			      (and (eq_attr "type" "ssecmp")
-				   (and (eq_attr "mode" "V4SF,V2DF,V2SF,V1DF,SF")
+				   (and (eq_attr "mode" "V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (and (eq_attr "prefix" "evex")
 					 (eq_attr "memory" "load")))))
 			 "znver4-direct,znver5-load,znver4-fpu1|znver4-fpu2")
@@ -1774,13 +1774,13 @@
 
 (define_insn_reservation "znver4_sse_muladd_load" 10
 			 (and (eq_attr "cpu" "znver4")
-			      (and (eq_attr "type" "sseshuf")
+			      (and (eq_attr "type" "ssemuladd")
 				   (eq_attr "memory" "load")))
 			 "znver4-direct,znver4-load,znver4-fpu0*2|znver4-fpu1*2")
 
 (define_insn_reservation "znver5_sse_muladd_load" 10
 			 (and (eq_attr "cpu" "znver5")
-			      (and (eq_attr "type" "sseshuf")
+			      (and (eq_attr "type" "ssemuladd")
 				   (eq_attr "memory" "load")))
 			 "znver4-direct,znver5-load,znver4-fpu1|znver4-fpu2")
 
