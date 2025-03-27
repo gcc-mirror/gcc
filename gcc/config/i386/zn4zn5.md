@@ -953,9 +953,8 @@
 
 (define_insn_reservation "znver4_sse_test" 1
 			 (and (eq_attr "cpu" "znver4,znver5")
-			      (and (eq_attr "prefix_extra" "1")
-				   (and (eq_attr "type" "ssecomi")
-					(eq_attr "memory" "none"))))
+				  (and (eq_attr "type" "ssecomi")
+					(eq_attr "memory" "none")))
 			 "znver4-direct,znver4-fpu1|znver4-fpu2")
 
 (define_insn_reservation "znver4_sse_test_load" 6
