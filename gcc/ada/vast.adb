@@ -50,12 +50,11 @@ package body VAST is
    --  False means disabled checks are silent; True means we print a message
    --  (but still don't raise VAST_Failure).
 
-   type Check_Enum is (Check_Other, Check_Itype_Parents, Check_Error_Nodes);
+   type Check_Enum is (Check_Other, Check_Error_Nodes);
    Enabled_Checks : constant array (Check_Enum) of Boolean :=
---     (Check_Other => True, others => False);
-     (others => True);
---     (Check_Itype_Parents => False, -- this one fails in bootstrap!
---      others => True);
+     (Check_Other => True,
+--      others => False);
+      others => True);
    --  Passing checks are Check_Other, which should always be enabled.
    --  Currently-failing checks are different enumerals in Check_Enum,
    --  which can be disabled individually until we fix the bugs, or enabled
@@ -152,9 +151,10 @@ package body VAST is
       if Nkind (N) = N_Compilation_Unit then
          Assert (No (Parent (N)));
          --  The root of each unit should not have a parent
+
       elsif N in N_Entity_Id and then Is_Itype (N) then
-         Assert (No (Parent (N)), Check_Itype_Parents);
-         --  Itypes should not have a parent
+         null; --  An Itype might or might not have a parent
+
       else
          if Nkind (N) = N_Error then
             Assert (False, Check_Error_Nodes);

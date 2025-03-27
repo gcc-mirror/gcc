@@ -463,11 +463,13 @@ package Einfo is
 
 --       For an access_to_protected_subprogram parameter it is the declaration
 --       of the corresponding formal parameter.
---
---       Itypes have no explicit declaration, and therefore are not attached to
---       the tree: their Parent field is always empty. The Associated_Node_For_
---       Itype is the only way to determine the construct that leads to the
---       creation of a given itype entity.
+
+--       Itypes need not have an explicit declaration, in which case they are
+--       not attached to the tree through the Parent field, which is empty. In
+--       other cases, they have one and are attached to the tree through the
+--       Parent field as usual. Associated_Node_For_Itype should be used to
+--       determine the construct that leads to the creation of a given itype
+--       entity.
 
 --    Associated_Storage_Pool [root type only]
 --       Defined in simple and general access type entities. References the
