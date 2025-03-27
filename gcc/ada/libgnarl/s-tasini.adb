@@ -115,11 +115,13 @@ package body System.Tasking.Initialization is
    procedure Tasking_Runtime_Initialize;
    pragma Export (Ada, Tasking_Runtime_Initialize,
                   "__gnat_tasking_runtime_initialize");
+   pragma Linker_Constructor (Tasking_Runtime_Initialize);
    --  This procedure starts the initialization of the GNARL. It installs the
-   --  tasking versions of the RTS_Lock manipulation routines. It is called
+   --  tasking version of the RTS_Lock manipulation routines. It is called
    --  very early before the elaboration of all the Ada units of the program,
    --  including those of the runtime, because this elaboration may require
-   --  the initialization of RTS_Lock objects.
+   --  the initialization of RTS_Lock objects, which means that it must only
+   --  contain code to which pragma Restrictions (No_Elaboration_Code) applies.
 
    --------------------------
    -- Change_Base_Priority --
