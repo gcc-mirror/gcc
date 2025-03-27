@@ -1,4 +1,4 @@
-/* { dg-additional-options "-Wno-stringop-overflow"} */
+/* { dg-additional-options "-Wno-stringop-overflow" } */
 /* -Wstringop-overflow= triggers on test5.  */
 
 #include <stdint.h>

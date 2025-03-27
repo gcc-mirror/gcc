@@ -16,13 +16,13 @@ const char* test_literal (int x)
 
 void test_2 (const char *s, int c)
 {
-  char *p = __builtin_strchr (s, c); /* { dg-message "when '__builtin_strchr' returns NULL"} */
+  char *p = __builtin_strchr (s, c); /* { dg-message "when '__builtin_strchr' returns NULL" } */
   *p = 'A'; /* { dg-warning "dereference of NULL 'p'" "null deref" } */
 }
 
 void test_3 (const char *s, int c)
 {
-  char *p = strchr (s, c); /* { dg-message "when 'strchr' returns NULL"} */
+  char *p = strchr (s, c); /* { dg-message "when 'strchr' returns NULL" } */
   *p = 'A'; /* { dg-warning "dereference of NULL 'p'" "null deref" } */
 }
 

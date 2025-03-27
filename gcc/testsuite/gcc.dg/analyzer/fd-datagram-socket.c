@@ -102,7 +102,7 @@ void test_listen_on_datagram_socket_with_bind (const char *sockname)
   memset (&addr, 0, sizeof (addr));
   addr.sun_family = AF_UNIX;
   strncpy (addr.sun_path, sockname, sizeof(addr.sun_path) - 1);
-  if (bind (fd, (struct sockaddr *)&addr, sizeof (addr)) == -1) /* { dg message "datagram socket bound here" } */
+  if (bind (fd, (struct sockaddr *)&addr, sizeof (addr)) == -1) /* { dg-message "datagram socket bound here" } */
     {
       close (fd);
       return;
