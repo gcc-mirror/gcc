@@ -31916,9 +31916,10 @@ cp_parser_function_contract_specifier (cp_parser *parser)
 
   if (identifier == error_mark_node)
     {
-      cp_parser_skip_to_closing_parenthesis_1 (parser, /*recovering=*/true,
-					       CPP_CLOSE_PAREN,
-					       /*consume_paren=*/true);
+      cp_parser_skip_to_closing_parenthesis (parser,
+					     /*recovering=*/true,
+					     /*or_comma=*/false,
+					     /*consume_paren=*/true);
       return error_mark_node;
     }
 
@@ -31936,9 +31937,9 @@ cp_parser_function_contract_specifier (cp_parser *parser)
       cp_token *first = cp_lexer_peek_token (parser->lexer);
 
       /* Skip until we reach a closing token ).  */
-      cp_parser_skip_to_closing_parenthesis_1 (parser,
+      cp_parser_skip_to_closing_parenthesis (parser,
 					     /*recovering=*/false,
-					     CPP_CLOSE_PAREN,
+					     /*or_comma=*/false,
 					     /*consume_paren=*/false);
 
       cp_token *last = cp_lexer_peek_token (parser->lexer);
