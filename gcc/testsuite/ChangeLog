@@ -1,3 +1,11 @@
+2025-03-26  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2025-03-12  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/116564
+	* gcc.target/aarch64/torture/pr116564.c: New test.
+
 2025-03-25  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

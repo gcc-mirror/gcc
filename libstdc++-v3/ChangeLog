@@ -1,3 +1,42 @@
+2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (ranges::to): Allow unions as well as
+	non-union class types.
+	* testsuite/std/ranges/conv/lwg4229.cc: New test.
+
+2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112803
+	* include/std/ranges (ranges::to): Add static assertions to
+	enforce Mandates conditions.
+	* testsuite/std/ranges/conv/112803.cc: New test.
+
+2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/119429
+	* include/std/format (__format::_Scanner::_Scanner): Cast
+	default argument to size_t.
+
+2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115939
+	* include/bits/hashtable_policy.h (_Node_iterator): Add
+	operator== and operator!=.
+	(_Node_const_iterator): Likewise.
+	* testsuite/23_containers/unordered_map/115939.cc: New test.
+
 2025-03-25  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
