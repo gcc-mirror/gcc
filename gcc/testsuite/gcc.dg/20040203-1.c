@@ -1,6 +1,6 @@
 /* PR/13994; bug_cond2 was rejected on gcc up to version 3.4.x */
-/* { dg-do compile  }*/
-/* { dg-options "-std=gnu89"  }*/
+/* { dg-do compile } */
+/* { dg-options "-std=gnu89" } */
 
 struct s { char c[1]; };
 struct s a;

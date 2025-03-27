@@ -20,7 +20,7 @@ end subroutine poobar
 program test
   character(len=*), parameter :: foo = 'test'     ! Parameters must work.
   character(len=4) :: bar = foo
-  character(len=*) :: foobar = 'This should fail' ! {  dg-error "must be a dummy" }
+  character(len=*) :: foobar = 'This should fail' ! { dg-error "must be a dummy" }
   print *, bar
   call poobar ()
 end

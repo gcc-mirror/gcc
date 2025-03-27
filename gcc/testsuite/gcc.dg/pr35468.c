@@ -1,5 +1,5 @@
 /* PR tree-optimization/35468 */
-/* { dg-do compile  }*/
+/* { dg-do compile } */
 /* { dg-options "-O2 -fno-tree-dce" } */
 
 char *const f(void)

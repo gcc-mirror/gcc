@@ -1,5 +1,5 @@
 /* PR rtl-optimization/82597 */
-/* { dg-do compile  }*/
+/* { dg-do compile } */
 /* { dg-options "-O2 -funroll-loops" } */
 
 int pb;
