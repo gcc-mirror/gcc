@@ -1932,7 +1932,9 @@ Dump::visit (TraitItemConst &e)
 
   put_field ("name", e.get_name ().as_string ());
   visit_field ("type", e.get_type ());
-  visit_field ("expr", e.get_expr ());
+  if (e.has_expr ())
+    visit_field ("expr", e.get_expr ());
+
   end ("TraitItemConst");
 }
 
