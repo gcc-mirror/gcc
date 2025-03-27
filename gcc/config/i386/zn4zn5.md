@@ -1263,21 +1263,28 @@
 
 (define_insn_reservation "znver4_sse_icvt" 3
 			 (and (eq_attr "cpu" "znver4,znver5")
-			      (and (eq_attr "type" "ssecvt")
+			      (and (eq_attr "type" "sseicvt")
 				   (and (eq_attr "mode" "SI")
+				    (eq_attr "memory" "none"))))
+			 "znver4-direct,znver4-fpu2|znver4-fpu3")
+
+(define_insn_reservation "znver4_sse_icvt2" 3
+			 (and (eq_attr "cpu" "znver4,znver5")
+			      (and (eq_attr "type" "sseicvt2")
+				   (and (eq_attr "mode" "DF")
 				    (eq_attr "memory" "none"))))
 			 "znver4-direct,znver4-fpu2|znver4-fpu3")
 
 (define_insn_reservation "znver4_sse_icvt_store" 4
 			 (and (eq_attr "cpu" "znver4")
-			      (and (eq_attr "type" "ssecvt")
+			      (and (eq_attr "type" "sseicvt")
 				   (and (eq_attr "mode" "SI")
 				    (eq_attr "memory" "store"))))
 			 "znver4-double,znver4-fpu2|znver4-fpu3,znver4-fp-store")
 
 (define_insn_reservation "znver5_sse_icvt_store" 4
 			 (and (eq_attr "cpu" "znver5")
-			      (and (eq_attr "type" "ssecvt")
+			      (and (eq_attr "type" "sseicvt")
 				   (and (eq_attr "mode" "SI")
 				    (eq_attr "memory" "store"))))
 			 "znver4-double,znver4-fpu2|znver4-fpu3,znver5-fp-store256")
