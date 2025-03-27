@@ -1571,7 +1571,11 @@
    "TARGET_AVX512VL || <MODE_SIZE> == 64"
    "vpternlogd\t{$0xFF, %0, %0, %0|%0, %0, %0, 0xFF}"
   [(set_attr "type" "sselog1")
-   (set_attr "prefix" "evex")])
+   (set_attr "prefix" "evex")
+   (set (attr "mode")
+        (if_then_else (match_test "TARGET_AVX512VL")
+		      (const_string "<sseinsnmode>")
+		      (const_string "XI")))])
 
 ;; If mem_addr points to a memory region with less than whole vector size bytes
 ;; of accessible memory and k is a mask that would prevent reading the inaccessible
