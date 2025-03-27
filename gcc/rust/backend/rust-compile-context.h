@@ -72,7 +72,10 @@ public:
       return it->second;
 
     compiled_type_map.insert ({h, type});
-    push_type (type);
+
+    if (TYPE_NAME (type) != NULL)
+      push_type (type);
+
     return type;
   }
 
