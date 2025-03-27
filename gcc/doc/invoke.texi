@@ -27211,8 +27211,8 @@ Use (do not use) @code{amcas[_db].@{b/h/w/d@}} instructions.  When build with
 @opindex mno-ld-seq-sa
 @item -mld-seq-sa
 @itemx -mno-ld-seq-sa
-Whether a load-load barrier (@code{dbar 0x700}) is needed.  When build with
-@option{-march=la664}, it is enabled by default.  The default is
+Whether a same-address load-load barrier (@code{dbar 0x700}) is needed.  When
+build with @option{-march=la664}, it is enabled by default.  The default is
 @option{-mno-ld-seq-sa}, the load-load barrier is needed.
 
 @opindex mtls-dialect
