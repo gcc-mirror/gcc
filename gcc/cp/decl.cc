@@ -8477,6 +8477,9 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 		    = build_int_cst (TREE_TYPE (nargs),
 				     tree_to_uhwi (TREE_PURPOSE (nargs)) + 1);
 		}
+	      for (tree t = append_args_list; t; t = TREE_CHAIN (t))
+		TREE_VALUE (t)
+		  = cp_finish_omp_init_prefer_type (TREE_VALUE (t));
 	      DECL_ATTRIBUTES (variant) = tree_cons (
 		get_identifier ("omp declare variant variant args"),
 		TREE_VALUE (adjust_args_list), DECL_ATTRIBUTES (variant));

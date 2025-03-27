@@ -1,3 +1,11 @@
+2025-03-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-03-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* g++.dg/gomp/append-args-1.C: Remove expected dg-sorry.
+	* g++.dg/gomp/append-args-8.C: New test.
+
 2025-03-25  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:

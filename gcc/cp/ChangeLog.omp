@@ -1,3 +1,17 @@
+2025-03-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-03-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* cp-tree.h (cp_finish_omp_init_prefer_type): Add.
+	* decl.cc (omp_declare_variant_finalize_one): Call it.
+	* pt.cc (tsubst_attribute): Minor rebustification for OpenMP
+	append_args handling.
+	* semantics.cc (cp_omp_init_prefer_type_update): Rename to ...
+	(cp_finish_omp_init_prefer_type): ... this; remove static attribute
+	and return modified tree. Move clause handling to ...
+	(finish_omp_clauses): ... the caller.
+
 2025-03-27  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:

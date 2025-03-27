@@ -1,3 +1,10 @@
+2025-03-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-03-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (modify_call_for_omp_dispatch): Remove sorry.
+
 2025-03-27  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:

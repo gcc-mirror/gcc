@@ -7920,6 +7920,7 @@ extern tree cp_remove_omp_priv_cleanup_stmt	(tree *, int *, void *);
 extern bool cp_check_omp_declare_reduction	(tree);
 extern bool cp_check_omp_declare_mapper		(tree);
 extern void finish_omp_declare_simd_methods	(tree);
+extern tree cp_finish_omp_init_prefer_type	(tree);
 extern tree finish_omp_clauses			(tree, enum c_omp_region_type);
 extern tree omp_instantiate_mappers		(tree);
 extern tree push_omp_privatization_clauses	(bool);
