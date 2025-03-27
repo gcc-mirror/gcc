@@ -23,7 +23,7 @@ typedef enum omp_interop_t __GOMP_UINTPTR_T_ENUM
 float repl1(omp_interop_t, omp_interop_t, omp_interop_t);
 
 #pragma omp declare variant(repl1) match(construct={dispatch}) append_args(interop(target), interop(targetsync), interop (target))
-float base1();
+float base1(void);
 
 float
 test (int *a, int *b)
