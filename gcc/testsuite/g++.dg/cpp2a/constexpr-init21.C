@@ -20,7 +20,7 @@ constexpr A<int> a4(4); // { dg-error "not a constant expression|incompletely in
 
 struct s { int n; };
 constexpr A<s> b;
-constexpr A<s> b0(0); // {  dg-error "not a constant expression|incompletely initialized" }
+constexpr A<s> b0(0); // { dg-error "not a constant expression|incompletely initialized" }
 
 struct empty {};
 constexpr A<empty> c;

@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O2 -fstrict-enums --param case-values-threshold=1"}
+// { dg-options "-O2 -fstrict-enums --param case-values-threshold=1" }
 
 typedef int basic_block;
 

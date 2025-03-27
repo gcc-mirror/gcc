@@ -104,4 +104,4 @@ f13 (double x)
   /* Can't reassoc here.  */
   return bar (tmp1 * tmp2, tmp2);
 }
-/* { dg-final { scan-tree-dump-times "Optimizing copysign" 12 "reassoc1"} }*/
+/* { dg-final { scan-tree-dump-times "Optimizing copysign" 12 "reassoc1" } } */
