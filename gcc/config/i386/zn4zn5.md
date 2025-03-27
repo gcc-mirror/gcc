@@ -1367,6 +1367,20 @@
 				    (eq_attr "memory" "load"))))
 			 "znver4-direct,znver5-load,znver4-fpu0|znver4-fpu1|znver4-fpu2|znver4-fpu3")
 
+(define_insn_reservation "znver4_sse_log_evex_store" 1
+			 (and (eq_attr "cpu" "znver4")
+			      (and (eq_attr "type" "sselog")
+				   (and (eq_attr "mode" "V16SF,V8DF,XI")
+				    (eq_attr "memory" "store"))))
+			 "znver4-direct,znver4-store,znver4-fpu0*2|znver4-fpu1*2|znver4-fpu2*2|znver4-fpu3*2")
+
+(define_insn_reservation "znver5_sse_log_evex_store" 1
+			 (and (eq_attr "cpu" "znver5")
+			      (and (eq_attr "type" "sselog")
+				   (and (eq_attr "mode" "V16SF,V8DF,XI")
+				    (eq_attr "memory" "store"))))
+			 "znver4-direct,znver5-store,znver4-fpu0|znver4-fpu1|znver4-fpu2|znver4-fpu3")
+
 (define_insn_reservation "znver4_sse_log1_evex" 1
 			 (and (eq_attr "cpu" "znver4")
 			      (and (eq_attr "type" "sselog1")
