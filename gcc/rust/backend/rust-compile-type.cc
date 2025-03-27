@@ -481,6 +481,8 @@ TyTyResolveCompile::visit (const TyTy::ArrayType &type)
   tree folded_capacity_expr = fold_expr (capacity_expr);
 
   translated = Backend::array_type (element_type, folded_capacity_expr);
+  if (translated != error_mark_node)
+    translated = ctx->insert_compiled_type (translated);
 }
 
 void
