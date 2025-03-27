@@ -301,6 +301,27 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	    trait->get_mappings ().get_defid (), &trait_ref);
 	  rust_assert (ok);
 
+	  if (trait_item.value ()->get_item_kind ()
+	      == HIR::TraitItem::TraitItemKind::CONST)
+	    {
+	      auto &c
+		= *static_cast<HIR::TraitItemConst *> (trait_item.value ());
+	      if (!c.has_expr ())
+		{
+		  rich_location r (line_table, expr_locus);
+		  r.add_range (trait->get_locus ());
+		  r.add_range (c.get_locus ());
+		  rust_error_at (r, "no default expression on trait constant");
+		  return error_mark_node;
+		}
+
+	      return CompileExpr::Compile (c.get_expr (), ctx);
+	    }
+
+	  if (trait_item.value ()->get_item_kind ()
+	      != HIR::TraitItem::TraitItemKind::FUNC)
+	    return error_mark_node;
+
 	  // the type resolver can only resolve type bounds to their trait
 	  // item so its up to us to figure out if this path should resolve
 	  // to an trait-impl-block-item or if it can be defaulted to the
