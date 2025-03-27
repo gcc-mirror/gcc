@@ -472,8 +472,11 @@ MethodResolver::get_predicate_items (
       if (ty->get_kind () == TyTy::TypeKind::FNDEF)
 	{
 	  TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
-	  predicate_candidate candidate{lookup, fnty};
-	  predicate_items.push_back (candidate);
+	  if (fnty->is_method ())
+	    {
+	      predicate_candidate candidate{lookup, fnty};
+	      predicate_items.push_back (candidate);
+	    }
 	}
     }
 
