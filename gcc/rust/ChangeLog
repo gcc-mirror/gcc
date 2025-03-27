@@ -1,3 +1,9 @@
+2025-03-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* metadata/rust-export-metadata.cc
+	(PublicInterface::write_to_path): Use 'lbasename()' instead of
+	'basename()'.
+
 2025-03-24  Philip Herron  <herron.philip@googlemail.com>
 
 	* typecheck/rust-hir-path-probe.cc: update call

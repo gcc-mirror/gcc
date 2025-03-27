@@ -1,3 +1,188 @@
+2025-03-26  Jørgen Kvalsvik  <j@lambda.is>
+
+	* builtins.cc (expand_builtin_fork_or_exec): Call
+	coverage_instrumentation_p.
+	* ipa-inline.cc (can_early_inline_edge_p): Likewise.
+	* passes.cc (finish_optimization_passes): Likewise.
+	* profile.cc (coverage_instrumentation_p): New function.
+	* profile.h (coverage_instrumentation_p): New declaration.
+	* tree-profile.cc (tree_profiling): Call
+	coverage_instrumentation_p.
+	(pass_ipa_tree_profile::gate): Likewise.
+	* value-prof.h (coverage_instrumentation_p): New declaration.
+
+2025-03-26  Jørgen Kvalsvik  <j@lambda.is>
+
+	* Makefile.in (OBJS): Add prime-paths.o, path-coverage.o.
+	(GTFILES): Add prime-paths.cc, path-coverage.cc
+	(GCOV_OBJS): Add graphds.o, prime-paths.o, bitmap.o
+	* builtins.cc (expand_builtin_fork_or_exec): Check
+	path_coverage_flag.
+	* collect2.cc (main): Add -fno-path-coverage to OBSTACK.
+	* common.opt: Add new options -fpath-coverage,
+	-fpath-coverage-limit, -Wcoverage-too-many-paths
+	* doc/gcov.texi: Add --prime-paths, --prime-paths-lines,
+	--prime-paths-source documentation.
+	* doc/invoke.texi: Add -fpath-coverage, -fpath-coverage-limit,
+	-Wcoverage-too-many-paths documentation.
+	* gcc.cc: Link gcov on -fpath-coverage.
+	* gcov-counter.def (GCOV_COUNTER_PATHS): New.
+	* gcov-io.h (GCOV_TAG_PATHS): New.
+	(GCOV_TAG_PATHS_LENGTH): New.
+	(GCOV_TAG_PATHS_NUM): New.
+	* gcov.cc (class path_info): New.
+	(struct coverage_info): Add paths, paths_covered.
+	(find_prime_paths): New.
+	(add_path_counts): New.
+	(find_arc): New.
+	(print_usage): Add -e, --prime-paths, --prime-paths-lines,
+	--prime-paths-source.
+	(process_args): Likewise.
+	(json_set_prime_path_coverage): New.
+	(output_json_intermediate_file): Call
+	json_set_prime_path_coverage.
+	(process_all_functions): Call find_prime_paths.
+	(generate_results): Call add_path_counts.
+	(read_graph_file): Read path counters.
+	(read_count_file): Likewise.
+	(function_summary): Print path counts.
+	(file_summary): Likewise.
+	(print_source_line): New.
+	(print_prime_path_lines): New.
+	(print_inlined_separator): New.
+	(print_prime_path_source): New.
+	(output_path_coverage): New.
+	(output_lines): Print path coverage.
+	* ipa-inline.cc (can_early_inline_edge_p): Check
+	path_coverage_flag.
+	* passes.cc (finish_optimization_passes): Likewise.
+	* profile.cc (branch_prob): Likewise.
+	* selftest-run-tests.cc (selftest::run_tests): Run path coverage
+	tests.
+	* selftest.h (path_coverage_cc_tests): New declaration.
+	* tree-profile.cc (tree_profiling): Check path_coverage_flag.
+	(pass_ipa_tree_profile::gate): Likewise.
+	* path-coverage.cc: New file.
+	* prime-paths.cc: New file.
+
+2025-03-26  Jørgen Kvalsvik  <j@lambda.is>
+
+	* gcov.cc (generate_results): Count branches, conditions.
+	(function_summary): Output branch, calls, condition count.
+
+2025-03-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR driver/101544
+	* gcc.cc (driver_handle_option): Forward host '-lstdc++' to
+	offloading compilation.
+	* config/gcn/mkoffload.cc (main): Adjust.
+	* config/nvptx/mkoffload.cc (main): Likewise.
+
+2025-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119417
+	* tree-ssa-math-opts.cc (convert_mult_to_widen): Before changing
+	typeN because actual_precision/from_unsignedN differs cast rhsN
+	to typeN if it has a different type.
+	(convert_plusminus_to_widen): Before changing
+	typeN because actual_precision/from_unsignedN differs cast mult_rhsN
+	to typeN if it has a different type.
+
+2025-03-26  Jakub Jelinek  <jakub@redhat.com>
+	    Andi Kleen  <ak@gcc.gnu.org>
+
+	PR gcov-profile/118442
+	* profile.cc (branch_prob): Ignore EDGE_FAKE edges from musttail calls
+	to EXIT.
+
+2025-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119450
+	* config/i386/i386.md (narrow test peephole2): Test for
+	offsettable_memref_p in condition.
+
+2025-03-26  Richard Biener  <rguenther@suse.de>
+
+	PR target/119010
+	* config/i386/zn4zn5.md (znver4_sse_mov_fp, znver4_sse_mov_fp_load,
+	znver5_sse_mov_fp_load, znver4_sse_mov_fp_store,
+	znver5_sse_mov_fp_store): Also match V1SF and DF.
+
+2025-03-26  Richard Biener  <rguenther@suse.de>
+
+	PR target/119010
+	* config/i386/zn4zn5.md (znver4_imov_double_store,
+	znver5_imov_double_store, znver4_imov_store, znver5_imov_store):
+	New reservations for integer stores.
+
+2025-03-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118795
+	* match.pd (vec_perm <vec_perm <a, b>> -> vec_perm <a, b>):
+	Use the appropriate check to see whether the original
+	outer permute was supported.
+
+2025-03-26  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/avx10_2-512convertintrin.h (_mm512_mask_cvtx2ps_ph): Formatting fixes
+	(_mm512_mask_cvtx_round2ps_ph): Ditto
+	(_mm512_maskz_cvtx_round2ps_ph): Ditto
+	(_mm512_cvtbiassph_bf8): Rename to _mm512_cvts_biasph_bf8.
+	(_mm512_mask_cvtbiassph_bf8): Rename to _mm512_mask_cvts_biasph_bf8.
+	(_mm512_maskz_cvtbiassph_bf8): Rename to _mm512_maskz_cvts_biasph_bf8.
+	(_mm512_cvtbiassph_hf8): Rename to _mm512_cvts_biasph_hf8.
+	(_mm512_mask_cvtbiassph_hf8): Rename to _mm512_mask_cvts_biasph_hf8.
+	(_mm512_maskz_cvtbiassph_hf8): Rename to _mm512_maskz_cvts_biasph_hf8.
+	(_mm512_cvts2ph_bf8): Rename to _mm512_cvts_2ph_bf8.
+	(_mm512_mask_cvts2ph_bf8): Rename to _mm512_mask_cvts_2ph_bf8.
+	(_mm512_maskz_cvts2ph_bf8): Rename to _mm512_maskz_cvts_2ph_bf8.
+	(_mm512_cvts2ph_hf8): Rename to _mm512_cvts_2ph_hf8.
+	(_mm512_mask_cvts2ph_hf8): Rename to _mm512_mask_cvts_2ph_hf8.
+	(_mm512_maskz_cvts2ph_hf8): Rename to _mm512_maskz_cvts_2ph_hf8.
+	(_mm512_cvtsph_bf8): Rename to _mm512_cvts_ph_bf8.
+	(_mm512_mask_cvtsph_bf8): Rename to _mm512_mask_cvts_ph_bf8.
+	(_mm512_maskz_cvtsph_bf8): Rename to _mm512_maskz_cvts_ph_bf8.
+	(_mm512_cvtsph_hf8): Rename to _mm512_cvts_ph_hf8.
+	(_mm512_mask_cvtsph_hf8): Rename to _mm512_mask_cvts_ph_hf8.
+	(_mm512_maskz_cvtsph_hf8): Rename to _mm512_maskz_cvts_ph_hf8.
+	* config/i386/avx10_2convertintrin.h
+	(_mm_cvtbiassph_bf8): Rename to _mm_cvts_biasph_bf8.
+	(_mm_mask_cvtbiassph_bf8): Rename to _mm_mask_cvts_biasph_bf8.
+	(_mm_maskz_cvtbiassph_bf8): Rename to _mm_maskz_cvts_biasph_bf8.
+	(_mm256_cvtbiassph_bf8): Rename to _mm256_cvts_biasph_bf8.
+	(_mm256_mask_cvtbiassph_bf8): Rename to _mm256_mask_cvts_biasph_bf8.
+	(_mm256_maskz_cvtbiassph_bf8): Rename to _mm256_maskz_cvts_biasph_bf8.
+	(_mm_cvtbiassph_hf8): Rename to _mm_cvts_biasph_hf8.
+	(_mm_mask_cvtbiassph_hf8): Rename to _mm_mask_cvts_biasph_hf8.
+	(_mm_maskz_cvtbiassph_hf8): Rename to _mm_maskz_cvts_biasph_hf8.
+	(_mm256_cvtbiassph_hf8): Rename to _mm256_cvts_biasph_hf8.
+	(_mm256_mask_cvtbiassph_hf8): Rename to _mm256_mask_cvts_biasph_hf8.
+	(_mm256_maskz_cvtbiassph_hf8): Rename to _mm256_maskz_cvts_biasph_hf8.
+	(_mm_cvts2ph_bf8): Rename to _mm_cvts_2ph_bf8.
+	(_mm_mask_cvts2ph_bf8): Rename to _mm_mask_cvts_2ph_bf8.
+	(_mm_maskz_cvts2ph_bf8): Rename to _mm_maskz_cvts_2ph_bf8.
+	(_mm256_cvts2ph_bf8): Rename to _mm256_cvts_2ph_bf8.
+	(_mm256_mask_cvts2ph_bf8): Rename to _mm256_mask_cvts_2ph_bf8.
+	(_mm256_maskz_cvts2ph_bf8): Rename to _mm256_maskz_cvts_2ph_bf8.
+	(_mm_cvts2ph_hf8): Rename to _mm_cvts_2ph_hf8.
+	(_mm_mask_cvts2ph_hf8): Rename to _mm_mask_cvts_2ph_hf8.
+	(_mm_maskz_cvts2ph_hf8): Rename to _mm_maskz_cvts_2ph_hf8.
+	(_mm256_cvts2ph_hf8): Rename to _mm256_cvts_2ph_hf8.
+	(_mm256_mask_cvts2ph_hf8): Rename to _mm256_mask_cvts_2ph_hf8.
+	(_mm256_maskz_cvts2ph_hf8): Rename to _mm256_maskz_cvts_2ph_hf8.
+	(_mm_cvtsph_bf8): Rename to _mm_cvts_ph_bf8.
+	(_mm_mask_cvtsph_bf8): Rename to _mm_mask_cvts_ph_bf8.
+	(_mm_maskz_cvtsph_bf8): Rename to _mm_maskz_cvts_ph_bf8.
+	(_mm256_cvtsph_bf8): Rename to _mm256_cvts_ph_bf8.
+	(_mm256_mask_cvtsph_bf8): Rename to _mm256_mask_cvts_ph_bf8.
+	(_mm256_maskz_cvtsph_bf8): Rename to _mm256_maskz_cvts_ph_bf8.
+	(_mm_cvtsph_hf8): Rename to _mm_cvts_ph_hf8.
+	(_mm_mask_cvtsph_hf8): Rename to _mm_mask_cvts_ph_hf8.
+	(_mm_maskz_cvtsph_hf8): Rename to _mm_maskz_cvts_ph_hf8.
+	(_mm256_cvtsph_hf8): Rename to _mm256_cvts_ph_hf8.
+	(_mm256_mask_cvtsph_hf8): Rename to _mm256_mask_cvts_ph_hf8.
+	(_mm256_maskz_cvtsph_hf8): Rename to _mm256_maskz_cvts_ph_hf8.
+
 2025-03-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcov.cc (get_gcov_intermediate_filename): Use lbasename().

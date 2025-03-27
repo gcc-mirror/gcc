@@ -1,3 +1,9 @@
+2025-03-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118796
+	* resolve.cc: Do not apply default initialization to a derived-type
+	function result if the resolved function is use-associated.
+
 2025-03-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/119419

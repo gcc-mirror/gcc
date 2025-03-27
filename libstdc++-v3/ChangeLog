@@ -1,3 +1,42 @@
+2025-03-26  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* include/bits/version.def (constexpr_algorithms): Change
+	the value of the feature-testing macro.
+	* include/bits/version.h: Regenerate.
+	* testsuite/25_algorithms/cpp_lib_constexpr.cc: Amend the
+	check of the feature-testing macro.
+
+2025-03-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119415
+	* include/std/flat_set (_Flat_set_impl:insert_range):
+	Replace __detail::__cpp17_input_iterator with __has_input_iter_cat.
+	* testsuite/23_containers/flat_multiset/1.cc: New tests
+	* testsuite/23_containers/flat_set/1.cc: New tests
+
+2025-03-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/111055
+	* include/bits/deque.tcc (deque::prepend_range, deque::append_range)
+	(deque::insert_range, __advance_dist): Define.
+	(deque::_M_range_prepend, deque::_M_range_append):
+	Extract from _M_range_insert_aux for _ForwardIterator(s).
+	* include/bits/stl_deque.h (deque::assign_range): Define.
+	(deque::prepend_range, deque::append_range, deque::insert_range):
+	Declare.
+	(deque(from_range_t, _Rg&&, const allocator_type&)): Define constructor
+	and deduction guide.
+	* include/debug/deque (deque::prepend_range, deque::append_range)
+	(deque::assign_range):	Define.
+	(deque(from_range_t, _Rg&&, const allocator_type&)): Define constructor
+	and deduction guide.
+	* testsuite/23_containers/deque/cons/from_range.cc: New test.
+	* testsuite/23_containers/deque/modifiers/append_range.cc: New test.
+	* testsuite/23_containers/deque/modifiers/assign/assign_range.cc:
+	New test.
+	* testsuite/23_containers/deque/modifiers/prepend_range.cc: New test.
+	* testsuite/23_containers/deque/modifiers/insert/insert_range.cc: New file.
+
 2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/ranges (ranges::to): Allow unions as well as

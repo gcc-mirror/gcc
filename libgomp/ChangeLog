@@ -1,3 +1,23 @@
+2025-03-26  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR driver/101544
+	* testsuite/libgomp.c++/pr101544-1-O0.C: Remove
+	'-foffload-options=-lstdc++'.
+	* testsuite/libgomp.c++/pr101544-1.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr101544-1.C: Likewise.
+
+2025-03-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP 5.1): Add @ref to offload-target specifics
+	for 'interop'.
+	(OpenMP 6.0): Mark dispatch's interop clause as implemented.
+	(omp_get_interop_int, omp_get_interop_str,
+	omp_get_interop_ptr, omp_get_interop_type_desc): Add @ref to
+	Offload-Target Specifics; change ret_code argument type to
+	'omp_interop_rc_t *'.
+	(Offload-Target Specifics): Document the supported OpenMP
+	interop foreign runtimes on AMD and Nvidia GPUs.
+
 2025-03-25  Sandra Loosemore  <sloosemore@baylibre.com>
 	    Tobias Burnus  <tburnus@baylibre.com>
 

@@ -1,3 +1,9 @@
+2025-03-26  Thomas Schwinge  <tschwinge@baylibre.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* rtti.cc (throw_bad_typeid): Adjust implicit '__cxa_bad_typeid'
+	prototype to reality.  Adjust all users.
+
 2025-03-25  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/114525

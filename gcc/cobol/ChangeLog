@@ -1,3 +1,31 @@
+2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* except.cc (cbl_enabled_exceptions_t::turn_on_off): Replace
+	quadratic loop with a single pass.
+
+2025-03-26  Bob Dubner  <rdubner@symas.com>
+
+	* genapi.cc: (parser_display_internal): Adjust for E vs e exponent notation.
+	* parse.y: (literal_refmod_valid): Display correct value in error message.
+
+2025-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR cobol/119242
+	* genutil.h (get_power_of_ten): Remove #pragma GCC diagnostic
+	around declaration.
+	* genapi.cc (psa_FldLiteralN): Change type of value from
+	__int128 to FIXED_WIDE_INT(128).  Remove #pragma GCC diagnostic
+	around the declaration.  Use wi::min_precision to determine
+	minimum unsigned precision of the value.  Use wi::neg_p instead
+	of value < 0 tests and wi::set_bit_in_zero<FIXED_WIDE_INT(128)>
+	to build sign bit.  Handle field->data.capacity == 16 like
+	1, 2, 4 and 8, use wide_int_to_tree instead of build_int_cst.
+	(mh_source_is_literalN): Remove #pragma GCC diagnostic around
+	the definition.
+	(binary_initial_from_float128): Likewise.
+	* genutil.cc (get_power_of_ten): Remove #pragma GCC diagnostic
+	before the definition.
+
 2025-03-25  Bob Dubner  <rdubner@symas.com>
 	    Richard Biener  <rguenth@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>

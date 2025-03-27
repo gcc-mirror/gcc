@@ -1,3 +1,148 @@
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	PR ipa/98265
+	* g++.dg/tree-ssa/pr98265.C: Use -std=c++14.
+	Use scan-tree-dump instead of scan-tree-dump-times.
+
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	PR tree-optimization/37143
+	* g++.dg/vect/pr37143.C: Move to...
+	* g++.dg/vect/pr37143.cc: ...here.
+
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	PR ipa/98265
+	* gcc.dg/tree-ssa/pr98265.C: Move to...
+	* g++.dg/tree-ssa/pr98265.C: ...here.
+
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	PR middle-end/112938
+	* g++.dg/strub-internal-pr112938.cc: Move to...
+	* g++.dg/strub-internal-pr112938.C: ...here.
+
+2025-03-26  Jørgen Kvalsvik  <j@lambda.is>
+
+	* lib/gcov.exp: Add prime paths test function.
+	* g++.dg/gcov/gcov-22.C: New test.
+	* g++.dg/gcov/gcov-23-1.h: New test.
+	* g++.dg/gcov/gcov-23-2.h: New test.
+	* g++.dg/gcov/gcov-23.C: New test.
+	* gcc.misc-tests/gcov-29.c: New test.
+	* gcc.misc-tests/gcov-30.c: New test.
+	* gcc.misc-tests/gcov-31.c: New test.
+	* gcc.misc-tests/gcov-32.c: New test.
+	* gcc.misc-tests/gcov-33.c: New test.
+	* gcc.misc-tests/gcov-34.c: New test.
+
+2025-03-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118796
+	* gfortran.dg/derived_result_4.f90: New test.
+
+2025-03-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.target/powerpc/pr70243.c: Fix missing trailing " }" in
+	dg-do directive.
+	* gcc.target/powerpc/pr91903.c: Likewise.
+
+2025-03-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/gomp/metadirective-target-device-2.c: Fix missing
+	trailing " }" on dg-do directive.
+	* gcc.dg/gomp/attrs-21.c: Likewise for dg-options.
+	* gcc.dg/gomp/parallel-2.c: Drop ":" from dg-message.
+
+2025-03-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/ipa/pr110377.c: Fix missing trailing " }" in dg-do
+	directive.
+	* gcc.dg/plugin/infoleak-1.c: Fix dg-bogus directive.
+	* gcc.dg/pr101364-1.c: Fix missing trailing " }" in dg-options
+	directive.
+	* gcc.dg/pr113207.c: Fix dg-do.
+	* gcc.dg/sarif-output/include-chain-2.c: Fix ordering of dg-do
+	and dg-require-effective-target.
+	* gcc.dg/strub-pr118007.c: Likewise.
+	* gcc.dg/tanhbysinh.c: Fix missing whitespace after opening
+	brace and before closing brace in 6 dg-final directives.
+	* gcc.dg/uninit-pred-3_c.c: Fix missing whitespace after opening
+	brace in 6 dg-final directive.
+	* gcc.dg/uninit-pred-3_d.c: Likewise.
+	* gcc.dg/variable-sized-type-flex-array.c: Fix missing space
+	between dg-bogus and message in 2 places.
+
+2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/tree-ssa/initlist-opt1.C: Match _M_range_initialize_n
+	instead of _M_range_initialize.
+
+2025-03-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* c-c++-common/gomp/metadirective-device.c
+	(dg-additional-options): Use on all x86 targets.  Restrict to lp64.
+	* c-c++-common/gomp/metadirective-target-device-1.c: Likewise.
+
+2025-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/gomp/append-args-interop.f90: Don't use omp_lib,
+	instead use iso_c_binding and define omp_interop_kind parameter
+	locally.
+
+2025-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119417
+	* gcc.dg/torture/pr119417.c: New test.
+
+2025-03-26  Jakub Jelinek  <jakub@redhat.com>
+	    Andi Kleen  <ak@gcc.gnu.org>
+
+	PR gcov-profile/118442
+	* c-c++-common/pr118442.c: New test.
+
+2025-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/55583
+	PR target/119465
+	* gcc.target/i386/pr55583.c: Add -mno-sse -mno-mmx to
+	dg-additional-options.  Expect 4 shrdl and 2 shldl instructions on
+	ia32.
+
+2025-03-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr117946.c: Require dfp support.
+	* gcc.target/i386/pr118017.c: Likewise.  Use
+	dg-require-effective-target for both this and int128.
+
+2025-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119450
+	* gcc.target/i386/pr119450.c: New test.
+
+2025-03-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/118795
+	* g++.dg/torture/pr118795.C: New testcase.
+
+2025-03-26  Sam James  <sam@gentoo.org>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/119382
+	* gcc.dg/ipa/ipa-icf-40.c: New test.
+
+2025-03-26  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx10_2-512-convert-1.c: Modify function name
+	to follow the latest version.
+	* gcc.target/i386/avx10_2-512-vcvt2ph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvt2ph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtbiasph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2bf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-512-vcvtph2hf8s-2.c: Ditto.
+	* gcc.target/i386/avx10_2-convert-1.c: Ditto.
+
 2025-03-25  Bob Dubner  <rdubner@symas.com>
 	    Richard Biener  <rguenth@suse.de>
 	    Jakub Jelinek  <jakub@redhat.com>
