@@ -650,7 +650,8 @@ namespace __debug
 	else if (__first.base() == _Base::begin()
 		 || __last.base() == _Base::end())
 	  {
-	    this->_M_detach_singular();
+	    const deque* __this = this;
+	    __this->_M_detach_singular();
 	    for (_Base_const_iterator __position = __first.base();
 		 __position != __last.base(); ++__position)
 	      {
@@ -663,7 +664,7 @@ namespace __debug
 	      }
 	    __catch(...)
 	      {
-		this->_M_revalidate_singular();
+		__this->_M_revalidate_singular();
 		__throw_exception_again;
 	      }
 	  }

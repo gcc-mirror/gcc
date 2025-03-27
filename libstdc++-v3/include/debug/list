@@ -321,7 +321,8 @@ namespace __debug
       void
       resize(size_type __sz)
       {
-	this->_M_detach_singular();
+	const list* __this = this;
+	__this->_M_detach_singular();
 
 	// if __sz < size(), invalidate all iterators in [begin + __sz, end())
 	_Base_iterator __victim = _Base::begin();
@@ -338,7 +339,7 @@ namespace __debug
 	  }
 	__catch(...)
 	  {
-	    this->_M_revalidate_singular();
+	    __this->_M_revalidate_singular();
 	    __throw_exception_again;
 	  }
       }
@@ -346,7 +347,8 @@ namespace __debug
       void
       resize(size_type __sz, const _Tp& __c)
       {
-	this->_M_detach_singular();
+	const list* __this = this;
+	__this->_M_detach_singular();
 
 	// if __sz < size(), invalidate all iterators in [begin + __sz, end())
 	_Base_iterator __victim = _Base::begin();
@@ -363,7 +365,7 @@ namespace __debug
 	  }
 	__catch(...)
 	  {
-	    this->_M_revalidate_singular();
+	    __this->_M_revalidate_singular();
 	    __throw_exception_again;
 	  }
       }
@@ -371,7 +373,8 @@ namespace __debug
       void
       resize(size_type __sz, _Tp __c = _Tp())
       {
-	this->_M_detach_singular();
+	const list* __this = this;
+	__this->_M_detach_singular();
 
 	// if __sz < size(), invalidate all iterators in [begin + __sz, end())
 	_Base_iterator __victim = _Base::begin();
@@ -388,7 +391,7 @@ namespace __debug
 	  }
 	__catch(...)
 	  {
-	    this->_M_revalidate_singular();
+	    __this->_M_revalidate_singular();
 	    __throw_exception_again;
 	  }
       }

@@ -44,7 +44,7 @@ namespace __gnu_debug
 	  if (__rhs._M_is_end())
 	    return
 	      {
-		_M_get_sequence()->bucket_size(bucket()),
+		_M_get_ucontainer()->bucket_size(bucket()),
 		__dp_exact
 	      };
 
@@ -56,7 +56,7 @@ namespace __gnu_debug
 	  if (__rhs._M_is_begin())
 	    return
 	      {
-		-_M_get_sequence()->bucket_size(bucket()),
+		-_M_get_ucontainer()->bucket_size(bucket()),
 		__dp_exact
 	      };
 

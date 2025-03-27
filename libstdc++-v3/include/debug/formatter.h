@@ -96,7 +96,7 @@ namespace __gnu_debug
   template<typename _Iterator, typename _Sequence, typename _Category>
     class _Safe_iterator;
 
-  template<typename _Iterator, typename _Sequence>
+  template<typename _Iterator, typename _UContainer>
     class _Safe_local_iterator;
 
   template<typename _Sequence>
@@ -316,8 +316,8 @@ namespace __gnu_debug
 	    }
 	}
 
-      template<typename _Iterator, typename _Sequence>
-	_Parameter(_Safe_local_iterator<_Iterator, _Sequence> const& __it,
+      template<typename _Iterator, typename _UContainer>
+	_Parameter(_Safe_local_iterator<_Iterator, _UContainer> const& __it,
 		   const char* __name, _Is_iterator)
 	: _M_kind(__iterator),  _M_variant()
 	{
@@ -326,8 +326,8 @@ namespace __gnu_debug
 	  _M_variant._M_iterator._M_type = _GLIBCXX_TYPEID(_Iterator);
 	  _M_variant._M_iterator._M_constness =
 	    __it._S_constant() ? __const_iterator : __mutable_iterator;
-	  _M_variant._M_iterator._M_sequence = __it._M_get_sequence();
-	  _M_variant._M_iterator._M_seq_type = _GLIBCXX_TYPEID(_Sequence);
+	  _M_variant._M_iterator._M_sequence = __it._M_get_ucontainer();
+	  _M_variant._M_iterator._M_seq_type = _GLIBCXX_TYPEID(_UContainer);
 
 	  if (__it._M_singular())
 	    {

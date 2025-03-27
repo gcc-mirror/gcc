@@ -210,6 +210,9 @@ namespace __gnu_test
 	clit = container.cbegin(bn);
 	assert( ++clit == container.cend(bn) );
 
+	clit = container.begin(bn);
+	assert( ++clit == container.cend(bn) );
+
 	assert( container.begin(bn) != container.cend(bn) );
       }
     };
@@ -304,6 +307,9 @@ namespace __gnu_test
 	assert( container.cbegin() != container.cend() );
 	assert( container.cbegin() != container.end() );
 	assert( container.begin() != container.cend() );
+
+	auto cit = container.begin();
+	assert( cit == container.cbegin() );
       }
   };
 

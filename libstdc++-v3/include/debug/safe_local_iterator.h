@@ -52,15 +52,15 @@ namespace __gnu_debug
   /** \brief Safe iterator wrapper.
    *
    *  The class template %_Safe_local_iterator is a wrapper around an
-   *  iterator that tracks the iterator's movement among sequences and
-   *  checks that operations performed on the "safe" iterator are
+   *  iterator that tracks the iterator's movement among unordered containers
+   *  and checks that operations performed on the "safe" iterator are
    *  legal. In additional to the basic iterator operations (which are
    *  validated, and then passed to the underlying iterator),
    *  %_Safe_local_iterator has member functions for iterator invalidation,
-   *  attaching/detaching the iterator from sequences, and querying
+   *  attaching/detaching the iterator from unordered containers, and querying
    *  the iterator's state.
    */
-  template<typename _Iterator, typename _Sequence>
+  template<typename _Iterator, typename _UContainer>
     class _Safe_local_iterator
     : private _Iterator
     , public _Safe_local_iterator_base
@@ -68,28 +68,27 @@ namespace __gnu_debug
       typedef _Iterator _Iter_base;
       typedef _Safe_local_iterator_base _Safe_base;
 
-      typedef typename _Sequence::size_type size_type;
+      typedef typename _UContainer::size_type size_type;
 
       typedef std::iterator_traits<_Iterator> _Traits;
 
-      typedef std::__are_same<
-	typename _Sequence::_Base::const_local_iterator,
-	_Iterator> _IsConstant;
+      using _IsConstant = std::__are_same<
+	typename _UContainer::_Base::const_local_iterator, _Iterator>;
 
-      typedef typename __gnu_cxx::__conditional_type<_IsConstant::__value,
-	typename _Sequence::_Base::local_iterator,
-	typename _Sequence::_Base::const_local_iterator>::__type
-      _OtherIterator;
+      using _OtherIterator = std::__conditional_t<
+	_IsConstant::__value,
+	typename _UContainer::_Base::local_iterator,
+	typename _UContainer::_Base::const_local_iterator>;
 
       typedef _Safe_local_iterator _Self;
-      typedef _Safe_local_iterator<_OtherIterator, _Sequence> _OtherSelf;
+      typedef _Safe_local_iterator<_OtherIterator, _UContainer> _OtherSelf;
 
       struct _Unchecked { };
 
       _Safe_local_iterator(const _Safe_local_iterator& __x,
 			   _Unchecked) noexcept
       : _Iter_base(__x.base())
-      { _M_attach(__x._M_sequence); }
+      { _M_attach(__x._M_safe_container()); }
 
     public:
       typedef _Iterator					iterator_type;
@@ -104,12 +103,13 @@ namespace __gnu_debug
 
       /**
        * @brief Safe iterator construction from an unsafe iterator and
-       * its sequence.
+       * its unordered container.
        *
-       * @pre @p seq is not NULL
+       * @pre @p cont is not NULL
        * @post this is not singular
        */
-      _Safe_local_iterator(_Iterator __i, const _Safe_sequence_base* __cont)
+      _Safe_local_iterator(_Iterator __i,
+			   const _Safe_unordered_container_base* __cont)
       : _Iter_base(__i), _Safe_base(__cont, _S_constant())
       { }
 
@@ -126,7 +126,7 @@ namespace __gnu_debug
 			      _M_message(__msg_init_copy_singular)
 			      ._M_iterator(*this, "this")
 			      ._M_iterator(__x, "other"));
-	_M_attach(__x._M_sequence);
+	_M_attach(__x._M_safe_container());
       }
 
       /**
@@ -141,7 +141,7 @@ namespace __gnu_debug
 			      _M_message(__msg_init_copy_singular)
 			      ._M_iterator(*this, "this")
 			      ._M_iterator(__x, "other"));
-	auto __cont = __x._M_sequence;
+	auto __cont = __x._M_safe_container();
 	__x._M_detach();
 	std::swap(base(), __x.base());
 	_M_attach(__cont);
@@ -156,7 +156,7 @@ namespace __gnu_debug
 	  const _Safe_local_iterator<_MutableIterator,
 	  typename __gnu_cxx::__enable_if<_IsConstant::__value &&
 	    std::__are_same<_MutableIterator, _OtherIterator>::__value,
-					  _Sequence>::__type>& __x) noexcept
+					  _UContainer>::__type>& __x) noexcept
 	: _Iter_base(__x.base())
 	{
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -166,7 +166,7 @@ namespace __gnu_debug
 				_M_message(__msg_init_const_singular)
 				._M_iterator(*this, "this")
 				._M_iterator(__x, "other"));
-	  _M_attach(__x._M_sequence);
+	  _M_attach(__x._M_safe_container());
 	}
 
       /**
@@ -193,7 +193,7 @@ namespace __gnu_debug
 	  {
 	    _M_detach();
 	    base() = __x.base();
-	    _M_attach(__x._M_sequence);
+	    _M_attach(__x._M_safe_container());
 	  }
 
 	return *this;
@@ -225,7 +225,7 @@ namespace __gnu_debug
 	  {
 	    _M_detach();
 	    base() = __x.base();
-	    _M_attach(__x._M_sequence);
+	    _M_attach(__x._M_safe_container());
 	  }
 
 	__x._M_detach();
@@ -318,15 +318,15 @@ namespace __gnu_debug
        */
       operator _Iterator() const { return *this; }
 
-      /** Attach iterator to the given sequence. */
+      /** Attach iterator to the given unordered container. */
       void
-      _M_attach(_Safe_sequence_base* __seq)
-      { _Safe_base::_M_attach(__seq, _S_constant()); }
+      _M_attach(const _Safe_unordered_container_base* __cont)
+      { _Safe_base::_M_attach(__cont, _S_constant()); }
 
       /** Likewise, but not thread-safe. */
       void
-      _M_attach_single(_Safe_sequence_base* __seq)
-      { _Safe_base::_M_attach_single(__seq, _S_constant()); }
+      _M_attach_single(const _Safe_unordered_container_base* __cont)
+      { _Safe_base::_M_attach_single(__cont, _S_constant()); }
 
       /// Is the iterator dereferenceable?
       bool
@@ -353,25 +353,31 @@ namespace __gnu_debug
       typename _Distance_traits<_Iterator>::__type
       _M_get_distance_to(const _Safe_local_iterator& __rhs) const;
 
-      // The sequence this iterator references.
-      typename __gnu_cxx::__conditional_type<
-	_IsConstant::__value, const _Sequence*, _Sequence*>::__type
-      _M_get_sequence() const
-      { return static_cast<_Sequence*>(_M_sequence); }
+      // The unordered container this iterator references.
+      std::__conditional_t<
+	_IsConstant::__value, const _UContainer*, _UContainer*>
+      _M_get_ucontainer() const
+      {
+	// Looks like not const-correct, but if _IsConstant the constness
+	// is restored when returning the container pointer and if not
+	// _IsConstant we are allowed to remove constness.
+	return static_cast<_UContainer*>
+	  (const_cast<_Safe_unordered_container_base*>(_M_safe_container()));
+      }
 
-      /// Is this iterator equal to the sequence's begin(bucket) iterator?
+      /// Is this iterator equal to the container's begin(bucket) iterator?
       bool _M_is_begin() const
-      { return base() == _M_get_sequence()->_M_base().begin(bucket()); }
+      { return base() == _M_get_ucontainer()->_M_base().begin(bucket()); }
 
-      /// Is this iterator equal to the sequence's end(bucket) iterator?
+      /// Is this iterator equal to the container's end(bucket) iterator?
       bool _M_is_end() const
-      { return base() == _M_get_sequence()->_M_base().end(bucket()); }
+      { return base() == _M_get_ucontainer()->_M_base().end(bucket()); }
 
       /// Is this iterator part of the same bucket as the other one?
       template<typename _Other>
 	bool
 	_M_in_same_bucket(const _Safe_local_iterator<_Other,
-						     _Sequence>& __other) const
+						     _UContainer>& __other) const
 	{ return bucket() == __other.bucket(); }
 
       friend inline bool
@@ -404,31 +410,31 @@ namespace __gnu_debug
     };
 
   /** Safe local iterators know how to check if they form a valid range. */
-  template<typename _Iterator, typename _Sequence>
+  template<typename _Iterator, typename _UContainer>
     inline bool
-    __valid_range(const _Safe_local_iterator<_Iterator, _Sequence>& __first,
-		  const _Safe_local_iterator<_Iterator, _Sequence>& __last,
+    __valid_range(const _Safe_local_iterator<_Iterator, _UContainer>& __first,
+		  const _Safe_local_iterator<_Iterator, _UContainer>& __last,
 		  typename _Distance_traits<_Iterator>::__type& __dist_info)
     { return __first._M_valid_range(__last, __dist_info); }
 
-  template<typename _Iterator, typename _Sequence>
+  template<typename _Iterator, typename _UContainer>
     inline bool
-    __valid_range(const _Safe_local_iterator<_Iterator, _Sequence>& __first,
-		  const _Safe_local_iterator<_Iterator, _Sequence>& __last)
+    __valid_range(const _Safe_local_iterator<_Iterator, _UContainer>& __first,
+		  const _Safe_local_iterator<_Iterator, _UContainer>& __last)
     {
       typename _Distance_traits<_Iterator>::__type __dist_info;
       return __first._M_valid_range(__last, __dist_info);
     }
 
 #if __cplusplus < 201103L
-  template<typename _Iterator, typename _Sequence>
-    struct _Unsafe_type<_Safe_local_iterator<_Iterator, _Sequence> >
+  template<typename _Iterator, typename _UContainer>
+    struct _Unsafe_type<_Safe_local_iterator<_Iterator, _UContainer> >
     { typedef _Iterator _Type; };
 #endif
 
-  template<typename _Iterator, typename _Sequence>
+  template<typename _Iterator, typename _UContainer>
     inline _Iterator
-    __unsafe(const _Safe_local_iterator<_Iterator, _Sequence>& __it)
+    __unsafe(const _Safe_local_iterator<_Iterator, _UContainer>& __it)
     { return __it.base(); }
 
 } // namespace __gnu_debug

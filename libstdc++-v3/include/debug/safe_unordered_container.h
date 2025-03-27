@@ -62,6 +62,10 @@ namespace __gnu_debug
       _M_cont() noexcept
       { return *static_cast<_Container*>(this); }
 
+      const _Safe_unordered_container*
+      _M_self() const
+      { return this; }
+
     protected:
       void
       _M_invalidate_locals()

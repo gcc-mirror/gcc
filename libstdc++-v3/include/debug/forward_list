@@ -58,44 +58,44 @@ namespace __gnu_debug
     class _Safe_forward_list
     : public _Safe_sequence<_SafeSequence>
     {
-      _SafeSequence&
-      _M_this() noexcept
-      { return *static_cast<_SafeSequence*>(this); }
+      const _SafeSequence*
+      _M_this() const noexcept
+      { return static_cast<const _SafeSequence*>(this); }
 
       static void
-      _M_swap_aux(_Safe_sequence_base& __lhs,
+      _S_swap_aux(const _Safe_forward_list& __lhs,
 		  _Safe_iterator_base*& __lhs_iterators,
-		  _Safe_sequence_base& __rhs,
+		  const _Safe_forward_list& __rhs,
 		  _Safe_iterator_base*& __rhs_iterators);
 
-      void _M_swap_single(_Safe_sequence_base&) noexcept;
+      void _M_swap_single(const _Safe_forward_list&) const noexcept;
 
     protected:
       void
-      _M_invalidate_all()
+      _M_invalidate_all() const
       {
-	using _Base_const_iterator = __decltype(_M_this()._M_base().cend());
+	using _Base_const_iterator = __decltype(_M_this()->_M_base().cend());
 	this->_M_invalidate_if([this](_Base_const_iterator __it)
 	{
-	  return __it != _M_this()._M_base().cbefore_begin()
-	    && __it != _M_this()._M_base().cend(); });
+	  return __it != _M_this()->_M_base().cbefore_begin()
+	    && __it != _M_this()->_M_base().cend(); });
       }
 
-      void _M_swap(_Safe_sequence_base&) noexcept;
+      void
+      _M_swap(const _Safe_forward_list&) const noexcept;
     };
 
    template<typename _SafeSequence>
     void
     _Safe_forward_list<_SafeSequence>::
-    _M_swap_aux(_Safe_sequence_base& __lhs,
+    _S_swap_aux(const _Safe_forward_list& __lhs,
 		_Safe_iterator_base*& __lhs_iterators,
-		_Safe_sequence_base& __rhs,
+		const _Safe_forward_list& __rhs,
 		_Safe_iterator_base*& __rhs_iterators)
     {
       using const_iterator = typename _SafeSequence::const_iterator;
       _Safe_iterator_base* __bbegin_its = 0;
       _Safe_iterator_base* __last_bbegin = 0;
-      _SafeSequence& __rseq = static_cast<_SafeSequence&>(__rhs);
 
       for (_Safe_iterator_base* __iter = __lhs_iterators; __iter;)
 	{
@@ -104,7 +104,7 @@ namespace __gnu_debug
 	  const_iterator* __victim =
 	    static_cast<const_iterator*>(__victim_base);
 	  __iter = __iter->_M_next;
-	  if (__victim->base() == __rseq._M_base().cbefore_begin())
+	  if (__victim->base() == __rhs._M_this()->_M_base().cbefore_begin())
 	    {
 	      __victim->_M_unlink();
 	      if (__lhs_iterators == __victim_base)
@@ -136,21 +136,21 @@ namespace __gnu_debug
    template<typename _SafeSequence>
     void
     _Safe_forward_list<_SafeSequence>::
-    _M_swap_single(_Safe_sequence_base& __other) noexcept
+    _M_swap_single(const _Safe_forward_list& __other) const noexcept
     {
-      std::swap(_M_this()._M_iterators, __other._M_iterators);
-      std::swap(_M_this()._M_const_iterators, __other._M_const_iterators);
+      std::swap(_M_this()->_M_iterators, __other._M_iterators);
+      std::swap(_M_this()->_M_const_iterators, __other._M_const_iterators);
       // Useless, always 1 on forward_list
-      //std::swap(_M_this()_M_version, __other._M_version);
-      _Safe_iterator_base* __this_its = _M_this()._M_iterators;
-      _M_swap_aux(__other, __other._M_iterators,
-		  _M_this(), _M_this()._M_iterators);
-      _Safe_iterator_base* __this_const_its = _M_this()._M_const_iterators;
-      _M_swap_aux(__other, __other._M_const_iterators,
-		  _M_this(), _M_this()._M_const_iterators);
-      _M_swap_aux(_M_this(), __this_its,
+      //std::swap(_M_this()->_M_version, __other._M_version);
+      _Safe_iterator_base* __this_its = _M_this()->_M_iterators;
+      _S_swap_aux(__other, __other._M_iterators,
+		  _M_this(), _M_this()->_M_iterators);
+      _Safe_iterator_base* __this_const_its = _M_this()->_M_const_iterators;
+      _S_swap_aux(__other, __other._M_const_iterators,
+		  _M_this(), _M_this()->_M_const_iterators);
+      _S_swap_aux(_M_this(), __this_its,
 		  __other, __other._M_iterators);
-      _M_swap_aux(_M_this(), __this_const_its,
+      _S_swap_aux(_M_this(), __this_const_its,
 		  __other, __other._M_const_iterators);
     }
 
@@ -159,13 +159,12 @@ namespace __gnu_debug
    template<typename _SafeSequence>
     void
     _Safe_forward_list<_SafeSequence>::
-    _M_swap(_Safe_sequence_base& __other) noexcept
+    _M_swap(const _Safe_forward_list& __other) const noexcept
     {
       // We need to lock both sequences to swap
       using namespace __gnu_cxx;
-      __mutex *__this_mutex = &_M_this()._M_get_mutex();
-      __mutex *__other_mutex =
-	&static_cast<_SafeSequence&>(__other)._M_get_mutex();
+      __mutex *__this_mutex = &_M_this()->_M_get_mutex();
+      __mutex *__other_mutex = &__other._M_get_mutex();
       if (__this_mutex == __other_mutex)
 	{
 	  __scoped_lock __lock(*__this_mutex);
@@ -565,7 +564,8 @@ namespace __debug
       void
       resize(size_type __sz)
       {
-	this->_M_detach_singular();
+	const forward_list* __this = this;
+	__this->_M_detach_singular();
 
 	// if __sz < size(), invalidate all iterators in [begin+__sz, end()
 	_Base_iterator __victim = _Base::begin();
@@ -585,7 +585,7 @@ namespace __debug
 	  }
 	__catch(...)
 	  {
-	    this->_M_revalidate_singular();
+	    __this->_M_revalidate_singular();
 	    __throw_exception_again;
 	  }
       }
@@ -593,7 +593,8 @@ namespace __debug
       void
       resize(size_type __sz, const value_type& __val)
       {
-	this->_M_detach_singular();
+	const forward_list* __this = this;
+	__this->_M_detach_singular();
 
 	// if __sz < size(), invalidate all iterators in [begin+__sz, end())
 	_Base_iterator __victim = _Base::begin();
@@ -613,7 +614,7 @@ namespace __debug
 	  }
 	__catch(...)
 	  {
-	    this->_M_revalidate_singular();
+	    __this->_M_revalidate_singular();
 	    __throw_exception_again;
 	  }
       }

@@ -25,7 +25,7 @@ class container : public __gnu_debug::_Safe_sequence<container>
 {
 public:
   __gnu_cxx::__mutex&
-  get_mutex()
+  get_mutex() const
   { return this->_M_get_mutex(); }
 };
 

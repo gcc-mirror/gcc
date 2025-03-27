@@ -49,6 +49,10 @@ namespace __gnu_debug
    */
   class _Safe_local_iterator_base : public _Safe_iterator_base
   {
+  public:
+    const _Safe_unordered_container_base*
+    _M_safe_container() const noexcept;
+
   protected:
     /** Initializes the iterator and makes it singular. */
     _Safe_local_iterator_base()
@@ -61,20 +65,18 @@ namespace __gnu_debug
      *  singular. Otherwise, the iterator will reference @p __seq and
      *  be nonsingular.
      */
-    _Safe_local_iterator_base(const _Safe_sequence_base* __seq, bool __constant)
-    { this->_M_attach(const_cast<_Safe_sequence_base*>(__seq), __constant); }
+    _Safe_local_iterator_base(const _Safe_unordered_container_base* __seq,
+			      bool __constant)
+    { _M_attach(__seq, __constant); }
 
     /** Initializes the iterator to reference the same container that
 	@p __x does. @p __constant is true if this is a constant
 	iterator, and false if it is mutable. */
     _Safe_local_iterator_base(const _Safe_local_iterator_base& __x,
 			      bool __constant)
-    { this->_M_attach(__x._M_sequence, __constant); }
+    { this->_M_attach(__x._M_safe_container(), __constant); }
 
     ~_Safe_local_iterator_base() { this->_M_detach(); }
-
-    _Safe_unordered_container_base*
-    _M_get_container() const noexcept;
 
     /** Attaches this iterator to the given container, detaching it
      *	from whatever container it was attached to originally. If the
@@ -82,11 +84,13 @@ namespace __gnu_debug
      *	unattached.
      */
     void
-    _M_attach(_Safe_sequence_base* __seq, bool __constant);
+    _M_attach(const _Safe_unordered_container_base* __cont,
+	      bool __constant);
 
     /** Likewise, but not thread-safe. */
     void
-    _M_attach_single(_Safe_sequence_base* __seq, bool __constant) throw ();
+    _M_attach_single(const _Safe_unordered_container_base* __cont,
+		     bool __constant) noexcept;
 
     /** Detach the iterator for whatever container it is attached to,
      *	if any.
@@ -96,7 +100,19 @@ namespace __gnu_debug
 
     /** Likewise, but not thread-safe. */
     void
-    _M_detach_single() throw ();
+    _M_detach_single() noexcept;
+
+#if !_GLIBCXX_INLINE_VERSION
+  private:
+    /***************************************************************/
+    /** Not-const method preserved for abi backward compatibility. */
+    void
+    _M_attach(_Safe_sequence_base* __seq, bool __constant);
+
+    void
+    _M_attach_single(_Safe_sequence_base* __seq, bool __constant) noexcept;
+    /***************************************************************/
+#endif
   };
 
   /**
@@ -124,10 +140,10 @@ namespace __gnu_debug
 
   public:
     /// The list of mutable local iterators that reference this container
-    _Safe_iterator_base* _M_local_iterators;
+    mutable _Safe_iterator_base* _M_local_iterators;
 
     /// The list of constant local iterators that reference this container
-    _Safe_iterator_base* _M_const_local_iterators;
+    mutable _Safe_iterator_base* _M_const_local_iterators;
 
   protected:
     // Initialize with a version number of 1 and no iterators
@@ -153,7 +169,7 @@ namespace __gnu_debug
 
     /** Detach all iterators, leaving them singular. */
     void
-    _M_detach_all();
+    _M_detach_all() const;
 
     /** Swap this container with the given container. This operation
      *  also swaps ownership of the iterators, so that when the
@@ -161,25 +177,42 @@ namespace __gnu_debug
      *  one container now reference the other container.
      */
     void
-    _M_swap(_Safe_unordered_container_base& __x) noexcept;
+    _M_swap(const _Safe_unordered_container_base& __x) const noexcept;
 
   private:
+#if !_GLIBCXX_INLINE_VERSION
+    /***************************************************************/
+    /** Not-const method preserved for abi backward compatibility. */
+    void
+    _M_detach_all();
+
+    void
+    _M_swap(_Safe_unordered_container_base& __x) noexcept;
+    /***************************************************************/
+#endif
+
     /** Attach an iterator to this container. */
     void
-    _M_attach_local(_Safe_iterator_base* __it, bool __constant);
+    _M_attach_local(_Safe_iterator_base* __it, bool __constant) const;
 
     /** Likewise but not thread safe. */
     void
-    _M_attach_local_single(_Safe_iterator_base* __it, bool __constant) throw ();
+    _M_attach_local_single(_Safe_iterator_base* __it,
+			   bool __constant) const noexcept;
 
     /** Detach an iterator from this container */
     void
-    _M_detach_local(_Safe_iterator_base* __it);
+    _M_detach_local(_Safe_iterator_base* __it) const;
 
     /** Likewise but not thread safe. */
     void
-    _M_detach_local_single(_Safe_iterator_base* __it) throw ();
+    _M_detach_local_single(_Safe_iterator_base* __it) const noexcept;
   };
+
+  inline const _Safe_unordered_container_base*
+  _Safe_local_iterator_base::
+  _M_safe_container() const noexcept
+  { return static_cast<const _Safe_unordered_container_base*>(_M_sequence); }
 } // namespace __gnu_debug
 
 #endif
