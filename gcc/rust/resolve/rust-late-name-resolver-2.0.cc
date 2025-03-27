@@ -235,7 +235,7 @@ Late::visit (AST::IdentifierExpr &expr)
     }
   else
     {
-      if (auto type = ctx.types.get_prelude (expr.get_ident ()))
+      if (auto type = ctx.types.get_lang_prelude (expr.get_ident ()))
 	{
 	  resolved = type;
 	}
