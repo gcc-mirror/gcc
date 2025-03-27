@@ -1,5 +1,6 @@
 /* { dg-options "--coverage -fpath-coverage" } */
 /* { dg-do compile } */
+/* { dg-require-effective-target sigsetjmp } */
 
 /* A collection of odd crashes and regressions observed when building arbitrary
    programs.  */

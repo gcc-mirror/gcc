@@ -1,5 +1,6 @@
 /* { dg-options "--coverage -fpath-coverage -g -O2" } */
 /* { dg-do compile } */
+/* { dg-require-effective-target sigsetjmp } */
 
 #include <setjmp.h>
 
