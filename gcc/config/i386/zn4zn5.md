@@ -421,6 +421,18 @@
 				   (eq_attr "memory" "store")))
 			 "znver4-direct,znver4-ieu,znver5-store")
 
+(define_insn_reservation "znver4_insn_both" 5
+			 (and (eq_attr "cpu" "znver4")
+			      (and (eq_attr "type" "alu,alu1,negnot,rotate1,ishift1,test,incdec,icmp")
+				   (eq_attr "memory" "both")))
+			 "znver4-direct,znver4-load,znver4-ieu,znver4-store")
+
+(define_insn_reservation "znver5_insn_both" 5
+			 (and (eq_attr "cpu" "znver5")
+			      (and (eq_attr "type" "alu,alu1,negnot,rotate1,ishift1,test,incdec,icmp")
+				   (eq_attr "memory" "both")))
+			 "znver4-direct,znver5-load,znver4-ieu,znver5-store")
+
 (define_insn_reservation "znver4_insn2_store" 1
 			 (and (eq_attr "cpu" "znver4")
 			      (and (eq_attr "type" "icmov,setcc")
