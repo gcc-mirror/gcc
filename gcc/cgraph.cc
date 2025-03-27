@@ -353,45 +353,60 @@ cgraph_node::delete_function_version_by_decl (tree decl)
   decl_node->remove ();
 }
 
-/* Record that DECL1 and DECL2 are semantically identical function
+/* Add decl to the structure of semantically identical function versions.
+   The node is inserted at the point maintaining the priority ordering on the
    versions.  */
 void
-cgraph_node::record_function_versions (tree decl1, tree decl2)
+cgraph_node::add_function_version (cgraph_function_version_info *fn_v,
+				   tree decl)
 {
-  cgraph_node *decl1_node = cgraph_node::get_create (decl1);
-  cgraph_node *decl2_node = cgraph_node::get_create (decl2);
-  cgraph_function_version_info *decl1_v = NULL;
-  cgraph_function_version_info *decl2_v = NULL;
-  cgraph_function_version_info *before;
-  cgraph_function_version_info *after;
+  cgraph_node *decl_node = cgraph_node::get_create (decl);
+  cgraph_function_version_info *decl_v = NULL;
 
-  gcc_assert (decl1_node != NULL && decl2_node != NULL);
-  decl1_v = decl1_node->function_version ();
-  decl2_v = decl2_node->function_version ();
+  gcc_assert (decl_node != NULL);
 
-  if (decl1_v != NULL && decl2_v != NULL)
+  decl_v = decl_node->function_version ();
+
+  /* If the nodes are already linked, skip.  */
+  if (decl_v != NULL && (decl_v->next || decl_v->prev))
     return;
 
-  if (decl1_v == NULL)
-    decl1_v = decl1_node->insert_new_function_version ();
+  if (decl_v == NULL)
+    decl_v = decl_node->insert_new_function_version ();
 
-  if (decl2_v == NULL)
-    decl2_v = decl2_node->insert_new_function_version ();
+  gcc_assert (decl_v);
+  gcc_assert (fn_v);
 
-  /* Chain decl2_v and decl1_v.  All semantically identical versions
-     will be chained together.  */
+  /* Go to start of the FMV structure.  */
+  while (fn_v->prev)
+    fn_v = fn_v->prev;
 
-  before = decl1_v;
-  after = decl2_v;
+  cgraph_function_version_info *insert_point_before = NULL;
+  cgraph_function_version_info *insert_point_after = fn_v;
 
-  while (before->next != NULL)
-    before = before->next;
+  /* Find the insertion point for the new version to maintain ordering.
+     The default node must always go at the beginning.  */
+  if (!is_function_default_version (decl))
+    while (insert_point_after
+	   && (targetm.compare_version_priority
+		 (decl, insert_point_after->this_node->decl) > 0
+	       || is_function_default_version
+		    (insert_point_after->this_node->decl)
+	       || lookup_attribute
+		    ("target_clones",
+		     DECL_ATTRIBUTES (insert_point_after->this_node->decl))))
+      {
+	insert_point_before = insert_point_after;
+	insert_point_after = insert_point_after->next;
+      }
 
-  while (after->prev != NULL)
-    after= after->prev;
+  decl_v->prev = insert_point_before;
+  decl_v->next= insert_point_after;
 
-  before->next = after;
-  after->prev = before;
+  if (insert_point_before)
+    insert_point_before->next = decl_v;
+  if (insert_point_after)
+    insert_point_after->prev = decl_v;
 }
 
 /* Initialize callgraph dump file.  */

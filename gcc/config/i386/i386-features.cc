@@ -4284,7 +4284,6 @@ ix86_get_function_versions_dispatcher (void *decl)
   struct cgraph_node *node = NULL;
   struct cgraph_node *default_node = NULL;
   struct cgraph_function_version_info *node_v = NULL;
-  struct cgraph_function_version_info *first_v = NULL;
 
   tree dispatch_decl = NULL;
 
@@ -4301,36 +4300,15 @@ ix86_get_function_versions_dispatcher (void *decl)
   if (node_v->dispatcher_resolver != NULL)
     return node_v->dispatcher_resolver;
 
-  /* Find the default version and make it the first node.  */
-  first_v = node_v;
-  /* Go to the beginning of the chain.  */
-  while (first_v->prev != NULL)
-    first_v = first_v->prev;
-  default_version_info = first_v;
-  while (default_version_info != NULL)
-    {
-      if (is_function_default_version
-	    (default_version_info->this_node->decl))
-	break;
-      default_version_info = default_version_info->next;
-    }
+  /* The default node is always the beginning of the chain.  */
+  default_version_info = node_v;
+  while (default_version_info->prev != NULL)
+    default_version_info = default_version_info->prev;
+  default_node = default_version_info->this_node;
 
   /* If there is no default node, just return NULL.  */
-  if (default_version_info == NULL)
+  if (!is_function_default_version (default_node->decl))
     return NULL;
-
-  /* Make default info the first node.  */
-  if (first_v != default_version_info)
-    {
-      default_version_info->prev->next = default_version_info->next;
-      if (default_version_info->next)
-	default_version_info->next->prev = default_version_info->prev;
-      first_v->prev = default_version_info;
-      default_version_info->next = first_v;
-      default_version_info->prev = NULL;
-    }
-
-  default_node = default_version_info->this_node;
 
 #if defined (ASM_OUTPUT_TYPE_DIRECTIVE)
   if (targetm.has_ifunc_p ())

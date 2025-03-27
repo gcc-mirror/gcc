@@ -1339,9 +1339,9 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
     return m_summary_id;
   }
 
-  /* Record that DECL1 and DECL2 are semantically identical function
-     versions.  */
-  static void record_function_versions (tree decl1, tree decl2);
+  /* Adds DECL to the FN_V structure of semantically identical functions.  */
+  static void add_function_version (cgraph_function_version_info *fn_v,
+				    tree decl);
 
   /* Remove the cgraph_function_version_info and cgraph_node for DECL.  This
      DECL is a duplicate declaration.  */

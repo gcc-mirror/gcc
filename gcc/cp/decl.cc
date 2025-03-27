@@ -1311,7 +1311,15 @@ maybe_version_functions (tree newdecl, tree olddecl, bool record)
     }
 
   if (record)
-    cgraph_node::record_function_versions (olddecl, newdecl);
+    {
+      /* Add the new version to the function version structure.  */
+      cgraph_node *fn_node = cgraph_node::get_create (olddecl);
+      cgraph_function_version_info *fn_v = fn_node->function_version ();
+      if (!fn_v)
+	fn_v = fn_node->insert_new_function_version ();
+
+      cgraph_node::add_function_version (fn_v, newdecl);
+    }
 
   return true;
 }
