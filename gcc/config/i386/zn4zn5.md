@@ -1156,7 +1156,7 @@
 (define_insn_reservation "znver4_sse_div_pd" 13
 			 (and (eq_attr "cpu" "znver4,znver5")
 			      (and (eq_attr "type" "ssediv")
-				   (and (eq_attr "mode" "V4DF,V2DF,V1DF")
+				   (and (eq_attr "mode" "V4DF,V2DF,V1DF,DF")
 				    (eq_attr "memory" "none"))))
 			 "znver4-direct,znver4-fdiv*5")
 
@@ -1170,14 +1170,14 @@
 (define_insn_reservation "znver4_sse_div_pd_load" 18
 			 (and (eq_attr "cpu" "znver4")
 			      (and (eq_attr "type" "ssediv")
-				   (and (eq_attr "mode" "V4DF,V2DF,V1DF")
+				   (and (eq_attr "mode" "V4DF,V2DF,V1DF,DF")
 				    (eq_attr "memory" "load"))))
 			 "znver4-direct,znver4-load,znver4-fdiv*5")
 
 (define_insn_reservation "znver5_sse_div_pd_load" 18
 			 (and (eq_attr "cpu" "znver5")
 			      (and (eq_attr "type" "ssediv")
-				   (and (eq_attr "mode" "V4DF,V2DF,V1DF")
+				   (and (eq_attr "mode" "V4DF,V2DF,V1DF,DF")
 				    (eq_attr "memory" "load"))))
 			 "znver4-direct,znver5-load,znver4-fdiv*5")
 
