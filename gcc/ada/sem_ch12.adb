@@ -6032,6 +6032,10 @@ package body Sem_Ch12 is
 
       if (Is_In_Main_Unit (N) or else Is_Inlined_Or_Child_Of_Inlined (Subp))
 
+        --  No need to instantiate bodies in generic units
+
+        and then not Is_Generic_Unit (Cunit_Entity (Main_Unit))
+
         --  Must be generating code or analyzing code in GNATprove mode
 
         and then (Operating_Mode = Generate_Code
