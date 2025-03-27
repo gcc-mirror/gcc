@@ -31861,6 +31861,51 @@ cp_parser_should_constify_contract (const contract_modifier& modifier)
   return should_constify;
 }
 
+/* Parse an inherited contract. */
+
+static tree
+cp_parse_inherited_contract (cp_parser *parser)
+{
+  cp_token *token = cp_lexer_consume_token (parser->lexer);
+  location_t loc = token->location;
+
+  gcc_checking_assert(token->type == CPP_KEYWORD
+		      && token->keyword == RID_INHERITED);
+
+  matching_parens parens;
+  parens.require_open (parser);
+
+  if (flag_contracts_on_virtual_functions != CONTRACTS_ON_VIRTUALS_P3653)
+    {
+      error_at (loc, "inherited contracts are only available with"
+		" %<-fcontracts-on-virtual-functions=P3653%>");
+
+      cp_parser_skip_to_closing_parenthesis_1 (parser, /*recovering=*/true,
+      					       CPP_CLOSE_PAREN,
+      					       /*consume_paren=*/true);
+      return error_mark_node;
+    }
+
+  /* Otherwise, look for the class-name.  */
+  tree type = cp_parser_class_name (parser,
+			       /*typename_keyword_p=*/true,
+			       /*template_keyword_p=*/false,
+			       none_type,
+			       /*check_dependency_p=*/false,
+			       /*class_head_p=*/false,
+			       /*is_declaration=*/false);
+  type = TREE_TYPE (type);
+  /* ": T...[constant-expression]" is a C++26 pack-index-specifier.  */
+  if (cp_parser_next_tokens_are_pack_index_p (parser))
+    type = cp_parser_pack_index (parser, type);
+
+  cp_parser_skip_to_closing_parenthesis_1 (parser,
+					   /*recovering=*/true,
+					   CPP_CLOSE_PAREN,
+					   /*consume_paren=*/true);
+  return error_mark_node;
+}
+
 /* Parse a natural syntax contract specifier seq.
 
   function-contract-specifier :
@@ -31900,6 +31945,11 @@ cp_parser_function_contract_specifier (cp_parser *parser)
   cp_lexer_consume_token (parser->lexer);
   location_t loc = token->location;
   bool postcondition_p = is_attribute_p ("post", contract_name);
+
+  token = cp_lexer_peek_token (parser->lexer);
+
+  if (token->type == CPP_KEYWORD && token->keyword == RID_INHERITED)
+    return cp_parse_inherited_contract(parser);
 
   /* Parse experimental modifiers on C++26 contracts.  */
   contract_modifier modifier

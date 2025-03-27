@@ -516,7 +516,6 @@ const struct c_common_resword c_common_reswords[] =
   { "constinit",	RID_CONSTINIT,	D_CXXONLY | D_CXX20 | D_CXXWARN },
   { "const_cast",	RID_CONSTCAST,	D_CXXONLY | D_CXXWARN },
   { "continue",		RID_CONTINUE,	0 },
-  { "contract_assert",	RID_CONTASSERT,	D_CXXONLY | D_CXXWARN }, // removed D_CXX20 in order for contracts to work out of the box
   { "decltype",         RID_DECLTYPE,   D_CXXONLY | D_CXX11 | D_CXXWARN },
   { "default",		RID_DEFAULT,	0 },
   { "delete",		RID_DELETE,	D_CXXONLY | D_CXXWARN },
@@ -598,6 +597,10 @@ const struct c_common_resword c_common_reswords[] =
   { "co_await",		RID_CO_AWAIT,	D_CXX_COROUTINES_FLAGS | D_CXXWARN },
   { "co_yield",		RID_CO_YIELD,	D_CXX_COROUTINES_FLAGS | D_CXXWARN },
   { "co_return", 	RID_CO_RETURN,	D_CXX_COROUTINES_FLAGS | D_CXXWARN },
+
+  /* Contracts-related keywords */
+  { "contract_assert",	RID_CONTASSERT,	D_CXXONLY | D_CXXWARN }, // removed D_CXX20 in order for contracts to work out of the box
+  { "inherited",	RID_INHERITED,	D_CXXONLY | D_CXXWARN },
 
   /* These Objective-C keywords are recognized only immediately after
      an '@'.  */
