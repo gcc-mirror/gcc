@@ -77,7 +77,7 @@ ForeverStack<N>::push_inner (Rib rib, Link link)
       rust_assert (&cursor_reference.get () == &root);
       // Prelude doesn't have an access path
       rust_assert (!link.path);
-      update_cursor (this->prelude);
+      update_cursor (this->lang_prelude);
       return;
     }
   // If the link does not exist, we create it and emplace a new `Node` with the
@@ -319,16 +319,16 @@ ForeverStack<N>::get (const Identifier &name)
 
 template <Namespace N>
 tl::optional<Rib::Definition>
-ForeverStack<N>::get_prelude (const Identifier &name)
+ForeverStack<N>::get_lang_prelude (const Identifier &name)
 {
-  return prelude.rib.get (name.as_string ());
+  return lang_prelude.rib.get (name.as_string ());
 }
 
 template <Namespace N>
 tl::optional<Rib::Definition>
-ForeverStack<N>::get_prelude (const std::string &name)
+ForeverStack<N>::get_lang_prelude (const std::string &name)
 {
-  return prelude.rib.get (name);
+  return lang_prelude.rib.get (name);
 }
 
 template <>
@@ -571,7 +571,7 @@ ForeverStack<N>::resolve_segments (
 	  if (current_node->is_root () && !searched_prelude)
 	    {
 	      searched_prelude = true;
-	      current_node = &prelude;
+	      current_node = &lang_prelude;
 	      continue;
 	    }
 
@@ -641,7 +641,8 @@ ForeverStack<N>::resolve_path (
 	= get (unwrap_type_segment (segments.back ()).as_string ());
 
       if (!res)
-	res = get_prelude (unwrap_type_segment (segments.back ()).as_string ());
+	res = get_lang_prelude (
+	  unwrap_type_segment (segments.back ()).as_string ());
 
       if (res && !res->is_ambiguous ())
 	insert_segment_resolution (segments.back (), res->get_node_id ());
@@ -672,7 +673,7 @@ ForeverStack<N>::resolve_path (
 				 seg.is_lower_self_seg ());
       // Ok we didn't find it in the rib, Lets try the prelude...
       if (!res)
-	res = get_prelude (seg_name);
+	res = get_lang_prelude (seg_name);
 
       if (res && !res->is_ambiguous ())
 	insert_segment_resolution (segments.back (), res->get_node_id ());
