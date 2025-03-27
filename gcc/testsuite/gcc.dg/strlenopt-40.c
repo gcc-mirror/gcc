@@ -19,7 +19,7 @@
 /* Macros to emit a call to funcation named
      call_in_{true,false}_branch_not_eliminated_on_line_NNN()
    for each call that's expected to be eliminated.  The dg-final
-   scan-tree-dump-time directive at the bottom of the test verifies
+   scan-tree-dump-times directive at the bottom of the test verifies
    that no such call appears in output.  */
 #define ELIM_TRUE(expr) \
   if (!(expr)) FAIL (in_true_branch_not_eliminated); else (void)0
@@ -30,7 +30,7 @@
 /* Macro to emit a call to a function named
      call_made_in_{true,false}_branch_on_line_NNN()
    for each call that's expected to be retained.  The dg-final
-   scan-tree-dump-time directive at the bottom of the test verifies
+   scan-tree-dump-times directive at the bottom of the test verifies
    that the expected number of both kinds of calls appears in output
    (a pair for each line with the invocation of the KEEP() macro.  */
 #define KEEP(expr)				\

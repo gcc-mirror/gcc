@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* PR treee-optimization/114894 */
+/* PR tree-optimization/114894 */
 /* Phi-OPT should be able to optimize these without sinking being invoked. */
 /* { dg-options "-O -fdump-tree-phiopt2 -fdump-tree-phiopt3 -fdump-tree-optimized -fno-tree-sink" } */
 

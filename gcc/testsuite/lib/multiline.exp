@@ -17,7 +17,7 @@
 # Testing of multiline output
 
 # We have pre-existing testcases like this:
-#   |typedef struct _GMutex GMutex; // { dg-message "previously declared here"}
+#   |typedef struct _GMutex GMutex; // { dg-message "previously declared here" }
 # (using "|" here to indicate the start of a line),
 # generating output like this:
 #   |gcc/testsuite/g++.dg/diagnostic/wrong-tag-1.C:4:16: note: 'struct _GMutex' was previously declared here
@@ -27,7 +27,7 @@
 # To handle rich error-reporting, we want to be able to verify that we
 # get output like this:
 #   |gcc/testsuite/g++.dg/diagnostic/wrong-tag-1.C:4:16: note: 'struct _GMutex' was previously declared here
-#   | typedef struct _GMutex GMutex; // { dg-message "previously declared here"}
+#   | typedef struct _GMutex GMutex; // { dg-message "previously declared here" }
 #   |                ^~~~~~~
 # where the compiler's first line of output is as before, but in
 # which it then echoes the source lines, adding annotations.

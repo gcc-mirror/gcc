@@ -2078,7 +2078,7 @@ proc check_effective_target_riscv_zvfh { } {
 
 # Return 1 if the target arch supports half float, 0 otherwise.
 # Note, this differs from the test performed by
-# /* dg-skip-if "" { *-*-* } { "*" } { "-march=rv*zfh*" } */
+# /* { dg-skip-if "" { *-*-* } { "*" } { "-march=rv*zfh*" } } */
 # in that it takes default behaviour into account.
 # Cache the result.
 
