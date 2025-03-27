@@ -1257,9 +1257,9 @@
 
 #if !defined(__cpp_lib_constexpr_algorithms)
 # if (__cplusplus >  202302L)
-#  define __glibcxx_constexpr_algorithms 202305L
+#  define __glibcxx_constexpr_algorithms 202306L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_constexpr_algorithms)
-#   define __cpp_lib_constexpr_algorithms 202305L
+#   define __cpp_lib_constexpr_algorithms 202306L
 #  endif
 # elif (__cplusplus >= 202002L)
 #  define __glibcxx_constexpr_algorithms 201806L
