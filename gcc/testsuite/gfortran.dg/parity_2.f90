@@ -6,7 +6,7 @@
 ! Check implementation of PARITY
 !
 implicit none
-print *, parity([real ::]) ! { dg-error "must be LOGICAL" })
+print *, parity([real ::]) ! { dg-error "must be LOGICAL" }
 print *, parity([integer ::]) ! { dg-error "must be LOGICAL" }
 print *, parity([logical ::])
 print *, parity(.true.) ! { dg-error "must be an array" }

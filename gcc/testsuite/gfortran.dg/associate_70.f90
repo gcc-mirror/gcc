@@ -1,5 +1,5 @@
 ! { dg-do run }
-! ( dg-options "-Wuninitialized" )
+! { dg-options "-Wuninitialized" }
 !
 ! Test fix for PR115700 comment 5, in which ‘.tmp1’ is used uninitialized and
 ! both normal and scalarized array references did not work correctly.
