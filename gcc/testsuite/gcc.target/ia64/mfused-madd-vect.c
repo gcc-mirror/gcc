@@ -1,4 +1,4 @@
-/* { dg-do compile */
+/* { dg-do compile } */
 /* { dg-options "-O2 -ftree-vectorize" } */
 /* { dg-final { scan-assembler-not "fpmpy" } } */
 

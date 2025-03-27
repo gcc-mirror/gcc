@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 */
+/* { dg-options "-O1" } */
 
 #define __aux(r) __attribute__((aux(r)))
 static volatile __aux(0x1000) int var;

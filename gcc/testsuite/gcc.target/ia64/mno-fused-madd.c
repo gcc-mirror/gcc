@@ -1,4 +1,4 @@
-/* { dg-do compile */
+/* { dg-do compile } */
 /* { dg-options "-O2 -ffp-contract=off" } */
 /* { dg-final { scan-assembler-not "fma" } } */
 /* { dg-final { scan-assembler-not "fms" } } */
