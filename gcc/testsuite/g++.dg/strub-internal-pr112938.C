@@ -3,7 +3,7 @@
 /* { dg-require-effective-target strub } */
 
 bool __attribute__ ((__strub__ ("internal")))
-f(bool i, volatile bool j)
+f(bool i, volatile bool j)	/* { dg-warning "'volatile'-qualified parameter is deprecated" "" { target c++20 } } */
 {
   return (i ^ j) == j;
 }
