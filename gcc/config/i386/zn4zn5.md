@@ -893,13 +893,20 @@
 			 "znver4-direct,znver5-load,znver4-fpu")
 
 (define_insn_reservation "znver4_sse_log1" 1
+			 (and (eq_attr "cpu" "znver4,znver5")
+			      (and (eq_attr "type" "sselog1")
+				   (and (eq_attr "mode" "V4SF,V8SF,V2DF,V4DF,QI,HI,SI,DI,TI,OI")
+				    (eq_attr "memory" "none"))))
+			 "znver4-direct,znver4-fpu1|znver4-fpu2")
+
+(define_insn_reservation "znver4_sse_log1_store" 1
 			 (and (eq_attr "cpu" "znver4")
 			      (and (eq_attr "type" "sselog1")
 				   (and (eq_attr "mode" "V4SF,V8SF,V2DF,V4DF,QI,HI,SI,DI,TI,OI")
 				    (eq_attr "memory" "store"))))
 			 "znver4-direct,znver4-fpu1|znver4-fpu2,znver4-fp-store")
 
-(define_insn_reservation "znver5_sse_log1" 1
+(define_insn_reservation "znver5_sse_log1_store" 1
 			 (and (eq_attr "cpu" "znver5")
 			      (and (eq_attr "type" "sselog1")
 				   (and (eq_attr "mode" "V4SF,V8SF,V2DF,V4DF,QI,HI,SI,DI,TI,OI")
