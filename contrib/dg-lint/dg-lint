@@ -1,0 +1,404 @@
+#!/usr/bin/env python3
+
+# Script to detect common mistakes in DejaGnu tests.
+
+# Contributed by David Malcolm <dmalcolm@redhat.com>
+#
+# Copyright (C) 2024-2025 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING.  If not, write to
+# the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+# Boston, MA 02110-1301, USA.
+
+import argparse
+import difflib
+import os
+import pathlib
+import re
+import sys
+
+import libgdiagnostics
+
+KNOWN_DIRECTIVES = {
+    # Directives, organized by HTML documentation file:
+
+    # https://gcc.gnu.org/onlinedocs/gccint/Directives.html
+    'dg-do',
+    'dg-options',
+    'dg-add-options',
+    'dg-remove-options',
+    'dg-additional-options',
+    'dg-timeout',
+    'dg-timeout-factor',
+    'dg-do-if',
+    'dg-skip-if',
+    'dg-require-effective-target',
+    'dg-require-support',
+    'dg-xfail-if',
+    'dg-xfail-run-if',
+    'dg-ice',
+    'dg-shouldfail',
+    'dg-error',
+    'dg-warning',
+    'dg-message',
+    'dg-note',
+    'dg-bogus',
+    'dg-line',
+    'dg-excess-errors',
+    'dg-prune-output',
+    'dg-output',
+    'dg-output-file',
+    'dg-set-compiler-env-var',
+    'dg-set-target-env-var',
+    'dg-additional-files',
+    'dg-final',
+
+    # https://gcc.gnu.org/onlinedocs/gccint/Require-Support.html
+    'dg-require-iconv',
+    'dg-require-profiling',
+    'dg-require-stack-check',
+    'dg-require-stack-size',
+    'dg-require-visibility',
+    'dg-require-alias',
+    'dg-require-ascii-locale',
+    'dg-require-compat-dfp',
+    'dg-require-cxa-atexit',
+    'dg-require-dll',
+    'dg-require-dot',
+    'dg-require-fork',
+    'dg-require-gc-sections',
+    'dg-require-host-local',
+    'dg-require-linker-plugin',
+    'dg-require-mkfifo',
+    'dg-require-named-sections',
+    'dg-require-weak',
+    'dg-require-weak-override',
+
+    # https://gcc.gnu.org/onlinedocs/gccint/LTO-Testing.html
+    'dg-lto-do',
+    'dg-lto-options',
+    'dg-extra-ld-options',
+    'dg-suppress-ld-options',
+
+    # https://gcc.gnu.org/onlinedocs/gccint/profopt-Testing.html
+    'dg-final-generate',
+    'dg-final-use',
+
+    # https://gcc.gnu.org/onlinedocs/gccint/Final-Actions.html
+    'dg-keep-saved-temps',
+
+    # Other directives I couldn't find docs for,
+    # organized by implementation file:
+
+    # gcc/testsuite/lib/target-supports-dg.exp
+    'dg-require-ifunc',
+    'dg-require-python-h',
+
+    # gcc/testsuite/lib/multiline.exp:
+    'dg-begin-multiline-output',
+    'dg-end-multiline-output',
+    'dg-enable-nn-line-numbers',
+
+    # gcc/testsuite/lib/gcc-dg.exp:
+    'dg-allow-blank-lines-in-output',
+    'dg-locus',
+    'dg-optimized',
+    'dg-missed',
+
+    # In gcc/testsuite/lib/gcc-defs.exp:
+    'dg-additional-sources',
+    'dg-regexp',
+
+    'dg-compile-aux-modules',
+    # implemented in various places:
+    # gcc/testsuite/gcc.target/powerpc/ppc-fortran/ppc-fortran.exp
+    # gcc/testsuite/gfortran.dg/c-interop/c-interop.exp
+    # gcc/testsuite/gfortran.dg/coarray/caf.exp
+    # gcc/testsuite/gfortran.dg/dg.exp
+    # gcc/testsuite/gfortran.dg/f202y/f202y.exp
+    # gcc/testsuite/gfortran.dg/goacc/goacc.exp
+
+    # gcc/testsuite/lib/lto.exp
+    'dg-lto-warning',
+    'dg-lto-message',
+    'dg-lto-note',
+
+    # gcc/testsuite/lib/profopt.exp
+    'dg-final-use-autofdo',
+    'dg-final-use-not-autofdo',
+
+    # gcc/testsuite/lib/scanasm.exp
+    'dg-function-on-line',
+
+    # gcc/testsuite/g++.dg/modules/modules.exp:
+    'dg-module-cmi',
+    'dg-module-do',
+
+    # gcc/testsuite/gcc.target/bfin/bfin.exp
+    'dg-bfin-options',
+    'dg-bfin-processors',
+
+    # gcc/testsuite/gcc.target/csky/csky.exp
+    'dg-csky-options',
+
+    # libstdc++-v3/testsuite/lib/dg-options.exp
+    'dg-require-c-std',
+    'dg-require-debug-mode',
+    'dg-require-profile-mode',
+    'dg-require-normal-mode',
+    'dg-require-normal-namespace',
+    'dg-require-parallel-mode',
+    'dg-require-fileio',
+    'dg-require-namedlocale',
+    'dg-require-sharedlib',
+    'dg-require-time',
+    'dg-require-cstdint',
+    'dg-require-cmath',
+    'dg-require-thread-fence',
+    'dg-require-atomic-cmpxchg-word',
+    'dg-require-atomic-builtins',
+    'dg-require-gthreads',
+    'dg-require-gthreads-timed',
+    'dg-require-sleep',
+    'dg-require-sched-yield',
+    'dg-require-string-conversions',
+    'dg-require-swprintf',
+    'dg-require-binary-io',
+    'dg-require-nprocs',
+    'dg-require-static-libstdcxx',
+    'dg-require-little-endian',
+    'dg-require-filesystem-ts',
+    'dg-require-target-fs-symlinks',
+    'dg-require-target-fs-space',
+    'dg-require-target-fs-lwt',
+    'dg-require-cpp-feature-test'
+}
+
+class Directive:
+    @staticmethod
+    def from_match(path, line_num, line, m):
+        return Directive(path, line_num,
+                         m.group(1), m.span(1),
+                         m.group(2), m.span(2))
+
+    def __init__(self, path, line_num,
+                 name, name_span,
+                 args_str, args_str_span):
+        self.path = path
+        self.line_num = line_num
+        self.name = name
+        self.name_span = name_span
+        self.args_str = args_str
+        self.args_str_span = args_str_span
+
+class FileState:
+    def __init__(self):
+        # Map from directive name to list of directives
+        self.directives = {}
+
+    def add_directive(self, d):
+        if d.name not in self.directives:
+            self.directives[d.name] = []
+        self.directives[d.name].append(d)
+
+class Context:
+    def __init__(self):
+        self.mgr = libgdiagnostics.Manager()
+        self.mgr.set_tool_name('dg-lint')
+        self.mgr.add_text_sink()
+        self.num_files_checked = 0
+
+    def check_file(self, f_in):
+        file_state = FileState()
+        try:
+            for line_idx, line in enumerate(f_in):
+                self.check_line(file_state, f_in.name, line_idx + 1, line)
+            self.num_files_checked += 1
+        except UnicodeDecodeError:
+            return # FIXME
+
+    def check_line(self, file_state, path, line_num, line):
+        if 0:
+            phys_loc = self.get_file_and_line(path, line_num)
+            self.report_warning(phys_loc, "line = '%s'", line.rstrip())
+
+        # Look for directives
+        # Compare with dg.exp's dg-get-options
+        m = re.search(r"{[ \t]+(dg-[-a-z]+)[ \t]+(.*)[ \t]+}", line)
+        if m:
+            d = Directive.from_match(path, line_num, line, m)
+            self.on_directive(file_state, d)
+        else:
+            # Look for things that look like attempts to use directives,
+            # but didn't match the regexp
+            m = re.search(r"(dg-[-a-z]+)", line)
+            if m:
+                phys_loc \
+                    = self.get_file_line_and_range_for_match_span(path,
+                                                                  line_num,
+                                                                  m.span(1))
+                self.make_warning() \
+                    .at(phys_loc) \
+                    .emit('directive %qs appears not to match dg.exp\'s regexp',
+                          m.group(1))
+            else:
+                # Look for things that look like misspellings of directives,
+                # via underscores rather than dashes
+                m = re.search(r"{[ \t]+(dg[-_][-_a-z]+)(.*)", line)
+                if m:
+                    bogus_d = Directive.from_match(path, line_num, line, m)
+                    self.report_unknown_directive(bogus_d)
+
+    def on_directive(self, file_state, d):
+        if 0:
+            phys_loc = self.get_file_and_line(d.path, d.line_num)
+            self.make_note() \
+                .at(phys_loc) \
+                .emit('directive %qs with arguments %qs',
+                      d.name, d.args_str)
+
+        if d.name not in KNOWN_DIRECTIVES:
+            self.report_unknown_directive(d)
+
+        # Apparently we can't have a dg-do after a dg-require;
+        # see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=116163#c5
+        if d.name == 'dg-do':
+            for existing_name in file_state.directives:
+                if existing_name.startswith('dg-require'):
+                    other_d = file_state.directives[existing_name][0]
+                    self.complain_about_order(other_d, d)
+
+        file_state.add_directive(d)
+
+    def report_unknown_directive(self, d):
+        phys_loc = self.get_phys_loc_for_directive(d)
+        w = self.make_warning() \
+                .at(phys_loc)
+        candidates = difflib.get_close_matches(d.name, KNOWN_DIRECTIVES)
+        if candidates:
+            suggestion = candidates[0]
+            w.with_fix_it_replace (phys_loc, suggestion) \
+             .emit("unknown directive: %qs; did you mean %qs?",
+                   d.name, suggestion)
+        else:
+            w.emit("unknown directive: %qs",
+                   d.name)
+
+    def complain_about_order(self, existing_d: Directive, new_d: Directive):
+        """
+        Complain about new_d occurring after existing_d.
+        """
+        with self.mgr.make_group() as g:
+            self.make_warning() \
+                .at(self.get_phys_loc_for_directive(new_d))\
+                .emit("%qs after %qs", new_d.name, existing_d.name)
+            self.make_note() \
+                .at(self.get_phys_loc_for_directive(existing_d))\
+                .emit("%qs was here", existing_d.name)
+
+    def get_file_and_line(self,
+                          path: str,
+                          line_num: int):
+        """
+        Get a libgdiagnostics.c_diagnostic_physical_location_ptr for the given line.
+        """
+        c_diag_file = self.mgr.get_file(path)
+        return self.mgr.get_file_and_line(c_diag_file, line_num)
+
+    def get_phys_loc_for_directive(self, d: Directive) \
+          -> libgdiagnostics.c_diagnostic_physical_location_ptr:
+        return self.get_file_line_and_range_for_match_span(d.path,
+                                                           d.line_num,
+                                                           d.name_span)
+
+    def get_file_line_and_range_for_match_span(self,
+                                               path: str,
+                                               line_num: int,
+                                               span):
+        return self.get_file_line_and_range(path, line_num,
+                                            start_column=span[0] + 1,
+                                            end_column=span[1])
+
+    def get_file_line_and_range(self,
+                                path: str,
+                                line_num: int,
+                                start_column: int,
+                                end_column: int):
+        """
+        Get a libgdiagnostics.c_diagnostic_physical_location_ptr for the range
+        of columns on the given line.
+        """
+        c_diag_file = self.mgr.get_file(path)
+        start_loc = self.mgr.get_file_line_and_column(c_diag_file, line_num, start_column)
+        end_loc = self.mgr.get_file_line_and_column(c_diag_file, line_num, end_column)
+        return self.mgr.get_range(start_loc, start_loc, end_loc)
+
+    def report_warning(self, phys_loc, msg, *args):
+        diag = libgdiagnostics.Diagnostic(self.mgr,
+                                          libgdiagnostics.DIAGNOSTIC_LEVEL_WARNING)
+        diag.set_location (phys_loc)
+        diag.finish(msg, *args)
+
+    def make_warning(self):
+        return libgdiagnostics.Diagnostic(self.mgr,
+                                          libgdiagnostics.DIAGNOSTIC_LEVEL_WARNING)
+
+    def make_note(self):
+        return libgdiagnostics.Diagnostic(self.mgr,
+                                          libgdiagnostics.DIAGNOSTIC_LEVEL_NOTE)
+
+    def report_stats(self):
+        self.make_note ()\
+            .emit('%i files checked', self.num_files_checked)
+
+def skip_file(filename):
+    if 'ChangeLog' in filename:
+        return True
+    if 'README' in filename:
+        return True
+    if filename.endswith('Makefile.am') or filename.endswith('Makefile.in'):
+        return True
+    if filename.endswith('.exp'):
+        return True
+    if 'gen_directive_tests' in filename:
+        return True
+    return False
+
+def main(argv):
+    parser = argparse.ArgumentParser()#usage=__doc__)
+    parser.add_argument('paths', nargs='+', type=pathlib.Path)
+    opts = parser.parse_args(argv[1:])
+
+    ctxt = Context()
+    for path in opts.paths:
+        if path.is_dir():
+            for dirpath, dirnames, filenames in os.walk(path):
+                for f in filenames:
+                    if skip_file(f):
+                        continue
+                    p = os.path.join(dirpath, f)
+                    with open(p) as f:
+                        ctxt.check_file(f)
+        else:
+            with open(path) as f:
+                ctxt.check_file(f)
+    ctxt.report_stats()
+
+# TODO: how to unit test?
+
+if __name__ == '__main__':
+    retval = main(sys.argv)
+    sys.exit(retval)
