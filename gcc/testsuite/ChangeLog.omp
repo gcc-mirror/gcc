@@ -3,6 +3,12 @@
 	Backported from trunk:
 	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* g++.target/gcn/exceptions-bad_cast-1.C: New.
+	* g++.target/nvptx/exceptions-bad_cast-1.C: Likewise.
+
+	Backported from trunk:
+	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	PR target/118794
 	* g++.target/gcn/exceptions-pr118794-1.C: New.
 	* g++.target/nvptx/exceptions-pr118794-1.C: Likewise.

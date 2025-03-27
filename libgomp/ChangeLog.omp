@@ -3,6 +3,12 @@
 	Backported from trunk:
 	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-1.C: New.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-1.C: Likewise.
+
+	Backported from trunk:
+	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	PR target/118794
 	* testsuite/libgomp.c++/target-exceptions-pr118794-1.C: New.
 	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-GCN.C:
