@@ -1601,7 +1601,7 @@
 (define_insn_reservation "znver4_sse_cmp_avx128" 3
 			 (and (eq_attr "cpu" "znver4")
 			      (and (eq_attr "type" "ssecmp")
-				   (and (eq_attr "mode" "V4SF,V2DF,V2SF,V1DF,DF,SF")
+				   (and (eq_attr "mode" "V4SF,V2DF,V2SF,V1DF,DF,SF,TI")
 				    (and (eq_attr "prefix" "evex")
 					 (eq_attr "memory" "none")))))
 			 "znver4-direct,znver4-fpu0*2|znver4-fpu1*2")
@@ -1609,7 +1609,7 @@
 (define_insn_reservation "znver5_sse_cmp_avx128" 3
 			 (and (eq_attr "cpu" "znver5")
 			      (and (eq_attr "type" "ssecmp")
-				   (and (eq_attr "mode" "V4SF,V2DF,V2SF,V1DF,DF,SF")
+				   (and (eq_attr "mode" "V4SF,V2DF,V2SF,V1DF,DF,SF,TI")
 				    (and (eq_attr "prefix" "evex")
 					 (eq_attr "memory" "none")))))
 			 "znver4-direct,znver4-fpu1|znver4-fpu2")
@@ -1633,7 +1633,7 @@
 (define_insn_reservation "znver4_sse_cmp_avx256" 4
 			 (and (eq_attr "cpu" "znver4")
 			      (and (eq_attr "type" "ssecmp")
-				   (and (eq_attr "mode" "V8SF,V4DF")
+				   (and (eq_attr "mode" "V8SF,V4DF,OI")
 				    (and (eq_attr "prefix" "evex")
 					 (eq_attr "memory" "none")))))
 			 "znver4-direct,znver4-fpu0*2|znver4-fpu1*2")
@@ -1641,7 +1641,7 @@
 (define_insn_reservation "znver5_sse_cmp_avx256" 4
 			 (and (eq_attr "cpu" "znver5")
 			      (and (eq_attr "type" "ssecmp")
-				   (and (eq_attr "mode" "V8SF,V4DF")
+				   (and (eq_attr "mode" "V8SF,V4DF,OI")
 				    (and (eq_attr "prefix" "evex")
 					 (eq_attr "memory" "none")))))
 			 "znver4-direct,znver4-fpu1|znver4-fpu2")
@@ -1665,7 +1665,7 @@
 (define_insn_reservation "znver4_sse_cmp_avx512" 5
 			 (and (eq_attr "cpu" "znver4")
 			      (and (eq_attr "type" "ssecmp")
-				   (and (eq_attr "mode" "V16SF,V8DF")
+				   (and (eq_attr "mode" "V16SF,V8DF,XI")
 				    (and (eq_attr "prefix" "evex")
 					 (eq_attr "memory" "none")))))
 			 "znver4-direct,znver4-fpu0*2|znver4-fpu1*2")
@@ -1673,7 +1673,7 @@
 (define_insn_reservation "znver5_sse_cmp_avx512" 5
 			 (and (eq_attr "cpu" "znver5")
 			      (and (eq_attr "type" "ssecmp")
-				   (and (eq_attr "mode" "V16SF,V8DF")
+				   (and (eq_attr "mode" "V16SF,V8DF,XI")
 				    (and (eq_attr "prefix" "evex")
 					 (eq_attr "memory" "none")))))
 			 "znver4-direct,znver4-fpu1|znver4-fpu2")
