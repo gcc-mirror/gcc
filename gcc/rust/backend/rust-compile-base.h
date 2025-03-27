@@ -110,7 +110,7 @@ protected:
 			 const Resolver::CanonicalPath &canonical_path,
 			 TyTy::FnType *fntype);
 
-  static tree unit_expression (location_t locus);
+  tree unit_expression (location_t locus);
 
   void setup_fndecl (tree fndecl, bool is_main_entry_point, bool is_generic_fn,
 		     HIR::Visibility &visibility,

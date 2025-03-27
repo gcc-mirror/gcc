@@ -1023,7 +1023,7 @@ HIRCompileBase::resolve_method_address (TyTy::FnType *fntype,
 tree
 HIRCompileBase::unit_expression (location_t locus)
 {
-  tree unit_type = TyTyResolveCompile::get_unit_type ();
+  tree unit_type = TyTyResolveCompile::get_unit_type (ctx);
   return Backend::constructor_expression (unit_type, false, {}, -1, locus);
 }
 

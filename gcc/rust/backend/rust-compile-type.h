@@ -30,7 +30,7 @@ public:
   static tree compile (Context *ctx, const TyTy::BaseType *ty,
 		       bool trait_object_mode = false);
 
-  static tree get_unit_type ();
+  static tree get_unit_type (Context *ctx);
 
   void visit (const TyTy::InferType &) override;
   void visit (const TyTy::ADTType &) override;
