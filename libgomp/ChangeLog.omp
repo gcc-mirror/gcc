@@ -3,6 +3,12 @@
 	Backported from trunk:
 	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* testsuite/libgomp.c++/target-exceptions-throw-3.C: New.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-3.C: Likewise.
+
+	Backported from trunk:
+	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* testsuite/libgomp.c++/target-exceptions-throw-2.C: New.
 	* testsuite/libgomp.c++/target-exceptions-throw-2-offload-sorry-GCN.C: Likewise.
 	* testsuite/libgomp.c++/target-exceptions-throw-2-offload-sorry-nvptx.C: Likewise.
