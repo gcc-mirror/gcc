@@ -4,7 +4,7 @@
 //
 // Written by Richard Henderson, 26 May 2002.
 
-// { dg-do link { target c++11} }
+// { dg-do link { target c++11 } }
 extern void foo [[gnu::nothrow]] ();
 extern void link_error();
 

@@ -1,4 +1,4 @@
-/* { dg-do compile { target ia32} } */
+/* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2 -mno-sse2" } */
 
 _Float16 a;

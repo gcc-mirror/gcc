@@ -1,5 +1,5 @@
 /* { dg-do run { target bfin-*-linux-uclibc } } */
-/* { dg-bfin-processors bf544 bf547 bf548 bf549 bf561} */
+/* { dg-bfin-processors bf544 bf547 bf548 bf549 bf561 } */
 
 #if defined(__ADSPBF544__)
 #define L2_START 0xFEB00000
