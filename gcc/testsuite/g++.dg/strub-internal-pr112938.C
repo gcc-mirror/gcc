@@ -9,4 +9,4 @@ f(bool i, volatile bool j)
 }
 
 /* Check for two dereferences of the indirected volatile j parm.  */
-/* { dg-final { scan-tree-dump-times {={v} \*j_[0-9][0-9]*(D)} 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times {={v} \*j_[0-9+]\(D\)} 2 "optimized" } } */
