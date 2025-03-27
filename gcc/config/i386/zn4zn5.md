@@ -1036,14 +1036,14 @@
 
 (define_insn_reservation "znver4_sse_mov_fp_load" 6
 			 (and (eq_attr "cpu" "znver4")
-			      (and (eq_attr "type" "ssemov")
+			      (and (eq_attr "type" "ssemov,ssemov2")
 				   (and (eq_attr "mode" "V16SF,V8DF,V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "load"))))
 			 "znver4-direct,znver4-load,znver4-fpu")
 
 (define_insn_reservation "znver5_sse_mov_fp_load" 6
 			 (and (eq_attr "cpu" "znver5")
-			      (and (eq_attr "type" "ssemov")
+			      (and (eq_attr "type" "ssemov,ssemov2")
 				   (and (eq_attr "mode" "V16SF,V8DF,V8SF,V4DF,V4SF,V2DF,V2SF,V1DF,DF,SF")
 				    (eq_attr "memory" "load"))))
 			 "znver4-direct,znver5-load,znver4-fpu")
