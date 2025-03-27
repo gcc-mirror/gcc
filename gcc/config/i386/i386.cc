@@ -26465,8 +26465,7 @@ ix86_redzone_clobber ()
   cfun->machine->asm_redzone_clobber_seen = true;
   if (ix86_using_red_zone ())
     {
-      rtx base = plus_constant (Pmode, stack_pointer_rtx,
-				GEN_INT (-RED_ZONE_SIZE));
+      rtx base = plus_constant (Pmode, stack_pointer_rtx, -RED_ZONE_SIZE);
       rtx mem = gen_rtx_MEM (BLKmode, base);
       set_mem_size (mem, RED_ZONE_SIZE);
       return mem;
