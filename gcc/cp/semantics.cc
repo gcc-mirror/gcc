@@ -7466,17 +7466,17 @@ cp_oacc_check_attachments (tree c)
 /* Update OMP_CLAUSE_INIT_PREFER_TYPE in case template substitution
    happened.  */
 
-static void
-cp_omp_init_prefer_type_update (tree c)
+tree
+cp_finish_omp_init_prefer_type (tree pref_type)
 {
   if (processing_template_decl
-      || OMP_CLAUSE_INIT_PREFER_TYPE (c) == NULL_TREE
-      || TREE_CODE (OMP_CLAUSE_INIT_PREFER_TYPE (c)) != TREE_LIST)
-    return;
+      || pref_type == NULL_TREE
+      || TREE_CODE (pref_type) != TREE_LIST)
+    return pref_type;
 
-  tree t = TREE_PURPOSE (OMP_CLAUSE_INIT_PREFER_TYPE (c));
+  tree t = TREE_PURPOSE (pref_type);
   char *str = const_cast<char *> (TREE_STRING_POINTER (t));
-  tree fr_list = TREE_VALUE (OMP_CLAUSE_INIT_PREFER_TYPE (c));
+  tree fr_list = TREE_VALUE (pref_type);
   int len = TREE_VEC_LENGTH (fr_list);
   int cnt = 0;
 
@@ -7502,7 +7502,7 @@ cp_omp_init_prefer_type_update (tree c)
 		  || !tree_fits_shwi_p (value))
 		error_at (loc,
 			  "expected string literal or "
-			  "constant integer expression instead of %qE", value); // FIXME of 'qE' and no 'loc'?
+			  "constant integer expression instead of %qE", value);
 	      else
 		{
 		  HOST_WIDE_INT n = tree_to_shwi (value);
@@ -7531,7 +7531,7 @@ cp_omp_init_prefer_type_update (tree c)
       if (cnt >= len)
 	break;
     }
-  OMP_CLAUSE_INIT_PREFER_TYPE (c) = t;
+  return t;
 }
 
 /* For all elements of CLAUSES, validate them vs OpenMP constraints.
@@ -9690,7 +9690,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  break;
 	case OMP_CLAUSE_INIT:
 	  init_seen = true;
-	  cp_omp_init_prefer_type_update (c);
+	  OMP_CLAUSE_INIT_PREFER_TYPE (c)
+	    = cp_finish_omp_init_prefer_type (OMP_CLAUSE_INIT_PREFER_TYPE (c));
 	  if (!OMP_CLAUSE_INIT_TARGETSYNC (c))
 	    init_no_targetsync_clause = c;
 	  /* FALLTHRU */

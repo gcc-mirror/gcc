@@ -97,10 +97,10 @@ test (int *a, int *b)
   #pragma omp dispatch
     base99 ();
 
-  #pragma omp dispatch interop ( obj1 )  // { dg-message "sorry" }
+  #pragma omp dispatch interop ( obj1 )
     base2<int *, omp_interop_t> (b, omp_interop_none);
 
-  #pragma omp dispatch interop ( obj1 )  // { dg-message "sorry" }
+  #pragma omp dispatch interop ( obj1 )
     base2<int *, int *> (b, a);
 
   #pragma omp dispatch interop ( obj1 )

@@ -12134,13 +12134,18 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
       location_t match_loc = cp_expr_loc_or_input_loc (TREE_PURPOSE (chain));
       tree ctx = copy_list (TREE_VALUE (val));
       tree append_args_list = TREE_CHAIN (TREE_CHAIN (chain));
-      if (append_args_list && TREE_VALUE (append_args_list))
+      if (append_args_list
+	  && TREE_VALUE (append_args_list)
+	  && TREE_CHAIN (TREE_VALUE (append_args_list)))
 	{
-	  append_args_list = TREE_VALUE (TREE_VALUE (append_args_list));
+	  append_args_list = TREE_VALUE (append_args_list);
+	  append_args_list = TREE_VALUE (TREE_CHAIN (append_args_list));
 	  for (; append_args_list;
 	       append_args_list = TREE_CHAIN (append_args_list))
 	     {
 	      tree pref_list = TREE_VALUE (append_args_list);
+	      if (pref_list == NULL_TREE || TREE_CODE (pref_list) != TREE_LIST)
+		continue;
 	      tree fr_list = TREE_VALUE (pref_list);
 	      int len = TREE_VEC_LENGTH (fr_list);
 	      for (int i = 0; i < len; i++)

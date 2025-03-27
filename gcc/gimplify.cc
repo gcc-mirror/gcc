@@ -4073,13 +4073,6 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
 		  tree pref = TREE_VALUE (a);
 		  if (pref == NULL_TREE)
 		    pref = null_pointer_node;
-		  else if (TREE_CODE (pref) == TREE_LIST)
-		    {
-		      /* FIXME: this is a bug in the C++ front end.  */
-		      sorry_at (OMP_CLAUSE_LOCATION (dispatch_interop),
-				"%<prefer_type%> with template function");
-		      pref = null_pointer_node;
-		    }
 		  else
 		    pref = build_fold_addr_expr (pref);
 		  init = build4 (ARRAY_REF, prefer_type_type, prefer_type,
