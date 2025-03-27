@@ -81,13 +81,22 @@ TyTyResolveCompile::get_implicit_enumeral_node_type (TyTy::BaseType *repr)
 }
 
 tree
-TyTyResolveCompile::get_unit_type ()
+TyTyResolveCompile::get_unit_type (Context *ctx)
 {
   static tree unit_type;
   if (unit_type == nullptr)
     {
+      auto cn = ctx->get_mappings ().get_current_crate ();
+      auto &c = ctx->get_mappings ().get_ast_crate (cn);
+      location_t locus = BUILTINS_LOCATION;
+      if (c.items.size () > 0)
+	{
+	  auto &item = c.items[0];
+	  locus = item->get_locus ();
+	}
+
       auto unit_type_node = Backend::struct_type ({});
-      unit_type = Backend::named_type ("()", unit_type_node, BUILTINS_LOCATION);
+      unit_type = Backend::named_type ("()", unit_type_node, locus);
     }
   return unit_type;
 }
@@ -421,7 +430,7 @@ TyTyResolveCompile::visit (const TyTy::TupleType &type)
 {
   if (type.num_fields () == 0)
     {
-      translated = get_unit_type ();
+      translated = get_unit_type (ctx);
       return;
     }
 
@@ -724,7 +733,7 @@ TyTyResolveCompile::visit (const TyTy::StrType &type)
 void
 TyTyResolveCompile::visit (const TyTy::NeverType &)
 {
-  translated = get_unit_type ();
+  translated = get_unit_type (ctx);
 }
 
 void

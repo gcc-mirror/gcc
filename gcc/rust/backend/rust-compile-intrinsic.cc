@@ -1322,7 +1322,7 @@ try_handler_inner (Context *ctx, TyTy::FnType *fntype, bool is_new_api)
 
   if (is_new_api)
     {
-      auto ret_type = TyTyResolveCompile::get_unit_type ();
+      auto ret_type = TyTyResolveCompile::get_unit_type (ctx);
       auto ret_expr = Backend::constructor_expression (ret_type, false, {}, -1,
 						       UNDEF_LOCATION);
       normal_return_stmt
