@@ -149,6 +149,18 @@ protected:
   relation_oracle *m_oracle;
 };
 
+// This version of fur_source will pick a range up off an edge.
+
+class fur_edge : public fur_source
+{
+public:
+  fur_edge (edge e, range_query *q = NULL);
+  virtual bool get_operand (vrange &r, tree expr) override;
+  virtual bool get_phi_operand (vrange &r, tree expr, edge e) override;
+private:
+  edge m_edge;
+};
+
 // This class uses ranges to fold a gimple statement producing a range for
 // the LHS.  The source of all operands is supplied via the fur_source class
 // which provides a range_query as well as a source location and any other
