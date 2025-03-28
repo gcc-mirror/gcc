@@ -4,7 +4,12 @@
 // { dg-final { scan-tree-dump-times "  \[^\n\r]* = foo \\\(\[^\n\r]*\\\); \\\[tail call\\\] \\\[must tail call\\\]" 1 "optimized" } }
 
 struct S { S () {} };
-char *foo (S);
+
+[[gnu::noipa]] char *
+foo (S)
+{
+  return 0;
+}
 
 char *
 bar (S)
