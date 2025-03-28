@@ -1,3 +1,13 @@
+2025-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119000
+	* c-parser.cc (c_parser_omp_atomic): For omp write call
+	default_function_array_read_conversion on the rhs expression.
+	Merge the two adjacent if (code == NOP_EXPR) blocks.
+
 2025-03-22  Martin Uecker  <uecker@tugraz.at>
 
 	Backported from master:
