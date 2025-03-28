@@ -92,17 +92,17 @@ begin
 
    --  Common switches available everywhere
 
-   Write_Switch_Char ("g            ", "");
+   Write_Switch_Char ("g        ", "");
    Write_Line ("Generate debugging information");
 
-   Write_Switch_Char ("Idir         ", "");
+   Write_Switch_Char ("Idir     ", "");
    Write_Line ("Specify source files search path");
 
-   Write_Switch_Char ("I-           ", "");
+   Write_Switch_Char ("I-       ", "");
    Write_Line ("Do not look for sources in current directory");
 
-   Write_Switch_Char ("O[0123]      ", "");
-   Write_Line ("Control the optimization level");
+   Write_Switch_Char ("O[?]     ", "");
+   Write_Line ("Control the optimization level (?=0/1/2/3/s/z/g)");
 
    Write_Eol;
 

@@ -10076,7 +10076,7 @@ Library (RTL) ALI files.
 @code{n} controls the optimization level:
 
 
-@multitable {xxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
+@multitable {xxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
 @item
 
 `n'
@@ -10091,7 +10091,7 @@ Effect
 
 @tab
 
-No optimization, the default setting if no @code{-O} appears
+No optimization, the default setting if no @code{-O} appears.
 
 @item
 
@@ -10099,8 +10099,8 @@ No optimization, the default setting if no @code{-O} appears
 
 @tab
 
-Normal optimization, the default if you specify @code{-O} without an
-operand. A good compromise between code quality and compilation
+Moderate optimization, same as @code{-O} without an operand.
+A good compromise between quality of generated code and compilation
 time.
 
 @item
@@ -10109,7 +10109,7 @@ time.
 
 @tab
 
-Extensive optimization, may improve execution time, possibly at
+Extensive optimization, should improve execution time, possibly at
 the cost of substantially increased compilation time.
 
 @item
@@ -10118,8 +10118,8 @@ the cost of substantially increased compilation time.
 
 @tab
 
-Same as @code{-O2}, and also includes inline expansion for small
-subprograms in the same unit.
+Full optimization, may further improve execution time, possibly at
+the cost of substantially larger generated code.
 
 @item
 
@@ -10127,7 +10127,23 @@ subprograms in the same unit.
 
 @tab
 
-Optimize space usage
+Optimize for size (code and data) rather than speed.
+
+@item
+
+`z'
+
+@tab
+
+Optimize aggressively for size (code and data) rather than speed.
+
+@item
+
+`g'
+
+@tab
+
+Optimize for debugging experience rather than speed.
 
 @end multitable
 
@@ -20281,13 +20297,12 @@ Turning on optimization makes the compiler attempt to improve the
 performance and/or code size at the expense of compilation time and
 possibly the ability to debug the program.
 
-If you use multiple @code{-O} switches, with or without level
-numbers, the last such switch is the one that’s used.
-
-You can use the
-@code{-O} switch (the permitted forms are @code{-O0}, @code{-O1}
-@code{-O2}, @code{-O3}, and @code{-Os})
-to @code{gcc} to control the optimization level:
+You can pass the @code{-O} switch, with or without an operand
+(the permitted forms with an operand are @code{-O0}, @code{-O1},
+@code{-O2}, @code{-O3}, @code{-Os}, @code{-Oz}, and
+@code{-Og}) to @code{gcc} to control the optimization level. If you
+pass multiple @code{-O} switches, with or without an operand,
+the last such switch is the one that’s used:
 
 
 @itemize *
@@ -20298,8 +20313,7 @@ to @code{gcc} to control the optimization level:
 
 @item @code{-O0}
 
-No optimization (the default);
-generates unoptimized code but has
+No optimization (the default); generates unoptimized code but has
 the fastest compilation time. Debugging is easiest with this switch.
 
 Note that many other compilers do substantial optimization even if
@@ -20316,10 +20330,11 @@ mind when doing performance comparisons.
 
 @item @code{-O1}
 
-Moderate optimization; optimizes reasonably well but does not
-degrade compilation time significantly. You may not be able to see
-some variables in the debugger and changing the value of some
-variables in the debugger may not have the effect you desire.
+Moderate optimization (same as @code{-O} without an operand);
+optimizes reasonably well but does not degrade compilation time
+significantly. You may not be able to see some variables in the
+debugger, and changing the value of some variables in the debugger
+may not have the effect you desire.
 @end table
 
 @item 
@@ -20328,9 +20343,8 @@ variables in the debugger may not have the effect you desire.
 
 @item @code{-O2}
 
-Full optimization;
-generates highly optimized code and has
-the slowest compilation time. You may see significant impacts on
+Extensive optimization; generates highly optimized code but has
+an increased compilation time. You may see significant impacts on
 your ability to display and modify variables in the debugger.
 @end table
 
@@ -20340,9 +20354,9 @@ your ability to display and modify variables in the debugger.
 
 @item @code{-O3}
 
-Full optimization as in @code{-O2};
-also uses more aggressive automatic inlining of subprograms within a unit
-(@ref{104,,Inlining of Subprograms}) and attempts to vectorize loops.
+Full optimization; attempts more sophisticated transformations, in
+particular on loops, possibly at the cost of larger generated code.
+You may be hardly able to use the debugger at this optimization level.
 @end table
 
 @item 
@@ -20351,16 +20365,41 @@ also uses more aggressive automatic inlining of subprograms within a unit
 
 @item @code{-Os}
 
-Optimize space usage (code and data) of resulting program.
+Optimize for size (code and data) of resulting binary rather than
+speed; based on the @code{-O2} optimization level, but disables
+some of its transformations that often increase code size, as well
+as performs further optimizations designed to reduce code size.
+@end table
+
+@item 
+
+@table @asis
+
+@item @code{-Oz}
+
+Optimize aggressively for size (code and data) of resulting binary
+rather than speed; may increase the number of instructions executed
+if these instructions require fewer bytes to be encoded.
+@end table
+
+@item 
+
+@table @asis
+
+@item @code{-Og}
+
+Optimize for debugging experience rather than speed; based on the
+@code{-O1} optimization level, but attempts to eliminate all the
+negative effects of optimization on debugging.
 @end table
 @end itemize
 
 Higher optimization levels perform more global transformations on the
 program and apply more expensive analysis algorithms in order to generate
 faster and more compact code. The price in compilation time, and the
-resulting improvement in execution time,
-both depend on the particular application and the hardware environment.
-You should experiment to find the best level for your application.
+resulting improvement in execution time, both depend on the particular
+application and the hardware environment. You should experiment to find
+the best level for your application.
 
 Since the precise set of optimizations done at each level will vary from
 release to release (and sometime from target to target), it is best to think
