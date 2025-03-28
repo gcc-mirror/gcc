@@ -1,3 +1,288 @@
+2025-03-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/abi/pure-virtual1.C: Fix dg-require-weak directive.
+	* g++.target/i386/mangling-alias1.C: Fix dg-require-ifunc
+	directive.
+
+2025-03-27  Bob Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/ACCEPT_DATE___DAY_and_intrinsic_functions__1_.cob: New testcase.
+	* cobol.dg/group2/ACCEPT_DATE___DAY_and_intrinsic_functions__2_.cob: Likewise.
+	* cobol.dg/group2/ACCEPT_FROM_TIME___DATE___DAY___DAY-OF-WEEK__1_.cob: Likewise.
+	* cobol.dg/group2/ACCEPT_FROM_TIME___DATE___DAY___DAY-OF-WEEK__2_.cob: Likewise.
+	* cobol.dg/group2/COMP-6_arithmetic.cob: Likewise.
+	* cobol.dg/group2/COMP-6_numeric_test.cob: Likewise.
+	* cobol.dg/group2/COMP-6_used_with_DISPLAY.cob: Likewise.
+	* cobol.dg/group2/COMP-6_used_with_MOVE.cob: Likewise.
+	* cobol.dg/group2/COMPUTE_multiplication_to_FIX4.cob: Likewise.
+	* cobol.dg/group2/DISPLAY__Sign_ASCII__2_.cob: Likewise.
+	* cobol.dg/group2/DISPLAY__Sign_ASCII.cob: Likewise.
+	* cobol.dg/group2/Floating_continuation_indicator__1_.cob: Likewise.
+	* cobol.dg/group2/floating-point_ADD_FORMAT_1.cob: Likewise.
+	* cobol.dg/group2/floating-point_ADD_FORMAT_2.cob: Likewise.
+	* cobol.dg/group2/floating-point_DIVIDE_FORMAT_1.cob: Likewise.
+	* cobol.dg/group2/floating-point_DIVIDE_FORMAT_2.cob: Likewise.
+	* cobol.dg/group2/floating-point_literals.cob: Likewise.
+	* cobol.dg/group2/floating-point_MULTIPLY_FORMAT_1.cob: Likewise.
+	* cobol.dg/group2/floating-point_MULTIPLY_FORMAT_2.cob: Likewise.
+	* cobol.dg/group2/floating-point_SUBTRACT_FORMAT_1.cob: Likewise.
+	* cobol.dg/group2/floating-point_SUBTRACT_FORMAT_2.cob: Likewise.
+	* cobol.dg/group2/IBM_dialect_COMP_redefined_by_POINTER_as_64-bit.cob: Likewise.
+	* cobol.dg/group2/Indicators_______________-____D__.cob: Likewise.
+	* cobol.dg/group2/MULTIPLY_to_FIX4.cob: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_arithmetic.cob: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_basic_comp-3_comp-6__1_.cob: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_basic_comp-3_comp-6__2_.cob: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_dump.cob: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_numeric_test__1_.cob: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_numeric_test__2_.cob: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_used_with_DISPLAY.cob: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_used_with_INITIALIZE.cob: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_used_with_MOVE.cob: Likewise.
+	* cobol.dg/group2/POINTER__display.cob: Likewise.
+	* cobol.dg/group2/Simple_floating-point_MOVE.cob: Likewise.
+	* cobol.dg/group2/Simple_floating-point_VALUE_and_MOVE.cob: Likewise.
+	* cobol.dg/group2/ACCEPT_FROM_TIME___DATE___DAY___DAY-OF-WEEK__2_.out: Known-good result.
+	* cobol.dg/group2/COMP-6_arithmetic.out: Likewise.
+	* cobol.dg/group2/COMP-6_numeric_test.out: Likewise.
+	* cobol.dg/group2/COMP-6_used_with_DISPLAY.out: Likewise.
+	* cobol.dg/group2/COMP-6_used_with_MOVE.out: Likewise.
+	* cobol.dg/group2/COMPUTE_multiplication_to_FIX4.out: Likewise.
+	* cobol.dg/group2/DISPLAY__Sign_ASCII__2_.out: Likewise.
+	* cobol.dg/group2/DISPLAY__Sign_ASCII.out: Likewise.
+	* cobol.dg/group2/Floating_continuation_indicator__1_.out: Likewise.
+	* cobol.dg/group2/floating-point_ADD_FORMAT_1.out: Likewise.
+	* cobol.dg/group2/floating-point_ADD_FORMAT_2.out: Likewise.
+	* cobol.dg/group2/floating-point_DIVIDE_FORMAT_1.out: Likewise.
+	* cobol.dg/group2/floating-point_DIVIDE_FORMAT_2.out: Likewise.
+	* cobol.dg/group2/floating-point_literals.out: Likewise.
+	* cobol.dg/group2/floating-point_MULTIPLY_FORMAT_1.out: Likewise.
+	* cobol.dg/group2/floating-point_MULTIPLY_FORMAT_2.out: Likewise.
+	* cobol.dg/group2/floating-point_SUBTRACT_FORMAT_1.out: Likewise.
+	* cobol.dg/group2/floating-point_SUBTRACT_FORMAT_2.out: Likewise.
+	* cobol.dg/group2/IBM_dialect_COMP_redefined_by_POINTER_as_64-bit.out: Likewise.
+	* cobol.dg/group2/Indicators_______________-____D__.out: Likewise.
+	* cobol.dg/group2/MULTIPLY_to_FIX4.out: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_arithmetic.out: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_basic_comp-3_comp-6__1_.out: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_basic_comp-3_comp-6__2_.out: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_dump.out: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_numeric_test__1_.out: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_numeric_test__2_.out: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_used_with_DISPLAY.out: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_used_with_INITIALIZE.out: Likewise.
+	* cobol.dg/group2/PACKED-DECIMAL_used_with_MOVE.out: Likewise.
+	* cobol.dg/group2/POINTER__display.out: Likewise.
+	* cobol.dg/group2/Simple_floating-point_MOVE.out: Likewise.
+	* cobol.dg/group2/Simple_floating-point_VALUE_and_MOVE.out: Likewise.
+
+2025-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/strub-internal-pr112938.C: Add dg-warning for c++20.
+
+2025-03-27  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/template/explicit-args6.C: Remove an extra set of {} in
+	a dg-message.
+
+2025-03-27  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.misc-tests/gcov-31.c: Require effective target sigsetjmp.
+	* gcc.misc-tests/gcov-32.c: Ditto.
+
+2025-03-27  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/tree-ssa/initlist-opt2.C: Match _M_range_initialize_n
+	instead of _M_range_initialize.
+
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	* gfortran.dg/cray_pointers_2.f90: Restore whitespace.
+
+2025-03-27  Edwin Lu  <ewlu@rivosinc.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/merge-4.c: Fix typo
+
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	* gcc.target/aarch64/atomic-inst-ldlogic.c: Add another closing brace.
+
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	* gcc.dg/analyzer/fd-datagram-socket.c: Fix 'dg-message' spelling.
+	* gcc.dg/analyzer/out-of-bounds-zero.c: Fix whitespace in 'dg-additional-options'.
+	* gcc.dg/analyzer/strchr-1.c: Fix 'dg-message' whitespace.
+	* gnat.dg/sso/q11.adb: Fix 'dg-output' whitespace.
+
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	* g++.dg/warn/Winvalid-memory-model.C: Fix typo in comment.
+	* gcc.dg/builtin-dynamic-object-size-19.c: Ditto.
+	* gcc.dg/builtin-object-size-19.c: Ditto.
+	* gcc.dg/strlenopt-40.c: Ditto.
+	* gcc.dg/strlenopt-44.c: Ditto.
+	* gcc.dg/strlenopt-45.c: Ditto.
+	* gcc.dg/strlenopt-50.c: Ditto.
+	* gcc.dg/strlenopt-51.c: Ditto.
+	* gcc.dg/strlenopt-52.c: Ditto.
+	* gcc.dg/strlenopt-53.c: Ditto.
+	* gcc.dg/strlenopt-54.c: Ditto.
+	* gcc.dg/strlenopt-55.c: Ditto.
+	* gcc.dg/strlenopt-58.c: Ditto.
+	* gcc.dg/strlenopt-59.c: Ditto.
+	* gcc.dg/strlenopt-62.c: Ditto.
+	* gcc.dg/strlenopt-65.c: Ditto.
+	* gcc.dg/strlenopt-70.c: Ditto.
+	* gcc.dg/strlenopt-72.c: Ditto.
+	* gcc.dg/strlenopt-73.c: Ditto.
+	* gcc.dg/strlenopt-77.c: Ditto.
+	* gcc.dg/strlenopt-82.c: Ditto.
+	* gcc.dg/tree-ssa/builtin-snprintf-4.c: Ditto.
+	* gcc.dg/tree-ssa/builtin-snprintf-6.c: Ditto.
+	* gcc.dg/tree-ssa/builtin-snprintf-7.c: Ditto.
+	* gcc.dg/tree-ssa/builtin-sprintf-10.c: Ditto.
+	* gcc.dg/tree-ssa/builtin-sprintf-9.c: Ditto.
+	* gcc.dg/tree-ssa/phi-opt-value-5.c: Ditto.
+	* lib/multiline.exp: Ditto.
+	* lib/target-supports.exp: Ditto.
+
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	* c-c++-common/goacc/pr69916.c: Fix unusual whitespace in dg-*.
+	* g++.old-deja/g++.abi/vtable2.C: Ditto.
+	* g++.old-deja/g++.bugs/900330_02.C: Ditto.
+	* g++.old-deja/g++.bugs/900406_02.C: Ditto.
+	* g++.old-deja/g++.bugs/900519_13.C: Ditto.
+	* g++.old-deja/g++.mike/p9068.C: Ditto.
+	* gcc.dg/20040203-1.c: Ditto.
+	* gcc.dg/980502-1.c: Ditto.
+	* gcc.dg/ipa/ipa-sra-14.c: Ditto.
+	* gcc.dg/pr35468.c: Ditto.
+	* gcc.dg/pr82597.c: Ditto.
+	* gcc.dg/tree-ssa/phi-opt-7.c: Ditto.
+	* gfortran.dg/assumed_charlen_in_main.f90: Ditto.
+	* gfortran.dg/cray_pointers_2.f90: Ditto.
+
+2025-03-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* g++.dg/gomp/append-args-1.C: Remove expected dg-sorry.
+	* g++.dg/gomp/append-args-8.C: New test.
+
+2025-03-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118920
+	* g++.dg/modules/attrib-3_a.H: New test.
+	* g++.dg/modules/attrib-3_b.C: New test.
+	* g++.dg/modules/pr118920.h: New test.
+	* g++.dg/modules/pr118920_a.H: New test.
+	* g++.dg/modules/pr118920_b.H: New test.
+	* g++.dg/modules/pr118920_c.C: New test.
+
+2025-03-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/118920
+	* g++.dg/modules/tpl-friend-17.h: New test.
+	* g++.dg/modules/tpl-friend-17_a.C: New test.
+	* g++.dg/modules/tpl-friend-17_b.C: New test.
+
+2025-03-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/fmaxmin.c: Move scan-assembler checks to ...
+	* gcc.target/arm/fmaxmin-2.c: ... here.  New test.
+
+2025-03-27  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/119425
+	* gcc.target/i386/pr119425.c: New test.
+	Co-authered-by: Hongyu Wang <hongyu.wang@intel.com>
+
+2025-03-27  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/118765
+	* gcc.dg/pr118765-2.c: New test.
+	* gcc.dg/pr118765-3.c: New test.
+	* gcc.dg/typedef-redecl3.c: New test.
+
+2025-03-27  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/119408
+	* gcc.target/loongarch/pr119408.c: New test.
+
+2025-03-27  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c-c++-common/gomp/append-args-interop.c: Fix declaration of base
+	function to be correct for pre-C23 dialects.
+
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	PR testsuite/119489
+	* g++.dg/strub-internal-pr112938.C: Adjust pattern.
+
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	* gcc.target/arc/taux-1.c: Add missing brace.
+	* gcc.target/arc/taux-2.c: Ditto.
+	* gcc.target/i386/addr-space-1.c: Ditto.
+	* gcc.target/ia64/mfused-madd-vect.c: Ditto.
+	* gcc.target/ia64/mfused-madd.c: Ditto.
+	* gcc.target/ia64/mno-fused-madd-vect.c: Ditto.
+	* gcc.target/ia64/mno-fused-madd.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/merge-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vls/merge-4.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-1.c: Ditto.
+	* gcc.target/s390/target-attribute/tattr-2.c: Ditto.
+
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	PR target/98743
+	PR tree-optimization/105820
+	* g++.dg/cpp0x/udlit-namespace-ambiguous.C: Fix whitespace.
+	* g++.dg/cpp2a/constexpr-init21.C: Ditto.
+	* g++.dg/diagnostic/wrong-tag-1.C: Ditto.
+	* g++.dg/init/self1.C: Ditto.
+	* g++.dg/opt/pr98743.C: Add missing '}' to terminate dg directive.
+	* g++.dg/parse/error8.C: Fix whitespace.
+	* g++.dg/template/explicit-args6.C: Add missing '{' to begin dg directive.
+	* g++.dg/template/unify9.C: Fix whitespace.
+	* g++.dg/tree-ssa/pr105820.C: Ditto.
+	* g++.dg/warn/Wmismatched-tags-8.C: Add missing braces.
+	* gcc.dg/cpp/cmdlne-dM-M.c: Ditto.
+	* gcc.dg/tree-ssa/reassoc-32.c: Ditto.
+	* gcc.dg/tree-ssa/reassoc-33.c: Ditto.
+	* gcc.dg/tree-ssa/reassoc-34.c: Ditto.
+	* gcc.dg/tree-ssa/reassoc-35.c: Ditto.
+	* gcc.dg/tree-ssa/reassoc-36.c: Ditto.
+	* gcc.dg/tree-ssa/reassoc-39.c: Ditto.
+	* gcc.dg/tree-ssa/reassoc-41.c: Ditto.
+
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	* g++.dg/diagnostic/unclosed-extern-c.C: Fix 'dg-message' typo.
+	* g++.dg/warn/Wno-attributes-1.C: Ditto.
+
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	* g++.dg/cpp0x/gen-attrs-6.C: Surround 'target' by whitespace.
+	* gcc.target/aarch64/atomic-inst-ldlogic.c: Fix 'dg-final' whitespace.
+	* gcc.target/arm/short-vfp-1.c: Ditto.
+	* gcc.target/bfin/l2.c: Fix 'dg-bfin-processors' whitespace.
+	* gcc.target/i386/avx512fp16-vmovw-1b.c: Surround 'target' by whitespace.
+	* gcc.target/i386/sse2-float16-5.c: Ditto.
+	* gcc.target/powerpc/fold-vec-perm-longlong.c: Ditto.
+
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	PR middle-end/93437
+	* g++.dg/warn/Wstringop-overflow-5.C: Fix -Wstringop-overflow casing.
+
+2025-03-27  Sam James  <sam@gentoo.org>
+
+	* gfortran.dg/associate_70.f90: Replace parenthesis with '}'.
+	* gfortran.dg/bessel_3.f90: Drop extraneous parenthesis.
+	* gfortran.dg/c_funloc_tests_6.f90: Ditto.
+	* gfortran.dg/parity_2.f90: Ditto.
+
 2025-03-27  Sam James  <sam@gentoo.org>
 
 	PR ipa/98265

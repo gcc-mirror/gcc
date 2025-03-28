@@ -1,3 +1,11 @@
+2025-03-27  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/118765
+	* c-decl.cc (merge_decls): For TYPE_DECLS copy
+	DECL_ORIGINAL_TYPE from the old declaration.
+	* c-typeck.cc (tagged_types_tu_compatible_p): Add
+	checking assertions.
+
 2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
 	    Tobias Burnus  <tburnus@baylibre.com>
 

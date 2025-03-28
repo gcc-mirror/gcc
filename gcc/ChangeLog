@@ -1,3 +1,68 @@
+2025-03-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (ix86_redzone_clobber): Use integer, not rtx
+	as the third argument of plus_constant.
+
+2025-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR target/119010
+	* config/i386/zn4zn5.md (znver4_insn_both, znver5_insn_both):
+	New reservation for ALU ops with load and store.
+
+2025-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR target/119010
+	* config/i386/zn4zn5.md (znver4_sse_add, znver4_sse_add_load,
+	znver5_sse_add_load, znver4_sse_add1, znver4_sse_add1_load,
+	znver5_sse_add1_load, znver4_sse_mul, znver4_sse_mul_load,
+	znver5_sse_mul_load, znver4_sse_cvt, znver4_sse_cvt_load,
+	znver5_sse_cvt_load, znver4_sse_shuf, znver5_sse_shuf,
+	znver4_sse_shuf_load, znver5_sse_shuf_load,
+	znver4_sse_cmp_avx128, znver5_sse_cmp_avx128,
+	znver4_sse_cmp_avx128_load, znver5_sse_cmp_avx128_load):
+	Also handle DFmode.
+	(znver4_sse_muladd_load, znver5_sse_muladd_load): Use
+	ssemuladd type.
+
+2025-03-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (modify_call_for_omp_dispatch): Remove sorry.
+
+2025-03-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/neon.md (<fmaxmin><mode>3): Move pattern from here...
+	* config/arm/vec-common.md (<fmaxmin><mode>3): ... to here.  Convert
+	to define_expand and disable the pattern when denormal values might
+	get truncated to zero.  Iterate on VF to add V4HF and V8HF variants.
+
+2025-03-27  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/119425
+	* config/i386/sse.md:
+	(vec_set<mode>_0): Set the alternative with constraint "jm"'s
+	attribute "addr" to "gpr16".
+	(<mask_codefor>avx512dq_shuf_<shuffletype>64x2_1<mask_name>):
+	Ditto.
+	(avx512vl_shuf_<shuffletype>32x4_1<mask_name>): Ditto.
+	(avx2_pblendd<mode>): Ditto.
+	(aesenc): Ditto.
+	(aesenclast): Ditto.
+	(aesdec): Ditto.
+	(aesdeclast): Ditto.
+	(vaesdec_<mode>): Ditto.
+	(vaesdeclast_<mode>): Ditto.
+	(vaesenc_<mode>):: Ditto.
+	(vaesenclast_<mode>):: Ditto.
+	(aes<aesklvariant>u8): Ditto.
+	(*aes<aeswideklvariant>u8): Ditto.
+
+2025-03-27  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/119408
+	* config/loongarch/loongarch.cc
+	(loongarch_c_mode_for_suffix): New.
+	(TARGET_C_MODE_FOR_SUFFIX): Define.
+
 2025-03-26  Jørgen Kvalsvik  <j@lambda.is>
 
 	* builtins.cc (expand_builtin_fork_or_exec): Call
