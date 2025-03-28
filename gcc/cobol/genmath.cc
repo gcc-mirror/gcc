@@ -42,7 +42,6 @@
 #include "gengen.h"
 #include "structs.h"
 #include "../../libgcobol/gcobolio.h"
-#include "../../libgcobol/libgcobol.h"
 #include "show_parse.h"
 
 void

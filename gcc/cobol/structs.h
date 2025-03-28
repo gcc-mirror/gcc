@@ -55,7 +55,6 @@ extern GTY(()) tree cblc_field_pp_type_node;
 extern GTY(()) tree cblc_file_type_node;
 extern GTY(()) tree cblc_file_p_type_node;
 extern GTY(()) tree cblc_goto_type_node;
-extern GTY(()) tree cblc_int128_type_node;
 
 extern void create_our_type_nodes();
 

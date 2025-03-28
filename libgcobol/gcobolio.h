@@ -35,6 +35,13 @@
 #include <unordered_map>
 #include <vector>
 
+// RUNTIME structures *must* match the ones created in structs.c and initialized
+// and used in genapi.c.  It's actually not all that important to emphasize that
+// fact, since the compiled executable will crash and burn quickly if they don't
+// match precisely.
+
+// Note that it must match the same structure in the GDB-COBOL debugger
+
 typedef struct cblc_field_t
     {
     // This structure must match the code in structs.cc
@@ -76,6 +83,15 @@ enum cblc_file_prior_op_t
 
 /* end implementation details */
 
+enum cblc_file_flags_t
+    {
+    file_flag_none_e          = 0x00000,
+    file_flag_optional_e      = 0x00001,
+    file_flag_existed_e       = 0x00002,
+    file_name_quoted_e        = 0x00004,
+    file_flag_initialized_e   = 0x00008,
+    };
+
 typedef struct cblc_file_t
     {
     // This structure must match the code in structs.cc
@@ -110,5 +126,27 @@ typedef struct cblc_file_t
     cblc_file_prior_op_t prior_op;         // run-time type is INT
     int                  dummy;
     } cblc_file_t;
+
+
+/*  In various arithmetic routines implemented in libgcobol, it is oftent the
+    case that complicates lists of variables need to be conveyed.  For example,
+    "ADD A B C D GIVING E" and "ADD A TO B C D" are valid instructions.
+    
+    These treeplets (triplets of trees) were created to handle that.  */
+
+extern cblc_field_t ** __gg__treeplet_1f;
+extern size_t       *  __gg__treeplet_1o;
+extern size_t       *  __gg__treeplet_1s;
+extern cblc_field_t ** __gg__treeplet_2f;
+extern size_t       *  __gg__treeplet_2o;
+extern size_t       *  __gg__treeplet_2s;
+extern cblc_field_t ** __gg__treeplet_3f;
+extern size_t       *  __gg__treeplet_3o;
+extern size_t       *  __gg__treeplet_3s;
+extern cblc_field_t ** __gg__treeplet_4f;
+extern size_t       *  __gg__treeplet_4o;
+extern size_t       *  __gg__treeplet_4s;
+
+extern int *        __gg__fourplet_flags;
 
 #endif

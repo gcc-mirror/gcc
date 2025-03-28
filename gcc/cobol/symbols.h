@@ -477,6 +477,14 @@ struct cbl_subtable_t {
 
 bool is_elementary( enum cbl_field_type_t type );
 
+/*  In cbl_field_t:
+ *  'offset' is overloaded for FldAlphanumeric/temporary/intermediate variables
+ *  For such variables, offset is a copy of the initial capacity.  This is in
+ *  support of the FUNCTION TRIM function, which both needs to be able to
+ *  reduce the capacity of the target variable, and then to reset it back to
+ *  the original value
+ */
+
 struct cbl_field_t {
   size_t offset;
   enum cbl_field_type_t type, usage;

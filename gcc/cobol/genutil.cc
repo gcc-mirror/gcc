@@ -42,7 +42,6 @@
 #include "genutil.h"
 #include "structs.h"
 #include "../../libgcobol/gcobolio.h"
-#include "../../libgcobol/libgcobol.h"
 #include "../../libgcobol/charmaps.h"
 #include "show_parse.h"
 #include "../../libgcobol/exceptl.h"
@@ -1463,7 +1462,7 @@ get_power_of_ten(int n)
   else
     {
     // 19 through 38 is handled in a second step, because when this was written,
-    // GCC couldn't handle __int128 constants:
+    // GCC couldn't handle 128-bit constants:
     retval = pos[n/2];
     retval *= retval;
     if( n & 1 )

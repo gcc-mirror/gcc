@@ -210,4 +210,64 @@ enum ec_type_t {
 };
 
 
+// The following declarations are used by both gcc/cobol code and the libgcobol
+// code
+
+struct cblc_declarative_t
+    {
+    int format;
+    int culprit;  //declarative_culprit_t
+    int nfiles;
+    };
+
+/*  According to the standard, the first digit of the file operation status
+    register is interpreted like this:
+
+    EC-I-O-AT-END               '1'
+    EC-I-O-INVALID-KEY          '2'
+    EC-I-O-PERMANENT-ERROR      '3'
+    EC-I-O-LOGIC-ERROR          '4'
+    EC-I-O-RECORD-OPERATION     '5'
+    EC-I-O-FILE-SHARING         '6'
+    EC-I-O-IMP                  '9'
+
+When the tens digit is '0', there are a number of conditions for
+successful completion.  See section 9.1.12.1
+
+    00      unqualified success
+    02      duplicate key detected
+    04      the data read were either too short or too long
+    05      the operator couldn't find the tape
+    07      somebody tried to rewind the card reader.
+
+For now, I am going to treat the io_status as an integer 00 through 99.  I
+anticipate mostly returning
+    00 for ordinary success,
+    04 for a mismatched record size
+    10 for an end-of-file
+
+*/
+
+// This global variable is constantly being updated with the yylineno.  This is
+// useful for creating error messages, and for handling EXCEPTION_CONDITIONS
+extern int         __gg__exception_code;
+extern int         __gg__exception_line_number;
+extern int         __gg__exception_file_status;
+extern const char *__gg__exception_file_name;
+extern const char *__gg__exception_statement;
+extern const char *__gg__exception_source_file;
+extern const char *__gg__exception_program_id;
+extern const char *__gg__exception_section;
+extern const char *__gg__exception_paragraph;
+
+extern "C" void __gg__set_exception_code( ec_type_t ec,
+                                          int from_raise_statement=0);
+
+#if 1
+  static inline
+  void exception_raise(ec_type_t ec_code) { __gg__set_exception_code(ec_code); }
+#else
+# define exception_raise(ec_code)do{__gg__set_exception_code(ec_code);}while(0);
+#endif
+
 #endif

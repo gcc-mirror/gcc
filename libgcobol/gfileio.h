@@ -30,6 +30,30 @@
 #ifndef GFILEIO_H_
 #define GFILEIO_H_
 
+// For indexed files, there can be one or more indexes, one per key.
+// Each index is one or more fields.
+
+struct file_hole_t
+  {
+  long location;
+  size_t size;
+  };
+
+struct file_index_t
+    {
+    std::multimap<std::vector<unsigned char>, long> key_to_position;
+    std::multimap<std::vector<unsigned char>, long>::iterator current_iterator;
+    std::multimap<std::vector<unsigned char>, long>::iterator ending_iterator;
+    };
+
+class supplemental_t
+  {
+  public:
+    std::vector<file_hole_t>  holes;
+    std::vector<file_index_t> indexes;
+    std::vector<int>          uniques;
+  };
+
 extern "C"
 {
 void __gg__handle_error(const char *function, const char *msg);

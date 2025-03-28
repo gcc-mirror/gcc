@@ -93,7 +93,6 @@ cobol/charmaps.cc: $(LIB_SOURCE)/charmaps.cc
 	sed -i "s|\"common-defs[.]h\"|\"$(LIB_SOURCE)/common-defs.h\"|g" $@
 	sed -i "s|\"io[.]h\"|\"$(LIB_SOURCE)/io.h\"|g" $@
 	sed -i "s|\"gcobolio[.]h\"|\"$(LIB_SOURCE)/gcobolio.h\"|g" $@
-	sed -i "s|\"libgcobol[.]h\"|\"$(LIB_SOURCE)/libgcobol.h\"|g" $@
 	sed -i "s|\"gfileio[.]h\"|\"$(LIB_SOURCE)/gfileio.h\"|g" $@
 	sed -i "s|\"charmaps[.]h\"|\"$(LIB_SOURCE)/charmaps.h\"|g" $@
 	sed -i "s|\"valconv[.]h\"|\"$(LIB_SOURCE)/valconv.h\"|g" $@
@@ -105,7 +104,6 @@ cobol/valconv.cc: $(LIB_SOURCE)/valconv.cc
 	sed -i "s|\"common-defs[.]h\"|\"$(LIB_SOURCE)/common-defs.h\"|g" $@
 	sed -i "s|\"io[.]h\"|\"$(LIB_SOURCE)/io.h\"|g" $@
 	sed -i "s|\"gcobolio[.]h\"|\"$(LIB_SOURCE)/gcobolio.h\"|g" $@
-	sed -i "s|\"libgcobol[.]h\"|\"$(LIB_SOURCE)/libgcobol.h\"|g" $@
 	sed -i "s|\"gfileio[.]h\"|\"$(LIB_SOURCE)/gfileio.h\"|g" $@
 	sed -i "s|\"charmaps[.]h\"|\"$(LIB_SOURCE)/charmaps.h\"|g" $@
 	sed -i "s|\"valconv[.]h\"|\"$(LIB_SOURCE)/valconv.h\"|g" $@

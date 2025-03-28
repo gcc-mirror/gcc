@@ -48,7 +48,6 @@
 #include "genmath.h"
 #include "structs.h"
 #include "../../libgcobol/gcobolio.h"
-#include "../../libgcobol/libgcobol.h"
 #include "../../libgcobol/charmaps.h"
 #include "../../libgcobol/valconv.h"
 #include "show_parse.h"
@@ -4800,14 +4799,13 @@ parser_display_internal(tree file_descriptor,
   else if( refer.field->type == FldLiteralN )
     {
     // The parser found the string of digits from the source code and converted
-    // it to a _Float128.
+    // it to a 128-bit binary floating point number.
 
     // The bad news is that something like 555.55 can't be expressed exactly;
     // internally it is 555.5499999999....
 
-    // The good news is that we know any string of 33 or fewer digits is
-    // converted to _Float128 and then converted back again, you get the same
-    // string.
+    // The good news is that we know any string of 33 or fewer decimal digits
+    // can be converted to and from IEEE 754 binary128 without being changes
 
     // We make use of that here
 

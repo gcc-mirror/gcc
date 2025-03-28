@@ -41,7 +41,7 @@
 // takes 127 bits.  By using a maximum of 37, that gives us an additional digit
 // of headroom in order to accomplish rounding.
 
-// You should keep in mind that the _Float128 binary floating point numbers that
+// You should keep in mind that the 128-bit binary floating point numbers that
 // we use can reliably reproduce numbers of 33 decimal digits when going to
 // binary and back.
 
@@ -63,8 +63,23 @@
 
 // In the __gg__move_literala() call, we piggyback this bit onto the
 // cbl_round_t parameter, just to cut down on the number of parameters passed
+
 #define REFER_ALL_BIT 0x80
 
+// Other bits for handling MOVE ALL and so on.
+#define REFER_T_ALL_FLAGS_MASK 0x0FF  // We allow for seven subscripts
+#define REFER_T_MOVE_ALL       0x100  // This is the move_all flag
+#define REFER_T_ADDRESS_OF     0x200  // This is the address_of flag
+
+#define MIN_FIELD_BLOCK_SIZE (16)
+
+#define A_ZILLION (1000000) // Absurdly large number for __gg__call_parameter_count
+
+// These bits are used for the "call flags" of arithmetic operations
+#define ON_SIZE_ERROR 0x01
+#define REMAINDER_PRESENT 0x02
+
+#define MINIMUM_ALLOCATION_SIZE 16
 
 /*
  * User-defined names in IBM COBOL can have at most 30 characters.
@@ -495,6 +510,11 @@ T enabled_exception_match( T beg, T end, ec_type_t type, size_t file ) {
   return output;
 }
 
-
+enum substitute_flags_t
+  {
+  substitute_anycase_e  = 1,
+  substitute_first_e    = 2,  // first and last are mutually exclusive
+  substitute_last_e     = 4,
+  };
 
 #endif

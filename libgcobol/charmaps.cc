@@ -42,7 +42,6 @@
 #include "common-defs.h"
 #include "io.h"
 #include "gcobolio.h"
-#include "libgcobol.h"
 #include "charmaps.h"
 #include "valconv.h"
 

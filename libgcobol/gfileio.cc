@@ -334,8 +334,8 @@ __gg__file_init(
     file->errnum              = 0 ;
     file->io_status           = FsSuccess ;
     file->delimiter           = internal_newline ;
-    file->flags               = 0;
-        file->flags          |= (optional ? file_flag_optional_e : 0)
+    file->flags               = file_flag_none_e;
+        file->flags          |= (optional ? file_flag_optional_e : file_flag_none_e)
                                 + file_flag_initialized_e;
     file->record_area_min     = record_area_min;
     file->record_area_max     = record_area_max;
@@ -4138,7 +4138,7 @@ __gg__file_reopen(cblc_file_t *file, int mode_char)
   random_access_mode = (    file->access == file_access_rnd_e
                               || file->access == file_access_dyn_e);
   the_file_exists = access(trimmed_name, F_OK) == 0;
-  file->flags |= the_file_exists ? file_flag_existed_e : 0 ;
+  file->flags |= the_file_exists ? file_flag_existed_e : file_flag_none_e ;
 
   // We have four operations: INPUT (r) OUTPUT (w) I-O (+) and EXTEND (a)
   // INPUT and I-O and EXTEND have different results based on is_optional
@@ -4351,7 +4351,7 @@ __io__file_open(cblc_file_t *file,
     // file close time.
     file->filename = filename;
     file->flags &= ~file_name_quoted_e;
-    file->flags |= is_quoted ? file_name_quoted_e : 0;
+    file->flags |= is_quoted ? file_name_quoted_e : file_flag_none_e;
 
     __gg__file_reopen(file, mode_char);
     }

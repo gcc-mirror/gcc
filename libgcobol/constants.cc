@@ -44,13 +44,6 @@
 #include "io.h"
 #include "common-defs.h"
 #include "gcobolio.h"
-#include "libgcobol.h"
-#include "gfileio.h"
-#include "charmaps.h"
-
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wwrite-strings"
@@ -112,8 +105,6 @@ struct cblc_field_t __gg___2_##a = {    \
   .rdigits        = 0 ,                 \
   .dummy          = 0 ,                 \
   };
-
-
 
 unsigned char __gg__data_space[1] = {' '};
 struct cblc_field_t __gg__space = {
