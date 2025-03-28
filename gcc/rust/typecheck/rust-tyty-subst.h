@@ -125,7 +125,7 @@ public:
 				     std::vector<Region> subst)
   {
     RegionParamList list (num_regions);
-    for (size_t i = 0; i < subst.size (); i++)
+    for (size_t i = 0; i < MIN (num_regions, subst.size ()); i++)
       list.regions.at (i) = subst.at (i);
     for (size_t i = subst.size (); i < num_regions; i++)
       {
