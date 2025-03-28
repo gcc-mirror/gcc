@@ -1059,9 +1059,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     vector<bool, _Alloc>::
     _M_reallocate(size_type __n)
     {
+      const iterator __begin = begin(), __end = end();
+      if (size_type(__end - __begin) > __n)
+	__builtin_unreachable();
       _Bit_pointer __q = this->_M_allocate(__n);
       iterator __start(std::__addressof(*__q), 0);
-      iterator __finish(_M_copy_aligned(begin(), end(), __start));
+      iterator __finish(_M_copy_aligned(__begin, __end, __start));
       this->_M_deallocate();
       this->_M_impl._M_start = __start;
       this->_M_impl._M_finish = __finish;
