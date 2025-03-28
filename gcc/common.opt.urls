@@ -289,6 +289,12 @@ UrlSuffix(gcc/Warning-Options.html#index-Wcoverage-invalid-line-number)
 Wcoverage-too-many-conditions
 UrlSuffix(gcc/Warning-Options.html#index-Wcoverage-too-many-conditions)
 
+fpath-coverage-limit=
+UrlSuffix(gcc/Instrumentation-Options.html#index-fpath-coverage-limit)
+
+Wcoverage-too-many-paths
+UrlSuffix(gcc/Warning-Options.html#index-Wcoverage-too-many-paths)
+
 Wmissing-profile
 UrlSuffix(gcc/Warning-Options.html#index-Wmissing-profile)
 
@@ -1036,6 +1042,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-foptimize-crc)
 
 foptimize-sibling-calls
 UrlSuffix(gcc/Optimize-Options.html#index-foptimize-sibling-calls)
+
+fpath-coverage
+UrlSuffix(gcc/Instrumentation-Options.html#index-fpath-coverage)
 
 fpartial-inlining
 UrlSuffix(gcc/Optimize-Options.html#index-fpartial-inlining)
