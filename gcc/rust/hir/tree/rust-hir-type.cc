@@ -268,7 +268,8 @@ BareFunctionType::BareFunctionType (BareFunctionType const &other)
     for_lifetimes (other.for_lifetimes),
     function_qualifiers (other.function_qualifiers), params (other.params),
     is_variadic (other.is_variadic),
-    return_type (other.return_type->clone_type ())
+    return_type (other.has_return_type () ? other.return_type->clone_type ()
+					  : nullptr)
 {}
 
 BareFunctionType &

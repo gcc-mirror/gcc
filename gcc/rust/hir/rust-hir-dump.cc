@@ -2440,7 +2440,9 @@ Dump::visit (BareFunctionType &e)
       end_field ("params");
     }
 
-  visit_field ("return_type", e.get_return_type ());
+  if (e.has_return_type ())
+    visit_field ("return_type", e.get_return_type ());
+
   put_field ("is_variadic", std::to_string (e.get_is_variadic ()));
   end ("BareFunctionType");
 }
