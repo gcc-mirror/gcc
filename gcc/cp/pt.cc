@@ -25968,6 +25968,23 @@ mark_definable (tree decl)
     DECL_NOT_REALLY_EXTERN (clone) = 1;
 }
 
+/* DECL is an explicit instantiation definition, ensure that it will
+   be written out here and that it won't clash with other instantiations
+   in other translation units.  */
+
+void
+setup_explicit_instantiation_definition_linkage (tree decl)
+{
+  mark_definable (decl);
+  mark_needed (decl);
+  /* Always make artificials weak.  */
+  if (DECL_ARTIFICIAL (decl) && flag_weak)
+    comdat_linkage (decl);
+  /* We also want to put explicit instantiations in linkonce sections.  */
+  else if (TREE_PUBLIC (decl))
+    maybe_make_one_only (decl);
+}
+
 /* Called if RESULT is explicitly instantiated, or is a member of an
    explicitly instantiated class.  */
 
@@ -26005,16 +26022,8 @@ mark_decl_instantiated (tree result, int extern_p)
     }
   else
     {
-      mark_definable (result);
-      mark_needed (result);
       set_instantiating_module (result);
-      /* Always make artificials weak.  */
-      if (DECL_ARTIFICIAL (result) && flag_weak)
-	comdat_linkage (result);
-      /* For WIN32 we also want to put explicit instantiations in
-	 linkonce sections.  */
-      else if (TREE_PUBLIC (result))
-	maybe_make_one_only (result);
+      setup_explicit_instantiation_definition_linkage (result);
       if (TREE_CODE (result) == FUNCTION_DECL
 	  && DECL_TEMPLATE_INSTANTIATED (result))
 	/* If the function has already been instantiated, clear DECL_EXTERNAL,

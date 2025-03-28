@@ -5169,6 +5169,7 @@ copy_fndecl_with_name (tree fn, tree name, tree_code code,
       set_constraints (clone, copy_node (ci));
 
   SET_DECL_ASSEMBLER_NAME (clone, NULL_TREE);
+  DECL_ABSTRACT_P (clone) = false;
   /* There's no pending inline data for this function.  */
   DECL_PENDING_INLINE_INFO (clone) = NULL;
   DECL_PENDING_INLINE_P (clone) = 0;

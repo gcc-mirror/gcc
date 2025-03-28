@@ -12737,6 +12737,9 @@ trees_in::read_var_def (tree decl, tree maybe_template)
 	  if (maybe_dup && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (maybe_dup))
 	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = true;
 	  tentative_decl_linkage (decl);
+	  if (DECL_EXPLICIT_INSTANTIATION (decl)
+	      && !DECL_EXTERNAL (decl))
+	    setup_explicit_instantiation_definition_linkage (decl);
 	  if (DECL_IMPLICIT_INSTANTIATION (decl)
 	      || (DECL_EXPLICIT_INSTANTIATION (decl)
 		  && !DECL_EXTERNAL (decl))
@@ -16656,6 +16659,12 @@ module_state::read_cluster (unsigned snum)
       cfun->language->returns_null = pdata.returns_null;
       cfun->language->returns_abnormally = pdata.returns_abnormally;
       cfun->language->infinite_loop = pdata.infinite_loop;
+
+      /* Make sure we emit explicit instantiations.
+	 FIXME do we want to do this in expand_or_defer_fn instead?  */
+      if (DECL_EXPLICIT_INSTANTIATION (decl)
+	  && !DECL_EXTERNAL (decl))
+	setup_explicit_instantiation_definition_linkage (decl);
 
       if (abstract)
 	;

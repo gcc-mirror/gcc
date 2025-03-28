@@ -7692,6 +7692,7 @@ extern tree fn_type_unification			(tree, tree, tree,
 						 tree, unification_kind_t, int,
 						 struct conversion **,
 						 bool, bool);
+extern void setup_explicit_instantiation_definition_linkage (tree);
 extern void mark_decl_instantiated		(tree, int);
 extern int more_specialized_fn			(tree, tree, int);
 extern tree type_targs_deducible_from		(tree, tree);
