@@ -321,8 +321,22 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
 	  AST::AttrInputMetaItemContainer *meta_items
 	    = option.parse_to_meta_item ();
 
-	  const std::string inline_option
-	    = meta_items->get_items ().at (0)->as_string ();
+	  if (meta_items == nullptr)
+	    {
+	      rust_error_at (attr.get_locus (), "malformed %qs attribute",
+			     "repr");
+	      continue;
+	    }
+
+	  auto &items = meta_items->get_items ();
+	  if (items.size () == 0)
+	    {
+	      // nothing to do with this its empty
+	      delete meta_items;
+	      continue;
+	    }
+
+	  const std::string inline_option = items.at (0)->as_string ();
 
 	  // TODO: it would probably be better to make the MetaItems more aware
 	  // of constructs with nesting like #[repr(packed(2))] rather than
@@ -358,6 +372,8 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
 	    repr.pack = value;
 	  else if (is_align)
 	    repr.align = value;
+
+	  delete meta_items;
 
 	  // Multiple repr options must be specified with e.g. #[repr(C,
 	  // packed(2))].
