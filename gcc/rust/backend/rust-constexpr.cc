@@ -2697,10 +2697,8 @@ eval_store_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	      }
 	    if (TREE_CODE (probe) == ARRAY_REF)
 	      {
-		// TODO
-		rust_unreachable ();
-		// elt = eval_and_check_array_index (ctx, probe, false,
-		// 				  non_constant_p, overflow_p);
+		elt = eval_and_check_array_index (ctx, probe, false,
+						  non_constant_p, overflow_p);
 		if (*non_constant_p)
 		  return t;
 	      }
