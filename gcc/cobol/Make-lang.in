@@ -87,27 +87,10 @@ cobol1_OBJS =    \
 # Various #includes in the files copied from gcc/libgcobol need to be modified
 # so that the .h files can be found.
 
-cobol/charmaps.cc: $(LIB_SOURCE)/charmaps.cc
-	cp $^ $@
-	sed -i "s|\"ec[.]h\"|\"$(LIB_SOURCE)/ec.h\"|g" $@
-	sed -i "s|\"common-defs[.]h\"|\"$(LIB_SOURCE)/common-defs.h\"|g" $@
-	sed -i "s|\"io[.]h\"|\"$(LIB_SOURCE)/io.h\"|g" $@
-	sed -i "s|\"gcobolio[.]h\"|\"$(LIB_SOURCE)/gcobolio.h\"|g" $@
-	sed -i "s|\"gfileio[.]h\"|\"$(LIB_SOURCE)/gfileio.h\"|g" $@
-	sed -i "s|\"charmaps[.]h\"|\"$(LIB_SOURCE)/charmaps.h\"|g" $@
-	sed -i "s|\"valconv[.]h\"|\"$(LIB_SOURCE)/valconv.h\"|g" $@
-	sed -i "s|\"exceptl[.]h\"|\"$(LIB_SOURCE)/exceptl.h\"|g" $@
-
-cobol/valconv.cc: $(LIB_SOURCE)/valconv.cc
-	cp $^ $@
-	sed -i "s|\"ec[.]h\"|\"$(LIB_SOURCE)/ec.h\"|g" $@
-	sed -i "s|\"common-defs[.]h\"|\"$(LIB_SOURCE)/common-defs.h\"|g" $@
-	sed -i "s|\"io[.]h\"|\"$(LIB_SOURCE)/io.h\"|g" $@
-	sed -i "s|\"gcobolio[.]h\"|\"$(LIB_SOURCE)/gcobolio.h\"|g" $@
-	sed -i "s|\"gfileio[.]h\"|\"$(LIB_SOURCE)/gfileio.h\"|g" $@
-	sed -i "s|\"charmaps[.]h\"|\"$(LIB_SOURCE)/charmaps.h\"|g" $@
-	sed -i "s|\"valconv[.]h\"|\"$(LIB_SOURCE)/valconv.h\"|g" $@
-	sed -i "s|\"exceptl[.]h\"|\"$(LIB_SOURCE)/exceptl.h\"|g" $@
+cobol/charmaps.cc cobol/valconv.cc: cobol/%.cc: $(LIB_SOURCE)/%.cc
+	-l='ec\|common-defs\|io\|gcobolio\|gfileio\|charmaps'; \
+	l=$$l'\|valconv\|exceptl'; \
+	sed -e '/^#include/s,"\('$$l'\)\.h","../../libgcobol/\1.h",' $^ > $@
 
 LIB_SOURCE_H=$(wildcard $(LIB_SOURCE)/*.h)
 
