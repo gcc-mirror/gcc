@@ -3713,8 +3713,8 @@ package body Sem_Ch3 is
          Set_Is_Static_Expression (E, True);
          Set_Etype                (E, Universal_Integer);
 
-         Set_Etype     (Id, Universal_Integer);
          Mutate_Ekind  (Id, E_Named_Integer);
+         Set_Etype     (Id, Universal_Integer);
          Set_Is_Frozen (Id, True);
 
          Set_Debug_Info_Needed (Id);
@@ -3774,8 +3774,8 @@ package body Sem_Ch3 is
 
       if Is_Integer_Type (T) then
          Resolve (E, T);
-         Set_Etype (Id, Universal_Integer);
          Mutate_Ekind (Id, E_Named_Integer);
+         Set_Etype (Id, Universal_Integer);
 
       elsif Is_Real_Type (T) then
 
@@ -3806,15 +3806,15 @@ package body Sem_Ch3 is
          end if;
 
          Resolve (E, T);
-         Set_Etype (Id, Universal_Real);
          Mutate_Ekind (Id, E_Named_Real);
+         Set_Etype (Id, Universal_Real);
 
       else
          Wrong_Type (E, Any_Numeric);
          Resolve (E, T);
 
-         Set_Etype               (Id, T);
          Mutate_Ekind            (Id, E_Constant);
+         Set_Etype               (Id, T);
          Set_Never_Set_In_Source (Id, True);
          Set_Is_True_Constant    (Id, True);
          return;
@@ -6468,12 +6468,15 @@ package body Sem_Ch3 is
       Priv          : Entity_Id;
       Related_Id    : Entity_Id;
       Has_FLB_Index : Boolean := False;
+      K             : Entity_Kind;
 
    begin
       if Nkind (Def) = N_Constrained_Array_Definition then
          Index := First (Discrete_Subtype_Definitions (Def));
+         K := E_Array_Subtype;
       else
          Index := First (Subtype_Marks (Def));
+         K := E_Array_Type;
       end if;
 
       --  Find proper names for the implicit types which may be public. In case
@@ -6652,7 +6655,7 @@ package body Sem_Ch3 is
          --  them unique suffixes, because GNATprove require distinct types to
          --  have different names.
 
-         T := Create_Itype (E_Void, P, Related_Id, 'T', Suffix_Index => -1);
+         T := Create_Itype (K, P, Related_Id, 'T', Suffix_Index => -1);
       end if;
 
       --  Constrained array case
@@ -15220,12 +15223,15 @@ package body Sem_Ch3 is
         or else (Nkind (S) = N_Attribute_Reference
                  and then Attribute_Name (S) = Name_Range);
       Is_Indic     : constant Boolean := Nkind (S) = N_Subtype_Indication;
+      K            : constant Entity_Kind :=
+        (if Is_Modular_Integer_Type (T) then E_Modular_Integer_Subtype
+         elsif Is_Integer_Type (T) then E_Signed_Integer_Subtype
+         else E_Enumeration_Subtype);
 
    begin
       if Is_Range or else Is_Indic then
          Def_Id :=
-           Create_Itype
-             (E_Void, Related_Nod, Related_Id, Suffix, Suffix_Index);
+           Create_Itype (K, Related_Nod, Related_Id, Suffix, Suffix_Index);
          Set_Etype (Def_Id, Base_Type (T));
       end if;
 
@@ -15329,16 +15335,9 @@ package body Sem_Ch3 is
 
       --  Complete construction of the Itype
 
-      if Is_Modular_Integer_Type (T) then
-         Mutate_Ekind (Def_Id, E_Modular_Integer_Subtype);
-
-      elsif Is_Integer_Type (T) then
-         Mutate_Ekind (Def_Id, E_Signed_Integer_Subtype);
-
-      else
-         Mutate_Ekind (Def_Id, E_Enumeration_Subtype);
+      if K = E_Enumeration_Subtype then
          Set_Is_Character_Type (Def_Id, Is_Character_Type (T));
-         Set_First_Literal     (Def_Id, First_Literal (T));
+         Set_First_Literal (Def_Id, First_Literal (T));
       end if;
 
       Set_Size_Info      (Def_Id,                (T));
@@ -20603,17 +20602,17 @@ package body Sem_Ch3 is
 
       if No (Def_Id) then
          Def_Id :=
-           Create_Itype (E_Void, Related_Nod, Related_Id, 'D', Suffix_Index);
+           Create_Itype
+             ((if Is_Signed_Integer_Type (T) then E_Signed_Integer_Subtype
+               elsif Is_Modular_Integer_Type (T) then E_Modular_Integer_Subtype
+               else E_Enumeration_Subtype),
+              Related_Nod,
+              Related_Id,
+              'D',
+              Suffix_Index);
          Set_Etype (Def_Id, Base_Type (T));
 
-         if Is_Signed_Integer_Type (T) then
-            Mutate_Ekind (Def_Id, E_Signed_Integer_Subtype);
-
-         elsif Is_Modular_Integer_Type (T) then
-            Mutate_Ekind (Def_Id, E_Modular_Integer_Subtype);
-
-         else
-            Mutate_Ekind          (Def_Id, E_Enumeration_Subtype);
+         if Ekind (Def_Id) = E_Enumeration_Subtype then
             Set_Is_Character_Type (Def_Id, Is_Character_Type (T));
             Set_First_Literal     (Def_Id, First_Literal (T));
          end if;
