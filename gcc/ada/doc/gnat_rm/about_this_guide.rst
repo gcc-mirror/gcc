@@ -96,6 +96,9 @@ This reference manual contains the following chapters:
 * :ref:`Implementation_of_Ada_2012_Features`, describes the status of the
   GNAT implementation of the Ada 2012 language standard.
 
+* :ref:`Implementation_of_Ada_2022_Features`, describes the status of the
+  GNAT implementation of the Ada 2022 language standard.
+
 * :ref:`Security_Hardening_Features` documents GNAT extensions aimed
   at security hardening.
 

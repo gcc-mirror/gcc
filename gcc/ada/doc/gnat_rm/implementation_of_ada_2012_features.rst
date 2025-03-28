@@ -36,11 +36,8 @@ binding interpretation.
 
 Each feature corresponds to an Ada Issue ('AI') approved by the Ada
 standardization group (ISO/IEC JTC1/SC22/WG9) for inclusion in Ada 2012.
-The features are ordered based on the relevant sections of the Ada
-Reference Manual ("RM").  When a given AI relates to multiple points
-in the RM, the earliest is used.
 
-A complete description of the AIs may be found in
+The section "RM references" lists all modified paragraphs in the Ada 2005 reference manual. The details of each modification as well as a complete description of the AIs may be found in
 http://www.ada-auth.org/ai05-summary.html.
 
 .. index:: AI-0002 (Ada 2012 feature)
