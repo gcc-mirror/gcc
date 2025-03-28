@@ -793,6 +793,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		// reachable.
 		pointer __old_start = this->_M_impl._M_start;
 		pointer __old_finish = this->_M_impl._M_finish;
+		if ((__old_finish - __old_start) < 0)
+		  __builtin_unreachable();
 
 		const size_type __len =
 		  _M_check_len(__n, "vector::_M_range_insert");
