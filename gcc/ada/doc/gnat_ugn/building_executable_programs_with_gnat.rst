@@ -2259,15 +2259,17 @@ Alphabetical List of All Switches
   ======= ==================================================================
    *n*     Effect
   ------- ------------------------------------------------------------------
-  *0*      No optimization, the default setting if no :switch:`-O` appears
-  *1*      Normal optimization, the default if you specify :switch:`-O` without an
-           operand. A good compromise between code quality and compilation
+  *0*      No optimization, the default setting if no :switch:`-O` appears.
+  *1*      Moderate optimization, same as :switch:`-O` without an operand.
+           A good compromise between quality of generated code and compilation
            time.
-  *2*      Extensive optimization, may improve execution time, possibly at
+  *2*      Extensive optimization, should improve execution time, possibly at
            the cost of substantially increased compilation time.
-  *3*      Same as :switch:`-O2`, and also includes inline expansion for small
-           subprograms in the same unit.
-  *s*      Optimize space usage
+  *3*      Full optimization, may further improve execution time, possibly at
+           the cost of substantially larger generated code.
+  *s*      Optimize for size (code and data) rather than speed.
+  *z*      Optimize aggressively for size (code and data) rather than speed.
+  *g*      Optimize for debugging experience rather than speed.
   ======= ==================================================================
 
   See also :ref:`Optimization_Levels`.

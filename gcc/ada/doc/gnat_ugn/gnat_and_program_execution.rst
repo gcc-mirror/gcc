@@ -1584,18 +1584,16 @@ Turning on optimization makes the compiler attempt to improve the
 performance and/or code size at the expense of compilation time and
 possibly the ability to debug the program.
 
-If you use multiple :switch:`-O` switches, with or without level
-numbers, the last such switch is the one that's used.
-
-You can use the
-:switch:`-O` switch (the permitted forms are :switch:`-O0`, :switch:`-O1`
-:switch:`-O2`, :switch:`-O3`, and :switch:`-Os`)
-to ``gcc`` to control the optimization level:
+You can pass the :switch:`-O` switch, with or without an operand
+(the permitted forms with an operand are :switch:`-O0`, :switch:`-O1`,
+:switch:`-O2`, :switch:`-O3`, :switch:`-Os`, :switch:`-Oz`, and
+:switch:`-Og`) to ``gcc`` to control the optimization level. If you
+pass multiple :switch:`-O` switches, with or without an operand,
+the last such switch is the one that's used:
 
 
 * :switch:`-O0`
-    No optimization (the default);
-    generates unoptimized code but has
+    No optimization (the default); generates unoptimized code but has
     the fastest compilation time. Debugging is easiest with this switch.
 
     Note that many other compilers do substantial optimization even if
@@ -1606,32 +1604,45 @@ to ``gcc`` to control the optimization level:
     mind when doing performance comparisons.
 
 * :switch:`-O1`
-    Moderate optimization; optimizes reasonably well but does not
-    degrade compilation time significantly. You may not be able to see
-    some variables in the debugger and changing the value of some
-    variables in the debugger may not have the effect you desire.
+    Moderate optimization (same as :switch:`-O` without an operand);
+    optimizes reasonably well but does not degrade compilation time
+    significantly. You may not be able to see some variables in the
+    debugger, and changing the value of some variables in the debugger
+    may not have the effect you desire.
 
 * :switch:`-O2`
-    Full optimization;
-    generates highly optimized code and has
-    the slowest compilation time. You may see significant impacts on
+    Extensive optimization; generates highly optimized code but has
+    an increased compilation time. You may see significant impacts on
     your ability to display and modify variables in the debugger.
 
 * :switch:`-O3`
-    Full optimization as in :switch:`-O2`;
-    also uses more aggressive automatic inlining of subprograms within a unit
-    (:ref:`Inlining_of_Subprograms`) and attempts to vectorize loops.
-
+    Full optimization; attempts more sophisticated transformations, in
+    particular on loops, possibly at the cost of larger generated code.
+    You may be hardly able to use the debugger at this optimization level.
 
 * :switch:`-Os`
-    Optimize space usage (code and data) of resulting program.
+    Optimize for size (code and data) of resulting binary rather than
+    speed; based on the :switch:`-O2` optimization level, but disables
+    some of its transformations that often increase code size, as well
+    as performs further optimizations designed to reduce code size.
+
+* :switch:`-Oz`
+    Optimize aggressively for size (code and data) of resulting binary
+    rather than speed; may increase the number of instructions executed
+    if these instructions require fewer bytes to be encoded.
+
+* :switch:`-Og`
+    Optimize for debugging experience rather than speed; based on the
+    :switch:`-O1` optimization level, but attempts to eliminate all the
+    negative effects of optimization on debugging.
+
 
 Higher optimization levels perform more global transformations on the
 program and apply more expensive analysis algorithms in order to generate
 faster and more compact code. The price in compilation time, and the
-resulting improvement in execution time,
-both depend on the particular application and the hardware environment.
-You should experiment to find the best level for your application.
+resulting improvement in execution time, both depend on the particular
+application and the hardware environment. You should experiment to find
+the best level for your application.
 
 Since the precise set of optimizations done at each level will vary from
 release to release (and sometime from target to target), it is best to think
