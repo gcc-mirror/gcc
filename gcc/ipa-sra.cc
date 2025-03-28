@@ -2242,7 +2242,11 @@ isra_analyze_call (cgraph_edge *cs)
 	  BITMAP_FREE (analyzed);
 	}
     }
-  else
+  /* Don't set m_return_ignored for musttail calls.  The tailc/musttail passes
+     compare the returned value against the IPA-VRP return value range if
+     it is a singleton, but if the call is changed to something which doesn't
+     return anything, it will always fail.  */
+  else if (!gimple_call_must_tail_p (call_stmt))
     csum->m_return_ignored = true;
 }
 
