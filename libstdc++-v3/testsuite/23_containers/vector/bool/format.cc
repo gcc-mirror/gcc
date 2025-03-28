@@ -56,6 +56,12 @@ test_output()
 
   res = std::format(WIDEN("{:=^#7X}"), v[1]);
   VERIFY( res == WIDEN("==0X0==") );
+
+  res = std::format(WIDEN("{}"), v);
+  VERIFY( res == WIDEN("[true, false]") );
+
+  res = std::format(WIDEN("{::d}"), v);
+  VERIFY( res == WIDEN("[1, 0]") );
 }
 
 int main()

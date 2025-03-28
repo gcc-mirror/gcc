@@ -97,6 +97,10 @@ namespace __format
 #define _GLIBCXX_WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
 #define _GLIBCXX_WIDEN(S) _GLIBCXX_WIDEN_(_CharT, S)
 
+  // Size for stack located buffer
+  template<typename _CharT>
+  constexpr size_t __stackbuf_size = 32 * sizeof(void*) / sizeof(_CharT);
+
   // Type-erased character sinks.
   template<typename _CharT> class _Sink;
   template<typename _CharT> class _Fixedbuf_sink;
@@ -475,9 +479,10 @@ namespace __format
     _Pres_d = 1, _Pres_b, _Pres_B, _Pres_o, _Pres_x, _Pres_X, _Pres_c,
     // Presentation types for floating-point types.
     _Pres_a = 1, _Pres_A, _Pres_e, _Pres_E, _Pres_f, _Pres_F, _Pres_g, _Pres_G,
-    _Pres_p = 0, _Pres_P,   // For pointers.
-    _Pres_s = 0,            // For strings and bool.
-    _Pres_esc = 0xf,        // For strings and charT.
+    _Pres_p = 0, _Pres_P,     // For pointers.
+    _Pres_s = 0,              // For strings, bool
+    _Pres_seq = 0, _Pres_str, // For ranges
+    _Pres_esc = 0xf,          // For strings, charT and ranges
   };
 
   enum _Align {
@@ -544,42 +549,48 @@ namespace __format
       // pre: __first != __last
       constexpr iterator
       _M_parse_fill_and_align(iterator __first, iterator __last) noexcept
-      {
-	if (*__first != '{')
-	  {
-	    using namespace __unicode;
-	    if constexpr (__literal_encoding_is_unicode<_CharT>())
-	      {
-		// Accept any UCS scalar value as fill character.
-		_Utf32_view<ranges::subrange<iterator>> __uv({__first, __last});
-		if (!__uv.empty())
-		  {
-		    auto __beg = __uv.begin();
-		    char32_t __c = *__beg++;
-		    if (__is_scalar_value(__c))
-		      if (auto __next = __beg.base(); __next != __last)
-			if (_Align __align = _S_align(*__next))
-			  {
-			    _M_fill = __c;
-			    _M_align = __align;
-			    return ++__next;
-			  }
-		  }
-	      }
-	    else if (__last - __first >= 2)
-	      if (_Align __align = _S_align(__first[1]))
-		{
-		  _M_fill = *__first;
-		  _M_align = __align;
-		  return __first + 2;
-		}
+      { return _M_parse_fill_and_align(__first, __last, "{"); }
 
-	    if (_Align __align = _S_align(__first[0]))
-	      {
-		_M_fill = ' ';
-		_M_align = __align;
-		return __first + 1;
-	      }
+      // pre: __first != __last
+      constexpr iterator
+      _M_parse_fill_and_align(iterator __first, iterator __last, string_view __not_fill) noexcept
+      {
+	for (char c : __not_fill)
+	  if (*__first == c)
+	    return __first;
+
+	using namespace __unicode;
+	if constexpr (__literal_encoding_is_unicode<_CharT>())
+	  {
+	    // Accept any UCS scalar value as fill character.
+	    _Utf32_view<ranges::subrange<iterator>> __uv({__first, __last});
+	    if (!__uv.empty())
+	    {
+	      auto __beg = __uv.begin();
+	      char32_t __c = *__beg++;
+	      if (__is_scalar_value(__c))
+		if (auto __next = __beg.base(); __next != __last)
+		  if (_Align __align = _S_align(*__next))
+		    {
+		      _M_fill = __c;
+		      _M_align = __align;
+		      return ++__next;
+		    }
+	     }
+	  }
+	else if (__last - __first >= 2)
+	  if (_Align __align = _S_align(__first[1]))
+	    {
+	      _M_fill = *__first;
+	      _M_align = __align;
+	      return __first + 2;
+	    }
+
+	if (_Align __align = _S_align(__first[0]))
+	  {
+	    _M_fill = ' ';
+	    _M_align = __align;
+	    return __first + 1;
 	  }
 	return __first;
       }
@@ -934,11 +945,27 @@ namespace __format
 
       static consteval
       _Str_view _S_all()
-      { return _GLIBCXX_WIDEN("{}"); }
+      { return _GLIBCXX_WIDEN("[]{}(), : "); }
+
+      static consteval
+      _Str_view _S_squares()
+      { return _S_all().substr(0, 2); }
 
       static consteval
       _Str_view _S_braces()
-      { return _S_all().substr(0, 2); }
+      { return _S_all().substr(2, 2); }
+
+      static consteval
+      _Str_view _S_parens()
+      { return _S_all().substr(4, 2); }
+
+      static consteval
+      _Str_view _S_comma()
+      { return _S_all().substr(6, 2); }
+
+      static consteval
+      _Str_view _S_colon()
+      { return _S_all().substr(8, 2); }
     };
 
   template<typename _CharT>
@@ -1231,6 +1258,13 @@ namespace __format
   template<__char _CharT>
     struct __formatter_str
     {
+      __formatter_str() = default;
+
+      constexpr
+      __formatter_str(_Spec<_CharT> __spec) noexcept
+       : _M_spec(__spec)
+      { }
+
       constexpr typename basic_format_parse_context<_CharT>::iterator
       parse(basic_format_parse_context<_CharT>& __pc)
       {
@@ -1329,6 +1363,43 @@ namespace __format
 	}
 
 #if __glibcxx_format_ranges // C++ >= 23 && HOSTED
+      template<ranges::input_range _Rg, typename _Out>
+	requires same_as<remove_cvref_t<ranges::range_reference_t<_Rg>>, _CharT>
+	typename basic_format_context<_Out, _CharT>::iterator
+	_M_format_range(_Rg&& __rg, basic_format_context<_Out, _CharT>& __fc) const
+	{
+	  using _String = basic_string<_CharT>;
+	  using _String_view = basic_string_view<_CharT>;
+	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
+	    {
+	      const size_t __n(ranges::distance(__rg));
+	      if constexpr (ranges::contiguous_range<_Rg>)
+		return format(_String_view(ranges::data(__rg), __n), __fc);
+	      else if (__n <= __format::__stackbuf_size<_CharT>)
+		{
+		  _CharT __buf[__format::__stackbuf_size<_CharT>];
+		  ranges::copy(__rg, __buf);
+		  return format(_String_view(__buf, __n), __fc);
+		}
+	      else if constexpr (ranges::sized_range<_Rg>)
+		return format(_String(from_range, __rg), __fc);
+	      else if constexpr (ranges::random_access_range<_Rg>)
+		{
+		  ranges::iterator_t<_Rg> __first = ranges::begin(__rg);
+		  ranges::subrange __sub(__first, __first + __n);
+   	          return format(_String(from_range, __sub), __fc);
+		}
+	      else
+		{
+		  // N.B. preserve the computed size
+		  ranges::subrange __sub(__rg, __n);
+   	          return format(_String(from_range, __sub), __fc);
+		}
+	    }
+	  else
+	    return format(_String(from_range, __rg), __fc);
+	}
+
       constexpr void
       set_debug_format() noexcept
       { _M_spec._M_type = _Pres_esc; }
@@ -2931,7 +3002,7 @@ namespace __format
     };
   /// @}
 
-#if defined _GLIBCXX_USE_WCHAR_T && __cpp_lib_format_ranges
+#if defined _GLIBCXX_USE_WCHAR_T && __glibcxx_format_ranges
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 3944. Formatters converting sequences of char to sequences of wchar_t
 
@@ -2991,19 +3062,21 @@ namespace __format
     concept __formattable_impl
       = __parsable_with<_Tp, _Context> && __formattable_with<_Tp, _Context>;
 
+  template<typename _Formatter>
+    concept __has_debug_format = requires(_Formatter __f)
+    {
+      __f.set_debug_format();
+    };
+
 } // namespace __format
 /// @endcond
 
-// Concept std::formattable was introduced by P2286R8 "Formatting Ranges",
-// but we can't guard it with __cpp_lib_format_ranges until we define that!
-#if __cplusplus > 202002L
+#if __glibcxx_format_ranges // C++ >= 23 && HOSTED
   // [format.formattable], concept formattable
   template<typename _Tp, typename _CharT>
     concept formattable
       = __format::__formattable_impl<remove_reference_t<_Tp>, _CharT>;
-#endif
 
-#if __cpp_lib_format_ranges
   /// @cond undocumented
 namespace __format
 {
@@ -3246,7 +3319,7 @@ namespace __format
     class _Buf_sink : public _Sink<_CharT>
     {
     protected:
-      _CharT _M_buf[32 * sizeof(void*) / sizeof(_CharT)];
+      _CharT _M_buf[__stackbuf_size<_CharT>];
 
       [[__gnu__::__always_inline__]]
       constexpr
@@ -5088,7 +5161,7 @@ namespace __format
     }
 #endif
 
-#if __cpp_lib_format_ranges
+#if __glibcxx_format_ranges // C++ >= 23 && HOSTED
   // [format.range], formatting of ranges
   // [format.range.fmtkind], variable template format_kind
   enum class range_format {
@@ -5133,28 +5206,346 @@ namespace __format
   template<ranges::input_range _Rg> requires same_as<_Rg, remove_cvref_t<_Rg>>
     constexpr range_format format_kind<_Rg> = __fmt_kind<_Rg>();
 
-  // [format.range.formatter], class template range_formatter
-  template<typename _Tp, typename _CharT = char>
-    requires same_as<remove_cvref_t<_Tp>, _Tp> && formattable<_Tp, _CharT>
-    class range_formatter; // TODO
-
 /// @cond undocumented
 namespace __format
 {
-  // [format.range.fmtdef], class template range-default-formatter
-  template<range_format _Kind, ranges::input_range _Rg, typename _CharT>
-    struct __range_default_formatter; // TODO
+  template<typename _Tp>
+    concept __is_map_formattable
+      = __is_pair<_Tp> || (__is_tuple_v<_Tp> && tuple_size_v<_Tp> == 2);
+
 } // namespace __format
 /// @endcond
 
+  // [format.range.formatter], class template range_formatter
+  template<typename _Tp, __format::__char _CharT = char>
+    requires same_as<remove_cvref_t<_Tp>, _Tp> && formattable<_Tp, _CharT>
+    class range_formatter
+    {
+       using _String_view = basic_string_view<_CharT>;
+       using _Seps = __format::_Separators<_CharT>;
+
+    public:
+       constexpr void
+       set_separator(basic_string_view<_CharT> __sep) noexcept
+       { _M_sep = __sep; }
+
+       constexpr void
+       set_brackets(basic_string_view<_CharT> __open,
+		    basic_string_view<_CharT> __close) noexcept
+       {
+	 _M_open = __open;
+	 _M_close = __close;
+       }
+
+       constexpr formatter<_Tp, _CharT>&
+       underlying() noexcept
+       { return _M_fval; }
+
+       constexpr const formatter<_Tp, _CharT>&
+       underlying() const noexcept
+       { return _M_fval; }
+
+       // We deviate from standard, that declares this as template accepting
+       // unconstrained ParseContext type, which seems unimplementable.
+       constexpr typename basic_format_parse_context<_CharT>::iterator
+       parse(basic_format_parse_context<_CharT>& __pc)
+       {
+	 auto __first = __pc.begin();
+	 const auto __last = __pc.end();
+	 __format::_Spec<_CharT> __spec{};
+	 bool __no_brace = false;
+
+	 auto __finished = [&]
+	   { return __first == __last || *__first == '}'; };
+
+	 auto __finalize = [&]
+	   {
+	     _M_spec = __spec;
+	     return __first;
+	   };
+
+	 auto __parse_val = [&](_String_view __nfs = _String_view())
+	   {
+	     basic_format_parse_context<_CharT> __npc(__nfs);
+	     if (_M_fval.parse(__npc) != __npc.end())
+	       __format::__failed_to_parse_format_spec();
+	     if constexpr (__format::__has_debug_format<formatter<_Tp, _CharT>>)
+	       _M_fval.set_debug_format();
+	     return __finalize();
+	   };
+
+	 if (__finished())
+	   return __parse_val();
+
+	 __first = __spec._M_parse_fill_and_align(__first, __last, "{:");
+	 if (__finished())
+	   return __parse_val();
+
+	 __first = __spec._M_parse_width(__first, __last, __pc);
+	 if (__finished())
+	   return __parse_val();
+
+	 if (*__first == '?')
+	   {
+	     ++__first;
+	     __spec._M_type = __format::_Pres_esc;
+	     if (__finished() || *__first != 's')
+	       __throw_format_error("format error: '?' is allowed only in"
+				    " combination with 's'");
+	   }
+
+	 if (*__first == 's')
+	   {
+	     ++__first;
+	     if constexpr (same_as<_Tp, _CharT>)
+	       {
+		 if (__spec._M_type != __format::_Pres_esc)
+		   __spec._M_type = __format::_Pres_str;
+		 if (__finished())
+		   return __finalize();
+		 __throw_format_error("format error: element format specifier"
+				      " cannot be provided when 's' specifier is used");
+	       }
+	     else
+	       __throw_format_error("format error: 's' specifier requires"
+				    " range of character types");
+	   }
+
+	 if (__finished())
+	   return __parse_val();
+
+	 if (*__first == 'n')
+	   {
+	     ++__first;
+	     _M_open = _M_close = _String_view();
+	     __no_brace = true;
+	   }
+
+	 if (__finished())
+	   return __parse_val();
+
+	 if (*__first == 'm')
+	   {
+	     _String_view __m(__first, 1);
+	     ++__first;
+	     if constexpr (__format::__is_map_formattable<_Tp>)
+	       {
+		 _M_sep = _Seps::_S_comma();
+		 if (!__no_brace)
+		   {
+		     _M_open = _Seps::_S_braces().substr(0, 1);
+		     _M_close = _Seps::_S_braces().substr(1, 1);
+		   }
+		 if (__finished())
+		   return __parse_val(__m);
+		 __throw_format_error("format error: element format specifier"
+				      " cannot be provided when 'm' specifier is used");
+	       }
+	     else
+	       __throw_format_error("format error: 'm' specifier requires"
+				    " range of pairs or tuples of two elements");
+	   }
+
+	if (__finished())
+	  return __parse_val();
+
+	if (*__first == ':')
+	  {
+	    __pc.advance_to(++__first);
+	    __first = _M_fval.parse(__pc);
+	  }
+
+	if (__finished())
+	  return __finalize();
+
+	__format::__failed_to_parse_format_spec();
+      }
+
+      // We deviate from standard, that declares this as template accepting
+      // unconstrained FormatContext type, which seems unimplementable.
+      template<ranges::input_range _Rg, typename _Out>
+	requires formattable<ranges::range_reference_t<_Rg>, _CharT> &&
+		 same_as<remove_cvref_t<ranges::range_reference_t<_Rg>>, _Tp>
+	typename basic_format_context<_Out, _CharT>::iterator
+	format(_Rg&& __rg, basic_format_context<_Out, _CharT>& __fc) const
+	{
+	  // This is required to implement formatting with padding,
+	  // as we need to format to temporary buffer, using the same iterator.
+	  static_assert(is_same_v<_Out, __format::_Sink_iter<_CharT>>);
+	  if constexpr (same_as<_Tp, _CharT>)
+	    if (_M_spec._M_type == __format::_Pres_str
+		  || _M_spec._M_type == __format::_Pres_esc)
+	      {
+		__format::__formatter_str __fstr(_M_spec);
+		return __fstr._M_format_range(__rg, __fc);
+	      }
+	  if (_M_spec._M_get_width(__fc) > 0)
+	    return _M_format_with_padding(__rg, __fc);
+	  return _M_format_no_padding(__rg, __fc);
+	}
+
+    private:
+      template<ranges::input_range _Rg, typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	_M_format_no_padding(_Rg& __rg,
+			     basic_format_context<_Out, _CharT>& __fc) const
+	{
+	  auto __out = __format::__write(__fc.out(), _M_open);
+
+	  auto __first = ranges::begin(__rg);
+	  auto const __last = ranges::end(__rg);
+	  if (__first == __last)
+	    return __format::__write(__out, _M_close);
+
+	  __fc.advance_to(__out);
+	  __out = _M_fval.format(*__first, __fc);
+	  for (++__first; __first != __last; ++__first)
+	    {
+	      __out = __format::__write(__out, _M_sep);
+	      __fc.advance_to(__out);
+	      __out = _M_fval.format(*__first, __fc);
+	    }
+
+	  return __format::__write(__out, _M_close);
+	}
+
+      template<ranges::input_range _Rg, typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	_M_format_with_padding(_Rg& __rg,
+			       basic_format_context<_Out, _CharT>& __fc) const
+	{
+     	  struct _Restore_out
+	  {
+	    _Restore_out(basic_format_context<_Out, _CharT>& __fc)
+	    : _M_ctx(addressof(__fc)), _M_out(__fc.out())
+	    { }
+
+	    void trigger()
+	    {
+	      if (_M_ctx)
+		_M_ctx->advance_to(_M_out);
+	      _M_ctx = nullptr;
+	    }
+
+	    ~_Restore_out()
+	    { trigger(); }
+
+	  private:
+	    basic_format_context<_Out, _CharT>* _M_ctx;
+	    __format::_Sink_iter<_CharT> _M_out;
+	  };
+
+	  _Restore_out __restore{__fc};
+	  // TODO Consider double sinking, first buffer of width
+	  // size and then original sink, if first buffer is overrun
+	  // we do not need to align
+	  __format::_Str_sink<_CharT> __buf;
+	  __fc.advance_to(__format::_Sink_iter<_CharT>(__buf));
+	  _M_format_no_padding(__rg, __fc);
+	  __restore.trigger();
+
+	  _String_view __s(__buf.view());
+	  size_t __width;
+	  if constexpr (__unicode::__literal_encoding_is_unicode<_CharT>())
+	    __width = __unicode::__field_width(__s);
+	  else
+	    __width = __s.size();
+	  return __format::__write_padded_as_spec(__s, __width, __fc, _M_spec);
+	}
+
+      __format::_Spec<_CharT> _M_spec{};
+      _String_view _M_open = _Seps::_S_squares().substr(0, 1);
+      _String_view _M_close = _Seps::_S_squares().substr(1, 1);
+      _String_view _M_sep = _Seps::_S_comma();
+      formatter<_Tp, _CharT> _M_fval;
+    };
+
+  // In standard this is shown as inheriting from specialization of
+  // exposition only specialization for range-default-formatter for
+  // each range_format. We opt for simpler implementation.
   // [format.range.fmtmap], [format.range.fmtset], [format.range.fmtstr],
   // specializations for maps, sets, and strings
-  template<ranges::input_range _Rg, typename _CharT>
+  template<ranges::input_range _Rg, __format::__char _CharT>
     requires (format_kind<_Rg> != range_format::disabled)
       && formattable<ranges::range_reference_t<_Rg>, _CharT>
     struct formatter<_Rg, _CharT>
-    : __format::__range_default_formatter<format_kind<_Rg>, _Rg, _CharT>
-    { };
+    {
+    private:
+      static const bool _S_range_format_is_string =
+	(format_kind<_Rg> == range_format::string)
+	 || (format_kind<_Rg> == range_format::debug_string);
+      using _Vt = remove_cvref_t<
+		    ranges::range_reference_t<
+		      __format::__maybe_const_range<_Rg, _CharT>>>;
+
+      static consteval bool _S_is_correct()
+	{
+	  if constexpr (_S_range_format_is_string)
+	    static_assert(same_as<_Vt, _CharT>);
+	  return true;
+	}
+
+      static_assert(_S_is_correct());
+
+    public:
+      constexpr formatter() noexcept
+      {
+	using _Seps = __format::_Separators<_CharT>;
+	if constexpr (format_kind<_Rg> == range_format::map)
+	  {
+	    static_assert(__format::__is_map_formattable<_Vt>);
+	    _M_under.set_brackets(_Seps::_S_braces().substr(0, 1),
+				  _Seps::_S_braces().substr(1, 1));
+	    _M_under.underlying().set_brackets({}, {});
+	    _M_under.underlying().set_separator(_Seps::_S_colon());
+	  }
+	else if constexpr (format_kind<_Rg> == range_format::set)
+	  _M_under.set_brackets(_Seps::_S_braces().substr(0, 1),
+				_Seps::_S_braces().substr(1, 1));
+      }
+
+      constexpr void
+      set_separator(basic_string_view<_CharT> __sep) noexcept
+	requires (!_S_range_format_is_string)
+      { _M_under.set_separator(__sep); }
+
+      constexpr void
+      set_brackets(basic_string_view<_CharT> __open,
+		   basic_string_view<_CharT> __close) noexcept
+	requires (!_S_range_format_is_string)
+      { _M_under.set_brackets(__open, __close); }
+
+      // We deviate from standard, that declares this as template accepting
+      // unconstrained ParseContext type, which seems unimplementable.
+      constexpr typename basic_format_parse_context<_CharT>::iterator
+      parse(basic_format_parse_context<_CharT>& __pc)
+      {
+	auto __res = _M_under.parse(__pc);
+	if constexpr (format_kind<_Rg> == range_format::debug_string)
+	  _M_under.set_debug_format();
+	return __res;
+      }
+
+      // We deviate from standard, that declares this as template accepting
+      // unconstrained FormatContext type, which seems unimplementable.
+      template<typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	format(__format::__maybe_const_range<_Rg, _CharT>& __rg,
+	       basic_format_context<_Out, _CharT>& __fc) const
+	{
+	  if constexpr (_S_range_format_is_string)
+	    return _M_under._M_format_range(__rg, __fc);
+	  else
+	    return _M_under.format(__rg, __fc);
+       	}
+
+    private:
+      using _Formatter_under
+	= __conditional_t<_S_range_format_is_string,
+			  __format::__formatter_str<_CharT>,
+			  range_formatter<_Vt, _CharT>>;
+      _Formatter_under _M_under;
+    };
 #endif // C++23 formatting ranges
 #undef _GLIBCXX_WIDEN
 

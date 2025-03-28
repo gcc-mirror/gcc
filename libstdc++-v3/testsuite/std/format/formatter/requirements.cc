@@ -70,12 +70,14 @@ test_specializations() // [format.formatter.spec]
 
   // LWG 3833. Remove specialization
   // template<size_t N> struct formatter<const charT[N], charT>
-  using Farr = std::format_context::formatter_type<const char[1]>;
-  static_assert( ! std::is_default_constructible_v<Farr> );
-  static_assert( ! std::is_copy_constructible_v<Farr> );
-  static_assert( ! std::is_move_constructible_v<Farr> );
-  static_assert( ! std::is_copy_assignable_v<Farr> );
-  static_assert( ! std::is_move_assignable_v<Farr> );
+  // Formatter is only expected to be instantiated with only cv-unqual types
+  // and attempting to instantiate this specialization is ill-formed
+  // using Farr = std::format_context::formatter_type<const char[1]>;
+  // static_assert( ! std::is_default_constructible_v<Farr> );
+  // static_assert( ! std::is_copy_constructible_v<Farr> );
+  // static_assert( ! std::is_move_constructible_v<Farr> );
+  // static_assert( ! std::is_copy_assignable_v<Farr> );
+  // static_assert( ! std::is_move_assignable_v<Farr> );
 }
 
 int main()
