@@ -15680,24 +15680,23 @@ initial_from_float128(cbl_field_t *field)
 
     case FldFloat:
       {
-      tree tem;
       retval = (char *)xmalloc(field->data.capacity);
       switch( field->data.capacity )
         {
         case 4:
           value = real_value_truncate (TYPE_MODE (FLOAT), value);
-          tem = build_real (FLOAT, value);
-          native_encode_expr (tem, (unsigned char *)retval, 4, 0);
+          native_encode_real (SCALAR_FLOAT_TYPE_MODE (FLOAT), &value,
+			      (unsigned char *)retval, 4, 0);
           break;
         case 8:
           value = real_value_truncate (TYPE_MODE (DOUBLE), value);
-          tem = build_real (DOUBLE, value);
-          native_encode_expr (tem, (unsigned char *)retval, 8, 0);
+          native_encode_real (SCALAR_FLOAT_TYPE_MODE (DOUBLE), &value,
+			      (unsigned char *)retval, 8, 0);
           break;
         case 16:
           value = real_value_truncate (TYPE_MODE (FLOAT128), value);
-          tem = build_real (FLOAT128, value);
-          native_encode_expr (tem, (unsigned char *)retval, 16, 0);
+          native_encode_real (SCALAR_FLOAT_TYPE_MODE (FLOAT128), &value,
+			      (unsigned char *)retval, 16, 0);
           break;
         }
       break;
