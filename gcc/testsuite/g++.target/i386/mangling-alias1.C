@@ -1,6 +1,6 @@
 // PR c++/114992
 // { dg-do compile { target { c++11 && x86_64-*-* } } }
-// { dg-require-ifunc }
+// { dg-require-ifunc "" }
 
 template <typename Callable>
 __attribute__((target_clones("avx2", "default")))
