@@ -2257,7 +2257,11 @@ extern int making_const_table;
 
 #define SELECT_CC_MODE(OP, X, Y)  arm_select_cc_mode (OP, X, Y)
 
-#define REVERSIBLE_CC_MODE(MODE) 1
+/* Floating-point modes cannot be reversed unless we don't care about
+   NaNs.  */
+#define REVERSIBLE_CC_MODE(MODE)			\
+  (flag_finite_math_only				\
+   || !((MODE) == CCFPmode || (MODE) == CCFPEmode))
 
 #define REVERSE_CONDITION(CODE,MODE) \
   (((MODE) == CCFPmode || (MODE) == CCFPEmode) \
