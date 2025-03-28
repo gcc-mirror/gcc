@@ -5546,8 +5546,10 @@ trees_in::start (unsigned code)
 
 enum class importer_interface {
   unknown,	  /* The definition may or may not need to be emitted.  */
-  always_import,  /* The definition can always be found in another TU.  */
-  always_emit,	  /* The definition must be emitted in the importer's TU. */
+  external,	  /* The definition can always be found in another TU.  */
+  internal,	  /* The definition should be emitted in the importer's TU.  */
+  always_emit,	  /* The definition must be emitted in the importer's TU,
+		     regardless of if it's used or not. */
 };
 
 /* Returns what kind of interface an importer will have of DECL.  */
@@ -5558,13 +5560,13 @@ get_importer_interface (tree decl)
   /* Internal linkage entities must be emitted in each importer if
      there is a definition available.  */
   if (!TREE_PUBLIC (decl))
-    return importer_interface::always_emit;
+    return importer_interface::internal;
 
-  /* Entities that aren't vague linkage are either not definitions or
-     will be emitted in this TU, so importers can just refer to an
-     external definition.  */
+  /* Other entities that aren't vague linkage are either not definitions
+     or will be publicly emitted in this TU, so importers can just refer
+     to an external definition.  */
   if (!vague_linkage_p (decl))
-    return importer_interface::always_import;
+    return importer_interface::external;
 
   /* For explicit instantiations, importers can always rely on there
      being a definition in another TU, unless this is a definition
@@ -5574,13 +5576,13 @@ get_importer_interface (tree decl)
       && DECL_EXPLICIT_INSTANTIATION (decl))
     return (header_module_p () && !DECL_EXTERNAL (decl)
 	    ? importer_interface::always_emit
-	    : importer_interface::always_import);
+	    : importer_interface::external);
 
   /* A gnu_inline function is never emitted in any TU.  */
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DECLARED_INLINE_P (decl)
       && lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (decl)))
-    return importer_interface::always_import;
+    return importer_interface::external;
 
   /* Everything else has vague linkage.  */
   return importer_interface::unknown;
@@ -5722,29 +5724,13 @@ trees_out::core_bools (tree t, bits_out& bits)
 	   DECL_NOT_REALLY_EXTERN -> base.not_really_extern
 	     == that was a lie, it is here  */
 
+	/* decl_flag_1 is DECL_EXTERNAL. Things we emit here, might
+	   well be external from the POV of an importer.  */
 	bool is_external = t->decl_common.decl_flag_1;
-	if (!is_external)
-	  /* decl_flag_1 is DECL_EXTERNAL. Things we emit here, might
-	     well be external from the POV of an importer.  */
-	  // FIXME: Do we need to know if this is a TEMPLATE_RESULT --
-	  // a flag from the caller?
-	  switch (code)
-	    {
-	    default:
-	      break;
-
-	    case VAR_DECL:
-	      if (TREE_PUBLIC (t)
-		  && DECL_VTABLE_OR_VTT_P (t))
-		/* We handle vtable linkage specially.  */
-		is_external = true;
-	      gcc_fallthrough ();
-	    case FUNCTION_DECL:
-	      if (get_importer_interface (t)
-		  == importer_interface::always_import)
-		is_external = true;
-	      break;
-	    }
+	if (!is_external
+	    && VAR_OR_FUNCTION_DECL_P (t)
+	    && get_importer_interface (t) == importer_interface::external)
+	  is_external = true;
 	WB (is_external);
       }
 
@@ -12651,7 +12637,7 @@ trees_out::write_function_def (tree decl)
       /* Whether the importer should emit this definition, if used.  */
       flags |= 1 * (DECL_NOT_REALLY_EXTERN (decl)
 		    && (get_importer_interface (decl)
-			!= importer_interface::always_import));
+			!= importer_interface::external));
 
       if (f)
 	{
