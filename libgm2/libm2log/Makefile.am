@@ -147,7 +147,7 @@ endif
 if ENABLE_DARWIN_AT_RPATH
 libm2log_la_link_flags += -nodefaultrpaths -Wl,-rpath,@loader_path/
 endif
-libm2log_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2log_la_link_flags)
+libm2log_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2log_la_link_flags) -lm
 BUILT_SOURCES = ../libm2pim/SYSTEM.def
 
 M2LIBDIR = /m2/m2log/
