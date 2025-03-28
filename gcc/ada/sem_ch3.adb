@@ -15315,13 +15315,12 @@ package body Sem_Ch3 is
                   S, Entity (S));
             end if;
 
-            return;
-
          else
             Error_Msg_N ("invalid index constraint", S);
             Rewrite (S, New_Occurrence_Of (T, Sloc (S)));
-            return;
          end if;
+
+         return;
       end if;
 
       --  Complete construction of the Itype
