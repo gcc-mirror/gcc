@@ -484,7 +484,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
   size_t idx;
   tree var;
 
-  if (!single_succ_p (bb))
+  if (!single_succ_p (bb)
+      && (EDGE_COUNT (bb->succs) || !cfun->has_musttail || !diag_musttail))
     {
       /* If there is an abnormal edge assume it's the only extra one.
 	 Tolerate that case so that we can give better error messages
@@ -605,7 +606,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
   /* If the call might throw an exception that wouldn't propagate out of
      cfun, we can't transform to a tail or sibling call (82081).  */
   if ((stmt_could_throw_p (cfun, stmt)
-       && !stmt_can_throw_external (cfun, stmt)) || !single_succ_p (bb))
+       && !stmt_can_throw_external (cfun, stmt)) || EDGE_COUNT (bb->succs) > 1)
   {
     if (stmt == last_stmt)
       maybe_error_musttail (call,
@@ -760,10 +761,12 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
   a = NULL_TREE;
   auto_bitmap to_move_defs;
   auto_vec<gimple *> to_move_stmts;
+  bool is_noreturn
+    = EDGE_COUNT (bb->succs) == 0 && gimple_call_noreturn_p (call);
 
   abb = bb;
   agsi = gsi;
-  while (1)
+  while (!is_noreturn)
     {
       tree tmp_a = NULL_TREE;
       tree tmp_m = NULL_TREE;
@@ -844,7 +847,22 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
     }
 
   /* See if this is a tail call we can handle.  */
-  ret_var = gimple_return_retval (as_a <greturn *> (stmt));
+  if (is_noreturn)
+    {
+      tree rettype = TREE_TYPE (TREE_TYPE (current_function_decl));
+      tree calltype = TREE_TYPE (gimple_call_fntype (call));
+      if (!VOID_TYPE_P (rettype)
+	  && !useless_type_conversion_p (rettype, calltype))
+	{
+	  maybe_error_musttail (call,
+				_("call and return value are different"),
+				diag_musttail);
+	  return;
+	}
+      ret_var = NULL_TREE;
+    }
+  else
+    ret_var = gimple_return_retval (as_a <greturn *> (stmt));
 
   /* We may proceed if there either is no return value, or the return value
      is identical to the call's return or if the return decl is an empty type
@@ -1153,24 +1171,32 @@ eliminate_tail_call (struct tailcall *t, class loop *&new_loop)
 	gsi_prev (&gsi2);
     }
 
-  /* Number of executions of function has reduced by the tailcall.  */
-  e = single_succ_edge (gsi_bb (t->call_gsi));
+  if (gimple_call_noreturn_p (as_a <gcall *> (stmt)))
+    {
+      e = make_edge (gsi_bb (t->call_gsi), first, EDGE_FALLTHRU);
+      e->probability = profile_probability::always ();
+    }
+  else
+    {
+      /* Number of executions of function has reduced by the tailcall.  */
+      e = single_succ_edge (gsi_bb (t->call_gsi));
 
-  profile_count count = e->count ();
+      profile_count count = e->count ();
 
-  /* When profile is inconsistent and the recursion edge is more frequent
-     than number of executions of functions, scale it down, so we do not end
-     up with 0 executions of entry block.  */
-  if (count >= ENTRY_BLOCK_PTR_FOR_FN (cfun)->count)
-    count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.apply_scale (7, 8);
-  decrease_profile (EXIT_BLOCK_PTR_FOR_FN (cfun), count);
-  decrease_profile (ENTRY_BLOCK_PTR_FOR_FN (cfun), count);
-  if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
-    decrease_profile (e->dest, count);
+      /* When profile is inconsistent and the recursion edge is more frequent
+	 than number of executions of functions, scale it down, so we do not
+	 end up with 0 executions of entry block.  */
+      if (count >= ENTRY_BLOCK_PTR_FOR_FN (cfun)->count)
+	count = ENTRY_BLOCK_PTR_FOR_FN (cfun)->count.apply_scale (7, 8);
+      decrease_profile (EXIT_BLOCK_PTR_FOR_FN (cfun), count);
+      decrease_profile (ENTRY_BLOCK_PTR_FOR_FN (cfun), count);
+      if (e->dest != EXIT_BLOCK_PTR_FOR_FN (cfun))
+	decrease_profile (e->dest, count);
 
-  /* Replace the call by a jump to the start of function.  */
-  e = redirect_edge_and_branch (single_succ_edge (gsi_bb (t->call_gsi)),
-				first);
+      /* Replace the call by a jump to the start of function.  */
+      e = redirect_edge_and_branch (single_succ_edge (gsi_bb (t->call_gsi)),
+				    first);
+    }
   gcc_assert (e);
   PENDING_STMT (e) = NULL;
 
@@ -1294,6 +1320,18 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls, bool only_musttail,
       if (safe_is_a <greturn *> (*gsi_last_bb (e->src)))
 	find_tail_calls (e->src, &tailcalls, only_musttail, opt_tailcalls,
 			 diag_musttail);
+    }
+  if (cfun->has_musttail && diag_musttail)
+    {
+      basic_block bb;
+      FOR_EACH_BB_FN (bb, cfun)
+	if (EDGE_COUNT (bb->succs) == 0)
+	  if (gimple *c = last_nondebug_stmt (bb))
+	    if (is_gimple_call (c)
+		&& gimple_call_must_tail_p (as_a <gcall *> (c))
+		&& gimple_call_noreturn_p (as_a <gcall *> (c)))
+	      find_tail_calls (bb, &tailcalls, only_musttail, opt_tailcalls,
+			       diag_musttail);
     }
 
   if (live_vars)

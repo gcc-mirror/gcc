@@ -2568,7 +2568,7 @@ can_implement_as_sibling_call_p (tree exp,
       maybe_complain_about_tail_call (exp, _("callee returns twice"));
       return false;
     }
-  if (flags & ECF_NORETURN)
+  if ((flags & ECF_NORETURN) && !CALL_EXPR_MUST_TAIL_CALL (exp))
     {
       maybe_complain_about_tail_call (exp, _("callee does not return"));
       return false;
