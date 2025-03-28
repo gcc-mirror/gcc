@@ -16234,7 +16234,9 @@ arm_select_cc_mode (enum rtx_code op, rtx x, rtx y)
 	case LE:
 	case GT:
 	case GE:
-	  return CCFPEmode;
+	  return (flag_finite_math_only
+		  ? CCFPmode
+		  : CCFPEmode);
 
 	default:
 	  gcc_unreachable ();
