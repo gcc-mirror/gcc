@@ -970,12 +970,26 @@ expand_dw2_landing_pad_for_region (eh_region region)
     { /* Nothing */ }
 
   if (region->exc_ptr_reg)
-    emit_move_insn (region->exc_ptr_reg,
-		    gen_rtx_REG (ptr_mode, EH_RETURN_DATA_REGNO (0)));
+    {
+      rtx exc_ptr_reg;
+      if (EH_RETURN_DATA_REGNO (0) != INVALID_REGNUM)
+	exc_ptr_reg = gen_rtx_REG (ptr_mode, EH_RETURN_DATA_REGNO (0));
+      else
+	/* The target must be doing something special.  Submit a dummy.  */
+	exc_ptr_reg = constm1_rtx;
+      emit_move_insn (region->exc_ptr_reg, exc_ptr_reg);
+    }
   if (region->filter_reg)
-    emit_move_insn (region->filter_reg,
-		    gen_rtx_REG (targetm.eh_return_filter_mode (),
-				 EH_RETURN_DATA_REGNO (1)));
+    {
+      rtx filter_reg;
+      if (EH_RETURN_DATA_REGNO (1) != INVALID_REGNUM)
+	filter_reg = gen_rtx_REG (targetm.eh_return_filter_mode (),
+				  EH_RETURN_DATA_REGNO (1));
+      else
+	/* The target must be doing something special.  Submit a dummy.  */
+	filter_reg = constm1_rtx;
+      emit_move_insn (region->filter_reg, filter_reg);
+    }
 }
 
 /* Expand the extra code needed at landing pads for dwarf2 unwinding.  */

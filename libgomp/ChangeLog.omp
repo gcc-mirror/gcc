@@ -3,6 +3,37 @@
 	Backported from trunk:
 	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	PR target/118794
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2-offload-sorry-GCN.C:
+	Set '-foffload-options=-mno-fake-exceptions'.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2-offload-sorry-nvptx.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-nvptx.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-throw-2-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-throw-2-offload-sorry-nvptx.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2-offload-sorry-nvptx.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2-offload-sorry-nvptx.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2.C: Adjust.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-throw-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-throw-2-O0.C: New.
+
+	Backported from trunk:
+	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* testsuite/libgomp.c++/target-exceptions-throw-3.C: New.
 	* testsuite/libgomp.oacc-c++/exceptions-throw-3.C: Likewise.
 

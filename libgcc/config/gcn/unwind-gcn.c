@@ -38,6 +38,12 @@ _Unwind_DeleteException (struct _Unwind_Exception *exc)
     (*exc->exception_cleanup) (_URC_FOREIGN_EXCEPTION_CAUGHT, exc);
 }
 
+void
+_Unwind_Resume (struct _Unwind_Exception *exc __attribute__ ((__unused__)))
+{
+  __builtin_abort ();
+}
+
 _Unwind_Reason_Code
 _Unwind_Resume_or_Rethrow (struct _Unwind_Exception *exc __attribute__ ((__unused__)))
 {

@@ -3,6 +3,28 @@
 	Backported from trunk:
 	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	PR target/118794
+	* g++.target/gcn/exceptions-bad_cast-2.C: Set
+	'-mno-fake-exceptions'.
+	* g++.target/gcn/exceptions-pr118794-1.C: Likewise.
+	* g++.target/gcn/exceptions-throw-2.C: Likewise.
+	* g++.target/nvptx/exceptions-bad_cast-2.C: Likewise.
+	* g++.target/nvptx/exceptions-pr118794-1.C: Likewise.
+	* g++.target/nvptx/exceptions-throw-2.C: Likewise.
+	* g++.target/gcn/exceptions-bad_cast-2_-mfake-exceptions.C: New.
+	* g++.target/gcn/exceptions-pr118794-1_-mfake-exceptions.C:
+	Likewise.
+	* g++.target/gcn/exceptions-throw-2_-mfake-exceptions.C: Likewise.
+	* g++.target/nvptx/exceptions-bad_cast-2_-mfake-exceptions.C:
+	Likewise.
+	* g++.target/nvptx/exceptions-pr118794-1_-mfake-exceptions.C:
+	Likewise.
+	* g++.target/nvptx/exceptions-throw-2_-mfake-exceptions.C:
+	Likewise.
+
+	Backported from trunk:
+	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* g++.target/gcn/exceptions-throw-3.C: New.
 	* g++.target/nvptx/exceptions-throw-3.C: Likewise.
 

@@ -1,6 +1,24 @@
 2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/118794
+	* config/gcn/gcn.opt (-mfake-exceptions): Support.
+	* config/nvptx/nvptx.opt (-mfake-exceptions): Likewise.
+	* config/gcn/gcn.md (define_expand "exception_receiver"): Use it.
+	* config/nvptx/nvptx.md (define_expand "exception_receiver"):
+	Likewise.
+	* config/gcn/mkoffload.cc (main): Set it.
+	* config/nvptx/mkoffload.cc (main): Likewise.
+	* config/nvptx/nvptx.cc (nvptx_assemble_integer)
+	<in_section == exception_section>: Special handling for
+	'SYMBOL_REF's.
+	* except.cc (expand_dw2_landing_pad_for_region): Don't generate
+	bogus code for (default)
+	'#define EH_RETURN_DATA_REGNO(N) INVALID_REGNUM'.
+
+	Backported from trunk:
 	2025-04-07  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* config/nvptx/nvptx.opt (-mfake-ptx-alloca): Update.

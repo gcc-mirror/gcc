@@ -2431,7 +2431,25 @@ nvptx_assemble_integer (rtx x, unsigned int size, int ARG_UNUSED (aligned_p))
     {
       gcc_checking_assert (!init_frag.active);
       /* Just use the default machinery; it's not getting used, anyway.  */
-      return default_assemble_integer (x, size, aligned_p);
+      bool ok = default_assemble_integer (x, size, aligned_p);
+      /* ..., but a few cases need special handling.  */
+      switch (GET_CODE (x))
+	{
+	case SYMBOL_REF:
+	  /* The default machinery won't work: we don't define the necessary
+	     operations; don't use them outside of this.  */
+	  gcc_checking_assert (!ok);
+	  {
+	    /* Just emit something; it's not getting used, anyway.  */
+	    const char *op = "\t.symbol_ref\t";
+	    ok = (assemble_integer_with_op (op, x), true);
+	  }
+	  break;
+
+	default:
+	  break;
+	}
+      return ok;
     }
 
   gcc_checking_assert (init_frag.active);

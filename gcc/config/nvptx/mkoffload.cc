@@ -788,6 +788,9 @@ main (int argc, char **argv)
     }
   if (fopenmp)
     obstack_ptr_grow (&argv_obstack, "-mgomp");
+  /* The host code may contain exception handling constructs.
+     Handle these as good as we can.  */
+  obstack_ptr_grow (&argv_obstack, "-mfake-exceptions");
 
   for (int ix = 1; ix != argc; ix++)
     {

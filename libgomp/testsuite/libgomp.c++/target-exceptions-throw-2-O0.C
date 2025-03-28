@@ -1,14 +1,16 @@
 /* 'throw' in OpenMP 'target' region, caught.  */
 
+/* { dg-additional-options -O0 } */
 /* { dg-require-effective-target exceptions }
    { dg-additional-options -fexceptions } */
 /* { dg-additional-options -fdump-tree-optimized-raw }
    { dg-additional-options -foffload-options=-fdump-tree-optimized-raw } */
-/* { dg-bogus {Size expression must be absolute\.} PR119737 { target offload_target_amdgcn xfail *-*-* } 0 }
-   { dg-ice PR119737 { offload_target_amdgcn } }
-   { dg-excess-errors {'mkoffload' failures etc.} { xfail offload_target_amdgcn } } */
+/* { dg-bogus {undefined symbol: typeinfo name for MyException} PR119806 { target offload_target_amdgcn xfail *-*-* } 0 }
+   { dg-excess-errors {'mkoffload' failure etc.} { xfail offload_target_amdgcn } } */
+/* { dg-bogus {Initial value type mismatch} PR119806 { target offload_target_nvptx xfail *-*-* } 0 }
+   { dg-excess-errors {'mkoffload' failure etc.} { xfail offload_target_nvptx } } */
 
-#include "../libgomp.oacc-c++/exceptions-throw-2.C"
+#include "target-exceptions-throw-2.C"
 
 /* { dg-output {CheCKpOInT[\r\n]+} }
 

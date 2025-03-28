@@ -1,6 +1,13 @@
 2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/118794
+	* config/gcn/unwind-gcn.c (_Unwind_Resume): New.
+	* config/nvptx/unwind-nvptx.c (_Unwind_Resume): Likewise.
+
+	Backported from trunk:
 	2025-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* config/gcn/unwind-gcn.c (_Unwind_RaiseException)
