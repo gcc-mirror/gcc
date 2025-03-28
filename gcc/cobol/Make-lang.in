@@ -272,7 +272,7 @@ cobol/scan.o: cobol/scan.cc			\
 # output, and do not require those tools to be installed.
 #
 cobol.srcextra: cobol/parse.cc cobol/cdf.cc cobol/scan.cc
-	ln -f $^ cobol/parse.h cobol/cdf.h $(srcdir)/cobol/
+	-cp -p $^ cobol/parse.h cobol/cdf.h $(srcdir)/cobol/
 
 
 # And the cobol1 front end
