@@ -12395,13 +12395,14 @@ create_and_call(size_t narg,
       // We got back a 64-bit or 128-bit integer.  The called and calling
       // programs have to agree on size, but other than that, integer numeric
       // types are converted one to the other.
+
       gg_call(VOID,
               "__gg__int128_to_qualified_field",
               gg_get_address_of(returned.field->var_decl_node),
               refer_offset_dest(returned),
               refer_size_dest(returned),
               gg_cast(INT128, returned_value),
-              member(returned.field->var_decl_node, "rdigits"),
+              gg_cast(INT, member(returned.field->var_decl_node, "rdigits")),
               build_int_cst_type(INT, truncation_e),
               null_pointer_node,
               NULL_TREE );

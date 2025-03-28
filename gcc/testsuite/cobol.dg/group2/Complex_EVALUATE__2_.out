@@ -1,0 +1,15 @@
+            Prime the pump with three calls to bumper
+            bumper is returning 0001
+            bumper is returning 0002
+            bumper is returning 0003
+            Three calls to BUMPER should follow
+            bumper is returning 0004
+            bumper is returning 0005
+            bumper is returning 0006
+properly 4 also 5 also 6
+            Three more calls to BUMPER should follow
+            bumper is returning 0007
+            bumper is returning 0008
+            bumper is returning 0009
+properly 7 also 8 also 9
+
