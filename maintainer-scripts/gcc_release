@@ -267,7 +267,7 @@ EOF
       esac
     fi
     contrib/gcc_build -d ${SOURCE_DIRECTORY} -o ${OBJECT_DIRECTORY} \
-      -c "--enable-generated-files-in-srcdir --disable-multilib" \
+      -c "--enable-languages=default,cobol --enable-generated-files-in-srcdir --disable-multilib" \
       -m "-j$num_cpus" build || \
       error "Could not rebuild GCC"
   fi
