@@ -1160,6 +1160,9 @@ main (int argc, char **argv)
   obstack_ptr_grow (&cc_argv_obstack, "-xlto");
   if (fopenmp)
     obstack_ptr_grow (&cc_argv_obstack, "-mgomp");
+  /* The host code may contain exception handling constructs.
+     Handle these as good as we can.  */
+  obstack_ptr_grow (&cc_argv_obstack, "-mfake-exceptions");
 
   for (int ix = 1; ix != argc; ix++)
     {

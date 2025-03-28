@@ -1644,7 +1644,9 @@
   [(const_int 0)]
   ""
 {
-  sorry ("exception handling not supported");
+  if (!fake_exceptions)
+    sorry ("exception handling not supported");
+  DONE;
 })
 
 (define_expand "nonlocal_goto"

@@ -2,15 +2,16 @@
 
 /* { dg-require-effective-target exceptions }
    { dg-additional-options -fexceptions } */
-/* { dg-additional-options -foffload=disable }
-   Offloading compilation not yet supported; see
-   'target-exceptions-pr118794-1-offload-sorry-GCN.C',
-   'target-exceptions-pr118794-1-offload-sorry-nvptx.C'.  */
 /* { dg-additional-options -O0 } */
-/* { dg-additional-options -fdump-tree-optimized-raw } */
+/* { dg-additional-options -fdump-tree-optimized-raw }
+   { dg-additional-options -foffload-options=-fdump-tree-optimized-raw } */
 
 /* See also '../../../gcc/testsuite/g++.target/gcn/exceptions-pr118794-1.C',
    '../../../gcc/testsuite/g++.target/nvptx/exceptions-pr118794-1.C'.  */
+
+/* Help nvptx offloading overcome a code generation issue;
+   PR106445, PR118518.  */
+#define ALWAYS_INLINE __attribute__((always_inline))
 
 #pragma omp begin declare target
 
@@ -19,10 +20,12 @@ bool ok = false;
 template <typename T>
 struct C
 {
+  ALWAYS_INLINE
   C()
   {
     ok = true;
   }
+  ALWAYS_INLINE
   C(int) {};
   ~C() {};
 
@@ -55,4 +58,6 @@ int main()
 /* In this specific C++ arrangement, distilled from PR118794, GCC synthesizes
    '__builtin_eh_pointer', '__builtin_unwind_resume' calls as dead code in 'f':
    { dg-final { scan-tree-dump-times {gimple_call <__builtin_eh_pointer, } 1 optimized } }
-   { dg-final { scan-tree-dump-times {gimple_call <__builtin_unwind_resume, } 1 optimized } } */
+   { dg-final { scan-tree-dump-times {gimple_call <__builtin_unwind_resume, } 1 optimized } }
+   { dg-final { scan-offload-tree-dump-times {gimple_call <__builtin_eh_pointer, } 1 optimized } }
+   { dg-final { scan-offload-tree-dump-times {gimple_call <__builtin_unwind_resume, } 1 optimized } } */

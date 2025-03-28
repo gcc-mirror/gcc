@@ -2,6 +2,7 @@
 
 /* Via the magic string "-std=*++" indicate that testing one (the default) C++ standard is sufficient.  */
 /* { dg-additional-options -fexceptions } */
+/* { dg-additional-options -mno-fake-exceptions } */
 /* { dg-additional-options -fdump-tree-optimized-raw } */
 
 #include "../../../../libgomp/testsuite/libgomp.oacc-c++/exceptions-bad_cast-2.C"
