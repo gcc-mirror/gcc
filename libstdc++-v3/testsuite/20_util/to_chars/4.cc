@@ -17,7 +17,7 @@
 
 // { dg-do link { target c++17 } }
 // { dg-require-effective-target ieee_floats }
-// { dg-require-static-libstdcxx }
+// { dg-require-static-libstdcxx "" }
 // { dg-additional-options "-static-libstdc++" }
 
 // Verify the Ryu symbol generic_to_chars doesn't inadvertently leak into

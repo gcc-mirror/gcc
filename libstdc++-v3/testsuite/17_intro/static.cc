@@ -1,5 +1,5 @@
 // { dg-do run { target c++11 } }
-// { dg-require-static-libstdcxx }
+// { dg-require-static-libstdcxx "" }
 // { dg-options "-static-libstdc++" }
 
 // Copyright (C) 2012-2025 Free Software Foundation, Inc.
