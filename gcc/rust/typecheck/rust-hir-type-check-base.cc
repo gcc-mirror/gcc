@@ -305,6 +305,12 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
   for (const auto &attr : attrs)
     {
       bool is_repr = attr.get_path ().as_string () == Values::Attributes::REPR;
+      if (is_repr && !attr.has_attr_input ())
+	{
+	  rust_error_at (attr.get_locus (), "malformed %qs attribute", "repr");
+	  continue;
+	}
+
       if (is_repr)
 	{
 	  const AST::AttrInput &input = attr.get_attr_input ();
