@@ -2508,7 +2508,7 @@ s-mlib: $(srcdir)/genmultilib Makefile
 srcextra: gcc.srcextra lang.srcextra
 
 gcc.srcextra: gengtype-lex.cc
-	-cp -p $^ $(srcdir)
+	-sed -e '/^#line/s,".*/gcc/gengtype-lex\.l","gengtype-lex.l",' $^ > $(srcdir)/$^
 
 AR_OBJS = file-find.o
 AR_LIBS = @COLLECT2_LIBS@
