@@ -15215,17 +15215,21 @@ package body Sem_Ch3 is
       R      : Node_Id := Empty;
       T      : constant Entity_Id := Etype (Index);
       Is_FLB_Index : Boolean := False;
+      Is_Range     : constant Boolean :=
+        Nkind (S) = N_Range
+        or else (Nkind (S) = N_Attribute_Reference
+                 and then Attribute_Name (S) = Name_Range);
+      Is_Indic     : constant Boolean := Nkind (S) = N_Subtype_Indication;
 
    begin
-      Def_Id :=
-        Create_Itype (E_Void, Related_Nod, Related_Id, Suffix, Suffix_Index);
-      Set_Etype (Def_Id, Base_Type (T));
+      if Is_Range or else Is_Indic then
+         Def_Id :=
+           Create_Itype
+             (E_Void, Related_Nod, Related_Id, Suffix, Suffix_Index);
+         Set_Etype (Def_Id, Base_Type (T));
+      end if;
 
-      if Nkind (S) = N_Range
-        or else
-          (Nkind (S) = N_Attribute_Reference
-            and then Attribute_Name (S) = Name_Range)
-      then
+      if Is_Range then
          --  A Range attribute will be transformed into N_Range by Resolve
 
          --  If a range has an Empty upper bound, then remember that for later
@@ -15260,7 +15264,7 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-      elsif Nkind (S) = N_Subtype_Indication then
+      elsif Is_Indic then
 
          --  The parser has verified that this is a discrete indication
 
