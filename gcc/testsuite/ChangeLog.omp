@@ -1,6 +1,11 @@
 2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* g++.target/gcn/gcn.exp: New.
+
+	Backported from trunk:
 	2025-04-07  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* gcc.target/nvptx/alloca-2-O0_-mfake-ptx-alloca.c: Adjust.
