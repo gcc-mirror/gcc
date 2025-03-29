@@ -230,4 +230,25 @@ _gcc_jit_function_add_integer_array_attribute
 # LIBGCCJIT_ABI_27
 _gcc_jit_context_new_sizeof
 
+# LIBGCCJIT_ABI_28
+_gcc_jit_context_new_alignof
+
+# LIBGCCJIT_ABI_29 
+_gcc_jit_global_set_readonly
+
+# LIBGCCJIT_ABI_30
+_gcc_jit_context_convert_vector
+
+# LIBGCCJIT_ABI_31 
+_gcc_jit_context_new_vector_access
+_gcc_jit_context_new_rvalue_vector_perm
+
+# LIBGCCJIT_ABI_32 
+_gcc_jit_context_get_target_builtin_function
+
+# LIBGCCJIT_ABI_33 
+_gcc_jit_function_new_temp
+
+# LIBGCCJIT_ABI_34 
+_gcc_jit_context_set_output_ident
 
