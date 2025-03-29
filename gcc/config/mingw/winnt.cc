@@ -819,6 +819,7 @@ mingw_pe_file_end (void)
 	    }
 
 	  fprintf (asm_out_file, "\t.section\t.rdata$%s, \"dr\"\n"
+			   "\t.p2align\t3, 0\n"
 	  		   "\t.globl\t%s\n"
 			   "\t.linkonce\tdiscard\n", oname, oname);
 	  fprintf (asm_out_file, "%s:\n\t.quad\t%s\n", oname, name);
