@@ -2949,7 +2949,14 @@ switch_to_exception_section (const char * ARG_UNUSED (fnname))
 {
   section *s;
 
-  if (exception_section)
+  if (exception_section
+  /* Don't use the cached section for comdat if it will be different. */
+#ifdef HAVE_LD_EH_GC_SECTIONS
+      && !(targetm_common.have_named_sections
+	   && DECL_COMDAT_GROUP (current_function_decl)
+	   && HAVE_COMDAT_GROUP)
+#endif
+     )
     s = exception_section;
   else
     {
