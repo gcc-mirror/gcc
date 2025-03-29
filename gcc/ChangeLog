@@ -1,3 +1,42 @@
+2025-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* common.opt.urls: Regenerate.
+
+2025-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (gcc.srcextra): Use sed to turn .../gcc/gengtype-lex.l
+	in #line directives into just gengtype-lex.l.
+
+2025-03-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (operator_mult::op1_range): If the LHS does not
+	contain zero, return non-zero.
+
+2025-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119483
+	* tree-tailcall.cc (find_tail_calls): Handle noreturn musttail
+	calls.
+	(eliminate_tail_call): Likewise.
+	(tree_optimize_tail_calls_1): If cfun->has_musttail and
+	diag_musttail, handle also basic blocks with no successors
+	with noreturn musttail calls.
+	* calls.cc (can_implement_as_sibling_call_p): Allow ECF_NORETURN
+	calls if they are musttail calls.
+
+2025-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/119484
+	* ipa-sra.cc (isra_analyze_call): Don't set m_return_ignored if
+	gimple_call_must_tail_p even if it doesn't have lhs.
+
+2025-03-28  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.h (native_encode_real): Export.
+	* fold-const.cc (native_encode_real): Change API to take
+	mode and REAL_VALUE_TYPE.
+	(native_encode_expr): Adjust.
+
 2025-03-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.cc (ix86_redzone_clobber): Use integer, not rtx

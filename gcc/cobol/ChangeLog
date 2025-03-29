@@ -1,3 +1,46 @@
+2025-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (cobol/charmaps.cc, cobol/valconv.cc): Used sed -e
+	instead of cp and multiple sed -i commands.  Always prefix libgcobol
+	header names in #include directives with ../../libgcobol/ rather than
+	something depending on $(LIB_SOURCE).
+
+2025-03-28  Bob Dubner  <rdubner@symas.com>
+
+	* Make-lang.in: Eliminate libgcobol.h from gcc/cobol files.
+	* genapi.cc: Eliminate "#include libgcobol.h".
+	(parser_display_internal): Change comment.
+	* genmath.cc: Eliminate "#include libgcobol.h".
+	* genutil.cc: Likewise.
+	(get_power_of_ten): Change comment.
+	* structs.cc: Eliminate cblc_int128_type_node.
+	* structs.h: Likewise.
+	* symbols.h: Receive comment from libgcobol.h
+
+2025-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (cobol.srcextra): Use sed to turn
+	.../gcc/cobol/*.{y,l,h,cc} and cobol/*.{y,l,h,cc} in #line directives
+	into just *.{y,l,h,cc}.
+
+2025-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/119513
+	* Make-lang.in (cobol.srcextra): Use cp instead of ln, ignore
+	errors.
+
+2025-03-28  Bob Dubner  <rdubner@symas.com>
+
+	* genapi.cc: (create_and_call): cast unsigned char to int
+
+2025-03-28  Richard Biener  <rguenther@suse.de>
+
+	* genapi.cc (initial_from_float128): Use native_encode_real.
+
+2025-03-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* cobol-system.h: Remove <cmath>.
+
 2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* except.cc (cbl_enabled_exceptions_t::turn_on_off): Replace

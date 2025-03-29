@@ -1,3 +1,13 @@
+2025-03-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/118045
+	* libm2iso/Makefile.am (libm2iso_la_LINK): Add -lm.
+	* libm2log/Makefile.am (libm2log_la_LINK): Ditto.
+	* libm2pim/Makefile.am (libm2pim_la_LINK): Ditto.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+
 2025-03-20  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* libm2iso/ErrnoCategory.cc (IsErrnoHard): Defend against

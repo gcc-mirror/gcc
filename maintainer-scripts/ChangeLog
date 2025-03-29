@@ -1,3 +1,9 @@
+2025-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR other/119510
+	* gcc_release: Use --enable-languages=default,cobol
+	when building generated files.
+
 2025-03-11  James K. Lowden  <jklowden@symas.com>
 
 	* update_web_docs_git: Add libgcobol module and cobol language.

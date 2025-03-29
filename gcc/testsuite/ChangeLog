@@ -1,3 +1,82 @@
+2025-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/opt/musttail2.C (foo): Define the function instead of
+	just declaring it, add [[gnu::noipa]] attribute to it.
+
+2025-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/gfortran-dg.exp: Don't cycle through the option list if
+	dg-options or dg-additional-options contains -O after space, tab,
+	double quote or open curly bracket.
+	* gfortran.dg/cray_pointers_2.f90: Remove extraneous space between
+	dg-do and run and remove comment about it.
+
+2025-03-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119504
+	* gm2/iso/fail/conststrarray2.mod: New test.
+	* gm2/iso/run/pass/constarray2.mod: New test.
+	* gm2/pim/pass/hexstring.mod: New test.
+
+2025-03-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr110992.c: New.
+	* gcc.dg/pr119471.c: New.
+
+2025-03-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/119133
+	* gcc.dg/torture/pr119133.c: Add options for float16.
+
+2025-03-28  Bob Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/Complex_EVALUATE__1_.cob: New EVALUTE testcase.
+	* cobol.dg/group2/Complex_EVALUATE__2_.cob: Likewise.
+	* cobol.dg/group2/EVALUATE_WHEN_NEGATIVE.cob: Likewise.
+	* cobol.dg/group2/EVALUATE_condition__2_.cob: Likewise.
+	* cobol.dg/group2/EVALUATE_doubled_WHEN.cob: Likewise.
+	* cobol.dg/group2/EVALUATE_with_WHEN_using_condition-1.cob: Likewise.
+	* cobol.dg/group2/Complex_EVALUATE__1_.out: Known-good data for testcase.
+	* cobol.dg/group2/Complex_EVALUATE__2_.out: Likewise.
+	* cobol.dg/group2/EVALUATE_WHEN_NEGATIVE.out: Likewise.
+	* cobol.dg/group2/EVALUATE_condition__2_.out: Likewise.
+	* cobol.dg/group2/EVALUATE_doubled_WHEN.out: Likewise.
+	* cobol.dg/group2/EVALUATE_with_WHEN_using_condition-1.out: Likewise.
+
+2025-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119483
+	* c-c++-common/pr119483-1.c: New test.
+	* c-c++-common/pr119483-2.c: New test.
+
+2025-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/119484
+	* c-c++-common/pr119484.c: New test.
+
+2025-03-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.target/riscv/cmo-zicbop-1.c: Fix missing space before
+	trailing } in dg-do directive.
+	* gcc.target/riscv/cmo-zicbop-2.c: Likewise.
+	* gcc.target/riscv/prefetch-zicbop.c: Likewise.
+	* gcc.target/riscv/prefetch-zihintntl.c: Likewise.
+
+2025-03-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.target/i386/strub-pr118006.c: Fix ordering of dg-do and
+	dg-require- directive so that dg-do is first.
+
+2025-03-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.target/arm/cmse/cmse-17.c: Fix missing space before trailing
+	"}" in dg-options.
+
+2025-03-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.target/aarch64/saturating_arithmetic_1.c: Fix dg-do compile.
+	* gcc.target/aarch64/saturating_arithmetic_2.c: Likewise.
+
 2025-03-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/abi/pure-virtual1.C: Fix dg-require-weak directive.

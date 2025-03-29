@@ -1,3 +1,19 @@
+2025-03-28  Bob Dubner  <rdubner@symas.com>
+
+	* charmaps.cc:Eliminate "#include libgcobol.h".
+	Change comment about _Float128.
+	* common-defs.h: Change comment about _Float128. Receive
+	#defines from libgcobol.h.
+	* constants.cc: Eliminate #include libgcobol.h. Eliminate other
+	unneeded #includes.
+	* ec.h: Receive declarations from libgcobol.h.
+	* gcobolio.h: Likewise.
+	* gfileio.cc: (__gg__file_init): Use file_flag_none_e instead of
+	zero in assignment.  (__gg__file_reopen): Likewise.
+	(__io__file_open): Likewise.
+	* gfileio.h: Receive declarations from libgcobol.h.
+	* libgcobol.h: Numerous declarations moved elsewhere.
+
 2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* charmaps.cc (__gg__raw_to_ascii): Use auto for complicated

@@ -1,3 +1,9 @@
+2025-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117983
+	* testsuite/23_containers/vector/modifiers/insert/117983.cc: New
+	test.
+
 2025-03-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* testsuite/17_intro/shared_with_static_deps.cc: Fix malformed

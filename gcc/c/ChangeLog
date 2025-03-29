@@ -1,3 +1,8 @@
+2025-03-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (c.srcextra): Don't depend on anything and don't copy
+	anything.
+
 2025-03-27  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/118765

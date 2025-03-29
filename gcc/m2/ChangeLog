@@ -1,3 +1,12 @@
+2025-03-28  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119504
+	* gm2-compiler/M2Quads.mod (BuildHighFunction): Defend against
+	Type = NulSym and fall into BuildConstHighFromSym.
+	(BuildDesignatorArray): Rewrite to detect an array access to
+	a constant string.
+	(BuildDesignatorArrayStaticDynamic): New procedure.
+
 2025-03-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/119449

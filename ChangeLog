@@ -1,3 +1,9 @@
+2025-03-28  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/119513
+	* configure.ac (compare_exclusions): Add gcc/cobol/parse\$(objext).
+	* configure: Regenerated.
+
 2025-03-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR cobol/119244
