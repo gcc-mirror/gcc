@@ -27238,6 +27238,19 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
       if (DECL_UNIQUE_FRIEND_P (decl))
 	goto done;
 
+      /* A template with a lambda in the signature also changes type if
+	 regenerated (PR119401).  */
+      walk_tree_fn find_lambda
+	= [](tree *tp, int *, void *)
+	{
+	  if (TREE_CODE (*tp) == LAMBDA_EXPR)
+	    return *tp;
+	  return NULL_TREE;
+	};
+      if (cp_walk_tree_without_duplicates
+	  (&TREE_TYPE (tmpl), find_lambda, nullptr))
+	goto done;
+
       /* Use the source location of the definition.  */
       DECL_SOURCE_LOCATION (decl) = DECL_SOURCE_LOCATION (tmpl);
 
