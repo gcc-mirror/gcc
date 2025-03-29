@@ -2012,8 +2012,8 @@ get_class_binding_direct (tree klass, tree name, bool want_type)
 static void
 maybe_lazily_declare (tree klass, tree name)
 {
-  /* See big comment anout module_state::write_pendings regarding adding a check
-     bit.  */
+  /* See big comment about module_state::write_pendings regarding adding
+     a check bit.  */
   if (modules_p ())
     lazy_load_pendings (TYPE_NAME (klass));
 
