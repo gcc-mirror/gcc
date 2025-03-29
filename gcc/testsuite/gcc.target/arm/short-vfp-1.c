@@ -38,8 +38,8 @@ test_sihi (short x)
   return (int)x;
 }
 
-/* { dg-final { scan-assembler-times {vcvt\.s32\.f32\ts[0-9]+,s[0-9]+} 2 }} */
-/* { dg-final { scan-assembler-times {vcvt\.f32\.s32\ts[0-9]+,s[0-9]+} 2 }} */
-/* { dg-final { scan-assembler-times {vmov\tr[0-9]+,s[0-9]+} 2 }} */
-/* { dg-final { scan-assembler-times {vmov\ts[0-9]+,r[0-9]+} 2 }} */
-/* { dg-final { scan-assembler-times {sxth\tr[0-9]+,r[0-9]+} 2 }} */
+/* { dg-final { scan-assembler-times {vcvt\.s32\.f32\ts[0-9]+,s[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {vcvt\.f32\.s32\ts[0-9]+,s[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {vmov\tr[0-9]+,s[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {vmov\ts[0-9]+,r[0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {sxth\tr[0-9]+,r[0-9]+} 2 } } */
