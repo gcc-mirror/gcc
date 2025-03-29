@@ -2393,6 +2393,12 @@ aggregate_initializer_decl (AggregateDeclaration *decl)
       SET_DECL_ALIGN (sinit, sd->alignment.get () * BITS_PER_UNIT);
       DECL_USER_ALIGN (sinit) = true;
     }
+  else if (sd == NULL)
+    {
+      /* Alignment of class is determined its biggest field alignment.  */
+      SET_DECL_ALIGN (sinit, decl->alignsize * BITS_PER_UNIT);
+      DECL_USER_ALIGN (sinit) = true;
+    }
 
   decl->sinit = sinit;
   return sinit;
