@@ -3777,6 +3777,10 @@ check_module_override (tree decl, tree mvec, bool hiding,
      any reachable declaration, so we should check for overriding here too.  */
   bool any_reachable = deduction_guide_p (decl);
 
+  /* DECL might have an originating module if it's an instantiation of a
+     friend; we want to look at all reachable decls in that module.  */
+  unsigned decl_mod = get_originating_module (decl);
+
   if (BINDING_VECTOR_SLOTS_PER_CLUSTER == BINDING_SLOTS_FIXED)
     {
       cluster++;
@@ -3789,18 +3793,15 @@ check_module_override (tree decl, tree mvec, bool hiding,
 	/* Are we importing this module?  */
 	if (cluster->indices[jx].span != 1)
 	  continue;
-	if (!cluster->indices[jx].base)
+	unsigned cluster_mod = cluster->indices[jx].base;
+	if (!cluster_mod)
 	  continue;
-	if (!any_reachable
-	    && !bitmap_bit_p (imports, cluster->indices[jx].base))
+	bool c_any_reachable = (any_reachable || cluster_mod == decl_mod);
+	if (!c_any_reachable && !bitmap_bit_p (imports, cluster_mod))
 	  continue;
 	/* Is it loaded? */
 	if (cluster->slots[jx].is_lazy ())
-	  {
-	    gcc_assert (cluster->indices[jx].span == 1);
-	    lazy_load_binding (cluster->indices[jx].base,
-			       scope, name, &cluster->slots[jx]);
-	  }
+	  lazy_load_binding (cluster_mod, scope, name, &cluster->slots[jx]);
 	tree bind = cluster->slots[jx];
 	if (!bind)
 	  /* Errors could cause there to be nothing.  */
@@ -3812,7 +3813,7 @@ check_module_override (tree decl, tree mvec, bool hiding,
 	    /* If there was a matching STAT_TYPE here then xref_tag
 	       should have found it, but we need to check anyway because
 	       a conflicting using-declaration may exist.  */
-	    if (any_reachable)
+	    if (c_any_reachable)
 	      {
 		type = STAT_TYPE (bind);
 		bind = STAT_DECL (bind);

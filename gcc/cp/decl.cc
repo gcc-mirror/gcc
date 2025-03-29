@@ -2539,8 +2539,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	}
 
       /* Propagate purviewness and importingness as with
-	 set_instantiating_module.  */
-      if (modules_p () && DECL_LANG_SPECIFIC (new_result))
+	 set_instantiating_module, unless newdecl is a friend injection.  */
+      if (modules_p () && DECL_LANG_SPECIFIC (new_result)
+	  && !(TREE_CODE (new_result) == FUNCTION_DECL
+	       && DECL_UNIQUE_FRIEND_P (new_result)))
 	{
 	  if (DECL_MODULE_PURVIEW_P (new_result))
 	    DECL_MODULE_PURVIEW_P (old_result) = true;
