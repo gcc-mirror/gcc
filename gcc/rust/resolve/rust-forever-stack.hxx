@@ -656,27 +656,61 @@ ForeverStack<N>::resolve_path (
   // if there's only one segment, we just use `get`
   if (segments.size () == 1)
     {
-      auto &seg = segments.front ();
-      if (auto lang_item = unwrap_segment_get_lang_item (seg))
+      auto &outer_seg = segments.front ();
+      if (auto lang_item = unwrap_segment_get_lang_item (outer_seg))
 	{
 	  NodeId seg_id = Analysis::Mappings::get ().get_lang_item_node (
 	    lang_item.value ());
 
-	  insert_segment_resolution (seg, seg_id);
+	  insert_segment_resolution (outer_seg, seg_id);
 	  // TODO: does NonShadowable matter?
 	  return Rib::Definition::NonShadowable (seg_id);
 	}
 
+      auto &seg = unwrap_type_segment (outer_seg);
+
       tl::optional<Rib::Definition> res
-	= get (starting_point.get (),
-	       unwrap_type_segment (segments.back ()).as_string ());
+	= get (starting_point.get (), seg.as_string ());
 
       if (!res)
-	res = get_lang_prelude (
-	  unwrap_type_segment (segments.back ()).as_string ());
+	res = get_lang_prelude (seg.as_string ());
+
+      if (!res && N == Namespace::Types)
+	{
+	  if (seg.is_crate_path_seg ())
+	    {
+	      insert_segment_resolution (outer_seg, root.id);
+	      // TODO: does NonShadowable matter?
+	      return Rib::Definition::NonShadowable (root.id);
+	    }
+	  else if (seg.is_lower_self_seg ())
+	    {
+	      NodeId id = find_closest_module (starting_point.get ()).id;
+	      insert_segment_resolution (outer_seg, id);
+	      // TODO: does NonShadowable matter?
+	      return Rib::Definition::NonShadowable (id);
+	    }
+	  else if (seg.is_super_path_seg ())
+	    {
+	      Node &closest_module
+		= find_closest_module (starting_point.get ());
+	      if (closest_module.is_root ())
+		{
+		  rust_error_at (seg.get_locus (), ErrorCode::E0433,
+				 "too many leading %<super%> keywords");
+		  return tl::nullopt;
+		}
+
+	      NodeId id
+		= find_closest_module (closest_module.parent.value ()).id;
+	      insert_segment_resolution (outer_seg, id);
+	      // TODO: does NonShadowable matter?
+	      return Rib::Definition::NonShadowable (id);
+	    }
+	}
 
       if (res && !res->is_ambiguous ())
-	insert_segment_resolution (segments.back (), res->get_node_id ());
+	insert_segment_resolution (outer_seg, res->get_node_id ());
       return res;
     }
 
