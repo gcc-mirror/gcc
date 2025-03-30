@@ -449,6 +449,9 @@ struct GTY(()) function {
   /* Set for artificial function created for [[assume (cond)]].
      These should be GIMPLE optimized, but not expanded to RTL.  */
   unsigned int assume_function : 1;
+
+  /* Nonzero if reload will have to split basic blocks.  */
+  unsigned int split_basic_blocks_after_reload : 1;
 };
 
 /* Add the decl D to the local_decls list of FUN.  */
