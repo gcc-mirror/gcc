@@ -43,6 +43,7 @@ extern enum reg_class alpha_preferred_reload_class (rtx, enum reg_class);
 extern void alpha_set_memflags (rtx, rtx);
 extern bool alpha_split_const_mov (machine_mode, rtx *);
 extern bool alpha_expand_mov (machine_mode, rtx *);
+extern bool alpha_expand_mov_safe_bwa (machine_mode, rtx *);
 extern bool alpha_expand_mov_nobwx (machine_mode, rtx *);
 extern void alpha_expand_movmisalign (machine_mode, rtx *);
 extern void alpha_emit_floatuns (rtx[]);

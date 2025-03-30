@@ -69,6 +69,10 @@ mcix
 Target Mask(CIX)
 Emit code for the counting ISA extension.
 
+msafe-bwa
+Target Mask(SAFE_BWA)
+Emit multi-thread and async-signal safe code for byte and word memory accesses.
+
 mexplicit-relocs
 Target Mask(EXPLICIT_RELOCS)
 Emit code using explicit relocation directives.

@@ -1661,8 +1661,10 @@ alpha_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	      if (!aligned_memory_operand (x, mode))
 		sri->icode = direct_optab_handler (reload_in_optab, mode);
 	    }
-	  else
+	  else if (aligned_memory_operand (x, mode) || !TARGET_SAFE_BWA)
 	    sri->icode = direct_optab_handler (reload_out_optab, mode);
+	  else
+	    sri->icode = code_for_reload_out_safe_bwa (mode);
 	  return NO_REGS;
 	}
     }
@@ -2384,6 +2386,70 @@ alpha_expand_mov_nobwx (machine_mode mode, rtx *operands)
 
 	  alpha_set_memflags (seq, operands[0]);
 	  emit_insn (seq);
+	}
+      return true;
+    }
+
+  return false;
+}
+
+/* Expand a multi-thread and async-signal safe QImode or HImode
+   move instruction; return true if all work is done.  */
+
+bool
+alpha_expand_mov_safe_bwa (machine_mode mode, rtx *operands)
+{
+  /* If the output is not a register, the input must be.  */
+  if (MEM_P (operands[0]))
+    operands[1] = force_reg (mode, operands[1]);
+
+  /* If it's a memory load, the sequence is the usual non-BWX one.  */
+  if (any_memory_operand (operands[1], mode))
+    return alpha_expand_mov_nobwx (mode, operands);
+
+  /* Handle memory store cases, unaligned and aligned.  The only case
+     where we can be called during reload is for aligned loads; all
+     other cases require temporaries.  */
+  if (any_memory_operand (operands[0], mode))
+    {
+      if (aligned_memory_operand (operands[0], mode))
+	{
+	  rtx label = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
+	  emit_label (XEXP (label, 0));
+
+	  rtx aligned_mem, bitnum;
+	  rtx status = gen_reg_rtx (SImode);
+	  rtx temp = gen_reg_rtx (SImode);
+	  get_aligned_mem (operands[0], &aligned_mem, &bitnum);
+	  emit_insn (gen_aligned_store_safe_bwa (aligned_mem, operands[1],
+						 bitnum, status, temp));
+
+	  rtx cond = gen_rtx_EQ (DImode,
+				 gen_rtx_SUBREG (DImode, status, 0),
+				 const0_rtx);
+	  alpha_emit_unlikely_jump (cond, label);
+	}
+      else
+	{
+	  rtx addr = gen_reg_rtx (DImode);
+	  emit_insn (gen_rtx_SET (addr, get_unaligned_address (operands[0])));
+
+	  rtx aligned_addr = gen_reg_rtx (DImode);
+	  emit_insn (gen_rtx_SET (aligned_addr,
+				  gen_rtx_AND (DImode, addr, GEN_INT (-8))));
+
+	  rtx label = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
+	  emit_label (XEXP (label, 0));
+
+	  rtx status = gen_reg_rtx (DImode);
+	  rtx temp = gen_reg_rtx (DImode);
+	  rtx seq = gen_unaligned_store_safe_bwa (mode, addr, operands[1],
+						  aligned_addr, status, temp);
+	  alpha_set_memflags (seq, operands[0]);
+	  emit_insn (seq);
+
+	  rtx cond = gen_rtx_EQ (DImode, status, const0_rtx);
+	  alpha_emit_unlikely_jump (cond, label);
 	}
       return true;
     }

@@ -991,6 +991,7 @@ Objective-C and Objective-C++ Dialects}.
 -mtrap-precision=@var{mode}  -mbuild-constants
 -mcpu=@var{cpu-type}  -mtune=@var{cpu-type}
 -mbwx  -mmax  -mfix  -mcix
+-msafe-bwa
 -mfloat-vax  -mfloat-ieee
 -mexplicit-relocs  -msmall-data  -mlarge-data
 -msmall-text  -mlarge-text
@@ -26301,6 +26302,14 @@ Indicate whether GCC should generate code to use the optional BWX,
 CIX, FIX and MAX instruction sets.  The default is to use the instruction
 sets supported by the CPU type specified via @option{-mcpu=} option or that
 of the CPU on which GCC was built if none is specified.
+
+@opindex msafe-bwa
+@opindex mno-safe-bwa
+@item -msafe-bwa
+@itemx -mno-safe-bwa
+Indicate whether in the absence of the optional BWX instruction set
+GCC should generate multi-thread and async-signal safe code for byte
+and aligned word memory accesses.
 
 @opindex mfloat-vax
 @opindex mfloat-ieee
