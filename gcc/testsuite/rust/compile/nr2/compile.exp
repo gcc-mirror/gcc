@@ -47,18 +47,22 @@ namespace eval rust-nr2-ns {
     set tests_expect_ok ""
     set tests_expect_err ""
 
+    set compile_dir [list {*}[file split $srcdir] {*}[file split $subdir]]
+    set compile_dir [lreplace $compile_dir end end]
+
     foreach test_dir $test_dirs {
-        set directory [list {*}[file split $srcdir] {*}[file split $subdir]]
-	set directory [lreplace $directory end end]
-	set directory [list {*}$directory {*}$test_dir]
-        foreach test [lsort [glob -nocomplain -tails -directory [file join {*}$directory] *.rs]] {
+        foreach test [lsort [glob -nocomplain -tails -directory [file join {*}$compile_dir {*}$test_dir] *.rs]] {
 	    # use '/' as the path seperator for entries in the exclude file
 	    set test_lbl [join [list {*}$test_dir $test] "/"]
 	    set idx [lsearch -exact -sorted $exclude $test_lbl]
 	    if {$idx == -1} {
-		lappend tests_expect_ok [file join {*}$directory $test]
+	        if {[runtest_file_p $runtests [file join {*}$compile_dir {*}$test_dir $test]]} {
+		    lappend tests_expect_ok [list {*}$test_dir $test]
+		}
 	    } else {
-		lappend tests_expect_err [file join {*}$directory $test]
+	        if {[runtest_file_p $runtests [file join {*}$compile_dir {*}$test_dir $test]]} {
+		    lappend tests_expect_err [list {*}$test_dir $test]
+		}
 		set exclude [lreplace $exclude $idx $idx]
 	    }
 	}
@@ -83,10 +87,10 @@ namespace eval rust-nr2-ns {
 		variable record_test_out
 		switch $type {
 		    FAIL {
-			lappend record_test_out "$type: $msg"
+			lappend record_test_out [list $type $msg]
 		    }
 		    XPASS {
-			lappend record_test_out "$type: $msg"
+			lappend record_test_out [list $type $msg]
 		    }
 		}
             }
@@ -109,23 +113,23 @@ namespace eval rust-nr2-ns {
 
     # check for unexpected failures
     foreach test $tests_expect_ok {
-        set fails [try_test $test]
+        set fails [try_test [file join {*}$compile_dir {*}$test]]
 	if {[llength $fails] != 0} {
 	    foreach ent $fails {
-		record_test FAIL "$test: nr2 failure: $ent"
+		record_test [lindex $ent 0] "on nr2: [lindex $ent 1]"
 	    }
 	} else {
-	    record_test PASS "$test: nr2 success"
+	    record_test PASS "[file join {*}$test] on nr2"
 	}
     }
 
     #check for unexpected successes
     foreach test $tests_expect_err {
-        set fails [try_test $test]
+        set fails [try_test [file join {*}$compile_dir {*}$test]]
 	if {[llength $fails] == 0} {
-	    record_test XPASS "$test: nr2 unexpectedly passed"
+	    record_test XPASS "[file join {*}$test] on nr2"
 	} else {
-	    record_test XFAIL "$test: nr2 was rightfully excluded"
+	    record_test XFAIL "[file join {*}$test] on nr2 was rightfully excluded"
 	}
     }
 }
