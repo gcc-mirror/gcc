@@ -91,6 +91,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     S::_M_construct(const C*, const C*, forward_iterator_tag);
 
+  template
+    void
+    S::_M_construct<false>(const C*, size_t);
+
+  template
+    void
+    S::_M_construct<true>(const C*, size_t);
+
 #else // !_GLIBCXX_USE_CXX11_ABI
 
   template

@@ -341,6 +341,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       void
       _M_construct(size_type __req, _CharT __c);
 
+      // Construct using block of memory of known size.
+      // If _Terminated is true assume that source is already 0 terminated.
+      template<bool _Terminated>
+	_GLIBCXX20_CONSTEXPR
+	void
+	_M_construct(const _CharT *__c, size_type __n);
+
       _GLIBCXX20_CONSTEXPR
       allocator_type&
       _M_get_allocator()
@@ -561,8 +568,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       : _M_dataplus(_M_local_data(),
 		    _Alloc_traits::_S_select_on_copy(__str._M_get_allocator()))
       {
-	_M_construct(__str._M_data(), __str._M_data() + __str.length(),
-		     std::forward_iterator_tag());
+	_M_construct<true>(__str._M_data(), __str.length());
       }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
