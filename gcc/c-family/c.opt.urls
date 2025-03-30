@@ -983,8 +983,8 @@ UrlSuffix(gcc/Warning-Options.html#index-Wzero-length-bounds)
 
 ; skipping UrlSuffix for 'ansi' due to multiple URLs:
 ;   duplicate: 'gcc/C-Dialect-Options.html#index-ansi-1'
+;   duplicate: 'gcc/Library-Builtins.html#index-ansi-2'
 ;   duplicate: 'gcc/Non-bugs.html#index-ansi-3'
-;   duplicate: 'gcc/Other-Builtins.html#index-ansi-2'
 ;   duplicate: 'gcc/Standards.html#index-ansi'
 
 ; skipping UrlSuffix for 'd' due to multiple URLs:
@@ -1014,7 +1014,7 @@ UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fassume-sane-operators-new-
 
 ; skipping UrlSuffix for 'fbuiltin' due to multiple URLs:
 ;   duplicate: 'gcc/C-Dialect-Options.html#index-fbuiltin'
-;   duplicate: 'gcc/Other-Builtins.html#index-fno-builtin-3'
+;   duplicate: 'gcc/Library-Builtins.html#index-fno-builtin-3'
 ;   duplicate: 'gcc/Warning-Options.html#index-fno-builtin-1'
 ; skipping LangUrlSuffix_D for 'fbuiltin' due to multiple URLs:
 ;   duplicate: 'gdc/Other-Builtins.html#index-fno-builtin-1'

@@ -72,8 +72,8 @@ UrlSuffix(gcc/Preprocessor-Options.html#index-P) LangUrlSuffix_Fortran(gfortran/
 
 ; skipping UrlSuffix for 'ansi' due to multiple URLs:
 ;   duplicate: 'gcc/C-Dialect-Options.html#index-ansi-1'
+;   duplicate: 'gcc/Library-Builtins.html#index-ansi-2'
 ;   duplicate: 'gcc/Non-bugs.html#index-ansi-3'
-;   duplicate: 'gcc/Other-Builtins.html#index-ansi-2'
 ;   duplicate: 'gcc/Standards.html#index-ansi'
 
 ; skipping UrlSuffix for 'c' due to multiple URLs:

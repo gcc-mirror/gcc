@@ -110,7 +110,7 @@ LangUrlSuffix_D(gdc/Runtime-Options.html#index-fbounds-check) LangUrlSuffix_Fort
 
 ; skipping UrlSuffix for 'fbuiltin' due to multiple URLs:
 ;   duplicate: 'gcc/C-Dialect-Options.html#index-fbuiltin'
-;   duplicate: 'gcc/Other-Builtins.html#index-fno-builtin-3'
+;   duplicate: 'gcc/Library-Builtins.html#index-fno-builtin-3'
 ;   duplicate: 'gcc/Warning-Options.html#index-fno-builtin-1'
 ; skipping LangUrlSuffix_D for 'fbuiltin' due to multiple URLs:
 ;   duplicate: 'gdc/Other-Builtins.html#index-fno-builtin-1'
