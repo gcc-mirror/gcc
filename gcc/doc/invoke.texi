@@ -274,7 +274,7 @@ in the following sections.
 -Wsuggest-final-types  -Wsuggest-override  -Wno-template-body
 -Wno-template-id-cdtor  -Wtemplate-names-tu-local
 -Wno-terminate  -Wno-vexing-parse  -Wvirtual-inheritance
--Wno-virtual-move-assign  -Wvolatile  -Wzero-as-null-pointer-constant}
+-Wno-virtual-move-assign  -Wvolatile}
 
 @item Objective-C and Objective-C++ Language Options
 @xref{Objective-C and Objective-C++ Dialect Options,,Options Controlling
@@ -442,6 +442,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wvla  -Wvla-larger-than=@var{byte-size}  -Wno-vla-larger-than
 -Wvolatile-register-var  -Wwrite-strings
 -Wno-xor-used-as-pow
+-Wzero-as-null-pointer-constant
 -Wzero-length-bounds}
 
 @item Static Analyzer Options
@@ -4690,11 +4691,6 @@ non-class type, @code{volatile}-qualified function return type,
 Enabled by default with @option{-std=c++20}.  Before
 @option{-std=c++20}, enabled with explicit @option{-Wdeprecated}.
 
-@opindex Wzero-as-null-pointer-constant
-@opindex Wno-zero-as-null-pointer-constant
-@item -Wzero-as-null-pointer-constant
-Warn when a literal @samp{0} is used as null pointer constant.
-
 @opindex Waligned-new
 @opindex Wno-aligned-new
 @item -Waligned-new
@@ -8919,6 +8915,11 @@ error.  The error can be downgraded to a warning using
 error alone, with @option{-Wno-error=int-conversion}.
 
 This warning is upgraded to an error by @option{-pedantic-errors}.
+
+@opindex Wzero-as-null-pointer-constant
+@opindex Wno-zero-as-null-pointer-constant
+@item -Wzero-as-null-pointer-constant
+Warn when a literal @samp{0} is used as null pointer constant.
 
 @opindex Wzero-length-bounds
 @opindex Wzero-length-bounds
