@@ -59,6 +59,7 @@ extern rtx alpha_expand_zap_mask (HOST_WIDE_INT);
 extern void alpha_expand_builtin_vector_binop (rtx (*)(rtx, rtx, rtx),
 					       machine_mode,
 					       rtx, rtx, rtx);
+extern rtx alpha_emit_unlikely_jump (rtx, rtx);
 extern void alpha_expand_builtin_establish_vms_condition_handler (rtx, rtx);
 extern void alpha_expand_builtin_revert_vms_condition_handler (rtx);
 

@@ -4421,12 +4421,13 @@ alpha_expand_builtin_vector_binop (rtx (*gen) (rtx, rtx, rtx),
 /* A subroutine of the atomic operation splitters.  Jump to LABEL if
    COND is true.  Mark the jump as unlikely to be taken.  */
 
-static void
-emit_unlikely_jump (rtx cond, rtx label)
+rtx
+alpha_emit_unlikely_jump (rtx cond, rtx label)
 {
   rtx x = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, label, pc_rtx);
   rtx_insn *insn = emit_jump_insn (gen_rtx_SET (pc_rtx, x));
   add_reg_br_prob_note (insn, profile_probability::very_unlikely ());
+  return insn;
 }
 
 /* Subroutines of the atomic operation splitters.  Emit barriers
@@ -4518,7 +4519,7 @@ alpha_split_atomic_op (enum rtx_code code, rtx mem, rtx val, rtx before,
   emit_insn (gen_store_conditional (mode, cond, mem, scratch));
 
   x = gen_rtx_EQ (DImode, cond, const0_rtx);
-  emit_unlikely_jump (x, label);
+  alpha_emit_unlikely_jump (x, label);
 
   alpha_post_atomic_barrier (model);
 }
@@ -4568,7 +4569,7 @@ alpha_split_compare_and_swap (rtx operands[])
       emit_insn (gen_rtx_SET (cond, x));
       x = gen_rtx_EQ (DImode, cond, const0_rtx);
     }
-  emit_unlikely_jump (x, label2);
+  alpha_emit_unlikely_jump (x, label2);
 
   emit_move_insn (cond, newval);
   emit_insn (gen_store_conditional
@@ -4577,7 +4578,7 @@ alpha_split_compare_and_swap (rtx operands[])
   if (!is_weak)
     {
       x = gen_rtx_EQ (DImode, cond, const0_rtx);
-      emit_unlikely_jump (x, label1);
+      alpha_emit_unlikely_jump (x, label1);
     }
 
   if (!is_mm_relaxed (mod_f))
@@ -4680,7 +4681,7 @@ alpha_split_compare_and_swap_12 (rtx operands[])
       emit_insn (gen_rtx_SET (cond, x));
       x = gen_rtx_EQ (DImode, cond, const0_rtx);
     }
-  emit_unlikely_jump (x, label2);
+  alpha_emit_unlikely_jump (x, label2);
 
   emit_insn (gen_mskxl (cond, scratch, mask, addr));
 
@@ -4692,7 +4693,7 @@ alpha_split_compare_and_swap_12 (rtx operands[])
   if (!is_weak)
     {
       x = gen_rtx_EQ (DImode, cond, const0_rtx);
-      emit_unlikely_jump (x, label1);
+      alpha_emit_unlikely_jump (x, label1);
     }
 
   if (!is_mm_relaxed (mod_f))
@@ -4732,7 +4733,7 @@ alpha_split_atomic_exchange (rtx operands[])
   emit_insn (gen_store_conditional (mode, cond, mem, scratch));
 
   x = gen_rtx_EQ (DImode, cond, const0_rtx);
-  emit_unlikely_jump (x, label);
+  alpha_emit_unlikely_jump (x, label);
 
   alpha_post_atomic_barrier (model);
 }
@@ -4806,7 +4807,7 @@ alpha_split_atomic_exchange_12 (rtx operands[])
   emit_insn (gen_store_conditional (DImode, scratch, mem, scratch));
 
   x = gen_rtx_EQ (DImode, scratch, const0_rtx);
-  emit_unlikely_jump (x, label);
+  alpha_emit_unlikely_jump (x, label);
 
   alpha_post_atomic_barrier (model);
 }
