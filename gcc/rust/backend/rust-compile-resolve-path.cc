@@ -105,7 +105,9 @@ ResolvePathRef::attempt_constructor_expression_lookup (
 
   // make the ctor for the union
   HIR::Expr &discrim_expr = variant->get_discriminant ();
+  ctx->push_const_context ();
   tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
+  ctx->pop_const_context ();
   tree folded_discrim_expr = fold_expr (discrim_expr_node);
   tree qualifier = folded_discrim_expr;
 
