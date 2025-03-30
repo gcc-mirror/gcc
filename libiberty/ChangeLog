@@ -1,3 +1,13 @@
+2025-03-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR cobol/119283
+	* Makefile.in: Add memrchr build rules.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for memrchr.
+	* functions.texi: Document memrchr.
+	* memrchr.c: New file.
+
 2025-03-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR other/119218

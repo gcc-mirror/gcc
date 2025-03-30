@@ -1,3 +1,24 @@
+2025-03-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR cobol/119283
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for host memrchr.
+
+2025-03-29  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* doc/invoke.texi: Modify the description of '-mld-seq-sa'.
+
+2025-03-29  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-def.cc
+	(la464_align): Add settings for labels.
+	(la664_align): Likewise.
+	* config/loongarch/loongarch-opts.cc
+	(loongarch_target_option_override): Likewise.
+	* config/loongarch/loongarch-tune.h
+	(struct loongarch_align): Implement the function `label_`.
+
 2025-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* common.opt.urls: Regenerate.

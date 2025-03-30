@@ -1,3 +1,34 @@
+2025-03-29  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (duplicate_decls): Don't clobber DECL_MODULE_IMPORT_P with
+	an injected friend.
+	* name-lookup.cc (check_module_override): Look at all reachable
+	decls in decl's originating module.
+
+2025-03-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/64500
+	PR c++/116285
+	* name-lookup.cc (push_to_top_level): Don't try to store_bindings
+	for namespace levels.
+
+2025-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* name-lookup.cc (maybe_lazily_declare): Fix comment typo,
+	anout -> about.
+
+2025-03-29  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118961
+	* class.cc (copy_fndecl_with_name): Mark clones as non-abstract.
+	* cp-tree.h (setup_explicit_instantiation_definition_linkage):
+	Declare new function.
+	* module.cc (trees_in::read_var_def): Use it.
+	(module_state::read_cluster): Likewise.
+	* pt.cc (setup_explicit_instantiation_definition_linkage): New
+	function.
+	(mark_decl_instantiated): Use it.
+
 2025-03-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	* cp-tree.h (cp_finish_omp_init_prefer_type): Add.

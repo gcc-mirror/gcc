@@ -1,3 +1,7 @@
+2025-03-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* libgccjit.exports: Add symbols for ABI 28 to 34.
+
 2025-03-13  Matthias Klose  <doko@ubuntu.com>
 
 	* Make-lang.in (LIBGCCJIT_VERSION_NUM): Move to ../Makefile.in.

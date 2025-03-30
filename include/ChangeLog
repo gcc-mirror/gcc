@@ -1,3 +1,8 @@
+2025-03-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR cobol/119283
+	* libiberty.h (memrchr): New.
+
 2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
 	    Tobias Burnus  <tburnus@baylibre.com>
 

@@ -1,3 +1,24 @@
+2025-03-29  Sam James  <sam@gentoo.org>
+
+	* gcc.target/arm/short-vfp-1.c: Add whitespace around brace.
+
+2025-03-29  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/friend-9_a.C: New test.
+	* g++.dg/modules/friend-9_b.C: New test.
+
+2025-03-29  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/118961
+	* g++.dg/modules/lto-1.h: New test.
+	* g++.dg/modules/lto-1_a.H: New test.
+	* g++.dg/modules/lto-1_b.C: New test.
+	* g++.dg/modules/lto-1_c.C: New test.
+	* g++.dg/modules/lto-2_a.H: New test.
+	* g++.dg/modules/lto-2_b.C: New test.
+	* g++.dg/modules/lto-3_a.H: New test.
+	* g++.dg/modules/lto-3_b.C: New test.
+
 2025-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/opt/musttail2.C (foo): Define the function instead of
