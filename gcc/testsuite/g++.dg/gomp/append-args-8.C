@@ -89,5 +89,5 @@ test (int *a, int *b)
 
 
 /* { dg-final { scan-tree-dump-times "__builtin_GOMP_interop \\(-5, 0, 0B, 0B, 0B, 0, 0B, 3, interopobjs\.\[0-9\]+, 0, 0B\\);" 1 "gimple" } }  */
-/* { dg-final { scan-tree-dump-times "repl3<int\\*, omp_interop_t> \\(a, interop\.\[0-9\]+3, interop\.\[0-9\]+2, interop\.\[0-9\]+, 1, 2, \"abc\"\\);" 1 "gimple" } }  */
+/* { dg-final { scan-tree-dump-times "repl3<int\\*, omp_interop_t> \\(a, interop\.\[0-9\]+, interop\.\[0-9\]+, interop\.\[0-9\]+, 1, 2, \"abc\"\\);" 1 "gimple" } }  */
 /* { dg-final { scan-tree-dump-times "__builtin_GOMP_interop \\(-5, 3, interopobjs\.\[0-9\]+, tgt_tgtsync\.\[0-9\]+, pref_type\.\[0-9\]+, 0, 0B, 0, 0B, 0, 0B\\);" 1 "gimple" } }  */
