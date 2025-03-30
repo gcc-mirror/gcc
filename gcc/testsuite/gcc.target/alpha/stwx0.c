@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mno-bwx" } */
+/* { dg-options "-mno-bwx -mno-safe-partial" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 typedef struct { short v __attribute__ ((packed)); } shortx;

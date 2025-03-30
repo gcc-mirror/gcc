@@ -991,7 +991,7 @@ Objective-C and Objective-C++ Dialects}.
 -mtrap-precision=@var{mode}  -mbuild-constants
 -mcpu=@var{cpu-type}  -mtune=@var{cpu-type}
 -mbwx  -mmax  -mfix  -mcix
--msafe-bwa
+-msafe-bwa  -msafe-partial
 -mfloat-vax  -mfloat-ieee
 -mexplicit-relocs  -msmall-data  -mlarge-data
 -msmall-text  -mlarge-text
@@ -26310,6 +26310,16 @@ of the CPU on which GCC was built if none is specified.
 Indicate whether in the absence of the optional BWX instruction set
 GCC should generate multi-thread and async-signal safe code for byte
 and aligned word memory accesses.
+
+@opindex msafe-partial
+@opindex mno-safe-partial
+@item -msafe-partial
+@itemx -mno-safe-partial
+Indicate whether GCC should generate multi-thread and async-signal
+safe code for partial memory accesses, including piecemeal accesses
+to unaligned data as well as block accesses to leading and trailing
+parts of aggregate types or other objects in memory that do not
+respectively start and end on an aligned 64-bit data boundary.
 
 @opindex mfloat-vax
 @opindex mfloat-ieee

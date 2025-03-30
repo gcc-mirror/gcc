@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-mno-safe-partial" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 unsigned long unaligned_src_di[9] = { [0 ... 8] = 0xfefdfcfbfaf9f8f7 };

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-mno-safe-partial" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 unsigned int unaligned_src_si[17] = { [0 ... 16] = 0xfefdfcfb };

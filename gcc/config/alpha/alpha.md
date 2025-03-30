@@ -4781,9 +4781,15 @@
 	  && INTVAL (operands[1]) != 64))
     FAIL;
 
-  alpha_expand_unaligned_store (operands[0], operands[3],
-				INTVAL (operands[1]) / 8,
-				INTVAL (operands[2]) / 8);
+  if (TARGET_SAFE_PARTIAL)
+    alpha_expand_unaligned_store_safe_partial (operands[0], operands[3],
+					       INTVAL (operands[1]) / 8,
+					       INTVAL (operands[2]) / 8,
+					       BITS_PER_UNIT);
+  else
+    alpha_expand_unaligned_store (operands[0], operands[3],
+				  INTVAL (operands[1]) / 8,
+				  INTVAL (operands[2]) / 8);
   DONE;
 })
 

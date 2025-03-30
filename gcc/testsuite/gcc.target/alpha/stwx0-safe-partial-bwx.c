@@ -1,13 +1,13 @@
 /* { dg-do compile } */
-/* { dg-options "-mbwx -mno-safe-partial" } */
+/* { dg-options "-mbwx -msafe-partial" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 #include "stwx0.c"
 
 /* Expect assembly such as:
 
-	stb $31,0($16)
-	stb $31,1($16)
+        stb $31,0($16)
+        stb $31,1($16)
 
    without any LDQ_U or STQ_U instructions.  */
 

@@ -54,6 +54,9 @@ extern void alpha_expand_unaligned_load (rtx, rtx, HOST_WIDE_INT,
 					 HOST_WIDE_INT, int);
 extern void alpha_expand_unaligned_store (rtx, rtx, HOST_WIDE_INT,
 					  HOST_WIDE_INT);
+extern void alpha_expand_unaligned_store_safe_partial (rtx, rtx, HOST_WIDE_INT,
+						       HOST_WIDE_INT,
+						       HOST_WIDE_INT);
 extern int alpha_expand_block_move (rtx []);
 extern int alpha_expand_block_clear (rtx []);
 extern rtx alpha_expand_zap_mask (HOST_WIDE_INT);

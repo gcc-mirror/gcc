@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-mno-safe-partial" } */
 /* { dg-skip-if "" { *-*-* } { "-O0" } } */
 
 typedef struct { int v __attribute__ ((packed)); } intx;
