@@ -4,6 +4,7 @@
 // { dg-additional-options "-fno-rtti -nostdlib++" }
 // { dg-additional-options "-Wl,-undefined,dynamic_lookup" { target *-*-darwin* } }
 // { dg-xfail-if "AIX weak" { powerpc-ibm-aix* } }
+// { dg-xfail-if PR119369 { amdgcn-*-* } }
 
 struct A
 {

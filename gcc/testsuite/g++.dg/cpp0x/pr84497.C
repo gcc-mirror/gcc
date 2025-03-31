@@ -3,6 +3,7 @@
 // { dg-require-weak "" }
 // { dg-require-alias "" }
 // { dg-skip-if "No .weak" { { hppa*-*-hpux* } && { ! lp64 } } }
+// { dg-skip-if PR119369 { amdgcn-*-* } }
 
 struct Base
 {

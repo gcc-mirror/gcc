@@ -6927,6 +6927,20 @@ gcn_asm_output_symbol_ref (FILE *file, rtx x)
     }
 }
 
+void
+gcn_asm_weaken_decl (FILE *stream, tree decl, const char *name,
+		     const char *value)
+{
+  if (!value
+      && DECL_EXTERNAL (decl))
+    /* Don't emit weak undefined symbols; see PR119369.  */
+    return;
+  if (value)
+    ASM_OUTPUT_WEAK_ALIAS (stream, name, value);
+  else
+    ASM_WEAKEN_LABEL (stream, name);
+}
+
 /* Implement TARGET_CONSTANT_ALIGNMENT.
 
    Returns the alignment in bits of a constant that is being placed in memory.

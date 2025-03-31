@@ -2,6 +2,7 @@
 // { dg-do compile }
 // { dg-require-weak "" }
 // { dg-options "" }
+// { dg-skip-if PR119369 { amdgcn-*-* } }
 
 // { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?_Z3foov" } }
 
