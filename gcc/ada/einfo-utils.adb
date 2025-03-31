@@ -2639,14 +2639,7 @@ package body Einfo.Utils is
       --  anonymous protected types, since protected types always have the
       --  default convention.
 
-      if Present (Etype (E))
-        and then (Is_Object (E)
-
-                   --  Allow E_Void (happens for pragma Convention appearing
-                   --  in the middle of a record applying to a component)
-
-                   or else Ekind (E) = E_Void)
-      then
+      if Present (Etype (E)) and then Is_Object (E) then
          declare
             Typ : constant Entity_Id := Etype (E);
 
