@@ -9850,7 +9850,7 @@ Treat pragma Restrictions as Restriction_Warnings.
 
 @table @asis
 
-@item @code{-gnatR[0|1|2|3|4][e][j][m][s]}
+@item @code{-gnatR[0|1|2|3|4][e][h][m][j][s]}
 
 Output representation information for declared types, objects and
 subprograms. Note that this switch is not allowed if a previous
@@ -15286,7 +15286,7 @@ restriction warnings rather than restrictions.
 
 @table @asis
 
-@item @code{-gnatR[0|1|2|3|4][e][j][m][s]}
+@item @code{-gnatR[0|1|2|3|4][e][h][m][j][s]}
 
 This switch controls output from the compiler of a listing showing
 representation information for declared types, objects and subprograms.
@@ -15315,17 +15315,21 @@ If the switch is followed by an @code{e} (e.g. @code{-gnatR2e}), then
 extended representation information for record sub-components of records
 is included.
 
+If the switch is followed by a @code{h} (e.g. @code{-gnatR3h}), then
+the components of records are sorted by increasing offsets and holes
+between consecutive components are flagged.
+
 If the switch is followed by an @code{m} (e.g. @code{-gnatRm}), then
 subprogram conventions and parameter passing mechanisms for all the
 subprograms are included.
 
-If the switch is followed by a @code{j} (e.g., @code{-gnatRj}), then
+If the switch is followed by a @code{j} (e.g. @code{-gnatRj}), then
 the output is in the JSON data interchange format specified by the
 ECMA-404 standard. The semantic description of this JSON output is
 available in the specification of the Repinfo unit present in the
 compiler sources.
 
-If the switch is followed by an @code{s} (e.g., @code{-gnatR3s}), then
+If the switch is followed by an @code{s} (e.g. @code{-gnatR3s}), then
 the output is to a file with the name @code{file.rep} where @code{file} is
 the name of the corresponding source file, except if @code{j} is also
 specified, in which case the file name is @code{file.json}.

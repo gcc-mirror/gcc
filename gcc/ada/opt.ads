@@ -943,6 +943,21 @@ package Opt is
 
    --  WARNING: There is a matching C declaration of this variable in fe.h
 
+   List_Representation_Info_Extended : Boolean := False;
+   --  GNAT
+   --  Set true by -gnatRe switch. Causes extended information for record types
+   --  to be included in the representation output information.
+
+   List_Representation_Info_Holes : Boolean := False;
+   --  GNAT
+   --  Set true by -gnatRh switch. Causes information for holes between record
+   --  components to be included in the representation output information.
+
+   List_Representation_Info_Mechanisms : Boolean := False;
+   --  GNAT
+   --  Set true by -gnatRm switch. Causes information on mechanisms to be
+   --  included in the representation output information.
+
    List_Representation_Info_To_File : Boolean := False;
    --  GNAT
    --  Set true by -gnatRs switch. Causes information from -gnatR[1-4]m to be
@@ -954,16 +969,6 @@ package Opt is
    --  GNAT
    --  Set true by -gnatRj switch. Causes information from -gnatR[1-4]m to be
    --  output in the JSON data interchange format.
-
-   List_Representation_Info_Mechanisms : Boolean := False;
-   --  GNAT
-   --  Set true by -gnatRm switch. Causes information on mechanisms to be
-   --  included in the representation output information.
-
-   List_Representation_Info_Extended : Boolean := False;
-   --  GNAT
-   --  Set true by -gnatRe switch. Causes extended information for record types
-   --  to be included in the representation output information.
 
    List_Preprocessing_Symbols : Boolean := False;
    --  GNAT, GNATPREP

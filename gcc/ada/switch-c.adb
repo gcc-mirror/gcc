@@ -1220,17 +1220,20 @@ package body Switch.C is
                      List_Representation_Info :=
                        Character'Pos (C) - Character'Pos ('0');
 
-                  when 's' =>
-                     List_Representation_Info_To_File := True;
+                  when 'e' =>
+                     List_Representation_Info_Extended := True;
 
-                  when 'j' =>
-                     List_Representation_Info_To_JSON := True;
+                  when 'h' =>
+                     List_Representation_Info_Holes := True;
 
                   when 'm' =>
                      List_Representation_Info_Mechanisms := True;
 
-                  when 'e' =>
-                     List_Representation_Info_Extended := True;
+                  when 'j' =>
+                     List_Representation_Info_To_JSON := True;
+
+                  when 's' =>
+                     List_Representation_Info_To_File := True;
 
                   when others =>
                      Bad_Switch ("-gnatR" & Switch_Chars (Ptr .. Max));
@@ -1243,6 +1246,12 @@ package body Switch.C is
                  and then List_Representation_Info_Extended
                then
                   Osint.Fail ("-gnatRe is incompatible with -gnatRj");
+               end if;
+
+               if List_Representation_Info_To_JSON
+                 and then List_Representation_Info_Holes
+               then
+                  Osint.Fail ("-gnatRh is incompatible with -gnatRj");
                end if;
 
             --  -gnats (syntax check only)
