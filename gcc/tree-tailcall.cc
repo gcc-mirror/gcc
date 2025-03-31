@@ -361,6 +361,10 @@ process_assignment (gassign *stmt,
     if (FLOAT_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
       return FAIL;
 
+  /* We at least cannot build -1 for all fixed point types.  */
+  if (FIXED_POINT_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
+    return FAIL;
+
   if (rhs_class == GIMPLE_UNARY_RHS
       && op0 == *ass_var)
     ;
