@@ -19454,7 +19454,8 @@ finish_function (bool inline_p)
       && !cp_function_chain->can_throw
       && !flag_non_call_exceptions
       && !decl_replaceable_p (fndecl,
-			      opt_for_fn (fndecl, flag_semantic_interposition)))
+			      opt_for_fn (fndecl, flag_semantic_interposition))
+      && !lookup_attribute ("noipa", DECL_ATTRIBUTES (fndecl)))
     TREE_NOTHROW (fndecl) = 1;
 
  cleanup:
