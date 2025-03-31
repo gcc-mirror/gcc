@@ -568,7 +568,8 @@ DefaultASTVisitor::visit (AST::WhileLoopExpr &expr)
 {
   visit_outer_attrs (expr);
   visit (expr.get_predicate_expr ());
-  visit (expr.get_loop_label ());
+  if (expr.has_loop_label ())
+    visit (expr.get_loop_label ());
   visit (expr.get_loop_block ());
 }
 
