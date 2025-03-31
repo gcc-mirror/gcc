@@ -1467,11 +1467,13 @@ ix86_handle_option (struct gcc_options *opts,
       return true;
 
     case OPT_msse4:
+      gcc_assert (value != 0);
       opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SSE4_SET;
       opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_SET;
       return true;
 
     case OPT_mno_sse4:
+      gcc_assert (value != 0);
       opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_SSE4_UNSET;
       opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_SSE4_UNSET;
       opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_SSE4_UNSET;
