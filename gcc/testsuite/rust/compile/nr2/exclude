@@ -23,8 +23,6 @@ derive-default1.rs
 derive-eq-invalid.rs
 derive-hash1.rs
 torture/alt_patterns1.rs
-torture/loop4.rs
-torture/loop8.rs
 torture/name_resolve1.rs
 issue-3568.rs
 issue-3663.rs
