@@ -1,3 +1,125 @@
+2025-03-30  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/extend.texi (New/Delete Builtins): Cleanup up the text and
+	explicitly list the builtins being documented.
+
+2025-03-30  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/42270
+	* doc/extend.texi (Numeric Builtins): Move Integer Overflow Builtins
+	section here, as a subsection.
+
+2025-03-30  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/42270
+	* doc/extend.texi (Atomic Memory Access): New section.
+	(__sync Builtins): Make it a subsection of the above.
+	(Atomic Memory Access): Likewise.
+	(x86 specific memory model extensions for transactional memory):
+	Delete this section, incorporating the text into the discussion
+	of __atomic builtins.
+
+2025-03-30  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/42270
+	* doc/extend.texi (Built-in Functions): Incorporate some text
+	formerly in "Other Builtins" into the introduction.  Adjust
+	menu for new sections.
+	(Library Builtins): New section, split from "Other Builtins".
+	(Numeric Builtins): Likewise.
+	(Stack Allocation): Likewise.
+	(Constructing Calls): Move __builtin_call_with_static_chain here.
+	(Object Size Checking): Minor copy-editing.
+	(Other Builtins): Move text to new sections listed above.  Delete
+	duplicate docs for object-size checking builtins.
+	* doc/invoke.texi (C dialect options): Update @xref for -fno-builtin.
+
+2025-03-30  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/42270
+	* doc/extend.texi (C Extensions): Move menu items for
+	builtin-related sections to...
+	(Built-in Functions): New chapter.
+	* doc/gcc.texi (Introduction): Add menu entry for new chapter.
+
+2025-03-30  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/42270
+	* doc/extend.texi (Attributes): New section.
+	(Function Attributes): Make it a subsection of the new section.
+	(Variable Attributes): Likewise.
+	(Type Attributes): Likewise.
+	(Label Attributes): Likewise.
+	(Enumerator Attributes): Likewise.
+	(Attribute Syntax): Likewise.
+
+2025-03-30  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/42270
+	* doc/extend.texi (Function Attributes): Merge text from "Target
+	Format Checks" into the main discussion of the format and
+	format_arg attributes.
+	(Target Format Checks): Delete section.
+
+2025-03-30  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	PR target/117759
+	* config/alpha/alpha-protos.h
+	(alpha_expand_unaligned_store_safe_partial): New prototype.
+	* config/alpha/alpha.cc (alpha_expand_movmisalign)
+	(alpha_expand_block_move, alpha_expand_block_clear): Handle
+	TARGET_SAFE_PARTIAL.
+	(alpha_expand_unaligned_store_safe_partial)
+	(alpha_expand_unaligned_store_words_safe_partial)
+	(alpha_expand_clear_safe_partial_nobwx): New functions.
+	* config/alpha/alpha.md (insvmisaligndi): Handle
+	TARGET_SAFE_PARTIAL.
+	* config/alpha/alpha.opt (msafe-partial): New option.
+	* config/alpha/alpha.opt.urls: Regenerate.
+	* doc/invoke.texi (Option Summary, DEC Alpha Options): Document
+	the new option.
+
+2025-03-30  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	PR target/117759
+	* config/alpha/alpha-modes.def (OI): New integer mode.
+	* config/alpha/alpha-protos.h (alpha_expand_mov_safe_bwa): New
+	prototype.
+	* config/alpha/alpha.cc (alpha_expand_mov_safe_bwa): New
+	function.
+	(alpha_secondary_reload): Handle TARGET_SAFE_BWA.
+	* config/alpha/alpha.md (aligned_store_safe_bwa)
+	(unaligned_store<mode>_safe_bwa, reload_out<mode>_safe_bwa)
+	(reload_out<mode>_unaligned_safe_bwa): New expanders.
+	(mov<mode>, movcqi, reload_out<mode>_aligned): Handle
+	TARGET_SAFE_BWA.
+	(reload_out<mode>): Guard against TARGET_SAFE_BWA.
+	* config/alpha/alpha.opt (msafe-bwa): New option.
+	* config/alpha/alpha.opt.urls: Regenerate.
+	* doc/invoke.texi (Option Summary, DEC Alpha Options): Document
+	the new option.
+
+2025-03-30  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* function.h (struct function): Add
+	`split_basic_blocks_after_reload' member.
+	* lra.cc (lra): Handle it.
+	* reload1.cc (reload): Likewise.
+
+2025-03-30  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/alpha/alpha-protos.h (alpha_emit_unlikely_jump): New
+	prototype.
+	* config/alpha/alpha.cc (emit_unlikely_jump): Rename to...
+	(alpha_emit_unlikely_jump): ... this.  Return the insn emitted.
+	(alpha_split_atomic_op, alpha_split_compare_and_swap)
+	(alpha_split_compare_and_swap_12, alpha_split_atomic_exchange)
+	(alpha_split_atomic_exchange_12): Update call sites accordingly.
+
+2025-03-30  LIU Hao  <lh_mouse@126.com>
+
+	* config/mingw/winnt.cc (mingw_pe_file_end): Add `.p2align`.
+
 2025-03-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR cobol/119283

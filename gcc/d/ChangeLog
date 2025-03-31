@@ -1,3 +1,7 @@
+2025-03-30  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* lang.opt.urls: Regenerate.
+
 2025-03-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 02a64d2e13.

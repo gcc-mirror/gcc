@@ -1,3 +1,69 @@
+2025-03-30  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/tree-ssa/pr80331.C: New test.
+	* g++.dg/tree-ssa/pr87502.C: New test.
+
+2025-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/aarch64/atomic-inst-ldlogic.c: Fix another
+	unbalanced {} directive problem.  Add space after all
+	scan-assembler-times counts.
+
+2025-03-30  Mariam Arutunian  <mariamarutunian@gmail.com>
+
+	* gcc.target/aarch64/crc-crc32c-data16.c: Fix iteration
+	count to match testname.
+
+2025-03-30  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	PR target/117759
+	* gcc.target/alpha/memclr-a2-o1-c9-ptr.c: Add
+	`-mno-safe-partial'.
+	* gcc.target/alpha/memclr-a2-o1-c9-ptr-safe-partial.c: New file.
+	* gcc.target/alpha/memcpy-di-unaligned-dst.c: New file.
+	* gcc.target/alpha/memcpy-di-unaligned-dst-safe-partial.c: New
+	file.
+	* gcc.target/alpha/memcpy-di-unaligned-dst-safe-partial-bwx.c:
+	New file.
+	* gcc.target/alpha/memcpy-si-unaligned-dst.c: New file.
+	* gcc.target/alpha/memcpy-si-unaligned-dst-safe-partial.c: New
+	file.
+	* gcc.target/alpha/memcpy-si-unaligned-dst-safe-partial-bwx.c:
+	New file.
+	* gcc.target/alpha/stlx0.c: Add `-mno-safe-partial'.
+	* gcc.target/alpha/stlx0-safe-partial.c: New file.
+	* gcc.target/alpha/stlx0-safe-partial-bwx.c: New file.
+	* gcc.target/alpha/stqx0.c: Add `-mno-safe-partial'.
+	* gcc.target/alpha/stqx0-safe-partial.c: New file.
+	* gcc.target/alpha/stqx0-safe-partial-bwx.c: New file.
+	* gcc.target/alpha/stwx0.c: Add `-mno-safe-partial'.
+	* gcc.target/alpha/stwx0-bwx.c: Add `-mno-safe-partial'.  Refer
+	to stwx0.c rather than copying its code and also verify no LDQ_U
+	or STQ_U instructions have been produced.
+	* gcc.target/alpha/stwx0-safe-partial.c: New file.
+	* gcc.target/alpha/stwx0-safe-partial-bwx.c: New file.
+
+2025-03-30  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	PR target/117759
+	* gcc.target/alpha/stb.c: New file.
+	* gcc.target/alpha/stb-bwa.c: New file.
+	* gcc.target/alpha/stb-bwx.c: New file.
+	* gcc.target/alpha/stba.c: New file.
+	* gcc.target/alpha/stba-bwa.c: New file.
+	* gcc.target/alpha/stba-bwx.c: New file.
+	* gcc.target/alpha/stw.c: New file.
+	* gcc.target/alpha/stw-bwa.c: New file.
+	* gcc.target/alpha/stw-bwx.c: New file.
+	* gcc.target/alpha/stwa.c: New file.
+	* gcc.target/alpha/stwa-bwa.c: New file.
+	* gcc.target/alpha/stwa-bwx.c: New file.
+
+2025-03-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* g++.dg/gomp/append-args-8.C: Remove bogus '3' after \.\[0-9\]+
+	pattern.
+
 2025-03-29  Sam James  <sam@gentoo.org>
 
 	* gcc.target/arm/short-vfp-1.c: Add whitespace around brace.
