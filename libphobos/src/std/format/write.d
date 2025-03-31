@@ -648,9 +648,16 @@ uint formattedWrite(Writer, Char, Args...)(auto ref Writer w, const scope Char[]
                     break SWITCH;
             }
         default:
-            throw new FormatException(
-                text("Positional specifier %", spec.indexStart, '$', spec.spec,
-                     " index exceeds ", Args.length));
+            if (spec.indexEnd == spec.indexEnd.max)
+                break;
+            else if (spec.indexEnd == spec.indexStart)
+                throw new FormatException(
+                    text("Positional specifier %", spec.indexStart, '$', spec.spec,
+                    " index exceeds ", Args.length));
+            else
+                throw new FormatException(
+                    text("Positional specifier %", spec.indexStart, ":", spec.indexEnd, '$', spec.spec,
+                    " index exceeds ", Args.length));
         }
     }
     return currentArg;
@@ -1197,6 +1204,16 @@ if (isSomeString!(typeof(fmt)))
 
     stream.clear();
     formattedWrite(stream, "%s", aa);
+}
+
+// https://github.com/dlang/phobos/issues/10699
+@safe pure unittest
+{
+    import std.array : appender;
+    auto w = appender!(char[])();
+
+    formattedWrite(w, "%1:$d", 1, 2, 3);
+    assert(w.data == "123");
 }
 
 /**

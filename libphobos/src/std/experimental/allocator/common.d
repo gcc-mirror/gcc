@@ -63,7 +63,8 @@ unittest
     class C2 { char c; }
     static assert(stateSize!C2 == 4 * size_t.sizeof);
     static class C3 { char c; }
-    static assert(stateSize!C3 == 2 * size_t.sizeof + char.sizeof);
+    // Uncomment test after dmd issue closed https://github.com/dlang/dmd/issues/21065
+    //static assert(stateSize!C3 == 3 * size_t.sizeof);
 }
 
 /**

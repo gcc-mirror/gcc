@@ -3,9 +3,9 @@
  *
  * Copyright: Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/file_manager.d, _file_manager.d)
+ * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/file_manager.d, _file_manager.d)
  * Documentation:  https://dlang.org/phobos/dmd_file_manager.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/file_manager.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/file_manager.d
  */
 
 module dmd.file_manager;

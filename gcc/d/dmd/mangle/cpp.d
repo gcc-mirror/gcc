@@ -7,9 +7,9 @@
  * Copyright: Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors: Walter Bright, https://www.digitalmars.com
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/cppmangle.d, _cppmangle.d)
+ * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mangle/cpp.d, _cppmangle.d)
  * Documentation:  https://dlang.org/phobos/dmd_cppmangle.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/cppmangle.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/mangle/cpp.d
  *
  * References:
  *  Follows Itanium C++ ABI 1.86 section 5.1

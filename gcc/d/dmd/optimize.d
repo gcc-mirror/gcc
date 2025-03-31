@@ -4,9 +4,9 @@
  * Copyright:   Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     $(LINK2 https://www.digitalmars.com, Walter Bright)
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/optimize.d, _optimize.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/optimize.d, _optimize.d)
  * Documentation:  https://dlang.org/phobos/dmd_optimize.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/optimize.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/optimize.d
  */
 
 module dmd.optimize;

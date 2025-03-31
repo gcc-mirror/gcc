@@ -6,9 +6,9 @@
  * Copyright: Copyright (C) 1999-2025 by The D Language Foundation, All Rights Reserved
  * Authors: Walter Bright, https://www.digitalmars.com
  * License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/dmangle.d, _dmangle.d)
+ * Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mangle/package.d, _dmangle.d)
  * Documentation:  https://dlang.org/phobos/dmd_dmangle.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/dmangle.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/mangle/package.d
  * References:  https://dlang.org/blog/2017/12/20/ds-newfangled-name-mangling/
  */
 

@@ -4,9 +4,9 @@
  *              Copyright (C) 2018-2025 by The D Language Foundation, All Rights Reserved
  * Authors:     Iain Buclaw
  * License:     $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
- * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/iasmgcc.d, _iasmgcc.d)
+ * Source:      $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/iasmgcc.d, _iasmgcc.d)
  * Documentation:  https://dlang.org/phobos/dmd_iasmgcc.html
- * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/iasmgcc.d
+ * Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/iasmgcc.d
  */
 
 module dmd.iasmgcc;

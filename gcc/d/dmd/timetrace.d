@@ -9,9 +9,9 @@ This file is originally from LDC (the LLVM D compiler).
 Copyright: Copyright (C) 1999-2022 by The D Language Foundation, All Rights Reserved
 Authors:   Johan Engelen, Max Haughton, Dennis Korpel
 License:   $(LINK2 https://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
-Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/src/dmd/common/timetrace.d, common/_timetrace.d)
+Source:    $(LINK2 https://github.com/dlang/dmd/blob/master/compiler/src/dmd/timetrace.d, common/_timetrace.d)
 Documentation: https://dlang.org/phobos/dmd_common_timetrace.html
-Coverage:    https://codecov.io/gh/dlang/dmd/src/master/src/dmd/common/timetrace.d
+Coverage:    https://codecov.io/gh/dlang/dmd/src/master/compiler/src/dmd/timetrace.d
 */
 module dmd.timetrace;
 

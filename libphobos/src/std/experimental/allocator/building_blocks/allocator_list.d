@@ -1140,7 +1140,6 @@ template SharedAllocatorList(alias factoryFunction,
     import std.algorithm.comparison : max;
     import std.typecons : Ternary;
 
-    enum pageSize = 4096;
     enum numPages = 2;
 
     static void testrw(void[] b)
@@ -1269,8 +1268,6 @@ template SharedAllocatorList(alias factoryFunction,
     import std.algorithm.comparison : max;
     import std.typecons : Ternary;
 
-    enum pageSize = 4096;
-
     static void testrw(void[] b)
     {
         ubyte* buf = cast(ubyte*) b.ptr;
@@ -1283,17 +1280,17 @@ template SharedAllocatorList(alias factoryFunction,
 
     enum numPages = 5;
     AllocatorList!((n) => AscendingPageAllocator(max(n, numPages * pageSize)), NullAllocator) a;
-    auto b = a.alignedAllocate(1, pageSize * 2);
+    auto b = a.alignedAllocate(1, cast(uint) (pageSize * 2));
     assert(b.length == 1);
-    assert(a.expand(b, 4095));
-    assert(b.ptr.alignedAt(2 * 4096));
-    assert(b.length == 4096);
+    assert(a.expand(b, pageSize - 1));
+    assert(b.ptr.alignedAt(cast(uint) (pageSize * 2)));
+    assert(b.length == pageSize);
 
-    b = a.allocate(4096);
-    assert(b.length == 4096);
+    b = a.allocate(pageSize);
+    assert(b.length == pageSize);
     assert(a.allocators.length == 1);
 
-    assert(a.allocate(4096 * 5).length == 4096 * 5);
+    assert(a.allocate(pageSize * 5).length == pageSize * 5);
     assert(a.allocators.length == 2);
 
     assert(a.deallocateAll());
@@ -1339,7 +1336,6 @@ template SharedAllocatorList(alias factoryFunction,
     import std.algorithm.comparison : max;
 
     enum numThreads = 100;
-    enum pageSize = 4096;
     enum numPages = 10;
     SharedAllocatorList!((n) => SharedAscendingPageAllocator(max(n, pageSize * numPages)), Mallocator) a;
 
