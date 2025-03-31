@@ -1,3 +1,22 @@
+2025-03-30  Martin Uecker  <uecker@tugraz.at>
+
+	Backported from master:
+	2024-12-12  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/113688
+	PR c/114014
+	PR c/114713
+	PR c/117724
+	* tree.cc (gimple_canonical_types_compatible_p): Add exception.
+
+2025-03-30  Martin Uecker  <uecker@tugraz.at>
+
+	Backported from master:
+	2024-12-12  Martin Uecker  <uecker@tugraz.at>
+
+	* tree.cc (gimple_canonical_types_compatible_p): Add exception.
+	(verify_type): Add exception.
+
 2025-03-29  Denis Chertykov  <chertykov@gmail.com>
 
 	Backported from master:

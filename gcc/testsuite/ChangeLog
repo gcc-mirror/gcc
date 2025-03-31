@@ -1,3 +1,17 @@
+2025-03-30  Martin Uecker  <uecker@tugraz.at>
+
+	Backported from master:
+	2024-12-12  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/113688
+	PR c/114014
+	PR c/114713
+	PR c/117724
+	* gcc.dg/pr113688.c: New test.
+	* gcc.dg/pr114014.c: New test.
+	* gcc.dg/pr114713.c: New test.
+	* gcc.dg/pr117724.c: New test.
+
 2025-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
