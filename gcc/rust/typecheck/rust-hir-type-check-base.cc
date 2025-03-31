@@ -397,8 +397,6 @@ TypeCheckBase::resolve_generic_params (
 	    auto lifetime_param
 	      = static_cast<HIR::LifetimeParam &> (*generic_param);
 	    auto lifetime = lifetime_param.get_lifetime ();
-	    rust_assert (lifetime.get_lifetime_type ()
-			 == AST::Lifetime::LifetimeType::NAMED);
 	    context->get_lifetime_resolver ().insert_mapping (
 	      context->intern_lifetime (lifetime));
 	  }
