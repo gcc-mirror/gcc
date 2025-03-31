@@ -10072,7 +10072,7 @@ Library (RTL) ALI files.
 @code{n} controls the optimization level:
 
 
-@multitable {xxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
+@multitable {xxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
 @item
 
 `n'
@@ -10096,8 +10096,7 @@ No optimization, the default setting if no @code{-O} appears.
 @tab
 
 Moderate optimization, same as @code{-O} without an operand.
-A good compromise between quality of generated code and compilation
-time.
+A good compromise between code quality and compilation time.
 
 @item
 
