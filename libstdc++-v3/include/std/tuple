@@ -2534,7 +2534,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       return [&]<size_t... _Inds>(index_sequence<_Inds...>) {
 	// Fold == over the tuples until non-equal elements are found.
-	return ((std::get<_Inds>(__t) == std::get<_Inds>(__u)) && ...);
+	return (bool(std::get<_Inds>(__t) == std::get<_Inds>(__u)) && ...);
       }(index_sequence_for<_Tps...>{});
     }
 
