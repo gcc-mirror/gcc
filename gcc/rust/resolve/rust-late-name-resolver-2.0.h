@@ -48,6 +48,7 @@ public:
   void visit (AST::IdentifierExpr &) override;
   void visit (AST::StructExprFieldIdentifier &) override;
   void visit (AST::BreakExpr &) override;
+  void visit (AST::LoopLabel &) override;
   void visit (AST::PathInExpression &) override;
   void visit (AST::TypePath &) override;
   void visit (AST::Trait &) override;

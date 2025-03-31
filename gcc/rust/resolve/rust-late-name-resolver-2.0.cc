@@ -213,6 +213,25 @@ Late::visit (AST::BreakExpr &expr)
 }
 
 void
+Late::visit (AST::LoopLabel &label)
+{
+  // Shall we move this to visit(AST::Lifetime) or do we need to
+  // keep the context ?
+  auto lifetime = label.get_lifetime ();
+  if (auto resolved = ctx.labels.get (lifetime.as_string ()))
+    {
+      ctx.map_usage (Usage (lifetime.get_node_id ()),
+		     Definition (resolved->get_node_id ()));
+    }
+  else
+    {
+      ctx.labels.insert (Identifier (lifetime.as_string (),
+				     lifetime.get_locus ()),
+			 lifetime.get_node_id ());
+    }
+}
+
+void
 Late::visit (AST::IdentifierExpr &expr)
 {
   // TODO: same thing as visit(PathInExpression) here?
