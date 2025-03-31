@@ -1611,9 +1611,17 @@ branch_prob (bool thunk)
 	instrument_values (values);
     }
 
-  void find_paths (struct function*);
+  unsigned instrument_prime_paths (struct function*);
   if (path_coverage_flag)
-    find_paths (cfun);
+    {
+      const unsigned npaths = instrument_prime_paths (cfun);
+      if (output_to_file)
+	{
+	  gcov_position_t offset = gcov_write_tag (GCOV_TAG_PATHS);
+	  gcov_write_unsigned (npaths);
+	  gcov_write_length (offset);
+	}
+    }
 
   free_aux_for_edges ();
 

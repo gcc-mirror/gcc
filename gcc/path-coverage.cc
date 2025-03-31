@@ -504,8 +504,8 @@ flush_on_gsi (gimple_stmt_iterator *gsi, size_t bucket, tree local, tree mask,
    bit N%64 in bucket N/64.  For large functions, an individual basic block
    will only be part of a small subset of paths, and by extension buckets and
    local counters.  Only the necessary counters are read and written.  */
-void
-find_paths (struct function *fn)
+unsigned
+instrument_prime_paths (struct function *fn)
 {
   mark_dfs_back_edges (fn);
   vec<vec<int>> paths = find_prime_paths (fn);
@@ -515,7 +515,7 @@ find_paths (struct function *fn)
       warning_at (fn->function_start_locus, OPT_Wcoverage_too_many_paths,
 		  "paths exceeding limit, giving up path coverage");
       release_vec_vec (paths);
-      return;
+      return 0;
     }
 
   tree gcov_type_node = get_gcov_type ();
@@ -526,13 +526,8 @@ find_paths (struct function *fn)
   if (!coverage_counter_alloc (GCOV_COUNTER_PATHS, nbuckets))
     {
       release_vec_vec (paths);
-      return;
+      return 0;
     }
-
-  gcov_position_t offset {};
-  offset = gcov_write_tag (GCOV_TAG_PATHS);
-  gcov_write_unsigned (paths.length ());
-  gcov_write_length (offset);
 
   hash_map <edge_hash, uint64_t> ands;
   hash_map <block_hash, uint64_t> iors;
@@ -771,6 +766,8 @@ find_paths (struct function *fn)
 	}
     }
 
+  const unsigned npaths = paths.length ();
   blocks.release ();
   release_vec_vec (paths);
+  return npaths;
 }
