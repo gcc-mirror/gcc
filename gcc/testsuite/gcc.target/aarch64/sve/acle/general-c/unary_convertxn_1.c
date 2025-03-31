@@ -1,6 +1,6 @@
 #include <arm_sve.h>
 
-#pragma GCC target "+sme2"
+#pragma GCC target "+sve2+sme2"
 
 void
 test (svbool_t pg, float f, svint8_t s8, svfloat32_t f32,

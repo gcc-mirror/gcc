@@ -22095,7 +22095,8 @@ Enable the Pointer Authentication Extension.
 @item cssc
 Enable the Common Short Sequence Compression instructions.
 @item sme
-Enable the Scalable Matrix Extension.
+Enable the Scalable Matrix Extension.  This is only supported when SVE2 is also
+enabled.
 @item sme-i16i64
 Enable the FEAT_SME_I16I64 extension to SME.  This also enables SME
 instructions.

@@ -3,7 +3,7 @@
 #include <arm_sve.h>
 #include <stdbool.h>
 
-#pragma GCC target "+sme2"
+#pragma GCC target "+sve2+sme2"
 
 enum signed_enum { SA = -1, SB };
 enum unsigned_enum { UA, UB };

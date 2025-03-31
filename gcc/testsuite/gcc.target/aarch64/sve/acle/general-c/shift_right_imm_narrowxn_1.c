@@ -2,7 +2,7 @@
 
 #include <arm_sve.h>
 
-#pragma GCC target ("+sme2")
+#pragma GCC target ("+sve2+sme2")
 
 void
 f1 (svboolx2_t pgx2,

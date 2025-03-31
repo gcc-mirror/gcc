@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 
-#pragma GCC target "+sme2"
+#pragma GCC target "+sve2+sme2"
 
 #include <arm_sve.h>
 
