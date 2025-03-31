@@ -768,6 +768,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 	  if (__navail >= __n)
 	    {
+	      if (!this->_M_impl._M_finish)
+		__builtin_unreachable();
+
 	      _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
 	      this->_M_impl._M_finish =
 		std::__uninitialized_default_n_a(this->_M_impl._M_finish,
