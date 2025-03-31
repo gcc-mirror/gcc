@@ -4138,6 +4138,10 @@ ix86_expand_sse_fp_minmax (rtx dest, enum rtx_code code, rtx cmp_op0,
     return false;
 
   mode = GET_MODE (dest);
+  if (immediate_operand (if_false, mode))
+    if_false = force_reg (mode, if_false);
+  if (immediate_operand (if_true, mode))
+    if_true = force_reg (mode, if_true);
 
   /* We want to check HONOR_NANS and HONOR_SIGNED_ZEROS here,
      but MODE may be a vector mode and thus not appropriate.  */
@@ -4687,6 +4691,8 @@ ix86_expand_fp_movcc (rtx operands[])
       compare_op = ix86_expand_compare (NE, tmp, const0_rtx);
     }
 
+  operands[2] = force_reg (mode, operands[2]);
+  operands[3] = force_reg (mode, operands[3]);
   emit_insn (gen_rtx_SET (operands[0],
 			  gen_rtx_IF_THEN_ELSE (mode, compare_op,
 						operands[2], operands[3])));

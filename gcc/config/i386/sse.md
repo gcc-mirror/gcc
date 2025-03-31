@@ -5142,7 +5142,7 @@
 (define_expand "vcond_mask_<mode><sseintvecmodelower>"
   [(set (match_operand:VI_256_AVX2 0 "register_operand")
 	(vec_merge:VI_256_AVX2
-	  (match_operand:VI_256_AVX2 1 "nonimmediate_operand")
+	  (match_operand:VI_256_AVX2 1 "nonimm_or_0_or_1s_operand")
 	  (match_operand:VI_256_AVX2 2 "nonimm_or_0_operand")
 	  (match_operand:<sseintvecmode> 3 "register_operand")))]
   "TARGET_AVX"
@@ -5155,7 +5155,7 @@
 (define_expand "vcond_mask_<mode><sseintvecmodelower>"
   [(set (match_operand:VI_128 0 "register_operand")
 	(vec_merge:VI_128
-	  (match_operand:VI_128 1 "vector_operand")
+	  (match_operand:VI_128 1 "vector_or_0_or_1s_operand")
 	  (match_operand:VI_128 2 "nonimm_or_0_operand")
 	  (match_operand:<sseintvecmode> 3 "register_operand")))]
   "TARGET_SSE2"
@@ -5168,7 +5168,7 @@
 (define_expand "vcond_mask_v1tiv1ti"
   [(set (match_operand:V1TI 0 "register_operand")
 	(vec_merge:V1TI
-	  (match_operand:V1TI 1 "vector_operand")
+	  (match_operand:V1TI 1 "vector_or_0_or_1s_operand")
 	  (match_operand:V1TI 2 "nonimm_or_0_operand")
 	  (match_operand:V1TI 3 "register_operand")))]
   "TARGET_SSE2"
@@ -5181,7 +5181,7 @@
 (define_expand "vcond_mask_<mode><sseintvecmodelower>"
   [(set (match_operand:VF_256 0 "register_operand")
 	(vec_merge:VF_256
-	  (match_operand:VF_256 1 "nonimmediate_operand")
+	  (match_operand:VF_256 1 "nonimm_or_0_or_1s_operand")
 	  (match_operand:VF_256 2 "nonimm_or_0_operand")
 	  (match_operand:<sseintvecmode> 3 "register_operand")))]
   "TARGET_AVX"
@@ -5194,7 +5194,7 @@
 (define_expand "vcond_mask_<mode><sseintvecmodelower>"
   [(set (match_operand:VF_128 0 "register_operand")
 	(vec_merge:VF_128
-	  (match_operand:VF_128 1 "vector_operand")
+	  (match_operand:VF_128 1 "vector_or_0_or_1s_operand")
 	  (match_operand:VF_128 2 "nonimm_or_0_operand")
 	  (match_operand:<sseintvecmode> 3 "register_operand")))]
   "TARGET_SSE"
