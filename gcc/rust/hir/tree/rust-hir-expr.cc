@@ -749,7 +749,7 @@ BlockExpr::BlockExpr (Analysis::NodeMapping mappings,
 		      std::vector<std::unique_ptr<Stmt>> block_statements,
 		      std::unique_ptr<Expr> block_expr, bool tail_reachable,
 		      AST::AttrVec inner_attribs, AST::AttrVec outer_attribs,
-		      LoopLabel label, location_t start_locus,
+		      tl::optional<LoopLabel> label, location_t start_locus,
 		      location_t end_locus)
   : ExprWithBlock (std::move (mappings), std::move (outer_attribs)),
     WithInnerAttrs (std::move (inner_attribs)),
@@ -985,7 +985,8 @@ UnsafeBlockExpr::operator= (UnsafeBlockExpr const &other)
 
 BaseLoopExpr::BaseLoopExpr (Analysis::NodeMapping mappings,
 			    std::unique_ptr<BlockExpr> loop_block,
-			    location_t locus, LoopLabel loop_label,
+			    location_t locus,
+			    tl::optional<LoopLabel> loop_label,
 			    AST::AttrVec outer_attribs)
   : ExprWithBlock (std::move (mappings), std::move (outer_attribs)),
     loop_label (std::move (loop_label)), loop_block (std::move (loop_block)),
@@ -1011,7 +1012,8 @@ BaseLoopExpr::operator= (BaseLoopExpr const &other)
 
 LoopExpr::LoopExpr (Analysis::NodeMapping mappings,
 		    std::unique_ptr<BlockExpr> loop_block, location_t locus,
-		    LoopLabel loop_label, AST::AttrVec outer_attribs)
+		    tl::optional<LoopLabel> loop_label,
+		    AST::AttrVec outer_attribs)
   : BaseLoopExpr (std::move (mappings), std::move (loop_block), locus,
 		  std::move (loop_label), std::move (outer_attribs))
 {}
@@ -1019,7 +1021,8 @@ LoopExpr::LoopExpr (Analysis::NodeMapping mappings,
 WhileLoopExpr::WhileLoopExpr (Analysis::NodeMapping mappings,
 			      std::unique_ptr<Expr> loop_condition,
 			      std::unique_ptr<BlockExpr> loop_block,
-			      location_t locus, LoopLabel loop_label,
+			      location_t locus,
+			      tl::optional<LoopLabel> loop_label,
 			      AST::AttrVec outer_attribs)
   : BaseLoopExpr (std::move (mappings), std::move (loop_block), locus,
 		  std::move (loop_label), std::move (outer_attribs)),
@@ -1046,7 +1049,8 @@ WhileLetLoopExpr::WhileLetLoopExpr (
   Analysis::NodeMapping mappings,
   std::vector<std::unique_ptr<Pattern>> match_arm_patterns,
   std::unique_ptr<Expr> condition, std::unique_ptr<BlockExpr> loop_block,
-  location_t locus, LoopLabel loop_label, AST::AttrVec outer_attribs)
+  location_t locus, tl::optional<LoopLabel> loop_label,
+  AST::AttrVec outer_attribs)
   : BaseLoopExpr (std::move (mappings), std::move (loop_block), locus,
 		  std::move (loop_label), std::move (outer_attribs)),
     match_arm_patterns (std::move (match_arm_patterns)),

@@ -1704,7 +1704,7 @@ WhileLoopExpr::as_string () const
     }
   else
     {
-      str += loop_label.as_string ();
+      str += get_loop_label ().as_string ();
     }
 
   str += "\n Conditional expr: " + condition->as_string ();
@@ -1726,7 +1726,7 @@ WhileLetLoopExpr::as_string () const
     }
   else
     {
-      str += loop_label.as_string ();
+      str += get_loop_label ().as_string ();
     }
 
   str += "\n Match arm patterns: ";
@@ -1761,7 +1761,7 @@ LoopExpr::as_string () const
     }
   else
     {
-      str += loop_label.as_string ();
+      str += get_loop_label ().as_string ();
     }
 
   str += "\n Loop block: " + loop_block->as_string ();

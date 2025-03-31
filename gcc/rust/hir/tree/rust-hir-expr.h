@@ -1717,7 +1717,7 @@ public:
   std::vector<std::unique_ptr<Stmt>> statements;
   std::unique_ptr<Expr> expr;
   bool tail_reachable;
-  LoopLabel label;
+  tl::optional<LoopLabel> label;
   location_t start_locus;
   location_t end_locus;
 
@@ -1737,7 +1737,8 @@ public:
 	     std::vector<std::unique_ptr<Stmt>> block_statements,
 	     std::unique_ptr<Expr> block_expr, bool tail_reachable,
 	     AST::AttrVec inner_attribs, AST::AttrVec outer_attribs,
-	     LoopLabel label, location_t start_locus, location_t end_locus);
+	     tl::optional<LoopLabel> label, location_t start_locus,
+	     location_t end_locus);
 
   // Copy constructor with clone
   BlockExpr (BlockExpr const &other);
@@ -1776,8 +1777,8 @@ public:
     return ExprType::Block;
   }
 
-  bool has_label () const { return !label.is_error (); }
-  LoopLabel &get_label () { return label; }
+  bool has_label () const { return label.has_value (); }
+  LoopLabel &get_label () { return label.value (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2295,7 +2296,7 @@ protected:
 class BaseLoopExpr : public ExprWithBlock
 {
 protected:
-  LoopLabel loop_label;
+  tl::optional<LoopLabel> loop_label;
   std::unique_ptr<BlockExpr> loop_block;
 
 private:
@@ -2305,7 +2306,7 @@ protected:
   // Constructor for BaseLoopExpr
   BaseLoopExpr (Analysis::NodeMapping mappings,
 		std::unique_ptr<BlockExpr> loop_block, location_t locus,
-		LoopLabel loop_label,
+		tl::optional<LoopLabel> loop_label,
 		AST::AttrVec outer_attribs = AST::AttrVec ());
 
   // Copy constructor for BaseLoopExpr with clone
@@ -2324,13 +2325,14 @@ protected:
   }
 
 public:
-  bool has_loop_label () const { return !loop_label.is_error (); }
+  bool has_loop_label () const { return loop_label.has_value (); }
 
   location_t get_locus () const override final { return locus; }
 
   HIR::BlockExpr &get_loop_block () { return *loop_block; };
 
-  LoopLabel &get_loop_label () { return loop_label; }
+  LoopLabel &get_loop_label () { return loop_label.value (); }
+  const LoopLabel &get_loop_label () const { return loop_label.value (); }
 };
 
 // 'Loop' expression (i.e. the infinite loop) HIR node
@@ -2342,7 +2344,8 @@ public:
   // Constructor for LoopExpr
   LoopExpr (Analysis::NodeMapping mappings,
 	    std::unique_ptr<BlockExpr> loop_block, location_t locus,
-	    LoopLabel loop_label, AST::AttrVec outer_attribs = AST::AttrVec ());
+	    tl::optional<LoopLabel> loop_label,
+	    AST::AttrVec outer_attribs = AST::AttrVec ());
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
@@ -2372,7 +2375,7 @@ public:
   WhileLoopExpr (Analysis::NodeMapping mappings,
 		 std::unique_ptr<Expr> loop_condition,
 		 std::unique_ptr<BlockExpr> loop_block, location_t locus,
-		 LoopLabel loop_label,
+		 tl::optional<LoopLabel> loop_label,
 		 AST::AttrVec outer_attribs = AST::AttrVec ());
 
   // Copy constructor with clone
@@ -2421,7 +2424,7 @@ public:
 		    std::vector<std::unique_ptr<Pattern>> match_arm_patterns,
 		    std::unique_ptr<Expr> condition,
 		    std::unique_ptr<BlockExpr> loop_block, location_t locus,
-		    LoopLabel loop_label,
+		    tl::optional<LoopLabel> loop_label,
 		    AST::AttrVec outer_attribs = AST::AttrVec ());
 
   // Copy constructor with clone
