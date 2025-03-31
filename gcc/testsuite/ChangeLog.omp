@@ -1,6 +1,23 @@
 2025-04-02  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-04-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119369
+	* g++.dg/abi/pure-virtual1.C: 'dg-xfail-if' GCN.
+	* g++.dg/cpp0x/pr84497.C: 'dg-skip-if' GCN.
+	* g++.dg/ext/weak2.C: Likewise.
+	* gcc.dg/attr-weakref-1.c: Likewise.
+	* gcc.dg/weak/weak-1.c: Likewise.
+	* gcc.dg/weak/weak-12.c: Likewise.
+	* gcc.dg/weak/weak-15.c: Likewise.
+	* gcc.dg/weak/weak-16.c: Likewise.
+	* gcc.dg/weak/weak-2.c: Likewise.
+	* gcc.dg/weak/weak-3.c: Likewise.
+	* gcc.dg/weak/weak-4.c: Likewise.
+	* gcc.dg/weak/weak-5.c: Likewise.
+
+	Backported from trunk:
 	2024-08-28  Joern Rennecke  <joern.rennecke@riscy-ip.com>
 
 	PR testsuite/116271

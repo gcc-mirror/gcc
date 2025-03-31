@@ -3,6 +3,7 @@
 /* { dg-require-alias "" } */
 /* { dg-options "-fno-common" } */
 /* { dg-skip-if "" { x86_64-*-mingw* } } */
+/* { dg-skip-if PR119369 { amdgcn-*-* } } */
 
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1a" } } */
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?vfoo1b" } } */

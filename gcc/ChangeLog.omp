@@ -1,3 +1,13 @@
+2025-04-02  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-04-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119369
+	* config/gcn/gcn-protos.h (gcn_asm_weaken_decl): Declare.
+	* config/gcn/gcn.cc (gcn_asm_weaken_decl): New.
+	* config/gcn/gcn-hsa.h (ASM_WEAKEN_DECL): '#define' to this.
+
 2025-04-01  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
