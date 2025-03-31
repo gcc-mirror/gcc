@@ -28029,6 +28029,14 @@ build with @option{-march=la664}, it is enabled by default.  The default is
 This option controls which tls dialect may be used for general dynamic and
 local dynamic TLS models.
 
+@table @samp
+@item trad
+Use traditional TLS. This is the default.
+
+@item desc
+Use TLS descriptors.
+@end table
+
 @opindex mannotate-tablejump
 @opindex mno-annotate-tablejump
 @item -mannotate-tablejump
@@ -28039,14 +28047,6 @@ table is used to optimize the @code{switch} statement.  Some external
 tools, for example @file{objtool} of the Linux kernel building system,
 need the annotation to analysis the control flow.  The default is
 @option{-mno-annotate-tablejump}.
-
-@table @samp
-@item trad
-Use traditional TLS. This is the default.
-
-@item desc
-Use TLS descriptors.
-@end table
 
 @item --param loongarch-vect-unroll-limit=@var{n}
 The vectorizer will use available tuning information to determine whether it
