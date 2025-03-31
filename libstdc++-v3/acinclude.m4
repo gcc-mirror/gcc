@@ -5745,6 +5745,41 @@ AC_DEFUN([GLIBCXX_ZONEINFO_DIR], [
 ])
 
 dnl
+dnl Check for a tm_zone member in struct tm.
+dnl
+dnl This member is defined as const char* in Glibc, newlib, POSIX.1-2024,
+dnl and as char* in BSD (including macOS).
+dnl
+dnl Defines:
+dnl  _GLIBCXX_USE_STRUCT_TM_TM_ZONE if struct tm has a tm_zone member.
+dnl
+AC_DEFUN([GLIBCXX_STRUCT_TM_TM_ZONE], [
+
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=c++20"
+
+  AC_CACHE_CHECK([for tm_zone member of struct tm], glibcxx_cv_tm_zone, [
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([#include <time.h>
+	],
+	[struct tm t{}; t.tm_zone = (char*)0;]
+	)],
+	[glibcxx_cv_tm_zone=yes],
+	[glibcxx_cv_tm_zone=no]
+      )
+    ])
+
+  if test $glibcxx_cv_tm_zone = yes; then
+    AC_DEFINE(_GLIBCXX_USE_STRUCT_TM_TM_ZONE, 1,
+	      [Define if struct tm has a tm_zone member.])
+  fi
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  AC_LANG_RESTORE
+])
+
+dnl
 dnl Check whether lock tables can be aligned to avoid false sharing.
 dnl
 dnl Defines:

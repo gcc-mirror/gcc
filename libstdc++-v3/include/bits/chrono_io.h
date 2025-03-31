@@ -905,7 +905,7 @@ namespace __format
 	  // time zone info available for the time in __tm.
 	  __tm.tm_isdst = -1;
 
-#ifdef _GLIBCXX_HAVE_STRUCT_TM_TM_ZONE
+#ifdef _GLIBCXX_USE_STRUCT_TM_TM_ZONE
 	  // POSIX.1-2024 adds tm.tm_zone which will be used for %Z.
 	  // BSD has had tm_zone since 1987 but as char* so cast away const.
 	  if constexpr (__is_time_point_v<_Tp>)
