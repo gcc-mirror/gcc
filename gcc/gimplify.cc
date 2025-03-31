@@ -3969,6 +3969,7 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
 		  : DECL_SOURCE_LOCATION (fndecl),
 		  "%<declare variant%> candidate %qD declared here",
 		  fndecl);
+	  ninterop = nappend;
 	}
     }
   if (dispatch_interop && !dispatch_device_num)
@@ -3991,7 +3992,7 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
 	  buffer[i] = CALL_EXPR_ARG (expr, i);
 	}
       int j = ninterop;
-      for (tree t = dispatch_interop; t; t = TREE_CHAIN (t))
+      for (tree t = dispatch_interop; t && j > 0; t = TREE_CHAIN (t))
 	if (OMP_CLAUSE_CODE (t) == OMP_CLAUSE_INTEROP)
 	  buffer[i + --j] = OMP_CLAUSE_DECL (t);
       gcc_checking_assert (j == 0);

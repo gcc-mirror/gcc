@@ -1,3 +1,11 @@
+2025-03-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-03-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* g++.dg/gomp/append-args-8.C: Remove bogus '3' after \.\[0-9\]+
+	pattern.
+
 2025-03-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
