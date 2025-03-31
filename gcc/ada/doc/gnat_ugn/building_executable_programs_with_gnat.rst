@@ -2261,8 +2261,7 @@ Alphabetical List of All Switches
   ------- ------------------------------------------------------------------
   *0*      No optimization, the default setting if no :switch:`-O` appears.
   *1*      Moderate optimization, same as :switch:`-O` without an operand.
-           A good compromise between quality of generated code and compilation
-           time.
+           A good compromise between code quality and compilation time.
   *2*      Extensive optimization, should improve execution time, possibly at
            the cost of substantially increased compilation time.
   *3*      Full optimization, may further improve execution time, possibly at
