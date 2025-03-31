@@ -41,14 +41,14 @@ f ()
   constexpr T3 ifr_level_zero = (T3) (omp_ifr_sycl + 2);
   constexpr T3 ifr_invalid = (T3) 99;
 
-  #pragma omp interop init ( obj1, obj2) use (obj3) destroy(obj4) init(obj5) destroy(obj6) use(obj7)   
-  /* { dg-final { scan-tree-dump-times "#pragma omp interop use\\(obj7\\) destroy\\(obj6\\) init\\(obj5\\) destroy\\(obj4\\) use\\(obj3\\) init\\(obj2\\) init\\(obj1\\)\[\r\n\]" 2 "original" } }  */
+#pragma omp interop init (target: obj1, obj2) use (obj3) destroy(obj4) init(targetsync:obj5) destroy(obj6) use(obj7)   
+  /* { dg-final { scan-tree-dump-times "#pragma omp interop use\\(obj7\\) destroy\\(obj6\\) init\\(targetsync: obj5\\) destroy\\(obj4\\) use\\(obj3\\) init\\(target: obj2\\) init\\(target: obj1\\)\[\r\n\]" 2 "original" } }  */
 
   #pragma omp interop nowait init (targetsync : obj1, obj2) use (obj3) destroy(obj4) init(target, targetsync : obj5) destroy(obj6) use(obj7) depend(inout: x)  
   /* { dg-final { scan-tree-dump-times "#pragma omp interop depend\\(inout:x\\) use\\(obj7\\) destroy\\(obj6\\) init\\(target, targetsync: obj5\\) destroy\\(obj4\\) use\\(obj3\\) init\\(targetsync: obj2\\) init\\(targetsync: obj1\\) nowait\[\r\n\]" 2 "original" } }  */
 
-  #pragma omp interop init ( obj1, obj2) init (target: obj3) init(targetsync : obj4) init(target,targetsync: obj5)  
-  /* { dg-final { scan-tree-dump-times "#pragma omp interop init\\(target, targetsync: obj5\\) init\\(targetsync: obj4\\) init\\(target: obj3\\) init\\(obj2\\) init\\(obj1\\)\[\r\n\]" 2 "original" } }  */
+#pragma omp interop init (target: obj1, obj2) init (target: obj3) init(targetsync : obj4) init(target,targetsync: obj5)  
+  /* { dg-final { scan-tree-dump-times "#pragma omp interop init\\(target, targetsync: obj5\\) init\\(targetsync: obj4\\) init\\(target: obj3\\) init\\(target: obj2\\) init\\(target: obj1\\)\[\r\n\]" 2 "original" } }  */
 
   /* --------------------------------------------  */
 

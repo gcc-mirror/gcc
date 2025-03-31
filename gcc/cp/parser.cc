@@ -43436,8 +43436,8 @@ cp_parser_omp_clause_init_modifiers (cp_parser *parser, bool *target,
   while (true);
 
 fail:
-  cp_parser_error (parser, "%<init%> clause with modifier other than "
-			   "%<prefer_type%>, %<target%> or %<targetsync%>");
+  cp_parser_error (parser,
+		   "expected %<prefer_type%>, %<target%>, or %<targetsync%>");
   return false;
 }
 
@@ -43455,39 +43455,14 @@ cp_parser_omp_clause_init (cp_parser *parser, tree list)
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return list;
 
-  unsigned raw_pos = 1;
-  while (cp_lexer_peek_nth_token (parser->lexer, raw_pos)->type == CPP_NAME)
-    {
-      raw_pos++;
-      if (cp_lexer_peek_nth_token (parser->lexer, raw_pos)->type
-	  == CPP_OPEN_PAREN)
-	{
-	  unsigned n = cp_parser_skip_balanced_tokens (parser, raw_pos);
-	  if (n == raw_pos)
-	    {
-	      raw_pos = 0;
-	      break;
-	    }
-	  raw_pos = n;
-	}
-      if (cp_lexer_peek_nth_token (parser->lexer, raw_pos)->type == CPP_COLON)
-	break;
-      if (cp_lexer_peek_nth_token (parser->lexer, raw_pos)->type != CPP_COMMA)
-	{
-	  raw_pos = 0;
-	  break;
-	}
-      raw_pos++;
-    }
-
   bool target = false;
   bool targetsync = false;
   tree prefer_type_tree = NULL_TREE;
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
-  if (raw_pos > 1
-      && (!cp_parser_omp_clause_init_modifiers (parser, &target, &targetsync,
-					       &prefer_type_tree)
-	  || !cp_parser_require (parser, CPP_COLON, RT_COLON)))
+  if (!cp_parser_omp_clause_init_modifiers (parser, &target, &targetsync,
+					    &prefer_type_tree)
+      || !cp_parser_require (parser, CPP_COLON, RT_COLON))
     {
       if (prefer_type_tree == error_mark_node)
 	return error_mark_node;
@@ -43496,6 +43471,10 @@ cp_parser_omp_clause_init (cp_parser *parser, tree list)
 					     /*consume_paren=*/true);
       return list;
     }
+
+  if (!target && !targetsync)
+    error_at (loc,
+	      "missing required %<target%> and/or %<targetsync%> modifier");
 
   tree nl = cp_parser_omp_var_list_no_open (parser, OMP_CLAUSE_INIT, list,
 					    NULL);
@@ -50970,6 +50949,10 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
 							&targetsync,
 							&prefer_type_tree))
 		goto fail;
+	      if (!target && !targetsync)
+		error_at (loc,
+			  "missing required %<target%> and/or "
+			  "%<targetsync%> modifier");
 	      tree t = build_tree_list (target ? boolean_true_node
 					       : boolean_false_node,
 					targetsync ? boolean_true_node

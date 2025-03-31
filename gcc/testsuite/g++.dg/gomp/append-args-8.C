@@ -20,7 +20,7 @@ template<typename T, typename T2, typename T3>
 void repl2(T, T2, T3, T3);
 #pragma omp declare variant(repl2) match(construct={dispatch}) adjust_args(need_device_ptr : y) \
         append_args(interop(target, targetsync, prefer_type(1)), \
-                    interop(prefer_type({fr(3), attr("ompx_nop")},{fr(2)},{attr("ompx_all")})))
+                    interop(target, prefer_type({fr(3), attr("ompx_nop")},{fr(2)},{attr("ompx_all")})))
 template<typename T, typename T2>
 void base2(T x, T2 y);
 
@@ -31,7 +31,7 @@ void repl3(T, T2, T2, T2, ...);
 #pragma omp declare variant(repl3) match(construct={dispatch}) \
         append_args( interop(target, prefer_type("cuda", "hsa")), \
                      interop(targetsync), \
-                     interop(prefer_type({attr("ompx_nop")})) )
+                     interop(target, prefer_type({attr("ompx_nop")})) )
 template<typename T>
 void base3(T, ...);
 
@@ -68,10 +68,9 @@ test (int *a, int *b)
 /* { dg-final { scan-tree-dump-times "interopobjs.\[0-9\]+\\\[0\\\] = &interop\\.\[0-9\]+;" 2 "gimple" } }  */
 /* { dg-final { scan-tree-dump-times "interopobjs.\[0-9\]+\\\[1\\\] = &interop\\.\[0-9\]+;" 1 "gimple" } }  */
 /* { dg-final { scan-tree-dump-times "interopobjs.\[0-9\]+\\\[2\\\] = &interop\\.\[0-9\]+;" 1 "gimple" } }  */
-/* { dg-final { scan-tree-dump-times "tgt_tgtsync.\[0-9\]+\\\[0\\\] = 0;" 1 "gimple" } }  */
-/* { dg-final { scan-tree-dump-times "tgt_tgtsync.\[0-9\]+\\\[0\\\] = 1;" 1 "gimple" } }  */
+/* { dg-final { scan-tree-dump-times "tgt_tgtsync.\[0-9\]+\\\[0\\\] = 1;" 2 "gimple" } }  */
 /* { dg-final { scan-tree-dump-times "tgt_tgtsync.\[0-9\]+\\\[1\\\] = 2;" 1 "gimple" } }  */
-/* { dg-final { scan-tree-dump-times "tgt_tgtsync.\[0-9\]+\\\[2\\\] = 0;" 1 "gimple" } }  */
+/* { dg-final { scan-tree-dump-times "tgt_tgtsync.\[0-9\]+\\\[2\\\] = 1;" 1 "gimple" } }  */
 /* { dg-final { scan-tree-dump-times "pref_type.\[0-9\]+\\\[0\\\] = \"\\\\x80\\\\x03\\\\x80ompx_nop\\\\x00\\\\x00\\\\x80\\\\x02\\\\x80\\\\x00\\\\x80\\\\x80ompx_all\\\\x00\\\\x00\";" 1 "gimple" } }  */
 /* { dg-final { scan-tree-dump-times "pref_type.\[0-9\]+\\\[0\\\] = \"\\\\x80\\\\x01\\\\x80\\\\x00\\\\x80\\\\x07\\\\x80\\\\x00\";" 1 "gimple" } }  */
 /* { dg-final { scan-tree-dump-times "pref_type.\[0-9\]+\\\[1\\\] = 0B;" 1 "gimple" } }  */
