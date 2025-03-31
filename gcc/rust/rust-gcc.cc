@@ -1074,6 +1074,12 @@ arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op, tree left,
   if (left == error_mark_node || right == error_mark_node)
     return error_mark_node;
 
+  // unwrap the const decls if set
+  if (TREE_CODE (left) == CONST_DECL)
+    left = DECL_INITIAL (left);
+  if (TREE_CODE (right) == CONST_DECL)
+    right = DECL_INITIAL (right);
+
   /* We need to determine if we're doing floating point arithmetics of integer
      arithmetics. */
   bool floating_point = is_floating_point (left);
