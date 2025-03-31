@@ -40,7 +40,7 @@ contains
     character(len=*) :: str
     integer, optional, value :: int_opt
     character(len=:), allocatable :: alloc_str
-    !$omp declare variant (vifun ) match(construct={dispatch}) append_args (interop(targetsync), interop( prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
+    !$omp declare variant (vifun ) match(construct={dispatch}) append_args (interop(targetsync), interop( target, prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
     ifun = 0
   end
 

@@ -2138,10 +2138,8 @@ gfc_match_omp_prefer_type (char **type_str, int *type_str_len)
    the 'interop' directive and the 'append_args' directive of 'declare variant'.
      [prefer_type(...)][,][<target|targetsync>, ...])
 
-   If is_init_clause, there might be no modifiers but variables like 'target';
-   additionally, the modifier parsing ends with a ':'.
-   If not is_init_clause (i.e. append_args), there must be modifiers and the
-   parsing ends with ')'.  */
+   If is_init_clause, the modifier parsing ends with a ':'.
+   If not is_init_clause (i.e. append_args), the parsing ends with ')'.  */
 
 static match
 gfc_parser_omp_clause_init_modifiers (bool &target, bool &targetsync,
@@ -2153,9 +2151,10 @@ gfc_parser_omp_clause_init_modifiers (bool &target, bool &targetsync,
   *type_str = NULL;
   type_str_len = 0;
   match m;
-  locus old_loc = gfc_current_locus;
-  do {
-       if (gfc_match ("prefer_type ( ") == MATCH_YES)
+
+  do
+    {
+      if (gfc_match ("prefer_type ( ") == MATCH_YES)
 	{
 	  if (*type_str)
 	    {
@@ -2181,12 +2180,17 @@ gfc_parser_omp_clause_init_modifiers (bool &target, bool &targetsync,
 	    }
 	  return MATCH_ERROR;
 	}
-       if (gfc_match ("targetsync ") == MATCH_YES)
+
+      if (gfc_match ("prefer_type ") == MATCH_YES)
+	{
+	  gfc_error ("Expected %<(%> after %<prefer_type%> at %C");
+	  return MATCH_ERROR;
+	}
+
+      if (gfc_match ("targetsync ") == MATCH_YES)
 	{
 	  if (targetsync)
 	    {
-	      /* Avoid the word 'modifier' as it could be also be no clauses and
-		 twice a variable named 'targetsync', which is also invalid.  */
 	      gfc_error ("Duplicate %<targetsync%> at %C");
 	      return MATCH_ERROR;
 	    }
@@ -2202,13 +2206,6 @@ gfc_parser_omp_clause_init_modifiers (bool &target, bool &targetsync,
 	    }
 	  if (gfc_match (": ") == MATCH_YES)
 	    break;
-	  gfc_char_t c = gfc_peek_char ();
-	  if (!*type_str && (c == ')' || (gfc_current_form != FORM_FREE
-					  && (c == '_' || ISALPHA (c)))))
-	    {
-	      gfc_current_locus = old_loc;
-	      break;
-	    }
 	  gfc_error ("Expected %<,%> or %<:%> at %C");
 	  return MATCH_ERROR;
 	}
@@ -2231,25 +2228,21 @@ gfc_parser_omp_clause_init_modifiers (bool &target, bool &targetsync,
 	    }
 	  if (gfc_match (": ") == MATCH_YES)
 	    break;
-	  gfc_char_t c = gfc_peek_char ();
-	  if (!*type_str && (c == ')' || (gfc_current_form != FORM_FREE
-					  && (c == '_' || ISALPHA (c)))))
-	    {
-	      gfc_current_locus = old_loc;
-	      break;
-	    }
 	  gfc_error ("Expected %<,%> or %<:%> at %C");
 	  return MATCH_ERROR;
 	}
-      if (*type_str)
-	{
-	  gfc_error ("Expected %<target%> or %<targetsync%> at %C");
-	  return MATCH_ERROR;
-	}
-      gfc_current_locus = old_loc;
-      break;
+      gfc_error ("Expected %<prefer_type%>, %<target%>, or %<targetsync%> "
+		 "at %C");
+      return MATCH_ERROR;
     }
   while (true);
+
+  if (!target && !targetsync)
+    {
+      gfc_error ("Missing required %<target%> and/or %<targetsync%> "
+		 "modifier at %C");
+      return MATCH_ERROR;
+    }
   return MATCH_YES;
 }
 
@@ -2266,17 +2259,17 @@ gfc_match_omp_init (gfc_omp_namelist **list)
 					    type_str_len, true) == MATCH_ERROR)
     return MATCH_ERROR;
 
- gfc_omp_namelist **head = NULL;
- if (gfc_match_omp_variable_list ("", list, false, NULL, &head) != MATCH_YES)
-   return MATCH_ERROR;
- for (gfc_omp_namelist *n = *head; n; n = n->next)
-   {
-     n->u.init.target = target;
-     n->u.init.targetsync = targetsync;
-     n->u.init.len = type_str_len;
-     n->u2.init_interop = type_str;
-   }
- return MATCH_YES;
+  gfc_omp_namelist **head = NULL;
+  if (gfc_match_omp_variable_list ("", list, false, NULL, &head) != MATCH_YES)
+    return MATCH_ERROR;
+  for (gfc_omp_namelist *n = *head; n; n = n->next)
+    {
+      n->u.init.target = target;
+      n->u.init.targetsync = targetsync;
+      n->u.init.len = type_str_len;
+      n->u2.init_interop = type_str;
+    }
+  return MATCH_YES;
 }
 
 

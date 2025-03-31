@@ -56,7 +56,7 @@ contains
     integer(omp_interop_kind),value :: obj2
   end
   subroutine g1a (obj)
-    !$omp declare variant (g1 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
+    !$omp declare variant (g1 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( target, prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
     integer(omp_interop_kind),value :: obj
   end
 
@@ -75,7 +75,7 @@ contains
     integer(omp_interop_kind) :: obj2
   end
   subroutine g3a (obj)
-    !$omp declare variant (g3 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
+    !$omp declare variant (g3 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( target, prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
     integer(omp_interop_kind),value :: obj
   end
 
@@ -84,7 +84,7 @@ contains
     integer(omp_interop_kind) :: obj2
   end
   subroutine g4a (obj)
-    !$omp declare variant (g4 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
+    !$omp declare variant (g4 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( target, prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
     integer(omp_interop_kind),value :: obj
   end
 
@@ -95,7 +95,7 @@ contains
     optional :: obj3
   end
   subroutine g5a (obj)
-    !$omp declare variant (g5 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
+    !$omp declare variant (g5 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( target, prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
     ! { dg-error "'obj3' at .1. with OPTIONAL attribute not support when utilized with the 'append_args' clause at .2." "" { target *-*-* } .-1 }
     integer(omp_interop_kind),value :: obj
   end
@@ -108,7 +108,7 @@ contains
     optional :: obj3
   end
   subroutine g5avar (obj)
-    !$omp declare variant (g5var ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
+    !$omp declare variant (g5var ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( target, prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
     ! { dg-error "'obj3' at .1. with OPTIONAL attribute not support when utilized with the 'append_args' clause at .2." "" { target *-*-* } .-1 }
     integer(omp_interop_kind),value :: obj
   end
@@ -120,7 +120,7 @@ contains
     integer(omp_interop_kind) :: obj2
   end
   subroutine g6a (obj)
-    !$omp declare variant (g6 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
+    !$omp declare variant (g6 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( target, prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
     ! { dg-error "'obj3' at .1. must be a nonpointer, nonallocatable scalar integer dummy argument of 'omp_interop_kind' kind as it utilized with the 'append_args' clause at .2." "" { target *-*-* } .-1 }
     integer(omp_interop_kind),value :: obj
   end
@@ -132,7 +132,7 @@ contains
     integer(omp_interop_kind),allocatable :: obj2
   end
   subroutine g7a (obj)
-    !$omp declare variant (g7 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
+    !$omp declare variant (g7 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( target, prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
     ! { dg-error "'obj2' at .1. must be a nonpointer, nonallocatable scalar integer dummy argument of 'omp_interop_kind' kind as it utilized with the 'append_args' clause at .2." "" { target *-*-* } .-1 }
     integer(omp_interop_kind),value :: obj
   end
@@ -144,7 +144,7 @@ contains
     integer(omp_interop_kind) :: obj2(:)
   end
   subroutine g8a (obj)
-    !$omp declare variant (g8 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
+    !$omp declare variant (g8 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( target, prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
     ! { dg-error "'obj2' at .1. must be a nonpointer, nonallocatable scalar integer dummy argument of 'omp_interop_kind' kind as it utilized with the 'append_args' clause at .2." "" { target *-*-* } .-1 }
     integer(omp_interop_kind),value :: obj
   end
@@ -156,7 +156,7 @@ contains
     integer(omp_interop_kind) :: obj2(2)
   end
   subroutine g9a (obj)
-    !$omp declare variant (g9 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
+    !$omp declare variant (g9 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( target, prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
     ! { dg-error "'obj2' at .1. must be a nonpointer, nonallocatable scalar integer dummy argument of 'omp_interop_kind' kind as it utilized with the 'append_args' clause at .2." "" { target *-*-* } .-1 }
     integer(omp_interop_kind),value :: obj
   end
@@ -168,7 +168,7 @@ contains
     integer(1) :: obj2
   end
   subroutine g10a (obj)
-    !$omp declare variant (g10 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
+    !$omp declare variant (g10 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( target, prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
     ! { dg-error "'obj2' at .1. must be a nonpointer, nonallocatable scalar integer dummy argument of 'omp_interop_kind' kind as it utilized with the 'append_args' clause at .2." "" { target *-*-* } .-1 }
     integer(omp_interop_kind),value :: obj
   end
@@ -180,7 +180,7 @@ contains
     real(omp_interop_kind) :: obj2  ! { dg-warning "C kind type parameter is for type INTEGER but type at .1. is REAL" }
   end
   subroutine g11a (obj)
-    !$omp declare variant (g11 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
+    !$omp declare variant (g11 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( target, prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
     ! { dg-error "'obj2' at .1. must be a nonpointer, nonallocatable scalar integer dummy argument of 'omp_interop_kind' kind as it utilized with the 'append_args' clause at .2." "" { target *-*-* } .-1 }
     integer(omp_interop_kind),value :: obj
   end
@@ -192,7 +192,7 @@ contains
     integer(omp_interop_kind) :: obj2[*]
   end
   subroutine g12a (obj)
-    !$omp declare variant (g12 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
+    !$omp declare variant (g12 ) match(construct={dispatch}) append_args ( interop ( target , targetsync), interop( target, prefer_type ( {fr("cuda"), attr("ompx_xx")}, {attr("ompx_yy")} )))
     ! { dg-error "'obj2' at .1. must be a nonpointer, nonallocatable scalar integer dummy argument of 'omp_interop_kind' kind as it utilized with the 'append_args' clause at .2." "" { target *-*-* } .-1 }
     integer(omp_interop_kind),value :: obj
   end
