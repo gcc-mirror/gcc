@@ -163,7 +163,6 @@ proc cobol_init { args } {
     global gcc_warning_prefix
     global gcc_error_prefix
     global TEST_ALWAYS_FLAGS
-    global cobol_init_set_COBOL_UNDER_TEST
 
     # We set LC_ALL and LANG to C so that we get the same error messages as expected.
     setenv LC_ALL C
@@ -179,24 +178,14 @@ proc cobol_init { args } {
       setenv LANG C.ASCII
     }
 
-    # COBOL_UNDER_TEST as set below contains $specpath, which depends on
-    # the used multilib config. Thus, its value may need to be reset;
-    # that's tracked via gfortran_init_set_COBOL_UNDER_TEST.
-    if { ![info exists COBOL_UNDER_TEST]
-	 || [info exists cobol_init_set_COBOL_UNDER_TEST] } then {
+    if ![info exists COBOL_UNDER_TEST] then {
 	if [info exists TOOL_EXECUTABLE] {
 	    set COBOL_UNDER_TEST $TOOL_EXECUTABLE
 	} else {
 	    if { [is_remote host] || ! [info exists TESTING_IN_BUILD_TREE] } {
 		set COBOL_UNDER_TEST [transform gcobol]
 	    } else {
-		if [info exists TOOL_OPTIONS] {
-	            set specpath [get_multilibs ${TOOL_OPTIONS}]
-		} else {
-		    set specpath [get_multilibs]
-		}
-		set cobol_init_set_COBOL_UNDER_TEST 1
-		set COBOL_UNDER_TEST [findfile $base_dir/../../gcobol "$base_dir/../../gcobol -B$base_dir/../../ -B$specpath/libgcobol/.libs" [findfile $base_dir/gcobol "$base_dir/gcobol -B$base_dir/" [transform gcobol]]]
+		set COBOL_UNDER_TEST [findfile $base_dir/../../gcobol "$base_dir/../../gcobol -B$base_dir/../../" [findfile $base_dir/gcobol "$base_dir/gcobol -B$base_dir/" [transform gcobol]]]
 	    }
 	}
     }
