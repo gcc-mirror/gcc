@@ -3338,10 +3338,11 @@ add_functions (void)
 	     gfc_check_team_number, NULL, gfc_resolve_team_number,
 	     team, BT_DERIVED, di, OPTIONAL);
 
-  add_sym_3 ("this_image", GFC_ISYM_THIS_IMAGE, CLASS_INQUIRY, ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2008,
-	     gfc_check_this_image, gfc_simplify_this_image, gfc_resolve_this_image,
-	     ca, BT_REAL, dr, OPTIONAL, dm, BT_INTEGER, ii, OPTIONAL,
-	     dist, BT_INTEGER, di, OPTIONAL);
+  add_sym_3red ("this_image", GFC_ISYM_THIS_IMAGE, CLASS_INQUIRY, ACTUAL_NO,
+		BT_INTEGER, di, GFC_STD_F2008, gfc_check_this_image,
+		gfc_simplify_this_image, gfc_resolve_this_image, ca, BT_REAL,
+		dr, OPTIONAL, dm, BT_INTEGER, ii, OPTIONAL, team, BT_DERIVED,
+		di, OPTIONAL);
 
   add_sym_0 ("time", GFC_ISYM_TIME, CLASS_IMPURE, ACTUAL_NO, BT_INTEGER,
 	     di, GFC_STD_GNU, NULL, NULL, gfc_resolve_time);
@@ -4956,6 +4957,9 @@ check_specific (gfc_intrinsic_sym *specific, gfc_expr *expr, int error_flag)
   else if (specific->check.f3red == gfc_check_transf_bit_intrins)
     /* Same as for PRODUCT and SUM, but different checks.  */
     t = gfc_check_transf_bit_intrins (*ap);
+  else if (specific->check.f3red == gfc_check_this_image)
+    /* May need to reassign arguments.  */
+    t = gfc_check_this_image (*ap);
   else
      {
        if (specific->check.f1 == NULL)

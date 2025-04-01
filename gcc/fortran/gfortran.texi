@@ -4300,21 +4300,23 @@ using the STOP and ERROR STOP statements; those use different library calls.
 
 @table @asis
 @item @emph{Synopsis}:
-@code{int _gfortran_caf_this_image (int distance)}
+@code{int _gfortran_caf_this_image (caf_team_t team)}
 
 @item @emph{Description}:
-This function returns the current image number, which is a positive number.
+Return the current image number in the @var{team}, or in the current team, if
+no @var{team} is given.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{distance} @tab As specified for the @code{this_image} intrinsic
-in TS18508.  Shall be a nonnegative number.
+@item @var{team} @tab intent(in), optional; The team this image's number is
+requested for.  If null, the image number in the current team is returned.
 @end multitable
 
 @item @emph{Notes}:
-If the Fortran intrinsic @code{this_image} is invoked without an argument, which
-is the only permitted form in Fortran 2008, GCC passes @code{0} as
-first argument.
+Available since Fortran 2008 without argument; Since Fortran 2018 with optional
+team argument.  Fortran 2008 uses 0 as argument for team, which is permissible,
+because a team handle is always an opaque pointer, which as a special case can
+be null here.
 @end table
 
 

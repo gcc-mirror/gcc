@@ -91,7 +91,7 @@ caf_static_t;
 void _gfortran_caf_init (int *, char ***);
 void _gfortran_caf_finalize (void);
 
-int _gfortran_caf_this_image (int);
+int _gfortran_caf_this_image (caf_team_t);
 int _gfortran_caf_num_images (int, int);
 
 void _gfortran_caf_register (size_t, caf_register_t, caf_token_t *,

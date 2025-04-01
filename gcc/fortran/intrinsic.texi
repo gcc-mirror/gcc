@@ -14579,9 +14579,8 @@ Fortran 2018 and later.
 @table @asis
 @item @emph{Synopsis}:
 @multitable @columnfractions .80
-@item @code{RESULT = THIS_IMAGE()}
-@item @code{RESULT = THIS_IMAGE(DISTANCE)}
-@item @code{RESULT = THIS_IMAGE(COARRAY [, DIM])}
+@item @code{RESULT = THIS_IMAGE([TEAM])}
+@item @code{RESULT = THIS_IMAGE(COARRAY [, DIM][, TEAM])}
 @end multitable
 
 @item @emph{Description}:
@@ -14592,8 +14591,8 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{DISTANCE} @tab (optional, intent(in)) Nonnegative scalar integer
-(not permitted together with @var{COARRAY}).
+@item @var{TEAM} @tab (optional, intent(in)) The team for which the index of
+this image is desired.  The current team is used, when no team is given.
 @item @var{COARRAY} @tab Coarray of any type  (optional; if @var{DIM}
 present, required).
 @item @var{DIM}     @tab default integer scalar (optional). If present,
@@ -14602,16 +14601,16 @@ present, required).
 
 @item @emph{Return value}:
 Default integer. If @var{COARRAY} is not present, it is scalar; if
-@var{DISTANCE} is not present or has value 0, its value is the image index on
-the invoking image for the current team, for values smaller or equal
-distance to the initial team, it returns the image index on the ancestor team
-that has a distance of @var{DISTANCE} from the invoking team. If
-@var{DISTANCE} is larger than the distance to the initial team, the image
-index of the initial team is returned. Otherwise when the @var{COARRAY} is
+@var{TEAM} is not present, its value is the image index on the invoking image
+for the current team; if @var{TEAM} is present, returns the image index of
+the invoking image as given to the @code{FORM TEAM (..., NEW_INDEX=..)} call,
+or a implementation specific unique number, when @code{NEW_INDEX=} was absent
+from @code{FORM TEAM}.  Otherwise when the @var{COARRAY} is
 present, if @var{DIM} is not present, a rank-1 array with corank elements is
 returned, containing the cosubscripts for @var{COARRAY} specifying the invoking
-image. If @var{DIM} is present, a scalar is returned, with the value of
-the @var{DIM} element of @code{THIS_IMAGE(COARRAY)}.
+image (in the team when @var{TEAM} is present).  If @var{DIM} is present, a
+scalar is returned, with the value of the @var{DIM} element of
+@code{THIS_IMAGE(COARRAY)}.
 
 @item @emph{Example}:
 @smallexample
@@ -14626,13 +14625,12 @@ IF (THIS_IMAGE() == 1) THEN
 END IF
 
 ! Check whether the current image is the initial image
-IF (THIS_IMAGE(HUGE(1)) /= THIS_IMAGE())
+IF (THIS_IMAGE(GET_TEAM(INITIAL_TEAM)) /= THIS_IMAGE())
   error stop "something is rotten here"
 @end smallexample
 
 @item @emph{Standard}:
-Fortran 2008 and later. With @var{DISTANCE} argument, 
-Technical Specification (TS) 18508 or later
+Fortran 2008 and later.  With @var{TEAM} argument, Fortran 2018 or later
 
 @item @emph{See also}:
 @ref{NUM_IMAGES}, @*

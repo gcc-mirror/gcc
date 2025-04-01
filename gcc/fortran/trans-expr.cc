@@ -2579,10 +2579,8 @@ gfc_caf_get_image_index (stmtblock_t *block, gfc_expr *e, tree desc)
   gcc_assert (ref != NULL);
 
   if (ref->u.ar.dimen_type[ref->u.ar.dimen] == DIMEN_THIS_IMAGE)
-    {
-      return build_call_expr_loc (input_location, gfor_fndecl_caf_this_image, 1,
-				  integer_zero_node);
-    }
+    return build_call_expr_loc (input_location, gfor_fndecl_caf_this_image, 1,
+				null_pointer_node);
 
   img_idx = build_zero_cst (gfc_array_index_type);
   extent = build_one_cst (gfc_array_index_type);

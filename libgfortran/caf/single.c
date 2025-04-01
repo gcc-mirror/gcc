@@ -54,6 +54,7 @@ struct caf_single_team
 {
   struct caf_single_team *parent;
   int team_no;
+  int index;
   struct coarray_allocated
   {
     struct coarray_allocated *next;
@@ -194,13 +195,11 @@ _gfortran_caf_finalize (void)
   caf_teams_formed = NULL;
 }
 
-
 int
-_gfortran_caf_this_image (int distance __attribute__ ((unused)))
+_gfortran_caf_this_image (caf_team_t team)
 {
-  return 1;
+  return team ? ((caf_single_team_t) team)->index : 1;
 }
-
 
 int
 _gfortran_caf_num_images (int distance __attribute__ ((unused)),
@@ -1006,9 +1005,8 @@ void _gfortran_caf_random_init (bool repeatable, bool image_distinct)
 }
 
 void
-_gfortran_caf_form_team (int team_no, caf_team_t *team,
-			 int *new_index __attribute__ ((unused)), int *stat,
-			 char *errmsg __attribute__ ((unused)),
+_gfortran_caf_form_team (int team_no, caf_team_t *team, int *new_index,
+			 int *stat, char *errmsg __attribute__ ((unused)),
 			 size_t errmsg_len __attribute__ ((unused)))
 {
   const char alloc_fail_msg[] = "Failed to allocate team";
@@ -1025,6 +1023,7 @@ _gfortran_caf_form_team (int team_no, caf_team_t *team,
   t = *((caf_single_team_t *) team);
   t->parent = caf_teams_formed;
   t->team_no = team_no;
+  t->index = new_index ? *new_index : 1;
   t->allocated = NULL;
   caf_teams_formed = t;
 }

@@ -9069,14 +9069,13 @@ gfc_simplify_image_status (gfc_expr *image, gfc_expr *team ATTRIBUTE_UNUSED)
 
 gfc_expr *
 gfc_simplify_this_image (gfc_expr *coarray, gfc_expr *dim,
-			 gfc_expr *distance ATTRIBUTE_UNUSED)
+			 gfc_expr *team ATTRIBUTE_UNUSED)
 {
   if (flag_coarray != GFC_FCOARRAY_SINGLE)
     return NULL;
 
-  /* If no coarray argument has been passed or when the first argument
-     is actually a distance argument.  */
-  if (coarray == NULL || !gfc_is_coarray (coarray))
+  /* If no coarray argument has been passed.  */
+  if (coarray == NULL)
     {
       gfc_expr *result;
       /* FIXME: gfc_current_locus is wrong.  */

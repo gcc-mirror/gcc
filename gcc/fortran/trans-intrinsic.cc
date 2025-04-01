@@ -1818,34 +1818,31 @@ static void
 trans_this_image (gfc_se * se, gfc_expr *expr)
 {
   stmtblock_t loop;
-  tree type, desc, dim_arg, cond, tmp, m, loop_var, exit_label, min_var,
-       lbound, ubound, extent, ml;
+  tree type, desc, dim_arg, cond, tmp, m, loop_var, exit_label, min_var, lbound,
+    ubound, extent, ml, team;
   gfc_se argse;
   int rank, corank;
-  gfc_expr *distance = expr->value.function.actual->next->next->expr;
-
-  if (expr->value.function.actual->expr
-      && !gfc_is_coarray (expr->value.function.actual->expr))
-    distance = expr->value.function.actual->expr;
 
   /* The case -fcoarray=single is handled elsewhere.  */
   gcc_assert (flag_coarray != GFC_FCOARRAY_SINGLE);
 
-  /* Argument-free version: THIS_IMAGE().  */
-  if (distance || expr->value.function.actual->expr == NULL)
+  /* Translate team, if present.  */
+  if (expr->value.function.actual->next->next->expr)
     {
-      if (distance)
-	{
-	  gfc_init_se (&argse, NULL);
-	  gfc_conv_expr_val (&argse, distance);
-	  gfc_add_block_to_block (&se->pre, &argse.pre);
-	  gfc_add_block_to_block (&se->post, &argse.post);
-	  tmp = fold_convert (integer_type_node, argse.expr);
-	}
-      else
-	tmp = integer_zero_node;
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_val (&argse, expr->value.function.actual->next->next->expr);
+      gfc_add_block_to_block (&se->pre, &argse.pre);
+      gfc_add_block_to_block (&se->post, &argse.post);
+      team = fold_convert (pvoid_type_node, argse.expr);
+    }
+  else
+    team = null_pointer_node;
+
+  /* Argument-free version: THIS_IMAGE().  */
+  if (expr->value.function.actual->expr == NULL)
+    {
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_this_image, 1,
-				 tmp);
+				 team);
       se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind),
 			       tmp);
       return;
@@ -1940,8 +1937,8 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
   */
 
   /* this_image () - 1.  */
-  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_this_image, 1,
-			     integer_zero_node);
+  tmp
+    = build_call_expr_loc (input_location, gfor_fndecl_caf_this_image, 1, team);
   tmp = fold_build2_loc (input_location, MINUS_EXPR, type,
 			 fold_convert (type, tmp), build_int_cst (type, 1));
   if (corank == 1)

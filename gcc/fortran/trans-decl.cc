@@ -4043,9 +4043,9 @@ gfc_build_builtin_function_decls (void)
       gfor_fndecl_caf_finalize = gfc_build_library_function_decl (
 	get_identifier (PREFIX("caf_finalize")), void_type_node, 0);
 
-      gfor_fndecl_caf_this_image = gfc_build_library_function_decl (
-	get_identifier (PREFIX("caf_this_image")), integer_type_node,
-	1, integer_type_node);
+      gfor_fndecl_caf_this_image = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX ("caf_this_image")), ". r ", integer_type_node,
+	1, pvoid_type_node);
 
       gfor_fndecl_caf_num_images = gfc_build_library_function_decl (
 	get_identifier (PREFIX("caf_num_images")), integer_type_node,

@@ -6665,75 +6665,115 @@ gfc_check_team_number (gfc_expr *team)
 
 
 bool
-gfc_check_this_image (gfc_expr *coarray, gfc_expr *dim, gfc_expr *distance)
+gfc_check_this_image (gfc_actual_arglist *args)
 {
+  gfc_expr *coarray, *dim, *team, *cur;
+
+  coarray = dim = team = NULL;
+
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
       gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
       return false;
     }
 
-  if (coarray == NULL && dim == NULL && distance == NULL)
+  /* Shortcut when no arguments are given.  */
+  if (!args->expr && !args->next->expr && !args->next->next->expr)
     return true;
+
+  cur = args->expr;
+
+  if (cur)
+    {
+      gfc_push_suppress_errors ();
+      if (coarray_check (cur, 0))
+	coarray = cur;
+      else if (scalar_check (cur, 2) && team_type_check (cur, 2))
+	team = cur;
+      else
+	{
+	  gfc_pop_suppress_errors ();
+	  gfc_error ("First argument of %<this_image%> intrinsic at %L must be "
+		     "a coarray "
+		     "variable or an object of type %<team_type%> from the "
+		     "intrinsic module "
+		     "%<ISO_FORTRAN_ENV%>",
+		     &cur->where);
+	  return false;
+	}
+      gfc_pop_suppress_errors ();
+    }
+
+  cur = args->next->expr;
+  if (cur)
+    {
+      gfc_push_suppress_errors ();
+      if (dim_check (cur, 1, true) && cur->corank == 0)
+	dim = cur;
+      else if (scalar_check (cur, 2) && team_type_check (cur, 2))
+	{
+	  if (team)
+	    {
+	      gfc_pop_suppress_errors ();
+	      goto team_type_error;
+	    }
+	  team = cur;
+	}
+      else
+	{
+	  gfc_pop_suppress_errors ();
+	  gfc_error ("Second argument of %<this_image%> intrinsic at %L must "
+		     "be an %<INTEGER%> "
+		     "typed scalar or an object of type %<team_type%> from the "
+		     "intrinsic "
+		     "module %<ISO_FORTRAN_ENV%>",
+		     &cur->where);
+	  return false;
+	}
+      gfc_pop_suppress_errors ();
+    }
+
+  cur = args->next->next->expr;
+  if (cur)
+    {
+      if (team_type_check (cur, 2) && scalar_check (cur, 2))
+	{
+	  if (team)
+	    goto team_type_error;
+	  team = cur;
+	}
+      else
+	return false;
+    }
 
   if (dim != NULL && coarray == NULL)
     {
-      gfc_error ("DIM argument without COARRAY argument not allowed for "
-		 "THIS_IMAGE intrinsic at %L", &dim->where);
+      gfc_error ("%<dim%> argument without %<coarray%> argument not allowed "
+		 "for %<this_image%> intrinsic at %L",
+		 &dim->where);
       return false;
     }
 
-  if (distance && (coarray || dim))
-    {
-      gfc_error ("The DISTANCE argument may not be specified together with the "
-		 "COARRAY or DIM argument in intrinsic at %L",
-		 &distance->where);
-      return false;
-    }
-
-  /* Assume that we have "this_image (distance)".  */
-  if (coarray && !gfc_is_coarray (coarray) && coarray->ts.type == BT_INTEGER)
-    {
-      if (dim)
-	{
-	  gfc_error ("Unexpected DIM argument with noncoarray argument at %L",
-		     &coarray->where);
-	  return false;
-	}
-      distance = coarray;
-    }
-
-  if (distance)
-    {
-      if (!type_check (distance, 2, BT_INTEGER))
-	return false;
-
-      if (!nonnegative_check ("DISTANCE", distance))
-	return false;
-
-      if (!scalar_check (distance, 2))
-	return false;
-
-      if (!gfc_notify_std (GFC_STD_F2018, "DISTANCE= argument to "
-			   "THIS_IMAGE at %L", &distance->where))
-	return false;
-
-      return true;
-    }
-
-  if (!coarray_check (coarray, 0))
+  if (dim && !dim_corank_check (dim, coarray))
     return false;
 
-  if (dim != NULL)
-    {
-      if (!dim_check (dim, 1, false))
-       return false;
+  if (team
+      && !gfc_notify_std (GFC_STD_F2018,
+			  "%<team%> argument to %<this_image%> at %L",
+			  &team->where))
+    return false;
 
-      if (!dim_corank_check (dim, coarray))
-       return false;
-    }
-
+  args->expr = coarray;
+  args->next->expr = dim;
+  args->next->next->expr = team;
   return true;
+
+team_type_error:
+  gfc_error (
+    "At most one argument of type %<team_type%> from the intrinsic module "
+    "%<ISO_FORTRAN_ENV%> to %<this_image%> at %L allowed",
+    &cur->where);
+  return false;
 }
 
 /* Calculate the sizes for transfer, used by gfc_check_transfer and also

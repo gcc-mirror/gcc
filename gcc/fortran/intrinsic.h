@@ -234,7 +234,7 @@ bool gfc_check_signal_sub (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_sleep_sub (gfc_expr *);
 bool gfc_check_stat_sub (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_system_sub (gfc_expr *, gfc_expr *);
-bool gfc_check_this_image (gfc_expr *, gfc_expr *, gfc_expr *);
+bool gfc_check_this_image (gfc_actual_arglist *);
 bool gfc_check_ttynam_sub (gfc_expr *, gfc_expr *);
 bool gfc_check_umask_sub (gfc_expr *, gfc_expr *);
 bool gfc_check_unlink_sub (gfc_expr *, gfc_expr *);

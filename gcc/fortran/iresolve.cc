@@ -3271,20 +3271,33 @@ gfc_resolve_team_number (gfc_expr *f, gfc_expr *team)
 }
 
 void
-gfc_resolve_this_image (gfc_expr *f, gfc_expr *array, gfc_expr *dim,
-			gfc_expr *distance ATTRIBUTE_UNUSED)
+gfc_resolve_this_image (gfc_expr *f, gfc_expr *coarray, gfc_expr *dim,
+			gfc_expr *team)
 {
   static char this_image[] = "__this_image";
-  if (array && gfc_is_coarray (array))
-    resolve_bound (f, array, dim, NULL, "__this_image", true);
+  if (coarray && dim)
+    resolve_bound (f, coarray, dim, NULL, this_image, true);
+  else if (coarray)
+    {
+      f->ts.type = BT_INTEGER;
+      f->ts.kind = gfc_default_integer_kind;
+      f->value.function.name = this_image;
+      if (f->shape && f->rank != 1)
+	gfc_free_shape (&f->shape, f->rank);
+      f->rank = 1;
+      f->shape = gfc_get_shape (1);
+      mpz_init_set_ui (f->shape[0], coarray->corank);
+    }
   else
     {
       f->ts.type = BT_INTEGER;
       f->ts.kind = gfc_default_integer_kind;
       f->value.function.name = this_image;
     }
-}
 
+  if (team)
+    gfc_resolve_expr (team);
+}
 
 void
 gfc_resolve_time (gfc_expr *f)
