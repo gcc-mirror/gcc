@@ -2513,6 +2513,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	  else if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant ()
 		   || !TYPE_VECTOR_SUBPARTS
 			 (gs_info->offset_vectype).is_constant ()
+		   || VECTOR_BOOLEAN_TYPE_P (gs_info->offset_vectype)
 		   || !constant_multiple_p (TYPE_VECTOR_SUBPARTS
 					      (gs_info->offset_vectype),
 					    TYPE_VECTOR_SUBPARTS (vectype)))
