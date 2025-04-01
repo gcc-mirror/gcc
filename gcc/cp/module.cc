@@ -16679,6 +16679,15 @@ module_state::read_cluster (unsigned snum)
 #endif
 	  cfun->returns_struct = aggr;
 	  expand_or_defer_fn (decl);
+
+	  /* If we first see this function after at_eof, it doesn't get
+	     note_vague_linkage_fn from tentative_decl_linkage, so the loop in
+	     c_parse_final_cleanups won't consider it.  But with DECL_COMDAT we
+	     can just clear DECL_EXTERNAL and let cgraph decide.
+	     FIXME handle this outside module.cc after GCC 15.  */
+	  if (at_eof && DECL_COMDAT (decl) && DECL_EXTERNAL (decl)
+	      && DECL_NOT_REALLY_EXTERN (decl))
+	    DECL_EXTERNAL (decl) = false;
 	}
 
     }
@@ -19159,6 +19168,10 @@ post_load_processing ()
 
       gcc_checking_assert (DECL_MAYBE_IN_CHARGE_CDTOR_P (decl));
       expand_or_defer_fn (decl);
+      /* As in module_state::read_cluster.  */
+      if (at_eof && DECL_COMDAT (decl) && DECL_EXTERNAL (decl)
+	  && DECL_NOT_REALLY_EXTERN (decl))
+	DECL_EXTERNAL (decl) = false;
     }
 
   cfun = old_cfun;
