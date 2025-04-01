@@ -2702,9 +2702,9 @@ package body Atree is
       --  tail recursive step won't go past the end.
 
       declare
-         Cur_Field : Offset_Array_Index := Traversed_Offset_Array'First;
          Offsets : Traversed_Offset_Array renames
            Traversed_Fields (Nkind (Cur_Node));
+         Cur_Field : Offset_Array_Index := Traversed_Offset_Array'First;
 
       begin
          if Offsets (Traversed_Offset_Array'First) /= No_Field_Offset then
