@@ -51,7 +51,7 @@ test01(std::vector<T> ix)
     {
       ix = saved_ix;
 
-      int size = ix.size();
+      unsigned size = ix.size();
       auto buffer = std::unique_ptr<char[]>(new char[sizeof(T)*size]);
       std::span<T> rx((T *)buffer.get(), size);
 
