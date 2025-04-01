@@ -12943,7 +12943,7 @@ C and/or C++ standards, while others remain specific to GNU C.
 * Typeof::              @code{typeof}: referring to the type of an expression.
 * Offsetof::            Special syntax for @code{offsetof}.
 * Alignment::           Determining the alignment of a function, type or variable.
-* Incomplete Enums::    @code{enum foo;}, with details to follow.
+* Enum Extensions::     Forward declarations and specifying the underlying type.
 * Variadic Macros::     Macros with a variable number of arguments.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
 * Case Ranges::         `case 1 ... 9' and such.
@@ -13643,22 +13643,60 @@ If the operand of the @code{__alignof__} expression is a function,
 the expression evaluates to the alignment of the function which may
 be specified by attribute @code{aligned} (@pxref{Common Function Attributes}).
 
-@node Incomplete Enums
-@subsection Incomplete @code{enum} Types
+@node Enum Extensions
+@subsection Extensions to @code{enum} Type Declarations
+@anchor{Incomplete Enums}
+@cindex @code{enum} extensions
+@cindex base type of an @code{enum}
+@cindex underlying type of an @code{enum}
+@cindex forward declaration of an @code{enum}
+@cindex opaque @code{enum} types
+@cindex incomplete @code{enum} types
 
-You can define an @code{enum} tag without specifying its possible values.
-This results in an incomplete type, much like what you get if you write
-@code{struct foo} without describing the elements.  A later declaration
-that does specify the possible values completes the type.
+The C23 and C++11 standards added new syntax to specify the underlying
+type of an @code{enum} type.  For example,
 
+@smallexample
+enum pet : unsigned char @{ CAT, DOG, ROCK @};
+@end smallexample
+
+In GCC, this feature is supported as an extension in all older
+dialects of C and C++ as well.  For C++ dialects before C++11, use
+@option{-Wno-c++11-extensions} to silence the associated warnings.
+
+You can also forward-declare an @code{enum} type, without specifying
+its possible values.  The enumerators are supplied in a later
+redeclaration of the type, which must match the underlying type of the
+first declaration.
+
+@smallexample
+enum pet : unsigned char;
+static enum pet my_pet;
+...
+enum pet : unsigned char @{ CAT, DOG, ROCK @};
+@end smallexample
+
+Forward declaration of @code{enum} types with an explicit underlying
+type is also a feature of C++11 that is supported as an extension by
+GCC for all C dialects.  However, it's not available in C++ dialects
+prior to C++11.
+
+The C++ standard refers to a forward declaration of an @code{enum}
+with an explicit underlying type as an @dfn{opaque type}.  It is not
+considered an incomplete type, since its size is known.  That means
+you can declare variables or allocate storage using the type before
+the redeclaration, not just use pointers of that type.
+
+GCC has also traditionally supported forward declarations of
+@code{enum} types that don't include an explicit underlying type
+specification.  This results in an incomplete type, much like what you
+get if you write @code{struct foo} without describing the elements.
 You cannot allocate variables or storage using the type while it is
 incomplete.  However, you can work with pointers to that type.
 
-This extension may not be very useful, but it makes the handling of
-@code{enum} more consistent with the way @code{struct} and @code{union}
-are handled.
-
-This extension is not supported by GNU C++.
+Forward-declaring an incomplete enum type without an explicit
+underlying type is supported as an extension in all GNU C dialects,
+but is not supported at all in GNU C++.
 
 @node Variadic Macros
 @subsection Macros with a Variable Number of Arguments.
