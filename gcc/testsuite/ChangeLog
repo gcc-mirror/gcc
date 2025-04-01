@@ -1,3 +1,11 @@
+2025-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2025-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/117002
+	* gdc.dg/torture/pr117002.d: New test.
+
 2025-03-25  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
