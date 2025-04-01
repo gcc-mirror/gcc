@@ -12944,6 +12944,7 @@ C and/or C++ standards, while others remain specific to GNU C.
 * Offsetof::            Special syntax for @code{offsetof}.
 * Alignment::           Determining the alignment of a function, type or variable.
 * Enum Extensions::     Forward declarations and specifying the underlying type.
+* Boolean Type::	Support for the @code{_Bool} keyword.
 * Variadic Macros::     Macros with a variable number of arguments.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
 * Case Ranges::         `case 1 ... 9' and such.
@@ -13697,6 +13698,17 @@ incomplete.  However, you can work with pointers to that type.
 Forward-declaring an incomplete enum type without an explicit
 underlying type is supported as an extension in all GNU C dialects,
 but is not supported at all in GNU C++.
+
+@node Boolean Type
+@subsection Support for the @code{_Bool} Type
+@cindex boolean type
+@cindex @code{_Bool} keyword
+
+The C99 standard added @code{_Bool} as a C language keyword naming the
+boolean type.  As an extension, GNU C also recognizes @code{_Bool} in
+C90 mode as well as with @option{-std=c99} and later.
+
+GNU C++ does not support the @code{_Bool} keyword.
 
 @node Variadic Macros
 @subsection Macros with a Variable Number of Arguments.
