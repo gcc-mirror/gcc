@@ -291,7 +291,7 @@ protected:
 class ReferenceType : public TypeNoBounds
 {
   // bool has_lifetime; // TODO: handle in lifetime or something?
-  Lifetime lifetime;
+  tl::optional<Lifetime> lifetime;
 
   Mutability mut;
   std::unique_ptr<Type> type;
@@ -301,12 +301,12 @@ public:
   bool is_mut () const { return mut == Mutability::Mut; }
 
   // Returns whether the reference has a lifetime.
-  bool has_lifetime () const { return !lifetime.is_error (); }
+  bool has_lifetime () const { return lifetime.has_value (); }
 
   // Constructor
   ReferenceType (Analysis::NodeMapping mappings, Mutability mut,
 		 std::unique_ptr<Type> type_no_bounds, location_t locus,
-		 Lifetime lifetime);
+		 tl::optional<Lifetime> lifetime);
 
   // Copy constructor with custom clone method
   ReferenceType (ReferenceType const &other);
@@ -323,7 +323,8 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
 
-  Lifetime &get_lifetime () { return lifetime; }
+  Lifetime &get_lifetime () { return lifetime.value (); }
+  const Lifetime &get_lifetime () const { return lifetime.value (); }
 
   Mutability get_mut () const { return mut; }
 

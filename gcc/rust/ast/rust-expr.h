@@ -2844,7 +2844,7 @@ protected:
 class ContinueExpr : public ExprWithoutBlock
 {
   std::vector<Attribute> outer_attrs;
-  Lifetime label;
+  tl::optional<Lifetime> label;
   location_t locus;
 
   // TODO: find another way to store this to save memory?
@@ -2854,11 +2854,11 @@ public:
   std::string as_string () const override;
 
   // Returns true if the continue expr has a label.
-  bool has_label () const { return !label.is_error (); }
+  bool has_label () const { return label.has_value (); }
 
   // Constructor for a ContinueExpr with a label.
-  ContinueExpr (Lifetime label, std::vector<Attribute> outer_attribs,
-		location_t locus)
+  ContinueExpr (tl::optional<Lifetime> label,
+		std::vector<Attribute> outer_attribs, location_t locus)
     : outer_attrs (std::move (outer_attribs)), label (std::move (label)),
       locus (locus)
   {}
@@ -2879,7 +2879,8 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
-  Lifetime &get_label () { return label; }
+  Lifetime &get_label () { return label.value (); }
+  const Lifetime &get_label () const { return label.value (); }
 
   Expr::Kind get_expr_kind () const override { return Expr::Kind::Continue; }
 
@@ -2915,7 +2916,8 @@ public:
   bool has_break_expr () const { return break_expr != nullptr; }
 
   // Constructor for a break expression
-  BreakExpr (LoopLabel break_label, std::unique_ptr<Expr> expr_in_break,
+  BreakExpr (tl::optional<LoopLabel> break_label,
+	     std::unique_ptr<Expr> expr_in_break,
 	     std::vector<Attribute> outer_attribs, location_t locus)
     : outer_attrs (std::move (outer_attribs)), label (std::move (break_label)),
       break_expr (std::move (expr_in_break)), locus (locus)

@@ -242,7 +242,7 @@ TypeCheckImplItem::visit (HIR::Function &function)
       // add the synthetic self param at the front, this is a placeholder for
       // compilation to know parameter names. The types are ignored but we
       // reuse the HIR identifier pattern which requires it
-      HIR::SelfParam &self_param = function.get_self_param ();
+      HIR::SelfParam &self_param = function.get_self_param_unchecked ();
       // FIXME: which location should be used for Rust::Identifier for `self`?
       std::unique_ptr<HIR::Pattern> self_pattern
 	= std::make_unique<HIR::IdentifierPattern> (
@@ -267,13 +267,21 @@ TypeCheckImplItem::visit (HIR::Function &function)
 	      break;
 
 	      case HIR::SelfParam::IMM_REF: {
-		auto region = context->lookup_and_resolve_lifetime (
-		  self_param.get_lifetime ());
-		if (!region.has_value ())
+		tl::optional<TyTy::Region> region;
+		if (self_param.has_lifetime ())
 		  {
-		    rust_inform (self_param.get_locus (),
-				 "failed to resolve lifetime");
-		    region = TyTy::Region::make_anonymous (); // FIXME
+		    region = context->lookup_and_resolve_lifetime (
+		      self_param.get_lifetime ());
+		    if (!region.has_value ())
+		      {
+			rust_inform (self_param.get_locus (),
+				     "failed to resolve lifetime");
+			return;
+		      }
+		  }
+		else
+		  {
+		    region = TyTy::Region::make_anonymous ();
 		  }
 		self_type = new TyTy::ReferenceType (
 		  self_param.get_mappings ().get_hirid (),
@@ -283,13 +291,21 @@ TypeCheckImplItem::visit (HIR::Function &function)
 	      break;
 
 	      case HIR::SelfParam::MUT_REF: {
-		auto region = context->lookup_and_resolve_lifetime (
-		  self_param.get_lifetime ());
-		if (!region.has_value ())
+		tl::optional<TyTy::Region> region;
+		if (self_param.has_lifetime ())
 		  {
-		    rust_error_at (self_param.get_locus (),
-				   "failed to resolve lifetime");
-		    return;
+		    region = context->lookup_and_resolve_lifetime (
+		      self_param.get_lifetime ());
+		    if (!region.has_value ())
+		      {
+			rust_error_at (self_param.get_locus (),
+				       "failed to resolve lifetime");
+			return;
+		      }
+		  }
+		else
+		  {
+		    region = TyTy::Region::make_anonymous ();
 		  }
 		self_type = new TyTy::ReferenceType (
 		  self_param.get_mappings ().get_hirid (),

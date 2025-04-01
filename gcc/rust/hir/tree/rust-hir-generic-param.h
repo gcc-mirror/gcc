@@ -97,9 +97,6 @@ public:
 
   AST::AttrVec &get_outer_attrs () override { return outer_attrs; }
 
-  // Returns whether the lifetime param is in an error state.
-  bool is_error () const { return lifetime.is_error (); }
-
   // Constructor
   LifetimeParam (Analysis::NodeMapping mappings, Lifetime lifetime,
 		 location_t locus = UNDEF_LOCATION,

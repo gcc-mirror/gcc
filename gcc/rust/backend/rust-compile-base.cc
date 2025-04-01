@@ -666,7 +666,8 @@ get_abi (const AST::AttrVec &outer_attrs,
 
 tree
 HIRCompileBase::compile_function (
-  bool is_root_item, const std::string &fn_name, HIR::SelfParam &self_param,
+  bool is_root_item, const std::string &fn_name,
+  tl::optional<HIR::SelfParam> &self_param,
   std::vector<HIR::FunctionParam> &function_params,
   const HIR::FunctionQualifiers &qualifiers, HIR::Visibility &visibility,
   AST::AttrVec &outer_attrs, location_t locus, HIR::BlockExpr *function_body,
@@ -713,24 +714,24 @@ HIRCompileBase::compile_function (
   // setup the params
   TyTy::BaseType *tyret = fntype->get_return_type ();
   std::vector<Bvariable *> param_vars;
-  if (!self_param.is_error ())
+  if (self_param)
     {
       rust_assert (fntype->is_method ());
       TyTy::BaseType *self_tyty_lookup = fntype->get_self_type ();
 
       tree self_type = TyTyResolveCompile::compile (ctx, self_tyty_lookup);
       Bvariable *compiled_self_param
-	= CompileSelfParam::compile (ctx, fndecl, self_param, self_type,
-				     self_param.get_locus ());
+	= CompileSelfParam::compile (ctx, fndecl, self_param.value (),
+				     self_type, self_param->get_locus ());
 
       param_vars.push_back (compiled_self_param);
-      ctx->insert_var_decl (self_param.get_mappings ().get_hirid (),
+      ctx->insert_var_decl (self_param->get_mappings ().get_hirid (),
 			    compiled_self_param);
     }
 
   // offset from + 1 for the TyTy::FnType being used when this is a method to
   // skip over Self on the FnType
-  bool is_method = !self_param.is_error ();
+  bool is_method = self_param.has_value ();
   size_t i = is_method ? 1 : 0;
   for (auto &referenced_param : function_params)
     {

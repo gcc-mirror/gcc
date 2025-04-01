@@ -597,8 +597,10 @@ ASTLoweringExpr::visit (AST::ForLoopExpr &expr)
 void
 ASTLoweringExpr::visit (AST::BreakExpr &expr)
 {
-  HIR::Lifetime break_label
-    = lower_lifetime (expr.get_label ().get_lifetime ());
+  tl::optional<HIR::Lifetime> break_label = tl::nullopt;
+  if (expr.has_label ())
+    break_label = lower_lifetime (expr.get_label ().get_lifetime ());
+
   HIR::Expr *break_expr
     = expr.has_break_expr ()
 	? ASTLoweringExpr::translate (expr.get_break_expr ())
@@ -618,7 +620,9 @@ ASTLoweringExpr::visit (AST::BreakExpr &expr)
 void
 ASTLoweringExpr::visit (AST::ContinueExpr &expr)
 {
-  HIR::Lifetime break_label = lower_lifetime (expr.get_label ());
+  tl::optional<HIR::Lifetime> break_label;
+  if (expr.has_label ())
+    break_label = lower_lifetime (expr.get_label ());
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),

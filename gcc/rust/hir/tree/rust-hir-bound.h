@@ -44,18 +44,6 @@ public:
   {}
 
   // Returns true if the lifetime is in an error state.
-  bool is_error () const
-  {
-    return lifetime_type == AST::Lifetime::LifetimeType::NAMED
-	   && lifetime_name.empty ();
-  }
-
-  static Lifetime error ()
-  {
-    return Lifetime (Analysis::NodeMapping::get_error (),
-		     AST::Lifetime::LifetimeType::NAMED, "", UNDEF_LOCATION);
-  }
-
   std::string as_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;

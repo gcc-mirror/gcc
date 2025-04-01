@@ -123,7 +123,8 @@ TypeBoundWhereClauseItem::get_type_param_bounds ()
 }
 
 SelfParam::SelfParam (Analysis::NodeMapping mappings,
-		      ImplicitSelfKind self_kind, Lifetime lifetime, Type *type)
+		      ImplicitSelfKind self_kind,
+		      tl::optional<Lifetime> lifetime, Type *type)
   : self_kind (self_kind), lifetime (std::move (lifetime)), type (type),
     mappings (mappings)
 {}
@@ -131,13 +132,13 @@ SelfParam::SelfParam (Analysis::NodeMapping mappings,
 SelfParam::SelfParam (Analysis::NodeMapping mappings,
 		      std::unique_ptr<Type> type, bool is_mut, location_t locus)
   : self_kind (is_mut ? ImplicitSelfKind::MUT : ImplicitSelfKind::IMM),
-    lifetime (
-      Lifetime (mappings, AST::Lifetime::LifetimeType::NAMED, "", locus)),
-    type (std::move (type)), locus (locus), mappings (mappings)
+    lifetime (tl::nullopt), type (std::move (type)), locus (locus),
+    mappings (mappings)
 {}
 
-SelfParam::SelfParam (Analysis::NodeMapping mappings, Lifetime lifetime,
-		      bool is_mut, location_t locus)
+SelfParam::SelfParam (Analysis::NodeMapping mappings,
+		      tl::optional<Lifetime> lifetime, bool is_mut,
+		      location_t locus)
   : self_kind (is_mut ? ImplicitSelfKind::MUT_REF : ImplicitSelfKind::IMM_REF),
     lifetime (std::move (lifetime)), locus (locus), mappings (mappings)
 {}
@@ -263,7 +264,7 @@ Function::Function (Analysis::NodeMapping mappings, Identifier function_name,
 		    std::vector<FunctionParam> function_params,
 		    std::unique_ptr<Type> return_type, WhereClause where_clause,
 		    std::unique_ptr<BlockExpr> function_body, Visibility vis,
-		    AST::AttrVec outer_attrs, SelfParam self,
+		    AST::AttrVec outer_attrs, tl::optional<SelfParam> self,
 		    Defaultness defaultness, location_t locus)
   : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
     qualifiers (std::move (qualifiers)),
@@ -612,9 +613,9 @@ StaticItem::operator= (StaticItem const &other)
 
 TraitFunctionDecl::TraitFunctionDecl (
   Identifier function_name, FunctionQualifiers qualifiers,
-  std::vector<std::unique_ptr<GenericParam>> generic_params, SelfParam self,
-  std::vector<FunctionParam> function_params, std::unique_ptr<Type> return_type,
-  WhereClause where_clause)
+  std::vector<std::unique_ptr<GenericParam>> generic_params,
+  tl::optional<SelfParam> self, std::vector<FunctionParam> function_params,
+  std::unique_ptr<Type> return_type, WhereClause where_clause)
   : qualifiers (std::move (qualifiers)),
     function_name (std::move (function_name)),
     generic_params (std::move (generic_params)),

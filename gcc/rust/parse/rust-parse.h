@@ -25,6 +25,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "expected.h"
 
 namespace Rust {
+
+class ParseLifetimeParamError
+{
+};
+
+class ParseLifetimeError
+{
+};
+enum ParseSelfError
+{
+  SELF_PTR,
+  PARSING,
+  NOT_SELF,
+};
+
 /* HACK: used to resolve the expression-or-statement problem at the end of a
  * block by allowing either to be returned (technically). Tagged union would
  * probably take up the same amount of space. */
@@ -95,12 +110,6 @@ struct ParseRestrictions
   bool allow_close_after_expr_stmt = false;
 };
 
-enum ParseSelfError
-{
-  SELF_PTR,
-  PARSING,
-  NOT_SELF,
-};
 // Parser implementation for gccrs.
 // TODO: if updated to C++20, ManagedTokenSource would be useful as a concept
 template <typename ManagedTokenSource> class Parser
@@ -277,7 +286,8 @@ private:
     ParseFunction parsing_function, EndTokenPred is_end_token,
     std::string error_msg = "failed to parse generic param in generic params")
     -> std::vector<decltype (parsing_function ())>;
-  AST::LifetimeParam parse_lifetime_param ();
+  tl::expected<AST::LifetimeParam, ParseLifetimeParamError>
+  parse_lifetime_param ();
   std::vector<std::unique_ptr<AST::TypeParam>> parse_type_params ();
   template <typename EndTokenPred>
   std::vector<std::unique_ptr<AST::TypeParam>>
@@ -306,7 +316,8 @@ private:
   std::vector<AST::Lifetime> parse_lifetime_bounds ();
   template <typename EndTokenPred>
   std::vector<AST::Lifetime> parse_lifetime_bounds (EndTokenPred is_end_token);
-  AST::Lifetime parse_lifetime (bool allow_elided);
+  tl::expected<AST::Lifetime, ParseLifetimeError>
+  parse_lifetime (bool allow_elided);
   AST::Lifetime lifetime_from_token (const_TokenPtr tok);
   std::unique_ptr<AST::ExternalTypeItem>
   parse_external_type_item (AST::Visibility vis, AST::AttrVec outer_attrs);

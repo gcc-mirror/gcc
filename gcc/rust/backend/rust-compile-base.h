@@ -104,7 +104,7 @@ protected:
 			      location_t expr_locus);
 
   tree compile_function (bool is_root_item, const std::string &fn_name,
-			 HIR::SelfParam &self_param,
+			 tl::optional<HIR::SelfParam> &self_param,
 			 std::vector<HIR::FunctionParam> &function_params,
 			 const HIR::FunctionQualifiers &qualifiers,
 			 HIR::Visibility &visibility, AST::AttrVec &outer_attrs,

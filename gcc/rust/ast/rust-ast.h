@@ -1587,17 +1587,9 @@ public:
       lifetime_name (std::move (name)), locus (locus)
   {}
 
-  // Creates an "error" lifetime.
-  static Lifetime error () { return Lifetime (NAMED, ""); }
-
   static Lifetime elided () { return Lifetime (WILDCARD, ""); }
 
   // Returns true if the lifetime is in an error state.
-  bool is_error () const
-  {
-    return lifetime_type == NAMED && lifetime_name.empty ();
-  }
-
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
@@ -1687,15 +1679,6 @@ public:
 
   // Returns whether the lifetime param has an outer attribute.
   bool has_outer_attribute () const { return !outer_attrs.empty (); }
-
-  // Creates an error state lifetime param.
-  static LifetimeParam create_error ()
-  {
-    return LifetimeParam (Lifetime::error (), {}, {}, UNDEF_LOCATION);
-  }
-
-  // Returns whether the lifetime param is in an error state.
-  bool is_error () const { return lifetime.is_error (); }
 
   // Constructor
   LifetimeParam (Lifetime lifetime, std::vector<Lifetime> lifetime_bounds,

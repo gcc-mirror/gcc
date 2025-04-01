@@ -791,13 +791,15 @@ BlockExpr::operator= (BlockExpr const &other)
 }
 
 ContinueExpr::ContinueExpr (Analysis::NodeMapping mappings, location_t locus,
-			    Lifetime label, AST::AttrVec outer_attribs)
+			    tl::optional<Lifetime> label,
+			    AST::AttrVec outer_attribs)
   : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
     label (std::move (label)), locus (locus)
 {}
 
 BreakExpr::BreakExpr (Analysis::NodeMapping mappings, location_t locus,
-		      Lifetime break_label, std::unique_ptr<Expr> expr_in_break,
+		      tl::optional<Lifetime> break_label,
+		      std::unique_ptr<Expr> expr_in_break,
 		      AST::AttrVec outer_attribs)
   : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
     label (std::move (break_label)), break_expr (std::move (expr_in_break)),
