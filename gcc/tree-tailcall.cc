@@ -676,19 +676,17 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	         have a copyable type and the two arguments must have reasonably
 	         equivalent types.  The latter requirement could be relaxed if
 	         we emitted a suitable type conversion statement.  */
-	      if (!is_gimple_reg_type (TREE_TYPE (param))
+	      if (TREE_ADDRESSABLE (TREE_TYPE (param))
 		  || !useless_type_conversion_p (TREE_TYPE (param),
 					         TREE_TYPE (arg)))
 		break;
 
-	      /* The parameter should be a real operand, so that phi node
-		 created for it at the start of the function has the meaning
-		 of copying the value.  This test implies is_gimple_reg_type
-		 from the previous condition, however this one could be
-		 relaxed by being more careful with copying the new value
-		 of the parameter (emitting appropriate GIMPLE_ASSIGN and
-		 updating the virtual operands).  */
-	      if (!is_gimple_reg (param))
+	      if (is_gimple_reg_type (TREE_TYPE (param))
+		  ? !is_gimple_reg (param)
+		  : (!is_gimple_variable (param)
+		     || TREE_THIS_VOLATILE (param)
+		     || may_be_aliased (param)
+		     || !gimple_call_must_tail_p (call)))
 		break;
 	    }
 	}
@@ -938,9 +936,9 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	   param = DECL_CHAIN (param), idx++)
 	{
 	  tree ddef, arg = gimple_call_arg (call, idx);
-	  if (is_gimple_reg (param)
-	      && (ddef = ssa_default_def (cfun, param))
-	      && (arg != ddef))
+	  if (!is_gimple_reg (param)
+	      || ((ddef = ssa_default_def (cfun, param))
+		  && arg != ddef))
 	    bitmap_set_bit (tailr_arg_needs_copy, idx);
 	}
     }
@@ -1216,6 +1214,7 @@ eliminate_tail_call (struct tailcall *t, class loop *&new_loop)
 
   /* Add phi node entries for arguments.  The ordering of the phi nodes should
      be the same as the ordering of the arguments.  */
+  auto_vec<tree> copies;
   for (param = DECL_ARGUMENTS (current_function_decl),
 	 idx = 0, gpi = gsi_start_phis (first);
        param;
@@ -1224,12 +1223,46 @@ eliminate_tail_call (struct tailcall *t, class loop *&new_loop)
       if (!bitmap_bit_p (tailr_arg_needs_copy, idx))
 	continue;
 
+      if (!is_gimple_reg_type (TREE_TYPE (param)))
+	{
+	  if (param == gimple_call_arg (stmt, idx))
+	    continue;
+	  /* First check if param isn't used by any of the following
+	     call arguments.  If it is, we need to copy first to
+	     a temporary and only after doing all the assignments copy it
+	     to param.  */
+	  size_t idx2 = idx + 1;
+	  tree param2 = DECL_CHAIN (param);
+	  for (; param2; param2 = DECL_CHAIN (param2), idx2++)
+	    if (!is_gimple_reg_type (TREE_TYPE (param)))
+	      {
+		tree base = get_base_address (gimple_call_arg (stmt, idx2));
+		if (base == param)
+		  break;
+	      }
+	  tree tmp = param;
+	  if (param2)
+	    {
+	      tmp = create_tmp_var (TREE_TYPE (param));
+	      copies.safe_push (param);
+	      copies.safe_push (tmp);
+	    }
+	  gimple *g = gimple_build_assign (tmp, gimple_call_arg (stmt, idx));
+	  gsi_insert_before (&t->call_gsi, g, GSI_SAME_STMT);
+	  continue;
+	}
+
       arg = gimple_call_arg (stmt, idx);
       phi = gpi.phi ();
       gcc_assert (param == SSA_NAME_VAR (PHI_RESULT (phi)));
 
       add_phi_arg (phi, arg, e, gimple_location (stmt));
       gsi_next (&gpi);
+    }
+  for (unsigned i = 0; i < copies.length (); i += 2)
+    {
+      gimple *g = gimple_build_assign (copies[i], copies[i + 1]);
+      gsi_insert_before (&t->call_gsi, g, GSI_SAME_STMT);
     }
 
   /* Update the values of accumulators.  */
@@ -1390,8 +1423,8 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls, bool only_musttail,
 	     or if there are existing degenerate PHI nodes.  */
 	  if (!single_pred_p (first)
 	      || !gimple_seq_empty_p (phi_nodes (first)))
-	    first =
-	      split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+	    first
+	      = split_edge (single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
 
 	  /* Copy the args if needed.  */
 	  unsigned idx;
@@ -1400,6 +1433,8 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls, bool only_musttail,
 	       param = DECL_CHAIN (param), idx++)
 	    if (bitmap_bit_p (tailr_arg_needs_copy, idx))
 	      {
+		if (!is_gimple_reg_type (TREE_TYPE (param)))
+		  continue;
 		tree name = ssa_default_def (cfun, param);
 		tree new_name = make_ssa_name (param, SSA_NAME_DEF_STMT (name));
 		gphi *phi;
