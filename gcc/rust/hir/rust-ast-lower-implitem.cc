@@ -22,6 +22,7 @@
 #include "rust-ast-lower-expr.h"
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-block.h"
+#include "rust-hir-item.h"
 #include "rust-item.h"
 
 namespace Rust {
@@ -140,6 +141,9 @@ ASTLowerImplItem::visit (AST::Function &function)
 	ASTLoweringType::translate (function.get_return_type ()))
 				  : nullptr;
 
+  Defaultness defaultness
+    = function.is_default () ? Defaultness::Default : Defaultness::Final;
+
   std::vector<HIR::FunctionParam> function_params;
   for (auto &p : function.get_function_params ())
     {
@@ -183,7 +187,7 @@ ASTLowerImplItem::visit (AST::Function &function)
 			 std::move (function_params), std::move (return_type),
 			 std::move (where_clause), std::move (function_body),
 			 std::move (vis), function.get_outer_attrs (),
-			 std::move (self_param), locus);
+			 std::move (self_param), defaultness, locus);
 
   if (!fn->get_self_param ().is_error ())
     {
