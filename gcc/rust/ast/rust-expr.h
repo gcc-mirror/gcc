@@ -31,11 +31,6 @@ public:
   {}
 
   // Returns whether the LoopLabel is in an error state.
-  bool is_error () const { return label.is_error (); }
-
-  // Creates an error state LoopLabel.
-  static LoopLabel error () { return LoopLabel (Lifetime::error ()); }
-
   location_t get_locus () const { return locus; }
 
   Lifetime &get_lifetime () { return label; }
