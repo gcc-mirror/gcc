@@ -721,12 +721,8 @@ Target Mask(ISA_SSE4_2) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation.
 
 msse4
-Target RejectNegative Mask(ISA_SSE4_2) Var(ix86_isa_flags) Save
+Target Mask(ISA_SSE4_2) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions and code generation.
-
-mno-sse4
-Target RejectNegative InverseMask(ISA_SSE4_1) Var(ix86_isa_flags) Save
-Do not support SSE4.1 and SSE4.2 built-in functions and code generation.
 
 msse5
 Target Undocumented Alias(mavx) Warn(%<-msse5%> was removed)

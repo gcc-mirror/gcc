@@ -1271,13 +1271,6 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
 	    }
 	}
 
-      /* Fixup -msse4 which is RejectNegative to -mno-sse4 when negated.  */
-      if (opt == OPT_msse4 && !opt_set_p)
-	{
-	  opt = OPT_mno_sse4;
-	  opt_set_p = true;
-	}
-
       /* Process the option.  */
       if (opt == N_OPTS)
 	{
