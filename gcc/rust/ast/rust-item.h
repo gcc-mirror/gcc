@@ -1330,7 +1330,7 @@ class Function : public VisItem, public AssociatedItem, public ExternalItem
   WhereClause where_clause;
   tl::optional<std::unique_ptr<BlockExpr>> function_body;
   location_t locus;
-  bool is_default;
+  bool has_default;
   bool is_external_function;
 
 public:
@@ -1355,6 +1355,8 @@ public:
 
   bool has_body () const { return function_body.has_value (); }
 
+  bool is_default () const { return has_default; }
+
   // Mega-constructor with all possible fields
   Function (Identifier function_name, FunctionQualifiers qualifiers,
 	    std::vector<std::unique_ptr<GenericParam>> generic_params,
@@ -1362,7 +1364,7 @@ public:
 	    std::unique_ptr<Type> return_type, WhereClause where_clause,
 	    tl::optional<std::unique_ptr<BlockExpr>> function_body,
 	    Visibility vis, std::vector<Attribute> outer_attrs,
-	    location_t locus, bool is_default = false,
+	    location_t locus, bool has_default = false,
 	    bool is_external_function = false)
     : VisItem (std::move (vis), std::move (outer_attrs)),
       ExternalItem (Stmt::node_id), qualifiers (std::move (qualifiers)),
@@ -1372,7 +1374,7 @@ public:
       return_type (std::move (return_type)),
       where_clause (std::move (where_clause)),
       function_body (std::move (function_body)), locus (locus),
-      is_default (is_default), is_external_function (is_external_function)
+      has_default (has_default), is_external_function (is_external_function)
   {}
 
   // TODO: add constructor with less fields

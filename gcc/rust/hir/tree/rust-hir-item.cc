@@ -263,7 +263,8 @@ Function::Function (Analysis::NodeMapping mappings, Identifier function_name,
 		    std::vector<FunctionParam> function_params,
 		    std::unique_ptr<Type> return_type, WhereClause where_clause,
 		    std::unique_ptr<BlockExpr> function_body, Visibility vis,
-		    AST::AttrVec outer_attrs, SelfParam self, location_t locus)
+		    AST::AttrVec outer_attrs, SelfParam self,
+		    Defaultness defaultness, location_t locus)
   : VisItem (std::move (mappings), std::move (vis), std::move (outer_attrs)),
     qualifiers (std::move (qualifiers)),
     function_name (std::move (function_name)),
@@ -272,7 +273,7 @@ Function::Function (Analysis::NodeMapping mappings, Identifier function_name,
     return_type (std::move (return_type)),
     where_clause (std::move (where_clause)),
     function_body (std::move (function_body)), self (std::move (self)),
-    locus (locus)
+    locus (locus), defaultness (defaultness)
 {}
 
 Function::Function (Function const &other)
@@ -280,7 +281,7 @@ Function::Function (Function const &other)
     function_name (other.function_name),
     function_params (other.function_params), where_clause (other.where_clause),
     function_body (other.function_body->clone_block_expr ()), self (other.self),
-    locus (other.locus)
+    locus (other.locus), defaultness (other.defaultness)
 {
   // guard to prevent null dereference (always required)
   if (other.return_type != nullptr)
@@ -311,6 +312,8 @@ Function::operator= (Function const &other)
   function_body = other.function_body->clone_block_expr ();
   locus = other.locus;
   self = other.self;
+
+  defaultness = other.defaultness;
 
   generic_params.reserve (other.generic_params.size ());
   for (const auto &e : other.generic_params)

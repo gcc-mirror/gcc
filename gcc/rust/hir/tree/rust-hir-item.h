@@ -945,6 +945,12 @@ protected:
 
 class LetStmt;
 
+enum class Defaultness
+{
+  Default,
+  Final,
+};
+
 // Rust function declaration HIR node
 class Function : public VisItem, public ImplItem
 {
@@ -957,6 +963,11 @@ class Function : public VisItem, public ImplItem
   std::unique_ptr<BlockExpr> function_body;
   SelfParam self;
   location_t locus;
+
+  // NOTE: This should be moved to the trait item base class once we start
+  // implementing specialization for real, instead of just stubbing out the
+  // feature
+  Defaultness defaultness;
 
 public:
   std::string as_string () const override;
@@ -973,6 +984,9 @@ public:
   // Returns whether function has a where clause.
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
+  // Returns whether function has a default qualifier
+  bool is_default () const { return defaultness == Defaultness::Default; }
+
   ImplItemType get_impl_item_type () const override final
   {
     return ImplItem::ImplItemType::FUNCTION;
@@ -987,7 +1001,8 @@ public:
 	    std::vector<FunctionParam> function_params,
 	    std::unique_ptr<Type> return_type, WhereClause where_clause,
 	    std::unique_ptr<BlockExpr> function_body, Visibility vis,
-	    AST::AttrVec outer_attrs, SelfParam self, location_t locus);
+	    AST::AttrVec outer_attrs, SelfParam self, Defaultness defaultness,
+	    location_t locus);
 
   // Copy constructor with clone
   Function (Function const &other);

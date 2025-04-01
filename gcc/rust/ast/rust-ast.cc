@@ -1068,7 +1068,7 @@ Function::Function (Function const &other)
   : VisItem (other), ExternalItem (other.get_node_id ()),
     qualifiers (other.qualifiers), function_name (other.function_name),
     where_clause (other.where_clause), locus (other.locus),
-    is_default (other.is_default),
+    has_default (other.has_default),
     is_external_function (other.is_external_function)
 {
   // guard to prevent null dereference (always required)
@@ -1100,7 +1100,7 @@ Function::operator= (Function const &other)
   // visibility = other.visibility->clone_visibility();
   // outer_attrs = other.outer_attrs;
   locus = other.locus;
-  is_default = other.is_default;
+  has_default = other.has_default;
   is_external_function = other.is_external_function;
 
   // guard to prevent null dereference (always required)

@@ -451,13 +451,16 @@ ASTLoweringItem::visit (AST::Function &function)
   mappings.insert_location (function_body->get_mappings ().get_hirid (),
 			    function.get_locus ());
 
+  Defaultness defaultness
+    = function.is_default () ? Defaultness::Default : Defaultness::Final;
+
   auto fn
     = new HIR::Function (mapping, std::move (function_name),
 			 std::move (qualifiers), std::move (generic_params),
 			 std::move (function_params), std::move (return_type),
 			 std::move (where_clause), std::move (function_body),
 			 std::move (vis), function.get_outer_attrs (),
-			 HIR::SelfParam::error (), locus);
+			 HIR::SelfParam::error (), defaultness, locus);
 
   // add the mappings for the function params at the end
   for (auto &param : fn->get_function_params ())
