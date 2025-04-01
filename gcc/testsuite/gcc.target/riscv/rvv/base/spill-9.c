@@ -18,7 +18,7 @@ void f (char*);
 **	...
 **	addi\ta0,sp,15
 **	andi\ta0,a0,-16
-**	call\tf
+**	call\tf(?:@plt)?
 **	...
 **	lw\tra,12\(sp\)
 **	lw\ts0,8\(sp\)

@@ -44,7 +44,7 @@ f2 (void *a, int const b)
 /* Don't vectorise if the move is too large for requested lmul.
 ** f3:
 **  li\s+a2,\d+
-**  tail\s+memset
+**  tail\s+memset(?:@plt)?
 */
 void *
 f3 (void *a, int const b)

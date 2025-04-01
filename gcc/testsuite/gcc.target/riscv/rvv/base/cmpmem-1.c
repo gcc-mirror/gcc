@@ -21,7 +21,7 @@ f1 (void *a, void *b)
 /* Tiny __builtin_memcmp should use libc.
 ** f2:
 **  li\s+a\d,\d+
-**  tail\s+memcmp
+**  tail\s+memcmp(?:@plt)?
 */
 int
 f2 (void *a, void *b)
@@ -79,7 +79,7 @@ f5 (void *a, void *b)
 /* Don't inline if the length is too large for one operation.
 ** f6:
 **  li\s+a2,\d+
-**  tail\s+memcmp
+**  tail\s+memcmp(?:@plt)?
 */
 int
 f6 (void *a, void *b)

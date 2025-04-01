@@ -10,7 +10,7 @@ void bar2 ();
 /*
 ** foo1:
 **   cm.push\t{ra},\s*-16
-**   call\tbar1
+**   call\tbar1(?:@plt)?
 **   cm.popret\t{ra},\s*16
 */
 void
@@ -53,7 +53,7 @@ foo1 (vint8m1_t a)
 **    vs1r\.v\tv30,0\(sp\)
 **    sub\tsp,sp,t0
 **    vs1r\.v\tv31,0\(sp\)
-**    call\tbar2
+**    call\tbar2(?:@plt)?
 **    csrr\tt0,vlenb
 **    vl1re64\.v\tv31,0\(sp\)
 **    add\tsp,sp,t0
@@ -97,7 +97,7 @@ foo2 (vint8m1_t a)
 ** foo3:
 **   cm.push\t{ra},\s*-16
 **   vl1re8\.v\tv8,0\(a0\)
-**   call\tbar1
+**   call\tbar1(?:@plt)?
 **   cm.popret\t{ra},\s*16
 */
 void

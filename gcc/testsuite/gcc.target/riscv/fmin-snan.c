@@ -10,4 +10,4 @@ fmin (double x, double y)
 
 /* { dg-final { scan-assembler-not "\tfmin\\.d\t" } } */
 /* { dg-final { scan-assembler-not "\tfle\\.d\t" } } */
-/* { dg-final { scan-assembler "\t(call|tail)\tfmin\t" } } */
+/* { dg-final { scan-assembler "\t(call|tail)\tfmin(?:@plt)?\t" } } */

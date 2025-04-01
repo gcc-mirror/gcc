@@ -10,4 +10,4 @@ fminf (float x, float y)
 
 /* { dg-final { scan-assembler-not "\tfmin\\.s\t" } } */
 /* { dg-final { scan-assembler-not "\tfle\\.s\t" } } */
-/* { dg-final { scan-assembler "\t(call|tail)\tfminf\t" } } */
+/* { dg-final { scan-assembler "\t(call|tail)\tfminf(?:@plt)?\t" } } */

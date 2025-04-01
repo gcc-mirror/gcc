@@ -52,7 +52,7 @@ f3 (char *a, char const *b)
 /* Don't vectorise if the move is too large for one operation
 ** f4:
 **  li\s+a2,\d+
-**  tail\s+memmove
+**  tail\s+memmove(?:@plt)?
 */
 char *
 f4 (char *a, char const *b)

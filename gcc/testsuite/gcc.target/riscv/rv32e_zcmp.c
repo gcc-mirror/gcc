@@ -244,9 +244,9 @@ test_f0 ()
 /*
 **foo:
 **	cm.push	{ra}, -16
-**	call	f1
+**	call	f1(?:@plt)?
 **	cm.pop	{ra}, 16
-**	tail	f2
+**	tail	f2(?:@plt)?
 */
 void
 foo (void)
@@ -258,7 +258,7 @@ foo (void)
 /*
 **test_popretz:
 **	cm.push	{ra}, -16
-**	call	f1
+**	call	f1(?:@plt)?
 **	li	a0,0
 **	cm.popret	{ra}, 16
 */

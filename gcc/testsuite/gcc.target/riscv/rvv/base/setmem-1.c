@@ -94,7 +94,7 @@ f6 (void *a, int const b)
 /* Don't vectorise if the move is too large for one operation.
 ** f7:
 **  li\s+a2,\d+
-**  tail\s+memset
+**  tail\s+memset(?:@plt)?
 */
 void *
 f7 (void *a, int const b)

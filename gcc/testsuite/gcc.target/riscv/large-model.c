@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gc -mabi=lp64 -fno-section-anchors -mcmodel=large" } */
+/* { dg-options "-march=rv64gc -mabi=lp64 -fno-section-anchors -mcmodel=large -fno-pie" } */
 /* { dg-skip-if "" { *-*-* } {"-O0"} } */
 int a, b;
 int foo1()
