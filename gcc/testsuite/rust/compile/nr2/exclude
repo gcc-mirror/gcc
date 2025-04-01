@@ -14,9 +14,7 @@ pub_restricted_2.rs
 pub_restricted_3.rs
 undeclared_label.rs
 use_1.rs
-while_break_expr.rs
 issue-2905-2.rs
-issue-266.rs
 derive_clone_enum3.rs
 derive-debug1.rs
 derive-default1.rs
