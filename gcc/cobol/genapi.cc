@@ -2354,34 +2354,25 @@ section_label(struct cbl_proc_t *procedure)
 
   cbl_label_t *label = procedure->label;
   // The _initialize_program section isn't relevant.
-  static size_t psz_length = 256;
-  static char *psz = (char *)xmalloc(psz_length);
-  sprintf(psz,
-          "# SECTION %s in %s (%ld)",
-          label->name,
-          current_function->our_unmangled_name,
-          deconflictor);
+  char *psz = xasprintf("# SECTION %s in %s (%ld)",
+                        label->name,
+                        current_function->our_unmangled_name,
+                        deconflictor);
   gg_insert_into_assembler(psz);
+  free(psz);
 
   // The label has to start with an underscore.  I tried a period, but those
   // don't seem to show up in GDB's internal symbol tables.
-  char *combined = combined_name(procedure->label);
-  if( psz_length < strlen(combined) + 36 + 1 )
-    {
-    free(psz);
-    psz_length = strlen(combined) + 36 + 1;
-    psz        = (char *)xmalloc(psz_length);
-    }
-  sprintf(psz,
-          "_sect.%s",
-          combined_name(procedure->label));
+  char *psz2 = xasprintf( "_sect.%s",
+                          combined_name(procedure->label));
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
-    SHOW_PARSE_TEXT(psz);
+    SHOW_PARSE_TEXT(psz2);
     SHOW_PARSE_END
     }
-  assembler_label(psz);
+  assembler_label(psz2);
+  free(psz2);
   gg_assign(var_decl_nop, build_int_cst_type(INT, 108));
   }
 
@@ -2410,40 +2401,32 @@ paragraph_label(struct cbl_proc_t *procedure)
   char *para_name    = paragraph->name;
   char *section_name = section ? section->name : nullptr;
 
-  static size_t psz_length = 256;
-  static char *psz = (char *)xmalloc(psz_length);
-
-  static size_t deconflictor = symbol_label_id(procedure->label);
-
-  sprintf(psz,
+  size_t deconflictor = symbol_label_id(procedure->label);
+  
+  char *psz1 = 
+  xasprintf(
           "# PARAGRAPH %s of %s in %s (%ld)",
-          para_name,
-          section_name,
-          current_function->our_unmangled_name,
-          deconflictor);
-  gg_insert_into_assembler(psz);
+          para_name ? para_name: "" ,
+          section_name ? section_name: "(null)" ,
+          current_function->our_unmangled_name ? current_function->our_unmangled_name: "" ,
+          deconflictor );
+  
+  gg_insert_into_assembler(psz1);
 
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
-    SHOW_PARSE_TEXT(psz);
+    SHOW_PARSE_TEXT(psz1);
     SHOW_PARSE_END
     }
+  free(psz1);
 
   // The label has to start with an underscore.  I tried a period, but those
   // don't seem to show up in GDB's internal symbol tables.
-  char *combined = combined_name(procedure->label);
-  if( psz_length < strlen(combined) + 36 + 1 )
-    {
-    free(psz);
-    psz_length = strlen(combined) + 36 + 1;
-    psz        = (char *)xmalloc(psz_length);
-    }
-
-  sprintf(psz,
-          "_para.%s",
-          combined_name(procedure->label));
-  assembler_label(psz);
+  char *psz2 = xasprintf( "_para.%s",
+                          combined_name(procedure->label));
+  assembler_label(psz2);
+  free(psz2);
   gg_assign(var_decl_nop, build_int_cst_type(INT, 109));
   }
 
@@ -2537,11 +2520,11 @@ leave_procedure(struct cbl_proc_t *procedure, bool /*section*/)
     // new program, or after somebody else has cleared it out.
     gg_append_statement(procedure->exit.label);
 
-    char ach[256];
-    sprintf(ach,
-            "_procret.%ld:",
-            symbol_label_id(procedure->label));
-    gg_insert_into_assembler(ach);
+    char *psz;
+    psz = xasprintf("_procret.%ld:",
+                    symbol_label_id(procedure->label));
+    gg_insert_into_assembler(psz);
+    free(psz);
     pseudo_return_pop(procedure);
     gg_append_statement(procedure->bottom.label);
     }
@@ -2650,7 +2633,6 @@ find_procedure(cbl_label_t *label)
   if( !retval )
     {
     static int counter=1;
-    char ach[2*sizeof(cbl_name_t)];
 
     // This is a new section or paragraph; we need to create its values:
     retval = (struct cbl_proc_t *)xmalloc(sizeof(struct cbl_proc_t));
@@ -2681,8 +2663,9 @@ find_procedure(cbl_label_t *label)
 
     // If this procedure is a paragraph, and it becomes the target of
     // an ALTER statement, alter_location will be used to make that change
-    sprintf(ach, "_%s_alter_loc_%d", label->name, counter);
-    retval->alter_location = gg_define_void_star(ach, vs_static);
+    char *psz = xasprintf("_%s_alter_loc_%d", label->name, counter);
+    retval->alter_location = gg_define_void_star(psz, vs_static);
+    free(psz);
     DECL_INITIAL(retval->alter_location) = null_pointer_node;
 
     counter +=1 ;
@@ -2884,10 +2867,10 @@ parser_goto( cbl_refer_t value_ref, size_t narg, cbl_label_t * const labels[] )
 
   // We need to create a static array of pointers to locations:
   static int comp_gotos = 1;
-  char ach[32];
-  sprintf(ach, "_comp_goto_%d", comp_gotos++);
+  char *psz = xasprintf("_comp_goto_%d", comp_gotos++);
   tree array_of_pointers_type = build_array_type_nelts(VOID_P, narg);
-  tree array_of_pointers = gg_define_variable(array_of_pointers_type, ach, vs_static);
+  tree array_of_pointers = gg_define_variable(array_of_pointers_type, psz, vs_static);
+  free(psz);
 
   // We have the array.  Now we need to build the constructor for it
   tree constr = make_node(CONSTRUCTOR);
@@ -3342,9 +3325,10 @@ parser_enter_file(const char *filename)
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
-    char ach[32];
-    sprintf(ach, " entering level:%d %s", file_level+1, filename);
-    SHOW_PARSE_TEXT(ach);
+    char *psz;
+    psz = xasprintf(" entering level:%d %s", file_level+1, filename);
+    SHOW_PARSE_TEXT(psz);
+    free(psz);
     SHOW_PARSE_END
     }
 
