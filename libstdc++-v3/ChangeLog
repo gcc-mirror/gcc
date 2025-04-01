@@ -1,3 +1,74 @@
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101527
+	* testsuite/24_iterators/common_iterator/101527.cc: New test.
+	* testsuite/24_iterators/counted_iterator/101527.cc: New test.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Remove stray comma.
+	* doc/html/manual/test.html: Regenerate.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/forward_list (erase): Change lambda to have
+	explicit return type and const parameter type.
+	* include/std/list (erase): Likewise.
+	* testsuite/23_containers/forward_list/erasure.cc: Check lambda
+	is correct.
+	* testsuite/23_containers/list/erasure.cc: Likewise.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Fix two
+	broken links.
+	* doc/html/manual/policy_data_structures.html: Regenerate.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108487
+	* include/bits/stl_vector.h (vector(initializer_list)): Call
+	_M_range_initialize_n instead of _M_range_initialize.
+	(vector(InputIterator, InputIterator)): Use _M_range_initialize_n
+	for C++20 sized sentinels and forward iterators.
+	(vector::_M_range_initialize(FwIt, FwIt, forward_iterator_tag)):
+	Use _M_range_initialize_n.
+	(vector::_M_range_initialize_n): New function.
+	* testsuite/23_containers/vector/cons/108487.cc: New test.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdata.zi: Import new file from 2025b release.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (__detail::__get_leap_second_info): Update
+	expiry date for leap seconds list.
+	* src/c++20/tzdata.zi: Import new file from 2025a release.
+	* src/c++20/tzdb.cc (tzdb_list::_Node::_S_read_leap_seconds)
+	Update expiry date for leap seconds list.
+
 2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

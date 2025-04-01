@@ -1,3 +1,15 @@
+2025-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2025-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/117002
+	* decl.cc (aggregate_initializer_decl): Set explicit decl alignment of
+	class instance.
+	* expr.cc (ExprVisitor::visit (NewExp *)): Likewise.
+	* types.cc (TypeVisitor::visit (TypeClass *)): Mark the record type of
+	classes as packed.
+
 2025-03-23  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

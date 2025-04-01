@@ -1,3 +1,20 @@
+2025-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2025-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/117002
+	* gdc.dg/torture/pr117002.d: New test.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* g++.dg/tree-ssa/initlist-opt1.C: Match _M_range_initialize_n
+	instead of _M_range_initialize.
+	* g++.dg/tree-ssa/initlist-opt2.C: Likewise.
+
 2025-03-30  Martin Uecker  <uecker@tugraz.at>
 
 	Backported from master:
