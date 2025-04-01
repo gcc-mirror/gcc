@@ -690,8 +690,12 @@ ASTLoweringBase::lower_self (AST::Param &param)
 			     self.get_is_mut (), self.get_locus ());
     }
 
-  AST::Lifetime l = self.get_lifetime ();
-  return HIR::SelfParam (mapping, lower_lifetime (l), self.get_is_mut (),
+  tl::optional<HIR::Lifetime> lifetime = tl::nullopt;
+
+  if (self.has_lifetime ())
+    lifetime = lower_lifetime (self.get_lifetime ());
+
+  return HIR::SelfParam (mapping, lifetime, self.get_is_mut (),
 			 self.get_locus ());
 }
 

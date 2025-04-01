@@ -3102,7 +3102,7 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
     {
       case LIFETIME: {
 	auto lifetime = parse_lifetime (false);
-	if (lifetime.is_error ())
+	if (!lifetime)
 	  {
 	    rust_error_at (
 	      token->get_locus (),
@@ -3122,7 +3122,7 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 	  }
 
 	param = std::unique_ptr<AST::LifetimeParam> (new AST::LifetimeParam (
-	  std::move (lifetime), std::move (lifetime_bounds),
+	  std::move (lifetime.value ()), std::move (lifetime_bounds),
 	  std::move (outer_attrs), token->get_locus ()));
 	break;
       }
@@ -3276,16 +3276,16 @@ Parser<ManagedTokenSource>::parse_lifetime_params ()
 
   while (lexer.peek_token ()->get_id () != END_OF_FILE)
     {
-      AST::LifetimeParam lifetime_param = parse_lifetime_param ();
+      auto lifetime_param = parse_lifetime_param ();
 
-      if (lifetime_param.is_error ())
+      if (!lifetime_param)
 	{
 	  // can't treat as error as only way to get out with trailing comma
 	  break;
 	}
 
       lifetime_params.push_back (std::unique_ptr<AST::LifetimeParam> (
-	new AST::LifetimeParam (std::move (lifetime_param))));
+	new AST::LifetimeParam (std::move (lifetime_param.value ()))));
 
       if (lexer.peek_token ()->get_id () != COMMA)
 	break;
@@ -3311,9 +3311,9 @@ Parser<ManagedTokenSource>::parse_lifetime_params (EndTokenPred is_end_token)
   // if end_token is not specified, it defaults to EOF, so should work fine
   while (!is_end_token (lexer.peek_token ()->get_id ()))
     {
-      AST::LifetimeParam lifetime_param = parse_lifetime_param ();
+      auto lifetime_param = parse_lifetime_param ();
 
-      if (lifetime_param.is_error ())
+      if (!lifetime_param)
 	{
 	  /* TODO: is it worth throwing away all lifetime params just because
 	   * one failed? */
@@ -3351,9 +3351,9 @@ Parser<ManagedTokenSource>::parse_lifetime_params_objs ()
   // bad control structure as end token cannot be guaranteed
   while (true)
     {
-      AST::LifetimeParam lifetime_param = parse_lifetime_param ();
+      auto lifetime_param = parse_lifetime_param ();
 
-      if (lifetime_param.is_error ())
+      if (!lifetime_param)
 	{
 	  // not an error as only way to exit if trailing comma
 	  break;
@@ -3386,9 +3386,9 @@ Parser<ManagedTokenSource>::parse_lifetime_params_objs (
 
   while (!is_end_token (lexer.peek_token ()->get_id ()))
     {
-      AST::LifetimeParam lifetime_param = parse_lifetime_param ();
+      auto lifetime_param = parse_lifetime_param ();
 
-      if (lifetime_param.is_error ())
+      if (!lifetime_param)
 	{
 	  /* TODO: is it worth throwing away all lifetime params just because
 	   * one failed? */
@@ -3399,7 +3399,7 @@ Parser<ManagedTokenSource>::parse_lifetime_params_objs (
 	  return {};
 	}
 
-      lifetime_params.push_back (std::move (lifetime_param));
+      lifetime_params.push_back (std::move (lifetime_param.value ()));
 
       if (lexer.peek_token ()->get_id () != COMMA)
 	break;
@@ -3458,7 +3458,7 @@ Parser<ManagedTokenSource>::parse_non_ptr_sequence (
 
 /* Parses a single lifetime generic parameter (not including comma). */
 template <typename ManagedTokenSource>
-AST::LifetimeParam
+tl::expected<AST::LifetimeParam, ParseLifetimeParamError>
 Parser<ManagedTokenSource>::parse_lifetime_param ()
 {
   // parse outer attributes, which are optional and may not exist
@@ -3468,8 +3468,8 @@ Parser<ManagedTokenSource>::parse_lifetime_param ()
   const_TokenPtr lifetime_tok = lexer.peek_token ();
   if (lifetime_tok->get_id () != LIFETIME)
     {
-      // if lifetime is missing, must not be a lifetime param, so return null
-      return AST::LifetimeParam::create_error ();
+      // if lifetime is missing, must not be a lifetime param, so return error
+      return tl::make_unexpected<ParseLifetimeParamError> ({});
     }
   lexer.skip_token ();
   AST::Lifetime lifetime (AST::Lifetime::NAMED, lifetime_tok->get_str (),
@@ -3815,12 +3815,13 @@ template <typename ManagedTokenSource>
 std::unique_ptr<AST::LifetimeWhereClauseItem>
 Parser<ManagedTokenSource>::parse_lifetime_where_clause_item ()
 {
-  AST::Lifetime lifetime = parse_lifetime (false);
-  if (lifetime.is_error ())
+  auto parsed_lifetime = parse_lifetime (false);
+  if (!parsed_lifetime)
     {
       // TODO: error here?
       return nullptr;
     }
+  auto lifetime = parsed_lifetime.value ();
 
   if (!skip_token (COLON))
     {
@@ -4013,7 +4014,7 @@ Parser<ManagedTokenSource>::parse_type_param_bound ()
     {
     case LIFETIME:
       return std::unique_ptr<AST::Lifetime> (
-	new AST::Lifetime (parse_lifetime (false)));
+	new AST::Lifetime (parse_lifetime (false).value ()));
     case LEFT_PAREN:
     case QUESTION_MARK:
     case FOR:
@@ -4086,13 +4087,13 @@ Parser<ManagedTokenSource>::parse_lifetime_bounds ()
 
   while (true)
     {
-      AST::Lifetime lifetime = parse_lifetime (false);
+      auto lifetime = parse_lifetime (false);
 
       // quick exit for parsing failure
-      if (lifetime.is_error ())
+      if (!lifetime)
 	break;
 
-      lifetime_bounds.push_back (std::move (lifetime));
+      lifetime_bounds.push_back (std::move (lifetime.value ()));
 
       /* plus is maybe not allowed at end - spec defines it weirdly, so
        * assuming allowed at end */
@@ -4116,9 +4117,9 @@ Parser<ManagedTokenSource>::parse_lifetime_bounds (EndTokenPred is_end_token)
 
   while (!is_end_token (lexer.peek_token ()->get_id ()))
     {
-      AST::Lifetime lifetime = parse_lifetime (false);
+      auto lifetime = parse_lifetime (false);
 
-      if (lifetime.is_error ())
+      if (!lifetime)
 	{
 	  /* TODO: is it worth throwing away all lifetime bound info just
 	   * because one failed? */
@@ -4129,7 +4130,7 @@ Parser<ManagedTokenSource>::parse_lifetime_bounds (EndTokenPred is_end_token)
 	  return {};
 	}
 
-      lifetime_bounds.push_back (std::move (lifetime));
+      lifetime_bounds.push_back (std::move (lifetime.value ()));
 
       /* plus is maybe not allowed at end - spec defines it weirdly, so
        * assuming allowed at end */
@@ -4146,14 +4147,20 @@ Parser<ManagedTokenSource>::parse_lifetime_bounds (EndTokenPred is_end_token)
 /* Parses a lifetime token (named, 'static, or '_). Also handles lifetime not
  * existing. */
 template <typename ManagedTokenSource>
-AST::Lifetime
+tl::expected<AST::Lifetime, ParseLifetimeError>
 Parser<ManagedTokenSource>::parse_lifetime (bool allow_elided)
 {
   const_TokenPtr lifetime_tok = lexer.peek_token ();
   if (lifetime_tok->get_id () != LIFETIME)
     {
-      return (allow_elided) ? AST::Lifetime::elided ()
-			    : AST::Lifetime::error ();
+      if (allow_elided)
+	{
+	  return AST::Lifetime::elided ();
+	}
+      else
+	{
+	  return tl::make_unexpected<ParseLifetimeError> ({});
+	}
     }
   lexer.skip_token ();
 
@@ -6340,14 +6347,14 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
   location_t locus = t->get_locus ();
   while (!is_right_angle_tok (t->get_id ()))
     {
-      AST::Lifetime lifetime = parse_lifetime (false);
-      if (lifetime.is_error ())
+      auto lifetime = parse_lifetime (false);
+      if (!lifetime)
 	{
 	  // not necessarily an error
 	  break;
 	}
 
-      lifetime_args.push_back (std::move (lifetime));
+      lifetime_args.push_back (std::move (lifetime.value ()));
 
       // if next token isn't comma, then it must be end of list
       if (lexer.peek_token ()->get_id () != COMMA)
@@ -6961,10 +6968,12 @@ Parser<ManagedTokenSource>::parse_self_param ()
       // now test whether it has a lifetime
       if (lexer.peek_token ()->get_id () == LIFETIME)
 	{
-	  lifetime = parse_lifetime (true);
-
 	  // something went wrong somehow
-	  if (lifetime.is_error ())
+	  if (auto parsed_lifetime = parse_lifetime (true))
+	    {
+	      lifetime = parsed_lifetime.value ();
+	    }
+	  else
 	    {
 	      Error error (lexer.peek_token ()->get_locus (),
 			   "failed to parse lifetime in self param");
@@ -7519,12 +7528,10 @@ Parser<ManagedTokenSource>::parse_break_expr (AST::AttrVec outer_attrs,
       skip_token (BREAK);
     }
 
-  // parse label (lifetime) if it exists - create dummy first
-  AST::Lifetime label = AST::Lifetime::error ();
-  if (lexer.peek_token ()->get_id () == LIFETIME)
-    {
-      label = parse_lifetime (false);
-    }
+  auto parsed_label = parse_lifetime (false);
+  auto label = (parsed_label)
+		 ? tl::optional<AST::Lifetime> (parsed_label.value ())
+		 : tl::nullopt;
 
   // parse break return expression if it exists
   ParseRestrictions restrictions;
@@ -7550,12 +7557,10 @@ Parser<ManagedTokenSource>::parse_continue_expr (AST::AttrVec outer_attrs,
       skip_token (CONTINUE);
     }
 
-  // parse label (lifetime) if it exists - create dummy first
-  AST::Lifetime label = AST::Lifetime::error ();
-  if (lexer.peek_token ()->get_id () == LIFETIME)
-    {
-      label = parse_lifetime (false);
-    }
+  auto parsed_label = parse_lifetime (false);
+  auto label = (parsed_label)
+		 ? tl::optional<AST::Lifetime> (parsed_label.value ())
+		 : tl::nullopt;
 
   return std::unique_ptr<AST::ContinueExpr> (
     new AST::ContinueExpr (std::move (label), std::move (outer_attrs), locus));
@@ -9600,8 +9605,12 @@ Parser<ManagedTokenSource>::parse_reference_type_inner (location_t locus)
   AST::Lifetime lifetime = AST::Lifetime::elided ();
   if (lexer.peek_token ()->get_id () == LIFETIME)
     {
-      lifetime = parse_lifetime (true);
-      if (lifetime.is_error ())
+      auto parsed_lifetime = parse_lifetime (true);
+      if (parsed_lifetime)
+	{
+	  lifetime = parsed_lifetime.value ();
+	}
+      else
 	{
 	  Error error (lexer.peek_token ()->get_locus (),
 		       "failed to parse lifetime in reference type");

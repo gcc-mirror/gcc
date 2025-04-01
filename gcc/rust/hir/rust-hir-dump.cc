@@ -546,7 +546,8 @@ Dump::do_traitfunctiondecl (TraitFunctionDecl &e)
   else
     put_field ("where_clause", "none");
 
-  put_field ("self", e.get_self ().as_string ());
+  if (e.is_method ())
+    put_field ("self", e.get_self_unchecked ().as_string ());
 
   end ("TraitFunctionDecl");
 }
@@ -1693,7 +1694,8 @@ Dump::visit (Function &e)
     put_field ("where clause", e.get_where_clause ().as_string ());
 
   visit_field ("function_body", e.get_definition ());
-  put_field ("self", e.get_self_param ().as_string ());
+  if (e.is_method ())
+    put_field ("self", e.get_self_param_unchecked ().as_string ());
 
   end ("Function");
 }

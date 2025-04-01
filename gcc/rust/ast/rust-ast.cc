@@ -1631,7 +1631,7 @@ ContinueExpr::as_string () const
   std::string str ("continue ");
 
   if (has_label ())
-    str += label.as_string ();
+    str += get_label ().as_string ();
 
   return str;
 }
@@ -2485,9 +2485,6 @@ MacroMatchRepetition::as_string () const
 std::string
 Lifetime::as_string () const
 {
-  if (is_error ())
-    return "error lifetime";
-
   switch (lifetime_type)
     {
     case NAMED:
@@ -2612,7 +2609,7 @@ ReferenceType::as_string () const
   std::string str ("&");
 
   if (has_lifetime ())
-    str += lifetime.as_string () + " ";
+    str += get_lifetime ().as_string () + " ";
 
   if (has_mut)
     str += "mut ";
@@ -3070,7 +3067,7 @@ SelfParam::as_string () const
       else if (has_lifetime ())
 	{
 	  // ref and lifetime
-	  std::string str = "&" + lifetime.as_string () + " ";
+	  std::string str = "&" + get_lifetime ().as_string () + " ";
 
 	  if (is_mut)
 	    str += "mut ";

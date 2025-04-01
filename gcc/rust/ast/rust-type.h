@@ -542,7 +542,7 @@ protected:
 class ReferenceType : public TypeNoBounds
 {
   // bool has_lifetime; // TODO: handle in lifetime or something?
-  Lifetime lifetime;
+  tl::optional<Lifetime> lifetime;
 
   bool has_mut;
   std::unique_ptr<TypeNoBounds> type;
@@ -553,11 +553,12 @@ public:
   bool is_mut () const { return has_mut; }
 
   // Returns whether the reference has a lifetime.
-  bool has_lifetime () const { return !lifetime.is_error (); }
+  bool has_lifetime () const { return lifetime.has_value (); }
 
   // Constructor
   ReferenceType (bool is_mut, std::unique_ptr<TypeNoBounds> type_no_bounds,
-		 location_t locus, Lifetime lifetime = Lifetime::elided ())
+		 location_t locus,
+		 tl::optional<Lifetime> lifetime = Lifetime::elided ())
     : lifetime (std::move (lifetime)), has_mut (is_mut),
       type (std::move (type_no_bounds)), locus (locus)
   {}
@@ -598,7 +599,8 @@ public:
 
   bool get_has_mut () const { return has_mut; }
 
-  Lifetime &get_lifetime () { return lifetime; }
+  Lifetime &get_lifetime () { return lifetime.value (); }
+  const Lifetime &get_lifetime () const { return lifetime.value (); }
 
   TypeNoBounds &get_base_type () { return *type; }
 

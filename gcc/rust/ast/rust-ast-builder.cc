@@ -137,7 +137,7 @@ Builder::tuple (std::vector<std::unique_ptr<Expr>> &&values) const
 std::unique_ptr<Param>
 Builder::self_ref_param (bool mutability) const
 {
-  return std::make_unique<SelfParam> (Lifetime::error (), mutability, loc);
+  return std::make_unique<SelfParam> (tl::nullopt, mutability, loc);
 }
 
 std::unique_ptr<Param>

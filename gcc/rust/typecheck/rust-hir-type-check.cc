@@ -208,7 +208,7 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
       // add the synthetic self param at the front, this is a placeholder
       // for compilation to know parameter names. The types are ignored
       // but we reuse the HIR identifier pattern which requires it
-      HIR::SelfParam &self_param = function.get_self ();
+      HIR::SelfParam &self_param = function.get_self_unchecked ();
       std::unique_ptr<HIR::Pattern> self_pattern
 	= std::make_unique<HIR::IdentifierPattern> (HIR::IdentifierPattern (
 	  mapping, {"self"}, self_param.get_locus (), self_param.is_ref (),

@@ -1314,7 +1314,7 @@ ContinueExpr::as_string () const
 
   if (has_label ())
     {
-      str += label.as_string ();
+      str += get_label ().as_string ();
     }
 
   return str;
@@ -1816,7 +1816,7 @@ BreakExpr::as_string () const
 
   if (has_label ())
     {
-      str += label.as_string () + " ";
+      str += get_label ().as_string () + " ";
     }
 
   if (has_break_expr ())
@@ -2101,11 +2101,6 @@ QualifiedPathInType::as_string () const
 std::string
 Lifetime::as_string () const
 {
-  if (is_error ())
-    {
-      return "error lifetime";
-    }
-
   switch (lifetime_type)
     {
     case AST::Lifetime::LifetimeType::NAMED:
@@ -2760,7 +2755,7 @@ ReferenceType::as_string () const
 
   if (has_lifetime ())
     {
-      str += lifetime.as_string () + " ";
+      str += get_lifetime ().as_string () + " ";
     }
 
   if (is_mut ())
@@ -3411,7 +3406,7 @@ TraitFunctionDecl::as_string () const
   str += "\n Function params: ";
   if (is_method ())
     {
-      str += self.as_string () + (has_params () ? ", " : "");
+      str += get_self_unchecked ().as_string () + (has_params () ? ", " : "");
     }
 
   if (has_params ())
@@ -3525,70 +3520,63 @@ TraitItemType::as_string () const
 std::string
 SelfParam::as_string () const
 {
-  if (is_error ())
+  if (has_type ())
     {
-      return "error";
+      // type (i.e. not ref, no lifetime)
+      std::string str;
+
+      if (is_mut ())
+	{
+	  str += "mut ";
+	}
+
+      str += "self : ";
+
+      str += type->as_string ();
+
+      return str;
+    }
+  else if (has_lifetime ())
+    {
+      // ref and lifetime
+      std::string str = "&" + get_lifetime ().as_string () + " ";
+
+      if (is_mut ())
+	{
+	  str += "mut ";
+	}
+
+      str += "self";
+
+      return str;
+    }
+  else if (is_ref ())
+    {
+      // ref with no lifetime
+      std::string str = "&";
+
+      if (is_mut ())
+	{
+	  str += " mut ";
+	}
+
+      str += "self";
+
+      return str;
     }
   else
     {
-      if (has_type ())
+      // no ref, no type
+      std::string str;
+
+      if (is_mut ())
 	{
-	  // type (i.e. not ref, no lifetime)
-	  std::string str;
-
-	  if (is_mut ())
-	    {
-	      str += "mut ";
-	    }
-
-	  str += "self : ";
-
-	  str += type->as_string ();
-
-	  return str;
+	  str += "mut ";
 	}
-      else if (has_lifetime ())
-	{
-	  // ref and lifetime
-	  std::string str = "&" + lifetime.as_string () + " ";
 
-	  if (is_mut ())
-	    {
-	      str += "mut ";
-	    }
+      str += "self";
 
-	  str += "self";
-
-	  return str;
-	}
-      else if (is_ref ())
-	{
-	  // ref with no lifetime
-	  std::string str = "&";
-
-	  if (is_mut ())
-	    {
-	      str += " mut ";
-	    }
-
-	  str += "self";
-
-	  return str;
-	}
-      else
-	{
-	  // no ref, no type
-	  std::string str;
-
-	  if (is_mut ())
-	    {
-	      str += "mut ";
-	    }
-
-	  str += "self";
-
-	  return str;
-	}
+      return str;
     }
 }
 

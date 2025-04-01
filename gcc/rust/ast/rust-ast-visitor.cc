@@ -477,7 +477,8 @@ void
 DefaultASTVisitor::visit (AST::ContinueExpr &expr)
 {
   visit_outer_attrs (expr);
-  visit (expr.get_label ());
+  if (expr.has_label ())
+    visit (expr.get_label ());
 }
 
 void
@@ -591,7 +592,8 @@ DefaultASTVisitor::visit (AST::ForLoopExpr &expr)
   visit_outer_attrs (expr);
   visit (expr.get_pattern ());
   visit (expr.get_iterator_expr ());
-  visit (expr.get_loop_label ());
+  if (expr.has_loop_label ())
+    visit (expr.get_loop_label ());
   visit (expr.get_loop_block ());
 }
 

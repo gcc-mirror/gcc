@@ -162,7 +162,7 @@ RawPointerType::operator= (RawPointerType const &other)
 
 ReferenceType::ReferenceType (Analysis::NodeMapping mappings, Mutability mut,
 			      std::unique_ptr<Type> type_no_bounds,
-			      location_t locus, Lifetime lifetime)
+			      location_t locus, tl::optional<Lifetime> lifetime)
   : TypeNoBounds (mappings, locus), lifetime (std::move (lifetime)), mut (mut),
     type (std::move (type_no_bounds))
 {}

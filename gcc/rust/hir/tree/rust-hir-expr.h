@@ -45,9 +45,6 @@ public:
   LoopLabel (Analysis::NodeMapping mapping, Lifetime loop_label,
 	     location_t locus);
 
-  // Returns whether the LoopLabel is in an error state.
-  bool is_error () const { return label.is_error (); }
-
   location_t get_locus () const { return locus; }
 
   Analysis::NodeMapping &get_mappings () { return mappings; }
@@ -1806,25 +1803,27 @@ protected:
 // HIR node representing continue expression within loops
 class ContinueExpr : public ExprWithoutBlock
 {
-  Lifetime label;
+  tl::optional<Lifetime> label;
   location_t locus;
 
 public:
   std::string as_string () const override;
 
   // Returns true if the continue expr has a label.
-  bool has_label () const { return !label.is_error (); }
+  bool has_label () const { return label.has_value (); }
 
   // Constructor for a ContinueExpr with a label.
   ContinueExpr (Analysis::NodeMapping mappings, location_t locus,
-		Lifetime label, AST::AttrVec outer_attribs = AST::AttrVec ());
+		tl::optional<Lifetime> label,
+		AST::AttrVec outer_attribs = AST::AttrVec ());
 
   location_t get_locus () const override final { return locus; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
-  Lifetime &get_label () { return label; }
+  Lifetime &get_label () { return label.value (); }
+  const Lifetime &get_label () const { return label.value (); }
 
   ExprType get_expression_type () const final override
   {
@@ -1851,7 +1850,7 @@ protected:
 class BreakExpr : public ExprWithoutBlock
 {
   // bool has_label;
-  Lifetime label;
+  tl::optional<Lifetime> label;
 
   // bool has_break_expr;
   std::unique_ptr<Expr> break_expr;
@@ -1862,7 +1861,7 @@ public:
   std::string as_string () const override;
 
   // Returns whether the break expression has a label or not.
-  bool has_label () const { return !label.is_error (); }
+  bool has_label () const { return label.has_value (); }
 
   /* Returns whether the break expression has an expression used in the break or
    * not. */
@@ -1870,7 +1869,7 @@ public:
 
   // Constructor for a break expression
   BreakExpr (Analysis::NodeMapping mappings, location_t locus,
-	     Lifetime break_label,
+	     tl::optional<Lifetime> break_label,
 	     std::unique_ptr<Expr> expr_in_break = nullptr,
 	     AST::AttrVec outer_attribs = AST::AttrVec ());
 
@@ -1889,7 +1888,8 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
 
-  Lifetime &get_label () { return label; }
+  Lifetime &get_label () { return label.value (); }
+  const Lifetime &get_label () const { return label.value (); }
 
   Expr &get_expr () { return *break_expr; }
 
