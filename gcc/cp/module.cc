@@ -12679,9 +12679,10 @@ trees_in::read_function_def (tree decl, tree maybe_template)
 void
 trees_out::write_var_def (tree decl)
 {
-  /* The initializer of a variable or variable template is ignored for
-     determining exposures.  */
-  auto ovr = make_temp_override (dep_hash->ignore_tu_local, VAR_P (decl));
+  /* The initializer of a non-inline variable or variable template is
+     ignored for determining exposures.  */
+  auto ovr = make_temp_override (dep_hash->ignore_tu_local,
+				 VAR_P (decl) && !DECL_INLINE_VAR_P (decl));
 
   tree init = DECL_INITIAL (decl);
   tree_node (init);
