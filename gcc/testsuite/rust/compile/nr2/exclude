@@ -1,7 +1,6 @@
 canonical_paths1.rs
 cfg1.rs
 generics9.rs
-issue-2043.rs
 issue-2812.rs
 issue-3315-2.rs
 lookup_err1.rs

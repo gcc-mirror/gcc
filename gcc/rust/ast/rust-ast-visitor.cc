@@ -824,8 +824,6 @@ DefaultASTVisitor::visit (AST::Function &function)
   visit (function.get_qualifiers ());
   for (auto &generic : function.get_generic_params ())
     visit (generic);
-  if (function.has_self_param ())
-    visit (function.get_self_param ());
   for (auto &param : function.get_function_params ())
     visit (param);
   if (function.has_return_type ())
