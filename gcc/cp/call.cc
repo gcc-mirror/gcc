@@ -6673,6 +6673,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
   bool check_list_ctor = false;
   bool check_converting = false;
   unification_kind_t strict;
+  tree ne_context = NULL_TREE;
   tree ne_fns = NULL_TREE;
 
   if (!fns)
@@ -6719,6 +6720,7 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
       tree ne_name = ovl_op_identifier (false, NE_EXPR);
       if (DECL_CLASS_SCOPE_P (fn))
 	{
+	  ne_context = DECL_CONTEXT (fn);
 	  ne_fns = lookup_fnfields (TREE_TYPE ((*args)[0]), ne_name,
 				    1, tf_none);
 	  if (ne_fns == error_mark_node || ne_fns == NULL_TREE)
@@ -6728,8 +6730,9 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	}
       else
 	{
-	  tree context = decl_namespace_context (fn);
-	  ne_fns = lookup_qualified_name (context, ne_name, LOOK_want::NORMAL,
+	  ne_context = decl_namespace_context (fn);
+	  ne_fns = lookup_qualified_name (ne_context, ne_name,
+					  LOOK_want::NORMAL,
 					  /*complain*/false);
 	  if (ne_fns == error_mark_node
 	      || !is_overloaded_fn (ne_fns))
@@ -6828,8 +6831,26 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 
       /* When considering reversed operator==, if there's a corresponding
 	 operator!= in the same scope, it's not a rewrite target.  */
-      if (ne_fns)
+      if (ne_context)
 	{
+	  if (TREE_CODE (ne_context) == NAMESPACE_DECL)
+	    {
+	      /* With argument-dependent lookup, fns can span multiple
+		 namespaces; make sure we look in the fn's namespace for a
+		 corresponding operator!=.  */
+	      tree fn_ns = decl_namespace_context (fn);
+	      if (fn_ns != ne_context)
+		{
+		  ne_context = fn_ns;
+		  tree ne_name = ovl_op_identifier (false, NE_EXPR);
+		  ne_fns = lookup_qualified_name (ne_context, ne_name,
+						  LOOK_want::NORMAL,
+						  /*complain*/false);
+		  if (ne_fns == error_mark_node
+		      || !is_overloaded_fn (ne_fns))
+		    ne_fns = NULL_TREE;
+		}
+	    }
 	  bool found = false;
 	  for (lkp_iterator ne (ne_fns); !found && ne; ++ne)
 	    if (0 && !ne.using_p ()
