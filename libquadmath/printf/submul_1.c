@@ -26,11 +26,8 @@ MA 02111-1307, USA. */
 #include "gmp-impl.h"
 
 mp_limb_t
-mpn_submul_1 (res_ptr, s1_ptr, s1_size, s2_limb)
-     register mp_ptr res_ptr;
-     register mp_srcptr s1_ptr;
-     mp_size_t s1_size;
-     register mp_limb_t s2_limb;
+mpn_submul_1 (mp_ptr res_ptr, mp_srcptr s1_ptr, mp_size_t s1_size,
+	      mp_limb_t s2_limb)
 {
   register mp_limb_t cy_limb;
   register mp_size_t j;
