@@ -234,6 +234,8 @@ static struct
 }
 inverse_table[NUM_ORDERS];
 
+struct free_list;
+
 /* A page_entry records the status of an allocation page.  This
    structure is dynamically sized to fit the bitmap in_use_p.  */
 struct page_entry
@@ -250,6 +252,9 @@ struct page_entry
   /* The number of bytes allocated.  (This will always be a multiple
      of the host system page size.)  */
   size_t bytes;
+
+  /* Free list of this page size.  */
+  struct free_list *free_list;
 
   /* The address at which the memory is allocated.  */
   char *page;
@@ -368,6 +373,15 @@ struct free_object
 };
 #endif
 
+constexpr int num_free_list = 8;
+
+/* A free_list for pages with BYTES size.  */
+struct free_list
+{
+  size_t bytes;
+  page_entry *free_pages;
+};
+
 /* The rest of the global variables.  */
 static struct ggc_globals
 {
@@ -412,8 +426,8 @@ static struct ggc_globals
   int dev_zero_fd;
 #endif
 
-  /* A cache of free system pages.  */
-  page_entry *free_pages;
+  /* A cache of free system pages. Entry 0 is fallback.  */
+  struct free_list free_lists[num_free_list];
 
 #ifdef USING_MALLOC_PAGE_GROUPS
   page_group *page_groups;
@@ -488,6 +502,9 @@ static struct ggc_globals
 
     /* The overhead for each of the allocation orders.  */
     unsigned long long total_overhead_per_order[NUM_ORDERS];
+
+    /* Number of fallbacks.  */
+    unsigned long long fallback;
   } stats;
 } G;
 
@@ -754,6 +771,42 @@ clear_page_group_in_use (page_group *group, char *page)
 }
 #endif
 
+/* Find a free list for ENTRY_SIZE.  */
+
+static inline struct free_list *
+find_free_list (size_t entry_size)
+{
+  int i;
+  for (i = 1; i < num_free_list; i++)
+    {
+      if (G.free_lists[i].bytes == entry_size)
+	return &G.free_lists[i];
+      if (G.free_lists[i].bytes == 0)
+	{
+	  G.free_lists[i].bytes = entry_size;
+	  return &G.free_lists[i];
+	}
+    }
+  /* Fallback. Does this happen?  */
+  if (GATHER_STATISTICS)
+    G.stats.fallback++;
+  return &G.free_lists[0];
+}
+
+/* Fast lookup of free_list by order.  */
+
+static struct free_list *cache_free_list[NUM_ORDERS];
+
+/* Faster way to find a free list by ORDER for BYTES.  */
+
+static inline struct free_list *
+find_free_list_order (unsigned order, size_t bytes)
+{
+  if (cache_free_list[order] == NULL)
+    cache_free_list[order] = find_free_list (bytes);
+  return cache_free_list[order];
+}
+
 /* Allocate a new page for allocating objects of size 2^ORDER,
    and return an entry for it.  The entry is not added to the
    appropriate page_table list.  */
@@ -770,6 +823,7 @@ alloc_page (unsigned order)
 #ifdef USING_MALLOC_PAGE_GROUPS
   page_group *group;
 #endif
+  struct free_list *free_list;
 
   num_objects = OBJECTS_PER_PAGE (order);
   bitmap_size = BITMAP_SIZE (num_objects + 1);
@@ -782,8 +836,10 @@ alloc_page (unsigned order)
   entry = NULL;
   page = NULL;
 
+  free_list = find_free_list_order (order, entry_size);
+
   /* Check the list of free pages for one we can use.  */
-  for (pp = &G.free_pages, p = *pp; p; pp = &p->next, p = *pp)
+  for (pp = &free_list->free_pages, p = *pp; p; pp = &p->next, p = *pp)
     if (p->bytes == entry_size)
       break;
 
@@ -816,7 +872,7 @@ alloc_page (unsigned order)
       /* We want just one page.  Allocate a bunch of them and put the
 	 extras on the freelist.  (Can only do this optimization with
 	 mmap for backing store.)  */
-      struct page_entry *e, *f = G.free_pages;
+      struct page_entry *e, *f = free_list->free_pages;
       int i, entries = GGC_QUIRE_SIZE;
 
       page = alloc_anon (NULL, G.pagesize * GGC_QUIRE_SIZE, false);
@@ -833,12 +889,13 @@ alloc_page (unsigned order)
 	  e = XCNEWVAR (struct page_entry, page_entry_size);
 	  e->order = order;
 	  e->bytes = G.pagesize;
+	  e->free_list = free_list;
 	  e->page = page + (i << G.lg_pagesize);
 	  e->next = f;
 	  f = e;
 	}
 
-      G.free_pages = f;
+      free_list->free_pages = f;
     }
   else
     page = alloc_anon (NULL, entry_size, true);
@@ -904,12 +961,13 @@ alloc_page (unsigned order)
 	      e = XCNEWVAR (struct page_entry, page_entry_size);
 	      e->order = order;
 	      e->bytes = G.pagesize;
+	      e->free_list = free_list;
 	      e->page = a;
 	      e->group = group;
 	      e->next = f;
 	      f = e;
 	    }
-	  G.free_pages = f;
+	  free_list->free_pages = f;
 	}
     }
 #endif
@@ -918,6 +976,7 @@ alloc_page (unsigned order)
     entry = XCNEWVAR (struct page_entry, page_entry_size);
 
   entry->bytes = entry_size;
+  entry->free_list = free_list;
   entry->page = page;
   entry->context_depth = G.context_depth;
   entry->order = order;
@@ -1006,14 +1065,15 @@ free_page (page_entry *entry)
 
   adjust_depth ();
 
-  entry->next = G.free_pages;
-  G.free_pages = entry;
+  struct free_list *free_list = entry->free_list;
+  entry->next = free_list->free_pages;
+  free_list->free_pages = entry;
 }
 
-/* Release the free page cache to the system.  */
+/* Release the free page cache for FREE_LIST to the system.  */
 
 static void
-release_pages (void)
+do_release_pages (struct free_list *free_list)
 {
   size_t n1 = 0;
   size_t n2 = 0;
@@ -1031,7 +1091,7 @@ release_pages (void)
      This does not always work because the free_pages list is only
      approximately sorted. */
 
-  p = G.free_pages;
+  p = free_list->free_pages;
   prev = NULL;
   while (p)
     {
@@ -1060,7 +1120,7 @@ release_pages (void)
 	  if (prev)
 	    prev->next = p;
           else
-            G.free_pages = p;
+	    free_list->free_pages = p;
           G.bytes_mapped -= mapped_len;
 	  n1 += len;
 	  continue;
@@ -1071,7 +1131,7 @@ release_pages (void)
   /* Now give back the fragmented pages to the OS, but keep the address
      space to reuse it next time. */
 
-  for (p = G.free_pages; p; )
+  for (p = free_list->free_pages; p; )
     {
       if (p->discarded)
         {
@@ -1108,7 +1168,7 @@ release_pages (void)
   size_t len;
 
   /* Gather up adjacent pages so they are unmapped together.  */
-  p = G.free_pages;
+  p = free_list->free_pages;
 
   while (p)
     {
@@ -1131,14 +1191,14 @@ release_pages (void)
       G.bytes_mapped -= len;
     }
 
-  G.free_pages = NULL;
+  free_list->free_pages = NULL;
 #endif
 #ifdef USING_MALLOC_PAGE_GROUPS
   page_entry **pp, *p;
   page_group **gp, *g;
 
   /* Remove all pages from free page groups from the list.  */
-  pp = &G.free_pages;
+  pp = &free_list->free_pages;
   while ((p = *pp) != NULL)
     if (p->group->in_use == 0)
       {
@@ -1170,6 +1230,15 @@ release_pages (void)
 	fprintf (stderr, " madv_dontneed " PRsa (0), SIZE_AMOUNT (n2));
       fprintf (stderr, "}");
     }
+}
+
+/* Release the free page cache to the system.  */
+
+static void
+release_pages ()
+{
+  for (int i = 0; i < num_free_list; i++)
+    do_release_pages (&G.free_lists[i]);
 }
 
 /* This table provides a fast way to determine ceil(log_2(size)) for
@@ -1801,9 +1870,10 @@ init_ggc (void)
     /* We have a good page, might as well hold onto it...  */
     e = XCNEW (struct page_entry);
     e->bytes = G.pagesize;
+    e->free_list = find_free_list (G.pagesize);
     e->page = p;
-    e->next = G.free_pages;
-    G.free_pages = e;
+    e->next = e->free_list->free_pages;
+    e->free_list->free_pages = e;
   }
 #endif
 
@@ -2404,6 +2474,9 @@ ggc_print_statistics (void)
       fprintf (stderr, "Total Allocated under 128B:              "
 	       PRsa (9) "\n",
 	       SIZE_AMOUNT (G.stats.total_allocated_under128));
+      fprintf (stderr, "Number of free list fallbacks:           "
+	       PRsa (9) "\n",
+	       SIZE_AMOUNT (G.stats.fallback));
 
       for (i = 0; i < NUM_ORDERS; i++)
 	if (G.stats.total_allocated_per_order[i])
@@ -2677,6 +2750,7 @@ ggc_pch_read (FILE *f, void *addr)
 					    - sizeof (long)
 					    + BITMAP_SIZE (num_objs + 1)));
       entry->bytes = bytes;
+      entry->free_list = find_free_list (bytes);
       entry->page = offs;
       entry->context_depth = 0;
       offs += bytes;
