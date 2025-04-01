@@ -148,7 +148,7 @@ public:
 
   std::unique_ptr<AST::BlockExpr>
   parse_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		    AST::LoopLabel label = AST::LoopLabel::error (),
+		    tl::optional<AST::LoopLabel> = tl::nullopt,
 		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
 
   bool is_macro_rules_def (const_TokenPtr t);
@@ -588,18 +588,18 @@ private:
 		     location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::LoopExpr>
   parse_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		   AST::LoopLabel label = AST::LoopLabel::error (),
+		   tl::optional<AST::LoopLabel> label = tl::nullopt,
 		   location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::WhileLoopExpr>
   parse_while_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-			 AST::LoopLabel label = AST::LoopLabel::error (),
+			 tl::optional<AST::LoopLabel> label = tl::nullopt,
 			 location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   std::unique_ptr<AST::WhileLetLoopExpr>
   parse_while_let_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-			     AST::LoopLabel label = AST::LoopLabel::error ());
+			     tl::optional<AST::LoopLabel> label = tl::nullopt);
   std::unique_ptr<AST::ForLoopExpr>
   parse_for_loop_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
-		       AST::LoopLabel label = AST::LoopLabel::error ());
+		       tl::optional<AST::LoopLabel> label = tl::nullopt);
   std::unique_ptr<AST::MatchExpr>
   parse_match_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
@@ -609,7 +609,7 @@ private:
   std::unique_ptr<AST::Expr> parse_labelled_loop_expr (const_TokenPtr tok,
 						       AST::AttrVec outer_attrs
 						       = AST::AttrVec ());
-  AST::LoopLabel parse_loop_label (const_TokenPtr tok);
+  tl::optional<AST::LoopLabel> parse_loop_label (const_TokenPtr tok);
   std::unique_ptr<AST::AsyncBlockExpr>
   parse_async_block_expr (AST::AttrVec outer_attrs = AST::AttrVec ());
   std::unique_ptr<AST::GroupedExpr> parse_grouped_expr (AST::AttrVec outer_attrs

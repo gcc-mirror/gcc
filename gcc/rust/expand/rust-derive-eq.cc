@@ -49,8 +49,7 @@ DeriveEq::assert_receiver_is_total_eq_fn (
     stmts.emplace_back (assert_type_is_eq (std::move (type)));
 
   auto block = std::unique_ptr<BlockExpr> (
-    new BlockExpr (std::move (stmts), nullptr, {}, {}, AST::LoopLabel::error (),
-		   loc, loc));
+    new BlockExpr (std::move (stmts), nullptr, {}, {}, tl::nullopt, loc, loc));
 
   auto self = builder.self_ref_param ();
 

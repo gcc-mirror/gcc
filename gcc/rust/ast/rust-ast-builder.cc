@@ -335,9 +335,9 @@ std::unique_ptr<BlockExpr>
 Builder::block (std::vector<std::unique_ptr<Stmt>> &&stmts,
 		std::unique_ptr<Expr> &&tail_expr) const
 {
-  return std::unique_ptr<BlockExpr> (
-    new BlockExpr (std::move (stmts), std::move (tail_expr), {}, {},
-		   LoopLabel::error (), loc, loc));
+  return std::unique_ptr<BlockExpr> (new BlockExpr (std::move (stmts),
+						    std::move (tail_expr), {},
+						    {}, tl::nullopt, loc, loc));
 }
 
 std::unique_ptr<Expr>
