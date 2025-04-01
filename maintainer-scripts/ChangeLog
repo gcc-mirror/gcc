@@ -1,3 +1,11 @@
+2025-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/119510
+	* gcc_release: Use --enable-languages=c,c++,lto and if m2 is available,
+	with,m2 appended to that.  Check for all possible languages and run
+	make $lang.srcextra $lang.srcinfo $lang.srcman for those.  Add
+	libffi/doc/libffi.info.
+
 2025-03-28  Richard Biener  <rguenther@suse.de>
 
 	PR other/119510

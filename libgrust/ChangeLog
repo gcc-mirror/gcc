@@ -1,3 +1,13 @@
+2025-03-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* libformat_parser/Makefile.am: Avoid using --config as it is unsupported by cargo 1.49.
+	* libformat_parser/Makefile.in: Regenerate.
+	* libformat_parser/generic_format_parser/src/lib.rs: Use extension trait for missing
+	features.
+	* libformat_parser/src/lib.rs: Likewise.
+	* libformat_parser/.cargo/config: Moved to...
+	* libformat_parser/.cargo/config.toml: ...here.
+
 2025-03-17  badumbatish  <tanghocle456@gmail.com>
 
 	* libformat_parser/generic_format_parser/src/lib.rs:

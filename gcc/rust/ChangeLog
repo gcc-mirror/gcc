@@ -1,3 +1,162 @@
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::resolve_root_path):
+	catch nullptr root_tyty
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::parse_repr_options):
+	check for null and empty and add missing delete call
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty-subst.h: check for min range
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::parse_repr_options): check for input
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* hir/rust-hir-dump.cc (Dump::visit): check has type
+	* hir/tree/rust-hir-type.cc (BareFunctionType::BareFunctionType): likewise
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-constexpr.cc (eval_store_expression): turn this back on
+
+2025-03-31  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* expand/rust-macro-builtins-log-debug.cc:
+	Add newline to end of file.
+
+2025-03-31  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-forever-stack.h
+	(ForeverStack::get_prelude): Rename to...
+	(ForeverStack::get_lang_prelude): ...here.
+	(ForeverStack::prelude): Rename to...
+	(ForeverStack::lang_prelude): ...here.
+	(ForeverStack::ForeverStack): Handle renames.
+	* resolve/rust-forever-stack.hxx
+	(ForeverStack::push_inner): Likewise.
+	(ForeverStack::resolve_segments): Likewise.
+	(ForeverStack::resolve_path): Likewise.
+	(ForeverStack::get_prelude): Rename to...
+	(ForeverStack::get_lang_prelude): ...here and handle renames.
+	* resolve/rust-late-name-resolver-2.0.cc
+	(Late::visit): Handle renames.
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-context.h: only push named types
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): run the type hasher
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-resolve-path.cc (HIRCompileBase::query_compile): check for Expr trait
+	* hir/rust-hir-dump.cc (Dump::visit): expr is optional
+
+2025-03-31  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-forever-stack.hxx: Add a new specialized function
+	to retrieve the last "real" segment depending on the namespace.
+	* resolve/rust-forever-stack.h: Add new function prototype.
+	* resolve/rust-early-name-resolver-2.0.cc (Early::finalize_rebind_import):
+	Set declared name according to the selected segment, if there is a self
+	suffix in the use declaration then select the previous segment.
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-base.cc (HIRCompileBase::unit_expression): pass ctx
+	* backend/rust-compile-base.h: cant be static
+	* backend/rust-compile-intrinsic.cc (try_handler_inner): pass ctx
+	* backend/rust-compile-type.cc
+	(TyTyResolveCompile::get_unit_type): update to grab the first locus
+	(TyTyResolveCompile::visit): pass ctx
+	* backend/rust-compile-type.h: likewise
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-dot-operator.cc:
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* resolve/rust-ast-resolve-path.cc (ResolvePath::resolve_path): check for super mid path
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-base.cc (HIRCompileBase::address_expression): new helper constexpr
+	* backend/rust-compile-base.h: prototype
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): call constexpr helper
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::resolve_impl_block_substitutions):
+	Track the polarity
+	* typecheck/rust-tyty-bounds.cc (TypeBoundPredicate::validate_type_implements_this):
+	new validator
+	* typecheck/rust-tyty.h: new prototypes
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::array_value_expr): add value chk for array expr
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-trait-reference.h: add default infer arg
+	* typecheck/rust-hir-trait-resolve.cc: dont add new infer vars
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_segments): dont infer
+
+2025-03-31  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* checks/errors/rust-ast-validation.cc
+	(ASTValidation::visit): Allow constant items lacking expressions
+	if and only if they're associated with a trait definition, not a
+	trait implementation.
+
+2025-03-31  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* hir/rust-ast-lower-base.cc
+	(ASTLoweringBase::lower_literal): Lower raw string literals into
+	normal string literals.
+
+2025-03-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* checks/errors/borrowck/ffi-polonius/Cargo.lock: Regenerate.
+	* checks/errors/borrowck/ffi-polonius/Cargo.toml: Update to use source patching instead of
+	vendoring, lower edition to 2018.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/Cargo.toml: Change edition to 2018.
+	* checks/errors/borrowck/ffi-polonius/vendor/log/src/lib.rs: Remove uses of unstable
+	feature.
+	* checks/errors/borrowck/ffi-polonius/.cargo/config.toml: Removed.
+
+2025-03-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* hir/tree/rust-hir-stmt.h (class LetStmt): Add optional diverging else expression.
+	* hir/tree/rust-hir-stmt.cc: Likewise.
+	* hir/rust-ast-lower-stmt.cc (ASTLoweringStmt::visit): Add handling for lowering
+	diverging else.
+
+2025-03-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-ast-resolve-stmt.h: Add handling for diverging else.
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Likewise.
+
+2025-03-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Add handling for diverging else
+	expression.
+
+2025-03-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* parse/rust-parse-impl.h (Parser::parse_let_stmt): Add new parsing in case of `else` token.
+
+2025-03-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-stmt.h (class LetStmt): Add optional expression for diverging else.
+	* ast/rust-ast-builder.cc (Builder::let): Use new API.
+
 2025-03-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* metadata/rust-export-metadata.cc

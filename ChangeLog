@@ -1,3 +1,7 @@
+2025-03-31  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* MAINTAINERS: Update my name.
+
 2025-03-28  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/119513

@@ -1,3 +1,60 @@
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110498
+	* include/bits/vector.tcc (vector<bool, A>::_M_reallocate):
+	Hoist loads of begin() and end() before allocation and use them
+	to state an unreachable condition.
+	* testsuite/23_containers/vector/bool/capacity/110498.cc: New
+	test.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114758
+	* include/bits/vector.tcc (vector<bool, A>::_M_fill_insert):
+	Hoist loads of begin() and end() before allocation.
+	* testsuite/23_containers/vector/bool/capacity/114758.cc: New
+	test.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/119550
+	* acinclude.m4 (GLIBCXX_STRUCT_TM_TM_ZONE): New macro.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use GLIBCXX_STRUCT_TM_TM_ZONE.
+	* include/bits/chrono_io.h (__formatter_chrono::_M_c): Check
+	_GLIBCXX_USE_STRUCT_TM_TM_ZONE instead of
+	_GLIBCXX_HAVE_STRUCT_TM_TM_ZONE.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.21): Make
+	std::basic_string::_M_construct patterns more precise.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/119545
+	* include/std/tuple (operator==): Convert comparison results to
+	bool.
+	* testsuite/20_util/tuple/comparison_operators/119545.cc: New
+	test.
+
+2025-03-31  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119517
+	* include/bits/chrono_io.h (formatter):
+	Add __format::__char for _CharT and adjust parse and format
+	method signatures.
+	* testsuite/std/time/format/pr119517.cc: New test.
+
+2025-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/103827
+	PR tree-optimization/80331
+	PR tree-optimization/87502
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.34): Use [jmy] rather than m
+	in pattern for _M_construct<bool>(char const*, size_t).
+
 2025-03-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR tree-optimization/103827

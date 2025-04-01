@@ -1,3 +1,100 @@
+2025-03-31  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR gcov-profile/119553
+	* path-coverage.cc (find_paths): Return path count, don't
+	write to gcno, and rename to ...
+	(instrument_prime_paths): ... this.
+	* profile.cc (branch_prob): Write path counts to gcno.
+
+2025-03-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116960
+	PR c++/119303
+	* diagnostic.cc (diagnostic_context::report_diagnostic): Check for
+	non-zero m_lock later, after checking diagnostic_enabled.
+
+2025-03-31  Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (SME): Remove SVE2 as
+	prerequisite and add in FCMA and F16FML.
+	* config/aarch64/aarch64.cc (aarch64_override_options_internal):
+	Diagnose use of SME without SVE2 and implicitly enable SVE2 when
+	enabling SME after streaming mode diagnosis.
+	* doc/invoke.texi (sme): Document that this can only be used with the
+	sve2 extension.
+
+2025-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119532
+	* tree-tailcall.cc (process_assignment): FAIL for fixed-point
+	typed functions.
+
+2025-03-31  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/119541
+	* gimplify.cc (modify_call_for_omp_dispatch): Limit interop claues
+	processing by the number of append_args arguments.
+
+2025-03-31  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/119442
+	* expr.cc (store_constructor): Also allow element modes explicitly
+	accepted by target vec_duplicate pattern.
+
+2025-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR target/119010
+	* config/i386/sse.md (*vmov<mode>_constm1_pternlog_false_dep):
+	Add mode attribute.
+
+2025-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR target/119010
+	* config/i386/zn4zn5.md (znver4_sse_mov_fp_load,
+	znver5_sse_mov_fp_load): Also match ssemov2.
+
+2025-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR target/119010
+	* config/i386/zn4zn5.md (znver4_sse_log_evex_store,
+	znver5_sse_log_evex_store): New reservations.
+
+2025-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR target/119010
+	* config/i386/zn4zn5.md (znver4_sse_icvt): Use sseicvt.
+	(znver4_sse_icvt_store): Likewise.
+	(znver5_sse_icvt_store): Likewise.
+	(znver4_sse_icvt2): New.
+
+2025-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR target/119010
+	* config/i386/zn4zn5.md (znver4_sse_div_pd,
+	znver4_sse_div_pd_load, znver5_sse_div_pd_load): Handle DFmode.
+
+2025-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR target/119010
+	* config/i386/zn4zn5.md (znver4_sse_cmp_avx128,
+	znver5_sse_cmp_avx128): Handle TImode.
+	(znver4_sse_cmp_avx256, znver5_sse_cmp_avx256): Handle OImode.
+	(znver4_sse_cmp_avx512, znver5_sse_cmp_avx512): Handle XImode.
+
+2025-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR target/119010
+	* config/i386/zn4zn5.md (znver4_sse_test): Drop test of
+	prefix_extra attribute.
+
+2025-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR target/119010
+	* config/i386/zn4zn5.md (znver4_sse_log1): Rename to
+	znver4_sse_log1_store.
+	(znver5_sse_log1): Rename to znver5_sse_log1_store.
+	(znver4_sse_log1): New memory-less variant.
+
 2025-03-30  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* doc/extend.texi (New/Delete Builtins): Cleanup up the text and

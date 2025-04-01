@@ -1,3 +1,226 @@
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3613.rs: New test.
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3606.rs: New test.
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3605.rs: New test.
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3614.rs: New test.
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3615.rs: New test.
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3563.rs: New test.
+
+2025-03-31  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macros/mbe/macro43.rs: Adjust test to pass with
+	name resolution 2.0.
+	* rust/compile/nr2/exclude: Remove macros/mbe/macro43.rs.
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3588.rs: New test.
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3552.rs: New test.
+
+2025-03-31  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/self_import_namespace.rs: New test.
+
+2025-03-31  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove now passing tests from exclusion
+	list.
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3554-1.rs: New test.
+	* rust/compile/issue-3554-2.rs: New test.
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 puts out a different error multiple times
+	* rust/compile/issue-3568.rs: New test.
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3566-1.rs: New test.
+	* rust/compile/issue-3566-2.rs: New test.
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3553.rs: New test.
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3567.rs: New test.
+
+2025-03-31  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/issue-2905-2.rs: Import from core library into a single
+	file misses the crate directives.
+
+2025-03-31  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3242.rs: no longer skip the test
+
+2025-03-31  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/issue-3541-1.rs: New test.
+	* rust/compile/issue-3541-2.rs: Likewise.
+
+2025-03-31  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/cfg-core1.rs: New test.
+	* rust/compile/cfg-core2.rs: New test.
+
+2025-03-31  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/issue-3549.rs: New test.
+
+2025-03-31  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/const_generics_3.rs: Modify test to run with name
+	resolution 2.0 only and to handle the absence of a bogus
+	resolution error.
+	* rust/compile/nr2/exclude: Remove const_generics_3.rs.
+
+2025-03-31  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove test from exclusion list.
+
+2025-03-31  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/issue-2330.rs: Use complete path from crate root.
+	* rust/compile/issue-1901.rs: Likewise.
+	* rust/compile/issue-1981.rs: Likewise.
+	* rust/compile/iterators1.rs: Likewise.
+	* rust/compile/sizeof-stray-infer-var-bug.rs: Likewise.
+	* rust/compile/for-loop1.rs: Likewise.
+	* rust/compile/for-loop2.rs: Likewise.
+	* rust/compile/torture/builtin_abort.rs: Likewise.
+	* rust/compile/torture/uninit-intrinsic-1.rs: Likewise.
+
+2025-03-31  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/feature_rust_attri0.rs: Add extern
+	function declaration and change name to printf.
+	* rust/compile/nr2/exclude: Remove now passing test from exclusion
+	list.
+
+2025-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/117002
+	* gdc.dg/torture/pr117002.d: New test.
+
+2025-03-31  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116960
+	PR c++/119303
+	* g++.dg/cpp2a/lambda-uneval26.C: New test.
+	* g++.dg/warn/undefined2.C: New test.
+
+2025-03-31  Andre Simoes Dias Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/no-sve-with-sme-1.c: New.
+	* gcc.target/aarch64/no-sve-with-sme-2.c: New.
+	* gcc.target/aarch64/no-sve-with-sme-3.c: New.
+	* gcc.target/aarch64/no-sve-with-sme-4.c: New.
+	* gcc.target/aarch64/pragma_cpp_predefs_4.c: Pass +sve2 to existing
+	+sme pragma.
+	* gcc.target/aarch64/sve/acle/general-c/binary_int_opt_single_n_2.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binary_opt_single_n_2.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binary_single_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_int_opt_single_1.c:
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_lane_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_lane_2.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_lane_3.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_lane_4.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_opt_single_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_opt_single_2.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_opt_single_3.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_uint_opt_single_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/binaryxn_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/clamp_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/compare_scalar_count_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/dot_za_slice_int_lane_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/dot_za_slice_lane_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/dot_za_slice_lane_2.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/dot_za_slice_uint_lane_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/shift_right_imm_narrowxn_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/storexn_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_mfloat8_lane_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_mfloat8_lane_group_selection_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_qq_or_011_lane_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/unary_convertxn_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/unary_convertxn_narrow_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/unary_convertxn_narrowt_1.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/unary_za_slice_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/unaryxn_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/write_za_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/write_za_slice_1.c: Likewise.
+
+2025-03-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119401
+	* g++.dg/cpp2a/lambda-targ11.C: New test.
+	* g++.dg/cpp2a/lambda-targ12.C: New file.
+
+2025-03-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119532
+	* gcc.dg/torture/pr119532.c: New testcase.
+
+2025-03-31  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/vect-fmaxmin-2.c: New compile test.  Split from ...
+	* gcc.target/arm/vect-fmaxmin.c: ... here.  Remove scan-assembler
+	subtests.  For both, add -funsafe-math-optimizations.
+
+2025-03-31  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/119442
+	* gcc.target/aarch64/vls_sve_vec_dup_1.c: New test.
+
+2025-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119518
+	* g++.dg/opt/pr119518.C: New test.
+
 2025-03-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/tree-ssa/pr80331.C: New test.

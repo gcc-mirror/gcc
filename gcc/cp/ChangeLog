@@ -1,3 +1,16 @@
+2025-03-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119401
+	* pt.cc (regenerate_decl_from_template): Don't regenerate if the
+	signature involves a lambda.
+
+2025-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119518
+	* decl.cc (finish_function): Don't set TREE_NOTHROW for
+	functions with "noipa" attribute even when we can prove
+	they can't throw.
+
 2025-03-29  Jason Merrill  <jason@redhat.com>
 
 	* decl.cc (duplicate_decls): Don't clobber DECL_MODULE_IMPORT_P with
