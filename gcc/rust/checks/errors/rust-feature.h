@@ -51,6 +51,7 @@ public:
     RAW_REF_OP,
     EXCLUSIVE_RANGE_PATTERN,
     PRELUDE_IMPORT,
+    MIN_SPECIALIZATION,
   };
 
   const std::string &as_string () { return m_name_str; }
