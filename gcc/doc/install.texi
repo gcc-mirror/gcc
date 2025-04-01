@@ -312,6 +312,12 @@ documentation including the target @code{SYSTEM} definition module.
 If Python3 is unavailable Modula-2 documentation will include a target
 independent version of the SYSTEM modules.
 
+@item @anchor{gccrs-prerequisite}gccrs
+
+The official Rust compiler and Rust build system (cargo) are required for
+building various parts of the gccrs frontend, until gccrs can compile them
+by itself. The minimum supported Rust version is 1.49.
+
 @item A ``working'' POSIX compatible shell, or GNU bash
 
 Necessary when running @command{configure} because some
