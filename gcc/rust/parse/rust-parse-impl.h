@@ -7153,9 +7153,9 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 // Parses a block expression, including the curly braces at start and end.
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::BlockExpr>
-Parser<ManagedTokenSource>::parse_block_expr (AST::AttrVec outer_attrs,
-					      AST::LoopLabel label,
-					      location_t pratt_parsed_loc)
+Parser<ManagedTokenSource>::parse_block_expr (
+  AST::AttrVec outer_attrs, tl::optional<AST::LoopLabel> label,
+  location_t pratt_parsed_loc)
 {
   location_t locus = pratt_parsed_loc;
   if (locus == UNKNOWN_LOCATION)
@@ -7563,14 +7563,14 @@ Parser<ManagedTokenSource>::parse_continue_expr (AST::AttrVec outer_attrs,
 
 // Parses a loop label used in loop expressions.
 template <typename ManagedTokenSource>
-AST::LoopLabel
+tl::optional<AST::LoopLabel>
 Parser<ManagedTokenSource>::parse_loop_label (const_TokenPtr tok)
 {
   // parse lifetime - if doesn't exist, assume no label
   if (tok->get_id () != LIFETIME)
     {
       // not necessarily an error
-      return AST::LoopLabel::error ();
+      return tl::nullopt;
     }
   /* FIXME: check for named lifetime requirement here? or check in semantic
    * analysis phase? */
@@ -7579,10 +7579,11 @@ Parser<ManagedTokenSource>::parse_loop_label (const_TokenPtr tok)
   if (!skip_token (COLON))
     {
       // skip somewhere?
-      return AST::LoopLabel::error ();
+      return tl::nullopt;
     }
 
-  return AST::LoopLabel (std::move (label), tok->get_locus ());
+  return tl::optional<AST::LoopLabel> (
+    AST::LoopLabel (std::move (label), tok->get_locus ()));
 }
 
 /* Parses an if expression of any kind, including with else, else if, else if
@@ -7935,16 +7936,16 @@ Parser<ManagedTokenSource>::parse_if_let_expr (AST::AttrVec outer_attrs,
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::LoopExpr>
 Parser<ManagedTokenSource>::parse_loop_expr (AST::AttrVec outer_attrs,
-					     AST::LoopLabel label,
+					     tl::optional<AST::LoopLabel> label,
 					     location_t pratt_parsed_loc)
 {
   location_t locus = pratt_parsed_loc;
   if (locus == UNKNOWN_LOCATION)
     {
-      if (label.is_error ())
-	locus = lexer.peek_token ()->get_locus ();
+      if (label)
+	locus = label->get_locus ();
       else
-	locus = label.get_locus ();
+	locus = lexer.peek_token ()->get_locus ();
 
       if (!skip_token (LOOP))
 	{
@@ -7954,8 +7955,8 @@ Parser<ManagedTokenSource>::parse_loop_expr (AST::AttrVec outer_attrs,
     }
   else
     {
-      if (!label.is_error ())
-	locus = label.get_locus ();
+      if (label)
+	locus = label->get_locus ();
     }
 
   // parse loop body, which is required
@@ -7978,17 +7979,17 @@ Parser<ManagedTokenSource>::parse_loop_expr (AST::AttrVec outer_attrs,
  * via parse_labelled_loop_expr, which would call this. */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::WhileLoopExpr>
-Parser<ManagedTokenSource>::parse_while_loop_expr (AST::AttrVec outer_attrs,
-						   AST::LoopLabel label,
-						   location_t pratt_parsed_loc)
+Parser<ManagedTokenSource>::parse_while_loop_expr (
+  AST::AttrVec outer_attrs, tl::optional<AST::LoopLabel> label,
+  location_t pratt_parsed_loc)
 {
   location_t locus = pratt_parsed_loc;
   if (locus == UNKNOWN_LOCATION)
     {
-      if (label.is_error ())
-	locus = lexer.peek_token ()->get_locus ();
+      if (label)
+	locus = label->get_locus ();
       else
-	locus = label.get_locus ();
+	locus = lexer.peek_token ()->get_locus ();
 
       if (!skip_token (WHILE))
 	{
@@ -7998,8 +7999,8 @@ Parser<ManagedTokenSource>::parse_while_loop_expr (AST::AttrVec outer_attrs,
     }
   else
     {
-      if (!label.is_error ())
-	locus = label.get_locus ();
+      if (label)
+	locus = label->get_locus ();
     }
 
   // ensure it isn't a while let loop
@@ -8051,14 +8052,14 @@ Parser<ManagedTokenSource>::parse_while_loop_expr (AST::AttrVec outer_attrs,
  * parsed via parse_labelled_loop_expr, which would call this. */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::WhileLetLoopExpr>
-Parser<ManagedTokenSource>::parse_while_let_loop_expr (AST::AttrVec outer_attrs,
-						       AST::LoopLabel label)
+Parser<ManagedTokenSource>::parse_while_let_loop_expr (
+  AST::AttrVec outer_attrs, tl::optional<AST::LoopLabel> label)
 {
   location_t locus = UNKNOWN_LOCATION;
-  if (label.is_error ())
-    locus = lexer.peek_token ()->get_locus ();
+  if (label)
+    locus = label->get_locus ();
   else
-    locus = label.get_locus ();
+    locus = lexer.peek_token ()->get_locus ();
   maybe_skip_token (WHILE);
 
   /* check for possible accidental recognition of a while loop as a while let
@@ -8125,14 +8126,14 @@ Parser<ManagedTokenSource>::parse_while_let_loop_expr (AST::AttrVec outer_attrs,
  * parse_labelled_loop_expr, which would call this. */
 template <typename ManagedTokenSource>
 std::unique_ptr<AST::ForLoopExpr>
-Parser<ManagedTokenSource>::parse_for_loop_expr (AST::AttrVec outer_attrs,
-						 AST::LoopLabel label)
+Parser<ManagedTokenSource>::parse_for_loop_expr (
+  AST::AttrVec outer_attrs, tl::optional<AST::LoopLabel> label)
 {
   location_t locus = UNKNOWN_LOCATION;
-  if (label.is_error ())
-    locus = lexer.peek_token ()->get_locus ();
+  if (label)
+    locus = label->get_locus ();
   else
-    locus = label.get_locus ();
+    locus = lexer.peek_token ()->get_locus ();
   maybe_skip_token (FOR);
 
   // parse pattern, which is required
@@ -8210,8 +8211,9 @@ Parser<ManagedTokenSource>::parse_labelled_loop_expr (const_TokenPtr tok,
     }
 
   // parse loop label (required)
-  AST::LoopLabel label = parse_loop_label (tok);
-  if (label.is_error ())
+  // TODO: Convert this return type to tl::expected instead of tl::optional
+  tl::optional<AST::LoopLabel> label = parse_loop_label (tok);
+  if (!label)
     {
       Error error (lexer.peek_token ()->get_locus (),
 		   "failed to parse loop label in labelled loop expr");
@@ -12400,8 +12402,8 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
       return parse_continue_expr (std::move (outer_attrs), tok->get_locus ());
     case LEFT_CURLY:
       // ok - this is an expression with block for once.
-      return parse_block_expr (std::move (outer_attrs),
-			       AST::LoopLabel::error (), tok->get_locus ());
+      return parse_block_expr (std::move (outer_attrs), tl::nullopt,
+			       tok->get_locus ());
     case IF:
       // if or if let, so more lookahead to find out
       if (lexer.peek_token ()->get_id () == LET)
@@ -12417,7 +12419,7 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
     case LIFETIME:
       return parse_labelled_loop_expr (tok, std::move (outer_attrs));
     case LOOP:
-      return parse_loop_expr (std::move (outer_attrs), AST::LoopLabel::error (),
+      return parse_loop_expr (std::move (outer_attrs), tl::nullopt,
 			      tok->get_locus ());
     case WHILE:
       if (lexer.peek_token ()->get_id () == LET)
@@ -12426,13 +12428,11 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
 	}
       else
 	{
-	  return parse_while_loop_expr (std::move (outer_attrs),
-					AST::LoopLabel::error (),
+	  return parse_while_loop_expr (std::move (outer_attrs), tl::nullopt,
 					tok->get_locus ());
 	}
     case FOR:
-      return parse_for_loop_expr (std::move (outer_attrs),
-				  AST::LoopLabel::error ());
+      return parse_for_loop_expr (std::move (outer_attrs), tl::nullopt);
     case MATCH_KW:
       // also an expression with block
       return parse_match_expr (std::move (outer_attrs), tok->get_locus ());

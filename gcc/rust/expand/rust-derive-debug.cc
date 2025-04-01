@@ -50,8 +50,7 @@ DeriveDebug::stub_debug_fn ()
   // we can't use builder.block() here as it returns a unique_ptr<Expr> and
   // Function's constructor expects a unique_ptr<BlockExpr>
   auto block = std::unique_ptr<BlockExpr> (
-    new BlockExpr ({}, std::move (stub_return), {}, {},
-		   AST::LoopLabel::error (), loc, loc));
+    new BlockExpr ({}, std::move (stub_return), {}, {}, tl::nullopt, loc, loc));
 
   auto self = builder.self_ref_param ();
 

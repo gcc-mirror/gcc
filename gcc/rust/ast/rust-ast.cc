@@ -2095,7 +2095,7 @@ WhileLoopExpr::as_string () const
   if (!has_loop_label ())
     str += "none";
   else
-    str += loop_label.as_string ();
+    str += get_loop_label ().as_string ();
 
   str += "\n Conditional expr: " + condition->as_string ();
 
@@ -2115,7 +2115,7 @@ WhileLetLoopExpr::as_string () const
   if (!has_loop_label ())
     str += "none";
   else
-    str += loop_label.as_string ();
+    str += get_loop_label ().as_string ();
 
   str += "\n Match arm patterns: ";
   if (match_arm_patterns.empty ())
@@ -2146,7 +2146,7 @@ LoopExpr::as_string () const
   if (!has_loop_label ())
     str += "none";
   else
-    str += loop_label.as_string ();
+    str += get_loop_label ().as_string ();
 
   str += "\n Loop block: " + loop_block->as_string ();
 
@@ -2183,7 +2183,7 @@ BreakExpr::as_string () const
   std::string str ("break ");
 
   if (has_label ())
-    str += label.as_string () + " ";
+    str += get_label ().as_string () + " ";
 
   if (has_break_expr ())
     str += break_expr->as_string ();
@@ -2545,7 +2545,7 @@ ForLoopExpr::as_string () const
   if (!has_loop_label ())
     str += "none";
   else
-    str += loop_label.as_string ();
+    str += get_loop_label ().as_string ();
 
   str += "\n Pattern: " + pattern->as_string ();
 
