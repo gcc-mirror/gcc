@@ -55,6 +55,9 @@ Feature::create (Feature::Name f)
 		      "1.11.0", 37854);
     case Feature::Name::PRELUDE_IMPORT:
       return Feature (f, Feature::State::ACTIVE, "prelude_import", "1.0.0");
+    case Feature::Name::MIN_SPECIALIZATION:
+      return Feature (f, Feature::State::ACTIVE, "min_specialization",
+		      "1.0.0" /* FIXME: What version here? */, 31844);
     case Feature::Name::AUTO_TRAITS:
       return Feature (f, Feature::State::ACTIVE, "optin_builtin_traits",
 		      "1.0.0", 13231);
@@ -80,6 +83,7 @@ const std::map<std::string, Feature::Name> Feature::name_hash_map = {
   {"raw_ref_op", Feature::Name::RAW_REF_OP},
   {"exclusive_range_pattern", Feature::Name::EXCLUSIVE_RANGE_PATTERN},
   {"prelude_import", Feature::Name::PRELUDE_IMPORT},
+  {"min_specialization", Feature::Name::MIN_SPECIALIZATION},
 }; // namespace Rust
 
 tl::optional<Feature::Name>
