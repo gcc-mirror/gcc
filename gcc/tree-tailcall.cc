@@ -1345,6 +1345,38 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls, bool only_musttail,
       live_vars = NULL;
     }
 
+  if (cfun->has_musttail)
+    {
+      /* We can't mix non-recursive must tail calls with tail recursive
+	 calls which require accumulators, because in that case we have to
+	 emit code in between the musttail calls and return, which prevent
+	 calling them as tail calls.  So, in that case give up on the
+	 tail recursion.  */
+      for (act = tailcalls; act; act = act->next)
+	if (!act->tail_recursion)
+	  {
+	    gcall *call = as_a <gcall *> (gsi_stmt (act->call_gsi));
+	    if (gimple_call_must_tail_p (call))
+	      break;
+	  }
+      if (act)
+	for (struct tailcall **p = &tailcalls; *p; )
+	  {
+	    if ((*p)->tail_recursion && ((*p)->add || (*p)->mult))
+	      {
+		struct tailcall *a = *p;
+		*p = (*p)->next;
+		gcall *call = as_a <gcall *> (gsi_stmt (a->call_gsi));
+		maybe_error_musttail (call,
+				      _("tail recursion with accumulation "
+					"mixed with musttail "
+					"non-recursive call"), diag_musttail);
+		free (a);
+	      }
+	    else
+	      p = &(*p)->next;
+	  }
+    }
   /* Construct the phi nodes and accumulators if necessary.  */
   a_acc = m_acc = NULL_TREE;
   for (act = tailcalls; act; act = act->next)
