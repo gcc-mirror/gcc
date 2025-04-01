@@ -1,3 +1,12 @@
+2025-04-01  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-04-01  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/119559
+	* gimplify.cc (modify_call_for_omp_dispatch): Reorder checks to avoid
+	asserts and bogus diagnostic.
+
 2025-03-31  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

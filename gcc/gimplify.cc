@@ -3953,25 +3953,9 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
      the split between early/late resolution, etc instead of the code
      as written by the user.  */
   if (dispatch_interop)
-    {
-      for (tree t = dispatch_interop; t; t = TREE_CHAIN (t))
-	if (OMP_CLAUSE_CODE (t) == OMP_CLAUSE_INTEROP)
-	  ninterop++;
-      if (nappend < ninterop)
-	{
-	  error_at (OMP_CLAUSE_LOCATION (dispatch_interop),
-		    "number of list items in %<interop%> clause (%d) "
-		    "exceeds the number of %<append_args%> items (%d) for "
-		    "%<declare variant%> candidate %qD",
-		    ninterop, nappend, fndecl);
-	  inform (dispatch_append_args
-		  ? EXPR_LOCATION (TREE_PURPOSE (dispatch_append_args))
-		  : DECL_SOURCE_LOCATION (fndecl),
-		  "%<declare variant%> candidate %qD declared here",
-		  fndecl);
-	  ninterop = nappend;
-	}
-    }
+    for (tree t = dispatch_interop; t; t = TREE_CHAIN (t))
+      if (OMP_CLAUSE_CODE (t) == OMP_CLAUSE_INTEROP)
+	ninterop++;
   if (dispatch_interop && !dispatch_device_num)
     {
       gcc_checking_assert (ninterop > 1);
@@ -3979,7 +3963,19 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
 		"the %<device%> clause must be present if the %<interop%> "
 		"clause has more than one list item");
     }
-  else if (dispatch_append_args)
+  if (nappend < ninterop)
+    {
+      error_at (OMP_CLAUSE_LOCATION (dispatch_interop),
+		"number of list items in %<interop%> clause (%d) "
+		"exceeds the number of %<append_args%> items (%d) for "
+		"%<declare variant%> candidate %qD", ninterop, nappend, fndecl);
+      inform (dispatch_append_args
+	      ? EXPR_LOCATION (TREE_PURPOSE (dispatch_append_args))
+	      : DECL_SOURCE_LOCATION (fndecl),
+	      "%<declare variant%> candidate %qD declared here", fndecl);
+      ninterop = nappend;
+    }
+  if (dispatch_append_args)
     {
       tree *buffer = XALLOCAVEC (tree, nargs + nappend);
       tree arg = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
