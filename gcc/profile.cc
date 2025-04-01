@@ -1340,9 +1340,8 @@ branch_prob (bool thunk)
 	  EDGE_INFO (e)->ignore = 1;
 	  ignored_edges++;
 	}
-      /* Ignore fake edges after musttail calls.  */
-      if ((e->flags & EDGE_FAKE)
-	  && e->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
+      /* Ignore edges after musttail calls.  */
+      if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	{
 	  gimple_stmt_iterator gsi = gsi_last_bb (e->src);
 	  gimple *stmt = gsi_stmt (gsi);
