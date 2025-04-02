@@ -9972,50 +9972,79 @@ always the C-language name.
 @node Structure-Layout Pragmas
 @subsection Structure-Layout Pragmas
 
-For compatibility with Microsoft Windows compilers, GCC supports a
-set of @code{#pragma} directives that change the maximum alignment of
+@cindex pragma, pack
+@cindex pack pragma
+For compatibility with Microsoft Windows compilers, GCC supports a set
+of @code{#pragma pack} directives that change the maximum alignment of
 members of structures (other than zero-width bit-fields), unions, and
-classes subsequently defined. The @var{n} value below always is required
-to be a small power of two and specifies the new alignment in bytes.
+classes subsequently defined. The @var{n} value below specifies the
+new alignment in bytes and may have the value 1, 2, 4, 8, and 16.  A
+value of 0 is also permitted and indicates the default alignment (as if
+no @code{#pragma pack} were in effect) should be used.
 
-@enumerate
-@item @code{#pragma pack(@var{n})} simply sets the new alignment.
-@item @code{#pragma pack()} sets the alignment to the one that was in
+@table @code
+@item #pragma pack(@var{n})
+Sets the new alignment according to @var{n}.
+
+@item #pragma pack()
+Sets the alignment to the one that was in
 effect when compilation started (see also command-line option
-@option{-fpack-struct[=@var{n}]} @pxref{Code Gen Options}).
-@item @code{#pragma pack(push[,@var{n}])} pushes the current alignment
+@option{-fpack-struct[=@var{n}]}.   @xref{Code Gen Options}).
+
+@item #pragma pack(push[,@var{n}])
+Pushes the current alignment
 setting on an internal stack and then optionally sets the new alignment.
-@item @code{#pragma pack(pop)} restores the alignment setting to the one
+
+@item #pragma pack(pop)
+Restores the alignment setting to the one
 saved at the top of the internal stack (and removes that stack entry).
 Note that @code{#pragma pack([@var{n}])} does not influence this internal
 stack; thus it is possible to have @code{#pragma pack(push)} followed by
-multiple @code{#pragma pack(@var{n})} instances and finalized by a single
-@code{#pragma pack(pop)}.
-@end enumerate
+multiple @code{#pragma pack(@var{n})} instances, with the original state
+restored by a single @code{#pragma pack(pop)}.
 
+@end table
+
+You can also use the @code{packed} type attribute (@pxref{Common Type
+Attributes}) to pack a structure.  However, the @code{packed}
+attribute interferes with @code{#pragma pack}, and attempting to use
+them together may cause spurious warnings or unexpected behavior.
+@c FIXME: This is PR 60972.
+
+@cindex pragma, ms_struct
+@cindex ms_struct pragma
+@cindex Microsoft struct layout
 Some targets, e.g.@: x86 and PowerPC, support the @code{#pragma ms_struct}
-directive which lays out structures and unions subsequently defined as the
-documented @code{__attribute__ ((ms_struct))}.
+directive, which causes subsequent structure and union declarations to
+be laid out in the same way as
+@code{__attribute__ ((ms_struct))}; @pxref{x86 Variable Attributes}.
 
-@enumerate
-@item @code{#pragma ms_struct on} turns on the Microsoft layout.
-@item @code{#pragma ms_struct off} turns off the Microsoft layout.
-@item @code{#pragma ms_struct reset} goes back to the default layout.
-@end enumerate
+@table @code
+@item #pragma ms_struct on
+Turns on the Microsoft layout.
+@item #pragma ms_struct off
+Turns off the Microsoft layout.
+@item #pragma ms_struct reset
+Goes back to the default layout.
+@end table
 
+@cindex pragma, scalar_storage_order
 Most targets also support the @code{#pragma scalar_storage_order} directive
-which lays out structures and unions subsequently defined as the documented
-@code{__attribute__ ((scalar_storage_order))}.
+which lays out subsequent structure and union declarations in
+in the same way as the documented
+@code{__attribute__ ((scalar_storage_order))}; @pxref{Common Type Attributes}.
 
-@enumerate
-@item @code{#pragma scalar_storage_order big-endian} sets the storage order
-of the scalar fields to big-endian.
-@item @code{#pragma scalar_storage_order little-endian} sets the storage order
-of the scalar fields to little-endian.
-@item @code{#pragma scalar_storage_order default} goes back to the endianness
+@table @code
+@item #pragma scalar_storage_order big-endian
+@itemx #pragma scalar_storage_order little-endian
+Set the storage order of scalar fields to big- or little-endian,
+respectively.
+
+@item #pragma scalar_storage_order default
+Goes back to the endianness
 that was in effect when compilation started (see also command-line option
 @option{-fsso-struct=@var{endianness}} @pxref{C Dialect Options}).
-@end enumerate
+@end table
 
 @node Weak Pragmas
 @subsection Weak Pragmas
