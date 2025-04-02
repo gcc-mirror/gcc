@@ -604,7 +604,8 @@ package body System.Value_R is
          Bad_Value (Str);
       end if;
 
-      --  Check if the first number encountered is a base
+      --  Check if the first number encountered is a base. ':' is allowed in
+      --  place of '#' in virtue of RM J.2 (3).
 
       pragma Assert (Index >= Str'First);
 
