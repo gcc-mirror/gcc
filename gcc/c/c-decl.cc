@@ -2086,6 +2086,29 @@ previous_tag (tree type)
   return NULL_TREE;
 }
 
+/* Subroutine to mark functions as versioned when using the attribute
+   'target_version'.  */
+
+static void
+maybe_mark_function_versioned (tree decl)
+{
+  if (!DECL_FUNCTION_VERSIONED (decl))
+    {
+      /* We need to insert function version now to make sure the correct
+	 pre-mangled assembler name is recorded.  */
+      cgraph_node *node = cgraph_node::get_create (decl);
+
+      if (!node->function_version ())
+	node->insert_new_function_version ();
+
+      DECL_FUNCTION_VERSIONED (decl) = 1;
+
+      tree mangled_name
+	= targetm.mangle_decl_assembler_name (decl, DECL_NAME (decl));
+      SET_DECL_ASSEMBLER_NAME (decl, mangled_name);
+    }
+}
+
 /* Subroutine of duplicate_decls.  Compare NEWDECL to OLDDECL.
    Returns true if the caller should proceed to merge the two, false
    if OLDDECL should simply be discarded.  As a side effect, issues
@@ -2505,6 +2528,10 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 			"but not here");
 	    }
 	}
+      /* Check if these are unmergable overlapping FMV declarations.  */
+      if (!TARGET_HAS_FMV_TARGET_ATTRIBUTE
+	  && diagnose_versioned_decls (olddecl, newdecl))
+	return false;
     }
   else if (VAR_P (newdecl))
     {
@@ -2971,6 +2998,12 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
+      if (DECL_FUNCTION_VERSIONED (olddecl)
+	  || DECL_FUNCTION_VERSIONED (newdecl))
+	{
+	  maybe_mark_function_versioned (olddecl);
+	  maybe_mark_function_versioned (newdecl);
+	}
       /* If we're redefining a function previously defined as extern
 	 inline, make sure we emit debug info for the inline before we
 	 throw it away, in case it was inlined into a function that
@@ -3370,6 +3403,53 @@ pushdecl (tree x)
 		TREE_TYPE (b_use->decl) = b_use->u.type;
 	    }
 	}
+
+      /* Check if x is part of a FMV set with b_use.  */
+      if (b_use && TREE_CODE (b_use->decl) == FUNCTION_DECL
+	  && TREE_CODE (x) == FUNCTION_DECL && DECL_FILE_SCOPE_P (b_use->decl)
+	  && DECL_FILE_SCOPE_P (x)
+	  && disjoint_version_decls (x, b_use->decl)
+	  && comptypes (vistype, type) != 0)
+	{
+	  maybe_mark_function_versioned (b_use->decl);
+	  maybe_mark_function_versioned (b->decl);
+	  maybe_mark_function_versioned (x);
+
+	  cgraph_node *b_node = cgraph_node::get_create (b_use->decl);
+	  cgraph_function_version_info *b_v = b_node->function_version ();
+	  if (!b_v)
+	    b_v = b_node->insert_new_function_version ();
+
+	  /* Check if this new node conflicts with any previous functions
+	     in the set.  */
+	  cgraph_function_version_info *version = b_v;
+	  for (; version; version = version->next)
+	    if (!disjoint_version_decls (version->this_node->decl, x))
+	      {
+		/* The decls define overlapping version, so attempt to merge
+		   or diagnose the conflict.  */
+		if (duplicate_decls (x, version->this_node->decl))
+		  return version->this_node->decl;
+		else
+		  return error_mark_node;
+	      }
+
+	  /* This is a new version to be added to FMV structure.  */
+	  cgraph_node::add_function_version (b_v, x);
+
+	  /* Get the first node from the structure.  */
+	  cgraph_function_version_info *default_v = b_v;
+	  while (default_v->prev)
+	    default_v = default_v->prev;
+	  /* Always use the default node for the bindings.  */
+	  b_use->decl = default_v->this_node->decl;
+	  b->decl = default_v->this_node->decl;
+
+	  /* Node is not a duplicate, so no need to do the rest of the
+	     checks.  */
+	  return x;
+	}
+
       if (duplicate_decls (x, b_use->decl))
 	{
 	  if (b_use != b)
@@ -4494,6 +4574,12 @@ tree
 lookup_name (tree name)
 {
   struct c_binding *b = I_SYMBOL_BINDING (name);
+  /* Do not resolve non-default function versions.  */
+  if (b
+      && TREE_CODE (b->decl) == FUNCTION_DECL
+      && DECL_FUNCTION_VERSIONED (b->decl)
+      && !is_function_default_version (b->decl))
+    return NULL_TREE;
   if (b && !b->invisible)
     {
       maybe_record_typedef_use (b->decl);
@@ -5775,6 +5861,17 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
   if (c_dialect_objc ()
       && VAR_OR_FUNCTION_DECL_P (decl))
       objc_check_global_decl (decl);
+
+  /* To enable versions to be created across TU's we mark and mangle all
+     non-default versioned functions.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && !TARGET_HAS_FMV_TARGET_ATTRIBUTE
+      && get_target_version (decl).is_valid ())
+    {
+      maybe_mark_function_versioned (decl);
+      if (current_scope != file_scope)
+	error ("versioned declarations are only allowed at file scope");
+    }
 
   /* Add this decl to the current scope.
      TEM may equal DECL or it may be a previous decl of the same name.  */
@@ -10754,6 +10851,17 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
       warn_parm_array_mismatch (origloc, old_decl, parms);
     }
 
+  /* To enable versions to be created across TU's we mark and mangle all
+     non-default versioned functions.  */
+  if (TREE_CODE (decl1) == FUNCTION_DECL
+      && !TARGET_HAS_FMV_TARGET_ATTRIBUTE
+      && get_target_version (decl1).is_valid ())
+    {
+      maybe_mark_function_versioned (decl1);
+      if (current_scope != file_scope)
+	error ("versioned definitions are only allowed at file scope");
+    }
+
   /* Record the decl so that the function name is defined.
      If we already have a decl for this name, and it is a FUNCTION_DECL,
      use the old decl.  */
@@ -13584,6 +13692,10 @@ c_parse_final_cleanups (void)
   FOR_EACH_VEC_ELT (*all_translation_units, i, t)
     c_write_global_declarations_1 (BLOCK_VARS (DECL_INITIAL (t)));
   c_write_global_declarations_1 (BLOCK_VARS (ext_block));
+
+  /* Call this to set cpp_implicit_aliases_done on all nodes.  This is
+     important for function multiversioning aliases to get resolved.  */
+  symtab->process_same_body_aliases ();
 
   if (!in_lto_p)
     free_attr_access_data ();
