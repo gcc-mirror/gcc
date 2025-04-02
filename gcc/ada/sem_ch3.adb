@@ -21246,6 +21246,12 @@ package body Sem_Ch3 is
 
       Discr := First (Discriminant_Specifications (N));
       while Present (Discr) loop
+         if Ekind (Defining_Identifier (Discr)) = E_In_Parameter then
+            Reinit_Field_To_Zero
+              (Defining_Identifier (Discr), F_Discriminal_Link);
+         end if;
+
+         Mutate_Ekind (Defining_Identifier (Discr), E_Discriminant);
          Enter_Name (Defining_Identifier (Discr));
 
          --  For navigation purposes we add a reference to the discriminant
@@ -21521,11 +21527,6 @@ package body Sem_Ch3 is
       while Present (Discr) loop
          Id := Defining_Identifier (Discr);
 
-         if Ekind (Id) = E_In_Parameter then
-            Reinit_Field_To_Zero (Id, F_Discriminal_Link);
-         end if;
-
-         Mutate_Ekind (Id, E_Discriminant);
          Set_Is_Not_Self_Hidden (Id);
          Reinit_Component_Location (Id);
          Reinit_Esize (Id);

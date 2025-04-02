@@ -8026,6 +8026,7 @@ package body Sem_Util is
             --  but the error should be posted on it, not on the component.
 
             elsif Ekind (E) = E_Discriminant
+              and then Is_Not_Self_Hidden (E)
               and then Present (Scope (Def_Id))
               and then Scope (Def_Id) /= Current_Scope
             then
@@ -8051,7 +8052,10 @@ package body Sem_Util is
                --  Avoid cascaded messages with duplicate components in
                --  derived types.
 
-               if Ekind (E) in E_Component | E_Discriminant then
+               if Ekind (E) = E_Component
+                 or else (Ekind (E) = E_Discriminant
+                          and then Is_Not_Self_Hidden (E))
+               then
                   return;
                end if;
             end if;
