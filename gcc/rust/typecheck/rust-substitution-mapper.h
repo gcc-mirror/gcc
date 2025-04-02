@@ -37,6 +37,8 @@ public:
 
   bool have_generic_args () const;
 
+  static bool valid_type (TyTy::BaseType *base);
+
   void visit (TyTy::FnType &type) override;
   void visit (TyTy::ADTType &type) override;
   void visit (TyTy::PlaceholderType &type) override;
