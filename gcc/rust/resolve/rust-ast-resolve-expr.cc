@@ -486,8 +486,8 @@ ResolveExpr::visit (AST::BreakExpr &expr)
 	    &resolved_node))
 	{
 	  rust_error_at (label.get_locus (), ErrorCode::E0426,
-			 "use of undeclared label %qs in %<break%>",
-			 label.get_lifetime_name ().c_str ());
+			 "use of undeclared label %qs",
+			 label.as_string ().c_str ());
 	  return;
 	}
       resolver->insert_resolved_label (label.get_node_id (), resolved_node);
@@ -609,8 +609,8 @@ ResolveExpr::visit (AST::ContinueExpr &expr)
 	    &resolved_node))
 	{
 	  rust_error_at (expr.get_label ().get_locus (), ErrorCode::E0426,
-			 "use of undeclared label %qs in %<continue%>",
-			 label.get_lifetime_name ().c_str ());
+			 "use of undeclared label %qs",
+			 label.as_string ().c_str ());
 	  return;
 	}
       resolver->insert_resolved_label (label.get_node_id (), resolved_node);
