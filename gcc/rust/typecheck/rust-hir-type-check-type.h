@@ -91,20 +91,27 @@ class TypeResolveGenericParam : public TypeCheckBase
 {
 public:
   static TyTy::ParamType *Resolve (HIR::GenericParam &param,
+				   bool resolve_trait_bounds = true,
 				   bool apply_sized = true);
+
+  static void ApplyAnyTraitBounds (HIR::TypeParam &param, TyTy::ParamType *pty);
 
 protected:
   void visit (HIR::TypeParam &param);
   void visit (HIR::LifetimeParam &param);
   void visit (HIR::ConstGenericParam &param);
 
+  void apply_trait_bounds (HIR::TypeParam &param, TyTy::ParamType *pty);
+
 private:
-  TypeResolveGenericParam (bool apply_sized)
-    : TypeCheckBase (), resolved (nullptr), apply_sized (apply_sized)
+  TypeResolveGenericParam (bool apply_sized, bool resolve_trait_bounds)
+    : TypeCheckBase (), resolved (nullptr), apply_sized (apply_sized),
+      resolve_trait_bounds (resolve_trait_bounds)
   {}
 
   TyTy::ParamType *resolved;
   bool apply_sized;
+  bool resolve_trait_bounds;
 };
 
 class ResolveWhereClauseItem : public TypeCheckBase

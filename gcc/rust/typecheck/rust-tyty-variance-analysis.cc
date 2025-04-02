@@ -238,7 +238,7 @@ GenericTyVisitorCtx::process_type (ADTType &ty)
   first_lifetime = lookup_or_add_type (ty.get_orig_ref ());
   first_type = first_lifetime + ty.get_used_arguments ().get_regions ().size ();
 
-  for (const auto &param : ty.get_substs ())
+  for (auto &param : ty.get_substs ())
     param_names.push_back (
       param.get_generic_param ().get_type_representation ().as_string ());
 

@@ -22,10 +22,13 @@
 #include "rust-hir-type-check-implitem.h"
 #include "rust-hir-type-check-item.h"
 #include "rust-hir-type-check.h"
+#include "rust-hir-type-check-type.h"
 #include "rust-casts.h"
 #include "rust-unify.h"
 #include "rust-coercion.h"
 #include "rust-hir-type-bounds.h"
+#include "rust-immutable-name-resolution-context.h"
+#include "options.h"
 
 namespace Rust {
 namespace Resolver {
@@ -34,6 +37,7 @@ bool
 query_type (HirId reference, TyTy::BaseType **result)
 {
   auto &mappings = Analysis::Mappings::get ();
+  auto &resolver = *Resolver::get ();
   TypeCheckContext *context = TypeCheckContext::get ();
 
   if (context->query_in_progress (reference))
@@ -91,6 +95,39 @@ query_type (HirId reference, TyTy::BaseType **result)
       HIR::ImplBlock *impl = impl_block_by_type.value ();
       rust_debug_loc (impl->get_locus (), "resolved impl block type {%u} to",
 		      reference);
+
+      // this could be recursive to the root type
+      if (impl->has_type ())
+	{
+	  HIR::Type &ty = impl->get_type ();
+	  NodeId ref_node_id = UNKNOWN_NODEID;
+	  NodeId ast_node_id = ty.get_mappings ().get_nodeid ();
+
+	  if (flag_name_resolution_2_0)
+	    {
+	      auto &nr_ctx = Resolver2_0::ImmutableNameResolutionContext::get ()
+			       .resolver ();
+
+	      // assign the ref_node_id if we've found something
+	      nr_ctx.lookup (ast_node_id)
+		.map (
+		  [&ref_node_id] (NodeId resolved) { ref_node_id = resolved; });
+	    }
+	  else if (!resolver.lookup_resolved_name (ast_node_id, &ref_node_id))
+	    resolver.lookup_resolved_type (ast_node_id, &ref_node_id);
+
+	  if (ref_node_id != UNKNOWN_NODEID)
+	    {
+	      tl::optional<HirId> hid
+		= mappings.lookup_node_to_hir (ref_node_id);
+	      if (hid.has_value () && context->query_in_progress (hid.value ()))
+		{
+		  context->query_completed (reference);
+		  return false;
+		}
+	    }
+	}
+
       *result = TypeCheckItem::ResolveImplBlockSelf (*impl);
       context->query_completed (reference);
       return true;

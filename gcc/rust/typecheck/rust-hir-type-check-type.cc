@@ -417,8 +417,13 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
       TyTy::BaseType *lookup = nullptr;
       if (!query_type (ref, &lookup))
 	{
-	  if (is_root)
-	    return new TyTy::ErrorType (path.get_mappings ().get_hirid ());
+	  if (is_root || root_tyty == nullptr)
+	    {
+	      rust_error_at (seg->get_locus (),
+			     "failed to resolve type path segment: %qs",
+			     seg->as_string ().c_str ());
+	      return new TyTy::ErrorType (path.get_mappings ().get_hirid ());
+	    }
 
 	  return root_tyty;
 	}
@@ -573,6 +578,7 @@ TypeCheckType::resolve_segments (
 					ignore_mandatory_trait_items);
 	      if (candidates.size () == 0)
 		{
+		  prev_segment->debug ();
 		  rust_error_at (
 		    seg->get_locus (),
 		    "failed to resolve path segment using an impl Probe");
@@ -797,9 +803,10 @@ TypeCheckType::visit (HIR::ImplTraitType &type)
 }
 
 TyTy::ParamType *
-TypeResolveGenericParam::Resolve (HIR::GenericParam &param, bool apply_sized)
+TypeResolveGenericParam::Resolve (HIR::GenericParam &param,
+				  bool resolve_trait_bounds, bool apply_sized)
 {
-  TypeResolveGenericParam resolver (apply_sized);
+  TypeResolveGenericParam resolver (apply_sized, resolve_trait_bounds);
   switch (param.get_kind ())
     {
     case HIR::GenericParam::GenericKind::TYPE:
@@ -815,6 +822,14 @@ TypeResolveGenericParam::Resolve (HIR::GenericParam &param, bool apply_sized)
       break;
     }
   return resolver.resolved;
+}
+
+void
+TypeResolveGenericParam::ApplyAnyTraitBounds (HIR::TypeParam &param,
+					      TyTy::ParamType *pty)
+{
+  TypeResolveGenericParam resolver (true, true);
+  resolver.apply_trait_bounds (param, pty);
 }
 
 void
@@ -835,6 +850,19 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
   if (param.has_type ())
     TypeCheckType::Resolve (param.get_type ());
 
+  resolved
+    = new TyTy::ParamType (param.get_type_representation ().as_string (),
+			   param.get_locus (),
+			   param.get_mappings ().get_hirid (), param, {});
+
+  if (resolve_trait_bounds)
+    apply_trait_bounds (param, resolved);
+}
+
+void
+TypeResolveGenericParam::apply_trait_bounds (HIR::TypeParam &param,
+					     TyTy::ParamType *pty)
+{
   std::unique_ptr<HIR::Type> implicit_self_bound = nullptr;
   if (param.has_type_param_bounds ())
     {
@@ -865,8 +893,6 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
   //
   // We can only do this when we are not resolving the implicit Self for Sized
   // itself
-  rust_debug_loc (param.get_locus (), "apply_sized: %s",
-		  apply_sized ? "true" : "false");
   if (apply_sized)
     {
       TyTy::TypeBoundPredicate sized_predicate
@@ -941,10 +967,8 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
 	}
     }
 
-  resolved = new TyTy::ParamType (param.get_type_representation ().as_string (),
-				  param.get_locus (),
-				  param.get_mappings ().get_hirid (), param,
-				  specified_bounds);
+  // inherit them
+  pty->inherit_bounds (specified_bounds);
 }
 
 void

@@ -32,6 +32,11 @@ class TypeCheckBase
 public:
   virtual ~TypeCheckBase () {}
 
+  static void ResolveGenericParams (
+    const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
+    std::vector<TyTy::SubstitutionParamMapping> &substitutions, bool is_foreign,
+    ABI abi);
+
 protected:
   TypeCheckBase ();
 
@@ -57,7 +62,8 @@ protected:
 
   void resolve_generic_params (
     const std::vector<std::unique_ptr<HIR::GenericParam>> &generic_params,
-    std::vector<TyTy::SubstitutionParamMapping> &substitutions);
+    std::vector<TyTy::SubstitutionParamMapping> &substitutions,
+    bool is_foreign = false, ABI abi = ABI::RUST);
 
   TyTy::TypeBoundPredicate get_marker_predicate (LangItem::Kind item_type,
 						 location_t locus);

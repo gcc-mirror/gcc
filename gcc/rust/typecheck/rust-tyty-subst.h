@@ -44,7 +44,7 @@ class SubstitutionArgumentMappings;
 class SubstitutionParamMapping
 {
 public:
-  SubstitutionParamMapping (const HIR::TypeParam &generic, ParamType *param);
+  SubstitutionParamMapping (HIR::TypeParam &generic, ParamType *param);
 
   SubstitutionParamMapping (const SubstitutionParamMapping &other);
 
@@ -59,7 +59,7 @@ public:
 
   const ParamType *get_param_ty () const;
 
-  const HIR::TypeParam &get_generic_param () const;
+  HIR::TypeParam &get_generic_param ();
 
   // this is used for the backend to override the HirId ref of the param to
   // what the concrete type is for the rest of the context
@@ -76,7 +76,7 @@ public:
   bool need_substitution () const;
 
 private:
-  const HIR::TypeParam &generic;
+  HIR::TypeParam &generic;
   ParamType *param;
 };
 
