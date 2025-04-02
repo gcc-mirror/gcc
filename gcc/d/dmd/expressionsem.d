@@ -1247,6 +1247,9 @@ private Expression resolveUFCS(Scope* sc, CallExp ce)
         }
         else
         {
+            if (arrayExpressionSemantic(ce.arguments.peekSlice(), sc))
+                return ErrorExp.get();
+
             if (Expression ey = die.dotIdSemanticProp(sc, 1))
             {
                 if (ey.op == EXP.error)
@@ -1254,18 +1257,10 @@ private Expression resolveUFCS(Scope* sc, CallExp ce)
                 ce.e1 = ey;
                 if (isDotOpDispatch(ey))
                 {
-                    // even opDispatch and UFCS must have valid arguments,
-                    // so now that we've seen indication of a problem,
-                    // check them for issues.
-                    Expressions* originalArguments = Expression.arraySyntaxCopy(ce.arguments);
-
                     const errors = global.startGagging();
                     e = ce.expressionSemantic(sc);
                     if (!global.endGagging(errors))
                         return e;
-
-                    if (arrayExpressionSemantic(originalArguments.peekSlice(), sc))
-                        return ErrorExp.get();
 
                     /* fall down to UFCS */
                 }
