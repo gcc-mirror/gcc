@@ -48,6 +48,7 @@ public:
   void visit (AST::IdentifierExpr &) override;
   void visit (AST::StructExprFieldIdentifier &) override;
   void visit (AST::BreakExpr &) override;
+  void visit (AST::ContinueExpr &) override;
   void visit (AST::LoopLabel &) override;
   void visit (AST::PathInExpression &) override;
   void visit (AST::TypePath &) override;
@@ -62,6 +63,8 @@ public:
   void visit (AST::ClosureExprInnerTyped &) override;
 
 private:
+  void resolve_label (AST::Lifetime &lifetime);
+
   /* Setup Rust's builtin types (u8, i32, !...) in the resolver */
   void setup_builtin_types ();
 
