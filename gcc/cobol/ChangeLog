@@ -1,3 +1,10 @@
+2025-04-01  Bob Dubner  <rdubner@symas.com>
+
+	* genapi.cc: (section_label): Use xasprintf() instead of sprintf().
+	(paragraph_label): Likewise.  (leave_procedure): Likewise.
+	(find_procedure): Likewise.  (parser_goto): Likewise.
+	(parser_enter_file): Likewise.
+
 2025-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (cobol/charmaps.cc, cobol/valconv.cc): Used sed -e

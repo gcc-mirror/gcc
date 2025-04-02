@@ -1,3 +1,24 @@
+2025-04-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119551
+	* module.cc (trees_out::write_var_def): Only ignore non-inline
+	variable initializers.
+
+2025-04-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* parser.cc (cp_parser_diagnose_invalid_type_name): Replace
+	fmodules-ts with fmodules.
+	(cp_parser_template_declaration): Likewise.
+
+2025-04-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119383
+	* call.cc (build_over_call): Use force_lvalue to ensure op= returns
+	an lvalue.
+	* cp-tree.h (force_lvalue): Declare.
+	* cvt.cc (force_lvalue): New.
+	* typeck.cc (cp_build_indirect_ref_1): Revert r15-8011.
+
 2025-03-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/119401

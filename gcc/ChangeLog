@@ -1,3 +1,128 @@
+2025-04-01  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/118118
+	* doc/extend.texi (Boolean Type): New section.
+
+2025-04-01  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/117689
+	* doc/extend.texi (Incomplete Enums): Rename to....
+	(Enum Extensions): This.  Document support for specifying the
+	underlying type of an enum as an extension in all earlier C
+	and C++ standards.  Document that a forward declaration with
+	underlying type is not an incomplete type, and which dialects
+	GCC supports that in.
+
+2025-04-01  Tom Tromey  <tromey@adacore.com>
+
+	* dwarf2out.cc (modified_type_die): Use mod_scope for
+	ranged types, base types, and array types.
+
+2025-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119493
+	* tree-tailcall.cc (find_tail_calls): Don't punt on tail recusion
+	if some arguments don't have is_gimple_reg_type, only punt if they
+	have non-POD types, or volatile, or addressable or (for now) it is
+	not a musttail call.  Set tailr_arg_needs_copy in those cases too.
+	(eliminate_tail_call): Copy call arguments to params if they don't
+	have is_gimple_reg_type, use temporaries if the argument is used
+	later.
+	(tree_optimize_tail_calls_1): Skip !is_gimple_reg_type
+	tailr_arg_needs_copy parameters.  Formatting fix.
+
+2025-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119291
+	* combine.cc (try_combine): For splitting of PARALLEL with
+	2 independent SETs into i2 and i3 sets check reg_used_between_p
+	of the SET_DESTs rather than just modified_between_p.
+
+2025-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119534
+	* tree-vect-stmts.cc (get_load_store_type): Reject
+	VECTOR_BOOLEAN_TYPE_P offset vector type for emulated gathers.
+
+2025-04-01  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/119173
+	* doc/invoke.texi (Warning Options): Move to general options.
+
+2025-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/119535
+	* profile.cc (branch_prob): Ignore any edges from bbs ending with
+	musttail call, rather than only EDGE_FAKE edges from those to EXIT.
+
+2025-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119493
+	* tree-tailcall.cc (tree_optimize_tail_calls_1): Ignore tail recursion
+	candidates which need accumulators if there is at least one musttail
+	non-recursive call.
+
+2025-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/119537
+	* gimplify.cc (find_used_user_labels): New function.
+	(gimplify_call_expr): Don't remove complex assume expression at -O0
+	if it defines any user labels.
+	* gimple-low.cc: Include diagnostic-core.h.
+	(assume_labels): New variable.
+	(diagnose_assume_labels): New function.
+	(lower_function_body): Call it via walk_gimple_seq if assume_labels
+	is non-NULL, then BITMAP_FREE assume_labels.
+	(find_assumption_locals_r): Record in assume_labels uids of user
+	labels defined in assume attribute expressions.
+
+2025-04-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119369
+	* config/gcn/gcn-protos.h (gcn_asm_weaken_decl): Declare.
+	* config/gcn/gcn.cc (gcn_asm_weaken_decl): New.
+	* config/gcn/gcn-hsa.h (ASM_WEAKEN_DECL): '#define' to this.
+
+2025-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR target/119549
+	* common/config/i386/i386-common.cc (ix86_handle_option):
+	Assert that both OPT_msse4 and OPT_mno_sse4 are never unset.
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_inner_p):
+	Process negated OPT_msse4 as OPT_mno_sse4.
+
+2025-04-01  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/119559
+	* gimplify.cc (modify_call_for_omp_dispatch): Reorder checks to avoid
+	asserts and bogus diagnostic.
+
+2025-04-01  Hu, Lin1  <lin1.hu@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/119473
+	* config/i386/sse.md
+	(vaesdec_<mode>): Set attr "isa" as "avx,vaes_avx512vl", "type" as
+	"sselog1", "mode" as "TI".
+	(vaesdeclast_<mode>): Ditto.
+	(vaesenc_<mode>): Ditto.
+	(vaesenclast_<mode>): Ditto.
+
+2025-04-01  Monk Chiang  <monk.chiang@sifive.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-v.cc: Add restrict for insert LMUL.
+	* config/riscv/riscv-vector-builtins-types.def:
+	Use RVV_REQUIRE_ELEN_64 to check LMUL number.
+	* config/riscv/riscv-vector-switch.def: Likewise.
+	* config/riscv/vector-iterators.md: Check TARGET_VECTOR_ELEN_64
+	rather than "TARGET_MIN_VLEN > 32" for all iterator.
+
+2025-04-01  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* doc/invoke.texi: Corrected the position of '-mtls-dialect=opt'
+	option.
+
 2025-03-31  Jørgen Kvalsvik  <j@lambda.is>
 
 	PR gcov-profile/119553

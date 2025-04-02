@@ -1,3 +1,130 @@
+2025-04-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119551
+	* g++.dg/modules/internal-5_a.C: Add cases that should be
+	ignored.
+	* g++.dg/modules/internal-5_b.C: Test these new cases, and make
+	the testcase more robust.
+	* g++.dg/modules/internal-11.C: New test.
+	* g++.dg/modules/internal-12_a.C: New test.
+	* g++.dg/modules/internal-12_b.C: New test.
+
+2025-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119493
+	* gcc.dg/pr119493-1.c: New test.
+
+2025-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119291
+	* gcc.c-torture/execute/pr119291.c: New test.
+
+2025-04-01  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rv32i_zcmp.c: Tweak testcase for PIE.
+	* gcc.target/riscv/rv32e_zcmp.c: Likewise.
+	* gcc.target/riscv/zcmp_stack_alignment.c: Likewise.
+	* gcc.target/riscv/cm_mv_rv32.c: Likewise.
+	* gcc.target/riscv/cpymem-64.c: Likewise.
+	* gcc.target/riscv/fmax-snan.c: Likewise.
+	* gcc.target/riscv/fmaxf-snan.c: Likewise.
+	* gcc.target/riscv/fmin-snan.c: Likewise.
+	* gcc.target/riscv/fminf-snan.c: Likewise.
+	* gcc.target/riscv/large-model.c: Likewise.
+	* gcc.target/riscv/predef-1.c: Likewise.
+	* gcc.target/riscv/predef-4.c: Likewise.
+	* gcc.target/riscv/predef-7.c: Likewise.
+	* gcc.target/riscv/predef-9.c: Likewise.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2-save-restore.c: Likewise.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2-zcmp.c: Likewise.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2.c: Likewise.
+	* gcc.target/riscv/rvv/base/cmpmem-1.c: Likewise.
+	* gcc.target/riscv/rvv/base/cmpmem-3.c: Likewise.
+	* gcc.target/riscv/rvv/base/cmpmem-4.c: Likewise.
+	* gcc.target/riscv/rvv/base/cpymem-1.c: Likewise.
+	* gcc.target/riscv/rvv/base/movmem-1.c: Likewise.
+	* gcc.target/riscv/rvv/base/pr114352-3.c: Likewise.
+	* gcc.target/riscv/rvv/base/setmem-1.c: Likewise.
+	* gcc.target/riscv/rvv/base/setmem-2.c: Likewise.
+	* gcc.target/riscv/rvv/base/setmem-3.c: Likewise.
+	* gcc.target/riscv/rvv/base/spill-9.c: Likewise.
+	* g++.target/riscv/mv-symbols1.C: Likewise.
+	* g++.target/riscv/mv-symbols3.C: Likewise.
+	* g++.target/riscv/mv-symbols4.C: Likewise.
+	* g++.target/riscv/mv-symbols5.C: Likewise.
+	* g++.target/riscv/mvc-symbols1.C: Likewise.
+	* g++.target/riscv/mvc-symbols3.C: Likewise.
+
+2025-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119534
+	* gcc.dg/vect/pr119534.c: New testcase.
+
+2025-04-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119383
+	* g++.dg/cpp0x/temp-extend3.C: New test.
+
+2025-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/119535
+	* c-c++-common/pr119535.c: New test.
+
+2025-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119493
+	* gcc.dg/pr119493-2.c: New test.
+
+2025-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/119537
+	* c-c++-common/pr119537-1.c: New test.
+	* c-c++-common/pr119537-2.c: New test.
+
+2025-04-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119369
+	* g++.dg/abi/pure-virtual1.C: 'dg-xfail-if' GCN.
+	* g++.dg/cpp0x/pr84497.C: 'dg-skip-if' GCN.
+	* g++.dg/ext/weak2.C: Likewise.
+	* gcc.dg/attr-weakref-1.c: Likewise.
+	* gcc.dg/weak/weak-1.c: Likewise.
+	* gcc.dg/weak/weak-12.c: Likewise.
+	* gcc.dg/weak/weak-15.c: Likewise.
+	* gcc.dg/weak/weak-16.c: Likewise.
+	* gcc.dg/weak/weak-2.c: Likewise.
+	* gcc.dg/weak/weak-3.c: Likewise.
+	* gcc.dg/weak/weak-4.c: Likewise.
+	* gcc.dg/weak/weak-5.c: Likewise.
+
+2025-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR target/119549
+	* gcc.target/i386/pr119549.c: New testcase.
+
+2025-04-01  Liao Shihua  <shihua@iscas.ac.cn>
+
+	* gcc.target/riscv/cmo-zicbop-1.c: Fix missing { before target .
+	* gcc.target/riscv/cmo-zicbop-2.c: Likewise.
+	* gcc.target/riscv/prefetch-zicbop.c:Likewise.
+	* gcc.target/riscv/prefetch-zihintntl.c:Likewise.
+
+2025-04-01  Hu, Lin1  <lin1.hu@intel.com>
+	    Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/119473
+	* gcc.target/i386/pr119473.c: New test.
+
+2025-04-01  Monk Chiang  <monk.chiang@sifive.com>
+	    Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/autovec/pr111391-2.c: Update test.
+	* gcc.target/riscv/rvv/base/abi-14.c: Update test.
+	* gcc.target/riscv/rvv/base/abi-16.c: Update test.
+	* gcc.target/riscv/rvv/base/abi-18.c: Update test.
+	* gcc.target/riscv/rvv/base/vsetvl_zve32-1.c: New test.
+	* gcc.target/riscv/rvv/base/vsetvl_zve32-2.c: New test.
+
 2025-03-31  Philip Herron  <herron.philip@googlemail.com>
 
 	* rust/compile/issue-3613.rs: New test.

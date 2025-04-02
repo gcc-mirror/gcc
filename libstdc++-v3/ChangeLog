@@ -1,3 +1,17 @@
+2025-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114945
+	* include/bits/vector.tcc (vector::_M_default_append): Add
+	unreachable condition so the compiler knows that _M_finish is
+	not null.
+	* testsuite/23_containers/vector/capacity/114945.cc: New test.
+
+2025-04-01  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119369
+	* config/cpu/gcn/cpu_defines.h: New.
+	* configure.host [GCN] (cpu_defines_dir): Point to it.
+
 2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/110498

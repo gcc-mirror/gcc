@@ -1,3 +1,11 @@
+2025-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* strtod/strtod_l.c (____STRTOF_INTERNAL): Avoid old-style function
+	definitions.
+	* printf/addmul_1.c (mpn_addmul_1): Likewise.
+	* printf/mul_1.c (mpn_mul_1): Likewise.
+	* printf/submul_1.c (mpn_submul_1): Likewise.
+
 2025-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* libquadmath.texi: Bump @copying's copyright year.
