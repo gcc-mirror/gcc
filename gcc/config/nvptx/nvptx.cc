@@ -480,9 +480,7 @@ nvptx_encode_section_info (tree decl, rtx rtl, int first)
     {
       nvptx_data_area area = DATA_AREA_GENERIC;
 
-      if (TREE_CONSTANT (decl))
-	area = DATA_AREA_CONST;
-      else if (VAR_P (decl))
+      if (VAR_P (decl))
 	{
 	  if (lookup_attribute ("shared", DECL_ATTRIBUTES (decl)))
 	    {
@@ -492,7 +490,7 @@ nvptx_encode_section_info (tree decl, rtx rtl, int first)
 		       " memory is not supported", decl);
 	    }
 	  else
-	    area = TREE_READONLY (decl) ? DATA_AREA_CONST : DATA_AREA_GLOBAL;
+	    area = DATA_AREA_GLOBAL;
 	}
 
       SET_SYMBOL_DATA_AREA (XEXP (rtl, 0), area);
@@ -2669,7 +2667,7 @@ nvptx_asm_declare_constant_name (FILE *file, const char *name,
   fprintf (file, "\t");
 
   tree type = TREE_TYPE (exp);
-  nvptx_assemble_decl_begin (file, name, ".const", type, obj_size,
+  nvptx_assemble_decl_begin (file, name, ".global", type, obj_size,
 			     TYPE_ALIGN (type));
 }
 

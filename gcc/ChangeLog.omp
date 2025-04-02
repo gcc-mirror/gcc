@@ -1,6 +1,15 @@
 2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-04-03  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119573
+	* config/nvptx/nvptx.cc (nvptx_encode_section_info): Don't set
+	'DATA_AREA_CONST' for 'TREE_CONSTANT', or 'TREE_READONLY'.
+	(nvptx_asm_declare_constant_name): Use '.global' instead of
+	'.const'.
+
+	Backported from trunk:
 	2025-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* config/nvptx/nvptx.cc (nvptx_asm_output_def_from_decls)

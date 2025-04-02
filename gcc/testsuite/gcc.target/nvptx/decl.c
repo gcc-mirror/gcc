@@ -13,8 +13,8 @@ int Foo ()
 }
 
 /* { dg-final { scan-assembler "\[\r\n\]\[\t \]*.visible .global \[^,\r\n\]*glob_export" } } */
-/* { dg-final { scan-assembler "\[\r\n\]\[\t \]*.visible .const \[^,\r\n\]*cst_export" } } */
+/* { dg-final { scan-assembler "\[\r\n\]\[\t \]*.visible .global \[^,\r\n\]*cst_export" } } */
 /* { dg-final { scan-assembler "\[\r\n\]\[\t \]*.global \[^,\r\n\]*glob_local" } } */
-/* { dg-final { scan-assembler "\[\r\n\]\[\t \]*.const \[^,\r\n\]*cst_local" } } */
+/* { dg-final { scan-assembler "\[\r\n\]\[\t \]*.global \[^,\r\n\]*cst_local" } } */
 /* { dg-final { scan-assembler "\[\r\n\]\[\t \]*.extern .global \[^,\r\n\]*glob_import" } } */
-/* { dg-final { scan-assembler "\[\r\n\]\[\t \]*.extern .const \[^,\r\n\]*cst_import" } } */
+/* { dg-final { scan-assembler "\[\r\n\]\[\t \]*.extern .global \[^,\r\n\]*cst_import" } } */

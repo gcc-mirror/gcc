@@ -1,4 +1,3 @@
-/* { dg-skip-if "too big" { nvptx-*-* } } */
 /* PR middle-end/46534 */
 
 extern int printf (const char *, ...);

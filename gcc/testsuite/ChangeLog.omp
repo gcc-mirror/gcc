@@ -1,3 +1,12 @@
+2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-04-03  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119573
+	* gcc.c-torture/compile/pr46534.c: Don't 'dg-skip-if' nvptx.
+	* gcc.target/nvptx/decl.c: Adjust.
+
 2025-04-08  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
