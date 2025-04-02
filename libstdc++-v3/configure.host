@@ -374,11 +374,6 @@ case "${host}" in
      port_specific_symbol_files="\$(srcdir)/../config/os/gnu-linux/arm-eabi-extra.ver"
      ;;
   nvptx-*-none)
-    # For 'make all-target-libstdc++-v3', we need to inject per-file flags:
-    OPTIMIZE_CXXFLAGS="${OPTIMIZE_CXXFLAGS} \$(CXXFLAGS-\$(subdir)/\$@)"
-    # ..., see:
-    tmake_file="$tmake_file cpu/nvptx/t-nvptx"
-
     # For 'make all-target-libstdc++-v3', re 'alloca'/VLA usage:
     EXTRA_CFLAGS="${EXTRA_CFLAGS} -mfake-ptx-alloca"
     OPTIMIZE_CXXFLAGS="${OPTIMIZE_CXXFLAGS} -mfake-ptx-alloca"
