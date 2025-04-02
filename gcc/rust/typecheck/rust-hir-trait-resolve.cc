@@ -157,7 +157,13 @@ TraitResolver::resolve_path_to_trait (const HIR::TypePath &path,
     }
 
   auto resolved_item = mappings.lookup_hir_item (hid.value ());
-  rust_assert (resolved_item.has_value ());
+  if (!resolved_item.has_value ())
+    {
+      rust_error_at (path.get_locus (),
+		     "Failed to resolve trait by looking up hir node");
+      return false;
+    }
+
   if (resolved_item.value ()->get_item_kind () != HIR::Item::ItemKind::Trait)
     {
       rich_location r (line_table, path.get_locus ());

@@ -252,8 +252,12 @@ CompileItem::visit (HIR::Function &function)
   if (function.get_qualifiers ().is_const ())
     ctx->push_const_context ();
 
+  auto lookup_root_item = ctx->get_mappings ().lookup_hir_item (
+    function.get_mappings ().get_hirid ());
+  bool is_root_item = lookup_root_item.has_value ();
   tree fndecl
-    = compile_function (function.get_function_name ().as_string (),
+    = compile_function (is_root_item,
+			function.get_function_name ().as_string (),
 			function.get_self_param (),
 			function.get_function_params (),
 			function.get_qualifiers (), function.get_visibility (),

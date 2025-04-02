@@ -117,7 +117,7 @@ CompileTraitItem::visit (HIR::TraitItemFunc &func)
   auto vis = HIR::Visibility (HIR::Visibility::VisType::PUBLIC);
   HIR::TraitFunctionDecl &function = func.get_decl ();
   tree fndecl
-    = compile_function (function.get_function_name ().as_string (),
+    = compile_function (false, function.get_function_name ().as_string (),
 			function.get_self (), function.get_function_params (),
 			function.get_qualifiers (), vis,
 			func.get_outer_attrs (), func.get_locus (),

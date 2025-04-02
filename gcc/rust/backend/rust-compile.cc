@@ -338,7 +338,7 @@ HIRCompileBase::compute_address_for_trait_item (
 	}
 
       return CompileInherentImplItem::Compile (associated_function, ctx,
-					       lookup_fntype, true, locus);
+					       lookup_fntype, locus);
     }
 
   // we can only compile trait-items with a body
