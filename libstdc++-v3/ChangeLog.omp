@@ -3,6 +3,12 @@
 	Backported from trunk:
 	2025-04-03  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* config/cpu/nvptx/t-nvptx: Remove.
+	* configure.host [nvptx]: Adjust.
+
+	Backported from trunk:
+	2025-04-03  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	PR target/119573
 	* config/cpu/nvptx/t-nvptx (AM_MAKEFLAGS): Don't amend.
 
