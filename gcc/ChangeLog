@@ -1,3 +1,11 @@
+2025-04-01  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	PR target/119372
+	* config/aarch64/aarch64.cc
+	(aarch64_expand_epilogue): Use TARGET_PAUTH.
+	* config/aarch64/aarch64.md: Update comment.
+	(cherry-picked from commit 20385cb92cbd4a1934661ab97a162c1e25935836)
+
 2025-03-11  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
