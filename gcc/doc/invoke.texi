@@ -6145,12 +6145,12 @@ Inhibit all warning messages.
 @opindex Werror
 @opindex Wno-error
 @item -Werror
-Make all warnings into errors.
+Turn all warnings into errors.
 
 @opindex Werror=
 @opindex Wno-error=
 @item -Werror=
-Make the specified warning into an error.  The specifier for a warning
+Turn the specified warning into an error.  The specifier for a warning
 is appended; for example @option{-Werror=switch} turns the warnings
 controlled by @option{-Wswitch} into errors.  This switch takes a
 negative form, to be used to negate @option{-Werror} for specific
