@@ -33,10 +33,12 @@ BEGIN {
 {
     cpucfg_word[NR] = $1
     cpucfg_bit_in_word[NR] = $2
-    name[NR] = gensub(/-/, "_", "g", $3)
+    name[NR] = $3
+    gsub("-", "_", name[NR])
     name_capitalized[NR] = toupper(name[NR])
-    isa_version_major[NR] = gensub(/^([1-9][0-9]*)\.([0-9]+)$/, "\\1", 1, $4)
-    isa_version_minor[NR] = gensub(/^([1-9][0-9]*)\.([0-9]+)$/, "\\2", 1, $4)
+    split($4, isa_ver, "\\.")
+    isa_version_major[NR] = isa_ver[1]
+    isa_version_minor[NR] = isa_ver[2]
 
     $1 = $2 = $3 = $4 = ""
     sub (/^\s*/, "")
