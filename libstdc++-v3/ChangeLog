@@ -1,3 +1,51 @@
+2025-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116212
+	* testsuite/20_util/specialized_algorithms/uninitialized_move/constrained.cc:
+	Use unsigned for vector size.
+
+2025-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (range_common_reference_t): New
+	alias template, as per LWG 3860.
+	* testsuite/std/ranges/range.cc: Check it.
+
+2025-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_map.h: Check __glibcxx_node_extract instead
+	of __cplusplus.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+
+2025-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (packaged_task::packaged_task(F&&)): Add
+	static_assert.
+	* testsuite/30_threads/packaged_task/cons/dangling_ref.cc: Add
+	dg-error for new static assertion.
+	* testsuite/30_threads/packaged_task/cons/lwg4154_neg.cc: New
+	test.
+
+2025-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118699
+	* testsuite/27_io/filesystem/operations/copy.cc: Check copying a
+	file to a directory.
+
 2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

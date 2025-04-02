@@ -1,3 +1,21 @@
+2025-04-01  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-03-11  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-ssa-alias.cc (ao_compare::compare_ao_refs): Fix a
+	copy-and-paste error.
+
+2025-04-01  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-03-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/116572
+	* cgraph.cc (cgraph_update_edges_for_call_stmt): Do not update
+	edges of clones that are unexpanded thunk.  Assert that the node
+	passed as the parameter is not an unexpanded thunk.
+
 2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

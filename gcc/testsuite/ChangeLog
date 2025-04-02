@@ -1,3 +1,19 @@
+2025-04-01  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-04-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119383
+	* g++.dg/cpp0x/temp-extend3.C: New test.
+
+2025-04-01  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-03-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/116572
+	* g++.dg/ipa/pr116572.C: New test.
+
 2025-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
