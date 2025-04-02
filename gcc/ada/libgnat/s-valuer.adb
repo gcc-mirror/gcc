@@ -135,7 +135,9 @@ package body System.Value_R is
       B : constant Uns := Uns (Base);
 
    begin
-      if Digit >= Base / 2 then
+      --  Beware that Base may be odd
+
+      if 2 * Unsigned (Digit) >= Base then
 
          --  If Extra is maximum, round Value
 
