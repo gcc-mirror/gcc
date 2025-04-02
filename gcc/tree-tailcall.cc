@@ -206,14 +206,48 @@ suitable_for_tail_call_opt_p (gcall *call, bool diag_musttail)
 
   /* ??? It is OK if the argument of a function is taken in some cases,
      but not in all cases.  See PR15387 and PR19616.  Revisit for 4.1.  */
-  for (param = DECL_ARGUMENTS (current_function_decl);
-       param;
-       param = DECL_CHAIN (param))
-    if (TREE_ADDRESSABLE (param))
+  if (!diag_musttail || !gimple_call_must_tail_p (call))
+    for (param = DECL_ARGUMENTS (current_function_decl);
+	 param; param = DECL_CHAIN (param))
+      if (TREE_ADDRESSABLE (param))
+	{
+	  maybe_error_musttail (call, _("address of caller arguments taken"),
+				diag_musttail);
+	  return false;
+	}
+
+  if (diag_musttail
+      && gimple_call_must_tail_p (call)
+      && warn_musttail_local_addr)
+    for (unsigned int i = 0; i < gimple_call_num_args (call); i++)
       {
-	maybe_error_musttail (call, _("address of caller arguments taken"),
-			      diag_musttail);
-	return false;
+	tree arg = gimple_call_arg (call, i);
+	if (!POINTER_TYPE_P (TREE_TYPE (arg)))
+	  continue;
+	if (TREE_CODE (arg) == ADDR_EXPR)
+	  {
+	    arg = get_base_address (TREE_OPERAND (arg, 0));
+	    if (auto_var_in_fn_p (arg, current_function_decl))
+	      {
+		if (TREE_CODE (arg) == LABEL_DECL)
+		  warning_at (gimple_location (call), OPT_Wmusttail_local_addr,
+			      "address of label passed to %<musttail%> "
+			      "call argument");
+		else if (TREE_CODE (arg) == PARM_DECL)
+		  warning_at (gimple_location (call), OPT_Wmusttail_local_addr,
+			      "address of parameter %qD passed to "
+			      "%<musttail%> call argument", arg);
+		else if (!DECL_ARTIFICIAL (arg) && DECL_NAME (arg))
+		  warning_at (gimple_location (call), OPT_Wmusttail_local_addr,
+			      "address of automatic variable %qD passed to "
+			      "%<musttail%> call argument", arg);
+		else
+		  warning_at (gimple_location (call), OPT_Wmusttail_local_addr,
+			      "address of local variable passed to "
+			      "%<musttail%> call argument");
+		suppress_warning (call, OPT_Wmaybe_musttail_local_addr);
+	      }
+	  }
       }
 
   return true;
@@ -447,7 +481,7 @@ maybe_error_musttail (gcall *call, const char *err, bool diag_musttail)
 {
   if (gimple_call_must_tail_p (call) && diag_musttail)
     {
-      error_at (call->location, "cannot tail-call: %s", err);
+      error_at (gimple_location (call), "cannot tail-call: %s", err);
       /* Avoid another error. ??? If there are multiple reasons why tail
 	 calls fail it might be useful to report them all to avoid
 	 whack-a-mole for the user. But currently there is too much
@@ -730,6 +764,19 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	{
 	  if (!VAR_P (var))
 	    {
+	      if (diag_musttail && gimple_call_must_tail_p (call))
+		{
+		  auto opt = OPT_Wmaybe_musttail_local_addr;
+		  if (!warning_suppressed_p (call,
+					     opt))
+		    {
+		      warning_at (gimple_location (call), opt,
+				  "address of local variable can escape to "
+				  "%<musttail%> call");
+		      suppress_warning (call, opt);
+		    }
+		  continue;
+		}
 	      if (local_live_vars)
 		BITMAP_FREE (local_live_vars);
 	      maybe_error_musttail (call,
@@ -742,6 +789,24 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	      unsigned int *v = live_vars->get (DECL_UID (var));
 	      if (bitmap_bit_p (local_live_vars, *v))
 		{
+		  if (diag_musttail && gimple_call_must_tail_p (call))
+		    {
+		      auto opt = OPT_Wmaybe_musttail_local_addr;
+		      if (!warning_suppressed_p (call, opt))
+			{
+			  if (!DECL_ARTIFICIAL (var) && DECL_NAME (var))
+			    warning_at (gimple_location (call), opt,
+					"address of automatic variable %qD "
+					"can escape to %<musttail%> call",
+					var);
+			  else
+			    warning_at (gimple_location (call), opt,
+					"address of local variable can escape "
+					"to %<musttail%> call");
+			  suppress_warning (call, opt);
+			}
+		      continue;
+		    }
 		  BITMAP_FREE (local_live_vars);
 		  maybe_error_musttail (call,
 					_("call invocation refers to locals"),
@@ -751,6 +816,22 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	    }
 	}
     }
+  if (diag_musttail
+      && gimple_call_must_tail_p (call)
+      && !warning_suppressed_p (call, OPT_Wmaybe_musttail_local_addr))
+    for (tree param = DECL_ARGUMENTS (current_function_decl);
+	 param; param = DECL_CHAIN (param))
+      if (may_be_aliased (param)
+	  && (ref_maybe_used_by_stmt_p (call, param, false)
+	      || call_may_clobber_ref_p (call, param, false)))
+	{
+	  auto opt = OPT_Wmaybe_musttail_local_addr;
+	  warning_at (gimple_location (call), opt,
+		      "address of parameter %qD can escape to "
+		      "%<musttail%> call", param);
+	  suppress_warning (call, opt);
+	  break;
+	}
 
   if (local_live_vars)
     BITMAP_FREE (local_live_vars);

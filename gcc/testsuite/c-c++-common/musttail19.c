@@ -1,4 +1,4 @@
-/* { dg-do compile { target { musttail && { c || c++11 } } } } */
+/* { dg-do compile { target musttail } } */
 
 float f1(void);
 
@@ -10,8 +10,9 @@ int f2(void)
 
 int f3(int *);
 
-int f4(void)
+int f4(int *p)
 {
   int x;
-  __attribute__((musttail)) return f3(&x); /* { dg-error "\(refers to locals|other reasons\)" } */
+  (void) p;
+  __attribute__((musttail)) return f3(&x); /* { dg-warning "address of automatic variable 'x' passed to 'musttail' call argument" } */
 }

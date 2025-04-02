@@ -157,6 +157,12 @@ UrlSuffix(gcc/Warning-Options.html#index-Wno-unsafe-loop-optimizations)
 Wmissing-noreturn
 UrlSuffix(gcc/Warning-Options.html#index-Wmissing-noreturn)
 
+Wmusttail-local-addr
+UrlSuffix(gcc/Warning-Options.html#index-Wno-musttail-local-addr)
+
+Wmaybe-musttail-local-addr
+UrlSuffix(gcc/Warning-Options.html#index-Wmaybe-musttail-local-addr)
+
 Wodr
 UrlSuffix(gcc/Warning-Options.html#index-Wno-odr)
 

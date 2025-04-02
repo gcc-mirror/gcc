@@ -693,6 +693,14 @@ Does nothing. Preserved for backward compatibility.
 Wmissing-noreturn
 Common Warning Alias(Wsuggest-attribute=noreturn)
 
+Wmusttail-local-addr
+Common Var(warn_musttail_local_addr) Init(1) Warning
+Warn about passing a pointer/reference to a local or temporary variable to a musttail call argument.
+
+Wmaybe-musttail-local-addr
+Common Var(warn_maybe_musttail_local_addr) Warning EnabledBy(Wextra)
+Warn about pointer/reference to a local or temporary variable possibly escaping to a musttail call.
+
 Wodr
 Common Var(warn_odr_violations) Init(1) Warning
 Warn about some C++ One Definition Rule violations during link time optimization.

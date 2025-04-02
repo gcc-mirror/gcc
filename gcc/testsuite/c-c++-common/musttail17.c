@@ -1,4 +1,4 @@
-/* { dg-do compile { target { musttail && { c || c++11 } } } } */
+/* { dg-do compile { target musttail } } */
 
 struct box { char field[64]; int i; };
 

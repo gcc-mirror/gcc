@@ -9323,10 +9323,51 @@ __attribute__((musttail)) return bar();
 
 If the compiler cannot generate a @code{musttail} tail call it will report
 an error.  On some targets tail calls may never be supported.
-Tail calls cannot reference locals in memory, which may affect
-builds without optimization when passing small structures, or passing
-or returning large structures.  Enabling @option{-O1} or @option{-O2} can
-improve the success of tail calls.
+The user asserts for @code{musttail} tail calls that lifetime of automatic
+variables, function parameters and temporaries (unless they have non-trivial
+destruction) can end before the actual call instruction and that any access
+to those from inside of the called function results is considered undefined
+behavior.  Enabling @option{-O1} or @option{-O2} can improve the success of
+tail calls.
+
+@smallexample
+int foo (int *);
+void bar (int *);
+struct S @{ S (); ~S (); int s; @};
+
+int
+baz (int *x)
+@{
+  if (*x == 1)
+    @{
+      int a = 42;
+      /* The call will be tail called (would not be without the
+         attribute), dereferencing the pointer in the callee is
+         undefined behavior and there will be a warning emitted
+         for this by default (@option{-Wmusttail-local-addr}).  */
+      [[gnu::musttail]] return foo (&a);
+    @}
+  else if (*x == 2)
+    @{
+      int a = 42;
+      bar (&a);
+      /* The call will be tail called (would not be without the
+         attribute), if bar stores the pointer anywhere, dereferencing
+         it in foo will be undefined behavior and there will be a warning
+         emitted for this with @option{-Wextra}, which implies
+         @option{-Wmaybe-musttail-local-addr}.  */
+      [[gnu::musttail]] return foo (nullptr);
+    @}
+  else
+    @{
+      S s;
+      /* The s variable requires non-trivial destruction which ought
+         to be performed after the foo call returns, so this will
+         be rejected.  */
+      [[gnu::musttail]] return foo (&s.s);
+    @}
+@}
+@end smallexample
 @end table
 
 @node Attribute Syntax

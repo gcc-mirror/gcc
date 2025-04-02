@@ -1,4 +1,4 @@
-/* { dg-do compile { target { musttail && { c || c++11 } } } } */
+/* { dg-do compile { target musttail } } */
 /* { dg-additional-options "-fdelayed-branch" { target sparc*-*-* } } */
 
 int __attribute__((noinline,noclone,noipa))
