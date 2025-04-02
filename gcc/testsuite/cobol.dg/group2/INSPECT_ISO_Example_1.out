@@ -1,0 +1,9 @@
+  INPUT                C0 C1 C2 C3 C4 OUTPUT
+  -------------------- -- -- -- -- -- ----------------
+  EFABDBCGABEFGG       03 01 01 00 05 TUXYXVWRXYZZPZ
+* EFABDBCGABEFGG       03 01 01 00 05 TUXYXVWRXYZZPZ
+  BABABC               02 00 00 01 01 SXYXYZ
+* BABABC               02 00 00 01 01 SXYXYZ
+  BBBC                 00 01 00 02 00 SSVW
+* BBBC                 00 01 00 02 00 SSVW
+

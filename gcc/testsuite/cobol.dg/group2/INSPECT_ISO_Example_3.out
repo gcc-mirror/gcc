@@ -1,0 +1,13 @@
+  INPUT                C0 C1 C2 OUTPUT
+  -------------------- -- -- -- --------------------
+  BBEABDABABBCABE      03 00 02 BBEXYZXYXYZCABV
+* BBEABDABABBCABE      03 00 02 BBEXYZXYXYZCABV
+  ADDDDC               00 00 04 AZZZZC
+* ADDDDC               00 00 04 AZZZZC
+  ADDDDA               00 00 05 AZZZZZ
+* ADDDDA               00 00 05 AZZZZZ
+  CDDDDC               00 00 00 CDDDDC
+* CDDDDC               00 00 00 CDDDDC
+  BDBBBDB              00 03 00 BDWWWDB
+* BDBBBDB              00 03 00 BDWWWDB
+

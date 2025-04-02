@@ -1,0 +1,14 @@
+AAXAAAYAAAAZAAAAA
+Forward:
+FOR ALL A                  014
+FOR ALL A after X          012
+FOR ALL A before Z         009
+FOR ALL A after X before Z 007
+FOR TRAILING A             052
+Backward:
+FOR ALL A                  061
+FOR ALL A after X          002
+FOR ALL A before Z         005
+FOR ALL A after Z before X 007
+FOR TRAILING A             002
+
