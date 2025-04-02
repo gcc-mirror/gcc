@@ -68,7 +68,7 @@ extern void check_init_u32 (__u32 v);
 /* Adapted/reduced from arch/x86/kernel/cpu/mtrr/if.c: mtrr_ioctl,
    which is GPL-2.0  */
 
-long mtrr_ioctl(unsigned int cmd, unsigned long __arg) {
+long mtrr_ioctl(unsigned int cmd, __UINTPTR_TYPE__ __arg) {
   int err = 0;
   struct mtrr_sentry sentry;
   struct mtrr_gentry gentry;
