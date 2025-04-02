@@ -9368,6 +9368,31 @@ baz (int *x)
     @}
 @}
 @end smallexample
+
+To avoid the @option{-Wmaybe-musttail-local-addr} warning in the
+above @code{*x == 2} case and similar code, consider defining the
+maybe escaped variables in a separate scope which will end before the
+return statement if possible to make it clear that the variable is not
+live during the call.  So
+
+@smallexample
+  else if (*x == 2)
+    @{
+      @{
+        int a = 42;
+        bar (&a);
+      @}
+      /* The call will be tail called (would not be without the
+         attribute), if bar stores the pointer anywhere, dereferencing
+         it in foo will be undefined behavior and there will be a warning
+         emitted for this with @option{-Wextra}, which implies
+         @option{-Wmaybe-musttail-local-addr}.  */
+      [[gnu::musttail]] return foo (nullptr);
+    @}
+@end smallexample
+
+in this case.  That is not possible if it is function argument which
+is address taken because those are in scope for the whole function.
 @end table
 
 @node Attribute Syntax
