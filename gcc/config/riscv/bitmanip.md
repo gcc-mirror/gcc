@@ -80,7 +80,9 @@
 						    (match_operand:DI 3 "consecutive_bits_operand")) 0)
 				 (subreg:SI (match_operand:DI 4 "register_operand") 0))))]
   "TARGET_64BIT && TARGET_ZBA
-   && riscv_shamt_matches_mask_p (INTVAL (operands[2]), INTVAL (operands[3]))"
+   && riscv_shamt_matches_mask_p (INTVAL (operands[2]), INTVAL (operands[3]))
+   /* Ensure the mask includes all the bits in SImode.  */
+   && ((INTVAL (operands[3]) & (HOST_WIDE_INT_1U << 31)) != 0)"
   [(set (match_dup 0) (plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 4)))
    (set (match_dup 0) (zero_extend:DI (subreg:SI (match_dup 0) 0)))])
 
