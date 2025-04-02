@@ -57,7 +57,7 @@
    We also force _GLIBCXX_USE_LONG_LONG here so that we don't have
    to bastardize configure to deal with this sillyness.  */
 
-#ifdef __cplusplus
+#if __cplusplus >= 201103L
 namespace std
 {
   extern "C"
