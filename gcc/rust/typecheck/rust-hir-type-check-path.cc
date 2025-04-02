@@ -336,7 +336,7 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
       TyTy::BaseType *lookup = nullptr;
       if (!query_type (ref, &lookup))
 	{
-	  if (is_root)
+	  if (is_root || root_tyty == nullptr)
 	    {
 	      rust_error_at (expr.get_locus (), ErrorCode::E0425,
 			     "cannot find value %qs in this scope",

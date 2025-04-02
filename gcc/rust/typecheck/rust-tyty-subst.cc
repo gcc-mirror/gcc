@@ -28,8 +28,8 @@
 namespace Rust {
 namespace TyTy {
 
-SubstitutionParamMapping::SubstitutionParamMapping (
-  const HIR::TypeParam &generic, ParamType *param)
+SubstitutionParamMapping::SubstitutionParamMapping (HIR::TypeParam &generic,
+						    ParamType *param)
   : generic (generic), param (param)
 {}
 
@@ -66,8 +66,8 @@ SubstitutionParamMapping::get_param_ty () const
   return param;
 }
 
-const HIR::TypeParam &
-SubstitutionParamMapping::get_generic_param () const
+HIR::TypeParam &
+SubstitutionParamMapping::get_generic_param ()
 {
   return generic;
 }

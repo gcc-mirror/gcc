@@ -165,36 +165,9 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
   HIR::TraitFunctionDecl &function = fn.get_decl ();
   if (function.has_generics ())
     {
-      for (auto &generic_param : function.get_generic_params ())
-	{
-	  switch (generic_param.get ()->get_kind ())
-	    {
-	      case HIR::GenericParam::GenericKind::LIFETIME: {
-		auto lifetime_param
-		  = static_cast<HIR::LifetimeParam &> (*generic_param);
-
-		context->intern_and_insert_lifetime (
-		  lifetime_param.get_lifetime ());
-		// TODO: Handle lifetime bounds
-	      }
-	      break;
-	    case HIR::GenericParam::GenericKind::CONST:
-	      // FIXME: Skipping Lifetime and Const completely until better
-	      // handling.
-	      break;
-
-	      case HIR::GenericParam::GenericKind::TYPE: {
-		auto param_type
-		  = TypeResolveGenericParam::Resolve (*generic_param);
-		context->insert_type (generic_param->get_mappings (),
-				      param_type);
-
-		substitutions.push_back (TyTy::SubstitutionParamMapping (
-		  static_cast<HIR::TypeParam &> (*generic_param), param_type));
-	      }
-	      break;
-	    }
-	}
+      TypeCheckBase::ResolveGenericParams (function.get_generic_params (),
+					   substitutions, false /*is_foreign*/,
+					   ABI::RUST);
     }
 
   if (function.has_where_clause ())
