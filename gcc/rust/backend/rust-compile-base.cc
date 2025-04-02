@@ -663,7 +663,7 @@ get_abi (const AST::AttrVec &outer_attrs,
 
 tree
 HIRCompileBase::compile_function (
-  const std::string &fn_name, HIR::SelfParam &self_param,
+  bool is_root_item, const std::string &fn_name, HIR::SelfParam &self_param,
   std::vector<HIR::FunctionParam> &function_params,
   const HIR::FunctionQualifiers &qualifiers, HIR::Visibility &visibility,
   AST::AttrVec &outer_attrs, location_t locus, HIR::BlockExpr *function_body,
@@ -674,7 +674,7 @@ HIRCompileBase::compile_function (
     = canonical_path.get () + fntype->subst_as_string ();
 
   // we don't mangle the main fn since we haven't implemented the main shim
-  bool is_main_fn = fn_name.compare ("main") == 0;
+  bool is_main_fn = fn_name.compare ("main") == 0 && is_root_item;
   if (is_main_fn)
     {
       rust_assert (!main_identifier_node);

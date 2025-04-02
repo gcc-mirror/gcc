@@ -286,10 +286,10 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 	{
 	  if (!lookup->has_substitutions_defined ())
 	    return CompileInherentImplItem::Compile (resolved_item->first, ctx,
-						     nullptr, true, expr_locus);
+						     nullptr, expr_locus);
 	  else
 	    return CompileInherentImplItem::Compile (resolved_item->first, ctx,
-						     lookup, true, expr_locus);
+						     lookup, expr_locus);
 	}
       else if (auto trait_item
 	       = ctx->get_mappings ().lookup_hir_trait_item (ref))
@@ -372,11 +372,10 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 
 	      if (!lookup->has_substitutions_defined ())
 		return CompileInherentImplItem::Compile (impl_item, ctx,
-							 nullptr, true,
-							 expr_locus);
+							 nullptr, expr_locus);
 	      else
 		return CompileInherentImplItem::Compile (impl_item, ctx, lookup,
-							 true, expr_locus);
+							 expr_locus);
 	    }
 	}
     }

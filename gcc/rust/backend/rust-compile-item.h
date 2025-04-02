@@ -35,10 +35,6 @@ public:
   {
     CompileItem compiler (ctx, concrete, ref_locus);
     item->accept_vis (compiler);
-
-    if (compiler.reference == error_mark_node)
-      rust_debug ("failed to compile item: %s", item->as_string ().c_str ());
-
     return compiler.reference;
   }
 
