@@ -156,6 +156,9 @@ package body System.Value_F is
       pragma Assert (Num < 0 and then Den < 0);
       --  Accept only negative numbers to allow -2**(Int'Size - 1)
 
+      pragma Unsuppress (Overflow_Check);
+      --  Use overflow check to catch bad values
+
       function Safe_Expont
         (Base   : Int;
          Exp    : in out Natural;
@@ -224,38 +227,52 @@ package body System.Value_F is
 
       B : constant Int := Int (Base);
 
-      V : Uns := Val;
-      E : Uns := Uns (Extra);
+      V : Uns     := Val;
+      S : Integer := ScaleB;
+      E : Uns     := Uns (Extra);
 
       Y, Z, Q1, R1, Q2, R2 : Int;
 
    begin
+      --  The implementation of Value_R uses fully symmetric arithmetics
+      --  but here we cannot handle 2**(Int'Size - 1) if Minus is not set.
+
+      if V = 2**(Int'Size - 1) and then not Minus then
+         E := V rem Uns (B);
+         V := V / Uns (B);
+         S := S + 1;
+      end if;
+
       --  We will use a scaled divide operation for which we must control the
       --  magnitude of operands so that an overflow exception is not unduly
       --  raised during the computation. The only real concern is the exponent.
 
-      --  If ScaleB is too negative, then drop trailing digits, but preserve
-      --  the last dropped digit.
+      --  If S is too negative, then drop trailing digits, but preserve the
+      --  last dropped digit, until V saturates to 0.
 
-      if ScaleB < 0 then
+      if S < 0 then
          declare
-            LS : Integer := -ScaleB;
+            LS : Integer := -S;
 
          begin
             Y := Den;
             Z := Safe_Expont (B, LS, Num);
 
             for J in 1 .. LS loop
+               if V = 0 then
+                  E := 0;
+                  exit;
+               end if;
                E := V rem Uns (B);
                V := V / Uns (B);
             end loop;
          end;
 
-      --  If ScaleB is too positive, then scale V up, which may then overflow
+      --  If S is too positive, then scale V up, which may then overflow
 
-      elsif ScaleB > 0 then
+      elsif S > 0 then
          declare
-            LS : Integer := ScaleB;
+            LS : Integer := S;
 
          begin
             Y := Safe_Expont (B, LS, Den);
@@ -271,7 +288,7 @@ package body System.Value_F is
             end loop;
          end;
 
-      --  If ScaleB is zero, then proceed directly
+      --  If S is zero, then proceed directly
 
       else
          Y := Den;
