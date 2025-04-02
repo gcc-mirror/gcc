@@ -28,4 +28,6 @@ torture/loop4.rs
 torture/loop8.rs
 torture/name_resolve1.rs
 issue-3568.rs
+issue-3663.rs
+issue-3671.rs
 # please don't delete the trailing newline
