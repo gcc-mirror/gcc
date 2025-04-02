@@ -11312,8 +11312,10 @@ __gg__adjust_dest_size(cblc_field_t *dest, size_t ncount)
     {
     if( dest->allocated < ncount )
       {
-      dest->allocated = ncount;
-      dest->data = (unsigned char *)realloc(dest->data, ncount);
+      fprintf(stderr, "libgcobol.cc:__gg__adjust_dest_size(): Adjusting size upward is not possible.\n");
+      abort();
+//      dest->allocated = ncount;
+//      dest->data = (unsigned char *)realloc(dest->data, ncount);
       }
     dest->capacity = ncount;
     }
@@ -12643,7 +12645,7 @@ __gg__module_name(cblc_field_t *dest, module_type_t type)
       break;
     }
 
-__gg__adjust_dest_size(dest, strlen(result));
+  __gg__adjust_dest_size(dest, strlen(result));
   memcpy(dest->data, result, strlen(result)+1);
   }
 

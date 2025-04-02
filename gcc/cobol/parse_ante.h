@@ -41,6 +41,7 @@
 
 #define MAXLENGTH_FORMATTED_DATE     10
 #define MAXLENGTH_FORMATTED_TIME     19
+#define MAXLENGTH_CALENDAR_DATE      21
 #define MAXLENGTH_FORMATTED_DATETIME 30
 
 #pragma GCC diagnostic push
@@ -220,7 +221,7 @@ namcpy(const YYLTYPE& loc, cbl_name_t tgt, const char *src ) {
 }
 
 cbl_field_t *
-new_alphanumeric( size_t capacity );
+new_alphanumeric( size_t capacity = MAXIMUM_ALPHA_LENGTH );
 
 static inline cbl_refer_t *
 new_reference( enum cbl_field_type_t type, const char *initial ) {

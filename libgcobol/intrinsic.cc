@@ -3494,6 +3494,10 @@ __gg__reverse(cblc_field_t *dest,
     {
     dest->data[i] = (input->data+input_offset)[source_length-1-i];
     }
+  if( (dest->attr & intermediate_e) )
+    {
+    dest->capacity = std::min(dest_length, source_length);
+    }
   }
 
 extern "C"

@@ -6647,7 +6647,10 @@ parser_division(cbl_division_t division,
 
           if( args[i].refer.field->attr & any_length_e )
             {
-            //gg_printf("side channel 0x%lx\n", gg_array_value(var_decl_call_parameter_lengths, rt_i), NULL_TREE);
+            // gg_printf("side channel: Length of \"%s\" is %ld\n", 
+                      // member(args[i].refer.field->var_decl_node, "name"),
+                      // gg_array_value(var_decl_call_parameter_lengths, rt_i), 
+                      // NULL_TREE);
 
             // Get the length from the global lengths[] side channel.  Don't
             // forget to use the length mask on the table value.
@@ -16753,55 +16756,47 @@ parser_symbol_add(struct cbl_field_t *new_var )
 
         if( bytes_to_allocate )
           {
-          if(    new_var->attr & (intermediate_e)
-              && new_var->type != FldLiteralN
-              && new_var->type != FldLiteralA )
+          // We need a unique name for the allocated data for this COBOL variable:
+          char achDataName[256];
+          if( new_var->attr & external_e )
             {
-            // We'll malloc() data in initialize_variable
-            data_area = null_pointer_node;
+            sprintf(achDataName, "%s", new_var->name);
+            }
+          else if( new_var->name[0] == '_' )
+            {
+            // Avoid doubling up on leading underscore
+            sprintf(achDataName,
+                    "%s_data_%lu",
+                    new_var->name,
+                    sv_data_name_counter++);
             }
           else
             {
-            // We need a unique name for the allocated data for this COBOL variable:
-            char achDataName[256];
-            if( new_var->attr & external_e )
-              {
-              sprintf(achDataName, "%s", new_var->name);
-              }
-            else if( new_var->name[0] == '_' )
-              {
-              // Avoid doubling up on leading underscore
-              sprintf(achDataName,
-                      "%s_data_%lu",
-                      new_var->name,
-                      sv_data_name_counter++);
-              }
-            else
-              {
-              sprintf(achDataName,
-                      "_%s_data_%lu",
-                      new_var->name,
-                      sv_data_name_counter++);
-              }
+            sprintf(achDataName,
+                    "_%s_data_%lu",
+                    new_var->name,
+                    sv_data_name_counter++);
+            }
 
-            if( new_var->attr & external_e )
-              {
-              tree array_type = build_array_type_nelts(UCHAR, bytes_to_allocate);
-              new_var->data_decl_node = gg_define_variable(
-                                  array_type,
-                                  achDataName,
-                                  vs_external);
-              data_area = gg_get_address_of(new_var->data_decl_node);
-              }
-            else
-              {
-              tree array_type = build_array_type_nelts(UCHAR, bytes_to_allocate);
-              new_var->data_decl_node = gg_define_variable(
-                                  array_type,
-                                  achDataName,
-                                  vs_static);
-              data_area = gg_get_address_of(new_var->data_decl_node);
-              }
+          if( new_var->attr & external_e )
+            {
+            tree array_type = build_array_type_nelts(UCHAR, bytes_to_allocate);
+            new_var->data_decl_node = gg_define_variable(
+                                array_type,
+                                achDataName,
+                                vs_external);
+            data_area = gg_get_address_of(new_var->data_decl_node);
+            }
+          else
+            {
+            gg_variable_scope_t vs_scope = (new_var->attr & intermediate_e)
+                                            ? vs_stack : vs_static ;
+            tree array_type = build_array_type_nelts(UCHAR, bytes_to_allocate);
+            new_var->data_decl_node = gg_define_variable(
+                                array_type,
+                                achDataName,
+                                vs_scope);
+            data_area = gg_get_address_of(new_var->data_decl_node);
             }
           }
         }

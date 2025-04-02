@@ -224,6 +224,12 @@ enum symbol_type_t {
   SymDataSection,
 };
 
+// The ISO specification says alphanumeric literals have a maximum length of
+// 8,191 characters.  It seems to be silent on the length of alphanumeric data
+// items.  Our implementation requires a maximum length, so we chose to make it
+// the same.
+#define MAXIMUM_ALPHA_LENGTH 8192
+
 struct cbl_field_data_t {
   uint32_t memsize;             // nonzero if larger subsequent redefining field
   uint32_t capacity,            // allocated space
