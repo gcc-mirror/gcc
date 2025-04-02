@@ -57,21 +57,7 @@ namespace chrono
 /// @cond undocumented
 namespace __detail
 {
-  // STATICALLY-WIDEN, see C++20 [time.general]
-  // It doesn't matter for format strings (which can only be char or wchar_t)
-  // but this returns the narrow string for anything that isn't wchar_t. This
-  // is done because const char* can be inserted into any ostream type, and
-  // will be widened at runtime if necessary.
-  template<typename _CharT>
-    consteval auto
-    _Widen(const char* __narrow, const wchar_t* __wide)
-    {
-      if constexpr (is_same_v<_CharT, wchar_t>)
-	return __wide;
-      else
-	return __narrow;
-    }
-#define _GLIBCXX_WIDEN_(C, S) ::std::chrono::__detail::_Widen<C>(S, L##S)
+#define _GLIBCXX_WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
 #define _GLIBCXX_WIDEN(S) _GLIBCXX_WIDEN_(_CharT, S)
 
   template<typename _Period, typename _CharT>

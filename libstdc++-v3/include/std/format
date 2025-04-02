@@ -80,8 +80,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 /// @cond undocumented
 namespace __format
 {
-  // Type-erased character sink.
+  // STATICALLY-WIDEN, see C++20 [time.general]
+  // It doesn't matter for format strings (which can only be char or wchar_t)
+  // but this returns the narrow string for anything that isn't wchar_t. This
+  // is done because const char* can be inserted into any ostream type, and
+  // will be widened at runtime if necessary.
+  template<typename _CharT>
+    consteval auto
+    _Widen(const char* __narrow, const wchar_t* __wide)
+    {
+      if constexpr (is_same_v<_CharT, wchar_t>)
+	return __wide;
+      else
+	return __narrow;
+    }
+#define _GLIBCXX_WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
+#define _GLIBCXX_WIDEN(S) _GLIBCXX_WIDEN_(_CharT, S)
+
+  // Type-erased character sinks.
   template<typename _CharT> class _Sink;
+  template<typename _CharT> class _Fixedbuf_sink;
+  template<typename _Seq> class _Seq_sink;
+
+  template<typename _CharT, typename _Alloc = allocator<_CharT>>
+    using _Str_sink
+      = _Seq_sink<basic_string<_CharT, char_traits<_CharT>, _Alloc>>;
+
+  // template<typename _CharT, typename _Alloc = allocator<_CharT>>
+  // using _Vec_sink = _Seq_sink<vector<_CharT, _Alloc>>;
+
   // Output iterator that writes to a type-erase character sink.
   template<typename _CharT>
     class _Sink_iter;
@@ -848,6 +875,286 @@ namespace __format
 				      __spec._M_fill);
     }
 
+  // Values are indices into _Escapes::all.
+  enum class _Term_char : unsigned char {
+    _Tc_quote = 12,
+    _Tc_apos = 15
+  };
+
+  template<typename _CharT>
+    struct _Escapes
+    {
+      using _Str_view = basic_string_view<_CharT>;
+
+      static consteval
+      _Str_view _S_all()
+      { return _GLIBCXX_WIDEN("\t\\t\n\\n\r\\r\\\\\\\"\\\"'\\'\\u\\x"); }
+
+      static constexpr
+      _CharT _S_term(_Term_char __term)
+      { return _S_all()[static_cast<unsigned char>(__term)]; }
+
+      static consteval
+      _Str_view _S_tab()
+      { return _S_all().substr(0, 3); }
+
+      static consteval
+      _Str_view _S_newline()
+      { return _S_all().substr(3, 3); }
+
+      static consteval
+      _Str_view _S_return()
+      { return _S_all().substr(6, 3); }
+
+      static consteval
+      _Str_view _S_bslash()
+      { return _S_all().substr(9, 3); }
+
+      static consteval
+      _Str_view _S_quote()
+      { return _S_all().substr(12, 3); }
+
+      static consteval
+      _Str_view _S_apos()
+      { return _S_all().substr(15, 3); }
+
+      static consteval
+      _Str_view _S_u()
+      { return _S_all().substr(18, 2); }
+
+      static consteval
+      _Str_view _S_x()
+      { return _S_all().substr(20, 2); }
+    };
+
+  template<typename _CharT>
+    struct _Separators
+    {
+      using _Str_view = basic_string_view<_CharT>;
+
+      static consteval
+      _Str_view _S_all()
+      { return _GLIBCXX_WIDEN("{}"); }
+
+      static consteval
+      _Str_view _S_braces()
+      { return _S_all().substr(0, 2); }
+    };
+
+  template<typename _CharT>
+    constexpr bool __should_escape_ascii(_CharT __c, _Term_char __term)
+    {
+      using _Esc = _Escapes<_CharT>;
+      switch (__c)
+	{
+	  case _Esc::_S_tab()[0]:
+	  case _Esc::_S_newline()[0]:
+	  case _Esc::_S_return()[0]:
+	  case _Esc::_S_bslash()[0]:
+	    return true;
+	  case _Esc::_S_quote()[0]:
+	    return __term == _Term_char::_Tc_quote;
+	  case _Esc::_S_apos()[0]:
+	    return __term == _Term_char::_Tc_apos;
+	  default:
+	    return (__c >= 0 && __c < 0x20) || __c == 0x7f;
+	};
+  }
+
+  // @pre __c <= 0x10FFFF
+  constexpr bool __should_escape_unicode(char32_t __c, bool __prev_esc)
+  {
+    if (__unicode::__should_escape_category(__c))
+      return __c != U' ';
+    if (!__prev_esc)
+      return false;
+    return __unicode::__grapheme_cluster_break_property(__c)
+	     == __unicode::_Gcb_property::_Gcb_Extend;
+  }
+
+  using uint_least32_t = __UINT_LEAST32_TYPE__;
+  template<typename _Out, typename _CharT>
+    _Out
+    __write_escape_seq(_Out __out, uint_least32_t __val,
+		       basic_string_view<_CharT> __prefix)
+    {
+      using _Str_view = basic_string_view<_CharT>;
+      constexpr size_t __max = 8;
+      char __buf[__max];
+      const string_view __narrow(
+	__buf,
+	std::__to_chars_i<uint_least32_t>(__buf, __buf + __max, __val, 16).ptr);
+
+      __out = __format::__write(__out, __prefix);
+      *__out = _Separators<_CharT>::_S_braces()[0];
+      ++__out;
+      if constexpr (is_same_v<char, _CharT>)
+	__out = __format::__write(__out, __narrow);
+#ifdef _GLIBCXX_USE_WCHAR_T
+      else
+	{
+	  _CharT __wbuf[__max];
+	  const size_t __n = __narrow.size();
+	  std::__to_wstring_numeric(__narrow.data(), __n, __wbuf);
+	  __out = __format::__write(__out, _Str_view(__wbuf, __n));
+	}
+#endif
+      *__out = _Separators<_CharT>::_S_braces()[1];
+      return ++__out;
+    }
+
+  template<typename _Out, typename _CharT>
+    _Out
+    __write_escaped_char(_Out __out, _CharT __c)
+    {
+      using _UChar = make_unsigned_t<_CharT>;
+      using _Esc = _Escapes<_CharT>;
+      switch (__c)
+	{
+	  case _Esc::_S_tab()[0]:
+	    return __format::__write(__out, _Esc::_S_tab().substr(1, 2));
+	  case _Esc::_S_newline()[0]:
+	    return __format::__write(__out, _Esc::_S_newline().substr(1, 2));
+	  case _Esc::_S_return()[0]:
+	    return __format::__write(__out, _Esc::_S_return().substr(1, 2));
+	  case _Esc::_S_bslash()[0]:
+	    return __format::__write(__out, _Esc::_S_bslash().substr(1, 2));
+	  case _Esc::_S_quote()[0]:
+	    return __format::__write(__out, _Esc::_S_quote().substr(1, 2));
+	  case _Esc::_S_apos()[0]:
+	    return __format::__write(__out, _Esc::_S_apos().substr(1, 2));
+	  default:
+	    return __format::__write_escape_seq(__out,
+				static_cast<_UChar>(__c),
+						_Esc::_S_u());
+	}
+    }
+
+  template<typename _CharT, typename _Out>
+    _Out
+    __write_escaped_ascii(_Out __out,
+			  basic_string_view<_CharT> __str,
+			  _Term_char __term)
+    {
+      using _Str_view = basic_string_view<_CharT>;
+      auto __first = __str.begin();
+      auto const __last = __str.end();
+      while (__first != __last)
+      {
+	auto __print = __first;
+	// assume anything outside ASCII is printable
+	while (__print != __last
+		 && !__format::__should_escape_ascii(*__print, __term))
+	  ++__print;
+
+	if (__print != __first)
+	  __out = __format::__write(__out, _Str_view(__first, __print));
+
+	if (__print == __last)
+	  return __out;
+
+	__first = __print;
+	__out = __format::__write_escaped_char(__out, *__first);
+	++__first;
+      }
+      return __out;
+    }
+
+  template<typename _CharT, typename _Out>
+    _Out
+    __write_escaped_unicode(_Out __out,
+			    basic_string_view<_CharT> __str,
+			    _Term_char __term)
+    {
+      using _Str_view = basic_string_view<_CharT>;
+      using _UChar = make_unsigned_t<_CharT>;
+      using _Esc = _Escapes<_CharT>;
+
+      static constexpr char32_t __replace = U'\uFFFD';
+      static constexpr _Str_view __replace_rep = []
+	{
+	  // N.B. "\uFFFD" is ill-formed if encoding is not unicode.
+	  if constexpr (is_same_v<char, _CharT>)
+	    return "\xEF\xBF\xBD";
+	  else
+	    return L"\xFFFD";
+	}();
+
+      __unicode::_Utf_view<char32_t, _Str_view> __v(std::move(__str));
+      auto __first = __v.begin();
+      auto const __last = __v.end();
+
+      bool __prev_esc = true;
+      while (__first != __last)
+	{
+	  bool __esc_ascii = false;
+	  bool __esc_unicode = false;
+	  bool __esc_replace = false;
+	  auto __should_escape = [&](auto const& __it)
+	    {
+	      if (*__it <= 0x7f)
+		return __esc_ascii
+			 = __format::__should_escape_ascii(*__it.base(), __term);
+	      if (__format::__should_escape_unicode(*__it, __prev_esc))
+		return __esc_unicode = true;
+	      if (*__it == __replace)
+		{
+		  _Str_view __units(__it.base(), __it._M_units());
+		  return __esc_replace = (__units != __replace_rep);
+		}
+	      return false;
+	    };
+
+	  auto __print = __first;
+	  while (__print != __last && !__should_escape(__print))
+	    {
+	      __prev_esc = false;
+	      ++__print;
+	    }
+
+	  if (__print != __first)
+	    __out = __format::__write(__out, _Str_view(__first.base(), __print.base()));
+
+	  if (__print == __last)
+	    return __out;
+
+	  __first = __print;
+	  if (__esc_ascii)
+	    __out = __format::__write_escaped_char(__out, *__first.base());
+	  else if (__esc_unicode)
+	    __out = __format::__write_escape_seq(__out, *__first, _Esc::_S_u());
+	  else // __esc_replace
+	    for (_CharT __c : _Str_view(__first.base(), __first._M_units()))
+	      __out = __format::__write_escape_seq(__out,
+						   static_cast<_UChar>(__c),
+						   _Esc::_S_x());
+	  __prev_esc = true;
+	  ++__first;
+
+	}
+      return __out;
+    }
+
+  template<typename _CharT, typename _Out>
+    _Out
+    __write_escaped(_Out __out,  basic_string_view<_CharT> __str, _Term_char __term)
+    {
+      *__out = _Escapes<_CharT>::_S_term(__term);
+      ++__out;
+
+      if constexpr (__unicode::__literal_encoding_is_unicode<_CharT>())
+	__out = __format::__write_escaped_unicode(__out, __str, __term);
+      else if constexpr (is_same_v<char, _CharT>
+			  && __unicode::__literal_encoding_is_extended_ascii())
+	__out = __format::__write_escaped_ascii(__out, __str, __term);
+      else
+	// TODO Handle non-ascii extended encoding
+	__out = __format::__write_escaped_ascii(__out, __str, __term);
+
+      *__out = _Escapes<_CharT>::_S_term(__term);
+      return ++__out;
+    }
+
   // A lightweight optional<locale>.
   struct _Optional_locale
   {
@@ -961,7 +1268,7 @@ namespace __format
 
 	if (*__first == 's')
 	  ++__first;
-#if __cpp_lib_format_ranges
+#if __glibcxx_format_ranges // C++ >= 23 && HOSTED
 	else if (*__first == '?')
 	  {
 	    __spec._M_type = _Pres_esc;
@@ -980,43 +1287,71 @@ namespace __format
 	format(basic_string_view<_CharT> __s,
 	       basic_format_context<_Out, _CharT>& __fc) const
 	{
-	  if (_M_spec._M_type == _Pres_esc)
+	  constexpr auto __term = __format::_Term_char::_Tc_quote;
+	  const auto __write_direct = [&]
 	    {
-	      // TODO: C++23 escaped string presentation
-	    }
+	      if (_M_spec._M_type == _Pres_esc)
+		return __format::__write_escaped(__fc.out(), __s, __term);
+	      else
+		return __format::__write(__fc.out(), __s);
+	    };
 
 	  if (_M_spec._M_width_kind == _WP_none
 		&& _M_spec._M_prec_kind == _WP_none)
-	    return __format::__write(__fc.out(), __s);
+	    return __write_direct();
 
-	  size_t __estimated_width;
-	  if constexpr (__unicode::__literal_encoding_is_unicode<_CharT>())
-	    {
-	      if (_M_spec._M_prec_kind != _WP_none)
-		{
-		  size_t __prec = _M_spec._M_get_precision(__fc);
-		  __estimated_width = __unicode::__truncate(__s, __prec);
-		}
-	      else
-		__estimated_width = __unicode::__field_width(__s);
-	    }
-	  else
-	    {
-	      __s = __s.substr(0, _M_spec._M_get_precision(__fc));
-	      __estimated_width = __s.size();
-	    }
+	  const size_t __prec =
+	    _M_spec._M_prec_kind != _WP_none
+	      ? _M_spec._M_get_precision(__fc)
+	      : basic_string_view<_CharT>::npos;
 
-	  return __format::__write_padded_as_spec(__s, __estimated_width,
+	  const size_t __estimated_width = _S_trunc(__s, __prec);
+	  // N.B. Escaping only increases width
+	  if (_M_spec._M_get_width(__fc) <= __estimated_width
+		&& _M_spec._M_prec_kind == _WP_none)
+	     return __write_direct();
+
+	  if (_M_spec._M_type != _Pres_esc)
+	    return __format::__write_padded_as_spec(__s, __estimated_width,
+						    __fc, _M_spec);
+
+	  __format::_Str_sink<_CharT> __sink;
+	  __format::_Sink_iter<_CharT> __out(__sink);
+	  __format::__write_escaped(__out, __s, __term);
+	  basic_string_view<_CharT> __escaped(__sink.view().data(),
+					      __sink.view().size());
+	  const size_t __escaped_width = _S_trunc(__escaped, __prec);
+	  // N.B. [tab:format.type.string] defines '?' as
+	  // Copies the escaped string ([format.string.escaped]) to the output,
+	  // so precision seem to appy to escaped string.
+	  return __format::__write_padded_as_spec(__escaped, __escaped_width,
 						  __fc, _M_spec);
 	}
 
-#if __cpp_lib_format_ranges
+#if __glibcxx_format_ranges // C++ >= 23 && HOSTED
       constexpr void
       set_debug_format() noexcept
       { _M_spec._M_type = _Pres_esc; }
 #endif
 
     private:
+      static size_t
+      _S_trunc(basic_string_view<_CharT>& __s, size_t __prec)
+      {
+	if constexpr (__unicode::__literal_encoding_is_unicode<_CharT>())
+	 {
+	   if (__prec != basic_string_view<_CharT>::npos)
+	     return __unicode::__truncate(__s, __prec);
+	   else
+	     return __unicode::__field_width(__s);
+	 }
+       else
+	{
+	  __s = __s.substr(0, __prec);
+	  return __s.size();
+	}
+      }
+
       _Spec<_CharT> _M_spec{};
     };
 
@@ -1120,7 +1455,7 @@ namespace __format
 		++__first;
 	      }
 	    break;
-#if __cpp_lib_format_ranges
+#if __glibcxx_format_ranges // C++ >= 23 && HOSTED
 	  case '?':
 	    if (__type == _AsChar)
 	      {
@@ -1272,7 +1607,7 @@ namespace __format
       _S_character_width(_CharT __c)
       {
 	// N.B. single byte cannot encode charcter of width greater than 1
-	if constexpr (sizeof(_CharT) > 1u && 
+	if constexpr (sizeof(_CharT) > 1u &&
 			__unicode::__literal_encoding_is_unicode<_CharT>())
 	  return __unicode::__field_width(__c);
 	else
@@ -1286,7 +1621,34 @@ namespace __format
 	{
 	  return __format::__write_padded_as_spec({&__c, 1u},
 						  _S_character_width(__c),
-			                          __fc, _M_spec);
+						  __fc, _M_spec);
+	}
+
+      template<typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	_M_format_character_escaped(_CharT __c,
+				   basic_format_context<_Out, _CharT>& __fc) const
+	{
+	  using _Esc = _Escapes<_CharT>;
+	  constexpr auto __term = __format::_Term_char::_Tc_apos;
+	  const basic_string_view<_CharT> __in(&__c, 1u);
+	  if (_M_spec._M_get_width(__fc) <= 3u)
+	    return __format::__write_escaped(__fc.out(), __in, __term);
+
+	  _CharT __buf[12];
+	  __format::_Fixedbuf_sink<_CharT> __sink(__buf);
+	  __format::_Sink_iter<_CharT> __out(__sink);
+	  __format::__write_escaped(__out, __in, __term);
+
+	  const basic_string_view<_CharT> __escaped = __sink.view();
+	  size_t __estimated_width;
+	  if (__escaped[1] == _Esc::_S_bslash()[0]) // escape sequence
+	    __estimated_width = __escaped.size();
+	  else
+	    __estimated_width = 2 + _S_character_width(__c);
+	  return __format::__write_padded_as_spec(__escaped,
+						  __estimated_width,
+						  __fc, _M_spec);
 	}
 
       template<typename _Int>
@@ -1973,15 +2335,12 @@ namespace __format
 	      || _M_f._M_spec._M_type == __format::_Pres_c)
 	    return _M_f._M_format_character(__u, __fc);
 	  else if (_M_f._M_spec._M_type == __format::_Pres_esc)
-	    {
-	      // TODO
-	      return __fc.out();
-	    }
+	    return _M_f._M_format_character_escaped(__u, __fc);
 	  else
 	    return _M_f.format(static_cast<make_unsigned_t<_CharT>>(__u), __fc);
 	}
 
-#if __cpp_lib_format_ranges
+#if __glibcxx_format_ranges // C++ >= 23 && HOSTED
       constexpr void
       set_debug_format() noexcept
       { _M_f._M_spec._M_type = __format::_Pres_esc; }
@@ -2012,15 +2371,12 @@ namespace __format
 	      || _M_f._M_spec._M_type == __format::_Pres_c)
 	    return _M_f._M_format_character(__u, __fc);
 	  else if (_M_f._M_spec._M_type == __format::_Pres_esc)
-	    {
-	      // TODO
-	      return __fc.out();
-	    }
+	    return _M_f._M_format_character_escaped(__u, __fc);
 	  else
 	    return _M_f.format(static_cast<unsigned char>(__u), __fc);
 	}
 
-#if __cpp_lib_format_ranges
+#if __glibcxx_format_ranges // C++ >= 23 && HOSTED
       constexpr void
       set_debug_format() noexcept
       { _M_f._M_spec._M_type = __format::_Pres_esc; }
@@ -2050,7 +2406,7 @@ namespace __format
 	format(_CharT* __u, basic_format_context<_Out, _CharT>& __fc) const
 	{ return _M_f.format(__u, __fc); }
 
-#if __cpp_lib_format_ranges
+#if __glibcxx_format_ranges // C++ >= 23 && HOSTED
       constexpr void set_debug_format() noexcept { _M_f.set_debug_format(); }
 #endif
 
@@ -2075,7 +2431,7 @@ namespace __format
 	       basic_format_context<_Out, _CharT>& __fc) const
 	{ return _M_f.format(__u, __fc); }
 
-#if __cpp_lib_format_ranges
+#if __glibcxx_format_ranges // C++ >= 23 && HOSTED
       constexpr void set_debug_format() noexcept { _M_f.set_debug_format(); }
 #endif
 
@@ -2099,7 +2455,7 @@ namespace __format
 	       basic_format_context<_Out, _CharT>& __fc) const
 	{ return _M_f.format({__u, _Nm}, __fc); }
 
-#if __cpp_lib_format_ranges
+#if __glibcxx_format_ranges // C++ >= 23 && HOSTED
       constexpr void set_debug_format() noexcept { _M_f.set_debug_format(); }
 #endif
 
@@ -2123,7 +2479,7 @@ namespace __format
 	       basic_format_context<_Out, char>& __fc) const
 	{ return _M_f.format(__u, __fc); }
 
-#if __cpp_lib_format_ranges
+#if __glibcxx_format_ranges // C++ >= 23 && HOSTED
       constexpr void set_debug_format() noexcept { _M_f.set_debug_format(); }
 #endif
 
@@ -2148,7 +2504,7 @@ namespace __format
 	       basic_format_context<_Out, wchar_t>& __fc) const
 	{ return _M_f.format(__u, __fc); }
 
-#if __cpp_lib_format_ranges
+#if __glibcxx_format_ranges // C++ >= 23 && HOSTED
       constexpr void set_debug_format() noexcept { _M_f.set_debug_format(); }
 #endif
 
@@ -2173,7 +2529,7 @@ namespace __format
 	       basic_format_context<_Out, char>& __fc) const
 	{ return _M_f.format(__u, __fc); }
 
-#if __cpp_lib_format_ranges
+#if __glibcxx_format_ranges // C++ >= 23 && HOSTED
       constexpr void set_debug_format() noexcept { _M_f.set_debug_format(); }
 #endif
 
@@ -2198,7 +2554,7 @@ namespace __format
 	       basic_format_context<_Out, wchar_t>& __fc) const
 	{ return _M_f.format(__u, __fc); }
 
-#if __cpp_lib_format_ranges
+#if __glibcxx_format_ranges // C++ >= 23 && HOSTED
       constexpr void set_debug_format() noexcept { _M_f.set_debug_format(); }
 #endif
 
@@ -2859,6 +3215,32 @@ namespace __format
       { return _Sink_iter<_CharT>(*this); }
     };
 
+
+  template<typename _CharT>
+    class _Fixedbuf_sink final : public _Sink<_CharT>
+    {
+      void
+      _M_overflow() override
+      {
+	__glibcxx_assert(false);
+	this->_M_rewind();
+      }
+
+    public:
+      [[__gnu__::__always_inline__]]
+      constexpr explicit
+      _Fixedbuf_sink(span<_CharT> __buf)
+	: _Sink<_CharT>(__buf)
+      { }
+
+      constexpr basic_string_view<_CharT>
+      view() const
+      {
+	auto __s = this->_M_used();
+	return basic_string_view<_CharT>(__s.data(), __s.size());
+      }
+    };
+
   // A sink with an internal buffer. This is used to implement concrete sinks.
   template<typename _CharT>
     class _Buf_sink : public _Sink<_CharT>
@@ -2992,13 +3374,6 @@ namespace __format
 	return __s;
       }
     };
-
-  template<typename _CharT, typename _Alloc = allocator<_CharT>>
-    using _Str_sink
-      = _Seq_sink<basic_string<_CharT, char_traits<_CharT>, _Alloc>>;
-
-  // template<typename _CharT, typename _Alloc = allocator<_CharT>>
-    // using _Vec_sink = _Seq_sink<vector<_CharT, _Alloc>>;
 
   // A sink that writes to an output iterator.
   // Writes to a fixed-size buffer and then flushes to the output iterator
@@ -3675,17 +4050,17 @@ namespace __format
 	  return _M_visit([&__vis]<typename _Tp>(_Tp& __val) -> decltype(auto)
 	    {
 	      constexpr bool __user_facing = __is_one_of<_Tp,
-	        monostate, bool, _CharT,
-	        int, unsigned int, long long int, unsigned long long int,
-	        float, double, long double,
-	        const _CharT*, basic_string_view<_CharT>,
-	        const void*, handle>::value;
+		monostate, bool, _CharT,
+		int, unsigned int, long long int, unsigned long long int,
+		float, double, long double,
+		const _CharT*, basic_string_view<_CharT>,
+		const void*, handle>::value;
 	     if constexpr (__user_facing)
 	       return std::forward<_Visitor>(__vis)(__val);
 	     else
 	       {
-	         handle __h(__val);
-	         return std::forward<_Visitor>(__vis)(__h);
+		 handle __h(__val);
+		 return std::forward<_Visitor>(__vis)(__h);
 	       }
 	   }, __type);
 	}
@@ -4781,6 +5156,7 @@ namespace __format
     : __format::__range_default_formatter<format_kind<_Rg>, _Rg, _CharT>
     { };
 #endif // C++23 formatting ranges
+#undef _GLIBCXX_WIDEN
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

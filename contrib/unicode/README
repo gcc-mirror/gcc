@@ -16,10 +16,11 @@ ftp://ftp.unicode.org/Public/UNIDATA/DerivedNormalizationProps.txt
 ftp://ftp.unicode.org/Public/UNIDATA/DerivedCoreProperties.txt
 ftp://ftp.unicode.org/Public/UNIDATA/NameAliases.txt
 
-Two additional files are needed for lookup tables in libstdc++:
+Three additional files are needed for lookup tables in libstdc++:
 
 ftp://ftp.unicode.org/Public/UNIDATA/auxiliary/GraphemeBreakProperty.txt
 ftp://ftp.unicode.org/Public/UNIDATA/emoji/emoji-data.txt
+ftp://ftp.unicode.org/Public/UNIDATA/extracted/DerivedGeneralCategory.txt
 
 All these files have been added to source control in this directory;
 please see unicode-license.txt for the relevant copyright information.
