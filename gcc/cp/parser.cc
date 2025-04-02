@@ -31868,10 +31868,6 @@ cp_parse_inherited_contract (cp_parser *parser)
 {
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   location_t loc = token->location;
-
-  gcc_checking_assert(token->type == CPP_KEYWORD
-		      && token->keyword == RID_INHERITED);
-
   matching_parens parens;
   parens.require_open (parser);
 
@@ -31880,9 +31876,10 @@ cp_parse_inherited_contract (cp_parser *parser)
       error_at (loc, "inherited contracts are only available with"
 		" %<-fcontracts-on-virtual-functions=P3653%>");
 
-      cp_parser_skip_to_closing_parenthesis_1 (parser, /*recovering=*/true,
-      					       CPP_CLOSE_PAREN,
-      					       /*consume_paren=*/true);
+      cp_parser_skip_to_closing_parenthesis (parser,
+					     /*recovering=*/true,
+					     /*or_comma=*/false,
+					     /*consume_paren=*/true);
       return error_mark_node;
     }
 
@@ -31948,7 +31945,8 @@ cp_parser_function_contract_specifier (cp_parser *parser)
 
   token = cp_lexer_peek_token (parser->lexer);
 
-  if (token->type == CPP_KEYWORD && token->keyword == RID_INHERITED)
+  if (token->type == CPP_NAME
+      && is_attribute_p ("inherited", token->u.value))
     return cp_parse_inherited_contract(parser);
 
   /* Parse experimental modifiers on C++26 contracts.  */
