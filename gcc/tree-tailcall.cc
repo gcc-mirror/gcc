@@ -253,6 +253,23 @@ suitable_for_tail_call_opt_p (gcall *call, bool diag_musttail)
   return true;
 }
 
+/* Return single successor edge ignoring EDGE_EH edges.  */
+
+static edge
+single_non_eh_succ_edge (basic_block bb)
+{
+   edge e, ret = NULL;
+   edge_iterator ei;
+   FOR_EACH_EDGE (e, ei, bb->succs)
+    if ((e->flags & EDGE_EH) == 0)
+      {
+	gcc_assert (ret == NULL);
+	ret = e;
+      }
+  gcc_assert (ret);
+  return ret;
+}
+
 /* Checks whether the expression EXPR in stmt AT is independent of the
    statement pointed to by GSI (in a sense that we already know EXPR's value
    at GSI).  We use the fact that we are only called from the chain of
@@ -279,7 +296,7 @@ independent_of_stmt_p (tree expr, gimple *at, gimple_stmt_iterator gsi,
   /* Mark the blocks in the chain leading to the end.  */
   at_bb = gimple_bb (at);
   call_bb = gimple_bb (gsi_stmt (gsi));
-  for (bb = call_bb; bb != at_bb; bb = single_succ (bb))
+  for (bb = call_bb; bb != at_bb; bb = single_non_eh_succ_edge (bb)->dest)
     bb->aux = &bb->aux;
   bb->aux = &bb->aux;
 
@@ -323,7 +340,7 @@ independent_of_stmt_p (tree expr, gimple *at, gimple_stmt_iterator gsi,
     }
 
   /* Unmark the blocks.  */
-  for (bb = call_bb; bb != at_bb; bb = single_succ (bb))
+  for (bb = call_bb; bb != at_bb; bb = single_non_eh_succ_edge (bb)->dest)
     bb->aux = NULL;
   bb->aux = NULL;
 
@@ -496,6 +513,33 @@ maybe_error_musttail (gcall *call, const char *err, bool diag_musttail)
     }
 }
 
+/* Return true if there is no real work performed in the exception
+   path starting at BB and it will in the end result in external exception.
+   Search at most CNT basic blocks (so that we don't need to do trivial
+   loop discovery).  */
+static bool
+empty_eh_cleanup (basic_block bb, int cnt)
+{
+  if (EDGE_COUNT (bb->succs) > 1)
+    return false;
+
+  for (gimple_stmt_iterator gsi = gsi_after_labels (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
+    {
+      gimple *g = gsi_stmt (gsi);
+      if (is_gimple_debug (g) || gimple_clobber_p (g))
+	continue;
+      if (is_gimple_resx (g) && stmt_can_throw_external (cfun, g))
+	return true;
+      return false;
+    }
+  if (!single_succ_p (bb))
+    return false;
+  if (cnt == 1)
+    return false;
+  return empty_eh_cleanup (single_succ (bb), cnt - 1);
+}
+
 /* Argument for compute_live_vars/live_vars_at_stmt and what compute_live_vars
    returns.  Computed lazily, but just once for the function.  */
 static live_vars_map *live_vars;
@@ -646,14 +690,36 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
   if ((stmt_could_throw_p (cfun, stmt)
        && !stmt_can_throw_external (cfun, stmt)) || EDGE_COUNT (bb->succs) > 1)
   {
-    if (stmt == last_stmt)
-      maybe_error_musttail (call,
-			    _("call may throw exception that does not "
-			      "propagate"), diag_musttail);
-    else
-      maybe_error_musttail (call, _("code between call and return"),
-			    diag_musttail);
-    return;
+    if (stmt != last_stmt)
+      {
+	maybe_error_musttail (call, _("code between call and return"),
+			      diag_musttail);
+	return;
+      }
+
+    edge e;
+    edge_iterator ei;
+    FOR_EACH_EDGE (e, ei, bb->succs)
+      if (e->flags & EDGE_EH)
+	break;
+
+    if (!e)
+      {
+	maybe_error_musttail (call,
+			      _("call may throw exception that does not "
+				"propagate"), diag_musttail);
+	return;
+      }
+
+    if (!gimple_call_must_tail_p (call)
+	|| !empty_eh_cleanup (e->dest, 20)
+	|| EDGE_COUNT (bb->succs) > 2)
+      {
+	maybe_error_musttail (call,
+			      _("call may throw exception caught locally "
+				"or perform cleanups"), diag_musttail);
+	return;
+      }
   }
 
   /* If the function returns a value, then at present, the tail call
@@ -844,8 +910,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
   a = NULL_TREE;
   auto_bitmap to_move_defs;
   auto_vec<gimple *> to_move_stmts;
-  bool is_noreturn
-    = EDGE_COUNT (bb->succs) == 0 && gimple_call_noreturn_p (call);
+  bool is_noreturn = gimple_call_noreturn_p (call);
 
   abb = bb;
   agsi = gsi;
@@ -857,8 +922,9 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 
       while (gsi_end_p (agsi))
 	{
-	  ass_var = propagate_through_phis (ass_var, single_succ_edge (abb));
-	  abb = single_succ (abb);
+	  edge e = single_non_eh_succ_edge (abb);
+	  ass_var = propagate_through_phis (ass_var, e);
+	  abb = e->dest;
 	  agsi = gsi_start_bb (abb);
 	}
 
@@ -932,6 +998,11 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
   /* See if this is a tail call we can handle.  */
   if (is_noreturn)
     {
+      if (gimple_call_internal_p (call))
+	{
+	  maybe_error_musttail (call, _("internal call"), diag_musttail);
+	  return;
+	}
       tree rettype = TREE_TYPE (TREE_TYPE (current_function_decl));
       tree calltype = TREE_TYPE (gimple_call_fntype (call));
       if (!VOID_TYPE_P (rettype)
@@ -1193,11 +1264,6 @@ static void
 decrease_profile (basic_block bb, profile_count count)
 {
   bb->count = bb->count - count;
-  if (!single_succ_p (bb))
-    {
-      gcc_assert (!EDGE_COUNT (bb->succs));
-      return;
-    }
 }
 
 /* Eliminates tail call described by T.  TMP_VARS is a list of
@@ -1262,7 +1328,7 @@ eliminate_tail_call (struct tailcall *t, class loop *&new_loop)
   else
     {
       /* Number of executions of function has reduced by the tailcall.  */
-      e = single_succ_edge (gsi_bb (t->call_gsi));
+      e = single_non_eh_succ_edge (gsi_bb (t->call_gsi));
 
       profile_count count = e->count ();
 
@@ -1277,8 +1343,7 @@ eliminate_tail_call (struct tailcall *t, class loop *&new_loop)
 	decrease_profile (e->dest, count);
 
       /* Replace the call by a jump to the start of function.  */
-      e = redirect_edge_and_branch (single_succ_edge (gsi_bb (t->call_gsi)),
-				    first);
+      e = redirect_edge_and_branch (e, first);
     }
   gcc_assert (e);
   PENDING_STMT (e) = NULL;
@@ -1443,7 +1508,9 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls, bool only_musttail,
     {
       basic_block bb;
       FOR_EACH_BB_FN (bb, cfun)
-	if (EDGE_COUNT (bb->succs) == 0)
+	if (EDGE_COUNT (bb->succs) == 0
+	    || (single_succ_p (bb)
+		&& (single_succ_edge (bb)->flags & EDGE_EH)))
 	  if (gimple *c = last_nondebug_stmt (bb))
 	    if (is_gimple_call (c)
 		&& gimple_call_must_tail_p (as_a <gcall *> (c))
