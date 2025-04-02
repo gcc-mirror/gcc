@@ -8228,19 +8228,31 @@ package body Exp_Util is
                   return;
                end if;
 
-            --  the expansion of Task and protected type declarations can
+            --  The expansion of task and protected type declarations can
             --  create declarations for temporaries which, like other actions
-            --  are inserted and analyzed before the current declaraation.
-            --  However, the current scope is the synchronized type, and
-            --  for unnesting it is critical that the proper scope for these
-            --  generated entities be the enclosing one.
+            --  are inserted and analyzed before the current declaration.
+            --  However, in some cases, the current scope is the synchronized
+            --  type, and for unnesting it is critical that the proper scope
+            --  for these generated entities be the enclosing one.
 
             when N_Task_Type_Declaration
                | N_Protected_Type_Declaration =>
 
-               Push_Scope (Scope (Current_Scope));
-               Insert_List_Before_And_Analyze (P, Ins_Actions);
-               Pop_Scope;
+               declare
+                  Skip_Scope : constant Boolean :=
+                    Ekind (Current_Scope) in Concurrent_Kind;
+               begin
+                  if Skip_Scope then
+                     Push_Scope (Scope (Current_Scope));
+                  end if;
+
+                  Insert_List_Before_And_Analyze (P, Ins_Actions);
+
+                  if Skip_Scope then
+                     Pop_Scope;
+                  end if;
+               end;
+
                return;
 
             --  A special case, N_Raise_xxx_Error can act either as a statement
