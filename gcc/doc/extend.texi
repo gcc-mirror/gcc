@@ -2035,24 +2035,32 @@ called.  Functions with these attributes are useful for
 initializing data that is used implicitly during the execution of
 the program.
 
-On some targets the attributes also accept an integer argument to
+On most targets the attributes also accept an integer argument to
 specify a priority to control the order in which constructor and
-destructor functions are run.  A constructor
-with a smaller priority number runs before a constructor with a larger
-priority number; the opposite relationship holds for destructors.  Note
-that priorities 0-100 are reserved.  So, if you have a constructor that
+destructor functions are run.  The @var{priority} argument is a
+constant integral expression bounded between 101 and 65535 inclusive;
+priorities 0-100 are reserved for use by the compiler and its runtime
+libraries.
+A constructor with a smaller priority number runs before a constructor with
+a larger priority number; the opposite relationship holds for destructors.
+So, if you have a constructor that
 allocates a resource and a destructor that deallocates the same
-resource, both functions typically have the same priority.  The
-priorities for constructor and destructor functions are the same as
-those specified for namespace-scope C++ objects (@pxref{C++ Attributes}).
-However, at present, the order in which constructors for C++ objects
-with static storage duration and functions decorated with attribute
-@code{constructor} are invoked is unspecified. In mixed declarations,
-attribute @code{init_priority} can be used to impose a specific ordering.
+resource, both functions typically have the same priority.
 
-Using the argument forms of the @code{constructor} and @code{destructor}
-attributes on targets where the feature is not supported is rejected with
-an error.
+The order in which constructors for C++ objects with static storage
+duration are invoked relative to functions decorated with attribute
+@code{constructor} is normally unspecified.  You can use
+attribute @code{init_priority} (@pxref{C++ Attributes}) on the
+declarations of namespace-scope C++ objects to impose a specific
+ordering; the @var{priority} for the @code{init_priority} attribute
+has the same effect as the @var{priority} for the @code{constructor}
+attribute.
+
+Using the argument form of the @code{constructor} and
+@code{destructor} attributes on targets where the feature is not
+supported is rejected with an error.  Only a few targets (typically
+those not using ELF object format, or the GNU linker) reject this
+usage.
 
 @cindex @code{copy} function attribute
 @item copy
@@ -30291,11 +30299,11 @@ variable or function or moving it into a tagged inline namespace.
 In Standard C++, objects defined at namespace scope are guaranteed to be
 initialized in an order in strict accordance with that of their definitions
 @emph{in a given translation unit}.  No guarantee is made for initializations
-across translation units.  However, GNU C++ allows users to control the
+across translation units.  However, GNU C++ allows you to control the
 order of initialization of objects defined at namespace scope with the
 @code{init_priority} attribute by specifying a relative @var{priority},
-a constant integral expression currently bounded between 101 and 65535
-inclusive.  Lower numbers indicate a higher priority.
+with the same meaning as for the @code{constructor} attribute
+(@pxref{Common Function Attributes}).
 
 In the following example, @code{A} would normally be created before
 @code{B}, but the @code{init_priority} attribute reverses that order:
@@ -30308,6 +30316,11 @@ Some_Class  B  __attribute__ ((init_priority (543)));
 @noindent
 Note that the particular values of @var{priority} do not matter; only their
 relative ordering.
+
+As with the @var{priority} argument to the @code{constructor} and
+@code{destructor} attributes, a few targets do not support the
+@code{init_priority} attribute.  In that case the attribute is rejected
+with an error rather than ignored.
 
 @cindex @code{no_dangling} type attribute
 @cindex @code{no_dangling} function attribute
