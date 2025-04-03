@@ -580,8 +580,8 @@ package body System.Value_R is
       if Str (Index) in '0' .. '9' then
          After_Point := False;
 
-         --  If this is a digit it can indicates either the float decimal
-         --  part or the base to use.
+         --  If this is a digit it can indicate either the integral part or the
+         --  base to use.
 
          Scan_Integral_Digits
            (Str, Index, Max, Base, False, Value, Scale, N,
@@ -632,10 +632,10 @@ package body System.Value_R is
          end if;
       end if;
 
-      --  Scan the integral part if still necessary
+      --  Scan the integral part if there was a base and no point right after
 
       if Base_Char /= ASCII.NUL and then not After_Point then
-         if Index > Max or else As_Digit (Str (Index)) not in Valid_Digit then
+         if As_Digit (Str (Index)) not in Valid_Digit then
             Bad_Value (Str);
          end if;
 
