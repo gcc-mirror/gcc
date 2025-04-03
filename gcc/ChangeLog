@@ -1,3 +1,131 @@
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119145
+	* tree-vectorizer.cc (try_vectorize_loop_1): Avoid BB
+	vectorizing an if-converted loop body when there's a .MASK_CALL
+	in the loop body.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119119
+	* gimplify.cc (is_gimple_mem_rhs_or_call): All empty CTORs
+	are OK when not a register type.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119096
+	* tree-vect-loop.cc (vect_transform_reduction): Use the
+	correct else value for .COND_fn.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/119067
+	* ipa-devirt.cc (odr_types_equivalent_p): Check
+	TYPE_VECTOR_SUBPARTS for vectors.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119057
+	* tree-vect-loop.cc (check_reduction_path): Add argument
+	specifying whether we're analyzing the inner loop of a
+	double reduction.  Do not allow extra uses outside of the
+	double reduction cycle in this case.
+	(vect_is_simple_reduction): Adjust.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR lto/114501
+	* ipa-free-lang-data.cc (find_decls_types_r): Explicitly
+	handle CONSTRUCTORs as walk_tree handling of those is
+	incomplete.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/111245
+	* ipa-modref.cc (modref_access_analysis::analyze_store): Do
+	not guard the check of whether the stmt could throw by
+	cfun->can_throw_non_call_exceptions.
+
+2025-04-02  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	Backported from master:
+	2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	PR target/119383
+	* config/aarch64/aarch64.cc
+	(aarch64_expand_epilogue): Use TARGET_PAUTH.
+	* config/aarch64/aarch64.md: Update comment.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/101533
+	* dwarf2out.cc (gen_type_die_with_usage): When we have
+	output the typedef already do nothing for a typedef variant.
+	Do not set TREE_ASM_WRITTEN on the type.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101478
+	* gimplify.cc (gimplify_addr_expr): Check we still have an
+	ADDR_EXPR before calling recompute_tree_invariant_for_addr_expr.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98845
+	* tree-ssa-tail-merge.cc (stmt_local_def): Consider a
+	def with no uses not local.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87984
+	* tree-ssa-dom.cc (dom_opt_dom_walker::optimize_stmt): Do
+	not perform redundant store elimination to hard register
+	variables.
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_stmt):
+	Likewise.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66279
+	* gimplify.cc (gimplify_asm_expr): Copy TREE_PURPOSE before
+	rewriting it for "+" processing.
+
 2025-04-01  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

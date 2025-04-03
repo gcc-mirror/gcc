@@ -1,3 +1,79 @@
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/119469
+	* include/bits/iterator_concepts.h (_IterMove::__result): Use
+	decltype-specifier instead of an explicit type.
+	* testsuite/24_iterators/customization_points/iter_move.cc:
+	Check results for function references.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106612
+	* include/bits/iterator_concepts.h (_IterMove::__iter_ref_t):
+	New alias template.
+	(_IterMove::__result): Use __iter_ref_t instead of
+	std::iter_reference_t.
+	(_IterMove::__type): Remove incorrect __dereferenceable
+	constraint.
+	(_IterMove::operator()): Likewise. Add correct constraints. Use
+	__iter_ref_t instead of std::iter_reference_t. Forward parameter
+	as correct value category.
+	(iter_swap): Add comments.
+	* testsuite/24_iterators/customization_points/iter_move.cc: Test
+	that iter_move is found by ADL and that rvalue arguments are
+	handled correctly.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110498
+	* include/bits/vector.tcc (vector<bool, A>::_M_reallocate):
+	Hoist loads of begin() and end() before allocation and use them
+	to state an unreachable condition.
+	* testsuite/23_containers/vector/bool/capacity/110498.cc: New
+	test.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114758
+	* include/bits/vector.tcc (vector<bool, A>::_M_fill_insert):
+	Hoist loads of begin() and end() before allocation.
+	* testsuite/23_containers/vector/bool/capacity/114758.cc: New
+	test.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117983
+	* include/bits/vector.tcc (vector::_M_range_insert): Add
+	unreachable condition to tell the compiler begin() <= end().
+	* testsuite/23_containers/vector/modifiers/insert/117983.cc: New
+	test.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114945
+	* include/bits/vector.tcc (vector::_M_default_append): Add
+	unreachable condition so the compiler knows that _M_finish is
+	not null.
+	* testsuite/23_containers/vector/capacity/114945.cc: New test.
+
 2025-04-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/116212
