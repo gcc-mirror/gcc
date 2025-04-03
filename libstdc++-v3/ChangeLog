@@ -1,3 +1,57 @@
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bit (bit_cast): Use library trait instead of
+	__is_trivially_copyable built-in.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110498
+	* include/bits/vector.tcc (vector<bool, A>::_M_reallocate):
+	Hoist loads of begin() and end() before allocation and use them
+	to state an unreachable condition.
+	* testsuite/23_containers/vector/bool/capacity/110498.cc: New
+	test.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114758
+	* include/bits/vector.tcc (vector<bool, A>::_M_fill_insert):
+	Hoist loads of begin() and end() before allocation.
+	* testsuite/23_containers/vector/bool/capacity/114758.cc: New
+	test.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117983
+	* include/bits/vector.tcc (vector::_M_range_insert): Add
+	unreachable condition to tell the compiler begin() <= end().
+	* testsuite/23_containers/vector/modifiers/insert/117983.cc: New
+	test.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116212
+	* testsuite/20_util/specialized_algorithms/uninitialized_move/constrained.cc:
+	Use unsigned for vector size.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (range_common_reference_t): New
+	alias template, as per LWG 3860.
+	* testsuite/std/ranges/range.cc: Check it.
+
 2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
