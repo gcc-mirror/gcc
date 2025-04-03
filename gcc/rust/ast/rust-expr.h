@@ -2982,8 +2982,11 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
-  LoopLabel &get_label () { return label.value (); }
-  const LoopLabel &get_label () const { return label.value (); }
+  LoopLabel &get_label_unchecked () { return label.value (); }
+  const LoopLabel &get_label_unchecked () const { return label.value (); }
+
+  tl::optional<LoopLabel> &get_label () { return label; }
+  const tl::optional<LoopLabel> &get_label () const { return label; }
 
   Expr::Kind get_expr_kind () const override { return Expr::Kind::Break; }
 

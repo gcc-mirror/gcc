@@ -188,7 +188,7 @@ void
 Late::visit (AST::BreakExpr &expr)
 {
   if (expr.has_label ())
-    resolve_label (expr.get_label ().get_lifetime ());
+    resolve_label (expr.get_label_unchecked ().get_lifetime ());
 
   if (expr.has_break_expr ())
     {
