@@ -355,6 +355,18 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
       variants.push_back (field_type);
     }
 
+  // Check for zero-variant enum compatibility before processing repr attribute
+  if (enum_decl.is_zero_variant ())
+    {
+      if (repr.repr_kind == TyTy::ADTType::ReprKind::INT
+	  || repr.repr_kind == TyTy::ADTType::ReprKind::C)
+	{
+	  rust_error_at (enum_decl.get_locus (),
+			 "unsupported representation for zero-variant enum");
+	  return;
+	}
+    }
+
   // get the path
   tl::optional<CanonicalPath> canonical_path;
 
