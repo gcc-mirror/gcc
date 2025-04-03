@@ -308,7 +308,7 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
   repr.pack = 0;
   repr.align = 0;
 
-  // FIXME handle repr types....
+  // FIXME handle non-integer repr types....
   bool ok = context->lookup_builtin ("isize", &repr.repr);
   rust_assert (ok);
 
@@ -353,8 +353,10 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
 	  // manually parsing the string "packed(2)" here.
 
 	  size_t oparen = inline_option.find ('(', 0);
-	  bool is_pack = false, is_align = false, is_c = false,
-	       is_integer = false;
+	  bool is_pack = false;
+	  bool is_align = false;
+	  bool is_c = false;
+	  bool is_integer = false;
 	  unsigned char value = 1;
 
 	  if (oparen == std::string::npos)
@@ -409,6 +411,11 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
 	  else if (is_integer)
 	    {
 	      repr.repr_kind = TyTy::ADTType::ReprKind::INT;
+	      bool ok = context->lookup_builtin (inline_option, &repr.repr);
+	      if (!ok)
+		{
+		  rust_error_at (attr.get_locus (), "Invalid repr type");
+		}
 	    }
 
 	  delete meta_items;
