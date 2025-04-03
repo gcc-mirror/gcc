@@ -976,7 +976,7 @@ Wxor-used-as-pow
 UrlSuffix(gcc/Warning-Options.html#index-Wno-xor-used-as-pow)
 
 Wzero-as-null-pointer-constant
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-zero-as-null-pointer-constant)
+UrlSuffix(gcc/Warning-Options.html#index-Wno-zero-as-null-pointer-constant)
 
 Wzero-length-bounds
 UrlSuffix(gcc/Warning-Options.html#index-Wzero-length-bounds)
