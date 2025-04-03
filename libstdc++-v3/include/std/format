@@ -52,6 +52,7 @@
 #include <string_view>
 #include <string>
 #include <bits/monostate.h>
+#include <bits/formatfwd.h>
 #include <bits/ranges_base.h>  // input_range, range_reference_t
 #include <bits/ranges_util.h>  // subrange
 #include <bits/ranges_algobase.h> // ranges::copy
@@ -72,9 +73,6 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  // [format.context], class template basic_format_context
-  template<typename _Out, typename _CharT> class basic_format_context;
 
   // [format.fmt.string], class template basic_format_string
   template<typename _CharT, typename... _Args> struct basic_format_string;
@@ -178,7 +176,7 @@ namespace __format
   // [format.formatter], formatter
 
   /// The primary template of std::formatter is disabled.
-  template<typename _Tp, typename _CharT = char>
+  template<typename _Tp, typename _CharT>
     struct formatter
     {
       formatter() = delete; // No std::formatter specialization for this type.
@@ -922,14 +920,6 @@ namespace __format
     };
     bool _M_hasval = false;
   };
-
-#ifdef _GLIBCXX_USE_WCHAR_T
-  template<typename _CharT>
-    concept __char = same_as<_CharT, char> || same_as<_CharT, wchar_t>;
-#else
-  template<typename _CharT>
-    concept __char = same_as<_CharT, char>;
-#endif
 
   template<__char _CharT>
     struct __formatter_str

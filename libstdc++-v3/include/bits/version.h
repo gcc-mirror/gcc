@@ -1555,6 +1555,15 @@
 #endif /* !defined(__cpp_lib_expected) && defined(__glibcxx_want_expected) */
 #undef __glibcxx_want_expected
 
+#if !defined(__cpp_lib_format_ranges)
+# if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
+#  define __glibcxx_format_ranges 1L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_format_ranges)
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_format_ranges) && defined(__glibcxx_want_format_ranges) */
+#undef __glibcxx_want_format_ranges
+
 #if !defined(__cpp_lib_freestanding_algorithm)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_freestanding_algorithm 202311L
