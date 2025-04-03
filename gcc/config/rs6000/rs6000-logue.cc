@@ -5351,6 +5351,8 @@ rs6000_output_function_epilogue (FILE *file)
 	i = 1;
       else if (! strcmp (language_string, "GNU Ada"))
 	i = 3;
+      else if (! strcmp (language_string, "GCC COBOL"))
+	i = 7;
       else if (! strcmp (language_string, "GNU Modula-2"))
 	i = 8;
       else if (lang_GNU_CXX ()
