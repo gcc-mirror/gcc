@@ -199,12 +199,13 @@ public:
 class BorrowExpr : public OperatorExpr
 {
   Mutability mut;
+  bool raw;
 
 public:
   std::string as_string () const override;
 
   BorrowExpr (Analysis::NodeMapping mappings,
-	      std::unique_ptr<Expr> borrow_lvalue, Mutability mut,
+	      std::unique_ptr<Expr> borrow_lvalue, Mutability mut, bool raw,
 	      AST::AttrVec outer_attribs, location_t locus);
 
   void accept_vis (HIRFullVisitor &vis) override;
@@ -212,6 +213,7 @@ public:
 
   Mutability get_mut () const { return mut; }
   bool is_mut () const { return mut == Mutability::Mut; }
+  bool is_raw_borrow () const { return raw; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

@@ -29,7 +29,8 @@ class HIRCompileBase
 public:
   virtual ~HIRCompileBase () {}
 
-  static tree address_expression (tree expr, location_t locus);
+  static tree address_expression (tree expr, location_t locus,
+				  tree ptrty = NULL_TREE);
 
   static tree compile_constant_expr (
     Context *ctx, HirId coercion_id, TyTy::BaseType *resolved_type,

@@ -81,10 +81,10 @@ OperatorExpr::operator= (OperatorExpr const &other)
 
 BorrowExpr::BorrowExpr (Analysis::NodeMapping mappings,
 			std::unique_ptr<Expr> borrow_lvalue, Mutability mut,
-			AST::AttrVec outer_attribs, location_t locus)
+			bool raw, AST::AttrVec outer_attribs, location_t locus)
   : OperatorExpr (std::move (mappings), std::move (borrow_lvalue),
 		  std::move (outer_attribs), locus),
-    mut (mut)
+    mut (mut), raw (raw)
 {}
 
 DereferenceExpr::DereferenceExpr (Analysis::NodeMapping mappings,

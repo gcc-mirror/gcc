@@ -905,7 +905,8 @@ CompileExpr::visit (HIR::BorrowExpr &expr)
 				       &tyty))
     return;
 
-  translated = address_expression (main_expr, expr.get_locus ());
+  tree expected_type = TyTyResolveCompile::compile (ctx, tyty);
+  translated = address_expression (main_expr, expr.get_locus (), expected_type);
 }
 
 void

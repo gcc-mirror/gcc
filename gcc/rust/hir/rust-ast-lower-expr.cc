@@ -633,9 +633,6 @@ ASTLoweringExpr::visit (AST::ContinueExpr &expr)
 void
 ASTLoweringExpr::visit (AST::BorrowExpr &expr)
 {
-  if (expr.is_raw_borrow ())
-    rust_unreachable ();
-
   HIR::Expr *borrow_lvalue
     = ASTLoweringExpr::translate (expr.get_borrowed_expr ());
 
@@ -646,8 +643,8 @@ ASTLoweringExpr::visit (AST::BorrowExpr &expr)
 
   auto *borrow_expr
     = new HIR::BorrowExpr (mapping, std::unique_ptr<HIR::Expr> (borrow_lvalue),
-			   expr.get_mutability (), expr.get_outer_attrs (),
-			   expr.get_locus ());
+			   expr.get_mutability (), expr.is_raw_borrow (),
+			   expr.get_outer_attrs (), expr.get_locus ());
 
   if (expr.get_is_double_borrow ())
     {
@@ -659,8 +656,8 @@ ASTLoweringExpr::visit (AST::BorrowExpr &expr)
       borrow_expr
 	= new HIR::BorrowExpr (mapping,
 			       std::unique_ptr<HIR::Expr> (borrow_expr),
-			       expr.get_mutability (), expr.get_outer_attrs (),
-			       expr.get_locus ());
+			       expr.get_mutability (), expr.is_raw_borrow (),
+			       expr.get_outer_attrs (), expr.get_locus ());
     }
 
   translated = borrow_expr;
