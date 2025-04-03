@@ -353,13 +353,27 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
 	  // manually parsing the string "packed(2)" here.
 
 	  size_t oparen = inline_option.find ('(', 0);
-	  bool is_pack = false, is_align = false;
+	  bool is_pack = false, is_align = false, is_c = false,
+	       is_integer = false;
 	  unsigned char value = 1;
 
 	  if (oparen == std::string::npos)
 	    {
 	      is_pack = inline_option.compare ("packed") == 0;
 	      is_align = inline_option.compare ("align") == 0;
+	      is_c = inline_option.compare ("C") == 0;
+	      is_integer = (inline_option.compare ("isize") == 0
+			    || inline_option.compare ("i8") == 0
+			    || inline_option.compare ("i16") == 0
+			    || inline_option.compare ("i32") == 0
+			    || inline_option.compare ("i64") == 0
+			    || inline_option.compare ("i128") == 0
+			    || inline_option.compare ("usize") == 0
+			    || inline_option.compare ("u8") == 0
+			    || inline_option.compare ("u16") == 0
+			    || inline_option.compare ("u32") == 0
+			    || inline_option.compare ("u64") == 0
+			    || inline_option.compare ("u128") == 0);
 	    }
 
 	  else
@@ -379,9 +393,23 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
 	    }
 
 	  if (is_pack)
-	    repr.pack = value;
+	    {
+	      repr.repr_kind = TyTy::ADTType::ReprKind::PACKED;
+	      repr.pack = value;
+	    }
 	  else if (is_align)
-	    repr.align = value;
+	    {
+	      repr.repr_kind = TyTy::ADTType::ReprKind::ALIGN;
+	      repr.align = value;
+	    }
+	  else if (is_c)
+	    {
+	      repr.repr_kind = TyTy::ADTType::ReprKind::C;
+	    }
+	  else if (is_integer)
+	    {
+	      repr.repr_kind = TyTy::ADTType::ReprKind::INT;
+	    }
 
 	  delete meta_items;
 
