@@ -1463,6 +1463,15 @@ TypeCheckExpr::visit (HIR::BorrowExpr &expr)
 	}
     }
 
+  if (expr.is_raw_borrow ())
+    {
+      infered = new TyTy::PointerType (expr.get_mappings ().get_hirid (),
+				       TyTy::TyVar (resolved_base->get_ref ()),
+				       expr.get_mut ());
+
+      return;
+    }
+
   infered = new TyTy::ReferenceType (expr.get_mappings ().get_hirid (),
 				     TyTy::TyVar (resolved_base->get_ref ()),
 				     expr.get_mut ());

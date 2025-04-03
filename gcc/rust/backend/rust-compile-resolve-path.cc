@@ -261,10 +261,10 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
       HIR::ExternalItem *resolved_extern_item = hir_extern_item->first;
       if (!lookup->has_substitutions_defined ())
 	return CompileExternItem::compile (resolved_extern_item, ctx, nullptr,
-					   true, expr_locus);
+					   expr_locus);
       else
 	return CompileExternItem::compile (resolved_extern_item, ctx, lookup,
-					   true, expr_locus);
+					   expr_locus);
     }
   else
     {
