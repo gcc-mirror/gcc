@@ -9314,7 +9314,7 @@ The @code{gnu::musttail} or @code{clang::musttail} standard attribute
 or @code{musttail} GNU attribute can be applied to a @code{return} statement
 with a return-value expression that is a function call.  It asserts that the
 call must be a tail call that does not allocate extra stack space, so it is
-safe to use tail recursion to implement long running loops.
+safe to use tail recursion to implement long-running loops.
 
 @smallexample
 [[gnu::musttail]] return foo();
@@ -9324,11 +9324,11 @@ safe to use tail recursion to implement long running loops.
 __attribute__((musttail)) return bar();
 @end smallexample
 
-If the compiler cannot generate a @code{musttail} tail call it will report
-an error.  On some targets tail calls may never be supported.
-The user asserts for @code{musttail} tail calls that lifetime of automatic
+If the compiler cannot generate a @code{musttail} tail call it reports
+an error.  On some targets, tail calls may not be supported at all.
+The @code{musttail} attribute asserts that the lifetime of automatic
 variables, function parameters and temporaries (unless they have non-trivial
-destruction) can end before the actual call instruction and that any access
+destruction) can end before the actual call instruction, and that any access
 to those from inside of the called function results is considered undefined
 behavior.  Enabling @option{-O1} or @option{-O2} can improve the success of
 tail calls.
@@ -9344,9 +9344,9 @@ baz (int *x)
   if (*x == 1)
     @{
       int a = 42;
-      /* The call will be tail called (would not be without the
-         attribute), dereferencing the pointer in the callee is
-         undefined behavior and there will be a warning emitted
+      /* The call is a tail call (would not be without the
+         attribute).  Dereferencing the pointer in the callee is
+         undefined behavior, and there is a warning emitted
          for this by default (@option{-Wmusttail-local-addr}).  */
       [[gnu::musttail]] return foo (&a);
     @}
@@ -9354,9 +9354,9 @@ baz (int *x)
     @{
       int a = 42;
       bar (&a);
-      /* The call will be tail called (would not be without the
-         attribute), if bar stores the pointer anywhere, dereferencing
-         it in foo will be undefined behavior and there will be a warning
+      /* The call is a tail call (would not be without the
+         attribute).  If bar stores the pointer anywhere, dereferencing
+         it in foo is undefined behavior.  There is a warning
          emitted for this with @option{-Wextra}, which implies
          @option{-Wmaybe-musttail-local-addr}.  */
       [[gnu::musttail]] return foo (nullptr);
@@ -9365,8 +9365,8 @@ baz (int *x)
     @{
       S s;
       /* The s variable requires non-trivial destruction which ought
-         to be performed after the foo call returns, so this will
-         be rejected.  */
+         to be performed after the foo call returns, so this is
+         rejected.  */
       [[gnu::musttail]] return foo (&s.s);
     @}
 @}
@@ -9374,9 +9374,9 @@ baz (int *x)
 
 To avoid the @option{-Wmaybe-musttail-local-addr} warning in the
 above @code{*x == 2} case and similar code, consider defining the
-maybe escaped variables in a separate scope which will end before the
-return statement if possible to make it clear that the variable is not
-live during the call.  So
+maybe-escaped variables in a separate scope that ends before the
+return statement, if that is possible, to make it clear that the
+variable is not live during the call.  So:
 
 @smallexample
   else if (*x == 2)
@@ -9385,17 +9385,17 @@ live during the call.  So
         int a = 42;
         bar (&a);
       @}
-      /* The call will be tail called (would not be without the
-         attribute), if bar stores the pointer anywhere, dereferencing
-         it in foo will be undefined behavior and there will be a warning
-         emitted for this with @option{-Wextra}, which implies
-         @option{-Wmaybe-musttail-local-addr}.  */
+      /* The call is a tail call (would not be without the
+         attribute).  If bar stores the pointer anywhere, dereferencing
+         it in foo is undefined behavior even without tail call
+         optimization, and there is no warning.  */
       [[gnu::musttail]] return foo (nullptr);
     @}
 @end smallexample
 
-in this case.  That is not possible if it is function argument which
-is address taken because those are in scope for the whole function.
+It is not possible to avoid the warning in this way if the maybe-escaped
+variable is a function argument, because those are in scope
+for the whole function.
 @end table
 
 @node Attribute Syntax
