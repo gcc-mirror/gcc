@@ -9799,18 +9799,20 @@ pass_warn_function_return::execute (function *fun)
 	   (e = ei_safe_edge (ei)); )
 	{
 	  last = *gsi_last_bb (e->src);
-	  if ((gimple_code (last) == GIMPLE_RETURN
-	       || gimple_call_builtin_p (last, BUILT_IN_RETURN))
-	      && location == UNKNOWN_LOCATION
-	      && ((location = LOCATION_LOCUS (gimple_location (last)))
-		  != UNKNOWN_LOCATION)
-	      && !optimize)
-	    break;
-	  /* When optimizing, replace return stmts in noreturn functions
+	  /* Warn about __builtin_return .*/
+	  if (gimple_call_builtin_p (last, BUILT_IN_RETURN)
+	      && location == UNKNOWN_LOCATION)
+	    {
+	      location = LOCATION_LOCUS (gimple_location (last));
+	      ei_next (&ei);
+	    }
+	  /* Replace return stmts in noreturn functions
 	     with __builtin_unreachable () call.  */
-	  if (optimize && gimple_code (last) == GIMPLE_RETURN)
+	  else if (gimple_code (last) == GIMPLE_RETURN)
 	    {
 	      location_t loc = gimple_location (last);
+	      if (location == UNKNOWN_LOCATION)
+	        location = LOCATION_LOCUS (loc);
 	      gimple *new_stmt = gimple_build_builtin_unreachable (loc);
 	      gimple_stmt_iterator gsi = gsi_for_stmt (last);
 	      gsi_replace (&gsi, new_stmt, true);
