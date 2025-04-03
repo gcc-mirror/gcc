@@ -6565,7 +6565,8 @@ gfc_check_stat_sub (gfc_expr *name, gfc_expr *array, gfc_expr *status)
 
 
 bool
-gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub)
+gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub,
+		       gfc_expr *team_or_team_number)
 {
   mpz_t nelems;
 
@@ -6585,12 +6586,8 @@ gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub)
       return false;
     }
 
-  if (sub->ts.type != BT_INTEGER)
-    {
-      gfc_error ("Type of %s argument of IMAGE_INDEX at %L shall be INTEGER",
-		 gfc_current_intrinsic_arg[1]->name, &sub->where);
-      return false;
-    }
+  if (!type_check (sub, 1, BT_INTEGER))
+    return false;
 
   if (gfc_array_size (sub, &nelems))
     {
@@ -6605,12 +6602,23 @@ gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub)
       mpz_clear (nelems);
     }
 
+  if (team_or_team_number)
+    {
+      if (!type_check2 (team_or_team_number, 2, BT_DERIVED, BT_INTEGER)
+	  || !scalar_check (team_or_team_number, 2))
+	return false;
+
+      /* Check team is of team_type.  */
+      if (team_or_team_number->ts.type == BT_DERIVED
+	  && !team_type_check (team_or_team_number, 2))
+	return false;
+    }
+
   return true;
 }
 
-
 bool
-gfc_check_num_images (gfc_expr *distance, gfc_expr *failed)
+gfc_check_num_images (gfc_expr *team_or_team_number)
 {
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
@@ -6618,34 +6626,21 @@ gfc_check_num_images (gfc_expr *distance, gfc_expr *failed)
       return false;
     }
 
-  if (distance)
-    {
-      if (!type_check (distance, 0, BT_INTEGER))
-	return false;
+  if (!team_or_team_number)
+    return true;
 
-      if (!nonnegative_check ("DISTANCE", distance))
-	return false;
+  if (!gfc_notify_std (GFC_STD_F2008,
+		       "%<team%> or %<team_number%> argument to %qs at %L",
+		       gfc_current_intrinsic, &team_or_team_number->where))
+    return false;
 
-      if (!scalar_check (distance, 0))
-	return false;
+  if (!type_check2 (team_or_team_number, 0, BT_DERIVED, BT_INTEGER)
+      || !scalar_check (team_or_team_number, 0))
+    return false;
 
-      if (!gfc_notify_std (GFC_STD_F2018, "DISTANCE= argument to "
-			   "NUM_IMAGES at %L", &distance->where))
-	return false;
-    }
-
-   if (failed)
-    {
-      if (!type_check (failed, 1, BT_LOGICAL))
-	return false;
-
-      if (!scalar_check (failed, 1))
-	return false;
-
-      if (!gfc_notify_std (GFC_STD_F2018, "FAILED= argument to "
-			   "NUM_IMAGES at %L", &failed->where))
-	return false;
-    }
+  if (team_or_team_number->ts.type == BT_DERIVED
+      && !team_type_check (team_or_team_number, 0))
+    return false;
 
   return true;
 }

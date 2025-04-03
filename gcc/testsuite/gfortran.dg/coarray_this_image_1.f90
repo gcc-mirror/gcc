@@ -41,16 +41,12 @@ endif
 associate(me => this_image())
 end associate
 k1 = num_images()
-k2 = num_images(6)
-k3 = num_images(distance=7)
-k4 = num_images(distance=8, failed=.true.)
-k5 = num_images(failed=.false.)
+k2 = num_images(team)
+k3 = num_images(-1)
 end
 
 ! { dg-final { scan-tree-dump-times "j\[1-4\] = 1;" 4 "original" } }
 ! { dg-final { scan-tree-dump-times "A\\.\[0-9\]+\\\[2\\\] = \\\{1, 1\\\};" 4 "original" } }
-! { dg-final { scan-tree-dump-times "k1 = 1;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "k2 = 1;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "k3 = 1;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "k4 = 0;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "k5 = 1;" 1 "original" } }
+! { dg-final { scan-tree-dump "k1 = 1;" "original" } }
+! { dg-final { scan-tree-dump "k2 = 1;" "original" } }
+! { dg-final { scan-tree-dump "k3 = 1;" "original" } }

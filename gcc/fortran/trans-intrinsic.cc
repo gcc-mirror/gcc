@@ -1184,7 +1184,9 @@ conv_stat_and_team (stmtblock_t *block, gfc_expr *expr, tree *stat, tree *team,
       gfc_se team_se;
       gfc_init_se (&team_se, NULL);
       gfc_conv_expr_reference (&team_se, team_e);
-      *team = team_se.expr;
+      *team
+	= gfc_build_addr_expr (NULL_TREE, gfc_trans_force_lval (&team_se.pre,
+								team_se.expr));
       gfc_add_block_to_block (block, &team_se.pre);
       gfc_add_block_to_block (block, &team_se.post);
     }
@@ -1197,7 +1199,10 @@ conv_stat_and_team (stmtblock_t *block, gfc_expr *expr, tree *stat, tree *team,
       gfc_se team_se;
       gfc_init_se (&team_se, NULL);
       gfc_conv_expr_reference (&team_se, team_e);
-      *team_no = team_se.expr;
+      *team_no = gfc_build_addr_expr (
+	NULL_TREE,
+	gfc_trans_force_lval (&team_se.pre,
+			      fold_convert (integer_type_node, team_se.expr)));
       gfc_add_block_to_block (block, &team_se.pre);
       gfc_add_block_to_block (block, &team_se.post);
     }
@@ -1790,13 +1795,13 @@ conv_caf_sendget (gfc_code *code)
   ++caf_call_cnt;
 
   tmp = build_call_expr_loc (
-    input_location, gfor_fndecl_caf_transfer_between_remotes, 20, lhs_token,
+    input_location, gfor_fndecl_caf_transfer_between_remotes, 22, lhs_token,
     opt_lhs_desc, opt_lhs_charlen, lhs_image_index, receiver_fn_index_tree,
     lhs_add_data_tree, lhs_add_data_size, rhs_token, opt_rhs_desc,
     opt_rhs_charlen, rhs_image_index, sender_fn_index_tree, rhs_add_data_tree,
     rhs_add_data_size, rhs_size,
     transfer_rank == 0 ? boolean_true_node : boolean_false_node, lhs_stat,
-    lhs_team, lhs_team_no, rhs_stat, rhs_team, rhs_team_no);
+    rhs_stat, lhs_team, lhs_team_no, rhs_team, rhs_team_no);
 
   gfc_add_expr_to_block (&block, tmp);
   gfc_add_block_to_block (&block, &lhs_se.post);
@@ -2112,8 +2117,8 @@ conv_intrinsic_team_number (gfc_se *se, gfc_expr *expr)
 static void
 trans_image_index (gfc_se * se, gfc_expr *expr)
 {
-  tree num_images, cond, coindex, type, lbound, ubound, desc, subdesc,
-       tmp, invalid_bound;
+  tree num_images, cond, coindex, type, lbound, ubound, desc, subdesc, tmp,
+    invalid_bound, team = null_pointer_node, team_number = null_pointer_node;
   gfc_se argse, subse;
   int rank, corank, codim;
 
@@ -2136,6 +2141,22 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
   gfc_add_block_to_block (&se->post, &subse.post);
   subdesc = build_fold_indirect_ref_loc (input_location,
 			gfc_conv_descriptor_data_get (subse.expr));
+
+  if (expr->value.function.actual->next->next->expr)
+    {
+      gfc_init_se (&argse, NULL);
+      gfc_conv_expr_descriptor (&argse,
+				expr->value.function.actual->next->next->expr);
+      if (expr->value.function.actual->next->next->expr->ts.type == BT_DERIVED)
+	team = argse.expr;
+      else
+	team_number = gfc_build_addr_expr (
+	  NULL_TREE,
+	  gfc_trans_force_lval (&argse.pre,
+				fold_convert (integer_type_node, argse.expr)));
+      gfc_add_block_to_block (&se->pre, &argse.pre);
+      gfc_add_block_to_block (&se->post, &argse.post);
+    }
 
   /* Fortran 2008 does not require that the values remain in the cobounds,
      thus we need explicitly check this - and return 0 if they are exceeded.  */
@@ -2212,8 +2233,7 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
   else
     {
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images, 2,
-				 integer_zero_node,
-				 build_int_cst (integer_type_node, -1));
+				 team, team_number);
       num_images = fold_convert (type, tmp);
     }
 
@@ -2232,32 +2252,26 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
 static void
 trans_num_images (gfc_se * se, gfc_expr *expr)
 {
-  tree tmp, distance, failed;
+  tree tmp, team = null_pointer_node, team_number = null_pointer_node;
   gfc_se argse;
 
   if (expr->value.function.actual->expr)
     {
       gfc_init_se (&argse, NULL);
       gfc_conv_expr_val (&argse, expr->value.function.actual->expr);
+      if (expr->value.function.actual->expr->ts.type == BT_DERIVED)
+	team = argse.expr;
+      else
+	team_number = gfc_build_addr_expr (
+	  NULL_TREE,
+	  gfc_trans_force_lval (&se->pre,
+				fold_convert (integer_type_node, argse.expr)));
       gfc_add_block_to_block (&se->pre, &argse.pre);
       gfc_add_block_to_block (&se->post, &argse.post);
-      distance = fold_convert (integer_type_node, argse.expr);
     }
-  else
-    distance = integer_zero_node;
 
-  if (expr->value.function.actual->next->expr)
-    {
-      gfc_init_se (&argse, NULL);
-      gfc_conv_expr_val (&argse, expr->value.function.actual->next->expr);
-      gfc_add_block_to_block (&se->pre, &argse.pre);
-      gfc_add_block_to_block (&se->post, &argse.post);
-      failed = fold_convert (integer_type_node, argse.expr);
-    }
-  else
-    failed = build_int_cst (integer_type_node, -1);
   tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images, 2,
-			     distance, failed);
+			     team, team_number);
   se->expr = fold_convert (gfc_get_int_type (gfc_default_integer_kind), tmp);
 }
 
@@ -2687,8 +2701,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 
 	  cosize = gfc_conv_descriptor_cosize (desc, arg->expr->rank, corank);
 	  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images,
-				     2, integer_zero_node,
-				     build_int_cst (integer_type_node, -1));
+				     2, null_pointer_node, null_pointer_node);
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
 				 gfc_array_index_type,
 				 fold_convert (gfc_array_index_type, tmp),
@@ -2703,8 +2716,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 	{
 	  /* ubound = lbound + num_images() - 1.  */
 	  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images,
-				     2, integer_zero_node,
-				     build_int_cst (integer_type_node, -1));
+				     2, null_pointer_node, null_pointer_node);
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
 				 gfc_array_index_type,
 				 fold_convert (gfc_array_index_type, tmp),

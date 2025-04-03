@@ -22,13 +22,10 @@ j4 = this_image(caf, 1, team) ! ok
 j5 = this_image(caf, 1, team, 'baz') !{ dg-error "Too many arguments in call" }
 j6 = this_image(dim=1, team=team, coarray=caf)
 
-!k1 = num_images()
-
-!k2 = num_images(6)
-
-!k3 = num_images(distance=7)
-
-!k4 = num_images(distance=8, failed=.true.)
-
-!k5 = num_images(failed=.false.)
+k1 = num_images() ! ok
+k2 = num_images(team) ! ok
+k3 = num_images(team, 2) !{ dg-error "Too many arguments in call to" }
+k4 = num_images(1) ! ok
+k5 = num_images('abc') !{ dg-error "'team/team_number' argument of 'num_images' intrinsic" }
+k6 = num_images(1, team) !{ dg-error "Too many arguments in call to" }
 end

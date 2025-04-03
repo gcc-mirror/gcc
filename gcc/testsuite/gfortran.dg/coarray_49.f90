@@ -5,5 +5,5 @@
 
 program p
   integer :: x[*]
-  print *, image_index (x, [1.0]) ! { dg-error "shall be INTEGER" }
+  print *, image_index (x, [1.0]) ! { dg-error "must be INTEGER" }
 end

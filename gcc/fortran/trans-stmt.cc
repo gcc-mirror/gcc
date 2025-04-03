@@ -1337,8 +1337,7 @@ gfc_trans_sync (gfc_code *code, gfc_exec_op type)
 	{
 	  tree cond2;
 	  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images,
-				     2, integer_zero_node,
-				     build_int_cst (integer_type_node, -1));
+				     2, null_pointer_node, null_pointer_node);
 	  cond = fold_build2_loc (input_location, GT_EXPR, logical_type_node,
 				  images2, tmp);
 	  cond2 = fold_build2_loc (input_location, LT_EXPR, logical_type_node,

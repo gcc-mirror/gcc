@@ -3229,7 +3229,8 @@ gfc_resolve_get_team (gfc_expr *f, gfc_expr *level ATTRIBUTE_UNUSED)
 
 void
 gfc_resolve_image_index (gfc_expr *f, gfc_expr *array ATTRIBUTE_UNUSED,
-			 gfc_expr *sub ATTRIBUTE_UNUSED)
+			 gfc_expr *sub ATTRIBUTE_UNUSED,
+			 gfc_expr *team_or_team_number ATTRIBUTE_UNUSED)
 {
   static char image_index[] = "__image_index";
   f->ts.type = BT_INTEGER;

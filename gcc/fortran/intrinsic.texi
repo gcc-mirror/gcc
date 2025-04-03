@@ -11427,47 +11427,48 @@ Fortran 95 and later
 
 @table @asis
 @item @emph{Synopsis}:
-@code{RESULT = NUM_IMAGES(DISTANCE, FAILED)}
+@multitable @columnfractions .80
+@item @code{RESULT = NUM_IMAGES([TEAM])}
+@item @code{RESULT = NUM_IMAGES(TEAM_NUMBER)}
+@end multitable
 
 @item @emph{Description}:
-Returns the number of images.
+Returns the number of images in the current team or the given team.
 
 @item @emph{Class}:
 Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{DISTANCE} @tab (optional, intent(in)) Nonnegative scalar integer
-@item @var{FAILED}   @tab (optional, intent(in)) Scalar logical expression
+@item @var{TEAM} @tab (optional, intent(in)) If present, return the number of
+images in the given team; if absent, return the number of images in the
+current team.
+@item @var{TEAM_NUMBER} @tab (intent(in)) The number as given in the
+@code{FORM TEAM} statement.
 @end multitable
 
 @item @emph{Return value}:
-Scalar default-kind integer.  If @var{DISTANCE} is not present or has value 0,
-the number of images in the current team is returned. For values smaller or
-equal distance to the initial team, it returns the number of images index
-on the ancestor team that has a distance of @var{DISTANCE} from the invoking
-team. If @var{DISTANCE} is larger than the distance to the initial team, the
-number of images of the initial team is returned. If @var{FAILED} is not present
-the total number of images is returned; if it has the value @code{.TRUE.},
-the number of failed images is returned, otherwise, the number of images that
-do have not the failed status.
+Scalar default-kind integer.  Can be called without any arguments or a team
+type argument or a team_number argument.
 
 @item @emph{Example}:
 @smallexample
+use, intrinsic :: iso_fortran_env
 INTEGER :: value[*]
 INTEGER :: i
-value = THIS_IMAGE()
-SYNC ALL
-IF (THIS_IMAGE() == 1) THEN
-  DO i = 1, NUM_IMAGES()
-    WRITE(*,'(2(a,i0))') 'value[', i, '] is ', value[i]
-  END DO
-END IF
+type(team_type) :: t
+
+! When running with 4 images
+print *, num_images() ! 4
+
+form team (mod(this_image(), 2), t)
+print *, num_images(t) ! 2
+print *, num_images(-1) ! 4
 @end smallexample
 
 @item @emph{Standard}:
-Fortran 2008 and later. With @var{DISTANCE} or @var{FAILED} argument, 
-Technical Specification (TS) 18508 or later
+Fortran 2008 and later.  With @var{TEAM} or @var{TEAM_NUMBER} argument,
+Fortran 2018 and later.
 
 @item @emph{See also}:
 @ref{THIS_IMAGE}, @*

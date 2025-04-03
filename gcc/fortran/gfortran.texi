@@ -4326,25 +4326,29 @@ be null here.
 
 @table @asis
 @item @emph{Synopsis}:
-@code{int _gfortran_caf_num_images(int distance, int failed)}
+@code{int _gfortran_caf_num_images (caf_team_t team, int32_t *team_number)}
 
 @item @emph{Description}:
-This function returns the number of images in the current team, if
-@var{distance} is 0 or the number of images in the parent team at the specified
-distance. If @var{failed} is -1, the function returns the number of all images at
-the specified distance; if it is 0, the function returns the number of
-nonfailed images, and if it is 1, it returns the number of failed images.
+This function returns the number of images in the team given by @var{team} or
+@var{team_number}, if either one is present.  If both are null, then the number
+of images in the current team is returned.
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{distance} @tab the distance from this image to the ancestor.
-Shall be positive.
-@item @var{failed} @tab shall be -1, 0, or 1
+@item @var{team} @tab intent(in), optional; The team the number of images is
+requested for.  If null, the number of images in the current team is returned.
+@item @var{team_number} @tab intent(in), optional; The team id for which the
+number of teams is requested; if unset, then number of images in the current
+team is returned.
 @end multitable
 
 @item @emph{Notes}:
-This function follows TS18508. If the num_image intrinsic has no arguments,
-then the compiler passes @code{distance=0} and @code{failed=-1} to the function.
+When both argument are given, then it is caf-library dependent which argument
+is examined first.  Current implementations prioritize the @var{team} argument,
+because it is easier to retrive the number of images from it.
+
+Fortran 2008 or later, with no arguments; Fortran 2018 or later with two
+arguments.
 @end table
 
 

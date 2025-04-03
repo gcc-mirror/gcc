@@ -202,8 +202,8 @@ _gfortran_caf_this_image (caf_team_t team)
 }
 
 int
-_gfortran_caf_num_images (int distance __attribute__ ((unused)),
-			  int failed __attribute__ ((unused)))
+_gfortran_caf_num_images (caf_team_t team __attribute__ ((unused)),
+			  int32_t *team_number __attribute__ ((unused)))
 {
   return 1;
 }

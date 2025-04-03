@@ -6729,7 +6729,7 @@ gfc_simplify_null (gfc_expr *mold)
 
 
 gfc_expr *
-gfc_simplify_num_images (gfc_expr *distance ATTRIBUTE_UNUSED, gfc_expr *failed)
+gfc_simplify_num_images (gfc_expr *team_or_team_number ATTRIBUTE_UNUSED)
 {
   gfc_expr *result;
 
@@ -6742,16 +6742,9 @@ gfc_simplify_num_images (gfc_expr *distance ATTRIBUTE_UNUSED, gfc_expr *failed)
   if (flag_coarray != GFC_FCOARRAY_SINGLE)
     return NULL;
 
-  if (failed && failed->expr_type != EXPR_CONSTANT)
-    return NULL;
-
   /* FIXME: gfc_current_locus is wrong.  */
   result = gfc_get_constant_expr (BT_INTEGER, gfc_default_integer_kind,
 				  &gfc_current_locus);
-
-  if (failed && failed->value.logical != 0)
-    mpz_set_si (result->value.integer, 0);
-  else
     mpz_set_si (result->value.integer, 1);
 
   return result;
@@ -8927,7 +8920,8 @@ gfc_simplify_trim (gfc_expr *e)
 
 
 gfc_expr *
-gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub)
+gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub,
+			  gfc_expr *team_or_team_number ATTRIBUTE_UNUSED)
 {
   gfc_expr *result;
   gfc_ref *ref;
