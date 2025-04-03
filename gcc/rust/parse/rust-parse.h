@@ -33,6 +33,11 @@ class ParseLifetimeParamError
 class ParseLifetimeError
 {
 };
+enum class ParseLoopLabelError
+{
+  NOT_LOOP_LABEL,
+  MISSING_COLON,
+};
 enum ParseSelfError
 {
   SELF_PTR,
@@ -620,7 +625,8 @@ private:
   std::unique_ptr<AST::Expr> parse_labelled_loop_expr (const_TokenPtr tok,
 						       AST::AttrVec outer_attrs
 						       = AST::AttrVec ());
-  tl::optional<AST::LoopLabel> parse_loop_label (const_TokenPtr tok);
+  tl::expected<AST::LoopLabel, ParseLoopLabelError>
+  parse_loop_label (const_TokenPtr tok);
   std::unique_ptr<AST::AsyncBlockExpr>
   parse_async_block_expr (AST::AttrVec outer_attrs = AST::AttrVec ());
   std::unique_ptr<AST::GroupedExpr> parse_grouped_expr (AST::AttrVec outer_attrs
