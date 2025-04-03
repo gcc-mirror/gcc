@@ -1728,23 +1728,24 @@ write-only accesses to objects that are never read from.  Such accesses
 may be diagnosed by warnings such as @option{-Wstringop-overflow},
 @option{-Wuninitialized}, @option{-Wunused}, and others.
 
-The @code{access} attribute specifies that a function to whose by-reference
-arguments the attribute applies accesses the referenced object according to
-@var{access-mode}.  The @var{access-mode} argument is required and must be
-one of four names: @code{read_only}, @code{read_write}, @code{write_only},
-or @code{none}.  The remaining two are positional arguments.
+The @code{access} attribute specifies that a pointer or reference argument
+to the function is accessed according to @var{access-mode}, which must be
+one of @code{read_only}, @code{read_write}, @code{write_only},
+or @code{none}.  The semantics of these modes are described below.
 
-The required @var{ref-index} positional argument  denotes a function
-argument of pointer (or in C++, reference) type that is subject to
-the access.  The same pointer argument can be referenced by at most one
-distinct @code{access} attribute.
+The argument the attribute applies to is identifed by @var{ref-index}, which
+is an integer constant representing its position in the argument list.
+Argument numbering starts from 1.  You can specify multiple @code{access}
+attributes to describe the access modes of different arguments, but multiple
+@code{access} attributes applying to the same argument are not permitted.
 
-The optional @var{size-index} positional argument denotes a function
+The optional @var{size-index} denotes the position of a function
 argument of integer type that specifies the maximum size of the access.
 The size is the number of elements of the type referenced by @var{ref-index},
 or the number of bytes when the pointer type is @code{void*}.  When no
 @var{size-index} argument is specified, the pointer argument must be either
-null or point to a space that is suitably aligned and large for at least one
+null or point to a space that is suitably aligned and large enough
+for at least one
 object of the referenced type (this implies that a past-the-end pointer is
 not a valid argument).  The actual size of the access may be less but it
 must not be more.
@@ -1756,7 +1757,7 @@ is zero, the referenced object must be initialized.  The mode implies
 a stronger guarantee than the @code{const} qualifier which, when cast away
 from a pointer, does not prevent the pointed-to object from being modified.
 Examples of the use of the @code{read_only} access mode is the argument to
-the @code{puts} function, or the second and third arguments to
+the @code{puts} function, or the second argument to
 the @code{memcpy} function.
 
 @smallexample
@@ -1796,12 +1797,13 @@ __attribute__ ((access (write_only, 1, 2), access (read_write, 3)))
 int fgets (char*, int, FILE*);
 @end smallexample
 
-The access mode @code{none} specifies that the pointer to which it applies
+The access mode @code{none} specifies that the pointer argument
+to which it applies
 is not used to access the referenced object at all.  Unless the pointer is
-null the pointed-to object must exist and have at least the size as denoted
+null, the pointed-to object must exist and have at least the size as denoted
 by the @var{size-index} argument.  When the optional @var{size-index}
-argument is omitted for an argument of @code{void*} type the actual pointer
-agument is ignored.  The referenced object need not be initialized.
+argument is omitted for an argument of @code{void*} type, the actual pointer
+argument is ignored.  The referenced object need not be initialized.
 The mode is intended to be used as a means to help validate the expected
 object size, for example in functions that call @code{__builtin_object_size}.
 @xref{Object Size Checking}.
@@ -1812,7 +1814,8 @@ an access @strong{will} happen.  Also, the @code{access} attribute does not
 imply the attribute @code{nonnull} nor the attribute @code{nonnull_if_nonzero};
 it may be appropriate to add both attributes at the declaration of a function
 that unconditionally manipulates a buffer via a pointer argument.  See the
-@code{nonnull} or @code{nonnull_if_nonzero} attributes for more information and
+@code{nonnull} or @code{nonnull_if_nonzero} function attributes,
+documented later in this section, for more information and
 caveats.
 
 @cindex @code{alias} function attribute
