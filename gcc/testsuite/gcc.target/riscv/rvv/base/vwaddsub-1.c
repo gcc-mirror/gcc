@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! riscv_abi_e } } } */
+/* { dg-do compile { target { { ! riscv_abi_e } && rv64 } } } */
 /* { dg-add-options riscv_v } */
 /* { dg-additional-options "-std=gnu99 -O3 -fno-schedule-insns -fno-schedule-insns2" } */
 
