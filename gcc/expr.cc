@@ -7193,9 +7193,9 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 
 	case VECTOR_CST:
 	  {
-	    /* We can only construct constant-length vectors using
-	       CONSTRUCTOR.  */
-	    unsigned int nunits = VECTOR_CST_NELTS (value).to_constant ();
+	    unsigned int nunits
+	      = constant_lower_bound
+	      (TYPE_VECTOR_SUBPARTS (TREE_TYPE (value)));
 	    for (unsigned int i = 0; i < nunits; ++i)
 	      {
 		tree v = VECTOR_CST_ELT (value, i);
