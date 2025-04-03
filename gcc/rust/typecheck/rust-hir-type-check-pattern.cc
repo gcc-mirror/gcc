@@ -277,7 +277,15 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 
   infered = pattern_ty;
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (infered);
-  rust_assert (adt->number_of_variants () > 0);
+  if (adt->number_of_variants () == 0)
+    {
+      HIR::PathInExpression &path = pattern.get_path ();
+      const AST::SimplePath &sp = path.as_simple_path ();
+      rust_error_at (pattern.get_locus (), ErrorCode::E0574,
+		     "expected struct, variant or union type, found enum %qs",
+		     sp.as_string ().c_str ());
+      return;
+    }
 
   TyTy::VariantDef *variant = adt->get_variants ().at (0);
   if (adt->is_enum ())
@@ -285,7 +293,16 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
       HirId variant_id = UNKNOWN_HIRID;
       bool ok = context->lookup_variant_definition (
 	pattern.get_path ().get_mappings ().get_hirid (), &variant_id);
-      rust_assert (ok);
+      if (!ok)
+	{
+	  HIR::PathInExpression &path = pattern.get_path ();
+	  const AST::SimplePath &sp = path.as_simple_path ();
+	  rust_error_at (
+	    pattern.get_locus (), ErrorCode::E0574,
+	    "expected struct, variant or union type, found enum %qs",
+	    sp.as_string ().c_str ());
+	  return;
+	}
 
       ok = adt->lookup_variant_by_id (variant_id, &variant);
       rust_assert (ok);
