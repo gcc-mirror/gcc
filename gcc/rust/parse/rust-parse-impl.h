@@ -7568,14 +7568,15 @@ Parser<ManagedTokenSource>::parse_continue_expr (AST::AttrVec outer_attrs,
 
 // Parses a loop label used in loop expressions.
 template <typename ManagedTokenSource>
-tl::optional<AST::LoopLabel>
+tl::expected<AST::LoopLabel, ParseLoopLabelError>
 Parser<ManagedTokenSource>::parse_loop_label (const_TokenPtr tok)
 {
   // parse lifetime - if doesn't exist, assume no label
   if (tok->get_id () != LIFETIME)
     {
       // not necessarily an error
-      return tl::nullopt;
+      return tl::unexpected<ParseLoopLabelError> (
+	ParseLoopLabelError::NOT_LOOP_LABEL);
     }
   /* FIXME: check for named lifetime requirement here? or check in semantic
    * analysis phase? */
@@ -7584,10 +7585,11 @@ Parser<ManagedTokenSource>::parse_loop_label (const_TokenPtr tok)
   if (!skip_token (COLON))
     {
       // skip somewhere?
-      return tl::nullopt;
+      return tl::unexpected<ParseLoopLabelError> (
+	ParseLoopLabelError::MISSING_COLON);
     }
 
-  return tl::optional<AST::LoopLabel> (
+  return tl::expected<AST::LoopLabel, ParseLoopLabelError> (
     AST::LoopLabel (std::move (label), tok->get_locus ()));
 }
 
@@ -8217,8 +8219,8 @@ Parser<ManagedTokenSource>::parse_labelled_loop_expr (const_TokenPtr tok,
 
   // parse loop label (required)
   // TODO: Convert this return type to tl::expected instead of tl::optional
-  tl::optional<AST::LoopLabel> label = parse_loop_label (tok);
-  if (!label)
+  auto parsed_label = parse_loop_label (tok);
+  if (!parsed_label)
     {
       Error error (lexer.peek_token ()->get_locus (),
 		   "failed to parse loop label in labelled loop expr");
@@ -8227,6 +8229,10 @@ Parser<ManagedTokenSource>::parse_labelled_loop_expr (const_TokenPtr tok,
       // skip?
       return nullptr;
     }
+
+  auto label = parsed_label
+		 ? tl::optional<AST::LoopLabel> (parsed_label.value ())
+		 : tl::nullopt;
 
   // branch on next token
   const_TokenPtr t = lexer.peek_token ();
