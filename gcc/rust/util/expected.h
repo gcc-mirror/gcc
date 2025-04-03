@@ -212,9 +212,7 @@ template <typename E>
   throw std::forward<E>(e);
 #else
   (void)e;
-#ifdef _MSC_VER
   gcc_unreachable();
-#endif
 #endif
 }
 
