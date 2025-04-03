@@ -467,7 +467,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_empty_rep() _GLIBCXX_NOEXCEPT
       { return _Rep::_S_empty_rep(); }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       // A helper type for avoiding boiler-plate.
       typedef basic_string_view<_CharT, _Traits> __sv_type;
 
@@ -685,7 +685,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_dataplus(_S_construct(__beg, __end, __a), __a)
 	{ }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Construct string from a substring of a string_view.
        *  @param  __t   Source object convertible to string view.
@@ -775,7 +775,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #endif // C++11
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Set value to string constructed from a string_view.
        *  @param  __svt An object convertible to  string_view.
@@ -1246,7 +1246,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->append(__l.begin(), __l.size()); }
 #endif // C++11
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Append a string_view.
        *  @param __svt The object convertible to string_view to be appended.
@@ -1338,7 +1338,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	append(_InputIterator __first, _InputIterator __last)
 	{ return this->replace(_M_iend(), _M_iend(), __first, __last); }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Append a string_view.
        *  @param __svt The object convertible to string_view to be appended.
@@ -1496,7 +1496,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->assign(__l.begin(), __l.size()); }
 #endif // C++11
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Set value from a string_view.
        *  @param __svt The source object convertible to string_view.
@@ -1703,7 +1703,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return iterator(_M_data() + __pos);
       }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Insert a string_view.
        *  @param __pos  Position in string to insert at.
@@ -2092,7 +2092,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->replace(__i1, __i2, __l.begin(), __l.end()); }
 #endif // C++11
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Replace range of characters with string_view.
        *  @param __pos  The position to replace at.
@@ -2354,7 +2354,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_type
       find(_CharT __c, size_type __pos = 0) const _GLIBCXX_NOEXCEPT;
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Find position of a string_view.
        *  @param __svt  The object convertible to string_view to locate.
@@ -2432,7 +2432,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_type
       rfind(_CharT __c, size_type __pos = npos) const _GLIBCXX_NOEXCEPT;
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Find last position of a string_view.
        *  @param __svt  The object convertible to string_view to locate.
@@ -2515,7 +2515,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       find_first_of(_CharT __c, size_type __pos = 0) const _GLIBCXX_NOEXCEPT
       { return this->find(__c, __pos); }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Find position of a character of a string_view.
        *  @param __svt  An object convertible to string_view containing
@@ -2599,7 +2599,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       find_last_of(_CharT __c, size_type __pos = npos) const _GLIBCXX_NOEXCEPT
       { return this->rfind(__c, __pos); }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Find last position of a character of string.
        *  @param __svt  An object convertible to string_view containing
@@ -2680,7 +2680,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       find_first_not_of(_CharT __c, size_type __pos = 0) const
       _GLIBCXX_NOEXCEPT;
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Find position of a character not in a string_view.
        *  @param __svt  An object convertible to string_view containing
@@ -2762,7 +2762,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       find_last_not_of(_CharT __c, size_type __pos = npos) const
       _GLIBCXX_NOEXCEPT;
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Find last position of a character not in a string_view.
        *  @param __svt  An object convertible to string_view containing
@@ -2824,7 +2824,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __r;
       }
 
-#if __cplusplus >= 201703L
+#ifdef __glibcxx_string_view // >= C++17
       /**
        *  @brief  Compare to a string_view.
        *  @param __svt An object convertible to string_view to compare against.
