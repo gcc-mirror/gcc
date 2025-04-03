@@ -622,7 +622,7 @@ ASTLoweringExpr::visit (AST::ContinueExpr &expr)
 {
   tl::optional<HIR::Lifetime> break_label;
   if (expr.has_label ())
-    break_label = lower_lifetime (expr.get_label ());
+    break_label = lower_lifetime (expr.get_label_unchecked ());
 
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),

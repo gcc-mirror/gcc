@@ -242,7 +242,7 @@ void
 Late::visit (AST::ContinueExpr &expr)
 {
   if (expr.has_label ())
-    resolve_label (expr.get_label ());
+    resolve_label (expr.get_label_unchecked ());
 
   DefaultResolver::visit (expr);
 }
