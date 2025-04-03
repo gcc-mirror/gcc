@@ -37,34 +37,37 @@ static stringop_algs ix86_size_memset[2] = {
 const
 struct processor_costs ix86_size_cost = {/* costs for tuning for size */
   {
-  /* Start of register allocator costs.  integer->integer move cost is 2. */
-  2,				     /* cost for loading QImode using movzbl */
-  {2, 2, 2},				/* cost of loading integer registers
+  /* Start of register allocator costs.  integer->integer move cost is 2
+     and coststs are relative to it.  movl %eax, %ebx is 2 bytes, so the
+     sizes coincides with average size of instruction encoding.  */
+  3,				     /* cost for loading QImode using movzbl */
+  /* Typical load/save from stack frame is 4 bytes with ebp and 5 with esp.  */
+  {5, 6, 5},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {2, 2, 2},				/* cost of storing integer registers */
+  {5, 6, 5},				/* cost of storing integer registers */
   2,					/* cost of reg,reg fld/fst */
-  {2, 2, 2},				/* cost of loading fp registers
+  {5, 6, 5},				/* cost of loading fp registers
 					   in SFmode, DFmode and XFmode */
-  {2, 2, 2},				/* cost of storing fp registers
+  {5, 6, 5},				/* cost of storing fp registers
 					   in SFmode, DFmode and XFmode */
   3,					/* cost of moving MMX register */
-  {3, 3},				/* cost of loading MMX registers
+  {6, 6},				/* cost of loading MMX registers
 					   in SImode and DImode */
-  {3, 3},				/* cost of storing MMX registers
+  {6, 6},				/* cost of storing MMX registers
 					   in SImode and DImode */
-  3, 3, 3,				/* cost of moving XMM,YMM,ZMM register */
-  {3, 3, 3, 3, 3},			/* cost of loading SSE registers
+  4, 4, 6,				/* cost of moving XMM,YMM,ZMM register */
+  {6, 6, 6, 6, 11},			/* cost of loading SSE registers
 					   in 32,64,128,256 and 512-bit */
-  {3, 3, 3, 3, 3},			/* cost of storing SSE registers
+  {6, 6, 6, 6, 11},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
-  3, 3,				/* SSE->integer and integer->SSE moves */
-  3, 3,				/* mask->integer and integer->mask moves */
-  {2, 2, 2},				/* cost of loading mask register
+  4, 4,				/* SSE->integer and integer->SSE moves */
+  4, 4,				/* mask->integer and integer->mask moves */
+  {7, 7, 7},				/* cost of loading mask register
 					   in QImode, HImode, SImode.  */
-  {2, 2, 2},				/* cost if storing mask register
+  {7, 7, 7},				/* cost if storing mask register
 					   in QImode, HImode, SImode.  */
-  2,					/* cost of moving mask register.  */
+  4,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
@@ -88,22 +91,24 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
   0,					/* "large" insn */
   2,					/* MOVE_RATIO */
   2,					/* CLEAR_RATIO */
-  {2, 2, 2},				/* cost of loading integer registers
+  /* These costs are relative to reg-reg move with cost of 2.  Since it has
+     2 bytes, this coincides with average instruction sizes.  */
+  {5, 6, 5},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
-  {2, 2, 2},				/* cost of storing integer registers */
-  {3, 3, 3, 3, 3},			/* cost of loading SSE register
+  {5, 6, 5},				/* cost of storing integer registers */
+  {6, 6, 6, 6, 11},			/* cost of loading SSE register
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
-  {3, 3, 3, 3, 3},			/* cost of storing SSE register
+  {6, 6, 6, 6, 11},			/* cost of storing SSE register
 					   in 32bit, 64bit, 128bit, 256bit and 512bit */
-  {3, 3, 3, 3, 3},			/* cost of unaligned SSE load
+  {6, 6, 6, 6, 11},			/* cost of unaligned SSE load
 					   in 128bit, 256bit and 512bit */
-  {3, 3, 3, 3, 3},			/* cost of unaligned SSE store
+  {6, 6, 6, 6, 11},			/* cost of unaligned SSE store
 					   in 128bit, 256bit and 512bit */
-  3, 3, 3,				/* cost of moving XMM,YMM,ZMM register */
-  3,					/* cost of moving SSE register to integer.  */
-  5, 0,					/* Gather load static, per_elt.  */
-  5, 0,					/* Gather store static, per_elt.  */
+  4, 4, 6,				/* cost of moving XMM,YMM,ZMM register */
+  4,					/* cost of moving SSE register to integer.  */
+  COSTS_N_BYTES (5), 0,			/* Gather load static, per_elt.  */
+  COSTS_N_BYTES (5), 0,			/* Gather store static, per_elt.  */
   0,					/* size of l1 cache  */
   0,					/* size of l2 cache  */
   0,					/* size of prefetch block */
