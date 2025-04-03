@@ -1,3 +1,11 @@
+2025-04-02  Bob Dubner  <rdubner@symas.com>
+
+	PR cobol/119521
+	* intrinsic.cc: (__gg__reverse): Trim final result for intermediate_e.
+	* libgcobol.cc: (__gg__adjust_dest_size): Abort on attempt to increase
+	the size of a result.  (__gg__module_name): Formatting.
+	__gg__reverse(): Resize only intermediates
+
 2025-03-28  Bob Dubner  <rdubner@symas.com>
 
 	* charmaps.cc:Eliminate "#include libgcobol.h".

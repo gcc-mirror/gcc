@@ -1,3 +1,13 @@
+2025-04-02  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/os/hpux/os_defines.h: Only use long long when
+	__cplusplus >= 201103L.
+
+2025-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/lib/prune.exp: Prune ld warning about duplicatei
+	rpaths.
+
 2025-04-01  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/114945

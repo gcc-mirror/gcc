@@ -1,3 +1,19 @@
+2025-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119582
+	* c-typeck.cc (pointer_diff, build_binary_op): Call c_fully_fold on
+	__sanitizer_ptr_sub or __sanitizer_ptr_cmp arguments.
+
+2025-04-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/118965
+	* c-parser.cc (c_parser_omp_clause_init_modifiers): Adjust
+	error message.
+	(c_parser_omp_clause_init): Remove code for recognizing clauses
+	without modifiers.  Diagnose missing target/targetsync modifier.
+	(c_finish_omp_declare_variant): Diagnose missing target/targetsync
+	modifier.
+
 2025-03-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (c.srcextra): Don't depend on anything and don't copy

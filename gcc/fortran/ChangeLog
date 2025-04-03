@@ -1,3 +1,13 @@
+2025-04-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/118965
+	* openmp.cc (gfc_parser_omp_clause_init_modifiers): Fix some
+	inconsistent code indentation.  Remove code for recognizing
+	clauses	without modifiers.  Diagnose prefer_type without a
+	following paren.  Adjust error message for an unrecognized modifier.
+	Diagnose missing target/targetsync modifier.
+	(gfc_match_omp_init): Fix more inconsistent code indentation.
+
 2025-03-28  Harald Anlauf  <anlauf@gmx.de>
 
 	* check.cc (gfc_invalid_boz): Correct spelling of compiler flag in

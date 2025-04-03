@@ -1,3 +1,9 @@
+2025-04-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Use -B instead of -L to specifiy the C++ runtime
+	paths on Darwin.
+
 2025-03-31  Alice Carlotti  <alice.carlotti@arm.com>
 
 	* MAINTAINERS: Update my name.

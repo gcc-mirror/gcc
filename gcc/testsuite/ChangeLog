@@ -1,3 +1,100 @@
+2025-04-02  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/zba-shNadd-09.c: New test.
+	* gcc.target/riscv/zba-shNadd-10.c: New test.
+
+2025-04-02  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/modules/pr98893_b.C: xfail __tcf_ZL1b
+	assembler check on hppa*-*-hpux*.
+
+2025-04-02  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/abi/abi-tag18a.C: Skip on hppa*-*-hpux*.
+
+2025-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119491
+	* g++.dg/opt/musttail3.C: New test.
+	* g++.dg/opt/musttail4.C: New test.
+	* g++.dg/opt/musttail5.C: New test.
+
+2025-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119582
+	* gcc.dg/asan/pr119582.c: New test.
+
+2025-04-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/118965
+	* c-c++-common/gomp/append-args-1.c: Add target/targetsync
+	modifiers so tests do what they were previously supposed to do.
+	Adjust expected output.
+	* c-c++-common/gomp/append-args-7.c: Likewise.
+	* c-c++-common/gomp/append-args-8.c: Likewise.
+	* c-c++-common/gomp/append-args-9.c: Likewise.
+	* c-c++-common/gomp/interop-1.c: Likewise.
+	* c-c++-common/gomp/interop-2.c: Likewise.
+	* c-c++-common/gomp/interop-3.c: Likewise.
+	* c-c++-common/gomp/interop-4.c: Likewise.
+	* c-c++-common/gomp/pr118965-1.c: New.
+	* c-c++-common/gomp/pr118965-2.c: New.
+	* g++.dg/gomp/append-args-1.C: Add target/targetsync modifiers
+	and adjust expected output.
+	* g++.dg/gomp/append-args-2.C: Likewise.
+	* g++.dg/gomp/append-args-6.C: Likewise.
+	* g++.dg/gomp/append-args-7.C: Likewise.
+	* g++.dg/gomp/append-args-8.C: Likewise.
+	* g++.dg/gomp/interop-5.C: Likewise.
+	* gfortran.dg/gomp/append_args-1.f90: Add target/targetsync
+	modifiers and adjust expected output.
+	* gfortran.dg/gomp/append_args-2.f90: Likewise.
+	* gfortran.dg/gomp/append_args-3.f90: Likewise.
+	* gfortran.dg/gomp/append_args-4.f90: Likewise.
+	* gfortran.dg/gomp/interop-1.f90: Likewise.
+	* gfortran.dg/gomp/interop-2.f90: Likewise.
+	* gfortran.dg/gomp/interop-3.f90: Likewise.
+	* gfortran.dg/gomp/interop-4.f90: Likewise.
+	* gfortran.dg/gomp/pr118965-1.f90: New.
+	* gfortran.dg/gomp/pr118965-2.f90: New.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119586
+	* gcc.dg/vect/pr119586.c: New testcase.
+
+2025-04-02  Jonathan Yong  <10walls@gmail.com>
+
+	* gcc.dg/analyzer/torture/switch-3.c: Fix llp64 warnings.
+
+2025-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/119376
+	* c-c++-common/musttail8.c: Expect a warning rather than error in one
+	case.
+	(f4): Add int * argument.
+	* c-c++-common/musttail15.c: Don't disallow for C++98.
+	* c-c++-common/musttail16.c: Likewise.
+	* c-c++-common/musttail17.c: Likewise.
+	* c-c++-common/musttail18.c: Likewise.
+	* c-c++-common/musttail19.c: Likewise.  Expect a warning rather than
+	error in one case.
+	(f4): Add int * argument.
+	* c-c++-common/musttail20.c: Don't disallow for C++98.
+	* c-c++-common/musttail21.c: Likewise.
+	* c-c++-common/musttail28.c: New test.
+	* c-c++-common/musttail29.c: New test.
+	* c-c++-common/musttail30.c: New test.
+	* c-c++-common/musttail31.c: New test.
+	* g++.dg/ext/musttail1.C: New test.
+	* g++.dg/ext/musttail2.C: New test.
+	* g++.dg/ext/musttail3.C: New test.
+
+2025-04-02  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/119556
+	* gcc.target/arm/short-vfp-1.c: Add missing spaces.
+
 2025-04-01  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/119551

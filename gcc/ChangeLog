@@ -1,3 +1,102 @@
+2025-04-02  Sandra Loosemore  <sloosemore@baylibre.com>
+	    GUO Yixuan  <culu.gyx@gmail.com>
+
+	PR driver/58973
+	* common.opt (Werror, Werror=): Use less awkward wording in
+	description.
+	(pedantic-errors): Likewise.
+	* doc/invoke.texi (Warning Options): Likewise for -Werror and
+	-Werror= here.
+
+2025-04-02  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/119572
+	* config/riscv/autovec.md: Mask broadcast value.
+
+2025-04-02  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/bitmanip.md: The optimization can only be applied if
+	the high bit of operands[3] is set to 1.
+
+2025-04-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/114957
+	PR c/78008
+	PR c++/60972
+	* doc/extend.texi (Structure-Layout Pragmas):  Add @cindex
+	entries	and reformat the pragma descriptions to match the markup
+	used for other pragmas.  Document what #pragma pack(0) does.
+	Add cross-references to similar attributes.
+
+2025-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119491
+	* tree-tailcall.cc (single_non_eh_succ_edge): New function.
+	(independent_of_stmt_p): Use single_non_eh_succ_edge (bb)->dest
+	instead of single_succ (bb).
+	(empty_eh_cleanup): New function.
+	(find_tail_calls): Diagnose throwing of exceptions which do not
+	propagate only if there are no EDGE_EH successor edges.  If there are
+	and the call is musttail, use empty_eh_cleanup to find if the cleanup
+	is not empty.  If not or the call is not musttail, use different
+	diagnostics.  Set is_noreturn even if there are successor edges.  Use
+	single_non_eh_succ_edge (abb) instead of single_succ_edge (abb).  Punt
+	on internal noreturn calls.
+	(decrease_profile): Don't assert 0 or 1 successor edges.
+	(eliminate_tail_call): Use
+	single_non_eh_succ_edge (gsi_bb (t->call_gsi)) instead of
+	single_succ_edge (gsi_bb (t->call_gsi)).
+	(tree_optimize_tail_calls_1): Also look into basic blocks with
+	single succ edge which is EDGE_EH for noreturn musttail calls.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119586
+	* tree-vect-stmts.cc (vectorizable_load): Assume we got
+	alignment analysis for VMAT_STRIDED_SLP wrong.
+	(vectorizable_store): Likewise.
+
+2025-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi (musttail statement attribute): Hint how
+	to avoid -Wmaybe-musttail-local-addr warnings.
+
+2025-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/119376
+	* common.opt (Wmusttail-local-addr, Wmaybe-musttail-local-addr): New.
+	* tree-tailcall.cc (suitable_for_tail_call_opt_p): Don't fail for
+	TREE_ADDRESSABLE PARM_DECLs for musttail calls if diag_musttail.
+	Emit -Wmusttail-local-addr warnings.
+	(maybe_error_musttail): Use gimple_location instead of directly
+	accessing location member.
+	(find_tail_calls): For musttail calls if diag_musttail, don't fail
+	if address of local could escape to the call, instead emit
+	-Wmaybe-musttail-local-addr warnings.  Emit
+	-Wmaybe-musttail-local-addr warnings also for address taken
+	parameters.
+	* common.opt.urls: Regenerate.
+	* doc/extend.texi (musttail statement attribute): Clarify local
+	variables without non-trivial destruction are considered out of scope
+	before the tail call instruction.
+	* doc/invoke.texi (-Wno-musttail-local-addr,
+	-Wmaybe-musttail-local-addr): Document.
+
+2025-04-02  Andi Kleen  <ak@gcc.gnu.org>
+
+	PR middle-end/119482
+	* bitmap.cc (bitmap_set_bit): Write back value unconditionally
+
+2025-04-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c++/118982
+	* doc/extend.texi (Common Function Attributes): For the
+	constructor/destructory attribute, be more explicit about the
+	relationship between the constructor attribute and
+	the C++ init_priority attribute, and add a cross-reference.
+	Also document that most targets support this.
+	(C++ Attributes): Similarly for the init_priority attribute.
+
 2025-04-01  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR c/118118

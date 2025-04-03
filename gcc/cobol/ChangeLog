@@ -1,3 +1,20 @@
+2025-04-02  Bob Dubner  <rdubner@symas.com>
+
+	PR cobol/119521
+	* genapi.cc: (parser_division): Change comment.
+	(parser_symbol_add): Change intermediate_t handling.
+	* parse.y: Multiple changes to new_alphanumeric() calls.
+	* parse_ante.h: Establish named constant for date function
+	calls.  Change declaration of new_alphanumeric() function.
+	* symbols.cc: (new_temporary_impl): Use named constant
+	for default size of temporary alphanumerics.
+	* symbols.h: Establish MAXIMUM_ALPHA_LENGTH constant.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* symfind.cc (finalize_symbol_map2): Use std::list::remove_if
+	instead of std::remove_if.
+
 2025-04-01  Bob Dubner  <rdubner@symas.com>
 
 	* genapi.cc: (section_label): Use xasprintf() instead of sprintf().

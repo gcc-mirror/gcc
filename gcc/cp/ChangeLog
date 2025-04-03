@@ -1,3 +1,13 @@
+2025-04-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/118965
+	* parser.cc (c_parser_omp_clause_init_modifiers): Adjust
+	error message.
+	(cp_parser_omp_clause_init): Remove code for recognizing clauses
+	without modifiers.  Diagnose missing target/targetsync modifier.
+	(cp_finish_omp_declare_variant): Diagnose missing target/targetsync
+	modifier.
+
 2025-04-01  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/119551
