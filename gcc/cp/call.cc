@@ -917,7 +917,7 @@ build_list_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
 	  t->rank = cr_exact;
 	  for (j = 0; j < (unsigned) RAW_DATA_LENGTH (val); ++j)
 	    {
-	      sub = subsubconvs[i];
+	      sub = subsubconvs[j];
 	      if (sub->rank > t->rank)
 		t->rank = sub->rank;
 	      if (sub->user_conv_p)
