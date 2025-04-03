@@ -1,3 +1,23 @@
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2023-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR tree-optimization/107087
+	* include/bits/cow_string.h (basic_string::size()): Add
+	optimizer hint that _S_empty_rep()._M_length is always zero.
+	(basic_string::length()): Call size().
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-02-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99117
+	* include/std/valarray (valarray::operator=(const _Expr&)):
+	Use loop to copy instead of __valarray_copy with _Array.
+	* testsuite/26_numerics/valarray/99117.cc: New test.
+
 2024-10-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/string_view (basic_string_view::copy) Use explicit
