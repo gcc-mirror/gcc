@@ -522,6 +522,7 @@ test_unicode()
   std::string sP = std::format("{:1.1} {:*<1.1}", "£", "🤡");
   VERIFY( sP == "£ *" );
   sP = std::format("{:*<2.1} {:*<2.1}", "£", "🤡");
+  VERIFY( sP == "£* **" );
 
   // Verify field width handling for extended grapheme clusters,
   // and that a cluster gets output as a single item, not truncated.
