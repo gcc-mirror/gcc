@@ -15219,25 +15219,19 @@ binary_initial_from_float128(cbl_field_t *field, int rdigits,
   FIXED_WIDE_INT(128) i
     = FIXED_WIDE_INT(128)::from (real_to_integer (&value, &fail, 128), SIGNED);
 
-  /* ???  Use native_encode_* below.  */
   retval = (char *)xmalloc(field->data.capacity);
   switch(field->data.capacity)
     {
+      tree type;
     case 1:
-      *(signed char *)retval = (signed char)i.slow ();
-      break;
     case 2:
-      *(signed short *)retval = (signed short)i.slow ();
-      break;
     case 4:
-      *(signed int *)retval = (signed int)i.slow ();
-      break;
     case 8:
-      *(signed long *)retval = (signed long)i.slow ();
-      break;
     case 16:
-      *(unsigned long *)retval = (unsigned long)i.ulow ();
-      *((signed long *)retval + 1) = (signed long)i.shigh ();
+      type = build_nonstandard_integer_type (field->data.capacity
+					     * BITS_PER_UNIT, 0);
+      native_encode_wide_int (type, i, (unsigned char *)retval,
+			      field->data.capacity);
       break;
     default:
       fprintf(stderr,
