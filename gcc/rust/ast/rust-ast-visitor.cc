@@ -478,7 +478,7 @@ DefaultASTVisitor::visit (AST::ContinueExpr &expr)
 {
   visit_outer_attrs (expr);
   if (expr.has_label ())
-    visit (expr.get_label ());
+    visit (expr.get_label_unchecked ());
 }
 
 void

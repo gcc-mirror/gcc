@@ -2879,8 +2879,11 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
-  Lifetime &get_label () { return label.value (); }
-  const Lifetime &get_label () const { return label.value (); }
+  Lifetime &get_label_unchecked () { return label.value (); }
+  const Lifetime &get_label_unchecked () const { return label.value (); }
+
+  tl::optional<Lifetime> &get_label () { return label; }
+  const tl::optional<Lifetime> &get_label () const { return label; }
 
   Expr::Kind get_expr_kind () const override { return Expr::Kind::Continue; }
 
