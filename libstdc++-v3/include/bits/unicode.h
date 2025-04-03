@@ -1039,6 +1039,8 @@ inline namespace __v16_0_0
 	      string_view __s(__enc);
 	      if (__s.ends_with("//"))
 		__s.remove_suffix(2);
+	      if (__s.ends_with("LE") || __s.ends_with("BE"))
+		__s.remove_suffix(2);
 	      return __s == "16" || __s == "32";
 	    }
 	}
