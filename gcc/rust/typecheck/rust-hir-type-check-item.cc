@@ -355,7 +355,7 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
       variants.push_back (field_type);
     }
 
-  // Check for zero-variant enum compatibility before processing repr attribute
+  // Check for zero-variant enum compatibility
   if (enum_decl.is_zero_variant ())
     {
       if (repr.repr_kind == TyTy::ADTType::ReprKind::INT
