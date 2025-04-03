@@ -471,7 +471,7 @@ ResolveExpr::visit (AST::BreakExpr &expr)
 {
   if (expr.has_label ())
     {
-      auto label = expr.get_label ().get_lifetime ();
+      auto label = expr.get_label_unchecked ().get_lifetime ();
       if (label.get_lifetime_type () != AST::Lifetime::LifetimeType::NAMED)
 	{
 	  rust_error_at (label.get_locus (),

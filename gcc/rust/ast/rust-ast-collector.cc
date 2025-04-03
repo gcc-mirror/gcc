@@ -1287,7 +1287,7 @@ TokenCollector::visit (BreakExpr &expr)
 {
   push (Rust::Token::make (BREAK, expr.get_locus ()));
   if (expr.has_label ())
-    visit (expr.get_label ());
+    visit (expr.get_label_unchecked ());
   if (expr.has_break_expr ())
     visit (expr.get_break_expr ());
 }

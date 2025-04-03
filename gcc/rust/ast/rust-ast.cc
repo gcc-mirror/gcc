@@ -2183,7 +2183,7 @@ BreakExpr::as_string () const
   std::string str ("break ");
 
   if (has_label ())
-    str += get_label ().as_string () + " ";
+    str += get_label_unchecked ().as_string () + " ";
 
   if (has_break_expr ())
     str += break_expr->as_string ();

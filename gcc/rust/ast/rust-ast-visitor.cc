@@ -486,7 +486,7 @@ DefaultASTVisitor::visit (AST::BreakExpr &expr)
 {
   visit_outer_attrs (expr);
   if (expr.has_label ())
-    visit (expr.get_label ());
+    visit (expr.get_label_unchecked ());
 
   if (expr.has_break_expr ())
     visit (expr.get_break_expr ());

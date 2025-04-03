@@ -599,7 +599,7 @@ ASTLoweringExpr::visit (AST::BreakExpr &expr)
 {
   tl::optional<HIR::Lifetime> break_label = tl::nullopt;
   if (expr.has_label ())
-    break_label = lower_lifetime (expr.get_label ().get_lifetime ());
+    break_label = lower_lifetime (expr.get_label_unchecked ().get_lifetime ());
 
   HIR::Expr *break_expr
     = expr.has_break_expr ()
