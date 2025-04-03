@@ -906,6 +906,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/string_view \
                          include/syncstream \
                          include/system_error \
+                         include/text_encoding \
                          include/thread \
                          include/tuple \
                          include/typeindex \
