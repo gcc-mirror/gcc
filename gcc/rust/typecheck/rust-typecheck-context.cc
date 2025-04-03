@@ -514,7 +514,16 @@ TypeCheckContext::lookup_lifetime (const HIR::Lifetime &lifetime) const
 {
   if (lifetime.get_lifetime_type () == AST::Lifetime::NAMED)
     {
-      rust_assert (lifetime.get_name () != "static");
+      if (lifetime.get_name () == "static")
+	{
+	  rich_location r (line_table, lifetime.get_locus ());
+	  r.add_fixit_insert_after (lifetime.get_locus (),
+				    "static is a reserved lifetime name");
+	  rust_error_at (r, ErrorCode::E0262,
+			 "invalid lifetime parameter name: %qs",
+			 lifetime.get_name ().c_str ());
+	  return tl::nullopt;
+	}
       const auto name = lifetime.get_name ();
       auto it = lifetime_name_interner.find (name);
       if (it == lifetime_name_interner.end ())
