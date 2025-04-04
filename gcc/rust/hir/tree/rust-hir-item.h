@@ -2070,6 +2070,8 @@ public:
 
   Identifier get_name () const { return name; }
 
+  bool has_type () const { return expr != nullptr; }
+
   bool has_expr () const { return expr != nullptr; }
 
   Type &get_type ()
