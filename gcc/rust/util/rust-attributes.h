@@ -41,6 +41,8 @@ enum CompilerPass
   TYPE_CHECK,
   STATIC_ANALYSIS,
   CODE_GENERATION
+
+  // Do we need to add something here for const fns?
 };
 
 struct BuiltinAttrDefinition
