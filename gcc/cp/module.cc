@@ -9004,25 +9004,28 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	if (streaming_p ())
 	  i (tt_parm);
 	tree_node (DECL_CONTEXT (decl));
-	if (streaming_p ())
-	  {
-	    /* That must have put this in the map.  */
-	    walk_kind ref = ref_node (decl);
-	    if (ref != WK_none)
-	      // FIXME:OPTIMIZATION We can wander into bits of the
-	      // template this was instantiated from.  For instance
-	      // deferred noexcept and default parms.  Currently we'll
-	      // end up cloning those bits of tree.  It would be nice
-	      // to reference those specific nodes.  I think putting
-	      // those things in the map when we reference their
-	      // template by name.  See the note in add_indirects.
-	      return true;
 
-	    dump (dumper::TREE)
-	      && dump ("Wrote %s reference %N",
-		       TREE_CODE (decl) == PARM_DECL ? "parameter" : "result",
-		       decl);
-	  }
+	/* That must have put this in the map.  */
+	walk_kind ref = ref_node (decl);
+	if (ref != WK_none)
+	  // FIXME:OPTIMIZATION We can wander into bits of the
+	  // template this was instantiated from, for instance
+	  // deferred noexcept and default parms, or references
+	  // to parms from earlier forward-decls (PR c++/119608).
+	  //
+	  // Currently we'll end up cloning those bits of tree. 
+	  // It would be nice to reference those specific nodes.
+	  // I think putting those things in the map when we
+	  // reference their template by name.
+	  //
+	  // See the note in add_indirects.
+	  return true;
+
+	if (streaming_p ())
+	  dump (dumper::TREE)
+	    && dump ("Wrote %s reference %N",
+		     TREE_CODE (decl) == PARM_DECL ? "parameter" : "result",
+		     decl);
       }
       return false;
 
