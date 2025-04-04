@@ -1341,9 +1341,10 @@ branch_prob (bool thunk)
 	  ignored_edges++;
 	}
       /* Ignore edges after musttail calls.  */
-      if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
+      if (cfun->has_musttail
+	  && e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun))
 	{
-	  gimple_stmt_iterator gsi = gsi_last_bb (e->src);
+	  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (e->src);
 	  gimple *stmt = gsi_stmt (gsi);
 	  if (stmt
 	      && is_gimple_call (stmt)
