@@ -611,7 +611,6 @@ Session::compile_crate (const char *filename)
     return;
 
   AST::CollectLangItems ().go (parsed_crate);
-  AST::DesugarQuestionMark ().go (parsed_crate);
 
   auto name_resolution_ctx = Resolver2_0::NameResolutionContext ();
   // expansion pipeline stage
@@ -619,6 +618,7 @@ Session::compile_crate (const char *filename)
   expansion (parsed_crate, name_resolution_ctx);
 
   AST::DesugarForLoops ().go (parsed_crate);
+  AST::DesugarQuestionMark ().go (parsed_crate);
 
   rust_debug ("\033[0;31mSUCCESSFULLY FINISHED EXPANSION \033[0m");
   if (options.dump_option_enabled (CompileOptions::EXPANSION_DUMP))
