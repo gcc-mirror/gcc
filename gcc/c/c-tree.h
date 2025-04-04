@@ -795,6 +795,7 @@ c_type_unspecified_p (tree t)
 }
 
 extern bool char_type_p (tree);
+extern tree c_type_tag (const_tree t);
 extern tree c_objc_common_truthvalue_conversion (location_t, tree,
 						 tree = integer_type_node);
 extern tree require_complete_type (location_t, tree);

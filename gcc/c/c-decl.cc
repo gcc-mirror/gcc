@@ -659,7 +659,8 @@ c_struct_hasher::hash (tree type)
   inchash::hash hstate;
 
   hstate.add_int (TREE_CODE (type));
-  hstate.add_object (TYPE_NAME (type));
+  tree tag = c_type_tag (type);
+  hstate.add_object (tag);
 
   return hstate.end ();
 }
@@ -2073,7 +2074,7 @@ static tree
 previous_tag (tree type)
 {
   struct c_binding *b = NULL;
-  tree name = TYPE_NAME (type);
+  tree name = c_type_tag (type);
 
   if (name)
     b = I_TAG_BINDING (name);
