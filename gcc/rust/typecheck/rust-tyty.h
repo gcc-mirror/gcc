@@ -719,7 +719,6 @@ public:
     ALIGN,
     PACKED,
     // TRANSPARENT,
-    // PACKED,
     // SIMD,
     // ...
   };
