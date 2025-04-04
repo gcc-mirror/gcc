@@ -175,6 +175,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Limited_Composite, Flag),
         Sm (Is_Limited_Interface, Flag),
         Sm (Is_Limited_Record, Flag),
+        Sm (Is_Link_Once, Flag),
         Sm (Is_Loop_Parameter, Flag),
         Sm (Is_Obsolescent, Flag),
         Sm (Is_Package_Body_Entity, Flag),

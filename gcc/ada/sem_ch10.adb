@@ -3169,13 +3169,12 @@ package body Sem_Ch10 is
 
       elsif Unit_Kind = N_Package_Instantiation
         and then Nkind (U) = N_Package_Instantiation
-        and then Present (Instance_Spec (U))
       then
          --  If the instance has not been rewritten as a package declaration,
          --  then it appeared already in a previous with clause. Retrieve
          --  the entity from the previous instance.
 
-         E_Name := Defining_Entity (Specification (Instance_Spec (U)));
+         E_Name := Defining_Entity_Of_Instance (U);
 
       elsif Unit_Kind in N_Subprogram_Instantiation then
 
@@ -3186,9 +3185,7 @@ package body Sem_Ch10 is
          --  been rewritten as the declaration of the wrapper itself.
 
          if Nkind (U) in N_Subprogram_Instantiation then
-            E_Name :=
-              Related_Instance
-                (Defining_Entity (Specification (Instance_Spec (U))));
+            E_Name := Defining_Entity_Of_Instance (U);
          else
             E_Name := Related_Instance (Defining_Entity (U));
          end if;

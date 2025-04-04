@@ -3024,6 +3024,13 @@ package Einfo is
 --       record is declared to be limited. Note that this flag is not set
 --       simply because some components of the record are limited.
 
+--    Is_Link_Once
+--       Defined in all entities. Set to indicate that an entity can be defined
+--       in multiple compilation units without generating a linker error. The
+--       compiler guarantees that the multiple definitions are equivalent and,
+--       therefore, that the linker can freely pick one of them. If this flag
+--       is set on an entity, then the Is_Public flag is also set on it.
+
 --    Is_Local_Anonymous_Access
 --       Defined in access types. Set for an anonymous access type to indicate
 --       that the type is created for a record component with an access
@@ -4990,6 +4997,7 @@ package Einfo is
    --    Is_Known_Valid
    --    Is_Limited_Composite
    --    Is_Limited_Record
+   --    Is_Link_Once
    --    Is_Loop_Parameter
    --    Is_Obsolescent
    --    Is_Package_Body_Entity

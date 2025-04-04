@@ -56,6 +56,7 @@ with Scn;            use Scn;
 with Sem;            use Sem;
 with Sem_Aux;
 with Sem_Ch8;
+with Sem_Ch12;
 with Sem_SCIL;
 with Sem_Elab;       use Sem_Elab;
 with Sem_Prag;       use Sem_Prag;
@@ -430,6 +431,18 @@ begin
 
                if Inline_Processing_Required then
                   Analyze_Inlined_Bodies;
+               end if;
+
+               --  Mark the structural instances spawned by the main unit as
+               --  Link Once because other units may spawn them too.
+
+               Sem_Ch12.Mark_Link_Once
+                 (Declarations (Aux_Decls_Node (Cunit (Main_Unit))));
+
+               if Nkind (Unit (Cunit (Main_Unit))) = N_Package_Body then
+                  Sem_Ch12.Mark_Link_Once
+                    (Declarations
+                      (Aux_Decls_Node (Spec_Lib_Unit (Cunit (Main_Unit)))));
                end if;
 
                --  Remove entities from program that do not have any execution

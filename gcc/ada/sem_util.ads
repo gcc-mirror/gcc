@@ -62,6 +62,15 @@ package Sem_Util is
    --  for the current unit. The declared entity is added to current scope,
    --  so the caller should push a new scope as required before the call.
 
+   procedure Add_Local_Declaration
+     (Decl : Node_Id;
+      N    : Node_Id;
+      Scop : Entity_Id);
+   --  This procedure adds a declaration Decl to the innermost declarative
+   --  part that covers N, whose associated scope is Scop if Scop is present,
+   --  and before N if N is in this declarative part. The declared entity is
+   --  added to the scope associated with the declarative part.
+
    function Add_Suffix (E : Entity_Id; Suffix : Character) return Name_Id;
    --  Returns the name of E adding Suffix
 
@@ -686,6 +695,11 @@ package Sem_Util is
    function Defining_Entity_Or_Empty (N : Node_Id) return Entity_Id;
    --  This is equivalent to Defining_Entity but it returns Empty for nodes
    --  without an entity instead of raising Program_Error.
+
+   function Defining_Entity_Of_Instance (N : Node_Id) return Entity_Id;
+   --  Given an N_Generic_Instantiation node, returns the defining entity of
+   --  the instance, that is to say the entity that is declared at N (which
+   --  is not the same as Defining_Entity (N), see Sem_Ch12).
 
    function Denotes_Discriminant
      (N                : Node_Id;

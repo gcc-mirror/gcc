@@ -687,13 +687,14 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Defining_Unit_Name, Node_Id),
         Sy (Name, Node_Id, Default_Empty),
         Sy (Generic_Associations, List_Id, Default_No_List),
+        Sm (Parent_Spec, Node_Id),
         Sm (Instance_Spec, Node_Id),
         Sm (Is_Declaration_Level_Node, Flag),
         Sm (Is_Elaboration_Checks_OK_Node, Flag),
         Sm (Is_Elaboration_Warnings_OK_Node, Flag),
         Sm (Is_Known_Guaranteed_ABE, Flag),
         Sm (Is_SPARK_Mode_On_Node, Flag),
-        Sm (Parent_Spec, Node_Id)));
+        Sm (Is_Structural, Flag)));
 
    Ab (N_Subprogram_Instantiation, N_Generic_Instantiation,
        (Sy (Must_Override, Flag),

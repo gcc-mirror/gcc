@@ -347,6 +347,133 @@ package body Sem_Util is
       Analyze (Decl);
    end Add_Global_Declaration;
 
+   ---------------------------
+   -- Add_Local_Declaration --
+   ---------------------------
+
+   procedure Add_Local_Declaration
+     (Decl : Node_Id;
+      N    : Node_Id;
+      Scop : Entity_Id)
+   is
+      function Find_Associated_Scope (N : Node_Id) return Scope_Kind_Id;
+      --  Return the scope associated with the declarative part of N
+
+      ---------------------------
+      -- Find_Associated_Scope --
+      ---------------------------
+
+      function Find_Associated_Scope (N : Node_Id) return Scope_Kind_Id is
+      begin
+         case Nkind (N) is
+            when N_Block_Statement =>
+               return Entity (Identifier (N));
+
+            when N_Compilation_Unit
+               | N_Compilation_Unit_Aux
+            =>
+               return Standard_Standard;
+
+            when N_Package_Specification
+               | N_Protected_Definition
+               | N_Task_Definition
+            =>
+               return Defining_Entity (Parent (N));
+
+            when N_Entry_Body
+               | N_Package_Body
+               | N_Protected_Body
+               | N_Task_Body
+            =>
+               return Corresponding_Spec (N);
+
+            when N_Subprogram_Body =>
+               if Acts_As_Spec (N) then
+                  return Defining_Entity (N);
+               else
+                  return Corresponding_Spec (N);
+               end if;
+
+            when others =>
+               raise Program_Error;
+         end case;
+      end Find_Associated_Scope;
+
+      --  Local variables
+
+      Nod : Node_Id;
+      Par : Node_Id;
+
+   --  Start of processing for Add_Local_Declaration
+
+   begin
+      Nod := N;
+      Par := Parent (Nod);
+
+      --  Look for the innermost enclosing construct with a declarative part
+
+      while Nkind (Par) not in N_Block_Statement
+                             | N_Compilation_Unit
+                             | N_Compilation_Unit_Aux
+                             | N_Entry_Body
+                             | N_Package_Body
+                             | N_Package_Specification
+                             | N_Protected_Body
+                             | N_Protected_Definition
+                             | N_Subprogram_Body
+                             | N_Task_Body
+                             | N_Task_Definition
+         or else (Present (Scop) and Find_Associated_Scope (Par) /= Scop)
+      loop
+         Nod := Par;
+         Par := Parent (Nod);
+      end loop;
+
+      --  Compilation units do not directly have a declarative part
+
+      if Nkind (Par) = N_Compilation_Unit then
+         Par := Aux_Decls_Node (Par);
+      end if;
+
+      --  Insert Decl before N or at the end of the declarative part
+
+      case Nkind (Par) is
+         when N_Block_Statement
+            | N_Compilation_Unit_Aux
+            | N_Entry_Body
+            | N_Package_Body
+            | N_Protected_Body
+            | N_Subprogram_Body
+            | N_Task_Body
+         =>
+            if Is_List_Member (Nod)
+              and then List_Containing (Nod) = Declarations (Par)
+            then
+               Insert_Before (Nod, Decl);
+
+            else
+               if No (Declarations (Par)) then
+                  Set_Declarations (Par, New_List);
+               end if;
+
+               Append_To (Declarations (Par), Decl);
+            end if;
+
+         when N_Package_Specification
+            | N_Protected_Definition
+            | N_Task_Definition
+         =>
+            Insert_Before (Nod, Decl);
+
+         when others =>
+            raise Program_Error;
+      end case;
+
+      Push_Scope (Find_Associated_Scope (Par));
+      Analyze (Decl);
+      Pop_Scope;
+   end Add_Local_Declaration;
+
    --------------------------------
    -- Address_Integer_Convert_OK --
    --------------------------------
@@ -6742,6 +6869,28 @@ package body Sem_Util is
          raise Program_Error;
       end if;
    end Defining_Entity;
+
+   ---------------------------------
+   -- Defining_Entity_Of_Instance --
+   ---------------------------------
+
+   function Defining_Entity_Of_Instance (N : Node_Id) return Entity_Id is
+      pragma Assert (Nkind (N) in N_Generic_Instantiation);
+      Spec : constant Node_Id := Instance_Spec (N);
+
+   begin
+      --  Fall back to Defining_Entity in case of previous errors
+
+      if No (Spec) then
+         return Defining_Entity (N);
+      end if;
+
+      if Nkind (N) = N_Package_Instantiation then
+         return Defining_Entity (Specification (Spec));
+      else
+         return Related_Instance (Defining_Entity (Specification (Spec)));
+      end if;
+   end Defining_Entity_Of_Instance;
 
    ------------------------------
    -- Defining_Entity_Or_Empty --

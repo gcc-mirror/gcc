@@ -1884,3 +1884,157 @@ be private to the enclosing package. This is necessary due to the previously
 mentioned legality rule, to prevent breaking the privacy of the type when
 imposing that rule on outside types that derive from the private view of the
 type.
+
+Structural Generic Instantiation
+--------------------------------
+
+The compiler implements a second kind of generic instantiation, called
+"structural", alongside the traditional instantiation specified by the
+language, which is defined as follows: the structural instantiation of
+a generic unit on given actual parameters is the anonymous instantiation
+of the generic unit on the actual parameters done in the outermost scope
+where it would be legal to do an identical traditional instantiation.
+
+There is at most one structural instantiation of a generic unit on given
+actual parameters done in a partition.
+
+Structural generic instances (the product of structural instantiation)
+are implicitly created whenever a reference to them is made in a place
+where a name is accepted by the language.
+
+Syntax
+^^^^^^
+
+.. code-block:: text
+
+   name ::= { set of productions specified in the RM }
+            | structural_generic_instance_name
+
+   structural_generic_instance_name ::= name generic_actual_part
+
+Legality Rules
+^^^^^^^^^^^^^^
+
+The ``name`` in a ``structural_generic_instance_name`` shall denote a generic
+unit that is preelaborated. Note that, unlike in a traditional instantiation,
+there are no square brackets around the ``generic_actual_part`` in the second
+production, which means that it is mandatory and, therefore, that the generic
+unit shall have at least one generic formal parameter.
+
+The generic unit shall not take a generic formal object of mode ``in out``.
+If the generic unit takes a generic formal object of mode ``in``, then the
+corresponding generic actual parameter shall be a static expression.
+
+A ``structural_generic_instance_name`` shall not be present in a library
+unit if the structural instance is also a library unit and has a semantic
+dependence on the former.
+
+Static Semantics
+^^^^^^^^^^^^^^^^
+
+A ``structural_generic_instance_name`` denotes the instance that is the
+product of the structural instantiation of a generic unit on the specified
+actual parameters. This instance is unique to a partition.
+
+Example:
+
+.. code-block:: ada
+
+   with Ada.Containers.Vectors;
+
+   procedure P is
+      V : Ada.Containers.Vectors(Positive,Integer).Vector;
+
+   begin
+      V.Append (1);
+      V.Append (0);
+      Ada.Containers.Vectors(Positive,Integer).Generic_Sorting("<").Sort (V);
+   end;
+
+This procedure references two structural instantiations of two different generic
+units: ``Ada.Containers.Vectors(Positive,Integer)`` is the structural instance
+of the generic unit ``Ada.Containers.Vectors`` on ``Positive`` and ``Integer``
+and ``Ada.Containers.Vectors(Positive,Integer).Generic_Sorting("<")`` is the
+structural instance of the nested generic unit
+``Ada.Containers.Vectors(Positive,Integer).Generic_Sorting`` on ``"<"``.
+
+Note that the following example is illegal:
+
+.. code-block:: ada
+
+   with Ada.Containers.Vectors;
+
+   package Q is
+      type T is record
+         I : Integer;
+      end record;
+
+      V : Ada.Containers.Vectors(Positive,T).Vector;
+   end Q;
+
+The reason is that ``Ada.Containers.Vectors``, ``Positive`` and ``Q.T`` being
+library-level entities, the structural instance ``Ada.Containers.Vectors(Positive,T)`` is a library unit with a dependence
+on ``Q`` and, therefore, cannot be referenced from within ``Q``. The simple
+way out is to declare a traditional instantiation in this case:
+
+.. code-block:: ada
+
+   with Ada.Containers.Vectors;
+
+   package Q is
+      type T is record
+         I : Integer;
+      end record;
+
+      package Vectors_Of_T is new Ada.Containers.Vectors(Positive,T);
+
+      V : Vectors_Of_T.Vector;
+   end Q;
+
+But the following example is legal:
+
+.. code-block:: ada
+
+   with Ada.Containers.Vectors;
+
+   procedure P is
+      type T is record
+         I : Integer;
+      end record;
+
+      V : Ada.Containers.Vectors(Positive,T).Vector;
+   end;
+
+because the structural instance ``Ada.Containers.Vectors(Positive,T)`` is
+not a library unit.
+
+The first example can be rewritten in a less verbose manner:
+
+.. code-block:: ada
+
+   with Ada.Containers.Vectors; use Ada.Containers.Vectors(Positive,Integer);
+
+   procedure P is
+      V : Vector;
+
+   begin
+      V.Append (1);
+      V.Append (0);
+      Generic_Sorting("<").Sort (V);
+   end;
+
+Another example, which additionally uses the inference of dependent types:
+
+.. code-block:: ada
+
+   with Ada.Unchecked_Deallocation;
+
+   procedure P is
+
+      type Integer_Access is access all Integer;
+
+      A : Integer_Access := new Integer'(1);
+
+   begin
+      Ada.Unchecked_Deallocation(Name => Integer_Access) (A);
+   end;

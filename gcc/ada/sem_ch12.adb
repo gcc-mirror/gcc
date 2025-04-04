@@ -33,6 +33,7 @@ with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
 with Expander;       use Expander;
+with Exp_Dbug;       use Exp_Dbug;
 with Fname;          use Fname;
 with Fname.UF;       use Fname.UF;
 with Freeze;         use Freeze;
@@ -1290,6 +1291,11 @@ package body Sem_Ch12 is
    --  onto Default_Actuals, and actuals that require freezing are
    --  appended onto Actuals_To_Freeze.
 
+   procedure Analyze_Structural_Associations
+     (N     : Node_Id;
+      Match : Associations.Match_Rec);
+   --  Analyze associations for structural instantiation N
+
    procedure Check_Fixed_Point_Warning
      (Match     : Associations.Match_Rec;
       Renamings : List_Id);
@@ -2365,6 +2371,16 @@ package body Sem_Ch12 is
       Match : constant Match_Rec := Match_Assocs (N, Formals, F_Copy);
 
    begin
+      if Nkind (N) in N_Generic_Instantiation and then Is_Structural (N) then
+         Analyze_Structural_Associations (N, Match);
+
+         --  Bail out if the instantiation has been turned into something else
+
+         if Nkind (N) not in N_Generic_Instantiation then
+            return Result_Renamings;
+         end if;
+      end if;
+
       for Index in Match.Assocs'Range loop
          declare
             Assoc : Assoc_Rec renames Match.Assocs (Index);
@@ -4848,6 +4864,13 @@ package body Sem_Ch12 is
 
       function Needs_Body_Instantiated (Gen_Unit : Entity_Id) return Boolean is
       begin
+         --  If the instantiation is in the auxiliary declarations of the main
+         --  unit, then the body is needed, even if the main unit is generic.
+
+         if Parent (N) = Aux_Decls_Node (Cunit (Main_Unit)) then
+            return True;
+         end if;
+
          --  No need to instantiate bodies in generic units
 
          if Is_Generic_Unit (Cunit_Entity (Main_Unit)) then
@@ -5134,12 +5157,35 @@ package body Sem_Ch12 is
               Formals => Generic_Formal_Declarations (Act_Tree),
               F_Copy  => Generic_Formal_Declarations (Gen_Decl));
 
+         --  Bail out if the instantiation has been turned into something else
+
+         if Nkind (N) /= N_Package_Instantiation then
+            if Parent_Installed then
+               Remove_Parent;
+            end if;
+
+            Restore_Env;
+            goto Leave;
+         end if;
+
          Vis_Prims_List := Check_Hidden_Primitives (Renamings);
 
          --  Set minimal decoration on the original entity
 
          Mutate_Ekind (Defining_Entity (N), E_Package);
          Set_Scope (Defining_Entity (N), Current_Scope);
+
+         --  From now on only Act_Decl_Id matters. If was copied from the
+         --  original entity earlier but, if the instance is structural,
+         --  the latter has been changed, so adjust it accordingly.
+
+         if Chars (Defining_Entity (N)) /= Chars (Act_Decl_Id) then
+            pragma Assert (Is_Structural (N));
+            Set_Incomplete_Actuals
+              (Defining_Entity (N), Incomplete_Actuals (Act_Decl_Id));
+            Act_Decl_Id := New_Copy (Defining_Entity (N));
+            Set_Is_Not_Self_Hidden (Act_Decl_Id);
+         end if;
 
          Set_Instance_Env (Gen_Unit, Act_Decl_Id);
          Set_Is_Generic_Instance (Act_Decl_Id);
@@ -6011,6 +6057,454 @@ package body Sem_Ch12 is
       Analyze_Subprogram_Instantiation (N, E_Procedure);
    end Analyze_Procedure_Instantiation;
 
+   -------------------------------------
+   -- Analyze_Structural_Associations --
+   -------------------------------------
+
+   procedure Analyze_Structural_Associations
+     (N     : Node_Id;
+      Match : Associations.Match_Rec)
+   is
+      use Associations;
+
+      Loc : constant Source_Ptr := Sloc (N);
+      --  The source location of the instantiation
+
+      type Accessibility_Depth is record
+         Global : Uint;
+         Local  : Uint;
+      end record;
+      --  The accessibility depth of an entity is the depth of the outermost
+      --  scope from which the entity can be accessed at run time. It's zero
+      --  for library-level entities since they can be accessed from Standard.
+
+      --  However it can be accessed at run time only after being elaborated;
+      --  for a library-level entity, this means that it can be accessed from
+      --  Standard only after its enclosing library unit is elaborated, which
+      --  means that it can be accessed from all the other library units (that
+      --  have a dependence on this enclosing library unit) as if it was itself
+      --  declared in Standard, but not from this enclosing library unit.
+
+      --  Global contains the accessibility depth as computed from outside the
+      --  library or program unit where the entity is declared.
+
+      --  Local contains the accessibility depth as computed from the current
+      --  scope, which may be different from Global if the scope is within the
+      --  library or program unit where the entity is declared.
+
+      procedure Append_Entity_Name (B : in out Bounded_String; E : Entity_Id);
+      --  Append E's name to B
+
+      procedure Append_Expression (B : in out Bounded_String; N : Node_Id);
+      --  Append an encoding of N, a compile-time known expression, to B
+
+      function Get_Actual_Subtype (N : Node_Id) return Entity_Id;
+      --  Return the actual subtype of the formal object declared by N, which
+      --  is an N_Formal_Object_Declaration. It's the declared subtype of the
+      --  formal object if it is not a generic type, otherwise it's the actual
+      --  corresponding to this generic type in the instantiation.
+
+      function Get_Entity_Depth (E : Entity_Id) return Accessibility_Depth;
+      --  Return the accessibility depth of E
+
+      procedure Structural_Instantiation_Error (N : Node_Id);
+      --  Output an error for the specified structural instantiation
+
+      function Max (L, R : Accessibility_Depth) return Accessibility_Depth is
+        (Global => UI_Max (L.Global, R.Global),
+         Local  => UI_Max (L.Local,  R.Local));
+      --  Return a pair made up of the maximum value of each component
+
+      function OK_For_Structural_Instantiation (E : Entity_Id) return Boolean;
+      --  Return True if the generic unit E is OK for structural instantiation
+      --  and False if it is not, giving an error in the latter case.
+
+      procedure Rewrite_As_Renaming (N : Node_Id; E : Entity_Id);
+      --  Rewrite N as a renaming of E
+
+      ------------------------
+      -- Append_Entity_Name --
+      ------------------------
+
+      procedure Append_Entity_Name (B : in out Bounded_String; E : Entity_Id)
+      is
+      begin
+         if Operating_Mode = Generate_Code then
+            Get_External_Name (E);
+            Append (B, Global_Name_Buffer);
+         else
+            Append (B, 'E');
+            Append (B, Nat (E));
+         end if;
+      end Append_Entity_Name;
+
+      -----------------------
+      -- Append_Expression --
+      -----------------------
+
+      procedure Append_Expression (B : in out Bounded_String; N : Node_Id) is
+         Typ : constant Entity_Id := Etype (N);
+
+      begin
+         if Is_Integer_Type (Typ) then
+            Append (B, 'I');
+            Append (B, UI_Image (Expr_Value (N)));
+
+         elsif Is_Real_Type (Typ) then
+            declare
+               Val : constant Ureal := Expr_Value_R (N);
+            begin
+               Append (B, 'R');
+               Append (B, UI_Image (Norm_Num (Val)));
+               Append (B, '_');
+               Append (B, UI_Image (Norm_Den (Val)));
+            end;
+
+         elsif Is_Enumeration_Type (Typ) then
+            Append (B, 'E');
+            Append_Entity_Name (B, Expr_Value_E (N));
+
+         elsif Is_String_Type (Typ) then
+            Append (B, 'S');
+            Append (B, Strval (Expr_Value_S (N)));
+
+         else
+            raise Program_Error;
+         end if;
+      end Append_Expression;
+
+      ------------------------
+      -- Get_Actual_Subtype --
+      ------------------------
+
+      function Get_Actual_Subtype (N : Node_Id) return Entity_Id is
+         Subt : constant Entity_Id := Entity (Subtype_Mark (N));
+
+      begin
+         if not Is_Generic_Type (Subt) then
+            return Subt;
+         end if;
+
+         for Index in Match.Assocs'Range loop
+            declare
+               Assoc : Assoc_Rec renames Match.Assocs (Index);
+
+            begin
+               if Assoc.Actual.Kind = Name_Exp
+                 and then Nkind (Assoc.An_Formal) = N_Formal_Type_Declaration
+                 and then Defining_Identifier (Assoc.An_Formal) = Subt
+               then
+                  return Entity (Assoc.Actual.Name_Exp);
+               end if;
+            end;
+         end loop;
+
+         return Empty;
+      end Get_Actual_Subtype;
+
+      ----------------------
+      -- Get_Entity_Depth --
+      ----------------------
+
+      function Get_Entity_Depth (E : Entity_Id) return Accessibility_Depth is
+         Global : constant Uint := Scope_Depth (Enclosing_Dynamic_Scope (E));
+         CS     : constant Entity_Id := Current_Scope;
+
+         S : Entity_Id := Scope (E);
+
+      begin
+         --  Generic formal types are treated as local entities
+
+         if Is_Generic_Type (E) then
+            return (Global => Scope_Depth (S), Local => Scope_Depth (S));
+         end if;
+
+         --  Compute the accessibility depth from the current scope
+
+         while Scope_Depth (S) > Global
+           and then (not Scope_Within_Or_Same (CS, S)
+                      or else
+                        (Ekind (S) = E_Package
+                          and then Is_Generic_Instance (S)
+                          and then Alias (Related_Instance (S)) = CS))
+         loop
+            S := Scope (S);
+         end loop;
+
+         return (Global => Global, Local => Scope_Depth (S));
+      end Get_Entity_Depth;
+
+      ------------------------------------
+      -- Structural_Instantiation_Error --
+      ------------------------------------
+
+      procedure Structural_Instantiation_Error (N : Node_Id) is
+      begin
+         Error_Msg_N ("generic unit cannot be instantiated structurally", N);
+      end Structural_Instantiation_Error;
+
+      -------------------------------------
+      -- OK_For_Structural_Instantiation --
+      -------------------------------------
+
+      function OK_For_Structural_Instantiation (E : Entity_Id) return Boolean
+      is
+         Formals : constant List_Id :=
+                     Generic_Formal_Declarations (Unit_Declaration_Node (E));
+         Unit_Entity : constant Entity_Id :=
+                         Cunit_Entity (Get_Source_Unit (E));
+
+         Formal : Node_Id;
+
+      begin
+         --  Check that the generic unit is preelaborated
+
+         if Ekind (Unit_Entity) in E_Package | E_Generic_Package
+           and then not Is_Preelaborated (Unit_Entity)
+           and then not Is_Pure (Unit_Entity)
+         then
+            Structural_Instantiation_Error (N);
+            Error_Msg_NE
+              ("\generic unit& is not preelaborated", N, Unit_Entity);
+            return False;
+         end if;
+
+         --  Check that there is no generic formal object of mode In Out
+
+         Formal := First (Formals);
+         while Present (Formal) loop
+            if Nkind (Formal) = N_Formal_Object_Declaration
+              and then Out_Present (Formal)
+            then
+               Structural_Instantiation_Error (N);
+               Error_Msg_NE
+                 ("\in out formal parameter& not allowed", N,
+                  Defining_Identifier (Formal));
+               return False;
+            end if;
+
+            Next (Formal);
+         end loop;
+
+         return True;
+      end OK_For_Structural_Instantiation;
+
+      -------------------------
+      -- Rewrite_As_Renaming --
+      -------------------------
+
+      procedure Rewrite_As_Renaming (N : Node_Id; E : Entity_Id) is
+      begin
+         case Nkind (N) is
+            when N_Function_Instantiation =>
+               Rewrite (N,
+                 Make_Subprogram_Renaming_Declaration (Loc,
+                   Specification =>
+                     Make_Function_Specification (Loc,
+                       Defining_Unit_Name       => Defining_Unit_Name (N),
+                       Parameter_Specifications =>
+                         New_Copy_List
+                           (Parameter_Specifications
+                             (Subprogram_Specification (E))),
+                       Result_Definition        =>
+                         New_Occurrence_Of (Etype (E), Loc)),
+                   Name          => New_Occurrence_Of (E, Loc)));
+
+            when N_Procedure_Instantiation =>
+               Rewrite (N,
+                 Make_Subprogram_Renaming_Declaration (Loc,
+                   Specification =>
+                     Make_Procedure_Specification (Loc,
+                       Defining_Unit_Name       => Defining_Unit_Name (N),
+                       Parameter_Specifications =>
+                         New_Copy_List
+                           (Parameter_Specifications
+                             (Subprogram_Specification (E)))),
+                   Name          => New_Occurrence_Of (E, Loc)));
+
+            when N_Package_Instantiation =>
+               Rewrite (N,
+                 Make_Package_Renaming_Declaration (Loc,
+                   Defining_Unit_Name => Defining_Unit_Name (N),
+                   Name               => New_Occurrence_Of (E, Loc)));
+
+            when others =>
+               raise Program_Error;
+         end case;
+      end Rewrite_As_Renaming;
+
+      --  Local variables
+
+      Buf   : Bounded_String;
+      Depth : Accessibility_Depth;
+      Ent   : Entity_Id;
+      Nam   : Name_Id;
+      R     : Node_Id;
+      Scop  : Entity_Id;
+
+   --  Start of processing for Analyze_Structural_Associations
+
+   begin
+      if not OK_For_Structural_Instantiation (Match.Gen_Unit) then
+         return;
+      end if;
+
+      --  Compute the name and the scope depth of the structural instance
+
+      Append_Entity_Name (Buf, Match.Gen_Unit);
+      Append (Buf, "SI");
+      Depth := Get_Entity_Depth (Match.Gen_Unit);
+
+      for Index in Match.Assocs'Range loop
+         declare
+            Assoc : Assoc_Rec renames Match.Assocs (Index);
+
+         begin
+            Append (Buf, '_');
+
+            case Assoc.Actual.Kind is
+               when Name_Exp
+                  | Exp_Func_Default
+               =>
+                  if Nkind (Assoc.An_Formal) = N_Formal_Object_Declaration then
+                     --  Resolve the expression to compute whether it is static
+
+                     Resolve
+                       (Assoc.Actual.Name_Exp,
+                        Get_Actual_Subtype (Assoc.An_Formal));
+
+                     if Is_OK_Static_Expression (Assoc.Actual.Name_Exp) then
+                        --  We need the value of the expression to encode it
+
+                        pragma Assert
+                          (Compile_Time_Known_Value (Assoc.Actual.Name_Exp));
+
+                        Append_Expression (Buf, Assoc.Actual.Name_Exp);
+
+                     else
+                        Structural_Instantiation_Error (N);
+                        Error_Msg_N
+                          ("\expression is not static", Assoc.Actual.Name_Exp);
+                     end if;
+
+                  elsif Nkind (Assoc.Actual.Name_Exp) = N_Operator_Symbol then
+                     Append (Buf, Chars (Assoc.Actual.Name_Exp));
+
+                  else pragma Assert (Is_Entity_Name (Assoc.Actual.Name_Exp));
+                     Ent := Entity (Assoc.Actual.Name_Exp);
+
+                     --  If this is a type that is a renaming of another one,
+                     --  as is the case for actuals in instances, retain the
+                     --  latter. Beware of Natural and Positive, see Cstand.
+
+                     if Is_Type (Ent)
+                       and then Nkind (Parent (Ent)) = N_Subtype_Declaration
+                       and then
+                         Is_Entity_Name (Subtype_Indication (Parent (Ent)))
+                       and then not Comes_From_Source (Parent (Ent))
+                       and then Scope (Ent) /= Standard_Standard
+                     then
+                        Ent := Entity (Subtype_Indication (Parent (Ent)));
+                     end if;
+
+                     --  ??? Need to implement handling of explicit renaming
+
+                     Append_Entity_Name (Buf, Ent);
+                     Depth := Max (Depth, Get_Entity_Depth (Ent));
+                  end if;
+
+               when Box_Subp_Default =>
+                  Append (Buf, 'F');
+
+               when Null_Default =>
+                  Append (Buf, 'N');
+
+               when others =>
+                  Structural_Instantiation_Error (N);
+            end case;
+         end;
+      end loop;
+
+      Nam := Name_Find (Buf);
+      Ent := Get_Name_Entity_Id (Nam);
+
+      --  If the structural instance has already been created, then rewrite
+      --  this occurrence as a renaming of it.
+
+      if Present (Ent) then
+         Rewrite_As_Renaming (N, Ent);
+         Analyze (N);
+
+      --  Otherwise, create it in the outermost possible scope
+
+      else
+         --  Depth.Global is the accessibility depth of the structural instance
+         --  which is defined to be the depth of the outermost scope where the
+         --  instantiation is possible. If the depth cannot be reached from the
+         --  current scope, then the structural instance cannot be accessed out
+         --  of it and we would need to create a local instance instead.
+
+         if Depth.Local > Depth.Global then
+            Structural_Instantiation_Error (N);
+            Error_Msg_N ("\local entity used in the instantiation", N);
+            return;
+         end if;
+
+         Scop := Current_Scope;
+
+         --  If the current scope is too nested, analyze the instantiation
+         --  relocated in the outermost possible scope, which will invoke
+         --  us recursively with a matching scope depth this time.
+
+         if Scope_Depth (Scop) > Depth.Global then
+            while Scope_Depth (Scop) > Depth.Global loop
+               Scop := Scope (Scop);
+            end loop;
+
+            R := Relocate_Node (N);
+
+            --  If the scope is Standard, the instantiation is done outside the
+            --  current compilation unit and, therefore, needs a clean context.
+
+            if Scop = Standard_Standard then
+               declare
+                  S_Expander_Active  : constant Boolean := Expander_Active;
+                  S_Full_Analysis    : constant Boolean := Full_Analysis;
+                  S_In_Spec_Expr     : constant Boolean := In_Spec_Expression;
+                  S_Inside_A_Generic : constant Boolean := Inside_A_Generic;
+
+               begin
+                  Expander_Active := (Operating_Mode = Opt.Generate_Code);
+                  Full_Analysis := True;
+                  In_Spec_Expression := False;
+                  Inside_A_Generic := False;
+
+                  Add_Local_Declaration (R, N, Scop => Scop);
+
+                  Expander_Active := S_Expander_Active;
+                  Full_Analysis := S_Full_Analysis;
+                  In_Spec_Expression := S_In_Spec_Expr;
+                  Inside_A_Generic := S_Inside_A_Generic;
+               end;
+
+            else
+               Add_Local_Declaration (R, N, Scop => Scop);
+            end if;
+
+            Ent := Defining_Entity_Of_Instance (R);
+            Rewrite_As_Renaming (N, Ent);
+            Analyze (N);
+
+         --  Otherwise we are in the right scope and only need to set the
+         --  name of the instance.
+
+         else
+            Ent := Make_Defining_Identifier (Loc, Chars => Nam);
+            Set_Defining_Unit_Name (N, Ent);
+         end if;
+      end if;
+   end Analyze_Structural_Associations;
+
    -----------------------------------
    -- Need_Subprogram_Instance_Body --
    -----------------------------------
@@ -6056,9 +6550,12 @@ package body Sem_Ch12 is
 
       if (Is_In_Main_Unit (N) or else Is_Inlined_Or_Child_Of_Inlined (Subp))
 
-        --  No need to instantiate bodies in generic units
+        --  No need to instantiate bodies in generic units, except when the
+        --  instantiation is in the auxiliary declarations of the main unit;
+        --  in this case the body is needed, even if the main unit is generic.
 
-        and then not Is_Generic_Unit (Cunit_Entity (Main_Unit))
+        and then (not Is_Generic_Unit (Cunit_Entity (Main_Unit))
+                   or else Parent (N) = Aux_Decls_Node (Cunit (Main_Unit)))
 
         --  Must be generating code or analyzing code in GNATprove mode
 
@@ -6482,6 +6979,17 @@ package body Sem_Ch12 is
               Formals => Generic_Formal_Declarations (Act_Tree),
               F_Copy  => Generic_Formal_Declarations (Gen_Decl));
 
+         --  Bail out if the instantiation has been turned into something else
+
+         if Nkind (N) not in N_Subprogram_Instantiation then
+            if Parent_Installed then
+               Remove_Parent;
+            end if;
+
+            Restore_Env;
+            goto Leave;
+         end if;
+
          Vis_Prims_List := Check_Hidden_Primitives (Renamings);
 
          --  The subprogram itself cannot contain a nested instance, so the
@@ -6827,6 +7335,69 @@ package body Sem_Ch12 is
          return Assoc;
       end if;
    end Get_Associated_Node;
+
+   ------------------------------------
+   -- Build_Structural_Instantiation --
+   ------------------------------------
+
+   function Build_Structural_Instantiation
+     (N        : Node_Id;
+      Gen_Unit : Entity_Id;
+      Actuals  : List_Id) return Entity_Id
+   is
+      Loc     : constant Source_Ptr := Sloc (N);
+      Inst_Id : constant Entity_Id  := Make_Temporary (Loc, 'P');
+
+      Inst : Node_Id;
+
+   begin
+      case Ekind (Gen_Unit) is
+         when E_Generic_Function =>
+            Inst :=
+              Make_Function_Instantiation (Loc,
+                Defining_Unit_Name   => Inst_Id,
+                Name                 => New_Occurrence_Of (Gen_Unit, Loc),
+                Generic_Associations => Actuals);
+
+         when E_Generic_Package =>
+            Inst :=
+              Make_Package_Instantiation (Loc,
+                Defining_Unit_Name   => Inst_Id,
+                Name                 => New_Occurrence_Of (Gen_Unit, Loc),
+                Generic_Associations => Actuals);
+
+         when E_Generic_Procedure =>
+            Inst :=
+              Make_Procedure_Instantiation (Loc,
+                Defining_Unit_Name   => Inst_Id,
+                Name                 => New_Occurrence_Of (Gen_Unit, Loc),
+                Generic_Associations => Actuals);
+
+         when others =>
+            raise Program_Error;
+      end case;
+
+      Set_Is_Internal (Inst_Id);
+      Set_Is_Structural (Inst);
+
+      --  The instantiation must be added to a declarative part for technical
+      --  reasons pertaining to freezing (see the Freeze_Package_Instance and
+      --  Freeze_Subprogram_Instance procedures).
+
+      Add_Local_Declaration (Inst, N, Scop => Empty);
+      if Error_Posted (Inst) then
+         return Empty;
+      end if;
+
+      --  If the structural instance had already been created, this occurrence
+      --  has been turned into a renaming of it.
+
+      if Nkind (Inst) in N_Renaming_Declaration then
+         return Defining_Entity (Inst);
+      else
+         return Defining_Entity_Of_Instance (Inst);
+      end if;
+   end Build_Structural_Instantiation;
 
    -----------------------------------
    -- Build_Subprogram_Decl_Wrapper --
@@ -15911,6 +16482,64 @@ package body Sem_Ch12 is
          Next_Entity (E1);
       end loop;
    end Map_Formal_Package_Entities;
+
+   --------------------
+   -- Mark_Link_Once --
+   --------------------
+
+   procedure Mark_Link_Once (Decls : List_Id) is
+      procedure Mark_Link_Once (Ent : Entity_Id);
+
+      --------------------
+      -- Mark_Link_Once --
+      --------------------
+
+      procedure Mark_Link_Once (Ent : Entity_Id) is
+      begin
+         if Is_Public (Ent) then
+            Set_Is_Link_Once (Ent);
+         end if;
+
+         if Ekind (Ent) in E_Package | E_Package_Body
+           and then No (Renamed_Entity (Ent))
+         then
+            declare
+               Pack_Ent : Entity_Id;
+
+            begin
+               Pack_Ent := First_Entity (Ent);
+               while Present (Pack_Ent) loop
+                  Mark_Link_Once (Pack_Ent);
+
+                  Next_Entity (Pack_Ent);
+               end loop;
+            end;
+         end if;
+      end Mark_Link_Once;
+
+      Decl : Node_Id;
+      Spec : Node_Id;
+
+   begin
+      Decl := First (Decls);
+      while Present (Decl) loop
+         if Nkind (Decl) in N_Generic_Instantiation
+           and then Is_Structural (Decl)
+         then
+            Spec := Instance_Spec (Decl);
+
+            Mark_Link_Once (Defining_Entity (Specification (Spec)));
+
+            if Nkind (Decl) = N_Package_Instantiation
+              and then Present (Corresponding_Body (Spec))
+            then
+               Mark_Link_Once (Corresponding_Body (Spec));
+            end if;
+         end if;
+
+         Next (Decl);
+      end loop;
+   end Mark_Link_Once;
 
    -----------------------
    -- Move_Freeze_Nodes --

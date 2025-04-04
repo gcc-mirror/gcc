@@ -925,7 +925,7 @@ package body Ch10 is
                   --  then the compilation of the child unit itself is the
                   --  place where such an "error" should be caught.
 
-                  Set_Name (With_Node, P_Qualified_Simple_Name);
+                  Set_Name (With_Node, P_Library_Unit_Name);
                   if Name (With_Node) = Error then
                      Remove (With_Node);
                   end if;
@@ -1038,7 +1038,7 @@ package body Ch10 is
       Scan; -- past SEPARATE;
 
       U_Left_Paren;
-      Set_Name (Subunit_Node, P_Qualified_Simple_Name);
+      Set_Name (Subunit_Node, P_Parent_Unit_Name);
       U_Right_Paren;
 
       Ignore (Tok_Semicolon);

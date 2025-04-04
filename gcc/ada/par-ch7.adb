@@ -187,7 +187,7 @@ package body Ch7 is
             Package_Node :=
               New_Node (N_Package_Renaming_Declaration, Package_Sloc);
             Set_Defining_Unit_Name (Package_Node, Name_Node);
-            Set_Name (Package_Node, P_Qualified_Simple_Name);
+            Set_Name (Package_Node, P_Package_Name);
 
             No_Constraint;
             P_Aspect_Specifications (Package_Node, Semicolon => False);
@@ -224,7 +224,7 @@ package body Ch7 is
                Package_Node :=
                  New_Node (N_Package_Instantiation, Package_Sloc);
                Set_Defining_Unit_Name (Package_Node, Name_Node);
-               Set_Name (Package_Node, P_Qualified_Simple_Name);
+               Set_Name (Package_Node, P_Generic_Unit_Name);
                Set_Generic_Associations
                  (Package_Node, P_Generic_Actual_Part_Opt);
 

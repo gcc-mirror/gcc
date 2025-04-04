@@ -1878,6 +1878,12 @@ package Sinfo is
    --    Indicates that an expression is a static expression according to the
    --    rules in RM-4.9. See Sem_Eval for details.
 
+   --  Is_Structural
+   --    Present in N_Generic_Instantiation nodes. Set if the instantiation is
+   --    structural, that is to say, is the unique anonymous instantiation of
+   --    the generic unit on the actual parameters done in the outermost scope
+   --    where it would be legal to declare an identical named instantiation.
+
    --  Is_Subprogram_Descriptor
    --    Present in N_Object_Declaration, and set only for the object
    --    declaration generated for a subprogram descriptor in fast exception
@@ -7119,6 +7125,7 @@ package Sinfo is
       --  Is_Elaboration_Warnings_OK_Node
       --  Is_Declaration_Level_Node
       --  Is_Known_Guaranteed_ABE
+      --  Is_Structural
 
       --  N_Procedure_Instantiation
       --  Sloc points to PROCEDURE
@@ -7135,6 +7142,7 @@ package Sinfo is
       --  Must_Override set if overriding indicator present
       --  Must_Not_Override set if not_overriding indicator present
       --  Is_Known_Guaranteed_ABE
+      --  Is_Structural
 
       --  N_Function_Instantiation
       --  Sloc points to FUNCTION
@@ -7151,6 +7159,7 @@ package Sinfo is
       --  Must_Override set if overriding indicator present
       --  Must_Not_Override set if not_overriding indicator present
       --  Is_Known_Guaranteed_ABE
+      --  Is_Structural
 
       --  Note: overriding indicator is an Ada 2005 feature
 
