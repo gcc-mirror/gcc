@@ -308,7 +308,8 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
   repr.pack = 0;
   repr.align = 0;
 
-  // FIXME handle non-integer repr types....
+  // Default repr for enums is isize, but we now check for other repr in the
+  // attributes.
   bool ok = context->lookup_builtin ("isize", &repr.repr);
   rust_assert (ok);
 
