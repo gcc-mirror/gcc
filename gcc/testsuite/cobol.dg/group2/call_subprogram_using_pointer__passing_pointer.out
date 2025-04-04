@@ -1,0 +1,5 @@
+About to call 'ref hi' directly
+"hi          "
+About to call 'ref hi' indirectly
+"hi          "
+

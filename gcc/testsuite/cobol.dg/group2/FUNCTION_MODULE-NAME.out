@@ -1,0 +1,37 @@
+From level-1:
+   top-level:  "level-1"
+   current:    "level-1"
+   activating: " "
+   nested:     "level-1"
+   stack:      "level-1; "
+From level-2:
+   top-level:  "level-1"
+   current:    "level-2"
+   activating: "level-1"
+   nested:     "level-2"
+   stack:      "level-2;level-1; "
+From level-3:
+   top-level:  "level-1"
+   current:    "level-3"
+   activating: "level-2"
+   nested:     "level-3"
+   stack:      "level-3;level-2;level-1; "
+From level-3a:
+   top-level:  "level-1"
+   current:    "level-3"
+   activating: "level-3"
+   nested:     "level-3a"
+   stack:      "level-3a;level-3;level-2;level-1; "
+From level-3b:
+   top-level:  "level-1"
+   current:    "level-3"
+   activating: "level-3a"
+   nested:     "level-3b"
+   stack:      "level-3b;level-3a;level-3;level-2;level-1; "
+From level-3c:
+   top-level:  "level-1"
+   current:    "level-3"
+   activating: "level-3b"
+   nested:     "level-3c"
+   stack:      "level-3c;level-3b;level-3a;level-3;level-2;level-1; "
+
