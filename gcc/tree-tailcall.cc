@@ -165,8 +165,6 @@ suitable_for_tail_opt_p (gcall *call, bool diag_musttail)
 static bool
 suitable_for_tail_call_opt_p (gcall *call, bool diag_musttail)
 {
-  tree param;
-
   /* alloca (until we have stack slot life analysis) inhibits
      sibling call optimizations, but not tail recursion.  */
   if (cfun->calls_alloca)
@@ -203,18 +201,6 @@ suitable_for_tail_call_opt_p (gcall *call, bool diag_musttail)
 			    diag_musttail);
       return false;
     }
-
-  /* ??? It is OK if the argument of a function is taken in some cases,
-     but not in all cases.  See PR15387 and PR19616.  Revisit for 4.1.  */
-  if (!diag_musttail || !gimple_call_must_tail_p (call))
-    for (param = DECL_ARGUMENTS (current_function_decl);
-	 param; param = DECL_CHAIN (param))
-      if (TREE_ADDRESSABLE (param))
-	{
-	  maybe_error_musttail (call, _("address of caller arguments taken"),
-				diag_musttail);
-	  return false;
-	}
 
   if (diag_musttail
       && gimple_call_must_tail_p (call)
@@ -565,6 +551,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
   basic_block abb;
   size_t idx;
   tree var;
+  bool only_tailr = false;
 
   if (!single_succ_p (bb)
       && (EDGE_COUNT (bb->succs) || !cfun->has_musttail || !diag_musttail))
@@ -659,6 +646,25 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 
   if (!suitable_for_tail_call_opt_p (call, diag_musttail))
     opt_tailcalls = false;
+
+  /* ??? It is OK if the argument of a function is taken in some cases,
+     but not in all cases.  See PR15387 and PR19616.  Revisit for 4.1.  */
+  if (!diag_musttail || !gimple_call_must_tail_p (call))
+    for (param = DECL_ARGUMENTS (current_function_decl);
+	 param; param = DECL_CHAIN (param))
+      if (TREE_ADDRESSABLE (param))
+	{
+	  maybe_error_musttail (call, _("address of caller arguments taken"),
+				diag_musttail);
+	  /* If current function has musttail calls, we can't disable tail
+	     calls altogether for the whole caller, because those might be
+	     actually fine.  So just punt if this exact call is not
+	     a tail recursion.  */
+	  if (cfun->has_musttail)
+	    only_tailr = true;
+	  else
+	    opt_tailcalls = false;
+	}
 
   /* If the LHS of our call is not just a simple register or local
      variable, we can't transform this into a tail or sibling call.
@@ -793,6 +799,9 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
       if (idx == gimple_call_num_args (call) && !param)
 	tail_recursion = true;
     }
+
+  if (only_tailr && !tail_recursion)
+    return;
 
   /* Compute live vars if not computed yet.  */
   if (live_vars == NULL)
