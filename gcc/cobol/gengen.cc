@@ -375,6 +375,10 @@ show_type(tree type)
   static char ach[1024];
   switch( TREE_CODE(type) )
     {
+    case POINTER_TYPE:
+      sprintf(ach, "POINTER");
+      break;
+
     case VOID_TYPE:
       sprintf(ach, "VOID");
       break;
@@ -2548,6 +2552,10 @@ gg_define_function_with_no_parameters(tree return_type,
     DECL_CONTEXT (function_decl) = gg_trans_unit.trans_unit_decl;
     TREE_PUBLIC(function_decl) = 0;
 
+    // This function is file static, but nobody calls it, so without
+    // intervention -O1+ optimizations will discard it.
+    DECL_PRESERVE_P (function_decl) = 1;
+
     // Append this function to the list of functions and variables
     // associated with the computation module.
     gg_append_var_decl(function_decl);
@@ -3358,8 +3366,8 @@ gg_array_of_size_t( size_t N, size_t *values)
 tree
 gg_array_of_bytes( size_t N, unsigned char *values)
   {
-  tree retval = gg_define_variable(build_pointer_type(UCHAR));
-  gg_assign(retval, gg_cast(build_pointer_type(UCHAR), gg_malloc(  build_int_cst_type(UCHAR, N * sizeof(unsigned char)))));
+  tree retval = gg_define_variable(UCHAR_P);
+  gg_assign(retval, gg_cast(UCHAR_P, gg_malloc(  build_int_cst_type(SIZE_T, N * sizeof(unsigned char)))));
   for(size_t i=0; i<N; i++)
     {
     gg_assign(gg_array_value(retval, i), build_int_cst_type(UCHAR, values[i]));

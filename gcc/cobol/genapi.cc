@@ -8806,6 +8806,10 @@ static
 void set_user_status(struct cbl_file_t *file)
   {
   // This routine sets the user_status, if any, to the cblc_file_t::status
+
+  // We have to do it this way, because in the case where the file->user_status
+  // is in linkage, the memory addresses can end up pointing to the wrong
+  // places
   if(file->user_status)
     {
     cbl_field_t *user_status = cbl_field_of(symbol_at(file->user_status));
@@ -10111,6 +10115,13 @@ parser_intrinsic_subst( cbl_field_t *f,
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
+    SHOW_PARSE_FIELD(" TO ", f)
+    for(size_t i=0; i<argc; i++)
+      {
+      SHOW_PARSE_INDENT
+      SHOW_PARSE_FIELD(" ", argv[i].orig.field)
+      SHOW_PARSE_FIELD(" ", argv[i].replacement.field)
+      }
     SHOW_PARSE_END
     }
   TRACE1
@@ -15908,12 +15919,12 @@ psa_global(cbl_field_t *new_var)
 
   if( strcmp(new_var->name, "RETURN-CODE") == 0 )
     {
-    strcpy(ach, "__gg___11_return_code6");
+    strcpy(ach, "__gg__return_code");
     }
 
   if( strcmp(new_var->name, "UPSI-0") == 0 )
     {
-    strcpy(ach, "__gg___6_upsi_04");
+    strcpy(ach, "__gg__upsi");
     }
 
   new_var->var_decl_node = gg_declare_variable(cblc_field_type_node, ach, NULL, vs_external_reference);
@@ -16156,6 +16167,10 @@ psa_FldLiteralA(struct cbl_field_t *field )
                 field->data.initial,
                 NULL_TREE,
                 field->var_decl_node);
+    TREE_READONLY(field->var_decl_node) = 1;
+    TREE_USED(field->var_decl_node) = 1;
+    TREE_STATIC(field->var_decl_node) = 1;
+    DECL_PRESERVE_P (field->var_decl_node) = 1;
     nvar += 1;
     }
   TRACE1

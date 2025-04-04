@@ -288,7 +288,7 @@ struct cblc_field_t __gg___14_linage_counter6 = {
 
 
 unsigned char __gg__data_upsi_0[2] = {0,0};
-struct cblc_field_t __gg___6_upsi_04 = {
+struct cblc_field_t __gg__upsi = {
   .data           = __gg__data_upsi_0 ,
   .capacity       = 2 ,
   .allocated      = 2 ,
@@ -307,9 +307,9 @@ struct cblc_field_t __gg___6_upsi_04 = {
   .dummy          = 0 ,
   };
 
-unsigned char __gg__data_return_code[2] = {0,0};
-struct cblc_field_t __gg___11_return_code6 = {
-  .data           = __gg__data_return_code ,
+short __gg__data_return_code = 0;
+struct cblc_field_t __gg__return_code = {
+  .data           = (unsigned char *)&__gg__data_return_code ,
   .capacity       = 2 ,
   .allocated      = 2 ,
   .offset         = 0 ,
@@ -319,7 +319,7 @@ struct cblc_field_t __gg___11_return_code6 = {
   .parent         = NULL,
   .occurs_lower   = 0 ,
   .occurs_upper   = 0 ,
-  .attr           = 0x0 ,
+  .attr           = signable_e ,
   .type           = FldNumericBin5 ,
   .level          = 0 ,
   .digits         = 4 ,

@@ -297,7 +297,7 @@ extern unsigned char __gg__data_zeros[1]       ;
 extern unsigned char __gg__data_high_values[1] ;
 extern unsigned char __gg__data_quotes[1]      ;
 extern unsigned char __gg__data_upsi_0[2]      ;
-extern unsigned char __gg__data_return_code[2] ;
+extern short         __gg__data_return_code    ;
 
 // These are the various hardcoded tables used for conversions.
 extern const unsigned short __gg__one_to_one_values[256];
