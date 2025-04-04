@@ -368,7 +368,7 @@ begin
          --  --help flag.
          Set_Standard_Output;
          Write_Eol;
-         Write_Line ("Report bugs to report@adacore.com");
+         Write_Line ("Report bugs to support@adacore.com");
          return;
       end if;
 

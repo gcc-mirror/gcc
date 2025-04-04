@@ -307,7 +307,7 @@ package body Comperr is
 
                   Write_Str
                     ("| Please submit a bug report by email " &
-                     "to report@adacore.com.");
+                     "to support@adacore.com.");
                   End_Line;
 
                   Write_Str
@@ -336,7 +336,7 @@ package body Comperr is
 
                   Write_Str
                     ("| Or submit a bug report by email " &
-                     "to report@adacore.com");
+                     "to support@adacore.com");
                   End_Line;
 
                   Write_Str
