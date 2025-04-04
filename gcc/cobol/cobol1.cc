@@ -646,22 +646,6 @@ cobol_get_sarif_source_language(const char *)
     return "cobol";
     }
 
-bool
-cobol_langhook_post_options(const char**)
-  {
-  // This flag, when set to 0, results in calls to gg_exit working properly.
-  // I don't know why it is necessary.  There is something going on with the
-  // definition of  __gg__data_return_code in constants.cc, and with how it
-  // is used through var_decl_return_code in genapi.cc.  Without it, the value
-  // delivered to exit@PLT is zero, and not __gg__data_return_code
-  // Dubner, 2025-04-04.
-  flag_strict_aliasing = 0;
-
-  /* Returning false means that the backend should be used.  */
-  return false;
-  }
-
-
 #undef LANG_HOOKS_BUILTIN_FUNCTION
 #undef LANG_HOOKS_GETDECLS
 #undef LANG_HOOKS_GLOBAL_BINDINGS_P
@@ -676,7 +660,6 @@ cobol_langhook_post_options(const char**)
 ////#undef LANG_HOOKS_TYPE_FOR_SIZE
 #undef LANG_HOOKS_SET_DECL_ASSEMBLER_NAME
 #undef LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE
-#undef LANG_HOOKS_POST_OPTIONS
 
 // We use GCC in the name, not GNU, as others do,
 // because "GnuCOBOL" refers to a different GNU project.
@@ -701,8 +684,6 @@ cobol_langhook_post_options(const char**)
 #define LANG_HOOKS_SET_DECL_ASSEMBLER_NAME cobol_set_decl_assembler_name
 
 #define LANG_HOOKS_GET_SARIF_SOURCE_LANGUAGE cobol_get_sarif_source_language
-
-#define LANG_HOOKS_POST_OPTIONS cobol_langhook_post_options
 
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

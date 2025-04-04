@@ -2350,7 +2350,7 @@ symbol_table_init(void) {
       0, {}, {2,2,2,0, NULL}, NULL },
     { 0, FldNumericBin5, FldInvalid, 0, 0, 0, 0, nonarray, 0, "UPSI-0",
       0, {}, {2,2,4,0, NULL}, NULL },
-    { 0, FldNumericBin5, FldInvalid, 0, 0, 0, 0, nonarray, 0, "RETURN-CODE",
+    { 0, FldNumericBin5, FldInvalid, signable_e, 0, 0, 0, nonarray, 0, "RETURN-CODE",
       0, {}, {2,2,4,0, NULL}, NULL },
     { 0, FldNumericBin5, FldInvalid, 0, 0, 0, 0, nonarray, 0, "LINAGE-COUNTER",
       0, {}, {2,2,4,0, NULL}, NULL },
