@@ -53,7 +53,7 @@ static cpp_num num_equality_op (cpp_reader *, cpp_num, cpp_num,
 static cpp_num num_mul (cpp_reader *, cpp_num, cpp_num);
 static cpp_num num_div_op (cpp_reader *, cpp_num, cpp_num, enum cpp_ttype,
 			   location_t);
-static cpp_num num_lshift (cpp_num, size_t, size_t);
+static cpp_num num_lshift (cpp_reader *, cpp_num, size_t, size_t);
 static cpp_num num_rshift (cpp_num, size_t, size_t);
 
 static cpp_num append_digit (cpp_num, int, int, size_t);
@@ -2049,7 +2049,7 @@ num_rshift (cpp_num num, size_t precision, size_t n)
 
 /* Shift NUM, of width PRECISION, left by N bits.  */
 static cpp_num
-num_lshift (cpp_num num, size_t precision, size_t n)
+num_lshift (cpp_reader *pfile, cpp_num num, size_t precision, size_t n)
 {
   if (n >= precision)
     {
@@ -2075,8 +2075,26 @@ num_lshift (cpp_num num, size_t precision, size_t n)
 	}
       num = num_trim (num, precision);
 
-      if (num.unsignedp)
+      if (num.unsignedp
+	  /* For C++20 or later since P1236R1, there is no overflow for signed
+	     left shifts, it is as if the shift was in uintmax_t and cast
+	     back to intmax_t afterwards.  */
+	  || (CPP_OPTION (pfile, cplusplus)
+	      && CPP_OPTION (pfile, lang) >= CLK_GNUCXX20))
 	num.overflow = false;
+      else if (CPP_OPTION (pfile, cplusplus)
+	       && CPP_OPTION (pfile, lang) >= CLK_GNUCXX11
+	       && num_positive (orig, precision))
+	{
+	  /* For C++11 - C++17 since CWG1457, 1 << 63 is allowed because it is
+	     representable in uintmax_t, but 3 << 63 is not.
+	     Test whether num >> (precision - 1 - n) as logical
+	     shift is > 1.  */
+	  maybe_orig = orig;
+	  maybe_orig.unsignedp = true;
+	  maybe_orig = num_rshift (maybe_orig, precision, precision - 1 - n);
+	  num.overflow = maybe_orig.high || maybe_orig.low > 1;
+	}
       else
 	{
 	  maybe_orig = num_rshift (num, precision, n);
@@ -2149,7 +2167,7 @@ num_binary_op (cpp_reader *pfile, cpp_num lhs, cpp_num rhs, enum cpp_ttype op)
       else
 	n = rhs.low;
       if (op == CPP_LSHIFT)
-	lhs = num_lshift (lhs, precision, n);
+	lhs = num_lshift (pfile, lhs, precision, n);
       else
 	lhs = num_rshift (lhs, precision, n);
       break;
@@ -2347,7 +2365,7 @@ num_div_op (cpp_reader *pfile, cpp_num lhs, cpp_num rhs, enum cpp_ttype op,
   rhs.unsignedp = true;
   lhs.unsignedp = true;
   i = precision - i - 1;
-  sub = num_lshift (rhs, precision, i);
+  sub = num_lshift (pfile, rhs, precision, i);
 
   result.high = result.low = 0;
   for (;;)
