@@ -214,6 +214,27 @@ void test07()
 #endif
 }
 
+void
+test08()
+{
+  // PR libstdc++/119620 -- flat_set::emplace always constructs element on the stack
+  static int copy_counter;
+  struct A {
+    A() { }
+    A(const A&) { ++copy_counter; }
+    A& operator=(const A&) { ++copy_counter; return *this; }
+    auto operator<=>(const A&) const = default;
+  };
+  std::vector<A> v;
+  v.reserve(2);
+  std::flat_multiset<A> s(std::move(v));
+  A a;
+  s.emplace(a);
+  VERIFY( copy_counter == 1 );
+  s.emplace(a);
+  VERIFY( copy_counter == 2 );
+}
+
 int
 main()
 {
@@ -225,4 +246,5 @@ main()
   test05();
   test06();
   test07();
+  test08();
 }
