@@ -12122,7 +12122,7 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	 instantiate it in the middle of loading.   */
       tree e_spec = TYPE_RAISES_EXCEPTIONS (e_type);
       tree d_spec = TYPE_RAISES_EXCEPTIONS (d_type);
-      if (DEFERRED_NOEXCEPT_SPEC_P (e_spec))
+      if (DECL_MAYBE_DELETED (e_inner) || DEFERRED_NOEXCEPT_SPEC_P (e_spec))
 	{
 	  if (!DEFERRED_NOEXCEPT_SPEC_P (d_spec)
 	      || (UNEVALUATED_NOEXCEPT_SPEC_P (e_spec)
@@ -12161,6 +12161,20 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
       else if (type_uses_auto (d_ret)
 	       && !same_type_p (TREE_TYPE (d_type), TREE_TYPE (e_type)))
 	goto mismatch;
+
+      /* Similarly if EXISTING has undeduced constexpr, but DECL's
+	 is already deduced.  */
+      if (DECL_MAYBE_DELETED (e_inner) && !DECL_MAYBE_DELETED (d_inner)
+	  && DECL_DECLARED_CONSTEXPR_P (d_inner))
+	DECL_DECLARED_CONSTEXPR_P (e_inner) = true;
+      else if (DECL_DECLARED_CONSTEXPR_P (e_inner)
+	       != DECL_DECLARED_CONSTEXPR_P (d_inner))
+	goto mismatch;
+
+      /* Don't synthesize a defaulted function if we're importing one
+	 we've already determined.  */
+      if (!DECL_MAYBE_DELETED (d_inner))
+	DECL_MAYBE_DELETED (e_inner) = false;
     }
   else if (is_typedef)
     {
