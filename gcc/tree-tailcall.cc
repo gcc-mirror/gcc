@@ -1036,7 +1036,9 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	  && TREE_CONSTANT (ret_var))
 	if (tree type = gimple_range_type (call))
 	  if (tree callee = gimple_call_fndecl (call))
-	    if ((INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type))
+	    if ((INTEGRAL_TYPE_P (type)
+		 || SCALAR_FLOAT_TYPE_P (type)
+		 || POINTER_TYPE_P (type))
 		&& useless_type_conversion_p (TREE_TYPE (TREE_TYPE (callee)),
 					      type)
 		&& useless_type_conversion_p (TREE_TYPE (ret_var), type)
