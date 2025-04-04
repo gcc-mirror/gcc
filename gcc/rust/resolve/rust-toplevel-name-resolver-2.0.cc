@@ -113,7 +113,17 @@ TopLevel::visit (AST::Module &module)
   // This was copied from the old early resolver method
   // 'accumulate_escaped_macros'
   if (module.get_kind () == AST::Module::UNLOADED)
-    module.load_items ();
+    {
+      module.load_items ();
+
+      // If the module was previously unloaded, then we don't want to visit it
+      // this time around as the CfgStrip hasn't run on its inner items yet.
+      // Skip it for now, mark the visitor as dirty and try again
+
+      dirty = true;
+
+      return;
+    }
 
   DefaultResolver::visit (module);
 
