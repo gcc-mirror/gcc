@@ -8488,10 +8488,18 @@ package body Sem_Ch3 is
 
                Analyze (Decl);
 
-               pragma Assert (Has_Discriminants (Full_Der)
-                 and then not Has_Unknown_Discriminants (Full_Der));
+               pragma
+                 Assert
+                   ((Has_Discriminants (Full_Der)
+                     and then not Has_Unknown_Discriminants (Full_Der))
+                      or else Serious_Errors_Detected > 0);
 
                Uninstall_Declarations (Par_Scope);
+
+               if Etype (Full_Der) = Any_Type then
+                  pragma Assert (Serious_Errors_Detected > 0);
+                  return;
+               end if;
 
                --  Freeze the underlying record view, to prevent generation of
                --  useless dispatching information, which is simply shared with
@@ -9457,8 +9465,8 @@ package body Sem_Ch3 is
       if Constraint_Present then
          if not Has_Discriminants (Parent_Base)
            or else
-             (Has_Unknown_Discriminants (Parent_Base)
-               and then Is_Private_Type (Parent_Base))
+             (Has_Unknown_Discriminants (Parent_Type)
+               and then Is_Private_Type (Parent_Type))
          then
             Error_Msg_N
               ("invalid constraint: type has no discriminant",
