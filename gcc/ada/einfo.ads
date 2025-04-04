@@ -1689,7 +1689,7 @@ package Einfo is
 --
 --    Has_Homonym
 --       Defined in all entities. Set if an entity has a homonym in the same
---       scope. Used by the backend to generate unique names for all entities.
+--       scope. Used by Exp_Dbug to generate unique names for all entities.
 
 --    Has_Implicit_Dereference
 --       Defined in types and discriminants. Set if the type has an aspect

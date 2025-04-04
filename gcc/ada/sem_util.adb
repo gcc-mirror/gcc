@@ -333,7 +333,7 @@ package body Sem_Util is
    -- Add_Global_Declaration --
    ----------------------------
 
-   procedure Add_Global_Declaration (N : Node_Id) is
+   procedure Add_Global_Declaration (Decl : Node_Id) is
       Aux_Node : constant Node_Id := Aux_Decls_Node (Cunit (Current_Sem_Unit));
 
    begin
@@ -341,8 +341,8 @@ package body Sem_Util is
          Set_Declarations (Aux_Node, New_List);
       end if;
 
-      Append_To (Declarations (Aux_Node), N);
-      Analyze (N);
+      Append_To (Declarations (Aux_Node), Decl);
+      Analyze (Decl);
    end Add_Global_Declaration;
 
    --------------------------------
