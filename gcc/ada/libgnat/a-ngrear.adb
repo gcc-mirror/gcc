@@ -85,7 +85,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
 
    function Is_Symmetric (A : Real_Matrix) return Boolean is
      (Transpose (A) = A);
-   --  Return True iff A is symmetric, see RM G.3.1 (90).
+   --  Return True iff A is symmetric, see RM G.3.1 (90)
 
    function Is_Tiny (Value, Compared_To : Real) return Boolean is
      (abs Compared_To + 100.0 * abs Value = abs Compared_To);
@@ -104,7 +104,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
    --  not a square matrix, and otherwise returns its length.
 
    procedure Rotate (X, Y : in out Real; Sin, Tau : Real);
-   --  Perform a Givens rotation
+   --  Perform a Givens rotation of angle Theta given by sin and sin/(1 + cos)
 
    procedure Sort_Eigensystem
      (Values          : in out Real_Vector;
@@ -525,13 +525,13 @@ package body Ada.Numerics.Generic_Real_Arrays is
       Vectors         : out Real_Matrix;
       Compute_Vectors : Boolean)
    is
-      --  This subprogram uses Carl Gustav Jacob Jacobi's iterative method
-      --  for computing eigenvalues and eigenvectors and is based on
+      --  This subprogram uses Carl Gustav Jacob Jacobi's cyclic iterative
+      --  method for computing eigenvalues and eigenvectors and is based on
       --  Rutishauser's implementation.
 
       --  The given real symmetric matrix is transformed iteratively to
       --  diagonal form through a sequence of appropriately chosen elementary
-      --  orthogonal transformations, called Jacobi rotations here.
+      --  orthogonal transformations, called Jacobi rotations.
 
       --  The Jacobi method produces a systematic decrease of the sum of the
       --  squares of off-diagonal elements. Convergence to zero is quadratic,
@@ -542,41 +542,44 @@ package body Ada.Numerics.Generic_Real_Arrays is
       --  best choice here, even though for large matrices other methods will
       --  be significantly more efficient in both time and space.
 
-      --  While the eigensystem computations are absolutely foolproof for all
+      --  While the eigensystem computation is absolutely foolproof for all
       --  real symmetric matrices, in presence of invalid values, or similar
-      --  exceptional situations it might not. In such cases the results cannot
-      --  be trusted and Constraint_Error is raised.
+      --  exceptional situations, it may not be. In such cases, the results
+      --  cannot be trusted and Constraint_Error is raised.
 
       --  Note: this implementation needs temporary storage for 2 * N + N**2
       --        values of type Real.
 
-      Max_Iterations  : constant := 50;
-      N               : constant Natural := Length (A);
+      Max_Iterations : constant := 50;
+      N              : constant Natural := Length (A);
 
       subtype Square_Matrix is Real_Matrix (1 .. N, 1 .. N);
 
-      --  In order to annihilate the M (Row, Col) element, the
-      --  rotation parameters Cos and Sin are computed as
-      --  follows:
+      --  In order to annihilate the M (Row, Col) element, the rotation angle
+      --  Theta is chosen as follows:
 
-      --    Theta = Cot (2.0 * Phi)
-      --          = (Diag (Col) - Diag (Row)) / (2.0 * M (Row, Col))
+      --   Cot (2.0 * Theta) = (Diag (Col) - Diag (Row)) / (2.0 * M (Row, Col))
 
-      --  Then Tan (Phi) as the smaller root (in modulus) of
+      --  If C = Cot (2.0 * Theta), then Tan (Theta) is computed as the smaller
+      --  root (in modulus) of:
 
-      --    T**2 + 2 * T * Theta = 1 (or 0.5 / Theta, if Theta is large)
+      --    X**2 + 2 * C * X - 1 = 0
 
-      function Compute_Tan (Theta : Real) return Real is
-         (Real'Copy_Sign (1.0 / (abs Theta + Sqrt (1.0 + Theta**2)), Theta));
+      --  or else as 0.5 / C, if C is large.
+
+      function Compute_Tan (C : Real) return Real is
+        (Real'Copy_Sign (1.0 / (abs C + Sqrt (1.0 + C**2)), C));
 
       function Compute_Tan (P, H : Real) return Real is
-         (if Is_Tiny (P, Compared_To => H) then P / H
-          else Compute_Tan (Theta => H / (2.0 * P)));
+        (if Is_Tiny (P, Compared_To => H)
+         then P / H
+         else Compute_Tan (C => H / (2.0 * P)));
       pragma Annotate
         (CodePeer, False_Positive, "divide by zero", "H, P /= 0");
 
       function Sum_Strict_Upper (M : Square_Matrix) return Real;
-      --  Return the sum of all elements in the strict upper triangle of M
+      --  Return the sum of the absolute value of all the elements in the
+      --  strict upper triangle of M.
 
       ----------------------
       -- Sum_Strict_Upper --
@@ -595,11 +598,13 @@ package body Ada.Numerics.Generic_Real_Arrays is
          return Sum;
       end Sum_Strict_Upper;
 
+      --  Local variables
+
       M         : Square_Matrix := A; --  Work space for solving eigensystem
-      Threshold : Real;
-      Sum       : Real;
       Diag      : Real_Vector (1 .. N);
       Diag_Adj  : Real_Vector (1 .. N);
+      Sum       : Real;
+      Threshold : Real;
 
       --  The vector Diag_Adj indicates the amount of change in each value,
       --  while Diag tracks the value itself and Values holds the values as
@@ -621,22 +626,24 @@ package body Ada.Numerics.Generic_Real_Arrays is
          raise Constraint_Error with "matrix not symmetric";
       end if;
 
+      Values := Diagonal (M);
+
       --  Note: Only the locally declared matrix M and vectors (Diag, Diag_Adj)
       --        have lower bound equal to 1. The Vectors matrix may have
       --        different bounds, so take care indexing elements. Assignment
       --        as a whole is fine as sliding is automatic in that case.
 
-      Vectors := (if not Compute_Vectors then [1 .. 0 => [1 .. 0 => 0.0]]
-                  else Unit_Matrix (Vectors'Length (1), Vectors'Length (2)));
-      Values := Diagonal (M);
+      Vectors := (if Compute_Vectors
+                  then Unit_Matrix (N)
+                  else [1 .. 0 => [1 .. 0 => 0.0]]);
 
       Sweep : for Iteration in 1 .. Max_Iterations loop
 
-         --  The first three iterations, perform rotation for any non-zero
-         --  element. After this, rotate only for those that are not much
-         --  smaller than the average off-diagnal element. After the fifth
-         --  iteration, additionally zero out off-diagonal elements that are
-         --  very small compared to elements on the diagonal with the same
+         --  During the first three iterations, perform the rotation only for
+         --  elements that are not much smaller than the average off-diagonal
+         --  element. After this, rotate for any non-zero elements. After the
+         --  fifth iteration, additionally zero out off-diagonal elements that
+         --  are very small compared to elements on the diagonal with the same
          --  column or row index.
 
          Sum := Sum_Strict_Upper (M);
@@ -645,8 +652,8 @@ package body Ada.Numerics.Generic_Real_Arrays is
 
          Threshold := (if Iteration < 4 then 0.2 * Sum / Real (N**2) else 0.0);
 
-         --  Iterate over all off-diagonal elements, rotating any that have
-         --  an absolute value that exceeds the threshold.
+         --  Iterate over all off-diagonal elements, rotating any that have an
+         --  absolute value that exceeds the threshold.
 
          Diag := Values;
          Diag_Adj := [others => 0.0]; -- Accumulates adjustments to Diag
@@ -654,11 +661,11 @@ package body Ada.Numerics.Generic_Real_Arrays is
          for Row in 1 .. N - 1 loop
             for Col in Row + 1 .. N loop
 
-               --  If, before the rotation M (Row, Col) is tiny compared to
+               --  If, before the rotation, M (Row, Col) is tiny compared to
                --  Diag (Row) and Diag (Col), rotation is skipped. This is
                --  meaningful, as it produces no larger error than would be
                --  produced anyhow if the rotation had been performed.
-               --  Suppress this optimization in the first four sweeps, so
+               --  Suppress this optimization in the first four iterations, so
                --  that this procedure can be used for computing eigenvectors
                --  of perturbed diagonal matrices.
 
@@ -670,8 +677,8 @@ package body Ada.Numerics.Generic_Real_Arrays is
 
                elsif abs M (Row, Col) > Threshold then
                   Perform_Rotation : declare
-                     Tan : constant Real := Compute_Tan (M (Row, Col),
-                                               Diag (Col) - Diag (Row));
+                     Tan : constant Real :=
+                       Compute_Tan (M (Row, Col), Diag (Col) - Diag (Row));
                      Cos : constant Real := 1.0 / Sqrt (1.0 + Tan**2);
                      Sin : constant Real := Tan * Cos;
                      Tau : constant Real := Sin / (1.0 + Cos);
@@ -710,7 +717,7 @@ package body Ada.Numerics.Generic_Real_Arrays is
          Values := Values + Diag_Adj;
       end loop Sweep;
 
-      --  All normal matrices with valid values should converge perfectly.
+      --  All normal matrices with valid values should converge perfectly
 
       if Sum /= 0.0 then
          raise Constraint_Error with "eigensystem solution does not converge";
