@@ -21,6 +21,12 @@ void f2 (void * restrict in, void * restrict out, int l, int n, int m)
   }
 }
 
+/* The second check is XFAILed because we currently don't lift
+   vsetvls into non-transparent (in LCM parlance) blocks.
+   See PR119547.
+   In this test it is still possible because the conflicting
+   register only ever feeds vsetvls.  */
+
 /* { dg-final { scan-assembler-times {vsetvli} 2 { target { no-opts "-O0" no-opts "-Os" no-opts "-Oz" no-opts "-g" no-opts "-funroll-loops" } } } } */
-/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e8,\s*mf8,\s*tu,\s*m[au]} 2 { target { no-opts "-O0" no-opts "-Os" no-opts "-Oz" no-opts "-g" no-opts "-funroll-loops" } } } } */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e8,\s*mf8,\s*tu,\s*m[au]} 2 { target { no-opts "-O0" no-opts "-Os" no-opts "-Oz" no-opts "-g" no-opts "-funroll-loops" } xfail { *-*-* } } } } */
 /* { dg-final { scan-assembler-times {addi\s+[a-x0-9]+,\s*[a-x0-9]+,\s*44} 1 { target { no-opts "-O0" no-opts "-Os" no-opts "-Oz" no-opts "-g" no-opts "-funroll-loops" } } } } */

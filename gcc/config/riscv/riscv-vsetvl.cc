@@ -2965,6 +2965,18 @@ pre_vsetvl::earliest_fuse_vsetvl_info (int iter)
 		  continue;
 		}
 
+	      /* We cannot lift a vsetvl into the source block if the block is
+		 not transparent WRT to it.
+		 This is too restrictive for blocks where a register's use only
+		 feeds into vsetvls and no regular insns.  One example is the
+		 test rvv/vsetvl/avl_single-68.c which is currently XFAILed for
+		 that reason.
+		 In order to support this case we'd need to check the vsetvl's
+		 AVL operand's uses in the source block and make sure they are
+		 only used in other vsetvls.  */
+	      if (!bitmap_bit_p (m_transp[eg->src->index], expr_index))
+		continue;
+
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
 		  fprintf (dump_file,
