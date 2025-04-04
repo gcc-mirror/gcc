@@ -1,3 +1,9 @@
+2025-04-03  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119380
+	* trans-array.cc (structure_alloc_comps): Prevent freeing of
+	procedure pointer components.
+
 2025-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
