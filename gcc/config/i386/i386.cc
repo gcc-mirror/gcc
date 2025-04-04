@@ -21883,7 +21883,11 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case SYMBOL_REF:
       if (x86_64_immediate_operand (x, VOIDmode))
 	*total = 0;
-     else
+      else if (TARGET_64BIT && x86_64_zext_immediate_operand (x, VOIDmode))
+	/* Consider the zext constants slightly more expensive, as they
+	   can't appear in most instructions.  */
+	*total = 1;
+      else
 	/* movabsq is slightly more expensive than a simple instruction. */
 	*total = COSTS_N_INSNS (1) + 1;
       return true;
