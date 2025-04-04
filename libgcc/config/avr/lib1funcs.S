@@ -581,19 +581,12 @@ DEFUN __umulhisi3
     mul     A1, B1
     movw    C2, r0
     mul     A0, B1
-#ifdef __AVR_HAVE_JMP_CALL__
-    ;; This function is used by many other routines, often multiple times.
-    ;; Therefore, if the flash size is not too limited, avoid the RCALL
-    ;; and inverst 6 Bytes to speed things up.
     add     C1, r0
     adc     C2, r1
     clr     __zero_reg__
     adc     C3, __zero_reg__
-#else
-    rcall   1f
-#endif
     mul     A1, B0
-1:  add     C1, r0
+    add     C1, r0
     adc     C2, r1
     clr     __zero_reg__
     adc     C3, __zero_reg__
