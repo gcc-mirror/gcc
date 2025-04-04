@@ -1,3 +1,7 @@
+2025-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
 2025-03-30  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* c.opt.urls: Regenerate.

@@ -1,3 +1,29 @@
+2025-04-03  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/cpu/nvptx/t-nvptx: Remove.
+	* configure.host [nvptx]: Adjust.
+
+2025-04-03  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119573
+	* config/cpu/nvptx/t-nvptx (AM_MAKEFLAGS): Don't amend.
+
+2025-04-03  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/std/format/functions/format.cc: Restored line.
+
+2025-04-03  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119593
+	* include/bits/unicode.h
+	(__unicode::__literal_encoding_is_unicode<_CharT>):
+	Corrected handing for UTF-16 and UTF-32 with "LE" or "BE" suffix.
+	* include/std/format (__formatter_str::_S_character_width):
+	Define.
+	(__formatter_str::_S_character_width): Updated passed char
+	length.
+	* testsuite/std/format/functions/format.cc: Test for wchar_t.
+
 2025-04-02  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/os/hpux/os_defines.h: Only use long long when

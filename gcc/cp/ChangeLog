@@ -1,3 +1,28 @@
+2025-04-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119387
+	* constexpr.cc (p2280_active_p): New.
+	(cxx_eval_constant_expression) <case VAR_DECL>: Use it to
+	restrict P2280 relaxations.
+	<case PARM_DECL>: Likewise.
+
+2025-04-03  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (module_state::read_cluster)
+	(post_load_processing): Clear DECL_EXTERNAL if DECL_COMDAT.
+
+2025-04-03  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (add_candidates): Re-lookup ne_fns if we move into
+	another namespace.
+
+2025-04-03  Andrew Pinski  <quic_apinski@quicinc.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119563
+	* call.cc (build_list_conv): Fix a typo in loop gathering
+	summary information from subsubconvs.
+
 2025-04-02  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR middle-end/118965

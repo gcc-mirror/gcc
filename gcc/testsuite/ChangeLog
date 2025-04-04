@@ -1,3 +1,106 @@
+2025-04-03  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119573
+	* gcc.c-torture/compile/pr46534.c: Don't 'dg-skip-if' nvptx.
+	* gcc.target/nvptx/decl.c: Adjust.
+
+2025-04-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/spaceship-rewrite6.C: New test.
+
+2025-04-03  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	PR testsuite/118597
+	* gcc.dg/vect/vect-fncall-mask.c: Update test directives.
+
+2025-04-03  Bob Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/INSPECT_BACKWARD_REPLACING_LEADING.cob: New testcase.
+	* cobol.dg/group2/INSPECT_BACKWARD_REPLACING_TRAILING.cob: Likewise.
+	* cobol.dg/group2/INSPECT_BACKWARD_simple_CONVERTING.cob: Likewise.
+	* cobol.dg/group2/INSPECT_BACKWARD_simple_REPLACING.cob: Likewise.
+	* cobol.dg/group2/INSPECT_BACKWARD_simple_TALLYING.cob: Likewise.
+	* cobol.dg/group2/INSPECT_CONVERTING_NULL.cob: Likewise.
+	* cobol.dg/group2/INSPECT_CONVERTING_TO_figurative_constant.cob: Likewise.
+	* cobol.dg/group2/INSPECT_CONVERTING_TO_figurative_constants.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_1.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_2.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_3.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_4.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_5.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_5-f.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_5-r.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_6.cob: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_7.cob: Likewise.
+	* cobol.dg/group2/INSPECT_No_repeat_conversion_check.cob: Likewise.
+	* cobol.dg/group2/INSPECT_REPLACING_figurative_constant.cob: Likewise.
+	* cobol.dg/group2/INSPECT_REPLACING_LEADING_ZEROS_BY_SPACES.cob: Likewise.
+	* cobol.dg/group2/INSPECT_TALLYING_AFTER.cob: Likewise.
+	* cobol.dg/group2/INSPECT_TALLYING_BEFORE.cob: Likewise.
+	* cobol.dg/group2/INSPECT_TALLYING_REPLACING_ISO_Example.cob: Likewise.
+	* cobol.dg/group2/INSPECT_TRAILING.cob: Likewise.
+	* cobol.dg/group2/INSPECT_BACKWARD_REPLACING_LEADING.out: New known-good result.
+	* cobol.dg/group2/INSPECT_BACKWARD_REPLACING_TRAILING.out: Likewise.
+	* cobol.dg/group2/INSPECT_BACKWARD_simple_CONVERTING.out: Likewise.
+	* cobol.dg/group2/INSPECT_BACKWARD_simple_REPLACING.out: Likewise.
+	* cobol.dg/group2/INSPECT_BACKWARD_simple_TALLYING.out: Likewise.
+	* cobol.dg/group2/INSPECT_CONVERTING_TO_figurative_constants.out: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_1.out: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_2.out: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_3.out: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_4.out: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_5-f.out: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_5.out: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_5-r.out: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_6.out: Likewise.
+	* cobol.dg/group2/INSPECT_ISO_Example_7.out: Likewise.
+	* cobol.dg/group2/INSPECT_TALLYING_REPLACING_ISO_Example.out: Likewise.
+	* cobol.dg/group2/INSPECT_TRAILING.out: Likewise.
+
+2025-04-03  Andrew Pinski  <quic_apinski@quicinc.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119563
+	* g++.dg/cpp0x/pr119563.C: New test.
+	* g++.dg/cpp/embed-26.C: New test.
+
+2025-04-03  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/guality/pr90074.c: Remove xfail for aarch64.
+	* gcc.dg/guality/pr90716.c: Likewise.
+
+2025-04-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr111673.c (dg-options): Add
+	-fasynchronous-unwind-tables -fdwarf2-cfi-asm.
+	* gcc.target/i386/pr82142a.c: Likewise.
+	* gcc.target/i386/pr82142b.c (dg-options): Add -mno-stackrealign
+	-fasynchronous-unwind-tables -fdwarf2-cfi-asm.
+
+2025-04-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/riscv/rvv/base/vwaddsub-1.c: Require rv64.
+
+2025-04-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/riscv/mcpu-xiangshan-nanhu.c: Skip on non-rv64.
+
+2025-04-03  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/113281
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113281-1.c: XFAIL.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113281-2.c: Likewise.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113281-5.c: Likewise.
+
+2025-04-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: XFAIL on riscv lp64.
+
+2025-04-03  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/119539
+	* gcc.target/i386/apx-nf-pr119539.c: New test.
+
 2025-04-02  Jin Ma  <jinma@linux.alibaba.com>
 
 	* gcc.target/riscv/zba-shNadd-09.c: New test.

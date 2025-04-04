@@ -1,3 +1,53 @@
+2025-04-03  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119573
+	* config/nvptx/nvptx.cc (nvptx_encode_section_info): Don't set
+	'DATA_AREA_CONST' for 'TREE_CONSTANT', or 'TREE_READONLY'.
+	(nvptx_asm_declare_constant_name): Use '.global' instead of
+	'.const'.
+
+2025-04-03  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/119308
+	* config/rs6000/rs6000-logue.cc (rs6000_output_function_epilogue):
+	Handle GCC COBOL for the tbtab lang field.
+
+2025-04-03  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/extend.texi (Statement Attributes): Copy-edit the musttail
+	attribute documentation and correct the comment in the last
+	example.
+
+2025-04-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune-costs.h (ix86_size_cost): Fix sizes of move
+	instructions
+
+2025-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR cobol/119242
+	* fold-const.h (native_encode_wide_int): Declare.
+	* fold-const.cc (native_encode_wide_int): New function.
+	(native_encode_int): Use it.
+
+2025-04-03  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/genopts/gen-evolution.awk: Avoid using gensub
+	that FreeBSD awk lacks.
+
+2025-04-03  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/119539
+	* config/i386/i386.md (*<insn><mode>3_mask): Emit NF variant of
+	rotate when APX_NF enabled, and use force_lowpart_subreg.
+	(*<insn><mode>3_mask_1): Likewise.
+
+2025-04-03  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/101440
+	* doc/extend.texi (Common Function Attributes): Clean up some
+	confusing language in the description of the "access" attribute.
+
 2025-04-02  Sandra Loosemore  <sloosemore@baylibre.com>
 	    GUO Yixuan  <culu.gyx@gmail.com>
 

@@ -1,3 +1,27 @@
+2025-04-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for availability of strfromf32 and
+	strfromf64.
+	* libgcobol.cc (strfromf32, strfromf64): New.
+
+2025-04-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR cobol/119295
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Configure random_r and friends
+	* intrinsic.cc (__gg__random): Use random_r when available.
+	(__gg__random_next): Likewise.
+
+2025-04-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gfileio.cc: Include config.h.
+	* gmath.cc: Likewise.
+	* io.cc: Likewise.
+	* libgcobol.cc: Likewise.
+
 2025-04-02  Bob Dubner  <rdubner@symas.com>
 
 	PR cobol/119521
