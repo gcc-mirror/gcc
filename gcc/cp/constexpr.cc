@@ -10279,22 +10279,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return true;
 
     case INDIRECT_REF:
-      {
-        tree x = TREE_OPERAND (t, 0);
-        STRIP_NOPS (x);
-        if (is_this_parameter (x) && !is_capture_proxy (x))
-	  {
-	    if (now || !var_in_maybe_constexpr_fn (x))
-	      {
-		if (flags & tf_error)
-		  constexpr_error (loc, fundef_p, "use of %<this%> in a "
-				   "constant expression");
-		return false;
-	      }
-	    return true;
-	  }
-	return RECUR (x, rval);
-      }
+      return RECUR (TREE_OPERAND (t, 0), rval);
 
     case STATEMENT_LIST:
       for (tree stmt : tsi_range (t))

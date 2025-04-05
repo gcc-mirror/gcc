@@ -19,6 +19,6 @@ void
 g ()
 {
   constexpr int i = 42;
-  constexpr auto a1 = fn0 (&i);
+  constexpr auto a1 = fn0 (&i); // { dg-error "called in a constant expression" }
   constexpr auto a2 = fn1 (i); // { dg-error "called in a constant expression" }
 }
