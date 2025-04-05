@@ -1,3 +1,31 @@
+2025-04-04  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99546
+	PR c++/113925
+	PR c++/106976
+	PR c++/109961
+	PR c++/117336
+	* g++.dg/cpp2a/lambda-requires2.C: New test.
+	* g++.dg/cpp2a/lambda-requires3.C: New test.
+	* g++.dg/cpp2a/lambda-requires4.C: New test.
+	* g++.dg/cpp2a/lambda-requires5.C: New test.
+
+2025-04-04  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-04-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117849
+	* g++.dg/cpp2a/concepts-requires41.C: New test.
+
+2025-04-04  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	PR testsuite/118597
+	* gcc.dg/vect/vect-fncall-mask.c: Update test directives.
+
 2025-04-03  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/119380

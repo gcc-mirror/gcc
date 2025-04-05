@@ -1,3 +1,37 @@
+2025-04-04  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99546
+	PR c++/113925
+	PR c++/106976
+	PR c++/109961
+	PR c++/117336
+	* lambda.cc (build_lambda_object): Handle fake
+	requires-expr processing_template_decl.
+	* parser.cc (cp_parser_lambda_expression): Likewise.
+
+2025-04-04  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-04-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117849
+	* semantics.cc (finish_id_expression_1): Allow use of constraint
+	variable outside an unevaluated context.
+
+2025-04-04  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-04-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119387
+	* constexpr.cc (p2280_active_p): New.
+	(cxx_eval_constant_expression) <case VAR_DECL>: Use it to
+	restrict P2280 relaxations.
+	<case PARM_DECL>: Likewise.
+
 2025-04-02  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
