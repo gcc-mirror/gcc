@@ -1,3 +1,54 @@
+2025-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/119625
+	* lto-opts.cc (lto_write_options): If neither flag_pic nor
+	flag_pie are set, check first for flag_pie and only later
+	for flag_pic rather than the other way around, use a temporary
+	variable.  If flag_cf_protection is not set, don't append anything
+	if flag_cf_protection is none of CF_{NONE,FULL,BRANCH,RETURN} and
+	use a temporary variable.
+
+2025-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/119618
+	* profile.cc (branch_prob): Only check for musttail calls if
+	cfun->has_musttail.  Use gsi_last_nondebug_bb instead of gsi_last_bb.
+
+2025-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119616
+	* tree-tailcall.cc (suitable_for_tail_call_opt_p): Move checking
+	for addressable parameters from here ...
+	(find_tail_calls): ... here.  If cfun->has_musttail, don't clear
+	opt_tailcalls for it, instead set a local flag and punt if we can't
+	tail recurse optimize it.
+
+2025-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/119613
+	* cfgrtl.cc (purge_dead_edges): Remove REG_EH_REGION notes from
+	tail calls.
+
+2025-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/115910
+	* rtlanal.cc (pattern_cost): Return at least COSTS_N_INSNS (1)
+	rather than just COSTS_N_INTNS (1) for cost <= 0.
+	* config/i386/i386.cc (ix86_rtx_costs): Set *total to 1 for
+	TARGET_64BIT x86_64_zext_immediate_operand constants.
+
+2025-04-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR ipa/119599
+	* tree-cfg.cc (pass_warn_function_return::execute): Turn return statements always
+	into __builtin_unreachable calls.
+
+2025-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119614
+	* tree-tailcall.cc (find_tail_calls): Handle also pointer types in the
+	IPA-VRP workaround.
+
 2025-04-03  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/119573

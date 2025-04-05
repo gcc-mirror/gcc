@@ -1,3 +1,242 @@
+2025-04-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119564
+	* g++.dg/modules/gc-3_a.C: New test.
+	* g++.dg/modules/gc-3_b.C: New test.
+
+2025-04-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119608
+	* g++.dg/modules/pr119608_a.C: New test.
+	* g++.dg/modules/pr119608_b.C: New test.
+
+2025-04-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119462
+	* g++.dg/modules/noexcept-3_a.C: New test.
+	* g++.dg/modules/noexcept-3_b.C: New test.
+	* g++.dg/modules/noexcept-3_c.C: New test.
+
+2025-04-04  Bob Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/call_subprogram_using_pointer__passing_pointer.cob: New testcase.
+	* cobol.dg/group2/FUNCTION_ABS.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_ACOS.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_ALL_INTRINSIC_simple_test.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_ANNUITY.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_as_CALL_parameter_BY_CONTENT.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_ASIN.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_ATAN.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_BIGGER-POINTER__2_.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_BIGGER-POINTER.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_BYTE-LENGTH.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_CHAR.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_COMBINED-DATETIME.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_CONCAT___CONCATENATE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_CONCAT_with_reference_modding.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_COS.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_CURRENT-DATE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_DATE-OF-INTEGER.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_DATE___TIME_OMNIBUS.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_DATE-TO-YYYYMMDD.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_DAY-OF-INTEGER.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_DAY-TO-YYYYDDD.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_E.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_EXCEPTION-FILE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_EXCEPTION-STATEMENT.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_EXCEPTION-STATUS.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_EXP10.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_EXP.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_FACTORIAL.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_FORMATTED-DATE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_FORMATTED-DATETIME.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_FORMATTED-DATE_TIME_DATETIME.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_FORMATTED-DATETIME_with_ref_modding.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_FORMATTED-DATE_with_ref_modding.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_FORMATTED-TIME_DP.COMMA.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_FORMATTED-TIME_with_ref_modding.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_FRACTION-PART.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_HEX-OF.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_HIGHEST-ALGEBRAIC.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_INTEGER.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_INTEGER-OF-DATE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_INTEGER-OF-DAY.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_INTEGER-OF-FORMATTED-DATE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_INTEGER-PART.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_LENGTH__1_.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_LENGTH__2_.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_LOCALE-COMPARE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_LOCALE-DATE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_LOCALE-TIME.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_LOCALE-TIME-FROM-SECONDS.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_LOG10.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_LOG.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_LOWER-CASE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_LOWER-CASE_with_reference_modding.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_LOWEST-ALGEBRAIC.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_MAX.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_MEAN.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_MEDIAN.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_MIDRANGE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_MIN.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_MOD__invalid_.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_MODULE-NAME.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_MOD__valid_.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_NUMVAL-C.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_NUMVAL-C_DP.COMMA.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_NUMVAL.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_NUMVAL-F.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_ORD.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_ORD-MAX.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_ORD-MIN.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_PI.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_PRESENT-VALUE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_RANDOM.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_RANGE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_REM__invalid_.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_REM__valid_.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_REVERSE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_REVERSE_with_reference_modding.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_SECONDS-FROM-FORMATTED-TIME.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_SECONDS-PAST-MIDNIGHT.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_SIGN.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_SIN.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_SQRT.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_STANDARD-DEVIATION.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_SUBSTITUTE-CASE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_SUBSTITUTE-CASE_with_reference_mod.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_SUBSTITUTE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_SUBSTITUTE_with_reference_modding.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_SUM.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_TAN.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_TEST-DATE-YYYYMMDD.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_TEST-DAY-YYYYDDD__1_.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_TEST-DAY-YYYYDDD__2_.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_TEST-FORMATTED-DATETIME_additional.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_TEST-FORMATTED-DATETIME_DP.COMMA.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_TEST-FORMATTED-DATETIME_with_dates.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_TEST-FORMATTED-DATETIME_with_datetimes.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_TEST-FORMATTED-DATETIME_with_times.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_TEST-NUMVAL-C.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_TEST-NUMVAL.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_TEST-NUMVAL-F.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_TRIM.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_TRIM_with_reference_modding.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_TRIM_zero_length.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_UPPER-CASE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_UPPER-CASE_with_reference_modding.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_VARIANCE.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_WHEN-COMPILED.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_YEAR-TO-YYYY.cob: Likewise.
+	* cobol.dg/group2/Intrinsics_without_FUNCTION_keyword__2_.cob: Likewise.
+	* cobol.dg/group2/Program-to-program_parameters_and_retvals.cob: Likewise.
+	* cobol.dg/group2/Recursive_FUNCTION_with_local-storage.cob: Likewise.
+	* cobol.dg/group2/Repository_functions_clause.cob: Likewise.
+	* cobol.dg/group2/UDF_fibonacci_recursion.cob: Likewise.
+	* cobol.dg/group2/UDF_in_COMPUTE.cob: Likewise.
+	* cobol.dg/group2/UDF_RETURNING_group_and_PIC_9_5_.cob: Likewise.
+	* cobol.dg/group2/UDF_with_recursion.cob: Likewise.
+	* cobol.dg/group2/call_subprogram_using_pointer__passing_pointer.out: New known-good file.
+	* cobol.dg/group2/FUNCTION_ABS.out: Likewise.
+	* cobol.dg/group2/FUNCTION_ALL_INTRINSIC_simple_test.out: Likewise.
+	* cobol.dg/group2/FUNCTION_as_CALL_parameter_BY_CONTENT.out: Likewise.
+	* cobol.dg/group2/FUNCTION_BIGGER-POINTER__2_.out: Likewise.
+	* cobol.dg/group2/FUNCTION_BIGGER-POINTER.out: Likewise.
+	* cobol.dg/group2/FUNCTION_BYTE-LENGTH.out: Likewise.
+	* cobol.dg/group2/FUNCTION_EXCEPTION-FILE.out: Likewise.
+	* cobol.dg/group2/FUNCTION_EXCEPTION-STATEMENT.out: Likewise.
+	* cobol.dg/group2/FUNCTION_EXCEPTION-STATUS.out: Likewise.
+	* cobol.dg/group2/FUNCTION_FORMATTED-DATE_TIME_DATETIME.out: Likewise.
+	* cobol.dg/group2/FUNCTION_HEX-OF.out: Likewise.
+	* cobol.dg/group2/FUNCTION_LENGTH__2_.out: Likewise.
+	* cobol.dg/group2/FUNCTION_LOCALE-DATE.out: Likewise.
+	* cobol.dg/group2/FUNCTION_LOCALE-TIME-FROM-SECONDS.out: Likewise.
+	* cobol.dg/group2/FUNCTION_LOCALE-TIME.out: Likewise.
+	* cobol.dg/group2/FUNCTION_MAX.out: Likewise.
+	* cobol.dg/group2/FUNCTION_MEAN.out: Likewise.
+	* cobol.dg/group2/FUNCTION_MEDIAN.out: Likewise.
+	* cobol.dg/group2/FUNCTION_MIDRANGE.out: Likewise.
+	* cobol.dg/group2/FUNCTION_MIN.out: Likewise.
+	* cobol.dg/group2/FUNCTION_MODULE-NAME.out: Likewise.
+	* cobol.dg/group2/FUNCTION_NUMVAL-F.out: Likewise.
+	* cobol.dg/group2/FUNCTION_ORD-MAX.out: Likewise.
+	* cobol.dg/group2/FUNCTION_ORD-MIN.out: Likewise.
+	* cobol.dg/group2/FUNCTION_ORD.out: Likewise.
+	* cobol.dg/group2/FUNCTION_PRESENT-VALUE.out: Likewise.
+	* cobol.dg/group2/FUNCTION_SUBSTITUTE.out: Likewise.
+	* cobol.dg/group2/FUNCTION_TEST-DATE-YYYYMMDD.out: Likewise.
+	* cobol.dg/group2/FUNCTION_TEST-DAY-YYYYDDD__1_.out: Likewise.
+	* cobol.dg/group2/FUNCTION_TRIM.out: Likewise.
+	* cobol.dg/group2/FUNCTION_TRIM_with_reference_modding.out: Likewise.
+	* cobol.dg/group2/FUNCTION_TRIM_zero_length.out: Likewise.
+	* cobol.dg/group2/Program-to-program_parameters_and_retvals.out: Likewise.
+	* cobol.dg/group2/Recursive_FUNCTION_with_local-storage.out: Likewise.
+	* cobol.dg/group2/Repository_functions_clause.out: Likewise.
+	* cobol.dg/group2/UDF_fibonacci_recursion.out: Likewise.
+	* cobol.dg/group2/UDF_in_COMPUTE.out: Likewise.
+	* cobol.dg/group2/UDF_RETURNING_group_and_PIC_9_5_.out: Likewise.
+	* cobol.dg/group2/UDF_with_recursion.out: Likewise.
+
+2025-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99546
+	PR c++/113925
+	PR c++/106976
+	PR c++/109961
+	PR c++/117336
+	* g++.dg/cpp2a/lambda-requires2.C: New test.
+	* g++.dg/cpp2a/lambda-requires3.C: New test.
+	* g++.dg/cpp2a/lambda-requires4.C: New test.
+	* g++.dg/cpp2a/lambda-requires5.C: New test.
+
+2025-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/119618
+	* c-c++-common/pr119618.c: New test.
+
+2025-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119616
+	* c-c++-common/pr119616.c: New test.
+
+2025-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/119613
+	* g++.dg/opt/pr119613.C: New test.
+
+2025-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/115910
+	* gcc.target/i386/pr115910.c: New test.
+
+2025-04-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117849
+	* g++.dg/cpp2a/concepts-requires41.C: New test.
+
+2025-04-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR ipa/119599
+	* gcc.dg/torture/pr119599-1.c: New test.
+	* gcc.dg/builtin-apply5.c: New test.
+
+2025-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/119391
+	* g++.dg/cpp/pr119391.C: New test.
+
+2025-04-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/mve/mve.exp: Save dg-do-what-default before
+	changing it.  Restore it once done.
+
+2025-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119614
+	* c-c++-common/pr119614-1.c: New test.
+	* c-c++-common/pr119614-2.c: New test.
+	* c-c++-common/pr119614-3.c: New test.
+
 2025-04-03  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/119573

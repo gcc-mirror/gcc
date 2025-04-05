@@ -1,3 +1,21 @@
+2025-04-04  Bob Dubner  <rdubner@symas.com>
+
+	* cobol1.cc: Eliminate cobol_langhook_post_options.
+	* symbols.cc: Definition of RETURN-CODE special register sets
+	::attr member to signable_e.
+
+2025-04-04  Bob Dubner  <rdubner@symas.com>
+
+	* cobol1.cc: (cobol_langhook_post_options): Implemented in order to set
+	flag_strict_aliasing to zero.
+	* genapi.cc: (set_user_status): Add comment.
+	(parser_intrinsic_subst): Expand SHOW_PARSE information.
+	(psa_global): Change names of return-code and upsi globals,
+	(psa_FldLiteralA): Set DECL_PRESERVE_P for FldLiteralA.
+	* gengen.cc: (show_type): Add POINTER type.
+	(gg_define_function_with_no_parameters): Set DECL_PRESERVE_P for COBOL-
+	style nested programs.  (gg_array_of_bytes): Fix bad cast.
+
 2025-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR cobol/119242

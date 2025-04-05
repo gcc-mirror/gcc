@@ -1,3 +1,16 @@
+2025-04-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Use $(LIBM) to add the math lib when
+	it is needed.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check if the target wants libm.
+
+2025-04-04  Bob Dubner  <rdubner@symas.com>
+
+	* charmaps.h: Change __gg__data_return_code to 'short' type.
+	* constants.cc: Likewise.
+
 2025-04-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config.h.in: Regenerate.

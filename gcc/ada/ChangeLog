@@ -1,3 +1,15 @@
+2025-04-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/a-ngcoar.adb (Eigensystem): Adjust notation and fix the
+	layout of the real symmetric matrix in the main comment.  Adjust
+	the layout of the associated code accordingly and correctly turn
+	the 2Nx1 real vectors into Nx1 complex ones.
+	(Eigenvalues): Minor similar tweaks.
+	* libgnat/a-ngrear.adb (Jacobi): Minor tweaks in the main comment.
+	Adjust notation and corresponding parameter names of functions.
+	Fix call to Unit_Matrix routine.  Adjust the comment describing
+	the various kinds of iterations to match the implementation.
+
 2025-03-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgnarl/s-tasini.adb (Tasking_Runtime_Initialize): Add pragma

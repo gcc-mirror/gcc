@@ -1,3 +1,13 @@
+2025-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/119391
+	* expr.cc (num_lshift): Add pfile argument.  Don't set num.overflow
+	for !num.unsignedp in C++20 or later unless n >= precision.  For
+	C++11 to C++17 set it if orig >> (precision - 1 - n) as logical
+	shift results in value > 1.
+	(num_binary_op): Pass pfile to num_lshift.
+	(num_div_op): Likewise.
+
 2025-03-28  Jeremy Bettis  <jbettis@google.com>
 
 	PR preprocessor/108900

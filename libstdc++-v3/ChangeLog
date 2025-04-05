@@ -1,3 +1,60 @@
+2025-04-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/119620
+	* include/std/flat_set (_Flat_set_impl::_M_try_emplace): Split
+	out into two overloads, one taking at least one argument and one
+	taking zero arguments.  Turn __k into an auto&& reference bound
+	to __arg if it's already a value_type and otherwise bound to a
+	lifetime-extended value_type temporary.
+	* testsuite/23_containers/flat_multiset/1.cc (test08): New test.
+	* testsuite/23_containers/flat_set/1.cc (test08): New test.
+
+2025-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101587
+	* include/bits/ranges_uninitialized.h (__detail::__mindist):
+	Remove.
+	(ranges::uninitialized_copy, ranges::uninitialized_copy_n)
+	(ranges::uninitialized_move, ranges::uninitialized_move_n): Use
+	comparison and assignment instead of __mindist.
+	* testsuite/20_util/specialized_algorithms/uninitialized_copy/constrained.cc:
+	Check with ranges that use integer-like class type for
+	difference type.
+	* testsuite/20_util/specialized_algorithms/uninitialized_move/constrained.cc:
+	Likewise.
+
+2025-04-04  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/109162
+	* include/Makefile.am: Add bits/formatfwd.h.
+	* include/Makefile.in: Add bits/formatfwd.h.
+	* include/bits/version.def: Define __glibcxx_format_ranges without
+	corresponding std name.
+	* include/bits/version.h: Regenerate.
+	* include/std/format (basic_format_context, __format::__char):
+	Move declartions to bits/formatfwd.h.
+	(formatter<_Tp, _CharT>): Remove default argument for _CharT
+	parameter, now specified in forward declaration in bits/formatfwd.h.
+	* include/std/vector (formatter<_Bit_reference, _CharT>): Define.
+	* include/bits/formatfwd.h: New file with forward declarations
+	for bits of std/format.
+	* testsuite/23_containers/vector/bool/format.cc: New test.
+
+2025-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h: Check __glibcxx_string_view and
+	__glibcxx_variant instead of __cplusplus >= 2017L.
+	* include/bits/cow_string.h: Likewise.
+
+2025-04-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.tcc: Fix whitespace.
+
+2025-04-04  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/bits/version.tpl: Implement no_stdname.
+	* include/bits/version.def: Document no_stdname.
+
 2025-04-03  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* config/cpu/nvptx/t-nvptx: Remove.
