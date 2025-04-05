@@ -4023,10 +4023,11 @@ AC_DEFUN([GLIBCXX_ENABLE_LOCK_POLICY], [
     dnl Why don't we check 8-byte CAS for sparc64, where _Atomic_word is long?!
     dnl New targets should only check for CAS for the _Atomic_word type.
     AC_TRY_COMPILE([
-    #if defined __riscv
+    #if defined __AMDGCN__ || defined __nvptx__
+    /* Yes, please.  */
+    #elif defined __riscv
     # error "Defaulting to mutex-based locks for ABI compatibility"
-    #endif
-    #if ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
+    #elif ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
     # error "No 2-byte compare-and-swap"
     #elif ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
     # error "No 4-byte compare-and-swap"
