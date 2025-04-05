@@ -673,7 +673,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style}
 -fsanitize-trap   -fsanitize-trap=@var{style}
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},...
--fsanitize-undefined-trap-on-error  -fbounds-check
+-fsanitize-undefined-trap-on-error  -fbounds-check  -fcf-protection
 -fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]}
 -fharden-compares -fharden-conditional-branches  -fhardened
 -fharden-control-flow-redundancy  -fhardcfr-skip-leaf
@@ -18373,7 +18373,8 @@ operand constant, @code{__sanitizer_cov_trace_cmpf} or
 
 @opindex fcf-protection
 @item -fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]}
-Enable code instrumentation of control-flow transfers to increase
+@itemx -fcf-protection
+Enable code instrumentation to increase
 program security by checking that target addresses of control-flow
 transfer instructions (such as indirect function call, function return,
 indirect jump) are valid.  This prevents diverting the flow of control
@@ -18381,21 +18382,29 @@ to an unexpected target.  This is intended to protect against such
 threats as Return-oriented Programming (ROP), and similarly
 call/jmp-oriented programming (COP/JOP).
 
+The @option{-fcf-protection=} keywords are interpreted as follows.
+
 The value @code{branch} tells the compiler to implement checking of
 validity of control-flow transfer at the point of indirect branch
-instructions, i.e.@: call/jmp instructions.  The value @code{return}
-implements checking of validity at the point of returning from a
-function.  The value @code{full} is an alias for specifying both
-@code{branch} and @code{return}. The value @code{none} turns off
-instrumentation.
+instructions, i.e.@: call/jmp instructions.
 
-To override @option{-fcf-protection}, @option{-fcf-protection=none}
-needs to be added and then with @option{-fcf-protection=xxx}.
+The value @code{return} implements checking of validity at the point of
+returning from a function.
+
+The value @code{full} is an alias for specifying both
+@code{branch} and @code{return}.
 
 The value @code{check} is used for the final link with link-time
 optimization (LTO).  An error is issued if LTO object files are
 compiled with different @option{-fcf-protection} values.  The
 value @code{check} is ignored at the compile time.
+
+The value @code{none} turns off instrumentation.
+
+@option{-fcf-protection} is an alias for @option{-fcf-protection=full}.
+To override a previous @option{-fcf-protection} option on the command
+line, add @option{-fcf-protection=none} and then
+@option{-fcf-protection=@var{kind}}.
 
 The macro @code{__CET__} is defined when @option{-fcf-protection} is
 used.  The first bit of @code{__CET__} is set to 1 for the value
