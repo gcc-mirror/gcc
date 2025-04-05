@@ -356,6 +356,8 @@ ResolveItem::visit (AST::EnumItemDiscriminant &item)
   auto cpath = canonical_prefix.append (decl);
 
   mappings.insert_canonical_path (item.get_node_id (), cpath);
+
+  ResolveExpr::go (item.get_expr (), path, cpath);
 }
 
 void
