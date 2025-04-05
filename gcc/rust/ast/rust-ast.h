@@ -657,6 +657,9 @@ public:
   // Returns whether the attribute is considered an "empty" attribute.
   bool is_empty () const { return attr_input == nullptr && path.is_empty (); }
 
+  // Returns whether the attribute has no input
+  bool empty_input () const { return !attr_input; }
+
   location_t get_locus () const { return locus; }
 
   AttrInput &get_attr_input () const { return *attr_input; }
