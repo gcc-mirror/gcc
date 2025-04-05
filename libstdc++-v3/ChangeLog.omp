@@ -1,6 +1,16 @@
 2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-04-07  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119645
+	* acinclude.m4 (GLIBCXX_ENABLE_LOCK_POLICY) [GCN, nvptx]:
+	Hard-code results.
+	* configure: Regenerate.
+	* configure.host [GCN, nvptx] (atomicity_dir): Set to
+	'cpu/generic/atomicity_builtins'.
+
+	Backported from trunk:
 	2025-04-03  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* config/cpu/nvptx/t-nvptx: Remove.
