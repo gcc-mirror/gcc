@@ -5339,6 +5339,8 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
       decl = pushdecl_outermost_localscope (decl);
       if (decl != error_mark_node)
 	add_decl_expr (decl);
+      else
+	gcc_assert (seen_error ());
     }
   else
     {
