@@ -1469,97 +1469,60 @@ that the record type must be a root type, in other words not a derived type.
 
 The aspect additionally makes it possible to specify relaxed semantics for
 the finalization operations by means of the ``Relaxed_Finalization`` setting.
-
-Example:
+Here is the archetypal example:
 
 .. code-block:: ada
 
-    type Ctrl is record
-      Id : Natural := 0;
+    type T is record
+      ...
     end record
       with Finalizable => (Initialize           => Initialize,
                            Adjust               => Adjust,
                            Finalize             => Finalize,
                            Relaxed_Finalization => True);
 
-    procedure Adjust     (Obj : in out Ctrl);
-    procedure Finalize   (Obj : in out Ctrl);
-    procedure Initialize (Obj : in out Ctrl);
+    procedure Adjust     (Obj : in out T);
+    procedure Finalize   (Obj : in out T);
+    procedure Initialize (Obj : in out T);
 
-The three procedures have the same profile, taking a single ``in out T``
-parameter.
-
-We follow the same dynamic semantics as controlled objects:
+The three procedures have the same profile, with a single ``in out`` parameter,
+and also have the same dynamic semantics as for controlled types:
 
  - ``Initialize`` is called when an object of type ``T`` is declared without
-   default expression.
+   initialization expression.
 
  - ``Adjust`` is called after an object of type ``T`` is assigned a new value.
 
  - ``Finalize`` is called when an object of type ``T`` goes out of scope (for
-   stack-allocated objects) or is explicitly deallocated (for heap-allocated
-   objects). It is also called when on the value being replaced in an
-   assignment.
+   stack-allocated objects) or is deallocated (for heap-allocated objects).
+   It is also called when the value is replaced by an assignment.
 
-However the following differences are enforced by default when compared to the
-current Ada controlled-objects finalization model:
+However, when ``Relaxed_Finalization`` is either ``True`` or not explicitly
+specified, the following differences are implemented relative to the semantics
+of controlled types:
 
-* No automatic finalization of heap allocated objects: ``Finalize`` is only
-  called when an object is implicitly deallocated. As a consequence, no-runtime
-  support is needed for the implicit case, and no header will be maintained for
-  this in heap-allocated controlled objects.
+* The compiler has permission to perform no automatic finalization of
+  heap-allocated objects: ``Finalize`` is only called when such an object
+  is explicitly deallocated, or when the designated object is assigned a new
+  value. As a consequence, no runtime support is needed for performing
+  implicit deallocation. In particular, no per-object header data is needed
+  for heap-allocated objects.
 
-  Heap-allocated objects allocated through a nested access type definition will
-  hence **not** be deallocated either. The result is simply that memory will be
-  leaked in those cases.
+  Heap-allocated objects allocated through a nested access type will therefore
+  **not** be deallocated either. The result is simply that memory will be leaked
+  in this case.
 
-* The ``Finalize`` procedure should have have the :ref:`No_Raise_Aspect` specified.
-  If that's not the case, a compilation error will be raised.
+* The ``Adjust`` and ``Finalize`` procedures are automatically considered as
+  having the :ref:`No_Raise_Aspect` specified for them. In particular, the
+  compiler has permission to enforce none of the guarantees specified by the
+  RM 7.6.1 (14/1) and subsequent subclauses.
 
-Additionally, two other configuration aspects are added,
-``Legacy_Heap_Finalization`` and ``Exceptions_In_Finalize``:
-
-* ``Legacy_Heap_Finalization``: Uses the legacy automatic finalization of
-  heap-allocated objects
-
-* ``Exceptions_In_Finalize``: Allow users to have a finalizer that raises exceptions
-  **NB!** note that using this aspect introduces execution time penalities.
-
-.. _No_Raise_Aspect:
-
-No_Raise aspect
-----------------
-
-The ``No_Raise`` aspect can be applied to a subprogram to declare that this subprogram is not
-expected to raise any exceptions. Should an exception still occur during the execution of
-this subprogram, ``Program_Error`` is raised.
-
-New specification for ``Ada.Finalization.Controlled``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-``Ada.Finalization.Controlled`` is now specified as:
-
-.. code-block:: ada
-
-   type Controlled is abstract tagged null record
-      with Initialize => Initialize,
-         Adjust => Adjust,
-         Finalize => Finalize,
-         Legacy_Heap_Finalization, Exceptions_In_Finalize;
-
-         procedure Initialize (Self : in out Controlled) is abstract;
-         procedure Adjust (Self : in out Controlled) is abstract;
-         procedure Finalize (Self : in out Controlled) is abstract;
-
-
-### Examples
-
-A simple example of a ref-counted type:
+Simple example of ref-counted type:
 
 .. code-block:: ada
 
    type T is record
-      Value : Integer;
+      Value     : Integer;
       Ref_Count : Natural := 0;
    end record;
 
@@ -1571,8 +1534,8 @@ A simple example of a ref-counted type:
    type T_Ref is record
       Value : T_Access;
    end record
-      with Adjust   => Adjust,
-         Finalize => Finalize;
+      with Finalizable => (Adjust   => Adjust,
+                           Finalize => Finalize);
 
    procedure Adjust (Ref : in out T_Ref) is
    begin
@@ -1584,8 +1547,7 @@ A simple example of a ref-counted type:
       Def_Ref (Ref.Value);
    end Finalize;
 
-
-A simple file handle that ensures resources are properly released:
+Simple file handle that ensures resources are properly released:
 
 .. code-block:: ada
 
@@ -1595,51 +1557,47 @@ A simple file handle that ensures resources are properly released:
       function Open (Path : String) return File;
 
       procedure Close (F : in out File);
+
    private
       type File is limited record
          Handle : ...;
       end record
-         with Finalize => Close;
+         with Finalizable (Finalize => Close);
+   end P;
 
+Finalizable tagged types
+^^^^^^^^^^^^^^^^^^^^^^^^
 
-Finalized tagged types
-^^^^^^^^^^^^^^^^^^^^^^^
-
-Aspects are inherited by derived types and optionally overriden by those. The
-compiler-generated calls to the user-defined operations are then
-dispatching whenever it makes sense, i.e. the object in question is of
-class-wide type and the class includes at least one finalized tagged type.
-
-However note that for simplicity, it is forbidden to change the value of any of
-those new aspects in derived types.
+The aspect is inherited by derived types and the primitives may be overridden
+by the derivation. The compiler-generated calls to these operations are then
+dispatching whenever it makes sense, i.e. when the object in question is of a
+class-wide type and the class includes at least one finalizable tagged type.
 
 Composite types
 ^^^^^^^^^^^^^^^
 
-When a finalized type is used as a component of a composite type, the latter
-becomes finalized as well. The three primitives are derived automatically
-in order to call the primitives of their components.
-
-If that composite type was already user-finalized, then the compiler
-calls the primitives of the components so as to stay consistent with today's
-controlled types's behavior.
-
-So, ``Initialize`` and ``Adjust`` are called on components before they
-are called on the composite object, but ``Finalize`` is  called on the composite
-object first.
+When a finalizable type is used as a component of a composite type, the latter
+becomes finalizable as well. The three primitives are derived automatically
+in order to call the primitives of their components. The dynamic semantics is
+the same as for controlled components of composite types.
 
 Interoperability with controlled types
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-As a consequence of the redefinition of the ``Controlled`` type as a base type
-with the new aspects defined, interoperability with controlled type naturally
-follows the definition of the above rules. In particular:
+Finalizable types are fully interoperable with controlled types, in particular
+it is possible for a finalizable type to have a controlled component and vice
+versa, but the stricter dynamic semantics, in other words that of controlled
+types, is applied in this case.
 
-* It is possible to have a new finalized type have a controlled type
-  component
-* It is possible to have a controlled type have a finalized type
-  component
+.. _No_Raise_Aspect:
 
+No_Raise aspect
+----------------
+
+The ``No_Raise`` aspect can be applied to a subprogram to declare that this
+subprogram is not expected to raise an exception. Should an exception still
+be raised during the execution of the subprogram, it is caught at the end of
+this execution and ``Program_Error`` is propagated to the caller.
 
 Inference of Dependent Types in Generic Instantiations
 ------------------------------------------------------
