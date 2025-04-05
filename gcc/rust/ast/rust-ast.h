@@ -57,6 +57,11 @@ public:
 
   bool empty () const { return ident.empty (); }
 
+  bool operator== (const Identifier &other) const
+  {
+    return ident == other.ident;
+  }
+
 private:
   std::string ident;
   location_t loc;
