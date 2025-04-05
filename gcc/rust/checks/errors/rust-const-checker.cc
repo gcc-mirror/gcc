@@ -646,6 +646,9 @@ ConstChecker::visit (Enum &enum_item)
 {
   check_default_const_generics (enum_item.get_generic_params (),
 				ConstGenericCtx::Enum);
+
+  for (auto &item : enum_item.get_variants ())
+    item->accept_vis (*this);
 }
 
 void
