@@ -3567,7 +3567,7 @@ cbl_field_t::is_ascii() const {
  * compilation, if it moves off the default, it adjusts only once, and
  * never reverts.
  */
-static const char standard_internal[] = "CP1252//";
+static const char standard_internal[] = "CP1252";
 extern os_locale_t os_locale;
 
 static const char *
@@ -3594,6 +3594,10 @@ cbl_field_t::internalize() {
   static const char *fromcode = guess_encoding();
   static  iconv_t cd = iconv_open(tocode, fromcode);
   static const size_t noconv = size_t(-1);
+
+  if (cd == (iconv_t)-1) {
+    yywarn("failed iconv_open tocode = '%s' fromcode = %s", tocode, fromcode);
+  }
 
   // Sat Mar 16 11:45:08 2024: require temporary environment for testing
   if( getenv( "INTERNALIZE_NO") ) return data.initial;
