@@ -293,6 +293,7 @@ public:
   ForeverStack<Namespace::Labels> labels;
 
   Analysis::Mappings &mappings;
+  BindingContext bindings;
 
   // TODO: Rename
   // TODO: Use newtype pattern for Usage and Definition
