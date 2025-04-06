@@ -15,7 +15,7 @@ mod core {
         struct Formatter; // { dg-warning "is never constructed" }
         struct Error; // { dg-warning "is never constructed" }
 
-        type Result = core::result::Result<(), Error>;
+        type Result = crate::core::result::Result<(), Error>;
 
         trait Debug {
             fn fmt(&self, fmt: &mut Formatter) -> Result;
