@@ -1,3 +1,11 @@
+2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-04-07  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/alloca.c: New.
+	* config/nvptx/t-nvptx (LIB2ADD): Add it.
+
 2025-03-19  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Revert:

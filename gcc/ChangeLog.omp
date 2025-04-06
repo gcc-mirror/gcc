@@ -1,6 +1,11 @@
 2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-04-07  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.opt (-mfake-ptx-alloca): Update.
+
+	Backported from trunk:
 	2025-04-03  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/119573
