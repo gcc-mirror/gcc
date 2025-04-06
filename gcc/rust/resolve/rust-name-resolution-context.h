@@ -156,6 +156,87 @@ public:
   NodeId id;
 };
 
+struct Binding
+{
+  enum class Kind
+  {
+    Product,
+    Or,
+  } kind;
+
+  std::unordered_set<Identifier> set;
+
+  Binding (Binding::Kind kind) : kind (kind) {}
+};
+
+enum class BindingSource
+{
+  Match,
+  Let,
+  For,
+  Param
+};
+
+class BindingContext
+{
+  // FIXME: Use std::vector<std::vector<Binding>> to handle nested patterns
+  std::vector<Binding> bindings;
+
+  BindingSource source;
+
+  bool bind_test (Identifier ident, Binding::Kind kind)
+  {
+    for (auto &bind : bindings)
+      {
+	if (bind.set.find (ident) != bind.set.cend () && bind.kind == kind)
+	  {
+	    return true;
+	  }
+      }
+    return false;
+  }
+
+public:
+  bool and_binded (Identifier ident)
+  {
+    return bind_test (ident, Binding::Kind::Product);
+  }
+
+  bool or_binded (Identifier ident)
+  {
+    return bind_test (ident, Binding::Kind::Or);
+  }
+
+  void insert_ident (Identifier ident) { bindings.back ().set.insert (ident); }
+
+  void push (Binding::Kind kind) { bindings.push_back (Binding (kind)); }
+
+  void new_binding (BindingSource source)
+  {
+    rust_assert (bindings.size () == 0);
+    this->source = source;
+    push (Binding::Kind::Product);
+  }
+
+  void clear ()
+  {
+    rust_assert (bindings.size () == 1);
+    bindings.clear ();
+  }
+
+  void merge ()
+  {
+    auto last_binding = bindings.back ();
+    bindings.pop_back ();
+    for (auto &value : last_binding.set)
+      {
+	bindings.back ().set.insert (value);
+      }
+  }
+
+  BindingSource get_source () const { return source; }
+};
+
 // Now our resolver, which keeps track of all the `ForeverStack`s we could want
 class NameResolutionContext
 {
