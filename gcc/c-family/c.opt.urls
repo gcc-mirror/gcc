@@ -82,6 +82,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wabi)
 Wabi-tag
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wabi-tag)
 
+Wpsabi
+UrlSuffix(gcc/Warning-Options.html#index-Wno-psabi)
+
 Wabsolute-value
 UrlSuffix(gcc/Warning-Options.html#index-Wabsolute-value)
 

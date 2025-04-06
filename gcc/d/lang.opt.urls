@@ -75,6 +75,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wextra) LangUrlSuffix_D(gdc/Warnings.ht
 Wmismatched-special-enum
 LangUrlSuffix_D(gdc/Warnings.html#index-Wmismatched-special-enum)
 
+Wpsabi
+UrlSuffix(gcc/Warning-Options.html#index-Wno-psabi)
+
 Wspeculative
 LangUrlSuffix_D(gdc/Warnings.html#index-Wno-speculative)
 
