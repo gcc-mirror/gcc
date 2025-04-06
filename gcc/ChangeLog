@@ -1,3 +1,12 @@
+2025-04-05  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/112589
+	* common.opt (-fcf-protection): Add documentation string.
+	* doc/invoke.texi (Option Summary): Add entry for -fcf-protection
+	without argument.
+	(Instrumentation Options): Tidy the -fcf-protection entry and
+	and add documention for the form without an argument.
+
 2025-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR lto/119625

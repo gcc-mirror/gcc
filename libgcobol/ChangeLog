@@ -1,3 +1,21 @@
+2025-04-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Makefile.am: Add libgcobol.spec and dependency.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Add libgcobol.spec handling.
+	* libgcobol.spec.in: New file.
+
+2025-04-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* Makefile.am: Use the configured LIBS and extra_ldflags.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Shift configure to use c++. Order tests for tools
+	and environment before other tests.
+
 2025-04-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Makefile.am: Use $(LIBM) to add the math lib when

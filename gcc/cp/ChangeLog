@@ -1,3 +1,15 @@
+2025-04-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118249
+	* constexpr.cc (potential_constant_expression_1)
+	<case INDIRECT_REF>: Remove obsolete *this handling.
+
+2025-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118629
+	* name-lookup.cc (pushdecl_outermost_localscope): Look for an
+	sk_block.
+
 2025-04-04  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/119564

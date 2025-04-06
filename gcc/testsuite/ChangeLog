@@ -1,3 +1,20 @@
+2025-04-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118249
+	* g++.dg/cpp0x/constexpr-reinterpret2.C: Expect error at
+	call site of the non-constexpr functions.
+	* g++.dg/cpp23/constexpr-nonlit12.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ref14.C: New test.
+
+2025-04-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/cobol.exp: Conditionally add a path for libgcobol.spec.
+
+2025-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118629
+	* g++.dg/cpp0x/lambda/lambda-__func__3.C: New test.
+
 2025-04-04  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/119564
