@@ -129,6 +129,54 @@ Late::new_label (Identifier name, NodeId id)
 }
 
 void
+Late::visit (AST::ForLoopExpr &expr)
+{
+  visit_outer_attrs (expr);
+
+  ctx.bindings.new_binding (BindingSource::For);
+
+  visit (expr.get_pattern ());
+
+  ctx.bindings.clear ();
+
+  visit (expr.get_iterator_expr ());
+  visit (expr.get_loop_label ());
+  visit (expr.get_loop_block ());
+}
+
+void
+Late::visit (AST::IfLetExpr &expr)
+{
+  visit_outer_attrs (expr);
+
+  ctx.bindings.new_binding (BindingSource::Let);
+
+  for (auto &pattern : expr.get_patterns ())
+    visit (pattern);
+
+  ctx.bindings.clear ();
+
+  visit (expr.get_value_expr ());
+  visit (expr.get_if_block ());
+}
+
+void
+Late::visit (AST::MatchArm &arm)
+{
+  visit_outer_attrs (arm);
+
+  ctx.bindings.new_binding (BindingSource::Match);
+
+  for (auto &pattern : arm.get_patterns ())
+    visit (pattern);
+
+  ctx.bindings.clear ();
+
+  if (arm.has_match_arm_guard ())
+    visit (arm.get_guard_expr ());
+}
+
+void
 Late::visit (AST::LetStmt &let)
 {
   DefaultASTVisitor::visit_outer_attrs (let);
@@ -138,7 +186,12 @@ Late::visit (AST::LetStmt &let)
   // this makes variable shadowing work properly
   if (let.has_init_expr ())
     visit (let.get_init_expr ());
+
+  ctx.bindings.new_binding (BindingSource::Let);
+
   visit (let.get_pattern ());
+
+  ctx.bindings.clear ();
 
   if (let.has_else_expr ())
     visit (let.get_init_expr ());
@@ -167,9 +220,80 @@ Late::visit (AST::IdentifierPattern &identifier)
   // but values does not allow shadowing... since functions cannot shadow
   // do we insert functions in labels as well?
 
-  // We do want to ignore duplicated data because some situations rely on it.
-  std::ignore = ctx.values.insert_shadowable (identifier.get_ident (),
-					      identifier.get_node_id ());
+  if (ctx.bindings.and_binded (identifier.get_ident ()))
+    {
+      if (ctx.bindings.get_source () == BindingSource::Param)
+	rust_error_at (
+	  identifier.get_locus (), ErrorCode::E0415,
+	  "identifier %qs is bound more than once in the same parameter list",
+	  identifier.as_string ().c_str ());
+      else
+	rust_error_at (
+	  identifier.get_locus (), ErrorCode::E0416,
+	  "identifier %qs is bound more than once in the same pattern",
+	  identifier.as_string ().c_str ());
+      return;
+    }
+
+  ctx.bindings.insert_ident (identifier.get_ident ());
+
+  if (ctx.bindings.or_binded (identifier.get_ident ()))
+    {
+      // FIXME: map usage instead
+      std::ignore = ctx.values.insert_shadowable (identifier.get_ident (),
+						  identifier.get_node_id ());
+    }
+  else
+    {
+      // We do want to ignore duplicated data because some situations rely on
+      // it.
+      std::ignore = ctx.values.insert_shadowable (identifier.get_ident (),
+						  identifier.get_node_id ());
+    }
+}
+
+void
+Late::visit (AST::AltPattern &pattern)
+{
+  ctx.bindings.push (Binding::Kind::Or);
+  for (auto &alt : pattern.get_alts ())
+    {
+      ctx.bindings.push (Binding::Kind::Product);
+      visit (alt);
+      ctx.bindings.merge ();
+    }
+  ctx.bindings.merge ();
+}
+
+void
+Late::visit (AST::Function &function)
+{
+  auto def_fn = [this, &function] () {
+    visit_outer_attrs (function);
+    visit (function.get_visibility ());
+    visit (function.get_qualifiers ());
+    for (auto &generic : function.get_generic_params ())
+      visit (generic);
+
+    // We only care about params
+    ctx.bindings.new_binding (BindingSource::Param);
+
+    for (auto &param : function.get_function_params ())
+      visit (param);
+
+    ctx.bindings.clear ();
+
+    // Back to regular visit
+
+    if (function.has_return_type ())
+      visit (function.get_return_type ());
+    if (function.has_where_clause ())
+      visit (function.get_where_clause ());
+    if (function.has_body ())
+      visit (*function.get_definition ());
+  };
+
+  ctx.scoped (Rib::Kind::Function, function.get_node_id (), def_fn);
 }
 
 void
@@ -525,14 +649,35 @@ void
 Late::visit (AST::ClosureExprInner &closure)
 {
   add_captures (closure, ctx);
-  DefaultResolver::visit (closure);
+
+  visit_outer_attrs (closure);
+
+  ctx.bindings.new_binding (BindingSource::Param);
+
+  for (auto &param : closure.get_params ())
+    visit (param);
+
+  ctx.bindings.clear ();
+
+  visit (closure.get_definition_expr ());
 }
 
 void
 Late::visit (AST::ClosureExprInnerTyped &closure)
 {
   add_captures (closure, ctx);
-  DefaultResolver::visit (closure);
+
+  visit_outer_attrs (closure);
+
+  ctx.bindings.new_binding (BindingSource::Param);
+
+  for (auto &param : closure.get_params ())
+    visit (param);
+
+  ctx.bindings.clear ();
+
+  visit (closure.get_return_type ());
+  visit (closure.get_definition_block ());
 }
 
 } // namespace Resolver2_0
