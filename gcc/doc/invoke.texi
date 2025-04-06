@@ -10109,8 +10109,9 @@ a warning.)
 @opindex Wno-aggressive-loop-optimizations
 @opindex Waggressive-loop-optimizations
 @item -Wno-aggressive-loop-optimizations
-Warn if in a loop with constant number of iterations the compiler detects
-undefined behavior in some statement during one or more of the iterations.
+Do not warn if the compiler detects undefined behavior in a loop with
+a constant number of iterations.  @option{-Waggressive-loop-optimizations}
+is enabled by default.
 
 @opindex Wno-attributes
 @opindex Wattributes
