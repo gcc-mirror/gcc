@@ -17741,13 +17741,37 @@ maybe_dependent_member_ref (tree t, tree args, tsubst_flags_t complain,
 
   if (TYPE_P (t))
     {
+      bool stripped = false;
       if (typedef_variant_p (t))
-	t = strip_typedefs (t);
-      tree decl = TYPE_NAME (t);
+	{
+	  /* Since this transformation may undesirably turn a deduced context
+	     into a non-deduced one, we'd rather strip typedefs than perform
+	     the transformation.  */
+	  tree u = strip_typedefs (t);
+	  if (u != t)
+	    {
+	      stripped = true;
+	      t = u;
+	    }
+	}
+      decl = TYPE_NAME (t);
       if (decl)
 	decl = maybe_dependent_member_ref (decl, args, complain, in_decl);
       if (!decl)
-	return NULL_TREE;
+	{
+	  if (stripped)
+	    /* The original type was an alias from the current instantiation
+	       which we stripped to something outside it.  At this point we
+	       need to commit to using the stripped type rather than deferring
+	       to the caller (which would use the original type), to ensure
+	       eligible bits of the stripped type get transformed.  */
+	    return tsubst (t, args, complain, in_decl);
+	  else
+	    /* The original type wasn't a typedef, and we decided it doesn't
+	       need rewriting, so just let the caller (tsubst) substitute it
+	       normally.  */
+	    return NULL_TREE;
+	}
       return cp_build_qualified_type (TREE_TYPE (decl), cp_type_quals (t),
 				      complain);
     }
