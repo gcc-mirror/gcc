@@ -406,7 +406,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wparentheses  -Wno-pedantic-ms-format
 -Wpointer-arith  -Wno-pointer-compare  -Wno-pointer-to-int-cast
 -Wno-pragmas  -Wno-pragma-once-outside-header  -Wno-prio-ctor-dtor
--Wredundant-decls  -Wrestrict  -Wno-return-local-addr  -Wreturn-type
+-Wno-psabi
+-Wredundant-decls  -Wrestrict
+-Wno-return-local-addr  -Wreturn-type
 -Wno-scalar-storage-order  -Wsequence-point
 -Wshadow  -Wshadow=global  -Wshadow=local  -Wshadow=compatible-local
 -Wno-shadow-ivar
@@ -6497,7 +6499,8 @@ of a derived class.
 
 Warn about code affected by ABI changes.  This includes code that may
 not be compatible with the vendor-neutral C++ ABI as well as the psABI
-for the particular target.
+for the particular target.  The latter warnings are also controlled
+separately by @option{-Wpsabi}, which is implied by @option{-Wabi}.
 
 Since G++ now defaults to updating the ABI with each major release,
 normally @option{-Wabi} warns only about C++ ABI compatibility
@@ -6600,27 +6603,21 @@ This was fixed in @option{-fabi-version=10}, the default for GCC 6.1.
 
 @end itemize
 
-This option also enables warnings about psABI-related changes.
-The known psABI changes at this point include:
+@opindex Wpsabi
+@opindex Wno-psabi
+@item -Wpsabi @r{(C, Objective-C, C++ and Objective-C++ only)}
 
-@itemize @bullet
+@option{-Wpsabi} enables warnings about processor-specific ABI
+changes, such as changes in alignment requirements or how function
+arguments are passed.  On several targets, including AArch64, ARM,
+x86, MIPS, RS6000/PowerPC, and S/390, these details have changed
+between different versions of GCC and/or different versions of the C
+or C++ language standards in ways that affect binary compatibility of
+compiled code.  With @option{-Wpsabi}, GCC can detect potentially
+incompatible usages and warn you about them.
 
-@item
-For SysV/x86-64, unions with @code{long double} members are
-passed in memory as specified in psABI.  Prior to GCC 4.4, this was not
-the case.  For example:
-
-@smallexample
-union U @{
-  long double ld;
-  int i;
-@};
-@end smallexample
-
-@noindent
-@code{union U} is now always passed in memory.
-
-@end itemize
+@option{-Wpsabi} is enabled by default, and is also implied by
+@option{-Wabi}.
 
 @opindex Wchanges-meaning
 @opindex Wno-changes-meaning
@@ -32452,18 +32449,18 @@ and for AIX: @samp{vec-extabi}, @samp{vec-default}@.
 Change the current ABI to use IBM extended-precision long double.
 This is not likely to work if your system defaults to using IEEE
 extended-precision long double.  If you change the long double type
-from IEEE extended-precision, the compiler will issue a warning unless
-you use the @option{-Wno-psabi} option.  Requires @option{-mlong-double-128}
-to be enabled.
+from IEEE extended-precision, the compiler issues a warning unless
+you use the @option{-Wno-psabi} option (@pxref{Warning Options}).
+Requires @option{-mlong-double-128} to be enabled.
 
 @opindex mabi=ieeelongdouble
 @item -mabi=ieeelongdouble
 Change the current ABI to use IEEE extended-precision long double.
 This is not likely to work if your system defaults to using IBM
 extended-precision long double.  If you change the long double type
-from IBM extended-precision, the compiler will issue a warning unless
-you use the @option{-Wno-psabi} option.  Requires @option{-mlong-double-128}
-to be enabled.
+from IBM extended-precision, the compiler issues a warning unless
+you use the @option{-Wno-psabi} option (@pxref{Warning Options}).
+Requires @option{-mlong-double-128} to be enabled.
 
 @opindex mabi=elfv1
 @item -mabi=elfv1
