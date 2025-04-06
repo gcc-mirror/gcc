@@ -395,6 +395,7 @@ ENDF  __mulhi3
 
 #if defined (L_umulhisi3)
 DEFUN __umulhisi3
+#ifndef __AVR_TINY__
     wmov    B0, 24
     ;; Zero-extend B
     clr     B2
@@ -402,11 +403,48 @@ DEFUN __umulhisi3
     ;; Zero-extend A
     wmov    A2, B2
     XJMP    __mulsi3
+#else
+    ;; Push zero-extended R24
+    push    __zero_reg__
+    push    __zero_reg__
+    push    r25
+    push    r24
+    ;; Zero-extend R22
+    clr     R24
+    clr     R25
+    XCALL   __mulsi3
+    pop     __tmp_reg__
+    pop     __tmp_reg__
+    pop     __tmp_reg__
+    pop     __tmp_reg__
+    ret
+#endif /* AVR_TINY? */
 ENDF __umulhisi3
 #endif /* L_umulhisi3 */
 
 #if defined (L_mulhisi3)
 DEFUN __mulhisi3
+#ifdef __AVR_TINY__
+    ;; Push sign-extended R24
+    mov     __tmp_reg__, r25
+    lsl     __tmp_reg__
+    sbc     __tmp_reg__, __tmp_reg__
+    push    __tmp_reg__
+    push    __tmp_reg__
+    push    r25
+    push    r24
+    ;;  Sign-extend R22
+    mov     r24, r23
+    lsl     r24
+    sbc     r24, r24
+    sbc     r25, r25
+    XCALL   __mulsi3
+    pop     __tmp_reg__
+    pop     __tmp_reg__
+    pop     __tmp_reg__
+    pop     __tmp_reg__
+    ret
+#else
     wmov    B0, 24
     ;; Sign-extend B
     lsl     r25
@@ -418,7 +456,7 @@ DEFUN __mulhisi3
     sbrc    A1, 7
     com     A2
     mov     A3, A2
-    XJMP __mulsi3
+    XJMP    __mulsi3
 #else /*  no __AVR_ERRATA_SKIP_JMP_CALL__ */
     ;; Zero-extend A and __mulsi3 will run at least twice as fast
     ;; compared to a sign-extended A.
@@ -434,6 +472,7 @@ DEFUN __mulhisi3
     sbc     CC3, B1
     XJMP __mulsi3_helper
 #endif /*  __AVR_ERRATA_SKIP_JMP_CALL__ */
+#endif /* AVR_TINY? */
 ENDF __mulhisi3
 #endif /* L_mulhisi3 */
 
