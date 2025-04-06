@@ -133,11 +133,11 @@ Late::visit (AST::ForLoopExpr &expr)
 {
   visit_outer_attrs (expr);
 
-  ctx.bindings.new_binding (BindingSource::For);
+  ctx.bindings.enter (BindingSource::For);
 
   visit (expr.get_pattern ());
 
-  ctx.bindings.clear ();
+  ctx.bindings.exit ();
 
   visit (expr.get_iterator_expr ());
   visit (expr.get_loop_label ());
@@ -149,12 +149,12 @@ Late::visit (AST::IfLetExpr &expr)
 {
   visit_outer_attrs (expr);
 
-  ctx.bindings.new_binding (BindingSource::Let);
+  ctx.bindings.enter (BindingSource::Let);
 
   for (auto &pattern : expr.get_patterns ())
     visit (pattern);
 
-  ctx.bindings.clear ();
+  ctx.bindings.exit ();
 
   visit (expr.get_value_expr ());
   visit (expr.get_if_block ());
@@ -165,12 +165,12 @@ Late::visit (AST::MatchArm &arm)
 {
   visit_outer_attrs (arm);
 
-  ctx.bindings.new_binding (BindingSource::Match);
+  ctx.bindings.enter (BindingSource::Match);
 
   for (auto &pattern : arm.get_patterns ())
     visit (pattern);
 
-  ctx.bindings.clear ();
+  ctx.bindings.exit ();
 
   if (arm.has_match_arm_guard ())
     visit (arm.get_guard_expr ());
@@ -187,11 +187,11 @@ Late::visit (AST::LetStmt &let)
   if (let.has_init_expr ())
     visit (let.get_init_expr ());
 
-  ctx.bindings.new_binding (BindingSource::Let);
+  ctx.bindings.enter (BindingSource::Let);
 
   visit (let.get_pattern ());
 
-  ctx.bindings.clear ();
+  ctx.bindings.exit ();
 
   if (let.has_else_expr ())
     visit (let.get_init_expr ());
@@ -220,9 +220,9 @@ Late::visit (AST::IdentifierPattern &identifier)
   // but values does not allow shadowing... since functions cannot shadow
   // do we insert functions in labels as well?
 
-  if (ctx.bindings.and_binded (identifier.get_ident ()))
+  if (ctx.bindings.peek ().is_and_bound (identifier.get_ident ()))
     {
-      if (ctx.bindings.get_source () == BindingSource::Param)
+      if (ctx.bindings.peek ().get_source () == BindingSource::Param)
 	rust_error_at (
 	  identifier.get_locus (), ErrorCode::E0415,
 	  "identifier %qs is bound more than once in the same parameter list",
@@ -235,9 +235,9 @@ Late::visit (AST::IdentifierPattern &identifier)
       return;
     }
 
-  ctx.bindings.insert_ident (identifier.get_ident ());
+  ctx.bindings.peek ().insert_ident (identifier.get_ident ());
 
-  if (ctx.bindings.or_binded (identifier.get_ident ()))
+  if (ctx.bindings.peek ().is_or_bound (identifier.get_ident ()))
     {
       // FIXME: map usage instead
       std::ignore = ctx.values.insert_shadowable (identifier.get_ident (),
@@ -255,14 +255,14 @@ Late::visit (AST::IdentifierPattern &identifier)
 void
 Late::visit (AST::AltPattern &pattern)
 {
-  ctx.bindings.push (Binding::Kind::Or);
+  ctx.bindings.peek ().push (Binding::Kind::Or);
   for (auto &alt : pattern.get_alts ())
     {
-      ctx.bindings.push (Binding::Kind::Product);
+      ctx.bindings.peek ().push (Binding::Kind::Product);
       visit (alt);
-      ctx.bindings.merge ();
+      ctx.bindings.peek ().merge ();
     }
-  ctx.bindings.merge ();
+  ctx.bindings.peek ().merge ();
 }
 
 void
@@ -276,12 +276,12 @@ Late::visit (AST::Function &function)
       visit (generic);
 
     // We only care about params
-    ctx.bindings.new_binding (BindingSource::Param);
+    ctx.bindings.enter (BindingSource::Param);
 
     for (auto &param : function.get_function_params ())
       visit (param);
 
-    ctx.bindings.clear ();
+    ctx.bindings.exit ();
 
     // Back to regular visit
 
@@ -652,12 +652,12 @@ Late::visit (AST::ClosureExprInner &closure)
 
   visit_outer_attrs (closure);
 
-  ctx.bindings.new_binding (BindingSource::Param);
+  ctx.bindings.enter (BindingSource::Param);
 
   for (auto &param : closure.get_params ())
     visit (param);
 
-  ctx.bindings.clear ();
+  ctx.bindings.exit ();
 
   visit (closure.get_definition_expr ());
 }
@@ -669,12 +669,12 @@ Late::visit (AST::ClosureExprInnerTyped &closure)
 
   visit_outer_attrs (closure);
 
-  ctx.bindings.new_binding (BindingSource::Param);
+  ctx.bindings.enter (BindingSource::Param);
 
   for (auto &param : closure.get_params ())
     visit (param);
 
-  ctx.bindings.clear ();
+  ctx.bindings.exit ();
 
   visit (closure.get_return_type ());
   visit (closure.get_definition_block ());
