@@ -71,7 +71,14 @@ public:
     return last;
   }
 
-  const T &peek ()
+  const T &peek () const
+  {
+    rust_assert (!stack.empty ());
+
+    return stack.back ();
+  }
+
+  T &peek ()
   {
     rust_assert (!stack.empty ());
 

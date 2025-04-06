@@ -23,6 +23,7 @@
 #include "rust-forever-stack.h"
 #include "rust-hir-map.h"
 #include "rust-rib.h"
+#include "rust-stacked-contexts.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -169,72 +170,47 @@ struct Binding
   Binding (Binding::Kind kind) : kind (kind) {}
 };
 
+/**
+ * Used to identify the source of a binding, and emit the correct error message.
+ */
 enum class BindingSource
 {
   Match,
   Let,
   For,
+  /* Closure param or function param */
   Param
 };
 
-class BindingContext
+class BindingLayer
 {
-  // FIXME: Use std::vector<std::vector<Binding>> to handle nested patterns
+  BindingSource source;
   std::vector<Binding> bindings;
 
-  BindingSource source;
-
-  bool bind_test (Identifier ident, Binding::Kind kind)
-  {
-    for (auto &bind : bindings)
-      {
-	if (bind.set.find (ident) != bind.set.cend () && bind.kind == kind)
-	  {
-	    return true;
-	  }
-      }
-    return false;
-  }
+  bool bind_test (Identifier ident, Binding::Kind kind);
 
 public:
-  bool and_binded (Identifier ident)
-  {
-    return bind_test (ident, Binding::Kind::Product);
-  }
+  void push (Binding::Kind kind);
 
-  bool or_binded (Identifier ident)
-  {
-    return bind_test (ident, Binding::Kind::Or);
-  }
+  BindingLayer (BindingSource source);
 
-  void insert_ident (Identifier ident) { bindings.back ().set.insert (ident); }
+  /**
+   * Identifies if the identifier has been used in a product binding context.
+   * eg. `let (a, a) = test();`
+   */
+  bool is_and_bound (Identifier ident);
 
-  void push (Binding::Kind kind) { bindings.push_back (Binding (kind)); }
+  /**
+   * Identifies if the identifier has been used in a or context.
+   * eg. `let (a, 1) | (a, 2) = test()`
+   */
+  bool is_or_bound (Identifier ident);
 
-  void new_binding (BindingSource source)
-  {
-    rust_assert (bindings.size () == 0);
-    this->source = source;
-    push (Binding::Kind::Product);
-  }
+  void insert_ident (Identifier ident);
 
-  void clear ()
-  {
-    rust_assert (bindings.size () == 1);
-    bindings.clear ();
-  }
+  void merge ();
 
-  void merge ()
-  {
-    auto last_binding = bindings.back ();
-    bindings.pop_back ();
-    for (auto &value : last_binding.set)
-      {
-	bindings.back ().set.insert (value);
-      }
-  }
-
-  BindingSource get_source () const { return source; }
+  BindingSource get_source () const;
 };
 
 // Now our resolver, which keeps track of all the `ForeverStack`s we could want
@@ -293,7 +269,7 @@ public:
   ForeverStack<Namespace::Labels> labels;
 
   Analysis::Mappings &mappings;
-  BindingContext bindings;
+  StackedContexts<BindingLayer> bindings;
 
   // TODO: Rename
   // TODO: Use newtype pattern for Usage and Definition
