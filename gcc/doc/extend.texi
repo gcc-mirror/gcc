@@ -13814,7 +13814,13 @@ The C99 standard added @code{_Bool} as a C language keyword naming the
 boolean type.  As an extension, GNU C also recognizes @code{_Bool} in
 C90 mode as well as with @option{-std=c99} and later.
 
-GNU C++ does not support the @code{_Bool} keyword.
+C23 added @code{bool} as the preferred name of the boolean type, but
+@code{_Bool} also remains a standard keyword in the language and is
+supported as such by GCC with @option{-std=c23}.
+
+GNU C++ does not support @code{_Bool} as a keyword, but including
+@code{<stdbool.h>} defines it as a macro in terms of standard C++'s
+@code{bool} type.
 
 @node Variadic Macros
 @subsection Macros with a Variable Number of Arguments.
