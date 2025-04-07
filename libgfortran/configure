@@ -30288,6 +30288,10 @@ else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+    #ifdef __loongarch__
+    #error On LoongArch we should use long double instead; __float128 is only for porting existing code easier.
+    #endif
+
     _Float128 foo (_Float128 x)
     {
      _Complex _Float128 z1, z2;
@@ -30340,6 +30344,10 @@ else
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+
+    #ifdef __loongarch__
+    #error On LoongArch we should use long double instead; __float128 is only for porting existing code easier.
+    #endif
 
     _Float128 foo (_Float128 x)
     {
