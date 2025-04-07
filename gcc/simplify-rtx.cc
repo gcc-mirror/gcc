@@ -6657,15 +6657,20 @@ simplify_const_relational_operation (enum rtx_code code,
      we do not know the signedness of the operation on either the left or
      the right hand side of the comparison.  */
 
-  if (INTEGRAL_MODE_P (mode) && trueop1 != const0_rtx
+  if (INTEGRAL_MODE_P (mode)
+      && trueop1 != CONST0_RTX (mode)
       && (code == EQ || code == NE)
-      && ! ((REG_P (op0) || CONST_INT_P (trueop0))
-	    && (REG_P (op1) || CONST_INT_P (trueop1)))
+      && ! ((REG_P (op0)
+	     || CONST_SCALAR_INT_P (trueop0)
+	     || CONST_VECTOR_P (trueop0))
+	    && (REG_P (op1)
+		|| CONST_SCALAR_INT_P (trueop1)
+		|| CONST_VECTOR_P (trueop1)))
       && (tem = simplify_binary_operation (MINUS, mode, op0, op1)) != 0
       /* We cannot do this if tem is a nonzero address.  */
       && ! nonzero_address_p (tem))
     return simplify_const_relational_operation (signed_condition (code),
-						mode, tem, const0_rtx);
+						mode, tem, CONST0_RTX (mode));
 
   if (! HONOR_NANS (mode) && code == ORDERED)
     return const_true_rtx;
