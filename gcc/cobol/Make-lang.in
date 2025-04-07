@@ -40,6 +40,8 @@ GCOBOL_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcobol|sed '$(
 GCOBC_INSTALL_NAME := $(shell echo gcobc|sed '$(program_transform_name)')
 GCOBC_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcobc|sed '$(program_transform_name)')
 
+GCOBOL_HTML_FILES = $(addprefix $(build_htmldir)/gcobol/,gcobol.html gcobol-io.html)
+
 cobol: cobol1$(exeext)
 cobol.serial = cobol1$(exeext)
 .PHONY: cobol
@@ -303,8 +305,8 @@ cobol.install-pdf: installdirs gcobol.pdf gcobol-io.pdf
 
 cobol.install-plugin:
 
-cobol.install-html: installdirs gcobol.html gcobol-io.html
-	$(INSTALL_DATA) gcobol.html gcobol-io.html $(DESTDIR)$(htmldir)/
+cobol.install-html: installdirs $(GCOBOL_HTML_FILES)
+	$(INSTALL_DATA) $(GCOBOL_HTML_FILES) $(DESTDIR)$(htmldir)/
 
 cobol.info:
 cobol.srcinfo:
@@ -323,14 +325,16 @@ gcobol-io.pdf: $(srcdir)/cobol/gcobol.3
 	groff -mdoc -T pdf  $^ > $@~
 	@mv $@~ $@
 
-cobol.html: gcobol.html gcobol-io.html
-cobol.srchtml: gcobol.html gcobol-io.html
+cobol.html: $(GCOBOL_HTML_FILES)
+cobol.srchtml: $(GCOBOL_HTML_FILES)
 	ln $^ $(srcdir)/cobol/
 
-gcobol.html: $(srcdir)/cobol/gcobol.1
+$(build_htmldir)/gcobol/gcobol.html: $(srcdir)/cobol/gcobol.1
+	$(mkinstalldirs) $(build_htmldir)/gcobol
 	mandoc -T html $^ > $@~
 	@mv $@~ $@
-gcobol-io.html: $(srcdir)/cobol/gcobol.3
+$(build_htmldir)/gcobol/gcobol-io.html: $(srcdir)/cobol/gcobol.3
+	$(mkinstalldirs) $(build_htmldir)/gcobol
 	mandoc -T html $^ > $@~
 	@mv $@~ $@
 
