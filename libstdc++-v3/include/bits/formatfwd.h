@@ -67,5 +67,4 @@ namespace __format
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // __glibcxx_format
-#pragma GCC diagnostic pop
 #endif // _GLIBCXX_FORMAT_FWD_H
