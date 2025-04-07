@@ -50,6 +50,21 @@ typedef struct caf_single_token *caf_single_token_t;
 #define TOKEN(X) ((caf_single_token_t) (X))
 #define MEMTOK(X) ((caf_single_token_t) (X))->memptr
 
+struct caf_single_team
+{
+  struct caf_single_team *parent;
+  int team_no;
+  struct coarray_allocated
+  {
+    struct coarray_allocated *next;
+    caf_single_token_t token;
+  } *allocated;
+};
+typedef struct caf_single_team *caf_single_team_t;
+/* This points to the most current team.  */
+static caf_single_team_t caf_team_stack = NULL, caf_initial_team;
+static caf_single_team_t caf_teams_formed = NULL;
+
 /* Single-image implementation of the CAF library.
    Note: For performance reasons -fcoarry=single should be used
    rather than this library.  */
@@ -125,13 +140,39 @@ caf_internal_error (const char *msg, int *stat, char *errmsg,
   va_end (args);
 }
 
+static void
+init_caf_team_stack (void)
+{
+  caf_initial_team = caf_team_stack
+    = (caf_single_team_t) calloc (1, sizeof (struct caf_single_team));
+  caf_initial_team->team_no = -1;
+}
 
 void
 _gfortran_caf_init (int *argc __attribute__ ((unused)),
 		    char ***argv __attribute__ ((unused)))
 {
+  if (likely (!caf_team_stack))
+    init_caf_team_stack ();
 }
 
+static void
+free_team_list (caf_single_team_t l)
+{
+  while (l != NULL)
+    {
+      caf_single_team_t p = l->parent;
+      struct coarray_allocated *ca = l->allocated;
+      while (ca)
+	{
+	  struct coarray_allocated *nca = ca->next;
+	  free (ca);
+	  ca = nca;
+	}
+      free (l);
+      l = p;
+    }
+}
 
 void
 _gfortran_caf_finalize (void)
@@ -146,6 +187,11 @@ _gfortran_caf_finalize (void)
       free (caf_static_list);
       caf_static_list = tmp;
     }
+
+  free_team_list (caf_team_stack);
+  caf_initial_team = caf_team_stack = NULL;
+  free_team_list (caf_teams_formed);
+  caf_teams_formed = NULL;
 }
 
 
@@ -206,6 +252,8 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
   single_token->owning_memory = type != CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY;
   single_token->desc = GFC_DESCRIPTOR_RANK (data) > 0 ? data : NULL;
 
+  if (unlikely (!caf_team_stack))
+    init_caf_team_stack ();
 
   if (stat)
     *stat = 0;
@@ -219,6 +267,20 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
       tmp->token = *token;
       caf_static_list = tmp;
     }
+  else
+    {
+      struct coarray_allocated *ca = caf_team_stack->allocated;
+      for (; ca && ca->token != single_token; ca = ca->next)
+	;
+      if (!ca)
+	{
+	  ca = (struct coarray_allocated *) malloc (
+	    sizeof (struct coarray_allocated));
+	  *ca = (struct coarray_allocated) {caf_team_stack->allocated,
+					    single_token};
+	  caf_team_stack->allocated = ca;
+	}
+    }
   GFC_DESCRIPTOR_DATA (data) = local;
 }
 
@@ -231,10 +293,30 @@ _gfortran_caf_deregister (caf_token_t *token, caf_deregister_t type, int *stat,
   caf_single_token_t single_token = TOKEN (*token);
 
   if (single_token->owning_memory && single_token->memptr)
-    free (single_token->memptr);
+    {
+      free (single_token->memptr);
+      if (single_token->desc)
+	GFC_DESCRIPTOR_DATA (single_token->desc) = NULL;
+    }
 
   if (type != CAF_DEREGTYPE_COARRAY_DEALLOCATE_ONLY)
     {
+      struct coarray_allocated *ca = caf_team_stack->allocated;
+      if (ca && caf_team_stack->allocated->token == single_token)
+	caf_team_stack->allocated = ca->next;
+      else
+	{
+	  struct coarray_allocated *pca = NULL;
+	  for (; ca && ca->token != single_token; pca = ca, ca = ca->next)
+	    ;
+	  if (!ca)
+	    caf_runtime_error (
+	      "Coarray token to be freeed is not in current team %d", type);
+	  /* Unhook found coarray_allocated node from list...  */
+	  pca->next = ca->next;
+	}
+      /* ... and free.  */
+      free (ca);
       free (TOKEN (*token));
       *token = NULL;
     }
@@ -599,11 +681,10 @@ _gfortran_caf_is_present_on_remote (caf_token_t token, const int image_index,
   int32_t result;
   struct caf_single_token cb_token = {add_data, NULL, false};
 
-
-  accessor_hash_table[present_index].u.is_present (add_data, &image_index,
-						   &result,
-						   single_token->memptr,
-						   &cb_token, 0);
+  accessor_hash_table[present_index].u.is_present (
+    add_data, &image_index, &result,
+    single_token->desc ? single_token->desc : (void *) &single_token->memptr,
+    &cb_token, 0);
 
   return result;
 }
@@ -922,4 +1003,84 @@ void _gfortran_caf_random_init (bool repeatable, bool image_distinct)
   /* In a single image implementation always forward to the gfortran
      routine.  */
   _gfortran_random_init (repeatable, image_distinct, 1);
+}
+
+void
+_gfortran_caf_form_team (int team_no, caf_team_t *team,
+			 int *new_index __attribute__ ((unused)), int *stat,
+			 char *errmsg __attribute__ ((unused)),
+			 size_t errmsg_len __attribute__ ((unused)))
+{
+  const char alloc_fail_msg[] = "Failed to allocate team";
+  caf_single_team_t t;
+  if (stat)
+    *stat = 0;
+
+  *team = malloc (sizeof (struct caf_single_team));
+  if (unlikely (*team == NULL))
+    {
+      caf_internal_error (alloc_fail_msg, stat, errmsg, errmsg_len);
+      return;
+    }
+  t = *((caf_single_team_t *) team);
+  t->parent = caf_teams_formed;
+  t->team_no = team_no;
+  t->allocated = NULL;
+  caf_teams_formed = t;
+}
+
+void
+_gfortran_caf_change_team (caf_team_t team, int *stat,
+			   char *errmsg __attribute__ ((unused)),
+			   size_t errmsg_len __attribute__ ((unused)))
+{
+  caf_single_team_t t = (caf_single_team_t) team;
+
+  if (stat)
+    *stat = 0;
+
+  if (t == caf_teams_formed)
+    caf_teams_formed = t->parent;
+  else
+    for (caf_single_team_t p = caf_teams_formed; p; p = p->parent)
+      if (p->parent == t)
+	{
+	  p->parent = t->parent;
+	  break;
+	}
+
+  t->parent = caf_team_stack;
+  caf_team_stack = t;
+}
+
+void
+_gfortran_caf_end_team (int *stat, char *errmsg, size_t errmsg_len)
+{
+  caf_single_team_t t = caf_team_stack;
+
+  if (stat)
+    *stat = 0;
+
+  caf_team_stack = caf_team_stack->parent;
+  for (struct coarray_allocated *ca = t->allocated; ca;)
+    {
+      struct coarray_allocated *nca = ca->next;
+      _gfortran_caf_deregister ((caf_token_t *) &ca->token,
+				CAF_DEREGTYPE_COARRAY_DEALLOCATE_ONLY, stat,
+				errmsg, errmsg_len);
+      free (ca);
+      ca = nca;
+    }
+  t->allocated = NULL;
+  t->parent = caf_teams_formed;
+  caf_teams_formed = t;
+}
+
+void
+_gfortran_caf_sync_team (caf_team_t team __attribute__ ((unused)), int *stat,
+			 char *errmsg __attribute__ ((unused)),
+			 size_t errmsg_len __attribute__ ((unused)))
+{
+  if (stat)
+    *stat = 0;
 }

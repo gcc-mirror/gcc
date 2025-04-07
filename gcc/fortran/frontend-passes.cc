@@ -5340,6 +5340,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 	    {
 
 	    case EXEC_BLOCK:
+	    case EXEC_CHANGE_TEAM:
 	      WALK_SUBCODE (co->ext.block.ns->code);
 	      if (co->ext.block.assoc)
 		{

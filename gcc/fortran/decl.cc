@@ -8459,6 +8459,7 @@ gfc_match_end (gfc_statement *st)
     {
     case COMP_ASSOCIATE:
     case COMP_BLOCK:
+    case COMP_CHANGE_TEAM:
       if (startswith (block_name, "block@"))
 	block_name = NULL;
       break;
@@ -8515,7 +8516,7 @@ gfc_match_end (gfc_statement *st)
     case COMP_SUBROUTINE:
       *st = ST_END_SUBROUTINE;
       if (!abbreviated_modproc_decl)
-      target = " subroutine";
+	target = " subroutine";
       else
 	target = " procedure";
       eos_ok = !contained_procedure ();
@@ -8524,7 +8525,7 @@ gfc_match_end (gfc_statement *st)
     case COMP_FUNCTION:
       *st = ST_END_FUNCTION;
       if (!abbreviated_modproc_decl)
-      target = " function";
+	target = " function";
       else
 	target = " procedure";
       eos_ok = !contained_procedure ();
@@ -8646,6 +8647,12 @@ gfc_match_end (gfc_statement *st)
       eos_ok = 0;
       break;
 
+    case COMP_CHANGE_TEAM:
+      *st = ST_END_TEAM;
+      target = " team";
+      eos_ok = 0;
+      break;
+
     default:
       gfc_error ("Unexpected END statement at %C");
       goto cleanup;
@@ -8683,14 +8690,19 @@ gfc_match_end (gfc_statement *st)
   else
     got_matching_end = true;
 
+  if (*st == ST_END_TEAM && gfc_match_end_team () == MATCH_ERROR)
+    /* Emit errors of stat and errmsg parsing now to finish the block and
+       continue analysis of compilation unit.  */
+    gfc_error_check ();
+
   old_loc = gfc_current_locus;
   /* If we're at the end, make sure a block name wasn't required.  */
   if (gfc_match_eos () == MATCH_YES)
     {
-
       if (*st != ST_ENDDO && *st != ST_ENDIF && *st != ST_END_SELECT
 	  && *st != ST_END_FORALL && *st != ST_END_WHERE && *st != ST_END_BLOCK
-	  && *st != ST_END_ASSOCIATE && *st != ST_END_CRITICAL)
+	  && *st != ST_END_ASSOCIATE && *st != ST_END_CRITICAL
+	  && *st != ST_END_TEAM)
 	return MATCH_YES;
 
       if (!block_name)

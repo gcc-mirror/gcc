@@ -792,38 +792,42 @@ gfc_trans_form_team (gfc_code *code)
 {
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
-      gfc_se se;
-      gfc_se argse1, argse2;
-      tree team_id, team_type, tmp;
+      gfc_se se, argse;
+      tree team_id, team_type, new_index, stat, errmsg, errmsg_len, tmp;
 
       gfc_init_se (&se, NULL);
-      gfc_init_se (&argse1, NULL);
-      gfc_init_se (&argse2, NULL);
-      gfc_start_block (&se.pre);
+      gfc_init_se (&argse, NULL);
 
-      gfc_conv_expr_val (&argse1, code->expr1);
-      gfc_conv_expr_val (&argse2, code->expr2);
-      team_id = fold_convert (integer_type_node, argse1.expr);
-      team_type = gfc_build_addr_expr (ppvoid_type_node, argse2.expr);
+      gfc_conv_expr_val (&argse, code->expr1);
+      team_id = fold_convert (integer_type_node, argse.expr);
+      gfc_conv_expr_reference (&argse, code->expr2);
+      team_type = argse.expr;
 
-      gfc_add_block_to_block (&se.pre, &argse1.pre);
-      gfc_add_block_to_block (&se.pre, &argse2.pre);
-      tmp = build_call_expr_loc (input_location,
-				 gfor_fndecl_caf_form_team, 3,
-				 team_id, team_type,
-				 integer_zero_node);
+      /* NEW_INDEX=.  */
+      if (code->expr3)
+	{
+	  gfc_conv_expr_reference (&argse, code->expr3);
+	  new_index = argse.expr;
+	}
+      else
+	new_index = null_pointer_node;
+
+      gfc_add_block_to_block (&se.post, &argse.post);
+
+      gfc_trans_sync_stat (&code->ext.sync_stat, &se, &stat, &errmsg,
+			   &errmsg_len);
+
+      gfc_add_block_to_block (&se.pre, &argse.pre);
+
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_form_team, 6,
+				 team_id, team_type, new_index, stat, errmsg,
+				 errmsg_len);
       gfc_add_expr_to_block (&se.pre, tmp);
-      gfc_add_block_to_block (&se.pre, &argse1.post);
-      gfc_add_block_to_block (&se.pre, &argse2.post);
+      gfc_add_block_to_block (&se.pre, &se.post);
       return gfc_finish_block (&se.pre);
-    }
+     }
   else
-    {
-      const char *name = gfc_get_string (PREFIX ("exit_i%d"), 4);
-      gfc_symbol *exsym = gfc_get_intrinsic_sub_symbol (name);
-      tree tmp = gfc_get_symbol_decl (exsym);
-      return build_call_expr_loc (input_location, tmp, 1, integer_zero_node);
-    }
+    return trans_exit ();
 }
 
 /* Translate the CHANGE TEAM statement.  */
@@ -833,27 +837,30 @@ gfc_trans_change_team (gfc_code *code)
 {
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
-      gfc_se argse;
-      tree team_type, tmp;
+      stmtblock_t block;
+      gfc_se se;
+      tree team_type, stat, errmsg, errmsg_len, tmp;
 
-      gfc_init_se (&argse, NULL);
-      gfc_conv_expr_val (&argse, code->expr1);
-      team_type = gfc_build_addr_expr (ppvoid_type_node, argse.expr);
+      gfc_init_se (&se, NULL);
+      gfc_start_block (&block);
 
-      tmp = build_call_expr_loc (input_location,
-				 gfor_fndecl_caf_change_team, 2, team_type,
-				 integer_zero_node);
-      gfc_add_expr_to_block (&argse.pre, tmp);
-      gfc_add_block_to_block (&argse.pre, &argse.post);
-      return gfc_finish_block (&argse.pre);
+      gfc_conv_expr_val (&se, code->expr1);
+      team_type = se.expr;
+
+      gfc_trans_sync_stat (&code->ext.block.sync_stat, &se, &stat, &errmsg,
+			   &errmsg_len);
+
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_change_team, 4,
+				 team_type, stat, errmsg, errmsg_len);
+
+      gfc_add_expr_to_block (&se.pre, tmp);
+      gfc_add_block_to_block (&se.pre, &se.post);
+      gfc_add_block_to_block (&block, &se.pre);
+      gfc_add_expr_to_block (&block, gfc_trans_block_construct (code));
+      return gfc_finish_block (&block);
     }
   else
-    {
-      const char *name = gfc_get_string (PREFIX ("exit_i%d"), 4);
-      gfc_symbol *exsym = gfc_get_intrinsic_sub_symbol (name);
-      tree tmp = gfc_get_symbol_decl (exsym);
-      return build_call_expr_loc (input_location, tmp, 1, integer_zero_node);
-    }
+    return trans_exit ();
 }
 
 /* Translate the END TEAM statement.  */

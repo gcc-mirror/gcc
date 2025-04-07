@@ -1966,29 +1966,29 @@ gfc_match_block (void)
   return MATCH_YES;
 }
 
-
-/* Match an ASSOCIATE statement.  */
+bool
+check_coarray_assoc (const char *name, gfc_association_list *assoc)
+{
+  if (assoc->target->expr_type == EXPR_VARIABLE
+      && !strcmp (assoc->target->symtree->name, name))
+    {
+      gfc_error ("Codimension decl name %qs in association at %L "
+		 "must not be the same as a selector",
+		 name, &assoc->where);
+      return false;
+    }
+  return true;
+}
 
 match
-gfc_match_associate (void)
+match_association_list (bool for_change_team = false)
 {
-  if (gfc_match_label () == MATCH_ERROR)
-    return MATCH_ERROR;
-
-  if (gfc_match (" associate") != MATCH_YES)
-    return MATCH_NO;
-
-  /* Match the association list.  */
-  if (gfc_match_char ('(') != MATCH_YES)
-    {
-      gfc_error ("Expected association list at %C");
-      return MATCH_ERROR;
-    }
   new_st.ext.block.assoc = NULL;
   while (true)
     {
-      gfc_association_list* newAssoc = gfc_get_association_list ();
-      gfc_association_list* a;
+      gfc_association_list *newAssoc = gfc_get_association_list ();
+      gfc_association_list *a;
+      locus pre_name = gfc_current_locus;
 
       /* Match the next association.  */
       if (gfc_match (" %n ", newAssoc->name) != MATCH_YES)
@@ -1998,7 +1998,7 @@ gfc_match_associate (void)
 	}
 
       /* Required for an assumed rank target.  */
-      if (gfc_peek_char () == '(')
+      if (!for_change_team && gfc_peek_char () == '(')
 	{
 	  newAssoc->ar = gfc_get_array_ref ();
 	  if (gfc_match_array_ref (newAssoc->ar, NULL, 0, 0) != MATCH_YES)
@@ -2012,26 +2012,53 @@ gfc_match_associate (void)
 	gfc_error_now ("The bounds remapping list at %C is an experimental "
 		       "F202y feature. Use std=f202y to enable");
 
+      if (for_change_team && gfc_peek_char () == '[')
+	{
+	  if (!newAssoc->ar)
+	    newAssoc->ar = gfc_get_array_ref ();
+	  if (gfc_match_array_spec (&newAssoc->ar->as, false, true)
+	      == MATCH_ERROR)
+	    goto assocListError;
+	}
+
       /* Match the next association.  */
       if (gfc_match (" =>", newAssoc->name) != MATCH_YES)
 	{
-	  gfc_error ("Expected association at %C");
-	  goto assocListError;
+	  if (for_change_team)
+	    gfc_current_locus = pre_name;
+
+	  free (newAssoc);
+	  return MATCH_NO;
 	}
 
-      if (gfc_match (" %e", &newAssoc->target) != MATCH_YES)
+      if (!for_change_team)
 	{
-	  /* Have another go, allowing for procedure pointer selectors.  */
-	  gfc_matching_procptr_assignment = 1;
 	  if (gfc_match (" %e", &newAssoc->target) != MATCH_YES)
 	    {
+	      /* Have another go, allowing for procedure pointer selectors.  */
+	      gfc_matching_procptr_assignment = 1;
+	      if (gfc_match (" %e", &newAssoc->target) != MATCH_YES)
+		{
+		  gfc_matching_procptr_assignment = 0;
+		  gfc_error ("Invalid association target at %C");
+		  goto assocListError;
+		}
 	      gfc_matching_procptr_assignment = 0;
-	      gfc_error ("Invalid association target at %C");
+	    }
+	  newAssoc->where = gfc_current_locus;
+	}
+      else
+	{
+	  newAssoc->where = gfc_current_locus;
+	  /* F2018, C1116: A selector in a coarray-association shall be a named
+	     coarray.  */
+	  if (gfc_match (" %v", &newAssoc->target) != MATCH_YES)
+	    {
+	      gfc_error ("Selector in coarray association as %C shall be a "
+			 "named coarray");
 	      goto assocListError;
 	    }
-	  gfc_matching_procptr_assignment = 0;
 	}
-      newAssoc->where = gfc_current_locus;
 
       /* Check that the current name is not yet in the list.  */
       for (a = new_st.ext.block.assoc; a; a = a->next)
@@ -2041,6 +2068,35 @@ gfc_match_associate (void)
 		       newAssoc->name);
 	    goto assocListError;
 	  }
+
+      if (for_change_team)
+	{
+	  /* F2018, C1113: In a change-team-stmt, a coarray-name in a
+	     codimension-decl shall not be the same as a selector, or another
+	     coarray-name, in that statement.
+	     The latter is already checked for above.  So check only the
+	     former.
+	   */
+	  if (!check_coarray_assoc (newAssoc->name, newAssoc))
+	    goto assocListError;
+
+	  for (a = new_st.ext.block.assoc; a; a = a->next)
+	    {
+	      if (!check_coarray_assoc (newAssoc->name, a)
+		  || !check_coarray_assoc (a->name, newAssoc))
+		goto assocListError;
+
+	      /* F2018, C1115: No selector shall appear more than once in a
+	       * given change-team-stmt.  */
+	      if (!strcmp (newAssoc->target->symtree->name,
+			   a->target->symtree->name))
+		{
+		  gfc_error ("Selector at %L duplicates selector at %L",
+			     &newAssoc->target->where, &a->target->where);
+		  goto assocListError;
+		}
+	    }
+	}
 
       /* The target expression must not be coindexed.  */
       if (gfc_is_coindexed (newAssoc->target))
@@ -2108,8 +2164,40 @@ gfc_match_associate (void)
 
 assocListError:
       free (newAssoc);
+      return MATCH_ERROR;
+    }
+
+  return MATCH_YES;
+}
+
+/* Match an ASSOCIATE statement.  */
+
+match
+gfc_match_associate (void)
+{
+  match m;
+  if (gfc_match_label () == MATCH_ERROR)
+    return MATCH_ERROR;
+
+  if (gfc_match (" associate") != MATCH_YES)
+    return MATCH_NO;
+
+  /* Match the association list.  */
+  if (gfc_match_char ('(') != MATCH_YES)
+    {
+      gfc_error ("Expected association list at %C");
+      return MATCH_ERROR;
+    }
+
+  m = match_association_list ();
+  if (m == MATCH_ERROR)
+    goto error;
+  else if (m == MATCH_NO)
+    {
+      gfc_error ("Expected association at %C");
       goto error;
     }
+
   if (gfc_match_char (')') != MATCH_YES)
     {
       /* This should never happen as we peek above.  */
@@ -3914,7 +4002,9 @@ match
 gfc_match_form_team (void)
 {
   match m;
-  gfc_expr *teamid,*team;
+  gfc_expr *teamid, *team, *new_index;
+
+  teamid = team = new_index = NULL;
 
   if (!gfc_notify_std (GFC_STD_F2018, "FORM TEAM statement at %C"))
     return MATCH_ERROR;
@@ -3932,17 +4022,60 @@ gfc_match_form_team (void)
   if (gfc_match ("%e", &team) != MATCH_YES)
     goto syntax;
 
-  m = gfc_match_char (')');
-  if (m == MATCH_NO)
+  m = gfc_match_char (',');
+  if (m == MATCH_ERROR)
     goto syntax;
+  if (m == MATCH_NO)
+    {
+      m = gfc_match_char (')');
+      if (m == MATCH_YES)
+	goto done;
+      goto syntax;
+    }
+
+  for (;;)
+    {
+      m = match_stat_errmsg (&new_st.ext.sync_stat, ST_FORM_TEAM);
+      if (m == MATCH_ERROR)
+	goto cleanup;
+
+      m = match_named_arg (" new_index = %e", "NEW_INDEX", &new_index,
+			   ST_FORM_TEAM);
+      if (m == MATCH_ERROR)
+	goto cleanup;
+
+      m = gfc_match_char (',');
+      if (m == MATCH_YES)
+	continue;
+
+      break;
+    }
+
+  if (m == MATCH_ERROR)
+    goto syntax;
+
+  if (gfc_match (" )%t") != MATCH_YES)
+    goto syntax;
+
+done:
 
   new_st.expr1 = teamid;
   new_st.expr2 = team;
+  new_st.expr3 = new_index;
 
   return MATCH_YES;
 
 syntax:
   gfc_syntax_error (ST_FORM_TEAM);
+
+cleanup:
+  gfc_free_expr (new_index);
+  gfc_free_expr (new_st.ext.sync_stat.stat);
+  gfc_free_expr (new_st.ext.sync_stat.errmsg);
+  new_st.ext.sync_stat = {NULL, NULL};
+
+  gfc_free_expr (team);
+  gfc_free_expr (teamid);
 
   return MATCH_ERROR;
 }
@@ -3953,7 +4086,13 @@ match
 gfc_match_change_team (void)
 {
   match m;
-  gfc_expr *team;
+  gfc_expr *team = NULL;
+
+  if (gfc_match_label () == MATCH_ERROR)
+    return MATCH_ERROR;
+
+  if (gfc_match (" change% team") != MATCH_YES)
+    return MATCH_NO;
 
   if (!gfc_notify_std (GFC_STD_F2018, "CHANGE TEAM statement at %C"))
     return MATCH_ERROR;
@@ -3961,14 +4100,40 @@ gfc_match_change_team (void)
   if (gfc_match_char ('(') == MATCH_NO)
     goto syntax;
 
-  new_st.op = EXEC_CHANGE_TEAM;
-
   if (gfc_match ("%e", &team) != MATCH_YES)
     goto syntax;
 
-  m = gfc_match_char (')');
-  if (m == MATCH_NO)
+  m = gfc_match_char (',');
+  if (m == MATCH_ERROR)
     goto syntax;
+  if (m == MATCH_NO)
+    {
+      m = gfc_match_char (')');
+      if (m == MATCH_YES)
+	goto done;
+      goto syntax;
+    }
+
+  m = match_association_list (true);
+  if (m == MATCH_ERROR)
+    goto cleanup;
+  else if (m == MATCH_NO)
+    for (;;)
+      {
+	m = match_stat_errmsg (&new_st.ext.block.sync_stat, ST_CHANGE_TEAM);
+	if (m == MATCH_ERROR)
+	  goto cleanup;
+
+	if (gfc_match_char (',') == MATCH_YES)
+	  continue;
+
+	break;
+      }
+
+  if (gfc_match (" )%t") != MATCH_YES)
+    goto syntax;
+
+done:
 
   new_st.expr1 = team;
 
@@ -3977,19 +4142,45 @@ gfc_match_change_team (void)
 syntax:
   gfc_syntax_error (ST_CHANGE_TEAM);
 
+cleanup:
+  gfc_free_expr (new_st.ext.block.sync_stat.stat);
+  gfc_free_expr (new_st.ext.block.sync_stat.errmsg);
+  new_st.ext.block.sync_stat = {NULL, NULL};
+  gfc_free_association_list (new_st.ext.block.assoc);
+  new_st.ext.block.assoc = NULL;
+  gfc_free_expr (team);
+
   return MATCH_ERROR;
 }
 
-/* Match a END TEAM statement.  */
+/* Match an END TEAM statement.  */
 
 match
 gfc_match_end_team (void)
 {
-  if (!gfc_notify_std (GFC_STD_F2018, "END TEAM statement at %C"))
-    return MATCH_ERROR;
+  if (gfc_match_eos () == MATCH_YES)
+    goto done;
 
-  if (gfc_match_char ('(') == MATCH_YES)
+  if (gfc_match_char ('(') != MATCH_YES)
+    /* There could be a team-construct-name following.  Let caller decide
+       about error.  */
+    return MATCH_NO;
+
+  for (;;)
+    {
+      if (match_stat_errmsg (&new_st.ext.sync_stat, ST_END_TEAM) == MATCH_ERROR)
+	goto cleanup;
+
+      if (gfc_match_char (',') == MATCH_YES)
+	continue;
+
+      break;
+    }
+
+  if (gfc_match_char (')') != MATCH_YES)
     goto syntax;
+
+done:
 
   new_st.op = EXEC_END_TEAM;
 
@@ -3997,6 +4188,14 @@ gfc_match_end_team (void)
 
 syntax:
   gfc_syntax_error (ST_END_TEAM);
+
+cleanup:
+  gfc_free_expr (new_st.ext.sync_stat.stat);
+  gfc_free_expr (new_st.ext.sync_stat.errmsg);
+  new_st.ext.sync_stat = {NULL, NULL};
+
+  /* Try to match the closing bracket to allow error recovery.  */
+  gfc_match_char (')');
 
   return MATCH_ERROR;
 }
@@ -5355,6 +5554,15 @@ gfc_match_return (void)
   if (gfc_find_state (COMP_DO_CONCURRENT))
     {
       gfc_error ("Image control statement RETURN at %C in DO CONCURRENT block");
+      return MATCH_ERROR;
+    }
+
+  if (gfc_find_state (COMP_CHANGE_TEAM))
+    {
+      /* F2018, C1111: A RETURN statement shall not appear within a CHANGE TEAM
+	 construct.  */
+      gfc_error (
+	"Image control statement RETURN at %C in CHANGE TEAM-END TEAM block");
       return MATCH_ERROR;
     }
 

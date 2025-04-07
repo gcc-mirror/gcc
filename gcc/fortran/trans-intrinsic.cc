@@ -1379,9 +1379,9 @@ gfc_conv_intrinsic_caf_is_present_remote (gfc_se *se, gfc_expr *e)
   present_fn = e->value.function.actual->next->next->expr;
   add_data_sym = present_fn->symtree->n.sym->formal->sym;
 
-  fn_index = conv_caf_func_index (&se->pre, gfc_current_ns,
+  fn_index = conv_caf_func_index (&se->pre, e->symtree->n.sym->ns,
 				  "__caf_present_on_remote_fn_index_%d", hash);
-  add_data_tree = conv_caf_add_call_data (&se->pre, gfc_current_ns,
+  add_data_tree = conv_caf_add_call_data (&se->pre, e->symtree->n.sym->ns,
 					  "__caf_present_on_remote_add_data_%d",
 					  add_data_sym, &add_data_size);
   ++caf_call_cnt;

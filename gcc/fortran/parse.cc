@@ -488,6 +488,7 @@ decode_statement (void)
   match (NULL, gfc_match_do, ST_DO);
   match (NULL, gfc_match_block, ST_BLOCK);
   match (NULL, gfc_match_associate, ST_ASSOCIATE);
+  match (NULL, gfc_match_change_team, ST_CHANGE_TEAM);
   match (NULL, gfc_match_critical, ST_CRITICAL);
   match (NULL, gfc_match_select, ST_SELECT_CASE);
   match (NULL, gfc_match_select_type, ST_SELECT_TYPE);
@@ -517,7 +518,6 @@ decode_statement (void)
 
     case 'c':
       match ("call", gfc_match_call, ST_CALL);
-      match ("change% team", gfc_match_change_team, ST_CHANGE_TEAM);
       match ("close", gfc_match_close, ST_CLOSE);
       match ("continue", gfc_match_continue, ST_CONTINUE);
       match ("contiguous", gfc_match_contiguous, ST_ATTR_DECL);
@@ -537,7 +537,6 @@ decode_statement (void)
 
     case 'e':
       match ("end file", gfc_match_endfile, ST_END_FILE);
-      match ("end team", gfc_match_end_team, ST_END_TEAM);
       match ("exit", gfc_match_exit, ST_EXIT);
       match ("else", gfc_match_else, ST_ELSE);
       match ("else where", gfc_match_elsewhere, ST_ELSEWHERE);
@@ -1927,8 +1926,7 @@ next_statement (void)
   case ST_OMP_INTEROP: \
   case ST_ERROR_STOP: case ST_OMP_SCAN: case ST_SYNC_ALL: \
   case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: case ST_LOCK: case ST_UNLOCK: \
-  case ST_FORM_TEAM: case ST_CHANGE_TEAM: \
-  case ST_END_TEAM: case ST_SYNC_TEAM: \
+  case ST_FORM_TEAM: case ST_SYNC_TEAM: \
   case ST_EVENT_POST: case ST_EVENT_WAIT: case ST_FAIL_IMAGE: \
   case ST_OACC_UPDATE: case ST_OACC_WAIT: case ST_OACC_CACHE: \
   case ST_OACC_ENTER_DATA: case ST_OACC_EXIT_DATA
@@ -2032,7 +2030,8 @@ next_statement (void)
 
 #define case_end case ST_END_BLOCK_DATA: case ST_END_FUNCTION: \
 		 case ST_END_PROGRAM: case ST_END_SUBROUTINE: \
-		 case ST_END_BLOCK: case ST_END_ASSOCIATE
+		 case ST_END_BLOCK: case ST_END_ASSOCIATE: \
+		 case ST_END_TEAM
 
 
 /* Push a new state onto the stack.  */
@@ -2164,6 +2163,7 @@ check_statement_label (gfc_statement st)
     case ST_END_CRITICAL:
     case ST_END_BLOCK:
     case ST_END_ASSOCIATE:
+    case ST_END_TEAM:
     case_executable:
     case_exec_markers:
       if (st == ST_ENDDO || st == ST_CONTINUE)
@@ -3199,6 +3199,8 @@ accept_statement (gfc_statement st)
     case ST_ENTRY:
     case ST_OMP_METADIRECTIVE:
     case ST_OMP_BEGIN_METADIRECTIVE:
+    case ST_CHANGE_TEAM:
+    case ST_END_TEAM:
     case_executable:
     case_exec_markers:
       add_statement ();
@@ -3383,6 +3385,8 @@ verify_st_order (st_state *p, gfc_statement st, bool silent)
 	goto order;
       break;
 
+    case ST_CHANGE_TEAM:
+    case ST_END_TEAM:
     case_executable:
     case_exec_markers:
       if (p->state < ORDER_EXEC)
@@ -5238,30 +5242,12 @@ parse_block_construct (void)
   pop_state ();
 }
 
-
-/* Parse an ASSOCIATE construct.  This is essentially a BLOCK construct
-   behind the scenes with compiler-generated variables.  */
-
 static void
-parse_associate (void)
+move_associates_to_block ()
 {
-  gfc_namespace* my_ns;
-  gfc_state_data s;
-  gfc_statement st;
-  gfc_association_list* a;
+  gfc_association_list *a;
   gfc_array_spec *as;
 
-  gfc_notify_std (GFC_STD_F2003, "ASSOCIATE construct at %C");
-
-  my_ns = gfc_build_block_ns (gfc_current_ns);
-
-  new_st.op = EXEC_BLOCK;
-  new_st.ext.block.ns = my_ns;
-  gcc_assert (new_st.ext.block.assoc);
-
-  /* Add all associate-names as BLOCK variables.  Creating them is enough
-     for now, they'll get their values during trans-* phase.  */
-  gfc_current_ns = my_ns;
   for (a = new_st.ext.block.assoc; a; a = a->next)
     {
       gfc_symbol *sym, *tsym;
@@ -5298,26 +5284,23 @@ parse_associate (void)
 
       /* Don’t share the character length information between associate
 	 variable and target if the length is not a compile-time constant,
-	 as we don’t want to touch some other character length variable when
-	 we try to initialize the associate variable’s character length
-	 variable.
-	 We do it here rather than later so that expressions referencing the
-	 associate variable will automatically have the correctly setup length
-	 information.  If we did it at resolution stage the expressions would
-	 use the original length information, and the variable a new different
-	 one, but only the latter one would be correctly initialized at
-	 translation stage, and the former one would need some additional setup
-	 there.  */
-      if (sym->ts.type == BT_CHARACTER
-	  && sym->ts.u.cl
+	 as we don’t want to touch some other character length variable
+	 when we try to initialize the associate variable’s character
+	 length variable.  We do it here rather than later so that expressions
+	 referencing the associate variable will automatically have the
+	 correctly setup length information.  If we did it at resolution stage
+	 the expressions would use the original length information, and the
+	 variable a new different one, but only the latter one would be
+	 correctly initialized at translation stage, and the former one would
+	 need some additional setup there.  */
+      if (sym->ts.type == BT_CHARACTER && sym->ts.u.cl
 	  && !(sym->ts.u.cl->length
 	       && sym->ts.u.cl->length->expr_type == EXPR_CONSTANT))
 	sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
 
       /* If the function has been parsed, go straight to the result to
 	 obtain the expression rank.  */
-      if (target->expr_type == EXPR_FUNCTION
-	  && target->symtree
+      if (target->expr_type == EXPR_FUNCTION && target->symtree
 	  && target->symtree->n.sym)
 	{
 	  tsym = target->symtree->n.sym;
@@ -5344,8 +5327,7 @@ parse_associate (void)
 	 by calling gfc_resolve_expr because the context is unavailable.
 	 However, the references can be resolved and the rank of the target
 	 expression set.  */
-      if (!sym->assoc->inferred_type
-	  && target->ref && gfc_resolve_ref (target)
+      if (!sym->assoc->inferred_type && target->ref && gfc_resolve_ref (target)
 	  && target->expr_type != EXPR_ARRAY
 	  && target->expr_type != EXPR_COMPCALL)
 	gfc_expression_rank (target);
@@ -5353,13 +5335,12 @@ parse_associate (void)
       /* Determine whether or not function expressions with unknown type are
 	 structure constructors. If so, the function result can be converted
 	 to be a derived type.  */
-      if (target->expr_type == EXPR_FUNCTION
-	  && target->ts.type == BT_UNKNOWN)
+      if (target->expr_type == EXPR_FUNCTION && target->ts.type == BT_UNKNOWN)
 	{
 	  gfc_symbol *derived;
 	  /* The derived type has a leading uppercase character.  */
 	  gfc_find_symbol (gfc_dt_upper_string (target->symtree->name),
-			   my_ns->parent, 1, &derived);
+			   gfc_current_ns->parent, 1, &derived);
 	  if (derived && derived->attr.flavor == FL_DERIVED)
 	    {
 	      sym->ts.type = BT_DERIVED;
@@ -5394,7 +5375,7 @@ parse_associate (void)
 		  attr.codimension = as->corank ? 1 : 0;
 		  sym->assoc->variable = true;
 		}
-	       else if (rank || corank)
+	      else if (rank || corank)
 		{
 		  as = gfc_get_array_spec ();
 		  as->type = AS_DEFERRED;
@@ -5449,6 +5430,30 @@ parse_associate (void)
 	}
       gfc_commit_symbols ();
     }
+}
+
+/* Parse an ASSOCIATE construct.  This is essentially a BLOCK construct
+   behind the scenes with compiler-generated variables.  */
+
+static void
+parse_associate (void)
+{
+  gfc_namespace* my_ns;
+  gfc_state_data s;
+  gfc_statement st;
+
+  gfc_notify_std (GFC_STD_F2003, "ASSOCIATE construct at %C");
+
+  my_ns = gfc_build_block_ns (gfc_current_ns);
+
+  new_st.op = EXEC_BLOCK;
+  new_st.ext.block.ns = my_ns;
+  gcc_assert (new_st.ext.block.assoc);
+
+  /* Add all associate-names as BLOCK variables.  Creating them is enough
+     for now, they'll get their values during trans-* phase.  */
+  gfc_current_ns = my_ns;
+  move_associates_to_block ();
 
   accept_statement (ST_ASSOCIATE);
   push_state (&s, COMP_ASSOCIATE, my_ns->proc_name);
@@ -5474,6 +5479,49 @@ loop:
   pop_state ();
 }
 
+static void
+parse_change_team (void)
+{
+  gfc_namespace *my_ns;
+  gfc_state_data s;
+  gfc_statement st;
+
+  gfc_notify_std (GFC_STD_F2018, "CHANGE TEAM construct at %C");
+
+  my_ns = gfc_build_block_ns (gfc_current_ns);
+
+  new_st.op = EXEC_CHANGE_TEAM;
+  new_st.ext.block.ns = my_ns;
+
+  /* Add all associate-names as BLOCK variables.  Creating them is enough
+     for now, they'll get their values during trans-* phase.  */
+  gfc_current_ns = my_ns;
+  if (new_st.ext.block.assoc)
+    move_associates_to_block ();
+
+  accept_statement (ST_CHANGE_TEAM);
+  push_state (&s, COMP_CHANGE_TEAM, my_ns->proc_name);
+
+loop:
+  st = parse_executable (ST_NONE);
+  switch (st)
+    {
+    case ST_NONE:
+      unexpected_eof ();
+
+    case_end:
+      accept_statement (st);
+      my_ns->code = gfc_state_stack->head;
+      break;
+
+    default:
+      unexpected_statement (st);
+      goto loop;
+    }
+
+  gfc_current_ns = gfc_current_ns->parent;
+  pop_state ();
+}
 
 /* Parse a DO loop.  Note that the ST_CYCLE and ST_EXIT statements are
    handled inside of parse_executable(), because they aren't really
@@ -6576,6 +6624,7 @@ parse_executable (gfc_statement st)
 	  case ST_STOP:
 	  case ST_ERROR_STOP:
 	  case ST_END_SUBROUTINE:
+	  case ST_END_TEAM:
 
 	  case ST_DO:
 	  case ST_FORALL:
@@ -6613,6 +6662,10 @@ parse_executable (gfc_statement st)
 
 	case ST_ASSOCIATE:
 	  parse_associate ();
+	  break;
+
+	case ST_CHANGE_TEAM:
+	  parse_change_team ();
 	  break;
 
 	case ST_IF_BLOCK:

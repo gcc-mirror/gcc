@@ -357,7 +357,9 @@ split_expr_at_caf_ref (gfc_expr *expr, gfc_namespace *ns,
 
   gcc_assert (expr->expr_type == EXPR_VARIABLE);
   caf_ts = &expr->symtree->n.sym->ts;
-  if (!expr->symtree->n.sym->attr.codimension)
+  if (!(expr->symtree->n.sym->ts.type == BT_CLASS
+	  ? CLASS_DATA (expr->symtree->n.sym)->attr.codimension
+	  : expr->symtree->n.sym->attr.codimension))
     {
       /* The coarray is in some component.  Find it.  */
       caf_ref = expr->ref;
@@ -432,6 +434,9 @@ split_expr_at_caf_ref (gfc_expr *expr, gfc_namespace *ns,
   else if (base->ts.type == BT_CLASS)
     convert_coarray_class_to_derived_type (base, ns);
 
+  memset (&(*post_caf_ref_expr)->ts, 0, sizeof (gfc_typespec));
+  gfc_resolve_expr (*post_caf_ref_expr);
+  (*post_caf_ref_expr)->corank = 0;
   gfc_expression_rank (*post_caf_ref_expr);
   if (for_send)
     gfc_expression_rank (expr);
@@ -1130,8 +1135,8 @@ create_allocated_callback (gfc_expr *expr)
 
   // ADD_ARG (expr->symtree->name, base, BT_VOID, INTENT_IN);
   base = post_caf_ref_expr->symtree->n.sym;
+  base->attr.pointer = !base->attr.dimension;
   gfc_set_sym_referenced (base);
-  gfc_commit_symbol (base);
   *argptr = gfc_get_formal_arglist ();
   (*argptr)->sym = base;
   argptr = &(*argptr)->next;
@@ -1420,7 +1425,8 @@ coindexed_expr_callback (gfc_expr **e, int *walk_subtrees,
 	  {
 	  case GFC_ISYM_ALLOCATED:
 	    if ((*e)->value.function.actual->expr
-		&& gfc_is_coindexed ((*e)->value.function.actual->expr))
+		&& (gfc_is_coarray ((*e)->value.function.actual->expr)
+		    || gfc_is_coindexed ((*e)->value.function.actual->expr)))
 	      {
 		rewrite_caf_allocated (e);
 		*walk_subtrees = 0;

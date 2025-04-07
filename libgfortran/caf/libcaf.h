@@ -31,17 +31,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "libgfortran.h"
 
-#if 0
-#ifndef __GNUC__
-#define __attribute__(x)
-#define likely(x)       (x)
-#define unlikely(x)     (x)
-#else
-#define likely(x)       __builtin_expect(!!(x), 1)
-#define unlikely(x)     __builtin_expect(!!(x), 0)
-#endif
-#endif
-
 /* Definitions of the Fortran 2008 standard; need to kept in sync with
    ISO_FORTRAN_ENV, cf. gcc/fortran/libgfortran.h.  */
 typedef enum
@@ -78,8 +67,8 @@ typedef enum caf_deregister_t {
 }
 caf_deregister_t;
 
-typedef void* caf_token_t;
-typedef void * caf_team_t;
+typedef void *caf_token_t;
+typedef void *caf_team_t;
 typedef gfc_array_void gfc_descriptor_t;
 
 /* Linked list of static coarrays registered.  */
@@ -184,5 +173,10 @@ void _gfortran_caf_stopped_images (gfc_descriptor_t *,
 				   int *);
 
 void _gfortran_caf_random_init (bool, bool);
+
+void _gfortran_caf_form_team (int, caf_team_t *, int *, int *, char *, size_t);
+void _gfortran_caf_change_team (caf_team_t, int *, char *, size_t);
+void _gfortran_caf_end_team (int *, char *, size_t);
+void _gfortran_caf_sync_team (caf_team_t, int *, char *, size_t);
 
 #endif  /* LIBCAF_H  */

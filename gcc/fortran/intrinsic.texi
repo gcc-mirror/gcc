@@ -15445,6 +15445,10 @@ Derived type with private components to be use with the @code{LOCK} and
 @code{UNLOCK} statement. A variable of its type has to be always declared
 as coarray and may not appear in a variable-definition context.
 (Fortran 2008 or later.)
+@item @code{TEAM_TYPE}:
+An opaque type for handling teams.  Note that a variable of type
+@code{TEAM_TYPE} is not comparable with other variables of the same or other
+types nor with null.
 @end table
 
 The module also provides the following intrinsic procedures:

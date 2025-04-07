@@ -134,9 +134,7 @@ NAMED_DERIVED_TYPE (ISOFORTRAN_EVENT_TYPE, "event_type", \
 		    : gfc_default_integer_kind, GFC_STD_F2018)
 
 NAMED_DERIVED_TYPE (ISOFORTRAN_TEAM_TYPE, "team_type", \
-		    flag_coarray == GFC_FCOARRAY_LIB
-		    ? get_int_kind_from_node (ptr_type_node)
-		    : gfc_default_integer_kind, GFC_STD_F2018)
+		    get_int_kind_from_node (ptr_type_node), GFC_STD_F2018)
 
 NAMED_INTCST (ISOFORTRANENV_LOGICAL8, "logical8", \
               gfc_get_int_kind_from_width_isofortranenv (8), GFC_STD_F2023)
