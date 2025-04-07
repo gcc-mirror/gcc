@@ -4212,6 +4212,12 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
   bool only_i3_changed = !i0 && !i1 && rtx_equal_p (newi2pat, PATTERN (i2));
 
+  /* If only i3 has changed, any split of the combined instruction just
+     restored i2 to its original state.  No destinations moved from i3
+     to i2.  */
+  if (only_i3_changed)
+    split_i2i3 = false;
+
   /* We now know that we can do this combination.  Merge the insns and
      update the status of registers and LOG_LINKS.  */
 
