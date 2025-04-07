@@ -22258,6 +22258,15 @@ instantiate_template (tree tmpl, tree orig_args, tsubst_flags_t complain)
       return error_mark_node;
     }
 
+  /* Substituting the type might have recursively instantiated this
+     same alias (c++/117530).  */
+  if (DECL_ALIAS_TEMPLATE_P (gen_tmpl)
+      && (spec = retrieve_specialization (gen_tmpl, targ_ptr, hash)))
+    {
+      pop_deferring_access_checks ();
+      return spec;
+    }
+
   /* The DECL_TI_TEMPLATE should always be the immediate parent
      template, not the most general template.  */
   DECL_TI_TEMPLATE (fndecl) = tmpl;
