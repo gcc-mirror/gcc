@@ -205,11 +205,12 @@ done
 #
 # The COBOL FE maintains man pages.  Convert them to HTML and PDF.
 #
-mdoc2pdf_html() {
+cobol_mdoc2pdf_html() {
+    mkdir -p $DOCSDIR/gcobol gcobol
     input="$1"
     d="${input%/*}"
-    pdf="$d/$2"
-    html="$d/$3"
+    pdf="$2"
+    html="gcobol/$3"
     groff -mdoc -T pdf "$input" > "${pdf}~"
     mv "${pdf}~" "${pdf}"
     mandoc -T html "$filename" > "${html}~"
@@ -221,10 +222,10 @@ find . -name gcobol.[13] |
     do
         case ${filename##*.} in
             1)
-                mdoc2pdf_html "$filename" gcobol.pdf gcobol.html
+                cobol_mdoc2pdf_html "$filename" gcobol.pdf gcobol.html
                 ;;
             3)
-                mdoc2pdf_html "$filename" gcobol_io.pdf gcobol_io.html
+                cobol_mdoc2pdf_html "$filename" gcobol_io.pdf gcobol_io.html
                 ;;
         esac
     done
