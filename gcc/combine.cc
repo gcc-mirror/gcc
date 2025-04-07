@@ -472,7 +472,7 @@ static void move_deaths (rtx, rtx, int, rtx_insn *, rtx *);
 static bool reg_bitfield_target_p (rtx, rtx);
 static void distribute_notes (rtx, rtx_insn *, rtx_insn *, rtx_insn *,
 			      rtx, rtx, rtx);
-static void distribute_links (struct insn_link *);
+static void distribute_links (struct insn_link *, rtx_insn * = nullptr);
 static void mark_used_regs_combine (rtx);
 static void record_promoted_value (rtx_insn *, rtx);
 static bool unmentioned_reg_p (rtx, rtx);
@@ -4592,10 +4592,15 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 			    NULL_RTX, NULL_RTX, NULL_RTX);
       }
 
-    distribute_links (i3links);
-    distribute_links (i2links);
-    distribute_links (i1links);
-    distribute_links (i0links);
+    if (only_i3_changed)
+      distribute_links (i3links, i3);
+    else
+      {
+	distribute_links (i3links);
+	distribute_links (i2links, i2);
+	distribute_links (i1links);
+	distribute_links (i0links);
+      }
 
     if (REG_P (i2dest))
       {
@@ -14986,10 +14991,13 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 
 /* Similarly to above, distribute the LOG_LINKS that used to be present on
    I3, I2, and I1 to new locations.  This is also called to add a link
-   pointing at I3 when I3's destination is changed.  */
+   pointing at I3 when I3's destination is changed.
+
+   If START is nonnull and an insn, we know that the next location for each
+   link is no earlier than START.  */
 
 static void
-distribute_links (struct insn_link *links)
+distribute_links (struct insn_link *links, rtx_insn *start)
 {
   struct insn_link *link, *next_link;
 
@@ -15055,7 +15063,10 @@ distribute_links (struct insn_link *links)
 	 I3 to I2.  Also note that not much searching is typically done here
 	 since most links don't point very far away.  */
 
-      for (insn = NEXT_INSN (link->insn);
+      insn = start;
+      if (!insn || NOTE_P (insn))
+	insn = NEXT_INSN (link->insn);
+      for (;
 	   (insn && (this_basic_block->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
 		     || BB_HEAD (this_basic_block->next_bb) != insn));
 	   insn = NEXT_INSN (insn))
