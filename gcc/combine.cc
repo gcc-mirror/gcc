@@ -4210,16 +4210,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       adjust_for_new_dest (i3);
     }
 
-  /* If I2 didn't change, this is not a combination (but a simplification or
-     canonicalisation with context), which should not be done here.  Doing
-     it here explodes the algorithm.  Don't.  */
-  if (rtx_equal_p (newi2pat, PATTERN (i2)))
-    {
-      if (dump_file)
-	fprintf (dump_file, "i2 didn't change, not doing this\n");
-      undo_all ();
-      return 0;
-    }
+  bool only_i3_changed = !i0 && !i1 && rtx_equal_p (newi2pat, PATTERN (i2));
 
   /* We now know that we can do this combination.  Merge the insns and
      update the status of registers and LOG_LINKS.  */
@@ -4786,6 +4777,9 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 
   combine_successes++;
   undo_commit ();
+
+  if (only_i3_changed)
+    return i3;
 
   rtx_insn *ret = newi2pat ? i2 : i3;
   if (added_links_insn && DF_INSN_LUID (added_links_insn) < DF_INSN_LUID (ret))
