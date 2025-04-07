@@ -40,4 +40,6 @@ class ao_compare : public operand_compare
 		    inchash::hash &hstate);
 };
 
+bool types_equal_for_same_type_for_tbaa_p (tree type1, tree type2);
+
 #endif
