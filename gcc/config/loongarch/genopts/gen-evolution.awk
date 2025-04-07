@@ -101,10 +101,18 @@ function gen_cpucfg_useful_idx()
         idx_list[j++] = i+0
     delete idx_bucket
 
-    asort (idx_list)
+    for (i = 1; i < j; i++) {
+        t = i
+        for (k = i + 1; k < j; k++)
+            t = idx_list[k] < idx_list[t] ? k : t
+
+        k = idx_list[t]
+        idx_list[t] = idx_list[i]
+        idx_list[i] = k
+    }
 
     print "static constexpr int cpucfg_useful_idx[] = {"
-    for (i in idx_list)
+    for (i = 1; i < j; i++)
         printf("  %d,\n", idx_list[i])
     print "};"
 
