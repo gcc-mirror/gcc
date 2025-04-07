@@ -5,12 +5,12 @@
 
 /* { dg-additional-options "-O2 -g" } */
 
-typedef long int ptrdiff_t;
-typedef unsigned long int uintptr_t;
-typedef long int EMACS_INT;
+typedef __PTRDIFF_TYPE__ ptrdiff_t;
+typedef __UINTPTR_TYPE__ uintptr_t;
+typedef __PTRDIFF_TYPE__ EMACS_INT;
 enum
 {
-  EMACS_INT_WIDTH = 64,
+  EMACS_INT_WIDTH = sizeof(EMACS_INT) * 8,
   VALBITS = EMACS_INT_WIDTH - 3,
 };
 typedef struct Lisp_X* Lisp_Word;
@@ -151,4 +151,5 @@ set_marker_internal(Lisp_Object position, Lisp_Object buffer)
   struct buffer* b = live_buffer(buffer);
   if (NILP(position) || (MARKERP(position) && !XMARKER(position)->buffer) || !b) /* { dg-bogus "Wanalyzer-deref-before-check" } */
     unchain_marker();
+  return 0;
 }
