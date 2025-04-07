@@ -16516,6 +16516,15 @@ in combiner for a pseudo register as last known value of that register.
 @item max-combine-insns
 The maximum number of instructions the RTL combiner tries to combine.
 
+@item max-combine-search-insns
+The maximum number of instructions that the RTL combiner searches in order
+to find the next use of a given register definition.  If this limit is reached
+without finding such a use, the combiner will stop trying to optimize the
+definition.
+
+Currently this limit only applies after certain successful combination
+attempts, but it could be extended to other cases in future.
+
 @item integer-share-limit
 Small integer constants can use a shared data structure, reducing the
 compiler's memory usage and increasing its speed.  This sets the maximum

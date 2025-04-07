@@ -477,6 +477,10 @@ The maximum number of instructions to consider to unroll in a loop on average.
 Common Joined UInteger Var(param_max_combine_insns) Init(4) IntegerRange(2, 4) Param Optimization
 The maximum number of insns combine tries to combine.
 
+-param=max-combine-search-insns=
+Common Joined UInteger Var(param_max_combine_search_insns) Init(3000) Param Optimization
+The maximum number of instructions that combine searches in order to find the next use of a particular register.
+
 -param=max-completely-peel-loop-nest-depth=
 Common Joined UInteger Var(param_max_unroll_iterations) Init(8) Param Optimization
 The maximum depth of a loop nest we completely peel.

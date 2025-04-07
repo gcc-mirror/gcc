@@ -309,6 +309,7 @@ static int *uid_insn_cost;
 struct insn_link {
   rtx_insn *insn;
   unsigned int regno;
+  int insn_count;
   struct insn_link *next;
 };
 
@@ -342,6 +343,7 @@ alloc_insn_link (rtx_insn *insn, unsigned int regno, struct insn_link *next)
 					  sizeof (struct insn_link));
   l->insn = insn;
   l->regno = regno;
+  l->insn_count = 0;
   l->next = next;
   return l;
 }
@@ -472,7 +474,8 @@ static void move_deaths (rtx, rtx, int, rtx_insn *, rtx *);
 static bool reg_bitfield_target_p (rtx, rtx);
 static void distribute_notes (rtx, rtx_insn *, rtx_insn *, rtx_insn *,
 			      rtx, rtx, rtx);
-static void distribute_links (struct insn_link *, rtx_insn * = nullptr);
+static void distribute_links (struct insn_link *, rtx_insn * = nullptr,
+			      int limit = INT_MAX);
 static void mark_used_regs_combine (rtx);
 static void record_promoted_value (rtx_insn *, rtx);
 static bool unmentioned_reg_p (rtx, rtx);
@@ -4593,7 +4596,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
       }
 
     if (only_i3_changed)
-      distribute_links (i3links, i3);
+      distribute_links (i3links, i3, param_max_combine_search_insns);
     else
       {
 	distribute_links (i3links);
@@ -14994,10 +14997,12 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
    pointing at I3 when I3's destination is changed.
 
    If START is nonnull and an insn, we know that the next location for each
-   link is no earlier than START.  */
+   link is no earlier than START.  LIMIT is the maximum number of nondebug
+   instructions that can be scanned when looking for the next use of a
+   definition.  */
 
 static void
-distribute_links (struct insn_link *links, rtx_insn *start)
+distribute_links (struct insn_link *links, rtx_insn *start, int limit)
 {
   struct insn_link *link, *next_link;
 
@@ -15063,9 +15068,12 @@ distribute_links (struct insn_link *links, rtx_insn *start)
 	 I3 to I2.  Also note that not much searching is typically done here
 	 since most links don't point very far away.  */
 
+      int count = 0;
       insn = start;
       if (!insn || NOTE_P (insn))
 	insn = NEXT_INSN (link->insn);
+      else
+	count = link->insn_count;
       for (;
 	   (insn && (this_basic_block->next_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
 		     || BB_HEAD (this_basic_block->next_bb) != insn));
@@ -15086,6 +15094,11 @@ distribute_links (struct insn_link *links, rtx_insn *start)
 	  }
 	else if (INSN_P (insn) && reg_set_p (reg, insn))
 	  break;
+	else if (count >= limit)
+	  break;
+	else
+	  count += 1;
+      link->insn_count = count;
 
       /* If we found a place to put the link, place it there unless there
 	 is already a link to the same insn as LINK at that point.  */
