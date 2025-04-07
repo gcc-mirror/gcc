@@ -1751,9 +1751,9 @@ namespace __format
 
 	  if (_M_spec._M_localized && __builtin_isfinite(__v))
 	    {
-	      __wstr = _M_localize(__str, __expc, __fc.locale());
-	      if (!__wstr.empty())
-		__str = __wstr;
+	      auto __s = _M_localize(__str, __expc, __fc.locale());
+	      if (!__s.empty())
+		__str = __wstr = std::move(__s);
 	    }
 
 	  size_t __width = _M_spec._M_get_width(__fc);
