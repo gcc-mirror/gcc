@@ -2072,7 +2072,8 @@ conv_intrinsic_image_status (gfc_se *se, gfc_expr *expr)
     }
   else if (flag_coarray == GFC_FCOARRAY_LIB)
     tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_image_status, 2,
-			       args[0], build_int_cst (integer_type_node, -1));
+			       args[0],
+			       num_args < 2 ? null_pointer_node : args[1]);
   else
     gcc_unreachable ();
 
@@ -2092,18 +2093,7 @@ conv_intrinsic_team_number (gfc_se *se, gfc_expr *expr)
 
   if (flag_coarray ==
       GFC_FCOARRAY_SINGLE && expr->value.function.actual->expr)
-    {
-      tree arg;
-
-      arg = gfc_evaluate_now (args[0], &se->pre);
-      tmp = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
-      			     fold_convert (integer_type_node, arg),
-      			     integer_one_node);
-      tmp = fold_build3_loc (input_location, COND_EXPR, integer_type_node,
-      			     tmp, integer_zero_node,
-      			     build_int_cst (integer_type_node,
-      					    GFC_STAT_STOPPED_IMAGE));
-    }
+    tmp = gfc_evaluate_now (args[0], &se->pre);
   else if (flag_coarray == GFC_FCOARRAY_SINGLE)
     {
       // the value -1 represents that no team has been created yet
@@ -2111,10 +2101,10 @@ conv_intrinsic_team_number (gfc_se *se, gfc_expr *expr)
     }
   else if (flag_coarray == GFC_FCOARRAY_LIB && expr->value.function.actual->expr)
     tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_team_number, 1,
-			       args[0], build_int_cst (integer_type_node, -1));
+			       args[0]);
   else if (flag_coarray == GFC_FCOARRAY_LIB)
     tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_team_number, 1,
-		integer_zero_node, build_int_cst (integer_type_node, -1));
+			       null_pointer_node);
   else
     gcc_unreachable ();
 
@@ -11475,6 +11465,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_GETGID:
     case GFC_ISYM_GETPID:
     case GFC_ISYM_GETUID:
+    case GFC_ISYM_GET_TEAM:
     case GFC_ISYM_HOSTNM:
     case GFC_ISYM_IERRNO:
     case GFC_ISYM_IRAND:

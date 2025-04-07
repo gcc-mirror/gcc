@@ -39,10 +39,19 @@ typedef enum
   CAF_STAT_LOCKED,
   CAF_STAT_LOCKED_OTHER_IMAGE,
   CAF_STAT_STOPPED_IMAGE = 6000,
-  CAF_STAT_FAILED_IMAGE  = 6001
+  CAF_STAT_FAILED_IMAGE  = 6001,
+  CAF_STAT_UNLOCKED_FAILED_IMAGE = 6002
 }
 caf_stat_codes_t;
 
+/* Definitions of the Fortran 2018 standard; need to kept in sync with
+   ISO_FORTRAN_ENV, cf. gcc/fortran/libgfortran.h.  */
+typedef enum
+{
+  CAF_INITIAL_TEAM = 0,
+  CAF_PARENT_TEAM,
+  CAF_CURRENT_TEAM
+} caf_team_level_t;
 
 /* Describes what type of array we are registerring.  Keep in sync with
    gcc/fortran/trans.h.  */
@@ -178,5 +187,7 @@ void _gfortran_caf_form_team (int, caf_team_t *, int *, int *, char *, size_t);
 void _gfortran_caf_change_team (caf_team_t, int *, char *, size_t);
 void _gfortran_caf_end_team (int *, char *, size_t);
 void _gfortran_caf_sync_team (caf_team_t, int *, char *, size_t);
+int _gfortran_caf_team_number (caf_team_t);
+caf_team_t _gfortran_caf_get_team (int32_t *);
 
 #endif  /* LIBCAF_H  */

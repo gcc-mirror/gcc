@@ -3209,11 +3209,21 @@ gfc_resolve_get_team (gfc_expr *f, gfc_expr *level ATTRIBUTE_UNUSED)
 {
   static char get_team[] = "_gfortran_caf_get_team";
   f->rank = 0;
-  f->ts.type = BT_INTEGER;
-  f->ts.kind = gfc_default_integer_kind;
+  f->ts.type = BT_DERIVED;
+  gfc_find_symbol ("team_type", gfc_current_ns, 1, &f->ts.u.derived);
+  if (!f->ts.u.derived
+      || f->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV)
+    {
+      gfc_error (
+	"GET_TEAM at %L needs USE of the intrinsic module ISO_FORTRAN_ENV "
+	"to define its result type TEAM_TYPE",
+	&f->where);
+      f->ts.type = BT_UNKNOWN;
+    }
   f->value.function.name = get_team;
-}
 
+  /* No requirements to resolve for level argument now.  */
+}
 
 /* Resolve image_index (...).  */
 
@@ -3248,15 +3258,17 @@ gfc_resolve_stopped_images (gfc_expr *f, gfc_expr *team ATTRIBUTE_UNUSED,
 /* Resolve team_number (team).  */
 
 void
-gfc_resolve_team_number (gfc_expr *f, gfc_expr *team ATTRIBUTE_UNUSED)
+gfc_resolve_team_number (gfc_expr *f, gfc_expr *team)
 {
   static char team_number[] = "_gfortran_caf_team_number";
   f->rank = 0;
   f->ts.type = BT_INTEGER;
   f->ts.kind = gfc_default_integer_kind;
   f->value.function.name = team_number;
-}
 
+  if (team)
+    gfc_resolve_expr (team);
+}
 
 void
 gfc_resolve_this_image (gfc_expr *f, gfc_expr *array, gfc_expr *dim,

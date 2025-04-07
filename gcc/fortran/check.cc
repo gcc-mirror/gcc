@@ -1809,6 +1809,23 @@ gfc_check_atomic_ref (gfc_expr *value, gfc_expr *atom, gfc_expr *stat)
   return gfc_check_atomic (atom, 1, value, 0, stat, 2);
 }
 
+bool
+team_type_check (gfc_expr *e, int n)
+{
+  if (e->ts.type != BT_DERIVED || !e->ts.u.derived
+      || e->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV
+      || e->ts.u.derived->intmod_sym_id != ISOFORTRAN_TEAM_TYPE)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L shall be of type "
+		 "%<team_type%> from the intrinsic module "
+		 "%<ISO_FORTRAN_ENV%>",
+		 gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic,
+		 &e->where);
+      return false;
+    }
+
+  return true;
+}
 
 bool
 gfc_check_image_status (gfc_expr *image, gfc_expr *team)
@@ -1818,14 +1835,7 @@ gfc_check_image_status (gfc_expr *image, gfc_expr *team)
       || !positive_check (0, image))
     return false;
 
-  if (team)
-    {
-      gfc_error ("%qs argument of %qs intrinsic at %L not yet supported",
-		 gfc_current_intrinsic_arg[1]->name, gfc_current_intrinsic,
-		 &team->where);
-      return false;
-    }
-  return true;
+  return !team || (scalar_check (team, 0) && team_type_check (team, 0));
 }
 
 
@@ -1905,10 +1915,25 @@ gfc_check_get_team (gfc_expr *level)
 {
   if (level)
     {
-      gfc_error ("%qs argument of %qs intrinsic at %L not yet supported",
-		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
-		 &level->where);
-      return false;
+      int l;
+
+      if (!type_check (level, 0, BT_INTEGER) || !scalar_check (level, 0))
+	return false;
+
+      /* When level is a constant, try to extract it.  If not, the runtime has
+	 to check.  */
+      if (gfc_extract_int (level, &l, 0))
+	return true;
+
+      if (l < GFC_CAF_INITIAL_TEAM || l > GFC_CAF_CURRENT_TEAM)
+	{
+	  gfc_error ("%qs argument of %qs intrinsic at %L shall specify one of "
+		     "the INITIAL_TEAM, PARENT_TEAM or CURRENT_TEAM constants "
+		     "from the intrinsic module ISO_FORTRAN_ENV",
+		     gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		     &level->where);
+	  return false;
+	}
     }
   return true;
 }
@@ -6635,21 +6660,7 @@ gfc_check_team_number (gfc_expr *team)
       return false;
     }
 
-  if (team)
-    {
-      if (team->ts.type != BT_DERIVED
-	  || team->ts.u.derived->from_intmod != INTMOD_ISO_FORTRAN_ENV
-	  || team->ts.u.derived->intmod_sym_id != ISOFORTRAN_TEAM_TYPE)
-	 {
-	   gfc_error ("TEAM argument at %L to the intrinsic TEAM_NUMBER "
-	   	      "shall be of type TEAM_TYPE", &team->where);
-	   return false;
-	 }
-    }
-  else
-    return true;
-
-  return true;
+  return !team || (scalar_check (team, 0) && team_type_check (team, 0));
 }
 
 

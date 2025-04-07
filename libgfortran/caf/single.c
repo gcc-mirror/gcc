@@ -1084,3 +1084,29 @@ _gfortran_caf_sync_team (caf_team_t team __attribute__ ((unused)), int *stat,
   if (stat)
     *stat = 0;
 }
+
+int
+_gfortran_caf_team_number (caf_team_t team)
+{
+  return ((caf_single_team_t) team)->team_no;
+}
+
+caf_team_t
+_gfortran_caf_get_team (int32_t *level)
+{
+  if (!level)
+    return caf_team_stack;
+
+  switch ((caf_team_level_t) *level)
+    {
+    case CAF_INITIAL_TEAM:
+      return caf_initial_team;
+    case CAF_PARENT_TEAM:
+      return caf_team_stack->parent ? caf_team_stack->parent : caf_team_stack;
+    case CAF_CURRENT_TEAM:
+      return caf_team_stack;
+    default:
+      caf_runtime_error ("Illegal value for GET_TEAM");
+    }
+  return NULL; /* To prevent any warnings.  */
+}

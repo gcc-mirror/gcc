@@ -170,6 +170,7 @@ Some basic guidelines for editing this document:
 * @code{GETGID}:        GETGID,    Group ID function
 * @code{GETLOG}:        GETLOG,    Get login name
 * @code{GETPID}:        GETPID,    Process ID function
+* @code{GET_TEAM}:      GET_TEAM,  Get the handle of a team
 * @code{GETUID}:        GETUID,    User ID function
 * @code{GMTIME}:        GMTIME,    Convert time to GMT info
 * @code{HOSTNM}:        HOSTNM,    Get system host name
@@ -311,6 +312,7 @@ Some basic guidelines for editing this document:
 * @code{TAN}:           TAN,       Tangent function
 * @code{TAND}:          TAND,      Tangent function, degrees
 * @code{TANH}:          TANH,      Hyperbolic tangent function
+* @code{TEAM_NUMBER}:   TEAM_NUMBER, Retrieve team id of given team
 * @code{THIS_IMAGE}:    THIS_IMAGE, Cosubscript index of this image
 * @code{TIME}:          TIME,      Time function
 * @code{TIME8}:         TIME8,     Time function (64-bit)
@@ -7332,6 +7334,59 @@ GNU extension
 @item @emph{See also}:
 @ref{GETGID}, @*
 @ref{GETUID}
+@end table
+
+
+
+@node GET_TEAM
+@section @code{GET_TEAM} --- Get the handle of a team
+@fnindex GET_TEAM
+@cindex coarray, @code{GET_TEAM}
+@cindex images, get a handle to a team
+
+@table @asis
+@item @emph{Synopsis}:
+@code{RESULT = GET_TEAM([LEVEL])}
+
+@item @emph{Description}:
+Returns the handle of the current team, if @var{LEVEL} is not given.  Or the
+team specified by @var{LEVEL}, where @var{LEVEL} is one of the constants
+@code{INITIAL_TEAM}, @code{PARENT_TEAM} or @code{CURRENT_TEAM} from the
+intrinsic module @code{ISO_FORTRAN_ENV}.  Calling the function with
+@code{PARENT_TEAM} while being on the initial team, returns a handle to the
+initial team.  This ensures that always a valid team is returned, given that
+team handles can neither be checked for validity nor compared with each other
+or null.
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Return value}:
+An opaque handle of @code{TEAM_TYPE} from the intrinsic module
+@code{ISO_FORTRAN_ENV}.
+
+@item @emph{Example}:
+@smallexample
+program info
+  use, intrinsic :: iso_fortran_env
+  type(team_type) :: init, curr, par, nt
+
+  init = get_team()
+  curr = get_team(current_team) ! init equals curr here
+  form team(1, nt)
+  change team(nt)
+    curr = get_team() ! or get_team(current_team)
+    par = get_team(parent_team) ! par equals init here
+  end team
+end program info
+@end smallexample
+
+@item @emph{Standard}:
+Fortran 2018 or later
+
+@item @emph{See also}:
+@ref{THIS_IMAGE}, @*
+@ref{ISO_FORTRAN_ENV}
 @end table
 
 
@@ -14467,6 +14522,54 @@ Fortran 77 and later, for a complex argument Fortran 2008 or later
 
 
 
+@node TEAM_NUMBER
+@section @code{TEAM_NUMBER} --- Retrieve team id of given team
+@fnindex TEAM_NUMBER
+@cindex coarray, @code{TEAM_NUMBER}
+@cindex teams, index of given team
+
+@table @asis
+@item @emph{Synopsis}:
+@item @code{RESULT = TEAM_NUMBER([TEAM])}
+
+@item @emph{Description}:
+Returns the team id for the given @var{TEAM} as assigned by @code{FORM TEAM}.
+If @var{TEAM} is absent, returns the team number of the current team.
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{TEAM} @tab (optional, intent(in)) The handle of the team for which
+the number, aka id, is desired.
+@end multitable
+
+@item @emph{Return value}:
+Default integer.  The id as given in a call @code{FORM TEAM}. Applying
+@code{TEAM_NUMBER} to the initial team will result in @code{-1} to be returned.
+Returns the id of the current team, if @var{TEAM} is null.
+
+@item @emph{Example}:
+@smallexample
+use, intrinsic :: iso_fortran_env
+type(team_type) :: t
+
+print *, team_number() ! -1
+form team (99, t)
+print *, team_number(t) ! 99
+@end smallexample
+
+@item @emph{Standard}:
+Fortran 2018 and later.
+
+@item @emph{See also}:
+@ref{GET_TEAM}, @*
+@ref{TEAM_NUMBER}
+@end table
+
+
+
 @node THIS_IMAGE
 @section @code{THIS_IMAGE} --- Function that returns the cosubscript index of this image
 @fnindex THIS_IMAGE
@@ -15354,11 +15457,17 @@ parameters of the @code{CHARACTER} type. (Fortran 2008 or later.)
 @item @code{CHARACTER_STORAGE_SIZE}:
 Size in bits of the character storage unit.
 
+@item @code{CURRENT_TEAM}:
+The argument to @ref{GET_TEAM} to retrieve a handle of the current team.
+
 @item @code{ERROR_UNIT}:
 Identifies the preconnected unit used for error reporting.
 
 @item @code{FILE_STORAGE_SIZE}:
 Size in bits of the file-storage unit.
+
+@item @code{INTIAL_TEAM}:
+Argument to @ref{GET_TEAM} to retrieve a handle of the initial team.
 
 @item @code{INPUT_UNIT}:
 Identifies the preconnected unit identified by the asterisk
@@ -15396,6 +15505,9 @@ parameters of the @code{LOGICAL} type. (Fortran 2008 or later.)
 @item @code{OUTPUT_UNIT}:
 Identifies the preconnected unit identified by the asterisk
 (@code{*}) in @code{WRITE} statement.
+
+@item @code{PARENT_TEAM}:
+Argument to @ref{GET_TEAM} to retrieve a handle to the parent team.
 
 @item @code{REAL32}, @code{REAL64}, @code{REAL128}:
 Kind type parameters to specify a REAL type with a storage

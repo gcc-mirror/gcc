@@ -2112,10 +2112,10 @@ add_functions (void)
 
   make_generic ("getpid", GFC_ISYM_GETPID, GFC_STD_GNU);
 
-  add_sym_1 ("get_team", GFC_ISYM_GET_TEAM, CLASS_TRANSFORMATIONAL,
-	     ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2018,
-	     gfc_check_get_team, NULL, gfc_resolve_get_team,
-	     level, BT_INTEGER, di, OPTIONAL);
+  add_sym_1 ("get_team", GFC_ISYM_GET_TEAM, CLASS_TRANSFORMATIONAL, ACTUAL_NO,
+	     BT_DERIVED, di, GFC_STD_F2018, gfc_check_get_team,
+	     gfc_simplify_get_team, gfc_resolve_get_team, level, BT_INTEGER, di,
+	     OPTIONAL);
 
   add_sym_0 ("getuid", GFC_ISYM_GETUID, CLASS_IMPURE, ACTUAL_NO, BT_INTEGER,
 	     di, GFC_STD_GNU, NULL, NULL, gfc_resolve_getuid);

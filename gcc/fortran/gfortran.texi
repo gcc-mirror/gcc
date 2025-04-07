@@ -4234,6 +4234,8 @@ future implementation of teams.  It is about to change without further notice.
 * _gfortran_caf_change_team:: Team activation function
 * _gfortran_caf_end_team:: Team termination function
 * _gfortran_caf_sync_team:: Synchronize all images of a given team
+* _gfortran_caf_get_team:: Get the opaque handle of the specified team
+* _gfortran_caf_team_number:: Get the unique id of the given team
 @end menu
 
 
@@ -5782,6 +5784,54 @@ team given by @var{team} have joined the synchronisation call.
 @item @var{errmsg} @tab intent(out)  When an error occurs, this is set to
 an error message; may be NULL.
 @item @var{errmsg_len} @tab intent(in)  the buffer size of errmsg
+@end multitable
+@end table
+
+
+
+@node _gfortran_caf_get_team
+@subsection @code{_gfortran_caf_get_team} --- Get the opaque handle of the specified team
+@cindex Coarray, _gfortran_caf_get_team
+
+@table @asis
+@item @emph{Synopsis}:
+@code{caf_team_t _gfortran_caf_get_team (int32_t *level)}
+
+@item @emph{Description}:
+Get the current team, when @var{level} is null, or the team specified by
+@var{level} set to @code{INITIAL_TEAM}, @code{PARENT_TEAM} or
+@code{CURRENT_TEAM} from the @code{ISO_FORTRAN_ENV} intrinsic module.  When
+being on the @code{INITIAL_TEAM} and requesting its @code{PARENT_TEAM}, then
+the initial team is returned.
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{level} @tab intent(in)  If set to one of the levels specified in
+the @code{ISO_FORTRAN_ENV} module, the function returns the handle of the given
+team.  Values different from the allowed ones lead to a runtime error.
+@end multitable
+@end table
+
+
+
+@node _gfortran_caf_team_number
+@subsection @code{_gfortran_caf_team_number} --- Get the unique id of the given team
+@cindex Coarray, _gfortran_caf_team_number
+
+@table @asis
+@item @emph{Synopsis}:
+@code{int _gfortran_caf_team_number (caf_team_t team)}
+
+@item @emph{Description}:
+The team id given when forming the team @ref{_gfortran_caf_form_team} of the
+team specified by @var{team}, if given, or of the current team, if @var{team}
+is absent.  It is a runtime error to specify a non-existing team.
+The team has to be formed, i.e., it is not necessary that it is changed
+into to get the team number.  The initial team has the team number @code{-1}.
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{team} @tab intent(in)  The team for which the team id is desired.
 @end multitable
 @end table
 

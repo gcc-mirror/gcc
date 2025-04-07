@@ -3133,8 +3133,10 @@ gfc_simplify_get_team (gfc_expr *level ATTRIBUTE_UNUSED)
   if (flag_coarray == GFC_FCOARRAY_SINGLE)
     {
       gfc_expr *result;
-      result = gfc_get_array_expr (BT_INTEGER, gfc_default_integer_kind, &gfc_current_locus);
-      result->rank = 0;
+      result = gfc_get_null_expr (&gfc_current_locus);
+      result->ts.type = BT_DERIVED;
+      gfc_find_symbol ("team_type", gfc_current_ns, 1, &result->ts.u.derived);
+
       return result;
     }
 
