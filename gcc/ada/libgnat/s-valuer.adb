@@ -614,7 +614,13 @@ package body System.Value_R is
       then
          Base_Char := Str (Index);
 
-         if N = 1 and then Value (1) in 2 .. 16 then
+         --  Functionally, "(Parts = 1 or else N = 1)" in the condition of the
+         --  following if statement could replaced by the simpler "N = 1". The
+         --  reason we use a more complicated expression is to accommodate
+         --  machine-code-based coverage tools: the simple version makes it
+         --  impossible to fully cover generic instances of System.Value_R with
+         --  Parts = 1.
+         if (Parts = 1 or else N = 1) and then Value (1) in 2 .. 16 then
             Base := Unsigned (Value (1));
          else
             Base_Violation := True;
