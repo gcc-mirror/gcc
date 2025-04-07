@@ -1,3 +1,11 @@
+2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.cc (nvptx_asm_output_def_from_decls)
+	[!ACCEL_COMPILER]: Don't define label 'emit_ptx_alias'.
+
 2025-04-08  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
