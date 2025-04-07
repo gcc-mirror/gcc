@@ -491,7 +491,7 @@ TokenCollector::visit (ConstGenericParam &param)
   if (param.has_default_value ())
     {
       push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
-      visit (param.get_default_value ());
+      visit (param.get_default_value_unchecked ());
     }
 }
 
@@ -639,8 +639,6 @@ TokenCollector::visit (GenericArg &arg)
 	push (Rust::Token::make_identifier (UNDEF_LOCATION, std::move (path)));
       }
       break;
-    case GenericArg::Kind::Error:
-      rust_unreachable ();
     }
 }
 

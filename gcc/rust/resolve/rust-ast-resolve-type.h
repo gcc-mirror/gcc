@@ -141,8 +141,8 @@ public:
     if (first_pass)
       ResolveType::go (param.get_type ());
     else if (param.has_default_value ())
-      ResolveExpr::go (param.get_default_value ().get_expression (), prefix,
-		       canonical_prefix);
+      ResolveExpr::go (param.get_default_value_unchecked ().get_expression (),
+		       prefix, canonical_prefix);
   }
 
   void visit (AST::TypeParam &param) override

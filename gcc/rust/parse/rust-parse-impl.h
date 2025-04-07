@@ -3174,24 +3174,28 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 	  return nullptr;
 
 	// optional default value
-	auto default_expr = AST::GenericArg::create_error ();
+	tl::optional<AST::GenericArg> default_expr = tl::nullopt;
 	if (lexer.peek_token ()->get_id () == EQUAL)
 	  {
 	    lexer.skip_token ();
 	    auto tok = lexer.peek_token ();
 	    default_expr = parse_generic_arg ();
 
-	    if (default_expr.is_error ())
-	      rust_error_at (tok->get_locus (),
-			     "invalid token for start of default value for "
-			     "const generic parameter: expected %<block%>, "
-			     "%<identifier%> or %<literal%>, got %qs",
-			     token_id_to_str (tok->get_id ()));
+	    if (!default_expr)
+	      {
+		rust_error_at (tok->get_locus (),
+			       "invalid token for start of default value for "
+			       "const generic parameter: expected %<block%>, "
+			       "%<identifier%> or %<literal%>, got %qs",
+			       token_id_to_str (tok->get_id ()));
+		return nullptr;
+	      }
 
 	    // At this point, we *know* that we are parsing a const
 	    // expression
-	    if (default_expr.get_kind () == AST::GenericArg::Kind::Either)
-	      default_expr = default_expr.disambiguate_to_const ();
+	    if (default_expr.value ().get_kind ()
+		== AST::GenericArg::Kind::Either)
+	      default_expr = default_expr.value ().disambiguate_to_const ();
 	  }
 
 	param = std::unique_ptr<AST::ConstGenericParam> (
@@ -6249,7 +6253,7 @@ Parser<ManagedTokenSource>::parse_type_path ()
 }
 
 template <typename ManagedTokenSource>
-AST::GenericArg
+tl::optional<AST::GenericArg>
 Parser<ManagedTokenSource>::parse_generic_arg ()
 {
   auto tok = lexer.peek_token ();
@@ -6270,7 +6274,7 @@ Parser<ManagedTokenSource>::parse_generic_arg ()
 	    if (type)
 	      return AST::GenericArg::create_type (std::move (type));
 	    else
-	      return AST::GenericArg::create_error ();
+	      return tl::nullopt;
 	  }
 	else if (next_tok->get_id () == COLON)
 	  {
@@ -6287,7 +6291,7 @@ Parser<ManagedTokenSource>::parse_generic_arg ()
 	    if (type)
 	      return AST::GenericArg::create_type (std::move (type));
 	    else
-	      return AST::GenericArg::create_error ();
+	      return tl::nullopt;
 	  }
 	lexer.skip_token ();
 	return AST::GenericArg::create_ambiguous (tok->get_str (),
@@ -6313,12 +6317,12 @@ Parser<ManagedTokenSource>::parse_generic_arg ()
 	if (type)
 	  return AST::GenericArg::create_type (std::move (type));
 	else
-	  return AST::GenericArg::create_error ();
+	  return tl::nullopt;
       }
     }
 
   if (!expr)
-    return AST::GenericArg::create_error ();
+    return tl::nullopt;
 
   return AST::GenericArg::create_const (std::move (expr));
 }
@@ -6383,9 +6387,9 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
 	break;
 
       auto arg = parse_generic_arg ();
-      if (!arg.is_error ())
+      if (arg)
 	{
-	  generic_args.emplace_back (std::move (arg));
+	  generic_args.emplace_back (std::move (arg.value ()));
 	}
 
       // FIXME: Do we need to break if we encounter an error?

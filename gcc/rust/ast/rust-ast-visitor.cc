@@ -82,7 +82,7 @@ DefaultASTVisitor::visit (AST::ConstGenericParam &const_param)
   if (const_param.has_type ())
     visit (const_param.get_type ());
   if (const_param.has_default_value ())
-    visit (const_param.get_default_value ());
+    visit (const_param.get_default_value_unchecked ());
 }
 
 void
