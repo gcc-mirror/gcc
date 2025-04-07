@@ -1,3 +1,17 @@
+2025-04-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/cobol.exp: Simplify the setting of COBOL_UNDER_TEST.
+
+2025-04-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118626
+	* g++.dg/cpp2a/class-deduction-alias25a.C: New test.
+
+2025-04-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118626
+	* g++.dg/cpp2a/class-deduction-alias25.C: New test.
+
 2025-04-05  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/118249

@@ -1,3 +1,11 @@
+2025-04-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR cobol/119414
+	* gcobolspec.cc (append_rdynamic,
+	append_allow_multiple_definition, append_fpic): Remove.
+	(lang_specific_driver): Remove platform-specific command
+	line option handling.
+
 2025-04-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcobolspec.cc (SPEC_FILE): New.

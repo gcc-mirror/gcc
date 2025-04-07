@@ -1,3 +1,28 @@
+2025-04-06  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/extend.texi (Boolean Type): Further clarify support for
+	_Bool in C23 and C++.
+
+2025-04-06  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/78874
+	* doc/invoke.texi (Warning Options): Fix description of
+	-Wno-aggressive-loop-optimizations to reflect that this turns
+	off the warning, and the default is for it to be enabled.
+
+2025-04-06  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/81831
+	* doc/invoke.texi (Option Summary): Add -Wno-psabi.
+	(Warning Options): Document -Wpsabi separately from -Wabi.
+	Note it's enabled by default, not just implied by -Wabi.
+	Replace the detailed example for a GCC 4.4 change for x86
+	(which is unlikely to be very interesting nowadays) with
+	just a list of all targets that presently diagnose these
+	warnings.
+	(RS/6000 and PowerPC Options): Add cross-references for
+	-Wno-psabi.
+
 2025-04-05  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR middle-end/112589

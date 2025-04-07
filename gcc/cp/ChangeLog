@@ -1,3 +1,15 @@
+2025-04-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118626
+	* pt.cc (maybe_dependent_member_ref): Restrict TYPENAME_TYPE
+	shortcut to non-typedef TYPE_DECL.
+
+2025-04-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/118626
+	* pt.cc (maybe_dependent_member_ref): Substitute and return the
+	stripped type if we decided to not rewrite it directly.
+
 2025-04-05  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/118249

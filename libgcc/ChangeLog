@@ -1,3 +1,17 @@
+2025-04-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr (LIB1ASMFUNCS): Add (and remove from
+	FUNCS_notiny): _mulhisi3, _umulhisi3, _mulqq3, _mulhq3, _muluhq3,
+	_mulha3, _muluha3 _muluha3_round, _usmuluha3, _ssmulha3,
+	_divqq3, _udivuqq3, _divqq_helper, _divhq3, _udivuhq3.
+	_divha3 _udivuha3, _ssneg_2, _ssabs_1, _ssabs_2,
+	_mask1, _ret, _roundqq3 _rounduqq3,
+	_round_s2, _round_u2, _round_2_const, _addmask_2.
+	* config/avr/lib1funcs.S (__umulhisi3, __mulhisi3): Make
+	work on AVRrc.
+	* config/avr/lib1funcs-fixed.S: Build 8-bit and 16-bit functions
+	on AVRrc, too.
+
 2025-04-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/lib1funcs.S (__umulhisi3) [Have MUL]: Reduce call

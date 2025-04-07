@@ -1,3 +1,13 @@
+2025-04-06  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c.opt.urls: Regenerate.
+
+2025-04-06  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/81831
+	* c.opt (Wpsabi): Remove "Undocumented" modifier and add a
+	documentation string.
+
 2025-04-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt.urls: Regenerate.
