@@ -395,29 +395,23 @@ ENDF  __mulhi3
 
 #if defined (L_umulhisi3)
 DEFUN __umulhisi3
-#ifndef __AVR_TINY__
+#ifdef __AVR_TINY__
+    ;; Save callee saved regs.
+    push    B0
+    push    B1
+#endif /* AVR_TINY */
     wmov    B0, 24
     ;; Zero-extend B
     clr     B2
     clr     B3
     ;; Zero-extend A
     wmov    A2, B2
-    XJMP    __mulsi3
+#ifdef __AVR_TINY__
+    ;; Clear hi16 of the result so we can use __mulsi3_helper.
+    wmov    CC2, B2
+    XJMP    __mulsi3_helper
 #else
-    ;; Push zero-extended R24
-    push    __zero_reg__
-    push    __zero_reg__
-    push    r25
-    push    r24
-    ;; Zero-extend R22
-    clr     R24
-    clr     R25
-    XCALL   __mulsi3
-    pop     __tmp_reg__
-    pop     __tmp_reg__
-    pop     __tmp_reg__
-    pop     __tmp_reg__
-    ret
+    XJMP    __mulsi3
 #endif /* AVR_TINY? */
 ENDF __umulhisi3
 #endif /* L_umulhisi3 */
@@ -425,54 +419,33 @@ ENDF __umulhisi3
 #if defined (L_mulhisi3)
 DEFUN __mulhisi3
 #ifdef __AVR_TINY__
-    ;; Push sign-extended R24
-    mov     __tmp_reg__, r25
-    lsl     __tmp_reg__
-    sbc     __tmp_reg__, __tmp_reg__
-    push    __tmp_reg__
-    push    __tmp_reg__
-    push    r25
-    push    r24
-    ;;  Sign-extend R22
-    mov     r24, r23
-    lsl     r24
-    sbc     r24, r24
-    sbc     r25, r25
-    XCALL   __mulsi3
-    pop     __tmp_reg__
-    pop     __tmp_reg__
-    pop     __tmp_reg__
-    pop     __tmp_reg__
-    ret
-#else
+    ;; Save callee saved regs.
+    push    B0
+    push    B1
+#endif /* AVR_TINY */
     wmov    B0, 24
     ;; Sign-extend B
     lsl     r25
     sbc     B2, B2
     mov     B3, B2
-#ifdef __AVR_ERRATA_SKIP_JMP_CALL__
-    ;; Sign-extend A
-    clr     A2
-    sbrc    A1, 7
-    com     A2
-    mov     A3, A2
-    XJMP    __mulsi3
-#else /*  no __AVR_ERRATA_SKIP_JMP_CALL__ */
     ;; Zero-extend A and __mulsi3 will run at least twice as fast
     ;; compared to a sign-extended A.
     clr     A2
     clr     A3
+    ;; Clear hi16 of the result so we can use __mulsi3_helper.
+    wmov    CC2, A2
     sbrs    A1, 7
-    XJMP __mulsi3
+#ifdef __AVR_ERRATA_SKIP_JMP_CALL__
+    rjmp 1f
+#else
+    XJMP    __mulsi3_helper
+#endif /* ERRATA_SKIP */
     ;; If  A < 0  then perform the  B * 0xffff.... before the
     ;; very multiplication by initializing the high part of the
     ;; result CC with -B.
-    wmov    CC2, A2
     sub     CC2, B0
     sbc     CC3, B1
-    XJMP __mulsi3_helper
-#endif /*  __AVR_ERRATA_SKIP_JMP_CALL__ */
-#endif /* AVR_TINY? */
+1:  XJMP    __mulsi3_helper
 ENDF __mulhisi3
 #endif /* L_mulhisi3 */
 
