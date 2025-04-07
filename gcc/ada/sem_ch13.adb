@@ -9986,6 +9986,12 @@ package body Sem_Ch13 is
       --  Includes a call to the predicate function for type T in Expr if
       --  Predicate_Function (T) is non-empty.
 
+      function Has_Source_Predicate (T : Entity_Id) return Boolean;
+      --  Return True if one of the 3 predicate aspects is specified
+      --  explicitly (either via a pragma or an aspect specification, but
+      --  not implicitly via propagation from some other type/subtype via
+      --  RM 3.2.4(5)) for the type/subtype T.
+
       procedure Replace_Current_Instance_References
         (N : Node_Id; Typ, New_Entity : Entity_Id);
       --  Replace all references to Typ in the tree rooted at N with
@@ -10202,6 +10208,41 @@ package body Sem_Ch13 is
          end loop;
       end Add_Predicates;
 
+      --------------------------
+      -- Has_Source_Predicate --
+      --------------------------
+
+      function Has_Source_Predicate (T : Entity_Id) return Boolean is
+         Rep_Item : Node_Id := First_Rep_Item (T);
+      begin
+         while Present (Rep_Item) loop
+            case Nkind (Rep_Item) is
+               when N_Pragma =>
+                  if Get_Pragma_Id (Rep_Item) = Pragma_Predicate
+                    and then T = Entity (Expression
+                      (First (Pragma_Argument_Associations (Rep_Item))))
+                  then
+                     return True;
+                  end if;
+
+               when N_Aspect_Specification =>
+                  if Get_Aspect_Id (Rep_Item) in
+                       Aspect_Static_Predicate
+                         | Aspect_Dynamic_Predicate | Aspect_Predicate
+                    and then Entity (Rep_Item) = T
+                  then
+                     return True;
+                  end if;
+
+               when others =>
+                  null;
+            end case;
+
+            Next_Rep_Item (Rep_Item);
+         end loop;
+         return False;
+      end Has_Source_Predicate;
+
       -----------------------------------------
       -- Replace_Current_Instance_References --
       -----------------------------------------
@@ -10245,6 +10286,21 @@ package body Sem_Ch13 is
       --  context where expansion and tests are enabled.
 
       SId := Predicate_Function (Typ);
+
+      --  When declaring a subtype S whose "predecessor" subtype PS (that is,
+      --  the subtype denoted by the subtype_mark in the declaration of S)
+      --  already has a predicate function, do not confuse that existing
+      --  function for PS with the function we need to build for S if
+      --  Has_Source_Predicate returns True for S.
+
+      if Present (SId)
+        and then Nkind (Parent (Typ)) = N_Subtype_Declaration
+        and then Etype (First_Entity (SId)) /= Typ
+        and then Has_Source_Predicate (Typ)
+      then
+         SId := Empty;
+      end if;
+
       if not Has_Predicates (Typ)
         or else (Present (SId) and then Has_Completion (SId))
         or else

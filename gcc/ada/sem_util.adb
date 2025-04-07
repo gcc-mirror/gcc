@@ -2176,6 +2176,7 @@ package body Sem_Util is
       Def_Id      : Entity_Id;
       Btyp        : Entity_Id := Base_Type (Typ);
 
+      Predicated_Parent_Used : Boolean := False;
    begin
       --  The Related_Node better be here or else we won't be able to
       --  attach new itypes to a node in the tree.
@@ -2190,6 +2191,25 @@ package body Sem_Util is
         and then Present (Underlying_Type (Btyp))
       then
          Btyp := Underlying_Type (Btyp);
+
+      --  If a predicate has been specified for an unconstrained
+      --  ancestor subtype, then that ancestor subtype needs to also
+      --  be an ancestor subtype for the subtype we are building so that
+      --  we don't lose the predicate. It is somewhat ugly here to have
+      --  to replicate the precondition for Predicated_Parent.
+
+      elsif Typ in E_Array_Subtype_Id
+                   | E_Record_Subtype_Id
+                   | E_Record_Subtype_With_Private_Id
+        and then Present (Predicated_Parent (Typ))
+      then
+         --  Assert that the following assignment is only changing the
+         --  subtype, not the type.
+
+         pragma Assert (Base_Type (Predicated_Parent (Typ)) = Btyp);
+
+         Btyp := Predicated_Parent (Typ);
+         Predicated_Parent_Used := True;
       end if;
 
       Indic :=
@@ -2211,7 +2231,10 @@ package body Sem_Util is
 
       Analyze (Subtyp_Decl, Suppress => All_Checks);
 
-      if Is_Itype (Def_Id) and then Has_Predicates (Typ) then
+      if Is_Itype (Def_Id)
+        and then Has_Predicates (Typ)
+        and then not Predicated_Parent_Used
+      then
          Inherit_Predicate_Flags (Def_Id, Typ);
 
          --  Indicate where the predicate function may be found
