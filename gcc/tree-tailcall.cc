@@ -920,6 +920,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
   auto_bitmap to_move_defs;
   auto_vec<gimple *> to_move_stmts;
   bool is_noreturn = gimple_call_noreturn_p (call);
+  auto_vec<edge> edges;
 
   abb = bb;
   agsi = gsi;
@@ -933,6 +934,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	{
 	  edge e = single_non_eh_succ_edge (abb);
 	  ass_var = propagate_through_phis (ass_var, e);
+	  if (!ass_var)
+	    edges.safe_push (e);
 	  abb = e->dest;
 	  agsi = gsi_start_bb (abb);
 	}
@@ -1040,9 +1043,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
       /* If IPA-VRP proves called function always returns a singleton range,
 	 the return value is replaced by the only value in that range.
 	 For tail call purposes, pretend such replacement didn't happen.  */
-      if (ass_var == NULL_TREE
-	  && !tail_recursion
-	  && TREE_CONSTANT (ret_var))
+      if (ass_var == NULL_TREE && !tail_recursion)
 	if (tree type = gimple_range_type (call))
 	  if (tree callee = gimple_call_fndecl (call))
 	    if ((INTEGRAL_TYPE_P (type)
@@ -1052,9 +1053,43 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 					      type)
 		&& useless_type_conversion_p (TREE_TYPE (ret_var), type)
 		&& ipa_return_value_range (val, callee)
-		&& val.singleton_p (&valr)
-		&& operand_equal_p (ret_var, valr, 0))
-	      ok = true;
+		&& val.singleton_p (&valr))
+	      {
+		tree rv = ret_var;
+		unsigned int i = edges.length ();
+		/* If ret_var is equal to valr, we can tail optimize.  */
+		if (operand_equal_p (ret_var, valr, 0))
+		  ok = true;
+		else
+		  /* Otherwise, if ret_var is a PHI result, try to find out
+		     if valr isn't propagated through PHIs on the path from
+		     call's bb to SSA_NAME_DEF_STMT (ret_var)'s bb.  */
+		  while (TREE_CODE (rv) == SSA_NAME
+			 && gimple_code (SSA_NAME_DEF_STMT (rv)) == GIMPLE_PHI)
+		    {
+		      tree nrv = NULL_TREE;
+		      gimple *g = SSA_NAME_DEF_STMT (rv);
+		      for (; i; --i)
+			{
+			  if (edges[i - 1]->dest == gimple_bb (g))
+			    {
+			      nrv
+				= gimple_phi_arg_def_from_edge (g,
+								edges[i - 1]);
+			      --i;
+			      break;
+			    }
+			}
+		      if (nrv == NULL_TREE)
+			break;
+		      if (operand_equal_p (nrv, valr, 0))
+			{
+			  ok = true;
+			  break;
+			}
+		      rv = nrv;
+		    }
+	      }
       if (!ok)
 	{
 	  maybe_error_musttail (call,

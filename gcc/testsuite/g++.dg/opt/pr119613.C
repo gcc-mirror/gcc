@@ -1,5 +1,5 @@
 // PR middle-end/119613
-// { dg-do compile { target { musttail && { c || c++11 } } } }
+// { dg-do compile { target { musttail && c++11 } } }
 // { dg-options "-O0" }
 
 struct S { S () {} };
