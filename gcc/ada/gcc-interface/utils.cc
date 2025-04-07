@@ -5259,12 +5259,27 @@ convert (tree type, tree expr)
 	      : size_zero_node;
 	  tree byte_diff = size_diffop (type_pos, etype_pos);
 
-	  expr = build1 (NOP_EXPR, type, expr);
+	  expr = fold_convert (type, expr);
 	  if (integer_zerop (byte_diff))
 	    return expr;
 
 	  return build_binary_op (POINTER_PLUS_EXPR, type, expr,
 				  fold_convert (sizetype, byte_diff));
+	}
+
+      /* If converting from a thin pointer with zero offset from the base to
+	 a pointer to the array, add the offset of the array field.  */
+      if (TYPE_IS_THIN_POINTER_P (etype)
+	  && !TYPE_UNCONSTRAINED_ARRAY (TREE_TYPE (etype)))
+	{
+	  tree arr_field = DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (etype)));
+
+	  if (TREE_TYPE (type) == TREE_TYPE (arr_field))
+	    {
+	      expr = fold_convert (type, expr);
+	      return build_binary_op (POINTER_PLUS_EXPR, type, expr,
+				      byte_position (arr_field));
+	    }
 	}
 
       /* If converting fat pointer to normal or thin pointer, get the pointer
