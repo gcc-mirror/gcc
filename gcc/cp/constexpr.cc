@@ -9034,7 +9034,8 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
       if (TREE_CODE (t) == TARGET_EXPR
 	  && TARGET_EXPR_INITIAL (t) == r)
 	return t;
-      else if (TREE_CODE (t) == CONSTRUCTOR || TREE_CODE (t) == CALL_EXPR)
+      else if (TREE_CODE (t) == CONSTRUCTOR || TREE_CODE (t) == CALL_EXPR
+	       || TREE_CODE (t) == AGGR_INIT_EXPR)
 	/* Don't add a TARGET_EXPR if our argument didn't have one.  */;
       else if (TREE_CODE (t) == TARGET_EXPR && TARGET_EXPR_CLEANUP (t))
 	r = get_target_expr (r);
