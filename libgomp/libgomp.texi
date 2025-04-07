@@ -2316,7 +2316,7 @@ the initial device.
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_target_memcpy_rect_async}, @ref{omp_target_memcpy}
+@ref{omp_target_memcpy_rect_async}, @ref{omp_target_memcpy}, @ref{Offload-Target Specifics}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.6
@@ -2391,7 +2391,7 @@ the initial device.
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_target_memcpy_rect}, @ref{omp_target_memcpy_async}
+@ref{omp_target_memcpy_rect}, @ref{omp_target_memcpy_async}, @ref{Offload-Target Specifics}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.8.8
@@ -6911,6 +6911,11 @@ The implementation remark:
       @code{omp_thread_mem_alloc}, all use low-latency memory as first
       preference, and fall back to main graphics memory when the low-latency
       pool is exhausted.
+@item The OpenMP routines @code{omp_target_memcpy_rect} and
+      @code{omp_target_memcpy_rect_async} and the @code{target update}
+      directive for non-contiguous list items use the 3D memory-copy function
+      of the HSA library.  Higher dimensions call this functions in a loop and
+      are therefore supported.
 @item The unique identifier (UID), used with OpenMP's API UID routines, is the
       value returned by the HSA runtime library for @code{HSA_AMD_AGENT_INFO_UUID}.
       For GPUs, it is currently @samp{GPU-} followed by 16 lower-case hex digits,
@@ -7048,11 +7053,6 @@ The implementation remark:
       devices (``host fallback'').
 @item The default per-warp stack size is 128 kiB; see also @code{-msoft-stack}
       in the GCC manual.
-@item The OpenMP routines @code{omp_target_memcpy_rect} and
-      @code{omp_target_memcpy_rect_async} and the @code{target update}
-      directive for non-contiguous list items will use the 2D and 3D
-      memory-copy functions of the CUDA library.  Higher dimensions will
-      call those functions in a loop and are therefore supported.
 @item Low-latency memory (@code{omp_low_lat_mem_space}) is supported when the
       the @code{access} trait is set to @code{cgroup}, and libgomp has
       been built for PTX ISA version 4.1 or higher (such as in GCC's
@@ -7070,6 +7070,11 @@ The implementation remark:
       @code{omp_thread_mem_alloc}, all use low-latency memory as first
       preference, and fall back to main graphics memory when the low-latency
       pool is exhausted.
+@item The OpenMP routines @code{omp_target_memcpy_rect} and
+      @code{omp_target_memcpy_rect_async} and the @code{target update}
+      directive for non-contiguous list items use the 2D and 3D memory-copy
+      functions of the CUDA library.  Higher dimensions call those functions
+      in a loop and are therefore supported.
 @item The unique identifier (UID), used with OpenMP's API UID routines, consists
       of the @samp{GPU-} prefix followed by the 16-bytes UUID as returned by
       the CUDA runtime library.  This UUID is output in grouped lower-case
