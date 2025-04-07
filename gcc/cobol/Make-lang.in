@@ -90,9 +90,7 @@ cobol1_OBJS =    \
 # so that the .h files can be found.
 
 cobol/charmaps.cc cobol/valconv.cc: cobol/%.cc: $(LIB_SOURCE)/%.cc
-	-l='ec\|common-defs\|io\|gcobolio\|gfileio\|charmaps'; \
-	l=$$l'\|valconv\|exceptl'; \
-	sed -e '/^#include/s,"\('$$l'\)\.h","../../libgcobol/\1.h",' $^ > $@
+	sed -e '/^#include/s,"\([^"]*[^g"].h\)","../../libgcobol/\1",' $^ > $@
 
 LIB_SOURCE_H=$(wildcard $(LIB_SOURCE)/*.h)
 
