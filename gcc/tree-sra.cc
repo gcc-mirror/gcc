@@ -3253,7 +3253,7 @@ create_total_scalarization_access (struct access *parent, HOST_WIDE_INT pos,
   access->grp_write = parent->grp_write;
   access->grp_total_scalarization = 1;
   access->grp_hint = 1;
-  access->grp_same_access_path = path_comparable_for_same_access (expr);
+  access->grp_same_access_path = 0;
   access->reverse = reverse_storage_order_for_component_p (expr);
 
   access->next_sibling = next_sibling;
