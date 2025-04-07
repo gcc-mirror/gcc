@@ -7766,7 +7766,9 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name,
       return;
     }
 
+#ifdef ACCEL_COMPILER
  emit_ptx_alias:
+#endif
 
   cgraph_node *cnode = cgraph_node::get (name);
   if (!cnode->referred_to_p ())
