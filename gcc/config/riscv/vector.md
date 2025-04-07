@@ -3939,7 +3939,7 @@
 	  (any_extend:VWEXTI
 	    (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand" "   vr,   vr"))
 	  (match_operand:VWEXTI 2 "vector_merge_operand"         "   vu,    0")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && !TARGET_XTHEADVECTOR"
   "v<sz>ext.vf2\t%0,%3%p1"
   [(set_attr "type" "vext")
    (set_attr "mode" "<MODE>")])
@@ -3959,7 +3959,7 @@
 	  (any_extend:VQEXTI
 	    (match_operand:<V_QUAD_TRUNC> 3 "register_operand" "   vr,   vr"))
 	  (match_operand:VQEXTI 2 "vector_merge_operand"       "   vu,    0")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && !TARGET_XTHEADVECTOR"
   "v<sz>ext.vf4\t%0,%3%p1"
   [(set_attr "type" "vext")
    (set_attr "mode" "<MODE>")])
@@ -3979,7 +3979,7 @@
 	  (any_extend:VOEXTI
 	    (match_operand:<V_OCT_TRUNC> 3 "register_operand" "   vr,   vr"))
 	  (match_operand:VOEXTI 2 "vector_merge_operand"      "   vu,    0")))]
-  "TARGET_VECTOR"
+  "TARGET_VECTOR && !TARGET_XTHEADVECTOR"
   "v<sz>ext.vf8\t%0,%3%p1"
   [(set_attr "type" "vext")
    (set_attr "mode" "<MODE>")])
