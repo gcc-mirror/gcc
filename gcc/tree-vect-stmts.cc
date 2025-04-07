@@ -6750,13 +6750,16 @@ vectorizable_shift (vec_info *vinfo,
     {
       if (was_scalar_shift_arg)
 	{
-	  /* If the argument was the same in all lanes create
-	     the correctly typed vector shift amount directly.  */
+	  /* If the argument was the same in all lanes create the
+	     correctly typed vector shift amount directly.  Note
+	     we made SLP scheduling think we use the original scalars,
+	     so place the compensation code next to the shift which
+	     is conservative.  See PR119640 where it otherwise breaks.  */
 	  op1 = fold_convert (TREE_TYPE (vectype), op1);
 	  op1 = vect_init_vector (vinfo, stmt_info, op1, TREE_TYPE (vectype),
-				  !loop_vinfo ? gsi : NULL);
+				  gsi);
 	  vec_oprnd1 = vect_init_vector (vinfo, stmt_info, op1, vectype,
-					 !loop_vinfo ? gsi : NULL);
+					 gsi);
 	  vec_oprnds1.create (slp_node->vec_stmts_size);
 	  for (k = 0; k < slp_node->vec_stmts_size; k++)
 	    vec_oprnds1.quick_push (vec_oprnd1);
