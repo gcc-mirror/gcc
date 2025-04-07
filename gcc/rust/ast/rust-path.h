@@ -167,16 +167,10 @@ public:
    */
   enum class Kind
   {
-    Error,
     Const,  // A const value
     Type,   // A type argument (not discernable during parsing)
     Either, // Either a type or a const value, cleared up during resolving
   };
-
-  static GenericArg create_error ()
-  {
-    return GenericArg (nullptr, nullptr, {""}, Kind::Error, UNDEF_LOCATION);
-  }
 
   static GenericArg create_const (std::unique_ptr<Expr> expression)
   {
@@ -222,8 +216,6 @@ public:
   GenericArg (GenericArg &&other) = default;
   GenericArg &operator= (GenericArg &&other) = default;
 
-  bool is_error () const { return kind == Kind::Error; }
-
   Kind get_kind () const { return kind; }
   location_t get_locus () const { return locus; }
 
@@ -239,8 +231,6 @@ public:
 	break;
       case Kind::Either:
 	break;
-      case Kind::Error:
-	rust_unreachable ();
       }
   }
 
@@ -283,8 +273,6 @@ public:
   {
     switch (get_kind ())
       {
-      case Kind::Error:
-	rust_unreachable ();
       case Kind::Either:
 	return "Ambiguous: " + path.as_string ();
       case Kind::Const:
@@ -355,15 +343,15 @@ class ConstGenericParam : public GenericParam
   /**
    * Default value for the const generic parameter
    */
-  GenericArg default_value;
+  tl::optional<GenericArg> default_value;
 
   AST::AttrVec outer_attrs;
   location_t locus;
 
 public:
   ConstGenericParam (Identifier name, std::unique_ptr<AST::Type> type,
-		     GenericArg default_value, AST::AttrVec outer_attrs,
-		     location_t locus)
+		     tl::optional<GenericArg> default_value,
+		     AST::AttrVec outer_attrs, location_t locus)
     : name (name), type (std::move (type)),
       default_value (std::move (default_value)), outer_attrs (outer_attrs),
       locus (locus)
@@ -376,7 +364,7 @@ public:
   {}
 
   bool has_type () const { return type != nullptr; }
-  bool has_default_value () const { return !default_value.is_error (); }
+  bool has_default_value () const { return default_value.has_value (); }
 
   const Identifier &get_name () const { return name; }
 
@@ -389,18 +377,18 @@ public:
     return *type;
   }
 
-  GenericArg &get_default_value ()
+  GenericArg &get_default_value_unchecked ()
   {
     rust_assert (has_default_value ());
 
-    return default_value;
+    return default_value.value ();
   }
 
-  const GenericArg &get_default_value () const
+  const GenericArg &get_default_value_unchecked () const
   {
     rust_assert (has_default_value ());
 
-    return default_value;
+    return default_value.value ();
   }
 
   std::string as_string () const override;

@@ -119,7 +119,7 @@ ConstGenericParam::as_string () const
   str += "const " + name.as_string () + ": " + type->as_string ();
 
   if (has_default_value ())
-    str += " = " + get_default_value ().as_string ();
+    str += " = " + get_default_value_unchecked ().as_string ();
 
   return str;
 }
