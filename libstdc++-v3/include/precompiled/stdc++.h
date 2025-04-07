@@ -230,15 +230,15 @@
 #include <generator>
 #include <print>
 #include <spanstream>
-#if __has_include(<stacktrace>)
-# include <stacktrace>
-#endif
+#include <stacktrace>
 #include <stdatomic.h>
 #include <stdfloat>
 #endif
 
 #if __cplusplus > 202302L
 #include <text_encoding>
+#include <stdbit.h>
+#include <stdckdint.h>
 #endif
 
 #endif // HOSTED
