@@ -1669,12 +1669,13 @@ namespace __format
 
 	  if (_M_spec._M_localized && __builtin_isfinite(__v))
 	    {
+	      basic_string<_CharT> __s;
 	      if constexpr (is_same_v<char, _CharT>)
-		__wstr = _M_localize(__str, __expc, __fc.locale());
+		__s = _M_localize(__str, __expc, __fc.locale());
 	      else
-		__wstr = _M_localize(__str, __expc, __loc.value());
-	      if (!__wstr.empty())
-		__str = __wstr;
+		__s = _M_localize(__str, __expc, __loc.value());
+	      if (!__s.empty())
+		__str = __wstr = std::move(__s);
 	    }
 
 	  size_t __width = _M_spec._M_get_width(__fc);
