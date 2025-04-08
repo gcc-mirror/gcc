@@ -22,8 +22,8 @@
 
 void test01()
 {
-  std::unordered_map<int, int> um;
-  const std::unordered_map<int, int>& cum = um;
+  std::unordered_multimap<int, int> um;
+  const std::unordered_multimap<int, int>& cum = um;
   cum.begin(um.bucket_count());
 }
 

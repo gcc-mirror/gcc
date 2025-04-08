@@ -22,7 +22,7 @@
 
 void test01()
 {
-  std::unordered_map<int, int> um;
+  std::unordered_multimap<int, int> um;
   um.max_load_factor(-1.0f);
 }
 
