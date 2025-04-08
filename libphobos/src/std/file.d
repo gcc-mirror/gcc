@@ -983,10 +983,10 @@ private void renameImpl(scope const(char)[] f, scope const(char)[] t,
             import std.conv : to, text;
 
             if (!f)
-                f = to!(typeof(f))(fromz[0 .. wcslen(fromz)]);
+                f = fromz ? to!(typeof(f))(fromz[0 .. wcslen(fromz)]) : "(null)";
 
             if (!t)
-                t = to!(typeof(t))(toz[0 .. wcslen(toz)]);
+                t = toz ? to!(typeof(t))(toz[0 .. wcslen(toz)]) : "(null)";
 
             enforce(false,
                 new FileException(

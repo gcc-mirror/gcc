@@ -252,6 +252,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_norm.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_tables.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/windows/advapi32.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/windows/bcrypt.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/json.lo std/logger/core.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/filelogger.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/multilogger.lo \
@@ -612,14 +613,15 @@ libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_comp.d std/internal/unicode_decomp.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_grapheme.d std/internal/unicode_norm.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_tables.d std/internal/windows/advapi32.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/json.d std/logger/core.d std/logger/filelogger.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/multilogger.d std/logger/nulllogger.d std/logger/package.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/algebraic.d std/math/constants.d std/math/exponential.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/hardware.d std/math/operations.d std/math/package.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/remainder.d std/math/rounding.d std/math/traits.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/trigonometry.d std/mathspecial.d std/meta.d std/mmfile.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/net/curl.d std/net/isemail.d std/numeric.d std/outbuffer.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/package.d std/parallelism.d std/path.d std/process.d std/random.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/windows/bcrypt.d std/json.d std/logger/core.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/filelogger.d std/logger/multilogger.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/logger/nulllogger.d std/logger/package.d std/math/algebraic.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/constants.d std/math/exponential.d std/math/hardware.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/operations.d std/math/package.d std/math/remainder.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/math/rounding.d std/math/traits.d std/math/trigonometry.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/mathspecial.d std/meta.d std/mmfile.d std/net/curl.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/net/isemail.d std/numeric.d std/outbuffer.d std/package.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/parallelism.d std/path.d std/process.d std/random.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/range/interfaces.d std/range/package.d std/range/primitives.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/backtracking.d std/regex/internal/generator.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/ir.d std/regex/internal/kickstart.d \
@@ -901,6 +903,7 @@ std/internal/windows/$(am__dirstamp):
 	@: > std/internal/windows/$(am__dirstamp)
 std/internal/windows/advapi32.lo:  \
 	std/internal/windows/$(am__dirstamp)
+std/internal/windows/bcrypt.lo: std/internal/windows/$(am__dirstamp)
 std/json.lo: std/$(am__dirstamp)
 std/logger/$(am__dirstamp):
 	@$(MKDIR_P) std/logger

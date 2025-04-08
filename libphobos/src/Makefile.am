@@ -144,14 +144,15 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/odbc/odbc32.d etc/c/odbc/odbc64.d \
 	std/internal/unicode_comp.d std/internal/unicode_decomp.d \
 	std/internal/unicode_grapheme.d std/internal/unicode_norm.d \
 	std/internal/unicode_tables.d std/internal/windows/advapi32.d \
-	std/json.d std/logger/core.d std/logger/filelogger.d \
-	std/logger/multilogger.d std/logger/nulllogger.d std/logger/package.d \
-	std/math/algebraic.d std/math/constants.d std/math/exponential.d \
-	std/math/hardware.d std/math/operations.d std/math/package.d \
-	std/math/remainder.d std/math/rounding.d std/math/traits.d \
-	std/math/trigonometry.d std/mathspecial.d std/meta.d std/mmfile.d \
-	std/net/curl.d std/net/isemail.d std/numeric.d std/outbuffer.d \
-	std/package.d std/parallelism.d std/path.d std/process.d std/random.d \
+	std/internal/windows/bcrypt.d std/json.d std/logger/core.d \
+	std/logger/filelogger.d std/logger/multilogger.d \
+	std/logger/nulllogger.d std/logger/package.d std/math/algebraic.d \
+	std/math/constants.d std/math/exponential.d std/math/hardware.d \
+	std/math/operations.d std/math/package.d std/math/remainder.d \
+	std/math/rounding.d std/math/traits.d std/math/trigonometry.d \
+	std/mathspecial.d std/meta.d std/mmfile.d std/net/curl.d \
+	std/net/isemail.d std/numeric.d std/outbuffer.d std/package.d \
+	std/parallelism.d std/path.d std/process.d std/random.d \
 	std/range/interfaces.d std/range/package.d std/range/primitives.d \
 	std/regex/internal/backtracking.d std/regex/internal/generator.d \
 	std/regex/internal/ir.d std/regex/internal/kickstart.d \

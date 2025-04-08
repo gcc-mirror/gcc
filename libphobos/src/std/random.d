@@ -1792,23 +1792,7 @@ version (linux)
 
 version (Windows)
 {
-    pragma(lib, "Bcrypt.lib");
-
-    private bool bcryptGenRandom(T)(out T result) @trusted
-    {
-        import core.sys.windows.windef : PUCHAR, ULONG;
-        import core.sys.windows.ntdef : NT_SUCCESS;
-        import core.sys.windows.bcrypt : BCryptGenRandom, BCRYPT_USE_SYSTEM_PREFERRED_RNG;
-
-        const gotRandom = BCryptGenRandom(
-            null,
-            cast(PUCHAR) &result,
-            ULONG(T.sizeof),
-            BCRYPT_USE_SYSTEM_PREFERRED_RNG,
-        );
-
-        return NT_SUCCESS(gotRandom);
-    }
+    import std.internal.windows.bcrypt : bcryptGenRandom;
 }
 
 /**
