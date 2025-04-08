@@ -588,6 +588,8 @@ maybe_trim_constructor_store (ao_ref *ref, sbitmap live, gimple *stmt)
       /* We want &lhs for the MEM_REF expression.  */
       tree lhs_addr = build_fold_addr_expr (gimple_assign_lhs (stmt));
 
+      STRIP_USELESS_TYPE_CONVERSION (lhs_addr);
+
       if (! is_gimple_min_invariant (lhs_addr))
 	return;
 
