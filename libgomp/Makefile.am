@@ -97,7 +97,7 @@ openacc_kinds.mod: openacc.mod
 openacc.mod: openacc.lo
 	:
 %.mod: %.f90
-	$(FC) $(FCFLAGS) -cpp -fopenmp -fsyntax-only $<
+	$(FC) $(FCFLAGS) -cpp -fopenmp -fsyntax-only -Wno-c-binding-type $<
 fortran.lo: libgomp_f.h
 fortran.o: libgomp_f.h
 env.lo: libgomp_f.h
