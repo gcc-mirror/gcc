@@ -621,9 +621,10 @@ MacroExpander::match_n_matches (Parser<MacroInvocLexer> &parser,
 		// matched fragment get the offset in the token stream
 		size_t offs_end = source.get_offs ();
 
-		sub_stack.insert_metavar (
-		  MatchedFragment (fragment->get_ident ().as_string (),
-				   offs_begin, offs_end));
+		if (valid_current_match)
+		  sub_stack.insert_metavar (
+		    MatchedFragment (fragment->get_ident ().as_string (),
+				     offs_begin, offs_end));
 	      }
 	      break;
 
@@ -650,14 +651,14 @@ MacroExpander::match_n_matches (Parser<MacroInvocLexer> &parser,
 	}
       auto old_stack = sub_stack.pop ();
 
-      // nest metavars into repetitions
-      for (auto &ent : old_stack)
-	sub_stack.append_fragment (ent.first, std::move (ent.second));
-
       // If we've encountered an error once, stop trying to match more
       // repetitions
       if (!valid_current_match)
 	break;
+
+      // nest metavars into repetitions
+      for (auto &ent : old_stack)
+	sub_stack.append_fragment (ent.first, std::move (ent.second));
 
       match_amount++;
 
