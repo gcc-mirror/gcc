@@ -1,3 +1,27 @@
+2025-04-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/119642
+	* include/bits/formatfwd.h: Remove stray pragma.
+
+2025-04-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/precompiled/stdc++.h: Include <stdbit.h> and
+	<stdckdint.h>. Include <stacktrace> unconditionally.
+
+2025-04-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/doxygen/user.cfg.in (INPUT): Add flat_map, flat_set,
+	text_encoding, stdbit.h and stdckdint.h.
+
+2025-04-07  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119645
+	* acinclude.m4 (GLIBCXX_ENABLE_LOCK_POLICY) [GCN, nvptx]:
+	Hard-code results.
+	* configure: Regenerate.
+	* configure.host [GCN, nvptx] (atomicity_dir): Set to
+	'cpu/generic/atomicity_builtins'.
+
 2025-04-04  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/119620

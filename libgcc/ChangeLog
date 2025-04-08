@@ -1,3 +1,13 @@
+2025-04-07  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/alloca.c: New.
+	* config/nvptx/t-nvptx (LIB2ADD): Add it.
+
+2025-04-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/lib1funcs.S (__mulhisi3, __umulhisi3): Use
+	__mulhisi3_helper for better performance on AVRrc.
+
 2025-04-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/t-avr (LIB1ASMFUNCS): Add (and remove from

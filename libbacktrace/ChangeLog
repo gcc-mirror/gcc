@@ -1,3 +1,7 @@
+2025-04-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* atomic.c (backtrace_atomic_store_int): Use int for old value.
+
 2025-02-10  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (elf_uncompress_lzma_block): Add casts to avoid

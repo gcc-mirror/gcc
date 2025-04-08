@@ -1,3 +1,25 @@
+2025-04-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* symbols.cc : Remove trailing // on standard_internal.
+	(cbl_field_t::internalize): Print a warning if we fail to
+	initialise iconv.
+
+2025-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* Make-lang.in (cobol/charmaps.cc, cobol/valconv.cc): Use a BRE
+	only sed regex.
+
+2025-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR web/119227
+	* Make-lang.in (GCOBOL_HTML_FILES): New variable.
+	(cobol.install-html, cobol.html, cobol.srchtml): Use
+	$(GCOBOL_HTML_FILES) instead of gcobol.html gcobol-io.html.
+	(gcobol.html): Rename goal to ...
+	($(build_htmldir)/gcobol/gcobol.html): ... this.  Run mkinstalldirs.
+	(gcobol-io.html): Rename goal to ...
+	($(build_htmldir)/gcobol/gcobol-io.html): ... this.  Run mkinstalldirs.
+
 2025-04-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR cobol/119414

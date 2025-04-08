@@ -1,3 +1,92 @@
+2025-04-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/113257
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add Apple-a12,
+	Apple-M1, Apple-M2, Apple-M3 with expanded names to allow for the
+	LITTLE.big versions.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Add apple-m1,2 and 3 cores to the ones listed
+	for arch and tune selections.
+
+2025-04-07  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.opt (-mfake-ptx-alloca): Update.
+
+2025-04-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/118924
+	* tree-sra.cc (create_total_scalarization_access): Set
+	grp_same_access_path flag to zero.
+
+2025-04-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/118924
+	* tree-ssa-alias-compare.h (types_equal_for_same_type_for_tbaa_p):
+	Declare.
+	* tree-ssa-alias.cc: Include ipa-utils.h.
+	(types_equal_for_same_type_for_tbaa_p): New public overloaded variant.
+	* tree-sra.cc: Include tree-ssa-alias-compare.h.
+	(create_access): Initialzie grp_same_access_path to true.
+	(build_accesses_from_assign): Detect tbaa hazards and clear
+	grp_same_access_path fields of involved accesses when they occur.
+	(sort_and_splice_var_accesses): Take previous values of
+	grp_same_access_path into account.
+
+2025-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119640
+	* tree-vect-stmts.cc (vectorizable_shift): Always insert code
+	for one of our SLP operands before the code for the vector
+	shift itself.
+
+2025-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119614
+	* tree-tailcall.cc (find_tail_calls): Remember edges which have been
+	walked through if !ass_var.  Perform IPA-VRP workaround even when
+	ret_var is not TREE_CONSTANT, in that case check in a loop if it is
+	a PHI result and in that case look at the PHI argument from
+	corresponding edge in the edge vector.
+
+2025-04-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/116398
+	* params.opt (-param=max-combine-search-insns=): New param.
+	* doc/invoke.texi: Document it.
+	* combine.cc (insn_link::insn_count): New field.
+	(alloc_insn_link): Initialize it.
+	(distribute_links): Add a limit parameter.
+	(try_combine): Use the new param to limit distribute_links
+	when only i3 has changed.
+
+2025-04-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/116398
+	* combine.cc (distribute_links): Take an optional start point.
+	(try_combine): If only i3 has changed, only distribute i3's links,
+	not i2's.  Start the search for the new use from i3 rather than
+	from the definition instruction.  Likewise start the search for
+	the new use from i2 when distributing i2's links.
+
+2025-04-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/116398
+	* combine.cc (try_combine): Shortcut the split_i2i3 handling if
+	i2 is unchanged.
+
+2025-04-07  Richard Sandiford  <richard.sandiford@arm.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/116398
+	* combine.cc (try_combine): Reallow 2->2 combinations.  Detect when
+	only i3 has changed and restart from i3 in that case.
+
+2025-04-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* simplify-rtx.cc (simplify_const_relational_operation): Generalize
+	the constant checks in the fold-via-minus path to match the
+	INTEGRAL_MODE_P condition.
+
 2025-04-06  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* doc/extend.texi (Boolean Type): Further clarify support for

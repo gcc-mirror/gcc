@@ -1,3 +1,12 @@
+2025-04-07  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/119408
+	* configure.ac: When checking for __float128 support, determine
+	whether the current architecture is LoongArch.  If so, return false.
+	* configure: Regenerate.
+	Sigend-off-by: Xi Ruoyao <xry111@xry111.site>
+	Sigend-off-by: Jakub Jelinek <jakub@redhat.com>
+
 2025-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* strtod/strtod_l.c (____STRTOF_INTERNAL): Avoid old-style function

@@ -1,3 +1,45 @@
+2025-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119652
+	* g++.dg/cpp2a/constinit20.C: New test.
+
+2025-04-07  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gcc.target/nvptx/alloca-2-O0_-mfake-ptx-alloca.c: Adjust.
+
+2025-04-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/118924
+	* g++.dg/tree-ssa/pr118924.C: New test.
+
+2025-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119640
+	* gcc.dg/vect/pr119640.c: New testcase.
+
+2025-04-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/119556
+	* gcc.target/arm/short-vfp-1.c: Improve dg directives.
+
+2025-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119614
+	* g++.dg/opt/pr119613.C: Change { c || c++11 } in obviously C++ only
+	test to just c++11.
+	* g++.dg/opt/pr119614.C: New test.
+
+2025-04-07  Richard Sandiford  <richard.sandiford@arm.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/aarch64/popcnt-le-1.c: Account for commutativity of TST.
+	* gcc.target/aarch64/popcnt-le-3.c: Likewise AND.
+	* gcc.target/aarch64/pr100056.c: Revert previous patch.
+	* gcc.target/aarch64/sve/pred-not-gen-1.c: Likewise.
+	* gcc.target/aarch64/sve/pred-not-gen-4.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_2.c: Likewise.
+	* gcc.target/aarch64/sve/var_stride_4.c: Likewise.
+
 2025-04-06  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* lib/cobol.exp: Simplify the setting of COBOL_UNDER_TEST.

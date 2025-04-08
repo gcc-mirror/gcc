@@ -1,3 +1,10 @@
+2025-04-07  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/119408
+	* acinclude.m4: When checking for __float128 support, determine
+	whether the current architecture is LoongArch.  If so, return false.
+	* configure: Regenerate.
+
 2025-03-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* intrinsics/reduce.c (reduce_scalar_c): Correct type of parameter DIM.

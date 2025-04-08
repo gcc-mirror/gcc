@@ -1,3 +1,10 @@
+2025-04-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (omp_target_memcpy_rect_async,
+	omp_target_memcpy_rect): Add @ref to 'Offload-Target Specifics'.
+	(AMD Radeon (GCN)): Document how memcpy_rect is implemented.
+	(nvptx): Move item about memcpy_rect item down; use present tense.
+
 2025-03-26  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR driver/101544

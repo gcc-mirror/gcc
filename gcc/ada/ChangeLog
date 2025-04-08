@@ -1,3 +1,12 @@
+2025-04-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.cc (convert) <POINTER_TYPE>: Use fold_convert
+	to convert between thin pointers.  If the source is a thin pointer
+	with zero offset from the base and the target is a pointer to its
+	array, displace the pointer after converting it.
+	* gcc-interface/utils2.cc (build_unary_op) <ATTR_ADDR_EXPR>: Use
+	fold_convert to convert the address before displacing it.
+
 2025-04-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgnat/a-ngcoar.adb (Eigensystem): Adjust notation and fix the
