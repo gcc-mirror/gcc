@@ -6762,7 +6762,18 @@ cse_main (rtx_insn *f ATTRIBUTE_UNUSED, int nregs)
    modify the liveness of DEST.
    DEST is set to pc_rtx for a trapping insn, or for an insn with side effects.
    We must then count uses of a SET_DEST regardless, because the insn can't be
-   deleted here.  */
+   deleted here.
+   Also count uses of a SET_DEST if it has been used by an earlier insn,
+   but in that case only when incrementing and not when decrementing, effectively
+   making setters of such a pseudo non-eliminable.  This is for cases like
+   (set (reg x) (expr))
+   ...
+   (set (reg y) (expr (reg (x))))
+   ...
+   (set (reg x) (expr (reg (x))))
+   where we can't eliminate the last insn because x is is still used, if y
+   is unused we can eliminate the middle insn and when considering the first insn
+   we used to eliminate it despite it being used in the last insn.  */
 
 static void
 count_reg_usage (rtx x, int *counts, rtx dest, int incr)
@@ -6778,7 +6789,7 @@ count_reg_usage (rtx x, int *counts, rtx dest, int incr)
   switch (code = GET_CODE (x))
     {
     case REG:
-      if (x != dest)
+      if (x != dest || (incr > 0 && counts[REGNO (x)]))
 	counts[REGNO (x)] += incr;
       return;
 
