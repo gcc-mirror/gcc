@@ -11308,23 +11308,55 @@ and,
 (match (ctz_table_index @1 @2 @3)
   (rshift (mult (bit_and:c (negate @1) @1) INTEGER_CST@2) INTEGER_CST@3))
 
+/* Floatint point/integer comparison and integer->integer
+   or floating point -> float point conversion.  */
 (match (cond_expr_convert_p @0 @2 @3 @6)
  (cond (simple_comparison@6 @0 @1) (convert@4 @2) (convert@5 @3))
-  (if (INTEGRAL_TYPE_P (type)
-       && INTEGRAL_TYPE_P (TREE_TYPE (@2))
-       && INTEGRAL_TYPE_P (TREE_TYPE (@0))
-       && INTEGRAL_TYPE_P (TREE_TYPE (@3))
-       && TYPE_PRECISION (type) != TYPE_PRECISION (TREE_TYPE (@0))
-       && TYPE_PRECISION (TREE_TYPE (@0))
-	  == TYPE_PRECISION (TREE_TYPE (@2))
-       && TYPE_PRECISION (TREE_TYPE (@0))
-	  == TYPE_PRECISION (TREE_TYPE (@3))
+  (if ((INTEGRAL_TYPE_P (type)
+       || (!flag_trapping_math && SCALAR_FLOAT_TYPE_P (type)))
+       && ((INTEGRAL_TYPE_P (TREE_TYPE (@2))
+	    && INTEGRAL_TYPE_P (TREE_TYPE (@3)))
+	   || (SCALAR_FLOAT_TYPE_P (TREE_TYPE (@2))
+	       && types_match (TREE_TYPE (@2), TREE_TYPE (@3))))
+       && !operand_equal_p (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (@0)))
+       && operand_equal_p (TYPE_SIZE (TREE_TYPE (@0)),
+			   TYPE_SIZE (TREE_TYPE (@2)))
+       && operand_equal_p (TYPE_SIZE (TREE_TYPE (@0)),
+			   TYPE_SIZE (TREE_TYPE (@3)))
        /* For vect_recog_cond_expr_convert_pattern, @2 and @3 can differ in
 	  signess when convert is truncation, but not ok for extension since
 	  it's sign_extend vs zero_extend.  */
-       && (TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (type)
+       && (known_gt (tree_to_poly_uint64 (TYPE_SIZE (TREE_TYPE (@0))),
+		     tree_to_poly_uint64 (TYPE_SIZE (type)))
 	   || (TYPE_UNSIGNED (TREE_TYPE (@2))
 	       == TYPE_UNSIGNED (TREE_TYPE (@3))))
+       && single_use (@4)
+       && single_use (@5))))
+
+/* Floating point or integer comparison and integer to floating point
+   conversion.  */
+(match (cond_expr_convert_p @0 @2 @3 @6)
+ (cond (simple_comparison@6 @0 @1) (float@4 @2) (float@5 @3))
+  (if (SCALAR_FLOAT_TYPE_P (type) && !flag_trapping_math
+       && INTEGRAL_TYPE_P (TREE_TYPE (@2))
+       && types_match (TREE_TYPE (@2), TREE_TYPE (@3))
+       && !operand_equal_p (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (@0)))
+       && operand_equal_p (TYPE_SIZE (TREE_TYPE (@0)),
+			   TYPE_SIZE (TREE_TYPE (@2)))
+       && single_use (@4)
+       && single_use (@5))))
+
+/* Floating point or integer comparison and floating point to integer
+   conversion.  */
+(match (cond_expr_convert_p @0 @2 @3 @6)
+ (cond (simple_comparison@6 @0 @1) (fix_trunc@4 @2) (fix_trunc@5 @3))
+  (if (INTEGRAL_TYPE_P (type) && !flag_trapping_math
+       && SCALAR_FLOAT_TYPE_P (TREE_TYPE (@2))
+       && types_match (TREE_TYPE (@2), TREE_TYPE (@3))
+       && !operand_equal_p (TYPE_SIZE (type),
+			    TYPE_SIZE (TREE_TYPE (@0)))
+       && operand_equal_p (TYPE_SIZE (TREE_TYPE (@0)),
+			   TYPE_SIZE (TREE_TYPE (@2)))
        && single_use (@4)
        && single_use (@5))))
 
