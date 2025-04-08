@@ -354,7 +354,7 @@ struct norm_info : subst_info
   /* Construct a top-level context for DECL.  */
 
   norm_info (tree in_decl, bool diag)
-    : subst_info (tf_warning_or_error, in_decl),
+    : subst_info (tf_warning_or_error|tf_partial, in_decl),
       generate_diagnostics (diag)
   {
     if (in_decl)
