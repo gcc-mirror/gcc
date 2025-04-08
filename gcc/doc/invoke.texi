@@ -6180,10 +6180,11 @@ messages.
 @end table
 
 You can request many specific warnings with options beginning with
-@samp{-W}, for example @option{-Wimplicit} to request warnings on
-implicit declarations.  Each of these specific warning options also
-has a negative form beginning @samp{-Wno-} to turn off warnings; for
-example, @option{-Wno-implicit}.  This manual lists only one of the
+@samp{-W}, for example @option{-Wunused-variable} to request warnings on
+declarations of variables that are never used.
+Each of these specific warning options also
+has a negative form beginning with @samp{-Wno-} to turn off warnings; for
+example, @option{-Wno-unused-variable}.  This manual lists only one of the
 two forms, whichever is not the default.  For further
 language-specific options also refer to @ref{C++ Dialect Options} and
 @ref{Objective-C and Objective-C++ Dialect Options}.
@@ -6192,15 +6193,15 @@ Additional warnings can be produced by enabling the static analyzer;
 
 Some options, such as @option{-Wall} and @option{-Wextra}, turn on other
 options, such as @option{-Wunused}, which may turn on further options,
-such as @option{-Wunused-value}. The combined effect of positive and
+such as @option{-Wunused-variable}. The combined effect of positive and
 negative forms is that more specific options have priority over less
-specific ones, independently of their position in the command-line. For
+specific ones, independently of their position in the command line. For
 options of the same specificity, the last one takes effect. Options
 enabled or disabled via pragmas (@pxref{Diagnostic Pragmas}) take effect
-as if they appeared at the end of the command-line.
+as if they appeared at the end of the command line.
 
 When an unrecognized warning option is requested (e.g.,
-@option{-Wunknown-warning}), GCC emits a diagnostic stating
+@option{-Wunknown-warning}), GCC gives an error stating
 that the option is not recognized.  However, if the @option{-Wno-} form
 is used, the behavior is slightly different: no diagnostic is
 produced for @option{-Wno-unknown-warning} unless other diagnostics
@@ -6209,11 +6210,11 @@ with old compilers, but if something goes wrong, the compiler
 warns that an unrecognized option is present.
 
 The effectiveness of some warnings depends on optimizations also being
-enabled. For example @option{-Wsuggest-final-types} is more effective
-with link-time optimization and some instances of other warnings may
+enabled. For example, @option{-Wsuggest-final-types} is more effective
+with link-time optimization.  Some other warnings may
 not be issued at all unless optimization is enabled.  While optimization
-in general improves the efficacy of control and data flow sensitive
-warnings, in some cases it may also cause false positives.
+in general improves the efficacy of warnings about control and data-flow
+problems, in some cases it may also cause false positives.
 
 @table @gcctabopt
 @opindex pedantic
