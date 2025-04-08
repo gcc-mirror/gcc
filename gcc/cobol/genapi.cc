@@ -787,13 +787,13 @@ function_handle_from_name(cbl_refer_t &name,
       {
       gg_memcpy(gg_get_address_of(function_handle),
                 member(name.field->var_decl_node, "data"),
-                build_int_cst_type(SIZE_T, sizeof(void *)));
+                sizeof_pointer);
       }
     else
       {
       gg_memcpy(gg_get_address_of(function_handle),
                 qualified_data_source(name),
-                build_int_cst_type(SIZE_T, sizeof(void *)));
+                sizeof_pointer);
       }
     return function_handle;
     }
@@ -8917,8 +8917,8 @@ parser_file_add(struct cbl_file_t *file)
   gg_assign(array_of_keys,
             gg_cast(build_pointer_type(cblc_field_p_type_node),
                     gg_malloc(build_int_cst_type(SIZE_T,
-                                                (number_of_key_fields+1)
-                                                            *sizeof(void *)))));
+                                                 (number_of_key_fields+1)
+                                                 *int_size_in_bytes(VOID_P)))));
 
   strcpy(achName, "_");
   strcat(achName, file->name);
@@ -8929,8 +8929,8 @@ parser_file_add(struct cbl_file_t *file)
   gg_assign(key_numbers,
             gg_cast(build_pointer_type(INT),
                     gg_malloc(build_int_cst_type(SIZE_T,
-                                                (number_of_key_fields+1)
-                                                            *sizeof(int)))));
+                                                 (number_of_key_fields+1)
+                                                            *int_size_in_bytes(INT)))));
 
   strcpy(achName, "_");
   strcat(achName, file->name);
@@ -8942,7 +8942,7 @@ parser_file_add(struct cbl_file_t *file)
             gg_cast(build_pointer_type(INT),
                     gg_malloc(build_int_cst_type(SIZE_T,
                                                 (number_of_key_fields+1)
-                                                            *sizeof(int)))));
+                                                            *int_size_in_bytes(INT)))));
 
   size_t index = 0;
   for( size_t i=0; i<file->nkey; i++ )
@@ -9686,7 +9686,9 @@ inspect_tally(bool backward,
     gg_assign(int_size, build_int_cst_type(INT, n_integers));
     gg_assign(integers,
               gg_cast(SIZE_T_P,
-                      gg_realloc(integers, n_integers * sizeof(void *))));
+                      gg_realloc(integers,
+                                 n_integers
+                                 * int_size_in_bytes(VOID_P))));
     }
   ELSE
     {
@@ -9837,7 +9839,9 @@ inspect_replacing(int backward,
     gg_assign(int_size, build_int_cst_type(INT, n_integers));
     gg_assign(integers,
               gg_cast(SIZE_T_P,
-                      gg_realloc(integers, n_integers * sizeof(void *))));
+                      gg_realloc(integers,
+                                 n_integers
+                                 * int_size_in_bytes(VOID_P))));
     }
   ELSE
     {
@@ -11074,7 +11078,9 @@ gg_array_of_field_pointers( size_t N,
                             cbl_field_t **fields )
   {
   tree retval = gg_define_variable(build_pointer_type(cblc_field_p_type_node));
-  gg_assign(retval, gg_cast(build_pointer_type(cblc_field_p_type_node), gg_malloc(  build_int_cst_type(SIZE_T, N * sizeof(void *)))));
+  gg_assign(retval, gg_cast(build_pointer_type(cblc_field_p_type_node),
+                            gg_malloc(build_int_cst_type(SIZE_T,
+                                                         N * int_size_in_bytes(VOID_P)))));
   for(size_t i=0; i<N; i++)
     {
     gg_assign(gg_array_value(retval, i), gg_get_address_of(fields[i]->var_decl_node));
@@ -11566,7 +11572,8 @@ gg_array_of_file_pointers(  size_t N,
   {
   tree retval = gg_define_variable(build_pointer_type(cblc_file_p_type_node));
   gg_assign(retval, gg_cast(  build_pointer_type(cblc_file_p_type_node),
-                              gg_malloc(  build_int_cst_type(SIZE_T, N * sizeof(void *)))));
+                              gg_malloc(  build_int_cst_type(SIZE_T,
+                                                             N * int_size_in_bytes(VOID_P)))));
   for(size_t i=0; i<N; i++)
     {
     gg_assign(gg_array_value(retval, i), gg_get_address_of(files[i]->var_decl_node));
@@ -12853,7 +12860,7 @@ parser_set_pointers( size_t ntgt, cbl_refer_t *tgts, cbl_refer_t source )
                                                    COBOL_FUNCTION_RETURN_TYPE);
       gg_memcpy(qualified_data_dest(tgts[i]),
                 gg_get_address_of(function_handle),
-                build_int_cst_type(SIZE_T, sizeof(void *)));
+                sizeof_pointer);
       }
     else
       {

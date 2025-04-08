@@ -33,6 +33,7 @@
   #include "coretypes.h"
   #include "../../libgcobol/io.h"
   #include "../../libgcobol/ec.h"
+  #include "tree.h"
 
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
@@ -3822,7 +3823,8 @@ data_clauses:   data_clause
                         if( yydebug ) {
                           yywarn("expanding %s size from %u bytes to %zu "
                                 "because it redefines %s with USAGE POINTER",
-                                field->name, field->size(), sizeof(void*),
+                                field->name, field->size(),
+                                (size_t)int_size_in_bytes(ptr_type_node),
                                 redefined->name);
                         }
                         field->embiggen();
@@ -4282,7 +4284,7 @@ usage_clause1:  usage COMPUTATIONAL[comp]   native
                   if( gcobol_feature_embiggen() && redefined &&
                       is_numeric(redefined->type) && redefined->size() == 4) {
                     // For now, we allow POINTER to expand a 32-bit item to 64 bits.
-                    field->data.capacity = sizeof(void *);
+                    field->data.capacity = int_size_in_bytes(ptr_type_node);
                     dbgmsg("%s: expanding #%zu %s capacity %u => %u", __func__,
                           field_index(redefined), redefined->name,
                           redefined->data.capacity, field->data.capacity);

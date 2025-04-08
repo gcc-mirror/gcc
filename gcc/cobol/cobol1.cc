@@ -166,8 +166,8 @@ create_our_type_nodes_init()
   long_double_ten_node = build_real_from_int_cst(
                            LONGDOUBLE,
                            build_int_cst_type(INT,10));
-  sizeof_size_t  = build_int_cst_type(SIZE_T, sizeof(size_t));
-  sizeof_pointer = build_int_cst_type(SIZE_T, sizeof(void *));
+  sizeof_size_t  = build_int_cst_type(SIZE_T, int_size_in_bytes(SIZE_T));
+  sizeof_pointer = build_int_cst_type(SIZE_T, int_size_in_bytes(VOID_P));
 
   bool_true_node = build2(EQ_EXPR,
                           integer_type_node,
