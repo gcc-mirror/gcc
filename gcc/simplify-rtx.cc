@@ -6465,14 +6465,16 @@ simplify_context::simplify_relational_operation_1 (rtx_code code,
       case LEU:
 	/* (eq (popcount x) (const_int 0)) -> (eq x (const_int 0)).  */
 	return simplify_gen_relational (EQ, mode, GET_MODE (XEXP (op0, 0)),
-					XEXP (op0, 0), const0_rtx);
+					XEXP (op0, 0),
+					CONST0_RTX (GET_MODE (XEXP (op0, 0))));
 
       case NE:
       case GT:
       case GTU:
 	/* (ne (popcount x) (const_int 0)) -> (ne x (const_int 0)).  */
 	return simplify_gen_relational (NE, mode, GET_MODE (XEXP (op0, 0)),
-					XEXP (op0, 0), const0_rtx);
+					XEXP (op0, 0),
+					CONST0_RTX (GET_MODE (XEXP (op0, 0))));
 
       default:
 	break;
