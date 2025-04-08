@@ -39,6 +39,6 @@ test (int *a, int *b)
   return x;
 }
 
-/* { dg-final { scan-tree-dump "__builtin_GOMP_interop \\(D\.\[0-9\]+, 2, interopobjs\.\[0-9\]+, tgt_tgtsync\.\[0-9\]+," "gimple" } } */
-/* { dg-final { scan-tree-dump "__builtin_GOMP_interop \\(D\.\[0-9\]+, 0, 0B, 0B, 0B, 0, 0B, 2, interopobjs\.\[0-9\]+," "gimple" } } */
+/* { dg-final { scan-tree-dump "__builtin_GOMP_interop \\(D\.\[0-9\]+, 2, &interopobjs\.\[0-9\]+, &tgt_tgtsync\.\[0-9\]+," "gimple" } } */
+/* { dg-final { scan-tree-dump "__builtin_GOMP_interop \\(D\.\[0-9\]+, 0, 0B, 0B, 0B, 0, 0B, 2, &interopobjs\.\[0-9\]+," "gimple" } } */
 /* { dg-final { scan-tree-dump "repl1 \\(obj1, interop\.\[0-9\]+, interop\.\[0-9\]+\\)" "gimple" } } */

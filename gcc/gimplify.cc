@@ -3887,6 +3887,7 @@ static tree
 modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
 			      bool want_value, bool pointerize)
 {
+  location_t loc = EXPR_LOCATION (expr);
   tree fndecl = get_callee_fndecl (expr);
 
   /* Skip processing if we don't get the expected call form.  */
@@ -4081,14 +4082,17 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
 		}
 	    }
 
+	  objs = build_fold_addr_expr (objs);
+	  target_tgtsync = build_fold_addr_expr (target_tgtsync);
+	  prefer_type = prefer_type ? build_fold_addr_expr (prefer_type)
+				    : null_pointer_node;
 	  tree fn = builtin_decl_explicit (BUILT_IN_GOMP_INTEROP);
 	  tree create
-	    = build_call_expr (fn, 11, dispatch_device_num,
-			       nobjs, objs, target_tgtsync,
-			       prefer_type ? prefer_type : null_pointer_node,
-			       integer_zero_node, null_pointer_node,
-			       integer_zero_node, null_pointer_node,
-			       integer_zero_node, null_pointer_node);
+	    = build_call_expr_loc (loc, fn, 11, dispatch_device_num,
+				   nobjs, objs, target_tgtsync, prefer_type,
+				   integer_zero_node, null_pointer_node,
+				   integer_zero_node, null_pointer_node,
+				   integer_zero_node, null_pointer_node);
 	  if (init_code)
 	    init_code = build2 (COMPOUND_EXPR, TREE_TYPE (create),
 				init_code, create);
@@ -4096,12 +4100,12 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
 	    init_code = create;
 
 	  cleanup
-	    = build_call_expr (fn, 11, dispatch_device_num,
-			       integer_zero_node, null_pointer_node,
-			       null_pointer_node, null_pointer_node,
-			       integer_zero_node, null_pointer_node,
-			       nobjs, objs,
-			       integer_zero_node, null_pointer_node);
+	    = build_call_expr_loc (loc, fn, 11, dispatch_device_num,
+				   integer_zero_node, null_pointer_node,
+				   null_pointer_node, null_pointer_node,
+				   integer_zero_node, null_pointer_node,
+				   nobjs, objs,
+				   integer_zero_node, null_pointer_node);
 	  if (clobbers)
 	    cleanup = build2 (COMPOUND_EXPR, TREE_TYPE (clobbers),
 			      cleanup, clobbers);
@@ -4282,8 +4286,8 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
 				       actual_ptr);
 		}
 	      tree fn = builtin_decl_explicit (BUILT_IN_OMP_GET_MAPPED_PTR);
-	      tree mapped_arg = build_call_expr (fn, 2, actual_ptr,
-						 dispatch_device_num);
+	      tree mapped_arg = build_call_expr_loc (loc, fn, 2, actual_ptr,
+						     dispatch_device_num);
 
 	      if (TREE_CODE (*arg_p) == ADDR_EXPR
 		  || (TREE_CODE (TREE_TYPE (actual_ptr)) == REFERENCE_TYPE))
