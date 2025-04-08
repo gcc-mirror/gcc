@@ -1,3 +1,131 @@
+2025-04-07  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119652
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Also don't add a
+	TARGET_EXPR around AGGR_INIT_EXPR.
+
+2025-04-07  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118629
+	* name-lookup.cc (pushdecl_outermost_localscope): Look for an
+	sk_block.
+
+2025-04-04  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99546
+	PR c++/113925
+	PR c++/106976
+	PR c++/109961
+	PR c++/117336
+	* lambda.cc (build_lambda_object): Handle fake
+	requires-expr processing_template_decl.
+	* parser.cc (cp_parser_lambda_expression): Likewise.
+
+2025-04-04  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-04-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/117849
+	* semantics.cc (finish_id_expression_1): Allow use of constraint
+	variable outside an unevaluated context.
+
+2025-04-04  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-04-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119387
+	* constexpr.cc (p2280_active_p): New.
+	(cxx_eval_constant_expression) <case VAR_DECL>: Use it to
+	restrict P2280 relaxations.
+	<case PARM_DECL>: Likewise.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR c++/79786
+	* rtti.cc (emit_tinfo_decl): Fix DATA_ABI_ALIGNMENT invocation.
+
+2025-04-01  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-04-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119383
+	* call.cc (build_over_call): Use force_lvalue to ensure op= returns
+	an lvalue.
+	* cp-tree.h (force_lvalue): Declare.
+	* cvt.cc (force_lvalue): New.
+	* typeck.cc (cp_build_indirect_ref_1): Revert r15-8011.
+
+2025-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119150
+	* constexpr.cc (cxx_eval_call_expression): For
+	DECL_IMMEDIATE_FUNCTION_P (fun) set manifestly_const_eval in new_ctx
+	and new_call to mce_true and set ctx to &new_ctx.
+
+2025-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98533
+	PR c++/119123
+	* parser.cc (cp_parser_class_specifier): Update TYPE_FIELDS of
+	variant types in case cp_parser_late_parsing_default_args etc. change
+	TYPE_FIELDS on the main variant.  Add switch_to_class lambda and
+	use it to simplify repeated class switching code.
+
+2025-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119045
+	* constexpr.cc (cxx_eval_store_expression) <case REALPART_EXPR>:
+	Assert that refs->is_empty () rather than probe == target.
+	(cxx_eval_store_expression) <case IMAGPART_EXPR>: Likewise.
+
+2025-03-25  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2025-03-06  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/117504
+	* call.cc (perform_implicit_conversion_flags): Don't call
+	mark_{l,r}value_use.
+
+2025-03-24  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2024-09-14  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/116681
+	* name-lookup.cc (qualified_namespace_lookup): Use an
+	auto_cond_timer instead of using timevar_start and timevar_stop.
+
+2025-03-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119378
+	* pt.cc (tsubst) <case UNBOUND_CLASS_TEMPLATE>: Set
+	processing_template_decl when substituting the context.
+
 2025-03-20  Simon Martin  <simon@nasilyan.com>
 
 	PR c++/114292

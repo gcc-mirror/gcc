@@ -1,3 +1,30 @@
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR lto/91299
+	* lto-symtab.cc (lto_symtab_merge_symbols): Set DECL_EXTERNAL
+	only after calling get_availability.
+
+2025-03-30  Martin Uecker  <uecker@tugraz.at>
+
+	Backported from master:
+	2024-12-12  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/113688
+	PR c/114014
+	PR c/114713
+	PR c/117724
+	* lto-common.cc (hash_canonical_type): Add exception.
+
+2025-03-30  Martin Uecker  <uecker@tugraz.at>
+
+	Backported from master:
+	2024-12-12  Martin Uecker  <uecker@tugraz.at>
+
+	* lto-common.cc (hash_canonical_type): Add exception.
+
 2024-08-01  Release Manager
 
 	* GCC 14.2.0 released.

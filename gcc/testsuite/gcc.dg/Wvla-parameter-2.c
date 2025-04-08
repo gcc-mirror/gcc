@@ -34,17 +34,10 @@ void f (int[n1][2][n3][4][n5][6][n7][8][n9]);   // { dg-message "previously decl
                                                 // { dg-message "with 5 variable bounds" "note" { target *-*-* } .-1  }
 void f (int[n1][2][n3][4][n5][6][n7][8][n9]);
 
-/* Due to a limitation and because [*] is represented the same as [0]
-   only the most significant array bound is rendered as [*]; the others
-   are rendered as [0].  */
-void f (int[n1][2][n3][4][n5][6][n7][8][*]);    // { dg-warning "argument 1 of type 'int\\\[n1]\\\[2]\\\[n3]\\\[4]\\\[n5]\\\[6]\\\[n7]\\\[8]\\\[\\\*]' declared with 1 unspecified variable bound" "pr100420 (expected)" { xfail *-*-* } }
-// { dg-warning "argument 1 of type 'int\\\[n1]\\\[2]\\\[n3]\\\[4]\\\[n5]\\\[6]\\\[n7]\\\[8]\\\[0]' declared with 1 unspecified variable bound" "pr100420" { target *-*-* } .-1 }
-void f (int[n1][2][n3][4][n5][6][*][8][n9]);   // { dg-warning "argument 1 of type 'int\\\[n1]\\\[2]\\\[n3]\\\[4]\\\[n5]\\\[6]\\\[\\\*]\\\[8]\\\[n9]' declared with 1 unspecified variable bound" "pr100420 (expected)" { xfail *-*-* } }
-// { dg-warning "argument 1 of type 'int\\\[n1]\\\[2]\\\[n3]\\\[4]\\\[n5]\\\[6]\\\[0]\\\[8]\\\[n9]' declared with 1 unspecified variable bound" "pr100420" { target *-*-* } .-1 }
-void f (int[n1][2][n3][4][*][6][n7][8][n9]);   // { dg-warning "argument 1 of type 'int\\\[n1]\\\[2]\\\[n3]\\\[4]\\\[\\\*]\\\[6]\\\[n7]\\\[8]\\\[n9]' declared with 1 unspecified variable bound" "pr100420 (expected)" { xfail *-*-*} }
-// { dg-warning "argument 1 of type 'int\\\[n1]\\\[2]\\\[n3]\\\[4]\\\[0]\\\[6]\\\[n7]\\\[8]\\\[n9]' declared with 1 unspecified variable bound" "pr100420" { target *-*-* } .-1 }
-void f (int[n1][2][*][4][n5][6][n7][8][n9]);   // { dg-warning "argument 1 of type 'int\\\[n1]\\\[2]\\\[\\\*]\\\[4]\\\[n5]\\\[6]\\\[n7]\\\[8]\\\[n9]' declared with 1 unspecified variable bound" "pr100420 (expected)" { xfail *-*-* } }
-// { dg-warning "argument 1 of type 'int\\\[n1]\\\[2]\\\[0]\\\[4]\\\[n5]\\\[6]\\\[n7]\\\[8]\\\[n9]' declared with 1 unspecified variable bound" "pr100420" { target *-*-* } .-1 }
+void f (int[n1][2][n3][4][n5][6][n7][8][*]);    // { dg-warning "argument 1 of type 'int\\\[n1]\\\[2]\\\[n3]\\\[4]\\\[n5]\\\[6]\\\[n7]\\\[8]\\\[\\\*]' declared with 1 unspecified variable bound" "pr100420 (expected)" { target *-*-* } }
+void f (int[n1][2][n3][4][n5][6][*][8][n9]);   // { dg-warning "argument 1 of type 'int\\\[n1]\\\[2]\\\[n3]\\\[4]\\\[n5]\\\[6]\\\[\\\*]\\\[8]\\\[n9]' declared with 1 unspecified variable bound" "pr100420 (expected)" { target *-*-* } }
+void f (int[n1][2][n3][4][*][6][n7][8][n9]);   // { dg-warning "argument 1 of type 'int\\\[n1]\\\[2]\\\[n3]\\\[4]\\\[\\\*]\\\[6]\\\[n7]\\\[8]\\\[n9]' declared with 1 unspecified variable bound" "pr100420 (expected)" { target *-*-*} }
+void f (int[n1][2][*][4][n5][6][n7][8][n9]);   // { dg-warning "argument 1 of type 'int\\\[n1]\\\[2]\\\[\\\*]\\\[4]\\\[n5]\\\[6]\\\[n7]\\\[8]\\\[n9]' declared with 1 unspecified variable bound" "pr100420 (expected)" { target *-*-* } }
 void f (int[*][2][n3][4][n5][6][n7][8][n9]);   // { dg-warning "argument 1 of type 'int\\\[\\\*]\\\[2]\\\[n3]\\\[4]\\\[n5]\\\[6]\\\[n7]\\\[8]\\\[n9]' declared with 1 unspecified variable bound" }
 
 void f (int[n1][n2][n3][n4][n5][n6][n7][n8][n9]);   // { dg-warning "argument 1 of type 'int\\\[n1]\\\[n2]\\\[n3]\\\[n4]\\\[n5]\\\[n6]\\\[n7]\\\[n8]\\\[n9]' declared with 9 variable bounds" }

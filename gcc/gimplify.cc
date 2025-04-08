@@ -640,7 +640,7 @@ is_gimple_mem_rhs_or_call (tree t)
   else
     return (is_gimple_val (t)
 	    || is_gimple_lvalue (t)
-	    || TREE_CLOBBER_P (t)
+	    || (TREE_CODE (t) == CONSTRUCTOR && CONSTRUCTOR_NELTS (t) == 0)
 	    || TREE_CODE (t) == CALL_EXPR);
 }
 
@@ -2452,7 +2452,7 @@ warn_switch_unreachable_and_auto_init_r (gimple_stmt_iterator *gsi_p,
 	  const char *var_name_str = TREE_STRING_POINTER (var_name);
 
 	  warning_at (gimple_location (stmt), OPT_Wtrivial_auto_var_init,
-		      "%qs cannot be initialized with"
+		      "%qs cannot be initialized with "
 		      "%<-ftrivial-auto-var_init%>",
 		      var_name_str);
 	  break;
@@ -7709,7 +7709,8 @@ gimplify_addr_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	*expr_p = build_fold_addr_expr (op0);
 
       /* Make sure TREE_CONSTANT and TREE_SIDE_EFFECTS are set properly.  */
-      recompute_tree_invariant_for_addr_expr (*expr_p);
+      if (TREE_CODE (*expr_p) == ADDR_EXPR)
+	recompute_tree_invariant_for_addr_expr (*expr_p);
 
       /* If we re-built the ADDR_EXPR add a conversion to the original type
          if required.  */
@@ -7857,6 +7858,7 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  /* Turn the in/out constraint into an output constraint.  */
 	  char *p = xstrdup (constraint);
 	  p[0] = '=';
+	  TREE_PURPOSE (link) = unshare_expr (TREE_PURPOSE (link));
 	  TREE_VALUE (TREE_PURPOSE (link)) = build_string (constraint_len, p);
 
 	  /* And add a matching input constraint.  */

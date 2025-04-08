@@ -1,3 +1,26 @@
+2025-04-03  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119380
+	* trans-array.cc (structure_alloc_comps): Prevent freeing of
+	procedure pointer components.
+
+2025-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* resolve.cc (resolve_procedure_expression): Remove extraneous space
+	from the middle of diagnostics.
+
+2025-03-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-03-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/116706
+	* trans-array.cc (gfc_is_reallocatable_lhs): Fix check on
+	allocatable components of derived type or class objects.
+
 2025-03-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

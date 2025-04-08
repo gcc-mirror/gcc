@@ -16984,8 +16984,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
     case UNBOUND_CLASS_TEMPLATE:
       {
+	++processing_template_decl;
 	tree ctx = tsubst_aggr_type (TYPE_CONTEXT (t), args, complain,
 				     in_decl, /*entering_scope=*/1);
+	--processing_template_decl;
 	tree name = TYPE_IDENTIFIER (t);
 	tree parm_list = DECL_TEMPLATE_PARMS (TYPE_NAME (t));
 

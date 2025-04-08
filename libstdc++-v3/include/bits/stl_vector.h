@@ -65,6 +65,9 @@
 #if __cplusplus >= 202002L
 # include <compare>
 #endif
+#if __glibcxx_concepts // C++ >= C++20
+# include <bits/ranges_base.h>          // ranges::distance
+#endif
 
 #include <debug/assertions.h>
 
@@ -679,8 +682,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	     const allocator_type& __a = allocator_type())
       : _Base(__a)
       {
-	_M_range_initialize(__l.begin(), __l.end(),
-			    random_access_iterator_tag());
+	_M_range_initialize_n(__l.begin(), __l.end(), __l.size());
       }
 #endif
 
@@ -708,6 +710,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	       const allocator_type& __a = allocator_type())
 	: _Base(__a)
 	{
+#if __glibcxx_concepts // C++ >= C++20
+	  if constexpr (sized_sentinel_for<_InputIterator, _InputIterator>
+			  || forward_iterator<_InputIterator>)
+	    {
+	      const auto __n
+		= static_cast<size_type>(ranges::distance(__first, __last));
+	      _M_range_initialize_n(__first, __last, __n);
+	      return;
+	    }
+	  else
+#endif
 	  _M_range_initialize(__first, __last,
 			      std::__iterator_category(__first));
 	}
@@ -1689,14 +1702,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_M_range_initialize(_ForwardIterator __first, _ForwardIterator __last,
 			    std::forward_iterator_tag)
 	{
-	  const size_type __n = std::distance(__first, __last);
-	  this->_M_impl._M_start
-	    = this->_M_allocate(_S_check_init_len(__n, _M_get_Tp_allocator()));
-	  this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
-	  this->_M_impl._M_finish =
-	    std::__uninitialized_copy_a(__first, __last,
-					this->_M_impl._M_start,
-					_M_get_Tp_allocator());
+	  _M_range_initialize_n(__first, __last,
+				std::distance(__first, __last));
+	}
+
+      template<typename _Iterator>
+	_GLIBCXX20_CONSTEXPR
+	void
+	_M_range_initialize_n(_Iterator __first, _Iterator __last,
+			      size_type __n)
+	{
+	  pointer __start = this->_M_impl._M_start =
+	    this->_M_allocate(_S_check_init_len(__n, _M_get_Tp_allocator()));
+	  this->_M_impl._M_end_of_storage = __start + __n;
+	  this->_M_impl._M_finish
+	      = std::__uninitialized_copy_a(_GLIBCXX_MOVE(__first), __last,
+					    __start, _M_get_Tp_allocator());
 	}
 
       // Called by the first initialize_dispatch above and by the

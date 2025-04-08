@@ -1,3 +1,8 @@
+2025-03-27  Roland McGrath  <mcgrathr@google.com>
+
+	* configure.ac: Check for setlocale.
+	* configure, config.in: Regenerated.
+
 2024-11-25  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR preprocessor/117118

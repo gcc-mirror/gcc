@@ -1,3 +1,304 @@
+2025-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-03-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/116440
+	* include/std/tuple (tuple::tuple(const _Elements&...))
+	[C++20]: Turn into a template.
+	* testsuite/20_util/tuple/116440.C: New test.
+
+2025-04-03  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2025-04-03  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/std/format/functions/format.cc: Restored line.
+
+2025-04-03  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119593
+	* include/bits/unicode.h
+	(__unicode::__literal_encoding_is_unicode<_CharT>):
+	Corrected handing for UTF-16 and UTF-32 with "LE" or "BE" suffix.
+	* include/std/format (__formatter_str::_S_character_width):
+	Define.
+	(__formatter_str::_S_character_width): Updated passed char
+	length.
+	* testsuite/std/format/functions/format.cc: Test for wchar_t.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/119469
+	* include/bits/iterator_concepts.h (_IterMove::__result): Use
+	decltype-specifier instead of an explicit type.
+	* testsuite/24_iterators/customization_points/iter_move.cc:
+	Check results for function references.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106612
+	* include/bits/iterator_concepts.h (_IterMove::__iter_ref_t):
+	New alias template.
+	(_IterMove::__result): Use __iter_ref_t instead of
+	std::iter_reference_t.
+	(_IterMove::__type): Remove incorrect __dereferenceable
+	constraint.
+	(_IterMove::operator()): Likewise. Add correct constraints. Use
+	__iter_ref_t instead of std::iter_reference_t. Forward parameter
+	as correct value category.
+	(iter_swap): Add comments.
+	* testsuite/24_iterators/customization_points/iter_move.cc: Test
+	that iter_move is found by ADL and that rvalue arguments are
+	handled correctly.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/110498
+	* include/bits/vector.tcc (vector<bool, A>::_M_reallocate):
+	Hoist loads of begin() and end() before allocation and use them
+	to state an unreachable condition.
+	* testsuite/23_containers/vector/bool/capacity/110498.cc: New
+	test.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114758
+	* include/bits/vector.tcc (vector<bool, A>::_M_fill_insert):
+	Hoist loads of begin() and end() before allocation.
+	* testsuite/23_containers/vector/bool/capacity/114758.cc: New
+	test.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117983
+	* include/bits/vector.tcc (vector::_M_range_insert): Add
+	unreachable condition to tell the compiler begin() <= end().
+	* testsuite/23_containers/vector/modifiers/insert/117983.cc: New
+	test.
+
+2025-04-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/114945
+	* include/bits/vector.tcc (vector::_M_default_append): Add
+	unreachable condition so the compiler knows that _M_finish is
+	not null.
+	* testsuite/23_containers/vector/capacity/114945.cc: New test.
+
+2025-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116212
+	* testsuite/20_util/specialized_algorithms/uninitialized_move/constrained.cc:
+	Use unsigned for vector size.
+
+2025-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (range_common_reference_t): New
+	alias template, as per LWG 3860.
+	* testsuite/std/ranges/range.cc: Check it.
+
+2025-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-01-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_map.h: Check __glibcxx_node_extract instead
+	of __cplusplus.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+
+2025-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (packaged_task::packaged_task(F&&)): Add
+	static_assert.
+	* testsuite/30_threads/packaged_task/cons/dangling_ref.cc: Add
+	dg-error for new static assertion.
+	* testsuite/30_threads/packaged_task/cons/lwg4154_neg.cc: New
+	test.
+
+2025-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118699
+	* testsuite/27_io/filesystem/operations/copy.cc: Check copying a
+	file to a directory.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101527
+	* testsuite/24_iterators/common_iterator/101527.cc: New test.
+	* testsuite/24_iterators/counted_iterator/101527.cc: New test.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Remove stray comma.
+	* doc/html/manual/test.html: Regenerate.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/forward_list (erase): Change lambda to have
+	explicit return type and const parameter type.
+	* include/std/list (erase): Likewise.
+	* testsuite/23_containers/forward_list/erasure.cc: Check lambda
+	is correct.
+	* testsuite/23_containers/list/erasure.cc: Likewise.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Fix two
+	broken links.
+	* doc/html/manual/policy_data_structures.html: Regenerate.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108487
+	* include/bits/stl_vector.h (vector(initializer_list)): Call
+	_M_range_initialize_n instead of _M_range_initialize.
+	(vector(InputIterator, InputIterator)): Use _M_range_initialize_n
+	for C++20 sized sentinels and forward iterators.
+	(vector::_M_range_initialize(FwIt, FwIt, forward_iterator_tag)):
+	Use _M_range_initialize_n.
+	(vector::_M_range_initialize_n): New function.
+	* testsuite/23_containers/vector/cons/108487.cc: New test.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdata.zi: Import new file from 2025b release.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (__detail::__get_leap_second_info): Update
+	expiry date for leap seconds list.
+	* src/c++20/tzdata.zi: Import new file from 2025a release.
+	* src/c++20/tzdb.cc (tzdb_list::_Node::_S_read_leap_seconds)
+	Update expiry date for leap seconds list.
+
+2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (ranges::to): Allow unions as well as
+	non-union class types.
+	* testsuite/std/ranges/conv/lwg4229.cc: New test.
+
+2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/112803
+	* include/std/ranges (ranges::to): Add static assertions to
+	enforce Mandates conditions.
+	* testsuite/std/ranges/conv/112803.cc: New test.
+
+2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/119429
+	* include/std/format (__format::_Scanner::_Scanner): Cast
+	default argument to size_t.
+
+2025-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115939
+	* include/bits/hashtable_policy.h (_Node_iterator): Add
+	operator== and operator!=.
+	(_Node_const_iterator): Likewise.
+	* testsuite/23_containers/unordered_map/115939.cc: New test.
+
+2025-03-25  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-03-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/119135
+	* include/std/ranges: Include <utility>.
+	(views::__detail::__is_ref_view): Replace with ...
+	(views::__detail::__is_constable_ref_view): ... this.
+	(views::_AsConst::operator()): Replace bogus use of element_type
+	in the ref_view branch.
+	* testsuite/std/ranges/adaptors/as_const/1.cc (test03): Extend
+	test.
+
+2025-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Fix default for -std option.
+	* doc/html/manual/test.html: Regenerate.
+
+2025-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/18_support/numeric_limits/traps.cc (main): Fix comment
+	typo.
+
+2025-03-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_facets_nonio.tcc (time_put::do_put): Fix
+	typo in comment.
+
 2025-03-18  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

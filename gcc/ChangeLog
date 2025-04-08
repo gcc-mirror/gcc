@@ -1,3 +1,364 @@
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119145
+	* tree-vectorizer.cc (try_vectorize_loop_1): Avoid BB
+	vectorizing an if-converted loop body when there's a .MASK_CALL
+	in the loop body.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119119
+	* gimplify.cc (is_gimple_mem_rhs_or_call): All empty CTORs
+	are OK when not a register type.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119096
+	* tree-vect-loop.cc (vect_transform_reduction): Use the
+	correct else value for .COND_fn.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/119067
+	* ipa-devirt.cc (odr_types_equivalent_p): Check
+	TYPE_VECTOR_SUBPARTS for vectors.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119057
+	* tree-vect-loop.cc (check_reduction_path): Add argument
+	specifying whether we're analyzing the inner loop of a
+	double reduction.  Do not allow extra uses outside of the
+	double reduction cycle in this case.
+	(vect_is_simple_reduction): Adjust.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR lto/114501
+	* ipa-free-lang-data.cc (find_decls_types_r): Explicitly
+	handle CONSTRUCTORs as walk_tree handling of those is
+	incomplete.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/111245
+	* ipa-modref.cc (modref_access_analysis::analyze_store): Do
+	not guard the check of whether the stmt could throw by
+	cfun->can_throw_non_call_exceptions.
+
+2025-04-02  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	Backported from master:
+	2025-01-10  Andrew Carlotti  <andrew.carlotti@arm.com>
+
+	PR target/119383
+	* config/aarch64/aarch64.cc
+	(aarch64_expand_epilogue): Use TARGET_PAUTH.
+	* config/aarch64/aarch64.md: Update comment.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-18  Richard Biener  <rguenther@suse.de>
+
+	PR debug/101533
+	* dwarf2out.cc (gen_type_die_with_usage): When we have
+	output the typedef already do nothing for a typedef variant.
+	Do not set TREE_ASM_WRITTEN on the type.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-07-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101478
+	* gimplify.cc (gimplify_addr_expr): Check we still have an
+	ADDR_EXPR before calling recompute_tree_invariant_for_addr_expr.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98845
+	* tree-ssa-tail-merge.cc (stmt_local_def): Consider a
+	def with no uses not local.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87984
+	* tree-ssa-dom.cc (dom_opt_dom_walker::optimize_stmt): Do
+	not perform redundant store elimination to hard register
+	variables.
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_stmt):
+	Likewise.
+
+2025-04-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/66279
+	* gimplify.cc (gimplify_asm_expr): Copy TREE_PURPOSE before
+	rewriting it for "+" processing.
+
+2025-04-01  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-03-11  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-ssa-alias.cc (ao_compare::compare_ao_refs): Fix a
+	copy-and-paste error.
+
+2025-04-01  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-03-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/116572
+	* cgraph.cc (cgraph_update_edges_for_call_stmt): Do not update
+	edges of clones that are unexpanded thunk.  Assert that the node
+	passed as the parameter is not an unexpanded thunk.
+
+2025-03-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Common Variable Attributes): Fix grammar in
+	final sentence of -ftrivial-auto-var-init description.
+
+2025-03-31  Lulu Cheng  <chenglulu@loongson.cn>
+
+	Backported from master:
+	2025-03-29  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* doc/invoke.texi: Modify the description of '-mld-seq-sa'.
+
+2025-03-30  Martin Uecker  <uecker@tugraz.at>
+
+	Backported from master:
+	2024-12-12  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/113688
+	PR c/114014
+	PR c/114713
+	PR c/117724
+	* tree.cc (gimple_canonical_types_compatible_p): Add exception.
+
+2025-03-30  Martin Uecker  <uecker@tugraz.at>
+
+	Backported from master:
+	2024-12-12  Martin Uecker  <uecker@tugraz.at>
+
+	* tree.cc (gimple_canonical_types_compatible_p): Add exception.
+	(verify_type): Add exception.
+
+2025-03-29  Denis Chertykov  <chertykov@gmail.com>
+
+	Backported from master:
+	2024-10-17  Denis Chertykov  <chertykov@gmail.com>
+
+	PR target/116550
+	PR target/119340
+	* lra-constraints.cc (get_reload_reg): Reuse scratch registers
+	generated by LRA.
+
+2025-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119417
+	* tree-ssa-math-opts.cc (convert_mult_to_widen): Before changing
+	typeN because actual_precision/from_unsignedN differs cast rhsN
+	to typeN if it has a different type.
+	(convert_plusminus_to_widen): Before changing
+	typeN because actual_precision/from_unsignedN differs cast mult_rhsN
+	to typeN if it has a different type.
+
+2025-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119450
+	* config/i386/i386.md (narrow test peephole2): Test for
+	offsettable_memref_p in condition.
+
+2025-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.cc (warn_switch_unreachable_and_auto_init_r): Add missing
+	space in the middle of diagnostics.
+	* tree-vect-stmts.cc (vectorizable_load): Add missing space in the
+	middle of debug dump message.
+
+2025-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/119204
+	PR middle-end/119219
+	* builtins.cc (fold_builtin_2): Pass type as another argument
+	to fold_builtin_strspn and fold_builtin_strcspn.
+	(fold_builtin_strspn): Add type argument, use it instead of
+	size_type_node.
+	(fold_builtin_strcspn): Add type argument, use it instead of
+	TREE_TYPE (expr).
+
+2025-03-27  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119204
+	* builtins.cc (fold_builtin_strcspn): Preserve the original
+	expression type.
+
+2025-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119183
+	* tree.cc (skip_simple_arithmetic): If first operand of binary
+	expr is TREE_CONSTANT or TREE_READONLY with no side-effects, call
+	tree_invariant_p on that operand first instead of on the second.
+
+2025-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118953
+	* value-range.cc (irange::union_bitmask): Update m_bitmask if
+	get_bitmask () is unknown_p and m_bitmask is not even when the
+	semantic bitmask didn't change and returning false.
+
+2025-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/115871
+	* omp-simd-clone.cc (simd_clone_adjust): For SIMD_CLONE_ARG_TYPE_MASK
+	and sc->mask_mode not VOIDmode, set elem_type to the characteristic
+	type rather than boolean_type_node.
+
+2025-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114870
+	* ginclude/stddef.h (__STDC_VERSION_STDDEF_H__, unreachable): Don't
+	redefine multiple times if stddef.h is first included without __need_*
+	defines and later with them.  Move nullptr_t and unreachable and
+	__STDC_VERSION_STDDEF_H__ definitions into the same
+	defined (__STDC_VERSION__) && __STDC_VERSION__ > 201710L #if block.
+
+2025-03-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118915
+	* tree-ssa-reassoc.cc (optimize_range_tests_to_bit_test): For
+	highj == NULL_TREE use TYPE_MAX_VALUE (TREE_TYPE (lowj)) rather
+	than TYPE_MAX_VALUE (type).
+
+2025-03-27  Lulu Cheng  <chenglulu@loongson.cn>
+
+	Backported from master:
+	2025-03-27  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/119408
+	* config/loongarch/loongarch.cc
+	(loongarch_c_mode_for_suffix): New.
+	(TARGET_C_MODE_FOR_SUFFIX): Define.
+
+2025-03-26  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2025-03-12  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/116564
+	* df-problems.cc (df_simulate_defs): For partial defs, mark the
+	register live (treat it as a RMW operation).
+
+2025-03-25  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-03-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118318
+	* ipa-cp.cc (adjust_clone_incoming_counts): Add a compatible_p check.
+
+2025-03-24  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-isas.h: Add avx10.1.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Ditto.
+	* config/i386/i386-options.cc
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	* config/i386/i386.opt: Ditto.
+	* config/i386/i386.opt.urls: Ditto.
+	* doc/extend.texi: Ditto.
+	* doc/sourcebuild.texi: Ditto.
+
+2025-03-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-03-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def: Add AVR32SD20, AVR32SD28, AVR32SD32,
+	AVR64SD28, AVR64SD32, AVR64SD48.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2025-03-21  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-03-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114992
+	* multiple_target.cc (create_dispatcher_calls):
+	remove_from_same_comdat_group before add_to_same_comdat_group.
+
+2025-03-21  Filip Kastl  <fkastl@suse.cz>
+
+	Backported from master:
+	2025-03-20  Filip Kastl  <fkastl@suse.cz>
+
+	* gimple-ssa-sccopy.cc (scc_copy_prop::propagate): Don't
+	increment after vec::unordered_remove().
+
 2025-03-07  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:

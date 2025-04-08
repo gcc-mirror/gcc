@@ -272,10 +272,10 @@ namespace ranges
 		      && is_nothrow_assignable_v<_OutType&,
 						 iter_reference_t<_Iter>>)
 	  {
-	    auto __d1 = __ilast - __ifirst;
-	    auto __d2 = __olast - __ofirst;
-	    return ranges::copy_n(std::move(__ifirst), std::min(__d1, __d2),
-				  __ofirst);
+	    auto __d = __ilast - __ifirst;
+	    if (auto __d2 = __olast - __ofirst; __d2 < __d)
+	      __d = static_cast<iter_difference_t<_Iter>>(__d2);
+	    return ranges::copy_n(std::move(__ifirst), __d, __ofirst);
 	  }
 	else
 	  {
@@ -320,9 +320,9 @@ namespace ranges
 		      && is_nothrow_assignable_v<_OutType&,
 						 iter_reference_t<_Iter>>)
 	  {
-	    auto __d = __olast - __ofirst;
-	    return ranges::copy_n(std::move(__ifirst), std::min(__n, __d),
-				  __ofirst);
+	    if (auto __d = __olast - __ofirst; __d < __n)
+	      __n = static_cast<iter_difference_t<_Iter>>(__d);
+	    return ranges::copy_n(std::move(__ifirst), __n, __ofirst);
 	  }
 	else
 	  {
@@ -359,11 +359,12 @@ namespace ranges
 		      && is_nothrow_assignable_v<_OutType&,
 						 iter_rvalue_reference_t<_Iter>>)
 	  {
-	    auto __d1 = __ilast - __ifirst;
-	    auto __d2 = __olast - __ofirst;
+	    auto __d = __ilast - __ifirst;
+	    if (auto __d2 = __olast - __ofirst; __d2 < __d)
+	      __d = static_cast<iter_difference_t<_Iter>>(__d2);
 	    auto [__in, __out]
 	      = ranges::copy_n(std::make_move_iterator(std::move(__ifirst)),
-			       std::min(__d1, __d2), __ofirst);
+			       __d, __ofirst);
 	    return {std::move(__in).base(), __out};
 	  }
 	else
@@ -411,10 +412,11 @@ namespace ranges
 		      && is_nothrow_assignable_v<_OutType&,
 						 iter_rvalue_reference_t<_Iter>>)
 	  {
-	    auto __d = __olast - __ofirst;
+	    if (auto __d = __olast - __ofirst; __d < __n)
+	      __n = static_cast<iter_difference_t<_Iter>>(__d);
 	    auto [__in, __out]
 	      = ranges::copy_n(std::make_move_iterator(std::move(__ifirst)),
-			       std::min(__n, __d), __ofirst);
+			       __n, __ofirst);
 	    return {std::move(__in).base(), __out};
 	  }
 	else

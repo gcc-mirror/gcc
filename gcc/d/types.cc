@@ -704,7 +704,7 @@ finish_aggregate_type (unsigned structsize, unsigned alignsize, tree type)
       TYPE_LANG_SPECIFIC (t) = TYPE_LANG_SPECIFIC (type);
       TYPE_SIZE (t) = TYPE_SIZE (type);
       TYPE_SIZE_UNIT (t) = TYPE_SIZE_UNIT (type);
-      TYPE_PACKED (type) = TYPE_PACKED (type);
+      TYPE_PACKED (t) = TYPE_PACKED (type);
       SET_TYPE_ALIGN (t, TYPE_ALIGN (type));
       TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (type);
     }
@@ -1278,7 +1278,8 @@ public:
     build_type_decl (basetype, t->sym);
     set_visibility_for_decl (basetype, t->sym);
     apply_user_attributes (t->sym, basetype);
-    finish_aggregate_type (t->sym->structsize, t->sym->alignsize, basetype);
+    /* The underlying record type of classes are packed.  */
+    finish_aggregate_type (t->sym->structsize, 1, basetype);
 
     /* Classes only live in memory, so always set the TREE_ADDRESSABLE bit.  */
     for (tree tv = basetype; tv != NULL_TREE; tv = TYPE_NEXT_VARIANT (tv))
