@@ -1,3 +1,19 @@
+2025-04-07  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119652
+	* g++.dg/cpp2a/constinit20.C: New test.
+
+2025-04-07  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118629
+	* g++.dg/cpp0x/lambda/lambda-__func__3.C: New test.
+
 2025-04-04  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

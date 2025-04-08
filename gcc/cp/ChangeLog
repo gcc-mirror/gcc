@@ -1,3 +1,21 @@
+2025-04-07  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119652
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Also don't add a
+	TARGET_EXPR around AGGR_INIT_EXPR.
+
+2025-04-07  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118629
+	* name-lookup.cc (pushdecl_outermost_localscope): Look for an
+	sk_block.
+
 2025-04-04  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

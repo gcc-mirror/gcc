@@ -1,3 +1,13 @@
+2025-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-03-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/116440
+	* include/std/tuple (tuple::tuple(const _Elements&...))
+	[C++20]: Turn into a template.
+	* testsuite/20_util/tuple/116440.C: New test.
+
 2025-04-03  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	Backported from master:
