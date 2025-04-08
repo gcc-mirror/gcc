@@ -82,11 +82,11 @@ test (int *a, int *b)
 /* { dg-final { scan-tree-dump-times "__builtin_omp_set_default_device \\(D\.\[0-9\]+\\);" 2 "gimple" } }  */
 /* { dg-final { scan-tree-dump-times "D\.\[0-9\]+ = __builtin_omp_get_mapped_ptr \\(a, D\.\[0-9\]+\\);" 1 "gimple" } }  */
 
-/* { dg-final { scan-tree-dump-times "__builtin_GOMP_interop \\(D\.\[0-9\]+, 1, interopobjs\.\[0-9\], tgt_tgtsync\.\[0-9\]+, pref_type.2, 0, 0B, 0, 0B, 0, 0B\\);" 1 "gimple" } }  */
+/* { dg-final { scan-tree-dump-times "__builtin_GOMP_interop \\(D\.\[0-9\]+, 1, &interopobjs\.\[0-9\], &tgt_tgtsync\.\[0-9\]+, &pref_type.2, 0, 0B, 0, 0B, 0, 0B\\);" 1 "gimple" } }  */
 /* { dg-final { scan-tree-dump-times "repl2<int\\*, int\\*, omp_interop_t> \\(b, D\.\[0-9\]+, obj1, interop\.\[0-9\]+\\);" 1 "gimple" } }  */
-/* { dg-final { scan-tree-dump-times "__builtin_GOMP_interop \\(D\.\[0-9\]+, 0, 0B, 0B, 0B, 0, 0B, 1, interopobjs\.\[0-9\]+, 0, 0B\\);" 1 "gimple" } }  */
+/* { dg-final { scan-tree-dump-times "__builtin_GOMP_interop \\(D\.\[0-9\]+, 0, 0B, 0B, 0B, 0, 0B, 1, &interopobjs\.\[0-9\]+, 0, 0B\\);" 1 "gimple" } }  */
 
 
-/* { dg-final { scan-tree-dump-times "__builtin_GOMP_interop \\(-5, 0, 0B, 0B, 0B, 0, 0B, 3, interopobjs\.\[0-9\]+, 0, 0B\\);" 1 "gimple" } }  */
+/* { dg-final { scan-tree-dump-times "__builtin_GOMP_interop \\(-5, 0, 0B, 0B, 0B, 0, 0B, 3, &interopobjs\.\[0-9\]+, 0, 0B\\);" 1 "gimple" } }  */
 /* { dg-final { scan-tree-dump-times "repl3<int\\*, omp_interop_t> \\(a, interop\.\[0-9\]+, interop\.\[0-9\]+, interop\.\[0-9\]+, 1, 2, \"abc\"\\);" 1 "gimple" } }  */
-/* { dg-final { scan-tree-dump-times "__builtin_GOMP_interop \\(-5, 3, interopobjs\.\[0-9\]+, tgt_tgtsync\.\[0-9\]+, pref_type\.\[0-9\]+, 0, 0B, 0, 0B, 0, 0B\\);" 1 "gimple" } }  */
+/* { dg-final { scan-tree-dump-times "__builtin_GOMP_interop \\(-5, 3, &interopobjs\.\[0-9\]+, &tgt_tgtsync\.\[0-9\]+, &pref_type\.\[0-9\]+, 0, 0B, 0, 0B, 0, 0B\\);" 1 "gimple" } }  */

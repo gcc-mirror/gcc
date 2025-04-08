@@ -23,6 +23,6 @@ use m
   call f()
 end
 
-! { dg-final { scan-tree-dump "__builtin_GOMP_interop \\(99, 3, interopobjs\.\[0-9\]+, tgt_tgtsync\.\[0-9\]+, pref_type\.\[0-9\]+, " "gimple" } }
-! { dg-final { scan-tree-dump "__builtin_GOMP_interop \\(99, 0, 0B, 0B, 0B, 0, 0B, 3, interopobjs\.\[0-9\]+," "gimple" } }
+! { dg-final { scan-tree-dump "__builtin_GOMP_interop \\(99, 3, &interopobjs\.\[0-9\]+, &tgt_tgtsync\.\[0-9\]+, &pref_type\.\[0-9\]+, " "gimple" } }
+! { dg-final { scan-tree-dump "__builtin_GOMP_interop \\(99, 0, 0B, 0B, 0B, 0, 0B, 3, &interopobjs\.\[0-9\]+," "gimple" } }
 ! { dg-final { scan-tree-dump "g \\(&interop\.\[0-9\]+, interop\.\[0-9\]+, &interop\.\[0-9\]+\\)" "gimple" } }

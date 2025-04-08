@@ -1,3 +1,14 @@
+2025-04-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2025-04-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/119662
+	* c-c++-common/gomp/append-args-interop.c: Update for fixed
+	GOMP_interop call.
+	* g++.dg/gomp/append-args-8.C: Likewise.
+	* gfortran.dg/gomp/append-args-interop.f90: Likewise.
+
 2025-04-02  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
