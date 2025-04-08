@@ -566,16 +566,17 @@ maybe_trim_complex_store (ao_ref *ref, sbitmap live, gimple *stmt)
    The most common case for getting here is a CONSTRUCTOR with no elements
    being used to zero initialize an object.  We do not try to handle other
    cases as those would force us to fully cover the object with the
-   CONSTRUCTOR node except for the components that are dead.  */
+   CONSTRUCTOR node except for the components that are dead.
+   Also handles integer stores of 0 which can happen with memset/memcpy optimizations.  */
 
 static void
-maybe_trim_constructor_store (ao_ref *ref, sbitmap live, gimple *stmt)
+maybe_trim_constructor_store (ao_ref *ref, sbitmap live, gimple *stmt, bool was_integer_cst)
 {
   tree ctor = gimple_assign_rhs1 (stmt);
 
   /* This is the only case we currently handle.  It actually seems to
      catch most cases of actual interest.  */
-  gcc_assert (CONSTRUCTOR_NELTS (ctor) == 0);
+  gcc_assert (was_integer_cst ? integer_zerop (ctor) : CONSTRUCTOR_NELTS (ctor) == 0);
 
   int head_trim = 0;
   int tail_trim = 0;
@@ -804,10 +805,15 @@ maybe_trim_partially_dead_store (ao_ref *ref, sbitmap live, gimple *stmt)
       switch (gimple_assign_rhs_code (stmt))
 	{
 	case CONSTRUCTOR:
-	  maybe_trim_constructor_store (ref, live, stmt);
+	  maybe_trim_constructor_store (ref, live, stmt, false);
 	  break;
 	case COMPLEX_CST:
 	  maybe_trim_complex_store (ref, live, stmt);
+	  break;
+	case INTEGER_CST:
+	  if (integer_zerop (gimple_assign_rhs1 (stmt))
+	      && type_has_mode_precision_p (TREE_TYPE (gimple_assign_lhs (stmt))))
+	    maybe_trim_constructor_store (ref, live, stmt, true);
 	  break;
 	default:
 	  break;
