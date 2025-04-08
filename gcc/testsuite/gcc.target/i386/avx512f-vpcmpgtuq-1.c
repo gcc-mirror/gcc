@@ -12,5 +12,5 @@ void extern
 avx512f_test (void)
 {
   m = _mm512_cmpgt_epu64_mask (x, x);
-  m = _mm512_mask_cmpgt_epu64_mask (3, x, x);
+  m = _mm512_mask_cmpgt_epu64_mask (5, x, x);
 }

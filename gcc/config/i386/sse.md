@@ -527,6 +527,16 @@
    (V16SF "TARGET_EVEX512") (V8SF "TARGET_AVX512VL") (V4SF "TARGET_AVX512VL")
    (V8DF "TARGET_EVEX512") (V4DF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
 
+(define_mode_iterator V48_AVX512VL_4
+  [(V4SF "TARGET_AVX512VL") (V4DF "TARGET_AVX512VL")
+   (V4SI "TARGET_AVX512VL") (V4DI "TARGET_AVX512VL")])
+
+(define_mode_iterator VI48_AVX512VL_4
+  [(V4SI "TARGET_AVX512VL") (V4DI "TARGET_AVX512VL")])
+
+(define_mode_iterator V8_AVX512VL_2
+  [(V2DF "TARGET_AVX512VL") (V2DI "TARGET_AVX512VL")])
+
 (define_mode_iterator VFH_AVX10_2
   [(V32HF "TARGET_AVX10_2") V16HF V8HF
    (V16SF "TARGET_AVX10_2") V8SF V4SF
@@ -4410,7 +4420,7 @@
 	  (unspec:<V48H_AVX512VL:avx512fmaskmode>
 	    [(match_operand:V48H_AVX512VL 1 "nonimmediate_operand" "v")
 	     (match_operand:V48H_AVX512VL 2 "nonimmediate_operand" "vm")
-	     (match_operand:SI 3 "const_0_to_7_operand" "n")]
+	     (match_operand:SI 3 "<cmp_imm_predicate>" "n")]
 	    UNSPEC_PCMP)))]
   "TARGET_AVX512F
    && (!VALID_MASK_AVX512BW_MODE (<SWI248x:MODE>mode) || TARGET_AVX512BW)
@@ -4428,7 +4438,7 @@
 	  (unspec:<V48H_AVX512VL:avx512fmaskmode>
 	    [(match_operand:V48H_AVX512VL 1 "nonimmediate_operand")
 	     (match_operand:V48H_AVX512VL 2 "nonimmediate_operand")
-	     (match_operand:SI 3 "const_0_to_7_operand")]
+	     (match_operand:SI 3 "<cmp_imm_predicate>")]
 	    UNSPEC_PCMP)))
    (set (match_operand:<V48H_AVX512VL:avx512fmaskmode> 4 "register_operand")
 	(unspec:<V48H_AVX512VL:avx512fmaskmode>
@@ -4469,7 +4479,8 @@
 	     (match_operand:V48H_AVX512VL 2 "nonimmediate_operand")
 	     (match_operand:SI 3 "<cmp_imm_predicate>" "n")]
 	    UNSPEC_PCMP)))]
-  "TARGET_AVX512F && ix86_pre_reload_split ()"
+  "TARGET_AVX512F && GET_MODE_NUNITS (<MODE>mode) >= 8
+   && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -4479,6 +4490,70 @@
 	   (match_dup 4)]
 	   UNSPEC_PCMP))]
   "operands[4] = GEN_INT (INTVAL (operands[3]) ^ 4);")
+
+(define_insn "*<avx512>_cmp<mode>3_and15"
+  [(set (match_operand:QI 0 "register_operand" "=k")
+	(and:QI
+	  (unspec:QI
+	    [(match_operand:V48_AVX512VL_4 1 "nonimmediate_operand" "v")
+	     (match_operand:V48_AVX512VL_4 2 "nonimmediate_operand" "vm")
+	     (match_operand:SI 3 "<cmp_imm_predicate>" "n")]
+	    UNSPEC_PCMP)
+	  (const_int 15)))]
+  "TARGET_AVX512F"
+  "v<ssecmpintprefix>cmp<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "type" "ssecmp")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*<avx512>_ucmp<mode>3_and15"
+  [(set (match_operand:QI 0 "register_operand" "=k")
+	(and:QI
+	  (unspec:QI
+	    [(match_operand:VI48_AVX512VL_4 1 "nonimmediate_operand" "v")
+	     (match_operand:VI48_AVX512VL_4 2 "nonimmediate_operand" "vm")
+	     (match_operand:SI 3 "const_0_to_7_operand" "n")]
+	    UNSPEC_UNSIGNED_PCMP)
+	  (const_int 15)))]
+  "TARGET_AVX512F"
+  "vpcmpu<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "type" "ssecmp")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*<avx512>_cmp<mode>3_and3"
+  [(set (match_operand:QI 0 "register_operand" "=k")
+	(and:QI
+	  (unspec:QI
+	    [(match_operand:V8_AVX512VL_2 1 "nonimmediate_operand" "v")
+	     (match_operand:V8_AVX512VL_2 2 "nonimmediate_operand" "vm")
+	     (match_operand:SI 3 "<cmp_imm_predicate>" "n")]
+	    UNSPEC_PCMP)
+	  (const_int 3)))]
+  "TARGET_AVX512F"
+  "v<ssecmpintprefix>cmp<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "type" "ssecmp")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*avx512vl_ucmpv2di3_and3"
+  [(set (match_operand:QI 0 "register_operand" "=k")
+	(and:QI
+	  (unspec:QI
+	    [(match_operand:V2DI 1 "nonimmediate_operand" "v")
+	     (match_operand:V2DI 2 "nonimmediate_operand" "vm")
+	     (match_operand:SI 3 "const_0_to_7_operand" "n")]
+	    UNSPEC_UNSIGNED_PCMP)
+	  (const_int 3)))]
+  "TARGET_AVX512F"
+  "vpcmpuq\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "type" "ssecmp")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
 
 (define_insn "<avx512>_cmp<mode>3<mask_scalar_merge_name>"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k")
@@ -4762,7 +4837,8 @@
 	     (match_operand:VI48_AVX512VL 2 "nonimmediate_operand")
 	     (match_operand:SI 3 "const_0_to_7_operand")]
 	    UNSPEC_UNSIGNED_PCMP)))]
-  "TARGET_AVX512F && ix86_pre_reload_split ()"
+  "TARGET_AVX512F && ix86_pre_reload_split ()
+   && GET_MODE_NUNITS (<MODE>mode) >= 8"
   "#"
   "&& 1"
   [(set (match_dup 0)
