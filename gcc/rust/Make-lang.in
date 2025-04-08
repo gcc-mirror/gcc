@@ -115,6 +115,7 @@ GRS_OBJS = \
     rust/rust-macro-builtins-format-args.o \
     rust/rust-macro-builtins-location.o \
     rust/rust-macro-builtins-include.o \
+    rust/rust-token-tree-desugar.o \
 	rust/rust-fmt.o \
     rust/rust-hir.o \
     rust/rust-hir-map.o \

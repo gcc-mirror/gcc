@@ -28,6 +28,7 @@
 #include "rust-cfg-strip.h"
 #include "rust-early-name-resolver.h"
 #include "rust-proc-macro.h"
+#include "rust-token-tree-desugar.h"
 
 namespace Rust {
 
@@ -78,7 +79,10 @@ MacroExpander::expand_decl_macro (location_t invoc_locus,
    * trees.
    */
 
-  AST::DelimTokenTree &invoc_token_tree = invoc.get_delim_tok_tree ();
+  AST::DelimTokenTree &invoc_token_tree_sugar = invoc.get_delim_tok_tree ();
+
+  // We must first desugar doc comments into proper attributes
+  auto invoc_token_tree = AST::TokenTreeDesugar ().go (invoc_token_tree_sugar);
 
   // find matching arm
   AST::MacroRule *matched_rule = nullptr;
