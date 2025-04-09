@@ -83,7 +83,6 @@ const BiMap<std::string, BuiltinMacro> MacroBuiltin::builtins = {{
   {"Ord", BuiltinMacro::Ord},
   {"PartialOrd", BuiltinMacro::PartialOrd},
   {"Hash", BuiltinMacro::Hash},
-
 }};
 
 AST::MacroTranscriberFunc
