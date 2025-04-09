@@ -277,6 +277,8 @@ public:
   void visit (ClosureParam &param);
   void visit (ClosureExprInner &expr);
   void visit (BlockExpr &expr);
+  void visit (AnonConst &expr);
+  void visit (ConstBlock &expr);
   void visit (ClosureExprInnerTyped &expr);
   void visit (ContinueExpr &expr);
   void visit (BreakExpr &expr);

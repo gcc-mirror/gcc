@@ -1278,6 +1278,18 @@ BlockExpr::as_string () const
 }
 
 std::string
+AnonConst::as_string () const
+{
+  return "AnonConst: " + expr->as_string ();
+}
+
+std::string
+ConstBlock::as_string () const
+{
+  return "ConstBlock: " + expr.as_string ();
+}
+
+std::string
 TraitImpl::as_string () const
 {
   std::string str = VisItem::as_string ();
@@ -4516,6 +4528,18 @@ ClosureExprInner::accept_vis (ASTVisitor &vis)
 
 void
 BlockExpr::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+AnonConst::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+ConstBlock::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }

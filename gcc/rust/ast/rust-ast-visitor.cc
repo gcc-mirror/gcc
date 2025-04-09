@@ -456,6 +456,18 @@ DefaultASTVisitor::visit (AST::BlockExpr &expr)
 }
 
 void
+DefaultASTVisitor::visit (AST::ConstBlock &expr)
+{
+  visit (expr.get_const_expr ());
+}
+
+void
+DefaultASTVisitor::visit (AST::AnonConst &expr)
+{
+  visit (expr.get_inner_expr ());
+}
+
+void
 DefaultASTVisitor::visit (AST::ClosureExprInnerTyped &expr)
 {
   visit_outer_attrs (expr);
@@ -704,7 +716,7 @@ DefaultASTVisitor::visit (AST::InlineAsm &expr)
 	  }
 	case RegisterType::Const:
 	  {
-	    visit (operand.get_const ().anon_const.expr);
+	    visit (operand.get_const ().anon_const.get_inner_expr ());
 	    break;
 	  }
 	case RegisterType::Sym:
