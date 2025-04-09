@@ -325,10 +325,9 @@ Early::visit_attributes (std::vector<AST::Attribute> &attrs)
 	      auto pm_def = mappings.lookup_derive_proc_macro_def (
 		definition->get_node_id ());
 
-	      rust_assert (pm_def.has_value ());
-
-	      mappings.insert_derive_proc_macro_invocation (trait,
-							    pm_def.value ());
+	      if (pm_def.has_value ())
+		mappings.insert_derive_proc_macro_invocation (trait,
+							      pm_def.value ());
 	    }
 	}
       else if (Analysis::BuiltinAttributeMappings::get ()
