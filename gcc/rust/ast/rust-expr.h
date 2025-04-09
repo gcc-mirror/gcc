@@ -3004,6 +3004,10 @@ class RangeExpr : public ExprWithoutBlock
 {
   location_t locus;
 
+  // Some visitors still check for attributes on RangeExprs, and they will need
+  // to be supported in the future - so keep that for now
+  std::vector<Attribute> empty_attributes = {};
+
 protected:
   // outer attributes not allowed before range expressions
   RangeExpr (location_t locus) : locus (locus) {}
@@ -3013,15 +3017,11 @@ public:
 
   std::vector<Attribute> &get_outer_attrs () override final
   {
-    // RangeExpr cannot have any outer attributes
-    rust_assert (false);
+    return empty_attributes;
   }
 
   // should never be called - error if called
-  void set_outer_attrs (std::vector<Attribute> /* new_attrs */) override
-  {
-    rust_assert (false);
-  }
+  void set_outer_attrs (std::vector<Attribute> /* new_attrs */) override {}
 
   Expr::Kind get_expr_kind () const override { return Expr::Kind::Range; }
 };
