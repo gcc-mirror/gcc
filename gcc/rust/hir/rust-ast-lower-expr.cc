@@ -867,10 +867,10 @@ HIR::InlineAsmOperand
 translate_operand_const (const AST::InlineAsmOperand &operand)
 {
   auto const_value = operand.get_const ();
-  struct HIR::AnonConst anon_const (const_value.anon_const.id,
-				    std::unique_ptr<Expr> (
-				      ASTLoweringExpr::translate (
-					*const_value.anon_const.expr.get ())));
+  struct HIR::AnonConst anon_const (
+    const_value.anon_const.get_node_id (),
+    std::unique_ptr<Expr> (
+      ASTLoweringExpr::translate (const_value.anon_const.get_inner_expr ())));
   struct HIR::InlineAsmOperand::Const cnst
   {
     anon_const

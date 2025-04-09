@@ -21,6 +21,7 @@
 
 #include "rust-ast-visitor.h"
 #include "rust-ast.h"
+#include "rust-expr.h"
 #include "rust-name-resolver.h"
 #include "rust-diagnostics.h"
 #include "rust-location.h"
@@ -85,6 +86,8 @@ public:
   void visit (AST::FieldAccessExpr &);
   void visit (AST::ClosureExprInner &);
   void visit (AST::BlockExpr &);
+  void visit (AST::AnonConst &);
+  void visit (AST::ConstBlock &);
   void visit (AST::ClosureExprInnerTyped &);
   void visit (AST::ContinueExpr &);
   void visit (AST::BreakExpr &);

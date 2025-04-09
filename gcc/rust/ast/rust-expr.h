@@ -1214,6 +1214,8 @@ protected:
 class ArrayElemsCopied : public ArrayElems
 {
   std::unique_ptr<Expr> elem_to_copy;
+
+  // TODO: This should be replaced by a ConstExpr
   std::unique_ptr<Expr> num_copies;
   location_t locus;
 
@@ -2741,6 +2743,124 @@ protected:
   /*virtual*/ BlockExpr *clone_block_expr_impl () const
   {
     return new BlockExpr (*this);
+  }
+};
+
+class AnonConst : public ExprWithBlock
+{
+public:
+  AnonConst (std::unique_ptr<Expr> &&expr, location_t locus = UNKNOWN_LOCATION)
+    : ExprWithBlock (), locus (locus), expr (std::move (expr))
+  {
+    rust_assert (this->expr);
+  }
+
+  AnonConst (const AnonConst &other)
+  {
+    node_id = other.node_id;
+    locus = other.locus;
+    expr = other.expr->clone_expr ();
+  }
+
+  AnonConst operator= (const AnonConst &other)
+  {
+    node_id = other.node_id;
+    locus = other.locus;
+    expr = other.expr->clone_expr ();
+
+    return *this;
+  }
+
+  std::string as_string () const override;
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::ConstExpr; }
+
+  location_t get_locus () const override { return locus; }
+  Expr &get_inner_expr () { return *expr; }
+  NodeId get_node_id () const override { return node_id; }
+
+  /* FIXME: AnonConst are always "internal" and should not have outer attributes
+   * - is that true? Or should we instead call
+   * expr->get_outer_attrs()/expr->set_outer_attrs() */
+
+  std::vector<Attribute> &get_outer_attrs () override
+  {
+    static auto attrs = std::vector<Attribute> ();
+    return attrs;
+  }
+
+  void set_outer_attrs (std::vector<Attribute>) override {}
+
+  /* FIXME: Likewise for mark_for_strip() ? */
+  void mark_for_strip () override {}
+  bool is_marked_for_strip () const override { return false; }
+
+  void accept_vis (ASTVisitor &vis) override;
+
+private:
+  location_t locus;
+  std::unique_ptr<Expr> expr;
+
+  AnonConst *clone_expr_with_block_impl () const override
+  {
+    return new AnonConst (*this);
+  }
+};
+
+class ConstBlock : public ExprWithBlock
+{
+public:
+  ConstBlock (AnonConst &&expr, location_t locus = UNKNOWN_LOCATION,
+	      std::vector<Attribute> &&outer_attrs = {})
+    : ExprWithBlock (), expr (std::move (expr)),
+      outer_attrs (std::move (outer_attrs)), locus (locus)
+  {}
+
+  ConstBlock (const ConstBlock &other)
+    : ExprWithBlock (other), expr (other.expr), outer_attrs (other.outer_attrs),
+      locus (other.locus)
+  {}
+
+  ConstBlock operator= (const ConstBlock &other)
+  {
+    expr = other.expr;
+    node_id = other.node_id;
+    outer_attrs = other.outer_attrs;
+    locus = other.locus;
+
+    return *this;
+  }
+
+  std::string as_string () const override;
+
+  Expr::Kind get_expr_kind () const override { return Expr::Kind::ConstBlock; }
+
+  AnonConst &get_const_expr () { return expr; }
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
+
+  void set_outer_attrs (std::vector<Attribute> new_attrs) override
+  {
+    outer_attrs = std::move (new_attrs);
+  }
+
+  location_t get_locus () const override { return locus; }
+
+  bool is_marked_for_strip () const override { return marked_for_strip; }
+  void mark_for_strip () override { marked_for_strip = true; }
+
+private:
+  AnonConst expr;
+
+  std::vector<Attribute> outer_attrs;
+  location_t locus;
+  bool marked_for_strip = false;
+
+  ConstBlock *clone_expr_with_block_impl () const override
+  {
+    return new ConstBlock (*this);
   }
 };
 
@@ -4822,27 +4942,18 @@ protected:
   }
 };
 
-struct AnonConst
+// Inline-assembly specific options
+enum class InlineAsmOption
 {
-  NodeId id;
-  std::unique_ptr<Expr> expr;
-  AnonConst (NodeId id, std::unique_ptr<Expr> expr)
-    : id (id), expr (std::move (expr))
-  {
-    rust_assert (this->expr != nullptr);
-  }
-  AnonConst (const AnonConst &other)
-  {
-    id = other.id;
-    expr = other.expr->clone_expr ();
-  }
-
-  AnonConst operator= (const AnonConst &other)
-  {
-    id = other.id;
-    expr = other.expr->clone_expr ();
-    return *this;
-  }
+  PURE = 1 << 0,
+  NOMEM = 1 << 1,
+  READONLY = 1 << 2,
+  PRESERVES_FLAGS = 1 << 3,
+  NORETURN = 1 << 4,
+  NOSTACK = 1 << 5,
+  ATT_SYNTAX = 1 << 6,
+  RAW = 1 << 7,
+  MAY_UNWIND = 1 << 8,
 };
 
 struct InlineAsmRegOrRegClass

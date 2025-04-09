@@ -56,6 +56,8 @@ public:
   void visit (AST::IfLetExpr &expr) override;
   void visit (AST::IfLetExprConseqElse &expr) override;
   void visit (AST::BlockExpr &expr) override;
+  void visit (AST::AnonConst &expr) override;
+  void visit (AST::ConstBlock &expr) override;
   void visit (AST::InlineAsm &expr) override;
   void visit (AST::LlvmInlineAsm &expr) override;
   void visit (AST::UnsafeBlockExpr &expr) override;

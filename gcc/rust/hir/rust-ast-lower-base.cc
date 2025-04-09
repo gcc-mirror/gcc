@@ -201,6 +201,12 @@ void
 ASTLoweringBase::visit (AST::BlockExpr &)
 {}
 void
+ASTLoweringBase::visit (AST::AnonConst &)
+{}
+void
+ASTLoweringBase::visit (AST::ConstBlock &)
+{}
+void
 ASTLoweringBase::visit (AST::ClosureExprInnerTyped &)
 {}
 void
