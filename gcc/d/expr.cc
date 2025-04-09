@@ -2457,7 +2457,7 @@ public:
 	CONSTRUCTOR_APPEND_ELT (ce, TYPE_FIELDS (aatype), mem);
 
 	result = build_nop (build_ctype (e->type),
-			    build_constructor (aatype, ce));
+			    build_padded_constructor (aatype, ce));
       }
     else
       gcc_unreachable ();
@@ -2530,7 +2530,7 @@ public:
 	    CONSTRUCTOR_APPEND_ELT (elms, size_int (i), value);
 	  }
 
-	tree ctor = build_constructor (type, elms);
+	tree ctor = build_padded_constructor (type, elms);
 	TREE_CONSTANT (ctor) = 1;
 	this->result_ = ctor;
 	return;
@@ -2612,8 +2612,10 @@ public:
 	  this->result_ = d_array_value (build_ctype (e->type),
 					 size_int (0), null_pointer_node);
 	else
-	  this->result_ = build_constructor (make_array_type (tb->nextOf (), 0),
-					     NULL);
+	  {
+	    tree arrtype = make_array_type (tb->nextOf (), 0);
+	    this->result_ = build_padded_constructor (arrtype, NULL);
+	  }
 
 	return;
       }
@@ -2654,7 +2656,7 @@ public:
     /* Now return the constructor as the correct type.  For static arrays there
        is nothing else to do.  For dynamic arrays, return a two field struct.
        For pointers, return the address.  */
-    tree ctor = build_constructor (satype, elms);
+    tree ctor = build_padded_constructor (satype, elms);
     tree type = build_ctype (e->type);
 
     /* Nothing else to do for static arrays.  */
@@ -2755,7 +2757,7 @@ public:
     TypeAArray *ta = tb->isTypeAArray ();
     if (e->keys->length == 0)
       {
-	this->result_ = build_constructor (build_ctype (ta), NULL);
+	this->result_ = build_padded_constructor (build_ctype (ta), NULL);
 	return;
       }
 
@@ -2787,7 +2789,7 @@ public:
     CONSTRUCTOR_APPEND_ELT (ce, TYPE_FIELDS (aatype), mem);
 
     tree result = build_nop (build_ctype (e->type),
-			     build_constructor (aatype, ce));
+			     build_padded_constructor (aatype, ce));
     this->result_ = compound_expr (init, result);
   }
 
@@ -2798,7 +2800,7 @@ public:
     /* Handle empty struct literals.  */
     if (e->elements == NULL || e->sd->fields.length == 0)
       {
-	this->result_ = build_constructor (build_ctype (e->type), NULL);
+	this->result_ = build_padded_constructor (build_ctype (e->type), NULL);
 	return;
       }
 
@@ -2849,7 +2851,7 @@ public:
 	    elem = d_save_expr (elem);
 
 	    if (initializer_zerop (elem))
-	      value = build_constructor (build_ctype (ftype), NULL);
+	      value = build_padded_constructor (build_ctype (ftype), NULL);
 	    else
 	      value = build_array_from_val (ftype, elem);
 	  }
@@ -2948,7 +2950,7 @@ public:
 	if (constant_p)
 	  this->result_ = build_vector_from_ctor (type, elms);
 	else
-	  this->result_ = build_constructor (type, elms);
+	  this->result_ = build_padded_constructor (type, elms);
       }
     else if (e->e1->type->toBasetype ()->ty == TY::Tsarray)
       {

@@ -651,7 +651,7 @@ public:
       }
 
     DECL_INITIAL (vtblsym->csym)
-      = build_constructor (TREE_TYPE (vtblsym->csym), elms);
+      = build_padded_constructor (TREE_TYPE (vtblsym->csym), elms);
     d_finish_decl (vtblsym->csym);
 
     d->semanticRun (PASS::obj);

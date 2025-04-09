@@ -489,14 +489,14 @@ class TypeInfoVisitor : public Visitor
 	CONSTRUCTOR_APPEND_ELT (v, size_int (3), size_int (b->offset));
 
 	/* Add to the array of interfaces.  */
-	value = build_constructor (vtbl_interface_type_node, v);
+	value = build_padded_constructor (vtbl_interface_type_node, v);
 	CONSTRUCTOR_APPEND_ELT (elms, size_int (i), value);
       }
 
     tree domain = size_int (cd->vtblInterfaces->length - 1);
     tree arrtype = build_array_type (vtbl_interface_type_node,
 				     build_index_type (domain));
-    return build_constructor (arrtype, elms);
+    return build_padded_constructor (arrtype, elms);
   }
 
   /* Write out the interfacing vtable[] of base class BCD that will be accessed
@@ -542,7 +542,7 @@ class TypeInfoVisitor : public Visitor
 
     tree vtbldomain = build_index_type (size_int (id->vtbl.length - 1));
     tree vtbltype = build_array_type (vtable_entry_type, vtbldomain);
-    tree value = build_constructor (vtbltype, elms);
+    tree value = build_padded_constructor (vtbltype, elms);
     this->layout_field (value);
   }
 
@@ -1160,7 +1160,7 @@ public:
 	CONSTRUCTOR_APPEND_ELT (elms, size_int (i),
 				build_typeinfo (d->loc, arg->type));
       }
-    tree ctor = build_constructor (build_ctype (satype), elms);
+    tree ctor = build_padded_constructor (build_ctype (satype), elms);
     tree decl = this->internal_reference (ctor);
 
     tree length = size_int (ti->arguments->length);

@@ -667,7 +667,7 @@ layout_moduleinfo (Module *decl)
 
       CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE, size_int (aimports_dim));
       CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE,
-			      build_constructor (satype, elms));
+			      build_padded_constructor (satype, elms));
     }
 
   if (flags & MIlocalClasses)
@@ -684,7 +684,7 @@ layout_moduleinfo (Module *decl)
 
       CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE, size_int (aclasses.length));
       CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE,
-			      build_constructor (satype, elms));
+			      build_padded_constructor (satype, elms));
     }
 
   if (flags & MIname)
