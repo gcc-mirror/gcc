@@ -55,6 +55,8 @@ format_args_parse_arguments (AST::MacroInvocData &invoc)
   if (parser.peek_current_token ()->get_id () == STRING_LITERAL)
     format_expr = parser.parse_literal_expr ();
 
+  rust_assert (format_expr);
+
   // TODO(Arthur): Clean this up - if we haven't parsed a string literal but a
   // macro invocation, what do we do here? return a tl::unexpected?
   auto format_str = static_cast<AST::LiteralExpr &> (*format_expr)
@@ -80,6 +82,11 @@ format_args_parse_arguments (AST::MacroInvocData &invoc)
   while (parser.peek_current_token ()->get_id () != last_token_id)
     {
       parser.skip_token (COMMA);
+
+      // Check in case of an extraneous comma in the args list, which is
+      // allowed - format_args!("fmt", arg, arg2,)
+      if (parser.peek_current_token ()->get_id () == last_token_id)
+	break;
 
       if (parser.peek_current_token ()->get_id () == IDENTIFIER
 	  && parser.peek (1)->get_id () == EQUAL)
