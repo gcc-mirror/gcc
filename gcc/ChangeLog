@@ -1,3 +1,11 @@
+2025-04-08  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-03-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118318
+	* ipa-cp.cc (adjust_clone_incoming_counts): Add a compatible_p check.
+
 2025-04-01  Andrew Carlotti  <andrew.carlotti@arm.com>
 
 	* config/aarch64/aarch64.cc
