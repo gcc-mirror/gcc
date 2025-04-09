@@ -19708,7 +19708,8 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       tree ctx_parms = DECL_TEMPLATE_PARMS (DECL_TI_TEMPLATE (oldfn));
       if (generic_lambda_fn_p (oldfn))
 	ctx_parms = TREE_CHAIN (ctx_parms);
-      args = get_innermost_template_args (args, TMPL_PARMS_DEPTH (ctx_parms));
+      if (TMPL_ARGS_DEPTH (args) > TMPL_PARMS_DEPTH (ctx_parms))
+	args = get_innermost_template_args (args, TMPL_PARMS_DEPTH (ctx_parms));
     }
 
   tree r = build_lambda_expr ();
