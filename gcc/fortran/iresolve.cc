@@ -2417,7 +2417,7 @@ generate_reduce_op_wrapper (gfc_expr *op)
   gfc_symbol *operation = op->symtree->n.sym;
   gfc_symbol *wrapper, *a, *b, *c;
   gfc_symtree *st;
-  char tname[GFC_MAX_SYMBOL_LEN+1];
+  char tname[2 * GFC_MAX_SYMBOL_LEN + 2];
   char *name;
   gfc_namespace *ns;
   gfc_expr *e;
@@ -2462,7 +2462,7 @@ generate_reduce_op_wrapper (gfc_expr *op)
   a->attr.flavor = FL_VARIABLE;
   a->attr.dummy = 1;
   a->attr.artificial = 1;
-  a->attr.intent = INTENT_INOUT;
+  a->attr.intent = INTENT_IN;
   wrapper->formal = gfc_get_formal_arglist ();
   wrapper->formal->sym = a;
   gfc_set_sym_referenced (a);
@@ -2476,7 +2476,7 @@ generate_reduce_op_wrapper (gfc_expr *op)
   b->attr.dummy = 1;
   b->attr.optional= 1;
   b->attr.artificial = 1;
-  b->attr.intent = INTENT_INOUT;
+  b->attr.intent = INTENT_IN;
   wrapper->formal->next = gfc_get_formal_arglist ();
   wrapper->formal->next->sym = b;
   gfc_set_sym_referenced (b);

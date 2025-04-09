@@ -6546,7 +6546,7 @@ add_argument_checking (stmtblock_t *block, gfc_symbol *sym)
 	    message = _("Actual string length does not match the declared one"
 			" for dummy argument '%s' (%ld/%ld)");
 	  }
-	else if (fsym->as && fsym->as->rank != 0)
+	else if ((fsym->as && fsym->as->rank != 0) || fsym->attr.artificial)
 	  continue;
 	else
 	  {

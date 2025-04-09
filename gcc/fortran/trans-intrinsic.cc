@@ -3883,6 +3883,13 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 	  append_args->quick_push (null_pointer_node);
 	}
     }
+  /* Non-character scalar reduce returns a pointer to a result of size set by
+     the element size of 'array'. Setting 'sym' allocatable ensures that the
+     result is deallocated at the appropriate time.  */
+  else if (expr->value.function.isym->id == GFC_ISYM_REDUCE
+      && expr->rank == 0 && expr->ts.type != BT_CHARACTER)
+    sym->attr.allocatable = 1;
+
 
   gfc_conv_procedure_call (se, sym, expr->value.function.actual, expr,
 			  append_args);

@@ -52,14 +52,14 @@ reduce (parray *ret,
   index_type ext0, ext1, ext2;
   index_type str0, str1, str2;
   index_type idx0, idx1, idx2;
-  index_type dimen, dimen_m1, ldx;
+  index_type dimen, dimen_m1, ldx, ext, str;
   bool started;
   bool masked = false;
   bool dim_present = dim != NULL;
   bool mask_present = mask != NULL;
   bool identity_present = identity != NULL;
   bool scalar_result;
-  int i;
+  int i, j;
   int array_rank = (int)GFC_DESCRIPTOR_RANK (array);
   size_t elem_len = GFC_DESCRIPTOR_SIZE (array);
 
@@ -83,8 +83,8 @@ reduce (parray *ret,
   if (dim_present)
     {
       if ((*dim < 1) || (*dim > (GFC_INTEGER_4)array_rank))
-	runtime_error ("DIM in REDUCE intrinsic is less than 0 or greater than "
-		       "the rank of ARRAY");
+	runtime_error ("Mismatch between DIM and the rank of ARRAY in the "
+		       "REDUCE intrinsic (%d/%d)", (int)*dim, array_rank);
       dimen = (index_type) *dim;
     }
   else
@@ -99,33 +99,39 @@ reduce (parray *ret,
 
   scalar_result = (!dim_present && array_rank > 1) || array_rank == 1;
 
+  j = 0;
   for (i = 0; i < array_rank; i++)
     {
       /* Obtain the shape of the reshaped ARRAY.  */
-      index_type ext = GFC_DESCRIPTOR_EXTENT (array,i);
-      index_type str = GFC_DESCRIPTOR_STRIDE (array,i);
+      ext = GFC_DESCRIPTOR_EXTENT (array,i);
+      str = GFC_DESCRIPTOR_STRIDE (array,i);
 
       if (masked && (ext != GFC_DESCRIPTOR_EXTENT (mask, i)))
-	runtime_error ("shape mismatch between ARRAY and MASK in REDUCE "
-		       "intrinsic");
+	{
+	  int mext = (int)GFC_DESCRIPTOR_EXTENT (mask, i);
+	  runtime_error ("shape mismatch between ARRAY and MASK in the REDUCE "
+			 "intrinsic (%zd/%d)", ext, mext);
+	}
 
       if (scalar_result)
 	{
 	  ext1 *= ext;
 	  continue;
 	}
-      else if (i < dimen_m1)
+      else if (i < (int)dimen_m1)
 	ext0 *= ext;
-      else if (i == dimen_m1)
+      else if (i == (int)dimen_m1)
 	ext1 = ext;
       else
 	ext2 *= ext;
 
       /* The dimensions of the return array.  */
-      if (i < (int)(dimen - 1))
-	GFC_DIMENSION_SET (ret->dim[i], 0, ext - 1, str);
-      else if (i < array_rank - 1)
-	GFC_DIMENSION_SET (ret->dim[i], 0, ext - 1, str);
+      if (i != (int)dimen_m1)
+	{
+	  str = GFC_DESCRIPTOR_STRIDE (array, j);
+	  GFC_DIMENSION_SET (ret->dim[j], 0, ext - 1, str);
+	  j++;
+	}
     }
 
   if (!scalar_result)
@@ -214,14 +220,13 @@ reduce (parray *ret,
 }
 
 
-extern void reduce_scalar (void *, parray *,
+extern void * reduce_scalar (parray *,
 			   void (*operation) (void *, void *, void *),
 			   GFC_INTEGER_4 *, gfc_array_l4 *, void *, void *);
 export_proto (reduce_scalar);
 
-void
-reduce_scalar (void *res,
-	       parray *array,
+void *
+reduce_scalar (parray *array,
 	       void (*operation) (void *, void *, void *),
 	       GFC_INTEGER_4 *dim,
 	       gfc_array_l4 *mask,
@@ -232,55 +237,63 @@ reduce_scalar (void *res,
   ret.base_addr = NULL;
   ret.dtype.rank = 0;
   reduce (&ret, array, operation, dim, mask, identity, ordered);
-  memcpy (res, ret.base_addr, GFC_DESCRIPTOR_SIZE (array));
-  if (ret.base_addr) free (ret.base_addr);
+  return (void *)ret.base_addr;
 }
 
-extern void reduce_c (parray *, index_type, parray *,
+extern void reduce_c (parray *, gfc_charlen_type, parray *,
 		      void (*operation) (void *, void *, void *),
 		      GFC_INTEGER_4 *, gfc_array_l4 *, void *, void *,
-		      index_type, index_type);
+		      gfc_charlen_type, gfc_charlen_type);
 export_proto (reduce_c);
 
 void
 reduce_c (parray *ret,
-	  index_type ret_strlen __attribute__ ((unused)),
+	  gfc_charlen_type ret_strlen __attribute__ ((unused)),
 	  parray *array,
 	  void (*operation) (void *, void *, void *),
 	  GFC_INTEGER_4 *dim,
 	  gfc_array_l4 *mask,
 	  void *identity,
 	  void *ordered,
-	  index_type array_strlen __attribute__ ((unused)),
-	  index_type identity_strlen __attribute__ ((unused)))
+	  gfc_charlen_type array_strlen __attribute__ ((unused)),
+	  gfc_charlen_type identity_strlen __attribute__ ((unused)))
 {
+  /* The frontend constraints make string length checking redundant.  Also, the
+     scalar symbol is flagged to be allocatable in trans-intrinsic.cc so that
+     gfc_conv_procedure_call does the necessary allocation/deallocation.  */
   reduce (ret, array, operation, dim, mask, identity, ordered);
 }
 
 
-extern void reduce_scalar_c (void *, index_type, parray *,
+extern void reduce_scalar_c (void *, gfc_charlen_type, parray *,
 		      void (*operation) (void *, void *, void *),
 		      GFC_INTEGER_4 *, gfc_array_l4 *, void *, void *,
-		      index_type, index_type);
+		      gfc_charlen_type, gfc_charlen_type);
 export_proto (reduce_scalar_c);
 
 
 void
 reduce_scalar_c (void *res,
-		 index_type res_strlen __attribute__ ((unused)),
+		 gfc_charlen_type res_strlen __attribute__ ((unused)),
 		 parray *array,
 		 void (*operation) (void *, void *, void *),
 		 GFC_INTEGER_4 *dim,
 		 gfc_array_l4 *mask,
 		 void *identity,
 		 void *ordered,
-		 index_type array_strlen __attribute__ ((unused)),
-		 index_type identity_strlen __attribute__ ((unused)))
+		 gfc_charlen_type array_strlen __attribute__ ((unused)),
+		 gfc_charlen_type identity_strlen __attribute__ ((unused)))
 {
   parray ret;
   ret.base_addr = NULL;
   ret.dtype.rank = 0;
+  /* The frontend constraints make string length checking redundant.  */
   reduce (&ret, array, operation, dim, mask, identity, ordered);
-  memcpy (res, ret.base_addr, GFC_DESCRIPTOR_SIZE (array));
-  if (ret.base_addr) free (ret.base_addr);
+  if (res)
+    {
+      memcpy (res, ret.base_addr, GFC_DESCRIPTOR_SIZE (array));
+      if (ret.base_addr) free (ret.base_addr);
+    }
+  else
+    res = ret.base_addr;
 }

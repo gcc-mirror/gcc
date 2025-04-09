@@ -6753,12 +6753,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   gfc_intrinsic_sym *isym = expr && expr->rank ?
 			    expr->value.function.isym : NULL;
 
-  /* In order that the library function for intrinsic REDUCE be type and kind
-     agnostic, the result is passed by reference.  Allocatable components are
-     handled within the OPERATION wrapper.  */
-  bool reduce_scalar = expr && !expr->rank && expr->value.function.isym
-		       && expr->value.function.isym->id == GFC_ISYM_REDUCE;
-
   comp = gfc_get_proc_ptr_comp (expr);
 
   bool elemental_proc = (comp
@@ -8596,16 +8590,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       else if (ts.type == BT_CHARACTER)
 	vec_safe_push (retargs, len);
     }
-  else if (reduce_scalar)
-    {
-      /* In order that the library function for intrinsic REDUCE be type and
-	 kind agnostic, the result is passed by reference.  Allocatable
-	 components are handled within the OPERATION wrapper.  */
-      type = gfc_typenode_for_spec (&expr->ts);
-      result = gfc_create_var (type, "sr");
-      tmp =  gfc_build_addr_expr (pvoid_type_node, result);
-      vec_safe_push (retargs, tmp);
-    }
 
   gfc_free_interface_mapping (&mapping);
 
@@ -8820,14 +8804,6 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 					    NULL, GFC_CAF_COARRAY_NOCOARRAY);
 	  gfc_add_expr_to_block (&se->pre, tmp);
 	}
-    }
-  else if (reduce_scalar)
-    {
-      /* Even though the REDUCE intrinsic library function returns the result
-	 by reference, the scalar call passes the result as se->expr.  */
-      gfc_add_expr_to_block (&se->pre, se->expr);
-      se->expr = result;
-      gfc_add_block_to_block (&se->post, &post);
     }
   else
     {

@@ -8,6 +8,10 @@
   integer, allocatable :: i(:,:,:)
   integer :: n(2,2)
   Logical :: l1(4), l2(2,3), l3(2,2)
+  type :: string_t
+    character(:), allocatable :: chr(:)
+  end type
+  type(string_t) :: str
 
 ! The ARRAY argument at (1) of REDUCE shall not be polymorphic
   print *, reduce (cstar, add) ! { dg-error "shall not be polymorphic" }
@@ -53,6 +57,10 @@
 ! The character length of the ARRAY argument at (1) and of the arguments of the OPERATION at
 ! (2) shall be the same
   print *, reduce ([character(4) :: 'abcd','efgh'], char_three) ! { dg-error "arguments of the OPERATION" }
+
+! The character length of the ARRAY argument at (1) and of the arguments of the OPERATION at (2)
+! shall be the same
+  str = reduce ([character(4) :: 'abcd','efgh'], char_one) ! { dg-error "character length of the ARRAY" }
 
 ! The DIM argument at (1), if present, must be an integer scalar
   print *, reduce (i, add, dim = 2.0) ! { dg-error "must be an integer scalar" }
