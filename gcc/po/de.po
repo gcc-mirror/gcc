@@ -8,10 +8,10 @@
 # Roland Illig <roland.illig@gmx.de>, 2015, 2017-2025.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 15.1-b20250316\n"
+"Project-Id-Version: gcc 15.1-b20250406\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2025-04-04 20:42+0000\n"
-"PO-Revision-Date: 2025-04-09 07:29+0200\n"
+"PO-Revision-Date: 2025-04-09 20:06+0200\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -1309,13 +1309,12 @@ msgstr "Den WIP-Borrow-Prüfer verwenden."
 #: rust/lang.opt:217
 #, no-c-format
 msgid "-frust-edition=[unwind|abort]             Panic strategy to compile crate with"
-msgstr ""
+msgstr "-frust-edition=[unwind|abort]             Panikstrategie, mit der Crate compiliert wird"
 
 #: rust/lang.opt:230
-#, fuzzy, no-c-format
-#| msgid "Select the eBPF ISA version to target in code generation."
+#, no-c-format
 msgid "Enable the overflow checks in code generation"
-msgstr "Auswählen, für welche eBPF-ISA-Version der Zielcode generiert wird."
+msgstr "Überlaufprüfungen bei der Codegenerierung einschalten"
 
 #: c-family/c.opt:71
 #, no-c-format
@@ -1819,10 +1818,8 @@ msgstr "Bei veralteten arithmetischen Umwandlungen von Operanden mit Aufzählung
 msgid "Warn about deprecated arithmetic conversions on operands where one is of enumeration type and the other is of a floating-point type."
 msgstr "Bei veralteten arithmetischen Umwandlungen von Operanden warnen, bei denen der eine von einem Aufzählungstyp ist und der andere eine Gleitkommazahl."
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=118979
 #: c-family/c.opt:669
-#, fuzzy, no-c-format
-#| msgid "Warn about deprecated space between  and suffix in a user-defined literal operator."
+#, no-c-format
 msgid "Warn about deprecated space between \"\" and suffix in a user-defined literal operator."
 msgstr "Warnen, wenn zwischen \"\" und dem Suffix in einem benutzerdefinierten Literaloperator ein Leerzeichen steht (veraltet)."
 
@@ -8313,10 +8310,9 @@ msgid "Support USER_MSR built-in functions and code generation."
 msgstr "Eingebaute USER_MSR-Funktionen und Codeerzeugung unterstützen."
 
 #: config/i386/i386.opt:1368
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and AVX10.1-512 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and AVX10.1-256 built-in functions and code generation."
-msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 und AVX10.1-512 unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 und AVX10.1-256 unterstützen."
 
 #: config/i386/i386.opt:1373 config/i386/i386.opt:1378
 #, no-c-format
@@ -8324,16 +8320,14 @@ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and AVX10
 msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 und AVX10.1-512 unterstützen."
 
 #: config/i386/i386.opt:1383
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512 and AVX10.2-512 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512 and AVX10.2 built-in functions and code generation."
-msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512 und AVX10.2-512 unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512 und AVX10.2 unterstützen."
 
 #: config/i386/i386.opt:1388
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512, AVX10.2-512 and AMX-AVX512 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512, AVX10.2 and AMX-AVX512 built-in functions and code generation."
-msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512, AVX10.2-512 und AMX-AVX512 unterstützen."
+msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512, AVX10.2 und AMX-AVX512 unterstützen."
 
 #: config/i386/i386.opt:1393
 #, no-c-format
@@ -8779,7 +8773,7 @@ msgstr "Diese Option ist standardmäßig eingeschaltet, um PR118012 zu umgehen."
 #: config/avr/avr.opt:70
 #, no-c-format
 msgid "Optimization. Allow to use nonzero_bits() in some insn conditions."
-msgstr ""
+msgstr "Optimierung. Die Verwendung von nonzero_bits() in einigen Befehlsbedingungen erlauben."
 
 #: config/avr/avr.opt:74
 #, no-c-format
@@ -9908,10 +9902,9 @@ msgid "Put everything in the regular TOC."
 msgstr "Alles in reguläres TOC legen."
 
 #: config/rs6000/rs6000.opt:305
-#, fuzzy, no-c-format
-#| msgid "invalid arguments for %<-fpatchable-function-entry%>"
+#, no-c-format
 msgid "Emit NOPs before global and after local entry point for -fpatchable-function-entry."
-msgstr "ungültige Argumente für %<-fpatchable-function-entry%>"
+msgstr "NOPs vor dem globalen und nach dem lokalen Einstiegspunkt für -fpatchable-function-entry generieren."
 
 #: config/rs6000/rs6000.opt:309
 #, no-c-format
@@ -10408,12 +10401,12 @@ msgstr "Code für die Zählen-ISA-Erweiterung erzeugen."
 #: config/alpha/alpha.opt:74
 #, no-c-format
 msgid "Emit multi-thread and async-signal safe code for byte and word memory accesses."
-msgstr ""
+msgstr "Multithread- und Async-Signal-sicheren Code für Byte- und Wortspeicherzugriffe generieren."
 
 #: config/alpha/alpha.opt:78
 #, no-c-format
 msgid "Emit multi-thread and async-signal safe code for partial memory accesses."
-msgstr ""
+msgstr "Multithread- und Async-Signal-sicheren Code für partielle Speicherzugriffe generieren."
 
 #: config/alpha/alpha.opt:82
 #, no-c-format
@@ -13331,16 +13324,14 @@ msgid "Warn when an optimization pass is disabled."
 msgstr "Warnen, wenn ein Optimierungsdurchgang ausgeschaltet ist."
 
 #: common.opt:617
-#, fuzzy, no-c-format
-#| msgid "Treat all warnings as errors."
+#, no-c-format
 msgid "Turn all warnings into errors."
-msgstr "Alle Warnungen als Fehler behandeln."
+msgstr "Alle Warnungen in Fehler umwandeln."
 
 #: common.opt:621
-#, fuzzy, no-c-format
-#| msgid "Treat specified warning as error."
+#, no-c-format
 msgid "Turn the specified warning into an error."
-msgstr "Angegebene Warnung als Fehler behandeln."
+msgstr "Die angegebene Warnung in einen Fehler umwandeln."
 
 #: common.opt:625
 #, no-c-format
@@ -13408,16 +13399,14 @@ msgid "Warn if dereferencing a NULL pointer may lead to erroneous or undefined b
 msgstr "Warnen, wenn das Dereferenzieren eines Nullzeigers zu fehlerhaftem oder undefiniertem Verhalten führen kann."
 
 #: common.opt:698
-#, fuzzy, no-c-format
-#| msgid "Warn about returning a pointer/reference to a local or temporary variable."
+#, no-c-format
 msgid "Warn about passing a pointer/reference to a local or temporary variable to a musttail call argument."
-msgstr "Bei Rückgabe eines Zeigers/Referenz an lokale oder temporäre Variable warnen."
+msgstr "Warnen, wenn ein Zeiger oder eine Referenz auf eine lokale oder temporäre Variable an ein musttail-Aufrufargument übergeben wird."
 
 #: common.opt:702
-#, fuzzy, no-c-format
-#| msgid "Warn about returning a pointer/reference to a local or temporary variable."
+#, no-c-format
 msgid "Warn about pointer/reference to a local or temporary variable possibly escaping to a musttail call."
-msgstr "Bei Rückgabe eines Zeigers/Referenz an lokale oder temporäre Variable warnen."
+msgstr "Warnen, wenn ein Zeiger oder eine Referenz auf eine lokale oder temporäre Variable möglicherweise zu einem musttail-Aufruf entwischt."
 
 #: common.opt:706
 #, no-c-format
@@ -13637,12 +13626,12 @@ msgstr "Warnung, wenn eine Bedingung zu viele Terme hat und die Profilierung der
 #: common.opt:898
 #, no-c-format
 msgid "-fpath-coverage-limit=<number> Don't instrument functions path count exceeding <number>."
-msgstr ""
+msgstr "-fpath-coverage-limit=<Anzahl> Funktionspfade, die <Anzahl> überschreiten, nicht instrumentieren."
 
 #: common.opt:903
 #, no-c-format
 msgid "Warn if a function exceeds the number of paths (controlled by -fpath-coverage-limit) and path coverage give up instrumenting the function. The limit is approximate and conservative and coverage might give up even if the actual number is slightly below the limit."
-msgstr ""
+msgstr "Warnen, wenn eine Funktion die Anzahl der Pfade (gesteuert durch -fpath-coverage-limit) überschreitet und die Pfadabdeckung die Instrumentierung der Funktion aufgibt. Der Grenzwert ist annähernd und konservativ, und die Abdeckung könnte auch dann aufgeben, wenn die tatsächliche Anzahl etwas unter dem Grenzwert liegt."
 
 #: common.opt:910
 #, no-c-format
@@ -14835,10 +14824,9 @@ msgid "Optimize sibling and tail recursive calls."
 msgstr "Geschwister- und endrekursive Aufrufe optimieren."
 
 #: common.opt:2479
-#, fuzzy, no-c-format
-#| msgid "Insert arc-based program profiling code."
+#, no-c-format
 msgid "Insert path profiling code."
-msgstr "Arc-basierten Programm-Profilierungscode einfügen."
+msgstr "Pfadprofilierungscode einfügen."
 
 #: common.opt:2483
 #, no-c-format
@@ -16026,10 +16014,9 @@ msgid "Enable function profiling."
 msgstr "Funktionsprofilierung einschalten."
 
 #: common.opt:3808
-#, fuzzy, no-c-format
-#| msgid "Like -pedantic but issue them as errors."
+#, no-c-format
 msgid "Like -pedantic but issue errors instead of warnings."
-msgstr "Wie -pedantic, aber als Fehler ausgeben."
+msgstr "Wie -pedantic, aber Fehler statt Warnungen ausgeben."
 
 #: common.opt:3848
 #, no-c-format
@@ -18455,10 +18442,9 @@ msgstr ""
 "                                    Entscheidungen (MC/DC) ausgeben\n"
 
 #: gcov.cc:1104
-#, fuzzy, c-format
-#| msgid "  -p, --preserve-paths            Preserve all pathname components\n"
+#, c-format
 msgid "  -e, --prime-paths               Show prime path coverage summary\n"
-msgstr "  -p, --preserve-paths            Alle Pfadnamenskomponenten bewahren\n"
+msgstr "  -e, --prime-paths               Zusammenfassung der Primärpfadabdeckung anzeigen\n"
 
 #: gcov.cc:1105
 #, c-format
@@ -18468,6 +18454,10 @@ msgid ""
 "                                    TYPE is 'covered', 'uncovered', or 'both'\n"
 "                                    and defaults to 'uncovered'\n"
 msgstr ""
+"      --prime-paths-lines[=TYPE]  Pfade in die Ausgabe einbeziehen\n"
+"                                    Zeilen-Trace-Modus – wirkt sich nicht auf json aus\n"
+"                                    TYPE ist »covered«, »uncovered« oder »both«\n"
+"                                    und ist standardmäßig auf »uncovered« eingestellt\n"
 
 #: gcov.cc:1109
 #, c-format
@@ -18477,6 +18467,10 @@ msgid ""
 "                                    TYPE is 'covered', 'uncovered', or 'both'\n"
 "                                    and defaults to 'uncovered'\n"
 msgstr ""
+"      --prime-paths-source[=TYPE] Pfade in die Ausgabe einbeziehen\n"
+"                                    Quell-Trace-Modus – wirkt sich nicht auf json aus\n"
+"                                    TYPE ist »covered«, »uncovered«, or »both«\n"
+"                                    und ist standardmäßig auf »uncovered« eingestellt\n"
 
 #: gcov.cc:1113
 #, c-format
@@ -18640,12 +18634,12 @@ msgstr "JSON-Format-Version: %s\n"
 #: gcov.cc:1237
 #, c-format
 msgid "invalid argument '%s' for '--prime-paths-lines'. Valid arguments are: 'covered', 'uncovered', 'both'\n"
-msgstr ""
+msgstr "ungültiges Argument »%s« für »--prime-paths-lines«. Gültige Argumente sind: »covered«, »uncovered«, »both«\n"
 
 #: gcov.cc:1258
 #, c-format
 msgid "invalid argument '%s' for '--prime-paths-source'. Valid arguments are: 'covered', 'uncovered', 'both'\n"
-msgstr ""
+msgstr "ungültiges Argument »%s« für »--prime-paths-source«. Gültige Argumente sind: »covered«, »uncovered«, »both«\n"
 
 #: gcov.cc:1726
 #, c-format
@@ -18828,16 +18822,14 @@ msgid "No conditions\n"
 msgstr "Keine Bedingungen\n"
 
 #: gcov.cc:3101 gcov.cc:3155
-#, fuzzy, c-format
-#| msgid "Condition outcomes covered:%s of %d\n"
+#, c-format
 msgid "Prime paths covered:%s of %d\n"
-msgstr "Abgedeckte Bedingungsergebnisse: %s von %d\n"
+msgstr "Erfasste Primärpfade:%s von %d\n"
 
 #: gcov.cc:3105 gcov.cc:3159
-#, fuzzy, c-format
-#| msgid "Display this information."
+#, c-format
 msgid "No path information\n"
-msgstr "Diese Informationen anzeigen."
+msgstr "Keine Pfadinformationen\n"
 
 #: gcov.cc:3379
 #, c-format
@@ -18892,12 +18884,12 @@ msgstr "unbedingtes %2d niemals ausgeführt\n"
 #: gcov.cc:3729
 #, c-format
 msgid "path coverage omitted\n"
-msgstr ""
+msgstr "Pfadabdeckung entfällt\n"
 
 #: gcov.cc:3731
 #, c-format
 msgid "paths covered %u of %zu\n"
-msgstr ""
+msgstr "%u von %zu Pfaden abgedeckt\n"
 
 #: gcov.cc:3806
 #, c-format
@@ -19286,10 +19278,8 @@ msgid "call may throw exception that does not propagate"
 msgstr "der Aufruf wirft möglicherweise eine Ausnahme, die nicht propagiert"
 
 #: tree-tailcall.cc:725
-#, fuzzy
-#| msgid "call may throw exception that does not propagate"
 msgid "call may throw exception caught locally or perform cleanups"
-msgstr "der Aufruf wirft möglicherweise eine Ausnahme, die nicht propagiert"
+msgstr "der Aufruf wirft möglicherweise eine lokal gefangene Ausnahme oder räumt auf"
 
 #: tree-tailcall.cc:759
 msgid "return value used after call"
@@ -19308,10 +19298,8 @@ msgid "return value changed after call"
 msgstr "der Rückgabewert wird nach dem Aufruf verändert"
 
 #: tree-tailcall.cc:1012
-#, fuzzy
-#| msgid "inside another call"
 msgid "internal call"
-msgstr "innerhalb eines anderen Aufrufs"
+msgstr "interner Aufruf"
 
 #: tree-tailcall.cc:1021 tree-tailcall.cc:1061
 msgid "call and return value are different"
@@ -19327,7 +19315,7 @@ msgstr "Endrekursion mit Zeigern darf nur Additionen verwenden"
 
 #: tree-tailcall.cc:1563
 msgid "tail recursion with accumulation mixed with musttail non-recursive call"
-msgstr ""
+msgstr "Endrekursion, in dem Akkumulation mit nichtrekursivem musttail-Aufruf vermischt ist"
 
 #: c-family/c-format.cc:434
 msgid "format"
@@ -21716,10 +21704,8 @@ msgid "elemental binary operation"
 msgstr "Elementare Binäroperation"
 
 #: fortran/check.cc:70
-#, fuzzy
-#| msgid " [see %<-fno-allow-invalid-boz%>]"
 msgid " [see %<-fallow-invalid-boz%>]"
-msgstr " [siehe %<-fno-allow-invalid-boz%>]"
+msgstr " [siehe %<-fallow-invalid-boz%>]"
 
 #: fortran/check.cc:482
 msgid "BOZ constant truncated at %L"
@@ -23211,10 +23197,9 @@ msgid "unknown rust compile-until %qs"
 msgstr "unbekanntes Rust-compile-until %qs"
 
 #: rust/lang.opt:220
-#, fuzzy, gcc-internal-format
-#| msgid "unknown attribute %qs"
+#, gcc-internal-format
 msgid "unknown panic strategy %qs"
-msgstr "unbekanntes Attribut %qs"
+msgstr "unbekannte Panikstrategie %qs"
 
 #: c-family/c.opt:43 c-family/c.opt:46 c-family/c.opt:191
 #, gcc-internal-format
@@ -23382,12 +23367,12 @@ msgstr "unbekannter lam-Typ %qs"
 #: config/i386/i386.opt:1359
 #, gcc-internal-format
 msgid "%<-mevex512%> will be deprecated in GCC 16 due to all machines 512 bit vector size supported"
-msgstr ""
+msgstr "%<-mevex512%> wird in GCC 16 veraltet sein, da alle Maschinen 512 Bit Vektorgröße unterstützen"
 
 #: config/i386/i386.opt:1367 config/i386/i386.opt:1372
 #, gcc-internal-format
 msgid "%<-mavx10.1%> is aliased to 512 bit since GCC14.3 and GCC15.1 while %<-mavx10.1-256%> and %<-mavx10.1-512%> will be deprecated in GCC 16 due to all machines 512 bit vector size supported"
-msgstr ""
+msgstr "%<-mavx10.1%> ist seit GCC14.3 und GCC15.1 ein Alias für 512 Bit, während %<-mavx10.1-256%> und %<-mavx10.1-512%> in GCC 16 veraltet sein werden, da alle Maschinen 512 Bit Vektorgröße unterstützen"
 
 #: config/avr/avr.opt:34
 #, gcc-internal-format
@@ -26493,7 +26478,7 @@ msgstr "%qD hat mehr als %u Blöcke, das geforderte Maximum für %<-fharden-cont
 #: gimple-low.cc:110
 #, gcc-internal-format
 msgid "reference to label %qD defined inside of %<assume%> attribute expression from outside of the attribute"
-msgstr ""
+msgstr "Verweis auf das Label %qD, das innerhalb des Attributausdrucks %<assume%> definiert ist, von außerhalb des Attributs"
 
 #: gimple-low.cc:112 cp/name-lookup.cc:9306
 #, gcc-internal-format
@@ -27981,8 +27966,7 @@ msgid "statement will never be executed"
 msgstr "Anweisung wird niemals ausgeführt"
 
 #: gimplify.cc:2398
-#, fuzzy, gcc-internal-format
-#| msgid "%qs cannot be initialized with%<-ftrivial-auto-var_init%>"
+#, gcc-internal-format
 msgid "%qs cannot be initialized with %<-ftrivial-auto-var_init%>"
 msgstr "%qs kann nicht mit %<-ftrivial-auto-var_init%> initialisiert werden"
 
@@ -30530,7 +30514,7 @@ msgstr "Durchlauf %qs nicht gefunden, wird jedoch von neuem Durchlauf %qs refere
 #: path-coverage.cc:516
 #, gcc-internal-format
 msgid "paths exceeding limit, giving up path coverage"
-msgstr ""
+msgstr "Pfade überschreiten den Grenzwert, Pfadabdeckung wird aufgegeben"
 
 #: plugin.cc:214
 #, gcc-internal-format
@@ -33118,40 +33102,37 @@ msgstr "Verwendung schnellerer Algorithmen zum Optimieren von »switch«-Anweisu
 #: tree-tailcall.cc:220
 #, gcc-internal-format
 msgid "address of label passed to %<musttail%> call argument"
-msgstr ""
+msgstr "Adresse des an das Aufrufargument %<musttail%> übergebenen Labels"
 
 #: tree-tailcall.cc:224
 #, gcc-internal-format
 msgid "address of parameter %qD passed to %<musttail%> call argument"
-msgstr ""
+msgstr "Adresse des Parameters %qD, der an das Aufrufargument %<musttail%> übergeben wurde"
 
 #: tree-tailcall.cc:228
 #, gcc-internal-format
 msgid "address of automatic variable %qD passed to %<musttail%> call argument"
-msgstr ""
+msgstr "Die Adresse der automatischen Variable %qD wird an das Argument des %<musttail%>-Aufrufs übergeben"
 
 #: tree-tailcall.cc:232
-#, fuzzy, gcc-internal-format
-#| msgid "address of local variable %qD returned"
+#, gcc-internal-format
 msgid "address of local variable passed to %<musttail%> call argument"
-msgstr "Adresse der lokalen Variable %qD zurückgegeben"
+msgstr "Adresse einer lokalen Variable wird an das Argument des %<musttail%>-Aufrufs übergeben"
 
 #: tree-tailcall.cc:849 tree-tailcall.cc:879
-#, fuzzy, gcc-internal-format
-#| msgid "address of local variable %qD returned"
+#, gcc-internal-format
 msgid "address of local variable can escape to %<musttail%> call"
-msgstr "Adresse der lokalen Variable %qD zurückgegeben"
+msgstr "Adresse einer lokalen Variable kann zu einem %<musttail%>-Aufruf entwischen"
 
 #: tree-tailcall.cc:874
-#, fuzzy, gcc-internal-format
-#| msgid "automatic variable %qE cannot be %<threadprivate%>"
+#, gcc-internal-format
 msgid "address of automatic variable %qD can escape to %<musttail%> call"
-msgstr "automatische Variable %qE kann nicht %<threadprivate%> sein"
+msgstr "Adresse der lokalen Variable %qD kann zu einem %<musttail%>-Aufruf entwischen"
 
 #: tree-tailcall.cc:905
 #, gcc-internal-format
 msgid "address of parameter %qD can escape to %<musttail%> call"
-msgstr ""
+msgstr "Adresse des Parameters %qD kann zu einem %<musttail%>-Aufruf entwischen"
 
 #: tree-vect-generic.cc:308 tree-vect-generic.cc:437 tree-vect-generic.cc:1939
 #, gcc-internal-format
@@ -39405,10 +39386,9 @@ msgid "stack clash guard size %<%d%> must be equal to probing interval %<%d%>"
 msgstr "Größe des Stapelkollisionswächters %d muss gleich dem Sondierungsintervall %d sein"
 
 #: config/aarch64/aarch64.cc:18902
-#, fuzzy, gcc-internal-format
-#| msgid "support for mode %qs"
+#, gcc-internal-format
 msgid "no support for %qs without %qs"
-msgstr "Unterstützung für Modus %qs"
+msgstr "keine Unterstützung für %qs ohne %qs"
 
 #: config/aarch64/aarch64.cc:18955
 #, gcc-internal-format
@@ -40613,10 +40593,9 @@ msgid "supported core architectures:%s"
 msgstr "Unterstützte Kernarchitekturen:%s"
 
 #: config/avr/avr-passes.cc:4907
-#, fuzzy, gcc-internal-format
-#| msgid "could not split insn"
+#, gcc-internal-format
 msgid "failed to split insn"
-msgstr "Befehl kann nicht aufgeteilt werden"
+msgstr "Befehl konnte nicht aufgeteilt werden"
 
 #. Reached the end of `avr_mcu_types'.  This should actually never
 #. happen as options are provided by device-specs.  It could be a
@@ -41899,10 +41878,9 @@ msgid "%<target(\"rtd\")%> is ignored in 64bit mode"
 msgstr "%<target(\"rtd\")%> wird im 64-Bit-Modus ignoriert"
 
 #: config/i386/i386-options.cc:2693
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mno-evex512%> or %<-mno-avx512XXX%> cannot disable AVX10 instructions when AVX10.1-512 is available"
+#, gcc-internal-format
 msgid "%<-mno-evex512%> or %<-mno-avx512XXX%> cannot disable AVX10 instructions when AVX10.1-512 is available in GCC 15, behavior will change to it will disable that part of AVX512 instructions since GCC 16"
-msgstr "%<-mno-evex512%> oder %<-mno-avx512XXX%> kann AVX10-Befehle nicht deaktivieren, wenn AVX10.1-512 verfügbar ist"
+msgstr "%<-mno-evex512%> oder %<-mno-avx512XXX%> kann AVX10-Befehle nicht ausschalten, wenn AVX10.1-512 in GCC 15 verfügbar ist. Das Verhalten wird sich ändern, sodass dieser Teil der AVX512-Befehle ab GCC 16 deaktiviert wird"
 
 #. We should not emit 512 bit instructions under AVX10.1-256
 #. when EVEX512 is enabled w/o any AVX512 features enabled.
@@ -41918,16 +41896,14 @@ msgid "Vector size conflicts between AVX10.1 and AVX512, using 512 as max vector
 msgstr "Vektorgrößenkonflikte zwischen AVX10.1 und AVX512, als maximale Vektorgröße wird 512 verwendet"
 
 #: config/i386/i386-options.cc:2731
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mno-avx512XXX%> cannot disable AVX10 instructions when AVX10 is available"
+#, gcc-internal-format
 msgid "%<-mno-avx512XXX%> cannot disable AVX10 instructions when AVX10 is available in GCC 15, behavior will change to it will disable that part of AVX512 instructions since GCC 16"
-msgstr "%<-mno-avx512XXX%> kann AVX10-Anweisungen nicht deaktivieren, wenn AVX10 verfügbar ist"
+msgstr "%<-mno-avx512XXX%> kann AVX10-Befehle nicht deaktivieren, wenn AVX10 in GCC 15 verfügbar ist. Das Verhalten ändert sich dahingehend, dass es diesen Teil der AVX512-Befehle ab GCC 16 deaktiviert"
 
 #: config/i386/i386-options.cc:2743
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mno-avx10.1-256, -mno-avx10.1-512%> cannot disable AVX512 instructions when %<-mavx512XXX%>"
+#, gcc-internal-format
 msgid "%<-mno-avx10.1-256, -mno-avx10.1-512%> cannot disable AVX512 instructions when %<-mavx512XXX%> in GCC 15, behavior will change to it will disable all the instructions in GCC 16"
-msgstr "%<-mno-avx10.1-256, -mno-avx10.1-512%> können AVX512-Befehle nicht deaktivieren, wenn %<-mavx512XXX%> gewählt ist"
+msgstr "%<-mno-avx10.1-256, -mno-avx10.1-512%> kann AVX512-Befehle nicht deaktivieren, wenn %<-mavx512XXX%> in GCC 15 verwendet wird. Das Verhalten ändert sich dahingehend, dass alle Befehle in GCC 16 deaktiviert werden"
 
 #: config/i386/i386-options.cc:2790
 #, gcc-internal-format
@@ -47707,7 +47683,7 @@ msgstr "%<fallthrough%>-Attribut auf höchster Ebene"
 #: c/c-parser.cc:2541 c/c-parser.cc:8296
 #, gcc-internal-format
 msgid "attribute %<musttail%> mixed with other attributes on %<return%> statement"
-msgstr ""
+msgstr "in der %<return%>-Anweisung ist das Attribut %<musttail%> mit anderen Attributen vermischt"
 
 #: c/c-parser.cc:2557 c/c-parser.cc:4483
 #, gcc-internal-format
@@ -48115,10 +48091,9 @@ msgid "mixing OpenMP directives with attribute and pragma syntax on the same dec
 msgstr "Vermischung von OpenMP-Direktiven mit Attribut- und Pragma-Syntax in derselben Deklaration"
 
 #: c/c-parser.cc:7407 cp/parser.cc:15356
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute does not take any arguments"
+#, gcc-internal-format
 msgid "%qs attribute does not take any arguments"
-msgstr "Attribut %qE akzeptiert keine Argumente"
+msgstr "Attribut %qs akzeptiert keine Argumente"
 
 #: c/c-parser.cc:7504
 #, gcc-internal-format
@@ -49297,17 +49272,15 @@ msgid "duplicate %<prefer_type%> modifier"
 msgstr "doppelter %<prefer_type%>-Modifizierer"
 
 #: c/c-parser.cc:20841 cp/parser.cc:43138
-#, fuzzy, gcc-internal-format
-#| msgid "Expected %<target%> or %<targetsync%> at %C"
+#, gcc-internal-format
 msgid "expected %<prefer_type%>, %<target%>, or %<targetsync%>"
-msgstr "%<target%> oder %<targetsync%> bei %C erwartet"
+msgstr "%<prefer_type%>, %<target%> oder %<targetsync%> erwartet"
 
 #: c/c-parser.cc:20877 c/c-parser.cc:27149 cp/parser.cc:43175
 #: cp/parser.cc:50578
-#, fuzzy, gcc-internal-format
-#| msgid "Expected %<target%> or %<targetsync%> at %C"
+#, gcc-internal-format
 msgid "missing required %<target%> and/or %<targetsync%> modifier"
-msgstr "%<target%> oder %<targetsync%> bei %C erwartet"
+msgstr "fehlender erforderlicher Modifikator %<target%> und/oder %<targetsync%>"
 
 #: c/c-parser.cc:21118 cp/parser.cc:43470
 #, gcc-internal-format
@@ -60857,24 +60830,22 @@ msgstr "weitere importierte Quellencodestellen können nicht dargestellt werden"
 #: cp/module.cc:12041
 #, gcc-internal-format
 msgid "mismatching abi tags for %qD with tags %qE"
-msgstr ""
+msgstr "widersprüchliche ABI-Tags für %qD mit Tags %qE"
 
 #: cp/module.cc:12045
 #, gcc-internal-format
 msgid "mismatching abi tags for %qD with no tags"
-msgstr ""
+msgstr "widersprüchliche ABI-Tags für %qD mit keinen Tags"
 
 #: cp/module.cc:12048
-#, fuzzy, gcc-internal-format
-#| msgid "existing declaration %#qD"
+#, gcc-internal-format
 msgid "existing declaration here with tags %qE"
-msgstr "bestehende Deklaration %#qD"
+msgstr "bestehende Deklaration ist hier mit Tags %qE"
 
 #: cp/module.cc:12051
-#, fuzzy, gcc-internal-format
-#| msgid "exporting declaration %qD with internal linkage"
+#, gcc-internal-format
 msgid "existing declaration here with no tags"
-msgstr "die Deklaration %qD wird mit interner Bindung exportiert"
+msgstr "bestehende Deklaration ist hier ohne Tags"
 
 #: cp/module.cc:12193
 #, gcc-internal-format
@@ -61922,16 +61893,14 @@ msgid "%qE is not recognized as a module control-line"
 msgstr "unbekannte Modul-Steuerzeile %qE"
 
 #: cp/parser.cc:3904
-#, fuzzy, gcc-internal-format
-#| msgid "C++20 %qE only available with %<-fmodules-ts%>"
+#, gcc-internal-format
 msgid "C++20 %qE only available with %<-fmodules%>"
-msgstr "C++20 %qE ist nur mit %<-fmodules-ts%> verfügbar"
+msgstr "C++20 %qE ist nur mit %<-fmodules%> verfügbar"
 
 #: cp/parser.cc:3907
-#, fuzzy, gcc-internal-format
-#| msgid "C++20 %qE only available with %<-fmodules-ts%>, which is not yet enabled with %<-std=c++20%>"
+#, gcc-internal-format
 msgid "C++20 %qE only available with %<-fmodules%>, which is not yet enabled with %<-std=c++20%>"
-msgstr "%qE aus C++20 ist nur mit %<-fmodules-ts%> verfügbar, das ist jedoch noch nicht in %<-std=c++20%> enthalten"
+msgstr "%qE aus C++20 ist nur mit %<-fmodules%> verfügbar, das ist jedoch noch nicht in %<-std=c++20%> enthalten"
 
 #: cp/parser.cc:3913
 #, gcc-internal-format
@@ -63151,10 +63120,9 @@ msgid "keyword %<export%> is deprecated, and is ignored"
 msgstr "das Schlüsselwort %<export%> ist veraltet und wird ignoriert"
 
 #: cp/parser.cc:18861
-#, fuzzy, gcc-internal-format
-#| msgid "keyword %<export%> is enabled with %<-fmodules-ts%>"
+#, gcc-internal-format
 msgid "keyword %<export%> is enabled with %<-fmodules%>"
-msgstr "das Schlüsselwort %<export%> wird mit %<-fmodules-ts%> eingeschaltet"
+msgstr "das Schlüsselwort %<export%> wird mit %<-fmodules%> eingeschaltet"
 
 #: cp/parser.cc:18966
 #, gcc-internal-format
@@ -68782,8 +68750,7 @@ msgid "parameters of type %<va_list%> {aka %qs} are decayed to pointer types, an
 msgstr "Parameter vom Typ %<va_list%> {auch %qs} werden zu Zeigertypen degradiert und benötigen %<va_copy%>, um sie zurück in einen statischen Arraytyp umzuwandeln"
 
 #: d/d-lang.cc:463
-#, fuzzy, gcc-internal-format
-#| msgid "bad argument for %<-fdebug%>: %qs"
+#, gcc-internal-format
 msgid "bad argument for %<-fdebug=%>: %qs"
 msgstr "falsches Argument für %<-fdebug%>: %qs"
 
@@ -68793,14 +68760,12 @@ msgid "bad argument for %<-fextern-std%>: %qs"
 msgstr "falsches Argument für %<-fextern-std%>: %qs"
 
 #: d/d-lang.cc:537
-#, fuzzy, gcc-internal-format
-#| msgid "bad argument for %<-fmodule-file%>: %qs"
+#, gcc-internal-format
 msgid "bad argument for %<-fmodule-file=%>: %qs"
 msgstr "falsches Argument für %<-fmodule-file%>: %qs"
 
 #: d/d-lang.cc:704
-#, fuzzy, gcc-internal-format
-#| msgid "bad argument for %<-fversion%>: %qs"
+#, gcc-internal-format
 msgid "bad argument for %<-fversion=%>: %qs"
 msgstr "falsches Argument für %<-fversion%>: %qs"
 
@@ -70048,10 +70013,9 @@ msgstr "OPERATION-Argument bei %L muss eine PURE-Funktion sein"
 #. returning the same type and kind as the arguments and being permitted
 #. as actual argument.
 #: fortran/check.cc:2479
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Intrinsic function %s at %L is not permitted for CO_REDUCE"
+#, gcc-internal-format, gfc-internal-format
 msgid "Intrinsic function %s at %L is not permitted for %s"
-msgstr "Intrinsische Funktion »%s« bei %L ist nicht für CO_REDUCE erlaubt"
+msgstr "Intrinsische Funktion »%s« bei %L ist nicht für %s erlaubt"
 
 #: fortran/check.cc:2497
 #, gcc-internal-format, gfc-internal-format
@@ -70059,10 +70023,9 @@ msgid "The function passed as OPERATION at %L shall have two arguments"
 msgstr "Die Funktion, die bei %L als OPERATION übergeben wird, muss zwei Argumente haben"
 
 #: fortran/check.cc:2507
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "The A argument at %L has type %s but the function passed as OPERATION at %L returns %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "The %s argument at %L has type %s but the function passed as OPERATION at %L returns %s"
-msgstr "Argument A bei %L hat Typ »%s«, aber die Funktion, die bei %L als OPERATION übergeben wurde, gibt »%s« zurück"
+msgstr "Argument %s bei %L hat Typ »%s«, aber die Funktion, die bei %L als OPERATION übergeben wurde, gibt »%s« zurück"
 
 #: fortran/check.cc:2518
 #, gcc-internal-format, gfc-internal-format
@@ -70095,16 +70058,14 @@ msgid "The function passed as OPERATION at %L shall not have the OPTIONAL attrib
 msgstr "Die Funktion, die bei %L als OPERATION übergeben wird, darf bei keinem der Argumente das OPTIONAL-Attribut haben"
 
 #: fortran/check.cc:2577
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "The character length of the A argument at %L and of the arguments of the OPERATION at %L shall be the same"
+#, gcc-internal-format, gfc-internal-format
 msgid "The character length of the %s argument at %L and of the arguments of the OPERATION at %L shall be the same"
-msgstr "Die Zeichenlänge des A-Arguments bei %L und die der Argumente für die OPERATION bei %L muss dieselbe sein"
+msgstr "Die Zeichenlänge des %s-Arguments bei %L und die der Argumente für die OPERATION bei %L muss dieselbe sein"
 
 #: fortran/check.cc:2585
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "The character length of the A argument at %L and of the function result of the OPERATION at %L shall be the same"
+#, gcc-internal-format, gfc-internal-format
 msgid "The character length of the %s argument at %L and of the function result of the OPERATION at %L shall be the same"
-msgstr "Die Zeichenlänge des A-Arguments bei %L und die des Funktionsergebnisses der OPERATION bei %L muss dieselbe sein"
+msgstr "Die Zeichenlänge des %s-Arguments bei %L und die des Funktionsergebnisses für die OPERATION bei %L muss dieselbe sein"
 
 #: fortran/check.cc:2602
 #, gcc-internal-format, gfc-internal-format
@@ -70395,37 +70356,34 @@ msgid "The argument of the RANK intrinsic at %L must be a data object"
 msgstr "Argument des intrinsischen RANK bei %L muss ein Datenobjekt sein"
 
 #: fortran/check.cc:5157
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "The A argument at %L of CO_REDUCE shall not be polymorphic"
+#, gcc-internal-format, gfc-internal-format
 msgid "The ARRAY argument at %L of REDUCE shall not be polymorphic"
-msgstr "Das A-Argument bei %L von CO_REDUCE darf nicht polymorph sein"
+msgstr "Das Feld-Argument bei %L von REDUCE darf nicht polymorph sein"
 
 #: fortran/check.cc:5167
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "The stat= argument at %L must be a kind=4 integer variable"
+#, gcc-internal-format, gfc-internal-format
 msgid "The DIM argument at %L, if present, must be an integer scalar"
-msgstr "Das Argument »stat=« bei %L muss INTEGER-Variable mit »kind=4« sein"
+msgstr "Das Argument »DIM« bei %L muss ganzzahlig und skalar sein"
 
 #: fortran/check.cc:5174
 #, gcc-internal-format, gfc-internal-format
 msgid "The MASK argument at %L, if present, must be a logical array with the same rank as ARRAY"
-msgstr ""
+msgstr "Das MASK-Argument bei %L muss, falls vorhanden, ein logisches Feld mit demselben Rang wie ARRAY sein"
 
 #: fortran/check.cc:5186
 #, gcc-internal-format, gfc-internal-format
 msgid "MASK present at %L without IDENTITY"
-msgstr ""
+msgstr "MASK kommt bei %L ohne IDENTITY vor"
 
 #: fortran/check.cc:5190
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "TEAM argument at %L must be scalar"
+#, gcc-internal-format, gfc-internal-format
 msgid "The ORDERED argument at %L, if present, must be a logical scalar"
-msgstr "Argument TEAM bei %L muss skalar sein"
+msgstr "Das Argument ORDERED bei %L muss, falls vorhanden, logisch und skalar sein"
 
 #: fortran/check.cc:5198
 #, gcc-internal-format, gfc-internal-format
 msgid "The IDENTITY argument at %L, if present, must be a scalar with the same type as ARRAY"
-msgstr ""
+msgstr "Das IDENTITY-Argument bei %L muss, falls vorhanden, ein Skalar mit demselben Typ wie ARRAY sein"
 
 #: fortran/check.cc:5289
 #, gcc-internal-format
@@ -77193,10 +77151,9 @@ msgid "Expected %<,%> or %<:%> at %C"
 msgstr "%<,%> oder %<:%> bei %C erwartet"
 
 #: fortran/openmp.cc:2186
-#, fuzzy, gcc-internal-format
-#| msgid "Expected %<(%> after %qs at %C"
+#, gcc-internal-format
 msgid "Expected %<(%> after %<prefer_type%> at %C"
-msgstr "%<(%> nach %qs bei %C erwartet"
+msgstr "%<(%> nach %<prefer_type%> bei %C erwartet"
 
 #: fortran/openmp.cc:2194
 #, gcc-internal-format
@@ -77209,16 +77166,14 @@ msgid "Duplicate %<target%> at %C"
 msgstr "Doppeltes %<target%> bei %C"
 
 #: fortran/openmp.cc:2234
-#, fuzzy, gcc-internal-format
-#| msgid "Expected %<target%> or %<targetsync%> at %C"
+#, gcc-internal-format
 msgid "Expected %<prefer_type%>, %<target%>, or %<targetsync%> at %C"
-msgstr "%<target%> oder %<targetsync%> bei %C erwartet"
+msgstr "%<prefer_type%>, %<target%> oder %<targetsync%> bei %C erwartet"
 
 #: fortran/openmp.cc:2242
-#, fuzzy, gcc-internal-format
-#| msgid "Expected %<target%> or %<targetsync%> at %C"
+#, gcc-internal-format
 msgid "Missing required %<target%> and/or %<targetsync%> modifier at %C"
-msgstr "%<target%> oder %<targetsync%> bei %C erwartet"
+msgstr "Erforderlicher Modifikator %<target%> und/oder %<targetsync%> bei %C fehlt"
 
 #: fortran/openmp.cc:2295
 #, gcc-internal-format
@@ -80764,10 +80719,9 @@ msgid "The intrinsic %qs declared INTRINSIC at %L is not available in the curren
 msgstr "Das bei %2$L deklarierte INTRINSIC %1$qs ist in den derzeitigen Standardeinstellungen nicht verfügbar, außer %3$s. Entsprechende Option %<-std=*%> verwenden, oder %<-fall-intrinsics%> einschalten, um es zu verwenden."
 
 #: fortran/resolve.cc:1989
-#, fuzzy, gcc-internal-format
-#| msgid "Non-RECURSIVE procedure %qs from module %qs is  possibly calling itself recursively in procedure %qs.  Declare it RECURSIVE or use %<-frecursive%>"
+#, gcc-internal-format
 msgid "Non-RECURSIVE procedure %qs from module %qs is possibly calling itself recursively in procedure %qs.  Declare it RECURSIVE or use %<-frecursive%>"
-msgstr "Nicht-RECURSIVE Prozedur %qs aus Modul %qs ruft sich möglicherweise rekursiv selbst auf, in der Prozedur %qs. Deklarieren Sie die Prozedur als RECURSIVE oder verwenden Sie %<-frecursive%>"
+msgstr "Nicht-RECURSIVE-Prozedur %qs aus Modul %qs ruft sich möglicherweise rekursiv selbst auf, in der Prozedur %qs. Deklarieren Sie die Prozedur als RECURSIVE oder verwenden Sie %<-frecursive%>"
 
 #: fortran/resolve.cc:1994 fortran/resolve.cc:7143
 #, gcc-internal-format
@@ -81596,8 +81550,7 @@ msgid "Variable %qs at %L has already been specified in a locality-spec"
 msgstr "Variable %qs bei %L wurde bereits in einer Ortsangabe angegeben"
 
 #: fortran/resolve.cc:8218
-#, fuzzy, gcc-internal-format
-#| msgid "Index variable %qs at %L cannot be specified in alocality-spec"
+#, gcc-internal-format
 msgid "Index variable %qs at %L cannot be specified in a locality-spec"
 msgstr "Indexvariable %qs bei %L kann nicht in einer Ortsangabe angegeben werden"
 
@@ -81759,7 +81712,7 @@ msgstr "Reservierung von %s mit ABSTRACT-Basistyp bei %L erfordert Typspezifikat
 #: fortran/resolve.cc:9000
 #, gcc-internal-format
 msgid "The type parameter in ALLOCATE statement with type-spec shall be an asterisk as allocate object %qs at %L is a dummy argument with assumed type parameter"
-msgstr ""
+msgstr "Der Typ-Parameter in der ALLOCATE-Anweisung mit type-spec muss ein Sternchen sein, da das zugewiesene Objekt %qs bei %L ein Dummy-Argument mit angenommenem Typ-Parameter ist"
 
 #: fortran/resolve.cc:9020
 #, gcc-internal-format, gfc-internal-format
@@ -86495,64 +86448,3 @@ msgstr "unverwendeter Name %qE"
 #, gcc-internal-format, gfc-internal-format
 msgid "are you trying to break %s? how dare you?"
 msgstr "Wert »%s« kann in diesem Bereich nicht gefunden werden"
-
-#, no-c-format
-#~ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and AVX10.1 built-in functions and code generation."
-#~ msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 und AVX10.1 unterstützen."
-
-#, no-c-format
-#~ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1 and AVX10.2 built-in functions and code generation."
-#~ msgstr "Eingebaute Funktionen und Codeerzeugung für MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1 und AVX10.2 unterstützen."
-
-#, gcc-internal-format
-#~ msgid "%<-mesa%> is deprecated and support for ESA/390 will be removed; use %<-mzarch%> instead"
-#~ msgstr "%<-mesa%> ist veraltet und die Unterstützung für ESA/390 wird demnächst entfernt; verwenden Sie stattdessen %<-mzarch%>"
-
-#, gcc-internal-format
-#~ msgid "%<append_args%> clause not yet supported for %qD, except when specifying all %d objects in the %<interop%> clause of the %<dispatch%> directive"
-#~ msgstr "die %<append_args%>-Klausel wird für %qD noch nicht unterstützt, außer wenn alle %d Objekte in der %<interop%>-Klausel der %<dispatch%>-Richtlinie angegeben sind"
-
-#, gcc-internal-format
-#~ msgid "required by %<dispatch%> construct"
-#~ msgstr "erforderlich für das %<dispatch%>-Konstrukt"
-
-#, gcc-internal-format
-#~ msgid "%<#pragma omp interop%> not yet supported"
-#~ msgstr "%<#pragma omp interop%> wird noch nicht unterstützt"
-
-#, gcc-internal-format
-#~ msgid "%<init%> clause with modifier other than %<prefer_type%>, %<target%> or %<targetsync%>"
-#~ msgstr "%<init%>-Klausel mit einem anderen Modifikator als %<prefer_type%>, %<target%> oder %<targetsync%>"
-
-#, gcc-internal-format, gfc-internal-format
-#~ msgid "Interface mismatch in dummy procedure at %L conflichts with %L: %s"
-#~ msgstr "Abweichung in Schnittstelle der Scheinprozedur bei %L widerspricht %L: %s"
-
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=118991
-#, c-format
-#~ msgid "bad I/O address 0x"
-#~ msgstr "-"
-
-#, gcc-internal-format
-#~ msgid "late or dynamic variant resolution required for call in a %<dispatch%> construct"
-#~ msgstr "späte oder dynamische Variantenauflösung für den Aufruf in einem %<dispatch%>-Konstrukt erforderlich"
-
-#, gcc-internal-format
-#~ msgid "unexpected %<interop%> clause as invoked procedure %qD is not variant substituted"
-#~ msgstr "unerwartete %<interop%>-Klausel, da die aufgerufene Prozedur %qD nicht durch eine Variante ersetzt wird"
-
-#, gcc-internal-format, gfc-internal-format
-#~ msgid "TEAM= attribute in %C misplaced"
-#~ msgstr "Attribut »TEAM=« in %C fehlplatziert"
-
-#, gcc-internal-format, gfc-internal-format
-#~ msgid "STAT= attribute in %C misplaced"
-#~ msgstr "Attribut »STAT=« in %C fehlplatziert"
-
-#, gcc-internal-format, gfc-internal-format
-#~ msgid "expected argument list at %C"
-#~ msgstr "Argumentliste bei %C erwartet"
-
-#, gcc-internal-format, gfc-internal-format
-#~ msgid "Sorry, not yet able to call a non-pure/non-elemental function %s in a coarray reference;  use a temporary for the function's result instead"
-#~ msgstr "Sorry, noch nicht in der Lage, eine nicht-reine/nicht-elementare Funktion %s in einer Kofeld-Referenz aufzurufen; verwenden Sie stattdessen eine temporäre Variable für das Ergebnis der Funktion"
