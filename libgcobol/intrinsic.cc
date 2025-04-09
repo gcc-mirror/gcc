@@ -1867,8 +1867,7 @@ __gg__max(cblc_field_t *dest,
     unsigned char *best_location   ;
     size_t         best_length     ;
     int            best_attr       ;
-    bool           best_move_all   ;
-    bool           best_address_of ;
+    int            best_flags      ;
 
     bool first_time = true;
     assert(ncount);
@@ -1887,8 +1886,7 @@ __gg__max(cblc_field_t *dest,
           best_location   = __gg__treeplet_1f[i]->data + __gg__treeplet_1o[i];
           best_length     = __gg__treeplet_1s[i];
           best_attr       = __gg__treeplet_1f[i]->attr;
-          best_move_all   = !!(__gg__fourplet_flags[i] & REFER_T_MOVE_ALL);
-          best_address_of = !!(__gg__fourplet_flags[i] & REFER_T_ADDRESS_OF);
+          best_flags      = __gg__fourplet_flags[i];
           }
         else
           {
@@ -1896,31 +1894,27 @@ __gg__max(cblc_field_t *dest,
           unsigned char *candidate_location   = __gg__treeplet_1f[i]->data + __gg__treeplet_1o[i];
           size_t         candidate_length     = __gg__treeplet_1s[i];
           int            candidate_attr       = __gg__treeplet_1f[i]->attr;
-          bool           candidate_move_all   = !!(__gg__fourplet_flags[i] & REFER_T_MOVE_ALL);
-          bool           candidate_address_of = !!(__gg__fourplet_flags[i] & REFER_T_ADDRESS_OF);
+          int            candidate_flags      = __gg__fourplet_flags[i];
 
           int compare_result = __gg__compare_2(
                                  candidate_field,
                                  candidate_location,
                                  candidate_length,
                                  candidate_attr,
-                                 candidate_move_all,
-                                 candidate_address_of,
+                                 candidate_flags,
                                  best_field,
                                  best_location,
                                  best_length,
                                  best_attr,
-                                 best_move_all,
-                                 best_address_of,
+                                 best_flags,
                                  0);
           if( compare_result >= 0 )
             {
-            best_field      = candidate_field    ;
-            best_location   = candidate_location ;
-            best_length     = candidate_length   ;
-            best_attr       = candidate_attr     ;
-            best_move_all   = candidate_move_all ;
-            best_address_of = candidate_address_of ;
+            best_field      = candidate_field      ;
+            best_location   = candidate_location   ;
+            best_length     = candidate_length     ;
+            best_attr       = candidate_attr       ;
+            best_flags      = candidate_flags      ;
             }
           }
         if( !update_refer_state_for_all(state, __gg__treeplet_1f[i]) )
@@ -2129,8 +2123,7 @@ __gg__min(cblc_field_t *dest,
     unsigned char *best_location   ;
     size_t         best_length     ;
     int            best_attr       ;
-    bool           best_move_all   ;
-    bool           best_address_of ;
+    int            best_flags      ;
 
     bool first_time = true;
     assert(ncount);
@@ -2149,8 +2142,7 @@ __gg__min(cblc_field_t *dest,
           best_location   = __gg__treeplet_1f[i]->data + __gg__treeplet_1o[i];
           best_length     = __gg__treeplet_1s[i];
           best_attr       = __gg__treeplet_1f[i]->attr;
-          best_move_all   = !!(__gg__fourplet_flags[i] & REFER_T_MOVE_ALL);
-          best_address_of = !!(__gg__fourplet_flags[i] & REFER_T_ADDRESS_OF);
+          best_flags      = __gg__fourplet_flags[i];
           }
         else
           {
@@ -2158,31 +2150,27 @@ __gg__min(cblc_field_t *dest,
           unsigned char *candidate_location   = __gg__treeplet_1f[i]->data + __gg__treeplet_1o[i];
           size_t         candidate_length     = __gg__treeplet_1s[i];
           int            candidate_attr       = __gg__treeplet_1f[i]->attr;
-          bool           candidate_move_all   = !!(__gg__fourplet_flags[i] & REFER_T_MOVE_ALL);
-          bool           candidate_address_of = !!(__gg__fourplet_flags[i] & REFER_T_ADDRESS_OF);
+          int            candidate_flags      = __gg__fourplet_flags[i];
 
           int compare_result = __gg__compare_2(
                                  candidate_field,
                                  candidate_location,
                                  candidate_length,
                                  candidate_attr,
-                                 candidate_move_all,
-                                 candidate_address_of,
+                                 candidate_flags,
                                  best_field,
                                  best_location,
                                  best_length,
                                  best_attr,
-                                 best_move_all,
-                                 best_address_of,
+                                 best_flags,
                                  0);
           if( compare_result < 0 )
             {
-            best_field      = candidate_field    ;
-            best_location   = candidate_location ;
-            best_length     = candidate_length   ;
-            best_attr       = candidate_attr     ;
-            best_move_all   = candidate_move_all ;
-            best_address_of = candidate_address_of ;
+            best_field      = candidate_field      ;
+            best_location   = candidate_location   ;
+            best_length     = candidate_length     ;
+            best_attr       = candidate_attr       ;
+            best_flags      = candidate_flags      ;
             }
           }
         if( !update_refer_state_for_all(state, __gg__treeplet_1f[i]) )
@@ -2991,14 +2979,12 @@ __gg__ord_min(cblc_field_t *dest,
   unsigned char *best_location;
   size_t         best_length;
   int            best_attr;
-  bool           best_move_all;
-  bool           best_address_of ;
+  int            best_flags;
 
   unsigned char  *candidate_location;
   size_t candidate_length;
   int    candidate_attr;
-  bool   candidate_move_all;
-  bool   candidate_address_of;
+  int    candidate_flags;
 
   for( size_t i=0; i<ninputs; i++ )
     {
@@ -3016,8 +3002,7 @@ __gg__ord_min(cblc_field_t *dest,
         best_location   = __gg__treeplet_1f[i]->data + __gg__treeplet_1o[i];
         best_length     = __gg__treeplet_1s[i];
         best_attr       = __gg__treeplet_1f[i]->attr;
-        best_move_all   = !!(__gg__fourplet_flags[i] & REFER_T_MOVE_ALL);
-        best_address_of = !!(__gg__fourplet_flags[i] & REFER_T_ADDRESS_OF);
+        best_flags      = __gg__fourplet_flags[i];
         }
       else
         {
@@ -3026,8 +3011,7 @@ __gg__ord_min(cblc_field_t *dest,
         candidate_location   = __gg__treeplet_1f[i]->data + __gg__treeplet_1o[i];
         candidate_length     = __gg__treeplet_1s[i];
         candidate_attr       = __gg__treeplet_1f[i]->attr;
-        candidate_move_all   = !!(__gg__fourplet_flags[i] & REFER_T_MOVE_ALL);
-        candidate_address_of = !!(__gg__fourplet_flags[i] & REFER_T_ADDRESS_OF);
+        candidate_flags      = __gg__fourplet_flags[i];
 
         int compare_result =
           __gg__compare_2(
@@ -3035,14 +3019,12 @@ __gg__ord_min(cblc_field_t *dest,
             candidate_location,
             candidate_length,
             candidate_attr,
-            candidate_move_all,
-            candidate_address_of,
+            candidate_flags,
             best,
             best_location,
             best_length,
             best_attr,
-            best_move_all,
-            best_address_of,
+            best_flags,
             0);
         if( compare_result < 0 )
           {
@@ -3051,8 +3033,7 @@ __gg__ord_min(cblc_field_t *dest,
           best_location   = candidate_location;
           best_length     = candidate_length;
           best_attr       = candidate_attr;
-          best_move_all   = candidate_move_all;
-          best_address_of = candidate_address_of;
+          best_flags      = candidate_flags;
           }
         }
       if( !update_refer_state_for_all(state, __gg__treeplet_1f[i]) )
@@ -3086,14 +3067,12 @@ __gg__ord_max(cblc_field_t *dest,
   unsigned char *best_location;
   size_t         best_length;
   int            best_attr;
-  bool           best_move_all;
-  bool           best_address_of ;
+  int            best_flags;
 
   unsigned char  *candidate_location;
   size_t candidate_length;
   int    candidate_attr;
-  bool   candidate_move_all;
-  bool   candidate_address_of;
+  int    candidate_flags;
 
   for( size_t i=0; i<ninputs; i++ )
     {
@@ -3111,8 +3090,7 @@ __gg__ord_max(cblc_field_t *dest,
         best_location   = __gg__treeplet_1f[i]->data + __gg__treeplet_1o[i];
         best_length     = __gg__treeplet_1s[i];
         best_attr       = __gg__treeplet_1f[i]->attr;
-        best_move_all   = !!(__gg__fourplet_flags[i] & REFER_T_MOVE_ALL);
-        best_address_of = !!(__gg__fourplet_flags[i] & REFER_T_ADDRESS_OF);
+        best_flags      = __gg__fourplet_flags[i];
         }
       else
         {
@@ -3121,8 +3099,7 @@ __gg__ord_max(cblc_field_t *dest,
         candidate_location   = __gg__treeplet_1f[i]->data + __gg__treeplet_1o[i];
         candidate_length     = __gg__treeplet_1s[i];
         candidate_attr       = __gg__treeplet_1f[i]->attr;
-        candidate_move_all   = !!(__gg__fourplet_flags[i] & REFER_T_MOVE_ALL);
-        candidate_address_of = !!(__gg__fourplet_flags[i] & REFER_T_ADDRESS_OF);
+        candidate_flags      = __gg__fourplet_flags[i];
 
         int compare_result =
           __gg__compare_2(
@@ -3130,14 +3107,12 @@ __gg__ord_max(cblc_field_t *dest,
             candidate_location,
             candidate_length,
             candidate_attr,
-            candidate_move_all,
-            candidate_address_of,
+            candidate_flags,
             best,
             best_location,
             best_length,
             best_attr,
-            best_move_all,
-            best_address_of,
+            best_flags,
             0);
         if( compare_result > 0 )
           {
@@ -3146,8 +3121,7 @@ __gg__ord_max(cblc_field_t *dest,
           best_location   = candidate_location;
           best_length     = candidate_length;
           best_attr       = candidate_attr;
-          best_move_all   = candidate_move_all;
-          best_address_of = candidate_address_of;
+          best_flags      = candidate_flags;
           }
         }
       if( !update_refer_state_for_all(state, __gg__treeplet_1f[i]) )

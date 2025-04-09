@@ -70,6 +70,7 @@
 #define REFER_T_ALL_FLAGS_MASK 0x0FF  // We allow for seven subscripts
 #define REFER_T_MOVE_ALL       0x100  // This is the move_all flag
 #define REFER_T_ADDRESS_OF     0x200  // This is the address_of flag
+#define REFER_T_REFMOD         0x400  // Indicates to library the refer was a refmod
 
 #define MIN_FIELD_BLOCK_SIZE (16)
 

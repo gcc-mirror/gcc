@@ -2028,10 +2028,12 @@ cobol_compare(  tree return_int,
     {
     // None of our explicit comparisons up above worked, so we revert to the
     // general case:
-    int leftflags  =   (left_side_ref.all      ? REFER_T_MOVE_ALL : 0)
-                    +  (left_side_ref.addr_of  ? REFER_T_ADDRESS_OF : 0);
-    int rightflags =   (right_side_ref.all     ? REFER_T_MOVE_ALL : 0)
-                    +  (right_side_ref.addr_of ? REFER_T_ADDRESS_OF : 0);
+    int leftflags  =   (left_side_ref.all          ? REFER_T_MOVE_ALL   : 0)
+                    +  (left_side_ref.addr_of      ? REFER_T_ADDRESS_OF : 0)
+                    +  (left_side_ref.refmod.from  ? REFER_T_REFMOD     : 0);
+    int rightflags =   (right_side_ref.all         ? REFER_T_MOVE_ALL   : 0)
+                    +  (right_side_ref.addr_of     ? REFER_T_ADDRESS_OF : 0)
+                    +  (right_side_ref.refmod.from ? REFER_T_REFMOD     : 0);
     gg_assign(  return_int, gg_call_expr(
                 INT,
                 "__gg__compare",
@@ -2045,6 +2047,7 @@ cobol_compare(  tree return_int,
                 build_int_cst_type(INT, rightflags),
                 integer_zero_node,
                 NULL_TREE));
+    compared = true;
     }
 
 //  gg_printf("   result is %d\n", return_int, NULL_TREE);

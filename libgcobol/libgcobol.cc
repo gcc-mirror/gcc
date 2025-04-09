@@ -3919,22 +3919,16 @@ __gg__compare_2(cblc_field_t *left_side,
                 unsigned char   *left_location,
                 size_t  left_length,
                 int     left_attr,
-                bool    left_all,
-                bool    left_address_of,
+                int     left_flags,
                 cblc_field_t *right_side,
                 unsigned char   *right_location,
                 size_t  right_length,
                 int     right_attr,
-                bool    right_all,
-                bool    right_address_of,
+                int     right_flags,
                 int     second_time_through)
   {
   // First order of business:  If right_side is a FldClass, pass that off
   // to the speciality squad:
-
-  // static size_t converted_initial_size = MINIMUM_ALLOCATION_SIZE;
-  // static unsigned char *converted_initial =
-                                // (unsigned char *)malloc(converted_initial_size);
 
   if( right_side->type == FldClass )
     {
@@ -3945,8 +3939,17 @@ __gg__compare_2(cblc_field_t *left_side,
     }
 
   // Serene in our conviction that the left_side isn't a FldClass, we
-  // move on:
+  // move on.
 
+  // Extract the individual flags from the flag words:
+  bool left_all         = !!(left_flags  & REFER_T_MOVE_ALL  );
+  bool left_address_of  = !!(left_flags  & REFER_T_ADDRESS_OF);
+  bool right_all        = !!(right_flags & REFER_T_MOVE_ALL  );
+  bool right_address_of = !!(right_flags & REFER_T_ADDRESS_OF);
+//bool left_refmod      = !!(left_flags  & REFER_T_REFMOD    );
+  bool right_refmod     = !!(right_flags & REFER_T_REFMOD    );
+
+  // Figure out if we have any figurative constants
   cbl_figconst_t left_figconst  = (cbl_figconst_t)(left_attr  & FIGCONST_MASK);
   cbl_figconst_t right_figconst = (cbl_figconst_t)(right_attr & FIGCONST_MASK);
 
@@ -4302,6 +4305,23 @@ __gg__compare_2(cblc_field_t *left_side,
       {
       // We are comparing an alphanumeric to a numeric.
 
+      // The right side is numeric.  Sometimes people write code where they
+      // take the refmod of a numeric displays.  If somebody did that here,
+      // just do a complete straight-up character by character comparison:
+      
+      if( right_refmod )
+        {
+        retval = compare_strings(   (char *)left_location,
+                                    left_length,
+                                    left_all,
+                                    (char *)right_location,
+                                    right_length,
+                                    right_all);
+        compare = true;
+        goto fixup_retval;
+        }
+
+
       // The trick here is to convert the numeric to its display form,
       // and compare that to the alphanumeric. For example, when comparing
       // a VAL5 PIC X(3) VALUE 5 to literals,
@@ -4310,7 +4330,6 @@ __gg__compare_2(cblc_field_t *left_side,
       // VAL5 EQUAL  005  is TRUE
       // VAL5 EQUAL   "5" is FALSE
       // VAL5 EQUAL "005" is TRUE
-
       if( left_side->type == FldLiteralA )
         {
         left_location = (unsigned char *)left_side->data;
@@ -4373,14 +4392,12 @@ fixup_retval:
                                 right_location,
                                 right_length,
                                 right_attr,
-                                right_all,
-                                right_address_of,
+                                right_flags,
                                 left_side,
                                 left_location,
                                 left_length,
                                 left_attr,
-                                left_all,
-                                left_address_of,
+                                left_flags,
                                 1);
     // And reverse the sense of the return value:
     compare = true;
@@ -4428,14 +4445,12 @@ __gg__compare(struct cblc_field_t *left,
                             left->data + left_offset,
                             left_length,
                             left->attr,
-                            !!(left_flags & REFER_T_MOVE_ALL),
-                            !!(left_flags & REFER_T_ADDRESS_OF),
+                            left_flags,
                             right,
                             right->data + right_offset,
                             right_length,
                             right->attr,
-                            !!(right_flags & REFER_T_MOVE_ALL),
-                            !!(right_flags & REFER_T_ADDRESS_OF),
+                            right_flags,
                             second_time_through);
   return retval;
   }
