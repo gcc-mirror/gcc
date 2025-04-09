@@ -671,6 +671,14 @@ parse_asm_arg (InlineAsmContext inline_asm_ctx)
     {
       token = parser.peek_current_token ();
 
+      if (token->get_id () == COLON || token->get_id () == SCOPE_RESOLUTION)
+	{
+	  rust_error_at (
+	    token->get_locus (),
+	    "the legacy LLVM-style %<asm!%> syntax is no longer supported");
+	  return tl::unexpected<InlineAsmParseError> (COMMITTED);
+	}
+
       // We accept a comma token here.
       if (token->get_id () != COMMA
 	  && inline_asm_ctx.consumed_comma_without_formatted_string)
