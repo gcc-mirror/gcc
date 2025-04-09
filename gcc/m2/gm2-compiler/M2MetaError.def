@@ -109,7 +109,8 @@ FROM NameKey IMPORT Name ;
     describe the symbol.  If ordinary text is copied then it is not quoted.
 
    The color strings are: "filename", "quote", "error", "warning", "note",
-                          "locus", "insert", "delete", "type", "range1", range2".
+                          "locus", "insert", "delete", "type", "range1",
+                          "range2".
 *)
 
 (*
