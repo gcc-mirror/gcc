@@ -92,5 +92,5 @@ void test_9 (void *p)
 void test_10 (char *s, int n)
 {
   __builtin_realloc(s, n); /* { dg-warning "ignoring return value of '__builtin_realloc' declared with attribute 'warn_unused_result'" "" { target c } } */
-  /* { dg-warning "ignoring return value of 'void\\* __builtin_realloc\\(void\\*, (long )?unsigned int\\)' declared with attribute 'warn_unused_result'" "" { target c++ } .-1 } */
+  /* { dg-warning "ignoring return value of 'void\\* __builtin_realloc\\(void\\*, (long )*unsigned int\\)' declared with attribute 'warn_unused_result'" "" { target c++ } .-1 } */
 } /* { dg-warning "leak" } */
