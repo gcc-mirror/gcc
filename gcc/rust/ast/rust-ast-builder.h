@@ -51,6 +51,19 @@ vec (std::unique_ptr<T> &&t1, std::unique_ptr<T> &&t2)
   return v;
 }
 
+template <typename T>
+std::vector<std::unique_ptr<T>>
+vec (std::unique_ptr<T> &&t1, std::unique_ptr<T> &&t2, std::unique_ptr<T> &&t3)
+{
+  auto v = std::vector<std::unique_ptr<T>> ();
+
+  v.emplace_back (std::move (t1));
+  v.emplace_back (std::move (t2));
+  v.emplace_back (std::move (t3));
+
+  return v;
+}
+
 /* Pointer-ify something */
 template <typename T>
 static std::unique_ptr<T>
@@ -293,6 +306,9 @@ public:
 
   static std::unique_ptr<GenericParam>
   new_lifetime_param (LifetimeParam &param);
+
+  std::unique_ptr<GenericParam>
+  new_const_param (ConstGenericParam &param) const;
 
   static std::unique_ptr<GenericParam> new_type_param (
     TypeParam &param,

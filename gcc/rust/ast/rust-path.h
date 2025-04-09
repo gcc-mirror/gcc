@@ -391,6 +391,13 @@ public:
     return default_value.value ();
   }
 
+  tl::optional<GenericArg> &get_default_value () { return default_value; }
+
+  const tl::optional<GenericArg> &get_default_value () const
+  {
+    return default_value;
+  }
+
   std::string as_string () const override;
 
   void accept_vis (ASTVisitor &vis) override;
