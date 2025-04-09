@@ -40,7 +40,10 @@ enum CompilerPass
   HIR_LOWERING,
   TYPE_CHECK,
   STATIC_ANALYSIS,
-  CODE_GENERATION
+  CODE_GENERATION,
+
+  // External Rust tooling attributes, like #[rustfmt::skip]
+  EXTERNAL,
 
   // Do we need to add something here for const fns?
 };

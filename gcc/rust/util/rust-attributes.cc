@@ -94,7 +94,8 @@ static const BuiltinAttrDefinition __definitions[]
      {Attrs::RUSTC_ON_UNIMPLEMENTED, STATIC_ANALYSIS},
 
      {Attrs::FUNDAMENTAL, TYPE_CHECK},
-     {Attrs::NON_EXHAUSTIVE, TYPE_CHECK}};
+     {Attrs::NON_EXHAUSTIVE, TYPE_CHECK},
+     {Attrs::RUSTFMT, EXTERNAL}};
 
 BuiltinAttributeMappings *
 BuiltinAttributeMappings::get ()
