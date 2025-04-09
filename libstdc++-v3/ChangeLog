@@ -1,3 +1,11 @@
+2025-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/119671
+	* include/std/format (__formatter_fp::format): Do not invalidate
+	__wstr unless _M_localized returns a valid string.
+	* testsuite/std/format/functions/format.cc: Check wide string
+	formatting of floating-point types with classic locale.
+
 2025-04-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/119642

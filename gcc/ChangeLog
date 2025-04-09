@@ -1,3 +1,83 @@
+2025-04-08  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c++/90468
+	* doc/invoke.texi (Warning Options): Clean up text describing
+	-Wno-xxx.
+
+2025-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119672
+	* simplify-rtx.cc (simplify_context::simplify_relational_operation_1):
+	For POPCOUNT == 0 or != 0 optimizations use
+	CONST0_RTX (GET_MODE (XEXP (op0, 0))) rather than const0_rtx.
+
+2025-04-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/119662
+	* gimplify.cc (modify_call_for_omp_dispatch): Fix GOMP_interop
+	arg passing; add location info to function calls.
+
+2025-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119678
+	* config/riscv/freebsd.h (LINK_SPEC): Use FBSD_LINK_PG_NOTE rather
+	than non-existing FBSD_LINK_PG_NOTES.
+
+2025-04-08  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.cc (nvptx_asm_output_def_from_decls)
+	[!ACCEL_COMPILER]: Don't define label 'emit_ptx_alias'.
+
+2025-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119594
+	* cse.cc (count_reg_usage): Count even x == dest regs if they have
+	non-zero counts already and incr is positive.
+
+2025-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/119625
+	* lto-opts.cc (lto_write_options): Mask of CF_SET from
+	global_options.x_flag_cf_protection.
+
+2025-04-08  Tejas Belagod  <tejas.belagod@arm.com>
+	    Andrea Corallo  <andrea.corallo@arm.com>
+
+	* target.h (type_context_kind): Add new context kinds for target clauses.
+	(omp_type_context): Query if the context is of OMP kind.
+	* config/aarch64/aarch64-sve-builtins.cc (verify_type_context): Diagnose
+	SVE types for a given OpenMP context.
+	(omp_type_context): New.
+	* gimplify.cc (omp_notice_variable): Diagnose implicitly-mapped SVE
+	objects in OpenMP regions.
+	(gimplify_scan_omp_clauses): Diagnose SVE types for various target
+	clauses.
+
+2025-04-08  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* tree.h (strip_pointer_types): New.
+
+2025-04-08  Richard Sandiford  <richard.sandiford@arm.com>
+	    Tejas Belagod  <tejas.belagod@arm.com>
+
+	PR middle-end/101018
+	* poly-int.h (can_and_p): New function.
+	* fold-const.cc (poly_int_binop): Use it to optimize BIT_AND_EXPRs
+	involving POLY_INT_CSTs.
+	* gimplify.cc (omp_notice_variable): Use poly_int_tree_p instead
+	of INTEGER_CST when checking for constant-sized omp data.
+	(gimplify_adjust_omp_clauses_1): Likewise.
+	(gimplify_adjust_omp_clauses): Likewise.
+	* omp-low.cc (scan_sharing_clauses): Likewise.
+
+2025-04-08  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.h (PTA_DIAMONDRAPIDS): Add PTA_AVX10_1_256.
+
+2025-04-08  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/vector.md: Disable vsext/vzext for XTheadVector.
+
 2025-04-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/113257

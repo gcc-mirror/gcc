@@ -1,3 +1,322 @@
+2025-04-08  Matty Kuhn  <matty.kuhn.1@gmail.com>
+
+	* ast/rust-ast.h: (AST::Attribute): add empty_input function
+	* checks/errors/rust-feature-gate.cc: (FeatureGate::visit): check for empty feature gate
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Update label
+	getter call.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Likewise.
+	* ast/rust-ast.cc (BreakExpr::as_string): Likewise.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Likewise.
+	* resolve/rust-ast-resolve-expr.cc (ResolveExpr::visit): Likewise.
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Likewise.
+	* ast/rust-expr.h: Add optional getter and rename label getter to
+	get_label_unchecked.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit):
+	Call unchecked getter.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit):
+	Likewise.
+	* ast/rust-ast.cc (ContinueExpr::as_string): Likewise.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Likewise.
+	* resolve/rust-ast-resolve-expr.cc (ResolveExpr::visit): Likewise.
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Likewise.
+	* ast/rust-expr.h: Add new getter for the optional and rename getter
+	to get_label_unchecked.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* parse/rust-parse-impl.h (Parser::parse_loop_label): Change function
+	return type to expected.
+	(Parser::parse_labelled_loop_expr): Adapt call location to new return
+	type.
+	* parse/rust-parse.h (enum class): Update function prototype.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Add call
+	to label resolution if there is one label.
+	(Late::resolve_label): Look for labels and emit an error message on
+	failure.
+	* resolve/rust-late-name-resolver-2.0.h: Add function prototypes.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-ast-resolve-expr.cc (ResolveExpr::visit):
+	Change error message to match rustc.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-builder.cc (Builder::self_ref_param): Remove error state
+	and use optional.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Check label
+	before visiting.
+	* ast/rust-ast.cc (ContinueExpr::as_string): Retrieve label value.
+	(Lifetime::as_string): Retrieve lifetime value.
+	(ReferenceType::as_string): Likewise.
+	(SelfParam::as_string): Likewise.
+	* ast/rust-ast.h: Remove lifetime and LifetimeParam error state.
+	* ast/rust-desugar-for-loops.cc (DesugarForLoops::DesugarCtx::make_break_arm):
+	Use optional instead of error state.
+	* ast/rust-expr.h (class ContinueExpr): Make label optional.
+	* ast/rust-item.h (class SelfParam): Make lifetime optional.
+	* ast/rust-type.h (class ReferenceType): Likewise.
+	* backend/rust-compile-base.cc: Use optional for self param instead
+	of error state.
+	* backend/rust-compile-base.h: Update function prototype.
+	* expand/rust-derive-clone.cc (DeriveClone::clone_fn): Use optional.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::lower_self): Lower
+	lifetime only if it exists.
+	* hir/rust-ast-lower-block.h: Lower loop label only if it exists.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Likewise.
+	* hir/rust-ast-lower-implitem.cc (ASTLowerImplItem::visit): Remove
+	references to error state.
+	(ASTLowerTraitItem::visit): Lower self param only if it exists.
+	* hir/rust-ast-lower-item.cc (ASTLoweringItem::visit): Use nullopt
+	for default value instead of SelfParam error state.
+	* hir/rust-ast-lower.cc (ASTLoweringExprWithBlock::visit): Lower label
+	only if it exists.
+	* hir/rust-hir-dump.cc (Dump::do_traitfunctiondecl): Print self only if
+	it exists.
+	(Dump::visit): Liewise.
+	* hir/tree/rust-hir-bound.h: Remove error state.
+	* hir/tree/rust-hir-expr.cc (ContinueExpr::ContinueExpr): Use optional
+	in constructor for loop label.
+	(BreakExpr::BreakExpr): Likewise.
+	* hir/tree/rust-hir-expr.h (class ContinueExpr): Remove error state
+	implementation.
+	(class BreakExpr): Likewise.
+	* hir/tree/rust-hir-generic-param.h: Likewise.
+	* hir/tree/rust-hir-item.cc (SelfParam::SelfParam): Make lifetime
+	optional.
+	(Function::Function): Make self param optional.
+	* hir/tree/rust-hir-item.h (class Function): Likewise.
+	* hir/tree/rust-hir-type.cc (ReferenceType::ReferenceType): Make
+	lifetime optional.
+	* hir/tree/rust-hir-type.h (class ReferenceType): Likewise.
+	* hir/tree/rust-hir.cc (ContinueExpr::as_string): Use new getter.
+	(BreakExpr::as_string): Likewise.
+	(Lifetime::as_string): Likewise.
+	(ReferenceType::as_string): Likewise.
+	(TraitFunctionDecl::as_string): Likewise.
+	(SelfParam::as_string): Remove error state checking.
+	* parse/rust-parse-impl.h (Parser::parse_generic_param): Adapt to
+	optional.
+	(Parser::parse_lifetime_params): Likewise.
+	(Parser::parse_lifetime_params_objs): Likewise.
+	(Parser::parse_lifetime_param): Likewise.
+	(Parser::parse_lifetime_where_clause_item): Likewise.
+	(Parser::parse_type_param_bound): Likewise.
+	(Parser::parse_lifetime_bounds): Likewise.
+	(Parser::parse_path_generic_args): Likewise.
+	(Parser::parse_self_param): Likewise.
+	(Parser::parse_break_expr): Likewise.
+	(Parser::parse_continue_expr): Likewise.
+	(Parser::parse_reference_type_inner): Likewise.
+	* parse/rust-parse.h (class ParseLifetimeParamError): Add new class for
+	lifetime param parsing errors.
+	(class ParseLifetimeError): Add new class for lifetime parsing errors.
+	(enum ParseSelfError): Add new class for self param parsing errors.
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckImplItem::visit):
+	Use unchecked getter in checked context. And make anonymous region.
+	* typecheck/rust-hir-type-check.cc (TraitItemReference::get_type_from_fn):
+	Likewise.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Add
+	check for loop label before visiting it.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-expr.h: Remove error getter and constructor.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-builder.cc (Builder::block): Call with a nullopt instead
+	of an error loop label.
+	(WhileLetLoopExpr::as_string): Use getter function and adapt to
+	newtype.
+	* ast/rust-ast.cc (WhileLoopExpr::as_string): Likewise.
+	(LoopExpr::as_string): Likewise.
+	(BreakExpr::as_string): Likewise.
+	(ForLoopExpr::as_string): Likewise.
+	* ast/rust-expr.h (class BlockExpr): Make loop label optional.
+	(class BreakExpr): Likewise.
+	* expand/rust-derive-clone.cc (DeriveClone::clone_fn): Use nullopt.
+	* expand/rust-derive-debug.cc (DeriveDebug::stub_debug_fn): Likewise.
+	* expand/rust-derive-default.cc (DeriveDefault::default_fn): Likewise.
+	* expand/rust-derive-eq.cc: Likewise.
+	* parse/rust-parse-impl.h (Parser::parse_block_expr): Use optional
+	for arguments.
+	(Parser::parse_loop_expr): Likewise.
+	(Parser::parse_while_loop_expr): Likewise.
+	(Parser::parse_while_let_loop_expr): Likewise.
+	(Parser::parse_for_loop_expr): Likewise.
+	(Parser::parse_labelled_loop_expr): Likewise.
+	(Parser::parse_loop_label): Return an optional.
+	* parse/rust-parse.h: Update function prototype and use nullopt for
+	default values.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Change default
+	visit order.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Visit loop label
+	only if it exists.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* hir/rust-ast-lower.cc (ASTLoweringBlock::visit): Lower label only if
+	it exists.
+	* hir/tree/rust-hir-expr.cc (BlockExpr::BlockExpr): Make loop label
+	optional.
+	(BaseLoopExpr::BaseLoopExpr): Likewise.
+	(LoopExpr::LoopExpr): Likewise.
+	(WhileLoopExpr::WhileLoopExpr): Likewise.
+	* hir/tree/rust-hir-expr.h: Use optional for lifetime and labels.
+	* hir/tree/rust-hir.cc (WhileLoopExpr::as_string): Use getter.
+	(WhileLetLoopExpr::as_string): Likewise.
+	(LoopExpr::as_string): Likewise.
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Resolve labels.
+	* resolve/rust-late-name-resolver-2.0.h: Add visit function prototype
+	for loop labels.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/expected.h: Use gcc_unreachable within gcc context.
+
+2025-04-08  Sri Ganesh Thota  <sriganeshthota12345@gmail.com>
+
+	* resolve/rust-ast-resolve-base.h (redefined_error): created a function for
+	rust_error_at for redefined at multiple times.
+	* resolve/rust-ast-resolve-implitem.h: changed rust_error_at to redefined_error.
+	* resolve/rust-ast-resolve-stmt.cc (ResolveStmt::visit): changed rust_error_at to
+	redefined_error.
+	* resolve/rust-ast-resolve-stmt.h: changed rust_error_at to redefined_error.
+	* resolve/rust-ast-resolve-toplevel.h: changed rust_error_at to redefined_error.
+
+2025-04-08  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* ast/rust-ast-visitor.cc
+	(DefaultASTVisitor::visit): Remove explicit visitation of a
+	function's self parameter, as if it exists it'll be visited as
+	one of the function parameters.
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-typecheck-context.cc (TypeCheckContext::lookup_lifetime): emit error
+
+2025-04-08  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast.cc (Function::Function): Rename is_default -> has_default.
+	(Function::operator=): Likewise.
+	* ast/rust-item.h (class Function): Add `is_default` method.
+	* hir/rust-ast-lower-implitem.cc (ASTLowerImplItem::visit): Lower default qualifier.
+	* hir/rust-ast-lower-item.cc (ASTLoweringItem::visit): Likewise.
+	* hir/tree/rust-hir-item.cc (Function::Function): Add `is_default` member.
+	(Function::operator=): Likewise.
+	* hir/tree/rust-hir-item.h (enum class Defaultness): New enum.
+	(class Function): Use it.
+
+2025-04-08  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* checks/errors/rust-feature.cc (Feature::create): Handle `#![feature(min_specialization)]`.
+	* checks/errors/rust-feature.h: Likewise.
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* resolve/rust-ast-resolve-type.cc (ResolveRelativeTypePath::go): fix error msg
+	* typecheck/rust-substitution-mapper.cc (SubstMapper::Resolve): add validation
+	(SubstMapper::valid_type): new check
+	(SubstMapper::visit): check if can resolve
+	* typecheck/rust-substitution-mapper.h: new prototype
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-base.cc (HIRCompileBase::address_expression): allow optional type
+	* backend/rust-compile-base.h: update prototype
+	* backend/rust-compile-expr.cc (CompileExpr::visit): update borrow expr
+	* backend/rust-compile-extern.h: remove unused debug
+	* backend/rust-compile-resolve-path.cc (HIRCompileBase::query_compile): update usage
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): lower raw ref
+	* hir/tree/rust-hir-expr.cc (BorrowExpr::BorrowExpr): add flag for raw ref
+	* hir/tree/rust-hir-expr.h (class BorrowExpr): add new raw ref field
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): add handle for raw ref
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-pattern.cc (TypeCheckPattern::visit): emit error
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-trait-resolve.cc (TraitResolver::resolve_trait): new argument
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::TypeCheckBase): new helper
+	* typecheck/rust-hir-type-check-base.h: new helper prototype
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckTopLevelExternItem::visit):
+	remove comment out code
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_root_path): check for null
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::resolve_root_path): likewise
+	(TypeResolveGenericParam::Resolve): new args
+	(TypeResolveGenericParam::ApplyAnyTraitBounds): new helper
+	(TypeResolveGenericParam::apply_trait_bounds): new field
+	(TypeResolveGenericParam::visit): update
+	* typecheck/rust-hir-type-check-type.h: new args
+	* typecheck/rust-hir-type-check.cc (TraitItemReference::get_type_from_fn): reuse helper
+	* typecheck/rust-type-util.cc (query_type): check for recursive query
+	* typecheck/rust-tyty-subst.cc (SubstitutionParamMapping::SubstitutionParamMapping):
+	remove const
+	(SubstitutionParamMapping::get_generic_param): likewise
+	* typecheck/rust-tyty-subst.h: likewise
+	* typecheck/rust-tyty-variance-analysis.cc (GenericTyVisitorCtx::process_type): likewise
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-base.cc: new flag is_root_item
+	* backend/rust-compile-base.h: update prototype
+	* backend/rust-compile-implitem.cc (CompileTraitItem::visit): update call
+	* backend/rust-compile-implitem.h: remove old debug internal error
+	* backend/rust-compile-item.cc (CompileItem::visit): update call
+	* backend/rust-compile-item.h: remove old debug
+	* backend/rust-compile-resolve-path.cc (HIRCompileBase::query_compile): update calls
+	* backend/rust-compile.cc: likewise
+	* typecheck/rust-hir-trait-resolve.cc (TraitResolver::resolve_path_to_trait):
+	remove assertion and error
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-base.cc: remove assertion
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust-gcc.cc (arithmetic_or_logical_expression): unwrap const decls
+
+2025-04-08  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-forever-stack.h
+	(ForeverStack::ForeverStack): Initialize extern_prelude.
+	(ForeverStack::resolve_path): Add parameter
+	has_opening_scope_resolution.
+	(ForeverStack::extern_prelude): Add field.
+	* resolve/rust-forever-stack.hxx: Include rust-edition.h.
+	(ForeverStacl::resolve_path): Handle global paths (paths with an
+	opening scope resolution operator).
+	* resolve/rust-late-name-resolver-2.0.cc
+	(Late::visit): Handle global paths.
+	* resolve/rust-name-resolution-context.h
+	(NameResolutionContext::resolve_path): Handle global paths.
+
+2025-04-08  Ryutaro Okada  <1015ryu88@gmail.com>
+
+	* backend/rust-compile-resolve-path.cc: Evaluate the enum's discriminant in a const context
+
 2025-03-31  Philip Herron  <herron.philip@googlemail.com>
 
 	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::resolve_root_path):

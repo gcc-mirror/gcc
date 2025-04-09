@@ -1,3 +1,21 @@
+2025-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR cobol/119364
+	* genapi.cc (function_handle_from_name): Use sizeof_pointer.
+	(parser_file_add): Use int_size_in_bytes(VOID_P) and
+	int_size_in_bytes(int).
+	(inspect_tally): Use int_size_in_bytes(VOID_P).
+	(inspect_replacing): Likewise.
+	(gg_array_of_field_pointers): Likewise.
+	(gg_array_of_file_pointers): Likewise.
+	(parser_set_pointers): Use sizeof_pointer.
+	* cobol1.cc (create_our_type_nodes_init): Use
+	int_size_in_bytes(SIZE_T) and int_size_in_bytes(VOID_P).
+	* gengen.cc (gg_array_of_size_t): Use int_size_in_bytes(SIZE_T).
+	(gg_array_of_bytes): Just use N, don't multiply it by
+	sizeof(unsigned char).
+	* parse.y: Include tree.h.  Use int_size_in_bytes(ptr_type_node).
+
 2025-04-07  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* symbols.cc : Remove trailing // on standard_internal.

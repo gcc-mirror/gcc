@@ -1,3 +1,9 @@
+2025-04-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/117530
+	* pt.cc (instantiate_template): Check retrieve_specialization after
+	tsubst.
+
 2025-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/119652

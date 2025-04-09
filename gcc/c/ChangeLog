@@ -1,3 +1,12 @@
+2025-04-08  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/119612
+	* c-tree.h (c_type_tag): Add prototype.
+	* c-typeck.cc (c_type_tag): New function.
+	(tagged_types_tu_compatible_p, composite_type_internal): Use
+	c_type_tag.
+	* c-decl.cc (c_struct_hasher::hash, previous_tag): Use c_type_tag.
+
 2025-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/119582

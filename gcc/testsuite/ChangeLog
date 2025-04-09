@@ -1,3 +1,148 @@
+2025-04-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/guality/pr36728-3.c: Update XFAILs for aarch64.
+	* gcc.dg/guality/pr41353-1.c: Likewise.
+	* gcc.dg/guality/pr54693-2.c: Likewise.
+	* gcc.dg/guality/pr68860-1.c: Likewise.
+	* gcc.dg/guality/pr68860-2.c: Likewise.
+	* gcc.dg/guality/sra-1.c: Likewise.
+	* gcc.dg/guality/vla-1.c: Likewise.
+
+2025-04-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/pr99102.c: Force SVE when forcing the vector length.
+
+2025-04-08  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/119612
+	* gcc.dg/gnu23-tag-6.c: New test.
+	* gcc.dg/pr119612.c: New test.
+
+2025-04-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/119662
+	* c-c++-common/gomp/append-args-interop.c: Update for fixed
+	GOMP_interop call.
+	* g++.dg/gomp/append-args-8.C: Likewise.
+	* gfortran.dg/gomp/append-args-interop.f90: Likewise.
+
+2025-04-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/117530
+	* g++.dg/cpp2a/lambda-uneval27.C: New test.
+
+2025-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119594
+	* gcc.dg/pr119594.c: New test.
+
+2025-04-08  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macros/mbe/macro6.rs: Remove call of undefined
+	function.
+	* rust/compile/nr2/exclude: Remove macros/mbe/macro6.rs.
+
+2025-04-08  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/issue-2812.rs: Avoid multiple definition error.
+	* rust/compile/nr2/exclude: Remove issue-2812.rs.
+
+2025-04-08  Matty Kuhn  <matty.kuhn.1@gmail.com>
+
+	* rust/compile/feature.rs: add an invalid empty feature to produce an error
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/invalid_label_name.rs: Adapt test to nr2.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove test.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/undeclared_label.rs: Change test
+	expected string.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove test from exclusion list.
+
+2025-04-08  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove passing test.
+
+2025-04-08  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/compile.exp: Avoid absolute paths in output,
+	adjust phrasing of output, and avoid false XPASS output when
+	tests are run in parallel.
+
+2025-04-08  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entry.
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3647.rs: New test.
+
+2025-04-08  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/min_specialization1.rs: New test.
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 is missing type path error
+	* rust/compile/issue-3643.rs: New test.
+	* rust/compile/issue-3646.rs: New test.
+	* rust/compile/issue-3654.rs: New test.
+	* rust/compile/issue-3663.rs: New test.
+	* rust/compile/issue-3671.rs: New test.
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3667.rs: New test.
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3656.rs: New test.
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3625.rs: New test.
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3648.rs: New test.
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3657.rs: New test.
+
+2025-04-08  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3665.rs: New test.
+
+2025-04-08  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entries.
+
+2025-04-08  Ryutaro Okada  <1015ryu88@gmail.com>
+
+	* rust/compile/enum_discriminant1.rs: New test.
+
+2025-04-08  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/sve/gomp/gomp.exp: Test driver.
+	* gcc.target/aarch64/sve/gomp/target-device.c: New test.
+	* gcc.target/aarch64/sve/gomp/target-link.c: Likewise.
+	* gcc.target/aarch64/sve/gomp/target.c: Likewise.
+
+2025-04-08  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/xtheadvector/vsext.c: New test.
+	* gcc.target/riscv/rvv/xtheadvector/vzext.c: New test.
+
 2025-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/119652

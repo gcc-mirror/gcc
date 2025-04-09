@@ -1,3 +1,26 @@
+2025-04-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/119662
+	* testsuite/libgomp.c/append-args-fr-1.c: New test.
+	* testsuite/libgomp.c/append-args-fr.h: New test.
+
+2025-04-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	* Makefile.am (%.mod): Add -Wno-c-binding-type.
+	* Makefile.in: Regenerate.
+
+2025-04-08  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* testsuite/libgomp.c-target/aarch64/aarch64.exp: Test driver.
+	* testsuite/libgomp.c-target/aarch64/firstprivate.c: New test.
+	* testsuite/libgomp.c-target/aarch64/lastprivate.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/private.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/shared.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/simd-aligned.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/simd-nontemporal.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/threadprivate.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/udr-sve.c: Likewise.
+
 2025-04-07  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (omp_target_memcpy_rect_async,
