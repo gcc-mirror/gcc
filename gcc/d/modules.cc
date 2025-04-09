@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "cgraph.h"
 #include "stor-layout.h"
+#include "debug.h"
 #include "toplev.h"
 #include "target.h"
 #include "common/common-target.h"
@@ -907,6 +908,14 @@ d_finish_compilation (tree *vec, int len)
 {
   /* Complete all generated thunks.  */
   symtab->process_same_body_aliases ();
+
+  /* Output debug information for all type declarations in this unit.  */
+  for (int i = 0; i < len; i++)
+    {
+      tree decl = vec[i];
+      if (TREE_CODE (decl) == TYPE_DECL)
+	debug_hooks->type_decl (decl, false);
+    }
 
   /* Process all file scopes in this compilation, and the external_scope,
      through wrapup_global_declarations.  */

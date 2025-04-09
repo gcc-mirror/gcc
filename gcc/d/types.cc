@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tm.h"
 #include "function.h"
-#include "toplev.h"
 #include "target.h"
 #include "stringpool.h"
 #include "stor-layout.h"
@@ -709,13 +708,8 @@ finish_aggregate_type (unsigned structsize, unsigned alignsize, tree type)
       TYPE_USER_ALIGN (t) = TYPE_USER_ALIGN (type);
     }
 
-  /* Finish debugging output for this type.  */
-  rest_of_type_compilation (type, TYPE_FILE_SCOPE_P (type));
+  /* Complete any other forward-referenced fields of this aggregate type.  */
   finish_incomplete_fields (type);
-
-  /* Finish processing of TYPE_DECL.  */
-  rest_of_decl_compilation (TYPE_NAME (type),
-			    DECL_FILE_SCOPE_P (TYPE_NAME (type)), 0);
 }
 
 /* Returns true if the class or struct type TYPE has already been layed out by
@@ -1185,13 +1179,8 @@ public:
 
 	layout_type (t->ctype);
 
-	/* Finish debugging output for this type.  */
-	rest_of_type_compilation (t->ctype, TYPE_FILE_SCOPE_P (t->ctype));
+	/* Complete forward-referenced fields of this enum type.  */
 	finish_incomplete_fields (t->ctype);
-
-	/* Finish processing of TYPE_DECL.  */
-	rest_of_decl_compilation (TYPE_NAME (t->ctype),
-				  DECL_FILE_SCOPE_P (TYPE_NAME (t->ctype)), 0);
       }
   }
 
