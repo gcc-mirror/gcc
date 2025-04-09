@@ -3,7 +3,7 @@
 /* { dg-options "-march=rv64gcv -mabi=lp64d -O2"  { target { rv64 } } } */
 /* { dg-options "-march=rv32gcv -mabi=ilp32d -O2"  { target { rv32 } } } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 vfloat32m2_t foo (vfloat16m1_t a, size_t vl)
 {

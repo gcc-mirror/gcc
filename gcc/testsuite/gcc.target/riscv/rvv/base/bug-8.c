@@ -3,7 +3,7 @@
 /* { dg-options "-march=rv64gcv -mabi=lp64d -O0"  { target { rv64 } } } */
 /* { dg-options "-march=rv32gcv -mabi=ilp32d -O0"  { target { rv32 } } } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 vint64m1_t f1 (vint64m1_t vd, vint64m1_t vs2, size_t vl)
 {

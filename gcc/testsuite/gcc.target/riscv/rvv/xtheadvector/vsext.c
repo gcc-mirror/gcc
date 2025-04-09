@@ -1,7 +1,7 @@
 /* { dg-do compile { target { rv64 } } } */
 /* { dg-options "-march=rv64gc_xtheadvector -mabi=lp64d -O3" } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 struct a
 {

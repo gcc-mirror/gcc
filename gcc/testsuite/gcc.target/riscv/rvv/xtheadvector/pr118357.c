@@ -1,7 +1,7 @@
 /* { dg-do compile { target { rv64 } } } */
 /* { dg-options "-march=rv64gc_xtheadvector -mabi=lp64d -O2" } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 vfloat16m4_t foo (float *ptr, size_t vl)
 {

@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gcv_zvfh -mabi=lp64d -O1" } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 _Float16 a[10];
 void func(){
   int placeholder0 = 10;

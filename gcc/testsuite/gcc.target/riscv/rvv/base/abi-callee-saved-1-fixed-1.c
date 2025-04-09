@@ -2,7 +2,7 @@
 /* { dg-options "-O1 -march=rv64gczve32x -mabi=lp64d -mrvv-vector-bits=zvl" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 void bar (int8_t *data);
 

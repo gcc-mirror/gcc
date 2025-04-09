@@ -3,7 +3,7 @@
 /* { dg-additional-options "-std=gnu99" } */
 
 #include <stdint.h>
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 vfloat64m8_t
 test_vfwadd_wf_f64m8_m (vbool8_t vm, vfloat64m8_t vs2, float rs1, size_t vl)

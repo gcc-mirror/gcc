@@ -3,7 +3,7 @@
 /* { dg-additional-options "-std=gnu99 -O3 -fno-schedule-insns -fno-schedule-insns2" } */
 
 #include <stdint.h>
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 /*
 ** vwadd_wx_i64m8_m:

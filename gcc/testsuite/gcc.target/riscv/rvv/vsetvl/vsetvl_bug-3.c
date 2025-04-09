@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv32gcv -mabi=ilp32d -O2 -fdump-rtl-vsetvl-details" } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 uint64_t a[2], b[2];
 

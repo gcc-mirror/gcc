@@ -4,7 +4,7 @@
 /* { dg-require-effective-target riscv_zvfh_ok } */
 /* { dg-options " -march=rv64gcv_zvfh -mabi=lp64d -O2 --param=vsetvl-strategy=optim -fno-schedule-insns  -fno-schedule-insns2 -fno-schedule-fusion " } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 void
 __attribute__ ((noipa))

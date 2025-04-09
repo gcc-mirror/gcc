@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gcv -mabi=lp64d -O3" } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 extern size_t get_vl ();
 

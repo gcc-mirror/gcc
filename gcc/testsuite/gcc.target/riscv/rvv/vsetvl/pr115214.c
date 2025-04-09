@@ -2,7 +2,7 @@
 /* { dg-options "-mrvv-vector-bits=scalable -march=rv64gcv -mabi=lp64d -O3 -w -std=gnu17" } */
 /* { dg-skip-if "" { *-*-* } { "-flto" } } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 static inline __attribute__(()) int vaddq_f32();
 static inline __attribute__(()) int vload_tillz_f32(int nlane) {

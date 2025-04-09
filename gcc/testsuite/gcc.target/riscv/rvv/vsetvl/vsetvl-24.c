@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-mrvv-vector-bits=scalable -march=rv64gcv -mabi=lp64d" } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 size_t foo ()
 {

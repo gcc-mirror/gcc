@@ -1,7 +1,7 @@
 /* { dg-do compile { target { rv64 } } } */
 /* { dg-options "-march=rv64gcv_zvfh -mabi=lp64d -O3" } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 _Float16 a (uint64_t);
 int8_t b () {

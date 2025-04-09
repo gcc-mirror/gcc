@@ -4,7 +4,7 @@
 /* { dg-require-effective-target riscv_zvfh_ok } */
 /* { dg-options " -march=rv64gcv_zvfh -mabi=lp64d -O2" } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 int8_t a[1];
 uint16_t b[1];

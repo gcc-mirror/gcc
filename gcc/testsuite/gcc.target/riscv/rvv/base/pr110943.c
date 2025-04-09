@@ -2,7 +2,7 @@
 /* { dg-options "-O3 -march=rv64gcv -mabi=lp64d" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
-#include <riscv_vector.h>
+#include "riscv_vector.h"
 
 /*
 ** foo9:
