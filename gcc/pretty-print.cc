@@ -1640,7 +1640,7 @@ push_back_any_text (pp_token_list *tok_list,
    %@: diagnostic_event_id_ptr, for which event_id->known_p () must be true.
    %.*s: a substring the length of which is specified by an argument
 	 integer.
-   %Ns: likewise, but length specified as constant in the format string.
+   %.Ns: likewise, but length specified as constant in the format string.
    Flag 'q': quote formatted text (must come immediately after '%').
    %Z: Requires two arguments - array of int, and len. Prints elements
    of the array.
