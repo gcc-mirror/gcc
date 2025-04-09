@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-
+#define INCLUDE_VECTOR
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -5093,6 +5093,138 @@ gfc_trans_pointer_assign_need_temp (gfc_expr * expr1, gfc_expr * expr2,
     }
 }
 
+/* For saving the outer-variable data when doing
+   LOCAL and LOCAL_INIT substitution.  */
+struct symbol_and_tree_t
+{
+  gfc_symbol *sym;
+  gfc_expr *value;
+  tree decl;
+  symbol_attribute attr;
+};
+
+/* Handle the LOCAL and LOCAL_INIT locality specifiers. This has to be
+   called twice, once with after_body=false - and then after the loop
+   body has been processed with after_body=true.
+
+   Creates a copy of the variables that appear in the LOCAL and LOCAL_INIT
+   locality specifiers of 'do concurrent' - and use it in the original
+   gfc_symbol.  The declaration is then reset by after_body=true.
+
+   Variables in LOCAL_INIT are set in every loop iteration.  */
+
+void
+gfc_trans_concurrent_locality_spec (bool after_body, stmtblock_t *body,
+				    std::vector<symbol_and_tree_t> *saved_decls,
+				    gfc_expr_list **locality_list)
+{
+  if (!locality_list[LOCALITY_LOCAL] && !locality_list[LOCALITY_LOCAL_INIT])
+    return;
+
+  if (after_body)
+    {
+      for (unsigned i = 0; i < saved_decls->size (); i++)
+	{
+	  (*saved_decls)[i].sym->backend_decl = (*saved_decls)[i].decl;
+	  (*saved_decls)[i].sym->attr = (*saved_decls)[i].attr;
+	  (*saved_decls)[i].sym->value = (*saved_decls)[i].value;
+	}
+      return;
+    }
+
+  gfc_expr_list *el;
+  int cnt = 0;
+  for (int i = 0; i <= 1; i++)
+    for (el = locality_list[i == 0 ? LOCALITY_LOCAL : LOCALITY_LOCAL_INIT];
+	 el; el = el->next)
+      {
+	gfc_symbol *outer_sym = el->expr->symtree->n.sym;
+	if (!outer_sym->backend_decl)
+	  outer_sym->backend_decl = gfc_get_symbol_decl (outer_sym);
+	cnt++;
+      }
+  saved_decls->resize (cnt);
+
+  /* The variables have to be created in the scope of the loop body.  */
+  if (!body->has_scope)
+    {
+      gcc_checking_assert (body->head == NULL_TREE);
+      gfc_start_block (body);
+    }
+  gfc_start_saved_local_decls ();
+
+  cnt = 0;
+  static_assert (LOCALITY_LOCAL_INIT - LOCALITY_LOCAL == 1);
+  for (int type = LOCALITY_LOCAL;
+       type <= LOCALITY_LOCAL_INIT; type++)
+    for (el = locality_list[type]; el; el = el->next)
+      {
+	gfc_symbol *sym = el->expr->symtree->n.sym;
+	(*saved_decls)[cnt].sym = sym;
+	(*saved_decls)[cnt].attr = sym->attr;
+	(*saved_decls)[cnt].value = sym->value;
+	(*saved_decls)[cnt].decl = sym->backend_decl;
+
+	if (sym->attr.dimension && sym->as->type == AS_ASSUMED_SHAPE)
+	  {
+	    gfc_error ("Sorry, %s specifier at %L for assumed-size array %qs "
+		       "is not yet supported",
+		       type == LOCALITY_LOCAL ? "LOCAL" : "LOCAL_INIT",
+		       &el->expr->where, sym->name);
+	    continue;
+	  }
+
+	gfc_symbol outer_sym = *sym;
+
+	/* Create the inner local variable.  */
+	sym->backend_decl = NULL;
+	sym->value = NULL;
+	sym->attr.save = SAVE_NONE;
+	sym->attr.value = 0;
+	sym->attr.dummy = 0;
+	sym->attr.optional = 0;
+
+	{
+	  /* Slightly ugly hack for adding the decl via add_decl_as_local. */
+	  gfc_symbol dummy_block_sym;
+	  dummy_block_sym.attr.flavor = FL_LABEL;
+	  gfc_symbol *saved_proc_name = sym->ns->proc_name;
+	  sym->ns->proc_name = &dummy_block_sym;
+
+	  gfc_get_symbol_decl (sym);
+	  DECL_SOURCE_LOCATION (sym->backend_decl)
+	    = gfc_get_location (&el->expr->where);
+
+	  sym->ns->proc_name = saved_proc_name;
+	}
+
+	symbol_attribute attr = gfc_expr_attr (el->expr);
+	if (type == LOCALITY_LOCAL
+	    && !attr.pointer
+	    && sym->ts.type == BT_DERIVED
+	    && gfc_has_default_initializer (sym->ts.u.derived))
+	  /* Cf. PR fortran/  */
+	  gfc_error ("Sorry, LOCAL specifier at %L for %qs of derived type with"
+		     " default initializer is not yet supported",
+		     &el->expr->where, sym->name);
+	if (type == LOCALITY_LOCAL_INIT)
+	  {
+	    /* LOCAL_INIT:  local_var = outer_var.  */
+	    gfc_symtree st = *el->expr->symtree;
+	    st.n.sym = &outer_sym;
+	    gfc_expr expr = *el->expr;
+	    expr.symtree = &st;
+	    tree t = (attr.pointer
+		      ? gfc_trans_pointer_assignment (el->expr, &expr)
+		      : gfc_trans_assignment (el->expr, &expr, false, false,
+					      false, false));
+	    gfc_add_expr_to_block (body, t);
+	  }
+	cnt++;
+      }
+  gfc_stop_saved_local_decls ();
+}
+
 
 /* FORALL and WHERE statements are really nasty, especially when you nest
    them. All the rhs of a forall assignment must be evaluated before the
@@ -5348,9 +5480,19 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
       gfc_init_block (&body);
       cycle_label = gfc_build_label_decl (NULL_TREE);
       code->cycle_label = cycle_label;
+
+      /* Handle LOCAL and LOCAL_INIT.  */
+      std::vector<symbol_and_tree_t> saved_decls;
+      gfc_trans_concurrent_locality_spec (false, &body, &saved_decls,
+					  code->ext.concur.locality);
+
+      /* Translate the body.  */
       tmp = gfc_trans_code (code->block->next);
       gfc_add_expr_to_block (&body, tmp);
 
+      /* Reset locality variables. */
+      gfc_trans_concurrent_locality_spec (true, &body, &saved_decls,
+					  code->ext.concur.locality);
       if (TREE_USED (cycle_label))
 	{
 	  tmp = build1_v (LABEL_EXPR, cycle_label);

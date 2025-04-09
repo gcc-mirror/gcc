@@ -8422,13 +8422,6 @@ resolve_locality_spec (gfc_code *code, gfc_namespace *ns)
 	  plist = &((*plist)->next);
 	}
     }
-
-  if (code->ext.concur.locality[LOCALITY_LOCAL]
-      || code->ext.concur.locality[LOCALITY_LOCAL_INIT])
-    {
-      gfc_error ("Sorry, LOCAL and LOCAL_INIT are not yet supported for "
-		 "%<do concurrent%> constructs at %L", &code->loc);
-    }
 }
 
 /* Resolve a list of FORALL iterators.  The FORALL index-name is constrained

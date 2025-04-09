@@ -8361,23 +8361,17 @@ gfc_generate_block_data (gfc_namespace * ns)
   rest_of_decl_compilation (decl, 1, 0);
 }
 
-
-/* Process the local variables of a BLOCK construct.  */
+void
+gfc_start_saved_local_decls ()
+{
+  gcc_checking_assert (current_function_decl != NULL_TREE);
+  saved_local_decls = NULL_TREE;
+}
 
 void
-gfc_process_block_locals (gfc_namespace* ns)
+gfc_stop_saved_local_decls ()
 {
-  tree decl;
-
-  saved_local_decls = NULL_TREE;
-  has_coarray_vars_or_accessors = caf_accessor_head != NULL;
-
-  generate_local_vars (ns);
-
-  if (flag_coarray == GFC_FCOARRAY_LIB && has_coarray_vars_or_accessors)
-    generate_coarray_init (ns);
-
-  decl = nreverse (saved_local_decls);
+  tree decl = nreverse (saved_local_decls);
   while (decl)
     {
       tree next;
@@ -8388,6 +8382,21 @@ gfc_process_block_locals (gfc_namespace* ns)
       decl = next;
     }
   saved_local_decls = NULL_TREE;
+}
+
+/* Process the local variables of a BLOCK construct.  */
+
+void
+gfc_process_block_locals (gfc_namespace* ns)
+{
+  gfc_start_saved_local_decls ();
+  has_coarray_vars_or_accessors = caf_accessor_head != NULL;
+
+  generate_local_vars (ns);
+
+  if (flag_coarray == GFC_FCOARRAY_LIB && has_coarray_vars_or_accessors)
+    generate_coarray_init (ns);
+  gfc_stop_saved_local_decls ();
 }
 
 
