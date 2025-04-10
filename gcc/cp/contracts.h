@@ -218,6 +218,13 @@ enum contract_matching_context
   cmc_override
 };
 
+enum contract_match_kind
+{
+  cmk_all,
+  cmk_pre,
+  cmk_post
+};
+
 /* True if NODE is any kind of contract.  */
 #define CONTRACT_P(NODE)			\
   (TREE_CODE (NODE) == ASSERTION_STMT		\
@@ -349,7 +356,7 @@ extern tree finish_contract_attribute		(tree, tree);
 extern tree invalidate_contract			(tree);
 extern tree splice_out_contracts		(tree);
 extern bool all_attributes_are_contracts_p	(tree);
-extern tree remap_contracts  			(tree, tree, bool, bool);
+extern tree copy_and_remap_contracts		(tree, tree, bool, contract_match_kind);
 extern void start_function_contracts		(tree);
 extern void maybe_apply_function_contracts	(tree);
 extern void finish_function_contracts		(tree);
