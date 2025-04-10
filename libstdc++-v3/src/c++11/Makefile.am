@@ -168,7 +168,15 @@ localename.lo: localename.cc
 localename.o: localename.cc
 	$(CXXCOMPILE) -fchar8_t -c $<
 
+wstring-inst.lo: wstring-inst.cc string-inst.cc
+wstring-inst.o: wstring-inst.cc string-inst.cc
+
 if ENABLE_DUAL_ABI
+cow-string-inst.lo: cow-string-inst.cc string-inst.cc
+cow-string-inst.o: cow-string-inst.cc string-inst.cc
+cow-wstring-inst.lo: cow-wstring-inst.cc string-inst.cc
+cow-wstring-inst.o: cow-wstring-inst.cc string-inst.cc
+
 # Rewrite the type info for __ios_failure.
 rewrite_ios_failure_typeinfo = sed -e '/^_*_ZTISt13__ios_failure:/,/_ZTVN10__cxxabiv120__si_class_type_infoE/s/_ZTVN10__cxxabiv120__si_class_type_infoE/_ZTVSt19__iosfail_type_info/'
 
