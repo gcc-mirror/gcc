@@ -13520,6 +13520,8 @@ add_extra_args (tree extra, tree args, tsubst_flags_t complain, tree in_decl)
 	      inst = local;
 	  /* else inst is already a full instantiation of the pack.  */
 	  register_local_specialization (inst, gen);
+	  if (is_normal_capture_proxy (gen))
+	    register_local_specialization (inst, DECL_CAPTURED_VARIABLE (gen));
 	}
       gcc_assert (!TREE_PURPOSE (extra));
       extra = TREE_VALUE (extra);
