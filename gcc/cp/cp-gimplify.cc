@@ -3437,8 +3437,11 @@ cp_fold (tree x, fold_flags_t flags)
 		tree s = build_fold_indirect_ref_loc (loc, a);
 		r = cp_build_init_expr (s, r);
 		if (return_this)
-		  r = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (x), r,
-				  fold_convert_loc (loc, TREE_TYPE (x), a));
+		  {
+		    r = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (x), r,
+				    fold_convert_loc (loc, TREE_TYPE (x), a));
+		    suppress_warning (r);
+		  }
 	      }
 	    x = r;
 	    break;
