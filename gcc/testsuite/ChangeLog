@@ -1,3 +1,149 @@
+2025-04-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119574
+	* g++.dg/cpp2a/lambda-targ13.C: New test.
+	* g++.dg/cpp2a/lambda-targ13a.C: New test.
+
+2025-04-09  xuli  <xuli1@eswincomputing.com>
+
+	PR target/117286
+	* gcc.target/riscv/rvv/base/pr117286.c: New test.
+
+2025-04-09  xuli  <xuli1@eswincomputing.com>
+
+	PR target/117483
+	* gcc.target/riscv/pr117483.c: New test.
+
+2025-04-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/arch-31.c: Add m to arch string and expect it.
+	* gcc.target/riscv/arch-32.c: Ditto.
+	* gcc.target/riscv/predef-14.c: Ditto.
+	* gcc.target/riscv/predef-15.c: Ditto.
+	* gcc.target/riscv/predef-16.c: Ditto.
+	* gcc.target/riscv/predef-26.c: Ditto.
+	* gcc.target/riscv/predef-27.c: Ditto.
+	* gcc.target/riscv/predef-32.c: Ditto.
+	* gcc.target/riscv/predef-33.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/pr111486.c: Add m to arch string.
+	* gcc.target/riscv/compare-debug-1.c: Ditto.
+	* gcc.target/riscv/compare-debug-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr116036.c: New test.
+
+2025-04-09  Patrick O'Neill  <patrick@rivosinc.com>
+
+	* gcc.target/riscv/arch-41.c: New test.
+	* gcc.target/riscv/pr116111.c: New test.
+
+2025-04-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr116149.c: New test.
+
+2025-04-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116240
+	* gcc.target/riscv/pr116240.c: New test.
+
+2025-04-09  曾治金  <zhijin.zeng@spacemit.com>
+
+	PR target/116305
+	* gcc.target/riscv/rvv/base/scalable_vector_cfi.c: New test.
+
+2025-04-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/autovec/rotr.c: New.
+
+2025-04-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/116086
+	* lib/target-supports.exp: Add effective target checks for
+	zvl256b and zvl512b.
+	* gcc.target/riscv/rvv/autovec/pr116086-2-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr116086-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr116086.c: New test.
+
+2025-04-09  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/116592
+	* gcc.target/riscv/rvv/xtheadvector/pr116592.c: New test.
+
+2025-04-09  garthlei  <garthlei@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/vsetvl/vsetvl_bug-3.c: New test.
+
+2025-04-09  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/base/vssubu-1.c: New test.
+	* gcc.target/riscv/rvv/base/vssubu-2.c: New test.
+
+2025-04-09  Xianmiao Qu  <cooper.qu@linux.alibaba.com>
+
+	* gcc.target/riscv/xtheadbb-extu-4.c: New.
+
+2025-04-09  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/zfa-fmovh-fmovp-bug.c: New test.
+
+2025-04-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/117544
+	* gcc.target/riscv/rvv/base/abi-call-args-4.c: Expect vsetvl.
+	* gcc.target/riscv/rvv/base/pr117544.c: New test.
+
+2025-04-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/117383
+	* gcc.target/riscv/rvv/autovec/binop/vcompress-avlprop-1.c:
+	Expect tu.
+	* gcc.target/riscv/rvv/autovec/pr117383.c: New test.
+
+2025-04-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/106544
+	* gcc.target/riscv/pr106544.c: New test.
+
+2025-04-09  Andreas Schwab  <schwab@suse.de>
+
+	PR target/118137
+	* gcc.dg/atomic/pr118137.c: New.
+
+2025-04-09  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/117682
+	* gcc.target/riscv/rvv/autovec/pr117682.c: New test.
+
+2025-04-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/118154
+	* gcc.target/riscv/rvv/autovec/pr118154-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr118154-2.c: New test.
+
+2025-04-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/118182
+	* gfortran.target/riscv/rvv/pr118182.f: New.
+	* gcc.target/riscv/rvv/autovec/pr118182-1.c: New.
+	* gcc.target/riscv/rvv/autovec/pr118182-2.c: New.
+
+2025-04-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/fortran/pr111395.f90: Move this file to...
+	* gfortran.target/riscv/rvv/pr111395.f90: ...here.
+	* gcc.target/riscv/rvv/fortran/pr111566.f90: Move this file to...
+	* gfortran.target/riscv/rvv/pr111566.f90: ...here.
+	* gcc.target/riscv/rvv/rvv-fortran.exp: Move this file to...
+	* gfortran.target/riscv/rvv/rvv.exp: ...here.
+
+2025-04-09  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/118357
+	* gcc.target/riscv/rvv/xtheadvector/pr118357.c: New test.
+
+2025-04-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116308
+	* gcc.target/riscv/pr116308.c: New test.
+
 2025-04-07  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

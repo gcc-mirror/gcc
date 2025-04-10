@@ -1,3 +1,10 @@
+2025-04-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119574
+	* pt.cc (tsubst_lambda_expr): Don't call
+	get_innermost_template_args if we're requesting too many
+	levels.
+
 2025-04-07  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
