@@ -5769,6 +5769,42 @@ AC_LANG_SAVE
   AC_LANG_RESTORE
 ])
 
+dnl
+dnl Check whether the dependencies for std::is_debugger_present are available.
+dnl
+dnl Defines:
+dnl   _GLIBCXX_USE_PTRACE if ptrace(int, pid_t, int, int) is in <sys/ptrace.h>.
+dnl   _GLIBCXX_USE_PROC_SELF_STATUS if /proc/self/status should be used.
+dnl
+AC_DEFUN([GLIBCXX_CHECK_DEBUGGING], [
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  AC_CHECK_HEADERS([sys/ptrace.h debugapi.h])
+
+  case "$target_os" in
+    linux*)
+      AC_DEFINE([_GLIBCXX_USE_PROC_SELF_STATUS],1,
+		[Define if /proc/self/status should be used for <debugging>.])
+      ;;
+  esac
+
+  AC_MSG_CHECKING([whether ptrace(int, pid_t, int, int) is in <sys/ptrace.h>])
+  AC_TRY_COMPILE([
+  #include <sys/ptrace.h>
+  ],[
+    int i = ptrace(PTRACE_TRACEME, (pid_t)0, 1, 0);
+  ], [ac_ptrace=yes], [ac_ptrace=no])
+  AC_MSG_RESULT($ac_ptrace)
+  if test "$ac_ptrace" = yes; then
+    AC_DEFINE_UNQUOTED(_GLIBCXX_USE_PTRACE, 1,
+      [Define if ptrace should be used for std::is_debugger_present.])
+  fi
+
+  AC_LANG_RESTORE
+])
+
+
 # Macros from the top-level gcc directory.
 m4_include([../config/gc++filt.m4])
 m4_include([../config/tls.m4])

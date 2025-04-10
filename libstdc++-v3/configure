@@ -54501,6 +54501,79 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+# For std::is_debugger_present
+
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+  for ac_header in sys/ptrace.h debugapi.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_cxx_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+
+  case "$target_os" in
+    linux*)
+
+$as_echo "#define _GLIBCXX_USE_PROC_SELF_STATUS 1" >>confdefs.h
+
+      ;;
+  esac
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ptrace(int, pid_t, int, int) is in <sys/ptrace.h>" >&5
+$as_echo_n "checking whether ptrace(int, pid_t, int, int) is in <sys/ptrace.h>... " >&6; }
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+  #include <sys/ptrace.h>
+
+int
+main ()
+{
+
+    int i = ptrace(PTRACE_TRACEME, (pid_t)0, 1, 0);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_ptrace=yes
+else
+  ac_ptrace=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ptrace" >&5
+$as_echo "$ac_ptrace" >&6; }
+  if test "$ac_ptrace" = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define _GLIBCXX_USE_PTRACE 1
+_ACEOF
+
+  fi
+
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
 # Define documentation rules conditionally.
 
 # See if makeinfo has been installed and is modern enough

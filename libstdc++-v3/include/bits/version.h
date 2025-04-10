@@ -2134,6 +2134,16 @@
 #endif /* !defined(__cpp_lib_constexpr_new) && defined(__glibcxx_want_constexpr_new) */
 #undef __glibcxx_want_constexpr_new
 
+#if !defined(__cpp_lib_debugging)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_debugging 202403L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_debugging)
+#   define __cpp_lib_debugging 202403L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_debugging) && defined(__glibcxx_want_debugging) */
+#undef __glibcxx_want_debugging
+
 #if !defined(__cpp_lib_fstream_native_handle)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED
 #  define __glibcxx_fstream_native_handle 202306L

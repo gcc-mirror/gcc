@@ -1,0 +1,77 @@
+// Debugging support -*- C++ -*-
+
+// Copyright The GNU Toolchain Authors.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file include/debugging
+ *  This is a Standard C++ Library header.
+ */
+
+#ifndef _GLIBCXX_DEBUGGING
+#define _GLIBCXX_DEBUGGING 1
+
+#define __glibcxx_want_debugging
+#include <bits/version.h>
+
+#if __cpp_lib_debugging // C++ >= 26
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+// N.B. _GLIBCXX_BEGIN_NAMESPACE_VERSION is not used here.
+
+/** Try to determine if the program is running under control of a debugger.
+ *
+ * On GNU/Linux systems this function will only return true if the program
+ * is being traced by another program which is known to be a debugger.
+ * This is determined by checking the command name of the tracing program
+ * against a list of known debuggers, such as "gdb".
+ *
+ * On other POSIX-based systems, this function will return true if the
+ * program is being traced by any other process, which means it can return
+ * true for non-debugger utilities that use the ptrace system call.
+ *
+ * @since C++26
+ */
+bool
+is_debugger_present() noexcept;
+
+/** Stop the program with a breakpoint or debug trap.
+ *
+ * The details of how a breakpoint is implemented are platform-specific.
+ * Some systems provide a special instruction, such as `int3` in x86.
+ * When no more appropriate mechanism is available, this will stop the
+ * program using `__builtin_trap()`. It might not be possible for the
+ * program to continue after such a breakpoint.
+ *
+ * @since C++26
+ */
+void
+breakpoint() noexcept;
+
+/** Stop the program if it is running under control of a debugger.
+ *
+ * @since C++26
+ */
+void
+breakpoint_if_debugging() noexcept;
+
+} // namespace std
+#endif
+#endif // _GLIBCXX_DEBUGGING
