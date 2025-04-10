@@ -1199,8 +1199,11 @@ cp_build_init_expr_for_ctor (tree call, tree init)
   tree s = build_fold_indirect_ref_loc (loc, a);
   init = cp_build_init_expr (s, init);
   if (return_this)
-    init = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (call), init,
-		    fold_convert_loc (loc, TREE_TYPE (call), a));
+    {
+      init = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (call), init,
+			 fold_convert_loc (loc, TREE_TYPE (call), a));
+      suppress_warning (init);
+    }
   return init;
 }
 
