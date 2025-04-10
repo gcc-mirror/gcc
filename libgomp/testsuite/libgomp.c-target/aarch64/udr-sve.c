@@ -1,5 +1,5 @@
 /* { dg-do run { target aarch64_sve256_hw } } */
-/* { dg-options "-msve-vector-bits=256 -fopenmp -O2" } */
+/* { dg-options "-march=armv8-a+sve -msve-vector-bits=256 -fopenmp -O2" } */
 
 #include <arm_sve.h>
 
@@ -38,7 +38,7 @@ for_reduction ()
 
   #pragma omp parallel for reduction (+:va)
   for (j = 0; j < 8; j++)
-    va = svld1_s32 (svptrue_b32 (), a);
+    va += svld1_s32 (svptrue_b32 (), a);
 
   res = svaddv_s32 (svptrue_b32 (), va);
 

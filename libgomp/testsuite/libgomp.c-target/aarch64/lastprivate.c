@@ -1,6 +1,8 @@
 /* { dg-do run { target aarch64_sve256_hw } } */
 /* { dg-options "-msve-vector-bits=256 -fopenmp -O2" } */
 
+#pragma GCC target "+sve"
+
 #include <arm_sve.h>
 #include <omp.h>
 
