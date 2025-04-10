@@ -12164,7 +12164,8 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 		}
 	    }
 	}
-      else if (!DEFERRED_NOEXCEPT_SPEC_P (d_spec)
+      else if (!DECL_MAYBE_DELETED (d_inner)
+	       && !DEFERRED_NOEXCEPT_SPEC_P (d_spec)
 	       && !comp_except_specs (d_spec, e_spec, ce_type))
 	{
 	  mismatch_msg = G_("conflicting %<noexcept%> specifier for "
@@ -12195,6 +12196,8 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
       if (DECL_MAYBE_DELETED (e_inner) && !DECL_MAYBE_DELETED (d_inner)
 	  && DECL_DECLARED_CONSTEXPR_P (d_inner))
 	DECL_DECLARED_CONSTEXPR_P (e_inner) = true;
+      else if (!DECL_MAYBE_DELETED (e_inner) && DECL_MAYBE_DELETED (d_inner))
+	/* Nothing to do.  */;
       else if (DECL_DECLARED_CONSTEXPR_P (e_inner)
 	       != DECL_DECLARED_CONSTEXPR_P (d_inner))
 	{
