@@ -714,6 +714,10 @@ DefaultASTVisitor::visit (AST::InlineAsm &expr)
 }
 
 void
+DefaultASTVisitor::visit (AST::LlvmInlineAsm &expr)
+{}
+
+void
 DefaultASTVisitor::visit (AST::TypeParam &param)
 {
   visit_outer_attrs (param);

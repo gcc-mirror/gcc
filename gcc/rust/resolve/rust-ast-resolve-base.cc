@@ -328,6 +328,10 @@ ResolverBase::visit (AST::InlineAsm &)
 {}
 
 void
+ResolverBase::visit (AST::LlvmInlineAsm &)
+{}
+
+void
 ResolverBase::visit (AST::TypeParam &)
 {}
 
