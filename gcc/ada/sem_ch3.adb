@@ -3963,7 +3963,7 @@ package body Sem_Ch3 is
                   Data_Path_String : constant String :=
                     Absolute_Dir
                     & System.OS_Lib.Directory_Separator
-                    & Stringt.To_String (Strval (Def));
+                    & S;
 
                begin
                   Data_Path := Name_Find (Data_Path_String);
