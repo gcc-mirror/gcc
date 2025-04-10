@@ -2828,8 +2828,8 @@ ix86_option_override_internal (bool main_args_p,
   if (flag_nop_mcount)
     error ("%<-mnop-mcount%> is not compatible with this target");
 #endif
-  if (flag_nop_mcount && flag_pic)
-    error ("%<-mnop-mcount%> is not implemented for %<-fPIC%>");
+  if (flag_nop_mcount && flag_pic && !flag_plt)
+    error ("%<-mnop-mcount%> is not implemented for %<-fno-plt%>");
 
   /* Accept -msseregparm only if at least SSE support is enabled.  */
   if (TARGET_SSEREGPARM_P (opts->x_target_flags)
