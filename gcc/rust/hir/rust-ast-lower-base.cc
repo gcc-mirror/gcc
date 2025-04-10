@@ -267,6 +267,10 @@ void
 ASTLoweringBase::visit (AST::InlineAsm &)
 {}
 
+void
+ASTLoweringBase::visit (AST::LlvmInlineAsm &)
+{}
+
 //  void ASTLoweringBase::visit(MatchCasematch_case) {}
 // void ASTLoweringBase:: (AST::MatchCaseBlockExpr &) {}
 // void ASTLoweringBase:: (AST::MatchCaseExpr &) {}

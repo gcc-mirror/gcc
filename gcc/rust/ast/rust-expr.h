@@ -5330,6 +5330,54 @@ public:
   Expr::Kind get_expr_kind () const override { return Expr::Kind::InlineAsm; }
 };
 
+class LlvmInlineAsm : public ExprWithoutBlock
+{
+  // llvm_asm!("" :         : "r"(&mut dummy) : "memory" : "volatile");
+  //           Asm, Outputs, Inputs,            Clobbers, Options,
+
+private:
+  location_t locus;
+  std::vector<Attribute> outer_attrs;
+
+  std::vector<TupleClobber> clobber_abi;
+  bool is_volatile;
+  bool align_stack;
+  enum class Dialect
+  {
+    Att,
+    Intel,
+  } dialect;
+
+public:
+  LlvmInlineAsm (location_t locus) : locus (locus) {}
+
+  Dialect get_dialect () { return dialect; }
+
+  location_t get_locus () const override { return locus; }
+
+  void mark_for_strip () override {}
+
+  bool is_marked_for_strip () const override { return false; }
+
+  std::vector<Attribute> &get_outer_attrs () override { return outer_attrs; }
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  std::string as_string () const override { return "InlineAsm AST Node"; }
+
+  void set_outer_attrs (std::vector<Attribute> v) override { outer_attrs = v; }
+
+  LlvmInlineAsm *clone_expr_without_block_impl () const override
+  {
+    return new LlvmInlineAsm (*this);
+  }
+
+  Expr::Kind get_expr_kind () const override
+  {
+    return Expr::Kind::LlvmInlineAsm;
+  }
+};
+
 } // namespace AST
 } // namespace Rust
 

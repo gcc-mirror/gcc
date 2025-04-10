@@ -4651,6 +4651,12 @@ InlineAsm::accept_vis (ASTVisitor &vis)
 }
 
 void
+LlvmInlineAsm::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
 TypeParam::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);

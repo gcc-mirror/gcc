@@ -172,4 +172,11 @@ tl::optional<std::string>
 parse_label (Parser<MacroInvocLexer> &parser, TokenId last_token_id,
 	     InlineAsmContext &inline_asm_ctx);
 
+// LLVM ASM bits
+
+WARN_UNUSED_RESULT
+tl::optional<AST::Fragment>
+parse_llvm_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
+		AST::InvocKind semicolon, AST::AsmKind is_global_asm);
+
 } // namespace Rust

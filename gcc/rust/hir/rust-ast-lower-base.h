@@ -152,6 +152,7 @@ public:
   virtual void visit (AST::IfLetExpr &expr) override;
   virtual void visit (AST::IfLetExprConseqElse &expr) override;
   virtual void visit (AST::InlineAsm &expr) override;
+  virtual void visit (AST::LlvmInlineAsm &expr) override;
   //  virtual void visit(MatchCase& match_case) override;
   // virtual void visit (AST::MatchCaseBlockExpr &match_case) override;
   // virtual void visit (AST::MatchCaseExpr &match_case) override;
