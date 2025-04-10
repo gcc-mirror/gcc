@@ -1,3 +1,121 @@
+2025-04-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119574
+	* g++.dg/cpp2a/lambda-targ13.C: New test.
+	* g++.dg/cpp2a/lambda-targ13a.C: New test.
+	* g++.dg/cpp2a/lambda-targ13b.C: New test.
+
+2025-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119664
+	* gcc.dg/pr119664.c: New test.
+
+2025-04-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116595
+	* g++.target/aarch64/sve/pr116595.C: New test.
+
+2025-04-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/118309
+	* gdc.dg/debug/dwarf2/pr118309.d: New test.
+
+2025-04-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119656
+	* gfortran.dg/optional_absent_13.f90: New test.
+
+2025-04-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/sat/sat_s_sub-1-i64.c: Update expected output.
+	* gcc.target/riscv/sat/sat_s_sub-2-i64.c: Likewise.
+	* gcc.target/riscv/sat/sat_s_sub-3-i64.c: Likewise.
+	* gcc.target/riscv/sat/sat_s_sub-4-i64.c: Likewise.
+
+2025-04-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr67215-1.c: Correctly escape
+	asterisk in scan-assembler dirctive.
+	* gcc.target/i386/pr67215-2.c: Ditto.
+
+2025-04-09  Jonathan Yong  <10walls@gmail.com>
+
+	PR analyzer/113253
+	* gcc.dg/analyzer/deref-before-check-pr113253.c:
+	(ptrdiff_t): use stddef.h type.
+	(uintptr_t): ditto.
+	(EMACS_INT): ditto.
+	(set_marker_internal): Add dummy 0 to suppress -Wreturn-type.
+
+2025-04-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr117722.c: Adjust expected output.
+
+2025-04-09  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/119689
+	PR rtl-optimization/115568
+	* g++.target/i386/pr119689.C: New testcase.
+
+2025-04-09  Pan Li  <pan2.li@intel.com>
+
+	Revert:
+	2025-03-15  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3.c: Removed.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-f16.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-f32.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-i8.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3-u8.c: New test.
+	* gcc.target/riscv/rvv/autovec/cond/cond_widen_complicate-3.h: New test.
+
+2025-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/118674
+	* gcc.dg/cpp/pr118674.c: New test.
+
+2025-04-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* g++.target/riscv/rvv/autovec/pr116595.C: Add -mabi.
+
+2025-04-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/116595
+	* g++.target/riscv/rvv/autovec/pr116595.C: New test.
+
+2025-04-09  Paul Thomas  <pault@gcc.gnu.org>
+	    and Harald Anlauf  <anlauf@gcc.gnu.org>
+
+	PR fortran/119460
+	* gfortran.dg/reduce_2.f90: Add test to check that deferred len
+	characters cannot slip through.
+	* gfortran.dg/reduce_3.f90: New test
+	* gfortran.dg/reduce_4.f90: New test
+
+2025-04-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/101602
+	* gfortran.dg/do_concurrent_8_f2023.f90: Update for removed 'sorry,
+	unimplemented'.
+	* gfortran.dg/do_concurrent_9.f90: Likewise.
+	* gfortran.dg/do_concurrent_all_clauses.f90: Likewise.
+	* gfortran.dg/do_concurrent_local_init.f90: Likewise.
+	* gfortran.dg/do_concurrent_locality_specs.f90: Likewise.
+	* gfortran.dg/do_concurrent_11.f90: New test.
+	* gfortran.dg/do_concurrent_12.f90: New test.
+	* gfortran.dg/do_concurrent_13.f90: New test.
+	* gfortran.dg/do_concurrent_14.f90: New test.
+	* gfortran.dg/do_concurrent_15.f90: New test.
+
+2025-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118698
+	* g++.dg/cpp2a/concepts-lambda22.C: New test.
+
 2025-04-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.dg/guality/pr36728-3.c: Update XFAILs for aarch64.

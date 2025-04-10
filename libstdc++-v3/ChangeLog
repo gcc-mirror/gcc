@@ -1,3 +1,13 @@
+2025-04-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/115046
+	PR libstdc++/112490
+	* include/bits/stl_iterator.h (basic_const_iterator::operator-):
+	Replace non-dependent basic_const_iterator function parameter with
+	a dependent one of type basic_const_iterator<_It2> where _It2
+	matches _It.
+	* testsuite/std/ranges/adaptors/as_const/1.cc (test04): New test.
+
 2025-04-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/119671

@@ -1,3 +1,14 @@
+2025-04-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119574
+	* pt.cc (add_extra_args): Remove checking assert.
+
+2025-04-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118698
+	* constraint.cc (struct norm_info): Add tf_partial.
+	* pt.cc (any_template_parm_r): Handle LAMBDA_EXPR_EXTRA_ARGS.
+
 2025-04-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/117530

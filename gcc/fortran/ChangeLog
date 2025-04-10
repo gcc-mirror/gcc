@@ -1,3 +1,38 @@
+2025-04-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119656
+	* interface.cc (gfc_compare_actual_formal): Fix front-end memleak
+	when searching for matching interfaces.
+	* trans-expr.cc (gfc_conv_procedure_call): If there is a formal
+	dummy corresponding to an absent argument, use its type, and only
+	fall back to inferred type otherwise.
+
+2025-04-09  Paul Thomas  <pault@gcc.gnu.org>
+	    and Harald Anlauf  <anlauf@gcc.gnu.org>
+
+	PR fortran/119460
+	* iresolve.cc (generate_reduce_op_wrapper): Increase the size
+	of 'tname'. Change intent of 'a' and 'b' to intent_in.
+	* trans-decl.cc (add_argument_checking): Do not test artificial
+	formal symbols.
+	* trans-expr.cc (gfc_conv_procedure_call): Remove reduce_scalar
+	and the blocks triggered by it.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_function): Set the
+	result of non-character, scalar reduce to be allocatable.
+
+2025-04-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/101602
+	* resolve.cc (resolve_locality_spec): Remove 'sorry, unimplemented'.
+	* trans-stmt.cc (struct symbol_and_tree_t): New.
+	(gfc_trans_concurrent_locality_spec): New.
+	(gfc_trans_forall_1): Call it; update to handle local and local_init.
+	* trans-decl.cc (gfc_start_saved_local_decls,
+	gfc_stop_saved_local_decls): New; moved code from ...
+	(gfc_process_block_locals): ... here. Call it.
+	* trans.h (gfc_start_saved_local_decls,
+	gfc_stop_saved_local_decls): Declare.
+
 2025-04-02  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR middle-end/118965

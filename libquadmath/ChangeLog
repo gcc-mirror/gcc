@@ -1,3 +1,7 @@
+2025-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* math/expq.c (C): Fix up THREEp96 constant.
+
 2025-04-07  Lulu Cheng  <chenglulu@loongson.cn>
 
 	PR target/119408

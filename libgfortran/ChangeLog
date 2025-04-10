@@ -1,3 +1,19 @@
+2025-04-09  Paul Thomas  <pault@gcc.gnu.org>
+	    and Harald Anlauf  <anlauf@gcc.gnu.org>
+
+	PR libfortran/119460
+	* intrinsics/reduce.c (reduce): Correct error message about
+	mismatch between dim and the rank of array. Output the values
+	of both. Correct the evaluation of the result stride and
+	extent.
+	(reduce_scalar): The front end treats the result as an
+	allocatable so eliminate memcpy and free. Return the base-addr
+	of the local descriptor.
+	(reduce_c): Correct the type of the string lengths.
+	(reduce_scalar_c): Correct the type of the string lengths.Test
+	to see if 'res' is allocated. If not then return the base_addr
+	of the local descriptor.
+
 2025-04-07  Lulu Cheng  <chenglulu@loongson.cn>
 
 	PR target/119408

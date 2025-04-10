@@ -1,3 +1,9 @@
+2025-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/118674
+	* macro.cc (parse_params) <case CPP_ELLIPSIS>: If _cpp_save_parameter
+	failed for __VA_ARGS__, goto out.
+
 2025-04-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/119391

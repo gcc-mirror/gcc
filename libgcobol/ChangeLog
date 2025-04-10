@@ -1,3 +1,16 @@
+2025-04-09  Bob Dubner  <rdubner@symas.com>
+
+	PR cobol/119682
+	* common-defs.h: Define the REFER_T_REFMOD constant.
+	* intrinsic.cc: (__gg__max): Change the calls to __gg__compare_2(),
+	(__gg__min): Likewise, (__gg__ord_min): Likewise,
+	(__gg__ord_max): Likewise.
+	* libgcobol.cc: (__gg__compare_2): Change definition of calling
+	parameters, eliminate separate flag bit for ALL and ADDRESS_OF,
+	change comparison of alphanumeric to numeric when the numeric
+	is a refmod.
+	* libgcobol.h: Change declaration of __gg__compare_2.
+
 2025-04-05  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Makefile.am: Add libgcobol.spec and dependency.

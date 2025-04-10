@@ -1,3 +1,33 @@
+2025-04-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/118309
+	* modules.cc: Include debug.h
+	(d_finish_compilation): Call debug_hooks->type_decl on all TYPE_DECLs.
+	* types.cc: Remove toplev.h include.
+	(finish_aggregate_type): Don't call rest_of_type_compilation or
+	rest_of_decl_compilation on type.
+	(TypeVisitor::visit (TypeEnum *)): Likewise.
+
+2025-04-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/117832
+	* d-tree.h (build_padded_constructor): New prototype.
+	* d-codegen.cc (build_padded_constructor): New function.
+	(d_array_value): Call it.
+	(build_memset_call): Likewise.
+	(build_struct_literal): Likewise.
+	(underlying_complex_expr): Likewise.
+	(build_array_from_val): Likewise.
+	(build_array_from_exprs): Likewise.
+	(d_build_call): Likewise.
+	(get_frame_for_symbol): Likewise.
+	* d-convert.cc (convert_for_rvalue): Likewise.
+	(convert_for_assignment): Likewise.
+	* decl.cc (class DeclVisitor): Likewise.
+	* expr.cc (class ExprVisitor): Likewise.
+	* modules.cc (layout_moduleinfo): Likewise.
+	* typeinfo.cc (class TypeInfoVisitor): Likewise.
+
 2025-04-08  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 51816cd01d.

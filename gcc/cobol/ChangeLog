@@ -1,3 +1,8 @@
+2025-04-09  Bob Dubner  <rdubner@symas.com>
+
+	PR cobol/119682
+	* genapi.cc: (cobol_compare): Change the call to __gg__compare().
+
 2025-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR cobol/119364
