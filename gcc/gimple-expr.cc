@@ -877,7 +877,7 @@ bool
 is_gimple_mem_ref_addr (tree t)
 {
   return (is_gimple_reg (t)
-	  || TREE_CODE (t) == INTEGER_CST
+	  || poly_int_tree_p (t)
 	  || (TREE_CODE (t) == ADDR_EXPR
 	      && (CONSTANT_CLASS_P (TREE_OPERAND (t, 0))
 		  || decl_address_invariant_p (TREE_OPERAND (t, 0)))));
