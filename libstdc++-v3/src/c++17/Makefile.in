@@ -767,6 +767,12 @@ uninstall-am:
 
 vpath % $(top_srcdir)/src/c++17
 
+# These files should be rebuilt if the .cc prerequisite changes.
+@ENABLE_DUAL_ABI_TRUE@cow-string-inst.lo cow-string-inst.o: string-inst.cc
+@ENABLE_DUAL_ABI_TRUE@cow-fs_dir.lo cow-fs_dir.o: fs_dir.cc
+@ENABLE_DUAL_ABI_TRUE@cow-fs_ops.lo cow-fs_ops.o: fs_ops.cc
+@ENABLE_DUAL_ABI_TRUE@cow-fs_path.lo cow-fs_path.o: fs_path.cc
+
 @GLIBCXX_LDBL_ALT128_COMPAT_TRUE@floating_from_chars.lo: floating_from_chars.cc
 @GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(LTCXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
 @GLIBCXX_LDBL_ALT128_COMPAT_TRUE@floating_from_chars.o: floating_from_chars.cc

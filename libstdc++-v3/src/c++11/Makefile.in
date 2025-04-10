@@ -896,13 +896,17 @@ localename.lo: localename.cc
 localename.o: localename.cc
 	$(CXXCOMPILE) -fchar8_t -c $<
 
-wstring-inst.lo: wstring-inst.cc string-inst.cc
-wstring-inst.o: wstring-inst.cc string-inst.cc
+# These files should be rebuilt if the .cc prerequisite changes.
+wlocale-inst.lo wlocale-inst.o: locale-inst.cc
+wstring-inst.lo wstring-inst.o: string-inst.cc
 
-@ENABLE_DUAL_ABI_TRUE@cow-string-inst.lo: cow-string-inst.cc string-inst.cc
-@ENABLE_DUAL_ABI_TRUE@cow-string-inst.o: cow-string-inst.cc string-inst.cc
-@ENABLE_DUAL_ABI_TRUE@cow-wstring-inst.lo: cow-wstring-inst.cc string-inst.cc
-@ENABLE_DUAL_ABI_TRUE@cow-wstring-inst.o: cow-wstring-inst.cc string-inst.cc
+# These files should be rebuilt if the .cc prerequisite changes.
+@ENABLE_DUAL_ABI_TRUE@cow-shim_facets.lo cow-shim_facets.o: cxx11-shim_facets.cc
+@ENABLE_DUAL_ABI_TRUE@cow-sstream-inst.lo cow-sstream-inst.o: sstream-inst.cc
+@ENABLE_DUAL_ABI_TRUE@cow-string-inst.lo cow-string-inst.o: string-inst.cc
+@ENABLE_DUAL_ABI_TRUE@cow-wstring-inst.lo cow-wstring-inst.o: string-inst.cc
+@ENABLE_DUAL_ABI_TRUE@cxx11-locale-inst.lo cxx11-locale-inst.o: locale-inst.cc
+@ENABLE_DUAL_ABI_TRUE@cxx11-wlocale-inst.lo cxx11-wlocale-inst.o: locale-inst.cc
 
 @ENABLE_DUAL_ABI_TRUE@cxx11-ios_failure-lt.s: cxx11-ios_failure.cc
 @ENABLE_DUAL_ABI_TRUE@	$(LTCXXCOMPILE) -gno-as-loc-support -S $< -o tmp-cxx11-ios_failure-lt.s
