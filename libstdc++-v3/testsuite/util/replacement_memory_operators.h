@@ -36,8 +36,12 @@ namespace __gnu_test
 
     ~counter() THROW (counter_error)
     {
+#if __cpp_exceptions
       if (_M_throw && _M_count != 0)
 	throw counter_error();
+#else
+      VERIFY( !_M_throw || _M_count == 0 );
+#endif
     }
 
     static void
@@ -133,8 +137,12 @@ void* operator new(std::size_t size) THROW(std::bad_alloc)
 {
   std::printf("operator new is called \n");
   void* p = std::malloc(size);
+#if __cpp_exceptions
   if (!p)
     throw std::bad_alloc();
+#else
+  VERIFY( p );
+#endif
   __gnu_test::counter::increment();
   return p;
 }

@@ -1,4 +1,6 @@
 // { dg-do run { target c++11 } }
+// { dg-require-effective-target std_allocator_new }
+// { dg-xfail-run-if "AIX operator new" { powerpc-ibm-aix* } }
 
 // 2010-01-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -19,18 +21,42 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <vector>
+#include <deque>
 #include <testsuite_hooks.h>
+#include <replacement_memory_operators.h>
 
 // libstdc++/42573
 void test01()
 {
-  std::vector<int> d(100);
-  d.push_back(1);
-  d.push_back(1);
-  // VERIFY( d.size() < d.capacity() );
+  using namespace std;
+  __gnu_test::counter::reset();
+
+  const size_t buf_size = _GLIBCXX_STD_C::__deque_buf_size(sizeof(size_t));
+  deque<size_t> d;
+  for (size_t i = 0; i != buf_size; ++i)
+    d.push_back(i);
+
+  // No shrink if 1st buffer is full, create some front capacity.
+  d.pop_front();
+
+  // 1 node array allocation + 2 node allocation = 3.
+  VERIFY( __gnu_test::counter::count() == 3 );
+  VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+
   d.shrink_to_fit();
-  // VERIFY( d.size() == d.capacity() );
+
+  // No reallocation if no exception support, shrink_to_fit is then a
+  // no-op.
+#if __cpp_exceptions
+  // 1 node array allocation + 1 node allocation = 2.
+  const int expected_count = 2;
+  const int expected_increments = 2;
+#else
+  const int expected_count = 3;
+  const int expected_increments = 0;
+#endif
+  VERIFY( __gnu_test::counter::count() == expected_count );
+  VERIFY( __gnu_test::counter::get()._M_increments == 3 + expected_increments );
 }
 
 int main()
