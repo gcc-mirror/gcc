@@ -473,6 +473,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	  traits_type::assign(__d, __n, __c);
       }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
       // _S_copy_chars is a separate template to permit specialization
       // to optimize for the common case of pointers as iterators.
       template<class _Iterator>
@@ -480,31 +482,44 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
         static void
         _S_copy_chars(_CharT* __p, _Iterator __k1, _Iterator __k2)
         {
+#if __cplusplus >= 201103L
+	  using _IterBase = decltype(std::__niter_base(__k1));
+	  if constexpr (__or_<is_same<_IterBase, _CharT*>,
+			      is_same<_IterBase, const _CharT*>>::value)
+	    _S_copy(__p, std::__niter_base(__k1), __k2 - __k1);
+#if __cpp_lib_concepts
+	  else if constexpr (contiguous_iterator<_Iterator>
+			       && is_same_v<iter_value_t<_Iterator>, _CharT>)
+	    {
+	      const auto __d = __k2 - __k1;
+	      (void) (__k1 + __d); // See P3349R1
+	      _S_copy(__p, std::to_address(__k1), static_cast<size_type>(__d));
+	    }
+#endif
+	  else
+#endif
 	  for (; __k1 != __k2; ++__k1, (void)++__p)
 	    traits_type::assign(*__p, *__k1); // These types are off.
 	}
+#pragma GCC diagnostic pop
 
-      _GLIBCXX20_CONSTEXPR
+#if __cplusplus < 201103L || defined _GLIBCXX_DEFINING_STRING_INSTANTIATIONS
       static void
-      _S_copy_chars(_CharT* __p, iterator __k1, iterator __k2) _GLIBCXX_NOEXCEPT
+      _S_copy_chars(_CharT* __p, iterator __k1, iterator __k2)
       { _S_copy_chars(__p, __k1.base(), __k2.base()); }
 
-      _GLIBCXX20_CONSTEXPR
       static void
       _S_copy_chars(_CharT* __p, const_iterator __k1, const_iterator __k2)
-      _GLIBCXX_NOEXCEPT
       { _S_copy_chars(__p, __k1.base(), __k2.base()); }
 
-      _GLIBCXX20_CONSTEXPR
       static void
-      _S_copy_chars(_CharT* __p, _CharT* __k1, _CharT* __k2) _GLIBCXX_NOEXCEPT
+      _S_copy_chars(_CharT* __p, _CharT* __k1, _CharT* __k2)
       { _S_copy(__p, __k1, __k2 - __k1); }
 
-      _GLIBCXX20_CONSTEXPR
       static void
       _S_copy_chars(_CharT* __p, const _CharT* __k1, const _CharT* __k2)
-      _GLIBCXX_NOEXCEPT
       { _S_copy(__p, __k1, __k2 - __k1); }
+#endif
 
 #if __glibcxx_containers_ranges // C++ >= 23
       // pre: __n == ranges::distance(__rg). __p+[0,__n) is a valid range.
