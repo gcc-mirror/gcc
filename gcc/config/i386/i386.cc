@@ -22832,6 +22832,12 @@ x86_print_call_or_nop (FILE *file, const char *target)
   if (flag_nop_mcount || !strcmp (target, "nop"))
     /* 5 byte nop: nopl 0(%[re]ax,%[re]ax,1) */
     fprintf (file, "1:" ASM_BYTE "0x0f, 0x1f, 0x44, 0x00, 0x00\n");
+  else if (!TARGET_PECOFF && flag_pic)
+    {
+      gcc_assert (flag_plt);
+
+      fprintf (file, "1:\tcall\t%s@PLT\n", target);
+    }
   else
     fprintf (file, "1:\tcall\t%s\n", target);
 }
@@ -22995,7 +23001,7 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 	      break;
 	    case CM_SMALL_PIC:
 	    case CM_MEDIUM_PIC:
-	      if (!ix86_direct_extern_access)
+	      if (!flag_plt)
 		{
 		  if (ASSEMBLER_DIALECT == ASM_INTEL)
 		    fprintf (file, "1:\tcall\t[QWORD PTR %s@GOTPCREL[rip]]\n",
@@ -23026,7 +23032,9 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 		 "\tleal\t%sP%d@GOTOFF(%%ebx), %%" PROFILE_COUNT_REGISTER "\n",
 		 LPREFIX, labelno);
 #endif
-      if (ASSEMBLER_DIALECT == ASM_INTEL)
+      if (flag_plt)
+	x86_print_call_or_nop (file, mcount_name);
+      else if (ASSEMBLER_DIALECT == ASM_INTEL)
 	fprintf (file, "1:\tcall\t[DWORD PTR %s@GOT[ebx]]\n", mcount_name);
       else
 	fprintf (file, "1:\tcall\t*%s@GOT(%%ebx)\n", mcount_name);
