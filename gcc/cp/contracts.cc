@@ -973,6 +973,20 @@ extract_contract_attributes (tree fndecl)
   return contracts;
 }
 
+/*
+ */
+
+/* Set contracts of FNDECL to be CONTRACTS.  */
+
+void
+set_contract_attributes (tree fndecl, tree contracts)
+{
+  remove_contract_attributes (fndecl);
+  tree attrs = chainon (DECL_ATTRIBUTES(fndecl), contracts);
+  DECL_ATTRIBUTES (fndecl) = attrs;
+}
+
+
 /* Copy contract attributes from NEWDECL onto the attribute list of
    OLDDECL.  */
 
@@ -3042,11 +3056,6 @@ maybe_apply_function_contracts (tree fndecl)
   /* We should not have reached here with nothing to do... */
   gcc_checking_assert (do_pre || do_post);
 
-  if (contract_any_deferred_p (DECL_CONTRACTS (fndecl)))
-    {
-      //debug_tree (DECL_CONTRACTS (fndecl));
-    }
-
   /* If the function is noexcept, the user's written body will be wrapped in a
      MUST_NOT_THROW expression.  In that case we want to extract the body from
      that and build the replacement (including the pre and post-conditions as
@@ -3119,16 +3128,18 @@ maybe_apply_function_contracts (tree fndecl)
    If remap_post is false, postconditions are dropped from the destination.  */
 
 tree
-remap_contracts (tree dest, tree source, bool remap_result = true,
-			  bool remap_post = true )
+copy_and_remap_contracts (tree dest, tree source, bool remap_result = true,
+			  contract_match_kind remap_kind = cmk_all )
 {
   tree last = NULL_TREE, contract_attrs = NULL_TREE;
   for (tree a = DECL_CONTRACTS (source);
       a != NULL_TREE;
       a = CONTRACT_CHAIN (a))
     {
-      if (!remap_post
-	  && (TREE_CODE (CONTRACT_STATEMENT (a)) == POSTCONDITION_STMT))
+      if ((remap_kind == cmk_pre
+	   && (TREE_CODE (CONTRACT_STATEMENT (a)) == POSTCONDITION_STMT))
+	  || (remap_kind == cmk_post
+	      && (TREE_CODE (CONTRACT_STATEMENT (a)) == PRECONDITION_STMT)))
 	continue;
 
       tree c = copy_node (a);
@@ -3528,18 +3539,19 @@ define_contract_wrapper_func (const tree& fndecl, const tree& wrapdecl, void*)
   bool is_virtual = DECL_IOBJ_MEMBER_FUNCTION_P (fndecl)
 		    && DECL_VIRTUAL_P (fndecl);
   /* We check postconditions on virtual function calls or if postcondition
-     checks are enabled for all clients.  We should not get here unless there
+     checks are enabled for clients.  We should not get here unless there
      are some checks to make.  */
   bool check_post
     = (flag_contract_nonattr_client_check > 1)
       || (is_virtual
 	  && (flag_contracts_on_virtual_functions
-	      == CONTRACTS_ON_VIRTUALS_P2900R13));
+	      != CONTRACTS_ON_VIRTUALS_NONE));
   /* For wrappers on CDTORs we need to refer to the original contracts,
      when the wrapper is around a clone.  */
   set_decl_contracts( wrapdecl,
-		      remap_contracts (wrapdecl, DECL_ORIGIN (fndecl),
-				       /*remap_result*/true, check_post));
+		      copy_and_remap_contracts (wrapdecl, DECL_ORIGIN (fndecl),
+				       /*remap_result*/true,
+				       check_post? cmk_all : cmk_pre));
 
   start_preparsed_function (wrapdecl, /*DECL_ATTRIBUTES*/NULL_TREE,
 			    SF_DEFAULT | SF_PRE_PARSED);

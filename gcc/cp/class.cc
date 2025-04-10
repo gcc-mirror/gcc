@@ -3232,7 +3232,7 @@ check_for_override (tree decl, tree ctype)
 	      == CONTRACTS_ON_VIRTUALS_NONE)
 	{
 	  error_at (DECL_SOURCE_LOCATION(decl),
-		    "Contracts can not be added to virtual functions.");
+		    "Contracts cannot be added to virtual functions.");
 	}
     }
   else if (DECL_FINAL_P (decl))
