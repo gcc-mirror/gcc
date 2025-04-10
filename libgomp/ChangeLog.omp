@@ -1,3 +1,18 @@
+2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR c++/119692
+	* testsuite/libgomp.c++/pr119692-1-1.C: New.
+	* testsuite/libgomp.c++/pr119692-1-2.C: Likewise.
+	* testsuite/libgomp.c++/pr119692-1-3.C: Likewise.
+	* testsuite/libgomp.c++/pr119692-1-4.C: Likewise.
+	* testsuite/libgomp.c++/pr119692-1-5.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr119692-1-1.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr119692-1-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr119692-1-3.C: Likewise.
+
 2025-04-08  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

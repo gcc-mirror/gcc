@@ -3,6 +3,13 @@
 	Backported from trunk:
 	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	PR c++/119692
+	* g++.target/gcn/pr119692-1-1.C: New.
+	* g++.target/nvptx/pr119692-1-1.C: Likewise.
+
+	Backported from trunk:
+	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* g++.target/gcn/gcn.exp: New.
 
 	Backported from trunk:
