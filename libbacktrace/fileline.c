@@ -47,6 +47,10 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include <mach-o/dyld.h>
 #endif
 
+#ifdef __hpux__
+#include <dl.h>
+#endif
+
 #ifdef HAVE_WINDOWS_H
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
@@ -64,6 +68,33 @@ POSSIBILITY OF SUCH DAMAGE.  */
 
 #ifndef HAVE_GETEXECNAME
 #define getexecname() NULL
+#endif
+
+#ifdef __hpux__
+static char *
+hpux_get_executable_path (struct backtrace_state *state,
+			  backtrace_error_callback error_callback, void *data)
+{
+  struct shl_descriptor *desc;
+  size_t len = sizeof (struct shl_descriptor);
+
+  desc = backtrace_alloc (state, len, error_callback, data);
+  if (desc == NULL)
+    return NULL;
+
+  if (shl_get_r (0, desc) == -1)
+    {
+      backtrace_free (state, desc, len, error_callback, data);
+      return NULL;
+    }
+
+  return desc->filename;
+}
+
+#else
+
+#define hpux_get_executable_path(state, error_callback, data) NULL
+
 #endif
 
 #if !defined (HAVE_KERN_PROC_ARGS) && !defined (HAVE_KERN_PROC)
@@ -245,7 +276,7 @@ fileline_initialize (struct backtrace_state *state,
 
   descriptor = -1;
   called_error_callback = 0;
-  for (pass = 0; pass < 10; ++pass)
+  for (pass = 0; pass < 11; ++pass)
     {
       int does_not_exist;
 
@@ -284,6 +315,9 @@ fileline_initialize (struct backtrace_state *state,
 	  break;
 	case 9:
 	  filename = windows_get_executable_path (buf, error_callback, data);
+	  break;
+	case 10:
+	  filename = hpux_get_executable_path (state, error_callback, data);
 	  break;
 	default:
 	  abort ();
