@@ -12090,6 +12090,8 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
       gcc_checking_assert (TREE_CODE (e_inner) == TREE_CODE (d_inner));
     }
 
+  // FIXME: do more precise errors at point of mismatch
+  const char *mismatch_msg = nullptr;
   if (TREE_CODE (d_inner) == FUNCTION_DECL)
     {
       tree e_ret = fndecl_declared_return_type (existing);
@@ -12099,13 +12101,20 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	  && LAMBDA_TYPE_P (DECL_CONTEXT (d_inner)))
 	/* This has a recursive type that will compare different.  */;
       else if (!same_type_p (d_ret, e_ret))
-	goto mismatch;
+	{
+	  mismatch_msg = G_("conflicting type for imported declaration %#qD");
+	  goto mismatch;
+	}
 
       tree e_type = TREE_TYPE (e_inner);
       tree d_type = TREE_TYPE (d_inner);
 
       if (DECL_EXTERN_C_P (d_inner) != DECL_EXTERN_C_P (e_inner))
-	goto mismatch;
+	{
+	  mismatch_msg = G_("conflicting language linkage for imported "
+			    "declaration %#qD");
+	  goto mismatch;
+	}
 
       for (tree e_args = TYPE_ARG_TYPES (e_type),
 	     d_args = TYPE_ARG_TYPES (d_type);
@@ -12113,10 +12122,18 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	   e_args = TREE_CHAIN (e_args), d_args = TREE_CHAIN (d_args))
 	{
 	  if (!(e_args && d_args))
-	    goto mismatch;
+	    {
+	      mismatch_msg = G_("conflicting argument list for imported "
+				"declaration %#qD");
+	      goto mismatch;
+	    }
 
 	  if (!same_type_p (TREE_VALUE (d_args), TREE_VALUE (e_args)))
-	    goto mismatch;
+	    {
+	      mismatch_msg = G_("conflicting argument types for imported "
+				"declaration %#qD");
+	      goto mismatch;
+	    }
 	}
 
       /* If EXISTING has an undeduced or uninstantiated exception
@@ -12149,7 +12166,11 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	}
       else if (!DEFERRED_NOEXCEPT_SPEC_P (d_spec)
 	       && !comp_except_specs (d_spec, e_spec, ce_type))
-	goto mismatch;
+	{
+	  mismatch_msg = G_("conflicting %<noexcept%> specifier for "
+			    "imported declaration %#qD");
+	  goto mismatch;
+	}
 
       /* Similarly if EXISTING has an undeduced return type, but DECL's
 	 is already deduced.  */
@@ -12163,7 +12184,11 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	}
       else if (type_uses_auto (d_ret)
 	       && !same_type_p (TREE_TYPE (d_type), TREE_TYPE (e_type)))
-	goto mismatch;
+	{
+	  mismatch_msg = G_("conflicting deduced return type for "
+			    "imported declaration %#qD");
+	  goto mismatch;
+	}
 
       /* Similarly if EXISTING has undeduced constexpr, but DECL's
 	 is already deduced.  */
@@ -12172,7 +12197,11 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	DECL_DECLARED_CONSTEXPR_P (e_inner) = true;
       else if (DECL_DECLARED_CONSTEXPR_P (e_inner)
 	       != DECL_DECLARED_CONSTEXPR_P (d_inner))
-	goto mismatch;
+	{
+	  mismatch_msg = G_("conflicting %<constexpr%> for imported "
+			    "declaration %#qD");
+	  goto mismatch;
+	}
 
       /* Don't synthesize a defaulted function if we're importing one
 	 we've already determined.  */
@@ -12184,13 +12213,17 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
       if (!DECL_ORIGINAL_TYPE (e_inner)
 	  || !same_type_p (DECL_ORIGINAL_TYPE (d_inner),
 			   DECL_ORIGINAL_TYPE (e_inner)))
-	goto mismatch;
+	{
+	  mismatch_msg = G_("conflicting imported declaration %q#D");
+	  goto mismatch;
+	}
     }
   /* Using cp_tree_equal because we can meet TYPE_ARGUMENT_PACKs
      here. I suspect the entities that directly do that are things
      that shouldn't go to duplicate_decls (FIELD_DECLs etc).   */
   else if (!cp_tree_equal (TREE_TYPE (decl), TREE_TYPE (existing)))
     {
+      mismatch_msg = G_("conflicting type for imported declaration %#qD");
     mismatch:
       if (DECL_IS_UNDECLARED_BUILTIN (existing))
 	/* Just like duplicate_decls, presum the user knows what
@@ -12203,11 +12236,9 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	   equality isn't feasible in general for local entities.  */;
       else
 	{
-	  // FIXME:QOI Might be template specialization from a module,
-	  // not necessarily global module
+	  gcc_checking_assert (mismatch_msg);
 	  auto_diagnostic_group d;
-	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "conflicting global module declaration %#qD", decl);
+	  error_at (DECL_SOURCE_LOCATION (decl), mismatch_msg, decl);
 	  inform (DECL_SOURCE_LOCATION (existing),
 		  "existing declaration %#qD", existing);
 	  return false;

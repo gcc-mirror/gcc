@@ -4,4 +4,4 @@
 #include "lambda-8.h"
 import "lambda-8_a.H";
 
-// { dg-error "conflicting global module declaration" "" { target *-*-* } 0 }
+// { dg-error "conflicting imported declaration" "" { target *-*-* } 0 }
