@@ -16,7 +16,7 @@ static void cb_any_event (acc_prof_info *prof_info, acc_event_info *event_info, 
 {
   DEBUG_printf ("%s %d\n", __FUNCTION__, prof_info->event_type);
 
-  assert (prof_info->version == 201711);
+  assert (prof_info->version == 201811);
 
   ++ev_count;
 }

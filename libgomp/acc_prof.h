@@ -117,9 +117,11 @@ typedef struct acc_prof_info
 				_ACC_PROF_VALID_BYTES_BASICTYPE (_acc_prof_int_t))
 } acc_prof_info;
 
-/* We implement the OpenACC 2.6 Profiling Interface.  */
+/* We implement the OpenACC 2.7 Profiling Interface, or at least according
+   to the OpenACC spec the number in the version field of acc_prof_info must
+   be _OPENACC.  */
 
-#define _ACC_PROF_INFO_VERSION 201711
+#define _ACC_PROF_INFO_VERSION 201811
 
 typedef enum acc_construct_t
 {

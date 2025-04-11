@@ -10695,7 +10695,7 @@ influence run-time behavior.
 
 GCC strives to be compatible with the
 @uref{https://www.openacc.org/, OpenACC Application Programming
-Interface v2.6}.
+Interface v2.7}.
 
 To enable the processing of OpenACC directives @samp{#pragma acc}
 in C and C++, GCC needs to be invoked with the @option{-fopenacc} option.

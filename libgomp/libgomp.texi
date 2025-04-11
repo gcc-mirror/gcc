@@ -4712,7 +4712,7 @@ See @uref{https://gcc.gnu.org/wiki/OpenACC} for more information.
 
 A complete description of all OpenACC directives accepted may be found in 
 the @uref{https://www.openacc.org, OpenACC} Application Programming
-Interface manual, version 2.6.
+Interface manual, version 2.7.
 
 
 
@@ -4724,7 +4724,7 @@ Interface manual, version 2.6.
 @chapter OpenACC Runtime Library Routines
 
 The runtime routines described here are defined by section 3 of the OpenACC
-specifications in version 2.6.
+specifications in version 2.7.
 They have C linkage, and do not throw exceptions.
 Generally, they are available only for the host, with the exception of
 @code{acc_on_device}, which is available for both the host and the
@@ -4819,7 +4819,7 @@ for the device type specified in @var{devicetype}.
 @end multitable
 
 @item @emph{Reference}:
-@uref{https://www.openacc.org, OpenACC specification v2.6}, section
+@uref{https://www.openacc.org, OpenACC specification v2.7}, section
 3.2.1.
 @end table
 
@@ -6091,7 +6091,7 @@ Function for library registration.
 @chapter OpenACC Environment Variables
 
 The variables @env{ACC_DEVICE_TYPE} and @env{ACC_DEVICE_NUM}
-are defined by section 4 of the OpenACC specification in version 2.0.
+are defined by section 4 of the OpenACC specification in version 2.6.
 The variable @env{ACC_PROFLIB}
 is defined by section 4 of the OpenACC specification in version 2.6.
 
