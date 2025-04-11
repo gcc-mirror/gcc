@@ -15318,32 +15318,24 @@ arithmetic.  These options trade off between speed and
 correctness.  All must be specifically enabled.
 
 @table @gcctabopt
-@opindex ffloat-store
-@item -ffloat-store
-Do not store floating-point variables in registers, and inhibit other
-options that might change whether a floating-point value is taken from a
-register or memory.
-
-@cindex floating-point precision
-This option prevents undesirable excess precision on machines such as
-the 68000 where the floating registers (of the 68881) keep more
-precision than a @code{double} is supposed to have.  Similarly for the
-x86 architecture.  For most programs, the excess precision does only
-good, but a few programs rely on the precise definition of IEEE floating
-point.  Use @option{-ffloat-store} for such programs, after modifying
-them to store all pertinent intermediate computations into variables.
-
 @opindex fexcess-precision
 @item -fexcess-precision=@var{style}
-This option allows further control over excess precision on machines
+This option allows control over excess precision on machines
 where floating-point operations occur in a format with more precision or
-range than the IEEE standard and interchange floating-point types.  By
-default, @option{-fexcess-precision=fast} is in effect; this means that
+range than the IEEE standard and interchange floating-point types.
+An example of such a target is x87 floating point on x86 processors,
+which uses an 80-bit representation internally instead of the 64-bit
+IEEE format.  For most programs, the excess precision is harmless,
+but some programs may rely on the
+requirements of the C or C++ language standards for handling IEEE values.
+
+By default, @option{-fexcess-precision=fast} is in effect; this means that
 operations may be carried out in a wider precision than the types specified
 in the source if that would result in faster code, and it is unpredictable
 when rounding to the types specified in the source code takes place.
 When compiling C or C++, if @option{-fexcess-precision=standard} is specified
-then excess precision follows the rules specified in ISO C99 or C++; in particular,
+then excess precision follows the rules specified in ISO C99 or C++;
+in particular,
 both casts and assignments cause values to be rounded to their
 semantic types (whereas @option{-ffloat-store} only affects
 assignments).  This option is enabled by default for C or C++ if a strict
@@ -15360,6 +15352,18 @@ other than C or C++.  On the x86, it has no effect if @option{-mfpmath=sse}
 or @option{-mfpmath=sse+387} is specified; in the former case, IEEE
 semantics apply without excess precision, and in the latter, rounding
 is unpredictable.
+
+@opindex ffloat-store
+@item -ffloat-store
+Do not store floating-point variables in registers, and inhibit other
+options that might change whether a floating-point value is taken from a
+register or memory.  This option has generally been subsumed by
+@option{-fexcess-precision=standard}, which is more general.  If you do use
+@option{-ffloat-store}, you may need to modify your program to explicitly
+store intermediate computations in temporary variables since
+@option{-ffloat-store} handles rounding to IEEE format
+only on assignments and not casts as @option{-fexcess-precision=standard}
+does.
 
 @opindex ffast-math
 @item -ffast-math
