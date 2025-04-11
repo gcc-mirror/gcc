@@ -642,8 +642,8 @@ Objective-C and Objective-C++ Dialects}.
 -fsplit-wide-types  -fsplit-wide-types-early  -fssa-backprop  -fssa-phiopt
 -fstdarg-opt  -fstore-merging  -fstrict-aliasing -fipa-strict-aliasing
 -fthread-jumps  -ftracer  -ftree-bit-ccp
--ftree-builtin-call-dce  -ftree-ccp  -ftree-ch
--ftree-coalesce-vars  -ftree-copy-prop  -ftree-dce  -ftree-dominator-opts
+-ftree-builtin-call-dce  -ftree-ccp  -ftree-ch  -ftree-coalesce-vars
+-ftree-copy-prop  -ftree-cselim  -ftree-dce  -ftree-dominator-opts
 -ftree-dse  -ftree-forwprop  -ftree-fre  -fcode-hoisting
 -ftree-loop-if-convert  -ftree-loop-im
 -ftree-phiprop  -ftree-loop-distribution  -ftree-loop-distribute-patterns
@@ -14071,6 +14071,12 @@ is enabled by default at @option{-O2} and higher.  The compilation time
 in this pass can
 be limited using @option{max-tail-merge-comparisons} parameter and
 @option{max-tail-merge-iterations} parameter.
+
+@opindex ftree-cselim
+@item -ftree-cselim
+Perform conditional store elimination on trees.  This flag is enabled by
+default at @option{-O1} and higher on targets that have conditional
+move instructions.
 
 @opindex ftree-dce
 @item -ftree-dce

@@ -1459,6 +1459,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-ftree-coalesce-vars)
 ftree-copy-prop
 UrlSuffix(gcc/Optimize-Options.html#index-ftree-copy-prop)
 
+ftree-cselim
+UrlSuffix(gcc/Optimize-Options.html#index-ftree-cselim)
+
 ftree-switch-conversion
 UrlSuffix(gcc/Optimize-Options.html#index-ftree-switch-conversion)
 
