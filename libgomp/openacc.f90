@@ -798,7 +798,7 @@ module openacc
   public :: acc_memcpy_to_device, acc_memcpy_to_device_async
   public :: acc_memcpy_from_device, acc_memcpy_from_device_async
 
-  integer, parameter :: openacc_version = 201711
+  integer, parameter :: openacc_version = 201811
 
   interface acc_get_num_devices
     procedure :: acc_get_num_devices_h
