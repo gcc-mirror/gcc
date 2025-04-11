@@ -1547,14 +1547,15 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 	}
       else
 	{
-	  if (tree_to_uhwi (idx) < low)
+	  unsigned tidx = tree_to_uhwi (idx);
+	  if (tidx < low)
 	    {
 	      t = handle_operand (rhs1, idx);
 	      if (m_first)
 		m_data[save_data_cnt + 2]
 		  = build_int_cst (NULL_TREE, m_data_cnt);
 	    }
-	  else if (tree_to_uhwi (idx) < high)
+	  else if (tidx < high)
 	    {
 	      t = handle_operand (rhs1, size_int (low));
 	      if (m_first)
@@ -1587,7 +1588,9 @@ bitint_large_huge::handle_cast (tree lhs_type, tree rhs1, tree idx)
 		m_data_cnt = tree_to_uhwi (m_data[save_data_cnt + 2]);
 	      if (TYPE_UNSIGNED (rhs_type))
 		t = build_zero_cst (m_limb_type);
-	      else if (m_bb && m_data[save_data_cnt])
+	      else if (m_bb
+		       && m_data[save_data_cnt]
+		       && ((tidx & 1) == 0 || tidx != low + 1))
 		t = m_data[save_data_cnt];
 	      else
 		t = m_data[save_data_cnt + 1];
