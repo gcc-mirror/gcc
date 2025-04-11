@@ -1,4 +1,4 @@
-(* ClientSocket.def provides a client TCP interface for ChanId's.
+(* ClientSocket.def provides a client TCP interface for ChanIds.
 
 Copyright (C) 2008-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.

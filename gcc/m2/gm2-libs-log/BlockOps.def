@@ -50,7 +50,7 @@ PROCEDURE BlockMoveBackward (dest, src: ADDRESS; n: CARDINAL) ;
 
 
 (*
-   BlockClear - fills, block..block+n-1, with zero's.
+   BlockClear - fills, block..block+n-1, with zeros.
 *)
 
 PROCEDURE BlockClear (block: ADDRESS; n: CARDINAL) ;

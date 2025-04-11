@@ -45,7 +45,7 @@ PROCEDURE init (location: location_t) ;
 
 (*
    CSTIntToString - return an integer string using base 10 and no padding.
-                    The string returned will have been malloc'd.
+                    The string returned will have been mallocd.
 *)
 
 PROCEDURE CSTIntToString (t: tree) : CharStar ;

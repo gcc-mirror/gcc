@@ -32,7 +32,7 @@ EXPORT QUALIFIED SEMAPHORE, DESCRIPTOR,
                  RotateRunQueue, ProcessName, DebugProcess ;
 
 TYPE
-   SEMAPHORE ;         (* defines Dijkstra's semaphores *)
+   SEMAPHORE ;         (* defines Dijkstras semaphores  *)
    DESCRIPTOR ;        (* handle onto a process         *)
 
 
@@ -85,7 +85,7 @@ PROCEDURE InitSemaphore (v: CARDINAL; Name: ARRAY OF CHAR) : SEMAPHORE ;
 
 
 (*
-   Wait - performs dijkstra's P operation on a semaphore.
+   Wait - performs dijkstras P operation on a semaphore.
           A process which calls this procedure will
           wait until the value of the semaphore is > 0
           and then it will decrement this value.
@@ -95,7 +95,7 @@ PROCEDURE Wait (s: SEMAPHORE) ;
 
 
 (*
-   Signal - performs dijkstra's V operation on a semaphore.
+   Signal - performs dijkstras V operation on a semaphore.
             A process which calls the procedure will increment
             the semaphores value.
 *)

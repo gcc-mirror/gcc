@@ -2025,7 +2025,7 @@ PROCEDURE PutIncludedByDefinition (Sym: CARDINAL) ;
 
 (*
    IsIncludedByDefinition - returns TRUE if definition module symbol, Sym, was included
-                            by ModSym's definition module.
+                            by ModSyms definition module.
 *)
 
 PROCEDURE IsIncludedByDefinition (ModSym, Sym: CARDINAL) : BOOLEAN ;
