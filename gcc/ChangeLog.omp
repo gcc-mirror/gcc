@@ -1,5 +1,18 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* gimplify.cc (add_new_omp_iterators_clause): New.
+	(build_omp_struct_comp_nodes): Add extra argument for loops sequence.
+	Call add_new_omp_iterators_clause on newly generated clauses.
+	(omp_accumulate_sibling_list): Add extra argument for loops sequence.
+	Pass to calls to build_omp_struct_comp_nodes.  Add iterators to newly
+	generator clauses for struct accesses.
+	(omp_build_struct_sibling_lists): Add extra argument for loops
+	sequence. Pass to call to omp_accumulate_sibling_list.
+	(gimplify_adjust_omp_clauses): Pass loops sequence to
+	omp_build_struct_sibling_lists.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* gimplify.cc (gimplify_omp_affinity): Use macros for accessing
 	iterator elements.
 	(compute_omp_iterator_count): Likewise.
