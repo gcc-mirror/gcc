@@ -10262,6 +10262,60 @@ exit_omp_iterator_loop_context (tree c)
   pop_gimplify_context (NULL);
 }
 
+/* Insert new OpenMP clause C into pre-existing iterator loop LOOPS_SEQ_P.
+   If the clause has an iterator, then that iterator is assumed to be in
+   the expanded form (i.e. it has info regarding the loop, expanded elements
+   etc.).  */
+
+void
+add_new_omp_iterators_clause (tree c, gimple_seq *loops_seq_p)
+{
+  gimple_stmt_iterator gsi;
+  tree iters = OMP_CLAUSE_ITERATORS (c);
+  if (!iters)
+    return;
+  gcc_assert (OMP_ITERATORS_EXPANDED_P (iters));
+
+  /* Search for <index> = -1.  */
+  tree index = OMP_ITERATORS_INDEX (iters);
+  for (gsi = gsi_start (*loops_seq_p); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (gimple_code (stmt) == GIMPLE_ASSIGN
+	  && gimple_assign_lhs (stmt) == index
+	  && gimple_assign_rhs1 (stmt) == size_int (-1))
+	break;
+    }
+  gcc_assert (!gsi_end_p (gsi));
+
+  /* Create array for this clause.  */
+  tree arr_length = omp_iterator_elems_length (OMP_ITERATORS_COUNT (iters));
+  tree elems_type = TREE_CONSTANT (arr_length)
+			? build_array_type (ptr_type_node,
+					    build_index_type (arr_length))
+			: build_pointer_type (ptr_type_node);
+  tree elems = create_tmp_var_raw (elems_type, "omp_iter_data");
+  TREE_ADDRESSABLE (elems) = 1;
+  gimple_add_tmp_var (elems);
+
+  /* BEFORE LOOP:  */
+  /* elems[0] = count;  */
+  tree lhs = TREE_CODE (TREE_TYPE (elems)) == ARRAY_TYPE
+	? build4 (ARRAY_REF, ptr_type_node, elems, size_int (0), NULL_TREE,
+		  NULL_TREE)
+	: build1 (INDIRECT_REF, ptr_type_node, elems);
+
+  gimple_seq assign_seq = NULL;
+  gimplify_assign (lhs, OMP_ITERATORS_COUNT (iters), &assign_seq);
+  gsi_insert_seq_after (&gsi, assign_seq, GSI_SAME_STMT);
+
+  /* Update iterator information.  */
+  tree new_iterator = copy_omp_iterator (OMP_CLAUSE_ITERATORS (c));
+  OMP_ITERATORS_ELEMS (new_iterator) = elems;
+  TREE_CHAIN (new_iterator) = TREE_CHAIN (OMP_CLAUSE_ITERATORS (c));
+  OMP_CLAUSE_ITERATORS (c) = new_iterator;
+}
+
 /* If *LIST_P contains any OpenMP depend clauses with iterators,
    lower all the depend clauses by populating corresponding depend
    array.  Returns 0 if there are no such depend clauses, or
@@ -10680,7 +10734,7 @@ omp_maybe_get_descriptor_from_ptr (tree ptr)
 
 static tree
 build_omp_struct_comp_nodes (enum tree_code code, tree grp_start, tree grp_end,
-			     tree *extra_node)
+			     tree *extra_node, gimple_seq *loops_seq_p)
 {
   tree descr = omp_maybe_get_descriptor_from_ptr (OMP_CLAUSE_DECL (grp_end));
   enum gomp_map_kind mkind
@@ -10691,6 +10745,8 @@ build_omp_struct_comp_nodes (enum tree_code code, tree grp_start, tree grp_end,
 
   tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (grp_end), OMP_CLAUSE_MAP);
   OMP_CLAUSE_SET_MAP_KIND (c2, mkind);
+  OMP_CLAUSE_ITERATORS (c2) = OMP_CLAUSE_ITERATORS (grp_end);
+  add_new_omp_iterators_clause (c2, loops_seq_p);
   if (descr)
     {
       OMP_CLAUSE_DECL (c2) = unshare_expr (descr);
@@ -10716,6 +10772,8 @@ build_omp_struct_comp_nodes (enum tree_code code, tree grp_start, tree grp_end,
       tree c3
 	= build_omp_clause (OMP_CLAUSE_LOCATION (grp_end), OMP_CLAUSE_MAP);
       OMP_CLAUSE_SET_MAP_KIND (c3, mkind);
+      OMP_CLAUSE_ITERATORS (c3) = OMP_CLAUSE_ITERATORS (grp_end);
+      add_new_omp_iterators_clause (c3, loops_seq_p);
       OMP_CLAUSE_DECL (c3) = unshare_expr (OMP_CLAUSE_DECL (grp_mid));
       OMP_CLAUSE_SIZE (c3) = TYPE_SIZE_UNIT (ptr_type_node);
       OMP_CLAUSE_CHAIN (c3) = NULL_TREE;
@@ -12546,7 +12604,8 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 			     tree *grp_start_p, tree grp_end,
 			     vec<omp_addr_token *> &addr_tokens, tree **inner,
 			     bool *fragile_p, bool reprocessing_struct,
-			     tree **added_tail)
+			     tree **added_tail,
+			     gimple_seq *loops_seq_p)
 {
   using namespace omp_addr_tokenizer;
   poly_offset_int coffset;
@@ -12669,7 +12728,7 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 	  tree extra_node;
 	  tree alloc_node
 	    = build_omp_struct_comp_nodes (code, *grp_start_p, grp_end,
-					   &extra_node);
+					   &extra_node, loops_seq_p);
 	  tree *tail;
 	  OMP_CLAUSE_CHAIN (l) = alloc_node;
 
@@ -12852,6 +12911,8 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 	  OMP_CLAUSE_SIZE (c2)
 	    = fold_build2_loc (OMP_CLAUSE_LOCATION (grp_end), MINUS_EXPR,
 			       ptrdiff_type_node, baddr, decladdr);
+	  OMP_CLAUSE_ITERATORS (c2) = iterators;
+	  add_new_omp_iterators_clause (c2, loops_seq_p);
 	  /* Insert after struct node.  */
 	  OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (l);
 	  OMP_CLAUSE_CHAIN (l) = c2;
@@ -12997,7 +13058,8 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 	    gcc_unreachable ();
 	  else if (attach_detach)
 	    alloc_node = build_omp_struct_comp_nodes (code, *grp_start_p,
-						      grp_end, &extra_node);
+						      grp_end, &extra_node,
+						      loops_seq_p);
 	  else
 	    {
 	      /* If we don't have an attach/detach node, this is a
@@ -13042,7 +13104,8 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 	{
 	  tree cl = NULL_TREE, extra_node;
 	  tree alloc_node = build_omp_struct_comp_nodes (code, *grp_start_p,
-							 grp_end, &extra_node);
+							 grp_end, &extra_node,
+							 loops_seq_p);
 	  tree *tail_chain = NULL;
 
 	  if (*fragile_p
@@ -13140,7 +13203,8 @@ omp_build_struct_sibling_lists (enum tree_code code,
 				vec<omp_mapping_group> *groups,
 				hash_map<tree_operand_hash_no_se,
 					 omp_mapping_group *> **grpmap,
-				tree *list_p)
+				tree *list_p,
+				gimple_seq *loops_seq_p = NULL)
 {
   using namespace omp_addr_tokenizer;
   unsigned i;
@@ -13284,7 +13348,8 @@ omp_build_struct_sibling_lists (enum tree_code code,
 					   struct_map_to_clause, *grpmap,
 					   grp_start_p, grp_end, addr_tokens,
 					   &inner, &fragile_p,
-					   grp->reprocess_struct, &added_tail);
+					   grp->reprocess_struct, &added_tail,
+					   loops_seq_p);
 
 	  if (inner)
 	    {
@@ -16026,7 +16091,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 
 	  omp_resolve_clause_dependencies (code, groups, grpmap);
 	  omp_build_struct_sibling_lists (code, ctx->region_type, groups,
-					  &grpmap, list_p);
+					  &grpmap, list_p, loops_seq_p);
 
 	  omp_mapping_group *outlist = NULL;
 
