@@ -3,13 +3,13 @@
 
 struct Base
 {
-  virtual int f1() pre(true); // { dg-error "Contracts can not be added to virtual functions" }
+  virtual int f1() pre(true); // { dg-error "Contracts cannot be added to virtual functions" }
   virtual int f2();
 
 };
 struct Child : Base
 {
-  int f2() pre(true); // { dg-error "Contracts can not be added to virtual functions" }
+  int f2() pre(true); // { dg-error "Contracts cannot be added to virtual functions" }
 
 };
 
