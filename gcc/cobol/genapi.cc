@@ -75,7 +75,7 @@ static int pseudo_label = 1;
 static bool suppress_cobol_entry_point = false;
 static char ach_cobol_entry_point[256] = "";
 
-bool bSHOW_PARSE = getenv("SHOW_PARSE");
+bool bSHOW_PARSE = getenv("GCOBOL_SHOW");
 bool show_parse_sol = true;
 int  show_parse_indent = 0;
 
@@ -198,7 +198,7 @@ trace1_init()
     trace_handle = gg_define_variable(INT, "trace_handle", vs_static);
     trace_indent = gg_define_variable(INT, "trace_indent", vs_static);
 
-    bTRACE1 = getenv("TRACE1") ? getenv("TRACE1") : gv_trace_switch;
+    bTRACE1 = getenv("GCOBOL_TRACE") ? getenv("GCOBOL_TRACE") : gv_trace_switch;
 
     if( bTRACE1 && strcmp(bTRACE1, "0") != 0 )
       {
@@ -6631,22 +6631,6 @@ parser_division(cbl_division_t division,
             parameter = TREE_CHAIN(parameter);
             }
           gg_assign(base, gg_cast(UCHAR_P, parameter));
-
-          IF( gg_call_expr( CHAR_P,
-                            "getenv",
-                            gg_string_literal("PARAMETERS_ON_ENTRY"),
-                            NULL_TREE),
-              ne_op,
-              gg_cast(CHAR_P, null_pointer_node));
-            {
-            gg_printf("parameter_on_entry: %s(): %d %p\n",
-                      gg_string_literal(current_function->our_unmangled_name),
-                      build_int_cst_type(INT, i+1),
-                      base,
-                      NULL_TREE);
-            }
-          ELSE
-            ENDIF
 
           if( args[i].refer.field->attr & any_length_e )
             {
@@ -15870,38 +15854,6 @@ psa_global(cbl_field_t *new_var)
   char ach[2*sizeof(cbl_name_t)];
   sprintf(ach, "__gg__%s", mname);
   free(mname);
-
-  if( getenv("SHOW_GLOBAL_VARIABLES") )
-    {
-    char ach_type[32];
-    strcpy(ach_type, cbl_field_type_str(new_var->type));
-
-    fprintf(stderr, "struct cblc_field_t %s = {\n", ach);
-    fprintf(stderr, "  .data           = NULL ,\n"  );
-    fprintf(stderr, "  .capacity       = %d ,\n", new_var->data.capacity  );
-    fprintf(stderr, "  .offset         = %ld ,\n" , new_var->offset );
-    fprintf(stderr, "  .name           = \"%s\" ,\n" , new_var->name );
-    fprintf(stderr, "  .picture        = \"%s\" ,\n" , new_var->data.picture ? new_var->data.picture : "" );
-    if( new_var->data.initial || new_var->type == FldPointer )
-      {
-      fprintf(stderr, "  .initial        = \"%s\" ,\n" , new_var->data.picture ? new_var->data.picture : "" );
-      }
-    else
-      {
-      fprintf(stderr, "  .initial        = NULL ,\n" );
-      }
-    fprintf(stderr, "  .parent         = NULL,\n" );
-    fprintf(stderr, "  .depending_on   = NULL ,\n" );
-    fprintf(stderr, "  .depends_on     = NULL ,\n" );
-    fprintf(stderr, "  .occurs_lower   = 0 ,\n" );
-    fprintf(stderr, "  .occurs_upper   = 0 ,\n" );
-    fprintf(stderr, "  .attr           = 0x%lx ,\n" , new_var->attr );
-    fprintf(stderr, "  .type           = %s ,\n" , ach_type);
-    fprintf(stderr, "  .level          = %d ,\n" , new_var->level );
-    fprintf(stderr, "  .digits         = %d ,\n" , new_var->data.digits );
-    fprintf(stderr, "  .rdigits        = %d ,\n" , new_var->data.rdigits );
-    fprintf(stderr, "  };\n");
-    }
 
   if( strcmp(new_var->name, "_VERY_TRUE") == 0 )
     {

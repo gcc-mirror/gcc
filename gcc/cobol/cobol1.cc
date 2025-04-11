@@ -294,7 +294,7 @@ cobol_langhook_init_options_struct (struct gcc_options *opts) {
 
   cobol_set_debugging( false, false, false );
 
-  copybook_directory_add( getenv("GCOB_COPYBOOK") );
+  copybook_directory_add( getenv("GCOBOL_COPYBOOK") );
 }
 
 static unsigned int

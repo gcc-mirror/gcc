@@ -231,12 +231,16 @@ local_ec_type_descr( ec_type_t type ) {
   return p;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+// Keep this debugging function around for when it is needed
 static const char *
 local_ec_type_str( ec_type_t type ) {
   if( type == ec_none_e ) return "EC-NONE";
   auto p = local_ec_type_descr(type);
   return p->name;
 }
+#pragma GCC diagnostic pop
 
 ec_status_t& ec_status_t::update() {
   handled =   ec_type_t(__gg__exception_handled);
@@ -246,13 +250,6 @@ ec_status_t& ec_status_t::update() {
   lineno = __gg__exception_line_number;
   if( __gg__exception_statement ) {
     snprintf(statement, sizeof(statement), "%s", __gg__exception_statement);
-  }
-
-  if( type != ec_none_e && getenv("match_declarative") ) {
-    warnx( "ec_status_t::update:%d: EC %s by %s handled %02X " , __LINE__,
-           local_ec_type_str(type),
-           __gg__exception_statement? statement : "<none>",
-           handled ); // might be file-status, not ec_type_t
   }
 
   return *this;
@@ -2221,7 +2218,7 @@ extern "C"
 void
 __gg__clock_gettime(clockid_t clk_id, struct timespec *tp)
   {
-  const char *p = getenv("COB_CURRENT_DATE");
+  const char *p = getenv("GCOBOL_CURRENT_DATE");
 
   if( p )
     {
@@ -11011,13 +11008,6 @@ class match_file_declarative {
 
   bool operator()( const cbl_declarative_t& dcl ) {
 
-    if( getenv("match_declarative") && oops.type) {
-      warnx("match_file_declarative: checking:    oops %s dcl %s (handled %s) ",
-            local_ec_type_str(oops.type),
-            local_ec_type_str(dcl.type),
-            local_ec_type_str(handled_type));
-    }
-
     // Declarative is for the raised exception and not handled by the statement.
     if( handled() ) return false;
     bool matches = enabled_ECs.match(dcl.type);
@@ -11029,13 +11019,6 @@ class match_file_declarative {
       } else {
         matches = oops.mode == dcl.mode;
       }
-    }
-
-    if( matches && getenv("match_declarative") ) {
-      warnx("                   matches exception      %s (file %zu mode %s)",
-            local_ec_type_str(oops.type),
-            oops.file,
-            cbl_file_mode_str(oops.mode));
     }
 
     return matches;
@@ -11237,25 +11220,12 @@ __gg__match_exception( cblc_field_t *index,
       p = std::find_if( dcls + 1, eodcls, [ec] (const cbl_declarative_t& dcl) {
                           if( ! enabled_ECs.match(dcl.type) ) return false;
                           if( ! ec_cmp(ec, dcl.type) ) return false;
-
-                          if( getenv("match_declarative") ) {
-                            warnx("__gg__match_exception:%d: matched "
-                                  "%s against mask %s for section #%zu",
-                                  __LINE__,
-                                  local_ec_type_str(ec), local_ec_type_str(dcl.type),
-                                  dcl.section);
-                          }
                           return true;
                         } );
       if( p == eodcls ) {
         default_exception_handler(ec);
       }
     } else { // not enabled
-      if( getenv("match_declarative") ) {
-        warnx("__gg__match_exception:%d: raised exception "
-              "%s is disabled (%zu enabled)", __LINE__,
-              local_ec_type_str(ec), enabled_ECs.nec);
-      }
     }
   }
 
@@ -11487,10 +11457,6 @@ extern "C"
 void
 __gg__set_exception_file(cblc_file_t *file)
   {
-  if( getenv("match_declarative") )
-    {
-    warnx("%s: %s", __func__, file->name);
-    }
   recent_file = file;
   ec_type_t ec = local_ec_type_of( file->io_status );
   if( ec )
@@ -11547,10 +11513,6 @@ extern "C"
 void
 __gg__set_exception_code(ec_type_t ec, int from_raise_statement)
   {
-  if( getenv("match_declarative") )
-    {
-    warnx("%s: raised %02x", __func__, ec);
-    }
   sv_from_raise_statement = from_raise_statement;
 
   __gg__exception_code = ec;
@@ -11998,7 +11960,7 @@ __gg__function_handle_from_cobpath( char *unmangled_name, char *mangled_name)
     }
   if( !retval )
     {
-    const char *COBPATH = getenv("COBPATH");
+    const char *COBPATH = getenv("GCOBOL_LIBRARY_PATH");
     retval = find_in_dirs(COBPATH, unmangled_name, mangled_name);
     }
   if( !retval )

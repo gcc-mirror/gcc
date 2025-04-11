@@ -312,11 +312,11 @@ file_status_t current_file_handled_status();
 
 void
 declarative_runtime_match( cbl_field_t *declaratives, cbl_label_t *lave ) {
-  if( getenv("SHOW_PARSE") )
+  if( getenv("GCOBOL_SHOW") )
     {
     fprintf(stderr, "( %d ) %s: \n", cobol_location().first_line, __func__);
     }
-  if( getenv("TRACE1") )
+  if( getenv("GCOBOL_TRACE") )
     {
     gg_printf(">>>>>>( %d )(%s) declaratives:%s lave:%s\n",
               build_int_cst_type(INT, cobol_location().first_line),

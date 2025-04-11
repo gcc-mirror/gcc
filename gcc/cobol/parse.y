@@ -3306,13 +3306,6 @@ level_name:     LEVEL ctx_name
 data_descr:     data_descr1
                 {
                   $$ = current_field($1); // make available for occurs, etc.
-                  char *env = getenv("symbols_update");
-                  if( env && env[0] == 'P' ) {
-                    dbgmsg("parse.y:%d: %-15s %s (%s)", __LINE__,
-                          cbl_field_type_str($$->type) + 3,
-                          field_str($$),
-                          cbl_field_type_str($$->usage) + 3);
-                  }
                 }
         |       error { static cbl_field_t none = {}; $$ = &none; }
                 ;
@@ -11078,23 +11071,6 @@ void ast_call( const YYLTYPE& loc, cbl_refer_t name, cbl_refer_t returning,
     parser_symbol_add(name.field);
   }
 
-  if( getenv("ast_call") ) {
-    dbgmsg("%s: calling %s returning %s with %zu args:", __func__,
-	   name_of(name.field),
-	   (returning.field)? returning.field->name : "[none]",
-	   narg);
-    for( size_t i=0; i < narg; i++ ) {
-      const char *crv = "?";
-      switch(args[i].crv) {
-      case by_default_e: crv = "def"; break;
-      case by_reference_e: crv = "ref"; break;
-      case by_content_e: crv = "con"; break;
-      case by_value_e: crv = "val"; break;
-      }
-      dbgmsg("%s: %4zu: %s @%p %s", __func__,
-	     i, crv, args[i].refer.field, args[i].refer.field->name);
-    }
-  }
   parser_call( name, returning, narg, args, except, not_except, is_function );
 }
 
@@ -11403,11 +11379,6 @@ label_add( const YYLTYPE& loc,
 
   assert( !(p->type == LblSection && p->parent > 0) );
 
-  if( getenv(__func__) ) {
-    yywarn("%s: added label %3zu %10s for '%s' of %zu", __func__,
-          symbol_elem_of(p) - symbols_begin(), p->type_str()+3, p->name, p->parent);
-  }
-
   return p;
 }
 
@@ -11468,19 +11439,11 @@ paragraph_reference( const char name[], size_t section )
   strcpy(label.name, name);
   if( label.type == LblNone ) assert(label.parent == 0);
 
-  const symbol_elem_t *last = symbols_end();
-
   p = symbol_label_add(PROGRAM, &label);
   assert(p);
 
   const char *sect_name = section? cbl_label_of(symbol_at(section))->name : NULL;
   procedure_reference_add(sect_name, p->name, yylineno, current.program_section());
-
-  if( getenv(__func__) ) {
-    yywarn("%s: %s label %3zu %10s for '%s' of %zu", __func__,
-          symbols_end() == last? "added" : "found",
-          symbol_index(symbol_elem_of(p)), p->type_str()+3, p->name, p->parent);
-  }
 
   return p;
 }
@@ -11675,10 +11638,6 @@ ast_add( arith_t *arith ) {
   pC = use_any(arith->tgts, C);
   pA = use_any(arith->A, A);
 
-  if( getenv(__func__) ) {
-    dbgmsg("%s:%d: %-12s C{%zu %p} A{%zu %p}", __func__, __LINE__,
-          arith->format_str(), nC, pC, nA, pA );
-  }
   parser_add( nC, pC, nA, pA, arith->format, arith->on_error, arith->not_error );
 
   ec_type_t handled = arith->on_error || arith->not_error ? ec_size_e : ec_none_e;
@@ -11780,9 +11739,6 @@ stringify( refer_collection_t *inputs,
   }
   assert( inputs->lists.back().marker );
   std::copy( inputs->lists.begin(), inputs->lists.end(), sources.begin() );
-  if( yydebug && getenv(__func__) ) {
-    std::for_each(sources.begin(), sources.end(), stringify_src_t::dump);
-  }
   parser_string( into, pointer, sources.size(), sources.data(), on_error, not_error );
 }
 
@@ -12227,9 +12183,6 @@ initialize_one( cbl_num_result_t target, bool with_filler,
     } else {
       parser_move(tgt, src, current_rounded_mode());
     }
-    if( getenv(__func__) ) {
-      yywarn("%s:%-5s: %s", __func__, keyword_str(token), field_str(tgt.field));
-    }
     return true;
   }
 
@@ -12246,10 +12199,6 @@ initialize_one( cbl_num_result_t target, bool with_filler,
         parser_initialize(tgt);
       }
     }
-
-    if( getenv(__func__) ) {
-      yywarn("%s: value: %s", __func__, field_str(tgt.field));
-    }
   }
 
   // apply REPLACING, possibly overwriting VALUE
@@ -12262,74 +12211,14 @@ initialize_one( cbl_num_result_t target, bool with_filler,
   if( r != replacements.end() ) {
     parser_move( tgt, *r->second );
 
-    if( getenv(__func__) ) {
-      cbl_field_t *from = r->second->field;
-      char from_str[128]; // copy static buffer from field_str
-      strcpy( from_str, field_str(from) );
-      yywarn("%s:  move: %-18s %s \n\t      from %-18s %s", __func__,
-            cbl_field_type_str(tgt.field->type) + 3, field_str(tgt.field),
-            cbl_field_type_str(from->type) + 3, from_str);
-    }
     return true;
   }
 
   return true;
-
 }
 
 typedef std::pair<cbl_field_t*,cbl_field_t*> field_span_t;
 typedef std::pair<size_t, size_t>  cbl_bytespan_t;
-
-static void
-dump_spans( size_t isym,
-	    const cbl_field_t *table,
-	    const std::list<field_span_t>& spans,
-	    size_t nrange,
-	    const cbl_bytespan_t ranges[],
-	    size_t depth,
-	    const std::list<cbl_subtable_t>& subtables )
-{
-  int i=0;
-  assert( nrange == 0 || nrange == spans.size() );
-
-  if( isym != field_index(table) ) {
-    dbgmsg("%s:%d: isym %zu is not #%zu %02u %s", __func__, __LINE__,
-	  isym, field_index(table), table->level, table->name);
-  }
-  dbgmsg( "%s: [%zu] #%zu %s has %zu spans and %zu subtables",
-	 __func__, depth, isym, table->name, nrange, subtables.size() );
-  for( auto span : spans ) {
-    unsigned int last_level = 0;
-    const char *last_name = "<none>";
-    if( span.second ) {
-      last_level = span.second->level;
-      last_name = span.second->name;
-    }
-
-    char at_subtable[64] = {};
-    size_t offset = nrange? ranges[i].first : 0;
-    auto p = std::find_if(subtables.begin(), subtables.end(),
-			  [offset]( const cbl_subtable_t& tbl ) {
-			    return tbl.offset == offset;
-			  });
-    if( p != subtables.end() ) {
-      sprintf(at_subtable, "(subtable #%zu)", p->isym);
-    }
-    dbgmsg("\t    %02u %-20s to %02u %-20s: %3zu-%zu %s",
-	  span.first->level, span.first->name,
-	  last_level, last_name,
-	  nrange? ranges[i].first : 1,
-	  nrange? ranges[i].second : 0,
-	  at_subtable);
-    i++;
-  }
-  if( ! subtables.empty() ) {
-    dbgmsg("\ttable #%zu has %zu subtables", isym, subtables.size());
-    for( auto tbl : subtables ) {
-      dbgmsg("\t    #%zu @ %4zu", tbl.isym, tbl.offset);
-    }
-  }
-}
 
 /*
  * After the 1st record is initialized, copy it to the others.
@@ -12339,9 +12228,6 @@ initialize_table( cbl_num_result_t target,
 		  size_t nspan, const cbl_bytespan_t spans[],
 		  const std::list<cbl_subtable_t>& subtables )
 {
-  if( getenv("initialize_statement") ) {
-    dbgmsg("%s:%d: %s ", __func__, __LINE__, target.refer.str());
-  }
   assert( target.refer.nsubscript == dimensions(target.refer.field) );
   const cbl_refer_t& src( target.refer );
   size_t n( src.field->occurs.ntimes());
@@ -12391,12 +12277,6 @@ initialize_statement( const cbl_num_result_t& target, bool with_filler,
                       const category_map_t& replacements,
                       size_t depth = 0 )
 {
-  if( getenv(__func__) ) {
-    dbgmsg("%s:%d: %2zu: %s (%s%zuR)",
-	  __func__, __LINE__, depth, target.refer.str(),
-	  with_filler? "F" : "",
-	  replacements.size());
-  }
   const cbl_refer_t& tgt( target.refer );
   assert(dimensions(tgt.field) == tgt.nsubscript || 0 < depth);
   assert(!is_literal(tgt.field));
@@ -12480,10 +12360,6 @@ initialize_statement( const cbl_num_result_t& target, bool with_filler,
 			    return std::make_pair(first, second);
 			  } );
 	}
-	if( getenv("initialize_statement") ) {
-	  dump_spans( field_index(output.refer.field), output.refer.field,
-		      field_spans, ranges.size(), ranges.data(), depth, subtables );
-	}
 	return initialize_table( output, nrange, ranges.data(), subtables );
       }
     }
@@ -12550,18 +12426,6 @@ static void
 initialize_statement( std::list<cbl_num_result_t>& tgts, bool with_filler,
                      data_category_t value_category,
                      const category_map_t& replacements) {
-  if( yydebug && getenv(__func__) ) {
-    yywarn( "%s: %zu targets, %s filler",
-           __func__, tgts.size(), with_filler? "with" : "no");
-    for( auto tgt : tgts ) {
-      fprintf( stderr, "%28s: %s\n", __func__, name_of(tgt.refer.field) );
-    }
-    for( const auto& elem : replacements ) {
-      fprintf( stderr, "%28s: %s <-%s\n", __func__,
-               data_category_str(elem.first),
-               name_of(elem.second->field) );
-    }
-  }
 
   bool is_refmod = std::any_of( tgts.begin(), tgts.end(),
 				[]( const auto& tgt ) {

@@ -380,7 +380,9 @@ struct buffer_t : public bytespan_t {
     dbgmsg("flex input buffer: '%.*s'\n[xelf]", int(pos - data), data);
   }
   void dump() const {
+#ifdef GETENV_OK
     if( getenv("lexer_input") ) show();
+#endif
   }
 };
 
@@ -457,11 +459,11 @@ update_yylloc( const csub_match& stmt, const csub_match& term ) {
   class dump_loc_on_exit {
    public:
     dump_loc_on_exit() {
-      if( getenv( "update_yylloc" ) )
+      if( gcobol_getenv( "update_yylloc" ) )
         location_dump( "update_yylloc", __LINE__, "begin", yylloc);
     }
     ~dump_loc_on_exit() {
-      if( getenv( "update_yylloc" ) )
+      if( gcobol_getenv( "update_yylloc" ) )
         location_dump( "update_yylloc", __LINE__, "end  ", yylloc);
     }
   } dloe;

@@ -369,12 +369,6 @@ special_pair_cmp( const cbl_special_name_t& key,
                   const cbl_special_name_t& elem ) {
   const bool matched = key.id == elem.id || 0 == strcasecmp(key.name, elem.name);
 
-  if( getenv(__func__) ) {
-    dbgmsg("%s:%d: key:  id=%2d, %s", __func__, __LINE__, key.id, key.name);
-    dbgmsg("%s:%d: elem: id=%2d, %s => %s", __func__, __LINE__,
-          elem.id, elem.name, matched? "match" : "no match");
-  }
-
   return matched;
 }
 
@@ -893,13 +887,6 @@ update_block_offsets( struct symbol_elem_t *block)
   uint32_t offset = cbl_field_of(block)->offset;
   const uint32_t block_level = cbl_field_of(block)->level;
 
-  if( getenv(__func__) ) {
-    cbl_field_t *field = cbl_field_of(block);
-    dbgmsg( "%s: offset is %3zu for %2u %-30s #%3zu P%zu",
-           __func__, field->offset, field->level, field->name,
-           symbol_index(block), field->parent );
-  }
-
   struct symbol_elem_t *e = block;
   for( ++e; e < symbols_end(); e++ ) {
     if( e->type != SymField ) {
@@ -927,12 +914,6 @@ update_block_offsets( struct symbol_elem_t *block)
     } else {
        field->offset = offset;
        offset += field_memsize(field);
-    }
-
-    if( getenv(__func__) ) {
-      dbgmsg( "%s: offset is %3zu for %2u %-30s #%3zu P%zu",
-             __func__, field->offset, field->level, field->name,
-             symbol_index(e), field->parent );
     }
 
     if( field->type == FldGroup ) {
@@ -1051,7 +1032,6 @@ symbol_find_odo_debug( cbl_field_t * field ) {
 // Return OCCURS DEPENDING ON table subordinate to field, if any.
 struct cbl_field_t *
 symbol_find_odo( cbl_field_t * field ) {
-  if( getenv(__func__) ) return symbol_find_odo_debug(field);
   size_t bog = field_index(field), eog = end_of_group(bog);
   auto e = std::find_if( symbol_at(bog), symbol_at_impl(eog, true), has_odo );
   return e == symbol_at_impl(eog, true)? NULL : cbl_field_of(e);
@@ -1288,10 +1268,6 @@ static struct symbol_elem_t *
 
   // Print accumulating details for one group to debug log.
   bool details = false;
-  if( yydebug ) {
-    const auto details_for = getenv("symbols_update");
-    details = details_for && 0 == strcasecmp(details_for, group->name);
-  }
 
   // At end of group, members is a list of all immediate children, any
   // of which might have been redefined and so acquired a memsize.
@@ -1362,23 +1338,6 @@ verify_block( const struct symbol_elem_t *block,
   for( const struct symbol_elem_t *e=block; e < eoblock; e++ ) {
     if( e->type != SymField ) {
       continue;
-    }
-    const struct cbl_field_t *field = cbl_field_of(e);
-
-    if( getenv(__func__) ) {
-      if( e == block ) {
-        static const char ds[] = "--------------------------------";
-        dbgmsg( "%17s %-3s %-3s %-18s %-3s %3s %-16s  C/D/R = init\n"
-               "%.25s %-.3s %-.3s %-.18s %-.3s %.3s %-.16s %-.7s  %-.16s",
-               "", "ndx", "off", "type", "par", "lvl", "name",
-               ds, ds, ds, ds, ds, ds, ds, ds, ds );
-      }
-      dbgmsg( "%s:%d: %3zu %3zu %-18s %3zu  %02d %-16s %2u/%u/%d = '%s'",
-             __func__, __LINE__, e - symbols.elems, field->offset,
-             cbl_field_type_str(field->type),
-             field->parent, field->level, field->name,
-             field->data.capacity, field->data.digits, field->data.rdigits,
-             field->data.initial? field->data.initial : "(none)" );
     }
   }
 }
@@ -1694,6 +1653,9 @@ operator<<( std::ostream& os, const cbl_occurs_bounds_t& bound ) {
   return os << bound.lower << ',' << bound.upper;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
+// Keep this debugging function around for when it is needed
 static std::ostream&
 operator<<( std::ostream& os, const cbl_field_data_t& field ) {
   return os << field.memsize << ','
@@ -1717,16 +1679,7 @@ operator<<( std::ostream& os, const cbl_field_t& field ) {
             << ',' << field.line
             << ',' << field.data;
 }
-
-static void
-write_field_csv( size_t isym, const cbl_field_t *field ) {
-  static std::ofstream os( getenv("GCOBOL_DATA") );
-  assert(os.is_open());
-
-  if( symbols.first_program < isym) {
-    os << isym << "," << *field << std::endl;
-  }
-}
+#pragma GCC diagnostic pop
 
 static std::map<size_t, std::set<size_t>> same_record_areas;
 size_t parse_error_count();
@@ -1746,11 +1699,6 @@ size_t
 symbols_update( size_t first, bool parsed_ok ) {
   struct symbol_elem_t *p, *pend;
   std::list<cbl_field_t*> shared_record_areas;
-
-  if( getenv(__func__) ) {
-    fprintf(stderr, "Initial");
-    symbols_dump(std::max(first, symbols.first_program), true);
-  }
 
   for( p = symbols_begin(first); p < symbols_end(); p++ ) {
 
@@ -1794,10 +1742,6 @@ symbols_update( size_t first, bool parsed_ok ) {
       }
       break;
       // no special processing for other levels
-    }
-
-    if( getenv("GCOBOL_DATA") ) {
-      write_field_csv( p - symbols_begin(), field );
     }
 
     // Update ODO field in situ.
@@ -1867,11 +1811,6 @@ symbols_update( size_t first, bool parsed_ok ) {
     }
     assert(field->data.memsize == 0 || field_size(field) <= field_memsize(field));
     assert( !(field->data.memsize > 0 && symbol_explicitly_redefines(field)) );
-  }
-
-  if( getenv(__func__) ) {
-    fprintf(stderr, "Pre");
-    symbols_dump(std::max(first, symbols.first_program), true);
   }
 
   // A shared record area has no 01 child because that child redefines its parent.
@@ -2391,8 +2330,6 @@ symbol_table_init(void) {
   symbols.registers.return_code = symbol_index(symbol_field(0,0, "RETURN-CODE"));
   symbols.registers.very_true   = symbol_index(symbol_field(0,0, "_VERY_TRUE"));
   symbols.registers.very_false  = symbol_index(symbol_field(0,0, "_VERY_FALSE"));
-
-  if( getenv(__func__) ) symbols_dump(0, true);
 }
 
 /*
@@ -2587,26 +2524,6 @@ symbol_field_add( size_t program, struct cbl_field_t *field )
       field->data = 0.0;
       field->data.initial = NULL;
     }
-  }
-
-  char *s;
-  if( (s = getenv(__func__)) != NULL ) {
-    if( s[0] == 'D' ) {
-      for( struct symbol_elem_t *e = symbols_begin(); e < symbols_end(); e++ ) {
-        fprintf(stderr, "%zu: %s ", e - symbols.elems, symbol_type_str(e->type));
-        if( e->type == SymField ) {
-          fprintf(stderr, "%s = %s",
-                  cbl_field_of(e)->name, cbl_field_of(e)->data.initial);
-        }
-        fprintf(stderr, "\n");
-      }
-    }
-
-    dbgmsg( "%s:%d: %3zu %-18s %02d %-16s %u/%u/%d = '%s'", __func__, __LINE__,
-           field->offset,
-           cbl_field_type_str(field->type), field->level, field->name,
-           field->data.capacity, field->data.digits, field->data.rdigits,
-           field->data.initial? field->data.initial : "(none)" );
   }
 
   if( is_forward(field) ) {
@@ -3120,12 +3037,6 @@ symbol_file_record_sizes( struct cbl_file_t *file ) {
   output.min = cbl_field_of(&*p.first)->data.capacity;
   output.max = cbl_field_of(&*p.second)->data.capacity;
 
-  if( yydebug && getenv(__func__) ) {
-    dbgmsg("%s: %s: min '%s' %zu, max '%s' %zu", __func__, file->name,
-          cbl_field_of(&*p.first)->name, output.min,
-          cbl_field_of(&*p.second)->name, output.max);
-  }
-
   assert(output.min > 0 && "min record size is 0");
   assert(output.min <= output.max);
 
@@ -3304,10 +3215,6 @@ new_temporary_impl( enum cbl_field_type_t type )
     snprintf(f->name, sizeof(f->name), "_literal%d",++nliteral);
   } else {
     snprintf(f->name, sizeof(f->name), "_stack%d",++nstack);
-
-    if( getenv("symbol_temporaries_free") ) {
-      dbgmsg("%s: %s, %s", __func__, f->name, 3 + cbl_field_type_str(f->type));
-    }
   }
 
   return f;
@@ -3400,14 +3307,6 @@ temporaries_t::dump() const {
 }
 
 temporaries_t::~temporaries_t() {
-  if( getenv( "symbol_temporaries_free" ) ) {
-    dbgmsg("%s: %zu literals", __func__, literals.size());
-    for( const auto& elem : literals ) {
-      const literal_an& key(elem.first);
-      fprintf(stderr, "%c '%s'\n", key.is_quoted? 'Q' : ' ', key.value.c_str());
-    }
-    dump();
-  }
 }
 
 cbl_field_t *
@@ -3451,7 +3350,6 @@ temporaries_t::acquire( cbl_field_type_t type ) {
 
 void
 symbol_temporaries_free() {
-  if( getenv(__func__) ) temporaries.dump();
   for( auto& elem : temporaries.used ) {
     const cbl_field_type_t& type(elem.first);
     temporaries_t::fieldset_t& used(elem.second);
@@ -3599,9 +3497,6 @@ cbl_field_t::internalize() {
     yywarn("failed iconv_open tocode = '%s' fromcode = %s", tocode, fromcode);
   }
 
-  // Sat Mar 16 11:45:08 2024: require temporary environment for testing
-  if( getenv( "INTERNALIZE_NO") ) return data.initial;
-
   bool using_assumed = fromcode == os_locale.assumed;
 
   if( fromcode == tocode || has_attr(hex_encoded_e) ) {
@@ -3649,16 +3544,6 @@ cbl_field_t::internalize() {
   if( 0 != memcmp(data.initial, output.data(), out - output.data()) ) {
     assert(out <= output.data() + data.capacity);
 
-    if( getenv(__func__) ) {
-      const char *eoi = data.initial + data.capacity, *p;
-      char nullitude[64] = "no null";
-      if( (p = std::find(data.initial, eoi, '\0')) != eoi ) {
-        sprintf(nullitude, "NUL @ %zu", p - data.initial);
-      }
-      dbgmsg("%s:%d: before: %-15s %-20s: '%.*s'{%u}, %s", __func__, __LINE__,
-            3 + cbl_field_type_str(type), name,
-            data.capacity, data.initial, data.capacity, nullitude);
-    }
     dbgmsg("%s: converted '%.*s' to %s",
                         __func__, data.capacity, data.initial, tocode);
 
@@ -3677,18 +3562,6 @@ cbl_field_t::internalize() {
 
     free(const_cast<char*>(data.initial));
     data.initial = mem;
-
-    if( getenv(__func__) ) {
-      const char *eoi = data.initial + data.capacity, *p;
-      char nullitude[64] = "no null";
-      if( (p = std::find(data.initial, eoi, '\0')) != eoi ) {
-        sprintf(nullitude, "NUL @ %zu", p - data.initial);
-      }
-      dbgmsg("%s:%d: after:  %-15s %-20s: '%.*s'{%u}, %s", __func__, __LINE__,
-            "", name,
-            data.capacity, data.initial, data.capacity, nullitude);
-    }
-
   }
 
   return data.initial;
@@ -3808,37 +3681,14 @@ common_callables_update( const size_t iprog ) {
 cbl_label_t *
 symbol_label_add( size_t program, cbl_label_t *input )
 {
-  if( getenv(__func__) ) {
-    const cbl_label_t *L = input;
-    dbgmsg( "%s:%d: %-5s #%3zu %-9s '%s' of '%s' at line %d", __func__, __LINE__,
-           "input",
-           size_t(0),
-           L->type_str()+3,
-           L->name,
-           L->parent? cbl_label_of(symbol_at(L->parent))->name : "",
-           L->line );
-  }
-
   cbl_label_t *label = symbol_label(program, input->type,
                                     input->parent, input->name);
 
   if( label && label->type == LblNone ) {
-    const char *verb = "set";
     label->type = input->type;
     label->parent = input->parent;
     label->line = input->line;
 
-    if( getenv(__func__) ) {
-      const cbl_label_t *L = label;
-      dbgmsg( "%s:%d: %-5s #%3zu %-9s '%s' of '%s' at line %d",
-             __func__, __LINE__,
-             verb,
-             symbol_elem_of(L) - symbols_begin(),
-             L->type_str()+3,
-             L->name,
-             L->parent? cbl_label_of(symbol_at(L->parent))->name : "",
-             L->line );
-    }
     return label;
   }
 
@@ -3864,15 +3714,6 @@ symbol_label_add( size_t program, cbl_label_t *input )
   // restore munged line number unless symbol_add returned an existing label
   if( e->elem.label.line < 0 ) e->elem.label.line = -e->elem.label.line;
 
-  if( getenv(__func__) ) {
-    const cbl_label_t *L = cbl_label_of(e);
-    dbgmsg( "%s:%d: added #%3zu %-9s '%s' of '%s' at line %d", __func__, __LINE__,
-           e - symbols_begin(),
-           L->type_str()+3,
-           L->name,
-           L->parent? cbl_label_of(symbol_at(L->parent))->name : "",
-           L->line );
-  }
   symbols.labelmap_add(e);
   return cbl_label_of(e);
 }
@@ -3965,11 +3806,6 @@ symbol_special_add( size_t program, struct cbl_special_name_t *special )
   struct symbol_elem_t *e = symbol_special(program, special->name);
 
   if( e ) {
-    cbl_special_name_t *s = cbl_special_name_of(e);
-    if( getenv(__func__) ) {
-      dbgmsg("%s:%d matches %s %d (%s)", __func__, __LINE__,
-            special->name, int(s->id), s->name);
-    }
     return e;
   }
   assert(e == NULL);
@@ -3978,11 +3814,6 @@ symbol_special_add( size_t program, struct cbl_special_name_t *special )
 
   if( (e = symbol_add(&elem)) == NULL ) {
     cbl_errx( "%s:%d: could not add '%s'", __func__, __LINE__, special->name);
-  }
-
-  if( getenv(__func__) ) {
-    dbgmsg( "%s:%d: added special '%s'", __func__, __LINE__,
-           e->elem.special.name);
   }
 
   elem_key_t key(program, cbl_special_name_of(e)->name);

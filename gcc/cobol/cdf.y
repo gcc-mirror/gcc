@@ -226,7 +226,7 @@ apply_cdf_turn( exception_turns_t& turns ) {
                                    turns.location,
                                    elem.first, files);
   }
-  if( getenv("SHOW_PARSE") ) enabled_exceptions.dump();
+  if( getenv("GCOBOL_SHOW") ) enabled_exceptions.dump();
   return true;
 }
 %}

@@ -42,9 +42,6 @@
 
 // SHOW_PARSE must be followed by a bracketed set of instructions, no semicolon
 
-// This construction isn't really necessary; getenv() apparently runs pretty
-// fast.  But using makes compiling a large number of programs just perceptably
-// quicker.  So, I am using it; it's cheap.
 extern bool bSHOW_PARSE;
 extern bool show_parse_sol;
 extern int  show_parse_indent;

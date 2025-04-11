@@ -1,5 +1,5 @@
        *> { dg-do run }
-       *> { dg-set-target-env-var COB_CURRENT_DATE "2020/06/12 18:45:22" }
+       *> { dg-set-target-env-var GCOBOL_CURRENT_DATE "2020/06/12 18:45:22" }
 
        IDENTIFICATION   DIVISION.
        PROGRAM-ID.      prog.

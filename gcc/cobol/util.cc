@@ -1172,12 +1172,6 @@ valid_move( const struct cbl_field_t *tgt, const struct cbl_field_t *src )
     }
   }
 
-  if( yydebug && getenv(__func__) ) {
-    dbgmsg("%s:%d: ok to move %s to %s (0x%02x)", __func__, __LINE__,
-          cbl_field_type_str(src->type), cbl_field_type_str(tgt->type),
-          retval);
-  }
-
   return retval;
 }
 
@@ -1443,15 +1437,6 @@ locally_unique( size_t program, const procdef_t& key, const procref_t& ref ) {
   const char *section_name = ref.has_section()? ref.section() : key.section();
   procref_base_t full_ref(section_name, ref.paragraph());
 
-  if( getenv(__func__) ) {
-    dbgmsg("%s: %zu for ref %s of '%s' (line %d) "
-          "in %s of '%s' (as %s of '%s')", __func__,
-          procedures.count(full_ref),
-          ref.paragraph(), ref.section(), ref.line_number(),
-          key.paragraph(), key.section(),
-          full_ref.paragraph(), full_ref.section() );
-  }
-
   return 1 == procedures.count(full_ref);
 }
 
@@ -1473,9 +1458,6 @@ procedure_definition_add( size_t program, const cbl_label_t *procedure ) {
   }
 
   procdef_t key( section_name, paragraph_name, isym );
-  if( getenv(__func__) ) {
-    dbgmsg("%s: #%3zu %s of %s", __func__, isym, paragraph_name, section_name);
-  }
   current_procedure =
     programs[program].insert( make_pair(key, procedures_t::mapped_type()) );
 }
@@ -1485,9 +1467,6 @@ void
 procedure_reference_add( const char *section, const char *paragraph,
                          int line, size_t context )
 {
-  if( getenv(__func__) ) {
-    dbgmsg("%s: line %3d %s of %s", __func__, line, paragraph, section);
-  }
   current_procedure->second.push_back( procref_t(section, paragraph,
                                                  line, context) );
 }
@@ -1518,7 +1497,7 @@ ambiguous_reference( size_t program ) {
       ambiguous = find_if_not( proc.second.begin(), proc.second.end(),
                                is_unique(program, proc.first) );
     if( proc.second.end() != ambiguous ) {
-      if( yydebug || getenv("symbol_label_add")) {
+      if( yydebug ) {
         dbgmsg("%s: %s of '%s' has %zu potential matches", __func__,
               ambiguous->paragraph(), ambiguous->section(),
               procedures.count(*ambiguous));
@@ -1842,10 +1821,6 @@ bool cobol_filename( const char *name, ino_t inode ) {
   input_filename_vestige = name;
   bool pushed = input_filenames.push( input_file_t(name, inode, 1, lines) );
   input_filenames.top().lineno = yylineno = 1;
-  if( getenv(__func__) ) {
-    dbgmsg("   saving %s with lineno as %d",
-          input_filenames.top().name, input_filenames.top().lineno);
-  }
   return pushed;
 }
 
@@ -1854,9 +1829,6 @@ cobol_lineno_save() {
   if( input_filenames.empty() ) return NULL;
   auto& input( input_filenames.top() );
   input.lineno = yylineno;
-  if( getenv(__func__) ) {
-    dbgmsg("  setting %s with lineno as %d", input.name, input.lineno);
-  }
   return input.name;
 }
 
@@ -1880,9 +1852,6 @@ cobol_filename_restore() {
   input.lines = linemap_add(line_table, LC_LEAVE, sysp, NULL, 0);
 
   yylineno = input.lineno;
-  if( getenv("cobol_filename") ) {
-    dbgmsg("restoring %s with lineno to %d", input.name, input.lineno);
-  }
   return input.name;
 }
 
@@ -2117,8 +2086,6 @@ cobol_fileline_set( const char line[] ) {
     yywarn("could not parse line number %s from #line directive", line_str);
 
   input_file_t input_file( filename, ino_t(0), fileline ); // constructor sets inode
-
-  if( getenv(__func__) ) return filename; // ignore #line directive
 
   if( input_filenames.empty() ) {
     input_file.lines = linemap_add(line_table, LC_ENTER, sysp, filename, 1);

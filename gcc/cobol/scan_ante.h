@@ -694,9 +694,6 @@ tmpstring_append( int len ) {
   const char *extant = tmpstring == NULL ? "" : tmpstring;
   char *s = xasprintf("%s%.*s", extant, len, yytext);
   free(tmpstring);
-  if( yy_flex_debug && getenv(__func__) ) {
-    yywarn("%s: value is now '%s'", __func__, s);
-  }
   return tmpstring = s;
 }
 

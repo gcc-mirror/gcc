@@ -79,7 +79,7 @@
 
         01 minus10 pic s99 value -10.
 
-        01 forced_date_n pic X(64) VALUE Z"COB_CURRENT_DATE".
+        01 forced_date_n pic X(64) VALUE Z"GCOBOL_CURRENT_DATE".
         01 forced_date_v pic X(64) VALUE Z"1945/06/01 12:34:56".
 
         procedure division.

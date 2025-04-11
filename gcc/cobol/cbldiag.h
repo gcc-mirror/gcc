@@ -33,6 +33,12 @@
 #else
 #define _CBLDIAG_H
 
+#if 0
+#define gcobol_getenv(x) getenv(x)
+#else
+#define gcobol_getenv(x) ((char *)nullptr)
+#endif
+
 const char * cobol_filename();
 
 /*
@@ -101,7 +107,7 @@ template <typename LOC>
 static void
 location_dump( const char func[], int line, const char tag[], const LOC& loc) {
   extern int yy_flex_debug;
-  if( yy_flex_debug && getenv("update_location") )
+  if( yy_flex_debug && gcobol_getenv("update_location") )
     fprintf(stderr, "%s:%d: %s location (%d,%d) to (%d,%d)\n",
             func, line, tag,
             loc.first_line, loc.first_column, loc.last_line, loc.last_column);

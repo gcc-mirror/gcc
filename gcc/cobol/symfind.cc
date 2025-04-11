@@ -200,12 +200,6 @@ field_structure( symbol_elem_t& sym ) {
   static const symbol_map_t::value_type
     none( symbol_map_t::key_type( 0, "", 0 ), std::vector<size_t>() );
 
-  if( getenv(__func__) && sym.type == SymField ) {
-    const auto& field = *cbl_field_of(&sym);
-    dbgmsg("%s: #%zu %s: '%s' is_data_field: %s", __func__,
-          symbol_index(&sym), cbl_field_type_str(field.type), field.name,
-          is_data_field(sym)? "yes" : "no" );
-  }
   if( !is_data_field(sym) ) return none;
 
   cbl_field_t *field = cbl_field_of(&sym);
@@ -231,12 +225,6 @@ field_structure( symbol_elem_t& sym ) {
     if( redefined ) {
       field = redefined;  // We will use B's parent on next iteration
     }
-  }
-
-  if( getenv(__func__) && yydebug ) {
-    dbgmsg( "%s:%d: '%s' has %zu ancestors", __func__, __LINE__,
-           elem.first.c_str(), elem.second.size() );
-    dump_symbol_map_value(__func__, elem);
   }
 
   return elem;
@@ -270,12 +258,6 @@ build_symbol_map() {
   if( yydebug ) {
     dbgmsg( "%s:%d: %zu of %zu symbols inserted into %zu in symbol_map",
            __func__, __LINE__, nsym, end, symbol_map.size() );
-
-    if( getenv(__func__) ) {
-      for( const auto& elem : symbol_map ) {
-        dump_symbol_map_value1(elem);
-      }
-    }
   }
 }
 
@@ -291,9 +273,6 @@ public:
   is_name( const char *name ) : name(name) {}
   bool operator()( symbol_map_t::value_type& elem ) {
     const bool tf = elem.first == name;
-    if( tf && getenv("is_name") ) {
-      dump_key( "matched", elem.first );
-    }
     return tf;
   }
   protected:
@@ -586,12 +565,6 @@ public:
 symbol_elem_t *
 symbol_find_of( size_t program, std::list<const char *> names, size_t group ) {
   symbol_map_t input = symbol_match(program, names);
-
-  if( getenv(__func__) && input.size() != 1 ) {
-    dbgmsg( "%s:%d: '%s' has %zu candidates for group %zu",
-           __func__, __LINE__, names.back(), input.size(), group );
-    std::for_each( input.begin(), input.end(), dump_symbol_map_value1 );
-  }
 
   symbol_map_t items;
   std::copy_if( input.begin(), input.end(),
