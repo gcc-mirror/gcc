@@ -15505,9 +15505,8 @@ default state for @code{FENV_ACCESS}.
 @opindex frounding-math
 @item -frounding-math
 Disable transformations and optimizations that assume default floating-point
-rounding behavior.  This is round-to-zero for all floating point
-to integer conversions, and round-to-nearest for all other arithmetic
-truncations.  This option should be specified for programs that change
+rounding behavior (round-to-nearest).
+This option should be specified for programs that change
 the FP rounding mode dynamically, or that may be executed with a
 non-default rounding mode.  This option disables constant folding of
 floating-point expressions at compile time (which may be affected by
