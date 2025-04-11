@@ -3266,9 +3266,19 @@ Type merge(Type type)
 
         case Tsarray:
             // prevents generating the mangle if the array dim is not yet known
-            if (!type.isTypeSArray().dim.isIntegerExp())
-                return type;
-            goto default;
+            if (auto ie = type.isTypeSArray().dim.isIntegerExp())
+            {
+                // After TypeSemantic, the length is always converted to size_t, but the parser
+                // usually generates regular integer types (e.g. in cast(const ubyte[2])) which
+                // it may try to merge, which then leads to failing implicit conversions as 2LU != 2
+                // according to Expression.equals. Only merge array types with size_t lengths for now.
+                // https://github.com/dlang/dmd/issues/21179
+                if (ie.type != Type.tsize_t)
+                    return type;
+
+                goto default;
+            }
+            return type;
 
         case Tenum:
             break;

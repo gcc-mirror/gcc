@@ -1774,19 +1774,65 @@ else
 
 version (linux)
 {
-    // `getrandom()` was introduced in Linux 3.17.
+    version (linux_legacy_emulate_getrandom)
+    {
+        /+
+            Emulates `getrandom()` for backwards compatibility
+            with outdated kernels and legacy libc versions.
 
-    // Shim for missing bindings in druntime
-    version (none)
-        import core.sys.linux.sys.random : getrandom;
+            `getrandom()` was added to the GNU C Library in v2.25.
+         +/
+        pragma(msg, "`getrandom()` emulation for legacy Linux targets is enabled.");
+
+        /+
+            On modern kernels (5.6+), `/dev/random` would behave more similar
+            to `getrandom()`.
+            However, this emulator was specifically written for systems older
+            than that. Hence, `/dev/urandom` is the CSPRNG of choice.
+
+            <https://web.archive.org/web/20200914181930/https://www.2uo.de/myths-about-urandom/>
+         +/
+        private static immutable _pathLinuxSystemCSPRNG = "/dev/urandom";
+
+        import core.sys.posix.sys.types : ssize_t;
+
+        /+
+            Linux `getrandom()` emulation built upon `/dev/urandom`.
+            The fourth parameter (`uint flags`) is happily ignored.
+         +/
+        private ssize_t getrandom(
+                void* buf,
+                size_t buflen,
+                uint,
+        ) @system nothrow @nogc
+        {
+            import core.stdc.stdio : fclose, fopen, fread;
+
+            auto blockDev = fopen(_pathLinuxSystemCSPRNG.ptr, "r");
+            if (blockDev is null)
+                assert(false, "System CSPRNG unavailable: `fopen(\"" ~ _pathLinuxSystemCSPRNG ~ "\")` failed.");
+            scope (exit) fclose(blockDev);
+
+            const bytesRead = fread(buf, 1, buflen, blockDev);
+            return bytesRead;
+        }
+    }
     else
     {
-        import core.sys.posix.sys.types : ssize_t;
-        extern extern(C) ssize_t getrandom(
-            void* buf,
-            size_t buflen,
-            uint flags,
-        ) @system nothrow @nogc;
+        // `getrandom()` was introduced in Linux 3.17.
+
+        // Shim for missing bindings in druntime
+        version (none)
+            import core.sys.linux.sys.random : getrandom;
+        else
+        {
+            import core.sys.posix.sys.types : ssize_t;
+            private extern extern(C) ssize_t getrandom(
+                void* buf,
+                size_t buflen,
+                uint flags,
+            ) @system nothrow @nogc;
+        }
     }
 }
 

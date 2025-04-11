@@ -411,6 +411,7 @@ NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
+OS_DFLAGS = @OS_DFLAGS@
 OS_LINK_SPEC = @OS_LINK_SPEC@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
@@ -519,7 +520,8 @@ D_EXTRA_DFLAGS = -fpreview=dip1000 -fpreview=dtorfields -fpreview=fieldwise \
 # D flags for compilation
 AM_DFLAGS = \
 	$(phobos_lt_pic_flag) $(phobos_compiler_shared_flag) \
-	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(SECTION_FLAGS) $(CET_FLAGS)
+	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(SECTION_FLAGS) $(CET_FLAGS) \
+	$(OS_DFLAGS)
 
 
 # Flags for other kinds of sources

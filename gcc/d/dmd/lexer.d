@@ -132,7 +132,7 @@ class Lexer
         // debug printf("Lexer::Lexer(%p)\n", base);
         // debug printf("lexer.filename = %s\n", filename);
         token = Token.init;
-        this.baseLoc = newBaseLoc(filename, endoffset);
+        this.baseLoc = newBaseLoc(filename, base[0 .. endoffset]);
         this.linnum = 1;
         this.base = base;
         this.end = base + endoffset;
@@ -224,7 +224,7 @@ class Lexer
         inTokenStringConstant = 0;
         lastDocLine = 0;
 
-        baseLoc = newBaseLoc("#defines", slice.length);
+        baseLoc = newBaseLoc("#defines", slice);
         scanloc = baseLoc.getLoc(0);
     }
 

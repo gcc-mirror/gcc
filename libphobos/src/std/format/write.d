@@ -534,6 +534,8 @@ uint formattedWrite(Writer, Char, Args...)(auto ref Writer w, const scope Char[]
 
     // Are we already done with formats? Then just dump each parameter in turn
     uint currentArg = 0;
+    bool lastWasConsumeAll;
+
     while (spec.writeUpToNextSpec(w))
     {
         if (currentArg == Args.length && !spec.indexStart)
@@ -649,7 +651,10 @@ uint formattedWrite(Writer, Char, Args...)(auto ref Writer w, const scope Char[]
             }
         default:
             if (spec.indexEnd == spec.indexEnd.max)
+            {
+                lastWasConsumeAll = true;
                 break;
+            }
             else if (spec.indexEnd == spec.indexStart)
                 throw new FormatException(
                     text("Positional specifier %", spec.indexStart, '$', spec.spec,
@@ -660,7 +665,8 @@ uint formattedWrite(Writer, Char, Args...)(auto ref Writer w, const scope Char[]
                     " index exceeds ", Args.length));
         }
     }
-    return currentArg;
+
+    return lastWasConsumeAll ? Args.length : currentArg;
 }
 
 ///
@@ -1212,7 +1218,8 @@ if (isSomeString!(typeof(fmt)))
     import std.array : appender;
     auto w = appender!(char[])();
 
-    formattedWrite(w, "%1:$d", 1, 2, 3);
+    uint count = formattedWrite(w, "%1:$d", 1, 2, 3);
+    assert(count == 3);
     assert(w.data == "123");
 }
 

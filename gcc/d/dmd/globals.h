@@ -421,6 +421,7 @@ struct SourceLoc
     uint32_t line;
     uint32_t column;
     uint32_t fileOffset;
+    DString fileContent;
 };
 
 struct Loc

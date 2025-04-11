@@ -64,7 +64,7 @@ nothrow:
     extern (C++) static Loc singleFilename(const char* filename)
     {
         Loc result;
-        locFileTable ~= new BaseLoc(filename.toDString, locIndex, 0, [0]);
+        locFileTable ~= new BaseLoc(filename.toDString, null, locIndex, 0, [0]);
         result.index = locIndex++;
         return result;
     }
@@ -235,16 +235,20 @@ struct SourceLoc
     uint column; /// column number (starts at 1)
     uint fileOffset; /// byte index into file
 
+    /// Index `fileOffset` into this to to obtain source code context of this location
+    const(char)[] fileContent;
+
     // aliases for backwards compatibility
     alias linnum = line;
     alias charnum = column;
 
-    this(const(char)[] filename, uint line, uint column, uint fileOffset = 0) nothrow @nogc pure @safe
+    this(const(char)[] filename, uint line, uint column, uint fileOffset = 0, const(char)[] fileContent = null) nothrow @nogc pure @safe
     {
         this.filename = filename;
         this.line = line;
         this.column = column;
         this.fileOffset = fileOffset;
+        this.fileContent = fileContent;
     }
 
     this(Loc loc) nothrow @nogc @trusted
@@ -300,15 +304,15 @@ private size_t fileTableIndex(uint index) nothrow @nogc
  * Create a new source location map for a file
  * Params:
  *   filename = source file name
- *   size = space to reserve for locations, equal to the file size in bytes
+ *   fileContent = content of source file
  * Returns: new BaseLoc
  */
-BaseLoc* newBaseLoc(const(char)* filename, size_t size) nothrow
+BaseLoc* newBaseLoc(const(char)* filename, const(char)[] fileContent) nothrow
 {
-    locFileTable ~= new BaseLoc(filename.toDString, locIndex, 1, [0]);
+    locFileTable ~= new BaseLoc(filename.toDString, fileContent, locIndex, 1, [0]);
     // Careful: the endloc of a FuncDeclaration can
     // point to 1 past the very last byte in the file, so account for that
-    locIndex += size + 1;
+    locIndex += fileContent.length + 1;
     return locFileTable[$ - 1];
 }
 
@@ -354,6 +358,7 @@ struct BaseLoc
 @safe nothrow:
 
     const(char)[] filename; /// Source file name
+    const(char)[] fileContents; /// Source file contents
     uint startIndex; /// Subtract this from Loc.index to get file offset
     int startLine = 1; /// Line number at index 0
     uint[] lines; /// For each line, the file offset at which it starts. At index 0 there's always a 0 entry.
@@ -384,11 +389,11 @@ struct BaseLoc
     {
         auto fname = filename.toDString;
         if (substitutions.length == 0)
-            substitutions ~= BaseLoc(this.filename, 0, 0);
+            substitutions ~= BaseLoc(this.filename, null, 0, 0);
 
         if (fname.length == 0)
             fname = substitutions[$ - 1].filename;
-        substitutions ~= BaseLoc(fname, offset, cast(int) (line - lines.length + startLine - 2));
+        substitutions ~= BaseLoc(fname, null, offset, cast(int) (line - lines.length + startLine - 2));
     }
 
     /// Returns: `loc` modified by substitutions from #file / #line directives
@@ -408,7 +413,7 @@ struct BaseLoc
     private SourceLoc getSourceLoc(uint offset) @nogc
     {
         const i = getLineIndex(offset);
-        const sl = SourceLoc(filename, cast(int) (i + startLine), cast(int) (1 + offset - lines[i]), offset);
+        const sl = SourceLoc(filename, cast(int) (i + startLine), cast(int) (1 + offset - lines[i]), offset, fileContents);
         return substitute(sl);
     }
 
