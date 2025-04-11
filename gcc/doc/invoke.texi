@@ -211,8 +211,7 @@ in the following sections.
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{-fabi-version=@var{n}  -fno-access-control
--faligned-new=@var{n}  -fargs-in-order=@var{n}
--fno-assume-sane-operators-new-delete
+-faligned-new=@var{n}  -fno-assume-sane-operators-new-delete
 -fchar8_t  -fcheck-new
 -fconcepts  -fconstexpr-depth=@var{n}  -fconstexpr-cache-depth=@var{n}
 -fconstexpr-loop-limit=@var{n}  -fconstexpr-ops-limit=@var{n}
@@ -235,6 +234,7 @@ in the following sections.
 -fno-optional-diags
 -fno-pretty-templates  -frange-for-ext-temps
 -fno-rtti  -fsized-deallocation
+-fstrong-eval-order@r{[}=@var{kind}@r{]}
 -ftemplate-backtrace-limit=@var{n}
 -ftemplate-depth=@var{n}
 -fno-threadsafe-statics  -fuse-cxa-atexit
@@ -3581,12 +3581,19 @@ type.
 
 @opindex fstrong-eval-order
 @item -fstrong-eval-order
+@itemx -fstrong-eval-order=@var{kind}
 Evaluate member access, array subscripting, and shift expressions in
 left-to-right order, and evaluate assignment in right-to-left order,
-as adopted for C++17.  Enabled by default with @option{-std=c++17}.
+as adopted for C++17.  @option{-fstrong-eval-order} is equivalent to
+@option{-fstrong-eval-order=all},
+and is enabled by default with @option{-std=c++17} or later.
+
 @option{-fstrong-eval-order=some} enables just the ordering of member
-access and shift expressions, and is the default without
-@option{-std=c++17}.
+access and shift expressions, and is the default for C++ dialects prior to
+C++17.
+
+@option{-fstrong-eval-order=none} is equivalent to
+@option{-fno-strong-eval-order}.
 
 @opindex ftemplate-backtrace-limit
 @item -ftemplate-backtrace-limit=@var{n}
