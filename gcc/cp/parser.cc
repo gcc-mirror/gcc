@@ -31746,50 +31746,62 @@ void cp_parser_late_contract_condition (cp_parser *parser,
 
 /* Parse a base in inherited contract list */
 
-tree cp_parser_inherited_contract_base (cp_parser *parser,
-					tree fndecl,
-					tree_code code)
+tree
+cp_parser_inherited_contract_base (cp_parser *parser, tree fndecl,
+				   tree_code code)
 {
   tree base_contracts = NULL_TREE;
-  tree basedecl = cp_parser_class_name (parser,
-					/*typename_keyword_p=*/true,
-					/*template_keyword_p=*/false, none_type,
-					/*check_dependency_p=*/false,
-					/*class_head_p=*/false,
-					/*is_declaration=*/false);
+  tree in_decl = cp_parser_class_name (parser,
+				       /*typename_keyword_p=*/true,
+				       /*template_keyword_p=*/false, none_type,
+				       /*check_dependency_p=*/false,
+				       /*class_head_p=*/false,
+				       /*is_declaration=*/false);
 
-  if (basedecl == error_mark_node)
-      return NULL_TREE;
+  if (in_decl == error_mark_node)
+  return NULL_TREE;
 
-  tree basetype = TYPE_CANONICAL(TREE_TYPE (basedecl));
-  if (basetype == error_mark_node)
+  tree in_type = TYPE_CANONICAL(TREE_TYPE (in_decl));
+  tree base_type = NULL_TREE;
+  tree binfo = TYPE_BINFO (DECL_CONTEXT (fndecl));
+  tree base_binfo;
+  for (int i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
     {
-      error_at (DECL_SOURCE_LOCATION(fndecl), "contracts"
-	  " can only be inherited from a baseclass ");
-      return NULL_TREE;
+      if (same_type_p (in_type, TYPE_CANONICAL (BINFO_TYPE (base_binfo))))
+	{
+	  base_type = BINFO_TYPE (base_binfo);
+	  break;
+	}
     }
 
-  tree basefn = look_for_overrides_here (basetype, fndecl);
-  if (!basefn)
-    {
-      error_at (DECL_SOURCE_LOCATION(fndecl), "function does not "
-		" override a function in %qT ",
-		basetype);
-      return NULL_TREE;
-    }
+  if (!base_type)
+  {
+    error_at (DECL_SOURCE_LOCATION(fndecl), "contracts"
+	      " can only be inherited from a direct base class ");
+    return NULL_TREE ;
+  }
 
-  if (DECL_HAS_CONTRACTS_P(basefn))
-    {
-      contract_match_kind remap_kind = cmk_pre;
-      if (code == POSTCONDITION_STMT)
-	remap_kind = cmk_post;
-      /* We're inheriting basefn's contracts; create a copy of them but
-       * replace references to their parms to our parms.  */
+  tree base_fn = look_for_overrides_here (base_type, fndecl);
+  if (!base_fn)
+  {
+    error_at (DECL_SOURCE_LOCATION (fndecl), "function does not "
+	      "override a function in %qT ",
+	      base_type);
+    return NULL_TREE ;
+  }
 
-      base_contracts = copy_and_remap_contracts (fndecl, basefn,
-						 /* remap_result */false,
-						 remap_kind);
-    }
+  if (DECL_HAS_CONTRACTS_P(base_fn))
+  {
+    contract_match_kind remap_kind = cmk_pre;
+    if (code == POSTCONDITION_STMT)
+      remap_kind = cmk_post;
+    /* We're inheriting basefn's contracts; create a copy of them but
+     * replace references to their parms to our parms.  */
+
+    base_contracts = copy_and_remap_contracts (fndecl, base_fn,
+					       /* remap_result */false,
+					       remap_kind);
+  }
   // todo warn on empty contracts ?
   return base_contracts;
 }
