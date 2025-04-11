@@ -488,8 +488,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 			      is_same<_IterBase, const _CharT*>>::value)
 	    _S_copy(__p, std::__niter_base(__k1), __k2 - __k1);
 #if __cpp_lib_concepts
-	  else if constexpr (contiguous_iterator<_Iterator>
-			       && is_same_v<iter_value_t<_Iterator>, _CharT>)
+	  else if constexpr (requires {
+			       requires contiguous_iterator<_Iterator>;
+			       { std::to_address(__k1) }
+				 -> convertible_to<const _CharT*>;
+			     })
 	    {
 	      const auto __d = __k2 - __k1;
 	      (void) (__k1 + __d); // See P3349R1
@@ -499,7 +502,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	  else
 #endif
 	  for (; __k1 != __k2; ++__k1, (void)++__p)
-	    traits_type::assign(*__p, *__k1); // These types are off.
+	    traits_type::assign(*__p, static_cast<_CharT>(*__k1));
 	}
 #pragma GCC diagnostic pop
 
@@ -527,12 +530,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	static constexpr void
 	_S_copy_range(pointer __p, _Rg&& __rg, size_type __n)
 	{
-	  if constexpr (ranges::contiguous_range<_Rg>
-			  && is_same_v<ranges::range_value_t<_Rg>, _CharT>)
+	  if constexpr (requires {
+			  requires ranges::contiguous_range<_Rg>;
+			  { ranges::data(std::forward<_Rg>(__rg)) }
+			    -> convertible_to<const _CharT*>;
+			})
 	    _S_copy(__p, ranges::data(std::forward<_Rg>(__rg)), __n);
 	  else
-	    for (auto&& __e : __rg)
-	      traits_type::assign(*__p++, std::forward<decltype(__e)>(__e));
+	    {
+	      auto __first = ranges::begin(__rg);
+	      const auto __last = ranges::end(__rg);
+	      for (; __first != __last; ++__first)
+		traits_type::assign(*__p++, static_cast<_CharT>(*__first));
+	    }
 	}
 #endif
 

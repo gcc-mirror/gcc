@@ -210,7 +210,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		_M_data(__another);
 		_M_capacity(__capacity);
 	      }
-	    traits_type::assign(_M_data()[__len++], *__beg);
+	    traits_type::assign(_M_data()[__len++],
+				static_cast<_CharT>(*__beg));
 	    ++__beg;
 	  }
 

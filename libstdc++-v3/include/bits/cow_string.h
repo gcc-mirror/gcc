@@ -423,7 +423,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_copy_chars(_CharT* __p, _Iterator __k1, _Iterator __k2)
 	{
 	  for (; __k1 != __k2; ++__k1, (void)++__p)
-	    traits_type::assign(*__p, *__k1); // These types are off.
+	    traits_type::assign(*__p, static_cast<_CharT>(*__k1));
 	}
 
       static void
@@ -656,12 +656,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	      reserve(__n);
 	      pointer __p = _M_data();
-	      if constexpr (ranges::contiguous_range<_Rg>
-			      && is_same_v<ranges::range_value_t<_Rg>, _CharT>)
+	      if constexpr (requires {
+			      requires ranges::contiguous_range<_Rg>;
+			      { ranges::data(std::forward<_Rg>(__rg)) }
+				-> convertible_to<const _CharT*>;
+			    })
 		_M_copy(__p, ranges::data(std::forward<_Rg>(__rg)), __n);
 	      else
-		for (auto&& __e : __rg)
-		  traits_type::assign(*__p++, std::forward<decltype(__e)>(__e));
+		{
+		  auto __first = ranges::begin(__rg);
+		  const auto __last = ranges::end(__rg);
+		  for (; __first != __last; ++__first)
+		    traits_type::assign(*__p++, static_cast<_CharT>(*__first));
+		}
 	      _M_rep()->_M_set_length_and_sharable(__n);
 	    }
 	  else
