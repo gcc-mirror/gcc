@@ -1,3 +1,87 @@
+2025-04-10  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119345
+	* g++.dg/cpp2a/lambda-targ14.C: New test.
+
+2025-04-10  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119175
+	* g++.dg/cpp2a/concepts-lambda23.C: New test.
+
+2025-04-10  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/117530
+	* g++.dg/cpp2a/lambda-uneval27.C: New test.
+
+2025-04-10  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-04-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119687
+	* g++.dg/cpp23/class-deduction-inherited8.C: New test.
+
+2025-04-10  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2025-04-08  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/xtheadvector/vsext.c: New test.
+	* gcc.target/riscv/rvv/xtheadvector/vzext.c: New test.
+
+2025-04-10  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2025-02-12  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/118601
+	* gcc.target/riscv/rvv/xtheadvector/pr114194.c: Move to...
+	* gcc.target/riscv/rvv/xtheadvector/pr114194-rv64.c: ...here.
+	* gcc.target/riscv/rvv/xtheadvector/pr114194-rv32.c: New test.
+	* gcc.target/riscv/rvv/xtheadvector/pr118601.c: New test.
+
+2025-04-10  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2025-01-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/116593
+	* g++.target/riscv/rvv/rvv.exp: Enable testsuite of XTheadVector.
+	* g++.target/riscv/rvv/xtheadvector/pr116593.C: New test.
+
+2025-04-10  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2025-01-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/rvv.exp: Enable testsuite of
+	XTheadVector.
+	* gcc.target/riscv/rvv/xtheadvector/pr114194.c: Adjust correctly.
+	* gcc.target/riscv/rvv/xtheadvector/prefix.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlb-vsb.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlbu-vsb.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlh-vsh.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlhu-vsh.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlw-vsw.c: Likewise.
+	* gcc.target/riscv/rvv/xtheadvector/vlwu-vsw.c: Likewise.
+
+2025-04-10  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2024-11-13  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/116591
+	* gcc.target/riscv/rvv/xtheadvector/pr116591.c: New test.
+
 2025-04-09  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/119574

@@ -1,3 +1,52 @@
+2025-04-10  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2025-04-08  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/vector.md: Disable vsext/vzext for XTheadVector.
+
+2025-04-10  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2025-02-12  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/118601
+	* config/riscv/riscv-string.cc (expand_block_move): Check with new
+	constraint 'vl' instead of 'K'.
+	(expand_vec_setmem): Likewise.
+	(expand_vec_cmpmem): Likewise.
+	* config/riscv/riscv-v.cc (force_vector_length_operand): Likewise.
+	(expand_load_store): Likewise.
+	(expand_strided_load): Likewise.
+	(expand_strided_store): Likewise.
+	(expand_lanes_load_store): Likewise.
+
+2025-04-10  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2025-01-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/116593
+	* config/riscv/constraints.md (vl): New.
+	* config/riscv/thead-vector.md: Replacing rK with rvl.
+	* config/riscv/vector.md: Likewise.
+
+2025-04-10  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2024-11-13  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/116591
+	* config/riscv/vector.md: Add restriction to call pred_th_whole_mov.
+
+2025-04-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2025-04-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/multilib-generator: Remove the compact code model
+	and check large code model for RV32.
+
 2025-04-09  Patrick O'Neill  <patrick@rivosinc.com>
 
 	* config/riscv/riscv-v.cc (expand_const_vector): Fix STEP size in

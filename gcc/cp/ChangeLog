@@ -1,3 +1,38 @@
+2025-04-10  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119345
+	* pt.cc (add_extra_args): Also register a specialization
+	of the captured variable.
+
+2025-04-10  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119175
+	* mangle.cc (decl_mangling_context): Look through lambda type.
+
+2025-04-10  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/117530
+	* pt.cc (instantiate_template): Check retrieve_specialization after
+	tsubst.
+
+2025-04-10  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-04-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119687
+	* pt.cc (alias_ctad_tweaks): Use lkp_range / lkp_iterator
+	instead of ovl_iterator.
+
 2025-04-09  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/119574
