@@ -10382,7 +10382,7 @@ riscv_file_end ()
       fprintf (asm_out_file, "1:\n");
 
       /* pr_type.  */
-      fprintf (asm_out_file, "\t.p2align\t3\n");
+      fprintf (asm_out_file, "\t.p2align\t%u\n", p2align);
       fprintf (asm_out_file, "2:\n");
       fprintf (asm_out_file, "\t.long\t0xc0000000\n");
       /* pr_datasz.  */
