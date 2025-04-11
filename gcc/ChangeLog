@@ -1,3 +1,26 @@
+2025-04-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (LINK_SPEC): Add support for
+	-static-libgcobol.
+
+2025-04-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119706
+	* gimple-expr.cc (is_gimple_mem_ref_addr): Also allow
+	POLY_INT_CST.
+
+2025-04-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/119399
+	* tree-data-ref.cc (create_waw_or_war_checks): Use a MINUS_EXPR
+	on two converted pointers, rather than converting a POINTER_DIFF_EXPR
+	on the pointers.
+
+2025-04-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/multilib-generator: Remove the compact code model
+	and check large code model for RV32.
+
 2025-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* pretty-print.cc (pretty_printer::format): Use %.Ns instead of

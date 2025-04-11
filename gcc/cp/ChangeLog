@@ -1,3 +1,37 @@
+2025-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119345
+	* pt.cc (add_extra_args): Also register a specialization
+	of the captured variable.
+
+2025-04-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119687
+	* pt.cc (alias_ctad_tweaks): Use lkp_range / lkp_iterator
+	instead of ovl_iterator.
+
+2025-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR translation/119684
+	* error.cc (cp_print_error_function): Use G_ instead of _ for
+	pp_printf arguments.
+	(function_category): Use G_ instead of _.
+	(print_instantiation_full_context): Use G_ instead of _ in pp_verbatim
+	arguments.
+	(print_location): Likewise.
+	(print_instantiation_partial_context): Likewise.
+	(maybe_print_constexpr_context): Likewise.
+	(print_constrained_decl_info): Use G_() around pp_verbatim argument.
+	(print_concept_check_info): Likewise.
+	(print_constraint_context_head): Likewise.
+	(print_requires_expression_info): Likewise.  Merge separate pp_verbatim
+	"in requirements " and "with " into one with conditional messages.
+
+2025-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119175
+	* mangle.cc (decl_mangling_context): Look through lambda type.
+
 2025-04-09  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/119574

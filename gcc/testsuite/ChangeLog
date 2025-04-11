@@ -1,3 +1,91 @@
+2025-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119345
+	* g++.dg/cpp2a/lambda-targ14.C: New test.
+
+2025-04-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119687
+	* g++.dg/cpp23/class-deduction-inherited8.C: New test.
+
+2025-04-10  Bob Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/Dynamic_reference_modification.cob: New testcase.
+	* cobol.dg/group2/Length_overflow__1_.cob: Likewise.
+	* cobol.dg/group2/Length_overflow__2_.cob: Likewise.
+	* cobol.dg/group2/Length_overflow_with_offset__1_.cob: Likewise.
+	* cobol.dg/group2/Length_overflow_with_offset__2_.cob: Likewise.
+	* cobol.dg/group2/Length_overflow_with_offset__3_.cob: Likewise.
+	* cobol.dg/group2/Offset_overflow.cob: Likewise.
+	* cobol.dg/group2/Offset_underflow.cob: Likewise.
+	* cobol.dg/group2/Refmod__comparisons_inside_numeric-display.cob: Likewise.
+	* cobol.dg/group2/Refmod_sources_are_figurative_constants.cob: Likewise.
+	* cobol.dg/group2/Static_reference_modification.cob: Likewise.
+	* cobol.dg/group2/Dynamic_reference_modification.out: New known-good result.
+	* cobol.dg/group2/Length_overflow__1_.out: Likewise.
+	* cobol.dg/group2/Length_overflow__2_.out: Likewise.
+	* cobol.dg/group2/Length_overflow_with_offset__1_.out: Likewise.
+	* cobol.dg/group2/Length_overflow_with_offset__2_.out: Likewise.
+	* cobol.dg/group2/Length_overflow_with_offset__3_.out: Likewise.
+	* cobol.dg/group2/Offset_overflow.out: Likewise.
+	* cobol.dg/group2/Offset_underflow.out: Likewise.
+	* cobol.dg/group2/Refmod__comparisons_inside_numeric-display.out: Likewise.
+	* cobol.dg/group2/Refmod_sources_are_figurative_constants.out: Likewise.
+	* cobol.dg/group2/Static_reference_modification.out: Likewise.
+
+2025-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119175
+	* g++.dg/cpp2a/concepts-lambda23.C: New test.
+
+2025-04-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/cobol.exp: Add libquadmath paths.
+
+2025-04-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/119399
+	* gcc.dg/vect/pr119399.c: New test.
+
+2025-04-10  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-fixed-1.c: Include local
+	riscv_vector.h.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-fixed-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-save-restore.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1-zcmp.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2-save-restore.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2-zcmp.c: Ditto.
+	* gcc.target/riscv/rvv/base/abi-callee-saved-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/bug-10-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/bug-10.c: Ditto.
+	* gcc.target/riscv/rvv/base/bug-7.c: Ditto.
+	* gcc.target/riscv/rvv/base/bug-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/bug-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr110943.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr112431-21.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr114639-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr115068.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr117286.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr117544.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr117955.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr118872.c: Ditto.
+	* gcc.target/riscv/rvv/base/vlmul_ext-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/vssubu-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/vssubu-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/vwaddsub-1.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/pr111234.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/pr115214.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl-24.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl_bug-3.c: Ditto.
+	* gcc.target/riscv/rvv/vsetvl/vsetvl_bug-4.c: Ditto.
+	* gcc.target/riscv/rvv/xtheadvector/pr116591.c: Ditto.
+	* gcc.target/riscv/rvv/xtheadvector/pr116592.c: Ditto.
+	* gcc.target/riscv/rvv/xtheadvector/pr118357.c: Ditto.
+	* gcc.target/riscv/rvv/xtheadvector/vsext.c: Ditto.
+	* gcc.target/riscv/rvv/xtheadvector/vzext.c: Ditto.
+
 2025-04-09  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/119574

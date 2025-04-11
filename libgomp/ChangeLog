@@ -1,3 +1,15 @@
+2025-04-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* testsuite/libgomp.c-target/aarch64/firstprivate.c: Add +sve pragma.
+	* testsuite/libgomp.c-target/aarch64/lastprivate.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/private.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/shared.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/simd-aligned.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/simd-nontemporal.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/threadprivate.c: Likewise.
+	* testsuite/libgomp.c-target/aarch64/udr-sve.c: Add an -march option.
+	(for_reduction): Use "+=" in the reduction loop.
+
 2025-04-08  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR middle-end/119662

@@ -1,3 +1,27 @@
+2025-04-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure.tgt: Enable for x86_64 Darwin.
+
+2025-04-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR cobol/119244
+	* Makefile.am: Add support for libquadmath.
+	* Makefile.in: Regenerate.
+	* acinclude.m4: Add support for libquadmath.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Configure libquadmath support.
+	* gmath.cc: Use GCOB_FP128 to represent the configured
+	128b floating point type.  Use FP128_FUNC to represent
+	the naming of intrinsics in the configure 128b floating
+	point type. Render literals with GCOB_FP128_LITERAL.
+	* intrinsic.cc: Likewise.
+	* libgcobol.cc: Likewise.
+	* libgcobol.h: Likewise.
+	* libgcobol-fp.h: New file.
+	* gfileio.cc: Include libgcobol-fp.h.
+	* libgcobol.spec.in: Add libquadmath configure output.
+
 2025-04-09  Bob Dubner  <rdubner@symas.com>
 
 	PR cobol/119682
