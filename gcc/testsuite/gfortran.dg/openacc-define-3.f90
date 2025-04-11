@@ -6,6 +6,6 @@
 # error _OPENACC not defined
 #endif
 
-#if _OPENACC != 201711
+#if _OPENACC != 201811
 # error _OPENACC defined to wrong value
 #endif
