@@ -31770,7 +31770,7 @@ cp_parser_inherited_contract_base (cp_parser *parser, tree fndecl,
   if (!base_type)
   {
     error_at (DECL_SOURCE_LOCATION(fndecl), "contracts"
-	      " can only be inherited from a direct base class ");
+	      " can only be inherited from a direct base class");
     return NULL_TREE ;
   }
 
@@ -31778,7 +31778,7 @@ cp_parser_inherited_contract_base (cp_parser *parser, tree fndecl,
   if (!base_fn)
   {
     error_at (DECL_SOURCE_LOCATION (fndecl), "function does not "
-	      "override a function in %qT ",
+	      "override a function in %qT",
 	      base_type);
     return NULL_TREE ;
   }
