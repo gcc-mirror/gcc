@@ -104,8 +104,8 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
   /* The total number of arguments with the new stuff.  */
   unsigned int num_args = 1;
 
-  /* "-fonly" if it appears on the command line.  */
-  const char *only_source_option = 0;
+  /* "-fonly=" if it appears on the command line.  */
+  const char *only_source_arg = 0;
 
   /* Whether the -o option was used.  */
   bool saw_opt_o = false;
@@ -280,13 +280,13 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
 
 	case OPT_fonly_:
 	  args[i] |= SKIPOPT;
-	  only_source_option = decoded_options[i].orig_option_with_args_text;
+	  only_source_arg = arg;
 
 	  if (arg != NULL)
 	    {
-	      const char *suffix = strrchr (only_source_option, '.');
+	      const char *suffix = strrchr (only_source_arg, '.');
 	      if (suffix == NULL || strcmp (suffix, ".d") != 0)
-		only_source_option = concat (only_source_option, ".d", NULL);
+		only_source_arg = concat (only_source_arg, ".d", NULL);
 	    }
 	  break;
 
@@ -335,48 +335,52 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
     + (phobos_library != PHOBOS_NOLINK) * 4 + 2;
   new_decoded_options = XNEWVEC (cl_decoded_option, num_args);
 
-  i = 0;
   j = 0;
 
   /* Copy the 0th argument, i.e., the name of the program itself.  */
-  new_decoded_options[j++] = decoded_options[i++];
+  new_decoded_options[j++] = decoded_options[0];
 
   /* NOTE: We start at 1 now, not 0.  */
-  while (i < argc)
+  for (i = 1; i < argc; i++)
     {
       if (args[i] & SKIPOPT)
-	{
-	  ++i;
-	  continue;
-	}
-
-      new_decoded_options[j] = decoded_options[i];
+	continue;
 
       if (!saw_libcxx && (args[i] & WITHLIBCXX))
 	{
-	  --j;
 	  saw_libcxx = &decoded_options[i];
+	  continue;
 	}
 
-      if (args[i] & DSOURCE)
+      if (only_source_arg && (args[i] & DSOURCE))
 	{
-	  if (only_source_option)
-	    --j;
+	  if (!endswith (decoded_options[i].arg, only_source_arg))
+	    continue;
 	}
 
-      i++;
+      new_decoded_options[j] = decoded_options[i];
       j++;
     }
 
-  if (only_source_option)
+  if (only_source_arg)
     {
-      const char *only_source_arg = only_source_option + 7;
+      /* Generate -fonly= option, then copy D input sources that were initially
+	 skipped in first pass over all decoded_options.  */
       generate_option (OPT_fonly_, only_source_arg, 1, CL_DRIVER,
 		       &new_decoded_options[j]);
       j++;
 
-      generate_option_input_file (only_source_arg,
-				  &new_decoded_options[j++]);
+      for (i = 1; i < argc; i++)
+	{
+	  if (!(args[i] & DSOURCE))
+	    continue;
+
+	  if (endswith (decoded_options[i].arg, only_source_arg))
+	    continue;
+
+	  new_decoded_options[j] = decoded_options[i];
+	  j++;
+	}
     }
 
   /* If no reason to link against libphobos library, then don't add it.  */
