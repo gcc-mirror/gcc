@@ -5154,7 +5154,7 @@ gfc_trans_concurrent_locality_spec (bool after_body, stmtblock_t *body,
   gfc_start_saved_local_decls ();
 
   cnt = 0;
-  static_assert (LOCALITY_LOCAL_INIT - LOCALITY_LOCAL == 1);
+  static_assert (LOCALITY_LOCAL_INIT - LOCALITY_LOCAL == 1, "locality_type");
   for (int type = LOCALITY_LOCAL;
        type <= LOCALITY_LOCAL_INIT; type++)
     for (el = locality_list[type]; el; el = el->next)
