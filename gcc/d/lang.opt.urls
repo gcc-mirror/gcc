@@ -155,6 +155,9 @@ LangUrlSuffix_D(gdc/Runtime-Options.html#index-fextern-std)
 fignore-unknown-pragmas
 LangUrlSuffix_D(gdc/Warnings.html#index-fignore-unknown-pragmas)
 
+finclude-imports
+LangUrlSuffix_D(gdc/Runtime-Options.html#index-finclude-imports)
+
 finvariants
 LangUrlSuffix_D(gdc/Runtime-Options.html#index-finvariants)
 

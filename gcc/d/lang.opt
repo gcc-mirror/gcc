@@ -327,6 +327,10 @@ fignore-unknown-pragmas
 D
 Ignore unsupported pragmas.
 
+finclude-imports
+D RejectNegative
+Include imported modules in the compilation.
+
 finvariants
 D Var(flag_invariants)
 Generate code for class invariant contracts.

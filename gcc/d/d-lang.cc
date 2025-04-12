@@ -523,6 +523,10 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       global.params.ignoreUnsupportedPragmas = value;
       break;
 
+    case OPT_finclude_imports:
+      includeImports = true;
+      break;
+
     case OPT_finvariants:
       global.params.useInvariants = value ? CHECKENABLEon : CHECKENABLEoff;
       break;
@@ -1307,6 +1311,21 @@ d_parse_file (void)
 	message ("semantic3 %s", m->toChars ());
 
       dmd::semantic3 (m, NULL);
+    }
+
+  if (includeImports)
+    {
+      for (size_t i = 0; i < compiledImports.length; i++)
+	{
+	  Module *m = compiledImports[i];
+	  gcc_assert (m->isRoot ());
+
+	  if (global.params.v.verbose)
+	    message ("semantic3 %s", m->toChars ());
+
+	  dmd::semantic3 (m, NULL);
+	  modules.push (m);
+	}
     }
 
   Module::runDeferredSemantic3 ();

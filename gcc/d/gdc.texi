@@ -277,6 +277,12 @@ Sets @code{__traits(getTargetInfo, "cppStd")} to @code{202002}.
 Sets @code{__traits(getTargetInfo, "cppStd")} to @code{202302}.
 @end table
 
+@opindex finclude-imports
+@item -finclude-imports
+Include imported modules in the compilation, as if they were given on the
+command line.  When this option is enabled, all imported modules are compiled
+except those that are part of libphobos.
+
 @opindex finvariants
 @opindex fno-invariants
 @item -fno-invariants
