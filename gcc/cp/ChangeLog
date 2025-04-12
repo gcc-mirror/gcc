@@ -1,3 +1,9 @@
+2025-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114970
+	* cp-gimplify.cc (cp_build_init_expr_for_ctor): Suppress warnings on
+	return_this COMPOUND_EXPR.
+
 2025-04-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/119345

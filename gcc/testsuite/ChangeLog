@@ -1,3 +1,53 @@
+2025-04-11  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp: Rename arm_v8_1_lob_ok into
+	arm_v8_1m_lob_hw.
+	Rename arm_thumb2_no_arm_v8_1_lob into
+	arm_thumb2_no_arm_v8_1m_lob.
+	Rename arm_thumb2_ok_no_arm_v8_1_lob into
+	arm_thumb2_ok_no_arm_v8_1m_lob.
+	* gcc.target/arm/lob1.c: Likewise.
+	* gcc.target/arm/lob6.c: Likewise.
+	* gcc.target/arm/ivopts.c: Likewise.
+	* gcc.target/arm/unsigned-extend-2.c: Likewise.
+
+2025-04-11  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/118502
+	* g++.dg/opt/shrink-wrapping-vector-1.C: New test.
+
+2025-04-11  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/base/pr115068-run.c: Turn off pedantic diagnostics.
+	* gcc.target/riscv/rvv/base/pr115068.c: Likewise.
+	* gcc.target/riscv/rvv/base/vwaddsub-1.c: Likewise.
+
+2025-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114970
+	* g++.dg/opt/is_constant_evaluated4.C: New test.
+
+2025-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119707
+	* gcc.dg/torture/bitint-76.c: New test.
+
+2025-04-11  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR tree-optimization/119706
+	* g++.target/aarch64/sve/pr119706.C: New test.
+
+2025-04-11  Jonathan Yong  <10walls@gmail.com>
+
+	PR target/113633
+	* gcc.dg/bf-ms-attrib.c: Fix expected __ms_struct__ layout
+	size.
+
+2025-04-11  Jonathan Yong  <10walls@gmail.com>
+
+	* c-c++-common/analyzer/realloc-1.c: Make diagnostic accept
+	long long for __builtin_realloc warning.
+
 2025-04-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/119345

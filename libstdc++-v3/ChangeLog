@@ -1,3 +1,141 @@
+2025-04-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fast_float/LOCAL_PATCHES: Update.
+
+2025-04-11  Evgeny Karpov  <Evgeny.Karpov@microsoft.com>
+
+	* src/c++17/fast_float/fast_float.h (full_multiplication):
+	Support aarch64-w64-mingw32 target.
+
+2025-04-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (_S_copy_chars): Replace overloads
+	with constexpr-if and extend optimization to all contiguous
+	iterators.
+	* src/c++11/string-inst.cc: Extend comment.
+
+2025-04-11  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/111055
+	* include/bits/version.def (containers_ranges): Define.
+	* include/bits/version.h: Regenerate.
+	* include/bits/ranges_base.h (__detail::__container_compatible_range)
+	(__detail::__range_to_alloc_type, __detail::__range_mapped_type)
+	(__detail::__range_key_type): Depend on __glibcxx_containers_ranges
+	instead of __glibcxx_ranges_to_container.
+	* include/bits/basic_string.h: Replace __glibcxx_ranges_to_container with
+	__glibcxx_containers_ranges.
+	* include/bits/cow_string.h: Likewise.
+	* include/bits/deque.tcc: Likewise.
+	* include/bits/forward_list.h: Likewise.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_queue.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_stack.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/bits/unordered_set.h: Likewise.
+	* include/bits/vector.tcc: Likewise.
+	* include/debug/deque: Likewise.
+	* include/debug/forward_list: Likewise.
+	* include/debug/list: Likewise.
+	* include/debug/map.h: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/set.h: Likewise.
+	* include/debug/unordered_map: Likewise.
+	* include/debug/unordered_set: Likewise.
+	* include/debug/vector: Likewise.
+	* include/std/deque: Provide __cpp_lib_containers_ranges.
+	* include/std/forward_list: Likewise.
+	* include/std/list: Likewise.
+	* include/std/map: Likewise.
+	* include/std/queue: Likewise.
+	* include/std/set: Likewise.
+	* include/std/stack: Likewise.
+	* include/std/string: Likewise.
+	* include/std/unordered_map: Likewise.
+	* include/std/unordered_set: Likewise.
+	* include/std/vector: Likewise.
+	* testsuite/21_strings/basic_string/cons/from_range.cc: Test for value
+	__cpp_lib_containers_ranges.
+	* testsuite/23_containers/deque/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/forward_list/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/list/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/map/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/multimap/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/multiset/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/priority_queue/cons_from_range.cc: Likewise.
+	* testsuite/23_containers/queue/cons_from_range.cc: Likewise.
+	* testsuite/23_containers/set/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/stack/cons_from_range.cc: Likewise.
+	* testsuite/23_containers/unordered_map/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/unordered_set/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/vector/bool/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/vector/cons/from_range.cc: Likewise.
+
+2025-04-11  Jonathan Wakely  <jwakely@redhat.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/111055
+	* include/bits/basic_string.h (_S_copy_range): New function.
+	(basic_string(from_range_t, R%%, const Alloc&)): New
+	constructor.
+	(append_range, assign_range, insert_range, replace_with_range):
+	New functions.
+	* include/bits/cow_string.h: Likewise.
+	* testsuite/21_strings/basic_string/cons/from_range.cc: New
+	test.
+	* testsuite/21_strings/basic_string/modifiers/append/append_range.cc:
+	New test.
+	* testsuite/21_strings/basic_string/modifiers/assign/assign_range.cc:
+	New test.
+	* testsuite/21_strings/basic_string/modifiers/insert/insert_range.cc:
+	New test.
+	* testsuite/21_strings/basic_string/modifiers/replace/replace_with_range.cc:
+	New test.
+
+2025-04-11  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/109162
+	* include/bits/chrono_io.h (__detail::_Widen): Moved to std/format file.
+	* include/bits/unicode-data.h: Regnerate.
+	* include/bits/unicode.h (__unicode::_Utf_iterator::_M_units)
+	(__unicode::__should_escape_category): Define.
+	* include/std/format (_GLIBCXX_WIDEN_, _GLIBCXX_WIDEN):	Copied from
+	include/bits/chrono_io.h.
+	(__format::_Widen): Moved from include/bits/chrono_io.h.
+	(__format::_Term_char, __format::_Escapes, __format::_Separators)
+	(__format::__should_escape_ascii, __format::__should_escape_unicode)
+	(__format::__write_escape_seq, __format::__write_escaped_char)
+	(__format::__write_escaped_acii, __format::__write_escaped_unicode)
+	(__format::__write_escaped): Define.
+	(__formatter_str::_S_trunc): Extracted truncation of character
+	sequences.
+	(__formatter_str::format): Handle _Pres_esc.
+	(__formatter_int::_M_do_parse) [__glibcxx_format_ranges]: Parse '?'.
+	(__formatter_int::_M_format_character_escaped): Define.
+	(formatter<_CharT, _CharT>::format, formatter<char, wchar_t>::format):
+	Handle _Pres_esc.
+	(__formatter_str::set_debug_format, formatter<...>::set_debug_format)
+	Guard with __glibcxx_format_ranges.
+	(__format::_Fixedbuf_sink): Define.
+	* testsuite/23_containers/vector/bool/format.cc: Use __format::_Widen
+	and remove unnecessary <chrono> include.
+	* testsuite/std/format/debug.cc: New test.
+	* testsuite/std/format/debug_nonunicode.cc: New test.
+	* testsuite/std/format/parse_ctx.cc (escaped_strings_supported): Define
+	to true if __glibcxx_format_ranges is defined.
+	* testsuite/std/format/string.cc (escaped_strings_supported): Define to
+	true if __glibcxx_format_ranges is defined.
+
 2025-04-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/version.def (constrained_equality): Only define

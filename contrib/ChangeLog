@@ -1,3 +1,12 @@
+2025-04-11  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/109162
+	* unicode/README: Mentioned DerivedGeneralCategory.txt.
+	* unicode/gen_libstdcxx_unicode_data.py: Generation __escape_edges
+	table from DerivedGeneralCategory.txt. Update file name in comments.
+	* unicode/DerivedGeneralCategory.txt: Copy of file distributed by
+	Unicode Consortium.
+
 2025-03-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR testsuite/116163

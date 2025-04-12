@@ -1,3 +1,17 @@
+2025-04-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos 40ffbb364.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Call DRUNTIME_OS_FEATURES.
+	* libdruntime/Makefile.am (AM_DFLAGS): Add OS_DFLAGS.
+	* libdruntime/Makefile.in: Regenerate.
+	* m4/druntime/os.m4 (DRUNTIME_OS_FEATURES): Define.
+	* src/Makefile.am: Add OS_DFLAGS.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/testsuite_flags.in: Add OS_DFLAGS.
+
 2025-04-08  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* src/MERGE: Merge upstream phobos 35977c802.
