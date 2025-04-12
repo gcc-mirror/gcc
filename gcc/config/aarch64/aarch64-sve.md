@@ -3133,9 +3133,9 @@
   "TARGET_SVE"
   {
     rtx tmp = gen_reg_rtx (<MODE>mode);
-    emit_insn (gen_vcond_mask_<mode><vpred> (tmp, operands[1],
-					     CONST1_RTX (<MODE>mode),
-					     CONST0_RTX (<MODE>mode)));
+    emit_insn (gen_vcond_mask_<mode><vpred> (tmp, CONST1_RTX (<MODE>mode),
+					     CONST0_RTX (<MODE>mode),
+					     operands[1]));
     emit_insn (gen_vec_extract<mode><Vel> (operands[0], tmp, operands[2]));
     DONE;
   }
