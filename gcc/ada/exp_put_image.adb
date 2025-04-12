@@ -695,17 +695,15 @@ package body Exp_Put_Image is
            Put_Image_Base_Type
              (Get_Corresponding_Mutably_Tagged_Type_If_Present (Etype (C)));
       begin
-         if Ekind (C) /= E_Void then
-            Append_To (Clist,
-              Make_Attribute_Reference (Loc,
-                Prefix         => New_Occurrence_Of (Component_Typ, Loc),
-                Attribute_Name => Name_Put_Image,
-                Expressions    => New_List (
-                  Make_Identifier (Loc, Name_S),
-                  Make_Selected_Component (Loc,
-                    Prefix        => Make_Identifier (Loc, Name_V),
-                    Selector_Name => New_Occurrence_Of (C, Loc)))));
-         end if;
+         Append_To (Clist,
+           Make_Attribute_Reference (Loc,
+             Prefix         => New_Occurrence_Of (Component_Typ, Loc),
+             Attribute_Name => Name_Put_Image,
+             Expressions    => New_List (
+               Make_Identifier (Loc, Name_S),
+               Make_Selected_Component (Loc,
+                 Prefix        => Make_Identifier (Loc, Name_V),
+                 Selector_Name => New_Occurrence_Of (C, Loc)))));
       end Append_Component_Attr;
 
       -------------------------------
@@ -944,9 +942,38 @@ package body Exp_Put_Image is
 
          --  Generate Put_Images for the discriminants of the type
 
-         Append_List_To (Stms,
-           Make_Component_Attributes
-             (Discriminant_Specifications (Type_Decl)));
+         declare
+            Discrim_Specs : List_Id := Discriminant_Specifications (Type_Decl);
+            Partial_View  : Entity_Id;
+         begin
+            if Present (First (Discrim_Specs))
+              and then Ekind (Defining_Identifier (First (Discrim_Specs))) =
+                       E_Void
+            then
+               --  If the known discriminant part is repeated for the
+               --  completion of a private type declaration, then the
+               --  second copy is (by design) not analyzed. So we'd better
+               --  use the first copy instead.
+
+               Partial_View := Incomplete_Or_Partial_View
+                                 (Defining_Identifier (Type_Decl));
+
+               pragma Assert (Ekind (Partial_View) in
+                              E_Private_Type
+                                | E_Limited_Private_Type
+                                | E_Record_Type_With_Private);
+
+               Discrim_Specs :=
+                 Discriminant_Specifications (Parent (Partial_View));
+
+               pragma Assert (Present (First (Discrim_Specs)));
+               pragma Assert
+                 (Ekind (Defining_Identifier (First (Discrim_Specs))) /=
+                  E_Void);
+            end if;
+
+            Append_List_To (Stms, Make_Component_Attributes (Discrim_Specs));
+         end;
 
          Rdef := Type_Definition (Type_Decl);
 
