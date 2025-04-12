@@ -165,6 +165,57 @@ bool _goacc_profiling_setup_p (struct goacc_thread *,
 void goacc_profiling_dispatch (acc_prof_info *, acc_event_info *,
 			       acc_api_info *);
 
+/* Definitions for data structures describing OpenACC non-contiguous arrays
+   (Note: interfaces with compiler)
+
+   The compiler generates a descriptor for each such array, places the
+   descriptor on stack, and passes the address of the descriptor to the libgomp
+   runtime as a normal map argument. The runtime then processes the array
+   data structure setup, and replaces the argument with the new actual
+   array address for the child function.
+
+   Care must be taken such that the struct field and layout assumptions
+   of struct goacc_ncarray_dim, goacc_ncarray_descr_type inside the compiler
+   be consistant with the below declarations.  */
+
+struct goacc_ncarray_dim {
+  size_t base;
+  size_t length;
+  size_t elem_size;
+  size_t is_array;
+};
+
+struct goacc_ncarray_descr_type
+{
+  size_t ndims;
+  struct goacc_ncarray_dim dims[];
+};
+
+/* Internal non-contiguous array info struct, used only here inside the runtime. */
+
+struct goacc_ncarray
+{
+  struct goacc_ncarray_descr_type *descr;
+  void *ptr;
+  size_t map_index;
+  size_t ptrblock_size;
+  void **data_rows;
+  void **tgt_data_rows;
+  size_t data_row_num;
+  size_t data_row_size;
+};
+
+struct goacc_ncarray_info
+{
+  size_t num_data_rows, num_ncarray;
+  void **data_rows;
+  void **tgt_data_rows;
+  struct goacc_ncarray ncarray[];
+};
+
+extern void *goacc_noncontig_array_create_ptrblock (struct goacc_ncarray *, void *);
+
+
 #ifdef HAVE_ATTRIBUTE_VISIBILITY
 # pragma GCC visibility pop
 #endif
