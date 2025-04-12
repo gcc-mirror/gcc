@@ -1,3 +1,129 @@
+2025-04-11  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2025-03-12  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/116564
+	* df-problems.cc (df_simulate_defs): For partial defs, mark the
+	register live (treat it as a RMW operation).
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119145
+	* tree-vectorizer.cc (try_vectorize_loop_1): Avoid BB
+	vectorizing an if-converted loop body when there's a .MASK_CALL
+	in the loop body.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117424
+	* tree-eh.cc (tree_could_trap_p): Verify the base is
+	fully contained within a decl.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117113
+	* gimple-loop-jam.cc (unroll_jam_possible_p): Detect when
+	we cannot handle virtual SSA update.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116906
+	* tree-ssa-pre.cc (prune_clobbered_mems): Add clean_traps
+	argument.
+	(compute_antic_aux): Direct prune_clobbered_mems to prune
+	all traps when any MAX solution was involved in the ANTIC
+	computation.
+	(compute_partial_antic_aux): Adjust.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR lto/114501
+	* ipa-free-lang-data.cc (find_decls_types_r): Explicitly
+	handle CONSTRUCTORs as walk_tree handling of those is
+	incomplete.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114052
+	* tree-ssa-loop-niter.cc (maybe_lower_iteration_bound): Check
+	for infinite subloops we might not exit.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR lto/113207
+	* ipa-free-lang-data.cc (free_lang_data_in_type): First drop
+	const/volatile qualifiers from function argument types,
+	then build a simplified type.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112859
+	* tree-loop-distribution.cc
+	(loop_distribution::pg_add_dependence_edges): Add comment.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112859
+	PR tree-optimization/115347
+	* tree-loop-distribution.cc
+	(loop_distribution::pg_add_dependence_edges): For a zero
+	distance vector still make sure to not have an inner
+	loop with zero distance.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/111245
+	* ipa-modref.cc (modref_access_analysis::analyze_store): Do
+	not guard the check of whether the stmt could throw by
+	cfun->can_throw_non_call_exceptions.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/115110
+	* tree-ssa-alias.cc (view_converted_memref_p): Fix.
+
+2025-04-11  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2025-04-02  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/bitmanip.md: The optimization can only be applied if
+	the high bit of operands[3] is set to 1.
+
 2025-04-08  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

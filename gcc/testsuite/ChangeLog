@@ -1,3 +1,103 @@
+2025-04-11  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2025-03-12  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/116564
+	* gcc.target/aarch64/torture/pr116564.c: New test.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119145
+	* gcc.dg/vect/pr119145.c: New testcase.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117424
+	* gcc.dg/tree-ssa/ssa-lim-25.c: New testcase.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/117113
+	* gcc.dg/torture/pr117113.c: New testcase.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2024-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116906
+	* gcc.dg/pr116906-1.c: New testcase.
+	* gcc.dg/pr116906-2.c: Likewise.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-06  Richard Biener  <rguenther@suse.de>
+
+	PR lto/114501
+	* g++.dg/pr114501_0.C: New testcase.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114052
+	* gcc.dg/pr114052-1.c: New testcase.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR lto/113207
+	* gcc.dg/pr113207.c: New testcase.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/112859
+	PR tree-optimization/115347
+	* gcc.dg/torture/pr112859.c: New testcase.
+	* gcc.dg/torture/pr115347.c: Likewise.
+
+2025-04-11  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-02-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/111245
+	* g++.dg/torture/pr111245.C: New testcase.
+
+2025-04-11  Sam James  <sam@gentoo.org>
+
+	Backported from master:
+	2024-10-28  Sam James  <sam@gentoo.org>
+
+	PR tree-optimization/107467
+	PR middle-end/115110
+	* g++.dg/lto/pr107467_0.C: New test.
+
+2025-04-11  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2025-04-02  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/zba-shNadd-09.c: New test.
+	* gcc.target/riscv/zba-shNadd-10.c: New test.
+
 2025-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
