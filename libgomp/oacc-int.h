@@ -213,7 +213,8 @@ struct goacc_ncarray_info
   struct goacc_ncarray ncarray[];
 };
 
-extern void *goacc_noncontig_array_create_ptrblock (struct goacc_ncarray *, void *);
+extern void goacc_noncontig_array_create_ptrblock (struct goacc_ncarray *,
+						   void *, void *);
 
 
 #ifdef HAVE_ATTRIBUTE_VISIBILITY
