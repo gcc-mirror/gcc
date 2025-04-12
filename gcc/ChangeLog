@@ -1,3 +1,11 @@
+2025-04-11  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2025-04-02  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/bitmanip.md: The optimization can only be applied if
+	the high bit of operands[3] is set to 1.
+
 2025-04-10  Jin Ma  <jinma@linux.alibaba.com>
 
 	Backported from master:
