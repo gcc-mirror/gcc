@@ -2356,20 +2356,28 @@ is_std_construct_at (const constexpr_call *call)
 	  && is_std_construct_at (call->fundef->decl));
 }
 
-/* True if CTX is an instance of std::allocator.  */
+/* True if CTX is an instance of std::NAME class.  */
 
 bool
-is_std_allocator (tree ctx)
+is_std_class (tree ctx, const char *name)
 {
   if (ctx == NULL_TREE || !CLASS_TYPE_P (ctx) || !TYPE_MAIN_DECL (ctx))
     return false;
 
   tree decl = TYPE_MAIN_DECL (ctx);
-  tree name = DECL_NAME (decl);
-  if (name == NULL_TREE || !id_equal (name, "allocator"))
+  tree dname = DECL_NAME (decl);
+  if (dname == NULL_TREE || !id_equal (dname, name))
     return false;
 
   return decl_in_std_namespace_p (decl);
+}
+
+/* True if CTX is an instance of std::allocator.  */
+
+bool
+is_std_allocator (tree ctx)
+{
+  return is_std_class (ctx, "allocator");
 }
 
 /* Return true if FNDECL is std::allocator<T>::{,de}allocate.  */
@@ -8851,6 +8859,15 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	  tree fndecl = cp_get_callee_fndecl_nofold (x);
 	  if (fndecl && DECL_IMMEDIATE_FUNCTION_P (fndecl))
 	    is_consteval = true;
+      /* Don't try to evaluate a std::vector constructor taking an integer, it
+	 will fail in the 'if (heap_var)' block below after doing all the work
+	 (c++/113835).  This will need adjustment if P3554 is accepted.  Note
+	 that evaluation of e.g. the vector default constructor can succeed, so
+	 we don't shortcut all vector constructors.  */
+      if (fndecl && DECL_CONSTRUCTOR_P (fndecl) && allow_non_constant
+	  && is_std_class (type, "vector") && call_expr_nargs (x) > 1
+	  && TREE_CODE (TREE_TYPE (get_nth_callarg (x, 1))) == INTEGER_TYPE)
+	return t;
 	}
     }
   if (AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type))
