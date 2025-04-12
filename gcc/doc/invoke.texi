@@ -34838,7 +34838,8 @@ produces code optimized for the local machine under the constraints
 of the selected instruction set.
 
 @item x86-64
-A generic CPU with 64-bit extensions.
+A generic CPU with 64-bit extensions, MMX, SSE, SSE2, and FXSR instruction set
+support.
 
 @item x86-64-v2
 @itemx x86-64-v3
