@@ -1282,9 +1282,9 @@ maybe_complain_about_tail_call (tree call_expr, const char *reason)
       && dump_file
       && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, ";; ");
+      fprintf (dump_file, ";; Cannot tail-call: %s: ", reason);
       print_generic_expr (dump_file, call_expr, TDF_SLIM);
-      fprintf (dump_file, "\n;; Cannot tail-call: %s\n", reason);
+      fprintf (dump_file, "\n");
     }
 }
 

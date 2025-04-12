@@ -494,8 +494,8 @@ maybe_error_musttail (gcall *call, const char *err, bool diag_musttail)
     }
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
+      fprintf (dump_file, "Cannot tail-call: %s: ", err);
       print_gimple_stmt (dump_file, call, 0, TDF_SLIM);
-      fprintf (dump_file, "Cannot tail-call: %s\n", err);
     }
 }
 
