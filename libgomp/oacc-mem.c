@@ -403,7 +403,7 @@ acc_map_data (void *h, void *d, size_t s)
 
       struct target_mem_desc *tgt
 	= goacc_map_vars (acc_dev, NULL, mapnum, &hostaddrs, &devaddrs, &sizes,
-			  &kinds, true, GOMP_MAP_VARS_ENTER_DATA);
+			  &kinds, NULL, true, GOMP_MAP_VARS_ENTER_DATA);
       assert (tgt);
       assert (tgt->list_count == 1);
       splay_tree_key n = tgt->list[0].key;
@@ -568,7 +568,7 @@ goacc_enter_datum (void **hostaddrs, size_t *sizes, void *kinds, int async)
 
       struct target_mem_desc *tgt
 	= goacc_map_vars (acc_dev, aq, mapnum, hostaddrs, NULL, sizes,
-			  kinds, true, GOMP_MAP_VARS_ENTER_DATA);
+			  kinds, NULL, true, GOMP_MAP_VARS_ENTER_DATA);
       assert (tgt);
       assert (tgt->list_count == 1);
       n = tgt->list[0].key;
@@ -1206,7 +1206,7 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 	      gomp_mutex_unlock (&acc_dev->lock);
 	      struct target_mem_desc *tgt_ __attribute__((unused))
 		= goacc_map_vars (acc_dev, aq, groupnum, &hostaddrs[i], NULL,
-				  &sizes[i], &kinds[i], true,
+				  &sizes[i], &kinds[i], NULL, true,
 				  GOMP_MAP_VARS_ENTER_DATA);
 	      assert (tgt_ == NULL);
 	      gomp_mutex_lock (&acc_dev->lock);
@@ -1257,7 +1257,7 @@ goacc_enter_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
 
 	  struct target_mem_desc *tgt
 	    = goacc_map_vars (acc_dev, aq, groupnum, &hostaddrs[i], NULL,
-			      &sizes[i], &kinds[i], true,
+			      &sizes[i], &kinds[i], NULL, true,
 			      GOMP_MAP_VARS_ENTER_DATA);
 	  assert (tgt);
 
