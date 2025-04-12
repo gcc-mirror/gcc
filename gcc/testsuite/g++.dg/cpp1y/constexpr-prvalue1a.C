@@ -1,4 +1,5 @@
 // PR c++/116416
+// A version of constexpr-prvalue1.C that calls __builtin_is_constant_evaluated.
 // { dg-do compile { target c++14 } }
 // { dg-options "-O -fdump-tree-original" }
 
@@ -7,7 +8,7 @@ struct Str {
   constexpr Str(const char *instr) {
       str = instr; length = 0;
       for (auto index = 0; instr[index]; ++index) {
-        ++length;
+        length += __builtin_is_constant_evaluated() ? 1 : 1;
       }
   }
   const char *str = nullptr;

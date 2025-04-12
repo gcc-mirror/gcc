@@ -1483,7 +1483,9 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	  *walk_subtrees = 0;
 	  if (!flag_no_inline)
 	    {
-	      tree folded = maybe_constant_init (init, TARGET_EXPR_SLOT (stmt));
+	      tree folded = maybe_constant_init (init, TARGET_EXPR_SLOT (stmt),
+						 (data->flags & ff_mce_false
+						  ? mce_false : mce_unknown));
 	      if (folded != init && TREE_CONSTANT (folded))
 		init = folded;
 	    }
