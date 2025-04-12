@@ -896,6 +896,18 @@ build_ssa_conflict_graph (tree_live_info_p liveinfo)
 	  tree var;
 	  gimple *stmt = gsi_stmt (gsi);
 
+	  if (is_gimple_debug (stmt))
+	    continue;
+
+	  if (map->bitint)
+	    {
+	      build_bitint_stmt_ssa_conflicts (stmt, live, graph, map->bitint,
+					       live_track_process_def,
+					       live_track_process_use,
+					       live_track_clear_var);
+	      continue;
+	    }
+
 	  /* A copy between 2 partitions does not introduce an interference
 	     by itself.  If they did, you would never be able to coalesce
 	     two things which are copied.  If the two variables really do
@@ -911,16 +923,6 @@ build_ssa_conflict_graph (tree_live_info_p liveinfo)
                   && TREE_CODE (lhs) == SSA_NAME
                   && TREE_CODE (rhs1) == SSA_NAME)
 		live_track_clear_var (live, rhs1);
-	    }
-	  else if (is_gimple_debug (stmt))
-	    continue;
-
-	  if (map->bitint)
-	    {
-	      build_bitint_stmt_ssa_conflicts (stmt, live, graph, map->bitint,
-					       live_track_process_def,
-					       live_track_process_use);
-	      continue;
 	    }
 
 	  /* For stmts with more than one SSA_NAME definition pretend all the
