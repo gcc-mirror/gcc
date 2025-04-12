@@ -492,10 +492,10 @@ maybe_error_musttail (gcall *call, const char *err, bool diag_musttail)
       gimple_call_set_must_tail (call, false); /* Avoid another error.  */
       gimple_call_set_tail (call, false);
     }
-  if (dump_file)
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       print_gimple_stmt (dump_file, call, 0, TDF_SLIM);
-      fprintf (dump_file, "Cannot convert: %s\n", err);
+      fprintf (dump_file, "Cannot tail-call: %s\n", err);
     }
 }
 
@@ -596,9 +596,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	    return;
 	  if (bad_stmt)
 	    {
-	      maybe_error_musttail (call,
-				    _("memory reference or volatile after "
-				      "call"), diag_musttail);
+	      maybe_error_musttail (call, _("memory reference or volatile "
+					    "after call"), diag_musttail);
 	      return;
 	    }
 	  ass_var = gimple_call_lhs (call);
@@ -711,9 +710,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 
     if (!e)
       {
-	maybe_error_musttail (call,
-			      _("call may throw exception that does not "
-				"propagate"), diag_musttail);
+	maybe_error_musttail (call, _("call may throw exception that does not "
+				      "propagate"), diag_musttail);
 	return;
       }
 
@@ -721,9 +719,9 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	|| !empty_eh_cleanup (e->dest, 20)
 	|| EDGE_COUNT (bb->succs) > 2)
       {
-	maybe_error_musttail (call,
-			      _("call may throw exception caught locally "
-				"or perform cleanups"), diag_musttail);
+	maybe_error_musttail (call, _("call may throw exception caught "
+				      "locally or perform cleanups"),
+			      diag_musttail);
 	return;
       }
   }
@@ -854,9 +852,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 		}
 	      if (local_live_vars)
 		BITMAP_FREE (local_live_vars);
-	      maybe_error_musttail (call,
-				    _("call invocation refers to locals"),
-				    diag_musttail);
+	      maybe_error_musttail (call, _("call invocation refers to "
+					    "locals"), diag_musttail);
 	      return;
 	    }
 	  else
@@ -883,9 +880,8 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 		      continue;
 		    }
 		  BITMAP_FREE (local_live_vars);
-		  maybe_error_musttail (call,
-					_("call invocation refers to locals"),
-					diag_musttail);
+		  maybe_error_musttail (call, _("call invocation refers to "
+						"locals"), diag_musttail);
 		  return;
 		}
 	    }
@@ -1020,8 +1016,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
       if (!VOID_TYPE_P (rettype)
 	  && !useless_type_conversion_p (rettype, calltype))
 	{
-	  maybe_error_musttail (call,
-				_("call and return value are different"),
+	  maybe_error_musttail (call, _("call and return value are different"),
 				diag_musttail);
 	  return;
 	}
@@ -1092,8 +1087,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 	      }
       if (!ok)
 	{
-	  maybe_error_musttail (call,
-				_("call and return value are different"),
+	  maybe_error_musttail (call, _("call and return value are different"),
 				diag_musttail);
 	  return;
 	}
@@ -1103,18 +1097,16 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
      multiplicands.  */
   if (!tail_recursion && (m || a))
     {
-      maybe_error_musttail (call,
-			    _("operations after non tail recursive call"),
-			    diag_musttail);
+      maybe_error_musttail (call, _("operations after non tail recursive "
+				    "call"), diag_musttail);
       return;
     }
 
   /* For pointers only allow additions.  */
   if (m && POINTER_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
     {
-      maybe_error_musttail (call,
-			    _("tail recursion with pointers can only use "
-			      "additions"), diag_musttail);
+      maybe_error_musttail (call, _("tail recursion with pointers can only "
+				    "use additions"), diag_musttail);
       return;
     }
 
@@ -1594,10 +1586,10 @@ tree_optimize_tail_calls_1 (bool opt_tailcalls, bool only_musttail,
 		struct tailcall *a = *p;
 		*p = (*p)->next;
 		gcall *call = as_a <gcall *> (gsi_stmt (a->call_gsi));
-		maybe_error_musttail (call,
-				      _("tail recursion with accumulation "
-					"mixed with musttail "
-					"non-recursive call"), diag_musttail);
+		maybe_error_musttail (call, _("tail recursion with "
+					      "accumulation mixed with "
+					      "musttail non-recursive call"),
+				      diag_musttail);
 		free (a);
 	      }
 	    else
