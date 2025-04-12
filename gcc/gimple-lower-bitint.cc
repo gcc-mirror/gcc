@@ -5915,7 +5915,8 @@ build_bitint_stmt_ssa_conflicts (gimple *stmt, live_track *live,
 				 ssa_conflicts *graph, bitmap names,
 				 void (*def) (live_track *, tree,
 					      ssa_conflicts *),
-				 void (*use) (live_track *, tree))
+				 void (*use) (live_track *, tree),
+				 void (*clear) (live_track *, tree))
 {
   bool muldiv_p = false;
   tree lhs = NULL_TREE;
@@ -5932,6 +5933,25 @@ build_bitint_stmt_ssa_conflicts (gimple *stmt, live_track *live,
 	    {
 	      if (!bitmap_bit_p (names, SSA_NAME_VERSION (lhs)))
 		return;
+
+	      /* A copy between 2 partitions does not introduce an interference
+		 by itself.  If they did, you would never be able to coalesce
+		 two things which are copied.  If the two variables really do
+		 conflict, they will conflict elsewhere in the program.
+
+		 This is handled by simply removing the SRC of the copy from
+		 the live list, and processing the stmt normally.
+
+		 Don't do this if lhs is not in names though, in such cases
+		 it is actually used at some point later in the basic
+		 block.  */
+	      if (gimple_assign_copy_p (stmt))
+		{
+		  tree rhs1 = gimple_assign_rhs1 (stmt);
+		  if (TREE_CODE (rhs1) == SSA_NAME)
+		    clear (live, rhs1);
+		}
+
 	      switch (gimple_assign_rhs_code (stmt))
 		{
 		case MULT_EXPR:

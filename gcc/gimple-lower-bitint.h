@@ -26,6 +26,7 @@ extern void build_bitint_stmt_ssa_conflicts (gimple *, live_track *,
 					     ssa_conflicts *, bitmap,
 					     void (*) (live_track *, tree,
 						       ssa_conflicts *),
+					     void (*) (live_track *, tree),
 					     void (*) (live_track *, tree));
 
 #endif /* GCC_GIMPLE_LOWER_BITINT_H */
