@@ -7565,55 +7565,58 @@ print_configuration (FILE *file)
 
 #define RETRY_ICE_ATTEMPTS 3
 
-/* Returns true if FILE1 and FILE2 contain equivalent data, 0 otherwise.  */
+/* Returns true if FILE1 and FILE2 contain equivalent data, 0 otherwise.
+   If lines start with 0x followed by 1-16 lowercase hexadecimal digits
+   followed by a space, ignore anything before that space.  These are
+   typically function addresses from libbacktrace and those can differ
+   due to ASLR.  */
 
 static bool
 files_equal_p (char *file1, char *file2)
 {
-  struct stat st1, st2;
-  off_t n, len;
-  int fd1, fd2;
-  const int bufsize = 8192;
-  char *buf = XNEWVEC (char, bufsize);
+  FILE *f1 = fopen (file1, "rb");
+  FILE *f2 = fopen (file2, "rb");
+  char line1[256], line2[256];
 
-  fd1 = open (file1, O_RDONLY);
-  fd2 = open (file2, O_RDONLY);
-
-  if (fd1 < 0 || fd2 < 0)
-    goto error;
-
-  if (fstat (fd1, &st1) < 0 || fstat (fd2, &st2) < 0)
-    goto error;
-
-  if (st1.st_size != st2.st_size)
-    goto error;
-
-  for (n = st1.st_size; n; n -= len)
+  bool line_start = true;
+  while (fgets (line1, sizeof (line1), f1))
     {
-      len = n;
-      if ((int) len > bufsize / 2)
-	len = bufsize / 2;
-
-      if (read (fd1, buf, len) != (int) len
-	  || read (fd2, buf + bufsize / 2, len) != (int) len)
-	{
-	  goto error;
-	}
-
-      if (memcmp (buf, buf + bufsize / 2, len) != 0)
+      if (!fgets (line2, sizeof (line2), f2))
 	goto error;
+      char *p1 = line1, *p2 = line2;
+      if (line_start
+	  && line1[0] == '0'
+	  && line1[1] == 'x'
+	  && line2[0] == '0'
+	  && line2[1] == 'x')
+	{
+	  int i, j;
+	  for (i = 0; i < 16; ++i)
+	    if (!ISXDIGIT (line1[2 + i]) || ISUPPER (line1[2 + i]))
+	      break;
+	  for (j = 0; j < 16; ++j)
+	    if (!ISXDIGIT (line2[2 + j]) || ISUPPER (line2[2 + j]))
+	      break;
+	  if (i && line1[2 + i] == ' ' && j && line2[2 + j] == ' ')
+	    {
+	      p1 = line1 + i + 3;
+	      p2 = line2 + j + 3;
+	    }
+	}
+      if (strcmp (p1, p2) != 0)
+	goto error;
+      line_start = strchr (line1, '\n') != NULL;
     }
+  if (fgets (line2, sizeof (line2), f2))
+    goto error;
 
-  free (buf);
-  close (fd1);
-  close (fd2);
-
+  fclose (f1);
+  fclose (f2);
   return 1;
 
 error:
-  free (buf);
-  close (fd1);
-  close (fd2);
+  fclose (f1);
+  fclose (f2);
   return 0;
 }
 
