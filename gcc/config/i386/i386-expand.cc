@@ -10138,8 +10138,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 	  if (lookup_attribute ("interrupt",
 				TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
 	    error ("interrupt service routine cannot be called directly");
-	  else if (lookup_attribute ("no_callee_saved_registers",
-				     TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
+	  else if (ix86_type_no_callee_saved_registers_p (TREE_TYPE (fndecl)))
 	    call_no_callee_saved_registers = true;
 	  if (fndecl == current_function_decl
 	      && decl_binds_to_current_def_p (fndecl))
@@ -10153,8 +10152,7 @@ ix86_expand_call (rtx retval, rtx fnaddr, rtx callarg1,
 	  tree mem_expr = MEM_EXPR (fnaddr);
 	  if (mem_expr != nullptr
 	      && TREE_CODE (mem_expr) == MEM_REF
-	      && lookup_attribute ("no_callee_saved_registers",
-				   TYPE_ATTRIBUTES (TREE_TYPE (mem_expr))))
+	      && ix86_type_no_callee_saved_registers_p (TREE_TYPE (mem_expr)))
 	    call_no_callee_saved_registers = true;
 	}
 

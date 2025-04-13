@@ -3277,7 +3277,10 @@ ix86_set_func_type (tree fndecl)
      interrupt function in this case.  */
   enum call_saved_registers_type no_callee_saved_registers
     = TYPE_DEFAULT_CALL_SAVED_REGISTERS;
-  if (lookup_attribute ("no_callee_saved_registers",
+  if (lookup_attribute ("preserve_none",
+			     TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
+    no_callee_saved_registers = TYPE_PRESERVE_NONE;
+  else if (lookup_attribute ("no_callee_saved_registers",
 			TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
     no_callee_saved_registers = TYPE_NO_CALLEE_SAVED_REGISTERS;
   else if (ix86_noreturn_no_callee_saved_registers
@@ -3301,9 +3304,16 @@ ix86_set_func_type (tree fndecl)
 		      "interrupt and naked attributes are not compatible");
 
 	  if (no_callee_saved_registers)
-	    error_at (DECL_SOURCE_LOCATION (fndecl),
-		      "%qs and %qs attributes are not compatible",
-		      "interrupt", "no_callee_saved_registers");
+	    {
+	      const char *attr;
+	      if (no_callee_saved_registers == TYPE_PRESERVE_NONE)
+		attr = "preserve_none";
+	      else
+		attr = "no_callee_saved_registers";
+	      error_at (DECL_SOURCE_LOCATION (fndecl),
+			"%qs and %qs attributes are not compatible",
+			"interrupt", attr);
+	    }
 
 	  int nargs = 0;
 	  for (tree arg = DECL_ARGUMENTS (fndecl);
@@ -3325,21 +3335,13 @@ ix86_set_func_type (tree fndecl)
       else
 	{
 	  cfun->machine->func_type = TYPE_NORMAL;
-	  if (lookup_attribute ("no_caller_saved_registers",
-				TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
+	  if (no_callee_saved_registers)
+	    cfun->machine->call_saved_registers
+	      = no_callee_saved_registers;
+	  else if (lookup_attribute ("no_caller_saved_registers",
+				     TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
 	    cfun->machine->call_saved_registers
 	      = TYPE_NO_CALLER_SAVED_REGISTERS;
-	  if (no_callee_saved_registers)
-	    {
-	      if (cfun->machine->call_saved_registers
-		  == TYPE_NO_CALLER_SAVED_REGISTERS)
-		error_at (DECL_SOURCE_LOCATION (fndecl),
-			  "%qs and %qs attributes are not compatible",
-			  "no_caller_saved_registers",
-			  "no_callee_saved_registers");
-	      cfun->machine->call_saved_registers
-		= no_callee_saved_registers;
-	    }
 	}
     }
 }
@@ -3528,11 +3530,21 @@ ix86_set_current_function (tree fndecl)
       || (cfun->machine->call_saved_registers
 	  == TYPE_NO_CALLER_SAVED_REGISTERS))
     {
-      /* Don't allow SSE, MMX nor x87 instructions since they
-	 may change processor state.  */
+      /* Don't allow AVX, AVX512, MMX nor x87 instructions since they
+	 may change processor state.  Don't allow SSE instructions in
+	 exception/interrupt service routines.  */
       const char *isa;
       if (TARGET_SSE)
-	isa = "SSE";
+	{
+	  if (TARGET_AVX512F)
+	    isa = "AVX512";
+	  else if (TARGET_AVX)
+	    isa = "AVX";
+	  else if (cfun->machine->func_type != TYPE_NORMAL)
+	    isa = "SSE";
+	  else
+	    isa = NULL;
+	}
       else if (TARGET_MMX)
 	isa = "MMX/3Dnow";
       else if (TARGET_80387)
@@ -3957,9 +3969,50 @@ ix86_handle_fndecl_attribute (tree *node, tree name, tree args, int,
 }
 
 static tree
-ix86_handle_call_saved_registers_attribute (tree *, tree, tree,
+ix86_handle_call_saved_registers_attribute (tree *node, tree name, tree,
 					    int, bool *)
 {
+  const char *attr1 = nullptr;
+  const char *attr2 = nullptr;
+
+  if (is_attribute_p ("no_callee_saved_registers", name))
+    {
+      /* Disallow preserve_none and no_caller_saved_registers
+	 attributes.  */
+      attr1 = "no_callee_saved_registers";
+      if (lookup_attribute ("preserve_none", TYPE_ATTRIBUTES (*node)))
+	attr2 = "preserve_none";
+      else if (lookup_attribute ("no_caller_saved_registers",
+				 TYPE_ATTRIBUTES (*node)))
+	attr2 = "no_caller_saved_registers";
+    }
+  else if (is_attribute_p ("no_caller_saved_registers", name))
+    {
+      /* Disallow preserve_none and no_callee_saved_registers
+	 attributes.  */
+      attr1 = "no_caller_saved_registers";
+      if (lookup_attribute ("preserve_none", TYPE_ATTRIBUTES (*node)))
+	attr2 = "preserve_none";
+      else if (lookup_attribute ("no_callee_saved_registers",
+				 TYPE_ATTRIBUTES (*node)))
+	attr2 = "no_callee_saved_registers";
+    }
+  else if (is_attribute_p ("preserve_none", name))
+    {
+      /* Disallow no_callee_saved_registers and no_caller_saved_registers
+	 attributes.  */
+      attr1 = "preserve_none";
+      if (lookup_attribute ("no_callee_saved_registers",
+			    TYPE_ATTRIBUTES (*node)))
+	attr2 = "no_caller_saved_registers";
+      else if (lookup_attribute ("no_callee_saved_registers",
+				 TYPE_ATTRIBUTES (*node)))
+	attr2 = "no_callee_saved_registers";
+    }
+
+  if (attr2)
+    error ("%qs and %qs attributes are not compatible", attr1, attr2);
+
   return NULL_TREE;
 }
 
@@ -4120,6 +4173,8 @@ static const attribute_spec ix86_gnu_attributes[] =
   { "interrupt", 0, 0, false, true, true, false,
     ix86_handle_interrupt_attribute, NULL },
   { "no_caller_saved_registers", 0, 0, false, true, true, false,
+    ix86_handle_call_saved_registers_attribute, NULL },
+  { "preserve_none", 0, 0, false, true, true, true,
     ix86_handle_call_saved_registers_attribute, NULL },
   { "no_callee_saved_registers", 0, 0, false, true, true, true,
     ix86_handle_call_saved_registers_attribute, NULL },

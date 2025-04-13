@@ -1696,6 +1696,8 @@ typedef struct ix86_args {
   int stdarg;                   /* Set to 1 if function is stdarg.  */
   enum calling_abi call_abi;	/* Set to SYSV_ABI for sysv abi. Otherwise
  				   MS_ABI for ms abi.  */
+  bool preserve_none_abi;	/* Set to true if the preserve_none ABI is
+				   used.  */
   tree decl;			/* Callee decl.  */
 } CUMULATIVE_ARGS;
 
@@ -2805,6 +2807,9 @@ enum call_saved_registers_type
   /* The current function is a function specified with the "noreturn"
      attribute.  */
   TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP,
+  /* The current function is a function specified with the
+     "preserve_none" attribute.  */
+  TYPE_PRESERVE_NONE,
 };
 
 enum queued_insn_type
@@ -2881,7 +2886,7 @@ struct GTY(()) machine_function {
   ENUM_BITFIELD(indirect_branch) function_return_type : 3;
 
   /* Call saved registers type.  */
-  ENUM_BITFIELD(call_saved_registers_type) call_saved_registers : 2;
+  ENUM_BITFIELD(call_saved_registers_type) call_saved_registers : 3;
 
   /* If true, there is register available for argument passing.  This
      is used only in ix86_function_ok_for_sibcall by 32-bit to determine

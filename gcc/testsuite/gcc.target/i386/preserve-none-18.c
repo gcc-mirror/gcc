@@ -1,0 +1,17 @@
+/* { dg-do compile } */
+/* { dg-options "-O2 -mtune-ctrl=^prologue_using_move,^epilogue_using_move" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
+
+extern void foo (void);
+
+__attribute__ ((preserve_none))
+void
+bar (void)
+{
+  foo ();
+}
+
+/* { dg-final { scan-assembler-not "push" } } */
+/* { dg-final { scan-assembler-not "pop" } } */
+/* { dg-final { scan-assembler-not "call\[\\t \]+_?foo" } } */
+/* { dg-final { scan-assembler "jmp\[\\t \]+_?foo" } } */

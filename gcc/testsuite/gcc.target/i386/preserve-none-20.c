@@ -1,0 +1,18 @@
+/* { dg-do compile } */
+/* { dg-options "-O2 -mtune-ctrl=^prologue_using_move,^epilogue_using_move" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
+
+typedef void (*fn_t) (void) __attribute__ ((no_callee_saved_registers));
+extern fn_t bar;
+
+__attribute__ ((preserve_none))
+void
+foo (void)
+{
+  bar ();
+}
+
+/* { dg-final { scan-assembler-not "push" } } */
+/* { dg-final { scan-assembler-not "pop" } } */
+/* { dg-final { scan-assembler "jmp" } } */
+/* { dg-final { scan-assembler-not "call\[\\t \]+" } } */

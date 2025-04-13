@@ -335,6 +335,14 @@ static int const x86_64_ms_abi_int_parameter_registers[4] =
   CX_REG, DX_REG, R8_REG, R9_REG
 };
 
+/* Similar as Clang's preserve_none function parameter passing.
+   NB: Use DI_REG and SI_REG, see ix86_function_value_regno_p.  */
+
+static int const x86_64_preserve_none_int_parameter_registers[6] =
+{
+  R12_REG, R13_REG, R14_REG, R15_REG, DI_REG, SI_REG
+};
+
 static int const x86_64_int_return_registers[4] =
 {
   AX_REG, DX_REG, DI_REG, SI_REG
@@ -460,7 +468,8 @@ int ix86_arch_specified;
    red-zone.
 
    NB: Don't use red-zone for functions with no_caller_saved_registers
-   and 32 GPRs since 128-byte red-zone is too small for 31 GPRs.
+   and 32 GPRs or 16 XMM registers since 128-byte red-zone is too small
+   for 31 GPRs or 15 GPRs + 16 XMM registers.
 
    TODO: If we can reserve the first 2 WORDs, for PUSH and, another
    for CALL, in red-zone, we can allow local indirect jumps with
@@ -471,7 +480,7 @@ ix86_using_red_zone (void)
 {
   return (TARGET_RED_ZONE
 	  && !TARGET_64BIT_MS_ABI
-	  && (!TARGET_APX_EGPR
+	  && ((!TARGET_APX_EGPR && !TARGET_SSE)
 	      || (cfun->machine->call_saved_registers
 		  != TYPE_NO_CALLER_SAVED_REGISTERS))
 	  && (!cfun->machine->has_local_indirect_jump
@@ -898,6 +907,18 @@ x86_64_elf_unique_section (tree decl, int reloc)
   default_unique_section (decl, reloc);
 }
 
+/* Return true if TYPE has no_callee_saved_registers or preserve_none
+   attribute.  */
+
+bool
+ix86_type_no_callee_saved_registers_p (const_tree type)
+{
+  return (lookup_attribute ("no_callee_saved_registers",
+			    TYPE_ATTRIBUTES (type)) != NULL
+	  || lookup_attribute ("preserve_none",
+			       TYPE_ATTRIBUTES (type)) != NULL);
+}
+
 #ifdef COMMON_ASM_OP
 
 #ifndef LARGECOMM_SECTION_ASM_OP
@@ -1019,11 +1040,12 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
 
   /* Sibling call isn't OK if callee has no callee-saved registers
      and the calling function has callee-saved registers.  */
-  if (cfun->machine->call_saved_registers != TYPE_NO_CALLEE_SAVED_REGISTERS
+  if ((cfun->machine->call_saved_registers
+       != TYPE_NO_CALLEE_SAVED_REGISTERS)
+      && cfun->machine->call_saved_registers != TYPE_PRESERVE_NONE
       && (cfun->machine->call_saved_registers
 	  != TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP)
-      && lookup_attribute ("no_callee_saved_registers",
-			   TYPE_ATTRIBUTES (type)))
+      && ix86_type_no_callee_saved_registers_p (type))
     return false;
 
   /* If outgoing reg parm stack space changes, we cannot do sibcall.  */
@@ -1188,10 +1210,16 @@ ix86_comp_type_attributes (const_tree type1, const_tree type2)
       != ix86_function_regparm (type2, NULL))
     return 0;
 
-  if (lookup_attribute ("no_callee_saved_registers",
-			TYPE_ATTRIBUTES (type1))
-      != lookup_attribute ("no_callee_saved_registers",
-			   TYPE_ATTRIBUTES (type2)))
+  if (ix86_type_no_callee_saved_registers_p (type1)
+      != ix86_type_no_callee_saved_registers_p (type2))
+    return 0;
+
+  /* preserve_none attribute uses a different calling convention is
+     only for 64-bit.  */
+  if (TARGET_64BIT
+      && (lookup_attribute ("preserve_none", TYPE_ATTRIBUTES (type1))
+	  != lookup_attribute ("preserve_none",
+			       TYPE_ATTRIBUTES (type2))))
     return 0;
 
   return 1;
@@ -1553,7 +1581,10 @@ ix86_function_arg_regno_p (int regno)
   if (call_abi == SYSV_ABI && regno == AX_REG)
     return true;
 
-  if (call_abi == MS_ABI)
+  if (cfun
+      && cfun->machine->call_saved_registers == TYPE_PRESERVE_NONE)
+    parm_regs = x86_64_preserve_none_int_parameter_registers;
+  else if (call_abi == MS_ABI)
     parm_regs = x86_64_ms_abi_int_parameter_registers;
   else
     parm_regs = x86_64_int_parameter_registers;
@@ -1835,6 +1866,7 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 
   memset (cum, 0, sizeof (*cum));
 
+  tree preserve_none_type;
   if (fndecl)
     {
       target = cgraph_node::get (fndecl);
@@ -1843,12 +1875,24 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
 	  target = target->function_symbol ();
 	  local_info_node = cgraph_node::local_info_node (target->decl);
 	  cum->call_abi = ix86_function_abi (target->decl);
+	  preserve_none_type = TREE_TYPE (target->decl);
 	}
       else
-	cum->call_abi = ix86_function_abi (fndecl);
+	{
+	  cum->call_abi = ix86_function_abi (fndecl);
+	  preserve_none_type = TREE_TYPE (fndecl);
+	}
     }
   else
-    cum->call_abi = ix86_function_type_abi (fntype);
+    {
+      cum->call_abi = ix86_function_type_abi (fntype);
+      preserve_none_type = fntype;
+    }
+  cum->preserve_none_abi
+    = (preserve_none_type
+       && (lookup_attribute ("preserve_none",
+			     TYPE_ATTRIBUTES (preserve_none_type))
+	   != nullptr));
 
   cum->caller = caller;
 
@@ -3421,9 +3465,15 @@ function_arg_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
       break;
     }
 
+  const int *parm_regs;
+  if (cum->preserve_none_abi)
+    parm_regs = x86_64_preserve_none_int_parameter_registers;
+  else
+    parm_regs = x86_64_int_parameter_registers;
+
   return construct_container (mode, orig_mode, type, 0, cum->nregs,
 			      cum->sse_nregs,
-			      &x86_64_int_parameter_registers [cum->regno],
+			      &parm_regs[cum->regno],
 			      cum->sse_regno);
 }
 
@@ -4588,6 +4638,12 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
   if (max > X86_64_REGPARM_MAX)
     max = X86_64_REGPARM_MAX;
 
+  const int *parm_regs;
+  if (cum->preserve_none_abi)
+    parm_regs = x86_64_preserve_none_int_parameter_registers;
+  else
+    parm_regs = x86_64_int_parameter_registers;
+
   for (i = cum->regno; i < max; i++)
     {
       mem = gen_rtx_MEM (word_mode,
@@ -4595,8 +4651,7 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
       MEM_NOTRAP_P (mem) = 1;
       set_mem_alias_set (mem, set);
       emit_move_insn (mem,
-		      gen_rtx_REG (word_mode,
-				   x86_64_int_parameter_registers[i]));
+		      gen_rtx_REG (word_mode, parm_regs[i]));
     }
 
   if (ix86_varargs_fpr_size)
@@ -6718,6 +6773,7 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
 		  || !frame_pointer_needed));
 
     case TYPE_NO_CALLEE_SAVED_REGISTERS:
+    case TYPE_PRESERVE_NONE:
       return false;
 
     case TYPE_NO_CALLEE_SAVED_REGISTERS_EXCEPT_BP:
@@ -6797,7 +6853,9 @@ ix86_nsaved_sseregs (void)
   int nregs = 0;
   int regno;
 
-  if (!TARGET_64BIT_MS_ABI)
+  if (!TARGET_64BIT_MS_ABI
+      && (cfun->machine->call_saved_registers
+	  != TYPE_NO_CALLER_SAVED_REGISTERS))
     return 0;
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (SSE_REGNO_P (regno) && ix86_save_reg (regno, true, true))
@@ -7005,12 +7063,18 @@ ix86_compute_frame_layout (void)
   gcc_assert (preferred_alignment >= STACK_BOUNDARY / BITS_PER_UNIT);
   gcc_assert (preferred_alignment <= stack_alignment_needed);
 
-  /* The only ABI saving SSE regs should be 64-bit ms_abi.  */
-  gcc_assert (TARGET_64BIT || !frame->nsseregs);
+  /* The only ABI saving SSE regs should be 64-bit ms_abi or with
+     no_caller_saved_registers attribue.  */
+  gcc_assert (TARGET_64BIT
+	      || (cfun->machine->call_saved_registers
+		  == TYPE_NO_CALLER_SAVED_REGISTERS)
+	      || !frame->nsseregs);
   if (TARGET_64BIT && m->call_ms2sysv)
     {
       gcc_assert (stack_alignment_needed >= 16);
-      gcc_assert (!frame->nsseregs);
+      gcc_assert ((cfun->machine->call_saved_registers
+		   == TYPE_NO_CALLER_SAVED_REGISTERS)
+		  || !frame->nsseregs);
     }
 
   /* For SEH we have to limit the amount of code movement into the prologue.
@@ -23297,7 +23361,9 @@ x86_this_parameter (tree function)
     {
       const int *parm_regs;
 
-      if (ix86_function_type_abi (type) == MS_ABI)
+      if (lookup_attribute ("preserve_none", TYPE_ATTRIBUTES (type)))
+	parm_regs = x86_64_preserve_none_int_parameter_registers;
+      else if (ix86_function_type_abi (type) == MS_ABI)
         parm_regs = x86_64_ms_abi_int_parameter_registers;
       else
         parm_regs = x86_64_int_parameter_registers;
