@@ -962,7 +962,7 @@ s390_resolve_overloaded_builtin (location_t loc, tree ob_fndecl,
 
   if (!TARGET_VXE3 && (ob_flags & B_VXE3))
     {
-      error_at (loc, "%qF requires arch15 or higher", ob_fndecl);
+      error_at (loc, "%qF requires z17 or higher", ob_fndecl);
       return error_mark_node;
     }
 
@@ -1056,7 +1056,7 @@ s390_resolve_overloaded_builtin (location_t loc, tree ob_fndecl,
   if (!TARGET_VXE3
       && bflags_overloaded_builtin_var[last_match_index] & B_VXE3)
     {
-      error_at (loc, "%qs matching variant requires arch15 or higher",
+      error_at (loc, "%qs matching variant requires z17 or higher",
 		IDENTIFIER_POINTER (DECL_NAME (ob_fndecl)));
       return error_mark_node;
     }

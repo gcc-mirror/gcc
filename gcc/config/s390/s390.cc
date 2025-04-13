@@ -342,7 +342,7 @@ const struct s390_processor processor_table[] =
   { "z14",    "arch12", PROCESSOR_3906_Z14,    &zEC12_cost,  12 },
   { "z15",    "arch13", PROCESSOR_8561_Z15,    &zEC12_cost,  13 },
   { "z16",    "arch14", PROCESSOR_3931_Z16,    &zEC12_cost,  14 },
-  { "arch15", "arch15", PROCESSOR_ARCH15,      &zEC12_cost,  15 },
+  { "z17",    "arch15", PROCESSOR_9175_Z17,    &zEC12_cost,  15 },
   { "native", "",       PROCESSOR_NATIVE,      NULL,         0  }
 };
 
@@ -916,7 +916,7 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
       if ((bflags & B_VXE3) && !TARGET_VXE3)
 	{
-	  error ("Builtin %qF requires arch15 or higher", fndecl);
+	  error ("Builtin %qF requires z17 or higher", fndecl);
 	  return const0_rtx;
 	}
     }
@@ -9204,7 +9204,7 @@ s390_issue_rate (void)
     case PROCESSOR_3906_Z14:
     case PROCESSOR_8561_Z15:
     case PROCESSOR_3931_Z16:
-    case PROCESSOR_ARCH15:
+    case PROCESSOR_9175_Z17:
     default:
       return 1;
     }
@@ -15632,7 +15632,7 @@ s390_get_sched_attrmask (rtx_insn *insn)
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     case PROCESSOR_3931_Z16:
-    case PROCESSOR_ARCH15:
+    case PROCESSOR_9175_Z17:
       if (get_attr_z16_cracked (insn))
 	mask |= S390_SCHED_ATTR_MASK_CRACKED;
       if (get_attr_z16_expanded (insn))
@@ -15691,7 +15691,7 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
 	mask |= 1 << 3;
       break;
     case PROCESSOR_3931_Z16:
-    case PROCESSOR_ARCH15:
+    case PROCESSOR_9175_Z17:
       *units = 4;
       if (get_attr_z16_unit_lsu (insn))
 	mask |= 1 << 0;

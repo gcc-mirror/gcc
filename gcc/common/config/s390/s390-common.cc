@@ -54,10 +54,10 @@ EXPORTED_CONST int processor_flags_table[] =
 		 | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196 | PF_ZEC12 | PF_TX
 		 | PF_Z13 | PF_VX | PF_VXE | PF_Z14 | PF_VXE2 | PF_Z15
 		 | PF_NNPA | PF_Z16,
-    /* arch15 */ PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
+    /* z17 */    PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
 		 | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196 | PF_ZEC12 | PF_TX
 		 | PF_Z13 | PF_VX | PF_VXE | PF_Z14 | PF_VXE2 | PF_Z15
-		 | PF_NNPA | PF_Z16 | PF_VXE3 | PF_ARCH15
+		 | PF_NNPA | PF_Z16 | PF_VXE3 | PF_Z17
   };
 
 /* Change optimizations to be performed, depending on the
