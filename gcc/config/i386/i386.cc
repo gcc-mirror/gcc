@@ -444,6 +444,9 @@ int ix86_arch_specified;
    indirect thunk pushes the return address onto stack, destroying
    red-zone.
 
+   NB: Don't use red-zone for functions with no_caller_saved_registers
+   and 32 GPRs since 128-byte red-zone is too small for 31 GPRs.
+
    TODO: If we can reserve the first 2 WORDs, for PUSH and, another
    for CALL, in red-zone, we can allow local indirect jumps with
    indirect thunk.  */
@@ -453,6 +456,9 @@ ix86_using_red_zone (void)
 {
   return (TARGET_RED_ZONE
 	  && !TARGET_64BIT_MS_ABI
+	  && (!TARGET_APX_EGPR
+	      || (cfun->machine->call_saved_registers
+		  != TYPE_NO_CALLER_SAVED_REGISTERS))
 	  && (!cfun->machine->has_local_indirect_jump
 	      || cfun->machine->indirect_branch_type == indirect_branch_keep));
 }
