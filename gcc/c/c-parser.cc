@@ -16332,7 +16332,7 @@ c_parser_oacc_wait_list (c_parser *parser, location_t clause_loc, tree list)
    in TREE_PURPOSE and the location in TREE_VALUE (accessible using
    EXPR_LOCATION); return the list created.
 
-   The optional ALLOW_DEREF argument is true if list items can use the deref
+   The optional MAP_LVALUE argument is true if list items can use the deref
    (->) operator.  */
 
 struct omp_dim
@@ -16348,6 +16348,7 @@ static tree
 c_parser_omp_variable_list (c_parser *parser,
 			    location_t clause_loc,
 			    enum omp_clause_code kind, tree list,
+			    enum c_omp_region_type ort = C_ORT_OMP,
 			    bool map_lvalue = false)
 {
   auto_vec<omp_dim> dims;
@@ -16620,7 +16621,8 @@ c_parser_omp_variable_list (c_parser *parser,
 	    case OMP_CLAUSE_HAS_DEVICE_ADDR:
 	      array_section_p = false;
 	      dims.truncate (0);
-	      while (c_parser_next_token_is (parser, CPP_OPEN_SQUARE))
+	      while ((ort != C_ORT_ACC || kind != OMP_CLAUSE_REDUCTION)
+		     && c_parser_next_token_is (parser, CPP_OPEN_SQUARE))
 		{
 		  location_t loc = UNKNOWN_LOCATION;
 		  tree low_bound = NULL_TREE, length = NULL_TREE;
@@ -16754,12 +16756,14 @@ c_parser_omp_variable_list (c_parser *parser,
 }
 
 /* Similarly, but expect leading and trailing parenthesis.  This is a very
-   common case for OpenACC and OpenMP clauses.  The optional ALLOW_DEREF
+   common case for OpenACC and OpenMP clauses.  The optional MAP_LVALUE
    argument is true if list items can use the deref (->) operator.  */
 
 static tree
 c_parser_omp_var_list_parens (c_parser *parser, enum omp_clause_code kind,
-			      tree list, bool map_lvalue = false)
+			      tree list,
+			      enum c_omp_region_type ort = C_ORT_OMP,
+			      bool map_lvalue = false)
 {
   /* The clauses location.  */
   location_t loc = c_parser_peek_token (parser)->location;
@@ -16780,7 +16784,8 @@ c_parser_omp_var_list_parens (c_parser *parser, enum omp_clause_code kind,
   matching_parens parens;
   if (parens.require_open (parser))
     {
-      list = c_parser_omp_variable_list (parser, loc, kind, list, map_lvalue);
+      list = c_parser_omp_variable_list (parser, loc, kind, list, ort,
+					 map_lvalue);
       parens.skip_until_found_close (parser);
     }
   return list;
@@ -16875,7 +16880,7 @@ c_parser_oacc_data_clause (c_parser *parser, pragma_omp_clause c_kind,
 	    }
 	}
       nl = c_parser_omp_variable_list (parser, open_loc, OMP_CLAUSE_MAP, list,
-				       false);
+				       C_ORT_ACC, false);
       parens.skip_until_found_close (parser);
     }
 
@@ -16900,7 +16905,8 @@ c_parser_oacc_data_clause_deviceptr (c_parser *parser, tree list)
   /* Can't use OMP_CLAUSE_MAP here (that is, can't use the generic
      c_parser_oacc_data_clause), as for PRAGMA_OACC_CLAUSE_DEVICEPTR,
      variable-list must only allow for pointer variables.  */
-  vars = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_ERROR, NULL);
+  vars = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_ERROR, NULL,
+				       C_ORT_ACC);
   for (t = vars; t && t; t = TREE_CHAIN (t))
     {
       tree v = TREE_PURPOSE (t);
@@ -18459,7 +18465,7 @@ c_parser_omp_clause_private (c_parser *parser, tree list)
 
 static tree
 c_parser_omp_clause_reduction (c_parser *parser, enum omp_clause_code kind,
-			       bool is_omp, tree list)
+			       enum c_omp_region_type ort, tree list)
 {
   location_t clause_loc = c_parser_peek_token (parser)->location;
   matching_parens parens;
@@ -18470,7 +18476,7 @@ c_parser_omp_clause_reduction (c_parser *parser, enum omp_clause_code kind,
       enum tree_code code = ERROR_MARK;
       tree reduc_id = NULL_TREE;
 
-      if (kind == OMP_CLAUSE_REDUCTION && is_omp)
+      if (kind == OMP_CLAUSE_REDUCTION && ort == C_ORT_OMP)
 	{
 	  if (c_parser_next_token_is_keyword (parser, RID_DEFAULT)
 	      && c_parser_peek_2nd_token (parser)->type == CPP_COMMA)
@@ -18551,7 +18557,8 @@ c_parser_omp_clause_reduction (c_parser *parser, enum omp_clause_code kind,
 	{
 	  tree nl, c;
 
-	  nl = c_parser_omp_variable_list (parser, clause_loc, kind, list);
+	  nl = c_parser_omp_variable_list (parser, clause_loc, kind, list, ort);
+
 	  for (c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
 	    {
 	      tree d = OMP_CLAUSE_DECL (c), type;
@@ -20058,7 +20065,7 @@ c_parser_omp_clause_map (c_parser *parser, tree list)
     }
 
   nl = c_parser_omp_variable_list (parser, clause_loc, OMP_CLAUSE_MAP, list,
-				   true);
+				   C_ORT_OMP, true);
 
   for (c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
     OMP_CLAUSE_SET_MAP_KIND (c, kind);
@@ -20325,7 +20332,7 @@ c_parser_omp_clause_from_to (c_parser *parser, enum omp_clause_code kind,
       c_parser_consume_token (parser);
     }
 
-  tree nl = c_parser_omp_variable_list (parser, loc, kind, list);
+  tree nl = c_parser_omp_variable_list (parser, loc, kind, list, C_ORT_OMP);
   parens.skip_until_found_close (parser);
 
   if (present)
@@ -20876,8 +20883,7 @@ c_parser_omp_clause_init (c_parser *parser, tree list)
     error_at (loc,
 	      "missing required %<target%> and/or %<targetsync%> modifier");
 
-  tree nl = c_parser_omp_variable_list (parser, loc, OMP_CLAUSE_INIT, list,
-					false);
+  tree nl = c_parser_omp_variable_list (parser, loc, OMP_CLAUSE_INIT, list);
   parens.skip_until_found_close (parser);
 
   for (tree c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
@@ -21069,7 +21075,7 @@ c_parser_oacc_all_clauses (c_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OACC_CLAUSE_REDUCTION:
 	  clauses
 	    = c_parser_omp_clause_reduction (parser, OMP_CLAUSE_REDUCTION,
-					     false, clauses);
+					     C_ORT_ACC, clauses);
 	  c_name = "reduction";
 	  break;
 	case PRAGMA_OACC_CLAUSE_SELF:
@@ -21235,7 +21241,7 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_IN_REDUCTION:
 	  clauses
 	    = c_parser_omp_clause_reduction (parser, OMP_CLAUSE_IN_REDUCTION,
-					     true, clauses);
+					     C_ORT_OMP, clauses);
 	  c_name = "in_reduction";
 	  break;
 	case PRAGMA_OMP_CLAUSE_INDIRECT:
@@ -21281,7 +21287,7 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_REDUCTION:
 	  clauses
 	    = c_parser_omp_clause_reduction (parser, OMP_CLAUSE_REDUCTION,
-					     true, clauses);
+					     C_ORT_OMP, clauses);
 	  c_name = "reduction";
 	  break;
 	case PRAGMA_OMP_CLAUSE_SCHEDULE:
@@ -21295,7 +21301,7 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_TASK_REDUCTION:
 	  clauses
 	    = c_parser_omp_clause_reduction (parser, OMP_CLAUSE_TASK_REDUCTION,
-					     true, clauses);
+					     C_ORT_OMP, clauses);
 	  c_name = "task_reduction";
 	  break;
 	case PRAGMA_OMP_CLAUSE_UNTIED:
@@ -21588,7 +21594,7 @@ c_parser_oacc_cache (location_t loc, c_parser *parser)
 	  readonly = true;
 	}
       clauses = c_parser_omp_variable_list (parser, open_loc,
-					    OMP_CLAUSE__CACHE_, NULL_TREE);
+					    OMP_CLAUSE__CACHE_, NULL_TREE, C_ORT_ACC);
       parens.skip_until_found_close (parser);
     }
 
