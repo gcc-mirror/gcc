@@ -1119,20 +1119,22 @@ explain_invalid_constexpr_fn (tree fun)
 
 struct GTY((for_user)) constexpr_call {
   /* Description of the constexpr function definition.  */
-  constexpr_fundef *fundef;
+  constexpr_fundef *fundef = nullptr;
   /* Parameter bindings environment.  A TREE_VEC of arguments.  */
-  tree bindings;
-  /* Result of the call.
-       NULL means the call is being evaluated.
+  tree bindings = NULL_TREE;
+  /* Result of the call, indexed by the value of
+     constexpr_ctx::manifestly_const_eval.
+       unknown_type_node means the call is being evaluated.
        error_mark_node means that the evaluation was erroneous or otherwise
        uncacheable (e.g. because it depends on the caller).
        Otherwise, the actual value of the call.  */
-  tree result;
+  tree results[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
   /* The hash of this call; we remember it here to avoid having to
      recalculate it when expanding the hash table.  */
-  hashval_t hash;
-  /* The value of constexpr_ctx::manifestly_const_eval.  */
-  enum mce_value manifestly_const_eval;
+  hashval_t hash = 0;
+
+  /* The result slot corresponding to the given mce_value.  */
+  tree& result (mce_value mce) { return results[1 + int(mce)]; }
 };
 
 struct constexpr_call_hasher : ggc_ptr_hash<constexpr_call>
@@ -1426,8 +1428,6 @@ constexpr_call_hasher::equal (constexpr_call *lhs, constexpr_call *rhs)
   if (lhs == rhs)
     return true;
   if (lhs->hash != rhs->hash)
-    return false;
-  if (lhs->manifestly_const_eval != rhs->manifestly_const_eval)
     return false;
   if (!constexpr_fundef_hasher::equal (lhs->fundef, rhs->fundef))
     return false;
@@ -2855,9 +2855,6 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 {
   location_t loc = cp_expr_loc_or_input_loc (t);
   tree fun = get_function_named_in_call (t);
-  constexpr_call new_call
-    = { NULL, NULL, NULL, 0, ctx->manifestly_const_eval };
-  int depth_ok;
 
   if (fun == NULL_TREE)
     return cxx_eval_internal_function (ctx, t, lval,
@@ -3099,7 +3096,6 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   if (DECL_IMMEDIATE_FUNCTION_P (fun))
     {
       new_ctx.manifestly_const_eval = mce_true;
-      new_call.manifestly_const_eval = mce_true;
       ctx = &new_ctx;
     }
 
@@ -3112,6 +3108,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		       || cp_noexcept_operand);
 
   bool non_constant_args = false;
+  constexpr_call new_call;
   new_call.bindings
     = cxx_bind_parameters_in_call (ctx, t, fun, non_constant_p,
 				   overflow_p, &non_constant_args);
@@ -3185,7 +3182,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
         }
     }
 
-  depth_ok = push_cx_call_context (t);
+  int depth_ok = push_cx_call_context (t);
 
   /* Remember the object we are constructing or destructing.  */
   tree new_obj = NULL_TREE;
@@ -3227,8 +3224,6 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       new_call.hash = constexpr_fundef_hasher::hash (new_call.fundef);
       new_call.hash
 	= iterative_hash_template_arg (new_call.bindings, new_call.hash);
-      new_call.hash
-	= iterative_hash_object (ctx->manifestly_const_eval, new_call.hash);
 
       /* If we have seen this call before, we are done.  */
       maybe_initialize_constexpr_call_table ();
@@ -3246,22 +3241,23 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		 the slot can move during evaluation of the body.  */
 	      *slot = entry = ggc_alloc<constexpr_call> ();
 	      *entry = new_call;
+	      entry->result (ctx->manifestly_const_eval) = unknown_type_node;
 	      fb.preserve ();
 	    }
 	}
-      /* Calls that are in progress have their result set to NULL, so that we
-	 can detect circular dependencies.  Now that we only cache up to
-	 constexpr_cache_depth this won't catch circular dependencies that
+      /* Calls that are in progress have their result set to unknown_type_node,
+	 so that we can detect circular dependencies.  Now that we only cache
+	 up to constexpr_cache_depth this won't catch circular dependencies that
 	 start deeper, but they'll hit the recursion or ops limit.  */
-      else if (entry->result == NULL)
+      else if (entry->result (ctx->manifestly_const_eval) == unknown_type_node)
 	{
 	  if (!ctx->quiet)
 	    error ("call has circular dependency");
 	  *non_constant_p = true;
-	  entry->result = result = error_mark_node;
+	  entry->result (ctx->manifestly_const_eval) = result = error_mark_node;
 	}
       else
-	result = entry->result;
+	result = entry->result (ctx->manifestly_const_eval);
     }
 
   if (!depth_ok)
@@ -3482,7 +3478,22 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
       else if (!result)
 	result = void_node;
       if (entry)
-	entry->result = cacheable ? result : error_mark_node;
+	{
+	  entry->result (ctx->manifestly_const_eval)
+	    = cacheable ? result : error_mark_node;
+
+	  if (result != error_mark_node
+	      && ctx->manifestly_const_eval == mce_unknown)
+	    {
+	      /* Evaluation succeeded and was independent of whether we're in a
+		 manifestly constant-evaluated context, so we can also reuse
+		 this result when evaluating this call with a fixed context.  */
+	      if (!entry->result (mce_true))
+		entry->result (mce_true) = entry->result (mce_unknown);
+	      if (!entry->result (mce_false))
+		entry->result (mce_false) = entry->result (mce_unknown);
+	    }
+	}
     }
 
   /* The result of a constexpr function must be completely initialized.
