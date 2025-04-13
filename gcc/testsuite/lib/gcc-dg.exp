@@ -507,8 +507,7 @@ if { [info procs ${tool}_load] != [list] \
 	    set linenum 1
 	    set outfile [open [lindex ${output-file} 1]]
 	    set do_fail 0
-	    set name [file tail [lindex ${output-file} 1]]
-	    verbose "output-file args is $args program is $program" 1
+	    set name [testname-for-summary]
 	    while { [gets $outfile line] >= 0 } {
 		if { $linenum != 1 } {
 		    set c [string index $output $idx]
