@@ -1858,6 +1858,13 @@ prune_lambda_captures (tree body)
 
   cp_walk_tree_without_duplicates (&body, mark_const_cap_r, &const_vars);
 
+  tree bind_expr = expr_single (DECL_SAVED_TREE (lambda_function (lam)));
+  if (bind_expr && TREE_CODE (bind_expr) == MUST_NOT_THROW_EXPR)
+    bind_expr = expr_single (TREE_OPERAND (bind_expr, 0));
+  /* FIXME: We don't currently handle noexcept lambda captures correctly,
+     so bind_expr may not be set; see PR c++/119764.  */
+  gcc_assert (!bind_expr || TREE_CODE (bind_expr) == BIND_EXPR);
+
   tree *fieldp = &TYPE_FIELDS (LAMBDA_EXPR_CLOSURE (lam));
   for (tree *capp = &LAMBDA_EXPR_CAPTURE_LIST (lam); *capp; )
     {
@@ -1878,6 +1885,23 @@ prune_lambda_captures (tree body)
 	      while (*fieldp != field)
 		fieldp = &DECL_CHAIN (*fieldp);
 	      *fieldp = DECL_CHAIN (*fieldp);
+
+	      /* And out of the bindings for the function.  */
+	      tree *blockp = &BLOCK_VARS (current_binding_level->blocks);
+	      while (*blockp != DECL_EXPR_DECL (**use))
+		blockp = &DECL_CHAIN (*blockp);
+	      *blockp = DECL_CHAIN (*blockp);
+
+	      /* And maybe out of the vars declared in the containing
+		 BIND_EXPR, if it's listed there.  */
+	      if (bind_expr)
+		{
+		  tree *bindp = &BIND_EXPR_VARS (bind_expr);
+		  while (*bindp && *bindp != DECL_EXPR_DECL (**use))
+		    bindp = &DECL_CHAIN (*bindp);
+		  if (*bindp)
+		    *bindp = DECL_CHAIN (*bindp);
+		}
 
 	      /* And remove the capture proxy declaration.  */
 	      **use = void_node;
