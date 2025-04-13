@@ -1,3 +1,53 @@
+2025-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119761
+	* gdc.dg/import-c/import-c.exp: New test.
+	* gdc.dg/import-c/pr119761.d: New test.
+	* gdc.dg/import-c/pr119761c.c: New test.
+
+2025-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/109023
+	* gdc.dg/torture/imports/pr109023.d: New test.
+	* gdc.dg/torture/pr109023.d: New test.
+
+2025-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119758
+	* gdc.dg/driver_fonly1.d: New test.
+	* gdc.dg/driver_fonly2.d: New test.
+	* gdc.dg/driver_fonly3.d: New test.
+	* gdc.dg/imports/fonly.d: New test.
+
+2025-04-12  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR testsuite/117706
+	* gcc.dg/ira-shrinkwrap-prep-1.c: Unxfail for i?68-*-* and x86_64-*-*.
+	* gcc.dg/ira-shrinkwrap-prep-2.c: Likewise.
+
+2025-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116416
+	* g++.dg/cpp1y/constexpr-prvalue1.C: Adjust to instead inspect
+	the 'original' dump.
+	* g++.dg/cpp1y/constexpr-prvalue1a.C: New test.
+
+2025-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119722
+	* gcc.dg/torture/bitint-77.c: New test.
+
+2025-04-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/renaming17.adb: New test.
+
+2025-04-12  Bob Dubner  <rdubner@symas.com>
+
+	PR cobol/119694
+	* cobol.dg/group2/ACCEPT_DATE___DAY_and_intrinsic_functions__2_.cob: GCOBOL_CURRENT_DATE.
+	* cobol.dg/group2/ACCEPT_FROM_TIME___DATE___DAY___DAY-OF-WEEK__2_.cob: Likewise
+	* cobol.dg/group2/FUNCTION_DATE___TIME_OMNIBUS.cob: Likewise
+
 2025-04-11  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* lib/target-supports.exp: Rename arm_v8_1_lob_ok into

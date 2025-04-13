@@ -1,3 +1,9 @@
+2025-04-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR fortran/101602
+	* trans-stmt.cc (gfc_trans_concurrent_locality_spec): Fix
+	'static_assert'.
+
 2025-04-09  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/119656

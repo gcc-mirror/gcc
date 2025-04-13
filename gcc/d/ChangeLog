@@ -1,3 +1,21 @@
+2025-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/109023
+	* d-compiler.cc: Include dmd/errors.h.
+	(Compiler::onImport): Implement.
+	* d-lang.cc (d_handle_option): Handle -finclude-imports.
+	(d_parse_file): Run semantic on included imports.
+	* gdc.texi: Document -finclude-imports.
+	* lang.opt: Add finclude-imports.
+	* lang.opt.urls: Regenerate.
+
+2025-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119758
+	* d-lang.cc (d_parse_file): Use endswith in test for -fonly= argument.
+	* d-spec.cc (lang_specific_driver): Rework -fonly= and pass all input
+	files to the front-end compiler when the option is seen.
+
 2025-04-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 1b34fea478.

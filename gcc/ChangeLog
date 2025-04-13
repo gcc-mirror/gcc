@@ -1,3 +1,53 @@
+2025-04-12  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR target/97585
+	* doc/invoke.texi (x86 Options): Document list of extensions
+	supported by -march=x86_64, according to the declaration of
+	PTA_X86_64_BASELINE in config/i386/i386.h.
+
+2025-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/119727
+	* gcc.cc (files_equal_p): Rewritten using fopen/fgets/fclose instead
+	of open/fstat/read/close.  At the start of lines, ignore lowercase
+	hexadecimal addresses followed by space.
+
+2025-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119722
+	* gimple-lower-bitint.h (build_bitint_stmt_ssa_conflicts): Add
+	CLEAR argument.
+	* gimple-lower-bitint.cc (build_bitint_stmt_ssa_conflicts): Add
+	CLEAR argument.  Call clear on gimple_assign_copy_p rhs1 if lhs
+	is large/huge bitint unless lhs is not in names.
+	* tree-ssa-coalesce.cc (build_ssa_conflict_graph): Adjust
+	build_bitint_stmt_ssa_conflicts caller.  Move gimple_assign_copy_p
+	handling to after the build_bitint_stmt_ssa_conflicts call.
+
+2025-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119718
+	* tree-tailcall.cc (maybe_error_musttail): Dump the GIMPLE at the
+	end of the Cannot tail-call line rather than on the line before it.
+	* calls.cc (maybe_complain_about_tail_call): Dump the GENERIC
+	at the end of the ;; Cannot tail-call line rather than on the
+	line before it.
+
+2025-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119718
+	* tree-tailcall.cc (maybe_error_musttail): Only dump into dump_file
+	if dump_flags & TDF_DETAILS.  Use "Cannot tail-call: " prefix instead
+	of "Cannot convert: ".
+	(find_tail_calls, tree_optimize_tail_calls_1): Formatting fixes
+	for maybe_error_musttail calls.
+	* calls.cc (maybe_complain_about_tail_call): Emit also a message
+	into dump_file when dump_flags & TDF_DETAILS for CALL_EXPR_TAILCALL
+	calls.
+	(initialize_argument_information): Formatting fix for
+	maybe_complain_about_tail_call calls.
+	(can_implement_as_sibling_call_p, expand_call): Likewise.
+
 2025-04-11  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR c++/106618

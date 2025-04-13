@@ -1,3 +1,13 @@
+2025-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119761
+	* libdruntime/MERGE: Merge upstream druntime 09ed02ce56.
+	* libdruntime/Makefile.am (DRUNTIME_DISOURCES): Rename __builtins.di
+	to __importc_builtins.di.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/__builtins.di: Move to...
+	* libdruntime/__importc_builtins.di: ...here.
+
 2025-04-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* src/MERGE: Merge upstream phobos 40ffbb364.

@@ -1,3 +1,9 @@
+2025-04-12  Bob Dubner  <rdubner@symas.com>
+
+	PR cobol/119694
+	* gfileio.cc: Eliminate getenv() calls.
+	* libgcobol.cc: Likewise.
+
 2025-04-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* configure.tgt: Enable for x86_64 Darwin.

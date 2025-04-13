@@ -1,3 +1,16 @@
+2025-04-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/116416
+	* constexpr.cc (maybe_constant_init_1): Generalize type of
+	of manifestly_const_eval parameter from bool to mce_value.
+	(maybe_constant_init): Define 3-parameter version taking a
+	manifestly_const_eval instead of bool parameter.
+	(cxx_constant_init): Adjust.
+	* cp-gimplify.cc (cp_fold_r) <case TARGET_EXPR>: Pass mce_false
+	to maybe_constant_init during prvalue folding if ff_mce_false is
+	set.
+	* cp-tree.h (maybe_constant_init): Declare new overload.
+
 2025-04-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/114970

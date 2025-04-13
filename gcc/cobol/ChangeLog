@@ -1,3 +1,19 @@
+2025-04-12  Bob Dubner  <rdubner@symas.com>
+
+	PR cobol/119694
+	* cbldiag.h: Eliminate getenv() calls.
+	* cdf.y: Likewise.
+	* cobol1.cc: Likewise.
+	* except.cc: Likewise.
+	* genapi.cc: Likewise.
+	* lexio.cc: Likewise.
+	* parse.y: Likewise.
+	* scan_ante.h: Likewise.
+	* show_parse.h: Likewise.
+	* symbols.cc: Likewise.
+	* symfind.cc: Likewise.
+	* util.cc: Likewise.
+
 2025-04-09  Bob Dubner  <rdubner@symas.com>
 
 	PR cobol/119682
