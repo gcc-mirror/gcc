@@ -2099,20 +2099,20 @@ cobol_fileline_set( const char line[] ) {
   return file.name;
 }
 
-class timespec_t {
+class cbl_timespec {
   struct timespec now;
  public:
-  timespec_t() {
+  cbl_timespec() {
     clock_gettime(CLOCK_MONOTONIC, &now);
   }
   double ns() const {
     return now.tv_sec * 1000000000 + now.tv_nsec;
   }
-  friend double operator-( const timespec_t& now, const timespec_t& then );
+  friend double operator-( const cbl_timespec& now, const cbl_timespec& then );
 };
 
 double
-operator-( const timespec_t& then, const timespec_t& now ) {
+operator-( const cbl_timespec& then, const cbl_timespec& now ) {
   return (now.ns() - then.ns()) / 1000000000;
 }
 
@@ -2125,11 +2125,11 @@ parse_file( const char filename[] )
 
   parser_enter_file(filename);
 
-  timespec_t start;
+  cbl_timespec start;
 
   int erc = yyparse();
 
-  timespec_t finish;
+  cbl_timespec finish;
   double dt  = finish - start;
   parser_leave_file();
 
