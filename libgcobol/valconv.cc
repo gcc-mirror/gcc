@@ -853,14 +853,14 @@ got_float:
         }
       else
         {
-        const char *decimal_location = index(dest, __gg__decimal_point);
+        const char *decimal_location = strchr(dest, __gg__decimal_point);
         if( !decimal_location )
           {
-          decimal_location = index(dest, ascii_v);
+          decimal_location = strchr(dest, ascii_v);
           }
         if( !decimal_location )
           {
-          decimal_location = index(dest, ascii_V);
+          decimal_location = strchr(dest, ascii_V);
           }
         if( !decimal_location )
           {
