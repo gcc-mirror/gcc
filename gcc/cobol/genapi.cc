@@ -34,6 +34,7 @@
 #include "tree-iterator.h"
 #include "stringpool.h"
 #include "diagnostic-core.h"
+#include "target.h"
 
 #include "../../libgcobol/ec.h"
 #include "../../libgcobol/common-defs.h"
@@ -2357,7 +2358,8 @@ section_label(struct cbl_proc_t *procedure)
 
   cbl_label_t *label = procedure->label;
   // The _initialize_program section isn't relevant.
-  char *psz = xasprintf("# SECTION %s in %s (%ld)",
+  char *psz = xasprintf("%s SECTION %s in %s (%ld)",
+                        ASM_COMMENT_START,
                         label->name,
                         current_function->our_unmangled_name,
                         deconflictor);
@@ -2408,7 +2410,8 @@ paragraph_label(struct cbl_proc_t *procedure)
   
   char *psz1 = 
   xasprintf(
-          "# PARAGRAPH %s of %s in %s (%ld)",
+          "%s PARAGRAPH %s of %s in %s (%ld)",
+          ASM_COMMENT_START,
           para_name ? para_name: "" ,
           section_name ? section_name: "(null)" ,
           current_function->our_unmangled_name ? current_function->our_unmangled_name: "" ,
@@ -3006,7 +3009,8 @@ parser_perform(cbl_label_t *label, bool suppress_nexting)
     para_name = label->name;
     sect_name = section_label->name;
     sprintf(ach,
-            "# PERFORM %s of %s of %s (%ld)",
+            "%s PERFORM %s of %s of %s (%ld)",
+            ASM_COMMENT_START,
             para_name,
             sect_name,
             program_name,
@@ -3018,7 +3022,8 @@ parser_perform(cbl_label_t *label, bool suppress_nexting)
     {
     sect_name = label->name;
     sprintf(ach,
-            "# PERFORM %s of %s (%ld)",
+            "%s PERFORM %s of %s (%ld)",
+            ASM_COMMENT_START,
             sect_name,
             program_name,
             deconflictor);
@@ -3170,8 +3175,8 @@ internal_perform_through( cbl_label_t *proc_1,
   pseudo_return_push(proc2, return_addr);
 
   // Create the code that will launch the first procedure
-  gg_insert_into_assembler("# PERFORM %s THROUGH %s",
-                        proc_1->name, proc_2->name);
+  gg_insert_into_assembler("%s PERFORM %s THROUGH %s",
+                        ASM_COMMENT_START, proc_1->name, proc_2->name);
 
   if( !suppress_nexting )
     {
@@ -13606,7 +13611,7 @@ hijack_for_development(const char *funcname)
   // Assume that funcname is lowercase with no hyphens
   enter_program_common(funcname, funcname);
   parser_display_literal("You have been hijacked by a program named \"dubner\"");
-  gg_insert_into_assembler("# HIJACKED DUBNER CODE START");
+  gg_insert_into_assembler("%s HIJACKED DUBNER CODE START", ASM_COMMENT_START);
 
   for(int i=0; i<10; i++)
     {
@@ -13619,7 +13624,7 @@ hijack_for_development(const char *funcname)
             NULL_TREE);
     }
 
-  gg_insert_into_assembler("# HIJACKED DUBNER CODE END");
+  gg_insert_into_assembler("%s HIJACKED DUBNER CODE END", ASM_COMMENT_START);
   gg_return(0);
   }
 
