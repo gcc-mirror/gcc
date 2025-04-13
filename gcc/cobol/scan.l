@@ -1543,9 +1543,9 @@ USE({SPC}FOR)?		{ return USE; }
   NOT{SPC}(ON{SPC})?EXCEPTION {
                                   yylval.number = NOT;       return EXCEPTION; }
 
- (ON{SPC})?OVERFLOW      { yylval.number = OVERFLOW; return OVERFLOW; }
+ (ON{SPC})?OVERFLOW      { yylval.number = OVERFLOW_kw; return OVERFLOW_kw; }
   NOT{SPC}(ON{SPC})?OVERFLOW {
-                                  yylval.number = NOT;      return OVERFLOW; }
+                                  yylval.number = NOT;      return OVERFLOW_kw; }
 
  (AT{SPC})?END/[[:space:]]                { yylval.number = END;
                                                    return END; }
@@ -2312,7 +2312,7 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   ORGANIZATION	{ return ORGANIZATION; }
   OTHER	{ return OTHER; }
   OUTPUT	{ return OUTPUT; }
-  OVERFLOW	{ return OVERFLOW; }
+  OVERFLOW	{ return OVERFLOW_kw; }
   OVERRIDE	{ return OVERRIDE; }
   PACKED-DECIMAL	{ return PACKED_DECIMAL; }
   PAGE	{ return PAGE; }

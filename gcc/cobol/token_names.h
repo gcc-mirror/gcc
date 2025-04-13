@@ -49,7 +49,7 @@ tokens = {
         { "number", NUMBER }, // 302
         { "negative", NEGATIVE }, // 303
         { "numstr", NUMSTR }, // 304
-        { "overflow", OVERFLOW }, // 305
+        { "overflow", OVERFLOW_kw }, // 305
         { "computational", COMPUTATIONAL }, // 306
         { "perform", PERFORM }, // 307
         { "backward", BACKWARD }, // 308

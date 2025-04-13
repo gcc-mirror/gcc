@@ -338,7 +338,7 @@
 %token  <number>        INVALID
 %token  <number>        NUMBER NEGATIVE
 %token  <numstr>        NUMSTR    "numeric literal"
-%token  <number>        OVERFLOW
+%token  <number>        OVERFLOW_kw "OVERFLOW"
 %token  <computational> COMPUTATIONAL
 
 %token  <boolean>       PERFORM BACKWARD
@@ -997,7 +997,7 @@
                         DELETE DISPLAY DIVIDE EVALUATE END EOP EXIT FILLER_kw
                         GOBACK GOTO
                         INITIALIZE INSPECT
-                        MERGE MOVE MULTIPLY OPEN OVERFLOW PARAGRAPH PERFORM
+                        MERGE MOVE MULTIPLY OPEN OVERFLOW_kw PARAGRAPH PERFORM
                         READ RELEASE RETURN REWRITE
                         SEARCH SET SELECT SORT SORT_MERGE
                         STRING_kw STOP SUBTRACT START
@@ -9488,7 +9488,7 @@ call_except:    EXCEPTION
                     std::swap($$.on_error, $$.not_error);
                   }
                 }
-        |       OVERFLOW
+        |       OVERFLOW_kw
                 {
                   $$.not_error = NULL;
                   $$.on_error = label_add(LblArith,
@@ -9496,7 +9496,7 @@ call_except:    EXCEPTION
                   if( !$$.on_error ) YYERROR;
                   parser_call_exception( $$.on_error );
 
-                  assert( $1 == OVERFLOW || $1 == NOT );
+                  assert( $1 == OVERFLOW_kw || $1 == NOT );
                   if( $1 == NOT ) {
                     std::swap($$.on_error, $$.not_error);
                   }
@@ -9751,7 +9751,7 @@ on_overflows:   on_overflow[over] statements %prec ADD
                 }
                 ;
 
-on_overflow:    OVERFLOW
+on_overflow:    OVERFLOW_kw
                 {
                   $$.not_error = NULL;
                   $$.on_error = label_add(LblString,
@@ -9759,7 +9759,7 @@ on_overflow:    OVERFLOW
                   if( !$$.on_error ) YYERROR;
                   parser_string_overflow( $$.on_error );
 
-                  assert( $1 == OVERFLOW || $1 == NOT );
+                  assert( $1 == OVERFLOW_kw || $1 == NOT );
                   if( $1 == NOT ) {
                     std::swap($$.on_error, $$.not_error);
                   }
