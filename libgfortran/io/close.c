@@ -84,8 +84,17 @@ st_close (st_parameter_close *clp)
 
   if (u != NULL)
     {
-      if (close_share (u) < 0)
-	generate_error (&clp->common, LIBERROR_OS, "Problem in CLOSE");
+      if (u->s == NULL)
+	{
+	  if (u->unit_number < 0)
+	    generate_error (&clp->common, LIBERROR_BAD_UNIT,
+			    "Unit number is negative with no associated file");
+	  library_end ();
+	  return;
+	}
+      else
+	if (close_share (u) < 0)
+	  generate_error (&clp->common, LIBERROR_OS, "Problem in CLOSE");
       if (u->flags.status == STATUS_SCRATCH)
 	{
 	  if (status == CLOSE_KEEP)
