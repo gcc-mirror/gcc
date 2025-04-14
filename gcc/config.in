@@ -635,8 +635,7 @@
 #endif
 
 
-/* Define if your Mac OS X assembler supports the -mmacos-version-min option.
-   */
+/* Define if your macOS assembler supports the -mmacos-version-min option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_MMACOSX_VERSION_MIN_OPTION
 #endif
@@ -2229,6 +2228,13 @@
 /* Define if O_CLOEXEC supported by fcntl. */
 #ifndef USED_FOR_TARGET
 #undef HOST_HAS_O_CLOEXEC
+#endif
+
+
+/* Define if personality and ADDR_NO_RANDOMIZE are declared in
+   sys/personality.h. */
+#ifndef USED_FOR_TARGET
+#undef HOST_HAS_PERSONALITY_ADDR_NO_RANDOMIZE
 #endif
 
 
