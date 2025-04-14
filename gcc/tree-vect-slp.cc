@@ -1099,7 +1099,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   tree first_lhs = NULL_TREE;
   tree first_op1 = NULL_TREE;
   stmt_vec_info first_load = NULL, prev_first_load = NULL;
-  bool first_stmt_ldst_p = false;
+  bool first_stmt_ldst_p = false, first_stmt_ldst_masklen_p = false;
   bool first_stmt_phi_p = false;
   int first_reduc_idx = -1;
   bool maybe_soft_fail = false;
@@ -1133,6 +1133,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   FOR_EACH_VEC_ELT (stmts, i, stmt_info)
     {
       bool ldst_p = false;
+      bool ldst_masklen_p = false;
       bool phi_p = false;
       code_helper rhs_code = ERROR_MARK;
 
@@ -1195,17 +1196,22 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  else
 	    rhs_code = CALL_EXPR;
 
-	  if (cfn == CFN_MASK_LOAD
-	      || cfn == CFN_GATHER_LOAD
-	      || cfn == CFN_MASK_GATHER_LOAD
-	      || cfn == CFN_MASK_LEN_GATHER_LOAD
-	      || cfn == CFN_SCATTER_STORE
-	      || cfn == CFN_MASK_SCATTER_STORE
-	      || cfn == CFN_MASK_LEN_SCATTER_STORE)
+	  if (cfn == CFN_GATHER_LOAD
+	      || cfn == CFN_SCATTER_STORE)
 	    ldst_p = true;
+	  else if (cfn == CFN_MASK_LOAD
+		   || cfn == CFN_MASK_GATHER_LOAD
+		   || cfn == CFN_MASK_LEN_GATHER_LOAD
+		   || cfn == CFN_MASK_SCATTER_STORE
+		   || cfn == CFN_MASK_LEN_SCATTER_STORE)
+	    {
+	      ldst_p = true;
+	      ldst_masklen_p = true;
+	    }
 	  else if (cfn == CFN_MASK_STORE)
 	    {
 	      ldst_p = true;
+	      ldst_masklen_p = true;
 	      rhs_code = CFN_MASK_STORE;
 	    }
 	  else if (cfn == CFN_GOMP_SIMD_LANE)
@@ -1246,6 +1252,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  first_lhs = lhs;
 	  first_stmt_code = rhs_code;
 	  first_stmt_ldst_p = ldst_p;
+	  first_stmt_ldst_masklen_p = ldst_masklen_p;
 	  first_stmt_phi_p = phi_p;
 	  first_reduc_idx = STMT_VINFO_REDUC_IDX (stmt_info);
 
@@ -1364,6 +1371,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		  && (STMT_VINFO_GATHER_SCATTER_P (stmt_info)
 		      != STMT_VINFO_GATHER_SCATTER_P (first_stmt_info)))
 	      || first_stmt_ldst_p != ldst_p
+	      || (ldst_p && first_stmt_ldst_masklen_p != ldst_masklen_p)
 	      || first_stmt_phi_p != phi_p)
 	    {
 	      if (dump_enabled_p ())
