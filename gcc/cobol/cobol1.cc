@@ -413,8 +413,8 @@ cobol_langhook_handle_option (size_t scode,
           }
           return true;
         case OPT_include:
-          if( ! include_file_add(cobol_include) ) {
-            cbl_errx( "could not include %s", cobol_include);
+          if( ! include_file_add(arg) ) {
+            cbl_errx( "could not include %s", arg);
           }
             return true;
 

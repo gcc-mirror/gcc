@@ -114,7 +114,7 @@ Cobol Joined Separate
 ; Documented in C
 
 include
-Cobol Joined Separate Var(cobol_include)
+Cobol Joined Separate
 ; Documented in C
 
 isysroot
