@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-evrp-details" } */
+/* { dg-options "-O2 -fdump-tree-evrp-details -fno-tree-forwprop" } */
 
 int f1(int a, int b, int c){
   if(c==0)__builtin_unreachable();
