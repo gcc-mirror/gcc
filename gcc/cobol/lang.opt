@@ -77,10 +77,6 @@ ffixed-form
 Cobol RejectNegative
 Assume that the source file is fixed form.
 
-fsyntax-only
-Cobol RejectNegative
-; Documented in c.opt
-
 ffree-form
 Cobol RejectNegative
 Assume that the source file is free form.

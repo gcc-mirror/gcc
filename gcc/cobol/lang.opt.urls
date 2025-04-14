@@ -13,9 +13,6 @@ UrlSuffix(gcc/Directory-Options.html#index-I) LangUrlSuffix_D(gdc/Directory-Opti
 ffixed-form
 LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-ffixed-form)
 
-fsyntax-only
-UrlSuffix(gcc/Warning-Options.html#index-fsyntax-only) LangUrlSuffix_D(gdc/Warnings.html#index-fno-syntax-only) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-fsyntax-only)
-
 ffree-form
 LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-ffree-form)
 
