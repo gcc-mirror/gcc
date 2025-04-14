@@ -285,7 +285,7 @@ init_expmed (void)
   for (speed = 0; speed < 2; speed++)
     {
       crtl->maybe_hot_insn_p = speed;
-      set_zero_cost (speed, set_src_cost (const0_rtx, mode, speed));
+      set_zero_cost (speed, set_src_cost (const0_rtx, QImode, speed));
 
       for (mode = MIN_MODE_INT; mode <= MAX_MODE_INT;
 	   mode = (machine_mode)(mode + 1))
