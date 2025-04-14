@@ -8200,20 +8200,24 @@ package body Exp_Util is
                elsif Nkind (Parent (P)) in N_Variant | N_Record_Definition then
                   null;
 
-               --  Do not insert freeze nodes within the loop generated for
-               --  an aggregate, because they may be elaborated too late for
-               --  subsequent use in the back end: within a package spec the
-               --  loop is part of the elaboration procedure and is only
-               --  elaborated during the second pass.
+               --  Do not insert freeze nodes within a block or loop generated
+               --  for an aggregate, because they may be elaborated too late
+               --  for subsequent use in the back end: within a package spec,
+               --  the block or loop is part of the elaboration procedure and
+               --  is only elaborated during the second pass.
 
-               --  If the loop comes from source, or the entity is local to the
-               --  loop itself it must remain within.
+               --  If the block or loop comes from source, or the entity is
+               --  local to the block or loop itself, it must remain within.
 
-               elsif Nkind (Parent (P)) = N_Loop_Statement
-                 and then not Comes_From_Source (Parent (P))
+               elsif ((Nkind (Parent (P)) = N_Handled_Sequence_Of_Statements
+                        and then
+                          Nkind (Parent (Parent (P))) = N_Block_Statement
+                        and then not Comes_From_Source (Parent (Parent (P))))
+                      or else (Nkind (Parent (P)) = N_Loop_Statement
+                                and then not Comes_From_Source (Parent (P))))
                  and then Nkind (First (Ins_Actions)) = N_Freeze_Entity
-                 and then
-                   Scope (Entity (First (Ins_Actions))) /= Current_Scope
+                 and then not
+                   Within_Scope (Entity (First (Ins_Actions)), Current_Scope)
                then
                   null;
 
