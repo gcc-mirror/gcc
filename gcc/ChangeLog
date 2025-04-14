@@ -1,3 +1,22 @@
+2025-04-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-09  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/119689
+	PR rtl-optimization/115568
+	* lra-remat.cc (create_cands): Use prev_nonnote_nondebug_insn
+	to check whether insn2 is directly before insn.
+
+2025-04-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2025-02-05  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/115568
+	* lra-remat.cc (create_cands): Check that output reload insn is
+	adjacent to given insn.  Update a comment.
+
 2025-04-11  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:
