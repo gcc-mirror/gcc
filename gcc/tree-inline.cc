@@ -2707,8 +2707,11 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 		   && gimple_call_arg (copy_stmt, 0) == boolean_true_node)
 	    nonlocal_goto = false;
 	  else
-	    make_single_succ_edge (copy_stmt_bb, abnormal_goto_dest,
-				   EDGE_ABNORMAL);
+	    {
+	      make_single_succ_edge (copy_stmt_bb, abnormal_goto_dest,
+				     EDGE_ABNORMAL);
+	      gimple_call_set_ctrl_altering (copy_stmt, true);
+	    }
 	}
 
       if ((can_throw || nonlocal_goto)
