@@ -71,6 +71,21 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #error Timed lock primitives are not supported on Windows targets
 #endif
 
+#ifdef __has_attribute
+# if __has_attribute(__always_inline__)
+#  define __GTHREAD_ALWAYS_INLINE __attribute__((__always_inline__))
+# endif
+#endif
+#ifndef __GTHREAD_ALWAYS_INLINE
+# define __GTHREAD_ALWAYS_INLINE
+#endif
+
+#ifdef __cplusplus
+# define __GTHREAD_INLINE inline __GTHREAD_ALWAYS_INLINE
+#else
+# define __GTHREAD_INLINE static inline
+#endif
+
 /* Make sure CONST_CAST2 (origin in system.h) is declared.  */
 #ifndef CONST_CAST2
 #ifdef __cplusplus
@@ -398,11 +413,7 @@ extern int _CRT_MT;
 extern int __mingwthr_key_dtor (unsigned long, void (*) (void *));
 #endif /* _WIN32 && !__CYGWIN__ */
 
-/* __GTHR_W32_InterlockedCompareExchange is left over from win95,
-   which did not support InterlockedCompareExchange. */
-#define __GTHR_W32_InterlockedCompareExchange InterlockedCompareExchange
-
-static inline int
+__GTHREAD_INLINE int
 __gthread_active_p (void)
 {
 #ifdef MINGW32_SUPPORTS_MT_EH
@@ -438,20 +449,20 @@ extern int __gthr_win32_cond_timedwait (__gthread_cond_t *, __gthread_mutex_t *,
 					const __gthread_time_t *);
 #endif
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_create (__gthread_t *__thr, void *(*__func) (void*),
 		  void *__args)
 {
   return __gthr_win32_create (__thr, __func, __args);
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_join (__gthread_t __thr, void **__value_ptr)
 {
   return __gthr_win32_join (__thr, __value_ptr);
 }
 
-static inline __gthread_t
+__GTHREAD_INLINE __gthread_t
 __gthread_self (void)
 {
   return __gthr_win32_self ();
@@ -463,25 +474,25 @@ __gthread_self (void)
    Only stubs are exposed to avoid polluting the C++ namespace with
    Win32 API definitions.  */
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_detach (__gthread_t __thr)
 {
   return __gthr_win32_detach (__thr);
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_equal (__gthread_t __thr1, __gthread_t __thr2)
 {
   return __gthr_win32_equal (__thr1, __thr2);
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_yield (void)
 {
   return __gthr_win32_yield ();
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_once (__gthread_once_t *__once, void (*__func) (void))
 {
   if (__gthread_active_p ())
@@ -490,43 +501,43 @@ __gthread_once (__gthread_once_t *__once, void (*__func) (void))
     return -1;
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_key_create (__gthread_key_t *__key, void (*__dtor) (void *))
 {
   return __gthr_win32_key_create (__key, __dtor);
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_key_delete (__gthread_key_t __key)
 {
   return __gthr_win32_key_delete (__key);
 }
 
-static inline void *
+__GTHREAD_INLINE void *
 __gthread_getspecific (__gthread_key_t __key)
 {
   return __gthr_win32_getspecific (__key);
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_setspecific (__gthread_key_t __key, const void *__ptr)
 {
   return __gthr_win32_setspecific (__key, __ptr);
 }
 
-static inline void
+__GTHREAD_INLINE void
 __gthread_mutex_init_function (__gthread_mutex_t *__mutex)
 {
   __gthr_win32_mutex_init_function (__mutex);
 }
 
-static inline void
+__GTHREAD_INLINE void
 __gthread_mutex_destroy (__gthread_mutex_t *__mutex)
 {
   __gthr_win32_mutex_destroy (__mutex);
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_mutex_lock (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
@@ -535,7 +546,7 @@ __gthread_mutex_lock (__gthread_mutex_t *__mutex)
     return 0;
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_mutex_trylock (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
@@ -544,7 +555,7 @@ __gthread_mutex_trylock (__gthread_mutex_t *__mutex)
     return 0;
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_mutex_unlock (__gthread_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
@@ -553,7 +564,7 @@ __gthread_mutex_unlock (__gthread_mutex_t *__mutex)
     return 0;
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *__mutex)
 {
   if (__gthread_active_p ())
@@ -564,31 +575,31 @@ __gthread_recursive_mutex_trylock (__gthread_recursive_mutex_t *__mutex)
 
 #if __GTHREAD_HAS_COND
 
-static inline void
+__GTHREAD_INLINE void
 __gthread_cond_init_function (__gthread_cond_t *__cond)
 {
   __gthr_win32_cond_init_function (__cond);
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_cond_broadcast (__gthread_cond_t *__cond)
 {
   return __gthr_win32_cond_broadcast (__cond);
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_cond_signal (__gthread_cond_t *__cond)
 {
   return __gthr_win32_cond_signal (__cond);
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_cond_wait (__gthread_cond_t *__cond, __gthread_mutex_t *__mutex)
 {
   return __gthr_win32_cond_wait (__cond, __mutex);
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_cond_timedwait (__gthread_cond_t *__cond, __gthread_mutex_t *__mutex,
 			  const __gthread_time_t *__abs_time)
 {
@@ -600,11 +611,11 @@ __gthread_cond_timedwait (__gthread_cond_t *__cond, __gthread_mutex_t *__mutex,
 #else /* ! __GTHREAD_HIDE_WIN32API */
 
 #ifndef __GTHREAD_WIN32_INLINE
-#define __GTHREAD_WIN32_INLINE static inline
+#define __GTHREAD_WIN32_INLINE __GTHREAD_INLINE
 #endif
 
 #ifndef __GTHREAD_WIN32_COND_INLINE
-#define __GTHREAD_WIN32_COND_INLINE static inline
+#define __GTHREAD_WIN32_COND_INLINE __GTHREAD_INLINE
 #endif
 
 #ifndef __GTHREAD_WIN32_ACTIVE_P
@@ -828,25 +839,25 @@ __gthread_cond_timedwait (__gthread_cond_t *__cond,
 
 #endif /*  __GTHREAD_HIDE_WIN32API */
 
-static inline void
+__GTHREAD_INLINE void
 __gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *__mutex)
 {
   __gthread_mutex_init_function (__mutex);
 }
 
-static inline void
+__GTHREAD_INLINE void
 __gthread_recursive_mutex_destroy (__gthread_recursive_mutex_t *__mutex)
 {
   __gthread_mutex_destroy (__mutex);
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_recursive_mutex_lock (__gthread_recursive_mutex_t *__mutex)
 {
   return __gthread_mutex_lock (__mutex);
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 {
   return __gthread_mutex_unlock (__mutex);
@@ -854,13 +865,13 @@ __gthread_recursive_mutex_unlock (__gthread_recursive_mutex_t *__mutex)
 
 #if __GTHREAD_HAS_COND
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_cond_destroy (__gthread_cond_t *__cond ATTRIBUTE_UNUSED)
 {
   return 0;
 }
 
-static inline int
+__GTHREAD_INLINE int
 __gthread_cond_wait_recursive (__gthread_cond_t *__cond,
 			       __gthread_recursive_mutex_t *__mutex)
 {
