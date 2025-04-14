@@ -1735,24 +1735,7 @@ ipa_vr_intersect_with_arith_jfunc (vrange &vr,
       const value_range *inter_vr;
       if (operation != NOP_EXPR)
 	{
-	  /* Since we construct arithmetic jump functions even when there is a
-             type conversion in between the operation encoded in the jump
-             function and when it is passed in a call argument, the IPA
-             propagation phase must also perform the operation and conversion
-             in two separate steps.
-
-	     TODO: In order to remove the use of expr_type_first_operand_type_p
-	     predicate we would need to stream the operation type, ideally
-	     encoding the whole jump function as a series of expr_eval_op
-	     structures.  */
-
-	  tree operation_type;
-	  if (expr_type_first_operand_type_p (operation))
-	    operation_type = src_type;
-	  else if (operation == ABSU_EXPR)
-	    operation_type = unsigned_type_for (src_type);
-	  else
-	    return;
+	  tree operation_type = ipa_get_jf_pass_through_op_type (jfunc);
 	  op_res.set_varying (operation_type);
 	  if (!ipa_vr_operation_and_type_effects (op_res, src_vr, operation,
 						  operation_type, src_type))
@@ -1782,14 +1765,7 @@ ipa_vr_intersect_with_arith_jfunc (vrange &vr,
   value_range op_vr (TREE_TYPE (operand));
   ipa_get_range_from_ip_invariant (op_vr, operand, context_node);
 
-  tree operation_type;
-  if (TREE_CODE_CLASS (operation) == tcc_comparison)
-    operation_type = boolean_type_node;
-  else if (expr_type_first_operand_type_p (operation))
-    operation_type = src_type;
-  else
-    return;
-
+  tree operation_type = ipa_get_jf_pass_through_op_type (jfunc);
   value_range op_res (operation_type);
   if (!ipa_vr_supported_type_p (operation_type)
       || !handler.operand_check_p (operation_type, src_type, op_vr.type ())
