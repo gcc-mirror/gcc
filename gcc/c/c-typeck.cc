@@ -3013,12 +3013,16 @@ build_access_with_size_for_counted_by (location_t loc, tree ref,
   gcc_assert (c_flexible_array_member_type_p (TREE_TYPE (ref)));
   /* The result type of the call is a pointer to the flexible array type.  */
   tree result_type = c_build_pointer_type (TREE_TYPE (ref));
+  tree first_param
+    = c_fully_fold (array_to_pointer_conversion (loc, ref), false, NULL);
+  tree second_param
+    = c_fully_fold (counted_by_ref, false, NULL);
 
   tree call
     = build_call_expr_internal_loc (loc, IFN_ACCESS_WITH_SIZE,
 				    result_type, 6,
-				    array_to_pointer_conversion (loc, ref),
-				    counted_by_ref,
+				    first_param,
+				    second_param,
 				    build_int_cst (integer_type_node, 1),
 				    build_int_cst (counted_by_type, 0),
 				    build_int_cst (integer_type_node, -1),
