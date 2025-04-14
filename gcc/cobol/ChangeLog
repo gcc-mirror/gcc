@@ -1,3 +1,26 @@
+2025-04-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+	    Simon Sobisch  <simonsobisch@gnu.org>
+
+	PR cobol/119217
+	* parse.y: Rename OVERFLOW to OVERFLOW_kw.
+	Specify type name in %token directive.
+	* scan.l: Likewise.
+	* token_names.h: Regenerate.
+
+2025-04-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR cobol/119217
+	* util.cc (class timespec_t): Rename to cbl_timespec.
+
+2025-04-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* genapi.cc: Include target.h.
+	(section_label): Use ASM_COMMENT_START.
+	(paragraph_label): Likewise.
+	(parser_perform): Likewise.
+	(internal_perform_through): Likewise.
+	(hijack_for_development): Likewise.
+
 2025-04-12  Bob Dubner  <rdubner@symas.com>
 
 	PR cobol/119694

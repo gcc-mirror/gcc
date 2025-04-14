@@ -1,3 +1,11 @@
+2025-04-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/119502
+	* io/close.c (st_close): Issue an error and avoid
+	calling close_share when there is no stream assigned.
+	* io/open.c (st_open): If there is no stream assigned
+	to the unit, unlock the unit and issue an error.
+
 2025-04-09  Paul Thomas  <pault@gcc.gnu.org>
 	    and Harald Anlauf  <anlauf@gcc.gnu.org>
 

@@ -1,3 +1,29 @@
+2025-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/115639
+	* constexpr.cc (struct constexpr_call): Add NSDMIs to each
+	field.  Replace 'result' data member with 3-element 'results'
+	array and a 'result' accessor function.  Remove
+	'manifestly_const_eval' data member.
+	(constexpr_call_hasher::equal): Adjust after constexpr_call
+	layout change.
+	(cxx_eval_call_expression): Likewise.  Define some local
+	variables closer to their first use.  Use unknown_type_node
+	instead of NULL_TREE as the "in progress" result.  After
+	successully evaluating a call with mce_unknown, also cache the
+	result in the corresponding mce_true and mce_false slots.
+
+2025-04-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (trees_in::is_matching_decl): Don't check for
+	mismatches when importing a DECL_MAYBE_DELETED function over one
+	that's already finished.
+
+2025-04-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (trees_in::is_matching_decl): Add custom errors for
+	different kinds of mismatches.
+
 2025-04-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/116416

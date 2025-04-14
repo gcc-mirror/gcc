@@ -1,3 +1,8 @@
+2025-04-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* valconv.cc (__gg__string_to_numeric_edited): Use strchr instead
+	of index.
+
 2025-04-12  Bob Dubner  <rdubner@symas.com>
 
 	PR cobol/119694

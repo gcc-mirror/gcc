@@ -1,3 +1,10 @@
+2025-04-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119669
+	* interface.cc (compare_parameter): Error when mismatch between
+	formal argument as subroutine and function.  If the dummy
+	argument is a known function, set its typespec.
+
 2025-04-12  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR fortran/101602

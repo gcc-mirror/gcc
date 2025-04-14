@@ -1,3 +1,24 @@
+2025-04-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.cc: Add z17 scheduler description.
+	* config/s390/s390.h: Ditto.
+	* config/s390/s390.md: Ditto.
+	* config/s390/9175.md: New file.
+
+2025-04-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* common/config/s390/s390-common.cc: Rename arch15 to z17.
+	* config.gcc: Add z17.
+	* config/s390/driver-native.cc: Detect z17 machine.
+	* config/s390/s390-builtins.def (B_VXE3): Rename arch15 to z17.
+	* config/s390/s390-c.cc (s390_resolve_overloaded_builtin): Ditto.
+	* config/s390/s390-opts.h (enum processor_type): Ditto.
+	* config/s390/s390.cc: Ditto.
+	* config/s390/s390.h: Ditto.
+	* config/s390/s390.md: Ditto.
+	* config/s390/s390.opt: Add z17.
+	* doc/invoke.texi: Ditto.
+
 2025-04-12  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR target/97585
