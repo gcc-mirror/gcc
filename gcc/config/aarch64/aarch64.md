@@ -2182,9 +2182,9 @@
   "aarch64_mem_pair_offset (operands[4], <MODE>mode)
    && known_eq (INTVAL (operands[5]),
 		INTVAL (operands[4]) + GET_MODE_SIZE (<MODE>mode))"
-  {@ [cons: =&0, 1, =2, =3; attrs: type     ]
-     [       rk, 0,  r,  r; load_<ldpstp_sz>] ldp\t%<w>2, %<w>3, [%0, %4]!
-     [       rk, 0,  w,  w; neon_load1_2reg ] ldp\t%<v>2, %<v>3, [%0, %4]!
+  {@ [cons: =0,   1, =2, =3; attrs: type     ]
+     [       &rk, 0,  r,  r; load_<ldpstp_sz>] ldp\t%<w>2, %<w>3, [%0, %4]!
+     [       rk,  0,  w,  w; neon_load1_2reg ] ldp\t%<v>2, %<v>3, [%0, %4]!
   }
 )
 
@@ -2238,9 +2238,9 @@
 		INTVAL (operands[4]) + GET_MODE_SIZE (<MODE>mode))
    && !reg_overlap_mentioned_p (operands[0], operands[2])
    && !reg_overlap_mentioned_p (operands[0], operands[3])"
-  {@ [cons: =&0, 1,   2,   3; attrs: type      ]
-     [       rk, 0, rYZ, rYZ; store_<ldpstp_sz>] stp\t%<w>2, %<w>3, [%0, %4]!
-     [       rk, 0,   w,   w; neon_store1_2reg ] stp\t%<v>2, %<v>3, [%0, %4]!
+  {@ [cons: =0, 1,   2,   3; attrs: type      ]
+     [     &rk, 0, rYZ, rYZ; store_<ldpstp_sz>] stp\t%<w>2, %<w>3, [%0, %4]!
+     [      rk, 0,   w,   w; neon_store1_2reg ] stp\t%<v>2, %<v>3, [%0, %4]!
   }
 )
 
@@ -2486,15 +2486,15 @@
      (match_operand:GPI 1 "register_operand")
      (match_operand:GPI 2 "aarch64_pluslong_operand")))]
   ""
-  {@ [ cons: =0 , 1   , 2   ; attrs: type , arch  ]
-     [ rk       , %rk , I   ; alu_imm     , *     ] add\t%<w>0, %<w>1, %2
-     [ rk       , rk  , r   ; alu_sreg    , *     ] add\t%<w>0, %<w>1, %<w>2
-     [ w        , w   , w   ; neon_add    , simd  ] add\t%<rtn>0<vas>, %<rtn>1<vas>, %<rtn>2<vas>
-     [ rk       , rk  , J   ; alu_imm     , *     ] sub\t%<w>0, %<w>1, #%n2
-     [ r        , rk  , Uaa ; multiple    , *     ] #
-     [ r        , 0   , Uai ; alu_imm     , sve   ] << aarch64_output_sve_scalar_inc_dec (operands[2]);
-     [ rk       , rk  , Uav ; alu_imm     , sve   ] << aarch64_output_sve_addvl_addpl (operands[2]);
-     [ rk       , rk  , UaV ; alu_imm     , sme   ] << aarch64_output_addsvl_addspl (operands[2]);
+  {@ [ cons: =0 , %1 , 2   ; attrs: type , arch  ]
+     [ rk       , rk , I   ; alu_imm     , *     ] add\t%<w>0, %<w>1, %2
+     [ rk       , rk , r   ; alu_sreg    , *     ] add\t%<w>0, %<w>1, %<w>2
+     [ w        , w  , w   ; neon_add    , simd  ] add\t%<rtn>0<vas>, %<rtn>1<vas>, %<rtn>2<vas>
+     [ rk       , rk , J   ; alu_imm     , *     ] sub\t%<w>0, %<w>1, #%n2
+     [ r        , rk , Uaa ; multiple    , *     ] #
+     [ r        , 0  , Uai ; alu_imm     , sve   ] << aarch64_output_sve_scalar_inc_dec (operands[2]);
+     [ rk       , rk , Uav ; alu_imm     , sve   ] << aarch64_output_sve_addvl_addpl (operands[2]);
+     [ rk       , rk , UaV ; alu_imm     , sme   ] << aarch64_output_addsvl_addspl (operands[2]);
   }
   ;; The "alu_imm" types for INC/DEC and ADDVL/ADDPL are just placeholders.
 )
@@ -2507,11 +2507,11 @@
      (plus:SI (match_operand:SI 1 "register_operand")
 	      (match_operand:SI 2 "aarch64_pluslong_operand"))))]
   ""
-  {@ [ cons: =0 , 1   , 2   ; attrs: type ]
-     [ rk       , %rk , I   ; alu_imm     ] add\t%w0, %w1, %2
-     [ rk       , rk  , r   ; alu_sreg    ] add\t%w0, %w1, %w2
-     [ rk       , rk  , J   ; alu_imm     ] sub\t%w0, %w1, #%n2
-     [ r        , rk  , Uaa ; multiple    ] #
+  {@ [ cons: =0 , %1 , 2   ; attrs: type ]
+     [ rk       , rk , I   ; alu_imm     ] add\t%w0, %w1, %2
+     [ rk       , rk , r   ; alu_sreg    ] add\t%w0, %w1, %w2
+     [ rk       , rk , J   ; alu_imm     ] sub\t%w0, %w1, #%n2
+     [ r        , rk , Uaa ; multiple    ] #
   }
 )
 
@@ -2580,14 +2580,14 @@
      (match_operand:GPI 1 "register_operand")
      (match_operand:GPI 2 "aarch64_pluslong_or_poly_operand")))]
   "TARGET_SVE && operands[0] != stack_pointer_rtx"
-  {@ [ cons: =0 , 1   , 2   ; attrs: type ]
-     [ r        , %rk , I   ; alu_imm     ] add\t%<w>0, %<w>1, %2
-     [ r        , rk  , r   ; alu_sreg    ] add\t%<w>0, %<w>1, %<w>2
-     [ r        , rk  , J   ; alu_imm     ] sub\t%<w>0, %<w>1, #%n2
-     [ r        , rk  , Uaa ; multiple    ] #
-     [ r        , 0   , Uai ; alu_imm     ] << aarch64_output_sve_scalar_inc_dec (operands[2]);
-     [ r        , rk  , Uav ; alu_imm     ] << aarch64_output_sve_addvl_addpl (operands[2]);
-     [ &r       , rk  , Uat ; multiple    ] #
+  {@ [ cons: =0 , %1 , 2   ; attrs: type ]
+     [ r        , rk , I   ; alu_imm     ] add\t%<w>0, %<w>1, %2
+     [ r        , rk , r   ; alu_sreg    ] add\t%<w>0, %<w>1, %<w>2
+     [ r        , rk , J   ; alu_imm     ] sub\t%<w>0, %<w>1, #%n2
+     [ r        , rk , Uaa ; multiple    ] #
+     [ r        , 0  , Uai ; alu_imm     ] << aarch64_output_sve_scalar_inc_dec (operands[2]);
+     [ r        , rk , Uav ; alu_imm     ] << aarch64_output_sve_addvl_addpl (operands[2]);
+     [ &r       , rk , Uat ; multiple    ] #
   }
   "&& epilogue_completed
    && !reg_overlap_mentioned_p (operands[0], operands[1])
@@ -2759,10 +2759,10 @@
    (set (match_operand:GPI 0 "register_operand")
 	(plus:GPI (match_dup 1) (match_dup 2)))]
   ""
-  {@ [ cons: =0 , 1   , 2 ; attrs: type ]
-     [ r        , %rk , r ; alus_sreg   ] adds\t%<w>0, %<w>1, %<w>2
-     [ r        , rk  , I ; alus_imm    ] adds\t%<w>0, %<w>1, %2
-     [ r        , rk  , J ; alus_imm    ] subs\t%<w>0, %<w>1, #%n2
+  {@ [ cons: =0 , %1 , 2 ; attrs: type ]
+     [ r        , rk , r ; alus_sreg   ] adds\t%<w>0, %<w>1, %<w>2
+     [ r        , rk , I ; alus_imm    ] adds\t%<w>0, %<w>1, %2
+     [ r        , rk , J ; alus_imm    ] subs\t%<w>0, %<w>1, #%n2
   }
 )
 
@@ -2776,10 +2776,10 @@
    (set (match_operand:DI 0 "register_operand")
 	(zero_extend:DI (plus:SI (match_dup 1) (match_dup 2))))]
   ""
-  {@ [ cons: =0 , 1   , 2 ; attrs: type ]
-     [ r        , %rk , r ; alus_sreg   ] adds\t%w0, %w1, %w2
-     [ r        , rk  , I ; alus_imm    ] adds\t%w0, %w1, %2
-     [ r        , rk  , J ; alus_imm    ] subs\t%w0, %w1, #%n2
+  {@ [ cons: =0 , %1 , 2 ; attrs: type ]
+     [ r        , rk , r ; alus_sreg   ] adds\t%w0, %w1, %w2
+     [ r        , rk , I ; alus_imm    ] adds\t%w0, %w1, %2
+     [ r        , rk , J ; alus_imm    ] subs\t%w0, %w1, #%n2
   }
 )
 
@@ -2980,10 +2980,10 @@
 		   (match_operand:GPI 1 "aarch64_plus_operand"))
 	 (const_int 0)))]
   ""
-  {@ [ cons: 0 , 1 ; attrs: type ]
-     [ %r      , r ; alus_sreg   ] cmn\t%<w>0, %<w>1
-     [ r       , I ; alus_imm    ] cmn\t%<w>0, %1
-     [ r       , J ; alus_imm    ] cmp\t%<w>0, #%n1
+  {@ [ cons: %0 , 1 ; attrs: type ]
+     [ r        , r ; alus_sreg   ] cmn\t%<w>0, %<w>1
+     [ r        , I ; alus_imm    ] cmn\t%<w>0, %1
+     [ r        , J ; alus_imm    ] cmp\t%<w>0, #%n1
   }
 )
 
@@ -5091,8 +5091,8 @@
 	(LOGICAL:GPI (match_operand:GPI 1 "register_operand")
 		     (match_operand:GPI 2 "aarch64_logical_operand")))]
   ""
-  {@ [ cons: =0 , 1  , 2        ; attrs: type , arch  ]
-     [ r        , %r , r        ; logic_reg   , *     ] <logical>\t%<w>0, %<w>1, %<w>2
+  {@ [ cons: =0 , %1 , 2        ; attrs: type , arch  ]
+     [ r        , r  , r        ; logic_reg   , *     ] <logical>\t%<w>0, %<w>1, %<w>2
      [ rk       , r  , <lconst> ; logic_imm   , *     ] <logical>\t%<w>0, %<w>1, %2
      [ w        , 0  , <lconst> ; *           , sve   ] <logical>\t%Z0.<s>, %Z0.<s>, #%2
      [ w        , w  , w        ; neon_logic  , simd  ] <logical>\t%0.<Vbtype>, %1.<Vbtype>, %2.<Vbtype>
@@ -5106,8 +5106,8 @@
          (LOGICAL:SI (match_operand:SI 1 "register_operand")
 		     (match_operand:SI 2 "aarch64_logical_operand"))))]
   ""
-  {@ [ cons: =0 , 1  , 2 ; attrs: type ]
-     [ r        , %r , r ; logic_reg   ] <logical>\t%w0, %w1, %w2
+  {@ [ cons: =0 , %1 , 2 ; attrs: type ]
+     [ r        , r  , r ; logic_reg   ] <logical>\t%w0, %w1, %w2
      [ rk       , r  , K ; logic_imm   ] <logical>\t%w0, %w1, %2
   }
 )
@@ -5121,8 +5121,8 @@
    (set (match_operand:GPI 0 "register_operand")
 	(and:GPI (match_dup 1) (match_dup 2)))]
   ""
-  {@ [ cons: =0 , 1  , 2        ; attrs: type ]
-     [ r        , %r , r        ; logics_reg  ] ands\t%<w>0, %<w>1, %<w>2
+  {@ [ cons: =0 , %1 , 2        ; attrs: type ]
+     [ r        , r  , r        ; logics_reg  ] ands\t%<w>0, %<w>1, %<w>2
      [ r        , r  , <lconst> ; logics_imm  ] ands\t%<w>0, %<w>1, %2
   }
 )
@@ -5137,8 +5137,8 @@
    (set (match_operand:DI 0 "register_operand")
 	(zero_extend:DI (and:SI (match_dup 1) (match_dup 2))))]
   ""
-  {@ [ cons: =0 , 1  , 2 ; attrs: type ]
-     [ r        , %r , r ; logics_reg  ] ands\t%w0, %w1, %w2
+  {@ [ cons: =0 , %1 , 2 ; attrs: type ]
+     [ r        , r  , r ; logics_reg  ] ands\t%w0, %w1, %w2
      [ r        , r  , K ; logics_imm  ] ands\t%w0, %w1, %2
   }
 )
@@ -5722,9 +5722,9 @@
 		  (match_operand:GPI 1 "aarch64_logical_operand"))
 	 (const_int 0)))]
   ""
-  {@ [ cons: 0 , 1        ; attrs: type ]
-     [ %r      , r        ; logics_reg  ] tst\t%<w>0, %<w>1
-     [ r       , <lconst> ; logics_imm  ] tst\t%<w>0, %1
+  {@ [ cons: %0 , 1        ; attrs: type ]
+     [ r        , r        ; logics_reg  ] tst\t%<w>0, %<w>1
+     [ r        , <lconst> ; logics_imm  ] tst\t%<w>0, %1
   }
 )
 
