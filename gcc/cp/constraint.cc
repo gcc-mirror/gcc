@@ -2704,6 +2704,8 @@ satisfy_declaration_constraints (tree t, sat_info info)
 static tree
 satisfy_declaration_constraints (tree t, tree args, sat_info info)
 {
+  tree orig_args = args;
+
   /* Update the declaration for diagnostics.  */
   info.in_decl = t;
 
@@ -2732,7 +2734,7 @@ satisfy_declaration_constraints (tree t, tree args, sat_info info)
   tree result = boolean_true_node;
   if (tree norm = get_normalized_constraints_from_decl (t, info.noisy ()))
     {
-      if (!push_tinst_level (t, args))
+      if (!push_tinst_level (t, orig_args))
 	return result;
       tree pattern = DECL_TEMPLATE_RESULT (t);
       push_to_top_level ();
