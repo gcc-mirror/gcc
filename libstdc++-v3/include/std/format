@@ -1350,8 +1350,7 @@ namespace __format
 						    __fc, _M_spec);
 
 	  __format::_Str_sink<_CharT> __sink;
-	  __format::_Sink_iter<_CharT> __out(__sink);
-	  __format::__write_escaped(__out, __s, __term);
+	  __format::__write_escaped(__sink.out(), __s, __term);
 	  basic_string_view<_CharT> __escaped(__sink.view().data(),
 					      __sink.view().size());
 	  const size_t __escaped_width = _S_trunc(__escaped, __prec);
@@ -1387,13 +1386,13 @@ namespace __format
 		{
 		  ranges::iterator_t<_Rg> __first = ranges::begin(__rg);
 		  ranges::subrange __sub(__first, __first + __n);
-   	          return format(_String(from_range, __sub), __fc);
+	          return format(_String(from_range, __sub), __fc);
 		}
 	      else
 		{
 		  // N.B. preserve the computed size
 		  ranges::subrange __sub(__rg, __n);
-   	          return format(_String(from_range, __sub), __fc);
+	          return format(_String(from_range, __sub), __fc);
 		}
 	    }
 	  else
@@ -1698,7 +1697,7 @@ namespace __format
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
 	_M_format_character_escaped(_CharT __c,
-				   basic_format_context<_Out, _CharT>& __fc) const
+				    basic_format_context<_Out, _CharT>& __fc) const
 	{
 	  using _Esc = _Escapes<_CharT>;
 	  constexpr auto __term = __format::_Term_char::_Tc_apos;
@@ -1708,8 +1707,7 @@ namespace __format
 
 	  _CharT __buf[12];
 	  __format::_Fixedbuf_sink<_CharT> __sink(__buf);
-	  __format::_Sink_iter<_CharT> __out(__sink);
-	  __format::__write_escaped(__out, __in, __term);
+	  __format::__write_escaped(__sink.out(), __in, __term);
 
 	  const basic_string_view<_CharT> __escaped = __sink.view();
 	  size_t __estimated_width;
@@ -3077,19 +3075,6 @@ namespace __format
     concept formattable
       = __format::__formattable_impl<remove_reference_t<_Tp>, _CharT>;
 
-  /// @cond undocumented
-namespace __format
-{
-  template<typename _Rg, typename _CharT>
-    concept __const_formattable_range
-      = ranges::input_range<const _Rg>
-	  && formattable<ranges::range_reference_t<const _Rg>, _CharT>;
-
-  template<typename _Rg, typename _CharT>
-    using __maybe_const_range
-      = conditional_t<__const_formattable_range<_Rg, _CharT>, const _Rg, _Rg>;
-} // namespace __format
-  /// @endcond
 #endif // format_ranges
 
   /// An iterator after the last character written, and the number of
@@ -5209,12 +5194,292 @@ namespace __format
 /// @cond undocumented
 namespace __format
 {
+  template<typename _CharT, typename _Out, typename _Callback>
+    typename basic_format_context<_Out, _CharT>::iterator
+    __format_padded(basic_format_context<_Out, _CharT>& __fc,
+		    const _Spec<_CharT>& __spec,
+		    _Callback&& __call)
+    {
+      // This is required to implement formatting with padding,
+      // as we need to format to temporary buffer, using the same iterator.
+      static_assert(is_same_v<_Out, __format::_Sink_iter<_CharT>>);
+
+      if (__spec._M_get_width(__fc) == 0)
+	return __call(__fc);
+
+      struct _Restore_out
+      {
+	_Restore_out(basic_format_context<_Sink_iter<_CharT>, _CharT>& __fc)
+	: _M_ctx(std::addressof(__fc)), _M_out(__fc.out())
+	{ }
+
+	void _M_trigger()
+	{
+	  if (_M_ctx)
+	    _M_ctx->advance_to(_M_out);
+	  _M_ctx = nullptr;
+	}
+
+	~_Restore_out()
+	{ _M_trigger(); }
+
+      private:
+	basic_format_context<_Sink_iter<_CharT>, _CharT>* _M_ctx;
+	_Sink_iter<_CharT> _M_out;
+      };
+
+      _Restore_out __restore(__fc);
+      // TODO Consider double sinking, first buffer of width
+      // size and then original sink, if first buffer is overun
+      // we do not need to align
+      _Str_sink<_CharT> __buf;
+      __fc.advance_to(__buf.out());
+      __call(__fc);
+      __restore._M_trigger();
+
+      basic_string_view<_CharT> __str(__buf.view());
+      size_t __width;
+      if constexpr (__unicode::__literal_encoding_is_unicode<_CharT>())
+	__width = __unicode::__field_width(__str);
+      else
+	__width = __str.size();
+
+      return __format::__write_padded_as_spec(__str, __width, __fc, __spec);
+    }
+
+  template<typename _Rg, typename _CharT>
+    concept __const_formattable_range
+      = ranges::input_range<const _Rg>
+	  && formattable<ranges::range_reference_t<const _Rg>, _CharT>;
+
+  template<typename _Rg, typename _CharT>
+    using __maybe_const_range
+      = __conditional_t<__const_formattable_range<_Rg, _CharT>, const _Rg, _Rg>;
+
+  template<typename _Tp, typename _CharT>
+    using __maybe_const
+      = __conditional_t<formattable<const _Tp, _CharT>, const _Tp, _Tp>;
+
+  template<size_t _Pos, typename _Tp, typename _CharT>
+    struct __indexed_formatter_storage
+    {
+      constexpr void
+      _M_parse()
+      {
+	basic_format_parse_context<_CharT> __pc({});
+	if (_M_formatter.parse(__pc) != __pc.end())
+	  __format::__failed_to_parse_format_spec();
+      }
+
+      template<typename _Out>
+	void
+	_M_format(__maybe_const<_Tp, _CharT>& __elem,
+		  basic_format_context<_Out, _CharT>& __fc,
+		  basic_string_view<_CharT> __sep) const
+	{
+	  if constexpr (_Pos != 0)
+	    __fc.advance_to(__format::__write(__fc.out(), __sep));
+	  __fc.advance_to(_M_formatter.format(__elem, __fc));
+	}
+
+      [[__gnu__::__always_inline__]]
+      constexpr void
+      set_debug_format()
+      {
+	if constexpr (__has_debug_format<formatter<_Tp, _CharT>>)
+	  _M_formatter.set_debug_format();
+      }
+
+    private:
+      formatter<_Tp, _CharT> _M_formatter;
+    };
+
+  template<typename _CharT, typename... _Tps>
+    class __tuple_formatter
+    {
+      using _String_view = basic_string_view<_CharT>;
+      using _Seps = __format::_Separators<_CharT>;
+
+    public:
+      constexpr void
+      set_separator(basic_string_view<_CharT> __sep) noexcept
+      { _M_sep = __sep; }
+
+      constexpr void
+      set_brackets(basic_string_view<_CharT> __open,
+		   basic_string_view<_CharT> __close) noexcept
+      {
+	_M_open = __open;
+	_M_close = __close;
+      }
+
+      // We deviate from standard, that declares this as template accepting
+      // unconstrained ParseContext type, which seems unimplementable.
+      constexpr typename basic_format_parse_context<_CharT>::iterator
+      parse(basic_format_parse_context<_CharT>& __pc)
+      {
+	auto __first = __pc.begin();
+	const auto __last = __pc.end();
+	__format::_Spec<_CharT> __spec{};
+
+	auto __finished = [&]
+	  {
+	    if (__first != __last && *__first != '}')
+	      return false;
+
+	    _M_spec = __spec;
+	    _M_felems._M_parse();
+	    _M_felems.set_debug_format();
+	    return true;
+	  };
+
+	if (__finished())
+	  return __first;
+
+	__first = __spec._M_parse_fill_and_align(__first, __last, "{:");
+	if (__finished())
+	  return __first;
+
+	__first = __spec._M_parse_width(__first, __last, __pc);
+	if (__finished())
+	  return __first;
+
+	if (*__first == 'n')
+	  {
+	    ++__first;
+	    _M_open = _M_close = _String_view();
+	  }
+	else if (*__first == 'm')
+	  {
+	    ++__first;
+	    if constexpr (sizeof...(_Tps) == 2)
+	      {
+		_M_sep = _Seps::_S_colon();
+		_M_open = _M_close = _String_view();
+	      }
+	    else
+	      __throw_format_error("format error: 'm' specifier requires range"
+				   " of pair or tuple of two elements");
+	  }
+
+	if (__finished())
+	  return __first;
+
+	__format::__failed_to_parse_format_spec();
+      }
+
+    protected:
+      template<typename _Tuple, typename _Out, size_t... _Ids>
+	typename basic_format_context<_Out, _CharT>::iterator
+	_M_format(_Tuple& __tuple, index_sequence<_Ids...>,
+		  basic_format_context<_Out, _CharT>& __fc) const
+	{ return _M_format_elems(std::get<_Ids>(__tuple)..., __fc); }
+
+      template<typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	_M_format_elems(__maybe_const<_Tps, _CharT>&... __elems,
+			basic_format_context<_Out, _CharT>& __fc) const
+	{
+	  return __format::__format_padded(
+		   __fc, _M_spec,
+		   [this, &__elems...](basic_format_context<_Out, _CharT>& __nfc)
+		     {
+		       __nfc.advance_to(__format::__write(__nfc.out(), _M_open));
+		       _M_felems._M_format(__elems..., __nfc, _M_sep);
+		       return __format::__write(__nfc.out(), _M_close);
+		     });
+	}
+
+    private:
+      template<size_t... _Ids>
+	struct __formatters_storage
+	  : __indexed_formatter_storage<_Ids, _Tps, _CharT>...
+	{
+	  template<size_t _Id, typename _Up>
+	    using _Base = __indexed_formatter_storage<_Id, _Up, _CharT>;
+
+	  constexpr void
+	  _M_parse()
+	  {
+	    (_Base<_Ids, _Tps>::_M_parse(), ...);
+	  }
+
+	  template<typename _Out>
+	    void
+	    _M_format(__maybe_const<_Tps, _CharT>&... __elems,
+		      basic_format_context<_Out, _CharT>& __fc,
+		      _String_view __sep) const
+	    {
+	      (_Base<_Ids, _Tps>::_M_format(__elems, __fc, __sep), ...);
+	    }
+
+	  constexpr void
+	  set_debug_format()
+	  {
+	    (_Base<_Ids, _Tps>::set_debug_format(), ...);
+	  }
+	};
+
+      template<size_t... _Ids>
+	static auto
+	_S_create_storage(index_sequence<_Ids...>)
+	  -> __formatters_storage<_Ids...>;
+      using _Formatters
+	= decltype(_S_create_storage(index_sequence_for<_Tps...>()));
+
+      _Spec<_CharT> _M_spec{};
+      _String_view _M_open = _Seps::_S_parens().substr(0, 1);
+      _String_view _M_close = _Seps::_S_parens().substr(1, 1);
+      _String_view _M_sep = _Seps::_S_comma();
+      _Formatters _M_felems;
+    };
+
   template<typename _Tp>
     concept __is_map_formattable
       = __is_pair<_Tp> || (__is_tuple_v<_Tp> && tuple_size_v<_Tp> == 2);
 
 } // namespace __format
 /// @endcond
+
+  // [format.tuple] Tuple formatter
+  template<__format::__char _CharT, formattable<_CharT> _Fp,
+	   formattable<_CharT> _Sp>
+    struct formatter<pair<_Fp, _Sp>, _CharT>
+      : __format::__tuple_formatter<_CharT, remove_cvref_t<_Fp>,
+				    remove_cvref_t<_Sp>>
+    {
+    private:
+      using __maybe_const_pair
+	= __conditional_t<formattable<const _Fp, _CharT>
+			  && formattable<const _Sp, _CharT>,
+			  const pair<_Fp, _Sp>, pair<_Fp, _Sp>>;
+    public:
+      // We deviate from standard, that declares this as template accepting
+      // unconstrained FormatContext type, which seems unimplementable.
+      template<typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	format(__maybe_const_pair& __p,
+	       basic_format_context<_Out, _CharT>& __fc) const
+	{ return this->_M_format_elems(__p.first, __p.second, __fc); }
+    };
+
+  template<__format::__char _CharT, formattable<_CharT>... _Tps>
+    struct formatter<tuple<_Tps...>, _CharT>
+      : __format::__tuple_formatter<_CharT, remove_cvref_t<_Tps>...>
+    {
+    private:
+      using __maybe_const_tuple
+	= __conditional_t<(formattable<const _Tps, _CharT> && ...),
+			  const tuple<_Tps...>, tuple<_Tps...>>;
+    public:
+      // We deviate from standard, that declares this as template accepting
+      // unconstrained FormatContext type, which seems unimplementable.
+      template<typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	format(__maybe_const_tuple& __t,
+	       basic_format_context<_Out, _CharT>& __fc) const
+	{ return this->_M_format(__t, index_sequence_for<_Tps...>(), __fc); }
+    };
 
   // [format.range.formatter], class template range_formatter
   template<typename _Tp, __format::__char _CharT = char>
@@ -5369,9 +5634,16 @@ namespace __format
 	typename basic_format_context<_Out, _CharT>::iterator
 	format(_Rg&& __rg, basic_format_context<_Out, _CharT>& __fc) const
 	{
-	  // This is required to implement formatting with padding,
-	  // as we need to format to temporary buffer, using the same iterator.
-	  static_assert(is_same_v<_Out, __format::_Sink_iter<_CharT>>);
+	  using __maybe_const_range
+	    = __format::__maybe_const_range<_Rg, _CharT>;
+	  return _M_format<__maybe_const_range>(__rg, __fc);
+	}
+
+    private:
+      template<ranges::input_range _Rg, typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	_M_format(_Rg& __rg, basic_format_context<_Out, _CharT>& __fc) const
+	{
 	  if constexpr (same_as<_Tp, _CharT>)
 	    if (_M_spec._M_type == __format::_Pres_str
 		  || _M_spec._M_type == __format::_Pres_esc)
@@ -5379,16 +5651,17 @@ namespace __format
 		__format::__formatter_str __fstr(_M_spec);
 		return __fstr._M_format_range(__rg, __fc);
 	      }
-	  if (_M_spec._M_get_width(__fc) > 0)
-	    return _M_format_with_padding(__rg, __fc);
-	  return _M_format_no_padding(__rg, __fc);
+	  return __format::__format_padded(
+		   __fc, _M_spec,
+		   [this, &__rg](basic_format_context<_Out, _CharT>& __nfc)
+		     { return _M_format_elems(__rg, __nfc); });
 	}
 
-    private:
+
       template<ranges::input_range _Rg, typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
-	_M_format_no_padding(_Rg& __rg,
-			     basic_format_context<_Out, _CharT>& __fc) const
+	_M_format_elems(_Rg& __rg,
+			basic_format_context<_Out, _CharT>& __fc) const
 	{
 	  auto __out = __format::__write(__fc.out(), _M_open);
 
@@ -5407,50 +5680,6 @@ namespace __format
 	    }
 
 	  return __format::__write(__out, _M_close);
-	}
-
-      template<ranges::input_range _Rg, typename _Out>
-	typename basic_format_context<_Out, _CharT>::iterator
-	_M_format_with_padding(_Rg& __rg,
-			       basic_format_context<_Out, _CharT>& __fc) const
-	{
-     	  struct _Restore_out
-	  {
-	    _Restore_out(basic_format_context<_Out, _CharT>& __fc)
-	    : _M_ctx(addressof(__fc)), _M_out(__fc.out())
-	    { }
-
-	    void trigger()
-	    {
-	      if (_M_ctx)
-		_M_ctx->advance_to(_M_out);
-	      _M_ctx = nullptr;
-	    }
-
-	    ~_Restore_out()
-	    { trigger(); }
-
-	  private:
-	    basic_format_context<_Out, _CharT>* _M_ctx;
-	    __format::_Sink_iter<_CharT> _M_out;
-	  };
-
-	  _Restore_out __restore{__fc};
-	  // TODO Consider double sinking, first buffer of width
-	  // size and then original sink, if first buffer is overrun
-	  // we do not need to align
-	  __format::_Str_sink<_CharT> __buf;
-	  __fc.advance_to(__format::_Sink_iter<_CharT>(__buf));
-	  _M_format_no_padding(__rg, __fc);
-	  __restore.trigger();
-
-	  _String_view __s(__buf.view());
-	  size_t __width;
-	  if constexpr (__unicode::__literal_encoding_is_unicode<_CharT>())
-	    __width = __unicode::__field_width(__s);
-	  else
-	    __width = __s.size();
-	  return __format::__write_padded_as_spec(__s, __width, __fc, _M_spec);
 	}
 
       __format::_Spec<_CharT> _M_spec{};
@@ -5537,7 +5766,7 @@ namespace __format
 	    return _M_under._M_format_range(__rg, __fc);
 	  else
 	    return _M_under.format(__rg, __fc);
-       	}
+	}
 
     private:
       using _Formatter_under

@@ -892,6 +892,9 @@ namespace __gnu_test
     using test_input_range
       = test_range<T, input_iterator_wrapper>;
   template<typename T>
+    using test_input_range_nocopy
+      = test_range_nocopy<T, input_iterator_wrapper_nocopy>;
+  template<typename T>
     using test_output_range
       = test_range<T, output_iterator_wrapper>;
 

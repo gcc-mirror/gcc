@@ -1,7 +1,9 @@
 // { dg-do run { target c++23 } }
 
+#include <array>
 #include <format>
 #include <list>
+#include <ranges>
 #include <span>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
@@ -73,19 +75,23 @@ test_format_string()
 #define WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
 #define WIDEN(S) WIDEN_(_CharT, S)
 
-template<typename _CharT, typename Range>
+template<typename _CharT, typename Range, typename Storage>
 void test_output()
 {
   using Sv = std::basic_string_view<_CharT>;
   using T = std::ranges::range_value_t<Range>;
-  auto makeRange = [](std::span<T> s) {
-    return Range(s.data(), s.data() + s.size());
+  auto makeRange = [](Storage& s) -> Range {
+    if constexpr (std::is_same_v<std::remove_cvref_t<Range>, Storage>)
+      return s;
+    else
+      return Range(std::ranges::data(s),
+		   std::ranges::data(s) + std::ranges::size(s));
   };
 
   std::basic_string<_CharT> res;
   size_t size = 0;
 
-  T v1[]{1, 2, 3};
+  Storage v1{1, 2, 3};
   res = std::format(WIDEN("{}"), makeRange(v1));
   VERIFY( res == WIDEN("[1, 2, 3]") );
   res = std::format(WIDEN("{:}"), makeRange(v1));
@@ -143,27 +149,37 @@ void test_output()
   VERIFY( size == 25 );
 }
 
-template<typename Range>
-void test_output_c()
+template<typename Cont>
+void test_output_cont()
 {
-  test_output<char, Range>();
-  test_output<wchar_t, Range>();
+  test_output<char, Cont&, Cont>();
+  test_output<wchar_t, Cont const&, Cont>();
+}
+
+template<typename View>
+void test_output_view()
+{
+  test_output<char, View, int[3]>();
+  test_output<wchar_t, View, int[3]>();
 }
 
 void
 test_outputs()
 {
   using namespace __gnu_test;
-  test_output_c<std::vector<int>>();
-  test_output_c<std::list<int>>();
-  test_output_c<std::span<int>>();
+  test_output_cont<std::vector<int>>();
+  test_output_cont<std::list<int>>();
+  test_output_cont<std::array<int, 3>>();
 
-  test_output_c<test_forward_range<int>>();
-  test_output_c<test_input_range<int>>();
-  test_output_c<test_range_nocopy<int, input_iterator_wrapper_nocopy>>();
+  test_output_view<std::span<int>>();
+  test_output_view<std::ranges::subrange<int*>>();
+  test_output_view<test_forward_range<int>>();
+  test_output_view<test_input_range<int>>();
+  test_output_view<test_input_range_nocopy<int>>();
 
-  test_output_c<std::span<const int>>();
-  test_output_c<test_forward_range<const int>>();
+  test_output_view<std::span<const int>>();
+  test_output_view<std::ranges::subrange<const int*>>();
+  test_output_view<test_forward_range<const int>>();
 }
 
 void

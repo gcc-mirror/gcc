@@ -97,6 +97,7 @@ void
 test_override()
 {
   MyVector<_CharT, Formatter> vc{'a', 'b', 'c', 'd'};
+  MyVector<std::pair<int, int>, Formatter> vp{{1, 11}, {2, 21}};
   std::basic_string<_CharT> res;
 
   res = std::format(WIDEN("{:s}"), vc);
@@ -106,7 +107,10 @@ test_override()
   res = std::format(WIDEN("{:+^6s}"), vc);
   VERIFY( res == WIDEN("+abcd+") );
 
-  // TODO test map
+  res = std::format(WIDEN("{:m}"), vp);
+  VERIFY( res == WIDEN("{1: 11, 2: 21}") );
+  res = std::format(WIDEN("{:=^20m}"), vp);
+  VERIFY( res == WIDEN("==={1: 11, 2: 21}===") );
 }
 
 template<template<typename, typename> class Formatter>
