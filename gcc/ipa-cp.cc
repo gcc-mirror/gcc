@@ -307,14 +307,21 @@ ipcp_lattice<valtype>::print (FILE * f, bool dump_sources, bool dump_benefits)
     fprintf (f, "\n");
 }
 
-/* If VALUE has all bits set to one, print "-1" to F, otherwise simply print it
-   hexadecimally to F. */
+/* Print VALUE to F in a form which in usual cases does not take thousands of
+   characters. */
 
 static void
 ipcp_print_widest_int (FILE *f, const widest_int &value)
 {
   if (wi::eq_p (wi::bit_not (value), 0))
     fprintf (f, "-1");
+  else if (wi::eq_p (wi::bit_not (wi::bit_or (value,
+					      wi::sub (wi::lshift (1, 128),
+						       1))), 0))
+    {
+      fprintf (f, "all ones folled by ");
+      print_hex (wi::bit_and (value, wi::sub (wi::lshift (1, 128), 1)), f);
+    }
   else
     print_hex (value, f);
 }
@@ -331,7 +338,7 @@ ipcp_bits_lattice::print (FILE *f)
       fprintf (f, "         Bits: value = ");
       ipcp_print_widest_int (f, get_value ());
       fprintf (f, ", mask = ");
-      print_hex (get_mask (), f);
+      ipcp_print_widest_int (f, get_mask ());
       fprintf (f, "\n");
     }
 }
@@ -6437,7 +6444,7 @@ ipcp_store_vr_results (void)
 	  fprintf (dump_file, " param %i: value = ", i);
 	  ipcp_print_widest_int (dump_file, bits->get_value ());
 	  fprintf (dump_file, ", mask = ");
-	  print_hex (bits->get_mask (), dump_file);
+	  ipcp_print_widest_int (dump_file, bits->get_mask ());
 	  fprintf (dump_file, "\n");
 	}
     }
