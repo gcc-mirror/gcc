@@ -1,3 +1,20 @@
+2025-04-13  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-09  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/119689
+	PR rtl-optimization/115568
+	* g++.target/i386/pr119689.C: New testcase.
+
+2025-04-13  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2025-02-05  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/115568
+	* gcc.target/i386/pr115568.c: New.
+
 2025-04-11  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
