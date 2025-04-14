@@ -11708,7 +11708,7 @@ __gg__float64_from_128( cblc_field_t *dest,
   // _Float128 value = *(_Float128*)(source->data+source_offset);
   GCOB_FP128 value;
   memcpy(&value, source->data+source_offset, 16);
-  if( FP128_FUNC(fabs)(value) > 1.7976931348623157E308 )
+  if( FP128_FUNC(fabs)(value) > GCOB_FP128_LITERAL(1.7976931348623157E308) )
     {
     retval = 1;
     }
