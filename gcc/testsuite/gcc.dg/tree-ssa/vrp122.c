@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O2 -fdump-tree-evrp-details" }
+// { dg-options "-O2 -fdump-tree-ccp1-details" }
 
 void gg(void);
 int f(unsigned t)
@@ -16,4 +16,4 @@ int f(unsigned t)
   return 0;
 }
 
-// { dg-final { scan-tree-dump "Global Exported: g_.* MASK 0x1 VALUE 0x0" "evrp" } }
+// { dg-final { scan-tree-dump "Global Exported: g_.*MASK.*0 VALUE 0x0" "ccp1" } }

@@ -31,9 +31,7 @@ int fdiv1(int a, int b)
   return a != 0 ? c : 0;
 }
 
-/* fdiv1 requires until later than phiopt2 to be able to detect that
-   d is non-zero. to be able to remove the conditional.  */
-/* { dg-final { scan-tree-dump-times "goto" 2 "phiopt2" } } */
+/* { dg-final { scan-tree-dump-not "goto" "phiopt2" } } */
 /* { dg-final { scan-tree-dump-not "goto" "phiopt3" } } */
 /* { dg-final { scan-tree-dump-not "goto" "optimized" } } */
 
