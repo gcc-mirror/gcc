@@ -2183,6 +2183,13 @@
 #endif
 
 
+/* Define if personality and ADDR_NO_RANDOMIZE are declared in
+   sys/personality.h. */
+#ifndef USED_FOR_TARGET
+#undef HOST_HAS_PERSONALITY_ADDR_NO_RANDOMIZE
+#endif
+
+
 /* Define which stat syscall is able to handle 64bit indodes. */
 #ifndef USED_FOR_TARGET
 #undef HOST_STAT_FOR_64BIT_INODES
