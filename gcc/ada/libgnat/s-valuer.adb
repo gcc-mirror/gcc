@@ -341,7 +341,7 @@ package body System.Value_R is
 
             --  Underscore is only allowed if followed by a digit
 
-            if Digit = Underscore and Index + 1 <= Max then
+            if Digit = Underscore and then Index + 1 <= Max then
 
                Digit := As_Digit (Str (Index + 1));
                if Digit in Valid_Digit then
@@ -496,7 +496,7 @@ package body System.Value_R is
             --  Next character is not a digit. In that case stop scanning
             --  unless the next chracter is an underscore followed by a digit.
 
-            if Digit = Underscore and Index + 1 <= Max then
+            if Digit = Underscore and then Index + 1 <= Max then
                Digit := As_Digit (Str (Index + 1));
                if Digit in Valid_Digit then
                   Index := Index + 1;

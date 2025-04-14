@@ -148,7 +148,7 @@ package body Interfaces.C.Pointers is
       S : Pointer := Source;
 
    begin
-      if Source = null or Target = null then
+      if Source = null or else Target = null then
          raise Dereference_Error;
       end if;
 
