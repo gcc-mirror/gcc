@@ -2699,10 +2699,10 @@ PROCEDURE Example (foo, bar: CARDINAL) : CARDINAL ;
 VAR
    myout: CARDINAL ;
 BEGIN
-   ASM VOLATILE ("movq %1,%%rax; addq %2,%%rax; movq %%rax,%0"
+   ASM VOLATILE ("movl %1,%%eax; addl %2,%%eax; movl %%eax,%0"
       : "=rm" (myout)            (* outputs *)
       : "rm" (foo), "rm" (bar)   (* inputs  *)
-      : "rax") ;                 (* we trash *)
+      : "eax") ;                 (* we trash *)
    RETURN( myout )
 END Example ;
 @end example
@@ -2720,10 +2720,10 @@ VAR
    myout: CARDINAL ;
 BEGIN
    ASM VOLATILE (
-    "movq %[left],%%rax; addq %[right],%%rax; movq %%rax,%[output]"
+    "movl %[left],%%eax; addl %[right],%%eax; movl %%eax,%[output]"
       : [output] "=rm" (myout)                  (* outputs *)
       : [left] "rm" (foo), [right] "rm" (bar)   (* inputs  *)
-      : "rax") ;                                (* we trash *)
+      : "eax") ;                                (* we trash *)
    RETURN( myout )
 END Example ;
 @end example
