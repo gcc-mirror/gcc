@@ -385,10 +385,6 @@ cobol_langhook_handle_option (size_t scode,
             return true;
         }
 
-        case OPT_fmax_errors:
-            flag_max_errors = atoi(arg);
-            return true;
-
         case OPT_ffixed_form:
             cobol_set_indicator_column(-7);
             return true;

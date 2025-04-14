@@ -89,10 +89,6 @@ finternal-ebcdic
 Cobol Var(cobol_ebcdic, 1) Init(0)
 -finternal-ebcdic	Internal processing is in EBCDIC Code Page 1140
 
-fmax-errors
-Cobol Joined Separate
-; Documented in C
-
 fstatic-call
 Cobol Var(cobol_static_call, 1) Init(1)
 Enable/disable static linkage for CALL literals
