@@ -5,8 +5,8 @@ struct a {
   int b;
 };
 int c;
-char d;
-static int e(long f) { return f < 0; }
+signed char d;
+static int e(long long f) { return f < 0; }
 static void g(unsigned f) { c = e(~f); }
 int main() {
   int h;
