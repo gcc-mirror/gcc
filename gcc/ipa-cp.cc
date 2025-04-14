@@ -918,6 +918,8 @@ ipcp_bits_lattice::meet_with_1 (widest_int value, widest_int mask,
     m_mask |= m_value;
   m_value &= ~m_mask;
 
+  widest_int cap_mask = wi::bit_not (wi::sub (wi::lshift (1, precision), 1));
+  m_mask |= cap_mask;
   if (wi::sext (m_mask, precision) == -1)
     return set_to_bottom ();
 
@@ -996,6 +998,8 @@ ipcp_bits_lattice::meet_with (ipcp_bits_lattice& other, unsigned precision,
 	  adjusted_mask |= adjusted_value;
 	  adjusted_value &= ~adjusted_mask;
 	}
+      widest_int cap_mask = wi::bit_not (wi::sub (wi::lshift (1, precision), 1));
+      adjusted_mask |= cap_mask;
       if (wi::sext (adjusted_mask, precision) == -1)
 	return set_to_bottom ();
       return set_to_constant (adjusted_value, adjusted_mask);
@@ -2507,14 +2511,12 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
       return dest_lattice->set_to_bottom ();
     }
 
-  unsigned precision = TYPE_PRECISION (parm_type);
-  signop sgn = TYPE_SIGN (parm_type);
-
   if (jfunc->type == IPA_JF_PASS_THROUGH
       || jfunc->type == IPA_JF_ANCESTOR)
     {
       ipa_node_params *caller_info = ipa_node_params_sum->get (cs->caller);
       tree operand = NULL_TREE;
+      tree op_type = NULL_TREE;
       enum tree_code code;
       unsigned src_idx;
       bool keep_null = false;
@@ -2524,7 +2526,10 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
 	  code = ipa_get_jf_pass_through_operation (jfunc);
 	  src_idx = ipa_get_jf_pass_through_formal_id (jfunc);
 	  if (code != NOP_EXPR)
-	    operand = ipa_get_jf_pass_through_operand (jfunc);
+	    {
+	      operand = ipa_get_jf_pass_through_operand (jfunc);
+	      op_type = ipa_get_jf_pass_through_op_type (jfunc);
+	    }
 	}
       else
 	{
@@ -2551,6 +2556,11 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
 
       if (!src_lats->bits_lattice.bottom_p ())
 	{
+	  if (!op_type)
+	    op_type = ipa_get_type (caller_info, src_idx);
+
+	  unsigned precision = TYPE_PRECISION (op_type);
+	  signop sgn = TYPE_SIGN (op_type);
 	  bool drop_all_ones
 	    = keep_null && !src_lats->bits_lattice.known_nonzero_p ();
 
@@ -2570,7 +2580,8 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
 	    = widest_int::from (bm.mask (), TYPE_SIGN (parm_type));
 	  widest_int value
 	    = widest_int::from (bm.value (), TYPE_SIGN (parm_type));
-	  return dest_lattice->meet_with (value, mask, precision);
+	  return dest_lattice->meet_with (value, mask,
+					  TYPE_PRECISION (parm_type));
 	}
     }
   return dest_lattice->set_to_bottom ();
