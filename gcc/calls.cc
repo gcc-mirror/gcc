@@ -1273,11 +1273,6 @@ void
 maybe_complain_about_tail_call (tree call_expr, const char *reason)
 {
   gcc_assert (TREE_CODE (call_expr) == CALL_EXPR);
-  if (CALL_EXPR_MUST_TAIL_CALL (call_expr))
-    {
-      error_at (EXPR_LOCATION (call_expr), "cannot tail-call: %s", reason);
-      CALL_EXPR_MUST_TAIL_CALL (call_expr) = 0;
-    }
   if (CALL_EXPR_TAILCALL (call_expr)
       && dump_file
       && (dump_flags & TDF_DETAILS))
@@ -1285,6 +1280,11 @@ maybe_complain_about_tail_call (tree call_expr, const char *reason)
       fprintf (dump_file, ";; Cannot tail-call: %s: ", reason);
       print_generic_expr (dump_file, call_expr, TDF_SLIM);
       fprintf (dump_file, "\n");
+    }
+  if (CALL_EXPR_MUST_TAIL_CALL (call_expr))
+    {
+      error_at (EXPR_LOCATION (call_expr), "cannot tail-call: %s", reason);
+      CALL_EXPR_MUST_TAIL_CALL (call_expr) = 0;
     }
 }
 

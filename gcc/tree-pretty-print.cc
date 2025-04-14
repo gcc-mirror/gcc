@@ -3201,6 +3201,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	pp_string (pp, " [return slot optimization]");
       if (CALL_EXPR_TAILCALL (node))
 	pp_string (pp, " [tail call]");
+      if (CALL_EXPR_MUST_TAIL_CALL (node))
+	pp_string (pp, " [must tail call]");
       break;
 
     case WITH_CLEANUP_EXPR:
