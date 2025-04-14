@@ -348,7 +348,11 @@ insert_capture_proxy (tree var)
 
   /* And put a DECL_EXPR in the STATEMENT_LIST for the same block.  */
   var = build_stmt (DECL_SOURCE_LOCATION (var), DECL_EXPR, var);
-  tree stmt_list = (*stmt_list_stack)[1];
+  /* The first stmt_list is from start_preparsed_function.  Then there's a
+     possible stmt_list from begin_eh_spec_block, then the one from the
+     lambda's outer {}.  */
+  unsigned index = 1 + use_eh_spec_block (current_function_decl);
+  tree stmt_list = (*stmt_list_stack)[index];
   gcc_assert (stmt_list);
   append_to_statement_list_force (var, &stmt_list);
 }
@@ -1859,11 +1863,10 @@ prune_lambda_captures (tree body)
   cp_walk_tree_without_duplicates (&body, mark_const_cap_r, &const_vars);
 
   tree bind_expr = expr_single (DECL_SAVED_TREE (lambda_function (lam)));
-  if (bind_expr && TREE_CODE (bind_expr) == MUST_NOT_THROW_EXPR)
+  bool noexcept_p = (bind_expr
+		     && TREE_CODE (bind_expr) == MUST_NOT_THROW_EXPR);
+  if (noexcept_p)
     bind_expr = expr_single (TREE_OPERAND (bind_expr, 0));
-  /* FIXME: We don't currently handle noexcept lambda captures correctly,
-     so bind_expr may not be set; see PR c++/119764.  */
-  gcc_assert (!bind_expr || TREE_CODE (bind_expr) == BIND_EXPR);
 
   tree *fieldp = &TYPE_FIELDS (LAMBDA_EXPR_CLOSURE (lam));
   for (tree *capp = &LAMBDA_EXPR_CAPTURE_LIST (lam); *capp; )
@@ -1872,10 +1875,22 @@ prune_lambda_captures (tree body)
       if (tree var = var_to_maybe_prune (cap))
 	{
 	  tree **use = const_vars.get (var);
-	  if (use && TREE_CODE (**use) == DECL_EXPR)
+	  if (TREE_CODE (**use) == DECL_EXPR)
 	    {
 	      /* All uses of this capture were folded away, leaving only the
 		 proxy declaration.  */
+
+	      if (noexcept_p)
+		{
+		  /* We didn't handle noexcept lambda captures correctly before
+		     the fix for PR c++/119764.  */
+		  if (abi_version_crosses (21))
+		    warning_at (location_of (lam), OPT_Wabi, "%qD is no longer"
+				" captured in noexcept lambda in ABI v21 "
+				"(GCC 16)", var);
+		  if (!abi_version_at_least (21))
+		    goto next;
+		}
 
 	      /* Splice the capture out of LAMBDA_EXPR_CAPTURE_LIST.  */
 	      *capp = TREE_CHAIN (cap);
@@ -1894,14 +1909,11 @@ prune_lambda_captures (tree body)
 
 	      /* And maybe out of the vars declared in the containing
 		 BIND_EXPR, if it's listed there.  */
-	      if (bind_expr)
-		{
-		  tree *bindp = &BIND_EXPR_VARS (bind_expr);
-		  while (*bindp && *bindp != DECL_EXPR_DECL (**use))
-		    bindp = &DECL_CHAIN (*bindp);
-		  if (*bindp)
-		    *bindp = DECL_CHAIN (*bindp);
-		}
+	      tree *bindp = &BIND_EXPR_VARS (bind_expr);
+	      while (*bindp && *bindp != DECL_EXPR_DECL (**use))
+		bindp = &DECL_CHAIN (*bindp);
+	      if (*bindp)
+		*bindp = DECL_CHAIN (*bindp);
 
 	      /* And remove the capture proxy declaration.  */
 	      **use = void_node;
@@ -1909,6 +1921,7 @@ prune_lambda_captures (tree body)
 	    }
 	}
 
+    next:
       capp = &TREE_CHAIN (cap);
     }
 }
