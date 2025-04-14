@@ -6934,6 +6934,28 @@ DEFHOOK
  bool, (string_slice fn1, string_slice fn2),
  hook_stringslice_stringslice_unreachable)
 
+/* Checks if we can be certain that function DECL_A could resolve DECL_B.  */
+DEFHOOK
+(functions_b_resolvable_from_a,
+ "@var{decl_b} is a function declaration with a function multi-versioning\n\
+(FMV) attribute; this attribute is either @code{target} or\n\
+@code{target_version}, depending on @code{TARGET_HAS_FMV_TARGET_ATTRIBUTE}.\n\
+@var{decl_a} is a function declaration that may or may not have an FMV\n\
+attribute.\n\
+\n\
+Return true if we have enough information to determine that the\n\
+requirements of @var{decl_b}'s FMV attribute are met whenever @var{decl_a}\n\
+is executed, given that the target supports all features required by\n\
+function declaration @var{base}.\n\
+\n\
+The default implementation just checks whether @var{decl_a} has the same\n\
+FMV attribute as @var{decl_b}.  This is conservatively correct,\n\
+but ports can do better by taking the relationships between architecture\n\
+features into account.  For example, on AArch64, @code{sve} is present\n\
+whenever @code{sve2} is present.",
+ bool, (tree decl_a, tree decl_v, tree base),
+ functions_b_resolvable_from_a)
+
 /* Function to determine if one function can inline another function.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_"

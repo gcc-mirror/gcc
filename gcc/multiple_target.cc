@@ -423,60 +423,99 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   return true;
 }
 
-/* When NODE is a target clone, consider all callees and redirect
-   to a clone with equal target attributes.  That prevents multiple
-   multi-versioning dispatches and a call-chain can be optimized.
-
-   This optimisation might pick the wrong version in some cases, since knowing
-   that we meet the target requirements for a matching callee version does not
-   tell us that we won't also meet the target requirements for a higher
-   priority callee version at runtime.  Since this is longstanding behaviour
-   for x86 and powerpc, we preserve it for those targets, but skip the optimisation
-   for targets that use the "target_version" attribute for multi-versioning.  */
+/* When NODE is part of an FMV function set, consider all callees and check if
+   any can provably always resolve a certain version and then call that version
+   directly.  */
 
 static void
 redirect_to_specific_clone (cgraph_node *node)
 {
-  cgraph_function_version_info *fv = node->function_version ();
-  if (fv == NULL)
-    return;
-
-  gcc_assert (TARGET_HAS_FMV_TARGET_ATTRIBUTE);
-  tree attr_target = lookup_attribute ("target", DECL_ATTRIBUTES (node->decl));
-  if (attr_target == NULL_TREE)
+  if (!targetm.compare_version_priority || !optimize)
     return;
 
   /* We need to remember NEXT_CALLER as it could be modified in the loop.  */
   for (cgraph_edge *e = node->callees; e ; e = e->next_callee)
     {
-      cgraph_function_version_info *fv2 = e->callee->function_version ();
-      if (!fv2)
+      /* Only if this is a call to a dispatched symbol.  */
+      if (!e->callee->dispatcher_function)
 	continue;
 
-      tree attr_target2 = lookup_attribute ("target",
-					    DECL_ATTRIBUTES (e->callee->decl));
+      cgraph_function_version_info *callee_v
+	= e->callee->function_version ();
+      cgraph_function_version_info *caller_v
+	= e->caller->function_version ();
 
-      /* Function is not calling proper target clone.  */
-      if (attr_target2 == NULL_TREE
-	  || !attribute_value_equal (attr_target, attr_target2))
+      gcc_assert (callee_v);
+
+      /* Find the default nodes for both callee and caller (if present).  */
+      cgraph_function_version_info *callee_default_v = callee_v->next;
+      cgraph_function_version_info *caller_default_v = caller_v;
+      if (caller_v)
 	{
-	  while (fv2->prev != NULL)
-	    fv2 = fv2->prev;
+	  while (caller_default_v->prev)
+	    caller_default_v = caller_default_v->prev;
+	  if (!is_function_default_version (caller_default_v->this_node->decl))
+	    caller_default_v = NULL;
+	}
 
-	  /* Try to find a clone with equal target attribute.  */
-	  for (; fv2 != NULL; fv2 = fv2->next)
+      /* If this is not the TU that contains the definition of the default
+	 version we are not guaranteed to have visibility of all versions
+	 so cannot reason about them.  */
+      if (!callee_default_v
+	  || !callee_default_v->this_node->binds_to_current_def_p ())
+	continue;
+
+      cgraph_function_version_info *highest_callable_fn = NULL;
+      for (cgraph_function_version_info *ver = callee_v->next;
+	   ver;
+	   ver = ver->next)
+	if (targetm.target_option.functions_b_resolvable_from_a
+	      (node->decl, ver->this_node->decl, node->decl))
+	  highest_callable_fn = ver;
+
+      if (!highest_callable_fn)
+	continue;
+
+      bool inlinable = true;
+
+      /* If there are higher priority versions of callee and caller has no
+	 more version information, then not callable.  */
+      if (highest_callable_fn->next)
+	{
+	  /* If this is not the TU where the callee default is defined then
+	     cannot reason about the caller versions.  */
+	  if (!caller_default_v
+	      || !caller_default_v->this_node->binds_to_current_def_p ())
+	    continue;
+
+	  /* If every higher priority version would imply a higher priority
+	     version of caller would have been selected, then this is
+	     callable.  */
+	  for (cgraph_function_version_info *callee_ver
+	       = highest_callable_fn->next;
+	       callee_ver; callee_ver = callee_ver->next)
 	    {
-	      cgraph_node *callee = fv2->this_node;
-	      attr_target2 = lookup_attribute ("target",
-					       DECL_ATTRIBUTES (callee->decl));
-	      if (attr_target2 != NULL_TREE
-		  && attribute_value_equal (attr_target, attr_target2))
+	      bool is_possible = true;
+	      for (cgraph_function_version_info *caller_ver = caller_v->next;
+		   caller_ver; caller_ver = caller_ver->next)
+		if (targetm.target_option.functions_b_resolvable_from_a
+		      (callee_ver->this_node->decl, caller_ver->this_node->decl,
+		       node->decl))
+		  {
+		    is_possible = false;
+		    break;
+		  }
+	      if (is_possible)
 		{
-		  e->redirect_callee (callee);
-		  cgraph_edge::redirect_call_stmt_to_callee (e);
+		  inlinable = false;
 		  break;
 		}
 	    }
+	}
+      if (inlinable)
+	{
+	  e->redirect_callee (highest_callable_fn->this_node);
+	  cgraph_edge::redirect_call_stmt_to_callee (e);
 	}
     }
 }
@@ -566,9 +605,8 @@ ipa_target_clone (bool early)
   for (unsigned i = 0; i < to_dispatch.length (); i++)
     create_dispatcher_calls (to_dispatch[i]);
 
-  if (TARGET_HAS_FMV_TARGET_ATTRIBUTE)
-    FOR_EACH_FUNCTION (node)
-      redirect_to_specific_clone (node);
+  FOR_EACH_FUNCTION (node)
+    redirect_to_specific_clone (node);
 
   return 0;
 }

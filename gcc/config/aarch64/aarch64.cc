@@ -20640,6 +20640,30 @@ aarch64_compare_version_priority (tree decl1, tree decl2)
   return compare_feature_masks (mask1, mask2);
 }
 
+/* Implement TARGET_OPTION_FUNCTIONS_B_RESOLVABLE_FROM_A.  */
+
+bool
+aarch64_functions_b_resolvable_from_a (tree decl_a, tree decl_b, tree baseline)
+{
+  auto baseline_isa = aarch64_get_isa_flags
+		 (TREE_TARGET_OPTION (aarch64_fndecl_options (baseline)));
+  auto isa_a = baseline_isa;
+  auto isa_b = baseline_isa;
+
+  auto a_version = get_target_version (decl_a);
+  auto b_version = get_target_version (decl_b);
+  if (a_version.is_valid ())
+    aarch64_parse_fmv_features (a_version, &isa_a, NULL, NULL);
+  if (b_version.is_valid ())
+    aarch64_parse_fmv_features (b_version, &isa_b, NULL, NULL);
+
+  /* Are there any bits of b that arent in a.  */
+  if (isa_b & (~isa_a))
+    return false;
+
+  return true;
+}
+
 /* Build the struct __ifunc_arg_t type:
 
    struct __ifunc_arg_t
@@ -32853,6 +32877,10 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_COMPARE_VERSION_PRIORITY
 #define TARGET_COMPARE_VERSION_PRIORITY aarch64_compare_version_priority
+
+#undef TARGET_OPTION_FUNCTIONS_B_RESOLVABLE_FROM_A
+#define TARGET_OPTION_FUNCTIONS_B_RESOLVABLE_FROM_A \
+  aarch64_functions_b_resolvable_from_a
 
 #undef TARGET_GENERATE_VERSION_DISPATCHER_BODY
 #define TARGET_GENERATE_VERSION_DISPATCHER_BODY \

@@ -10983,6 +10983,25 @@ This target hook returns @code{true} if the target/target-version strings
 @var{fn1} and @var{fn2} imply the same function version.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_OPTION_FUNCTIONS_B_RESOLVABLE_FROM_A (tree @var{decl_a}, tree @var{decl_v}, tree @var{base})
+@var{decl_b} is a function declaration with a function multi-versioning
+(FMV) attribute; this attribute is either @code{target} or
+@code{target_version}, depending on @code{TARGET_HAS_FMV_TARGET_ATTRIBUTE}.
+@var{decl_a} is a function declaration that may or may not have an FMV
+attribute.
+
+Return true if we have enough information to determine that the
+requirements of @var{decl_b}'s FMV attribute are met whenever @var{decl_a}
+is executed, given that the target supports all features required by
+function declaration @var{base}.
+
+The default implementation just checks whether @var{decl_a} has the same
+FMV attribute as @var{decl_b}.  This is conservatively correct,
+but ports can do better by taking the relationships between architecture
+features into account.  For example, on AArch64, @code{sve} is present
+whenever @code{sve2} is present.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_CAN_INLINE_P (tree @var{caller}, tree @var{callee})
 This target hook returns @code{false} if the @var{caller} function
 cannot inline @var{callee}, based on target specific information.  By

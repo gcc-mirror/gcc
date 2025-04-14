@@ -7142,6 +7142,8 @@ with the target specific attributes.  The default value is @code{','}.
 
 @hook TARGET_OPTION_SAME_FUNCTION_VERSIONS
 
+@hook TARGET_OPTION_FUNCTIONS_B_RESOLVABLE_FROM_A
+
 @hook TARGET_CAN_INLINE_P
 
 @hook TARGET_UPDATE_IPA_FN_TARGET_INFO

@@ -56,6 +56,7 @@ extern struct scoped_attributes *
 extern char *sorted_attr_string (tree);
 extern tree make_dispatcher_decl (const tree);
 extern bool is_function_default_version (const tree);
+extern bool functions_b_resolvable_from_a (tree, tree, tree);
 extern void handle_ignored_attributes_option (vec<char *> *);
 
 /* Return a type like TTYPE except that its TYPE_ATTRIBUTES

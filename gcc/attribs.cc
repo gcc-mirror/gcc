@@ -1086,6 +1086,28 @@ make_attribute (string_slice name, string_slice arg_name, tree chain)
   return attr;
 }
 
+/* Default implementation of TARGET_OPTION_FUNCTIONS_B_RESOLVABLE_FROM_A.
+   Used to check very basically if DECL_B is callable from DECL_A.
+   For now this checks if the version strings are the same.  */
+
+bool
+functions_b_resolvable_from_a (tree decl_a, tree decl_b,
+			       tree base ATTRIBUTE_UNUSED)
+{
+  const char *attr_name = TARGET_HAS_FMV_TARGET_ATTRIBUTE
+			  ? "target"
+			  : "target_version";
+
+  tree attr_a = lookup_attribute (attr_name, DECL_ATTRIBUTES (decl_a));
+  tree attr_b = lookup_attribute (attr_name, DECL_ATTRIBUTES (decl_b));
+
+  gcc_assert (attr_b);
+  if (!attr_a)
+    return false;
+
+  return attribute_value_equal (attr_a, attr_b);
+}
+
 /* Comparator function to be used in qsort routine to sort attribute
    specification strings to "target".  */
 
