@@ -128,5 +128,5 @@ gengtype-lex.cc:357:15: warning: this statement may fall through [-Wimplicit-fal
 gengtype-lex.cc:357:15: warning: this statement may fall through [-Wimplicit-fallthrough=]
 gengtype-lex.cc:357:15: warning: this statement may fall through [-Wimplicit-fallthrough=]
 gengtype-lex.cc:357:15: warning: this statement may fall through [-Wimplicit-fallthrough=]
-install.texi:2230: warning: `.' or `,' must follow @xref, not f
+install.texi:2236: warning: `.' or `,' must follow @xref, not f
 libtool: install: warning: remember to run `libtool --finish /usr/local/libexec/gcc/x86_64-pc-linux-gnu/14.0.1'
