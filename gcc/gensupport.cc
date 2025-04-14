@@ -656,7 +656,7 @@ public:
      i.e. if rtx is the relevant match_operand or match_scratch then
      [ns..ns + len) should equal itoa (XINT (rtx, 0)), and if set_attr then
      [ns..ns + len) should equal XSTR (rtx, 0).  */
-  conlist (const char *ns, unsigned int len, bool numeric)
+  conlist (const char *ns, unsigned int len, bool numeric, file_location loc)
   {
     /* Trim leading whitespaces.  */
     while (len > 0 && ISBLANK (*ns))
@@ -670,16 +670,26 @@ public:
       if (!ISBLANK (ns[i]))
 	break;
 
-    /* Parse off any modifiers.  */
-    while (len > 0 && !ISALNUM (*ns))
-      {
-	con += *(ns++);
-	len--;
-      }
+    /* Only numeric values can have modifiers.  */
+    if (numeric)
+      /* Parse off any modifiers.  */
+      while (len > 0 && !ISALNUM (*ns))
+	{
+	  if (*ns != '=' && *ns != '+' && *ns != '%')
+	    error_at (loc, "`%c` is not a valid operand modifier", *ns);
+	  con += *(ns++);
+	  len--;
+	}
 
     name.assign (ns, len);
     if (numeric)
-      idx = strtol (name.c_str (), (char **)NULL, 10);
+      {
+	char *endstr;
+	/* There should only be a numeric value now... */
+	idx = strtol (name.c_str (), &endstr, 10);
+	if (*endstr != '\0')
+	  error_at (loc, "operand number expected, found %s", name.c_str ());
+      }
   }
 
   /* Adds a character to the end of the string.  */
@@ -832,7 +842,7 @@ parse_section_layout (file_location loc, const char **templ, const char *label,
 	  *templ += len;
 	  if (val == ',')
 	    (*templ)++;
-	  list.push_back (conlist (name_start, len, numeric));
+	  list.push_back (conlist (name_start, len, numeric, loc));
 	}
     }
 }
@@ -845,7 +855,8 @@ parse_section_layout (file_location loc, const char **templ, const char *label,
 
 static void
 parse_section (const char **templ, unsigned int n_elems, unsigned int alt_no,
-	       vec_conlist &list, file_location loc, const char *name)
+	       vec_conlist &list, file_location loc, const char *name,
+	       const char *invalid_chars = NULL)
 {
   unsigned int i;
 
@@ -856,6 +867,10 @@ parse_section (const char **templ, unsigned int n_elems, unsigned int alt_no,
       {
 	if (**templ == 0 || **templ == '\n')
 	  fatal_at (loc, "missing ']'");
+	if (invalid_chars
+	    && strchr (invalid_chars, **templ))
+	  error_at (loc, "'%c' is not permitted in an alternative for a %s",
+		    **templ, name);
 	list[i].add (**templ);
 	if (**templ == ',')
 	  {
@@ -981,7 +996,7 @@ convert_syntax (rtx x, file_location loc)
 	  /* Parse the constraint list, then the attribute list.  */
 	  if (tconvec.size () > 0)
 	    parse_section (&templ, tconvec.size (), alt_no, tconvec, loc,
-			   "constraint");
+			   "constraint", "=+%");
 
 	  if (attrvec.size () > 0)
 	    {
