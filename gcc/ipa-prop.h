@@ -96,6 +96,9 @@ struct GTY(()) ipa_pass_through_data
   /* If an operation is to be performed on the original parameter, this is the
      second (constant) operand.  */
   tree operand;
+  /* The result type of the operation.  In case of no operation (represented by
+     NOP_EXPR) it should be NULL_TREE.  */
+  tree op_type;
   /* Number of the caller's formal parameter being passed.  */
   int formal_id;
   /* Operation that is performed on the argument before it is passed on.
@@ -385,6 +388,18 @@ ipa_get_jf_pass_through_operand (struct ipa_jump_func *jfunc)
 {
   gcc_checking_assert (jfunc->type == IPA_JF_PASS_THROUGH);
   return jfunc->value.pass_through.operand;
+}
+
+/* Return the type of the operation in a non-NOP pass through jmp function
+   JFUNC.  */
+
+inline tree
+ipa_get_jf_pass_through_op_type (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_PASS_THROUGH
+		       && jfunc->value.pass_through.operation != NOP_EXPR);
+
+  return jfunc->value.pass_through.op_type;
 }
 
 /* Return the number of the caller's formal parameter that a pass through jump

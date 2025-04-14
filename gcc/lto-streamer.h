@@ -906,6 +906,7 @@ void lto_output_decl_state_streams (struct output_block *,
 void lto_output_decl_state_refs (struct output_block *,
 			         struct lto_output_stream *,
 			         struct lto_out_decl_state *);
+bool lto_variably_modified_type_p (tree);
 void lto_output_location (struct output_block *, struct bitpack_d *,
 			  location_t);
 void lto_output_location_and_block (struct output_block *, struct bitpack_d *,

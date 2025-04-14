@@ -130,7 +130,7 @@ destroy_output_block (struct output_block *ob)
 /* Wrapper around variably_modified_type_p avoiding type modification
    during WPA streaming.  */
 
-static bool
+bool
 lto_variably_modified_type_p (tree type)
 {
   return (in_lto_p
