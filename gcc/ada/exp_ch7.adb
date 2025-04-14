@@ -5275,6 +5275,13 @@ package body Exp_Ch7 is
             Obj_Typ          : Entity_Id;
 
          begin
+            --  Ignored Ghost objects do not need any cleanup actions because
+            --  they will not appear in the final tree.
+
+            if Is_Ignored_Ghost_Entity (Obj_Id) then
+               return;
+            end if;
+
             --  If the object needs to be exported to the outer finalizer,
             --  create the declaration of the Master_Node for the object,
             --  which will later be picked up by Build_Finalizer.
