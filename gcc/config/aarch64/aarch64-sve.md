@@ -3949,8 +3949,8 @@
 	     (match_operand:SVE_I_SIMD_DI 3 "aarch64_sve_<sve_imm_con>_operand"))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1   , 2  , 3             ; attrs: movprfx ]
-     [ w        , Upl , %0 , <sve_imm_con> ; *              ] #
+  {@ [ cons: =0 , 1   , %2 , 3             ; attrs: movprfx ]
+     [ w        , Upl , 0  , <sve_imm_con> ; *              ] #
      [ w        , Upl , 0  , w             ; *              ] <sve_int_op>\t%Z0.<Vetype>, %1/m, %Z0.<Vetype>, %Z3.<Vetype>
      [ ?&w      , Upl , w  , <sve_imm_con> ; yes            ] #
      [ ?&w      , Upl , w  , w             ; yes            ] movprfx\t%Z0, %Z2\;<sve_int_op>\t%Z0.<Vetype>, %1/m, %Z0.<Vetype>, %Z3.<Vetype>
@@ -4079,8 +4079,8 @@
 	  (match_operand:SVE_I 1 "register_operand")
 	  (match_operand:SVE_I 2 "aarch64_sve_add_operand")))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1  , 2   ; attrs: movprfx ]
-     [ w        , %0 , vsa ; *              ] add\t%0.<Vetype>, %0.<Vetype>, #%D2
+  {@ [ cons: =0 , %1 , 2   ; attrs: movprfx ]
+     [ w        , 0  , vsa ; *              ] add\t%0.<Vetype>, %0.<Vetype>, #%D2
      [ w        , 0  , vsn ; *              ] sub\t%0.<Vetype>, %0.<Vetype>, #%N2
      [ w        , 0  , vsi ; *              ] << aarch64_output_sve_vector_inc_dec ("%0.<Vetype>", operands[2]);
      [ ?w       , w  , vsa ; yes            ] movprfx\t%0, %1\;add\t%0.<Vetype>, %0.<Vetype>, #%D2
@@ -4298,8 +4298,8 @@
 	       (match_dup 3))]
 	    UNSPEC_PRED_X)))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1   , 2  , 3 ; attrs: movprfx ]
-     [ w        , Upl , %0 , w ; *              ] <su>abd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+  {@ [ cons: =0 , 1   , %2 , 3 ; attrs: movprfx ]
+     [ w        , Upl , 0  , w ; *              ] <su>abd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
      [ ?&w      , Upl , w  , w ; yes            ] movprfx\t%0, %2\;<su>abd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
   }
 )
@@ -4513,8 +4513,8 @@
 	     MUL_HIGHPART)]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1   , 2  , 3 ; attrs: movprfx ]
-     [ w        , Upl , %0 , w ; *              ] <su>mulh\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+  {@ [ cons: =0 , 1   , %2 , 3 ; attrs: movprfx ]
+     [ w        , Upl , 0  , w ; *              ] <su>mulh\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
      [ ?&w      , Upl , w  , w ; yes            ] movprfx\t%0, %2\;<su>mulh\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
   }
 )
@@ -4568,8 +4568,8 @@
 	   (match_operand:SVE_FULL_I 4 "aarch64_simd_imm_zero")]
 	  UNSPEC_SEL))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1   , 2  , 3  ]
-     [ &w       , Upl , %0 , w  ] movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<sve_int_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+  {@ [ cons: =0 , 1   , %2 , 3  ]
+     [ &w       , Upl , 0  , w  ] movprfx\t%0.<Vetype>, %1/z, %0.<Vetype>\;<sve_int_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
      [ &w       , Upl , w  , w  ] movprfx\t%0.<Vetype>, %1/z, %2.<Vetype>\;<sve_int_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
   }
   [(set_attr "movprfx" "yes")])
@@ -4713,8 +4713,8 @@
 	  (match_operand:SVE_I 1 "register_operand")
 	  (match_operand:SVE_I 2 "aarch64_sve_logical_operand")))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1  , 2   ; attrs: movprfx ]
-     [ w        , %0 , vsl ; *              ] <logical>\t%0.<Vetype>, %0.<Vetype>, #%C2
+  {@ [ cons: =0 , %1 , 2   ; attrs: movprfx ]
+     [ w        , 0  , vsl ; *              ] <logical>\t%0.<Vetype>, %0.<Vetype>, #%C2
      [ ?w       , w  , vsl ; yes            ] movprfx\t%0, %1\;<logical>\t%0.<Vetype>, %0.<Vetype>, #%C2
      [ w        , w  , w   ; *              ] <logical>\t%0.d, %1.d, %2.d
   }
@@ -5753,8 +5753,8 @@
 	   (match_operand:SVE_FULL_F 3 "aarch64_sve_float_arith_with_sub_operand")]
 	  SVE_COND_FP_ADD))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1   , 2  , 3   , 4   ; attrs: movprfx ]
-     [ w        , Upl , %0 , vsA , i   ; *              ] fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+  {@ [ cons: =0 , 1   , %2 , 3   , 4   ; attrs: movprfx ]
+     [ w        , Upl , 0  , vsA , i   ; *              ] fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
      [ w        , Upl , 0  , vsN , i   ; *              ] fsub\t%0.<Vetype>, %1/m, %0.<Vetype>, #%N3
      [ w        , Upl , w  , w   , Z   ; *              ] #
      [ w        , Upl , 0  , w   , Ui1 ; *              ] fadd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
@@ -6228,8 +6228,8 @@
 	     UNSPEC_COND_FSUB)]
 	  UNSPEC_COND_FABS))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1   , 2  , 3 ; attrs: movprfx ]
-     [ w        , Upl , %0 , w ; *              ] fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+  {@ [ cons: =0 , 1   , %2 , 3 ; attrs: movprfx ]
+     [ w        , Upl , 0  , w ; *              ] fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
      [ ?&w      , Upl , w  , w ; yes            ] movprfx\t%0, %2\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
   }
   "&& !rtx_equal_p (operands[1], operands[5])"
@@ -6251,8 +6251,8 @@
 	     UNSPEC_COND_FSUB)]
 	  UNSPEC_COND_FABS))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1   , 2  , 3 ; attrs: movprfx ]
-     [ w        , Upl , %0 , w ; *              ] fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+  {@ [ cons: =0 , 1   , %2 , 3 ; attrs: movprfx ]
+     [ w        , Upl , 0  , w ; *              ] fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
      [ ?&w      , Upl , w  , w ; yes            ] movprfx\t%0, %2\;fabd\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
   }
 )
@@ -6492,8 +6492,8 @@
 	   (match_operand:SVE_FULL_F 3 "aarch64_sve_float_mul_operand")]
 	  SVE_COND_FP_MUL))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1   , 2  , 3   , 4   ; attrs: movprfx ]
-     [ w        , Upl , %0 , vsM , i   ; *              ] fmul\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+  {@ [ cons: =0 , 1   , %2 , 3   , 4   ; attrs: movprfx ]
+     [ w        , Upl , 0  , vsM , i   ; *              ] fmul\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
      [ w        , Upl , w  , w   , Z   ; *              ] #
      [ w        , Upl , 0  , w   , Ui1 ; *              ] fmul\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
      [ ?&w      , Upl , w  , vsM , i   ; yes            ] movprfx\t%0, %2\;fmul\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
@@ -6726,8 +6726,8 @@
 	   (match_operand:SVE_FULL_F 3 "aarch64_sve_float_maxmin_operand")]
 	  SVE_COND_FP_MAXMIN))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1   , 2  , 3   ; attrs: movprfx ]
-     [ w        , Upl , %0 , vsB ; *              ] <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
+  {@ [ cons: =0 , 1   , %2 , 3   ; attrs: movprfx ]
+     [ w        , Upl , 0  , vsB ; *              ] <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
      [ w        , Upl , 0  , w   ; *              ] <sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
      [ ?&w      , Upl , w  , vsB ; yes            ] movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, #%3
      [ ?&w      , Upl , w  , w   ; yes            ] movprfx\t%0, %2\;<sve_fp_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
@@ -7035,8 +7035,8 @@
 	    UNSPEC_PRED_X)
 	  (match_operand:SVE_I 4 "register_operand")))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1   , 2  , 3 , 4 ; attrs: movprfx ]
-     [ w        , Upl , %0 , w , w ; *              ] mad\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
+  {@ [ cons: =0 , 1   , %2 , 3 , 4 ; attrs: movprfx ]
+     [ w        , Upl , 0  , w , w ; *              ] mad\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
      [ w        , Upl , w  , w , 0 ; *              ] mla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
      [ ?&w      , Upl , w  , w , w ; yes            ] movprfx\t%0, %4\;mla\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
   }
@@ -7177,8 +7177,8 @@
 	       (match_operand:SVE_I 3 "register_operand"))]
 	    UNSPEC_PRED_X)))]
   "TARGET_SVE"
-  {@ [ cons: =0 , 1   , 2  , 3 , 4 ; attrs: movprfx ]
-     [ w        , Upl , %0 , w , w ; *              ] msb\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
+  {@ [ cons: =0 , 1   , %2 , 3 , 4 ; attrs: movprfx ]
+     [ w        , Upl , 0  , w , w ; *              ] msb\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
      [ w        , Upl , w  , w , 0 ; *              ] mls\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
      [ ?&w      , Upl , w  , w , w ; yes            ] movprfx\t%0, %4\;mls\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
   }
@@ -7459,8 +7459,8 @@
 	   (match_operand:SVE_FULL_F_BF 4 "register_operand")]
 	  SVE_COND_FP_TERNARY))]
   "TARGET_SVE && (<supports_bf16> || !<is_bf16>)"
-  {@ [ cons: =0 , 1   , 2  , 3 , 4 ; attrs: movprfx , is_rev ]
-     [ w        , Upl , %w , w , 0 ; *   , *    ] <b><sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
+  {@ [ cons: =0 , 1   , %2  , 3 , 4 ; attrs: movprfx , is_rev ]
+     [ w        , Upl , w , w , 0 ; *   , *    ] <b><sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
      [ w        , Upl , 0  , w , w ; *   , true ] <b><sve_fmad_op>\t%0.<Vetype>, %1/m, %3.<Vetype>, %4.<Vetype>
      [ ?&w      , Upl , w  , w , w ; yes , *    ] movprfx\t%0, %4\;<b><sve_fmla_op>\t%0.<Vetype>, %1/m, %2.<Vetype>, %3.<Vetype>
   }
