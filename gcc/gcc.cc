@@ -30,6 +30,9 @@ compilation is specified by a string called a "spec".  */
 #define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
+#ifdef HOST_HAS_PERSONALITY_ADDR_NO_RANDOMIZE
+#include <sys/personality.h>
+#endif
 #include "coretypes.h"
 #include "multilib.h" /* before tm.h */
 #include "tm.h"
@@ -7975,6 +7978,10 @@ try_generate_repro (const char **argv)
     new_argv[out_arg + 1] = "-";
   else
     new_argv[out_arg] = "-o-";
+
+#ifdef HOST_HAS_PERSONALITY_ADDR_NO_RANDOMIZE
+  personality (personality (0xffffffffU) | ADDR_NO_RANDOMIZE);
+#endif
 
   int status;
   for (attempt = 0; attempt < RETRY_ICE_ATTEMPTS; ++attempt)
