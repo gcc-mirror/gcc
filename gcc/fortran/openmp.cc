@@ -1588,7 +1588,7 @@ gfc_match_omp_clause_reduction (char pc, gfc_omp_clauses *c, bool openacc,
 	  {
 	    gfc_omp_namelist *p = gfc_get_omp_namelist (), **tl;
 	    p->sym = n->sym;
-	    p->where = p->where;
+	    p->where = n->where;
 	    p->u.map.op = OMP_MAP_ALWAYS_TOFROM;
 
 	    tl = &c->lists[OMP_LIST_MAP];
@@ -9681,22 +9681,6 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			 && n->sym->as->type == AS_ASSUMED_SIZE)
 		  gfc_error ("Assumed size array %qs in %s clause at %L",
 			     n->sym->name, name, &n->where);
-		if (!openacc
-		    && list == OMP_LIST_MAP
-		    && n->sym->ts.type == BT_DERIVED
-		    && n->sym->ts.u.derived->attr.alloc_comp)
-		  gfc_error ("List item %qs with allocatable components is not "
-			     "permitted in map clause at %L", n->sym->name,
-			     &n->where);
-		if (!openacc
-		    && (list == OMP_LIST_MAP
-			|| list == OMP_LIST_FROM
-			|| list == OMP_LIST_TO)
-		    && ((n->expr && n->expr->ts.type == BT_CLASS)
-			|| (!n->expr && n->sym->ts.type == BT_CLASS)))
-		  gfc_warning (OPT_Wopenmp,
-			       "Mapping polymorphic list item at %L is "
-			       "unspecified behavior", &n->where);
 		if (list == OMP_LIST_MAP && !openacc)
 		  switch (code->op)
 		    {
@@ -10008,9 +9992,11 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			     n->sym->name, name, &n->where);
 
 		if (!openacc
-		    && list == OMP_LIST_FIRSTPRIVATE
-		    && ((n->expr && n->expr->ts.type == BT_CLASS)
-			|| (!n->expr && n->sym->ts.type == BT_CLASS)))
+		    && (list == OMP_LIST_PRIVATE
+			|| list == OMP_LIST_FIRSTPRIVATE)
+		    && ((n->sym->ts.type == BT_DERIVED
+			 && n->sym->ts.u.derived->attr.alloc_comp)
+			|| n->sym->ts.type == BT_CLASS))
 		  switch (code->op)
 		    {
 		    case EXEC_OMP_TARGET:
@@ -10025,9 +10011,19 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 		    case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
 		    case EXEC_OMP_TARGET_TEAMS_LOOP:
-		      gfc_warning (OPT_Wopenmp,
-				   "FIRSTPRIVATE with polymorphic list item at "
-				   "%L is unspecified behavior", &n->where);
+		      if (n->sym->ts.type == BT_DERIVED
+			  && n->sym->ts.u.derived->attr.alloc_comp)
+			gfc_error ("Sorry, list item %qs at %L with allocatable"
+				   " components is not yet supported in %s "
+				   "clause", n->sym->name, &n->where,
+				   list == OMP_LIST_PRIVATE ? "PRIVATE"
+							    : "FIRSTPRIVATE");
+		      else
+			gfc_error ("Polymorphic list item %qs at %L in %s "
+				   "clause has unspecified behavior and "
+				   "unsupported", n->sym->name, &n->where,
+				   list == OMP_LIST_PRIVATE ? "PRIVATE"
+							    : "FIRSTPRIVATE");
 		      break;
 		    default:
 		      break;

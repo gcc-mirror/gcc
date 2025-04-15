@@ -6920,6 +6920,7 @@ add_clause (gfc_symbol *sym, gfc_omp_map_op map_op)
 
   n = gfc_get_omp_namelist ();
   n->sym = sym;
+  n->where = sym->declared_at;
   n->u.map.op = map_op;
 
   if (!module_oacc_clauses)
