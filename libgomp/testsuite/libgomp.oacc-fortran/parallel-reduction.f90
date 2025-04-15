@@ -46,11 +46,9 @@ subroutine redsub(s1, s2, n)
   integer :: s1, s2, n
 
   !$acc parallel reduction(+:s1,s2) num_gangs (10)  copy(s1)
-  ! { dg-bogus {'s1\.[0-9]+' is used uninitialized} TODO { xfail *-*-* } .-1 }
-  !   { dg-note {'s1\.[0-9]+' was declared here} {} { target *-*-* } .-2 }
-  ! { dg-bogus {'s2\.[0-9]+' is used uninitialized} TODO { xfail *-*-* } .-3 }
-  !   { dg-note {'s2\.[0-9]+' was declared here} {} { target *-*-* } .-4 }
-  ! { dg-bogus "\[Ww\]arning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction'" { xfail *-*-* } .-5 }
+  ! { dg-bogus {'s1\.[0-9]+' is used uninitialized} "" { target *-*-* } .-1 }
+  ! { dg-bogus {'s2\.[0-9]+' is used uninitialized} "" { target *-*-* } .-2 }
+  ! { dg-bogus "\[Ww\]arning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction'" { xfail *-*-* } .-3 }
   s1 = s1 + 1
   s2 = s2 + 1
   !$acc end parallel

@@ -18,8 +18,7 @@ SUBROUTINE reduction_kernel(x_min,x_max,y_min,y_max,arr,sum)
 
 !$ACC DATA PRESENT(arr) COPY(sum)
 !$ACC PARALLEL LOOP REDUCTION(+ : sum)
-  ! { dg-bogus {'sum\.[0-9]+' is used uninitialized} TODO { xfail *-*-* } .-1 }
-  !   { dg-note {'sum\.[0-9]+' was declared here} {} { target *-*-* } .-2 }
+  ! { dg-bogus {'sum\.[0-9]+' is used uninitialized} "" { target *-*-* } .-1 }
   DO k=y_min,y_max
     DO j=x_min,x_max
       sum=sum+arr(j,k)
