@@ -1,5 +1,6 @@
 /* Test that we do not have ice when compile */
 /* { dg-do compile } */
+/* { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } } */
 /* { dg-options "-march=rv32gc_zfh_xtheadvector -mabi=ilp32d -O2" { target { rv32 } } } */
 /* { dg-options "-march=rv64gc_zfh_xtheadvector -mabi=lp64d -O2" { target { rv64 } } } */
 
