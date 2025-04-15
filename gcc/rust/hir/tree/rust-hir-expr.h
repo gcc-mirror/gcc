@@ -3118,6 +3118,80 @@ public:
 	     AST::AttrVec outer_attribs = AST::AttrVec ());
 };
 
+struct LlvmOperand
+{
+  std::string constraint;
+  std::unique_ptr<Expr> expr;
+
+  LlvmOperand (std::string constraint, std::unique_ptr<Expr> &&expr)
+    : constraint (constraint), expr (std::move (expr))
+  {}
+
+  LlvmOperand (const LlvmOperand &other)
+    : constraint (other.constraint), expr (other.expr->clone_expr ())
+  {}
+  LlvmOperand &operator= (const LlvmOperand &other)
+  {
+    constraint = other.constraint;
+    expr = other.expr->clone_expr ();
+
+    return *this;
+  }
+};
+
+class LlvmInlineAsm : public ExprWithoutBlock
+{
+public:
+  struct Options
+  {
+    bool is_volatile;
+    bool align_stack;
+    AST::LlvmInlineAsm::Dialect dialect;
+  };
+
+  location_t locus;
+  AST::AttrVec outer_attrs;
+  std::vector<LlvmOperand> inputs;
+  std::vector<LlvmOperand> outputs;
+  std::vector<AST::TupleTemplateStr> templates;
+  std::vector<AST::TupleClobber> clobbers;
+  Options options;
+
+  LlvmInlineAsm (location_t locus, std::vector<LlvmOperand> inputs,
+		 std::vector<LlvmOperand> outputs,
+		 std::vector<AST::TupleTemplateStr> templates,
+		 std::vector<AST::TupleClobber> clobbers, Options options,
+		 AST::AttrVec outer_attrs, Analysis::NodeMapping mappings)
+    : ExprWithoutBlock (mappings, std::move (outer_attrs)), locus (locus),
+      inputs (std::move (inputs)), outputs (std::move (outputs)),
+      templates (std::move (templates)), clobbers (std::move (clobbers)),
+      options (options)
+  {}
+
+  AST::LlvmInlineAsm::Dialect get_dialect () { return options.dialect; }
+
+  location_t get_locus () const override { return locus; }
+
+  std::vector<AST::Attribute> &get_outer_attrs () { return outer_attrs; }
+
+  void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRExpressionVisitor &vis) override;
+
+  LlvmInlineAsm *clone_expr_without_block_impl () const override
+  {
+    return new LlvmInlineAsm (*this);
+  }
+
+  std::vector<AST::TupleTemplateStr> &get_templates () { return templates; }
+
+  Expr::ExprType get_expression_type () const override
+  {
+    return Expr::ExprType::LlvmInlineAsm;
+  }
+
+  std::vector<AST::TupleClobber> get_clobbers () { return clobbers; }
+};
+
 } // namespace HIR
 } // namespace Rust
 

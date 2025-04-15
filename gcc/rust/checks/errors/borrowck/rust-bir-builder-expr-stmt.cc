@@ -325,6 +325,10 @@ ExprStmtBuilder::visit (HIR::InlineAsm &expr)
 {}
 
 void
+ExprStmtBuilder::visit (HIR::LlvmInlineAsm &expr)
+{}
+
+void
 ExprStmtBuilder::visit (HIR::MethodCallExpr &expr)
 {}
 

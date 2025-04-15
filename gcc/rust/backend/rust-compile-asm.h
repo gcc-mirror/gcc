@@ -56,6 +56,20 @@ public:
 
   tree tree_codegen_asm (HIR::InlineAsm &);
 };
+
+class CompileLlvmAsm : private HIRCompileBase
+{
+private:
+  tree construct_operands (std::vector<HIR::LlvmOperand> operands);
+
+  tree construct_clobbers (std::vector<AST::TupleClobber>);
+
+public:
+  CompileLlvmAsm (Context *ctx);
+
+  tree tree_codegen_asm (HIR::LlvmInlineAsm &);
+};
+
 } // namespace Compile
 } // namespace Rust
 #endif // RUST_COMPILE_ASM

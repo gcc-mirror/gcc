@@ -715,7 +715,13 @@ DefaultASTVisitor::visit (AST::InlineAsm &expr)
 
 void
 DefaultASTVisitor::visit (AST::LlvmInlineAsm &expr)
-{}
+{
+  for (auto &output : expr.get_outputs ())
+    visit (output.expr);
+
+  for (auto &input : expr.get_inputs ())
+    visit (input.expr);
+}
 
 void
 DefaultASTVisitor::visit (AST::TypeParam &param)

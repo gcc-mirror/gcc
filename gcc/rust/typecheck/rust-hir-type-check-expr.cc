@@ -844,6 +844,19 @@ TypeCheckExpr::visit (HIR::InlineAsm &expr)
 }
 
 void
+TypeCheckExpr::visit (HIR::LlvmInlineAsm &expr)
+{
+  for (auto &i : expr.inputs)
+    TypeCheckExpr::Resolve (*i.expr);
+
+  for (auto &o : expr.outputs)
+    TypeCheckExpr::Resolve (*o.expr);
+
+  // Black box hint is unit type
+  infered = TyTy::TupleType::get_unit_type ();
+}
+
+void
 TypeCheckExpr::visit (HIR::RangeFullExpr &expr)
 {
   auto lang_item_type = LangItem::Kind::RANGE_FULL;

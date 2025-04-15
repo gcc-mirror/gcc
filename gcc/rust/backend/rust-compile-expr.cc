@@ -368,6 +368,13 @@ CompileExpr::visit (HIR::InlineAsm &expr)
 }
 
 void
+CompileExpr::visit (HIR::LlvmInlineAsm &expr)
+{
+  CompileLlvmAsm asm_codegen (ctx);
+  ctx->add_statement (asm_codegen.tree_codegen_asm (expr));
+}
+
+void
 CompileExpr::visit (HIR::IfExprConseqElse &expr)
 {
   TyTy::BaseType *if_type = nullptr;

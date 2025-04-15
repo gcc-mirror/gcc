@@ -4885,6 +4885,27 @@ struct InlineAsmRegOrRegClass
   location_t locus;
 };
 
+struct LlvmOperand
+{
+  std::string constraint;
+  std::unique_ptr<Expr> expr;
+
+  LlvmOperand (std::string constraint, std::unique_ptr<Expr> &&expr)
+    : constraint (constraint), expr (std::move (expr))
+  {}
+
+  LlvmOperand (const LlvmOperand &other)
+    : constraint (other.constraint), expr (other.expr->clone_expr ())
+  {}
+  LlvmOperand &operator= (const LlvmOperand &other)
+  {
+    constraint = other.constraint;
+    expr = other.expr->clone_expr ();
+
+    return *this;
+  }
+};
+
 class InlineAsmOperand
 {
 public:
@@ -5258,6 +5279,7 @@ struct TupleTemplateStr
   location_t loc;
   std::string symbol;
 
+  location_t get_locus () { return loc; }
   TupleTemplateStr (location_t loc, const std::string &symbol)
     : loc (loc), symbol (symbol)
   {}
@@ -5335,18 +5357,23 @@ class LlvmInlineAsm : public ExprWithoutBlock
   // llvm_asm!("" :         : "r"(&mut dummy) : "memory" : "volatile");
   //           Asm, Outputs, Inputs,            Clobbers, Options,
 
-private:
-  location_t locus;
-  std::vector<Attribute> outer_attrs;
-
-  std::vector<TupleClobber> clobber_abi;
-  bool is_volatile;
-  bool align_stack;
+public:
   enum class Dialect
   {
     Att,
     Intel,
-  } dialect;
+  };
+
+private:
+  location_t locus;
+  std::vector<Attribute> outer_attrs;
+  std::vector<LlvmOperand> inputs;
+  std::vector<LlvmOperand> outputs;
+  std::vector<TupleTemplateStr> templates;
+  std::vector<TupleClobber> clobbers;
+  bool volatility;
+  bool align_stack;
+  Dialect dialect;
 
 public:
   LlvmInlineAsm (location_t locus) : locus (locus) {}
@@ -5372,10 +5399,28 @@ public:
     return new LlvmInlineAsm (*this);
   }
 
+  std::vector<TupleTemplateStr> &get_templates () { return templates; }
+
   Expr::Kind get_expr_kind () const override
   {
     return Expr::Kind::LlvmInlineAsm;
   }
+
+  void set_align_stack (bool align_stack) { this->align_stack = align_stack; }
+  bool is_stack_aligned () { return align_stack; }
+
+  void set_volatile (bool volatility) { this->volatility = volatility; }
+  bool is_volatile () { return volatility; }
+
+  void set_dialect (Dialect dialect) { this->dialect = dialect; }
+
+  void set_inputs (std::vector<LlvmOperand> operands) { inputs = operands; }
+  void set_outputs (std::vector<LlvmOperand> operands) { outputs = operands; }
+
+  std::vector<LlvmOperand> &get_inputs () { return inputs; }
+  std::vector<LlvmOperand> &get_outputs () { return outputs; }
+
+  std::vector<TupleClobber> &get_clobbers () { return clobbers; }
 };
 
 } // namespace AST

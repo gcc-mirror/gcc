@@ -207,6 +207,7 @@ public:
   }
 
   void visit (HIR::InlineAsm &expr) override {}
+  void visit (HIR::LlvmInlineAsm &expr) override {}
 
 protected: // Illegal at this position.
   void visit (HIR::StructExprFieldIdentifier &field) override

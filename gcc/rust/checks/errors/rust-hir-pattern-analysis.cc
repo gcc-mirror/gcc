@@ -423,6 +423,10 @@ PatternChecker::visit (InlineAsm &expr)
 {}
 
 void
+PatternChecker::visit (LlvmInlineAsm &expr)
+{}
+
+void
 PatternChecker::visit (TypeParam &)
 {}
 
