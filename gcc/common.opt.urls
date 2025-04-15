@@ -868,6 +868,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-fipa-bit-cp)
 fipa-modref
 UrlSuffix(gcc/Optimize-Options.html#index-fipa-modref)
 
+fipa-reorder-for-locality
+UrlSuffix(gcc/Optimize-Options.html#index-fipa-reorder-for-locality)
+
 fipa-profile
 UrlSuffix(gcc/Optimize-Options.html#index-fipa-profile)
 
