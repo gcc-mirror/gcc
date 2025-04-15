@@ -1,3 +1,26 @@
+2025-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR cobol/119776
+	* lang.opt (fmax-errors): Remove.
+	* lang.opt.urls: Regenerate.
+	* cobol1.cc (cobol_langhook_handle_option) <case OPT_fmax_errors>:
+	Remove.
+	* gcobol.1: Document -fmax-errors=nerror rather than
+	-fmax-errors nerror.
+
+2025-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR cobol/119777
+	* lang.opt (include): Remove Var(cobol_include).
+	* cobol1.cc (cobol_langhook_handle_option) <case OPT_include>: Use
+	arg instead of cobol_include.
+
+2025-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR cobol/119777
+	* lang.opt (fsyntax-only): Remove.
+	* lang.opt.urls: Regenerate.
+
 2025-04-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 	    Simon Sobisch  <simonsobisch@gnu.org>
 

@@ -1,3 +1,8 @@
+2025-04-14  Andreas Schwab  <schwab@suse.de>
+
+	* libgcobol.cc (__gg__float64_from_128): Mark literal as float128
+	literal.
+
 2025-04-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* valconv.cc (__gg__string_to_numeric_edited): Use strchr instead

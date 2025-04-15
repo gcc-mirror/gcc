@@ -1,3 +1,146 @@
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/118794
+	* config/gcn/gcn.opt (-mfake-exceptions): Support.
+	* config/nvptx/nvptx.opt (-mfake-exceptions): Likewise.
+	* config/gcn/gcn.md (define_expand "exception_receiver"): Use it.
+	* config/nvptx/nvptx.md (define_expand "exception_receiver"):
+	Likewise.
+	* config/gcn/mkoffload.cc (main): Set it.
+	* config/nvptx/mkoffload.cc (main): Likewise.
+	* config/nvptx/nvptx.cc (nvptx_assemble_integer)
+	<in_section == exception_section>: Special handling for
+	'SYMBOL_REF's.
+	* except.cc (expand_dw2_landing_pad_for_region): Don't generate
+	bogus code for (default)
+	'#define EH_RETURN_DATA_REGNO(N) INVALID_REGNUM'.
+
+2025-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119785
+	* expmed.cc (init_expmed): Always pass QImode rather than mode to
+	set_src_cost passed to set_zero_cost.
+
+2025-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119718
+	* tree-pretty-print.cc (dump_generic_node) <case CALL_EXPR>: Dump
+	also CALL_EXPR_MUST_TAIL_CALL flag.
+	* calls.cc (maybe_complain_about_tail_call): Emit error about
+	CALL_EXPR_MUST_TAIL_CALL only after emitting dump message, not before
+	it.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* doc/install.texi: Add requirements for building gccrs.
+
+2025-04-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/119784
+	* config/i386/i386.cc (ix86_using_red_zone): Don't use red-zone
+	with 32 GPRs and no caller-saved registers.
+
+2025-04-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118097
+	* ipa-cp.cc (ipa_get_jf_arith_result): Require res_operand for
+	anything except NOP_EXPR or ADDR_EXPR, document it and remove the code
+	trying to deduce it.
+	(ipa_value_from_jfunc): Use the stored and streamed type of arithmetic
+	pass-through functions.
+	(ipa_agg_value_from_jfunc): Use the stored and streamed type of
+	arithmetic pass-through functions, convert to the type used to store
+	the value if necessary.
+	(get_val_across_arith_op): New parameter op_type, pass it to
+	ipa_get_jf_arith_result.
+	(propagate_vals_across_arith_jfunc): New parameter op_type, pass it to
+	get_val_across_arith_op.
+	(propagate_vals_across_pass_through): Use the stored and streamed type
+	of arithmetic pass-through functions.
+	(propagate_aggregate_lattice): Likewise.
+	(push_agg_values_for_index_from_edge): Use the stored and streamed
+	type of arithmetic pass-through functions, convert to the type used to
+	store the value if necessary.
+
+2025-04-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118785
+	* ipa-cp.cc (ipa_vr_intersect_with_arith_jfunc): Use the stored
+	and streamed type of arithmetic pass-through functions.
+
+2025-04-14  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.cc (ipcp_print_widest_int): Also add a truncated form of
+	dumping of widest ints which only have zeros in the lowest 128 bits.
+	Update the comment.
+	(ipcp_bits_lattice::print): Also dump the mask using
+	ipcp_print_widest_int.
+	(ipcp_store_vr_results): Likewise.
+
+2025-04-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/119318
+	* ipa-cp.cc (ipcp_bits_lattice::meet_with_1): Set all mask bits
+	not covered by precision to one.
+	(ipcp_bits_lattice::meet_with): Likewise.
+	(propagate_bits_across_jump_function): Use the stored operation
+	type to perform meet with other lattices.
+
+2025-04-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/118097
+	PR ipa/118785
+	PR ipa/119318
+	* lto-streamer.h (lto_variably_modified_type_p): Declare.
+	* ipa-prop.h (ipa_pass_through_data): New field op_type.
+	(ipa_get_jf_pass_through_op_type): New function.
+	* ipa-prop.cc: Include lto-streamer.h.
+	(ipa_dump_jump_function): Dump also pass-through
+	operation types, if any.  Dump pass-through operands only if not NULL.
+	(ipa_set_jf_simple_pass_through): Set op_type accordingly.
+	(compute_complex_assign_jump_func): Set op_type of arithmetic
+	pass-through jump_functions.
+	(analyze_agg_content_value): Update lhs when walking assighment
+	copies.  Set op_type of aggregate arithmetic pass-through
+	jump_functions.
+	(update_jump_functions_after_inlining): Also transfer the operation
+	type from the source arithmentic pass-through jump function to the
+	destination jump function.
+	(ipa_write_jump_function): Stream also the op_type when necessary.
+	(ipa_read_jump_function): Likewise.
+	(ipa_agg_pass_through_jf_equivalent_p): Also compare operation types.
+	* lto-streamer-out.cc (lto_variably_modified_type_p): Make public.
+
+2025-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119757
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Record and compare
+	whether a stmt uses a maks.
+
+2025-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119778
+	* tree-inline.cc (copy_edges_for_bb): Mark calls that are
+	source of abnormal edges as altering control-flow.
+
+2025-04-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119779
+	* doc/gm2.texi (Interface to assembly language): Use eax
+	rather than rax in both examples.
+
+2025-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/119727
+	* configure.ac (HOST_HAS_PERSONALITY_ADDR_NO_RANDOMIZE): New check.
+	* gcc.cc: Include sys/personality.h if
+	HOST_HAS_PERSONALITY_ADDR_NO_RANDOMIZE is defined.
+	(try_generate_repro): Call
+	personality (personality (0xffffffffU) | ADDR_NO_RANDOMIZE)
+	if HOST_HAS_PERSONALITY_ADDR_NO_RANDOMIZE is defined.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
 2025-04-13  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	* config/s390/s390.cc: Add z17 scheduler description.

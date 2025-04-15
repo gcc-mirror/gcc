@@ -1,3 +1,16 @@
+2025-04-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/21334
+	* doc/xml/manual/using.xml: Document that container data race
+	avoidance rules do not apply to COW std::string.
+	* doc/html/*: Regenerate.
+
+2025-04-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119725
+	* testsuite/std/format/debug.cc: Updated dg-options.
+	* testsuite/std/format/debug_nonunicode.cc: Updated dg-options.
+
 2025-04-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++17/fast_float/LOCAL_PATCHES: Update.

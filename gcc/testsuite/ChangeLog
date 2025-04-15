@@ -1,3 +1,155 @@
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/118794
+	* g++.target/gcn/exceptions-bad_cast-2.C: Set
+	'-mno-fake-exceptions'.
+	* g++.target/gcn/exceptions-pr118794-1.C: Likewise.
+	* g++.target/gcn/exceptions-throw-2.C: Likewise.
+	* g++.target/nvptx/exceptions-bad_cast-2.C: Likewise.
+	* g++.target/nvptx/exceptions-pr118794-1.C: Likewise.
+	* g++.target/nvptx/exceptions-throw-2.C: Likewise.
+	* g++.target/gcn/exceptions-bad_cast-2_-mfake-exceptions.C: New.
+	* g++.target/gcn/exceptions-pr118794-1_-mfake-exceptions.C:
+	Likewise.
+	* g++.target/gcn/exceptions-throw-2_-mfake-exceptions.C: Likewise.
+	* g++.target/nvptx/exceptions-bad_cast-2_-mfake-exceptions.C:
+	Likewise.
+	* g++.target/nvptx/exceptions-pr118794-1_-mfake-exceptions.C:
+	Likewise.
+	* g++.target/nvptx/exceptions-throw-2_-mfake-exceptions.C:
+	Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* g++.target/gcn/exceptions-throw-3.C: New.
+	* g++.target/nvptx/exceptions-throw-3.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* g++.target/gcn/exceptions-throw-2.C: New.
+	* g++.target/nvptx/exceptions-throw-2.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* g++.target/gcn/exceptions-throw-1.C: New.
+	* g++.target/nvptx/exceptions-throw-1.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* g++.target/gcn/exceptions-bad_cast-3.C: New.
+	* g++.target/nvptx/exceptions-bad_cast-3.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* g++.target/gcn/exceptions-bad_cast-2.C: New.
+	* g++.target/nvptx/exceptions-bad_cast-2.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* g++.target/gcn/exceptions-bad_cast-1.C: New.
+	* g++.target/nvptx/exceptions-bad_cast-1.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/118794
+	* g++.target/gcn/exceptions-pr118794-1.C: New.
+	* g++.target/nvptx/exceptions-pr118794-1.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR c++/119692
+	* g++.target/gcn/pr119692-1-1.C: New.
+	* g++.target/nvptx/pr119692-1-1.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* g++.target/gcn/gcn.exp: New.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* lib/gcc-dg.exp (${tool}_load): Polish 'dg-output-file' test
+	logs.
+
+2025-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/119318
+	* gcc.dg/ipa/pr119530.c (d): Change type from char to signed char.
+	(e): Change argument type from long to long long.
+
+2025-04-14  beamandala  <mandalapubhavesh@gmail.com>
+
+	* rust/compile/track_caller.rs: New test.
+
+2025-04-14  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/enum_discriminant2.rs: New test.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/format_args_extra_comma.rs: New test.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/macros/mbe/macro-issue3709-1.rs: New test.
+	* rust/compile/macros/mbe/macro-issue3709-2.rs: New test.
+	* rust/compile/macros/mbe/macro-issue3693.rs: New file.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/macros/mbe/macro-issue3708.rs: New test.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/execute/torture/min_specialization2.rs: New test.
+	* rust/execute/torture/min_specialization3.rs: New test.
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118476
+	* gcc.dg/torture/pr118476-1.c: New test.
+
+2025-04-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99214
+	* g++.dg/concepts/diagnostic20.C: New test.
+
+2025-04-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/119784
+	* gcc.target/i386/pr119784a.c: New test.
+	* gcc.target/i386/pr119784b.c: Likewise.
+
+2025-04-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/119318
+	* gcc.dg/ipa/pr119318.c: New test.
+	* gcc.dg/ipa/pr119530.c: Likwise.
+
+2025-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119757
+	* gcc.dg/vect/pr119757.c: New testcase.
+
+2025-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119778
+	* g++.dg/torture/pr119778.C: New testcase.
+
+2025-04-14  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119779
+	* gm2.dg/doc/examples/pass/doc-examples-pass.exp: New test.
+	* gm2.dg/doc/examples/pass/exampleadd.mod: New test.
+	* gm2.dg/doc/examples/pass/exampleadd2.mod: New test.
+	* gm2.dg/doc/examples/pass/hello.mod: New test.
+	* gm2.dg/doc/examples/pass/hellopim.mod: New test.
+
+2025-04-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/119792
+	* gnat.dg/lto29.adb: New test.
+	* gnat.dg/lto29_pkg.ads: New helper.
+
 2025-04-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/119502

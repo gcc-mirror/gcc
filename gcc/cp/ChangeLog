@@ -1,3 +1,9 @@
+2025-04-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99214
+	* constraint.cc (satisfy_declaration_constraints): Pass the
+	original ARGS to push_tinst_level.
+
 2025-04-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/115639

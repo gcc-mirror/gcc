@@ -1,3 +1,162 @@
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-lang-item.h: Add new manually_drop lang item.
+	* util/rust-lang-item.cc: Likewise.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-attribute-values.h: Add RUSTFMT value.
+	* util/rust-attributes.cc: Define the attribute.
+	* util/rust-attributes.h (enum CompilerPass): Add EXTERNAL variant.
+	* expand/rust-macro-builtins.cc: Fix formatting.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-early-name-resolver-2.0.cc (Early::visit_attributes): Remove assertion.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-attribute-values.h: Add missing attributes.
+	* util/rust-attributes.cc: Likewise.
+	* util/rust-attributes.h (enum CompilerPass): Mention adding something for const
+	functions.
+
+2025-04-14  beamandala  <mandalapubhavesh@gmail.com>
+
+	* expand/rust-macro-builtins.cc (MacroBuiltin::builtin_transcribers):
+	Add entry for track_caller.
+	* util/rust-attribute-values.h: add `TRACK_CALLER` attribute.
+	* util/rust-attributes.cc: add `track_caller` attribute definition.
+
+2025-04-14  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* checks/errors/rust-const-checker.cc
+	(ConstChecker::visit): Visit the enum items of enums.
+	* resolve/rust-ast-resolve-item.cc
+	(ResolveItem::visit): Resolve enum discriminants during nr1.0.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* expand/rust-macro-builtins-format-args.cc (format_args_parse_arguments): Improve safety,
+	allow extra commas after end of argument list.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* expand/rust-macro-expand.cc (MacroExpander::expand_decl_macro): Call into
+	TokenTreeDesugar.
+	* expand/rust-token-tree-desugar.cc: New file.
+	* expand/rust-token-tree-desugar.h: New file.
+	* Make-lang.in: Compile them.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* expand/rust-macro-expand.cc (MacroExpander::match_n_matches): Do not
+	insert fragments and substack fragments if the matcher failed.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust-session-manager.cc (Session::compile_crate): Call the visitor later in the pipeline.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast.h (DelimTokenTree::get_locus): New function.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-expr.h (class RangeExpr): Add empty outer attributes and allow getting them
+	and setting them.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit): Return if module
+	is unloaded.
+
+2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* typecheck/rust-hir-type-check-expr.cc (is_default_fn): New.
+	(emit_ambiguous_resolution_error): New.
+	(handle_multiple_candidates): Properly handle multiple candidates in
+	the case of specialization.
+	(TypeCheckExpr::visit): Call `handle_multiple_candidates`.
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rust/119342
+	* rust-gcc.cc (block): Add comment on why chaining
+	the variables of the scope toether.
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rust/119341
+	* rust-gcc.cc (function_type): Use range fors.
+	(function_type_variadic): Likewise.
+	(fill_in_fields): Likewise.
+	(statement_list): Likewise.
+	(block): Likewise.
+	(block_add_statements): Likewise.
+	(function_set_parameters): Likewise.
+	(write_global_definitions): Likewise.
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* rust-gcc.cc (Bvariable::get_tree): Use error_operand_p.
+	(pointer_type): Likewise.
+	(reference_type): Likewise.
+	(immutable_type): Likewise.
+	(function_type): Likewise.
+	(function_type_variadic): Likewise.
+	Cleanup the check for receiver.type first.
+	(function_ptr_type): Use error_operand_p.
+	(fill_in_fields): Likewise.
+	(fill_in_array): Likewise.
+	(named_type): Likewise.
+	(type_size): Likewise.
+	(type_alignment): Likewise.
+	(type_field_alignment): Likewise.
+	(type_field_offset): Likewise.
+	(zero_expression): Likewise.
+	(float_constant_expression): Likewise.
+	(convert_expression): Likewise.
+	(struct_field_expression): Likewise.
+	(compound_expression): Likewise.
+	(conditional_expression): Likewise.
+	(negation_expression): Likewise.
+	(arithmetic_or_logical_expression): Likewise.
+	(arithmetic_or_logical_expression_checked): Likewise.
+	(comparison_expression): Likewise.
+	(lazy_boolean_expression): Likewise.
+	(constructor_expression): Likewise.
+	(array_constructor_expression): Likewise.
+	(array_index_expression): Likewise.
+	(call_expression): Likewise.
+	(init_statement): Likewise.
+	(assignment_statement): Likewise.
+	(return_statement): Likewise.
+	(exception_handler_statement): Likewise.
+	(if_statement): Likewise.
+	(compound_statement): Likewise.
+	Tighten up the code, removing t variable.
+	(statement_list): Use error_operand_p.
+	(block): Likewise.
+	(block_add_statements): Likewise.
+	(convert_tree): Likewise.
+	(global_variable): Likewise.
+	(global_variable_set_init): Likewise.
+	(local_variable): Likewise.
+	(parameter_variable): Likewise.
+	(static_chain_variable): Likewise.
+	(temporary_variable): Likewise.
+	(function): Likewise. Tighten up the code.
+	(function_defer_statement): Use error_operand_p.
+	(function_set_parameters): Use error_operand_p.
+	(write_global_definitions): Use error_operand_p.
+	Tighten up the code around the loop.
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* rust-gcc.cc (is_floating_point): Use FLOAT_TYPE_P
+	instead of manually checking the type.
+
 2025-04-08  Matty Kuhn  <matty.kuhn.1@gmail.com>
 
 	* ast/rust-ast.h: (AST::Attribute): add empty_input function

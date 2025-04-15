@@ -1,3 +1,93 @@
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/118794
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2-offload-sorry-GCN.C:
+	Set '-foffload-options=-mno-fake-exceptions'.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2-offload-sorry-nvptx.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-nvptx.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-throw-2-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-throw-2-offload-sorry-nvptx.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2-offload-sorry-nvptx.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2-offload-sorry-nvptx.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2.C: Adjust.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-throw-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-throw-2-O0.C: New.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-exceptions-throw-3.C: New.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-3.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-exceptions-throw-2.C: New.
+	* testsuite/libgomp.c++/target-exceptions-throw-2-offload-sorry-GCN.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-throw-2-offload-sorry-nvptx.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2-offload-sorry-GCN.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2-offload-sorry-nvptx.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-exceptions-throw-1.C: New.
+	* testsuite/libgomp.c++/target-exceptions-throw-1-O0.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-1.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-3.C: New.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-3.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2.C: New.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2-offload-sorry-GCN.C: Likewise.
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-2-offload-sorry-nvptx.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2-offload-sorry-GCN.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-2-offload-sorry-nvptx.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-exceptions-bad_cast-1.C: New.
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-1.C: Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/118794
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1.C: New.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-nvptx.C:
+	Likewise.
+
+2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR c++/119692
+	* testsuite/libgomp.c++/pr119692-1-1.C: New.
+	* testsuite/libgomp.c++/pr119692-1-2.C: Likewise.
+	* testsuite/libgomp.c++/pr119692-1-3.C: Likewise.
+	* testsuite/libgomp.c++/pr119692-1-4.C: Likewise.
+	* testsuite/libgomp.c++/pr119692-1-5.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr119692-1-1.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr119692-1-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr119692-1-3.C: Likewise.
+
 2025-04-10  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* testsuite/libgomp.c-target/aarch64/firstprivate.c: Add +sve pragma.
