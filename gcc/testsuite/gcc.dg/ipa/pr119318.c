@@ -1,7 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target int128 } */
-/* { dg-additional-options "-Wno-psabi -w" } */
-/* { dg-options "-Wno-psabi -O2" } */
+/* { dg-options "-Wno-psabi -w -O2" } */
 
 typedef unsigned V __attribute__((vector_size (64)));
 typedef unsigned __int128 W __attribute__((vector_size (64)));
