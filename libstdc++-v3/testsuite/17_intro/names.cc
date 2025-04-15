@@ -142,6 +142,10 @@
 #define try_emplace (
 #endif
 
+#if __cplusplus < 202002L
+#define ranges (
+#endif
+
 // These clash with newlib so don't use them.
 # define __lockable		cannot be used as an identifier
 # define __null_sentinel	cannot be used as an identifier

@@ -732,12 +732,11 @@ namespace __detail
   /// @} group numeric_ops
 #endif // C++17
 
+#if __glibcxx_ranges_iota >= 202202L // C++ >= 23
 namespace ranges
 {
-#if __glibcxx_ranges_iota >= 202202L // C++ >= 23
-
   template<typename _Out, typename _Tp>
-  using iota_result = out_value_result<_Out, _Tp>;
+    using iota_result = out_value_result<_Out, _Tp>;
 
   struct __iota_fn
   {
@@ -762,9 +761,8 @@ namespace ranges
   };
 
   inline constexpr __iota_fn iota{};
-
-#endif // __glibcxx_ranges_iota
 } // namespace ranges
+#endif // __glibcxx_ranges_iota
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
