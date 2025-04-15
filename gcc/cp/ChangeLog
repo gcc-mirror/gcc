@@ -1,3 +1,12 @@
+2025-04-14  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2025-03-25  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/114525
+	* typeck2.cc (build_m_component_ref): Call cp_build_addr_expr
+	instead of build_address.
+
 2025-03-25  Simon Martin  <simon@nasilyan.com>
 
 	Backported from master:
