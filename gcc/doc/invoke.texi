@@ -12746,6 +12746,7 @@ complexity than at @option{-O}.
 -fipa-pure-const
 -fipa-reference
 -fipa-reference-addressable
+-fivopts
 -fmerge-constants
 -fmove-loop-invariants
 -fmove-loop-stores
@@ -12853,6 +12854,13 @@ by @option{-O2} and also turns on the following optimization flags:
 @item -O0
 Reduce compilation time and make debugging produce the expected
 results.  This is the default.
+
+At @option{-O0}, GCC completely disables most optimization passes;
+they are not run even if you explicitly enable them on the command
+line, or are listed by @option{-Q --help=optimizers} as being enabled by
+default.  Many optimizations performed by GCC depend on code analysis
+or canonicalization passes that are enabled by @option{-O}, and it would
+not be useful to run individual optimization passes in isolation.
 
 @opindex Os
 @item -Os
@@ -14306,6 +14314,7 @@ Enabled by default at @option{-O1} and higher.
 @item -fivopts
 Perform induction variable optimizations (strength reduction, induction
 variable merging and induction variable elimination) on trees.
+Enabled by default at @option{-O1} and higher.
 
 @opindex ftree-parallelize-loops
 @item -ftree-parallelize-loops=n
