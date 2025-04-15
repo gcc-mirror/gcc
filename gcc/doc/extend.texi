@@ -1933,6 +1933,13 @@ Note that if such a function is called indirectly the compiler may
 or may not inline it depending on optimization level and a failure
 to inline an indirect call may or may not be diagnosed.
 
+If you need to use the inlined function in multiple translation units,
+you should put the @code{always_inline} attribute on a function
+definition in a header file that is included in all translation units
+where the function is used.  Link-time optimization can inline
+functions across translation units, but only if an optimization level
+that normally enables inlining is additionally specified.
+
 @cindex @code{artificial} function attribute
 @item artificial
 This attribute is useful for small inline wrappers that if possible
