@@ -30,6 +30,7 @@
 #include "realmpfr.h"
 #include "convert.h"
 #include "print-tree.h"
+#include "rust-hir-expr.h"
 #include "rust-system.h"
 #include "rust-tyty.h"
 
@@ -438,6 +439,18 @@ CompileExpr::visit (HIR::BlockExpr &expr)
   ctx->add_statement (block_stmt);
 
   translated = Backend::var_expression (tmp, expr.get_locus ());
+}
+
+void
+CompileExpr::visit (HIR::AnonConst &expr)
+{
+  expr.get_inner_expr ().accept_vis (*this);
+}
+
+void
+CompileExpr::visit (HIR::ConstBlock &expr)
+{
+  expr.get_const_expr ().accept_vis (*this);
 }
 
 void

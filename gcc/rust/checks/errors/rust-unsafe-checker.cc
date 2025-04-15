@@ -540,6 +540,18 @@ UnsafeChecker::visit (BlockExpr &expr)
 }
 
 void
+UnsafeChecker::visit (AnonConst &expr)
+{
+  expr.get_inner_expr ().accept_vis (*this);
+}
+
+void
+UnsafeChecker::visit (ConstBlock &expr)
+{
+  expr.get_const_expr ().accept_vis (*this);
+}
+
+void
 UnsafeChecker::visit (ContinueExpr &)
 {}
 

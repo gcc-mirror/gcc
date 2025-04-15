@@ -295,6 +295,18 @@ PatternChecker::visit (BlockExpr &expr)
 }
 
 void
+PatternChecker::visit (AnonConst &expr)
+{
+  expr.get_inner_expr ().accept_vis (*this);
+}
+
+void
+PatternChecker::visit (ConstBlock &expr)
+{
+  expr.get_const_expr ().accept_vis (*this);
+}
+
+void
 PatternChecker::visit (ContinueExpr &)
 {}
 

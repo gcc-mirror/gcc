@@ -19,6 +19,7 @@
 #include "rust-compile-block.h"
 #include "rust-compile-stmt.h"
 #include "rust-compile-expr.h"
+#include "rust-hir-expr.h"
 
 namespace Rust {
 namespace Compile {

@@ -19,12 +19,14 @@
 #ifndef RUST_HIR_EXPR_H
 #define RUST_HIR_EXPR_H
 
+#include "rust-ast.h"
 #include "rust-hir-expr-abstract.h"
 #include "rust-hir-literal.h"
 #include "rust-common.h"
 #include "rust-hir-bound.h"
 #include "rust-hir-attrs.h"
 #include "rust-expr.h"
+#include "rust-hir-map.h"
 
 namespace Rust {
 namespace HIR {
@@ -1800,6 +1802,71 @@ protected:
   }
 };
 
+class AnonConst : public ExprWithBlock
+{
+public:
+  AnonConst (Analysis::NodeMapping mappings, std::unique_ptr<Expr> &&expr,
+	     location_t locus = UNKNOWN_LOCATION);
+  AnonConst (const AnonConst &other);
+  AnonConst operator= (const AnonConst &other);
+
+  std::string as_string () const override;
+
+  void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRExpressionVisitor &vis) override;
+
+  ExprType get_expression_type () const final override
+  {
+    return ExprType::AnonConst;
+  }
+
+  location_t get_locus () const override { return locus; }
+  Expr &get_inner_expr () { return *expr; }
+  const Expr &get_inner_expr () const { return *expr; }
+
+private:
+  location_t locus;
+  std::unique_ptr<Expr> expr;
+
+  AnonConst *clone_expr_with_block_impl () const override
+  {
+    return new AnonConst (*this);
+  }
+};
+
+class ConstBlock : public ExprWithBlock
+{
+public:
+  ConstBlock (Analysis::NodeMapping mappings, AnonConst &&expr,
+	      location_t locus = UNKNOWN_LOCATION,
+	      AST::AttrVec outer_attrs = {});
+  ConstBlock (const ConstBlock &other);
+  ConstBlock operator= (const ConstBlock &other);
+
+  void accept_vis (HIRFullVisitor &vis) override;
+  void accept_vis (HIRExpressionVisitor &vis) override;
+
+  std::string as_string () const override;
+
+  ExprType get_expression_type () const final override
+  {
+    return ExprType::ConstBlock;
+  }
+
+  location_t get_locus () const override { return locus; }
+  AnonConst &get_const_expr () { return expr; }
+  const AnonConst &get_const_expr () const { return expr; }
+
+private:
+  AnonConst expr;
+  location_t locus;
+
+  ConstBlock *clone_expr_with_block_impl () const override
+  {
+    return new ConstBlock (*this);
+  }
+};
+
 // HIR node representing continue expression within loops
 class ContinueExpr : public ExprWithoutBlock
 {
@@ -2890,18 +2957,6 @@ class InlineAsmRegClass
   // this placeholder is to be removed when the definations
   // of the above enums are made in a later PR/patch.
   std::string placeholder;
-};
-
-struct AnonConst
-{
-  NodeId id;
-  std::unique_ptr<Expr> expr;
-
-  AnonConst (NodeId id, std::unique_ptr<Expr> expr);
-
-  AnonConst (const AnonConst &other);
-
-  AnonConst operator= (const AnonConst &other);
 };
 
 class InlineAsmOperand
