@@ -1183,7 +1183,7 @@ conv_stat_and_team (stmtblock_t *block, gfc_expr *expr, tree *stat, tree *team,
     {
       gfc_se team_se;
       gfc_init_se (&team_se, NULL);
-      gfc_conv_expr_reference (&team_se, team_e);
+      gfc_conv_expr (&team_se, team_e);
       *team
 	= gfc_build_addr_expr (NULL_TREE, gfc_trans_force_lval (&team_se.pre,
 								team_se.expr));
@@ -1198,7 +1198,7 @@ conv_stat_and_team (stmtblock_t *block, gfc_expr *expr, tree *stat, tree *team,
     {
       gfc_se team_se;
       gfc_init_se (&team_se, NULL);
-      gfc_conv_expr_reference (&team_se, team_e);
+      gfc_conv_expr (&team_se, team_e);
       *team_no = gfc_build_addr_expr (
 	NULL_TREE,
 	gfc_trans_force_lval (&team_se.pre,

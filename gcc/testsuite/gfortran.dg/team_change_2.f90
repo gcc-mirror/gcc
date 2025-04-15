@@ -74,6 +74,13 @@
     continue
   end team !{ dg-error "Expecting END PROGRAM statement" }
 
+  t: change team(team)
+    exit t
+  end team t
+
+  change team(team)
+    exit t !{ dg-error "EXIT statement at \\(1\\) is not within construct 't'" }
+  end team
 contains
   subroutine foo(team)
     type(team_type) :: team

@@ -3325,6 +3325,7 @@ match_exit_cycle (gfc_statement st, gfc_exec_op op)
 
     case COMP_ASSOCIATE:
     case COMP_BLOCK:
+    case COMP_CHANGE_TEAM:
     case COMP_IF:
     case COMP_SELECT:
     case COMP_SELECT_TYPE:
@@ -4162,9 +4163,12 @@ gfc_match_end_team (void)
     goto done;
 
   if (gfc_match_char ('(') != MATCH_YES)
-    /* There could be a team-construct-name following.  Let caller decide
-       about error.  */
-    return MATCH_NO;
+    {
+      /* There could be a team-construct-name following.  Let caller decide
+	 about error.  */
+      new_st.op = EXEC_END_TEAM;
+      return MATCH_NO;
+    }
 
   for (;;)
     {

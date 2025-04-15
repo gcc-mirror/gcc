@@ -9,6 +9,7 @@ program pr98903
   integer :: a[*]
   type(team_type) :: team
 
+  team = get_team()
   me = this_image()
   n = num_images()
   a = 42

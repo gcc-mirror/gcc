@@ -29,5 +29,14 @@
   change team (team)
     continue
   end team (stat=istat, errmsg=err, errmsg=err) ! { dg-error "Duplicate ERRMSG" }
+
+  t: change team (team)
+    continue
+  end team (stat=istat) t ! ok
+
+  t2: change team (team)
+    continue
+  end team   ! { dg-error "Expected block name of 't2' in END TEAM" }
+  end team t2  ! close the team correctly to catch other errors
 end
 

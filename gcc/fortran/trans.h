@@ -139,9 +139,9 @@ enum gfc_coarray_regtype
   GFC_CAF_EVENT_STATIC,
   GFC_CAF_EVENT_ALLOC,
   GFC_CAF_COARRAY_ALLOC_REGISTER_ONLY,
-  GFC_CAF_COARRAY_ALLOC_ALLOCATE_ONLY
+  GFC_CAF_COARRAY_ALLOC_ALLOCATE_ONLY,
+  GFC_CAF_COARRAY_MAP_EXISTING
 };
-
 
 /* Describes the action to take on _caf_deregister.  Keep in sync with
    gcc/fortran/trans.h.  The negative values are not valid for the library and

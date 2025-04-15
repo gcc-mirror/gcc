@@ -227,6 +227,8 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
     local = calloc (size, sizeof (uint32_t));
   else if (type == CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY)
     local = NULL;
+  else if (type == CAF_REGTYPE_COARRAY_MAP_EXISTING)
+    local = GFC_DESCRIPTOR_DATA (data);
   else
     local = malloc (size);
 
@@ -248,7 +250,8 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
 
   single_token = TOKEN (*token);
   single_token->memptr = local;
-  single_token->owning_memory = type != CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY;
+  single_token->owning_memory = type != CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY
+				&& type != CAF_REGTYPE_COARRAY_MAP_EXISTING;
   single_token->desc = GFC_DESCRIPTOR_RANK (data) > 0 ? data : NULL;
 
   if (unlikely (!caf_team_stack))
@@ -620,6 +623,37 @@ _gfortran_caf_get_remote_function_index (const int hash)
   return index;
 }
 
+static bool
+check_team (caf_team_t *team, int *team_number, int *stat)
+{
+  if (team || team_number)
+    {
+      caf_single_team_t cur = caf_team_stack;
+
+      if (team)
+	{
+	  caf_single_team_t single_team = (caf_single_team_t) (*team);
+	  while (cur && cur != single_team)
+	    cur = cur->parent;
+	}
+      else
+	while (cur && cur->team_no != *team_number)
+	  cur = cur->parent;
+
+      if (!cur)
+	{
+	  if (stat)
+	    {
+	      *stat = 1;
+	      return false;
+	    }
+	  else
+	    caf_runtime_error ("requested team not found");
+	}
+    }
+  return true;
+}
+
 void
 _gfortran_caf_get_from_remote (
   caf_token_t token, const gfc_descriptor_t *opt_src_desc,
@@ -628,8 +662,7 @@ _gfortran_caf_get_from_remote (
   size_t *opt_dst_charlen, gfc_descriptor_t *opt_dst_desc,
   const bool may_realloc_dst, const int getter_index, void *add_data,
   const size_t add_data_size __attribute__ ((unused)), int *stat,
-  caf_team_t *team __attribute__ ((unused)),
-  int *team_number __attribute__ ((unused)))
+  caf_team_t *team, int *team_number)
 {
   caf_single_token_t single_token = TOKEN (token);
   void *src_ptr = opt_src_desc ? (void *) opt_src_desc : single_token->memptr;
@@ -643,6 +676,9 @@ _gfortran_caf_get_from_remote (
 
   if (stat)
     *stat = 0;
+
+  if (!check_team (team, team_number, stat))
+    return;
 
   if (opt_dst_desc && !may_realloc_dst)
     {
@@ -696,8 +732,7 @@ _gfortran_caf_send_to_remote (
   const size_t *opt_src_charlen, const gfc_descriptor_t *opt_src_desc,
   const int accessor_index, void *add_data,
   const size_t add_data_size __attribute__ ((unused)), int *stat,
-  caf_team_t *team __attribute__ ((unused)),
-  int *team_number __attribute__ ((unused)))
+  caf_team_t *team, int *team_number)
 {
   caf_single_token_t single_token = TOKEN (token);
   void *dst_ptr = opt_dst_desc ? (void *) opt_dst_desc : single_token->memptr;
@@ -709,6 +744,9 @@ _gfortran_caf_send_to_remote (
 
   if (stat)
     *stat = 0;
+
+  if (!check_team (team, team_number, stat))
+    return;
 
   accessor_hash_table[accessor_index].u.receiver (add_data, &image_index,
 						  dst_ptr, src_ptr, &cb_token,
@@ -727,10 +765,8 @@ _gfortran_caf_transfer_between_remotes (
   const int src_access_index, void *src_add_data,
   const size_t src_add_data_size __attribute__ ((unused)),
   const size_t src_size, const bool scalar_transfer, int *dst_stat,
-  int *src_stat, caf_team_t *dst_team __attribute__ ((unused)),
-  int *dst_team_number __attribute__ ((unused)),
-  caf_team_t *src_team __attribute__ ((unused)),
-  int *src_team_number __attribute__ ((unused)))
+  int *src_stat, caf_team_t *dst_team, int *dst_team_number,
+  caf_team_t *src_team, int *src_team_number)
 {
   caf_single_token_t src_single_token = TOKEN (src_token),
 		     dst_single_token = TOKEN (dst_token);
@@ -748,6 +784,9 @@ _gfortran_caf_transfer_between_remotes (
 
   if (src_stat)
     *src_stat = 0;
+
+  if (!check_team (src_team, src_team_number, src_stat))
+    return;
 
   if (!scalar_transfer)
     {
@@ -770,6 +809,9 @@ _gfortran_caf_transfer_between_remotes (
 
   if (dst_stat)
     *dst_stat = 0;
+
+  if (!check_team (dst_team, dst_team_number, dst_stat))
+    return;
 
   if (scalar_transfer)
     transfer_ptr = *(void **) transfer_ptr;

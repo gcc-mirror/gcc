@@ -29,10 +29,12 @@
   deallocate(sample, stat=istat)
   if (istat == 0) stop 6
 
-  change team (team)
+  istat = 42
+  t: change team (team)
     continue
-  end team (stat=istat, errmsg=err)
-  if (trim(err) /= 'unchanged') stop 7
+  end team (stat=istat, errmsg=err) t
+  if (istat /= 0) stop 7
+  if (trim(err) /= 'unchanged') stop 8
 end
 
 ! { dg-final { scan-tree-dump "_gfortran_caf_end_team \\(&istat, 0B, 0\\)" "original" } }

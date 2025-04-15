@@ -55,7 +55,8 @@ typedef enum
 
 /* Describes what type of array we are registerring.  Keep in sync with
    gcc/fortran/trans.h.  */
-typedef enum caf_register_t {
+typedef enum caf_register_t
+{
   CAF_REGTYPE_COARRAY_STATIC,
   CAF_REGTYPE_COARRAY_ALLOC,
   CAF_REGTYPE_LOCK_STATIC,
@@ -64,9 +65,9 @@ typedef enum caf_register_t {
   CAF_REGTYPE_EVENT_STATIC,
   CAF_REGTYPE_EVENT_ALLOC,
   CAF_REGTYPE_COARRAY_ALLOC_REGISTER_ONLY,
-  CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY
-}
-caf_register_t;
+  CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY,
+  CAF_REGTYPE_COARRAY_MAP_EXISTING,
+} caf_register_t;
 
 /* Describes the action to take on _caf_deregister.  Keep in sync with
    gcc/fortran/trans.h.  */

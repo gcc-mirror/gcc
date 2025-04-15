@@ -2056,6 +2056,30 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 
       gfc_conv_expr_descriptor (&se, e);
 
+      if (flag_coarray == GFC_FCOARRAY_LIB && sym->attr.codimension)
+	{
+	  tree token = gfc_conv_descriptor_token (se.expr),
+	       size
+	       = sym->attr.dimension
+		   ? fold_build2 (MULT_EXPR, gfc_array_index_type,
+				  gfc_conv_descriptor_size (se.expr, e->rank),
+				  gfc_conv_descriptor_span_get (se.expr))
+		   : gfc_conv_descriptor_span_get (se.expr);
+	  /* Create a new token, because in the token the modified descriptor
+	     is stored.  The modified descriptor is needed for accesses on the
+	     remote image.  In the scalar case, the base address needs to be
+	     associated correctly, which also needs a new token.
+	     The token is freed automatically be the end team statement.  */
+	  gfc_add_expr_to_block (
+	    &se.pre,
+	    build_call_expr_loc (
+	      input_location, gfor_fndecl_caf_register, 7, size,
+	      build_int_cst (integer_type_node, GFC_CAF_COARRAY_MAP_EXISTING),
+	      gfc_build_addr_expr (pvoid_type_node, token),
+	      gfc_build_addr_expr (NULL_TREE, se.expr), null_pointer_node,
+	      null_pointer_node, integer_zero_node));
+	}
+
       if (sym->ts.type == BT_CHARACTER
 	  && !sym->attr.select_type_temporary
 	  && sym->ts.u.cl->backend_decl
