@@ -93,20 +93,6 @@ strfromf64 (char *s, size_t n, const char *f, double v)
 # endif
 #endif
 
-#if !defined (HAVE_STRFROMF128)
-# if !USE_QUADMATH
-#  error "no available float 128 to string"
-# endif
-#endif
-
-#if !defined (HAVE_STRTOF128)
-# if USE_QUADMATH
-#  define strtof128 strtoflt128
-# else
-#  error "no available string to float 128"
-# endif
-#endif
-
 // This couldn't be defined in symbols.h because it conflicts with a LEVEL66
 // in parse.h
 #define LEVEL66 (66)
@@ -3262,11 +3248,7 @@ format_for_display_internal(char **dest,
           // on a 16-bit boundary.
           GCOB_FP128 floatval;
           memcpy(&floatval, actual_location, 16);
-#if !defined (HAVE_STRFROMF128) && USE_QUADMATH
-          quadmath_snprintf(ach, sizeof(ach), "%.36QE", floatval);
-#else
-          strfromf128(ach, sizeof(ach), "%.36E", floatval);
-#endif
+          strfromfp128(ach, sizeof(ach), "%.36" FP128_FMT "E", floatval);
           char *p = strchr(ach, 'E');
           if( !p )
             {
@@ -3288,13 +3270,8 @@ format_for_display_internal(char **dest,
 
               int precision = 36 - exp;
               char achFormat[24];
-#if !defined (HAVE_STRFROMF128) && USE_QUADMATH
-              sprintf(achFormat, "%%.%dQf", precision);
-              quadmath_snprintf(ach, sizeof(ach), achFormat, floatval);
-#else
-              sprintf(achFormat, "%%.%df", precision);
-              strfromf128(ach, sizeof(ach), achFormat, floatval);
-#endif
+              sprintf(achFormat, "%%.%d" FP128_FMT "f", precision);
+              strfromfp128(ach, sizeof(ach), achFormat, floatval);
               }
             __gg__remove_trailing_zeroes(ach);
             __gg__realloc_if_necessary(dest, dest_size, strlen(ach)+1);
@@ -3533,7 +3510,7 @@ get_float128( cblc_field_t *field,
     {
     if( __gg__decimal_point == '.' )
       {
-      retval = strtof128(field->initial, NULL);
+      retval = strtofp128(field->initial, NULL);
       }
     else
       {
@@ -3551,7 +3528,7 @@ get_float128( cblc_field_t *field,
         {
         *p = '.';
         }
-      retval = strtof128(buffer, NULL);
+      retval = strtofp128(buffer, NULL);
       }
     }
   else
@@ -4248,7 +4225,7 @@ __gg__compare_2(cblc_field_t *left_side,
               //_Float128 left_value  = *(_Float128 *)left_location;
               GCOB_FP128 left_value;
               memcpy(&left_value, left_location, 16);
-              GCOB_FP128 right_value = strtof128(buffer, NULL);
+              GCOB_FP128 right_value = strtofp128(buffer, NULL);
               retval = 0;
               retval = left_value < right_value ? -1 : retval;
               retval = left_value > right_value ?  1 : retval;
@@ -5998,8 +5975,8 @@ __gg__move( cblc_field_t        *fdest,
                 }
               case 16:
                 {
-                //*(_Float128 *)(fdest->data+dest_offset) = strtof128(ach, NULL);
-                GCOB_FP128 t = strtof128(ach, NULL);
+                //*(_Float128 *)(fdest->data+dest_offset) = strtofp128(ach, NULL);
+                GCOB_FP128 t = strtofp128(ach, NULL);
                 memcpy(fdest->data+dest_offset, &t, 16);
                 break;
                 }
@@ -6168,7 +6145,7 @@ __gg__move_literala(cblc_field_t *field,
           }
         case 16:
           {
-          GCOB_FP128 t = strtof128(ach, NULL);
+          GCOB_FP128 t = strtofp128(ach, NULL);
           memcpy(field->data+field_offset, &t, 16);
           break;
           }

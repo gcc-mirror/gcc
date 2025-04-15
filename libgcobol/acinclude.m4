@@ -44,6 +44,10 @@ AC_DEFUN([LIBGCOBOL_CHECK_FLOAT128], [
   AC_CACHE_CHECK([whether we have a usable _Float128 type],
                  libgcob_cv_have_float128, [
    GCC_TRY_COMPILE_OR_LINK([
+#if __LDBL_MANT_DIG__ == 113 && __LDBL_MIN_EXP__ == -16381
+#error "long double is IEEE quad, no need for libquadmath"
+#endif
+
     _Float128 foo (_Float128 x)
     {
      _Complex _Float128 z1, z2;
@@ -90,32 +94,22 @@ AC_DEFUN([LIBGCOBOL_CHECK_FLOAT128], [
     fi
     AC_DEFINE(HAVE_FLOAT128, 1, [Define if target has usable _Float128 and __float128 types.])
 
-    dnl Check whether -Wl,--as-needed resp. -Wl,-zignore is supported
-    dnl 
-    dnl Turn warnings into error to avoid testsuite breakage.  So enable
-    dnl AC_LANG_WERROR, but there's currently (autoconf 2.64) no way to turn
-    dnl it off again.  As a workaround, save and restore werror flag like
-    dnl AC_PATH_XTRA.
-    dnl Cf. http://gcc.gnu.org/ml/gcc-patches/2010-05/msg01889.html
-    ac_xsave_[]_AC_LANG_ABBREV[]_werror_flag=$ac_[]_AC_LANG_ABBREV[]_werror_flag
-    AC_CACHE_CHECK([whether --as-needed/-z ignore works],
-      [libgcob_cv_have_as_needed],
-      [
-      # Test for native Solaris options first.
-      # No whitespace after -z to pass it through -Wl.
-      libgcob_cv_as_needed_option="-zignore"
-      libgcob_cv_no_as_needed_option="-zrecord"
-      save_LDFLAGS="$LDFLAGS"
-      LDFLAGS="$LDFLAGS -Wl,$libgcob_cv_as_needed_option -lm -Wl,$libgcob_cv_no_as_needed_option"
-      libgcob_cv_have_as_needed=no
-      AC_LANG_WERROR
-      AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
-		     [libgcob_cv_have_as_needed=yes],
-		     [libgcob_cv_have_as_needed=no])
-      LDFLAGS="$save_LDFLAGS"
-      if test "x$libgcob_cv_have_as_needed" = xno; then
-	libgcob_cv_as_needed_option="--as-needed"
-	libgcob_cv_no_as_needed_option="--no-as-needed"
+    if test "x$USE_IEC_60559" != xyes; then
+      dnl Check whether -Wl,--as-needed resp. -Wl,-zignore is supported
+      dnl 
+      dnl Turn warnings into error to avoid testsuite breakage.  So enable
+      dnl AC_LANG_WERROR, but there's currently (autoconf 2.64) no way to turn
+      dnl it off again.  As a workaround, save and restore werror flag like
+      dnl AC_PATH_XTRA.
+      dnl Cf. http://gcc.gnu.org/ml/gcc-patches/2010-05/msg01889.html
+      ac_xsave_[]_AC_LANG_ABBREV[]_werror_flag=$ac_[]_AC_LANG_ABBREV[]_werror_flag
+      AC_CACHE_CHECK([whether --as-needed/-z ignore works],
+	[libgcob_cv_have_as_needed],
+	[
+	# Test for native Solaris options first.
+	# No whitespace after -z to pass it through -Wl.
+	libgcob_cv_as_needed_option="-zignore"
+	libgcob_cv_no_as_needed_option="-zrecord"
 	save_LDFLAGS="$LDFLAGS"
 	LDFLAGS="$LDFLAGS -Wl,$libgcob_cv_as_needed_option -lm -Wl,$libgcob_cv_no_as_needed_option"
 	libgcob_cv_have_as_needed=no
@@ -124,45 +118,51 @@ AC_DEFUN([LIBGCOBOL_CHECK_FLOAT128], [
 		       [libgcob_cv_have_as_needed=yes],
 		       [libgcob_cv_have_as_needed=no])
 	LDFLAGS="$save_LDFLAGS"
+	if test "x$libgcob_cv_have_as_needed" = xno; then
+	  libgcob_cv_as_needed_option="--as-needed"
+	  libgcob_cv_no_as_needed_option="--no-as-needed"
+	  save_LDFLAGS="$LDFLAGS"
+	  LDFLAGS="$LDFLAGS -Wl,$libgcob_cv_as_needed_option -lm -Wl,$libgcob_cv_no_as_needed_option"
+	  libgcob_cv_have_as_needed=no
+	  AC_LANG_WERROR
+	  AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+			 [libgcob_cv_have_as_needed=yes],
+			 [libgcob_cv_have_as_needed=no])
+	  LDFLAGS="$save_LDFLAGS"
+	fi
+	ac_[]_AC_LANG_ABBREV[]_werror_flag=$ac_xsave_[]_AC_LANG_ABBREV[]_werror_flag
+      ])
+
+      dnl Determine -Bstatic ... -Bdynamic etc. support from gfortran -### stderr.
+      touch conftest1.$ac_objext conftest2.$ac_objext
+      LQUADMATH=-lquadmath
+      $CXX -static-libgcobol -### -o conftest \
+	  conftest1.$ac_objext -lgcobol conftest2.$ac_objext 2>&1 >/dev/null \
+	  | grep "conftest1.$ac_objext.*conftest2.$ac_objext" > conftest.cmd
+      if grep "conftest1.$ac_objext.* -Bstatic -lgcobol -Bdynamic .*conftest2.$ac_objext" \
+	 conftest.cmd >/dev/null 2>&1; then
+	LQUADMATH="%{static-libquadmath:-Bstatic} -lquadmath %{static-libquadmath:-Bdynamic}"
+      elif grep "conftest1.$ac_objext.* -bstatic -lgcobol -bdynamic .*conftest2.$ac_objext" \
+	  conftest.cmd >/dev/null 2>&1; then
+	LQUADMATH="%{static-libquadmath:-bstatic} -lquadmath %{static-libquadmath:-bdynamic}"
+      elif grep "conftest1.$ac_objext.* -aarchive_shared -lgcobol -adefault .*conftest2.$ac_objext" \
+	  conftest.cmd >/dev/null 2>&1; then
+	LQUADMATH="%{static-libquadmath:-aarchive_shared} -lquadmath %{static-libquadmath:-adefault}"
+      elif grep "conftest1.$ac_objext.*libgcobol.a .*conftest2.$ac_objext" \
+         conftest.cmd >/dev/null 2>&1; then
+	LQUADMATH="%{static-libquadmath:libquadmath.a%s;:-lquadmath}"
       fi
-      ac_[]_AC_LANG_ABBREV[]_werror_flag=$ac_xsave_[]_AC_LANG_ABBREV[]_werror_flag
-    ])
+      rm -f conftest1.$ac_objext conftest2.$ac_objext conftest conftest.cmd
 
-    dnl Determine -Bstatic ... -Bdynamic etc. support from gfortran -### stderr.
-    touch conftest1.$ac_objext conftest2.$ac_objext
-    LQUADMATH=-lquadmath
-    $CXX -static-libgcobol -### -o conftest \
-	conftest1.$ac_objext -lgcobol conftest2.$ac_objext 2>&1 >/dev/null \
-	| grep "conftest1.$ac_objext.*conftest2.$ac_objext" > conftest.cmd
-    if grep "conftest1.$ac_objext.* -Bstatic -lgcobol -Bdynamic .*conftest2.$ac_objext" \
-       conftest.cmd >/dev/null 2>&1; then
-      LQUADMATH="%{static-libquadmath:-Bstatic} -lquadmath %{static-libquadmath:-Bdynamic}"
-    elif grep "conftest1.$ac_objext.* -bstatic -lgcobol -bdynamic .*conftest2.$ac_objext" \
-         conftest.cmd >/dev/null 2>&1; then
-      LQUADMATH="%{static-libquadmath:-bstatic} -lquadmath %{static-libquadmath:-bdynamic}"
-    elif grep "conftest1.$ac_objext.* -aarchive_shared -lgcobol -adefault .*conftest2.$ac_objext" \
-         conftest.cmd >/dev/null 2>&1; then
-      LQUADMATH="%{static-libquadmath:-aarchive_shared} -lquadmath %{static-libquadmath:-adefault}"
-    elif grep "conftest1.$ac_objext.*libgcobol.a .*conftest2.$ac_objext" \
-         conftest.cmd >/dev/null 2>&1; then
-      LQUADMATH="%{static-libquadmath:libquadmath.a%s;:-lquadmath}"
-    fi
-    rm -f conftest1.$ac_objext conftest2.$ac_objext conftest conftest.cmd
-
-    dnl For static libgcobol linkage, depend on libquadmath only if needed.
-    dnl If using *f128 APIs from libc/libm, depend on libquadmath only if needed
-    dnl even for dynamic libgcobol linkage, and don't link libgcobol against
-    dnl -lquadmath.
-    if test "x$libgcob_cv_have_as_needed" = xyes; then
-      if test "x$USE_IEC_60559" = xyes; then
-	LIBQUADSPEC="$libgcob_cv_as_needed_option $LQUADMATH $libgcob_cv_no_as_needed_option"
+      if test "x$libgcob_cv_have_as_needed" = xyes; then
+	if test "x$USE_IEC_60559" = xyes; then
+	  LIBQUADSPEC="$libgcob_cv_as_needed_option $LQUADMATH $libgcob_cv_no_as_needed_option"
+	else
+	  LIBQUADSPEC="%{static-libgcobol:$libgcob_cv_as_needed_option} $LQUADMATH %{static-libgcobol:$libgcob_cv_no_as_needed_option}"
+	fi
       else
-	LIBQUADSPEC="%{static-libgcobol:$libgcob_cv_as_needed_option} $LQUADMATH %{static-libgcobol:$libgcob_cv_no_as_needed_option}"
+	LIBQUADSPEC="$LQUADMATH"
       fi
-    else
-      LIBQUADSPEC="$LQUADMATH"
-    fi
-    if test "x$USE_IEC_60559" != xyes; then
       if test -f ../libquadmath/libquadmath.la; then
 	LIBQUADLIB=../libquadmath/libquadmath.la
 	LIBQUADLIB_DEP=../libquadmath/libquadmath.la

@@ -28,17 +28,26 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define GCOB_FP128 long double
 # define GCOB_FP128_LITERAL(lit) (lit ## l)
 # define FP128_FUNC(funcname) funcname ## l
+# define FP128_FMT "L"
+# define strtofp128(nptr, endptr) strtold(nptr, endptr)
+# define strfromfp128(str, n, format, fp) snprintf(str, n, format, fp)
 #elif __FLT128_MANT_DIG__ == 113 && __FLT128_MIN_EXP__ == -16381 \
      && defined(USE_IEC_60559)
 // Use _Float128, f128 suffix on calls, f128 or F128 suffix on literals
 # define GCOB_FP128 _Float128
 # define GCOB_FP128_LITERAL(lit) (lit ## f128)
 # define FP128_FUNC(funcname) funcname ## f128
+# define FP128_FMT ""
+# define strtofp128(nptr, endptr) strtof128(nptr, endptr)
+# define strfromfp128(str, n, format, fp) strfromf128(str, n, format, fp)
 #elif __FLT128_MANT_DIG__ == 113 && __FLT128_MIN_EXP__ == -16381
 // Use __float128, q suffix on calls, q or Q suffix on literals
 # define GCOB_FP128 __float128
 # define GCOB_FP128_LITERAL(lit) (lit ## q)
 # define FP128_FUNC(funcname) funcname ## q
+# define FP128_FMT "Q"
+# define strtofp128(nptr, endptr) strtoflt128(nptr, endptr)
+# define strfromfp128(str, n, format, fp) quadmath_snprintf(str, n, format, fp)
 #else
 # error "libgcobol requires 128b floating point"
 #endif

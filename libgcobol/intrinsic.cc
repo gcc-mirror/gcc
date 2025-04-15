@@ -55,19 +55,11 @@
 #include "charmaps.h"
 
 
-#if !defined (HAVE_STRTOF128)
-# if USE_QUADMATH
-#  define strtof128 strtoflt128
-# else
-#  error "no available string to float 128"
-# endif
-#endif
-
 #pragma GCC diagnostic ignored "-Wformat-truncation"
 
 #define JD_OF_1601_01_02 2305812.5
 
-#define WEIRD_TRANSCENDENT_RETURN_VALUE (0.0Q)
+#define WEIRD_TRANSCENDENT_RETURN_VALUE GCOB_FP128_LITERAL (0.0)
 #define NO_RDIGITS (0)
 
 struct cobol_tm
@@ -5016,7 +5008,7 @@ __gg__numval_f( cblc_field_t *dest,
         }
       }
     *p++ = '\0';
-    value = strtof128(ach, NULL);
+    value = strtofp128(ach, NULL);
     }
   __gg__float128_to_field(dest,
                           value,

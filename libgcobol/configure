@@ -17172,6 +17172,10 @@ else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+#if __LDBL_MANT_DIG__ == 113 && __LDBL_MIN_EXP__ == -16381
+#error "long double is IEEE quad, no need for libquadmath"
+#endif
+
     _Float128 foo (_Float128 x)
     {
      _Complex _Float128 z1, z2;
@@ -17224,6 +17228,10 @@ else
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+
+#if __LDBL_MANT_DIG__ == 113 && __LDBL_MIN_EXP__ == -16381
+#error "long double is IEEE quad, no need for libquadmath"
+#endif
 
     _Float128 foo (_Float128 x)
     {
@@ -17296,47 +17304,18 @@ $as_echo "#define USE_QUADMATH 1" >>confdefs.h
 $as_echo "#define HAVE_FLOAT128 1" >>confdefs.h
 
 
-                                ac_xsave_cxx_werror_flag=$ac_cxx_werror_flag
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether --as-needed/-z ignore works" >&5
+    if test "x$USE_IEC_60559" != xyes; then
+                                                ac_xsave_cxx_werror_flag=$ac_cxx_werror_flag
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether --as-needed/-z ignore works" >&5
 $as_echo_n "checking whether --as-needed/-z ignore works... " >&6; }
 if ${libgcob_cv_have_as_needed+:} false; then :
   $as_echo_n "(cached) " >&6
 else
 
-      # Test for native Solaris options first.
-      # No whitespace after -z to pass it through -Wl.
-      libgcob_cv_as_needed_option="-zignore"
-      libgcob_cv_no_as_needed_option="-zrecord"
-      save_LDFLAGS="$LDFLAGS"
-      LDFLAGS="$LDFLAGS -Wl,$libgcob_cv_as_needed_option -lm -Wl,$libgcob_cv_no_as_needed_option"
-      libgcob_cv_have_as_needed=no
-
-ac_cxx_werror_flag=yes
-      if test x$gcc_no_link = xyes; then
-  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
-fi
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  libgcob_cv_have_as_needed=yes
-else
-  libgcob_cv_have_as_needed=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-      LDFLAGS="$save_LDFLAGS"
-      if test "x$libgcob_cv_have_as_needed" = xno; then
-	libgcob_cv_as_needed_option="--as-needed"
-	libgcob_cv_no_as_needed_option="--no-as-needed"
+	# Test for native Solaris options first.
+	# No whitespace after -z to pass it through -Wl.
+	libgcob_cv_as_needed_option="-zignore"
+	libgcob_cv_no_as_needed_option="-zrecord"
 	save_LDFLAGS="$LDFLAGS"
 	LDFLAGS="$LDFLAGS -Wl,$libgcob_cv_as_needed_option -lm -Wl,$libgcob_cv_no_as_needed_option"
 	libgcob_cv_have_as_needed=no
@@ -17364,43 +17343,72 @@ fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 	LDFLAGS="$save_LDFLAGS"
-      fi
-      ac_cxx_werror_flag=$ac_xsave_cxx_werror_flag
+	if test "x$libgcob_cv_have_as_needed" = xno; then
+	  libgcob_cv_as_needed_option="--as-needed"
+	  libgcob_cv_no_as_needed_option="--no-as-needed"
+	  save_LDFLAGS="$LDFLAGS"
+	  LDFLAGS="$LDFLAGS -Wl,$libgcob_cv_as_needed_option -lm -Wl,$libgcob_cv_no_as_needed_option"
+	  libgcob_cv_have_as_needed=no
+
+ac_cxx_werror_flag=yes
+	  if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  libgcob_cv_have_as_needed=yes
+else
+  libgcob_cv_have_as_needed=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	  LDFLAGS="$save_LDFLAGS"
+	fi
+	ac_cxx_werror_flag=$ac_xsave_cxx_werror_flag
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcob_cv_have_as_needed" >&5
 $as_echo "$libgcob_cv_have_as_needed" >&6; }
 
-        touch conftest1.$ac_objext conftest2.$ac_objext
-    LQUADMATH=-lquadmath
-    $CXX -static-libgcobol -### -o conftest \
-	conftest1.$ac_objext -lgcobol conftest2.$ac_objext 2>&1 >/dev/null \
-	| grep "conftest1.$ac_objext.*conftest2.$ac_objext" > conftest.cmd
-    if grep "conftest1.$ac_objext.* -Bstatic -lgcobol -Bdynamic .*conftest2.$ac_objext" \
-       conftest.cmd >/dev/null 2>&1; then
-      LQUADMATH="%{static-libquadmath:-Bstatic} -lquadmath %{static-libquadmath:-Bdynamic}"
-    elif grep "conftest1.$ac_objext.* -bstatic -lgcobol -bdynamic .*conftest2.$ac_objext" \
+            touch conftest1.$ac_objext conftest2.$ac_objext
+      LQUADMATH=-lquadmath
+      $CXX -static-libgcobol -### -o conftest \
+	  conftest1.$ac_objext -lgcobol conftest2.$ac_objext 2>&1 >/dev/null \
+	  | grep "conftest1.$ac_objext.*conftest2.$ac_objext" > conftest.cmd
+      if grep "conftest1.$ac_objext.* -Bstatic -lgcobol -Bdynamic .*conftest2.$ac_objext" \
+	 conftest.cmd >/dev/null 2>&1; then
+	LQUADMATH="%{static-libquadmath:-Bstatic} -lquadmath %{static-libquadmath:-Bdynamic}"
+      elif grep "conftest1.$ac_objext.* -bstatic -lgcobol -bdynamic .*conftest2.$ac_objext" \
+	  conftest.cmd >/dev/null 2>&1; then
+	LQUADMATH="%{static-libquadmath:-bstatic} -lquadmath %{static-libquadmath:-bdynamic}"
+      elif grep "conftest1.$ac_objext.* -aarchive_shared -lgcobol -adefault .*conftest2.$ac_objext" \
+	  conftest.cmd >/dev/null 2>&1; then
+	LQUADMATH="%{static-libquadmath:-aarchive_shared} -lquadmath %{static-libquadmath:-adefault}"
+      elif grep "conftest1.$ac_objext.*libgcobol.a .*conftest2.$ac_objext" \
          conftest.cmd >/dev/null 2>&1; then
-      LQUADMATH="%{static-libquadmath:-bstatic} -lquadmath %{static-libquadmath:-bdynamic}"
-    elif grep "conftest1.$ac_objext.* -aarchive_shared -lgcobol -adefault .*conftest2.$ac_objext" \
-         conftest.cmd >/dev/null 2>&1; then
-      LQUADMATH="%{static-libquadmath:-aarchive_shared} -lquadmath %{static-libquadmath:-adefault}"
-    elif grep "conftest1.$ac_objext.*libgcobol.a .*conftest2.$ac_objext" \
-         conftest.cmd >/dev/null 2>&1; then
-      LQUADMATH="%{static-libquadmath:libquadmath.a%s;:-lquadmath}"
-    fi
-    rm -f conftest1.$ac_objext conftest2.$ac_objext conftest conftest.cmd
-
-                    if test "x$libgcob_cv_have_as_needed" = xyes; then
-      if test "x$USE_IEC_60559" = xyes; then
-	LIBQUADSPEC="$libgcob_cv_as_needed_option $LQUADMATH $libgcob_cv_no_as_needed_option"
-      else
-	LIBQUADSPEC="%{static-libgcobol:$libgcob_cv_as_needed_option} $LQUADMATH %{static-libgcobol:$libgcob_cv_no_as_needed_option}"
+	LQUADMATH="%{static-libquadmath:libquadmath.a%s;:-lquadmath}"
       fi
-    else
-      LIBQUADSPEC="$LQUADMATH"
-    fi
-    if test "x$USE_IEC_60559" != xyes; then
+      rm -f conftest1.$ac_objext conftest2.$ac_objext conftest conftest.cmd
+
+      if test "x$libgcob_cv_have_as_needed" = xyes; then
+	if test "x$USE_IEC_60559" = xyes; then
+	  LIBQUADSPEC="$libgcob_cv_as_needed_option $LQUADMATH $libgcob_cv_no_as_needed_option"
+	else
+	  LIBQUADSPEC="%{static-libgcobol:$libgcob_cv_as_needed_option} $LQUADMATH %{static-libgcobol:$libgcob_cv_no_as_needed_option}"
+	fi
+      else
+	LIBQUADSPEC="$LQUADMATH"
+      fi
       if test -f ../libquadmath/libquadmath.la; then
 	LIBQUADLIB=../libquadmath/libquadmath.la
 	LIBQUADLIB_DEP=../libquadmath/libquadmath.la
