@@ -313,14 +313,24 @@ ipcp_lattice<valtype>::print (FILE * f, bool dump_sources, bool dump_benefits)
 static void
 ipcp_print_widest_int (FILE *f, const widest_int &value)
 {
-  if (wi::eq_p (wi::bit_not (value), 0))
+  if (value == -1)
     fprintf (f, "-1");
-  else if (wi::eq_p (wi::bit_not (wi::bit_or (value,
-					      wi::sub (wi::lshift (1, 128),
-						       1))), 0))
+  else if (wi::arshift (value, 128) == -1)
     {
-      fprintf (f, "all ones folled by ");
-      print_hex (wi::bit_and (value, wi::sub (wi::lshift (1, 128), 1)), f);
+      char buf[35], *p = buf + 2;
+      widest_int v = wi::zext (value, 128);
+      size_t len;
+      print_hex (v, buf);
+      len = strlen (p);
+      if (len == 32)
+	{
+	  fprintf (f, "0xf..f");
+	  while (*p == 'f')
+	    ++p;
+	}
+      else
+	fprintf (f, "0xf..f%0*d", (int) (32 - len), 0);
+      fputs (p, f);
     }
   else
     print_hex (value, f);
