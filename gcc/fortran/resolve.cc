@@ -3155,6 +3155,13 @@ gfc_pure_function (gfc_expr *e, const char **name)
 	     || e->value.function.isym->elemental;
       *name = e->value.function.isym->name;
     }
+  else if (e->symtree && e->symtree->n.sym && e->symtree->n.sym->attr.dummy)
+    {
+      /* The function has been resolved, but esym is not yet set.
+	 This can happen with functions as dummy argument.  */
+      pure = e->symtree->n.sym->attr.pure;
+      *name = e->symtree->n.sym->name;
+    }
   else
     {
       /* Implicit functions are not pure.  */
