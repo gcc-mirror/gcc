@@ -933,13 +933,13 @@ ipcp_bits_lattice::meet_with_1 (widest_int value, widest_int mask,
   m_mask = (m_mask | mask) | (m_value ^ value);
   if (drop_all_ones)
     m_mask |= m_value;
-  m_value &= ~m_mask;
 
-  widest_int cap_mask = wi::bit_not (wi::sub (wi::lshift (1, precision), 1));
+  widest_int cap_mask = wi::shifted_mask <widest_int> (0, precision, true);
   m_mask |= cap_mask;
   if (wi::sext (m_mask, precision) == -1)
     return set_to_bottom ();
 
+  m_value &= ~m_mask;
   return m_mask != old_mask;
 }
 
@@ -1015,7 +1015,7 @@ ipcp_bits_lattice::meet_with (ipcp_bits_lattice& other, unsigned precision,
 	  adjusted_mask |= adjusted_value;
 	  adjusted_value &= ~adjusted_mask;
 	}
-      widest_int cap_mask = wi::bit_not (wi::sub (wi::lshift (1, precision), 1));
+      widest_int cap_mask = wi::shifted_mask <widest_int> (0, precision, true);
       adjusted_mask |= cap_mask;
       if (wi::sext (adjusted_mask, precision) == -1)
 	return set_to_bottom ();
