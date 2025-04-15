@@ -11634,6 +11634,10 @@ tsubst_friend_function (tree decl, tree args)
 		      elt.args = DECL_TI_ARGS (spec);
 		      elt.spec = NULL_TREE;
 
+		      if (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (DECL_TI_ARGS (spec))
+			  && !is_specialization_of_friend (spec, new_template))
+			continue;
+
 		      decl_specializations->remove_elt (&elt);
 
 		      tree& spec_args = DECL_TI_ARGS (spec);
