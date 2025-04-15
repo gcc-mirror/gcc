@@ -685,7 +685,7 @@ invalid_opt_bb_p (basic_block cfg_bb)
   /* We only do LCM optimizations on blocks that are post dominated by
      EXIT block, that is, we don't do LCM optimizations on infinite loop.  */
   FOR_EACH_EDGE (e, ei, cfg_bb->succs)
-    if (e->flags & EDGE_FAKE)
+    if ((e->flags & EDGE_FAKE) || (e->flags & EDGE_ABNORMAL))
       return true;
 
   return false;
@@ -2698,6 +2698,7 @@ pre_vsetvl::compute_lcm_local_properties ()
   m_avout = sbitmap_vector_alloc (last_basic_block_for_fn (cfun), num_exprs);
 
   bitmap_vector_clear (m_avloc, last_basic_block_for_fn (cfun));
+  bitmap_vector_clear (m_kill, last_basic_block_for_fn (cfun));
   bitmap_vector_clear (m_antloc, last_basic_block_for_fn (cfun));
   bitmap_vector_ones (m_transp, last_basic_block_for_fn (cfun));
 
@@ -2749,6 +2750,10 @@ pre_vsetvl::compute_lcm_local_properties ()
 
       if (invalid_opt_bb_p (bb->cfg_bb ()))
 	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "\n --- skipping bb %u due to weird edge",
+		     bb->index ());
+
 	  bitmap_clear (m_antloc[bb_index]);
 	  bitmap_clear (m_transp[bb_index]);
 	}
