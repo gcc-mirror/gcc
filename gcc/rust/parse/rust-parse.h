@@ -17,6 +17,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef RUST_PARSE_H
 #define RUST_PARSE_H
 
+#include "rust-ast.h"
 #include "rust-item.h"
 #include "rust-lex.h"
 #include "rust-ast-full.h"
@@ -164,6 +165,10 @@ public:
   parse_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		    tl::optional<AST::LoopLabel> = tl::nullopt,
 		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
+
+  std::unique_ptr<AST::ConstBlock>
+  parse_const_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
+			  location_t loc = UNKNOWN_LOCATION);
 
   bool is_macro_rules_def (const_TokenPtr t);
   std::unique_ptr<AST::Item> parse_item (bool called_from_statement);

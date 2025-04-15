@@ -7264,6 +7264,30 @@ Parser<ManagedTokenSource>::parse_block_expr (
 			std::move (label), locus, end_locus));
 }
 
+/* Parse a "const block", a block preceded by the `const` keyword whose
+ * statements can be const evaluated and used in constant contexts */
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::ConstBlock>
+Parser<ManagedTokenSource>::parse_const_block_expr (AST::AttrVec outer_attrs,
+						    location_t locus)
+{
+  auto block = parse_block_expr ();
+
+  if (!block)
+    {
+      add_error (Error (locus, "failed to parse inner block in const block"));
+      skip_after_end_block ();
+
+      return nullptr;
+    }
+
+  auto block_locus = block->get_locus ();
+
+  return std::make_unique<AST::ConstBlock> (AST::AnonConst (std::move (block),
+							    block_locus),
+					    locus, std::move (outer_attrs));
+}
+
 /* Parses a "grouped" expression (expression in parentheses), used to control
  * precedence. */
 template <typename ManagedTokenSource>
@@ -12537,6 +12561,9 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
 	       "use of %qs is not allowed on the right-side of an assignment",
 	       tok->get_token_description ()));
       return nullptr;
+    case CONST:
+      return parse_const_block_expr (std::move (outer_attrs),
+				     tok->get_locus ());
     default:
       if (!restrictions.expr_can_be_null)
 	add_error (Error (tok->get_locus (),
