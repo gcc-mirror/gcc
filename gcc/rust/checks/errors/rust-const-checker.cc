@@ -537,6 +537,10 @@ ConstChecker::visit (InlineAsm &)
 {}
 
 void
+ConstChecker::visit (LlvmInlineAsm &)
+{}
+
+void
 ConstChecker::visit (TypeParam &)
 {}
 

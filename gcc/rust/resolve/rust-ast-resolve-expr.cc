@@ -368,6 +368,17 @@ ResolveExpr::visit (AST::InlineAsm &expr)
 {
   translate_operand (expr, prefix, canonical_prefix);
 }
+
+void
+ResolveExpr::visit (AST::LlvmInlineAsm &expr)
+{
+  for (auto &output : expr.get_outputs ())
+    ResolveExpr::go (*output.expr, prefix, canonical_prefix);
+
+  for (auto &input : expr.get_inputs ())
+    ResolveExpr::go (*input.expr, prefix, canonical_prefix);
+}
+
 void
 ResolveExpr::visit (AST::UnsafeBlockExpr &expr)
 {

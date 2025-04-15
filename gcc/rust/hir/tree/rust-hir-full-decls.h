@@ -126,6 +126,7 @@ class InlineAsmRegClass;
 struct AnonConst;
 class InlineAsmOperand;
 class InlineAsm;
+class LlvmInlineAsm;
 
 // rust-stmt.h
 class EmptyStmt;

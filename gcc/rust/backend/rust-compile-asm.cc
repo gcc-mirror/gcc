@@ -1,5 +1,7 @@
 #include "rust-compile-asm.h"
 #include "rust-compile-expr.h"
+#include "rust-system.h"
+
 namespace Rust {
 namespace Compile {
 
@@ -139,6 +141,58 @@ CompileAsm::asm_construct_label_tree (HIR::InlineAsm &expr)
 {
   // TODO: Do i need to do this?
   return NULL_TREE;
+}
+
+CompileLlvmAsm::CompileLlvmAsm (Context *ctx) : HIRCompileBase (ctx) {}
+
+tree
+CompileLlvmAsm::construct_operands (std::vector<HIR::LlvmOperand> operands)
+{
+  tree head = NULL_TREE;
+  for (auto &operand : operands)
+    {
+      tree t = CompileExpr::Compile (*operand.expr, this->ctx);
+      auto name = build_string (operand.constraint.size () + 1,
+				operand.constraint.c_str ());
+      head = chainon (head,
+		      build_tree_list (build_tree_list (NULL_TREE, name), t));
+    }
+  return head;
+}
+
+tree
+CompileLlvmAsm::construct_clobbers (std::vector<AST::TupleClobber> clobbers)
+{
+  tree head = NULL_TREE;
+  for (auto &clobber : clobbers)
+    {
+      auto name
+	= build_string (clobber.symbol.size () + 1, clobber.symbol.c_str ());
+      head = chainon (head, build_tree_list (NULL_TREE, name));
+    }
+  return head;
+}
+
+tree
+CompileLlvmAsm::tree_codegen_asm (HIR::LlvmInlineAsm &expr)
+{
+  tree ret = make_node (ASM_EXPR);
+  TREE_TYPE (ret) = void_type_node;
+  SET_EXPR_LOCATION (ret, expr.get_locus ());
+  ASM_VOLATILE_P (ret) = expr.options.is_volatile;
+
+  std::stringstream ss;
+  for (const auto &template_str : expr.templates)
+    {
+      ss << template_str.symbol << "\n";
+    }
+
+  ASM_STRING (ret) = Backend::string_constant_expression (ss.str ());
+  ASM_INPUTS (ret) = construct_operands (expr.inputs);
+  ASM_OUTPUTS (ret) = construct_operands (expr.outputs);
+  ASM_CLOBBERS (ret) = construct_clobbers (expr.get_clobbers ());
+
+  return ret;
 }
 
 } // namespace Compile
