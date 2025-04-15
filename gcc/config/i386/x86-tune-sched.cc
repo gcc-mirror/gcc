@@ -81,6 +81,14 @@ ix86_issue_rate (void)
     case PROCESSOR_YONGFENG:
     case PROCESSOR_SHIJIDADAO:
     case PROCESSOR_GENERIC:
+    /* For znver5 decoder can handle 4 or 8 instructions per cycle,
+       op cache 12 instruction/cycle, dispatch 8 instructions
+       integer rename 8 instructions and Fp 6 instructions.
+
+       The scheduler, without understanding out of order nature of the CPU
+       is not going to be able to use more than 4 instructions since that
+       is limits of the decoders.  */
+    case PROCESSOR_ZNVER5:
       return 4;
 
     case PROCESSOR_ICELAKE_CLIENT:
@@ -91,13 +99,6 @@ ix86_issue_rate (void)
       return 5;
 
     case PROCESSOR_SAPPHIRERAPIDS:
-    /* For znver5 decoder can handle 4 or 8 instructions per cycle,
-       op cache 12 instruction/cycle, dispatch 8 instructions
-       integer rename 8 instructions and Fp 6 instructions.
-
-       The scheduler, without understanding out of order nature of the CPU
-       is unlikely going to be able to fill all of these.  */
-    case PROCESSOR_ZNVER5:
       return 6;
 
     default:
