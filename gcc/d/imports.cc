@@ -182,7 +182,11 @@ public:
     vec_alloc (tset, d->a.length);
 
     for (size_t i = 0; i < d->a.length; i++)
-      vec_safe_push (tset, build_import_decl (d->a[i]));
+      {
+	tree overload = build_import_decl (d->a[i]);
+	if (overload != NULL_TREE)
+	  vec_safe_push (tset, overload);
+      }
 
     this->result_ = build_tree_list_vec (tset);
     tset->truncate (0);
