@@ -1297,6 +1297,28 @@ Dump::visit (BlockExpr &e)
 }
 
 void
+Dump::visit (AnonConst &e)
+{
+  begin ("AnonConst");
+  do_expr (e);
+
+  visit_field ("inner", e.get_inner_expr ());
+
+  end ("AnonConst");
+}
+
+void
+Dump::visit (ConstBlock &e)
+{
+  begin ("ConstBlock");
+  do_expr (e);
+
+  visit_field ("inner", e.get_const_expr ());
+
+  end ("ConstBlock");
+}
+
+void
 Dump::visit (ContinueExpr &e)
 {
   begin ("ContinueExpr");

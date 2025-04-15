@@ -169,6 +169,14 @@ public:
   {
     return_place (ExprStmtBuilder (ctx).build (expr), expr.get_locus ());
   }
+  void visit (HIR::AnonConst &expr) override
+  {
+    return_place (ExprStmtBuilder (ctx).build (expr), expr.get_locus ());
+  }
+  void visit (HIR::ConstBlock &expr) override
+  {
+    return_place (ExprStmtBuilder (ctx).build (expr), expr.get_locus ());
+  }
   void visit (HIR::UnsafeBlockExpr &expr) override
   {
     return_place (ExprStmtBuilder (ctx).build (expr), expr.get_locus ());

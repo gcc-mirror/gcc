@@ -790,6 +790,50 @@ BlockExpr::operator= (BlockExpr const &other)
   return *this;
 }
 
+AnonConst::AnonConst (Analysis::NodeMapping mappings,
+		      std::unique_ptr<Expr> &&expr, location_t locus)
+  : ExprWithBlock (std::move (mappings), {}), locus (locus),
+    expr (std::move (expr))
+{
+  rust_assert (this->expr);
+}
+
+AnonConst::AnonConst (const AnonConst &other)
+  : ExprWithBlock (other), locus (other.locus), expr (other.expr->clone_expr ())
+{}
+
+AnonConst
+AnonConst::operator= (const AnonConst &other)
+{
+  ExprWithBlock::operator= (other);
+
+  locus = other.locus;
+  expr = other.expr->clone_expr ();
+
+  return *this;
+}
+
+ConstBlock::ConstBlock (Analysis::NodeMapping mappings, AnonConst &&expr,
+			location_t locus, AST::AttrVec outer_attrs)
+  : ExprWithBlock (std::move (mappings), std::move (outer_attrs)),
+    expr (std::move (expr)), locus (locus)
+{}
+
+ConstBlock::ConstBlock (const ConstBlock &other)
+  : ExprWithBlock (other), expr (other.expr), locus (other.locus)
+{}
+
+ConstBlock
+ConstBlock::operator= (const ConstBlock &other)
+{
+  ExprWithBlock::operator= (other);
+
+  expr = other.expr;
+  locus = other.locus;
+
+  return *this;
+}
+
 ContinueExpr::ContinueExpr (Analysis::NodeMapping mappings, location_t locus,
 			    tl::optional<Lifetime> label,
 			    AST::AttrVec outer_attribs)
@@ -1309,26 +1353,6 @@ OperatorExprMeta::OperatorExprMeta (HIR::ComparisonExpr &expr)
     lvalue_mappings (expr.get_expr ().get_mappings ()),
     locus (expr.get_locus ())
 {}
-
-AnonConst::AnonConst (NodeId id, std::unique_ptr<Expr> expr)
-  : id (id), expr (std::move (expr))
-{
-  rust_assert (this->expr != nullptr);
-}
-
-AnonConst::AnonConst (const AnonConst &other)
-{
-  id = other.id;
-  expr = other.expr->clone_expr ();
-}
-
-AnonConst
-AnonConst::operator= (const AnonConst &other)
-{
-  id = other.id;
-  expr = other.expr->clone_expr ();
-  return *this;
-}
 
 InlineAsmOperand::In::In (
   const tl::optional<struct AST::InlineAsmRegOrRegClass> &reg,

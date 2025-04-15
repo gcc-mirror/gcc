@@ -1048,6 +1048,33 @@ BlockExpr::as_string () const
 }
 
 std::string
+AnonConst::as_string () const
+{
+  std::string istr = indent_spaces (enter);
+  std::string str = istr + "AnonConst:\n" + istr;
+
+  str += get_inner_expr ().as_string ();
+
+  str += "\n" + indent_spaces (out);
+
+  return str;
+}
+
+std::string
+ConstBlock::as_string () const
+{
+  std::string istr = indent_spaces (enter);
+
+  std::string str = istr + "ConstBlock:\n" + istr;
+
+  str += get_const_expr ().as_string ();
+
+  str += "\n" + indent_spaces (out);
+
+  return str;
+}
+
+std::string
 TypeAlias::as_string () const
 {
   std::string str = VisItem::as_string ();
@@ -4055,6 +4082,18 @@ BlockExpr::accept_vis (HIRFullVisitor &vis)
 }
 
 void
+AnonConst::accept_vis (HIRFullVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+ConstBlock::accept_vis (HIRFullVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
 ContinueExpr::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
@@ -5022,6 +5061,18 @@ TypeAlias::accept_vis (HIRImplVisitor &vis)
 
 void
 BlockExpr::accept_vis (HIRExpressionVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+AnonConst::accept_vis (HIRExpressionVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+ConstBlock::accept_vis (HIRExpressionVisitor &vis)
 {
   vis.visit (*this);
 }

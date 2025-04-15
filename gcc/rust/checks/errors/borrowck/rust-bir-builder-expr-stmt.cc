@@ -415,6 +415,18 @@ ExprStmtBuilder::visit (HIR::BlockExpr &block)
 }
 
 void
+ExprStmtBuilder::visit (HIR::AnonConst &block)
+{
+  rust_unreachable ();
+}
+
+void
+ExprStmtBuilder::visit (HIR::ConstBlock &block)
+{
+  rust_unreachable ();
+}
+
+void
 ExprStmtBuilder::visit (HIR::ContinueExpr &cont)
 {
   LoopAndLabelCtx info = cont.has_label () ? get_label_ctx (cont.get_label ())

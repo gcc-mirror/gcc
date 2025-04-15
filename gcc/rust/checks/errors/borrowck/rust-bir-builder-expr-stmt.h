@@ -84,6 +84,8 @@ protected: // Expr
   void visit (HIR::MethodCallExpr &expr) override;
   void visit (HIR::FieldAccessExpr &expr) override;
   void visit (HIR::BlockExpr &block) override;
+  void visit (HIR::AnonConst &block) override;
+  void visit (HIR::ConstBlock &block) override;
   void visit (HIR::ContinueExpr &cont) override;
   void visit (HIR::BreakExpr &brk) override;
   void visit (HIR::RangeFromToExpr &range) override;

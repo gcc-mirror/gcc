@@ -83,6 +83,8 @@ public:
   void visit (HIR::MethodCallExpr &) override {}
   void visit (HIR::FieldAccessExpr &) override {}
   void visit (HIR::BlockExpr &) override {}
+  void visit (HIR::AnonConst &) override {}
+  void visit (HIR::ConstBlock &) override {}
   void visit (HIR::ContinueExpr &) override {}
   void visit (HIR::BreakExpr &) override {}
   void visit (HIR::RangeFromToExpr &) override {}
@@ -138,6 +140,12 @@ public:
     translated = CompileBlock::compile (expr, ctx, result);
   }
 
+  void visit (HIR::ConstBlock &expr) override
+  {
+    rust_unreachable ();
+    // translated = CompileExpr::compile (expr, ctx, result);
+  }
+
   // Empty visit for unused Expression HIR nodes.
   void visit (HIR::PathInExpression &) override {}
   void visit (HIR::QualifiedPathInExpression &) override {}
@@ -184,6 +192,7 @@ public:
   void visit (HIR::AsyncBlockExpr &) override {}
   void visit (HIR::InlineAsm &) override {}
   void visit (HIR::LlvmInlineAsm &) override {}
+  void visit (HIR::AnonConst &) override {}
 
 private:
   CompileExprWithBlock (Context *ctx, Bvariable *result)

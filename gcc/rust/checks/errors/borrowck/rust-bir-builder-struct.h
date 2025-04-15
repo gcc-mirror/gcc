@@ -133,6 +133,8 @@ protected:
   void visit (HIR::MethodCallExpr &expr) override { rust_unreachable (); }
   void visit (HIR::FieldAccessExpr &expr) override { rust_unreachable (); }
   void visit (HIR::BlockExpr &expr) override { rust_unreachable (); }
+  void visit (HIR::AnonConst &expr) override { rust_unreachable (); }
+  void visit (HIR::ConstBlock &expr) override { rust_unreachable (); }
   void visit (HIR::ClosureExpr &expr) override { rust_unreachable (); }
   void visit (HIR::ContinueExpr &expr) override { rust_unreachable (); }
   void visit (HIR::BreakExpr &expr) override { rust_unreachable (); }

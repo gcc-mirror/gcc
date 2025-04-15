@@ -519,6 +519,18 @@ PrivacyReporter::visit (HIR::BlockExpr &expr)
 }
 
 void
+PrivacyReporter::visit (HIR::AnonConst &expr)
+{
+  expr.get_inner_expr ().accept_vis (*this);
+}
+
+void
+PrivacyReporter::visit (HIR::ConstBlock &expr)
+{
+  expr.get_const_expr ().accept_vis (*this);
+}
+
+void
 PrivacyReporter::visit (HIR::ContinueExpr &)
 {}
 

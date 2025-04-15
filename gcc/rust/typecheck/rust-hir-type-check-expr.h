@@ -46,6 +46,8 @@ public:
   void visit (HIR::IfExpr &expr) override;
   void visit (HIR::IfExprConseqElse &expr) override;
   void visit (HIR::BlockExpr &expr) override;
+  void visit (HIR::AnonConst &expr) override;
+  void visit (HIR::ConstBlock &expr) override;
   void visit (HIR::UnsafeBlockExpr &expr) override;
   void visit (HIR::ArrayIndexExpr &expr) override;
   void visit (HIR::ArrayExpr &expr) override;

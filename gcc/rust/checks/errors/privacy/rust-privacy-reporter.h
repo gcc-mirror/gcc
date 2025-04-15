@@ -106,6 +106,8 @@ types
   virtual void visit (HIR::MethodCallExpr &expr);
   virtual void visit (HIR::FieldAccessExpr &expr);
   virtual void visit (HIR::BlockExpr &expr);
+  virtual void visit (HIR::AnonConst &expr);
+  virtual void visit (HIR::ConstBlock &expr);
   virtual void visit (HIR::ContinueExpr &expr);
   virtual void visit (HIR::BreakExpr &expr);
   virtual void visit (HIR::RangeFromToExpr &expr);

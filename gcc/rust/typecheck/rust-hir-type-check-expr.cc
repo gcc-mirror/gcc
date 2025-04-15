@@ -643,6 +643,18 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 }
 
 void
+TypeCheckExpr::visit (HIR::AnonConst &expr)
+{
+  infered = TypeCheckExpr::Resolve (expr.get_inner_expr ());
+}
+
+void
+TypeCheckExpr::visit (HIR::ConstBlock &expr)
+{
+  infered = TypeCheckExpr::Resolve (expr.get_const_expr ());
+}
+
+void
 TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
 {
   auto lang_item_type = LangItem::Kind::RANGE;
@@ -813,7 +825,7 @@ typecheck_inline_asm_operand (HIR::InlineAsm &expr)
 	  }
 	  case RegisterType::Const: {
 	    auto anon_const = operand.get_const ().anon_const;
-	    TypeCheckExpr::Resolve (*anon_const.expr);
+	    TypeCheckExpr::Resolve (anon_const.get_inner_expr ());
 	    break;
 	  }
 	  case RegisterType::Sym: {

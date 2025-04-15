@@ -104,6 +104,8 @@ public:
   void visit (HIR::MethodCallExpr &expr) override {}
   void visit (HIR::FieldAccessExpr &expr) override {}
   void visit (HIR::BlockExpr &expr) override {}
+  void visit (HIR::AnonConst &expr) override {}
+  void visit (HIR::ConstBlock &expr) override {}
   void visit (HIR::ContinueExpr &expr) override {}
   void visit (HIR::BreakExpr &expr) override {}
   void visit (HIR::RangeFromToExpr &expr) override {}

@@ -25,6 +25,7 @@
 #include "rust-ast-lower-type.h"
 #include "rust-ast.h"
 #include "rust-diagnostics.h"
+#include "rust-hir-map.h"
 #include "rust-system.h"
 #include "tree/rust-hir-expr.h"
 
@@ -124,6 +125,43 @@ void
 ASTLoweringExpr::visit (AST::BlockExpr &expr)
 {
   translated = ASTLoweringBlock::translate (expr, &terminated);
+}
+
+void
+ASTLoweringExpr::visit (AST::AnonConst &expr)
+{
+  auto inner_expr = ASTLoweringExpr::translate (expr.get_inner_expr ());
+
+  auto &mappings = Analysis::Mappings::get ();
+  auto crate_num = mappings.get_current_crate ();
+  auto mapping = Analysis::NodeMapping (crate_num, expr.get_node_id (),
+					mappings.get_next_hir_id (crate_num),
+					UNKNOWN_LOCAL_DEFID);
+
+  translated = new HIR::AnonConst (std::move (mapping),
+				   std::unique_ptr<Expr> (inner_expr),
+				   expr.get_locus ());
+}
+
+void
+ASTLoweringExpr::visit (AST::ConstBlock &expr)
+{
+  auto inner_expr = ASTLoweringExpr::translate (expr.get_const_expr ());
+
+  // we know this will always be an `AnonConst`, or we have an issue. Let's
+  // assert just to be sure.
+  rust_assert (inner_expr->get_expression_type () == Expr::ExprType::AnonConst);
+  auto anon_const = static_cast<AnonConst *> (inner_expr);
+
+  auto &mappings = Analysis::Mappings::get ();
+  auto crate_num = mappings.get_current_crate ();
+  auto mapping = Analysis::NodeMapping (crate_num, expr.get_node_id (),
+					mappings.get_next_hir_id (crate_num),
+					UNKNOWN_LOCAL_DEFID);
+
+  translated
+    = new HIR::ConstBlock (std::move (mapping), std::move (*anon_const),
+			   expr.get_locus (), expr.get_outer_attrs ());
 }
 
 void
@@ -841,6 +879,7 @@ translate_operand_out (const AST::InlineAsmOperand &operand)
 					     *out_value.expr.get ())));
   return out;
 }
+
 HIR::InlineAsmOperand
 translate_operand_inout (const AST::InlineAsmOperand &operand)
 {
@@ -851,6 +890,7 @@ translate_operand_inout (const AST::InlineAsmOperand &operand)
 						 *inout_value.expr.get ())));
   return inout;
 }
+
 HIR::InlineAsmOperand
 translate_operand_split_in_out (const AST::InlineAsmOperand &operand)
 {
@@ -863,19 +903,21 @@ translate_operand_split_in_out (const AST::InlineAsmOperand &operand)
       ASTLoweringExpr::translate (*split_in_out_value.out_expr.get ())));
   return split_in_out;
 }
+
 HIR::InlineAsmOperand
 translate_operand_const (const AST::InlineAsmOperand &operand)
 {
   auto const_value = operand.get_const ();
-  struct HIR::AnonConst anon_const (
-    const_value.anon_const.get_node_id (),
-    std::unique_ptr<Expr> (
-      ASTLoweringExpr::translate (const_value.anon_const.get_inner_expr ())));
-  struct HIR::InlineAsmOperand::Const cnst
-  {
-    anon_const
-  };
-  return cnst;
+
+  auto inner_expr = ASTLoweringExpr::translate (const_value.anon_const);
+
+  // Like `ConstBlock`, we know this should only be an `AnonConst` - let's
+  // assert to make sure and static cast
+  rust_assert (inner_expr->get_expression_type () == Expr::ExprType::AnonConst);
+
+  auto anon_const = static_cast<AnonConst *> (inner_expr);
+
+  return HIR::InlineAsmOperand::Const{*anon_const};
 }
 
 HIR::InlineAsmOperand

@@ -86,6 +86,8 @@ private:
   virtual void visit (MethodCallExpr &expr) override;
   virtual void visit (FieldAccessExpr &expr) override;
   virtual void visit (BlockExpr &expr) override;
+  virtual void visit (AnonConst &expr) override;
+  virtual void visit (ConstBlock &expr) override;
   virtual void visit (ClosureExpr &expr) override;
   virtual void visit (ContinueExpr &expr) override;
   virtual void visit (BreakExpr &expr) override;

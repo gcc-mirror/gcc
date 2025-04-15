@@ -64,6 +64,8 @@ public:
   virtual void visit (MethodCallExpr &expr) = 0;
   virtual void visit (FieldAccessExpr &expr) = 0;
   virtual void visit (BlockExpr &expr) = 0;
+  virtual void visit (AnonConst &expr) = 0;
+  virtual void visit (ConstBlock &expr) = 0;
   virtual void visit (ClosureExpr &expr) = 0;
   virtual void visit (ContinueExpr &expr) = 0;
   virtual void visit (BreakExpr &expr) = 0;
@@ -201,6 +203,8 @@ public:
   virtual void visit (FieldAccessExpr &) override {}
   virtual void visit (ClosureExpr &) override {}
   virtual void visit (BlockExpr &) override {}
+  virtual void visit (AnonConst &) override {}
+  virtual void visit (ConstBlock &) override {}
   virtual void visit (ContinueExpr &) override {}
   virtual void visit (BreakExpr &) override {}
   virtual void visit (RangeFromToExpr &) override {}
@@ -427,6 +431,8 @@ public:
   virtual void visit (MethodCallExpr &expr) = 0;
   virtual void visit (FieldAccessExpr &expr) = 0;
   virtual void visit (BlockExpr &expr) = 0;
+  virtual void visit (AnonConst &expr) = 0;
+  virtual void visit (ConstBlock &expr) = 0;
   virtual void visit (ContinueExpr &expr) = 0;
   virtual void visit (BreakExpr &expr) = 0;
   virtual void visit (RangeFromToExpr &expr) = 0;
