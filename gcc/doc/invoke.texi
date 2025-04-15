@@ -34872,7 +34872,7 @@ Intel Lakemont MCU, based on Intel Pentium CPU.
 Intel Pentium MMX CPU, based on Pentium core with MMX instruction set support.
 
 @item pentiumpro
-Intel Pentium Pro CPU@.
+Intel Pentium Pro CPU with no MMX support.
 
 @item i686
 When used with @option{-march}, the Pentium Pro
