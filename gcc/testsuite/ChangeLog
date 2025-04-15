@@ -1,3 +1,81 @@
+2025-04-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr113688.c: Delete.
+	* gcc.dg/pr114014.c: Likewise.
+	* gcc.dg/pr114713.c: Likewise.
+	* gcc.dg/pr117724.c: Likewise
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118476
+	* gcc.dg/torture/pr118476-1.c: New test.
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-08-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116412
+	* gcc.dg/torture/pr116412-1.c: New test.
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-10-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/111285
+	* g++.dg/torture/vect-absu-1.C: New test.
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-10-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116922
+	* gcc.dg/torture/pr116922.c: New test.
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-10-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/116927
+	* g++.dg/torture/pr116927-1.C: New test.
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-10-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116098
+	* c-c++-common/torture/pr116098-2.c: New test.
+	* g++.dg/torture/pr116098-1.C: New test.
+
+2025-04-14  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-04-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119656
+	* gfortran.dg/optional_absent_13.f90: New test.
+
+2025-04-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/119792
+	* gnat.dg/lto29.adb: New test.
+	* gnat.dg/lto29_pkg.ads: New helper.
+
+2025-04-14  Simon Martin  <simon@nasilyan.com>
+
+	Backported from master:
+	2025-03-25  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/114525
+	* g++.dg/expr/cond18.C: New test.
+
 2025-04-13  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

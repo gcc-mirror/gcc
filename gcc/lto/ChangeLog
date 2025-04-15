@@ -1,3 +1,10 @@
+2025-04-14  2024-12-12  Martin Uecker  <uecker@tugraz.at>
+
+	PR lto/119792
+	Revert
+	Backported from master:
+	* lto-common.cc (hash_canonical_type): Add exception.
+
 2025-04-02  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

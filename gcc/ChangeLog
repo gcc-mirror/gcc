@@ -1,3 +1,61 @@
+2025-04-14  2024-12-12  Martin Uecker  <uecker@tugraz.at>
+
+	PR lto/119792
+	PR c/113688
+	PR c/114014
+	PR c/114713
+	PR c/117724
+	Revert
+	Backported from master:
+	* tree.cc (gimple_canonical_types_compatible_p): Add exception.
+	(verify_type): Add exception.
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-08-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116412
+	* gimple-match-exports.cc (gimple_extract): Return false if op0
+	was not a SSA name nor a min invariant for REALPART_EXPR/IMAGPART_EXPR/VCE
+	and BIT_FIELD_REF.
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-10-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/111285
+	* tree-vect-generic.cc (do_unop): Use a signed type for the
+	operand if the operation was ABSU_EXPR.
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-10-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116922
+	* gimple-ssa-backprop.cc (remove_unused_var): Handle phi
+	nodes correctly.
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-10-03  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/116927
+	* config/aarch64/aarch64-early-ra.cc (early_ra::is_dead_insn): Insns
+	that throw are not dead with -fno-delete-dead-exceptions.
+
+2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-10-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116098
+	* tree-ssa-phiopt.cc (move_stmt): Rewrite VCEs from integer to integer
+	types to case.
+
 2025-04-13  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
