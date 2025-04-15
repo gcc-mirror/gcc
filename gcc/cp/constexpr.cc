@@ -2881,6 +2881,9 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
      we can only get a trivial function here with -fno-elide-constructors.  */
   gcc_checking_assert (!trivial_fn_p (fun)
 		       || !flag_elide_constructors
+		       /* Or it's a call from maybe_thunk_body (111075).  */
+		       || (TREE_CODE (t) == CALL_EXPR ? CALL_FROM_THUNK_P (t)
+			   : AGGR_INIT_FROM_THUNK_P (t))
 		       /* We don't elide constructors when processing
 			  a noexcept-expression.  */
 		       || cp_noexcept_operand);
