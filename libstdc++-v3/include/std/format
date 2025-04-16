@@ -5634,9 +5634,14 @@ namespace __format
 	typename basic_format_context<_Out, _CharT>::iterator
 	format(_Rg&& __rg, basic_format_context<_Out, _CharT>& __fc) const
 	{
-	  using __maybe_const_range
-	    = __format::__maybe_const_range<_Rg, _CharT>;
-	  return _M_format<__maybe_const_range>(__rg, __fc);
+	  using _Range = remove_reference_t<_Rg>;
+	  if constexpr (__format::__const_formattable_range<_Range, _CharT>)
+	  {
+	    using _CRef = ranges::range_reference_t<const _Range>;
+	    if constexpr (same_as<remove_cvref_t<_CRef>, _Tp>)
+	      return _M_format<const _Range>(__rg, __fc);
+	  }
+	  return _M_format(__rg, __fc);
 	}
 
     private:

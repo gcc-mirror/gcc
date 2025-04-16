@@ -1,5 +1,6 @@
 // { dg-do run { target c++23 } }
 
+#include <flat_map>
 #include <format>
 #include <testsuite_hooks.h>
 #include <vector>
@@ -138,6 +139,26 @@ test_nested()
   VERIFY( res == "+<01; 02; 11; 12>+" );
 }
 
+struct MyFlatMap : std::flat_map<int, int>
+{
+  using std::flat_map<int, int>::flat_map;
+};
+
+template<typename CharT>
+struct std::formatter<MyFlatMap, CharT>
+  // This cannot apply format BitVector const&, because formatted type would
+  // be std::pair<int const&, int const&>, and formatter for
+  // pair<int const&, int> cannot format it.
+  : std::range_formatter<MyFlatMap::reference>
+{};
+
+void test_const_ref_type_mismatch()
+{
+  MyFlatMap m{{1, 11}, {2, 22}};
+  std::string res = std::format("{:m}", m);
+  VERIFY( res == "{1: 11, 2: 22}" );
+}
+
 template<typename T, typename CharT>
 using VectorFormatter = std::formatter<std::vector<T>, CharT>;
 
@@ -146,4 +167,5 @@ int main()
   test_outputs<std::range_formatter>();
   test_outputs<VectorFormatter>();
   test_nested();
+  test_const_ref_type_mismatch();
 }
