@@ -23,6 +23,7 @@ This chapter covers several topics:
 * `Performing Dimensionality Analysis in GNAT`_
 * `Stack Related Facilities`_
 * `Memory Management Issues`_
+* `Sanitizers for Ada`_
 
 .. _Running_and_Debugging_Ada_Programs:
 
@@ -4133,3 +4134,271 @@ execution of this erroneous program:
 
   The allocation root #1 of the first example has been split in 2 roots #1
   and #3, thanks to the more precise associated backtrace.
+
+.. _Sanitizers_for_Ada:
+
+Sanitizers for Ada
+==================
+
+.. index:: Sanitizers
+
+This section explains how to use sanitizers with Ada code. Sanitizers offer code
+instrumentation and run-time libraries that detect certain memory issues and
+undefined behaviors during execution. They provide dynamic analysis capabilities
+useful for debugging and testing.
+
+While many sanitizer capabilities overlap with Ada's built-in runtime checks,
+they are particularly valuable for identifying issues that arise from unchecked
+features or low-level operations.
+
+.. _AddressSanitizer:
+
+AddressSanitizer
+----------------
+
+.. index:: AddressSanitizer
+.. index:: ASan
+.. index:: -fsanitize=address
+
+AddressSanitizer (aka ASan) is a memory error detector activated with the
+:switch:`-fsanitize=address` switch. Note that many of the typical memory errors,
+such as use after free or buffer overflow, are detected by Ada’s ``Access_Check``
+and ``Index_Check``.
+
+It can detect the following types of problems:
+
+* Wrong memory overlay
+
+  A memory overlay is a situation in which an object of one type is placed at the
+  same memory location as a distinct object of a different type, thus overlaying
+  one object over the other in memory. When there is an overflow because the
+  objects do not overlap (like in the following example), the sanitizer can signal
+  it.
+
+    .. code-block:: ada
+
+       procedure Wrong_Size_Overlay is
+          type Block is array (Natural range <>) of Integer;
+
+          Block4 : aliased Block := (1 .. 4 => 4);
+          Block5 : Block (1 .. 5) with Address => Block4'Address;
+       begin
+          Block5 (Block5'Last) := 5;  --  Outside the object
+       end Wrong_Size_Overlay;
+
+  If the code is built with the :switch:`-fsanitize=address` and :switch:`-g`` options,
+  the following error is shown at execution time:
+
+    ::
+
+        ...
+        SUMMARY: AddressSanitizer: stack-buffer-overflow wrong_size_overlay.adb:7 in _ada_wrong_size_overlay
+        ...
+
+* Buffer overflow
+
+  Ada’s ``Index_Check`` detects buffer overflows caused by out-of-bounds array
+  access. If run-time checks are disabled, the sanitizer can still detect such
+  overflows at execution time the same way as it signalled the previous wrong
+  memory overlay.
+
+    .. code-block:: ada
+
+       procedure Buffer_Overrun is
+          Size : constant := 100;
+          Buffer : array (1 .. Size) of Integer := (others => 0);
+          Wrong_Index : Integer := Size + 1 with Export;
+       begin
+          -- Access outside the boundaries
+          Put_Line ("Value: " & Integer'Image (Buffer (Wrong_Index)));
+       end Buffer_Overrun;
+
+* Use after lifetime
+
+  Ada’s ``Accessibility_Check`` helps prevent use-after-return and
+  use-after-scope errors by enforcing lifetime rules. When these checks are
+  bypassed using ``Unchecked_Access``, sanitizers can still detect such
+  violations during execution.
+
+    .. code-block:: ada
+
+       with Ada.Text_IO; use Ada.Text_IO;
+
+       procedure Use_After_Return is
+          type Integer_Access is access all Integer;
+          Ptr : Integer_Access;
+
+          procedure Inner;
+
+          procedure Inner is
+             Local : aliased Integer := 42;
+          begin
+             Ptr := Local'Unchecked_Access;
+          end Inner;
+
+       begin
+          Inner;
+          --  Accessing Local after it has gone out of scope
+          Put_Line ("Value: " & Integer'Image (Ptr.all));
+       end Use_After_Return;
+
+  If the code is built with the :switch:`-fsanitize=address` and :switch:`-g`
+  options, the following error is shown at execution time:
+
+    ::
+
+        ...
+        ==1793927==ERROR: AddressSanitizer: stack-use-after-return on address 0xf6fa1a409060 at pc 0xb20b6cb6cac0 bp 0xffffcc89c8b0 sp 0xffffcc89c8c8
+        READ of size 4 at 0xf6fa1a409060 thread T0
+            #0 0xb20b6cb6cabc in _ada_use_after_return use_after_return.adb:18
+            ...
+
+        Address 0xf6fa1a409060 is located in stack of thread T0 at offset 32 in frame
+            #0 0xb20b6cb6c794 in use_after_return__inner use_after_return.adb:9
+
+          This frame has 1 object(s):
+            [32, 36) 'local' (line 10) <== Memory access at offset 32 is inside this variable
+        SUMMARY: AddressSanitizer: stack-use-after-return use_after_return.adb:18 in _ada_use_after_return
+        ...
+
+* Memory leak
+
+  A memory leak happens when a program allocates memory from the heap but fails
+  to release it after it is no longer needed and loses all references to it like
+  in the following example.
+
+    .. code-block:: ada
+
+       procedure Memory_Leak is
+          type Integer_Access is access Integer;
+
+          procedure Allocate is
+             Ptr : Integer_Access := new Integer'(42);
+          begin
+             null;
+          end Allocate;
+       begin
+          --  Memory leak occurs in the following procedure
+         Allocate;
+       end Memory_Leak;
+
+  If the code is built with the :switch:`-fsanitize=address` and :switch:`-g`
+  options, the following error is emitted at execution time showing the
+  location of the offending allocation.
+
+    ::
+
+        ==1810634==ERROR: LeakSanitizer: detected memory leaks
+
+        Direct leak of 4 byte(s) in 1 object(s) allocated from:
+            #0 0xe3cbee4bb4a8 in __interceptor_malloc asan_malloc_linux.cpp:69
+            #1 0xc15bb25d0af8 in __gnat_malloc (memory_leak+0x10af8) (BuildId: f5914a6eac10824f81d512de50b514e7d5f733be)
+            #2 0xc15bb25c9060 in memory_leak__allocate memory_leak.adb:5
+            ...
+
+        SUMMARY: AddressSanitizer: 4 byte(s) leaked in 1 allocation(s).
+
+.. _UndefinedBehaviorSanitizer:
+
+UndefinedBehaviorSanitizer
+--------------------------
+
+.. index:: UndefinedBehaviorSanitizer
+.. index:: UBSan
+.. index:: -fsanitize=undefined
+
+UndefinedBehaviorSanitizer (aka UBSan) modifies the program at compile-time to
+catch various kinds of undefined behavior during program execution.
+
+Different sanitize options (:switch:`-fsanitize=alignment,float-cast-overflow,signed-integer-overflow``)
+detect the following types of problems:
+
+* Wrong alignment
+
+  The :switch:`-fsanitize=alignment` flag (included also in
+  :switch:`-fsanitize=undefined`) enables run-time checks for misaligned memory
+  accesses, ensuring that objects are accessed at addresses that conform to the
+  alignment constraints of their declared types. Violations may lead to crashes
+  or performance penalties on certain architectures.
+
+  In the following example:
+
+    .. code-block:: ada
+
+       with Ada.Text_IO; use Ada.Text_IO;
+       with System.Storage_Elements; use System.Storage_Elements;
+
+       procedure Misaligned_Address is
+          type Aligned_Integer is new Integer with
+            Alignment => 4;  -- Ensure 4-byte alignment
+
+          Reference : Aligned_Integer := 42;  -- Properly aligned object
+
+          -- Create a misaligned object by modifying the address manually
+          Misaligned : Aligned_Integer with Address => Reference'Address + 1;
+
+       begin
+          -- This causes undefined behavior or an alignment exception on strict architectures
+          Put_Line ("Misaligned Value: " & Aligned_Integer'Image (Misaligned));
+       end Misaligned_Address;
+
+  If the code is built with the :switch:`-fsanitize=alignment` and :switch:`-g`
+  options, the following error is shown at execution time.
+
+    ::
+
+        misaligned_address.adb:15:51: runtime error: load of misaligned address 0xffffd836dd45 for type 'volatile misaligned_address__aligned_integer', which requires 4 byte alignment
+
+* Signed integer overflow
+
+  Ada performs range checks at runtime in arithmetic operation on signed integers
+  to ensure the value is within the target type's bounds. If this check is removed,
+  the :switch:`-fsanitize=signed-integer-overflow` flag (included also in
+  :switch:`-fsanitize=undefined`) enables run-time checks for signed integer
+  overflows.
+
+  In the following example:
+
+    .. code-block:: ada
+
+       procedure Signed_Integer_Overflow is
+          type Small_Int is range -128 .. 127;
+          X, Y, Z : Small_Int with Export;
+       begin
+          X := 100;
+          Y := 50;
+          -- This addition will exceed 127, causing an overflow
+          Z := X + Y;
+       end Signed_Integer_Overflow;
+
+  If the code is built with the :switch:`-fsanitize=signed-integer-overflow` and
+  :switch:`-g` options, the following error is shown at execution time.
+
+    ::
+
+        signed_integer_overflow.adb:8:11: runtime error: signed integer overflow: 100 + 50 cannot be represented in type 'signed_integer_overflow__small_int'
+
+* Float to integer overflow
+
+  When converting a floating-point value to an integer type, Ada performs a range
+  check at runtime to ensure the value is within the target type's bounds. If this
+  check is removed, the sanitizer can detect overflows in conversions from
+  floating point to integer types.
+
+  In the following code:
+
+      .. code-block:: ada
+
+         procedure Float_Cast_Overflow is
+            Flt : Float := Float'Last with Export;
+            Int : Integer;
+         begin
+            Int := Integer (Flt); --  Overflow
+         end Float_Cast_Overflow;
+
+   If the code is built with the :switch:`-fsanitize=float-cast-overflow` and
+   :switch:`-g` options, the following error is shown at execution time.
+
+    ::
+
+        float_cast_overflow.adb:5:20: runtime error: 3.40282e+38 is outside the range of representable values of type 'integer'
