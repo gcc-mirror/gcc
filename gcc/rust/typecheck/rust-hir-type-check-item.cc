@@ -649,6 +649,38 @@ TypeCheckItem::visit (HIR::Function &function)
   context->switch_to_fn_body ();
   auto block_expr_ty = TypeCheckExpr::Resolve (function.get_definition ());
 
+  // emit check for
+  // error[E0121]: the type placeholder `_` is not allowed within types on item
+  const auto placeholder = ret_type->contains_infer ();
+  if (placeholder != nullptr && function.has_return_type ())
+    {
+      // FIXME
+      // this will be a great place for the Default Hir Visitor we want to
+      // grab the locations of the placeholders (HIR::InferredType) their
+      // location, for now maybe we can use their hirid to lookup the location
+      location_t placeholder_locus
+	= mappings.lookup_location (placeholder->get_ref ());
+      location_t type_locus = function.get_return_type ().get_locus ();
+      rich_location r (line_table, placeholder_locus);
+
+      bool have_expected_type
+	= block_expr_ty != nullptr && !block_expr_ty->is<TyTy::ErrorType> ();
+      if (!have_expected_type)
+	{
+	  r.add_range (type_locus);
+	}
+      else
+	{
+	  std::string fixit
+	    = "replace with the correct type " + block_expr_ty->get_name ();
+	  r.add_fixit_replace (type_locus, fixit.c_str ());
+	}
+
+      rust_error_at (r, ErrorCode::E0121,
+		     "the type placeholder %<_%> is not allowed within types "
+		     "on item signatures");
+    }
+
   location_t fn_return_locus = function.has_function_return_type ()
 				 ? function.get_return_type ().get_locus ()
 				 : function.get_locus ();

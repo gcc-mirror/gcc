@@ -137,6 +137,9 @@ public:
   void inherit_bounds (
     const std::vector<TyTy::TypeBoundPredicate> &specified_bounds);
 
+  // contains_infer checks if there is an inference variable inside the type
+  const TyTy::BaseType *contains_infer () const;
+
   // is_unit returns whether this is just a unit-struct
   bool is_unit () const;
 
