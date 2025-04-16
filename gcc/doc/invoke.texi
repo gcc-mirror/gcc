@@ -2199,6 +2199,7 @@ those that have already been displayed.  If @option{--help} is also
 specified anywhere on the command line then this takes precedence
 over any @option{--help=} option.
 
+@opindex Q
 If the @option{-Q} option appears on the command line before the
 @option{--help=} option, then the descriptive text displayed by
 @option{--help=} is changed.  Instead of describing the displayed
@@ -21311,8 +21312,13 @@ Toggle @option{-fvar-tracking-assignments}, in the same way that
 
 @opindex Q
 @item -Q
-Makes the compiler print out each function name as it is compiled, and
-print some statistics about each pass when it finishes.
+When used on the command line prior to @option{--help=}, @option{-Q}
+acts as a modifier to the help output.  @xref{Overall Options},
+for details about @option{--help=}.
+
+Otherwise, this option makes the compiler print out each function name
+as it is compiled, and print some statistics about each pass when it
+finishes.
 
 @opindex ftime-report
 @item -ftime-report
