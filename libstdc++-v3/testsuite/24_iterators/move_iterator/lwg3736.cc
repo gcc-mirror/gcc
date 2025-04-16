@@ -1,3 +1,4 @@
+// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
 
 // 3736.  move_iterator missing disable_sized_sentinel_for specialization

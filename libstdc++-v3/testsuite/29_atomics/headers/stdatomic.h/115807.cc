@@ -1,3 +1,4 @@
+// { dg-options "-std=gnu++23" }
 // { dg-do compile { target c++23 } }
 #include <stdatomic.h>
 namespace other {

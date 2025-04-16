@@ -1,3 +1,4 @@
+// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
 
 // LWG 3589. The const lvalue reference overload of get for subrange does not

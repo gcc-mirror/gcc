@@ -1,4 +1,4 @@
-// { dg-options "-D_GLIBCXX_DEBUG" }
+// { dg-options "-D_GLIBCXX_DEBUG -std=gnu++20" }
 // { dg-do compile { target c++20 } }
 
 // Bug 117966
