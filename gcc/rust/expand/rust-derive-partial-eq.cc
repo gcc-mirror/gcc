@@ -199,8 +199,6 @@ DerivePartialEq::match_enum_tuple (PathInExpression variant_path,
       auto self_pattern_str = "__self_" + std::to_string (i);
       auto other_pattern_str = "__other_" + std::to_string (i);
 
-      rust_debug ("]ARTHUR[ %s", self_pattern_str.c_str ());
-
       self_patterns.emplace_back (
 	builder.identifier_pattern (self_pattern_str));
       other_patterns.emplace_back (
@@ -240,15 +238,55 @@ MatchCase
 DerivePartialEq::match_enum_struct (PathInExpression variant_path,
 				    const EnumItemStruct &variant)
 {
-  // NOTE: We currently do not support compiling struct patterns where an
-  // identifier is assigned a new pattern, e.g. Bloop { f0: x }
-  // This is what we should be using to compile PartialEq for enum struct
-  // variants, as we need to be comparing the field of each instance meaning we
-  // need to give two different names to two different instances of the same
-  // field. We cannot just use the field's name like we do when deriving
-  // `Clone`.
+  auto self_fields = std::vector<std::unique_ptr<StructPatternField>> ();
+  auto other_fields = std::vector<std::unique_ptr<StructPatternField>> ();
 
-  rust_unreachable ();
+  auto self_other_exprs = std::vector<SelfOther> ();
+
+  for (auto &field : variant.get_struct_fields ())
+    {
+      // The patterns we're creating for each field are `self_<field>` and
+      // `other_<field>` where `field` is the name of the field. It doesn't
+      // actually matter what we use, as long as it's ordered, unique, and that
+      // we can reuse it in the match case's return expression to check that
+      // they are equal.
+
+      auto field_name = field.get_field_name ().as_string ();
+
+      auto self_pattern_str = "__self_" + field_name;
+      auto other_pattern_str = "__other_" + field_name;
+
+      self_fields.emplace_back (builder.struct_pattern_ident_pattern (
+	field_name, builder.identifier_pattern (self_pattern_str)));
+      other_fields.emplace_back (builder.struct_pattern_ident_pattern (
+	field_name, builder.identifier_pattern (other_pattern_str)));
+
+      self_other_exprs.emplace_back (SelfOther{
+	builder.identifier (self_pattern_str),
+	builder.identifier (other_pattern_str),
+      });
+    }
+
+  auto self_elts = StructPatternElements (std::move (self_fields));
+  auto other_elts = StructPatternElements (std::move (other_fields));
+
+  auto self_pattern = std::unique_ptr<Pattern> (
+    new ReferencePattern (std::unique_ptr<Pattern> (new StructPattern (
+			    variant_path, loc, std::move (self_elts))),
+			  false, false, loc));
+  auto other_pattern = std::unique_ptr<Pattern> (
+    new ReferencePattern (std::unique_ptr<Pattern> (new StructPattern (
+			    variant_path, loc, std::move (other_elts))),
+			  false, false, loc));
+
+  auto tuple_items = std::make_unique<TuplePatternItemsMultiple> (
+    vec (std::move (self_pattern), std::move (other_pattern)));
+
+  auto pattern = std::make_unique<TuplePattern> (std::move (tuple_items), loc);
+
+  auto expr = build_eq_expression (std::move (self_other_exprs));
+
+  return builder.match_case (std::move (pattern), std::move (expr));
 }
 
 void
@@ -275,9 +313,9 @@ DerivePartialEq::visit_enum (Enum &item)
 			      static_cast<EnumItemTuple &> (*variant)));
 	  break;
 	case EnumItem::Kind::Struct:
-	  rust_sorry_at (
-	    item.get_locus (),
-	    "cannot derive(PartialEq) for enum struct variants yet");
+	  cases.emplace_back (
+	    match_enum_struct (variant_path,
+			       static_cast<EnumItemStruct &> (*variant)));
 	  break;
 	}
     }
