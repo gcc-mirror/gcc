@@ -307,7 +307,14 @@ is_valid_constexpr_fn (tree fun, bool complain)
     {
       ret = false;
       if (complain)
-	error ("%q#T has virtual base classes", DECL_CONTEXT (fun));
+	{
+	  if (DECL_CONSTRUCTOR_P (fun))
+	    error ("%<constexpr%> constructor in %q#T that has "
+		   "virtual base classes", DECL_CONTEXT (fun));
+	  else
+	    error ("%<constexpr%> destructor in %q#T that has "
+		   "virtual base classes", DECL_CONTEXT (fun));
+	}
     }
 
   return ret;
