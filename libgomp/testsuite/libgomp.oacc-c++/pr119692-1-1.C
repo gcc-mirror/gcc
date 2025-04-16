@@ -39,4 +39,4 @@ int main()
   }
 }
 
-/* { dg-final { scan-tree-dump-not {(?n)#pragma omp target oacc_serial map\(tofrom:_ZTI2C2 \[len: [0-9]+\]\) map\(tofrom:_ZTI2C1 \[len: [0-9]+\]\) map\(tofrom:_ZTV2C1 \[len: [0-9]+\]\)$} gimple { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-not {(?n)#pragma omp target oacc_serial map\(tofrom:_ZTI2C2 \[len: [0-9]+\] \[runtime_implicit\]\) map\(tofrom:_ZTI2C1 \[len: [0-9]+\] \[runtime_implicit\]\) map\(tofrom:_ZTV2C1 \[len: [0-9]+\] \[runtime_implicit\]\)$} gimple { xfail *-*-* } } } */
