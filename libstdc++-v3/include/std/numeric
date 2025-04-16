@@ -90,7 +90,7 @@
 #include <bits/version.h>
 
 #if __glibcxx_ranges_iota >= 202202L // C++ >= 23
-# include <bits/ranges_algobase.h> // for ranges::out_value_result, ranges::iota
+# include <bits/ranges_algobase.h> // for ranges::iota
 #endif
 
 #ifdef __glibcxx_saturation_arithmetic // C++ >= 26
