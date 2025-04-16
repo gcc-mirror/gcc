@@ -81,19 +81,22 @@ libat_lock_n (void *ptr, size_t n)
 {
   uintptr_t h = addr_hash (ptr);
   size_t i = 0;
+  size_t nlocks
+    = (n + ((uintptr_t)ptr % WATCH_SIZE) + WATCH_SIZE - 1) / WATCH_SIZE;
 
   /* Don't lock more than all the locks we have.  */
-  if (n > PAGE_SIZE)
-    n = PAGE_SIZE;
+  if (nlocks > NLOCKS)
+    nlocks = NLOCKS;
 
-  do
+  if (__builtin_expect (h + nlocks > NLOCKS, 0))
     {
-      pthread_mutex_lock (&locks[h].mutex);
-      if (++h == NLOCKS)
-	h = 0;
-      i += WATCH_SIZE;
+      size_t j = h + nlocks - NLOCKS;
+      for (; i < j; ++i)
+	pthread_mutex_lock (&locks[i].mutex);
     }
-  while (i < n);
+
+  for (; i < nlocks; ++i)
+    pthread_mutex_lock (&locks[h++].mutex);
 }
 
 void
@@ -101,16 +104,20 @@ libat_unlock_n (void *ptr, size_t n)
 {
   uintptr_t h = addr_hash (ptr);
   size_t i = 0;
+  size_t nlocks
+    = (n + ((uintptr_t)ptr % WATCH_SIZE) + WATCH_SIZE - 1) / WATCH_SIZE;
 
-  if (n > PAGE_SIZE)
-    n = PAGE_SIZE;
+  /* Don't lock more than all the locks we have.  */
+  if (nlocks > NLOCKS)
+    nlocks = NLOCKS;
 
-  do
+  if (__builtin_expect (h + nlocks > NLOCKS, 0))
     {
-      pthread_mutex_unlock (&locks[h].mutex);
-      if (++h == NLOCKS)
-	h = 0;
-      i += WATCH_SIZE;
+      size_t j = h + nlocks - NLOCKS;
+      for (; i < j; ++i)
+	pthread_mutex_unlock (&locks[i].mutex);
     }
-  while (i < n);
+
+  for (; i < nlocks; ++i)
+    pthread_mutex_unlock (&locks[h++].mutex);
 }
