@@ -22,6 +22,8 @@
 #include "rust-constexpr.h"
 #include "rust-compile-type.h"
 #include "print-tree.h"
+#include "rust-hir-pattern.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace Compile {
@@ -505,6 +507,57 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 }
 
 void
+CompilePatternBindings::handle_struct_pattern_ident (
+  HIR::StructPatternField &pat, TyTy::ADTType *adt, TyTy::VariantDef *variant,
+  int variant_index)
+{
+  HIR::StructPatternFieldIdent &ident
+    = static_cast<HIR::StructPatternFieldIdent &> (pat);
+
+  size_t offs = 0;
+  auto ok = variant->lookup_field (ident.get_identifier ().as_string (),
+				   nullptr, &offs);
+  rust_assert (ok);
+
+  tree binding = error_mark_node;
+  if (adt->is_enum ())
+    {
+      tree payload_accessor_union
+	= Backend::struct_field_expression (match_scrutinee_expr, 1,
+					    ident.get_locus ());
+
+      tree variant_accessor
+	= Backend::struct_field_expression (payload_accessor_union,
+					    variant_index, ident.get_locus ());
+
+      binding = Backend::struct_field_expression (variant_accessor, offs,
+						  ident.get_locus ());
+    }
+  else
+    {
+      tree variant_accessor = match_scrutinee_expr;
+      binding = Backend::struct_field_expression (variant_accessor, offs,
+						  ident.get_locus ());
+    }
+
+  ctx->insert_pattern_binding (ident.get_mappings ().get_hirid (), binding);
+}
+
+void
+CompilePatternBindings::handle_struct_pattern_ident_pat (
+  HIR::StructPatternField &pat)
+{
+  rust_unreachable ();
+}
+
+void
+CompilePatternBindings::handle_struct_pattern_tuple_pat (
+  HIR::StructPatternField &pat)
+{
+  rust_unreachable ();
+}
+
+void
 CompilePatternBindings::visit (HIR::StructPattern &pattern)
 {
   // lookup the type
@@ -539,54 +592,14 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
     {
       switch (field->get_item_type ())
 	{
-	  case HIR::StructPatternField::ItemType::TUPLE_PAT: {
-	    // TODO
-	    rust_unreachable ();
-	  }
+	case HIR::StructPatternField::ItemType::TUPLE_PAT:
+	  handle_struct_pattern_tuple_pat (*field);
 	  break;
-
-	  case HIR::StructPatternField::ItemType::IDENT_PAT: {
-	    // TODO
-	    rust_unreachable ();
-	  }
+	case HIR::StructPatternField::ItemType::IDENT_PAT:
+	  handle_struct_pattern_ident_pat (*field);
 	  break;
-
-	  case HIR::StructPatternField::ItemType::IDENT: {
-	    HIR::StructPatternFieldIdent &ident
-	      = static_cast<HIR::StructPatternFieldIdent &> (*field.get ());
-
-	    size_t offs = 0;
-	    ok = variant->lookup_field (ident.get_identifier ().as_string (),
-					nullptr, &offs);
-	    rust_assert (ok);
-
-	    tree binding = error_mark_node;
-	    if (adt->is_enum ())
-	      {
-		tree payload_accessor_union
-		  = Backend::struct_field_expression (match_scrutinee_expr, 1,
-						      ident.get_locus ());
-
-		tree variant_accessor
-		  = Backend::struct_field_expression (payload_accessor_union,
-						      variant_index,
-						      ident.get_locus ());
-
-		binding
-		  = Backend::struct_field_expression (variant_accessor, offs,
-						      ident.get_locus ());
-	      }
-	    else
-	      {
-		tree variant_accessor = match_scrutinee_expr;
-		binding
-		  = Backend::struct_field_expression (variant_accessor, offs,
-						      ident.get_locus ());
-	      }
-
-	    ctx->insert_pattern_binding (ident.get_mappings ().get_hirid (),
-					 binding);
-	  }
+	case HIR::StructPatternField::ItemType::IDENT:
+	  handle_struct_pattern_ident (*field, adt, variant, variant_index);
 	  break;
 	}
     }
