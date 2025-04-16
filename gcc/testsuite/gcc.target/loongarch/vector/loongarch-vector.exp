@@ -35,7 +35,7 @@ dg-init
 
 # If the target hardware supports LSX, the default action is "run", otherwise
 # just "compile".
-global dg-do-what-default
+set saved-dg-do-what-default ${dg-do-what-default}
 if {[check_effective_target_loongarch_sx_hw]} then {
   set dg-do-what-default run
 } else {
@@ -45,6 +45,7 @@ if {[check_effective_target_loongarch_sx_hw]} then {
 #Main loop.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/lsx/*.\[cS\]]] \
 	" -mlsx" $DEFAULT_CFLAGS
+set dg-do-what-default ${saved-dg-do-what-default}
 
 dg-finish
 
@@ -52,7 +53,7 @@ dg-init
 # If the target hardware supports LASX, the default action is "run", otherwise
 # just "compile".
 
-global dg-do-what-default
+set saved-dg-do-what-default ${dg-do-what-default}
 if {[check_effective_target_loongarch_asx_hw]} then {
   set dg-do-what-default run
 } else {
@@ -61,5 +62,6 @@ if {[check_effective_target_loongarch_asx_hw]} then {
 
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/lasx/*.\[cS\]]] \
 	" -mlasx" $DEFAULT_CFLAGS
+set dg-do-what-default ${saved-dg-do-what-default}
 # All done.
 dg-finish
