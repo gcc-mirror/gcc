@@ -1225,6 +1225,18 @@ expand_const_vec_duplicate (rtx target, rtx src, rtx elt)
 }
 
 static void
+expand_const_vec_series (rtx target, rtx base, rtx step)
+{
+  machine_mode mode = GET_MODE (target);
+  rtx result = register_operand (target, mode) ? target : gen_reg_rtx (mode);
+
+  expand_vec_series (result, base, step);
+
+  if (result != target)
+    emit_move_insn (target, result);
+}
+
+static void
 expand_const_vector (rtx target, rtx src)
 {
   machine_mode mode = GET_MODE (target);
@@ -1237,13 +1249,7 @@ expand_const_vector (rtx target, rtx src)
   /* Support scalable const series vector.  */
   rtx base, step;
   if (const_vec_series_p (src, &base, &step))
-    {
-      expand_vec_series (result, base, step);
-
-      if (result != target)
-	emit_move_insn (target, result);
-      return;
-    }
+    return expand_const_vec_series (target, base, step);
 
   /* Handle variable-length vector.  */
   unsigned int nelts_per_pattern = CONST_VECTOR_NELTS_PER_PATTERN (src);
