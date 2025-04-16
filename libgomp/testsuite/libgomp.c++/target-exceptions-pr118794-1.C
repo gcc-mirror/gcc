@@ -9,10 +9,6 @@
 /* See also '../../../gcc/testsuite/g++.target/gcn/exceptions-pr118794-1.C',
    '../../../gcc/testsuite/g++.target/nvptx/exceptions-pr118794-1.C'.  */
 
-/* Help nvptx offloading overcome a code generation issue;
-   PR106445, PR118518.  */
-#define ALWAYS_INLINE __attribute__((always_inline))
-
 #pragma omp begin declare target
 
 bool ok = false;
@@ -20,12 +16,10 @@ bool ok = false;
 template <typename T>
 struct C
 {
-  ALWAYS_INLINE
   C()
   {
     ok = true;
   }
-  ALWAYS_INLINE
   C(int) {};
   ~C() {};
 

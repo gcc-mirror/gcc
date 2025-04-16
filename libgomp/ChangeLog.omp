@@ -3,6 +3,12 @@
 	Backported from trunk:
 	2025-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1.C: Remove
+	'ALWAYS_INLINE' workaround.
+
+	Backported from trunk:
+	2025-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	PR target/106445
 	* testsuite/libgomp.c++/pr106445-1.C: New.
 	* testsuite/libgomp.c++/pr106445-1-O0.C: Likewise.
