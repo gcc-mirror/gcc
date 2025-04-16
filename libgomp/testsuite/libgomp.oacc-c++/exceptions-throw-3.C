@@ -37,7 +37,7 @@ int main()
   }
 }
 
-/* { dg-final { scan-tree-dump-not {(?n)#pragma omp target oacc_serial map\(tofrom:_ZTI11MyException \[len: [0-9]+\]\)$} gimple { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-not {(?n)#pragma omp target oacc_serial map\(tofrom:_ZTI11MyException \[len: [0-9]+\] \[runtime_implicit\]\)$} gimple { xfail *-*-* } } } */
 
 /* { dg-final { scan-tree-dump-times {gimple_call <__cxa_allocate_exception, } 1 optimized } }
    { dg-final { scan-tree-dump-times {gimple_call <__cxa_throw, } 1 optimized } } */

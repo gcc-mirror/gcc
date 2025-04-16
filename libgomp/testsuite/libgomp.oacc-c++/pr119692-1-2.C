@@ -9,4 +9,4 @@
 
 /* { dg-bogus {using 'vector_length \(32\)', ignoring 1} {} { target openacc_nvidia_accel_selected xfail *-*-* } 0 } */
 
-/* { dg-final { scan-tree-dump-not {(?n)#pragma omp target oacc_serial default\(none\) map\(tofrom:_ZTI2C2 \[len: [0-9]+\]\) map\(tofrom:_ZTI2C1 \[len: [0-9]+\]\) map\(tofrom:_ZTV2C1 \[len: [0-9]+\]\)$} gimple { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-not {(?n)#pragma omp target oacc_serial default\(none\) map\(tofrom:_ZTI2C2 \[len: [0-9]+\] \[runtime_implicit\]\) map\(tofrom:_ZTI2C1 \[len: [0-9]+\] \[runtime_implicit\]\) map\(tofrom:_ZTV2C1 \[len: [0-9]+\] \[runtime_implicit\]\)$} gimple { xfail *-*-* } } } */

@@ -1,5 +1,11 @@
 2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	* testsuite/libgomp.oacc-c++/exceptions-bad_cast-3.C: Adjust.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-3.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr119692-1-1.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr119692-1-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/pr119692-1-3.C: Likewise.
+
 	Backported from trunk:
 	2025-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
 
