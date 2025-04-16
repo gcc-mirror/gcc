@@ -1284,7 +1284,9 @@ Dump::visit (BlockExpr &e)
   do_expr (e);
   do_inner_attrs (e);
   put_field ("tail_reachable", std::to_string (e.is_tail_reachable ()));
-  put_field ("label", e.get_label ().as_string ());
+
+  if (e.has_label ())
+    put_field ("label", e.get_label ().as_string ());
 
   visit_collection ("statements", e.get_statements ());
 
