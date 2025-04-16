@@ -3149,6 +3149,7 @@ package body Sem_Ch5 is
    --  Start of processing for Analyze_Loop_Parameter_Specification
 
    begin
+      Mutate_Ekind (Id, E_Loop_Parameter);
       Enter_Name (Id);
 
       --  We always consider the loop variable to be referenced, since the loop
@@ -3254,7 +3255,6 @@ package body Sem_Ch5 is
                --  subsequent analysis of the condition in a quantified
                --  expression.
 
-               Mutate_Ekind (Id, E_Loop_Parameter);
                return;
             end;
 
@@ -3317,7 +3317,6 @@ package body Sem_Ch5 is
          Make_Index (DS, N);
       end if;
 
-      Mutate_Ekind (Id, E_Loop_Parameter);
       Set_Etype (Id, Etype (DS));
 
       Set_Is_Not_Self_Hidden (Id);
