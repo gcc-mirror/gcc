@@ -653,6 +653,10 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location, "Detected induction.\n");
       STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_induction_def;
+
+      /* Mark if we have a non-linear IV.  */
+      LOOP_VINFO_NON_LINEAR_IV (loop_vinfo)
+	= STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (stmt_vinfo) != vect_step_op_add;
     }
 
 
@@ -1046,12 +1050,14 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     suggested_unroll_factor (1),
     max_vectorization_factor (0),
     mask_skip_niters (NULL_TREE),
+    mask_skip_niters_pfa_offset (NULL_TREE),
     rgroup_compare_type (NULL_TREE),
     simd_if_cond (NULL_TREE),
     partial_vector_style (vect_partial_vectors_none),
     unaligned_dr (NULL),
     peeling_for_alignment (0),
     ptr_mask (0),
+    nonlinear_iv (false),
     ivexpr_map (NULL),
     scan_map (NULL),
     slp_unrolling_factor (1),
@@ -10678,6 +10684,54 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 				       LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo));
 	  peel_mul = gimple_build_vector_from_val (&init_stmts,
 						   step_vectype, peel_mul);
+
+	  /* If early break then we have to create a new PHI which we can use as
+	    an offset to adjust the induction reduction in early exits.
+
+	    This is because when peeling for alignment using masking, the first
+	    few elements of the vector can be inactive.  As such if we find the
+	    entry in the first iteration we have adjust the starting point of
+	    the scalar code.
+
+	    We do this by creating a new scalar PHI that keeps track of whether
+	    we are the first iteration of the loop (with the additional masking)
+	    or whether we have taken a loop iteration already.
+
+	    The generated sequence:
+
+	    pre-header:
+	      bb1:
+		i_1 = <number of leading inactive elements>
+
+	    header:
+	      bb2:
+		i_2 = PHI <i_1(bb1), 0(latch)>
+		…
+
+	    early-exit:
+	      bb3:
+		i_3 = iv_step * i_2 + PHI<vector-iv>
+
+	    The first part of the adjustment to create i_1 and i_2 are done here
+	    and the last part creating i_3 is done in
+	    vectorizable_live_operations when the induction extraction is
+	    materialized.  */
+	  if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
+	      && !LOOP_VINFO_MASK_NITERS_PFA_OFFSET (loop_vinfo))
+	    {
+	      auto skip_niters = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
+	      tree ty_skip_niters = TREE_TYPE (skip_niters);
+	      tree break_lhs_phi = vect_get_new_vect_var (ty_skip_niters,
+							  vect_scalar_var,
+							  "pfa_iv_offset");
+	      gphi *nphi = create_phi_node (break_lhs_phi, bb);
+	      add_phi_arg (nphi, skip_niters, pe, UNKNOWN_LOCATION);
+	      add_phi_arg (nphi, build_zero_cst (ty_skip_niters),
+			   loop_latch_edge (iv_loop), UNKNOWN_LOCATION);
+
+	      LOOP_VINFO_MASK_NITERS_PFA_OFFSET (loop_vinfo)
+		= PHI_RESULT (nphi);
+	    }
 	}
       tree step_mul = NULL_TREE;
       unsigned ivn;
@@ -11565,8 +11619,10 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 	      /* For early exit where the exit is not in the BB that leads
 		 to the latch then we're restarting the iteration in the
 		 scalar loop.  So get the first live value.  */
-	      if ((all_exits_as_early_p || !main_exit_edge)
-		  && STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def)
+	      bool early_break_first_element_p
+		= (all_exits_as_early_p || !main_exit_edge)
+		   && STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def;
+	      if (early_break_first_element_p)
 		{
 		  tmp_vec_lhs = vec_lhs0;
 		  tmp_bitstart = build_zero_cst (TREE_TYPE (bitstart));
@@ -11581,6 +11637,41 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 						 lhs_type, &exit_gsi);
 
 	      auto gsi = gsi_for_stmt (use_stmt);
+	      if (early_break_first_element_p
+		  && LOOP_VINFO_MASK_NITERS_PFA_OFFSET (loop_vinfo))
+		{
+		  tree step_expr
+		    = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info);
+		  tree break_lhs_phi
+		    = LOOP_VINFO_MASK_NITERS_PFA_OFFSET (loop_vinfo);
+		  tree ty_skip_niters = TREE_TYPE (break_lhs_phi);
+		  gimple_seq iv_stmts = NULL;
+
+		  /* Now create the PHI for the outside loop usage to
+		     retrieve the value for the offset counter.  */
+		  tree rphi_step
+		    = gimple_convert (&iv_stmts, ty_skip_niters, step_expr);
+		  tree tmp2
+		    = gimple_build (&iv_stmts, MULT_EXPR,
+				    ty_skip_niters, rphi_step,
+				    break_lhs_phi);
+
+		  if (POINTER_TYPE_P (TREE_TYPE (new_tree)))
+		    tmp2 = gimple_build (&iv_stmts, POINTER_PLUS_EXPR,
+					 TREE_TYPE (new_tree), new_tree, tmp2);
+		  else
+		    {
+		      tmp2 = gimple_convert (&iv_stmts, TREE_TYPE (new_tree),
+					     tmp2);
+		      tmp2 = gimple_build (&iv_stmts, PLUS_EXPR,
+					   TREE_TYPE (new_tree), new_tree,
+					   tmp2);
+		    }
+
+		  new_tree = tmp2;
+		  gsi_insert_seq_before (&exit_gsi, iv_stmts, GSI_SAME_STMT);
+		}
+
 	      tree lhs_phi = gimple_phi_result (use_stmt);
 	      remove_phi_node (&gsi, false);
 	      gimple *copy = gimple_build_assign (lhs_phi, new_tree);
