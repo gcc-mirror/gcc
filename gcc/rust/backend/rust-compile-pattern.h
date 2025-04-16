@@ -17,7 +17,9 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-base.h"
+#include "rust-hir-pattern.h"
 #include "rust-hir-visitor.h"
+#include "rust-tyty.h"
 
 namespace Rust {
 namespace Compile {
@@ -77,6 +79,13 @@ public:
     CompilePatternBindings compiler (ctx, match_scrutinee_expr);
     pattern.accept_vis (compiler);
   }
+
+  void handle_struct_pattern_ident (HIR::StructPatternField &pat,
+				    TyTy::ADTType *adt,
+				    TyTy::VariantDef *variant,
+				    int variant_index);
+  void handle_struct_pattern_ident_pat (HIR::StructPatternField &pat);
+  void handle_struct_pattern_tuple_pat (HIR::StructPatternField &pat);
 
   void visit (HIR::StructPattern &pattern) override;
   void visit (HIR::TupleStructPattern &pattern) override;
