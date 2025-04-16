@@ -1,3 +1,4 @@
+// { dg-options "-std=gnu++20" }
 // { dg-do run { target c++20 } }
 // { dg-require-namedlocale "fr_FR.ISO8859-1" }
 

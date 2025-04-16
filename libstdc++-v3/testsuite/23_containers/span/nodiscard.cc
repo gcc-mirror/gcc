@@ -1,3 +1,4 @@
+// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
 
 #include <span>
@@ -28,13 +29,6 @@ test_iterators(std::span<S> s)
   s.end(); // { dg-warning "ignoring return value" }
   s.rbegin(); // { dg-warning "ignoring return value" }
   s.rend(); // { dg-warning "ignoring return value" }
-
-#if __cplusplus > 202002L
-  s.cbegin(); // { dg-warning "ignoring return value" "" { target c++23 } }
-  s.cend(); // { dg-warning "ignoring return value" "" { target c++23 } }
-  s.crbegin(); // { dg-warning "ignoring return value" "" { target c++23 } }
-  s.crend(); // { dg-warning "ignoring return value" "" { target c++23 } }
-#endif
 }
 
 void

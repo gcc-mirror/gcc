@@ -1,3 +1,4 @@
+// { dg-options "-std=gnu++20" }
 // { dg-do compile { target c++20 } }
 
 // PR libstdc++/115522 std::to_array no longer works for struct which is
