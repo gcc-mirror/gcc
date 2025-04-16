@@ -756,8 +756,12 @@ force_subreg (machine_mode outermode, rtx op,
   if (x)
     return x;
 
+  auto *start = get_last_insn ();
   op = copy_to_mode_reg (innermode, op);
-  return simplify_gen_subreg (outermode, op, innermode, byte);
+  rtx res = simplify_gen_subreg (outermode, op, innermode, byte);
+  if (!res)
+    delete_insns_since (start);
+  return res;
 }
 
 /* If X is a memory ref, copy its contents to a new temp reg and return
