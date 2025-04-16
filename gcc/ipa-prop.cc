@@ -5439,6 +5439,49 @@ ipa_read_node_info (class lto_input_block *ib, struct cgraph_node *node,
     }
 }
 
+/* Stream out ipa_return_summary.  */
+static void
+ipa_write_return_summaries (output_block *ob)
+{
+  if (!ipa_return_value_sum)
+    {
+      streamer_write_uhwi (ob, 0);
+      return;
+    }
+
+  lto_symtab_encoder_t encoder = ob->decl_state->symtab_node_encoder;
+  unsigned int count = 0;
+  for (int i = 0; i < lto_symtab_encoder_size (encoder); i++)
+    {
+      symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
+      cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
+      ipa_return_value_summary *v;
+
+      if (cnode && cnode->definition && !cnode->alias
+	  && (v = ipa_return_value_sum->get (cnode))
+	  && v->vr)
+	count++;
+    }
+  streamer_write_uhwi (ob, count);
+
+  for (int i = 0; i < lto_symtab_encoder_size (encoder); i++)
+    {
+      symtab_node *snode = lto_symtab_encoder_deref (encoder, i);
+      cgraph_node *cnode = dyn_cast <cgraph_node *> (snode);
+      ipa_return_value_summary *v;
+
+      if (cnode && cnode->definition && !cnode->alias
+	  && (v = ipa_return_value_sum->get (cnode))
+	  && v->vr)
+	{
+	  streamer_write_uhwi
+	    (ob,
+	     lto_symtab_encoder_encode (encoder, cnode));
+	  v->vr->streamer_write (ob);
+	}
+    }
+}
+
 /* Write jump functions for nodes in SET.  */
 
 void
@@ -5475,9 +5518,56 @@ ipa_prop_write_jump_functions (void)
 	  && ipa_node_params_sum->get (node) != NULL)
         ipa_write_node_info (ob, node);
     }
-  streamer_write_char_stream (ob->main_stream, 0);
+  ipa_write_return_summaries (ob);
   produce_asm (ob);
   destroy_output_block (ob);
+}
+
+/* Record that return value range of N is VAL.  */
+
+static void
+ipa_record_return_value_range_1 (cgraph_node *n, value_range val)
+{
+  if (!ipa_return_value_sum)
+    {
+      if (!ipa_vr_hash_table)
+	ipa_vr_hash_table = hash_table<ipa_vr_ggc_hash_traits>::create_ggc (37);
+      ipa_return_value_sum = new (ggc_alloc_no_dtor <ipa_return_value_sum_t> ())
+	      ipa_return_value_sum_t (symtab, true);
+      ipa_return_value_sum->disable_insertion_hook ();
+    }
+  ipa_return_value_sum->get_create (n)->vr = ipa_get_value_range (val);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Recording return range of %s:", n->dump_name ());
+      val.dump (dump_file);
+      fprintf (dump_file, "\n");
+    }
+}
+
+/* Stream out ipa_return_summary.  */
+static void
+ipa_read_return_summaries (lto_input_block *ib,
+			   struct lto_file_decl_data *file_data,
+			   class data_in *data_in)
+{
+  unsigned int f_count = streamer_read_uhwi (ib);
+  for (unsigned int i = 0; i < f_count; i++)
+    {
+      unsigned int index = streamer_read_uhwi (ib);
+      lto_symtab_encoder_t encoder = file_data->symtab_node_encoder;
+      struct cgraph_node *node
+	      = dyn_cast <cgraph_node *>
+		  (lto_symtab_encoder_deref (encoder, index));
+      ipa_vr rvr;
+      rvr.streamer_read (ib, data_in);
+      if (node->prevailing_p ())
+	{
+	  value_range tmp;
+	  rvr.get_vrange (tmp);
+	  ipa_record_return_value_range_1 (node, tmp);
+	}
+    }
 }
 
 /* Read section in file FILE_DATA of length LEN with data DATA.  */
@@ -5516,6 +5606,7 @@ ipa_prop_read_section (struct lto_file_decl_data *file_data, const char *data,
       gcc_assert (node->definition);
       ipa_read_node_info (&ib_main, node, data_in);
     }
+  ipa_read_return_summaries (&ib_main, file_data, data_in);
   lto_free_section_data (file_data, LTO_section_jump_functions, NULL, data,
 			 len);
   lto_data_in_delete (data_in);
@@ -5635,6 +5726,7 @@ read_ipcp_transformation_info (lto_input_block *ib, cgraph_node *node,
     }
 }
 
+
 /* Write all aggregate replacement for nodes in set.  */
 
 void
@@ -5673,7 +5765,7 @@ ipcp_write_transformation_summaries (void)
 	  && lto_symtab_encoder_encode_body_p (encoder, cnode))
 	write_ipcp_transformation_info (ob, cnode, ts);
     }
-  streamer_write_char_stream (ob->main_stream, 0);
+  ipa_write_return_summaries (ob);
   produce_asm (ob);
   destroy_output_block (ob);
 }
@@ -5714,6 +5806,7 @@ read_replacements_section (struct lto_file_decl_data *file_data,
 								index));
       read_ipcp_transformation_info (&ib_main, node, data_in);
     }
+  ipa_read_return_summaries (&ib_main, file_data, data_in);
   lto_free_section_data (file_data, LTO_section_jump_functions, NULL, data,
 			 len);
   lto_data_in_delete (data_in);
@@ -6194,22 +6287,8 @@ ipcp_transform_function (struct cgraph_node *node)
 void
 ipa_record_return_value_range (value_range val)
 {
-  cgraph_node *n = cgraph_node::get (current_function_decl);
-  if (!ipa_return_value_sum)
-    {
-      if (!ipa_vr_hash_table)
-	ipa_vr_hash_table = hash_table<ipa_vr_ggc_hash_traits>::create_ggc (37);
-      ipa_return_value_sum = new (ggc_alloc_no_dtor <ipa_return_value_sum_t> ())
-	      ipa_return_value_sum_t (symtab, true);
-      ipa_return_value_sum->disable_insertion_hook ();
-    }
-  ipa_return_value_sum->get_create (n)->vr = ipa_get_value_range (val);
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "Recording return range ");
-      val.dump (dump_file);
-      fprintf (dump_file, "\n");
-    }
+  ipa_record_return_value_range_1
+	  (cgraph_node::get (current_function_decl), val);
 }
 
 /* Return true if value range of DECL is known and if so initialize RANGE.  */
