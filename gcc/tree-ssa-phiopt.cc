@@ -403,12 +403,15 @@ factor_out_conditional_operation (edge e0, edge e1, basic_block merge,
       if (dominated_by_p (CDI_DOMINATORS, gimple_bb (phi), gimple_bb (arg0_def_stmt)))
 	return false;
 
-      /* Only handle if arg1 is a INTEGER_CST and one that fits
-	 into the new type or if it is the same precision.  */
+      /* If arg1 is an INTEGER_CST, fold it to new type if it fits, or else
+	 if the bits will not be modified during the conversion, except for
+	 boolean types whose precision is not 1 (see int_fits_type_p).  */
       if (!INTEGRAL_TYPE_P (TREE_TYPE (new_arg0))
 	  || !(int_fits_type_p (arg1, TREE_TYPE (new_arg0))
 	       || (TYPE_PRECISION (TREE_TYPE (new_arg0))
-		   == TYPE_PRECISION (TREE_TYPE (arg1)))))
+		   == TYPE_PRECISION (TREE_TYPE (arg1))
+		   && (TREE_CODE (TREE_TYPE (new_arg0)) != BOOLEAN_TYPE
+		       || TYPE_PRECISION (TREE_TYPE (new_arg0)) == 1))))
 	return false;
 
       /* For the INTEGER_CST case, we are just moving the
