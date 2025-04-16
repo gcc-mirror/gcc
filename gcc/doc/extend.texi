@@ -12978,6 +12978,7 @@ C and/or C++ standards, while others remain specific to GNU C.
 * Binary constants::    Binary constants using the @samp{0b} prefix.
 * Dollar Signs::        Dollar sign is allowed in identifiers.
 * Character Escapes::   @samp{\e} stands for the character @key{ESC}.
+* Raw String Literals::	C++ raw string literals are supported in C.
 * Alternate Keywords::  @code{__const__}, @code{__asm__}, etc., for header files.
 * Function Names::      Printable strings which are the name of the current
                         function.
@@ -13998,6 +13999,25 @@ machines, typically because the target assembler does not allow them.
 
 You can use the sequence @samp{\e} in a string or character constant to
 stand for the ASCII character @key{ESC}.
+
+@node Raw String Literals
+@subsection Raw String Literals
+@cindex raw string literals
+@cindex string literals, raw
+
+The C++11 standard added syntax for raw string literals prefixed
+with @samp{R}.  This syntax allows you to use an arbitrary delimiter
+sequence instead of escaping special characters within the string.
+For example, these string constants are all equivalent:
+
+@smallexample
+const char *s1 = "\\";
+const char *s2 = R"(\)";
+const char *s3 = R"foo(\)foo";
+@end smallexample
+
+As an extension, GCC also accepts raw string literals in C with
+@option{-std=gnu99} or later.
 
 @node Alternate Keywords
 @subsection Alternate Keywords
