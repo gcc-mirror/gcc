@@ -259,34 +259,16 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
 	  }
 	  break;
 
-	  case HIR::StructPatternField::ItemType::IDENT_PAT: {
-	    HIR::StructPatternFieldIdentPat &ident
-	      = static_cast<HIR::StructPatternFieldIdentPat &> (*field.get ());
+	case HIR::StructPatternField::ItemType::IDENT_PAT:
+	  // we only support rebinding patterns at the moment, which always
+	  // match - so do nothing
 
-	    size_t offs = 0;
-	    ok = variant->lookup_field (ident.get_identifier ().as_string (),
-					nullptr, &offs);
-	    rust_assert (ok);
-
-	    // we may be offsetting by + 1 here since the first field in the
-	    // record is always the discriminator
-	    offs += adt->is_enum ();
-	    tree field_expr
-	      = Backend::struct_field_expression (match_scrutinee_expr, offs,
-						  ident.get_locus ());
-
-	    tree check_expr_sub
-	      = CompilePatternCheckExpr::Compile (ident.get_pattern (),
-						  field_expr, ctx);
-	    check_expr = Backend::arithmetic_or_logical_expression (
-	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
-	      check_expr_sub, ident.get_pattern ().get_locus ());
-	  }
+	  // this needs to change once we actually check that the field
+	  // matches a certain value, either a literal value or a const one
 	  break;
 
-	  case HIR::StructPatternField::ItemType::IDENT: {
-	    // ident pattern always matches - do nothing
-	  }
+	case HIR::StructPatternField::ItemType::IDENT:
+	  // ident pattern always matches - do nothing
 	  break;
 	}
     }
