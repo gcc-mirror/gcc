@@ -4200,7 +4200,8 @@ It can detect the following types of problems:
   Ada’s ``Index_Check`` detects buffer overflows caused by out-of-bounds array
   access. If run-time checks are disabled, the sanitizer can still detect such
   overflows at execution time the same way as it signalled the previous wrong
-  memory overlay.
+  memory overlay. Note that if both the Ada run-time checks and the sanitizer
+  are enabled, the Ada run-time exception takes precedence.
 
     .. code-block:: ada
 
