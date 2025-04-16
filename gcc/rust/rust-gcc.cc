@@ -1109,6 +1109,7 @@ arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op, tree left,
       rust_error_at (location, "division by zero");
     }
   else if (op == ArithmeticOrLogicalOperator::LEFT_SHIFT
+	   && TREE_CODE (right) == INTEGER_CST
 	   && (compare_tree_int (right, TYPE_PRECISION (TREE_TYPE (ret))) >= 0))
     {
       rust_error_at (location, "left shift count >= width of type");
