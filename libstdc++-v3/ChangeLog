@@ -1,3 +1,13 @@
+2025-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-04-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/21334
+	* doc/xml/manual/using.xml: Document that container data race
+	avoidance rules do not apply to COW std::string.
+	* doc/html/*: Regenerate.
+
 2025-04-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

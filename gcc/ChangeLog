@@ -1,3 +1,32 @@
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-03-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/113546
+	* tree-cfg.cc (first_non_label_stmt): Rename to ...
+	(first_non_label_nondebug_stmt): This and use gsi_start_nondebug_after_labels_bb.
+	(assign_discriminators): Update call to first_non_label_nondebug_stmt.
+
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-12-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117243
+	PR tree-optimization/116749
+	* tree-ssa-phiopt.cc (replace_phi_edge_with_variable): Reset loop
+	estimates if the cond_block was an exit to a loop.
+
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-03-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118922
+	* tree-ssa-phiopt.cc (value_replacement): Set empty_or_with_defined_p
+	to false when there is phi nodes for the middle bb.
+
 2025-04-14  2024-12-12  Martin Uecker  <uecker@tugraz.at>
 
 	PR lto/119792

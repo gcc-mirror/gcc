@@ -1,3 +1,37 @@
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-03-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/113546
+	* c-c++-common/torture/pr113546-1.c: New test.
+
+2025-04-15  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-04-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99214
+	* g++.dg/concepts/diagnostic20.C: New test.
+
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-12-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117243
+	PR tree-optimization/116749
+	* gcc.dg/torture/pr117243-1.c: New test.
+	* gcc.dg/torture/pr117243-2.c: New test.
+
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-03-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118922
+	* gcc.dg/torture/pr118922-1.c: New test.
+
 2025-04-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr113688.c: Delete.
