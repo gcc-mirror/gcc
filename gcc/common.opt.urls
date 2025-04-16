@@ -31,8 +31,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-Og)
 Oz
 UrlSuffix(gcc/Optimize-Options.html#index-Oz)
 
-Q
-UrlSuffix(gcc/Developer-Options.html#index-Q)
+; skipping UrlSuffix for 'Q' due to multiple URLs:
+;   duplicate: 'gcc/Developer-Options.html#index-Q-1'
+;   duplicate: 'gcc/Overall-Options.html#index-Q'
 
 Qn
 UrlSuffix(gcc/System-V-Options.html#index-Qn)
