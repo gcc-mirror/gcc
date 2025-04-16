@@ -254,6 +254,10 @@ public:
   std::unique_ptr<Expr> field_access (std::unique_ptr<Expr> &&instance,
 				      std::string field) const;
 
+  std::unique_ptr<StructPatternField>
+  struct_pattern_ident_pattern (std::string field_name,
+				std::unique_ptr<Pattern> &&pattern);
+
   /* Create a wildcard pattern (`_`) */
   std::unique_ptr<Pattern> wildcard () const;
   /* Create a reference pattern (`&pattern`) */

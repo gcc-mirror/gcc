@@ -442,6 +442,14 @@ Builder::field_access (std::unique_ptr<Expr> &&instance,
     new FieldAccessExpr (std::move (instance), field, {}, loc));
 }
 
+std::unique_ptr<StructPatternField>
+Builder::struct_pattern_ident_pattern (std::string field_name,
+				       std::unique_ptr<Pattern> &&pattern)
+{
+  return std::make_unique<StructPatternFieldIdentPat> (
+    field_name, std::move (pattern), std::vector<Attribute> (), loc);
+}
+
 std::unique_ptr<Pattern>
 Builder::wildcard () const
 {
