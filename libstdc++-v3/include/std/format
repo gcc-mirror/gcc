@@ -5160,7 +5160,10 @@ namespace __format
 
   /// @cond undocumented
   template<typename _Rg>
-    constexpr auto format_kind = not defined(format_kind<_Rg>);
+    constexpr auto format_kind =
+    __primary_template_not_defined(
+      format_kind<_Rg> // you can specialize this for non-const input ranges
+    );
 
   template<typename _Tp>
     consteval range_format
