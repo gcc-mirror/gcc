@@ -6639,10 +6639,28 @@ gimple_lower_bitint (void)
 	  bitmap_set_bit (large_huge.m_names, SSA_NAME_VERSION (s));
 	  if (has_single_use (s))
 	    {
-	      if (!large_huge.m_single_use_names)
-		large_huge.m_single_use_names = BITMAP_ALLOC (NULL);
-	      bitmap_set_bit (large_huge.m_single_use_names,
-			      SSA_NAME_VERSION (s));
+	      tree s2 = s;
+	      /* The coalescing hook special cases SSA_NAME copies.
+		 Make sure not to mark in m_single_use_names single
+		 use SSA_NAMEs copied from non-single use SSA_NAMEs.  */
+	      while (gimple_assign_copy_p (SSA_NAME_DEF_STMT (s2)))
+		{
+		  s2 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (s2));
+		  if (TREE_CODE (s2) != SSA_NAME)
+		    break;
+		  if (!has_single_use (s2))
+		    {
+		      s2 = NULL_TREE;
+		      break;
+		    }
+		}
+	      if (s2)
+		{
+		  if (!large_huge.m_single_use_names)
+		    large_huge.m_single_use_names = BITMAP_ALLOC (NULL);
+		  bitmap_set_bit (large_huge.m_single_use_names,
+				  SSA_NAME_VERSION (s));
+		}
 	    }
 	  if (SSA_NAME_VAR (s)
 	      && ((TREE_CODE (SSA_NAME_VAR (s)) == PARM_DECL
