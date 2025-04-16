@@ -1,5 +1,10 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* trans-openmp.cc (gfc_trans_omp_array_section): Use temporaries only
+	when translating OpenACC.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* gfortran.h (struct gfc_omp_namelist): Move udm field into a new
 	union u3.
 	* match.cc (gfc_free_omp_namelist): Change references to u2.udm to

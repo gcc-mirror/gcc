@@ -1,5 +1,10 @@
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
+	* gfortran.dg/gomp/target-enter-exit-data.f90: Revert expected tree
+	dumps.
+
+2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
 	* c-c++-common/gomp/target-update-iterators-1.c: New.
 	* c-c++-common/gomp/target-update-iterators-2.c: New.
 	* c-c++-common/gomp/target-update-iterators-3.c: New.
