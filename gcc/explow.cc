@@ -764,6 +764,20 @@ force_subreg (machine_mode outermode, rtx op,
   return res;
 }
 
+/* Try to return an rvalue expression for the OUTERMODE lowpart of OP,
+   which has mode INNERMODE.  Allow OP to be forced into a new register
+   if necessary.
+
+   Return null on failure.  */
+
+rtx
+force_lowpart_subreg (machine_mode outermode, rtx op,
+		      machine_mode innermode)
+{
+  auto byte = subreg_lowpart_offset (outermode, innermode);
+  return force_subreg (outermode, op, innermode, byte);
+}
+
 /* If X is a memory ref, copy its contents to a new temp reg and return
    that reg.  Otherwise, return X.  */
 
