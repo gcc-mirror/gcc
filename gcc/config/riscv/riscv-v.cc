@@ -1236,6 +1236,109 @@ expand_const_vec_series (rtx target, rtx base, rtx step)
     emit_move_insn (target, result);
 }
 
+
+/* We handle the case that we can find a vector container to hold
+   element bitsize = NPATTERNS * ele_bitsize.
+
+     NPATTERNS = 8, element width = 8
+       v = { 0, 1, 2, 3, 4, 5, 6, 7, ... }
+     In this case, we can combine NPATTERNS element into a larger
+     element.  Use element width = 64 and broadcast a vector with
+     all element equal to 0x0706050403020100.  */
+
+static void
+expand_const_vector_duplicate_repeating (rtx target, rvv_builder *builder)
+{
+  machine_mode mode = GET_MODE (target);
+  rtx result = register_operand (target, mode) ? target : gen_reg_rtx (mode);
+  rtx ele = builder->get_merged_repeating_sequence ();
+  rtx dup;
+
+  if (lra_in_progress)
+    {
+      dup = gen_reg_rtx (builder->new_mode ());
+      rtx ops[] = {dup, ele};
+      emit_vlmax_insn (code_for_pred_broadcast (builder->new_mode ()),
+		       UNARY_OP, ops);
+    }
+  else
+    dup = expand_vector_broadcast (builder->new_mode (), ele);
+
+  emit_move_insn (result, gen_lowpart (mode, dup));
+
+  if (result != target)
+    emit_move_insn (target, result);
+}
+
+/* We handle the case that we can't find a vector container to hold
+   element bitsize = NPATTERNS * ele_bitsize.
+
+     NPATTERNS = 8, element width = 16
+       v = { 0, 1, 2, 3, 4, 5, 6, 7, ... }
+     Since NPATTERNS * element width = 128, we can't find a container
+     to hold it.
+
+     In this case, we use NPATTERNS merge operations to generate such
+     vector.  */
+
+static void
+expand_const_vector_duplicate_default (rtx target, rvv_builder *builder)
+{
+  machine_mode mode = GET_MODE (target);
+  rtx result = register_operand (target, mode) ? target : gen_reg_rtx (mode);
+  unsigned int nbits = builder->npatterns () - 1;
+
+  /* Generate vid = { 0, 1, 2, 3, 4, 5, 6, 7, ... }.  */
+  rtx vid = gen_reg_rtx (builder->int_mode ());
+  rtx op[] = {vid};
+  emit_vlmax_insn (code_for_pred_series (builder->int_mode ()), NULLARY_OP, op);
+
+  /* Generate vid_repeat = { 0, 1, ... nbits, ... }  */
+  rtx vid_repeat = gen_reg_rtx (builder->int_mode ());
+  rtx and_ops[] = {vid_repeat, vid,
+		   gen_int_mode (nbits, builder->inner_int_mode ())};
+  emit_vlmax_insn (code_for_pred_scalar (AND, builder->int_mode ()), BINARY_OP,
+		   and_ops);
+
+  rtx tmp1 = gen_reg_rtx (builder->mode ());
+  rtx dup_ops[] = {tmp1, builder->elt (0)};
+  emit_vlmax_insn (code_for_pred_broadcast (builder->mode ()), UNARY_OP,
+		   dup_ops);
+
+  for (unsigned int i = 1; i < builder->npatterns (); i++)
+    {
+      /* Generate mask according to i.  */
+      rtx mask = gen_reg_rtx (builder->mask_mode ());
+      rtx const_vec = gen_const_vector_dup (builder->int_mode (), i);
+      expand_vec_cmp (mask, EQ, vid_repeat, const_vec);
+
+      /* Merge scalar to each i.  */
+      rtx tmp2 = gen_reg_rtx (builder->mode ());
+      rtx merge_ops[] = {tmp2, tmp1, builder->elt (i), mask};
+      insn_code icode = code_for_pred_merge_scalar (builder->mode ());
+      emit_vlmax_insn (icode, MERGE_OP, merge_ops);
+      tmp1 = tmp2;
+    }
+
+  emit_move_insn (result, tmp1);
+
+  if (result != target)
+    emit_move_insn (target, result);
+}
+
+/* Handle the case with repeating sequence that NELTS_PER_PATTERN = 1
+   E.g.  NPATTERNS = 4, v = { 0, 2, 6, 7, ... }
+	 NPATTERNS = 8, v = { 0, 2, 6, 7, 19, 20, 8, 7 ... }
+	 The elements within NPATTERNS are not necessary regular.  */
+static void
+expand_const_vector_duplicate (rtx target, rvv_builder *builder)
+{
+  if (builder->can_duplicate_repeating_sequence_p ())
+    return expand_const_vector_duplicate_repeating (target, builder);
+  else
+    return expand_const_vector_duplicate_default (target, builder);
+}
+
 static void
 expand_const_vector (rtx target, rtx src)
 {
@@ -1263,82 +1366,7 @@ expand_const_vector (rtx target, rtx src)
   builder.finalize ();
 
   if (CONST_VECTOR_DUPLICATE_P (src))
-    {
-      /* Handle the case with repeating sequence that NELTS_PER_PATTERN = 1
-	 E.g. NPATTERNS = 4, v = { 0, 2, 6, 7, ... }
-	      NPATTERNS = 8, v = { 0, 2, 6, 7, 19, 20, 8, 7 ... }
-	The elements within NPATTERNS are not necessary regular.  */
-      if (builder.can_duplicate_repeating_sequence_p ())
-	{
-	  /* We handle the case that we can find a vector container to hold
-	     element bitsize = NPATTERNS * ele_bitsize.
-
-	       NPATTERNS = 8, element width = 8
-		 v = { 0, 1, 2, 3, 4, 5, 6, 7, ... }
-	       In this case, we can combine NPATTERNS element into a larger
-	       element. Use element width = 64 and broadcast a vector with
-	       all element equal to 0x0706050403020100.  */
-	  rtx ele = builder.get_merged_repeating_sequence ();
-	  rtx dup;
-	  if (lra_in_progress)
-	    {
-	      dup = gen_reg_rtx (builder.new_mode ());
-	      rtx ops[] = {dup, ele};
-	      emit_vlmax_insn (code_for_pred_broadcast
-			       (builder.new_mode ()), UNARY_OP, ops);
-	    }
-	  else
-	    dup = expand_vector_broadcast (builder.new_mode (), ele);
-	  emit_move_insn (result, gen_lowpart (mode, dup));
-	}
-      else
-	{
-	  /* We handle the case that we can't find a vector container to hold
-	     element bitsize = NPATTERNS * ele_bitsize.
-
-	       NPATTERNS = 8, element width = 16
-		 v = { 0, 1, 2, 3, 4, 5, 6, 7, ... }
-	       Since NPATTERNS * element width = 128, we can't find a container
-	       to hold it.
-
-	       In this case, we use NPATTERNS merge operations to generate such
-	       vector.  */
-	  unsigned int nbits = npatterns - 1;
-
-	  /* Generate vid = { 0, 1, 2, 3, 4, 5, 6, 7, ... }.  */
-	  rtx vid = gen_reg_rtx (builder.int_mode ());
-	  rtx op[] = {vid};
-	  emit_vlmax_insn (code_for_pred_series (builder.int_mode ()),
-			    NULLARY_OP, op);
-
-	  /* Generate vid_repeat = { 0, 1, ... nbits, ... }  */
-	  rtx vid_repeat = gen_reg_rtx (builder.int_mode ());
-	  rtx and_ops[] = {vid_repeat, vid,
-			   gen_int_mode (nbits, builder.inner_int_mode ())};
-	  emit_vlmax_insn (code_for_pred_scalar (AND, builder.int_mode ()),
-			    BINARY_OP, and_ops);
-
-	  rtx tmp1 = gen_reg_rtx (builder.mode ());
-	  rtx dup_ops[] = {tmp1, builder.elt (0)};
-	  emit_vlmax_insn (code_for_pred_broadcast (builder.mode ()), UNARY_OP,
-			    dup_ops);
-	  for (unsigned int i = 1; i < builder.npatterns (); i++)
-	    {
-	      /* Generate mask according to i.  */
-	      rtx mask = gen_reg_rtx (builder.mask_mode ());
-	      rtx const_vec = gen_const_vector_dup (builder.int_mode (), i);
-	      expand_vec_cmp (mask, EQ, vid_repeat, const_vec);
-
-	      /* Merge scalar to each i.  */
-	      rtx tmp2 = gen_reg_rtx (builder.mode ());
-	      rtx merge_ops[] = {tmp2, tmp1, builder.elt (i), mask};
-	      insn_code icode = code_for_pred_merge_scalar (builder.mode ());
-	      emit_vlmax_insn (icode, MERGE_OP, merge_ops);
-	      tmp1 = tmp2;
-	    }
-	  emit_move_insn (result, tmp1);
-	}
-    }
+    return expand_const_vector_duplicate (target, &builder);
   else if (CONST_VECTOR_STEPPED_P (src))
     {
       gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_INT);
