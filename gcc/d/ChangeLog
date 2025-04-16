@@ -1,3 +1,22 @@
+2025-04-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119826
+	* types.cc (TypeVisitor::visit (TypeEnum *)): Propagate flags of main
+	enum types to all forward-referenced variants.
+
+2025-04-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119799
+	* decl.cc (DeclVisitor::visit (VarDeclaration *)): Check front-end
+	type size before building the VAR_DECL.  Allow C symbols to have a
+	size of `0'.
+
+2025-04-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119817
+	* imports.cc (ImportVisitor::visit (OverloadSet *)): Don't push
+	NULL_TREE to vector of import symbols.
+
 2025-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/109023

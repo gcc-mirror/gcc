@@ -1,3 +1,64 @@
+2025-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (__glibcxx_want_ranges_iota): Do not
+	define.
+
+2025-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/numeric (ranges): Only declare namespace for C++23
+	and later.
+	(ranges::iota_result): Fix indentation.
+	* testsuite/17_intro/names.cc: Check ranges is not used as an
+	identifier before C++20.
+
+2025-04-15  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/109162
+	* include/std/format (__format::__has_debug_format, _Pres_type::_Pres_seq)
+	(_Pres_type::_Pres_str, __format::__Stackbuf_size): Define.
+	(_Separators::_S_squares, _Separators::_S_parens, _Separators::_S_comma)
+	(_Separators::_S_colon): Define additional constants.
+	(_Spec::_M_parse_fill_and_align): Define overload accepting
+	list of excluded characters for fill, and forward existing overload.
+	(__formatter_str::_M_format_range): Define.
+	(__format::_Buf_sink) Use __Stackbuf_size for size of array.
+	(__format::__is_map_formattable, std::range_formatter)
+	(std::formatter<_Rg, _CharT>): Define.
+	* src/c++23/std.cc.in (std::format_kind, std::range_format)
+	(std::range_formatter): Export.
+	* testsuite/std/format/formatter/lwg3944.cc: Guarded tests with
+	__glibcxx_format_ranges.
+	* testsuite/std/format/formatter/requirements.cc: Adjusted for standard
+	behavior.
+	* testsuite/23_containers/vector/bool/format.cc: Test vector<bool> formatting.
+	* testsuite/std/format/ranges/format_kind.cc: New test.
+	* testsuite/std/format/ranges/formatter.cc: New test.
+	* testsuite/std/format/ranges/sequence.cc: New test.
+	* testsuite/std/format/ranges/string.cc: New test.
+
+2025-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/119748
+	* include/bits/basic_string.h (_S_copy_chars): Only optimize for
+	contiguous iterators that are convertible to const charT*. Use
+	explicit conversion to charT after dereferencing iterator.
+	(_S_copy_range): Likewise for contiguous ranges.
+	* include/bits/basic_string.tcc (_M_construct): Use explicit
+	conversion to charT after dereferencing iterator.
+	* include/bits/cow_string.h (_S_copy_chars): Likewise.
+	(basic_string(from_range_t, R&&, const Allocator&)): Likewise.
+	Only optimize for contiguous iterators that are convertible to
+	const charT*.
+	* testsuite/21_strings/basic_string/cons/char/119748.cc: New
+	test.
+	* testsuite/21_strings/basic_string/cons/wchar_t/119748.cc:
+	New test.
+
+2025-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_iterators.h (test_container): Define
+	array constructor for C++98 as well.
+
 2025-04-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/21334

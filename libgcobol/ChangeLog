@@ -1,3 +1,28 @@
+2025-04-15  Andreas Schwab  <schwab@suse.de>
+
+	* configure.tgt: Set LIBGCOBOL_SUPPORTED for riscv64-*-linux* with
+	64-bit multilib.
+
+2025-04-15  Jakub Jelinek  <jakub@redhat.com>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR cobol/119244
+	* acinclude.m4 (LIBGCOBOL_CHECK_FLOAT128): Ensure
+	libgcob_cv_have_float128 is not yes on targets with IEEE quad
+	long double.  Don't check for --as-needed nor set LIBQUADSPEC
+	on targets which USE_IEC_60559.
+	* libgcobol-fp.h (FP128_FMT, strtofp128, strfromfp128): Define.
+	* intrinsic.cc (strtof128): Don't redefine.
+	(WEIRD_TRANSCENDENT_RETURN_VALUE): Use GCOB_FP128_LITERAL macro.
+	(__gg__numval_f): Use strtofp128 instead of strtof128.
+	* libgcobol.cc (strtof128): Don't redefine.
+	(format_for_display_internal): Use strfromfp128 instead of
+	strfromf128 or quadmath_snprintf and use FP128_FMT in the format
+	string.
+	(get_float128, __gg__compare_2, __gg__move, __gg__move_literala):
+	Use strtofp128 instead of strtof128.
+	* configure: Regenerate.
+
 2025-04-14  Andreas Schwab  <schwab@suse.de>
 
 	* libgcobol.cc (__gg__float64_from_128): Mark literal as float128

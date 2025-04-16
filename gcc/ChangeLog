@@ -1,3 +1,138 @@
+2025-04-15  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR tree-optimization/71094
+	* doc/invoke.texi (Optimize Options): Document that -fivopts is
+	enabled at -O1 and higher.  Add blurb about -O0 causing GCC to
+	completely ignore most optimization options.
+
+2025-04-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Recognise PROJECT:ld-mmmm.nn.aa as an identifier
+	for Darwin's static linker.
+
+2025-04-15  Iain Sandoe  <iainsandoe@mini-05-seq.local>
+
+	PR target/116827
+	* ginclude/stddef.h: Undefine __PTRDIFF_T and __SIZE_T for module-
+	enabled c++ on Darwin/macOS platforms.
+
+2025-04-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* common.opt.urls: Regenerate.
+
+2025-04-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Set
+	to 4 for znver5.
+
+2025-04-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/119298
+	* config/i386/x86-tune-costs.h (znver5_cost): Set ADDSS cost to 3.
+
+2025-04-15  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/119533
+	* config/riscv/riscv-vsetvl.cc (invalid_opt_bb_p): Check for
+	EDGE_ABNOMAL.
+	(pre_vsetvl::compute_lcm_local_properties): Initialize kill
+	bitmap.
+	Debug dump skipped edge.
+
+2025-04-15  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/119547
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::earliest_fuse_vsetvl_info):
+	Do not perform lift if block is not transparent.
+
+2025-04-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* Makefile.in (OBJS): Add ipa-locality-cloning.o.
+	* cgraph.h (set_new_clone_decl_and_node_flags): Declare prototype.
+	* cgraphclones.cc (set_new_clone_decl_and_node_flags): Remove static
+	qualifier.
+	* common.opt (fipa-reorder-for-locality): New flag.
+	(LTO_PARTITION_DEFAULT): Declare.
+	(flto-partition): Change default to LTO_PARTITION_DFEAULT.
+	* doc/invoke.texi: Document -fipa-reorder-for-locality.
+	* flag-types.h (enum lto_locality_cloning_model): Declare.
+	(lto_partitioning_model): Add LTO_PARTITION_DEFAULT.
+	* lto-cgraph.cc (lto_set_symtab_encoder_in_partition): Add dumping of
+	node and index.
+	* opts.cc (validate_ipa_reorder_locality_lto_partition): Define.
+	(finish_options): Handle LTO_PARTITION_DEFAULT.
+	* params.opt (lto_locality_cloning_model): New enum.
+	(lto-partition-locality-cloning): New param.
+	(lto-partition-locality-frequency-cutoff): Likewise.
+	(lto-partition-locality-size-cutoff): Likewise.
+	(lto-max-locality-partition): Likewise.
+	* passes.def: Register pass_ipa_locality_cloning.
+	* timevar.def (TV_IPA_LC): New timevar.
+	* tree-pass.h (make_pass_ipa_locality_cloning): Declare.
+	* ipa-locality-cloning.cc: New file.
+	* ipa-locality-cloning.h: New file.
+
+2025-04-15  Martin Jambor  <mjambor@suse.cz>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/119803
+	* ipa-cp.cc (ipcp_bits_lattice::meet_with_1): Move m_value adjustmed
+	according to m_mask below the adjustment of the latter according to
+	cap_mask.  Optimize the  calculation of cap_mask a bit.
+	(ipcp_bits_lattice::meet_with): Optimize the calculation of cap_mask a
+	bit.
+
+2025-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-cp.cc (ipcp_print_widest_int): Print values with all ones in
+	bits 128+ with "0xf..f" prefix instead of "all ones folled by ".
+	Simplify wide_int check for -1 or all ones above least significant
+	128 bits.
+
+2025-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/119801
+	* sanitizer.def (BUILT_IN_TSAN_FUNC_EXIT): Use BT_FN_VOID rather
+	than BT_FN_VOID_PTR.
+	* tree-tailcall.cc: Include attribs.h and asan.h.
+	(struct tailcall): Add has_tsan_func_exit member.
+	(empty_eh_cleanup): Add eh_has_tsan_func_exit argument, set what
+	it points to to 1 if there is exactly one __tsan_func_exit call
+	and ignore that call otherwise.  Adjust recursive call.
+	(find_tail_calls): Add RETRY_TSAN_FUNC_EXIT argument, pass it
+	to recursive calls.  When seeing __tsan_func_exit call with
+	RETRY_TSAN_FUNC_EXIT 0, set it to -1.  If RETRY_TSAN_FUNC_EXIT
+	is 1, initially ignore __tsan_func_exit calls.  Adjust
+	empty_eh_cleanup caller.  When looking through stmts after the call,
+	ignore exactly one __tsan_func_exit call but remember it in
+	t->has_tsan_func_exit.  Diagnose if EH cleanups didn't have
+	__tsan_func_exit and normal path did or vice versa.
+	(optimize_tail_call): Emit __tsan_func_exit before the tail call
+	or tail recursion.
+	(tree_optimize_tail_calls_1): Adjust find_tail_calls callers.  If
+	find_tail_calls changes retry_tsan_func_exit to -1, set it to 1
+	and call it again with otherwise the same arguments.
+
+2025-04-15  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR ipa/113203
+	* doc/extend.texi (Common Function Attributes): Explain how to
+	use always_inline in programs that have multiple translation
+	units, and that LTO inlining additionally needs optimization
+	enabled.
+
+2025-04-15  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/108134
+	* doc/extend.texi: Remove documents from r11-344-g0fec3f62b9bfc0.
+
+2025-04-15  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR target/42683
+	* doc/invoke.texi (x86 Options): Clarify that -march=pentiumpro
+	doesn't include MMX.
+
 2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/118794

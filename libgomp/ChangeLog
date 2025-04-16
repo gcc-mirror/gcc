@@ -1,3 +1,38 @@
+2025-04-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (gcn, nvptx): Mention self_maps clause
+	besides unified_shared_memory in the requirements item.
+
+2025-04-15  waffl3x  <waffl3x@baylibre.com>
+
+	* omp.h.in: Add omp::allocator::* and ompx::allocator::* allocators.
+	(__detail::__allocator_templ<T, omp_allocator_handle_t>):
+	New struct template.
+	(null_allocator<T>): New struct template.
+	(default_mem<T>): Likewise.
+	(large_cap_mem<T>): Likewise.
+	(const_mem<T>): Likewise.
+	(high_bw_mem<T>): Likewise.
+	(low_lat_mem<T>): Likewise.
+	(cgroup_mem<T>): Likewise.
+	(pteam_mem<T>): Likewise.
+	(thread_mem<T>): Likewise.
+	(ompx::allocator::gnu_pinned_mem<T>): Likewise.
+	* testsuite/libgomp.c++/allocator-1.C: New test.
+	* testsuite/libgomp.c++/allocator-2.C: New test.
+
+2025-04-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (5.0 Impl. Status): Mark mapping alloc comps as 'Y'.
+	* testsuite/libgomp.fortran/allocatable-comp.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-comp-3.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-comp-4.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-comp-5.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-comp-6.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-comp-7.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-comp-8.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-comp-9.f90: New test.
+
 2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/118794

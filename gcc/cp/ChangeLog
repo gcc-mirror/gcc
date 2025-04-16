@@ -1,3 +1,29 @@
+2025-04-15  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119755
+	* lambda.cc (prune_lambda_captures): Remove pruned capture from
+	function's BLOCK_VARS and BIND_EXPR_VARS.
+
+2025-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111075
+	* constexpr.cc (cxx_eval_call_expression): Allow trivial
+	call from a thunk.
+
+2025-04-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119807
+	PR c++/112288
+	* pt.cc (tsubst_friend_function): Skip remapping an
+	existing specialization if it doesn't match the shape of
+	the new friend definition.
+
+2025-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113835
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Bail out early
+	for std::vector(N).
+
 2025-04-14  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/99214

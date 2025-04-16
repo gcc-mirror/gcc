@@ -1,3 +1,32 @@
+2025-04-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	* f95-lang.cc (LANG_HOOKS_OMP_DEEP_MAPPING,
+	LANG_HOOKS_OMP_DEEP_MAPPING_P, LANG_HOOKS_OMP_DEEP_MAPPING_CNT):
+	Define.
+	* openmp.cc (gfc_match_omp_clause_reduction): Fix location setting.
+	(resolve_omp_clauses): Permit allocatable components, reject
+	them and polymorphic variables in PRIVATE/FIRSTPRIVATE.
+	* trans-decl.cc (add_clause): Set clause location.
+	* trans-openmp.cc (gfc_has_alloc_comps): Add ptr_ok and
+	shallow_alloc_only Boolean arguments.
+	(gfc_omp_replace_alloc_by_to_mapping): New.
+	(gfc_omp_private_outer_ref, gfc_walk_alloc_comps,
+	gfc_omp_clause_default_ctor, gfc_omp_clause_copy_ctor,
+	gfc_omp_clause_assign_op, gfc_omp_clause_dtor): Update call to it.
+	(gfc_omp_finish_clause): Minor cleanups, improve location data,
+	handle allocatable components.
+	(gfc_omp_deep_mapping_map, gfc_omp_deep_mapping_item,
+	gfc_omp_deep_mapping_comps, gfc_omp_gen_simple_loop,
+	gfc_omp_get_array_size, gfc_omp_elmental_loop,
+	gfc_omp_deep_map_kind_p, gfc_omp_deep_mapping_int_p,
+	gfc_omp_deep_mapping_p, gfc_omp_deep_mapping_do,
+	gfc_omp_deep_mapping_cnt, gfc_omp_deep_mapping): New.
+	(gfc_trans_omp_array_section): Save array descriptor in case
+	deep-mapping lang hook will need it.
+	(gfc_trans_omp_clauses): Likewise; use better clause location data.
+	* trans.h (gfc_omp_deep_mapping_p, gfc_omp_deep_mapping_cnt,
+	gfc_omp_deep_mapping): Add function prototypes.
+
 2025-04-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/119669

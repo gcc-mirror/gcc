@@ -1,3 +1,10 @@
+2025-04-15  Richard Biener  <rguenther@suse.de>
+
+	PR cobol/119302
+	* Make-lang.in (GCOBOLIO_INSTALL_NAME): Define.
+	Use $(GCOBOLIO_INSTALL_NAME) for gcobol.3 manpage source
+	upon install.
+
 2025-04-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR cobol/119776
