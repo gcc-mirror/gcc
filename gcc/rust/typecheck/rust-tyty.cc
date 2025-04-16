@@ -682,6 +682,91 @@ BaseType::debug () const
 	      debug_str ().c_str ());
 }
 
+const TyTy::BaseType *
+BaseType::contains_infer () const
+{
+  const TyTy::BaseType *x = destructure ();
+
+  if (auto fn = x->try_as<const FnType> ())
+    {
+      for (const auto &param : fn->get_params ())
+	{
+	  auto infer = param.get_type ()->contains_infer ();
+	  if (infer)
+	    return infer;
+	}
+      return fn->get_return_type ()->contains_infer ();
+    }
+  else if (auto fn = x->try_as<const FnPtr> ())
+    {
+      for (const auto &param : fn->get_params ())
+	{
+	  auto infer = param.get_tyty ()->contains_infer ();
+	  if (infer)
+	    return infer;
+	}
+      return fn->get_return_type ()->contains_infer ();
+    }
+  else if (auto adt = x->try_as<const ADTType> ())
+    {
+      for (auto &variant : adt->get_variants ())
+	{
+	  bool is_num_variant
+	    = variant->get_variant_type () == VariantDef::VariantType::NUM;
+	  if (is_num_variant)
+	    continue;
+
+	  for (auto &field : variant->get_fields ())
+	    {
+	      const BaseType *field_type = field->get_field_type ();
+	      auto infer = (field_type->contains_infer ());
+	      if (infer)
+		return infer;
+	    }
+	}
+      return nullptr;
+    }
+  else if (auto arr = x->try_as<const ArrayType> ())
+    {
+      return arr->get_element_type ()->contains_infer ();
+    }
+  else if (auto slice = x->try_as<const SliceType> ())
+    {
+      return slice->get_element_type ()->contains_infer ();
+    }
+  else if (auto ptr = x->try_as<const PointerType> ())
+    {
+      return ptr->get_base ()->contains_infer ();
+    }
+  else if (auto ref = x->try_as<const ReferenceType> ())
+    {
+      return ref->get_base ()->contains_infer ();
+    }
+  else if (auto tuple = x->try_as<const TupleType> ())
+    {
+      for (size_t i = 0; i < tuple->num_fields (); i++)
+	{
+	  auto infer = (tuple->get_field (i)->contains_infer ());
+	  if (infer)
+	    return infer;
+	}
+      return nullptr;
+    }
+  else if (auto closure = x->try_as<const ClosureType> ())
+    {
+      auto infer = (closure->get_parameters ().contains_infer ());
+      if (infer)
+	return infer;
+      return closure->get_result_type ().contains_infer ();
+    }
+  else if (x->is<InferType> ())
+    {
+      return x;
+    }
+
+  return nullptr;
+}
+
 bool
 BaseType::is_concrete () const
 {
