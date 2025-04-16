@@ -1,6 +1,14 @@
 2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/97106
+	* config/nvptx/nvptx.cc (nvptx_asm_output_def_from_decls)
+	[ACCEL_COMPILER]: Make sure to emit C++ constructor, destructor
+	aliases.
+
+	Backported from trunk:
 	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/118794

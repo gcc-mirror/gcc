@@ -1,6 +1,13 @@
 2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/97106
+	* testsuite/libgomp.c++/pr96390.C: Un-XFAIL nvptx offloading.
+	* testsuite/libgomp.c-c++-common/pr96390.c: Adjust.
+
+	Backported from trunk:
 	2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/118794

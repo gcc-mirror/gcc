@@ -8518,6 +8518,18 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name,
 #endif
 
   cgraph_node *cnode = cgraph_node::get (name);
+#ifdef ACCEL_COMPILER
+  /* For nvptx offloading, make sure to emit C++ constructor, destructor aliases [PR97106]
+
+     For some reason (yet to be analyzed), they're not 'cnode->referred_to_p ()'.
+     (..., or that's not the right approach at all;
+     <https://inbox.sourceware.org/87v7rx8lbx.fsf@euler.schwinge.ddns.net>
+     "Re: [committed][nvptx] Use .alias directive for mptx >= 6.3").  */
+  if (DECL_CXX_CONSTRUCTOR_P (name)
+      || DECL_CXX_DESTRUCTOR_P (name))
+    ;
+  else
+#endif
   if (!cnode->referred_to_p ())
     /* Prevent "Internal error: reference to deleted section".  */
     return;

@@ -1,6 +1,4 @@
 /* { dg-additional-options "-O0 -fdump-tree-omplower" } */
-/* { dg-additional-options "-foffload=-Wa,--verify" { target offload_target_nvptx } } */
-/* { dg-xfail-if "PR 97106/PR 97102 - .alias not (yet) supported for nvptx" { offload_target_nvptx } } */
 
 #include <cstdlib>
 #include <type_traits>
