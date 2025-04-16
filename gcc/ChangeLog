@@ -1,3 +1,60 @@
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-08-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116412
+	* gimple-match-head.cc (gimple_extract): Return false if op0
+	was not a SSA name nor a min invariant for REALPART_EXPR/IMAGPART_EXPR/VCE
+	and BIT_FIELD_REF.
+
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-03-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/113546
+	* tree-cfg.cc (first_non_label_stmt): Rename to ...
+	(first_non_label_nondebug_stmt): This and use gsi_start_nondebug_after_labels_bb.
+	(assign_discriminators): Update call to first_non_label_nondebug_stmt.
+
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-03-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118922
+	* tree-ssa-phiopt.cc (value_replacement): Set empty_or_with_defined_p
+	to false when there is phi nodes for the middle bb.
+
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-12-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117243
+	PR tree-optimization/116749
+	* tree-ssa-phiopt.cc (replace_phi_edge_with_variable): Reset loop
+	estimates if the cond_block was an exit to a loop.
+
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-10-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116922
+	* gimple-ssa-backprop.cc (remove_unused_var): Handle phi
+	nodes correctly.
+
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-10-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/111285
+	* tree-vect-generic.cc (do_unop): Use a signed type for the
+	operand if the operation was ABSU_EXPR.
+
 2025-04-13  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

@@ -1,3 +1,61 @@
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-04-14  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118476
+	* gcc.dg/torture/pr118476-1.c: New test.
+
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-08-20  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116412
+	* gcc.dg/torture/pr116412-1.c: New test.
+
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-03-16  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/113546
+	* c-c++-common/torture/pr113546-1.c: New test.
+
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2025-03-09  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118922
+	* gcc.dg/torture/pr118922-1.c: New test.
+
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-12-04  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/117243
+	PR tree-optimization/116749
+	* gcc.dg/torture/pr117243-1.c: New test.
+	* gcc.dg/torture/pr117243-2.c: New test.
+
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-10-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/116922
+	* gcc.dg/torture/pr116922.c: New test.
+
+2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-10-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/111285
+	* g++.dg/torture/vect-absu-1.C: New test.
+
 2025-04-14  Simon Martin  <simon@nasilyan.com>
 
 	Backported from master:
