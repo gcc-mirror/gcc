@@ -80,11 +80,17 @@ public:
     pattern.accept_vis (compiler);
   }
 
+  tree make_struct_access (TyTy::ADTType *adt, TyTy::VariantDef *variant,
+			   Identifier &ident, int variant_index);
+
   void handle_struct_pattern_ident (HIR::StructPatternField &pat,
 				    TyTy::ADTType *adt,
 				    TyTy::VariantDef *variant,
 				    int variant_index);
-  void handle_struct_pattern_ident_pat (HIR::StructPatternField &pat);
+  void handle_struct_pattern_ident_pat (HIR::StructPatternField &pat,
+					TyTy::ADTType *adt,
+					TyTy::VariantDef *variant,
+					int variant_index);
   void handle_struct_pattern_tuple_pat (HIR::StructPatternField &pat);
 
   void visit (HIR::StructPattern &pattern) override;
