@@ -22,8 +22,11 @@
 #include "rust-constexpr.h"
 #include "rust-compile-type.h"
 #include "print-tree.h"
+#include "rust-diagnostics.h"
+#include "rust-hir-pattern-abstract.h"
 #include "rust-hir-pattern.h"
 #include "rust-system.h"
+#include "rust-tyty.h"
 
 namespace Rust {
 namespace Compile {
@@ -506,20 +509,16 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
     }
 }
 
-void
-CompilePatternBindings::handle_struct_pattern_ident (
-  HIR::StructPatternField &pat, TyTy::ADTType *adt, TyTy::VariantDef *variant,
-  int variant_index)
+tree
+CompilePatternBindings::make_struct_access (TyTy::ADTType *adt,
+					    TyTy::VariantDef *variant,
+					    Identifier &ident,
+					    int variant_index)
 {
-  HIR::StructPatternFieldIdent &ident
-    = static_cast<HIR::StructPatternFieldIdent &> (pat);
-
   size_t offs = 0;
-  auto ok = variant->lookup_field (ident.get_identifier ().as_string (),
-				   nullptr, &offs);
+  auto ok = variant->lookup_field (ident.as_string (), nullptr, &offs);
   rust_assert (ok);
 
-  tree binding = error_mark_node;
   if (adt->is_enum ())
     {
       tree payload_accessor_union
@@ -530,24 +529,59 @@ CompilePatternBindings::handle_struct_pattern_ident (
 	= Backend::struct_field_expression (payload_accessor_union,
 					    variant_index, ident.get_locus ());
 
-      binding = Backend::struct_field_expression (variant_accessor, offs,
-						  ident.get_locus ());
+      return Backend::struct_field_expression (variant_accessor, offs,
+					       ident.get_locus ());
     }
   else
     {
       tree variant_accessor = match_scrutinee_expr;
-      binding = Backend::struct_field_expression (variant_accessor, offs,
-						  ident.get_locus ());
+
+      return Backend::struct_field_expression (variant_accessor, offs,
+					       ident.get_locus ());
     }
+}
+
+void
+CompilePatternBindings::handle_struct_pattern_ident (
+  HIR::StructPatternField &pat, TyTy::ADTType *adt, TyTy::VariantDef *variant,
+  int variant_index)
+{
+  HIR::StructPatternFieldIdent &ident
+    = static_cast<HIR::StructPatternFieldIdent &> (pat);
+
+  auto identifier = ident.get_identifier ();
+  tree binding = make_struct_access (adt, variant, identifier, variant_index);
 
   ctx->insert_pattern_binding (ident.get_mappings ().get_hirid (), binding);
 }
 
 void
 CompilePatternBindings::handle_struct_pattern_ident_pat (
-  HIR::StructPatternField &pat)
+  HIR::StructPatternField &pat, TyTy::ADTType *adt, TyTy::VariantDef *variant,
+  int variant_index)
 {
-  rust_unreachable ();
+  auto &pattern = static_cast<HIR::StructPatternFieldIdentPat &> (pat);
+
+  switch (pattern.get_pattern ().get_pattern_type ())
+    {
+      case HIR::Pattern::IDENTIFIER: {
+	auto &id
+	  = static_cast<HIR::IdentifierPattern &> (pattern.get_pattern ());
+
+	CompilePatternBindings::Compile (id, match_scrutinee_expr, ctx);
+      }
+      break;
+    default:
+      rust_sorry_at (pat.get_locus (),
+		     "cannot handle non-identifier struct patterns");
+      return;
+    }
+
+  auto ident = pattern.get_identifier ();
+  tree binding = make_struct_access (adt, variant, ident, variant_index);
+
+  ctx->insert_pattern_binding (
+    pattern.get_pattern ().get_mappings ().get_hirid (), binding);
 }
 
 void
@@ -596,7 +630,7 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
 	  handle_struct_pattern_tuple_pat (*field);
 	  break;
 	case HIR::StructPatternField::ItemType::IDENT_PAT:
-	  handle_struct_pattern_ident_pat (*field);
+	  handle_struct_pattern_ident_pat (*field, adt, variant, variant_index);
 	  break;
 	case HIR::StructPatternField::ItemType::IDENT:
 	  handle_struct_pattern_ident (*field, adt, variant, variant_index);
