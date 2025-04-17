@@ -1142,27 +1142,25 @@ TypeCheckExpr::visit (HIR::FieldAccessExpr &expr)
   bool is_valid_type = struct_base->get_kind () == TyTy::TypeKind::ADT;
   if (!is_valid_type)
     {
-      rust_error_at (expr.get_locus (),
-		     "expected algebraic data type got: [%s]",
-		     struct_base->as_string ().c_str ());
+      rust_error_at (expr.get_locus (), "expected algebraic data type got %qs",
+		     struct_base->get_name ().c_str ());
       return;
     }
 
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (struct_base);
-  rust_assert (!adt->is_enum ());
-  rust_assert (adt->number_of_variants () == 1);
-
+  rust_assert (adt->number_of_variants () > 0);
   TyTy::VariantDef *vaiant = adt->get_variants ().at (0);
 
   TyTy::StructFieldType *lookup = nullptr;
   bool found = vaiant->lookup_field (expr.get_field_name ().as_string (),
 				     &lookup, nullptr);
-  if (!found)
+  if (!found || adt->is_enum ())
     {
-      rust_error_at (expr.get_locus (), ErrorCode::E0609,
-		     "no field %qs on type %qs",
+      rich_location r (line_table, expr.get_locus ());
+      r.add_range (expr.get_field_name ().get_locus ());
+      rust_error_at (r, ErrorCode::E0609, "no field %qs on type %qs",
 		     expr.get_field_name ().as_string ().c_str (),
-		     adt->as_string ().c_str ());
+		     adt->get_name ().c_str ());
       return;
     }
 
