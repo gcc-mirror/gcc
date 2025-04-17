@@ -1144,8 +1144,8 @@ package body Treepr is
       end if;
 
       if not Is_List_Member (N) then
-         Print_Str (Prefix_Str);
-         Print_Str (" Parent = ");
+         Print_Str (Prefix);
+         Print_Str ("Parent = ");
          Print_Node_Ref (Parent (N));
          Print_Eol;
       end if;
