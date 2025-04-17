@@ -204,6 +204,9 @@ template <typename I, typename T> class IndexVec
 {
   std::vector<T> internal_vector;
 
+  typedef decltype (std::declval<I> ().value) size_type;
+  static constexpr auto MAX_INDEX = std::numeric_limits<size_type>::max ();
+
 public:
   IndexVec () = default;
   IndexVec (size_t size) { internal_vector.reserve (size); }
@@ -219,7 +222,11 @@ public:
     internal_vector.emplace_back (std::forward<Args> (args)...);
   }
 
-  size_t size () const { return internal_vector.size (); }
+  size_type size () const
+  {
+    rust_assert (internal_vector.size () < MAX_INDEX);
+    return static_cast<size_type> (internal_vector.size ());
+  }
 
   std::vector<T> &get_vector () { return internal_vector; }
 };
@@ -418,8 +425,7 @@ public:
     if (lookup != INVALID_PLACE)
       return lookup;
 
-    add_place ({Place::VARIABLE, id, {}, is_type_copy (tyty), tyty});
-    return {places.size () - 1};
+    return add_place ({Place::VARIABLE, id, {}, is_type_copy (tyty), tyty});
   };
 
   template <typename FN> void for_each_path_from_root (PlaceId var, FN fn) const
