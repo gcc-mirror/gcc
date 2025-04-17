@@ -16963,6 +16963,19 @@ Size of max partition for WHOPR (in estimated instructions).
 to provide an upper bound for individual size of partition.
 Meant to be used only with balanced partitioning.
 
+@item lto-partition-locality-frequency-cutoff
+The denominator n of fraction 1/n of the execution frequency of callee to be
+cloned for a particular caller. Special value of 0 dictates to always clone
+without a cut-off.
+
+@item lto-partition-locality-size-cutoff
+Size cut-off for callee including inlined calls to be cloned for a particular
+caller.
+
+@item lto-max-locality-partition
+Maximal size of a locality partition for LTO (in estimated instructions).
+Value of 0 results in default value being used.
+
 @item lto-max-streaming-parallelism
 Maximal number of parallel processes used for LTO streaming.
 
