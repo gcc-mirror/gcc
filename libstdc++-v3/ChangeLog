@@ -1,3 +1,189 @@
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/integer_sequence/112473.cc: Compile with
+	-std=gnu++20.
+	* testsuite/21_strings/char_traits/requirements/113200.cc:
+	Likewise.
+	* testsuite/23_containers/array/comparison_operators/106212.cc:
+	Likewise.
+	* testsuite/23_containers/array/creation/115522.cc: Likewise.
+	* testsuite/23_containers/span/117966.cc: Likewise.
+	* testsuite/23_containers/span/nodiscard.cc: Likewise. Remove
+	dg-warning directives for et c++23.
+	* testsuite/23_containers/vector/cons/113841.cc: Compile with
+	-std=gnu++20.
+	* testsuite/24_iterators/common_iterator/101527.cc: Likewise.
+	* testsuite/24_iterators/counted_iterator/101527.cc: Likewise.
+	* testsuite/24_iterators/move_iterator/lwg3736.cc: Likewise.
+	* testsuite/25_algorithms/lexicographical_compare_three_way/113960.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/iterators/lwg3480.cc: Likewise.
+	* testsuite/29_atomics/headers/stdatomic.h/115807.cc: Compile
+	with -std=gnu++23.
+	* testsuite/experimental/scopeguard/114152.cc: Compile with
+	-std=gnu++20.
+	* testsuite/std/format/arguments/112607.cc: Likewise.
+	* testsuite/std/format/arguments/args_neg.cc: Likewise.
+	* testsuite/std/format/context.cc: Likewise.
+	* testsuite/std/format/formatter/112832.cc: Likewise.
+	* testsuite/std/format/formatter/basic.cc: Likewise.
+	* testsuite/std/ranges/subrange/111948.cc: Likewise.
+	* testsuite/std/ranges/subrange/lwg3589.cc: Likewise.
+	* testsuite/std/time/format/pr117085.cc: Likewise.
+	* testsuite/std/time/month/2.cc: Likewise.
+	* testsuite/std/time/time_zone/sys_info_abbrev.cc: Likewise.
+	* testsuite/std/time/tzdb/links.cc: Likewise.
+	* testsuite/std/time/weekday/2.cc: Likewise.
+
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc: Check ranges is not used as an
+	identifier before C++20.
+
+2025-04-16  Michael Levine  <mlevine55@bloomberg.net>
+
+	Backported from master:
+	2024-06-08  Michael Levine  <mlevine55@bloomberg.net>
+
+	PR libstdc++/108760
+	* include/bits/ranges_algo.h (ranges::out_value_result)
+	(ranges::iota_result, ranges::__iota_fn, ranges::iota): Move to
+	<bits/ranges_algobase.h>.
+	* include/bits/ranges_algobase.h (ranges::out_value_result):
+	(ranges::iota_result, ranges::__iota_fn, ranges::iota): Move to
+	here.
+	* include/std/numeric: Include <bits/ranges_algobase.h>.
+	* testsuite/25_algorithms/iota/1.cc: Renamed to ...
+	* testsuite/26_numerics/iota/2.cc: ... here.
+
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105609
+	* include/bits/ranges_algobase.h (__detail::__assign_one): New
+	helper function.
+	(__copy_or_move, __copy_or_move_backward): Use new function
+	instead of std::__assign_one.
+	* testsuite/25_algorithms/move/constrained.cc: Check that
+	ADL iter_move is used in preference to std::move.
+	* testsuite/25_algorithms/move_backward/constrained.cc:
+	Likewise.
+
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h (ranges::__assign_one): Remove.
+	(__copy_or_move, __copy_or_move_backward): Use std::__assign_one
+	instead of ranges::__assign_one.
+
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117121
+	* include/bits/ranges_algobase.h (copy_backward): Decrement
+	output iterator before assigning one element through it.
+	* testsuite/25_algorithms/copy/108846.cc: Ensure the algorithm's
+	effects are correct for a single memcpyable element.
+	* testsuite/25_algorithms/copy_backward/108846.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/108846.cc: Likewise.
+
+2025-04-16  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	Backported from master:
+	2024-09-13  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	PR libstdc++/108846
+	PR libstdc++/116471
+	* include/bits/ranges_algobase.h (__assign_one): New helper
+	function.
+	(__copy_or_move): Remove a spurious static_assert; use
+	__assign_one for memcpyable ranges of length 1.
+	(__copy_or_move_backward): Likewise.
+	* testsuite/25_algorithms/copy/108846.cc: Extend to range-based
+	algorithms, and cover both memcpyable and non-memcpyable
+	cases.
+	* testsuite/25_algorithms/copy_backward/108846.cc: Likewise.
+	* testsuite/25_algorithms/copy_n/108846.cc: Likewise.
+	* testsuite/25_algorithms/move/108846.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/108846.cc: Likewise.
+
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h: Include <bits/stl_algobase.h>.
+
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-02-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106612
+	* include/bits/iterator_concepts.h (_IterMove::__iter_ref_t):
+	New alias template.
+	(_IterMove::__result): Use __iter_ref_t instead of
+	std::iter_reference_t.
+	(_IterMove::__type): Remove incorrect __dereferenceable
+	constraint.
+	(_IterMove::operator()): Likewise. Add correct constraints. Use
+	__iter_ref_t instead of std::iter_reference_t. Forward parameter
+	as correct value category.
+	(iter_swap): Add comments.
+	* testsuite/24_iterators/customization_points/iter_move.cc: Test
+	that iter_move is found by ADL and that rvalue arguments are
+	handled correctly.
+
+2025-04-16  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2023-12-21  Arsen Arsenović  <arsen@aarsen.me>
+
+	* include/bits/ranges_util.h: Add missing <bits/invoke.h>
+	include.
+
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-01-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118093
+	* include/bits/atomic_futex.h (_M_load_and_test_until_impl):
+	Return false for times before the epoch.
+	* src/c++11/futex.cc (_M_futex_wait_until): Extend check for
+	negative times to check for subsecond times. Add unlikely
+	attribute.
+	(_M_futex_wait_until_steady): Likewise.
+	* testsuite/30_threads/future/members/118093.cc: New test.
+
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/104395
+	* include/bits/new_allocator.h: Disable extended alignment
+	support in C++98 mode.
+	* include/ext/bitmap_allocator.h: Likewise.
+	* include/ext/malloc_allocator.h: Likewise.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/pool_allocator.h: Likewise.
+	* testsuite/ext/104395.cc: New test.
+
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-06-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/memory_resource.h (polymorphic_allocator::destroy):
+	Remove deprecated attribute.
+
 2025-04-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
