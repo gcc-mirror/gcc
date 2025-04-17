@@ -60,6 +60,12 @@ package Treepr is
    --  Prints the subtree consisting of the given element list and all its
    --  referenced descendants.
 
+   procedure Print_Entity_Chain (From : Entity_Id; Rev : Boolean := False);
+   --  Prints the entity chain From is on, starting from From. In other words,
+   --  prints From and then recursively follow the Next_Entity field. If Rev is
+   --  True, prints the chain backwards, i.e. follow the Last_Entity field
+   --  instead of Next_Entity.
+
    --  The following debugging procedures are intended to be called from gdb.
    --  Note that in several cases there are synonyms which represent historical
    --  development, and we keep them because some people are used to them!
@@ -103,4 +109,12 @@ package Treepr is
    --  on the left and add a minus sign. This just saves some typing in the
    --  debugger.
 
+   procedure pec (From : Entity_Id);
+   pragma Export (Ada, pec);
+   --  Print From and the entities that follow it on its entity chain
+
+   procedure rpec (From : Entity_Id);
+   pragma Export (Ada, rpec);
+   --  Like pec, but walk the entity chain backwards. The 'r' stands for
+   --  "reverse".
 end Treepr;

@@ -412,6 +412,34 @@ package body Treepr is
 
    procedure pe (N : Union_Id) renames pn;
 
+   ---------
+   -- pec --
+   ---------
+
+   procedure pec (From : Entity_Id) is
+   begin
+      Push_Output;
+      Set_Standard_Output;
+
+      Print_Entity_Chain (From);
+
+      Pop_Output;
+   end pec;
+
+   ----------
+   -- rpec --
+   ----------
+
+   procedure rpec (From : Entity_Id) is
+   begin
+      Push_Output;
+      Set_Standard_Output;
+
+      Print_Entity_Chain (From, Rev => True);
+
+      Pop_Output;
+   end rpec;
+
    --------
    -- pl --
    --------
@@ -588,6 +616,36 @@ package body Treepr is
          Write_Location (End_Location (N));
       end if;
    end Print_End_Span;
+
+   ------------------------
+   -- Print_Entity_Chain --
+   ------------------------
+
+   procedure Print_Entity_Chain (From : Entity_Id; Rev : Boolean := False) is
+      Ent : Entity_Id := From;
+   begin
+      Printing_Descendants := False;
+      Phase := Printing;
+
+      loop
+         declare
+            Next_Ent : constant Entity_Id :=
+              (if Rev then Prev_Entity (Ent) else Next_Entity (Ent));
+
+            Prefix_Char : constant Character :=
+              (if Present (Next_Ent) then '|' else ' ');
+         begin
+            Print_Node (Ent, "", Prefix_Char);
+
+            exit when No (Next_Ent);
+
+            Ent := Next_Ent;
+
+            Print_Char ('|');
+            Print_Eol;
+         end;
+      end loop;
+   end Print_Entity_Chain;
 
    -----------------------
    -- Print_Entity_Info --
