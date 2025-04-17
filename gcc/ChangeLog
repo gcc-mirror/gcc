@@ -1,3 +1,134 @@
+2025-04-16  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* tree-ssa-phiopt.cc (factor_out_conditional_operation): Do not
+	bypass the int_fits_type_p test for boolean types whose precision
+	is not 1.
+
+2025-04-16  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_valid_sysreg_name_p): Remove feature check.
+	(aarch64_retrieve_sysreg): Ditto.
+
+2025-04-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-04-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/119784
+	* config/i386/i386.cc (ix86_using_red_zone): Don't use red-zone
+	with 32 GPRs and no caller-saved registers.
+
+2025-04-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2024-08-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	* doc/sourcebuild.texi (check-function-bodies): Add an optional
+	argument for matched output lines.
+
+2025-04-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2025-04-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.h (JUMP_TABLES_IN_TEXT_SECTION): Check if
+	large code model.
+
+2025-04-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2025-04-02  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/119572
+	* config/riscv/autovec.md: Mask broadcast value.
+
+2025-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-05-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/115258
+	* config/aarch64/aarch64-simd.md (aarch64_combinev16qi): Allow
+	the split before reload.
+	* config/aarch64/aarch64.cc (aarch64_split_combinev16qi): Generalize
+	into a form that handles pseudo registers.
+
+2025-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-03-10  Richard Sandiford  <richard.sandiford@arm.com>
+		    Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	PR target/115258
+	* config/aarch64/aarch64.cc (aarch64_vectorize_vec_perm_const): Use
+	d.one_vector_p to decide whether op1 should be a copy of op0.
+
+2025-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-03-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/116125
+	* tree-vect-data-refs.cc (vect_prune_runtime_alias_test_list): Make
+	the dr_with_seg_len alignment fields describe tha access sizes as
+	well as the pointer alignment.
+	* tree-data-ref.cc (create_intersect_range_checks): Don't compensate
+	for invalid alignment fields here.
+
+2025-04-16  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2025-01-23  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/118501
+	* config/loongarch/loongarch.md (@xorsign<mode>3): Use
+	force_lowpart_subreg.
+
+2025-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-01-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/118501
+	* config/aarch64/aarch64.md (@xorsign<mode>3): Use
+	force_lowpart_subreg.
+
+2025-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-03-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/119133
+	* config/aarch64/aarch64.md
+	(*aarch64_bfi<GPI:mode><ALLX:mode>_<SUBDI_BITS>): Use
+	force_lowpart_subreg.
+
+2025-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-04-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/119399
+	* tree-data-ref.cc (create_waw_or_war_checks): Use a MINUS_EXPR
+	on two converted pointers, rather than converting a POINTER_DIFF_EXPR
+	on the pointers.
+
+2025-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* explow.h (force_lowpart_subreg): Declare.
+	* explow.cc (force_lowpart_subreg): New function.
+
+2025-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2024-06-18  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* explow.cc (force_subreg): Emit no instructions on failure.
+
 2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:
