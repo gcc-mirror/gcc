@@ -1972,8 +1972,12 @@ CompileExpr::array_copied_expr (location_t expr_locus,
   if (ctx->const_context_p ())
     {
       size_t idx = 0;
+
       std::vector<unsigned long> indexes;
       std::vector<tree> constructor;
+
+      indexes.reserve (len);
+      constructor.reserve (len);
       for (unsigned HOST_WIDE_INT i = 0; i < len; i++)
 	{
 	  constructor.push_back (translated_expr);
