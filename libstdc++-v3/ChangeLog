@@ -1,3 +1,95 @@
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/integer_sequence/112473.cc: Compile with
+	-std=gnu++20.
+	* testsuite/21_strings/char_traits/requirements/113200.cc:
+	Likewise.
+	* testsuite/23_containers/array/comparison_operators/106212.cc:
+	Likewise.
+	* testsuite/23_containers/span/117966.cc: Likewise.
+	* testsuite/23_containers/vector/cons/113841.cc: Compile with
+	-std=gnu++20.
+	* testsuite/24_iterators/move_iterator/lwg3736.cc: Likewise.
+	* testsuite/25_algorithms/lexicographical_compare_three_way/113960.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/iterators/lwg3480.cc: Likewise.
+	* testsuite/29_atomics/headers/stdatomic.h/115807.cc: Compile
+	with -std=gnu++23.
+	* testsuite/std/ranges/subrange/lwg3589.cc: Likewise.
+	* testsuite/std/time/month/2.cc: Likewise.
+	* testsuite/std/time/weekday/2.cc: Likewise.
+
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_util.h (subrange::begin): Fix constraint,
+	as per LWG 3589.
+	* testsuite/std/ranges/subrange/lwg3589.cc: New test.
+
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-12-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/106212
+	* include/std/array (operator==): Use std::__equal_aux1 instead
+	of std::equal.
+	* testsuite/23_containers/array/comparison_operators/106212.cc:
+	New test.
+
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-12-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117966
+	* include/std/span (span(T (&)[N])): Do not delegate to
+	constructor that performs redundant checks.
+	(span(array<T, N>&), span(const array<T, N>&)): Likewise.
+	(span(Range&&), span(const span<T, N>&)): Likewise.
+	* testsuite/23_containers/span/117966.cc: New test.
+
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113841
+	* include/bits/allocator.h (allocator<cv T>): Add default
+	constructor to partial specializations for cv-qualified types.
+	* include/bits/stl_vector.h (_Vector_impl::_Vector_impl()):
+	Constrain so that it's only present if the allocator is default
+	constructible.
+	* include/bits/stl_bvector.h (_Bvector_impl::_Bvector_impl()):
+	Likewise.
+	* testsuite/23_containers/vector/cons/113841.cc: New test.
+
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116549
+	* include/bits/stl_iterator.h (disable_sized_sentinel_for):
+	Define specialization for two move_iterator types, as per LWG
+	3736.
+	* testsuite/24_iterators/move_iterator/lwg3736.cc: New test.
+
+2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117560
+	* include/bits/fs_dir.h (enable_borrowed_range, enable_view):
+	Define specializations for directory iterators, as per LWG 3480.
+	* testsuite/27_io/filesystem/iterators/lwg3480.cc: New test.
+
 2025-04-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
