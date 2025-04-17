@@ -61,6 +61,7 @@
 #define POSIX
 #include "vxWorks.h"
 #include <sys/time.h>
+#include <ctype.h> /* for isalpha */
 
 #if defined (__mips_vxworks)
 #include "cacheLib.h"
