@@ -6828,6 +6828,9 @@ or string (str) data type, call @code{omp_get_interop_int},
 Note that @code{device_num} is the OpenMP device number
 while @code{device} is the HIP device number or HSA device handle.
 
+When using HIP with C and C++, the @code{__HIP_PLATFORM_AMD__} preprocessor
+macro must be defined before including the HIP header files.
+
 For the API routine call, add the prefix @code{omp_ipr_} to the property name;
 for instance:
 @smallexample
@@ -6989,6 +6992,9 @@ or string (str) data type, call @code{omp_get_interop_int},
 @code{omp_get_interop_ptr}, or @code{omp_get_interop_str}, respectively.
 Note that @code{device_num} is the OpenMP device number while @code{device}
 is the CUDA, CUDA Driver, or HIP device number.
+
+When using HIP with C and C++, the @code{__HIP_PLATFORM_NVIDIA__} preprocessor
+macro must be defined before including the HIP header files.
 
 For the API routine call, add the prefix @code{omp_ipr_} to the property name;
 for instance:
