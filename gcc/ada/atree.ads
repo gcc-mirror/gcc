@@ -453,7 +453,7 @@ package Atree is
 
    function Parent_Or_List_Containing (X : Union_Id) return Union_Id;
    --  X must be in Node_Range or in List_Range. If X is in Node_Range and is
-   --  contained in a list, returns that list, otherwise return the parent of
+   --  contained in a list, returns that list, otherwise returns the parent of
    --  the list or node represented by X.
 
    function Paren_Count (N : Node_Id) return Nat;
