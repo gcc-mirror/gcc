@@ -398,12 +398,14 @@ ForeverStack<N>::find_closest_module (Node &starting_point)
  * segments */
 template <typename S>
 static inline bool
-check_leading_kw_at_start (const S &segment, bool condition)
+check_leading_kw_at_start (std::vector<Error> &collect_errors, const S &segment,
+			   bool condition)
 {
   if (condition)
-    rust_error_at (segment.get_locus (), ErrorCode::E0433,
-		   "%qs in paths can only be used in start position",
-		   segment.as_string ().c_str ());
+    collect_errors.emplace_back (
+      segment.get_locus (), ErrorCode::E0433,
+      "%qs in paths can only be used in start position",
+      segment.as_string ().c_str ());
 
   return condition;
 }
@@ -418,7 +420,8 @@ template <typename S>
 tl::optional<typename std::vector<S>::const_iterator>
 ForeverStack<N>::find_starting_point (
   const std::vector<S> &segments, std::reference_wrapper<Node> &starting_point,
-  std::function<void (const S &, NodeId)> insert_segment_resolution)
+  std::function<void (const S &, NodeId)> insert_segment_resolution,
+  std::vector<Error> &collect_errors)
 {
   auto iterator = segments.begin ();
 
@@ -435,8 +438,9 @@ ForeverStack<N>::find_starting_point (
 
       // if we're after the first path segment and meet `self` or `crate`, it's
       // an error - we should only be seeing `super` keywords at this point
-      if (check_leading_kw_at_start (seg, !is_start (iterator, segments)
-					    && is_self_or_crate))
+      if (check_leading_kw_at_start (collect_errors, seg,
+				     !is_start (iterator, segments)
+				       && is_self_or_crate))
 	return tl::nullopt;
 
       if (seg.is_crate_path_seg ())
@@ -459,8 +463,9 @@ ForeverStack<N>::find_starting_point (
 	  starting_point = find_closest_module (starting_point);
 	  if (starting_point.get ().is_root ())
 	    {
-	      rust_error_at (seg.get_locus (), ErrorCode::E0433,
-			     "too many leading %<super%> keywords");
+	      collect_errors.emplace_back (
+		seg.get_locus (), ErrorCode::E0433,
+		"too many leading %<super%> keywords");
 	      return tl::nullopt;
 	    }
 
@@ -486,7 +491,8 @@ tl::optional<typename ForeverStack<N>::Node &>
 ForeverStack<N>::resolve_segments (
   Node &starting_point, const std::vector<S> &segments,
   typename std::vector<S>::const_iterator iterator,
-  std::function<void (const S &, NodeId)> insert_segment_resolution)
+  std::function<void (const S &, NodeId)> insert_segment_resolution,
+  std::vector<Error> &collect_errors)
 {
   Node *current_node = &starting_point;
   for (; !is_last (iterator, segments); iterator++)
@@ -508,9 +514,10 @@ ForeverStack<N>::resolve_segments (
       rust_debug ("[ARTHUR]: resolving segment part: %s", str.c_str ());
 
       // check that we don't encounter *any* leading keywords afterwards
-      if (check_leading_kw_at_start (seg, seg.is_crate_path_seg ()
-					    || seg.is_super_path_seg ()
-					    || seg.is_lower_self_seg ()))
+      if (check_leading_kw_at_start (collect_errors, seg,
+				     seg.is_crate_path_seg ()
+				       || seg.is_super_path_seg ()
+				       || seg.is_lower_self_seg ()))
 	return tl::nullopt;
 
       tl::optional<typename ForeverStack<N>::Node &> child = tl::nullopt;
@@ -619,7 +626,8 @@ template <typename S>
 tl::optional<Rib::Definition>
 ForeverStack<N>::resolve_path (
   const std::vector<S> &segments, bool has_opening_scope_resolution,
-  std::function<void (const S &, NodeId)> insert_segment_resolution)
+  std::function<void (const S &, NodeId)> insert_segment_resolution,
+  std::vector<Error> &collect_errors)
 {
   // TODO: What to do if segments.empty() ?
 
@@ -667,12 +675,13 @@ ForeverStack<N>::resolve_path (
   std::reference_wrapper<Node> starting_point = cursor ();
 
   auto res
-    = find_starting_point (segments, starting_point, insert_segment_resolution)
+    = find_starting_point (segments, starting_point, insert_segment_resolution,
+			   collect_errors)
 	.and_then (
-	  [this, &segments, &starting_point, &insert_segment_resolution] (
-	    typename std::vector<S>::const_iterator iterator) {
+	  [this, &segments, &starting_point, &insert_segment_resolution,
+	   &collect_errors] (typename std::vector<S>::const_iterator iterator) {
 	    return resolve_segments (starting_point.get (), segments, iterator,
-				     insert_segment_resolution);
+				     insert_segment_resolution, collect_errors);
 	  })
 	.and_then ([this, &segments, &insert_segment_resolution] (
 		     Node &final_node) -> tl::optional<Rib::Definition> {

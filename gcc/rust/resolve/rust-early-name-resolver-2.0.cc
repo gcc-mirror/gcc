@@ -141,6 +141,10 @@ Early::build_import_mapping (
       // be moved into the newly created import mappings
       auto path = import.to_resolve;
 
+      // used to skip the "unresolved import" error
+      // if we output other errors during resolution
+      size_t old_error_count = macro_resolve_errors.size ();
+
       switch (import.kind)
 	{
 	case TopLevel::ImportKind::Kind::Glob:
@@ -154,7 +158,7 @@ Early::build_import_mapping (
 	  break;
 	}
 
-      if (!found)
+      if (!found && old_error_count == macro_resolve_errors.size ())
 	collect_error (Error (path.get_final_segment ().get_locus (),
 			      ErrorCode::E0433, "unresolved import %qs",
 			      path.as_string ().c_str ()));

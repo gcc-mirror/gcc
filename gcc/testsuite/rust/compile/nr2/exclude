@@ -17,7 +17,6 @@ derive-default1.rs
 derive-eq-invalid.rs
 torture/alt_patterns1.rs
 torture/name_resolve1.rs
-issue-3568.rs
 issue-3663.rs
 issue-3671.rs
 issue-3652.rs
