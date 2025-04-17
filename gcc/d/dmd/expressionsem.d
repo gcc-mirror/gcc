@@ -6978,10 +6978,10 @@ private extern (C++) final class ExpressionSemanticVisitor : Visitor
         while (1)
         {
             AttribDeclaration ad = s.isAttribDeclaration();
-            if (!ad)
-                break;
-            if (ad.decl && ad.decl.length == 1)
+            if (ad && ad.decl && ad.decl.length == 1)
                 s = (*ad.decl)[0];
+            else
+                break;
         }
 
         //printf("inserting '%s' %p into sc = %p\n", s.toChars(), s, sc);
