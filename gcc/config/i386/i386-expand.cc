@@ -19256,8 +19256,6 @@ ix86_emit_swdivsf (rtx res, rtx a, rtx b, machine_mode mode)
   e1 = gen_reg_rtx (mode);
   x1 = gen_reg_rtx (mode);
 
-  /* a / b = a * ((rcp(b) + rcp(b)) - (b * rcp(b) * rcp (b))) */
-
   b = force_reg (mode, b);
 
   /* x0 = rcp(b) estimate */
@@ -19270,20 +19268,42 @@ ix86_emit_swdivsf (rtx res, rtx a, rtx b, machine_mode mode)
     emit_insn (gen_rtx_SET (x0, gen_rtx_UNSPEC (mode, gen_rtvec (1, b),
 						UNSPEC_RCP)));
 
-  /* e0 = x0 * b */
-  emit_insn (gen_rtx_SET (e0, gen_rtx_MULT (mode, x0, b)));
+  unsigned vector_size = GET_MODE_SIZE (mode);
 
-  /* e0 = x0 * e0 */
-  emit_insn (gen_rtx_SET (e0, gen_rtx_MULT (mode, x0, e0)));
+  /* (a - (rcp(b) * a * b)) * rcp(b) + rcp(b) * a
+     N-R step with 2 fma implementation.  */
+  if (TARGET_FMA
+      || (TARGET_AVX512F && vector_size == 64)
+      || (TARGET_AVX512VL && (vector_size == 32 || vector_size == 16)))
+    {
+      /* e0 = x0 * a  */
+      emit_insn (gen_rtx_SET (e0, gen_rtx_MULT (mode, x0, a)));
+      /* e1 = e0 * b - a  */
+      emit_insn (gen_rtx_SET (e1, gen_rtx_FMA (mode, e0, b,
+					       gen_rtx_NEG (mode, a))));
+      /* res = - e1 * x0 + e0  */
+      emit_insn (gen_rtx_SET (res, gen_rtx_FMA (mode,
+					       gen_rtx_NEG (mode, e1),
+					       x0, e0)));
+    }
+  else
+    /* a / b = a * ((rcp(b) + rcp(b)) - (b * rcp(b) * rcp (b))) */
+    {
+      /* e0 = x0 * b */
+      emit_insn (gen_rtx_SET (e0, gen_rtx_MULT (mode, x0, b)));
 
-  /* e1 = x0 + x0 */
-  emit_insn (gen_rtx_SET (e1, gen_rtx_PLUS (mode, x0, x0)));
+      /* e1 = x0 + x0 */
+      emit_insn (gen_rtx_SET (e1, gen_rtx_PLUS (mode, x0, x0)));
 
-  /* x1 = e1 - e0 */
-  emit_insn (gen_rtx_SET (x1, gen_rtx_MINUS (mode, e1, e0)));
+      /* e0 = x0 * e0 */
+      emit_insn (gen_rtx_SET (e0, gen_rtx_MULT (mode, x0, e0)));
 
-  /* res = a * x1 */
-  emit_insn (gen_rtx_SET (res, gen_rtx_MULT (mode, a, x1)));
+      /* x1 = e1 - e0 */
+      emit_insn (gen_rtx_SET (x1, gen_rtx_MINUS (mode, e1, e0)));
+
+      /* res = a * x1 */
+      emit_insn (gen_rtx_SET (res, gen_rtx_MULT (mode, a, x1)));
+    }
 }
 
 /* Output code to perform a Newton-Rhapson approximation of a
