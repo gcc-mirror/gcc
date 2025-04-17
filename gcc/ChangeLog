@@ -1,3 +1,110 @@
+2025-04-16  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/88382
+	* doc/extend.texi (Syntax Extensions): Adjust menu.
+	(Raw String Literals): New section.
+
+2025-04-16  Keith Packard  <keithp@keithp.com>
+
+	* config/rx/rx.md (cmpstrnsi): Allow constant length.  For
+	static length 0, just store 0 into the output register.
+	For dynamic zero, set C/Z appropriately.
+	(rxcmpstrn): No longer set C/Z.
+
+2025-04-16  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* tree-ssa-phiopt.cc (factor_out_conditional_operation): Do not
+	bypass the int_fits_type_p test for boolean types whose precision
+	is not 1.
+
+2025-04-16  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* common.opt.urls: Regenerated.
+
+2025-04-16  Ard Biesheuvel  <ardb@kernel.org>
+
+	PR target/119386
+	* config/i386/i386-options.cc: Permit -mnop-mcount when
+	using -fpic with PLTs.
+
+2025-04-16  Ard Biesheuvel  <ardb@kernel.org>
+
+	PR target/119386
+	* config/i386/i386.cc (x86_print_call_or_nop): Add @PLT suffix
+	where appropriate.
+	(x86_function_profiler): Fall through to x86_print_call_or_nop()
+	for PIC codegen when flag_plt is set.
+
+2025-04-16  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR driver/90465
+	* doc/invoke.texi (Overall Options): Add a @cindex for -Q in
+	connection with --help=.
+	(Developer Options): Point at --help= documentation for the
+	other use of -Q.
+
+2025-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/97106
+	* config/nvptx/nvptx.cc (nvptx_asm_output_def_from_decls)
+	[ACCEL_COMPILER]: Make sure to emit C++ constructor, destructor
+	aliases.
+
+2025-04-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR tree-optimization/119614
+	* ipa-prop.cc (ipa_write_return_summaries): New function.
+	(ipa_record_return_value_range_1): Break out from ....
+	(ipa_record_return_value_range): ... here.
+	(ipa_read_return_summaries): New function.
+	(ipa_prop_read_section): Read return summaries.
+	(read_ipcp_transformation_info): Read return summaries.
+	(ipcp_write_transformation_summaries): Write return summaries;
+	do not stream stray 0.
+
+2025-04-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/119351
+	* tree-vectorizer.h (LOOP_VINFO_MASK_NITERS_PFA_OFFSET,
+	LOOP_VINFO_NON_LINEAR_IV): New.
+	(class _loop_vec_info): Add mask_skip_niters_pfa_offset and
+	nonlinear_iv.
+	* tree-vect-loop.cc (_loop_vec_info::_loop_vec_info): Initialize them.
+	(vect_analyze_scalar_cycles_1): Record non-linear inductions.
+	(vectorizable_induction): If early break and PFA using masking create a
+	new phi which tracks where the scalar code needs to start...
+	(vectorizable_live_operation): ...and generate the adjustments here.
+	(vect_use_loop_mask_for_alignment_p): Reject non-linear inductions and
+	early break needing peeling.
+
+2025-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/119808
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Don't set
+	m_single_use_names bits for SSA_NAMEs which have single use but
+	their SSA_NAME_DEF_STMT is a copy from another SSA_NAME which doesn't
+	have a single use, or single use which is such a copy etc.
+
+2025-04-16  Jesse Huang  <jesse.huang@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_file_end): Fix .p2align value.
+
+2025-04-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.h (JUMP_TABLES_IN_TEXT_SECTION): Check if
+	large code model.
+
+2025-04-16  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-sve.md (vec_extract<vpred><Vel>): Fix operand
+	order to gen_vcond_mask_*.
+
+2025-04-16  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_valid_sysreg_name_p): Remove feature check.
+	(aarch64_retrieve_sysreg): Ditto.
+
 2025-04-15  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR tree-optimization/71094

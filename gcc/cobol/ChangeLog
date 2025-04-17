@@ -1,3 +1,8 @@
+2025-04-16  Bob Dubner  <rdubner@symas.com>
+
+	PR cobol/119759
+	* LICENSE: Deleted.
+
 2025-04-15  Richard Biener  <rguenther@suse.de>
 
 	PR cobol/119302

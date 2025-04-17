@@ -1,3 +1,16 @@
+2025-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114772
+	PR c++/101180
+	* pt.cc (apply_late_template_attributes): Also override
+	target_option_current_node.
+
+2025-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116954
+	* contracts.cc (remove_contract_attributes): Preserve flags
+	on the attribute list.
+
 2025-04-15  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/119755

@@ -1,3 +1,20 @@
+2025-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1.C: Remove
+	'ALWAYS_INLINE' workaround.
+
+2025-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/106445
+	* testsuite/libgomp.c++/pr106445-1.C: New.
+	* testsuite/libgomp.c++/pr106445-1-O0.C: Likewise.
+
+2025-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/97106
+	* testsuite/libgomp.c++/pr96390.C: Un-XFAIL nvptx offloading.
+	* testsuite/libgomp.c-c++-common/pr96390.c: Adjust.
+
 2025-04-15  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (gcn, nvptx): Mention self_maps clause

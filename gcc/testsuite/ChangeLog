@@ -1,3 +1,93 @@
+2025-04-16  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/ipa/ipa-sra-19.c: Add -Wno-psabi on ppc-elf too.
+
+2025-04-16  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR tree-optimization/112822
+	* g++.dg/pr112822.C: Replace altivec vector attribute with a generic
+	vector attribute.
+
+2025-04-16  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/opt105.adb: New test.
+	* gnat.dg/opt105_pkg.ads, gnat.dg/opt105_pkg.adb: New helper.
+
+2025-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114772
+	PR c++/101180
+	* g++.dg/ext/pragma-target2.C: New test.
+
+2025-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116954
+	* g++.dg/warn/Wformat-3.C: New test.
+
+2025-04-16  Ard Biesheuvel  <ardb@kernel.org>
+
+	PR target/119386
+	* gcc.target/i386/pr119386-3.c: New test.
+
+2025-04-16  Ard Biesheuvel  <ardb@kernel.org>
+
+	PR target/119386
+	* gcc.target/i386/pr119386-1.c: New test.
+	* gcc.target/i386/pr119386-2.c: New test.
+
+2025-04-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106948
+	* gfortran.dg/pure_formal_proc_4.f90: New test.
+
+2025-04-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	* g++.dg/lto/pr119614_0.C: New test.
+
+2025-04-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/119286
+	* gcc.dg/vect/vect-early-break_18.c: Force -march=gfx908 for amdgcn.
+
+2025-04-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/119351
+	* gcc.target/aarch64/sve/peel_ind_10.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_10_run.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_5.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_5_run.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_6.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_6_run.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_7.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_7_run.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_8.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_8_run.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_9.c: New test.
+	* gcc.target/aarch64/sve/peel_ind_9_run.c: New test.
+
+2025-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/119808
+	* gcc.dg/bitint-121.c: New test.
+
+2025-04-16  Jesse Huang  <jesse.huang@sifive.com>
+
+	* gcc.target/riscv/gnu-property-align-rv32.c: New file.
+	* gcc.target/riscv/gnu-property-align-rv64.c: New file.
+
+2025-04-16  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/jump-table-large-code-model.c: New test.
+
+2025-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/116093
+	* gcc.dg/bitint-122.c: New test.
+
+2025-04-16  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* gcc.target/aarch64/acle/rwsr-ungated.c: New test.
+
 2025-04-15  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/119826

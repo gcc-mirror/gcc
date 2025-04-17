@@ -1,3 +1,37 @@
+2025-04-16  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/109162
+	* include/std/format (range_formatter::format): Format const range,
+	only if reference type is not changed.
+	* testsuite/std/format/ranges/formatter.cc: New tests.
+
+2025-04-16  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/109162
+	* include/std/format (__formatter_int::_M_format_character_escaped)
+	(__formatter_str::format): Use __sink.out() to produce _Sink_iter.
+	(__format::__const_formattable_range): Moved closer to range_formatter.
+	(__format::__maybe_const_range): Use `__conditional_t` and moved closer
+	to range_formatter.
+	(__format::__format_padded, __format::maybe_const)
+	(__format::__indexed_formatter_storage, __format::__tuple_formatter)
+	(std::formatter<pair<_Fp, _Sp>, _CharT>>)
+	(std::formatter<tuple<_Tps...>, _CharT): Define.
+	(std::formatter<_Rg, _CharT>::format): Cast incoming range to
+	__format::__maybe_const_range<_Rg, _CharT>&.
+	(std::formatter<_Rg, _CharT>::_M_format): Extracted from format,
+	and use __format_padded.
+	(std::formatter<_Rg, _CharT>::_M_format_no_padding): Rename...
+	(std::formatter<_Rg, _CharT>::_M_format_elems): ...to this.
+	(std::formatter<_Rg, _CharT>::_M_format_with_padding): Extracted as
+	__format_padded.
+	* testsuite/util/testsuite_iterators.h (test_input_range_nocopy):
+	Define.
+	* testsuite/std/format/ranges/formatter.cc: Tests for `m` specifier.
+	* testsuite/std/format/ranges/sequence.cc: Tests for array and subrange.
+	* testsuite/std/format/ranges/map.cc: New test.
+	* testsuite/std/format/tuple.cc: New test.
+
 2025-04-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/ranges (__glibcxx_want_ranges_iota): Do not
