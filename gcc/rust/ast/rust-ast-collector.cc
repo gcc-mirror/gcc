@@ -1524,7 +1524,44 @@ TokenCollector::visit (InlineAsm &expr)
 
 void
 TokenCollector::visit (LlvmInlineAsm &expr)
-{}
+{
+  push (Rust::Token::make_identifier (expr.get_locus (), "llvm_asm"));
+  push (Rust::Token::make (EXCLAM, expr.get_locus ()));
+  push (Rust::Token::make (LEFT_PAREN, expr.get_locus ()));
+  for (auto &template_str : expr.get_templates ())
+    push (Rust::Token::make_string (template_str.get_locus (),
+				    std::move (template_str.symbol)));
+
+  push (Rust::Token::make (COLON, expr.get_locus ()));
+  for (auto output : expr.get_outputs ())
+    {
+      push (Rust::Token::make_string (expr.get_locus (),
+				      std::move (output.constraint)));
+      visit (output.expr);
+      push (Rust::Token::make (COMMA, expr.get_locus ()));
+    }
+
+  push (Rust::Token::make (COLON, expr.get_locus ()));
+  for (auto input : expr.get_inputs ())
+    {
+      push (Rust::Token::make_string (expr.get_locus (),
+				      std::move (input.constraint)));
+      visit (input.expr);
+      push (Rust::Token::make (COMMA, expr.get_locus ()));
+    }
+
+  push (Rust::Token::make (COLON, expr.get_locus ()));
+  for (auto &clobber : expr.get_clobbers ())
+    {
+      push (Rust::Token::make_string (expr.get_locus (),
+				      std::move (clobber.symbol)));
+      push (Rust::Token::make (COMMA, expr.get_locus ()));
+    }
+  push (Rust::Token::make (COLON, expr.get_locus ()));
+  // Dump options
+
+  push (Rust::Token::make (RIGHT_PAREN, expr.get_locus ()));
+}
 
 // rust-item.h
 
