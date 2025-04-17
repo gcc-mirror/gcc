@@ -9,8 +9,6 @@
 
 ! We've got support for OpenACC "Changes from Version 2.0 to 2.5":
 ! "The 'declare create' directive with a Fortran 'allocatable' has new behavior".
-! Yet, after 'allocate'/before 'deallocate', call 'acc_create'/'acc_delete'
-! manually, too.
 
 
 !TODO { dg-additional-options -fno-inline } for stable results regarding OpenACC 'routine'.
@@ -103,12 +101,6 @@ program test
   ! This is now OpenACC "present":
   if (.not.acc_is_present (b)) error stop
   ! ..., and got the actual array descriptor installed:
-  !$acc serial
-  call verify_n1_allocated
-  !$acc end serial
-
-  call acc_create (b)
-  if (.not.acc_is_present (b)) error stop
   !$acc serial
   call verify_n1_allocated
   !$acc end serial
@@ -213,13 +205,6 @@ program test
   call verify_n1_allocated
   if (.not.acc_is_present (b)) error stop
 
-  call acc_delete (b)
-  if (.not.allocated (b)) error stop
-  if (.not.acc_is_present (b)) error stop
-  !$acc serial
-  call verify_n1_allocated
-  !$acc end serial
-
   deallocate (b)
   !if (acc_is_present (b)) error stop
   call verify_n1_deallocated (.false.)
@@ -251,12 +236,6 @@ program test
 
   allocate (b(n2_lb:n2_ub))
   call verify_n2_allocated
-  if (.not.acc_is_present (b)) error stop
-  !$acc serial
-  call verify_n2_allocated
-  !$acc end serial
-
-  call acc_create (b)
   if (.not.acc_is_present (b)) error stop
   !$acc serial
   call verify_n2_allocated
@@ -328,13 +307,6 @@ program test
 
   call verify_n2_allocated
   if (.not.acc_is_present (b)) error stop
-
-  call acc_delete (b)
-  if (.not.allocated (b)) error stop
-  if (.not.acc_is_present (b)) error stop
-  !$acc serial
-  call verify_n2_allocated
-  !$acc end serial
 
   deallocate (b)
   !if (acc_is_present (b)) error stop

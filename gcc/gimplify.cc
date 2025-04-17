@@ -10755,6 +10755,8 @@ omp_group_base (omp_mapping_group *grp, unsigned int *chained,
     case GOMP_MAP_FIRSTPRIVATE_INT:
     case GOMP_MAP_USE_DEVICE_PTR:
     case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
+    case GOMP_MAP_DECLARE_ALLOCATE:
+    case GOMP_MAP_DECLARE_DEALLOCATE:
       return NULL_TREE;
 
     case GOMP_MAP_FIRSTPRIVATE_POINTER:
@@ -14737,7 +14739,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 			     enum tree_code code)
 {
   struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
-  tree *orig_list_p = list_p;
+  tree *prev_list_p = NULL, *orig_list_p = list_p;
   tree c, decl;
   bool has_inscan_reductions = false;
 
@@ -15048,9 +15050,15 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	    case OMP_TARGET_DATA:
 	    case OMP_TARGET_ENTER_DATA:
 	    case OMP_TARGET_EXIT_DATA:
-	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
-		  || (OMP_CLAUSE_MAP_KIND (c)
-		      == GOMP_MAP_FIRSTPRIVATE_REFERENCE))
+	      if ((OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
+		   || (OMP_CLAUSE_MAP_KIND (c)
+		       == GOMP_MAP_FIRSTPRIVATE_REFERENCE))
+		  && !(prev_list_p
+		       && OMP_CLAUSE_CODE (*prev_list_p) == OMP_CLAUSE_MAP
+		       && ((OMP_CLAUSE_MAP_KIND (*prev_list_p)
+			    == GOMP_MAP_DECLARE_ALLOCATE)
+			   || (OMP_CLAUSE_MAP_KIND (*prev_list_p)
+			       == GOMP_MAP_DECLARE_DEALLOCATE))))
 		/* For target {,enter ,exit }data only the array slice is
 		   mapped, but not the pointer to it.  */
 		remove = true;
@@ -15391,6 +15399,19 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		  || (OMP_CLAUSE_MAP_KIND (c)
 		      == GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION)))
 	    move_attach = true;
+
+	  if (!remove && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_POINTER
+	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH_DETACH
+	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_TO_PSET
+	      && OMP_CLAUSE_CHAIN (c)
+	      && OMP_CLAUSE_CODE (OMP_CLAUSE_CHAIN (c)) == OMP_CLAUSE_MAP
+	      && ((OMP_CLAUSE_MAP_KIND (OMP_CLAUSE_CHAIN (c))
+		   == GOMP_MAP_ALWAYS_POINTER)
+		  || (OMP_CLAUSE_MAP_KIND (OMP_CLAUSE_CHAIN (c))
+		      == GOMP_MAP_ATTACH_DETACH)
+		  || (OMP_CLAUSE_MAP_KIND (OMP_CLAUSE_CHAIN (c))
+		      == GOMP_MAP_TO_PSET)))
+	    prev_list_p = list_p;
 
 	  break;
 

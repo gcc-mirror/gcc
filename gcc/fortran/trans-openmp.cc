@@ -102,6 +102,10 @@ gfc_omp_check_optional_argument (tree decl, bool for_present_check)
   if (!for_present_check)
     return gfc_omp_is_optional_argument (decl) ? decl : NULL_TREE;
 
+  if (!DECL_P (decl))
+    return fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+			    decl, null_pointer_node);
+
   if (!DECL_LANG_SPECIFIC (decl))
     return NULL_TREE;
 
@@ -4117,6 +4121,12 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		case OMP_MAP_FORCE_DEVICEPTR:
 		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_FORCE_DEVICEPTR);
 		  break;
+		case OMP_MAP_DECLARE_ALLOCATE:
+		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_DECLARE_ALLOCATE);
+		  break;
+		case OMP_MAP_DECLARE_DEALLOCATE:
+		  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_DECLARE_DEALLOCATE);
+		  break;
 		default:
 		  gcc_unreachable ();
 		}
@@ -4239,6 +4249,14 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			    gmk = GOMP_MAP_DELETE;
 			  else if (op == EXEC_OMP_TARGET_EXIT_DATA)
 			    gmk = GOMP_MAP_RELEASE;
+			  else if (GFC_DECL_GET_SCALAR_ALLOCATABLE (decl)
+				   && n->sym->attr.oacc_declare_create)
+			    {
+			      if (clauses->update_allocatable)
+				gmk = GOMP_MAP_ALWAYS_POINTER;
+			      else
+				gmk = GOMP_MAP_FIRSTPRIVATE_POINTER;
+			    }
 			  tree size;
 			  if (gmk == GOMP_MAP_RELEASE || gmk == GOMP_MAP_DELETE)
 			    size = TYPE_SIZE_UNIT (TREE_TYPE (decl));
@@ -5978,12 +5996,14 @@ gfc_trans_oacc_executable_directive (gfc_code *code)
 {
   stmtblock_t block;
   tree stmt, oacc_clauses;
+  gfc_omp_clauses *clauses = code->ext.omp_clauses;
   enum tree_code construct_code;
 
   switch (code->op)
     {
       case EXEC_OACC_UPDATE:
 	construct_code = OACC_UPDATE;
+	clauses->update_allocatable = 1;
 	break;
       case EXEC_OACC_ENTER_DATA:
 	construct_code = OACC_ENTER_DATA;
@@ -5999,8 +6019,8 @@ gfc_trans_oacc_executable_directive (gfc_code *code)
     }
 
   gfc_start_block (&block);
-  oacc_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
-					code->loc, false, true, code->op);
+  oacc_clauses = gfc_trans_omp_clauses (&block, clauses, code->loc,
+					false, true, code->op);
   stmt = build1_loc (input_location, construct_code, void_type_node,
 		     oacc_clauses);
   gfc_add_expr_to_block (&block, stmt);
@@ -9322,6 +9342,41 @@ gfc_trans_oacc_declare (gfc_code *code)
   gfc_add_expr_to_block (&block, stmt);
 
   return gfc_finish_block (&block);
+}
+
+/* Create an OpenACC enter or exit data construct for an OpenACC declared
+   variable that has been allocated or deallocated.  */
+
+tree
+gfc_trans_oacc_declare_allocate (stmtblock_t *block, gfc_expr *expr,
+				 bool allocate)
+{
+  gfc_omp_clauses *clauses = gfc_get_omp_clauses ();
+  gfc_omp_namelist *p = gfc_get_omp_namelist ();
+  tree oacc_clauses, stmt;
+  enum tree_code construct_code;
+
+  p->sym = expr->symtree->n.sym;
+  p->where = expr->where;
+
+  if (allocate)
+    {
+      p->u.map.op = OMP_MAP_DECLARE_ALLOCATE;
+      construct_code = OACC_ENTER_DATA;
+    }
+  else
+    {
+      p->u.map.op = OMP_MAP_DECLARE_DEALLOCATE;
+      construct_code = OACC_EXIT_DATA;
+    }
+  clauses->lists[OMP_LIST_MAP] = p;
+
+  oacc_clauses = gfc_trans_omp_clauses (block, clauses, expr->where);
+  stmt = build1_loc (input_location, construct_code, void_type_node,
+		     oacc_clauses);
+  gfc_add_expr_to_block (block, stmt);
+
+  return stmt;
 }
 
 tree
