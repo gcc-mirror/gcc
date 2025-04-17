@@ -676,7 +676,7 @@ ForeverStack<N>::resolve_path (
 				     insert_segment_resolution);
 	  })
 	.and_then ([this, &segments, &insert_segment_resolution] (
-		     Node final_node) -> tl::optional<Rib::Definition> {
+		     Node &final_node) -> tl::optional<Rib::Definition> {
 	  // leave resolution within impl blocks to type checker
 	  if (final_node.rib.kind == Rib::Kind::TraitOrImpl)
 	    return tl::nullopt;
