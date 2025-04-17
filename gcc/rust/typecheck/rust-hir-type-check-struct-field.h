@@ -60,6 +60,9 @@ private:
   TyTy::BaseType *resolved_field_value_expr;
   std::set<std::string> fields_assigned;
   std::map<size_t, HIR::StructExprField *> adtFieldIndexToField;
+
+  // parent
+  HIR::Expr &parent;
 };
 
 } // namespace Resolver
