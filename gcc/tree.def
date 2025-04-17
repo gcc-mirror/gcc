@@ -135,7 +135,11 @@ DEFTREECODE (OFFSET_TYPE, "offset_type", tcc_type, 0)
 DEFTREECODE (ENUMERAL_TYPE, "enumeral_type", tcc_type, 0)
 
 /* Boolean type (true or false are the only values).  Looks like an
-   INTEGRAL_TYPE.  */
+   INTEGER_TYPE, but must be dealt with specially because TYPE_PRECISION
+   may be arbitrary despite the restricted set of valid values (in other
+   words, boolean types with TYPE_PRECISION > 1 exist in some languages).
+   Similarly, TYPE_UNSIGNED may be false for components of vector masks,
+   as well as for boolean types in languages other than C.  */
 DEFTREECODE (BOOLEAN_TYPE, "boolean_type", tcc_type, 0)
 
 /* Integer types in all languages, including char in C.
