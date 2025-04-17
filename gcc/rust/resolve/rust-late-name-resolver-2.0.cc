@@ -173,6 +173,14 @@ Late::visit (AST::IdentifierPattern &identifier)
 }
 
 void
+Late::visit (AST::StructPatternFieldIdent &field)
+{
+  // We do want to ignore duplicated data because some situations rely on it.
+  std::ignore = ctx.values.insert_shadowable (field.get_identifier (),
+					      field.get_node_id ());
+}
+
+void
 Late::visit (AST::SelfParam &param)
 {
   // handle similar to AST::IdentifierPattern
