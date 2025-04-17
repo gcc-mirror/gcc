@@ -1976,6 +1976,9 @@ at plain @option{-O2}.
 @item tls
 Target supports thread-local storage.
 
+@item tls_link
+Target supports linking TLS executables.
+
 @item tls_native
 Target supports native (rather than emulated) thread-local storage.
 

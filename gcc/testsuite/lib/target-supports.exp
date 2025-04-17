@@ -1098,6 +1098,16 @@ proc check_effective_target_tls {} {
     }]
 }
 
+# Return 1 if we can link using TLS, 0 otherwise.
+
+proc check_effective_target_tls_link {} {
+    return [check_no_compiler_messages tls_link executable {
+	__thread int i;
+	int main (void) { return i; }
+	void g (int j) { i = j; }
+    }]
+}
+
 # Return 1 if *native* thread local storage (TLS) is supported, 0 otherwise.
 
 proc check_effective_target_tls_native {} {
