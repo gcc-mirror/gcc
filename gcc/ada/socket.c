@@ -280,10 +280,10 @@ __gnat_gethostbyname (const char *name,
     return -1;
   }
   ret->h_name      = name;
-  ret->h_aliases   = &vxw_h_aliases;
+  ret->h_aliases   = vxw_h_aliases;
   ret->h_addrtype  = AF_INET;
   ret->h_length    = 4;
-  ret->h_addr_list = &vxw_h_addr_list;
+  ret->h_addr_list = vxw_h_addr_list;
   return 0;
 }
 
@@ -302,18 +302,18 @@ __gnat_gethostbyaddr (const char *addr, int len, int type,
     return -1;
   }
 
-  if (hostGetByAddr (*(int*)addr, &vxw_h_name) != OK) {
+  if (hostGetByAddr (*(int*)addr, vxw_h_name) != OK) {
     *h_errnop = __gnat_get_h_errno ();
     return -1;
   }
 
   vxw_h_addr       = (long) addr;
 
-  ret->h_name      = &vxw_h_name;
-  ret->h_aliases   = &vxw_h_aliases;
+  ret->h_name      = vxw_h_name;
+  ret->h_aliases   = vxw_h_aliases;
   ret->h_addrtype  = AF_INET;
   ret->h_length    = 4;
-  ret->h_addr_list = &vxw_h_addr_list;
+  ret->h_addr_list = vxw_h_addr_list;
   return 0;
 }
 
