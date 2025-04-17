@@ -68,8 +68,7 @@ ResolvePath::resolve_path (AST::PathInExpression &expr)
       if (in_middle_of_path && segment.is_lower_self_seg ())
 	{
 	  rust_error_at (segment.get_locus (), ErrorCode::E0433,
-			 "leading path segment %qs can only be used at the "
-			 "beginning of a path",
+			 "%qs in paths can only be used in start position",
 			 segment.as_string ().c_str ());
 	  return UNKNOWN_NODEID;
 	}
@@ -372,8 +371,9 @@ ResolvePath::resolve_path (AST::SimplePath &expr)
 	{
 	  if (!is_first_segment)
 	    {
-	      rust_error_at (segment.get_locus (),
-			     "%<super%> can only be used in start position");
+	      rust_error_at (
+		segment.get_locus (), ErrorCode::E0433,
+		"%<super%> in paths can only be used in start position");
 	      return UNKNOWN_NODEID;
 	    }
 	  if (module_scope_id == crate_scope_id)

@@ -4,4 +4,4 @@ mod foo {
 }
 
 pub use foo::super::foo::S as T;
-// { dg-error ".super. can only be used in start position" "" { target *-*-* } .-1 }
+// { dg-error ".super. in paths can only be used in start position" "" { target *-*-* } .-1 }

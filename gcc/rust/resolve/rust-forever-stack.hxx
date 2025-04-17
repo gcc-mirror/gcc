@@ -401,10 +401,9 @@ static inline bool
 check_leading_kw_at_start (const S &segment, bool condition)
 {
   if (condition)
-    rust_error_at (
-      segment.get_locus (), ErrorCode::E0433,
-      "leading path segment %qs can only be used at the beginning of a path",
-      segment.as_string ().c_str ());
+    rust_error_at (segment.get_locus (), ErrorCode::E0433,
+		   "%qs in paths can only be used in start position",
+		   segment.as_string ().c_str ());
 
   return condition;
 }
