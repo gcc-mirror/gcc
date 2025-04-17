@@ -108,7 +108,8 @@ DefaultASTVisitor::visit (GenericArgsBinding &binding)
 void
 DefaultASTVisitor::visit (AST::TypePathSegmentGeneric &segment)
 {
-  visit (segment.get_generic_args ());
+  if (segment.has_generic_args ())
+    visit (segment.get_generic_args ());
 }
 
 void

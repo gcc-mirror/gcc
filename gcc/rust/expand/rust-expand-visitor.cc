@@ -489,7 +489,8 @@ ExpandVisitor::visit (AST::PathInExpression &path)
 void
 ExpandVisitor::visit (AST::TypePathSegmentGeneric &segment)
 {
-  expand_generic_args (segment.get_generic_args ());
+  if (segment.has_generic_args ())
+    expand_generic_args (segment.get_generic_args ());
 }
 
 void
