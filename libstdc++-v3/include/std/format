@@ -555,8 +555,8 @@ namespace __format
       constexpr iterator
       _M_parse_fill_and_align(iterator __first, iterator __last, string_view __not_fill) noexcept
       {
-	for (char c : __not_fill)
-	  if (*__first == c)
+	for (char __c : __not_fill)
+	  if (*__first == static_cast<_CharT>(__c))
 	    return __first;
 
 	using namespace __unicode;
