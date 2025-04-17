@@ -78,7 +78,10 @@ void test_inequality ()
   CHECK_INEQUALITY (omp::allocator::cgroup_mem, void);
   CHECK_INEQUALITY (omp::allocator::pteam_mem, void);
   CHECK_INEQUALITY (omp::allocator::thread_mem, void);
+#ifdef __gnu_linux__
+  /* Pinning not implemented on other targets.  */
   CHECK_INEQUALITY (ompx::allocator::gnu_pinned_mem, void);
+#endif
   /* And again with the same type passed to the allocator.  */
   CHECK_INEQUALITY (omp::allocator::null_allocator, T);
   CHECK_INEQUALITY (omp::allocator::default_mem, T);
@@ -89,7 +92,9 @@ void test_inequality ()
   CHECK_INEQUALITY (omp::allocator::cgroup_mem, T);
   CHECK_INEQUALITY (omp::allocator::pteam_mem, T);
   CHECK_INEQUALITY (omp::allocator::thread_mem, T);
+#ifdef __gnu_linux__
   CHECK_INEQUALITY (ompx::allocator::gnu_pinned_mem, T);
+#endif
 }
 
 #undef CHECK_INEQUALITY
@@ -121,7 +126,9 @@ int main ()
   test<int, omp::allocator::cgroup_mem>(42);
   test<int, omp::allocator::pteam_mem>(42);
   test<int, omp::allocator::thread_mem>(42);
+#ifdef __gnu_linux__
   test<int, ompx::allocator::gnu_pinned_mem>(42);
+#endif
 
   test<long long, omp::allocator::null_allocator>(42);
   test<long long, omp::allocator::default_mem>(42);
@@ -132,7 +139,9 @@ int main ()
   test<long long, omp::allocator::cgroup_mem>(42);
   test<long long, omp::allocator::pteam_mem>(42);
   test<long long, omp::allocator::thread_mem>(42);
+#ifdef __gnu_linux__
   test<long long, ompx::allocator::gnu_pinned_mem>(42);
+#endif
 
   test<S, omp::allocator::null_allocator>( S{42, true, 128.f});
   test<S, omp::allocator::default_mem>(    S{42, true, 128.f});
@@ -143,7 +152,9 @@ int main ()
   test<S, omp::allocator::cgroup_mem>(     S{42, true, 128.f});
   test<S, omp::allocator::pteam_mem>(      S{42, true, 128.f});
   test<S, omp::allocator::thread_mem>(     S{42, true, 128.f});
+#ifdef __gnu_linux__
   test<S, ompx::allocator::gnu_pinned_mem>(S{42, true, 128.f});
+#endif
 
   test_inequality<int, omp::allocator::null_allocator>();
   test_inequality<int, omp::allocator::default_mem>();
@@ -154,5 +165,7 @@ int main ()
   test_inequality<int, omp::allocator::cgroup_mem>();
   test_inequality<int, omp::allocator::pteam_mem>();
   test_inequality<int, omp::allocator::thread_mem>();
+#ifdef __gnu_linux__
   test_inequality<int, ompx::allocator::gnu_pinned_mem>();
+#endif
 }

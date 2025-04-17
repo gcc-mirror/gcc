@@ -86,7 +86,10 @@ int main ()
   f<int, omp::allocator::cgroup_mem     >(0, 1, 2, 3);
   f<int, omp::allocator::pteam_mem      >(0, 1, 2, 3);
   f<int, omp::allocator::thread_mem     >(0, 1, 2, 3);
+#ifdef __gnu_linux__
+  /* Pinning not implemented on other targets.  */
   f<int, ompx::allocator::gnu_pinned_mem>(0, 1, 2, 3);
+#endif
 
   f<long long, omp::allocator::null_allocator >(0, 1, 2, 3);
   f<long long, omp::allocator::default_mem    >(0, 1, 2, 3);
@@ -97,7 +100,9 @@ int main ()
   f<long long, omp::allocator::cgroup_mem     >(0, 1, 2, 3);
   f<long long, omp::allocator::pteam_mem      >(0, 1, 2, 3);
   f<long long, omp::allocator::thread_mem     >(0, 1, 2, 3);
+#ifdef __gnu_linux__
   f<long long, ompx::allocator::gnu_pinned_mem>(0, 1, 2, 3);
+#endif
 
   S0 s0_0{   42, true,  111128.f};
   S0 s0_1{  142, false,  11128.f};
@@ -112,7 +117,9 @@ int main ()
   f<S0, omp::allocator::cgroup_mem     >(s0_0, s0_1, s0_2, s0_3);
   f<S0, omp::allocator::pteam_mem      >(s0_0, s0_1, s0_2, s0_3);
   f<S0, omp::allocator::thread_mem     >(s0_0, s0_1, s0_2, s0_3);
+#ifdef __gnu_linux__
   f<S0, ompx::allocator::gnu_pinned_mem>(s0_0, s0_1, s0_2, s0_3);
+#endif
 
   S1 s1_0{   42, true,  111128.f};
   S1 s1_1{  142, false,  11128.f};
@@ -128,5 +135,7 @@ int main ()
   f<S1, omp::allocator::cgroup_mem     >(s1_0, s1_1, s1_2, s1_3);
   f<S1, omp::allocator::pteam_mem      >(s1_0, s1_1, s1_2, s1_3);
   f<S1, omp::allocator::thread_mem     >(s1_0, s1_1, s1_2, s1_3);
+#ifdef __gnu_linux__
   f<S1, ompx::allocator::gnu_pinned_mem>(s1_0, s1_1, s1_2, s1_3);
+#endif
 }
