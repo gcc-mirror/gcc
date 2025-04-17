@@ -193,6 +193,33 @@ class cxx_format_postprocessor : public format_postprocessor
   deferred_printed_type m_type_b;
 };
 
+/* Constructor and destructor for cxx_dump_pretty_printer, defined here to
+   avoid needing to move cxx_format_postprocessor into the header as well.  */
+
+cxx_dump_pretty_printer::
+cxx_dump_pretty_printer (int phase)
+  : phase (phase)
+{
+  outf = dump_begin (phase, &flags);
+  if (outf)
+    {
+      pp_format_decoder (this) = cp_printer;
+      /* This gets deleted in ~pretty_printer.  */
+      pp_format_postprocessor (this) = new cxx_format_postprocessor ();
+      set_output_stream (outf);
+    }
+}
+
+cxx_dump_pretty_printer::
+~cxx_dump_pretty_printer ()
+{
+  if (outf)
+    {
+      pp_flush (this);
+      dump_end (phase, outf);
+    }
+}
+
 /* Return the in-scope template that's currently being parsed, or
    NULL_TREE otherwise.  */
 
