@@ -83,24 +83,6 @@ DerivePartialEq::eq_fn (std::unique_ptr<Expr> &&cmp_expression,
 			   std::move (block));
 }
 
-DerivePartialEq::SelfOther
-DerivePartialEq::tuple_indexes (int idx)
-{
-  return SelfOther{
-    builder.tuple_idx ("self", idx),
-    builder.tuple_idx ("other", idx),
-  };
-}
-
-DerivePartialEq::SelfOther
-DerivePartialEq::field_acccesses (const std::string &field_name)
-{
-  return SelfOther{
-    builder.field_access (builder.identifier ("self"), field_name),
-    builder.field_access (builder.identifier ("other"), field_name),
-  };
-}
-
 std::unique_ptr<Expr>
 DerivePartialEq::build_eq_expression (
   std::vector<SelfOther> &&field_expressions)
@@ -137,7 +119,7 @@ DerivePartialEq::visit_tuple (TupleStruct &item)
   auto fields = std::vector<SelfOther> ();
 
   for (size_t idx = 0; idx < item.get_fields ().size (); idx++)
-    fields.emplace_back (tuple_indexes (idx));
+    fields.emplace_back (SelfOther::index (builder, idx));
 
   auto fn = eq_fn (build_eq_expression (std::move (fields)), type_name);
 
@@ -153,7 +135,7 @@ DerivePartialEq::visit_struct (StructStruct &item)
 
   for (auto &field : item.get_fields ())
     fields.emplace_back (
-      field_acccesses (field.get_field_name ().as_string ()));
+      SelfOther::field (builder, field.get_field_name ().as_string ()));
 
   auto fn = eq_fn (build_eq_expression (std::move (fields)), type_name);
 

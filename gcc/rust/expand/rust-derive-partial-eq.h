@@ -21,6 +21,7 @@
 
 #include "rust-derive.h"
 #include "rust-path.h"
+#include "rust-derive-cmp-common.h"
 
 namespace Rust {
 namespace AST {
@@ -45,19 +46,6 @@ private:
 
   std::unique_ptr<AssociatedItem> eq_fn (std::unique_ptr<Expr> &&cmp_expression,
 					 std::string type_name);
-
-  /**
-   * A pair of two expressions from each instance being compared. E.g. this
-   * could be `self.0` and `other.0`, or `self.field` and `other.field`
-   */
-  struct SelfOther
-  {
-    std::unique_ptr<Expr> self_expr;
-    std::unique_ptr<Expr> other_expr;
-  };
-
-  SelfOther tuple_indexes (int idx);
-  SelfOther field_acccesses (const std::string &field_name);
 
   /**
    * Build a suite of equality arithmetic expressions chained together by a
