@@ -908,6 +908,24 @@
   "bext\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
+;; We do not define SHIFT_COUNT_TRUNCATED, so we have to have variants
+;; that mask/extend the count if we want to eliminate those ops
+;;      
+;; We could (in theory) use GPR for the various modes, but I haven't
+;; seen those cases appear in practice.  Without a testcase I've
+;; elected to keep the modes X which is easy to reason about.
+(define_insn "*bext<mode>_mask_pos"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(zero_extract:X (match_operand:X 1 "register_operand" "r")
+			(const_int 1)
+			(and:X
+			  (match_operand:X 2 "register_operand" "r")
+			  (match_operand 3 "const_int_operand"))))]
+  "(TARGET_ZBS
+    && INTVAL (operands[3]) + 1 == GET_MODE_BITSIZE (<MODE>mode))"
+  "bext\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
 ;; This is a bext followed by a seqz.  Normally this would be a 3->2 split
 ;; But the and-not pattern with a constant operand is a define_insn_and_split,
 ;; so this looks like a 2->2 split, which combine rejects.  So implement it
