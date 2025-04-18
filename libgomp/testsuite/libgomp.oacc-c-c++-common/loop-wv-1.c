@@ -65,8 +65,24 @@ int main ()
       if(ondev)
 	{
 	  int g = 0;
+#ifdef ACC_DEVICE_TYPE_radeon
+#  ifdef __OPTIMIZE__
+	  int use_vecsize = 64;
+#  else
+	  int use_vecsize = vectorsize;
+#  endif
+	  /* For Radeon, the loop is split into contiguous blocks of
+	     chunk_size * vector_size, with chunk_size selected to cover the
+	     whole iteration space.  Each block is then autovectorized where
+	     possible.  */
+	  int chunk_size = (N + workersize * use_vecsize - 1)
+			   / (workersize * use_vecsize);
+	  int w = ix / (chunk_size * use_vecsize);
+	  int v = 0;
+#else
 	  int w = (ix / vectorsize) % workersize;
 	  int v = ix % vectorsize;
+#endif
 
 	  expected = (g << 16) | (w << 8) | v;
 	}
