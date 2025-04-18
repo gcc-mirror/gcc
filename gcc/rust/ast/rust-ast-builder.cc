@@ -332,6 +332,12 @@ Builder::block () const
 }
 
 std::unique_ptr<BlockExpr>
+Builder::block (std::unique_ptr<Expr> &&tail_expr) const
+{
+  return block (tl::nullopt, std::move (tail_expr));
+}
+
+std::unique_ptr<BlockExpr>
 Builder::block (std::vector<std::unique_ptr<Stmt>> &&stmts,
 		std::unique_ptr<Expr> &&tail_expr) const
 {
@@ -490,9 +496,14 @@ MatchCase
 Builder::match_case (std::unique_ptr<Pattern> &&pattern,
 		     std::unique_ptr<Expr> &&expr)
 {
-  return MatchCase (match_arm (std::move (pattern)), std::move (expr));
+  return match_case (match_arm (std::move (pattern)), std::move (expr));
 }
 
+MatchCase
+Builder::match_case (MatchArm &&arm, std::unique_ptr<Expr> &&expr)
+{
+  return MatchCase (std::move (arm), std::move (expr));
+}
 std::unique_ptr<Expr>
 Builder::loop (std::vector<std::unique_ptr<Stmt>> &&stmts)
 {

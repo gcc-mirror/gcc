@@ -130,6 +130,9 @@ public:
   /* Create an empty block */
   std::unique_ptr<BlockExpr> block () const;
 
+  /* Create a block with just a tail expression */
+  std::unique_ptr<BlockExpr> block (std::unique_ptr<Expr> &&tail_expr) const;
+
   /* Create an early return expression with an optional expression */
   std::unique_ptr<Expr> return_expr (std::unique_ptr<Expr> &&to_return
 				     = nullptr);
@@ -285,6 +288,7 @@ public:
   MatchArm match_arm (std::unique_ptr<Pattern> &&pattern);
   MatchCase match_case (std::unique_ptr<Pattern> &&pattern,
 			std::unique_ptr<Expr> &&expr);
+  MatchCase match_case (MatchArm &&arm, std::unique_ptr<Expr> &&expr);
 
   /* Create a loop expression */
   std::unique_ptr<Expr> loop (std::vector<std::unique_ptr<Stmt>> &&stmts);
