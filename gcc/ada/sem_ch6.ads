@@ -64,9 +64,8 @@ package Sem_Ch6 is
    --  respective counterparts.
 
    procedure Check_Delayed_Subprogram (Designator : Entity_Id);
-   --  Designator can be a E_Subprogram_Type, E_Procedure or E_Function. If a
-   --  type in its profile depends on a private type without a full
-   --  declaration, indicate that the subprogram or type is delayed.
+   --  Designator can be a E_Subprogram_Type, E_Procedure or E_Function. Set
+   --  Has_Delayed_Freeze on Designator if its freezing needs to be delayed.
 
    procedure Check_Formal_Subprogram_Conformance
      (New_Id  : Entity_Id;

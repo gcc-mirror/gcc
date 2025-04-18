@@ -6425,12 +6425,6 @@ package body Sem_Ch6 is
 
          elsif Has_Delayed_Freeze (T) and then not Is_Frozen (T) then
             Set_Has_Delayed_Freeze (Designator);
-
-         elsif Is_Access_Type (T)
-           and then Has_Delayed_Freeze (Designated_Type (T))
-           and then not Is_Frozen (Designated_Type (T))
-         then
-            Set_Has_Delayed_Freeze (Designator);
          end if;
       end Possible_Freeze;
 
@@ -6456,6 +6450,13 @@ package body Sem_Ch6 is
          Possible_Freeze (Base_Type (Etype (F))); -- needed ???
          Next_Formal (F);
       end loop;
+
+      --  RM 13.14 (15.1/6): the primitive subprograms of a tagged type are
+      --  frozen at the place where the type is frozen.
+
+      if Is_Dispatching_Operation (Designator) then
+         Set_Has_Delayed_Freeze (Designator);
+      end if;
 
       --  Mark functions that return by reference. Note that it cannot be done
       --  for delayed_freeze subprograms because the underlying returned type
