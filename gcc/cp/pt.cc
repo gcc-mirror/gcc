@@ -11418,6 +11418,7 @@ push_tinst_level_loc (tree tldcl, tree targs, location_t loc)
   new_level->targs = targs;
   new_level->locus = loc;
   new_level->errors = errorcount + sorrycount;
+  new_level->had_errors = false;
   new_level->next = NULL;
   new_level->refcount = 0;
   new_level->path = new_level->visible = nullptr;
@@ -11468,6 +11469,9 @@ pop_tinst_level (void)
   /* Restore the filename and line number stashed away when we started
      this instantiation.  */
   input_location = current_tinst_level->locus;
+  if (unsigned errs = errorcount + sorrycount)
+    if (errs > current_tinst_level->errors)
+      current_tinst_level->had_errors = true;
   set_refcount_ptr (current_tinst_level, current_tinst_level->next);
   --tinst_depth;
 }
@@ -11487,7 +11491,7 @@ reopen_tinst_level (struct tinst_level *level)
 
   set_refcount_ptr (current_tinst_level, level);
   pop_tinst_level ();
-  if (current_tinst_level)
+  if (current_tinst_level && !current_tinst_level->had_errors)
     current_tinst_level->errors = errorcount+sorrycount;
 
   tree decl = level->maybe_get_node ();
@@ -28072,7 +28076,9 @@ instantiate_pending_templates (int retries)
 	  tree instantiation = reopen_tinst_level ((*t)->tinst);
 	  bool complete = false;
 
-	  if (TYPE_P (instantiation))
+	  if (limit_bad_template_recursion (instantiation))
+	    /* Do nothing.  */;
+	  else if (TYPE_P (instantiation))
 	    {
 	      if (!COMPLETE_TYPE_P (instantiation))
 		{

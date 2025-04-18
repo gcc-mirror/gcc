@@ -6755,8 +6755,14 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
   /* The location where the template is instantiated.  */
   location_t locus;
 
-  /* errorcount + sorrycount when we pushed this level.  */
-  unsigned short errors;
+  /* errorcount + sorrycount when we pushed this level.  If the value
+     overflows, it will always seem like we currently have more errors, so we
+     will limit template recursion even from non-erroneous templates.  In a TU
+     with over 32k errors, that's fine.  */
+  unsigned short errors : 15;
+
+  /* set in pop_tinst_level if there have been errors since we pushed.  */
+  bool had_errors : 1;
 
   /* Count references to this object.  If refcount reaches
      refcount_infinity value, we don't increment or decrement the
