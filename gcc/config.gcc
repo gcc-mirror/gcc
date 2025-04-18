@@ -2540,6 +2540,20 @@ riscv*-*-linux*)
 	gcc_cv_initfini_array=yes
 	with_tls=${with_tls:-trad}
 	;;
+riscv*-*-gnu*)
+	tm_file="elfos.h gnu-user.h gnu.h glibc-stdint.h ${tm_file} riscv/gnu.h"
+	tmake_file="${tmake_file} riscv/t-riscv"
+	gnu_ld=yes
+	gas=yes
+	case $target in
+	riscv32be-*|riscv64be-*)
+		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
+		;;
+	esac
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+	;;
 riscv*-*-elf* | riscv*-*-rtems*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
 	case ${target} in
