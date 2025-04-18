@@ -36645,7 +36645,7 @@ The option is similar to @option{-mmemcpy-strategy=} except that it is to contro
 Don't keep the frame pointer in a register for leaf functions.  This
 avoids the instructions to save, set up, and restore frame pointers and
 makes an extra register available in leaf functions.  The option
-@option{-fomit-leaf-frame-pointer} removes the frame pointer for leaf functions,
+@option{-momit-leaf-frame-pointer} removes the frame pointer for leaf functions,
 which might make debugging harder.
 
 @opindex mtls-direct-seg-refs
