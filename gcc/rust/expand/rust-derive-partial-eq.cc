@@ -116,10 +116,7 @@ void
 DerivePartialEq::visit_tuple (TupleStruct &item)
 {
   auto type_name = item.get_struct_name ().as_string ();
-  auto fields = std::vector<SelfOther> ();
-
-  for (size_t idx = 0; idx < item.get_fields ().size (); idx++)
-    fields.emplace_back (SelfOther::index (builder, idx));
+  auto fields = SelfOther::indexes (builder, item.get_fields ());
 
   auto fn = eq_fn (build_eq_expression (std::move (fields)), type_name);
 
@@ -131,11 +128,7 @@ void
 DerivePartialEq::visit_struct (StructStruct &item)
 {
   auto type_name = item.get_struct_name ().as_string ();
-  auto fields = std::vector<SelfOther> ();
-
-  for (auto &field : item.get_fields ())
-    fields.emplace_back (
-      SelfOther::field (builder, field.get_field_name ().as_string ()));
+  auto fields = SelfOther::fields (builder, item.get_fields ());
 
   auto fn = eq_fn (build_eq_expression (std::move (fields)), type_name);
 

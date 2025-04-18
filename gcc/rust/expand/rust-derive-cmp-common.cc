@@ -32,14 +32,12 @@ SelfOther::index (Builder builder, int idx)
 }
 
 std::vector<SelfOther>
-SelfOther::indexes (Builder builder, int limit)
+SelfOther::indexes (Builder builder, const std::vector<TupleField> &fields)
 {
   std::vector<SelfOther> vec;
 
-  for (int i = 0; i < limit; i++)
-    {
-      vec.emplace_back (SelfOther::index (builder, i));
-    }
+  for (size_t i = 0; i < fields.size (); i++)
+    vec.emplace_back (SelfOther::index (builder, i));
 
   return vec;
 }
@@ -58,7 +56,7 @@ SelfOther::fields (Builder builder, const std::vector<StructField> &fields)
 {
   std::vector<SelfOther> vec;
 
-  for (auto &field : fields)
+  for (const auto &field : fields)
     vec.emplace_back (
       SelfOther::field (builder, field.get_field_name ().as_string ()));
 

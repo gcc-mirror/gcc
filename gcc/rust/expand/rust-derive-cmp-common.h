@@ -36,7 +36,8 @@ struct SelfOther
 
   /* Create a <self.i> and an <other.i> expression */
   static SelfOther index (Builder builder, int idx);
-  static std::vector<SelfOther> indexes (Builder builder, int limit);
+  static std::vector<SelfOther> indexes (Builder builder,
+					 const std::vector<TupleField> &fields);
 
   /* Create a <self.field> and an <other.field> expression */
   static SelfOther field (Builder builder, const std::string &field_name);
