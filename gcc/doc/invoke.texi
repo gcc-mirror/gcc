@@ -3297,6 +3297,50 @@ Enable support for the C++ coroutines extension (experimental).
 Permit the C++ front end to note all candidates during overload resolution
 failure, including when a deleted function is selected.
 
+@item -fdump-lang-
+@itemx -fdump-lang-@var{switch}
+@itemx -fdump-lang-@var{switch}-@var{options}
+@itemx -fdump-lang-@var{switch}-@var{options}=@var{filename}
+Control the dumping of C++-specific information.  The @var{options}
+and @var{filename} portions behave as described in the
+@option{-fdump-tree} option.  The following @var{switch} values are
+accepted:
+
+@table @samp
+@item all
+Enable all of the below.
+
+@opindex fdump-lang-class
+@item class
+Dump class hierarchy information.  Virtual table information is emitted
+unless '@option{slim}' is specified.
+
+@opindex fdump-lang-module
+@item module
+Dump module information.  Options @option{lineno} (locations),
+@option{graph} (reachability), @option{blocks} (clusters),
+@option{uid} (serialization), @option{alias} (mergeable),
+@option{asmname} (Elrond), @option{eh} (mapper) & @option{vops}
+(macros) may provide additional information.
+
+@opindex fdump-lang-raw
+@item raw
+Dump the raw internal tree data.
+
+@opindex fdump-lang-tinst
+@item tinst
+Dump the sequence of template instantiations, indented to show the
+depth of recursion.  The @option{lineno} option adds the source
+location where the instantiation was triggered, and the
+@option{details} option also dumps pre-instantiation substitutions
+such as those performed during template argument deduction.
+
+Lines in the .tinst dump start with @samp{I} for an instantiation,
+@samp{S} for another substitution, and @samp{R[IS]} for the reopened
+context of a deferred instantiation.
+
+@end table
+
 @opindex fno-elide-constructors
 @opindex felide-constructors
 @item -fno-elide-constructors
@@ -20891,30 +20935,10 @@ Dump language-specific information.  The file name is made by appending
 @itemx -fdump-lang-@var{switch}-@var{options}=@var{filename}
 Control the dumping of language-specific information.  The @var{options}
 and @var{filename} portions behave as described in the
-@option{-fdump-tree} option.  The following @var{switch} values are
-accepted:
-
-@table @samp
-@item all
-
-Enable all language-specific dumps.
-
-@item class
-Dump class hierarchy information.  Virtual table information is emitted
-unless '@option{slim}' is specified.  This option is applicable to C++ only.
-
-@item module
-Dump module information.  Options @option{lineno} (locations),
-@option{graph} (reachability), @option{blocks} (clusters),
-@option{uid} (serialization), @option{alias} (mergeable),
-@option{asmname} (Elrond), @option{eh} (mapper) & @option{vops}
-(macros) may provide additional information.  This option is
-applicable to C++ only.
-
-@item raw
-Dump the raw internal tree data.  This option is applicable to C++ only.
-
-@end table
+@option{-fdump-tree} option.  @option{-fdump-tree-all} enables all
+language-specific dumps; other options vary with the language.  For
+instance, see @xref{C++ Dialect Options} for the @option{-fdump-lang}
+flags supported by the C++ front-end.
 
 @opindex fdump-passes
 @item -fdump-passes
