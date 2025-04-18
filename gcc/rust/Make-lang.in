@@ -94,6 +94,7 @@ GRS_OBJS = \
     rust/rust-ast-builder.o \
     rust/rust-ast-builder-type.o \
     rust/rust-derive.o \
+    rust/rust-derive-cmp-common.o \
     rust/rust-derive-clone.o \
     rust/rust-derive-copy.o \
     rust/rust-derive-debug.o \
