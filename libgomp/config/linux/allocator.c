@@ -53,6 +53,7 @@
 
 #define _GNU_SOURCE
 #include <sys/mman.h>
+#include <unistd.h>
 #include <string.h>
 #include <assert.h>
 #include "libgomp.h"
@@ -77,6 +78,16 @@ GOMP_enable_pinned_mode ()
 static int using_device_for_page_locked
   = /* uninitialized */ -1;
 
+
+static usmpin_ctx_p pin_ctx = NULL;
+static pthread_once_t ctxlock = PTHREAD_ONCE_INIT;
+
+static void
+linux_init_pin_ctx ()
+{
+  pin_ctx = usmpin_init_context ();
+}
+
 static void *
 linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin,
 		      bool init0)
@@ -85,7 +96,7 @@ linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin,
 	      __FUNCTION__, (unsigned long long) memspace,
 	      (unsigned long long) size, pin, init0);
 
-  void *addr;
+  void *addr = NULL;
 
   /* Explicit pinning may not be required.  */
   pin = pin && !always_pinned_mode;
@@ -111,28 +122,51 @@ linux_memspace_alloc (omp_memspace_handle_t memspace, size_t size, int pin,
 	}
       if (using_device == 0)
 	{
-	  gomp_debug (0, "  mmap\n");
-	  addr = mmap (NULL, size, PROT_READ | PROT_WRITE,
-		       MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-	  if (addr == MAP_FAILED)
-	    addr = NULL;
-	  else
-	    {
-	      /* 'mmap' zero-initializes.  */
-	      init0 = false;
+	  static int pagesize = 0;
+	  static void *addrhint = NULL;
 
-	      gomp_debug (0, "  mlock\n");
-	      if (mlock (addr, size))
+	  if (!pagesize)
+	    pagesize = sysconf(_SC_PAGE_SIZE);
+ 
+	  while (1)
+	    {
+	      addr = usmpin_alloc (pin_ctx, size);
+	      if (addr)
+		break;
+
+	      gomp_debug (0, "  mmap\n");
+
+	      /* Round up to a whole page.  */
+	      size_t misalignment = size % pagesize;
+	      size_t mmap_size = (misalignment > 0
+				  ? size + pagesize - misalignment
+				  : size);
+	      void *newpage = mmap (addrhint, mmap_size, PROT_READ | PROT_WRITE,
+				 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	      if (newpage == MAP_FAILED)
+		break;
+	      else
 		{
+		  gomp_debug (0, "  mlock\n");
+		  if (mlock (newpage, size))
+		    {
 #ifdef HAVE_INTTYPES_H
-		  gomp_debug (0, "libgomp: failed to pin %"PRIu64" bytes of"
-			      " memory (ulimit too low?)\n", (uint64_t) size);
+		      gomp_debug (0, "libgomp: failed to pin %"PRIu64" bytes"
+				  " of memory (ulimit too low?)\n",
+				  (uint64_t) size);
 #else
-		  gomp_debug (0, "libgomp: failed to pin %lu bytes of memory"
-			      " (ulimit too low?)\n", (unsigned long) size);
+		      gomp_debug (0, "libgomp: failed to pin %lu bytes of"
+				  " memory (ulimit too low?)\n",
+				  (unsigned long) size);
 #endif
-		  munmap (addr, size);
-		  addr = NULL;
+		      munmap (newpage, size);
+		      break;
+		    }
+
+		  addrhint = newpage + mmap_size;
+
+		  pthread_once (&ctxlock, linux_init_pin_ctx);
+		  usmpin_register_memory (pin_ctx, newpage, mmap_size);
 		}
 	    }
 	}
@@ -184,8 +218,7 @@ linux_memspace_free (omp_memspace_handle_t memspace, void *addr, size_t size,
       if (using_device == 1)
 	gomp_page_locked_host_free (addr);
       else
-	/* 'munlock'ing is implicit with following 'munmap'.  */
-	munmap (addr, size);
+	usmpin_free (pin_ctx, addr);
     }
   else
     free (addr);
@@ -203,29 +236,29 @@ linux_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
 
   if (oldpin && pin)
     {
-      /* We can only expect to be able to just 'mremap' if not using a device
-	 for page-locked memory.  */
       int using_device
 	= __atomic_load_n (&using_device_for_page_locked,
 		       MEMMODEL_RELAXED);
       gomp_debug (0, "  using_device=%d\n",
 		  using_device);
-      if (using_device != 0)
-	goto manual_realloc;
 
-      gomp_debug (0, "  mremap\n");
-      void *newaddr = mremap (addr, oldsize, size, MREMAP_MAYMOVE);
-      if (newaddr == MAP_FAILED)
-	return NULL;
-
-      return newaddr;
+      /* The device plugin API does not support realloc,
+	 but the usmpin allocator does.  */
+      if (using_device == 0)
+	{
+	  /* This can fail if there is insufficient pinned memory free.  */
+	  void *newaddr = usmpin_realloc (pin_ctx, addr, size);
+	  if (newaddr)
+	    return newaddr;
+	}
     }
   else if (oldpin || pin)
-    goto manual_realloc;
+    /* Moving from pinned to unpinned memory cannot be done in-place.  */
+    ;
   else
     return realloc (addr, size);
 
-manual_realloc:;
+  /* In-place reallocation failed.  Fall back to copy.  */
   void *newaddr = linux_memspace_alloc (memspace, size, pin, false);
   if (newaddr)
     {

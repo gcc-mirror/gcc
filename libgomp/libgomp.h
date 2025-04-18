@@ -1668,4 +1668,14 @@ gomp_thread_to_pthread_t (struct gomp_thread *thr)
 }
 #endif
 
+/* usmpin-allocator.c  */
+
+typedef struct usmpin_context *usmpin_ctx_p;
+
+usmpin_ctx_p usmpin_init_context ();
+void usmpin_register_memory (usmpin_ctx_p ctx, char *base, size_t size);
+void *usmpin_alloc (usmpin_ctx_p ctx, size_t size);
+void usmpin_free (usmpin_ctx_p ctx, void *addr);
+void *usmpin_realloc (usmpin_ctx_p ctx, void *addr, size_t newsize);
+
 #endif /* LIBGOMP_H */
