@@ -123,15 +123,6 @@ DeriveOrd::make_cmp_arms ()
 	  builder.match_arm (std::move (non_equal))};
 }
 
-template <typename T>
-inline bool
-is_last (T &elt, std::vector<T> &vec)
-{
-  rust_assert (!vec.empty ());
-
-  return &elt == &vec.back ();
-}
-
 std::unique_ptr<Expr>
 DeriveOrd::recursive_match (std::vector<SelfOther> &&members)
 {
@@ -210,7 +201,14 @@ DeriveOrd::visit_struct (StructStruct &item)
 // straightforward once we have `visit_struct` working
 void
 DeriveOrd::visit_tuple (TupleStruct &item)
-{}
+{
+  auto fields = SelfOther::indexes (builder, item.get_fields ());
+
+  auto match_expr = recursive_match (std::move (fields));
+
+  expanded = cmp_impl (builder.block (std::move (match_expr)),
+		       item.get_identifier (), item.get_generic_params ());
+}
 
 // for enums, we need to generate a match for each of the enum's variant that
 // contains data and then do the same thing as visit_struct or visit_enum. if
