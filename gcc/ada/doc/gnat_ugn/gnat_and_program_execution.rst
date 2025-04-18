@@ -4311,7 +4311,7 @@ UndefinedBehaviorSanitizer
 UndefinedBehaviorSanitizer (aka UBSan) modifies the program at compile-time to
 catch various kinds of undefined behavior during program execution.
 
-Different sanitize options (:switch:`-fsanitize=alignment,float-cast-overflow,signed-integer-overflow``)
+Different sanitize options (:switch:`-fsanitize=alignment,float-cast-overflow,signed-integer-overflow`)
 detect the following types of problems:
 
 * Wrong alignment
@@ -4397,8 +4397,8 @@ detect the following types of problems:
             Int := Integer (Flt); --  Overflow
          end Float_Cast_Overflow;
 
-   If the code is built with the :switch:`-fsanitize=float-cast-overflow` and
-   :switch:`-g` options, the following error is shown at execution time.
+  If the code is built with the :switch:`-fsanitize=float-cast-overflow` and
+  :switch:`-g` options, the following error is shown at execution time.
 
     ::
 

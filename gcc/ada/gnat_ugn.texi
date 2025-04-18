@@ -23102,7 +23102,7 @@ SUMMARY: AddressSanitizer: 4 byte(s) leaked in 1 allocation(s).
 UndefinedBehaviorSanitizer (aka UBSan) modifies the program at compile-time to
 catch various kinds of undefined behavior during program execution.
 
-Different sanitize options (@code{-fsanitize=alignment,float-cast-overflow,signed-integer-overflow`})
+Different sanitize options (@code{-fsanitize=alignment,float-cast-overflow,signed-integer-overflow})
 detect the following types of problems:
 
 
@@ -23199,8 +23199,6 @@ In the following code:
 
 @quotation
 
-@quotation
-
 @example
 procedure Float_Cast_Overflow is
    Flt : Float := Float'Last with Export;
@@ -23219,7 +23217,6 @@ If the code is built with the @code{-fsanitize=float-cast-overflow} and
 @example
 float_cast_overflow.adb:5:20: runtime error: 3.40282e+38 is outside the range of representable values of type 'integer'
 @end example
-@end quotation
 @end quotation
 @end itemize
 
@@ -30225,8 +30222,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{d2}@w{                              }
 @anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
+@anchor{d2}@w{                              }
 
 @c %**end of body
 @bye
