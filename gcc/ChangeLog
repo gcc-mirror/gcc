@@ -1,3 +1,23 @@
+2025-04-17  Ard Biesheuvel  <ardb@kernel.org>
+
+	Backported from master:
+	2025-04-16  Ard Biesheuvel  <ardb@kernel.org>
+
+	PR target/119386
+	* config/i386/i386-options.cc: Permit -mnop-mcount when
+	using -fpic with PLTs.
+
+2025-04-17  Ard Biesheuvel  <ardb@kernel.org>
+
+	Backported from master:
+	2025-04-16  Ard Biesheuvel  <ardb@kernel.org>
+
+	PR target/119386
+	* config/i386/i386.cc (x86_print_call_or_nop): Add @PLT suffix
+	where appropriate.
+	(x86_function_profiler): Fall through to x86_print_call_or_nop()
+	for PIC codegen when flag_plt is set.
+
 2025-04-16  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* tree-ssa-phiopt.cc (factor_out_conditional_operation): Do not

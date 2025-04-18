@@ -1,3 +1,20 @@
+2025-04-17  Ard Biesheuvel  <ardb@kernel.org>
+
+	Backported from master:
+	2025-04-16  Ard Biesheuvel  <ardb@kernel.org>
+
+	PR target/119386
+	* gcc.target/i386/pr119386-3.c: New test.
+
+2025-04-17  Ard Biesheuvel  <ardb@kernel.org>
+
+	Backported from master:
+	2025-04-16  Ard Biesheuvel  <ardb@kernel.org>
+
+	PR target/119386
+	* gcc.target/i386/pr119386-1.c: New test.
+	* gcc.target/i386/pr119386-2.c: New test.
+
 2025-04-16  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* gnat.dg/opt105.adb: New test.

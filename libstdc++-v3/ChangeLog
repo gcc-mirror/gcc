@@ -1,3 +1,18 @@
+2025-04-17  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2025-03-12  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/format (formatter<_Float16, _CharT>): Define only if
+	_GLIBCXX_FLOAT_IS_IEEE_BINARY32 macro is defined.
+	(formatter<_Float16, _CharT>): As above.
+	(formatter<__gnu_cxx::__bfloat16_t, _CharT>): As above.
+	(formatter<_Float64, _CharT>): Define only if
+	_GLIBCXX_DOUBLE_IS_IEEE_BINARY64 is defined.
+	(basic_format_arg::_S_to_arg_type): Normalize _Float32 and _Float64
+	only to float and double respectivelly.
+	(basic_format_arg::_S_to_enum): Remove handling of _Float32 and _Float64.
+
 2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/numeric: Only mention ranges::iota in comment.
