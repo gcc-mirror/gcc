@@ -1076,7 +1076,6 @@ package body CStand is
             Set_Never_Set_In_Source    (A_Char, True);
             Set_Is_True_Constant       (A_Char, True);
             Set_Etype                  (A_Char, Standard_Character);
-            Set_Scope                  (A_Char, Standard_Entity (S_ASCII));
             Set_Is_Immediately_Visible (A_Char, False);
             Set_Is_Public              (A_Char, True);
             Set_Is_Known_Valid         (A_Char, True);
@@ -1732,7 +1731,6 @@ package body CStand is
    begin
       Mutate_Ekind                  (Id, E_Component);
       Set_Etype                     (Id, Typ);
-      Set_Scope                     (Id, Rec);
       Reinit_Component_Location     (Id);
       Set_Original_Record_Component (Id, Id);
       Set_Is_Aliased                (Id);
@@ -1750,7 +1748,6 @@ package body CStand is
    begin
       Mutate_Ekind  (Formal, E_In_Parameter);
       Set_Mechanism (Formal, Default_Mechanism);
-      Set_Scope     (Formal, Standard_Standard);
       Set_Etype     (Formal, Typ);
 
       return Formal;
@@ -1780,7 +1777,6 @@ package body CStand is
       Set_Is_Pure    (Ident_Node, True);
       Mutate_Ekind   (Ident_Node, E_Operator);
       Set_Etype      (Ident_Node, Typ);
-      Set_Scope      (Ident_Node, Standard_Standard);
       Set_Homonym    (Ident_Node, Get_Name_Entity_Id (Op));
       Set_Convention (Ident_Node, Convention_Intrinsic);
 
