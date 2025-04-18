@@ -1,3 +1,15 @@
+2025-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/119849
+	* testsuite/libgomp.c++/allocator-1.C (test_inequality, main): Guard
+	ompx::allocator::gnu_pinned_mem uses with #ifdef __gnu_linux__.
+	* testsuite/libgomp.c++/allocator-2.C (main): Likewise.
+
+2025-04-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (gcn interop, nvptx interop): For HIP with C/C++, add
+	a note about setting a preprocessor define.
+
 2025-04-16  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* testsuite/libgomp.c++/target-exceptions-pr118794-1.C: Remove

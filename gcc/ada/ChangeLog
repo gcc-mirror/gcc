@@ -1,3 +1,7 @@
+2025-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gnatvsn.ads: Bump Library_Version to 16.
+
 2025-04-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/119643
