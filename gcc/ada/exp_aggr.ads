@@ -59,6 +59,10 @@ package Exp_Aggr is
    --  This is the case if it consists only of iterated component associations
    --  with iterator specifications, see RM 4.3.3(20.2/5).
 
+   function Parent_Is_Regular_Aggregate (Par : Node_Id) return Boolean;
+   --  Return True if Par is an aggregate that is not a container aggregate, or
+   --  a component association of such an aggregate.
+
    function Static_Array_Aggregate (N : Node_Id) return Boolean;
    --  N is an array aggregate that may have a component association with
    --  an others clause and a range. If bounds are static and the expressions

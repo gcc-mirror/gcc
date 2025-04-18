@@ -2709,6 +2709,15 @@ package body Sem_Util is
 
                   Append_Unique_Elmt (N, Identifiers_List);
                end if;
+
+            --  Skip attribute references created by the compiler, typically
+            --  'Constrained applied to one of the writable actuals, to avoid
+            --  spurious errors.
+
+            elsif Nkind (N) = N_Attribute_Reference
+              and then not Comes_From_Source (N)
+            then
+               return Skip;
             end if;
 
             return OK;

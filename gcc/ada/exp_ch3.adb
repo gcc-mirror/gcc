@@ -2675,9 +2675,10 @@ package body Exp_Ch3 is
 
          Exp_Q := Unqualify (Exp);
 
-         --  Adjust the component if controlled, except if it is an aggregate
-         --  that will be expanded inline (but note that the case of container
-         --  aggregates does require component adjustment), or a function call.
+         --  Adjust the component if controlled, except if the expression is an
+         --  aggregate that will be expanded inline (but note that the case of
+         --  container aggregates does require component adjustment), or else
+         --  a function call whose result is adjusted in the called function.
          --  Note that, when we don't inhibit component adjustment, the tag
          --  will be automatically inserted by Make_Tag_Ctrl_Assignment in the
          --  tagged case. Otherwise, we have to generate a tag assignment here.
@@ -2686,7 +2687,8 @@ package body Exp_Ch3 is
            and then (Nkind (Exp_Q) not in N_Aggregate | N_Extension_Aggregate
                       or else Is_Container_Aggregate (Exp_Q))
            and then not Is_Build_In_Place_Function_Call (Exp)
-           and then Nkind (Exp) /= N_Function_Call
+           and then not (Back_End_Return_Slot
+                          and then Nkind (Exp) = N_Function_Call)
          then
             Set_No_Finalize_Actions (First (Res));
 

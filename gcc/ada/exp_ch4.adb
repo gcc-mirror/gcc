@@ -240,6 +240,10 @@ package body Exp_Ch4 is
    --  skipped if the operation is done in Bignum mode but that's fine, since
    --  the Bignum call takes care of everything.
 
+   function New_Assign_Copy (N : Node_Id; Expr : Node_Id) return Node_Id;
+   --  N is an assignment statement. Return a copy of N with the same name but
+   --  expression changed to Expr and perform a couple of adjustments.
+
    procedure Narrow_Large_Operation (N : Node_Id);
    --  Try to compute the result of a large operation in a narrower type than
    --  its nominal type. This is mainly aimed at getting rid of operations done
@@ -727,7 +731,7 @@ package body Exp_Ch4 is
          --  adjust after the assignment but, in either case, we do not
          --  finalize before since the target is newly allocated memory.
 
-         if Nkind (Exp) = N_Function_Call then
+         if Back_End_Return_Slot and then Nkind (Exp) = N_Function_Call then
             Set_No_Ctrl_Actions (Assign);
          else
             Set_No_Finalize_Actions (Assign);
@@ -869,10 +873,7 @@ package body Exp_Ch4 is
       --  as qualified expression must be rewritten into the form expected by
       --  Expand_Container_Aggregate, resp. Two_Pass_Aggregate_Expansion.
 
-      if Nkind (Exp) = N_Aggregate
-        and then (Has_Aspect (T, Aspect_Aggregate)
-                   or else Is_Two_Pass_Aggregate (Exp))
-      then
+      if Is_Container_Aggregate (Exp) or else Is_Two_Pass_Aggregate (Exp) then
          Temp := Make_Temporary (Loc, 'P', N);
          Set_Analyzed (Exp, False);
          Insert_Action (N,
@@ -5191,6 +5192,8 @@ package body Exp_Ch4 is
       --  expansion until the (immediate) parent is rewritten as a return
       --  statement (or is already the return statement). Likewise if it is
       --  in the context of an object declaration that can be optimized.
+      --  Likewise if it is in the context of a regular agggregate and the
+      --  type should not be copied.
 
       if not Expansion_Delayed (N) then
          declare
@@ -5198,6 +5201,8 @@ package body Exp_Ch4 is
          begin
             if Nkind (Uncond_Par) = N_Simple_Return_Statement
               or else Is_Optimizable_Declaration (Uncond_Par)
+              or else (Parent_Is_Regular_Aggregate (Uncond_Par)
+                        and then not Is_Copy_Type (Typ))
             then
                Delay_Conditional_Expressions_Between (N, Uncond_Par);
             end if;
@@ -5377,17 +5382,7 @@ package body Exp_Ch4 is
             if Optimize_Assignment_Stmt then
                --  We directly copy the parent node to preserve its flags
 
-               Stmts := New_List (New_Copy (Par));
-               Set_Sloc       (First (Stmts), Alt_Loc);
-               Set_Name       (First (Stmts), New_Copy_Tree (Name (Par)));
-               Set_Expression (First (Stmts), Alt_Expr);
-
-               --  If the expression is itself a conditional expression whose
-               --  expansion has been delayed, analyze it again and expand it.
-
-               if Is_Delayed_Conditional_Expression (Alt_Expr) then
-                  Unanalyze_Delayed_Conditional_Expression (Alt_Expr);
-               end if;
+               Stmts := New_List (New_Assign_Copy (Par, Alt_Expr));
 
             --  Generate:
             --    return AX;
@@ -5805,8 +5800,9 @@ package body Exp_Ch4 is
       --  expansion until the (immediate) parent is rewritten as a return
       --  statement (or is already the return statement). Likewise if it is
       --  in the context of an object declaration that can be optimized.
-      --  Note that this deals with the case of the elsif part of the if
-      --  expression, if it exists.
+      --  Likewise if it is in the context of a regular agggregate and the
+      --  type should not be copied. Note that this deals with the case of
+      --  the elsif part of the if expression, if it exists.
 
       if not Expansion_Delayed (N) then
          declare
@@ -5814,6 +5810,8 @@ package body Exp_Ch4 is
          begin
             if Nkind (Uncond_Par) = N_Simple_Return_Statement
               or else Is_Optimizable_Declaration (Uncond_Par)
+              or else (Parent_Is_Regular_Aggregate (Uncond_Par)
+                        and then not Is_Copy_Type (Typ))
             then
                Delay_Conditional_Expressions_Between (N, Uncond_Par);
             end if;
@@ -5916,26 +5914,8 @@ package body Exp_Ch4 is
 
          --  We directly copy the parent node to preserve its flags
 
-         New_Then := New_Copy (Par);
-         Set_Sloc       (New_Then, Sloc (Thenx));
-         Set_Name       (New_Then, New_Copy_Tree (Name (Par)));
-         Set_Expression (New_Then, Relocate_Node (Thenx));
-
-         --  If the expression is itself a conditional expression whose
-         --  expansion has been delayed, analyze it again and expand it.
-
-         if Is_Delayed_Conditional_Expression (Expression (New_Then)) then
-            Unanalyze_Delayed_Conditional_Expression (Expression (New_Then));
-         end if;
-
-         New_Else := New_Copy (Par);
-         Set_Sloc       (New_Else, Sloc (Elsex));
-         Set_Name       (New_Else, New_Copy_Tree (Name (Par)));
-         Set_Expression (New_Else, Relocate_Node (Elsex));
-
-         if Is_Delayed_Conditional_Expression (Expression (New_Else)) then
-            Unanalyze_Delayed_Conditional_Expression (Expression (New_Else));
-         end if;
+         New_Then := New_Assign_Copy (Par, Relocate_Node (Thenx));
+         New_Else := New_Assign_Copy (Par, Relocate_Node (Elsex));
 
          If_Stmt :=
            Make_Implicit_If_Statement (N,
@@ -14222,6 +14202,39 @@ package body Exp_Ch4 is
          Convert_To_And_Rewrite (Typ, N);
       end if;
    end Narrow_Large_Operation;
+
+   ---------------------
+   -- New_Assign_Copy --
+   ---------------------
+
+   function New_Assign_Copy (N : Node_Id; Expr : Node_Id) return Node_Id is
+      New_N : constant Node_Id := New_Copy (N);
+
+   begin
+      Set_Sloc       (New_N, Sloc (Expr));
+      Set_Name       (New_N, New_Copy_Tree (Name (N)));
+      Set_Expression (New_N, Expr);
+
+      --  The result of a function call need not be adjusted if it has
+      --  already been adjusted in the called function.
+
+      if No_Finalize_Actions (New_N)
+        and then Back_End_Return_Slot
+        and then Nkind (Expr) = N_Function_Call
+      then
+         Set_No_Finalize_Actions (New_N, False);
+         Set_No_Ctrl_Actions (New_N);
+      end if;
+
+      --  If the expression is itself a conditional expression whose
+      --  expansion has been delayed, analyze it again and expand it.
+
+      if Is_Delayed_Conditional_Expression (Expr) then
+         Unanalyze_Delayed_Conditional_Expression (Expr);
+      end if;
+
+      return New_N;
+   end New_Assign_Copy;
 
    --------------------------------
    -- Optimize_Length_Comparison --
