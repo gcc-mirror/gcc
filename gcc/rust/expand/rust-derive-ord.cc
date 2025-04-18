@@ -92,15 +92,85 @@ DeriveOrd::cmp_fn (std::unique_ptr<BlockExpr> &&block, Identifier type_name)
 			    builder.reference_type (ptrify (
 			      builder.type_path (type_name.as_string ())))));
 
-  auto function_name = ordering == Ordering::Partial ? "partial_cmp" : "cmp";
+  auto function_name = fn (ordering);
 
   return builder.function (function_name, std::move (params),
 			   ptrify (return_type), std::move (block));
 }
-std::unique_ptr<Expr>
-recursive_match ()
+
+std::pair<MatchArm, MatchArm>
+DeriveOrd::make_cmp_arms ()
 {
-  return nullptr;
+  // All comparison results other than Ordering::Equal
+  auto non_equal = builder.identifier_pattern (DeriveOrd::not_equal);
+
+  std::unique_ptr<Pattern> equal = ptrify (
+    builder.path_in_expression ({"core", "cmp", "Ordering", "Equal"}, true));
+
+  // We need to wrap the pattern in Option::Some if we are doing total ordering
+  if (ordering == Ordering::Total)
+    {
+      auto pattern_items = std::unique_ptr<TupleStructItems> (
+	new TupleStructItemsNoRange (vec (std::move (equal))));
+
+      equal
+	= std::make_unique<TupleStructPattern> (builder.path_in_expression (
+						  LangItem::Kind::OPTION_SOME),
+						std::move (pattern_items));
+    }
+
+  return {builder.match_arm (std::move (equal)),
+	  builder.match_arm (std::move (non_equal))};
+}
+
+template <typename T>
+inline bool
+is_last (T &elt, std::vector<T> &vec)
+{
+  rust_assert (!vec.empty ());
+
+  return &elt == &vec.back ();
+}
+
+std::unique_ptr<Expr>
+DeriveOrd::recursive_match (std::vector<SelfOther> &&members)
+{
+  std::unique_ptr<Expr> final_expr = nullptr;
+
+  for (auto it = members.rbegin (); it != members.rend (); it++)
+    {
+      auto &member = *it;
+
+      auto cmp_fn_path = builder.path_in_expression (
+	{"core", "cmp", trait (ordering), fn (ordering)}, true);
+
+      auto cmp_call = builder.call (ptrify (cmp_fn_path),
+				    vec (std::move (member.self_expr),
+					 std::move (member.other_expr)));
+
+      // For the last member (so the first iterator), we just create a call
+      // expression
+      if (it == members.rbegin ())
+	{
+	  final_expr = std::move (cmp_call);
+	  continue;
+	}
+
+      // If we aren't dealing with the last member, then we need to wrap all of
+      // that in a big match expression and keep going
+      auto match_arms = make_cmp_arms ();
+
+      auto match_cases
+	= {builder.match_case (std::move (match_arms.first),
+			       std::move (final_expr)),
+	   builder.match_case (std::move (match_arms.second),
+			       builder.identifier (DeriveOrd::not_equal))};
+
+      final_expr
+	= builder.match (std::move (cmp_call), std::move (match_cases));
+    }
+
+  return final_expr;
 }
 
 // we need to do a recursive match expression for all of the fields used in a
@@ -128,10 +198,12 @@ recursive_match ()
 void
 DeriveOrd::visit_struct (StructStruct &item)
 {
-  // FIXME: Put cmp_fn call inside cmp_impl, pass a block to cmp_impl instead -
-  // this avoids repeating the same parameter twice (the type name)
-  expanded = cmp_impl (builder.block (), item.get_identifier (),
-		       item.get_generic_params ());
+  auto fields = SelfOther::fields (builder, item.get_fields ());
+
+  auto match_expr = recursive_match (std::move (fields));
+
+  expanded = cmp_impl (builder.block (std::move (match_expr)),
+		       item.get_identifier (), item.get_generic_params ());
 }
 
 // same as structs, but for each field index instead of each field name -
@@ -162,10 +234,10 @@ DeriveOrd::visit_enum (Enum &item)
 void
 DeriveOrd::visit_union (Union &item)
 {
-  auto trait_name = ordering == Ordering::Total ? "Ord" : "PartialOrd";
+  auto trait_name = trait (ordering);
 
   rust_error_at (item.get_locus (), "derive(%s) cannot be used on unions",
-		 trait_name);
+		 trait_name.c_str ());
 }
 
 } // namespace AST

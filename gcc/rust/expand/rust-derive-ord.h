@@ -20,6 +20,7 @@
 #define RUST_DERIVE_ORD_H
 
 #include "rust-ast.h"
+#include "rust-derive-cmp-common.h"
 #include "rust-derive.h"
 
 namespace Rust {
@@ -42,6 +43,22 @@ public:
     Partial
   };
 
+  std::string fn (Ordering ordering)
+  {
+    if (ordering == Ordering::Total)
+      return "cmp";
+    else
+      return "partial_cmp";
+  }
+
+  std::string trait (Ordering ordering)
+  {
+    if (ordering == Ordering::Total)
+      return "Ord";
+    else
+      return "PartialOrd";
+  }
+
   DeriveOrd (Ordering ordering, location_t loc);
 
   std::unique_ptr<Item> go (Item &item);
@@ -51,10 +68,26 @@ private:
 
   Ordering ordering;
 
+  /* Identifier patterns for the non-equal match arms */
+  constexpr static const char *not_equal = "non_eq";
+
   /**
    * Create the recursive matching structure used when implementing the
-   * comparison function on multiple sub items (fields, tuple indexes...) */
-  std::unique_ptr<Expr> recursive_match ();
+   * comparison function on multiple sub items (fields, tuple indexes...)
+   */
+  std::unique_ptr<Expr> recursive_match (std::vector<SelfOther> &&members);
+
+  /**
+   * Make the match arms for one inner match in a comparison function block.
+   * This returns the "equal" match arm and the "rest" match arm, so something
+   * like `Ordering::Equal` and `non_eq` in the following match expression:
+   *
+   * match cmp(...) {
+   *     Ordering::Equal => match cmp(...) { ... }
+   *     non_eq => non_eq,
+   * }
+   */
+  std::pair<MatchArm, MatchArm> make_cmp_arms ();
 
   std::unique_ptr<Item>
   cmp_impl (std::unique_ptr<BlockExpr> &&fn_block, Identifier type_name,
