@@ -258,8 +258,8 @@ check_version(symbol& test, bool added)
 	test.version_status = symbol::incompatible;
 
       // Check that added symbols are added in the latest pre-release version.
-      bool latestp = (test.version_name == "GLIBCXX_3.4.34"
-		     || test.version_name == "CXXABI_1.3.16"
+      bool latestp = (test.version_name == "GLIBCXX_3.4.35"
+		     || test.version_name == "CXXABI_1.3.17"
 		     || test.version_name == "CXXABI_FLOAT128"
 		     || test.version_name == "CXXABI_TM_1");
       if (added && !latestp)
