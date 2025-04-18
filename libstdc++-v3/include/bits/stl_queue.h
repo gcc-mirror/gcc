@@ -70,6 +70,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __glibcxx_format_ranges
+  template<typename, typename> class formatter;
+#endif
+
   /**
    *  @brief  A standard container giving FIFO behavior.
    *
@@ -369,6 +373,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	swap(c, __q.c);
       }
 #endif // __cplusplus >= 201103L
+
+#if __glibcxx_format_ranges
+      friend class formatter<queue<_Tp, _Sequence>, char>;
+      friend class formatter<queue<_Tp, _Sequence>, wchar_t>;
+#endif
     };
 
 #if __cpp_deduction_guides >= 201606
@@ -898,6 +907,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	swap(comp, __pq.comp);
       }
 #endif // __cplusplus >= 201103L
+
+#if __glibcxx_format_ranges
+      friend class formatter<priority_queue<_Tp, _Sequence, _Compare>, char>;
+      friend class formatter<priority_queue<_Tp, _Sequence, _Compare>, wchar_t>;
+#endif
     };
 
 #if __cpp_deduction_guides >= 201606

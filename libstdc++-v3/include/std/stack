@@ -61,11 +61,53 @@
 
 #include <bits/requires_hosted.h> // containers
 
-#include <deque>
-#include <bits/stl_stack.h>
-
 #define __glibcxx_want_adaptor_iterator_pair_constructor
 #define __glibcxx_want_containers_ranges
 #include <bits/version.h>
+
+#include <deque>
+#include <bits/stl_stack.h>
+
+#ifdef __glibcxx_format_ranges // C++ >= 23 && HOSTED
+#include <bits/formatfwd.h>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  // Standard does not constrain accepted _CharT, we do so we can
+  // befriend specializations.
+  template<__format::__char _CharT, typename _Tp,
+	   formattable<_CharT> _Container>
+    struct formatter<stack<_Tp, _Container>, _CharT>
+    {
+    private:
+      using __maybe_const_adaptor
+	= __conditional_t<
+	    __format::__const_formattable_range<_Container, _CharT>,
+	    const stack<_Tp, _Container>, stack<_Tp, _Container>>;
+
+    public:
+      // Standard declares this as template accepting unconstrained
+      // ParseContext type.
+      constexpr typename basic_format_parse_context<_CharT>::iterator
+      parse(basic_format_parse_context<_CharT>& __pc)
+      { return _M_f.parse(__pc); }
+
+      // Standard declares this as template accepting unconstrained
+      // FormatContext type.
+      template<typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	format(__maybe_const_adaptor& __a,
+	       basic_format_context<_Out, _CharT>& __fc) const
+	{ return _M_f.format(__a.c, __fc); }
+
+    private:
+      // Standard uses formatter<ref_view<_Container>, _CharT>.
+      range_formatter<_Tp, _CharT> _M_f;
+    };
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // __glibcxx_format_ranges
+
 
 #endif /* _GLIBCXX_STACK */
