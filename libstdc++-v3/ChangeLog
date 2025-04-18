@@ -1,3 +1,37 @@
+2025-04-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/html/manual/status.html: Regenerate.
+	* doc/xml/manual/status_cxx1998.xml: Replace references to
+	mainline GCC.
+	* doc/xml/manual/status_cxx2011.xml: Likewise.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/status_cxx2017.xml: Likewise.
+	* doc/xml/manual/status_cxx2020.xml: Likewise.
+	* doc/xml/manual/status_cxx2023.xml: Likewise.
+	* doc/xml/manual/status_cxxtr1.xml: Likewise.
+	* doc/xml/manual/status_cxxtr24733.xml: Likewise.
+
+2025-04-17  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119840
+	* include/std/format (_M_parse_fill_and_align): Cast elements of
+	__not_fill to _CharT.
+
+2025-04-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (format_kind): Do not use 'not'
+	alternative token to make the primary template ill-formed. Use
+	the undeclared identifier __primary_template_not_defined and a
+	comment that will appear in diagnostics.
+	* testsuite/std/format/ranges/format_kind_neg.cc: New test.
+
+2025-04-17  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/109162
+	* include/std/format (__format::__simply_formattable_range): Define.
+	(range_formatter::format): Do not instantiate _M_format for mutable
+	_Rg if const _Rg can be used.
+
 2025-04-16  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/109162

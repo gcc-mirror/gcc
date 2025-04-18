@@ -1,3 +1,29 @@
+2025-04-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/119351
+	* tree-vect-stmts.cc (vectorizable_early_exit): Mask both operands of
+	the gcond for partial masking support.
+
+2025-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119834
+	* config/s390/s390.md (define_split after *cpymem_short): Use
+	(clobber (match_scratch N)) instead of (clobber (scratch)).  Use
+	(match_dup 4) and operands[4] instead of (match_dup 3) and operands[3]
+	in the last of those.
+	(define_split after *clrmem_short): Use (clobber (match_scratch N))
+	instead of (clobber (scratch)).
+	(define_split after *cmpmem_short): Likewise.
+
+2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/nvptx/nvptx.cc (TARGET_ASM_NEED_VAR_DECL_BEFORE_USE):
+	Don't '#define'.
+
+2025-04-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	* combine.cc: Correct comments about combine_validate_cost.
+
 2025-04-16  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR c/88382

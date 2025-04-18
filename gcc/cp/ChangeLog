@@ -1,3 +1,12 @@
+2025-04-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113360
+	* cp-tree.h (struct language_function): Add erroneous bit.
+	* constexpr.cc (explain_invalid_constexpr_fn): Return if set.
+	(cxx_eval_call_expression): Quiet if set.
+	* parser.cc (cp_parser_function_definition_after_declarator)
+	* pt.cc (instantiate_body): Set it.
+
 2025-04-16  Jason Merrill  <jason@redhat.com>
 
 	PR c++/114772
