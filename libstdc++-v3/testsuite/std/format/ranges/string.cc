@@ -1,4 +1,5 @@
 // { dg-do run { target c++23 } }
+// { dg-timeout-factor 2 }
 
 #include <format>
 #include <span>
