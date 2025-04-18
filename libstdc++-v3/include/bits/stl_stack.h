@@ -70,6 +70,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#if __glibcxx_format_ranges
+  template<typename, typename> class formatter;
+#endif
+
   /**
    *  @brief  A standard container giving FILO behavior.
    *
@@ -343,6 +347,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	swap(c, __s.c);
       }
 #endif // __cplusplus >= 201103L
+
+#if __glibcxx_format_ranges
+      friend class formatter<stack<_Tp, _Sequence>, char>;
+      friend class formatter<stack<_Tp, _Sequence>, wchar_t>;
+#endif
     };
 
 #if __cpp_deduction_guides >= 201606
