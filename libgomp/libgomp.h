@@ -1135,6 +1135,8 @@ extern int gomp_get_num_devices (void);
 extern bool gomp_target_task_fn (void *);
 extern void gomp_target_rev (uint64_t, uint64_t, uint64_t, uint64_t, uint64_t,
 			     int, struct goacc_asyncqueue *);
+extern bool gomp_page_locked_host_alloc (void **, size_t);
+extern void gomp_page_locked_host_free (void *);
 
 /* Splay tree definitions.  */
 typedef struct splay_tree_node_s *splay_tree_node;
@@ -1418,6 +1420,8 @@ struct gomp_device_descr
   __typeof (GOMP_OFFLOAD_unload_image) *unload_image_func;
   __typeof (GOMP_OFFLOAD_alloc) *alloc_func;
   __typeof (GOMP_OFFLOAD_free) *free_func;
+  __typeof (GOMP_OFFLOAD_page_locked_host_alloc) *page_locked_host_alloc_func;
+  __typeof (GOMP_OFFLOAD_page_locked_host_free) *page_locked_host_free_func;
   __typeof (GOMP_OFFLOAD_dev2host) *dev2host_func;
   __typeof (GOMP_OFFLOAD_host2dev) *host2dev_func;
   __typeof (GOMP_OFFLOAD_memcpy2d) *memcpy2d_func;

@@ -375,6 +375,7 @@ extern bool GOMP_is_alloc (void *);
 
 extern void *GOMP_alloc (size_t, size_t, uintptr_t);
 extern void GOMP_free (void *, uintptr_t);
+extern void GOMP_enable_pinned_mode (void);
 
 /* error.c */
 

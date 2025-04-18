@@ -167,6 +167,8 @@ extern int GOMP_OFFLOAD_load_image (int, unsigned, const void *,
 extern bool GOMP_OFFLOAD_unload_image (int, unsigned, const void *);
 extern void *GOMP_OFFLOAD_alloc (int, size_t);
 extern bool GOMP_OFFLOAD_free (int, void *);
+extern bool GOMP_OFFLOAD_page_locked_host_alloc (void **, size_t);
+extern bool GOMP_OFFLOAD_page_locked_host_free (void *);
 extern bool GOMP_OFFLOAD_dev2host (int, void *, const void *, size_t);
 extern bool GOMP_OFFLOAD_host2dev (int, void *, const void *, size_t);
 extern bool GOMP_OFFLOAD_dev2dev (int, void *, const void *, size_t);

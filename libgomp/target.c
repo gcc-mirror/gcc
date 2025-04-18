@@ -4627,6 +4627,140 @@ omp_target_free (void *device_ptr, int device_num)
   gomp_mutex_unlock (&devicep->lock);
 }
 
+/* Device (really: libgomp plugin) to use for paged-locked memory.  We
+   assume there is either none or exactly one such device for the lifetime of
+   the process.  */
+
+static struct gomp_device_descr *device_for_page_locked
+  = /* uninitialized */ (void *) -1;
+
+static struct gomp_device_descr *
+get_device_for_page_locked (void)
+{
+  gomp_debug (0, "%s\n",
+	      __FUNCTION__);
+
+  struct gomp_device_descr *device;
+#ifdef HAVE_SYNC_BUILTINS
+  device
+    = __atomic_load_n (&device_for_page_locked, MEMMODEL_RELAXED);
+  if (device == (void *) -1)
+    {
+      gomp_debug (0, "  init\n");
+
+      gomp_init_targets_once ();
+
+      device = NULL;
+      for (int i = 0; i < num_devices; ++i)
+	{
+	  gomp_debug (0, "  i=%d, target_id=%d\n",
+		      i, devices[i].target_id);
+
+	  /* We consider only the first device of potentially several of the
+	     same type as this functionality is not specific to an individual
+	     offloading device, but instead relates to the host-side
+	     implementation of the respective offloading implementation.  */
+	  if (devices[i].target_id != 0)
+	    continue;
+
+	  if (!devices[i].page_locked_host_alloc_func)
+	    continue;
+
+	  gomp_debug (0, "  found device: %p (%s)\n",
+		      &devices[i], devices[i].name);
+	  if (device)
+	    gomp_fatal ("Unclear how %s and %s libgomp plugins may"
+			" simultaneously provide functionality"
+			" for page-locked memory",
+			device->name, devices[i].name);
+	  else
+	    device = &devices[i];
+	}
+
+      struct gomp_device_descr *device_old
+	= __atomic_exchange_n (&device_for_page_locked, device,
+			       MEMMODEL_RELAXED);
+      gomp_debug (0, "  old device_for_page_locked: %p\n",
+		  device_old);
+      assert (device_old == (void *) -1
+	      /* We shouldn't have concurrently found a different or no
+		 device.  */
+	      || device_old == device);
+    }
+#else /* !HAVE_SYNC_BUILTINS */
+  gomp_debug (0, "  not implemented for '!HAVE_SYNC_BUILTINS'\n");
+  (void) &device_for_page_locked;
+  device = NULL;
+#endif /* HAVE_SYNC_BUILTINS */
+
+  gomp_debug (0, "  -> device=%p (%s)\n",
+	      device, device ? device->name : "[none]");
+  return device;
+}
+
+/* Allocate page-locked host memory.
+   Returns whether we have a device capable of that.  */
+
+attribute_hidden bool
+gomp_page_locked_host_alloc (void **ptr, size_t size)
+{
+  gomp_debug (0, "%s: ptr=%p, size=%llu\n",
+	      __FUNCTION__, ptr, (unsigned long long) size);
+
+  struct gomp_device_descr *device = get_device_for_page_locked ();
+  gomp_debug (0, "  device=%p (%s)\n",
+	      device, device ? device->name : "[none]");
+  if (device)
+    {
+      gomp_mutex_lock (&device->lock);
+      if (device->state == GOMP_DEVICE_UNINITIALIZED)
+	gomp_init_device (device);
+      else if (device->state == GOMP_DEVICE_FINALIZED)
+	{
+	  gomp_mutex_unlock (&device->lock);
+	  gomp_fatal ("Device %s used for for page-locked memory is finalized",
+		      device->name);
+	}
+      gomp_mutex_unlock (&device->lock);
+
+      if (!device->page_locked_host_alloc_func (ptr, size))
+	gomp_fatal ("Failed to allocate page-locked host memory"
+		    " via %s libgomp plugin",
+		    device->name);
+    }
+  return device != NULL;
+}
+
+/* Free page-locked host memory.
+   This must only be called if 'gomp_page_locked_host_alloc' returned
+   'true'.  */
+
+attribute_hidden void
+gomp_page_locked_host_free (void *ptr)
+{
+  gomp_debug (0, "%s: ptr=%p\n",
+	      __FUNCTION__, ptr);
+
+  struct gomp_device_descr *device = get_device_for_page_locked ();
+  gomp_debug (0, "  device=%p (%s)\n",
+	      device, device ? device->name : "[none]");
+  assert (device);
+
+  gomp_mutex_lock (&device->lock);
+  assert (device->state != GOMP_DEVICE_UNINITIALIZED);
+  if (device->state == GOMP_DEVICE_FINALIZED)
+    {
+      gomp_mutex_unlock (&device->lock);
+      return;
+    }
+  gomp_mutex_unlock (&device->lock);
+
+  if (!device->page_locked_host_free_func (ptr))
+    gomp_fatal ("Failed to free page-locked host memory"
+		" via %s libgomp plugin",
+		device->name);
+}
+
 int
 omp_target_is_present (const void *ptr, int device_num)
 {
@@ -5666,6 +5800,8 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM (unload_image);
   DLSYM (alloc);
   DLSYM (free);
+  DLSYM_OPT (page_locked_host_alloc, page_locked_host_alloc);
+  DLSYM_OPT (page_locked_host_free, page_locked_host_free);
   DLSYM (dev2host);
   DLSYM (host2dev);
   DLSYM_OPT (memcpy2d, memcpy2d);

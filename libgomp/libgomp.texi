@@ -6795,8 +6795,9 @@ a @code{nearest} allocation.
 
 Additional notes regarding the traits:
 @itemize
-@item The @code{pinned} trait is supported on Linux hosts, but is subject to
-      the OS @code{ulimit}/@code{rlimit} locked memory settings.
+@item The @code{pinned} trait is supported on Linux hosts, but is usually
+      subject to the OS @code{ulimit}/@code{rlimit} locked memory settings (see
+      @ref{Offload-Target Specifics} for exceptions).
 @item The default for the @code{pool_size} trait is no pool and for every
       (re)allocation the associated library routine is called, which might
       internally use a memory pool.
@@ -6903,6 +6904,12 @@ The implementation remark:
       @code{omp_thread_mem_alloc}, all use low-latency memory as first
       preference, and fall back to main graphics memory when the low-latency
       pool is exhausted.
+@item Pinned memory allocated using @code{omp_alloc} with the
+      @code{ompx_gnu_pinned_mem_alloc} allocator or the @code{pinned} trait is
+      obtained via the CUDA API when an NVPTX device is present.  This provides
+      a performance boost for NVPTX offload code and also allows unlimited use
+      of pinned memory regardless of the OS @code{ulimit}/@code{rlimit}
+      settings.
 @item The OpenMP routines @code{omp_target_memcpy_rect} and
       @code{omp_target_memcpy_rect_async} and the @code{target update}
       directive for non-contiguous list items use the 3D memory-copy function

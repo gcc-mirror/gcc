@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-additional-options -DOFFLOAD_DEVICE_NVPTX { target offload_device_nvptx } } */
 
 /* Test that ompx_gnu_pinned_mem_alloc fails correctly.  */
 
@@ -66,32 +67,57 @@ set_pin_limit (int size)
 int
 main ()
 {
+#ifdef OFFLOAD_DEVICE_NVPTX
+  /* Go big or go home.
+     The OS ulimit does not affect memory locked via CUDA for NVPTX devices. */
+  const int SIZE = 40 * 1024 * 1024;
+#else
   /* Allocate at least a page each time, but stay within the ulimit.  */
   const int SIZE = PAGE_SIZE * 4;
+#endif
+  const int PIN_LIMIT = PAGE_SIZE*2;
 
   /* Ensure that the limit is smaller than the allocation.  */
-  set_pin_limit (SIZE / 2);
+  set_pin_limit (PIN_LIMIT);
 
   // Sanity check
   if (get_pinned_mem () != 0)
     abort ();
 
-  // Should fail
   void *p = omp_alloc (SIZE, ompx_gnu_pinned_mem_alloc);
-  if (p)
+#ifdef OFFLOAD_DEVICE_NVPTX
+  // Doesn't care about 'set_pin_limit'.
+  if (!p)
     abort ();
-
+#else
   // Should fail
-  p = omp_calloc (1, SIZE, ompx_gnu_pinned_mem_alloc);
   if (p)
     abort ();
+#endif
 
-  // Should fail to realloc
+  p = omp_calloc (1, SIZE, ompx_gnu_pinned_mem_alloc);
+#ifdef OFFLOAD_DEVICE_NVPTX
+  // Doesn't care about 'set_pin_limit'.
+  if (!p)
+    abort ();
+#else
+  // Should fail
+  if (p)
+    abort ();
+#endif
+
   void *notpinned = omp_alloc (SIZE, omp_default_mem_alloc);
   p = omp_realloc (notpinned, SIZE, ompx_gnu_pinned_mem_alloc,
 		   omp_default_mem_alloc);
+#ifdef OFFLOAD_DEVICE_NVPTX
+  // Doesn't care about 'set_pin_limit'; does reallocate.
+  if (!notpinned || !p || p == notpinned)
+    abort ();
+#else
+  // Should fail to realloc
   if (!notpinned || p)
     abort ();
+#endif
 
   // No memory should have been pinned
   int amount = get_pinned_mem ();

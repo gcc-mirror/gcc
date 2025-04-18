@@ -1826,6 +1826,48 @@ GOMP_OFFLOAD_free (int ord, void *ptr)
 	  && nvptx_free (ptr, ptx_devices[ord]));
 }
 
+bool
+GOMP_OFFLOAD_page_locked_host_alloc (void **ptr, size_t size)
+{
+  GOMP_PLUGIN_debug (0, "nvptx %s: ptr=%p, size=%llu\n",
+		     __FUNCTION__, ptr, (unsigned long long) size);
+
+  if (size == 0)
+    {
+      /* Special case to ensure omp_alloc specification compliance.  */
+      *ptr = NULL;
+      GOMP_PLUGIN_debug (0, "  -> *ptr=null\n");
+      return true;
+    }
+
+  CUresult r;
+
+  unsigned int flags = 0;
+  /* Given 'CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING', we don't need
+     'flags |= CU_MEMHOSTALLOC_PORTABLE;' here.  */
+  r = CUDA_CALL_NOCHECK (cuMemHostAlloc, ptr, size, flags);
+  if (r == CUDA_ERROR_OUT_OF_MEMORY)
+    *ptr = NULL;
+  else if (r != CUDA_SUCCESS)
+    {
+      GOMP_PLUGIN_error ("cuMemHostAlloc error: %s", cuda_error (r));
+      return false;
+    }
+  GOMP_PLUGIN_debug (0, "  -> *ptr=%p\n",
+		     *ptr);
+  return true;
+}
+
+bool
+GOMP_OFFLOAD_page_locked_host_free (void *ptr)
+{
+  GOMP_PLUGIN_debug (0, "nvptx %s: ptr=%p\n",
+		     __FUNCTION__, ptr);
+
+  CUDA_CALL (cuMemFreeHost, ptr);
+  return true;
+}
+
 void
 GOMP_OFFLOAD_openacc_exec (void (*fn) (void *),
 			   size_t mapnum  __attribute__((unused)),

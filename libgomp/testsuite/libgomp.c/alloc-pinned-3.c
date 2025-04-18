@@ -1,5 +1,7 @@
 /* { dg-do run } */
 
+/* { dg-additional-options -DOFFLOAD_DEVICE_NVPTX { target offload_device_nvptx } } */
+
 /* Test that pinned memory fails correctly.  */
 
 #include <stdio.h>
@@ -75,8 +77,15 @@ verify0 (char *p, size_t s)
 int
 main ()
 {
+#ifdef OFFLOAD_DEVICE_NVPTX
+  /* Go big or go home.
+     The OS ulimit does not affect memory locked via CUDA for NVPTX devices. */
+  const int SIZE = 40 * 1024 * 1024;
+#else
   /* This needs to be large enough to cover multiple pages.  */
   const int SIZE = PAGE_SIZE * 4;
+#endif
+  const int PIN_LIMIT = PAGE_SIZE * 2;
 
   /* Pinned memory, no fallback.  */
   const omp_alloctrait_t traits1[] = {
@@ -101,23 +110,34 @@ main ()
 #endif
 
   /* Ensure that the limit is smaller than the allocation.  */
-  set_pin_limit (SIZE / 2);
+  set_pin_limit (PIN_LIMIT);
 
   // Sanity check
   if (get_pinned_mem () != 0)
     abort ();
 
-  // Should fail
   void *p1 = omp_alloc (SIZE, allocator1);
+#ifdef OFFLOAD_DEVICE_NVPTX
+  // Doesn't care about 'set_pin_limit'.
+  if (!p1)
+    abort ();
+#else
+  // Should fail
   if (p1)
     abort ();
+#endif
 
-  // Should fail
   void *p2 = omp_calloc (1, SIZE, allocator1);
+#ifdef OFFLOAD_DEVICE_NVPTX
+  // Doesn't care about 'set_pin_limit'.
+  if (!p2)
+    abort ();
+#else
+  // Should fail
   if (p2)
     abort ();
+#endif
 
-  // Should fall back
   void *p3 = omp_alloc (SIZE, allocator2);
   if (!p3)
     abort ();
@@ -128,16 +148,29 @@ main ()
     abort ();
   verify0 (p4, SIZE);
 
-  // Should fail to realloc
   void *notpinned = omp_alloc (SIZE, omp_default_mem_alloc);
   void *p5 = omp_realloc (notpinned, SIZE, allocator1, omp_default_mem_alloc);
+#ifdef OFFLOAD_DEVICE_NVPTX
+  // Doesn't care about 'set_pin_limit'; does reallocate.
+  if (!notpinned || !p5 || p5 == notpinned)
+    abort ();
+#else
+  // Should fail to realloc
   if (!notpinned || p5)
     abort ();
+#endif
 
-  // Should fall back to no realloc needed
+#ifdef OFFLOAD_DEVICE_NVPTX
+  void *p6 = omp_realloc (p5, SIZE, allocator2, allocator1);
+  // Does reallocate.
+  if (p5 == p6)
+    abort ();
+#else
   void *p6 = omp_realloc (notpinned, SIZE, allocator2, omp_default_mem_alloc);
+  // Should fall back to no realloc needed
   if (p6 != notpinned)
     abort ();
+#endif
 
   // No memory should have been pinned
   int amount = get_pinned_mem ();
