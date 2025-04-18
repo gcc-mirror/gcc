@@ -11657,8 +11657,12 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 				    break_lhs_phi);
 
 		  if (POINTER_TYPE_P (TREE_TYPE (new_tree)))
-		    tmp2 = gimple_build (&iv_stmts, POINTER_PLUS_EXPR,
-					 TREE_TYPE (new_tree), new_tree, tmp2);
+		    {
+		      tmp2 = gimple_convert (&iv_stmts, sizetype, tmp2);
+		      tmp2 = gimple_build (&iv_stmts, POINTER_PLUS_EXPR,
+					   TREE_TYPE (new_tree), new_tree,
+					   tmp2);
+		    }
 		  else
 		    {
 		      tmp2 = gimple_convert (&iv_stmts, TREE_TYPE (new_tree),
