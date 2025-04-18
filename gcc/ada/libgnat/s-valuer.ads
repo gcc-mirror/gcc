@@ -85,7 +85,8 @@ package System.Value_R is
    --
    --    Sum [Val (N) * (Base ** Scale (N)), N in 1 .. Parts]
    --
-   --  when Parts > 1, with the negative sign if Minus is true.
+   --  when Parts > 1, with the negative sign if Minus is true. Note that
+   --  Val (1) cannot be zero unless Val is entirely filled with zero.
    --
    --  If no valid real is found, then Ptr.all points either to an initial
    --  non-blank character, or to Max + 1 if the field is all spaces and the
