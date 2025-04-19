@@ -266,34 +266,14 @@ Late::visit (AST::AltPattern &pattern)
 }
 
 void
-Late::visit (AST::Function &function)
+Late::visit_function_params (AST::Function &function)
 {
-  auto def_fn = [this, &function] () {
-    visit_outer_attrs (function);
-    visit (function.get_visibility ());
-    visit (function.get_qualifiers ());
-    for (auto &generic : function.get_generic_params ())
-      visit (generic);
+  ctx.bindings.enter (BindingSource::Param);
 
-    // We only care about params
-    ctx.bindings.enter (BindingSource::Param);
+  for (auto &param : function.get_function_params ())
+    visit (param);
 
-    for (auto &param : function.get_function_params ())
-      visit (param);
-
-    ctx.bindings.exit ();
-
-    // Back to regular visit
-
-    if (function.has_return_type ())
-      visit (function.get_return_type ());
-    if (function.has_where_clause ())
-      visit (function.get_where_clause ());
-    if (function.has_body ())
-      visit (*function.get_definition ());
-  };
-
-  ctx.scoped (Rib::Kind::Function, function.get_node_id (), def_fn);
+  ctx.bindings.exit ();
 }
 
 void

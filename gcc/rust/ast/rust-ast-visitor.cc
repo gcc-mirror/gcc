@@ -832,6 +832,13 @@ DefaultASTVisitor::visit (AST::UseDeclaration &use_decl)
 }
 
 void
+DefaultASTVisitor::visit_function_params (AST::Function &function)
+{
+  for (auto &param : function.get_function_params ())
+    visit (param);
+}
+
+void
 DefaultASTVisitor::visit (AST::Function &function)
 {
   visit_outer_attrs (function);
@@ -839,8 +846,9 @@ DefaultASTVisitor::visit (AST::Function &function)
   visit (function.get_qualifiers ());
   for (auto &generic : function.get_generic_params ())
     visit (generic);
-  for (auto &param : function.get_function_params ())
-    visit (param);
+
+  visit_function_params (function);
+
   if (function.has_return_type ())
     visit (function.get_return_type ());
   if (function.has_where_clause ())
