@@ -18,7 +18,7 @@ program do_concurrent_all_clauses
       squared = i * i
       arr(i) = temp2 + squared
       sum = sum + arr(i)
-      max_val = max(max_val, arr(i)) ! { dg-error "Reference to impure function" }
+      max_val = max(max_val, arr(i))
     end block
   end do
   print *, arr, sum, max_val
