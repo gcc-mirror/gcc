@@ -1,3 +1,9 @@
+2025-04-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119858
+	* tree-vect-loop.cc (vectorizable_live_operation): Convert
+	pointer offset to sizetype.
+
 2025-04-17  Tamar Christina  <tamar.christina@arm.com>
 
 	PR tree-optimization/119351
