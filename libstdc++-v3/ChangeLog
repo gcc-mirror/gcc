@@ -1,3 +1,10 @@
+2025-04-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/format (basic_format_arg::_S_to_arg_type): Normalize
+	_Float32 and _Float64 only to float and double respectivelly.
+	(basic_format_arg::_S_to_enum): Remove handling of _Float32 and _Float64.
+	(cherry picked with modifications from commit 445128c12cf22081223f7385196ee3889ef4c4b2)
+
 2025-04-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/integer_sequence/112473.cc: Compile with
