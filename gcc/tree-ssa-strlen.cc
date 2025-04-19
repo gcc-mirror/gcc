@@ -3785,6 +3785,70 @@ strlen_pass::handle_alloc_call (built_in_function bcode)
   si->dont_invalidate = true;
 }
 
+/* Returns true of the last statement of the bb is a conditional
+   that checks ptr for null-ness. */
+static bool
+last_stmt_ptr_check (tree ptr, basic_block bb)
+{
+  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
+  gcond *cstmt = dyn_cast <gcond *>(gsi_stmt (gsi));
+  if (!cstmt)
+    return false;
+  if (gimple_cond_code (cstmt) != EQ_EXPR && gimple_cond_code (cstmt) != NE_EXPR)
+    return false;
+  if (!integer_zerop (gimple_cond_rhs (cstmt)))
+    return false;
+  if (!operand_equal_p (gimple_cond_lhs (cstmt), ptr))
+    return false;
+  return true;
+}
+
+/* Check if doing a malloc+memset to calloc is a good idea. PTR is the
+   return value of the malloc/where the memset happens. MALLOC_BB is
+   the basic block of the malloc. MEMSET_BB is basic block of the memset.  */
+
+static bool
+allow_memset_malloc_to_calloc (tree ptr, basic_block malloc_bb,
+			       basic_block memset_bb)
+{
+  /* If the malloc and memset are in the same block, then always
+     allow the transformation. Don't need post dominator calculation. */
+  if (malloc_bb == memset_bb)
+    return true;
+
+  if (!dom_info_available_p (cfun, CDI_POST_DOMINATORS))
+    calculate_dominance_info (CDI_POST_DOMINATORS);
+
+  /* If the memset is always executed after the malloc, then allow
+      to optimize to calloc. */
+  if (dominated_by_p (CDI_POST_DOMINATORS, malloc_bb, memset_bb))
+    return true;
+
+  /* If the malloc bb ends in a ptr check, then we need to check if
+     either successor is post dominated by the memset bb.  */
+  if (last_stmt_ptr_check (ptr, malloc_bb))
+    {
+      if (dominated_by_p (CDI_POST_DOMINATORS, EDGE_SUCC (malloc_bb, 0)->dest, memset_bb))
+	return true;
+      if (dominated_by_p (CDI_POST_DOMINATORS, EDGE_SUCC (malloc_bb, 1)->dest, memset_bb))
+	return true;
+    }
+
+  /* At this point we want to only handle:
+     malloc();
+     ...
+     if (ptr)  goto memset_bb; */
+  if (!single_pred_p (memset_bb))
+    return false;
+
+  /* If the predecessor of the memset bb is not post dominated by malloc, then the memset is
+     conditionalized by something more than just the checking if ptr is non-null.  */
+  if (!dominated_by_p (CDI_POST_DOMINATORS, malloc_bb, single_pred_edge (memset_bb)->src))
+    return false;
+
+  return last_stmt_ptr_check (ptr, single_pred_edge (memset_bb)->src);
+}
+
 /* Handle a call to memset.
    After a call to calloc, memset(,0,) is unnecessary.
    memset(malloc(n),0,n) is calloc(n,1).
@@ -3870,6 +3934,8 @@ strlen_pass::handle_builtin_memset (bool *zero_write)
   enum built_in_function code1 = DECL_FUNCTION_CODE (callee1);
   if (code1 == BUILT_IN_CALLOC)
     /* Not touching alloc_stmt */ ;
+  else if (!allow_memset_malloc_to_calloc (ptr, gimple_bb (si1->stmt), gimple_bb (memset_stmt)))
+     return false;
   else if (code1 == BUILT_IN_MALLOC
 	   && operand_equal_p (memset_size, alloc_size, 0))
     {
@@ -5942,6 +6008,7 @@ printf_strlen_execute (function *fun, bool warn_only)
   disable_ranger (fun);
   scev_finalize ();
   loop_optimizer_finalize ();
+  free_dominance_info (CDI_POST_DOMINATORS);
 
   return walker.m_cleanup_cfg ? TODO_cleanup_cfg : 0;
 }
