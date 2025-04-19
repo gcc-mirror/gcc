@@ -1449,18 +1449,46 @@ gimplify_bind_expr (tree *expr_p, gimple_seq *pre_p)
 		 dynamic_allocators clause is present in the same compilation
 		 unit.  */
 	      bool missing_dyn_alloc = false;
-	      if (alloc == NULL_TREE
-		  && ((omp_requires_mask & OMP_REQUIRES_DYNAMIC_ALLOCATORS)
-		      == 0))
+	      if ((omp_requires_mask & OMP_REQUIRES_DYNAMIC_ALLOCATORS) == 0)
 		{
 		  /* This comes too early for omp_discover_declare_target...,
 		     but should at least catch the most common cases.  */
 		  missing_dyn_alloc
-		    = cgraph_node::get (current_function_decl)->offloadable;
+		    = (alloc == NULL_TREE
+		       && cgraph_node::get (current_function_decl)->offloadable);
 		  for (struct gimplify_omp_ctx *ctx2 = ctx;
 		       ctx2 && !missing_dyn_alloc; ctx2 = ctx2->outer_context)
 		    if (ctx2->code == OMP_TARGET)
-		      missing_dyn_alloc = true;
+		      {
+			if (alloc == NULL_TREE)
+			  missing_dyn_alloc = true;
+			else if (TREE_CODE (alloc) != INTEGER_CST)
+			  {
+			    tree alloc2 = alloc;
+			    if (TREE_CODE (alloc2) == MEM_REF
+				|| TREE_CODE (alloc2) == INDIRECT_REF)
+			      alloc2 = TREE_OPERAND (alloc2, 0);
+			    tree c2;
+			    for (c2 = ctx2->clauses; c2;
+				 c2 = OMP_CLAUSE_CHAIN (c2))
+			      if (OMP_CLAUSE_CODE (c2)
+				  == OMP_CLAUSE_USES_ALLOCATORS)
+				{
+				  tree t2
+				    = OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (c2);
+				  if (operand_equal_p (alloc2, t2))
+				    break;
+				}
+			    if (c2 == NULL_TREE)
+			      error_at (EXPR_LOC_OR_LOC (
+					  alloc, DECL_SOURCE_LOCATION (t)),
+					"%qE in %<allocator%> clause inside a "
+					"target region must be specified in an "
+					"%<uses_allocators%> clause on the "
+					"%<target%> directive", alloc2);
+			  }
+			break;
+		      }
 		}
 	      if (missing_dyn_alloc)
 		error_at (DECL_SOURCE_LOCATION (t),
@@ -14080,6 +14108,21 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  nowait = 1;
 	  break;
 
+	case OMP_CLAUSE_USES_ALLOCATORS:
+	  if (TREE_CODE (OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (c))
+	      != INTEGER_CST)
+	    {
+	      decl = OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (c);
+	      omp_add_variable (ctx, decl, GOVD_SEEN | GOVD_PRIVATE);
+
+	      decl = OMP_CLAUSE_USES_ALLOCATORS_TRAITS (c);
+	      if (decl && !DECL_INITIAL (decl))
+		omp_add_variable (ctx, decl, GOVD_SEEN | GOVD_FIRSTPRIVATE);
+	    }
+	  else
+	    remove = true;
+	  break;
+
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_COLLAPSE:
@@ -14229,6 +14272,49 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    {
 	      remove = true;
 	      break;
+	    }
+	  if ((omp_requires_mask & OMP_REQUIRES_DYNAMIC_ALLOCATORS) == 0
+	      && OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)
+	      && TREE_CODE (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)) != INTEGER_CST)
+	    {
+	      tree allocator = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c);
+	      tree clauses = NULL_TREE;
+
+	      /* Get clause list of the nearest enclosing target construct.  */
+	      if (ctx->code == OMP_TARGET)
+		clauses = *orig_list_p;
+	      else
+		{
+		  struct gimplify_omp_ctx *tctx = ctx->outer_context;
+		  while (tctx && tctx->code != OMP_TARGET)
+		    tctx = tctx->outer_context;
+		  if (tctx)
+		    clauses = tctx->clauses;
+		}
+
+	      if (clauses)
+		{
+		  tree uc;
+		  if (TREE_CODE (allocator) == MEM_REF
+		      || TREE_CODE (allocator) == INDIRECT_REF)
+		    allocator = TREE_OPERAND (allocator, 0);
+		  for (uc = clauses; uc; uc = OMP_CLAUSE_CHAIN (uc))
+		    if (OMP_CLAUSE_CODE (uc) == OMP_CLAUSE_USES_ALLOCATORS)
+		      {
+			tree uc_allocator
+			  = OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (uc);
+			if (operand_equal_p (allocator, uc_allocator))
+			  break;
+		      }
+		  if (uc == NULL_TREE)
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c), "allocator %qE "
+				"requires %<uses_allocators(%E)%> clause in "
+				"target region", allocator, allocator);
+		      remove = true;
+		      break;
+		    }
+		}
 	    }
 	  if (gimplify_expr (&OMP_CLAUSE_ALLOCATE_ALLOCATOR (c), pre_p, NULL,
 			     is_gimple_val, fb_rvalue) == GS_ERROR)
@@ -15587,6 +15673,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_INCLUSIVE:
 	case OMP_CLAUSE_EXCLUSIVE:
+	case OMP_CLAUSE_USES_ALLOCATORS:
 	  break;
 
 	case OMP_CLAUSE_NOHOST:
@@ -18204,6 +18291,92 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
 	  g = gimple_build_try (body, cleanup, GIMPLE_TRY_FINALLY);
 	  body = NULL;
 	  gimple_seq_add_stmt (&body, g);
+	}
+      else if ((ort & ORT_TARGET) != 0 && (ort & ORT_ACC) == 0)
+	{
+	  gimple_seq init_seq = NULL;
+	  gimple_seq fini_seq = NULL;
+
+	  tree omp_init_allocator_fn = NULL_TREE;
+	  tree omp_destroy_allocator_fn = NULL_TREE;
+
+	  for (tree *cp = &OMP_CLAUSES (expr); *cp != NULL;
+	       cp = &OMP_CLAUSE_CHAIN (*cp))
+	    if (OMP_CLAUSE_CODE (*cp) == OMP_CLAUSE_USES_ALLOCATORS)
+	      {
+		tree c = *cp;
+		tree allocator = OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (c);
+		tree memspace = OMP_CLAUSE_USES_ALLOCATORS_MEMSPACE (c);
+		tree traits = OMP_CLAUSE_USES_ALLOCATORS_TRAITS (c);
+
+		if (omp_init_allocator_fn == NULL_TREE)
+		  {
+		    omp_init_allocator_fn
+		      = builtin_decl_explicit (BUILT_IN_OMP_INIT_ALLOCATOR);
+		    omp_destroy_allocator_fn
+		      = builtin_decl_explicit (BUILT_IN_OMP_DESTROY_ALLOCATOR);
+		  }
+		tree ntraits, traits_var;
+		if (traits == NULL_TREE)
+		  {
+		     ntraits = integer_zero_node;
+		     traits_var = null_pointer_node;
+		  }
+		else if (DECL_INITIAL (traits))
+		  {
+		    location_t loc = OMP_CLAUSE_LOCATION (c);
+		    tree t = DECL_INITIAL (traits);
+		    gcc_assert (TREE_CODE (t) == CONSTRUCTOR);
+		    ntraits = build_int_cst (integer_type_node,
+					     CONSTRUCTOR_NELTS (t));
+		    t = get_initialized_tmp_var (t, &init_seq, NULL);
+		    traits_var = build_fold_addr_expr_loc (loc, t);
+		  }
+		else
+		  {
+		    location_t loc = OMP_CLAUSE_LOCATION (c);
+		    gcc_assert (TREE_CODE (TREE_TYPE (traits)) == ARRAY_TYPE);
+		    tree t = TYPE_DOMAIN (TREE_TYPE (traits));
+		    tree min = TYPE_MIN_VALUE (t);
+		    tree max = TYPE_MAX_VALUE (t);
+		    gcc_assert (TREE_CODE (min) == INTEGER_CST
+				&& TREE_CODE (max) == INTEGER_CST);
+		    t = fold_build2_loc (loc, MINUS_EXPR, TREE_TYPE (min),
+					 max, min);
+		    t = fold_build2_loc (loc, PLUS_EXPR, TREE_TYPE (min),
+					 t, build_int_cst (TREE_TYPE (min), 1));
+		    ntraits = t;
+		    traits_var = build_fold_addr_expr_loc (loc, traits);
+		  }
+
+		if (memspace == NULL_TREE)
+		  memspace = build_int_cst (pointer_sized_int_node, 0);
+		else
+		  memspace = fold_convert (pointer_sized_int_node,
+					   memspace);
+
+		tree call = build_call_expr_loc (OMP_CLAUSE_LOCATION (c),
+						 omp_init_allocator_fn, 3,
+						 memspace, ntraits,
+						 traits_var);
+		call = fold_convert (TREE_TYPE (allocator), call);
+		gimplify_assign (allocator, call, &init_seq);
+
+		call = build_call_expr_loc (OMP_CLAUSE_LOCATION (c),
+					    omp_destroy_allocator_fn, 1,
+					    allocator);
+		gimplify_and_add (call, &fini_seq);
+	      }
+
+	  if (fini_seq)
+	    {
+	      gbind *bind = as_a<gbind *> (gimple_seq_first_stmt (body));
+	      g = gimple_build_try (gimple_bind_body (bind),
+				    fini_seq, GIMPLE_TRY_FINALLY);
+	      gimple_seq_add_stmt (&init_seq, g);
+	      gimple_bind_set_body (bind, init_seq);
+	      body = bind;
+	    }
 	}
     }
   else

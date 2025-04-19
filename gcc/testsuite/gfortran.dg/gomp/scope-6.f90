@@ -20,4 +20,4 @@ contains
   end
 end
 
-! { dg-final { scan-tree-dump "omp scope private\\(a\\) firstprivate\\(b\\) reduction\\(\\+:c\\) allocate\\(allocator\\(D\\.\[0-9\]+\\):a\\) allocate\\(allocator\\(D\\.\[0-9\]+\\):b\\) allocate\\(allocator\\(D\\.\[0-9\]+\\):c\\)" "original" } }
+! { dg-final { scan-tree-dump "omp scope private\\(a\\) firstprivate\\(b\\) reduction\\(\\+:c\\) allocate\\(allocator\\(h\\):a\\) allocate\\(allocator\\(h\\):b\\) allocate\\(allocator\\(h\\):c\\)" "original" } }

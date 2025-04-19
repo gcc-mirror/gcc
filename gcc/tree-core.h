@@ -589,6 +589,8 @@ enum omp_clause_code {
   /* OpenMP clause: nocontext (scalar-expression).  */
   OMP_CLAUSE_NOCONTEXT,
 
+  /* OpenMP clause: uses_allocators.  */
+  OMP_CLAUSE_USES_ALLOCATORS,
 };
 
 #undef DEFTREESTRUCT

@@ -3711,7 +3711,12 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			      gfc_init_se (&se, NULL);
 			      gfc_conv_expr (&se, n->u2.allocator);
 			      gfc_add_block_to_block (block, &se.pre);
-			      allocator_ = gfc_evaluate_now (se.expr, block);
+			      t = se.expr;
+			      if (DECL_P (t) && se.post.head == NULL_TREE)
+				allocator_ = (POINTER_TYPE_P (TREE_TYPE (t))
+					      ? build_fold_indirect_ref (t): t);
+			      else
+				allocator_ = gfc_evaluate_now (t, block);
 			      gfc_add_block_to_block (block, &se.post);
 			    }
 			  OMP_CLAUSE_ALLOCATE_ALLOCATOR (node) = allocator_;
@@ -5092,13 +5097,36 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	    }
 	  break;
 	case OMP_LIST_USES_ALLOCATORS:
-	  /* Ignore pre-defined allocators as no special treatment is needed. */
 	  for (; n != NULL; n = n->next)
-	    if (n->sym->attr.flavor == FL_VARIABLE)
-	      break;
-	  if (n != NULL)
-	    sorry_at (input_location, "%<uses_allocators%> clause with traits "
-				      "and memory spaces");
+	    {
+	      if (!n->sym->attr.referenced)
+		continue;
+	      tree node = build_omp_clause (input_location,
+					    OMP_CLAUSE_USES_ALLOCATORS);
+	      tree t;
+	      if (n->sym->attr.flavor == FL_VARIABLE)
+		t = gfc_get_symbol_decl (n->sym);
+	      else
+		{
+		  t = gfc_conv_mpz_to_tree (n->sym->value->value.integer,
+					    n->sym->ts.kind);
+		  t = fold_convert (ptr_type_node, t);
+		}
+	      OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR(node) = t;
+	      if (n->u.memspace_sym)
+		{
+		  n->u.memspace_sym->attr.referenced = true;
+		  OMP_CLAUSE_USES_ALLOCATORS_MEMSPACE (node)
+		    = gfc_get_symbol_decl (n->u.memspace_sym);
+		}
+	      if (n->u2.traits_sym)
+		{
+		  n->u2.traits_sym->attr.referenced = true;
+		  OMP_CLAUSE_USES_ALLOCATORS_TRAITS (node)
+		    = gfc_get_symbol_decl (n->u2.traits_sym);
+		}
+	      omp_clauses = gfc_trans_add_clause (node, omp_clauses);
+	    }
 	  break;
 	default:
 	  break;

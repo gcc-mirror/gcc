@@ -1294,6 +1294,36 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	    && omp_maybe_offloaded_ctx (ctx))
 	  error_at (OMP_CLAUSE_LOCATION (c), "%<allocate%> clause must"
 		    " specify an allocator here");
+	if ((omp_requires_mask & OMP_REQUIRES_DYNAMIC_ALLOCATORS) == 0
+	    && OMP_CLAUSE_ALLOCATE_ALLOCATOR (c) != NULL_TREE
+	    && DECL_P (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c))
+	    && !DECL_ARTIFICIAL (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c)))
+	  {
+	    tree alloc2 = OMP_CLAUSE_ALLOCATE_ALLOCATOR (c);
+	    if (TREE_CODE (alloc2) == MEM_REF
+		|| TREE_CODE (alloc2) == INDIRECT_REF)
+	      alloc2 = TREE_OPERAND (alloc2, 0);
+	    omp_context *ctx2 = ctx;
+	    for (; ctx2; ctx2 = ctx2->outer)
+	      if (is_gimple_omp_offloaded (ctx2->stmt))
+		break;
+	    if (ctx2 != NULL)
+	      {
+		tree c2 = gimple_omp_target_clauses (ctx2->stmt);
+		for (; c2; c2 = OMP_CLAUSE_CHAIN (c2))
+		  if (OMP_CLAUSE_CODE (c2) == OMP_CLAUSE_USES_ALLOCATORS
+		      && operand_equal_p (
+			   alloc2, OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (c2)))
+		    break;
+		if (c2 == NULL_TREE)
+		  error_at (EXPR_LOC_OR_LOC (OMP_CLAUSE_ALLOCATE_ALLOCATOR (c),
+					     OMP_CLAUSE_LOCATION (c)),
+			    "allocator %qE in %<allocate%> clause inside a "
+			    "target region must be specified in an "
+			    "%<uses_allocators%> clause on the %<target%> "
+			    "directive", alloc2);
+	      }
+	  }
 	if (ctx->allocate_map == NULL)
 	  ctx->allocate_map = new hash_map<tree, tree>;
 	tree val = integer_zero_node;
@@ -1927,6 +1957,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_TASK_REDUCTION:
 	case OMP_CLAUSE_ALLOCATE:
+	case OMP_CLAUSE_USES_ALLOCATORS:
 	  break;
 
 	case OMP_CLAUSE_ALIGNED:
@@ -2153,6 +2184,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_INIT:
 	case OMP_CLAUSE_USE:
 	case OMP_CLAUSE_DESTROY:
+	case OMP_CLAUSE_USES_ALLOCATORS:
 	  break;
 
 	case OMP_CLAUSE__CACHE_:
