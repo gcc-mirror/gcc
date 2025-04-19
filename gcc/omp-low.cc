@@ -181,6 +181,10 @@ struct omp_context
      than teams is strictly nested in it.  */
   bool nonteams_nested_p;
 
+  /* Indicates that context is in OMPACC mode, set after _ompacc_ internal
+     clauses are removed.  */
+  bool ompacc_p;
+
   /* Candidates for adjusting OpenACC privatization level.  */
   vec<tree> oacc_privatization_candidates;
 };
@@ -1958,6 +1962,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_TASK_REDUCTION:
 	case OMP_CLAUSE_ALLOCATE:
 	case OMP_CLAUSE_USES_ALLOCATORS:
+	case OMP_CLAUSE__OMPACC_:
 	  break;
 
 	case OMP_CLAUSE_ALIGNED:
@@ -2185,6 +2190,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_USE:
 	case OMP_CLAUSE_DESTROY:
 	case OMP_CLAUSE_USES_ALLOCATORS:
+	case OMP_CLAUSE__OMPACC_:
 	  break;
 
 	case OMP_CLAUSE__CACHE_:
@@ -2251,6 +2257,21 @@ omp_maybe_offloaded_ctx (omp_context *ctx)
   for (; ctx; ctx = ctx->outer)
     if (is_gimple_omp_offloaded (ctx->stmt))
       return true;
+  return false;
+}
+
+static bool
+ompacc_ctx_p (omp_context *ctx)
+{
+  if (cgraph_node::get (current_function_decl)->offloadable
+      && lookup_attribute ("ompacc",
+			   DECL_ATTRIBUTES (current_function_decl)))
+    return true;
+  for (; ctx; ctx = ctx->outer)
+    if (is_gimple_omp_offloaded (ctx->stmt))
+      return (ctx->ompacc_p
+	      || omp_find_clause (gimple_omp_target_clauses (ctx->stmt),
+				  OMP_CLAUSE__OMPACC_));
   return false;
 }
 
@@ -2559,8 +2580,28 @@ scan_omp_parallel (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
   DECL_NAMELESS (name) = 1;
   TYPE_NAME (ctx->record_type) = name;
   TYPE_ARTIFICIAL (ctx->record_type) = 1;
-  create_omp_child_function (ctx, false);
-  gimple_omp_parallel_set_child_fn (stmt, ctx->cb.dst_fn);
+
+  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+      && ompacc_ctx_p (ctx))
+    {
+      tree data_name = get_identifier (".omp_data_i_par");
+      tree t = build_decl (gimple_location (stmt), VAR_DECL, data_name,
+			   ptr_type_node);
+      DECL_ARTIFICIAL (t) = 1;
+      DECL_NAMELESS (t) = 1;
+      DECL_CONTEXT (t) = current_function_decl;
+      DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
+      DECL_CHAIN (t) = ctx->block_vars;
+      ctx->block_vars = t;
+      TREE_USED (t) = 1;
+      TREE_READONLY (t) = 1;
+      ctx->receiver_decl = t;
+    }
+  else
+    {
+      create_omp_child_function (ctx, false);
+      gimple_omp_parallel_set_child_fn (stmt, ctx->cb.dst_fn);
+    }
 
   scan_sharing_clauses (gimple_omp_parallel_clauses (stmt), ctx);
   scan_omp (gimple_omp_body_ptr (stmt), ctx);
@@ -3390,6 +3431,24 @@ scan_omp_target (gomp_target *stmt, omp_context *outer_ctx)
 
   scan_sharing_clauses (clauses, ctx);
   scan_omp (gimple_omp_body_ptr (stmt), ctx);
+
+  if (offloaded && flag_openmp_target == OMP_TARGET_MODE_OMPACC)
+    {
+      for (tree *cp = gimple_omp_target_clauses_ptr (stmt); *cp;
+	   cp = &OMP_CLAUSE_CHAIN (*cp))
+	if (OMP_CLAUSE_CODE (*cp) == OMP_CLAUSE__OMPACC_)
+	  {
+	    DECL_ATTRIBUTES (gimple_omp_target_child_fn (stmt))
+	      = tree_cons (get_identifier ("ompacc"), NULL_TREE,
+			   DECL_ATTRIBUTES (gimple_omp_target_child_fn (stmt)));
+	    /* Unlink and remove.  */
+	    *cp = OMP_CLAUSE_CHAIN (*cp);
+
+	    /* Set to true.  */
+	    ctx->ompacc_p = true;
+	    break;
+	  }
+    }
 
   if (TYPE_FIELDS (ctx->record_type) == NULL)
     ctx->record_type = ctx->receiver_decl = NULL;
@@ -8624,6 +8683,9 @@ lower_oacc_head_mark (location_t loc, tree ddvar, tree clauses,
     gcc_unreachable ();
   else if (is_oacc_kernels_decomposed_part (tgt))
     ;
+  else if (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+	   && is_omp_target (tgt->stmt))
+    ;
   else
     gcc_unreachable ();
 
@@ -8641,7 +8703,12 @@ lower_oacc_head_mark (location_t loc, tree ddvar, tree clauses,
       gcc_assert (!(tag & OLF_AUTO));
     }
 
-  if (tag & OLF_TILE)
+  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+      && gimple_code (ctx->stmt) == GIMPLE_OMP_PARALLEL
+      && tgt
+      && ompacc_ctx_p (tgt))
+    levels = 1;
+  else if (tag & OLF_TILE)
     /* Tiling could use all 3 levels.  */
     levels = 3;
   else
@@ -11930,6 +11997,23 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   push_gimplify_context ();
 
+  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC && ompacc_ctx_p (ctx))
+    {
+      enum omp_clause_code code = OMP_CLAUSE_ERROR;
+      if (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_FOR)
+	code = OMP_CLAUSE_VECTOR;
+      else if (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_DISTRIBUTE)
+	code = OMP_CLAUSE_GANG;
+      if (code)
+	{
+	  /* Adjust into OACC loop kind with vector/gang clause.  */
+	  gimple_omp_for_set_kind (stmt, GF_OMP_FOR_KIND_OACC_LOOP);
+	  tree c = build_omp_clause (UNKNOWN_LOCATION, code);
+	  OMP_CLAUSE_CHAIN (c) = gimple_omp_for_clauses (stmt);
+	  gimple_omp_for_set_clauses (stmt, c);
+	}
+    }
+
   if (is_gimple_omp_oacc (ctx->stmt))
     oacc_privatization_scan_clause_chain (ctx, gimple_omp_for_clauses (stmt));
 
@@ -11951,7 +12035,9 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       gbind *inner_bind
 	= as_a <gbind *> (gimple_seq_first_stmt (omp_for_body));
       tree vars = gimple_bind_vars (inner_bind);
-      if (is_gimple_omp_oacc (ctx->stmt))
+      if (is_gimple_omp_oacc (ctx->stmt)
+	  || (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+	      && ompacc_ctx_p (ctx)))
 	oacc_privatization_scan_decl_chain (ctx, vars);
       gimple_bind_append_vars (new_stmt, vars);
       /* bind_vars/BLOCK_VARS are being moved to new_stmt/block, don't
@@ -12067,7 +12153,8 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   lower_omp (gimple_omp_body_ptr (stmt), ctx);
 
   gcall *private_marker = NULL;
-  if (is_gimple_omp_oacc (ctx->stmt)
+  if ((is_gimple_omp_oacc (ctx->stmt)
+       || (flag_openmp_target == OMP_TARGET_MODE_OMPACC && ompacc_ctx_p (ctx)))
       && !gimple_seq_empty_p (omp_for_body))
     private_marker = lower_oacc_private_marker (ctx);
 
@@ -12122,11 +12209,13 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   /* Once lowered, extract the bounds and clauses.  */
   omp_extract_for_data (stmt, &fd, NULL);
 
-  if (is_gimple_omp_oacc (ctx->stmt)
-      && !ctx_in_oacc_kernels_region (ctx))
-    lower_oacc_head_tail (gimple_location (stmt),
-			  gimple_omp_for_clauses (stmt), private_marker,
-			  &oacc_head, &oacc_tail, ctx);
+  if (flag_openacc)
+    {
+      if (is_gimple_omp_oacc (ctx->stmt) && !ctx_in_oacc_kernels_region (ctx))
+	lower_oacc_head_tail (gimple_location (stmt),
+			      gimple_omp_for_clauses (stmt), private_marker,
+			      &oacc_head, &oacc_tail, ctx);
+    }
 
   /* Add OpenACC partitioning and reduction markers just before the loop.  */
   if (oacc_head)
@@ -12910,9 +12999,20 @@ lower_omp_taskreg (gimple_stmt_iterator *gsi_p, omp_context *ctx)
     bind = gimple_build_bind (NULL, NULL, make_node (BLOCK));
   else
     bind = gimple_build_bind (NULL, NULL, gimple_bind_block (par_bind));
+
+  gimple_seq oacc_head = NULL, oacc_tail = NULL;
+  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+      && gimple_code (stmt) == GIMPLE_OMP_PARALLEL
+      && ompacc_ctx_p (ctx))
+    lower_oacc_head_tail (gimple_location (stmt), clauses,
+			  NULL, &oacc_head, &oacc_tail,
+			  ctx);
+
   gsi_replace (gsi_p, dep_bind ? dep_bind : bind, true);
   gimple_bind_add_seq (bind, ilist);
+  gimple_bind_add_seq (bind, oacc_head);
   gimple_bind_add_stmt (bind, stmt);
+  gimple_bind_add_seq (bind, oacc_tail);
   gimple_bind_add_seq (bind, olist);
 
   pop_gimplify_context (NULL);
@@ -14768,7 +14868,9 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       gimple_seq fork_seq = NULL;
       gimple_seq join_seq = NULL;
 
-      if (offloaded && is_gimple_omp_oacc (ctx->stmt))
+      if (offloaded && (is_gimple_omp_oacc (ctx->stmt)
+			|| (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+			    && ompacc_ctx_p (ctx))))
 	{
 	  /* If there are reductions on the offloaded region itself, treat
 	     them as a dummy GANG loop.  */
@@ -15107,6 +15209,22 @@ lower_omp_teams (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   lower_omp (gimple_omp_body_ptr (teams_stmt), ctx);
   lower_reduction_clauses (gimple_omp_teams_clauses (teams_stmt), &olist,
 			   NULL, ctx);
+
+  if (flag_openmp_target == OMP_TARGET_MODE_OMPACC && ompacc_ctx_p (ctx))
+    {
+      /* Forward the team/gang-wide variables to outer target region.  */
+      struct omp_context *tgt = ctx;
+      while (tgt && !is_gimple_omp_offloaded (tgt->stmt))
+	tgt = tgt->outer;
+      if (tgt)
+	{
+	  int i;
+	  tree decl;
+	  FOR_EACH_VEC_ELT (ctx->oacc_privatization_candidates, i, decl)
+	    tgt->oacc_privatization_candidates.safe_push (decl);
+	}
+    }
+
   gimple_seq_add_stmt (&bind_body, teams_stmt);
 
   gimple_seq_add_seq (&bind_body, gimple_omp_body (teams_stmt));
@@ -15274,7 +15392,9 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		 ctx);
       break;
     case GIMPLE_BIND:
-      if (ctx && is_gimple_omp_oacc (ctx->stmt))
+      if (ctx && (is_gimple_omp_oacc (ctx->stmt)
+		  || (flag_openmp_target == OMP_TARGET_MODE_OMPACC
+		      && ompacc_ctx_p (ctx))))
 	{
 	  tree vars = gimple_bind_vars (as_a <gbind *> (stmt));
 	  oacc_privatization_scan_decl_chain (ctx, vars);

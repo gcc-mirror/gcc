@@ -32,5 +32,6 @@ extern GTY(()) vec<tree, va_gc> *offload_ind_funcs;
 
 extern void omp_finish_file (void);
 extern void omp_discover_implicit_declare_target (void);
+extern void omp_ompacc_attribute_tagging (void);
 
 #endif /* GCC_OMP_DEVICE_H */
