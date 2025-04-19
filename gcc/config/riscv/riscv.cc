@@ -13136,9 +13136,6 @@ parse_features_for_version (tree decl,
 					  DECL_SOURCE_LOCATION (decl));
   gcc_assert (parse_res);
 
-  if (arch_string != default_opts->x_riscv_arch_string)
-    free (CONST_CAST (void *, (const void *) arch_string));
-
   cl_target_option_restore (&global_options, &global_options_set,
 			    &cur_target);
 }
