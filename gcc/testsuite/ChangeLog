@@ -1,3 +1,65 @@
+2025-04-18  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR cobol/119818
+	* cobol.dg/group2/FUNCTION_DATE___TIME_OMNIBUS.cob:
+	'dg-set-target-env-var TZ UTC0'.
+
+2025-04-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/bext-ext-2.c: New test
+
+2025-04-18  Jonathan Yong  <10walls@gmail.com>
+
+	* g++.dg/abi/ref-temp1.C: Replicate some test based on
+	PE expectations.
+	* lib/target-supports.exp: New check_effective_target_pe.
+
+2025-04-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/87901
+	* gcc.dg/tree-ssa/ssa-dse-53.c: New test.
+	* gcc.dg/tree-ssa/ssa-dse-54.c: New test.
+
+2025-04-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/87901
+	* gcc.dg/tree-ssa/ssa-dse-52.c: New test.
+
+2025-04-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118902
+	* gcc.dg/tree-ssa/pr118902-1.c: New test.
+
+2025-04-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118947
+	* gcc.dg/pr118947-1.c: New test.
+
+2025-04-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/78408
+	PR tree-optimization/118947
+	* gcc.dg/pr78408-3.c: New test.
+
+2025-04-18  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/pr116357.c: Use sizeof(int) instead of alignof(int).
+
+2025-04-18  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR middle-end/108016
+	* gcc.target/riscv/pr108016.c: New test.
+
+2025-04-18  kelefth  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/119160
+	* gcc.dg/pr119160.c: New test.
+
+2025-04-18  Xing Li  <lixing@loongson.cn>
+
+	* gcc.target/loongarch/vector/loongarch-vector.exp: Change
+	{dg-do-what-default} save and restore logical.
+
 2025-04-17  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp2a/constexpr-dtor16.C: Adjust diagnostic.

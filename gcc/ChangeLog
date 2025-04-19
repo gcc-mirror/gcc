@@ -1,3 +1,77 @@
+2025-04-18  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (*bext<mode>_mask_pos): New pattern
+	for extracting a single bit at masked bit position.
+
+2025-04-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/87901
+	* tree-ssa-dse.cc (maybe_trim_constructor_store): Add was_integer_cst argument.
+	Check for was_integer_cst instead of `{}` when was_integer_cst is true.
+	(maybe_trim_partially_dead_store): Handle INTEGER_CST stores of 0 as stores of `{}`.
+	Udpate call to maybe_trim_constructor_store for CONSTRUCTOR.
+
+2025-04-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/87901
+	* tree-ssa-dse.cc (maybe_trim_constructor_store): Strip over useless type
+	conversions after taking the address of the MEM_REF.
+
+2025-04-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118902
+	* fold-const.cc (tree_swap_operands_p): Place invariants in the first operand
+	if not used with constants.
+
+2025-04-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118947
+	* gimple-fold.cc (optimize_memcpy_to_memset): Walk back until we get a
+	statement that may clobber the read.
+
+2025-04-18  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/78408
+	PR tree-optimization/118947
+	* gimple-fold.cc (optimize_memcpy_to_memset): Handle STRING_CST case too.
+
+2025-04-18  Richard Braun  <rbraun@sceen.net>
+
+	* config/c6x/c6x.h (ASM_PREFERRED_EH_DATA_FORMAT): Remove the
+	DW_EH_PE_indirect flag.
+
+2025-04-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119858
+	* tree-vect-loop.cc (vectorizable_live_operation): Convert
+	pointer offset to sizetype.
+
+2025-04-18  Hakan Candar  <hakancandar@protonmail.com>
+
+	* config.gcc: Recognize riscv*-*-gnu* targets.
+	* config/riscv/gnu.h: New file.
+
+2025-04-18  Alexey Merzlyakov  <alexey.merzlyakov@samsung.com>
+
+	PR middle-end/108016
+	PR middle-end/108016
+	* config/riscv/riscv.md (addv<mode>4, uaddv<mode>4, subv<mode>4,
+	usubv<mode>4): Tunes for unnecessary sext.w elimination.
+
+2025-04-18  kelefth  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/119160
+	* avoid-store-forwarding.cc (process_store_forwarding):
+	Zero-extend the value stored in the base register, in case
+	of load-elimination, only when the mode of the destination
+	is wider.
+
+2025-04-18  kelefth  <konstantinos.eleftheriou@vrull.eu>
+
+	* doc/cfg.texi: Update the exception handling section for the
+	REG_EH_REGION notes to make it clear that the note is attached
+	to the instruction throwing the exception.
+
 2025-04-17  翁愷邑  <kaiweng9487@gmail.com>
 
 	* config/riscv/riscv-target-attr.cc

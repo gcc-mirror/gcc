@@ -1,3 +1,79 @@
+2025-04-18  François Dumont  <frs.dumont@gmail.com>
+
+	* testsuite/util/debug/unordered_checks.h (fill_container): New helper method.
+	(use_erased_local_iterator, invalid_local_iterator_pre_increment)
+	(invalid_local_iterator_post_increment, invalid_local_iterator_compare)
+	(invalid_local_iterator_range): Use latter.
+	(fill_and_get_local_iterator): New, use fill_container.
+	(use_invalid_local_iterator): Use latter.
+	(invalid_local_iterator_arrow_operator): New test function.
+	(invalid_local_iterator_copy_instantiation): New test function.
+	(invalid_local_iterator_move_instantiation): New test function.
+	(invalid_local_iterator_copy_assignment): New test function.
+	(invalid_local_iterator_move_assignment): New test function.
+	(invalid_local_iterator_const_conversion): New test function.
+	* testsuite/23_containers/unordered_map/debug/invalid_local_iterator_arrow_operator_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_map/debug/invalid_local_iterator_const_conversion_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_map/debug/invalid_local_iterator_copy_assignment_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_map/debug/invalid_local_iterator_copy_construction_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_map/debug/invalid_local_iterator_move_assignment_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_map/debug/invalid_local_iterator_move_construction_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_map/debug/max_load_factor_neg.cc: Test unordered_map.
+	* testsuite/23_containers/unordered_multimap/debug/begin2_neg.cc: Test unordered_multimap.
+	* testsuite/23_containers/unordered_multimap/debug/bucket_size_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/cbegin_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/cend_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/end1_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/end2_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/debug/invalid_local_iterator_arrow_operator_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_multimap/debug/invalid_local_iterator_const_conversion_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_multimap/debug/invalid_local_iterator_copy_assignment_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_multimap/debug/invalid_local_iterator_copy_construction_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_multimap/debug/invalid_local_iterator_move_assignment_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_multimap/debug/invalid_local_iterator_move_construction_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_multimap/debug/max_load_factor_neg.cc:
+	Test unordered_multimap.
+	* testsuite/23_containers/unordered_multiset/debug/invalid_local_iterator_arrow_operator_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_multiset/debug/invalid_local_iterator_const_conversion_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_multiset/debug/invalid_local_iterator_copy_assignment_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_multiset/debug/invalid_local_iterator_copy_construction_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_multiset/debug/invalid_local_iterator_move_assignment_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_multiset/debug/invalid_local_iterator_move_construction_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_set/debug/invalid_local_iterator_arrow_operator_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_set/debug/invalid_local_iterator_const_conversion_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_set/debug/invalid_local_iterator_copy_assignment_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_set/debug/invalid_local_iterator_copy_construction_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_set/debug/invalid_local_iterator_move_assignment_neg.cc:
+	New test case.
+	* testsuite/23_containers/unordered_set/debug/invalid_local_iterator_move_construction_neg.cc:
+	New test case.
+
+2025-04-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* doc/xml/manual/appendix_contributing.xml: Add 'and functions'.
+
 2025-04-17  Jason Merrill  <jason@redhat.com>
 
 	* testsuite/20_util/tuple/element_access/get_neg.cc: Adjust
