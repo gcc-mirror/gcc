@@ -6889,6 +6889,9 @@ The implementation remark:
       does not support XNACK, consider using @code{ROCR_VISIBLE_DEVICES} to
       enable only the APU.  If not supported, all AMD GPU devices are removed
       from the list of available devices (``host fallback'').
+@item OpenMP @emph{pinned} memory (@code{omp_atk_pinned},
+      @code{ompx_pinned_mem_alloc}, for example)
+      is allocated via @code{mmap}, @code{mlock}.
 @item The available stack size can be changed using the @code{GCN_STACK_SIZE}
       environment variable; the default is 32 kiB per thread.
 @item Low-latency memory (@code{omp_low_lat_mem_space}) is supported when the
@@ -7053,6 +7056,11 @@ The implementation remark:
       @uref{https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-requirements}}
       otherwise, all nvptx device are removed from the list of available
       devices (``host fallback'').
+@item OpenMP @emph{pinned} memory (@code{omp_atk_pinned},
+      @code{ompx_pinned_mem_alloc}, for example)
+      is allocated via @code{cuMemHostAlloc} (CUDA Driver API).
+      This potentially helps optimization of host <-> device data
+      transfers.
 @item The default per-warp stack size is 128 kiB; see also @code{-msoft-stack}
       in the GCC manual.
 @item Low-latency memory (@code{omp_low_lat_mem_space}) is supported when the
