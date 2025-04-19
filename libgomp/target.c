@@ -2242,6 +2242,9 @@ gomp_unmap_vars_internal (struct target_mem_desc *tgt, bool do_copyfrom,
 			     false, NULL);
     }
 
+  size_t nrmvars = 0;
+  splay_tree_key remove_vars[tgt->list_count];
+
   for (i = 0; i < tgt->list_count; i++)
     {
       splay_tree_key k = tgt->list[i].key;
@@ -2263,17 +2266,22 @@ gomp_unmap_vars_internal (struct target_mem_desc *tgt, bool do_copyfrom,
 			    (void *) (k->tgt->tgt_start + k->tgt_offset
 				      + tgt->list[i].offset),
 			    tgt->list[i].length);
+      /* Queue all removals together for processing below.
+	 See also 'gomp_exit_data'.  */
       if (do_remove)
-	{
-	  struct target_mem_desc *k_tgt __attribute__((unused)) = k->tgt;
-	  bool is_tgt_unmapped __attribute__((unused))
-	    = gomp_remove_var (devicep, k);
-	  /* It would be bad if TGT got unmapped while we're still iterating
-	     over its LIST_COUNT, and also expect to use it in the following
-	     code.  */
-	  assert (!is_tgt_unmapped
-		  || k_tgt != tgt);
-	}
+	remove_vars[nrmvars++] = k;
+    }
+
+  for (i = 0; i < nrmvars; i++)
+    {
+      splay_tree_key k = remove_vars[i];
+      struct target_mem_desc *k_tgt __attribute__((unused)) = k->tgt;
+      bool is_tgt_unmapped __attribute__((unused))
+	= gomp_remove_var (devicep, k);
+      /* It would be bad if TGT got unmapped while we're still iterating over
+	 its LIST_COUNT, and also expect to use it in the following code.  */
+      assert (!is_tgt_unmapped
+	      || k_tgt != tgt);
     }
 
   if (aq)
@@ -4244,7 +4252,7 @@ gomp_exit_data (struct gomp_device_descr *devicep, size_t mapnum,
 			       false, NULL);
       }
 
-  int nrmvars = 0;
+  size_t nrmvars = 0;
   splay_tree_key remove_vars[mapnum];
 
   for (i = 0; i < mapnum; i++)
@@ -4307,10 +4315,6 @@ gomp_exit_data (struct gomp_device_descr *devicep, size_t mapnum,
 	     errors if we still have following element siblings to copy back.
 	     While we're at it, it also seems more disciplined to simply
 	     queue all removals together for processing below.
-
-	     Structured block unmapping (i.e. gomp_unmap_vars_internal) should
-	     not have this problem, since they maintain an additional
-	     tgt->refcount = 1 reference to the target_mem_desc to start with.
 	  */
 	  if (do_remove)
 	    remove_vars[nrmvars++] = k;
@@ -4325,7 +4329,7 @@ gomp_exit_data (struct gomp_device_descr *devicep, size_t mapnum,
 	}
     }
 
-  for (int i = 0; i < nrmvars; i++)
+  for (i = 0; i < nrmvars; i++)
     gomp_remove_var (devicep, remove_vars[i]);
 
   gomp_mutex_unlock (&devicep->lock);
