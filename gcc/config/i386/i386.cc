@@ -100,6 +100,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "i386-features.h"
 #include "function-abi.h"
 #include "rtl-error.h"
+#include "gimple-pretty-print.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -21816,6 +21817,25 @@ ix86_insn_cost (rtx_insn *insn, bool speed)
   return insn_cost + pattern_cost (PATTERN (insn), speed);
 }
 
+/* Return cost of SSE/AVX FP->FP conversion (extensions and truncates).  */
+
+static int
+vec_fp_conversion_cost (const struct processor_costs *cost, int size)
+{
+  if (size < 128)
+    return cost->cvtss2sd;
+  else if (size < 256)
+    {
+      if (TARGET_SSE_SPLIT_REGS)
+	return cost->cvtss2sd * size / 64;
+      return cost->cvtss2sd;
+    }
+  if (size < 512)
+    return cost->vcvtps2pd256;
+  else
+    return cost->vcvtps2pd512;
+}
+
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
@@ -22479,17 +22499,18 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       return false;
 
     case FLOAT_EXTEND:
+      /* x87 represents all values extended to 80bit.  */
       if (!SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
 	*total = 0;
       else
-        *total = ix86_vec_cost (mode, cost->addss);
+	*total = vec_fp_conversion_cost (cost, GET_MODE_BITSIZE (mode));
       return false;
 
     case FLOAT_TRUNCATE:
       if (!SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
 	*total = cost->fadd;
       else
-        *total = ix86_vec_cost (mode, cost->addss);
+	*total = vec_fp_conversion_cost (cost, GET_MODE_BITSIZE (mode));
       return false;
 
     case ABS:
@@ -24683,7 +24704,7 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
   switch (type_of_cost)
     {
       case scalar_stmt:
-        return fp ? ix86_cost->addss : COSTS_N_INSNS (1);
+	return fp ? ix86_cost->addss : COSTS_N_INSNS (1);
 
       case scalar_load:
 	/* load/store costs are relative to register move which is 2. Recompute
@@ -24754,7 +24775,11 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
         return ix86_cost->cond_not_taken_branch_cost;
 
       case vec_perm:
+	return ix86_vec_cost (mode, ix86_cost->sse_op);
+
       case vec_promote_demote:
+	if (fp)
+	  return vec_fp_conversion_cost (ix86_tune_cost, mode);
         return ix86_vec_cost (mode, ix86_cost->sse_op);
 
       case vec_construct:
@@ -25232,6 +25257,32 @@ ix86_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
   return new ix86_vector_costs (vinfo, costing_for_scalar);
 }
 
+/* Return cost of statement doing FP conversion.  */
+
+static unsigned
+fp_conversion_stmt_cost (machine_mode mode, gimple *stmt, bool scalar_p)
+{
+  int outer_size
+    = tree_to_uhwi
+	(TYPE_SIZE
+	    (TREE_TYPE (gimple_assign_lhs (stmt))));
+  int inner_size
+    = tree_to_uhwi
+	(TYPE_SIZE
+	    (TREE_TYPE (gimple_assign_rhs1 (stmt))));
+  int stmt_cost = vec_fp_conversion_cost
+		    (ix86_tune_cost, GET_MODE_BITSIZE (mode));
+  /* VEC_PACK_TRUNC_EXPR: If inner size is greater than outer size we will end
+     up doing two conversions and packing them.  */
+  if (!scalar_p && inner_size > outer_size)
+    {
+      int n = inner_size / outer_size;
+      stmt_cost = stmt_cost * n
+		  + (n - 1) * ix86_vec_cost (mode, ix86_cost->sse_op);
+    }
+  return stmt_cost;
+}
+
 unsigned
 ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 				  stmt_vec_info stmt_info, slp_tree node,
@@ -25342,6 +25393,9 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	        (TREE_TYPE (gimple_assign_lhs (stmt_info->stmt)),
 		 TREE_TYPE (gimple_assign_rhs1 (stmt_info->stmt))))
 	    stmt_cost = 0;
+	  else if (fp)
+	    stmt_cost = fp_conversion_stmt_cost (mode, stmt_info->stmt,
+						 scalar_p);
 	  break;
 
 	case BIT_IOR_EXPR:
@@ -25382,6 +25436,10 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
       default:
 	break;
       }
+
+  if (kind == vec_promote_demote
+      && fp && FLOAT_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt_info->stmt))))
+    stmt_cost = fp_conversion_stmt_cost (mode, stmt_info->stmt, scalar_p);
 
   /* If we do elementwise loads into a vector then we are bound by
      latency and execution resources for the many scalar loads

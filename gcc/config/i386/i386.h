@@ -207,6 +207,12 @@ struct processor_costs {
   const int divsd;		/* cost of DIVSD instructions.  */
   const int sqrtss;		/* cost of SQRTSS instructions.  */
   const int sqrtsd;		/* cost of SQRTSD instructions.  */
+  const int cvtss2sd;		/* cost SSE FP conversions,
+				   such as CVTSS2SD.  */
+  const int vcvtps2pd256;	/* cost 256bit packed FP conversions,
+				   such as VCVTPD2PS with larger reg in ymm.  */
+  const int vcvtps2pd512;	/* cost 512bit packed FP conversions,
+				   such as VCVTPD2PS with larger reg in zmm.  */
   const int reassoc_int, reassoc_fp, reassoc_vec_int, reassoc_vec_fp;
 				/* Specify reassociation width for integer,
 				   fp, vector integer and vector fp
