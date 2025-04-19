@@ -1082,57 +1082,74 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
     {
       bool ok = false;
       value_range val;
-      tree valr;
-      /* If IPA-VRP proves called function always returns a singleton range,
-	 the return value is replaced by the only value in that range.
-	 For tail call purposes, pretend such replacement didn't happen.  */
       if (ass_var == NULL_TREE && !tail_recursion)
-	if (tree type = gimple_range_type (call))
-	  if (tree callee = gimple_call_fndecl (call))
-	    if ((INTEGRAL_TYPE_P (type)
-		 || SCALAR_FLOAT_TYPE_P (type)
-		 || POINTER_TYPE_P (type))
-		&& useless_type_conversion_p (TREE_TYPE (TREE_TYPE (callee)),
-					      type)
-		&& useless_type_conversion_p (TREE_TYPE (ret_var), type)
-		&& ipa_return_value_range (val, callee)
-		&& val.singleton_p (&valr))
+	{
+	  tree other_value = NULL_TREE;
+	  /* If we have a function call that we know the return value is the same
+	     as the argument, try the argument too. */
+	  int flags = gimple_call_return_flags (call);
+	  if ((flags & ERF_RETURNS_ARG) != 0
+	      && (flags & ERF_RETURN_ARG_MASK) < gimple_call_num_args (call))
+	    {
+	      tree arg = gimple_call_arg (call, flags & ERF_RETURN_ARG_MASK);
+	      if (useless_type_conversion_p (TREE_TYPE (ret_var), TREE_TYPE (arg) ))
+		other_value = arg;
+	    }
+	  /* If IPA-VRP proves called function always returns a singleton range,
+	     the return value is replaced by the only value in that range.
+	     For tail call purposes, pretend such replacement didn't happen.  */
+	  else if (tree type = gimple_range_type (call))
+	    if (tree callee = gimple_call_fndecl (call))
 	      {
-		tree rv = ret_var;
-		unsigned int i = edges.length ();
-		/* If ret_var is equal to valr, we can tail optimize.  */
-		if (operand_equal_p (ret_var, valr, 0))
-		  ok = true;
-		else
-		  /* Otherwise, if ret_var is a PHI result, try to find out
-		     if valr isn't propagated through PHIs on the path from
-		     call's bb to SSA_NAME_DEF_STMT (ret_var)'s bb.  */
-		  while (TREE_CODE (rv) == SSA_NAME
-			 && gimple_code (SSA_NAME_DEF_STMT (rv)) == GIMPLE_PHI)
-		    {
-		      tree nrv = NULL_TREE;
-		      gimple *g = SSA_NAME_DEF_STMT (rv);
-		      for (; i; --i)
-			{
-			  if (edges[i - 1]->dest == gimple_bb (g))
-			    {
-			      nrv
-				= gimple_phi_arg_def_from_edge (g,
-								edges[i - 1]);
-			      --i;
-			      break;
-			    }
-			}
-		      if (nrv == NULL_TREE)
-			break;
-		      if (operand_equal_p (nrv, valr, 0))
-			{
-			  ok = true;
-			  break;
-			}
-		      rv = nrv;
-		    }
+		tree valr;
+		if ((INTEGRAL_TYPE_P (type)
+		     || SCALAR_FLOAT_TYPE_P (type)
+		     || POINTER_TYPE_P (type))
+		    && useless_type_conversion_p (TREE_TYPE (TREE_TYPE (callee)),
+					      type)
+		    && useless_type_conversion_p (TREE_TYPE (ret_var), type)
+		    && ipa_return_value_range (val, callee)
+		    && val.singleton_p (&valr))
+		  other_value = valr;
 	      }
+
+	  if (other_value)
+	    {
+	      tree rv = ret_var;
+	      unsigned int i = edges.length ();
+	      /* If ret_var is equal to other_value, we can tail optimize.  */
+	      if (operand_equal_p (ret_var, other_value, 0))
+		ok = true;
+	      else
+		/* Otherwise, if ret_var is a PHI result, try to find out
+		   if other_value isn't propagated through PHIs on the path from
+		   call's bb to SSA_NAME_DEF_STMT (ret_var)'s bb.  */
+		while (TREE_CODE (rv) == SSA_NAME
+		      && gimple_code (SSA_NAME_DEF_STMT (rv)) == GIMPLE_PHI)
+		  {
+		    tree nrv = NULL_TREE;
+		    gimple *g = SSA_NAME_DEF_STMT (rv);
+		    for (; i; --i)
+		      {
+			if (edges[i - 1]->dest == gimple_bb (g))
+			  {
+			    nrv = gimple_phi_arg_def_from_edge (g,
+								edges[i - 1]);
+			    --i;
+			    break;
+			  }
+		      }
+		    if (nrv == NULL_TREE)
+		      break;
+		    if (operand_equal_p (nrv, other_value, 0))
+		      {
+			ok = true;
+			break;
+		      }
+		      rv = nrv;
+		  }
+	  }
+	}
       if (!ok)
 	{
 	  maybe_error_musttail (call, _("call and return value are different"),
