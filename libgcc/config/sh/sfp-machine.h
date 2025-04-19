@@ -39,11 +39,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define _FP_DIV_MEAT_D(R,X,Y)	_FP_DIV_MEAT_2_udiv(D,R,X,Y)
 #define _FP_DIV_MEAT_Q(R,X,Y)	_FP_DIV_MEAT_4_udiv(Q,R,X,Y)
 
-#define _FP_NANFRAC_B	_FP_QNANBIT_B
-#define _FP_NANFRAC_H	_FP_QNANBIT_H
-#define _FP_NANFRAC_S	_FP_QNANBIT_S
-#define _FP_NANFRAC_D	_FP_QNANBIT_D, 0
-#define _FP_NANFRAC_Q	_FP_QNANBIT_Q, 0, 0, 0
+#define _FP_NANFRAC_B	(_FP_QNANBIT_B - 1)
+#define _FP_NANFRAC_H	(_FP_QNANBIT_H - 1)
+#define _FP_NANFRAC_S	(_FP_QNANBIT_S - 1)
+#define _FP_NANFRAC_D	(_FP_QNANBIT_D - 1), -1
+#define _FP_NANFRAC_Q	(_FP_QNANBIT_Q - 1), -1, -1, -1
 
 /* The type of the result of a floating point comparison.  This must
    match __libgcc_cmp_return__ in GCC for the target.  */
@@ -56,14 +56,24 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 #define _FP_NANSIGN_D	0
 #define _FP_NANSIGN_Q	0
 
-#define _FP_KEEPNANFRACP 0
-#define _FP_QNANNEGATEDP 0
+#define _FP_KEEPNANFRACP 1
+#define _FP_QNANNEGATEDP 1
 
-#define _FP_CHOOSENAN(fs, wc, R, X, Y, OP)  \
-  do {                      \
-    R##_s = _FP_NANSIGN_##fs;           \
-    _FP_FRAC_SET_##wc(R,_FP_NANFRAC_##fs);  \
-    R##_c = FP_CLS_NAN;             \
+/* X is chosen unless one of the NaNs is sNaN.  */
+# define _FP_CHOOSENAN(fs, wc, R, X, Y, OP)			\
+  do {								\
+    if ((_FP_FRAC_HIGH_RAW_##fs(X) |				\
+	 _FP_FRAC_HIGH_RAW_##fs(Y)) & _FP_QNANBIT_##fs)		\
+      {								\
+	R##_s = _FP_NANSIGN_##fs;				\
+	_FP_FRAC_SET_##wc(R,_FP_NANFRAC_##fs);			\
+      }								\
+    else							\
+      {								\
+	R##_s = X##_s;						\
+	_FP_FRAC_COPY_##wc(R,X);				\
+      }								\
+    R##_c = FP_CLS_NAN;						\
   } while (0)
 
 #define _FP_TININESS_AFTER_ROUNDING 1
