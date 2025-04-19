@@ -76,6 +76,52 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
     R##_c = FP_CLS_NAN;						\
   } while (0)
 
+#ifdef __SH_FPU_ANY__
+#define _FPU_GETCW(fpscr) fpscr = __builtin_sh_get_fpscr ()
+#define _FPU_SETCW(fpscr) __builtin_sh_set_fpscr (fpscr)
+#define FP_EX_ENABLE_SHIFT 5
+#define FP_EX_CAUSE_SHIFT	10
+
+#define	FP_EX_INVALID	0x0040
+#define	FP_EX_DIVZERO	0x0020
+#if defined (__SH2E__)
+#define	FP_EX_ALL	(FP_EX_DIVZERO | FP_EX_INVALID)
+#else
+#define	FP_EX_OVERFLOW	0x0010
+#define	FP_EX_UNDERFLOW	0x0008
+#define	FP_EX_INEXACT	0x0004
+#define	FP_EX_ALL	(FP_EX_DIVZERO | FP_EX_INEXACT | \
+    FP_EX_INVALID | FP_EX_OVERFLOW | FP_EX_UNDERFLOW)
+#endif
+#define _FP_DECL_EX \
+  unsigned int _fcsr __attribute__ ((unused)) = FP_RND_NEAREST
+/* Rounding modes.  */
+#define	FP_RND_NEAREST  0x0
+#define	FP_RND_ZERO     0x1
+/* Placeholder, hardware does not have PINF/MINF modes.  */
+#define FP_RND_PINF     0x2
+#define FP_RND_MINF     0x3
+#define FP_RND_MASK     3
+
+#define FP_INIT_ROUNDMODE _FPU_GETCW (_fcsr)
+#define FP_ROUNDMODE (_fcsr & FP_RND_MASK)
+#define FP_TRAPPING_EXCEPTIONS ((_fcsr >> FP_EX_ENABLE_SHIFT) & FP_EX_ALL)
+#define FP_HANDLE_EXCEPTIONS				\
+  do {							\
+    _fcsr &= ~(FP_EX_ALL << FP_EX_CAUSE_SHIFT);		\
+    _fcsr |= _fex | (_fex << FP_EX_CAUSE_SHIFT);	\
+    _FPU_SETCW (_fcsr);			\
+  } while (0)
+#else
+#define FP_EX_INVALID (1 << 4)
+#define FP_EX_DIVZERO (1 << 3)
+#if !defined (__SH2E__)
+#define FP_EX_OVERFLOW (1 << 2)
+#define FP_EX_UNDERFLOW (1 << 1)
+#define FP_EX_INEXACT (1 << 0)
+#endif
+#endif
+
 #define _FP_TININESS_AFTER_ROUNDING 1
 
 #define __LITTLE_ENDIAN 1234
