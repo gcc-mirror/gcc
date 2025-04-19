@@ -249,7 +249,7 @@ public:
 
   bool check_and_optimize_stmt (bool *cleanup_eh);
   bool check_and_optimize_call (bool *zero_write);
-  bool handle_assign (tree lhs, bool *zero_write);
+  bool handle_assign (tree lhs, tree rhs, bool *zero_write);
   bool handle_store (bool *zero_write);
   void handle_pointer_plus ();
   void handle_builtin_strlen ();
@@ -5465,7 +5465,7 @@ strlen_pass::check_and_optimize_call (bool *zero_write)
 	}
 
       if (tree lhs = gimple_call_lhs (stmt))
-	handle_assign (lhs, zero_write);
+	handle_assign (lhs, NULL_TREE, zero_write);
 
       /* Proceed to handle user-defined formatting functions.  */
     }
@@ -5680,14 +5680,60 @@ strlen_pass::handle_integral_assign (bool *cleanup_eh)
 }
 
 /* Handle assignment statement at *GSI to LHS.  Set *ZERO_WRITE if
-   the assignment stores all zero bytes.  */
+   the assignment stores all zero bytes. RHS is the rhs of the
+   statement if not a call.  */
 
 bool
-strlen_pass::handle_assign (tree lhs, bool *zero_write)
+strlen_pass::handle_assign (tree lhs, tree rhs, bool *zero_write)
 {
   tree type = TREE_TYPE (lhs);
   if (TREE_CODE (type) == ARRAY_TYPE)
     type = TREE_TYPE (type);
+
+  if (rhs && TREE_CODE (rhs) == CONSTRUCTOR
+      && TREE_CODE (lhs) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (lhs, 0)) == SSA_NAME
+      && integer_zerop (TREE_OPERAND (lhs, 1)))
+    {
+      /* Set to the non-constant offset added to PTR.  */
+      wide_int offrng[2];
+      gcc_assert (CONSTRUCTOR_NELTS (rhs) == 0);
+      tree ptr = TREE_OPERAND (lhs, 0);
+      tree len = TYPE_SIZE_UNIT (TREE_TYPE (lhs));
+      int idx1 = get_stridx (ptr, gsi_stmt (m_gsi), offrng, ptr_qry.rvals);
+      if (idx1 > 0)
+	{
+	  strinfo *si1 = get_strinfo (idx1);
+	  if (si1 && si1->stmt
+	      && si1->alloc && is_gimple_call (si1->alloc)
+	      && valid_builtin_call (si1->stmt)
+	      && offrng[0] == 0 && offrng[1] == 0)
+	    {
+	      gimple *malloc_stmt = si1->stmt;
+	      basic_block malloc_bb = gimple_bb (malloc_stmt);
+	      if ((DECL_FUNCTION_CODE (gimple_call_fndecl (malloc_stmt))
+		   == BUILT_IN_MALLOC)
+		  && operand_equal_p (len, gimple_call_arg (malloc_stmt, 0), 0)
+		  && allow_memset_malloc_to_calloc (ptr, malloc_bb,
+						    gsi_bb (m_gsi)))
+		{
+		  tree alloc_size = gimple_call_arg (malloc_stmt, 0);
+		  gimple_stmt_iterator gsi1 = gsi_for_stmt (malloc_stmt);
+		  tree calloc_decl = builtin_decl_implicit (BUILT_IN_CALLOC);
+		  update_gimple_call (&gsi1, calloc_decl, 2, alloc_size,
+				      build_one_cst (size_type_node));
+		  si1->nonzero_chars = build_int_cst (size_type_node, 0);
+		  si1->full_string_p = true;
+		  si1->stmt = gsi_stmt (gsi1);
+		  gimple *stmt = gsi_stmt (m_gsi);
+		  unlink_stmt_vdef (stmt);
+		  gsi_remove (&m_gsi, true);
+		  release_defs (stmt);
+		  return false;
+		}
+	    }
+	}
+    }
 
   bool is_char_store = is_char_type (type);
   if (!is_char_store && TREE_CODE (lhs) == MEM_REF)
@@ -5764,7 +5810,7 @@ strlen_pass::check_and_optimize_stmt (bool *cleanup_eh)
 	/* Handle assignment to a character.  */
 	handle_integral_assign (cleanup_eh);
       else if (TREE_CODE (lhs) != SSA_NAME && !TREE_SIDE_EFFECTS (lhs))
-	if (!handle_assign (lhs, &zero_write))
+	if (!handle_assign (lhs, gimple_assign_rhs1 (stmt), &zero_write))
 	  return false;
     }
   else if (gcond *cond = dyn_cast<gcond *> (stmt))
