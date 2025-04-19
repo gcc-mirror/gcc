@@ -7,8 +7,8 @@ void* aaa();
 void* bbb()
 {
     void* ret = aaa();
-    char buf[32] = {};
-    __builtin_memcpy(ret, buf, 32);
+    char buf[1025] = {};
+    __builtin_memcpy(ret, buf, sizeof(buf));
     return ret;
 }
 

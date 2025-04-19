@@ -6,10 +6,10 @@
 void* aaa();
 void* bbb()
 {
-    char buf[32] = {};
+    char buf[1025] = {};
     /*  Tha call to aaa should not matter and clobber buf. */
     void* ret = aaa();
-    __builtin_memcpy(ret, buf, 32);
+    __builtin_memcpy(ret, buf, sizeof(buf));
     return ret;
 }
 
