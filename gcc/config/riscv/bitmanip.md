@@ -1263,3 +1263,41 @@
   expand_crc_using_clmul (<SUBX:MODE>mode, <SUBX1:MODE>mode, operands);
   DONE;
 })
+
+;; If we have an XOR/IOR with a constant operand (C) and the we can
+;; synthesize ~C more efficiently than C, then synthesize ~C and use
+;; xnor/orn instead.
+;;
+;; The same can be done for AND, but mvconst_internal's issues get in
+;; the way.  That's future work.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(any_or:X (match_operand:X 1 "register_operand")
+		  (match_operand:X 2 "const_int_operand")))
+   (clobber (match_operand:X 3 "register_operand"))]
+  "TARGET_ZBB
+   && (riscv_const_insns (operands[2], true)
+       > riscv_const_insns (GEN_INT (~INTVAL (operands[2])), true))"
+  [(const_int 0)]
+{
+  /* Get the inverted constant into the temporary register.  */
+  riscv_emit_move (operands[3], GEN_INT (~INTVAL (operands[2])));
+
+  /* For xnor, the NOT operation is in a different position.  So
+     we have to customize the split code we generate a bit.
+
+     It is expected that AND will be handled like IOR in the future.  */
+  if (<CODE> == XOR)
+    {
+      rtx x = gen_rtx_XOR (<X:MODE>mode, operands[1], operands[3]);
+      x = gen_rtx_NOT (<X:MODE>mode, x);
+      emit_insn (gen_rtx_SET (operands[0], x));
+    }
+  else
+    {
+      rtx x = gen_rtx_NOT (<X:MODE>mode, operands[3]);
+      x = gen_rtx_IOR (<X:MODE>mode, x, operands[1]);
+      emit_insn (gen_rtx_SET (operands[0], x));
+    }
+  DONE;
+})
