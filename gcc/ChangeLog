@@ -1,3 +1,46 @@
+2025-04-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/119865
+	* config/riscv/riscv.cc (parse_features_for_version): Do not
+	explicitly free the architecture string.
+
+2025-04-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/118410
+	* config/riscv/bitmanip.md (logical with constant argument): New
+	splitter for cases where synthesizing ~C is cheaper than synthesizing
+	the original constant C.
+
+2025-04-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386.cc (vec_fp_conversion_cost): New function.
+	(ix86_rtx_costs): Use it for SSE/AVX FP conversoins.
+	(ix86_builtin_vectorization_cost): Fix indentation;
+	and use vec_fp_conversion_cost in vec_promote_demote.
+	(fp_conversion_stmt_cost): New function.
+	(ix86_vector_costs::add_stmt_cost): Use it to cost NOP_EXPR
+	and vec_promote_demote.
+	* config/i386/i386.h (struct processor_costs):
+	* config/i386/x86-tune-costs.h (struct processor_costs):
+
+2025-04-19  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/111949
+	* combine.cc (find_split_point): Add a split point
+	for `(and (not X) Y)` if not in the outer set already.
+
+2025-04-19  Jiaxun Yang  <jiaxun.yang@flygoat.com>
+
+	PR target/111814
+	* config/sh/sh-modes.def (RESET_FLOAT_FORMAT): Use mips format.
+	(FLOAT_MODE): Use mips mode.
+
+2025-04-19  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/alpha/alpha.cc
+	(alpha_get_mem_rtx_alignment_and_offset): Recurse into
+	COMPONENT_REF nodes.
+
 2025-04-18  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/bitmanip.md (*bext<mode>_mask_pos): New pattern

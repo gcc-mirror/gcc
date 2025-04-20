@@ -1,3 +1,44 @@
+2025-04-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR testsuite/119508
+	* rust/compile/nr2/compile.exp: Disable parallel testing.
+
+2025-04-19  Co-authored-by: Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/118410
+	* gcc.target/riscv/pr118410-1.c: New test.
+	* gcc.target/riscv/pr118410-2.c: Likewise.
+
+2025-04-19  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gcc.dg/pr118947-1.c: Use 1025 as the size of the buf.
+	* gcc.dg/pr78408-3.c: Likewise.
+
+2025-04-19  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/111949
+	* gcc.target/aarch64/bic-1.c: New test.
+
+2025-04-19  Jiaxun Yang  <jiaxun.yang@flygoat.com>
+
+	PR target/111814
+	* gcc.target/sh/pr111814.c: New test.
+
+2025-04-19  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* gcc.target/alpha/memcpy-nested-offset-long.c: New file.
+	* gcc.target/alpha/memcpy-nested-offset-quad.c: New file.
+
+2025-04-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/119836
+	* gfortran.dg/do_concurrent_all_clauses.f90: Remove invalid
+	dg-error test.
+	* gfortran.dg/pr119836_1.f90: New test.
+	* gfortran.dg/pr119836_2.f90: New test.
+	* gfortran.dg/pr119836_3.f90: New test.
+	* gfortran.dg/pr119836_4.f90: New test.
+
 2025-04-18  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR cobol/119818

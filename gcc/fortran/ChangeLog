@@ -1,3 +1,10 @@
+2025-04-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/119836
+	* resolve.cc (check_pure_function): Fix checking for
+	an impure subprogram within a DO CONCURRENT construct.
+	(pure_subroutine): Ditto.
+
 2025-04-16  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/106948

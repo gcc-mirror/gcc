@@ -1,3 +1,37 @@
+2025-04-19  Jiaxun Yang  <jiaxun.yang@flygoat.com>
+
+	PR target/118257
+	* config/sh/sfp-machine.h (_FPU_GETCW): Implement with builtin.
+	(_FPU_SETCW): Likewise.
+	(FP_EX_ENABLE_SHIFT): Derive from arch spec.
+	(FP_EX_CAUSE_SHIFT): Likewise.
+	(FP_RND_MASK): Likewise.
+	(FP_EX_INVALID): Likewise.
+	(FP_EX_DIVZERO): Likewise.
+	(FP_EX_ALL): Likewise.
+	(FP_EX_OVERFLOW): Likewise.
+	(FP_EX_UNDERFLOW): Likewise.
+	(FP_EX_INEXACT): Likewise.
+	(_FP_DECL_EX): Declear default FCSR value.
+	(FP_RND_NEAREST): Derive from arch spec.
+	(FP_RND_ZERO): Likewise.
+	(FP_INIT_ROUNDMODE): Likewise.
+	(FP_ROUNDMODE): Likewise.
+	(FP_TRAPPING_EXCEPTIONS): Likewise.
+	(FP_HANDLE_EXCEPTIONS): Implement with _FPU_SETCW.
+
+2025-04-19  Jiaxun Yang  <jiaxun.yang@flygoat.com>
+
+	PR target/111814
+	* config/sh/sfp-machine.h (_FP_NANFRAC_B): Reverse signaling bit.
+	(_FP_NANFRAC_H): Likewise.
+	(_FP_NANFRAC_S): Likewise.
+	(_FP_NANFRAC_D): Likewise.
+	(_FP_NANFRAC_Q): Likewise.
+	(_FP_KEEPNANFRACP): Enable for target.
+	(_FP_QNANNEGATEDP): Enable for target.
+	(_FP_CHOOSENAN): Port from MIPS.
+
 2025-04-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/118794
