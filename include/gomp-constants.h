@@ -234,7 +234,13 @@ enum gomp_map_kind
     GOMP_MAP_PRESENT_ALLOC =		(GOMP_MAP_LAST | 4),
     GOMP_MAP_PRESENT_TO =		(GOMP_MAP_LAST | 5),
     GOMP_MAP_PRESENT_FROM =		(GOMP_MAP_LAST | 6),
-    GOMP_MAP_PRESENT_TOFROM =		(GOMP_MAP_LAST | 7)
+    GOMP_MAP_PRESENT_TOFROM =		(GOMP_MAP_LAST | 7),
+    /* Unset, used for "declare mapper" maps with no explicit data movement
+       specified.  These use the movement specified at the invocation site.  */
+    GOMP_MAP_UNSET =			(GOMP_MAP_LAST | 8),
+    /* Used to record the name of a named mapper.  */
+    GOMP_MAP_PUSH_MAPPER_NAME =		(GOMP_MAP_LAST | 9),
+    GOMP_MAP_POP_MAPPER_NAME =		(GOMP_MAP_LAST | 10)
   };
 
 #define GOMP_MAP_COPY_TO_P(X) \
