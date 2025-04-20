@@ -1,3 +1,10 @@
+2025-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* math/expq.c (C): Fix up THREEp96 constant.
+
 2025-04-08  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:

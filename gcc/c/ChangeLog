@@ -1,3 +1,12 @@
+2025-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119582
+	* c-typeck.cc (pointer_diff, build_binary_op): Call c_fully_fold on
+	__sanitizer_ptr_sub or __sanitizer_ptr_cmp arguments.
+
 2025-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

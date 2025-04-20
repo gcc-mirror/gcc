@@ -1,3 +1,34 @@
+2025-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2025-04-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119826
+	* types.cc (TypeVisitor::visit (TypeEnum *)): Propagate flags of main
+	enum types to all forward-referenced variants.
+
+2025-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2025-04-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119817
+	* imports.cc (ImportVisitor::visit (OverloadSet *)): Don't push
+	NULL_TREE to vector of import symbols.
+
+2025-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2025-04-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/118309
+	* modules.cc: Include debug.h
+	(d_finish_compilation): Call debug_hooks->type_decl on all TYPE_DECLs.
+	* types.cc: Remove toplev.h include.
+	(finish_aggregate_type): Don't call rest_of_type_compilation or
+	rest_of_decl_compilation on type.
+	(TypeVisitor::visit (TypeEnum *)): Likewise.
+
 2025-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

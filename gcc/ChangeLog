@@ -1,3 +1,97 @@
+2025-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/119808
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Don't set
+	m_single_use_names bits for SSA_NAMEs which have single use but
+	their SSA_NAME_DEF_STMT is a copy from another SSA_NAME which doesn't
+	have a single use, or single use which is such a copy etc.
+
+2025-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119785
+	* expmed.cc (init_expmed): Always pass QImode rather than mode to
+	set_src_cost passed to set_zero_cost.
+
+2025-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/119727
+	* configure.ac (HOST_HAS_PERSONALITY_ADDR_NO_RANDOMIZE): New check.
+	* gcc.cc: Include sys/personality.h if
+	HOST_HAS_PERSONALITY_ADDR_NO_RANDOMIZE is defined.
+	(try_generate_repro): Call
+	personality (personality (0xffffffffU) | ADDR_NO_RANDOMIZE)
+	if HOST_HAS_PERSONALITY_ADDR_NO_RANDOMIZE is defined.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
+2025-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/119727
+	* gcc.cc (files_equal_p): Rewritten using fopen/fgets/fclose instead
+	of open/fstat/read/close.  At the start of lines, ignore lowercase
+	hexadecimal addresses followed by space.
+
+2025-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119722
+	* gimple-lower-bitint.h (build_bitint_stmt_ssa_conflicts): Add
+	CLEAR argument.
+	* gimple-lower-bitint.cc (build_bitint_stmt_ssa_conflicts): Add
+	CLEAR argument.  Call clear on gimple_assign_copy_p rhs1 if lhs
+	is large/huge bitint unless lhs is not in names.
+	* tree-ssa-coalesce.cc (build_ssa_conflict_graph): Adjust
+	build_bitint_stmt_ssa_conflicts caller.  Move gimple_assign_copy_p
+	handling to after the build_bitint_stmt_ssa_conflicts call.
+
+2025-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119707
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_cast): Only use
+	m_data[save_data_cnt] instead of m_data[save_data_cnt + 1] if
+	idx is odd and equal to low + 1.  Remember tree_to_uhwi (idx) in
+	a temporary instead of calling the function multiple times.
+
+2025-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/119625
+	* lto-opts.cc (lto_write_options): If neither flag_pic nor
+	flag_pie are set, check first for flag_pie and only later
+	for flag_pic rather than the other way around, use a temporary
+	variable.  If flag_cf_protection is not set, don't append anything
+	if flag_cf_protection is none of CF_{NONE,FULL,BRANCH,RETURN} and
+	use a temporary variable.
+
+2025-04-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119291
+	* combine.cc (try_combine): For splitting of PARALLEL with
+	2 independent SETs into i2 and i3 sets check reg_used_between_p
+	of the SET_DESTs rather than just modified_between_p.
+
 2025-04-17  Ard Biesheuvel  <ardb@kernel.org>
 
 	Backported from master:
