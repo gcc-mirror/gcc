@@ -599,7 +599,9 @@ export namespace std
   using std::atomic_schar;
   using std::atomic_short;
   using std::atomic_signal_fence;
+#ifdef __cpp_lib_atomic_lock_free_type_aliases
   using std::atomic_signed_lock_free;
+#endif
   using std::atomic_size_t;
   using std::atomic_store;
   using std::atomic_store_explicit;
@@ -622,7 +624,9 @@ export namespace std
   using std::atomic_uintptr_t;
   using std::atomic_ullong;
   using std::atomic_ulong;
+#ifdef __cpp_lib_atomic_lock_free_type_aliases
   using std::atomic_unsigned_lock_free;
+#endif
   using std::atomic_ushort;
   using std::atomic_wait;
   using std::atomic_wait_explicit;
