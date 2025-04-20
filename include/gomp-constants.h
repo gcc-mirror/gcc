@@ -276,7 +276,8 @@ enum gomp_map_kind
    || (X) == GOMP_MAP_FORCE_PRESENT)
 
 #define GOMP_MAP_NONCONTIG_ARRAY_P(X) \
-  ((X) & GOMP_MAP_NONCONTIG_ARRAY)
+  (((X) & GOMP_MAP_NONCONTIG_ARRAY) != 0 \
+   && ((X) & GOMP_MAP_FLAG_SPECIAL_4) == 0)
 
 /* Asynchronous behavior.  Keep in sync with
    libgomp/{openacc.h,openacc.f90,openacc_lib.h}:acc_async_t.  */

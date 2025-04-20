@@ -27,7 +27,7 @@ void test1 (void)
   }
 }
 
-/* { dg-final { scan-tree-dump-times "map\\(force_tofrom:sum \\\[len: \[0-9\]+\\\]\\)" 1 "gimple" } } */
-/* { dg-final { scan-tree-dump-times "map\\(force_tofrom:prod \\\[len: \[0-9\]+\\\]\\)" 1 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "map\\(force_tofrom:sum \\\[len: \[0-9\]+\\\].*\\)" 1 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "map\\(force_tofrom:prod \\\[len: \[0-9\]+\\\].*\\)" 1 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "map\\(tofrom:sum \\\[len: \[0-9\]+\\\]\\)" 2 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "map\\(tofrom:prod \\\[len: \[0-9\]+\\\]\\)" 2 "gimple" } } */

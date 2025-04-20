@@ -33,7 +33,7 @@ main ()
 
 /* { dg-final { scan-tree-dump-times "omp target oacc_parallel reduction.+:v1. map.tofrom:v1" 1 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "acc loop reduction.+:v1. private.i." 1 "gimple" } } */
-/* { dg-final { scan-tree-dump-times "omp target oacc_kernels map.force_tofrom:n .len: 4.. map.force_tofrom:v1 .len: 4.." 1 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "omp target oacc_kernels map.force_tofrom:n .len: 4. .runtime_implicit.. map.force_tofrom:v1 .len: 4. .runtime_implicit.." 1 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "acc loop reduction.+:v1. private.i." 1 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "omp target oacc_serial reduction.+:v1. map.tofrom:v1" 1 "gimple" } } */
 /* { dg-final { scan-tree-dump-times "acc loop reduction.+:v1. private.i." 1 "gimple" } } */

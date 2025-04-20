@@ -30,7 +30,7 @@ program test
   !$acc kernels
   ! { dg-final { scan-tree-dump-times "private\\(i0_1\\)" 1 "original" { xfail *-*-* } } } ! PR90067
   ! { dg-final { scan-tree-dump-times "private\\(i0_1\\)" 1 "gimple" { xfail *-*-* } } } ! PR90067
-  ! { dg-final { scan-tree-dump-times "#pragma omp target oacc_kernels map\\(force_tofrom:i0_1 \\\[len: \[0-9\]+\\\]\\)" 0 "gimple" { xfail *-*-* } } } ! PR90067
+  ! { dg-final { scan-tree-dump-times "#pragma omp target oacc_kernels map\\(force_tofrom:i0_1 \\\[len: \[0-9\]+\\\]\\)" 0 "gimple" { target *-*-* } } }
   do i0_1 = 1, 100
   end do
   !$acc end kernels
@@ -40,7 +40,7 @@ program test
   ! { dg-final { scan-tree-dump-times "private\\(j0_2\\)" 1 "original" { xfail *-*-* } } } ! PR90067
   ! { dg-final { scan-tree-dump-times "private\\(i0_2\\)" 1 "gimple" { xfail *-*-* } } } ! PR90067
   ! { dg-final { scan-tree-dump-times "private\\(j0_2\\)" 1 "gimple" { xfail *-*-* } } } ! PR90067
-  ! { dg-final { scan-tree-dump-times "#pragma omp target oacc_kernels map\\(force_tofrom:j0_2 \\\[len: \[0-9\]+\\\]\\) map\\(force_tofrom:i0_2 \\\[len: \[0-9\]+\\\]\\)" 0 "gimple" { xfail *-*-* } } } ! PR90067
+  ! { dg-final { scan-tree-dump-times "#pragma omp target oacc_kernels map\\(force_tofrom:j0_2 \\\[len: \[0-9\]+\\\]\\) map\\(force_tofrom:i0_2 \\\[len: \[0-9\]+\\\]\\)" 0 "gimple" { target *-*-* } } }
   do i0_2 = 1, 100
      do j0_2 = 1, 100
      end do
@@ -82,7 +82,7 @@ program test
   !$acc kernels
   ! { dg-final { scan-tree-dump-times "private\\(i2_2_s\\)" 1 "original" { xfail *-*-* } } } ! PR90067
   ! { dg-final { scan-tree-dump-times "private\\(i2_2_s\\)" 1 "gimple" { xfail *-*-* } } } ! PR90067
-  ! { dg-final { scan-tree-dump-times "#pragma omp target oacc_kernels map\\(force_tofrom:i2_2_s \\\[len: \[0-9\]+\\\]\\)" 0 "gimple" { xfail *-*-* } } } ! PR90067
+  ! { dg-final { scan-tree-dump-times "#pragma omp target oacc_kernels map\\(force_tofrom:i2_2_s \\\[len: \[0-9\]+\\\]\\)" 0 "gimple" { target *-*-* } } }
   do i2_2_s = 1, 100
      !$acc loop independent
      ! { dg-final { scan-tree-dump-times "#pragma acc loop private\\(j2_2_s\\) independent" 1 "original" } }
@@ -231,7 +231,7 @@ program test
   !$acc kernels
   ! { dg-final { scan-tree-dump-times "private\\(i3_5_s\\)" 1 "original" { xfail *-*-* } } } ! PR90067
   ! { dg-final { scan-tree-dump-times "private\\(i3_5_s\\)" 1 "gimple" { xfail *-*-* } } } ! PR90067
-  ! { dg-final { scan-tree-dump-times "#pragma omp target oacc_kernels map\\(force_tofrom:i3_5_s \\\[len: \[0-9\]+\\\]\\)" 0 "gimple" { xfail *-*-* } } } ! PR90067
+  ! { dg-final { scan-tree-dump-times "#pragma omp target oacc_kernels map\\(force_tofrom:i3_5_s \\\[len: \[0-9\]+\\\]\\)" 0 "gimple" { target *-*-* } } }
   do i3_5_s = 1, 100
      !$acc loop independent
      ! { dg-final { scan-tree-dump-times "#pragma acc loop private\\(j3_5_s\\) independent" 1 "original" } }
