@@ -3405,7 +3405,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	errval = throw_bad_array_new_length ();
       if (outer_nelts_check != NULL_TREE)
 	size = build3 (COND_EXPR, sizetype, outer_nelts_check, size, errval);
-      size = cp_fully_fold (size);
+      size = fold_to_constant (size);
       /* Create the argument list.  */
       vec_safe_insert (*placement, 0, size);
       /* Do name-lookup to find the appropriate operator.  */
@@ -3462,7 +3462,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	    outer_nelts_check = NULL_TREE;
 	}
 
-      size = cp_fully_fold (size);
+      size = fold_to_constant (size);
       /* If size is zero e.g. due to type having zero size, try to
 	 preserve outer_nelts for constant expression evaluation
 	 purposes.  */

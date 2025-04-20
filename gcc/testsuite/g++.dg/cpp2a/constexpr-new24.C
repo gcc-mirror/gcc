@@ -6,14 +6,14 @@ int a;
 constexpr char *
 f1 ()
 {
-  constexpr auto p = new char[(long int) &a]; // { dg-error "size not constant" }
+  constexpr auto p = new char[(long int) &a]; // { dg-error "conversion from pointer" }
   return p;
 }
 
 constexpr char *
 f2 ()
 {
-  auto p = new char[(long int) &a];  // { dg-error "size not constant" }
+  auto p = new char[(long int) &a];  // { dg-error "conversion from pointer" }
   return p;
 }
 
