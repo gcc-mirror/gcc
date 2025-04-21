@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Case_Util; use System.Case_Util;
+with System.Case_Util_NSS; use System.Case_Util_NSS;
 
 package body System.Val_Util
   with SPARK_Mode

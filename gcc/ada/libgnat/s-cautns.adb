@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                     S Y S T E M . C A S E _ U T I L                      --
+--                 S Y S T E M . C A S E _ U T I L _ N S S                  --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,40 +29,99 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Case_Util
+--  Ghost code, loop invariants and assertions in this unit are meant for
+--  analysis only, not for run-time checking, as it would be too costly
+--  otherwise. This is enforced by setting the assertion policy to Ignore.
+
+pragma Assertion_Policy (Ghost          => Ignore,
+                         Loop_Invariant => Ignore,
+                         Assert         => Ignore);
+
+package body System.Case_Util_NSS
   with SPARK_Mode
 is
    --------------
    -- To_Lower --
    --------------
 
-   function To_Lower (A : String) return String is
-      Result : String := A;
+   function To_Lower (A : Character) return Character is
+      A_Val : constant Natural := Character'Pos (A);
+
    begin
-      To_Lower (Result);
-      return Result;
+      if A in 'A' .. 'Z'
+        or else A_Val in 16#C0# .. 16#D6#
+        or else A_Val in 16#D8# .. 16#DE#
+      then
+         return Character'Val (A_Val + 16#20#);
+      else
+         return A;
+      end if;
+   end To_Lower;
+
+   procedure To_Lower (A : in out String) is
+   begin
+      for J in A'Range loop
+         A (J) := To_Lower (A (J));
+
+         pragma Loop_Invariant
+           (for all K in A'First .. J => A (K) = To_Lower (A'Loop_Entry (K)));
+      end loop;
    end To_Lower;
 
    --------------
    -- To_Mixed --
    --------------
 
-   function To_Mixed (A : String) return String is
-      Result : String := A;
+   procedure To_Mixed (A : in out String) is
+      Ucase : Boolean := True;
+
    begin
-      To_Mixed (Result);
-      return Result;
+      for J in A'Range loop
+         if Ucase then
+            A (J) := To_Upper (A (J));
+         else
+            A (J) := To_Lower (A (J));
+         end if;
+
+         pragma Loop_Invariant
+           (for all K in A'First .. J =>
+              (if K = A'First
+                 or else A'Loop_Entry (K - 1) = '_'
+               then
+                 A (K) = To_Upper (A'Loop_Entry (K))
+               else
+                 A (K) = To_Lower (A'Loop_Entry (K))));
+
+         Ucase := A (J) = '_';
+      end loop;
    end To_Mixed;
 
    --------------
    -- To_Upper --
    --------------
 
-   function To_Upper (A : String) return String is
-      Result : String := A;
+   function To_Upper (A : Character) return Character is
+      A_Val : constant Natural := Character'Pos (A);
+
    begin
-      To_Upper (Result);
-      return Result;
+      if A in 'a' .. 'z'
+        or else A_Val in 16#E0# .. 16#F6#
+        or else A_Val in 16#F8# .. 16#FE#
+      then
+         return Character'Val (A_Val - 16#20#);
+      else
+         return A;
+      end if;
    end To_Upper;
 
-end System.Case_Util;
+   procedure To_Upper (A : in out String) is
+   begin
+      for J in A'Range loop
+         A (J) := To_Upper (A (J));
+
+         pragma Loop_Invariant
+           (for all K in A'First .. J => A (K) = To_Upper (A'Loop_Entry (K)));
+      end loop;
+   end To_Upper;
+
+end System.Case_Util_NSS;

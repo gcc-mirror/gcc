@@ -323,7 +323,7 @@ GNATMAKE_OBJS = a-except.o ali.o ali-util.o aspects.o s-casuti.o alloc.o \
  erroutc.o errutil.o err_vars.o fmap.o fname.o fname-uf.o fname-sf.o \
  gnatmake.o gnatvsn.o hostparm.o interfac.o i-c.o i-cstrin.o krunch.o lib.o \
  make.o makeusg.o make_util.o namet.o nlists.o opt.o osint.o osint-m.o \
- output.o restrict.o rident.o s-exctab.o \
+ output.o restrict.o rident.o s-exctab.o s-cautns.o \
  s-secsta.o s-stalib.o s-stoele.o scans.o scng.o sdefault.o sfn_scan.o \
  s-purexc.o s-htable.o scil_ll.o sem_aux.o sinfo.o sinput.o sinput-c.o \
  snames.o stand.o stringt.o styleg.o stylesw.o system.o validsw.o \
