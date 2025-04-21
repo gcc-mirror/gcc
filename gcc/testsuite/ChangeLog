@@ -1,3 +1,14 @@
+2025-04-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2025-04-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119817
+	* gdc.dg/debug/imports/m119817/a.d: New test.
+	* gdc.dg/debug/imports/m119817/b.d: New test.
+	* gdc.dg/debug/imports/m119817/package.d: New test.
+	* gdc.dg/debug/pr119817.d: New test.
+
 2025-04-16  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:
