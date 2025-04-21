@@ -1350,113 +1350,150 @@ case statement with composite selector type".
 Mutably Tagged Types with Size'Class Aspect
 -------------------------------------------
 
-The ``Size'Class`` aspect can be applied to a tagged type to specify a size
-constraint for the type and its descendants. When this aspect is specified
-on a tagged type, the class-wide type of that type is considered to be a
-"mutably tagged" type - meaning that objects of the class-wide type can have
-their tag changed by assignment from objects with a different tag.
+For a specific tagged nonformal type T that satisfies some conditions
+described later in this section, the universal-integer-valued type-related
+representation aspect ``Size'Class`` may be specified; any such specified
+aspect value shall be static.
+
+Specifying this aspect imposes an upper bound on the sizes of all specific
+descendants of T (including T itself). T'Class (but not T) is then said to be
+a "mutably tagged" type - meaning that T'Class is a definite subtype and that
+the tag of a variable of type T'Class may be modified by assignment in some
+cases described later in this section. An inherited ``Size'Class`` aspect
+value may be overridden, but not with a larger value.
+
+If the ``Size'Class`` aspect is specified for a type T, then every specific
+descendant of T (including T itself)
+
+* shall have a Size that does not exceed the specified value; and
+
+* shall have a (possibly inherited) ``Size'Class`` aspect that does not exceed
+  the specifed value; and
+
+* shall be undiscriminated; and
+
+* shall have no composite subcomponent whose subtype is subject to a nonstatic
+  constraint; and
+
+* shall not have a tagged partial view other than a private extension; and
+
+* shall not be a descendant of an interface type; and
+
+* shall not have a statically deeper accessibility level than that of T.
+
+If the ``Size'Class`` aspect is not specified for a type T (either explicitly
+or by inheritance), then it shall not be specified for any descendant of T.
 
 Example:
 
 .. code-block:: ada
 
-    type Base is tagged null record
-        with Size'Class => 16 * 8;  -- Size in bits (128 bits, or 16 bytes)
+    type Root_Type is tagged null record with Size'Class => 16 * 8;
 
-    type Derived_Type is new Base with record
-       Data_Field : Integer;
+    type Derived_Type is new Root_Type with record
+       Stuff : Some_Type;
     end record;  -- ERROR if Derived_Type exceeds 16 bytes
 
-Class-wide types with a specified ``Size'Class`` can be used as the type of
-array components, record components, and stand-alone objects.
+Because any subtype of a mutably tagged type is definite, it can be used as a
+component subtype for enclosing array or record types, as the subtype of a
+default-initialized stand-alone object, or as the subtype of an uninitialized
+allocator, as in this example:
 
 .. code-block:: ada
 
-    Inst : Base'Class;
-    type Array_of_Base is array (Positive range <>) of Base'Class;
+    Obj : Root_Type'Class;
+    type Array_of_Roots is array (Positive range <>) of Root_Type'Class;
 
-If the ``Size'Class`` aspect is specified for a type ``T``, then every
-specific descendant of ``T`` [redundant: (including ``T``)]
+Default initialization of an object of such a definite subtype proceeds as
+for the corresponding specific type, except that Program_Error is raised if
+the specific type is abstract. In particular, the initial tag of the object
+is that of the corresponding specific type.
 
-- shall have a Size that does not exceed the specified value; and
+There is a general design principle that if a type has a tagged partial view,
+then the type's ``Size'Class`` aspect (or lack thereof) should be determinable
+by looking only at the partial view. That provides the motivation for the
+rules of the next two paragraphs.
 
-- shall be undiscriminated; and
+If a type has a tagged partial view, then a ``Size'Class`` aspect specification
+may be provided only at the point of the partial view declaration (in other
+words, no such aspect specification may be provided when the full view of
+the type is declared). All of the above rules (in particular, the rule that
+an overriding ``Size'Class`` aspect value shall not be larger than the
+overridden inherited value) are also enforced when the full view (which may
+have a different ancestor type than that of the partial view) is declared.
+If a partial view for a type inherits a ``Size'Class`` aspect value and does
+not override that value with an explicit aspect specification, then the
+(static) aspect values inherited by the partial view and by the full view
+shall be equal.
 
-- shall have no composite subcomponent whose subtype is subject to a
-  dynamic constraint; and
+An actual parameter of an instantiation whose corresponding formal parameter
+is a formal tagged private type shall not be either mutably tagged or the
+corresponding specific type of a mutably tagged type.
 
-- shall have no interface progenitors; and
+For the legality rules in this section, the RM 12.3(11) rule about legality
+checking in the visible part and formal part of an instance is extended (in
+the same way that it is extended in many other places in the RM) to include
+the private part of an instance.
 
-- shall not have a tagged partial view other than a private extension; and
+An object (or a view thereof) of a tagged type is defined to be
+"tag-constrained" if it is
 
-- shall not have a statically deeper accessibility level than that of ``T``.
+* an object whose type is not mutably tagged; or
 
-In addition to the places where Legality Rules normally apply (see 12.3),
-these legality rules apply also in the private part and in the body of an
-instance of a generic unit.
+* a constant object; or
 
-For any subtype ``S`` that is a subtype of a descendant of ``T``, ``S'Class'Size`` is
-defined to yield the specified value [redundant:,  although ``S'Class'Size`` is
-not a static expression].
+* a view conversion of a tag-constrained object; or
 
-A class-wide descendant of a type with a specified ``Size'Class`` aspect is
-defined to be a "mutably tagged" type. Any subtype of a mutably tagged type is,
-by definition, a definite subtype (RM 3.3 notwithstanding). Default
-initialization of an object of such a definite subtype proceeds as for the
-corresponding specific type, except that ``Program_Error`` is raised if the
-specific type is abstract. [In particular, the initial tag of the object is
-that of the corresponding specific type.]
+* a view conversion to a type that is not a descendant of the operand's
+  type; or
 
-An object of a tagged type is defined to be "tag-constrained" if it is
+* a formal in out or out parameter whose corresponding actual parameter is
+  tag-constrained; or
 
-- an object whose type is not mutably tagged; or
+* a dereference of an access value.
 
-- a constant object; or
-
-- a view conversion of a tag-constrained object; or
-
-- a formal ``in out`` or ``out`` parameter whose corresponding
-  actual parameter is tag-constrained.
-
-In the case of an assignment to a tagged variable that
-is not tag-constrained, no check is performed that the tag of the value of
-the expression is the same as that of the target (RM 5.2 notwithstanding).
+In the case of an assignment to a tagged variable that is not
+tag-constrained, no check is performed that the tag of the value
+of the expression is the same as that of the target (RM 5.2 notwithstanding).
 Instead, the tag of the target object becomes that of the source object of
-the assignment.
+the assignment. Note that the tag of an object of a mutably tagged type MT
+will always be the tag of some specific type that is a descendant of MT.
 An assignment to a composite object similarly copies the tags of any
-subcomponents of the source object that have a mutably-tagged type.
+subcomponents of the source object that have a mutably tagged type.
 
-The ``Constrained`` attribute is defined for any name denoting an object of a
-mutably tagged type (RM 3.7.2 notwithstanding). In this case, the Constrained
-attribute yields the value True if the object is tag-constrained and False
-otherwise.
+The Constrained attribute is defined for any name denoting an object of a
+mutably tagged type (RM 3.7.2 notwithstanding). In this case, the
+Constrained attribute yields the value True if the object is
+tag-constrained and False otherwise.
 
-Renaming is not allowed (see 8.5.1) for a type conversion having an operand of
-a mutably tagged type ``MT`` and a target type ``TT`` such that ``TT'Class``
-does not cover ``MT``, nor for any part of such an object, nor for any slice
-of such an object. This rule also applies in any context where a name is
-required to be one for which "renaming is allowed" (for example, see RM 12.4).
+Renaming is not allowed (see RM 8.5.1) for a type conversion having an operand
+of a mutably tagged type MT and a target type TT such that TT (or its
+corresponding specific type if TT is class-wide) is not an ancestor of MT
+(this is sometimes called a "downward" conversion), nor for any part of
+such an object, nor for any slice of any part of such an object. This
+rule also applies in any context where a name is required to be one for
+which "renaming is allowed" (for example, see RM 12.4).
+[This is analogous to the way that renaming is not allowed for a
+discriminant-dependent component of an unconstrained variable.]
 
-A name denoting a view of a variable of a mutably tagged type shall not
-occur as an operative constituent of the prefix of a name denoting a
-prefixed view of a callable entity, except as the callee name in a call to
-the callable entity.
-
-For a type conversion between two general access types, either both or neither
-of the designated types shall be mutably tagged. For an ``Access`` (or
-``Unchecked_Access``) attribute reference, the designated type of the type of the
-attribute reference and the type of the prefix of the attribute shall either
-both or neither be mutably tagged.
+A name denoting a view of a variable of a mutably tagged type shall not occur
+as an operative constituent of the prefix of a name denoting a prefixed
+view of a callable entity, except as the callee name in a call to the
+callable entity. This disallows, for example, renaming such a prefixed view,
+passing the prefixed view name as a generic actual parameter, or using the
+prefixed view name as the prefix of an attribute.
 
 The execution of a construct is erroneous if the construct has a constituent
 that is a name denoting a subcomponent of a tagged object and the object's
-tag is changed by this execution between evaluating the name and the last use
-(within this execution) of the subcomponent denoted by the name.
+tag is changed by this execution between evaluating the name and the last
+use (within this execution) of the subcomponent denoted by the name.
+This is analogous to the RM 3.7.2(4) rule about discriminant-dependent
+subcomponents.
 
-If the type of a formal parameter is a specific tagged type then the execution
+If the type of a formal parameter is a specific tagged type, then the execution
 of the call is erroneous if the tag of the actual is changed while the formal
-parameter exists (that is, before leaving the corresponding callable
-construct).
+parameter exists (that is, before leaving the corresponding callable construct).
+This is analogous to the RM 6.4.1(18) rule about discriminated parameters.
 
 Generalized Finalization
 ------------------------
