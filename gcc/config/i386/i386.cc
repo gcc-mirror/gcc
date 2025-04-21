@@ -25257,32 +25257,6 @@ ix86_vectorize_create_costs (vec_info *vinfo, bool costing_for_scalar)
   return new ix86_vector_costs (vinfo, costing_for_scalar);
 }
 
-/* Return cost of statement doing FP conversion.  */
-
-static unsigned
-fp_conversion_stmt_cost (machine_mode mode, gimple *stmt, bool scalar_p)
-{
-  int outer_size
-    = tree_to_uhwi
-	(TYPE_SIZE
-	    (TREE_TYPE (gimple_assign_lhs (stmt))));
-  int inner_size
-    = tree_to_uhwi
-	(TYPE_SIZE
-	    (TREE_TYPE (gimple_assign_rhs1 (stmt))));
-  int stmt_cost = vec_fp_conversion_cost
-		    (ix86_tune_cost, GET_MODE_BITSIZE (mode));
-  /* VEC_PACK_TRUNC_EXPR: If inner size is greater than outer size we will end
-     up doing two conversions and packing them.  */
-  if (!scalar_p && inner_size > outer_size)
-    {
-      int n = inner_size / outer_size;
-      stmt_cost = stmt_cost * n
-		  + (n - 1) * ix86_vec_cost (mode, ix86_cost->sse_op);
-    }
-  return stmt_cost;
-}
-
 unsigned
 ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 				  stmt_vec_info stmt_info, slp_tree node,
@@ -25394,8 +25368,8 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 		 TREE_TYPE (gimple_assign_rhs1 (stmt_info->stmt))))
 	    stmt_cost = 0;
 	  else if (fp)
-	    stmt_cost = fp_conversion_stmt_cost (mode, stmt_info->stmt,
-						 scalar_p);
+	    stmt_cost = vec_fp_conversion_cost
+			  (ix86_tune_cost, GET_MODE_BITSIZE (mode));
 	  break;
 
 	case BIT_IOR_EXPR:
@@ -25439,7 +25413,26 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 
   if (kind == vec_promote_demote
       && fp && FLOAT_TYPE_P (TREE_TYPE (gimple_assign_rhs1 (stmt_info->stmt))))
-    stmt_cost = fp_conversion_stmt_cost (mode, stmt_info->stmt, scalar_p);
+    {
+      int outer_size
+	= tree_to_uhwi
+	    (TYPE_SIZE
+		(TREE_TYPE (gimple_assign_lhs (stmt_info->stmt))));
+      int inner_size
+	= tree_to_uhwi
+	    (TYPE_SIZE
+		(TREE_TYPE (gimple_assign_rhs1 (stmt_info->stmt))));
+      int stmt_cost = vec_fp_conversion_cost
+			(ix86_tune_cost, GET_MODE_BITSIZE (mode));
+      /* VEC_PACK_TRUNC_EXPR: If inner size is greater than outer size we will end
+	 up doing two conversions and packing them.  */
+      if (inner_size > outer_size)
+	{
+	  int n = inner_size / outer_size;
+	  stmt_cost = stmt_cost * n
+		      + (n - 1) * ix86_vec_cost (mode, ix86_cost->sse_op);
+	}
+    }
 
   /* If we do elementwise loads into a vector then we are bound by
      latency and execution resources for the many scalar loads
