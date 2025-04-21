@@ -1216,13 +1216,15 @@ optimize_memcpy_to_memset (gimple_stmt_iterator *gsip, tree dest, tree src, tree
   ao_ref_init (&read, src);
   tree vuse = gimple_vuse (stmt);
   gimple *defstmt;
+  unsigned limit = param_sccvn_max_alias_queries_per_access;
   do {
     if (vuse == NULL || TREE_CODE (vuse) != SSA_NAME)
       return false;
     defstmt = SSA_NAME_DEF_STMT (vuse);
     if (is_a <gphi*>(defstmt))
       return false;
-
+    if (limit-- == 0)
+      return false;
     /* If the len was null, then we can use TBBA. */
     if (stmt_may_clobber_ref_p_1 (defstmt, &read,
 				  /* tbaa_p = */ len_was_null))
