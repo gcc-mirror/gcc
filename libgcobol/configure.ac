@@ -231,6 +231,9 @@ elif test "${ENABLE_LIBQUADMATH_SUPPORT}" = "default" ; then
 fi
 LIBGCOBOL_CHECK_FLOAT128
 
+# struct tm tm_zone is a POSIX.1-2024 addition.
+AC_CHECK_MEMBERS([struct tm.tm_zone],,,[#include <time.h>])
+
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"
 else

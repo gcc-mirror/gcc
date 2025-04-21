@@ -72,6 +72,9 @@
 /* Define to 1 if you have the `strtof128' function. */
 #undef HAVE_STRTOF128
 
+/* Define to 1 if `tm_zone' is a member of `struct tm'. */
+#undef HAVE_STRUCT_TM_TM_ZONE
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
