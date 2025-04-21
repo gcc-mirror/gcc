@@ -1,6 +1,14 @@
 2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-04-25  Andrew Pinski  <quic_apinski@quicinc.com>
+		    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119737
+	* config/gcn/gcn.cc (gcn_hsa_declare_function_name): Properly
+	switch sections.
+
+	Backported from trunk:
 	2024-08-07  Julian Brown  <julian@codesourcery.com>
 		    Tobias Burnus  <tobias@baylibre.com>
 

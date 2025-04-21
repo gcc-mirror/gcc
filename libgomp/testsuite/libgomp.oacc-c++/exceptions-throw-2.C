@@ -6,9 +6,6 @@
    { dg-additional-options -foffload-options=-fdump-tree-optimized-raw } */
 /* { dg-bogus {undefined symbol: typeinfo name for MyException} PR119806 { target { openacc_radeon_accel_selected && { ! __OPTIMIZE__ } } xfail *-*-* } 0 }
    { dg-excess-errors {'mkoffload' failure etc.} { xfail { openacc_radeon_accel_selected && { ! __OPTIMIZE__ } } } } */
-/* { dg-bogus {Size expression must be absolute\.} PR119737 { target { openacc_radeon_accel_selected && __OPTIMIZE__ } xfail *-*-* } 0 }
-   { dg-ice PR119737 { openacc_radeon_accel_selected && __OPTIMIZE__ } }
-   { dg-excess-errors {'mkoffload' failures etc.} { xfail { openacc_radeon_accel_selected && __OPTIMIZE__ } } } */
 /* { dg-bogus {Initial value type mismatch} PR119806 { target { openacc_nvidia_accel_selected && { ! __OPTIMIZE__ } } xfail *-*-* } 0 }
    { dg-excess-errors {'mkoffload' failure etc.} { xfail { openacc_nvidia_accel_selected && { ! __OPTIMIZE__ } } } } */
 

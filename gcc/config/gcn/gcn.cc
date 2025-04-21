@@ -6708,8 +6708,8 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
   if (avgpr % vgpr_block_size)
     avgpr += vgpr_block_size - (avgpr % vgpr_block_size);
 
-  fputs ("\t.rodata\n"
-	 "\t.p2align\t6\n"
+  switch_to_section (readonly_data_section);
+  fputs ("\t.p2align\t6\n"
 	 "\t.amdhsa_kernel\t", file);
   assemble_name (file, name);
   fputs ("\n", file);
@@ -6820,7 +6820,7 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
   fputs ("        .end_amdgpu_metadata\n", file);
 #endif
 
-  fputs ("\t.text\n", file);
+  switch_to_section (current_function_section ());
   fputs ("\t.align\t256\n", file);
   fputs ("\t.type\t", file);
   assemble_name (file, name);

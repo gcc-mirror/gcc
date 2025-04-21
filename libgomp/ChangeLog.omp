@@ -1,6 +1,17 @@
 2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-04-25  Andrew Pinski  <quic_apinski@quicinc.com>
+		    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119737
+	* testsuite/libgomp.c++/target-exceptions-throw-1.C: Remove
+	PR119737 XFAILing.
+	* testsuite/libgomp.c++/target-exceptions-throw-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-1.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2.C: Likewise.
+
+	Backported from trunk:
 	2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR target/118794
