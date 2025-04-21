@@ -4,9 +4,6 @@
    { dg-additional-options -fexceptions } */
 /* { dg-additional-options -fdump-tree-optimized-raw }
    { dg-additional-options -foffload-options=-fdump-tree-optimized-raw } */
-/* { dg-bogus {Size expression must be absolute\.} PR119737 { target { openacc_radeon_accel_selected && __OPTIMIZE__ } xfail *-*-* } 0 }
-   { dg-ice PR119737 { openacc_radeon_accel_selected && __OPTIMIZE__ } }
-   { dg-excess-errors {'mkoffload' failure etc.} { xfail { openacc_radeon_accel_selected && __OPTIMIZE__ } } } */
 
 /* See also '../libgomp.c++/target-exceptions-throw-1.C'.  */
 
