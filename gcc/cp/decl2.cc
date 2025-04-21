@@ -4186,7 +4186,11 @@ start_objects (bool initp, unsigned priority, bool has_body,
 	       bool omp_target = false)
 {
   bool default_init = initp && priority == DEFAULT_INIT_PRIORITY;
-  bool is_module_init = default_init && module_global_init_needed ();
+  /* FIXME: We may eventually want to treat OpenMP offload initializers
+     in modules specially as well.  */
+  bool is_module_init = (default_init
+			 && !omp_target
+			 && module_global_init_needed ());
   tree name = NULL_TREE;
 
   if (is_module_init)
@@ -5878,12 +5882,8 @@ c_parse_final_cleanups (void)
       if (static_init_fini_fns[true]->get_or_insert (DEFAULT_INIT_PRIORITY))
 	has_module_inits = true;
 
-      if (flag_openmp)
-	{
-	  if (!static_init_fini_fns[2 + true])
-	    static_init_fini_fns[2 + true] = priority_map_t::create_ggc ();
-	  static_init_fini_fns[2 + true]->get_or_insert (DEFAULT_INIT_PRIORITY);
-	}
+      /* FIXME: We need to work out what static constructors on OpenMP offload
+	 target in modules will look like.  */
     }
 
   /* Generate initialization and destruction functions for all
