@@ -4497,6 +4497,8 @@ pass_forwprop::execute (function *fun)
 		    }
 		}
 	    }
+	  if (substituted_p)
+	    update_stmt (stmt);
 	  if (substituted_p
 	      && is_gimple_assign (stmt)
 	      && gimple_assign_rhs_code (stmt) == ADDR_EXPR)
@@ -4536,17 +4538,7 @@ pass_forwprop::execute (function *fun)
 			  && !SSA_NAME_IS_DEFAULT_DEF (use))
 			bitmap_set_bit (simple_dce_worklist,
 					SSA_NAME_VERSION (use));
-		}
-
-	      if (changed || substituted_p)
-		{
-		  if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
-		    bitmap_set_bit (to_purge, bb->index);
-		  if (!was_noreturn
-		      && is_gimple_call (stmt) && gimple_call_noreturn_p (stmt))
-		    to_fixup.safe_push (stmt);
 		  update_stmt (stmt);
-		  substituted_p = false;
 		}
 
 	      switch (gimple_code (stmt))
@@ -4560,8 +4552,6 @@ pass_forwprop::execute (function *fun)
 		      {
 			int did_something;
 			did_something = forward_propagate_into_comparison (&gsi);
-			if (maybe_clean_or_replace_eh_stmt (stmt, gsi_stmt (gsi)))
-			  bitmap_set_bit (to_purge, bb->index);
 			if (did_something == 2)
 			  cfg_changed = true;
 			changed |= did_something != 0;
@@ -4613,6 +4603,16 @@ pass_forwprop::execute (function *fun)
 		default:;
 		}
 
+	      if (changed || substituted_p)
+		{
+		  substituted_p = false;
+		  stmt = gsi_stmt (gsi);
+		  if (maybe_clean_or_replace_eh_stmt (orig_stmt, stmt))
+		    bitmap_set_bit (to_purge, bb->index);
+		  if (!was_noreturn
+		      && is_gimple_call (stmt) && gimple_call_noreturn_p (stmt))
+		    to_fixup.safe_push (stmt);
+		}
 	      if (changed)
 		{
 		  /* If the stmt changed then re-visit it and the statements
