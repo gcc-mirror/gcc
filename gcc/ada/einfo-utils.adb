@@ -2345,6 +2345,25 @@ package body Einfo.Utils is
    begin
       pragma Assert (Is_Type (Id));
 
+      if Nkind (Associated_Node_For_Itype (Id)) = N_Subtype_Declaration then
+         declare
+            Associated_Id : constant Entity_Id :=
+              Defining_Identifier (Associated_Node_For_Itype (Id));
+         begin
+            --  Avoid Itype/predicate problems by looking through Itypes.
+            --  We never introduce new predicates for Itypes, so doing this
+            --  will never cause us to incorrectly overlook a predicate.
+            --  It is not clear whether the FE needs this fix, but
+            --  GNATProve does (note that GNATProve calls Predicate_Function).
+
+            if Id /= Associated_Id
+              and then Base_Type (Id) = Base_Type (Associated_Id)
+            then
+               return Predicate_Function (Associated_Id);
+            end if;
+         end;
+      end if;
+
       --  If type is private and has a completion, predicate may be defined on
       --  the full view.
 
