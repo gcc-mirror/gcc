@@ -1,4 +1,4 @@
-/* { dg-do compile { target c++ } } */
+/* { dg-do compile } */
 
 typedef struct S_ {
   int *myarr;
