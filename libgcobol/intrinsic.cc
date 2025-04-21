@@ -1482,7 +1482,9 @@ __gg__formatted_current_date( cblc_field_t *dest, // Destination string
   __gg__clock_gettime(CLOCK_REALTIME, &ts);
 
   struct tm tm = {};
+#ifdef HAVE_STRUCT_TM_TM_ZONE
   tm.tm_zone = "GMT";
+#endif
   if( is_zulu )
     {
     gmtime_r(&ts.tv_sec, &tm);
