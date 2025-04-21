@@ -4178,22 +4178,6 @@ mergeable_namespace_slots (tree ns, tree name, bool is_attached, tree *vec)
   return vslot;
 }
 
-/* Retrieve the bindings for an existing mergeable entity in namespace
-   NS slot NAME.  Returns NULL if no such bindings exists.  */
-
-static tree
-get_mergeable_namespace_binding (tree ns, tree name, bool is_attached)
-{
-  tree *mslot = find_namespace_slot (ns, name, false);
-  if (!mslot || !*mslot || TREE_CODE (*mslot) != BINDING_VECTOR)
-    return NULL_TREE;
-
-  tree *vslot = get_fixed_binding_slot
-    (mslot, name, is_attached ? BINDING_SLOT_PARTITION : BINDING_SLOT_GLOBAL,
-     false);
-  return vslot ? *vslot : NULL_TREE;
-}
-
 /* DECL is a new mergeable namespace-scope decl.  Add it to the
    mergeable entities on GSLOT.  */
 
@@ -4574,9 +4558,9 @@ lookup_imported_hidden_friend (tree friend_tmpl)
 
   lazy_load_pendings (friend_tmpl);
 
-  tree bind = get_mergeable_namespace_binding
-    (current_namespace, DECL_NAME (inner), DECL_MODULE_ATTACH_P (inner));
-  if (!bind)
+  tree name = DECL_NAME (inner);
+  tree *slot = find_namespace_slot (current_namespace, name, false);
+  if (!slot || !*slot || TREE_CODE (*slot) != BINDING_VECTOR)
     return NULL_TREE;
 
   /* We're only interested in declarations attached to the same module
@@ -4584,9 +4568,28 @@ lookup_imported_hidden_friend (tree friend_tmpl)
   int m = get_originating_module (friend_tmpl, /*global=-1*/true);
   gcc_assert (m != 0);
 
+  /* First check whether there's a reachable declaration attached to the module
+     we're looking for.  */
+  if (m > 0)
+    if (binding_slot *mslot = search_imported_binding_slot (slot, m))
+      {
+	if (mslot->is_lazy ())
+	  lazy_load_binding (m, current_namespace, name, mslot);
+	for (ovl_iterator iter (*mslot); iter; ++iter)
+	  if (DECL_CLASS_TEMPLATE_P (*iter))
+	    return *iter;
+      }
+
+  /* Otherwise, look in the mergeable slots for this name, in case an importer
+     has already instantiated this declaration.  */
+  tree *vslot = get_fixed_binding_slot
+    (slot, name, m > 0 ? BINDING_SLOT_PARTITION : BINDING_SLOT_GLOBAL, false);
+  if (!vslot || !*vslot)
+    return NULL_TREE;
+
   /* There should be at most one class template from the module we're
      looking for, return it.  */
-  for (ovl_iterator iter (bind); iter; ++iter)
+  for (ovl_iterator iter (*vslot); iter; ++iter)
     if (DECL_CLASS_TEMPLATE_P (*iter)
 	&& get_originating_module (*iter, true) == m)
       return *iter;
