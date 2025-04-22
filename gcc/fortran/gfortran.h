@@ -3405,6 +3405,19 @@ typedef struct gfc_finalizer
 gfc_finalizer;
 #define gfc_get_finalizer() XCNEW (gfc_finalizer)
 
+/* Control clause translation per-directive for gfc_trans_omp_clauses.  Also
+   used for gfc_omp_instantiate_mappers.  */
+
+enum toc_directive
+{
+  TOC_OPENMP,
+  TOC_OPENMP_DECLARE_SIMD,
+  TOC_OPENMP_DECLARE_MAPPER,
+  TOC_OPENMP_EXIT_DATA,
+  TOC_OPENACC,
+  TOC_OPENACC_DECLARE,
+  TOC_OPENACC_EXIT_DATA
+};
 
 /************************ Function prototypes *************************/
 
@@ -3904,6 +3917,9 @@ void gfc_resolve_omp_do_blocks (gfc_code *, gfc_namespace *);
 void gfc_resolve_omp_declare (gfc_namespace *);
 void gfc_resolve_omp_udrs (gfc_symtree *);
 void gfc_resolve_omp_udms (gfc_symtree *);
+void gfc_omp_instantiate_mappers (gfc_code *, gfc_omp_clauses *,
+				  toc_directive = TOC_OPENMP,
+				  int = OMP_LIST_MAP);
 void gfc_omp_save_and_clear_state (struct gfc_omp_saved_state *);
 void gfc_omp_restore_state (struct gfc_omp_saved_state *);
 void gfc_free_expr_list (gfc_expr_list *);
@@ -4160,6 +4176,7 @@ bool gfc_convert_to_structure_constructor (gfc_expr *, gfc_symbol *,
 /* trans.cc */
 void gfc_generate_code (gfc_namespace *);
 void gfc_generate_module_code (gfc_namespace *);
+location_t gfc_get_location (locus *);
 
 /* trans-intrinsic.cc */
 bool gfc_inline_intrinsic_function_p (gfc_expr *);
