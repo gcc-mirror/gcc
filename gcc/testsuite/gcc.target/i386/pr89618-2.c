@@ -19,5 +19,9 @@ void foo (int n, int *off, double *a)
 }
 
 /* Make sure the cost model selects SSE vectors rather than AVX to avoid
-   too many scalar ops for the address computes in the loop.  */
-/* { dg-final { scan-tree-dump "loop vectorized using 16 byte vectors" "vect" { target { ! ia32 } } } } */
+   too many scalar ops for the address computes in the loop. 
+  
+   Since open-coded scatters are costed wrong, we no longer vectorize after fixing
+   COND_EXPR costs.  See PR119902.  */
+/* { dg-final { scan-tree-dump "loop vectorized using 16 byte vectors" "vect" { target { ! ia32 } xfail *-*-*  } } } */
+/* { dg-final { scan-tree-dump-not "loop vectorized using 32 byte vectors" "vect" { target { ! ia32 } } } } */

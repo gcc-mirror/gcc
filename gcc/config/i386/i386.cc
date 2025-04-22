@@ -25300,7 +25300,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	      else if (X87_FLOAT_MODE_P (mode))
 		stmt_cost = ix86_cost->fadd;
 	      else
-	        stmt_cost = ix86_cost->add;
+		stmt_cost = ix86_cost->add;
 	    }
 	  else
 	    stmt_cost = ix86_vec_cost (mode, fp ? ix86_cost->addss
@@ -25355,7 +25355,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 			    (subcode == RSHIFT_EXPR
 			     && !TYPE_UNSIGNED (TREE_TYPE (op1)))
 			    ? ASHIFTRT : LSHIFTRT, mode,
-		            TREE_CODE (op2) == INTEGER_CST,
+			    TREE_CODE (op2) == INTEGER_CST,
 			    cst_and_fits_in_hwi (op2)
 			    ? int_cst_value (op2) : -1,
 			    false, false, NULL, NULL);
@@ -25364,7 +25364,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	case NOP_EXPR:
 	  /* Only sign-conversions are free.  */
 	  if (tree_nop_conversion_p
-	        (TREE_TYPE (gimple_assign_lhs (stmt_info->stmt)),
+		(TREE_TYPE (gimple_assign_lhs (stmt_info->stmt)),
 		 TREE_TYPE (gimple_assign_rhs1 (stmt_info->stmt))))
 	    stmt_cost = 0;
 	  else if (fp)
@@ -25372,17 +25372,94 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 			  (ix86_tune_cost, GET_MODE_BITSIZE (mode));
 	  break;
 
-	case BIT_IOR_EXPR:
-	case ABS_EXPR:
-	case ABSU_EXPR:
+	case COND_EXPR:
+	  {
+	    /* SSE2 conditinal move sequence is:
+		 pcmpgtd %xmm5, %xmm0
+		 pand    %xmm0, %xmm2
+		 pandn   %xmm1, %xmm0
+		 por     %xmm2, %xmm0
+	       while SSE4 uses cmp + blend
+	       and AVX512 masked moves.  */
+
+	    int ninsns = TARGET_SSE4_1 ? 2 : 4;
+
+	    if (SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
+	      stmt_cost = ninsns * ix86_cost->sse_op;
+	    else if (X87_FLOAT_MODE_P (mode))
+	      /* x87 requires conditional branch.  We don't have cost for
+		 that.  */
+	      ;
+	    else if (VECTOR_MODE_P (mode))
+	      stmt_cost = ix86_vec_cost (mode, ninsns * ix86_cost->sse_op);
+	    else
+	      /* compare + cmov.  */
+	      stmt_cost = ix86_cost->add * 2;
+	  }
+	  break;
+
 	case MIN_EXPR:
 	case MAX_EXPR:
+	  if (fp)
+	    {
+	      if (X87_FLOAT_MODE_P (mode))
+		/* x87 requires conditional branch.  We don't have cost for
+		   that.  */
+		;
+	      else
+		/* minss  */
+		stmt_cost = ix86_vec_cost (mode, ix86_cost->sse_op);
+	    }
+	  else
+	    {
+	      if (VECTOR_MODE_P (mode))
+		{
+		  stmt_cost = ix86_vec_cost (mode, ix86_cost->sse_op);
+		  /* vpmin was introduced in SSE3.
+		     SSE2 needs pcmpgtd + pand + pandn + pxor.  */
+		  if (!TARGET_SSSE3)
+		    stmt_cost *= 4;
+		}
+	      else
+		/* cmp + cmov.  */
+		stmt_cost = ix86_cost->add * 2;
+	    }
+	  break;
+
+	case ABS_EXPR:
+	case ABSU_EXPR:
+	  if (fp)
+	    {
+	      if (X87_FLOAT_MODE_P (mode))
+		/* fabs.  */
+		stmt_cost = ix86_cost->fabs;
+	      else
+		/* andss of sign bit.  */
+		stmt_cost = ix86_vec_cost (mode, ix86_cost->sse_op);
+	    }
+	  else
+	    {
+	      if (VECTOR_MODE_P (mode))
+		{
+		  stmt_cost = ix86_vec_cost (mode, ix86_cost->sse_op);
+		  /* vabs was introduced in SSE3.
+		     SSE3 uses psrat + pxor + psub.  */
+		  if (!TARGET_SSSE3)
+		    stmt_cost *= 3;
+		}
+	      else
+		/* neg + cmov.  */
+		stmt_cost = ix86_cost->add * 2;
+	    }
+	  break;
+
+	case BIT_IOR_EXPR:
 	case BIT_XOR_EXPR:
 	case BIT_AND_EXPR:
 	case BIT_NOT_EXPR:
-	  if (SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
-	    stmt_cost = ix86_cost->sse_op;
-	  else if (VECTOR_MODE_P (mode))
+	  gcc_assert (!SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode)
+		      && !X87_FLOAT_MODE_P (mode));
+	  if (VECTOR_MODE_P (mode))
 	    stmt_cost = ix86_vec_cost (mode, ix86_cost->sse_op);
 	  else
 	    stmt_cost = ix86_cost->add;
