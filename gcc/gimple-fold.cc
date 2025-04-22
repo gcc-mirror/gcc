@@ -6276,6 +6276,32 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	}
       else if (!inplace)
 	{
+	  /* For throwing comparisons, see if the GIMPLE_COND is the same as
+	     the comparison would be.
+	     This can happen due to the match pattern for
+	     `(ne (cmp @0 @1) integer_zerop)` which creates a new expression
+	     for the comparison.  */
+	  if (TREE_CODE_CLASS (code) == tcc_comparison
+	      && flag_exceptions
+	      && cfun->can_throw_non_call_exceptions
+	      && operation_could_trap_p (code,
+					 FLOAT_TYPE_P (TREE_TYPE (ops[0])),
+					 false, NULL_TREE))
+	    {
+	      tree lhs = gimple_cond_lhs (cond_stmt);
+	      if (gimple_cond_code (cond_stmt) == NE_EXPR
+		  && TREE_CODE (lhs) == SSA_NAME
+		  && INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+		  && integer_zerop (gimple_cond_rhs (cond_stmt)))
+		{
+		  gimple *s = SSA_NAME_DEF_STMT (lhs);
+		  if (is_gimple_assign (s)
+		      && gimple_assign_rhs_code (s) == code
+		      && operand_equal_p (gimple_assign_rhs1 (s), ops[0])
+		      && operand_equal_p (gimple_assign_rhs2 (s), ops[1]))
+		    return false;
+		}
+	    }
 	  tree res = maybe_push_res_to_seq (res_op, seq);
 	  if (!res)
 	    return false;
