@@ -390,6 +390,10 @@ range_op_handler::lhs_op1_relation (const vrange &lhs,
 	return m_operator->lhs_op1_relation (as_a <prange> (lhs),
 					     as_a <irange> (op1),
 					     as_a <irange> (op2), rel);
+      case RO_PPI:
+	return m_operator->lhs_op1_relation (as_a <prange> (lhs),
+					     as_a <prange> (op1),
+					     as_a <irange> (op2), rel);
       case RO_IFF:
 	return m_operator->lhs_op1_relation (as_a <irange> (lhs),
 					     as_a <frange> (op1),

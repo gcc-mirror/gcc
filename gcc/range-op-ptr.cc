@@ -218,6 +218,15 @@ range_operator::lhs_op1_relation (const prange &lhs ATTRIBUTE_UNUSED,
   return VREL_VARYING;
 }
 
+relation_kind
+range_operator::lhs_op1_relation (const prange &lhs ATTRIBUTE_UNUSED,
+				  const prange &op1 ATTRIBUTE_UNUSED,
+				  const irange &op2 ATTRIBUTE_UNUSED,
+				  relation_kind rel ATTRIBUTE_UNUSED) const
+{
+  return VREL_VARYING;
+}
+
 void
 range_operator::update_bitmask (irange &,
 				const prange &,
@@ -293,6 +302,7 @@ class pointer_plus_operator : public range_operator
   using range_operator::update_bitmask;
   using range_operator::fold_range;
   using range_operator::op2_range;
+  using range_operator::lhs_op1_relation;
 public:
   virtual bool fold_range (prange &r, tree type,
 			   const prange &op1,
@@ -302,6 +312,10 @@ public:
 			  const prange &lhs,
 			  const prange &op1,
 			  relation_trio = TRIO_VARYING) const final override;
+  virtual relation_kind lhs_op1_relation (const prange &lhs,
+					  const prange &op1,
+					  const irange &op2,
+					  relation_kind) const;
   void update_bitmask (prange &r, const prange &lh, const irange &rh) const
     { update_known_bitmask (r, POINTER_PLUS_EXPR, lh, rh); }
 } op_pointer_plus;
@@ -377,6 +391,51 @@ pointer_plus_operator::op2_range (irange &r, tree type,
   else
     return false;
   return true;
+}
+
+// Return the relation between the LHS and OP1 based on the value of the
+// operand being added.  Pointer_plus is define to have a size_type for
+// operand 2 which can be interpreted as negative, so always used SIGNED.
+// Any overflow is considered UB and thus ignored.
+
+relation_kind
+pointer_plus_operator::lhs_op1_relation (const prange &lhs,
+					 const prange &op1,
+					 const irange &op2,
+					 relation_kind) const
+{
+  if (lhs.undefined_p () || op1.undefined_p () || op2.undefined_p ())
+    return VREL_VARYING;
+
+  unsigned prec = TYPE_PRECISION (op2.type ());
+
+  // LHS = OP1 + 0  indicates LHS == OP1.
+  if (op2.zero_p ())
+    return VREL_EQ;
+
+  tree val;
+  // Only deal with singletons for now.
+  if (TYPE_OVERFLOW_UNDEFINED (lhs.type ()) && op2.singleton_p (&val))
+    {
+      // Always interpret VALUE as a signed value.  Positive will increase
+      // the pointer value, and negative will decrease the poiinter value.
+      // It cannot be zero or the earlier zero_p () condition will catch it.
+      wide_int value = wi::to_wide (val);
+
+      // Positive op2 means lhs > op1.
+      if (wi::gt_p (value, wi::zero (prec), SIGNED))
+	return VREL_GT;
+
+      // Negative op2 means lhs < op1.
+      if (wi::lt_p (value, wi::zero (prec), SIGNED))
+	return VREL_LT;
+    }
+
+  // If op2 does not contain 0, then LHS and OP1 can never be equal.
+  if (!range_includes_zero_p (op2))
+    return VREL_NE;
+
+  return VREL_VARYING;
 }
 
 bool

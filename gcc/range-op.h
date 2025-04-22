@@ -189,6 +189,10 @@ public:
 					  const prange &op1,
 					  const prange &op2,
 					  relation_kind = VREL_VARYING) const;
+  virtual relation_kind lhs_op1_relation (const prange &lhs,
+					  const prange &op1,
+					  const irange &op2,
+					  relation_kind = VREL_VARYING) const;
   virtual relation_kind lhs_op1_relation (const frange &lhs,
 					  const frange &op1,
 					  const frange &op2,
