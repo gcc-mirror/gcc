@@ -91,11 +91,6 @@ private:
    */
   std::pair<MatchArm, MatchArm> make_cmp_arms ();
 
-  MatchCase match_enum_tuple (PathInExpression variant_path,
-			      const EnumItemTuple &variant);
-  MatchCase match_enum_struct (PathInExpression variant_path,
-			       const EnumItemStruct &variant);
-
   /**
    * Generate a call to the proper trait function, based on the ordering, in
    * order to compare two given expressions

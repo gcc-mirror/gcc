@@ -17,10 +17,11 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-derive-ord.h"
-#include "rust-ast-dump.h"
 #include "rust-ast.h"
+#include "rust-derive-cmp-common.h"
 #include "rust-derive.h"
 #include "rust-item.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace AST {
@@ -33,8 +34,6 @@ std::unique_ptr<Item>
 DeriveOrd::go (Item &item)
 {
   item.accept_vis (*this);
-
-  AST::Dump::debug (*expanded);
 
   return std::move (expanded);
 }
@@ -234,25 +233,38 @@ DeriveOrd::visit_tuple (TupleStruct &item)
 void
 DeriveOrd::visit_enum (Enum &item)
 {
+  // NOTE: We can factor this even further with DerivePartialEq, but this is
+  // getting out of scope for this PR surely
+
   auto cases = std::vector<MatchCase> ();
   auto type_name = item.get_identifier ().as_string ();
 
   auto let_sd = builder.discriminant_value (DeriveOrd::self_discr, "self");
-  auto other_sd = builder.discriminant_value (DeriveOrd::other_discr, "other");
+  auto let_od = builder.discriminant_value (DeriveOrd::other_discr, "other");
 
   auto discr_cmp = cmp_call (builder.identifier (DeriveOrd::self_discr),
 			     builder.identifier (DeriveOrd::other_discr));
+
+  auto recursive_match_fn = [this] (std::vector<SelfOther> &&fields) {
+    return recursive_match (std::move (fields));
+  };
 
   for (auto &variant : item.get_variants ())
     {
       auto variant_path
 	= builder.variant_path (type_name,
 				variant->get_identifier ().as_string ());
+      auto enum_builder
+	= EnumMatchBuilder (variant_path, recursive_match_fn, builder);
 
       switch (variant->get_enum_item_kind ())
 	{
-	case EnumItem::Kind::Tuple:
 	case EnumItem::Kind::Struct:
+	  cases.emplace_back (enum_builder.strukt (*variant));
+	  break;
+	case EnumItem::Kind::Tuple:
+	  cases.emplace_back (enum_builder.tuple (*variant));
+	  break;
 	case EnumItem::Kind::Identifier:
 	case EnumItem::Kind::Discriminant:
 	  // We don't need to do anything for these, as they are handled by the
@@ -272,7 +284,7 @@ DeriveOrd::visit_enum (Enum &item)
 		     std::move (cases));
 
   expanded
-    = cmp_impl (builder.block (vec (std::move (let_sd), std::move (other_sd)),
+    = cmp_impl (builder.block (vec (std::move (let_sd), std::move (let_od)),
 			       std::move (match)),
 		type_name, item.get_generic_params ());
 }
