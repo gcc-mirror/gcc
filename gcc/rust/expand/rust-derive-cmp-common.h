@@ -21,6 +21,8 @@
 
 #include "rust-ast.h"
 #include "rust-ast-builder.h"
+#include "rust-item.h"
+#include "rust-path.h"
 
 namespace Rust {
 namespace AST {
@@ -43,6 +45,48 @@ struct SelfOther
   static SelfOther field (Builder builder, const std::string &field_name);
   static std::vector<SelfOther> fields (Builder builder,
 					const std::vector<StructField> &fields);
+};
+
+/**
+ * Builder for common match cases used when comparing two enum instances. This
+ * builder takes care of creating the unique patterns for the `self` instance
+ * and `other` instance, as well as the entire `MatchCase` required for building
+ * a proper comparision expression for an implementation of a comparision trait
+ * for an enum type. The functions take a lambda to use when creating the
+ * expression of the generated `MatchCase`.
+ */
+class EnumMatchBuilder
+{
+public:
+  /**
+   * The type of functions to call when creating the resulting expression in the
+   * generated `MatchCase`
+   */
+  using ExprFn
+    = std::function<std::unique_ptr<Expr> (std::vector<SelfOther> &&)>;
+
+  EnumMatchBuilder (PathInExpression &variant_path, ExprFn fn, Builder &builder)
+    : variant_path (variant_path), fn (fn), builder (builder)
+  {}
+
+  /**
+   * Generate a `MatchCase` for an enum tuple variant
+   *
+   * (&Enum::Tuple(self0, self1), &Enum::Tuple(other0, other1)) => <fn>
+   */
+  MatchCase tuple (EnumItem &variant);
+
+  /**
+   * Generate a `MatchCase` for an enum struct variant
+   *
+   * (&Enum::Struct { a: self_a }, &Enum::Struct { a: other_a }) => <fn>
+   */
+  MatchCase strukt (EnumItem &variant);
+
+private:
+  PathInExpression &variant_path;
+  ExprFn fn;
+  Builder &builder;
 };
 
 } // namespace AST
