@@ -62,7 +62,7 @@ test_indexing()
   VERIFY( ! is_format_string_for("{} {0}", 1) );
 }
 
-#if __glibcxx_format_ranges
+#if __cpp_lib_format_ranges
 constexpr bool escaped_strings_supported = true;
 #else
 constexpr bool escaped_strings_supported = false;
