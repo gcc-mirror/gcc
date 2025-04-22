@@ -44,7 +44,7 @@ private:
     std::unique_ptr<AssociatedItem> &&eq_fn, std::string name,
     const std::vector<std::unique_ptr<GenericParam>> &type_generics);
 
-  std::unique_ptr<AssociatedItem> eq_fn (std::unique_ptr<Expr> &&cmp_expression,
+  std::unique_ptr<AssociatedItem> eq_fn (std::unique_ptr<BlockExpr> &&block,
 					 std::string type_name);
 
   /**
@@ -60,6 +60,9 @@ private:
 			      const EnumItemTuple &variant);
   MatchCase match_enum_struct (PathInExpression variant_path,
 			       const EnumItemStruct &variant);
+
+  constexpr static const char *self_discr = "#self_discr";
+  constexpr static const char *other_discr = "#other_discr";
 
   virtual void visit_struct (StructStruct &item) override;
   virtual void visit_tuple (TupleStruct &item) override;

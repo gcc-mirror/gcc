@@ -64,11 +64,9 @@ DerivePartialEq::partialeq_impls (
 }
 
 std::unique_ptr<AssociatedItem>
-DerivePartialEq::eq_fn (std::unique_ptr<Expr> &&cmp_expression,
+DerivePartialEq::eq_fn (std::unique_ptr<BlockExpr> &&block,
 			std::string type_name)
 {
-  auto block = builder.block (tl::nullopt, std::move (cmp_expression));
-
   auto self_type
     = std::unique_ptr<TypeNoBounds> (new TypePath (builder.type_path ("Self")));
 
@@ -118,7 +116,8 @@ DerivePartialEq::visit_tuple (TupleStruct &item)
   auto type_name = item.get_struct_name ().as_string ();
   auto fields = SelfOther::indexes (builder, item.get_fields ());
 
-  auto fn = eq_fn (build_eq_expression (std::move (fields)), type_name);
+  auto fn = eq_fn (builder.block (build_eq_expression (std::move (fields))),
+		   type_name);
 
   expanded
     = partialeq_impls (std::move (fn), type_name, item.get_generic_params ());
@@ -130,7 +129,8 @@ DerivePartialEq::visit_struct (StructStruct &item)
   auto type_name = item.get_struct_name ().as_string ();
   auto fields = SelfOther::fields (builder, item.get_fields ());
 
-  auto fn = eq_fn (build_eq_expression (std::move (fields)), type_name);
+  auto fn = eq_fn (builder.block (build_eq_expression (std::move (fields))),
+		   type_name);
 
   expanded
     = partialeq_impls (std::move (fn), type_name, item.get_generic_params ());
@@ -270,46 +270,58 @@ DerivePartialEq::visit_enum (Enum &item)
   auto cases = std::vector<MatchCase> ();
   auto type_name = item.get_identifier ().as_string ();
 
+  auto eq_expr_fn = [this] (std::vector<SelfOther> &&fields) {
+    return build_eq_expression (std::move (fields));
+  };
+
+  auto let_sd
+    = builder.discriminant_value (DerivePartialEq::self_discr, "self");
+  auto let_od
+    = builder.discriminant_value (DerivePartialEq::other_discr, "other");
+
+  auto discr_cmp
+    = builder.comparison_expr (builder.identifier (DerivePartialEq::self_discr),
+			       builder.identifier (
+				 DerivePartialEq::other_discr),
+			       ComparisonOperator::EQUAL);
+
   for (auto &variant : item.get_variants ())
     {
       auto variant_path
 	= builder.variant_path (type_name,
 				variant->get_identifier ().as_string ());
 
+      auto enum_builder = EnumMatchBuilder (variant_path, eq_expr_fn, builder);
+
       switch (variant->get_enum_item_kind ())
 	{
-	case EnumItem::Kind::Identifier:
-	case EnumItem::Kind::Discriminant:
-	  cases.emplace_back (match_enum_identifier (variant_path, variant));
-	  break;
 	case EnumItem::Kind::Tuple:
-	  cases.emplace_back (
-	    match_enum_tuple (variant_path,
-			      static_cast<EnumItemTuple &> (*variant)));
+	  cases.emplace_back (enum_builder.tuple (*variant));
 	  break;
 	case EnumItem::Kind::Struct:
-	  cases.emplace_back (
-	    match_enum_struct (variant_path,
-			       static_cast<EnumItemStruct &> (*variant)));
+	  cases.emplace_back (enum_builder.strukt (*variant));
+	  break;
+	case EnumItem::Kind::Identifier:
+	case EnumItem::Kind::Discriminant:
+	  // We don't need to do anything for these, as they are handled by the
+	  // discriminant value comparison
 	  break;
 	}
     }
 
-  // NOTE: Mention using discriminant_value and skipping that last case, and
-  // instead skipping all identifiers/discriminant enum items and returning
-  // `true` in the wildcard case
-
   // In case the two instances of `Self` don't have the same discriminant,
   // automatically return false.
   cases.emplace_back (
-    builder.match_case (builder.wildcard (), builder.literal_bool (false)));
+    builder.match_case (builder.wildcard (), std::move (discr_cmp)));
 
   auto match
     = builder.match (builder.tuple (vec (builder.identifier ("self"),
 					 builder.identifier ("other"))),
 		     std::move (cases));
 
-  auto fn = eq_fn (std::move (match), type_name);
+  auto fn = eq_fn (builder.block (vec (std::move (let_sd), std::move (let_od)),
+				  std::move (match)),
+		   type_name);
 
   expanded
     = partialeq_impls (std::move (fn), type_name, item.get_generic_params ());

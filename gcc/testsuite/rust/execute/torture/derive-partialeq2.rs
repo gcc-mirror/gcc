@@ -2,6 +2,20 @@
 
 #![feature(intrinsics)]
 
+pub mod core {
+    pub mod intrinsics {
+        #[lang = "discriminant_kind"]
+        pub trait DiscriminantKind {
+            #[lang = "discriminant_type"]
+            type Discriminant;
+        }
+
+        extern "rust-intrinsic" {
+            pub fn discriminant_value<T>(v: &T) -> <T as DiscriminantKind>::Discriminant;
+        }
+    }
+}
+
 #[lang = "sized"]
 trait Sized {}
 
