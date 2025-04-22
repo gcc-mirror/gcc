@@ -24,6 +24,7 @@
 #include "rust-ast.h"
 #include "rust-item.h"
 #include "rust-operators.h"
+#include <initializer_list>
 
 namespace Rust {
 namespace AST {
@@ -306,6 +307,14 @@ public:
 		      std::vector<std::unique_ptr<TypeParamBound>> &&bounds,
 		      std::unique_ptr<Type> &&type = nullptr);
 
+  /**
+   * Create a let statement with the discriminant value of a given enum
+   * instance. This helper exists since it is a common operation in a lot of the
+   * derive implementations, and it sucks to repeat all the steps every time.
+   */
+  std::unique_ptr<Stmt> discriminant_value (std::string binding_name,
+					    std::string instance = "self");
+
   static std::unique_ptr<Type> new_type (Type &type);
 
   static std::unique_ptr<GenericParam>
@@ -323,10 +332,12 @@ public:
   static GenericArgs new_generic_args (GenericArgs &args);
 
 private:
-  /**
-   * Location of the generated AST nodes
-   */
+  /* Location of the generated AST nodes */
   location_t loc;
+
+  /* Some constexpr helpers for some of the builders */
+  static constexpr std::initializer_list<const char *> discriminant_value_path
+    = {"core", "intrinsics", "discriminant_value"};
 };
 
 } // namespace AST
