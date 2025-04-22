@@ -224,7 +224,7 @@ AARCH64_CORE("neoverse-v3ae", neoversev3ae, cortexa57, V9_2A, (SVE2_BITPERM, RNG
 AARCH64_CORE("demeter", demeter, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
 
 /* NVIDIA ('N') cores. */
-AARCH64_CORE("olympus", olympus, cortexa57, V9_2A, (SVE2_BITPERM, RNG, LS64, MEMTAG, PROFILE, FAMINMAX, FP8DOT2, LUT, SVE2_AES, SVE2_SHA3, SVE2_SM4), neoversev3, 0x4e, 0x10, -1)
+AARCH64_CORE("olympus", olympus, cortexa57, V9_2A, (SVE2_BITPERM, RNG, LS64, MEMTAG, PROFILE, FAMINMAX, FP8FMA, FP8DOT2, FP8DOT4, LUT, SVE2_AES, SVE2_SHA3, SVE2_SM4), neoversev3, 0x4e, 0x10, -1)
 
 /* Generic Architecture Processors.  */
 AARCH64_CORE("generic",  generic, cortexa53, V8A,  (), generic, 0x0, 0x0, -1)
