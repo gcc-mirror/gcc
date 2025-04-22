@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mcpu=neoverse-v2 --param=aarch64-autovec-preference=sve-only -w" } */
+/* { dg-options "-O3 -mcpu=neoverse-v2 --param=aarch64-autovec-preference=2 -w" } */
 
 namespace a {
 typedef long unsigned b;
