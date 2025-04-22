@@ -1347,7 +1347,7 @@ extern void c_omp_mark_declare_variant (location_t, tree, tree);
 extern void c_omp_adjust_map_clauses (tree, bool);
 template<typename T> struct omp_mapper_list;
 extern void c_omp_find_nested_mappers (struct omp_mapper_list<tree> *, tree);
-extern tree c_omp_instantiate_mappers (tree);
+extern tree c_omp_instantiate_mappers (tree, enum c_omp_region_type);
 
 namespace omp_addr_tokenizer { struct omp_addr_token; }
 typedef omp_addr_tokenizer::omp_addr_token omp_addr_token;
