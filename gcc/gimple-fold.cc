@@ -6246,8 +6246,16 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 					  false, NULL_TREE)))
 	gimple_cond_set_condition (cond_stmt, code, ops[0], ops[1]);
       else if (code == SSA_NAME)
-	gimple_cond_set_condition (cond_stmt, NE_EXPR, ops[0],
-				   build_zero_cst (TREE_TYPE (ops[0])));
+	{
+	  /* If setting the gimple cond to the same thing,
+	     return false as nothing changed.  */
+	  if (gimple_cond_code (cond_stmt) == NE_EXPR
+	      && operand_equal_p (gimple_cond_lhs (cond_stmt), ops[0])
+	      && integer_zerop (gimple_cond_rhs (cond_stmt)))
+	    return false;
+	  gimple_cond_set_condition (cond_stmt, NE_EXPR, ops[0],
+				     build_zero_cst (TREE_TYPE (ops[0])));
+	}
       else if (code == INTEGER_CST)
 	{
 	  if (integer_zerop (ops[0]))
