@@ -331,10 +331,10 @@ public:
 
   static GenericArgs new_generic_args (GenericArgs &args);
 
-private:
   /* Location of the generated AST nodes */
   location_t loc;
 
+private:
   /* Some constexpr helpers for some of the builders */
   static constexpr std::initializer_list<const char *> discriminant_value_path
     = {"core", "intrinsics", "discriminant_value"};
