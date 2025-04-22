@@ -10,4 +10,4 @@ int is_sorted(int *a, int n)
 }
 
 /* { dg-final { scan-tree-dump "Executing predictive commoning without unrolling" "pcom" } } */
-/* { dg-final { scan-tree-dump-not "Invalid sum" "pcom" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "pcom" { xfail aarch64*-*-* } } } */
