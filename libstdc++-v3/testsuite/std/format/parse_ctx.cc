@@ -108,7 +108,7 @@ is_std_format_spec_for(std::string_view spec)
   }
 }
 
-#if __glibcxx_format_ranges
+#if __cpp_lib_format_ranges
 constexpr bool escaped_strings_supported = true;
 #else
 constexpr bool escaped_strings_supported = false;

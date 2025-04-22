@@ -1416,9 +1416,8 @@ ftms = {
   // 202207 P2286R8 Formatting Ranges
   // 202207 P2585R1 Improving default container formatting
   // LWG3750 Too many papers bump __cpp_lib_format
-  no_stdname = true; // TODO remove
   values = {
-    v = 1; // TODO 202207
+    v = 202207;
     cxxmin = 23;
     hosted = yes;
   };

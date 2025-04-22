@@ -1319,8 +1319,7 @@ export namespace std
   using std::format_to_n;
   using std::format_to_n_result;
   using std::formatted_size;
-// FIXME __cpp_lib_format_ranges
-#if __cplusplus > 202002L
+#if __cpp_lib_format_ranges
   using std::formattable;
 #endif
   using std::formatter;
@@ -1336,8 +1335,7 @@ export namespace std
   using std::wformat_context;
   using std::wformat_parse_context;
   using std::wformat_string;
-// FIXME __cpp_lib_format_ranges
-#ifdef __glibcxx_format_ranges
+#ifdef __cpp_lib_format_ranges
   using std::format_kind;
   using std::range_format;
   using std::range_formatter;
