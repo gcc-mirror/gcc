@@ -69,7 +69,9 @@ private:
   Ordering ordering;
 
   /* Identifier patterns for the non-equal match arms */
-  constexpr static const char *not_equal = "non_eq";
+  constexpr static const char *not_equal = "#non_eq";
+  constexpr static const char *self_discr = "#self_discr";
+  constexpr static const char *other_discr = "#other_discr";
 
   /**
    * Create the recursive matching structure used when implementing the
@@ -88,6 +90,18 @@ private:
    * }
    */
   std::pair<MatchArm, MatchArm> make_cmp_arms ();
+
+  MatchCase match_enum_tuple (PathInExpression variant_path,
+			      const EnumItemTuple &variant);
+  MatchCase match_enum_struct (PathInExpression variant_path,
+			       const EnumItemStruct &variant);
+
+  /**
+   * Generate a call to the proper trait function, based on the ordering, in
+   * order to compare two given expressions
+   */
+  std::unique_ptr<Expr> cmp_call (std::unique_ptr<Expr> &&self_expr,
+				  std::unique_ptr<Expr> &&other_expr);
 
   std::unique_ptr<Item>
   cmp_impl (std::unique_ptr<BlockExpr> &&fn_block, Identifier type_name,
