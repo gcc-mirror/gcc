@@ -14,8 +14,10 @@
 
 /* In this specific C++ arrangement, distilled from PR118794, GCC synthesizes
    '__builtin_eh_pointer', '__builtin_unwind_resume' calls as dead code in 'f':
-   { dg-final { scan-tree-dump-times {gimple_call <__builtin_eh_pointer, } 1 optimized } }
-   { dg-final { scan-tree-dump-times {gimple_call <__builtin_unwind_resume, } 1 optimized } }
+   { dg-final { scan-tree-dump-times {gimple_call <__builtin_eh_pointer, } 1 optimized { target { ! { arm_eabi || tic6x-*-* } } } } }
+   { dg-final { scan-tree-dump-times {gimple_call <__builtin_unwind_resume, } 1 optimized { target { ! { arm_eabi || tic6x-*-* } } } } }
+   ..., just 'targetm.arm_eabi_unwinder' is different:
+   { dg-final { scan-tree-dump-times {gimple_call <__builtin_cxa_end_cleanup, } 1 optimized { target { arm_eabi || tic6x-*-* } } } }
    { dg-final { only_for_offload_target amdgcn-amdhsa scan-offload-tree-dump-times {gimple_call <__builtin_eh_pointer, } 1 optimized } }
    { dg-final { only_for_offload_target amdgcn-amdhsa scan-offload-tree-dump-times {gimple_call <__builtin_unwind_resume, } 1 optimized } }
    Given '-O0' and '-foffload-options=-mno-fake-exceptions', offload compilation fails:
