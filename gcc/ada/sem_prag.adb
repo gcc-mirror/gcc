@@ -21370,8 +21370,8 @@ package body Sem_Prag is
          --  pragma No_Component_Reordering [([Entity =>] type_LOCAL_NAME)];
 
          when Pragma_No_Component_Reordering => No_Comp_Reordering : declare
-            E    : Entity_Id;
-            E_Id : Node_Id;
+            Typ     : Entity_Id;
+            Type_Id : Node_Id;
 
          begin
             GNAT_Pragma;
@@ -21384,19 +21384,20 @@ package body Sem_Prag is
             else
                Check_Optional_Identifier (Arg2, Name_Entity);
                Check_Arg_Is_Local_Name (Arg1);
-               E_Id := Get_Pragma_Arg (Arg1);
+               Type_Id := Get_Pragma_Arg (Arg1);
 
-               if Etype (E_Id) = Any_Type then
+               Find_Type (Type_Id);
+               Typ := Entity (Type_Id);
+
+               if Typ = Any_Type then
                   return;
                end if;
 
-               E := Entity (E_Id);
-
-               if not Is_Record_Type (E) then
+               if not Is_Record_Type (Typ) then
                   Error_Pragma_Arg ("pragma% requires record type", Arg1);
                end if;
 
-               Set_No_Reordering (Base_Type (E));
+               Set_No_Reordering (Base_Type (Typ));
             end if;
          end No_Comp_Reordering;
 
