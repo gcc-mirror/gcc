@@ -865,7 +865,9 @@ package body Exp_Aggr is
 
             --  Checks 8: (no delayed components)
 
-            if Is_Delayed_Aggregate (Expr) then
+            if Is_Delayed_Aggregate (Expr)
+              or else Is_Delayed_Conditional_Expression (Expr)
+            then
                return False;
             end if;
 
