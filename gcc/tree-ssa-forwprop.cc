@@ -4564,7 +4564,7 @@ pass_forwprop::execute (function *fun)
 			  bitmap_set_bit (to_purge, bb->index);
 			if (did_something == 2)
 			  cfg_changed = true;
-			changed = did_something != 0;
+			changed |= did_something != 0;
 		      }
 		    else if ((code == PLUS_EXPR
 			      || code == BIT_IOR_EXPR
@@ -4580,15 +4580,15 @@ pass_forwprop::execute (function *fun)
 		      }
 		    else if (code == CONSTRUCTOR
 			     && TREE_CODE (TREE_TYPE (rhs1)) == VECTOR_TYPE)
-		      changed = simplify_vector_constructor (&gsi);
+		      changed |= simplify_vector_constructor (&gsi);
 		    else if (code == ARRAY_REF)
-		      changed = simplify_count_trailing_zeroes (&gsi);
+		      changed |= simplify_count_trailing_zeroes (&gsi);
 		    break;
 		  }
 
 		case GIMPLE_SWITCH:
-		  changed = simplify_gimple_switch (as_a <gswitch *> (stmt),
-						    edges_to_remove);
+		  changed |= simplify_gimple_switch (as_a <gswitch *> (stmt),
+						     edges_to_remove);
 		  break;
 
 		case GIMPLE_COND:
@@ -4597,7 +4597,7 @@ pass_forwprop::execute (function *fun)
 							(as_a <gcond *> (stmt));
 		    if (did_something == 2)
 		      cfg_changed = true;
-		    changed = did_something != 0;
+		    changed |= did_something != 0;
 		    break;
 		  }
 
@@ -4606,7 +4606,7 @@ pass_forwprop::execute (function *fun)
 		    tree callee = gimple_call_fndecl (stmt);
 		    if (callee != NULL_TREE
 			&& fndecl_built_in_p (callee, BUILT_IN_NORMAL))
-		      changed = simplify_builtin_call (&gsi, callee);
+		      changed |= simplify_builtin_call (&gsi, callee);
 		    break;
 		  }
 
