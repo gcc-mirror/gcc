@@ -1,5 +1,6 @@
 /* { dg-do compile }  */
 /* { dg-options "-mdejagnu-cpu=power8 -O2" }  */
+/* { dg-require-ifunc "" } */
 
 /* Check if we can set the power11 target via a target_clones attribute.  */
 
