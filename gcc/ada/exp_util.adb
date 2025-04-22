@@ -1528,31 +1528,135 @@ package body Exp_Util is
                   Ctrl_Type : constant Entity_Id
                     := Find_Dispatching_Type (Par_Subp);
 
-                  function Call_To_Parent_Dispatching_Op_Must_Be_Mapped
-                    (Call_Node : Node_Id) return Boolean;
+                  function Must_Map_Call_To_Parent_Primitive
+                    (Call_Node     : Node_Id;
+                     Check_Parents : Boolean := True) return Boolean;
                   --  If Call_Node is a call to a primitive function F of the
                   --  tagged type T associated with Par_Subp that either has
-                  --  any actuals that are controlling formals of Par_Subp,
+                  --  any actuals that involve controlling formals of Par_Subp,
                   --  or else the call to F is an actual parameter of an
                   --  enclosing call to a primitive of T that has any actuals
-                  --  that are controlling formals of Par_Subp (and recursively
-                  --  up the tree of enclosing function calls), returns True;
-                  --  otherwise returns False. Returning True implies that the
-                  --  call to F must be mapped to a call that instead targets
-                  --  the corresponding function F of the tagged type for which
-                  --  Subp is a primitive function.
+                  --  that involve controlling formals of Par_Subp (and
+                  --  recursively up the tree of enclosing function calls),
+                  --  returns True; otherwise returns False. Returning True
+                  --  implies that the call to F must be mapped to a call
+                  --  that instead targets the corresponding function F of
+                  --  the tagged type for which Subp is a primitive function.
+                  --  Checks_Parent specifies whether this function should
+                  --  recursively check enclosing calls.
 
-                  --------------------------------------------------
-                  -- Call_To_Parent_Dispatching_Op_Must_Be_Mapped --
-                  --------------------------------------------------
+                  ---------------------------------------
+                  -- Must_Map_Call_To_Parent_Primitive --
+                  ---------------------------------------
 
-                  function Call_To_Parent_Dispatching_Op_Must_Be_Mapped
-                    (Call_Node : Node_Id) return Boolean
+                  function Must_Map_Call_To_Parent_Primitive
+                    (Call_Node     : Node_Id;
+                     Check_Parents : Boolean := True) return Boolean
                   is
                      pragma Assert (Nkind (Call_Node) = N_Function_Call);
 
                      Actual           : Node_Id := First_Actual (Call_Node);
-                     Actual_Or_Prefix : Node_Id;
+
+                     function Expr_Has_Ctrl_Formal_Ref
+                       (Expr : Node_Id) return Boolean;
+                     --  Determines whether Expr is or contains a reference
+                     --  to a controlling formal and returns True if so. More
+                     --  specifically, if Expr is not directly a reference
+                     --  to a formal, it can be an access attribute or Old
+                     --  attribute whose immediate object prefix is such
+                     --  a reference (possibly through a chain of multiple
+                     --  such attributes); or else it can be a dereference
+                     --  of a controlling formal; or else it can be either
+                     --  a dependent expression of a conditional expression,
+                     --  or the expression of a declare expression that
+                     --  qualifies as such. Returns True if the expression
+                     --  satisifies one of those requirements; otherwise
+                     --  returns False.
+
+                     ------------------------------
+                     -- Expr_Has_Ctrl_Formal_Ref --
+                     ------------------------------
+
+                     function Expr_Has_Ctrl_Formal_Ref
+                       (Expr : Node_Id) return Boolean
+                     is
+
+                        function Is_Controlling_Formal_Ref
+                          (N : Node_Id) return Boolean;
+                        --  Returns True if and only if N denotes a reference
+                        --  to a controlling formal declared for Par_Subp.
+
+                        -------------------------------
+                        -- Is_Controlling_Formal_Ref --
+                        -------------------------------
+
+                        function Is_Controlling_Formal_Ref
+                          (N : Node_Id) return Boolean
+                        is
+                        begin
+                           return Nkind (N) in N_Identifier | N_Expanded_Name
+                             and then Is_Formal (Entity (N))
+                             and then Is_Controlling_Formal (Entity (N))
+                             and then Scope (Entity (N)) = Par_Subp;
+                        end Is_Controlling_Formal_Ref;
+
+                     --  Start of processing for Expr_Has_Ctrl_Formal_Ref
+
+                     begin
+                        if (Nkind (Expr) = N_Attribute_Reference
+                             and then Attribute_Name (Expr)
+                                        in Name_Old
+                                         | Name_Access
+                                         | Name_Unchecked_Access
+                                         | Name_Unrestricted_Access)
+                          or else Nkind (Expr) = N_Explicit_Dereference
+                        then
+                           return Expr_Has_Ctrl_Formal_Ref (Prefix (Expr));
+
+                        elsif Nkind (Expr) = N_If_Expression then
+                           declare
+                              Then_Expr : constant Node_Id :=
+                                Pick (Expressions (Expr), 2);
+                              Else_Expr : constant Node_Id :=
+                                Pick (Expressions (Expr), 3);
+                           begin
+                              return Expr_Has_Ctrl_Formal_Ref (Then_Expr)
+                                or else Expr_Has_Ctrl_Formal_Ref (Else_Expr);
+                           end;
+
+                        elsif Nkind (Expr) = N_Case_Expression then
+                           declare
+                              Case_Expr_Alt : Node_Id :=
+                                First (Alternatives (Expr));
+                           begin
+                              while Present (Case_Expr_Alt) loop
+                                 if Expr_Has_Ctrl_Formal_Ref
+                                      (Expression (Case_Expr_Alt))
+                                 then
+                                    return True;
+                                 end if;
+
+                                 Next (Case_Expr_Alt);
+                              end loop;
+                           end;
+
+                           return False;
+
+                        --  Case of a declare_expression
+
+                        elsif Nkind (Expr) = N_Expression_With_Actions
+                          and then Comes_From_Source (Expr)
+                        then
+                           return Expr_Has_Ctrl_Formal_Ref (Expression (Expr));
+
+                        --  All other cases must be references to a formal
+
+                        else
+                           return Is_Controlling_Formal_Ref (Expr);
+                        end if;
+                     end Expr_Has_Ctrl_Formal_Ref;
+
+                  --  Start of processing for Must_Map_Call_To_Parent_Primitive
 
                   begin
                      if Is_Entity_Name (Name (Call_Node))
@@ -1566,34 +1670,15 @@ package body Exp_Util is
                      then
                         while Present (Actual) loop
 
-                           --  Account for 'Old and explicit dereferences,
-                           --  picking up the prefix object in those cases.
-
-                           if (Nkind (Actual) = N_Attribute_Reference
-                                and then Attribute_Name (Actual) = Name_Old)
-                             or else Nkind (Actual) = N_Explicit_Dereference
-                           then
-                              Actual_Or_Prefix := Prefix (Actual);
-                           else
-                              Actual_Or_Prefix := Actual;
-                           end if;
-
-                           --  If at least one actual is a controlling formal
-                           --  parameter of a class-wide Pre/Post aspect's
-                           --  subprogram, the rule in RM 6.1.1(7) applies,
+                           --  If at least one actual references a controlling
+                           --  formal parameter of a class-wide Pre/Post
+                           --  aspect's associated subprogram (including
+                           --  a direct prefix of an access attribute or
+                           --  dereference), the rule in RM 6.1.1(7) applies,
                            --  and we want to map the call to target the
                            --  corresponding function of the derived type.
 
-                           if Nkind (Actual_Or_Prefix)
-                                in N_Identifier
-                                 | N_Expanded_Name
-                                 | N_Operator_Symbol
-
-                             and then Is_Formal (Entity (Actual_Or_Prefix))
-
-                             and then Is_Controlling_Formal
-                                        (Entity (Actual_Or_Prefix))
-                           then
+                           if Expr_Has_Ctrl_Formal_Ref (Actual) then
                               return True;
 
                            --  RM 6.1.1(7) also applies to Result attributes
@@ -1603,15 +1688,34 @@ package body Exp_Util is
                              and then Has_Controlling_Result (Subp)
                            then
                               return True;
+
+                           --  Recursively check any actuals that are function
+                           --  calls with controlling results.
+
+                           elsif Nkind (Actual) = N_Function_Call
+                             and then
+                               Has_Controlling_Result
+                                 (Entity (Name (Actual)))
+                             and then
+                               Must_Map_Call_To_Parent_Primitive
+                                 (Actual, Check_Parents => False)
+                           then
+                              return True;
                            end if;
 
                            Next_Actual (Actual);
                         end loop;
 
-                        if Nkind (Parent (Call_Node)) = N_Function_Call then
-                           return
-                             Call_To_Parent_Dispatching_Op_Must_Be_Mapped
-                               (Parent (Call_Node));
+                        --  Recursively check parents that are function calls,
+                        --  to handle cases like "F1 (F2, F3 (X))", where
+                        --  Call_Node is the call to F2, and we need to map
+                        --  F1, F2, and F3 due to the reference to formal X.
+
+                        if Check_Parents
+                          and then Nkind (Parent (Call_Node)) = N_Function_Call
+                        then
+                           return Must_Map_Call_To_Parent_Primitive
+                                    (Parent (Call_Node));
                         end if;
 
                         return False;
@@ -1619,7 +1723,7 @@ package body Exp_Util is
                      else
                         return False;
                      end if;
-                  end Call_To_Parent_Dispatching_Op_Must_Be_Mapped;
+                  end Must_Map_Call_To_Parent_Primitive;
 
                begin
                   --  If N's entity is in the map, then the entity is either
@@ -1634,8 +1738,7 @@ package body Exp_Util is
 
                   if not Is_Subprogram (Entity (N))
                     or else Nkind (Parent (N)) /= N_Function_Call
-                    or else
-                      Call_To_Parent_Dispatching_Op_Must_Be_Mapped (Parent (N))
+                    or else Must_Map_Call_To_Parent_Primitive (Parent (N))
                   then
                      Rewrite (N, New_Occurrence_Of (New_E, Sloc (N)));
                   end if;

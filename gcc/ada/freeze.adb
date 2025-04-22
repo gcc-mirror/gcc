@@ -1496,12 +1496,13 @@ package body Freeze is
             New_Formal := Defining_Identifier (New_F_Spec);
 
             --  If the controlling argument is inherited, add conversion to
-            --  parent type for the call.
+            --  parent type for the call. We make this an unchecked conversion
+            --  since the formal subtypes of the parent and derived subprograms
+            --  must conform, so checks should not be needed.
 
             if Is_Controlling_Formal (Formal) then
                Append_To (Actuals,
-                 Make_Type_Conversion (Loc,
-                   New_Occurrence_Of (Etype (Formal), Loc),
+                 Unchecked_Convert_To (Etype (Formal),
                    New_Occurrence_Of (New_Formal, Loc)));
             else
                Append_To (Actuals, New_Occurrence_Of (New_Formal, Loc));
