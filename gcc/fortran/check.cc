@@ -3835,7 +3835,8 @@ gfc_check_lcobound (gfc_expr *coarray, gfc_expr *dim, gfc_expr *kind)
 {
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      gfc_fatal_error ("Coarrays disabled at %L, use %<-fcoarray=%> to enable",
+		       gfc_current_intrinsic_where);
       return false;
     }
 
@@ -6572,7 +6573,8 @@ gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub,
 
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      gfc_fatal_error ("Coarrays disabled at %L, use %<-fcoarray=%> to enable",
+		       gfc_current_intrinsic_where);
       return false;
     }
 
@@ -6622,7 +6624,8 @@ gfc_check_num_images (gfc_expr *team_or_team_number)
 {
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      gfc_fatal_error ("Coarrays disabled at %L, use %<-fcoarray=%> to enable",
+		       gfc_current_intrinsic_where);
       return false;
     }
 
@@ -6651,7 +6654,8 @@ gfc_check_team_number (gfc_expr *team)
 {
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      gfc_fatal_error ("Coarrays disabled at %L, use %<-fcoarray=%> to enable",
+		       gfc_current_intrinsic_where);
       return false;
     }
 
@@ -6668,7 +6672,8 @@ gfc_check_this_image (gfc_actual_arglist *args)
 
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      gfc_fatal_error ("Coarrays disabled at %L, use %<-fcoarray=%> to enable",
+		       gfc_current_intrinsic_where);
       return false;
     }
 
@@ -6967,7 +6972,8 @@ gfc_check_ucobound (gfc_expr *coarray, gfc_expr *dim, gfc_expr *kind)
 {
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
-      gfc_fatal_error ("Coarrays disabled at %C, use %<-fcoarray=%> to enable");
+      gfc_fatal_error ("Coarrays disabled at %L, use %<-fcoarray=%> to enable",
+		       gfc_current_intrinsic_where);
       return false;
     }
 
