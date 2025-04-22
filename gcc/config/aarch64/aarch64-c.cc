@@ -293,6 +293,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_SME2, "__ARM_FEATURE_SME2", pfile);
   aarch64_def_or_undef (AARCH64_HAVE_ISA (SME2p1),
 			"__ARM_FEATURE_SME2p1", pfile);
+  aarch64_def_or_undef (TARGET_FAMINMAX, "__ARM_FEATURE_FAMINMAX", pfile);
 
   /* Not for ACLE, but required to keep "float.h" correct if we switch
      target between implementations that do or do not support ARMv8.2-A
