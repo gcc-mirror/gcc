@@ -2136,17 +2136,33 @@
 	     (match_operand 7 "const_int_operand")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (vec_duplicate:V_VLS
-	    (match_operand:<VEL> 3 "direct_broadcast_operand"))
+	  ;; (vec_duplicate:V_VLS ;; wrapper activated by wrap_vec_dup below.
+	  (match_operand:<VEL> 3 "direct_broadcast_operand") ;; )
 	  (match_operand:V_VLS 2 "vector_merge_operand")))]
   "TARGET_VECTOR"
 {
   /* Transform vmv.v.x/vfmv.v.f (avl = 1) into vmv.s.x since vmv.s.x/vfmv.s.f
      has better chances to do vsetvl fusion in vsetvl pass.  */
+  bool wrap_vec_dup = true;
+  rtx vec_cst = NULL_RTX;
   if (riscv_vector::splat_to_scalar_move_p (operands))
     {
       operands[1] = riscv_vector::gen_scalar_move_mask (<VM>mode);
       operands[3] = force_reg (<VEL>mode, operands[3]);
+    }
+  else if (immediate_operand (operands[3], <VEL>mode)
+	   && (vec_cst = gen_const_vec_duplicate (<MODE>mode, operands[3]))
+	   && (/* -> pred_broadcast<mode>_zero */
+	       (vector_least_significant_set_mask_operand (operands[1],
+							   <VM>mode)
+		&& vector_const_0_operand (vec_cst, <MODE>mode))
+	       || (/* pred_broadcast<mode>_imm */
+		   vector_all_trues_mask_operand (operands[1], <VM>mode)
+		   && vector_const_int_or_double_0_operand (vec_cst,
+							    <MODE>mode))))
+    {
+      operands[3] = vec_cst;
+      wrap_vec_dup = false;
     }
   /* Handle vmv.s.x instruction (Wb1 mask) which has memory scalar.  */
   else if (satisfies_constraint_Wdm (operands[3]))
@@ -2191,6 +2207,8 @@
     ;
   else
     operands[3] = force_reg (<VEL>mode, operands[3]);
+  if (wrap_vec_dup)
+    operands[3] = gen_rtx_VEC_DUPLICATE (<MODE>mode, operands[3]);
 })
 
 (define_insn_and_split "*pred_broadcast<mode>"
