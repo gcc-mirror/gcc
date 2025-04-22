@@ -42,8 +42,7 @@ extract_module_path (const AST::AttrVec &inner_attrs,
     {
       rust_error_at (
 	path_attr.get_locus (),
-	// Split the format string so that -Wformat-diag does not complain...
-	"path attributes must contain a filename: '%s'", "#![path = \"file\"]");
+	"path attributes must contain a filename: %<#[path = \"file\"]%>");
       return name;
     }
 
@@ -67,8 +66,7 @@ extract_module_path (const AST::AttrVec &inner_attrs,
     {
       rust_error_at (
 	path_attr.get_locus (),
-	// Split the format string so that -Wformat-diag does not complain...
-	"path attributes must contain a filename: '%s'", "#[path = \"file\"]");
+	"path attributes must contain a filename: %<#[path = \"file\"]%>");
       return name;
     }
 
@@ -79,6 +77,15 @@ extract_module_path (const AST::AttrVec &inner_attrs,
   // In order to do this, we can simply go through the string until we find
   // a character that is not an equal sign or whitespace
   auto filename_begin = path_value.find_first_not_of ("=\t ");
+
+  // If the path consists of only whitespace, then we have an error
+  if (filename_begin == std::string::npos)
+    {
+      rust_error_at (
+	path_attr.get_locus (),
+	"path attributes must contain a filename: %<#[path = \"file\"]%>");
+      return name;
+    }
 
   auto path = path_value.substr (filename_begin);
 
