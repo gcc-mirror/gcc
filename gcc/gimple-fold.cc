@@ -6258,10 +6258,21 @@ replace_stmt_with_simplification (gimple_stmt_iterator *gsi,
 	}
       else if (code == INTEGER_CST)
 	{
+	  /* Make into the canonical form `1 != 0` and `0 != 0`.
+	     If already in the canonical form return false
+	     saying nothing has been done.  */
 	  if (integer_zerop (ops[0]))
-	    gimple_cond_make_false (cond_stmt);
+	    {
+	      if (gimple_cond_false_canonical_p (cond_stmt))
+		return false;
+	      gimple_cond_make_false (cond_stmt);
+	    }
 	  else
-	    gimple_cond_make_true (cond_stmt);
+	    {
+	      if (gimple_cond_true_canonical_p (cond_stmt))
+		return false;
+	      gimple_cond_make_true (cond_stmt);
+	    }
 	}
       else if (!inplace)
 	{

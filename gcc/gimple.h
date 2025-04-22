@@ -3875,6 +3875,21 @@ gimple_cond_true_p (const gcond *gs)
   return false;
 }
 
+/* Check if conditional statement GS is in the caonical form of 'if (1 != 0)'. */
+
+inline bool
+gimple_cond_true_canonical_p (const gcond *gs)
+{
+  tree lhs = gimple_cond_lhs (gs);
+  tree rhs = gimple_cond_rhs (gs);
+  tree_code code = gimple_cond_code (gs);
+  if (code == NE_EXPR
+      && lhs == boolean_true_node
+      && rhs == boolean_false_node)
+    return true;
+  return false;
+}
+
 /* Check if conditional statement GS is of the form 'if (1 != 1)',
    'if (0 != 0)', 'if (1 == 0)' or 'if (0 == 1)' */
 
@@ -3897,6 +3912,21 @@ gimple_cond_false_p (const gcond *gs)
   if (code == EQ_EXPR && lhs != rhs)
       return true;
 
+  return false;
+}
+
+/* Check if conditional statement GS is in the caonical form of 'if (0 != 0)'. */
+
+inline bool
+gimple_cond_false_canonical_p (const gcond *gs)
+{
+  tree lhs = gimple_cond_lhs (gs);
+  tree rhs = gimple_cond_rhs (gs);
+  tree_code code = gimple_cond_code (gs);
+  if (code == NE_EXPR
+      && lhs == boolean_false_node
+      && rhs == boolean_false_node)
+    return true;
   return false;
 }
 
