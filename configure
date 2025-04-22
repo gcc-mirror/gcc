@@ -3571,31 +3571,28 @@ case ,${enable_languages}, in
   *,cobol,*)
     case ,${enable_languages}, in
       *,c++,*)
-      ;;
+        ;;
       *)
         # We have an explicit cobol, but no c++.  We need c++, because cobol
         # requires libstdc++
         enable_languages="$enable_languages,c++"
-      ;;
+        ;;
     esac
     ;;
   *)
     case "${target}" in
-      *-*-darwin*)
+      aarch64-*-linux*|x86_64-*-linux*)
+        ;;
+      *-*-*)
         unsupported_languages="$unsupported_languages cobol"
         ;;
-      x86_64-*-*|aarch64-*-*)
-        ;;
-      *-*-*)
-    unsupported_languages="$unsupported_languages cobol"
-    ;;
     esac
     case "${host}" in
-      x86_64-*-*|aarch64-*-*)
+      aarch64-*-linux*|x86_64-*-linux*)
         ;;
       *-*-*)
-    unsupported_languages="$unsupported_languages cobol"
-    ;;
+        unsupported_languages="$unsupported_languages cobol"
+        ;;
     esac
     ;;
 esac
