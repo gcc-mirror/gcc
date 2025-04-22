@@ -1,6 +1,17 @@
 2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/118794
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1.C: Adjust for
+	'targetm.arm_eabi_unwinder'.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-nvptx.C:
+	Likewise.
+
+	Backported from trunk:
 	2024-08-09  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* testsuite/libgomp.c++/static-aggr-constructor-destructor-1.C:
