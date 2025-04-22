@@ -20,7 +20,7 @@ run_pending_traps ()
     jump_to_top_level (2);
 
   for (sig = 1; sig < (64 + 1) ; sig++)
-    __sigsetjmp ((return_catch), 0);
+    sigsetjmp ((return_catch), 0);
 }
 
 /* Distilled from alsalib-1.2.11 pcm/pcm_route.c.  */
