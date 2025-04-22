@@ -829,11 +829,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  using __projected_Proj = _Proj;
 	};
       };
-
-    // Optimize the common case of the projection being std::identity.
-    template<typename _Iter>
-      struct __projected<_Iter, identity>
-      { using __type = _Iter; };
   } // namespace __detail
 
   /// [projected], projected
