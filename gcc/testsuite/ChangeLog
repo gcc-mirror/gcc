@@ -1,3 +1,31 @@
+2025-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118775
+	* g++.dg/cpp2a/constexpr-new24.C: Adjust diagnostic.
+
+2025-04-21  Andrew Bennett  <andrew.bennett@imgtec.com>
+
+	* gcc.dg/memcpy-4.c: Remove mips specific code.
+	* gcc.target/mips/memcpy-2.c: New test.
+
+2025-04-21  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* gcc.target/mips/clear-cache-1.c: Also allow jrc.
+
+2025-04-21  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c: Do not check output for
+	MIPS lp64 abi.
+
+2025-04-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/119507
+	* g++.dg/eh/pr119507.C: New test.
+
+2025-04-21  hongtao.liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/recip-vec-divf-fma.c: New test.
+
 2025-04-20  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/117863

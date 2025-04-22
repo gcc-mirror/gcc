@@ -1,3 +1,10 @@
+2025-04-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Check for struct tm.tm_zone.
+	* configure, config.h.in: Regenerate.
+	* intrinsic.cc (__gg__formatted_current_date): Guard tm.tm_zone
+	use with HAVE_STRUCT_TM_TM_ZONE.
+
 2025-04-15  Andreas Schwab  <schwab@suse.de>
 
 	* configure.tgt: Set LIBGCOBOL_SUPPORTED for riscv64-*-linux* with

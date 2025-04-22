@@ -1,3 +1,31 @@
+2025-04-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/119879
+	* config/i386/i386.cc (fp_conversion_stmt_cost): Inline to ...
+	(ix86_vector_costs::add_stmt_cost): ... here; fix handling of NOP_EXPR.
+
+2025-04-21  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/mips.cc (mips_option_override): Error out for
+	-mmicromips -mmsa.
+
+2025-04-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/119507
+	* except.cc (switch_to_exception_section): Don't use the cached section if
+	the current function is in comdat.
+
+2025-04-21  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* vec.h (array_slice::begin): Assert that the
+	slice is valid.
+	(array_slice::end): Likewise.
+
+2025-04-21  hongtao.liu  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_emit_swdivsf): Generate 2
+	FMA instructions when TARGET_FMA.
+
 2025-04-19  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/119865

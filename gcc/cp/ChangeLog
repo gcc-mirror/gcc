@@ -1,3 +1,22 @@
+2025-04-21  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Move
+	verify_constant later.
+
+2025-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/118775
+	* constexpr.cc (cxx_eval_call_expression): Add assert.
+	(fold_to_constant): Handle processing_template_decl.
+	* init.cc (build_new_1): Use fold_to_constant.
+
+2025-04-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99456
+	* constexpr.cc (cxx_eval_constant_expression): Check strict
+	instead of manifestly_const_eval.
+	(maybe_constant_init_1): Be strict for static constexpr vars.
+
 2025-04-19  Jason Merrill  <jason@redhat.com>
 
 	* coroutines.cc (coro_build_expr_stmt)
