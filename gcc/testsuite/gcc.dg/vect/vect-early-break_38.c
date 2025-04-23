@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_early_break } */
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "-march=gfx908" { target amdgcn*-*-* } } */
 
 #ifndef N
 #define N 803
