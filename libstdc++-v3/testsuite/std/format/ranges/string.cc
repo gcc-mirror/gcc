@@ -1,7 +1,9 @@
 // { dg-do run { target c++23 } }
+// { dg-options "-fexec-charset=UTF-8" }
 // { dg-timeout-factor 2 }
 
 #include <format>
+#include <forward_list>
 #include <span>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
@@ -216,6 +218,67 @@ test_nested()
   VERIFY( std::format("{:::}", vv) == R"([[s, t, r, 1], [s, t, r, 2]])" );
   VERIFY( std::format("{::s}", vv) == R"([str1, str2])" );
   VERIFY( std::format("{::?s}", vv) == R"(["str1", "str2"])" );
+}
+
+bool strip_quotes(std::string_view& v)
+{
+  if (!v.starts_with('"') || !v.ends_with('"'))
+    return false;
+  v.remove_prefix(1);
+  v.remove_suffix(1);
+  return true;
+}
+
+bool strip_prefix(std::string_view& v, size_t n, char c)
+{
+  size_t pos = v.find_first_not_of(c);
+  if (pos == std::string_view::npos)
+    pos = v.size();
+  if (pos != n)
+    return false;
+  v.remove_prefix(n);
+  return true;
+}
+
+
+void test_padding()
+{
+  std::string res;
+  std::string_view resv;
+
+  // width is 3, size is 15
+  std::string in = "o\u0302\u0323i\u0302\u0323u\u0302\u0323";
+  in += in; // width is 6, size is 30
+  in += in; // width is 12, size is 60
+  in += in; // width is 24, size is 120
+  in += in; // width is 48, size is 240
+  in += in; // width is 96, size is 480
+  in += in; // width is 192, size is 960
+
+  std::forward_list<char> lc(std::from_range, in);
+
+  resv = res = std::format("{:s}", lc);
+  VERIFY( resv == in );
+
+  resv = res = std::format("{:*>10s}", lc);
+  VERIFY( resv == in );
+
+  resv = res = std::format("{:*>240s}", lc);
+  VERIFY( strip_prefix(resv, 48, '*') );
+  VERIFY( resv == in );
+
+  resv = res = std::format("{:?s}", lc);
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == in );
+
+  resv = res = std::format("{:*>10?s}", lc);
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == in );
+
+  resv = res = std::format("{:*>240?s}", lc);
+  VERIFY( strip_prefix(resv, 46, '*') );
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == in );
 }
 
 int main()

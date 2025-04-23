@@ -1,4 +1,5 @@
 // { dg-do run { target c++23 } }
+// { dg-options "-fexec-charset=UTF-8" }
 // { dg-timeout-factor 2 }
 
 #include <array>
@@ -6,6 +7,7 @@
 #include <list>
 #include <ranges>
 #include <span>
+#include <string>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 #include <vector>
@@ -199,9 +201,123 @@ test_nested()
   VERIFY( res == "+[01, 02, 11, 12]+" );
 }
 
+bool strip_quote(std::string_view& v)
+{
+  if (!v.starts_with('"'))
+    return false;
+  v.remove_prefix(1);
+  return true;
+}
+
+bool strip_prefix(std::string_view& v, std::string_view expected, bool quoted = false)
+{
+  if (quoted && !strip_quote(v))
+    return false;
+  if (!v.starts_with(expected))
+    return false;
+  v.remove_prefix(expected.size());
+  if (quoted && !strip_quote(v))
+    return false;
+  return true;
+}
+
+bool strip_squares(std::string_view& v)
+{
+  if (!v.starts_with('[') || !v.ends_with(']'))
+    return false;
+  v.remove_prefix(1);
+  v.remove_suffix(1);
+  return true;
+}
+
+bool strip_prefix(std::string_view& v, size_t n, char c)
+{
+  size_t pos = v.find_first_not_of(c);
+  if (pos == std::string_view::npos)
+    pos = v.size();
+  if (pos != n)
+    return false;
+  v.remove_prefix(n);
+  return true;
+}
+
+void test_padding()
+{
+  std::string res;
+  std::string_view resv;
+
+  // width is 3, size is 15
+  std::string in = "o\u0302\u0323i\u0302\u0323u\u0302\u0323";
+  in += in; // width is 6, size is 30
+  in += in; // width is 12, size is 60
+  in += in; // width is 24, size is 120
+  in += in; // width is 48, size is 240
+  // width is 192, size is 960
+  std::vector<std::string> const vs{in, in, in, in};
+
+  auto const check_elems = [=](std::string_view& v, bool quoted)
+  {
+    VERIFY( strip_prefix(v, in, quoted) );
+    VERIFY( strip_prefix(v, ", ", false) );
+    VERIFY( strip_prefix(v, in, quoted) );
+    VERIFY( strip_prefix(v, ", ", false) );
+    VERIFY( strip_prefix(v, in, quoted) );
+    VERIFY( strip_prefix(v, ", ", false) );
+    VERIFY( strip_prefix(v, in, quoted) );
+    return v.empty();
+  };
+
+  resv = res = std::format("{}", vs);
+  VERIFY( strip_squares(resv) );
+  VERIFY( check_elems(resv, true) );
+
+  resv = res = std::format("{:n}", vs);
+  VERIFY( check_elems(resv, true) );
+
+  resv = res = std::format("{::}", vs);
+  VERIFY( strip_squares(resv) );
+  VERIFY( check_elems(resv, false) );
+
+  resv = res = std::format("{:n:}", vs);
+  VERIFY( check_elems(resv, false) );
+
+  resv = res = std::format("{:*>10}", vs);
+  VERIFY( strip_squares(resv) );
+  VERIFY( check_elems(resv, true) );
+
+  resv = res = std::format("{:*>10n}", vs);
+  VERIFY( check_elems(resv, true) );
+
+  resv = res = std::format("{:*>10:}", vs);
+  VERIFY( strip_squares(resv) );
+  VERIFY( check_elems(resv, false) );
+
+  resv = res = std::format("{:*>10n:}", vs);
+  VERIFY( check_elems(resv, false) );
+
+  resv = res = std::format("{:*>240}", vs);
+  VERIFY( strip_prefix(resv, 32, '*') );
+  VERIFY( strip_squares(resv) );
+  VERIFY( check_elems(resv, true) );
+
+  resv = res = std::format("{:*>240n}", vs);
+  VERIFY( strip_prefix(resv, 34, '*') );
+  VERIFY( check_elems(resv, true) );
+
+  resv = res = std::format("{:*>240:}", vs);
+  VERIFY( strip_prefix(resv, 40, '*') );
+  VERIFY( strip_squares(resv) );
+  VERIFY( check_elems(resv, false) );
+
+  resv = res = std::format("{:*>240n:}", vs);
+  VERIFY( strip_prefix(resv, 42, '*') );
+  VERIFY( check_elems(resv, false) );
+}
+
 int main()
 {
   test_format_string();
   test_outputs();
   test_nested();
+  test_padding();
 }

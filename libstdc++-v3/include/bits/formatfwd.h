@@ -145,6 +145,14 @@ namespace __format
       = ranges::input_range<const _Rg>
 	  && formattable<ranges::range_reference_t<const _Rg>, _CharT>;
 
+  // _Rg& and const _Rg& are both formattable and use same formatter
+  // specialization for their references.
+  template<typename _Rg, typename _CharT>
+    concept __simply_formattable_range
+      = __const_formattable_range<_Rg, _CharT>
+	  && same_as<remove_cvref_t<ranges::range_reference_t<_Rg>>,
+		     remove_cvref_t<ranges::range_reference_t<const _Rg>>>;
+
   template<typename _Rg, typename _CharT>
     using __maybe_const_range
       = __conditional_t<__const_formattable_range<_Rg, _CharT>, const _Rg, _Rg>;

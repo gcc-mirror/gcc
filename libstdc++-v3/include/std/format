@@ -56,7 +56,7 @@
 #include <bits/ranges_base.h>  // input_range, range_reference_t
 #include <bits/ranges_util.h>  // subrange
 #include <bits/ranges_algobase.h> // ranges::copy
-#include <bits/stl_iterator.h> // back_insert_iterator
+#include <bits/stl_iterator.h> // back_insert_iterator, counted_iterator
 #include <bits/stl_pair.h>     // __is_pair
 #include <bits/unicode.h>      // __is_scalar_value, _Utf_view, etc.
 #include <bits/utility.h>      // tuple_size_v
@@ -99,19 +99,12 @@ namespace __format
 
   // Size for stack located buffer
   template<typename _CharT>
-  constexpr size_t __stackbuf_size = 32 * sizeof(void*) / sizeof(_CharT);
+    constexpr size_t __stackbuf_size = 32 * sizeof(void*) / sizeof(_CharT);
 
   // Type-erased character sinks.
   template<typename _CharT> class _Sink;
   template<typename _CharT> class _Fixedbuf_sink;
-  template<typename _Seq> class _Seq_sink;
-
-  template<typename _CharT, typename _Alloc = allocator<_CharT>>
-    using _Str_sink
-      = _Seq_sink<basic_string<_CharT, char_traits<_CharT>, _Alloc>>;
-
-  // template<typename _CharT, typename _Alloc = allocator<_CharT>>
-  // using _Vec_sink = _Seq_sink<vector<_CharT, _Alloc>>;
+  template<typename _Out, typename _CharT> class _Padding_sink;
 
   // Output iterator that writes to a type-erase character sink.
   template<typename _CharT>
@@ -885,6 +878,25 @@ namespace __format
 				      __spec._M_fill);
     }
 
+   template<typename _CharT>
+     size_t
+     __truncate(basic_string_view<_CharT>& __s, size_t __prec)
+     {
+       if constexpr (__unicode::__literal_encoding_is_unicode<_CharT>())
+	 {
+	   if (__prec != (size_t)-1)
+	     return __unicode::__truncate(__s, __prec);
+	   else
+	     return __unicode::__field_width(__s);
+	 }
+       else
+	 {
+	   __s = __s.substr(0, __prec);
+	   return __s.size();
+	 }
+    }
+
+
   // Values are indices into _Escapes::all.
   enum class _Term_char : unsigned char {
     _Tc_quote = 12,
@@ -1320,82 +1332,111 @@ namespace __format
 	format(basic_string_view<_CharT> __s,
 	       basic_format_context<_Out, _CharT>& __fc) const
 	{
-	  constexpr auto __term = __format::_Term_char::_Tc_quote;
-	  const auto __write_direct = [&]
-	    {
-	      if (_M_spec._M_type == _Pres_esc)
-		return __format::__write_escaped(__fc.out(), __s, __term);
-	      else
-		return __format::__write(__fc.out(), __s);
-	    };
+	  if (_M_spec._M_type == _Pres_esc)
+	    return _M_format_escaped(__s, __fc);
 
 	  if (_M_spec._M_width_kind == _WP_none
 		&& _M_spec._M_prec_kind == _WP_none)
-	    return __write_direct();
+	    return __format::__write(__fc.out(), __s);
 
-	  const size_t __prec =
-	    _M_spec._M_prec_kind != _WP_none
-	      ? _M_spec._M_get_precision(__fc)
-	      : basic_string_view<_CharT>::npos;
+	  const size_t __maxwidth = _M_spec._M_get_precision(__fc);
+	  const size_t __width = __format::__truncate(__s, __maxwidth);
+	  return __format::__write_padded_as_spec(__s, __width, __fc, _M_spec);
+	}
 
-	  const size_t __estimated_width = _S_trunc(__s, __prec);
+      template<typename _Out>
+	_Out
+	_M_format_escaped(basic_string_view<_CharT> __s,
+			  basic_format_context<_Out, _CharT>& __fc) const
+	{
+	  constexpr auto __term = __format::_Term_char::_Tc_quote;
+	  const size_t __padwidth = _M_spec._M_get_width(__fc);
+	  if (__padwidth == 0 && _M_spec._M_prec_kind == _WP_none)
+	    return __format::__write_escaped(__fc.out(), __s, __term);
+
+	  const size_t __maxwidth = _M_spec._M_get_precision(__fc);
+	  const size_t __width = __truncate(__s, __maxwidth);
 	  // N.B. Escaping only increases width
-	  if (_M_spec._M_get_width(__fc) <= __estimated_width
-		&& _M_spec._M_prec_kind == _WP_none)
-	     return __write_direct();
+	  if (__padwidth <= __width && _M_spec._M_prec_kind == _WP_none)
+	    return __format::__write_escaped(__fc.out(), __s, __term);
 
-	  if (_M_spec._M_type != _Pres_esc)
-	    return __format::__write_padded_as_spec(__s, __estimated_width,
-						    __fc, _M_spec);
-
-	  __format::_Str_sink<_CharT> __sink;
-	  __format::__write_escaped(__sink.out(), __s, __term);
-	  basic_string_view<_CharT> __escaped(__sink.view().data(),
-					      __sink.view().size());
-	  const size_t __escaped_width = _S_trunc(__escaped, __prec);
 	  // N.B. [tab:format.type.string] defines '?' as
 	  // Copies the escaped string ([format.string.escaped]) to the output,
 	  // so precision seem to appy to escaped string.
-	  return __format::__write_padded_as_spec(__escaped, __escaped_width,
-						  __fc, _M_spec);
+	  _Padding_sink<_Out, _CharT> __sink(__fc.out(), __padwidth, __maxwidth);
+	  __format::__write_escaped(__sink.out(), __s, __term);
+	  return __sink._M_finish(_M_spec._M_align, _M_spec._M_fill);
 	}
 
 #if __glibcxx_format_ranges // C++ >= 23 && HOSTED
       template<ranges::input_range _Rg, typename _Out>
 	requires same_as<remove_cvref_t<ranges::range_reference_t<_Rg>>, _CharT>
-	typename basic_format_context<_Out, _CharT>::iterator
+	_Out
 	_M_format_range(_Rg&& __rg, basic_format_context<_Out, _CharT>& __fc) const
 	{
+	  using _Range = remove_reference_t<_Rg>;
 	  using _String = basic_string<_CharT>;
 	  using _String_view = basic_string_view<_CharT>;
-	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
+	  if constexpr (!is_lvalue_reference_v<_Rg>)
+	    return _M_format_range<_Range&>(__rg, __fc);
+	  else if constexpr (!is_const_v<_Range>
+			       && __simply_formattable_range<_Range, _CharT>)
+	    return _M_format_range<const _Range&>(__rg, __fc);
+	  else if constexpr (ranges::contiguous_range<_Rg>)
+	    {
+	      _String_view __str(ranges::data(__rg),
+				 size_t(ranges::distance(__rg)));
+	      return format(__str, __fc);
+	    }
+	  else if (_M_spec._M_type != _Pres_esc)
+	    {
+	      const size_t __padwidth = _M_spec._M_get_width(__fc);
+	      if (__padwidth == 0 && _M_spec._M_prec_kind == _WP_none)
+		return ranges::copy(__rg, __fc.out()).out;
+
+	      _Padding_sink<_Out, _CharT> __sink(__fc.out(), __padwidth,
+						 _M_spec._M_get_precision(__fc));
+	      ranges::copy(__rg, __sink.out());
+	      return __sink._M_finish(_M_spec._M_align, _M_spec._M_fill);
+	    }
+	  else if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
 	    {
 	      const size_t __n(ranges::distance(__rg));
-	      if constexpr (ranges::contiguous_range<_Rg>)
-		return format(_String_view(ranges::data(__rg), __n), __fc);
-	      else if (__n <= __format::__stackbuf_size<_CharT>)
+	      size_t __w = __n;
+	      if constexpr (!__unicode::__literal_encoding_is_unicode<_CharT>())
+		if (size_t __max = _M_spec._M_get_precision(__fc); __n > __max)
+		  __w == __max;
+
+	      if (__w <= __format::__stackbuf_size<_CharT>)
 		{
 		  _CharT __buf[__format::__stackbuf_size<_CharT>];
-		  ranges::copy(__rg, __buf);
-		  return format(_String_view(__buf, __n), __fc);
+		  ranges::copy_n(ranges::begin(__rg), __w, __buf);
+		  return _M_format_escaped(_String_view(__buf, __n), __fc);
 		}
-	      else if constexpr (ranges::sized_range<_Rg>)
-		return format(_String(from_range, __rg), __fc);
 	      else if constexpr (ranges::random_access_range<_Rg>)
 		{
 		  ranges::iterator_t<_Rg> __first = ranges::begin(__rg);
-		  ranges::subrange __sub(__first, __first + __n);
-	          return format(_String(from_range, __sub), __fc);
+		  ranges::subrange __sub(__first, __first + __w);
+		  return _M_format_escaped(_String(from_range, __sub), __fc);
 		}
+	      else if (__w <= __n)
+		{
+		  ranges::subrange __sub(
+		    counted_iterator(ranges::begin(__rg), __w),
+		    default_sentinel);
+		  return _M_format_escaped(_String(from_range, __sub), __fc);
+		}
+	      else if constexpr (ranges::sized_range<_Rg>)
+		return _M_format_escaped(_String(from_range, __rg), __fc);
 	      else
 		{
 		  // N.B. preserve the computed size
 		  ranges::subrange __sub(__rg, __n);
-	          return format(_String(from_range, __sub), __fc);
+		  return _M_format_escaped(_String(from_range, __sub), __fc);
 		}
 	    }
 	  else
-	    return format(_String(from_range, __rg), __fc);
+	    return _M_format_escaped(_String(from_range, __rg), __fc);
 	}
 
       constexpr void
@@ -1404,23 +1445,6 @@ namespace __format
 #endif
 
     private:
-      static size_t
-      _S_trunc(basic_string_view<_CharT>& __s, size_t __prec)
-      {
-	if constexpr (__unicode::__literal_encoding_is_unicode<_CharT>())
-	 {
-	   if (__prec != basic_string_view<_CharT>::npos)
-	     return __unicode::__truncate(__s, __prec);
-	   else
-	     return __unicode::__field_width(__s);
-	 }
-       else
-	{
-	  __s = __s.substr(0, __prec);
-	  return __s.size();
-	}
-      }
-
       _Spec<_CharT> _M_spec{};
     };
 
@@ -3294,12 +3318,12 @@ namespace __format
   // A sink that fills a sequence (e.g. std::string, std::vector, std::deque).
   // Writes to a buffer then appends that to the sequence when it fills up.
   template<typename _Seq>
-    class _Seq_sink final : public _Buf_sink<typename _Seq::value_type>
+    class _Seq_sink : public _Buf_sink<typename _Seq::value_type>
     {
       using _CharT = typename _Seq::value_type;
 
       _Seq _M_seq;
-
+    protected:
       // Transfer buffer contents to the sequence, so buffer can be refilled.
       void
       _M_overflow() override
@@ -3371,6 +3395,17 @@ namespace __format
 	  }
       }
 
+      void _M_trim(span<const _CharT> __s)
+	requires __is_specialization_of<_Seq, basic_string>
+      {
+	_GLIBCXX_DEBUG_ASSERT(__s.data() == this->_M_buf
+				|| __s.data() == _M_seq.data());
+	if (__s.data() == _M_seq.data())
+	  _M_seq.resize(__s.size());
+	else
+	  this->_M_reset(this->_M_buf, __s.size());
+      }
+
     public:
       // TODO: for SSO string, use SSO buffer as initial span, then switch
       // to _M_buf if it overflows? Or even do that for all unused capacity?
@@ -3396,7 +3431,7 @@ namespace __format
       // A writable span that views everything written to the sink.
       // Will be either a view over _M_seq or the used part of _M_buf.
       span<_CharT>
-      view()
+      _M_span()
       {
 	auto __s = this->_M_used();
 	if (_M_seq.size())
@@ -3407,9 +3442,21 @@ namespace __format
 	  }
 	return __s;
       }
+
+      basic_string_view<_CharT>
+      view()
+      {
+	auto __span = _M_span();
+	return basic_string_view<_CharT>(__span.data(), __span.size());
+      }
     };
 
-  // A sink that writes to an output iterator.
+  template<typename _CharT, typename _Alloc = allocator<_CharT>>
+    using _Str_sink
+      = _Seq_sink<basic_string<_CharT, char_traits<_CharT>, _Alloc>>;
+
+  // template<typename _CharT, typename _Alloc = allocator<_CharT>>
+  // using _Vec_sink = _Seq_sink<vector<_CharTthis-> sink that writes to an output iterator.
   // Writes to a fixed-size buffer and then flushes to the output iterator
   // when the buffer fills up.
   template<typename _CharT, typename _OutIter>
@@ -3574,6 +3621,173 @@ namespace __format
 	    iter_difference_t<_OutIter> __count(__s.size());
 	    return { _M_first + __count, __count };
 	  }
+      }
+    };
+
+  // A sink for handling the padded outputs (_M_padwidth) or truncated
+  // (_M_maxwidth). The handling is done by writting to buffer (_Str_strink)
+  // until sufficient number of characters is written. After that if sequence
+  // is longer than _M_padwidth it's written to _M_out, and further writes are
+  // either:
+  //	* buffered and forwarded to _M_out, if below _M_maxwidth,
+  //	* ignored otherwise
+  // If field width of written sequence is no greater than _M_padwidth, the
+  // sequence is written during _M_finish call.
+  template<typename _Out, typename _CharT>
+    class _Padding_sink : public _Str_sink<_CharT>
+    {
+      const size_t _M_padwidth;
+      const size_t _M_maxwidth;
+      _Out _M_out;
+      size_t _M_printwidth;
+
+      [[__gnu__::__always_inline__]]
+      bool
+      _M_ignoring() const
+      {
+	return _M_printwidth >= _M_maxwidth;
+      }
+
+      [[__gnu__::__always_inline__]]
+      bool
+      _M_buffering() const
+      {
+	if (_M_printwidth < _M_padwidth)
+	  return true;
+	if (_M_maxwidth != (size_t)-1)
+	  return _M_printwidth < _M_maxwidth;
+	return false;
+      }
+
+      void
+      _M_flush()
+      {
+	span<_CharT> __new = this->_M_used();
+	basic_string_view<_CharT> __str(__new.data(), __new.size());
+	_M_out = __format::__write(std::move(_M_out), __str);
+	this->_M_rewind();
+      }
+
+      bool
+      _M_force_update()
+      {
+	auto __str = this->view();
+	// Compute actual field width, possibly truncated.
+	_M_printwidth = __format::__truncate(__str, _M_maxwidth);
+	if (_M_ignoring())
+	  this->_M_trim(__str);
+	if (_M_buffering())
+	  return true;
+
+	// We have more characters than padidng, no padding is needed,
+	// write direclty to _M_out.
+	if (_M_printwidth >= _M_padwidth)
+	  _M_out = __format::__write(std::move(_M_out), __str);
+	// We reached _M_maxwidth that is smaller than _M_padwidth.
+	// Store the prefix sequence in _M_seq, and free _M_buf.
+	else
+	  _Str_sink<_CharT>::_M_overflow();
+
+	// Use internal buffer for writes to _M_out.
+	this->_M_reset(this->_M_buf);
+	return false;
+      }
+
+      bool
+      _M_update(size_t __new)
+      {
+	_M_printwidth += __new;
+	if (_M_buffering())
+	  return true;
+	return _M_force_update();
+      }
+
+      void
+      _M_overflow() override
+      {
+	// Ignore characters in buffer, and override it.
+	if (_M_ignoring())
+	  this->_M_rewind();
+	// Write buffer to _M_out, and override it.
+	else if (!_M_buffering())
+	  _M_flush();
+	// Update written count, and if input still should be buffered,
+	// flush the to _M_seq.
+	else if (_M_update(this->_M_used().size()))
+	  _Str_sink<_CharT>::_M_overflow();
+      }
+
+      typename _Sink<_CharT>::_Reservation
+      _M_reserve(size_t __n) override
+      {
+	// Ignore characters in buffer, if any.
+	if (_M_ignoring())
+	  this->_M_rewind();
+	else if constexpr (is_same_v<_Out, _Sink_iter<_CharT>>)
+	  if (!_M_buffering())
+	    {
+	      // Write pending characters if any
+	      if (!this->_M_used().empty())
+		_M_flush();
+	      // Try to reserve from _M_out sink.
+	      if (auto __reserved = _M_out._M_reserve(__n))
+		return __reserved;
+	    }
+	return _Sink<_CharT>::_M_reserve(__n);
+      }
+
+      void
+      _M_bump(size_t __n) override
+      {
+	// Ignore the written characters.
+	if (_M_ignoring())
+	  return;
+	// If reservation was made directy sink associated _M_out,
+	// _M_bump will be called on that sink.
+	_Sink<_CharT>::_M_bump(__n);
+	if (_M_buffering())
+	  _M_update(__n);
+      }
+
+    public:
+      [[__gnu__::__always_inline__]]
+      explicit _Padding_sink(_Out __out, size_t __padwidth)
+      : _M_padwidth(__padwidth), _M_maxwidth(-1),
+	_M_out(std::move(__out)), _M_printwidth(0)
+      { }
+
+      [[__gnu__::__always_inline__]]
+      explicit _Padding_sink(_Out __out, size_t __padwidth, size_t __maxwidth)
+      : _M_padwidth(__padwidth), _M_maxwidth(__maxwidth),
+	_M_out(std::move(__out)), _M_printwidth(0)
+      { }
+
+      _Out
+      _M_finish(_Align __align, char32_t __fill_char)
+      {
+	// Handle any characters in the buffer.
+	if (auto __rem = this->_M_used().size())
+	  {
+	    if (_M_ignoring())
+	      this->_M_rewind();
+	    else if (!_M_buffering())
+	      _M_flush();
+	    else
+	      _M_update(__rem);
+	  }
+
+	if (!_M_buffering() || !_M_force_update())
+	  // Characters were already written to _M_out.
+	  if (_M_printwidth >= _M_padwidth)
+	    return std::move(_M_out);
+
+	const auto __str = this->view();
+	if (_M_printwidth >= _M_padwidth)
+	  return __format::__write(std::move(_M_out), __str);
+
+	const size_t __nfill = _M_padwidth - _M_printwidth;
+	return __format::__write_padded(std::move(_M_out), __str,
+					__align, __nfill, __fill_char);
       }
     };
 
@@ -5183,7 +5397,8 @@ namespace __format
       // as we need to format to temporary buffer, using the same iterator.
       static_assert(is_same_v<_Out, __format::_Sink_iter<_CharT>>);
 
-      if (__spec._M_get_width(__fc) == 0)
+      const size_t __padwidth = __spec._M_get_width(__fc);
+      if (__padwidth == 0)
 	return __call(__fc);
 
       struct _Restore_out
@@ -5192,15 +5407,15 @@ namespace __format
 	: _M_ctx(std::addressof(__fc)), _M_out(__fc.out())
 	{ }
 
-	void _M_trigger()
+	void
+	_M_disarm()
+	{ _M_ctx = nullptr; }
+
+	~_Restore_out()
 	{
 	  if (_M_ctx)
 	    _M_ctx->advance_to(_M_out);
-	  _M_ctx = nullptr;
 	}
-
-	~_Restore_out()
-	{ _M_trigger(); }
 
       private:
 	basic_format_context<_Sink_iter<_CharT>, _CharT>* _M_ctx;
@@ -5208,31 +5423,13 @@ namespace __format
       };
 
       _Restore_out __restore(__fc);
-      // TODO Consider double sinking, first buffer of width
-      // size and then original sink, if first buffer is overun
-      // we do not need to align
-      _Str_sink<_CharT> __buf;
-      __fc.advance_to(__buf.out());
+      _Padding_sink<_Sink_iter<_CharT>, _CharT> __sink(__fc.out(), __padwidth);
+      __fc.advance_to(__sink.out());
       __call(__fc);
-      __restore._M_trigger();
-
-      basic_string_view<_CharT> __str(__buf.view());
-      size_t __width;
-      if constexpr (__unicode::__literal_encoding_is_unicode<_CharT>())
-	__width = __unicode::__field_width(__str);
-      else
-	__width = __str.size();
-
-      return __format::__write_padded_as_spec(__str, __width, __fc, __spec);
+      __fc.advance_to(__sink._M_finish(__spec._M_align, __spec._M_fill));
+      __restore._M_disarm();
+      return __fc.out();
     }
-
-  // _Rg& and const _Rg& are both formattable and use same formatter
-  // specialization for their references.
-  template<typename _Rg, typename _CharT>
-    concept __simply_formattable_range
-      = __const_formattable_range<_Rg, _CharT>
-	  && same_as<remove_cvref_t<ranges::range_reference_t<_Rg>>,
-		     remove_cvref_t<ranges::range_reference_t<const _Rg>>>;
 
   template<size_t _Pos, typename _Tp, typename _CharT>
     struct __indexed_formatter_storage

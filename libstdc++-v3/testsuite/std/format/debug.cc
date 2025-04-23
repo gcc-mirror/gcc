@@ -2,6 +2,7 @@
 // { dg-options "-fexec-charset=UTF-8 -fwide-exec-charset=UTF-32BE -DUNICODE_ENC" { target be } }
 // { dg-do run { target c++23 } }
 // { dg-add-options no_pch }
+// { dg-timeout-factor 2 }
 
 #include <format>
 #include <testsuite_hooks.h>
@@ -96,7 +97,7 @@ test_extended_ascii()
   res = fdebug(in);
   VERIFY( res == WIDEN(R"("Åëÿ")") );
 
-  static constexpr bool __test_characters 
+  static constexpr bool __test_characters
 #if UNICODE_ENC
     = sizeof(_CharT) >= 2;
 #else // ISO8859-1
@@ -114,11 +115,11 @@ test_extended_ascii()
   }
 }
 
-#if UNICODE_ENC
 template<typename _CharT>
 void
 test_unicode_escapes()
 {
+#if UNICODE_ENC
   std::basic_string<_CharT> res;
 
   const auto in = WIDEN(
@@ -160,12 +161,14 @@ test_unicode_escapes()
     res = fdebug(in[5]);
     VERIFY( res == WIDEN("'\U0001f984'") );
   }
+#endif // UNICODE_ENC
 }
 
 template<typename _CharT>
 void
 test_grapheme_extend()
 {
+#if UNICODE_ENC
   std::basic_string<_CharT> res;
 
   const auto vin = WIDEN("o\u0302\u0323");
@@ -184,12 +187,14 @@ test_grapheme_extend()
     res = fdebug(in[1]);
     VERIFY( res == WIDEN(R"('\u{302}')") );
   }
+#endif // UNICODE_ENC
 }
 
 template<typename _CharT>
 void
 test_replacement_char()
 {
+#if UNICODE_ENC
   std::basic_string<_CharT> repl = WIDEN("\uFFFD");
   std::basic_string<_CharT> res = fdebug(repl);
   VERIFY( res == WIDEN("\"\uFFFD\"") );
@@ -197,11 +202,13 @@ test_replacement_char()
   repl = WIDEN("\uFFFD\uFFFD");
   res = fdebug(repl);
   VERIFY( res == WIDEN("\"\uFFFD\uFFFD\"") );
+#endif // UNICODE_ENC
 }
 
 void
 test_ill_formed_utf8_seq()
 {
+#if UNICODE_ENC
   std::string_view seq = "\xf0\x9f\xa6\x84"; //  \U0001F984
   std::string res;
 
@@ -233,11 +240,13 @@ test_ill_formed_utf8_seq()
   VERIFY( res == R"('\x{84}')" );
   res = fdebug(seq.substr(3, 1));
   VERIFY( res == R"("\x{84}")" );
+#endif // UNICODE_ENC
 }
 
 void
 test_ill_formed_utf32()
 {
+#if UNICODE_ENC
   std::wstring res;
 
   wchar_t ic1 = static_cast<wchar_t>(0xff'ffff);
@@ -255,8 +264,8 @@ test_ill_formed_utf32()
   std::wstring is2(1, ic2);
   res = fdebug(is2);
   VERIFY( res == LR"("\x{ffffffff}")" );
-}
 #endif // UNICODE_ENC
+}
 
 template<typename _CharT>
 void
@@ -328,6 +337,375 @@ test_prec()
   std::basic_string_view<_CharT> in2 = WIDEN("\u1100");
   res = std::format(WIDEN("{:.3?}"), in2);
   VERIFY( res == WIDEN("\"\u1100") );
+#endif // UNICODE_ENC
+}
+
+bool strip_quote(std::string_view& v)
+{
+  if (!v.starts_with('"'))
+    return false;
+  v.remove_prefix(1);
+  return true;
+}
+
+bool strip_quotes(std::string_view& v)
+{
+  if (!v.starts_with('"') || !v.ends_with('"'))
+    return false;
+  v.remove_prefix(1);
+  v.remove_suffix(1);
+  return true;
+}
+
+bool strip_prefix(std::string_view& v, size_t n, char c)
+{
+  size_t pos = v.find_first_not_of(c);
+  if (pos == std::string_view::npos)
+    pos = v.size();
+  if (pos != n)
+    return false;
+  v.remove_prefix(n);
+  return true;
+}
+
+void test_padding()
+{
+  std::string res;
+  std::string_view resv;
+
+  // width and size are 26
+  std::string in = "abcdefghijklmnopqrstuvwxyz";
+  in += in; // width and size are 52
+  in += in; // width and size are 104
+  in += in; // width and size are 208
+  in += in; // width and size are 416
+  std::string_view inv = in;
+
+  resv = res = std::format("{}", in);
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:.500}", in);
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:.400}", in);
+  VERIFY( resv == inv.substr(0, 400) );
+
+  resv = res = std::format("{:.200}", in);
+  VERIFY( resv == inv.substr(0, 200) );
+
+  resv = res = std::format("{:.10}", in);
+  VERIFY( resv == inv.substr(0, 10) );
+
+  resv = res = std::format("{:.0}", in);
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:*>20}", in);
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>20.500}", in);
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>20.400}", in);
+  VERIFY( resv == inv.substr(0, 400) );
+
+  resv = res = std::format("{:*>20.200}", in);
+  VERIFY( resv == inv.substr(0, 200) );
+
+  resv = res = std::format("{:*>20.10}", in);
+  VERIFY( strip_prefix(resv, 10, '*') );
+  VERIFY( resv == inv.substr(0, 10) );
+
+  resv = res = std::format("{:*>20.0}", in);
+  VERIFY( strip_prefix(resv, 20, '*') );
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:*>450}", in);
+  VERIFY( strip_prefix(resv, 34, '*') );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>450.500}", in);
+  VERIFY( strip_prefix(resv, 34, '*') );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>450.420}", in);
+  VERIFY( strip_prefix(resv, 34, '*') );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>450.400}", in);
+  VERIFY( strip_prefix(resv, 50, '*') );
+  VERIFY( resv == inv.substr(0, 400) );
+
+  resv = res = std::format("{:*>450.200}", in);
+  VERIFY( strip_prefix(resv, 250, '*') );
+  VERIFY( resv == inv.substr(0, 200) );
+
+  resv = res = std::format("{:*>450.10}", in);
+  VERIFY( strip_prefix(resv, 440, '*') );
+  VERIFY( resv == inv.substr(0, 10) );
+
+  resv = res = std::format("{:*>450.0}", in);
+  VERIFY( strip_prefix(resv, 450, '*') );
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:?}", in);
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:.500?}", in);
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:.400?}", in);
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 399) );
+
+  resv = res = std::format("{:.200?}", in);
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 199) );
+
+  resv = res = std::format("{:.10?}", in);
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 9) );
+
+  resv = res = std::format("{:.1?}", in);
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:.0?}", in);
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:*>20?}", in);
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>20.500?}", in);
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>20.400?}", in);
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 399) );
+
+  resv = res = std::format("{:*>20.200?}", in);
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 199) );
+
+  resv = res = std::format("{:*>20.10?}", in);
+  VERIFY( strip_prefix(resv, 10, '*') );
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 9) );
+
+  resv = res = std::format("{:*>20.1?}", in);
+  VERIFY( strip_prefix(resv, 19, '*') );
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:*>20.0?}", in);
+  VERIFY( strip_prefix(resv, 20, '*') );
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:*>450?}", in);
+  VERIFY( strip_prefix(resv, 32, '*') );
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>450.500?}", in);
+  VERIFY( strip_prefix(resv, 32, '*') );
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>450.420?}", in);
+  VERIFY( strip_prefix(resv, 32, '*') );
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>450.400?}", in);
+  VERIFY( strip_prefix(resv, 50, '*') );
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 399) );
+
+  resv = res = std::format("{:*>450.200?}", in);
+  VERIFY( strip_prefix(resv, 250, '*') );
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 199) );
+
+  resv = res = std::format("{:*>450.10?}", in);
+  VERIFY( strip_prefix(resv, 440, '*') );
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 9) );
+
+  resv = res = std::format("{:*>450.1?}", in);
+  VERIFY( strip_prefix(resv, 449, '*') );
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:*>450.0?}", in);
+  VERIFY( strip_prefix(resv, 450, '*') );
+  VERIFY( resv == "" );
+
+#if UNICODE_ENC
+  // width is 3, size is 15
+  in = "o\u0302\u0323i\u0302\u0323u\u0302\u0323";
+  in += in; // width is 6, size is 30
+  in += in; // width is 12, size is 60
+  in += in; // width is 24, size is 120
+  in += in; // width is 48, size is 240
+  in += in; // width is 96, size is 480
+  in += in; // width is 192, size is 960
+  inv = in;
+
+  resv = res = std::format("{:}", in);
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:.200}", in);
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:.96}", in);
+  VERIFY( resv == inv.substr(0, 480) );
+
+  resv = res = std::format("{:.12}", in);
+  VERIFY( resv == inv.substr(0, 60) );
+
+  resv = res = std::format("{:.3}", in);
+  VERIFY( resv == inv.substr(0, 15) );
+
+  resv = res = std::format("{:.0}", in);
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:*>10}", in);
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>10.200}", in);
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>10.96}", in);
+  VERIFY( resv == inv.substr(0, 480) );
+
+  resv = res = std::format("{:*>10.12}", in);
+  VERIFY( resv == inv.substr(0, 60) );
+
+  resv = res = std::format("{:*>10.3}", in);
+  VERIFY( strip_prefix(resv, 7, '*') );
+  VERIFY( resv == inv.substr(0, 15) );
+
+  resv = res = std::format("{:*>10.0}", in);
+  VERIFY( strip_prefix(resv, 10, '*') );
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:*>240s}", in);
+  VERIFY( strip_prefix(resv, 48, '*') );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>240.200s}", in);
+  VERIFY( strip_prefix(resv, 48, '*') );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>240.96s}", in);
+  VERIFY( strip_prefix(resv, 144, '*') );
+  VERIFY( resv == inv.substr(0, 480) );
+
+  resv = res = std::format("{:*>240.12}", in);
+  VERIFY( strip_prefix(resv, 228, '*') );
+  VERIFY( resv == inv.substr(0, 60) );
+
+  resv = res = std::format("{:*>240.3s}", in);
+  VERIFY( strip_prefix(resv, 237, '*') );
+  VERIFY( resv == inv.substr(0, 15) );
+
+  resv = res = std::format("{:*>240.0s}", in);
+  VERIFY( strip_prefix(resv, 240, '*') );
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:?}", in);
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:.200?}", in);
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:.97?}", in);
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 480) );
+
+  resv = res = std::format("{:.13?}", in);
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 60) );
+
+  resv = res = std::format("{:.4?}", in);
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 15) );
+
+  resv = res = std::format("{:.1?}", in);
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:.0?}", in);
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:*>10?}", in);
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>10.200?}", in);
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>10.97?}", in);
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 480) );
+
+  resv = res = std::format("{:*>10.13?}", in);
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 60) );
+
+  resv = res = std::format("{:*>10.4?}", in);
+  VERIFY( strip_prefix(resv, 6, '*') );
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 15) );
+
+  resv = res = std::format("{:*>10.1?}", in);
+  VERIFY( strip_prefix(resv, 9, '*') );
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:*>10.0?}", in);
+  VERIFY( strip_prefix(resv, 10, '*') );
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:*>240?}", in);
+  VERIFY( strip_prefix(resv, 46, '*') );
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>240.200?}", in);
+  VERIFY( strip_prefix(resv, 46, '*') );
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>240.97?}", in);
+  VERIFY( strip_prefix(resv, 143, '*') );
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 480) );
+
+  resv = res = std::format("{:*>240.13?}", in);
+  VERIFY( strip_prefix(resv, 227, '*') );
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 60) );
+
+  resv = res = std::format("{:*>240.4?}", in);
+  VERIFY( strip_prefix(resv, 236, '*') );
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == inv.substr(0, 15) );
+
+  resv = res = std::format("{:*>240.1?}", in);
+  VERIFY( strip_prefix(resv, 239, '*') );
+  VERIFY( strip_quote(resv) );
+  VERIFY( resv == "" );
+
+  resv = res = std::format("{:*>240.0?}", in);
+  VERIFY( strip_prefix(resv, 240, '*') );
+  VERIFY( resv == "" );
 #endif // UNICODE_ENC
 }
 
@@ -435,7 +813,6 @@ int main()
   test_extended_ascii<char>();
   test_extended_ascii<wchar_t>();
 
-#if UNICODE_ENC
   test_unicode_escapes<char>();
   test_unicode_escapes<wchar_t>();
   test_grapheme_extend<char>();
@@ -444,12 +821,13 @@ int main()
   test_replacement_char<wchar_t>();
   test_ill_formed_utf8_seq();
   test_ill_formed_utf32();
-#endif // UNICODE_ENC
 
   test_fill<char>();
   test_fill<wchar_t>();
   test_prec<char>();
   test_prec<wchar_t>();
+
+  test_padding();
 
   test_formatters_c();
 }
