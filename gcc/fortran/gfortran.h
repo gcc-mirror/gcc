@@ -1844,6 +1844,9 @@ gfc_omp_udm;
 
 typedef struct gfc_omp_namelist_udm
 {
+  /* Used to store mapper_id before resolution.  */
+  const char *mapper_id;
+
   bool multiple_elems_p;
   struct gfc_omp_udm *udm;
 }
