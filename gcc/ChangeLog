@@ -1,3 +1,41 @@
+2025-04-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119778
+	* tree-inline.cc (copy_edges_for_bb): Mark calls that are
+	source of abnormal edges as altering control-flow.
+
+2025-04-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119706
+	* gimple-expr.cc (is_gimple_mem_ref_addr): Also allow
+	POLY_INT_CST.
+
+2025-04-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR target/119549
+	* common/config/i386/i386-common.cc (ix86_handle_option):
+	Assert that both OPT_msse4 and OPT_mno_sse4 are never unset.
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_inner_p):
+	Process negated OPT_msse4 as OPT_mno_sse4.
+
+2025-04-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119534
+	* tree-vect-stmts.cc (get_load_store_type): Reject
+	VECTOR_BOOLEAN_TYPE_P offset vector type for emulated gathers.
+
 2025-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
