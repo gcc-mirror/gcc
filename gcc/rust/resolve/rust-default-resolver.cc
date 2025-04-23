@@ -179,5 +179,13 @@ DefaultResolver::visit (AST::StaticItem &item)
   ctx.scoped (Rib::Kind::ConstantItem, item.get_node_id (), expr_vis);
 }
 
+void
+DefaultResolver::visit (AST::TypeParam &param)
+{
+  auto expr_vis = [this, &param] () { AST::DefaultASTVisitor::visit (param); };
+
+  ctx.scoped (Rib::Kind::ForwardTypeParamBan, param.get_node_id (), expr_vis);
+}
+
 } // namespace Resolver2_0
 } // namespace Rust

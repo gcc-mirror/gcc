@@ -50,6 +50,8 @@ public:
   void visit (AST::InherentImpl &) override;
   void visit (AST::TraitImpl &) override;
 
+  void visit (AST::TypeParam &) override;
+
   // type dec nodes, which visit their fields or variants by default
   void visit (AST::StructStruct &) override;
   void visit (AST::TupleStruct &) override;
