@@ -1,6 +1,8 @@
 // { dg-do compile { target comdat_group } }
 // ARM EABI has its own exception handling data handling and does not use gcc_except_table
 // { dg-skip-if "!TARGET_EXCEPTION_DATA" { arm_eabi } }
+// Solaris/SPARC as uses a widely different COMDAT section syntax.
+// { dg-skip-if "Solaris/SPARC as syntax" { sparc*-*-solaris2* && { ! gas } } }
 // Force off function sections
 // Force on exceptions
 // { dg-options "-fno-function-sections -fexceptions" }
