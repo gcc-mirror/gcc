@@ -1595,6 +1595,7 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 
   tree decl = OMP_CLAUSE_DECL (c);
   location_t loc = OMP_CLAUSE_LOCATION (c);
+  bool assumed_size = false;
 
   /* Assumed-size arrays can't be mapped implicitly, they have to be
      mapped explicitly using array sections.  */
@@ -1605,9 +1606,14 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 				GFC_TYPE_ARRAY_RANK (TREE_TYPE (decl)) - 1)
 	 == NULL)
     {
-      error_at (OMP_CLAUSE_LOCATION (c),
-		"implicit mapping of assumed size array %qD", decl);
-      return;
+      if (openacc)
+	assumed_size = true;
+      else
+	{
+	  error_at (OMP_CLAUSE_LOCATION (c),
+		    "implicit mapping of assumed size array %qD", decl);
+	  return;
+	}
     }
 
   if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FORCE_DEVICEPTR)
@@ -1662,7 +1668,9 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
       else
 	{
 	  OMP_CLAUSE_DECL (c) = decl;
-	  OMP_CLAUSE_SIZE (c) = NULL_TREE;
+	  OMP_CLAUSE_SIZE (c) = assumed_size ? size_zero_node : NULL_TREE;
+	  if (assumed_size)
+	    OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
 	}
       if (TREE_CODE (TREE_TYPE (orig_decl)) == REFERENCE_TYPE
 	  && (GFC_DECL_GET_SCALAR_POINTER (orig_decl)
