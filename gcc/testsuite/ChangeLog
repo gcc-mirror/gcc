@@ -1,3 +1,24 @@
+2025-04-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-04-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_4.c: Test
+	__ARM_FEATURE_FAMINMAX.
+
+2025-04-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/118407
+	* gcc.dg/tree-ssa/predcom-8.c: Add XFAIL for aarch64.
+
+2025-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backported from master:
+	2025-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.misc-tests/gcov-31.c (run_pending_traps): Use sigsetjmp
+	instead of __sigsetjmp.
+
 2025-04-18  Xing Li  <lixing@loongson.cn>
 
 	Backported from master:

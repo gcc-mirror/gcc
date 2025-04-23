@@ -1,3 +1,60 @@
+2025-04-22  Patrick Palka  <ppalka@redhat.com>
+
+	Revert:
+	2024-08-22  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/iterator_concepts.h (__detail::__projected): Define
+	an optimized partial specialization for when the projection is
+	std::identity.
+	* testsuite/24_iterators/indirect_callable/projected.cc: Verify the
+	optimization.
+
+2025-04-22  Andreas Schwab  <schwab@linux-m68k.org>
+
+	Backported from master:
+	2025-04-22  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Update.
+
+2025-04-22  Andreas Schwab  <schwab@linux-m68k.org>
+
+	Backported from master:
+	2025-04-22  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt: Update.
+
+2025-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backported from master:
+	2025-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/sparc64-linux-gnu/baseline_symbols.txt: Regenerate.
+	* config/abi/post/sparc64-linux-gnu/32/baseline_symbols.txt: Likewise.
+
+2025-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backported from master:
+	2025-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/i386-solaris/baseline_symbols.txt: Regenerate.
+	* config/abi/post/i386-solaris/amd64/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/sparc-solaris/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris/sparcv9/baseline_symbols.txt:
+	Likewise.
+
+2025-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64le-linux-gnu/baseline_symbols.txt: Update.
+
 2025-04-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/html/manual/status.html: Regenerate.

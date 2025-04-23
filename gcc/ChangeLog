@@ -1,3 +1,28 @@
+2025-04-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-04-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_FAMINMAX.
+
+2025-04-22  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2025-04-22  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-cores.def (olympus): Add fp8fma, fp8dot4
+	explicitly.
+
+2025-04-22  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2025-04-22  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* doc/invoke.texi (lto-partition-locality-frequency-cutoff,
+	lto-partition-locality-size-cutoff, lto-max-locality-partition):
+	Document.
+
 2025-04-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/119858
