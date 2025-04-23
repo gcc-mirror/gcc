@@ -1,3 +1,138 @@
+2025-04-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.target/i386/pr89618-2.c: XFAIL.
+
+2025-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119327
+	* g++.dg/opt/pr119327.C: New test.
+
+2025-04-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_4.c: Test
+	__ARM_FEATURE_FAMINMAX.
+
+2025-04-22  Spencer Abson  <spencer.abson@arm.com>
+
+	* gcc.target/aarch64/_Float16_cmp_1.c: New test.
+	* gcc.target/aarch64/_Float16_cmp_2.c: New (negative) test.
+
+2025-04-22  Spencer Abson  <spencer.abson@arm.com>
+
+	PR target/117013
+	* g++.target/aarch64/spaceship_1.C: New test.
+	* g++.target/aarch64/spaceship_2.C: New test.
+	* g++.target/aarch64/spaceship_3.C: New test.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray/coindexed_3.f08: Add minimal test for
+	get_team().
+	* gfortran.dg/team_change_2.f90: Add test for change team with
+	label and exiting out of it.
+	* gfortran.dg/team_end_2.f90: Check parsing to labeled team
+	blocks is correct now.
+	* gfortran.dg/team_end_3.f90: Check that end_team call is
+	generated for labeled end_teams, too.
+	* gfortran.dg/coarray/coindexed_5.f90: New test.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* gfortran.dg/coarray_49.f90: Adapt to changed error message.
+	* gfortran.dg/coarray_collectives_12.f90: Adapt to changed
+	function signature of num_images.
+	* gfortran.dg/coarray_collectives_16.f90: Same.
+	* gfortran.dg/coarray_lib_this_image_1.f90: Same.
+	* gfortran.dg/coarray_lib_this_image_2.f90: Same.
+	* gfortran.dg/coarray_this_image_1.f90: Adapt tests for
+	num_images.
+	* gfortran.dg/coarray_this_image_2.f90: Same.
+	* gfortran.dg/coarray_this_image_3.f90: Same.
+	* gfortran.dg/num_images_1.f90: Check that deprecated syntax is
+	no longer supported.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/87326
+	* gfortran.dg/coarray_10.f90: Update error messages.
+	* gfortran.dg/coarray_lib_this_image_1.f90: Same.
+	* gfortran.dg/coarray_lib_this_image_2.f90: Same.
+	* gfortran.dg/coarray_this_image_1.f90: Add more tests and
+	remove incorrect ones.
+	* gfortran.dg/coarray_this_image_2.f90: Test more features.
+	* gfortran.dg/coarray_this_image_3.f90: New test.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/88154
+	PR fortran/88960
+	PR fortran/97210
+	PR fortran/103001
+	* gfortran.dg/coarray/image_status_1.f08: Correct check for
+	team_type.
+	* gfortran.dg/pr102458.f90: Adapt to multiple errors.
+	* gfortran.dg/coarray/get_team_1.f90: New test.
+	* gfortran.dg/team_get_1.f90: New test.
+	* gfortran.dg/team_number_1.f90: Correct Fortran syntax.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/87326
+	PR fortran/87556
+	PR fortran/88254
+	PR fortran/103796
+	* gfortran.dg/team_change_2.f90: New test.
+	* gfortran.dg/team_change_3.f90: New test.
+	* gfortran.dg/team_end_2.f90: New test.
+	* gfortran.dg/team_end_3.f90: New test.
+	* gfortran.dg/team_form_2.f90: New test.
+	* gfortran.dg/team_form_3.f90: New test.
+	* gfortran.dg/team_sync_2.f90: New test.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/87939
+	* gfortran.dg/coarray_critical_2.f90: New test.
+	* gfortran.dg/coarray_critical_3.f90: New test.
+	* gfortran.dg/team_sync_1.f90: New test.
+	* gfortran.dg/move_alloc_11.f90: New test.
+
+2025-04-22  Yixuan Chen  <chenyixuan@iscas.ac.cn>
+
+	* gcc.target/riscv/mcpu-xt-c908.c: test -mcpu=xt-c908.
+	* gcc.target/riscv/mcpu-xt-c910.c: test -mcpu=xt-c910.
+	* gcc.target/riscv/mcpu-xt-c920v2.c: test -mcpu=xt-c920v2.
+	* gcc.target/riscv/mcpu-xt-c908v.c: test -mcpu=xt-c908v.
+	* gcc.target/riscv/mcpu-xt-c910v2.c: test -mcpu=xt-c910v2.
+	* gcc.target/riscv/mcpu-xt-c920.c: test -mcpu=xt-c920.
+
+2025-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* g++.dg/gcov/gcov.exp: Handle GCOV_UNDER_TEST.
+	* gcc.misc-tests/gcov.exp: Likewise.
+	* gdc.dg/gcov.exp: Likewise.
+	* gnat.dg/gcov/gcov.exp: Likewise.
+
+2025-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.misc-tests/gcov-31.c (run_pending_traps): Use sigsetjmp
+	instead of __sigsetjmp.
+
+2025-04-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119863
+	* g++.dg/modules/tpl-friend-18_a.C: New test.
+	* g++.dg/modules/tpl-friend-18_b.C: New test.
+	* g++.dg/modules/tpl-friend-18_c.C: New test.
+
+2025-04-22  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* g++.dg/eh/pr119507.C: Skip for arm eabi.
+
+2025-04-22  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/powerpc/power11-3.c: Require ifunc support.
+
 2025-04-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/118775

@@ -1,3 +1,72 @@
+2025-04-22  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost): Add special cases
+	for COND_EXPR; make MIN_EXPR, MAX_EXPR, ABS_EXPR and ABSU_EXPR more realistic.
+
+2025-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119327
+	* config/rs6000/rs6000.cc (rs6000_can_inline_p): Ignore also
+	OPTION_MASK_SAVE_TOC_INDIRECT differences.
+
+2025-04-22  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_FAMINMAX.
+
+2025-04-22  Spencer Abson  <spencer.abson@arm.com>
+
+	* tree-vect-loop.cc (vectorizable_induction): Add target support
+	checks for vectorized MULT_EXPR and FLOAT_EXPR where necessary for
+	scalable types.
+	Prefer target_supports_op_p over directly_supports_p for these tree
+	codes.
+	(vectorizable_nonlinear_induction): Fix a doc comment while I'm
+	here.
+
+2025-04-22  Spencer Abson  <spencer.abson@arm.com>
+
+	* config/aarch64/aarch64.md: Update cbranch, cstore, fcmp
+	and fcmpe to use the GPF_F16 iterator for floating-point
+	modes.
+
+2025-04-22  Spencer Abson  <spencer.abson@arm.com>
+
+	PR target/117013
+	* config/aarch64/aarch64-protos.h (aarch64_expand_fp_spaceship):
+	Declare optab expander function for floating-point types.
+	* config/aarch64/aarch64.cc (aarch64_expand_fp_spaceship):
+	Define optab expansion for floating-point types (new function).
+	* config/aarch64/aarch64.md (spaceship<mode>4):
+	Add define_expands for spaceship<mode>4 on integer and
+	floating-point types.
+
+2025-04-22  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-cores.def (olympus): Add fp8fma, fp8dot4
+	explicitly.
+
+2025-04-22  Yixuan Chen  <chenyixuan@iscas.ac.cn>
+
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Add xt-c908, xt-c908v,
+	xt-c910, xt-c910v2, xt-c920, xt-c920v2.
+	(RISCV_CORE): Add xt-c908, xt-c908v, xt-c910, xt-c910v2, xt-c920,
+	xt-c920v2.
+	* doc/invoke.texi: Add xt-c908, xt-c908v, xt-c910, xt-c910v2,
+	xt-c920, xt-c920v2.
+
+2025-04-22  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* doc/invoke.texi (lto-partition-locality-frequency-cutoff,
+	lto-partition-locality-size-cutoff, lto-max-locality-partition):
+	Document.
+
+2025-04-22  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/118182
+	* config/riscv/vector.md (@pred_broadcast<mode>): Expand to
+	_zero and _imm variants without vec_duplicate.
+
 2025-04-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/119879

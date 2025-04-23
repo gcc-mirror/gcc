@@ -1,3 +1,11 @@
+2025-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR cobol/119217
+	* configure.ac: Restrict cobol to aarch64-*-linux*,
+	x86_64-*-linux*.
+	Fix indentation.
+	* configure: Regenerate.
+
 2025-04-16  Waffl3x  <waffl3x@baylibre.com>
 
 	* MAINTAINERS: Add myself.

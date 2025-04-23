@@ -1,3 +1,16 @@
+2025-04-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* name-lookup.cc (lookup_imported_hidden_friend): Remove
+	unnecessary lazy_load_pendings.
+
+2025-04-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119863
+	* name-lookup.cc (get_mergeable_namespace_binding): Remove
+	no-longer-used function.
+	(lookup_imported_hidden_friend): Also look for hidden imported
+	decls in an attached decl's module.
+
 2025-04-21  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.cc (cxx_eval_outermost_constant_expr): Move
