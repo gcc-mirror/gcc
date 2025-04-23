@@ -220,8 +220,8 @@ am_libgomp_la_OBJECTS = alloc.lo atomic.lo barrier.lo critical.lo \
 	oacc-async.lo oacc-plugin.lo oacc-cuda.lo priority_queue.lo \
 	affinity-fmt.lo teams.lo allocator.lo oacc-profiling.lo \
 	oacc-target.lo target-indirect.lo \
-	oacc-profiling-acc_register_library.lo \
-	usmpin-allocator.lo selector.lo $(am__objects_1)
+	oacc-profiling-acc_register_library.lo usmpin-allocator.lo \
+	selector.lo target-cxa-dso-dtor.lo $(am__objects_1)
 libgomp_la_OBJECTS = $(am_libgomp_la_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -555,8 +555,8 @@ libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c \
 	oacc-async.c oacc-plugin.c oacc-cuda.c priority_queue.c \
 	affinity-fmt.c teams.c allocator.c oacc-profiling.c \
 	oacc-target.c target-indirect.c \
-	oacc-profiling-acc_register_library.c \
-	usmpin-allocator.c selector.lo $(am__append_3)
+	oacc-profiling-acc_register_library.c usmpin-allocator.c \
+	selector.c target-cxa-dso-dtor.c $(am__append_3)
 
 # Nvidia PTX OpenACC plugin.
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_version_info = -version-info $(libtool_VERSION)
@@ -786,6 +786,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/single.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/splay-tree.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/target-cxa-dso-dtor.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/target-indirect.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/target.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/task.Plo@am__quote@

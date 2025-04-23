@@ -3,6 +3,18 @@
 	Backported from trunk:
 	2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
 
+	PR target/119853
+	PR target/119854
+	* target-cxa-dso-dtor.c: New.
+	* config/accel/target-cxa-dso-dtor.c: Likewise.
+	* Makefile.am (libgomp_la_SOURCES): Add it.
+	* Makefile.in: Regenerate.
+	* testsuite/libgomp.c++/target-cdtor-1.C: New.
+	* testsuite/libgomp.c++/target-cdtor-2.C: Likewise.
+
+	Backported from trunk:
+	2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
 	* testsuite/libgomp.c-c++-common/target-cdtor-1.c: New.
 
 	Backported from trunk:

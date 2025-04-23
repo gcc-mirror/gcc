@@ -1,3 +1,14 @@
+2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Backported from trunk:
+	2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119853
+	PR target/119854
+	* config/gcn/crt0.c (_fini_array): Call
+	'__GCC_offload___cxa_finalize'.
+	* config/nvptx/gbl-ctors.c (__static_do_global_dtors): Likewise.
+
 2025-04-17  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
