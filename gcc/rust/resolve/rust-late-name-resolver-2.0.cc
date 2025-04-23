@@ -355,8 +355,8 @@ Late::visit (AST::PathInExpression &expr)
   if (!resolved)
     {
       if (!ctx.lookup (expr.get_segments ().front ().get_node_id ()))
-	rust_error_at (expr.get_locus (),
-		       "could not resolve path expression: %qs",
+	rust_error_at (expr.get_locus (), ErrorCode::E0433,
+		       "Cannot find path %qs in this scope",
 		       expr.as_simple_path ().as_string ().c_str ());
       return;
     }
