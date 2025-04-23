@@ -92,6 +92,11 @@ static stmtblock_t caf_init_block;
 
 tree gfc_static_ctors;
 
+/* The namespace in which to look up "declare mapper" mappers (in
+   trans-openmp.cc:gfc_trans_omp_target).  This is somewhat grubby.  */
+
+gfc_namespace *omp_declare_mapper_ns;
+
 
 /* Whether we've seen a symbol from an IEEE module in the namespace.  */
 static int seen_ieee_symbol;
@@ -651,9 +656,12 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
      function scope.  */
   if (current_function_decl != NULL_TREE)
     {
-      if (sym->ns->proc_name
-	  && (sym->ns->proc_name->backend_decl == current_function_decl
-	      || sym->result == sym))
+      if (sym->ns->omp_udm_ns)
+	/* ...except for in omp declare mappers, which are special.  */
+	pushdecl (decl);
+      else if (sym->ns->proc_name
+	       && (sym->ns->proc_name->backend_decl == current_function_decl
+		   || sym->result == sym))
 	gfc_add_decl_to_function (decl);
       else if (sym->ns->proc_name
 	       && sym->ns->proc_name->attr.flavor == FL_LABEL)
@@ -4837,6 +4845,9 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
       if (sym->assoc)
 	continue;
 
+      if (sym->attr.omp_udm_artificial_var)
+	continue;
+
       /* Set the vptr of unlimited polymorphic pointer variables so that
 	 they do not cause segfaults in select type, when the selector
 	 is an intrinsic type.  */
@@ -7995,6 +8006,16 @@ gfc_generate_function_code (gfc_namespace * ns)
   if (flag_openmp)
     gfc_traverse_ns (ns, gfc_handle_omp_declare_variant);
 
+  {
+    tree dm_saved_parent_function_decls = saved_parent_function_decls;
+    saved_parent_function_decls = saved_function_decls;
+    /* NOTE: Decls referenced in a mapper (other than the placeholder variable)
+       may be added to "saved_parent_function_decls".  */
+    gfc_trans_omp_declare_mappers (ns->omp_udm_root);
+    saved_function_decls = saved_parent_function_decls;
+    saved_parent_function_decls = dm_saved_parent_function_decls;
+  }
+
   gfc_generate_contained_functions (ns);
 
   has_coarray_vars_or_accessors = caf_accessor_head != NULL;
@@ -8063,8 +8084,14 @@ gfc_generate_function_code (gfc_namespace * ns)
 
   finish_oacc_declare (ns, sym, false);
 
+  /* Record the namespace for looking up OpenMP declare mappers in.  */
+  omp_declare_mapper_ns = ns;
+
   tmp = gfc_trans_code (ns->code);
   gfc_add_expr_to_block (&body, tmp);
+
+  /* Unset this to avoid accidentally using a stale pointer.  */
+  omp_declare_mapper_ns = NULL;
 
   if (TREE_TYPE (DECL_RESULT (fndecl)) != void_type_node
       || (sym->result && sym->result != sym
