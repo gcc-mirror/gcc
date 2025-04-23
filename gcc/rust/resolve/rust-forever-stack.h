@@ -831,6 +831,21 @@ private:
   tl::optional<Node &> dfs_node (Node &starting_point, NodeId to_find);
   tl::optional<const Node &> dfs_node (const Node &starting_point,
 				       NodeId to_find) const;
+
+public:
+  bool forward_declared (NodeId definition, NodeId usage)
+  {
+    if (peek ().kind != Rib::Kind::ForwardTypeParamBan)
+      return false;
+
+    const auto &definition_rib = dfs_rib (cursor (), definition);
+
+    if (!definition_rib)
+      return false;
+
+    return (definition_rib
+	    && definition_rib.value ().kind == Rib::Kind::ForwardTypeParamBan);
+  }
 };
 
 } // namespace Resolver2_0
