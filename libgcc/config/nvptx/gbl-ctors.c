@@ -31,6 +31,20 @@
 extern int atexit (void (*function) (void));
 
 
+/* Host/device compatibility: '__cxa_finalize'.  Dummy; if necessary,
+   overridden via libgomp 'target-cxa-dso-dtor.c'.  */
+
+extern void __GCC_offload___cxa_finalize (void *);
+
+void __attribute__((weak))
+__GCC_offload___cxa_finalize (void *dso_handle __attribute__((unused)))
+{
+}
+
+/* There are no DSOs; this is the main program.  */
+static void * const __dso_handle = 0;
+
+
 /* Handler functions ('static', in contrast to the 'gbl-ctors.h'
    prototypes).  */
 
@@ -49,6 +63,8 @@ static void __static_do_global_dtors (void);
 static void
 __static_do_global_dtors (void)
 {
+  __GCC_offload___cxa_finalize (__dso_handle);
+
   func_ptr *p = __DTOR_LIST__;
   ++p;
   for (; *p; ++p)
