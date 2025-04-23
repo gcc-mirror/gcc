@@ -1,6 +1,11 @@
 2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from trunk:
+	2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/target-cdtor-1.c: New.
+
+	Backported from trunk:
 	2025-04-25  Andrew Pinski  <quic_apinski@quicinc.com>
 		    Thomas Schwinge  <tschwinge@baylibre.com>
 
