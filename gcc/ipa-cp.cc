@@ -147,10 +147,6 @@ object_allocator<ipcp_value_source<tree> > ipcp_sources_pool
 object_allocator<ipcp_agg_lattice> ipcp_agg_lattice_pool
   ("IPA_CP aggregate lattices");
 
-/* Base count to use in heuristics when using profile feedback.  */
-
-static profile_count base_count;
-
 /* Original overall size of the program.  */
 
 static long overall_size, orig_overall_size;
@@ -505,14 +501,16 @@ struct caller_statistics
   profile_count count_sum;
   /* Sum of all frequencies for all calls.  */
   sreal freq_sum;
-  /* Number of calls and hot calls respectively.  */
-  int n_calls, n_hot_calls;
+  /* Number of calls and calls considered interesting respectively.  */
+  int n_calls, n_interesting_calls;
   /* If itself is set up, also count the number of non-self-recursive
      calls.  */
   int n_nonrec_calls;
   /* If non-NULL, this is the node itself and calls from it should have their
      counts included in rec_count_sum and not count_sum.  */
   cgraph_node *itself;
+  /* True if there is a caller that has no IPA profile.  */
+  bool called_without_ipa_profile;
 };
 
 /* Initialize fields of STAT to zeroes and optionally set it up so that edges
@@ -524,10 +522,39 @@ init_caller_stats (caller_statistics *stats, cgraph_node *itself = NULL)
   stats->rec_count_sum = profile_count::zero ();
   stats->count_sum = profile_count::zero ();
   stats->n_calls = 0;
-  stats->n_hot_calls = 0;
+  stats->n_interesting_calls = 0;
   stats->n_nonrec_calls = 0;
   stats->freq_sum = 0;
   stats->itself = itself;
+  stats->called_without_ipa_profile = false;
+}
+
+/* We want to propagate across edges that may be executed, however
+   we do not want to check maybe_hot, since call itself may be cold
+   while calee contains some heavy loop which makes propagation still
+   relevant.
+
+   In particular, even edge called once may lead to significant
+   improvement.  */
+
+static bool
+cs_interesting_for_ipcp_p (cgraph_edge *e)
+{
+  /* If profile says the edge is executed, we want to optimize.  */
+  if (e->count.ipa ().nonzero_p ())
+    return true;
+  /* If local (possibly guseed or adjusted 0 profile) claims edge is
+     not executed, do not propagate.  */
+  if (!e->count.nonzero_p ())
+    return false;
+  /* If IPA profile says edge is executed zero times, but zero
+     is quality is ADJUSTED, still consider it for cloning in
+     case we have partial training.  */
+  if (e->count.ipa ().initialized_p ()
+      && opt_for_fn (e->callee->decl,flag_profile_partial_training)
+      && e->count.nonzero_p ())
+    return false;
+  return true;
 }
 
 /* Worker callback of cgraph_for_node_and_aliases accumulating statistics of
@@ -553,13 +580,18 @@ gather_caller_stats (struct cgraph_node *node, void *data)
 	    else
 	      stats->count_sum += cs->count.ipa ();
 	  }
+	else
+	  stats->called_without_ipa_profile = true;
 	stats->freq_sum += cs->sreal_frequency ();
 	stats->n_calls++;
 	if (stats->itself && stats->itself != cs->caller)
 	  stats->n_nonrec_calls++;
 
-	if (cs->maybe_hot_p ())
-	  stats->n_hot_calls ++;
+	/* If profile known to be zero, we do not want to clone for performance.
+	   However if call is cold, the called function may still contain
+	   important hot loops.  */
+	if (cs_interesting_for_ipcp_p (cs))
+	  stats->n_interesting_calls++;
       }
   return false;
 
@@ -602,26 +634,11 @@ ipcp_cloning_candidate_p (struct cgraph_node *node)
 		 node->dump_name ());
       return true;
     }
-
-  /* When profile is available and function is hot, propagate into it even if
-     calls seems cold; constant propagation can improve function's speed
-     significantly.  */
-  if (stats.count_sum > profile_count::zero ()
-      && node->count.ipa ().initialized_p ())
-    {
-      if (stats.count_sum > node->count.ipa ().apply_scale (90, 100))
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "Considering %s for cloning; "
-		     "usually called directly.\n",
-		     node->dump_name ());
-	  return true;
-	}
-    }
-  if (!stats.n_hot_calls)
+  if (!stats.n_interesting_calls)
     {
       if (dump_file)
-	fprintf (dump_file, "Not considering %s for cloning; no hot calls.\n",
+	fprintf (dump_file, "Not considering %s for cloning; "
+		 "no calls considered interesting by profile.\n",
 		 node->dump_name ());
       return false;
     }
@@ -3369,24 +3386,29 @@ incorporate_penalties (cgraph_node *node, ipa_node_params *info,
 static bool
 good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
 			    sreal freq_sum, profile_count count_sum,
-			    int size_cost)
+			    int size_cost, bool called_without_ipa_profile)
 {
+  gcc_assert (count_sum.ipa () == count_sum);
   if (time_benefit == 0
       || !opt_for_fn (node->decl, flag_ipa_cp_clone)
-      || node->optimize_for_size_p ())
+      || node->optimize_for_size_p ()
+      /* If there is no call which was executed in profiling or where
+	 profile is missing, we do not want to clone.  */
+      || (!called_without_ipa_profile && !count_sum.nonzero_p ()))
     return false;
 
   gcc_assert (size_cost > 0);
 
   ipa_node_params *info = ipa_node_params_sum->get (node);
   int eval_threshold = opt_for_fn (node->decl, param_ipa_cp_eval_threshold);
+  /* If we know the execution IPA execution counts, we can estimate overall
+     speedup of the program.  */
   if (count_sum.nonzero_p ())
     {
-      gcc_assert (base_count.nonzero_p ());
-      sreal factor = count_sum.probability_in (base_count).to_sreal ();
-      sreal evaluation = (time_benefit * factor) / size_cost;
+      profile_count saved_time = count_sum * time_benefit;
+      sreal evaluation = saved_time.to_sreal_scale (profile_count::one ())
+			      / size_cost;
       evaluation = incorporate_penalties (node, info, evaluation);
-      evaluation *= 1000;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -3394,33 +3416,46 @@ good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
 		   "size: %i, count_sum: ", time_benefit.to_double (),
 		   size_cost);
 	  count_sum.dump (dump_file);
+	  fprintf (dump_file, ", overall time saved: ");
+	  saved_time.dump (dump_file);
 	  fprintf (dump_file, "%s%s) -> evaluation: %.2f, threshold: %i\n",
 		 info->node_within_scc
 		   ? (info->node_is_self_scc ? ", self_scc" : ", scc") : "",
 		 info->node_calling_single_call ? ", single_call" : "",
 		   evaluation.to_double (), eval_threshold);
 	}
-
-      return evaluation.to_int () >= eval_threshold;
+      gcc_checking_assert (saved_time == saved_time.ipa ());
+      if (!maybe_hot_count_p (NULL, saved_time))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "     not cloning: time saved is not hot\n");
+	}
+      /* Evaulation approximately corresponds to time saved per instruction
+	 introduced.  This is likely almost always going to be true, since we
+	 already checked that time saved is large enough to be considered
+	 hot.  */
+      else if (evaluation.to_int () >= eval_threshold)
+	return true;
+      /* If all call sites have profile known; we know we do not want t clone.
+	 If there are calls with unknown profile; try local heuristics.  */
+      if (!called_without_ipa_profile)
+	return false;
     }
-  else
-    {
-      sreal evaluation = (time_benefit * freq_sum) / size_cost;
-      evaluation = incorporate_penalties (node, info, evaluation);
-      evaluation *= 1000;
+  sreal evaluation = (time_benefit * freq_sum) / size_cost;
+  evaluation = incorporate_penalties (node, info, evaluation);
+  evaluation *= 1000;
 
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "     good_cloning_opportunity_p (time: %g, "
-		 "size: %i, freq_sum: %g%s%s) -> evaluation: %.2f, "
-		 "threshold: %i\n",
-		 time_benefit.to_double (), size_cost, freq_sum.to_double (),
-		 info->node_within_scc
-		   ? (info->node_is_self_scc ? ", self_scc" : ", scc") : "",
-		 info->node_calling_single_call ? ", single_call" : "",
-		 evaluation.to_double (), eval_threshold);
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "     good_cloning_opportunity_p (time: %g, "
+	     "size: %i, freq_sum: %g%s%s) -> evaluation: %.2f, "
+	     "threshold: %i\n",
+	     time_benefit.to_double (), size_cost, freq_sum.to_double (),
+	     info->node_within_scc
+	       ? (info->node_is_self_scc ? ", self_scc" : ", scc") : "",
+	     info->node_calling_single_call ? ", single_call" : "",
+	     evaluation.to_double (), eval_threshold);
 
-      return evaluation.to_int () >= eval_threshold;
-    }
+  return evaluation.to_int () >= eval_threshold;
 }
 
 /* Grow vectors in AVALS and fill them with information about values of
@@ -3613,7 +3648,8 @@ estimate_local_effects (struct cgraph_node *node)
 		     "known contexts, code not going to grow.\n");
 	}
       else if (good_cloning_opportunity_p (node, time, stats.freq_sum,
-					   stats.count_sum, size))
+					   stats.count_sum, size,
+					   stats.called_without_ipa_profile))
 	{
 	  if (size + overall_size <= get_max_overall_size (node))
 	    {
@@ -3979,7 +4015,7 @@ value_topo_info<valtype>::propagate_effects ()
 	  processed_srcvals.empty ();
 	  for (src = val->sources; src; src = src->next)
 	    if (src->val
-		&& src->cs->maybe_hot_p ())
+		&& cs_interesting_for_ipcp_p (src->cs))
 	      {
 		if (!processed_srcvals.add (src->val))
 		  {
@@ -4024,21 +4060,6 @@ value_topo_info<valtype>::propagate_effects ()
     }
 }
 
-/* Callback for qsort to sort counts of all edges.  */
-
-static int
-compare_edge_profile_counts (const void *a, const void *b)
-{
-  const profile_count *cnt1 = (const profile_count *) a;
-  const profile_count *cnt2 = (const profile_count *) b;
-
-  if (*cnt1 < *cnt2)
-    return 1;
-  if (*cnt1 > *cnt2)
-    return -1;
-  return 0;
-}
-
 
 /* Propagate constants, polymorphic contexts and their effects from the
    summaries interprocedurally.  */
@@ -4051,10 +4072,6 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
   if (dump_file)
     fprintf (dump_file, "\n Propagating constants:\n\n");
 
-  base_count = profile_count::uninitialized ();
-
-  bool compute_count_base = false;
-  unsigned base_count_pos_percent = 0;
   FOR_EACH_DEFINED_FUNCTION (node)
   {
     if (node->has_gimple_body_p ()
@@ -4071,56 +4088,7 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
     ipa_size_summary *s = ipa_size_summaries->get (node);
     if (node->definition && !node->alias && s != NULL)
       overall_size += s->self_size;
-    if (node->count.ipa ().initialized_p ())
-      {
-	compute_count_base = true;
-	unsigned pos_percent = opt_for_fn (node->decl,
-					   param_ipa_cp_profile_count_base);
-	base_count_pos_percent = MAX (base_count_pos_percent, pos_percent);
-      }
   }
-
-  if (compute_count_base)
-    {
-      auto_vec<profile_count> all_edge_counts;
-      all_edge_counts.reserve_exact (symtab->edges_count);
-      FOR_EACH_DEFINED_FUNCTION (node)
-	for (cgraph_edge *cs = node->callees; cs; cs = cs->next_callee)
-	  {
-	    profile_count count = cs->count.ipa ();
-	    if (!count.nonzero_p ())
-	      continue;
-
-	    enum availability avail;
-	    cgraph_node *tgt
-	      = cs->callee->function_or_virtual_thunk_symbol (&avail);
-	    ipa_node_params *info = ipa_node_params_sum->get (tgt);
-	    if (info && info->versionable)
-	      all_edge_counts.quick_push (count);
-	  }
-
-      if (!all_edge_counts.is_empty ())
-	{
-	  gcc_assert (base_count_pos_percent <= 100);
-	  all_edge_counts.qsort (compare_edge_profile_counts);
-
-	  unsigned base_count_pos
-	    = ((all_edge_counts.length () * (base_count_pos_percent)) / 100);
-	  base_count = all_edge_counts[base_count_pos];
-
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "\nSelected base_count from %u edges at "
-		       "position %u, arriving at: ", all_edge_counts.length (),
-		       base_count_pos);
-	      base_count.dump (dump_file);
-	      fprintf (dump_file, "\n");
-	    }
-	}
-      else if (dump_file)
-	fprintf (dump_file, "\nNo candidates with non-zero call count found, "
-		 "continuing as if without profile feedback.\n");
-    }
 
   orig_overall_size = overall_size;
 
@@ -4383,15 +4351,17 @@ static bool
 get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
 				sreal *freq_sum, int *caller_count,
 				profile_count *rec_count_sum,
-				profile_count *nonrec_count_sum)
+				profile_count *nonrec_count_sum,
+				bool *called_without_ipa_profile)
 {
   ipcp_value_source<valtype> *src;
   sreal freq = 0;
   int count = 0;
   profile_count rec_cnt = profile_count::zero ();
   profile_count nonrec_cnt = profile_count::zero ();
-  bool hot = false;
+  bool interesting = false;
   bool non_self_recursive = false;
+  *called_without_ipa_profile = false;
 
   for (src = val->sources; src; src = src->next)
     {
@@ -4402,15 +4372,19 @@ get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
 	    {
 	      count++;
 	      freq += cs->sreal_frequency ();
-	      hot |= cs->maybe_hot_p ();
+	      interesting |= cs_interesting_for_ipcp_p (cs);
 	      if (cs->caller != dest)
 		{
 		  non_self_recursive = true;
 		  if (cs->count.ipa ().initialized_p ())
 		    rec_cnt += cs->count.ipa ();
+		  else
+		    *called_without_ipa_profile = true;
 		}
 	      else if (cs->count.ipa ().initialized_p ())
 	        nonrec_cnt += cs->count.ipa ();
+	      else
+		*called_without_ipa_profile = true;
 	    }
 	  cs = get_next_cgraph_edge_clone (cs);
 	}
@@ -4426,19 +4400,7 @@ get_info_about_necessary_edges (ipcp_value<valtype> *val, cgraph_node *dest,
   *rec_count_sum = rec_cnt;
   *nonrec_count_sum = nonrec_cnt;
 
-  if (!hot && ipa_node_params_sum->get (dest)->node_within_scc)
-    {
-      struct cgraph_edge *cs;
-
-      /* Cold non-SCC source edge could trigger hot recursive execution of
-	 function. Consider the case as hot and rely on following cost model
-	 computation to further select right one.  */
-      for (cs = dest->callers; cs; cs = cs->next_caller)
-	if (cs->caller == dest && cs->maybe_hot_p ())
-	  return true;
-    }
-
-  return hot;
+  return interesting;
 }
 
 /* Given a NODE, and a set of its CALLERS, try to adjust order of the callers
@@ -5928,6 +5890,7 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
   sreal freq_sum;
   profile_count count_sum, rec_count_sum;
   vec<cgraph_edge *> callers;
+  bool called_without_ipa_profile;
 
   if (val->spec_node)
     {
@@ -5943,7 +5906,8 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
       return false;
     }
   else if (!get_info_about_necessary_edges (val, node, &freq_sum, &caller_count,
-					    &rec_count_sum, &count_sum))
+					    &rec_count_sum, &count_sum,
+					    &called_without_ipa_profile))
     return false;
 
   if (!dbg_cnt (ipa_cp_values))
@@ -5980,9 +5944,11 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
 
   if (!good_cloning_opportunity_p (node, val->local_time_benefit,
 				   freq_sum, count_sum,
-				   val->local_size_cost)
+				   val->local_size_cost,
+				   called_without_ipa_profile)
       && !good_cloning_opportunity_p (node, val->prop_time_benefit,
-				      freq_sum, count_sum, val->prop_size_cost))
+				      freq_sum, count_sum, val->prop_size_cost,
+				      called_without_ipa_profile))
     return false;
 
   if (dump_file)
@@ -6564,7 +6530,6 @@ make_pass_ipa_cp (gcc::context *ctxt)
 void
 ipa_cp_cc_finalize (void)
 {
-  base_count = profile_count::uninitialized ();
   overall_size = 0;
   orig_overall_size = 0;
   ipcp_free_transformation_sum ();
