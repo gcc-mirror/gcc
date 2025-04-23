@@ -3829,7 +3829,7 @@ gimple_cond_false_label (const gcond *gs)
 }
 
 
-/* Set the conditional COND_STMT to be of the form 'if (1 == 0)'.  */
+/* Set the conditional COND_STMT to be of the form 'if (0 != 0)'.  */
 
 inline void
 gimple_cond_make_false (gcond *gs)
@@ -3840,7 +3840,7 @@ gimple_cond_make_false (gcond *gs)
 }
 
 
-/* Set the conditional COND_STMT to be of the form 'if (1 == 1)'.  */
+/* Set the conditional COND_STMT to be of the form 'if (1 != 0)'.  */
 
 inline void
 gimple_cond_make_true (gcond *gs)
@@ -3850,7 +3850,7 @@ gimple_cond_make_true (gcond *gs)
   gs->subcode = NE_EXPR;
 }
 
-/* Check if conditional statemente GS is of the form 'if (1 == 1)',
+/* Check if conditional statement GS is of the form 'if (1 == 1)',
   'if (0 == 0)', 'if (1 != 0)' or 'if (0 != 1)' */
 
 inline bool
