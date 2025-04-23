@@ -117,8 +117,9 @@ DeriveOrd::make_cmp_arms ()
   std::unique_ptr<Pattern> equal = ptrify (
     builder.path_in_expression ({"core", "cmp", "Ordering", "Equal"}, true));
 
-  // We need to wrap the pattern in Option::Some if we are doing total ordering
-  if (ordering == Ordering::Total)
+  // We need to wrap the pattern in Option::Some if we are doing partial
+  // ordering
+  if (ordering == Ordering::Partial)
     {
       auto pattern_items = std::unique_ptr<TupleStructItems> (
 	new TupleStructItemsNoRange (vec (std::move (equal))));
