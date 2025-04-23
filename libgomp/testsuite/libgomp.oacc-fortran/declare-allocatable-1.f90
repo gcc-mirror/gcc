@@ -202,9 +202,9 @@ program test
 
   deallocate (b)
 end program test ! { dg-line l[incr c] }
-! { dg-bogus {note: variable 'overflow\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {TODO n/a} { xfail *-*-* } l$c }
-! { dg-bogus {note: variable 'not_prev_allocated\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {TODO n/a} { xfail *-*-* } l$c }
-! { dg-bogus {note: variable 'parm\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: artificial} {TODO n/a} { xfail *-*-* } l$c }
+! { dg-bogus {note: variable 'overflow\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l$c }
+! { dg-bogus {note: variable 'not_prev_allocated\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} {} { target *-*-* } l$c }
+! { dg-bogus {note: variable 'parm\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: artificial} {} { target *-*-* } l$c }
 
 ! Set each element in array 'b' at index i to i*2.
 
