@@ -10,11 +10,11 @@ subroutine f2
 end
 
 subroutine f3 (i)
-  !$omp declare simd simdlen(-2)   ! { dg-warning "INTEGER expression of SIMDLEN clause at .1. must be positive" }
+  !$omp declare simd simdlen(-2)   ! { dg-error "INTEGER expression of SIMDLEN clause at .1. must be positive" }
 end subroutine
 
 subroutine f4
-  !$omp declare simd simdlen(0)	   ! { dg-warning "INTEGER expression of SIMDLEN clause at .1. must be positive" }
+  !$omp declare simd simdlen(0)	   ! { dg-error "INTEGER expression of SIMDLEN clause at .1. must be positive" }
 end
 
 subroutine foo(p, d, n)
@@ -31,11 +31,11 @@ subroutine foo(p, d, n)
   do i = 1, 16
   end do
 
-  !$omp simd safelen(-2)    ! { dg-warning "INTEGER expression of SAFELEN clause at .1. must be positive" }
+  !$omp simd safelen(-2)    ! { dg-error "INTEGER expression of SAFELEN clause at .1. must be positive" }
   do i = 1, 16
   end do
 
-  !$omp simd safelen(0)     ! { dg-warning "INTEGER expression of SAFELEN clause at .1. must be positive" }
+  !$omp simd safelen(0)     ! { dg-error "INTEGER expression of SAFELEN clause at .1. must be positive" }
   do i = 1, 16
   end do
 
