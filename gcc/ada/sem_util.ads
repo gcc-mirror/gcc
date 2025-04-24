@@ -1143,12 +1143,10 @@ package Sem_Util is
    --  If expression N references a part of an object, return this object.
    --  Otherwise return Empty. Expression N should have been resolved already.
 
-   function Get_Enclosing_Ghost_Object (N : Node_Id) return Entity_Id;
-   --  If expression N references a reachable part of an object (as defined in
-   --  SPARK RM 6.9), return this object. Otherwise return Empty. It is similar
-   --  to Get_Enclosing_Object, but treats pointer dereference like component
-   --  selection. Also, it handles function results and type conversions like
-   --  objects. Expression N should have been resolved already.
+   function Get_Enclosing_Ghost_Entity (N : Node_Id) return Entity_Id;
+   --  If expression N references a name of either an object or of a
+   --  subprogram, then return its outermost entity that determines
+   --  whether this name denotes a ghost object.
 
    function Get_Generic_Entity (N : Node_Id) return Entity_Id;
    --  Returns the true generic entity in an instantiation. If the name in the

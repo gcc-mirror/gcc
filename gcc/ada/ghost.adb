@@ -776,7 +776,7 @@ package body Ghost is
       Formal     : Entity_Id;
       Is_Default : Boolean := False)
    is
-      Actual_Obj : constant Entity_Id := Get_Enclosing_Ghost_Object (Actual);
+      Actual_Obj : constant Entity_Id := Get_Enclosing_Ghost_Entity (Actual);
    begin
       if not Is_Ghost_Entity (Formal) then
          return;
@@ -1165,7 +1165,7 @@ package body Ghost is
       --  entity.
 
       if Nkind (N) = N_Assignment_Statement then
-         Id := Get_Enclosing_Ghost_Object (Name (N));
+         Id := Get_Enclosing_Ghost_Entity (Name (N));
 
          return Present (Id) and then Is_Ghost_Entity (Id);
       end if;
@@ -1223,7 +1223,7 @@ package body Ghost is
       --  A procedure call is Ghost when it invokes a Ghost procedure
 
       if Nkind (N) = N_Procedure_Call_Statement then
-         Id := Get_Enclosing_Ghost_Object (Name (N));
+         Id := Get_Enclosing_Ghost_Entity (Name (N));
 
          return Present (Id) and then Is_Ghost_Entity (Id);
       end if;
@@ -1460,7 +1460,7 @@ package body Ghost is
             end if;
 
             declare
-               Id : constant Entity_Id := Get_Enclosing_Ghost_Object (Lhs);
+               Id : constant Entity_Id := Get_Enclosing_Ghost_Entity (Lhs);
             begin
                if Present (Id) then
                   --  Left-hand side denotes a Checked ghost entity, so install
@@ -1744,7 +1744,7 @@ package body Ghost is
       --  A procedure call becomes Ghost when the procedure being invoked is
       --  Ghost. Install the Ghost mode of the procedure.
 
-      Id := Get_Enclosing_Ghost_Object (Name (N));
+      Id := Get_Enclosing_Ghost_Entity (Name (N));
 
       if Present (Id) then
          if Is_Checked_Ghost_Entity (Id) then
@@ -2058,7 +2058,7 @@ package body Ghost is
       --  of the target.
 
       if Nkind (N) = N_Assignment_Statement then
-         Id := Get_Enclosing_Ghost_Object (Name (N));
+         Id := Get_Enclosing_Ghost_Entity (Name (N));
 
          if Present (Id) then
             Set_Ghost_Mode_From_Entity (Id);
@@ -2097,7 +2097,7 @@ package body Ghost is
       --  procedure being invoked.
 
       elsif Nkind (N) = N_Procedure_Call_Statement then
-         Id := Get_Enclosing_Ghost_Object (Name (N));
+         Id := Get_Enclosing_Ghost_Entity (Name (N));
 
          if Present (Id) then
             Set_Ghost_Mode_From_Entity (Id);

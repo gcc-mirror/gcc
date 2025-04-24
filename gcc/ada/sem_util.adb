@@ -10261,6 +10261,43 @@ package body Sem_Util is
           Strval => String_From_Name_Buffer);
    end Get_Default_External_Name;
 
+   --------------------------------
+   -- Get_Enclosing_Ghost_Entity --
+   --------------------------------
+
+   function Get_Enclosing_Ghost_Entity (N : Node_Id) return Entity_Id is
+   begin
+      if Is_Entity_Name (N) then
+         return Entity (N);
+      else
+         case Nkind (N) is
+            when N_Attribute_Reference
+               | N_Explicit_Dereference
+               | N_Indexed_Component
+               | N_Selected_Component
+               | N_Slice
+            =>
+               return Get_Enclosing_Ghost_Entity (Prefix (N));
+
+            when N_Function_Call =>
+               return Get_Called_Entity (N);
+
+            --  We are interested in the target type, because if it is ghost,
+            --  then the object is ghost as well and if it is non-ghost, then
+            --  its expression can't be ghost.
+
+            when N_Qualified_Expression
+               | N_Type_Conversion
+               | N_Unchecked_Type_Conversion
+            =>
+               return Entity (Subtype_Mark (N));
+
+            when others =>
+               return Empty;
+         end case;
+      end if;
+   end Get_Enclosing_Ghost_Entity;
+
    --------------------------
    -- Get_Enclosing_Object --
    --------------------------
@@ -10285,43 +10322,6 @@ package body Sem_Util is
          end case;
       end if;
    end Get_Enclosing_Object;
-
-   --------------------------------
-   -- Get_Enclosing_Ghost_Object --
-   --------------------------------
-
-   function Get_Enclosing_Ghost_Object (N : Node_Id) return Entity_Id is
-   begin
-      if Is_Entity_Name (N) then
-         return Entity (N);
-      else
-         case Nkind (N) is
-            when N_Attribute_Reference
-               | N_Explicit_Dereference
-               | N_Indexed_Component
-               | N_Selected_Component
-               | N_Slice
-            =>
-               return Get_Enclosing_Ghost_Object (Prefix (N));
-
-            when N_Function_Call =>
-               return Get_Called_Entity (N);
-
-            --  We are interested in the target type, because if it is ghost,
-            --  then the object is ghost as well and if it is non-ghost, then
-            --  its expression can't be ghost.
-
-            when N_Qualified_Expression
-               | N_Type_Conversion
-               | N_Unchecked_Type_Conversion
-            =>
-               return Entity (Subtype_Mark (N));
-
-            when others =>
-               return Empty;
-         end case;
-      end if;
-   end Get_Enclosing_Ghost_Object;
 
    ---------------------------
    -- Get_Enum_Lit_From_Pos --
