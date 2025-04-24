@@ -41,9 +41,9 @@ extern "C" {
 
 fn print(b: bool) {
     if b {
-        unsafe { puts("true" as *const str as *const i8) }
+        unsafe { puts("true\0" as *const str as *const i8) }
     } else {
-        unsafe { puts("false" as *const str as *const i8) }
+        unsafe { puts("false\0" as *const str as *const i8) }
     }
 }
 
