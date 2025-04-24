@@ -67,11 +67,6 @@ package body Ghost is
    -- Local subprograms --
    -----------------------
 
-   function Ghost_Entity (Ref : Node_Id) return Entity_Id;
-   pragma Inline (Ghost_Entity);
-   --  Obtain the entity of a Ghost entity from reference Ref. Return Empty if
-   --  no such entity exists.
-
    procedure Install_Ghost_Mode (Mode : Ghost_Mode_Type);
    pragma Inline (Install_Ghost_Mode);
    --  Install Ghost mode Mode as the Ghost mode in effect
@@ -1079,27 +1074,6 @@ package body Ghost is
       end if;
    end Check_Ghost_Type;
 
-   ------------------
-   -- Ghost_Entity --
-   ------------------
-
-   function Ghost_Entity (Ref : Node_Id) return Entity_Id is
-      Obj_Ref : constant Node_Id := Ultimate_Prefix (Ref);
-
-   begin
-      --  When the reference denotes a subcomponent, recover the related whole
-      --  object (SPARK RM 6.9(1)).
-
-      if Is_Entity_Name (Obj_Ref) then
-         return Entity (Obj_Ref);
-
-      --  Otherwise the reference cannot possibly denote a Ghost entity
-
-      else
-         return Empty;
-      end if;
-   end Ghost_Entity;
-
    --------------------------------
    -- Implements_Ghost_Interface --
    --------------------------------
@@ -1249,7 +1223,7 @@ package body Ghost is
       --  A procedure call is Ghost when it invokes a Ghost procedure
 
       if Nkind (N) = N_Procedure_Call_Statement then
-         Id := Ghost_Entity (Name (N));
+         Id := Get_Enclosing_Ghost_Object (Name (N));
 
          return Present (Id) and then Is_Ghost_Entity (Id);
       end if;
@@ -1770,7 +1744,7 @@ package body Ghost is
       --  A procedure call becomes Ghost when the procedure being invoked is
       --  Ghost. Install the Ghost mode of the procedure.
 
-      Id := Ghost_Entity (Name (N));
+      Id := Get_Enclosing_Ghost_Object (Name (N));
 
       if Present (Id) then
          if Is_Checked_Ghost_Entity (Id) then
@@ -2084,7 +2058,7 @@ package body Ghost is
       --  of the target.
 
       if Nkind (N) = N_Assignment_Statement then
-         Id := Ghost_Entity (Name (N));
+         Id := Get_Enclosing_Ghost_Object (Name (N));
 
          if Present (Id) then
             Set_Ghost_Mode_From_Entity (Id);
@@ -2123,7 +2097,7 @@ package body Ghost is
       --  procedure being invoked.
 
       elsif Nkind (N) = N_Procedure_Call_Statement then
-         Id := Ghost_Entity (Name (N));
+         Id := Get_Enclosing_Ghost_Object (Name (N));
 
          if Present (Id) then
             Set_Ghost_Mode_From_Entity (Id);
