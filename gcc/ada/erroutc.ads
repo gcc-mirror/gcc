@@ -29,9 +29,13 @@
 with Table;
 with Errsw; use Errsw;
 with Errid; use Errid;
+with Osint; use Osint;
 with Types; use Types;
 
 package Erroutc is
+
+   Exit_Code : Exit_Code_Type := E_Success;
+   --  Exit_Code used at the end of the compilation
 
    type Error_Msg_Type is
      (Error,  -- Default value

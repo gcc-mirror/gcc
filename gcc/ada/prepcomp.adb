@@ -545,7 +545,7 @@ package body Prepcomp is
 
       if Total_Errors_Detected > T then
          Errout.Finalize (Last_Call => True);
-         Errout.Output_Messages;
+         Errout.Output_Messages (E_Fatal);
          Fail ("errors found in preprocessing data file """
                & Get_Name_String (N) & """");
       end if;
@@ -668,7 +668,7 @@ package body Prepcomp is
 
             if T /= Total_Errors_Detected then
                Errout.Finalize (Last_Call => True);
-               Errout.Output_Messages;
+               Errout.Output_Messages (E_Fatal);
                Fail ("errors found in definition file """
                      & Get_Name_String (N)
                      & """");

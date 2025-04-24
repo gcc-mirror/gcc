@@ -28,7 +28,6 @@ with GNAT.Lists; use GNAT.Lists;
 with Gnatvsn;    use Gnatvsn;
 with Lib;        use Lib;
 with Namet;      use Namet;
-with Osint;      use Osint;
 with Output;     use Output;
 with Sinput;     use Sinput;
 with System.OS_Lib;
@@ -759,7 +758,7 @@ package body Erroutc.SARIF_Emitter is
 
       --  Print executionSuccessful
 
-      Write_Boolean_Attribute (N_EXECUTION_SUCCESSFUL, not Compilation_Errors);
+      Write_Boolean_Attribute (N_EXECUTION_SUCCESSFUL, Exit_Code = E_Success);
 
       End_Block;
       NL_And_Indent;

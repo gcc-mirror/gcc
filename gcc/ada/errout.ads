@@ -32,6 +32,7 @@ with Err_Vars;
 with Erroutc;
 with Errid;    use Errid;
 with Namet;    use Namet;
+with Osint;    use Osint;
 with Table;
 with Types;    use Types;
 with Uintp;    use Uintp;
@@ -716,9 +717,9 @@ package Errout is
    --  and must be set True on the last call (a value of True activates some
    --  processing that must only be done after all messages are posted).
 
-   procedure Output_Messages;
+   procedure Output_Messages (Exit_Code : Exit_Code_Type);
    --  Output list of messages, including messages giving number of detected
-   --  errors and warnings.
+   --  errors and warnings and store the exit code used.
 
    procedure Error_Msg
      (Msg : String; Flag_Location : Source_Ptr);

@@ -982,7 +982,7 @@ procedure Gnat1drv is
    --  Local variables
 
    Back_End_Mode : Back_End.Back_End_Mode_Type;
-   Ecode         : Exit_Code_Type;
+   Ecode         : Exit_Code_Type := E_Success;
 
    Main_Unit_Kind : Node_Kind;
    --  Kind of main compilation unit node
@@ -1169,9 +1169,10 @@ begin
       --  Exit with errors if the main source could not be parsed
 
       if Sinput.Main_Source_File <= No_Source_File then
+         Ecode := E_Errors;
          Errout.Finalize (Last_Call => True);
-         Errout.Output_Messages;
-         Exit_Program (E_Errors);
+         Errout.Output_Messages (Ecode);
+         Exit_Program (Ecode);
       end if;
 
       Main_Unit_Node := Cunit (Main_Unit);
@@ -1198,9 +1199,10 @@ begin
       Errout.Finalize (Last_Call => False);
 
       if Compilation_Errors then
+         Ecode := E_Errors;
          Treepr.Tree_Dump;
          Errout.Finalize (Last_Call => True);
-         Errout.Output_Messages;
+         Errout.Output_Messages (Ecode);
          Namet.Finalize;
 
          --  Generate ALI file if specially requested
@@ -1209,7 +1211,7 @@ begin
             Write_ALI (Object => False);
          end if;
 
-         Exit_Program (E_Errors);
+         Exit_Program (Ecode);
       end if;
 
       --  Case of no code required to be generated, exit indicating no error
@@ -1217,7 +1219,7 @@ begin
       if Original_Operating_Mode = Check_Syntax then
          Treepr.Tree_Dump;
          Errout.Finalize (Last_Call => True);
-         Errout.Output_Messages;
+         Errout.Output_Messages (Ecode);
          Namet.Finalize;
          Check_Rep_Info;
 
@@ -1407,7 +1409,7 @@ begin
 
          Post_Compilation_Validation_Checks;
          Errout.Finalize (Last_Call => True);
-         Errout.Output_Messages;
+         Errout.Output_Messages (Ecode);
          Treepr.Tree_Dump;
 
          --  Generate ALI file if specially requested, or for missing subunits,
@@ -1461,7 +1463,7 @@ begin
       then
          Post_Compilation_Validation_Checks;
          Errout.Finalize (Last_Call => True);
-         Errout.Output_Messages;
+         Errout.Output_Messages (Ecode);
          Write_ALI (Object => False);
          Tree_Dump;
          Namet.Finalize;
@@ -1541,7 +1543,8 @@ begin
       --  representation information for List_Rep_Info).
 
       Errout.Finalize (Last_Call => True);
-      Errout.Output_Messages;
+      Errout.Output_Messages
+        ((if Compilation_Errors then E_Errors else E_Success));
 
       --  Back annotation of representation info is not done in CodePeer and
       --  SPARK modes.
@@ -1557,8 +1560,9 @@ begin
       --  there will be no attempt to generate an object file.
 
       if Compilation_Errors then
+         Ecode := E_Errors;
          Treepr.Tree_Dump;
-         Exit_Program (E_Errors);
+         Exit_Program (Ecode);
       end if;
 
       if not GNATprove_Mode then
@@ -1632,7 +1636,7 @@ begin
 exception
    when Unrecoverable_Error =>
       Errout.Finalize (Last_Call => True);
-      Errout.Output_Messages;
+      Errout.Output_Messages (E_Errors);
 
       Set_Standard_Error;
       Write_Str ("compilation abandoned");

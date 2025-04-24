@@ -44,7 +44,6 @@ with Gnatvsn;        use Gnatvsn;
 with Lib;            use Lib;
 with Opt;            use Opt;
 with Nlists;         use Nlists;
-with Osint;          use Osint;
 with Output;         use Output;
 with Scans;          use Scans;
 with Sem_Aux;        use Sem_Aux;
@@ -2710,7 +2709,7 @@ package body Errout is
    -- Output_Messages --
    ---------------------
 
-   procedure Output_Messages is
+   procedure Output_Messages (Exit_Code : Exit_Code_Type) is
 
       --  Local subprograms
 
@@ -2818,6 +2817,8 @@ package body Errout is
       if not Finalize_Called then
          raise Program_Error;
       end if;
+
+      Erroutc.Exit_Code := Exit_Code;
 
       --  Reset current error source file if the main unit has a pragma
       --  Source_Reference. This ensures outputting the proper name of
