@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-additional-options "-fcheck=pointer" }
 !
 ! Test the fix for PRs93924 & 93925.
 !
