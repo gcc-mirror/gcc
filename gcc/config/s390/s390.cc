@@ -14496,7 +14496,21 @@ s390_call_saved_register_used (tree call_expr)
 
 	  for (reg = 0; reg < nregs; reg++)
 	    if (!call_used_or_fixed_reg_p (reg + REGNO (parm_rtx)))
-	      return true;
+	      {
+		rtx parm;
+		/* Allow passing through unmodified value from caller,
+		   see PR119873.  */
+		if (TREE_CODE (parameter) == SSA_NAME
+		    && SSA_NAME_IS_DEFAULT_DEF (parameter)
+		    && SSA_NAME_VAR (parameter)
+		    && TREE_CODE (SSA_NAME_VAR (parameter)) == PARM_DECL
+		    && (parm = DECL_INCOMING_RTL (SSA_NAME_VAR (parameter)))
+		    && REG_P (parm)
+		    && REGNO (parm) == REGNO (parm_rtx)
+		    && REG_NREGS (parm) == REG_NREGS (parm_rtx))
+		  break;
+		return true;
+	      }
 	}
       else if (GET_CODE (parm_rtx) == PARALLEL)
 	{
@@ -14543,8 +14557,9 @@ s390_function_ok_for_sibcall (tree decl, tree exp)
     return false;
 
   /* Register 6 on s390 is available as an argument register but unfortunately
-     "caller saved". This makes functions needing this register for arguments
-     not suitable for sibcalls.  */
+     "caller saved".  This makes functions needing this register for arguments
+     not suitable for sibcalls, unless the same value is passed from the
+     caller.  */
   return !s390_call_saved_register_used (exp);
 }
 
