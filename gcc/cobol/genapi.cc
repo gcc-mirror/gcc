@@ -1229,7 +1229,40 @@ initialize_variable_internal( cbl_refer_t refer,
       }
     else
       {
-      TRACE1_FIELD_VALUE("", parsed_var, "")
+      // Convert strings of spaces to "<SPACES>"
+      tree spaces = gg_define_int(0);
+      if(   parsed_var->type == FldGroup
+         || parsed_var->type == FldAlphanumeric
+         || parsed_var->type == FldAlphaEdited
+         || parsed_var->type == FldLiteralA )
+        {
+        gg_assign(spaces, integer_one_node);
+        tree counter = gg_define_int(parsed_var->data.capacity);
+        WHILE(counter, gt_op, integer_zero_node)
+          {
+          gg_decrement(counter);
+          IF( gg_indirect(member(parsed_var->var_decl_node, "data"), counter),
+              ne_op,
+              build_int_cst_type(UCHAR, ' ') )
+              {
+              gg_assign(spaces, integer_zero_node);
+              }
+          ELSE
+            {
+            }
+          ENDIF
+          }
+          WEND
+        }
+      IF(spaces, eq_op, integer_one_node)
+        {
+        TRACE1_TEXT(" <SPACES>")
+        }
+      ELSE
+        {
+        TRACE1_FIELD_VALUE("", parsed_var, "")
+        }
+      ENDIF
       }
     TRACE1_END
     }
@@ -12341,7 +12374,7 @@ create_and_call(size_t narg,
 
     // Because the CALL had a RETURNING clause, RETURN-CODE doesn't return a
     // value.  So, we make sure it is zero
-    gg_assign(var_decl_return_code, build_int_cst_type(SHORT, 0));
+////    gg_assign(var_decl_return_code, build_int_cst_type(SHORT, 0));
 
     if( returned_value_type == CHAR_P )
       {
@@ -12352,7 +12385,7 @@ create_and_call(size_t narg,
                 gg_add( member(returned.field->var_decl_node, "data"),
                         refer_offset_dest(returned)));
       gg_assign(returned_length,
-                refer_size_dest(returned));
+                gg_cast(TREE_TYPE(returned_length), refer_size_dest(returned)));
 
       // The returned value is a string of nbytes, which by specification
       // has to be at least as long as the returned_length of the target:
@@ -12442,28 +12475,9 @@ create_and_call(size_t narg,
     }
   else
     {
-    // Because no explicit returning value is expected, we switch to
-    // the IBM default behavior, where the returned INT value is assigned
-    // to our RETURN-CODE:
-    returned_value = gg_define_variable(SHORT);
-
-    // Before doing the call, we save the COBOL program_state:
-    push_program_state();
-    gg_assign(returned_value, gg_cast(SHORT, call_expr));
-    // And after the call, we restore it:
-    pop_program_state();
-
-    // We know that the returned value is a 2-byte little-endian INT:
-    gg_assign(  var_decl_return_code,
-                returned_value);
-    TRACE1
-      {
-      TRACE1_HEADER
-      gg_printf("returned value: %d",
-                gg_cast(INT, var_decl_return_code),
-                NULL_TREE);
-      TRACE1_END
-      }
+    // Because no explicit returning value is expected, we just call it.  We
+    // expect COBOL routines to set RETURN-CODE when they think it necessary.
+    gg_append_statement(call_expr);
     }
 
   for( size_t i=0; i<narg; i++ )
@@ -14810,7 +14824,7 @@ mh_source_is_group( cbl_refer_t &destref,
     tree dbytes  = refer_size_dest(destref);
     tree sbytes  = tsrc.length;
 
-    IF( sbytes, ge_op, dbytes )
+    IF( sbytes, ge_op, gg_cast(TREE_TYPE(sbytes), dbytes) )
       {
       // There are too many source bytes
       gg_memcpy(tdest, tsource, dbytes);
@@ -16140,12 +16154,12 @@ psa_FldLiteralA(struct cbl_field_t *field )
     DECL_PRESERVE_P (field->var_decl_node) = 1;
     nvar += 1;
     }
-  TRACE1
-    {
-    TRACE1_INDENT
-    TRACE1_TEXT("Finished")
-    TRACE1_END
-    }
+//  TRACE1
+//    {
+//    TRACE1_INDENT
+//    TRACE1_TEXT("Finished")
+//    TRACE1_END
+//    }
   }
 #endif
 
@@ -16535,24 +16549,15 @@ parser_symbol_add(struct cbl_field_t *new_var )
 
     size_t our_index = new_var->our_index;
 
-    // During the early stages of implementing cbl_field_t::our_index, there
-    // were execution paths in parse.y and parser.cc that resulted in our_index
-    // not being set.  I hereby try to use field_index() to find the index
-    // of this field to resolve those.  I note that field_index does a linear
-    // search of the symbols[] table to find that index.  That's why I don't
-    // use it routinely; it results in O(N^squared) computational complexity
-    // to do a linear search of the symbol table for each symbol
-
     if(   !our_index
           && new_var->type != FldLiteralN
           && !(new_var->attr & intermediate_e))
       {
-      our_index = field_index(new_var);
-      if( our_index == (size_t)-1 )
-        {
-        // Hmm.  Couldn't find it.  Seems odd.
-        our_index = 0;
-        }
+      // During the early stages of implementing cbl_field_t::our_index, there
+      // were execution paths in parse.y and parser.cc that resulted in
+      // our_index not being set.  Those should be gone.
+      fprintf(stderr, "our_index is NULL under unanticipated circumstances");
+      gcc_assert(false);
       }
 
     // When we create the cblc_field_t structure, we need a data pointer
@@ -16561,7 +16566,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
     // we calculate data as the pointer to our parent's data plus our
     // offset.
 
-    // declare and define the structure.  This code *must* match
+    // Declare and define the structure.  This code *must* match
     // the C structure declared in libgcobol.c.  Towards that end, the
     // variables are declared in descending order of size in order to
     // make the packing match up.
