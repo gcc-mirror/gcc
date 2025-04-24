@@ -1536,7 +1536,7 @@ loc_descr_equal_p_1 (dw_loc_descr_ref a, dw_loc_descr_ref b)
   /* ??? This is only ever set for DW_OP_constNu, for N equal to the
      address size, but since we always allocate cleared storage it
      should be zero for other types of locations.  */
-  if (a->dtprel != b->dtprel)
+  if (a->dw_loc_dtprel != b->dw_loc_dtprel)
     return false;
 
   return (dw_val_equal_p (&a->dw_loc_oprnd1, &b->dw_loc_oprnd1)
@@ -2115,7 +2115,7 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
       dw2_asm_output_data (2, val1->v.val_int, NULL);
       break;
     case DW_OP_const4u:
-      if (loc->dtprel)
+      if (loc->dw_loc_dtprel)
 	{
 	  gcc_assert (targetm.asm_out.output_dwarf_dtprel);
 	  targetm.asm_out.output_dwarf_dtprel (asm_out_file, 4,
@@ -2128,7 +2128,7 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
       dw2_asm_output_data (4, val1->v.val_int, NULL);
       break;
     case DW_OP_const8u:
-      if (loc->dtprel)
+      if (loc->dw_loc_dtprel)
 	{
 	  gcc_assert (targetm.asm_out.output_dwarf_dtprel);
 	  targetm.asm_out.output_dwarf_dtprel (asm_out_file, 8,
@@ -2323,7 +2323,7 @@ output_loc_operands (dw_loc_descr_ref loc, int for_eh_or_skip)
       break;
 
     case DW_OP_addr:
-      if (loc->dtprel)
+      if (loc->dw_loc_dtprel)
 	{
 	  if (targetm.asm_out.output_dwarf_dtprel)
 	    {
@@ -4028,7 +4028,7 @@ new_addr_loc_descr (rtx addr, enum dtprel_bool dtprel)
 
   ref->dw_loc_oprnd1.val_class = dw_val_class_addr;
   ref->dw_loc_oprnd1.v.val_addr = addr;
-  ref->dtprel = dtprel;
+  ref->dw_loc_dtprel = dtprel;
   if (dwarf_split_debug_info)
     ref->dw_loc_oprnd1.val_entry
       = add_addr_table_entry (addr,
@@ -7036,7 +7036,7 @@ loc_checksum (dw_loc_descr_ref loc, struct md5_ctx *ctx)
   inchash::hash hstate;
   hashval_t hash;
 
-  tem = (loc->dtprel << 8) | ((unsigned int) loc->dw_loc_opc);
+  tem = (loc->dw_loc_dtprel << 8) | ((unsigned int) loc->dw_loc_opc);
   CHECKSUM (tem);
   hash_loc_operands (loc, hstate);
   hash = hstate.end();
@@ -7259,7 +7259,7 @@ loc_checksum_ordered (dw_loc_descr_ref loc, struct md5_ctx *ctx)
       inchash::hash hstate;
       hashval_t hash;
 
-      CHECKSUM_ULEB128 (loc->dtprel);
+      CHECKSUM_ULEB128 (loc->dw_loc_dtprel);
       CHECKSUM_ULEB128 (loc->dw_loc_opc);
       hash_loc_operands (loc, hstate);
       hash = hstate.end ();
@@ -18310,7 +18310,7 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 
       /* If needed, relocate the picking offset with respect to the frame
 	 offset. */
-      if (l->frame_offset_rel)
+      if (l->dw_loc_frame_offset_rel)
 	{
 	  unsigned HOST_WIDE_INT off;
 	  switch (l->dw_loc_opc)
@@ -18826,7 +18826,7 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	       && want_address == 0)
 	{
 	  ret = new_loc_descr (DW_OP_pick, 0, 0);
-	  ret->frame_offset_rel = 1;
+	  ret->dw_loc_frame_offset_rel = 1;
 	  context->placeholder_seen = true;
 	  break;
 	}
@@ -18993,7 +18993,7 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	  gcc_assert (cursor != NULL_TREE);
 
 	  ret = new_loc_descr (DW_OP_pick, i, 0);
-	  ret->frame_offset_rel = 1;
+	  ret->dw_loc_frame_offset_rel = 1;
 	  break;
 	}
       /* FALLTHRU */
@@ -31061,7 +31061,7 @@ resolve_addr_in_expr (dw_attr_node *a, dw_loc_descr_ref loc)
 	     || loc->dw_loc_opc == DW_OP_addrx)
 	    || ((loc->dw_loc_opc == DW_OP_GNU_const_index
 		 || loc->dw_loc_opc == DW_OP_constx)
-		&& loc->dtprel))
+		&& loc->dw_loc_dtprel))
           {
             rtx rtl = loc->dw_loc_oprnd1.val_entry->addr.rtl;
             if (!resolve_one_addr (&rtl))
@@ -31073,7 +31073,7 @@ resolve_addr_in_expr (dw_attr_node *a, dw_loc_descr_ref loc)
 	break;
       case DW_OP_const4u:
       case DW_OP_const8u:
-	if (loc->dtprel
+	if (loc->dw_loc_dtprel
 	    && !resolve_one_addr (&loc->dw_loc_oprnd1.v.val_addr))
 	  return false;
 	break;
@@ -31359,8 +31359,12 @@ copy_deref_exprloc (dw_loc_descr_ref expr)
   while (expr != l)
     {
       *p = new_loc_descr (expr->dw_loc_opc, 0, 0);
-      (*p)->dw_loc_oprnd1 = expr->dw_loc_oprnd1;
-      (*p)->dw_loc_oprnd2 = expr->dw_loc_oprnd2;
+      (*p)->dw_loc_oprnd1.val_class = expr->dw_loc_oprnd1.val_class;
+      (*p)->dw_loc_oprnd1.val_entry = expr->dw_loc_oprnd1.val_entry;
+      (*p)->dw_loc_oprnd1.v = expr->dw_loc_oprnd1.v;
+      (*p)->dw_loc_oprnd2.val_class = expr->dw_loc_oprnd2.val_class;
+      (*p)->dw_loc_oprnd2.val_entry = expr->dw_loc_oprnd2.val_entry;
+      (*p)->dw_loc_oprnd2.v = expr->dw_loc_oprnd2.v;
       p = &(*p)->dw_loc_next;
       expr = expr->dw_loc_next;
     }
@@ -31451,7 +31455,9 @@ optimize_string_length (dw_attr_node *a)
      copy over the DW_AT_location attribute from die to a.  */
   if (l->dw_loc_next != NULL)
     {
-      a->dw_attr_val = av->dw_attr_val;
+      a->dw_attr_val.val_class = av->dw_attr_val.val_class;
+      a->dw_attr_val.val_entry = av->dw_attr_val.val_entry;
+      a->dw_attr_val.v = av->dw_attr_val.v;
       return 1;
     }
 
@@ -31737,7 +31743,7 @@ hash_loc_operands (dw_loc_descr_ref loc, inchash::hash &hstate)
     {
     case DW_OP_const4u:
     case DW_OP_const8u:
-      if (loc->dtprel)
+      if (loc->dw_loc_dtprel)
 	goto hash_addr;
       /* FALLTHRU */
     case DW_OP_const1u:
@@ -31839,7 +31845,7 @@ hash_loc_operands (dw_loc_descr_ref loc, inchash::hash &hstate)
       break;
     case DW_OP_addr:
     hash_addr:
-      if (loc->dtprel)
+      if (loc->dw_loc_dtprel)
 	{
 	  unsigned char dtprel = 0xd1;
 	  hstate.add_object (dtprel);
@@ -31851,7 +31857,7 @@ hash_loc_operands (dw_loc_descr_ref loc, inchash::hash &hstate)
     case DW_OP_GNU_const_index:
     case DW_OP_constx:
       {
-        if (loc->dtprel)
+	if (loc->dw_loc_dtprel)
           {
             unsigned char dtprel = 0xd1;
 	    hstate.add_object (dtprel);
@@ -31998,7 +32004,7 @@ compare_loc_operands (dw_loc_descr_ref x, dw_loc_descr_ref y)
     {
     case DW_OP_const4u:
     case DW_OP_const8u:
-      if (x->dtprel)
+      if (x->dw_loc_dtprel)
 	goto hash_addr;
       /* FALLTHRU */
     case DW_OP_const1u:
@@ -32162,7 +32168,7 @@ compare_locs (dw_loc_descr_ref x, dw_loc_descr_ref y)
 {
   for (; x != NULL && y != NULL; x = x->dw_loc_next, y = y->dw_loc_next)
     if (x->dw_loc_opc != y->dw_loc_opc
-	|| x->dtprel != y->dtprel
+	|| x->dw_loc_dtprel != y->dw_loc_dtprel
 	|| !compare_loc_operands (x, y))
       break;
   return x == NULL && y == NULL;
