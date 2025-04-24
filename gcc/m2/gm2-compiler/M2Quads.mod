@@ -69,6 +69,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         GetArraySubscript, GetDimension,
                         GetParam,
                         GetNth, GetNthParamAny,
+                        GetNthParamAnyClosest,
                         GetFirstUsed, GetDeclaredMod,
                         GetQuads, GetReadQuads, GetWriteQuads,
                         GetWriteLimitQuads, GetReadLimitQuads,
@@ -5676,7 +5677,8 @@ BEGIN
    WHILE i<=ParamTotal DO
       IF i <= NoOfParamAny (Proc)
       THEN
-         FormalI := GetParam(Proc, i) ;
+         (* FormalI := GetParam(Proc, i) ;  *)
+         FormalI := GetNthParamAnyClosest (Proc, i, GetCurrentModule ()) ;
          IF CompilerDebugging
          THEN
             n1 := GetSymName(FormalI) ;
@@ -5801,7 +5803,7 @@ BEGIN
             MetaError3 ('parameter {%3n} in {%1dD} causes a mismatch it was declared as a {%2d}', call, GetNth (call, i), i)
          END ;
          BuildRange (InitTypesParameterCheck (tokno, CheckedProcedure, i,
-                                              GetParam (CheckedProcedure, i),
+                                              GetNthParamAnyClosest (CheckedProcedure, i, GetCurrentModule ()),
                                               GetParam (ProcType, i), ParamCheckId)) ;
          INC(i)
       END
@@ -6150,7 +6152,7 @@ BEGIN
    MetaErrorStringT2 (tokpos, Msg, ProcedureSym, ParameterNo) ;
    IF NoOfParamAny (ProcedureSym) >= ParameterNo
    THEN
-      FormalParam := GetNthParamAny (ProcedureSym, ParameterNo) ;
+      FormalParam := GetNthParamAnyClosest (ProcedureSym, ParameterNo, GetCurrentModule ()) ;
       IF IsUnboundedParamAny (ProcedureSym, ParameterNo)
       THEN
          MetaErrorT2 (GetVarDeclFullTok (FormalParam), 'formal parameter {%1ad} has an open array type {%2tad}',
@@ -6205,7 +6207,7 @@ BEGIN
    MetaErrorStringT2 (tokpos, Msg, ProcedureSym, ParameterNo) ;
    IF NoOfParamAny (ProcedureSym) >= ParameterNo
    THEN
-      FormalParam := GetNthParamAny (ProcedureSym, ParameterNo) ;
+      FormalParam := GetNthParamAnyClosest (ProcedureSym, ParameterNo, GetCurrentModule ()) ;
       IF IsUnboundedParamAny (ProcedureSym, ParameterNo)
       THEN
          MetaErrorT2 (GetVarDeclFullTok (FormalParam), '{%W}formal parameter {%1ad} has an open array type {%2tad}',
