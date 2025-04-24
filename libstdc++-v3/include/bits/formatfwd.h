@@ -57,6 +57,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _CharT = char> struct formatter;
 
 /// @cond undocumented
+  [[noreturn]]
+  inline void
+  __throw_format_error(const char* __what);
+
 namespace __format
 {
 #ifdef _GLIBCXX_USE_WCHAR_T
@@ -66,6 +70,19 @@ namespace __format
   template<typename _CharT>
     concept __char = same_as<_CharT, char>;
 #endif
+
+  enum _Align {
+    _Align_default,
+    _Align_left,
+    _Align_right,
+    _Align_centre,
+  };
+
+  template<typename _CharT> struct _Spec;
+
+  template<__char _CharT> struct __formatter_str;
+  template<__char _CharT> struct __formatter_int;
+  template<__char _CharT> struct __formatter_ptr;
 
   template<typename _Tp, typename _Context,
 	   typename _Formatter
@@ -107,9 +124,6 @@ namespace __format
     {
       __f.set_debug_format();
     };
-
-  template<__char _CharT>
-    struct __formatter_int;
 } // namespace __format
 /// @endcond
 
@@ -140,7 +154,6 @@ namespace __format
       = __conditional_t<formattable<const _Tp, _CharT>, const _Tp, _Tp>;
 }
 #endif // format_ranges
-
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
