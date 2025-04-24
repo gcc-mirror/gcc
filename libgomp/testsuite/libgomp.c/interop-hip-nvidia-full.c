@@ -1,0 +1,8 @@
+/* { dg-require-effective-target openacc_cudart } */
+/* { dg-require-effective-target openacc_cuda } */
+/* { dg-require-effective-target gomp_hip_header_nvidia } */
+/* { dg-additional-options "-lcuda -lcudart" } */
+
+#define __HIP_PLATFORM_NVIDIA__ 1
+
+#include "interop-hip.h"
