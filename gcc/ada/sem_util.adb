@@ -10314,7 +10314,9 @@ package body Sem_Util is
             =>
                return Get_Enclosing_Object (Prefix (N));
 
-            when N_Type_Conversion =>
+            when N_Type_Conversion
+               | N_Unchecked_Type_Conversion
+            =>
                return Get_Enclosing_Object (Expression (N));
 
             when others =>
