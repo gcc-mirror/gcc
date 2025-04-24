@@ -5104,6 +5104,19 @@ verify_gimple_cond (gcond *stmt)
       return true;
     }
 
+  tree lhs = gimple_cond_lhs (stmt);
+
+  /* GIMPLE_CONDs condition may not throw.  */
+  if (flag_exceptions
+      && cfun->can_throw_non_call_exceptions
+      && operation_could_trap_p (gimple_cond_code (stmt),
+				 FLOAT_TYPE_P (TREE_TYPE (lhs)),
+				 false, NULL_TREE))
+    {
+      error ("gimple cond condition cannot throw");
+      return true;
+    }
+
   return verify_gimple_comparison (boolean_type_node,
 				   gimple_cond_lhs (stmt),
 				   gimple_cond_rhs (stmt),
