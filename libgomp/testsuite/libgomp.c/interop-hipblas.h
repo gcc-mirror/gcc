@@ -24,7 +24,19 @@ Based on the interop example in OpenMP's example document  */
 #include "../libgomp.c-c++-common/on_device_arch.h"
 
 
-#if __has_include(<hipblas/hipblas.h>) && !defined(USE_HIP_FALLBACK_HEADER)
+#if __has_include(<hipblas/hipblas.h>) && (__has_include(<library_types.h>) || !defined(__HIP_PLATFORM_NVIDIA__)) && !defined(USE_HIP_FALLBACK_HEADER)
+  #ifdef __HIP_PLATFORM_NVIDIA__
+    /* There seems to be an issue with hip/library_types.h including
+       CUDA's "library_types.h". Include CUDA's one explicitly here.
+       Could possibly worked around by using -isystem vs. -I.  */
+    #include <library_types.h>
+
+    /* For some reasons, the following symbols do not seem to get
+       mapped from HIP to CUDA, causing link errors.  */
+    #define hipblasSetStream cublasSetStream_v2
+    #define hipblasDaxpy cublasDaxpy_v2
+    #define hipblasCreate cublasCreate_v2
+  #endif
   #include <hipblas/hipblas.h>
 
 #elif defined(__HIP_PLATFORM_AMD__)
