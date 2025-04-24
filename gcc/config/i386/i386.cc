@@ -25375,14 +25375,32 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	case COND_EXPR:
 	  {
 	    /* SSE2 conditinal move sequence is:
-		 pcmpgtd %xmm5, %xmm0
+		 pcmpgtd %xmm5, %xmm0 (accounted separately)
 		 pand    %xmm0, %xmm2
 		 pandn   %xmm1, %xmm0
 		 por     %xmm2, %xmm0
 	       while SSE4 uses cmp + blend
-	       and AVX512 masked moves.  */
+	       and AVX512 masked moves.
 
-	    int ninsns = TARGET_SSE4_1 ? 2 : 4;
+	       The condition is accounted separately since we usually have
+		 p = a < b
+		 c = p ? x : y
+	       and we will account first statement as setcc.  Exception is when
+	       p is loaded from memory as bool and then we will not acocunt
+	       the compare, but there is no way to check for this.  */
+
+	    int ninsns = TARGET_SSE4_1 ? 1 : 3;
+
+	    /* If one of parameters is 0 or -1 the sequence will be simplified:
+	       (if_true & mask) | (if_false & ~mask) -> if_true & mask  */
+	    if (ninsns > 1
+		&& (zerop (gimple_assign_rhs2 (stmt_info->stmt))
+		    || zerop (gimple_assign_rhs3 (stmt_info->stmt))
+		    || integer_minus_onep
+			(gimple_assign_rhs2 (stmt_info->stmt))
+		    || integer_minus_onep
+			(gimple_assign_rhs3 (stmt_info->stmt))))
+	      ninsns = 1;
 
 	    if (SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
 	      stmt_cost = ninsns * ix86_cost->sse_op;
@@ -25393,8 +25411,8 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	    else if (VECTOR_MODE_P (mode))
 	      stmt_cost = ix86_vec_cost (mode, ninsns * ix86_cost->sse_op);
 	    else
-	      /* compare + cmov.  */
-	      stmt_cost = ix86_cost->add * 2;
+	      /* compare (accounted separately) + cmov.  */
+	      stmt_cost = ix86_cost->add;
 	  }
 	  break;
 
@@ -25416,9 +25434,18 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 		{
 		  stmt_cost = ix86_vec_cost (mode, ix86_cost->sse_op);
 		  /* vpmin was introduced in SSE3.
-		     SSE2 needs pcmpgtd + pand + pandn + pxor.  */
+		     SSE2 needs pcmpgtd + pand + pandn + pxor.
+		     If one of parameters is 0 or -1 the sequence is simplified
+		     to pcmpgtd + pand.  */
 		  if (!TARGET_SSSE3)
-		    stmt_cost *= 4;
+		    {
+		      if (zerop (gimple_assign_rhs2 (stmt_info->stmt))
+			  || integer_minus_onep
+				(gimple_assign_rhs2 (stmt_info->stmt)))
+			stmt_cost *= 2;
+		      else
+			stmt_cost *= 4;
+		    }
 		}
 	      else
 		/* cmp + cmov.  */
