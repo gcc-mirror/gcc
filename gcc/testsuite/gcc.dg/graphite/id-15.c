@@ -1,7 +1,7 @@
 /* { dg-additional-options "-Wno-old-style-definition" } */
 /* { dg-require-effective-target int32plus } */
 
-typedef long unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 extern void *memset (void *__s, int __c, size_t __n) __attribute__ ((__nothrow__)) __attribute__ ((__nonnull__ (1)));
 
 static void

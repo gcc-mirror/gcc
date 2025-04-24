@@ -11,8 +11,7 @@ typedef unsigned int __u32;
 typedef __s8 s8;
 typedef __u32 u32;
 enum { false = 0, true = 1 };
-typedef unsigned long __kernel_ulong_t;
-typedef __kernel_ulong_t __kernel_size_t;
+typedef __SIZE_TYPE__ __kernel_size_t;
 typedef _Bool bool;
 typedef __kernel_size_t size_t;
 
