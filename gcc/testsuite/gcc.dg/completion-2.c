@@ -5,7 +5,6 @@
 -flto-partition=1to1
 -flto-partition=balanced
 -flto-partition=cache
--flto-partition=default
 -flto-partition=max
 -flto-partition=none
 -flto-partition=one
