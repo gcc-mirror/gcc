@@ -17262,6 +17262,10 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		 member access.  */
 	      id = false;
 	    type = finish_decltype_type (type, id, complain);
+
+	    if (DECLTYPE_FOR_OMP_ARRAYSHAPE_CAST (t)
+		&& TYPE_REF_P (type))
+	      type = TREE_TYPE (type);
 	  }
 	return cp_build_qualified_type (type,
 					cp_type_quals (t)
@@ -17921,14 +17925,17 @@ tsubst_omp_clause_decl (tree decl, tree args, tsubst_flags_t complain,
 	= tsubst_stmt (TREE_OPERAND (decl, 1), args, complain, in_decl);
       tree length = tsubst_stmt (TREE_OPERAND (decl, 2), args, complain,
 				 in_decl);
+      tree stride = tsubst_stmt (TREE_OPERAND (decl, 3), args, complain,
+				 in_decl);
       tree base = tsubst_omp_clause_decl (TREE_OPERAND (decl, 0), args,
 					   complain, in_decl, NULL);
       if (TREE_OPERAND (decl, 0) == base
 	  && TREE_OPERAND (decl, 1) == low_bound
-	  && TREE_OPERAND (decl, 2) == length)
+	  && TREE_OPERAND (decl, 2) == length
+	  && TREE_OPERAND (decl, 3) == stride)
 	return decl;
-      return build3 (OMP_ARRAY_SECTION, TREE_TYPE (base), base, low_bound,
-		     length);
+      return build4 (OMP_ARRAY_SECTION, TREE_TYPE (base), base, low_bound,
+		     length, stride);
     }
   tree ret = tsubst_stmt (decl, args, complain, in_decl);
   /* Undo convert_from_reference tsubst_expr could have called.  */
@@ -20827,6 +20834,14 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	RETURN (cp_build_bit_cast (EXPR_LOCATION (t), type, op0, complain));
       }
 
+    case OMP_ARRAYSHAPE_CAST_EXPR:
+      {
+	tree type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	tree op0 = RECUR (TREE_OPERAND (t, 0));
+	RETURN (cp_build_omp_arrayshape_cast (EXPR_LOCATION (t), type, op0,
+					      complain));
+      }
+
     case POSTDECREMENT_EXPR:
     case POSTINCREMENT_EXPR:
       op1 = tsubst_non_call_postfix_expression (TREE_OPERAND (t, 0),
@@ -21012,7 +21027,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case OMP_ARRAY_SECTION:
       {
 	tree op0 = RECUR (TREE_OPERAND (t, 0));
-	tree op1 = NULL_TREE, op2 = NULL_TREE;
+	tree op1 = NULL_TREE, op2 = NULL_TREE, op3 = NULL_TREE;
 	if (op0 == error_mark_node)
 	  RETURN (error_mark_node);
 	if (TREE_OPERAND (t, 1))
@@ -21027,7 +21042,14 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    if (op2 == error_mark_node)
 	      RETURN (error_mark_node);
 	  }
-	RETURN (build_omp_array_section (EXPR_LOCATION (t), op0, op1, op2));
+	if (TREE_OPERAND (t, 3))
+	  {
+	    op3 = RECUR (TREE_OPERAND (t, 3));
+	    if (op3 == error_mark_node)
+	      RETURN (error_mark_node);
+	  }
+	RETURN (build_omp_array_section (EXPR_LOCATION (t), op0, op1, op2,
+					 op3));
       }
 
     case OMP_DECLARE_MAPPER:

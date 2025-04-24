@@ -4115,6 +4115,32 @@ omp_addr_token::omp_addr_token (token_type t, structure_base_kinds k, tree e)
 }
 
 static bool
+omp_parse_noncontiguous_array (tree *expr0)
+{
+  tree expr = *expr0;
+  bool noncontig = false;
+
+  while (TREE_CODE (expr) == OMP_ARRAY_SECTION
+	 || TREE_CODE (expr) == ARRAY_REF)
+    {
+      /* Contiguous arrays use ARRAY_REF.  By the time we reach here,
+	 OMP_ARRAY_SECTION is only used for noncontiguous arrays.  */
+      if (TREE_CODE (expr) == OMP_ARRAY_SECTION)
+	noncontig = true;
+
+      expr = TREE_OPERAND (expr, 0);
+    }
+
+  if (noncontig)
+    {
+      *expr0 = expr;
+      return true;
+    }
+
+  return false;
+}
+
+static bool
 omp_parse_component_selector (tree *expr0)
 {
   tree expr = *expr0;
@@ -4213,6 +4239,13 @@ omp_parse_access_method (tree *expr0, enum access_method_kinds *kind)
 
   if (omp_parse_ref (&expr))
     *kind = ACCESS_REF;
+  else if (omp_parse_noncontiguous_array (&expr))
+    {
+      if (omp_parse_ref (&expr))
+	*kind = ACCESS_NONCONTIG_REF_TO_ARRAY;
+      else
+	*kind = ACCESS_NONCONTIG_ARRAY;
+    }
   else if (omp_parse_pointer (&expr, &has_offset))
     {
       if (omp_parse_ref (&expr))
@@ -4281,6 +4314,14 @@ omp_parse_structure_base (vec<omp_addr_token *> &addr_tokens,
     {
       *kind = BASE_COMPONENT_EXPR;
       *expr0 = expr;
+      return true;
+    }
+
+  if (TREE_CODE (expr) == VIEW_CONVERT_EXPR
+      && TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE)
+    {
+      *kind = BASE_DECL;
+      *expr0 = TREE_OPERAND (expr, 0);
       return true;
     }
 
@@ -4431,6 +4472,12 @@ debug_omp_tokenized_addr (vec<omp_addr_token *> &addr_tokens,
 	      break;
 	    case ACCESS_INDEXED_REF_TO_ARRAY:
 	      fputs ("access_indexed_ref_to_array", stderr);
+	      break;
+	    case ACCESS_NONCONTIG_ARRAY:
+	      fputs ("access_noncontig_array", stderr);
+	      break;
+	    case ACCESS_NONCONTIG_REF_TO_ARRAY:
+	      fputs ("access_noncontig_ref_to_array", stderr);
 	      break;
 	    }
 	  break;

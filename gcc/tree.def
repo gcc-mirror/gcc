@@ -1419,7 +1419,7 @@ DEFTREECODE (OMP_ATOMIC_CAPTURE_NEW, "omp_atomic_capture_new", tcc_statement, 2)
 DEFTREECODE (OMP_CLAUSE, "omp_clause", tcc_exceptional, 0)
 
 /* An OpenMP array section.  */
-DEFTREECODE (OMP_ARRAY_SECTION, "omp_array_section", tcc_expression, 3)
+DEFTREECODE (OMP_ARRAY_SECTION, "omp_array_section", tcc_expression, 4)
 
 /* OpenMP variant construct selector, used only in the middle end in the
    expansions of variant constructs that can't be resolved until the
