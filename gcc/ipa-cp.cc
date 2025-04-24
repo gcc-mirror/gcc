@@ -4639,7 +4639,7 @@ update_counts_for_self_gen_clones (cgraph_node *orig_node,
 				   const vec<cgraph_node *> &self_gen_clones)
 {
   profile_count redist_sum = orig_node->count.ipa ();
-  if (!(redist_sum > profile_count::zero ()))
+  if (!redist_sum.nonzero_p ())
     return;
 
   if (dump_file)
@@ -4710,7 +4710,7 @@ update_counts_for_self_gen_clones (cgraph_node *orig_node,
      it.  */
   for (cgraph_node *n : self_gen_clones)
     {
-      if (!(n->count.ipa () > profile_count::zero ()))
+      if (!n->count.ipa ().nonzero_p ())
 	continue;
 
       desc_incoming_count_struct desc;
@@ -4756,7 +4756,7 @@ update_profiling_info (struct cgraph_node *orig_node,
   profile_count new_sum;
   profile_count remainder, orig_node_count = orig_node->count.ipa ();
 
-  if (!(orig_node_count > profile_count::zero ()))
+  if (!orig_node_count.nonzero_p ())
     return;
 
   if (dump_file)
@@ -4920,7 +4920,7 @@ update_specialized_profile (struct cgraph_node *new_node,
       orig_node_count.dump (dump_file);
       fprintf (dump_file, "\n");
     }
-  if (!(orig_node_count > profile_count::zero ()))
+  if (!orig_node_count.nonzero_p ())
     return;
 
   new_node_count = new_node->count;
