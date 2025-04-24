@@ -2279,9 +2279,6 @@ Enum
 Name(lto_partition_model) Type(enum lto_partition_model) UnknownError(unknown LTO partitioning model %qs)
 
 EnumValue
-Enum(lto_partition_model) String(default) Value(LTO_PARTITION_DEFAULT)
-
-EnumValue
 Enum(lto_partition_model) String(none) Value(LTO_PARTITION_NONE)
 
 EnumValue
@@ -2300,7 +2297,7 @@ EnumValue
 Enum(lto_partition_model) String(cache) Value(LTO_PARTITION_CACHE)
 
 flto-partition=
-Common Joined RejectNegative Enum(lto_partition_model) Var(flag_lto_partition) Init(LTO_PARTITION_DEFAULT)
+Common Joined RejectNegative Enum(lto_partition_model) Var(flag_lto_partition) Init(LTO_PARTITION_BALANCED)
 Specify the algorithm to partition symbols and vars at linktime.
 
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
