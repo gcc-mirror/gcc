@@ -12,16 +12,16 @@ struct F {
 
 // Mandates: is_invocable_r_v<R, decay_t<F>&, ArgTypes...> is true.
 const F f;
-std::packaged_task<void()> p(f); // { dg-error "here" "" { target c++17 } }
-// { dg-error "static assertion failed" "" { target c++17 } 0 }
-// { dg-error "invoke_r" "" { target *-*-* } 0 }
-// { dg-prune-output "enable_if<false" }
+std::packaged_task<void()> p(f); // { dg-error "here" }
+// { dg-error "static assertion failed" "" { target *-*-* } 0 }
+// { dg-error "note: .*std::is_invocable_r_v<void, " "" { target c++17 } 0 }
 
 // Only callable as rvalue
 struct Frv {
   int* operator()() && { return 0; }
 };
-std::packaged_task<int*()> p2(Frv{}); // { dg-error "here" "" { target c++17 } }
+std::packaged_task<int*()> p2(Frv{}); // { dg-error "here" }
+// { dg-error "note: .*std::is_invocable_r_v<int., " "" { target c++17 } 0 }
 
 // Only callable as non-const lvalue
 struct Fnc {
