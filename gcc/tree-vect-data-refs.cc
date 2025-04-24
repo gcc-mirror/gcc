@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_ALGORITHM
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -3662,7 +3663,7 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
       poly_uint64 lower_bound;
       tree segment_length_a, segment_length_b;
       unsigned HOST_WIDE_INT access_size_a, access_size_b;
-      unsigned int align_a, align_b;
+      unsigned HOST_WIDE_INT align_a, align_b;
 
       /* Ignore the alias if the VF we chose ended up being no greater
 	 than the dependence distance.  */
@@ -3818,6 +3819,13 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 					   stmt_info_a->stmt,
 					   stmt_info_b->stmt);
 	}
+
+      /* dr_with_seg_len requires the alignment to apply to the segment length
+	 and access size, not just the start address.  The access size can be
+	 smaller than the pointer alignment for grouped accesses and bitfield
+	 references; see PR115192 and PR116125 respectively.  */
+      align_a = std::min (align_a, least_bit_hwi (access_size_a));
+      align_b = std::min (align_b, least_bit_hwi (access_size_b));
 
       dr_with_seg_len dr_a (dr_info_a->dr, segment_length_a,
 			    access_size_a, align_a);
