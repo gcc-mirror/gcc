@@ -8079,13 +8079,13 @@ gfc_generate_function_code (gfc_namespace * ns)
 		   || sym->result->ts.u.derived->attr.alloc_comp
 		   || sym->result->ts.u.derived->attr.pointer_comp))
 	      || (sym->result->ts.type == BT_CLASS
-		  && (CLASS_DATA (sym)->attr.allocatable
-		      || CLASS_DATA (sym)->attr.class_pointer
+		  && (CLASS_DATA (sym->result)->attr.allocatable
+		      || CLASS_DATA (sym->result)->attr.class_pointer
 		      || CLASS_DATA (sym->result)->attr.alloc_comp
 		      || CLASS_DATA (sym->result)->attr.pointer_comp))))
 	{
 	  artificial_result_decl = true;
-	  result = gfc_get_fake_result_decl (sym, 0);
+	  result = gfc_get_fake_result_decl (sym->result, 0);
 	}
 
       if (result != NULL_TREE && sym->attr.function && !sym->attr.pointer)
