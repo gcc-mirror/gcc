@@ -14524,7 +14524,17 @@ s390_call_saved_register_used (tree call_expr)
 	      gcc_assert (REG_NREGS (r) == 1);
 
 	      if (!call_used_or_fixed_reg_p (REGNO (r)))
-		return true;
+		{
+		  rtx parm;
+		  if (TREE_CODE (parameter) == SSA_NAME
+		      && SSA_NAME_IS_DEFAULT_DEF (parameter)
+		      && SSA_NAME_VAR (parameter)
+		      && TREE_CODE (SSA_NAME_VAR (parameter)) == PARM_DECL
+		      && (parm = DECL_INCOMING_RTL (SSA_NAME_VAR (parameter)))
+		      && rtx_equal_p (parm_rtx, parm))
+		    break;
+		  return true;
+		}
 	    }
 	}
     }
