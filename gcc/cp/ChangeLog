@@ -1,3 +1,22 @@
+2025-04-23  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114772
+	PR c++/101180
+	* pt.cc (apply_late_template_attributes): Also override
+	target_option_current_node.
+
+2025-04-23  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/111075
+	* constexpr.cc (cxx_eval_call_expression): Allow trivial
+	call from a thunk.
+
 2025-04-15  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

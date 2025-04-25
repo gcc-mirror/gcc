@@ -1,3 +1,20 @@
+2025-04-24  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-04-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/118924
+	* g++.dg/tree-ssa/pr118924.C: New test.
+
+2025-04-23  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114772
+	PR c++/101180
+	* g++.dg/ext/pragma-target2.C: New test.
+
 2025-04-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/119706

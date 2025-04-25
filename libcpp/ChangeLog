@@ -1,3 +1,12 @@
+2025-04-23  Jeremy Bettis  <jbettis@google.com>
+
+	Backported from master:
+	2025-03-28  Jeremy Bettis  <jbettis@google.com>
+
+	PR preprocessor/108900
+	* files.cc (_cpp_stack_file): Do not decrement highest_location
+	across distinct maps.
+
 2025-03-27  Roland McGrath  <mcgrathr@google.com>
 
 	* configure.ac: Check for setlocale.

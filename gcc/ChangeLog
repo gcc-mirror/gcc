@@ -1,3 +1,38 @@
+2025-04-24  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-04-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/118924
+	* tree-sra.cc (create_total_scalarization_access): Set
+	grp_same_access_path flag to zero.
+
+2025-04-24  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-04-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/118924
+	* tree-ssa-alias-compare.h (types_equal_for_same_type_for_tbaa_p):
+	Declare.
+	* tree-ssa-alias.cc: Include ipa-utils.h.
+	(types_equal_for_same_type_for_tbaa_p): New public overloaded variant.
+	* tree-sra.cc: Include tree-ssa-alias-compare.h.
+	(create_access): Initialzie grp_same_access_path to true.
+	(build_accesses_from_assign): Detect tbaa hazards and clear
+	grp_same_access_path fields of involved accesses when they occur.
+	(sort_and_splice_var_accesses): Take previous values of
+	grp_same_access_path into account.
+
+2025-04-24  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2025-03-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/119235
+	* config/s390/s390.cc (s390_hard_regno_mode_ok): Accept only
+	Pmode for registers AP/FP/RA.
+
 2025-04-22  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
