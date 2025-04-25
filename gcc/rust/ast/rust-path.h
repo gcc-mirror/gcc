@@ -1211,6 +1211,8 @@ public:
 
   std::string as_string () const override;
 
+  std::string make_debug_string () const;
+
   /* Converts TypePath to SimplePath if possible (i.e. no generic or function
    * arguments). Otherwise returns an empty SimplePath. */
   SimplePath as_simple_path () const;

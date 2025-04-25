@@ -141,33 +141,10 @@ TopLevel::visit (AST::Trait &trait)
 }
 
 void
-TopLevel::visit (AST::InherentImpl &impl)
+TopLevel::maybe_insert_big_self (AST::Impl &impl)
 {
-  auto inner_fn = [this, &impl] () {
-    insert_or_error_out (Identifier ("Self", impl.get_type ().get_locus ()),
-			 impl.get_type (), Namespace::Types);
-
-    // We do want to visit with the default visitor instead of default resolver
-    // because we don't want to insert the scope twice.
-    AST::DefaultASTVisitor::visit (impl);
-  };
-
-  ctx.scoped (Rib::Kind::TraitOrImpl, impl.get_node_id (), inner_fn);
-}
-
-void
-TopLevel::visit (AST::TraitImpl &impl)
-{
-  auto inner_fn = [this, &impl] () {
-    insert_or_error_out (Identifier ("Self", impl.get_type ().get_locus ()),
-			 impl.get_type (), Namespace::Types);
-
-    // We do want to visit using the default visitor instead of default resolver
-    // because we don't want to insert the scope twice.
-    AST::DefaultASTVisitor::visit (impl);
-  };
-
-  ctx.scoped (Rib::Kind::TraitOrImpl, impl.get_node_id (), inner_fn);
+  insert_or_error_out (Identifier ("Self", impl.get_type ().get_locus ()),
+		       impl.get_type (), Namespace::Types);
 }
 
 void

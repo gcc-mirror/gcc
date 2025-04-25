@@ -47,6 +47,8 @@ public:
   void visit (AST::Function &) override;
   void visit (AST::ForLoopExpr &expr) override;
   void visit (AST::Trait &) override;
+  // used to handle Self insertion in TopLevel
+  virtual void maybe_insert_big_self (AST::Impl &) {}
   void visit (AST::InherentImpl &) override;
   void visit (AST::TraitImpl &) override;
 

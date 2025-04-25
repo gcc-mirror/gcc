@@ -188,6 +188,8 @@ public:
      * restriction that you cannot `use` items from the Prelude
      */
     Prelude,
+    /* Generic rib, used to store generics */
+    Generics,
   } kind;
 
   static std::string kind_to_string (Rib::Kind kind)

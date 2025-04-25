@@ -160,8 +160,7 @@ private:
 
   void visit (AST::Module &module) override;
   void visit (AST::Trait &trait) override;
-  void visit (AST::InherentImpl &impl) override;
-  void visit (AST::TraitImpl &impl) override;
+  void maybe_insert_big_self (AST::Impl &impl) override;
   void visit (AST::TraitItemType &trait_item) override;
   void visit (AST::MacroRulesDefinition &macro) override;
   void visit (AST::Function &function) override;

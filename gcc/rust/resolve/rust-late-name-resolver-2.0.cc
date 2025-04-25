@@ -495,15 +495,16 @@ Late::visit (AST::TypePath &type)
   if (!resolved.has_value ())
     {
       if (!ctx.lookup (type.get_segments ().front ()->get_node_id ()))
-	rust_error_at (type.get_locus (), "could not resolve type path %qs",
-		       type.as_string ().c_str ());
+	rust_error_at (type.get_locus (), ErrorCode::E0412,
+		       "could not resolve type path %qs",
+		       type.make_debug_string ().c_str ());
       return;
     }
 
   if (resolved->is_ambiguous ())
     {
       rust_error_at (type.get_locus (), ErrorCode::E0659, "%qs is ambiguous",
-		     type.as_string ().c_str ());
+		     type.make_debug_string ().c_str ());
       return;
     }
 
