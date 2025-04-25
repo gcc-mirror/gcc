@@ -1,3 +1,7 @@
+2025-04-25  Release Manager
+
+	* GCC 15.1.0 released.
+
 2025-01-06  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	PR sanitizer/117725

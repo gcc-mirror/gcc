@@ -1,3 +1,7 @@
+2025-04-25  Release Manager
+
+	* GCC 15.1.0 released.
+
 2025-03-31  Arthur Cohen  <arthur.cohen@embecosm.com>
 
 	* libformat_parser/Makefile.am: Avoid using --config as it is unsupported by cargo 1.49.

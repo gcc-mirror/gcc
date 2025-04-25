@@ -1,3 +1,7 @@
+2025-04-25  Release Manager
+
+	* GCC 15.1.0 released.
+
 2025-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR analyzer/119278

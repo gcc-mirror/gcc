@@ -1,3 +1,7 @@
+2025-04-25  Release Manager
+
+	* GCC 15.1.0 released.
+
 2025-04-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	* lto-partition.cc (add_node_references_to_partition): Define.

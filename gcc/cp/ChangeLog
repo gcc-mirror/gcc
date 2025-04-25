@@ -1,3 +1,7 @@
+2025-04-25  Release Manager
+
+	* GCC 15.1.0 released.
+
 2025-04-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/113360

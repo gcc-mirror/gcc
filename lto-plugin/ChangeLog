@@ -1,3 +1,7 @@
+2025-04-25  Release Manager
+
+	* GCC 15.1.0 released.
+
 2025-03-06  Michal Jires  <mjires@suse.cz>
 
 	* lto-plugin.c (cleanup_handler): Keep only files in ltrans

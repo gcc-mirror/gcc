@@ -1,3 +1,7 @@
+2025-04-25  Release Manager
+
+	* GCC 15.1.0 released.
+
 2025-02-05  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/118746

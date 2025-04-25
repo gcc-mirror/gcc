@@ -1,3 +1,7 @@
+2025-04-25  Release Manager
+
+	* GCC 15.1.0 released.
+
 2024-10-24  Yang Yujie  <yangyujie@loongson.cn>
 
 	* src/loongarch64/ffi.c: Avoid defining floats

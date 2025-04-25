@@ -1,3 +1,7 @@
+2025-04-25  Release Manager
+
+	* GCC 15.1.0 released.
+
 2025-03-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	* t-libf7 (libgcc-objects): Only add objects when building

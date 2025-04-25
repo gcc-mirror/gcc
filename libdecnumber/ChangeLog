@@ -1,3 +1,7 @@
+2025-04-25  Release Manager
+
+	* GCC 15.1.0 released.
+
 2024-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* decCommon.c (decFinalize): Fix duplicated words in

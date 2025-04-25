@@ -1,3 +1,7 @@
+2025-04-25  Release Manager
+
+	* GCC 15.1.0 released.
+
 2025-04-15  Andreas Schwab  <schwab@suse.de>
 
 	* configure.tgt: Set LIBGCOBOL_SUPPORTED for riscv64-*-linux* with

@@ -1,3 +1,7 @@
+2025-04-25  Release Manager
+
+	* GCC 15.1.0 released.
+
 2025-04-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/119502
