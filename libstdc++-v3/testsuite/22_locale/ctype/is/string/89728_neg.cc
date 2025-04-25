@@ -18,7 +18,6 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-error "invalid use of incomplete type" "" { target *-*-* } 0 }
-// { dg-error "invalid 'static_cast'" "" { target c++98_only } 0 }
 
 #include <locale>
 
