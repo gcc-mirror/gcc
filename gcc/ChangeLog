@@ -1,3 +1,24 @@
+2025-04-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2025-04-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* opts.cc (validate_ipa_reorder_locality_lto_partition): Check opts
+	instead of opts_set for x_flag_ipa_reorder_for_locality.
+	(finish_options): Update call site.
+
+2025-04-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2025-04-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* common.opt (LTO_PARTITION_DEFAULT): Delete.
+	(flto-partition=): Change default back to balanced.
+	* flag-types.h (lto_partition_model): Remove LTO_PARTITION_DEFAULT.
+	* opts.cc (validate_ipa_reorder_locality_lto_partition):
+	Check opts_set->x_flag_lto_partition instead of LTO_PARTITION_DEFAULT.
+	(finish_options): Remove handling of LTO_PARTITION_DEFAULT.
+
 2025-04-22  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:

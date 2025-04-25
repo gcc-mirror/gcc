@@ -1,3 +1,31 @@
+2025-04-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2025-04-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/completion-2.c: Remove check for default.
+
+2025-04-23  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backported from master:
+	2025-04-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/119836
+	* gfortran.dg/do_concurrent_all_clauses.f90: Remove invalid
+	dg-error test.
+	* gfortran.dg/pr119836_1.f90: New test.
+	* gfortran.dg/pr119836_2.f90: New test.
+	* gfortran.dg/pr119836_3.f90: New test.
+	* gfortran.dg/pr119836_4.f90: New test.
+
+2025-04-23  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-04-23  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/119286
+	* gcc.dg/vect/vect-early-break_38.c: Force -march=gfx908 for amdgcn.
+
 2025-04-22  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
