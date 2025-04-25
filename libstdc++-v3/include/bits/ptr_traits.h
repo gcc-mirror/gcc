@@ -223,7 +223,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    * @brief Obtain address referenced by a pointer to an object
    * @param __ptr A pointer to an object
-   * @return @c __ptr
+   * @return `__ptr`
    * @ingroup pointer_abstractions
   */
   template<typename _Tp>
@@ -239,8 +239,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    * @brief Obtain address referenced by a pointer to an object
    * @param __ptr A pointer to an object
-   * @return @c pointer_traits<_Ptr>::to_address(__ptr) if that expression is
-             well-formed, otherwise @c to_address(__ptr.operator->())
+   * @return `pointer_traits<_Ptr>::to_address(__ptr)` if that expression is
+   *         well-formed, otherwise `to_address(__ptr.operator->())`.
    * @ingroup pointer_abstractions
   */
   template<typename _Ptr>
