@@ -3709,16 +3709,22 @@ AC_DEFUN([GLIBCXX_ENABLE_PCH], [
   AC_SUBST(glibcxx_PCHFLAGS)
 ])
 
-
 dnl
 dnl Check for atomic builtins.
 dnl See:
 dnl http://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html
 dnl
-dnl This checks to see if the host supports the compiler-generated
-dnl builtins for atomic operations for various integral sizes. Note, this
-dnl is intended to be an all-or-nothing switch, so all the atomic operations
-dnl that are used should be checked.
+dnl This checks to see if the host supports __atomic_fetch_add on _Atomic_word.
+dnl
+dnl We don't want libstdc++.so to depend on libatomic.so for basic
+dnl functionality like library-internal reference counting. This means we
+dnl should not use atomics for reference counting unless it can be done
+dnl using native instructions and not by calling into libatomic.
+dnl This policy could change if linking to libatomic.so becomes implicit.
+dnl
+dnl Defines:
+dnl  GLIBCXX_ATOMIC_WORD_BUILTINS - if atomic builtins should be used for
+dnl                                 increments and decrements of _Atomic_word.
 dnl
 dnl Note:
 dnl libgomp and libgfortran use a link test, see CHECK_SYNC_FETCH_AND_ADD.
@@ -3728,7 +3734,7 @@ AC_DEFUN([GLIBCXX_ENABLE_ATOMIC_BUILTINS], [
   AC_LANG_CPLUSPLUS
   old_CXXFLAGS="$CXXFLAGS"
 
-  # Do link tests if possible, instead asm tests, limited to some platforms
+  # Do link tests if possible, otherwise asm tests. Limited to some platforms
   # see discussion in PR target/40134, PR libstdc++/40133 and the thread
   # starting at http://gcc.gnu.org/ml/gcc-patches/2009-07/msg00322.html
   atomic_builtins_link_tests=no
@@ -3741,223 +3747,59 @@ AC_DEFUN([GLIBCXX_ENABLE_ATOMIC_BUILTINS], [
     esac
   fi
 
-  if test x$atomic_builtins_link_tests = xyes; then
+  if test "$atomic_builtins_link_tests" = yes; then
 
-  # Do link tests.
+    # Do link tests.
 
-  CXXFLAGS="$CXXFLAGS -fno-exceptions"
+    CXXFLAGS="$CXXFLAGS -fno-exceptions"
 
-  AC_CACHE_CHECK([for atomic builtins for bool],
-    glibcxx_cv_atomic_bool, [
-    AC_TRY_LINK(
-      [ ],
-      [typedef bool atomic_type;
-       atomic_type c1;
-       atomic_type c2;
-       atomic_type c3(0);
-       // N.B. __atomic_fetch_add is not supported for bool.
-       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-				   __ATOMIC_RELAXED);
-       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-       __atomic_load_n(&c1, __ATOMIC_RELAXED);
-      ],
-      [glibcxx_cv_atomic_bool=yes],
-      [glibcxx_cv_atomic_bool=no])
-  ])
-
-  AC_CACHE_CHECK([for atomic builtins for short],
-    glibcxx_cv_atomic_short, [
-    AC_TRY_LINK(
-      [ ],
-      [typedef short atomic_type;
-       atomic_type c1;
-       atomic_type c2;
-       atomic_type c3(0);
-       __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
-       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-				   __ATOMIC_RELAXED);
-       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-       __atomic_load_n(&c1, __ATOMIC_RELAXED);
-      ],
-      [glibcxx_cv_atomic_short=yes],
-      [glibcxx_cv_atomic_short=no])
-  ])
-
-  AC_CACHE_CHECK([for atomic builtins for int],
-    glibcxx_cv_atomic_int, [
-    AC_TRY_LINK(
-      [ ],
-      [typedef int atomic_type;
-       atomic_type c1;
-       atomic_type c2;
-       atomic_type c3(0);
-       __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
-       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-				   __ATOMIC_RELAXED);
-       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-       __atomic_load_n(&c1, __ATOMIC_RELAXED);
-      ],
-      [glibcxx_cv_atomic_int=yes],
-      [glibcxx_cv_atomic_int=no])
-  ])
-
-  AC_CACHE_CHECK([for atomic builtins for long long],
-    glibcxx_cv_atomic_long_long, [
-    AC_TRY_LINK(
-      [ ],
-      [typedef long long atomic_type;
-       atomic_type c1;
-       atomic_type c2;
-       atomic_type c3(0);
-       __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
-       __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-				   __ATOMIC_RELAXED);
-       __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-       __atomic_load_n(&c1, __ATOMIC_RELAXED);
-      ],
-      [glibcxx_cv_atomic_long_long=yes],
-      [glibcxx_cv_atomic_long_long=no])
-  ])
+    AC_CACHE_CHECK([for atomic builtins for _Atomic_word],
+	glibcxx_cv_atomic_word,
+	[AC_TRY_LINK([#include "${glibcxx_srcdir}/config/$atomic_word_dir/atomic_word.h"],
+		     [_Atomic_word a = 0, b;
+		      b = __atomic_fetch_add(&a, 1, __ATOMIC_ACQ_REL);],
+		     [glibcxx_cv_atomic_word=yes],
+		     [glibcxx_cv_atomic_word=no])])
 
   else
+    # Do asm tests.
 
-  # Do asm tests.
+    # Compile unoptimized.
+    CXXFLAGS='-O0 -S'
 
-  # Compile unoptimized.
-  CXXFLAGS='-O0 -S'
-
-  # Fake what AC_TRY_COMPILE does.
-
-    cat > conftest.$ac_ext << EOF
-[#]line __oline__ "configure"
-int main()
-{
-  typedef bool atomic_type;
-  atomic_type c1;
-  atomic_type c2;
-  atomic_type c3(0);
-  // N.B. __atomic_fetch_add is not supported for bool.
-  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-			      __ATOMIC_RELAXED);
-  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-  __atomic_load_n(&c1, __ATOMIC_RELAXED);
-
-  return 0;
-}
-EOF
-
-    AC_MSG_CHECKING([for atomic builtins for bool])
-    if AC_TRY_EVAL(ac_compile); then
-      if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
-	glibcxx_cv_atomic_bool=no
-      else
-	glibcxx_cv_atomic_bool=yes
-      fi
-    fi
-    AC_MSG_RESULT($glibcxx_cv_atomic_bool)
-    rm -f conftest*
+    # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
 [#]line __oline__ "configure"
+[#]include "${glibcxx_srcdir}/config/$atomic_word_dir/atomic_word.h"
 int main()
 {
-  typedef short atomic_type;
-  atomic_type c1;
-  atomic_type c2;
-  atomic_type c3(0);
-  __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
-  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-			      __ATOMIC_RELAXED);
-  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-  __atomic_load_n(&c1, __ATOMIC_RELAXED);
-
-  return 0;
+  _Atomic_word a = 0, b;
+  b = __atomic_fetch_add(&a, 1, __ATOMIC_ACQ_REL);
 }
 EOF
 
-    AC_MSG_CHECKING([for atomic builtins for short])
+    AC_MSG_CHECKING([for atomic builtins for _Atomic_word])
     if AC_TRY_EVAL(ac_compile); then
       if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
-	glibcxx_cv_atomic_short=no
+	glibcxx_cv_atomic_word=no
       else
-	glibcxx_cv_atomic_short=yes
+	glibcxx_cv_atomic_word=yes
       fi
     fi
-    AC_MSG_RESULT($glibcxx_cv_atomic_short)
+    AC_MSG_RESULT($glibcxx_cv_atomic_word)
     rm -f conftest*
-
-    cat > conftest.$ac_ext << EOF
-[#]line __oline__ "configure"
-int main()
-{
-  // NB: _Atomic_word not necessarily int.
-  typedef int atomic_type;
-  atomic_type c1;
-  atomic_type c2;
-  atomic_type c3(0);
-  __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
-  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-			      __ATOMIC_RELAXED);
-  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-  __atomic_load_n(&c1, __ATOMIC_RELAXED);
-
-  return 0;
-}
-EOF
-
-    AC_MSG_CHECKING([for atomic builtins for int])
-    if AC_TRY_EVAL(ac_compile); then
-      if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
-	glibcxx_cv_atomic_int=no
-      else
-	glibcxx_cv_atomic_int=yes
-      fi
-    fi
-    AC_MSG_RESULT($glibcxx_cv_atomic_int)
-    rm -f conftest*
-
-    cat > conftest.$ac_ext << EOF
-[#]line __oline__ "configure"
-int main()
-{
-  typedef long long atomic_type;
-  atomic_type c1;
-  atomic_type c2;
-  atomic_type c3(0);
-  __atomic_fetch_add(&c1, c2, __ATOMIC_RELAXED);
-  __atomic_compare_exchange_n(&c1, &c2, c3, true, __ATOMIC_ACQ_REL,
-			      __ATOMIC_RELAXED);
-  __atomic_test_and_set(&c1, __ATOMIC_RELAXED);
-  __atomic_load_n(&c1, __ATOMIC_RELAXED);
-
-  return 0;
-}
-EOF
-
-    AC_MSG_CHECKING([for atomic builtins for long long])
-    if AC_TRY_EVAL(ac_compile); then
-      if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
-	glibcxx_cv_atomic_long_long=no
-      else
-	glibcxx_cv_atomic_long_long=yes
-      fi
-    fi
-    AC_MSG_RESULT($glibcxx_cv_atomic_long_long)
-    rm -f conftest*
-
   fi
 
   CXXFLAGS="$old_CXXFLAGS"
   AC_LANG_RESTORE
 
-  # Set atomicity_dir to builtins if all but the long long test above passes,
+  # Set atomicity_dir to builtins if the test above passes,
   # or if the builtins were already chosen (e.g. by configure.host).
-  if { test "$glibcxx_cv_atomic_bool" = yes \
-     && test "$glibcxx_cv_atomic_short" = yes \
-     && test "$glibcxx_cv_atomic_int" = yes; } \
+  if test "$glibcxx_cv_atomic_word" = yes \
      || test "$atomicity_dir" = "cpu/generic/atomicity_builtins"; then
-    AC_DEFINE(_GLIBCXX_ATOMIC_BUILTINS, 1,
-    [Define if the compiler supports C++11 atomics.])
+    AC_DEFINE(_GLIBCXX_ATOMIC_WORD_BUILTINS, 1,
+    [Define if the compiler supports native atomics for _Atomic_word.])
     atomicity_dir=cpu/generic/atomicity_builtins
   fi
 
@@ -5448,8 +5290,75 @@ AC_DEFUN([GLIBCXX_ENABLE_BACKTRACE], [
 
   BACKTRACE_CPPFLAGS="-D_GNU_SOURCE"
 
-  # libbacktrace only needs atomics for int, which we've already tested
-  if test "$glibcxx_cv_atomic_int" = "yes"; then
+  GLIBCXX_LANG_PUSH
+
+  # libbacktrace's own configure.ac only tests atomics for int,
+  # but the code actually uses atomics for size_t and pointers as well.
+  if test "$atomic_builtins_link_tests" = yes; then
+
+    CXXFLAGS='-O0'
+
+    AC_CACHE_CHECK([for atomic builtins for libbacktrace],
+	glibcxx_cv_libbacktrace_atomics,
+	[AC_TRY_LINK([], [
+	    int i = 0;
+	    int* p = &i;
+	    size_t s = 0;
+	    // backtrace_atomic_load_pointer
+	    void* vp = __atomic_load_n(&p, __ATOMIC_ACQUIRE);
+	    // backtrace_atomic_load_int
+	    int i2 = __atomic_load_n(&i, __ATOMIC_ACQUIRE);
+	    // backtrace_atomic_store_pointer
+	    __atomic_store_n(&p, &i, __ATOMIC_RELEASE);
+	    // backtrace_atomic_store_size_t
+	    __atomic_store_n(&s, s, __ATOMIC_RELEASE);
+	    // backtrace_atomic_store_int
+	    __atomic_store_n(&i, i, __ATOMIC_RELEASE);
+			 ],
+		     [glibcxx_cv_libbacktrace_atomics=yes],
+		     [glibcxx_cv_libbacktrace_atomics=no])])
+
+  else
+    # Do asm tests.
+
+    CXXFLAGS='-O0 -S'
+
+    cat > conftest.$ac_ext << EOF
+[#]line __oline__ "configure"
+[#]include <stddef.h>
+int main()
+{
+  int i = 0;
+  int* p = &i;
+  size_t s = 0;
+  // backtrace_atomic_load_pointer
+  void* vp = __atomic_load_n(&p, __ATOMIC_ACQUIRE);
+  // backtrace_atomic_load_int
+  int i2 = __atomic_load_n(&i, __ATOMIC_ACQUIRE);
+  // backtrace_atomic_store_pointer
+  __atomic_store_n(&p, &i, __ATOMIC_RELEASE);
+  // backtrace_atomic_store_size_t
+  __atomic_store_n(&s, s, __ATOMIC_RELEASE);
+  // backtrace_atomic_store_int
+  __atomic_store_n(&i, i, __ATOMIC_RELEASE);
+}
+EOF
+
+    AC_MSG_CHECKING([for atomic builtins for libbacktrace])
+    if AC_TRY_EVAL(ac_compile); then
+      if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
+	glibcxx_cv_libbacktrace_atomics=no
+      else
+	glibcxx_cv_libbacktrace_atomics=yes
+      fi
+    fi
+    AC_MSG_RESULT($glibcxx_cv_libbacktrace_atomics)
+    rm -f conftest*
+  fi
+
+  GLIBCXX_LANG_POP
+
+  if test "$glibcxx_cv_libbacktrace_atomics" = yes; then
     BACKTRACE_CPPFLAGS="$BACKTRACE_CPPFLAGS -DHAVE_ATOMIC_FUNCTIONS=1"
   fi
 

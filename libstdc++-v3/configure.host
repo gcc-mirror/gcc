@@ -180,7 +180,7 @@ esac
 
 
 # Set specific CPU overrides for atomicity_dir.
-# This can be over-ridden in GLIBCXX_ENABLE_ATOMIC_BUILTINS.
+# This can be overridden in GLIBCXX_ENABLE_ATOMIC_BUILTINS.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 if test -f ${glibcxx_srcdir}/config/${cpu_include_dir}/atomicity.h ; then
   atomicity_dir=$cpu_include_dir
