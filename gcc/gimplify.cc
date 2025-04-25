@@ -3909,7 +3909,7 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
 			      bool want_value, bool pointerize)
 {
   location_t loc = EXPR_LOCATION (expr);
-  tree fndecl = get_callee_fndecl (expr);
+  const tree fndecl = get_callee_fndecl (expr);
 
   /* Skip processing if we don't get the expected call form.  */
   if (!fndecl)
@@ -3918,23 +3918,180 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
   tree init_code = NULL_TREE;
   tree cleanup = NULL_TREE;
   tree clobbers = NULL_TREE;
-  int nargs = call_expr_nargs (expr);
+  const int nargs = call_expr_nargs (expr);
   tree dispatch_device_num = NULL_TREE;
   tree dispatch_interop = NULL_TREE;
   tree dispatch_append_args = NULL_TREE;
+  /* Equal to the number of parameters.  */
   int nfirst_args = 0;
-  tree dispatch_adjust_args_list
-    = lookup_attribute ("omp declare variant variant args",
-			DECL_ATTRIBUTES (fndecl));
 
-  if (dispatch_adjust_args_list)
+  const const_tree nothing_id = get_identifier ("nothing");
+  const const_tree need_ptr_id = get_identifier ("need_device_ptr");
+  const const_tree need_addr_id = get_identifier ("need_device_addr");
+
+  vec<tree> dispatch_adjust_args_specifiers = vNULL;
+
+  if (tree declare_variant_variant_args_attr
+	= lookup_attribute ("omp declare variant variant args",
+			    DECL_ATTRIBUTES (fndecl)))
     {
+      /* Due to how the nodes are layed out, unpacking them is pretty
+	 incomprehensible.  */
+      gcc_assert (TREE_VALUE (declare_variant_variant_args_attr));
+      dispatch_append_args
+	= TREE_CHAIN (TREE_VALUE (declare_variant_variant_args_attr));
+      tree dispatch_adjust_args_list
+	= TREE_VALUE (declare_variant_variant_args_attr);
+      gcc_assert (dispatch_adjust_args_list);
       dispatch_adjust_args_list = TREE_VALUE (dispatch_adjust_args_list);
-      dispatch_append_args = TREE_CHAIN (dispatch_adjust_args_list);
-      if (TREE_PURPOSE (dispatch_adjust_args_list) == NULL_TREE
-	  && TREE_VALUE (dispatch_adjust_args_list) == NULL_TREE)
-	dispatch_adjust_args_list = NULL_TREE;
+
+      if (dispatch_adjust_args_list)
+	{
+	  dispatch_adjust_args_specifiers.create (nargs);
+	  for (int arg_idx = 0; arg_idx < nargs; ++arg_idx)
+	    dispatch_adjust_args_specifiers.quick_push (NULL_TREE);
+
+	  for (tree n = dispatch_adjust_args_list; n; n = TREE_CHAIN (n))
+	    {
+	      gcc_assert (TREE_VALUE (n)
+			  && (TREE_PURPOSE (n) == nothing_id
+			      || TREE_PURPOSE (n) == need_ptr_id
+			      || TREE_PURPOSE (n) == need_addr_id));
+	      tree item = TREE_VALUE (n);
+	      /* Diagnostics make more sense if we defer these.  */
+	      if (TREE_CODE (TREE_VALUE (item)) == TREE_LIST)
+		continue;
+	      gcc_assert (TREE_CODE (TREE_VALUE (item)) == INTEGER_CST);
+	      const int idx = tree_to_shwi (TREE_VALUE (item));
+	      if (idx >= nargs)
+		{
+		  /* Adjust to a 1 based index for output.  */
+		  const int adjusted = idx + 1;
+		  error_at (EXPR_LOCATION (TREE_PURPOSE (item)),
+			    "parameter index %d is out of range with %d "
+			    "arguments",
+			    adjusted, nargs);
+		  continue;
+		}
+	      tree& spec_at_idx = dispatch_adjust_args_specifiers[idx];
+	      gcc_assert (spec_at_idx == NULL_TREE);
+	      spec_at_idx = n;
+	    }
+	  /* There might be a better place to put this.  */
+	  const bool variadic_func_p = [&] ()
+	    {
+	      tree parm_type = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+	      while (parm_type && parm_type != void_list_node)
+		parm_type = TREE_CHAIN (parm_type);
+	      return parm_type != void_list_node;
+	    } (); /* IILE.  */
+	  auto expand_range = [&] (tree modifier_id, tree loc, tree range)
+	    {
+	      /* We only encounter numeric ranges here if fn is variadic.  */
+	      gcc_assert (variadic_func_p);
+	      const location_t range_loc = EXPR_LOCATION (loc);
+	      const tree lb_node = TREE_PURPOSE (range);
+	      const tree ub_node = TREE_VALUE (range);
+	      const bool relative_lb = TREE_PURPOSE (lb_node) != NULL_TREE;
+	      const bool relative_ub = TREE_PURPOSE (ub_node) != NULL_TREE;
+	      const ptrdiff_t lb_raw = tree_to_shwi (TREE_VALUE (lb_node));
+	      const ptrdiff_t ub_raw = tree_to_shwi (TREE_VALUE (ub_node));
+	      /* relative_lb implies lb_raw <= -1,
+		 relative_ub implies ub_raw <= 0.  */
+	      gcc_assert ((relative_lb || relative_ub)
+			  && (!relative_lb || lb_raw <= -1)
+			  && (!relative_ub || ub_raw <= 0));
+	      /* (relative_lb && relative_ub) implies lb_raw < ub_raw.  */
+	      gcc_assert (!(relative_lb && relative_ub) || lb_raw < ub_raw);
+	      const ptrdiff_t lb = relative_lb ? lb_raw + nargs : lb_raw;
+	      const ptrdiff_t ub = relative_ub ? ub_raw + nargs : ub_raw;
+	      /* This will never happen, still gotta diagnose it.  */
+	      if (lb > INT_MAX || ub > INT_MAX)
+		{
+		  if (lb > INT_MAX)
+		    error_at (range_loc, "lb overflow");
+		  else if (ub > INT_MAX)
+		    error_at (range_loc, "ub overflow");
+		  return;
+		}
+	      /* Internally, ub is stored as one-past-the-end.  */
+	      if (lb < 0 || ub < 1)
+		{
+		  if (lb < 0)
+		    /* FIXME: Use location of lb specifically.  */
+		    error_at (range_loc,
+			      "lower bound with logical offset is negative "
+			      "with %d arguments",
+			      nargs);
+		  if (ub < 1)
+		    /* FIXME: Use location of ub specifically.  */
+		    error_at (range_loc,
+			      "upper bound with logical offset is negative "
+			      "with %d arguments",
+			      nargs);
+		  return;
+		}
+	      /* It's okay for lb and ub to be equal, we allow empty ranges
+		 at this point.  Don't bother diagnosing this if either bound
+		 is out of range.  */
+	      if (lb > ub)
+		{
+		  if (relative_lb)
+		    error_at (range_loc,
+			      "lower bound with logical offset is greater "
+			      "than upper bound with %d arguments",
+			      nargs);
+		  else
+		    error_at (range_loc,
+			      "upper bound with logical offset is less than "
+			      "lower bound with %d arguments",
+			      nargs);
+		  return;
+		}
+
+	      for (int idx = lb; idx < ub; ++idx)
+		{
+		  tree& spec_at_idx = dispatch_adjust_args_specifiers[idx];
+		  if (spec_at_idx != NULL_TREE)
+		    {
+		      tree item = TREE_VALUE (spec_at_idx);
+		      location_t dupe_loc
+			= EXPR_LOCATION (TREE_PURPOSE (item));
+		      /* FIXME: Use nfirst_args to determine whether an index
+			 refers to a variadic argument to enhance the
+			 diagnostic.  */
+		      error_at (range_loc,
+				"expansion of numeric range with %d "
+				"arguments specifies an already specified "
+				"parameter",
+				nargs);
+		      inform (dupe_loc, "parameter previously specified here");
+		      /* Give up after the first collision to avoid spamming
+			 errors.  Alternatively, we could also remember which
+			 ones we diagnosed, but it doesn't seem worth it.  */
+		      return;
+		    }
+		  else
+		    {
+		      /* We don't need to create an index node anymore,
+			 it is represented by the position in vec.  */
+		      tree new_item = build_tree_list (loc, NULL_TREE);
+		      spec_at_idx = build_tree_list (modifier_id, new_item);
+		    }
+		}
+	    };
+	  for (tree n = dispatch_adjust_args_list; n; n = TREE_CHAIN (n))
+	    {
+	      tree item = TREE_VALUE (n);
+	      if (TREE_CODE (TREE_VALUE (item)) != TREE_LIST)
+		continue;
+	      expand_range (TREE_PURPOSE (n),
+			    TREE_PURPOSE (item),
+			    TREE_VALUE (item));
+	    }
+	}
     }
+
   if (dispatch_append_args)
     {
       nfirst_args = tree_to_shwi (TREE_PURPOSE (dispatch_append_args));
@@ -3944,9 +4101,8 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
   if (dispatch_device_num)
     dispatch_device_num = OMP_CLAUSE_DEVICE_ID (dispatch_device_num);
   dispatch_interop = omp_find_clause (dispatch_clauses, OMP_CLAUSE_INTEROP);
-  int nappend = 0, ninterop = 0;
-  for (tree t = dispatch_append_args; t; t = TREE_CHAIN (t))
-    nappend++;
+  const int nappend = list_length (dispatch_append_args);
+  int ninterop = 0;
 
   /* FIXME: error checking should be taken out of this function and
      handled before any attempt at filtering or resolution happens.
@@ -4174,10 +4330,14 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
       i += nappend;
       for (j = nfirst_args; j < nargs; j++)
 	buffer[i++] = CALL_EXPR_ARG (expr, j);
-      nargs += nappend;
+      /* Leave nargs alone so we don't need to account for changes of varargs
+	 indices when adjusting the arguments below.
+	 We also don't want any surprises if we move the above append_args
+	 handling down, as it depends on nargs.  */
+      const int new_nargs = nargs + nappend;
       tree call = expr;
       expr = build_call_array_loc (EXPR_LOCATION (expr), TREE_TYPE (call),
-				   CALL_EXPR_FN (call), nargs, buffer);
+				   CALL_EXPR_FN (call), new_nargs, buffer);
 
       /* Copy all CALL_EXPR flags.  */
       CALL_EXPR_STATIC_CHAIN (expr) = CALL_EXPR_STATIC_CHAIN (call);
@@ -4189,139 +4349,164 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
       CALL_EXPR_VA_ARG_PACK (expr) = CALL_EXPR_VA_ARG_PACK (call);
     }
 
-  /* Nothing to do for adjust_args?  */
-  if (!dispatch_adjust_args_list || !TYPE_ARG_TYPES (TREE_TYPE (fndecl)))
-    goto add_cleanup;
-
-  /* Handle adjust_args.  */
-  for (int i = 0; i < nargs; i++)
+  auto adjust_the_arg = [&] (tree arg, tree aa_spec)
     {
-      tree *arg_p = &CALL_EXPR_ARG (expr, i);
+      if (integer_zerop (arg) || !aa_spec)
+	return arg;
+      const bool need_device_ptr = TREE_PURPOSE (aa_spec) == need_ptr_id;
+      const bool need_device_addr = TREE_PURPOSE (aa_spec) == need_addr_id;
+      if (!need_device_ptr && !need_device_addr)
+	return arg;
 
-      /* Nothing to do if arg is constant null pointer.  */
-      if (integer_zerop (*arg_p))
-	continue;
-
-      bool need_device_ptr = false;
-      bool need_device_addr = false;
-      for (int need_addr = 0; need_addr <= 1; need_addr++)
-	for (tree arg = (need_addr
-			 ? TREE_VALUE (dispatch_adjust_args_list)
-			 : TREE_PURPOSE (dispatch_adjust_args_list));
-	     arg != NULL; arg = TREE_CHAIN (arg))
-	  {
-	    if (TREE_VALUE (arg)
-		&& TREE_CODE (TREE_VALUE (arg)) == INTEGER_CST
-		&& wi::eq_p (i, wi::to_wide (TREE_VALUE (arg))))
-	      {
-		if (need_addr)
-		  need_device_addr = true;
-		else
-		  need_device_ptr = true;
-		break;
-	      }
-	  }
-
-      if (need_device_ptr || need_device_addr)
+      auto find_arg_in_clause = [&] (const_tree clauses) -> const_tree
 	{
-	  bool is_device_ptr = false;
-	  bool has_device_addr = false;
-
-	  for (tree c = dispatch_clauses; c; c = TREE_CHAIN (c))
+	  const const_tree arg_decl = [&] ()
 	    {
-	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IS_DEVICE_PTR
-		  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_HAS_DEVICE_ADDR)
-		{
-		  tree decl1 = DECL_NAME (OMP_CLAUSE_DECL (c));
-		  tree decl2 = tree_strip_nop_conversions (*arg_p);
-		  if (TREE_CODE (decl2) == ADDR_EXPR)
-		    decl2 = TREE_OPERAND (decl2, 0);
-		  if (VAR_P (decl2) || TREE_CODE (decl2) == PARM_DECL)
-		    {
-		      decl2 = DECL_NAME (decl2);
-		      if (decl1 == decl2
-			  && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IS_DEVICE_PTR)
-			{
-			  if (need_device_addr)
-			    warning_at (OMP_CLAUSE_LOCATION (c),
-					OPT_Wopenmp,
-					"%<is_device_ptr%> for %qD does"
-					" not imply %<has_device_addr%> "
-					"required for %<need_device_addr%>",
-					OMP_CLAUSE_DECL (c));
-			  is_device_ptr = true;
-			  break;
-			}
-		      else if (decl1 == decl2)
-			{
-			  if (need_device_ptr)
-			    warning_at (OMP_CLAUSE_LOCATION (c),
-					OPT_Wopenmp,
-					"%<has_device_addr%> for %qD does"
-					" not imply %<is_device_ptr%> "
-					"required for %<need_device_ptr%>",
-					OMP_CLAUSE_DECL (c));
-			  has_device_addr = true;
-			  break;
-			}
-		    }
-		}
-	    }
-
-	  if ((need_device_ptr && !is_device_ptr)
-	      || (need_device_addr && !has_device_addr))
+	      tree arg_decl = tree_strip_nop_conversions (arg);
+	      if (TREE_CODE (arg_decl) == ADDR_EXPR)
+		arg_decl = TREE_OPERAND (arg_decl, 0);
+	      return arg_decl;
+	    } (); /* IILE.  */
+	  for (const_tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
 	    {
-	      if (dispatch_device_num == NULL_TREE)
-		{
-		  // device_num = omp_get_default_device ()
-		  tree fn
-		    = builtin_decl_explicit (BUILT_IN_OMP_GET_DEFAULT_DEVICE);
-		  tree call = build_call_expr (fn, 0);
-		  dispatch_device_num = create_tmp_var_raw (TREE_TYPE (call));
-		  tree init
-		    = build4 (TARGET_EXPR, TREE_TYPE (call),
-			      dispatch_device_num, call, NULL_TREE, NULL_TREE);
-		  if (init_code)
-		    init_code = build2 (COMPOUND_EXPR, TREE_TYPE (init),
-					init_code, init);
-		  else
-		    init_code = init;
-		}
-
-	      // We want to emit the following statement:
-	      //   mapped_arg = omp_get_mapped_ptr (arg,
-	      // 		device_num)
-	      // but arg has to be the actual pointer, not a
-	      // reference or a conversion expression.
-	      tree actual_ptr
-		= ((TREE_CODE (*arg_p) == ADDR_EXPR)
-		   ? TREE_OPERAND (*arg_p, 0)
-		   : *arg_p);
-	      if (TREE_CODE (actual_ptr) == NOP_EXPR
-		  && (TREE_CODE (TREE_TYPE (TREE_OPERAND (actual_ptr, 0)))
-		      == REFERENCE_TYPE))
-		{
-		  actual_ptr = TREE_OPERAND (actual_ptr, 0);
-		  actual_ptr = build1 (INDIRECT_REF,
-				       TREE_TYPE (actual_ptr),
-				       actual_ptr);
-		}
-	      tree fn = builtin_decl_explicit (BUILT_IN_OMP_GET_MAPPED_PTR);
-	      tree mapped_arg = build_call_expr_loc (loc, fn, 2, actual_ptr,
-						     dispatch_device_num);
-
-	      if (TREE_CODE (*arg_p) == ADDR_EXPR
-		  || (TREE_CODE (TREE_TYPE (actual_ptr)) == REFERENCE_TYPE))
-		mapped_arg = build_fold_addr_expr (mapped_arg);
-	      else if (TREE_CODE (*arg_p) == NOP_EXPR)
-		mapped_arg = build1 (NOP_EXPR, TREE_TYPE (*arg_p),
-				     mapped_arg);
-	      *arg_p = mapped_arg;
+	      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IS_DEVICE_PTR
+		  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_HAS_DEVICE_ADDR)
+		continue;
+	      const tree name_in_clause = DECL_NAME (OMP_CLAUSE_DECL (c));
+	      if ((VAR_P (arg_decl) || TREE_CODE (arg_decl) == PARM_DECL)
+		  && name_in_clause == DECL_NAME (arg_decl))
+		return c;
 	    }
+	  return NULL_TREE;
+	};
+      /* The code this was refactored from stops on the first clause with a
+	 matching var/parm specified in it.  */
+      const_tree clause_with_arg = find_arg_in_clause (dispatch_clauses);
+      /* I assume if a var/parm is used in multiple clauses it gets diagnosed
+	 before we get here, make sure that is true.  */
+      gcc_checking_assert (!clause_with_arg
+			   || !find_arg_in_clause
+				(OMP_CLAUSE_CHAIN (clause_with_arg)));
+
+      const bool is_device_ptr = clause_with_arg
+				 && OMP_CLAUSE_CODE (clause_with_arg)
+				    == OMP_CLAUSE_IS_DEVICE_PTR;
+      const bool has_device_addr = clause_with_arg
+				   && OMP_CLAUSE_CODE (clause_with_arg)
+				      == OMP_CLAUSE_HAS_DEVICE_ADDR;
+      /* Obviously impossible with how things are currently implemented.  */
+      gcc_assert (!(is_device_ptr && has_device_addr));
+
+      if (need_device_addr && is_device_ptr)
+	warning_at (OMP_CLAUSE_LOCATION (clause_with_arg),
+		    OPT_Wopenmp,
+		    "%<is_device_ptr%> for %qD does not imply "
+		    "%<has_device_addr%> required for %<need_device_addr%>",
+		    OMP_CLAUSE_DECL (clause_with_arg));
+      if (need_device_ptr && has_device_addr)
+	warning_at (OMP_CLAUSE_LOCATION (clause_with_arg),
+		    OPT_Wopenmp,
+		    "%<has_device_addr%> for %qD does not imply "
+		    "%<is_device_ptr%> required for %<need_device_ptr%>",
+		    OMP_CLAUSE_DECL (clause_with_arg));
+      /* ARG does not need to be adjusted.  */
+      if ((need_device_ptr && is_device_ptr)
+	  || (need_device_addr && has_device_addr))
+	return arg;
+
+      if (dispatch_device_num == NULL_TREE)
+	{
+	  // device_num = omp_get_default_device ()
+	  tree fn = builtin_decl_explicit (BUILT_IN_OMP_GET_DEFAULT_DEVICE);
+	  tree call = build_call_expr (fn, 0);
+	  dispatch_device_num = create_tmp_var_raw (TREE_TYPE (call));
+	  tree init = build4 (TARGET_EXPR, TREE_TYPE (call),
+	  dispatch_device_num, call, NULL_TREE, NULL_TREE);
+	  if (init_code)
+	    init_code = build2 (COMPOUND_EXPR, TREE_TYPE (init),
+				init_code, init);
+	  else
+	    init_code = init;
+	}
+
+      // We want to emit the following statement:
+      //   mapped_arg = omp_get_mapped_ptr (arg,
+      //		device_num)
+      // but arg has to be the actual pointer, not a
+      // reference or a conversion expression.
+      tree actual_ptr = TREE_CODE (arg) == ADDR_EXPR ? TREE_OPERAND (arg, 0)
+						     : arg;
+      if (TREE_CODE (actual_ptr) == NOP_EXPR
+	  && (TREE_CODE (TREE_TYPE (TREE_OPERAND (actual_ptr, 0)))
+	      == REFERENCE_TYPE))
+	{
+	  actual_ptr = TREE_OPERAND (actual_ptr, 0);
+	  actual_ptr
+	    = build1 (INDIRECT_REF, TREE_TYPE (actual_ptr), actual_ptr);
+	}
+      tree fn = builtin_decl_explicit (BUILT_IN_OMP_GET_MAPPED_PTR);
+      tree mapped_arg
+	= build_call_expr_loc (loc, fn, 2, actual_ptr, dispatch_device_num);
+
+      if (TREE_CODE (arg) == ADDR_EXPR
+	  || (TREE_CODE (TREE_TYPE (actual_ptr)) == REFERENCE_TYPE))
+	mapped_arg = build_fold_addr_expr (mapped_arg);
+      else if (TREE_CODE (arg) == NOP_EXPR)
+	mapped_arg = build1 (NOP_EXPR, TREE_TYPE (arg), mapped_arg);
+      return mapped_arg;
+    };
+
+  /* Nothing to do for adjust_args?  */
+  const bool adjust_args_needed = [&] ()
+    {
+      if (!dispatch_adjust_args_specifiers.exists ())
+	return false;
+      for (auto const& aa_spec : dispatch_adjust_args_specifiers)
+	{
+	  if (aa_spec
+	      && (TREE_PURPOSE (aa_spec) == need_ptr_id
+		  || TREE_PURPOSE (aa_spec) == need_addr_id))
+	    return true;
+	}
+      return false;
+    } (); /* IILE.  */
+
+  if (adjust_args_needed)
+    {
+      /* FIXME: We need to check argument types.  */
+      const int num_parms = nfirst_args ? nfirst_args : nargs;
+      /* adjust_the_arg returns arg unchanged if no adjustments are needed.  */
+      for (int idx = 0; idx < num_parms; ++idx)
+	{
+	  gcc_assert (dispatch_adjust_args_specifiers.length ()
+		      > static_cast<size_t>(idx));
+	  const tree aa_spec = dispatch_adjust_args_specifiers[idx];
+	  tree *const arg = &CALL_EXPR_ARG (expr, idx);
+	  *arg = adjust_the_arg (*arg, aa_spec);
+	}
+      /* Variadic args come after append_args args, we can't do adjust_args
+	 until after append_args is done though because append_args needs to
+	 push into init_code first.  We can probably fix this, but until then
+	 we just need to adjust our index into CALL_EXPR_ARG by the number of
+	 appended args.
+	 It would just be simpler if we could handle adjust_args first, but I
+	 don't know if there is a trivial way of handling the init_code
+	 ordering.
+	 This only handles varargs in functions that have an append_args
+	 clause, varargs are handled in the above loop otherwise and this loop
+	 is skipped.  */
+      const int varargs_start = num_parms;
+      for (int idx = varargs_start; idx < nargs; ++idx)
+	{
+	  gcc_assert (dispatch_adjust_args_specifiers.length ()
+		      > static_cast<size_t>(idx));
+	  const tree aa_spec = dispatch_adjust_args_specifiers[idx];
+	  const int call_expr_arg_idx = idx + nappend;
+	  tree *const arg = &CALL_EXPR_ARG (expr, call_expr_arg_idx);
+	  *arg = adjust_the_arg (*arg, aa_spec);
 	}
     }
 
- add_cleanup:
   if (cleanup)
     {
       tree result = NULL_TREE;

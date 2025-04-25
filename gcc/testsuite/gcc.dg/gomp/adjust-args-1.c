@@ -1,8 +1,6 @@
 /* Test parsing of OMP clause adjust_args */
 /* { dg-do compile } */
 
-int b;
-
 int f0 (void *a);
 int g (void *a);
 int f1 (int);
@@ -17,16 +15,27 @@ int f4 (void *a);
 int f5 (int a);
 #pragma omp declare variant (f1) match (construct={dispatch}) adjust_args (nothing) /* { dg-error "expected 'nothing' or 'need_device_ptr' followed by ':'" } */
 int f6 (int a);
-#pragma omp declare variant (f1) match (construct={dispatch}) adjust_args (nothing:) /* { dg-error "expected identifier before '\\)' token" } */
+#pragma omp declare variant (f1) match (construct={dispatch}) adjust_args (nothing:) /* { dg-error "expected expression before '\\)' token" } */
 int f7 (int a);
-#pragma omp declare variant (f1) match (construct={dispatch}) adjust_args (nothing: z) /* { dg-error "'z' undeclared here \\(not in a function\\)" } */
+#pragma omp declare variant (f1) match (construct={dispatch}) adjust_args (nothing: z) /* { dg-error "'z' is not a function parameter" } */
 int f8 (int a);
-#pragma omp declare variant (f1) match (construct={dispatch}) adjust_args (need_device_ptr: a) /* { dg-error "'a' is not of pointer type" } */
-int f9 (int a);
-#pragma omp declare variant (f1) match (construct={dispatch}) adjust_args (nothing: a) adjust_args (nothing: a) /* { dg-error "'a' is specified more than once" } */
+#pragma omp declare variant (f1) match (construct={dispatch}) adjust_args (need_device_ptr: a) /* { dg-note "specified here" } */
+int f9 (int a); /* { dg-error "'a' is not of pointer type" } */
+#pragma omp declare variant (f1) match (construct={dispatch}) \
+				 adjust_args (nothing: a)     \
+				 adjust_args (nothing: a)
 int f10 (int a);
-#pragma omp declare variant (g) match (construct={dispatch}) adjust_args (nothing: a) adjust_args (need_device_ptr: a) /* { dg-error "'a' is specified more than once" } */
+/* { dg-note "previously specified here" "" { target *-*-* } .-3 } */
+/* { dg-error "parameter list item specified more than once" "" { target *-*-* } .-3 } */
+#pragma omp declare variant (g) match (construct={dispatch}) \
+				adjust_args (nothing: a)     \
+				adjust_args (need_device_ptr: a)
 int f11 (void *a);
-#pragma omp declare variant (g) match (construct={dispatch}) adjust_args (need_device_ptr: b) /* { dg-error "'b' is not a function argument" } */
+/* { dg-note "previously specified here" "" { target *-*-* } .-3 } */
+/* { dg-error "parameter list item specified more than once" "" { target *-*-* } .-3 } */
+
+int b;
+
+#pragma omp declare variant (g) match (construct={dispatch}) adjust_args (need_device_ptr: b) /* { dg-error "'b' is not a function parameter" } */
 int f12 (void *a);
 

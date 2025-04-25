@@ -11999,36 +11999,159 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
       ++cp_unevaluated_operand;
       tree varid = tsubst_expr (TREE_PURPOSE (val), args, complain, in_decl);
       --cp_unevaluated_operand;
-      tree chain = TREE_CHAIN (val);
+      tree chain = copy_list (TREE_CHAIN (val));
       location_t match_loc = cp_expr_loc_or_input_loc (TREE_PURPOSE (chain));
       tree ctx = copy_list (TREE_VALUE (val));
-      tree append_args_list = TREE_CHAIN (TREE_CHAIN (chain));
-      if (append_args_list
-	  && TREE_VALUE (append_args_list)
-	  && TREE_CHAIN (TREE_VALUE (append_args_list)))
+      /* These asserts may seem strange but the layout of this attribute is
+	 really difficult to grok and remember.  They should be left in until
+	 we refactor the layout of the stored nodes.  */
+      gcc_assert (TREE_CHAIN (chain));
+      /* These nodes were copied by copy_list above, don't copy it again.  */
+      tree omp_variant_clauses = TREE_CHAIN (TREE_CHAIN (chain));
+      gcc_checking_assert (!omp_variant_clauses
+			   || TREE_PURPOSE (omp_variant_clauses)
+			      == get_identifier ("omp variant clauses temp"));
+      tree adjust_args_idxs = NULL_TREE;
+      if (omp_variant_clauses)
 	{
-	  append_args_list = TREE_VALUE (append_args_list);
-	  append_args_list = TREE_VALUE (TREE_CHAIN (append_args_list));
-	  for (; append_args_list;
-	       append_args_list = TREE_CHAIN (append_args_list))
-	     {
-	      tree pref_list = TREE_VALUE (append_args_list);
-	      if (pref_list == NULL_TREE || TREE_CODE (pref_list) != TREE_LIST)
+	  gcc_assert (TREE_VALUE (omp_variant_clauses));
+	  adjust_args_idxs = copy_node (TREE_VALUE (omp_variant_clauses));
+	  gcc_assert (adjust_args_idxs);
+	  gcc_checking_assert (TREE_PURPOSE (adjust_args_idxs)
+			       == get_identifier ("omp adjust args idxs"));
+	  /* copy_node doesn't copy the CHAIN.  */
+	  if (adjust_args_idxs)
+	    {
+	      if (TREE_CHAIN (TREE_VALUE (omp_variant_clauses)))
+		TREE_CHAIN (adjust_args_idxs)
+		  = copy_node (TREE_CHAIN (TREE_VALUE (omp_variant_clauses)));
+	      TREE_VALUE (omp_variant_clauses) = adjust_args_idxs;
+	    }
+	}
+      if (adjust_args_idxs
+	  && TREE_CHAIN (adjust_args_idxs))
+	{
+	  /* This only needs to be copied if node PURPOSE is NULL_TREE, or if
+	     there is a dependent prefer type node.  It's hard to determine
+	     this though, so don't try to handle it conditionally for now.  */
+	  tree append_args_node = TREE_CHAIN (adjust_args_idxs);
+	  /* PURPOSE holds the count of real args, it doesn't need to be copied
+	     because it will just be replaced if it needs to be changed.
+	     VALUE holds the list of append_args.  */
+	  append_args_node = copy_node (append_args_node);
+	  /* It's too hard to figure out if we have anything dependent,
+	     unconditionally copy this list.  */
+	  tree append_args_head = copy_list (TREE_VALUE (append_args_node));
+	  for (tree n = append_args_head; n != NULL_TREE; n = TREE_CHAIN (n))
+	    {
+	      tree pref_list = TREE_VALUE (n);
+	      if (pref_list == NULL_TREE
+		  || TREE_CODE (pref_list) != TREE_LIST)
+		/* Not a pref_list.  */
 		continue;
-	      tree fr_list = TREE_VALUE (pref_list);
+	      tree fr_list = copy_node (TREE_VALUE (pref_list));
 	      int len = TREE_VEC_LENGTH (fr_list);
+	      /* Track if substitution occurs.
+		 I'm not really sure that this even works the way I hope it
+		 does, really I'm pretty sure tsubst_expr will basically always
+		 return some sort of copy.  The proper solution is probably
+		 marking the list as dependent during parsing.  */
+	      bool substituted = false;
 	      for (int i = 0; i < len; i++)
 		{
-		  tree *fr_expr = &TREE_VEC_ELT (fr_list, i);
-		  /* Preserve NOP_EXPR to have a location.  */
-		  if (*fr_expr && TREE_CODE (*fr_expr) == NOP_EXPR)
-		    TREE_OPERAND (*fr_expr, 0)
-		      = tsubst_expr (TREE_OPERAND (*fr_expr, 0), args, complain,
-				     in_decl);
-		  else
-		    *fr_expr = tsubst_expr (*fr_expr, args, complain, in_decl);
+		  tree elt = TREE_VEC_ELT (fr_list, i);
+		  if (!elt)
+		    continue;
+		  tree expr = TREE_CODE (elt) == NOP_EXPR
+			      ? TREE_OPERAND (elt, 0)
+			      : elt;
+		  tree new_expr = tsubst_expr (expr, args, complain, in_decl);
+		  if (new_expr != expr)
+		    {
+		      substituted = true;
+		      if (TREE_CODE (elt) == NOP_EXPR)
+			{
+			  tree copied_nop = copy_node (elt);
+			  TREE_OPERAND (copied_nop, 0) = new_expr;
+			  TREE_VEC_ELT (fr_list, i) = copied_nop;
+			}
+		      else
+			TREE_VEC_ELT (fr_list, i) = new_expr;
+		    }
+		}
+	      if (substituted)
+		{
+		  pref_list = copy_node (pref_list);
+		  TREE_VALUE (pref_list) = fr_list;
+		  /* This node gets mutated in cp_finish_omp_init_prefer_type
+		     if fr_list is dependent, it needs to be copied.  */
+		  TREE_PURPOSE (pref_list)
+		    = copy_node (TREE_PURPOSE (pref_list));
+		  TREE_VALUE (n) = pref_list;
 		}
 	    }
+	  TREE_VALUE (append_args_node) = append_args_head;
+	  TREE_CHAIN (adjust_args_idxs) = append_args_node;
+	}
+      gcc_assert (TREE_CHAIN (chain));
+
+      tree adjust_args_list = adjust_args_idxs
+			      ? TREE_VALUE (adjust_args_idxs)
+			      : NULL_TREE;
+
+      if (adjust_args_list && ATTR_IS_DEPENDENT (adjust_args_list))
+	{
+	  tree copied = copy_list (adjust_args_list);
+	  /* Substitute numeric ranges, we also need to copy ranges with
+	     relative bounds, in theory it's possible for them to get expanded
+	     while one bound is still dependent.  */
+	  for (tree n = copied; n; n = TREE_CHAIN (n))
+	    {
+	      tree item = TREE_VALUE (n);
+	      const tree_code code = TREE_CODE (TREE_VALUE (item));
+	      gcc_assert (code == PARM_DECL
+			  || code == INTEGER_CST
+			  || code == TREE_LIST);
+	      if (code == TREE_LIST)
+		{
+		  tree range = TREE_VALUE (item);
+		  gcc_assert (TREE_CODE (range) == TREE_LIST);
+		  auto tsubst_bound = [&] (tree bound)
+		    {
+		      gcc_assert (bound != NULL_TREE);
+		      if (bound == error_mark_node
+			  || !ATTR_IS_DEPENDENT (bound))
+			{
+			  /* As above, copy the bound if it is relative.  */
+			  if (TREE_PURPOSE (bound) != NULL_TREE)
+			    return copy_node (bound);
+			  else
+			    return bound;
+			}
+		      tree expr = TREE_VALUE (bound);
+		      tree subst_expr
+			= tsubst_expr (expr, args, complain, in_decl);
+		      gcc_assert (subst_expr != expr);
+		      tree new_bound = build_tree_list (TREE_PURPOSE (bound),
+							subst_expr);
+		      return new_bound;
+		    };
+		  tree lb = tsubst_bound (TREE_PURPOSE (range));
+		  tree ub = tsubst_bound (TREE_VALUE (range));
+		  /* Only build a new range if substitution occured.  */
+		  if (lb != TREE_PURPOSE (range)
+		      || ub != TREE_VALUE (range))
+		    {
+		      tree new_range = build_tree_list (lb, ub);
+		      /* We don't need to copy the purpose, it just holds
+			 a location.  */
+		      TREE_VALUE (n) = build_tree_list (TREE_PURPOSE (item),
+							new_range);
+		    }
+		}
+	    }
+	  TREE_VALUE (adjust_args_idxs) = copied;
+	  TREE_VALUE (omp_variant_clauses) = adjust_args_idxs;
 	}
       for (tree tss = ctx; tss; tss = TREE_CHAIN (tss))
 	{

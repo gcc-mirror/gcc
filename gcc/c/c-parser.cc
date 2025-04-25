@@ -16072,6 +16072,722 @@ c_parser_omp_var_list_parens (c_parser *parser, enum omp_clause_code kind,
   return list;
 }
 
+/* Helper for c_parser_omp_parm_list and c_finish_omp_declare_variant.
+   Compare two OpenMP parameter-list-item numeric ranges with a relative bound.
+   Returns true if they always overlap for any value of omp_num_args,
+   returns false otherwise.
+
+   Literal bounds are never compared with each other here,
+   c_parser_omp_parm_list already handles that case.
+
+   In hindsight, this was never really worth doing.  If there is ever a case
+   found that this function gets wrong the best course of action is probably
+   to just disable the section that causes a problem.  This function only
+   serves to diagnose overlapping numeric ranges in variadic functions early,
+   gimplify.cc:modify_call_for_omp_dispatch will always catch these problems
+   when the numeric range is expanded even if this function misses any cases.
+
+   If I could go back in time, I would stop myself from writing this, but it's
+   already done now.  It technically does serve its purpose of providing better
+   diagnostics for niche scenarios, so until it breaks, here it is.  */
+
+static bool
+c_omp_numeric_ranges_always_overlap (tree first, tree second)
+{
+  gcc_assert (first && TREE_CODE (first) == TREE_LIST
+	      && second && TREE_CODE (second) == TREE_LIST);
+
+  auto bound_is_relative = [] (tree bound) -> bool
+    {
+      gcc_assert (!TREE_PURPOSE (bound)
+		  || TREE_PURPOSE (bound)
+		     == get_identifier ("omp relative bound"));
+      /* NULL_TREE means literal, the only other possible value is
+	 get_identifier ("omp relative bound"), I hate this design though.  */
+      return TREE_PURPOSE (bound);
+    };
+
+  tree lb1 = TREE_PURPOSE (first);
+  tree ub1 = TREE_VALUE (first);
+  gcc_assert (lb1 && ub1);
+  const bool lb1_relative = bound_is_relative (lb1);
+  const bool ub1_relative = bound_is_relative (ub1);
+  const bool first_mixed = !(lb1_relative && ub1_relative);
+
+  tree lb2 = TREE_PURPOSE (second);
+  tree ub2 = TREE_VALUE (second);
+  gcc_assert (lb2 && ub2);
+  const bool lb2_relative = bound_is_relative (lb2);
+  const bool ub2_relative = bound_is_relative (ub2);
+  const bool second_mixed = !(lb2_relative && ub2_relative);
+
+  /* Both ranges must have a relative bound.  */
+  gcc_assert ((lb1_relative || ub1_relative)
+	      && (lb2_relative || ub2_relative));
+
+  /* Both fully relative.  */
+  if (!first_mixed && !second_mixed)
+    {
+      /* (relative : relative), (relative : relative)  */
+      wi::tree_to_widest_ref lb1_v = wi::to_widest (TREE_VALUE (lb1));
+      wi::tree_to_widest_ref ub1_v = wi::to_widest (TREE_VALUE (ub1));
+      wi::tree_to_widest_ref lb2_v = wi::to_widest (TREE_VALUE (lb2));
+      wi::tree_to_widest_ref ub2_v = wi::to_widest (TREE_VALUE (ub2));
+      /* We compare lower bound to upper bound including equality because
+	 upper bounds are stored as one past the end of the range.  */
+      return (lb1_v >= lb2_v && lb1_v < ub2_v)
+	      || (ub1_v > lb2_v && ub1_v <= ub2_v);
+    }
+  else if (first_mixed && second_mixed)
+    {
+      /* Note that this is a comparison, not logical and/or.  */
+      if (lb1_relative == lb2_relative)
+	{
+	  /*  FIRST		     SECOND
+	      LB1	  UB1	     LB2	 UB2
+	      (literal  : relative), (literal  : relative)
+	      (relative : literal),  (relative : literal)  */
+
+	  /* Simply compare the relative bounds, if they match the two ranges
+	     will always overlap.
+	     There is some other static analysis that can be done, but it isn't
+	     worth the time to implement.  */
+	  gcc_assert (ub1_relative == ub2_relative);
+	  if (lb1_relative)
+	    {
+	      /* (relative : literal), (relative : literal)  */
+	      return wi::to_widest (TREE_VALUE (lb1))
+		     == wi::to_widest (TREE_VALUE (lb2));
+	    }
+	  else
+	    {
+	      /* (literal : relative), (literal : relative)  */
+	      return wi::to_widest (TREE_VALUE (ub1))
+		     == wi::to_widest (TREE_VALUE (ub2));
+	    }
+	}
+      else
+	{
+	  /* FIRST		    SECOND
+	     LB1	 UB1	    LB2		UB2
+	     (literal  : relative), (relative : literal)
+	     (relative : literal),  (literal  : relative)  */
+	  gcc_assert (lb1_relative != lb2_relative
+		      && ub2_relative != ub2_relative
+		      && (lb1_relative == ub2_relative
+			  || lb2_relative == ub1_relative));
+	  /* There is definitely more interesting static analysis that can
+	     be done here but it would probably be a waste of time.  */
+	  tree relative_lb = lb1_relative ? lb1 : lb2;
+	  tree relative_ub = ub1_relative ? ub1 : ub2;
+	  return wi::to_widest (TREE_VALUE (relative_lb))
+		 >= wi::to_widest (TREE_VALUE (relative_ub));
+	}
+    }
+  else
+    {
+      /* FIRST			SECOND
+	 LB1	     UB1	LB2	    UB2
+	 (literal  : relative), (relative : relative)
+	 (relative : relative), (literal  : relative)
+
+	 (relative : relative), (relative : literal)
+	 (relative : literal),  (relative : relative)  */
+      gcc_assert ((first_mixed && !second_mixed)
+		  || (!first_mixed && second_mixed));
+      tree lb_mixed = first_mixed ? lb1 : lb2;
+      tree ub_mixed = first_mixed ? ub1 : ub2;
+
+      tree lb_full_relative = !first_mixed ? lb1 : lb2;
+      tree ub_full_relative = !first_mixed ? ub1 : ub2;
+
+      if (bound_is_relative (lb_mixed))
+	{
+	  return wi::to_widest (TREE_VALUE (lb_mixed))
+		   >= wi::to_widest (TREE_VALUE (lb_full_relative))
+		 && wi::to_widest (TREE_VALUE (lb_mixed))
+		      < wi::to_widest (TREE_VALUE (ub_full_relative));
+	}
+      else
+	{
+	  gcc_assert (bound_is_relative (ub_mixed));
+	  return wi::to_widest (TREE_VALUE (ub_mixed))
+		   > wi::to_widest (TREE_VALUE (lb_full_relative))
+		 && wi::to_widest (TREE_VALUE (ub_mixed))
+		      <= wi::to_widest (TREE_VALUE (ub_full_relative));
+	}
+    }
+  gcc_unreachable ();
+}
+
+
+/* Parse an OpenMP parameter-list.
+   parameter-list:
+     parameter-list-item[, parameter-list-item [, ...]]
+
+   parameter-list-item:
+     named parameter list item
+     parameter index (1 based)
+     numeric-range
+
+
+   numeric-range:
+     [bound]:[bound]
+
+   bound:
+     index-expr
+     omp_num_args[±logical_offset]
+
+   A named parameter list item is the name of a parameter.  A parameter index
+   is a positive integer literal that is the 1 based index of a parameter.
+   A numeric-range is a pair of bounds of the form lb:ub, the values of each
+   bound form a closed interval of parameter indices.  Bounds can be literal or
+   relative.  An index-expr is a non-negative integer constant-expression that
+   is the value of a literal bound.  The special identifier omp_num_args is
+   equal to the number of arguments passed to the function at the call site,
+   including the number of varargs.  Optionally, a plus or minus with a
+   logical_offset may follow omp_num_args, logical_offset is a non-negative
+   integer constant-expression.  A bound formed with omp_num_args is a relative
+   bound.  If a bound is omitted, a default value is used.  The default value
+   of lb is as if 1 were specified, the default value of ub is as if
+   omp_num_args were specified.
+
+   Each parameter-list-item is stored in a TREE_LIST.  The PURPOSE is for
+   general use and left NULL_TREE here, and the item is stored in the VALUE.
+   An item is a TREE_LIST, the PURPOSE is an expression with the location of
+   the list item, and the VALUE is a representation of the item.
+   Each parameter-list-item is stored in a TREE_LIST node VALUE.  The PURPOSE
+   is unused, and the VALUE is the item-repr.
+
+   Node - PUPOSE: NULL_TREE
+	- VALUE: item-with-location
+   item-with-location - PURPOSE: expr-with-location
+		      - VALUE: item-repr
+
+   An item-repr is a INTEGER_CST or a TREE_LIST.  An INTEGER_CST is the 0 based
+   index of a specified parameter, derived from a named parameter list item or
+   a parameter index.  A TREE_LIST is a numeric-range where its PURPOSE is a
+   TREE_LIST representing the lb, and its VALUE is a TREE_LIST representing the
+   ub.
+
+   item-repr
+     INTEGER_CST - parameter index (0 based)
+     TREE_LIST - PURPOSE: TREE_LIST (lb)
+	       - VALUE:   TREE_LIST (ub)
+
+   lb and ub are a TREE_LIST of the following form;
+   TREE_LIST - PURPOSE: relative bound marker (NULL_TREE if literal)
+	     - VALUE: expr-value
+
+   In non-variadic functions numeric ranges are immediately expanded into
+   INTEGER_CST nodes corresponding to each index specified by the interval.
+
+   The expr-value is an INTEGER_CST node of type integer_type_node, the value
+   corresponding to the expr.  The value of lb is adjusted to be 0 based, while
+   the value of ub is adjusted to be 0 based, and one past the end to support
+   empty ranges.  In other words, lb is adjusted by -1, and ub remains the
+   same.
+
+   Parameters that are specified but are not defined, out of range indices and
+   duplicate specifications are diagnosed.  Additionally, numeric ranges that
+   can be proven to always overlap for any value of omp_num_args even before
+   expansion are also diagnosed.  This provides diagnostics that occur before
+   the function is used.  In hindsight, I wish I didn't waste my time on that
+   last one.
+   If a diagnostic is issued for a list item, it is not appened to the list and
+   parsing continues.  Returns NULL_TREE if no valid list items are parsed.
+
+   This function strictly handles a parameter-list, it does not parse clause
+   modifiers, or parenthesis other than in the expr of a numeric range.  */
+
+static tree
+c_parser_omp_parm_list (c_parser *parser, tree decl, const int parm_count)
+{
+  /* TODO: C++ front end was enhanced a little, gotta make changes in here
+     to match it.  */
+  tree list = NULL_TREE;
+  /* Even though an adjust_args clause on a non-variadic function with 0
+     parameters is silly, we should still probably handle it gracefully.  */
+  const bool variadic_p = TYPE_ARG_TYPES (TREE_TYPE (decl)) != void_list_node
+			  && parm_count == 0;
+  const int omp_num_args_value = parm_count;
+
+  auto unique_append_to_list = [&list, &variadic_p] (int idx, location_t loc)
+    {
+      gcc_assert (idx >= 0);
+      /* Keep track of the last chain to append to the list.  */
+      tree *chain = &list;
+      for (tree node = list; node; node = TREE_CHAIN (node))
+	{
+	  chain = &TREE_CHAIN (node);
+	  tree item = TREE_VALUE (node);
+	  /* Skip numeric range nodes, only valid for variadic functions.  */
+	  if (variadic_p && TREE_CODE (TREE_VALUE (item)) != INTEGER_CST)
+	    /* Early exit.  */;
+	  else if (wi::to_widest (TREE_VALUE (item)) == idx)
+	    /* Return the item for diagnostic purposes.  */
+	    return item;
+	}
+      gcc_assert (*chain == NULL_TREE);
+      /* Store the location in PURPOSE for use in diagnostics.  */
+      tree item = build_tree_list (build_empty_stmt (loc),
+				   build_int_cst (integer_type_node, idx));
+      /* Leave PURPOSE unused for use by the caller of
+	 c_parser_omp_parm_list.  */
+      *chain = build_tree_list (NULL_TREE, item);
+      return NULL_TREE;
+    };
+
+  auto tok_terminates_item_p = [] (c_token *tok)
+    {
+      return tok->type == CPP_COMMA
+	     || tok->type == CPP_CLOSE_PAREN;
+    };
+  /* The first list item is (obviously) not preceded by a comma.  */
+  goto first_element;
+  do
+    {
+      /* Consume the comma.  */
+      c_parser_consume_token (parser);
+      first_element:
+      c_token *const tok = c_parser_peek_token (parser);
+
+      /* OpenMP 6.0 (162:29-34)
+	 A parameter list item can be one of the following:
+	   • A named parameter list item;
+	   • The position of a parameter in a parameter specification specified
+	     by a positive integer, where 1 represents the first parameter; or
+	   • A parameter range specified by lb : ub where both lb and ub must
+	     be an expression of integer OpenMP type with the constant property
+	     and the positive property.
+
+	 The spec does not support arbitrary expression outside of a numeric
+	 range.  In theory they could be supported as a parameter index, but
+	 for now we do not support that case.  */
+
+      /* If we don't see a comma or close paren this can't be a named parameter
+	 list item or a parameter index, it can only be a numeric range.
+	 As far as I can tell, there is no well-formed code that could break
+	 this assumption.  */
+      if (!tok_terminates_item_p (c_parser_peek_2nd_token (parser))
+	  /* Or this edge case, there is a default lower bound.  */
+	  || tok->type == CPP_COLON)
+	/* Early exit, numeric range case handled below.  */;
+      else if (tok->type == CPP_NAME
+	       && tok->id_kind == C_ID_ID)
+	{
+	  if (strcmp (IDENTIFIER_POINTER (tok->value), "omp_num_args") == 0)
+	    {
+	      error_at (tok->location, "%<omp_num_args%> may only be used at "
+				       "the start of a numeric range bound");
+	      c_parser_consume_token (parser);
+	      continue;
+	    }
+	  tree parm_decl = lookup_name (tok->value);
+
+	  if (parm_decl && TREE_CODE (parm_decl) == PARM_DECL)
+	    {
+	      tree parm = DECL_ARGUMENTS (decl);
+	      /* We store indices in 0 based form internally.  */
+	      int idx = 0;
+	      while (parm != parm_decl)
+		{
+		  gcc_assert (parm != NULL_TREE && parm != void_list_node);
+		  ++idx;
+		  parm = DECL_CHAIN (parm);
+		}
+	      if (tree dupe = unique_append_to_list (idx, tok->location))
+		{
+		  error_at (tok->location,
+			    "OpenMP parameter list items must specify a "
+			    "unique parameter");
+		  inform (EXPR_LOCATION (TREE_PURPOSE (dupe)),
+			  "parameter previously specified here");
+		}
+	    }
+	  else
+	    {
+	      /* It feels like the only reasonable solution is to cook our own
+		 solution for this, undeclared_variable doesn't give us what
+		 we wan't for more than a few reasons.  */
+	error_at (tok->location,
+			"%qs is not a function parameter",
+			IDENTIFIER_POINTER (tok->value));
+	      /* FIXME: Something like this is a good idea.  */
+	      /* if (parm_decl && TREE_CONSTANT (parm_decl))
+		   inform (tok->location,
+			   "an expression is only allowed in a "
+			   "numeric range");  */
+	      /* Don't use undeclared_variable if we are parsing a decl
+		 instead of a declaration, it breaks subsequent lookups in
+		 later functions.  */
+	    }
+	  c_parser_consume_token (parser);
+	  continue;
+	}
+      else if (tok->type == CPP_NUMBER)
+	{
+	  if (wi::to_widest (tok->value) <= 0)
+	    error_at (tok->location, "parameter indices in an OpenMP "
+				     "parameter list must be positive");
+	  else if (wi::to_widest (tok->value) > INT_MAX)
+	    error_at (tok->location, "parameter index is too big");
+	  else
+	    {
+	      /* We store indices 0 based internally, OpenMP specifies
+		 1 based indices, modify it.  */
+	      const int idx = tree_to_shwi (tok->value) - 1;
+	      if (!variadic_p && idx >= parm_count)
+		error_at (tok->location,
+			  "parameter list item index is out of range");
+	      else
+		{
+		  if (tree dupe = unique_append_to_list (idx, tok->location))
+		    {
+		      error_at (tok->location,
+				"OpenMP parameter list items must specify a "
+				"unique parameter");
+		      inform (EXPR_LOCATION (TREE_PURPOSE (dupe)),
+			      "parameter previously specified here");
+		    }
+		}
+	    }
+	  c_parser_consume_token (parser);
+	  continue;
+	}
+      else
+	{
+	  gcc_checking_assert (tok_terminates_item_p
+				 (c_parser_peek_2nd_token (parser)));
+	  error_at (tok->location, "expected parameter or integer");
+	  c_parser_consume_token (parser);
+	  continue;
+	}
+      /* We have a numeric range or something ill formed now, this can be
+	 an arbitrary expression.  */
+
+      /* Empty bounds are delimited differently for lower and upper bounds,
+	 handle them before calling parse_bound.  */
+      auto parse_bound = [&] ()
+	{
+	  enum omp_num_args
+	    {
+	      num_args_none,
+	      num_args_plus,
+	      num_args_minus,
+	      num_args_no_offset
+	    };
+	  /* (OpenMP 6.0, 162:35-37)
+	     In both lb and ub, an expression using omp_num_args, that enables
+	     identification of parameters relative to the last argument of the
+	     call, can be used with the form:
+			     omp_num_args [± logical_offset]  */
+
+	  const omp_num_args parsed_omp_num_args = [&] ()
+	    {
+	      c_token *tok = c_parser_peek_token (parser);
+	      if (tok->type == CPP_NAME
+		  && tok->id_kind == C_ID_ID
+		  && strcmp (IDENTIFIER_POINTER (tok->value), "omp_num_args")
+		     == 0)
+	{
+		  /* Consume omp_num_args.  */
+		  c_parser_consume_token (parser);
+		  c_token *op_tok = c_parser_peek_token (parser);
+		  if (op_tok->type == CPP_PLUS)
+		    {
+		      c_parser_consume_token (parser);
+		      return num_args_plus;
+		    }
+		  else if (op_tok->type == CPP_MINUS)
+		    {
+		      c_parser_consume_token (parser);
+		      return num_args_minus;
+		    }
+		  return num_args_no_offset;
+		}
+	      else
+		return num_args_none;
+	    } (); /* IILE.  */
+
+	  /* If there was omp_num_args but no operator an expr is not
+	     permitted, we are finished with this bound.  */
+	  if (parsed_omp_num_args == num_args_no_offset)
+	    return build_int_cst (integer_type_node, omp_num_args_value);
+	  gcc_assert (parsed_omp_num_args < num_args_no_offset);
+
+	  c_expr expr = c_parser_expr_no_commas (parser, NULL);
+	  /* I don't know if this location is correct.  */
+	  const location_t expr_loc = expr.get_location ();
+	  /* I don't think read_p true is correct.  */
+	  expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
+	  if (expr.value == error_mark_node)
+	    return error_mark_node;
+	  tree folded = c_fully_fold (expr.value, false, NULL);
+	  if (!TREE_CONSTANT (folded))
+	    {
+	      error_at (expr_loc, "expression of a bound must be a "
+				  "constant expression");
+	      return error_mark_node;
+	    }
+	  /* This seems wrong...  */
+	  gcc_assert (TREE_CODE (folded) == INTEGER_CST);
+	  /* If we have omp_num_args, expr can be 0,
+	     if we don't, expr must be positive.  */
+	  const int sgn = tree_int_cst_sgn (folded);
+	  /* I'm sure this is wrong but I dunno a better way right now.  */
+	  const ptrdiff_t value = tree_to_shwi (folded);
+	  switch (parsed_omp_num_args)
+	    {
+	      case num_args_none:
+		{
+		  if (sgn != 1)
+		    {
+		      error_at (expr_loc, "expression of bound must be "
+					  "positive");
+		      return error_mark_node;
+		    }
+		  if (!variadic_p && value > omp_num_args_value)
+		    {
+		      error_at (expr_loc, "expression of bound is out "
+					  "of range");
+		      return error_mark_node;
+		    }
+		  return build_int_cst (integer_type_node, value);
+		}
+	      case num_args_plus:
+		{
+		  if (sgn != 0)
+		    {
+		      error_at (expr_loc,
+				"logical offset must be equal to 0 in a bound "
+				"of the form %<omp_num_args+logical-offset%>");
+		      return error_mark_node;
+		    }
+		  return build_int_cst (integer_type_node, omp_num_args_value);
+		}
+	      case num_args_minus:
+		{
+		  if (sgn == -1)
+		    {
+		      error_at (expr_loc,
+				"logical offset must be non-negative");
+		      return error_mark_node;
+		    }
+		  if (variadic_p)
+		    return build_int_cst (integer_type_node, -value);
+		  const ptrdiff_t parm_index = omp_num_args_value - value;
+		  if (parm_index <= 0)
+		    {
+		      error_at (expr_loc,
+				"bound with logical offset evaluates to an "
+				"out of range index");
+		      return error_mark_node;
+		    }
+		  return build_int_cst (integer_type_node, parm_index);
+		}
+	      case num_args_no_offset:
+		/* Handled above.  */
+	      default:
+		gcc_unreachable ();
+	    }
+	  gcc_unreachable ();
+	};
+      const location_t num_range_loc_begin = tok->location;
+
+      /* As stated above, empty bounds are handled here.  */
+      tree lb = c_parser_next_token_is (parser, CPP_COLON) ? NULL_TREE
+							   : parse_bound ();
+      /* I wish we could error here saying that we expect an unqualified-id,
+	 an integer, or an expression.  Parsing the expression emits the error
+	 right away though.  */
+      if (lb && error_operand_p (lb))
+	{
+	  c_parser_skip_to_end_of_parameter (parser);
+	  continue;
+	}
+      /* Tokens get consumed by parse_bound.  */
+      if (c_parser_next_token_is_not (parser, CPP_COLON))
+	{
+	  /* lower_bound can only be null if the next token was a colon.  */
+	  gcc_assert (lb != NULL_TREE);
+	  c_parser_error (parser, "expected %<:%>");
+	  if (tok_terminates_item_p (c_parser_peek_token (parser)))
+	    {
+	      const location_t loc = make_location (num_range_loc_begin,
+						    num_range_loc_begin,
+						    input_location);
+	      inform (loc, "an expression is only allowed in a numeric range");
+	    }
+	  c_parser_skip_to_end_of_parameter (parser);
+	  continue;
+	}
+      const location_t colon_loc = c_parser_peek_token (parser)->location;
+      c_parser_consume_token (parser);
+
+      tree ub = tok_terminates_item_p (c_parser_peek_token (parser))
+		  ? NULL_TREE : parse_bound ();
+      if (!ub || ub == error_mark_node)
+	c_parser_skip_to_end_of_parameter (parser);
+
+      location_t num_range_loc_end = ub != NULL_TREE ? input_location
+						     : colon_loc;
+      location_t num_range_loc = make_location (num_range_loc_begin,
+						num_range_loc_begin,
+						num_range_loc_end);
+      /* I think we are supposed to have some sort of diagnostic here, I'm just
+	 not sure what it should be.  */
+      if (lb == error_mark_node || ub == error_mark_node)
+	continue;
+      /* Handle default bounds.  */
+      const ptrdiff_t lb_val = lb ? tree_to_shwi (lb)
+				  : 1;
+      const ptrdiff_t ub_val = ub ? tree_to_shwi (ub)
+				  : omp_num_args_value;
+
+      gcc_assert (variadic_p || (lb_val > 0 && ub_val > 0));
+      /* We only know this at this point if they are both negative/zero or both
+	 positive, so basically if both or neither use omp_num_args.  */
+      /* FIXME: need a test for this case, I think we are missing this case
+	 in the C++ front end, so add it.  */
+      if (((lb_val <= 0) == (ub_val <= 0)) && lb_val > ub_val)
+	{
+	  error_at (num_range_loc,
+		    "numeric range lower bound must be less than "
+		    "or equal to upper bound");
+	  continue;
+	}
+
+      auto add_range_known = [&] (const int lb, const int ub)
+	{
+	  gcc_assert (lb > 0 && ub > 0 && lb <= ub);
+
+	  for (int idx = lb; idx <= ub; ++idx)
+	    {
+	      gcc_assert (variadic_p || idx <= parm_count);
+	      if (tree dupe = unique_append_to_list (idx - 1, num_range_loc))
+		{
+		  error_at (num_range_loc,
+			    "expansion of numeric range specifies "
+			    "non-unique index %d", idx);
+		  inform (EXPR_LOCATION (TREE_PURPOSE (dupe)),
+			  "parameter previously specified here");
+		}
+	    }
+	};
+      /* Store ub as exclusive (one past the end) so we can differentiate an
+	 empty range from a range of one index without ever encoding lb as
+	 greater than ub.
+	 Semantically, OpenMP does not allow this as numeric range bounds are
+	 specified to be inclusive, but we utilize it for diagnostic purposes.
+	 This is explained in detail below.  */
+      auto add_range_unknown = [&] (const int lb_in,
+				    const bool lb_relative_p,
+				    const int ub_in,
+				    const bool ub_relative_p)
+	{
+	  /* If both bounds are relative, then lb should be <= ub.  */
+	  gcc_assert ((!(lb_relative_p && ub_relative_p) || lb_in <= ub_in)
+		      /* We only deal with ranges that aren't known here, so
+			 at least one bound should be relative to num args.  */
+		      && (lb_relative_p || ub_relative_p));
+	  /* Adjust to be 0 based, -1 now corresponds to the last arg.  */
+	  const int lb = lb_in - 1;
+	  /* Adjust to be 0 based, but add 1 to make it one past the end.  */
+	  const int ub = ub_in - 1 + 1;
+	  /* We don't check against the non-range indices, we already check
+	     that by adding any indices we can be sure of WAY below.  */
+	  auto build_bound = [] (int val, bool add_num_args)
+	    {
+	      return build_tree_list (add_num_args
+					? get_identifier ("omp relative bound")
+					: NULL_TREE,
+				      build_int_cst (integer_type_node, val));
+	    };
+	  tree lb_node = build_bound (lb, lb_relative_p);
+	  tree ub_node = build_bound (ub, ub_relative_p);
+	  tree new_range = build_tree_list (lb_node, ub_node);
+	  /* Keep track of the last chain to append to the list.  */
+	  tree *chain = &list;
+	  for (tree node = list; node; node = TREE_CHAIN (node))
+	  {
+	    chain = &TREE_CHAIN (node);
+	    tree item = TREE_VALUE (node);
+	    gcc_assert (TREE_PURPOSE (item));
+	    if (TREE_CODE (TREE_VALUE (item)) == INTEGER_CST)
+	      continue;
+
+	    tree range = TREE_VALUE (item);
+	    if (c_omp_numeric_ranges_always_overlap (range, new_range))
+	      {
+		error_at (num_range_loc,
+			  "numeric range always overlaps with another "
+			  "range");
+		inform (EXPR_LOCATION (TREE_PURPOSE (item)),
+			"overlaps with this range");
+		/* Do not add this range.  */
+		return;
+	      }
+	  }
+	  tree item = build_tree_list (build_empty_stmt (num_range_loc),
+							 new_range);
+	  /* Leave PURPOSE unused for use by the caller of
+	     c_parser_omp_parm_list.  */
+	  *chain = build_tree_list (NULL_TREE, item);
+	};
+
+      if (lb_val > 0 && ub_val > 0)
+	{
+	  gcc_assert (variadic_p
+		      || (lb_val <= parm_count && ub_val <= parm_count));
+	  add_range_known (lb_val, ub_val);
+	}
+      else if (lb_val <= 0 && ub_val <= 0)
+	{
+	  gcc_assert (variadic_p);
+	  add_range_unknown (lb_val, true, ub_val, true);
+	}
+      /* Add the indices that will be specified for all well-formed calls to
+	 the function.  This lets us diagnose indices that were specified
+	 (or rather, will be when the numeric range is expanded) multiple times
+	 before the function is even called.  We must adjust the literal bound
+	 of the numeric range accordingly depending on how many indices we
+	 add to prevent them from being specified again erroneously once the
+	 range is expanded at the call site.
+	 We can do this because we support expansion of unknown ranges
+	 evaluating to an empty interval, as mentioned above in
+	 add_range_unknown.  */
+      else if (lb_val > 0)
+	{
+	  gcc_assert (variadic_p);
+	  /* FIXME: Make sure to add a test where lb > parm_count, that
+	     originally could break this realized that would break this
+	     optimization.  */
+	  /* In the case that UB refers to the last argument, we can assume all
+	     non-variadic arguments between LB and the last non-variadic arg,
+	     if any, will always be specified.  */
+	  const int known_upper_bound = ub_val == 0 && lb_val <= parm_count
+					? parm_count : lb_val;
+	  add_range_known (lb_val, known_upper_bound);
+	  add_range_unknown (known_upper_bound + 1, false, ub_val, true);
+	}
+      else if (ub_val > 0)
+	{
+	  gcc_assert (variadic_p);
+	  /* We can do this because numeric ranges are inclusive, any
+	     well-formed call to this function will cause the range to evaluate
+	     to include the literal index.  */
+	  add_range_known (ub_val, ub_val);
+	  add_range_unknown (lb_val, true, ub_val - 1, false);
+	}
+      else
+	gcc_unreachable ();
+
+    } while (c_parser_next_token_is (parser, CPP_COMMA));
+  return list;
+}
+
+
 /* OpenACC 2.0:
    copy ( variable-list )
    copyin ( variable-list )
@@ -26784,15 +27500,55 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 
   parens.require_close (parser);
 
+  const int parm_count = [&] ()
+    {
+      tree parm = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+      int parm_count = 0;
+      while (parm != NULL_TREE && parm != void_list_node)
+	{
+	  ++parm_count;
+	  parm = TREE_CHAIN (parm);
+	}
+      gcc_assert (!parm || parm == void_list_node);
+      return parm == void_list_node ? parm_count : 0;
+    } (); /* IILE.  */
+  /* Do we care about non-variadic functions with 0 parameters?  I don't think
+     we do, but lets handle for that case anyway, at least as long as we aren't
+     diagnosing for it.  */
+  const bool variadic_p = TYPE_ARG_TYPES (TREE_TYPE (fndecl)) == void_list_node
+			  ? false : parm_count == 0;
+
   tree append_args_tree = NULL_TREE;
   tree append_args_last;
-  vec<tree> adjust_args_list = vNULL;
+  hash_map<int_hash<int, -1, -2>, tree> adjust_args_idxs;
   bool has_match = false, has_adjust_args = false;
   location_t adjust_args_loc = UNKNOWN_LOCATION;
   location_t append_args_loc = UNKNOWN_LOCATION;
   location_t match_loc = UNKNOWN_LOCATION;
-  tree need_device_ptr_list = NULL_TREE;
   tree ctx = error_mark_node;
+
+  tree adjust_args_list = NULL_TREE;
+  auto append_adjust_args = [chain = &adjust_args_list] (tree node) mutable
+    {
+      gcc_assert (chain && *chain == NULL_TREE);
+      *chain = node;
+      chain = &TREE_CHAIN (node);
+    };
+
+  auto compare_ranges = [&] (tree item)
+    {
+      for (tree n2 = adjust_args_list; n2; n2 = TREE_CHAIN (n2))
+	{
+	  tree item2 = TREE_VALUE (n2);
+	  if (TREE_CODE (TREE_VALUE (item2)) == INTEGER_CST)
+	    continue;
+	  else if (c_omp_numeric_ranges_always_overlap (TREE_VALUE (item2),
+							TREE_VALUE (item)))
+	    /* Return the location.  */
+	    return TREE_PURPOSE (item2);
+	}
+      return NULL_TREE;
+    };
 
   do
     {
@@ -26838,7 +27594,8 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 
       if (!parens.require_open (parser))
 	goto fail;
-
+      /* This almost certainly causes problems with technically correct, but
+	 insane functions that are variadic with no params.  */
       if (parms == NULL_TREE)
 	parms = error_mark_node;
 
@@ -26896,62 +27653,119 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	  if (c_parser_next_token_is (parser, CPP_NAME)
 	      && c_parser_peek_2nd_token (parser)->type == CPP_COLON)
 	    {
-	      const char *p
-		= IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+	      tree modifier_id = c_parser_peek_token (parser)->value;
+	      const char *p = IDENTIFIER_POINTER (modifier_id);
 	      if (strcmp (p, "need_device_ptr") == 0
 		  || strcmp (p, "nothing") == 0)
 		{
-		  c_parser_consume_token (parser); // need_device_ptr
+		  c_parser_consume_token (parser); // need_device_ptr / nothing
 		  c_parser_consume_token (parser); // :
 
 		  loc = c_parser_peek_token (parser)->location;
-		  tree list
-		    = c_parser_omp_variable_list (parser, loc, OMP_CLAUSE_ERROR,
-						  NULL_TREE);
+		  const tree parm_list
+		    = c_parser_omp_parm_list (parser, fndecl, parm_count);
 
-		  tree arg;
 		  if (variant != error_mark_node)
-		    for (tree c = list; c != NULL_TREE; c = TREE_CHAIN (c))
+		    for (tree next, n = parm_list; n != NULL_TREE; n = next)
 		      {
-			tree decl = TREE_PURPOSE (c);
-			location_t arg_loc = EXPR_LOCATION (TREE_VALUE (c));
-			int idx;
-			for (arg = parms, idx = 0; arg != NULL;
-			     arg = TREE_CHAIN (arg), idx++)
-			  if (arg == decl)
-			    break;
-			if (arg == NULL_TREE)
+			next = TREE_CHAIN (n);
+			TREE_CHAIN (n) = NULL_TREE;
+			TREE_PURPOSE (n) = modifier_id;
+
+			tree item = TREE_VALUE (n);
+			const location_t item_loc
+			  = EXPR_LOCATION (TREE_PURPOSE (item));
+			if (TREE_CODE (TREE_VALUE (item)) == TREE_LIST)
 			  {
-			    error_at (arg_loc,
-				      "%qD is not a function argument",
-				      decl);
+			    /* Ranges are expanded by c_parser_omp_parm_list
+			       in non-variadic functions.  */
+			    gcc_assert (variadic_p);
+			    if (tree dupe = compare_ranges (item))
+			      {
+				const location_t dupe_item_loc
+				  = EXPR_LOCATION (dupe);
+
+				error_at (item_loc,
+					  "numeric range always overlaps with "
+					  "previously specified numeric "
+					  "range");
+				inform (dupe_item_loc,
+					"previously specified here");
+			      }
+			    else
+			      append_adjust_args (n);
+			    continue;
+			  }
+			gcc_assert (TREE_CODE (TREE_VALUE (item))
+				    == INTEGER_CST);
+			const int idx = tree_to_shwi (TREE_VALUE (item));
+			/* Indices are 0 based, c_parser_omp_parm_list is
+			   supposed to handle out of range indices.  */
+			gcc_assert (idx >= 0
+				    && (variadic_p || idx < parm_count));
+
+			if (tree *dupe = adjust_args_idxs.get (idx))
+			  {
+			    const location_t prev_item_loc
+			      = EXPR_LOCATION (TREE_PURPOSE (*dupe));
+			    /* Ensure the wording matches that in
+			       c_parser_omp_parm_list.  */
+			    error_at (item_loc,
+				      "parameter list item specified more "
+				      "than once");
+			    inform (prev_item_loc,
+				    "previously specified here");
+			    /* FIXME: Don't fail, keep going.  */
 			    goto fail;
 			  }
-			if (adjust_args_list.contains (arg))
-			  {
-			    error_at (arg_loc,
-				      "%qD is specified more than once",
-				      decl);
-			    goto fail;
-			  }
-			if (strcmp (p, "need_device_ptr") == 0
-			    && TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE)
-			  {
-			    error_at (loc, "%qD is not of pointer type", decl);
-			    goto fail;
-			  }
-			adjust_args_list.safe_push (arg);
+			/* Unconditionally push idx so we don't emit the
+			   following errors multiple times.  */
+			if (adjust_args_idxs.put (idx, item))
+			  gcc_unreachable ();
+
 			if (strcmp (p, "need_device_ptr") == 0)
 			  {
-			    need_device_ptr_list = chainon (
-			      need_device_ptr_list,
-			      build_tree_list (
-				NULL_TREE,
-				build_int_cst (
-				  integer_type_node,
-				  idx))); // Store 0-based argument index,
-					  // as in gimplify_call_expr
+			    const tree parm = [&] ()
+			      {
+				if (idx >= parm_count)
+				  return NULL_TREE;
+				int curr_idx = 0;
+				tree parm = parms;
+				while (parm != NULL_TREE)
+				  {
+				    if (curr_idx == idx)
+				      return parm;
+				    ++curr_idx;
+				    parm = TREE_CHAIN (parm);
+				  }
+				/* We already confirmed a parm exists in
+				   c_parser_omp_parm_list.  */
+				gcc_unreachable ();
+			      } (); /* IILE.  */
+			    /* If we don't have an argument (because the index
+			       is to a variadic arg) we can't check this.  */
+			    if (parm
+				&& TREE_CODE (TREE_TYPE (parm))
+				   != POINTER_TYPE)
+			      {
+				error_at (DECL_SOURCE_LOCATION (parm),
+					  "%qD is not of pointer type", parm);
+				inform (item_loc, "specified here");
+				/* FIXME: Don't fail, keep going.  */
+				goto fail;
+			      }
+			    append_adjust_args (n);
 			  }
+			else if (strcmp (p, "nothing") == 0)
+			  {
+			    /* We only need to save parameter list items from a
+			       clause with the nothing modifier if the function
+			       is variadic.  */
+			    if (variadic_p)
+			      append_adjust_args (n);
+			  }
+			else
+			  gcc_unreachable ();
 		      }
 		}
 	      else
@@ -27180,11 +27994,13 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
     }
 
   if ((ctx != error_mark_node && variant != error_mark_node)
-      && (need_device_ptr_list || append_args_tree))
+      && (adjust_args_list || append_args_tree))
     {
       tree variant_decl = tree_strip_nop_conversions (variant);
-      tree t = build_tree_list (need_device_ptr_list,
-				NULL_TREE /* need_device_addr */);
+      tree t = build_tree_list (CHECKING_P
+				  ? get_identifier ("omp adjust args idxs")
+				  : NULL_TREE,
+				adjust_args_list);
       TREE_CHAIN (t) = append_args_tree;
       DECL_ATTRIBUTES (variant_decl)
 	= tree_cons (get_identifier ("omp declare variant variant args"), t,

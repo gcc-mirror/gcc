@@ -6,7 +6,8 @@ void fvar(int *, int *);
 #pragma omp declare variant(fvar) \
   match(construct={dispatch}) \
   adjust_args(need_device_ptr: yyy, xxx, xxx)
-/* { dg-error "37: .xxx. is specified more than once" "" { target *-*-* } .-1 } */
+/* { dg-error "42: OpenMP parameter list items must specify a unique parameter" "" { target *-*-* } .-1 } */
+/* { dg-note "37: parameter previously specified here" "" { target *-*-* } .-2 } */
 void f(int *xxx, int*yyy);
 
 

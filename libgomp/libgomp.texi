@@ -477,6 +477,8 @@ Technical Report (TR) 12 is the second preview for OpenMP 6.0.
 @item The OpenMP directive syntax was extended to include C 23 attribute
       specifiers @tab Y @tab
 @item All inarguable clauses take now an optional Boolean argument @tab N @tab
+@item The @code{adjust_args} clause was extended to specify the argument by position
+      and supports variadic arguments @tab Y @tab
 @item For Fortran, @emph{locator list} can be also function reference with
       data pointer result @tab N @tab
 @item Concept of @emph{assumed-size arrays} in C and C++
