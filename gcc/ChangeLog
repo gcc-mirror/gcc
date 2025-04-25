@@ -1,3 +1,353 @@
+2025-04-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-04-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/119399
+	* tree-data-ref.cc (create_waw_or_war_checks): Use a MINUS_EXPR
+	on two converted pointers, rather than converting a POINTER_DIFF_EXPR
+	on the pointers.
+
+2025-04-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-03-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/116125
+	* tree-vect-data-refs.cc (vect_prune_runtime_alias_test_list): Make
+	the dr_with_seg_len alignment fields describe tha access sizes as
+	well as the pointer alignment.
+	* tree-data-ref.cc (create_intersect_range_checks): Don't compensate
+	for invalid alignment fields here.
+
+2025-04-24  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2025-03-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/119235
+	* config/s390/s390.cc (s390_hard_regno_mode_ok): Accept only
+	Pmode for registers AP/FP/RA.
+
+2025-04-23  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-03-11  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-ssa-alias.cc (ao_compare::compare_ao_refs): Fix a
+	copy-and-paste error.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119785
+	* expmed.cc (init_expmed): Always pass QImode rather than mode to
+	set_src_cost passed to set_zero_cost.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/119727
+	* configure.ac (HOST_HAS_PERSONALITY_ADDR_NO_RANDOMIZE): New check.
+	* gcc.cc: Include sys/personality.h if
+	HOST_HAS_PERSONALITY_ADDR_NO_RANDOMIZE is defined.
+	(try_generate_repro): Call
+	personality (personality (0xffffffffU) | ADDR_NO_RANDOMIZE)
+	if HOST_HAS_PERSONALITY_ADDR_NO_RANDOMIZE is defined.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/119727
+	* gcc.cc (files_equal_p): Rewritten using fopen/fgets/fclose instead
+	of open/fstat/read/close.  At the start of lines, ignore lowercase
+	hexadecimal addresses followed by space.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/119625
+	* lto-opts.cc (lto_write_options): If neither flag_pic nor
+	flag_pie are set, check first for flag_pie and only later
+	for flag_pic rather than the other way around, use a temporary
+	variable.  If flag_cf_protection is not set, don't append anything
+	if flag_cf_protection is none of CF_{NONE,FULL,BRANCH,RETURN} and
+	use a temporary variable.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119291
+	* combine.cc (try_combine): For splitting of PARALLEL with
+	2 independent SETs into i2 and i3 sets check reg_used_between_p
+	of the SET_DESTs rather than just modified_between_p.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.cc (warn_switch_unreachable_and_auto_init_r): Add missing
+	space in the middle of diagnostics.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/119204
+	PR middle-end/119219
+	* builtins.cc (fold_builtin_2): Pass type as another argument
+	to fold_builtin_strspn and fold_builtin_strcspn.
+	(fold_builtin_strspn): Add type argument, use it instead of
+	size_type_node.
+	(fold_builtin_strcspn): Add type argument, use it instead of
+	TREE_TYPE (expr).
+
+2025-04-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/119204
+	* builtins.cc (fold_builtin_strcspn): Preserve the original
+	expression type.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119183
+	* tree.cc (skip_simple_arithmetic): If first operand of binary
+	expr is TREE_CONSTANT or TREE_READONLY with no side-effects, call
+	tree_invariant_p on that operand first instead of on the second.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/114870
+	* ginclude/stddef.h (__STDC_VERSION_STDDEF_H__, unreachable): Don't
+	redefine multiple times if stddef.h is first included without __need_*
+	defines and later with them.  Move nullptr_t and unreachable and
+	__STDC_VERSION_STDDEF_H__ definitions into the same
+	defined (__STDC_VERSION__) && __STDC_VERSION__ > 201710L #if block.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118915
+	* tree-ssa-reassoc.cc (optimize_range_tests_to_bit_test): For
+	highj == NULL_TREE use TYPE_MAX_VALUE (TREE_TYPE (lowj)) rather
+	than TYPE_MAX_VALUE (type).
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/118776
+	* config/i386/sse.md (<code><mode>3_mask): Use VI1248_AVX512VLBW
+	iterator rather than VI48_AVX512VL.
+	(<mask_codefor><code><mode>3<mask_name>): Rename to ...
+	(*avx512bw_<code><mode>3<mask_name>): ... this.  Use
+	nonimmediate_operand rather than register_operand predicate and %v
+	rather than v constraint for operand 1 and adjust condition to reject
+	MEMs in both operand 1 and 2.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/117432
+	* ipa-icf-gimple.cc (func_checker::compare_asm_inputs_outputs):
+	Also return_false if operands have incompatible types.
+	(func_checker::compare_gimple_call): Check fntype1 vs. fntype2
+	compatibility for all non-internal calls and assume fntype1 and
+	fntype2 are non-NULL for those.  For calls to non-prototyped
+	calls or for stdarg_p functions after the last named argument (if any)
+	check type compatibility of call arguments.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/118689
+	PR modula2/115032
+	* tree-ssa-loop-niter.cc (build_cltz_expr): Return NULL_TREE if fn is
+	NULL and use_ifn is false.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/114877
+	* builtins.cc (fold_builtin_frexp): Handle rvc_nan and rvc_inf cases
+	like rvc_zero, return passed in arg and set *exp = 0.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-12-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/118024
+	* gimple-ssa-warn-access.cc (matching_alloc_calls_p): Walk malloc
+	attributes of alloc_decl and dealloc_decl in separate loops rather
+	than in lock-step.  Use common_deallocs.contains rather than
+	common_deallocs.add in the second loop.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/117095
+	* cse.cc (cse_extended_basic_block): Don't call record_jump_equiv
+	if multiple_sets (insn).
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/117960
+	* doc/invoke.texi (fsanitize=hwaddress): Clarify on which targets
+	it is supported.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117642
+	* doc/extend.texi: Remove documentation of warning for unimplemented
+	__sync_* operations, such warning has never been implemented.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/102674
+	* builtins.cc (fold_builtin_fpclassify): Use real_from_string3 rather
+	than real_from_string.  Use "1E%d" format string rather than "0x1p%d"
+	for decimal float minimum.  Formatting fixes.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/43374
+	* real.cc (get_max_float): Handle decimal float.
+	* builtins.cc (fold_builtin_interclass_mathfn): Use
+	real_from_string3 rather than real_from_string.  Use
+	"1E%d" format string rather than "0x1p%d" for decimal
+	float minimum.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94589
+	PR tree-optimization/117612
+	* tree-ssa-phiopt.cc (spaceship_replacement): Fix up
+	a pasto in check when arg1 is 2.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/117439
+	* gimple-ssa-store-merging.cc (encode_tree_to_bitpos): For
+	empty_ctor_p use !sub_byte_op_p even if bitlen doesn't have an
+	integral mode.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117296
+	* function.cc (assign_parms): Call do_pending_stack_adjust.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/117249
+	* tree-ssa-structalias.cc (insert_vi_for_tree): Move put calls out of
+	gcc_assert.
+	* lto-cgraph.cc (lto_symtab_encoder_delete_node): Likewise.
+	* gimple-ssa-strength-reduction.cc (get_alternative_base,
+	add_cand_for_stmt): Likewise.
+	* tree-eh.cc (add_stmt_to_eh_lp_fn): Likewise.
+	* except.cc (duplicate_eh_regions_1): Likewise.
+	* tree-ssa-reassoc.cc (insert_operand_rank): Likewise.
+	* config/nvptx/nvptx.cc (nvptx_expand_call): Use == rather than = in
+	gcc_assert.
+	* opts-common.cc (jobserver_info::disconnect): Call close outside of
+	gcc_assert and only check result in it.
+	(jobserver_info::return_token): Call write outside of gcc_assert and
+	only check result in it.
+	* genautomata.cc (output_default_latencies): Move j++ side-effect
+	outside of gcc_assert.
+	* tree-ssa-loop-ivopts.cc (get_alias_ptr_type_for_ptr_address): Use
+	== rather than = in gcc_assert.
+	* cgraph.cc (symbol_table::create_edge): Move ++edges_max_uid
+	side-effect outside of gcc_assert.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/117209
+	* asan.cc (maybe_cast_to_ptrmode): Formatting fix.
+	(build_check_stmt): Don't copy *iter into gsi, perform all
+	the updates on iter directly.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-09-20  Uros Bizjak  <ubizjak@gmail.com>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/116738
+	* config/i386/subst.md (mask_scalar_operand_arg34,
+	mask_scalar_expand_op3, round_saeonly_scalar_mask_arg3): New
+	subst attributes.
+	* config/i386/sse.md
+	(<sse>_vm<code><mode>3<mask_scalar_name><round_saeonly_scalar_name>):
+	Change from define_insn to define_expand, rename the old define_insn
+	to ...
+	(*<sse>_vm<code><mode>3<mask_scalar_name><round_saeonly_scalar_name>):
+	... this.
+	(<sse>_ieee_vm<ieee_maxmin><mode>3<mask_scalar_name><round_saeonly_scalar_name>):
+	New define_insn.
+
 2025-04-15  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:

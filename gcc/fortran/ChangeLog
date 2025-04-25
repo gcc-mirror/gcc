@@ -1,3 +1,11 @@
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* resolve.cc (resolve_procedure_expression): Remove extraneous space
+	from the middle of diagnostics.
+
 2025-04-22  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

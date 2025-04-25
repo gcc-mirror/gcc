@@ -1,3 +1,43 @@
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/117406
+	* testsuite/26_numerics/headers/cmath/117406.cc: Use
+	std::numeric_limits<int>::max() instead of INT_MAX.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/117406
+	* include/c_global/cmath (std::ilogb(_Float16), std::llrint(_Float16),
+	std::llround(_Float16), std::lrint(_Float16), std::lround(_Float16)):
+	Don't cast __builtin_* return to _Float16.
+	(std::ilogb(__gnu_cxx::__bfloat16_t),
+	std::llrint(__gnu_cxx::__bfloat16_t),
+	std::llround(__gnu_cxx::__bfloat16_t),
+	std::lrint(__gnu_cxx::__bfloat16_t),
+	std::lround(__gnu_cxx::__bfloat16_t)): Don't cast __builtin_* return to
+	__gnu_cxx::__bfloat16_t.
+	* testsuite/26_numerics/headers/cmath/117406.cc: New test.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/117321
+	* include/c_global/cmath (nextafter(_Float16, _Float16)): Use
+	if consteval rather than if (std::__is_constant_evaluated()) around
+	the __builtin_nextafterf16 call.
+	(nextafter(__gnu_cxx::__bfloat16_t, __gnu_cxx::__bfloat16_t)): Use
+	if consteval rather than if (std::__is_constant_evaluated()) around
+	the __builtin_nextafterf16b call.
+	* testsuite/26_numerics/headers/cmath/117321.cc: New test.
+
 2025-04-18  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* include/std/format (basic_format_arg::_S_to_arg_type): Normalize

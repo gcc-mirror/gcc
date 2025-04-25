@@ -1,3 +1,17 @@
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-03-10  Jakub Jelinek  <jakub@redhat.com>
+		    Michael Leuchtenburg  <michael@slashhome.org>
+
+	PR libgcc/119151
+	* unwind-dw2-btree.h (btree_split_inner): Add size argument.  If
+	left_fence is in the middle of [target,target + size - 1] range,
+	increase it to target + size - 1.
+	(btree_insert): Adjust btree_split_inner caller.  If fence is smaller
+	than base + size - 1, increase it and separator of the slot to
+	base + size - 1.
+
 2025-02-17  Dimitry Andric  <dimitry@andric.com>
 
 	PR target/118685

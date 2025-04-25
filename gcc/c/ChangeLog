@@ -1,3 +1,32 @@
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119582
+	* c-typeck.cc (pointer_diff, build_binary_op): Call c_fully_fold on
+	__sanitizer_ptr_sub or __sanitizer_ptr_cmp arguments.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-02-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/119000
+	* c-parser.cc (c_parser_omp_atomic): For omp write call
+	default_function_array_read_conversion on the rhs expression.
+	Merge the two adjacent if (code == NOP_EXPR) blocks.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2024-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/117745
+	* c-parser.cc (c_parser_sizeof_expression): If type_name is NULL,
+	just expr.set_error () and goto sizeof_expr instead of doing error
+	recovery manually.
+
 2024-06-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,29 @@
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/101075
+	PR libgcc/119796
+	* config/mingw/lock.c (libat_lock_n, libat_unlock_n): Start with
+	computing how many locks will be needed and take into account
+	((uintptr_t)ptr % WATCH_SIZE).  If some locks from the end of the
+	locks array and others from the start of it will be needed, first
+	lock the ones from the start followed by ones from the end.
+
+2025-04-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/101075
+	PR libgcc/119796
+	* config/posix/lock.c (libat_lock_n, libat_unlock_n): Start with
+	computing how many locks will be needed and take into account
+	((uintptr_t)ptr % WATCH_SIZE).  If some locks from the end of the
+	locks array and others from the start of it will be needed, first
+	lock the ones from the start followed by ones from the end.
+
 2024-05-21  Release Manager
 
 	* GCC 13.3.0 released.
