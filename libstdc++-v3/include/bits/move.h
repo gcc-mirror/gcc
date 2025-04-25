@@ -174,7 +174,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     [[__nodiscard__,__gnu__::__always_inline__]]
     inline _GLIBCXX17_CONSTEXPR _Tp*
     addressof(_Tp& __r) noexcept
-    { return std::__addressof(__r); }
+    { return __builtin_addressof(__r); }
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2598. addressof works on temporaries
