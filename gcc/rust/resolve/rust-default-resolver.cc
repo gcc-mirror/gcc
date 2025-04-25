@@ -72,17 +72,54 @@ DefaultResolver::visit (AST::Trait &trait)
 void
 DefaultResolver::visit (AST::InherentImpl &impl)
 {
-  auto inner_fn = [this, &impl] () { AST::DefaultASTVisitor::visit (impl); };
+  visit_outer_attrs (impl);
+  visit (impl.get_visibility ());
+  visit_inner_attrs (impl);
 
-  ctx.scoped (Rib::Kind::TraitOrImpl, impl.get_node_id (), inner_fn);
+  auto inner_fn_inner = [this, &impl] () {
+    for (auto &item : impl.get_impl_items ())
+      visit (item);
+  };
+
+  auto inner_fn_outer = [this, &impl, &inner_fn_inner] () {
+    maybe_insert_big_self (impl);
+    for (auto &generic : impl.get_generic_params ())
+      visit (generic);
+    if (impl.has_where_clause ())
+      visit (impl.get_where_clause ());
+    visit (impl.get_type ());
+
+    ctx.scoped (Rib::Kind::TraitOrImpl, impl.get_node_id (), inner_fn_inner);
+  };
+
+  ctx.scoped (Rib::Kind::Generics, impl.get_node_id (), inner_fn_outer);
 }
 
 void
 DefaultResolver::visit (AST::TraitImpl &impl)
 {
-  auto inner_fn = [this, &impl] () { AST::DefaultASTVisitor::visit (impl); };
+  visit_outer_attrs (impl);
+  visit (impl.get_visibility ());
+  visit_inner_attrs (impl);
 
-  ctx.scoped (Rib::Kind::TraitOrImpl, impl.get_node_id (), inner_fn);
+  auto inner_fn_inner = [this, &impl] () {
+    for (auto &item : impl.get_impl_items ())
+      visit (item);
+  };
+
+  auto inner_fn_outer = [this, &impl, &inner_fn_inner] () {
+    maybe_insert_big_self (impl);
+    for (auto &generic : impl.get_generic_params ())
+      visit (generic);
+    if (impl.has_where_clause ())
+      visit (impl.get_where_clause ());
+    visit (impl.get_type ());
+    visit (impl.get_trait_path ());
+
+    ctx.scoped (Rib::Kind::TraitOrImpl, impl.get_node_id (), inner_fn_inner);
+  };
+
+  ctx.scoped (Rib::Kind::Generics, impl.get_node_id (), inner_fn_outer);
 }
 
 void
