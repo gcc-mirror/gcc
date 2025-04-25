@@ -2485,9 +2485,10 @@ create_waw_or_war_checks (tree *cond_expr,
   limit = fold_build2 (PLUS_EXPR, sizetype, limit,
 		       size_int (last_chunk_a + last_chunk_b));
 
-  tree subject = fold_build2 (POINTER_DIFF_EXPR, ssizetype, addr_b, addr_a);
-  subject = fold_build2 (PLUS_EXPR, sizetype,
-			 fold_convert (sizetype, subject), bias);
+  tree subject = fold_build2 (MINUS_EXPR, sizetype,
+			      fold_convert (sizetype, addr_b),
+			      fold_convert (sizetype, addr_a));
+  subject = fold_build2 (PLUS_EXPR, sizetype, subject, bias);
 
   *cond_expr = fold_build2 (GT_EXPR, boolean_type_node, subject, limit);
   if (dump_enabled_p ())
