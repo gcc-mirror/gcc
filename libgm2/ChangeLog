@@ -1,3 +1,44 @@
+2025-04-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/115276
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (AC_STRUCT_TIMEZONE): Add.
+	(AC_CHECK_MEMBER): Test for struct tm.tm_year.
+	(AC_CHECK_MEMBER): Test for struct tm.tm_mon.
+	(AC_CHECK_MEMBER): Test for struct tm.tm_mday.
+	(AC_CHECK_MEMBER): Test for struct tm.tm_hour.
+	(AC_CHECK_MEMBER): Test for struct tm.tm_min.
+	(AC_CHECK_MEMBER): Test for struct tm.tm_sec.
+	(AC_CHECK_MEMBER): Test for struct tm.tm_year.
+	(AC_CHECK_MEMBER): Test for struct tm.tm_yday.
+	(AC_CHECK_MEMBER): Test for struct tm.tm_wday.
+	(AC_CHECK_MEMBER): Test for struct tm.tm_isdst.
+	(AC_CHECK_MEMBER): Test for struct timeval.tv_sec.
+	(AC_CHECK_MEMBER): Test for struct timeval.tv_sec.
+	(AC_CHECK_MEMBER): Test for struct timeval.tv_usec.
+	* libm2iso/wraptime.cc (InitTimeval): Guard against lack
+	struct timeval and malloc.
+	(InitTimezone): Guard against lack of struct tm.tm_zone
+	and malloc.
+	(KillTimezone): Ditto.
+	(InitTimeval): Guard against lack of struct timeval
+	and malloc.
+	(KillTimeval): Guard against lack of malloc.
+	(settimeofday): Guard against lack of struct tm.tm_zone.
+	(GetFractions): Guard against lack of struct timeval.
+	(localtime_r): Ditto.
+	(GetYear): Guard against lack of struct tm.
+	(GetMonth): Ditto.
+	(GetDay): Ditto.
+	(GetHour): Ditto.
+	(GetMinute): Ditto.
+	(GetSecond): Ditto.
+	(GetSummerTime): Ditto.
+	(GetDST): Guards against lack of struct timezone.
+	(SetTimezone): Ditto.
+	(SetTimeval): Guard against lack of struct tm.
+
 2025-03-28  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/118045

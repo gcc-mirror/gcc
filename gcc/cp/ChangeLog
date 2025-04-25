@@ -1,3 +1,9 @@
+2025-04-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116954
+	* contracts.cc (remove_contract_attributes): Return early if
+	not enabled.
+
 2025-04-22  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* name-lookup.cc (lookup_imported_hidden_friend): Remove

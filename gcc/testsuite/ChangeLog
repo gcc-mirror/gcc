@@ -1,3 +1,97 @@
+2025-04-24  Jakub Jelinek  <jakub@redhat.com>
+	    Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/119873
+	* gcc.target/s390/pr119873-1.c: New test.
+	* gcc.target/s390/pr119873-2.c: New test.
+	* gcc.target/s390/pr119873-3.c: New test.
+	* gcc.target/s390/pr119873-4.c: New test.
+
+2025-04-24  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group1/declarative_1.cob: Adjust for repaired exception logic.
+
+2025-04-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.target/i386/pr119919.c: New test.
+
+2025-04-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/119610
+	* g++.dg/torture/pr119610.C: New test.
+	* g++.target/aarch64/sve/pr119610-sve.C: Likewise.
+
+2025-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110343
+	* gcc.dg/raw-string-1.c: New test.
+
+2025-04-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/completion-2.c: Remove check for default.
+
+2025-04-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119915
+	* gm2/pimlib/run/pass/format2.mod: New test.
+
+2025-04-24  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512vl-pr103750-1.c: New test.
+	* gcc.target/i386/avx512f-pr96891-3.c: Adjust testcase.
+	* gcc.target/i386/avx512f-vpcmpgtuq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpeqq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpequq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpgeq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpgeuq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpgtq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpgtuq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpleq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpleuq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpltq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpltuq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpneqq-1.c: Ditto.
+	* gcc.target/i386/avx512vl-vpcmpnequq-1.c: Ditto.
+
+2025-04-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119914
+	* gm2/pim/fail/constintarraybyte.mod: New test.
+
+2025-04-23  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* g++.dg/no-stack-protector-attr-3.C: Require effective target
+	fstack_protector.
+
+2025-04-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/ipa-clone-4.c: New file.
+	* gcc.dg/tree-prof/ipa-cp-1.c: New file.
+
+2025-04-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/71233
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x2.c: Enable on arm.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x3.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vld1x4.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x2.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x3.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vst1x4.c: Likewise.
+
+2025-04-23  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/eh/pr119507.C: Skip on sparc*-*-solaris2* && !gas.
+
+2025-04-23  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/119286
+	* gcc.dg/vect/vect-early-break_38.c: Force -march=gfx908 for amdgcn.
+
+2025-04-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/blendv-to-maxmin.c: New test.
+	* gcc.target/i386/blendv-to-pand.c: New test.
+
 2025-04-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	* gcc.target/i386/pr89618-2.c: XFAIL.

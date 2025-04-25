@@ -1,3 +1,141 @@
+2025-04-24  Jakub Jelinek  <jakub@redhat.com>
+	    Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/119873
+	* config/s390/s390.cc (s390_call_saved_register_used): Don't return
+	true if default definition of PARM_DECL SSA_NAME of the same register
+	is passed in call saved register.
+	(s390_function_ok_for_sibcall): Adjust comment.
+
+2025-04-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/119919
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost): Account
+	correctly cond_expr and min/max when one of operands is 0 or -1.
+
+2025-04-24  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/119924
+	* ipa-cp.cc (update_counts_for_self_gen_clones): Use nonzero_p.
+	(update_profiling_info): Likewise.
+	(update_specialized_profile): Likewise.
+
+2025-04-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/119610
+	* config/aarch64/aarch64.cc (aarch64_allocate_and_probe_stack_space):
+	Add a bytes_below_sp parameter and use it to calculate the CFA
+	offsets.  Attach the first SVE CFA note to the move into the
+	associated temporary register.
+	(aarch64_allocate_and_probe_stack_space): Update calls accordingly.
+	Start out with bytes_per_sp set to the frame size and decrement
+	it after each allocation.
+
+2025-04-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* opts.cc (validate_ipa_reorder_locality_lto_partition): Check opts
+	instead of opts_set for x_flag_ipa_reorder_for_locality.
+	(finish_options): Update call site.
+
+2025-04-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* common.opt (LTO_PARTITION_DEFAULT): Delete.
+	(flto-partition=): Change default back to balanced.
+	* flag-types.h (lto_partition_model): Remove LTO_PARTITION_DEFAULT.
+	* opts.cc (validate_ipa_reorder_locality_lto_partition):
+	Check opts_set->x_flag_lto_partition instead of LTO_PARTITION_DEFAULT.
+	(finish_options): Remove handling of LTO_PARTITION_DEFAULT.
+
+2025-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/119711
+	* dwarf2out.h (struct dw_val_node): Add u member.
+	(struct dw_loc_descr_node): Remove dw_loc_opc, dtprel,
+	frame_offset_rel and dw_loc_addr members.
+	(dw_loc_opc, dw_loc_dtprel, dw_loc_frame_offset_rel, dw_loc_addr):
+	Define.
+	(struct dw_attr_struct): Remove dw_attr member.
+	(dw_attr): Define.
+	* dwarf2out.cc (loc_descr_equal_p_1): Use dw_loc_dtprel instead of
+	dtprel.
+	(output_loc_operands, new_addr_loc_descr, loc_checksum,
+	loc_checksum_ordered): Likewise.
+	(resolve_args_picking_1): Use dw_loc_frame_offset_rel instead of
+	frame_offset_rel.
+	(loc_list_from_tree_1): Likewise.
+	(resolve_addr_in_expr): Use dw_loc_dtprel instead of dtprel.
+	(copy_deref_exprloc): Copy val_class, val_entry and v members
+	instead of whole dw_loc_oprnd1 and dw_loc_oprnd2.
+	(optimize_string_length): Copy val_class, val_entry and v members
+	instead of whole dw_attr_val.
+	(hash_loc_operands): Use dw_loc_dtprel instead of dtprel.
+	(compare_loc_operands, compare_locs): Likewise.
+
+2025-04-24  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103750
+	* config/i386/sse.md (*<avx512>_cmp<mode>3_and15): New define_insn.
+	(*<avx512>_ucmp<mode>3_and15): Ditto.
+	(*<avx512>_cmp<mode>3_and3): Ditto.
+	(*avx512vl_ucmpv2di3_and3): Ditto.
+	(*<avx512>_cmp<V48H_AVX512VL:mode>3_zero_extend<SWI248x:mode>):
+	Change operands[3] predicate to <cmp_imm_predicate>.
+	(*<avx512>_cmp<V48H_AVX512VL:mode>3_zero_extend<SWI248x:mode>_2):
+	Ditto.
+	(*<avx512>_cmp<mode>3): Add GET_MODE_NUNITS (<MODE>mode) >= 8
+	to the condition.
+	(*<avx512>_ucmp<mode>3): Ditto.
+	(V48_AVX512VL_4): New mode iterator.
+	(VI48_AVX512VL_4): Ditto.
+	(V8_AVX512VL_2): Ditto.
+
+2025-04-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.cc (base_count): Remove.
+	(struct caller_statistics): Rename n_hot_calls to n_interesting_calls;
+	add called_without_ipa_profile.
+	(init_caller_stats): Update.
+	(cs_interesting_for_ipcp_p): New function.
+	(gather_caller_stats): collect n_interesting_calls and
+	called_without_profile.
+	(ipcp_cloning_candidate_p): Use n_interesting-calls rather then hot.
+	(good_cloning_opportunity_p): Rewrite heuristics when IPA profile is
+	present
+	(estimate_local_effects): Update.
+	(value_topo_info::propagate_effects): Update.
+	(compare_edge_profile_counts): Remove.
+	(ipcp_propagate_stage): Do not collect base_count.
+	(get_info_about_necessary_edges): Record whether function is called
+	without profile.
+	(decide_about_value): Update.
+	(ipa_cp_cc_finalize): Do not initialie base_count.
+	* profile-count.cc (profile_count::operator*): New.
+	(profile_count::operator*=): New.
+	* profile-count.h (profile_count::operator*): Declare
+	(profile_count::operator*=): Declare.
+	* params.opt: Remove ipa-cp-profile-count-base.
+	* doc/invoke.texi: Likewise.
+
+2025-04-23  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost): Cost truth_value
+	exprs.
+
+2025-04-23  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/predicates.md (vector_or_0_or_1s_operand): New predicate.
+	(nonimm_or_0_or_1s_operand): Ditto.
+	* config/i386/sse.md (vcond_mask_<mode><sseintvecmodelower>):
+	Extend the predicate of operands1 to accept 0 or allones
+	operands.
+	(vcond_mask_<mode><sseintvecmodelower>): Ditto.
+	(vcond_mask_v1tiv1ti): Ditto.
+	(vcond_mask_<mode><sseintvecmodelower>): Ditto.
+	* config/i386/i386.md (mov<mode>cc): Ditto for operands[2] and
+	operands[3].
+	* config/i386/i386-expand.cc (ix86_expand_sse_fp_minmax):
+	Force immediate_operand to register.
+
 2025-04-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost): Add special cases

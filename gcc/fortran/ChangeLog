@@ -1,3 +1,13 @@
+2025-04-23  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119200
+	* check.cc (gfc_check_lcobound): Use locus from intrinsic_where.
+	(gfc_check_image_index): Same.
+	(gfc_check_num_images): Same.
+	(gfc_check_team_number): Same.
+	(gfc_check_this_image): Same.
+	(gfc_check_ucobound): Same.
+
 2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	* match.cc (match_exit_cycle): Allow to exit team block.

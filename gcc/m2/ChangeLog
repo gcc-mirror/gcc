@@ -1,3 +1,39 @@
+2025-04-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119915
+	* gm2-libs/FormatStrings.mod (PerformFormatString): Handle
+	the %u and %x format specifiers in a similar way to the %d
+	specifier.  Avoid using Slice and use Copy instead.
+
+2025-04-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119914
+	* gm2-compiler/M2Check.mod (checkConstMeta): Add check for
+	Ztype, Rtype and Ctype and unbounded arrays.
+	(IsZRCType): New procedure function.
+	(isZRC): Add comment.
+	* gm2-compiler/M2Quads.mod:
+	* gm2-compiler/M2Range.mod (gdbinit): New procedure.
+	(BreakWhenRangeCreated): Ditto.
+	(CheckBreak): Ditto.
+	(InitRange): Call CheckBreak.
+	(Init): Add gdbhook and initialize interactive watch point.
+	* gm2-compiler/SymbolTable.def (GetNthParamAnyClosest): New
+	procedure function.
+	* gm2-compiler/SymbolTable.mod (BreakSym): Remove constant.
+	(BreakSym): Add Variable.
+	(stop): Remove.
+	(gdbhook): New procedure.
+	(BreakWhenSymCreated): Ditto.
+	(CheckBreak): Ditto.
+	(NewSym): Call CheckBreak.
+	(Init): Add gdbhook and initialize interactive watch point.
+	(MakeProcedure): Replace guarded call to stop with CheckBreak.
+	(GetNthParamChoice): New procedure function.
+	(GetNthParamOrdered): Ditto.
+	(GetNthParamAnyClosest): Ditto.
+	(GetOuterModuleScope): Ditto.
+
 2025-04-11  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/119735

@@ -1,3 +1,36 @@
+2025-04-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/forward_list/48101_neg.cc: Remove
+	dg-prune-output that doesn't match anything.
+	* testsuite/23_containers/list/48101_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/48101_neg.cc: Likewise.
+	* testsuite/23_containers/set/48101_neg.cc: Likewise.
+
+2025-04-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/generator (generator::yield_value): Add overload
+	taking lvalue element_of view, as per LWG 3899.
+	* testsuite/24_iterators/range_generators/lwg3899.cc: New test.
+
+2025-04-24  François Dumont  <frs.dumont@gmail.com>
+
+	* testsuite/util/replacement_memory_operators.h: Adapt for -fno-exceptions
+	context.
+	* testsuite/23_containers/deque/capacity/shrink_to_fit.cc: Adapt test
+	to check std::deque shrink_to_fit method.
+
+2025-04-23  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt: Update.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Update.
+
+2025-04-23  ZENG Hao  <c@cyano.cn>
+
+	* src/c++23/std.cc.in (atomic_signed_lock_free): Guard with
+	preprocessor check for __cpp_lib_atomic_lock_free_type_aliases.
+	(atomic_unsigned_lock_free): Likewise.
+
 2025-04-22  Patrick Palka  <ppalka@redhat.com>
 
 	Revert:

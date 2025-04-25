@@ -1,3 +1,53 @@
+2025-04-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_gomp_hip_header_nvidia): Compile with
+	"-Wno-deprecated-declarations".
+	* testsuite/libgomp.c/interop-hip-nvidia-full.c: Likewise.
+	* testsuite/libgomp.c/interop-hipblas-nvidia-full.c: Likewise.
+	* testsuite/libgomp.c/interop-hipblas.h: Add workarounds
+	when using the HIP headers with __HIP_PLATFORM_NVIDIA__.
+
+2025-04-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/lib/libgomp.exp (check_effective_target_openacc_cublas,
+	check_effective_target_openacc_cudart): Update description as
+	the check requires more.
+	(check_effective_target_openacc_libcuda,
+	check_effective_target_openacc_libcublas,
+	check_effective_target_openacc_libcudart,
+	check_effective_target_gomp_hip_header_amd,
+	check_effective_target_gomp_hip_header_nvidia,
+	check_effective_target_gomp_hipfort_module,
+	check_effective_target_gomp_libamdhip64,
+	check_effective_target_gomp_libhipblas): New.
+	* testsuite/libgomp.c-c++-common/interop-2.c: New test.
+	* testsuite/libgomp.c/interop-cublas-full.c: New test.
+	* testsuite/libgomp.c/interop-cublas-libonly.c: New test.
+	* testsuite/libgomp.c/interop-cuda-full.c: New test.
+	* testsuite/libgomp.c/interop-cuda-libonly.c: New test.
+	* testsuite/libgomp.c/interop-hip-amd-full.c: New test.
+	* testsuite/libgomp.c/interop-hip-amd-no-hip-header.c: New test.
+	* testsuite/libgomp.c/interop-hip-nvidia-full.c: New test.
+	* testsuite/libgomp.c/interop-hip-nvidia-no-headers.c: New test.
+	* testsuite/libgomp.c/interop-hip-nvidia-no-hip-header.c: New test.
+	* testsuite/libgomp.c/interop-hip.h: New test.
+	* testsuite/libgomp.c/interop-hipblas-amd-full.c: New test.
+	* testsuite/libgomp.c/interop-hipblas-amd-no-hip-header.c: New test.
+	* testsuite/libgomp.c/interop-hipblas-nvidia-full.c: New test.
+	* testsuite/libgomp.c/interop-hipblas-nvidia-no-headers.c: New test.
+	* testsuite/libgomp.c/interop-hipblas-nvidia-no-hip-header.c: New test.
+	* testsuite/libgomp.c/interop-hipblas.h: New test.
+	* testsuite/libgomp.fortran/interop-hip-amd-full.F90: New test.
+	* testsuite/libgomp.fortran/interop-hip-amd-no-module.F90: New test.
+	* testsuite/libgomp.fortran/interop-hip-nvidia-full.F90: New test.
+	* testsuite/libgomp.fortran/interop-hip-nvidia-no-module.F90: New test.
+	* testsuite/libgomp.fortran/interop-hip.h: New test.
+
+2025-04-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.fortran/target-enter-data-8.f90: New test.
+
 2025-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/119849

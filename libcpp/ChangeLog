@@ -1,3 +1,9 @@
+2025-04-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/110343
+	* lex.cc (lex_raw_string): For C allow $@` in raw string delimiters
+	if CPP_OPTION (pfile, low_ucns) i.e. for C23 and later.
+
 2025-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/118674
