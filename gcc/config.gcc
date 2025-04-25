@@ -273,6 +273,7 @@ esac
 # Obsolete configurations.
 case ${target} in
      ia64*-*-hpux* | ia64*-*-*vms* | ia64*-*-elf*	\
+   | m32c*-*-*						\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
