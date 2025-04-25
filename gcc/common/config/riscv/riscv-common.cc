@@ -218,6 +218,37 @@ static const riscv_implied_info_t riscv_implied_info[] =
    {
      return subset_list->xlen () == 32 && subset_list->lookup ("f");
    }},
+  {"zca", "c",
+   [] (const riscv_subset_list *subset_list) -> bool
+   {
+     /* For RV32 Zca implies C for one of these combinations of
+	extensions: Zca, F_Zca_Zcf and FD_Zca_Zcf_Zcd.  */
+     if (subset_list->xlen () == 32)
+       {
+	 if (subset_list->lookup ("d"))
+	   return subset_list->lookup ("zcf") && subset_list->lookup ("zcd");
+
+	 if (subset_list->lookup ("f"))
+	   return subset_list->lookup ("zcf");
+
+	 return true;
+       }
+
+     /* For RV64 Zca implies C for one of these combinations of
+	extensions: Zca and FD_Zca_Zcd (Zcf is not available
+	for RV64).  */
+     if (subset_list->xlen () == 64)
+       {
+	 if (subset_list->lookup ("d"))
+	   return subset_list->lookup ("zcd");
+
+	 return true;
+       }
+
+     /* Do nothing for future RV128 specification. Behaviour
+	for this case is not yet well defined.  */
+     return false;
+   }},
 
   {"smaia", "ssaia"},
   {"smstateen", "ssstateen"},

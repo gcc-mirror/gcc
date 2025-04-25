@@ -3,4 +3,4 @@
 
 void foo(){}
 
-/* { dg-final { scan-assembler ".attribute arch, \"rv64i2p1_f2p2_zicsr2p0_zca1p0_zcb1p0_zce1p0_zcmp1p0_zcmt1p0\"" } } */
+/* { dg-final { scan-assembler ".attribute arch, \"rv64i2p1_f2p2_c2p0_zicsr2p0_zca1p0_zcb1p0_zce1p0_zcmp1p0_zcmt1p0\"" } } */
