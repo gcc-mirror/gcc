@@ -293,8 +293,14 @@ DeriveClone::clone_enum_struct (PathInExpression variant_path,
     new ReferencePattern (std::unique_ptr<Pattern> (new StructPattern (
 			    variant_path, loc, pattern_elts)),
 			  false, false, loc));
+
+  PathInExpression new_path (variant_path.get_segments (),
+			     variant_path.get_outer_attrs (),
+			     variant_path.get_locus (),
+			     variant_path.opening_scope_resolution ());
+
   auto expr = std::unique_ptr<Expr> (
-    new StructExprStructFields (variant_path, std::move (cloned_fields), loc));
+    new StructExprStructFields (new_path, std::move (cloned_fields), loc));
 
   return builder.match_case (std::move (pattern), std::move (expr));
 }
