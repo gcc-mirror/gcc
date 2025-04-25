@@ -141,7 +141,7 @@ build_sources() {
 		 "in gcc-${RELEASE_MAJOR}/index.html"
 
     sed -n -e "/^${thischanges}/,/^${previndex}/p" NEWS |\
-	   grep -q "^[[:blank:]]*GCC ${RELEASE_MAJOR}.${RELEASE_MINOR}" ||\
+	   grep -q "^[[:blank:]]*\(\[[0-9]\{1,\}\][[:blank:]]*\)\{0,1\}GCC ${RELEASE_MAJOR}.${RELEASE_MINOR}" ||\
 	   error "GCC ${RELEASE_MAJOR}.${RELEASE_MINOR} not mentioned "\
 		 "in gcc-${RELEASE_MAJOR}/changes.html"
 
