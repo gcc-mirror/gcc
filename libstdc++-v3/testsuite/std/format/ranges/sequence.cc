@@ -295,6 +295,15 @@ void test_padding()
   resv = res = std::format("{:*>10n:}", vs);
   VERIFY( check_elems(resv, false) );
 
+  resv = res = std::format("{:*>256}", vs);
+  VERIFY( strip_prefix(resv, 48, '*') );
+  VERIFY( strip_squares(resv) );
+  VERIFY( check_elems(resv, true) );
+
+  resv = res = std::format("{:*>256n}", vs);
+  VERIFY( strip_prefix(resv, 50, '*') );
+  VERIFY( check_elems(resv, true) );
+
   resv = res = std::format("{:*>240}", vs);
   VERIFY( strip_prefix(resv, 32, '*') );
   VERIFY( strip_squares(resv) );

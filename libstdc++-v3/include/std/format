@@ -3697,9 +3697,10 @@ namespace __format
       _M_update(size_t __new)
       {
 	_M_printwidth += __new;
-	if (_M_buffering())
-	  return true;
-	return _M_force_update();
+	// Compute estimated width, to see if is not reduced.
+	if (_M_printwidth >= _M_padwidth || _M_printwidth >= _M_maxwidth)
+	  return _M_force_update();
+	return true;
       }
 
       void

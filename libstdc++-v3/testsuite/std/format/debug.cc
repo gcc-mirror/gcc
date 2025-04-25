@@ -596,6 +596,10 @@ void test_padding()
   VERIFY( strip_prefix(resv, 48, '*') );
   VERIFY( resv == inv );
 
+  resv = res = std::format("{:*>300.200s}", in);
+  VERIFY( strip_prefix(resv, 108, '*') );
+  VERIFY( resv == inv );
+
   resv = res = std::format("{:*>240.200s}", in);
   VERIFY( strip_prefix(resv, 48, '*') );
   VERIFY( resv == inv );
@@ -675,6 +679,11 @@ void test_padding()
 
   resv = res = std::format("{:*>240?}", in);
   VERIFY( strip_prefix(resv, 46, '*') );
+  VERIFY( strip_quotes(resv) );
+  VERIFY( resv == inv );
+
+  resv = res = std::format("{:*>300.200?}", in);
+  VERIFY( strip_prefix(resv, 106, '*') );
   VERIFY( strip_quotes(resv) );
   VERIFY( resv == inv );
 
