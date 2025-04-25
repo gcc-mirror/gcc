@@ -1,3 +1,12 @@
+2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	Revert:
+	2023-05-12  Julian Brown  <julian@codesourcery.com>
+
+	* omp-builtins.def (BUILT_IN_OMP_IS_INITIAL_DEVICE): New builtin.
+	* tree.cc (get_file_function_name): Support names for on-target
+	constructor/destructor functions.
+
 2025-04-17  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	* langhooks-def.h (lhd_omp_deep_mapping): Add new argument.
