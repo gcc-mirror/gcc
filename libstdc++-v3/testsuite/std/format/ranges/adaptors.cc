@@ -88,7 +88,7 @@ test_output()
   VERIFY( res == WIDEN("==[0x03, 0x02, 0x01]===") );
 
   // Sequence output is always used
-  std::queue<_CharT, std::basic_string<_CharT>> qs(
+  Adaptor<_CharT, std::basic_string<_CharT>> qs(
     std::from_range,
     std::basic_string_view<_CharT>(WIDEN("321")));
 
