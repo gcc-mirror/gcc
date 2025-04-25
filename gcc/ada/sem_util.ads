@@ -1139,14 +1139,27 @@ package Sem_Util is
    --  identifier provided as the external name. Letters in the name are
    --  according to the setting of Opt.External_Name_Default_Casing.
 
-   function Get_Enclosing_Object (N : Node_Id) return Entity_Id;
-   --  If expression N references a part of an object, return this object.
-   --  Otherwise return Empty. Expression N should have been resolved already.
-
    function Get_Enclosing_Ghost_Entity (N : Node_Id) return Entity_Id;
    --  If expression N references a name of either an object or of a
    --  subprogram, then return its outermost entity that determines
    --  whether this name denotes a ghost object.
+
+   function Get_Enclosing_Object (N : Node_Id) return Entity_Id;
+   --  If expression N references a part of an object, return this object.
+   --  Otherwise return Empty. Expression N should have been resolved already.
+
+   function Get_Enum_Lit_From_Pos
+     (T   : Entity_Id;
+      Pos : Uint;
+      Loc : Source_Ptr) return Node_Id;
+   --  This function returns an identifier denoting the E_Enumeration_Literal
+   --  entity for the specified value from the enumeration type or subtype T.
+   --  The second argument is the Pos value. Constraint_Error is raised if
+   --  argument Pos is not in range. The third argument supplies a source
+   --  location for constructed nodes returned by this function. If No_Location
+   --  is supplied as source location, the location of the returned node is
+   --  copied from the original source location for the enumeration literal,
+   --  when available.
 
    function Get_Generic_Entity (N : Node_Id) return Entity_Id;
    --  Returns the true generic entity in an instantiation. If the name in the
@@ -1212,19 +1225,6 @@ package Sem_Util is
    --
    --  When flag Do_Checks is set, this routine will flag duplicate uses of
    --  aspects.
-
-   function Get_Enum_Lit_From_Pos
-     (T   : Entity_Id;
-      Pos : Uint;
-      Loc : Source_Ptr) return Node_Id;
-   --  This function returns an identifier denoting the E_Enumeration_Literal
-   --  entity for the specified value from the enumeration type or subtype T.
-   --  The second argument is the Pos value. Constraint_Error is raised if
-   --  argument Pos is not in range. The third argument supplies a source
-   --  location for constructed nodes returned by this function. If No_Location
-   --  is supplied as source location, the location of the returned node is
-   --  copied from the original source location for the enumeration literal,
-   --  when available.
 
    function Get_Iterable_Type_Primitive
      (Typ : Entity_Id;
@@ -2443,14 +2443,14 @@ package Sem_Util is
    --  Determine whether an arbitrary entity denotes an instance of function
    --  Ada.Unchecked_Conversion.
 
-   function Is_Universal_Numeric_Type (T : Entity_Id) return Boolean;
-   pragma Inline (Is_Universal_Numeric_Type);
-   --  True if T is Universal_Integer or Universal_Real
-
    function Is_Unconstrained_Or_Tagged_Item (Item : Entity_Id) return Boolean;
    --  Subsidiary to Collect_Subprogram_Inputs_Outputs and the analysis of
    --  pragma Depends. Determine whether the type of dependency item Item is
    --  tagged, unconstrained array or unconstrained record.
+
+   function Is_Universal_Numeric_Type (T : Entity_Id) return Boolean;
+   pragma Inline (Is_Universal_Numeric_Type);
+   --  True if T is Universal_Integer or Universal_Real
 
    function Is_User_Defined_Equality (Id : Entity_Id) return Boolean;
    --  Determine whether an entity denotes a user-defined equality
