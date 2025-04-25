@@ -1,3 +1,13 @@
+2025-04-23  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114772
+	PR c++/101180
+	* pt.cc (apply_late_template_attributes): Also override
+	target_option_current_node.
+
 2025-01-20  Simon Martin  <simon@nasilyan.com>
 
 	Backported from master:

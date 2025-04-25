@@ -1,3 +1,12 @@
+2025-04-23  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/114772
+	PR c++/101180
+	* g++.dg/ext/pragma-target2.C: New test.
+
 2025-04-22  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
