@@ -7386,7 +7386,7 @@ trees_out::lang_decl_vals (tree t)
 	    WU (lang->u.fn.ovl_op_code);
 	}
 
-      if (DECL_CLASS_SCOPE_P (t))
+      if (DECL_CLASS_SCOPE_P (t) || DECL_UNIQUE_FRIEND_P (t))
 	WT (lang->u.fn.context);
 
       if (lang->u.fn.thunk_p)
@@ -7470,7 +7470,7 @@ trees_in::lang_decl_vals (tree t)
 	    lang->u.fn.ovl_op_code = code;
 	}
 
-      if (DECL_CLASS_SCOPE_P (t))
+      if (DECL_CLASS_SCOPE_P (t) || DECL_UNIQUE_FRIEND_P (t))
 	RT (lang->u.fn.context);
 
       if (lang->u.fn.thunk_p)
