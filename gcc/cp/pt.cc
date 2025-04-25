@@ -7492,8 +7492,13 @@ get_template_parm_object (tree expr, tree name, bool check_init/*=true*/)
     {
       /* The EXPR is the already processed initializer, set it on the NTTP
 	 object now so that cp_finish_decl doesn't do it again later.  */
+      gcc_checking_assert (reduced_constant_expression_p (expr));
       DECL_INITIAL (decl) = expr;
-      DECL_INITIALIZED_P (decl) = 1;
+      DECL_INITIALIZED_P (decl) = true;
+      DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = true;
+      /* FIXME setting TREE_CONSTANT on refs breaks the back end.  */
+      if (!TYPE_REF_P (type))
+	TREE_CONSTANT (decl) = true;
     }
 
   pushdecl_top_level_and_finish (decl, expr);
