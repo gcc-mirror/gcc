@@ -1425,16 +1425,68 @@ gfc_match_motion_var_list (const char *str, gfc_omp_namelist **list,
   if (m != MATCH_YES)
     return m;
 
-  match m_present = gfc_match (" present : ");
+  locus old_loc = gfc_current_locus;
+  int present_modifier = 0;
+  int mapper_modifier = 0;
+  locus second_mapper_locus = old_loc;
+  locus second_present_locus = old_loc;
+  char mapper_id[GFC_MAX_SYMBOL_LEN + 1] = { '\0' };
+
+  for (;;)
+    {
+      locus current_locus = gfc_current_locus;
+      if (gfc_match ("present ") == MATCH_YES)
+	{
+	  if (present_modifier++ == 1)
+	    second_present_locus = current_locus;
+	}
+      else if (gfc_match ("mapper ( ") == MATCH_YES)
+	{
+	  if (mapper_modifier++ == 1)
+	    second_mapper_locus = current_locus;
+	  m = gfc_match (" %n ) ", mapper_id);
+	  if (m != MATCH_YES)
+	    return m;
+	  if (strcmp (mapper_id, "default") == 0)
+	    mapper_id[0] = '\0';
+	}
+      else
+	break;
+      gfc_match (", ");
+    }
+
+  if (gfc_match (" : ") != MATCH_YES)
+    {
+      gfc_current_locus = old_loc;
+      present_modifier = 0;
+      mapper_modifier = 0;
+    }
+
+  if (present_modifier > 1)
+    {
+      gfc_error ("too many %<present%> modifiers at %L", &second_present_locus);
+      return MATCH_ERROR;
+    }
+  if (mapper_modifier > 1)
+    {
+      gfc_error ("too many %<mapper%> modifiers at %L", &second_mapper_locus);
+      return MATCH_ERROR;
+    }
 
   m = gfc_match_omp_variable_list ("", list, false, NULL, headp, true, true);
   if (m != MATCH_YES)
     return m;
-  if (m_present == MATCH_YES)
+  gfc_omp_namelist *n;
+  for (n = **headp; n; n = n->next)
     {
-      gfc_omp_namelist *n;
-      for (n = **headp; n; n = n->next)
+      if (present_modifier)
 	n->u.present_modifier = true;
+
+      if (mapper_id[0] != '\0')
+	{
+	  n->u2.udm = gfc_get_omp_namelist_udm ();
+	  n->u2.udm->mapper_id = gfc_get_string ("%s", mapper_id);
+	}
     }
   return MATCH_YES;
 }
@@ -3197,10 +3249,15 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 					      &c->lists[OMP_LIST_FIRSTPRIVATE],
 					      true) == MATCH_YES)
 	    continue;
-	  if ((mask & OMP_CLAUSE_FROM)
-	      && gfc_match_motion_var_list ("from (", &c->lists[OMP_LIST_FROM],
-					     &head) == MATCH_YES)
-	    continue;
+	  if (mask & OMP_CLAUSE_FROM)
+	    {
+	      m = gfc_match_motion_var_list ("from (", &c->lists[OMP_LIST_FROM],
+					     &head);
+	      if (m == MATCH_YES)
+		continue;
+	      else if (m == MATCH_ERROR)
+		goto error;
+	    }
 	  if ((mask & OMP_CLAUSE_FULL)
 	      && (m = gfc_match_dupl_check (!c->full, "full")) != MATCH_NO)
 	    {
@@ -4325,10 +4382,15 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      if (m == MATCH_YES)
 		continue;
 	    }
-	  else if ((mask & OMP_CLAUSE_TO)
-		   && gfc_match_motion_var_list ("to (", &c->lists[OMP_LIST_TO],
-						 &head) == MATCH_YES)
-	    continue;
+	  else if (mask & OMP_CLAUSE_TO)
+	    {
+	      m = gfc_match_motion_var_list ("to (", &c->lists[OMP_LIST_TO],
+						 &head);
+	      if (m == MATCH_YES)
+		continue;
+	      else if (m == MATCH_ERROR)
+		goto error;
+	    }
 	  break;
 	case 'u':
 	  if ((mask & OMP_CLAUSE_UNIFORM)
@@ -13863,7 +13925,7 @@ gfc_subst_mapper_var (gfc_symbol **out_sym, gfc_expr **out_expr,
 }
 
 static gfc_omp_namelist **
-gfc_omp_instantiate_mapper (gfc_omp_namelist **outlistp,
+gfc_omp_instantiate_mapper (gfc_code *code, gfc_omp_namelist **outlistp,
 			    gfc_omp_namelist *clause,
 			    gfc_omp_map_op outer_map_op, gfc_omp_udm *udm,
 			    toc_directive cd, int list)
@@ -13969,8 +14031,10 @@ gfc_omp_instantiate_mapper (gfc_omp_namelist **outlistp,
 		  = omp_split_map_op (map_clause_op, &force_p, &always_p,
 				      &present_p);
 		free (new_clause);
-		gfc_warning (0, "Dropping incompatible %qs mapper clause at %C",
-			     omp_basic_map_kind_name (basic_kind));
+		gfc_warning (OPT_Wopenmp,
+			     "Dropping incompatible %qs mapper clause at %L",
+			     omp_basic_map_kind_name (basic_kind),
+			     &code->loc);
 		inform (gfc_get_location (&mapper_clause->where),
 			"Defined here");
 		continue;
@@ -13986,7 +14050,7 @@ gfc_omp_instantiate_mapper (gfc_omp_namelist **outlistp,
 	  && mapper_clause->u2.udm->udm != udm)
 	{
 	  gfc_omp_udm *inner_udm = mapper_clause->u2.udm->udm;
-	  outlistp = gfc_omp_instantiate_mapper (outlistp, new_clause,
+	  outlistp = gfc_omp_instantiate_mapper (code, outlistp, new_clause,
 						 outer_map_op, inner_udm, cd,
 						 list);
 	}
@@ -14004,7 +14068,7 @@ gfc_omp_instantiate_mapper (gfc_omp_namelist **outlistp,
    false if errors were diagnosed.  This function is invoked from the
    translation phase so callers need to handle passing up the error.  */
 bool
-gfc_omp_instantiate_mappers (gfc_code *code ATTRIBUTE_UNUSED, gfc_omp_clauses *clauses,
+gfc_omp_instantiate_mappers (gfc_code *code, gfc_omp_clauses *clauses,
 			     toc_directive cd, int list)
 {
   gfc_omp_namelist *clause = clauses->lists[list];
@@ -14035,7 +14099,8 @@ gfc_omp_instantiate_mappers (gfc_code *code ATTRIBUTE_UNUSED, gfc_omp_clauses *c
 	    default:
 	      gcc_unreachable ();
 	    }
-	  clausep = gfc_omp_instantiate_mapper (clausep, clause, outer_map_op,
+	  clausep = gfc_omp_instantiate_mapper (code, clausep, clause,
+						outer_map_op,
 						clause->u2.udm->udm, cd, list);
 	  *clausep = clause->next;
 	  invoked_mappers = true;

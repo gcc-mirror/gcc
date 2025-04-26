@@ -18,8 +18,8 @@ var%arr = 0
 
 var%arr = 1
 
-! But this is fine.  (Re-enabled by later patch.)
-!!$omp target update to(mapper(even): var)
+! But this is fine.
+!$omp target update to(mapper(even): var)
 
 ! As 'enter data'.
 !$omp target exit data map(mapper(even), delete: var)
