@@ -84,6 +84,7 @@ package body System.Value_R is
        Scale          : out Scale_Array;
        N              : out Positive;
        Extra          : out Char_As_Digit;
+       Extra_Rounded  : out Boolean;
        Base_Violation : in out Boolean);
    --  Scan the integral part of a real (i.e. before decimal separator)
    --
@@ -93,7 +94,7 @@ package body System.Value_R is
    --  For each digit parsed, either Value := Value * Base + Digit or Scale
    --  is incremented by 1 if precision limit is reached, in which case the
    --  remaining digits are still parsed but ignored, except for the first
-   --  which is stored in Extra.
+   --  which is stored in Extra, rounded if Extra_Rounded is True.
    --
    --  Base_Violation is set to True if a digit found is not part of the Base
    --
@@ -207,18 +208,22 @@ package body System.Value_R is
       --  Number of trailing zeros at a given point
 
    begin
-      --  If initial Scale is not 0 then it means that Precision_Limit was
+      --  If initial Scale is not 0, then this means that Precision_Limit was
       --  reached during scanning of the integral part.
 
       if Scale (Data_Index'Last) > 0 then
          Precision_Limit_Reached := True;
+
+         if Round then
+            Precision_Limit_Just_Reached := True;
+         end if;
       else
          Extra := 0;
          Precision_Limit_Reached := False;
-      end if;
 
-      if Round then
-         Precision_Limit_Just_Reached := False;
+         if Round then
+            Precision_Limit_Just_Reached := False;
+         end if;
       end if;
 
       --  Initialize trailing zero counter
@@ -373,6 +378,7 @@ package body System.Value_R is
        Scale          : out Scale_Array;
        N              : out Positive;
        Extra          : out Char_As_Digit;
+       Extra_Rounded  : out Boolean;
        Base_Violation : in out Boolean)
    is
       pragma Assert (Base in 2 .. 16);
@@ -398,12 +404,13 @@ package body System.Value_R is
       --  Temporary
 
    begin
-      --  Initialize N, Value, Scale and Extra
+      --  Initialize N, Value, Scale, Extra and Extra_Rounded
 
       N := 1;
       Value := (others => 0);
       Scale := (others => 0);
       Extra := 0;
+      Extra_Rounded := False;
 
       Precision_Limit_Reached := False;
 
@@ -443,6 +450,7 @@ package body System.Value_R is
 
             if Round and then Precision_Limit_Just_Reached then
                Round_Extra (Digit, Base, Value (N), Scale (N), Extra);
+               Extra_Rounded := True;
                Precision_Limit_Just_Reached := False;
             end if;
 
@@ -536,6 +544,9 @@ package body System.Value_R is
       --  If True some digits where not in the base. The real is still scanned
       --  till the end even if an error will be raised.
 
+      Extra_Rounded : Boolean;
+      --  True if Extra has been rounded
+
       N : Positive;
       --  Index number of the current part
 
@@ -585,7 +596,7 @@ package body System.Value_R is
 
          Scan_Integral_Digits
            (Str, Index, Max, Base, False, Value, Scale, N,
-            Char_As_Digit (Extra), Base_Violation);
+            Char_As_Digit (Extra), Extra_Rounded, Base_Violation);
 
       --  A dot is allowed only if followed by a digit (RM 3.5(39.8))
 
@@ -599,6 +610,7 @@ package body System.Value_R is
          Value := (others => 0);
          Scale := (others => 0);
          Extra := 0;
+         Extra_Rounded := False;
 
       else
          Bad_Value (Str);
@@ -648,7 +660,7 @@ package body System.Value_R is
 
          Scan_Integral_Digits
            (Str, Index, Max, Base, Base_Char /= ASCII.NUL, Value, Scale,
-            N, Char_As_Digit (Extra), Base_Violation);
+            N, Char_As_Digit (Extra), Extra_Rounded, Base_Violation);
       end if;
 
       --  Do we have a dot?
@@ -673,9 +685,22 @@ package body System.Value_R is
       if After_Point then
          pragma Assert (Index <= Max);
 
-         Scan_Decimal_Digits
-           (Str, Index, Max, Base, Base_Char /= ASCII.NUL, Value, Scale,
-            N, Char_As_Digit (Extra), Base_Violation);
+         --  If Extra has been rounded, we are done with it
+
+         if Extra_Rounded then
+            declare
+               Dummy : Unsigned := 0;
+            begin
+               Scan_Decimal_Digits
+                 (Str, Index, Max, Base, Base_Char /= ASCII.NUL, Value, Scale,
+                  N, Dummy, Base_Violation);
+            end;
+
+         else
+            Scan_Decimal_Digits
+              (Str, Index, Max, Base, Base_Char /= ASCII.NUL, Value, Scale,
+               N, Char_As_Digit (Extra), Base_Violation);
+         end if;
       end if;
 
       --  If an explicit base was specified ensure that the delimiter is found
