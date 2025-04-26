@@ -543,7 +543,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item New @code{partitioner} value to @code{partition} allocator trait
       @tab N @tab
 @item Semicolon-separated list to @code{uses_allocators} @tab N @tab
-@item New @code{need_device_addr} modifier to @code{adjust_args} clause @tab N @tab
+@item New @code{need_device_addr} modifier to @code{adjust_args} clause @tab Y @tab
 @item @code{interop} clause to @code{dispatch} @tab Y @tab
 @item Scope requirement changes for @code{declare_target} @tab N @tab
 @item @code{message} and @code{severity} clauses to @code{parallel} directive

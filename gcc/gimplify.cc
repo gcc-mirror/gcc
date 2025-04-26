@@ -4506,25 +4506,81 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
       //		device_num)
       // but arg has to be the actual pointer, not a
       // reference or a conversion expression.
-      tree actual_ptr = TREE_CODE (arg) == ADDR_EXPR ? TREE_OPERAND (arg, 0)
-						     : arg;
-      if (TREE_CODE (actual_ptr) == NOP_EXPR
-	  && (TREE_CODE (TREE_TYPE (TREE_OPERAND (actual_ptr, 0)))
-	      == REFERENCE_TYPE))
-	{
-	  actual_ptr = TREE_OPERAND (actual_ptr, 0);
-	  actual_ptr
-	    = build1 (INDIRECT_REF, TREE_TYPE (actual_ptr), actual_ptr);
-	}
       tree fn = builtin_decl_explicit (BUILT_IN_OMP_GET_MAPPED_PTR);
-      tree mapped_arg
-	= build_call_expr_loc (loc, fn, 2, actual_ptr, dispatch_device_num);
+      tree mapped_arg = NULL_TREE;
+      bool reference_to_ptr_p = false;
 
-      if (TREE_CODE (arg) == ADDR_EXPR
-	  || (TREE_CODE (TREE_TYPE (actual_ptr)) == REFERENCE_TYPE))
+      tree argtype = TREE_TYPE (arg);
+      if (!POINTER_TYPE_P (argtype))
+	{
+	  sorry_at (EXPR_LOCATION (arg),
+		    "Invalid non-pointer/reference argument "
+		    "not diagnosed properly earlier");
+	  return arg;
+	}
+
+      /* Fortran C_PTR passed by reference?  Also handle the weird case
+	 where an array of C_PTR is passed instead of its first element.  */
+      if (need_device_ptr
+	  && lang_GNU_Fortran ()
+	  && (POINTER_TYPE_P (TREE_TYPE (argtype))
+	      || (TREE_CODE (TREE_TYPE (argtype)) == ARRAY_TYPE
+		  && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (argtype))))))
+	reference_to_ptr_p = true;
+
+      /* C++ pointer passed by reference?  */
+      else if (need_device_ptr
+	       && TREE_CODE (argtype) == REFERENCE_TYPE
+	       && TREE_CODE (TREE_TYPE (argtype)) == POINTER_TYPE)
+	reference_to_ptr_p = true;
+
+      /* If reference_to_ptr_p is true, we need to dereference arg to
+	 get the actual pointer.  */
+      tree actual_ptr = (reference_to_ptr_p
+			 ? build_fold_indirect_ref (arg) : arg);
+      tree actual_ptr_type = TREE_TYPE (actual_ptr);
+      STRIP_NOPS (actual_ptr);
+
+      if (lang_hooks.decls.omp_array_data (actual_ptr, true))
+	{
+	  /* This is a Fortran array with a descriptor.  The actual_ptr that
+	     lives on the target is the array data, not the descriptor.  */
+	  tree array_data
+	    = lang_hooks.decls.omp_array_data (actual_ptr, false);
+	  tree mapped_array_data =
+	    build_call_expr_loc (loc, fn, 2, array_data, dispatch_device_num);
+
+	  gcc_assert (TREE_CODE (array_data) == COMPONENT_REF);
+
+	  /* We need to create a new array descriptor newd that points at the
+	     mapped actual_ptr instead of the original one.  Start by
+	     creating the new descriptor and copy-initializing it from the
+	     existing one.  */
+	  tree oldd = TREE_OPERAND (array_data, 0);
+	  tree newd = create_tmp_var (TREE_TYPE (oldd), get_name (oldd));
+	  tree t2 = build2 (MODIFY_EXPR, void_type_node, newd, oldd);
+	  if (init_code)
+	    init_code = build2 (COMPOUND_EXPR, void_type_node, init_code, t2);
+	  else
+	    init_code = t2;
+
+	  /* Now stash the mapped array pointer in the new descriptor newd.  */
+	  tree lhs = build3 (COMPONENT_REF, TREE_TYPE (array_data), newd,
+			     TREE_OPERAND (array_data, 1),
+			     TREE_OPERAND (array_data, 2));
+	  t2 = build2 (MODIFY_EXPR, void_type_node, lhs, mapped_array_data);
+	  init_code = build2 (COMPOUND_EXPR, void_type_node, init_code, t2);
+	  mapped_arg = build_fold_addr_expr (newd);
+	}
+      else
+	mapped_arg
+	  = build_call_expr_loc (loc, fn, 2, actual_ptr, dispatch_device_num);
+
+      /* Cast mapped_arg back to its original type, and if we need a
+	 reference, build one.  */
+      mapped_arg = build1 (NOP_EXPR, actual_ptr_type, mapped_arg);
+      if (reference_to_ptr_p)
 	mapped_arg = build_fold_addr_expr (mapped_arg);
-      else if (TREE_CODE (arg) == NOP_EXPR)
-	mapped_arg = build1 (NOP_EXPR, TREE_TYPE (arg), mapped_arg);
       return mapped_arg;
     };
 

@@ -13,13 +13,13 @@ int f2a (void *a);
 int f2b (void *a);
 #pragma omp declare variant (f0) match (construct={dispatch},device={arch(gcn)}) adjust_args (need_device_ptr: a) /* { dg-error "'int f0.void..' used as a variant with incompatible 'construct' selector sets" } */
 int f2c (void *a);
-#pragma omp declare variant (f1) match (construct={dispatch}) adjust_args (other: a) /* { dg-error "expected 'nothing' or 'need_device_ptr'" } */
+#pragma omp declare variant (f1) match (construct={dispatch}) adjust_args (other: a) /* { dg-error "expected 'nothing', 'need_device_ptr' or 'need_device_addr'" } */
 int f3 (int a);
 #pragma omp declare variant (f0) adjust_args (nothing: a) /* { dg-error "an 'adjust_args' clause requires a 'match' clause" } */
 int f4 (void *a);
-#pragma omp declare variant (f1) match (construct={dispatch}) adjust_args () /* { dg-error "expected 'nothing' or 'need_device_ptr' followed by ':'" } */
+#pragma omp declare variant (f1) match (construct={dispatch}) adjust_args () /* { dg-error "expected 'nothing', 'need_device_ptr' or 'need_device_addr' followed by ':'" } */
 int f5 (int a);
-#pragma omp declare variant (f1) match (construct={dispatch}) adjust_args (nothing) /* { dg-error "expected 'nothing' or 'need_device_ptr' followed by ':'" } */
+#pragma omp declare variant (f1) match (construct={dispatch}) adjust_args (nothing) /* { dg-error "expected 'nothing', 'need_device_ptr' or 'need_device_addr' followed by ':'" } */
 int f6 (int a);
 #pragma omp declare variant (f1) match (construct={dispatch}) adjust_args (nothing:) /* { dg-error "expected primary-expression before '\\)' token" } */
 int f7 (int a);
