@@ -4795,10 +4795,10 @@ op_symbol_code (enum tree_code code, dump_flags_t flags)
       return ">>";
 
     case LROTATE_EXPR:
-      return "r<<";
+      return (flags & TDF_GIMPLE) ? "__ROTATE_LEFT" : "r<<";
 
     case RROTATE_EXPR:
-      return "r>>";
+      return (flags & TDF_GIMPLE) ? "__ROTATE_RIGHT" : "r>>";
 
     case WIDEN_LSHIFT_EXPR:
       return "w<<";

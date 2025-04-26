@@ -982,6 +982,8 @@ static const std::pair<const char *, tree_code> gimple_binary_identifier_code[] 
     {"__FLOOR_MOD", FLOOR_MOD_EXPR},
     {"__ROUND_MOD", ROUND_MOD_EXPR},
     {"__CEIL_MOD", CEIL_MOD_EXPR},
+    {"__ROTATE_LEFT", LROTATE_EXPR},
+    {"__ROTATE_RIGHT", RROTATE_EXPR},
   };
 
 /* Parse gimple binary expr.
