@@ -1,3 +1,72 @@
+2025-04-25  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* doc/sourcebuild.texi: Document variadic_mi_thunk effective
+	target check.
+
+2025-04-25  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* doc/sourcebuild.texi: Document effective target
+	using_sjlj_exceptions.
+
+2025-04-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* match.pd: Move `(cmp (cond @0 @1 @2) @3)` simplifcation after
+	the bool comparison simplifications.
+
+2025-04-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple.h (gimple_cond_make_false): Fix comment.
+	(gimple_cond_make_true): Likewise.
+	(gimple_cond_true_p): Fix spello for statement in comment.
+
+2025-04-25  Jason Merrill  <jason@redhat.com>
+
+	* common.opt: Add ABI v21.
+
+2025-04-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* ipa-icf.cc (sem_function::sem_function): Remove
+	the obstack argument version one.
+	(sem_variable::sem_variable): Likewise.
+	* ipa-icf.h (sem_function): Remove ctor for
+	obstack argument only one.
+	(sem_variable): Likewise.
+
+2025-04-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* ipa-icf.cc (sem_function::init): Remove assignment of node from itself.
+
+2025-04-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/119811
+	* tree-ssa-phiopt.cc: Remove calls.h include.
+
+2025-04-25  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR rtl-optimization/116479
+	* modulo-sched.cc (doloop_register_get): Reject conditions with
+	decrements that are not 1.
+
+2025-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119873
+	* config/s390/s390.cc (s390_call_saved_register_used): Don't return
+	true if default definition of PARM_DECL SSA_NAME of the same register
+	is passed in call saved register in the PARALLEL case either.
+
+2025-04-25  Andrew Pinski  <quic_apinski@quicinc.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119737
+	* config/gcn/gcn.cc (gcn_hsa_declare_function_name): Properly
+	switch sections.
+
+2025-04-25  Yuriy Kolerov  <Yuriy.Kolerov@synopsys.com>
+
+	PR target/119122
+	* common/config/riscv/riscv-common.cc (riscv_implied_info): Add a rule
+	for Zca to C implication.
+
 2025-04-24  Jakub Jelinek  <jakub@redhat.com>
 	    Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 

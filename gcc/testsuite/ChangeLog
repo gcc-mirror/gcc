@@ -1,3 +1,168 @@
+2025-04-25  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* g++.dg/ipa/pr83549.C: Require effective target
+	variadic_mi_thunk.
+	* g++.dg/ipa/pr83667.C: Ditto.
+	* g++.dg/torture/pr81812.C: Ditto.
+	* g++.old-deja/g++.jason/thunk3.C: Ditto.
+	* lib/target-supports.exp
+	(check_effective_target_variadic_mi_thunk): New function.
+
+2025-04-25  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* c-c++-common/musttail14.c: Disable test if effective target
+	using_sjlj_exceptions.
+	* c-c++-common/musttail22.c: Ditto.
+	* g++.dg/musttail8.C: Ditto.
+	* g++.dg/musttail9.C: Ditto.
+	* g++.dg/opt/musttail3.C: Ditto.
+	* g++.dg/opt/musttail4.C: Ditto.
+	* g++.dg/opt/musttail5.C: Ditto.
+	* g++.dg/opt/pr119613.C: Ditto.
+	* lib/target-supports.exp
+	(check_effective_target_using_sjlj_exceptions): New check.
+
+2025-04-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102900
+	* gfortran.dg/proc_ptr_52.f90: Add -fcheck=pointer to options.
+	* gfortran.dg/proc_ptr_57.f90: New test.
+
+2025-04-25  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119764
+	PR c++/87185
+	* g++.dg/cpp0x/lambda/lambda-noexcept1.C: New test.
+
+2025-04-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/abi/macro0.C: Update for -fabi-version=21.
+
+2025-04-25  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/88_level_with_FALSE_IS_clause.cob: New testcase.
+	* cobol.dg/group2/88_level_with_FILLER.cob: Likewise.
+	* cobol.dg/group2/88_level_with_THRU.cob: Likewise.
+	* cobol.dg/group2/ADD_CORRESPONDING.cob: Likewise.
+	* cobol.dg/group2/ADD_SUBTRACT_CORR_mixed_fix___float.cob: Likewise.
+	* cobol.dg/group2/ALPHABETIC-LOWER_test.cob: Likewise.
+	* cobol.dg/group2/ALPHABETIC_test.cob: Likewise.
+	* cobol.dg/group2/ALPHABETIC-UPPER_test.cob: Likewise.
+	* cobol.dg/group2/BLANK_WHEN_ZERO.cob: Likewise.
+	* cobol.dg/group2/Check_for_equality_of_COMP-1___COMP-2.cob: Likewise.
+	* cobol.dg/group2/Compare_COMP-2_with_floating-point_literal.cob: Likewise.
+	* cobol.dg/group2/Contained_program_visibility__3_.cob: Likewise.
+	* cobol.dg/group2/Contained_program_visibility__4_.cob: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__1_.cob: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__2_.cob: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__3_.cob: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__4_.cob: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__5_.cob: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__6_.cob: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__7_.cob: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__8_.cob: Likewise.
+	* cobol.dg/group2/debugging_lines__not_active_.cob: Likewise.
+	* cobol.dg/group2/debugging_lines__WITH_DEBUGGING_MODE_.cob: Likewise.
+	* cobol.dg/group2/DEBUG_Line.cob: Likewise.
+	* cobol.dg/group2/DISPLAY_and_assignment_NumericDisplay.cob: Likewise.
+	* cobol.dg/group2/DISPLAY_data_items_with_MOVE_statement.cob: Likewise.
+	* cobol.dg/group2/DISPLAY_data_items_with_VALUE_clause.cob: Likewise.
+	* cobol.dg/group2/DISPLAY_literals__DECIMAL-POINT_is_COMMA.cob: Likewise.
+	* cobol.dg/group2/GLOBAL_at_lower_level.cob: Likewise.
+	* cobol.dg/group2/GLOBAL_at_same_level.cob: Likewise.
+	* cobol.dg/group2/GLOBAL_FD__1_.cob: Likewise.
+	* cobol.dg/group2/GLOBAL_FD__2_.cob: Likewise.
+	* cobol.dg/group2/GLOBAL_FD__3_.cob: Likewise.
+	* cobol.dg/group2/GLOBAL_FD__4_.cob: Likewise.
+	* cobol.dg/group2/Hexadecimal_literal.cob: Likewise.
+	* cobol.dg/group2/integer_arithmetic_on_floating-point_var.cob: Likewise.
+	* cobol.dg/group2/MULTIPLY_BY_literal_in_INITIAL_program.cob: Likewise.
+	* cobol.dg/group2/Named_conditionals_-_fixed__float__and_alphabetic.cob: Likewise.
+	* cobol.dg/group2/Numeric_operations__1_.cob: Likewise.
+	* cobol.dg/group2/Numeric_operations__2_.cob: Likewise.
+	* cobol.dg/group2/Numeric_operations__3_.cob: Likewise.
+	* cobol.dg/group2/Numeric_operations__4_.cob: Likewise.
+	* cobol.dg/group2/Numeric_operations__5_.cob: Likewise.
+	* cobol.dg/group2/Numeric_operations__7_.cob: Likewise.
+	* cobol.dg/group2/Numeric_operations__8_.cob: Likewise.
+	* cobol.dg/group2/ROUNDED_AWAY-FROM-ZERO.cob: Likewise.
+	* cobol.dg/group2/ROUNDED_NEAREST-AWAY-FROM-ZERO.cob: Likewise.
+	* cobol.dg/group2/ROUNDED_NEAREST-EVEN.cob: Likewise.
+	* cobol.dg/group2/ROUNDED_NEAREST-TOWARD-ZERO.cob: Likewise.
+	* cobol.dg/group2/ROUNDED_TOWARD-GREATER.cob: Likewise.
+	* cobol.dg/group2/ROUNDED_TOWARD-LESSER.cob: Likewise.
+	* cobol.dg/group2/ROUNDED_TRUNCATION.cob: Likewise.
+	* cobol.dg/group2/ROUNDING_omnibus_Floating-Point_from_COMPUTE.cob: Likewise.
+	* cobol.dg/group2/ROUNDING_omnibus_NumericDisplay_from_COMPUTE.cob: Likewise.
+	* cobol.dg/group2/Separate_sign_positions__1_.cob: Likewise.
+	* cobol.dg/group2/Separate_sign_positions__2_.cob: Likewise.
+	* cobol.dg/group2/Simple_p-scaling.cob: Likewise.
+	* cobol.dg/group2/Simple_TYPEDEF.cob: Likewise.
+	* cobol.dg/group2/ADD_SUBTRACT_CORR_mixed_fix___float.out: New known-good result.
+	* cobol.dg/group2/BLANK_WHEN_ZERO.out: Likewise.
+	* cobol.dg/group2/Contained_program_visibility__4_.out: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__1_.out: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__2_.out: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__3_.out: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__4_.out: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__5_.out: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__6_.out: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__7_.out: Likewise.
+	* cobol.dg/group2/Context_sensitive_words__8_.out: Likewise.
+	* cobol.dg/group2/debugging_lines__not_active_.out: Likewise.
+	* cobol.dg/group2/debugging_lines__WITH_DEBUGGING_MODE_.out: Likewise.
+	* cobol.dg/group2/DEBUG_Line.out: Likewise.
+	* cobol.dg/group2/DISPLAY_and_assignment_NumericDisplay.out: Likewise.
+	* cobol.dg/group2/DISPLAY_data_items_with_MOVE_statement.out: Likewise.
+	* cobol.dg/group2/DISPLAY_data_items_with_VALUE_clause.out: Likewise.
+	* cobol.dg/group2/DISPLAY_literals__DECIMAL-POINT_is_COMMA.out: Likewise.
+	* cobol.dg/group2/GLOBAL_at_lower_level.out: Likewise.
+	* cobol.dg/group2/GLOBAL_at_same_level.out: Likewise.
+	* cobol.dg/group2/Hexadecimal_literal.out: Likewise.
+	* cobol.dg/group2/Named_conditionals_-_fixed__float__and_alphabetic.out: Likewise.
+	* cobol.dg/group2/ROUNDED_AWAY-FROM-ZERO.out: Likewise.
+	* cobol.dg/group2/ROUNDED_NEAREST-AWAY-FROM-ZERO.out: Likewise.
+	* cobol.dg/group2/ROUNDED_NEAREST-EVEN.out: Likewise.
+	* cobol.dg/group2/ROUNDED_NEAREST-TOWARD-ZERO.out: Likewise.
+	* cobol.dg/group2/ROUNDED_TOWARD-GREATER.out: Likewise.
+	* cobol.dg/group2/ROUNDED_TOWARD-LESSER.out: Likewise.
+	* cobol.dg/group2/ROUNDED_TRUNCATION.out: Likewise.
+	* cobol.dg/group2/ROUNDING_omnibus_Floating-Point_from_COMPUTE.out: Likewise.
+	* cobol.dg/group2/ROUNDING_omnibus_NumericDisplay_from_COMPUTE.out: Likewise.
+	* cobol.dg/group2/Separate_sign_positions__1_.out: Likewise.
+	* cobol.dg/group2/Separate_sign_positions__2_.out: Likewise.
+	* cobol.dg/group2/Simple_p-scaling.out: Likewise.
+
+2025-04-25  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/pr116479.c: New test.
+
+2025-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119873
+	* gcc.target/s390/pr119873-5.c: New test.
+
+2025-04-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/template/recurse5.C: New test.
+
+2025-04-25  Yuriy Kolerov  <Yuriy.Kolerov@synopsys.com>
+
+	PR target/119122
+	* gcc.target/riscv/arch-25.c: Fix dg-error expectation.
+	* gcc.target/riscv/attribute-c-1.c: New test.
+	* gcc.target/riscv/attribute-c-2.c: New test.
+	* gcc.target/riscv/attribute-c-3.c: New test.
+	* gcc.target/riscv/attribute-c-4.c: New test.
+	* gcc.target/riscv/attribute-c-5.c: New test.
+	* gcc.target/riscv/attribute-c-6.c: New test.
+	* gcc.target/riscv/attribute-c-7.c: New test.
+	* gcc.target/riscv/attribute-c-8.c: New test.
+	* gcc.target/riscv/attribute-zce-1.c: Update Zce tests.
+	* gcc.target/riscv/attribute-zce-2.c: Likewise.
+	* gcc.target/riscv/attribute-zce-3.c: Likewise
+	* gcc.target/riscv/attribute-zce-4.c: Likewise.
+
 2025-04-24  Jakub Jelinek  <jakub@redhat.com>
 	    Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 

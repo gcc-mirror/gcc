@@ -1,3 +1,42 @@
+2025-04-25  Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.c/interop-hsa.c: New test.
+
+2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119853
+	PR target/119854
+	* target-cxa-dso-dtor.c: New.
+	* config/accel/target-cxa-dso-dtor.c: Likewise.
+	* Makefile.am (libgomp_la_SOURCES): Add it.
+	* Makefile.in: Regenerate.
+	* testsuite/libgomp.c++/target-cdtor-1.C: New.
+	* testsuite/libgomp.c++/target-cdtor-2.C: Likewise.
+
+2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/target-cdtor-1.c: New.
+
+2025-04-25  Andrew Pinski  <quic_apinski@quicinc.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/119737
+	* testsuite/libgomp.c++/target-exceptions-throw-1.C: Remove
+	PR119737 XFAILing.
+	* testsuite/libgomp.c++/target-exceptions-throw-2.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-1.C: Likewise.
+	* testsuite/libgomp.oacc-c++/exceptions-throw-2.C: Likewise.
+
+2025-04-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/118794
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1.C: Adjust for
+	'targetm.arm_eabi_unwinder'.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-GCN.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-exceptions-pr118794-1-offload-sorry-nvptx.C:
+	Likewise.
+
 2025-04-24  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/lib/libgomp.exp
