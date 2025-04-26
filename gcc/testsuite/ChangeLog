@@ -1,3 +1,19 @@
+2025-04-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-04-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/119399
+	* gcc.dg/vect/pr119399.c: New test.
+
+2025-04-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-03-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/116125
+	* gcc.dg/vect/pr116125.c: New test.
+
 2025-04-23  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

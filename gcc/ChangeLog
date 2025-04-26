@@ -1,3 +1,25 @@
+2025-04-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-04-10  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/119399
+	* tree-data-ref.cc (create_waw_or_war_checks): Use a MINUS_EXPR
+	on two converted pointers, rather than converting a POINTER_DIFF_EXPR
+	on the pointers.
+
+2025-04-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-03-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/116125
+	* tree-vect-data-refs.cc (vect_prune_runtime_alias_test_list): Make
+	the dr_with_seg_len alignment fields describe tha access sizes as
+	well as the pointer alignment.
+	* tree-data-ref.cc (create_intersect_range_checks): Don't compensate
+	for invalid alignment fields here.
+
 2025-04-16  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	Backported from master:
