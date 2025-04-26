@@ -1,3 +1,34 @@
+2025-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119873
+	* config/s390/s390.cc (s390_call_saved_register_used): Don't return
+	true if default definition of PARM_DECL SSA_NAME of the same register
+	is passed in call saved register in the PARALLEL case either.
+
+2025-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-24  Jakub Jelinek  <jakub@redhat.com>
+		    Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/119873
+	* config/s390/s390.cc (s390_call_saved_register_used): Don't return
+	true if default definition of PARM_DECL SSA_NAME of the same register
+	is passed in call saved register.
+	(s390_function_ok_for_sibcall): Adjust comment.
+
+2025-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119327
+	* config/rs6000/rs6000.cc (rs6000_can_inline_p): Ignore also
+	OPTION_MASK_SAVE_TOC_INDIRECT differences.
+
 2025-04-25  Release Manager
 
 	* GCC 15.1.0 released.

@@ -1,3 +1,49 @@
+2025-04-25  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2025-04-25  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/109162
+	* include/bits/version.def (format_ranges): Remove no_stdname and
+	update value.
+	* include/bits/version.h: Regenerate.
+	* src/c++23/std.cc.in: Replace __glibcxx_format_ranges with
+	__cpp_lib_format_ranges.
+	* testsuite/std/format/formatter/lwg3944.cc: Likewise.
+	* testsuite/std/format/parse_ctx.cc: Likewise.
+	* testsuite/std/format/string.cc: Likewise.
+	* testsuite/std/format/ranges/feature_test.cc: New test.
+
+2025-04-25  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2025-04-25  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/109162
+	* include/bits/formatfwd.h (__format::__parsable_with)
+	(__format::__formattable_with, __format::__formattable_impl)
+	(__format::__has_debug_format, __format::__const_formattable_range)
+	(__format::__maybe_const_range, __format::__maybe_const)
+	(std::formattable): Moved from std/format.
+	(__format::Iter_for, std::range_formatter): Forward declare.
+	* include/bits/stl_queue.h (std::formatter): Forward declare.
+	(std::queue, std::priority_queue): Befriend formatter specializations.
+	* include/bits/stl_stack.h (std::formatter): Forward declare.
+	(std::stack): Befriend formatter specializations.
+	* include/std/format (__format::_Iter_for): Define as struct with
+	(__format::__parsable_with, __format::__formattable_with)
+	(__format::__formattable_impl, __format::__has_debug_format)
+	(_format::__const_formattable_range, __format::__maybe_const_range)
+	(__format::__maybe_const, std::formattable): Moved to bits/formatfwd.h.
+	(std::range_formatter): Remove default argument specified in declaration
+	in bits/formatfwd.h.
+	* include/std/queue: Include bits/version.h before bits/stl_queue.h.
+	(formatter<queue<_Tp, _Container, _Compare>, _CharT>)
+	(formatter<priority_queue<_Tp, _Container, _Compare>, _CharT>): Define.
+	* include/std/stack: Include bits/version.h before bits/stl_stack.h
+	(formatter<stack<_Tp, _Container, _Compare>, _CharT>): Define.
+	* testsuite/std/format/ranges/adaptors.cc: New test.
+
 2025-04-25  Release Manager
 
 	* GCC 15.1.0 released.

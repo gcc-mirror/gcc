@@ -1,3 +1,31 @@
+2025-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119873
+	* gcc.target/s390/pr119873-5.c: New test.
+
+2025-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-24  Jakub Jelinek  <jakub@redhat.com>
+		    Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/119873
+	* gcc.target/s390/pr119873-1.c: New test.
+	* gcc.target/s390/pr119873-2.c: New test.
+	* gcc.target/s390/pr119873-3.c: New test.
+	* gcc.target/s390/pr119873-4.c: New test.
+
+2025-04-25  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/119327
+	* g++.dg/opt/pr119327.C: New test.
+
 2025-04-25  Release Manager
 
 	* GCC 15.1.0 released.
