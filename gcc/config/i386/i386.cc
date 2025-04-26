@@ -25420,7 +25420,8 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	case MAX_EXPR:
 	  if (fp)
 	    {
-	      if (X87_FLOAT_MODE_P (mode))
+	      if (X87_FLOAT_MODE_P (mode)
+		  && !SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
 		/* x87 requires conditional branch.  We don't have cost for
 		   that.  */
 		;
@@ -25457,7 +25458,8 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	case ABSU_EXPR:
 	  if (fp)
 	    {
-	      if (X87_FLOAT_MODE_P (mode))
+	      if (X87_FLOAT_MODE_P (mode)
+		  && !SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (mode))
 		/* fabs.  */
 		stmt_cost = ix86_cost->fabs;
 	      else
