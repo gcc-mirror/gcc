@@ -1,3 +1,18 @@
+2025-04-26  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/105275
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost): Fix cost of FP scalar
+	MAX_EXPR and MIN_EXPR
+
+2025-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (LIST): --enable-obsolete for m32c-elf.
+
+2025-04-26  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* simplify-rtx.cc (simplify_context::simplify_unary_operation_1) <case ZERO_EXTEND>:
+	Add simplifcation for and with a constant.
+
 2025-04-25  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* doc/sourcebuild.texi: Document variadic_mi_thunk effective

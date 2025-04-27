@@ -1,3 +1,7 @@
+2025-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-list.mk: Add m32c*-*-* to the list of obsoleted targets.
+
 2025-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* gennews (files): Add files for GCC 15.
