@@ -32,6 +32,7 @@ int la_evo_feature_masks[] = {
   OPTION_MASK_ISA_DIV32,
   OPTION_MASK_ISA_LAM_BH,
   OPTION_MASK_ISA_LAMCAS,
+  OPTION_MASK_ISA_SCQ,
   OPTION_MASK_ISA_LD_SEQ_SA,
 };
 
@@ -40,6 +41,7 @@ const char* la_evo_macro_name[] = {
   "__loongarch_div32",
   "__loongarch_lam_bh",
   "__loongarch_lamcas",
+  "__loongarch_scq",
   "__loongarch_ld_seq_sa",
 };
 
@@ -48,6 +50,7 @@ int la_evo_version_major[] = {
   1,    /* DIV32 */
   1,    /* LAM_BH */
   1,    /* LAMCAS */
+  1,    /* SCQ */
   1,    /* LD_SEQ_SA */
 };
 
@@ -56,5 +59,6 @@ int la_evo_version_minor[] = {
   1,    /* DIV32 */
   1,    /* LAM_BH */
   1,    /* LAMCAS */
+  1,    /* SCQ */
   1,    /* LD_SEQ_SA */
 };

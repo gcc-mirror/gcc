@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTSTR_DIV32	"div32"
 #define OPTSTR_LAM_BH	"lam-bh"
 #define OPTSTR_LAMCAS	"lamcas"
+#define OPTSTR_SCQ	"scq"
 #define OPTSTR_LD_SEQ_SA	"ld-seq-sa"
 
 #endif /* LOONGARCH_STR_H */

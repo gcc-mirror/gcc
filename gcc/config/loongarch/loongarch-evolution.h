@@ -36,6 +36,7 @@ static constexpr struct {
   { 2, 1u << 26, OPTION_MASK_ISA_DIV32 },
   { 2, 1u << 27, OPTION_MASK_ISA_LAM_BH },
   { 2, 1u << 28, OPTION_MASK_ISA_LAMCAS },
+  { 2, 1u << 30, OPTION_MASK_ISA_SCQ },
   { 3, 1u << 23, OPTION_MASK_ISA_LD_SEQ_SA },
 };
 
@@ -58,8 +59,9 @@ enum {
   EVO_DIV32 = 1,
   EVO_LAM_BH = 2,
   EVO_LAMCAS = 3,
-  EVO_LD_SEQ_SA = 4,
-  N_EVO_FEATURES = 5
+  EVO_SCQ = 4,
+  EVO_LD_SEQ_SA = 5,
+  N_EVO_FEATURES = 6
 };
 
 /* Condition macros */
@@ -71,6 +73,8 @@ enum {
   (la_target.isa.evolution & OPTION_MASK_ISA_LAM_BH)
 #define ISA_HAS_LAMCAS \
   (la_target.isa.evolution & OPTION_MASK_ISA_LAMCAS)
+#define ISA_HAS_SCQ \
+  (la_target.isa.evolution & OPTION_MASK_ISA_SCQ)
 #define ISA_HAS_LD_SEQ_SA \
   (la_target.isa.evolution & OPTION_MASK_ISA_LD_SEQ_SA)
 

@@ -334,6 +334,10 @@ mlamcas
 Target Mask(ISA_LAMCAS) Var(la_isa_evolution)
 Support amcas[_db].{b/h/w/d} instructions.
 
+mscq
+Target Mask(ISA_SCQ) Var(la_isa_evolution)
+Support sc.q instruction.
+
 mld-seq-sa
 Target Mask(ISA_LD_SEQ_SA) Var(la_isa_evolution)
 Do not need load-load barriers (dbar 0x700).

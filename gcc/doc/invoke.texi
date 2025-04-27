@@ -1102,7 +1102,8 @@ Objective-C and Objective-C++ Dialects}.
 -mcmodel=@var{code-model} -mrelax -mpass-mrelax-to-as
 -mrecip  -mrecip=@var{opt} -mfrecipe -mno-frecipe -mdiv32 -mno-div32
 -mlam-bh -mno-lam-bh -mlamcas -mno-lamcas -mld-seq-sa -mno-ld-seq-sa
--mtls-dialect=@var{opt} -mannotate-tablejump -mno-annotate-tablejump}
+-mscq -mno-scq -mtls-dialect=@var{opt}
+-mannotate-tablejump -mno-annotate-tablejump}
 
 @emph{M32C Options} (@ref{M32C Options})
 @gccoptlist{-mcpu=@var{cpu}  -msim  -memregs=@var{number}}
@@ -28572,6 +28573,14 @@ Use (do not use) @code{amcas[_db].@{b/h/w/d@}} instructions.  When build with
 Whether a same-address load-load barrier (@code{dbar 0x700}) is needed.  When
 build with @option{-march=la664}, it is enabled by default.  The default is
 @option{-mno-ld-seq-sa}, the load-load barrier is needed.
+
+@opindex mscq
+@opindex mno-scq
+@item -mscq
+@item -mno-scq
+Use (do not use) the 16-byte conditional store instruction @code{sc.q}.
+The default is @option{-mscq} if the machine type specified with
+@option{-march=} supports this instruction, @option{-mno-scq} otherwise.
 
 @opindex mtls-dialect
 @item -mtls-dialect=@var{opt}

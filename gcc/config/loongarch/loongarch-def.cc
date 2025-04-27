@@ -72,7 +72,7 @@ array_arch<loongarch_isa> loongarch_cpu_default_isa =
 	    .simd_ (ISA_EXT_SIMD_LASX)
 	    .evolution_ (OPTION_MASK_ISA_DIV32 | OPTION_MASK_ISA_LD_SEQ_SA
 			 | OPTION_MASK_ISA_LAM_BH | OPTION_MASK_ISA_LAMCAS
-			 | OPTION_MASK_ISA_FRECIPE))
+			 | OPTION_MASK_ISA_FRECIPE | OPTION_MASK_ISA_SCQ))
     .set (ARCH_LA64V1_0,
 	  loongarch_isa ()
 	    .base_ (ISA_BASE_LA64)
@@ -86,7 +86,7 @@ array_arch<loongarch_isa> loongarch_cpu_default_isa =
 	    .simd_ (ISA_EXT_SIMD_LSX)
 	    .evolution_ (OPTION_MASK_ISA_DIV32 | OPTION_MASK_ISA_LD_SEQ_SA
 			 | OPTION_MASK_ISA_LAM_BH | OPTION_MASK_ISA_LAMCAS
-			 | OPTION_MASK_ISA_FRECIPE));
+			 | OPTION_MASK_ISA_FRECIPE | OPTION_MASK_ISA_SCQ));
 
 
 static inline loongarch_cache la464_cache ()
