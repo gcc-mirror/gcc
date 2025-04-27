@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 /* 32-bit Windows aligns the stack on a 4-byte boundary but SSE instructions
    may require 16-byte alignment.  */
 #undef STACK_REALIGN_DEFAULT
-#define STACK_REALIGN_DEFAULT TARGET_SSE
+#define STACK_REALIGN_DEFAULT (TARGET_64BIT ? 0 : 1)
 
 /* Support hooks for SEH.  */
 #undef  TARGET_ASM_UNWIND_EMIT
