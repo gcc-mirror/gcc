@@ -4743,7 +4743,7 @@ package body Sem_Warn is
       Ent : Entity_Id;
 
    begin
-      if Warn_On_Modified_Unread
+      if (Warn_On_Modified_Unread or Warn_On_All_Unread_Out_Parameters)
         and then In_Extended_Main_Source_Unit (E)
       then
          Ent := First_Entity (E);
