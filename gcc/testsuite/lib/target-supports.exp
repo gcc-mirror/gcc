@@ -4639,7 +4639,7 @@ proc add_options_for_vect_early_break { flags } {
 
     if { [check_effective_target_arm_v8_neon_ok] } {
 	global et_arm_v8_neon_flags
-	return "$flags $et_arm_v8_neon_flags -mcpu=unset -march=armv8-a"
+	return "$flags $et_arm_v8_neon_flags"
     }
 
     if { [check_effective_target_sse4] } {
@@ -5462,7 +5462,7 @@ proc add_options_for_arm_v8_neon { flags } {
 	return "$flags"
     }
     global et_arm_v8_neon_flags
-    return "$flags $et_arm_v8_neon_flags -mcpu=unset -march=armv8-a"
+    return "$flags $et_arm_v8_neon_flags"
 }
 
 # Add the options needed for ARMv8.1 Adv.SIMD.  Also adds the ARMv8 NEON
@@ -5931,7 +5931,7 @@ proc check_effective_target_arm_v8_neon_ok_nocache { } {
 		__asm__ volatile ("vrintn.f32 q0, q0");
 	    }
 	} "$flags -mcpu=unset -march=armv8-a"] } {
-	    set et_arm_v8_neon_flags $flags
+	    set et_arm_v8_neon_flags "$flags -mcpu=unset -march=armv8-a"
 	    return 1
 	}
     }
