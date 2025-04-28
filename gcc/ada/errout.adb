@@ -1060,9 +1060,6 @@ package body Errout is
 
       Temp_Msg : Error_Msg_Id;
 
-      Warn_Err : Boolean;
-      --  Set if warning to be treated as error
-
       First_Fix : Fix_Id := No_Fix;
       Last_Fix  : Fix_Id := No_Fix;
 
@@ -1422,19 +1419,11 @@ package body Errout is
 
       --  Test if warning to be treated as error
 
-      Warn_Err :=
+      Errors.Table (Cur_Msg).Warn_Err :=
         Error_Msg_Kind in Warning | Style
         and then (Warning_Treated_As_Error (Msg_Buffer (1 .. Msglen))
                   or else Warning_Treated_As_Error (Get_Warning_Tag (Cur_Msg))
                   or else Is_Runtime_Raise);
-
-      --  Propagate Warn_Err to this message and preceding continuations.
-
-      for J in reverse 1 .. Errors.Last loop
-         Errors.Table (J).Warn_Err := Warn_Err;
-
-         exit when not Errors.Table (J).Msg_Cont;
-      end loop;
 
       --  If immediate errors mode set, output error message now. Also output
       --  now if the -d1 debug flag is set (so node number message comes out
@@ -1815,6 +1804,10 @@ package body Errout is
          if not Errors.Table (E).Deleted then
             Errors.Table (E).Deleted := True;
             Warnings_Detected := Warnings_Detected - 1;
+
+            if Errors.Table (E).Warn_Err then
+               Warnings_Treated_As_Errors := Warnings_Treated_As_Errors - 1;
+            end if;
          end if;
       end Delete_Warning;
 
@@ -3343,6 +3336,10 @@ package body Errout is
                and then not Errors.Table (E).Uncond
             then
                Warnings_Detected := Warnings_Detected - 1;
+
+               if Errors.Table (E).Warn_Err then
+                  Warnings_Treated_As_Errors := Warnings_Treated_As_Errors - 1;
+               end if;
 
                return True;
 

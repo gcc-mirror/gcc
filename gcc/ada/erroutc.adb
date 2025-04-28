@@ -282,6 +282,10 @@ package body Erroutc is
          when Warning | Style =>
             Warnings_Detected := Warnings_Detected - 1;
 
+            if E.Warn_Err then
+               Warnings_Treated_As_Errors := Warnings_Treated_As_Errors - 1;
+            end if;
+
          when High_Check | Medium_Check | Low_Check =>
             Check_Messages := Check_Messages - 1;
 
@@ -428,6 +432,24 @@ package body Erroutc is
 
          when Warning | Style =>
             Warnings_Detected := Warnings_Detected + 1;
+
+            if E.Warn_Err then
+               Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
+
+               --  Propagate Warn_Err to all of the preceeding continuation
+               --  messages and the main message.
+
+               for J in reverse 1 .. Errors.Last loop
+                  if not Errors.Table (J).Warn_Err then
+                     Errors.Table (J).Warn_Err := E.Warn_Err;
+
+                     Warnings_Treated_As_Errors :=
+                       Warnings_Treated_As_Errors + 1;
+                  end if;
+
+                  exit when not Errors.Table (J).Msg_Cont;
+               end loop;
+            end if;
 
          when High_Check | Medium_Check | Low_Check =>
             Check_Messages := Check_Messages + 1;
@@ -1014,9 +1036,6 @@ package body Erroutc is
       --  Additionally include the style suffix when needed.
 
       if E_Msg.Warn_Err then
-
-         Warnings_Treated_As_Errors := Warnings_Treated_As_Errors + 1;
-
          Append
            (Buf,
             SGR_Error & "error: " & SGR_Reset &
