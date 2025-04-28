@@ -827,8 +827,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret, bool only_musttail,
 		  ? !is_gimple_reg (param)
 		  : (!is_gimple_variable (param)
 		     || TREE_THIS_VOLATILE (param)
-		     || may_be_aliased (param)
-		     || !gimple_call_must_tail_p (call)))
+		     || may_be_aliased (param)))
 		break;
 	    }
 	}
