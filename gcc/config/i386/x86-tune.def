@@ -87,8 +87,7 @@ DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_CONVERTS_DEPENDENCY,
    several insns to break false dependency on the dest register for GLC
    micro-architecture.  */
 DEF_TUNE (X86_TUNE_DEST_FALSE_DEP_FOR_GLC,
-	  "dest_false_dep_for_glc", m_SAPPHIRERAPIDS | m_GRANITERAPIDS
-	  | m_GRANITERAPIDS_D | m_CORE_HYBRID | m_CORE_ATOM)
+	  "dest_false_dep_for_glc", m_SAPPHIRERAPIDS | m_ALDERLAKE)
 
 /* X86_TUNE_SSE_SPLIT_REGS: Set for machines where the type and dependencies
    are resolved on SSE register parts instead of whole registers, so we may
