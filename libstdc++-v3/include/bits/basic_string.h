@@ -3938,21 +3938,23 @@ _GLIBCXX_END_NAMESPACE_CXX11
     operator+(basic_string<_CharT, _Traits, _Alloc>&& __lhs,
 	      basic_string<_CharT, _Traits, _Alloc>&& __rhs)
     {
-#if _GLIBCXX_USE_CXX11_ABI
-      using _Alloc_traits = allocator_traits<_Alloc>;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+      // Return value must use __lhs.get_allocator(), but if __rhs has equal
+      // allocator then we can choose which parameter to modify in-place.
       bool __use_rhs = false;
-      if _GLIBCXX17_CONSTEXPR (typename _Alloc_traits::is_always_equal{})
+      if constexpr (allocator_traits<_Alloc>::is_always_equal::value)
 	__use_rhs = true;
       else if (__lhs.get_allocator() == __rhs.get_allocator())
 	__use_rhs = true;
       if (__use_rhs)
-#endif
 	{
 	  const auto __size = __lhs.size() + __rhs.size();
 	  if (__size > __lhs.capacity() && __size <= __rhs.capacity())
 	    return std::move(__rhs.insert(0, __lhs));
 	}
       return std::move(__lhs.append(__rhs));
+#pragma GCC diagnostic pop
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
