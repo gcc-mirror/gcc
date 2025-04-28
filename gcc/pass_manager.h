@@ -67,13 +67,13 @@ public:
 
   /* Various passes are manually cloned by avr and epiphany. */
   opt_pass *get_pass_split_all_insns () const {
-    return pass_split_all_insns_1;
+    return m_pass_split_all_insns_1;
   }
   opt_pass *get_pass_mode_switching () const {
-    return pass_mode_switching_1;
+    return m_pass_mode_switching_1;
   }
-  opt_pass *get_pass_peephole2 () const { return pass_peephole2_1; }
-  opt_pass *get_pass_profile () const { return pass_profile_1; }
+  opt_pass *get_pass_peephole2 () const { return m_pass_peephole2_1; }
+  opt_pass *get_pass_profile () const { return m_pass_profile_1; }
 
   void register_pass_name (opt_pass *pass, const char *name);
 
@@ -81,9 +81,9 @@ public:
 
   opt_pass *get_rest_of_compilation () const
   {
-    return pass_rest_of_compilation_1;
+    return m_pass_rest_of_compilation_1;
   }
-  opt_pass *get_clean_slate () const { return pass_clean_state_1; }
+  opt_pass *get_clean_slate () const { return m_pass_clean_state_1; }
 
 public:
   /* The root of the compilation pass tree, once constructed.  */
@@ -114,21 +114,21 @@ private:
      For example:
          NEXT_PASS (pass_build_cfg, 1);
      within pass-instances.def means that there is a field:
-         opt_pass *pass_build_cfg_1;
+         opt_pass *m_pass_build_cfg_1;
 
      Similarly, the various:
         NEXT_PASS (pass_copy_prop, 1);
         ...
         NEXT_PASS (pass_copy_prop, 8);
      in pass-instances.def lead to fields:
-        opt_pass *pass_copy_prop_1;
+        opt_pass *m_pass_copy_prop_1;
         ...
-        opt_pass *pass_copy_prop_8;  */
+        opt_pass *m_pass_copy_prop_8;  */
 
 #define INSERT_PASSES_AFTER(PASS)
 #define PUSH_INSERT_PASSES_WITHIN(PASS, NUM)
 #define POP_INSERT_PASSES()
-#define NEXT_PASS(PASS, NUM) opt_pass *PASS ## _ ## NUM
+#define NEXT_PASS(PASS, NUM) opt_pass *m_ ## PASS ## _ ## NUM
 #define NEXT_PASS_WITH_ARG(PASS, NUM, ARG) NEXT_PASS (PASS, NUM)
 #define NEXT_PASS_WITH_ARGS(PASS, NUM, ...) NEXT_PASS (PASS, NUM)
 #define TERMINATE_PASS_LIST(PASS)
