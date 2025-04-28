@@ -556,7 +556,7 @@ va_list_state_machine::check_for_ended_va_list (sm_context &sm_ctxt,
 {
   if (sm_ctxt.get_state (&call, arg) == m_ended)
     sm_ctxt.warn (node, &call, arg,
-		  make_unique<va_list_use_after_va_end>
+		  std::make_unique<va_list_use_after_va_end>
 		    (*this, arg, NULL_TREE, usage_fnname));
 }
 
@@ -635,7 +635,7 @@ va_list_state_machine::on_va_end (sm_context &sm_ctxt,
 std::unique_ptr<pending_diagnostic>
 va_list_state_machine::on_leak (tree var) const
 {
-  return make_unique<va_list_leak> (*this, nullptr, var);
+  return std::make_unique<va_list_leak> (*this, nullptr, var);
 }
 
 } // anonymous namespace
@@ -814,7 +814,7 @@ public:
 	  = get_num_variadic_arguments (dst_node->get_function ()->decl,
 					call_stmt);
 	emission_path->add_event
-	  (make_unique<va_arg_call_event>
+	  (std::make_unique<va_arg_call_event>
 	   (eedge,
 	    event_loc_info (last_stmt ? last_stmt->location : UNKNOWN_LOCATION,
 			    src_point.get_fndecl (),
@@ -1070,7 +1070,7 @@ kf_va_arg::impl_call_pre (const call_details &cd) const
 		  else
 		    {
 		      if (ctxt)
-			ctxt->warn (make_unique <va_arg_type_mismatch>
+			ctxt->warn (std::make_unique <va_arg_type_mismatch>
 				      (va_list_tree,
 				       arg_reg,
 				       lhs_type,
@@ -1081,8 +1081,9 @@ kf_va_arg::impl_call_pre (const call_details &cd) const
 	      else
 		{
 		  if (ctxt)
-		    ctxt->warn (make_unique <va_list_exhausted> (va_list_tree,
-								 arg_reg));
+		    ctxt->warn
+		      (std::make_unique <va_list_exhausted> (va_list_tree,
+							     arg_reg));
 		  saw_problem = true;
 		}
 	    }
@@ -1131,10 +1132,10 @@ public:
 void
 register_varargs_builtins (known_function_manager &kfm)
 {
-  kfm.add (BUILT_IN_VA_START, make_unique<kf_va_start> ());
-  kfm.add (BUILT_IN_VA_COPY, make_unique<kf_va_copy> ());
-  kfm.add (IFN_VA_ARG, make_unique<kf_va_arg> ());
-  kfm.add (BUILT_IN_VA_END, make_unique<kf_va_end> ());
+  kfm.add (BUILT_IN_VA_START, std::make_unique<kf_va_start> ());
+  kfm.add (BUILT_IN_VA_COPY, std::make_unique<kf_va_copy> ());
+  kfm.add (IFN_VA_ARG, std::make_unique<kf_va_arg> ());
+  kfm.add (BUILT_IN_VA_END, std::make_unique<kf_va_end> ());
 }
 
 } // namespace ana

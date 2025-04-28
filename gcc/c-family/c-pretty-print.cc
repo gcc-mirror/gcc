@@ -36,7 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "basic-block.h"
 #include "gimple.h"
-#include "make-unique.h"
 
 /* The pretty-printer code is primarily designed to closely follow
    (GNU) C and C++ grammars.  That is to be contrasted with spaghetti
@@ -2994,7 +2993,7 @@ c_pretty_printer::c_pretty_printer (dump_flags_t dump_flags)
 std::unique_ptr<pretty_printer>
 c_pretty_printer::clone () const
 {
-  return ::make_unique<c_pretty_printer> (*this);
+  return std::make_unique<c_pretty_printer> (*this);
 }
 
 /* Print the tree T in full, on file FILE.  */

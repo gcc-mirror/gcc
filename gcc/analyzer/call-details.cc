@@ -593,10 +593,10 @@ call_details::complain_about_overlap (unsigned arg_idx_a,
   if (!byte_range_a.intersection (byte_range_b, *model).is_true ())
     return;
 
-  ctxt->warn (make_unique<overlapping_buffers> (get_fndecl_for_call (),
-						byte_range_a,
-						byte_range_b,
-						num_bytes_read_sval));
+  ctxt->warn (std::make_unique<overlapping_buffers> (get_fndecl_for_call (),
+						     byte_range_a,
+						     byte_range_b,
+						     num_bytes_read_sval));
 }
 
 } // namespace ana

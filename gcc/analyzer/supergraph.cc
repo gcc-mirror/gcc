@@ -444,11 +444,11 @@ supergraph::dump_dot (const char *path, const dump_args_t &dump_args) const
 std::unique_ptr<json::object>
 supergraph::to_json () const
 {
-  auto sgraph_obj = ::make_unique<json::object> ();
+  auto sgraph_obj = std::make_unique<json::object> ();
 
   /* Nodes.  */
   {
-    auto nodes_arr = ::make_unique<json::array> ();
+    auto nodes_arr = std::make_unique<json::array> ();
     unsigned i;
     supernode *n;
     FOR_EACH_VEC_ELT (m_nodes, i, n)
@@ -458,7 +458,7 @@ supergraph::to_json () const
 
   /* Edges.  */
   {
-    auto edges_arr = ::make_unique<json::array> ();
+    auto edges_arr = std::make_unique<json::array> ();
     unsigned i;
     superedge *n;
     FOR_EACH_VEC_ELT (m_edges, i, n)
@@ -699,7 +699,7 @@ supernode::dump_dot_id (pretty_printer *pp) const
 std::unique_ptr<json::object>
 supernode::to_json () const
 {
-  auto snode_obj = ::make_unique<json::object> ();
+  auto snode_obj = std::make_unique<json::object> ();
 
   snode_obj->set_integer ("idx", m_index);
   snode_obj->set_integer ("bb_idx", m_bb->index);
@@ -716,7 +716,7 @@ supernode::to_json () const
 
   /* Phi nodes.  */
   {
-    auto phi_arr = ::make_unique<json::array> ();
+    auto phi_arr = std::make_unique<json::array> ();
     for (gphi_iterator gpi = const_cast<supernode *> (this)->start_phis ();
 	 !gsi_end_p (gpi); gsi_next (&gpi))
       {
@@ -731,7 +731,7 @@ supernode::to_json () const
 
   /* Statements.  */
   {
-    auto stmt_arr = ::make_unique<json::array> ();
+    auto stmt_arr = std::make_unique<json::array> ();
     int i;
     gimple *stmt;
     FOR_EACH_VEC_ELT (m_stmts, i, stmt)
@@ -962,7 +962,7 @@ superedge::dump_dot (graphviz_out *gv, const dump_args_t &) const
 std::unique_ptr<json::object>
 superedge::to_json () const
 {
-  auto sedge_obj = ::make_unique<json::object> ();
+  auto sedge_obj = std::make_unique<json::object> ();
   sedge_obj->set_string ("kind", edge_kind_to_string (m_kind));
   sedge_obj->set_integer ("src_idx", m_src->m_index);
   sedge_obj->set_integer ("dst_idx", m_dest->m_index);

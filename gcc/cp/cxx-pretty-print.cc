@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "cxx-pretty-print.h"
 #include "tree-pretty-print.h"
-#include "make-unique.h"
 
 static void pp_cxx_unqualified_id (cxx_pretty_printer *, tree);
 static void pp_cxx_nested_name_specifier (cxx_pretty_printer *, tree);
@@ -2954,5 +2953,5 @@ cxx_pretty_printer::cxx_pretty_printer ()
 std::unique_ptr<pretty_printer>
 cxx_pretty_printer::clone () const
 {
-  return ::make_unique<cxx_pretty_printer> (*this);
+  return std::make_unique<cxx_pretty_printer> (*this);
 }

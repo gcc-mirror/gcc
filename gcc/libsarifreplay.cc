@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_STRING
 #include "system.h"
 #include "coretypes.h"
-#include "make-unique.h"
 #include "libgdiagnostics++.h"
 #include "json-parsing.h"
 #include "intl.h"
@@ -51,7 +50,7 @@ read_file (const char *path, libgdiagnostics::manager &mgr)
     }
 
   /* Read content, allocating a buffer for it.  */
-  auto result = ::make_unique<std::vector<char>> ();
+  auto result = std::make_unique<std::vector<char>> ();
   char buf[4096];
   size_t iter_sz_in;
 
@@ -1350,7 +1349,7 @@ maybe_consume_embedded_link (const char *&iter_src)
     }
 
   iter_src = iter;
-  return ::make_unique<embedded_link> (std::move (result));
+  return std::make_unique<embedded_link> (std::move (result));
 }
 
 /* Lookup the plain text string within a result.message (§3.27.11),

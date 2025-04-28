@@ -62,7 +62,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-offload.h"  /* For offload_vars.  */
 #include "c-parser.h"
 #include "gcc-urlifier.h"
-#include "make-unique.h"
 
 #include "tree-pretty-print.h"
 
@@ -4550,9 +4549,9 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
   if (header_hint)
     return name_hint
       (nullptr,
-       ::make_unique<suggest_missing_header> (loc,
-					      IDENTIFIER_POINTER (name),
-					      header_hint));
+       std::make_unique<suggest_missing_header> (loc,
+						 IDENTIFIER_POINTER (name),
+						 header_hint));
 
   /* Next, look for exact matches for builtin defines that would have been
      defined if the user had passed a command-line option (e.g. -fopenmp
@@ -4562,9 +4561,9 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
   if (option_id.m_idx > 0)
     return name_hint
       (nullptr,
-       ::make_unique<suggest_missing_option> (loc,
-					      IDENTIFIER_POINTER (name),
-					      option_id));
+       std::make_unique<suggest_missing_option> (loc,
+						 IDENTIFIER_POINTER (name),
+						 option_id));
 
   /* Only suggest names reserved for the implementation if NAME begins
      with an underscore.  */

@@ -72,7 +72,7 @@ state_machine::state::to_json () const
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   dump_to_pp (&pp);
-  return ::make_unique<json::string> (pp_formatted_text (&pp));
+  return std::make_unique<json::string> (pp_formatted_text (&pp));
 }
 
 /* class state_machine.  */
@@ -143,11 +143,11 @@ state_machine::dump_to_pp (pretty_printer *pp) const
 std::unique_ptr<json::object>
 state_machine::to_json () const
 {
-  auto sm_obj = ::make_unique<json::object> ();
+  auto sm_obj = std::make_unique<json::object> ();
 
   sm_obj->set_string ("name", m_name);
   {
-    auto states_arr = ::make_unique<json::array> ();
+    auto states_arr = std::make_unique<json::array> ();
     unsigned i;
     state *s;
     FOR_EACH_VEC_ELT (m_states, i, s)

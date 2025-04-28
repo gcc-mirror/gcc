@@ -217,7 +217,7 @@ region_to_value_map::dump (bool simple) const
 std::unique_ptr<json::object>
 region_to_value_map::to_json () const
 {
-  auto map_obj = ::make_unique<json::object> ();
+  auto map_obj = std::make_unique<json::object> ();
 
   auto_vec<const region *> regs;
   for (iterator iter = begin (); iter != end (); ++iter)
@@ -497,7 +497,7 @@ region_model::debug () const
 std::unique_ptr<json::object>
 region_model::to_json () const
 {
-  auto model_obj = ::make_unique<json::object> ();
+  auto model_obj = std::make_unique<json::object> ();
   model_obj->set ("store", m_store.to_json ());
   model_obj->set ("constraints", m_constraints->to_json ());
   if (m_current_frame)
@@ -938,10 +938,10 @@ public:
   {
     if (reg == m_base_reg_a)
       emission_path.add_event
-	(make_unique<ptrdiff_region_creation_event> (loc_info, true));
+	(std::make_unique<ptrdiff_region_creation_event> (loc_info, true));
     else if (reg == m_base_reg_b)
       emission_path.add_event
-	(make_unique<ptrdiff_region_creation_event> (loc_info, false));
+	(std::make_unique<ptrdiff_region_creation_event> (loc_info, false));
   }
 
   bool
@@ -991,11 +991,12 @@ check_for_invalid_ptrdiff (const gassign *assign,
   if (base_reg_b->get_kind () == RK_SYMBOLIC)
     return;
 
-  ctxt.warn (make_unique<undefined_ptrdiff_diagnostic> (assign,
-							sval_a,
-							sval_b,
-							base_reg_a,
-							base_reg_b));
+  ctxt.warn
+    (std::make_unique<undefined_ptrdiff_diagnostic> (assign,
+						     sval_a,
+						     sval_b,
+						     base_reg_a,
+						     base_reg_b));
 }
 
 /* If ASSIGN is a stmt that can be modelled via
@@ -1174,13 +1175,13 @@ region_model::get_gassign_result (const gassign *assign,
 		{
 		  if (tree_int_cst_sgn (rhs2_cst) < 0)
 		    ctxt->warn
-		      (make_unique<shift_count_negative_diagnostic>
+		      (std::make_unique<shift_count_negative_diagnostic>
 			 (assign, rhs2_cst));
 		  else if (compare_tree_int (rhs2_cst,
 					     TYPE_PRECISION (TREE_TYPE (rhs1)))
 			   >= 0)
 		    ctxt->warn
-		      (make_unique<shift_count_overflow_diagnostic>
+		      (std::make_unique<shift_count_overflow_diagnostic>
 			 (assign,
 			  int (TYPE_PRECISION (TREE_TYPE (rhs1))),
 			  rhs2_cst));
@@ -1414,10 +1415,11 @@ region_model::check_for_poison (const svalue *sval,
 	check_expr = expr;
       else
 	check_expr = NULL;
-      if (ctxt->warn (make_unique<poisoned_value_diagnostic> (diag_arg,
-							      pkind,
-							      src_region,
-							      check_expr)))
+      if (ctxt->warn
+	    (std::make_unique<poisoned_value_diagnostic> (diag_arg,
+							  pkind,
+							  src_region,
+							  check_expr)))
 	{
 	  /* We only want to report use of a poisoned value at the first
 	     place it gets used; return an unknown value to avoid generating
@@ -1680,7 +1682,7 @@ region_model::check_call_format_attr (const call_details &cd,
       };
 
       call_arg_details arg_details (m_cd, m_fmt_param_idx);
-      add_note (make_unique<reason_format_attr> (arg_details));
+      add_note (std::make_unique<reason_format_attr> (arg_details));
     }
   private:
     const call_details &m_cd;
@@ -2135,8 +2137,8 @@ region_model::check_function_attr_access (const gcall &call,
 	    }
 	    void add_annotations () final override
 	    {
-	      add_note (make_unique<reason_attr_access>
-			(m_callee_fndecl, m_access));
+	      add_note (std::make_unique<reason_attr_access>
+			  (m_callee_fndecl, m_access));
 	    }
 	  private:
 	    tree m_callee_fndecl;
@@ -3080,7 +3082,7 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 		const poisoned_svalue *poisoned_sval
 		  = as_a <const poisoned_svalue *> (ptr_sval);
 		enum poison_kind pkind = poisoned_sval->get_poison_kind ();
-		ctxt->warn (::make_unique<poisoned_value_diagnostic>
+		ctxt->warn (std::make_unique<poisoned_value_diagnostic>
 			      (ptr, pkind, nullptr, nullptr));
 	      }
 	  }
@@ -3251,16 +3253,18 @@ region_model::check_for_writable_region (const region* dest_reg,
       {
 	const function_region *func_reg = as_a <const function_region *> (base_reg);
 	tree fndecl = func_reg->get_fndecl ();
-	ctxt->warn (make_unique<write_to_const_diagnostic>
-		      (func_reg, fndecl));
+	ctxt->warn
+	  (std::make_unique<write_to_const_diagnostic>
+	     (func_reg, fndecl));
       }
       break;
     case RK_LABEL:
       {
 	const label_region *label_reg = as_a <const label_region *> (base_reg);
 	tree label = label_reg->get_label ();
-	ctxt->warn (make_unique<write_to_const_diagnostic>
-		      (label_reg, label));
+	ctxt->warn
+	  (std::make_unique<write_to_const_diagnostic>
+	     (label_reg, label));
       }
       break;
     case RK_DECL:
@@ -3273,11 +3277,13 @@ region_model::check_for_writable_region (const region* dest_reg,
 	   "this" param is "T* const").  */
 	if (TREE_READONLY (decl)
 	    && is_global_var (decl))
-	  ctxt->warn (make_unique<write_to_const_diagnostic> (dest_reg, decl));
+	  ctxt->warn
+	    (std::make_unique<write_to_const_diagnostic> (dest_reg, decl));
       }
       break;
     case RK_STRING:
-      ctxt->warn (make_unique<write_to_string_literal_diagnostic> (dest_reg));
+      ctxt->warn
+	(std::make_unique<write_to_string_literal_diagnostic> (dest_reg));
       break;
     }
 }
@@ -3479,7 +3485,8 @@ public:
 			      checker_path &emission_path) final override
   {
     emission_path.add_event
-      (make_unique<region_creation_event_allocation_size> (capacity, loc_info));
+      (std::make_unique<region_creation_event_allocation_size>
+	 (capacity, loc_info));
 
     m_has_allocation_event = true;
   }
@@ -3815,9 +3822,10 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 	if (TREE_CODE (cst_cap) == INTEGER_CST
 	    && !capacity_compatible_with_type (cst_cap, pointee_size_tree,
 					       is_struct))
-	  ctxt->warn (make_unique <dubious_allocation_size> (lhs_reg, rhs_reg,
-							     capacity, cst_cap,
-							     ctxt->get_stmt ()));
+	  ctxt->warn
+	    (std::make_unique <dubious_allocation_size> (lhs_reg, rhs_reg,
+							 capacity, cst_cap,
+							 ctxt->get_stmt ()));
       }
       break;
     default:
@@ -3829,10 +3837,11 @@ region_model::check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 				     m_constraints))
 	      {
 		tree expr = get_representative_tree (capacity);
-		ctxt->warn (make_unique <dubious_allocation_size> (lhs_reg,
-								   rhs_reg,
-								   capacity, expr,
-								   ctxt->get_stmt ()));
+		ctxt->warn
+		  (std::make_unique <dubious_allocation_size> (lhs_reg,
+							       rhs_reg,
+							       capacity, expr,
+							       ctxt->get_stmt ()));
 	      }
 	  }
       break;
@@ -4625,9 +4634,11 @@ region_model::check_for_null_terminated_string_arg (const call_details &cd,
 			       m_cd.get_model ()->get_current_function ()->decl,
 			       m_cd.get_model ()->get_stack_depth ());
 
-      add_event (make_unique<null_terminator_check_event> (loc_info,
-							   arg_details));
-      add_note (make_unique <null_terminator_check_decl_note> (arg_details));
+      add_event
+	(std::make_unique<null_terminator_check_event> (loc_info,
+							arg_details));
+      add_note
+	(std::make_unique <null_terminator_check_decl_note> (arg_details));
     }
   private:
     const call_details &m_cd;
@@ -5373,7 +5384,7 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
 {
   bool sat = add_constraint (lhs, op, rhs, ctxt);
   if (!sat && out)
-    *out = make_unique <rejected_op_constraint> (*this, lhs, op, rhs);
+    *out = std::make_unique <rejected_op_constraint> (*this, lhs, op, rhs);
   return sat;
 }
 
@@ -6144,7 +6155,7 @@ apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
       && !ctxt->possibly_tainted_p (index_sval))
     {
       if (out)
-	*out = make_unique <rejected_default_case> (*this);
+	*out = std::make_unique <rejected_default_case> (*this);
       return false;
     }
 
@@ -6153,7 +6164,8 @@ apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
     = ranges_mgr->get_or_create_ranges_for_switch (&edge, switch_stmt);
   bool sat = m_constraints->add_bounded_ranges (index_sval, all_cases_ranges);
   if (!sat && out)
-    *out = make_unique <rejected_ranges_constraint> (*this, index, all_cases_ranges);
+    *out = std::make_unique <rejected_ranges_constraint>
+      (*this, index, all_cases_ranges);
   if (sat && ctxt && !all_cases_ranges->empty_p ())
     ctxt->on_bounded_ranges (*index_sval, *all_cases_ranges);
   return sat;
@@ -6370,7 +6382,7 @@ public:
 	  {}
 	  std::unique_ptr<stmt_finder> clone () const override
 	  {
-	    return ::make_unique<my_finder> (m_call_stmt, m_caller_frame);
+	    return std::make_unique<my_finder> (m_call_stmt, m_caller_frame);
 	  }
 	  const gimple *find_stmt (const exploded_path &) override
 	  {
@@ -6813,7 +6825,7 @@ region_model::check_dynamic_size_for_floats (const svalue *size_in_bytes,
   if (const svalue *float_sval = v.get_svalue_to_report ())
 	{
 	  tree diag_arg = get_representative_tree (float_sval);
-	  ctxt->warn (make_unique<float_as_size_arg> (diag_arg));
+	  ctxt->warn (std::make_unique<float_as_size_arg> (diag_arg));
 	}
 }
 
@@ -7159,8 +7171,7 @@ private:
 	tree type = m_copied_sval->get_type ();
 	if (type && TREE_CODE (type) == RECORD_TYPE)
 	  {
-	    // (std::make_unique is C++14)
-	    layout = std::unique_ptr<record_layout> (new record_layout (type));
+	    layout = std::make_unique<record_layout> (type);
 
 	    if (0)
 	      layout->dump ();
@@ -7385,9 +7396,10 @@ region_model::maybe_complain_about_infoleak (const region *dst_reg,
 {
   /* Check for exposure.  */
   if (contains_uninit_p (copied_sval))
-    ctxt->warn (make_unique<exposure_through_uninit_copy> (src_reg,
-							   dst_reg,
-							   copied_sval));
+    ctxt->warn
+      (std::make_unique<exposure_through_uninit_copy> (src_reg,
+						       dst_reg,
+						       copied_sval));
 }
 
 /* Set errno to a positive symbolic int, as if some error has occurred.  */

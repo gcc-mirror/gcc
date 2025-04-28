@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "plugin.h"
 #include "timevar.h"
-#include "make-unique.h"
 
 /* Concrete class for supplying a diagnostic_context with information
    about a specific plugin within the client, when the client is the
@@ -169,5 +168,5 @@ private:
 std::unique_ptr<diagnostic_client_data_hooks>
 make_compiler_data_hooks ()
 {
-  return ::make_unique<compiler_data_hooks> ();
+  return std::make_unique<compiler_data_hooks> ();
 }

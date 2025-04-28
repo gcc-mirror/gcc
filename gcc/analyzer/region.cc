@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "digraph.h"
 #include "sbitmap.h"
 #include "fold-const.h"
-#include "make-unique.h"
 
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/supergraph.h"
@@ -1019,7 +1018,7 @@ std::unique_ptr<json::value>
 region::to_json () const
 {
   label_text desc = get_desc (true);
-  auto reg_js = ::make_unique<json::string> (desc.get ());
+  auto reg_js = std::make_unique<json::string> (desc.get ());
   return reg_js;
 }
 

@@ -172,10 +172,10 @@ public:
 void
 register_known_functions_lang_cp (known_function_manager &kfm)
 {
-  kfm.add ("operator new", make_unique<kf_operator_new> ());
-  kfm.add ("operator new []", make_unique<kf_operator_new> ());
-  kfm.add ("operator delete", make_unique<kf_operator_delete> ());
-  kfm.add ("operator delete []", make_unique<kf_operator_delete> ());
+  kfm.add ("operator new", std::make_unique<kf_operator_new> ());
+  kfm.add ("operator new []", std::make_unique<kf_operator_new> ());
+  kfm.add ("operator delete", std::make_unique<kf_operator_delete> ());
+  kfm.add ("operator delete []", std::make_unique<kf_operator_delete> ());
 }
 
 } // namespace ana

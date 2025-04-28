@@ -92,10 +92,10 @@ extrinsic_state::dump () const
 std::unique_ptr<json::object>
 extrinsic_state::to_json () const
 {
-  auto ext_state_obj = ::make_unique<json::object> ();
+  auto ext_state_obj = std::make_unique<json::object> ();
 
   {
-    auto checkers_arr = ::make_unique<json::array> ();
+    auto checkers_arr = std::make_unique<json::array> ();
     for (auto &sm : m_checkers)
       checkers_arr->append (sm->to_json ());
     ext_state_obj->set ("checkers", std::move (checkers_arr));
@@ -266,7 +266,7 @@ sm_state_map::dump (bool simple) const
 std::unique_ptr<json::object>
 sm_state_map::to_json () const
 {
-  auto map_obj = ::make_unique<json::object> ();
+  auto map_obj = std::make_unique<json::object> ();
 
   if (m_global_state != m_sm.get_start_state ())
     map_obj->set ("global", m_global_state->to_json ());
@@ -1175,7 +1175,7 @@ program_state::dump () const
 std::unique_ptr<json::object>
 program_state::to_json (const extrinsic_state &ext_state) const
 {
-  auto state_obj = ::make_unique<json::object> ();
+  auto state_obj = std::make_unique<json::object> ();
 
   state_obj->set ("store", m_region_model->get_store ()->to_json ());
   state_obj->set ("constraints",
@@ -1186,7 +1186,7 @@ program_state::to_json (const extrinsic_state &ext_state) const
 
   /* Provide m_checker_states as an object, using names as keys.  */
   {
-    auto checkers_obj = ::make_unique<json::object> ();
+    auto checkers_obj = std::make_unique<json::object> ();
 
     int i;
     sm_state_map *smap;

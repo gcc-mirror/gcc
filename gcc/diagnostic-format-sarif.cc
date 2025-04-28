@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-format-text.h"
 #include "ordered-hash-map.h"
 #include "sbitmap.h"
-#include "make-unique.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 #include "selftest-diagnostic-show-locus.h"
@@ -158,7 +157,7 @@ make_date_time_string_for_current_time ()
 	     "%02i:%02i:%02iZ"),
 	    tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
 	    tm->tm_hour, tm->tm_min, tm->tm_sec);
-  return ::make_unique<json::string> (buf);
+  return std::make_unique<json::string> (buf);
 }
 
 /* Subclass of sarif_object for SARIF "invocation" objects
@@ -920,13 +919,13 @@ sarif_object::get_or_create_properties ()
 
 sarif_invocation::sarif_invocation (sarif_builder &builder,
 				    const char * const *original_argv)
-: m_notifications_arr (::make_unique<json::array> ()),
+: m_notifications_arr (std::make_unique<json::array> ()),
   m_success (true)
 {
   // "arguments" property (SARIF v2.1.0 section 3.20.2)
   if (original_argv)
     {
-      auto arguments_arr = ::make_unique<json::array> ();
+      auto arguments_arr = std::make_unique<json::array> ();
       for (size_t i = 0; original_argv[i]; ++i)
 	arguments_arr->append_string (original_argv[i]);
       set<json::array> ("arguments", std::move (arguments_arr));
@@ -953,9 +952,9 @@ sarif_invocation::add_notification_for_ice (const diagnostic_info &diagnostic,
   m_success = false;
 
   auto notification
-    = ::make_unique<sarif_ice_notification> (diagnostic,
-					     builder,
-					     std::move (backtrace));
+    = std::make_unique<sarif_ice_notification> (diagnostic,
+						builder,
+						std::move (backtrace));
 
   /* Support for related locations within a notification was added
      in SARIF 2.2; see https://github.com/oasis-tcs/sarif-spec/issues/540  */
@@ -1070,7 +1069,7 @@ sarif_artifact::populate_roles ()
 {
   if (bitmap_empty_p (m_roles))
     return;
-  auto roles_arr (::make_unique<json::array> ());
+  auto roles_arr (std::make_unique<json::array> ());
   for (int i = 0; i < (int)diagnostic_artifact_role::NUM_ROLES; i++)
     if (bitmap_bit_p (m_roles, i))
       {
@@ -1247,7 +1246,7 @@ void
 sarif_result::on_diagram (const diagnostic_diagram &diagram,
 			  sarif_builder &builder)
 {
-  auto location_obj = ::make_unique<sarif_location> ();
+  auto location_obj = std::make_unique<sarif_location> ();
   auto message_obj = builder.make_message_object_for_diagram (diagram);
   location_obj->set<sarif_message> ("message", std::move (message_obj));
 
@@ -1346,7 +1345,7 @@ sarif_location::lazily_add_relationship_object (sarif_location &target,
   /* No existing locationRelationship from THIS to TARGET; make one,
      record it, and add it to the "relationships" array.  */
   auto relationship_obj
-    = ::make_unique<sarif_location_relationship> (target, loc_mgr);
+    = std::make_unique<sarif_location_relationship> (target, loc_mgr);
   sarif_location_relationship *relationship = relationship_obj.get ();
   auto kv
     = std::pair<sarif_location *,
@@ -1474,7 +1473,7 @@ sarif_code_flow::sarif_code_flow (sarif_result &parent,
   m_idx_within_parent (idx_within_parent)
 {
   /* "threadFlows" property (SARIF v2.1.0 section 3.36.3).  */
-  auto thread_flows_arr = ::make_unique<json::array> ();
+  auto thread_flows_arr = std::make_unique<json::array> ();
   m_thread_flows_arr = thread_flows_arr.get (); // borrowed
   set<json::array> ("threadFlows", std::move (thread_flows_arr));
 }
@@ -1489,7 +1488,7 @@ sarif_code_flow::get_or_append_thread_flow (const diagnostic_thread &thread,
 
   unsigned next_thread_flow_idx = m_thread_flows_arr->size ();
   auto thread_flow_obj
-    = ::make_unique<sarif_thread_flow> (*this, thread, next_thread_flow_idx);
+    = std::make_unique<sarif_thread_flow> (*this, thread, next_thread_flow_idx);
   m_thread_id_map.put (thread_id, thread_flow_obj.get ()); // borrowed
   sarif_thread_flow *result = thread_flow_obj.get ();
   m_thread_flows_arr->append<sarif_thread_flow> (std::move (thread_flow_obj));
@@ -1569,8 +1568,8 @@ sarif_builder::sarif_builder (diagnostic_context &context,
   m_line_maps (line_maps),
   m_token_printer (*this),
   m_invocation_obj
-    (::make_unique<sarif_invocation> (*this,
-				      context.get_original_argv ())),
+    (std::make_unique<sarif_invocation> (*this,
+					 context.get_original_argv ())),
   m_results_array (new json::array ()),
   m_cur_group_result (nullptr),
   m_seen_any_relative_paths (false),
@@ -1687,7 +1686,7 @@ bt_callback (void *data, uintptr_t pc, const char *filename, int lineno,
 	}
     }
 
-  auto frame_obj = ::make_unique<json::object> ();
+  auto frame_obj = std::make_unique<json::object> ();
 
   /* I tried using sarifStack and sarifStackFrame for this
      but it's not a good fit e.g. PC information.  */
@@ -1713,7 +1712,7 @@ bt_callback (void *data, uintptr_t pc, const char *filename, int lineno,
 std::unique_ptr<json::object>
 sarif_builder::make_stack_from_backtrace ()
 {
-  auto frames_arr = ::make_unique<json::array> ();
+  auto frames_arr = std::make_unique<json::array> ();
 
   backtrace_state *state = nullptr;
   state = backtrace_create_state (nullptr, 0, nullptr, nullptr);
@@ -1726,7 +1725,7 @@ sarif_builder::make_stack_from_backtrace ()
   if (frames_arr->size () == 0)
     return nullptr;
 
-  auto stack = ::make_unique<json::object> ();
+  auto stack = std::make_unique<json::object> ();
   stack->set ("frames", std::move (frames_arr));
   return stack;
 }
@@ -1875,7 +1874,7 @@ sarif_builder::make_result_object (const diagnostic_info &diagnostic,
 				   diagnostic_t orig_diag_kind,
 				   unsigned idx_within_parent)
 {
-  auto result_obj = ::make_unique<sarif_result> (idx_within_parent);
+  auto result_obj = std::make_unique<sarif_result> (idx_within_parent);
 
   /* "ruleId" property (SARIF v2.1.0 section 3.27.5).  */
   /* Ideally we'd have an option_name for these.  */
@@ -1916,7 +1915,7 @@ sarif_builder::make_result_object (const diagnostic_info &diagnostic,
       /* "taxa" property (SARIF v2.1.0 section 3.27.8).  */
       if (int cwe_id = diagnostic.metadata->get_cwe ())
 	{
-	  auto taxa_arr = ::make_unique<json::array> ();
+	  auto taxa_arr = std::make_unique<json::array> ();
 	  taxa_arr->append<sarif_reporting_descriptor_reference>
 	    (make_reporting_descriptor_reference_object_for_cwe_id (cwe_id));
 	  result_obj->set<json::array> ("taxa", std::move (taxa_arr));
@@ -1947,7 +1946,7 @@ sarif_builder::make_result_object (const diagnostic_info &diagnostic,
   /* "codeFlows" property (SARIF v2.1.0 section 3.27.18).  */
   if (const diagnostic_path *path = diagnostic.richloc->get_path ())
     {
-      auto code_flows_arr = ::make_unique<json::array> ();
+      auto code_flows_arr = std::make_unique<json::array> ();
       const unsigned code_flow_index = 0;
       code_flows_arr->append<sarif_code_flow>
 	(make_code_flow_object (*result_obj.get (),
@@ -1964,7 +1963,7 @@ sarif_builder::make_result_object (const diagnostic_info &diagnostic,
   const rich_location *richloc = diagnostic.richloc;
   if (richloc->get_num_fixit_hints ())
     {
-      auto fix_arr = ::make_unique<json::array> ();
+      auto fix_arr = std::make_unique<json::array> ();
       fix_arr->append<sarif_fix> (make_fix_object (*richloc));
       result_obj->set<json::array> ("fixes", std::move (fix_arr));
     }
@@ -1981,7 +1980,7 @@ make_reporting_descriptor_object_for_warning (const diagnostic_info &diagnostic,
 					      diagnostic_t /*orig_diag_kind*/,
 					      const char *option_text)
 {
-  auto reporting_desc = ::make_unique<sarif_reporting_descriptor> ();
+  auto reporting_desc = std::make_unique<sarif_reporting_descriptor> ();
 
   /* "id" property (SARIF v2.1.0 section 3.49.3).  */
   reporting_desc->set_string ("id", option_text);
@@ -2005,7 +2004,7 @@ make_reporting_descriptor_object_for_warning (const diagnostic_info &diagnostic,
 std::unique_ptr<sarif_reporting_descriptor>
 sarif_builder::make_reporting_descriptor_object_for_cwe_id (int cwe_id) const
 {
-  auto reporting_desc = ::make_unique<sarif_reporting_descriptor> ();
+  auto reporting_desc = std::make_unique<sarif_reporting_descriptor> ();
 
   /* "id" property (SARIF v2.1.0 section 3.49.3).  */
   {
@@ -2032,7 +2031,7 @@ std::unique_ptr<sarif_reporting_descriptor_reference>
 sarif_builder::
 make_reporting_descriptor_reference_object_for_cwe_id (int cwe_id)
 {
-  auto desc_ref_obj = ::make_unique<sarif_reporting_descriptor_reference> ();
+  auto desc_ref_obj = std::make_unique<sarif_reporting_descriptor_reference> ();
 
   /* "id" property (SARIF v2.1.0 section 3.52.4).  */
   {
@@ -2059,7 +2058,7 @@ std::unique_ptr<sarif_tool_component_reference>
 sarif_builder::
 make_tool_component_reference_object_for_cwe () const
 {
-  auto comp_ref_obj = ::make_unique<sarif_tool_component_reference> ();
+  auto comp_ref_obj = std::make_unique<sarif_tool_component_reference> ();
 
   /* "name" property  (SARIF v2.1.0 section 3.54.3).  */
   comp_ref_obj->set_string ("name", "cwe");
@@ -2077,7 +2076,7 @@ sarif_builder::make_locations_arr (sarif_location_manager &loc_mgr,
 				   const diagnostic_info &diagnostic,
 				   enum diagnostic_artifact_role role)
 {
-  auto locations_arr = ::make_unique<json::array> ();
+  auto locations_arr = std::make_unique<json::array> ();
   const logical_location *logical_loc = nullptr;
   if (auto client_data_hooks = m_context.get_client_data_hooks ())
     logical_loc = client_data_hooks->get_current_logical_location ();
@@ -2101,7 +2100,7 @@ set_any_logical_locs_arr (sarif_location &location_obj,
 {
   if (!logical_loc)
     return;
-  auto location_locs_arr = ::make_unique<json::array> ();
+  auto location_locs_arr = std::make_unique<json::array> ();
   location_locs_arr->append<sarif_logical_location>
     (make_sarif_logical_location_object (*logical_loc));
   location_obj.set<json::array> ("logicalLocations",
@@ -2161,7 +2160,7 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
   } the_renderer (rich_loc,
 		  m_context.get_escape_format ());
 
-  auto location_obj = ::make_unique<sarif_location> ();
+  auto location_obj = std::make_unique<sarif_location> ();
 
   /* Get primary loc from RICH_LOC.  */
   location_t loc = rich_loc.get_loc ();
@@ -2199,7 +2198,7 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
 		if (region)
 		  {
 		    if (!annotations_arr)
-		      annotations_arr = ::make_unique<json::array> ();
+		      annotations_arr = std::make_unique<json::array> ();
 		    region->set<sarif_message>
 		      ("message", make_message_object (text.get ()));
 		    annotations_arr->append<sarif_region> (std::move (region));
@@ -2279,7 +2278,7 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
 				     location_t loc,
 				     enum diagnostic_artifact_role role)
 {
-  auto location_obj = ::make_unique<sarif_location> ();
+  auto location_obj = std::make_unique<sarif_location> ();
 
   /* "physicalLocation" property (SARIF v2.1.0 section 3.28.3).  */
   if (auto phs_loc_obj
@@ -2300,7 +2299,7 @@ sarif_builder::make_location_object (sarif_location_manager &loc_mgr,
 				     const diagnostic_event &event,
 				     enum diagnostic_artifact_role role)
 {
-  auto location_obj = ::make_unique<sarif_location> ();
+  auto location_obj = std::make_unique<sarif_location> ();
 
   /* "physicalLocation" property (SARIF v2.1.0 section 3.28.3).  */
   location_t loc = event.get_location ();
@@ -2344,7 +2343,7 @@ maybe_make_physical_location_object (location_t loc,
   if (loc <= BUILTINS_LOCATION || LOCATION_FILE (loc) == nullptr)
     return nullptr;
 
-  auto phys_loc_obj = ::make_unique<sarif_physical_location> ();
+  auto phys_loc_obj = std::make_unique<sarif_physical_location> ();
 
   /* "artifactLocation" property (SARIF v2.1.0 section 3.29.3).  */
   phys_loc_obj->set<sarif_artifact_location>
@@ -2388,7 +2387,7 @@ sarif_builder::make_artifact_location_object (location_t loc)
 std::unique_ptr<sarif_artifact_location>
 sarif_builder::make_artifact_location_object (const char *filename)
 {
-  auto artifact_loc_obj = ::make_unique<sarif_artifact_location> ();
+  auto artifact_loc_obj = std::make_unique<sarif_artifact_location> ();
 
   /* "uri" property (SARIF v2.1.0 section 3.4.3).  */
   artifact_loc_obj->set_string ("uri", filename);
@@ -2434,7 +2433,7 @@ make_pwd_uri_str ()
 std::unique_ptr<sarif_artifact_location>
 sarif_builder::make_artifact_location_object_for_pwd () const
 {
-  auto artifact_loc_obj = ::make_unique<sarif_artifact_location> ();
+  auto artifact_loc_obj = std::make_unique<sarif_artifact_location> ();
 
   /* "uri" property (SARIF v2.1.0 section 3.4.3).  */
   if (char *pwd = make_pwd_uri_str ())
@@ -2494,7 +2493,7 @@ sarif_builder::maybe_make_region_object (location_t loc,
   if (exploc_start.line <= 0)
     return nullptr;
 
-  auto region_obj = ::make_unique<sarif_region> ();
+  auto region_obj = std::make_unique<sarif_region> ();
 
   /* "startLine" property (SARIF v2.1.0 section 3.30.5) */
   region_obj->set_integer ("startLine", exploc_start.line);
@@ -2571,7 +2570,7 @@ maybe_make_region_object_for_context (location_t loc,
   if (exploc_start.line <= 0)
     return nullptr;
 
-  auto region_obj = ::make_unique<sarif_region> ();
+  auto region_obj = std::make_unique<sarif_region> ();
 
   /* "startLine" property (SARIF v2.1.0 section 3.30.5) */
   region_obj->set_integer ("startLine", exploc_start.line);
@@ -2605,7 +2604,7 @@ sarif_builder::make_region_object_for_hint (const fixit_hint &hint) const
   expanded_location exploc_start = expand_location (start_loc);
   expanded_location exploc_next = expand_location (next_loc);
 
-  auto region_obj = ::make_unique<sarif_region> ();
+  auto region_obj = std::make_unique<sarif_region> ();
 
   /* "startLine" property (SARIF v2.1.0 section 3.30.5) */
   region_obj->set_integer ("startLine", exploc_start.line);
@@ -2665,7 +2664,7 @@ maybe_get_sarif_kind (enum logical_location_kind kind)
 std::unique_ptr<sarif_logical_location>
 make_sarif_logical_location_object (const logical_location &logical_loc)
 {
-  auto logical_loc_obj = ::make_unique<sarif_logical_location> ();
+  auto logical_loc_obj = std::make_unique<sarif_logical_location> ();
 
   /* "name" property (SARIF v2.1.0 section 3.33.4).  */
   if (const char *short_name = logical_loc.get_short_name ())
@@ -2726,7 +2725,7 @@ sarif_builder::make_code_flow_object (sarif_result &result,
 				      const diagnostic_path &path)
 {
   auto code_flow_obj
-    = ::make_unique <sarif_code_flow> (result, idx_within_parent);
+    = std::make_unique <sarif_code_flow> (result, idx_within_parent);
 
   /* First pass:
      Create threadFlows and threadFlowLocation objects within them,
@@ -2811,7 +2810,7 @@ sarif_builder::maybe_make_kinds_array (diagnostic_event::meaning m) const
       && m.m_property == diagnostic_event::PROPERTY_unknown)
     return nullptr;
 
-  auto kinds_arr = ::make_unique<json::array> ();
+  auto kinds_arr = std::make_unique<json::array> ();
   if (const char *verb_str
 	= diagnostic_event::meaning::maybe_get_verb_str (m.m_verb))
     kinds_arr->append_string (verb_str);
@@ -2861,7 +2860,7 @@ set_string_property_escaping_braces (json::object &obj,
 std::unique_ptr<sarif_message>
 sarif_builder::make_message_object (const char *msg) const
 {
-  auto message_obj = ::make_unique<sarif_message> ();
+  auto message_obj = std::make_unique<sarif_message> ();
 
   /* "text" property (SARIF v2.1.0 section 3.11.8).  */
   set_string_property_escaping_braces (*message_obj,
@@ -2877,7 +2876,7 @@ sarif_builder::make_message_object (const char *msg) const
 std::unique_ptr<sarif_message>
 sarif_builder::make_message_object_for_diagram (const diagnostic_diagram &diagram)
 {
-  auto message_obj = ::make_unique<sarif_message> ();
+  auto message_obj = std::make_unique<sarif_message> ();
 
   /* "text" property (SARIF v2.1.0 section 3.11.8).  */
   set_string_property_escaping_braces (*message_obj,
@@ -2908,7 +2907,7 @@ sarif_builder::make_message_object_for_diagram (const diagnostic_diagram &diagra
 std::unique_ptr<sarif_multiformat_message_string>
 sarif_builder::make_multiformat_message_string (const char *msg) const
 {
-  auto message_obj = ::make_unique<sarif_multiformat_message_string> ();
+  auto message_obj = std::make_unique<sarif_multiformat_message_string> ();
 
   /* "text" property (SARIF v2.1.0 section 3.12.3).  */
   set_string_property_escaping_braces (*message_obj,
@@ -2960,7 +2959,7 @@ sarif_builder::
 make_top_level_object (std::unique_ptr<sarif_invocation> invocation_obj,
 		       std::unique_ptr<json::array> results)
 {
-  auto log_obj = ::make_unique<sarif_log> ();
+  auto log_obj = std::make_unique<sarif_log> ();
 
   /* "$schema" property (SARIF v2.1.0 section 3.13.3) .  */
   log_obj->set_string ("$schema", sarif_version_to_url (get_version ()));
@@ -2969,7 +2968,7 @@ make_top_level_object (std::unique_ptr<sarif_invocation> invocation_obj,
   log_obj->set_string ("version", sarif_version_to_property (get_version ()));
 
   /* "runs" property (SARIF v2.1.0 section 3.13.4).  */
-  auto run_arr = ::make_unique<json::array> ();
+  auto run_arr = std::make_unique<json::array> ();
   auto run_obj = make_run_object (std::move (invocation_obj),
 				  std::move (results));
   run_arr->append<sarif_run> (std::move (run_obj));
@@ -2985,7 +2984,7 @@ sarif_builder::
 make_run_object (std::unique_ptr<sarif_invocation> invocation_obj,
 		 std::unique_ptr<json::array> results)
 {
-  auto run_obj = ::make_unique<sarif_run> ();
+  auto run_obj = std::make_unique<sarif_run> ();
 
   /* "tool" property (SARIF v2.1.0 section 3.14.6).  */
   run_obj->set<sarif_tool> ("tool", make_tool_object ());
@@ -2996,7 +2995,7 @@ make_run_object (std::unique_ptr<sarif_invocation> invocation_obj,
 
   /* "invocations" property (SARIF v2.1.0 section 3.14.11).  */
   {
-    auto invocations_arr = ::make_unique<json::array> ();
+    auto invocations_arr = std::make_unique<json::array> ();
     invocations_arr->append (std::move (invocation_obj));
     run_obj->set<json::array> ("invocations", std::move (invocations_arr));
   }
@@ -3004,7 +3003,7 @@ make_run_object (std::unique_ptr<sarif_invocation> invocation_obj,
   /* "originalUriBaseIds (SARIF v2.1.0 section 3.14.14).  */
   if (m_seen_any_relative_paths)
     {
-      auto orig_uri_base_ids = ::make_unique<json::object> ();
+      auto orig_uri_base_ids = std::make_unique<json::object> ();
       orig_uri_base_ids->set<sarif_artifact_location>
 	(PWD_PROPERTY_NAME, make_artifact_location_object_for_pwd ());
       run_obj->set<json::object> ("originalUriBaseIds",
@@ -3012,7 +3011,7 @@ make_run_object (std::unique_ptr<sarif_invocation> invocation_obj,
     }
 
   /* "artifacts" property (SARIF v2.1.0 section 3.14.15).  */
-  auto artifacts_arr = ::make_unique<json::array> ();
+  auto artifacts_arr = std::make_unique<json::array> ();
   for (auto iter : m_filename_to_artifact_map)
     {
       sarif_artifact *artifact_obj = iter.second;
@@ -3035,7 +3034,7 @@ make_run_object (std::unique_ptr<sarif_invocation> invocation_obj,
 std::unique_ptr<sarif_tool>
 sarif_builder::make_tool_object ()
 {
-  auto tool_obj = ::make_unique<sarif_tool> ();
+  auto tool_obj = std::make_unique<sarif_tool> ();
 
   /* "driver" property (SARIF v2.1.0 section 3.18.2).  */
   tool_obj->set<sarif_tool_component> ("driver",
@@ -3054,7 +3053,7 @@ sarif_builder::make_tool_object ()
 	  {
 	    /* Create a "toolComponent" object (SARIF v2.1.0 section 3.19)
 	       for the plugin.  */
-	    auto plugin_obj = ::make_unique<sarif_tool_component> ();
+	    auto plugin_obj = std::make_unique<sarif_tool_component> ();
 
 	    /* "name" property (SARIF v2.1.0 section 3.19.8).  */
 	    if (const char *short_name = p.get_short_name ())
@@ -3076,7 +3075,7 @@ sarif_builder::make_tool_object ()
 	vinfo->for_each_plugin (v);
 	if (v.m_plugin_objs.size () > 0)
 	  {
-	    auto extensions_arr = ::make_unique<json::array> ();
+	    auto extensions_arr = std::make_unique<json::array> ();
 	    for (auto &iter : v.m_plugin_objs)
 	      extensions_arr->append<sarif_tool_component> (std::move (iter));
 	    tool_obj->set<json::array> ("extensions",
@@ -3096,7 +3095,7 @@ sarif_builder::make_tool_object ()
 std::unique_ptr<sarif_tool_component>
 sarif_builder::make_driver_tool_component_object ()
 {
-  auto driver_obj = ::make_unique<sarif_tool_component> ();
+  auto driver_obj = std::make_unique<sarif_tool_component> ();
 
   if (auto client_data_hooks = m_context.get_client_data_hooks ())
     if (const client_version_info *vinfo
@@ -3145,7 +3144,7 @@ sarif_builder::maybe_make_taxonomies_array () const
     return nullptr;
 
   /* "taxonomies" property (SARIF v2.1.0 section 3.14.8).  */
-  auto taxonomies_arr = ::make_unique<json::array> ();
+  auto taxonomies_arr = std::make_unique<json::array> ();
   taxonomies_arr->append<sarif_tool_component> (std::move (cwe_obj));
   return taxonomies_arr;
 }
@@ -3162,7 +3161,7 @@ sarif_builder::maybe_make_cwe_taxonomy_object () const
   if (m_cwe_id_set.is_empty ())
     return nullptr;
 
-  auto taxonomy_obj = ::make_unique<sarif_tool_component> ();
+  auto taxonomy_obj = std::make_unique<sarif_tool_component> ();
 
   /* "name" property (SARIF v2.1.0 section 3.19.8).  */
   taxonomy_obj->set_string ("name", "CWE");
@@ -3180,7 +3179,7 @@ sarif_builder::maybe_make_cwe_taxonomy_object () const
 				      " Common Weakness Enumeration"));
 
   /* "taxa" property (SARIF v2.1.0 3.section 3.19.25).  */
-  auto taxa_arr = ::make_unique<json::array> ();
+  auto taxa_arr = std::make_unique<json::array> ();
   for (auto cwe_id : m_cwe_id_set)
     taxa_arr->append<sarif_reporting_descriptor>
       (make_reporting_descriptor_object_for_cwe_id (cwe_id));
@@ -3254,10 +3253,10 @@ sarif_builder::maybe_make_artifact_content_object (const char *filename) const
   if (!cpp_valid_utf8_p(utf8_content.get_buffer (), utf8_content.length ()))
     return nullptr;
 
-  auto artifact_content_obj = ::make_unique<sarif_artifact_content> ();
+  auto artifact_content_obj = std::make_unique<sarif_artifact_content> ();
   artifact_content_obj->set<json::string>
     ("text",
-     ::make_unique <json::string> (utf8_content.get_buffer (),
+     std::make_unique <json::string> (utf8_content.get_buffer (),
 				   utf8_content.length ()));
   return artifact_content_obj;
 }
@@ -3312,7 +3311,7 @@ maybe_make_artifact_content_object (const char *filename,
       return nullptr;
     }
 
-  auto artifact_content_obj = ::make_unique<sarif_artifact_content> ();
+  auto artifact_content_obj = std::make_unique<sarif_artifact_content> ();
   artifact_content_obj->set_string ("text", text_utf8);
   free (text_utf8);
 
@@ -3330,11 +3329,11 @@ maybe_make_artifact_content_object (const char *filename,
 std::unique_ptr<sarif_fix>
 sarif_builder::make_fix_object (const rich_location &richloc)
 {
-  auto fix_obj = ::make_unique<sarif_fix> ();
+  auto fix_obj = std::make_unique<sarif_fix> ();
 
   /* "artifactChanges" property (SARIF v2.1.0 section 3.55.3).  */
   /* We assume that all fix-it hints in RICHLOC affect the same file.  */
-  auto artifact_change_arr = ::make_unique<json::array> ();
+  auto artifact_change_arr = std::make_unique<json::array> ();
   artifact_change_arr->append<sarif_artifact_change>
     (make_artifact_change_object (richloc));
   fix_obj->set<json::array> ("artifactChanges",
@@ -3348,7 +3347,7 @@ sarif_builder::make_fix_object (const rich_location &richloc)
 std::unique_ptr<sarif_artifact_change>
 sarif_builder::make_artifact_change_object (const rich_location &richloc)
 {
-  auto artifact_change_obj = ::make_unique<sarif_artifact_change> ();
+  auto artifact_change_obj = std::make_unique<sarif_artifact_change> ();
 
   /* "artifactLocation" property (SARIF v2.1.0 section 3.56.2).  */
   artifact_change_obj->set<sarif_artifact_location>
@@ -3356,7 +3355,7 @@ sarif_builder::make_artifact_change_object (const rich_location &richloc)
      make_artifact_location_object (richloc.get_loc ()));
 
   /* "replacements" property (SARIF v2.1.0 section 3.56.3).  */
-  auto replacement_arr = ::make_unique<json::array> ();
+  auto replacement_arr = std::make_unique<json::array> ();
   for (unsigned int i = 0; i < richloc.get_num_fixit_hints (); i++)
     {
       const fixit_hint *hint = richloc.get_fixit_hint (i);
@@ -3374,7 +3373,7 @@ sarif_builder::make_artifact_change_object (const rich_location &richloc)
 std::unique_ptr<sarif_replacement>
 sarif_builder::make_replacement_object (const fixit_hint &hint) const
 {
-  auto replacement_obj = ::make_unique<sarif_replacement> ();
+  auto replacement_obj = std::make_unique<sarif_replacement> ();
 
   /* "deletedRegion" property (SARIF v2.1.0 section 3.57.3).  */
   replacement_obj->set<sarif_region> ("deletedRegion",
@@ -3393,7 +3392,7 @@ sarif_builder::make_replacement_object (const fixit_hint &hint) const
 std::unique_ptr<sarif_artifact_content>
 sarif_builder::make_artifact_content_object (const char *text) const
 {
-  auto content_obj = ::make_unique<sarif_artifact_content> ();
+  auto content_obj = std::make_unique<sarif_artifact_content> ();
 
   /* "text" property (SARIF v2.1.0 section 3.3.2).  */
   content_obj->set_string ("text", text);
@@ -3472,7 +3471,7 @@ public:
   std::unique_ptr<diagnostic_per_format_buffer>
   make_per_format_buffer () final override
   {
-    return ::make_unique<diagnostic_sarif_format_buffer> (m_builder);
+    return std::make_unique<diagnostic_sarif_format_buffer> (m_builder);
   }
   void set_buffer (diagnostic_per_format_buffer *base_buffer) final override
   {
@@ -3750,12 +3749,12 @@ diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
   const sarif_generation_options sarif_gen_opts;
   diagnostic_output_format_init_sarif
     (context,
-     ::make_unique<sarif_stream_output_format> (context,
-						line_maps,
-						main_input_filename_,
-						formatted,
-						sarif_gen_opts,
-						stderr));
+     std::make_unique<sarif_stream_output_format> (context,
+						   line_maps,
+						   main_input_filename_,
+						   formatted,
+						   sarif_gen_opts,
+						   stderr));
 }
 
 /* Attempt to open BASE_FILE_NAME.sarif for writing.
@@ -3813,12 +3812,12 @@ diagnostic_output_format_init_sarif_file (diagnostic_context &context,
   const sarif_generation_options sarif_gen_opts;
   diagnostic_output_format_init_sarif
     (context,
-     ::make_unique<sarif_file_output_format> (context,
-					      line_maps,
-					      main_input_filename_,
-					      formatted,
-					      sarif_gen_opts,
-					      std::move (output_file)));
+     std::make_unique<sarif_file_output_format> (context,
+						 line_maps,
+						 main_input_filename_,
+						 formatted,
+						 sarif_gen_opts,
+						 std::move (output_file)));
 }
 
 /* Populate CONTEXT in preparation for SARIF output to STREAM.  */
@@ -3834,12 +3833,12 @@ diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
   const sarif_generation_options sarif_gen_opts;
   diagnostic_output_format_init_sarif
     (context,
-     ::make_unique<sarif_stream_output_format> (context,
-						line_maps,
-						main_input_filename_,
-						formatted,
-						sarif_gen_opts,
-						stream));
+     std::make_unique<sarif_stream_output_format> (context,
+						   line_maps,
+						   main_input_filename_,
+						   formatted,
+						   sarif_gen_opts,
+						   stream));
 }
 
 std::unique_ptr<diagnostic_output_format>
@@ -3850,12 +3849,13 @@ make_sarif_sink (diagnostic_context &context,
 		 const sarif_generation_options &sarif_gen_opts,
 		 diagnostic_output_file output_file)
 {
-  auto sink = ::make_unique<sarif_file_output_format> (context,
-						       &line_maps,
-						       main_input_filename_,
-						       formatted,
-						       sarif_gen_opts,
-						       std::move (output_file));
+  auto sink
+    = std::make_unique<sarif_file_output_format> (context,
+						  &line_maps,
+						  main_input_filename_,
+						  formatted,
+						  sarif_gen_opts,
+						  std::move (output_file));
   sink->update_printer ();
   return sink;
 }
@@ -3881,11 +3881,11 @@ public:
   test_sarif_diagnostic_context (const char *main_input_filename,
 				 const sarif_generation_options &sarif_gen_opts)
   {
-    auto format = ::make_unique<buffered_output_format> (*this,
-							 line_table,
-							 main_input_filename,
-							 true,
-							 sarif_gen_opts);
+    auto format = std::make_unique<buffered_output_format> (*this,
+							    line_table,
+							    main_input_filename,
+							    true,
+							    sarif_gen_opts);
     m_format = format.get (); // borrowed
     diagnostic_output_format_init_sarif (*this, std::move (format));
   }
@@ -4377,7 +4377,7 @@ test_message_with_embedded_link (const sarif_generation_options &sarif_gen_opts)
     };
 
     test_sarif_diagnostic_context dc ("test.c", sarif_gen_opts);
-    dc.push_owned_urlifier (::make_unique<test_urlifier> ());
+    dc.push_owned_urlifier (std::make_unique<test_urlifier> ());
     rich_location richloc (line_table, UNKNOWN_LOCATION);
     dc.report (DK_ERROR, richloc, nullptr, 0,
 	       "foo %<-foption%> %<unrecognized%> bar");

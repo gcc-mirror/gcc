@@ -28,7 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "diagnostic.h"
 #include "selftest.h"
-#include "make-unique.h"
 
 char *
 make_doc_url (const char *doc_url_suffix)
@@ -215,7 +214,7 @@ gcc_urlifier::get_url_suffix_for_option (const char *p, size_t sz) const
 std::unique_ptr<urlifier>
 make_gcc_urlifier (unsigned int lang_mask)
 {
-  return ::make_unique<gcc_urlifier> (lang_mask);
+  return std::make_unique<gcc_urlifier> (lang_mask);
 }
 
 /* class auto_override_urlifier.  */

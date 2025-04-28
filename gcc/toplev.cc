@@ -94,7 +94,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "gcc-urlifier.h"
 #include "unique-argv.h"
-#include "make-unique.h"
 
 #include "selftest.h"
 
@@ -1095,9 +1094,9 @@ general_init (const char *argv0, bool init_signals, unique_argv original_argv)
   global_dc->m_internal_error = internal_error_function;
   const unsigned lang_mask = lang_hooks.option_lang_mask ();
   global_dc->set_option_manager
-    (::make_unique<compiler_diagnostic_option_manager> (*global_dc,
-							lang_mask,
-							&global_options),
+    (std::make_unique<compiler_diagnostic_option_manager> (*global_dc,
+							   lang_mask,
+							   &global_options),
      lang_mask);
   global_dc->push_owned_urlifier (make_gcc_urlifier (lang_mask));
 

@@ -77,7 +77,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "c-family/c-ubsan.h"
 #include "gcc-urlifier.h"
-#include "make-unique.h"
 
 /* We need to walk over decls with incomplete struct/union/enum types
    after parsing the whole translation unit.
@@ -1074,9 +1073,10 @@ c_parser_error_richloc (c_parser *parser, const char *gmsgid,
 	= get_c_stdlib_header_for_string_macro_name (token_name);
       if (header_hint != NULL)
 	h = name_hint (nullptr,
-		       ::make_unique<suggest_missing_header> (token->location,
-							      token_name,
-							      header_hint));
+		       std::make_unique<suggest_missing_header>
+			 (token->location,
+			  token_name,
+			  header_hint));
     }
 
   c_parse_error (gmsgid,

@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print-markup.h"
 #include "opts.h"
 #include "options.h"
-#include "make-unique.h"
 
 /* A namespace for handling the DSL of the arguments of
    -fdiagnostics-add-output= and -fdiagnostics-set-output=.  */
@@ -308,7 +307,7 @@ parse (const context &ctxt, const char *unparsed_arg)
     }
   else
     result.m_scheme_name = unparsed_arg;
-  return ::make_unique<scheme_name_and_params> (std::move (result));
+  return std::make_unique<scheme_name_and_params> (std::move (result));
 }
 
 /* class output_factory::scheme_handler.  */
@@ -317,8 +316,8 @@ parse (const context &ctxt, const char *unparsed_arg)
 
 output_factory::output_factory ()
 {
-  m_scheme_handlers.push_back (::make_unique<text_scheme_handler> ());
-  m_scheme_handlers.push_back (::make_unique<sarif_scheme_handler> ());
+  m_scheme_handlers.push_back (std::make_unique<text_scheme_handler> ());
+  m_scheme_handlers.push_back (std::make_unique<sarif_scheme_handler> ());
 }
 
 const output_factory::scheme_handler *
@@ -405,7 +404,7 @@ text_scheme_handler::make_sink (const context &ctxt,
       return nullptr;
     }
 
-  auto sink = ::make_unique<diagnostic_text_output_format> (ctxt.m_dc);
+  auto sink = std::make_unique<diagnostic_text_output_format> (ctxt.m_dc);
   sink->set_show_nesting (show_nesting);
   sink->set_show_locations_in_nesting (show_locations_in_nesting);
   sink->set_show_nesting_levels (show_levels);

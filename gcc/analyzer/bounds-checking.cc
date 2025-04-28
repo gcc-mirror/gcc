@@ -96,9 +96,9 @@ public:
        so we don't need an event for that.  */
     if (byte_capacity)
       emission_path.add_event
-	(make_unique<oob_region_creation_event_capacity> (byte_capacity,
-							  loc_info,
-							  *this));
+	(std::make_unique<oob_region_creation_event_capacity> (byte_capacity,
+							       loc_info,
+							       *this));
   }
 
   void maybe_add_sarif_properties (sarif_object &result_obj)
@@ -289,9 +289,9 @@ public:
   {
     if (m_byte_bound && TREE_CODE (m_byte_bound) == INTEGER_CST)
       emission_path.add_event
-	(make_unique<oob_region_creation_event_capacity> (m_byte_bound,
-							  loc_info,
-							  *this));
+	(std::make_unique<oob_region_creation_event_capacity> (m_byte_bound,
+							       loc_info,
+							       *this));
   }
 
   void maybe_add_sarif_properties (sarif_object &result_obj)
@@ -1420,22 +1420,24 @@ region_model::check_symbolic_bounds (const region *base_reg,
 	  break;
 	case access_direction::read:
 	  gcc_assert (sval_hint == nullptr);
-	  ctxt->warn (make_unique<symbolic_buffer_over_read> (*this,
-							      sized_offset_reg,
-							      diag_arg,
-							      offset_tree,
-							      num_bytes_tree,
-							      capacity_tree));
+	  ctxt->warn
+	    (std::make_unique<symbolic_buffer_over_read> (*this,
+							  sized_offset_reg,
+							  diag_arg,
+							  offset_tree,
+							  num_bytes_tree,
+							  capacity_tree));
 	  return false;
 	  break;
 	case access_direction::write:
-	  ctxt->warn (make_unique<symbolic_buffer_overflow> (*this,
-							     sized_offset_reg,
-							     diag_arg,
-							     offset_tree,
-							     num_bytes_tree,
-							     capacity_tree,
-							     sval_hint));
+	  ctxt->warn
+	    (std::make_unique<symbolic_buffer_overflow> (*this,
+							 sized_offset_reg,
+							 diag_arg,
+							 offset_tree,
+							 num_bytes_tree,
+							 capacity_tree,
+							 sval_hint));
 	  return false;
 	  break;
 	}
@@ -1528,16 +1530,18 @@ region_model::check_region_bounds (const region *reg,
 	  break;
 	case access_direction::read:
 	  gcc_assert (sval_hint == nullptr);
-	  ctxt->warn (make_unique<concrete_buffer_under_read> (*this, reg,
-							       diag_arg,
-							       bits_outside));
+	  ctxt->warn
+	    (std::make_unique<concrete_buffer_under_read> (*this, reg,
+							   diag_arg,
+							   bits_outside));
 	  oob_safe = false;
 	  break;
 	case access_direction::write:
-	  ctxt->warn (make_unique<concrete_buffer_underwrite> (*this,
-							       reg, diag_arg,
-							       bits_outside,
-							       sval_hint));
+	  ctxt->warn
+	    (std::make_unique<concrete_buffer_underwrite> (*this,
+							   reg, diag_arg,
+							   bits_outside,
+							   sval_hint));
 	  oob_safe = false;
 	  break;
 	}
@@ -1564,18 +1568,20 @@ region_model::check_region_bounds (const region *reg,
 	  break;
 	case access_direction::read:
 	  gcc_assert (sval_hint == nullptr);
-	  ctxt->warn (make_unique<concrete_buffer_over_read> (*this,
-							      reg, diag_arg,
-							      bits_outside,
-							      bit_bound));
+	  ctxt->warn
+	    (std::make_unique<concrete_buffer_over_read> (*this,
+							  reg, diag_arg,
+							  bits_outside,
+							  bit_bound));
 	  oob_safe = false;
 	  break;
 	case access_direction::write:
-	  ctxt->warn (make_unique<concrete_buffer_overflow> (*this,
-							     reg, diag_arg,
-							     bits_outside,
-							     bit_bound,
-							     sval_hint));
+	  ctxt->warn
+	    (std::make_unique<concrete_buffer_overflow> (*this,
+							 reg, diag_arg,
+							 bits_outside,
+							 bit_bound,
+							 sval_hint));
 	  oob_safe = false;
 	  break;
 	}

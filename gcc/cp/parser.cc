@@ -50,7 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "contracts.h"
 #include "bitmap.h"
 #include "builtins.h"
-#include "make-unique.h"
 
 
 /* The lexer.  */
@@ -3437,9 +3436,9 @@ cp_parser_error_1 (cp_parser* parser, const char* gmsgid,
 	  if (header_hint != NULL)
 	    h = name_hint
 	      (nullptr,
-	       ::make_unique<suggest_missing_header> (token->location,
-						      token_name,
-						      header_hint));
+	       std::make_unique<suggest_missing_header> (token->location,
+							 token_name,
+							 header_hint));
 	}
 
   /* Actually emit the error.  */

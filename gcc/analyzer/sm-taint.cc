@@ -1113,8 +1113,8 @@ taint_state_machine::on_stmt (sm_context &sm_ctxt,
 	    && sm_ctxt.get_global_state () == m_tainted_control_flow)
 	  {
 	    sm_ctxt.warn (node, call, NULL_TREE,
-			  make_unique<tainted_assertion> (*this, NULL_TREE,
-							  callee_fndecl));
+			  std::make_unique<tainted_assertion> (*this, NULL_TREE,
+							       callee_fndecl));
 	  }
       }
   // TODO: ...etc; many other sources of untrusted data
@@ -1464,7 +1464,7 @@ taint_state_machine::check_for_tainted_size_arg (sm_context &sm_ctxt,
 	    TREE_STRING_POINTER (access->to_external_string ());
 	  tree diag_size = sm_ctxt.get_diagnostic_tree (size_arg);
 	  sm_ctxt.warn (node, &call, size_arg,
-			make_unique<tainted_access_attrib_size>
+			std::make_unique<tainted_access_attrib_size>
 			(*this, diag_size, b,
 			 callee_fndecl,
 			 access->sizarg,
@@ -1508,8 +1508,9 @@ taint_state_machine::check_for_tainted_divisor (sm_context &sm_ctxt,
 	return;
 
       tree diag_divisor = sm_ctxt.get_diagnostic_tree (divisor_expr);
-      sm_ctxt.warn (node, assign, divisor_expr,
-		    make_unique <tainted_divisor> (*this, diag_divisor, b));
+      sm_ctxt.warn
+	(node, assign, divisor_expr,
+	 std::make_unique <tainted_divisor> (*this, diag_divisor, b));
       sm_ctxt.set_next_state (assign, divisor_sval, m_stop);
     }
 }
@@ -1672,8 +1673,8 @@ region_model::check_region_for_taint (const region *reg,
 		if (index_can_be_out_of_bounds_p (element_reg))
 		  {
 		    tree arg = get_representative_tree (index);
-		    ctxt->warn (make_unique<tainted_array_index> (taint_sm,
-								  arg, b));
+		    ctxt->warn (std::make_unique<tainted_array_index> (taint_sm,
+								       arg, b));
 		  }
 		else if (ctxt->get_logger ())
 		  ctxt->get_logger ()->log ("rejecting tainted_array_index as"
@@ -1699,8 +1700,8 @@ region_model::check_region_for_taint (const region *reg,
 	    if (taint_sm.get_taint (state, effective_type, &b))
 	      {
 		tree arg = get_representative_tree (offset);
-		ctxt->warn (make_unique<tainted_offset> (taint_sm, arg, b,
-							 offset));
+		ctxt->warn (std::make_unique<tainted_offset> (taint_sm, arg, b,
+							      offset));
 	      }
 	  }
 	  break;
@@ -1717,7 +1718,7 @@ region_model::check_region_for_taint (const region *reg,
 	    if (taint_sm.get_taint (state, size_sval->get_type (), &b))
 	      {
 		tree arg = get_representative_tree (size_sval);
-		ctxt->warn (make_unique<tainted_size> (taint_sm, arg, b));
+		ctxt->warn (std::make_unique<tainted_size> (taint_sm, arg, b));
 	      }
 	  }
 	  break;
@@ -1763,7 +1764,7 @@ region_model::check_dynamic_size_for_taint (enum memory_space mem_space,
   if (taint_sm.get_taint (state, size_in_bytes->get_type (), &b))
     {
       tree arg = get_representative_tree (size_in_bytes);
-      ctxt->warn (make_unique<tainted_allocation_size>
+      ctxt->warn (std::make_unique<tainted_allocation_size>
 		    (taint_sm, arg, size_in_bytes, b, mem_space));
     }
 }

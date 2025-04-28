@@ -365,11 +365,11 @@ bit_size_expr::maybe_get_formatted_str (text_art::style_manager &sm,
 	  if (!wi::fits_uhwi_p (concrete_num_bytes))
 	    return nullptr;
 	  if (concrete_num_bytes == 1)
-	    return ::make_unique <text_art::styled_string>
+	    return std::make_unique <text_art::styled_string>
 	      (fmt_styled_string (sm, concrete_single_byte_fmt,
 				  concrete_num_bytes.to_uhwi ()));
 	  else
-	    return ::make_unique <text_art::styled_string>
+	    return std::make_unique <text_art::styled_string>
 	      (fmt_styled_string (sm, concrete_plural_bytes_fmt,
 				  concrete_num_bytes.to_uhwi ()));
 	}
@@ -379,7 +379,7 @@ bit_size_expr::maybe_get_formatted_str (text_art::style_manager &sm,
 	  pp_format_decoder (&pp) = default_tree_printer;
 	  if (!num_bytes->maybe_print_for_user (&pp, model))
 	    return nullptr;
-	  return ::make_unique <text_art::styled_string>
+	  return std::make_unique <text_art::styled_string>
 	    (fmt_styled_string (sm, symbolic_bytes_fmt,
 				pp_formatted_text (&pp)));
 	}
@@ -390,11 +390,11 @@ bit_size_expr::maybe_get_formatted_str (text_art::style_manager &sm,
       if (!wi::fits_uhwi_p (concrete_num_bits))
 	return nullptr;
       if (concrete_num_bits == 1)
-	return ::make_unique <text_art::styled_string>
+	return std::make_unique <text_art::styled_string>
 	  (fmt_styled_string (sm, concrete_single_bit_fmt,
 			      concrete_num_bits.to_uhwi ()));
       else
-	return ::make_unique <text_art::styled_string>
+	return std::make_unique <text_art::styled_string>
 	  (fmt_styled_string (sm, concrete_plural_bits_fmt,
 			      concrete_num_bits.to_uhwi ()));
     }
@@ -404,7 +404,7 @@ bit_size_expr::maybe_get_formatted_str (text_art::style_manager &sm,
       pp_format_decoder (&pp) = default_tree_printer;
       if (!m_num_bits.maybe_print_for_user (&pp, model))
 	return nullptr;
-      return ::make_unique <text_art::styled_string>
+      return std::make_unique <text_art::styled_string>
 	(fmt_styled_string (sm, symbolic_bits_fmt,
 			    pp_formatted_text (&pp)));
     }
@@ -1965,11 +1965,11 @@ make_written_svalue_spatial_item (const access_operation &op,
   if (const initial_svalue *initial_sval = sval.dyn_cast_initial_svalue ())
     if (const string_region *string_reg
 	= initial_sval->get_region ()->dyn_cast_string_region ())
-      return make_unique <string_literal_spatial_item>
+      return std::make_unique <string_literal_spatial_item>
 	(sval, actual_bits,
 	 *string_reg, theme,
 	 svalue_spatial_item::kind::WRITTEN);
-  return make_unique <written_svalue_spatial_item> (op, sval, actual_bits);
+  return std::make_unique <written_svalue_spatial_item> (op, sval, actual_bits);
 }
 
 static std::unique_ptr<spatial_item>
@@ -1990,7 +1990,7 @@ make_existing_svalue_spatial_item (const svalue *sval,
 	const initial_svalue *initial_sval = (const initial_svalue *)sval;
 	if (const string_region *string_reg
 	    = initial_sval->get_region ()->dyn_cast_string_region ())
-	  return make_unique <string_literal_spatial_item>
+	  return std::make_unique <string_literal_spatial_item>
 	    (*sval, bits,
 	     *string_reg, theme,
 	     svalue_spatial_item::kind::EXISTING);
@@ -1998,7 +1998,7 @@ make_existing_svalue_spatial_item (const svalue *sval,
       }
 
     case SK_COMPOUND:
-      return make_unique<compound_svalue_spatial_item>
+      return std::make_unique<compound_svalue_spatial_item>
 	(*((const compound_svalue *)sval),
 	 bits,
 	 svalue_spatial_item::kind::EXISTING,
@@ -2106,7 +2106,7 @@ public:
     }
 
     m_col_widths
-      = make_unique <table_dimension_sizes> (m_btm.get_num_columns ());
+      = std::make_unique <table_dimension_sizes> (m_btm.get_num_columns ());
 
     /* Now create child widgets.  */
 
@@ -2201,8 +2201,8 @@ private:
   std::unique_ptr<boundaries>
   find_boundaries () const
   {
-    std::unique_ptr<boundaries> result
-      = make_unique<boundaries> (*m_op.m_base_region, m_logger);
+    auto result
+      = std::make_unique<boundaries> (*m_op.m_base_region, m_logger);
 
     m_valid_region_spatial_item.add_boundaries (*result, m_logger);
     m_accessed_region_spatial_item.add_boundaries (*result, m_logger);
@@ -2261,7 +2261,7 @@ private:
 
   void add_direction_widget ()
   {
-    add_child (::make_unique<direction_widget> (*this, m_btm));
+    add_child (std::make_unique<direction_widget> (*this, m_btm));
   }
 
   void add_invalid_accesses_to_region_table (table &t_region)
@@ -2666,11 +2666,12 @@ access_diagram::access_diagram (const access_operation &op,
 				style_manager &sm,
 				const theme &theme,
 				logger *logger)
-: wrapper_widget (make_unique <access_diagram_impl> (op,
-						     region_creation_event_id,
-						     sm,
-						     theme,
-						     logger))
+: wrapper_widget
+    (std::make_unique <access_diagram_impl> (op,
+					     region_creation_event_id,
+					     sm,
+					     theme,
+					     logger))
 {
 }
 

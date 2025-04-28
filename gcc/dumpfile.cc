@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "optinfo-emit-json.h"
 #include "stringpool.h" /* for get_identifier.  */
 #include "spellcheck.h"
-#include "make-unique.h"
 #include "pretty-print-format-impl.h"
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of
@@ -638,9 +637,9 @@ make_item_for_dump_gimple_stmt (gimple *stmt, int spc, dump_flags_t dump_flags)
   pp_newline (&pp);
 
   std::unique_ptr<optinfo_item> item
-    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_GIMPLE,
-				 gimple_location (stmt),
-				 xstrdup (pp_formatted_text (&pp)));
+    = std::make_unique<optinfo_item> (OPTINFO_ITEM_KIND_GIMPLE,
+				      gimple_location (stmt),
+				      xstrdup (pp_formatted_text (&pp)));
   return item;
 }
 
@@ -686,9 +685,9 @@ make_item_for_dump_gimple_expr (gimple *stmt, int spc, dump_flags_t dump_flags)
   pp_gimple_stmt_1 (&pp, stmt, spc, dump_flags);
 
   std::unique_ptr<optinfo_item> item
-    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_GIMPLE,
-				 gimple_location (stmt),
-				 xstrdup (pp_formatted_text (&pp)));
+    = std::make_unique<optinfo_item> (OPTINFO_ITEM_KIND_GIMPLE,
+				      gimple_location (stmt),
+				      xstrdup (pp_formatted_text (&pp)));
   return item;
 }
 
@@ -740,8 +739,8 @@ make_item_for_dump_generic_expr (tree node, dump_flags_t dump_flags)
     loc = EXPR_LOCATION (node);
 
   std::unique_ptr<optinfo_item> item
-    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TREE, loc,
-				 xstrdup (pp_formatted_text (&pp)));
+    = std::make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TREE, loc,
+				      xstrdup (pp_formatted_text (&pp)));
   return item;
 }
 
@@ -785,8 +784,8 @@ make_item_for_dump_symtab_node (symtab_node *node)
 {
   location_t loc = DECL_SOURCE_LOCATION (node->decl);
   std::unique_ptr<optinfo_item> item
-    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_SYMTAB_NODE, loc,
-				 xstrdup (node->dump_name ()));
+    = std::make_unique<optinfo_item> (OPTINFO_ITEM_KIND_SYMTAB_NODE, loc,
+				      xstrdup (node->dump_name ()));
   return item;
 }
 
@@ -847,7 +846,7 @@ dump_pretty_printer::stash_item (pp_token_list &formatted_tok_list,
   gcc_assert (item.get ());
 
   auto custom_data
-    = ::make_unique<wrapped_optinfo_item> (std::move (item));
+    = std::make_unique<wrapped_optinfo_item> (std::move (item));
   formatted_tok_list.push_back<pp_token_custom_data> (std::move (custom_data));
 }
 
@@ -1013,8 +1012,8 @@ emit_any_pending_textual_chunks ()
 
   char *formatted_text = xstrdup (pp_formatted_text (pp));
   std::unique_ptr<optinfo_item> item
-    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
-				 formatted_text);
+    = std::make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
+				      formatted_text);
   pp->emit_item (std::move (item), m_optinfo);
 
   /* Clear the pending text by unwinding formatted_text back to the start
@@ -1085,8 +1084,8 @@ make_item_for_dump_dec (const poly_int<N, C> &value)
     }
 
   auto item
-    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
-				 xstrdup (pp_formatted_text (&pp)));
+    = std::make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
+				      xstrdup (pp_formatted_text (&pp)));
   return item;
 }
 
@@ -1164,8 +1163,8 @@ dump_context::begin_scope (const char *name,
   pp_printf (&pp, "%s %s %s", "===", name, "===");
   pp_newline (&pp);
   std::unique_ptr<optinfo_item> item
-    = make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
-				 xstrdup (pp_formatted_text (&pp)));
+    = std::make_unique<optinfo_item> (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
+				      xstrdup (pp_formatted_text (&pp)));
   emit_item (*item.get (), MSG_NOTE);
 
   if (optinfo_enabled_p ())

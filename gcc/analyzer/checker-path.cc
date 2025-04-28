@@ -148,8 +148,8 @@ checker_path::add_region_creation_events (pending_diagnostic *pd,
   pd->add_region_creation_events (reg, capacity, loc_info, *this);
 
   if (debug)
-    add_event (make_unique<region_creation_event_debug> (reg, capacity,
-							 loc_info));
+    add_event (std::make_unique<region_creation_event_debug> (reg, capacity,
+							      loc_info));
 }
 
 void

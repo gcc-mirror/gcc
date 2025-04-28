@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-name-hint.h"
 #include "attribs.h"
 #include "pretty-print-format-impl.h"
-#include "make-unique.h"
 #include "diagnostic-format-text.h"
 
 #define pp_separate_with_comma(PP) pp_cxx_separate_with (PP, ',')

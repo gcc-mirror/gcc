@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "json.h"
 #include "pretty-print.h"
 #include "math.h"
-#include "make-unique.h"
 #include "selftest.h"
 
 using namespace json;
@@ -510,7 +509,7 @@ test_formatting ()
 {
   object obj;
   object *child = new object;
-  std::unique_ptr<object> grandchild = ::make_unique<object> ();
+  std::unique_ptr<object> grandchild = std::make_unique<object> ();
 
   obj.set_string ("str", "bar");
   obj.set ("child", child);
@@ -518,7 +517,7 @@ test_formatting ()
 
   array *arr = new array;
   for (int i = 0; i < 3; i++)
-    arr->append (::make_unique<integer_number> (i));
+    arr->append (std::make_unique<integer_number> (i));
   grandchild->set ("arr", arr);
   grandchild->set_integer ("int", 1066);
 

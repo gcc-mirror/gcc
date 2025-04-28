@@ -423,7 +423,8 @@ fileptr_state_machine::on_stmt (sm_context &sm_ctxt,
 	      {
 		tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
 		sm_ctxt.warn (node, stmt, arg,
-			      make_unique<double_fclose> (*this, diag_arg));
+			      std::make_unique<double_fclose> (*this,
+							       diag_arg));
 		sm_ctxt.set_next_state (stmt, arg, m_stop);
 	      }
 	    return true;
@@ -493,7 +494,7 @@ fileptr_state_machine::can_purge_p (state_t s) const
 std::unique_ptr<pending_diagnostic>
 fileptr_state_machine::on_leak (tree var) const
 {
-  return make_unique<file_leak> (*this, var);
+  return std::make_unique<file_leak> (*this, var);
 }
 
 } // anonymous namespace
@@ -645,40 +646,40 @@ public:
 void
 register_known_file_functions (known_function_manager &kfm)
 {
-  kfm.add (BUILT_IN_FPRINTF, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_FPRINTF_UNLOCKED, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_FPUTC, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_FPUTC_UNLOCKED, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_FPUTS, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_FPUTS_UNLOCKED, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_FWRITE, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_FWRITE_UNLOCKED, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_PRINTF, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_PRINTF_UNLOCKED, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_PUTC, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_PUTCHAR, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_PUTCHAR_UNLOCKED, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_PUTC_UNLOCKED, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_PUTS, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_PUTS_UNLOCKED, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_VFPRINTF, make_unique<kf_stdio_output_fn> ());
-  kfm.add (BUILT_IN_VPRINTF, make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_FPRINTF, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_FPRINTF_UNLOCKED, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_FPUTC, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_FPUTC_UNLOCKED, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_FPUTS, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_FPUTS_UNLOCKED, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_FWRITE, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_FWRITE_UNLOCKED, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_PRINTF, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_PRINTF_UNLOCKED, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_PUTC, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_PUTCHAR, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_PUTCHAR_UNLOCKED, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_PUTC_UNLOCKED, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_PUTS, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_PUTS_UNLOCKED, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_VFPRINTF, std::make_unique<kf_stdio_output_fn> ());
+  kfm.add (BUILT_IN_VPRINTF, std::make_unique<kf_stdio_output_fn> ());
 
-  kfm.add ("ferror", make_unique<kf_ferror> ());
-  kfm.add ("fgets", make_unique<kf_fgets> ());
-  kfm.add ("fgets_unlocked", make_unique<kf_fgets> ()); // non-standard
-  kfm.add ("fileno", make_unique<kf_fileno> ());
-  kfm.add ("fread", make_unique<kf_fread> ());
-  kfm.add ("getc", make_unique<kf_getc> ());
-  kfm.add ("getchar", make_unique<kf_getchar> ());
+  kfm.add ("ferror", std::make_unique<kf_ferror> ());
+  kfm.add ("fgets", std::make_unique<kf_fgets> ());
+  kfm.add ("fgets_unlocked", std::make_unique<kf_fgets> ()); // non-standard
+  kfm.add ("fileno", std::make_unique<kf_fileno> ());
+  kfm.add ("fread", std::make_unique<kf_fread> ());
+  kfm.add ("getc", std::make_unique<kf_getc> ());
+  kfm.add ("getchar", std::make_unique<kf_getchar> ());
 
   /* Some C++ implementations use the std:: copies of these functions
      from <cstdio> for <stdio.h>, so we must match against these too.  */
-  kfm.add_std_ns ("ferror", make_unique<kf_ferror> ());
-  kfm.add_std_ns ("fgets", make_unique<kf_fgets> ());
-  kfm.add_std_ns ("fread", make_unique<kf_fread> ());
-  kfm.add_std_ns ("getc", make_unique<kf_getc> ());
-  kfm.add_std_ns ("getchar", make_unique<kf_getchar> ());
+  kfm.add_std_ns ("ferror", std::make_unique<kf_ferror> ());
+  kfm.add_std_ns ("fgets", std::make_unique<kf_fgets> ());
+  kfm.add_std_ns ("fread", std::make_unique<kf_fread> ());
+  kfm.add_std_ns ("getc", std::make_unique<kf_getc> ());
+  kfm.add_std_ns ("getchar", std::make_unique<kf_getchar> ());
 }
 
 #if CHECKING_P

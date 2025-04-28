@@ -49,7 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print-urlifier.h"
 #include "logical-location.h"
 #include "diagnostic-buffer.h"
-#include "make-unique.h"
 
 #ifdef HAVE_TERMIOS_H
 # include <termios.h>
@@ -223,7 +222,7 @@ diagnostic_context::initialize (int n_opts)
 {
   /* Allocate a basic pretty-printer.  Clients will replace this a
      much more elaborated pretty-printer if they wish.  */
-  m_reference_printer = ::make_unique<pretty_printer> ().release ();
+  m_reference_printer = std::make_unique<pretty_printer> ().release ();
 
   m_file_cache = new file_cache ();
   m_diagnostic_counters.clear ();

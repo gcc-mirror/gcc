@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "timevar.h"
 #include "options.h"
 #include "json.h"
-#include "make-unique.h"
 
 /* Non-NULL if timevars should be used.  In GCC, this happens with
    the -ftime-report flag.  */
@@ -139,7 +138,7 @@ timer::named_items::print (FILE *fp, const timevar_time_def *total)
 std::unique_ptr<json::value>
 timer::named_items::make_json () const
 {
-  auto arr = ::make_unique<json::array> ();
+  auto arr = std::make_unique<json::array> ();
   for (const char *item_name : m_names)
     {
       hash_map_t &mut_map = const_cast <hash_map_t &> (m_hash_map);
@@ -703,7 +702,7 @@ timer::print (FILE *fp)
 std::unique_ptr<json::object>
 make_json_for_timevar_time_def (const timevar_time_def &ttd)
 {
-  auto obj = ::make_unique<json::object> ();
+  auto obj = std::make_unique<json::object> ();
   obj->set_float ("wall", nanosec_to_floating_sec (ttd.wall));
   obj->set_integer ("ggc_mem", ttd.ggc_mem);
   return obj;
@@ -717,7 +716,7 @@ make_json_for_timevar_time_def (const timevar_time_def &ttd)
 std::unique_ptr<json::value>
 timer::timevar_def::make_json () const
 {
-  auto timevar_obj = ::make_unique<json::object> ();
+  auto timevar_obj = std::make_unique<json::object> ();
   timevar_obj->set_string ("name", name);
   timevar_obj->set ("elapsed", make_json_for_timevar_time_def (elapsed));
 
@@ -732,14 +731,14 @@ timer::timevar_def::make_json () const
 	  }
       if (any_children_with_time)
 	{
-	  auto children_arr = ::make_unique<json::array> ();
+	  auto children_arr = std::make_unique<json::array> ();
 	  for (auto i : *children)
 	    {
 	      /* Don't emit timing variables if we're going to get a row of
 		 zeroes.  */
 	      if (all_zero (i.second))
 		continue;
-	      auto child_obj = ::make_unique<json::object> ();
+	      auto child_obj = std::make_unique<json::object> ();
 	      child_obj->set_string ("name", i.first->name);
 	      child_obj->set ("elapsed",
 			      make_json_for_timevar_time_def (i.second));
@@ -759,7 +758,7 @@ std::unique_ptr<json::value>
 timer::make_json () const
 {
 #if defined (HAVE_WALL_TIME)
-  auto report_obj = ::make_unique<json::object> ();
+  auto report_obj = std::make_unique<json::object> ();
   json::array *json_arr = new json::array ();
   report_obj->set ("timevars", json_arr);
 
@@ -803,7 +802,7 @@ timer::make_json () const
     get_time (&total_now);
     timevar_diff (&total_elapsed, m_timevars[TV_TOTAL].start_time, total_now);
 
-    auto total_obj = ::make_unique<json::object> ();
+    auto total_obj = std::make_unique<json::object> ();
     total_obj->set_string ("name", "TOTAL");
     total_obj->set ("elapsed", make_json_for_timevar_time_def (total_elapsed));
     json_arr->append (std::move (total_obj));

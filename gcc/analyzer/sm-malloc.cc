@@ -2018,9 +2018,10 @@ malloc_state_machine::handle_nonnull (sm_context &sm_ctxt,
   if (unchecked_p (state))
     {
       tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
-      sm_ctxt.warn (node, stmt, arg,
-		    make_unique<possible_null_arg> (*this, diag_arg, fndecl,
-						    i));
+      sm_ctxt.warn
+	(node, stmt, arg,
+	 std::make_unique<possible_null_arg> (*this, diag_arg, fndecl,
+					      i));
       const allocation_state *astate
 	= as_a_allocation_state (state);
       sm_ctxt.set_next_state (stmt, arg, astate->get_nonnull ());
@@ -2029,7 +2030,7 @@ malloc_state_machine::handle_nonnull (sm_context &sm_ctxt,
     {
       tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
       sm_ctxt.warn (node, stmt, arg,
-		    make_unique<null_arg> (*this, diag_arg, fndecl, i));
+		    std::make_unique<null_arg> (*this, diag_arg, fndecl, i));
       sm_ctxt.set_next_state (stmt, arg, m_stop);
     }
   else if (state == m_start)
@@ -2251,8 +2252,8 @@ malloc_state_machine::on_stmt (sm_context &sm_ctxt,
 	    {
 	      tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
 	      sm_ctxt.warn (node, stmt, arg,
-			    make_unique<possible_null_deref> (*this,
-							      diag_arg));
+			    std::make_unique<possible_null_deref> (*this,
+								   diag_arg));
 	      const allocation_state *astate = as_a_allocation_state (state);
 	      sm_ctxt.set_next_state (stmt, arg, astate->get_nonnull ());
 	    }
@@ -2260,7 +2261,7 @@ malloc_state_machine::on_stmt (sm_context &sm_ctxt,
 	    {
 	      tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
 	      sm_ctxt.warn (node, stmt, arg,
-			    make_unique<null_deref> (*this, diag_arg));
+			    std::make_unique<null_deref> (*this, diag_arg));
 	      sm_ctxt.set_next_state (stmt, arg, m_stop);
 	    }
 	  else if (freed_p (state))
@@ -2268,7 +2269,7 @@ malloc_state_machine::on_stmt (sm_context &sm_ctxt,
 	      tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
 	      const allocation_state *astate = as_a_allocation_state (state);
 	      sm_ctxt.warn (node, stmt, arg,
-			    make_unique<use_after_free>
+			    std::make_unique<use_after_free>
 			      (*this, diag_arg, astate->m_deallocator));
 	      sm_ctxt.set_next_state (stmt, arg, m_stop);
 	    }
@@ -2330,7 +2331,7 @@ maybe_complain_about_deref_before_check (sm_context &sm_ctxt,
   if (diag_ptr)
     sm_ctxt.warn
       (node, stmt, ptr,
-       make_unique<deref_before_check> (*this, diag_ptr));
+       std::make_unique<deref_before_check> (*this, diag_ptr));
   sm_ctxt.set_next_state (stmt, ptr, m_stop);
 }
 
@@ -2378,7 +2379,7 @@ malloc_state_machine::handle_free_of_non_heap (sm_context &sm_ctxt,
       freed_reg = old_model->deref_rvalue (ptr_sval, arg, NULL);
     }
   sm_ctxt.warn (node, &call, arg,
-		make_unique<free_of_non_heap>
+		std::make_unique<free_of_non_heap>
 		  (*this, diag_arg, freed_reg, d->m_name));
   sm_ctxt.set_next_state (&call, arg, m_stop);
 }
@@ -2408,7 +2409,7 @@ malloc_state_machine::on_deallocator_call (sm_context &sm_ctxt,
 	  /* Wrong allocator.  */
 	  tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
 	  sm_ctxt.warn (node, &call, arg,
-			make_unique<mismatching_deallocation>
+			std::make_unique<mismatching_deallocation>
 			  (*this, diag_arg,
 			   astate->m_deallocators,
 			   d));
@@ -2423,7 +2424,7 @@ malloc_state_machine::on_deallocator_call (sm_context &sm_ctxt,
       /* freed -> stop, with warning.  */
       tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
       sm_ctxt.warn (node, &call, arg,
-		    make_unique<double_free> (*this, diag_arg, d->m_name));
+		    std::make_unique<double_free> (*this, diag_arg, d->m_name));
       sm_ctxt.set_next_state (&call, arg, m_stop);
     }
   else if (state == m_non_heap)
@@ -2462,7 +2463,7 @@ malloc_state_machine::on_realloc_call (sm_context &sm_ctxt,
 	  /* Wrong allocator.  */
 	  tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
 	  sm_ctxt.warn (node, &call, arg,
-			make_unique<mismatching_deallocation>
+			std::make_unique<mismatching_deallocation>
 			  (*this, diag_arg,
 			   astate->m_deallocators, d));
 	  sm_ctxt.set_next_state (&call, arg, m_stop);
@@ -2475,7 +2476,7 @@ malloc_state_machine::on_realloc_call (sm_context &sm_ctxt,
       /* freed -> stop, with warning.  */
       tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
       sm_ctxt.warn (node, &call, arg,
-		    make_unique<double_free> (*this, diag_arg, "free"));
+		    std::make_unique<double_free> (*this, diag_arg, "free"));
       sm_ctxt.set_next_state (&call, arg, m_stop);
       if (path_context *path_ctxt = sm_ctxt.get_path_context ())
 	path_ctxt->terminate_path ();
@@ -2585,7 +2586,7 @@ malloc_state_machine::can_purge_p (state_t s) const
 std::unique_ptr<pending_diagnostic>
 malloc_state_machine::on_leak (tree var) const
 {
-  return make_unique<malloc_leak> (*this, var);
+  return std::make_unique<malloc_leak> (*this, var);
 }
 
 /* Implementation of state_machine::reset_when_passed_to_unknown_fn_p vfunc

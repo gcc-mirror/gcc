@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "diagnostic.h"
 #include "tree-diagnostic.h"
-#include "make-unique.h"
 
 #include "text-art/dump.h"
 
@@ -35,7 +34,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/store.h"
 #include "analyzer/svalue.h"
 #include "analyzer/region-model.h"
-
 
 #if ENABLE_ANALYZER
 
@@ -92,7 +90,7 @@ std::unique_ptr<json::value>
 svalue::to_json () const
 {
   label_text desc = get_desc (true);
-  auto sval_js = ::make_unique<json::string> (desc.get ());
+  auto sval_js = std::make_unique<json::string> (desc.get ());
   return sval_js;
 }
 

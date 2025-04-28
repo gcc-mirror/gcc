@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-format-text.h"
 #include "logical-location.h"
 #include "edit-context.h"
-#include "make-unique.h"
 #include "libgdiagnostics.h"
 
 class owned_nullable_string
@@ -398,11 +397,11 @@ public:
 
     m_dc.m_client_aux_data = this;
     m_dc.set_client_data_hooks
-      (::make_unique<impl_diagnostic_client_data_hooks> (*this));
+      (std::make_unique<impl_diagnostic_client_data_hooks> (*this));
 
     diagnostic_text_starter (&m_dc) = diagnostic_text_sink::text_starter;
 
-    m_edit_context = ::make_unique <edit_context> (m_dc.get_file_cache ());
+    m_edit_context = std::make_unique <edit_context> (m_dc.get_file_cache ());
   }
 
   ~diagnostic_manager ()
@@ -503,11 +502,11 @@ public:
       return (*iter).second.get ();
 
     std::unique_ptr<diagnostic_logical_location> logical_loc
-      = ::make_unique<diagnostic_logical_location> (kind,
-						    parent,
-						    short_name,
-						    fully_qualified_name,
-						    decorated_name);
+      = std::make_unique<diagnostic_logical_location> (kind,
+						       parent,
+						       short_name,
+						       fully_qualified_name,
+						       decorated_name);
     const diagnostic_logical_location *result = logical_loc.get ();
     m_logical_locs.insert
       (logical_locs_map_t::value_type (std::move (key),
@@ -785,11 +784,12 @@ struct diagnostic_execution_path : public diagnostic_path
 		const char *gmsgid,
 		va_list *args)
   {
-    m_events.push_back (::make_unique<libgdiagnostics_path_event> (physical_loc,
-								   logical_loc,
-								   stack_depth,
-								   gmsgid,
-								   args));
+    m_events.push_back
+      (std::make_unique<libgdiagnostics_path_event> (physical_loc,
+						     logical_loc,
+						     stack_depth,
+						     gmsgid,
+						     args));
     return m_events.size () - 1;
   }
 
@@ -860,7 +860,7 @@ public:
   void add_rule (const char *title,
 		 const char *url)
   {
-    std::unique_ptr<impl_rule> rule = ::make_unique<impl_rule> (title, url);
+    std::unique_ptr<impl_rule> rule = std::make_unique<impl_rule> (title, url);
     m_metadata.add_rule (*rule.get ());
     m_rules.push_back (std::move (rule));
   }
@@ -882,7 +882,7 @@ public:
 			   const char *text)
   {
     std::unique_ptr<range_label> label
-      = ::make_unique <impl_range_label> (text);
+      = std::make_unique <impl_range_label> (text);
     m_rich_loc.add_range (as_location_t (loc),
 			  SHOW_RANGE_WITHOUT_CARET,
 			  label.get ());
@@ -902,7 +902,7 @@ public:
   diagnostic_execution_path *
   add_execution_path ()
   {
-    m_path = ::make_unique<diagnostic_execution_path> ();
+    m_path = std::make_unique<diagnostic_execution_path> ();
     m_rich_loc.set_path (m_path.get ());
     return m_path.get ();
   }
@@ -946,7 +946,7 @@ diagnostic_t_from_diagnostic_level (enum diagnostic_level level)
 void
 diagnostic_file::set_buffered_content (const char *buf, size_t sz)
 {
-  m_content = ::make_unique<content_buffer> (buf, sz);
+  m_content = std::make_unique<content_buffer> (buf, sz);
 
   // Populate file_cache:
   file_cache &fc = m_mgr.get_dc ().get_file_cache ();
@@ -1004,8 +1004,8 @@ diagnostic_text_sink::diagnostic_text_sink (diagnostic_manager &mgr,
   m_source_printing (mgr.get_dc ().m_source_printing)
 {
   auto inner_sink
-    = ::make_unique<diagnostic_text_output_format> (mgr.get_dc (),
-						    &m_source_printing);
+    = std::make_unique<diagnostic_text_output_format> (mgr.get_dc (),
+						       &m_source_printing);
   inner_sink->get_printer ()->set_output_stream (dst_stream);
   m_inner_sink = inner_sink.get ();
   set_colorize (colorize);
@@ -1287,10 +1287,10 @@ diagnostic_manager_add_sarif_sink (diagnostic_manager *diag_mgr,
       break;
     }
 
-  diag_mgr->add_sink (make_unique<sarif_sink> (*diag_mgr,
-					       dst_stream,
-					       main_input_file,
-					       sarif_gen_opts));
+  diag_mgr->add_sink (std::make_unique<sarif_sink> (*diag_mgr,
+						    dst_stream,
+						    main_input_file,
+						    sarif_gen_opts));
 }
 
 /* Public entrypoint.  */

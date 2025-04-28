@@ -187,8 +187,8 @@ sensitive_state_machine::warn_for_any_exposure (sm_context &sm_ctxt,
     {
       tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
       sm_ctxt.warn (node, stmt, arg,
-		    make_unique<exposure_through_output_file> (*this,
-							       diag_arg));
+		    std::make_unique<exposure_through_output_file> (*this,
+								    diag_arg));
     }
 }
 

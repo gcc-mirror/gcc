@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "pretty-print.h"
 #include "selftest.h"
-#include "make-unique.h"
 #include "text-art/selftests.h"
 #include "text-art/tree-widget.h"
 #include "text-art/dump-widget-info.h"
@@ -38,8 +37,8 @@ static const int margin_width = 3;
 std::unique_ptr<tree_widget>
 tree_widget::make (styled_string str, const theme &theme, style::id_t style_id)
 {
-  return ::make_unique <tree_widget>
-    (::make_unique <text_widget> (std::move (str)),
+  return std::make_unique <tree_widget>
+    (std::make_unique <text_widget> (std::move (str)),
      theme,
      style_id);
 }

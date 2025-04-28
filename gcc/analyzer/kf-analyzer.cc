@@ -297,7 +297,7 @@ public:
     region_model_context *ctxt = cd.get_ctxt ();
     if (!ctxt)
       return;
-    ctxt->warn (make_unique<dump_path_diagnostic> ());
+    ctxt->warn (std::make_unique<dump_path_diagnostic> ());
   }
 };
 
@@ -374,22 +374,28 @@ public:
 void
 register_known_analyzer_functions (known_function_manager &kfm)
 {
-  kfm.add ("__analyzer_break", make_unique<kf_analyzer_break> ());
-  kfm.add ("__analyzer_describe", make_unique<kf_analyzer_describe> ());
+  kfm.add ("__analyzer_break",
+	   std::make_unique<kf_analyzer_break> ());
+  kfm.add ("__analyzer_describe",
+	   std::make_unique<kf_analyzer_describe> ());
   kfm.add ("__analyzer_dump_capacity",
-	   make_unique<kf_analyzer_dump_capacity> ());
-  kfm.add ("__analyzer_dump_escaped", make_unique<kf_analyzer_dump_escaped> ());
+	   std::make_unique<kf_analyzer_dump_capacity> ());
+  kfm.add ("__analyzer_dump_escaped",
+	   std::make_unique<kf_analyzer_dump_escaped> ());
   kfm.add ("__analyzer_dump_exploded_nodes",
-	   make_unique<kf_analyzer_dump_exploded_nodes> ());
+	   std::make_unique<kf_analyzer_dump_exploded_nodes> ());
   kfm.add ("__analyzer_dump_named_constant",
-	   make_unique<kf_analyzer_dump_named_constant> ());
-  kfm.add ("__analyzer_dump_path", make_unique<kf_analyzer_dump_path> ());
+	   std::make_unique<kf_analyzer_dump_named_constant> ());
+  kfm.add ("__analyzer_dump_path",
+	   std::make_unique<kf_analyzer_dump_path> ());
   kfm.add ("__analyzer_dump_region_model",
-	   make_unique<kf_analyzer_dump_region_model> ());
-  kfm.add ("__analyzer_eval", make_unique<kf_analyzer_eval> ());
+	   std::make_unique<kf_analyzer_dump_region_model> ());
+  kfm.add ("__analyzer_eval",
+	   std::make_unique<kf_analyzer_eval> ());
   kfm.add ("__analyzer_get_unknown_ptr",
-	   make_unique<kf_analyzer_get_unknown_ptr> ());
-  kfm.add ("__analyzer_get_strlen", make_kf_strlen ());
+	   std::make_unique<kf_analyzer_get_unknown_ptr> ());
+  kfm.add ("__analyzer_get_strlen",
+	   make_kf_strlen ());
 }
 
 } // namespace ana

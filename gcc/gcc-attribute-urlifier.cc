@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "diagnostic.h"
 #include "selftest.h"
-#include "make-unique.h"
 #include "target.h"
 
 /* class attribute_urlifier : public urlifier.  */

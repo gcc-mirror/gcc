@@ -33,7 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "target.h"
 #include "diagnostic-format-text.h"
-#include "make-unique.h"
 #include "print-tree.h"
 
 #include <mpfr.h>
@@ -1085,8 +1084,9 @@ jit_langhook_init (void)
   diagnostic_text_starter (global_dc) = jit_begin_diagnostic;
   diagnostic_text_finalizer (global_dc) = jit_end_diagnostic;
   auto sink
-    = ::make_unique<jit_diagnostic_listener> (*global_dc,
-					      *gcc::jit::active_playback_ctxt);
+    = std::make_unique<jit_diagnostic_listener>
+	(*global_dc,
+	 *gcc::jit::active_playback_ctxt);
   global_dc->set_output_format (std::move (sink));
 
   build_common_tree_nodes (flag_signed_char);

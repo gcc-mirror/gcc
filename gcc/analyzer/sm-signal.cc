@@ -225,10 +225,10 @@ public:
     const final override
   {
     emission_path->add_event
-      (make_unique<precanned_custom_event>
-       (event_loc_info (UNKNOWN_LOCATION, NULL_TREE, 0),
-	"later on,"
-	" when the signal is delivered to the process"));
+      (std::make_unique<precanned_custom_event>
+         (event_loc_info (UNKNOWN_LOCATION, NULL_TREE, 0),
+	  "later on,"
+	  " when the signal is delivered to the process"));
   }
 };
 
@@ -271,7 +271,7 @@ public:
     if (dst_enode)
       eg->add_edge (src_enode, dst_enode, NULL, /*state_change (),*/
 		    true, /* assume does work  */
-		    make_unique<signal_delivery_edge_info_t> ());
+		    std::make_unique<signal_delivery_edge_info_t> ());
   }
 
   const signal_state_machine &m_sm;
@@ -352,7 +352,7 @@ signal_state_machine::on_stmt (sm_context &sm_ctxt,
 	  if (signal_unsafe_p (callee_fndecl))
 	    if (sm_ctxt.get_global_state () == m_in_signal_handler)
 	      sm_ctxt.warn (node, stmt, NULL_TREE,
-			    make_unique<signal_unsafe_call>
+			    std::make_unique<signal_unsafe_call>
 			     (*this, *call, callee_fndecl));
     }
 

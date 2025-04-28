@@ -213,7 +213,7 @@ bit_range::dump () const
 std::unique_ptr<json::object>
 bit_range::to_json () const
 {
-  auto obj = ::make_unique<json::object> ();
+  auto obj = std::make_unique<json::object> ();
   obj->set ("start_bit_offset",
 	    bit_offset_to_json (m_start_bit_offset));
   obj->set ("size_in_bits",
@@ -487,7 +487,7 @@ byte_range::dump () const
 std::unique_ptr<json::object>
 byte_range::to_json () const
 {
-  auto obj = ::make_unique<json::object> ();
+  auto obj = std::make_unique<json::object> ();
   obj->set ("start_byte_offset",
 	    byte_offset_to_json (m_start_byte_offset));
   obj->set ("size_in_bytes",
@@ -752,7 +752,7 @@ binding_map::dump (bool simple) const
 std::unique_ptr<json::object>
 binding_map::to_json () const
 {
-  auto map_obj = ::make_unique<json::object> ();
+  auto map_obj = std::make_unique<json::object> ();
 
   auto_vec <const binding_key *> binding_keys;
   for (map_t::iterator iter = m_map.begin ();
@@ -1434,7 +1434,7 @@ binding_cluster::validate () const
 std::unique_ptr<json::object>
 binding_cluster::to_json () const
 {
-  auto cluster_obj = ::make_unique<json::object> ();
+  auto cluster_obj = std::make_unique<json::object> ();
 
   cluster_obj->set_bool ("escaped", m_escaped);
   cluster_obj->set_bool ("touched", m_touched);
@@ -2651,7 +2651,7 @@ store::validate () const
 std::unique_ptr<json::object>
 store::to_json () const
 {
-  auto store_obj = ::make_unique<json::object> ();
+  auto store_obj = std::make_unique<json::object> ();
 
   /* Sort into some deterministic order.  */
   auto_vec<const region *> base_regions;
@@ -2674,7 +2674,7 @@ store::to_json () const
     {
       gcc_assert (parent_reg);
 
-      auto clusters_in_parent_reg_obj = ::make_unique<json::object> ();
+      auto clusters_in_parent_reg_obj = std::make_unique<json::object> ();
 
       const region *base_reg;
       unsigned j;

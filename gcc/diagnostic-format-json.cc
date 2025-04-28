@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "json.h"
 #include "selftest.h"
 #include "logical-location.h"
-#include "make-unique.h"
 
 class json_output_format;
 
@@ -74,7 +73,7 @@ public:
   std::unique_ptr<diagnostic_per_format_buffer>
   make_per_format_buffer () final override
   {
-    return ::make_unique<diagnostic_json_format_buffer> (*this);
+    return std::make_unique<diagnostic_json_format_buffer> (*this);
   }
   void set_buffer (diagnostic_per_format_buffer *base_buffer) final override
   {
@@ -118,7 +117,7 @@ protected:
 		      bool formatted)
   : diagnostic_output_format (context),
     m_buffer (nullptr),
-    m_toplevel_array (::make_unique<json::array> ()),
+    m_toplevel_array (std::make_unique<json::array> ()),
     m_cur_group (nullptr),
     m_cur_children_array (nullptr),
     m_formatted (formatted)
@@ -156,7 +155,7 @@ static std::unique_ptr<json::object>
 json_from_expanded_location (diagnostic_context &context, location_t loc)
 {
   expanded_location exploc = expand_location (loc);
-  std::unique_ptr<json::object> result = ::make_unique <json::object> ();
+  std::unique_ptr<json::object> result = std::make_unique <json::object> ();
   if (exploc.file)
     result->set_string ("file", exploc.file);
   result->set_integer ("line", exploc.line);
@@ -200,7 +199,7 @@ json_from_location_range (diagnostic_context &context,
   location_t start_loc = get_start (loc_range->m_loc);
   location_t finish_loc = get_finish (loc_range->m_loc);
 
-  std::unique_ptr<json::object> result = ::make_unique <json::object> ();
+  std::unique_ptr<json::object> result = std::make_unique <json::object> ();
   result->set ("caret",
 	       json_from_expanded_location (context, caret_loc));
   if (start_loc != caret_loc
@@ -227,7 +226,7 @@ json_from_location_range (diagnostic_context &context,
 static std::unique_ptr<json::object>
 json_from_fixit_hint (diagnostic_context &context, const fixit_hint *hint)
 {
-  std::unique_ptr<json::object> fixit_obj = ::make_unique <json::object> ();
+  std::unique_ptr<json::object> fixit_obj = std::make_unique <json::object> ();
 
   location_t start_loc = hint->get_start_loc ();
   fixit_obj->set ("start",
@@ -245,7 +244,7 @@ json_from_fixit_hint (diagnostic_context &context, const fixit_hint *hint)
 static std::unique_ptr<json::object>
 json_from_metadata (const diagnostic_metadata *metadata)
 {
-  std::unique_ptr<json::object> metadata_obj = ::make_unique <json::object> ();
+  std::unique_ptr<json::object> metadata_obj = std::make_unique <json::object> ();
 
   if (metadata->get_cwe ())
     metadata_obj->set_integer ("cwe", metadata->get_cwe ());
@@ -260,12 +259,12 @@ make_json_for_path (diagnostic_context &context,
 		    pretty_printer *ref_pp,
 		    const diagnostic_path *path)
 {
-  std::unique_ptr<json::array> path_array = ::make_unique<json::array> ();
+  std::unique_ptr<json::array> path_array = std::make_unique<json::array> ();
   for (unsigned i = 0; i < path->num_events (); i++)
     {
       const diagnostic_event &event = path->get_event (i);
 
-      std::unique_ptr<json::object> event_obj = ::make_unique <json::object> ();
+      std::unique_ptr<json::object> event_obj = std::make_unique <json::object> ();
       if (event.get_location ())
 	event_obj->set ("location",
 			json_from_expanded_location (context,
@@ -395,7 +394,7 @@ json_output_format::on_report_diagnostic (const diagnostic_info &diagnostic,
 	     add a "children" array and record the column origin.  */
 	  m_cur_group = diag_obj;
 	  std::unique_ptr<json::array> children_array
-	    = ::make_unique<json::array> ();
+	    = std::make_unique<json::array> ();
 	  m_cur_children_array = children_array.get (); // borrowed
 	  diag_obj->set ("children", std::move (children_array));
 	  diag_obj->set_integer ("column-origin", m_context.m_column_origin);
@@ -409,7 +408,7 @@ json_output_format::on_report_diagnostic (const diagnostic_info &diagnostic,
   const rich_location *richloc = diagnostic.richloc;
 
   {
-    std::unique_ptr<json::array> loc_array = ::make_unique<json::array> ();
+    std::unique_ptr<json::array> loc_array = std::make_unique<json::array> ();
     for (unsigned int i = 0; i < richloc->get_num_locations (); i++)
       {
 	const location_range *loc_range = richloc->get_range (i);
@@ -422,7 +421,7 @@ json_output_format::on_report_diagnostic (const diagnostic_info &diagnostic,
 
   if (richloc->get_num_fixit_hints ())
     {
-      std::unique_ptr<json::array> fixit_array = ::make_unique<json::array> ();
+      std::unique_ptr<json::array> fixit_array = std::make_unique<json::array> ();
       for (unsigned int i = 0; i < richloc->get_num_fixit_hints (); i++)
 	{
 	  const fixit_hint *hint = richloc->get_fixit_hint (i);
@@ -524,8 +523,8 @@ diagnostic_output_format_init_json_stderr (diagnostic_context &context,
 {
   diagnostic_output_format_init_json
     (context,
-     ::make_unique<json_stderr_output_format> (context,
-					       formatted));
+     std::make_unique<json_stderr_output_format> (context,
+						  formatted));
 }
 
 /* Populate CONTEXT in preparation for JSON output to a file named
@@ -538,9 +537,9 @@ diagnostic_output_format_init_json_file (diagnostic_context &context,
 {
   diagnostic_output_format_init_json
     (context,
-     ::make_unique<json_file_output_format> (context,
-					     formatted,
-					     base_file_name));
+     std::make_unique<json_file_output_format> (context,
+						formatted,
+						base_file_name));
 }
 
 #if CHECKING_P

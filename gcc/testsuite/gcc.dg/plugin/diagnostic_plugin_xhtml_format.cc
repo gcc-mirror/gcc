@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-buffer.h"
 #include "ordered-hash-map.h"
 #include "sbitmap.h"
-#include "make-unique.h"
 #include "selftest.h"
 #include "selftest-diagnostic.h"
 #include "selftest-diagnostic-show-locus.h"
@@ -179,7 +178,7 @@ void
 node_with_children::add_text (label_text str)
 {
   gcc_assert (str.get ());
-  add_child (::make_unique <text> (std::move (str)));
+  add_child (std::make_unique <text> (std::move (str)));
 }
 
 
@@ -338,7 +337,7 @@ private:
 static std::unique_ptr<xml::element>
 make_div (label_text class_)
 {
-  auto div = ::make_unique<xml::element> ("div", false);
+  auto div = std::make_unique<xml::element> ("div", false);
   div->set_attr ("class", std::move (class_));
   return div;
 }
@@ -346,7 +345,7 @@ make_div (label_text class_)
 static std::unique_ptr<xml::element>
 make_span (label_text class_)
 {
-  auto span = ::make_unique<xml::element> ("span", true);
+  auto span = std::make_unique<xml::element> ("span", true);
   span->set_attr ("class", std::move (class_));
   return span;
 }
@@ -410,24 +409,24 @@ xhtml_builder::xhtml_builder (diagnostic_context &context,
 {
   gcc_assert (m_line_maps);
 
-  m_document = ::make_unique<xml::document> ();
+  m_document = std::make_unique<xml::document> ();
   {
-    auto html_element = ::make_unique<xml::element> ("html", false);
+    auto html_element = std::make_unique<xml::element> ("html", false);
     html_element->set_attr
       ("xmlns",
        label_text::borrow ("http://www.w3.org/1999/xhtml"));
     {
       {
-	auto head_element = ::make_unique<xml::element> ("head", false);
+	auto head_element = std::make_unique<xml::element> ("head", false);
 	{
-	  auto title_element = ::make_unique<xml::element> ("title", true);
+	  auto title_element = std::make_unique<xml::element> ("title", true);
 	  label_text title (label_text::borrow ("Title goes here")); // TODO
 	  title_element->add_text (std::move (title));
 	  head_element->add_child (std::move (title_element));
 	}
 	html_element->add_child (std::move (head_element));
 
-	auto body_element = ::make_unique<xml::element> ("body", false);
+	auto body_element = std::make_unique<xml::element> ("body", false);
 	{
 	  auto diagnostics_element
 	    = make_div (label_text::borrow ("gcc-diagnostic-list"));
@@ -531,7 +530,7 @@ xhtml_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 	  case pp_token::kind::begin_url:
 	    {
 	      pp_token_begin_url *sub = as_a <pp_token_begin_url *> (iter);
-	      auto anchor = ::make_unique<xml::element> ("a", true);
+	      auto anchor = std::make_unique<xml::element> ("a", true);
 	      anchor->set_attr ("href", std::move (sub->m_value));
 	      push_element (std::move (anchor));
 	    }
@@ -585,7 +584,7 @@ xhtml_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 	  auto cwe_span = make_span (label_text::borrow ("gcc-cwe-metadata"));
 	  cwe_span->add_text (label_text::borrow ("["));
 	  {
-	    auto anchor = ::make_unique<xml::element> ("a", true);
+	    auto anchor = std::make_unique<xml::element> ("a", true);
 	    anchor->set_attr ("href", label_text::take (get_cwe_url (cwe)));
 	    pretty_printer pp;
 	    pp_printf (&pp, "CWE-%i", cwe);
@@ -614,7 +613,7 @@ xhtml_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
       {
 	if (option_url.get ())
 	  {
-	    auto anchor = ::make_unique<xml::element> ("a", true);
+	    auto anchor = std::make_unique<xml::element> ("a", true);
 	    anchor->set_attr ("href", std::move (option_url));
 	    anchor->add_text (std::move (option_text));
 	    option_span->add_child (std::move (anchor));
@@ -627,7 +626,7 @@ xhtml_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
     }
 
   {
-    auto pre = ::make_unique<xml::element> ("pre", true);
+    auto pre = std::make_unique<xml::element> ("pre", true);
     pre->set_attr ("class", label_text::borrow ("gcc-annotated-source"));
     // TODO: ideally we'd like to capture elements within the following:
     diagnostic_show_locus (&m_context, m_context.m_source_printing,
@@ -698,7 +697,7 @@ public:
   std::unique_ptr<diagnostic_per_format_buffer>
   make_per_format_buffer () final override
   {
-    return ::make_unique<diagnostic_xhtml_format_buffer> (m_builder);
+    return std::make_unique<diagnostic_xhtml_format_buffer> (m_builder);
   }
   void set_buffer (diagnostic_per_format_buffer *base_buffer) final override
   {
@@ -844,9 +843,9 @@ diagnostic_output_format_init_xhtml_stderr (diagnostic_context &context,
 					    const line_maps *line_maps)
 {
   gcc_assert (line_maps);
-  auto format = ::make_unique<xhtml_stream_output_format> (context,
-							   line_maps,
-							   stderr);
+  auto format = std::make_unique<xhtml_stream_output_format> (context,
+							      line_maps,
+							      stderr);
   diagnostic_output_format_init_xhtml (context, std::move (format));
 }
 
@@ -859,9 +858,9 @@ diagnostic_output_format_init_xhtml_file (diagnostic_context &context,
 					  const char *base_file_name)
 {
   gcc_assert (line_maps);
-  auto format = ::make_unique<xhtml_file_output_format> (context,
-							 line_maps,
-							 base_file_name);
+  auto format = std::make_unique<xhtml_file_output_format> (context,
+							    line_maps,
+							    base_file_name);
   diagnostic_output_format_init_xhtml (context, std::move (format));
 }
 
@@ -878,8 +877,8 @@ class test_xhtml_diagnostic_context : public test_diagnostic_context
 public:
   test_xhtml_diagnostic_context ()
   {
-    auto format = ::make_unique<xhtml_buffered_output_format> (*this,
-							       line_table);
+    auto format = std::make_unique<xhtml_buffered_output_format> (*this,
+								  line_table);
     m_format = format.get (); // borrowed
     diagnostic_output_format_init_xhtml (*this, std::move (format));
   }
@@ -974,9 +973,9 @@ plugin_init (struct plugin_name_args *plugin_info,
     return 1;
 
   global_dc->set_output_format
-    (::make_unique<xhtml_stream_output_format> (*global_dc,
-						line_table,
-						stderr));
+    (std::make_unique<xhtml_stream_output_format> (*global_dc,
+						   line_table,
+						   stderr));
 
 #if CHECKING_P
   selftest::xhtml_format_selftests ();

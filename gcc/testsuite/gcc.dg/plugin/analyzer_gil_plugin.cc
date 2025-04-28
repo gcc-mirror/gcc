@@ -10,7 +10,6 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "make-unique.h"
 #include "diagnostic.h"
 #include "tree.h"
 #include "gimple.h"
@@ -325,9 +324,9 @@ gil_state_machine::check_for_pyobject_in_call (sm_context &sm_ctxt,
       if (type_based_on_pyobject_p (type))
 	{
 	  sm_ctxt.warn (node, &call, NULL_TREE,
-			make_unique<fncall_without_gil> (*this, call,
-							 callee_fndecl,
-							 i));
+			std::make_unique<fncall_without_gil> (*this, call,
+							      callee_fndecl,
+							      i));
 	  sm_ctxt.set_global_state (m_stop);
 	}
     }
@@ -354,7 +353,7 @@ gil_state_machine::on_stmt (sm_context &sm_ctxt,
 	      if (global_state == m_released_gil)
 		{
 		  sm_ctxt.warn (node, stmt, NULL_TREE,
-				make_unique<double_save_thread> (*this, call));
+				std::make_unique<double_save_thread> (*this, call));
 		  sm_ctxt.set_global_state (m_stop);
 		}
 	      else
@@ -410,7 +409,7 @@ gil_state_machine::check_for_pyobject_usage_without_gil (sm_context &sm_ctxt,
   if (type_based_on_pyobject_p (type))
     {
       sm_ctxt.warn (node, stmt, NULL_TREE,
-		    make_unique<pyobject_usage_without_gil> (*this, op));
+		    std::make_unique<pyobject_usage_without_gil> (*this, op));
       sm_ctxt.set_global_state (m_stop);
     }
 }
@@ -426,7 +425,7 @@ gil_analyzer_init_cb (void *gcc_data, void */*user_data*/)
   if (0)
     inform (input_location, "got here: gil_analyzer_init_cb");
   iface->register_state_machine
-    (make_unique<gil_state_machine> (iface->get_logger ()));
+    (std::make_unique<gil_state_machine> (iface->get_logger ()));
 }
 
 } // namespace ana

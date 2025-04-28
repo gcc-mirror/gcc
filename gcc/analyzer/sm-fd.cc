@@ -1438,7 +1438,7 @@ fd_state_machine::check_for_fd_attrs (
 	    {
 
 	      sm_ctxt.warn (node, stmt, arg,
-			    make_unique<fd_use_after_close>
+			    std::make_unique<fd_use_after_close>
 			    (*this, diag_arg,
 			     fndecl, attr_name,
 			     arg_idx));
@@ -1450,7 +1450,7 @@ fd_state_machine::check_for_fd_attrs (
 	      if (!is_constant_fd_p (state))
 		{
 		  sm_ctxt.warn (node, stmt, arg,
-				make_unique<fd_use_without_check>
+				std::make_unique<fd_use_without_check>
 				(*this, diag_arg,
 				 fndecl, attr_name,
 				 arg_idx));
@@ -1466,13 +1466,13 @@ fd_state_machine::check_for_fd_attrs (
 
 	      if (is_writeonly_fd_p (state))
 		{
-		  sm_ctxt.warn (
-		      node, stmt, arg,
-		      make_unique<fd_access_mode_mismatch> (*this, diag_arg,
-							    DIRS_WRITE,
-							    fndecl,
-							    attr_name,
-							    arg_idx));
+		  sm_ctxt.warn
+		    (node, stmt, arg,
+		     std::make_unique<fd_access_mode_mismatch> (*this, diag_arg,
+								DIRS_WRITE,
+								fndecl,
+								attr_name,
+								arg_idx));
 		}
 
 	      break;
@@ -1480,13 +1480,13 @@ fd_state_machine::check_for_fd_attrs (
 
 	      if (is_readonly_fd_p (state))
 		{
-		  sm_ctxt.warn (
-		      node, stmt, arg,
-		      make_unique<fd_access_mode_mismatch> (*this, diag_arg,
-							    DIRS_READ,
-							    fndecl,
-							    attr_name,
-							    arg_idx));
+		  sm_ctxt.warn
+		    (node, stmt, arg,
+		     std::make_unique<fd_access_mode_mismatch> (*this, diag_arg,
+								DIRS_READ,
+								fndecl,
+								attr_name,
+								arg_idx));
 		}
 
 	      break;
@@ -1528,7 +1528,7 @@ fd_state_machine::on_open (sm_context &sm_ctxt, const supernode *node,
   else
     {
       sm_ctxt.warn (node, stmt, NULL_TREE,
-		    make_unique<fd_leak> (*this, NULL_TREE));
+		    std::make_unique<fd_leak> (*this, NULL_TREE));
     }
 }
 
@@ -1541,7 +1541,7 @@ fd_state_machine::on_creat (sm_context &sm_ctxt, const supernode *node,
     sm_ctxt.on_transition (node, stmt, lhs, m_start, m_unchecked_write_only);
   else
     sm_ctxt.warn (node, stmt, NULL_TREE,
-		  make_unique<fd_leak> (*this, NULL_TREE));
+		  std::make_unique<fd_leak> (*this, NULL_TREE));
 }
 
 void
@@ -1587,8 +1587,8 @@ fd_state_machine::check_for_dup (sm_context &sm_ctxt, const supernode *node,
 	{
 	  sm_ctxt.warn (
 	      node, stmt, arg_2,
-	      make_unique<fd_use_without_check> (*this, diag_arg_2,
-						 callee_fndecl));
+	      std::make_unique<fd_use_without_check> (*this, diag_arg_2,
+						      callee_fndecl));
 	  return;
 	}
       /* dup2 returns value of its second argument on success.But, the
@@ -1635,7 +1635,7 @@ fd_state_machine::on_close (sm_context &sm_ctxt, const supernode *node,
   if (is_closed_fd_p (state))
     {
       sm_ctxt.warn (node, stmt, arg,
-		    make_unique<fd_double_close> (*this, diag_arg));
+		    std::make_unique<fd_double_close> (*this, diag_arg));
       sm_ctxt.set_next_state (stmt, arg, m_stop);
     }
 }
@@ -1667,8 +1667,8 @@ fd_state_machine::check_for_open_fd (
   if (is_closed_fd_p (state))
     {
       sm_ctxt.warn (node, stmt, arg,
-		    make_unique<fd_use_after_close> (*this, diag_arg,
-						     callee_fndecl));
+		    std::make_unique<fd_use_after_close> (*this, diag_arg,
+							  callee_fndecl));
     }
 
   else
@@ -1679,10 +1679,10 @@ fd_state_machine::check_for_open_fd (
 	/* Complain about fncall on socket in wrong phase.  */
 	sm_ctxt.warn
 	  (node, stmt, arg,
-	   make_unique<fd_phase_mismatch> (*this, diag_arg,
-					   callee_fndecl,
-					   state,
-					   EXPECTED_PHASE_CAN_TRANSFER));
+	   std::make_unique<fd_phase_mismatch> (*this, diag_arg,
+						callee_fndecl,
+						state,
+						EXPECTED_PHASE_CAN_TRANSFER));
       else if (!(is_valid_fd_p (state)
 		 || state == m_new_datagram_socket
 		 || state == m_bound_unknown_socket
@@ -1693,8 +1693,8 @@ fd_state_machine::check_for_open_fd (
 	  if (!is_constant_fd_p (state))
 	    sm_ctxt.warn (
 		node, stmt, arg,
-		make_unique<fd_use_without_check> (*this, diag_arg,
-						   callee_fndecl));
+		std::make_unique<fd_use_without_check> (*this, diag_arg,
+							callee_fndecl));
 	}
       switch (callee_fndecl_dir)
 	{
@@ -1705,8 +1705,8 @@ fd_state_machine::check_for_open_fd (
 	    {
 	      tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
 	      sm_ctxt.warn (node, stmt, arg,
-			    make_unique<fd_access_mode_mismatch> (
-			      *this, diag_arg, DIRS_WRITE, callee_fndecl));
+			    std::make_unique<fd_access_mode_mismatch>
+			      (*this, diag_arg, DIRS_WRITE, callee_fndecl));
 	    }
 
 	  break;
@@ -1716,8 +1716,8 @@ fd_state_machine::check_for_open_fd (
 	    {
 	      tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
 	      sm_ctxt.warn (node, stmt, arg,
-			     make_unique<fd_access_mode_mismatch> (
-				 *this, diag_arg, DIRS_READ, callee_fndecl));
+			    std::make_unique<fd_access_mode_mismatch>
+			      (*this, diag_arg, DIRS_READ, callee_fndecl));
 	    }
 	  break;
 	}
@@ -1792,7 +1792,7 @@ fd_state_machine::on_socket (const call_details &cd,
 	}
       else
 	sm_ctxt.warn (node, &call, NULL_TREE,
-		      make_unique<fd_leak> (*this, NULL_TREE));
+		      std::make_unique<fd_leak> (*this, NULL_TREE));
     }
   else
     {
@@ -1829,8 +1829,8 @@ fd_state_machine::check_for_socket_fd (const call_details &cd,
       tree diag_arg = sm_ctxt.get_diagnostic_tree (fd_sval);
       sm_ctxt.warn
 	(node, &call, fd_sval,
-	 make_unique<fd_use_after_close> (*this, diag_arg,
-					  cd.get_fndecl_for_call ()));
+	 std::make_unique<fd_use_after_close> (*this, diag_arg,
+					       cd.get_fndecl_for_call ()));
       if (complained)
 	*complained = true;
       if (successful)
@@ -1842,10 +1842,10 @@ fd_state_machine::check_for_socket_fd (const call_details &cd,
       tree diag_arg = sm_ctxt.get_diagnostic_tree (fd_sval);
       sm_ctxt.warn
 	(node, &call, fd_sval,
-	 make_unique<fd_type_mismatch> (*this, diag_arg,
-					cd.get_fndecl_for_call (),
-					old_state,
-					EXPECTED_TYPE_SOCKET));
+	 std::make_unique<fd_type_mismatch> (*this, diag_arg,
+					     cd.get_fndecl_for_call (),
+					     old_state,
+					     EXPECTED_TYPE_SOCKET));
       if (complained)
 	*complained = true;
       if (successful)
@@ -1856,8 +1856,8 @@ fd_state_machine::check_for_socket_fd (const call_details &cd,
       tree diag_arg = sm_ctxt.get_diagnostic_tree (fd_sval);
       sm_ctxt.warn
 	(node, &call, fd_sval,
-	 make_unique<fd_use_without_check> (*this, diag_arg,
-					    cd.get_fndecl_for_call ()));
+	 std::make_unique<fd_use_without_check> (*this, diag_arg,
+						 cd.get_fndecl_for_call ()));
       if (complained)
 	*complained = true;
       if (successful)
@@ -1919,10 +1919,10 @@ fd_state_machine::check_for_new_socket_fd (const call_details &cd,
       tree diag_arg = sm_ctxt.get_diagnostic_tree (fd_sval);
       sm_ctxt.warn
 	(node, &cd.get_call_stmt (), fd_sval,
-	 make_unique<fd_phase_mismatch> (*this, diag_arg,
-					 cd.get_fndecl_for_call (),
-					 old_state,
-					 expected_phase));
+	 std::make_unique<fd_phase_mismatch> (*this, diag_arg,
+					      cd.get_fndecl_for_call (),
+					      old_state,
+					      expected_phase));
       if (successful)
 	return false;
     }
@@ -2029,17 +2029,17 @@ fd_state_machine::on_listen (const call_details &cd,
       if (is_stream_socket_fd_p (old_state))
 	sm_ctxt.warn
 	  (node, &call, fd_sval,
-	   make_unique<fd_phase_mismatch> (*this, diag_arg,
-					   cd.get_fndecl_for_call (),
-					   old_state,
-					   EXPECTED_PHASE_CAN_LISTEN));
+	   std::make_unique<fd_phase_mismatch> (*this, diag_arg,
+						cd.get_fndecl_for_call (),
+						old_state,
+						EXPECTED_PHASE_CAN_LISTEN));
       else
 	sm_ctxt.warn
 	  (node, &call, fd_sval,
-	   make_unique<fd_type_mismatch> (*this, diag_arg,
-					  cd.get_fndecl_for_call (),
-					  old_state,
-					  EXPECTED_TYPE_STREAM_SOCKET));
+	   std::make_unique<fd_type_mismatch> (*this, diag_arg,
+					       cd.get_fndecl_for_call (),
+					       old_state,
+					       EXPECTED_TYPE_STREAM_SOCKET));
       if (successful)
 	return false;
     }
@@ -2150,17 +2150,17 @@ fd_state_machine::on_accept (const call_details &cd,
       if (is_stream_socket_fd_p (old_state))
 	sm_ctxt.warn
 	  (node, &call, fd_sval,
-	   make_unique<fd_phase_mismatch> (*this, diag_arg,
-					   cd.get_fndecl_for_call (),
-					   old_state,
-					   EXPECTED_PHASE_CAN_ACCEPT));
+	   std::make_unique<fd_phase_mismatch> (*this, diag_arg,
+						cd.get_fndecl_for_call (),
+						old_state,
+						EXPECTED_PHASE_CAN_ACCEPT));
       else
 	sm_ctxt.warn
 	  (node, &call, fd_sval,
-	   make_unique<fd_type_mismatch> (*this, diag_arg,
-					  cd.get_fndecl_for_call (),
-					  old_state,
-					  EXPECTED_TYPE_STREAM_SOCKET));
+	   std::make_unique<fd_type_mismatch> (*this, diag_arg,
+					       cd.get_fndecl_for_call (),
+					       old_state,
+					       EXPECTED_TYPE_STREAM_SOCKET));
       if (successful)
 	return false;
     }
@@ -2185,7 +2185,7 @@ fd_state_machine::on_accept (const call_details &cd,
 	}
       else
 	sm_ctxt.warn (node, &call, NULL_TREE,
-		      make_unique<fd_leak> (*this, NULL_TREE));
+		      std::make_unique<fd_leak> (*this, NULL_TREE));
     }
   else
     {
@@ -2323,7 +2323,7 @@ fd_state_machine::can_purge_p (state_t s) const
 std::unique_ptr<pending_diagnostic>
 fd_state_machine::on_leak (tree var) const
 {
-  return make_unique<fd_leak> (*this, var);
+  return std::make_unique<fd_leak> (*this, var);
 }
 } // namespace
 
@@ -2415,8 +2415,10 @@ public:
   {
     if (cd.get_ctxt ())
       {
-	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_socket> (cd, false));
-	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_socket> (cd, true));
+	cd.get_ctxt ()->bifurcate
+	  (std::make_unique<outcome_of_socket> (cd, false));
+	cd.get_ctxt ()->bifurcate
+	  (std::make_unique<outcome_of_socket> (cd, true));
 	cd.get_ctxt ()->terminate_path ();
       }
   }
@@ -2467,8 +2469,10 @@ public:
   {
     if (cd.get_ctxt ())
       {
-	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_bind> (cd, false));
-	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_bind> (cd, true));
+	cd.get_ctxt ()->bifurcate
+	  (std::make_unique<outcome_of_bind> (cd, false));
+	cd.get_ctxt ()->bifurcate
+	  (std::make_unique<outcome_of_bind> (cd, true));
 	cd.get_ctxt ()->terminate_path ();
       }
   }
@@ -2519,8 +2523,10 @@ class kf_listen : public known_function
   {
     if (cd.get_ctxt ())
       {
-	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_listen> (cd, false));
-	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_listen> (cd, true));
+	cd.get_ctxt ()->bifurcate
+	  (std::make_unique<outcome_of_listen> (cd, false));
+	cd.get_ctxt ()->bifurcate
+	  (std::make_unique<outcome_of_listen> (cd, true));
 	cd.get_ctxt ()->terminate_path ();
       }
   }
@@ -2573,8 +2579,10 @@ class kf_accept : public known_function
   {
     if (cd.get_ctxt ())
       {
-	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_accept> (cd, false));
-	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_accept> (cd, true));
+	cd.get_ctxt ()->bifurcate
+	  (std::make_unique<outcome_of_accept> (cd, false));
+	cd.get_ctxt ()->bifurcate
+	  (std::make_unique<outcome_of_accept> (cd, true));
 	cd.get_ctxt ()->terminate_path ();
       }
   }
@@ -2627,8 +2635,10 @@ public:
   {
     if (cd.get_ctxt ())
       {
-	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_connect> (cd, false));
-	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_connect> (cd, true));
+	cd.get_ctxt ()->bifurcate
+	  (std::make_unique<outcome_of_connect> (cd, false));
+	cd.get_ctxt ()->bifurcate
+	  (std::make_unique<outcome_of_connect> (cd, true));
 	cd.get_ctxt ()->terminate_path ();
       }
   }
@@ -2705,8 +2715,10 @@ public:
   {
     if (cd.get_ctxt ())
       {
-	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_isatty> (cd, false));
-	cd.get_ctxt ()->bifurcate (make_unique<outcome_of_isatty> (cd, true));
+	cd.get_ctxt ()->bifurcate
+	  (std::make_unique<outcome_of_isatty> (cd, false));
+	cd.get_ctxt ()->bifurcate
+	  (std::make_unique<outcome_of_isatty> (cd, true));
 	cd.get_ctxt ()->terminate_path ();
       }
   }
@@ -2788,8 +2800,10 @@ public:
   {
     if (cd.get_ctxt ())
       {
-	cd.get_ctxt ()->bifurcate (make_unique<failure> (cd));
-	cd.get_ctxt ()->bifurcate (make_unique<success> (cd));
+	cd.get_ctxt ()->bifurcate
+	  (std::make_unique<failure> (cd));
+	cd.get_ctxt ()->bifurcate
+	  (std::make_unique<success> (cd));
 	cd.get_ctxt ()->terminate_path ();
       }
   }
@@ -2837,15 +2851,15 @@ public:
 void
 register_known_fd_functions (known_function_manager &kfm)
 {
-  kfm.add ("accept", make_unique<kf_accept> ());
-  kfm.add ("bind", make_unique<kf_bind> ());
-  kfm.add ("connect", make_unique<kf_connect> ());
-  kfm.add ("isatty", make_unique<kf_isatty> ());
-  kfm.add ("listen", make_unique<kf_listen> ());
-  kfm.add ("pipe", make_unique<kf_pipe> (1));
-  kfm.add ("pipe2", make_unique<kf_pipe> (2));
-  kfm.add ("read", make_unique<kf_read> ());
-  kfm.add ("socket", make_unique<kf_socket> ());
+  kfm.add ("accept", std::make_unique<kf_accept> ());
+  kfm.add ("bind", std::make_unique<kf_bind> ());
+  kfm.add ("connect", std::make_unique<kf_connect> ());
+  kfm.add ("isatty", std::make_unique<kf_isatty> ());
+  kfm.add ("listen", std::make_unique<kf_listen> ());
+  kfm.add ("pipe", std::make_unique<kf_pipe> (1));
+  kfm.add ("pipe2", std::make_unique<kf_pipe> (2));
+  kfm.add ("read", std::make_unique<kf_read> ());
+  kfm.add ("socket", std::make_unique<kf_socket> ());
 }
 
 } // namespace ana

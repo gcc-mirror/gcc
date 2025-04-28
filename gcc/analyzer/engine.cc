@@ -572,17 +572,17 @@ get_state_map_by_name (const char *name,
     {
       const sm_state_map *old_smap = m_old_state->m_checker_states[sm_idx];
       *out_sm_context
-	= make_unique<impl_sm_context> (*m_eg,
-					sm_idx,
-					*sm,
-					m_enode_for_diag,
-					m_old_state,
-					m_new_state,
-					old_smap,
-					new_smap,
-					m_path_ctxt,
-					m_stmt_finder,
-					false);
+	= std::make_unique<impl_sm_context> (*m_eg,
+					     sm_idx,
+					     *sm,
+					     m_enode_for_diag,
+					     m_old_state,
+					     m_new_state,
+					     old_smap,
+					     new_smap,
+					     m_path_ctxt,
+					     m_stmt_finder,
+					     false);
     }
   return true;
 }
@@ -598,7 +598,7 @@ public:
 
   std::unique_ptr<stmt_finder> clone () const final override
   {
-    return make_unique<leak_stmt_finder> (m_eg, m_var);
+    return std::make_unique<leak_stmt_finder> (m_eg, m_var);
   }
 
   const gimple *find_stmt (const exploded_path &epath)
@@ -1429,7 +1429,7 @@ exploded_node::dump (const extrinsic_state &ext_state) const
 std::unique_ptr<json::object>
 exploded_node::to_json (const extrinsic_state &ext_state) const
 {
-  auto enode_obj = ::make_unique<json::object> ();
+  auto enode_obj = std::make_unique<json::object> ();
 
   enode_obj->set ("point", get_point ().to_json ());
   enode_obj->set ("state", get_state ().to_json (ext_state));
@@ -1743,10 +1743,11 @@ exploded_node::replay_call_summary (exploded_graph &eg,
   call_summary_replay r (cd, called_fn, summary, ext_state);
 
   if (path_ctxt)
-    path_ctxt->bifurcate (make_unique<call_summary_edge_info> (cd,
-							       called_fn,
-							       summary,
-							       ext_state));
+    path_ctxt->bifurcate
+      (std::make_unique<call_summary_edge_info> (cd,
+						 called_fn,
+						 summary,
+						 ext_state));
 }
 
 
@@ -1941,9 +1942,9 @@ exploded_node::on_longjmp (exploded_graph &eg,
   /* Verify that the setjmp's call_stack hasn't been popped.  */
   if (!valid_longjmp_stack_p (longjmp_point, setjmp_point))
     {
-      ctxt->warn (make_unique<stale_jmp_buf> (setjmp_call,
-					      longjmp_call,
-					      setjmp_point));
+      ctxt->warn (std::make_unique<stale_jmp_buf> (setjmp_call,
+						   longjmp_call,
+						   setjmp_point));
       return;
     }
 
@@ -1977,8 +1978,8 @@ exploded_node::on_longjmp (exploded_graph &eg,
     {
       exploded_edge *eedge
 	= eg.add_edge (const_cast<exploded_node *> (this), next, NULL, true,
-		       make_unique<rewind_info_t> (tmp_setjmp_record,
-						   longjmp_call));
+		       std::make_unique<rewind_info_t> (tmp_setjmp_record,
+							longjmp_call));
 
       /* For any diagnostics that were queued here (such as leaks) we want
 	 the checker_path to show the rewinding events after the "final event"
@@ -2122,16 +2123,16 @@ dynamic_call_info_t::add_events_to_path (checker_path *emission_path,
 
   if (m_is_returning_call)
     emission_path->add_event
-      (make_unique<return_event> (eedge,
-				  event_loc_info (m_dynamic_call.location,
-						  dest_point.get_fndecl (),
-						  dest_stack_depth)));
+      (std::make_unique<return_event> (eedge,
+				       event_loc_info (m_dynamic_call.location,
+						       dest_point.get_fndecl (),
+						       dest_stack_depth)));
   else
     emission_path->add_event
-      (make_unique<call_event> (eedge,
-				event_loc_info (m_dynamic_call.location,
-						src_point.get_fndecl (),
-						src_stack_depth)));
+      (std::make_unique<call_event> (eedge,
+				     event_loc_info (m_dynamic_call.location,
+						     src_point.get_fndecl (),
+						     src_stack_depth)));
 }
 
 /* class rewind_info_t : public custom_edge_info.  */
@@ -2176,19 +2177,19 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
   const int dst_stack_depth = dst_point.get_stack_depth ();
 
   emission_path->add_event
-    (make_unique<rewind_from_longjmp_event>
-     (&eedge,
-      event_loc_info (get_longjmp_call ().location,
-		      src_point.get_fndecl (),
-		      src_stack_depth),
-      this));
+    (std::make_unique<rewind_from_longjmp_event>
+       (&eedge,
+	event_loc_info (get_longjmp_call ().location,
+			src_point.get_fndecl (),
+			src_stack_depth),
+	this));
   emission_path->add_event
-    (make_unique<rewind_to_setjmp_event>
-     (&eedge,
-      event_loc_info (get_setjmp_call ().location,
-		      dst_point.get_fndecl (),
-		      dst_stack_depth),
-      this));
+    (std::make_unique<rewind_to_setjmp_event>
+       (&eedge,
+	event_loc_info (get_setjmp_call ().location,
+			dst_point.get_fndecl (),
+			dst_stack_depth),
+	this));
 }
 
 /* class exploded_edge : public dedge<eg_traits>.  */
@@ -2281,7 +2282,7 @@ exploded_edge::dump_dot_label (pretty_printer *pp) const
 std::unique_ptr<json::object>
 exploded_edge::to_json () const
 {
-  auto eedge_obj = ::make_unique<json::object> ();
+  auto eedge_obj = std::make_unique<json::object> ();
   eedge_obj->set_integer ("src_idx", m_src->m_index);
   eedge_obj->set_integer ("dst_idx", m_dest->m_index);
   if (m_sedge)
@@ -2407,9 +2408,9 @@ strongly_connected_components::dump () const
 std::unique_ptr<json::array>
 strongly_connected_components::to_json () const
 {
-  auto scc_arr = ::make_unique<json::array> ();
+  auto scc_arr = std::make_unique<json::array> ();
   for (int i = 0; i < m_sg.num_nodes (); i++)
-    scc_arr->append (::make_unique<json::integer_number> (get_scc_id (i)));
+    scc_arr->append (std::make_unique<json::integer_number> (get_scc_id (i)));
   return scc_arr;
 }
 
@@ -2628,7 +2629,7 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
 std::unique_ptr<json::object>
 worklist::to_json () const
 {
-  auto worklist_obj = ::make_unique<json::object> ();
+  auto worklist_obj = std::make_unique<json::object> ();
 
   worklist_obj->set ("scc", m_scc.to_json ());
 
@@ -2778,8 +2779,8 @@ public:
 			   const exploded_edge &) const final override
   {
     emission_path->add_event
-      (make_unique<tainted_args_function_custom_event>
-       (event_loc_info (DECL_SOURCE_LOCATION (m_fndecl), m_fndecl, 0)));
+      (std::make_unique<tainted_args_function_custom_event>
+	 (event_loc_info (DECL_SOURCE_LOCATION (m_fndecl), m_fndecl, 0)));
   }
 
 private:
@@ -2820,7 +2821,7 @@ exploded_graph::add_function_entry (const function &fun)
   if (lookup_attribute ("tainted_args", DECL_ATTRIBUTES (fun.decl)))
     {
       if (mark_params_as_tainted (&state, fun.decl, m_ext_state))
-	edge_info = make_unique<tainted_args_function_info> (fun.decl);
+	edge_info = std::make_unique<tainted_args_function_info> (fun.decl);
     }
 
   if (!state.m_valid)
@@ -3225,16 +3226,16 @@ public:
     /* Show the field in the struct declaration, e.g.
        "(1) field 'store' is marked with '__attribute__((tainted_args))'"  */
     emission_path->add_event
-      (make_unique<tainted_args_field_custom_event> (m_field));
+      (std::make_unique<tainted_args_field_custom_event> (m_field));
 
     /* Show the callback in the initializer
        e.g.
        "(2) function 'gadget_dev_desc_UDC_store' used as initializer
        for field 'store' marked with '__attribute__((tainted_args))'".  */
     emission_path->add_event
-      (make_unique<tainted_args_callback_custom_event>
-       (event_loc_info (m_loc, m_fndecl, 0),
-	m_field));
+      (std::make_unique<tainted_args_callback_custom_event>
+	 (event_loc_info (m_loc, m_fndecl, 0),
+	  m_field));
   }
 
 private:
@@ -3291,7 +3292,7 @@ add_tainted_args_callback (exploded_graph *eg, tree field, tree fndecl,
     }
 
   eg->add_edge (eg->get_origin (), enode, NULL, false,
-		make_unique<tainted_args_call_info> (field, fndecl, loc));
+		std::make_unique<tainted_args_call_info> (field, fndecl, loc));
 }
 
 /* Callback for walk_tree for finding callbacks within initializers;
@@ -3892,7 +3893,7 @@ exploded_graph::maybe_create_dynamic_call (const gcall &call,
 	  if (enode)
 	    add_edge (node,enode, NULL,
 		      false, /* No work is done by the call itself.  */
-		      make_unique<dynamic_call_info_t> (call));
+		      std::make_unique<dynamic_call_info_t> (call));
 	  return true;
 	}
     }
@@ -4362,7 +4363,8 @@ exploded_graph::process_node (exploded_node *node)
 			const svalue *fn_ptr_sval
 			  = model->get_rvalue (fn_ptr, &ctxt);
 			if (fn_ptr_sval->all_zeroes_p ())
-			  ctxt.warn (make_unique<jump_through_null> (call));
+			  ctxt.warn
+			    (std::make_unique<jump_through_null> (call));
 		      }
 
 		    /* An unknown function or a special function was called
@@ -4429,7 +4431,7 @@ exploded_graph::process_node (exploded_node *node)
 							   node);
 		if (enode)
 		  add_edge (node, enode, NULL, false,
-			    make_unique<dynamic_call_info_t> (*call, true));
+			    std::make_unique<dynamic_call_info_t> (*call, true));
 	      }
 	  }
       }
@@ -4648,11 +4650,11 @@ exploded_graph::dump_states_for_supernode (FILE *out,
 std::unique_ptr<json::object>
 exploded_graph::to_json () const
 {
-  auto egraph_obj = ::make_unique<json::object> ();
+  auto egraph_obj = std::make_unique<json::object> ();
 
   /* Nodes.  */
   {
-    auto nodes_arr = ::make_unique<json::array> ();
+    auto nodes_arr = std::make_unique<json::array> ();
     unsigned i;
     exploded_node *n;
     FOR_EACH_VEC_ELT (m_nodes, i, n)
@@ -4662,7 +4664,7 @@ exploded_graph::to_json () const
 
   /* Edges.  */
   {
-    auto edges_arr = ::make_unique<json::array> ();
+    auto edges_arr = std::make_unique<json::array> ();
     unsigned i;
     exploded_edge *n;
     FOR_EACH_VEC_ELT (m_edges, i, n)
@@ -4768,9 +4770,9 @@ exploded_path::feasible_p (logger *logger,
 	      const program_point &src_point = src_enode.get_point ();
 	      const gimple *last_stmt
 		= src_point.get_supernode ()->get_last_stmt ();
-	      *out = ::make_unique<feasibility_problem> (edge_idx, *eedge,
-							 last_stmt,
-							 std::move (rc));
+	      *out = std::make_unique<feasibility_problem> (edge_idx, *eedge,
+							    last_stmt,
+							    std::move (rc));
 	    }
 	  return false;
 	}
@@ -6082,7 +6084,7 @@ dump_analyzer_json (const supergraph &sg,
       return;
     }
 
-  auto toplev_obj = ::make_unique<json::object> ();
+  auto toplev_obj = std::make_unique<json::object> ();
   toplev_obj->set ("sgraph", sg.to_json ());
   toplev_obj->set ("egraph", eg.to_json ());
 

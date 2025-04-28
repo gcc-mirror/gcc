@@ -191,7 +191,7 @@ epath_finder::get_best_epath (const exploded_node *enode,
 	logger->log ("trying to find shortest path ignoring feasibility");
       gcc_assert (m_sep);
       std::unique_ptr<exploded_path> epath
-	= make_unique<exploded_path> (m_sep->get_shortest_path (enode));
+	= std::make_unique<exploded_path> (m_sep->get_shortest_path (enode));
       if (epath->feasible_p (logger, out_problem, m_eg.get_engine (), &m_eg))
 	{
 	  if (logger)
@@ -730,7 +730,7 @@ saved_diagnostic::add_event (std::unique_ptr<checker_event> event)
 std::unique_ptr<json::object>
 saved_diagnostic::to_json () const
 {
-  auto sd_obj = ::make_unique<json::object> ();
+  auto sd_obj = std::make_unique<json::object> ();
 
   if (m_sm)
     sd_obj->set_string ("sm", m_sm->get_name ());
@@ -1036,10 +1036,10 @@ saved_diagnostic::maybe_add_sarif_properties (sarif_object &result_obj) const
   props.set_integer (PROPERTY_PREFIX "idx", m_idx);
   if (m_duplicates.length () > 0)
     {
-      auto duplicates_arr = ::make_unique<json::array> ();
+      auto duplicates_arr = std::make_unique<json::array> ();
       for (auto iter : m_duplicates)
 	{
-	  auto sd_obj = ::make_unique<sarif_object> ();
+	  auto sd_obj = std::make_unique<sarif_object> ();
 	  iter->maybe_add_sarif_properties (*sd_obj);
 	  duplicates_arr->append (std::move (sd_obj));
 	}
@@ -1230,10 +1230,10 @@ diagnostic_manager::add_event (std::unique_ptr<checker_event> event)
 std::unique_ptr<json::object>
 diagnostic_manager::to_json () const
 {
-  auto dm_obj = ::make_unique<json::object> ();
+  auto dm_obj = std::make_unique<json::object> ();
 
   {
-    auto sd_arr = ::make_unique<json::array> ();
+    auto sd_arr = std::make_unique<json::array> ();
     int i;
     saved_diagnostic *sd;
     FOR_EACH_VEC_ELT (m_saved_diagnostics, i, sd)
@@ -1804,16 +1804,16 @@ public:
     int stack_depth = src_stack_depth;
 
     m_emission_path->add_event
-      (make_unique<state_change_event> (supernode,
-					stmt,
-					stack_depth,
-					sm,
-					nullptr,
-					src_sm_val,
-					dst_sm_val,
-					nullptr,
-					dst_state,
-					src_node));
+      (std::make_unique<state_change_event> (supernode,
+					     stmt,
+					     stack_depth,
+					     sm,
+					     nullptr,
+					     src_sm_val,
+					     dst_sm_val,
+					     nullptr,
+					     dst_state,
+					     src_node));
     return false;
   }
 
@@ -1849,16 +1849,16 @@ public:
       return false;
 
     m_emission_path->add_event
-      (make_unique<state_change_event> (supernode,
-					stmt,
-					stack_depth,
-					sm,
-					sval,
-					src_sm_val,
-					dst_sm_val,
-					dst_origin_sval,
-					dst_state,
-					src_node));
+      (std::make_unique<state_change_event> (supernode,
+					     stmt,
+					     stack_depth,
+					     sm,
+					     sval,
+					     src_sm_val,
+					     dst_sm_val,
+					     dst_origin_sval,
+					     dst_state,
+					     src_node));
     return false;
   }
 
@@ -1995,15 +1995,15 @@ struct null_assignment_sm_context : public sm_context
     int stack_depth = m_point->get_stack_depth ();
 
     m_emission_path->add_event
-      (make_unique<state_change_event> (supernode,
-					m_stmt,
-					stack_depth,
-					m_sm,
-					var_new_sval,
-					from, to,
-					nullptr,
-					*m_new_state,
-					nullptr));
+      (std::make_unique<state_change_event> (supernode,
+					     m_stmt,
+					     stack_depth,
+					     m_sm,
+					     var_new_sval,
+					     from, to,
+					     nullptr,
+					     *m_new_state,
+					     nullptr));
   }
 
   void set_next_state (const gimple *stmt,
@@ -2021,15 +2021,15 @@ struct null_assignment_sm_context : public sm_context
     int stack_depth = m_point->get_stack_depth ();
 
     m_emission_path->add_event
-      (make_unique<state_change_event> (supernode,
-					m_stmt,
-					stack_depth,
-					m_sm,
-					sval,
-					from, to,
-					nullptr,
-					*m_new_state,
-					nullptr));
+      (std::make_unique<state_change_event> (supernode,
+					     m_stmt,
+					     stack_depth,
+					     m_sm,
+					     sval,
+					     from, to,
+					     nullptr,
+					     *m_new_state,
+					     nullptr));
   }
 
   void warn (const supernode *, const gimple *,
@@ -2210,16 +2210,17 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 	const gcall *call = dyn_cast <const gcall *> (stmt);
 	if (call && is_setjmp_call_p (*call))
 	  emission_path->add_event
-	    (make_unique<setjmp_event> (event_loc_info (stmt->location,
-							dst_point.get_fndecl (),
-							dst_stack_depth),
-					dst_node,
-					*call));
+	    (std::make_unique<setjmp_event>
+	       (event_loc_info (stmt->location,
+				dst_point.get_fndecl (),
+				dst_stack_depth),
+		dst_node,
+		*call));
 	else
 	  emission_path->add_event
-	    (make_unique<statement_event> (stmt,
-					   dst_point.get_fndecl (),
-					   dst_stack_depth, dst_state));
+	    (std::make_unique<statement_event> (stmt,
+						dst_point.get_fndecl (),
+						dst_stack_depth, dst_state));
 
 	/* Create state change events for assignment to NULL.
 	   Iterate through the stmts in dst_enode, adding state change
@@ -2312,11 +2313,11 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
 		 " at this edge: ");
       pb.get_feasibility_problem ()->dump_to_pp (&pp);
       emission_path->add_event
-	(make_unique<precanned_custom_event>
-	 (event_loc_info (dst_point.get_location (),
-			  dst_point.get_fndecl (),
-			  dst_stack_depth),
-	  pp_formatted_text (&pp)));
+	(std::make_unique<precanned_custom_event>
+	   (event_loc_info (dst_point.get_location (),
+			    dst_point.get_fndecl (),
+			    dst_stack_depth),
+	    pp_formatted_text (&pp)));
     }
 }
 
@@ -2427,17 +2428,18 @@ diagnostic_manager::add_events_for_superedge (const path_builder &pb,
     case SUPEREDGE_CFG_EDGE:
       {
 	emission_path->add_event
-	  (make_unique<start_cfg_edge_event>
-	   (eedge,
-	    event_loc_info (last_stmt ? last_stmt->location : UNKNOWN_LOCATION,
-			    src_point.get_fndecl (),
-			    src_stack_depth)));
+	  (std::make_unique<start_cfg_edge_event>
+	     (eedge,
+	      event_loc_info
+		(last_stmt ? last_stmt->location : UNKNOWN_LOCATION,
+		 src_point.get_fndecl (),
+		 src_stack_depth)));
 	emission_path->add_event
-	  (make_unique<end_cfg_edge_event>
-	    (eedge,
-	     event_loc_info (dst_point.get_supernode ()->get_start_location (),
-			     dst_point.get_fndecl (),
-			     dst_stack_depth)));
+	  (std::make_unique<end_cfg_edge_event>
+	     (eedge,
+	      event_loc_info (dst_point.get_supernode ()->get_start_location (),
+			      dst_point.get_fndecl (),
+			      dst_stack_depth)));
       }
       break;
 
@@ -2450,12 +2452,13 @@ diagnostic_manager::add_events_for_superedge (const path_builder &pb,
 	/* TODO: add a subclass for this, or generate events for the
 	   summary.  */
 	emission_path->add_event
-	  (make_unique<debug_event> (event_loc_info (last_stmt
-						     ? last_stmt->location
-						     : UNKNOWN_LOCATION,
-						     src_point.get_fndecl (),
-						     src_stack_depth),
-				     "call summary"));
+	  (std::make_unique<debug_event>
+	     (event_loc_info (last_stmt
+			      ? last_stmt->location
+			      : UNKNOWN_LOCATION,
+			      src_point.get_fndecl (),
+			      src_stack_depth),
+	      "call summary"));
       }
       break;
 
@@ -2466,10 +2469,11 @@ diagnostic_manager::add_events_for_superedge (const path_builder &pb,
 
 	const gcall &call_stmt = return_edge->get_call_stmt ();
 	emission_path->add_event
-	  (make_unique<return_event> (eedge,
-				      event_loc_info (call_stmt.location,
-						      dst_point.get_fndecl (),
-						      dst_stack_depth)));
+	  (std::make_unique<return_event>
+	     (eedge,
+	      event_loc_info (call_stmt.location,
+			      dst_point.get_fndecl (),
+			      dst_stack_depth)));
       }
       break;
     }

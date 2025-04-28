@@ -219,11 +219,11 @@ std::unique_ptr<json::value>
 tree_to_json (tree node)
 {
   if (!node)
-    return ::make_unique<json::literal> (json::JSON_NULL);
+    return std::make_unique<json::literal> (json::JSON_NULL);
 
   pretty_printer pp;
   dump_generic_node (&pp, node, 0, TDF_VOPS|TDF_MEMSYMS, false);
-  return ::make_unique<json::string> (pp_formatted_text (&pp));
+  return std::make_unique<json::string> (pp_formatted_text (&pp));
 }
 
 /* Generate a JSON value for EVENT_ID.
@@ -238,10 +238,10 @@ diagnostic_event_id_to_json (const diagnostic_event_id_t &event_id)
     {
       pretty_printer pp;
       pp_printf (&pp, "%@", &event_id);
-      return ::make_unique<json::string> (pp_formatted_text (&pp));
+      return std::make_unique<json::string> (pp_formatted_text (&pp));
     }
   else
-    return ::make_unique<json::literal> (json::JSON_NULL);
+    return std::make_unique<json::literal> (json::JSON_NULL);
 }
 
 /* Generate a JSON value for OFFSET.
@@ -253,7 +253,7 @@ bit_offset_to_json (const bit_offset_t &offset)
 {
   pretty_printer pp;
   pp_wide_int_large (&pp, offset, SIGNED);
-  return ::make_unique<json::string> (pp_formatted_text (&pp));
+  return std::make_unique<json::string> (pp_formatted_text (&pp));
 }
 
 /* Generate a JSON value for OFFSET.
@@ -265,7 +265,7 @@ byte_offset_to_json (const byte_offset_t &offset)
 {
   pretty_printer pp;
   pp_wide_int_large (&pp, offset, SIGNED);
-  return ::make_unique<json::string> (pp_formatted_text (&pp));
+  return std::make_unique<json::string> (pp_formatted_text (&pp));
 }
 
 /* Workaround for lack of const-correctness of ssa_default_def.  */

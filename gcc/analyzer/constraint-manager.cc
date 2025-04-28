@@ -436,7 +436,7 @@ bounded_range::dump (bool show_types) const
 std::unique_ptr<json::object>
 bounded_range::to_json () const
 {
-  auto range_obj = ::make_unique<json::object> ();
+  auto range_obj = std::make_unique<json::object> ();
   set_json_attr (*range_obj, "lower", m_lower);
   set_json_attr (*range_obj, "upper", m_upper);
   return range_obj;
@@ -705,7 +705,7 @@ bounded_ranges::dump (bool show_types) const
 std::unique_ptr<json::value>
 bounded_ranges::to_json () const
 {
-  auto arr_obj = ::make_unique<json::array> ();
+  auto arr_obj = std::make_unique<json::array> ();
 
   for (unsigned i = 0; i < m_ranges.length (); ++i)
     arr_obj->append (m_ranges[i].to_json ());
@@ -1103,9 +1103,9 @@ equiv_class::print (pretty_printer *pp) const
 std::unique_ptr<json::object>
 equiv_class::to_json () const
 {
-  auto ec_obj = ::make_unique<json::object> ();
+  auto ec_obj = std::make_unique<json::object> ();
 
-  auto sval_arr = ::make_unique<json::array> ();
+  auto sval_arr = std::make_unique<json::array> ();
   for (const svalue *sval : m_vars)
     sval_arr->append (sval->to_json ());
   ec_obj->set ("svals", std::move (sval_arr));
@@ -1370,7 +1370,7 @@ constraint::print (pretty_printer *pp, const constraint_manager &cm) const
 std::unique_ptr<json::object>
 constraint::to_json () const
 {
-  auto con_obj = ::make_unique<json::object> ();
+  auto con_obj = std::make_unique<json::object> ();
 
   con_obj->set_integer ("lhs", m_lhs.as_int ());
   con_obj->set_string ("op", constraint_op_code (m_op));
@@ -1458,7 +1458,7 @@ bounded_ranges_constraint::print (pretty_printer *pp,
 std::unique_ptr<json::object>
 bounded_ranges_constraint::to_json () const
 {
-  auto con_obj = ::make_unique<json::object> ();
+  auto con_obj = std::make_unique<json::object> ();
 
   con_obj->set_integer ("ec", m_ec_id.as_int ());
   con_obj->set ("ranges", m_ranges->to_json ());
@@ -1771,11 +1771,11 @@ debug (const constraint_manager &cm)
 std::unique_ptr<json::object>
 constraint_manager::to_json () const
 {
-  auto cm_obj = ::make_unique<json::object> ();
+  auto cm_obj = std::make_unique<json::object> ();
 
   /* Equivalence classes.  */
   {
-    auto ec_arr = ::make_unique<json::array> ();
+    auto ec_arr = std::make_unique<json::array> ();
     for (const equiv_class *ec : m_equiv_classes)
       ec_arr->append (ec->to_json ());
     cm_obj->set ("ecs", std::move (ec_arr));
@@ -1783,7 +1783,7 @@ constraint_manager::to_json () const
 
   /* Constraints.  */
   {
-    auto con_arr = ::make_unique<json::array> ();
+    auto con_arr = std::make_unique<json::array> ();
     for (const constraint &c : m_constraints)
       con_arr->append (c.to_json ());
     cm_obj->set ("constraints", std::move (con_arr));
@@ -1791,7 +1791,7 @@ constraint_manager::to_json () const
 
   /* m_bounded_ranges_constraints.  */
   {
-    auto con_arr = ::make_unique<json::array> ();
+    auto con_arr = std::make_unique<json::array> ();
     for (const auto &c : m_bounded_ranges_constraints)
       con_arr->append (c.to_json ());
     cm_obj->set ("bounded_ranges_constraints", std::move (con_arr));

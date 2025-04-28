@@ -136,7 +136,7 @@ symbolic_byte_range::dump (bool simple, region_model_manager &mgr) const
 std::unique_ptr<json::value>
 symbolic_byte_range::to_json () const
 {
-  auto obj = ::make_unique<json::object> ();
+  auto obj = std::make_unique<json::object> ();
   obj->set ("start", m_start.to_json ());
   obj->set ("size", m_size.to_json ());
   return obj;

@@ -23,7 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-event-id.h"
 #include "gcc-rich-location.h"
 #include "gimple-pretty-print.h"
-#include "make-unique.h"
 #include "sbitmap.h"
 #include "selftest.h"
 #include "shortest-paths.h"
@@ -303,7 +302,7 @@ program_point::dump () const
 std::unique_ptr<json::object>
 program_point::to_json () const
 {
-  auto point_obj = ::make_unique<json::object> ();
+  auto point_obj = std::make_unique<json::object> ();
 
   point_obj->set_string ("kind", point_kind_to_string (get_kind ()));
 
