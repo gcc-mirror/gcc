@@ -828,6 +828,7 @@ DefaultASTVisitor::visit (AST::UseTreeRebind &use_tree)
 void
 DefaultASTVisitor::visit (AST::UseDeclaration &use_decl)
 {
+  visit (use_decl.get_visibility ());
   visit (use_decl.get_tree ());
 }
 
