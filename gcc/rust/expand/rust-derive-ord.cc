@@ -46,7 +46,8 @@ DeriveOrd::cmp_call (std::unique_ptr<Expr> &&self_expr,
     {"core", "cmp", trait (ordering), fn (ordering)}, true);
 
   return builder.call (ptrify (cmp_fn_path),
-		       vec (std::move (self_expr), std::move (other_expr)));
+		       vec (builder.ref (std::move (self_expr)),
+			    builder.ref (std::move (other_expr))));
 }
 
 std::unique_ptr<Item>
