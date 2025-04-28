@@ -12901,17 +12901,19 @@ It turns off @option{-fsemantic-interposition}.
 
 @opindex Og
 @item -Og
-Optimize debugging experience.  @option{-Og} should be the optimization
+Optimize while keeping in mind debugging experience.
+@option{-Og} should be the optimization
 level of choice for the standard edit-compile-debug cycle, offering
-a reasonable level of optimization while maintaining fast compilation
-and a good debugging experience.  It is a better choice than @option{-O0}
-for producing debuggable code because some compiler passes
-that collect debug information are disabled at @option{-O0}.
+a reasonable blend of optimization, fast compilation and debugging experience
+especially for code with a high abstraction penalty.  In contrast to
+@option{-O0}, this enables @option{-fvar-tracking-assignments} and
+@option{-fvar-tracking} which handle debug information in the prologue
+and epilogue of functions better than @option{-O0}.
 
-Like @option{-O0}, @option{-Og} completely disables a number of
+Like @option{-O0}, @option{-Og} completely skips a number of
 optimization passes so that individual options controlling them have
 no effect.  Otherwise @option{-Og} enables all @option{-O1}
-optimization flags except for those that may interfere with debugging:
+optimization flags except for those known to greatly interfere with debugging:
 
 @gccoptlist{-fbranch-count-reg  -fdelayed-branch
 -fdse  -fif-conversion  -fif-conversion2
