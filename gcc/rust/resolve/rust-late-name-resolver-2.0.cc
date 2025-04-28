@@ -33,7 +33,9 @@
 namespace Rust {
 namespace Resolver2_0 {
 
-Late::Late (NameResolutionContext &ctx) : DefaultResolver (ctx) {}
+Late::Late (NameResolutionContext &ctx)
+  : DefaultResolver (ctx), funny_error (false)
+{}
 
 static NodeId
 next_node_id ()
