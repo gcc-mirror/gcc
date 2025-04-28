@@ -206,20 +206,20 @@ class exploded_node : public dnode<eg_traits>
      This allows us to distinguish enodes that were merged during
      worklist-handling, and thus never had process_node called on them
      (in favor of processing the merged node).  */
-  enum status
+  enum class status
   {
     /* Node is in the worklist.  */
-    STATUS_WORKLIST,
+    worklist,
 
     /* Node has had exploded_graph::process_node called on it.  */
-    STATUS_PROCESSED,
+    processed,
 
     /* Node was left unprocessed due to merger; it won't have had
        exploded_graph::process_node called on it.  */
-    STATUS_MERGER,
+    merger,
 
     /* Node was processed by maybe_process_run_of_before_supernode_enodes.  */
-    STATUS_BULK_MERGED
+    bulk_merged
   };
   static const char * status_to_str (enum status s);
 
@@ -335,7 +335,7 @@ class exploded_node : public dnode<eg_traits>
   enum status get_status () const { return m_status; }
   void set_status (enum status status)
   {
-    gcc_assert (m_status == STATUS_WORKLIST);
+    gcc_assert (m_status == status::worklist);
     m_status = status;
   }
 

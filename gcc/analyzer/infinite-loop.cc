@@ -410,7 +410,7 @@ starts_infinite_loop_p (const exploded_node &enode,
       if (logger)
 	logger->log ("iter: EN: %i", iter->m_index);
       /* Analysis bailed out before processing this node.  */
-      if (iter->get_status () == exploded_node::STATUS_WORKLIST)
+      if (iter->get_status () == exploded_node::status::worklist)
 	{
 	  if (logger)
 	    logger->log ("rejecting: EN: %i is still in worklist",

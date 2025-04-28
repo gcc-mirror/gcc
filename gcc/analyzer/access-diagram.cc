@@ -235,7 +235,7 @@ get_access_size_str (style_manager &sm,
       pp_format_decoder (&pp) = default_tree_printer;
       if (num_bits.maybe_print_for_user (&pp, op.m_model))
 	{
-	  if (op.m_dir == DIR_READ)
+	  if (op.m_dir == access_direction::read)
 	    return fmt_styled_string (sm,
 				      _("read of %qT (%s)"),
 				      type,
@@ -247,7 +247,7 @@ get_access_size_str (style_manager &sm,
 				      pp_formatted_text (&pp));
 	}
     }
-  if (op.m_dir == DIR_READ)
+  if (op.m_dir == access_direction::read)
     {
       if (auto p
 	  = num_bits.maybe_get_formatted_str (sm, op.m_model,
@@ -274,13 +274,13 @@ get_access_size_str (style_manager &sm,
 
   if (type)
     {
-      if (op.m_dir == DIR_READ)
+      if (op.m_dir == access_direction::read)
 	return fmt_styled_string (sm, _("read of %qT"), type);
       else
 	return fmt_styled_string (sm, _("write of %qT"), type);
     }
 
-  if (op.m_dir == DIR_READ)
+  if (op.m_dir == access_direction::read)
     return styled_string (sm, _("read"));
   else
     return styled_string (sm, _("write"));
@@ -2372,7 +2372,7 @@ private:
 	bit_size_expr num_before_bits
 	  (invalid_before_bits.get_size (m_op.get_manager ()));
 	std::unique_ptr<styled_string> label;
-	if (m_op.m_dir == DIR_READ)
+	if (m_op.m_dir == access_direction::read)
 	  label = num_before_bits.maybe_get_formatted_str
 	    (m_sm, m_op.m_model,
 	     _("under-read of %wi bit"),
@@ -2413,7 +2413,7 @@ private:
     maybe_add_gap (w, invalid_before_bits, valid_bits);
 
     std::unique_ptr<styled_string> label;
-    if (m_op.m_dir == DIR_READ)
+    if (m_op.m_dir == access_direction::read)
       label = num_valid_bits.maybe_get_formatted_str (m_sm,
 						      m_op.m_model,
 						      _("size: %wi bit"),
@@ -2449,7 +2449,7 @@ private:
 	bit_size_expr num_after_bits
 	  (invalid_after_bits.get_size (m_op.get_manager ()));
 	std::unique_ptr<styled_string> label;
-	if (m_op.m_dir == DIR_READ)
+	if (m_op.m_dir == access_direction::read)
 	  label = num_after_bits.maybe_get_formatted_str
 	    (m_sm, m_op.m_model,
 	     _("over-read of %wi bit"),
@@ -2648,7 +2648,7 @@ direction_widget::paint_to_canvas (canvas &canvas)
 	    (canvas,
 	     canvas_x,
 	     canvas::range_t (get_y_range ()),
-	     (m_dia_impl.get_op ().m_dir == DIR_READ
+	     (m_dia_impl.get_op ().m_dir == access_direction::read
 	      ? theme::y_arrow_dir::UP
 	      : theme::y_arrow_dir::DOWN),
 	     style_id);

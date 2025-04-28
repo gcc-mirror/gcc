@@ -2574,7 +2574,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	default:
 	  gcc_unreachable ();
 
-	case EK_DEBUG:
+	case event_kind::debug:
 	  if (m_verbosity < 4)
 	    {
 	      log ("filtering event %i: debug event", idx);
@@ -2582,11 +2582,11 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	    }
 	  break;
 
-	case EK_CUSTOM:
+	case event_kind::custom:
 	  /* Don't filter custom events.  */
 	  break;
 
-	case EK_STMT:
+	case event_kind::stmt:
 	  {
 	    if (m_verbosity < 4)
 	      {
@@ -2596,11 +2596,11 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	  }
 	  break;
 
-	case EK_REGION_CREATION:
+	case event_kind::region_creation:
 	  /* Don't filter these.  */
 	  break;
 
-	case EK_FUNCTION_ENTRY:
+	case event_kind::function_entry:
 	  if (m_verbosity < 1)
 	    {
 	      log ("filtering event %i: function entry", idx);
@@ -2608,7 +2608,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	    }
 	  break;
 
-	case EK_STATE_CHANGE:
+	case event_kind::state_change:
 	  {
 	    state_change_event *state_change = (state_change_event *)base_event;
 	    gcc_assert (state_change->m_dst_state.m_region_model);
@@ -2662,7 +2662,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	  }
 	  break;
 
-	case EK_START_CFG_EDGE:
+	case event_kind::start_cfg_edge:
 	  {
 	    cfg_edge_event *event = (cfg_edge_event *)base_event;
 
@@ -2675,20 +2675,20 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	      {
 		log ("filtering events %i and %i: CFG edge", idx, idx + 1);
 		path->delete_event (idx);
-		/* Also delete the corresponding EK_END_CFG_EDGE.  */
+		/* Also delete the corresponding event_kind::end_cfg_edge.  */
 		gcc_assert (path->get_checker_event (idx)->m_kind
-			    == EK_END_CFG_EDGE);
+			    == event_kind::end_cfg_edge);
 		path->delete_event (idx);
 	      }
 	  }
 	  break;
 
-	case EK_END_CFG_EDGE:
-	  /* These come in pairs with EK_START_CFG_EDGE events and are
+	case event_kind::end_cfg_edge:
+	  /* These come in pairs with event_kind::start_cfg_edge events and are
 	     filtered when their start event is filtered.  */
 	  break;
 
-	case EK_CALL_EDGE:
+	case event_kind::call_edge:
 	  {
 	    call_event *event = (call_event *)base_event;
 	    const region_model *callee_model
@@ -2729,7 +2729,7 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	  }
 	  break;
 
-	case EK_RETURN_EDGE:
+	case event_kind::return_edge:
 	  {
 	    if (sval)
 	      {
@@ -2773,19 +2773,19 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	  }
 	  break;
 
-	case EK_INLINED_CALL:
+	case event_kind::inlined_call:
 	  /* We don't expect to see these yet, as they're added later.
 	     We'd want to keep them around.  */
 	  break;
 
-	case EK_SETJMP:
+	case event_kind::setjmp_:
 	  /* TODO: only show setjmp_events that matter i.e. those for which
 	     there is a later rewind event using them.  */
-	case EK_REWIND_FROM_LONGJMP:
-	case EK_REWIND_TO_SETJMP:
+	case event_kind::rewind_from_longjmp:
+	case event_kind::rewind_to_setjmp:
 	  break;
 
-	case EK_WARNING:
+	case event_kind::warning:
 	  /* Always show the final "warning" event in the path.  */
 	  break;
 	}
@@ -3061,7 +3061,7 @@ diagnostic_manager::consolidate_conditions (checker_path *path) const
 	    continue;
 
 	  /* Are we looking for a run of all TRUE edges, or all FALSE edges?  */
-	  gcc_assert (old_start_ev->m_kind == EK_START_CFG_EDGE);
+	  gcc_assert (old_start_ev->m_kind == event_kind::start_cfg_edge);
 	  const start_cfg_edge_event *old_start_cfg_ev
 	    = (const start_cfg_edge_event *)old_start_ev;
 	  const cfg_superedge& first_cfg_sedge
@@ -3084,7 +3084,7 @@ diagnostic_manager::consolidate_conditions (checker_path *path) const
 	    {
 	      const checker_event *iter_ev
 		= path->get_checker_event (next_idx);
-	      gcc_assert (iter_ev->m_kind == EK_START_CFG_EDGE);
+	      gcc_assert (iter_ev->m_kind == event_kind::start_cfg_edge);
 	      const start_cfg_edge_event *iter_cfg_ev
 		= (const start_cfg_edge_event *)iter_ev;
 	      const cfg_superedge& iter_cfg_sedge
@@ -3142,7 +3142,7 @@ diagnostic_manager::finish_pruning (checker_path *path) const
       while (idx >= 0 && idx < (signed)path->num_events ())
 	{
 	  checker_event *base_event = path->get_checker_event (idx);
-	  if (base_event->m_kind == EK_FUNCTION_ENTRY)
+	  if (base_event->m_kind == event_kind::function_entry)
 	    {
 	      log ("filtering event %i:"
 		   " function entry for purely intraprocedural path", idx);

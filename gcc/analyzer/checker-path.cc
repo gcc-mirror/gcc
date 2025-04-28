@@ -167,8 +167,8 @@ checker_path::cfg_edge_pair_at_p (unsigned idx) const
 {
   if (m_events.length () < idx + 1)
     return false;
-  return (m_events[idx]->m_kind == EK_START_CFG_EDGE
-	  && m_events[idx + 1]->m_kind == EK_END_CFG_EDGE);
+  return (m_events[idx]->m_kind == event_kind::start_cfg_edge
+	  && m_events[idx + 1]->m_kind == event_kind::end_cfg_edge);
 }
 
 /* Consider a call from "outer" to "middle" which calls "inner",
@@ -186,38 +186,38 @@ checker_path::cfg_edge_pair_at_p (unsigned idx) const
    (for gcc.dg/analyzer/inlining-4.c):
 
     before[0]:
-      EK_FUNCTION_ENTRY "entry to ‘outer’"
+      event_kind::function_entry "entry to ‘outer’"
       (depth 1, fndecl ‘outer’, m_loc=511c4)
     before[1]:
-      EK_START_CFG_EDGE "following ‘true’ branch (when ‘flag != 0’)..."
+      event_kind::start_cfg_edge "following ‘true’ branch (when ‘flag != 0’)..."
       (depth 3 corrected from 1,
        fndecl ‘inner’ corrected from ‘outer’, m_loc=8000000f)
     before[2]:
-      EK_END_CFG_EDGE "...to here"
+      event_kind::end_cfg_edge "...to here"
       (depth 1, fndecl ‘outer’, m_loc=0)
     before[3]:
-      EK_WARNING "here (‘<unknown>’ is in state ‘null’)"
+      event_kind::warning "here (‘<unknown>’ is in state ‘null’)"
       (depth 1, fndecl ‘outer’, m_loc=80000004)
 
    We want to add inlined_call_events showing the calls, so that
    the above becomes:
 
     after[0]:
-      EK_FUNCTION_ENTRY "entry to ‘outer’"
+      event_kind::function_entry "entry to ‘outer’"
       (depth 1, fndecl ‘outer’, m_loc=511c4)
     after[1]:
-      EK_INLINED_CALL "inlined call to ‘middle’ from ‘outer’"
+      event_kind::inlined_call "inlined call to ‘middle’ from ‘outer’"
       (depth 1, fndecl ‘outer’, m_loc=53300)
     after[2]:
-      EK_INLINED_CALL "inlined call to ‘inner’ from ‘middle’"
+      event_kind::inlined_call "inlined call to ‘inner’ from ‘middle’"
       (depth 2, fndecl ‘middle’, m_loc=4d2e0)
     after[3]:
-      EK_START_CFG_EDGE "following ‘true’ branch (when ‘flag != 0’)..."
+      event_kind::start_cfg_edge "following ‘true’ branch (when ‘flag != 0’)..."
       (depth 3 corrected from 1,
        fndecl ‘inner’ corrected from ‘outer’, m_loc=8000000f)
-    after[4]: EK_END_CFG_EDGE "...to here"
+    after[4]: event_kind::end_cfg_edge "...to here"
       (depth 1, fndecl ‘outer’, m_loc=0)
-    after[5]: EK_WARNING "here (‘<unknown>’ is in state ‘null’)"
+    after[5]: event_kind::warning "here (‘<unknown>’ is in state ‘null’)"
       (depth 1, fndecl ‘outer’, m_loc=80000004)
 
     where we've added events between before[0] and before[1] to show

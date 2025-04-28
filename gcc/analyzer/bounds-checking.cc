@@ -107,7 +107,7 @@ public:
     sarif_property_bag &props = result_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/out_of_bounds/"
     props.set_string (PROPERTY_PREFIX "dir",
-		      get_dir () == DIR_READ ? "read" : "write");
+		      get_dir () == access_direction::read ? "read" : "write");
     props.set (PROPERTY_PREFIX "model", m_model.to_json ());
     props.set (PROPERTY_PREFIX "region", m_reg->to_json ());
     props.set (PROPERTY_PREFIX "diag_arg", tree_to_json (m_diag_arg));
@@ -496,7 +496,7 @@ public:
       }
   }
 
-  enum access_direction get_dir () const final override { return DIR_WRITE; }
+  enum access_direction get_dir () const final override { return access_direction::write; }
 };
 
 /* Concrete subclass to complain about buffer over-reads.  */
@@ -680,7 +680,7 @@ public:
       }
   }
 
-  enum access_direction get_dir () const final override { return DIR_READ; }
+  enum access_direction get_dir () const final override { return access_direction::read; }
 };
 
 /* Concrete subclass to complain about buffer underwrites.  */
@@ -808,7 +808,7 @@ public:
       }
   }
 
-  enum access_direction get_dir () const final override { return DIR_WRITE; }
+  enum access_direction get_dir () const final override { return access_direction::write; }
 };
 
 /* Concrete subclass to complain about buffer under-reads.  */
@@ -936,7 +936,7 @@ public:
       }
   }
 
-  enum access_direction get_dir () const final override { return DIR_READ; }
+  enum access_direction get_dir () const final override { return access_direction::read; }
 };
 
 /* Abstract class to complain about out-of-bounds read/writes where
@@ -1107,7 +1107,7 @@ public:
     return true;
   }
 
-  enum access_direction get_dir () const final override { return DIR_WRITE; }
+  enum access_direction get_dir () const final override { return access_direction::write; }
 };
 
 /* Concrete subclass to complain about over-reads with symbolic values.  */
@@ -1234,7 +1234,7 @@ public:
     return true;
   }
 
-  enum access_direction get_dir () const final override { return DIR_READ; }
+  enum access_direction get_dir () const final override { return access_direction::read; }
 };
 
 const svalue *
@@ -1418,7 +1418,7 @@ region_model::check_symbolic_bounds (const region *base_reg,
 	default:
 	  gcc_unreachable ();
 	  break;
-	case DIR_READ:
+	case access_direction::read:
 	  gcc_assert (sval_hint == nullptr);
 	  ctxt->warn (make_unique<symbolic_buffer_over_read> (*this,
 							      sized_offset_reg,
@@ -1428,7 +1428,7 @@ region_model::check_symbolic_bounds (const region *base_reg,
 							      capacity_tree));
 	  return false;
 	  break;
-	case DIR_WRITE:
+	case access_direction::write:
 	  ctxt->warn (make_unique<symbolic_buffer_overflow> (*this,
 							     sized_offset_reg,
 							     diag_arg,
@@ -1526,14 +1526,14 @@ region_model::check_region_bounds (const region *reg,
 	default:
 	  gcc_unreachable ();
 	  break;
-	case DIR_READ:
+	case access_direction::read:
 	  gcc_assert (sval_hint == nullptr);
 	  ctxt->warn (make_unique<concrete_buffer_under_read> (*this, reg,
 							       diag_arg,
 							       bits_outside));
 	  oob_safe = false;
 	  break;
-	case DIR_WRITE:
+	case access_direction::write:
 	  ctxt->warn (make_unique<concrete_buffer_underwrite> (*this,
 							       reg, diag_arg,
 							       bits_outside,
@@ -1562,7 +1562,7 @@ region_model::check_region_bounds (const region *reg,
 	default:
 	  gcc_unreachable ();
 	  break;
-	case DIR_READ:
+	case access_direction::read:
 	  gcc_assert (sval_hint == nullptr);
 	  ctxt->warn (make_unique<concrete_buffer_over_read> (*this,
 							      reg, diag_arg,
@@ -1570,7 +1570,7 @@ region_model::check_region_bounds (const region *reg,
 							      bit_bound));
 	  oob_safe = false;
 	  break;
-	case DIR_WRITE:
+	case access_direction::write:
 	  ctxt->warn (make_unique<concrete_buffer_overflow> (*this,
 							     reg, diag_arg,
 							     bits_outside,

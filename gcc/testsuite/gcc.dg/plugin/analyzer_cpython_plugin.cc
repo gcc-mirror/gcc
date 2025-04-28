@@ -680,7 +680,7 @@ kf_PyList_Append::impl_call_post (const call_details &cd) const
           = old_ptr_sval->dyn_cast_region_svalue ())
         {
           const region *freed_reg = old_reg->get_pointee ();
-          model->unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
+          model->unbind_region_and_descendents (freed_reg, poison_kind::freed);
           model->unset_dynamic_extents (freed_reg);
         }
 
@@ -885,7 +885,7 @@ kf_PyList_Append::impl_call_post (const call_details &cd) const
               model->mark_region_as_unknown (freed_reg, cd.get_uncertainty ());
             }
 
-          model->unbind_region_and_descendents (freed_reg, POISON_KIND_FREED);
+          model->unbind_region_and_descendents (freed_reg, poison_kind::freed);
           model->unset_dynamic_extents (freed_reg);
         }
 

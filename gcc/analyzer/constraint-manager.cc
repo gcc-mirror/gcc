@@ -113,7 +113,7 @@ bound::ensure_closed (enum bound_kind bound_kind)
 	 and convert x < 5 into x <= 4.  */
       gcc_assert (CONSTANT_CLASS_P (m_constant));
       gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (m_constant)));
-      m_constant = fold_build2 (bound_kind == BK_UPPER ? MINUS_EXPR : PLUS_EXPR,
+      m_constant = fold_build2 (bound_kind == bound_kind::upper ? MINUS_EXPR : PLUS_EXPR,
 				TREE_TYPE (m_constant),
 				m_constant, integer_one_node);
       gcc_assert (CONSTANT_CLASS_P (m_constant));
@@ -190,8 +190,8 @@ range::constrained_to_single_element ()
     return NULL_TREE;
 
   /* Convert any open bounds to closed bounds.  */
-  m_lower_bound.ensure_closed (BK_LOWER);
-  m_upper_bound.ensure_closed (BK_UPPER);
+  m_lower_bound.ensure_closed (bound_kind::lower);
+  m_upper_bound.ensure_closed (bound_kind::upper);
 
   // Are they equal?
   tree comparison = fold_binary (EQ_EXPR, boolean_type_node,
@@ -302,18 +302,18 @@ range::add_bound (bound b, enum bound_kind bound_kind)
     {
     default:
       gcc_unreachable ();
-    case BK_LOWER:
+    case bound_kind::lower:
       /* Discard redundant bounds.  */
       if (m_lower_bound.m_constant)
 	{
-	  m_lower_bound.ensure_closed (BK_LOWER);
+	  m_lower_bound.ensure_closed (bound_kind::lower);
 	  if (tree_int_cst_le (b.m_constant,
 			       m_lower_bound.m_constant))
 	    return true;
 	}
       if (m_upper_bound.m_constant)
 	{
-	  m_upper_bound.ensure_closed (BK_UPPER);
+	  m_upper_bound.ensure_closed (bound_kind::upper);
 	  /* Reject B <= V <= UPPER when B > UPPER.  */
 	  if (!tree_int_cst_le (b.m_constant,
 				m_upper_bound.m_constant))
@@ -322,18 +322,18 @@ range::add_bound (bound b, enum bound_kind bound_kind)
       m_lower_bound = b;
       break;
 
-    case BK_UPPER:
+    case bound_kind::upper:
       /* Discard redundant bounds.  */
       if (m_upper_bound.m_constant)
 	{
-	  m_upper_bound.ensure_closed (BK_UPPER);
+	  m_upper_bound.ensure_closed (bound_kind::upper);
 	  if (!tree_int_cst_lt (b.m_constant,
 				m_upper_bound.m_constant))
 	    return true;
 	}
       if (m_lower_bound.m_constant)
 	{
-	  m_lower_bound.ensure_closed (BK_LOWER);
+	  m_lower_bound.ensure_closed (bound_kind::lower);
 	  /* Reject LOWER <= V <= B when LOWER > B.  */
 	  if (!tree_int_cst_le (m_lower_bound.m_constant,
 				b.m_constant))
@@ -358,16 +358,16 @@ range::add_bound (enum tree_code op, tree rhs_const)
       return true;
     case LT_EXPR:
       /* "V < RHS_CONST"  */
-      return add_bound (bound (rhs_const, false), BK_UPPER);
+      return add_bound (bound (rhs_const, false), bound_kind::upper);
     case LE_EXPR:
       /* "V <= RHS_CONST"  */
-      return add_bound (bound (rhs_const, true), BK_UPPER);
+      return add_bound (bound (rhs_const, true), bound_kind::upper);
     case GE_EXPR:
       /* "V >= RHS_CONST"  */
-      return add_bound (bound (rhs_const, true), BK_LOWER);
+      return add_bound (bound (rhs_const, true), bound_kind::lower);
     case GT_EXPR:
       /* "V > RHS_CONST"  */
-      return add_bound (bound (rhs_const, false), BK_LOWER);
+      return add_bound (bound (rhs_const, false), bound_kind::lower);
     }
 }
 
@@ -2565,12 +2565,12 @@ constraint_manager::get_ec_bounds (equiv_class_id ec_id) const
 
 	      case CONSTRAINT_LT:
 		/* We have "EC_ID < OTHER_CST".  */
-		result.add_bound (bound (other_cst, false), BK_UPPER);
+		result.add_bound (bound (other_cst, false), bound_kind::upper);
 		break;
 
 	      case CONSTRAINT_LE:
 		/* We have "EC_ID <= OTHER_CST".  */
-		result.add_bound (bound (other_cst, true), BK_UPPER);
+		result.add_bound (bound (other_cst, true), bound_kind::upper);
 		break;
 	      }
 	}
@@ -2587,13 +2587,13 @@ constraint_manager::get_ec_bounds (equiv_class_id ec_id) const
 	      case CONSTRAINT_LT:
 		/* We have "OTHER_CST < EC_ID"
 		   i.e. "EC_ID > OTHER_CST".  */
-		result.add_bound (bound (other_cst, false), BK_LOWER);
+		result.add_bound (bound (other_cst, false), bound_kind::lower);
 		break;
 
 	      case CONSTRAINT_LE:
 		/* We have "OTHER_CST <= EC_ID"
 		   i.e. "EC_ID >= OTHER_CST".  */
-		result.add_bound (bound (other_cst, true), BK_LOWER);
+		result.add_bound (bound (other_cst, true), bound_kind::lower);
 		break;
 	      }
 	}

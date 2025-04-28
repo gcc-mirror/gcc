@@ -588,7 +588,7 @@ public:
 
   bool use_of_uninit_p () const final override
   {
-    return m_pkind == POISON_KIND_UNINIT;
+    return m_pkind == poison_kind::uninit;
   }
 
   bool operator== (const poisoned_value_diagnostic &other) const
@@ -604,12 +604,12 @@ public:
       {
       default:
 	gcc_unreachable ();
-      case POISON_KIND_UNINIT:
+      case poison_kind::uninit:
 	return OPT_Wanalyzer_use_of_uninitialized_value;
-      case POISON_KIND_FREED:
-      case POISON_KIND_DELETED:
+      case poison_kind::freed:
+      case poison_kind::deleted:
 	return OPT_Wanalyzer_use_after_free;
-      case POISON_KIND_POPPED_STACK:
+      case poison_kind::popped_stack:
 	return OPT_Wanalyzer_use_of_pointer_in_stale_stack_frame;
       }
   }
@@ -622,28 +622,28 @@ public:
       {
       default:
 	gcc_unreachable ();
-      case POISON_KIND_UNINIT:
+      case poison_kind::uninit:
 	{
 	  ctxt.add_cwe (457); /* "CWE-457: Use of Uninitialized Variable".  */
 	  return ctxt.warn ("use of uninitialized value %qE",
 			    m_expr);
 	}
 	break;
-      case POISON_KIND_FREED:
+      case poison_kind::freed:
 	{
 	  ctxt.add_cwe (416); /* "CWE-416: Use After Free".  */
 	  return ctxt.warn ("use after %<free%> of %qE",
 			    m_expr);
 	}
 	break;
-      case POISON_KIND_DELETED:
+      case poison_kind::deleted:
 	{
 	  ctxt.add_cwe (416); /* "CWE-416: Use After Free".  */
 	  return ctxt.warn ("use after %<delete%> of %qE",
 			    m_expr);
 	}
 	break;
-      case POISON_KIND_POPPED_STACK:
+      case poison_kind::popped_stack:
 	{
 	  /* TODO: which CWE?  */
 	  return ctxt.warn
@@ -662,28 +662,28 @@ public:
       {
       default:
 	gcc_unreachable ();
-      case POISON_KIND_UNINIT:
+      case poison_kind::uninit:
 	{
 	  pp_printf (&pp,
 		     "use of uninitialized value %qE here",
 		     m_expr);
 	  return true;
 	}
-      case POISON_KIND_FREED:
+      case poison_kind::freed:
 	{
 	  pp_printf (&pp,
 		     "use after %<free%> of %qE here",
 		     m_expr);
 	  return true;
 	}
-      case POISON_KIND_DELETED:
+      case poison_kind::deleted:
 	{
 	  pp_printf (&pp,
 		     "use after %<delete%> of %qE here",
 		     m_expr);
 	  return true;
 	}
-      case POISON_KIND_POPPED_STACK:
+      case poison_kind::popped_stack:
 	{
 	  pp_printf (&pp,
 		     "dereferencing pointer %qE to within stale stack frame",
@@ -1374,12 +1374,12 @@ region_model::check_for_poison (const svalue *sval,
 
       /* Ignore uninitialized uses of empty types; there's nothing
 	 to initialize.  */
-      if (pkind == POISON_KIND_UNINIT
+      if (pkind == poison_kind::uninit
 	  && sval->get_type ()
 	  && is_empty_type (sval->get_type ()))
 	return sval;
 
-      if (pkind == POISON_KIND_UNINIT)
+      if (pkind == poison_kind::uninit)
 	if (const gimple *curr_stmt = ctxt->get_stmt ())
 	  if (const gassign *assign_stmt
 		= dyn_cast <const gassign *> (curr_stmt))
@@ -1400,7 +1400,7 @@ region_model::check_for_poison (const svalue *sval,
 	 the tree other than via the def stmts, using
 	 fixup_tree_for_diagnostic.  */
       tree diag_arg = fixup_tree_for_diagnostic (expr);
-      if (src_region == NULL && pkind == POISON_KIND_UNINIT)
+      if (src_region == NULL && pkind == poison_kind::uninit)
 	src_region = get_region_for_poisoned_expr (expr);
 
       /* Can we reliably get the poisoned value from "expr"?
@@ -3358,10 +3358,10 @@ region_model::check_region_access (const region *reg,
     {
     default:
       gcc_unreachable ();
-    case DIR_READ:
+    case access_direction::read:
       /* Currently a no-op.  */
       break;
-    case DIR_WRITE:
+    case access_direction::write:
       check_for_writable_region (reg, ctxt);
       break;
     }
@@ -3375,7 +3375,7 @@ region_model::check_region_for_write (const region *dest_reg,
 				      const svalue *sval_hint,
 				      region_model_context *ctxt) const
 {
-  check_region_access (dest_reg, DIR_WRITE, sval_hint, ctxt);
+  check_region_access (dest_reg, access_direction::write, sval_hint, ctxt);
 }
 
 /* If CTXT is non-NULL, use it to warn about any problems reading from REG.
@@ -3385,7 +3385,7 @@ bool
 region_model::check_region_for_read (const region *src_reg,
 				     region_model_context *ctxt) const
 {
-  return check_region_access (src_reg, DIR_READ, NULL, ctxt);
+  return check_region_access (src_reg, access_direction::read, NULL, ctxt);
 }
 
 /* Concrete subclass for casts of pointers that lead to trailing bytes.  */
@@ -6424,7 +6424,7 @@ private:
 
    Purge the frame region and all its descendent regions.
    Convert any pointers that point into such regions into
-   POISON_KIND_POPPED_STACK svalues.  */
+   poison_kind::popped_stack svalues.  */
 
 void
 region_model::pop_frame (tree result_lvalue,
@@ -6474,7 +6474,7 @@ region_model::pop_frame (tree result_lvalue,
       set_value (result_dst_reg, retval, call_stmt ? &caller_ctxt : ctxt);
     }
 
-  unbind_region_and_descendents (frame_reg,POISON_KIND_POPPED_STACK);
+  unbind_region_and_descendents (frame_reg,poison_kind::popped_stack);
   notify_on_pop_frame (this, &pre_popped_model, retval, ctxt);
 }
 
@@ -7068,7 +7068,7 @@ private:
 	{
 	  const poisoned_svalue *poisoned_sval
 	    = as_a <const poisoned_svalue *> (m_copied_sval);
-	  gcc_assert (poisoned_sval->get_poison_kind () == POISON_KIND_UNINIT);
+	  gcc_assert (poisoned_sval->get_poison_kind () == poison_kind::uninit);
 
 	  /* Give up if don't have type information.  */
 	  if (m_copied_sval->get_type () == NULL_TREE)
@@ -7093,7 +7093,7 @@ private:
 	      const svalue *sval = iter.second;
 	      if (const poisoned_svalue *psval
 		  = sval->dyn_cast_poisoned_svalue ())
-		if (psval->get_poison_kind () == POISON_KIND_UNINIT)
+		if (psval->get_poison_kind () == poison_kind::uninit)
 		  {
 		    const binding_key *key = iter.first;
 		    const concrete_binding *ckey
@@ -7145,7 +7145,7 @@ private:
 	    const svalue *sval = iter.second;
 	    if (const poisoned_svalue *psval
 		= sval->dyn_cast_poisoned_svalue ())
-	      if (psval->get_poison_kind () == POISON_KIND_UNINIT)
+	      if (psval->get_poison_kind () == poison_kind::uninit)
 		{
 		  const binding_key *key = iter.first;
 		  const concrete_binding *ckey
@@ -7349,7 +7349,7 @@ contains_uninit_p (const svalue *sval)
       {
 	const poisoned_svalue *psval
 	  = as_a <const poisoned_svalue *> (sval);
-	return psval->get_poison_kind () == POISON_KIND_UNINIT;
+	return psval->get_poison_kind () == poison_kind::uninit;
       }
     case SK_COMPOUND:
       {
@@ -7361,7 +7361,7 @@ contains_uninit_p (const svalue *sval)
 	    const svalue *sval = iter.second;
 	    if (const poisoned_svalue *psval
 		= sval->dyn_cast_poisoned_svalue ())
-	      if (psval->get_poison_kind () == POISON_KIND_UNINIT)
+	      if (psval->get_poison_kind () == poison_kind::uninit)
 		return true;
 	  }
 
@@ -8479,7 +8479,7 @@ test_stack_frames ()
   const svalue *new_p_sval = model.get_rvalue (p, NULL);
   ASSERT_EQ (new_p_sval->get_kind (), SK_POISONED);
   ASSERT_EQ (new_p_sval->dyn_cast_poisoned_svalue ()->get_poison_kind (),
-	     POISON_KIND_POPPED_STACK);
+	     poison_kind::popped_stack);
 
   /* Verify that q still points to p, in spite of the region
      renumbering.  */

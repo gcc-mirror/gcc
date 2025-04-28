@@ -1196,10 +1196,10 @@ exploded_node::status_to_str (enum status s)
   switch (s)
     {
     default: gcc_unreachable ();
-    case STATUS_WORKLIST: return "WORKLIST";
-    case STATUS_PROCESSED: return "PROCESSED";
-    case STATUS_MERGER: return "MERGER";
-    case STATUS_BULK_MERGED: return "BULK_MERGED";
+    case status::worklist: return "worklist";
+    case status::processed: return "processed";
+    case status::merger: return "merger";
+    case status::bulk_merged: return "bulk_merged";
     }
 }
 
@@ -1207,7 +1207,7 @@ exploded_node::status_to_str (enum status s)
 
 exploded_node::exploded_node (const point_and_state &ps,
 			      int index)
-: m_ps (ps), m_status (STATUS_WORKLIST), m_index (index),
+: m_ps (ps), m_status (status::worklist), m_index (index),
   m_num_processed_stmts (0)
 {
   gcc_checking_assert (ps.get_state ().m_region_model->canonicalized_p ());
@@ -1285,9 +1285,9 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
   pp_write_text_to_stream (pp);
 
   pp_printf (pp, "EN: %i", m_index);
-  if (m_status == STATUS_MERGER)
+  if (m_status == status::merger)
     pp_string (pp, " (merger)");
-  else if (m_status == STATUS_BULK_MERGED)
+  else if (m_status == status::bulk_merged)
     pp_string (pp, " (bulk merged)");
   pp_newline (pp);
 
@@ -2507,7 +2507,7 @@ worklist::peek_next ()
 void
 worklist::add_node (exploded_node *enode)
 {
-  gcc_assert (enode->get_status () == exploded_node::STATUS_WORKLIST);
+  gcc_assert (enode->get_status () == exploded_node::status::worklist);
   m_queue.insert (key_t (*this, enode), enode);
 }
 
@@ -3386,7 +3386,7 @@ exploded_graph::process_worklist ()
   while (m_worklist.length () > 0)
     {
       exploded_node *node = m_worklist.take_next ();
-      gcc_assert (node->get_status () == exploded_node::STATUS_WORKLIST);
+      gcc_assert (node->get_status () == exploded_node::status::worklist);
       gcc_assert (node->m_succs.length () == 0
 		  || node == m_origin);
 
@@ -3406,7 +3406,7 @@ exploded_graph::process_worklist ()
 	if (exploded_node *node_2 = m_worklist.peek_next ())
 	  {
 	    gcc_assert (node_2->get_status ()
-			== exploded_node::STATUS_WORKLIST);
+			== exploded_node::status::worklist);
 	    gcc_assert (node->m_succs.length () == 0);
 	    gcc_assert (node_2->m_succs.length () == 0);
 
@@ -3451,7 +3451,7 @@ exploded_graph::process_worklist ()
 
 			/* Remove node_2 from the worklist.  */
 			m_worklist.take_next ();
-			node_2->set_status (exploded_node::STATUS_MERGER);
+			node_2->set_status (exploded_node::status::merger);
 
 			/* Continue processing "node" below.  */
 		      }
@@ -3461,7 +3461,7 @@ exploded_graph::process_worklist ()
 			   in the worklist, to be processed on the next
 			   iteration.  */
 			add_edge (node, node_2, NULL, false);
-			node->set_status (exploded_node::STATUS_MERGER);
+			node->set_status (exploded_node::status::merger);
 			continue;
 		      }
 		    else
@@ -3506,7 +3506,7 @@ exploded_graph::process_worklist ()
 			else
 			  {
 			    add_edge (node, merged_enode, NULL, false);
-			    node->set_status (exploded_node::STATUS_MERGER);
+			    node->set_status (exploded_node::status::merger);
 			  }
 
 			if (merged_enode == node_2)
@@ -3514,7 +3514,7 @@ exploded_graph::process_worklist ()
 			else
 			  {
 			    add_edge (node_2, merged_enode, NULL, false);
-			    node_2->set_status (exploded_node::STATUS_MERGER);
+			    node_2->set_status (exploded_node::status::merger);
 			  }
 
 			continue;
@@ -3564,7 +3564,7 @@ exploded_graph::process_worklist ()
    If ENODE's point is of the form (before-supernode, SNODE) and the next
    nodes in the worklist are a consecutive run of enodes of the same form,
    for the same supernode as ENODE (but potentially from different in-edges),
-   process them all together, setting their status to STATUS_BULK_MERGED,
+   process them all together, setting their status to status::bulk_merged,
    and return true.
    Otherwise, return false, in which case ENODE must be processed in the
    normal way.
@@ -3603,7 +3603,7 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
     int m_merger_idx;
   };
 
-  gcc_assert (enode->get_status () == exploded_node::STATUS_WORKLIST);
+  gcc_assert (enode->get_status () == exploded_node::status::worklist);
   gcc_assert (enode->m_succs.length () == 0);
 
   const program_point &point = enode->get_point ();
@@ -3623,7 +3623,7 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
   while (exploded_node *enode_2 = m_worklist.peek_next ())
     {
       gcc_assert (enode_2->get_status ()
-		  == exploded_node::STATUS_WORKLIST);
+		  == exploded_node::status::worklist);
       gcc_assert (enode_2->m_succs.length () == 0);
 
       const program_point &point_2 = enode_2->get_point ();
@@ -3750,7 +3750,7 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
       if (next)
 	add_edge (it->m_input_enode, next, NULL,
 		  false); /* no "work" is done during merger.  */
-      it->m_input_enode->set_status (exploded_node::STATUS_BULK_MERGED);
+      it->m_input_enode->set_status (exploded_node::status::bulk_merged);
     }
 
   if (logger)
@@ -4030,7 +4030,7 @@ exploded_graph::process_node (exploded_node *node)
   logger * const logger = get_logger ();
   LOG_FUNC_1 (logger, "EN: %i", node->m_index);
 
-  node->set_status (exploded_node::STATUS_PROCESSED);
+  node->set_status (exploded_node::status::processed);
 
   const program_point &point = node->get_point ();
 
@@ -5509,13 +5509,13 @@ exploded_graph::dump_exploded_nodes () const
 		      {
 		      default:
 			gcc_unreachable ();
-		      case exploded_node::STATUS_WORKLIST:
+		      case exploded_node::status::worklist:
 			worklist_enodes.safe_push (other_enode);
 			break;
-		      case exploded_node::STATUS_PROCESSED:
+		      case exploded_node::status::processed:
 			processed_enodes.safe_push (other_enode);
 			break;
-		      case exploded_node::STATUS_MERGER:
+		      case exploded_node::status::merger:
 			merger_enodes.safe_push (other_enode);
 			break;
 		      }
@@ -5996,15 +5996,15 @@ private:
       {
       default:
 	gcc_unreachable ();
-      case exploded_node::STATUS_WORKLIST:
+      case exploded_node::status::worklist:
 	pp_string (pp, "(W)");
 	break;
-      case exploded_node::STATUS_PROCESSED:
+      case exploded_node::status::processed:
 	break;
-      case exploded_node::STATUS_MERGER:
+      case exploded_node::status::merger:
 	pp_string (pp, "(M)");
 	break;
-      case exploded_node::STATUS_BULK_MERGED:
+      case exploded_node::status::bulk_merged:
 	pp_string (pp, "(BM)");
 	break;
       }

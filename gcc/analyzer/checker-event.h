@@ -30,25 +30,25 @@ namespace ana {
 /* An enum for discriminating between the concrete subclasses of
    checker_event.  */
 
-enum event_kind
+enum class event_kind
 {
-  EK_DEBUG,
-  EK_CUSTOM,
-  EK_STMT,
-  EK_REGION_CREATION,
-  EK_FUNCTION_ENTRY,
-  EK_STATE_CHANGE,
-  EK_START_CFG_EDGE,
-  EK_END_CFG_EDGE,
-  EK_CALL_EDGE,
-  EK_RETURN_EDGE,
-  EK_START_CONSOLIDATED_CFG_EDGES,
-  EK_END_CONSOLIDATED_CFG_EDGES,
-  EK_INLINED_CALL,
-  EK_SETJMP,
-  EK_REWIND_FROM_LONGJMP,
-  EK_REWIND_TO_SETJMP,
-  EK_WARNING
+  debug,
+  custom,
+  stmt,
+  region_creation,
+  function_entry,
+  state_change,
+  start_cfg_edge,
+  end_cfg_edge,
+  call_edge,
+  return_edge,
+  start_consolidated_cfg_edges,
+  end_consolidated_cfg_edges,
+  inlined_call,
+  setjmp_,
+  rewind_from_longjmp,
+  rewind_to_setjmp,
+  warning
 };
 
 extern const char *event_kind_to_string (enum event_kind ek);
@@ -60,27 +60,27 @@ extern const char *event_kind_to_string (enum event_kind ek);
 
    diagnostic_event
      checker_event
-       debug_event (EK_DEBUG)
-       custom_event (EK_CUSTOM)
+       debug_event (event_kind::debug)
+       custom_event (event_kind::custom)
 	 precanned_custom_event
-       statement_event (EK_STMT)
-       region_creation_event (EK_REGION_CREATION)
-       function_entry_event (EK_FUNCTION_ENTRY)
-       state_change_event (EK_STATE_CHANGE)
+       statement_event (event_kind::stmt)
+       region_creation_event (event_kind::region_creation)
+       function_entry_event (event_kind::function_entry)
+       state_change_event (event_kind::state_change)
        superedge_event
          cfg_edge_event
-	   start_cfg_edge_event (EK_START_CFG_EDGE)
-	   end_cfg_edge_event (EK_END_CFG_EDGE)
-         call_event (EK_CALL_EDGE)
-         return_edge (EK_RETURN_EDGE)
-       start_consolidated_cfg_edges_event (EK_START_CONSOLIDATED_CFG_EDGES)
-       end_consolidated_cfg_edges_event (EK_END_CONSOLIDATED_CFG_EDGES)
-       inlined_call_event (EK_INLINED_CALL)
-       setjmp_event (EK_SETJMP)
+	   start_cfg_edge_event (event_kind::start_cfg_edge)
+	   end_cfg_edge_event (event_kind::end_cfg_edge)
+         call_event (event_kind::call_edge)
+         return_edge (event_kind::return_edge)
+       start_consolidated_cfg_edges_event (event_kind::start_consolidated_cfg_edges)
+       end_consolidated_cfg_edges_event (event_kind::end_consolidated_cfg_edges)
+       inlined_call_event (event_kind::inlined_call)
+       setjmp_event (event_kind::setjmp_)
        rewind_event
-         rewind_from_longjmp_event (EK_REWIND_FROM_LONGJMP)
-	 rewind_to_setjmp_event (EK_REWIND_TO_SETJMP)
-       warning_event (EK_WARNING).  */
+         rewind_from_longjmp_event (event_kind::rewind_from_longjmp)
+	 rewind_to_setjmp_event (event_kind::rewind_to_setjmp)
+       warning_event (event_kind::warning).  */
 
 /* Abstract subclass of diagnostic_event; the base class for use in
    checker_path (the analyzer's diagnostic_path subclass).  */
@@ -158,7 +158,7 @@ public:
 
   debug_event (const event_loc_info &loc_info,
 	       const char *desc)
-  : checker_event (EK_DEBUG, loc_info),
+  : checker_event (event_kind::debug, loc_info),
     m_desc (xstrdup (desc))
   {
   }
@@ -180,7 +180,7 @@ class custom_event : public checker_event
 {
 protected:
   custom_event (const event_loc_info &loc_info)
-  : checker_event (EK_CUSTOM, loc_info)
+  : checker_event (event_kind::custom, loc_info)
   {
   }
 };
@@ -329,7 +329,7 @@ class function_entry_event : public checker_event
 {
 public:
   function_entry_event (const event_loc_info &loc_info)
-  : checker_event (EK_FUNCTION_ENTRY, loc_info)
+  : checker_event (event_kind::function_entry, loc_info)
   {
   }
 
@@ -435,7 +435,7 @@ class start_cfg_edge_event : public cfg_edge_event
 public:
   start_cfg_edge_event (const exploded_edge &eedge,
 			const event_loc_info &loc_info)
-  : cfg_edge_event (EK_START_CFG_EDGE, eedge, loc_info)
+  : cfg_edge_event (event_kind::start_cfg_edge, eedge, loc_info)
   {
   }
 
@@ -461,7 +461,7 @@ class end_cfg_edge_event : public cfg_edge_event
 public:
   end_cfg_edge_event (const exploded_edge &eedge,
 		      const event_loc_info &loc_info)
-  : cfg_edge_event (EK_END_CFG_EDGE, eedge, loc_info)
+  : cfg_edge_event (event_kind::end_cfg_edge, eedge, loc_info)
   {
   }
 
@@ -517,7 +517,7 @@ class start_consolidated_cfg_edges_event : public checker_event
 public:
   start_consolidated_cfg_edges_event (const event_loc_info &loc_info,
 				      bool edge_sense)
-  : checker_event (EK_START_CONSOLIDATED_CFG_EDGES, loc_info),
+  : checker_event (event_kind::start_consolidated_cfg_edges, loc_info),
     m_edge_sense (edge_sense)
   {
   }
@@ -537,7 +537,7 @@ class end_consolidated_cfg_edges_event : public checker_event
 {
 public:
   end_consolidated_cfg_edges_event (const event_loc_info &loc_info)
-  : checker_event (EK_END_CONSOLIDATED_CFG_EDGES, loc_info)
+  : checker_event (event_kind::end_consolidated_cfg_edges, loc_info)
   {
   }
 
@@ -558,7 +558,7 @@ public:
 		      tree apparent_caller_fndecl,
 		      int actual_depth,
 		      int stack_depth_adjustment)
-  : checker_event (EK_INLINED_CALL,
+  : checker_event (event_kind::inlined_call,
 		   event_loc_info (loc,
 				   apparent_caller_fndecl,
 				   actual_depth + stack_depth_adjustment)),
@@ -584,7 +584,7 @@ public:
   setjmp_event (const event_loc_info &loc_info,
 		const exploded_node *enode,
 		const gcall *setjmp_call)
-  : checker_event (EK_SETJMP, loc_info),
+  : checker_event (event_kind::setjmp_, loc_info),
     m_enode (enode), m_setjmp_call (setjmp_call)
   {
   }
@@ -633,7 +633,7 @@ public:
   rewind_from_longjmp_event (const exploded_edge *eedge,
 			     const event_loc_info &loc_info,
 			     const rewind_info_t *rewind_info)
-  : rewind_event (eedge, EK_REWIND_FROM_LONGJMP, loc_info,
+  : rewind_event (eedge, event_kind::rewind_from_longjmp, loc_info,
 		  rewind_info)
   {
   }
@@ -650,7 +650,7 @@ public:
   rewind_to_setjmp_event (const exploded_edge *eedge,
 			  const event_loc_info &loc_info,
 			  const rewind_info_t *rewind_info)
-  : rewind_event (eedge, EK_REWIND_TO_SETJMP, loc_info,
+  : rewind_event (eedge, event_kind::rewind_to_setjmp, loc_info,
 		  rewind_info)
   {
   }
@@ -677,7 +677,7 @@ public:
 		 const exploded_node *enode,
 		 const state_machine *sm,
 		 tree var, state_machine::state_t state)
-  : checker_event (EK_WARNING, loc_info),
+  : checker_event (event_kind::warning, loc_info),
     m_enode (enode),
     m_sm (sm), m_var (var), m_state (state)
   {

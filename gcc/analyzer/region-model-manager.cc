@@ -307,7 +307,7 @@ region_model_manager::get_or_create_initial_value (const region *reg,
 						   bool check_poisoned)
 {
   if (!reg->can_have_initial_svalue_p () && check_poisoned)
-    return get_or_create_poisoned_svalue (POISON_KIND_UNINIT,
+    return get_or_create_poisoned_svalue (poison_kind::uninit,
 					  reg->get_type ());
 
   /* The initial value of a cast is a cast of the initial value.  */

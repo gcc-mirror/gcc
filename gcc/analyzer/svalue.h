@@ -421,19 +421,19 @@ public:
 
 /* An enum describing a particular kind of "poisoned" value.  */
 
-enum poison_kind
+enum class poison_kind
 {
   /* For use to describe uninitialized memory.  */
-  POISON_KIND_UNINIT,
+  uninit,
 
   /* For use to describe freed memory.  */
-  POISON_KIND_FREED,
+  freed,
 
   /* For use to describe deleted memory.  */
-  POISON_KIND_DELETED,
+  deleted,
 
   /* For use on pointers to regions within popped stack frames.  */
-  POISON_KIND_POPPED_STACK
+  popped_stack
 };
 
 extern const char *poison_kind_to_str (enum poison_kind);
@@ -454,7 +454,7 @@ public:
     hashval_t hash () const
     {
       inchash::hash hstate;
-      hstate.add_int (m_kind);
+      hstate.add_int (static_cast<int> (m_kind));
       hstate.add_ptr (m_type);
       return hstate.end ();
     }

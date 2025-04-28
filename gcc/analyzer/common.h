@@ -363,10 +363,10 @@ public:
 
 /* An enum for describing the direction of an access to memory.  */
 
-enum access_direction
+enum class access_direction
 {
-  DIR_READ,
-  DIR_WRITE
+  read,
+  write
 };
 
 /* Abstract base class for associating custom data with an

@@ -557,8 +557,8 @@ svalue::cmp_ptr (const svalue *sval1, const svalue *sval2)
       {
 	const poisoned_svalue *poisoned_sval1 = (const poisoned_svalue *)sval1;
 	const poisoned_svalue *poisoned_sval2 = (const poisoned_svalue *)sval2;
-	return (poisoned_sval1->get_poison_kind ()
-		- poisoned_sval2->get_poison_kind ());
+	return (static_cast<int> (poisoned_sval1->get_poison_kind ())
+		- static_cast<int> (poisoned_sval2->get_poison_kind ()));
       }
       break;
     case SK_SETJMP:
@@ -1219,13 +1219,13 @@ poison_kind_to_str (enum poison_kind kind)
     {
     default:
       gcc_unreachable ();
-    case POISON_KIND_UNINIT:
+    case poison_kind::uninit:
       return "uninit";
-    case POISON_KIND_FREED:
+    case poison_kind::freed:
       return "freed";
-    case POISON_KIND_DELETED:
+    case poison_kind::deleted:
       return "deleted";
-    case POISON_KIND_POPPED_STACK:
+    case poison_kind::popped_stack:
       return "popped stack";
     }
 }

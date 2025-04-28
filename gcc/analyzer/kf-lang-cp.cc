@@ -162,7 +162,7 @@ public:
 	/* If the ptr points to an underlying heap region, delete it,
 	   poisoning pointers.  */
 	model->unbind_region_and_descendents (freed_reg,
-					      POISON_KIND_DELETED);
+					      poison_kind::deleted);
       }
   }
 

@@ -57,40 +57,40 @@ event_kind_to_string (enum event_kind ek)
     {
     default:
       gcc_unreachable ();
-    case EK_DEBUG:
-      return "EK_DEBUG";
-    case EK_CUSTOM:
-      return "EK_CUSTOM";
-    case EK_STMT:
-      return "EK_STMT";
-    case EK_REGION_CREATION:
-      return "EK_REGION_CREATION";
-    case EK_FUNCTION_ENTRY:
-      return "EK_FUNCTION_ENTRY";
-    case EK_STATE_CHANGE:
-      return "EK_STATE_CHANGE";
-    case EK_START_CFG_EDGE:
-      return "EK_START_CFG_EDGE";
-    case EK_END_CFG_EDGE:
-      return "EK_END_CFG_EDGE";
-    case EK_CALL_EDGE:
-      return "EK_CALL_EDGE";
-    case EK_RETURN_EDGE:
-      return "EK_RETURN_EDGE";
-    case EK_START_CONSOLIDATED_CFG_EDGES:
-      return "EK_START_CONSOLIDATED_CFG_EDGES";
-    case EK_END_CONSOLIDATED_CFG_EDGES:
-      return "EK_END_CONSOLIDATED_CFG_EDGES";
-    case EK_INLINED_CALL:
-      return "EK_INLINED_CALL";
-    case EK_SETJMP:
-      return "EK_SETJMP";
-    case EK_REWIND_FROM_LONGJMP:
-      return "EK_REWIND_FROM_LONGJMP";
-    case EK_REWIND_TO_SETJMP:
-      return "EK_REWIND_TO_SETJMP";
-    case EK_WARNING:
-      return "EK_WARNING";
+    case event_kind::debug:
+      return "debug";
+    case event_kind::custom:
+      return "custom";
+    case event_kind::stmt:
+      return "stmt";
+    case event_kind::region_creation:
+      return "region_creation";
+    case event_kind::function_entry:
+      return "function_entry";
+    case event_kind::state_change:
+      return "state_change";
+    case event_kind::start_cfg_edge:
+      return "start_cfg_edge";
+    case event_kind::end_cfg_edge:
+      return "end_cfg_edge";
+    case event_kind::call_edge:
+      return "call_edge";
+    case event_kind::return_edge:
+      return "return_edge";
+    case event_kind::start_consolidated_cfg_edges:
+      return "start_consolidated_cfg_edges";
+    case event_kind::end_consolidated_cfg_edges:
+      return "end_consolidated_cfg_edges";
+    case event_kind::inlined_call:
+      return "inlined_call";
+    case event_kind::setjmp_:
+      return "setjmp";
+    case event_kind::rewind_from_longjmp:
+      return "rewind_from_longjmp";
+    case event_kind::rewind_to_setjmp:
+      return "rewind_to_setjmp";
+    case event_kind::warning:
+      return "warning";
     }
 }
 
@@ -244,7 +244,7 @@ precanned_custom_event::print_desc (pretty_printer &pp) const
 
 statement_event::statement_event (const gimple *stmt, tree fndecl, int depth,
 				  const program_state &dst_state)
-: checker_event (EK_STMT,
+: checker_event (event_kind::stmt,
 		 event_loc_info (gimple_location (stmt), fndecl, depth)),
   m_stmt (stmt),
   m_dst_state (dst_state)
@@ -265,7 +265,7 @@ statement_event::print_desc (pretty_printer &pp) const
 /* class region_creation_event : public checker_event.  */
 
 region_creation_event::region_creation_event (const event_loc_info &loc_info)
-: checker_event (EK_REGION_CREATION, loc_info)
+: checker_event (event_kind::region_creation, loc_info)
 {
 }
 
@@ -337,7 +337,7 @@ region_creation_event_debug::print_desc (pretty_printer &pp) const
 /* class function_entry_event : public checker_event.  */
 
 function_entry_event::function_entry_event (const program_point &dst_point)
-: checker_event (EK_FUNCTION_ENTRY,
+: checker_event (event_kind::function_entry,
 		 event_loc_info (dst_point.get_supernode
 				   ()->get_start_location (),
 				 dst_point.get_fndecl (),
@@ -379,7 +379,7 @@ state_change_event::state_change_event (const supernode *node,
 					const svalue *origin,
 					const program_state &dst_state,
 					const exploded_node *enode)
-: checker_event (EK_STATE_CHANGE,
+: checker_event (event_kind::state_change,
 		 event_loc_info (stmt->location,
 				 node->m_fun->decl,
 				 stack_depth)),
@@ -790,7 +790,7 @@ start_cfg_edge_event::should_print_expr_p (tree expr)
 
 call_event::call_event (const exploded_edge &eedge,
 			const event_loc_info &loc_info)
-: superedge_event (EK_CALL_EDGE, eedge, loc_info)
+: superedge_event (event_kind::call_edge, eedge, loc_info)
 {
   if (eedge.m_sedge)
     gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_CALL);
@@ -866,7 +866,7 @@ call_event::get_callee_fndecl () const
 
 return_event::return_event (const exploded_edge &eedge,
 			    const event_loc_info &loc_info)
-: superedge_event (EK_RETURN_EDGE, eedge, loc_info)
+: superedge_event (event_kind::return_edge, eedge, loc_info)
 {
   if (eedge.m_sedge)
     gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_RETURN);
