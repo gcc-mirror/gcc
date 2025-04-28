@@ -6103,8 +6103,8 @@ dump_analyzer_json (const supergraph &sg,
 class plugin_analyzer_init_impl : public plugin_analyzer_init_iface
 {
 public:
-  plugin_analyzer_init_impl (auto_delete_vec <state_machine> *checkers,
-			     known_function_manager *known_fn_mgr,
+  plugin_analyzer_init_impl (std::vector<std::unique_ptr<state_machine>> &checkers,
+			     known_function_manager &known_fn_mgr,
 			     logger *logger)
   : m_checkers (checkers),
     m_known_fn_mgr (known_fn_mgr),
@@ -6114,14 +6114,14 @@ public:
   void register_state_machine (std::unique_ptr<state_machine> sm) final override
   {
     LOG_SCOPE (m_logger);
-    m_checkers->safe_push (sm.release ());
+    m_checkers.push_back (std::move (sm));
   }
 
   void register_known_function (const char *name,
 				std::unique_ptr<known_function> kf) final override
   {
     LOG_SCOPE (m_logger);
-    m_known_fn_mgr->add (name, std::move (kf));
+    m_known_fn_mgr.add (name, std::move (kf));
   }
 
   logger *get_logger () const final override
@@ -6130,8 +6130,8 @@ public:
   }
 
 private:
-  auto_delete_vec <state_machine> *m_checkers;
-  known_function_manager *m_known_fn_mgr;
+  std::vector<std::unique_ptr<state_machine>> &m_checkers;
+  known_function_manager &m_known_fn_mgr;
   logger *m_logger;
 };
 
@@ -6185,27 +6185,25 @@ impl_run_checkers (logger *logger)
       free (filename);
     }
 
-  auto_delete_vec <state_machine> checkers;
-  make_checkers (checkers, logger);
+  auto checkers = make_checkers (logger);
 
   register_known_functions (*eng.get_known_function_manager (),
 			    *eng.get_model_manager ());
 
-  plugin_analyzer_init_impl data (&checkers,
-				  eng.get_known_function_manager (),
+  plugin_analyzer_init_impl data (checkers,
+				  *eng.get_known_function_manager (),
 				  logger);
   invoke_plugin_callbacks (PLUGIN_ANALYZER_INIT, &data);
 
   if (logger)
     {
-      int i;
-      state_machine *sm;
-      FOR_EACH_VEC_ELT (checkers, i, sm)
-	logger->log ("checkers[%i]: %s", i, sm->get_name ());
+      int i = 0;
+      for (auto &sm : checkers)
+	logger->log ("checkers[%i]: %s", ++i, sm->get_name ());
     }
 
   /* Extrinsic state shared by nodes in the graph.  */
-  const extrinsic_state ext_state (checkers, &eng, logger);
+  const extrinsic_state ext_state (std::move (checkers), &eng, logger);
 
   const analysis_plan plan (sg, logger);
 

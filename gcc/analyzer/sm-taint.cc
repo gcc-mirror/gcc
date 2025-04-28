@@ -1518,10 +1518,10 @@ taint_state_machine::check_for_tainted_divisor (sm_context &sm_ctxt,
 
 /* Internal interface to this file. */
 
-state_machine *
+std::unique_ptr<state_machine>
 make_taint_state_machine (logger *logger)
 {
-  return new taint_state_machine (logger);
+  return std::make_unique<taint_state_machine> (logger);
 }
 
 /* A closed concrete range.  */

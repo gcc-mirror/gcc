@@ -2327,10 +2327,10 @@ fd_state_machine::on_leak (tree var) const
 }
 } // namespace
 
-state_machine *
+std::unique_ptr<state_machine>
 make_fd_state_machine (logger *logger)
 {
-  return new fd_state_machine (logger);
+  return std::make_unique<fd_state_machine> (logger);
 }
 
 static bool

@@ -2698,10 +2698,10 @@ malloc_state_machine::transition_ptr_sval_non_null (region_model *model,
 
 /* Internal interface to this file. */
 
-state_machine *
+std::unique_ptr<state_machine>
 make_malloc_state_machine (logger *logger)
 {
-  return new malloc_state_machine (logger);
+  return std::make_unique<malloc_state_machine> (logger);
 }
 
 /* Specialcase hook for handling realloc, for use by

@@ -500,10 +500,10 @@ fileptr_state_machine::on_leak (tree var) const
 
 /* Internal interface to this file. */
 
-state_machine *
+std::unique_ptr<state_machine>
 make_fileptr_state_machine (logger *logger)
 {
-  return new fileptr_state_machine (logger);
+  return std::make_unique<fileptr_state_machine> (logger);
 }
 
 /* Handler for various stdio-related builtins that merely have external

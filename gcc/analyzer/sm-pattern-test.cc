@@ -146,10 +146,10 @@ pattern_test_state_machine::can_purge_p (state_t s ATTRIBUTE_UNUSED) const
 
 /* Internal interface to this file. */
 
-state_machine *
+std::unique_ptr<state_machine>
 make_pattern_test_state_machine (logger *logger)
 {
-  return new pattern_test_state_machine (logger);
+  return std::make_unique<pattern_test_state_machine> (logger);
 }
 
 } // namespace ana

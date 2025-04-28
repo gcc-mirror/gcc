@@ -61,11 +61,10 @@ void
 extrinsic_state::dump_to_pp (pretty_printer *pp) const
 {
   pp_printf (pp, "extrinsic_state: %i checker(s)\n", get_num_checkers ());
-  unsigned i;
-  state_machine *checker;
-  FOR_EACH_VEC_ELT (m_checkers, i, checker)
+  unsigned i = 0;
+  for (auto &checker : m_checkers)
     {
-      pp_printf (pp, "m_checkers[%i]: %qs\n", i, checker->get_name ());
+      pp_printf (pp, "m_checkers[%i]: %qs\n", ++i, checker->get_name ());
       checker->dump_to_pp (pp);
     }
 }
@@ -97,9 +96,7 @@ extrinsic_state::to_json () const
 
   {
     auto checkers_arr = ::make_unique<json::array> ();
-    unsigned i;
-    state_machine *sm;
-    FOR_EACH_VEC_ELT (m_checkers, i, sm)
+    for (auto &sm : m_checkers)
       checkers_arr->append (sm->to_json ());
     ext_state_obj->set ("checkers", std::move (checkers_arr));
   }
@@ -125,10 +122,8 @@ extrinsic_state::get_model_manager () const
 bool
 extrinsic_state::get_sm_idx_by_name (const char *name, unsigned *out) const
 {
-  unsigned i;
-  state_machine *sm;
-  FOR_EACH_VEC_ELT (m_checkers, i, sm)
-    if (0 == strcmp (name, sm->get_name ()))
+  for (size_t i = 0; i < m_checkers.size (); ++i)
+    if (0 == strcmp (name, m_checkers[i]->get_name ()))
       {
 	/* Found NAME.  */
 	*out = i;
@@ -1783,12 +1778,13 @@ test_sm_state_map ()
   tree y = build_global_decl ("y", integer_type_node);
   tree z = build_global_decl ("z", integer_type_node);
 
-  state_machine *sm = make_malloc_state_machine (NULL);
-  auto_delete_vec <state_machine> checkers;
-  checkers.safe_push (sm);
-  engine eng;
-  extrinsic_state ext_state (checkers, &eng);
+  std::unique_ptr<state_machine> sm = make_malloc_state_machine (NULL);
   state_machine::state_t start = sm->get_start_state ();
+  std::vector<std::unique_ptr<state_machine>> checkers;
+  const state_machine &borrowed_sm = *sm.get ();
+  checkers.push_back (std::move (sm));
+  engine eng;
+  extrinsic_state ext_state (std::move (checkers), &eng);
 
   /* Test setting states on svalue_id instances directly.  */
   {
@@ -1800,7 +1796,7 @@ test_sm_state_map ()
     const svalue *y_sval = model.get_rvalue (y, NULL);
     const svalue *z_sval = model.get_rvalue (z, NULL);
 
-    sm_state_map map (*sm);
+    sm_state_map map (borrowed_sm);
     ASSERT_TRUE (map.is_empty_p ());
     ASSERT_EQ (map.get_state (x_sval, ext_state), start);
 
@@ -1829,7 +1825,7 @@ test_sm_state_map ()
     const svalue *y_sval = model.get_rvalue (y, NULL);
     const svalue *z_sval = model.get_rvalue (z, NULL);
 
-    sm_state_map map (*sm);
+    sm_state_map map (borrowed_sm);
     ASSERT_TRUE (map.is_empty_p ());
     ASSERT_EQ (map.get_state (x_sval, ext_state), start);
     ASSERT_EQ (map.get_state (y_sval, ext_state), start);
@@ -1852,9 +1848,9 @@ test_sm_state_map ()
     const svalue *y_sval = model.get_rvalue (y, NULL);
     const svalue *z_sval = model.get_rvalue (z, NULL);
 
-    sm_state_map map0 (*sm);
-    sm_state_map map1 (*sm);
-    sm_state_map map2 (*sm);
+    sm_state_map map0 (borrowed_sm);
+    sm_state_map map1 (borrowed_sm);
+    sm_state_map map2 (borrowed_sm);
 
     ASSERT_EQ (map0.hash (), map1.hash ());
     ASSERT_EQ (map0, map1);
@@ -1875,9 +1871,9 @@ test_sm_state_map ()
     const state_machine::state_t TEST_STATE_2 = &test_state_2;
     const state_machine::state test_state_3 ("test state 3", 3);
     const state_machine::state_t TEST_STATE_3 = &test_state_3;
-    sm_state_map map0 (*sm);
-    sm_state_map map1 (*sm);
-    sm_state_map map2 (*sm);
+    sm_state_map map0 (borrowed_sm);
+    sm_state_map map1 (borrowed_sm);
+    sm_state_map map2 (borrowed_sm);
 
     ASSERT_EQ (map0.hash (), map1.hash ());
     ASSERT_EQ (map0, map1);
@@ -1912,14 +1908,12 @@ test_program_state_1 ()
      malloc sm-state, pointing to a region on the heap.  */
   tree p = build_global_decl ("p", ptr_type_node);
 
-  state_machine *sm = make_malloc_state_machine (NULL);
+  std::unique_ptr<state_machine> sm = make_malloc_state_machine (NULL);
   const state_machine::state_t UNCHECKED_STATE
     = sm->get_state_by_name ("unchecked");
-  auto_delete_vec <state_machine> checkers;
-  checkers.safe_push (sm);
 
   engine eng;
-  extrinsic_state ext_state (checkers, &eng);
+  extrinsic_state ext_state (std::move (sm), &eng);
   region_model_manager *mgr = eng.get_model_manager ();
   program_state s (ext_state);
   region_model *model = s.m_region_model;
@@ -1947,9 +1941,9 @@ test_program_state_2 ()
 
   tree string_cst_ptr = build_string_literal (4, "foo");
 
-  auto_delete_vec <state_machine> checkers;
+  std::vector<std::unique_ptr<state_machine>> checkers;
   engine eng;
-  extrinsic_state ext_state (checkers, &eng);
+  extrinsic_state ext_state (std::move (checkers), &eng);
 
   program_state s (ext_state);
   region_model *model = s.m_region_model;
@@ -1971,9 +1965,8 @@ test_program_state_merging ()
   engine eng;
   region_model_manager *mgr = eng.get_model_manager ();
   program_point point (program_point::origin (*mgr));
-  auto_delete_vec <state_machine> checkers;
-  checkers.safe_push (make_malloc_state_machine (NULL));
-  extrinsic_state ext_state (checkers, &eng);
+  extrinsic_state ext_state (make_malloc_state_machine (NULL),
+			     &eng);
 
   program_state s0 (ext_state);
   uncertainty_t uncertainty;
@@ -2039,9 +2032,7 @@ test_program_state_merging_2 ()
   engine eng;
   region_model_manager *mgr = eng.get_model_manager ();
   program_point point (program_point::origin (*mgr));
-  auto_delete_vec <state_machine> checkers;
-  checkers.safe_push (make_signal_state_machine (NULL));
-  extrinsic_state ext_state (checkers, &eng);
+  extrinsic_state ext_state (make_signal_state_machine (NULL), &eng);
 
   const state_machine::state test_state_0 ("test state 0", 0);
   const state_machine::state test_state_1 ("test state 1", 1);

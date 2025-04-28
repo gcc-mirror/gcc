@@ -642,10 +642,10 @@ va_list_state_machine::on_leak (tree var) const
 
 /* Internal interface to this file. */
 
-state_machine *
+std::unique_ptr<state_machine>
 make_va_list_state_machine (logger *logger)
 {
-  return new va_list_state_machine (logger);
+  return std::make_unique<va_list_state_machine> (logger);
 }
 
 /* Handler for "__builtin_va_start".  */
