@@ -2,6 +2,7 @@
    region_model_context_decorator::add_note.  */
 
 /* { dg-additional-options "-Wno-analyzer-write-to-string-literal" } */
+/* { dg-additional-options "-fno-exceptions" } */
 
 typedef __SIZE_TYPE__ size_t;
 

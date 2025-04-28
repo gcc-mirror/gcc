@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fno-exceptions" } */
+
 typedef struct FILE   FILE;
 
 FILE* fopen (const char*, const char*);

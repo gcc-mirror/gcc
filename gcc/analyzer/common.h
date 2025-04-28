@@ -49,6 +49,9 @@ class supernode;
 class superedge;
   class cfg_superedge;
     class switch_cfg_superedge;
+    class eh_dispatch_cfg_superedge;
+      class eh_dispatch_try_cfg_superedge;
+      class eh_dispatch_allowed_cfg_superedge;
   class callgraph_superedge;
     class call_superedge;
     class return_superedge;
@@ -396,6 +399,12 @@ public:
 
   virtual void add_events_to_path (checker_path *emission_path,
 				   const exploded_edge &eedge) const = 0;
+
+  virtual exploded_node *create_enode (exploded_graph &eg,
+				       const program_point &point,
+				       program_state &&state,
+				       exploded_node *enode_for_diag,
+				       region_model_context *ctxt) const;
 };
 
 /* Abstract base class for splitting state.
@@ -472,6 +481,8 @@ extern bool is_std_named_call_p (const_tree fndecl, const char *funcname,
 extern bool is_setjmp_call_p (const gcall &call);
 extern bool is_longjmp_call_p (const gcall &call);
 extern bool is_placement_new_p (const gcall &call);
+extern bool is_cxa_throw_p (const gcall &call);
+extern bool is_cxa_rethrow_p (const gcall &call);
 
 extern const char *get_user_facing_name (const gcall &call);
 

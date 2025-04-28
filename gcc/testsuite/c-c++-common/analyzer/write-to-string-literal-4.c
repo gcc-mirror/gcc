@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fno-exceptions" } */
+
 typedef __SIZE_TYPE__ size_t;
 
 int getrandom (void *__buffer, size_t __length, /* { dg-line getrandom } */

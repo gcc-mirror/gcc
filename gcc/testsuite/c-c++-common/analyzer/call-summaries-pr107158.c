@@ -1,4 +1,4 @@
-/* { dg-additional-options "-fanalyzer-call-summaries -Wno-analyzer-symbol-too-complex" } */
+/* { dg-additional-options "-fanalyzer-call-summaries -Wno-analyzer-symbol-too-complex -fno-exceptions" } */
 
 typedef __SIZE_TYPE__ size_t;
 enum { _ISspace = ((5) < 8 ? ((1 << (5)) << 8) : ((1 << (5)) >> 8)) };

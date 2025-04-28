@@ -1,5 +1,5 @@
 // { dg-additional-options "-fanalyzer" }
-// { dg-excess-errors "lots of analyzer output, but no ICE" }
+
 namespace std {
 template <typename _Result> struct coroutine_traits : _Result {};
 template <typename = void> struct coroutine_handle {

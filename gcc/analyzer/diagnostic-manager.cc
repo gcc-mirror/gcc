@@ -2427,6 +2427,35 @@ diagnostic_manager::add_events_for_superedge (const path_builder &pb,
     {
     case SUPEREDGE_CFG_EDGE:
       {
+	if (auto eh_dispatch_try_sedge
+	      = eedge.m_sedge->dyn_cast_eh_dispatch_try_cfg_superedge ())
+	  {
+	    if (eh_dispatch_try_sedge->get_eh_catch ())
+	      {
+		const region_model *model = src_node->get_state ().m_region_model;
+		auto curr_thrown_exception_node
+		  = model->get_current_thrown_exception ();
+		gcc_assert (curr_thrown_exception_node);
+		tree type = curr_thrown_exception_node->maybe_get_type ();
+		emission_path->add_event
+		  (std::make_unique<catch_cfg_edge_event>
+		   (eedge,
+		    event_loc_info (dst_point.get_supernode ()->get_start_location (),
+				    dst_point.get_fndecl (),
+				    dst_stack_depth),
+		    type));
+		return;
+	      }
+	    else
+	      {
+		/* We have the "uncaught exception" sedge, from eh_dispatch
+		   to a block containing resx.
+		   Don't add any events for this, so that we can consolidate
+		   adjacent stack unwinding events.  */
+		return;
+	      }
+	  }
+
 	emission_path->add_event
 	  (std::make_unique<start_cfg_edge_event>
 	     (eedge,
@@ -2502,6 +2531,7 @@ diagnostic_manager::prune_path (checker_path *path,
   if (! flag_analyzer_show_events_in_system_headers)
     prune_system_headers (path);
   consolidate_conditions (path);
+  consolidate_unwind_events (path);
   finish_pruning (path);
   path->maybe_log (get_logger (), "pruned");
 }
@@ -2688,6 +2718,12 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	case event_kind::end_cfg_edge:
 	  /* These come in pairs with event_kind::start_cfg_edge events and are
 	     filtered when their start event is filtered.  */
+	  break;
+
+	case event_kind::catch_:
+	case event_kind::throw_:
+	case event_kind::unwind:
+	  /* Don't filter these.  */
 	  break;
 
 	case event_kind::call_edge:
@@ -3127,6 +3163,48 @@ diagnostic_manager::consolidate_conditions (checker_path *path) const
 	      path->delete_events (start_idx + 2, next_idx - (start_idx + 2));
 	    }
 	}
+    }
+}
+
+/* Consolidate runs of consecutive unwind_event.  */
+
+void
+diagnostic_manager::consolidate_unwind_events (checker_path *path) const
+{
+  /* Don't simplify edges if we're debugging them.  */
+  if (flag_analyzer_verbose_edges)
+    return;
+
+  for (int start_idx = 0;
+       start_idx < (signed)path->num_events () - 1;
+       start_idx++)
+    {
+      /* Find a run of consecutive unwind_event instances.  */
+      if (path->get_checker_event (start_idx)->m_kind != event_kind::unwind)
+	continue;
+      int iter_idx = start_idx + 1;
+      while (iter_idx < (int)path->num_events ())
+	if (path->get_checker_event (iter_idx)->m_kind == event_kind::unwind)
+	  ++iter_idx;
+	else
+	  break;
+
+      /* iter_idx should now be one after the last unwind_event in the run.  */
+      const int last_idx = iter_idx - 1;
+      if (last_idx == start_idx)
+	continue;
+
+      gcc_assert (last_idx > start_idx);
+
+      log ("consolidating unwind events %i-%i into %i",
+	   start_idx, last_idx, start_idx);
+
+      unwind_event *first_event
+	= (unwind_event *)path->get_checker_event (start_idx);
+      const unwind_event *last_event
+	= (const unwind_event *)path->get_checker_event (last_idx);
+      first_event->m_num_frames += last_event->m_num_frames;
+      path->delete_events (start_idx + 1, last_idx - start_idx);
     }
 }
 

@@ -58,6 +58,18 @@ custom_edge_info::update_state (program_state *state,
   return update_model (state->m_region_model, eedge, ctxt);
 }
 
+/* Base implementation of custom_edge_info::create_enode vfunc.  */
+
+exploded_node *
+custom_edge_info::create_enode (exploded_graph &eg,
+				const program_point &point,
+				program_state &&state,
+				exploded_node *enode_for_diag,
+				region_model_context *) const
+{
+  return eg.get_or_create_node (point, state, enode_for_diag);
+}
+
 /* class call_info : public custom_edge_info.  */
 
 /* Implementation of custom_edge_info::print vfunc for call_info.  */

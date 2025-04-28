@@ -40,6 +40,7 @@ enum class event_kind
   state_change,
   start_cfg_edge,
   end_cfg_edge,
+  catch_,
   call_edge,
   return_edge,
   start_consolidated_cfg_edges,
@@ -48,6 +49,8 @@ enum class event_kind
   setjmp_,
   rewind_from_longjmp,
   rewind_to_setjmp,
+  throw_,
+  unwind,
   warning
 };
 
@@ -71,6 +74,7 @@ extern const char *event_kind_to_string (enum event_kind ek);
          cfg_edge_event
 	   start_cfg_edge_event (event_kind::start_cfg_edge)
 	   end_cfg_edge_event (event_kind::end_cfg_edge)
+	   catch_cfg_edge_event (event_kind::catch_cfg_edge)
          call_event (event_kind::call_edge)
          return_edge (event_kind::return_edge)
        start_consolidated_cfg_edges_event (event_kind::start_consolidated_cfg_edges)
@@ -80,6 +84,10 @@ extern const char *event_kind_to_string (enum event_kind ek);
        rewind_event
          rewind_from_longjmp_event (event_kind::rewind_from_longjmp)
 	 rewind_to_setjmp_event (event_kind::rewind_to_setjmp)
+       throw_event (event_kind:throw_)
+	 explicit_throw_event
+	 throw_from_call_to_external_fn_event
+       unwind_event (event_kind::unwind)
        warning_event (event_kind::warning).  */
 
 /* Abstract subclass of diagnostic_event; the base class for use in
@@ -471,6 +479,32 @@ public:
   }
 };
 
+/* A concrete event subclass for catching an exception
+   e.g. "...catching 'struct io_error' here".  */
+
+class catch_cfg_edge_event : public cfg_edge_event
+{
+public:
+  catch_cfg_edge_event (const exploded_edge &eedge,
+			const event_loc_info &loc_info,
+			tree type)
+  : cfg_edge_event (event_kind::catch_, eedge, loc_info),
+    m_type (type)
+  {
+  }
+
+  void print_desc (pretty_printer &pp) const final override
+  {
+    if (m_type)
+      pp_printf (&pp, "...catching exception of type %qT here", m_type);
+    else
+      pp_string (&pp, "...catching exception here");
+  }
+
+private:
+  tree m_type;
+};
+
 /* A concrete event subclass for an interprocedural call.  */
 
 class call_event : public superedge_event
@@ -663,6 +697,88 @@ public:
 
 private:
   diagnostic_event_id_t m_original_setjmp_event_id;
+};
+
+/* An abstract subclass for throwing/rethrowing an exception.  */
+
+class throw_event : public checker_event
+{
+public:
+  throw_event (const event_loc_info &loc_info,
+	       const exploded_node *enode,
+	       const gcall &throw_call)
+  : checker_event (event_kind::throw_, loc_info),
+    m_enode (enode),
+    m_throw_call (throw_call)
+  {
+  }
+
+protected:
+  const exploded_node *m_enode;
+  const gcall &m_throw_call;
+};
+
+/* A concrete event subclass for an explicit "throw EXC;"
+   or "throw;"  (actually, a call to __cxa_throw or __cxa_rethrow).  */
+
+class explicit_throw_event : public throw_event
+{
+public:
+  explicit_throw_event (const event_loc_info &loc_info,
+			const exploded_node *enode,
+			const gcall &throw_call,
+			tree type,
+			bool is_rethrow)
+  : throw_event (loc_info, enode, throw_call),
+    m_type (type),
+    m_is_rethrow (is_rethrow)
+  {
+  }
+
+  void print_desc (pretty_printer &pp) const final override;
+
+private:
+  tree m_type;
+  bool m_is_rethrow;
+};
+
+/* A concrete event subclass for an exception being thrown
+   from within a call to a function we don't have the body of,
+   or where we don't know what function was called.  */
+
+class throw_from_call_to_external_fn_event : public throw_event
+{
+public:
+  throw_from_call_to_external_fn_event (const event_loc_info &loc_info,
+					const exploded_node *enode,
+					const gcall &throw_call,
+					tree fndecl)
+  : throw_event (loc_info, enode, throw_call),
+    m_fndecl (fndecl)
+  {
+  }
+
+  void print_desc (pretty_printer &pp) const final override;
+
+private:
+  tree m_fndecl;
+};
+
+/* A concrete event subclass for unwinding a stack frame when
+   processing an exception.  */
+
+class unwind_event : public checker_event
+{
+public:
+  unwind_event (const event_loc_info &loc_info)
+  : checker_event (event_kind::unwind, loc_info),
+    m_num_frames (1)
+  {
+  }
+
+  void print_desc (pretty_printer &pp) const final override;
+
+  int m_num_frames;
 };
 
 /* Concrete subclass of checker_event for use at the end of a path:

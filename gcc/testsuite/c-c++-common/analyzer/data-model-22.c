@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fno-exceptions" } */
+
 #include <string.h>
 #include "analyzer-decls.h"
 

@@ -73,6 +73,8 @@ event_kind_to_string (enum event_kind ek)
       return "start_cfg_edge";
     case event_kind::end_cfg_edge:
       return "end_cfg_edge";
+    case event_kind::catch_:
+      return "catch";
     case event_kind::call_edge:
       return "call_edge";
     case event_kind::return_edge:
@@ -89,6 +91,10 @@ event_kind_to_string (enum event_kind ek)
       return "rewind_from_longjmp";
     case event_kind::rewind_to_setjmp:
       return "rewind_to_setjmp";
+    case event_kind::throw_:
+      return "throw";
+    case event_kind::unwind:
+      return "unwind";
     case event_kind::warning:
       return "warning";
     }
@@ -1102,6 +1108,50 @@ rewind_to_setjmp_event::prepare_for_emission (checker_path *path,
   checker_event::prepare_for_emission (path, pd, emission_id);
   path->get_setjmp_event (m_rewind_info->get_enode_origin (),
 			  &m_original_setjmp_event_id);
+}
+
+/* class throw_event : public checker_event.  */
+
+/* class explicit_throw_event : public throw_event.  */
+void
+explicit_throw_event::print_desc (pretty_printer &pp) const
+{
+  if (m_is_rethrow)
+    {
+      if (m_type)
+	pp_printf (&pp, "rethrowing exception of type %qT here...", m_type);
+      else
+	pp_printf (&pp, "rethrowing exception here...");
+    }
+  else
+    {
+      if (m_type)
+	pp_printf (&pp, "throwing exception of type %qT here...", m_type);
+      else
+	pp_printf (&pp, "throwing exception here...");
+    }
+}
+
+/* class throw_from_call_to_external_fn_event : public throw_event.  */
+
+void
+throw_from_call_to_external_fn_event::print_desc (pretty_printer &pp) const
+{
+  if (m_fndecl)
+    pp_printf (&pp, "if %qD throws an exception...", m_fndecl);
+  else
+    pp_printf (&pp, "if the called function throws an exception...");
+}
+
+// class unwind_event : public checker_event
+
+void
+unwind_event::print_desc (pretty_printer &pp) const
+{
+  if (m_num_frames > 1)
+    pp_printf (&pp, "unwinding %i stack frames", m_num_frames);
+  else
+    pp_printf (&pp, "unwinding stack frame");
 }
 
 /* class warning_event : public checker_event.  */

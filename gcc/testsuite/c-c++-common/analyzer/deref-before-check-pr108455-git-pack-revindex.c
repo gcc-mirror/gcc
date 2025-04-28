@@ -1,4 +1,5 @@
 /* Reduced from git-2.39.0's pack-revindex.c  */
+/* { dg-additional-options "-fno-exceptions" } */
 
 typedef unsigned int __uint32_t;
 typedef unsigned long int __uintmax_t;

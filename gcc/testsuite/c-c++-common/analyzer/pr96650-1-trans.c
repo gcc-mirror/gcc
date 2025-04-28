@@ -1,4 +1,5 @@
 /* { dg-additional-options "-O2 -fanalyzer-transitivity" } */
+/* { dg-additional-options "-fno-exceptions" } */
 
 int *wf;
 

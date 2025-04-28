@@ -3,6 +3,7 @@
    Adapted from intl/localealias.c, with all #includes removed.  */
 
 /* { dg-do "compile" } */
+/* { dg-additional-options "-fno-exceptions" } */
 
 /* Handle aliases for locale names.
    Copyright (C) 1995-1999, 2000-2001, 2003 Free Software Foundation, Inc.

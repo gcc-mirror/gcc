@@ -1599,6 +1599,24 @@ exploded_node::on_stmt_pre (exploded_graph &eg,
 	    ctxt->maybe_did_work ();
 	  return;
 	}
+      else if (is_cxa_throw_p (call))
+	{
+	  on_throw (eg, call, state, false, ctxt);
+	  *out_terminate_path = true;
+	  return;
+	}
+      else if (is_cxa_rethrow_p (call))
+	{
+	  on_throw (eg, call, state, true, ctxt);
+	  *out_terminate_path = true;
+	  return;
+	}
+    }
+  else if (const gresx *resx = dyn_cast <const gresx *> (stmt))
+    {
+      on_resx (eg, *resx, state, ctxt);
+      *out_terminate_path = true;
+      return;
     }
 
   /* Otherwise, defer to m_region_model.  */
@@ -2016,6 +2034,332 @@ exploded_node::on_longjmp (exploded_graph &eg,
 	}
     }
 }
+
+/* Subclass of call_info for exploded edges that express
+   a throw or rethrow of an exception (actually a call
+   to __cxa_throw or __cxa_rethrow).  */
+
+class throw_custom_edge : public call_info
+{
+public:
+  throw_custom_edge (const call_details &cd,
+		     tree type,
+		     bool is_rethrow)
+  : call_info (cd),
+    m_type (type),
+    m_is_rethrow (is_rethrow)
+  {
+  }
+
+  void print (pretty_printer *pp) const final override
+  {
+    if (m_is_rethrow)
+      {
+	if (m_type)
+	  pp_printf (pp, "rethrowing %qT", m_type);
+	else
+	  pp_printf (pp, "rethrowing");
+      }
+    else
+      {
+	if (m_type)
+	  pp_printf (pp, "throwing %qT", m_type);
+	else
+	  pp_printf (pp, "throwing");
+      }
+  }
+
+  void print_desc (pretty_printer &pp) const final override
+  {
+    print (&pp);
+  }
+
+  bool update_model (region_model *model,
+		     const exploded_edge *,
+		     region_model_context *ctxt) const final override
+  {
+    if (m_is_rethrow)
+      {
+	auto eh_node = model->get_current_caught_exception ();
+	gcc_assert (eh_node);
+	model->push_thrown_exception (*eh_node);
+      }
+    else
+      {
+	call_details cd (get_call_details (model, ctxt));
+
+	const svalue *exception_sval = cd.get_arg_svalue (0);
+	const svalue *tinfo_sval = cd.get_arg_svalue (1);
+	const svalue *destructor_sval = cd.get_arg_svalue (2);
+
+	/* Push a new exception_node on the model's m_exception_stack.  */
+	exception_node eh_node (exception_sval, tinfo_sval, destructor_sval);
+	model->push_thrown_exception (eh_node);
+      }
+
+    return true;
+  }
+
+  void add_events_to_path (checker_path *emission_path,
+			   const exploded_edge &eedge) const final override
+  {
+    const exploded_node *dst_node = eedge.m_dest;
+    const program_point &dst_point = dst_node->get_point ();
+    const int dst_stack_depth = dst_point.get_stack_depth ();
+
+    const gcall &call = get_call_stmt ();
+
+    emission_path->add_event
+      (std::make_unique<explicit_throw_event>
+	 (event_loc_info (call.location,
+			  dst_point.get_fndecl (),
+			  dst_stack_depth),
+	  dst_node,
+	  call,
+	  m_type,
+	  m_is_rethrow));
+  }
+
+private:
+  tree m_type;
+  bool m_is_rethrow;
+};
+
+/* Subclass of custom_edge_info for an exploded edge that expresses
+   unwinding one stack frame during exception handling.  */
+
+class unwind_custom_edge : public custom_edge_info
+{
+public:
+  unwind_custom_edge (location_t loc)
+  : m_loc (loc)
+  {
+  }
+
+  void print (pretty_printer *pp) const final override
+  {
+    pp_printf (pp, "unwinding frame");
+  }
+
+  bool update_model (region_model *model,
+		     const exploded_edge *,
+		     region_model_context *ctxt) const final override
+  {
+    model->pop_frame (NULL_TREE, nullptr, ctxt, nullptr, false);
+    return true;
+  }
+
+  void add_events_to_path (checker_path *emission_path,
+			   const exploded_edge &eedge) const final override
+  {
+    const exploded_node *src_node = eedge.m_src;
+    const program_point &src_point = src_node->get_point ();
+    const int src_stack_depth = src_point.get_stack_depth ();
+    emission_path->add_event
+      (std::make_unique<unwind_event> (event_loc_info (m_loc,
+						       src_point.get_fndecl (),
+						       src_stack_depth)));
+  }
+
+private:
+  location_t m_loc;
+};
+
+/* Locate an SNODE that's a CFG edge with the EH flag,
+   or return nullptr. */
+
+static const superedge *
+get_eh_outedge (const supernode &snode)
+{
+  for (auto out_sedge : snode.m_succs)
+    if (::edge cfg_edge = out_sedge->get_any_cfg_edge ())
+      if (cfg_edge->flags & EDGE_EH)
+	return out_sedge;
+
+  // Not found
+  return nullptr;
+}
+
+/* Given THROWN_ENODE, which expreses a throw or rethrow occurring at
+   THROW_STMT, unwind intraprocedurally and interprocedurally to find
+   the next eh_dispatch statement to handle exceptions, if any.
+
+   Add eedges and enodes to this graph expressing the actions taken
+   to reach an enode containing the eh_dispatch stmt, if any.
+   Only the final enode is added to this graph's worklist.
+
+   Use CTXT to warn about problems e.g. memory leaks due to stack frames
+   being unwound.  */
+
+void
+exploded_graph::unwind_from_exception (exploded_node &thrown_enode,
+				       const gimple *throw_stmt,
+				       region_model_context *ctxt)
+{
+  logger * const logger = get_logger ();
+  LOG_FUNC_1 (logger, "thrown EN: %i", thrown_enode.m_index);
+
+  /* Iteratively unwind the stack looking for an out-cfg-edge
+     flagged EH.  */
+  exploded_node *iter_enode = &thrown_enode;
+  while (iter_enode)
+    {
+      /* If we have an out-cfg-edge flagged EH, follow that,
+	 presumably to a bb with a label and an eh_dispatch stmt.
+	 Otherwise assume no out-cfgs-edges, and we are unwinding to the
+	 caller.  */
+      if (auto sedge = get_eh_outedge (*iter_enode->get_supernode ()))
+	{
+	  /* Intraprocedural case.
+	     Assume we have an out-edge flagged with EH leading to
+	     code for dispatch to catch handlers.  */
+	  const program_point next_point
+	    = program_point::before_supernode (sedge->m_dest,
+					       sedge,
+					       iter_enode->get_point ().get_call_string ());
+	  exploded_node *next_enode
+	    = get_or_create_node (next_point,
+				  iter_enode->get_state (),
+				  iter_enode,
+				  /* Add this enode to the worklist.  */
+				  true);
+	  if (!next_enode)
+	    return;
+
+	  add_edge (iter_enode, next_enode, NULL, false, nullptr);
+	  return;
+	}
+      else
+	{
+	  /* Interprocedural case.
+	     No out-cfg-edge.  Unwind one stack frame.  */
+	  program_state unwound_state (iter_enode->get_state ());
+	  location_t loc = throw_stmt ? throw_stmt->location : UNKNOWN_LOCATION;
+	  auto unwind_edge_info
+	    = std::make_unique<unwind_custom_edge> (loc);
+	  unwind_edge_info->update_model (unwound_state.m_region_model, nullptr,
+					  ctxt);
+
+	  /* Detect leaks in the new state relative to the old state.
+	     Use an alternate ctxt that uses the original enode and the stmt
+	     (if any) for the location of any diagnostics.  */
+	  {
+	    uncertainty_t uncertainty;
+	    impl_region_model_context ctxt (*this,
+					    &thrown_enode,
+					    &iter_enode->get_state (),
+					    &unwound_state,
+					    &uncertainty,
+					    nullptr,
+					    throw_stmt);
+	    program_state::detect_leaks (iter_enode->get_state (),
+					 unwound_state,
+					 NULL,
+					 get_ext_state (), &ctxt);
+	  }
+	  const call_string &cs = iter_enode->get_point ().get_call_string ();
+	  if (cs.empty_p ())
+	    {
+	      /* Top-level stack frame in analysis: unwinding
+		 to the outside world that called us.  */
+	      return;
+	    }
+	  else
+	    {
+	      /* Nested function in analysis: unwinding to
+		 the callsite in the analysis (or beyond).  */
+	      program_point unwound_point
+		= program_point::after_supernode (cs.get_caller_node (), cs);
+	      unwound_point.pop_from_call_stack ();
+
+	      exploded_node *after_unwind_enode
+		= get_or_create_node (unwound_point,
+				      std::move (unwound_state),
+				      iter_enode,
+				      /* Don't add this enode to the
+					 worklist; we will process it
+					 on the next iteration.  */
+				      false);
+
+	      if (!after_unwind_enode)
+		return;
+
+	      add_edge (iter_enode, after_unwind_enode, NULL, true,
+			std::move (unwind_edge_info));
+	      iter_enode = after_unwind_enode;
+	    }
+	}
+    }
+}
+
+/* Handle THROW_CALL, a call to __cxa_throw or __cxa_rethrow.
+
+   Create an eedge and destination enode for the throw/rethrow, adding
+   them to this egraph.  The new enode isn't added to the worklist, but
+   instead exploded_graph::unwind_from_exception is immediately called
+   on it, potentially creating more eedges and enodes leading to an
+   eh_handler stmt.  */
+
+void
+exploded_node::on_throw (exploded_graph &eg,
+			 const gcall &throw_call,
+			 program_state *new_state,
+			 bool is_rethrow,
+			 region_model_context *ctxt)
+{
+  region_model *model = new_state->m_region_model;
+  call_details cd (throw_call, model, ctxt);
+
+  /* Create an enode and eedge for the "throw".  */
+  tree type = NULL_TREE;
+  if (is_rethrow)
+    {
+      const exception_node *eh_node = model->get_current_caught_exception ();
+      gcc_assert (eh_node);
+      type = eh_node->maybe_get_type ();
+    }
+  else
+    {
+      const svalue *tinfo_sval = cd.get_arg_svalue (1);
+      type = tinfo_sval->maybe_get_type_from_typeinfo ();
+    }
+  auto throw_edge_info
+    = std::make_unique<throw_custom_edge> (cd, type, is_rethrow);
+  throw_edge_info->update_model (model, nullptr, ctxt);
+
+  program_point after_throw_point = get_point ().get_next ();
+
+  exploded_node *after_throw_enode
+    = eg.get_or_create_node (after_throw_point, *new_state, this,
+			     /* Don't add to worklist; we process
+				this immediately below.  */
+			     false);
+
+  if (!after_throw_enode)
+    return;
+
+  /* Create custom exploded_edge for a throw.  */
+  eg.add_edge (this, after_throw_enode, NULL, true,
+	       std::move (throw_edge_info));
+
+  eg.unwind_from_exception (*after_throw_enode, &throw_call, ctxt);
+}
+
+/* Handle a gimple "resx" statement by adding eedges and enode.
+   that unwind to the next eh_dispatch statement, if any.  Only
+   the final enode is added to the worklist.  */
+
+void
+exploded_node::on_resx (exploded_graph &eg,
+			const gresx &/*resx*/,
+			program_state */*new_state*/,
+			region_model_context *ctxt)
+{
+  eg.unwind_from_exception (*this,
+			    nullptr,
+			    ctxt);
+}
+
 
 /* Subroutine of exploded_graph::process_node for finding the successors
    of the supernode for a function exit basic block.
@@ -2839,7 +3183,8 @@ exploded_graph::add_function_entry (const function &fun)
 }
 
 /* Get or create an exploded_node for (POINT, STATE).
-   If a new node is created, it is added to the worklist.
+   If a new node is created and ADD_TO_WORKLIST is true,
+   it is added to the worklist.
 
    Use ENODE_FOR_DIAG, a pre-existing enode, for any diagnostics
    that need to be emitted (e.g. when purging state *before* we have
@@ -2848,7 +3193,8 @@ exploded_graph::add_function_entry (const function &fun)
 exploded_node *
 exploded_graph::get_or_create_node (const program_point &point,
 				    const program_state &state,
-				    exploded_node *enode_for_diag)
+				    exploded_node *enode_for_diag,
+				    bool add_to_worklist)
 {
   logger * const logger = get_logger ();
   LOG_FUNC (logger);
@@ -3023,7 +3369,10 @@ exploded_graph::get_or_create_node (const program_point &point,
     }
 
   /* Add the new node to the worlist.  */
-  m_worklist.add_node (node);
+  if (add_to_worklist)
+    m_worklist.add_node (node);
+  else
+    node->set_status (exploded_node::status::special);
   return node;
 }
 
@@ -4258,12 +4607,18 @@ exploded_graph::process_node (exploded_node *node)
 					 NULL, /* no exploded_edge yet.  */
 					 &bifurcation_ctxt))
 	      {
-		exploded_node *next2
-		  = get_or_create_node (next_point, bifurcated_new_state, node);
-		if (next2)
-		  add_edge (node, next2, NULL,
-			    true /* assume that work could be done */,
-			    std::move (edge_info));
+		if (exploded_node *next2
+		    = edge_info->create_enode
+			(*this,
+			 next_point,
+			 std::move (bifurcated_new_state),
+			 node,
+			 &bifurcation_ctxt))
+		  {
+		    add_edge (node, next2, NULL,
+			      true /* assume that work could be done */,
+			      std::move (edge_info));
+		  }
 	      }
 	    else
 	      {
@@ -4382,6 +4737,18 @@ exploded_graph::process_node (exploded_node *node)
 		      add_edge (node, next, succ,
 				true /* assume that work is done */);
 		  }
+	      }
+
+	    /* Ignore CFG edges in the sgraph flagged with EH whilst
+	       we're exploring the egraph.
+	       We only use these sedges in special-case logic for
+	       dealing with exception-handling.  */
+	    if (auto cfg_sedge = succ->dyn_cast_cfg_superedge ())
+	      if (cfg_sedge->get_flags () & EDGE_EH)
+		{
+		  if (logger)
+		    logger->log ("rejecting EH edge");
+		  continue;
 	      }
 
 	    if (!node->on_edge (*this, succ, &next_point, &next_state,
@@ -6001,6 +6368,9 @@ private:
 	pp_string (pp, "(W)");
 	break;
       case exploded_node::status::processed:
+	break;
+      case exploded_node::status::special:
+	pp_string (pp, "(S)");
 	break;
       case exploded_node::status::merger:
 	pp_string (pp, "(M)");

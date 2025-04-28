@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/checker-path.h"
 #include "analyzer/feasible-graph.h"
 #include "analyzer/record-layout.h"
+#include "analyzer/function-set.h"
 
 #if ENABLE_ANALYZER
 
@@ -314,12 +315,97 @@ region_to_value_map::purge_state_involving (const svalue *sval)
     m_hash_map.remove (iter);
 }
 
+// struct exception_node
+
+bool
+exception_node::operator== (const exception_node &other) const
+{
+  return (m_exception_sval == other.m_exception_sval
+	  && m_typeinfo_sval == other.m_typeinfo_sval
+	  && m_destructor_sval == other.m_destructor_sval);
+}
+
+void
+exception_node::dump_to_pp (pretty_printer *pp,
+			    bool simple) const
+{
+  pp_printf (pp, "{exception: ");
+  m_exception_sval->dump_to_pp (pp, simple);
+  pp_string (pp, ", typeinfo: ");
+  m_typeinfo_sval->dump_to_pp (pp, simple);
+  pp_string (pp, ", destructor: ");
+  m_destructor_sval->dump_to_pp (pp, simple);
+  pp_string (pp, "}");
+}
+
+void
+exception_node::dump (FILE *fp, bool simple) const
+{
+  tree_dump_pretty_printer pp (fp);
+  dump_to_pp (&pp, simple);
+  pp_newline (&pp);
+}
+
+/* Dump a multiline representation of this model to stderr.  */
+
+DEBUG_FUNCTION void
+exception_node::dump (bool simple) const
+{
+  dump (stderr, simple);
+}
+
+DEBUG_FUNCTION void
+exception_node::dump () const
+{
+  text_art::dump (*this);
+}
+
+std::unique_ptr<json::object>
+exception_node::to_json () const
+{
+  auto obj = std::make_unique<json::object> ();
+  obj->set ("exception", m_exception_sval->to_json ());
+  obj->set ("typeinfo", m_typeinfo_sval->to_json ());
+  obj->set ("destructor", m_destructor_sval->to_json ());
+  return obj;
+}
+
+std::unique_ptr<text_art::tree_widget>
+exception_node::make_dump_widget (const text_art::dump_widget_info &dwi) const
+{
+  using text_art::tree_widget;
+  std::unique_ptr<tree_widget> w
+    (tree_widget::from_fmt (dwi, nullptr, "Exception Node"));
+
+  w->add_child (m_exception_sval->make_dump_widget (dwi, "exception"));
+  w->add_child (m_typeinfo_sval->make_dump_widget (dwi, "typeinfo"));
+  w->add_child (m_destructor_sval->make_dump_widget (dwi, "destructor"));
+
+  return w;
+}
+
+tree
+exception_node::maybe_get_type () const
+{
+  return m_typeinfo_sval->maybe_get_type_from_typeinfo ();
+}
+
+void
+exception_node::add_to_reachable_regions (reachable_regions &regs) const
+{
+  regs.handle_sval (m_exception_sval);
+  regs.handle_sval (m_typeinfo_sval);
+  regs.handle_sval (m_destructor_sval);
+}
+
 /* class region_model.  */
 
 /* Ctor for region_model: construct an "empty" model.  */
 
 region_model::region_model (region_model_manager *mgr)
 : m_mgr (mgr), m_store (), m_current_frame (NULL),
+  m_thrown_exceptions_stack (),
+  m_caught_exceptions_stack (),
   m_dynamic_extents ()
 {
   m_constraints = new constraint_manager (mgr);
@@ -331,6 +417,8 @@ region_model::region_model (const region_model &other)
 : m_mgr (other.m_mgr), m_store (other.m_store),
   m_constraints (new constraint_manager (*other.m_constraints)),
   m_current_frame (other.m_current_frame),
+  m_thrown_exceptions_stack (other.m_thrown_exceptions_stack),
+  m_caught_exceptions_stack (other.m_caught_exceptions_stack),
   m_dynamic_extents (other.m_dynamic_extents)
 {
 }
@@ -357,6 +445,9 @@ region_model::operator= (const region_model &other)
 
   m_current_frame = other.m_current_frame;
 
+  m_thrown_exceptions_stack = other.m_thrown_exceptions_stack;
+  m_caught_exceptions_stack = other.m_caught_exceptions_stack;
+
   m_dynamic_extents = other.m_dynamic_extents;
 
   return *this;
@@ -381,6 +472,11 @@ region_model::operator== (const region_model &other) const
     return false;
 
   if (m_current_frame != other.m_current_frame)
+    return false;
+
+  if (m_thrown_exceptions_stack != other.m_thrown_exceptions_stack)
+    return false;
+  if (m_caught_exceptions_stack != other.m_caught_exceptions_stack)
     return false;
 
   if (m_dynamic_extents != other.m_dynamic_extents)
@@ -409,7 +505,7 @@ void
 region_model::dump_to_pp (pretty_printer *pp, bool simple,
 			  bool multiline) const
 {
-  /* Dump stack.  */
+  /* Dump frame stack.  */
   pp_printf (pp, "stack depth: %i", get_stack_depth ());
   if (multiline)
     pp_newline (pp);
@@ -429,6 +525,50 @@ region_model::dump_to_pp (pretty_printer *pp, bool simple,
     }
   if (!multiline)
     pp_string (pp, "}");
+
+  /* Dump exception stacks.  */
+  if (m_thrown_exceptions_stack.size () > 0)
+    {
+      pp_printf (pp, "thrown exceptions: %i", (int)m_thrown_exceptions_stack.size ());
+      if (multiline)
+	pp_newline (pp);
+      else
+	pp_string (pp, " {");
+      for (size_t idx = 0; idx < m_thrown_exceptions_stack.size (); ++idx)
+	{
+	  if (multiline)
+	    pp_string (pp, "  ");
+	  else if (idx > 0)
+	    pp_string (pp, ", ");
+	  pp_printf (pp, "exception (index %i): ", (int)idx);
+	  m_thrown_exceptions_stack[idx].dump_to_pp (pp, simple);
+	  if (multiline)
+	    pp_newline (pp);
+	}
+      if (!multiline)
+	pp_string (pp, "}");
+    }
+  if (m_caught_exceptions_stack.size () > 0)
+    {
+      pp_printf (pp, "caught exceptions: %i", (int)m_caught_exceptions_stack.size ());
+      if (multiline)
+	pp_newline (pp);
+      else
+	pp_string (pp, " {");
+      for (size_t idx = 0; idx < m_caught_exceptions_stack.size (); ++idx)
+	{
+	  if (multiline)
+	    pp_string (pp, "  ");
+	  else if (idx > 0)
+	    pp_string (pp, ", ");
+	  pp_printf (pp, "exception (index %i): ", (int)idx);
+	  m_caught_exceptions_stack[idx].dump_to_pp (pp, simple);
+	  if (multiline)
+	    pp_newline (pp);
+	}
+      if (!multiline)
+	pp_string (pp, "}");
+    }
 
   /* Dump store.  */
   if (!multiline)
@@ -502,6 +642,17 @@ region_model::to_json () const
   model_obj->set ("constraints", m_constraints->to_json ());
   if (m_current_frame)
     model_obj->set ("current_frame", m_current_frame->to_json ());
+
+  auto thrown_exceptions_arr = std::make_unique<json::array> ();
+  for (auto &node : m_thrown_exceptions_stack)
+    thrown_exceptions_arr->append (node.to_json ());
+  model_obj->set ("thrown_exception_stack", std::move (thrown_exceptions_arr));
+
+  auto caught_exceptions_arr = std::make_unique<json::array> ();
+  for (auto &node : m_caught_exceptions_stack)
+    caught_exceptions_arr->append (node.to_json ());
+  model_obj->set ("caught_exception_stack", std::move (caught_exceptions_arr));
+
   model_obj->set ("dynamic_extents", m_dynamic_extents.to_json ());
   return model_obj;
 }
@@ -525,6 +676,26 @@ region_model::make_dump_widget (const text_art::dump_widget_info &dwi) const
       m_current_frame->dump_to_pp (pp, simple);
       model_widget->add_child (tree_widget::make (dwi, pp));
     }
+
+  if (m_thrown_exceptions_stack.size () > 0)
+    {
+      auto thrown_exceptions_widget
+	= tree_widget::make (dwi, "Thrown Exceptions");
+      for (auto &thrown_exception : m_thrown_exceptions_stack)
+	thrown_exceptions_widget->add_child
+	  (thrown_exception.make_dump_widget (dwi));
+      model_widget->add_child (std::move (thrown_exceptions_widget));
+    }
+  if (m_caught_exceptions_stack.size () > 0)
+    {
+      auto caught_exceptions_widget
+	= tree_widget::make (dwi, "Caught Exceptions");
+      for (auto &caught_exception : m_caught_exceptions_stack)
+	caught_exceptions_widget->add_child
+	  (caught_exception.make_dump_widget (dwi));
+      model_widget->add_child (std::move (caught_exceptions_widget));
+    }
+
   model_widget->add_child
     (m_store.make_dump_widget (dwi,
 			       m_mgr->get_store_manager ()));
@@ -1906,6 +2077,170 @@ region_model::get_builtin_kf (const gcall &call,
   return NULL;
 }
 
+/* Subclass of custom_edge_info for use by exploded_edges that represent
+   an exception being thrown from a call we don't have the code for.  */
+
+class exception_thrown_from_unrecognized_call : public custom_edge_info
+{
+public:
+  exception_thrown_from_unrecognized_call (const gcall &call,
+					   tree fndecl)
+  : m_call (call),
+    m_fndecl (fndecl)
+  {
+  }
+
+  void print (pretty_printer *pp) const
+  {
+    if (m_fndecl)
+      pp_printf (pp, "if %qD throws an exception...", m_fndecl);
+    else
+      pp_printf (pp, "if the called function throws an exception...");
+  };
+
+  bool
+  update_model (region_model *model,
+		const exploded_edge *,
+		region_model_context *ctxt) const final override
+  {
+    /* Allocate an exception and set it as the current exception.  */
+    const region *exception_reg
+      = model->get_or_create_region_for_heap_alloc
+	  (nullptr, /* We don't know the size of the region.  */
+	   ctxt);
+
+    region_model_manager *mgr = model->get_manager ();
+    conjured_purge p (model, ctxt);
+
+    /* The contents of the region are some conjured svalue.  */
+    const svalue *exception_sval
+      = mgr->get_or_create_conjured_svalue (NULL_TREE,
+					    &m_call,
+					    exception_reg, p, 0);
+    model->set_value (exception_reg, exception_sval, ctxt);
+    const svalue *exception_ptr_sval
+      = mgr->get_ptr_svalue (ptr_type_node, exception_reg);
+    const svalue *tinfo_sval
+      = mgr->get_or_create_conjured_svalue (ptr_type_node,
+					    &m_call,
+					    exception_reg, p, 1);
+    const svalue *destructor_sval
+      = mgr->get_or_create_conjured_svalue (ptr_type_node,
+					    &m_call,
+					    exception_reg, p, 2);
+
+    /* Push a new exception_node on the model's thrown exception stack.  */
+    exception_node eh_node (exception_ptr_sval, tinfo_sval, destructor_sval);
+    model->push_thrown_exception (eh_node);
+
+    return true;
+  }
+
+  void
+  add_events_to_path (checker_path *emission_path,
+		      const exploded_edge &eedge) const final override
+  {
+    const exploded_node *dst_node = eedge.m_dest;
+    const program_point &dst_point = dst_node->get_point ();
+    const int dst_stack_depth = dst_point.get_stack_depth ();
+
+    emission_path->add_event
+      (std::make_unique<throw_from_call_to_external_fn_event>
+	 (event_loc_info (m_call.location,
+			  dst_point.get_fndecl (),
+			  dst_stack_depth),
+	  dst_node,
+	  m_call,
+	  m_fndecl));
+  }
+
+  exploded_node *
+  create_enode (exploded_graph &eg,
+		const program_point &point,
+		program_state &&state,
+		exploded_node *enode_for_diag,
+		region_model_context *ctxt) const final override
+  {
+    exploded_node *thrown_enode
+      = eg.get_or_create_node (point, state, enode_for_diag,
+			       /* Don't add to worklist.  */
+			       false);
+    if (!thrown_enode)
+      return nullptr;
+
+    /* Add successor edges for thrown_enode "by hand" for the exception.  */
+    eg.unwind_from_exception (*thrown_enode,
+			      &m_call,
+			      ctxt);
+    return thrown_enode;
+  }
+
+private:
+  const gcall &m_call;
+  tree m_fndecl; // could be null
+};
+
+/* Get a set of functions that are assumed to not throw exceptions.  */
+
+static function_set
+get_fns_assumed_not_to_throw ()
+{
+  // TODO: populate this list more fully
+  static const char * const fn_names[] = {
+    /* This array must be kept sorted.  */
+
+    "fclose"
+  };
+  const size_t count = ARRAY_SIZE (fn_names);
+  function_set fs (fn_names, count);
+  return fs;
+}
+
+/* Return true if CALL could throw an exception.
+   FNDECL could be NULL_TREE.  */
+
+static bool
+can_throw_p (const gcall &call, tree fndecl)
+{
+  if (!flag_exceptions)
+    return false;
+
+  if (gimple_call_nothrow_p (&call))
+    return false;
+
+  if (fndecl)
+    {
+      const function_set fs = get_fns_assumed_not_to_throw ();
+      if (fs.contains_decl_p (fndecl))
+	return false;
+    }
+
+  return true;
+}
+
+/* Given CALL where we don't know what code is being called
+   (by not having the body of FNDECL, or having NULL_TREE for FNDECL),
+  potentially bifurcate control flow to simulate the call throwing
+  an exception.  */
+
+void
+region_model::check_for_throw_inside_call (const gcall &call,
+					   tree fndecl,
+					   region_model_context *ctxt)
+{
+  if (!ctxt)
+    return;
+
+  /* Could this function throw an exception?
+     If so, add an extra e-edge for that.  */
+  if (!can_throw_p (call, fndecl))
+    return;
+
+  auto throws_exception
+    = std::make_unique<exception_thrown_from_unrecognized_call> (call, fndecl);
+  ctxt->bifurcate (std::move (throws_exception));
+}
+
 /* Update this model for the CALL stmt, using CTXT to report any
    diagnostics - the first half.
 
@@ -1951,6 +2286,7 @@ region_model::on_call_pre (const gcall &call, region_model_context *ctxt)
 
   if (!callee_fndecl)
     {
+      check_for_throw_inside_call (call, NULL_TREE, ctxt);
       cd.set_any_lhs_with_defaults ();
       return true; /* Unknown side effects.  */
     }
@@ -1971,7 +2307,10 @@ region_model::on_call_pre (const gcall &call, region_model_context *ctxt)
     return true; /* Unknown side effects.  */
 
   if (!fndecl_has_gimple_body_p (callee_fndecl))
-    return true; /* Unknown side effects.  */
+    {
+      check_for_throw_inside_call (call, callee_fndecl, ctxt);
+      return true; /* Unknown side effects.  */
+    }
 
   return false; /* No side effects.  */
 }
@@ -5884,16 +6223,21 @@ region_model::maybe_update_for_edge (const superedge &edge,
 					    ctxt, out);
     }
 
+  if (const geh_dispatch *eh_dispatch_stmt
+	= dyn_cast <const geh_dispatch *> (last_stmt))
+    {
+      const eh_dispatch_cfg_superedge *eh_dispatch_cfg_sedge
+	= as_a <const eh_dispatch_cfg_superedge *> (&edge);
+      return apply_constraints_for_eh_dispatch (*eh_dispatch_cfg_sedge,
+						eh_dispatch_stmt,
+						ctxt, out);
+    }
+
   if (const ggoto *goto_stmt = dyn_cast <const ggoto *> (last_stmt))
     {
       const cfg_superedge *cfg_sedge = as_a <const cfg_superedge *> (&edge);
       return apply_constraints_for_ggoto (*cfg_sedge, goto_stmt, ctxt);
     }
-
-  /* Apply any constraints due to an exception being thrown.  */
-  if (const cfg_superedge *cfg_sedge = dyn_cast <const cfg_superedge *> (&edge))
-    if (cfg_sedge->get_flags () & EDGE_EH)
-      return apply_constraints_for_exception (last_stmt, ctxt, out);
 
   return true;
 }
@@ -6171,6 +6515,173 @@ apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
   return sat;
 }
 
+class rejected_eh_dispatch : public rejected_constraint
+{
+public:
+  rejected_eh_dispatch (const region_model &model)
+  : rejected_constraint (model)
+  {}
+
+  void dump_to_pp (pretty_printer *pp) const final override
+  {
+    pp_printf (pp, "rejected_eh_dispatch");
+  }
+};
+
+static bool
+exception_matches_type_p (tree exception_type,
+			  tree catch_type)
+{
+  if (catch_type == exception_type)
+    return true;
+
+  /* TODO (PR analyzer/119697): we should also handle subclasses etc;
+     see the rules in https://en.cppreference.com/w/cpp/language/catch
+
+     It looks like we should be calling (or emulating)
+     can_convert_eh from the C++ FE, but that's specific to the C++ FE.  */
+
+  return false;
+}
+
+static bool
+matches_any_exception_type_p (eh_catch ehc, tree exception_type)
+{
+  if (ehc->type_list == NULL_TREE)
+    /* All exceptions are caught here.  */
+    return true;
+
+  for (tree iter = ehc->type_list; iter; iter = TREE_CHAIN (iter))
+    if (exception_matches_type_p (TREE_VALUE (iter),
+				  exception_type))
+      return true;
+  return false;
+}
+
+bool
+region_model::
+apply_constraints_for_eh_dispatch (const eh_dispatch_cfg_superedge &edge,
+				   const geh_dispatch *,
+				   region_model_context *ctxt,
+				   std::unique_ptr<rejected_constraint> *out)
+{
+  const exception_node *current_node = get_current_thrown_exception ();
+  gcc_assert (current_node);
+  tree curr_exception_type = current_node->maybe_get_type ();
+  if (!curr_exception_type)
+    /* We don't know the specific type.  */
+    return true;
+
+  return edge.apply_constraints (this, ctxt, curr_exception_type, out);
+}
+
+bool
+region_model::
+apply_constraints_for_eh_dispatch_try (const eh_dispatch_try_cfg_superedge &edge,
+				       region_model_context */*ctxt*/,
+				       tree exception_type,
+				       std::unique_ptr<rejected_constraint> *out)
+{
+  /* TODO: can we rely on this ordering?
+     or do we need to iterate through prev_catch ?  */
+  /* The exception must not match any of the previous edges.  */
+  for (auto sibling_sedge : edge.m_src->m_succs)
+    {
+      if (sibling_sedge == &edge)
+	break;
+
+      const eh_dispatch_try_cfg_superedge *sibling_eh_sedge
+	= as_a <const eh_dispatch_try_cfg_superedge *> (sibling_sedge);
+      if (eh_catch ehc = sibling_eh_sedge->get_eh_catch ())
+	if (matches_any_exception_type_p (ehc, exception_type))
+	  {
+	    /* The earlier sibling matches, so the "unhandled" edge is
+	       not taken.  */
+	    if (out)
+	      *out = std::make_unique<rejected_eh_dispatch> (*this);
+	    return false;
+	  }
+    }
+
+  if (eh_catch ehc = edge.get_eh_catch ())
+    {
+      /* We have an edge that tried to match one or more types.  */
+
+      /* The exception must not match any of the previous edges.  */
+
+      /* It must match this type.  */
+      if (matches_any_exception_type_p (ehc, exception_type))
+	return true;
+      else
+	{
+	  /* Exception type doesn't match.  */
+	  if (out)
+	    *out = std::make_unique<rejected_eh_dispatch> (*this);
+	  return false;
+	}
+    }
+  else
+    {
+      /* This is the "unhandled exception" edge.
+	 If we get here then no sibling edges matched;
+	 we will follow this edge.  */
+      return true;
+    }
+}
+
+bool
+region_model::
+apply_constraints_for_eh_dispatch_allowed (const eh_dispatch_allowed_cfg_superedge &edge,
+					   region_model_context */*ctxt*/,
+					   tree exception_type,
+					   std::unique_ptr<rejected_constraint> *out)
+{
+  auto curr_thrown_exception_node = get_current_thrown_exception ();
+  gcc_assert (curr_thrown_exception_node);
+  tree curr_exception_type = curr_thrown_exception_node->maybe_get_type ();
+  eh_region eh_reg = edge.get_eh_region ();
+  tree type_list = eh_reg->u.allowed.type_list;
+
+  switch (edge.get_eh_kind ())
+    {
+    default:
+      gcc_unreachable ();
+    case eh_dispatch_allowed_cfg_superedge::eh_kind::expected:
+      if (!curr_exception_type)
+	{
+	  /* We don't know the specific type;
+	     assume we have one of an expected type.  */
+	  return true;
+	}
+      for (tree iter = type_list; iter; iter = TREE_CHAIN (iter))
+	if (exception_matches_type_p (TREE_VALUE (iter),
+				      exception_type))
+	  return true;
+      if (out)
+	*out = std::make_unique<rejected_eh_dispatch> (*this);
+      return false;
+
+    case eh_dispatch_allowed_cfg_superedge::eh_kind::unexpected:
+      if (!curr_exception_type)
+	{
+	  /* We don't know the specific type;
+	     assume we don't have one of an expected type.  */
+	  if (out)
+	    *out = std::make_unique<rejected_eh_dispatch> (*this);
+	  return false;
+	}
+      for (tree iter = type_list; iter; iter = TREE_CHAIN (iter))
+	if (exception_matches_type_p (TREE_VALUE (iter),
+				      exception_type))
+	  {
+	    if (out)
+	      *out = std::make_unique<rejected_eh_dispatch> (*this);
+	    return false;
+	  }
+      return true;
+    }
+}
+
 /* Given an edge reached by GOTO_STMT, determine appropriate constraints
    for the edge to be taken.
 
@@ -6199,38 +6710,6 @@ region_model::apply_constraints_for_ggoto (const cfg_superedge &edge,
 	return false;
     }
 
-  return true;
-}
-
-/* Apply any constraints due to an exception being thrown at LAST_STMT.
-
-   If they are feasible, add the constraints and return true.
-
-   Return false if the constraints contradict existing knowledge
-   (and so the edge should not be taken).
-   When returning false, if OUT is non-NULL, write a new rejected_constraint
-   to it.  */
-
-bool
-region_model::
-apply_constraints_for_exception (const gimple *last_stmt,
-				 region_model_context *ctxt,
-				 std::unique_ptr<rejected_constraint> *out)
-{
-  gcc_assert (last_stmt);
-  if (const gcall *call = dyn_cast <const gcall *> (last_stmt))
-    if (tree callee_fndecl = get_fndecl_for_call (*call, ctxt))
-      if (is_named_call_p (callee_fndecl, "operator new", *call, 1)
-	  || is_named_call_p (callee_fndecl, "operator new []", *call, 1))
-	{
-	  /* We have an exception thrown from operator new.
-	     Add a constraint that the result was NULL, to avoid a false
-	     leak report due to the result being lost when following
-	     the EH edge.  */
-	  if (tree lhs = gimple_call_lhs (call))
-	    return add_constraint (lhs, EQ_EXPR, null_pointer_node, ctxt, out);
-	  return true;
-	}
   return true;
 }
 
@@ -6640,6 +7119,14 @@ region_model::can_merge_with_p (const region_model &other_model,
   for (auto iter : m.m_svals_changing_meaning)
     out_model->m_constraints->purge_state_involving (iter);
 
+  if (m_thrown_exceptions_stack != other_model.m_thrown_exceptions_stack)
+    return false;
+  out_model->m_thrown_exceptions_stack = m_thrown_exceptions_stack;
+
+  if (m_caught_exceptions_stack != other_model.m_caught_exceptions_stack)
+    return false;
+  out_model->m_caught_exceptions_stack = m_caught_exceptions_stack;
+
   return true;
 }
 
@@ -6893,6 +7380,12 @@ region_model::get_referenced_base_regions (auto_bitmap &out_ids) const
 	if (parent->get_kind () == RK_FRAME)
 	  reachable_regs.add (base_reg, false);
     }
+
+  for (auto &eh_node : m_thrown_exceptions_stack)
+    eh_node.add_to_reachable_regions (reachable_regs);
+  for (auto &eh_node : m_caught_exceptions_stack)
+    eh_node.add_to_reachable_regions (reachable_regs);
+
 
   bitmap_clear (out_ids);
   for (auto iter_reg : reachable_regs)

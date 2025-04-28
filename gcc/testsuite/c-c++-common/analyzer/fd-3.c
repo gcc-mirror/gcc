@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fno-exceptions" } */
+
 int open(const char *, int mode);
 void close(int fd);
 int write (int fd, void *buf, int nbytes);

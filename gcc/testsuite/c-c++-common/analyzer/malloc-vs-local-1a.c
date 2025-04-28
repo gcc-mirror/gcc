@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fno-exceptions" } */
 /* { dg-additional-options "-fno-analyzer-call-summaries -fanalyzer-transitivity" } */
 /* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 

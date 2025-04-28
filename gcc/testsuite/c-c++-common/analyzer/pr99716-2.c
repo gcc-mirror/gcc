@@ -1,4 +1,5 @@
 /* { dg-skip-if "requires hosted libstdc++ for stdlib rand" { ! hostedlib } } */
+/* { dg-additional-options "-fno-exceptions" } */
 
 /* Reduced from
    https://github.com/libguestfs/libguestfs/blob/e0a11061035d47b118c95706240bcc17fd576edc/tests/mount-local/test-parallel-mount-local.c#L299-L335

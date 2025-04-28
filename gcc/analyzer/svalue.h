@@ -188,6 +188,8 @@ public:
 			     const region_model &model,
 			     const svalue *outer_sval = nullptr) const;
 
+  tree maybe_get_type_from_typeinfo () const;
+
  protected:
   svalue (complexity c, symbol::id_t id, tree type)
   : symbol (c, id), m_type (type)

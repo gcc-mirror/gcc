@@ -1,4 +1,5 @@
 /* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
+/* { dg-additional-options "-fno-exceptions" } */
 
 #include <stdio.h>
 #include <stdlib.h>

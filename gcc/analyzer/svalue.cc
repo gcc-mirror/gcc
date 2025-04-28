@@ -860,6 +860,19 @@ svalue::maybe_get_deref_base_region () const
     }
 }
 
+/* If this svalue is a pointer to the typeinfo instance for a particular
+   type, return that type.  Otherwise return NULL_TREE.  */
+
+tree
+svalue::maybe_get_type_from_typeinfo () const
+{
+  if (const region *reg = maybe_get_region ())
+    if (const decl_region *decl_reg = reg->dyn_cast_decl_region ())
+      return TREE_TYPE (DECL_NAME (decl_reg->get_decl ()));
+
+  return NULL_TREE;
+}
+
 /* class region_svalue : public svalue.  */
 
 /* Implementation of svalue::dump_to_pp vfunc for region_svalue.  */

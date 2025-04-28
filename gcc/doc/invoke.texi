@@ -513,6 +513,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-tainted-divisor
 -Wno-analyzer-tainted-offset
 -Wno-analyzer-tainted-size
+-Wno-analyzer-throw-of-unexpected-type
 -Wanalyzer-symbol-too-complex
 -Wanalyzer-too-complex
 -Wno-analyzer-undefined-behavior-ptrdiff
@@ -11008,6 +11009,7 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-tainted-divisor
 -Wanalyzer-tainted-offset
 -Wanalyzer-tainted-size
+-Wanalyzer-throw-of-unexpected-type
 -Wanalyzer-undefined-behavior-ptrdiff
 -Wanalyzer-undefined-behavior-strtok
 -Wanalyzer-unsafe-call-within-signal-handler
@@ -11658,6 +11660,17 @@ an operation such as @code{memset} without being sanitized, so that an
 attacker could inject an out-of-bounds access.
 
 See @uref{https://cwe.mitre.org/data/definitions/129.html, CWE-129: Improper Validation of Array Index}.
+
+@opindex Wanalyzer-throw-of-unexpected-type
+@opindex Wno-analyzer-throw-of-unexpected-type
+@item -Wno-analyzer-throw-of-unexpected-type
+This warning requires @option{-fanalyzer} which enables it;
+use @option{-Wno-analyzer-throw-of-unexpected-type} to disable it.
+Dynamic exception specifications are only available in C++14 and earlier.
+
+This diagnostic warns for paths through the code in which a an exception
+is thrown from a function with a dynamic exception specification where
+the exception does not comply with the specification.
 
 @opindex Wanalyzer-undefined-behavior-ptrdiff
 @opindex Wno-analyzer-undefined-behavior-ptrdiff

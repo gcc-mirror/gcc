@@ -1,7 +1,7 @@
 /* Example of extra argument to "malloc" attribute.  */
 
 struct foo;
-extern void foo_release (int, struct foo *);
+extern void foo_release (int, struct foo *) __attribute__((nothrow));
 extern struct foo *foo_acquire (void)
   __attribute__ ((malloc (foo_release, 2)));
 

@@ -1276,6 +1276,27 @@ public:
   /* Currently a no-op.  */
 };
 
+/* Handler for "__builtin_eh_pointer".  */
+
+class kf_eh_pointer : public builtin_known_function
+{
+public:
+  bool matches_call_types_p (const call_details &) const final override
+  {
+    return true;
+  }
+
+  enum built_in_function builtin_code () const final override
+  {
+    return BUILT_IN_EH_POINTER;
+  }
+
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    cd.set_any_lhs_with_defaults ();
+  }
+};
+
 /* Handler for "strcat" and "__builtin_strcat_chk".  */
 
 class kf_strcat : public builtin_known_function
@@ -2249,6 +2270,8 @@ register_known_functions (known_function_manager &kfm,
     kfm.add (BUILT_IN_ALLOCA_WITH_ALIGN, std::make_unique<kf_alloca> ());
     kfm.add (BUILT_IN_STACK_RESTORE, std::make_unique<kf_stack_restore> ());
     kfm.add (BUILT_IN_STACK_SAVE, std::make_unique<kf_stack_save> ());
+
+    kfm.add (BUILT_IN_EH_POINTER, std::make_unique<kf_eh_pointer> ());
 
     register_atomic_builtins (kfm);
     register_sanitizer_builtins (kfm);

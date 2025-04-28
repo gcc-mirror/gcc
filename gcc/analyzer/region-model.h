@@ -250,6 +250,41 @@ typedef void (*pop_frame_callback) (const region_model *model,
 				    const svalue *retval,
 				    region_model_context *ctxt);
 
+/* Roughly equivalent to a struct __cxa_exception, except we store a std::vector
+   rather than a linked list.    */
+
+struct exception_node
+{
+  exception_node (const svalue *exception_sval,
+		  const svalue *typeinfo_sval,
+		  const svalue *destructor_sval)
+  : m_exception_sval (exception_sval),
+    m_typeinfo_sval (typeinfo_sval),
+    m_destructor_sval (destructor_sval)
+  {
+  }
+
+  bool operator== (const exception_node &other) const;
+
+  void dump_to_pp (pretty_printer *pp, bool simple) const;
+  void dump (FILE *fp, bool simple) const;
+  void dump (bool simple) const;
+  void dump () const;
+
+  std::unique_ptr<json::object> to_json () const;
+
+  std::unique_ptr<text_art::tree_widget>
+  make_dump_widget (const text_art::dump_widget_info &dwi) const;
+
+  tree maybe_get_type () const;
+
+  void add_to_reachable_regions (reachable_regions &) const;
+
+  const svalue *m_exception_sval;
+  const svalue *m_typeinfo_sval;
+  const svalue *m_destructor_sval;
+};
+
 /* A region_model encapsulates a representation of the state of memory, with
    a tree of regions, along with their associated values.
    The representation is graph-like because values can be pointers to
@@ -583,6 +618,56 @@ class region_model
 
   bool called_from_main_p () const;
 
+  void push_thrown_exception (const exception_node &node)
+  {
+    m_thrown_exceptions_stack.push_back (node);
+  }
+  const exception_node *get_current_thrown_exception () const
+  {
+    if (m_thrown_exceptions_stack.empty ())
+      return nullptr;
+    return &m_thrown_exceptions_stack.back ();
+  }
+  exception_node pop_thrown_exception ()
+  {
+    gcc_assert (!m_thrown_exceptions_stack.empty ());
+    const exception_node retval = m_thrown_exceptions_stack.back ();
+    m_thrown_exceptions_stack.pop_back ();
+    return retval;
+  }
+
+  void push_caught_exception (const exception_node &node)
+  {
+    m_caught_exceptions_stack.push_back (node);
+  }
+  const exception_node *get_current_caught_exception () const
+  {
+    if (m_caught_exceptions_stack.empty ())
+      return nullptr;
+    return &m_caught_exceptions_stack.back ();
+  }
+  exception_node pop_caught_exception ()
+  {
+    gcc_assert (!m_caught_exceptions_stack.empty ());
+    const exception_node retval = m_caught_exceptions_stack.back ();
+    m_caught_exceptions_stack.pop_back ();
+    return retval;
+  }
+
+  bool
+  apply_constraints_for_eh_dispatch_try
+    (const eh_dispatch_try_cfg_superedge &edge,
+     region_model_context *ctxt,
+     tree exception_type,
+     std::unique_ptr<rejected_constraint> *out);
+
+  bool
+  apply_constraints_for_eh_dispatch_allowed
+    (const eh_dispatch_allowed_cfg_superedge &edge,
+     region_model_context *ctxt,
+     tree exception_type,
+     std::unique_ptr<rejected_constraint> *out);
+
 private:
   const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;
   const svalue *get_rvalue_1 (path_var pv, region_model_context *ctxt) const;
@@ -621,9 +706,12 @@ private:
   bool apply_constraints_for_ggoto (const cfg_superedge &edge,
 				    const ggoto *goto_stmt,
 				    region_model_context *ctxt);
-  bool apply_constraints_for_exception (const gimple *last_stmt,
-					region_model_context *ctxt,
-					std::unique_ptr<rejected_constraint> *out);
+
+  bool
+  apply_constraints_for_eh_dispatch (const eh_dispatch_cfg_superedge &edge,
+				     const geh_dispatch *eh_dispatch_stmt,
+				     region_model_context *ctxt,
+				     std::unique_ptr<rejected_constraint> *out);
 
   int poison_any_pointers_to_descendents (const region *reg,
 					  enum poison_kind pkind);
@@ -689,6 +777,10 @@ private:
 			     tree callee_fndecl,
 			     region_model_context *ctxt);
 
+  void check_for_throw_inside_call (const gcall &call,
+				    tree fndecl,
+				    region_model_context *ctxt);
+
   static auto_vec<pop_frame_callback> pop_frame_callbacks;
   /* Storing this here to avoid passing it around everywhere.  */
   region_model_manager *const m_mgr;
@@ -698,6 +790,9 @@ private:
   constraint_manager *m_constraints; // TODO: embed, rather than dynalloc?
 
   const frame_region *m_current_frame;
+
+  std::vector<exception_node> m_thrown_exceptions_stack;
+  std::vector<exception_node> m_caught_exceptions_stack;
 
   /* Map from base region to size in bytes, for tracking the sizes of
      dynamically-allocated regions.

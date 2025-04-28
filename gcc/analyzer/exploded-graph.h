@@ -214,6 +214,10 @@ class exploded_node : public dnode<eg_traits>
     /* Node has had exploded_graph::process_node called on it.  */
     processed,
 
+    /* Node was excluded from worklist on creation.
+       e.g. for handling exception-unwinding.  */
+    special,
+
     /* Node was left unprocessed due to merger; it won't have had
        exploded_graph::process_node called on it.  */
     merger,
@@ -306,6 +310,15 @@ class exploded_node : public dnode<eg_traits>
 		   const gcall &call,
 		   program_state *new_state,
 		   region_model_context *ctxt);
+  void on_throw (exploded_graph &eg,
+		 const gcall &call,
+		 program_state *new_state,
+		 bool is_rethrow,
+		 region_model_context *ctxt);
+  void on_resx (exploded_graph &eg,
+		const gresx &resx,
+		program_state *new_state,
+		region_model_context *ctxt);
 
   void detect_leaks (exploded_graph &eg);
 
@@ -827,7 +840,8 @@ public:
 
   exploded_node *get_or_create_node (const program_point &point,
 				     const program_state &state,
-				     exploded_node *enode_for_diag);
+				     exploded_node *enode_for_diag,
+				     bool add_to_worklist = true);
   exploded_edge *add_edge (exploded_node *src, exploded_node *dest,
 			   const superedge *sedge, bool could_do_work,
 			   std::unique_ptr<custom_edge_info> custom = NULL);
@@ -880,6 +894,10 @@ public:
   }
 
   void on_escaped_function (tree fndecl);
+
+  void unwind_from_exception (exploded_node &enode,
+			      const gimple *stmt,
+			      region_model_context *ctxt);
 
   /* In infinite-loop.cc */
   void detect_infinite_loops ();

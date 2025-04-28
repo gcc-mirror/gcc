@@ -3561,7 +3561,7 @@ gimple_call_set_nothrow (gcall *s, bool nothrow_p)
 /* Return true if S is a nothrow call.  */
 
 inline bool
-gimple_call_nothrow_p (gcall *s)
+gimple_call_nothrow_p (const gcall *s)
 {
   return (gimple_call_flags (s) & ECF_NOTHROW) != 0;
 }

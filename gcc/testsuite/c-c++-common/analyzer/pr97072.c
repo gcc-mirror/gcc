@@ -1,4 +1,4 @@
-void unknown_fn_1 (void *);
+void unknown_fn_1 (void *) __attribute__((nothrow));
 
 void test_1 (int co, int y)
 {
