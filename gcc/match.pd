@@ -3242,7 +3242,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      SAT_U_ADD = IMAGPART (SUM) != 0 ? -1 : REALPART (SUM)  */
   (cond^ (ne (imagpart (IFN_ADD_OVERFLOW@2 @0 INTEGER_CST@1)) integer_zerop)
 	 integer_minus_onep (realpart @2))
-  (if (types_match (type, @0) && int_fits_type_p (@1, type)))))
+  (if (types_match (type, @0) && int_fits_type_p (@1, type))))
+ (match (unsigned_integer_sat_add @0 @1)
+  /* WIDEN_SUM = (WT)X + (WT)Y
+     SAT_U_ADD = WIDEN_SUM > MAX ? MAX : (NT)WIDEN_SUM  */
+  (cond^ (le (plus (convert@2 @0) (convert@3 @1)) INTEGER_CST@4)
+	 (plus:c @0 @1) integer_minus_onep)
+  (if (types_match (type, @0, @1) && types_match (@2, @3))
+   (with
+    {
+     unsigned precision = TYPE_PRECISION (type);
+     unsigned widen_precision = TYPE_PRECISION (TREE_TYPE (@2));
+     wide_int max = wi::mask (precision, false, widen_precision);
+     wide_int c4 = wi::to_wide (@4);
+    }
+    (if (wi::eq_p (c4, max) && widen_precision > precision))))))
 
 /* Saturation sub for unsigned integer.  */
 (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
