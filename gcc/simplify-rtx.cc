@@ -7713,6 +7713,28 @@ native_decode_vector_rtx (machine_mode mode, const vec<target_unit> &bytes,
   return builder.build ();
 }
 
+/* Extract a PRECISION-bit integer from bytes [FIRST_BYTE, FIRST_BYTE + SIZE)
+   of target memory image BYTES.  */
+
+wide_int
+native_decode_int (const vec<target_unit> &bytes, unsigned int first_byte,
+		   unsigned int size, unsigned int precision)
+{
+  /* Pull the bytes msb first, so that we can use simple
+     shift-and-insert wide_int operations.  */
+  wide_int result (wi::zero (precision));
+  for (unsigned int i = 0; i < size; ++i)
+    {
+      unsigned int lsb = (size - i - 1) * BITS_PER_UNIT;
+      /* Always constant because the inputs are.  */
+      unsigned int subbyte
+	= subreg_size_offset_from_lsb (1, size, lsb).to_constant ();
+      result <<= BITS_PER_UNIT;
+      result |= bytes[first_byte + subbyte];
+    }
+  return result;
+}
+
 /* Read an rtx of mode MODE from the target memory image given by BYTES,
    starting at byte FIRST_BYTE.  Each element of BYTES contains BITS_PER_UNIT
    bits and the bytes are in target memory order.  The image has enough
@@ -7738,19 +7760,9 @@ native_decode_rtx (machine_mode mode, const vec<target_unit> &bytes,
   if (is_a <scalar_int_mode> (mode, &imode)
       && GET_MODE_PRECISION (imode) <= MAX_BITSIZE_MODE_ANY_INT)
     {
-      /* Pull the bytes msb first, so that we can use simple
-	 shift-and-insert wide_int operations.  */
-      unsigned int size = GET_MODE_SIZE (imode);
-      wide_int result (wi::zero (GET_MODE_PRECISION (imode)));
-      for (unsigned int i = 0; i < size; ++i)
-	{
-	  unsigned int lsb = (size - i - 1) * BITS_PER_UNIT;
-	  /* Always constant because the inputs are.  */
-	  unsigned int subbyte
-	    = subreg_size_offset_from_lsb (1, size, lsb).to_constant ();
-	  result <<= BITS_PER_UNIT;
-	  result |= bytes[first_byte + subbyte];
-	}
+      auto result = native_decode_int (bytes, first_byte,
+				       GET_MODE_SIZE (imode),
+				       GET_MODE_PRECISION (imode));
       return immed_wide_int_const (result, imode);
     }
 
