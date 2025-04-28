@@ -848,9 +848,9 @@ public:
   /* True if permerrors are warnings.  */
   bool m_permissive;
 
-  /* The index of the option to associate with turning permerrors into
-     warnings.  */
-  int m_opt_permissive;
+  /* The option to associate with turning permerrors into warnings,
+     if any.  */
+  diagnostic_option_id m_opt_permissive;
 
   /* True if errors are fatal.  */
   bool m_fatal_errors;
