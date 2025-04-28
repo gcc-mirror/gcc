@@ -12915,29 +12915,23 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
      codegen so we must replace the original insn.  */
   gimple *orig_stmt = STMT_VINFO_STMT (vect_orig_stmt (stmt_info));
   gcond *cond_stmt = as_a <gcond *>(orig_stmt);
+
+  tree cst = build_zero_cst (vectype);
+  auto bb = gimple_bb (cond_stmt);
+  edge exit_true_edge = EDGE_SUCC (bb, 0);
+  if (exit_true_edge->flags & EDGE_FALSE_VALUE)
+    exit_true_edge = EDGE_SUCC (bb, 1);
+  gcc_assert (exit_true_edge->flags & EDGE_TRUE_VALUE);
+
   /* When vectorizing we assume that if the branch edge is taken that we're
      exiting the loop.  This is not however always the case as the compiler will
      rewrite conditions to always be a comparison against 0.  To do this it
      sometimes flips the edges.  This is fine for scalar,  but for vector we
-     then have to flip the test, as we're still assuming that if you take the
-     branch edge that we found the exit condition.  i.e. we need to know whether
-     we are generating a `forall` or an `exist` condition.  */
-  auto new_code = NE_EXPR;
-  auto reduc_optab = ior_optab;
-  auto reduc_op = BIT_IOR_EXPR;
-  tree cst = build_zero_cst (vectype);
-  edge exit_true_edge = EDGE_SUCC (gimple_bb (cond_stmt), 0);
-  if (exit_true_edge->flags & EDGE_FALSE_VALUE)
-    exit_true_edge = EDGE_SUCC (gimple_bb (cond_stmt), 1);
-  gcc_assert (exit_true_edge->flags & EDGE_TRUE_VALUE);
-  if (flow_bb_inside_loop_p (LOOP_VINFO_LOOP (loop_vinfo),
-			     exit_true_edge->dest))
-    {
-      new_code = EQ_EXPR;
-      reduc_optab = and_optab;
-      reduc_op = BIT_AND_EXPR;
-      cst = build_minus_one_cst (vectype);
-    }
+     then have to negate the result of the test, as we're still assuming that if
+     you take the branch edge that we found the exit condition.  i.e. we need to
+     know whether we are generating a `forall` or an `exist` condition.  */
+  bool flipped = flow_bb_inside_loop_p (LOOP_VINFO_LOOP (loop_vinfo),
+					exit_true_edge->dest);
 
   /* Analyze only.  */
   if (!vec_stmt)
@@ -12953,14 +12947,13 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
 	}
 
       if (ncopies > 1
-	  && direct_optab_handler (reduc_optab, mode) == CODE_FOR_nothing)
+	  && direct_optab_handler (ior_optab, mode) == CODE_FOR_nothing)
 	{
 	  if (dump_enabled_p ())
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			       "can't vectorize early exit because the "
-			       "target does not support boolean vector %s "
+			       "target does not support boolean vector IOR "
 			       "for type %T.\n",
-			       reduc_optab == ior_optab ? "OR" : "AND",
 			       vectype);
 	  return false;
 	}
@@ -13010,6 +13003,29 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
 	stmts.quick_push (gimple_assign_lhs (stmt));
     }
 
+  /* If we're comparing against a previous forall we need to negate the resullts
+     before we do the final comparison or reduction.  */
+  if (flipped)
+    {
+      /* Rewrite the if(all(mask)) into if (!all(mask)) which is the same as
+	 if (any(~mask)) by negating the masks and flipping the branches.
+
+	1. For unmasked loops we simply reduce the ~mask.
+	2. For masked loops we reduce (~mask & loop_mask) which is the same as
+	   doing (mask & loop_mask) ^ loop_mask.  */
+      for (unsigned i = 0; i < stmts.length (); i++)
+	{
+	  tree inv_lhs = make_temp_ssa_name (vectype, NULL, "vexit_inv");
+	  auto inv_stmt = gimple_build_assign (inv_lhs, BIT_NOT_EXPR, stmts[i]);
+	  vect_finish_stmt_generation (loop_vinfo, stmt_info, inv_stmt,
+				       &cond_gsi);
+	  stmts[i] = inv_lhs;
+	}
+
+      EDGE_SUCC (bb, 0)->flags ^= (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
+      EDGE_SUCC (bb, 1)->flags ^= (EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
+    }
+
   /* Determine if we need to reduce the final value.  */
   if (stmts.length () > 1)
     {
@@ -13039,7 +13055,7 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
 	  new_temp = make_temp_ssa_name (vectype, NULL, "vexit_reduc");
 	  tree arg0 = workset.pop ();
 	  tree arg1 = workset.pop ();
-	  new_stmt = gimple_build_assign (new_temp, reduc_op, arg0, arg1);
+	  new_stmt = gimple_build_assign (new_temp, BIT_IOR_EXPR, arg0, arg1);
 	  vect_finish_stmt_generation (loop_vinfo, stmt_info, new_stmt,
 				       &cond_gsi);
 	  workset.quick_insert (0, new_temp);
@@ -13059,7 +13075,7 @@ vectorizable_early_exit (vec_info *vinfo, stmt_vec_info stmt_info,
 
   gcc_assert (new_temp);
 
-  gimple_cond_set_condition (cond_stmt, new_code, new_temp, cst);
+  gimple_cond_set_condition (cond_stmt, NE_EXPR, new_temp, cst);
   update_stmt (orig_stmt);
 
   if (slp_node)
