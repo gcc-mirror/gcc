@@ -5737,6 +5737,25 @@ package body Sem_Ch3 is
       Id : constant Entity_Id := Defining_Identifier (N);
       T  : Entity_Id;
 
+      procedure Copy_Parent_Attributes;
+      --  Copy fields that don't depend on the type kind from the subtype
+      --  denoted by the subtype mark.
+
+      ----------------------------
+      -- Copy_Parent_Attributes --
+      ----------------------------
+
+      procedure Copy_Parent_Attributes is
+      begin
+         Set_Etype (Id, Base_Type (T));
+         Set_Is_Volatile (Id, Is_Volatile (T));
+         Set_Treat_As_Volatile (Id, Treat_As_Volatile (T));
+         Set_Is_Generic_Type (Id, Is_Generic_Type (Base_Type (T)));
+         Set_Convention (Id, Convention (T));
+      end Copy_Parent_Attributes;
+
+   --  Start of processing for Analyze_Subtype_Declaration
+
    begin
       Generate_Definition (Id);
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
@@ -5803,13 +5822,6 @@ package body Sem_Ch3 is
          T := Full_View (T);
       end if;
 
-      --  Inherit common attributes
-
-      Set_Is_Volatile       (Id, Is_Volatile       (T));
-      Set_Treat_As_Volatile (Id, Treat_As_Volatile (T));
-      Set_Is_Generic_Type   (Id, Is_Generic_Type   (Base_Type (T)));
-      Set_Convention        (Id, Convention        (T));
-
       --  If ancestor has predicates then so does the subtype, and in addition
       --  we must delay the freeze to properly arrange predicate inheritance.
 
@@ -5849,16 +5861,16 @@ package body Sem_Ch3 is
       --  semantic attributes must be established here.
 
       if Nkind (Subtype_Indication (N)) /= N_Subtype_Indication then
-         Set_Etype (Id, Base_Type (T));
-
          case Ekind (T) is
             when Array_Kind =>
                Mutate_Ekind                  (Id, E_Array_Subtype);
+               Copy_Parent_Attributes;
                Copy_Array_Subtype_Attributes (Id, T);
                Set_Packed_Array_Impl_Type    (Id, Packed_Array_Impl_Type (T));
 
             when Decimal_Fixed_Point_Kind =>
                Mutate_Ekind             (Id, E_Decimal_Fixed_Point_Subtype);
+               Copy_Parent_Attributes;
                Set_Digits_Value         (Id, Digits_Value       (T));
                Set_Delta_Value          (Id, Delta_Value        (T));
                Set_Scale_Value          (Id, Scale_Value        (T));
@@ -5871,6 +5883,7 @@ package body Sem_Ch3 is
 
             when Enumeration_Kind =>
                Mutate_Ekind             (Id, E_Enumeration_Subtype);
+               Copy_Parent_Attributes;
                Set_First_Literal        (Id, First_Literal (Base_Type (T)));
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Is_Character_Type    (Id, Is_Character_Type  (T));
@@ -5880,6 +5893,7 @@ package body Sem_Ch3 is
 
             when Ordinary_Fixed_Point_Kind =>
                Mutate_Ekind          (Id, E_Ordinary_Fixed_Point_Subtype);
+               Copy_Parent_Attributes;
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Small_Value          (Id, Small_Value        (T));
                Set_Delta_Value          (Id, Delta_Value        (T));
@@ -5889,6 +5903,7 @@ package body Sem_Ch3 is
 
             when Float_Kind =>
                Mutate_Ekind             (Id, E_Floating_Point_Subtype);
+               Copy_Parent_Attributes;
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Digits_Value         (Id, Digits_Value       (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
@@ -5898,6 +5913,7 @@ package body Sem_Ch3 is
 
             when Signed_Integer_Kind =>
                Mutate_Ekind             (Id, E_Signed_Integer_Subtype);
+               Copy_Parent_Attributes;
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
@@ -5905,6 +5921,7 @@ package body Sem_Ch3 is
 
             when Modular_Integer_Kind =>
                Mutate_Ekind             (Id, E_Modular_Integer_Subtype);
+               Copy_Parent_Attributes;
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
                Set_Is_Known_Valid       (Id, Is_Known_Valid     (T));
@@ -5912,6 +5929,7 @@ package body Sem_Ch3 is
 
             when Class_Wide_Kind =>
                Mutate_Ekind             (Id, E_Class_Wide_Subtype);
+               Copy_Parent_Attributes;
                Set_Class_Wide_Type      (Id, Class_Wide_Type    (T));
                Set_Cloned_Subtype       (Id, T);
                Set_Is_Tagged_Type       (Id, True);
@@ -5929,6 +5947,7 @@ package body Sem_Ch3 is
                | E_Record_Type
             =>
                Mutate_Ekind             (Id, E_Record_Subtype);
+               Copy_Parent_Attributes;
 
                --  Subtype declarations introduced for formal type parameters
                --  in generic instantiations should inherit the Size value of
@@ -5980,6 +5999,7 @@ package body Sem_Ch3 is
 
             when Private_Kind =>
                Mutate_Ekind           (Id, Subtype_Kind (Ekind        (T)));
+               Copy_Parent_Attributes;
                Set_Has_Discriminants  (Id, Has_Discriminants          (T));
                Set_Is_Constrained     (Id, Is_Constrained             (T));
                Set_First_Entity       (Id, First_Entity               (T));
@@ -6043,6 +6063,7 @@ package body Sem_Ch3 is
 
             when Access_Kind =>
                Mutate_Ekind          (Id, E_Access_Subtype);
+               Copy_Parent_Attributes;
                Set_Is_Constrained    (Id, Is_Constrained        (T));
                Set_Is_Access_Constant
                                      (Id, Is_Access_Constant    (T));
@@ -6066,6 +6087,7 @@ package body Sem_Ch3 is
 
             when Concurrent_Kind =>
                Mutate_Ekind             (Id, Subtype_Kind (Ekind   (T)));
+               Copy_Parent_Attributes;
                Set_Corresponding_Record_Type (Id,
                                          Corresponding_Record_Type (T));
                Set_First_Entity         (Id, First_Entity          (T));
@@ -6094,6 +6116,7 @@ package body Sem_Ch3 is
                   --  subtypes for Ada 2012 extended use of incomplete types.
 
                   Mutate_Ekind           (Id, E_Incomplete_Subtype);
+                  Copy_Parent_Attributes;
                   Set_Is_Tagged_Type     (Id, Is_Tagged_Type (T));
                   Set_Private_Dependents (Id, New_Elmt_List);
 
@@ -6134,6 +6157,8 @@ package body Sem_Ch3 is
          --  declared entity inherits predicates from the parent.
 
          Inherit_Predicate_Flags (Id, T);
+      else
+         Copy_Parent_Attributes;
       end if;
 
       if Etype (Id) = Any_Type then
