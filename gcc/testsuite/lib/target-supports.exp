@@ -10145,6 +10145,7 @@ proc check_effective_target_sync_int_long { } {
 	     || ([istarget arc*-*-*] && [check_effective_target_arc_atomic])
 	     || [check_effective_target_mips_llsc]
 	     || [istarget nvptx*-*-*]
+	     || ([istarget xtensa*-*-*] && [check_effective_target_xtensa_atomic])
 	 }}]
 }
 
@@ -10182,7 +10183,9 @@ proc check_effective_target_sync_char_short { } {
 	     || ([istarget riscv*-*-*]
 		 && ([check_effective_target_riscv_zalrsc]
 		     || [check_effective_target_riscv_zabha]))
-	     || [check_effective_target_mips_llsc] }}]
+	     || [check_effective_target_mips_llsc]
+	     || ([istarget xtensa*-*-*] && [check_effective_target_xtensa_atomic])
+	 }}]
 }
 
 # Return 1 if thread_fence does not rely on __sync_synchronize
@@ -14406,4 +14409,13 @@ proc check_effective_target_speculation_barrier_defined { } {
 		return __builtin_speculation_safe_value (argc);
 	    }
 	}]
+}
+
+# Return 1 if this is a compiler supporting Xtensa atomic operations
+proc check_effective_target_xtensa_atomic { } {
+    return [check_no_compiler_messages xtensa_atomic assembly {
+	#if __XCHAL_HAVE_S32C1I != 1 && __XCHAL_HAVE_EXCLUSIVE != 1
+	#error FOO
+	#endif
+    }]
 }
