@@ -6529,18 +6529,18 @@ create_variable_info_for (tree decl, const char *name, bool add_id)
 	  if (!vnode->all_refs_explicit_p ())
 	    make_copy_constraint (vi, nonlocal_id);
 
-	  /* If this is a global variable with an initializer and we are in
-	     IPA mode generate constraints for it.  */
-	  ipa_ref *ref;
-	  for (unsigned idx = 0; vnode->iterate_reference (idx, ref); ++idx)
+	  /* While we can in theory walk references for the varpool
+	     node that does not cover zero-initialization or references
+	     to the constant pool.  */
+	  if (DECL_INITIAL (decl))
 	    {
 	      auto_vec<ce_s> rhsc;
 	      struct constraint_expr lhs, *rhsp;
 	      unsigned i;
-	      get_constraint_for_address_of (ref->referred->decl, &rhsc);
 	      lhs.var = vi->id;
 	      lhs.offset = 0;
 	      lhs.type = SCALAR;
+	      get_constraint_for (DECL_INITIAL (decl), &rhsc);
 	      FOR_EACH_VEC_ELT (rhsc, i, rhsp)
 		process_constraint (new_constraint (lhs, *rhsp));
 	      /* If this is a variable that escapes from the unit
