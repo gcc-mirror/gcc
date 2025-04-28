@@ -7210,7 +7210,7 @@
 
       emit_insn (gen_iorv2<v_int_equiv>3 (
 	lowpart_subreg (V2<V_INT_EQUIV>mode, operands[0], <MODE>mode),
-	lowpart_subreg (V2<V_INT_EQUIV>mode, operands[1], <MODE>mode),
+	force_lowpart_subreg (V2<V_INT_EQUIV>mode, operands[1], <MODE>mode),
 	v_bitmask));
       DONE;
     }
