@@ -1,3 +1,22 @@
+2025-04-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-04-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119939
+	* g++.dg/modules/concept-11_a.H: New test.
+	* g++.dg/modules/concept-11_b.C: New test.
+
+2025-04-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-04-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119863
+	* g++.dg/modules/tpl-friend-18_a.C: New test.
+	* g++.dg/modules/tpl-friend-18_b.C: New test.
+	* g++.dg/modules/tpl-friend-18_c.C: New test.
+
 2025-04-25  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

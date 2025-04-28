@@ -1,3 +1,24 @@
+2025-04-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-04-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119939
+	* module.cc (trees_out::lang_decl_vals): Also stream
+	lang->u.fn.context when DECL_UNIQUE_FRIEND_P.
+	(trees_in::lang_decl_vals): Likewise.
+
+2025-04-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-04-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119863
+	* name-lookup.cc (get_mergeable_namespace_binding): Remove
+	no-longer-used function.
+	(lookup_imported_hidden_friend): Also look for hidden imported
+	decls in an attached decl's module.
+
 2025-04-25  Release Manager
 
 	* GCC 15.1.0 released.
