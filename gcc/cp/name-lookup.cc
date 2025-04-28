@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/known-headers.h"
 #include "c-family/c-spellcheck.h"
 #include "bitmap.h"
+#include "make-unique.h"
 
 static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
@@ -7085,13 +7086,16 @@ namespace_hints::convert_candidates_to_name_hint ()
       /* Clean up CANDIDATES.  */
       m_candidates.release ();
       return name_hint (expr_to_string (candidate),
-			new show_candidate_location (m_loc, candidate));
+			::make_unique<show_candidate_location> (m_loc,
+								candidate));
     }
   else if (m_candidates.length () > 1)
     /* If we have more than one candidate, issue a name_hint without a single
        "suggestion", but with a deferred diagnostic that lists the
        various candidates.  This takes ownership of m_candidates.  */
-    return name_hint (NULL, new suggest_alternatives (m_loc, m_candidates));
+    return name_hint (NULL,
+		      ::make_unique<suggest_alternatives> (m_loc,
+							   m_candidates));
 
   /* Otherwise, m_candidates ought to be empty, so no cleanup is necessary.  */
   gcc_assert (m_candidates.length () == 0);
@@ -7111,10 +7115,11 @@ name_hint
 namespace_hints::maybe_decorate_with_limit (name_hint hint)
 {
   if (m_limited)
-    return name_hint (hint.suggestion (),
-		      new namespace_limit_reached (m_loc, m_limit,
-						   m_name,
-						   hint.take_deferred ()));
+    return name_hint
+      (hint.suggestion (),
+       ::make_unique<namespace_limit_reached> (m_loc, m_limit,
+					       m_name,
+					       hint.take_deferred ()));
   else
     return hint;
 }
@@ -7191,10 +7196,11 @@ suggest_alternatives_for_1 (location_t location, tree name,
   diagnostic_option_id option_id
     = get_option_for_builtin_define (IDENTIFIER_POINTER (name));
   if (option_id.m_idx > 0)
-    return name_hint (nullptr,
-		      new suggest_missing_option (location,
-						  IDENTIFIER_POINTER (name),
-						  option_id));
+    return name_hint
+      (nullptr,
+       ::make_unique<suggest_missing_option> (location,
+					      IDENTIFIER_POINTER (name),
+					      option_id));
 
   /* Otherwise, consider misspellings.  */
   if (!suggest_misspellings)
@@ -7322,8 +7328,9 @@ maybe_suggest_missing_std_header (location_t location, tree name)
   if (!header_hint)
     return name_hint ();
 
-  return name_hint (NULL, new missing_std_header (location, name_str,
-						  header_hint));
+  return name_hint (nullptr,
+		    ::make_unique<missing_std_header> (location, name_str,
+						       header_hint));
 }
 
 /* Attempt to generate a name_hint that suggests a missing header file
@@ -7705,12 +7712,12 @@ class macro_use_before_def : public deferred_diagnostic
  public:
   /* Factory function.  Return a new macro_use_before_def instance if
      appropriate, or return NULL. */
-  static macro_use_before_def *
+  static std::unique_ptr<macro_use_before_def>
   maybe_make (location_t use_loc, cpp_hashnode *macro)
   {
     location_t def_loc = cpp_macro_definition_location (macro);
     if (def_loc == UNKNOWN_LOCATION)
-      return NULL;
+      return nullptr;
 
     /* We only want to issue a note if the macro was used *before* it was
        defined.
@@ -7718,12 +7725,11 @@ class macro_use_before_def : public deferred_diagnostic
        used, leaving it unexpanded (e.g. by using the wrong argument
        count).  */
     if (!linemap_location_before_p (line_table, use_loc, def_loc))
-      return NULL;
+      return nullptr;
 
-    return new macro_use_before_def (use_loc, macro);
+    return ::make_unique<macro_use_before_def> (use_loc, macro);
   }
 
- private:
   /* Ctor.  LOC is the location of the usage.  MACRO is the
      macro that was used.  */
   macro_use_before_def (location_t loc, cpp_hashnode *macro)
@@ -7790,10 +7796,11 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
   const char *header_hint
     = get_cp_stdlib_header_for_name (IDENTIFIER_POINTER (name));
   if (header_hint)
-    return name_hint (NULL,
-		      new suggest_missing_header (loc,
-						  IDENTIFIER_POINTER (name),
-						  header_hint));
+    return name_hint
+      (nullptr,
+       ::make_unique<suggest_missing_header> (loc,
+					      IDENTIFIER_POINTER (name),
+					      header_hint));
 
   best_match <tree, const char *> bm (name);
 
