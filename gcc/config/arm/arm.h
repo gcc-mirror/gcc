@@ -1460,34 +1460,37 @@ extern const char *fp_sysreg_names[NB_FP_SYSREGS];
 /* Return the register class of a scratch register needed to copy IN into
    or out of a register in CLASS in MODE.  If it can be done directly,
    NO_REGS is returned.  */
-#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)		\
-  /* Restrict which direct reloads are allowed for VFP/iWMMXt regs.  */ \
-  ((TARGET_HARD_FLOAT && IS_VFP_CLASS (CLASS))			\
-   ? coproc_secondary_reload_class (MODE, X, FALSE)		\
-   : (TARGET_IWMMXT && (CLASS) == IWMMXT_REGS)			\
-   ? coproc_secondary_reload_class (MODE, X, TRUE)		\
-   : TARGET_32BIT						\
-   ? (((MODE) == HImode && ! arm_arch4 && true_regnum (X) == -1) \
-    ? GENERAL_REGS : NO_REGS)					\
-   : THUMB_SECONDARY_OUTPUT_RELOAD_CLASS (CLASS, MODE, X))
+#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)			\
+  /* Restrict which direct reloads are allowed for VFP/iWMMXt regs.  */	\
+  ((TARGET_HARD_FLOAT && IS_VFP_CLASS (CLASS))				\
+   ? coproc_secondary_reload_class (MODE, X, FALSE)			\
+   : ((TARGET_IWMMXT && (CLASS) == IWMMXT_REGS)				\
+      ? coproc_secondary_reload_class (MODE, X, TRUE)			\
+      : (TARGET_32BIT							\
+	 ? (((MODE) == HImode && ! arm_arch4 && true_regnum (X) == -1)	\
+	    ? GENERAL_REGS						\
+	    : NO_REGS)							\
+	 : THUMB_SECONDARY_OUTPUT_RELOAD_CLASS (CLASS, MODE, X))))
 
 /* If we need to load shorts byte-at-a-time, then we need a scratch.  */
-#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)		\
-  /* Restrict which direct reloads are allowed for VFP/iWMMXt regs.  */ \
-  ((TARGET_HARD_FLOAT && IS_VFP_CLASS (CLASS))			\
-    ? coproc_secondary_reload_class (MODE, X, FALSE) :		\
-    (TARGET_IWMMXT && (CLASS) == IWMMXT_REGS) ?			\
-    coproc_secondary_reload_class (MODE, X, TRUE) :		\
-   (TARGET_32BIT ?						\
-    (((CLASS) == IWMMXT_REGS || (CLASS) == IWMMXT_GR_REGS)	\
-     && CONSTANT_P (X))						\
-    ? GENERAL_REGS :						\
-    (((MODE) == HImode && ! arm_arch4				\
-      && (MEM_P (X)					\
-	  || ((REG_P (X) || GET_CODE (X) == SUBREG)	\
-	      && true_regnum (X) == -1)))			\
-     ? GENERAL_REGS : NO_REGS)					\
-    : THUMB_SECONDARY_INPUT_RELOAD_CLASS (CLASS, MODE, X)))
+#define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)			\
+  /* Restrict which direct reloads are allowed for VFP/iWMMXt regs.  */	\
+  ((TARGET_HARD_FLOAT && IS_VFP_CLASS (CLASS))				\
+   ? coproc_secondary_reload_class (MODE, X, FALSE)			\
+   : ((TARGET_IWMMXT && (CLASS) == IWMMXT_REGS)				\
+      ? coproc_secondary_reload_class (MODE, X, TRUE)			\
+      : (TARGET_32BIT							\
+	 ? ((((CLASS) == IWMMXT_REGS || (CLASS) == IWMMXT_GR_REGS)	\
+	     && CONSTANT_P (X))						\
+	    ? GENERAL_REGS						\
+	    : (((MODE) == HImode					\
+		&& ! arm_arch4						\
+		&& (MEM_P (X)						\
+		    || ((REG_P (X) || GET_CODE (X) == SUBREG)		\
+			&& true_regnum (X) == -1)))			\
+	       ? GENERAL_REGS						\
+	       : NO_REGS))						\
+	 : THUMB_SECONDARY_INPUT_RELOAD_CLASS (CLASS, MODE, X))))
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
