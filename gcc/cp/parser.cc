@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "contracts.h"
 #include "bitmap.h"
 #include "builtins.h"
+#include "analyzer/analyzer-language.h"
 
 
 /* The lexer.  */
@@ -285,6 +286,37 @@ static FILE *cp_lexer_debug_stream;
 /* Nonzero if we are parsing an unevaluated operand: an operand to
    sizeof, typeof, or alignof.  */
 int cp_unevaluated_operand;
+
+#if ENABLE_ANALYZER
+
+namespace ana {
+
+/* Concrete implementation of ana::translation_unit for the C++ frontend.  */
+
+class cp_translation_unit : public translation_unit
+{
+public:
+  tree lookup_constant_by_id (tree /*id*/) const final override
+  {
+    return NULL_TREE;
+  }
+
+  tree
+  lookup_type_by_id (tree /*id*/) const final override
+  {
+    return NULL_TREE;
+  }
+
+  tree
+  lookup_global_var_by_id (tree /*id*/) const final override
+  {
+    return NULL_TREE;
+  }
+};
+
+} // namespace ana
+
+#endif /* #if ENABLE_ANALYZER */
 
 /* Dump up to NUM tokens in BUFFER to FILE starting with token
    START_TOKEN.  If START_TOKEN is NULL, the dump starts with the
@@ -5470,6 +5502,14 @@ cp_parser_translation_unit (cp_parser* parser)
       else
 	cp_parser_toplevel_declaration (parser);
     }
+
+#if ENABLE_ANALYZER
+  if (flag_analyzer)
+    {
+      ana::cp_translation_unit tu;
+      ana::on_finish_translation_unit (tu);
+    }
+#endif
 
   /* Get rid of the token array; we don't need it any more.  */
   cp_lexer_destroy (parser->lexer);
