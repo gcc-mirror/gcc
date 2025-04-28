@@ -499,9 +499,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	  __sign = __builtin_signbit(__f) ? _To(-1.0) : _To(+1.0);
 
-	  if _GLIBCXX17_CONSTEXPR (__is_same(_To, double))
+	  if _GLIBCXX_CONSTEXPR (__is_same(_To, double))
 	    __d = __builtin_copysign(__d, __sign);
-	  else if _GLIBCXX17_CONSTEXPR (__is_same(_To, long double))
+	  else if _GLIBCXX_CONSTEXPR (__is_same(_To, long double))
 	    __d = __builtin_copysignl(__d, __sign);
 #endif
 	  return __d;

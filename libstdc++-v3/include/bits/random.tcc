@@ -849,11 +849,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr result_type __range = max() - min();
       size_t __j = __k;
       const result_type __y = _M_y - min();
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
       // Avoid using slower long double arithmetic if possible.
-      if _GLIBCXX17_CONSTEXPR (__detail::__p1_representable_as_double(__range))
+      if constexpr (__detail::__p1_representable_as_double(__range))
 	__j *= __y / (__range + 1.0);
       else
 	__j *= __y / (__range + 1.0L);
+#pragma GCC diagnostic pop
       _M_y = _M_v[__j];
       _M_v[__j] = _M_b();
 
@@ -3244,8 +3247,11 @@ namespace __detail
   template<typename _InputIterator>
     seed_seq::seed_seq(_InputIterator __begin, _InputIterator __end)
     {
-      if _GLIBCXX17_CONSTEXPR (__is_random_access_iter<_InputIterator>::value)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+      if constexpr (__is_random_access_iter<_InputIterator>::value)
 	_M_v.reserve(std::distance(__begin, __end));
+#pragma GCC diagnostic pop
 
       for (_InputIterator __iter = __begin; __iter != __end; ++__iter)
 	_M_v.push_back(__detail::__mod<result_type,

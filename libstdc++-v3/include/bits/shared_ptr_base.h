@@ -315,6 +315,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     _Sp_counted_base<_S_atomic>::_M_release() noexcept
     {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
       _GLIBCXX_SYNCHRONIZATION_HAPPENS_BEFORE(&_M_use_count);
 #if ! _GLIBCXX_TSAN
       constexpr bool __lock_free
@@ -325,7 +327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // The ref-count members follow the vptr, so are aligned to
       // alignof(void*).
       constexpr bool __aligned = __alignof(long long) <= alignof(void*);
-      if _GLIBCXX17_CONSTEXPR (__lock_free && __double_word && __aligned)
+      if constexpr (__lock_free && __double_word && __aligned)
 	{
 	  constexpr int __wordbits = __CHAR_BIT__ * sizeof(_Atomic_word);
 	  constexpr int __shiftbits = __double_word ? __wordbits : 0;
@@ -359,6 +361,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  _M_release_last_use();
 	}
+#pragma GCC diagnostic pop
     }
 
   template<>

@@ -2340,8 +2340,11 @@ namespace __rb_tree
 	  constexpr bool __move = !__move_if_noexcept_cond<value_type>::value;
 	  _Alloc_node __an(*this);
 	  _M_root() = _M_copy<__move>(__x, __an);
-	  if _GLIBCXX17_CONSTEXPR (__move)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+	  if constexpr (__move)
 	    __x.clear();
+#pragma GCC diagnostic pop
 	}
     }
 

@@ -1605,6 +1605,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef std::basic_istream<_CharT, _Traits>  __istream_type;
       typedef typename __istream_type::ios_base    __ios_base;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
       struct _Buffer
       {
 	static _GLIBCXX_CONSTEXPR bool _S_use_alloca() { return _Nb <= 256; }
@@ -1613,18 +1615,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 	~_Buffer()
 	{
-	  if _GLIBCXX17_CONSTEXPR (!_S_use_alloca())
+	  if _GLIBCXX_CONSTEXPR (!_S_use_alloca())
 	    delete[] _M_ptr;
 	}
 
 	_CharT* const _M_ptr;
       };
       _CharT* __ptr;
-      if _GLIBCXX17_CONSTEXPR (_Buffer::_S_use_alloca())
+      if _GLIBCXX_CONSTEXPR (_Buffer::_S_use_alloca())
 	__ptr = (_CharT*)__builtin_alloca(_Nb);
       else
 	__ptr = new _CharT[_Nb];
       const _Buffer __buf(__ptr);
+#pragma GCC diagnostic pop
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 303. Bitset input operator underspecified
@@ -1673,7 +1676,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    { __is._M_setstate(__ios_base::badbit); }
 	}
 
-      if _GLIBCXX17_CONSTEXPR (_Nb)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+      if _GLIBCXX_CONSTEXPR (_Nb)
       {
 	if (size_t __len = __ptr - __buf._M_ptr)
 	  __x.template _M_copy_from_ptr<_CharT, _Traits>(__buf._M_ptr, __len,
@@ -1682,6 +1687,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	else
 	  __state |= __ios_base::failbit;
       }
+#pragma GCC diagnostic pop
       if (__state)
 	__is.setstate(__state);
       return __is;

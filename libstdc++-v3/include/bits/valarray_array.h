@@ -64,13 +64,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __valarray_release_memory(void* __p)
   { operator delete(__p); }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+
   // Turn raw-memory into an array of _Tp filled with _Tp().
   // This is used in `valarray<T> v(n);` and in `valarray<T>::shift(n)`.
   template<typename _Tp>
     inline void
     __valarray_default_construct(_Tp* __b, _Tp* __e)
     {
-      if _GLIBCXX17_CONSTEXPR (__is_trivial(_Tp))
+      if _GLIBCXX_CONSTEXPR (__is_trivial(_Tp))
 	__builtin_memset(__b, 0, (__e - __b) * sizeof(_Tp));
       else
 	while (__b != __e)
@@ -94,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __valarray_copy_construct(const _Tp* __b, const _Tp* __e,
 			      _Tp* __restrict__ __o)
     {
-      if _GLIBCXX17_CONSTEXPR (__is_trivial(_Tp))
+      if _GLIBCXX_CONSTEXPR (__is_trivial(_Tp))
 	{
 	  if (__b)
 	    __builtin_memcpy(__o, __b, (__e - __b) * sizeof(_Tp));
@@ -110,7 +113,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __valarray_copy_construct (const _Tp* __restrict__ __a, size_t __n,
 			       size_t __s, _Tp* __restrict__ __o)
     {
-      if _GLIBCXX17_CONSTEXPR (__is_trivial(_Tp))
+      if _GLIBCXX_CONSTEXPR (__is_trivial(_Tp))
 	while (__n--)
 	  {
 	    *__o++ = *__a;
@@ -131,7 +134,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			       const size_t* __restrict__ __i,
 			       _Tp* __restrict__ __o, size_t __n)
     {
-      if (__is_trivial(_Tp))
+      if _GLIBCXX_CONSTEXPR (__is_trivial(_Tp))
 	while (__n--)
 	  *__o++ = __a[*__i++];
       else
@@ -144,13 +147,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     __valarray_destroy_elements(_Tp* __b, _Tp* __e)
     {
-      if (!__is_trivial(_Tp))
+      if _GLIBCXX_CONSTEXPR (!__is_trivial(_Tp))
 	while (__b != __e)
 	  {
 	    __b->~_Tp();
 	    ++__b;
 	  }
     }
+
+#pragma GCC diagnostic pop
 
   // Fill a plain array __a[<__n>] with __t
   template<typename _Tp>

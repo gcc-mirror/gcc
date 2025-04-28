@@ -99,7 +99,9 @@ namespace tr2
 	if (__val == 0)
 	  return;
 
-	if _GLIBCXX17_CONSTEXPR (sizeof(__val) == sizeof(block_type))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+	if constexpr (sizeof(__val) == sizeof(block_type))
 	  _M_w[0] = __val;
 	else
 	  {
@@ -111,6 +113,7 @@ namespace tr2
 		__val >>= _S_bits_per_block;
 	      }
 	  }
+#pragma GCC diagnostic pop
       }
 
       void
@@ -667,13 +670,16 @@ namespace tr2
       operator=(dynamic_bitset&& __b)
       noexcept(std::is_nothrow_move_assignable<_Base>::value)
       {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
 	static_cast<_Base&>(*this) = static_cast<_Base&&>(__b);
 	_M_Nb = __b._M_Nb;
-	if _GLIBCXX17_CONSTEXPR (std::is_nothrow_move_assignable<_Base>::value)
+	if constexpr (std::is_nothrow_move_assignable<_Base>::value)
 	  __b._M_Nb = 0;
 	else if (get_allocator() == __b.get_allocator())
 	  __b._M_Nb = 0;
 	return *this;
+#pragma GCC diagnostic pop
       }
 
       /**

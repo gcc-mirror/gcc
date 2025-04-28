@@ -35,6 +35,7 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpedantic" // __int128
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
 
 #include <bits/requires_hosted.h> // for error codes
 
@@ -239,7 +240,7 @@ namespace __detail
       to_chars_result __res;
       unsigned __len = 0;
 
-      if _GLIBCXX17_CONSTEXPR (__gnu_cxx::__int_traits<_Tp>::__digits <= 16)
+      if constexpr (__gnu_cxx::__int_traits<_Tp>::__digits <= 16)
 	{
 	  __len = __val > 077777u ? 6u
 	    : __val > 07777u ? 5u
@@ -336,7 +337,7 @@ namespace __detail
 	  *__first = '0';
 	  return { __first + 1, errc{} };
 	}
-      else if _GLIBCXX17_CONSTEXPR (std::is_signed<_Tp>::value)
+      else if constexpr (std::is_signed<_Tp>::value)
 	if (__value < 0)
 	  {
 	    *__first++ = '-';
@@ -452,7 +453,7 @@ namespace __detail
     _GLIBCXX20_CONSTEXPR unsigned char
     __from_chars_alnum_to_val(unsigned char __c)
     {
-      if _GLIBCXX17_CONSTEXPR (_DecOnly)
+      if constexpr (_DecOnly)
 	return static_cast<unsigned char>(__c - '0');
       else
 	return __from_chars_alnum_to_val_table<_DecOnly>::value.__data[__c];
@@ -562,7 +563,7 @@ namespace __detail
       from_chars_result __res{__first, {}};
 
       int __sign = 1;
-      if _GLIBCXX17_CONSTEXPR (std::is_signed<_Tp>::value)
+      if constexpr (std::is_signed<_Tp>::value)
 	if (__first != __last && *__first == '-')
 	  {
 	    __sign = -1;
@@ -595,7 +596,7 @@ namespace __detail
 	    __res.ec = errc::result_out_of_range;
 	  else
 	    {
-	      if _GLIBCXX17_CONSTEXPR (std::is_signed<_Tp>::value)
+	      if constexpr (std::is_signed<_Tp>::value)
 		{
 		  _Tp __tmp;
 		  if (__builtin_mul_overflow(__val, __sign, &__tmp))
@@ -605,8 +606,8 @@ namespace __detail
 		}
 	      else
 		{
-		  if _GLIBCXX17_CONSTEXPR (__gnu_cxx::__int_traits<_Up>::__max
-		      > __gnu_cxx::__int_traits<_Tp>::__max)
+		  if constexpr (__gnu_cxx::__int_traits<_Up>::__max
+				 > __gnu_cxx::__int_traits<_Tp>::__max)
 		    {
 		      if (__val > __gnu_cxx::__int_traits<_Tp>::__max)
 			__res.ec = errc::result_out_of_range;
