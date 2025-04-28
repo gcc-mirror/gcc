@@ -3561,10 +3561,6 @@ package body Sem_Ch5 is
    ----------------------------
 
    procedure Analyze_Loop_Statement (N : Node_Id) is
-
-      --  The following exception is raised by routine Prepare_Loop_Statement
-      --  to avoid further analysis of a transformed loop.
-
       procedure Prepare_Loop_Statement
         (Iter            : Node_Id;
          Stop_Processing : out Boolean);
