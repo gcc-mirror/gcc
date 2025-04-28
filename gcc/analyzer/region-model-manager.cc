@@ -944,6 +944,12 @@ region_model_manager::maybe_fold_sub_svalue (tree type,
   if (!parent_svalue->can_have_associated_state_p ())
     return get_or_create_unknown_svalue (type);
 
+  /* If we have a subvalue of a zero constant, it's zero.  */
+  if (tree cst = parent_svalue->maybe_get_constant ())
+    if (TREE_CODE (cst) == INTEGER_CST)
+      if (zerop (cst))
+	return get_or_create_cast (type, parent_svalue);
+
   /* If we have a subregion of a zero-fill, it's zero.  */
   if (const unaryop_svalue *unary
       = parent_svalue->dyn_cast_unaryop_svalue ())
