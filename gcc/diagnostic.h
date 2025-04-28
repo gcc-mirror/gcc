@@ -772,6 +772,13 @@ public:
 
   bool supports_fnotice_on_stderr_p () const;
 
+  /* Raise SIGABRT on any diagnostic of severity DK_ERROR or higher.  */
+  void
+  set_abort_on_error (bool val)
+  {
+    m_abort_on_error = val;
+  }
+
 private:
   void error_recursion () ATTRIBUTE_NORETURN;
 
@@ -828,10 +835,10 @@ private:
      each diagnostic, if known.  */
   bool m_show_option_requested;
 
-public:
   /* True if we should raise a SIGABRT on errors.  */
   bool m_abort_on_error;
 
+public:
   /* True if we should show the column number on diagnostics.  */
   bool m_show_column;
 
@@ -1041,13 +1048,6 @@ diagnostic_text_finalizer (diagnostic_context *context)
 /* Extension hooks for client.  */
 #define diagnostic_context_auxiliary_data(DC) (DC)->m_client_aux_data
 #define diagnostic_info_auxiliary_data(DI) (DI)->x_data
-
-/* Raise SIGABRT on any diagnostic of severity DK_ERROR or higher.  */
-inline void
-diagnostic_abort_on_error (diagnostic_context *context)
-{
-  context->m_abort_on_error = true;
-}
 
 /* This diagnostic_context is used by front-ends that directly output
    diagnostic messages without going through `error', `warning',

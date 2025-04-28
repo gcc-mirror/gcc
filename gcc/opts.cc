@@ -3628,7 +3628,7 @@ setup_core_dumping (diagnostic_context *dc)
 		   "setting core file size limit to maximum: %m");
   }
 #endif
-  diagnostic_abort_on_error (dc);
+  dc->set_abort_on_error (true);
 }
 
 /* Parse a -d<ARG> command line switch for OPTS, location LOC,
