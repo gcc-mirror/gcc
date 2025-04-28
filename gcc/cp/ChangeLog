@@ -1,3 +1,18 @@
+2025-04-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119939
+	* module.cc (trees_out::lang_decl_vals): Also stream
+	lang->u.fn.context when DECL_UNIQUE_FRIEND_P.
+	(trees_in::lang_decl_vals): Likewise.
+
+2025-04-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/112877
+	* call.cc (type_passed_as): Remove the
+	targetm.calls.promote_prototypes call.
+	(convert_for_arg_passing): Likewise.
+	* typeck.cc (cxx_safe_arg_type_equiv_p): Likewise.
+
 2025-04-25  Jason Merrill  <jason@redhat.com>
 
 	PR c++/119764

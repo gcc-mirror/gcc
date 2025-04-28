@@ -1,3 +1,9 @@
+2025-04-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/112877
+	* gcc-interface/utils.cc (create_param_decl): Remove the
+	targetm.calls.promote_prototypes call.
+
 2025-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnatvsn.ads: Bump Library_Version to 16.

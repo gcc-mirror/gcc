@@ -1,3 +1,15 @@
+2025-04-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR c/48274
+	PR middle-end/112877
+	PR middle-end/118288
+	* c-decl.cc (start_decl): Remove the
+	targetm.calls.promote_prototypes call.
+	(store_parm_decls_oldstyle): Likewise.
+	(finish_function): Likewise.
+	* c-typeck.cc (convert_argument): Likewise.
+	(c_safe_arg_type_equiv_p): Likewise.
+
 2025-04-15  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR c/119717

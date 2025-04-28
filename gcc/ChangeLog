@@ -1,3 +1,65 @@
+2025-04-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR c/48274
+	PR middle-end/112877
+	PR middle-end/118288
+	* gimple.cc (gimple_builtin_call_types_compatible_p): Remove the
+	targetm.calls.promote_prototypes call.
+	* tree.cc (tree_builtin_call_types_compatible_p): Likewise.
+
+2025-04-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/112877
+	* calls.cc (initialize_argument_information): Promote small integer
+	arguments if TARGET_PROMOTE_PROTOTYPES returns true.
+
+2025-04-27  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_const_vector): Extract
+	const vector stepped into separated func.
+	(expand_const_vector_single_step_npatterns): Add new func
+	to take care of single step.
+	(expand_const_vector_interleaved_stepped_npatterns): Add new
+	func to take care of interleaved step.
+	(expand_const_vector_stepped): Add new func to take care of
+	const vector stepped.
+
+2025-04-27  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_const_vector_duplicate_repeating):
+	Add new func to take care of vector duplicate with repeating.
+	(expand_const_vector_duplicate_default): Add new func to take
+	care of default const vector duplicate.
+	(expand_const_vector_duplicate): Add new func to take care
+	of all const vector duplicate.
+	(expand_const_vector): Extract const vector duplicate into
+	separated function.
+
+2025-04-27  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_const_vec_series): Add new
+	func to take care of the const vec_series.
+	(expand_const_vector): Extract const vec_series into separated
+	function.
+
+2025-04-27  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (expand_const_vector): Extract
+	const vec_duplicate into separated function.
+	(expand_const_vec_duplicate): Add new func to take care
+	of the const vec_duplicate.
+
+2025-04-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/119549
+	* common/config/i386/i386-common.cc (ix86_handle_option):
+	Refactor msse4 and mno-sse4.
+	* config/i386/i386.opt (msse4): Remove RejectNegative.
+	(mno-sse4): Remove the entry.
+	* config/i386/i386-options.cc
+	(ix86_valid_target_attribute_inner_p): Remove special code
+	which handles mno-sse4.
+
 2025-04-26  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR target/105275
