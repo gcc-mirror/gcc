@@ -68,6 +68,10 @@ public:
 
   void dump_to_pp (pretty_printer *pp, bool simple) const;
   void dump (bool simple) const;
+  void dump () const;
+
+  std::unique_ptr<text_art::tree_widget>
+  make_dump_widget (const text_art::dump_widget_info &dwi) const;
 
   const svalue *get_or_create_conjured_svalue (const region *) const;
 

@@ -366,6 +366,65 @@ call_details::dump (bool simple) const
   dump_to_pp (&pp, simple);
 }
 
+/* Dump a tree-like representation of this call to stderr.  */
+
+DEBUG_FUNCTION void
+call_details::dump () const
+{
+  text_art::dump (*this);
+}
+
+std::unique_ptr<text_art::tree_widget>
+call_details::make_dump_widget (const text_art::dump_widget_info &dwi) const
+{
+  using text_art::tree_widget;
+  std::unique_ptr<tree_widget> cd_widget
+    (tree_widget::from_fmt (dwi, nullptr, "Call Details"));
+
+  {
+    pretty_printer the_pp;
+    pretty_printer * const pp = &the_pp;
+    pp_format_decoder (pp) = default_tree_printer;
+    pp_string (pp, "gcall: ");
+    pp_gimple_stmt_1 (pp, m_call, 0 /* spc */, TDF_NONE /* flags */);
+    cd_widget->add_child (tree_widget::make (dwi, pp));
+  }
+  {
+    pretty_printer the_pp;
+    pretty_printer * const pp = &the_pp;
+    pp_format_decoder (pp) = default_tree_printer;
+    pp_string (pp, "return region: ");
+    if (m_lhs_region)
+      m_lhs_region->dump_to_pp (pp, true);
+    else
+      pp_string (pp, "NULL");
+    auto w = tree_widget::make (dwi, pp);
+    if (m_lhs_region)
+      w->add_child (m_lhs_region->make_dump_widget (dwi));
+    cd_widget->add_child (std::move (w));
+  }
+  if (gimple_call_num_args (m_call) > 0)
+    {
+      std::unique_ptr<tree_widget> args_widget
+	(tree_widget::from_fmt (dwi, nullptr, "Arguments"));
+      for (unsigned i = 0; i < gimple_call_num_args (m_call); i++)
+	{
+	  pretty_printer the_pp;
+	  pretty_printer * const pp = &the_pp;
+	  pp_format_decoder (pp) = default_tree_printer;
+	  const svalue *arg_sval = get_arg_svalue (i);
+	  pp_printf (pp, "%i: ", i);
+	  arg_sval->dump_to_pp (pp, true);
+	  auto w = tree_widget::make (dwi, pp);
+	  w->add_child (arg_sval->make_dump_widget (dwi));
+	  args_widget->add_child (std::move (w));
+	}
+      cd_widget->add_child (std::move (args_widget));
+    }
+
+  return cd_widget;
+}
+
 /* Get a conjured_svalue for this call for REG,
    and purge any state already relating to that conjured_svalue.  */
 
