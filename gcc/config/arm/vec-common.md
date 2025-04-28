@@ -1,4 +1,4 @@
-;; Machine Description for shared bits common to IWMMXT and Neon.
+;; Machine Description for shared bits common to Neon and MVE.
 ;; Copyright (C) 2006-2025 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
@@ -24,7 +24,6 @@
   [(set (match_operand:VNIM1 0 "nonimmediate_operand")
 	(match_operand:VNIM1 1 "general_operand"))]
   "TARGET_NEON
-   || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))
    || (TARGET_HAVE_MVE && VALID_MVE_SI_MODE (<MODE>mode))
    || (TARGET_HAVE_MVE_FLOAT && VALID_MVE_SF_MODE (<MODE>mode))"
    {
@@ -46,8 +45,7 @@
 (define_expand "mov<mode>"
   [(set (match_operand:VNINOTM1 0 "nonimmediate_operand")
 	(match_operand:VNINOTM1 1 "general_operand"))]
-  "TARGET_NEON
-   || (TARGET_REALLY_IWMMXT && VALID_IWMMXT_REG_MODE (<MODE>mode))"
+  "TARGET_NEON"
 {
   gcc_checking_assert (aligned_operand (operands[0], <MODE>mode));
   gcc_checking_assert (aligned_operand (operands[1], <MODE>mode));
@@ -83,7 +81,7 @@
 })
 
 ;; Vector arithmetic.  Expanders are blank, then unnamed insns implement
-;; patterns separately for Neon, IWMMXT and MVE.
+;; patterns separately for Neon and MVE.
 
 (define_expand "add<mode>3"
   [(set (match_operand:VDQ 0 "s_register_operand")
@@ -103,10 +101,7 @@
   [(set (match_operand:VDQWH 0 "s_register_operand")
 	(mult:VDQWH (match_operand:VDQWH 1 "s_register_operand")
 		    (match_operand:VDQWH 2 "s_register_operand")))]
-  "ARM_HAVE_<MODE>_ARITH
-   && (!TARGET_REALLY_IWMMXT
-       || <MODE>mode == V4HImode
-       || <MODE>mode == V2SImode)"
+  "ARM_HAVE_<MODE>_ARITH"
 )
 
 (define_expand "smin<mode>3"
@@ -216,13 +211,13 @@
 (define_expand "one_cmpl<mode>2"
   [(set (match_operand:VDQ 0 "s_register_operand")
 	(not:VDQ (match_operand:VDQ 1 "s_register_operand")))]
-  "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
+  "ARM_HAVE_<MODE>_ARITH"
 )
 
 (define_expand "<absneg_str><mode>2"
   [(set (match_operand:VDQWH 0 "s_register_operand" "")
 	(ABSNEG:VDQWH (match_operand:VDQWH 1 "s_register_operand" "")))]
-  "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
+  "ARM_HAVE_<MODE>_ARITH"
 )
 
 (define_expand "cadd<rot><mode>3"
@@ -295,8 +290,7 @@
  [(set (match_operand:VDQ 0 "nonimmediate_operand")
 	(unspec:VDQ [(match_operand:VDQ 1 "general_operand")]
 	 UNSPEC_MISALIGNED_ACCESS))]
- "ARM_HAVE_<MODE>_LDST && !BYTES_BIG_ENDIAN
-  && unaligned_access && !TARGET_REALLY_IWMMXT"
+ "ARM_HAVE_<MODE>_LDST && !BYTES_BIG_ENDIAN && unaligned_access"
 {
   rtx *memloc;
   bool for_store = false;
@@ -373,7 +367,7 @@
 	(unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w,w")
 		       (match_operand:VDQIW 2 "imm_lshift_or_reg_neon" "w,Ds")]
 	 VSHLQ))]
-  "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
+  "ARM_HAVE_<MODE>_ARITH"
   "@
    <mve_insn>.<supf>%#<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2
    * return neon_output_shift_immediate (\"vshl\", 'i', &operands[2], <MODE>mode, VALID_NEON_QREG_MODE (<MODE>mode), true);"
@@ -385,7 +379,7 @@
   [(set (match_operand:VDQIW 0 "s_register_operand" "")
 	(ashift:VDQIW (match_operand:VDQIW 1 "s_register_operand" "")
 		      (match_operand:VDQIW 2 "imm_lshift_or_reg_neon" "")))]
-  "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
+  "ARM_HAVE_<MODE>_ARITH"
 {
   emit_insn (gen_mve_vshlq_u<mode> (operands[0], operands[1], operands[2]));
   DONE;
@@ -398,7 +392,7 @@
   [(set (match_operand:VDQIW 0 "s_register_operand")
 	(ashiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand")
 			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon")))]
-  "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
+  "ARM_HAVE_<MODE>_ARITH"
 {
   if (s_register_operand (operands[2], <MODE>mode))
     {
@@ -416,7 +410,7 @@
   [(set (match_operand:VDQIW 0 "s_register_operand")
 	(lshiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand")
 			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon")))]
-  "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
+  "ARM_HAVE_<MODE>_ARITH"
 {
   if (s_register_operand (operands[2], <MODE>mode))
     {
@@ -606,8 +600,7 @@
 (define_expand "clz<mode>2"
  [(set (match_operand:VDQIW 0 "s_register_operand")
        (clz:VDQIW (match_operand:VDQIW 1 "s_register_operand")))]
-  "ARM_HAVE_<MODE>_ARITH
-   && !TARGET_REALLY_IWMMXT"
+  "ARM_HAVE_<MODE>_ARITH"
 )
 (define_expand "vec_init<mode><V_elem_l>"
   [(match_operand:VDQX 0 "s_register_operand")

@@ -149,7 +149,7 @@
 ; This attribute is used to compute attribute "enabled",
 ; use type "any" to enable an alternative in all cases.
 (define_attr "arch" "any, a, t, 32, t1, t2, v6,nov6, v6t2, \
-		     v8mb, fix_vlldm, iwmmxt, iwmmxt2, armv6_or_vfpv3, \
+		     v8mb, fix_vlldm, armv6_or_vfpv3, \
 		     neon, mve"
   (const_string "any"))
 
@@ -195,10 +195,6 @@
 
 	 (and (eq_attr "arch" "fix_vlldm")
 	      (match_test "fix_vlldm"))
-	 (const_string "yes")
-
-	 (and (eq_attr "arch" "iwmmxt2")
-	      (match_test "TARGET_REALLY_IWMMXT2"))
 	 (const_string "yes")
 
 	 (and (eq_attr "arch" "armv6_or_vfpv3")
@@ -2893,14 +2889,12 @@
 ;; Split DImode and, ior, xor operations.  Simply perform the logical
 ;; operation on the upper and lower halves of the registers.
 ;; This is needed for atomic operations in arm_split_atomic_op.
-;; Avoid splitting IWMMXT instructions.
 (define_split
   [(set (match_operand:DI 0 "s_register_operand" "")
 	(match_operator:DI 6 "logical_binary_operator"
 	  [(match_operand:DI 1 "s_register_operand" "")
 	   (match_operand:DI 2 "s_register_operand" "")]))]
-  "TARGET_32BIT && reload_completed
-   && ! IS_IWMMXT_REGNUM (REGNO (operands[0]))"
+  "TARGET_32BIT && reload_completed"
   [(set (match_dup 0) (match_op_dup:SI 6 [(match_dup 1) (match_dup 2)]))
    (set (match_dup 3) (match_op_dup:SI 6 [(match_dup 4) (match_dup 5)]))]
   "
@@ -6345,7 +6339,6 @@
   "TARGET_32BIT
    && !(TARGET_HARD_FLOAT)
    && !(TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT)
-   && !TARGET_IWMMXT
    && (   register_operand (operands[0], DImode)
        || register_operand (operands[1], DImode))"
   "*
@@ -6554,7 +6547,7 @@
 (define_insn "*arm_movsi_insn"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,r,r,rk,m")
 	(match_operand:SI 1 "general_operand"      "rk, I,K,j,mi,rk"))]
-  "TARGET_ARM && !TARGET_IWMMXT && !TARGET_HARD_FLOAT
+  "TARGET_ARM && !TARGET_HARD_FLOAT
    && (   register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   "@
@@ -13123,7 +13116,7 @@
   [(set_attr "conds" "unconditional")
    (set_attr "type" "nop")])
 
-;; Vector bits common to IWMMXT, Neon and MVE
+;; Vector bits common to Neon and MVE
 (include "vec-common.md")
 ;; Load the VFP co-processor patterns
 (include "vfp.md")
