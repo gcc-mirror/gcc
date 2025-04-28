@@ -17,7 +17,7 @@
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "diagnostic-event-id.h"
-#include "analyzer/analyzer.h"
+#include "analyzer/common.h"
 #include "analyzer/analyzer-logging.h"
 #include "json.h"
 #include "analyzer/sm.h"

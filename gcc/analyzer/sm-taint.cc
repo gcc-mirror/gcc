@@ -20,20 +20,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "make-unique.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "options.h"
-#include "diagnostic-core.h"
-#include "diagnostic-path.h"
-#include "analyzer/analyzer.h"
-#include "analyzer/analyzer-logging.h"
+#include "analyzer/common.h"
+
 #include "gimple-iterator.h"
 #include "ordered-hash-map.h"
 #include "cgraph.h"
@@ -42,6 +30,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "fold-const.h"
+#include "diagnostic-format-sarif.h"
+#include "gcc-urlifier.h"
+
+#include "analyzer/analyzer-logging.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
@@ -51,8 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/program-state.h"
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/constraint-manager.h"
-#include "diagnostic-format-sarif.h"
-#include "gcc-urlifier.h"
 
 #if ENABLE_ANALYZER
 

@@ -17,28 +17,18 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
 #define INCLUDE_ALGORITHM
 #define INCLUDE_MAP
 #define INCLUDE_SET
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "diagnostic-core.h"
-#include "diagnostic.h"
+#include "analyzer/common.h"
+
+#include "fold-const.h"
 #include "intl.h"
-#include "make-unique.h"
-#include "tree-diagnostic.h" /* for default_tree_printer.  */
-#include "analyzer/analyzer.h"
+
+#include "text-art/ruler.h"
+
 #include "analyzer/region-model.h"
 #include "analyzer/access-diagram.h"
-#include "text-art/ruler.h"
-#include "fold-const.h"
 #include "analyzer/analyzer-selftests.h"
 
 #if ENABLE_ANALYZER

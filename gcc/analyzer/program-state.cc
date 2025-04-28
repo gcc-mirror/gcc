@@ -18,44 +18,36 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "diagnostic-core.h"
-#include "diagnostic.h"
-#include "analyzer/analyzer.h"
-#include "analyzer/analyzer-logging.h"
-#include "analyzer/sm.h"
+#include "analyzer/common.h"
+
 #include "sbitmap.h"
-#include "bitmap.h"
 #include "ordered-hash-map.h"
 #include "selftest.h"
+#include "cfg.h"
+#include "gimple-iterator.h"
+#include "cgraph.h"
+#include "digraph.h"
+#include "diagnostic-event-id.h"
+
+#include "text-art/tree-widget.h"
+#include "text-art/dump.h"
+
+#include "analyzer/analyzer-logging.h"
+#include "analyzer/sm.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/program-state.h"
 #include "analyzer/constraint-manager.h"
-#include "diagnostic-event-id.h"
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/diagnostic-manager.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
-#include "cgraph.h"
-#include "digraph.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/program-state.h"
 #include "analyzer/exploded-graph.h"
 #include "analyzer/state-purge.h"
 #include "analyzer/call-summary.h"
 #include "analyzer/analyzer-selftests.h"
-#include "text-art/tree-widget.h"
-#include "text-art/dump.h"
-#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 

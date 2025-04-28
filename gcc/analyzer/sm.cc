@@ -18,21 +18,10 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "options.h"
-#include "function.h"
-#include "diagnostic-core.h"
-#include "pretty-print.h"
-#include "diagnostic.h"
+#include "analyzer/common.h"
+
 #include "tree-diagnostic.h"
-#include "analyzer/analyzer.h"
+
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
 #include "analyzer/call-string.h"
@@ -41,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/svalue.h"
 #include "analyzer/program-state.h"
 #include "analyzer/pending-diagnostic.h"
-#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 

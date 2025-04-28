@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "text-art/canvas.h"
 #include "text-art/theme.h"
 #include "text-art/widget.h"
-#include "analyzer/analyzer.h"
+
 #include "analyzer/store.h"
 
 namespace ana {

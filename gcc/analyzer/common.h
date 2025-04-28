@@ -1,4 +1,4 @@
-/* Utility functions for the analyzer.
+/* Base header for the analyzer, plus utility functions.
    Copyright (C) 2019-2025 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
@@ -18,9 +18,22 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_ANALYZER_ANALYZER_H
-#define GCC_ANALYZER_ANALYZER_H
+#ifndef GCC_ANALYZER_COMMON_H
+#define GCC_ANALYZER_COMMON_H
 
+#include "config.h"
+#define INCLUDE_VECTOR
+#include "system.h"
+#include "coretypes.h"
+#include "make-unique.h"
+#include "tree.h"
+#include "function.h"
+#include "basic-block.h"
+#include "gimple.h"
+#include "options.h"
+#include "bitmap.h"
+#include "diagnostic-core.h"
+#include "diagnostic-path.h"
 #include "rich-location.h"
 #include "function.h"
 #include "json.h"
@@ -577,4 +590,4 @@ private:
 extern void sorry_no_analyzer ();
 #endif /* #if !ENABLE_ANALYZER */
 
-#endif /* GCC_ANALYZER_ANALYZER_H */
+#endif /* GCC_ANALYZER_COMMON_H */

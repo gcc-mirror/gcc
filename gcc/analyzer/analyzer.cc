@@ -18,20 +18,12 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "diagnostic.h"
-#include "intl.h"
-#include "analyzer/analyzer.h"
+#include "analyzer/common.h"
+
 #include "tree-pretty-print.h"
 #include "diagnostic-event-id.h"
 #include "tree-dfa.h"
-#include "make-unique.h"
+#include "intl.h"
 
 #if ENABLE_ANALYZER
 

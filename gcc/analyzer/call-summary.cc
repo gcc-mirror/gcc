@@ -17,16 +17,8 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "tree-dfa.h"
-#include "diagnostic-core.h"
-#include "diagnostic.h"
-#include "tree-diagnostic.h"
-#include "analyzer/analyzer.h"
+#include "analyzer/common.h"
+
 #include "analyzer/region-model.h"
 #include "analyzer/call-summary.h"
 #include "analyzer/exploded-graph.h"

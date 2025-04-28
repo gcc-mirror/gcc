@@ -18,42 +18,21 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "tm.h"
-#include "toplev.h"
-#include "hash-table.h"
-#include "vec.h"
-#include "ggc.h"
-#include "basic-block.h"
-#include "function.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
-#include "gimple-fold.h"
-#include "tree-eh.h"
-#include "gimple-expr.h"
-#include "is-a.h"
+#include "analyzer/common.h"
+
 #include "timevar.h"
 #include "gimple-pretty-print.h"
-#include "tree-pretty-print.h"
-#include "graphviz.h"
-#include "cgraph.h"
-#include "tree-dfa.h"
-#include "bitmap.h"
-#include "cfganal.h"
-#include "function.h"
-#include "analyzer/analyzer.h"
 #include "ordered-hash-map.h"
 #include "options.h"
 #include "cgraph.h"
 #include "cfg.h"
 #include "digraph.h"
 #include "tree-cfg.h"
+#include "tree-dfa.h"
+#include "cfganal.h"
+
 #include "analyzer/supergraph.h"
 #include "analyzer/analyzer-logging.h"
-#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 

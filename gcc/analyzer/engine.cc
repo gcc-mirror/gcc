@@ -18,23 +18,27 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "make-unique.h"
-#include "tree.h"
-#include "fold-const.h"
+#include "analyzer/common.h"
+
+#include <zlib.h>
+
+#include "cfg.h"
+#include "basic-block.h"
 #include "gcc-rich-location.h"
-#include "diagnostic-core.h"
-#include "diagnostic-event-id.h"
-#include "diagnostic-path.h"
-#include "function.h"
-#include "pretty-print.h"
-#include "sbitmap.h"
-#include "bitmap.h"
-#include "ordered-hash-map.h"
-#include "analyzer/analyzer.h"
+#include "gimple.h"
+#include "gimple-iterator.h"
+#include "gimple-pretty-print.h"
+#include "cgraph.h"
+#include "fold-const.h"
+#include "digraph.h"
+#include "plugin.h"
+#include "target.h"
+#include "stringpool.h"
+#include "attribs.h"
+#include "tree-dfa.h"
+
+#include "text-art/dump.h"
+
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
@@ -44,13 +48,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/sm.h"
 #include "analyzer/pending-diagnostic.h"
 #include "analyzer/diagnostic-manager.h"
-#include "cfg.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
-#include "gimple-pretty-print.h"
-#include "cgraph.h"
-#include "digraph.h"
 #include "analyzer/supergraph.h"
 #include "analyzer/program-state.h"
 #include "analyzer/exploded-graph.h"
@@ -59,16 +56,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/state-purge.h"
 #include "analyzer/bar-chart.h"
 #include "analyzer/call-info.h"
-#include <zlib.h>
-#include "plugin.h"
-#include "target.h"
-#include <memory>
-#include "stringpool.h"
-#include "attribs.h"
-#include "tree-dfa.h"
 #include "analyzer/known-function-manager.h"
 #include "analyzer/call-summary.h"
-#include "text-art/dump.h"
 
 /* For an overview, see gcc/doc/analyzer.texi.  */
 

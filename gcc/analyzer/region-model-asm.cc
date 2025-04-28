@@ -18,26 +18,16 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
-#include "diagnostic-core.h"
-#include "pretty-print.h"
-#include "analyzer/analyzer.h"
+#include "analyzer/common.h"
+
+#include "stmt.h"
+
 #include "analyzer/analyzer-logging.h"
-#include "options.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/region-model-reachability.h"
-#include "stmt.h"
 
 #if ENABLE_ANALYZER
 

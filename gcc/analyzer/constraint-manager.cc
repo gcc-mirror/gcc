@@ -18,28 +18,17 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#include "config.h"
-#define INCLUDE_VECTOR
-#include "system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "function.h"
-#include "basic-block.h"
-#include "gimple.h"
-#include "gimple-iterator.h"
+#include "analyzer/common.h"
+
 #include "fold-const.h"
-#include "selftest.h"
-#include "diagnostic-core.h"
-#include "graphviz.h"
-#include "analyzer/analyzer.h"
 #include "ordered-hash-map.h"
-#include "options.h"
 #include "cgraph.h"
 #include "cfg.h"
 #include "digraph.h"
-#include "analyzer/supergraph.h"
 #include "sbitmap.h"
-#include "bitmap.h"
+#include "tree-pretty-print.h"
+
+#include "analyzer/supergraph.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
@@ -48,8 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/constraint-manager.h"
 #include "analyzer/call-summary.h"
 #include "analyzer/analyzer-selftests.h"
-#include "tree-pretty-print.h"
-#include "make-unique.h"
 
 #if ENABLE_ANALYZER
 
