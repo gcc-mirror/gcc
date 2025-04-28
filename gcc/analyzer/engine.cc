@@ -1626,7 +1626,7 @@ class call_summary_edge_info : public call_info
 public:
   call_summary_edge_info (const call_details &cd,
 			  const function &called_fn,
-			  call_summary *summary,
+			  call_summary &summary,
 			  const extrinsic_state &ext_state)
   : call_info (cd, called_fn),
     m_called_fn (called_fn),
@@ -1641,7 +1641,7 @@ public:
     /* Update STATE based on summary_end_state.  */
     call_details cd (get_call_details (state->m_region_model, ctxt));
     call_summary_replay r (cd, m_called_fn, m_summary, m_ext_state);
-    const program_state &summary_end_state = m_summary->get_state ();
+    const program_state &summary_end_state = m_summary.get_state ();
     return state->replay_call_summary (r, summary_end_state);
   }
 
@@ -1652,19 +1652,19 @@ public:
     /* Update STATE based on summary_end_state.  */
     call_details cd (get_call_details (model, ctxt));
     call_summary_replay r (cd, m_called_fn, m_summary, m_ext_state);
-    const program_state &summary_end_state = m_summary->get_state ();
+    const program_state &summary_end_state = m_summary.get_state ();
     model->replay_call_summary (r, *summary_end_state.m_region_model);
     return true;
   }
 
   void print_desc (pretty_printer &pp) const final override
   {
-    pp_string (&pp, m_summary->get_desc ().get ());
+    pp_string (&pp, m_summary.get_desc ().get ());
   }
 
 private:
   const function &m_called_fn;
-  call_summary *m_summary;
+  call_summary &m_summary;
   const extrinsic_state &m_ext_state;
 };
 
@@ -1686,8 +1686,11 @@ exploded_node::replay_call_summaries (exploded_graph &eg,
 
   /* Each summary will call bifurcate on the PATH_CTXT.  */
   for (auto summary : called_fn_data.m_summaries)
-    replay_call_summary (eg, snode, call_stmt, state,
-			 path_ctxt, called_fn, summary, ctxt);
+    {
+      gcc_assert (summary);
+      replay_call_summary (eg, snode, call_stmt, state,
+			   path_ctxt, called_fn, *summary, ctxt);
+    }
   path_ctxt->terminate_path ();
 
   return on_stmt_flags ();
@@ -1704,22 +1707,21 @@ exploded_node::replay_call_summary (exploded_graph &eg,
 				    program_state *old_state,
 				    path_context *path_ctxt,
 				    const function &called_fn,
-				    call_summary *summary,
+				    call_summary &summary,
 				    region_model_context *ctxt)
 {
   logger *logger = eg.get_logger ();
   LOG_SCOPE (logger);
   gcc_assert (snode);
   gcc_assert (old_state);
-  gcc_assert (summary);
 
   if (logger)
     logger->log ("using %s as summary for call to %qE from %qE",
-		 summary->get_desc ().get (),
+		 summary.get_desc ().get (),
 		 called_fn.decl,
 		 snode->get_function ()->decl);
   const extrinsic_state &ext_state = eg.get_ext_state ();
-  const program_state &summary_end_state = summary->get_state ();
+  const program_state &summary_end_state = summary.get_state ();
   if (logger)
     {
       pretty_printer *pp = logger->get_printer ();

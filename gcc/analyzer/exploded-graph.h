@@ -294,7 +294,7 @@ class exploded_node : public dnode<eg_traits>
 			    program_state *state,
 			    path_context *path_ctxt,
 			    const function &called_fn,
-			    call_summary *summary,
+			    call_summary &summary,
 			    region_model_context *ctxt);
 
   bool on_edge (exploded_graph &eg,

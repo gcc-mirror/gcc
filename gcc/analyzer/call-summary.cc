@@ -157,7 +157,7 @@ call_summary::dump (const extrinsic_state &ext_state, bool simple) const
 
 call_summary_replay::call_summary_replay (const call_details &cd,
 					  const function &called_fn,
-					  call_summary *summary,
+					  call_summary &summary,
 					  const extrinsic_state &ext_state)
 : m_cd (cd),
   m_summary (summary),
@@ -808,7 +808,7 @@ call_summary_replay::dump_to_pp (pretty_printer *pp, bool simple) const
   pp_newline (pp);
   pp_string (pp, "CALLEE SUMMARY:");
   pp_newline (pp);
-  m_summary->dump_to_pp (m_ext_state, pp, simple);
+  m_summary.dump_to_pp (m_ext_state, pp, simple);
 
   /* Current state of caller (could be in mid-update).  */
   pp_newline (pp);
