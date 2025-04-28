@@ -193,7 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	__format::_Str_sink<char> __buf;
 	std::vformat_to(__buf.out(), __os.getloc(), __fmt, __args);
-	auto __out = __buf.view();
+	auto __out = __buf._M_span();
 
 	void* __open_terminal(streambuf*);
 	error_code __write_to_terminal(void*, span<char>);
