@@ -730,7 +730,7 @@ state_purge_per_decl::process_worklists (const state_purge_map &map,
       worklist.safe_push (iter);
 
     region_model model (mgr);
-    model.push_frame (get_function (), NULL, NULL);
+    model.push_frame (get_function (), nullptr, nullptr, nullptr);
 
     /* Process worklist by walking backwards until we reach a stmt
        that fully overwrites the decl.  */

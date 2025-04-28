@@ -391,7 +391,9 @@ class region_model
   void update_for_return_gcall (const gcall &call_stmt,
                                 region_model_context *ctxt);
 
-  const region *push_frame (const function &fun, const vec<const svalue *> *arg_sids,
+  const region *push_frame (const function &fun,
+			    const gcall *call_stmt,
+			    const vec<const svalue *> *arg_sids,
 			    region_model_context *ctxt);
   const frame_region *get_current_frame () const { return m_current_frame; }
   const function *get_current_function () const;

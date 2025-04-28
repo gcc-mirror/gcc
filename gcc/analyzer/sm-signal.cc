@@ -196,7 +196,7 @@ update_model_for_signal_handler (region_model *model,
   gcc_assert (model);
   /* Purge all state within MODEL.  */
   *model = region_model (model->get_manager ());
-  model->push_frame (handler_fun, NULL, NULL);
+  model->push_frame (handler_fun, nullptr, nullptr, nullptr);
 }
 
 /* Custom exploded_edge info: entry into a signal-handler.  */

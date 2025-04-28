@@ -1231,7 +1231,7 @@ void
 program_state::push_frame (const extrinsic_state &ext_state ATTRIBUTE_UNUSED,
 			   const function &fun)
 {
-  m_region_model->push_frame (fun, NULL, NULL);
+  m_region_model->push_frame (fun, nullptr, nullptr, nullptr);
 }
 
 /* Get the current function of this state.  */

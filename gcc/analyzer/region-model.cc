@@ -6270,7 +6270,7 @@ region_model::update_for_gcall (const gcall &call_stmt,
   }
 
   gcc_assert (callee);
-  push_frame (*callee, &arg_svals, ctxt);
+  push_frame (*callee, &call_stmt, &arg_svals, ctxt);
 }
 
 /* Pop the top-most frame_region from the stack, and copy the return
@@ -6744,6 +6744,10 @@ region_model::on_top_level_param (tree param,
 /* Update this region_model to reflect pushing a frame onto the stack
    for a call to FUN.
 
+   If CALL_STMT is non-NULL, this is for the interprocedural case where
+   we already have an execution path into the caller.  It can be NULL for
+   top-level entrypoints into the analysis, or in selftests.
+
    If ARG_SVALS is non-NULL, use it to populate the parameters
    in the new frame.
    Otherwise, the params have their initial_svalues.
@@ -6752,14 +6756,32 @@ region_model::on_top_level_param (tree param,
 
 const region *
 region_model::push_frame (const function &fun,
+			  const gcall *call_stmt,
 			  const vec<const svalue *> *arg_svals,
 			  region_model_context *ctxt)
 {
-  m_current_frame = m_mgr->get_frame_region (m_current_frame, fun);
+  tree fndecl = fun.decl;
   if (arg_svals)
     {
+      /* If the result of the callee is DECL_BY_REFERENCE, then
+	 we'll need to store a reference to the caller's lhs of
+	 CALL_STMT within callee's result.
+	 If so, determine the region of CALL_STMT's lhs within
+	 the caller's frame before updating m_current_frame.  */
+      const region *caller_return_by_reference_reg = nullptr;
+      if (tree result = DECL_RESULT (fndecl))
+	if (DECL_BY_REFERENCE (result))
+	  {
+	    gcc_assert (call_stmt);
+	    tree lhs = gimple_call_lhs (call_stmt);
+	    gcc_assert (lhs);
+	    caller_return_by_reference_reg = get_lvalue (lhs, ctxt);
+	  }
+
+      /* Update m_current_frame.  */
+      m_current_frame = m_mgr->get_frame_region (m_current_frame, fun);
+
       /* Arguments supplied from a caller frame.  */
-      tree fndecl = fun.decl;
       unsigned idx = 0;
       for (tree iter_parm = DECL_ARGUMENTS (fndecl); iter_parm;
 	   iter_parm = DECL_CHAIN (iter_parm), ++idx)
@@ -6787,13 +6809,39 @@ region_model::push_frame (const function &fun,
 					 va_arg_idx);
 	  set_value (var_arg_reg, arg_sval, ctxt);
 	}
+
+      /* If the result of the callee is DECL_BY_REFERENCE, then above
+	 we should have determined the region within the
+	 caller's frame that the callee will be writing back to.
+	 Use this now to initialize the reference in callee's frame.  */
+      if (tree result = DECL_RESULT (fndecl))
+	if (DECL_BY_REFERENCE (result))
+	  {
+	    /* Get reference to the caller lhs.  */
+	    gcc_assert (caller_return_by_reference_reg);
+	    const svalue *ref_sval
+	      = m_mgr->get_ptr_svalue (TREE_TYPE (result),
+				       caller_return_by_reference_reg);
+
+	    /* Get region for default val of DECL_RESULT within the
+	       callee.  */
+	    tree result_default_ssa = get_ssa_default_def (fun, result);
+	    gcc_assert (result_default_ssa);
+	    const region *callee_result_reg
+	      = get_lvalue (result_default_ssa, ctxt);
+
+	    /* Set the callee's reference to refer to the caller's lhs.  */
+	    set_value (callee_result_reg, ref_sval, ctxt);
+	  }
     }
   else
     {
       /* Otherwise we have a top-level call within the analysis.  The params
 	 have defined but unknown initial values.
 	 Anything they point to has escaped.  */
-      tree fndecl = fun.decl;
+
+      /* Update m_current_frame.  */
+      m_current_frame = m_mgr->get_frame_region (m_current_frame, fun);
 
       /* Handle "__attribute__((nonnull))".   */
       tree fntype = TREE_TYPE (fndecl);
@@ -6946,7 +6994,11 @@ region_model::pop_frame (tree result_lvalue,
   /* Pop the frame.  */
   m_current_frame = m_current_frame->get_calling_frame ();
 
-  if (result_lvalue && retval)
+  if (result_lvalue
+      && retval
+      /* Don't write back for DECL_BY_REFERENCE; the writes
+	 should have happened within the callee already.  */
+      && !DECL_BY_REFERENCE (result))
     {
       gcc_assert (eval_return_svalue);
 
@@ -8925,7 +8977,7 @@ test_stack_frames ()
   /* Push stack frame for "parent_fn".  */
   const region *parent_frame_reg
     = model.push_frame (*DECL_STRUCT_FUNCTION (parent_fndecl),
-			NULL, &ctxt);
+			nullptr, nullptr, &ctxt);
   ASSERT_EQ (model.get_current_frame (), parent_frame_reg);
   ASSERT_TRUE (model.region_exists_p (parent_frame_reg));
   const region *a_in_parent_reg = model.get_lvalue (a, &ctxt);
@@ -8940,7 +8992,8 @@ test_stack_frames ()
 
   /* Push stack frame for "child_fn".  */
   const region *child_frame_reg
-    = model.push_frame (*DECL_STRUCT_FUNCTION (child_fndecl), NULL, &ctxt);
+    = model.push_frame (*DECL_STRUCT_FUNCTION (child_fndecl),
+			nullptr, nullptr, &ctxt);
   ASSERT_EQ (model.get_current_frame (), child_frame_reg);
   ASSERT_TRUE (model.region_exists_p (child_frame_reg));
   const region *x_in_child_reg = model.get_lvalue (x, &ctxt);
@@ -9033,7 +9086,8 @@ test_get_representative_path_var ()
   for (int depth = 0; depth < 5; depth++)
     {
       const region *frame_n_reg
-	= model.push_frame (*DECL_STRUCT_FUNCTION (fndecl), NULL, &ctxt);
+	= model.push_frame (*DECL_STRUCT_FUNCTION (fndecl),
+			    nullptr, nullptr, &ctxt);
       const region *parm_n_reg = model.get_lvalue (path_var (n, depth), &ctxt);
       parm_regs.safe_push (parm_n_reg);
 
@@ -9279,9 +9333,11 @@ test_state_merging ()
     region_model model0 (&mgr);
     region_model model1 (&mgr);
     ASSERT_EQ (model0.get_stack_depth (), 0);
-    model0.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl), NULL, &ctxt);
+    model0.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl),
+		       nullptr, nullptr, &ctxt);
     ASSERT_EQ (model0.get_stack_depth (), 1);
-    model1.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl), NULL, &ctxt);
+    model1.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl),
+		       nullptr, nullptr, &ctxt);
 
     placeholder_svalue test_sval (mgr.alloc_symbol_id (),
 				  integer_type_node, "test sval");
@@ -9373,7 +9429,8 @@ test_state_merging ()
   /* Pointers: non-NULL and non-NULL: ptr to a local.  */
   {
     region_model model0 (&mgr);
-    model0.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl), NULL, NULL);
+    model0.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl),
+		       nullptr, nullptr, nullptr);
     model0.set_value (model0.get_lvalue (p, NULL),
 		      model0.get_rvalue (addr_of_a, NULL), NULL);
 
@@ -9512,12 +9569,14 @@ test_state_merging ()
      frame points to a local in a more recent stack frame.  */
   {
     region_model model0 (&mgr);
-    model0.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl), NULL, NULL);
+    model0.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl),
+		       nullptr, nullptr, nullptr);
     const region *q_in_first_frame = model0.get_lvalue (q, NULL);
 
     /* Push a second frame.  */
     const region *reg_2nd_frame
-      = model0.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl), NULL, NULL);
+      = model0.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl),
+			   nullptr, nullptr, nullptr);
 
     /* Have a pointer in the older frame point to a local in the
        more recent frame.  */
@@ -9544,7 +9603,8 @@ test_state_merging ()
   /* Verify that we can merge a model in which a local points to a global.  */
   {
     region_model model0 (&mgr);
-    model0.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl), NULL, NULL);
+    model0.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl),
+		       nullptr, nullptr, nullptr);
     model0.set_value (model0.get_lvalue (q, NULL),
 		      model0.get_rvalue (addr_of_y, NULL), NULL);
 
@@ -10076,7 +10136,7 @@ test_alloca ()
   /* Push stack frame.  */
   const region *frame_reg
     = model.push_frame (*DECL_STRUCT_FUNCTION (fndecl),
-			NULL, &ctxt);
+			nullptr, nullptr, &ctxt);
   /* "p = alloca (n * 4);".  */
   const svalue *size_sval = model.get_rvalue (n_times_4, &ctxt);
   const region *reg = model.create_region_for_alloca (size_sval, &ctxt);

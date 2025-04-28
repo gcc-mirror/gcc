@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "digraph.h"
 #include "sbitmap.h"
 #include "fold-const.h"
+#include "tree-ssa.h"
 
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/supergraph.h"
@@ -546,15 +547,12 @@ region::can_have_initial_svalue_p () const
 
 	    case SSA_NAME:
 	      {
+		/* Some SSA names have an implicit default defined value.  */
 		tree ssa_name = decl;
-		/* SSA names that are the default defn of a PARM_DECL
-		   have initial_svalues; other SSA names don't.  */
-		if (SSA_NAME_IS_DEFAULT_DEF (ssa_name)
-		    && SSA_NAME_VAR (ssa_name)
-		    && TREE_CODE (SSA_NAME_VAR (ssa_name)) == PARM_DECL)
-		  return true;
-		else
-		  return false;
+		if (SSA_NAME_IS_DEFAULT_DEF (ssa_name))
+		  return ssa_defined_default_def_p (ssa_name);
+		/* Others don't.  */
+		return false;
 	      }
 	    }
 	}

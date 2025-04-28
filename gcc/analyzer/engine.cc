@@ -5343,7 +5343,7 @@ maybe_update_for_edge (logger *logger,
 		      == PK_BEFORE_SUPERNODE);
 	  function *fun = eedge->m_dest->get_function ();
 	  gcc_assert (fun);
-	  m_model.push_frame (*fun, NULL, ctxt);
+	  m_model.push_frame (*fun, nullptr, nullptr, ctxt);
 	  if (logger)
 	    logger->log ("  pushing frame for %qD", fun->decl);
 	}
