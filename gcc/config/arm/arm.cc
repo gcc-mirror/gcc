@@ -4000,9 +4000,6 @@ arm_options_perform_arch_sanity_checks (void)
   if (TARGET_IWMMXT && !ARM_DOUBLEWORD_ALIGN)
     error ("iwmmxt requires an AAPCS compatible ABI for proper operation");
 
-  if (TARGET_IWMMXT_ABI && !TARGET_IWMMXT)
-    error ("iwmmxt abi requires an iwmmxt capable cpu");
-
   /* BPABI targets use linker tricks to allow interworking on cores
      without thumb support.  */
   if (TARGET_INTERWORK
@@ -4043,9 +4040,7 @@ arm_options_perform_arch_sanity_checks (void)
 
   if (TARGET_AAPCS_BASED)
     {
-      if (arm_abi == ARM_ABI_IWMMXT)
-	arm_pcs_default = ARM_PCS_AAPCS_IWMMXT;
-      else if (TARGET_HARD_FLOAT_ABI)
+      if (TARGET_HARD_FLOAT_ABI)
 	{
 	  arm_pcs_default = ARM_PCS_AAPCS_VFP;
 	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv2)
@@ -6048,9 +6043,6 @@ arm_libcall_value_1 (machine_mode mode)
 {
   if (TARGET_AAPCS_BASED)
     return aapcs_libcall_value (mode);
-  else if (TARGET_IWMMXT_ABI
-	   && arm_vector_mode_supported_p (mode))
-    return gen_rtx_REG (mode, FIRST_IWMMXT_REGNUM);
   else
     return gen_rtx_REG (mode, ARG_REGISTER (1));
 }
@@ -6083,9 +6075,7 @@ arm_function_value_regno_p (const unsigned int regno)
       || (TARGET_32BIT
 	  && TARGET_AAPCS_BASED
 	  && TARGET_HARD_FLOAT
-	  && regno == FIRST_VFP_REGNUM)
-      || (TARGET_IWMMXT_ABI
-	  && regno == FIRST_IWMMXT_REGNUM))
+	  && regno == FIRST_VFP_REGNUM))
     return true;
 
   return false;
@@ -6102,8 +6092,6 @@ arm_apply_result_size (void)
     {
       if (TARGET_HARD_FLOAT_ABI)
 	size += 32;
-      if (TARGET_IWMMXT_ABI)
-	size += 8;
     }
 
   return size;
@@ -6265,7 +6253,6 @@ const struct pcs_attribute_arg
 #if 0
     /* We could recognize these, but changes would be needed elsewhere
      * to implement them.  */
-    {"aapcs-iwmmxt", ARM_PCS_AAPCS_IWMMXT},
     {"atpcs", ARM_PCS_ATPCS},
     {"apcs", ARM_PCS_APCS},
 #endif
@@ -7195,7 +7182,6 @@ arm_init_cumulative_args (CUMULATIVE_ARGS *pcum, tree fntype,
 
   /* On the ARM, the offset starts at 0.  */
   pcum->nregs = 0;
-  pcum->iwmmxt_nregs = 0;
   pcum->can_split = true;
 
   /* Varargs vectors are treated the same as long long.
@@ -7308,22 +7294,6 @@ arm_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
       return pcum->aapcs_reg;
     }
 
-  /* Varargs vectors are treated the same as long long.
-     named_count avoids having to change the way arm handles 'named' */
-  if (TARGET_IWMMXT_ABI
-      && arm_vector_mode_supported_p (arg.mode)
-      && pcum->named_count > pcum->nargs + 1)
-    {
-      if (pcum->iwmmxt_nregs <= 9)
-	return gen_rtx_REG (arg.mode,
-			    pcum->iwmmxt_nregs + FIRST_IWMMXT_REGNUM);
-      else
-	{
-	  pcum->can_split = false;
-	  return NULL_RTX;
-	}
-    }
-
   /* Put doubleword aligned quantities in even register pairs.  */
   if ((pcum->nregs & 1) && ARM_DOUBLEWORD_ALIGN)
     {
@@ -7383,9 +7353,6 @@ arm_arg_partial_bytes (cumulative_args_t pcum_v, const function_arg_info &arg)
       return pcum->aapcs_partial;
     }
 
-  if (TARGET_IWMMXT_ABI && arm_vector_mode_supported_p (arg.mode))
-    return 0;
-
   if (NUM_ARG_REGS > nregs
       && (NUM_ARG_REGS < nregs + ARM_NUM_REGS2 (arg.mode, arg.type))
       && pcum->can_split)
@@ -7422,12 +7389,7 @@ arm_function_arg_advance (cumulative_args_t pcum_v,
   else
     {
       pcum->nargs += 1;
-      if (arm_vector_mode_supported_p (arg.mode)
-	  && pcum->named_count > pcum->nargs
-	  && TARGET_IWMMXT_ABI)
-	pcum->iwmmxt_nregs += 1;
-      else
-	pcum->nregs += ARM_NUM_REGS2 (arg.mode, arg.type);
+      pcum->nregs += ARM_NUM_REGS2 (arg.mode, arg.type);
     }
 }
 

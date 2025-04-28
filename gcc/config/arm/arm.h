@@ -143,7 +143,6 @@ emission of floating point pcs attributes.  */
 					 && !TARGET_GENERAL_REGS_ONLY)
 #define TARGET_REALLY_IWMMXT2		(TARGET_IWMMXT2 && TARGET_32BIT \
 					 && !TARGET_GENERAL_REGS_ONLY)
-#define TARGET_IWMMXT_ABI (TARGET_32BIT && arm_abi == ARM_ABI_IWMMXT)
 #define TARGET_ARM                      (! TARGET_THUMB)
 #define TARGET_EITHER			1 /* (TARGET_ARM | TARGET_THUMB) */
 #define TARGET_BACKTRACE	        (crtl->is_leaf \
@@ -1675,7 +1674,6 @@ enum arm_pcs
 {
   ARM_PCS_AAPCS,	/* Base standard AAPCS.  */
   ARM_PCS_AAPCS_VFP,	/* Use VFP registers for floating point values.  */
-  ARM_PCS_AAPCS_IWMMXT, /* Use iWMMXT registers for vectors.  */
   /* This must be the last AAPCS variant.  */
   ARM_PCS_AAPCS_LOCAL,	/* Private call within this compilation unit.  */
   ARM_PCS_ATPCS,	/* ATPCS.  */
@@ -1693,8 +1691,6 @@ typedef struct
 {
   /* This is the number of registers of arguments scanned so far.  */
   int nregs;
-  /* This is the number of iWMMXt register arguments scanned so far.  */
-  int iwmmxt_nregs;
   int named_count;
   int nargs;
   /* Which procedure call variant to use for this call.  */
@@ -1742,9 +1738,7 @@ typedef struct
 #define FUNCTION_ARG_REGNO_P(REGNO)					\
    (IN_RANGE ((REGNO), 0, 3)						\
     || (TARGET_AAPCS_BASED && TARGET_HARD_FLOAT				\
-	&& IN_RANGE ((REGNO), FIRST_VFP_REGNUM, FIRST_VFP_REGNUM + 15))	\
-    || (TARGET_IWMMXT_ABI						\
-	&& IN_RANGE ((REGNO), FIRST_IWMMXT_REGNUM, FIRST_IWMMXT_REGNUM + 9)))
+	&& IN_RANGE ((REGNO), FIRST_VFP_REGNUM, FIRST_VFP_REGNUM + 15)))
 
 
 /* If your target environment doesn't prefix user functions with an

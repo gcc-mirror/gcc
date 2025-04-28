@@ -4459,7 +4459,7 @@ case "${target}" in
 
 		case "$with_abi" in
 		"" \
-		| apcs-gnu | atpcs | aapcs | iwmmxt | aapcs-linux )
+		| apcs-gnu | atpcs | aapcs | aapcs-linux )
 			#OK
 			;;
 		*)

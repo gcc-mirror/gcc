@@ -23520,7 +23520,7 @@ These @samp{-m} options are defined for the ARM port:
 @opindex mabi
 @item -mabi=@var{name}
 Generate code for the specified ABI@.  Permissible values are: @samp{apcs-gnu},
-@samp{atpcs}, @samp{aapcs}, @samp{aapcs-linux} and @samp{iwmmxt}.
+@samp{atpcs}, @samp{aapcs} and @samp{aapcs-linux}.
 
 @opindex mapcs-frame
 @item -mapcs-frame
