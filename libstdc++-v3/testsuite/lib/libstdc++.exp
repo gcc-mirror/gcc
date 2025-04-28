@@ -650,6 +650,11 @@ proc v3_target_compile { source dest type options } {
     }
 
     set comp_output [target_compile $source $dest $type $options]
+
+    # Strip versioned namespace from the compiler output,
+    # so that dg-error and dg-warning patterns can ignore it:
+    regsub -all "std::__8::" $comp_output "std::" comp_output
+
     if { $type == "executable" && $file_to_delete != "" } {
 	file delete $file_to_delete
 	if { [istarget *-*-darwin*] && [file exists $file_to_delete.dSYM] } {
