@@ -53,12 +53,34 @@ sat_u_add_##T##_fmt_6 (T x, T y)        \
   return (T)(x + y) < x ? -1 : (x + y); \
 }
 
+#define DEF_SAT_U_ADD_FMT_7(WT, T)     \
+T __attribute__((noinline))            \
+sat_u_add_##WT##_##T##_fmt_7(T x, T y) \
+{                                      \
+  T max = -1;                          \
+  WT val = (WT)x + (WT)y;              \
+  return val > max ? max : (T)val;     \
+}
+#define DEF_SAT_U_ADD_FMT_7_WRAP(WT, T) DEF_SAT_U_ADD_FMT_7(WT, T)
+
 #define RUN_SAT_U_ADD_FMT_1(T, x, y) sat_u_add_##T##_fmt_1(x, y)
 #define RUN_SAT_U_ADD_FMT_2(T, x, y) sat_u_add_##T##_fmt_2(x, y)
 #define RUN_SAT_U_ADD_FMT_3(T, x, y) sat_u_add_##T##_fmt_3(x, y)
 #define RUN_SAT_U_ADD_FMT_4(T, x, y) sat_u_add_##T##_fmt_4(x, y)
 #define RUN_SAT_U_ADD_FMT_5(T, x, y) sat_u_add_##T##_fmt_5(x, y)
 #define RUN_SAT_U_ADD_FMT_6(T, x, y) sat_u_add_##T##_fmt_6(x, y)
+#define RUN_SAT_U_ADD_FMT_7_FROM_U16(T, x, y) \
+  sat_u_add_uint16_t_##T##_fmt_7(x, y)
+#define RUN_SAT_U_ADD_FMT_7_FROM_U16_WRAP(T, x, y) \
+  RUN_SAT_U_ADD_FMT_7_FROM_U16(T, x, y)
+#define RUN_SAT_U_ADD_FMT_7_FROM_U32(T, x, y) \
+  sat_u_add_uint32_t_##T##_fmt_7(x, y)
+#define RUN_SAT_U_ADD_FMT_7_FROM_U32_WRAP(T, x, y) \
+  RUN_SAT_U_ADD_FMT_7_FROM_U32(T, x, y)
+#define RUN_SAT_U_ADD_FMT_7_FROM_U64(T, x, y) \
+  sat_u_add_uint64_t_##T##_fmt_7(x, y)
+#define RUN_SAT_U_ADD_FMT_7_FROM_U64_WRAP(T, x, y) \
+  RUN_SAT_U_ADD_FMT_7_FROM_U64(T, x, y)
 
 #define DEF_SAT_U_ADD_IMM_FMT_1(T, IMM)      \
 T __attribute__((noinline))                  \
