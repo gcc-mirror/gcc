@@ -298,7 +298,7 @@ public:
   sarif_sink (diagnostic_manager &mgr,
 	      FILE *dst_stream,
 	      const diagnostic_file *main_input_file,
-	      enum sarif_version version);
+	      const sarif_generation_options &sarif_gen_opts);
 };
 
 /* Helper for the linemap code.  */
@@ -1071,7 +1071,7 @@ diagnostic_text_sink::text_starter (diagnostic_text_output_format &text_output,
 sarif_sink::sarif_sink (diagnostic_manager &mgr,
 			FILE *dst_stream,
 			const diagnostic_file *main_input_file,
-			enum sarif_version version)
+			const sarif_generation_options &sarif_gen_opts)
 : sink (mgr)
 {
   diagnostic_output_file output_file (dst_stream, false,
@@ -1079,7 +1079,8 @@ sarif_sink::sarif_sink (diagnostic_manager &mgr,
   auto inner_sink = make_sarif_sink (mgr.get_dc (),
 				     *mgr.get_line_table (),
 				     main_input_file->get_name (),
-				     version,
+				     true,
+				     sarif_gen_opts,
 				     std::move (output_file));
   mgr.get_dc ().add_sink (std::move (inner_sink));
 }
@@ -1271,7 +1272,7 @@ diagnostic_manager_add_sarif_sink (diagnostic_manager *diag_mgr,
   FAIL_IF_NULL (dst_stream);
   FAIL_IF_NULL (main_input_file);
 
-  enum sarif_version internal_version;
+  sarif_generation_options sarif_gen_opts;
   switch (version)
     {
     default:
@@ -1279,17 +1280,17 @@ diagnostic_manager_add_sarif_sink (diagnostic_manager *diag_mgr,
 	       __func__, (int)version);
       abort ();
     case DIAGNOSTIC_SARIF_VERSION_2_1_0:
-      internal_version = sarif_version::v2_1_0;
+      sarif_gen_opts.m_version = sarif_version::v2_1_0;
       break;
     case DIAGNOSTIC_SARIF_VERSION_2_2_PRERELEASE:
-      internal_version = sarif_version::v2_2_prerelease_2024_08_08;
+      sarif_gen_opts.m_version = sarif_version::v2_2_prerelease_2024_08_08;
       break;
     }
 
   diag_mgr->add_sink (make_unique<sarif_sink> (*diag_mgr,
 					       dst_stream,
 					       main_input_file,
-					       internal_version));
+					       sarif_gen_opts));
 }
 
 /* Public entrypoint.  */

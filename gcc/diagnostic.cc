@@ -1830,8 +1830,7 @@ diagnostic_output_format_init (diagnostic_context &context,
       diagnostic_output_format_init_sarif_stderr (context,
 						  line_table,
 						  main_input_filename_,
-						  json_formatting,
-						  sarif_version::v2_1_0);
+						  json_formatting);
       break;
 
     case DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE:
@@ -1839,7 +1838,6 @@ diagnostic_output_format_init (diagnostic_context &context,
 						line_table,
 						main_input_filename_,
 						json_formatting,
-						sarif_version::v2_1_0,
 						base_file_name);
       break;
     }

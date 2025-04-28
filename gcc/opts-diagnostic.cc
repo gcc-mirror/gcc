@@ -485,10 +485,14 @@ sarif_scheme_handler::make_sink (const context &ctxt,
   if (!output_file)
     return nullptr;
 
+  sarif_generation_options sarif_gen_opts;
+  sarif_gen_opts.m_version = version;
+
   auto sink = make_sarif_sink (ctxt.m_dc,
 			       *line_table,
 			       ctxt.m_opts.x_main_input_filename,
-			       version,
+			       true,
+			       sarif_gen_opts,
 			       std::move (output_file));
   return sink;
 }

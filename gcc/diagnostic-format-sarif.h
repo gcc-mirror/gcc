@@ -27,14 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 
 class logical_location;
 
-enum class sarif_version
-{
-  v2_1_0,
-  v2_2_prerelease_2024_08_08,
-
-  num_versions
-};
-
 extern diagnostic_output_file
 diagnostic_output_format_open_sarif_file (diagnostic_context &context,
 					  line_maps *line_maps,
@@ -44,27 +36,45 @@ extern void
 diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
 					    const line_maps *line_maps,
 					    const char *main_input_filename_,
-					    bool formatted,
-					    enum sarif_version version);
+					    bool formatted);
 extern void
 diagnostic_output_format_init_sarif_file (diagnostic_context &context,
 					  line_maps *line_maps,
 					  const char *main_input_filename_,
 					  bool formatted,
-					  enum sarif_version version,
 					  const char *base_file_name);
 extern void
 diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
 					    const line_maps *line_maps,
 					    const char *main_input_filename_,
 					    bool formatted,
-					    enum sarif_version version,
 					    FILE *stream);
+
+enum class sarif_version
+{
+  v2_1_0,
+  v2_2_prerelease_2024_08_08,
+
+  num_versions
+};
+
+/* A bundle of state for controlling what to put in SARIF output,
+   such as which version of SARIF to generate
+   (as opposed to SARIF *serialization* options, such as formatting).  */
+
+struct sarif_generation_options
+{
+  sarif_generation_options ();
+
+  enum sarif_version m_version;
+};
+
 extern std::unique_ptr<diagnostic_output_format>
 make_sarif_sink (diagnostic_context &context,
 		 const line_maps &line_maps,
 		 const char *main_input_filename_,
-		 enum sarif_version version,
+		 bool formatted,
+		 const sarif_generation_options &sarif_gen_opts,
 		 diagnostic_output_file output_file);
 
 /* Concrete subclass of json::object for SARIF property bags

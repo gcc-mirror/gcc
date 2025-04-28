@@ -689,7 +689,7 @@ public:
 		 const line_maps *line_maps,
 		 const char *main_input_filename_,
 		 bool formatted,
-		 enum sarif_version version);
+		 const sarif_generation_options &sarif_gen_opts);
   ~sarif_builder ();
 
   void set_printer (pretty_printer &printer)
@@ -743,7 +743,7 @@ public:
   diagnostic_context &get_context () const { return m_context; }
   pretty_printer *get_printer () const { return m_printer; }
   token_printer &get_token_printer () { return m_token_printer; }
-  enum sarif_version get_version () const { return m_version; }
+  enum sarif_version get_version () const { return m_sarif_gen_opts.m_version; }
 
   size_t num_results () const { return m_results_array->size (); }
   sarif_result &get_result (size_t idx)
@@ -752,6 +752,8 @@ public:
     gcc_assert (element);
     return *static_cast<sarif_result *> (element);
   }
+
+  const sarif_generation_options &get_opts () const { return m_sarif_gen_opts; }
 
 private:
   class sarif_token_printer : public token_printer
@@ -865,7 +867,6 @@ private:
   pretty_printer *m_printer;
   const line_maps *m_line_maps;
   sarif_token_printer m_token_printer;
-  enum sarif_version m_version;
 
   /* The JSON object for the invocation object.  */
   std::unique_ptr<sarif_invocation> m_invocation_obj;
@@ -892,6 +893,7 @@ private:
   int m_tabstop;
 
   bool m_formatted;
+  const sarif_generation_options m_sarif_gen_opts;
 
   unsigned m_next_result_idx;
   sarif_code_flow *m_current_code_flow;
@@ -1561,12 +1563,11 @@ sarif_builder::sarif_builder (diagnostic_context &context,
 			      const line_maps *line_maps,
 			      const char *main_input_filename_,
 			      bool formatted,
-			      enum sarif_version version)
+			      const sarif_generation_options &sarif_gen_opts)
 : m_context (context),
   m_printer (&printer),
   m_line_maps (line_maps),
   m_token_printer (*this),
-  m_version (version),
   m_invocation_obj
     (::make_unique<sarif_invocation> (*this,
 				      context.get_original_argv ())),
@@ -1577,6 +1578,7 @@ sarif_builder::sarif_builder (diagnostic_context &context,
   m_rules_arr (new json::array ()),
   m_tabstop (context.m_tabstop),
   m_formatted (formatted),
+  m_sarif_gen_opts (sarif_gen_opts),
   m_next_result_idx (0),
   m_current_code_flow (nullptr)
 {
@@ -2961,10 +2963,10 @@ make_top_level_object (std::unique_ptr<sarif_invocation> invocation_obj,
   auto log_obj = ::make_unique<sarif_log> ();
 
   /* "$schema" property (SARIF v2.1.0 section 3.13.3) .  */
-  log_obj->set_string ("$schema", sarif_version_to_url (m_version));
+  log_obj->set_string ("$schema", sarif_version_to_url (get_version ()));
 
   /* "version" property (SARIF v2.1.0 section 3.13.2).  */
-  log_obj->set_string ("version", sarif_version_to_property (m_version));
+  log_obj->set_string ("version", sarif_version_to_property (get_version ()));
 
   /* "runs" property (SARIF v2.1.0 section 3.13.4).  */
   auto run_arr = ::make_unique<json::array> ();
@@ -3534,10 +3536,10 @@ protected:
 		       const line_maps *line_maps,
 		       const char *main_input_filename_,
 		       bool formatted,
-		       enum sarif_version version)
+		       const sarif_generation_options &sarif_gen_opts)
   : diagnostic_output_format (context),
     m_builder (context, *get_printer (), line_maps, main_input_filename_,
-	       formatted, version),
+	       formatted, sarif_gen_opts),
     m_buffer (nullptr)
   {}
 
@@ -3552,10 +3554,11 @@ public:
 			      const line_maps *line_maps,
 			      const char *main_input_filename_,
 			      bool formatted,
-			      enum sarif_version version,
+			      const sarif_generation_options &sarif_gen_opts,
 			      FILE *stream)
   : sarif_output_format (context, line_maps, main_input_filename_,
-			 formatted, version),
+			 formatted,
+			 sarif_gen_opts),
     m_stream (stream)
   {
   }
@@ -3578,10 +3581,10 @@ public:
 			    const line_maps *line_maps,
 			    const char *main_input_filename_,
 			    bool formatted,
-			    enum sarif_version version,
+			    const sarif_generation_options &sarif_gen_opts,
 			    diagnostic_output_file output_file)
   : sarif_output_format (context, line_maps, main_input_filename_,
-			 formatted, version),
+			 formatted, sarif_gen_opts),
     m_output_file (std::move (output_file))
   {
     gcc_assert (m_output_file.get_open_file ());
@@ -3741,17 +3744,17 @@ void
 diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
 					    const line_maps *line_maps,
 					    const char *main_input_filename_,
-					    bool formatted,
-					    enum sarif_version version)
+					    bool formatted)
 {
   gcc_assert (line_maps);
+  const sarif_generation_options sarif_gen_opts;
   diagnostic_output_format_init_sarif
     (context,
      ::make_unique<sarif_stream_output_format> (context,
 						line_maps,
 						main_input_filename_,
 						formatted,
-						version,
+						sarif_gen_opts,
 						stderr));
 }
 
@@ -3798,7 +3801,6 @@ diagnostic_output_format_init_sarif_file (diagnostic_context &context,
 					  line_maps *line_maps,
 					  const char *main_input_filename_,
 					  bool formatted,
-					  enum sarif_version version,
 					  const char *base_file_name)
 {
   gcc_assert (line_maps);
@@ -3808,13 +3810,14 @@ diagnostic_output_format_init_sarif_file (diagnostic_context &context,
 						line_maps,
 						base_file_name);
 
+  const sarif_generation_options sarif_gen_opts;
   diagnostic_output_format_init_sarif
     (context,
      ::make_unique<sarif_file_output_format> (context,
 					      line_maps,
 					      main_input_filename_,
 					      formatted,
-					      version,
+					      sarif_gen_opts,
 					      std::move (output_file)));
 }
 
@@ -3825,17 +3828,17 @@ diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
 					    const line_maps *line_maps,
 					    const char *main_input_filename_,
 					    bool formatted,
-					    enum sarif_version version,
 					    FILE *stream)
 {
   gcc_assert (line_maps);
+  const sarif_generation_options sarif_gen_opts;
   diagnostic_output_format_init_sarif
     (context,
      ::make_unique<sarif_stream_output_format> (context,
 						line_maps,
 						main_input_filename_,
 						formatted,
-						version,
+						sarif_gen_opts,
 						stream));
 }
 
@@ -3843,17 +3846,25 @@ std::unique_ptr<diagnostic_output_format>
 make_sarif_sink (diagnostic_context &context,
 		 const line_maps &line_maps,
 		 const char *main_input_filename_,
-		 enum sarif_version version,
+		 bool formatted,
+		 const sarif_generation_options &sarif_gen_opts,
 		 diagnostic_output_file output_file)
 {
   auto sink = ::make_unique<sarif_file_output_format> (context,
 						       &line_maps,
 						       main_input_filename_,
-						       true,
-						       version,
+						       formatted,
+						       sarif_gen_opts,
 						       std::move (output_file));
   sink->update_printer ();
   return sink;
+}
+
+// struct sarif_generation_options
+
+sarif_generation_options::sarif_generation_options ()
+: m_version (sarif_version::v2_1_0)
+{
 }
 
 #if CHECKING_P
@@ -3868,13 +3879,13 @@ class test_sarif_diagnostic_context : public test_diagnostic_context
 {
 public:
   test_sarif_diagnostic_context (const char *main_input_filename,
-				 enum sarif_version version)
+				 const sarif_generation_options &sarif_gen_opts)
   {
     auto format = ::make_unique<buffered_output_format> (*this,
 							 line_table,
 							 main_input_filename,
 							 true,
-							 version);
+							 sarif_gen_opts);
     m_format = format.get (); // borrowed
     diagnostic_output_format_init_sarif (*this, std::move (format));
   }
@@ -3895,9 +3906,9 @@ private:
 			    const line_maps *line_maps,
 			    const char *main_input_filename_,
 			    bool formatted,
-			    enum sarif_version version)
+			    const sarif_generation_options &sarif_gen_opts)
     : sarif_output_format (context, line_maps, main_input_filename_,
-			   formatted, version)
+			   formatted,  sarif_gen_opts)
     {
     }
     bool machine_readable_stderr_p () const final override
@@ -3917,8 +3928,8 @@ private:
    with labels and escape-on-output.  */
 
 static void
-test_make_location_object (const line_table_case &case_,
-			   enum sarif_version version)
+test_make_location_object (const sarif_generation_options &sarif_gen_opts,
+			   const line_table_case &case_)
 {
   diagnostic_show_locus_fixture_one_liner_utf8 f (case_);
   location_t line_end = linemap_position_for_column (line_table, 31);
@@ -3930,7 +3941,7 @@ test_make_location_object (const line_table_case &case_,
   test_diagnostic_context dc;
   pretty_printer pp;
   sarif_builder builder (dc, pp, line_table, "MAIN_INPUT_FILENAME",
-			 true, version);
+			 true, sarif_gen_opts);
 
   /* These "columns" are byte offsets, whereas later on the columns
      in the generated SARIF use sarif_builder::get_sarif_column and
@@ -4041,9 +4052,9 @@ test_make_location_object (const line_table_case &case_,
    Verify various basic properties. */
 
 static void
-test_simple_log (enum sarif_version version)
+test_simple_log (const sarif_generation_options &sarif_gen_opts)
 {
-  test_sarif_diagnostic_context dc ("MAIN_INPUT_FILENAME", version);
+  test_sarif_diagnostic_context dc ("MAIN_INPUT_FILENAME", sarif_gen_opts);
 
   rich_location richloc (line_table, UNKNOWN_LOCATION);
   dc.report (DK_ERROR, richloc, nullptr, 0, "this is a test: %i", 42);
@@ -4052,6 +4063,7 @@ test_simple_log (enum sarif_version version)
 
   // 3.13 sarifLog:
   auto log = log_ptr.get ();
+  const enum sarif_version version = sarif_gen_opts.m_version;
   ASSERT_JSON_STRING_PROPERTY_EQ (log, "$schema",
 				  sarif_version_to_url (version));
   ASSERT_JSON_STRING_PROPERTY_EQ (log, "version",
@@ -4158,8 +4170,8 @@ test_simple_log (enum sarif_version version)
 /* As above, but with a "real" location_t.  */
 
 static void
-test_simple_log_2 (const line_table_case &case_,
-		   enum sarif_version version)
+test_simple_log_2 (const sarif_generation_options &sarif_gen_opts,
+		   const line_table_case &case_)
 {
   auto_fix_quotes fix_quotes;
 
@@ -4174,7 +4186,7 @@ test_simple_log_2 (const line_table_case &case_,
   if (line_end > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
 
-  test_sarif_diagnostic_context dc (f.get_filename (), version);
+  test_sarif_diagnostic_context dc (f.get_filename (), sarif_gen_opts);
 
   const location_t typo_loc
     = make_location (linemap_position_for_column (line_table, 1),
@@ -4304,11 +4316,11 @@ get_message_from_log (const sarif_log *log)
 /* Tests of messages with embedded links; see SARIF v2.1.0 3.11.6.  */
 
 static void
-test_message_with_embedded_link (enum sarif_version version)
+test_message_with_embedded_link (const sarif_generation_options &sarif_gen_opts)
 {
   auto_fix_quotes fix_quotes;
   {
-    test_sarif_diagnostic_context dc ("test.c", version);
+    test_sarif_diagnostic_context dc ("test.c", sarif_gen_opts);
     rich_location richloc (line_table, UNKNOWN_LOCATION);
     dc.report (DK_ERROR, richloc, nullptr, 0,
 	       "before %{text%} after",
@@ -4324,7 +4336,7 @@ test_message_with_embedded_link (enum sarif_version version)
   /* Escaping in message text.
      This is "EXAMPLE 1" from 3.11.6.  */
   {
-    test_sarif_diagnostic_context dc ("test.c", version);
+    test_sarif_diagnostic_context dc ("test.c", sarif_gen_opts);
     rich_location richloc (line_table, UNKNOWN_LOCATION);
 
     /* Disable "unquoted sequence of 2 consecutive punctuation
@@ -4364,7 +4376,7 @@ test_message_with_embedded_link (enum sarif_version version)
       }
     };
 
-    test_sarif_diagnostic_context dc ("test.c", version);
+    test_sarif_diagnostic_context dc ("test.c", sarif_gen_opts);
     dc.push_owned_urlifier (::make_unique<test_urlifier> ());
     rich_location richloc (line_table, UNKNOWN_LOCATION);
     dc.report (DK_ERROR, richloc, nullptr, 0,
@@ -4382,11 +4394,11 @@ test_message_with_embedded_link (enum sarif_version version)
    3.11.5 ("Messages with placeholders").  */
 
 static void
-test_message_with_braces (enum sarif_version version)
+test_message_with_braces (const sarif_generation_options &sarif_gen_opts)
 {
   auto_fix_quotes fix_quotes;
   {
-    test_sarif_diagnostic_context dc ("test.c", version);
+    test_sarif_diagnostic_context dc ("test.c", sarif_gen_opts);
     rich_location richloc (line_table, UNKNOWN_LOCATION);
     dc.report (DK_ERROR, richloc, nullptr, 0,
 	       "open brace: %qs close brace: %qs",
@@ -4401,9 +4413,9 @@ test_message_with_braces (enum sarif_version version)
 }
 
 static void
-test_buffering (enum sarif_version version)
+test_buffering (const sarif_generation_options &sarif_gen_opts)
 {
-  test_sarif_diagnostic_context dc ("test.c", version);
+  test_sarif_diagnostic_context dc ("test.c", sarif_gen_opts);
 
   diagnostic_buffer buf_a (dc);
   diagnostic_buffer buf_b (dc);
@@ -4487,19 +4499,31 @@ test_buffering (enum sarif_version version)
   }
 }
 
+template <class ...ArgTypes>
 static void
-run_tests_per_version (const line_table_case &case_)
+for_each_sarif_gen_option (void (*callback) (const sarif_generation_options &,
+					     ArgTypes ...),
+			   ArgTypes ...args)
 {
+  sarif_generation_options sarif_gen_opts;
   for (int version_idx = 0;
        version_idx < (int)sarif_version::num_versions;
        ++version_idx)
     {
-      enum sarif_version version
-	= static_cast<enum sarif_version> (version_idx);
+      sarif_gen_opts.m_version = static_cast<enum sarif_version> (version_idx);
 
-      test_make_location_object (case_, version);
-      test_simple_log_2 (case_, version);
+      callback (sarif_gen_opts, args...);
     }
+}
+
+static void
+run_line_table_case_tests_per_version (const line_table_case &case_)
+{
+  for_each_sarif_gen_option<const line_table_case &>
+    (test_make_location_object, case_);
+
+  for_each_sarif_gen_option<const line_table_case &>
+    (test_simple_log_2, case_);
 }
 
 /* Run all of the selftests within this file.  */
@@ -4507,21 +4531,13 @@ run_tests_per_version (const line_table_case &case_)
 void
 diagnostic_format_sarif_cc_tests ()
 {
-  for (int version_idx = 0;
-       version_idx < (int)sarif_version::num_versions;
-       ++version_idx)
-    {
-      enum sarif_version version
-	= static_cast<enum sarif_version> (version_idx);
+  for_each_sarif_gen_option (test_simple_log);
+  for_each_sarif_gen_option (test_message_with_embedded_link);
+  for_each_sarif_gen_option (test_message_with_braces);
+  for_each_sarif_gen_option (test_buffering);
 
-      test_simple_log (version);
-      test_message_with_embedded_link (version);
-      test_message_with_braces (version);
-      test_buffering (version);
-    }
-
-  /* Run tests per (line-table-case, SARIF version) pair.  */
-  for_each_line_table_case (run_tests_per_version);
+  /* Run tests per (SARIF gen-option, line-table-case) pair.  */
+  for_each_line_table_case (run_line_table_case_tests_per_version);
 }
 
 } // namespace selftest
