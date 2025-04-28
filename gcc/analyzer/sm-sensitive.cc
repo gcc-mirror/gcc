@@ -201,9 +201,9 @@ sensitive_state_machine::on_stmt (sm_context &sm_ctxt,
 				  const gimple *stmt) const
 {
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
-    if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (call))
+    if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (*call))
       {
-	if (is_named_call_p (callee_fndecl, "getpass", call, 1))
+	if (is_named_call_p (callee_fndecl, "getpass", *call, 1))
 	  {
 	    tree lhs = gimple_call_lhs (call);
 	    if (lhs)
@@ -221,7 +221,7 @@ sensitive_state_machine::on_stmt (sm_context &sm_ctxt,
 	      }
 	    return true;
 	  }
-	else if (is_named_call_p (callee_fndecl, "fwrite", call, 4))
+	else if (is_named_call_p (callee_fndecl, "fwrite", *call, 4))
 	  {
 	    tree arg = gimple_call_arg (call, 0);
 	    warn_for_any_exposure (sm_ctxt, node, stmt, arg);

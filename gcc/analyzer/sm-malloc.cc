@@ -471,22 +471,22 @@ private:
 					   tree ptr) const;
 
   void on_allocator_call (sm_context &sm_ctxt,
-			  const gcall *call,
+			  const gcall &call,
 			  const deallocator_set *deallocators,
 			  bool returns_nonnull = false) const;
   void handle_free_of_non_heap (sm_context &sm_ctxt,
 				const supernode *node,
-				const gcall *call,
+				const gcall &call,
 				tree arg,
 				const deallocator *d) const;
   void on_deallocator_call (sm_context &sm_ctxt,
 			    const supernode *node,
-			    const gcall *call,
+			    const gcall &call,
 			    const deallocator *d,
 			    unsigned argno) const;
   void on_realloc_call (sm_context &sm_ctxt,
 			const supernode *node,
-			const gcall *call) const;
+			const gcall &call) const;
   void on_zero_assignment (sm_context &sm_ctxt,
 			   const gimple *stmt,
 			   tree lhs) const;
@@ -1944,7 +1944,7 @@ get_or_create_assumed_non_null_state_for_frame (const frame_region *frame)
    builtin.  */
 
 static bool
-known_allocator_p (const_tree fndecl, const gcall *call)
+known_allocator_p (const_tree fndecl, const gcall &call)
 {
   /* Either it is a function we know by name and number of arguments... */
   if (is_named_call_p (fndecl, "malloc", call, 1)
@@ -2043,9 +2043,11 @@ malloc_state_machine::on_stmt (sm_context &sm_ctxt,
 			       const supernode *node,
 			       const gimple *stmt) const
 {
-  if (const gcall *call = dyn_cast <const gcall *> (stmt))
-    if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (call))
+  if (const gcall *call_stmt = dyn_cast <const gcall *> (stmt))
+    if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (*call_stmt))
       {
+	const gcall &call = *call_stmt;
+
 	if (known_allocator_p (callee_fndecl, call))
 	  {
 	    on_allocator_call (sm_ctxt, call, &m_free);
@@ -2081,7 +2083,7 @@ malloc_state_machine::on_stmt (sm_context &sm_ctxt,
 	if (is_named_call_p (callee_fndecl, "alloca", call, 1)
 	    || is_named_call_p (callee_fndecl, "__builtin_alloca", call, 1))
 	  {
-	    tree lhs = gimple_call_lhs (call);
+	    tree lhs = gimple_call_lhs (&call);
 	    if (lhs)
 	      sm_ctxt.on_transition (node, stmt, lhs, m_start, m_non_heap);
 	    return true;
@@ -2338,15 +2340,15 @@ maybe_complain_about_deref_before_check (sm_context &sm_ctxt,
 
 void
 malloc_state_machine::on_allocator_call (sm_context &sm_ctxt,
-					 const gcall *call,
+					 const gcall &call,
 					 const deallocator_set *deallocators,
 					 bool returns_nonnull) const
 {
-  tree lhs = gimple_call_lhs (call);
+  tree lhs = gimple_call_lhs (&call);
   if (lhs)
     {
-      if (sm_ctxt.get_state (call, lhs) == m_start)
-	sm_ctxt.set_next_state (call, lhs,
+      if (sm_ctxt.get_state (&call, lhs) == m_start)
+	sm_ctxt.set_next_state (&call, lhs,
 				(returns_nonnull
 				 ? deallocators->m_nonnull
 				 : deallocators->m_unchecked));
@@ -2363,7 +2365,7 @@ malloc_state_machine::on_allocator_call (sm_context &sm_ctxt,
 void
 malloc_state_machine::handle_free_of_non_heap (sm_context &sm_ctxt,
 					       const supernode *node,
-					       const gcall *call,
+					       const gcall &call,
 					       tree arg,
 					       const deallocator *d) const
 {
@@ -2375,28 +2377,28 @@ malloc_state_machine::handle_free_of_non_heap (sm_context &sm_ctxt,
       const svalue *ptr_sval = old_model->get_rvalue (arg, NULL);
       freed_reg = old_model->deref_rvalue (ptr_sval, arg, NULL);
     }
-  sm_ctxt.warn (node, call, arg,
+  sm_ctxt.warn (node, &call, arg,
 		make_unique<free_of_non_heap>
 		  (*this, diag_arg, freed_reg, d->m_name));
-  sm_ctxt.set_next_state (call, arg, m_stop);
+  sm_ctxt.set_next_state (&call, arg, m_stop);
 }
 
 void
 malloc_state_machine::on_deallocator_call (sm_context &sm_ctxt,
 					   const supernode *node,
-					   const gcall *call,
+					   const gcall &call,
 					   const deallocator *d,
 					   unsigned argno) const
 {
-  if (argno >= gimple_call_num_args (call))
+  if (argno >= gimple_call_num_args (&call))
     return;
-  tree arg = gimple_call_arg (call, argno);
+  tree arg = gimple_call_arg (&call, argno);
 
-  state_t state = sm_ctxt.get_state (call, arg);
+  state_t state = sm_ctxt.get_state (&call, arg);
 
   /* start/assumed_non_null/unchecked/nonnull -> freed.  */
   if (state == m_start || assumed_non_null_p (state))
-    sm_ctxt.set_next_state (call, arg, d->m_freed);
+    sm_ctxt.set_next_state (&call, arg, d->m_freed);
   else if (unchecked_p (state) || nonnull_p (state))
     {
       const allocation_state *astate = as_a_allocation_state (state);
@@ -2405,13 +2407,13 @@ malloc_state_machine::on_deallocator_call (sm_context &sm_ctxt,
 	{
 	  /* Wrong allocator.  */
 	  tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
-	  sm_ctxt.warn (node, call, arg,
+	  sm_ctxt.warn (node, &call, arg,
 			make_unique<mismatching_deallocation>
 			  (*this, diag_arg,
 			   astate->m_deallocators,
 			   d));
 	}
-      sm_ctxt.set_next_state (call, arg, d->m_freed);
+      sm_ctxt.set_next_state (&call, arg, d->m_freed);
     }
 
   /* Keep state "null" as-is, rather than transitioning to "freed";
@@ -2420,9 +2422,9 @@ malloc_state_machine::on_deallocator_call (sm_context &sm_ctxt,
     {
       /* freed -> stop, with warning.  */
       tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
-      sm_ctxt.warn (node, call, arg,
+      sm_ctxt.warn (node, &call, arg,
 		    make_unique<double_free> (*this, diag_arg, d->m_name));
-      sm_ctxt.set_next_state (call, arg, m_stop);
+      sm_ctxt.set_next_state (&call, arg, m_stop);
     }
   else if (state == m_non_heap)
     {
@@ -2442,14 +2444,14 @@ malloc_state_machine::on_deallocator_call (sm_context &sm_ctxt,
 void
 malloc_state_machine::on_realloc_call (sm_context &sm_ctxt,
 				       const supernode *node,
-				       const gcall *call) const
+				       const gcall &call) const
 {
   const unsigned argno = 0;
   const deallocator *d = &m_realloc;
 
-  tree arg = gimple_call_arg (call, argno);
+  tree arg = gimple_call_arg (&call, argno);
 
-  state_t state = sm_ctxt.get_state (call, arg);
+  state_t state = sm_ctxt.get_state (&call, arg);
 
   if (unchecked_p (state) || nonnull_p (state))
     {
@@ -2459,11 +2461,11 @@ malloc_state_machine::on_realloc_call (sm_context &sm_ctxt,
 	{
 	  /* Wrong allocator.  */
 	  tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
-	  sm_ctxt.warn (node, call, arg,
+	  sm_ctxt.warn (node, &call, arg,
 			make_unique<mismatching_deallocation>
 			  (*this, diag_arg,
 			   astate->m_deallocators, d));
-	  sm_ctxt.set_next_state (call, arg, m_stop);
+	  sm_ctxt.set_next_state (&call, arg, m_stop);
 	  if (path_context *path_ctxt = sm_ctxt.get_path_context ())
 	    path_ctxt->terminate_path ();
 	}
@@ -2472,9 +2474,9 @@ malloc_state_machine::on_realloc_call (sm_context &sm_ctxt,
     {
       /* freed -> stop, with warning.  */
       tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
-      sm_ctxt.warn (node, call, arg,
+      sm_ctxt.warn (node, &call, arg,
 		    make_unique<double_free> (*this, diag_arg, "free"));
-      sm_ctxt.set_next_state (call, arg, m_stop);
+      sm_ctxt.set_next_state (&call, arg, m_stop);
       if (path_context *path_ctxt = sm_ctxt.get_path_context ())
 	path_ctxt->terminate_path ();
     }

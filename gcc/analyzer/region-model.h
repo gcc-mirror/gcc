@@ -305,8 +305,8 @@ class region_model
   const svalue *get_gassign_result (const gassign *assign,
 				    region_model_context *ctxt);
   void on_asm_stmt (const gasm *asm_stmt, region_model_context *ctxt);
-  bool on_call_pre (const gcall *stmt, region_model_context *ctxt);
-  void on_call_post (const gcall *stmt,
+  bool on_call_pre (const gcall &stmt, region_model_context *ctxt);
+  void on_call_post (const gcall &stmt,
 		     bool unknown_side_effects,
 		     region_model_context *ctxt);
 
@@ -323,16 +323,16 @@ class region_model
 			       bool unmergeable);
   void update_for_nonzero_return (const call_details &cd);
 
-  void handle_unrecognized_call (const gcall *call,
+  void handle_unrecognized_call (const gcall &call,
 				 region_model_context *ctxt);
   void get_reachable_svalues (svalue_set *out,
 			      const svalue *extra_sval,
 			      const uncertainty_t *uncertainty);
 
   void on_return (const greturn *stmt, region_model_context *ctxt);
-  void on_setjmp (const gcall *stmt, const exploded_node *enode,
+  void on_setjmp (const gcall &stmt, const exploded_node *enode,
 		  region_model_context *ctxt);
-  void on_longjmp (const gcall *longjmp_call, const gcall *setjmp_call,
+  void on_longjmp (const gcall &longjmp_call, const gcall &setjmp_call,
 		   int setjmp_stack_depth, region_model_context *ctxt);
 
   void update_for_phis (const supernode *snode,
@@ -349,11 +349,11 @@ class region_model
 			      region_model_context *ctxt,
 			      std::unique_ptr<rejected_constraint> *out);
 
-  void update_for_gcall (const gcall *call_stmt,
+  void update_for_gcall (const gcall &call_stmt,
                          region_model_context *ctxt,
                          function *callee = NULL);
 
-  void update_for_return_gcall (const gcall *call_stmt,
+  void update_for_return_gcall (const gcall &call_stmt,
                                 region_model_context *ctxt);
 
   const region *push_frame (const function &fun, const vec<const svalue *> *arg_sids,
@@ -484,7 +484,7 @@ class region_model
 			 const program_state *state_a = NULL,
 			 const program_state *state_b = NULL) const;
 
-  tree get_fndecl_for_call (const gcall *call,
+  tree get_fndecl_for_call (const gcall &call,
 			    region_model_context *ctxt);
 
   void get_regions_for_current_frame (auto_vec<const decl_region *> *out) const;
@@ -562,7 +562,7 @@ class region_model
 					const svalue **out_sval) const;
 
   const builtin_known_function *
-  get_builtin_kf (const gcall *call,
+  get_builtin_kf (const gcall &call,
 		  region_model_context *ctxt = NULL) const;
 
   static void
@@ -672,20 +672,20 @@ private:
   void check_call_args (const call_details &cd) const;
   void check_call_format_attr (const call_details &cd,
 			       tree format_attr) const;
-  void check_function_attr_access (const gcall *call,
+  void check_function_attr_access (const gcall &call,
 				   tree callee_fndecl,
 				   region_model_context *ctxt,
 				   rdwr_map &rdwr_idx) const;
-  void check_function_attr_null_terminated_string_arg (const gcall *call,
+  void check_function_attr_null_terminated_string_arg (const gcall &call,
 						       tree callee_fndecl,
 						       region_model_context *ctxt,
 						       rdwr_map &rdwr_idx);
-  void check_one_function_attr_null_terminated_string_arg (const gcall *call,
+  void check_one_function_attr_null_terminated_string_arg (const gcall &call,
 							   tree callee_fndecl,
 							   region_model_context *ctxt,
 							   rdwr_map &rdwr_idx,
 							   tree attr);
-  void check_function_attrs (const gcall *call,
+  void check_function_attrs (const gcall &call,
 			     tree callee_fndecl,
 			     region_model_context *ctxt);
 

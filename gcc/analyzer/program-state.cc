@@ -1340,7 +1340,7 @@ program_state::on_edge (exploded_graph &eg,
 void
 program_state::push_call (exploded_graph &eg,
                           exploded_node *enode,
-                          const gcall *call_stmt,
+                          const gcall &call_stmt,
                           uncertainty_t *uncertainty)
 {
   /* Update state.  */
@@ -1363,7 +1363,7 @@ program_state::push_call (exploded_graph &eg,
 void
 program_state::returning_call (exploded_graph &eg,
                                exploded_node *enode,
-                               const gcall *call_stmt,
+                               const gcall &call_stmt,
                                uncertainty_t *uncertainty)
 {
   /* Update state.  */
@@ -1741,7 +1741,7 @@ program_state::replay_call_summary (call_summary_replay &r,
 /* Handle calls to "__analyzer_dump_state".  */
 
 void
-program_state::impl_call_analyzer_dump_state (const gcall *call,
+program_state::impl_call_analyzer_dump_state (const gcall &call,
 					      const extrinsic_state &ext_state,
 					      region_model_context *ctxt)
 {
@@ -1749,13 +1749,13 @@ program_state::impl_call_analyzer_dump_state (const gcall *call,
   const char *sm_name = cd.get_arg_string_literal (0);
   if (!sm_name)
     {
-      error_at (call->location, "cannot determine state machine");
+      error_at (call.location, "cannot determine state machine");
       return;
     }
   unsigned sm_idx;
   if (!ext_state.get_sm_idx_by_name (sm_name, &sm_idx))
     {
-      error_at (call->location, "unrecognized state machine %qs", sm_name);
+      error_at (call.location, "unrecognized state machine %qs", sm_name);
       return;
     }
   const sm_state_map *smap = m_checker_states[sm_idx];
@@ -1767,7 +1767,7 @@ program_state::impl_call_analyzer_dump_state (const gcall *call,
     sval = cast;
 
   state_machine::state_t state = smap->get_state (sval, ext_state);
-  warning_at (call->location, 0, "state: %qs", state->get_name ());
+  warning_at (call.location, 0, "state: %qs", state->get_name ());
 }
 
 #if CHECKING_P

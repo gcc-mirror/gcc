@@ -393,9 +393,9 @@ fileptr_state_machine::on_stmt (sm_context &sm_ctxt,
 				const gimple *stmt) const
 {
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
-    if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (call))
+    if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (*call))
       {
-	if (is_named_call_p (callee_fndecl, "fopen", call, 2))
+	if (is_named_call_p (callee_fndecl, "fopen", *call, 2))
 	  {
 	    tree lhs = gimple_call_lhs (call);
 	    if (lhs)
@@ -407,7 +407,7 @@ fileptr_state_machine::on_stmt (sm_context &sm_ctxt,
 	    return true;
 	  }
 
-	if (is_named_call_p (callee_fndecl, "fclose", call, 1))
+	if (is_named_call_p (callee_fndecl, "fclose", *call, 1))
 	  {
 	    tree arg = gimple_call_arg (call, 0);
 

@@ -126,7 +126,7 @@ public:
     return *const_cast <bb_to_node_t &> (m_bb_to_initial_node).get (bb);
   }
 
-  /* Get the supernode containing the second half of the gcall *
+  /* Get the supernode containing the second half of the gcall &
      at an interprocedural call, within the caller.  */
   supernode *get_caller_next_node (cgraph_edge *edge) const
   {
@@ -415,7 +415,7 @@ class callgraph_superedge : public superedge
   function *get_caller_function () const;
   tree get_callee_decl () const;
   tree get_caller_decl () const;
-  gcall *get_call_stmt () const;
+  const gcall &get_call_stmt () const;
   tree get_arg_for_parm (tree parm, callsite_expr *out) const;
   tree get_parm_for_arg (tree arg, callsite_expr *out) const;
   tree map_expr_from_caller_to_callee (tree caller_expr,

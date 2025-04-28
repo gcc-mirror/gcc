@@ -40,13 +40,13 @@ namespace ana {
 
 /* call_details's ctor.  */
 
-call_details::call_details (const gcall *call, region_model *model,
+call_details::call_details (const gcall &call, region_model *model,
 			    region_model_context *ctxt)
 : m_call (call), m_model (model), m_ctxt (ctxt),
   m_lhs_type (NULL_TREE), m_lhs_region (NULL)
 {
   m_lhs_type = NULL_TREE;
-  if (tree lhs = gimple_call_lhs (call))
+  if (tree lhs = gimple_call_lhs (&call))
     {
       m_lhs_region = model->get_lvalue (lhs, ctxt);
       m_lhs_type = TREE_TYPE (lhs);
@@ -58,9 +58,11 @@ call_details::call_details (const gcall *call, region_model *model,
 
 call_details::call_details (const call_details &cd,
 			    region_model_context *ctxt)
+: m_call (cd.m_call), m_model (cd.m_model),
+  m_ctxt (ctxt),
+  m_lhs_type (cd.m_lhs_type),
+  m_lhs_region (cd.m_lhs_region)
 {
-  *this = cd;
-  m_ctxt = ctxt;
 }
 
 /* Get the manager from m_model.  */
@@ -244,7 +246,7 @@ call_details::set_any_lhs_with_defaults () const
 unsigned
 call_details::num_args () const
 {
-  return gimple_call_num_args (m_call);
+  return gimple_call_num_args (&m_call);
 }
 
 /* Return true if argument IDX is a size_t (or compatible with it).  */
@@ -260,7 +262,7 @@ call_details::arg_is_size_p (unsigned idx) const
 location_t
 call_details::get_location () const
 {
-  return m_call->location;
+  return m_call.location;
 }
 
 /* Get argument IDX at the callsite as a tree.  */
@@ -268,7 +270,7 @@ call_details::get_location () const
 tree
 call_details::get_arg_tree (unsigned idx) const
 {
-  return gimple_call_arg (m_call, idx);
+  return gimple_call_arg (&m_call, idx);
 }
 
 /* Get the type of argument IDX.  */
@@ -276,7 +278,7 @@ call_details::get_arg_tree (unsigned idx) const
 tree
 call_details::get_arg_type (unsigned idx) const
 {
-  return TREE_TYPE (gimple_call_arg (m_call, idx));
+  return TREE_TYPE (gimple_call_arg (&m_call, idx));
 }
 
 /* Get argument IDX at the callsite as an svalue.  */
@@ -332,7 +334,7 @@ void
 call_details::dump_to_pp (pretty_printer *pp, bool simple) const
 {
   pp_string (pp, "gcall: ");
-  pp_gimple_stmt_1 (pp, m_call, 0 /* spc */, TDF_NONE /* flags */);
+  pp_gimple_stmt_1 (pp, &m_call, 0 /* spc */, TDF_NONE /* flags */);
   pp_newline (pp);
   pp_string (pp, "return region: ");
   if (m_lhs_region)
@@ -340,7 +342,7 @@ call_details::dump_to_pp (pretty_printer *pp, bool simple) const
   else
     pp_string (pp, "NULL");
   pp_newline (pp);
-  for (unsigned i = 0; i < gimple_call_num_args (m_call); i++)
+  for (unsigned i = 0; i < gimple_call_num_args (&m_call); i++)
     {
       const svalue *arg_sval = get_arg_svalue (i);
       pp_printf (pp, "arg %i: ", i);
@@ -378,7 +380,7 @@ call_details::make_dump_widget (const text_art::dump_widget_info &dwi) const
     pretty_printer * const pp = &the_pp;
     pp_format_decoder (pp) = default_tree_printer;
     pp_string (pp, "gcall: ");
-    pp_gimple_stmt_1 (pp, m_call, 0 /* spc */, TDF_NONE /* flags */);
+    pp_gimple_stmt_1 (pp, &m_call, 0 /* spc */, TDF_NONE /* flags */);
     cd_widget->add_child (tree_widget::make (dwi, pp));
   }
   {
@@ -395,11 +397,11 @@ call_details::make_dump_widget (const text_art::dump_widget_info &dwi) const
       w->add_child (m_lhs_region->make_dump_widget (dwi));
     cd_widget->add_child (std::move (w));
   }
-  if (gimple_call_num_args (m_call) > 0)
+  if (gimple_call_num_args (&m_call) > 0)
     {
       std::unique_ptr<tree_widget> args_widget
 	(tree_widget::from_fmt (dwi, nullptr, "Arguments"));
-      for (unsigned i = 0; i < gimple_call_num_args (m_call); i++)
+      for (unsigned i = 0; i < gimple_call_num_args (&m_call); i++)
 	{
 	  pretty_printer the_pp;
 	  pretty_printer * const pp = &the_pp;
@@ -424,7 +426,7 @@ const svalue *
 call_details::get_or_create_conjured_svalue (const region *reg) const
 {
   region_model_manager *mgr = m_model->get_manager ();
-  return mgr->get_or_create_conjured_svalue (reg->get_type (), m_call, reg,
+  return mgr->get_or_create_conjured_svalue (reg->get_type (), &m_call, reg,
 					     conjured_purge (m_model, m_ctxt));
 }
 
@@ -439,7 +441,7 @@ call_details::lookup_function_attribute (const char *attr_name) const
   if (tree fndecl = get_fndecl_for_call ())
     allocfntype = TREE_TYPE (fndecl);
   else
-    allocfntype = gimple_call_fntype (m_call);
+    allocfntype = gimple_call_fntype (&m_call);
 
   if (!allocfntype)
     return NULL_TREE;

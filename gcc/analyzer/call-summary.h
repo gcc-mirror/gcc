@@ -73,7 +73,7 @@ public:
 		       const extrinsic_state &ext_state);
 
   const call_details &get_call_details () const { return m_cd; }
-  const gcall *get_call_stmt () const { return m_cd.get_call_stmt (); }
+  const gcall &get_call_stmt () const { return m_cd.get_call_stmt (); }
   region_model_manager *get_manager () const { return m_cd.get_manager (); }
   store_manager *get_store_manager () const
   {

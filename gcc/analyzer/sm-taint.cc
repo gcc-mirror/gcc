@@ -130,7 +130,7 @@ private:
 
   void check_for_tainted_size_arg (sm_context &sm_ctxt,
 				   const supernode *node,
-				   const gcall *call,
+				   const gcall &call,
 				   tree callee_fndecl) const;
   void check_for_tainted_divisor (sm_context &sm_ctxt,
 				  const supernode *node,
@@ -1089,9 +1089,9 @@ taint_state_machine::on_stmt (sm_context &sm_ctxt,
 			       const gimple *stmt) const
 {
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
-    if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (call))
+    if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (*call))
       {
-	if (is_named_call_p (callee_fndecl, "fread", call, 4))
+	if (is_named_call_p (callee_fndecl, "fread", *call, 4))
 	  {
 	    tree arg = gimple_call_arg (call, 0);
 
@@ -1107,7 +1107,7 @@ taint_state_machine::on_stmt (sm_context &sm_ctxt,
 
 	/* External function with "access" attribute. */
 	if (sm_ctxt.unknown_side_effects_p ())
-	  check_for_tainted_size_arg (sm_ctxt, node, call, callee_fndecl);
+	  check_for_tainted_size_arg (sm_ctxt, node, *call, callee_fndecl);
 
 	if (is_assertion_failure_handler_p (callee_fndecl)
 	    && sm_ctxt.get_global_state () == m_tainted_control_flow)
@@ -1423,7 +1423,7 @@ taint_state_machine::combine_states (state_t s0, state_t s1) const
 void
 taint_state_machine::check_for_tainted_size_arg (sm_context &sm_ctxt,
 						 const supernode *node,
-						 const gcall *call,
+						 const gcall &call,
 						 tree callee_fndecl) const
 {
   tree fntype = TREE_TYPE (callee_fndecl);
@@ -1454,16 +1454,16 @@ taint_state_machine::check_for_tainted_size_arg (sm_context &sm_ctxt,
       if (access->sizarg == UINT_MAX)
 	continue;
 
-      tree size_arg = gimple_call_arg (call, access->sizarg);
+      tree size_arg = gimple_call_arg (&call, access->sizarg);
 
-      state_t state = sm_ctxt.get_state (call, size_arg);
+      state_t state = sm_ctxt.get_state (&call, size_arg);
       enum bounds b;
       if (get_taint (state, TREE_TYPE (size_arg), &b))
 	{
 	  const char* const access_str =
 	    TREE_STRING_POINTER (access->to_external_string ());
 	  tree diag_size = sm_ctxt.get_diagnostic_tree (size_arg);
-	  sm_ctxt.warn (node, call, size_arg,
+	  sm_ctxt.warn (node, &call, size_arg,
 			make_unique<tainted_access_attrib_size>
 			(*this, diag_size, b,
 			 callee_fndecl,

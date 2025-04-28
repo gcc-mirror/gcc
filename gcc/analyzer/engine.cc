@@ -311,11 +311,11 @@ public:
 
   logger *get_logger () const { return m_logger.get_logger (); }
 
-  tree get_fndecl_for_call (const gcall *call) final override
+  tree get_fndecl_for_call (const gcall &call) final override
   {
     impl_region_model_context old_ctxt
       (m_eg, m_enode_for_diag, NULL, NULL, NULL/*m_enode->get_state ()*/,
-       NULL, call);
+       NULL, &call);
     region_model *model = m_new_state->m_region_model;
     return model->get_fndecl_for_call (call, &old_ctxt);
   }
@@ -1511,7 +1511,7 @@ exploded_node::on_stmt (exploded_graph &eg,
 	    gcc_assert (called_fn);
 	    return replay_call_summaries (eg,
 					  snode,
-					  as_a <const gcall *> (stmt),
+					  *as_a <const gcall *> (stmt),
 					  state,
 					  path_ctxt,
 					  *called_fn,
@@ -1568,8 +1568,9 @@ exploded_node::on_stmt_pre (exploded_graph &eg,
 			    region_model_context *ctxt)
 {
   /* Handle special-case calls that require the full program_state.  */
-  if (const gcall *call = dyn_cast <const gcall *> (stmt))
+  if (const gcall *call_stmt = dyn_cast <const gcall *> (stmt))
     {
+      const gcall &call = *call_stmt;
       if (is_special_named_call_p (call, "__analyzer_dump", 0))
 	{
 	  /* Handle the builtin "__analyzer_dump" by dumping state
@@ -1615,7 +1616,7 @@ exploded_node::on_stmt_post (const gimple *stmt,
 			     region_model_context *ctxt)
 {
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
-    state->m_region_model->on_call_post (call, unknown_side_effects, ctxt);
+    state->m_region_model->on_call_post (*call, unknown_side_effects, ctxt);
 }
 
 /* A concrete call_info subclass representing a replay of a call summary.  */
@@ -1673,7 +1674,7 @@ private:
 exploded_node::on_stmt_flags
 exploded_node::replay_call_summaries (exploded_graph &eg,
 				      const supernode *snode,
-				      const gcall *call_stmt,
+				      const gcall &call_stmt,
 				      program_state *state,
 				      path_context *path_ctxt,
 				      const function &called_fn,
@@ -1699,7 +1700,7 @@ exploded_node::replay_call_summaries (exploded_graph &eg,
 void
 exploded_node::replay_call_summary (exploded_graph &eg,
 				    const supernode *snode,
-				    const gcall *call_stmt,
+				    const gcall &call_stmt,
 				    program_state *old_state,
 				    path_context *path_ctxt,
 				    const function &called_fn,
@@ -1709,7 +1710,6 @@ exploded_node::replay_call_summary (exploded_graph &eg,
   logger *logger = eg.get_logger ();
   LOG_SCOPE (logger);
   gcc_assert (snode);
-  gcc_assert (call_stmt);
   gcc_assert (old_state);
   gcc_assert (summary);
 
@@ -1815,7 +1815,7 @@ valid_longjmp_stack_p (const program_point &longjmp_point,
 class stale_jmp_buf : public pending_diagnostic_subclass<stale_jmp_buf>
 {
 public:
-  stale_jmp_buf (const gcall *setjmp_call, const gcall *longjmp_call,
+  stale_jmp_buf (const gcall &setjmp_call, const gcall &longjmp_call,
 		 const program_point &setjmp_point)
   : m_setjmp_call (setjmp_call), m_longjmp_call (longjmp_call),
     m_setjmp_point (setjmp_point), m_stack_pop_event (NULL)
@@ -1838,8 +1838,8 @@ public:
 
   bool operator== (const stale_jmp_buf &other) const
   {
-    return (m_setjmp_call == other.m_setjmp_call
-	    && m_longjmp_call == other.m_longjmp_call);
+    return (&m_setjmp_call == &other.m_setjmp_call
+	    && &m_longjmp_call == &other.m_longjmp_call);
   }
 
   bool
@@ -1892,8 +1892,8 @@ public:
 
 
 private:
-  const gcall *m_setjmp_call;
-  const gcall *m_longjmp_call;
+  const gcall &m_setjmp_call;
+  const gcall &m_longjmp_call;
   program_point m_setjmp_point;
   custom_event *m_stack_pop_event;
 };
@@ -1906,11 +1906,11 @@ private:
 
 void
 exploded_node::on_longjmp (exploded_graph &eg,
-			   const gcall *longjmp_call,
+			   const gcall &longjmp_call,
 			   program_state *new_state,
 			   region_model_context *ctxt)
 {
-  tree buf_ptr = gimple_call_arg (longjmp_call, 0);
+  tree buf_ptr = gimple_call_arg (&longjmp_call, 0);
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (buf_ptr)));
 
   region_model *new_region_model = new_state->m_region_model;
@@ -1931,7 +1931,7 @@ exploded_node::on_longjmp (exploded_graph &eg,
      call back to the setjmp/sigsetjmp.  */
   rewind_info_t rewind_info (tmp_setjmp_record, longjmp_call);
 
-  const gcall *setjmp_call = rewind_info.get_setjmp_call ();
+  const gcall &setjmp_call = rewind_info.get_setjmp_call ();
   const program_point &setjmp_point = rewind_info.get_setjmp_point ();
 
   const program_point &longjmp_point = get_point ();
@@ -2121,17 +2121,13 @@ dynamic_call_info_t::add_events_to_path (checker_path *emission_path,
   if (m_is_returning_call)
     emission_path->add_event
       (make_unique<return_event> (eedge,
-				  event_loc_info (m_dynamic_call
-						  ? m_dynamic_call->location
-						  : UNKNOWN_LOCATION,
+				  event_loc_info (m_dynamic_call.location,
 						  dest_point.get_fndecl (),
 						  dest_stack_depth)));
   else
     emission_path->add_event
       (make_unique<call_event> (eedge,
-				event_loc_info (m_dynamic_call
-						? m_dynamic_call->location
-						: UNKNOWN_LOCATION,
+				event_loc_info (m_dynamic_call.location,
 						src_point.get_fndecl (),
 						src_stack_depth)));
 }
@@ -2180,14 +2176,14 @@ rewind_info_t::add_events_to_path (checker_path *emission_path,
   emission_path->add_event
     (make_unique<rewind_from_longjmp_event>
      (&eedge,
-      event_loc_info (get_longjmp_call ()->location,
+      event_loc_info (get_longjmp_call ().location,
 		      src_point.get_fndecl (),
 		      src_stack_depth),
       this));
   emission_path->add_event
     (make_unique<rewind_to_setjmp_event>
      (&eedge,
-      event_loc_info (get_setjmp_call ()->location,
+      event_loc_info (get_setjmp_call ().location,
 		      dst_point.get_fndecl (),
 		      dst_stack_depth),
       this));
@@ -3768,8 +3764,9 @@ static bool
 stmt_requires_new_enode_p (const gimple *stmt,
 			   const gimple *prev_stmt)
 {
-  if (const gcall *call = dyn_cast <const gcall *> (stmt))
+  if (const gcall *call_stmt = dyn_cast <const gcall *> (stmt))
     {
+      const gcall &call = *call_stmt;
       /* Stop consolidating at calls to
 	 "__analyzer_dump_exploded_nodes", so they always appear at the
 	 start of an exploded_node.  */
@@ -3838,7 +3835,7 @@ state_change_requires_new_enode_p (const program_state &old_state,
    functions or calls that happen via function pointer.  */
 
 bool
-exploded_graph::maybe_create_dynamic_call (const gcall *call,
+exploded_graph::maybe_create_dynamic_call (const gcall &call,
 					   tree fn_decl,
 					   exploded_node *node,
 					   program_state next_state,
@@ -3981,7 +3978,7 @@ private:
 class jump_through_null : public pending_diagnostic_subclass<jump_through_null>
 {
 public:
-  jump_through_null (const gcall *call)
+  jump_through_null (const gcall &call)
   : m_call (call)
   {}
 
@@ -3992,7 +3989,7 @@ public:
 
   bool operator== (const jump_through_null &other) const
   {
-    return m_call == other.m_call;
+    return &m_call == &other.m_call;
   }
 
   int get_controlling_option () const final override
@@ -4013,7 +4010,7 @@ public:
   }
 
 private:
-  const gcall *m_call;
+  const gcall &m_call;
 };
 
 /* The core of exploded_graph::process_worklist (the main analysis loop),
@@ -4333,8 +4330,8 @@ exploded_graph::process_node (exploded_node *node)
 	    if (succ->m_kind == SUPEREDGE_INTRAPROCEDURAL_CALL
 		&& !(succ->get_any_callgraph_edge ()))
 	      {
-		const gcall *call
-		  = point.get_supernode ()->get_final_call ();
+		const gcall &call
+		  = *point.get_supernode ()->get_final_call ();
 
 		impl_region_model_context ctxt (*this,
 						node,
@@ -4358,7 +4355,7 @@ exploded_graph::process_node (exploded_node *node)
 		if (!call_discovered)
 		  {
 		    /* Check for jump through NULL.  */
-		    if (tree fn_ptr = gimple_call_fn (call))
+		    if (tree fn_ptr = gimple_call_fn (&call))
 		      {
 			const svalue *fn_ptr_sval
 			  = model->get_rvalue (fn_ptr, &ctxt);
@@ -4420,7 +4417,7 @@ exploded_graph::process_node (exploded_node *node)
 	      = next_point.get_supernode ()->get_returning_call ();
 
 	    if (call)
-	      next_state.returning_call (*this, node, call, &uncertainty);
+	      next_state.returning_call (*this, node, *call, &uncertainty);
 
 	    if (next_state.m_valid)
 	      {
@@ -4430,7 +4427,7 @@ exploded_graph::process_node (exploded_node *node)
 							   node);
 		if (enode)
 		  add_edge (node, enode, NULL, false,
-			    make_unique<dynamic_call_info_t> (call, true));
+			    make_unique<dynamic_call_info_t> (*call, true));
 	      }
 	  }
       }
@@ -5026,8 +5023,8 @@ feasibility_state::update_for_stmt (const gimple *stmt)
     m_model.on_asm_stmt (asm_stmt, NULL);
   else if (const gcall *call = dyn_cast <const gcall *> (stmt))
     {
-      bool unknown_side_effects = m_model.on_call_pre (call, NULL);
-      m_model.on_call_post (call, unknown_side_effects, NULL);
+      bool unknown_side_effects = m_model.on_call_pre (*call, NULL);
+      m_model.on_call_post (*call, unknown_side_effects, NULL);
     }
   else if (const greturn *return_ = dyn_cast <const greturn *> (stmt))
     m_model.on_return (return_, NULL);
@@ -5488,7 +5485,7 @@ exploded_graph::dump_exploded_nodes () const
 
       if (const gimple *stmt = enode->get_stmt ())
 	if (const gcall *call = dyn_cast <const gcall *> (stmt))
-	  if (is_special_named_call_p (call, "__analyzer_dump_exploded_nodes",
+	  if (is_special_named_call_p (*call, "__analyzer_dump_exploded_nodes",
 				       1))
 	    {
 	      if (seen.contains (stmt))

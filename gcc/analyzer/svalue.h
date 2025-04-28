@@ -528,8 +528,8 @@ namespace ana {
 struct setjmp_record
 {
   setjmp_record (const exploded_node *enode,
-		 const gcall *setjmp_call)
-  : m_enode (enode), m_setjmp_call (setjmp_call)
+		 const gcall &setjmp_call)
+  : m_enode (enode), m_setjmp_call (&setjmp_call)
   {
   }
 
@@ -549,6 +549,7 @@ struct setjmp_record
 
   const exploded_node *m_enode;
   const gcall *m_setjmp_call;
+  // non-null, but we can't use a reference since we're putting these in a hash_map
 };
 
 /* Concrete subclass of svalue representing buffers for setjmp/sigsetjmp,

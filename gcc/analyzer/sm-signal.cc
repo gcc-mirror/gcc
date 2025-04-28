@@ -84,7 +84,7 @@ class signal_unsafe_call
   : public pending_diagnostic_subclass<signal_unsafe_call>
 {
 public:
-  signal_unsafe_call (const signal_state_machine &sm, const gcall *unsafe_call,
+  signal_unsafe_call (const signal_state_machine &sm, const gcall &unsafe_call,
 		      tree unsafe_fndecl)
   : m_sm (sm), m_unsafe_call (unsafe_call), m_unsafe_fndecl (unsafe_fndecl)
   {
@@ -95,7 +95,7 @@ public:
 
   bool operator== (const signal_unsafe_call &other) const
   {
-    return m_unsafe_call == other.m_unsafe_call;
+    return &m_unsafe_call == &other.m_unsafe_call;
   }
 
   int get_controlling_option () const final override
@@ -115,7 +115,7 @@ public:
 	   suggesting the replacement.  */
 	if (const char *replacement = get_replacement_fn ())
 	  {
-	    location_t note_loc = gimple_location (m_unsafe_call);
+	    location_t note_loc = gimple_location (&m_unsafe_call);
 	    /* It would be nice to add a fixit, but the gimple call
 	       location covers the whole call expression.  It isn't
 	       currently possible to cut this down to just the call
@@ -159,7 +159,7 @@ public:
 
 private:
   const signal_state_machine &m_sm;
-  const gcall *m_unsafe_call;
+  const gcall &m_unsafe_call;
   tree m_unsafe_fndecl;
 
   /* Returns a replacement function as text if it exists.  Currently
@@ -331,9 +331,9 @@ signal_state_machine::on_stmt (sm_context &sm_ctxt,
   if (global_state == m_start)
     {
       if (const gcall *call = dyn_cast <const gcall *> (stmt))
-	if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (call))
-	  if (is_named_call_p (callee_fndecl, "signal", call, 2)
-	      || is_std_named_call_p (callee_fndecl, "signal", call, 2))
+	if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (*call))
+	  if (is_named_call_p (callee_fndecl, "signal", *call, 2)
+	      || is_std_named_call_p (callee_fndecl, "signal", *call, 2))
 	    {
 	      tree handler = gimple_call_arg (call, 1);
 	      if (TREE_CODE (handler) == ADDR_EXPR
@@ -348,12 +348,12 @@ signal_state_machine::on_stmt (sm_context &sm_ctxt,
   else if (global_state == m_in_signal_handler)
     {
       if (const gcall *call = dyn_cast <const gcall *> (stmt))
-	if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (call))
+	if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (*call))
 	  if (signal_unsafe_p (callee_fndecl))
 	    if (sm_ctxt.get_global_state () == m_in_signal_handler)
 	      sm_ctxt.warn (node, stmt, NULL_TREE,
 			    make_unique<signal_unsafe_call>
-			     (*this, call, callee_fndecl));
+			     (*this, *call, callee_fndecl));
     }
 
   return false;

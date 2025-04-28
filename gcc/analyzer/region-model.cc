@@ -1585,7 +1585,7 @@ region_model::on_stmt_pre (const gimple *stmt,
 	   anything, for which we don't have a function body, or for which we
 	   don't know the fndecl.  */
 	const gcall *call = as_a <const gcall *> (stmt);
-	*out_unknown_side_effects = on_call_pre (call, ctxt);
+	*out_unknown_side_effects = on_call_pre (*call, ctxt);
       }
       break;
 
@@ -1889,7 +1889,7 @@ region_model::get_known_function (enum internal_fn ifn) const
    attributes.  */
 
 const builtin_known_function *
-region_model::get_builtin_kf (const gcall *call,
+region_model::get_builtin_kf (const gcall &call,
 			       region_model_context *ctxt /* = NULL */) const
 {
   region_model *mut_this = const_cast <region_model *> (this);
@@ -1916,7 +1916,7 @@ region_model::get_builtin_kf (const gcall *call,
    fndecl it is).  */
 
 bool
-region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
+region_model::on_call_pre (const gcall &call, region_model_context *ctxt)
 {
   call_details cd (call, this, ctxt);
 
@@ -1926,8 +1926,8 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
      Handle IFN_DEFERRED_INIT by treating it as no-op: don't touch the
      lhs of the call, so that it is still uninitialized from the point of
      view of the analyzer.  */
-  if (gimple_call_internal_p (call)
-      && gimple_call_internal_fn (call) == IFN_DEFERRED_INIT)
+  if (gimple_call_internal_p (&call)
+      && gimple_call_internal_fn (&call) == IFN_DEFERRED_INIT)
     return false; /* No side effects.  */
 
   /* Get svalues for all of the arguments at the callsite, to ensure that we
@@ -1939,9 +1939,9 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
 
   tree callee_fndecl = get_fndecl_for_call (call, ctxt);
 
-  if (gimple_call_internal_p (call))
+  if (gimple_call_internal_p (&call))
     if (const known_function *kf
-	  = get_known_function (gimple_call_internal_fn (call)))
+	  = get_known_function (gimple_call_internal_fn (&call)))
       {
 	kf->impl_call_pre (cd);
 	return false; /* No further side effects.  */
@@ -1985,7 +1985,7 @@ region_model::on_call_pre (const gcall *call, region_model_context *ctxt)
    to purge state.  */
 
 void
-region_model::on_call_post (const gcall *call,
+region_model::on_call_post (const gcall &call,
 			    bool unknown_side_effects,
 			    region_model_context *ctxt)
 {
@@ -2093,12 +2093,11 @@ private:
    attribute.  */
 
 void
-region_model::check_function_attr_access (const gcall *call,
+region_model::check_function_attr_access (const gcall &call,
 					  tree callee_fndecl,
 					  region_model_context *ctxt,
 					  rdwr_map &rdwr_idx) const
 {
-  gcc_assert (call);
   gcc_assert (callee_fndecl);
   gcc_assert (ctxt);
 
@@ -2148,7 +2147,7 @@ region_model::check_function_attr_access (const gcall *call,
 	     note added to them.  */
 	  annotating_ctxt my_ctxt (callee_fndecl, *access, ctxt);
 
-	  tree ptr_tree = gimple_call_arg (call, access->ptrarg);
+	  tree ptr_tree = gimple_call_arg (&call, access->ptrarg);
 	  const svalue *ptr_sval = get_rvalue (ptr_tree, &my_ctxt);
 	  const region *reg = deref_rvalue (ptr_sval, ptr_tree, &my_ctxt);
 	  check_region_for_write (reg, nullptr, &my_ctxt);
@@ -2162,13 +2161,12 @@ region_model::check_function_attr_access (const gcall *call,
 
 void
 region_model::
-check_one_function_attr_null_terminated_string_arg (const gcall *call,
+check_one_function_attr_null_terminated_string_arg (const gcall &call,
 						    tree callee_fndecl,
 						    region_model_context *ctxt,
 						    rdwr_map &rdwr_idx,
 						    tree attr)
 {
-  gcc_assert (call);
   gcc_assert (callee_fndecl);
   gcc_assert (ctxt);
   gcc_assert (attr);
@@ -2236,12 +2234,11 @@ check_one_function_attr_null_terminated_string_arg (const gcall *call,
 
 void
 region_model::
-check_function_attr_null_terminated_string_arg (const gcall *call,
+check_function_attr_null_terminated_string_arg (const gcall &call,
 						tree callee_fndecl,
 						region_model_context *ctxt,
 						rdwr_map &rdwr_idx)
 {
-  gcc_assert (call);
   gcc_assert (callee_fndecl);
   gcc_assert (ctxt);
 
@@ -2266,11 +2263,10 @@ check_function_attr_null_terminated_string_arg (const gcall *call,
    function attributes, complaining to CTXT about any issues.  */
 
 void
-region_model::check_function_attrs (const gcall *call,
+region_model::check_function_attrs (const gcall &call,
 				    tree callee_fndecl,
 				    region_model_context *ctxt)
 {
-  gcc_assert (call);
   gcc_assert (callee_fndecl);
   gcc_assert (ctxt);
 
@@ -2301,7 +2297,7 @@ region_model::check_function_attrs (const gcall *call,
    from their values, and from values that point to them.  */
 
 void
-region_model::handle_unrecognized_call (const gcall *call,
+region_model::handle_unrecognized_call (const gcall &call,
 					region_model_context *ctxt)
 {
   tree fndecl = get_fndecl_for_call (call, ctxt);
@@ -2322,7 +2318,8 @@ region_model::handle_unrecognized_call (const gcall *call,
     tree iter_param_types = NULL_TREE;
     if (fndecl)
       iter_param_types = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-    for (unsigned arg_idx = 0; arg_idx < gimple_call_num_args (call); arg_idx++)
+    for (unsigned arg_idx = 0; arg_idx < gimple_call_num_args (&call);
+	 arg_idx++)
       {
 	/* Track expected param type, where available.  */
 	tree param_type = NULL_TREE;
@@ -2333,7 +2330,7 @@ region_model::handle_unrecognized_call (const gcall *call,
 	    iter_param_types = TREE_CHAIN (iter_param_types);
 	  }
 
-	tree parm = gimple_call_arg (call, arg_idx);
+	tree parm = gimple_call_arg (&call, arg_idx);
 	const svalue *parm_sval = get_rvalue (parm, ctxt);
 	reachable_regs.handle_parm (parm_sval, param_type);
       }
@@ -2457,11 +2454,11 @@ region_model::on_return (const greturn *return_stmt, region_model_context *ctxt)
    0), as opposed to any second return due to longjmp/sigsetjmp.  */
 
 void
-region_model::on_setjmp (const gcall *call, const exploded_node *enode,
+region_model::on_setjmp (const gcall &call, const exploded_node *enode,
 			 region_model_context *ctxt)
 {
-  const svalue *buf_ptr = get_rvalue (gimple_call_arg (call, 0), ctxt);
-  const region *buf_reg = deref_rvalue (buf_ptr, gimple_call_arg (call, 0),
+  const svalue *buf_ptr = get_rvalue (gimple_call_arg (&call, 0), ctxt);
+  const region *buf_reg = deref_rvalue (buf_ptr, gimple_call_arg (&call, 0),
 					 ctxt);
 
   /* Create a setjmp_svalue for this call and store it in BUF_REG's
@@ -2475,7 +2472,7 @@ region_model::on_setjmp (const gcall *call, const exploded_node *enode,
     }
 
   /* Direct calls to setjmp return 0.  */
-  if (tree lhs = gimple_call_lhs (call))
+  if (tree lhs = gimple_call_lhs (&call))
     {
       const svalue *new_sval
 	= m_mgr->get_or_create_int_cst (TREE_TYPE (lhs), 0);
@@ -2490,11 +2487,11 @@ region_model::on_setjmp (const gcall *call, const exploded_node *enode,
    done, and should be done by the caller.  */
 
 void
-region_model::on_longjmp (const gcall *longjmp_call, const gcall *setjmp_call,
+region_model::on_longjmp (const gcall &longjmp_call, const gcall &setjmp_call,
 			   int setjmp_stack_depth, region_model_context *ctxt)
 {
   /* Evaluate the val, using the frame of the "longjmp".  */
-  tree fake_retval = gimple_call_arg (longjmp_call, 1);
+  tree fake_retval = gimple_call_arg (&longjmp_call, 1);
   const svalue *fake_retval_sval = get_rvalue (fake_retval, ctxt);
 
   /* Pop any frames until we reach the stack depth of the function where
@@ -2506,7 +2503,7 @@ region_model::on_longjmp (const gcall *longjmp_call, const gcall *setjmp_call,
   gcc_assert (get_stack_depth () == setjmp_stack_depth);
 
   /* Assign to LHS of "setjmp" in new_state.  */
-  if (tree lhs = gimple_call_lhs (setjmp_call))
+  if (tree lhs = gimple_call_lhs (&setjmp_call))
     {
       /* Passing 0 as the val to longjmp leads to setjmp returning 1.  */
       const svalue *zero_sval
@@ -5896,24 +5893,24 @@ region_model::maybe_update_for_edge (const superedge &edge,
    caller's frame.  */
 
 void
-region_model::update_for_gcall (const gcall *call_stmt,
+region_model::update_for_gcall (const gcall &call_stmt,
 				region_model_context *ctxt,
 				function *callee)
 {
   /* Build a vec of argument svalues, using the current top
      frame for resolving tree expressions.  */
-  auto_vec<const svalue *> arg_svals (gimple_call_num_args (call_stmt));
+  auto_vec<const svalue *> arg_svals (gimple_call_num_args (&call_stmt));
 
-  for (unsigned i = 0; i < gimple_call_num_args (call_stmt); i++)
+  for (unsigned i = 0; i < gimple_call_num_args (&call_stmt); i++)
     {
-      tree arg = gimple_call_arg (call_stmt, i);
+      tree arg = gimple_call_arg (&call_stmt, i);
       arg_svals.quick_push (get_rvalue (arg, ctxt));
     }
 
   if(!callee)
   {
     /* Get the function * from the gcall.  */
-    tree fn_decl = get_fndecl_for_call (call_stmt,ctxt);
+    tree fn_decl = get_fndecl_for_call (call_stmt, ctxt);
     callee = DECL_STRUCT_FUNCTION (fn_decl);
   }
 
@@ -5926,14 +5923,14 @@ region_model::update_for_gcall (const gcall *call_stmt,
    the call (if any).  */
 
 void
-region_model::update_for_return_gcall (const gcall *call_stmt,
+region_model::update_for_return_gcall (const gcall &call_stmt,
 				       region_model_context *ctxt)
 {
   /* Get the lvalue for the result of the call, passing it to pop_frame,
      so that pop_frame can determine the region with respect to the
      *caller* frame.  */
-  tree lhs = gimple_call_lhs (call_stmt);
-  pop_frame (lhs, NULL, ctxt, call_stmt);
+  tree lhs = gimple_call_lhs (&call_stmt);
+  pop_frame (lhs, NULL, ctxt, &call_stmt);
 }
 
 /* Extract calling information from the superedge and update the model for the
@@ -5943,7 +5940,7 @@ void
 region_model::update_for_call_superedge (const call_superedge &call_edge,
 					 region_model_context *ctxt)
 {
-  const gcall *call_stmt = call_edge.get_call_stmt ();
+  const gcall &call_stmt = call_edge.get_call_stmt ();
   update_for_gcall (call_stmt, ctxt, call_edge.get_callee_function ());
 }
 
@@ -5954,7 +5951,7 @@ void
 region_model::update_for_return_superedge (const return_superedge &return_edge,
 					   region_model_context *ctxt)
 {
-  const gcall *call_stmt = return_edge.get_call_stmt ();
+  const gcall &call_stmt = return_edge.get_call_stmt ();
   update_for_return_gcall (call_stmt, ctxt);
 }
 
@@ -6210,9 +6207,9 @@ apply_constraints_for_exception (const gimple *last_stmt,
 {
   gcc_assert (last_stmt);
   if (const gcall *call = dyn_cast <const gcall *> (last_stmt))
-    if (tree callee_fndecl = get_fndecl_for_call (call, ctxt))
-      if (is_named_call_p (callee_fndecl, "operator new", call, 1)
-	  || is_named_call_p (callee_fndecl, "operator new []", call, 1))
+    if (tree callee_fndecl = get_fndecl_for_call (*call, ctxt))
+      if (is_named_call_p (callee_fndecl, "operator new", *call, 1)
+	  || is_named_call_p (callee_fndecl, "operator new []", *call, 1))
 	{
 	  /* We have an exception thrown from operator new.
 	     Add a constraint that the result was NULL, to avoid a false
@@ -6638,10 +6635,10 @@ region_model::can_merge_with_p (const region_model &other_model,
    otherwise.  */
 
 tree
-region_model::get_fndecl_for_call (const gcall *call,
+region_model::get_fndecl_for_call (const gcall &call,
 				   region_model_context *ctxt)
 {
-  tree fn_ptr = gimple_call_fn (call);
+  tree fn_ptr = gimple_call_fn (&call);
   if (fn_ptr == NULL_TREE)
     return NULL_TREE;
   const svalue *fn_ptr_sval = get_rvalue (fn_ptr, ctxt);
@@ -7402,7 +7399,7 @@ region_model::set_errno (const call_details &cd)
   conjured_purge p (this, cd.get_ctxt ());
   const svalue *new_errno_sval
     = m_mgr->get_or_create_conjured_svalue (integer_type_node,
-					    cd.get_call_stmt (),
+					    &cd.get_call_stmt (),
 					    errno_reg, p);
   const svalue *zero
     = m_mgr->get_or_create_int_cst (integer_type_node, 0);

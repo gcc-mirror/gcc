@@ -235,7 +235,7 @@ public:
      Use in preference to gimple_call_fndecl (and gimple_call_addr_fndecl),
      since it can look through function pointer assignments and
      other callback handling.  */
-  virtual tree get_fndecl_for_call (const gcall *call) = 0;
+  virtual tree get_fndecl_for_call (const gcall &call) = 0;
 
   /* Get the old state of VAR at STMT.  */
   virtual state_machine::state_t get_state (const gimple *stmt,

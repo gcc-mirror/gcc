@@ -1951,7 +1951,7 @@ struct null_assignment_sm_context : public sm_context
   {
   }
 
-  tree get_fndecl_for_call (const gcall */*call*/) final override
+  tree get_fndecl_for_call (const gcall &/*call*/) final override
   {
     return NULL_TREE;
   }
@@ -2208,13 +2208,13 @@ diagnostic_manager::add_events_for_eedge (const path_builder &pb,
       {
 	const gimple *stmt = dst_point.get_stmt ();
 	const gcall *call = dyn_cast <const gcall *> (stmt);
-	if (call && is_setjmp_call_p (call))
+	if (call && is_setjmp_call_p (*call))
 	  emission_path->add_event
 	    (make_unique<setjmp_event> (event_loc_info (stmt->location,
 							dst_point.get_fndecl (),
 							dst_stack_depth),
 					dst_node,
-					call));
+					*call));
 	else
 	  emission_path->add_event
 	    (make_unique<statement_event> (stmt,
@@ -2464,12 +2464,10 @@ diagnostic_manager::add_events_for_superedge (const path_builder &pb,
 	const return_superedge *return_edge
 	  = as_a <const return_superedge *> (eedge.m_sedge);
 
-	const gcall *call_stmt = return_edge->get_call_stmt ();
+	const gcall &call_stmt = return_edge->get_call_stmt ();
 	emission_path->add_event
 	  (make_unique<return_event> (eedge,
-				      event_loc_info (call_stmt
-						      ? call_stmt->location
-						      : UNKNOWN_LOCATION,
+				      event_loc_info (call_stmt.location,
 						      dst_point.get_fndecl (),
 						      dst_stack_depth)));
       }

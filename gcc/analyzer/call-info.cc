@@ -101,7 +101,7 @@ call_info::add_events_to_path (checker_path *emission_path,
   const int stack_depth = src_point.get_stack_depth ();
 
   emission_path->add_event
-    (make_unique<call_event> (event_loc_info (get_call_stmt ()->location,
+    (make_unique<call_event> (event_loc_info (get_call_stmt ().location,
 					      caller_fndecl,
 					      stack_depth),
 			      this));

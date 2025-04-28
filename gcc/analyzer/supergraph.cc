@@ -1240,13 +1240,13 @@ callgraph_superedge::get_callee_decl () const
 
 /* Get the gcall * of this interprocedural call/return edge.  */
 
-gcall *
+const gcall &
 callgraph_superedge::get_call_stmt () const
 {
   if (m_cedge)
-    return m_cedge->call_stmt;
+    return *m_cedge->call_stmt;
 
-  return m_src->get_final_call ();
+  return *m_src->get_final_call ();
 }
 
 /* Get the calling fndecl at this interprocedural call/return edge.  */
@@ -1268,19 +1268,19 @@ callgraph_superedge::get_arg_for_parm (tree parm_to_find,
   gcc_assert  (TREE_CODE (parm_to_find) == PARM_DECL);
 
   tree callee = get_callee_decl ();
-  const gcall *call_stmt = get_call_stmt ();
+  const gcall &call_stmt = get_call_stmt ();
 
   unsigned i = 0;
   for (tree iter_parm = DECL_ARGUMENTS (callee); iter_parm;
        iter_parm = DECL_CHAIN (iter_parm), ++i)
     {
-      if (i >= gimple_call_num_args (call_stmt))
+      if (i >= gimple_call_num_args (&call_stmt))
 	return NULL_TREE;
       if (iter_parm == parm_to_find)
 	{
 	  if (out)
 	    *out = callsite_expr::from_zero_based_param (i);
-	  return gimple_call_arg (call_stmt, i);
+	  return gimple_call_arg (&call_stmt, i);
 	}
     }
 
@@ -1298,15 +1298,15 @@ callgraph_superedge::get_parm_for_arg (tree arg_to_find,
 				       callsite_expr *out) const
 {
   tree callee = get_callee_decl ();
-  const gcall *call_stmt = get_call_stmt ();
+  const gcall &call_stmt = get_call_stmt ();
 
   unsigned i = 0;
   for (tree iter_parm = DECL_ARGUMENTS (callee); iter_parm;
        iter_parm = DECL_CHAIN (iter_parm), ++i)
     {
-      if (i >= gimple_call_num_args (call_stmt))
+      if (i >= gimple_call_num_args (&call_stmt))
 	return NULL_TREE;
-      tree param = gimple_call_arg (call_stmt, i);
+      tree param = gimple_call_arg (&call_stmt, i);
       if (arg_to_find == param)
 	{
 	  if (out)
@@ -1332,7 +1332,7 @@ callgraph_superedge::map_expr_from_caller_to_callee (tree caller_expr,
   if (parm)
     return parm;
   /* Otherwise try return value.  */
-  if (caller_expr == gimple_call_lhs (get_call_stmt ()))
+  if (caller_expr == gimple_call_lhs (&get_call_stmt ()))
     {
       if (out)
 	*out = callsite_expr::from_return_value ();
@@ -1367,7 +1367,7 @@ callgraph_superedge::map_expr_from_callee_to_caller (tree callee_expr,
     {
       if (out)
 	*out = callsite_expr::from_return_value ();
-      return gimple_call_lhs (get_call_stmt ());
+      return gimple_call_lhs (&get_call_stmt ());
     }
 
   return NULL_TREE;

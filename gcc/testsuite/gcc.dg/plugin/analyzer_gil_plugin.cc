@@ -66,7 +66,7 @@ public:
  private:
   void check_for_pyobject_in_call (sm_context &sm_ctxt,
 				   const supernode *node,
-				   const gcall *call,
+				   const gcall &call,
 				   tree callee_fndecl) const;
 
  public:
@@ -147,7 +147,7 @@ public:
 class double_save_thread : public gil_diagnostic
 {
  public:
-  double_save_thread (const gil_state_machine &sm, const gcall *call)
+  double_save_thread (const gil_state_machine &sm, const gcall &call)
   : gil_diagnostic (sm), m_call (call)
   {}
 
@@ -160,7 +160,7 @@ class double_save_thread : public gil_diagnostic
   {
     const double_save_thread &sub_other
       = (const double_save_thread &)base_other;
-    return m_call == sub_other.m_call;
+    return &m_call == &sub_other.m_call;
   }
 
   bool emit (diagnostic_emission_context &ctxt) final override
@@ -179,13 +179,13 @@ class double_save_thread : public gil_diagnostic
   }
 
  private:
-  const gcall *m_call;
+  const gcall &m_call;
 };
 
 class fncall_without_gil : public gil_diagnostic
 {
  public:
-  fncall_without_gil (const gil_state_machine &sm, const gcall *call,
+  fncall_without_gil (const gil_state_machine &sm, const gcall &call,
 		      tree callee_fndecl, unsigned arg_idx)
   : gil_diagnostic (sm), m_call (call), m_callee_fndecl (callee_fndecl),
     m_arg_idx (arg_idx)
@@ -200,7 +200,7 @@ class fncall_without_gil : public gil_diagnostic
   {
     const fncall_without_gil &sub_other
       = (const fncall_without_gil &)base_other;
-    return (m_call == sub_other.m_call
+    return (&m_call == &sub_other.m_call
 	    && m_callee_fndecl == sub_other.m_callee_fndecl
 	    && m_arg_idx == sub_other.m_arg_idx);
   }
@@ -233,7 +233,7 @@ class fncall_without_gil : public gil_diagnostic
   }
 
  private:
-  const gcall *m_call;
+  const gcall &m_call;
   tree m_callee_fndecl;
   unsigned m_arg_idx;
 };
@@ -313,18 +313,18 @@ check_for_pyobject (gimple *, tree op, tree, void *data)
 void
 gil_state_machine::check_for_pyobject_in_call (sm_context &sm_ctxt,
 					       const supernode *node,
-					       const gcall *call,
+					       const gcall &call,
 					       tree callee_fndecl) const
 {
-  for (unsigned i = 0; i < gimple_call_num_args (call); i++)
+  for (unsigned i = 0; i < gimple_call_num_args (&call); i++)
     {
-      tree arg = gimple_call_arg (call, i);
+      tree arg = gimple_call_arg (&call, i);
       if (TREE_CODE (TREE_TYPE (arg)) != POINTER_TYPE)
 	continue;
       tree type = TREE_TYPE (TREE_TYPE (arg));
       if (type_based_on_pyobject_p (type))
 	{
-	  sm_ctxt.warn (node, call, NULL_TREE,
+	  sm_ctxt.warn (node, &call, NULL_TREE,
 			make_unique<fncall_without_gil> (*this, call,
 							 callee_fndecl,
 							 i));
@@ -341,8 +341,9 @@ gil_state_machine::on_stmt (sm_context &sm_ctxt,
 			    const gimple *stmt) const
 {
   const state_t global_state = sm_ctxt.get_global_state ();
-  if (const gcall *call = dyn_cast <const gcall *> (stmt))
+  if (const gcall *call_stmt = dyn_cast <const gcall *> (stmt))
     {
+      const gcall &call = *call_stmt;
       if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (call))
 	{
 	  if (is_named_call_p (callee_fndecl, "PyEval_SaveThread", call, 0))

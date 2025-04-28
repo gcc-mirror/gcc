@@ -583,7 +583,7 @@ class setjmp_event : public checker_event
 public:
   setjmp_event (const event_loc_info &loc_info,
 		const exploded_node *enode,
-		const gcall *setjmp_call)
+		const gcall &setjmp_call)
   : checker_event (event_kind::setjmp_, loc_info),
     m_enode (enode), m_setjmp_call (setjmp_call)
   {
@@ -597,7 +597,7 @@ public:
 
 private:
   const exploded_node *m_enode;
-  const gcall *m_setjmp_call;
+  const gcall &m_setjmp_call;
 };
 
 /* An abstract event subclass for rewinding from a longjmp to a setjmp

@@ -2187,7 +2187,7 @@ binding_cluster::mark_as_escaped ()
    Use P to purge state involving conjured_svalues.  */
 
 void
-binding_cluster::on_unknown_fncall (const gcall *call,
+binding_cluster::on_unknown_fncall (const gcall &call,
 				    store_manager *mgr,
 				    const conjured_purge &p)
 {
@@ -2200,7 +2200,7 @@ binding_cluster::on_unknown_fncall (const gcall *call,
 	  /* Bind it to a new "conjured" value using CALL.  */
 	  const svalue *sval
 	    = mgr->get_svalue_manager ()->get_or_create_conjured_svalue
-	    (m_base_region->get_type (), call, m_base_region, p);
+	    (m_base_region->get_type (), &call, m_base_region, p);
 	  bind (mgr, m_base_region, sval);
 	}
 
@@ -3238,7 +3238,7 @@ store::mark_as_escaped (const region *base_reg)
    (either in this fncall, or in a prior one).  */
 
 void
-store::on_unknown_fncall (const gcall *call, store_manager *mgr,
+store::on_unknown_fncall (const gcall &call, store_manager *mgr,
 			  const conjured_purge &p)
 {
   m_called_unknown_fn = true;

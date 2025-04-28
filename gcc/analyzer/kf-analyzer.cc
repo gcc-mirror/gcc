@@ -102,7 +102,7 @@ public:
     const region *base_reg = reg->get_base_region ();
     const svalue *capacity = model->get_capacity (base_reg);
     label_text desc = capacity->get_desc (true);
-    warning_at (cd.get_call_stmt ()->location, 0,
+    warning_at (cd.get_call_stmt ().location, 0,
 		"capacity: %qs", desc.get ());
   }
 };

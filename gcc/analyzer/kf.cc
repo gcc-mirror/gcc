@@ -41,7 +41,6 @@ public:
   : m_call_stmt (cd.get_call_stmt ()),
     m_callee_fndecl (cd.get_fndecl_for_call ())
   {
-    gcc_assert (m_call_stmt);
     gcc_assert (m_callee_fndecl);
   }
 
@@ -52,7 +51,7 @@ public:
 
   bool operator== (const undefined_function_behavior &other) const
   {
-    return (m_call_stmt == other.m_call_stmt
+    return (&m_call_stmt == &other.m_call_stmt
 	    && m_callee_fndecl == other.m_callee_fndecl);
   }
 
@@ -61,7 +60,7 @@ public:
   tree get_callee_fndecl () const { return m_callee_fndecl; }
 
 private:
-  const gimple *m_call_stmt;
+  const gimple &m_call_stmt;
   tree m_callee_fndecl;
 };
 
@@ -1191,7 +1190,7 @@ kf_strchr::impl_call_post (const call_details &cd) const
 		 using the str_reg as the id of the conjured_svalue.  */
 	      const svalue *offset
 		= mgr->get_or_create_conjured_svalue (size_type_node,
-						      cd.get_call_stmt (),
+						      &cd.get_call_stmt (),
 						      str_reg,
 						      conjured_purge (model,
 								      ctxt));
@@ -1748,7 +1747,7 @@ kf_strstr::impl_call_post (const call_details &cd) const
 		 using the str_reg as the id of the conjured_svalue.  */
 	      const svalue *offset
 		= mgr->get_or_create_conjured_svalue (size_type_node,
-						      cd.get_call_stmt (),
+						      &cd.get_call_stmt (),
 						      str_reg,
 						      conjured_purge (model,
 								      ctxt));
@@ -1949,14 +1948,14 @@ public:
 	     using the str_reg as the id of the conjured_svalue.  */
 	  const svalue *start_offset
 	    = mgr->get_or_create_conjured_svalue (size_type_node,
-						  cd.get_call_stmt (),
+						  &cd.get_call_stmt (),
 						  str_reg,
 						  conjured_purge (model,
 								  ctxt),
 						  0);
 	  const svalue *nul_offset
 	    = mgr->get_or_create_conjured_svalue (size_type_node,
-						  cd.get_call_stmt (),
+						  &cd.get_call_stmt (),
 						  str_reg,
 						  conjured_purge (model,
 								  ctxt),

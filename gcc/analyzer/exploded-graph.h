@@ -282,7 +282,7 @@ class exploded_node : public dnode<eg_traits>
 
   on_stmt_flags replay_call_summaries (exploded_graph &eg,
 				       const supernode *snode,
-				       const gcall *call_stmt,
+				       const gcall &call_stmt,
 				       program_state *state,
 				       path_context *path_ctxt,
 				       const function &called_fn,
@@ -290,7 +290,7 @@ class exploded_node : public dnode<eg_traits>
 				       region_model_context *ctxt);
   void replay_call_summary (exploded_graph &eg,
 			    const supernode *snode,
-			    const gcall *call_stmt,
+			    const gcall &call_stmt,
 			    program_state *state,
 			    path_context *path_ctxt,
 			    const function &called_fn,
@@ -303,7 +303,7 @@ class exploded_node : public dnode<eg_traits>
 		program_state *next_state,
 		uncertainty_t *uncertainty);
   void on_longjmp (exploded_graph &eg,
-		   const gcall *call,
+		   const gcall &call,
 		   program_state *new_state,
 		   region_model_context *ctxt);
 
@@ -424,7 +424,7 @@ private:
 class dynamic_call_info_t : public custom_edge_info
 {
 public:
-  dynamic_call_info_t (const gcall *dynamic_call,
+  dynamic_call_info_t (const gcall &dynamic_call,
   		       const bool is_returning_call = false)
   : m_dynamic_call (dynamic_call),
     m_is_returning_call (is_returning_call)
@@ -445,7 +445,7 @@ public:
   void add_events_to_path (checker_path *emission_path,
 			   const exploded_edge &eedge) const final override;
 private:
-  const gcall *m_dynamic_call;
+  const gcall &m_dynamic_call;
   const bool m_is_returning_call;
 };
 
@@ -457,7 +457,7 @@ class rewind_info_t : public custom_edge_info
 {
 public:
   rewind_info_t (const setjmp_record &setjmp_record,
-		 const gcall *longjmp_call)
+		 const gcall &longjmp_call)
   : m_setjmp_record (setjmp_record),
     m_longjmp_call (longjmp_call)
   {}
@@ -486,12 +486,12 @@ public:
     return origin_point;
   }
 
-  const gcall *get_setjmp_call () const
+  const gcall &get_setjmp_call () const
   {
-    return m_setjmp_record.m_setjmp_call;
+    return *m_setjmp_record.m_setjmp_call;
   }
 
-  const gcall *get_longjmp_call () const
+  const gcall &get_longjmp_call () const
   {
     return m_longjmp_call;
   }
@@ -503,7 +503,7 @@ public:
 
 private:
   setjmp_record m_setjmp_record;
-  const gcall *m_longjmp_call;
+  const gcall &m_longjmp_call;
 };
 
 /* Statistics about aspects of an exploded_graph.  */
@@ -817,7 +817,7 @@ public:
   bool maybe_process_run_of_before_supernode_enodes (exploded_node *node);
   void process_node (exploded_node *node);
 
-  bool maybe_create_dynamic_call (const gcall *call,
+  bool maybe_create_dynamic_call (const gcall &call,
                                   tree fn_decl,
                                   exploded_node *node,
                                   program_state next_state,

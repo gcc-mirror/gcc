@@ -727,7 +727,7 @@ start_cfg_edge_event::maybe_describe_condition (bool can_colorize,
       && zerop (rhs))
     {
       if (gcall *call = dyn_cast <gcall *> (SSA_NAME_DEF_STMT (lhs)))
-	if (is_special_named_call_p (call, "strcmp", 2))
+	if (is_special_named_call_p (*call, "strcmp", 2))
 	  {
 	    if (op == EQ_EXPR)
 	      return label_text::borrow ("when the strings are equal");

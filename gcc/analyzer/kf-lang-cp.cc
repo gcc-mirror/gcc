@@ -36,10 +36,9 @@ along with GCC; see the file COPYING3.  If not see
 
    See https://en.cppreference.com/w/cpp/memory/new/operator_new.  */
 
-bool is_placement_new_p (const gcall *call)
+bool is_placement_new_p (const gcall &call)
 {
-  gcc_assert (call);
-  tree fndecl = gimple_call_fndecl (call);
+  tree fndecl = gimple_call_fndecl (&call);
 
   if (!fndecl || TREE_CODE (TREE_TYPE (fndecl)) == METHOD_TYPE)
     /* Give up on overloaded operator new.  */
@@ -84,7 +83,7 @@ public:
     region_model_manager *mgr = cd.get_manager ();
     const svalue *size_sval = cd.get_arg_svalue (0);
     region_model_context *ctxt = cd.get_ctxt ();
-    const gcall *call = cd.get_call_stmt ();
+    const gcall &call = cd.get_call_stmt ();
 
     /* If the call was actually a placement new, check that accessing
        the buffer lhs is placed into does not result in out-of-bounds.  */

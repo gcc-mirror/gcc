@@ -242,12 +242,12 @@ public:
 
   void push_call (exploded_graph &eg,
 		  exploded_node *enode,
-		  const gcall *call_stmt,
+		  const gcall &call_stmt,
 		  uncertainty_t *uncertainty);
 
   void returning_call (exploded_graph &eg,
 		       exploded_node *enode,
-		       const gcall *call_stmt,
+		       const gcall &call_stmt,
 		       uncertainty_t *uncertainty);
 
 
@@ -298,7 +298,7 @@ public:
   bool replay_call_summary (call_summary_replay &r,
 			    const program_state &summary);
 
-  void impl_call_analyzer_dump_state (const gcall *call,
+  void impl_call_analyzer_dump_state (const gcall &call,
 				      const extrinsic_state &ext_state,
 				      region_model_context *ctxt);
 

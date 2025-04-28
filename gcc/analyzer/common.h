@@ -460,21 +460,21 @@ extern tree remove_ssa_names (tree expr);
 
 } // namespace ana
 
-extern bool is_special_named_call_p (const gcall *call, const char *funcname,
+extern bool is_special_named_call_p (const gcall &call, const char *funcname,
 				     unsigned int num_args,
 				     bool look_in_std = false);
 extern bool is_named_call_p (const_tree fndecl, const char *funcname);
 extern bool is_named_call_p (const_tree fndecl, const char *funcname,
-			     const gcall *call, unsigned int num_args);
+			     const gcall &call, unsigned int num_args);
 extern bool is_std_function_p (const_tree fndecl);
 extern bool is_std_named_call_p (const_tree fndecl, const char *funcname);
 extern bool is_std_named_call_p (const_tree fndecl, const char *funcname,
-				 const gcall *call, unsigned int num_args);
-extern bool is_setjmp_call_p (const gcall *call);
-extern bool is_longjmp_call_p (const gcall *call);
-extern bool is_placement_new_p (const gcall *call);
+				 const gcall &call, unsigned int num_args);
+extern bool is_setjmp_call_p (const gcall &call);
+extern bool is_longjmp_call_p (const gcall &call);
+extern bool is_placement_new_p (const gcall &call);
 
-extern const char *get_user_facing_name (const gcall *call);
+extern const char *get_user_facing_name (const gcall &call);
 
 extern void register_analyzer_pass ();
 
