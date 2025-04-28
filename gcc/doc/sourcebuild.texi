@@ -2042,10 +2042,6 @@ ARM target uses emulated floating point operations.
 ARM target supports @code{-mfpu=vfp -mfloat-abi=hard}.
 Some multilibs may be incompatible with these options.
 
-@item arm_iwmmxt_ok
-ARM target supports @code{-mcpu=iwmmxt}.
-Some multilibs may be incompatible with this option.
-
 @item arm_neon
 ARM target supports generating NEON instructions.
 

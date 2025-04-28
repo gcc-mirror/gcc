@@ -67,12 +67,6 @@ EnumValue
 Enum(processor_type) String(xscale) Value( TARGET_CPU_xscale)
 
 EnumValue
-Enum(processor_type) String(iwmmxt) Value( TARGET_CPU_iwmmxt)
-
-EnumValue
-Enum(processor_type) String(iwmmxt2) Value( TARGET_CPU_iwmmxt2)
-
-EnumValue
 Enum(processor_type) String(fa606te) Value( TARGET_CPU_fa606te)
 
 EnumValue

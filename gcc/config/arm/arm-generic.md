@@ -96,14 +96,14 @@
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "ldsched" "yes") 
 	    (and (eq_attr "type" "load_byte,load_4")
-	         (eq_attr "tune" "xscale,iwmmxt,iwmmxt2"))))
+	         (eq_attr "tune" "xscale"))))
   "core")
 
 (define_insn_reservation "load_ldsched" 2
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "ldsched" "yes") 
 	    (and (eq_attr "type" "load_byte,load_4")
-	         (eq_attr "tune" "!xscale,iwmmxt,iwmmxt2"))))
+	         (eq_attr "tune" "!xscale"))))
   "core")
 
 (define_insn_reservation "load_or_store" 2
