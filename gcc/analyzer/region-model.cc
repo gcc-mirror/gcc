@@ -1570,13 +1570,15 @@ region_model::on_stmt_pre (const gimple *stmt,
 {
   switch (gimple_code (stmt))
     {
-    default:
-      /* No-op for now.  */
-      break;
-
-    case GIMPLE_DEBUG:
-      /* We should have stripped these out when building the supergraph.  */
-      gcc_unreachable ();
+    case GIMPLE_COND:
+    case GIMPLE_EH_DISPATCH:
+    case GIMPLE_GOTO:
+    case GIMPLE_LABEL:
+    case GIMPLE_NOP:
+    case GIMPLE_PREDICT:
+    case GIMPLE_RESX:
+    case GIMPLE_SWITCH:
+      /* No-ops here.  */
       break;
 
     case GIMPLE_ASSIGN:
@@ -1610,6 +1612,13 @@ region_model::on_stmt_pre (const gimple *stmt,
 	const greturn *return_ = as_a <const greturn *> (stmt);
 	on_return (return_, ctxt);
       }
+      break;
+
+    /* We don't expect to see any other statement kinds in the analyzer.  */
+    case GIMPLE_DEBUG: // should have stripped these out when building the supergraph
+    default:
+      internal_error ("unexpected gimple stmt code: %qs",
+		      gimple_code_name[gimple_code (stmt)]);
       break;
     }
 }
