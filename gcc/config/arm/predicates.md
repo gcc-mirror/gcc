@@ -806,14 +806,8 @@
 
 ;;-------------------------------------------------------------------------
 ;;
-;; iWMMXt predicates
-;;
-
-(define_predicate "imm_or_reg_operand"
-  (ior (match_operand 0 "immediate_operand")
-       (match_operand 0 "register_operand")))
-
 ;; Neon predicates
+;;
 
 (define_predicate "const_multiple_of_8_operand"
   (match_code "const_int")

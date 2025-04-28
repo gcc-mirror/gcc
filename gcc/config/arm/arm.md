@@ -13125,8 +13125,6 @@
 
 ;; Vector bits common to IWMMXT, Neon and MVE
 (include "vec-common.md")
-;; Load the Intel Wireless Multimedia Extension patterns
-(include "iwmmxt.md")
 ;; Load the VFP co-processor patterns
 (include "vfp.md")
 ;; Thumb-1 patterns

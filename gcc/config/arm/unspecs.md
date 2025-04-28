@@ -21,7 +21,6 @@
 ;; UNSPEC Usage:
 ;; Note: sin and cos are no-longer used.
 ;; Unspec enumerators for Neon are defined in neon.md.
-;; Unspec enumerators for iwmmxt2 are defined in iwmmxt2.md
 
 (define_c_enum "unspec" [
   UNSPEC_PUSH_MULT      ; `push multiple' operation:
@@ -42,17 +41,6 @@
                         ; and stack frame generation.  Operand 0 is the
                         ; register to "use".
   UNSPEC_CHECK_ARCH     ; Set CCs to indicate 26-bit or 32-bit mode.
-  UNSPEC_WSHUFH         ; Used by the intrinsic form of the iWMMXt WSHUFH instruction.
-  UNSPEC_WACC           ; Used by the intrinsic form of the iWMMXt WACC instruction.
-  UNSPEC_TMOVMSK        ; Used by the intrinsic form of the iWMMXt TMOVMSK instruction.
-  UNSPEC_WSAD           ; Used by the intrinsic form of the iWMMXt WSAD instruction.
-  UNSPEC_WSADZ          ; Used by the intrinsic form of the iWMMXt WSADZ instruction.
-  UNSPEC_WMACS          ; Used by the intrinsic form of the iWMMXt WMACS instruction.
-  UNSPEC_WMACU          ; Used by the intrinsic form of the iWMMXt WMACU instruction.
-  UNSPEC_WMACSZ         ; Used by the intrinsic form of the iWMMXt WMACSZ instruction.
-  UNSPEC_WMACUZ         ; Used by the intrinsic form of the iWMMXt WMACUZ instruction.
-  UNSPEC_CLRDI          ; Used by the intrinsic form of the iWMMXt CLRDI instruction.
-  UNSPEC_WALIGNI        ; Used by the intrinsic form of the iWMMXt WALIGN instruction.
   UNSPEC_TLS            ; A symbol that has been treated properly for TLS usage.
   UNSPEC_PIC_LABEL      ; A label used for PIC access that does not appear in the
                         ; instruction stream.
@@ -164,18 +152,6 @@
 
 
 (define_c_enum "unspec" [
-  UNSPEC_WADDC		; Used by the intrinsic form of the iWMMXt WADDC instruction.
-  UNSPEC_WABS		; Used by the intrinsic form of the iWMMXt WABS instruction.
-  UNSPEC_WQMULWMR	; Used by the intrinsic form of the iWMMXt WQMULWMR instruction.
-  UNSPEC_WQMULMR	; Used by the intrinsic form of the iWMMXt WQMULMR instruction.
-  UNSPEC_WQMULWM	; Used by the intrinsic form of the iWMMXt WQMULWM instruction.
-  UNSPEC_WQMULM		; Used by the intrinsic form of the iWMMXt WQMULM instruction.
-  UNSPEC_WQMIAxyn	; Used by the intrinsic form of the iWMMXt WMIAxyn instruction.
-  UNSPEC_WQMIAxy	; Used by the intrinsic form of the iWMMXt WMIAxy instruction.
-  UNSPEC_TANDC		; Used by the intrinsic form of the iWMMXt TANDC instruction.
-  UNSPEC_TORC		; Used by the intrinsic form of the iWMMXt TORC instruction.
-  UNSPEC_TORVSC		; Used by the intrinsic form of the iWMMXt TORVSC instruction.
-  UNSPEC_TEXTRC		; Used by the intrinsic form of the iWMMXt TEXTRC instruction.
   UNSPEC_GET_FPSCR_NZCVQC	; Represent fetch of FPSCR_nzcvqc content.
 ])
 
@@ -205,12 +181,7 @@
                         ;   a 64-bit object.
   VUNSPEC_POOL_16       ; `pool-entry(16)'.  An entry in the constant pool for
                         ;   a 128-bit object.
-  VUNSPEC_TMRC          ; Used by the iWMMXt TMRC instruction.
-  VUNSPEC_TMCR          ; Used by the iWMMXt TMCR instruction.
   VUNSPEC_ALIGN8        ; 8-byte alignment version of VUNSPEC_ALIGN
-  VUNSPEC_WCMP_EQ       ; Used by the iWMMXt WCMPEQ instructions
-  VUNSPEC_WCMP_GTU      ; Used by the iWMMXt WCMPGTU instructions
-  VUNSPEC_WCMP_GT       ; Used by the iwMMXT WCMPGT instructions
   VUNSPEC_EH_RETURN     ; Use to override the return address for exception
                         ; handling.
   VUNSPEC_ATOMIC_CAS	; Represent an atomic compare swap.
