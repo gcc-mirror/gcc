@@ -176,14 +176,17 @@ package body Util is
    procedure Check_Future_Keyword is
    begin
       --  Ada 2005 (AI-284): Compiling in Ada 95 mode we warn that INTERFACE,
-      --  OVERRIDING, and SYNCHRONIZED are new reserved words.
+      --  OVERRIDING, and SYNCHRONIZED are new reserved words. We make an
+      --  exception if INTERFACE is used in the context of the GNAT-specific
+      --  pragma Interface, since we accept that pragma regardless of the Ada
+      --  version.
 
       if Ada_Version = Ada_95
         and then Warn_On_Ada_2005_Compatibility
       then
-         if Token_Name in Name_Overriding | Name_Synchronized
-           or else (Token_Name = Name_Interface
-                     and then Prev_Token /= Tok_Pragma)
+         if Token_Name in Ada_2005_Reserved_Words
+           and then not (Token_Name = Name_Interface
+                         and then Prev_Token = Tok_Pragma)
          then
             Error_Msg_N ("& is a reserved word in Ada 2005?y?", Token_Node);
          end if;
@@ -194,13 +197,13 @@ package body Util is
       if Ada_Version in Ada_95 .. Ada_2005
         and then Warn_On_Ada_2012_Compatibility
       then
-         if Token_Name = Name_Some then
+         if Token_Name in Ada_2012_Reserved_Words then
             Error_Msg_N ("& is a reserved word in Ada 2012?y?", Token_Node);
          end if;
       end if;
 
       if Ada_Version < Ada_With_All_Extensions then
-         if Token_Name = Name_Finally then
+         if Token_Name in GNAT_Extensions_Reserved_Words then
             Error_Msg_N
               ("& is a reserved word with all extensions enabled?",
                Token_Node);
