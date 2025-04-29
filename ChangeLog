@@ -1,3 +1,7 @@
+2025-04-28  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	* MAINTAINERS (kcy): Add gcc.gnu.org username.
+
 2025-04-22  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR cobol/119217

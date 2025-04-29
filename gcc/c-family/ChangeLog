@@ -1,3 +1,20 @@
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-pretty-print.cc: Drop include of "make-unique.h".
+	Replace uses of ::make_unique with std::make_unique.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* name-hint.h (name_hint::name_hint): Use std::unique_ptr for
+	param.
+
+2025-04-28  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c/118838
+	* c-lex.cc (cb_def_pragma): Call cpp_get_diagnostic_override_loc()
+	to get a valid location at which to issue -Wunknown-pragmas, in case
+	it was triggered from a _Pragma.
+
 2025-04-25  Jason Merrill  <jason@redhat.com>
 
 	* c-opts.cc (c_common_post_options): Bump default ABI to 21

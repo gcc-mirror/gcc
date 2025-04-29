@@ -1,3 +1,356 @@
+2025-04-28  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* checks/errors/borrowck/rust-bir-place.h
+	(IndexVec::size_type): Add.
+	(IndexVec::MAX_INDEX): Add.
+	(IndexVec::size): Change the return type to the type of the
+	internal value used by the index type.
+	(PlaceDB::lookup_or_add_variable): Use the return value from the
+	PlaceDB::add_place call.
+	* checks/errors/borrowck/rust-bir.h
+	(struct BasicBlockId): Move this definition before the
+	definition of the struct Function.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Visit visibility.
+
+2025-04-28  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* ast/rust-ast-visitor.cc
+	(DefaultASTVisitor::visit): Visit the loop labels of
+	WhileLetLoopExpr instances before visiting their scrutinee
+	expressions.
+	* resolve/rust-early-name-resolver-2.0.cc
+	(Early::resolve_glob_import): Pass the glob import's path
+	directly to NameResolutionContext::resolve_path.
+	* resolve/rust-toplevel-name-resolver-2.0.cc
+	(TopLevel::visit): Remove unnecessary call to
+	Identifier::as_string.
+	(flatten_glob): Improve handling of cases where a glob use tree
+	has no path.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* expand/rust-derive-clone.cc (DeriveClone::clone_enum_struct): Clone
+	path to avoid using the same nodeid.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit_function_params):
+	Add specialized function to visit function parameters.
+	(DefaultASTVisitor::visit): Remove parameter visit and call specialized
+	function instead.
+	* ast/rust-ast-visitor.h: Add function prototye.
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Remove
+	function.
+	(Late::visit_function_params): Override specialized visit function.
+	* resolve/rust-late-name-resolver-2.0.h: Add overriden function
+	prototype.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-name-resolution-context.h: Use BindingLayer instead.
+	* resolve/rust-name-resolution-context.cc (BindingLayer::BindingLayer):
+	Add new constructor for binding layer.
+	(BindingLayer::bind_test): Add a function to test a binding constraint.
+	(BindingLayer::push): Push a new binding group.
+	(BindingLayer::and_binded): Add function to test and-binding
+	constraint.
+	(BindingLayer::or_binded): Add function to test or-binding constraints.
+	(BindingLayer::insert_ident): Insert a new identifier in the current
+	binding group.
+	(BindingLayer::merge): Merge current binding group with it's parent.
+	(BindingLayer::get_source): Get the source of the current binding
+	group.
+	* resolve/rust-late-name-resolver-2.0.cc: Use stacked context for
+	binding group.
+	* util/rust-stacked-contexts.h: Add mutable peek function.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Add binding
+	creation in visitor.
+	* resolve/rust-late-name-resolver-2.0.h: Add function prototypes.
+	* resolve/rust-name-resolution-context.h: Add binding context.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-name-resolution-context.h (struct Binding): Add Binding
+	struct to differentiate Or and Product bindings in patterns.
+	(enum class): Add Binding kind.
+	(class BindingContext): Add binding context with Binding stack.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast.h: Add hash function.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast.h: Add equality operator.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-default-resolver.cc (DefaultResolver::visit): Add visit
+	function for TypeParam.
+	* resolve/rust-default-resolver.h: Add function prototype.
+	* resolve/rust-forever-stack.h: Add function to check for forward
+	declaration ban.
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Check forward
+	declarations.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Remove error kind
+	and change function call.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Change call name.
+	* ast/rust-path.cc (ConstGenericParam::as_string): Likewise.
+	* ast/rust-path.h: Remove error kind.
+	* hir/rust-ast-lower-type.cc (ASTLowerGenericParam::visit): Change call
+	name.
+	* parse/rust-parse-impl.h (Parser::parse_generic_param): Use optional
+	on parsing failure.
+	(Parser::parse_generic_arg): Likewise.
+	(Parser::parse_path_generic_args): Likewise.
+	* parse/rust-parse.h: Likewise.
+	* resolve/rust-ast-resolve-type.h: Change call name.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Change error
+	message.
+
+2025-04-28  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-early-name-resolver-2.0.cc
+	(Early::build_import_mapping): Avoid outputting an "unresolved
+	import" error if other errors are outputted during resolution.
+	* resolve/rust-early-name-resolver-2.0.h
+	(Early::resolve_path_in_all_ns): Collect path resolution errors
+	while avoiding duplicate errors for resolutions in each
+	namespace.
+	* resolve/rust-forever-stack.h
+	(ForeverStack::resolve_path): Add parameter for collecting
+	errors.
+	(ForeverStack::find_starting_point): Likewise.
+	(ForeverStack::resolve_segments): Likewise.
+	* resolve/rust-forever-stack.hxx
+	(check_leading_kw_at_start): Likewise.
+	(ForeverStack::find_starting_point): Likewise.
+	(ForeverStack::resolve_segments): Likewise.
+	(ForeverStack::resolve_path): Likewise.
+	* resolve/rust-name-resolution-context.h
+	(NameResolutionContext::resolve_path): Add optional parameter
+	for collecting errors.
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::array_copied_expr): prealloc the vector
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): add guard
+	* expand/rust-expand-visitor.cc (ExpandVisitor::visit): add guard
+
+2025-04-28  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-ast-resolve-path.cc
+	(ResolvePath::resolve_path): Adjust error messages.
+	* resolve/rust-ast-resolve-type.cc
+	(ResolveRelativeTypePath::go): Likewise.
+	* resolve/rust-forever-stack.hxx
+	(check_leading_kw_at_start): Likewise.
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): fix bad assertion
+
+2025-04-28  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-forever-stack.hxx
+	(ForeverStack::resolve_path): Pass instance of Node to lambda by
+	reference instead of by value.
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-struct-field.h: keep reference to parent expression
+	* typecheck/rust-hir-type-check-struct.cc (TypeCheckStructExpr::TypeCheckStructExpr):
+	update ctor
+	(TypeCheckStructExpr::resolve): remove bad rust_fatal_errors
+	(TypeCheckStructExpr::visit): cleanup errors
+
+2025-04-28  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-late-name-resolver-2.0.cc
+	(Late::visit): Handle StructPatternFieldIdent.
+	* resolve/rust-late-name-resolver-2.0.h
+	(Late::visit): Likewise.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Dump llvm inline
+	asm tokens.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Remove unreachable
+	code.
+	* ast/rust-expr.h (struct LlvmOperand): Add LlvmOperand struct to
+	represent input and outputs.
+	(class LlvmInlineAsm): Add input, output and clobber operands.
+	(struct TupleTemplateStr): Add locus getter.
+	* backend/rust-compile-block.h: Add visit for LlvmInlineAsm.
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Add llvm inline
+	asm stmt compilation.
+	* backend/rust-compile-expr.h: Add function prototype.
+	* backend/rust-compile-asm.h (class CompileLlvmAsm): Add llvm asm hir
+	not to gimple.
+	* backend/rust-compile-asm.cc (CompileLlvmAsm::CompileLlvmAsm): Add
+	constructor.
+	(CompileLlvmAsm::construct_operands): Add function to construct operand
+	tree.
+	(CompileLlvmAsm::construct_clobbers): Add function to construct clobber
+	tree.
+	(CompileLlvmAsm::tree_codegen_asm): Generate the whole tree for a given
+	llvm inline assembly node.
+	* checks/errors/borrowck/rust-bir-builder-expr-stmt.cc (ExprStmtBuilder::visit):
+	Add visit function.
+	* checks/errors/borrowck/rust-bir-builder-expr-stmt.h: Add function
+	prototype.
+	* checks/errors/borrowck/rust-bir-builder-lazyboolexpr.h: Add visit
+	function.
+	* checks/errors/borrowck/rust-bir-builder-struct.h: Likewise.
+	* checks/errors/borrowck/rust-function-collector.h: Likewise.
+	* checks/errors/privacy/rust-privacy-reporter.cc (PrivacyReporter::visit):
+	Likewise.
+	* checks/errors/privacy/rust-privacy-reporter.h: Add visit function
+	prototype.
+	* checks/errors/rust-const-checker.cc (ConstChecker::visit): Add visit
+	function.
+	* checks/errors/rust-const-checker.h: Add visit function prototype.
+	* checks/errors/rust-hir-pattern-analysis.cc (PatternChecker::visit):
+	Add visit function.
+	* checks/errors/rust-hir-pattern-analysis.h: Add visit function
+	prototype.
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::visit): Add
+	visit function.
+	* checks/errors/rust-unsafe-checker.h: Add function prototype.
+	* expand/rust-macro-builtins-asm.cc (parse_llvm_templates): Parse
+	templates.
+	(parse_llvm_arguments): Add function to parse non template tokens.
+	(parse_llvm_operands): Add function to parse operands, either input or
+	output.
+	(parse_llvm_outputs): Add function to parse and collect llvm asm
+	outputs.
+	(parse_llvm_inputs): Likewise with inputs.
+	(parse_llvm_clobbers): Add function to parse llvm asm clobbers.
+	(parse_llvm_options): Add function to parse llvm asm options.
+	(parse_llvm_asm): Add function to parse llvm asm.
+	* expand/rust-macro-builtins-asm.h (class LlvmAsmContext): Add context
+	for llvm asm parser.
+	(parse_llvm_outputs): Add function prototype.
+	(parse_llvm_inputs): Likewise.
+	(parse_llvm_clobbers): Likewise.
+	(parse_llvm_options): Likewise.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Lower AST llvm
+	asm node to HIR.
+	* hir/rust-ast-lower-expr.h: Add function prototype.
+	* hir/rust-hir-dump.cc (Dump::visit): Add visit function.
+	* hir/rust-hir-dump.h: Add function prototype.
+	* hir/tree/rust-hir-expr-abstract.h: Add HIR llvm asm node kind.
+	* hir/tree/rust-hir-expr.h (struct LlvmOperand): Add LlvmOperand type
+	to represent input and outputs.
+	(class LlvmInlineAsm): Add LlvmInlineAsm hir node.
+	* hir/tree/rust-hir-full-decls.h (class LlvmInlineAsm): Add
+	LlvmInlineAsm hir node forward declaration.
+	* hir/tree/rust-hir-visitor.h: Add visit functions for LlvmInlineAsm
+	hir node.
+	* hir/tree/rust-hir.cc (LlvmInlineAsm::accept_vis): Add hir node
+	visitor related functions.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit):
+	Type check input and output operands.
+	* typecheck/rust-hir-type-check-expr.h: Add function prototype.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Visit input and
+	output operand expressions.
+	* resolve/rust-ast-resolve-expr.cc (ResolveExpr::visit): Resolve input
+	and output expressions.
+	* resolve/rust-ast-resolve-expr.h: Add function prototypes.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Make visitor
+	unreachable.
+	* ast/rust-ast-collector.h: Add visit for LlvmInlineAsmNode.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Add visit
+	function for the default ast visitor.
+	* ast/rust-ast-visitor.h: Add function prototype.
+	* ast/rust-ast.cc (LlvmInlineAsm::accept_vis): Add accept_vis to
+	LlvmInlineAsm node.
+	* ast/rust-ast.h: Add LlvmInlineAsm node kind.
+	* ast/rust-expr.h (class LlvmInlineAsm): Add LlvmInlineAsm node.
+	* expand/rust-derive.h: Add visit function for LlvmInlineAsm node.
+	* expand/rust-macro-builtins-asm.cc (MacroBuiltin::llvm_asm_handler):
+	Add handler for llvm inline assembly nodes.
+	(parse_llvm_asm): Add function to parse llvm assembly nodes.
+	* expand/rust-macro-builtins-asm.h (parse_llvm_asm): Add function
+	prototypes.
+	* expand/rust-macro-builtins.cc (inline_llvm_asm_maker): Add macro
+	transcriber.
+	* expand/rust-macro-builtins.h: Add transcriber function prototype.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::visit): Add visit
+	function for LlvmInlineAsm node.
+	* hir/rust-ast-lower-base.h: Add visit function prototype.
+	* resolve/rust-ast-resolve-base.cc (ResolverBase::visit): Add visit
+	function for LlvmInlineAsm node.
+	* resolve/rust-ast-resolve-base.h: Add visit function prototype.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_asm_arg): Emit error
+	message.
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit): add diagnostic
+	* typecheck/rust-tyty.cc (BaseType::contains_infer): new helper to grab first infer var
+	* typecheck/rust-tyty.h: prototype
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust-gcc.cc (arithmetic_or_logical_expression): Ensure this is an integer
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* hir/rust-hir-dump.cc (Dump::visit): add guard for optional label
+
+2025-04-28  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* typecheck/rust-tyty.h: Remove extra redundant comment.
+	* typecheck/rust-hir-type-check-base.cc: Update comment on repr
+	handling.
+
+2025-04-28  Zhi Heng  <yapzhhg@gmail.com>
+
+	* typecheck/rust-hir-type-check-base.cc: Set enum representing
+	type properly if repr is an integer type.
+	* typecheck/rust-hir-type-check-item.cc: Update comments.
+
+2025-04-28  Zhi Heng  <yapzhhg@gmail.com>
+
+	* typecheck/rust-tyty.h: Add new `ReprKind` enum to
+	`ReprOptions`.
+	* typecheck/rust-hir-type-check-base.cc: Handle setting of
+	`repr_kind`.
+	* typecheck/rust-hir-type-check-item.cc: New check for
+	zero-variant enums.
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::visit): add null check
+	* hir/tree/rust-hir-item.h: add has_type helper
+	* typecheck/rust-hir-trait-resolve.cc (TraitItemReference::resolve_item):
+	add missing type checking
+
 2025-04-14  Arthur Cohen  <arthur.cohen@embecosm.com>
 
 	* util/rust-lang-item.h: Add new manually_drop lang item.

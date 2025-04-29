@@ -1,3 +1,38 @@
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.cc: Include "analyzer/analyzer-language.h".
+	(ana::cp_translation_unit): New class.
+	(cp_parser_translation_unit): Add call to
+	ana::on_finish_translation_unit.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* cxx-pretty-print.cc: Drop include of "make-unique.h".
+	Replace uses of ::make_unique with std::make_unique.
+	* error.cc: Likewise.
+	* name-lookup.cc: Likewise.
+	* parser.cc: Likewise.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* name-lookup.cc: Include "make-unique.h".
+	(namespace_hints::convert_candidates_to_name_hint): Use
+	::make_unique rather than "new" when making
+	show_candidate_location and suggest_alternatives.
+	(namespace_hints::maybe_decorate_with_limit): Likewise when making
+	namespace_limit_reached.
+	(suggest_alternatives_for_1): Likewise when making
+	suggest_missing_option.
+	(maybe_suggest_missing_std_header): Likewise when making
+	missing_std_header.
+	(macro_use_before_def::maybe_make): Use std::unique_ptr.
+	(macro_use_before_def::macro_use_before_def): Make public.
+	(lookup_name_fuzzy): Use ::make_unique rather than "new" when
+	making suggest_missing_header.
+	* parser.cc: Include "make-unique.h".
+	(cp_parser_error_1): Use ::make_unique rather than "new" when
+	making suggest_missing_header.
+
 2025-04-27  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/119939

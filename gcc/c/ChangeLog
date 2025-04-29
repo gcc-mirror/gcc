@@ -1,3 +1,31 @@
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.cc: Drop include of "make-unique.h".
+	Replace uses of ::make_unique with std::make_unique.
+	* c-objc-common.cc: Likewise.
+	* c-parser.cc: Likewise.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.cc: Include "make-unique.h".
+	(lookup_name_fuzzy): Use ::make_unique rather than "new" when
+	making suggest_missing_header and suggest_missing_option.
+	* c-parser.cc: Include "make-unique.h"
+	(c_parser_error_richloc): Use ::make_unique rather than "new" when
+	making suggest_missing_header.
+
+2025-04-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c/119432
+	* gimple-parser.cc (gimple_binary_identifier_code): Add
+	__ROTATE_LEFT and __ROTATE_RIGHT.
+
+2025-04-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* gimple-parser.cc (gimple_binary_identifier_code): New variable.
+	(c_parser_gimple_binary_expression): Use gimple_binary_identifier_code
+	instead of doing if statements on the strings.
+
 2025-04-27  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR c/48274

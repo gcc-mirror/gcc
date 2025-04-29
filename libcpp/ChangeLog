@@ -1,3 +1,9 @@
+2025-04-28  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c/118838
+	* errors.cc (cpp_get_diagnostic_override_loc): New function.
+	* include/cpplib.h (cpp_get_diagnostic_override_loc): Declare.
+
 2025-04-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/110343

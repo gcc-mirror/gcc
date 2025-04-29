@@ -1,3 +1,296 @@
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97111
+	* doc/invoke.texi: Add -Wanalyzer-throw-of-unexpected-type.
+	* gimple.h (gimple_call_nothrow_p): Make arg const.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-json.cc: Drop include of "make-unique.h".
+	Replace uses of ::make_unique with std::make_unique.
+	* diagnostic-format-sarif.cc: Likewise.
+	* diagnostic-format-text.cc: Likewise.
+	* diagnostic.cc: Likewise.
+	* dumpfile.cc: Likewise.
+	* gcc-attribute-urlifier.cc: Likewise.
+	* gcc-urlifier.cc: Likewise.
+	* json-parsing.cc: Likewise.
+	* json.cc: Likewise.
+	* lazy-diagnostic-path.cc: Likewise.
+	* libgdiagnostics.cc: Likewise.
+	* libsarifreplay.cc: Likewise.
+	* lto-wrapper.cc: Likewise.
+	* make-unique.h: Delete.
+	* opts-diagnostic.cc: Drop include of "make-unique.h".
+	Replace uses of ::make_unique with std::make_unique.
+	* pretty-print.cc: Likewise.
+	* text-art/style.cc: Likewise.
+	* text-art/styled-string.cc: Likewise.
+	* text-art/table.cc: Likewise.
+	* text-art/tree-widget.cc: Likewise.
+	* text-art/widget.cc: Likewise.
+	* timevar.cc: Likewise.
+	* toplev.cc: Likewise.
+	* tree-diagnostic-client-data-hooks.cc: Likewise.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* pass_manager.h (class pass_manager): Add "m_" prefix to all pass
+	fields.
+	* passes.cc (pass_manager::execute_early_local_passes): Update
+	for added "m_" prefix.
+	(pass_manager::execute_pass_mode_switching): Likewise.
+	(pass_manager::finish_optimization_passes): Likewise.
+	(pass_manager::pass_manager): Likewise.
+	(pass_manager::dump_profile_report): Likewise.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h (diagnostic_context::m_opt_permissive): Convert
+	from int to diagnostic_option_id.  Update comment.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic.h (diagnostic_context::set_abort_on_error): New.
+	(diagnostic_context::m_abort_on_error): Make private.
+	(diagnostic_abort_on_error): Delete.
+	* opts.cc (setup_core_dumping): Update for above changes.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc (sarif_builder::get_opts): New
+	accessor.
+	(sarif_builder::get_version): Update for...
+	(sarif_builder::m_version): Replace this field...
+	(sarif_builder::m_m_sarif_gen_opts): ...with this.
+	(sarif_builder::sarif_builder): Replace version with
+	sarif_gen_opts throughout.
+	(sarif_builder::make_top_level_object): Use get_version.
+	(sarif_output_format::sarif_output_format): Replace version with
+	sarif_gen_opts throughout.
+	(sarif_stream_output_format::sarif_stream_output_format):
+	Likewise.
+	(sarif_file_output_format::sarif_file_output_format): Likewise.
+	(diagnostic_output_format_init_sarif_stderr): Drop version param
+	and use default for sarif_generation_options instead.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+	(make_sarif_sink): Replace version with sarif_gen_opts throughout.
+	(sarif_generation_options::sarif_generation_options): New.
+	(selftest::test_sarif_diagnostic_context::test_sarif_diagnostic_context):
+	Replace version with sarif_gen_opts throughout.
+	(selftest::test_make_location_object): Likewise.
+	(selftest::test_simple_log): Likewise.
+	(selftest::test_simple_log_2): Likewise.
+	(selftest::test_message_with_embedded_link): Likewise.
+	(selftest::test_message_with_braces): Likewise.
+	(selftest::test_buffering): Likewise.
+	(selftest::run_tests_per_version): Replace with...
+	(selftest::for_each_sarif_gen_option): ...this...
+	(selftest::run_line_table_case_tests_per_version): ...and this.
+	(selftest::diagnostic_format_sarif_cc_tests): Update to use
+	for_each_sarif_gen_option and
+	run_line_table_case_tests_per_version.
+	* diagnostic-format-sarif.h (enum class sarif_version): Move lower
+	down.
+	(diagnostic_output_format_init_sarif_stderr): Drop "version"
+	param.
+	(diagnostic_output_format_init_sarif_file): Likewise.
+	(diagnostic_output_format_init_sarif_stream): Likewise.
+	(struct sarif_generation_options): New.
+	(make_sarif_sink): Add "formatted" param.  Replace version param
+	with sarif_gen_opts.
+	* diagnostic.cc (diagnostic_output_format_init): Drop hardcoded
+	sarif_version::v2_1_0 arguments from calls, which instead use
+	the default ctor for sarif_generation_options internally.
+	* libgdiagnostics.cc (sarif_sink::sarif_sink): Replace version
+	param with sarif_gen_opts, and update for changes to
+	make_sarif_sink.
+	(diagnostic_manager_add_sarif_sink): Use sarif_gen_opts rather
+	than version.
+	* opts-diagnostic.cc (sarif_scheme_handler::make_sink): Likewise.
+	Pass "true" for "formatted" param.
+
+2025-04-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (value_relation::swap): New.
+	(value_relation::negate): Remove.
+	(dom_oracle::next_relation): New.
+	(block_relation_iterator::block_relation_iterator): New.
+	(block_relation_iterator::get_next_relation): New.
+	(dom_oracle::dump): Use iterator.
+	* value-relation.h (relation_oracle::next_relation): New.
+	(dom_oracle::next_relation): New prototype.
+	(class block_relation_iterator): New.
+	(FOR_EACH_RELATION_BB): New.
+	(FOR_EACH_RELATION_NAME): New.
+
+2025-04-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op-ptr.cc (range_operator::lhs_op1_relation): Add
+	prange/prange/irange (PPI) default.
+	(pointer_plus_operator::lhs_op1_relation): New.
+	* range-op.cc (range_op_handler::lhs_op1_relation): Add RO_PPI case.
+	* range-op.h (range_op_handler::lhs_op1_relation): Add prototype.
+
+2025-04-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_range_op): Use a
+	new local variable for intermediate relation results.
+
+2025-04-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::apply_inferred_ranges): Pass
+	'this' as the range-query to the inferred range constructor.
+
+2025-04-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/95801
+	* range-op.cc (operator_div::op2_range): New.
+
+2025-04-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/119712
+	* value-range.cc (range_bitmask::adjust_range): Delete.
+	(irange::set_range_from_bitmask): Integrate adjust_range.
+	(irange::update_bitmask): Do nothing if bitmask doesnt change.
+	(irange:intersect_bitmask): Do not call adjust_range. Exit if there
+	is no second bitmask.
+	* value-range.h (adjust_range): Remove prototype.
+
+2025-04-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/67797
+	* tree-tailcall.cc (find_tail_calls): Add support for ERF_RETURNS_ARG.
+
+2025-04-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-cfg.cc (verify_gimple_cond): Error out if the comparison
+	throws.
+
+2025-04-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c/119432
+	* tree-pretty-print.cc (op_symbol_code): For LROTATE_EXPR,
+	output __ROTATE_LEFT for gimple.
+	For RROTATE_EXPR output __ROTATE_RIGHT for gimple.
+
+2025-04-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* rtl.h (native_decode_int): Declare.
+	* simplify-rtx.cc (native_decode_int): New function, split out from...
+	(native_decode_rtx): ...here.
+
+2025-04-28  H.J. Lu  <hjl.tools@gmail.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/109780
+	PR target/109093
+	* config/i386/i386.cc (stack_access_data): New.
+	(ix86_update_stack_alignment): Likewise.
+	(ix86_find_all_reg_use_1): Likewise.
+	(ix86_find_all_reg_use): Likewise.
+	(ix86_find_max_used_stack_alignment): Also check memory accesses
+	from registers defined by stack or frame registers.
+
+2025-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/119973
+	* tree-ssa-structalias.cc (create_variable_info_for):
+	Build constraints from DECL_INITIAL directly rather than
+	the IPA reference list which is incomplete.
+
+2025-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR lto/113207
+	* ipa-free-lang-data.cc (fld_type_variant): Add extra checking.
+
+2025-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119044
+	* tree-predcom.cc (ref_at_iteration): Copy alias info
+	from the original ref.
+
+2025-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119103
+	* tree-ssa-loop-im.cc (in_loop_pipeline): Globalize.
+	(compute_invariantness): Override costing when we run
+	right before PRE and PRE is enabled.
+	(pass_lim::execute): Adjust.
+	* tree-vect-patterns.cc (vect_determine_precisions_from_users):
+	For variable shift amounts use range information.
+
+2025-04-28  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.cc (::gen_transform): Add in_place parameter.
+	Assert it isn't set in unexpected places.
+	(possible_noop_convert): New.
+	(expr::gen_transform): Support in_place and emit code to
+	compute a child in-place when the operation is a conversion.
+	(dt_simplify::gen_1): Arrange for an outermost conversion
+	to be elided by generating the transform of the operand
+	in-place.
+	* match.pd (__real cepxi (x) -> cos (x)): Use single_use.
+
+2025-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60779
+	* common.opt (fcx-method=): New, map to flag_complex_method.
+	(Enum complex_method): New.
+	(fcx-limited-range): Alias to -fcx-method=limited-range.
+	(fcx-fortran-rules): Alias to -fcx-medhot=fortran.
+	* ipa-inline-transform.cc (inline_call): Check flag_complex_method.
+	* ipa-inline.cc (can_inline_edge_by_limits_p): Likewise.
+	* opts.cc (finish_options): Adjust.
+	(set_fast_math_flags): Likewise.
+	* doc/invoke.texi (fcx-method=): Document.
+
+2025-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/116083
+	* stor-layout.cc (layout_type): Compute TYPE_SIZE and
+	TYPE_SIZE_UNIT for vector types from the component mode
+	sizes.
+
+2025-04-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_loop_operations): Prune
+	all actual analysis and only fail when we discover a not
+	SLP covered stmt.
+	(vect_analyze_loop_2): Remove path trying without SLP.
+
+2025-04-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_loop_kill_debug_uses): Remove.
+	(maybe_set_vectorized_backedge_value): Likewise.
+	(vect_transform_loop_stmt): Likewise.  Move dump printing
+	to vect_transform_stmt.
+	(vect_transform_loop): Remove loop over loop stmts transforming
+	them, but retain some DCE code still necessary.
+	* tree-vect-stmts.cc (vect_transform_stmt): Dump that
+	we're vectorizing a stmt.
+
+2025-04-28  Richard Biener  <rguenther@suse.de>
+
+	* params.opt (--param=vect-force-slp): Remove.
+	* doc/invoke.texi (--param=vect-force-slp): Likewise.
+	* tree-vect-loop.cc (vect_analyze_loop_2): Assume
+	param_vect_force_slp is 1.
+	* tree-vect-stmts.cc (vect_analyze_stmt): Likewise.
+
+2025-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119493
+	* tree-tailcall.cc (find_tail_calls): Handle non-gimple_reg_type
+	arguments which aren't just passed through for tail recursions
+	even for non-musttail calls.
+
+2025-04-28  LIU Hao  <lh_mouse@126.com>
+
+	PR target/111107
+	* config/i386/cygming.h (STACK_REALIGN_DEFAULT): Copy from sol2.h.
+
 2025-04-27  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR c/48274

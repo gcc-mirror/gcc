@@ -1,3 +1,315 @@
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111536
+	* c-c++-common/analyzer/hard-reg-1.c: New test.
+	* g++.dg/analyzer/nrvo-1.C: New test.
+	* g++.dg/analyzer/nrvo-2.C: New test.
+	* g++.dg/analyzer/nrvo-pr111536-1.C: New test.
+	* g++.dg/analyzer/nrvo-pr111536-1b.C: New test.
+	* g++.dg/analyzer/nrvo-pr111536-2.C: New test.
+	* g++.dg/analyzer/nrvo-pr111536-2b.C: New test.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109366
+	* g++.dg/analyzer/unique_ptr-1.C: New test.
+	* g++.dg/analyzer/unique_ptr-2.C: New test.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97111
+	* c-c++-common/analyzer/analyzer-verbosity-2a.c: Add
+	-fno-exceptions.
+	* c-c++-common/analyzer/analyzer-verbosity-3a.c: Likewise.
+	* c-c++-common/analyzer/attr-const-2.c: Add
+	__attribute__((nothrow)).
+	* c-c++-common/analyzer/attr-malloc-4.c: Likewise.
+	* c-c++-common/analyzer/attr-malloc-5.c: Likewise.
+	* c-c++-common/analyzer/attr-malloc-6.c: Add -fno-exceptions.
+	* c-c++-common/analyzer/attr-malloc-CVE-2019-19078-usb-leak.c:
+	Likewise.
+	* c-c++-common/analyzer/attr-malloc-exception.c: New test.
+	* c-c++-common/analyzer/call-summaries-pr107158-2.c: Add
+	-fno-exceptions.
+	* c-c++-common/analyzer/call-summaries-pr107158.c: Likewise.
+	* c-c++-common/analyzer/capacity-2.c: Likewise.
+	* c-c++-common/analyzer/coreutils-sum-pr108666.c: Likewise.
+	* c-c++-common/analyzer/data-model-22.c: Likewise.
+	* c-c++-common/analyzer/data-model-5d.c: Likewise.
+	* c-c++-common/analyzer/deref-before-check-pr108455-git-pack-revindex.c:
+	Likewise.
+	* c-c++-common/analyzer/deref-before-check-pr108475-haproxy-tcpcheck.c:
+	Likewise.
+	* c-c++-common/analyzer/edges-2.c: Likewise.
+	* c-c++-common/analyzer/fd-2.c: Likewise.
+	* c-c++-common/analyzer/fd-3.c: Likewise.
+	* c-c++-common/analyzer/fd-meaning.c: Likewise.
+	* c-c++-common/analyzer/file-1.c: Likewise.
+	* c-c++-common/analyzer/file-3.c: Likewise.
+	* c-c++-common/analyzer/file-meaning-1.c: Likewise.
+	* c-c++-common/analyzer/infinite-recursion.c: Likewise.
+	* c-c++-common/analyzer/leak-3.c: Likewise.
+	* c-c++-common/analyzer/malloc-dedupe-1.c: Likewise.
+	* c-c++-common/analyzer/malloc-in-loop.c: Likewise.
+	* c-c++-common/analyzer/malloc-many-paths-3.c: Likewise.
+	* c-c++-common/analyzer/malloc-paths-5.c: Likewise.
+	* c-c++-common/analyzer/malloc-paths-7.c: Likewise.
+	* c-c++-common/analyzer/malloc-paths-8.c: Likewise.
+	* c-c++-common/analyzer/malloc-vs-local-1a.c: Likewise.
+	* c-c++-common/analyzer/malloc-vs-local-2.c: Likewise.
+	* c-c++-common/analyzer/malloc-vs-local-3.c: Likewise.
+	* c-c++-common/analyzer/paths-7.c: Likewise.
+	* c-c++-common/analyzer/pr110830.c: Likewise.
+	* c-c++-common/analyzer/pr93032-mztools-simplified.c: Likewise.
+	* c-c++-common/analyzer/pr93355-localealias-feasibility-3.c:
+	Likewise.
+	* c-c++-common/analyzer/pr93355-localealias-simplified.c:
+	Likewise.
+	* c-c++-common/analyzer/pr96650-1-trans.c: Likewise.
+	* c-c++-common/analyzer/pr97072.c: Add __attribute__((nothrow)).
+	* c-c++-common/analyzer/pr98575-1.c: Likewise.
+	* c-c++-common/analyzer/pr99716-1.c: Add -fno-exceptions.
+	* c-c++-common/analyzer/pr99716-2.c: Likewise.
+	* c-c++-common/analyzer/pr99716-3.c: Likewise.
+	* c-c++-common/analyzer/pragma-2.c: Likewise.
+	* c-c++-common/analyzer/rhbz1878600.c: Likewise.
+	* c-c++-common/analyzer/strndup-1.c: Likewise.
+	* c-c++-common/analyzer/write-to-string-literal-4-disabled.c:
+	Likewise.
+	* c-c++-common/analyzer/write-to-string-literal-4.c: Likewise.
+	* c-c++-common/analyzer/write-to-string-literal-5.c: Likewise.
+	* c-c++-common/analyzer/zlib-5.c: Likewise.
+	* g++.dg/analyzer/exception-could-throw-1.C: New test.
+	* g++.dg/analyzer/exception-could-throw-2.C: New test.
+	* g++.dg/analyzer/exception-dynamic-spec.C: New test.
+	* g++.dg/analyzer/exception-leak-1.C: New test.
+	* g++.dg/analyzer/exception-leak-2.C: New test.
+	* g++.dg/analyzer/exception-leak-3.C: New test.
+	* g++.dg/analyzer/exception-leak-4.C: New test.
+	* g++.dg/analyzer/exception-leak-5.C: New test.
+	* g++.dg/analyzer/exception-leak-6.C: New test.
+	* g++.dg/analyzer/exception-nothrow.C: New test.
+	* g++.dg/analyzer/exception-path-1.C: New test.
+	* g++.dg/analyzer/exception-path-catch-all-1.C: New test.
+	* g++.dg/analyzer/exception-path-catch-all-2.C: New test.
+	* g++.dg/analyzer/exception-path-unwind-multiple-2.C: New test.
+	* g++.dg/analyzer/exception-path-unwind-multiple.C: New test.
+	* g++.dg/analyzer/exception-path-unwind-single.C: New test.
+	* g++.dg/analyzer/exception-path-with-cleanups.C: New test.
+	* g++.dg/analyzer/exception-rethrow-1.C: New test.
+	* g++.dg/analyzer/exception-rethrow-2.C: New test.
+	* g++.dg/analyzer/exception-stack-1.C: New test.
+	* g++.dg/analyzer/exception-stack-2.C: New test.
+	* g++.dg/analyzer/exception-subclass-1.C: New test.
+	* g++.dg/analyzer/exception-subclass-2.C: New test.
+	* g++.dg/analyzer/exception-value-1.C: New test.
+	* g++.dg/analyzer/exception-value-2.C: New test.
+	* g++.dg/analyzer/fno-exception.C: New test.
+	* g++.dg/analyzer/pr94028.C: Drop xfail.
+	* g++.dg/analyzer/std-unexpected.C: New test.
+	* g++.dg/coroutines/pr105287.C: Drop dg-excess-errors.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_cpython_plugin.cc: Drop include of
+	"make-unique.h".  Replace uses of ::make_unique with
+	std::make_unique.
+	* gcc.dg/plugin/analyzer_gil_plugin.cc: Likewise.
+	* gcc.dg/plugin/analyzer_kernel_plugin.cc: Likewise.
+	* gcc.dg/plugin/analyzer_known_fns_plugin.cc: Likewise.
+	* gcc.dg/plugin/diagnostic_group_plugin.cc: Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_xhtml_format.cc: Likewise.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_gil_plugin.cc: Convert gcall * to gcall &
+	where we know the pointer must be non-null.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_cpython_plugin.cc: Convert
+	enum poison_kind to "enum class".
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_cpython_plugin.cc: Update for renaming
+	of analyzer/analyzer.h to analyzer/common.h.
+	* gcc.dg/plugin/analyzer_gil_plugin.cc: Likewise.
+	* gcc.dg/plugin/analyzer_kernel_plugin.cc: Likewise.
+	* gcc.dg/plugin/analyzer_known_fns_plugin.cc: Likewise.
+
+2025-04-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/95801
+	* gcc.dg/tree-ssa/pr95801.c: New.
+
+2025-04-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/119712
+	* gcc.dg/pr119712.c: New.
+	* gcc.dg/pr83072-2.c: Adjust.
+	* gcc.dg/tree-ssa/phi-opt-value-5.c: Adjust.
+	* gcc.dg/tree-ssa/vrp122.c: Adjust
+
+2025-04-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/67797
+	* gcc.dg/tree-ssa/tailcall-14.c: New test.
+	* gcc.dg/tree-ssa/tailcall-15.c: New test.
+
+2025-04-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR c/119432
+	* gcc.dg/gimplefe-57.c: New test.
+
+2025-04-28  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/100038
+	* g++.dg/tree-ssa/pr100038.C: New test.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove now passing test from exclusion
+	list.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove passing test from exclusion list.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/multiple_bindings1.rs: Add missing lang items.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove test from exclusion list.
+	* rust/compile/use_1.rs: Change expected output and remove test from
+	nr1.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/generics9.rs: Change expected error message.
+	* rust/compile/nr2/exclude: Remove test from exclusion list.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/nr2/exclude: Remove passing test from exclusion list.
+
+2025-04-28  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entry.
+
+2025-04-28  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/derive-debug1.rs: Adjust a path.
+	* rust/compile/nr2/exclude: Remove derive-debug1.rs.
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 is missing error for this
+	* rust/compile/issue-3649.rs: New test.
+
+2025-04-28  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/issue-3568.rs: Adjust expected errors.
+	* rust/compile/name_resolution9.rs: Likewise.
+	* rust/compile/self-path2.rs: Likewise.
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nonexistent-field.rs: fix bad error message
+	* rust/compile/issue-3581-1.rs: New test.
+	* rust/compile/issue-3581-2.rs: New test.
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/nr2/exclude: nr2 does not error on the T it should require Self::T
+	* rust/compile/issue-3652.rs: New test.
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/macros/mbe/macro-issue2983_2984.rs: cleanup error diagnotics
+	* rust/compile/struct_init1.rs: likewise
+	* rust/compile/issue-3628.rs: New test.
+
+2025-04-28  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/nr2/exclude: Remove entry.
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3662.rs: New test.
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3711.rs: New test.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/black_box.rs: New test.
+
+2025-04-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/execute/black_box.rs: New test.
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-402.rs: New test.
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3664.rs: New test.
+
+2025-04-28  Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/issue-3530-1.rs: New file.
+	* rust/compile/issue-3530-2.rs: New file.
+
+2025-04-28  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3612.rs: New test.
+
+2025-04-28  H.J. Lu  <hjl.tools@gmail.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/109780
+	PR target/109093
+	* g++.target/i386/pr109780-1.C: New test.
+	* gcc.target/i386/pr109093-1.c: Likewise.
+	* gcc.target/i386/pr109780-1.c: Likewise.
+	* gcc.target/i386/pr109780-2.c: Likewise.
+	* gcc.target/i386/pr109780-3.c: Likewise.
+
+2025-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/119973
+	* gcc.dg/torture/pr119973.c: New testcase.
+
+2025-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119103
+	* gcc.target/i386/pr119103.c: New testcase.
+
+2025-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/60779
+	* gcc.dg/lto/pr60779_0.c: New testcase.
+	* gcc.dg/lto/pr60779_1.c: Likewise.
+
+2025-04-28  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR c/118838
+	* c-c++-common/cpp/pragma-diagnostic-loc-2.c: New test.
+	* g++.dg/gomp/macro-4.C: Adjust expected output.
+	* gcc.dg/gomp/macro-4.c: Likewise.
+	* gcc.dg/cpp/Wunknown-pragmas-1.c: Likewise.
+
+2025-04-28  Jonathan Yong  <10walls@gmail.com>
+
+	* gcc.dg/graphite/id-15.c: Use __SIZE_TYPE__ instead of
+	unsigned long.
+	* gcc.dg/plugin/infoleak-net-ethtool-ioctl.c: ditto.
+
 2025-04-27  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/119939

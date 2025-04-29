@@ -1,3 +1,422 @@
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/111536
+	* engine.cc (maybe_update_for_edge): Update for new call_stmt
+	param to region_model::push_frame.
+	* program-state.cc (program_state::push_frame): Likewise.
+	* region-model.cc (region_model::update_for_gcall): Likewise.
+	(region_model::push_frame): Add "call_stmt" param.
+	Handle DECL_RESULT with DECL_BY_REFERENCE set on it by stashing
+	the region of the lhs of the call_stmt in the caller frame,
+	and writing a reference to it within the "result" in the callee
+	frame.
+	(region_model::pop_frame): Don't write back to the LHS for
+	DECL_BY_REFERENCE results.
+	(selftest::test_stack_frames): Update for new call_stmt param to
+	region_model::push_frame.
+	(selftest::test_get_representative_path_var): Likewise.
+	(selftest::test_state_merging): Likewise.
+	(selftest::test_alloca): Likewise.
+	* region-model.h (region_model::push_frame): Add "call_stmt"
+	param.
+	* region.cc: Include "tree-ssa.h".
+	(region::can_have_initial_svalue_p): Use ssa_defined_default_def_p
+	for ssa names, rather than special-casing it for just parameters.
+	This should now also cover DECL_RESULT with DECL_BY_REFERENCE and
+	hard registers.
+	* sm-signal.cc (update_model_for_signal_handler): Update for new
+	call_stmt param to region_model::push_frame.
+	* state-purge.cc (state_purge_per_decl::process_worklists):
+	Likewise.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109366
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_sub_svalue): Sub-values of zero
+	constants are zero.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/97111
+	* analyzer.cc (is_cxa_throw_p): New.
+	(is_cxa_rethrow_p): New.
+	* analyzer.opt (Wanalyzer-throw-of-unexpected-type): New.
+	* analyzer.opt.urls: Regenerate.
+	* call-info.cc (custom_edge_info::create_enode): New.
+	* call-info.h (call_info::print): Drop "final".
+	(call_info::add_events_to_path): Likewise.
+	* checker-event.cc (event_kind_to_string): Add cases for
+	event_kind::catch_, event_kind::throw_, and event_kind::unwind.
+	(explicit_throw_event::print_desc): New.
+	(throw_from_call_to_external_fn_event::print_desc): New.
+	(unwind_event::print_desc): New.
+	* checker-event.h (enum class event_kind): Add catch_, throw_,
+	and unwind.
+	(class catch_cfg_edge_event): New.
+	(class throw_event): New.
+	(class explicit_throw_event): New.
+	(class throw_from_call_to_external_fn_event): New.
+	(class unwind_event): New.
+	* common.h (class eh_dispatch_cfg_superedge): New forward decl.
+	(class eh_dispatch_try_cfg_superedge): New forward decl.
+	(class eh_dispatch_allowed_cfg_superedge): New forward decl.
+	(custom_edge_info::create_enode): New vfunc decl.
+	(is_cxa_throw_p): New decl.
+	(is_cxa_rethrow_p): New decl.
+	* diagnostic-manager.cc
+	(diagnostic_manager::add_events_for_superedge): Special-case edges
+	for eh_dispach_try.
+	(diagnostic_manager::prune_path): Call consolidate_unwind_events.
+	(diagnostic_manager::prune_for_sm_diagnostic): Don't filter the new
+	event_kinds.
+	(diagnostic_manager::consolidate_unwind_events): New.
+	* diagnostic-manager.h
+	(diagnostic_manager::consolidate_unwind_events): New decl.
+	* engine.cc (exploded_node::on_stmt_pre): Handle "__cxa_throw",
+	"__cxa_rethrow", and resx statements.
+	(class throw_custom_edge): New.
+	(class unwind_custom_edge): New.
+	(get_eh_outedge): New.
+	(exploded_graph::unwind_from_exception): New.
+	(exploded_node::on_throw): New.
+	(exploded_node::on_resx): New.
+	(exploded_graph::get_or_create_node): Add "add_to_worklist" param
+	and use it.
+	(exploded_graph::process_node): Use edge_info's create_enode vfunc
+	to create enodes, rather than calling get_or_create_node directly.
+	Ignore CFG edges in the sgraph flagged with EH whilst we're
+	exploring the egraph.
+	(exploded_graph_annotator::print_enode): Handle case
+	exploded_node::status::special.
+	* exploded-graph.h (exploded_node::status): Add value "special".
+	(exploded_node::on_throw): New decl.
+	(exploded_node::on_resx): New decl.
+	(exploded_graph::get_or_create_node): Add optional
+	"add_to_worklist" param.
+	(exploded_graph::unwind_from_exception): New decl.
+	* kf-lang-cp.cc (class kf_cxa_allocate_exception): New.
+	(class kf_cxa_begin_catch): New.
+	(class kf_cxa_end_catch): New.
+	(class throw_of_unexpected_type): New.
+	(class kf_cxa_call_unexpected): New.
+	(register_known_functions_lang_cp): Register known functions
+	"__cxa_allocate_exception", "__cxa_begin_catch",
+	"__cxa_end_catch", and "__cxa_call_unexpected".
+	* kf.cc (class kf_eh_pointer): New.
+	(register_known_functions): Register it for BUILT_IN_EH_POINTER.
+	* region-model.cc: Include "analyzer/function-set.h".
+	(exception_node::operator==): New.
+	(exception_node::dump_to_pp): New.
+	(exception_node::dump): New.
+	(exception_node::to_json): New.
+	(exception_node::make_dump_widget): New.
+	(exception_node::maybe_get_type): New.
+	(exception_node::add_to_reachable_regions): New.
+	(region_model::region_model): Initialize
+	m_thrown_exceptions_stack and m_caught_exceptions_stack.
+	(region_model::operator=): Likewise.
+	(region_model::operator==): Compare them.
+	(region_model::dump_to_pp): Dump exception stacks.
+	(region_model::to_json): Add exception stacks.
+	(region_model::make_dump_widget): Likewise.
+	(class exception_thrown_from_unrecognized_call): New.
+	(get_fns_assumed_not_to_throw): New.
+	(can_throw_p): New.
+	(region_model::check_for_throw_inside_call): New.
+	(region_model::on_call_pre): Call check_for_throw_inside_call
+	on unknown fns or those we don't have a body for.
+	(region_model::maybe_update_for_edge): Handle eh_dispatch_stmt
+	statements.  Drop old code that called
+	apply_constraints_for_exception on EDGE_EH edges.
+	(class rejected_eh_dispatch): New.
+	(exception_matches_type_p): New.
+	(matches_any_exception_type_p): New.
+	(region_model::apply_constraints_for_eh_dispatch): New.
+	(region_model::apply_constraints_for_eh_dispatch_try): New.
+	(region_model::apply_constraints_for_eh_dispatch_allowed): New.
+	(region_model::apply_constraints_for_exception): Delete.
+	(region_model::can_merge_with_p): Don't merge models with
+	non-equal exception stacks.
+	(region_model::get_referenced_base_regions): Add regions from
+	exception stacks.
+	* region-model.h (struct exception_node): New.
+	(region_model::push_thrown_exception): New.
+	(region_model::get_current_thrown_exception): New.
+	(region_model::pop_thrown_exception): New.
+	(region_model::push_caught_exception): New.
+	(region_model::get_current_caught_exception): New.
+	(region_model::pop_caught_exception): New.
+	(region_model::apply_constraints_for_eh_dispatch_try): New decl.
+	(region_model::apply_constraints_for_eh_dispatch_allowed) New decl.
+	(region_model::apply_constraints_for_exception): Delete.
+	(region_model::apply_constraints_for_eh_dispatch): New decl.
+	(region_model::check_for_throw_inside_call): New decl.
+	(region_model::m_thrown_exceptions_stack): New field.
+	(region_model::m_caught_exceptions_stack): New field.
+	* supergraph.cc: Include "except.h" and "analyzer/region-model.h".
+	(supergraph::add_cfg_edge): Special-case eh_dispatch edges.
+	(superedge::get_description): Use default_tree_printer.
+	(get_catch): New.
+	(eh_dispatch_cfg_superedge::make): New.
+	(eh_dispatch_cfg_superedge::eh_dispatch_cfg_superedge): New.
+	(eh_dispatch_cfg_superedge::get_eh_status): New.
+	(eh_dispatch_try_cfg_superedge::dump_label_to_pp): New.
+	(eh_dispatch_try_cfg_superedge::apply_constraints): New.
+	(eh_dispatch_allowed_cfg_superedge::eh_dispatch_allowed_cfg_superedge):
+	New.
+	(eh_dispatch_allowed_cfg_superedge::dump_label_to_pp): New.
+	(eh_dispatch_allowed_cfg_superedge::apply_constraints): New.
+	* supergraph.h: Include "except.h".
+	(superedge::dyn_cast_eh_dispatch_cfg_superedge): New vfunc.
+	(superedge::dyn_cast_eh_dispatch_try_cfg_superedge): New vfunc.
+	(superedge::dyn_cast_eh_dispatch_allowed_cfg_superedge): New
+	vfunc.
+	(class eh_dispatch_cfg_superedge): New.
+	(is_a_helper <const eh_dispatch_cfg_superedge *>::test): New.
+	(class eh_dispatch_try_cfg_superedge): New.
+	(is_a_helper <const eh_dispatch_try_cfg_superedge *>::test): New.
+	(class eh_dispatch_allowed_cfg_superedge): New.
+	(is_a_helper <const eh_dispatch_allowed_cfg_superedge *>::test):
+	New.
+	* svalue.cc (svalue::maybe_get_type_from_typeinfo): New.
+	* svalue.h (svalue::maybe_get_type_from_typeinfo): New decl.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* access-diagram.cc: Replace uses of ::make_unique with
+	std::make_unique.
+	* analyzer.cc: Likewise.
+	* bounds-checking.cc: Likewise.
+	* call-details.cc: Likewise.
+	* call-info.cc: Likewise.
+	* call-string.cc: Likewise.
+	* checker-path.cc: Likewise.
+	* common.h: Drop include of "make-unique.h".
+	* constraint-manager.cc: Replace uses of ::make_unique with
+	std::make_unique.
+	* diagnostic-manager.cc: Likewise.
+	* engine.cc: Likewise.
+	* infinite-loop.cc: Likewise.
+	* infinite-recursion.cc: Likewise.
+	* kf-analyzer.cc: Likewise.
+	* kf-lang-cp.cc: Likewise.
+	* kf.cc: Likewise.
+	* pending-diagnostic.cc: Likewise.
+	* program-point.cc: Likewise; drop #include.
+	* program-state.cc: Likewise.
+	* ranges.cc: Likewise.
+	* region-model.cc: Likewise.
+	* region.cc: Likewise; drop #include.
+	* sm-fd.cc: Likewise.
+	* sm-file.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+	* sm-pattern-test.cc: Likewise.
+	* sm-sensitive.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* sm-taint.cc: Likewise.
+	* sm.cc: Likewise.
+	* store.cc: Likewise.
+	* supergraph.cc: Likewise.
+	* svalue.cc: Likewise; drop #include.
+	* varargs.cc: Likewise.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (class plugin_analyzer_init_impl): Convert
+	"m_checkers" to use std::vector of std::unique_ptr.  Convert
+	"m_known_fn_mgr" to a reference.
+	(impl_run_checkers): Convert "checkers" to use std::vector of
+	std::unique_ptr and move it into the extrinsic_state.
+	* program-state.cc (extrinsic_state::dump_to_pp): Update for
+	changes to m_checkers.
+	(extrinsic_state::to_json): Likewise.
+	(extrinsic_state::get_sm_idx_by_name): Likewise.
+	(selftest::test_sm_state_map): Update to use std::unique_ptr
+	for state machines.
+	(selftest::test_program_state_1): Likewise.
+	(selftest::test_program_state_2): Likewise.
+	(selftest::test_program_state_merging): Likewise.
+	(selftest::test_program_state_merging_2): Likewise.
+	* program-state.h (class extrinsic_state): Convert "m_checkers" to
+	use std::vector of std::unique_ptr and to be owned by this object,
+	rather than a reference.  Add ctor for use in selftests.
+	* sm-fd.cc (make_fd_state_machine): Update to use std::unique_ptr.
+	* sm-file.cc (make_fileptr_state_machine): Likewise.
+	* sm-malloc.cc (make_malloc_state_machine): Likewise.
+	* sm-pattern-test.cc (make_pattern_test_state_machine): Likewise.
+	* sm-sensitive.cc (make_sensitive_state_machine): Likewise.
+	* sm-signal.cc (make_signal_state_machine): Likewise.
+	* sm-taint.cc (make_taint_state_machine): Likewise.
+	* sm.cc: Define INCLUDE_LIST.
+	(make_checkers): Return the vector directly, rather than pass it
+	in by reference.  Update to use std::unique_ptr throughout.  Use
+	an intermediate list, and use that to filter with
+	flag_analyzer_checker, fixing memory leak for this case.
+	* sm.h: (make_checkers): Return the vector directly, rather than
+	pass it in by reference, and use std::vector of std::unique_ptr.
+	(make_malloc_state_machine): Convert return type to use std::unique_ptr.
+	(make_fileptr_state_machine): Likewise.
+	(make_taint_state_machine): Likewise.
+	(make_sensitive_state_machine): Likewise.
+	(make_signal_state_machine): Likewise.
+	(make_pattern_test_state_machine): Likewise.
+	(make_va_list_state_machine): Likewise.
+	(make_fd_state_machine): Likewise.
+	* varargs.cc (make_va_list_state_machine): Update to use
+	std::unique_ptr.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-summary.cc (call_summary_replay::call_summary_replay):
+	Convert "summary" from call_summary * to call_summary &.
+	(call_summary_replay::dump_to_pp): Likewise for m_summary.
+	* call-summary.h (call_summary_replay::call_summary_replay):
+	Likewise for "summary".
+	(call_summary_replay::m_summary): Likewise.
+	* engine.cc (call_summary_edge_info::call_summary_edge_info):
+	Likewise.
+	(call_summary_edge_info::update_state): Likewise.
+	(call_summary_edge_info::update_model): Likewise.
+	(call_summary_edge_info::print_desc): Likewise for m_summary.
+	(call_summary_edge_info::m_summary): Likewise.
+	(exploded_node::replay_call_summaries): Update for change to
+	replay_call_summary.
+	(exploded_node::replay_call_summary): Convert "summary" from
+	call_summary * to call_summary &.
+	* exploded-graph.h (exploded_node::replay_call_summary): Likewise.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.cc: Convert gcall * to gcall & where we know the
+	pointer must be non-null.
+	* call-details.cc: Likewise.
+	* call-details.h: Likewise.
+	* call-info.cc: Likewise.
+	* call-info.h: Likewise.
+	* call-summary.h: Likewise.
+	* checker-event.cc: Likewise.
+	* checker-event.h: Likewise.
+	* common.h: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	* engine.cc: Likewise.
+	* exploded-graph.h: Likewise.
+	* kf-analyzer.cc: Likewise.
+	* kf-lang-cp.cc: Likewise.
+	* kf.cc: Likewise.
+	* known-function-manager.cc: Likewise.
+	* program-state.cc: Likewise.
+	* program-state.h: Likewise.
+	* region-model.cc: Likewise.
+	* region-model.h: Likewise.
+	* sm-fd.cc: Likewise.
+	* sm-file.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+	* sm-sensitive.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* sm-taint.cc: Likewise.
+	* sm.h: Likewise.
+	* store.cc: Likewise.
+	* store.h: Likewise.
+	* supergraph.cc: Likewise.
+	* supergraph.h: Likewise.
+	* svalue.h: Likewise.
+	* varargs.cc: Likewise.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* access-diagram.cc: Convert enum access_direction to
+	"enum class".
+	* bounds-checking.cc: Likewise.
+	* checker-event.cc: Convert enum event_kind to "enum class".
+	* checker-event.h: Likewise.
+	* checker-path.cc: Likewise.
+	* common.h: Convert enum access_direction to "enum class".
+	* constraint-manager.cc: Convert enum bound_kind to "enum class".
+	* constraint-manager.h: Likewise.
+	* diagnostic-manager.cc: Convert enum event_kind to "enum class".
+	* engine.cc: Convert enum status to "enum class".
+	* exploded-graph.h: Likewise.
+	* infinite-loop.cc: Likewise.
+	* kf-lang-cp.cc: Convert enum poison_kind to "enum class".
+	* kf.cc: Likewise.
+	* region-model-manager.cc: Likewise.
+	* region-model.cc: Likewise; also for enum access_direction.
+	* svalue.cc: Likewise.
+	* svalue.h: Likewise.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h: Rename to...
+	* common.h: ...this.  Add define of INCLUDE_VECTOR, includes of
+	"config.h", "system.h", "coretypes.h", "make-unique.h", "tree.h",
+	"function.h", "basic-block.h", "gimple.h", "options.h",
+	"bitmap.h", "diagnostic-core.h", and "diagnostic-path.h".
+	* access-diagram.h: Don't include "analyzer/analyzer.h".
+	* access-diagram.cc: Reorganize includes to #include
+	"analyzer/common.h" first, then group by subsystem, dropping
+	redundant headers.
+	* analysis-plan.cc: Likewise.
+	* analyzer-language.cc: Likewise.
+	* analyzer-pass.cc: Likewise.
+	* analyzer-selftests.cc: Likewise.
+	* analyzer.cc: Likewise.
+	* bounds-checking.cc: Likewise.
+	* call-details.cc: Likewise.
+	* call-info.cc: Likewise.
+	* call-string.cc: Likewise.
+	* call-summary.cc: Likewise.
+	* checker-event.cc: Likewise.
+	* checker-path.cc: Likewise.
+	* complexity.cc: Likewise.
+	* constraint-manager.cc: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	* engine.cc: Likewise.
+	* feasible-graph.cc: Likewise.
+	* infinite-loop.cc: Likewise.
+	* infinite-recursion.cc: Likewise.
+	* kf-analyzer.cc: Likewise.
+	* kf-lang-cp.cc: Likewise.
+	* kf.cc: Likewise.
+	* known-function-manager.cc: Likewise.
+	* pending-diagnostic.cc: Likewise.
+	* program-point.cc: Likewise.
+	* program-state.cc: Likewise.
+	* ranges.cc: Likewise.
+	* record-layout.cc: Likewise.
+	* region-model-asm.cc: Likewise.
+	* region-model-manager.cc: Likewise.
+	* region-model-reachability.cc: Likewise.
+	* region-model.cc: Likewise.
+	* region.cc: Likewise.
+	* sm-fd.cc: Likewise.
+	* sm-file.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+	* sm-pattern-test.cc: Likewise.
+	* sm-sensitive.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* sm-taint.cc: Likewise.
+	* sm.cc: Likewise.
+	* state-purge.cc: Likewise.
+	* store.cc: Likewise.
+	* supergraph.cc: Likewise.
+	* svalue.cc: Likewise.
+	* symbol.cc: Likewise.
+	* trimmed-graph.cc: Likewise.
+	* varargs.cc: Likewise.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::on_stmt_pre): Use internal_error
+	if we see an unexpected gimple stmt code.
+
+2025-04-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* call-details.cc (call_details::dump): New overload.
+	(call_details::make_dump_widget): New.
+	* call-details.h (call_details::dump): Declare new overload.
+	(call_details::make_dump_widget): New decl.
+
 2025-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR analyzer/119278

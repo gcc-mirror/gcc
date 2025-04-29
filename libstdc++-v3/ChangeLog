@@ -1,3 +1,67 @@
+2025-04-28  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	* testsuite/20_util/shared_ptr/requirements/1.cc: Test both
+	shared_ptr and weak_ptr.
+	Add more tests.
+	* testsuite/20_util/weak_ptr/requirements/1.cc: Removed as
+	superseded by the other test.
+
+2025-04-28  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119970
+	* include/std/ostream (vprint_unicode) [_WIN32 && !__CYGWIN__]: Call
+	_Str_sink::_M_span instead of view.
+	* include/std/print (vprint_unicode) [_WIN32 && !__CYGWIN__]: Call
+	_Str_sink::_M_span instead of view.
+
+2025-04-28  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/ranges_base.h (__detail::__range_key_type):
+	Replace remove_const_t with remove_cvref_t.
+	(__detail::__range_mapped_type): Apply remove_cvref_t.
+	* include/bits/stl_iterator.h: (__detail::__iter_key_t):
+	Replace remove_const_t with __remove_cvref_t.
+	(__detail::__iter_val_t): Apply __remove_cvref_t.
+	* testsuite/23_containers/flat_map/1.cc: New tests.
+	* testsuite/23_containers/flat_multimap/1.cc: New tests.
+	* testsuite/23_containers/map/cons/deduction.cc: New tests.
+	* testsuite/23_containers/map/cons/from_range.cc: New tests.
+	* testsuite/23_containers/multimap/cons/deduction.cc: New tests.
+	* testsuite/23_containers/multimap/cons/from_range.cc: New tests.
+	* testsuite/23_containers/unordered_map/cons/deduction.cc: New tests.
+	* testsuite/23_containers/unordered_map/cons/from_range.cc: New tests.
+	* testsuite/23_containers/unordered_multimap/cons/deduction.cc:
+	New tests.
+	* testsuite/23_containers/unordered_multimap/cons/from_range.cc:
+	New tests.
+
+2025-04-28  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/unordered_map.h (unordered_map):
+	Define constructors accepting:
+	(_InputIterator, _InputIterator, const allocator_type&),
+	(initializer_list<value_type>, const allocator_type&),
+	(unordered_multimap): Likewise.
+	* include/debug/unordered_map (unordered_map): Likewise.
+	(unordered_multimap): Likewise.
+	* include/bits/unordered_set.h (unordered_set):
+	Define constructors and deduction guide accepting:
+	(_InputIterator, _InputIterator, const allocator_type&),
+	(initializer_list<value_type>, const allocator_type&),
+	(unordered_multiset): Likewise.
+	* include/debug/unordered_set (unordered_set): Likewise.
+	(unordered_multiset): Likewise.
+	* testsuite/23_containers/unordered_map/cons/66055.cc: New tests.
+	* testsuite/23_containers/unordered_map/cons/deduction.cc: New tests.
+	* testsuite/23_containers/unordered_multimap/cons/66055.cc: New tests.
+	* testsuite/23_containers/unordered_multimap/cons/deduction.cc:	New
+	tests.
+	* testsuite/23_containers/unordered_multiset/cons/66055.cc: New tests.
+	* testsuite/23_containers/unordered_multiset/cons/deduction.cc:	New
+	tests.
+	* testsuite/23_containers/unordered_set/cons/66055.cc: New tests.
+	* testsuite/23_containers/unordered_set/cons/deduction.cc: New tests.
+
 2025-04-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/ptr_traits.h (to_address): Use markdown for
