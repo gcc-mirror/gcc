@@ -346,10 +346,10 @@ class exploded_node : public dnode<eg_traits>
   void dump_succs_and_preds (FILE *outf) const;
 
   enum status get_status () const { return m_status; }
-  void set_status (enum status status)
+  void set_status (enum status s)
   {
     gcc_assert (m_status == status::worklist);
-    m_status = status;
+    m_status = s;
   }
 
   void add_diagnostic (const saved_diagnostic *sd)

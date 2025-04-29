@@ -104,7 +104,7 @@ minus_one (tree cst)
    closed one.  */
 
 void
-bound::ensure_closed (enum bound_kind bound_kind)
+bound::ensure_closed (enum bound_kind bnd_kind)
 {
   if (!m_closed)
     {
@@ -113,7 +113,7 @@ bound::ensure_closed (enum bound_kind bound_kind)
 	 and convert x < 5 into x <= 4.  */
       gcc_assert (CONSTANT_CLASS_P (m_constant));
       gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (m_constant)));
-      m_constant = fold_build2 (bound_kind == bound_kind::upper ? MINUS_EXPR : PLUS_EXPR,
+      m_constant = fold_build2 (bnd_kind == bound_kind::upper ? MINUS_EXPR : PLUS_EXPR,
 				TREE_TYPE (m_constant),
 				m_constant, integer_one_node);
       gcc_assert (CONSTANT_CLASS_P (m_constant));
@@ -290,15 +290,15 @@ range::above_upper_bound (tree rhs_const) const
    Return true if feasible; false if infeasible.  */
 
 bool
-range::add_bound (bound b, enum bound_kind bound_kind)
+range::add_bound (bound b, enum bound_kind bnd_kind)
 {
   /* Bail out on floating point constants.  */
   if (!INTEGRAL_TYPE_P (TREE_TYPE (b.m_constant)))
     return true;
 
-  b.ensure_closed (bound_kind);
+  b.ensure_closed (bnd_kind);
 
-  switch (bound_kind)
+  switch (bnd_kind)
     {
     default:
       gcc_unreachable ();
