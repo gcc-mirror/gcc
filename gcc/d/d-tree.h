@@ -568,6 +568,7 @@ extern tree d_mark_read (tree);
 extern tree build_memcmp_call (tree, tree, tree);
 extern tree build_memcpy_call (tree, tree, tree);
 extern tree build_memset_call (tree, tree = NULL_TREE);
+extern tree build_clear_padding_call (tree);
 extern bool identity_compare_p (StructDeclaration *);
 extern tree build_float_identity (tree_code, tree, tree);
 extern tree build_struct_comparison (tree_code, StructDeclaration *,
