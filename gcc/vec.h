@@ -611,6 +611,7 @@ public:
   const T *end () const { return address () + length (); }
   const T &operator[] (unsigned) const;
   T &operator[] (unsigned);
+  const T &last (void) const;
   T &last (void);
   bool space (unsigned) const;
   bool iterate (unsigned, T *) const;
@@ -913,6 +914,14 @@ vec<T, A, vl_embed>::operator[] (unsigned ix)
 
 
 /* Get the final element of the vector, which must not be empty.  */
+
+template<typename T, typename A>
+inline const T &
+vec<T, A, vl_embed>::last (void) const
+{
+  gcc_checking_assert (m_vecpfx.m_num > 0);
+  return (*this)[m_vecpfx.m_num - 1];
+}
 
 template<typename T, typename A>
 inline T &
@@ -1588,6 +1597,8 @@ public:
   const T *end () const { return begin () + length (); }
   const T &operator[] (unsigned ix) const
   { return (*m_vec)[ix]; }
+  const T &last (void) const
+  { return m_vec->last (); }
 
   bool operator!=(const vec &other) const
   { return !(*this == other); }
