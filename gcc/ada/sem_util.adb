@@ -25019,7 +25019,7 @@ package body Sem_Util is
             --  In case of a call rewritten in GNATprove mode while "inlining
             --  for proof" go to the original call.
 
-            elsif Nkind (Par) = N_Null_Statement then
+            elsif Nkind (Par) in N_Null_Statement | N_Block_Statement then
                pragma Assert
                  (GNATprove_Mode
                     and then

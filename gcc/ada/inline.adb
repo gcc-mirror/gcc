@@ -3397,10 +3397,6 @@ package body Inline is
       --  If the function body is a single expression, replace call with
       --  expression, else insert block appropriately.
 
-      procedure Rewrite_Procedure_Call (N : Node_Id; Blk : Node_Id);
-      --  If procedure body has no local variables, inline body without
-      --  creating block, otherwise rewrite call with block.
-
       ---------------------
       -- Make_Exit_Label --
       ---------------------
@@ -3784,35 +3780,6 @@ package body Inline is
             Insert_Before (Parent (N), Blk);
          end if;
       end Rewrite_Function_Call;
-
-      ----------------------------
-      -- Rewrite_Procedure_Call --
-      ----------------------------
-
-      procedure Rewrite_Procedure_Call (N : Node_Id; Blk : Node_Id) is
-         HSS : constant Node_Id := Handled_Statement_Sequence (Blk);
-
-      begin
-         --  If there is a transient scope for N, this will be the scope of the
-         --  actions for N, and the statements in Blk need to be within this
-         --  scope. For example, they need to have visibility on the constant
-         --  declarations created for the formals.
-
-         --  If N needs no transient scope, and if there are no declarations in
-         --  the inlined body, we can do a little optimization and insert the
-         --  statements for the body directly after N, and rewrite N to a
-         --  null statement, instead of rewriting N into a full-blown block
-         --  statement.
-
-         if not Scope_Is_Transient
-           and then Is_Empty_List (Declarations (Blk))
-         then
-            Insert_List_After (N, Statements (HSS));
-            Rewrite (N, Make_Null_Statement (Loc));
-         else
-            Rewrite (N, Blk);
-         end if;
-      end Rewrite_Procedure_Call;
 
    --  Start of processing for Expand_Inlined_Call
 
@@ -4273,7 +4240,7 @@ package body Inline is
       end;
 
       if Ekind (Subp) = E_Procedure then
-         Rewrite_Procedure_Call (N, Blk);
+         Rewrite (N, Blk);
 
       else
          Rewrite_Function_Call (N, Blk);
