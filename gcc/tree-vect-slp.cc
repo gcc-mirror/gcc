@@ -7832,21 +7832,70 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 			    node, node_instance, cost_vec);
 }
 
+static int
+sort_ints (const void *a_, const void *b_)
+{
+  int a = *(const int *)a_;
+  int b = *(const int *)b_;
+  return a - b;
+}
+
 /* Verify if we can externalize a set of internal defs.  */
 
 static bool
 vect_slp_can_convert_to_external (const vec<stmt_vec_info> &stmts)
 {
+  /* Constant generation uses get_later_stmt which can only handle
+     defs from the same BB or a set of defs that can be ordered
+     with a dominance query.  */
   basic_block bb = NULL;
+  bool all_same = true;
+  auto_vec<int> bbs;
+  bbs.reserve_exact (stmts.length ());
   for (stmt_vec_info stmt : stmts)
-    if (!stmt)
+    {
+      if (!stmt)
+	return false;
+      else if (!bb)
+	bb = gimple_bb (stmt->stmt);
+      else if (gimple_bb (stmt->stmt) != bb)
+	all_same = false;
+      bbs.quick_push (gimple_bb (stmt->stmt)->index);
+    }
+  if (all_same)
+    return true;
+
+  /* Produce a vector of unique BB indexes for the defs.  */
+  bbs.qsort (sort_ints);
+  unsigned i, j;
+  for (i = 1, j = 1; i < bbs.length (); ++i)
+    if (bbs[i] != bbs[j-1])
+      bbs[j++] = bbs[i];
+  gcc_assert (j >= 2);
+  bbs.truncate (j);
+
+  if (bbs.length () == 2)
+    return (dominated_by_p (CDI_DOMINATORS,
+			    BASIC_BLOCK_FOR_FN (cfun, bbs[0]),
+			    BASIC_BLOCK_FOR_FN (cfun, bbs[1]))
+	    || dominated_by_p (CDI_DOMINATORS,
+			       BASIC_BLOCK_FOR_FN (cfun, bbs[1]),
+			       BASIC_BLOCK_FOR_FN (cfun, bbs[0])));
+
+  /* ???  For more than two BBs we can sort the vector and verify the
+     result is a total order.  But we can't use vec::qsort with a
+     compare function using a dominance query since there's no way to
+     signal failure and any fallback for an unordered pair would
+     fail qsort_chk later.
+     For now simply hope that ordering after BB index provides the
+     best candidate total order.  If required we can implement our
+     own mergesort or export an entry without checking.  */
+  for (unsigned i = 1; i < bbs.length (); ++i)
+    if (!dominated_by_p (CDI_DOMINATORS,
+			 BASIC_BLOCK_FOR_FN (cfun, bbs[i]),
+			 BASIC_BLOCK_FOR_FN (cfun, bbs[i-1])))
       return false;
-    /* Constant generation uses get_later_stmt which can only handle
-       defs from the same BB.  */
-    else if (!bb)
-      bb = gimple_bb (stmt->stmt);
-    else if (gimple_bb (stmt->stmt) != bb)
-      return false;
+
   return true;
 }
 
