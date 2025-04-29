@@ -7942,6 +7942,15 @@ ix86_update_stack_boundary (void)
   if (ix86_tls_descriptor_calls_expanded_in_cfun
       && crtl->preferred_stack_boundary < 128)
     crtl->preferred_stack_boundary = 128;
+
+  /* For 32-bit MS ABI, both the incoming and preferred stack boundaries
+     are 32 bits, but if force_align_arg_pointer is specified, it should
+     prefer 128 bits for a backward-compatibility reason, which is also
+     what the doc suggests.  */
+  if (lookup_attribute ("force_align_arg_pointer",
+			TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl)))
+      && crtl->preferred_stack_boundary < 128)
+    crtl->preferred_stack_boundary = 128;
 }
 
 /* Handle the TARGET_GET_DRAP_RTX hook.  Return NULL if no DRAP is
