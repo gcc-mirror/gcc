@@ -3032,6 +3032,44 @@ match_plus_neg_pattern (rtx op0, rtx op1, machine_mode mode)
   return false;
 }
 
+/* Check if OP matches the pattern of (subreg (not X)) and the subreg is
+   non-paradoxical.  */
+
+static bool
+non_paradoxical_subreg_not_p (rtx op)
+{
+  return GET_CODE (op) == SUBREG
+	 && !paradoxical_subreg_p (op)
+	 && GET_CODE (SUBREG_REG (op)) == NOT;
+}
+
+/* Convert (binop (subreg (not X)) Y) into (binop (not (subreg X)) Y), or
+   (binop X (subreg (not Y))) into (binop X (not (subreg Y))) to expose
+   opportunities to combine another binary logical operation with NOT.  */
+
+static rtx
+simplify_with_subreg_not (rtx_code binop, machine_mode mode, rtx op0, rtx op1)
+{
+  rtx opn = NULL_RTX;
+  if (non_paradoxical_subreg_not_p (op0))
+    opn = op0;
+  else if (non_paradoxical_subreg_not_p (op1))
+    opn = op1;
+
+  if (opn == NULL_RTX)
+    return NULL_RTX;
+
+  rtx new_subreg = simplify_gen_subreg (mode,
+					XEXP (SUBREG_REG (opn), 0),
+					GET_MODE (SUBREG_REG (opn)),
+					SUBREG_BYTE (opn));
+  rtx new_not = simplify_gen_unary (NOT, mode, new_subreg, mode);
+  if (opn == op0)
+    return simplify_gen_binary (binop, mode, new_not, op1);
+  else
+    return simplify_gen_binary (binop, mode, op0, new_not);
+}
+
 /* Subroutine of simplify_binary_operation.  Simplify a binary operation
    CODE with result mode MODE, operating on OP0 and OP1.  If OP0 and/or
    OP1 are constant pool references, TRUEOP0 and TRUEOP1 represent the
@@ -3749,6 +3787,10 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  && rtx_equal_p (XEXP (XEXP (op0, 0), 0), op1))
 	return simplify_gen_binary (IOR, mode, XEXP (op0, 1), op1);
 
+      tem = simplify_with_subreg_not (code, mode, op0, op1);
+      if (tem)
+	return tem;
+
       tem = simplify_byte_swapping_operation (code, mode, op0, op1);
       if (tem)
 	return tem;
@@ -4017,6 +4059,10 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  && rtx_equal_p (XEXP (XEXP (op0, 0), 0), op1))
 	return simplify_gen_binary (IOR, mode, XEXP (op0, 1), op1);
 
+      tem = simplify_with_subreg_not (code, mode, op0, op1);
+      if (tem)
+	return tem;
+
       tem = simplify_byte_swapping_operation (code, mode, op0, op1);
       if (tem)
 	return tem;
@@ -4284,6 +4330,10 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 		  == (HOST_WIDE_INT_1U << (inner_prec - shift_count)) - 1))
 	    return simplify_gen_binary (LSHIFTRT, mode, XEXP (op0, 0), XEXP (op0, 1));
 	}
+
+      tem = simplify_with_subreg_not (code, mode, op0, op1);
+      if (tem)
+	return tem;
 
       tem = simplify_byte_swapping_operation (code, mode, op0, op1);
       if (tem)
