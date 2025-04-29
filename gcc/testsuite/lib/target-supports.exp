@@ -1017,6 +1017,18 @@ proc check_effective_target_label_values {} {
     return 1
 }
 
+
+# Return 1 if builtin_trap expands not into a call but an instruction,
+# 0 otherwise.
+proc check_effective_target_trap { } {
+    return [check_no_messages_and_pattern trap "!\\(call" rtl-expand {
+	void foo ()
+	  {
+	    return __builtin_trap ();
+	  }
+    } "" ]
+}
+
 # Return 1 if builtin_return_address and builtin_frame_address are
 # supported, 0 otherwise.
 
