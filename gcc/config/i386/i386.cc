@@ -8495,13 +8495,18 @@ ix86_update_stack_alignment (rtx, const_rtx pat, void *data)
   FOR_EACH_SUBRTX (iter, array, pat, ALL)
     {
       auto op = *iter;
-      if (MEM_P (op) && reg_mentioned_p (p->reg, op))
+      if (MEM_P (op))
 	{
-	  unsigned int alignment = MEM_ALIGN (op);
+	  if (reg_mentioned_p (p->reg, XEXP (op, 0)))
+	    {
+	      unsigned int alignment = MEM_ALIGN (op);
 
-	  if (alignment > *p->stack_alignment)
-	    *p->stack_alignment = alignment;
-	  break;
+	      if (alignment > *p->stack_alignment)
+		*p->stack_alignment = alignment;
+	      break;
+	    }
+	  else
+	    iter.skip_subrtxes ();
 	}
     }
 }
