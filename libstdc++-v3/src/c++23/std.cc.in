@@ -1833,7 +1833,11 @@ export namespace std
   }
 }
 
-// FIXME <mdspan>
+// <mdspan>
+{
+  using std::extents;
+  // FIXME layout_*, default_accessor and mdspan
+}
 
 // 20.2 <memory>
 export namespace std
