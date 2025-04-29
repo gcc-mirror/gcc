@@ -77,7 +77,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Has_Delayed_Aspects, Flag),
         Sm (Has_Delayed_Freeze, Flag),
         Sm (Has_Delayed_Rep_Aspects, Flag),
-        Sm (Has_Exit, Flag),
         Sm (Has_Forward_Instantiation, Flag),
         Sm (Has_Fully_Qualified_Name, Flag),
         Sm (Has_Gigi_Rep_Item, Flag),
@@ -1226,6 +1225,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  loop statement.
        (Sm (First_Entity, Node_Id),
         Sm (First_Exit_Statement, Node_Id),
+        Sm (Has_Exit, Flag),
         Sm (Has_Loop_Entry_Attributes, Flag),
         Sm (Last_Entity, Node_Id),
         Sm (Renamed_Or_Alias, Node_Id),
