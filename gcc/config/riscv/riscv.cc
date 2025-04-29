@@ -12273,6 +12273,41 @@ riscv_mode_needed (int entity, rtx_insn *insn, HARD_REG_SET)
     }
 }
 
+/* Return TRUE if the rouding mode is dynamic.  */
+
+static bool
+riscv_dynamic_frm_mode_p (int mode)
+{
+  return mode == riscv_vector::FRM_DYN
+	 || mode == riscv_vector::FRM_DYN_CALL
+	 || mode == riscv_vector::FRM_DYN_EXIT;
+}
+
+/* Implement TARGET_MODE_CONFLUENCE.  */
+
+static int
+riscv_mode_confluence (int entity, int mode1, int mode2)
+{
+  switch (entity)
+    {
+    case RISCV_VXRM:
+      return VXRM_MODE_NONE;
+    case RISCV_FRM:
+      {
+	/* FRM_DYN, FRM_DYN_CALL and FRM_DYN_EXIT are all compatible.
+	   Although we already try to set the mode needed to FRM_DYN after a
+	   function call, there are still some corner cases where both FRM_DYN
+	   and FRM_DYN_CALL may appear on incoming edges.  */
+	if (riscv_dynamic_frm_mode_p (mode1)
+	    && riscv_dynamic_frm_mode_p (mode2))
+	  return riscv_vector::FRM_DYN;
+	return riscv_vector::FRM_NONE;
+      }
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Return TRUE that an insn is asm.  */
 
 static bool
@@ -14356,6 +14391,8 @@ bool need_shadow_stack_push_pop_p ()
 #define TARGET_MODE_EMIT riscv_emit_mode_set
 #undef TARGET_MODE_NEEDED
 #define TARGET_MODE_NEEDED riscv_mode_needed
+#undef TARGET_MODE_CONFLUENCE
+#define TARGET_MODE_CONFLUENCE riscv_mode_confluence
 #undef TARGET_MODE_AFTER
 #define TARGET_MODE_AFTER riscv_mode_after
 #undef TARGET_MODE_ENTRY
