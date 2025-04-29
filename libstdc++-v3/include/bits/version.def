@@ -959,6 +959,7 @@ ftms = {
 
 ftms = {
   name = make_obj_using_allocator;
+  no_stdname = true;
   values = {
     // Not specified by C++20, used internally
     v = 201811;

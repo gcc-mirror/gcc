@@ -1074,7 +1074,6 @@
 # if (__cplusplus >= 202002L) && (__cpp_concepts)
 #  define __glibcxx_make_obj_using_allocator 201811L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_make_obj_using_allocator)
-#   define __cpp_lib_make_obj_using_allocator 201811L
 #  endif
 # endif
 #endif /* !defined(__cpp_lib_make_obj_using_allocator) && defined(__glibcxx_want_make_obj_using_allocator) */
