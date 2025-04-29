@@ -1584,7 +1584,9 @@ package body Exp_Util is
                         function Is_Controlling_Formal_Ref
                           (N : Node_Id) return Boolean;
                         --  Returns True if and only if N denotes a reference
-                        --  to a controlling formal declared for Par_Subp.
+                        --  to a controlling formal declared for Par_Subp, or
+                        --  Subp as formals may have been rewritten before the
+                        --  test happens.
 
                         -------------------------------
                         -- Is_Controlling_Formal_Ref --
@@ -1597,7 +1599,7 @@ package body Exp_Util is
                            return Nkind (N) in N_Identifier | N_Expanded_Name
                              and then Is_Formal (Entity (N))
                              and then Is_Controlling_Formal (Entity (N))
-                             and then Scope (Entity (N)) = Par_Subp;
+                             and then Scope (Entity (N)) in Par_Subp | Subp;
                         end Is_Controlling_Formal_Ref;
 
                      --  Start of processing for Expr_Has_Ctrl_Formal_Ref
