@@ -8907,31 +8907,33 @@ expand_set_or_cpymem_constant_prologue (rtx dst, rtx *srcp, rtx destreg,
 /* Return true if ALG can be used in current context.
    Assume we expand memset if MEMSET is true.  */
 static bool
-alg_usable_p (enum stringop_alg alg, bool memset, bool have_as)
+alg_usable_p (enum stringop_alg alg, bool memset,
+	      addr_space_t dst_as, addr_space_t src_as)
 {
   if (alg == no_stringop)
     return false;
   /* It is not possible to use a library call if we have non-default
      address space.  We can do better than the generic byte-at-a-time
      loop, used as a fallback.  */
-  if (alg == libcall && have_as)
+  if (alg == libcall &&
+      !(ADDR_SPACE_GENERIC_P (dst_as) && ADDR_SPACE_GENERIC_P (src_as)))
     return false;
   if (alg == vector_loop)
     return TARGET_SSE || TARGET_AVX;
   /* Algorithms using the rep prefix want at least edi and ecx;
      additionally, memset wants eax and memcpy wants esi.  Don't
      consider such algorithms if the user has appropriated those
-     registers for their own purposes, or if we have a non-default
-     address space, since some string insns cannot override the segment.  */
+     registers for their own purposes, or if we have the destination
+     in the non-default address space, since string insns cannot
+     override the destination segment.  */
   if (alg == rep_prefix_1_byte
       || alg == rep_prefix_4_byte
       || alg == rep_prefix_8_byte)
     {
-      if (have_as)
-	return false;
       if (fixed_regs[CX_REG]
 	  || fixed_regs[DI_REG]
-	  || (memset ? fixed_regs[AX_REG] : fixed_regs[SI_REG]))
+	  || (memset ? fixed_regs[AX_REG] : fixed_regs[SI_REG])
+	  || !ADDR_SPACE_GENERIC_P (dst_as))
 	return false;
     }
   return true;
@@ -8941,8 +8943,8 @@ alg_usable_p (enum stringop_alg alg, bool memset, bool have_as)
 static enum stringop_alg
 decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
 	    unsigned HOST_WIDE_INT min_size, unsigned HOST_WIDE_INT max_size,
-	    bool memset, bool zero_memset, bool have_as,
-	    int *dynamic_check, bool *noalign, bool recur)
+	    bool memset, bool zero_memset, addr_space_t dst_as,
+	    addr_space_t src_as, int *dynamic_check, bool *noalign, bool recur)
 {
   const struct stringop_algs *algs;
   bool optimize_for_speed;
@@ -8974,7 +8976,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
   for (i = 0; i < MAX_STRINGOP_ALGS; i++)
     {
       enum stringop_alg candidate = algs->size[i].alg;
-      bool usable = alg_usable_p (candidate, memset, have_as);
+      bool usable = alg_usable_p (candidate, memset, dst_as, src_as);
       any_alg_usable_p |= usable;
 
       if (candidate != libcall && candidate && usable)
@@ -8990,17 +8992,17 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
 
   /* If user specified the algorithm, honor it if possible.  */
   if (ix86_stringop_alg != no_stringop
-      && alg_usable_p (ix86_stringop_alg, memset, have_as))
+      && alg_usable_p (ix86_stringop_alg, memset, dst_as, src_as))
     return ix86_stringop_alg;
   /* rep; movq or rep; movl is the smallest variant.  */
   else if (!optimize_for_speed)
     {
       *noalign = true;
       if (!count || (count & 3) || (memset && !zero_memset))
-	return alg_usable_p (rep_prefix_1_byte, memset, have_as)
+	return alg_usable_p (rep_prefix_1_byte, memset, dst_as, src_as)
 	       ? rep_prefix_1_byte : loop_1_byte;
       else
-	return alg_usable_p (rep_prefix_4_byte, memset, have_as)
+	return alg_usable_p (rep_prefix_4_byte, memset, dst_as, src_as)
 	       ? rep_prefix_4_byte : loop;
     }
   /* Very tiny blocks are best handled via the loop, REP is expensive to
@@ -9024,7 +9026,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
 	      enum stringop_alg candidate = algs->size[i].alg;
 
 	      if (candidate != libcall
-		  && alg_usable_p (candidate, memset, have_as))
+		  && alg_usable_p (candidate, memset, dst_as, src_as))
 		{
 		  alg = candidate;
 		  alg_noalign = algs->size[i].noalign;
@@ -9044,7 +9046,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
 		  else if (!any_alg_usable_p)
 		    break;
 		}
-	      else if (alg_usable_p (candidate, memset, have_as)
+	      else if (alg_usable_p (candidate, memset, dst_as, src_as)
 		       && !(TARGET_PREFER_KNOWN_REP_MOVSB_STOSB
 			    && candidate == rep_prefix_1_byte
 			    /* NB: If min_size != max_size, size is
@@ -9066,7 +9068,7 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
      choice in ix86_costs.  */
   if ((TARGET_INLINE_ALL_STRINGOPS || TARGET_INLINE_STRINGOPS_DYNAMICALLY)
       && (algs->unknown_size == libcall
-	  || !alg_usable_p (algs->unknown_size, memset, have_as)))
+	  || !alg_usable_p (algs->unknown_size, memset, dst_as, src_as)))
     {
       enum stringop_alg alg;
       HOST_WIDE_INT new_expected_size = (max > 0 ? max : 4096) / 2;
@@ -9081,8 +9083,9 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
 	    *dynamic_check = 128;
 	  return loop_1_byte;
 	}
-      alg = decide_alg (count, new_expected_size, min_size, max_size, memset,
-			zero_memset, have_as, dynamic_check, noalign, true);
+      alg = decide_alg (count, new_expected_size, min_size, max_size,
+			memset, zero_memset, dst_as, src_as,
+			dynamic_check, noalign, true);
       gcc_assert (*dynamic_check == -1);
       if (TARGET_INLINE_STRINGOPS_DYNAMICALLY)
 	*dynamic_check = max;
@@ -9094,7 +9097,11 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
   /* Try to use some reasonable fallback algorithm.  Note that for
      non-default address spaces we default to a loop instead of
      a libcall.  */
-  return (alg_usable_p (algs->unknown_size, memset, have_as)
+
+  bool have_as = !(ADDR_SPACE_GENERIC_P (dst_as)
+		   && ADDR_SPACE_GENERIC_P (src_as));
+
+  return (alg_usable_p (algs->unknown_size, memset, dst_as, src_as)
 	  ? algs->unknown_size : have_as ? loop : libcall);
 }
 
@@ -9320,7 +9327,7 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   unsigned HOST_WIDE_INT max_size = -1;
   unsigned HOST_WIDE_INT probable_max_size = -1;
   bool misaligned_prologue_used = false;
-  bool have_as;
+  addr_space_t dst_as, src_as = ADDR_SPACE_GENERIC;
 
   if (CONST_INT_P (align_exp))
     align = INTVAL (align_exp);
@@ -9358,16 +9365,15 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   if (count > (HOST_WIDE_INT_1U << 30))
     return false;
 
-  have_as = !ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (dst));
+  dst_as = MEM_ADDR_SPACE (dst);
   if (!issetmem)
-    have_as |= !ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (src));
+    src_as = MEM_ADDR_SPACE (src);
 
   /* Step 0: Decide on preferred algorithm, desired alignment and
      size of chunks to be copied by main loop.  */
   alg = decide_alg (count, expected_size, min_size, probable_max_size,
-		    issetmem,
-		    issetmem && val_exp == const0_rtx, have_as,
-		    &dynamic_check, &noalign, false);
+		    issetmem, issetmem && val_exp == const0_rtx,
+		    dst_as, src_as, &dynamic_check, &noalign, false);
 
   if (dump_file)
     fprintf (dump_file, "Selected stringop expansion strategy: %s\n",
