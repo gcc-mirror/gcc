@@ -9417,13 +9417,16 @@ aarch64_emit_stack_tie (rtx reg)
 }
 
 /* Allocate POLY_SIZE bytes of stack space using TEMP1 and TEMP2 as scratch
-   registers.  If POLY_SIZE is not large enough to require a probe this function
-   will only adjust the stack.  When allocating the stack space
-   FRAME_RELATED_P is then used to indicate if the allocation is frame related.
-   FINAL_ADJUSTMENT_P indicates whether we are allocating the area below
-   the saved registers.  If we are then we ensure that any allocation
-   larger than the ABI defined buffer needs a probe so that the
-   invariant of having a 1KB buffer is maintained.
+   registers, given that the stack pointer is currently BYTES_BELOW_SP bytes
+   above the bottom of the static frame.
+
+   If POLY_SIZE is not large enough to require a probe this function will only
+   adjust the stack.  When allocating the stack space FRAME_RELATED_P is then
+   used to indicate if the allocation is frame related.  FINAL_ADJUSTMENT_P
+   indicates whether we are allocating the area below the saved registers.
+   If we are then we ensure that any allocation larger than the ABI defined
+   buffer needs a probe so that the invariant of having a 1KB buffer is
+   maintained.
 
    We emit barriers after each stack adjustment to prevent optimizations from
    breaking the invariant that we never drop the stack more than a page.  This
@@ -9440,6 +9443,7 @@ aarch64_emit_stack_tie (rtx reg)
 static void
 aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
 					poly_int64 poly_size,
+					poly_int64 bytes_below_sp,
 					aarch64_isa_mode force_isa_mode,
 					bool frame_related_p,
 					bool final_adjustment_p)
@@ -9503,8 +9507,8 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
 			  poly_size, temp1, temp2, force_isa_mode,
 			  false, true);
 
-      rtx_insn *insn = get_last_insn ();
-
+      auto initial_cfa_offset = frame.frame_size - bytes_below_sp;
+      auto final_cfa_offset = initial_cfa_offset + poly_size;
       if (frame_related_p)
 	{
 	  /* This is done to provide unwinding information for the stack
@@ -9514,28 +9518,31 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
 	     The tie will expand to nothing but the optimizers will not touch
 	     the instruction.  */
 	  rtx stack_ptr_copy = gen_rtx_REG (Pmode, STACK_CLASH_SVE_CFA_REGNUM);
-	  emit_move_insn (stack_ptr_copy, stack_pointer_rtx);
+	  auto *insn = emit_move_insn (stack_ptr_copy, stack_pointer_rtx);
 	  aarch64_emit_stack_tie (stack_ptr_copy);
 
 	  /* We want the CFA independent of the stack pointer for the
 	     duration of the loop.  */
-	  add_reg_note (insn, REG_CFA_DEF_CFA, stack_ptr_copy);
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			plus_constant (Pmode, stack_ptr_copy,
+				       initial_cfa_offset));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
       rtx probe_const = gen_int_mode (min_probe_threshold, Pmode);
       rtx guard_const = gen_int_mode (guard_size, Pmode);
 
-      insn = emit_insn (gen_probe_sve_stack_clash (Pmode, stack_pointer_rtx,
-						   stack_pointer_rtx, temp1,
-						   probe_const, guard_const));
+      auto *insn
+	= emit_insn (gen_probe_sve_stack_clash (Pmode, stack_pointer_rtx,
+						stack_pointer_rtx, temp1,
+						probe_const, guard_const));
 
       /* Now reset the CFA register if needed.  */
       if (frame_related_p)
 	{
 	  add_reg_note (insn, REG_CFA_DEF_CFA,
-			gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				      gen_int_mode (poly_size, Pmode)));
+			plus_constant (Pmode, stack_pointer_rtx,
+				       final_cfa_offset));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
@@ -9581,12 +9588,13 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
 	 We can determine which allocation we are doing by looking at
 	 the value of FRAME_RELATED_P since the final allocations are not
 	 frame related.  */
+      auto cfa_offset = frame.frame_size - (bytes_below_sp - rounded_size);
       if (frame_related_p)
 	{
 	  /* We want the CFA independent of the stack pointer for the
 	     duration of the loop.  */
 	  add_reg_note (insn, REG_CFA_DEF_CFA,
-			plus_constant (Pmode, temp1, rounded_size));
+			plus_constant (Pmode, temp1, cfa_offset));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
@@ -9608,7 +9616,7 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
       if (frame_related_p)
 	{
 	  add_reg_note (insn, REG_CFA_DEF_CFA,
-			plus_constant (Pmode, stack_pointer_rtx, rounded_size));
+			plus_constant (Pmode, stack_pointer_rtx, cfa_offset));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
 
@@ -9916,17 +9924,22 @@ aarch64_expand_prologue (void)
      code below does not handle it for -fstack-clash-protection.  */
   gcc_assert (known_eq (initial_adjust, 0) || callee_adjust == 0);
 
+  /* The offset of the current SP from the bottom of the static frame.  */
+  poly_int64 bytes_below_sp = frame_size;
+
   /* Will only probe if the initial adjustment is larger than the guard
      less the amount of the guard reserved for use by the caller's
      outgoing args.  */
   aarch64_allocate_and_probe_stack_space (tmp0_rtx, tmp1_rtx, initial_adjust,
-					  force_isa_mode, true, false);
+					  bytes_below_sp, force_isa_mode,
+					  true, false);
+  bytes_below_sp -= initial_adjust;
 
   if (callee_adjust != 0)
-    aarch64_push_regs (reg1, reg2, callee_adjust);
-
-  /* The offset of the current SP from the bottom of the static frame.  */
-  poly_int64 bytes_below_sp = frame_size - initial_adjust - callee_adjust;
+    {
+      aarch64_push_regs (reg1, reg2, callee_adjust);
+      bytes_below_sp -= callee_adjust;
+    }
 
   if (emit_frame_chain)
     {
@@ -9994,7 +10007,7 @@ aarch64_expand_prologue (void)
 		  || known_eq (frame.reg_offset[VG_REGNUM], bytes_below_sp));
       aarch64_allocate_and_probe_stack_space (tmp1_rtx, tmp0_rtx,
 					      sve_callee_adjust,
-					      force_isa_mode,
+					      bytes_below_sp, force_isa_mode,
 					      !frame_pointer_needed, false);
       bytes_below_sp -= sve_callee_adjust;
     }
@@ -10005,10 +10018,11 @@ aarch64_expand_prologue (void)
 
   /* We may need to probe the final adjustment if it is larger than the guard
      that is assumed by the called.  */
-  gcc_assert (known_eq (bytes_below_sp, final_adjust));
   aarch64_allocate_and_probe_stack_space (tmp1_rtx, tmp0_rtx, final_adjust,
-					  force_isa_mode,
+					  bytes_below_sp, force_isa_mode,
 					  !frame_pointer_needed, true);
+  bytes_below_sp -= final_adjust;
+  gcc_assert (known_eq (bytes_below_sp, 0));
   if (emit_frame_chain && maybe_ne (final_adjust, 0))
     aarch64_emit_stack_tie (hard_frame_pointer_rtx);
 
