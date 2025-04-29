@@ -243,6 +243,16 @@ test06()
   VERIFY( std::ranges::equal(m | std::views::values, (int[]){2, 3, 4, 5, 6}) );
 }
 
+void
+test07()
+{
+  // PR libstdc++/119427 - std::erase_if(std::flat_foo) does not work
+  std::flat_map<int, int> m = {std::pair{1, 2}, {3, 4}, {5, 6}};
+  auto n = std::erase_if(m, [](auto x) { auto [k,v] = x; return k == 1 || v == 6; });
+  VERIFY( n == 2 );
+  VERIFY( std::ranges::equal(m, (std::pair<int,int>[]){{3,4}}) );
+}
+
 int
 main()
 {
@@ -255,4 +265,5 @@ main()
   test04();
   test05();
   test06();
+  test07();
 }
