@@ -11162,9 +11162,14 @@ vect_schedule_slp_node (vec_info *vinfo,
 			    == cycle_phi_info_type);
 		gphi *phi = as_a <gphi *>
 			      (vect_find_last_scalar_stmt_in_slp (child)->stmt);
-		if (!last_stmt
-		    || vect_stmt_dominates_stmt_p (last_stmt, phi))
+		if (!last_stmt)
 		  last_stmt = phi;
+		else if (vect_stmt_dominates_stmt_p (last_stmt, phi))
+		  last_stmt = phi;
+		else if (vect_stmt_dominates_stmt_p (phi, last_stmt))
+		  ;
+		else
+		  gcc_unreachable ();
 	      }
 	    /* We are emitting all vectorized stmts in the same place and
 	       the last one is the last.
@@ -11175,9 +11180,14 @@ vect_schedule_slp_node (vec_info *vinfo,
 	    FOR_EACH_VEC_ELT (SLP_TREE_VEC_DEFS (child), j, vdef)
 	      {
 		gimple *vstmt = SSA_NAME_DEF_STMT (vdef);
-		if (!last_stmt
-		    || vect_stmt_dominates_stmt_p (last_stmt, vstmt))
+		if (!last_stmt)
 		  last_stmt = vstmt;
+		else if (vect_stmt_dominates_stmt_p (last_stmt, vstmt))
+		  last_stmt = vstmt;
+		else if (vect_stmt_dominates_stmt_p (vstmt, last_stmt))
+		  ;
+		else
+		  gcc_unreachable ();
 	      }
 	  }
 	else if (!SLP_TREE_VECTYPE (child))
@@ -11190,9 +11200,14 @@ vect_schedule_slp_node (vec_info *vinfo,
 		  && !SSA_NAME_IS_DEFAULT_DEF (def))
 		{
 		  gimple *stmt = SSA_NAME_DEF_STMT (def);
-		  if (!last_stmt
-		      || vect_stmt_dominates_stmt_p (last_stmt, stmt))
+		  if (!last_stmt)
 		    last_stmt = stmt;
+		  else if (vect_stmt_dominates_stmt_p (last_stmt, stmt))
+		    last_stmt = stmt;
+		  else if (vect_stmt_dominates_stmt_p (stmt, last_stmt))
+		    ;
+		  else
+		    gcc_unreachable ();
 		}
 	  }
 	else
@@ -11213,9 +11228,14 @@ vect_schedule_slp_node (vec_info *vinfo,
 		      && !SSA_NAME_IS_DEFAULT_DEF (vdef))
 		    {
 		      gimple *vstmt = SSA_NAME_DEF_STMT (vdef);
-		      if (!last_stmt
-			  || vect_stmt_dominates_stmt_p (last_stmt, vstmt))
+		      if (!last_stmt)
 			last_stmt = vstmt;
+		      else if (vect_stmt_dominates_stmt_p (last_stmt, vstmt))
+			last_stmt = vstmt;
+		      else if (vect_stmt_dominates_stmt_p (vstmt, last_stmt))
+			;
+		      else
+			gcc_unreachable ();
 		    }
 	      }
 	  }
