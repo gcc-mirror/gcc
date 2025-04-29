@@ -545,14 +545,12 @@ cs_interesting_for_ipcp_p (cgraph_edge *e)
     return true;
   /* If local (possibly guseed or adjusted 0 profile) claims edge is
      not executed, do not propagate.  */
-  if (!e->count.nonzero_p ())
+  if (e->count.initialized_p () && !e->count.nonzero_p ())
     return false;
-  /* If IPA profile says edge is executed zero times, but zero
-     is quality is ADJUSTED, still consider it for cloning in
-     case we have partial training.  */
+  /* If we have zero IPA profile, still consider edge for cloning
+     in case we do partial training.  */
   if (e->count.ipa ().initialized_p ()
-      && opt_for_fn (e->callee->decl,flag_profile_partial_training)
-      && e->count.nonzero_p ())
+      && !opt_for_fn (e->callee->decl,flag_profile_partial_training))
     return false;
   return true;
 }
