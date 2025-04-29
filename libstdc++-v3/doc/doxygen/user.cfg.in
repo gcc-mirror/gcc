@@ -880,6 +880,7 @@ INPUT                  = @srcdir@/doc/doxygen/doxygroups.cc \
                          include/list \
                          include/locale \
                          include/map \
+                         include/mdspan \
                          include/memory \
                          include/memory_resource \
                          include/mutex \
