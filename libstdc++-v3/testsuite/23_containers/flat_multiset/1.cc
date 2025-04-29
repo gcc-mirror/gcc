@@ -235,6 +235,16 @@ test08()
   VERIFY( copy_counter == 2 );
 }
 
+void
+test09()
+{
+  // PR libstdc++/119427 - std::erase_if(std::flat_foo) does not work
+  std::flat_multiset<int> s = {1,1,2,2,3,4,5};
+  auto n = std::erase_if(s, [](int x) { return x % 2 != 0; });
+  VERIFY( n == 4 );
+  VERIFY( std::ranges::equal(s, (int[]){2,2,4}) );
+}
+
 int
 main()
 {
@@ -247,4 +257,5 @@ main()
   test06();
   test07();
   test08();
+  test09();
 }

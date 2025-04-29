@@ -890,14 +890,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __x.swap(__y); }
 
       template<typename _Predicate>
-	friend size_type
-	erase_if(_Derived& __c, _Predicate __pred)
+	size_type
+	_M_erase_if(_Predicate __pred)
 	{
-	  auto __guard = __c._M_make_clear_guard();
-	  auto __zv = views::zip(__c._M_cont.keys, __c._M_cont.values);
+	  auto __guard = _M_make_clear_guard();
+	  auto __zv = views::zip(_M_cont.keys, _M_cont.values);
 	  auto __sr = ranges::remove_if(__zv, __pred);
 	  auto __erased = __sr.size();
-	  __c.erase(__c.end() - __erased, __c.end());
+	  erase(end() - __erased, end());
 	  __guard._M_disable();
 	  return __erased;
 	}
@@ -1329,6 +1329,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Impl::lower_bound;
       using _Impl::upper_bound;
       using _Impl::equal_range;
+
+      using _Impl::_M_erase_if;
     };
 
   template<typename _KeyContainer, typename _MappedContainer,
@@ -1412,6 +1414,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    && uses_allocator_v<_MappedContainer, _Alloc>>
     { };
 
+  template<typename _Key, typename _Tp, typename _Compare,
+	   typename _KeyContainer, typename _MappedContainer, typename _Predicate>
+    typename flat_map<_Key, _Tp, _Compare, _KeyContainer, _MappedContainer>::size_type
+    erase_if(flat_map<_Key, _Tp, _Compare, _KeyContainer, _MappedContainer>& __c,
+	     _Predicate __pred)
+    { return __c._M_erase_if(std::move(__pred)); }
+
   /* Class template flat_multimap - container adaptor
    *
    * @ingroup
@@ -1487,6 +1496,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Impl::lower_bound;
       using _Impl::upper_bound;
       using _Impl::equal_range;
+
+      using _Impl::_M_erase_if;
     };
 
   template<typename _KeyContainer, typename _MappedContainer,
@@ -1570,6 +1581,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : bool_constant<uses_allocator_v<_KeyContainer, _Alloc>
 		    && uses_allocator_v<_MappedContainer, _Alloc>>
     { };
+
+  template<typename _Key, typename _Tp, typename _Compare,
+	   typename _KeyContainer, typename _MappedContainer, typename _Predicate>
+    typename flat_multimap<_Key, _Tp, _Compare, _KeyContainer, _MappedContainer>::size_type
+    erase_if(flat_multimap<_Key, _Tp, _Compare, _KeyContainer, _MappedContainer>& __c,
+	     _Predicate __pred)
+    { return __c._M_erase_if(std::move(__pred)); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
