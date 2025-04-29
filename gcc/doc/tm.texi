@@ -4774,10 +4774,6 @@ that element as the canonical location and ignore the others.  The m68k
 port uses this type of @code{parallel} to return pointers in both
 @samp{%a0} (the canonical location) and @samp{%d0}.
 
-If @code{TARGET_PROMOTE_FUNCTION_RETURN} returns true, you must apply
-the same promotion rules specified in @code{PROMOTE_MODE} if
-@var{valtype} is a scalar type.
-
 If the precise function being called is known, @var{func} is a tree
 node (@code{FUNCTION_DECL}) for it; otherwise, @var{func} is a null
 pointer.  This makes it possible to use a different value-returning
