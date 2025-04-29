@@ -1,3 +1,18 @@
+2025-04-28  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-04-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/119351
+	* tree-vect-stmts.cc (vectorizable_early_exit): Mask both operands of
+	the gcond for partial masking support.
+
+2025-04-28  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/118892
+	* config/aarch64/aarch64.md (copysign<GPF:mode>3): Use
+	force_lowpart_subreg instead of lowpart_subreg.
+
 2025-04-24  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

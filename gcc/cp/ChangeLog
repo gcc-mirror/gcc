@@ -1,3 +1,24 @@
+2025-04-28  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116954
+	* contracts.cc (remove_contract_attributes): Preserve flags
+	on the attribute list.
+
+2025-04-28  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113835
+	* cp-tree.h (is_std_class): Declare.
+	* constexpr.cc (is_std_class): New function.
+	(is_std_allocator): Use it.
+	(cxx_eval_outermost_constant_expr): Bail out early
+	for std::vector(N).
+
 2025-04-23  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

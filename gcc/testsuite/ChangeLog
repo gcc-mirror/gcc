@@ -1,3 +1,33 @@
+2025-04-28  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/116954
+	* g++.dg/warn/Wformat-3.C: New test.
+
+2025-04-28  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/113835
+	* g++.dg/cpp2a/constexpr-vector1.C: New test.
+
+2025-04-28  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-04-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/119351
+	* gcc.target/aarch64/sve/pr119351.c: New test.
+	* gcc.target/aarch64/sve/pr119351_run.c: New test.
+
+2025-04-28  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/118892
+	* gcc.target/aarch64/copysign-pr118892.c: New test.
+
 2025-04-24  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
