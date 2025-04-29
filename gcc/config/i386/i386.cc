@@ -5180,6 +5180,27 @@ ix86_check_movabs (rtx insn, int opnum)
   return volatile_ok || !MEM_VOLATILE_P (mem);
 }
 
+/* Return true if XVECEXP idx of INSN satisfies MOVS arguments.  */
+bool
+ix86_check_movs (rtx insn, int idx)
+{
+  rtx pat = PATTERN (insn);
+  gcc_assert (GET_CODE (pat) == PARALLEL);
+
+  rtx set = XVECEXP (pat, 0, idx);
+  gcc_assert (GET_CODE (set) == SET);
+
+  rtx dst = SET_DEST (set);
+  gcc_assert (MEM_P (dst));
+
+  rtx src = SET_SRC (set);
+  gcc_assert (MEM_P (src));
+
+  return (ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (dst))
+	  && (ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (src))
+	      || Pmode == word_mode));
+}
+
 /* Return false if INSN contains a MEM with a non-default address space.  */
 bool
 ix86_check_no_addr_space (rtx insn)
@@ -14296,7 +14317,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  return;
 
 	case '^':
-	  if (TARGET_64BIT && Pmode != word_mode)
+	  if (Pmode != word_mode)
 	    fputs ("addr32 ", file);
 	  return;
 

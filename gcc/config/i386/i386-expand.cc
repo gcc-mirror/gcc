@@ -8933,7 +8933,8 @@ alg_usable_p (enum stringop_alg alg, bool memset,
       if (fixed_regs[CX_REG]
 	  || fixed_regs[DI_REG]
 	  || (memset ? fixed_regs[AX_REG] : fixed_regs[SI_REG])
-	  || !ADDR_SPACE_GENERIC_P (dst_as))
+	  || !ADDR_SPACE_GENERIC_P (dst_as)
+	  || !(ADDR_SPACE_GENERIC_P (src_as) || Pmode == word_mode))
 	return false;
     }
   return true;
