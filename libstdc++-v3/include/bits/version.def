@@ -1000,6 +1000,15 @@ ftms = {
 };
 
 ftms = {
+  name = mdspan;
+  no_stdname = true; // FIXME: remove
+  values = {
+    v = 1; // FIXME: 202207
+    cxxmin = 23;
+  };
+};
+
+ftms = {
   name = ssize;
   values = {
     v = 201902;

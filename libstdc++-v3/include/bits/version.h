@@ -1114,6 +1114,15 @@
 #endif /* !defined(__cpp_lib_span) && defined(__glibcxx_want_span) */
 #undef __glibcxx_want_span
 
+#if !defined(__cpp_lib_mdspan)
+# if (__cplusplus >= 202100L)
+#  define __glibcxx_mdspan 1L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_mdspan)
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_mdspan) && defined(__glibcxx_want_mdspan) */
+#undef __glibcxx_want_mdspan
+
 #if !defined(__cpp_lib_ssize)
 # if (__cplusplus >= 202002L)
 #  define __glibcxx_ssize 201902L
