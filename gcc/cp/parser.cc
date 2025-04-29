@@ -2957,8 +2957,8 @@ static tree cp_parser_function_contract_specifier
   (cp_parser *);
 static tree cp_parser_function_contract_specifier_seq
   (cp_parser *);
-static void cp_parser_late_contract_condition
-  (cp_parser *, tree, tree);
+static void cp_parser_late_contracts
+  (cp_parser *, tree);
 
 static bool cp_parser_should_constify_contract
   (const contract_modifier&);
@@ -12602,8 +12602,7 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
 
     /* We need to parse deferred contract conditions before we try to call
        finish_function (which will try to emit the contracts).  */
-    for (tree a = DECL_CONTRACTS (fco); a; a = CONTRACT_CHAIN (a))
-      cp_parser_late_contract_condition (parser, fco, a);
+    cp_parser_late_contracts (parser,fco);
 
     finish_lambda_function (body);
   }
@@ -28007,8 +28006,7 @@ cp_parser_class_specifier (cp_parser* parser)
 	    parser->local_variables_forbidden_p |= THIS_FORBIDDEN;
 
 	  /* Now we can parse contract conditions.  */
-	  for (tree a = DECL_CONTRACTS (decl); a; a = CONTRACT_CHAIN (a))
-	    cp_parser_late_contract_condition (parser, decl, a);
+	  cp_parser_late_contracts (parser, decl);
 
 	  /* Restore the state of local_variables_forbidden_p.  */
 	  parser->local_variables_forbidden_p = local_variables_forbidden_p;
@@ -31575,16 +31573,9 @@ cp_parser_contract_attribute_spec (cp_parser *parser, tree attribute)
 
 void cp_parser_late_contract_condition (cp_parser *parser,
 					tree fn,
-					tree attribute)
+					tree contract)
 {
-  tree contract = TREE_VALUE (TREE_VALUE (attribute));
-
-  /* Make sure we've gotten something that hasn't been parsed yet or that
-     we're not parsing an invalid contract.  */
-  tree condition = CONTRACT_CONDITION (contract);
-  if (TREE_CODE (condition) != DEFERRED_PARSE)
-    return;
-
+  tree condition = CONTRACT_CONDITION(contract);
   tree r_ident = NULL_TREE;
   if (TREE_CODE (contract) == POSTCONDITION_STMT)
     r_ident = POSTCONDITION_IDENTIFIER (contract);
@@ -31679,6 +31670,159 @@ void cp_parser_late_contract_condition (cp_parser *parser,
   current_class_ref = saved_ccr;
   current_class_ptr = saved_ccp;
   contract_class_ptr = saved_contract_ccp;
+}
+
+/* Parse a base in inherited contract list */
+
+tree
+cp_parser_inherited_contract_base (cp_parser *parser, tree fndecl,
+				   tree_code code)
+{
+  tree base_contracts = NULL_TREE;
+  tree in_decl = cp_parser_class_name (parser,
+				       /*typename_keyword_p=*/true,
+				       /*template_keyword_p=*/false, none_type,
+				       /*check_dependency_p=*/false,
+				       /*class_head_p=*/false,
+				       /*is_declaration=*/false);
+
+  if (in_decl == error_mark_node)
+  return NULL_TREE;
+
+  tree in_type = TYPE_CANONICAL(TREE_TYPE (in_decl));
+  tree base_type = NULL_TREE;
+  tree binfo = TYPE_BINFO (DECL_CONTEXT (fndecl));
+  tree base_binfo;
+  for (int i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
+    {
+      if (same_type_p (in_type, TYPE_CANONICAL (BINFO_TYPE (base_binfo))))
+	{
+	  base_type = BINFO_TYPE (base_binfo);
+	  break;
+	}
+    }
+
+  if (!base_type)
+  {
+    error_at (DECL_SOURCE_LOCATION(fndecl), "contracts"
+	      " can only be inherited from a direct base class");
+    return NULL_TREE ;
+  }
+
+  tree base_fn = look_for_overrides_here (base_type, fndecl);
+  if (!base_fn)
+  {
+    error_at (DECL_SOURCE_LOCATION (fndecl), "function does not "
+	      "override a function in %qT",
+	      base_type);
+    return NULL_TREE ;
+  }
+
+  if (DECL_HAS_CONTRACTS_P(base_fn))
+  {
+    contract_match_kind remap_kind = cmk_pre;
+    if (code == POSTCONDITION_STMT)
+      remap_kind = cmk_post;
+    /* We're inheriting basefn's contracts; create a copy of them but
+     * replace references to their parms to our parms.  */
+
+    base_contracts = copy_and_remap_contracts (fndecl, base_fn,
+					       /* remap_result */false,
+					       remap_kind);
+  }
+  // todo warn on empty contracts ?
+  return base_contracts;
+}
+
+
+/* Parse a deferred inherited contract of FNDECL */
+
+tree cp_parser_late_inherited_contract (cp_parser *parser,
+					tree fndecl,
+					tree contract)
+{
+
+  tree condition = CONTRACT_CONDITION(contract);
+  tree_code code = TREE_CODE (contract);
+  if (!DECL_VIRTUAL_P(fndecl))
+    {
+      error_at (DECL_SOURCE_LOCATION (fndecl), "inherited contracts can only"
+		" appear on a virtual function");
+      invalidate_contract (contract);
+      return error_mark_node;
+    }
+
+  push_unparsed_function_queues (parser);
+
+  /* Push the saved tokens onto the parser's lexer stack.  */
+  cp_token_cache *tokens = DEFPARSE_TOKENS(condition);
+  cp_parser_push_lexer_for_tokens (parser, tokens);
+  tree inherited_contracts = NULL_TREE;
+
+  while (true)
+    {
+      tree base_contracts = cp_parser_inherited_contract_base (parser,
+							       fndecl,
+							       code);
+      inherited_contracts = chainon (inherited_contracts, base_contracts);
+      if (!cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	break;
+      cp_lexer_consume_token (parser->lexer);
+    }
+
+
+  if (cp_lexer_next_token_is_not (parser->lexer, CPP_EOF))
+    error_at (input_location, "expected base class list");
+
+  /* Revert to the main lexer.  */
+  cp_parser_pop_lexer (parser);
+
+  /* Restore the queue.  */
+  pop_unparsed_function_queues (parser);
+
+  return inherited_contracts;
+}
+
+/* Parse deferred contracts of FNDECL.  */
+
+void cp_parser_late_contracts (cp_parser *parser,
+			       tree fndecl)
+{
+
+  tree new_contracts = NULL_TREE;
+  for (tree a = DECL_CONTRACTS (fndecl); a; a = CONTRACT_CHAIN (a))
+    {
+	tree contract = TREE_VALUE(TREE_VALUE (a));
+
+	/* Make sure we've gotten something that hasn't been parsed yet or that
+	 we're not parsing an invalid contract.  */
+	tree condition = CONTRACT_CONDITION(contract);
+	if (TREE_CODE (condition) != DEFERRED_PARSE)
+	  {
+	    tree list = tree_cons (TREE_PURPOSE (a), TREE_VALUE (a), NULL_TREE);
+	    new_contracts = chainon (new_contracts, list);
+	    continue;
+	  }
+
+	if (get_contract_inherited (contract))
+	  {
+	    tree base_contracts = cp_parser_late_inherited_contract (parser,
+								     fndecl,
+								     contract);
+	    if (base_contracts && base_contracts != error_mark_node)
+	      {
+		new_contracts = chainon (new_contracts, base_contracts);
+	      }
+	  }
+	else
+	  {
+	    cp_parser_late_contract_condition (parser, fndecl, contract);
+	    tree list = tree_cons (TREE_PURPOSE (a), TREE_VALUE (a), NULL_TREE);
+	    new_contracts = chainon (new_contracts, list);
+	  }
+    }
+
+  set_contract_attributes (fndecl, new_contracts);
 }
 
 static contract_modifier
@@ -31826,6 +31970,38 @@ cp_parser_function_contract_specifier (cp_parser *parser)
   location_t loc = token->location;
   bool postcondition_p = is_attribute_p ("post", contract_name);
 
+  token = cp_lexer_peek_token (parser->lexer);
+
+  bool inherited_contract = false;
+  if (token->type == CPP_NAME && is_attribute_p ("inherited", token->u.value))
+    {
+      if (flag_contracts_on_virtual_functions != CONTRACTS_ON_VIRTUALS_P3653)
+      	{
+      	  error_at (loc, "inherited contracts are only available with"
+      		    " %<-fcontracts-on-virtual-functions=P3653%>");
+
+      	  cp_parser_skip_to_closing_parenthesis (parser,
+      						 /*recovering=*/true,
+      						 /*or_comma=*/false,
+      						 /*consume_paren=*/true);
+      	  return error_mark_node;
+      	}
+      if (!current_class_type)
+	{
+	  error_at (loc, "inherited contracts are only available on"
+	      " member functions");
+
+	  cp_parser_skip_to_closing_parenthesis (parser,
+	      /*recovering=*/true,
+	      /*or_comma=*/false,
+	      /*consume_paren=*/true);
+	  return error_mark_node;
+	}
+
+      inherited_contract = true;
+      cp_lexer_consume_token (parser->lexer);
+    }
+
   /* Parse experimental modifiers on C++26 contracts.  */
   contract_modifier modifier
     = cp_parser_function_contract_modifier_opt (parser);
@@ -31836,7 +32012,8 @@ cp_parser_function_contract_specifier (cp_parser *parser)
   /* Check for postcondition identifiers.  */
   cp_expr identifier;
   if (postcondition_p && cp_lexer_next_token_is (parser->lexer, CPP_NAME)
-      && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_COLON)
+      && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_COLON
+      && !inherited_contract)
     identifier = cp_parser_identifier (parser);
 
   if (identifier == error_mark_node)
@@ -31883,6 +32060,7 @@ cp_parser_function_contract_specifier (cp_parser *parser)
 	identifier.maybe_add_location_wrapper ();
       contract = grok_contract (contract_name, /*mode*/NULL_TREE, identifier,
 				condition, loc);
+      set_contract_inherited(contract, inherited_contract);
     }
   else
     {

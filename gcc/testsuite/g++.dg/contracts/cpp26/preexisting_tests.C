@@ -24,17 +24,17 @@ namespace parsing_trailing_return_type_test {
 
 namespace parsing_virtual_test {
   struct A {
-    virtual void f(int i) // { dg-error "Contracts can not be added to virtual functions" }
+    virtual void f(int i) // { dg-error "Contracts cannot be added to virtual functions" }
       pre(i >= 0);
   };
 
   struct B : A {
-    void f(int i) override final // { dg-error "Contracts can not be added to virtual functions" }
+    void f(int i) override final // { dg-error "Contracts cannot be added to virtual functions" }
       pre(i >= 0);
   };
 
   struct C : A {
-    void f(int i) override // { dg-error "Contracts can not be added to virtual functions" }
+    void f(int i) override // { dg-error "Contracts cannot be added to virtual functions" }
       pre(i >= 0) = 0;
   };
 }
@@ -45,7 +45,7 @@ namespace parsing_default_delete_pure_test {
   struct X {
     X() pre(a) = default;
     X(const X&) pre(b) = delete;
-    virtual void f() pre(c) = 0; // { dg-error "Contracts can not be added to virtual functions" }
+    virtual void f() pre(c) = 0; // { dg-error "Contracts cannot be added to virtual functions" }
   };
 }
 
