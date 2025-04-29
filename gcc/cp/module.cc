@@ -14062,9 +14062,10 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 		     streaming the definition in such cases.  */
 		  dep->clear_flag_bit<DB_DEFN_BIT> ();
 
-		  if (DECL_DECLARED_CONSTEXPR_P (decl))
-		    /* Also, a constexpr variable initialized to a TU-local
-		       value is an exposure.  */
+		  if (DECL_DECLARED_CONSTEXPR_P (decl)
+		      || DECL_INLINE_VAR_P (decl))
+		    /* A constexpr variable initialized to a TU-local value,
+		       or an inline value (PR c++/119996), is an exposure.  */
 		    dep->set_flag_bit<DB_EXPOSURE_BIT> ();
 		}
 	    }
@@ -15025,12 +15026,24 @@ depset::hash::finalize_dependencies ()
 		break;
 	      }
 
-	  if (!explained && VAR_P (decl) && DECL_DECLARED_CONSTEXPR_P (decl))
+	  if (!explained
+	      && VAR_P (decl)
+	      && (DECL_DECLARED_CONSTEXPR_P (decl)
+		  || DECL_INLINE_VAR_P (decl)))
 	    {
 	      auto_diagnostic_group d;
-	      error_at (DECL_SOURCE_LOCATION (decl),
-			"%qD is declared %<constexpr%> and is initialized to "
-			"a TU-local value", decl);
+	      if (DECL_DECLARED_CONSTEXPR_P (decl))
+		error_at (DECL_SOURCE_LOCATION (decl),
+			  "%qD is declared %<constexpr%> and is initialized to "
+			  "a TU-local value", decl);
+	      else
+		{
+		  /* This can only occur with references.  */
+		  gcc_checking_assert (TYPE_REF_P (TREE_TYPE (decl)));
+		  error_at (DECL_SOURCE_LOCATION (decl),
+			    "%qD is a reference declared %<inline%> and is "
+			    "constant-initialized to a TU-local value", decl);
+		}
 	      bool informed = is_tu_local_value (decl, DECL_INITIAL (decl),
 						 /*explain=*/true);
 	      gcc_checking_assert (informed);
