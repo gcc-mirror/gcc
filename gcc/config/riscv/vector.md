@@ -56,8 +56,7 @@
 			  vssegtux,vssegtox,vlsegdff,vandn,vbrev,vbrev8,vrev8,vcpop,vclz,vctz,vrol,\
 			  vror,vwsll,vclmul,vclmulh,vghsh,vgmul,vaesef,vaesem,vaesdf,vaesdm,\
 			  vaeskf1,vaeskf2,vaesz,vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,vsm3me,vsm3c,\
-			  vfncvtbf16,vfwcvtbf16,vfwmaccbf16,\
-			  sf_vqmacc,sf_vfnrclip")
+			  vfncvtbf16,vfwcvtbf16,vfwmaccbf16,sf_vqmacc,sf_vfnrclip,sf_vc,sf_vc_se")
 	 (const_string "true")]
 	(const_string "false")))
 

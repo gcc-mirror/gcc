@@ -495,6 +495,8 @@
 ;; SiFive custom extension instrctions
 ;; sf_vqmacc      vector matrix integer multiply-add instructions
 ;; sf_vfnrclip     vector fp32 to int8 ranged clip instructions
+;; sf_vc vector coprocessor interface without side effect
+;; sf_vc_se vector coprocessor interface with side effect
 (define_attr "type"
   "unknown,branch,jump,jalr,ret,call,load,fpload,store,fpstore,
    mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
@@ -516,7 +518,8 @@
    vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,
    vgather,vcompress,vmov,vector,vandn,vbrev,vbrev8,vrev8,vclz,vctz,vcpop,vrol,vror,vwsll,
    vclmul,vclmulh,vghsh,vgmul,vaesef,vaesem,vaesdf,vaesdm,vaeskf1,vaeskf2,vaesz,
-   vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,vsm3me,vsm3c,vfncvtbf16,vfwcvtbf16,vfwmaccbf16"
+   vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,vsm3me,vsm3c,vfncvtbf16,vfwcvtbf16,vfwmaccbf16,
+   sf_vc,sf_vc_se"
   (cond [(eq_attr "got" "load") (const_string "load")
 
 	 ;; If a doubleword move uses these expensive instructions,

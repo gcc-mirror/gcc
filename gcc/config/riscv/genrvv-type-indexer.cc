@@ -303,6 +303,8 @@ main (int argc, const char **argv)
 	fprintf (fp, "  /*UNSIGNED_EEW%d_LMUL1_INTERPRET*/ %s,\n", eew,
 		 inttype (eew, LMUL1_LOG2, /* unsigned_p */true).c_str ());
 
+	fprintf (fp, "  /*X2*/ INVALID,\n");
+
       for (unsigned lmul_log2_offset : {1, 2, 3, 4, 5, 6})
 	{
 	  unsigned multiple_of_lmul = 1 << lmul_log2_offset;
@@ -426,6 +428,9 @@ main (int argc, const char **argv)
 	      fprintf (fp, "  /*UNSIGNED_EEW%d_LMUL1_INTERPRET*/ INVALID,\n",
 		       eew);
 
+	    fprintf (fp, "  /*X2*/ %s,\n",
+		     inttype (sew * 2, lmul_log2 + 1, /*unsigned_p*/ true).c_str ());
+
 	    for (unsigned lmul_log2_offset : {1, 2, 3, 4, 5, 6})
 	      {
 		unsigned multiple_of_lmul = 1 << lmul_log2_offset;
@@ -500,6 +505,8 @@ main (int argc, const char **argv)
 
 	for (unsigned eew : EEW_SIZE_LIST)
 	  fprintf (fp, "  /*UNSIGNED_EEW%d_LMUL1_INTERPRET*/ INVALID,\n", eew);
+
+	fprintf (fp, "  /*X2*/ INVALID,\n");
 
 	for (unsigned lmul_log2_offset : {1, 2, 3, 4, 5, 6})
 	  {
@@ -587,6 +594,8 @@ main (int argc, const char **argv)
 	  for (unsigned eew : EEW_SIZE_LIST)
 	    fprintf (fp, "  /*UNSIGNED_EEW%d_LMUL1_INTERPRET*/ INVALID,\n",
 		     eew);
+
+	  fprintf (fp, "  /*X2*/ INVALID,\n");
 
 	  for (unsigned lmul_log2_offset : {1, 2, 3, 4, 5, 6})
 	    {
