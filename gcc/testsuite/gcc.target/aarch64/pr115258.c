@@ -1,4 +1,4 @@
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -mcmodel=small" } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 /*
