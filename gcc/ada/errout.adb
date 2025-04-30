@@ -3364,6 +3364,8 @@ package body Errout is
          E := First_Error_Msg;
          while E /= No_Error_Msg loop
             while To_Be_Removed (Errors.Table (E).Next) loop
+               Errors.Table (Errors.Table (E).Next).Deleted := True;
+
                Errors.Table (E).Next :=
                  Errors.Table (Errors.Table (E).Next).Next;
 
