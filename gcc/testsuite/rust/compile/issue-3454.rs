@@ -1,5 +1,5 @@
 #[lang = "sized"]
-trait Sized {}
+pub trait Sized {}
 
 macro_rules! impl_foo {
 	() => { impl Foo }

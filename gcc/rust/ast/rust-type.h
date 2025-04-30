@@ -73,6 +73,13 @@ public:
       type_path (std::move (type_path)), locus (locus)
   {}
 
+  TraitBound (TraitBound const &other)
+    : TypeParamBound (other.get_node_id ()), in_parens (other.in_parens),
+      opening_question_mark (other.opening_question_mark),
+      for_lifetimes (other.for_lifetimes), type_path (other.type_path),
+      locus (other.locus)
+  {}
+
   std::string as_string () const override;
 
   location_t get_locus () const override final { return locus; }
@@ -305,20 +312,18 @@ public:
 // Impl trait with a single bound? Poor reference material here.
 class ImplTraitTypeOneBound : public TypeNoBounds
 {
-  TraitBound trait_bound;
+  std::unique_ptr<TypeParamBound> trait_bound;
   location_t locus;
 
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  ImplTraitTypeOneBound *clone_type_no_bounds_impl () const override
-  {
-    return new ImplTraitTypeOneBound (*this);
-  }
-
 public:
-  ImplTraitTypeOneBound (TraitBound trait_bound, location_t locus)
+  ImplTraitTypeOneBound (std::unique_ptr<TypeParamBound> trait_bound,
+			 location_t locus)
     : trait_bound (std::move (trait_bound)), locus (locus)
+  {}
+
+  ImplTraitTypeOneBound (ImplTraitTypeOneBound const &other)
+    : trait_bound (other.trait_bound->clone_type_param_bound ()),
+      locus (other.locus)
   {}
 
   std::string as_string () const override;
@@ -327,11 +332,11 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // TODO: would a "vis_type" be better?
-  TraitBound &get_trait_bound ()
+  std::unique_ptr<TypeParamBound> &get_trait_bound () { return trait_bound; }
+
+  TypeNoBounds *clone_type_no_bounds_impl () const override
   {
-    // TODO: check to ensure invariants are met?
-    return trait_bound;
+    return new ImplTraitTypeOneBound (*this);
   }
 };
 
@@ -529,6 +534,9 @@ public:
     return *type;
   }
 
+  // Getter for direct access to the type unique_ptr
+  std::unique_ptr<TypeNoBounds> &get_type_ptr () { return type; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -604,6 +612,9 @@ public:
 
   TypeNoBounds &get_base_type () { return *type; }
 
+  // Getter for direct access to the type unique_ptr
+  std::unique_ptr<TypeNoBounds> &get_type_ptr () { return type; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -666,6 +677,11 @@ public:
     return *size;
   }
 
+  std::unique_ptr<Type> &get_element_type () { return elem_type; }
+
+  // Additional getter for direct access to the size expr unique_ptr
+  std::unique_ptr<Expr> &get_size_ptr () { return size; }
+
 protected:
   /* Use covariance to implement clone function as returning this object rather
    * than base */
@@ -718,6 +734,9 @@ public:
     rust_assert (elem_type != nullptr);
     return *elem_type;
   }
+
+  // Getter for direct access to the elem_type unique_ptr
+  std::unique_ptr<Type> &get_elem_type_ptr () { return elem_type; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

@@ -968,11 +968,7 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: is this better? Or is a "vis_pattern" better?
-  GenericArgs &get_generic_args ()
-  {
-    rust_assert (has_generic_args ());
-    return generic_args;
-  }
+  GenericArgs &get_generic_args () { return generic_args; }
 
   // Use covariance to override base class method
   TypePathSegmentGeneric *clone_type_path_segment_impl () const override

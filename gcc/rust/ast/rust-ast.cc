@@ -2714,7 +2714,7 @@ ImplTraitTypeOneBound::as_string () const
 {
   std::string str ("ImplTraitTypeOneBound: \n TraitBound: ");
 
-  return str + trait_bound.as_string ();
+  return str + trait_bound->as_string ();
 }
 
 std::string

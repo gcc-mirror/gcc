@@ -519,7 +519,7 @@ ASTLoweringType::visit (AST::ImplTraitTypeOneBound &type)
 
   std::vector<std::unique_ptr<HIR::TypeParamBound>> bounds;
 
-  auto b = ASTLoweringTypeBounds::translate (type.get_trait_bound ());
+  auto b = ASTLoweringTypeBounds::translate (*type.get_trait_bound ().get ());
   bounds.push_back (std::unique_ptr<HIR::TypeParamBound> (b));
 
   auto crate_num = mappings.get_current_crate ();
