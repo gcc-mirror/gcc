@@ -1900,6 +1900,7 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(target_cpu) $(target_os))),)
   $(TRASYM_DWARF_UNIX_PAIRS) \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_TARGET_PAIRS) \
+  s-dorepr.adb<libgnat/s-dorepr__freebsd.adb \
   system.ads<libgnat/system-freebsd.ads
 
   GNATLIB_SHARED = gnatlib-shared-dual
