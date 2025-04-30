@@ -91,6 +91,13 @@ public:
   FILE *get_open_file () const { return m_outf; }
   const char *get_filename () const { return m_filename.get (); }
 
+  static diagnostic_output_file
+  try_to_open (diagnostic_context &context,
+	       line_maps *line_maps,
+	       const char *base_file_name,
+	       const char *extension,
+	       bool binary);
+
 private:
   FILE *m_outf;
   bool m_owned;

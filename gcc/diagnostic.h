@@ -72,10 +72,10 @@ enum diagnostics_output_format
   /* JSON-based output, to a file.  */
   DIAGNOSTICS_OUTPUT_FORMAT_JSON_FILE,
 
-  /* SARIF-based output, to stderr.  */
+  /* SARIF-based output, as JSON to stderr.  */
   DIAGNOSTICS_OUTPUT_FORMAT_SARIF_STDERR,
 
-  /* SARIF-based output, to a file.  */
+  /* SARIF-based output, to a JSON file.  */
   DIAGNOSTICS_OUTPUT_FORMAT_SARIF_FILE
 };
 

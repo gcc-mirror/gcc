@@ -27,10 +27,20 @@ along with GCC; see the file COPYING3.  If not see
 
 class logical_location;
 
+/* Enum for choosing what format to serializing the generated SARIF into.  */
+
+enum class sarif_serialization_kind
+{
+   json,
+
+   num_values
+};
+
 extern diagnostic_output_file
 diagnostic_output_format_open_sarif_file (diagnostic_context &context,
 					  line_maps *line_maps,
-					  const char *base_file_name);
+					  const char *base_file_name,
+					  enum sarif_serialization_kind serialization_kind);
 
 extern void
 diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
@@ -49,6 +59,34 @@ diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
 					    const char *main_input_filename_,
 					    bool formatted,
 					    FILE *stream);
+
+/* Abstract base class for handling JSON output vs other kinds of
+   serialization of the json tree.  */
+
+class sarif_serialization_format
+{
+public:
+  virtual ~sarif_serialization_format () {}
+  virtual void write_to_file (FILE *outf,
+			      const json::value &top) = 0;
+};
+
+/* Concrete subclass for serializing SARIF as JSON.  */
+
+class sarif_serialization_format_json : public sarif_serialization_format
+{
+public:
+  sarif_serialization_format_json (bool formatted)
+  : m_formatted (formatted)
+  {
+  }
+  void write_to_file (FILE *outf, const json::value &top) final override;
+
+private:
+  bool m_formatted;
+};
+
+/* Control of SARIF generation.  */
 
 enum class sarif_version
 {
@@ -73,7 +111,7 @@ extern std::unique_ptr<diagnostic_output_format>
 make_sarif_sink (diagnostic_context &context,
 		 const line_maps &line_maps,
 		 const char *main_input_filename_,
-		 bool formatted,
+		 std::unique_ptr<sarif_serialization_format> serialization_format,
 		 const sarif_generation_options &sarif_gen_opts,
 		 diagnostic_output_file output_file);
 

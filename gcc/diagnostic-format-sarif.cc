@@ -634,6 +634,18 @@ private:
   std::vector<std::unique_ptr<sarif_result>> m_results;
 };
 
+/* Classes for abstracting away JSON vs other serialization formats.  */
+
+// class sarif_serialization_format_json : public sarif_serialization_format
+
+void
+sarif_serialization_format_json::write_to_file (FILE *outf,
+						const json::value &top)
+{
+  top.dump (outf, m_formatted);
+  fprintf (outf, "\n");
+}
+
 /* A class for managing SARIF output (for -fdiagnostics-format=sarif-stderr
    and -fdiagnostics-format=sarif-file).
 
@@ -687,7 +699,7 @@ public:
 		 pretty_printer &printer,
 		 const line_maps *line_maps,
 		 const char *main_input_filename_,
-		 bool formatted,
+		 std::unique_ptr<sarif_serialization_format> serialization_format,
 		 const sarif_generation_options &sarif_gen_opts);
   ~sarif_builder ();
 
@@ -891,7 +903,7 @@ private:
 
   int m_tabstop;
 
-  bool m_formatted;
+  std::unique_ptr<sarif_serialization_format> m_serialization_format;
   const sarif_generation_options m_sarif_gen_opts;
 
   unsigned m_next_result_idx;
@@ -1561,7 +1573,7 @@ sarif_builder::sarif_builder (diagnostic_context &context,
 			      pretty_printer &printer,
 			      const line_maps *line_maps,
 			      const char *main_input_filename_,
-			      bool formatted,
+			      std::unique_ptr<sarif_serialization_format> serialization_format,
 			      const sarif_generation_options &sarif_gen_opts)
 : m_context (context),
   m_printer (&printer),
@@ -1576,12 +1588,13 @@ sarif_builder::sarif_builder (diagnostic_context &context,
   m_rule_id_set (),
   m_rules_arr (new json::array ()),
   m_tabstop (context.m_tabstop),
-  m_formatted (formatted),
+  m_serialization_format (std::move (serialization_format)),
   m_sarif_gen_opts (sarif_gen_opts),
   m_next_result_idx (0),
   m_current_code_flow (nullptr)
 {
   gcc_assert (m_line_maps);
+  gcc_assert (m_serialization_format);
 
   /* Mark MAIN_INPUT_FILENAME_ as the artifact that the tool was
      instructed to scan.
@@ -1823,8 +1836,7 @@ void
 sarif_builder::flush_to_file (FILE *outf)
 {
   std::unique_ptr<sarif_log> top = flush_to_object ();
-  top->dump (outf, m_formatted);
-  fprintf (outf, "\n");
+  m_serialization_format->write_to_file (outf, *top);
 }
 
 /* Attempt to convert DIAG_KIND to a suitable value for the "level"
@@ -3534,11 +3546,11 @@ protected:
   sarif_output_format (diagnostic_context &context,
 		       const line_maps *line_maps,
 		       const char *main_input_filename_,
-		       bool formatted,
+		       std::unique_ptr<sarif_serialization_format> serialization_format,
 		       const sarif_generation_options &sarif_gen_opts)
   : diagnostic_output_format (context),
     m_builder (context, *get_printer (), line_maps, main_input_filename_,
-	       formatted, sarif_gen_opts),
+	       std::move (serialization_format), sarif_gen_opts),
     m_buffer (nullptr)
   {}
 
@@ -3552,12 +3564,11 @@ public:
   sarif_stream_output_format (diagnostic_context &context,
 			      const line_maps *line_maps,
 			      const char *main_input_filename_,
-			      bool formatted,
+			      std::unique_ptr<sarif_serialization_format> serialization_format,
 			      const sarif_generation_options &sarif_gen_opts,
 			      FILE *stream)
   : sarif_output_format (context, line_maps, main_input_filename_,
-			 formatted,
-			 sarif_gen_opts),
+			 std::move (serialization_format), sarif_gen_opts),
     m_stream (stream)
   {
   }
@@ -3579,11 +3590,11 @@ public:
   sarif_file_output_format (diagnostic_context &context,
 			    const line_maps *line_maps,
 			    const char *main_input_filename_,
-			    bool formatted,
+			    std::unique_ptr<sarif_serialization_format> serialization_format,
 			    const sarif_generation_options &sarif_gen_opts,
 			    diagnostic_output_file output_file)
   : sarif_output_format (context, line_maps, main_input_filename_,
-			 formatted, sarif_gen_opts),
+			 std::move (serialization_format), sarif_gen_opts),
     m_output_file (std::move (output_file))
   {
     gcc_assert (m_output_file.get_open_file ());
@@ -3747,26 +3758,33 @@ diagnostic_output_format_init_sarif_stderr (diagnostic_context &context,
 {
   gcc_assert (line_maps);
   const sarif_generation_options sarif_gen_opts;
+  auto serialization
+    = std::make_unique<sarif_serialization_format_json> (formatted);
   diagnostic_output_format_init_sarif
     (context,
      std::make_unique<sarif_stream_output_format> (context,
 						   line_maps,
 						   main_input_filename_,
-						   formatted,
+						   std::move (serialization),
 						   sarif_gen_opts,
 						   stderr));
 }
 
-/* Attempt to open BASE_FILE_NAME.sarif for writing.
+/* Attempt to open "BASE_FILE_NAME""EXTENSION" for writing.
    Return a non-null diagnostic_output_file,
    or return a null diagnostic_output_file and complain to CONTEXT
    using LINE_MAPS.  */
 
 diagnostic_output_file
-diagnostic_output_format_open_sarif_file (diagnostic_context &context,
-					  line_maps *line_maps,
-					  const char *base_file_name)
+diagnostic_output_file::try_to_open (diagnostic_context &context,
+				     line_maps *line_maps,
+				     const char *base_file_name,
+				     const char *extension,
+				     bool is_binary)
 {
+  gcc_assert (extension);
+  gcc_assert (extension[0] == '.');
+
   if (!base_file_name)
     {
       rich_location richloc (line_maps, UNKNOWN_LOCATION);
@@ -3777,19 +3795,49 @@ diagnostic_output_format_open_sarif_file (diagnostic_context &context,
     }
 
   label_text filename = label_text::take (concat (base_file_name,
-						  ".sarif",
+						  extension,
 						  nullptr));
-  FILE *outf = fopen (filename.get (), "w");
+  FILE *outf = fopen (filename.get (), is_binary ? "wb" : "w");
   if (!outf)
     {
       rich_location richloc (line_maps, UNKNOWN_LOCATION);
       context.emit_diagnostic_with_group
 	(DK_ERROR, richloc, nullptr, 0,
-	 "unable to open %qs for SARIF output: %m",
+	 "unable to open %qs for diagnostic output: %m",
 	 filename.get ());
       return diagnostic_output_file ();
     }
   return diagnostic_output_file (outf, true, std::move (filename));
+}
+
+/* Attempt to open BASE_FILE_NAME.sarif for writing JSON.
+   Return a non-null diagnostic_output_file,
+   or return a null diagnostic_output_file and complain to CONTEXT
+   using LINE_MAPS.  */
+
+diagnostic_output_file
+diagnostic_output_format_open_sarif_file (diagnostic_context &context,
+					  line_maps *line_maps,
+					  const char *base_file_name,
+					  enum sarif_serialization_kind serialization_kind)
+{
+  const char *suffix;
+  bool is_binary;
+  switch (serialization_kind)
+    {
+    default:
+      gcc_unreachable ();
+    case sarif_serialization_kind::json:
+      suffix = ".sarif";
+      is_binary = false;
+      break;
+    }
+
+  return diagnostic_output_file::try_to_open (context,
+					      line_maps,
+					      base_file_name,
+					      suffix,
+					      is_binary);
 }
 
 /* Populate CONTEXT in preparation for SARIF output to a file named
@@ -3807,7 +3855,10 @@ diagnostic_output_format_init_sarif_file (diagnostic_context &context,
   diagnostic_output_file output_file
     = diagnostic_output_format_open_sarif_file (context,
 						line_maps,
-						base_file_name);
+						base_file_name,
+						sarif_serialization_kind::json);
+  auto serialization
+    = std::make_unique<sarif_serialization_format_json> (formatted);
 
   const sarif_generation_options sarif_gen_opts;
   diagnostic_output_format_init_sarif
@@ -3815,7 +3866,7 @@ diagnostic_output_format_init_sarif_file (diagnostic_context &context,
      std::make_unique<sarif_file_output_format> (context,
 						 line_maps,
 						 main_input_filename_,
-						 formatted,
+						 std::move (serialization),
 						 sarif_gen_opts,
 						 std::move (output_file)));
 }
@@ -3831,12 +3882,14 @@ diagnostic_output_format_init_sarif_stream (diagnostic_context &context,
 {
   gcc_assert (line_maps);
   const sarif_generation_options sarif_gen_opts;
+  auto serialization
+    = std::make_unique<sarif_serialization_format_json> (formatted);
   diagnostic_output_format_init_sarif
     (context,
      std::make_unique<sarif_stream_output_format> (context,
 						   line_maps,
 						   main_input_filename_,
-						   formatted,
+						   std::move (serialization),
 						   sarif_gen_opts,
 						   stream));
 }
@@ -3845,7 +3898,7 @@ std::unique_ptr<diagnostic_output_format>
 make_sarif_sink (diagnostic_context &context,
 		 const line_maps &line_maps,
 		 const char *main_input_filename_,
-		 bool formatted,
+		 std::unique_ptr<sarif_serialization_format> serialization,
 		 const sarif_generation_options &sarif_gen_opts,
 		 diagnostic_output_file output_file)
 {
@@ -3853,7 +3906,7 @@ make_sarif_sink (diagnostic_context &context,
     = std::make_unique<sarif_file_output_format> (context,
 						  &line_maps,
 						  main_input_filename_,
-						  formatted,
+						  std::move (serialization),
 						  sarif_gen_opts,
 						  std::move (output_file));
   sink->update_printer ();
@@ -3908,7 +3961,9 @@ private:
 			    bool formatted,
 			    const sarif_generation_options &sarif_gen_opts)
     : sarif_output_format (context, line_maps, main_input_filename_,
-			   formatted,  sarif_gen_opts)
+			   std::make_unique<sarif_serialization_format_json>
+			     (formatted),
+			   sarif_gen_opts)
     {
     }
     bool machine_readable_stderr_p () const final override
@@ -3940,8 +3995,10 @@ test_make_location_object (const sarif_generation_options &sarif_gen_opts,
 
   test_diagnostic_context dc;
   pretty_printer pp;
-  sarif_builder builder (dc, pp, line_table, "MAIN_INPUT_FILENAME",
-			 true, sarif_gen_opts);
+  sarif_builder builder
+    (dc, pp, line_table, "MAIN_INPUT_FILENAME",
+     std::make_unique<sarif_serialization_format_json> (true),
+     sarif_gen_opts);
 
   /* These "columns" are byte offsets, whereas later on the columns
      in the generated SARIF use sarif_builder::get_sarif_column and

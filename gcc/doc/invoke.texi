@@ -6053,6 +6053,11 @@ Specify the filename to write the SARIF output to, potentially with a
 leading absolute or relative path.  If not specified, it defaults to
 @file{@var{source}.sarif}.
 
+@item serialization=@r{[}json@r{]}
+Specify the serialization format to use when writing out the SARIF.
+Currently this can only be @code{json}, but is present as an
+extension point for experimenting with other serializations.
+
 @item version=@r{[}2.1@r{|}2.2-prerelease@r{]}
 Specify the version of SARIF to use for the output.  If not specified,
 defaults to 2.1.  @code{2.2-prerelease} uses an unofficial draft of the
