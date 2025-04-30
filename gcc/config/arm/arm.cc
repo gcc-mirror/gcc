@@ -948,12 +948,6 @@ int arm_ld_sched = 0;
 /* Nonzero if this chip is a StrongARM.  */
 int arm_tune_strongarm = 0;
 
-/* Nonzero if this chip supports Intel Wireless MMX technology.  */
-int arm_arch_iwmmxt = 0;
-
-/* Nonzero if this chip supports Intel Wireless MMX2 technology.  */
-int arm_arch_iwmmxt2 = 0;
-
 /* Nonzero if this chip is an XScale.  */
 int arm_arch_xscale = 0;
 
@@ -3919,8 +3913,6 @@ arm_option_reconfigure_globals (void)
   arm_arch_thumb1 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
   arm_arch_thumb2 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb2);
   arm_arch_xscale = bitmap_bit_p (arm_active_target.isa, isa_bit_xscale);
-  arm_arch_iwmmxt = bitmap_bit_p (arm_active_target.isa, isa_bit_iwmmxt);
-  arm_arch_iwmmxt2 = bitmap_bit_p (arm_active_target.isa, isa_bit_iwmmxt2);
   arm_arch_thumb_hwdiv = bitmap_bit_p (arm_active_target.isa, isa_bit_tdiv);
   arm_arch_arm_hwdiv = bitmap_bit_p (arm_active_target.isa, isa_bit_adiv);
   arm_arch_crc = bitmap_bit_p (arm_active_target.isa, isa_bit_crc32);
@@ -12378,11 +12370,6 @@ arm_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
       if ((IS_VFP_CLASS (from) && !IS_VFP_CLASS (to))
 	  || (!IS_VFP_CLASS (from) && IS_VFP_CLASS (to)))
 	return 15;
-      else if ((from == IWMMXT_REGS && to != IWMMXT_REGS)
-	       || (from != IWMMXT_REGS && to == IWMMXT_REGS))
-	return 4;
-      else if (from == IWMMXT_GR_REGS || to == IWMMXT_GR_REGS)
-	return 20;
       else
 	return 2;
     }
@@ -17498,8 +17485,7 @@ struct minipool_node
   rtx value;
   /* The mode of value.  */
   machine_mode mode;
-  /* The size of the value.  With iWMMXt enabled
-     sizes > 4 also imply an alignment of 8-bytes.  */
+  /* The size of the value.  */
   int fix_size;
 };
 
@@ -20162,9 +20148,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 		}
 	      else
 		{
-		  /* Use a single insn if we can.
-		     FIXME: IWMMXT allows offsets larger than ldrd can
-		     handle, fix these up with a pair of ldr.  */
+		  /* Use a single insn if we can.  */
 		  if (can_ldrd
 		      && (TARGET_THUMB2
 		      || !CONST_INT_P (otherops[2])
@@ -20189,9 +20173,7 @@ output_move_double (rtx *operands, bool emit, int *count)
 	    }
 	  else
 	    {
-	      /* Use a single insn if we can.
-		 FIXME: IWMMXT allows offsets larger than ldrd can handle,
-		 fix these up with a pair of ldr.  */
+	      /* Use a single insn if we can.  */
 	      if (can_ldrd
 		  && (TARGET_THUMB2
 		  || !CONST_INT_P (otherops[2])
@@ -20429,8 +20411,6 @@ output_move_double (rtx *operands, bool emit, int *count)
 	  otherops[1] = XEXP (XEXP (XEXP (operands[0], 0), 1), 0);
 	  otherops[2] = XEXP (XEXP (XEXP (operands[0], 0), 1), 1);
 
-	  /* IWMMXT allows offsets larger than strd can handle,
-	     fix these up with a pair of str.  */
 	  if (!TARGET_THUMB2
 	      && CONST_INT_P (otherops[2])
 	      && (INTVAL(otherops[2]) <= -256
@@ -21574,12 +21554,10 @@ output_return_instruction (rtx operand, bool really_return, bool reverse,
 
       if ((live_regs_mask & (1 << IP_REGNUM)) == (1 << IP_REGNUM))
 	{
-	  /* There are three possible reasons for the IP register
-	     being saved.  1) a stack frame was created, in which case
-	     IP contains the old stack pointer, or 2) an ISR routine
-	     corrupted it, or 3) it was saved to align the stack on
-	     iWMMXt.  In case 1, restore IP into SP, otherwise just
-	     restore IP.  */
+	  /* There are two possible reasons for the IP register being saved.
+	     1) a stack frame was created, in which case IP contains the old
+	     stack pointer, or 2) an ISR routine corrupted it.  In case 1,
+	     restore IP into SP, otherwise just restore IP.  */
 	  if (frame_pointer_needed)
 	    {
 	      live_regs_mask &= ~ (1 << IP_REGNUM);
@@ -24419,42 +24397,9 @@ arm_print_operand (FILE *stream, rtx x, int code)
       return;
 
     case 'U':
-      if (!REG_P (x)
-	  || REGNO (x) < FIRST_IWMMXT_GR_REGNUM
-	  || REGNO (x) > LAST_IWMMXT_GR_REGNUM)
-	/* Bad value for wCG register number.  */
-	{
-	  output_operand_lossage ("invalid operand for code '%c'", code);
-	  return;
-	}
-
-      else
-	fprintf (stream, "%d", REGNO (x) - FIRST_IWMMXT_GR_REGNUM);
-      return;
-
-      /* Print an iWMMXt control register name.  */
     case 'w':
-      if (!CONST_INT_P (x)
-	  || INTVAL (x) < 0
-	  || INTVAL (x) >= 16)
-	/* Bad value for wC register number.  */
-	{
-	  output_operand_lossage ("invalid operand for code '%c'", code);
-	  return;
-	}
-
-      else
-	{
-	  static const char * wc_reg_names [16] =
-	    {
-	      "wCID",  "wCon",  "wCSSF", "wCASF",
-	      "wC4",   "wC5",   "wC6",   "wC7",
-	      "wCGR0", "wCGR1", "wCGR2", "wCGR3",
-	      "wC12",  "wC13",  "wC14",  "wC15"
-	    };
-
-	  fputs (wc_reg_names [INTVAL (x)], stream);
-	}
+      /* Former iWMMXT support, removed after GCC-15.  */
+      output_operand_lossage ("obsolete iWMMXT format code '%c'", code);
       return;
 
     /* Print the high single-precision register of a VFP double-precision
@@ -25893,12 +25838,6 @@ arm_regno_class (int regno)
       else
         return VFP_HI_REGS;
     }
-
-  if (IS_IWMMXT_REGNUM (regno))
-    return IWMMXT_REGS;
-
-  if (IS_IWMMXT_GR_REGNUM (regno))
-    return IWMMXT_GR_REGS;
 
   return NO_REGS;
 }
@@ -29842,12 +29781,6 @@ arm_debugger_regno (unsigned int regno)
 	return 256 + (regno - FIRST_VFP_REGNUM) / 2;
     }
 
-  if (IS_IWMMXT_GR_REGNUM (regno))
-    return 104 + regno - FIRST_IWMMXT_GR_REGNUM;
-
-  if (IS_IWMMXT_REGNUM (regno))
-    return 112 + regno - FIRST_IWMMXT_REGNUM;
-
   if (IS_PAC_REGNUM (regno))
     return DWARF_PAC_REGNUM;
 
@@ -30431,95 +30364,6 @@ arm_output_shift(rtx * operands, int set_flags)
     sprintf (pattern, "mov%%%c\t%%0, %%1", c);
 
   output_asm_insn (pattern, operands);
-  return "";
-}
-
-/* Output assembly for a WMMX immediate shift instruction.  */
-const char *
-arm_output_iwmmxt_shift_immediate (const char *insn_name, rtx *operands, bool wror_or_wsra)
-{
-  int shift = INTVAL (operands[2]);
-  char templ[50];
-  machine_mode opmode = GET_MODE (operands[0]);
-
-  gcc_assert (shift >= 0);
-
-  /* If the shift value in the register versions is > 63 (for D qualifier),
-     31 (for W qualifier) or 15 (for H qualifier).  */
-  if (((opmode == V4HImode) && (shift > 15))
-	|| ((opmode == V2SImode) && (shift > 31))
-	|| ((opmode == DImode) && (shift > 63)))
-  {
-    if (wror_or_wsra)
-      {
-        sprintf (templ, "%s\t%%0, %%1, #%d", insn_name, 32);
-        output_asm_insn (templ, operands);
-        if (opmode == DImode)
-          {
-	    sprintf (templ, "%s\t%%0, %%0, #%d", insn_name, 32);
-	    output_asm_insn (templ, operands);
-          }
-      }
-    else
-      {
-        /* The destination register will contain all zeros.  */
-        sprintf (templ, "wzero\t%%0");
-        output_asm_insn (templ, operands);
-      }
-    return "";
-  }
-
-  if ((opmode == DImode) && (shift > 32))
-    {
-      sprintf (templ, "%s\t%%0, %%1, #%d", insn_name, 32);
-      output_asm_insn (templ, operands);
-      sprintf (templ, "%s\t%%0, %%0, #%d", insn_name, shift - 32);
-      output_asm_insn (templ, operands);
-    }
-  else
-    {
-      sprintf (templ, "%s\t%%0, %%1, #%d", insn_name, shift);
-      output_asm_insn (templ, operands);
-    }
-  return "";
-}
-
-/* Output assembly for a WMMX tinsr instruction.  */
-const char *
-arm_output_iwmmxt_tinsr (rtx *operands)
-{
-  int mask = INTVAL (operands[3]);
-  int i;
-  char templ[50];
-  int units = mode_nunits[GET_MODE (operands[0])];
-  gcc_assert ((mask & (mask - 1)) == 0);
-  for (i = 0; i < units; ++i)
-    {
-      if ((mask & 0x01) == 1)
-        {
-          break;
-        }
-      mask >>= 1;
-    }
-  gcc_assert (i < units);
-  {
-    switch (GET_MODE (operands[0]))
-      {
-      case E_V8QImode:
-	sprintf (templ, "tinsrb%%?\t%%0, %%2, #%d", i);
-	break;
-      case E_V4HImode:
-	sprintf (templ, "tinsrh%%?\t%%0, %%2, #%d", i);
-	break;
-      case E_V2SImode:
-	sprintf (templ, "tinsrw%%?\t%%0, %%2, #%d", i);
-	break;
-      default:
-	gcc_unreachable ();
-	break;
-      }
-    output_asm_insn (templ, operands);
-  }
   return "";
 }
 

@@ -137,12 +137,6 @@ emission of floating point pcs attributes.  */
 #define TARGET_MAYBE_HARD_FLOAT (arm_float_abi != ARM_FLOAT_ABI_SOFT)
 /* Use hardware floating point calling convention.  */
 #define TARGET_HARD_FLOAT_ABI		(arm_float_abi == ARM_FLOAT_ABI_HARD)
-#define TARGET_IWMMXT			(arm_arch_iwmmxt)
-#define TARGET_IWMMXT2			(arm_arch_iwmmxt2)
-#define TARGET_REALLY_IWMMXT		(TARGET_IWMMXT && TARGET_32BIT \
-					 && !TARGET_GENERAL_REGS_ONLY)
-#define TARGET_REALLY_IWMMXT2		(TARGET_IWMMXT2 && TARGET_32BIT \
-					 && !TARGET_GENERAL_REGS_ONLY)
 #define TARGET_ARM                      (! TARGET_THUMB)
 #define TARGET_EITHER			1 /* (TARGET_ARM | TARGET_THUMB) */
 #define TARGET_BACKTRACE	        (crtl->is_leaf \
@@ -524,12 +518,6 @@ extern int arm_ld_sched;
 
 /* Nonzero if this chip is a StrongARM.  */
 extern int arm_tune_strongarm;
-
-/* Nonzero if this chip supports Intel XScale with Wireless MMX technology.  */
-extern int arm_arch_iwmmxt;
-
-/* Nonzero if this chip supports Intel Wireless MMX2 technology.  */
-extern int arm_arch_iwmmxt2;
 
 /* Nonzero if this chip is an XScale.  */
 extern int arm_arch_xscale;
@@ -1085,9 +1073,6 @@ extern const int arm_arch_cde_coproc_bits[];
 #define SUBTARGET_FRAME_POINTER_REQUIRED 0
 #endif
 
-#define VALID_IWMMXT_REG_MODE(MODE) \
- (arm_vector_mode_supported_p (MODE) || (MODE) == DImode)
-
 /* Modes valid for Neon D registers.  */
 #define VALID_NEON_DREG_MODE(MODE) \
   ((MODE) == V2SImode || (MODE) == V4HImode || (MODE) == V8QImode \
@@ -1167,9 +1152,9 @@ extern const int arm_arch_cde_coproc_bits[];
 /* The conditions under which vector modes are supported for general
    arithmetic by any vector extension.  */
 
-#define ARM_HAVE_V8QI_ARITH (ARM_HAVE_NEON_V8QI_ARITH || TARGET_REALLY_IWMMXT)
-#define ARM_HAVE_V4HI_ARITH (ARM_HAVE_NEON_V4HI_ARITH || TARGET_REALLY_IWMMXT)
-#define ARM_HAVE_V2SI_ARITH (ARM_HAVE_NEON_V2SI_ARITH || TARGET_REALLY_IWMMXT)
+#define ARM_HAVE_V8QI_ARITH (ARM_HAVE_NEON_V8QI_ARITH)
+#define ARM_HAVE_V4HI_ARITH (ARM_HAVE_NEON_V4HI_ARITH)
+#define ARM_HAVE_V2SI_ARITH (ARM_HAVE_NEON_V2SI_ARITH)
 
 #define ARM_HAVE_V16QI_ARITH (ARM_HAVE_NEON_V16QI_ARITH || TARGET_HAVE_MVE)
 #define ARM_HAVE_V8HI_ARITH (ARM_HAVE_NEON_V8HI_ARITH || TARGET_HAVE_MVE)
@@ -1203,9 +1188,9 @@ extern const int arm_arch_cde_coproc_bits[];
 /* The conditions under which vector modes are supported by load/store
    instructions by any vector extension.  */
 
-#define ARM_HAVE_V8QI_LDST (ARM_HAVE_NEON_V8QI_LDST || TARGET_REALLY_IWMMXT)
-#define ARM_HAVE_V4HI_LDST (ARM_HAVE_NEON_V4HI_LDST || TARGET_REALLY_IWMMXT)
-#define ARM_HAVE_V2SI_LDST (ARM_HAVE_NEON_V2SI_LDST || TARGET_REALLY_IWMMXT)
+#define ARM_HAVE_V8QI_LDST (ARM_HAVE_NEON_V8QI_LDST)
+#define ARM_HAVE_V4HI_LDST (ARM_HAVE_NEON_V4HI_LDST)
+#define ARM_HAVE_V2SI_LDST (ARM_HAVE_NEON_V2SI_LDST)
 
 #define ARM_HAVE_V16QI_LDST (ARM_HAVE_NEON_V16QI_LDST || TARGET_HAVE_MVE)
 #define ARM_HAVE_V8HI_LDST (ARM_HAVE_NEON_V8HI_LDST || TARGET_HAVE_MVE)
@@ -1460,41 +1445,33 @@ extern const char *fp_sysreg_names[NB_FP_SYSREGS];
    or out of a register in CLASS in MODE.  If it can be done directly,
    NO_REGS is returned.  */
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)			\
-  /* Restrict which direct reloads are allowed for VFP/iWMMXt regs.  */	\
+  /* Restrict which direct reloads are allowed for VFP regs.  */	\
   ((TARGET_HARD_FLOAT && IS_VFP_CLASS (CLASS))				\
    ? coproc_secondary_reload_class (MODE, X, FALSE)			\
-   : ((TARGET_IWMMXT && (CLASS) == IWMMXT_REGS)				\
-      ? coproc_secondary_reload_class (MODE, X, TRUE)			\
-      : (TARGET_32BIT							\
-	 ? (((MODE) == HImode && ! arm_arch4 && true_regnum (X) == -1)	\
-	    ? GENERAL_REGS						\
-	    : NO_REGS)							\
-	 : THUMB_SECONDARY_OUTPUT_RELOAD_CLASS (CLASS, MODE, X))))
+   : (TARGET_32BIT							\
+      ? (((MODE) == HImode && ! arm_arch4 && true_regnum (X) == -1)	\
+	 ? GENERAL_REGS							\
+	 : NO_REGS)							\
+      : THUMB_SECONDARY_OUTPUT_RELOAD_CLASS (CLASS, MODE, X)))
 
 /* If we need to load shorts byte-at-a-time, then we need a scratch.  */
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)			\
-  /* Restrict which direct reloads are allowed for VFP/iWMMXt regs.  */	\
+  /* Restrict which direct reloads are allowed for VFP regs.  */	\
   ((TARGET_HARD_FLOAT && IS_VFP_CLASS (CLASS))				\
    ? coproc_secondary_reload_class (MODE, X, FALSE)			\
-   : ((TARGET_IWMMXT && (CLASS) == IWMMXT_REGS)				\
-      ? coproc_secondary_reload_class (MODE, X, TRUE)			\
-      : (TARGET_32BIT							\
-	 ? ((((CLASS) == IWMMXT_REGS || (CLASS) == IWMMXT_GR_REGS)	\
-	     && CONSTANT_P (X))						\
-	    ? GENERAL_REGS						\
-	    : (((MODE) == HImode					\
-		&& ! arm_arch4						\
-		&& (MEM_P (X)						\
-		    || ((REG_P (X) || GET_CODE (X) == SUBREG)		\
-			&& true_regnum (X) == -1)))			\
-	       ? GENERAL_REGS						\
-	       : NO_REGS))						\
-	 : THUMB_SECONDARY_INPUT_RELOAD_CLASS (CLASS, MODE, X))))
+   : (TARGET_32BIT							\
+      ? (((MODE) == HImode						\
+	  && ! arm_arch4						\
+	  && (MEM_P (X)							\
+	      || ((REG_P (X) || GET_CODE (X) == SUBREG)			\
+		  && true_regnum (X) == -1)))				\
+	 ? GENERAL_REGS							\
+	 : NO_REGS)							\
+      : THUMB_SECONDARY_INPUT_RELOAD_CLASS (CLASS, MODE, X)))
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
-   ARM regs are UNITS_PER_WORD bits.
-   FIXME: Is this true for iWMMX?  */
+   ARM regs are UNITS_PER_WORD bits.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)  \
   (CLASS == VPR_REG)		      \
   ? CEIL (GET_MODE_SIZE (MODE), 2)    \

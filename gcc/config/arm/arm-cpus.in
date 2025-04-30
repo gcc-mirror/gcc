@@ -102,12 +102,6 @@ define feature armv8
 # ARMv8 CRC32 instructions.
 define feature crc32
 
-# XScale v2 (Wireless MMX).
-define feature iwmmxt
-
-# XScale Wireless MMX2.
-define feature iwmmxt2
-
 # Architecture rel 8.1.
 define feature armv8_1
 
