@@ -1,4 +1,4 @@
-{ dg-require-effective-target c++11 }
+/* { dg-require-effective-target c++11 } */
 /* PR c++/118859 */
 
 /* Diagnose invalid substituted types of depdendent parameters specified
