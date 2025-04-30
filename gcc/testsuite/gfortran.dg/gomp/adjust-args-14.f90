@@ -14,7 +14,7 @@ contains
 
 ! { dg-error "19: Argument 'y' at .1. to list item in 'need_device_addr' at .2. must not have the VALUE attribute" "" { target *-*-* } 8 }
 ! { dg-error "64: Argument 'y' at .1. to list item in 'need_device_addr' at .2. must not have the VALUE attribute" "" { target *-*-* } 9 }
-! { dg-message "sorry, unimplemented: 'need_device_addr' not yet supported" "" { target *-*-* } 9 }
+
 
 ! { dg-error "Argument 'z' at .1. to list item in 'need_device_ptr' at .2. must be a scalar of TYPE\\(C_PTR\\)" "" { target *-*-* } 8 }
 ! { dg-error "Argument 'z' at .1. to list item in 'need_device_ptr' at .2. must be a scalar of TYPE\\(C_PTR\\)" "" { target *-*-* } 10 }

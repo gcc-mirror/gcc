@@ -516,6 +516,7 @@ Technical Report (TR) 12 is the second preview for OpenMP 6.0.
 @item Extension of @code{interop} operation of @code{append_args}, allowing all
       modifiers of the @code{init} clause
       @tab N @tab
+@item New @code{need_device_addr} modifier to @code{adjust_args} clause @tab Y @tab
 @item @code{interop} clause to @code{dispatch} @tab Y @tab
 @item @code{message} and @code{severity} clauses to @code{parallel} directive
       @tab N @tab

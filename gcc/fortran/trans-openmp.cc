@@ -11968,6 +11968,34 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns, gfc_namespace *parent_ns)
 					 &arg->sym->declared_at, &loc);
 			      continue;
 			    }
+			  if (arg_list->u.adj_args.need_addr
+			      && arg->sym->ts.type == BT_CLASS)
+			    {
+			      // In OpenMP 6.1, mapping polymorphic variables
+			      // is undefined behavior. 'sorry' would be an
+			      // alternative or some other wording.
+			      gfc_error ("Argument %qs at %L to list item in "
+					 "%<need_device_addr%> at %L must not "
+					 "be polymorphic",
+					 arg->sym->name,
+					 &arg->sym->declared_at, &loc);
+			      continue;
+			    }
+			  if (arg_list->u.adj_args.need_addr
+			      && arg->sym->attr.optional)
+			    {
+			      // OPTIONAL has the issue that we need to handle
+			      // absent arguments on the caller side, which
+			      // adds extra complications.
+			      gfc_error ("Sorry, argument %qs at %L to list "
+					 "item in %<need_device_addr%> at %L "
+					 "with OPTIONAL argument is "
+					 "not yet supported",
+					 arg->sym->name,
+					 &arg->sym->declared_at, &loc);
+			      continue;
+			    }
+
 			  if (adjust_args_list.contains (arg->sym))
 			    {
 			      gfc_error ("%qs at %L is specified more than "
@@ -11976,22 +12004,6 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns, gfc_namespace *parent_ns)
 			    }
 			  adjust_args_list.safe_push (arg->sym);
 
-			  if (arg_list->u.adj_args.need_addr)
-			    {
-			      /* TODO: Has to to support OPTIONAL and array
-				 descriptors; should check for CLASS, coarrays?
-				 Reject "abc" and 123 as actual arguments (in
-				 gimplify.cc or in the FE? Reject noncontiguous
-				 actuals?  Cf. also PR C++/118859.
-				 Also check array-valued type(c_ptr).  */
-			      static bool warned = false;
-			      if (!warned)
-				sorry_at (gfc_get_location (&loc),
-					  "%<need_device_addr%> not yet "
-					  "supported");
-			      warned = true;
-			      continue;
-			    }
 			  if (arg_list->u.adj_args.need_ptr
 			      || arg_list->u.adj_args.need_addr)
 			    {

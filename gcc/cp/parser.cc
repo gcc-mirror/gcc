@@ -51407,7 +51407,8 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
 	      else
 		{
 		  error_at (adjust_op_tok->location,
-			    "expected %<nothing%> or %<need_device_ptr%>");
+			    "expected %<nothing%>, %<need_device_ptr%> or "
+			    "%<need_device_addr%>");
 		  /* We should be trying to recover here instead of immediately
 		     failing, skipping to close paren and continuing.  */
 		  goto fail;
@@ -51418,8 +51419,8 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
 	      /* We should be trying to recover here instead of immediately
 		 failing, skipping to close paren and continuing.  */
 	      error_at (adjust_op_tok->location,
-			"expected %<nothing%> or %<need_device_ptr%> followed "
-			"by %<:%>");
+			"expected %<nothing%>, %<need_device_ptr%> or "
+			"%<need_device_addr%> followed by %<:%>");
 	      goto fail;
 	    }
 	  /* cp_parser_omp_var_list_no_open used to handle this, we don't use
