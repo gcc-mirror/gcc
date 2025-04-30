@@ -2120,6 +2120,7 @@ package body Errout is
       Warnings_Treated_As_Errors := 0;
       Warnings_Detected := 0;
       Warnings_As_Errors_Count := 0;
+      Compile_Time_Pragma_Warnings := 0;
 
       --  Initialize warnings tables
 
@@ -3126,19 +3127,11 @@ package body Errout is
       end if;
 
       if Warning_Mode = Treat_As_Error then
-         declare
-            Compile_Time_Pragma_Warnings : constant Nat :=
-               Count_Compile_Time_Pragma_Warnings;
-            Total : constant Int := Total_Errors_Detected + Warnings_Detected
-               - Compile_Time_Pragma_Warnings;
-            --  We need to protect against a negative Total here, because
-            --  if a pragma Compile_Time_Warning occurs in dead code, it
-            --  gets counted in Compile_Time_Pragma_Warnings but not in
-            --  Warnings_Detected.
-         begin
-            Total_Errors_Detected := Int'Max (Total, 0);
-            Warnings_Detected := Compile_Time_Pragma_Warnings;
-         end;
+         Total_Errors_Detected :=
+           Total_Errors_Detected
+           + Warnings_Detected
+           - Compile_Time_Pragma_Warnings;
+         Warnings_Detected := Compile_Time_Pragma_Warnings;
       end if;
    end Output_Messages;
 

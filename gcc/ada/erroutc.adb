@@ -237,36 +237,16 @@ package body Erroutc is
       --  Compile_Time_Warning pragma as an error. Warnings_Count is the sum
       --  of both "normal" and Compile_Time_Warning warnings. This means that
       --  there are only one or more non-Compile_Time_Warning warnings when
-      --  Warnings_Count is greater than Count_Compile_Time_Pragma_Warnings.
+      --  Warnings_Count is greater than Compile_Time_Pragma_Warnings.
 
       elsif Warning_Mode = Treat_As_Error
-         and then Warnings_Count > Count_Compile_Time_Pragma_Warnings
+         and then Warnings_Count > Compile_Time_Pragma_Warnings
       then
          return True;
       end if;
 
       return False;
    end Compilation_Errors;
-
-   ----------------------------------------
-   -- Count_Compile_Time_Pragma_Warnings  --
-   ----------------------------------------
-
-   function Count_Compile_Time_Pragma_Warnings return Int is
-      Result : Int := 0;
-   begin
-      for J in 1 .. Errors.Last loop
-         begin
-            if Errors.Table (J).Kind = Warning
-               and then Errors.Table (J).Compile_Time_Pragma
-               and then not Errors.Table (J).Deleted
-            then
-               Result := Result + 1;
-            end if;
-         end;
-      end loop;
-      return Result;
-   end Count_Compile_Time_Pragma_Warnings;
 
    ------------------------------
    -- Decrease_Error_Msg_Count --
@@ -284,6 +264,11 @@ package body Erroutc is
 
             if E.Warn_Err then
                Warnings_Treated_As_Errors := Warnings_Treated_As_Errors - 1;
+            end if;
+
+            if E.Compile_Time_Pragma then
+               Compile_Time_Pragma_Warnings :=
+                 Compile_Time_Pragma_Warnings - 1;
             end if;
 
          when High_Check | Medium_Check | Low_Check =>
@@ -449,6 +434,11 @@ package body Erroutc is
 
                   exit when not Errors.Table (J).Msg_Cont;
                end loop;
+            end if;
+
+            if E.Compile_Time_Pragma then
+               Compile_Time_Pragma_Warnings :=
+                 Compile_Time_Pragma_Warnings + 1;
             end if;
 
          when High_Check | Medium_Check | Low_Check =>
@@ -2215,10 +2205,6 @@ package body Erroutc is
       declare
          Warnings_Count : constant Int := Warnings_Detected;
 
-         Compile_Time_Warnings : Int;
-         --  Number of warnings that come from a Compile_Time_Warning
-         --  pragma.
-
          Non_Compile_Time_Warnings : Int;
          --  Number of warnings that do not come from a Compile_Time_Warning
          --  pragmas.
@@ -2233,16 +2219,15 @@ package body Erroutc is
                Write_Char ('s');
             end if;
 
-            Compile_Time_Warnings := Count_Compile_Time_Pragma_Warnings;
             Non_Compile_Time_Warnings :=
-               Warnings_Count - Compile_Time_Warnings;
+               Warnings_Count - Compile_Time_Pragma_Warnings;
 
             if Warning_Mode = Treat_As_Error
                and then Non_Compile_Time_Warnings > 0
             then
                Write_Str (" (");
 
-               if Compile_Time_Warnings > 0 then
+               if Compile_Time_Pragma_Warnings > 0 then
                   Write_Int (Non_Compile_Time_Warnings);
                   Write_Str (" ");
                end if;

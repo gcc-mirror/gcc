@@ -175,6 +175,9 @@ package Atree is
    --  Number of warnings changed into errors as a result of matching a pattern
    --  given in a Warning_As_Error configuration pragma.
 
+   Compile_Time_Pragma_Warnings : Nat := 0;
+   --  Number of warnings that come from a Compile_Time_Warning pragma
+
    Configurable_Run_Time_Violations : Nat := 0;
    --  Count of configurable run time violations so far. This is used to
    --  suppress certain cascaded error messages when we know that we may not

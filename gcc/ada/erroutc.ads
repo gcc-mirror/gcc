@@ -625,10 +625,6 @@ package Erroutc is
    --  redundant. If so, the message to be deleted and all its continuations
    --  are marked with the Deleted flag set to True.
 
-   function Count_Compile_Time_Pragma_Warnings return Int;
-   --  Returns the number of warnings in the Errors table that were triggered
-   --  by a Compile_Time_Warning pragma.
-
    function Get_Warning_Option (Id : Error_Msg_Id) return String;
    --  Returns the warning switch causing this warning message or an empty
    --  string is there is none..
