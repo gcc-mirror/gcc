@@ -137,6 +137,7 @@ static const riscv_implied_info_t riscv_implied_info[] =
   {"zve64f", "f"},
   {"zve64d", "d"},
 
+  {"zve32x", "zicsr"},
   {"zve32x", "zvl32b"},
   {"zve32f", "zve32x"},
   {"zve32f", "zvl32b"},
