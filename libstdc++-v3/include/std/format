@@ -1863,20 +1863,24 @@ namespace __format
       _Spec<_CharT> _M_spec{};
     };
 
+#ifdef __BFLT16_DIG__
+   using __bflt16_t = decltype(0.0bf16);
+#endif
+
   // Decide how 128-bit floating-point types should be formatted (or not).
-  // When supported, the typedef __format::__float128_t is the type that
-  // format arguments should be converted to for storage in basic_format_arg.
+  // When supported, the typedef __format::__flt128_t is the type that format
+  // arguments should be converted to before passing them to __formatter_fp.
   // Define the macro _GLIBCXX_FORMAT_F128 to say they're supported.
-  // _GLIBCXX_FORMAT_F128=1 means __float128, _Float128 etc. will be formatted
-  // by converting them to long double (or __ieee128 for powerpc64le).
-  // _GLIBCXX_FORMAT_F128=2 means basic_format_arg needs to enable explicit
-  // support for _Float128, rather than formatting it as another type.
+  // The __float128, _Float128 will be formatted by converting them to:
+  // __ieee128 (same as __float128) when _GLIBCXX_FORMAT_F128=1,
+  // long double when _GLIBCXX_FORMAT_F128=2,
+  // _Float128 when _GLIBCXX_FORMAT_F128=3.
 #undef _GLIBCXX_FORMAT_F128
 
 #ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 
   // Format 128-bit floating-point types using __ieee128.
-  using __float128_t = __ieee128;
+  using __flt128_t = __ieee128;
 # define _GLIBCXX_FORMAT_F128 1
 
 #ifdef __LONG_DOUBLE_IEEE128__
@@ -1910,14 +1914,14 @@ namespace __format
 #elif defined _GLIBCXX_LDOUBLE_IS_IEEE_BINARY128
 
   // Format 128-bit floating-point types using long double.
-  using __float128_t = long double;
-# define _GLIBCXX_FORMAT_F128 1
+  using __flt128_t = long double;
+# define _GLIBCXX_FORMAT_F128 2
 
 #elif __FLT128_DIG__ && defined(_GLIBCXX_HAVE_FLOAT128_MATH)
 
   // Format 128-bit floating-point types using _Float128.
-  using __float128_t = _Float128;
-# define _GLIBCXX_FORMAT_F128 2
+  using __flt128_t = _Float128;
+# define _GLIBCXX_FORMAT_F128 3
 
 # if __cplusplus == 202002L
   // These overloads exist in the library, but are not declared for C++20.
@@ -2947,8 +2951,8 @@ namespace __format
     };
 #endif
 
-#if defined(__FLT128_DIG__) && _GLIBCXX_FORMAT_F128 == 1
-  // Reuse __formatter_fp<C>::format<__float128_t, Out> for _Float128.
+#if defined(__FLT128_DIG__) && _GLIBCXX_FORMAT_F128
+  // Use __formatter_fp<C>::format<__format::__flt128_t, Out> for _Float128.
   template<__format::__char _CharT>
     struct formatter<_Float128, _CharT>
     {
@@ -2962,17 +2966,45 @@ namespace __format
       template<typename _Out>
 	typename basic_format_context<_Out, _CharT>::iterator
 	format(_Float128 __u, basic_format_context<_Out, _CharT>& __fc) const
-	{ return _M_f.format((__format::__float128_t)__u, __fc); }
+	{ return _M_f.format((__format::__flt128_t)__u, __fc); }
 
     private:
       __format::__formatter_fp<_CharT> _M_f;
     };
 #endif
 
+#if defined(__SIZEOF_FLOAT128__) && _GLIBCXX_FORMAT_F128 != 1
+  // Reuse __formatter_fp<C>::format<__format::__flt128_t, Out> for __float128.
+  // This formatter is not declared if _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT is true,
+  // as __float128 when present is same type as __ieee128, which may be same as
+  // long double.
+  template<__format::__char _CharT>
+    struct formatter<__float128, _CharT>
+    {
+      formatter() = default;
+
+      [[__gnu__::__always_inline__]]
+      constexpr typename basic_format_parse_context<_CharT>::iterator
+      parse(basic_format_parse_context<_CharT>& __pc)
+      { return _M_f.parse(__pc); }
+
+      template<typename _Out>
+	typename basic_format_context<_Out, _CharT>::iterator
+	format(__float128 __u, basic_format_context<_Out, _CharT>& __fc) const
+	{ return _M_f.format((__format::__flt128_t)__u, __fc); }
+
+    private:
+      __format::__formatter_fp<_CharT> _M_f;
+
+      static_assert( !is_same_v<__float128, long double>,
+		     "This specialization should not be used for long double" );
+    };
+#endif
+
 #if defined(__STDCPP_BFLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
   // Reuse __formatter_fp<C>::format<float, Out> for bfloat16_t.
   template<__format::__char _CharT>
-    struct formatter<__gnu_cxx::__bfloat16_t, _CharT>
+    struct formatter<__format::__bflt16_t, _CharT>
     {
       formatter() = default;
 
@@ -3835,16 +3867,14 @@ namespace __format
   enum _Arg_t : unsigned char {
     _Arg_none, _Arg_bool, _Arg_c, _Arg_i, _Arg_u, _Arg_ll, _Arg_ull,
     _Arg_flt, _Arg_dbl, _Arg_ldbl, _Arg_str, _Arg_sv, _Arg_ptr, _Arg_handle,
-    _Arg_i128, _Arg_u128,
-    _Arg_bf16, _Arg_f16, _Arg_f32, _Arg_f64, // These are unused.
+    _Arg_i128, _Arg_u128, _Arg_float128,
+    _Arg_bf16, _Arg_f16, _Arg_f32, _Arg_f64,
+    _Arg_max_,
+
 #ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
-    _Arg_next_value_,
-    _Arg_f128 = _Arg_ldbl,
-    _Arg_ibm128 = _Arg_next_value_,
-#else
-    _Arg_f128,
+    _Arg_ibm128 = _Arg_ldbl,
+    _Arg_ieee128 = _Arg_float128,
 #endif
-    _Arg_max_
   };
 
   template<typename _Context>
@@ -3871,6 +3901,12 @@ namespace __format
 	double _M_dbl;
 #ifndef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT // No long double if it's ambiguous.
 	long double _M_ldbl;
+#else
+	__ibm128  _M_ibm128;
+	__ieee128 _M_ieee128;
+#endif
+#ifdef __SIZEOF_FLOAT128__
+	__float128 _M_float128;
 #endif
 	const _CharT* _M_str;
 	basic_string_view<_CharT> _M_sv;
@@ -3880,11 +3916,17 @@ namespace __format
 	__int128 _M_i128;
 	unsigned __int128 _M_u128;
 #endif
-#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
-	__ieee128 _M_f128;
-	__ibm128  _M_ibm128;
-#elif _GLIBCXX_FORMAT_F128 == 2
-	__float128_t _M_f128;
+#ifdef __BFLT16_DIG__
+	__bflt16_t _M_bf16;
+#endif
+#ifdef __FLT16_DIG__
+	_Float16 _M_f16;
+#endif
+#ifdef __FLT32_DIG__
+	_Float32 _M_f32;
+#endif
+#ifdef __FLT64_DIG__
+	_Float64 _M_f64;
 #endif
       };
 
@@ -3922,10 +3964,14 @@ namespace __format
 	  else if constexpr (is_same_v<_Tp, long double>)
 	    return __u._M_ldbl;
 #else
-	  else if constexpr (is_same_v<_Tp, __ieee128>)
-	    return __u._M_f128;
 	  else if constexpr (is_same_v<_Tp, __ibm128>)
 	    return __u._M_ibm128;
+	  else if constexpr (is_same_v<_Tp, __ieee128>)
+	    return __u._M_ieee128;
+#endif
+#ifdef __SIZEOF_FLOAT128__
+	  else if constexpr (is_same_v<_Tp, __float128>)
+	    return __u._M_float128;
 #endif
 	  else if constexpr (is_same_v<_Tp, const _CharT*>)
 	    return __u._M_str;
@@ -3939,9 +3985,21 @@ namespace __format
 	  else if constexpr (is_same_v<_Tp, unsigned __int128>)
 	    return __u._M_u128;
 #endif
-#if _GLIBCXX_FORMAT_F128 == 2
-	  else if constexpr (is_same_v<_Tp, __float128_t>)
-	    return __u._M_f128;
+#ifdef __BFLT16_DIG__
+	  else if constexpr (is_same_v<_Tp, __bflt16_t>)
+	    return __u._M_bf16;
+#endif
+#ifdef __FLT16_DIG__
+	  else if constexpr (is_same_v<_Tp, _Float16>)
+	    return __u._M_f16;
+#endif
+#ifdef __FLT32_DIG__
+	  else if constexpr (is_same_v<_Tp, _Float32>)
+	    return __u._M_f32;
+#endif
+#ifdef __FLT64_DIG__
+	  else if constexpr (is_same_v<_Tp, _Float64>)
+	    return __u._M_f64;
 #endif
 	  else if constexpr (derived_from<_Tp, _HandleBase>)
 	    return static_cast<_Tp&>(__u._M_handle);
@@ -4120,36 +4178,25 @@ namespace __format
 	  else if constexpr (is_same_v<_Td, __ieee128>)
 	    return type_identity<__ieee128>();
 #endif
-
-#if defined(__FLT16_DIG__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+#if defined(__SIZEOF_FLOAT128__) && _GLIBCXX_FORMAT_F128
+	  else if constexpr (is_same_v<_Td, __float128>)
+	    return type_identity<__float128>();
+#endif
+#if defined(__STDCPP_BFLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+	  else if constexpr (is_same_v<_Td, __format::__bflt16_t>)
+	    return type_identity<__format::__bflt16_t>();
+#endif
+#if defined(__STDCPP_FLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
 	  else if constexpr (is_same_v<_Td, _Float16>)
-	    return type_identity<float>();
+	    return type_identity<_Float16>();
 #endif
-
-#if defined(__BFLT16_DIG__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
-	  else if constexpr (is_same_v<_Td, decltype(0.0bf16)>)
-	    return type_identity<float>();
-#endif
-
 #if defined(__FLT32_DIG__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
 	  else if constexpr (is_same_v<_Td, _Float32>)
-	    return type_identity<float>();
+	    return type_identity<_Float32>();
 #endif
-
 #if defined(__FLT64_DIG__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
 	  else if constexpr (is_same_v<_Td, _Float64>)
-	    return type_identity<double>();
-#endif
-
-#if _GLIBCXX_FORMAT_F128
-# if __FLT128_DIG__
-	  else if constexpr (is_same_v<_Td, _Float128>)
-	    return type_identity<__format::__float128_t>();
-# endif
-# if __SIZEOF_FLOAT128__
-	  else if constexpr (is_same_v<_Td, __float128>)
-	    return type_identity<__format::__float128_t>();
-# endif
+	    return type_identity<_Float64>();
 #endif
 	  else if constexpr (__is_specialization_of<_Td, basic_string_view>
 			    || __is_specialization_of<_Td, basic_string>)
@@ -4205,7 +4252,27 @@ namespace __format
 	  else if constexpr (is_same_v<_Tp, __ibm128>)
 	    return _Arg_ibm128;
 	  else if constexpr (is_same_v<_Tp, __ieee128>)
-	    return _Arg_f128;
+	    return _Arg_ieee128;
+#endif
+#if defined(__SIZEOF_FLOAT128__) && _GLIBCXX_FORMAT_F128
+	  else if constexpr (is_same_v<_Tp, __float128>)
+	    return _Arg_float128;
+#endif
+#if defined(__STDCPP_BFLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+	  else if constexpr (is_same_v<_Tp, __format::__bflt16_t>)
+	    return _Arg_bf16;
+#endif
+#if defined(__STDCPP_FLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+	  else if constexpr (is_same_v<_Tp, _Float16>)
+	    return _Arg_f16;
+#endif
+#if defined(__FLT32_DIG__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+	  else if constexpr (is_same_v<_Tp, _Float32>)
+	    return _Arg_f32;
+#endif
+#if defined(__FLT64_DIG__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
+	  else if constexpr (is_same_v<_Tp, _Float64>)
+	    return _Arg_f64;
 #endif
 	  else if constexpr (is_same_v<_Tp, const _CharT*>)
 	    return _Arg_str;
@@ -4218,11 +4285,6 @@ namespace __format
 	    return _Arg_i128;
 	  else if constexpr (is_same_v<_Tp, unsigned __int128>)
 	    return _Arg_u128;
-#endif
-
-#if _GLIBCXX_FORMAT_F128 == 2
-	  else if constexpr (is_same_v<_Tp, __format::__float128_t>)
-	    return _Arg_f128;
 #endif
 	  else if constexpr (is_same_v<_Tp, handle>)
 	    return _Arg_handle;
@@ -4296,13 +4358,33 @@ namespace __format
 #ifndef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 	    case _Arg_ldbl:
 	      return std::forward<_Visitor>(__vis)(_M_val._M_ldbl);
+#if defined(__SIZEOF_FLOAT128__) && _GLIBCXX_FORMAT_F128
+	    case _Arg_float128:
+	      return std::forward<_Visitor>(__vis)(_M_val._M_float128);
+#endif
 #else
-	    case _Arg_f128:
-	      return std::forward<_Visitor>(__vis)(_M_val._M_f128);
 	    case _Arg_ibm128:
 	      return std::forward<_Visitor>(__vis)(_M_val._M_ibm128);
+	    case _Arg_ieee128:
+	      return std::forward<_Visitor>(__vis)(_M_val._M_ieee128);
 #endif
+#if defined(__STDCPP_BFLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+	    case _Arg_bf16:
+	      return std::forward<_Visitor>(__vis)(_M_val._M_bf16);
 #endif
+#if defined(__STDCPP_FLOAT16_T__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+	    case _Arg_f16:
+	      return std::forward<_Visitor>(__vis)(_M_val._M_f16);
+#endif
+#if defined(__FLT32_DIG__) && defined(_GLIBCXX_FLOAT_IS_IEEE_BINARY32)
+	    case _Arg_f32:
+	      return std::forward<_Visitor>(__vis)(_M_val._M_f32);
+#endif
+#if defined(__FLT64_DIG__) && defined(_GLIBCXX_DOUBLE_IS_IEEE_BINARY64)
+	    case _Arg_f64:
+	      return std::forward<_Visitor>(__vis)(_M_val._M_f64);
+#endif
+#endif // __glibcxx_to_chars
 	    case _Arg_str:
 	      return std::forward<_Visitor>(__vis)(_M_val._M_str);
 	    case _Arg_sv:
@@ -4320,14 +4402,7 @@ namespace __format
 	    case _Arg_u128:
 	      return std::forward<_Visitor>(__vis)(_M_val._M_u128);
 #endif
-
-#if _GLIBCXX_FORMAT_F128 == 2
-	    case _Arg_f128:
-	      return std::forward<_Visitor>(__vis)(_M_val._M_f128);
-#endif
-
 	    default:
-	      // _Arg_f16 etc.
 	      __builtin_unreachable();
 	  }
 	}

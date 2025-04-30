@@ -443,6 +443,8 @@ test_custom()
 }
 
 #if __cpp_lib_format >= 202305
+#include <stdfloat>
+
 struct X { };
 
 template<>
@@ -458,13 +460,20 @@ struct std::formatter<X, char>
     if (spec == "int")
     {
       pc.check_dynamic_spec_integral(pc.next_arg_id());
-      integer = true;
+      type = Type::integral;
     }
     else if (spec == "str")
     {
       pc.check_dynamic_spec_string(pc.next_arg_id());
-      integer = false;
+      type = Type::string;
     }
+    else if (spec == "float")
+    {
+      pc.check_dynamic_spec<float, double, long double>(pc.next_arg_id());
+      type = Type::floating;
+    }
+    else if (spec == "other")
+      type = Type::other;
     else
       throw std::format_error("invalid format-spec");
     return pc.begin() + spec.size();
@@ -474,13 +483,44 @@ struct std::formatter<X, char>
   format(X, std::format_context& c) const
   {
     std::visit_format_arg([this]<typename T>(T) { // { dg-warning "deprecated" "" { target c++26 } }
-      if (is_integral_v<T> != this->integer)
-	throw std::format_error("invalid argument type");
+      constexpr bool is_handle
+	= std::is_same_v<std::basic_format_arg<std::format_context>::handle, T>;
+      constexpr bool is_integral
+	= std::is_same_v<int, T> || std::is_same_v<unsigned int, T>
+	    || is_same_v<long long, T> || std::is_same_v<unsigned long long, T>;
+      constexpr bool is_string
+	= std::is_same_v<const char*, T> || std::is_same_v<std::string_view, T>;
+      constexpr bool is_floating
+	= std::is_same_v<float, T> || std::is_same_v<double, T>
+	    || std::is_same_v<long double, T>;
+      switch (this->type)
+      {
+	case Type::other:
+	  if (is_handle) return;
+	  break;
+	case Type::integral:
+	  if (is_integral) return;
+	  break;
+	case Type::string:
+	  if (is_string) return;
+	  break;
+	case Type::floating:
+	  if (is_floating) return;
+	  break;
+      }
+      throw std::format_error("invalid argument type");
     }, c.arg(1));
     return c.out();
   }
 private:
-  bool integer = false;
+  enum class Type
+  {
+    other,
+    integral,
+    string,
+    floating,
+  };
+  Type type = Type::other;
 };
 #endif
 
@@ -497,6 +537,28 @@ test_dynamic_type_check()
 
   (void) std::format("{:int}", X{}, 42L);
   (void) std::format("{:str}", X{}, "H2G2");
+  (void) std::format("{:float}", X{}, 10.0);
+
+#ifdef __STDCPP_FLOAT16_T__
+  if constexpr (std::formattable<std::bfloat16_t, char>)
+    (void) std::format("{:other}", X{}, 10.0bf16);
+#endif
+#ifdef __STDCPP_FLOAT16_T__
+  if constexpr (std::formattable<std::float16_t, char>)
+    (void) std::format("{:other}", X{}, 10.0f16);
+#endif
+#ifdef __STDCPP_FLOAT32_T__
+  if constexpr (std::formattable<std::float32_t, char>)
+    (void) std::format("{:other}", X{}, 10.0f32);
+#endif
+#ifdef __STDCPP_FLOAT64_T__
+  if constexpr (std::formattable<std::float64_t, char>)
+    (void) std::format("{:other}", X{}, 10.0f64);
+#endif
+#ifdef __STDCPP_FLOAT128_T__
+  if constexpr (std::formattable<std::float128_t, char>)
+    (void) std::format("{:other}", X{}, 10.0f128);
+#endif
 #endif
 }
 
