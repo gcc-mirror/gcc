@@ -14823,9 +14823,16 @@ depset::hash::find_dependencies (module_state *module)
 		}
 	      walker.end ();
 
+	      /* If we see either a class template or a deduction guide, make
+		 sure to add all visible deduction guides.  We need to check
+		 both in case they have been added in separate modules, or
+		 one is in the GMF and would have otherwise been discarded.  */
 	      if (!is_key_order ()
 		  && DECL_CLASS_TEMPLATE_P (decl))
 		add_deduction_guides (decl);
+	      if (!is_key_order ()
+		  && deduction_guide_p (decl))
+		add_deduction_guides (TYPE_NAME (TREE_TYPE (TREE_TYPE (decl))));
 
 	      if (!is_key_order ()
 		  && TREE_CODE (decl) == TEMPLATE_DECL
