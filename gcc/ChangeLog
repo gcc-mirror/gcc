@@ -1,3 +1,150 @@
+2025-04-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.cc (cs_interesting_for_ipcp_p): Fix handling of uninitialized
+	counts and 0 IPA cost wrt flag_profile_partial_training.
+
+2025-04-29  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	* simplify-rtx.cc (non_paradoxical_subreg_not_p): New function
+	for pattern match of (subreg (not X)).
+	(simplify_with_subreg_not): New function for simplification.
+
+2025-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111657
+	* config/i386/i386-expand.cc (alg_usable_p): For Pmode != word_mode
+	reject rep_prefix_{1,4,8}_byte algorithms with src_as in the
+	non-default address space.
+	* config/i386/i386-protos.h (ix86_check_movs): New prototype.
+	* config/i386/i386.cc (ix86_check_movs): New function.
+	(ix86_print_operand) [case '^']: Remove excess check for TARGET_64BIT.
+	* config/i386/i386.md (strmov): For Pmode != word_mode expand with
+	gen_strmov_single only when operands[3] (source) is in the default
+	address space.
+	(*strmovdi_rex_1) Use ix86_check_movs.  Remove %^ from asm template.
+	(*strmovsi_1): Ditto.
+	(*strmovhi_1): DItto.
+	(*strmovqi_1): Ditto.
+	(*rep_movdi_rex64): Ditto.
+	(*rep_movsi): Ditto.
+	(*rep_movqi): Ditto.
+
+2025-04-29  Zhijin Zeng  <zengzhijin@linux.spacemit.com>
+
+	* config/riscv/riscv.cc (riscv_register_move_cost): Use
+	reg_class_subset_p to check the reg class.
+
+2025-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119997
+	* vec.h (vec<T, A, vl_embed>::last): Provide const overload.
+	(vec<T, va_heap, vl_ptr>::last): Likewise.
+	* tree-ssa-sccvn.h (vn_pp_nary_for_addr): Declare.
+	* tree-ssa-sccvn.cc (vn_pp_nary_for_addr): Split out from ...
+	(vn_reference_lookup): ... here.
+	(vn_reference_insert): ... and duplicate here.  Do not handle
+	zero offset as POINTER_PLUS_EXPR.
+	* tree-ssa-pre.cc (compute_avail): Implement
+	ADDR_EXPR-as-POINTER_PLUS_EXPR special casing.
+
+2025-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111657
+	* config/i386/i386-expand.cc (alg_usable_p): Remove have_as bool
+	argument and add dst_as and src_as address space arguments.  Reject
+	libcall algorithm with dst_as and src_as in the non-default address
+	spaces.  Reject rep_prefix_{1,4,8}_byte algorithms with dst_as in
+	the non-default address space.
+	(decide_alg): Remove have_as bool argument and add dst_as and src_as
+	address space arguments.  Update calls to alg_usable_p.
+	(ix86_expand_set_or_cpymem): Update call to decide_alg.
+	* config/i386/i386.md (strmov): Do not fail if operand[3] (source)
+	is in the non-default address space.  Expand with gen_strmov_singleop
+	only when operand[1] (destination) is in the default address space.
+	(*strmovdi_rex_1): Determine memory operands from insn pattern.
+	Allow only when destination is in the default address space.
+	Rewrite asm template to use explicit operands.
+	(*strmovsi_1): Ditto.
+	(*strmovhi_1): DItto.
+	(*strmovqi_1): Ditto.
+	(*rep_movdi_rex64): Ditto.
+	(*rep_movsi): Ditto.
+	(*rep_movqi): Ditto.
+	(*strsetdi_rex_1): Determine memory operands from insn pattern.
+	Allow only when destination is in the default address space.
+	(*strsetsi_1): Ditto.
+	(*strsethi_1): Ditto.
+	(*strsetqi_1): Ditto.
+	(*rep_stosdi_rex64): Ditto.
+	(*rep_stossi): Ditto.
+	(*rep_stosqi): Ditto.
+
+2025-04-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/119985
+	* target.def: Remove TARGET_PROMOTE_FUNCTION_RETURN reference.
+	* doc/tm.texi: Regenerated.
+
+2025-04-29  hongtao.liu  <hongtao.liu@intel.com>
+
+	PR gcov-profile/118581
+	* auto-profile.cc (autofdo_source_profile::get_count_info):
+	Overload the function with parameter gimple location instead
+	of stmt.
+	(afdo_set_bb_count): For !has_annotated BB, Check single
+	successors PHIs corresponding to the block and use those
+	count.
+
+2025-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR debug/78685
+	* doc/invoke.texi (-Og): Reword.
+
+2025-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (ix86_update_stack_alignment): Skip sub-RTXes
+	of the memory operand if stack access register is not mentioned in
+	the operand.
+
+2025-04-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/92080
+	PR target/117839
+	* config/i386/i386-features.cc (ix86_place_single_vector_set):
+	New function.
+	(remove_partial_avx_dependency): Use it.
+	(ix86_get_vector_load_mode): New function.
+	(replace_vector_const): Likewise.
+	(remove_redundant_vector_load): Likewise.
+	(pass_data_remove_redundant_vector_load): Likewise.
+	(pass_remove_redundant_vector_load): Likewise.
+	(make_pass_remove_redundant_vector_load): Likewise.
+	* config/i386/i386-passes.def: Add
+	pass_remove_redundant_vector_load after
+	pass_remove_partial_avx_dependency.
+	* config/i386/i386-protos.h
+	(make_pass_remove_redundant_vector_load): New.
+	* config/i386/i386.cc (ix86_modes_tieable_p): Return true for
+	narrower non-scalar-integer modes in SSE registers.
+
+2025-04-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/117547
+	* config/i386/i386-expand.cc (ix86_expand_unsigned_small_int_cst_argument):
+	New function.
+	(ix86_expand_args_builtin): Call
+	ix86_expand_unsigned_small_int_cst_argument to expand the argument
+	before calling fixup_modeless_constant.
+	(ix86_expand_round_builtin): Likewise.
+	(ix86_expand_special_args_builtin): Likewise.
+	(ix86_expand_builtin): Likewise.
+
+2025-04-29  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_DEST_FALSE_DEP_FOR_GLC):
+	Remove other processor except for GLC since this one is only
+	for GLC.
+
 2025-04-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/97111

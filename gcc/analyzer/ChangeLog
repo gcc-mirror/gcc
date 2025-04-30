@@ -1,3 +1,9 @@
+2025-04-29  Marc Poulhiès  <dkm@kataplop.net>
+
+	* exploded-graph.h (set_status): Rename parameter.
+	* constraint-manager.cc (bound::ensure_closed): Likewise.
+	(range::add_bound): Likewise.
+
 2025-04-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/111536

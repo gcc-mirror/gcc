@@ -1,3 +1,34 @@
+2025-04-29  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	* gcc.target/aarch64/simd/bic_orn_1.c: New file.
+
+2025-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111657
+	* gcc.target/i386/pr111657-1.c: Check that segment override is not
+	generated for "rep movsq" for x32 target.
+
+2025-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119997
+	* gcc.dg/tree-ssa/ssa-pre-35.c: New testcase.
+
+2025-04-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/111657
+	* gcc.target/i386/pr111657-1.c: New test.
+
+2025-04-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/92080
+	PR target/117839
+	* gcc.target/i386/pr117839-1a.c: New test.
+	* gcc.target/i386/pr117839-1b.c: Likewise.
+	* gcc.target/i386/pr117839-2.c: Likewise.
+	* gcc.target/i386/pr92080-1.c: Likewise.
+	* gcc.target/i386/pr92080-2.c: Likewise.
+	* gcc.target/i386/pr92080-3.c: Likewise.
+
 2025-04-28  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/111536

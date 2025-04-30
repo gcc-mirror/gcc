@@ -1,3 +1,114 @@
+2025-04-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (make_obj_using_allocator): Use
+	no_stdname.
+	* include/bits/version.h: Regenerate.
+
+2025-04-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_compiler.h: Replace _GLIBCXX17_CONSTEXPR
+	with constexpr and disable diagnostics with pragmas.
+	(_AnyMatcher::operator()): Use constexpr-if instead of tag
+	dispatching. Postpone calls to _M_translate until after checking
+	result of earlier calls.
+	(_AnyMatcher::_M_apply): Remove both overloads.
+	(_BracketMatcher::operator(), _BracketMatcher::_M_ready):
+	Replace tag dispatching with 'if constexpr'.
+	(_BracketMatcher::_M_apply(_CharT, true_type)): Remove.
+	(_BracketMatcher::_M_apply(_CharT, false_type)): Remove second
+	parameter.
+	(_BracketMatcher::_M_make_cache): Remove both overloads.
+	* include/bits/regex_compiler.tcc (_BracketMatcher::_M_apply):
+	Remove second parameter.
+	* include/bits/regex_executor.tcc: Replace _GLIBCXX17_CONSTEXPR
+	with constexpr and disable diagnostics with pragmas.
+	(_Executor::_M_handle_backref): Replace __glibcxx_assert with
+	static_assert.
+	(_Executor::_M_handle_accept): Mark _S_opcode_backref case as
+	unreachable for non-DFS mode and do not instantiate
+	_M_handle_backref for that case.
+
+2025-04-29  Barnabás Pőcze  <pobrn@protonmail.com>
+
+	PR libstdc++/112934
+	* include/bits/stl_map.h (map::erase): Use _M_erase_unique.
+	* include/bits/stl_set.h (set::erase): Likewise.
+	* include/bits/stl_tree.h (_Rb_tree::_M_erase_unique): Add.
+
+2025-04-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/119427
+	* include/std/flat_map (_Flat_map_impl::erase_if): Replace
+	this hidden friend with ...
+	(_Flat_map_impl::_M_erase_if): ... this member function.
+	(flat_map): Export _Flat_map_impl::_M_erase_if.
+	(erase_if(flat_map)): Define.
+	(flat_multimap): Export _Flat_map_impl::_M_erase_if.
+	(erase_if(flat_multimap)): Define.
+	* include/std/flat_set (_Flat_set_impl::erase_if): Replace
+	with ...
+	(_Flat_set_impl::_M_erase_if): ... this member function.
+	(flat_set): Export _Flat_set_impl::_M_erase_if.
+	(erase_if(flat_set)): Define.
+	(flat_multiset): Export _Flat_set_impl::_M_erase_if.
+	(erase_if(flat_multiset)): Define.
+	* testsuite/23_containers/flat_map/1.cc (test07): New test.
+	* testsuite/23_containers/flat_multimap/1.cc (test07): New test.
+	* testsuite/23_containers/flat_multiset/1.cc (test09): New test.
+	* testsuite/23_containers/flat_set/1.cc (test09): New test.
+
+2025-04-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/char_traits.h (char_traits::assign): Use
+	constexpr-if unconditionally for C++11 and C++14.
+	* include/bits/locale_conv.h (__do_str_codecvt): Likewise.
+	* include/bits/ostream.h (basic_ostream::_S_cast_flt): Likewise.
+	* include/bits/random.tcc (shuffle_order_engine::operator())
+	(seed_seq::seed_seq(Iter, Iter)): Likewise.
+	* include/bits/shared_ptr_base.h (_Sp_counted_base::_M_release):
+	Likewise.
+	* include/bits/stl_tree.h (_Rb_tree::_M_move_data): Likewise.
+	* include/bits/uniform_int_dist.h
+	(uniform_int_distribution::operator()): Likewise.
+	* include/bits/valarray_array.h (__valarray_default_construct)
+	(__valarray_fill_construct, __valarray_copy_construct)
+	(__valarray_copy_construct, __valarray_destroy_elements):
+	Likewise.
+	* include/experimental/numeric (lcm): Likewise.
+	* include/std/bit (__rotl, __rotr, __countl_zero, __countr_zero)
+	(__popcount, __bit_ceil) Likewise.:
+	* include/std/bitset (operator>>): Likewise.
+	* include/std/charconv (__to_chars_8, __to_chars_i)
+	(__from_chars_alnum_to_val, from_chars): Likewise.
+	* include/tr2/dynamic_bitset (__dynamic_bitset_base): Likewise.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line number.
+
+2025-04-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/std_function.h (_Target_handler): Remove.
+	(function::target): Use constexpr-if for C++11 and
+	C++14, with diagnostic pragmas to suppress warnings.
+
+2025-04-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_vector.h (_S_do_relocate): Remove.
+	(_S_relocate): Remove tag dispatching path.
+	* include/bits/vector.tcc (reserve, _M_realloc_insert)
+	(_M_realloc_append, _M_default_append): Add diagnostic pragmas
+	and use 'if constexpr' in C++11 and C++14. Call
+	std::__relocate_a directly instead of _S_relocate.
+
+2025-04-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (operator+(string&&, string&&)):
+	Do not assume that COW strings have equal allocators. Use
+	constexpr-if unconditionally.
+	* testsuite/21_strings/basic_string/allocator/char/operator_plus.cc:
+	Remove cxx11_abi effective-target check.
+	* testsuite/21_strings/basic_string/allocator/wchar_t/operator_plus.cc:
+	Likewise.
+
 2025-04-28  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
 
 	* testsuite/20_util/shared_ptr/requirements/1.cc: Test both
