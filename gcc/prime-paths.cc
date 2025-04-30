@@ -53,7 +53,7 @@ limit_checked_add (size_t approx)
 {
   approx_limit -= approx < approx_limit ? approx : approx_limit;
   return approx_limit == 0;
-};
+}
 
 /* Check if adding APPROX would exceed the path limit.  This is necessary when
    (pessimistically counted) trie insertions would exceed the limit and yields
@@ -1061,7 +1061,7 @@ enters_through_p (const struct graph *cfg, const vec<int> &path, int vertex)
   if (cfg->vertices[last].component == cfg->vertices[vertex].component)
     return false;
   return edge_p (cfg, last, vertex);
-};
+}
 
 /* Worker for scc_entry_prime_paths.  CFG is the CFG for the function,
    SCC_ENTRY_PATHS the accumulated scc_entry_paths for all the SCCs, PRIME_PATHS
