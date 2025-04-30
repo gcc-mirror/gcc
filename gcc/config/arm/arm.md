@@ -37,12 +37,12 @@
    (LR_REGNUM        14)	; Return address register
    (PC_REGNUM	     15)	; Program counter
    (LAST_ARM_REGNUM  15)	;
-   (CC_REGNUM       100)	; Condition code pseudo register
-   (VFPCC_REGNUM    101)	; VFP Condition code pseudo register
-   (APSRQ_REGNUM    104)	; Q bit pseudo register
-   (APSRGE_REGNUM   105)	; GE bits pseudo register
-   (VPR_REGNUM      106)	; Vector Predication Register - MVE register.
-   (RA_AUTH_CODE    107)	; Pseudo register to save PAC.
+   (CC_REGNUM        80)	; Condition code pseudo register
+   (VFPCC_REGNUM     81)	; VFP Condition code pseudo register
+   (APSRQ_REGNUM     84)	; Q bit pseudo register
+   (APSRGE_REGNUM    85)	; GE bits pseudo register
+   (VPR_REGNUM       86)	; Vector Predication Register - MVE register.
+   (RA_AUTH_CODE     87)	; Pseudo register to save PAC.
   ]
 )
 ;; 3rd operand to select_dominance_cc_mode

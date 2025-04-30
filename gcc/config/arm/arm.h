@@ -842,10 +842,6 @@ extern const int arm_arch_cde_coproc_bits[];
   1,1,1,1,1,1,1,1,		\
   1,1,1,1,1,1,1,1,		\
   1,1,1,1,1,1,1,1,		\
-  /* IWMMXT regs.  */		\
-  1,1,1,1,1,1,1,1,		\
-  1,1,1,1,1,1,1,1,		\
-  1,1,1,1,			\
   /* Specials.  */		\
   1,1,1,1,1,1,1,1		\
 }
@@ -872,10 +868,6 @@ extern const int arm_arch_cde_coproc_bits[];
   1,1,1,1,1,1,1,1,		\
   1,1,1,1,1,1,1,1,		\
   1,1,1,1,1,1,1,1,		\
-  /* IWMMXT regs.  */		\
-  1,1,1,1,1,1,1,1,		\
-  1,1,1,1,1,1,1,1,		\
-  1,1,1,1,			\
   /* Specials.  */		\
   1,1,1,1,1,1,1,1		\
 }
@@ -997,23 +989,11 @@ extern const int arm_arch_cde_coproc_bits[];
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM	SP_REGNUM
 
-#define FIRST_IWMMXT_REGNUM	(LAST_HI_VFP_REGNUM + 1)
-#define LAST_IWMMXT_REGNUM	(FIRST_IWMMXT_REGNUM + 15)
-
-/* Need to sync with WCGR in iwmmxt.md.  */
-#define FIRST_IWMMXT_GR_REGNUM	(LAST_IWMMXT_REGNUM + 1)
-#define LAST_IWMMXT_GR_REGNUM	(FIRST_IWMMXT_GR_REGNUM + 3)
-
-#define IS_IWMMXT_REGNUM(REGNUM) \
-  (((REGNUM) >= FIRST_IWMMXT_REGNUM) && ((REGNUM) <= LAST_IWMMXT_REGNUM))
-#define IS_IWMMXT_GR_REGNUM(REGNUM) \
-  (((REGNUM) >= FIRST_IWMMXT_GR_REGNUM) && ((REGNUM) <= LAST_IWMMXT_GR_REGNUM))
-
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM	102
+#define FRAME_POINTER_REGNUM	(CC_REGNUM + 2)
 
 /* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM	103
+#define ARG_POINTER_REGNUM	(FRAME_POINTER_REGNUM + 1)
 
 #define FIRST_VFP_REGNUM	16
 #define D7_VFP_REGNUM		(FIRST_VFP_REGNUM + 15)
@@ -1054,9 +1034,8 @@ extern const int arm_arch_cde_coproc_bits[];
 
 /* The number of hard registers is 16 ARM + 1 CC + 1 SFP + 1 AFP
    + 1 APSRQ + 1 APSRGE + 1 VPR + 1 Pseudo register to save PAC.  */
-/* Intel Wireless MMX Technology registers add 16 + 4 more.  */
 /* VFP (VFP3) adds 32 (64) + 1 VFPCC.  */
-#define FIRST_PSEUDO_REGISTER   108
+#define FIRST_PSEUDO_REGISTER   88
 
 #define DWARF_PAC_REGNUM 143
 
@@ -1222,8 +1201,6 @@ extern int arm_regs_in_sequence[];
    function.  */
 
 #define VREG(X)  (FIRST_VFP_REGNUM + (X))
-#define WREG(X)  (FIRST_IWMMXT_REGNUM + (X))
-#define WGREG(X) (FIRST_IWMMXT_GR_REGNUM + (X))
 
 #define REG_ALLOC_ORDER				\
 {						\
@@ -1249,12 +1226,6 @@ extern int arm_regs_in_sequence[];
   VREG(20), VREG(21), VREG(22), VREG(23),	\
   VREG(24), VREG(25), VREG(26), VREG(27),	\
   VREG(28), VREG(29), VREG(30), VREG(31),	\
-  /* IWMMX registers.  */			\
-  WREG(0),  WREG(1),  WREG(2),  WREG(3),	\
-  WREG(4),  WREG(5),  WREG(6),  WREG(7),	\
-  WREG(8),  WREG(9),  WREG(10), WREG(11),	\
-  WREG(12), WREG(13), WREG(14), WREG(15),	\
-  WGREG(0), WGREG(1), WGREG(2), WGREG(3),	\
   /* Registers not for general use.  */		\
   CC_REGNUM, VFPCC_REGNUM,			\
   FRAME_POINTER_REGNUM, ARG_POINTER_REGNUM,	\
@@ -1299,8 +1270,6 @@ enum reg_class
   VFP_LO_REGS,
   VFP_HI_REGS,
   VFP_REGS,
-  IWMMXT_REGS,
-  IWMMXT_GR_REGS,
   CC_REG,
   VFPCC_REG,
   SFP_REG,
@@ -1330,8 +1299,6 @@ enum reg_class
   "VFP_LO_REGS",	\
   "VFP_HI_REGS",	\
   "VFP_REGS",		\
-  "IWMMXT_REGS",	\
-  "IWMMXT_GR_REGS",	\
   "CC_REG",		\
   "VFPCC_REG",		\
   "SFP_REG",		\
@@ -1347,29 +1314,27 @@ enum reg_class
    of length N_REG_CLASSES.  */
 #define REG_CLASS_CONTENTS						\
 {									\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000000 }, /* NO_REGS  */	\
-  { 0x000000FF, 0x00000000, 0x00000000, 0x00000000 }, /* LO_REGS */	\
-  { 0x00002000, 0x00000000, 0x00000000, 0x00000000 }, /* STACK_REG */	\
-  { 0x000020FF, 0x00000000, 0x00000000, 0x00000000 }, /* BASE_REGS */	\
-  { 0x00005F00, 0x00000000, 0x00000000, 0x00000000 }, /* HI_REGS */	\
-  { 0x0000100F, 0x00000000, 0x00000000, 0x00000000 }, /* CALLER_SAVE_REGS */ \
-  { 0x00005555, 0x00000000, 0x00000000, 0x00000000 }, /* EVEN_REGS.  */ \
-  { 0x00005FFF, 0x00000000, 0x00000000, 0x00000000 }, /* GENERAL_REGS */ \
-  { 0x00007FFF, 0x00000000, 0x00000000, 0x00000000 }, /* CORE_REGS */	\
-  { 0xFFFF0000, 0x00000000, 0x00000000, 0x00000000 }, /* VFP_D0_D7_REGS  */ \
-  { 0xFFFF0000, 0x0000FFFF, 0x00000000, 0x00000000 }, /* VFP_LO_REGS  */ \
-  { 0x00000000, 0xFFFF0000, 0x0000FFFF, 0x00000000 }, /* VFP_HI_REGS  */ \
-  { 0xFFFF0000, 0xFFFFFFFF, 0x0000FFFF, 0x00000000 }, /* VFP_REGS  */	\
-  { 0x00000000, 0x00000000, 0xFFFF0000, 0x00000000 }, /* IWMMXT_REGS */	\
-  { 0x00000000, 0x00000000, 0x00000000, 0x0000000F }, /* IWMMXT_GR_REGS */ \
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000010 }, /* CC_REG */	\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000020 }, /* VFPCC_REG */	\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000040 }, /* SFP_REG */	\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000080 }, /* AFP_REG */	\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000400 }, /* VPR_REG.  */	\
-  { 0x00000000, 0x00000000, 0x00000000, 0x00000800 }, /* PAC_REG.  */	\
-  { 0x00005FFF, 0x00000000, 0x00000000, 0x00000400 }, /* GENERAL_AND_VPR_REGS.  */ \
-  { 0xFFFF7FFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x0000040F }  /* ALL_REGS.  */	\
+  { 0x00000000, 0x00000000, 0x00000000 }, /* NO_REGS  */		\
+  { 0x000000FF, 0x00000000, 0x00000000 }, /* LO_REGS */			\
+  { 0x00002000, 0x00000000, 0x00000000 }, /* STACK_REG */		\
+  { 0x000020FF, 0x00000000, 0x00000000 }, /* BASE_REGS */		\
+  { 0x00005F00, 0x00000000, 0x00000000 }, /* HI_REGS */			\
+  { 0x0000100F, 0x00000000, 0x00000000 }, /* CALLER_SAVE_REGS */	\
+  { 0x00005555, 0x00000000, 0x00000000 }, /* EVEN_REGS.  */		\
+  { 0x00005FFF, 0x00000000, 0x00000000 }, /* GENERAL_REGS */		\
+  { 0x00007FFF, 0x00000000, 0x00000000 }, /* CORE_REGS */		\
+  { 0xFFFF0000, 0x00000000, 0x00000000 }, /* VFP_D0_D7_REGS  */		\
+  { 0xFFFF0000, 0x0000FFFF, 0x00000000 }, /* VFP_LO_REGS  */		\
+  { 0x00000000, 0xFFFF0000, 0x0000FFFF }, /* VFP_HI_REGS  */		\
+  { 0xFFFF0000, 0xFFFFFFFF, 0x0000FFFF }, /* VFP_REGS  */		\
+  { 0x00000000, 0x00000000, 0x00010000 }, /* CC_REG */			\
+  { 0x00000000, 0x00000000, 0x00020000 }, /* VFPCC_REG */		\
+  { 0x00000000, 0x00000000, 0x00040000 }, /* SFP_REG */			\
+  { 0x00000000, 0x00000000, 0x00080000 }, /* AFP_REG */			\
+  { 0x00000000, 0x00000000, 0x00400000 }, /* VPR_REG.  */		\
+  { 0x00000000, 0x00000000, 0x00800000 }, /* PAC_REG.  */		\
+  { 0x00005FFF, 0x00000000, 0x00400000 }, /* GENERAL_AND_VPR_REGS.  */	\
+  { 0xFFFF7FFF, 0xFFFFFFFF, 0x0040FFFF }  /* ALL_REGS.  */		\
 }
 
 #define FP_SYSREGS \
