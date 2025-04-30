@@ -1,3 +1,11 @@
+2025-04-29  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-04-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/118924
+	* g++.dg/tree-ssa/pr118924.C: New test.
+
 2025-04-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
