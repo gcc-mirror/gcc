@@ -654,12 +654,16 @@
   [(parallel [(set (reg:MOVMODE 22)
               (mem:MOVMODE (lo_sum:PSI (reg:QI 21)
                                        (reg:HI REG_Z))))
+              (clobber (reg:QI 21))
+              (clobber (reg:HI REG_Z))
               (clobber (reg:CC REG_CC))])])
 
 (define_insn "*xload_<mode>_libgcc"
   [(set (reg:MOVMODE 22)
         (mem:MOVMODE (lo_sum:PSI (reg:QI 21)
                                  (reg:HI REG_Z))))
+   (clobber (reg:QI 21))
+   (clobber (reg:HI REG_Z))
    (clobber (reg:CC REG_CC))]
   "avr_xload_libgcc_p (<MODE>mode)
    && reload_completed"
