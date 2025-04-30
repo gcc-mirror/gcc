@@ -5528,7 +5528,6 @@ vectorizable_conversion (vec_info *vinfo,
   tree vec_dest, cvt_op = NULL_TREE;
   tree scalar_dest;
   tree op0, op1 = NULL_TREE;
-  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   tree_code tc1;
   code_helper code, code1, code2;
   code_helper codecvt1 = ERROR_MARK, codecvt2 = ERROR_MARK;
@@ -5538,7 +5537,7 @@ vectorizable_conversion (vec_info *vinfo,
   poly_uint64 nunits_in;
   poly_uint64 nunits_out;
   tree vectype_out, vectype_in;
-  int ncopies, i;
+  int i;
   tree lhs_type, rhs_type;
   /* For conversions between floating point and integer, there're 2 NARROW
      cases. NARROW_SRC is for FLOAT_EXPR, means
@@ -5605,7 +5604,7 @@ vectorizable_conversion (vec_info *vinfo,
   /* Check types of lhs and rhs.  */
   scalar_dest = gimple_get_lhs (stmt);
   lhs_type = TREE_TYPE (scalar_dest);
-  vectype_out = STMT_VINFO_VECTYPE (stmt_info);
+  vectype_out = SLP_TREE_VECTYPE (slp_node);
 
   /* Check the operands of the operation.  */
   slp_tree slp_op0, slp_op1 = NULL;
@@ -5702,20 +5701,6 @@ vectorizable_conversion (vec_info *vinfo,
       gcc_checking_assert (multiple_p (nunits_in, nunits_out));
       modifier = WIDEN;
     }
-
-  /* Multiple types in SLP are handled by creating the appropriate number of
-     vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
-     case of SLP.  */
-  if (slp_node)
-    ncopies = 1;
-  else if (modifier == NARROW_DST)
-    ncopies = vect_get_num_copies (loop_vinfo, vectype_out);
-  else
-    ncopies = vect_get_num_copies (loop_vinfo, vectype_in);
-
-  /* Sanity check: make sure that at least one copy of the vectorized stmt
-     needs to be generated.  */
-  gcc_assert (ncopies >= 1);
 
   bool found_mode = false;
   scalar_mode lhs_mode = SCALAR_TYPE_MODE (lhs_type);
@@ -5871,16 +5856,11 @@ vectorizable_conversion (vec_info *vinfo,
       else if (code == FLOAT_EXPR)
 	{
 	  wide_int op_min_value, op_max_value;
-	  if (slp_node)
-	    {
-	      tree def;
-	      /* ???  Merge ranges in case of more than one lane.  */
-	      if (SLP_TREE_LANES (slp_op0) != 1
-		  || !(def = vect_get_slp_scalar_def (slp_op0, 0))
-		  || !vect_get_range_info (def, &op_min_value, &op_max_value))
-		goto unsupported;
-	    }
-	  else if (!vect_get_range_info (op0, &op_min_value, &op_max_value))
+	  tree def;
+	  /* ???  Merge ranges in case of more than one lane.  */
+	  if (SLP_TREE_LANES (slp_op0) != 1
+	      || !(def = vect_get_slp_scalar_def (slp_op0, 0))
+	      || !vect_get_range_info (def, &op_min_value, &op_max_value))
 	    goto unsupported;
 
 	  cvt_type
@@ -5916,9 +5896,8 @@ vectorizable_conversion (vec_info *vinfo,
 
   if (!vec_stmt)		/* transformation not required.  */
     {
-      if (slp_node
-	  && (!vect_maybe_update_slp_op_vectype (slp_op0, vectype_in)
-	      || !vect_maybe_update_slp_op_vectype (slp_op1, vectype_in)))
+      if (!vect_maybe_update_slp_op_vectype (slp_op0, vectype_in)
+	  || !vect_maybe_update_slp_op_vectype (slp_op1, vectype_in))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5929,16 +5908,14 @@ vectorizable_conversion (vec_info *vinfo,
       if (modifier == NONE)
         {
 	  STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
-	  vect_model_simple_cost (vinfo, stmt_info,
-				  ncopies * (1 + multi_step_cvt),
+	  vect_model_simple_cost (vinfo, stmt_info, (1 + multi_step_cvt),
 				  dt, ndts, slp_node, cost_vec);
 	}
       else if (modifier == NARROW_SRC || modifier == NARROW_DST)
 	{
 	  STMT_VINFO_TYPE (stmt_info) = type_demotion_vec_info_type;
 	  /* The final packing step produces one vector result per copy.  */
-	  unsigned int nvectors
-	    = (slp_node ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) : ncopies);
+	  unsigned int nvectors = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
 	  vect_model_promotion_demotion_cost (stmt_info, dt, nvectors,
 					      multi_step_cvt, cost_vec,
 					      widen_arith);
@@ -5950,9 +5927,7 @@ vectorizable_conversion (vec_info *vinfo,
 	     per copy.  MULTI_STEP_CVT is 0 for a single conversion,
 	     so >> MULTI_STEP_CVT divides by 2^(number of steps - 1).  */
 	  unsigned int nvectors
-	    = (slp_node
-	       ? SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) >> multi_step_cvt
-	       : ncopies * 2);
+	    = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node) >> multi_step_cvt;
 	  vect_model_promotion_demotion_cost (stmt_info, dt, nvectors,
 					      multi_step_cvt, cost_vec,
 					      widen_arith);
@@ -5963,8 +5938,7 @@ vectorizable_conversion (vec_info *vinfo,
 
   /* Transform.  */
   if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-                     "transform conversion. ncopies = %d.\n", ncopies);
+    dump_printf_loc (MSG_NOTE, vect_location, "transform conversion.\n");
 
   if (op_type == binary_op)
     {
@@ -6003,23 +5977,10 @@ vectorizable_conversion (vec_info *vinfo,
 					    widen_or_narrow_float_p
 					    ? vectype_out : cvt_type);
 
-  int ninputs = 1;
-  if (!slp_node)
-    {
-      if (modifier == WIDEN)
-	;
-      else if (modifier == NARROW_SRC || modifier == NARROW_DST)
-	{
-	  if (multi_step_cvt)
-	    ninputs = vect_pow2 (multi_step_cvt);
-	  ninputs *= 2;
-	}
-    }
-
   switch (modifier)
     {
     case NONE:
-      vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies,
+      vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
 			 op0, vectype_in, &vec_oprnds0);
       /* vec_dest is intermediate type operand when multi_step_cvt.  */
       if (multi_step_cvt)
@@ -6046,10 +6007,7 @@ vectorizable_conversion (vec_info *vinfo,
 	  gimple_set_lhs (new_stmt, new_temp);
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 
-	  if (slp_node)
-	    slp_node->push_vec_def (new_stmt);
-	  else
-	    STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+	  slp_node->push_vec_def (new_stmt);
 	}
       break;
 
@@ -6058,7 +6016,7 @@ vectorizable_conversion (vec_info *vinfo,
 	 of elements that we can fit in a vectype (nunits), we have to
 	 generate more than one vector stmt - i.e - we need to "unroll"
 	 the vector stmt by a factor VF/nunits.  */
-      vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies * ninputs,
+      vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
 			 op0, vectype_in, &vec_oprnds0,
 			 code == WIDEN_LSHIFT_EXPR ? NULL_TREE : op1,
 			 vectype_in, &vec_oprnds1);
@@ -6102,10 +6060,7 @@ vectorizable_conversion (vec_info *vinfo,
 	  else
 	    new_stmt = SSA_NAME_DEF_STMT (vop0);
 
-	  if (slp_node)
-	    slp_node->push_vec_def (new_stmt);
-	  else
-	    STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+	  slp_node->push_vec_def (new_stmt);
 	}
       break;
 
@@ -6115,7 +6070,7 @@ vectorizable_conversion (vec_info *vinfo,
 	 of elements that we can fit in a vectype (nunits), we have to
 	 generate more than one vector stmt - i.e - we need to "unroll"
 	 the vector stmt by a factor VF/nunits.  */
-      vect_get_vec_defs (vinfo, stmt_info, slp_node, ncopies * ninputs,
+      vect_get_vec_defs (vinfo, stmt_info, slp_node, 1,
 			 op0, vectype_in, &vec_oprnds0);
       /* Arguments are ready.  Create the new vector stmts.  */
       if (cvt_type && modifier == NARROW_DST)
@@ -6148,16 +6103,11 @@ vectorizable_conversion (vec_info *vinfo,
 	      /* This is the last step of the conversion sequence. Store the
 		 vectors in SLP_NODE or in vector info of the scalar statement
 		 (or in STMT_VINFO_RELATED_STMT chain).  */
-	      if (slp_node)
-		slp_node->push_vec_def (new_stmt);
-	      else
-		STMT_VINFO_VEC_STMTS (stmt_info).safe_push (new_stmt);
+	      slp_node->push_vec_def (new_stmt);
 	    }
 	}
       break;
     }
-  if (!slp_node)
-    *vec_stmt = STMT_VINFO_VEC_STMTS (stmt_info)[0];
 
   vec_oprnds0.release ();
   vec_oprnds1.release ();
