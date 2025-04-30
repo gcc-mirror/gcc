@@ -20938,11 +20938,6 @@ vbfdotq_lane_f32 (float32x4_t __r, bfloat16x8_t __a, bfloat16x4_t __b,
   return __builtin_neon_vbfdot_lanev4bfv4sf (__r, __a, __b, __index);
 }
 
-#pragma GCC pop_options
-
-#pragma GCC push_options
-#pragma GCC target ("arch=armv8.2-a+bf16")
-
 typedef struct bfloat16x4x2_t
 {
   bfloat16x4_t val[2];
