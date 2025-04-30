@@ -49,7 +49,8 @@ package body System.Val_Real is
    Precision_Limit : constant Uns := 2**Num'Machine_Mantissa - 1;
    --  See below for the rationale
 
-   package Impl is new Value_R (Uns, 2, Precision_Limit, Round => False);
+   package Impl is new Value_R (Uns, 2, Precision_Limit);
+   --  We do not use the Extra digits for floating-point types
 
    subtype Base_T is Unsigned range 2 .. 16;
 

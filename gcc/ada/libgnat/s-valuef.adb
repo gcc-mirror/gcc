@@ -46,15 +46,15 @@ package body System.Value_F is
    pragma Assert (Int'Size <= Uns'Size);
    --  We need an unsigned type large enough to represent the mantissa
 
-   package Impl is new Value_R (Uns, 1, 2**(Int'Size - 1), Round => True);
-   --  We use the Extra digit for ordinary fixed-point types
+   package Impl is new Value_R (Uns, 1, 2**(Int'Size - 1));
+   --  We use the Extra digits for ordinary fixed-point types
 
    function Integer_To_Fixed
      (Str    : String;
       Val    : Uns;
       Base   : Unsigned;
       ScaleB : Integer;
-      Extra  : Unsigned;
+      Extra2 : Unsigned;
       Minus  : Boolean;
       Num    : Int;
       Den    : Int) return Int;
@@ -79,23 +79,23 @@ package body System.Value_F is
 
    --  Of course N1 = N2 + 1 holds, which means both that Val may not contain
    --  enough significant bits to represent all the values of the type and that
-   --  1 extra decimal digit contains the information for the missing bits.
+   --  1 extra decimal digit contains the information for the missing bits. But
+   --  in practice we need 2 extra decimal digits to avoid multiple roundings.
 
    --  Therefore the actual computation to be performed is
 
-   --    V = (Val * Base + Extra) * (Base ** (ScaleB - 1)) / (Num / Den)
+   --    V = (Val * Base ** 2 + Extra2) * (Base ** (ScaleB - 2)) / (Num / Den)
 
-   --  using two steps of scaled divide if Extra is positive and ScaleB too
+   --  using two steps of scaled divide if Extra2 is positive and ScaleB too
 
-   --    (1)  Val * (Den * (Base ** ScaleB)) = Q1 * Num + R1
+   --    (1a)  Val * (Den * (Base ** ScaleB)) = Q1 * Num + R1
 
-   --    (2)  Extra * (Den * (Base ** ScaleB)) = Q2 * -Base + R2
+   --    (2a)  Extra2 * (Den * (Base ** ScaleB)) = Q2 * Base ** 2 + R2
 
-   --  which yields after dividing (1) by Num and (2) by Num * Base and summing
+   --  which yields after dividing (1a) by Num and (2a) by Num * (Base ** 2)
+   --  and summing
 
-   --    V = Q1 + (R1 - Q2) / Num + R2 / (Num * Base)
-
-   --  but we get rid of the third term by using a rounding divide for (2).
+   --    V = Q1 + (Q2 + R1) / Num + R2 / (Num * (Base ** 2))
 
    --  This works only if Den * (Base ** ScaleB) does not overflow for inputs
    --  corresponding to 'Image. Let S = Num / Den, B = Base and N the scale in
@@ -113,19 +113,17 @@ package body System.Value_F is
 
    --  which means that the product does not overflow if Num <= 2**(M-1) / B.
 
-   --  On the other hand, if Extra is positive and ScaleB negative, the above
+   --  On the other hand, if Extra2 is positive and ScaleB negative, the above
    --  two steps are
 
    --   (1b)  Val * Den = Q1 * (Num * (Base ** -ScaleB)) + R1
 
-   --   (2b)  Extra * Den = Q2 * -Base + R2
+   --   (2b)  Extra2 * Den = Q2 * Base ** 2 + R2
 
    --  which yields after dividing (1b) by Num * (Base ** -ScaleB) and (2b) by
-   --  Num * (Base ** (1 - ScaleB)) and summing
+   --  Num * (Base ** (2 - ScaleB)) and summing
 
-   --    V = Q1 + (R1 - Q2) / (Num * (Base ** -ScaleB)) + R2 / ...
-
-   --  but we get rid of the third term by using a rounding divide for (2b).
+   --    V = Q1 + (Q2 + R1) / (Num * (Base ** -ScaleB)) + R2 / (Num * (...))
 
    --  This works only if Num * (Base ** -ScaleB) does not overflow for inputs
    --  corresponding to 'Image. With the determination of ScaleB above, we have
@@ -143,15 +141,15 @@ package body System.Value_F is
       Val    : Uns;
       Base   : Unsigned;
       ScaleB : Integer;
-      Extra  : Unsigned;
+      Extra2 : Unsigned;
       Minus  : Boolean;
       Num    : Int;
       Den    : Int) return Int
    is
       pragma Assert (Base in 2 .. 16);
 
-      pragma Assert (Extra < Base);
-      --  Accept only one extra digit after those used for Val
+      pragma Assert (Extra2 < Base ** 2);
+      --  Accept only two extra digits after those used for Val
 
       pragma Assert (Num < 0 and then Den < 0);
       --  Accept only negative numbers to allow -2**(Int'Size - 1)
@@ -169,7 +167,7 @@ package body System.Value_F is
       --  updated to contain the remaining power in the computation. Note that
       --  Factor is expected to be negative in this context.
 
-      function Unsigned_To_Signed (Val : Uns) return Int;
+      function To_Signed (Val : Uns) return Int;
       --  Convert an integer value from unsigned to signed representation
 
       -----------------
@@ -196,11 +194,11 @@ package body System.Value_F is
          return Result;
       end Safe_Expont;
 
-      ------------------------
-      -- Unsigned_To_Signed --
-      ------------------------
+      ---------------
+      -- To_Signed --
+      ---------------
 
-      function Unsigned_To_Signed (Val : Uns) return Int is
+      function To_Signed (Val : Uns) return Int is
       begin
          --  Deal with overflow cases, and also with largest negative number
 
@@ -221,15 +219,15 @@ package body System.Value_F is
          else
             return Int (Val);
          end if;
-      end Unsigned_To_Signed;
+      end To_Signed;
 
       --  Local variables
 
       B : constant Int := Int (Base);
 
-      V : Uns     := Val;
-      S : Integer := ScaleB;
-      E : Uns     := Uns (Extra);
+      V : Uns      := Val;
+      S : Integer  := ScaleB;
+      E : Unsigned := Extra2;
 
       Y, Z, Q1, R1, Q2, R2 : Int;
 
@@ -238,7 +236,7 @@ package body System.Value_F is
       --  but here we cannot handle 2**(Int'Size - 1) if Minus is not set.
 
       if V = 2**(Int'Size - 1) and then not Minus then
-         E := V rem Uns (B);
+         E := Unsigned (V rem Uns (B)) * Base + E / Base;
          V := V / Uns (B);
          S := S + 1;
       end if;
@@ -248,7 +246,7 @@ package body System.Value_F is
       --  raised during the computation. The only real concern is the exponent.
 
       --  If S is too negative, then drop trailing digits, but preserve the
-      --  last dropped digit, until V saturates to 0.
+      --  last two dropped digits, until V saturates to 0.
 
       if S < 0 then
          declare
@@ -263,7 +261,7 @@ package body System.Value_F is
                   E := 0;
                   exit;
                end if;
-               E := V rem Uns (B);
+               E := Unsigned (V rem Uns (B)) * Base + E / Base;
                V := V / Uns (B);
             end loop;
          end;
@@ -279,9 +277,9 @@ package body System.Value_F is
             Z := Num;
 
             for J in 1 .. LS loop
-               if V <= (Uns'Last - E) / Uns (B) then
-                  V := V * Uns (B) + E;
-                  E := 0;
+               if V <= (Uns'Last - Uns (E / Base)) / Uns (B) then
+                  V := V * Uns (B) + Uns (E / Base);
+                  E := (E rem Base) * Base;
                else
                   Bad_Value (Str);
                end if;
@@ -301,8 +299,8 @@ package body System.Value_F is
       --  sign of the first operand and the sign of the remainder the opposite.
 
       if E > 0 then
-         Scaled_Divide (Unsigned_To_Signed (V), Y, Z, Q1, R1, Round => False);
-         Scaled_Divide (Unsigned_To_Signed (E), Y, -B, Q2, R2, Round => True);
+         Scaled_Divide (To_Signed (V), Y, Z, Q1, R1, Round => False);
+         Scaled_Divide (To_Signed (Uns (E)), Y, -B**2, Q2, R2, Round => False);
 
          --  Avoid an overflow during the subtraction. Note that Q2 is smaller
          --  than Y and R1 smaller than Z in magnitude, so it is safe to take
@@ -329,7 +327,7 @@ package body System.Value_F is
          return Q1 + Q2;
 
       else
-         Scaled_Divide (Unsigned_To_Signed (V), Y, Z, Q1, R1, Round => True);
+         Scaled_Divide (To_Signed (V), Y, Z, Q1, R1, Round => True);
 
          return Q1;
       end if;
@@ -349,17 +347,17 @@ package body System.Value_F is
       Num : Int;
       Den : Int) return Int
    is
-      Base  : Unsigned;
-      Scl   : Impl.Scale_Array;
-      Extra : Unsigned;
-      Minus : Boolean;
-      Val   : Impl.Value_Array;
+      Bas    : Unsigned;
+      Scl    : Impl.Scale_Array;
+      Extra2 : Unsigned;
+      Minus  : Boolean;
+      Val    : Impl.Value_Array;
 
    begin
-      Val := Impl.Scan_Raw_Real (Str, Ptr, Max, Base, Scl, Extra, Minus);
+      Val := Impl.Scan_Raw_Real (Str, Ptr, Max, Bas, Scl, Extra2, Minus);
 
       return
-        Integer_To_Fixed (Str, Val (1), Base, Scl (1), Extra, Minus, Num, Den);
+        Integer_To_Fixed (Str, Val (1), Bas, Scl (1), Extra2, Minus, Num, Den);
    end Scan_Fixed;
 
    -----------------
@@ -371,17 +369,17 @@ package body System.Value_F is
       Num : Int;
       Den : Int) return Int
    is
-      Base  : Unsigned;
-      Scl   : Impl.Scale_Array;
-      Extra : Unsigned;
-      Minus : Boolean;
-      Val   : Impl.Value_Array;
+      Bas    : Unsigned;
+      Scl    : Impl.Scale_Array;
+      Extra2 : Unsigned;
+      Minus  : Boolean;
+      Val    : Impl.Value_Array;
 
    begin
-      Val := Impl.Value_Raw_Real (Str, Base, Scl, Extra, Minus);
+      Val := Impl.Value_Raw_Real (Str, Bas, Scl, Extra2, Minus);
 
       return
-        Integer_To_Fixed (Str, Val (1), Base, Scl (1), Extra, Minus, Num, Den);
+        Integer_To_Fixed (Str, Val (1), Bas, Scl (1), Extra2, Minus, Num, Den);
    end Value_Fixed;
 
 end System.Value_F;

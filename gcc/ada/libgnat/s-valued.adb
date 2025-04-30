@@ -38,8 +38,8 @@ package body System.Value_D is
    pragma Assert (Int'Size <= Uns'Size);
    --  We need an unsigned type large enough to represent the mantissa
 
-   package Impl is new Value_R (Uns, 1, 2**(Int'Size - 1), Round => False);
-   --  We do not use the Extra digit for decimal fixed-point types, except to
+   package Impl is new Value_R (Uns, 1, 2**(Int'Size - 1));
+   --  We do not use the Extra digits for decimal fixed-point types, except to
    --  effectively ensure that overflow is detected near the boundaries.
 
    function Integer_to_Decimal
@@ -47,7 +47,7 @@ package body System.Value_D is
       Val    : Uns;
       Base   : Unsigned;
       ScaleB : Integer;
-      Extra  : Unsigned;
+      Extra2 : Unsigned;
       Minus  : Boolean;
       Scale  : Integer) return Int;
    --  Convert the real value from integer to decimal representation
@@ -61,7 +61,7 @@ package body System.Value_D is
       Val    : Uns;
       Base   : Unsigned;
       ScaleB : Integer;
-      Extra  : Unsigned;
+      Extra2 : Unsigned;
       Minus  : Boolean;
       Scale  : Integer) return Int
    is
@@ -75,7 +75,7 @@ package body System.Value_D is
       --  updated to contain the remaining power in the computation. Note that
       --  Factor is expected to be positive in this context.
 
-      function Unsigned_To_Signed (Val : Uns) return Int;
+      function To_Signed (Val : Uns) return Int;
       --  Convert an integer value from unsigned to signed representation
 
       -----------------
@@ -102,11 +102,11 @@ package body System.Value_D is
          return Result;
       end Safe_Expont;
 
-      ------------------------
-      -- Unsigned_To_Signed --
-      ------------------------
+      ---------------
+      -- To_Signed --
+      ---------------
 
-      function Unsigned_To_Signed (Val : Uns) return Int is
+      function To_Signed (Val : Uns) return Int is
       begin
          --  Deal with overflow cases, and also with largest negative number
 
@@ -127,11 +127,11 @@ package body System.Value_D is
          else
             return Int (Val);
          end if;
-      end Unsigned_To_Signed;
+      end To_Signed;
 
       --  Local variables
 
-      E : Uns := Uns (Extra);
+      E : Uns := Uns (Extra2 / Base);
 
    begin
       --  If the base of the value is 10 or its scaling factor is zero, then
@@ -159,7 +159,7 @@ package body System.Value_D is
                end if;
             end loop;
 
-            return Unsigned_To_Signed (V);
+            return To_Signed (V);
          end;
 
       --  If the base of the value is not 10, use a scaled divide operation
@@ -218,7 +218,7 @@ package body System.Value_D is
 
             --  Perform a scaled divide operation with rounding to match 'Image
 
-            Scaled_Divide (Unsigned_To_Signed (V), Y, Z, Q, R, Round => True);
+            Scaled_Divide (To_Signed (V), Y, Z, Q, R, Round => True);
 
             return Q;
          end;
@@ -238,17 +238,17 @@ package body System.Value_D is
       Max   : Integer;
       Scale : Integer) return Int
    is
-      Base  : Unsigned;
-      Scl   : Impl.Scale_Array;
-      Extra : Unsigned;
-      Minus : Boolean;
-      Val   : Impl.Value_Array;
+      Base   : Unsigned;
+      Scl    : Impl.Scale_Array;
+      Extra2 : Unsigned;
+      Minus  : Boolean;
+      Val    : Impl.Value_Array;
 
    begin
-      Val := Impl.Scan_Raw_Real (Str, Ptr, Max, Base, Scl, Extra, Minus);
+      Val := Impl.Scan_Raw_Real (Str, Ptr, Max, Base, Scl, Extra2, Minus);
 
       return
-        Integer_to_Decimal (Str, Val (1), Base, Scl (1), Extra, Minus, Scale);
+        Integer_to_Decimal (Str, Val (1), Base, Scl (1), Extra2, Minus, Scale);
    end Scan_Decimal;
 
    -------------------
@@ -256,17 +256,17 @@ package body System.Value_D is
    -------------------
 
    function Value_Decimal (Str : String; Scale : Integer) return Int is
-      Base  : Unsigned;
-      Scl   : Impl.Scale_Array;
-      Extra : Unsigned;
-      Minus : Boolean;
-      Val   : Impl.Value_Array;
+      Base   : Unsigned;
+      Scl    : Impl.Scale_Array;
+      Extra2 : Unsigned;
+      Minus  : Boolean;
+      Val    : Impl.Value_Array;
 
    begin
-      Val := Impl.Value_Raw_Real (Str, Base, Scl, Extra, Minus);
+      Val := Impl.Value_Raw_Real (Str, Base, Scl, Extra2, Minus);
 
       return
-        Integer_to_Decimal (Str, Val (1), Base, Scl (1), Extra, Minus, Scale);
+        Integer_to_Decimal (Str, Val (1), Base, Scl (1), Extra2, Minus, Scale);
    end Value_Decimal;
 
 end System.Value_D;
