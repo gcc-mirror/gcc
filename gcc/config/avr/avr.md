@@ -718,6 +718,8 @@
   "&& reload_completed"
   [(parallel [(set (reg:MOVMODE REG_22)
                    (match_dup 0))
+              (clobber (reg:QI REG_21))
+              (clobber (reg:HI REG_Z))
               (clobber (reg:CC REG_CC))])]
   {
     operands[0] = SET_SRC (single_set (curr_insn));
@@ -727,6 +729,8 @@
   [(set (reg:MOVMODE REG_22)
         (mem:MOVMODE (lo_sum:PSI (reg:QI REG_21)
                                  (reg:HI REG_Z))))
+   (clobber (reg:QI REG_21))
+   (clobber (reg:HI REG_Z))
    (clobber (reg:CC REG_CC))]
   "reload_completed
    && (avr_load_libgcc_insn_p (insn, ADDR_SPACE_MEMX, true)
