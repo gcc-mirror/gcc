@@ -5583,6 +5583,42 @@ find_func_clobbers (struct function *fn, gimple *origt)
 	      process_ipa_clobber (fi, gimple_call_arg (t, 2));
 	      return;
 	    }
+	  /* The following functions use what their first argument
+	     points to.  */
+	  case BUILT_IN_STRDUP:
+	  case BUILT_IN_STRNDUP:
+	  case BUILT_IN_REALLOC:
+	  case BUILT_IN_INDEX:
+	  case BUILT_IN_STRCHR:
+	  case BUILT_IN_STRRCHR:
+	  case BUILT_IN_MEMCHR:
+	    {
+	      tree src = gimple_call_arg (t, 0);
+	      get_constraint_for_ptr_offset (src, NULL_TREE, &rhsc);
+	      lhs = get_function_part_constraint (fi, fi_uses);
+	      struct constraint_expr *rhsp;
+	      FOR_EACH_VEC_ELT (rhsc, i, rhsp)
+		process_constraint (new_constraint (lhs, *rhsp));
+	      return;
+	    }
+	  /* The following functions use what their first and second argument
+	     point to.  */
+	  case BUILT_IN_STRSTR:
+	  case BUILT_IN_STRPBRK:
+	    {
+	      tree src = gimple_call_arg (t, 0);
+	      get_constraint_for_ptr_offset (src, NULL_TREE, &rhsc);
+	      lhs = get_function_part_constraint (fi, fi_uses);
+	      struct constraint_expr *rhsp;
+	      FOR_EACH_VEC_ELT (rhsc, i, rhsp)
+		process_constraint (new_constraint (lhs, *rhsp));
+	      rhsc.truncate (0);
+	      src = gimple_call_arg (t, 1);
+	      get_constraint_for_ptr_offset (src, NULL_TREE, &rhsc);
+	      FOR_EACH_VEC_ELT (rhsc, i, rhsp)
+		process_constraint (new_constraint (lhs, *rhsp));
+	      return;
+	    }
 	  /* The following functions neither read nor clobber memory.  */
 	  case BUILT_IN_ASSUME_ALIGNED:
 	  case BUILT_IN_FREE:
