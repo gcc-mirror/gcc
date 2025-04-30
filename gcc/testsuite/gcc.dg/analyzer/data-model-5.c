@@ -60,7 +60,7 @@ base_obj *alloc_obj (type_obj *ob_type, size_t sz)
 {
   base_obj *obj = (base_obj *)malloc (sz);
   if (!obj)
-    return NULL;
+    return NULL; /* { dg-message "using NULL here" } */
   obj->ob_type = ob_type;
   obj->ob_refcnt = 1;
   return obj;

@@ -785,8 +785,13 @@ public:
 	else
 	  {
 	    if (change.m_expr)
-	      pp_printf (&pp, "%qE is NULL",
-			 change.m_expr);
+	      {
+		if (zerop (change.m_expr))
+		  pp_printf (&pp, "using NULL here");
+		else
+		  pp_printf (&pp, "%qE is NULL",
+			     change.m_expr);
+	      }
 	    else
 	      pp_printf (&pp, "%qs is NULL",
 			 "<unknown>");
