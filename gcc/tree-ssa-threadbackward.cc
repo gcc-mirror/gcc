@@ -349,9 +349,6 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
 				    unsigned overall_paths,
 				    back_threader_profitability &profit)
 {
-  if (m_visited_bbs.add (bb))
-    return;
-
   m_path.safe_push (bb);
 
   // Try to resolve the path without looking back.  Avoid resolving paths
@@ -377,7 +374,8 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
   // Continue looking for ways to extend the path but limit the
   // search space along a branch
   else if ((overall_paths = overall_paths * EDGE_COUNT (bb->preds))
-	   <= (unsigned)param_max_jump_thread_paths)
+	   <= (unsigned)param_max_jump_thread_paths
+	   && !m_visited_bbs.add (bb))
     {
       // For further greedy searching we want to remove interesting
       // names defined in BB but add ones on the PHI edges for the
@@ -489,6 +487,7 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
 	 backtracking we have to restore it.  */
       for (int j : new_imports)
 	bitmap_clear_bit (m_imports, j);
+      m_visited_bbs.remove (bb);
     }
   else if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "  FAIL: Search space limit %d reached.\n",
@@ -496,7 +495,6 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
 
   // Reset things to their original state.
   m_path.pop ();
-  m_visited_bbs.remove (bb);
 }
 
 // Search backwards from BB looking for paths where the final
