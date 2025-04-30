@@ -277,11 +277,7 @@ package body Errout is
          begin
             if not M.Deleted then
                M.Deleted := True;
-               Warnings_Detected := Warnings_Detected - 1;
-
-               if M.Warn_Err then
-                  Warnings_Treated_As_Errors := Warnings_Treated_As_Errors - 1;
-               end if;
+               Decrease_Error_Msg_Count (M);
             end if;
 
             Id := M.Next;
@@ -1803,11 +1799,7 @@ package body Errout is
       begin
          if not Errors.Table (E).Deleted then
             Errors.Table (E).Deleted := True;
-            Warnings_Detected := Warnings_Detected - 1;
-
-            if Errors.Table (E).Warn_Err then
-               Warnings_Treated_As_Errors := Warnings_Treated_As_Errors - 1;
-            end if;
+            Decrease_Error_Msg_Count (Errors.Table (E));
          end if;
       end Delete_Warning;
 
@@ -3335,11 +3327,7 @@ package body Errout is
 
                and then not Errors.Table (E).Uncond
             then
-               Warnings_Detected := Warnings_Detected - 1;
-
-               if Errors.Table (E).Warn_Err then
-                  Warnings_Treated_As_Errors := Warnings_Treated_As_Errors - 1;
-               end if;
+               Decrease_Error_Msg_Count (Errors.Table (E));
 
                return True;
 
