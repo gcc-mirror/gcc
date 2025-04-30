@@ -20,6 +20,7 @@
 #include "rust-collect-lang-items.h"
 #include "rust-desugar-for-loops.h"
 #include "rust-desugar-question-mark.h"
+#include "rust-desugar-apit.h"
 #include "rust-diagnostics.h"
 #include "rust-hir-pattern-analysis.h"
 #include "rust-immutable-name-resolution-context.h"
@@ -619,6 +620,7 @@ Session::compile_crate (const char *filename)
 
   AST::DesugarForLoops ().go (parsed_crate);
   AST::DesugarQuestionMark ().go (parsed_crate);
+  AST::DesugarApit ().go (parsed_crate);
 
   rust_debug ("\033[0;31mSUCCESSFULLY FINISHED EXPANSION \033[0m");
   if (options.dump_option_enabled (CompileOptions::EXPANSION_DUMP))

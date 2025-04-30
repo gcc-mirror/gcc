@@ -9117,14 +9117,8 @@ Parser<ManagedTokenSource>::parse_type (bool save_errors)
 	  t = lexer.peek_token ();
 	  if (t->get_id () != PLUS)
 	    {
-	      // convert trait bound to value object
-	      AST::TraitBound value_bound (*initial_bound);
-
-	      // DEBUG: removed as unique ptr, so should auto-delete
-	      // delete initial_bound;
-
 	      return std::unique_ptr<AST::ImplTraitTypeOneBound> (
-		new AST::ImplTraitTypeOneBound (std::move (value_bound),
+		new AST::ImplTraitTypeOneBound (std::move (initial_bound),
 						locus));
 	    }
 
@@ -9955,11 +9949,8 @@ Parser<ManagedTokenSource>::parse_type_no_bounds ()
 	      return nullptr;
 	    }
 
-	  // convert trait bound to value object
-	  AST::TraitBound value_bound (*initial_bound);
-
 	  return std::unique_ptr<AST::ImplTraitTypeOneBound> (
-	    new AST::ImplTraitTypeOneBound (std::move (value_bound), locus));
+	    new AST::ImplTraitTypeOneBound (std::move (initial_bound), locus));
 	}
     case DYN:
       case QUESTION_MARK: {

@@ -140,7 +140,7 @@ ResolveType::visit (AST::ImplTraitType &type)
 void
 ResolveType::visit (AST::ImplTraitTypeOneBound &type)
 {
-  ResolveTypeBound::go (type.get_trait_bound ());
+  ResolveTypeBound::go (*type.get_trait_bound ().get ());
 }
 
 // resolve relative type-paths
