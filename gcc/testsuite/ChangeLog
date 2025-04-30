@@ -1,3 +1,13 @@
+2025-04-29  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-04-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119807
+	PR c++/112288
+	* g++.dg/template/friend86.C: New test.
+	* g++.dg/template/friend87.C: New test.
+
 2025-04-28  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
