@@ -3309,8 +3309,16 @@ ix86_get_vector_load_mode (unsigned int size)
     mode = V64QImode;
   else if (size == 32)
     mode = V32QImode;
-  else
+  else if (size == 16)
     mode = V16QImode;
+  else if (size == 8)
+    mode = V8QImode;
+  else if (size == 4)
+    mode = V4QImode;
+  else if (size == 2)
+    mode = V2QImode;
+  else
+    gcc_unreachable ();
   return mode;
 }
 
@@ -3338,13 +3346,36 @@ replace_vector_const (machine_mode vector_mode, rtx vector_const,
       if (SUBREG_P (dest) || mode == vector_mode)
 	replace = vector_const;
       else
-	replace = gen_rtx_SUBREG (mode, vector_const, 0);
+	{
+	  unsigned int size = GET_MODE_SIZE (mode);
+	  if (size < ix86_regmode_natural_size (mode))
+	    {
+	      /* If the mode size is smaller than its natural size,
+		 first insert an extra move with a QI vector SUBREG
+		 of the same size to avoid validate_subreg failure.  */
+	      machine_mode vmode = ix86_get_vector_load_mode (size);
+	      rtx vreg;
+	      if (mode == vmode)
+		vreg = vector_const;
+	      else
+		{
+		  vreg = gen_reg_rtx (vmode);
+		  rtx vsubreg = gen_rtx_SUBREG (vmode, vector_const, 0);
+		  rtx pat = gen_rtx_SET (vreg, vsubreg);
+		  rtx_insn *vinsn = emit_insn_before (pat, insn);
+		  df_insn_rescan (vinsn);
+		}
+	      replace = gen_rtx_SUBREG (mode, vreg, 0);
+	    }
+	  else
+	    replace = gen_rtx_SUBREG (mode, vector_const, 0);
+	}
 
-      /* NB: Don't run recog_memoized here since vector SUBREG may not
-	 be valid.  Let LRA handle vector SUBREG.  */
       SET_SRC (set) = replace;
       /* Drop possible dead definitions.  */
       PATTERN (insn) = set;
+      INSN_CODE (insn) = -1;
+      recog_memoized (insn);
       df_insn_rescan (insn);
     }
 }
