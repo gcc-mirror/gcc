@@ -35,7 +35,7 @@ OPT_IN_LANGUAGES=
 #
 
 LIST = \
-  aarch64-elf aarch64-freebsd13 aarch64-linux-gnu aarch64-rtems \
+  aarch64-elf aarch64-freebsd14 aarch64-linux-gnu aarch64-rtems \
   alpha-linux-gnu alpha-netbsd alpha-openbsd \
   alpha64-dec-vms alpha-dec-vms \
   amdgcn-amdhsa \
@@ -54,7 +54,7 @@ LIST = \
   hppa64-hpux11.3 \
   hppa64-hpux11.0OPT-enable-sjlj-exceptions=yes \
   i686-apple-darwin9 i686-apple-darwin13 i686-apple-darwin17 \
-  i686-freebsd13 i686-kfreebsd-gnu \
+  i686-freebsd14 i686-kfreebsd-gnu \
   i686-netbsdelf9 \
   i686-openbsd i686-elf i686-kopensolaris-gnu i686-gnu \
   i686-pc-linux-gnu i686-pc-msdosdjgpp i686-lynxos i686-nto-qnx \
@@ -82,7 +82,7 @@ LIST = \
   or1k-elf or1k-linux-uclibc or1k-linux-musl or1k-rtems \
   pdp11-aout \
   powerpc-apple-darwin9 powerpc64-apple-darwin9 powerpc-apple-darwin8 \
-  powerpc-freebsd13 powerpc-netbsd \
+  powerpc-freebsd14 powerpc-netbsd \
   powerpc-eabisimaltivec powerpc-eabisim ppc-elf \
   powerpc-eabialtivec powerpc-xilinx-eabi powerpc-eabi \
   powerpc-rtems \
@@ -105,7 +105,7 @@ LIST = \
   vax-netbsdelf visium-elf \
   x86_64-apple-darwin10 x86_64-apple-darwin15 x86_64-apple-darwin21 \
   x86_64-gnu x86_64-pc-linux-gnuOPT-with-fpmath=avx \
-  x86_64-elfOPT-with-fpmath=sse x86_64-freebsd13 x86_64-netbsd \
+  x86_64-elfOPT-with-fpmath=sse x86_64-freebsd14 x86_64-netbsd \
   x86_64-w64-mingw32 \
   x86_64-mingw32OPT-enable-sjlj-exceptions=yes x86_64-rtems \
   xstormy16-elf xtensa-elf \
