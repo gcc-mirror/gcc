@@ -1754,7 +1754,7 @@ expand_vector_conversion (gimple_stmt_iterator *gsi)
   else if (ret_elt_bits > arg_elt_bits)
     modifier = WIDEN;
 
-  auto_vec<std::pair<tree, tree_code> > converts;
+  auto_vec<std::pair<tree, tree_code>, 2> converts;
   if (supportable_indirect_convert_operation (code, ret_type, arg_type,
 					      converts))
     {

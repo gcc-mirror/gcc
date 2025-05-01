@@ -5706,7 +5706,7 @@ vectorizable_conversion (vec_info *vinfo,
   scalar_mode lhs_mode = SCALAR_TYPE_MODE (lhs_type);
   scalar_mode rhs_mode = SCALAR_TYPE_MODE (rhs_type);
   opt_scalar_mode rhs_mode_iter;
-  auto_vec<std::pair<tree, tree_code> > converts;
+  auto_vec<std::pair<tree, tree_code>, 2> converts;
 
   /* Supportable by target?  */
   switch (modifier)
