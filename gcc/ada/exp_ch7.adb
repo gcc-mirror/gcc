@@ -2466,7 +2466,6 @@ package body Exp_Ch7 is
          --  Local variables
 
          Decl    : Node_Id;
-         Expr    : Node_Id;
          Obj_Id  : Entity_Id;
          Obj_Typ : Entity_Id;
          Pack_Id : Entity_Id;
@@ -2516,7 +2515,6 @@ package body Exp_Ch7 is
             elsif Nkind (Decl) = N_Object_Declaration then
                Obj_Id  := Defining_Identifier (Decl);
                Obj_Typ := Base_Type (Etype (Obj_Id));
-               Expr    := Expression (Decl);
 
                --  Bypass any form of processing for objects which have their
                --  finalization disabled. This applies only to objects at the
@@ -2572,21 +2570,10 @@ package body Exp_Ch7 is
                   Processing_Actions
                     (Decl, Strict => not Has_Relaxed_Finalization (Obj_Typ));
 
-               --  The object is of the form:
-               --    Obj : Access_Typ := Non_BIP_Function_Call'reference;
-
-               --    Obj : Access_Typ :=
-               --            BIP_Function_Call (BIPalloc => 2, ...)'reference;
+               --  The object is an access-to-controlled that must be finalized
 
                elsif Is_Access_Type (Obj_Typ)
-                 and then Needs_Finalization
-                            (Available_View (Designated_Type (Obj_Typ)))
-                 and then Present (Expr)
-                 and then
-                   (Is_Secondary_Stack_BIP_Func_Call (Expr)
-                     or else
-                       (Is_Non_BIP_Func_Call (Expr)
-                         and then not Is_Related_To_Func_Return (Obj_Id)))
+                 and then Is_Finalizable_Access (Decl)
                then
                   Processing_Actions
                     (Decl,
