@@ -1,3 +1,10 @@
+2025-04-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/112958
+	* Makefile.rtl (LIBGNAT_TARGET_PAIRS) [x86 FreeBSD]: Add specific
+	version of s-dorepr.adb.
+	* libgnat/s-dorepr__freebsd.adb: New file.
+
 2025-04-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgnat/a-ngcoar.adb (Eigensystem): Adjust notation and fix the
