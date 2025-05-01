@@ -2511,17 +2511,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	[[nodiscard]]
 	friend constexpr iter_difference_t<_It2>
 	operator-(const counted_iterator& __x,
-		  const counted_iterator<_It2>& __y)
+		  const counted_iterator<_It2>& __y) noexcept
 	{ return __y._M_length - __x._M_length; }
 
       [[nodiscard]]
       friend constexpr iter_difference_t<_It>
-      operator-(const counted_iterator& __x, default_sentinel_t)
+      operator-(const counted_iterator& __x, default_sentinel_t) noexcept
       { return -__x._M_length; }
 
       [[nodiscard]]
       friend constexpr iter_difference_t<_It>
-      operator-(default_sentinel_t, const counted_iterator& __y)
+      operator-(default_sentinel_t, const counted_iterator& __y) noexcept
       { return __y._M_length; }
 
       constexpr counted_iterator&
@@ -2548,19 +2548,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	[[nodiscard]]
 	friend constexpr bool
 	operator==(const counted_iterator& __x,
-		   const counted_iterator<_It2>& __y)
+		   const counted_iterator<_It2>& __y) noexcept
 	{ return __x._M_length == __y._M_length; }
 
       [[nodiscard]]
       friend constexpr bool
-      operator==(const counted_iterator& __x, default_sentinel_t)
+      operator==(const counted_iterator& __x, default_sentinel_t) noexcept
       { return __x._M_length == 0; }
 
       template<common_with<_It> _It2>
 	[[nodiscard]]
 	friend constexpr strong_ordering
 	operator<=>(const counted_iterator& __x,
-		    const counted_iterator<_It2>& __y)
+		    const counted_iterator<_It2>& __y) noexcept
 	{ return __y._M_length <=> __x._M_length; }
 
       [[nodiscard]]
