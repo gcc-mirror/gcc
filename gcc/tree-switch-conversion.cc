@@ -1783,58 +1783,98 @@ bit_test_cluster::find_bit_tests (vec<cluster *> &clusters, int max_c)
   if (!is_enabled () || max_c == 1)
     return clusters.copy ();
 
+  /* Dynamic programming algorithm.
+
+     In: List of simple clusters
+     Out: List of simple clusters and bit test clusters such that each bit test
+     cluster can_be_handled() and is_beneficial()
+
+     Tries to merge consecutive clusters into bigger (bit test) ones.  Tries to
+     end up with as few clusters as possible.  */
+
   unsigned l = clusters.length ();
   auto_vec<min_cluster_item> min;
   min.reserve (l + 1);
 
-  min.quick_push (min_cluster_item (0, 0, 0));
+  gcc_checking_assert (l > 0);
+  gcc_checking_assert (l <= INT_MAX);
 
-  unsigned bits_in_word = GET_MODE_BITSIZE (word_mode);
+  int bits_in_word = GET_MODE_BITSIZE (word_mode);
 
-  for (unsigned i = 1; i <= l; i++)
+  /* First phase: Compute the minimum number of clusters for each prefix of the
+     input list incrementally
+
+     min[i] = (count, j, _) means that the prefix ending with the (i-1)-th
+     element can be made to contain as few as count clusters and that in such
+     clustering the last cluster is made up of input clusters [j, i-1]
+     (inclusive).  */
+  min.quick_push (min_cluster_item (0, 0, INT_MAX));
+  min.quick_push (min_cluster_item (1, 0, INT_MAX));
+  for (int i = 2; i <= (int) l; i++)
     {
-      /* Set minimal # of clusters with i-th item to infinite.  */
-      min.quick_push (min_cluster_item (INT_MAX, INT_MAX, INT_MAX));
+      auto_vec<unsigned, m_max_case_bit_tests> unique_labels;
 
       /* Since each cluster contains at least one case number and one bit test
 	 cluster can cover at most bits_in_word case numbers, we don't need to
 	 look farther than bits_in_word clusters back.  */
-      unsigned j;
-      if (i - 1 >= bits_in_word)
-	j = i - 1 - bits_in_word;
-      else
-	j = 0;
-      for (; j < i; j++)
+      for (int j = i - 1; j >= 0 && j >= i - bits_in_word; j--)
 	{
-	  if (min[j].m_count + 1 < min[i].m_count
-	      && can_be_handled (clusters, j, i - 1))
-	    min[i] = min_cluster_item (min[j].m_count + 1, j, INT_MAX);
-	}
+	  /* Consider creating a bit test cluster from input clusters [j, i-1]
+	     (inclusive)  */
 
-      gcc_checking_assert (min[i].m_count != INT_MAX);
+	  simple_cluster *sc = static_cast<simple_cluster *> (clusters[j]);
+	  unsigned label = sc->m_case_bb->index;
+	  if (!unique_labels.contains (label))
+	    {
+	      if (unique_labels.length () >= m_max_case_bit_tests)
+		/* is_beneficial() will be false for this and the following
+		   iterations.  */
+		break;
+	      unique_labels.quick_push (label);
+	    }
+
+	  unsigned new_count = min[j].m_count + 1;
+
+	  if (j == i - 1)
+	    {
+	      min.quick_push (min_cluster_item (new_count, j, INT_MAX));
+	      continue;
+	    }
+
+	  unsigned HOST_WIDE_INT range
+	    = get_range (clusters[j]->get_low (), clusters[i-1]->get_high ());
+	  if (new_count < min[i].m_count
+	      && can_be_handled (range, unique_labels.length ())
+	      && is_beneficial (i - j, unique_labels.length ()))
+	    min[i] = min_cluster_item (new_count, j, INT_MAX);
+	}
     }
 
-  /* No result.  */
   if (min[l].m_count == l)
+    /* No bit test clustering opportunities.  */
     return clusters.copy ();
 
   vec<cluster *> output;
   output.create (4);
 
-  /* Find and build the clusters.  */
+  /* Second phase: Find and build the bit test clusters by traversing min
+     array backwards.  */
   for (unsigned end = l;;)
     {
-      int start = min[end].m_start;
+      unsigned start = min[end].m_start;
+      gcc_checking_assert (start < end);
 
-      if (is_beneficial (clusters, start, end - 1))
+      /* This cluster will be made out of input clusters [start, end - 1].  */
+
+      if (start == end - 1)
+	/* Let the cluster be a simple cluster.  */
+	output.safe_push (clusters[start]);
+      else
 	{
-	  bool entire = start == 0 && end == clusters.length ();
+	  bool entire = start == 0 && end == l;
 	  output.safe_push (new bit_test_cluster (clusters, start, end - 1,
 						  entire));
 	}
-      else
-	for (int i = end - 1; i >= start; i--)
-	  output.safe_push (clusters[i]);
 
       end = start;
 
@@ -1857,47 +1897,10 @@ bit_test_cluster::can_be_handled (unsigned HOST_WIDE_INT range,
   if (range == 0)
     return false;
 
-  if (range >= GET_MODE_BITSIZE (word_mode))
+  if (range > GET_MODE_BITSIZE (word_mode))
     return false;
 
   return uniq <= m_max_case_bit_tests;
-}
-
-/* Return true when cluster starting at START and ending at END (inclusive)
-   can build a bit test.  */
-
-bool
-bit_test_cluster::can_be_handled (const vec<cluster *> &clusters,
-				  unsigned start, unsigned end)
-{
-  auto_vec<int, m_max_case_bit_tests> dest_bbs;
-  /* For algorithm correctness, bit test for a single case must return
-     true.  We bail out in is_beneficial if it's called just for
-     a single case.  */
-  if (start == end)
-    return true;
-
-  unsigned HOST_WIDE_INT range = get_range (clusters[start]->get_low (),
-					    clusters[end]->get_high ());
-
-  /* Make a guess first.  */
-  if (!can_be_handled (range, m_max_case_bit_tests))
-    return false;
-
-  for (unsigned i = start; i <= end; i++)
-    {
-      simple_cluster *sc = static_cast<simple_cluster *> (clusters[i]);
-      /* m_max_case_bit_tests is very small integer, thus the operation
-	 is constant. */
-      if (!dest_bbs.contains (sc->m_case_bb->index))
-	{
-	  if (dest_bbs.length () >= m_max_case_bit_tests)
-	    return false;
-	  dest_bbs.quick_push (sc->m_case_bb->index);
-	}
-    }
-
-  return true;
 }
 
 /* Return true when COUNT of cases of UNIQ labels is beneficial for bit test
@@ -1906,33 +1909,11 @@ bit_test_cluster::can_be_handled (const vec<cluster *> &clusters,
 bool
 bit_test_cluster::is_beneficial (unsigned count, unsigned uniq)
 {
+  /* NOTE: When modifying this, keep in mind the value of
+     m_max_case_bit_tests.  */
   return (((uniq == 1 && count >= 3)
 	   || (uniq == 2 && count >= 5)
 	   || (uniq == 3 && count >= 6)));
-}
-
-/* Return true if cluster starting at START and ending at END (inclusive)
-   is profitable transformation.  */
-
-bool
-bit_test_cluster::is_beneficial (const vec<cluster *> &clusters,
-				 unsigned start, unsigned end)
-{
-  /* Single case bail out.  */
-  if (start == end)
-    return false;
-
-  auto_bitmap dest_bbs;
-
-  for (unsigned i = start; i <= end; i++)
-    {
-      simple_cluster *sc = static_cast<simple_cluster *> (clusters[i]);
-      bitmap_set_bit (dest_bbs, sc->m_case_bb->index);
-    }
-
-  unsigned uniq = bitmap_count_bits (dest_bbs);
-  unsigned count = end - start + 1;
-  return is_beneficial (count, uniq);
 }
 
 /* Comparison function for qsort to order bit tests by decreasing
