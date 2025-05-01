@@ -118,6 +118,20 @@ __revl (unsigned long __value)
     return __rev (__value);
 }
 
+__extension__ extern __inline double
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__sqrt (double __x)
+{
+  return __builtin_aarch64_sqrtdf (__x);
+}
+
+__extension__ extern __inline float
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__sqrtf (float __x)
+{
+  return __builtin_aarch64_sqrtsf (__x);
+}
+
 #pragma GCC push_options
 #pragma GCC target ("+nothing+jscvt")
 __extension__ extern __inline int32_t
