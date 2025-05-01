@@ -3325,6 +3325,14 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
       if (type_dependent_expression_p (fn)
 	  || any_type_dependent_arguments_p (*args))
 	{
+	  if (koenig_p
+	      && TREE_CODE (orig_fn) == FUNCTION_DECL
+	      && !fndecl_built_in_p (orig_fn))
+	    /* For an ADL-enabled call where unqualified lookup found a
+	       single non-template function, wrap it in an OVERLOAD so that
+	       later substitution doesn't overeagerly mark the function as
+	       used.  */
+	    orig_fn = ovl_make (orig_fn, NULL_TREE);
 	  result = build_min_nt_call_vec (orig_fn, *args);
 	  SET_EXPR_LOCATION (result, cp_expr_loc_or_input_loc (fn));
 	  KOENIG_LOOKUP_P (result) = koenig_p;
