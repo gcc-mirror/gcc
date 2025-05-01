@@ -3006,11 +3006,16 @@ in C++14 and up.
 Version 18, which first appeared in G++ 13, fixes manglings of lambdas
 that have additional context.
 
-Version 19, which first appeared in G++ 14, fixes manglings of structured
-bindings to include ABI tags.
+Version 19, which first appeared in G++ 14, fixes manglings of
+structured bindings to include ABI tags, handling of cv-qualified
+[[no_unique_address]] members, and adds mangling of C++20 constraints
+on function templates.
 
 Version 20, which first appeared in G++ 15, fixes manglings of lambdas
 in static data member initializers.
+
+Version 21, which first appeared in G++ 16, fixes unnecessary captures
+in noexcept lambdas (c++/119764).
 
 See also @option{-Wabi}.
 
