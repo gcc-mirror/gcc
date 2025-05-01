@@ -59,6 +59,17 @@ void test02()
   tmp->~test_type();
 }
 
+#ifdef __cpp_lib_constexpr_vector
+constexpr bool
+test03()
+{
+  using alloc_type = default_init_allocator<T>;
+  std::vector<T, alloc_type> v;
+  return v.get_allocator().state == 0;
+}
+static_assert( test03() );
+#endif
+
 int main()
 {
   test01();
