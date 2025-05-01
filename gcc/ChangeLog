@@ -1,3 +1,28 @@
+2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (xload_<mode>_libgcc): Clobber R21, Z.
+
+2025-04-30  Vineet Gupta  <vineetg@rivosinc.com>
+
+	Backported from master:
+	2025-04-15  Vineet Gupta  <vineetg@rivosinc.com>
+
+	PR target/119533
+	* config/riscv/riscv-vsetvl.cc (invalid_opt_bb_p): Check for
+	EDGE_ABNOMAL.
+	(pre_vsetvl::compute_lcm_local_properties): Initialize kill
+	bitmap.
+	Debug dump skipped edge.
+
+2025-04-30  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2025-04-15  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/119547
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl::earliest_fuse_vsetvl_info):
+	Do not perform lift if block is not transparent.
+
 2025-04-29  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:

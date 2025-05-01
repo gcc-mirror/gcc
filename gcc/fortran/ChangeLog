@@ -1,3 +1,13 @@
+2025-04-30  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-04-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106948
+	* resolve.cc (gfc_pure_function): If a function has been resolved,
+	but esym is not yet set, look at its attributes to see whether it
+	is pure or elemental.
+
 2025-04-14  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
