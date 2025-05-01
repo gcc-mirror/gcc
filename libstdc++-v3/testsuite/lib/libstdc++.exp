@@ -586,6 +586,7 @@ proc v3_target_compile { source dest type options } {
     global tool
 
     lappend options "additional_flags=-fdiagnostics-plain-output"
+    lappend options "additional_flags=-Wabi=20";
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
