@@ -1,3 +1,19 @@
+2025-04-30  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/118924
+	* g++.dg/tree-ssa/pr118924.C: New test.
+
+2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/pr119989.h: New file.
+	* gcc.target/avr/torture/pr119989-memx-1.c: New test.
+	* gcc.target/avr/torture/pr119989-memx-2.c: New test.
+	* gcc.target/avr/torture/pr119989-memx-3.c: New test.
+	* gcc.target/avr/torture/pr119989-memx-4.c: New test.
+
 2025-04-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:

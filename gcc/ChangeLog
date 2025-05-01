@@ -1,3 +1,19 @@
+2025-04-30  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2025-04-07  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/118924
+	* tree-sra.cc (create_total_scalarization_access): Set
+	grp_same_access_path flag to zero.
+
+2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (xload_<mode>_libgcc): Clobber R21, Z.
+
 2025-04-29  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	Backported from master:
