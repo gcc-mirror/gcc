@@ -18084,9 +18084,14 @@ ix86_warn_parameter_passing_abi (cumulative_args_t cum_v, tree type)
   if (cum->decl && !TREE_PUBLIC (cum->decl))
     return;
 
-  const_tree ctx = get_ultimate_context (cum->decl);
-  if (ctx != NULL_TREE
-      && !TRANSLATION_UNIT_WARN_EMPTY_P (ctx))
+  tree decl = cum->decl;
+  if (!decl)
+    /* If we don't know the target, look at the current TU.  */
+    decl = current_function_decl;
+
+  const_tree ctx = get_ultimate_context (decl);
+  if (ctx == NULL_TREE
+      || !TRANSLATION_UNIT_WARN_EMPTY_P (ctx))
     return;
 
   /* If the actual size of the type is zero, then there is no change
