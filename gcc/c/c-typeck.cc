@@ -4336,7 +4336,8 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree fntype,
 	  builtin_typetail = NULL_TREE;
 	}
 
-      if (!typetail && parmnum == 0 && !TYPE_NO_NAMED_ARGS_STDARG_P (fntype))
+      if (!typetail && parmnum == 0 && !TYPE_NO_NAMED_ARGS_STDARG_P (fntype)
+	  && !fndecl_built_in_p (fundecl))
 	{
 	  auto_diagnostic_group d;
 	  bool warned;
