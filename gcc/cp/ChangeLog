@@ -1,3 +1,15 @@
+2025-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119981
+	PR c++/119378
+	* pt.cc (tsubst) <case UNBOUND_CLASS_TEMPLATE>: Substitute
+	into template parameter list first.  When substituting the
+	context, only set processing_template_decl if there's more
+	than one level of introduced template parameters.
+
 2025-04-27  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Backported from master:

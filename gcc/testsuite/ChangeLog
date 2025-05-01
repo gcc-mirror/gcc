@@ -1,3 +1,42 @@
+2025-04-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/119712
+	* gcc.dg/pr119712.c: New.
+	* gcc.dg/pr83072-2.c: Adjust.
+	* gcc.dg/tree-ssa/phi-opt-value-5.c: Adjust.
+	* gcc.dg/tree-ssa/vrp122.c: Adjust
+
+2025-04-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2025-04-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/pr115258.c: Add -mcmodel=small.
+
+2025-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119981
+	PR c++/119378
+	* g++.dg/cpp2a/lambda-targ15.C: New test.
+
+2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/pr119989.h: New file.
+	* gcc.target/avr/torture/pr119989-memx-1.c: New test.
+	* gcc.target/avr/torture/pr119989-memx-2.c: New test.
+	* gcc.target/avr/torture/pr119989-memx-3.c: New test.
+	* gcc.target/avr/torture/pr119989-memx-4.c: New test.
+	* gcc.target/avr/torture/pr119989-flashx-1.c: New test.
+	* gcc.target/avr/torture/pr119989-flashx-2.c: New test.
+	* gcc.target/avr/torture/pr119989-flashx-3.c: New test.
+	* gcc.target/avr/torture/pr119989-flashx-4.c: New test.
+
 2025-04-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:

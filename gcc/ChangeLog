@@ -1,3 +1,25 @@
+2025-04-30  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/119712
+	* value-range.cc (range_bitmask::adjust_range): Delete.
+	(irange::set_range_from_bitmask): Integrate adjust_range.
+	(irange::update_bitmask): Do nothing if bitmask doesnt change.
+	(irange:intersect_bitmask): Do not call adjust_range. Exit if there
+	is no second bitmask.
+	* value-range.h (adjust_range): Remove prototype.
+
+2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (fxload_<mode>_libgcc): Use REG_ prefix for
+	magix register numbers (aligns with trunk).
+
+2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (xload_<mode>_libgcc): Clobber R21, Z.
+
 2025-04-29  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
