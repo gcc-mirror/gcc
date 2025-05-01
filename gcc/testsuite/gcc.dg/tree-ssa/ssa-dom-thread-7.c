@@ -12,7 +12,7 @@
    jump threading opportunities.  Skip the later tests on aarch64.  */
 /* { dg-final { scan-tree-dump-not "Jumps threaded"  "dom3" { target { ! aarch64*-*-* } } } } */
 /* { dg-final { scan-tree-dump "Jumps threaded: 10"  "thread2" { target { ! aarch64*-*-* } } } } */
-/* { dg-final { scan-tree-dump "Jumps threaded: 14"  "thread2" { target { aarch64*-*-* } } } } */
+/* { dg-final { scan-tree-dump "Jumps threaded: 17"  "thread2" { target { aarch64*-*-* } } } } */
 
 enum STATE {
   S0=0,
