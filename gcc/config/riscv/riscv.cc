@@ -3863,7 +3863,40 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
      Cost Model need to be well analyzed and supported in the future. */
   if (riscv_v_ext_mode_p (mode))
     {
-      *total = COSTS_N_INSNS (1);
+      int gr2vr_cost = get_gr2vr_cost ();
+
+      switch (outer_code)
+	{
+	case SET:
+	  {
+	    switch (GET_CODE (x))
+	      {
+	      case VEC_DUPLICATE:
+		*total = gr2vr_cost * COSTS_N_INSNS (1);
+		break;
+	      case PLUS:
+		{
+		  rtx op_0 = XEXP (x, 0);
+		  rtx op_1 = XEXP (x, 1);
+
+		  if (GET_CODE (op_0) == VEC_DUPLICATE
+		      || GET_CODE (op_1) == VEC_DUPLICATE)
+		    *total = (gr2vr_cost + 1) * COSTS_N_INSNS (1);
+		  else
+		    *total = COSTS_N_INSNS (1);
+		}
+		break;
+	      default:
+		*total = COSTS_N_INSNS (1);
+		break;
+	      }
+	  }
+	  break;
+	default:
+	  *total = COSTS_N_INSNS (1);
+	  break;
+	}
+
       return true;
     }
 
