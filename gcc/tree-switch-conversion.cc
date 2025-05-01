@@ -1773,92 +1773,38 @@ jump_table_cluster::is_beneficial (const vec<cluster *> &,
   return end - start + 1 >= case_values_threshold ();
 }
 
-/* Find bit tests of given CLUSTERS, where all members of the vector are of
-   type simple_cluster.  Use a fast algorithm that might not find the optimal
-   solution (minimal number of clusters on the output).  New clusters are
-   returned.
-
-   You should call find_bit_tests () instead of calling this function
-   directly.  */
-
-vec<cluster *>
-bit_test_cluster::find_bit_tests_fast (vec<cluster *> &clusters)
-{
-  unsigned l = clusters.length ();
-  vec<cluster *> output;
-
-  output.create (l);
-
-  /* Look at sliding BITS_PER_WORD sized windows in the switch value space
-     and determine if they are suitable for a bit test cluster.  Worst case
-     this can examine every value BITS_PER_WORD-1 times.  */
-  unsigned k;
-  for (unsigned i = 0; i < l; i += k)
-    {
-      hash_set<basic_block> targets;
-      cluster *start_cluster = clusters[i];
-
-      /* Find the biggest k such that clusters i to i+k-1 can be turned into a
-	 one big bit test cluster.  */
-      k = 0;
-      while (i + k < l)
-	{
-	  cluster *end_cluster = clusters[i + k];
-
-	  /* Does value range fit into the BITS_PER_WORD window?  */
-	  HOST_WIDE_INT w = cluster::get_range (start_cluster->get_low (),
-						end_cluster->get_high ());
-	  if (w == 0 || w > BITS_PER_WORD)
-	    break;
-
-	  /* Check for max # of targets.  */
-	  if (targets.elements () == m_max_case_bit_tests
-	      && !targets.contains (end_cluster->m_case_bb))
-	    break;
-
-	  targets.add (end_cluster->m_case_bb);
-	  k++;
-	}
-
-      if (is_beneficial (k, targets.elements ()))
-	{
-	  output.safe_push (new bit_test_cluster (clusters, i, i + k - 1,
-						  i == 0 && k == l));
-	}
-      else
-	{
-	  output.safe_push (clusters[i]);
-	  /* ??? Might be able to skip more.  */
-	  k = 1;
-	}
-    }
-
-  return output;
-}
-
 /* Find bit tests of given CLUSTERS, where all members of the vector
-   are of type simple_cluster.  Use a slow (quadratic) algorithm that always
-   finds the optimal solution (minimal number of clusters on the output).  New
-   clusters are returned.
-
-   You should call find_bit_tests () instead of calling this function
-   directly.  */
+   are of type simple_cluster.  MAX_C is the approx max number of cases per
+   label.  New clusters are returned.  */
 
 vec<cluster *>
-bit_test_cluster::find_bit_tests_slow (vec<cluster *> &clusters)
+bit_test_cluster::find_bit_tests (vec<cluster *> &clusters, int max_c)
 {
+  if (!is_enabled () || max_c == 1)
+    return clusters.copy ();
+
   unsigned l = clusters.length ();
   auto_vec<min_cluster_item> min;
   min.reserve (l + 1);
 
   min.quick_push (min_cluster_item (0, 0, 0));
 
+  unsigned bits_in_word = GET_MODE_BITSIZE (word_mode);
+
   for (unsigned i = 1; i <= l; i++)
     {
       /* Set minimal # of clusters with i-th item to infinite.  */
       min.quick_push (min_cluster_item (INT_MAX, INT_MAX, INT_MAX));
 
-      for (unsigned j = 0; j < i; j++)
+      /* Since each cluster contains at least one case number and one bit test
+	 cluster can cover at most bits_in_word case numbers, we don't need to
+	 look farther than bits_in_word clusters back.  */
+      unsigned j;
+      if (i - 1 >= bits_in_word)
+	j = i - 1 - bits_in_word;
+      else
+	j = 0;
+      for (; j < i; j++)
 	{
 	  if (min[j].m_count + 1 < min[i].m_count
 	      && can_be_handled (clusters, j, i - 1))
@@ -1898,25 +1844,6 @@ bit_test_cluster::find_bit_tests_slow (vec<cluster *> &clusters)
 
   output.reverse ();
   return output;
-}
-
-/* Find bit tests of given CLUSTERS, where all members of the vector
-   are of type simple_cluster.  MAX_C is the approx max number of cases per
-   label.  New clusters are returned.  */
-
-vec<cluster *>
-bit_test_cluster::find_bit_tests (vec<cluster *> &clusters, int max_c)
-{
-  if (!is_enabled () || max_c == 1)
-    return clusters.copy ();
-
-  unsigned l = clusters.length ();
-
-  /* Note: l + 1 is the number of cases of the switch.  */
-  if (l + 1 > (unsigned) param_switch_lower_slow_alg_max_cases)
-    return find_bit_tests_fast (clusters);
-  else
-    return find_bit_tests_slow (clusters);
 }
 
 /* Return true when RANGE of case values with UNIQ labels
