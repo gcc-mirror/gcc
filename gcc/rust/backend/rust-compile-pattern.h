@@ -81,7 +81,7 @@ public:
   }
 
   tree make_struct_access (TyTy::ADTType *adt, TyTy::VariantDef *variant,
-			   Identifier &ident, int variant_index);
+			   const Identifier &ident, int variant_index);
 
   void handle_struct_pattern_ident (HIR::StructPatternField &pat,
 				    TyTy::ADTType *adt,

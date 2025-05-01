@@ -209,6 +209,7 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
 
   rust_assert (adt->number_of_variants () > 0);
   TyTy::VariantDef *variant = nullptr;
+  tree variant_accesser_expr = nullptr;
   if (adt->is_enum ())
     {
       // lookup the variant
@@ -223,15 +224,21 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
 
       // find expected discriminant
       // // need to access qualifier the field, if we use QUAL_UNION_TYPE this
-      // // would be DECL_QUALIFIER i think. For now this will just access the
-      // // first record field and its respective qualifier because it will
-      // // always be set because this is all a big special union
+      // // would be DECL_QUALIFIER i think.
       HIR::Expr &discrim_expr = variant->get_discriminant ();
       tree discrim_expr_node = CompileExpr::Compile (discrim_expr, ctx);
 
       // find discriminant field of scrutinee
       tree scrutinee_expr_qualifier_expr
 	= Backend::struct_field_expression (match_scrutinee_expr, 0,
+					    pattern.get_path ().get_locus ());
+
+      // access variant data
+      tree scrutinee_union_expr
+	= Backend::struct_field_expression (match_scrutinee_expr, 1,
+					    pattern.get_path ().get_locus ());
+      variant_accesser_expr
+	= Backend::struct_field_expression (scrutinee_union_expr, variant_index,
 					    pattern.get_path ().get_locus ());
 
       check_expr
@@ -245,6 +252,7 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
   else
     {
       variant = adt->get_variants ().at (0);
+      variant_accesser_expr = match_scrutinee_expr;
       check_expr = boolean_true_node;
     }
 
@@ -268,11 +276,8 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
 					nullptr, &offs);
 	    rust_assert (ok);
 
-	    // we may be offsetting by + 1 here since the first field in the
-	    // record is always the discriminator
-	    offs += adt->is_enum ();
 	    tree field_expr
-	      = Backend::struct_field_expression (match_scrutinee_expr, offs,
+	      = Backend::struct_field_expression (variant_accesser_expr, offs,
 						  ident.get_locus ());
 
 	    tree check_expr_sub
@@ -512,7 +517,7 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 tree
 CompilePatternBindings::make_struct_access (TyTy::ADTType *adt,
 					    TyTy::VariantDef *variant,
-					    Identifier &ident,
+					    const Identifier &ident,
 					    int variant_index)
 {
   size_t offs = 0;
@@ -562,26 +567,9 @@ CompilePatternBindings::handle_struct_pattern_ident_pat (
 {
   auto &pattern = static_cast<HIR::StructPatternFieldIdentPat &> (pat);
 
-  switch (pattern.get_pattern ().get_pattern_type ())
-    {
-      case HIR::Pattern::IDENTIFIER: {
-	auto &id
-	  = static_cast<HIR::IdentifierPattern &> (pattern.get_pattern ());
-
-	CompilePatternBindings::Compile (id, match_scrutinee_expr, ctx);
-      }
-      break;
-    default:
-      rust_sorry_at (pat.get_locus (),
-		     "cannot handle non-identifier struct patterns");
-      return;
-    }
-
-  auto ident = pattern.get_identifier ();
-  tree binding = make_struct_access (adt, variant, ident, variant_index);
-
-  ctx->insert_pattern_binding (
-    pattern.get_pattern ().get_mappings ().get_hirid (), binding);
+  tree binding = make_struct_access (adt, variant, pattern.get_identifier (),
+				     variant_index);
+  CompilePatternBindings::Compile (pattern.get_pattern (), binding, ctx);
 }
 
 void
