@@ -2257,13 +2257,6 @@ switch_decision_tree::analyze_switch_statement ()
 
   reset_out_edges_aux (m_switch);
 
-  if (l > (unsigned) param_switch_lower_slow_alg_max_cases)
-    warning_at (gimple_location (m_switch), OPT_Wdisabled_optimization,
-	       "Using faster switch lowering algorithms. "
-	       "Number of switch cases (%d) exceeds "
-	       "%<--param=switch-lower-slow-alg-max-cases=%d%> limit.",
-	       l, param_switch_lower_slow_alg_max_cases);
-
   /* Find bit-test clusters.  */
   vec<cluster *> output = bit_test_cluster::find_bit_tests (clusters, max_c);
 
