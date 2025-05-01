@@ -133,23 +133,22 @@ ccmp_candidate_p (gimple *g, bool outer = false)
 
 /* Extract the comparison we want to do from the tree.  */
 void
-get_compare_parts (tree t, int *up, rtx_code *rcode,
+get_compare_parts (tree t, rtx_code *rcode,
 		   tree *rhs1, tree *rhs2)
 {
   tree_code code;
   gimple *g = get_gimple_for_ssa_name (t);
   if (g && is_gimple_assign (g))
     {
-      *up = TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (g)));
+      int up = TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (g)));
       code = gimple_assign_rhs_code (g);
-      *rcode = get_rtx_code (code, *up);
+      *rcode = get_rtx_code (code, up);
       *rhs1 = gimple_assign_rhs1 (g);
       *rhs2 = gimple_assign_rhs2 (g);
     }
   else
     {
       /* If g is not a comparison operator create a compare to zero.  */
-      *up = 1;
       *rcode = NE;
       *rhs1 = t;
       *rhs2 = build_zero_cst (TREE_TYPE (t));
@@ -167,10 +166,9 @@ expand_ccmp_next (tree op, tree_code code, rtx prev,
 		  rtx_insn **prep_seq, rtx_insn **gen_seq)
 {
   rtx_code rcode;
-  int unsignedp;
   tree rhs1, rhs2;
 
-  get_compare_parts(op, &unsignedp, &rcode, &rhs1, &rhs2);
+  get_compare_parts (op, &rcode, &rhs1, &rhs2);
   return targetm.gen_ccmp_next (prep_seq, gen_seq, prev, rcode,
 				rhs1, rhs2, get_rtx_code (code, 0));
 }
@@ -204,7 +202,6 @@ expand_ccmp_expr_1 (gimple *g, rtx_insn **prep_seq, rtx_insn **gen_seq)
     {
       if (ccmp_tree_comparison_p (op1, bb))
 	{
-	  int unsignedp0, unsignedp1;
 	  rtx_code rcode0, rcode1;
 	  tree logical_op0_rhs1, logical_op0_rhs2;
 	  tree logical_op1_rhs1, logical_op1_rhs2;
@@ -214,10 +211,10 @@ expand_ccmp_expr_1 (gimple *g, rtx_insn **prep_seq, rtx_insn **gen_seq)
 	  unsigned cost1 = MAX_COST;
 	  unsigned cost2 = MAX_COST;
 
-	  get_compare_parts (op0, &unsignedp0, &rcode0,
+	  get_compare_parts (op0, &rcode0,
 			     &logical_op0_rhs1, &logical_op0_rhs2);
 
-	  get_compare_parts (op1, &unsignedp1, &rcode1,
+	  get_compare_parts (op1, &rcode1,
 			     &logical_op1_rhs1, &logical_op1_rhs2);
 
 	  rtx_insn *prep_seq_1, *gen_seq_1;
