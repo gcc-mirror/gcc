@@ -1,3 +1,244 @@
+2025-04-30  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/120042
+	* tree-vectorizer.h: Include dominance.h.
+
+2025-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* prime-paths.cc (limit_checked_add): Remove redundant trailing
+	';'.
+	(enters_through_p): Likewise.
+
+2025-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-format-sarif.cc
+	(sarif_serialization_format_json::write_to_file): New.
+	(sarif_builder::m_formatted): Replace field with...
+	(sarif_builder::m_serialization_format): ...this.
+	(sarif_builder::sarif_builder): Update for field change.
+	(sarif_builder::flush_to_file): Call m_serialization_format's
+	write_to_file vfunc.
+	(sarif_output_format::sarif_output_format): Replace param
+	"formatted" with "serialization_format".
+	(sarif_stream_output_format::sarif_output_format): Likewise.
+	(sarif_file_output_format::sarif_file_output_format): Likewise.
+	(diagnostic_output_format_init_sarif_stderr): Make a
+	sarif_serialization_format_json and pass it to
+	diagnostic_output_format_init_sarif.
+	(diagnostic_output_format_open_sarif_file): Split out into...
+	(diagnostic_output_file::try_to_open): ...this, adding
+	"serialization_kind" param.
+	(diagnostic_output_format_init_sarif_file): Update for new param
+	to diagnostic_output_format_open_sarif_file.  Make a
+	sarif_serialization_format_json and pass it to
+	diagnostic_output_format_init_sarif.
+	(diagnostic_output_format_init_sarif_stream): Make a
+	sarif_serialization_format_json and pass it to
+	diagnostic_output_format_init_sarif.
+	(make_sarif_sink): Replace param "formatted" with "serialization".
+	(selftest::test_make_location_object): Update for changes to
+	sarif_builder ctor.
+	* diagnostic-format-sarif.h (enum class sarif_serialization): New.
+	(diagnostic_output_format_open_sarif_file): Add param
+	"serialization_kind".
+	(class sarif_serialization_format): New.
+	(class sarif_serialization_format_json): New.
+	(make_sarif_sink): Replace param "formatted" with
+	"serialization_format".
+	* diagnostic-output-file.h (diagnostic_output_file::try_to_open):
+	New decl.
+	* diagnostic.h (enum diagnostics_output_format): Tweak comments.
+	* doc/invoke.texi (-fdiagnostics-add-output): Add "serialization"
+	param to sarif scheme.
+	* libgdiagnostics.cc (sarif_sink::sarif_sink): Update for change
+	to make_sarif_sink.
+	* opts-diagnostic.cc (sarif_scheme_handler::make_sink): Add
+	"serialization" param and pass it on to make_sarif_sink.
+
+2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119960
+	* tree-vect-slp.cc (vect_schedule_slp_node): Sanity
+	check dominance check on operand defs.
+
+2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119960
+	* tree-vect-slp.cc (vect_slp_can_convert_to_external):
+	Handle cases where defs from multiple BBs are ordered
+	by their dominance relation.
+
+2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (get_later_stmt): Robustify against
+	stmts in different BBs, assert when they are unordered.
+
+2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119960
+	* tree-vect-slp.cc (vect_slp_can_convert_to_external):
+	Handle cases where defs from multiple BBs are ordered
+	by their dominance relation.
+
+2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/120006
+	* tree-ssa-structalias.cc (find_func_clobbers): Handle
+	strdup, strndup, realloc, index, strchr, strrchr, memchr,
+	strstr, strpbrk builtins like find_func_aliases does.
+
+2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120003
+	* tree-ssa-threadbackward.cc (back_threader::find_paths_to_names):
+	Allow block re-use but do not enlarge the path beyond such a
+	re-use.
+
+2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (xload_<mode>_libgcc): Clobber R21, Z.
+
+2025-04-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/119832
+	* config/riscv/riscv.cc (riscv_dynamic_frm_mode_p): New.
+	(riscv_mode_confluence): New.
+	(TARGET_MODE_CONFLUENCE): Define to riscv_mode_confluence.
+
+2025-04-30  Jerry Zhang Jian  <jerry.zhangjian@sifive.com>
+
+	* common/config/riscv/riscv-common.cc: Add Zve32x depends on Zicsr
+
+2025-04-30  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64.cc (aarch64_emit_sve_pred_move):
+	Fold LD1/ST1 with ptrue to LDR/STR for 128-bit VLS.
+
+2025-04-30  yulong  <shiyulong@iscas.ac.cn>
+
+	* config/riscv/constraints.md (Ou01): New constraint.
+	(Ou02): Ditto.
+	* config/riscv/generic-vector-ooo.md (vec_sf_vcp): New reservation.
+	* config/riscv/genrvv-type-indexer.cc (main): New type.
+	* config/riscv/riscv-c.cc (riscv_pragma_intrinsic): Add xsfvcp strings.
+	* config/riscv/riscv-vector-builtins-shapes.cc (struct sf_vcix_se_def):
+	New function.
+	(struct sf_vcix_def): Ditto.
+	(SHAPE): Ditto.
+	* config/riscv/riscv-vector-builtins-shapes.h: Ditto.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_X2_U_OPS): New type.
+	(DEF_RVV_X2_WU_OPS): Ditto.
+	(vuint8mf8_t): Ditto.
+	(vuint8mf4_t): Ditto.
+	(vuint8mf2_t): Ditto.
+	(vuint8m1_t): Ditto.
+	(vuint8m2_t): Ditto.
+	(vuint8m4_t): Ditto.
+	(vuint16mf4_t): Ditto.
+	(vuint16mf2_t): Ditto.
+	(vuint16m1_t): Ditto.
+	(vuint16m2_t): Ditto.
+	(vuint16m4_t): Ditto.
+	(vuint32mf2_t): Ditto.
+	(vuint32m1_t): Ditto.
+	(vuint32m2_t): Ditto.
+	(vuint32m4_t): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_X2_U_OPS): New builtins
+	def.
+	(DEF_RVV_X2_WU_OPS): Ditto.
+	(rvv_arg_type_info::get_scalar_float_type): Ditto.
+	(function_instance::modifies_global_state_p): Ditto.
+	* config/riscv/riscv-vector-builtins.def (v_x): New base type.
+	(i): Ditto.
+	(v_i): Ditto.
+	(xv): Ditto.
+	(iv): Ditto.
+	(fv): Ditto.
+	(vvv): Ditto.
+	(xvv): Ditto.
+	(ivv): Ditto.
+	(fvv): Ditto.
+	(vvw): Ditto.
+	(xvw): Ditto.
+	(ivw): Ditto.
+	(fvw): Ditto.
+	(v_vv): Ditto.
+	(v_xv): Ditto.
+	(v_iv): Ditto.
+	(v_fv): Ditto.
+	(v_vvv): Ditto.
+	(v_xvv): Ditto.
+	(v_ivv): Ditto.
+	(v_fvv): Ditto.
+	(v_vvw): Ditto.
+	(v_xvw): Ditto.
+	(v_ivw): Ditto.
+	(v_fvw): Ditto.
+	(x2_vector): Ditto.
+	(scalar_float): Ditto.
+	* config/riscv/riscv-vector-builtins.h (enum required_ext): New extension.
+	(required_ext_to_isa_name): Ditto.
+	(required_extensions_specified): Ditto.
+	(struct rvv_arg_type_info): Ditto.
+	(struct function_group_info): Ditto.
+	* config/riscv/riscv.md: New attr.
+	* config/riscv/sifive-vector-builtins-bases.cc (class sf_vc): New function.
+	(BASE): New base_name.
+	* config/riscv/sifive-vector-builtins-bases.h: New function_base.
+	* config/riscv/sifive-vector-builtins-functions.def
+	(REQUIRED_EXTENSIONS): New intrinsics def.
+	(sf_vc): Ditto.
+	* config/riscv/sifive-vector.md (@sf_vc_x_se<mode>): New RTL mode.
+	(@sf_vc_v_x_se<mode>): Ditto.
+	(@sf_vc_v_x<mode>): Ditto.
+	(@sf_vc_i_se<mode>): Ditto.
+	(@sf_vc_v_i_se<mode>): Ditto.
+	(@sf_vc_v_i<mode>): Ditto.
+	(@sf_vc_vv_se<mode>): Ditto.
+	(@sf_vc_v_vv_se<mode>): Ditto.
+	(@sf_vc_v_vv<mode>): Ditto.
+	(@sf_vc_xv_se<mode>): Ditto.
+	(@sf_vc_v_xv_se<mode>): Ditto.
+	(@sf_vc_v_xv<mode>): Ditto.
+	(@sf_vc_iv_se<mode>): Ditto.
+	(@sf_vc_v_iv_se<mode>): Ditto.
+	(@sf_vc_v_iv<mode>): Ditto.
+	(@sf_vc_fv_se<mode>): Ditto.
+	(@sf_vc_v_fv_se<mode>): Ditto.
+	(@sf_vc_v_fv<mode>): Ditto.
+	(@sf_vc_vvv_se<mode>): Ditto.
+	(@sf_vc_v_vvv_se<mode>): Ditto.
+	(@sf_vc_v_vvv<mode>): Ditto.
+	(@sf_vc_xvv_se<mode>): Ditto.
+	(@sf_vc_v_xvv_se<mode>): Ditto.
+	(@sf_vc_v_xvv<mode>): Ditto.
+	(@sf_vc_ivv_se<mode>): Ditto.
+	(@sf_vc_v_ivv_se<mode>): Ditto.
+	(@sf_vc_v_ivv<mode>): Ditto.
+	(@sf_vc_fvv_se<mode>): Ditto.
+	(@sf_vc_v_fvv_se<mode>): Ditto.
+	(@sf_vc_v_fvv<mode>): Ditto.
+	(@sf_vc_vvw_se<mode>): Ditto.
+	(@sf_vc_v_vvw_se<mode>): Ditto.
+	(@sf_vc_v_vvw<mode>): Ditto.
+	(@sf_vc_xvw_se<mode>): Ditto.
+	(@sf_vc_v_xvw_se<mode>): Ditto.
+	(@sf_vc_v_xvw<mode>): Ditto.
+	(@sf_vc_ivw_se<mode>): Ditto.
+	(@sf_vc_v_ivw_se<mode>): Ditto.
+	(@sf_vc_v_ivw<mode>): Ditto.
+	(@sf_vc_fvw_se<mode>): Ditto.
+	(@sf_vc_v_fvw_se<mode>): Ditto.
+	(@sf_vc_v_fvw<mode>): Ditto.
+	* config/riscv/vector-iterators.md: New iterator.
+	* config/riscv/vector.md: New vtype.
+
 2025-04-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-cp.cc (cs_interesting_for_ipcp_p): Fix handling of uninitialized

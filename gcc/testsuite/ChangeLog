@@ -1,3 +1,117 @@
+2025-04-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120023
+	* g++.dg/modules/dguide-7_a.C: New test.
+	* g++.dg/modules/dguide-7_b.C: New test.
+	* g++.dg/modules/dguide-7_c.C: New test.
+
+2025-04-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119938
+	* g++.dg/modules/tpl-nttp-2_a.H: New test.
+	* g++.dg/modules/tpl-nttp-2_b.C: New test.
+
+2025-04-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119551
+	PR c++/119996
+	* g++.dg/modules/internal-13.C: New test.
+
+2025-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107017
+	* c-c++-common/analyzer/sprintf-3.c: New test, covering use of
+	sprintf with specific format strings.  Doesn't yet find problems
+	as the analyzer doesn't yet understand the format strings.
+
+2025-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/analyzer/data-model-path-1.c: Check for
+	"using NULL here" message.
+	* c-c++-common/analyzer/null-deref-pr108251-smp_fetch_ssl_fc_has_early.c:
+	Likewise.  Check for "return of NULL" message.
+	* c-c++-common/analyzer/null-deref-pr108400-SoftEtherVPN-WebUi.c:
+	Likewise.
+	* gcc.dg/analyzer/data-model-5.c: Likewise.
+	* gcc.dg/analyzer/data-model-5b.c: Likewise.
+	* gcc.dg/analyzer/data-model-5c.c: Likewise.
+	* gcc.dg/analyzer/torture/pr93647.c: Likewise.
+
+2025-04-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/pr115258.c: Add -mcmodel=small.
+
+2025-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119981
+	PR c++/119378
+	* g++.dg/cpp2a/lambda-targ15.C: New test.
+
+2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119960
+	* gcc.dg/vect/bb-slp-pr119960-1.c: New testcase.
+
+2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/119960
+	* gcc.dg/vect/bb-slp-pr119960-1.c: New testcase.
+
+2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/120006
+	* gcc.dg/torture/pr120006.c: New testcase.
+
+2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120003
+	* gcc.dg/tree-ssa/ssa-thread-23.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Adjust.
+
+2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/pr119989.h: New file.
+	* gcc.target/avr/torture/pr119989-memx-1.c: New test.
+	* gcc.target/avr/torture/pr119989-memx-2.c: New test.
+	* gcc.target/avr/torture/pr119989-memx-3.c: New test.
+	* gcc.target/avr/torture/pr119989-memx-4.c: New test.
+	* gcc.target/avr/torture/pr119989-flashx-1.c: New test.
+	* gcc.target/avr/torture/pr119989-flashx-2.c: New test.
+	* gcc.target/avr/torture/pr119989-flashx-3.c: New test.
+	* gcc.target/avr/torture/pr119989-flashx-4.c: New test.
+
+2025-04-30  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/119832
+	* g++.target/riscv/pr119832.C: New test.
+
+2025-04-30  Jerry Zhang Jian  <jerry.zhangjian@sifive.com>
+
+	* gcc.target/riscv/predef-19.c: set the march to rv64im_zve32x
+	instead of rv64gc_zve32x to avoid Zicsr implied by g. Extra m is
+	added to avoid current 'V' extension requires 'M' extension
+
+2025-04-30  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sve/ldst_ptrue_128_to_neon.c: New test.
+	* gcc.target/aarch64/sve/cond_arith_6.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/pcs/return_4_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/return_5_128.c: Likewise.
+	* gcc.target/aarch64/sve/pcs/struct_3_128.c: Likewise.
+
+2025-04-30  yulong  <shiyulong@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/xsfvector/sf_vc_f.c: New test.
+	* gcc.target/riscv/rvv/xsfvector/sf_vc_i.c: New test.
+	* gcc.target/riscv/rvv/xsfvector/sf_vc_v.c: New test.
+	* gcc.target/riscv/rvv/xsfvector/sf_vc_x.c: New test.
+
 2025-04-29  Pengfei Li  <Pengfei.Li2@arm.com>
 
 	* gcc.target/aarch64/simd/bic_orn_1.c: New file.

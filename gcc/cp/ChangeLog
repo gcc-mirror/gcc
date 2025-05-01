@@ -1,3 +1,33 @@
+2025-04-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120023
+	* module.cc (depset::hash::find_dependencies): Also call
+	add_deduction_guides when walking one.
+
+2025-04-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119938
+	* pt.cc (get_template_parm_object): When !check_init, add assert
+	that expr really is constant and mark decl as such.
+
+2025-04-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119551
+	PR c++/119996
+	* module.cc (depset::hash::make_dependency): Also mark inline
+	variables referencing TU-local values as exposures here.
+	(depset::hash::finalize_dependencies): Add error message for
+	inline variables.
+
+2025-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119981
+	PR c++/119378
+	* pt.cc (tsubst) <case UNBOUND_CLASS_TEMPLATE>: Substitute
+	into template parameter list first.  When substituting the
+	context, only set processing_template_decl if there's more
+	than one level of introduced template parameters.
+
 2025-04-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* parser.cc: Include "analyzer/analyzer-language.h".

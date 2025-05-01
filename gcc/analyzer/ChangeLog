@@ -1,3 +1,9 @@
+2025-04-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-malloc.cc (malloc_diagnostic::describe_state_change): Tweak
+	the "EXPR is NULL" message for the case where EXPR is a null
+	pointer.
+
 2025-04-29  Marc Poulhiès  <dkm@kataplop.net>
 
 	* exploded-graph.h (set_status): Rename parameter.

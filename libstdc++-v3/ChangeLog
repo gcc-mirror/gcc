@@ -1,3 +1,24 @@
+2025-04-30  François Dumont  <frs.dumont@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (v3_target_compile): Strip version namespace
+	from compiler output.
+	* testsuite/20_util/aligned_storage/value.cc [_GLIBCXX_INLINE_VERSION]:
+	Avoid align_msa check.
+	* testsuite/20_util/function/cons/70692.cc: Remove now useless __8 namespace
+	pattern.
+	* testsuite/23_containers/map/48101_neg.cc: Likewise.
+	* testsuite/23_containers/multimap/48101_neg.cc: Likewise.
+
+2025-04-30  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/109162
+	* include/std/format (_Padding_sink::_M_update): Fixed condition for
+	calling _M_force_update.
+	* testsuite/std/format/debug.cc: Add test that reproduces this issue
+	on 64bit architecture.
+	* testsuite/std/format/ranges/sequence.cc: Another edge value test.
+
 2025-04-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/version.def (make_obj_using_allocator): Use
