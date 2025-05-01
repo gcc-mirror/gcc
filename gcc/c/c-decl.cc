@@ -13861,7 +13861,8 @@ c_get_loop_names (tree before_labels, bool switch_p, tree *last_p)
 	      ++ret;
 	    }
 	}
-      else if (TREE_CODE (stmt) != CASE_LABEL_EXPR)
+      else if (TREE_CODE (stmt) != CASE_LABEL_EXPR
+	       && TREE_CODE (stmt) != DEBUG_BEGIN_STMT)
 	break;
     }
   if (last)
