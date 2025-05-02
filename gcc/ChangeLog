@@ -1,3 +1,48 @@
+2025-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-07-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/115434
+	PR c++/110871
+	PR c++/110872
+	* gimplify.cc (struct gimplify_ctx): Add a flag to show we are
+	expending a handler.
+	(gimplify_expr): When we are expanding a handler, and the body
+	transforms might have re-written DECL_RESULT into a gimple var,
+	ensure that hander references to DECL_RESULT are also re-written
+	to refer to the gimple var.  When we are processing an EH_ELSE
+	expression, then add it if either of the cleanup slots is in
+	use.
+
+2025-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2025-04-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Recognise PROJECT:ld-mmmm.nn.aa as an identifier
+	for Darwin's static linker.
+
+2025-05-01  Iain Sandoe  <iainsandoe@mini-05-seq.local>
+
+	Backported from master:
+	2025-04-15  Iain Sandoe  <iainsandoe@mini-05-seq.local>
+
+	PR target/116827
+	* ginclude/stddef.h: Undefine __PTRDIFF_T and __SIZE_T for module-
+	enabled c++ on Darwin/macOS platforms.
+
+2025-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+	    Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR target/119172
+	* config.in: Regenerate.
+	* config/darwin.h (DARWIN_PLATFORM_ID): Add the option to
+	use -macos_version_min where available.
+	* configure: Regenerate.
+	* configure.ac: Check for ld64 support of -macos_version_min.
+
 2025-04-30  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md (xload_<mode>_libgcc): Clobber R21, Z.

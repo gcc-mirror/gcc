@@ -1,3 +1,14 @@
+2025-05-01  Mark Mentovai  <mark@mentovai.com>
+
+	Backported from master:
+	2024-09-24  Mark Mentovai  <mark@mentovai.com>
+
+	PR target/116809
+	* config.host: Build legacy libgcc_s.1 on hosts before macOS 10.12.
+	* config/i386/t-darwin: Remove reference to legacy libgcc_s.1
+	* config/rs6000/t-darwin: Likewise.
+	* config/t-darwin-libgccs1: New file.
+
 2025-03-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

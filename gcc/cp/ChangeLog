@@ -1,3 +1,123 @@
+2025-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-08-02  Iain Sandoe  <iain@sandoe.co.uk>
+		    Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/105475
+	* coroutines.cc (struct coroutine_info): Add from_address.
+	Carries the from_address member we looked up earlier.
+	(coro_resume_identifier): Remove.  Unused.
+	(coro_init_identifiers): Do not initialize the above.
+	(struct susp_frame_data): Remove unused members, provide a CTOR.
+	(void_coro_handle_address): New variable.  Contains the baselink
+	for the std::coroutine_handle<void>::address() instance method.
+	(get_handle_type_address): New function.  Looks up and validates
+	handle_type::address in a given handle_type.
+	(get_handle_type_from_address): New function.  Looks up and
+	validates handle_type::from_address in a given handle_type.
+	(coro_promise_type_found_p): Remove reliance on
+	coroutine_handle<> defaulting the promise type to void.  Store
+	get_handle_type_* results where appropriate.
+	(struct local_vars_frame_data): Add a CTOR.
+	(replace_continue): Look up expression type.
+	(get_coroutine_from_address): New helper.  Gets the
+	handle_type::from_address BASELINK from a coroutine_info.
+	(morph_fn_to_coro): Use susp_frame_data CTOR, and make the suspend
+	state hash map local to the morph function. Use CTOR for
+	local_vars_frame_data instead of brace init.
+	(build_actor_fn): Use the get_coroutine_from_address helper and
+	void_coro_handle_address.
+
+2025-05-01  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-08-01  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/112341
+	* coroutines.cc (struct coroutine_info): Also cache the
+	traits type.
+	(ensure_coro_initialized): New function.  Makes sure we have
+	initialized the coroutine state successfully, or informs the
+	caller should it fail to do so.  Extracted from
+	coro_promise_type_found_p.
+	(coro_get_traits_class): New function.  Gets the (cached)
+	coroutine traits type for a given coroutine.  Extracted from
+	coro_promise_type_found_p and refactored to cache the result.
+	(coro_promise_type_found_p): Use the two functions above.
+	(build_template_co_await_expr): New function.  Builds a
+	CO_AWAIT_EXPR representing a CO_AWAIT_EXPR in a template
+	declaration.
+	(build_co_await): Use the above if processing_template_decl, and
+	give it a proper type.
+	(coro_dependent_p): New function.  Returns true iff its
+	argument is a type-dependent expression OR the current functions
+	traits class is type dependent.
+	(finish_co_await_expr): Defer expansion only in the case
+	coro_dependent_p returns true.
+	(finish_co_yield_expr): Ditto.
+	(finish_co_return_stmt): Ditto.
+	* pt.cc (type_dependent_expression_p): Do not treat
+	CO_AWAIT/CO_YIELD specially.
+
+2025-05-01  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-07-30  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/115906
+	* parser.cc (cp_parser_unary_expression): Reject await
+	expressions if use of local variables is currently forbidden.
+	(cp_parser_yield_expression): Reject yield expressions if use of
+	local variables is currently forbidden.
+
+2025-05-01  Arsen Arsenovic  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-07-30  Arsen Arsenovic  <arsen@aarsen.me>
+
+	PR c++/115906
+	* coroutines.cc (register_local_var_uses): Only process
+	PARM_DECL and VAR_DECLs.
+
+2025-05-01  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-07-25  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/111728
+	* coroutines.cc (rewrite_param_uses): Skip unevaluated
+	subexpressions.
+
+2025-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-07-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/115434
+	PR c++/110871
+	PR c++/110872
+	* constexpr.cc (cxx_eval_constant_expression): Handle EH_ELSE_EXPR.
+	* contracts.cc (finish_contract_attribute): Remove excess line.
+	(build_contract_condition_function): Post condition handlers are
+	void now.
+	(emit_postconditions_cleanup): Remove.
+	(emit_postconditions): New.
+	(add_pre_condition_fn_call): New.
+	(add_post_condition_fn_call): New.
+	(apply_preconditions): New.
+	(apply_postconditions): New.
+	(maybe_apply_function_contracts): New.
+	(apply_postcondition_to_return): Remove.
+	* contracts.h (apply_postcondition_to_return): Remove.
+	(maybe_apply_function_contracts): Add.
+	* coroutines.cc (coro_build_actor_or_destroy_function): Do not
+	copy contracts to coroutine helpers.
+	* decl.cc (finish_function): Handle wrapping a possibly
+	transformed function body in contract checks.
+	* typeck.cc (check_return_expr): Remove handling of post
+	conditions on return expressions.
+
 2025-04-30  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

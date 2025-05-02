@@ -1,3 +1,88 @@
+2025-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-08-02  Iain Sandoe  <iain@sandoe.co.uk>
+		    Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/105475
+	* g++.dg/coroutines/pr103868.C: Add std::coroutine_handle
+	members we check for now.
+	* g++.dg/coroutines/pr105287.C: Ditto.
+	* g++.dg/coroutines/pr105301.C: Ditto.
+	* g++.dg/coroutines/pr94528.C: Ditto.
+	* g++.dg/coroutines/pr94879-folly-1.C: Ditto.
+	* g++.dg/coroutines/pr94883-folly-2.C: Ditto.
+	* g++.dg/coroutines/pr98118.C: Ditto.
+	* g++.dg/coroutines/pr105475.C: New test.
+	* g++.dg/coroutines/pr105475-1.C: New test.
+	* g++.dg/coroutines/pr105475-2.C: New test.
+	* g++.dg/coroutines/pr105475-3.C: New test.
+	* g++.dg/coroutines/pr105475-4.C: New test.
+	* g++.dg/coroutines/pr105475-5.C: New test.
+	* g++.dg/coroutines/pr105475-6.C: New test.
+	* g++.dg/coroutines/pr105475-broken-spec.C: New test.
+	* g++.dg/coroutines/pr105475-broken-spec-2.C: New test.
+
+2025-05-01  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-08-01  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/112341
+	* g++.dg/coroutines/pr112341-2.C: New test.
+	* g++.dg/coroutines/pr112341-3.C: New test.
+	* g++.dg/coroutines/torture/co-yield-03-tmpl-nondependent.C: New
+	test.
+	* g++.dg/coroutines/pr112341.C: New test.
+
+2025-05-01  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-07-30  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/115906
+	* g++.dg/coroutines/pr115906-yield.C: New test.
+	* g++.dg/coroutines/pr115906.C: New test.
+	* g++.dg/coroutines/co-await-syntax-02-outside-fn.C: Don't rely
+	on default arguments.
+	* g++.dg/coroutines/co-yield-syntax-01-outside-fn.C: Ditto.
+
+2025-05-01  Arsen Arsenovic  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-07-30  Arsen Arsenovic  <arsen@aarsen.me>
+
+	PR c++/115906
+	* g++.dg/coroutines/coro-function-decl.C: New test.
+
+2025-05-01  Arsen Arsenović  <arsen@aarsen.me>
+
+	Backported from master:
+	2024-07-25  Arsen Arsenović  <arsen@aarsen.me>
+
+	PR c++/111728
+	* g++.dg/coroutines/pr111728.C: New test.
+
+2025-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2024-07-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/115434
+	PR c++/110871
+	PR c++/110872
+	* g++.dg/contracts/pr115434.C: New test.
+	* g++.dg/coroutines/pr110871.C: New test.
+	* g++.dg/coroutines/pr110872.C: New test.
+
+2025-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2025-03-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/gm2.exp: Arrange for a '-B' option to be added for the
+	libstdc++ paths on targets that need it.
+
 2025-04-30  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
