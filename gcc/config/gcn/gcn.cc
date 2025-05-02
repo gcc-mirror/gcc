@@ -7908,8 +7908,6 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_LEGITIMATE_CONSTANT_P gcn_legitimate_constant_p
 #undef  TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION gcn_libc_has_function
-#undef  TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_true
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG gcn_md_reorg
 #undef  TARGET_MEMORY_MOVE_COST

@@ -720,8 +720,6 @@ static rtx arc_legitimize_address_0 (rtx, rtx, machine_mode mode);
 #define TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P	\
   arc_no_speculation_in_delay_slots_p
 
-#undef TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_true
 #define TARGET_REGISTER_PRIORITY arc_register_priority
 /* Stores with scaled offsets have different displacement ranges.  */
 #define TARGET_DIFFERENT_ADDR_DISPLACEMENT_P hook_bool_void_true
