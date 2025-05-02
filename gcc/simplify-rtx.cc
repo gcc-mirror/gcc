@@ -3063,6 +3063,10 @@ simplify_with_subreg_not (rtx_code binop, machine_mode mode, rtx op0, rtx op1)
 					XEXP (SUBREG_REG (opn), 0),
 					GET_MODE (SUBREG_REG (opn)),
 					SUBREG_BYTE (opn));
+
+  if (!new_subreg)
+    return NULL_RTX;
+
   rtx new_not = simplify_gen_unary (NOT, mode, new_subreg, mode);
   if (opn == op0)
     return simplify_gen_binary (binop, mode, new_not, op1);
