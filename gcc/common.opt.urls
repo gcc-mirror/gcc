@@ -502,6 +502,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-fcse-follow-jumps)
 fcse-skip-blocks
 UrlSuffix(gcc/Optimize-Options.html#index-fcse-skip-blocks)
 
+fcx-method=
+UrlSuffix(gcc/Optimize-Options.html#index-fcx-method)
+
 fcx-limited-range
 UrlSuffix(gcc/Optimize-Options.html#index-fcx-limited-range)
 
