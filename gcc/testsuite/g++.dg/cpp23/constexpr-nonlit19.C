@@ -1,6 +1,6 @@
 // { dg-do compile { target c++23 } }
 
-struct A { ~A() { } };
+struct A { ~A(); };
 
 struct B {
   constexpr B() {
