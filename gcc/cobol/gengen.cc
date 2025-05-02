@@ -393,13 +393,13 @@ show_type(tree type)
 
     case REAL_TYPE:
       sprintf(ach,
-              "%3ld-bit REAL",
+              "%3" PRId64 "-bit REAL",
               TREE_INT_CST_LOW(TYPE_SIZE(type)));
       break;
 
     case INTEGER_TYPE:
       sprintf(ach,
-              "%3ld-bit %s INT",
+              "%3" PRId64 "-bit %s INT",
               TREE_INT_CST_LOW(TYPE_SIZE(type)),
               (TYPE_UNSIGNED(type) ? "unsigned" : "  signed"));
       break;
@@ -892,7 +892,8 @@ gg_unique_in_function(const char *var_name, gg_variable_scope_t vs_scope)
   char *retval = (char *)xmalloc(strlen(var_name)+32);
   if( (vs_scope == vs_stack || vs_scope == vs_static) )
     {
-    sprintf(retval, "%s.%ld", var_name, current_function->program_id_number);
+    sprintf(retval, "%s." HOST_SIZE_T_PRINT_DEC, var_name,
+            (fmt_size_t)current_function->program_id_number);
     }
   else
     {

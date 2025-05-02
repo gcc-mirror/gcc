@@ -97,7 +97,7 @@ void cbl_unimplemented_at( const  YYLTYPE& loc, const char *gmsgid, ... );
  * be localized and fwrite directly to standard out.  dbgmsg is activated by
  * -fflex-debug or -fyacc-debug.  
  */
-void dbgmsg( const char fmt[], ... );
+void dbgmsg( const char fmt[], ... ) ATTRIBUTE_PRINTF_1;
 
 void gcc_location_set( const YYLTYPE& loc );
 

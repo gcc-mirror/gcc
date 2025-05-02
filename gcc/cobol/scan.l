@@ -27,6 +27,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+%top{
+#include "config.h"
+}
 %{
 #include <fstream>  // Before cobol-system because it uses poisoned functions
 #include "cobol-system.h"

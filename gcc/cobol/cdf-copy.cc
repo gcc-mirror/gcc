@@ -34,6 +34,7 @@
 //
 // We regret any confusion engendered.
 
+#include "config.h"
 #include <glob.h>
 
 #include "cobol-system.h"

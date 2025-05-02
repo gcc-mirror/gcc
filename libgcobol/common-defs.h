@@ -147,7 +147,7 @@ enum cbl_field_type_t {
  * A field is padded (in the unjustified direction) either with 0 or SPC.
  *   (But maybe the fill character should just be an explicit character.)
  */
-enum cbl_field_attr_t : size_t {
+enum cbl_field_attr_t : uint64_t {
   none_e            = 0x0000000000,
   figconst_1_e      = 0x0000000001, // This needs to be 1 - don't change the position
   figconst_2_e      = 0x0000000002, // This needs to be 2

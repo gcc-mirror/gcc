@@ -427,7 +427,8 @@ level_88_helper(size_t parent_capacity,
         nbuild += first_name_length;
         }
       }
-    returned_size = sprintf(retval, "%zdA", nbuild);
+    returned_size = sprintf(retval, HOST_SIZE_T_PRINT_DEC "A",
+                            (fmt_size_t)nbuild);
     memcpy(retval + returned_size, builder, nbuild);
     returned_size += nbuild;
     free(first_name);
@@ -735,12 +736,14 @@ parser_call_target_convention( tree func )
 void
 parser_call_targets_dump()
   {
-    dbgmsg( "call targets for #%zu", current_program_index() );
+    dbgmsg( "call targets for #" HOST_SIZE_T_PRINT_UNSIGNED,
+            (fmt_size_t)current_program_index() );
     for( const auto& elem : call_targets ) {
       const auto& k = elem.first;
       const auto& v = elem.second;
-      fprintf(stderr, "\t#%-3zu %s calls %s ",
-              k.caller, cbl_label_of(symbol_at(k.caller))->name, k.called);
+      fprintf(stderr, "\t#%-3" GCC_PRISZ "u %s calls %s ",
+              (fmt_size_t)k.caller, cbl_label_of(symbol_at(k.caller))->name,
+              k.called);
       char ch = '[';
       for( auto func : v ) {
         fprintf( stderr, "%c %s", ch, IDENTIFIER_POINTER(DECL_NAME(func.node)) );
@@ -2343,9 +2346,11 @@ combined_name(cbl_label_t *label)
     {
     strcat(retval, mangled_program_name);
     }
-  sprintf(ach, ".%ld", current_function->program_id_number);
+  sprintf(ach, "." HOST_SIZE_T_PRINT_DEC,
+          (fmt_size_t)current_function->program_id_number);
   strcat(retval, ach);
-  sprintf(ach, ".%ld", symbol_label_id(label));
+  sprintf(ach, "." HOST_SIZE_T_PRINT_DEC,
+          (fmt_size_t)symbol_label_id(label));
   strcat(retval, ach);
   free(mangled_program_name);
   free(section);
@@ -2391,11 +2396,11 @@ section_label(struct cbl_proc_t *procedure)
 
   cbl_label_t *label = procedure->label;
   // The _initialize_program section isn't relevant.
-  char *psz = xasprintf("%s SECTION %s in %s (%ld)",
+  char *psz = xasprintf("%s SECTION %s in %s (" HOST_SIZE_T_PRINT_DEC ")",
                         ASM_COMMENT_START,
                         label->name,
                         current_function->our_unmangled_name,
-                        deconflictor);
+                        (fmt_size_t)deconflictor);
   gg_insert_into_assembler(psz);
   free(psz);
 
@@ -2443,12 +2448,12 @@ paragraph_label(struct cbl_proc_t *procedure)
   
   char *psz1 = 
   xasprintf(
-          "%s PARAGRAPH %s of %s in %s (%ld)",
+          "%s PARAGRAPH %s of %s in %s (" HOST_SIZE_T_PRINT_DEC ")",
           ASM_COMMENT_START,
           para_name ? para_name: "" ,
           section_name ? section_name: "(null)" ,
           current_function->our_unmangled_name ? current_function->our_unmangled_name: "" ,
-          deconflictor );
+          (fmt_size_t)deconflictor );
   
   gg_insert_into_assembler(psz1);
 
@@ -2560,8 +2565,8 @@ leave_procedure(struct cbl_proc_t *procedure, bool /*section*/)
     gg_append_statement(procedure->exit.label);
 
     char *psz;
-    psz = xasprintf("_procret.%ld:",
-                    symbol_label_id(procedure->label));
+    psz = xasprintf("_procret." HOST_SIZE_T_PRINT_DEC ":",
+                    (fmt_size_t)symbol_label_id(procedure->label));
     gg_insert_into_assembler(psz);
     free(psz);
     pseudo_return_pop(procedure);
@@ -3042,12 +3047,12 @@ parser_perform(cbl_label_t *label, bool suppress_nexting)
     para_name = label->name;
     sect_name = section_label->name;
     sprintf(ach,
-            "%s PERFORM %s of %s of %s (%ld)",
+            "%s PERFORM %s of %s of %s (" HOST_SIZE_T_PRINT_DEC ")",
             ASM_COMMENT_START,
             para_name,
             sect_name,
             program_name,
-            deconflictor);
+            (fmt_size_t)deconflictor);
 
     gg_insert_into_assembler(ach);
     }
@@ -3055,19 +3060,19 @@ parser_perform(cbl_label_t *label, bool suppress_nexting)
     {
     sect_name = label->name;
     sprintf(ach,
-            "%s PERFORM %s of %s (%ld)",
+            "%s PERFORM %s of %s (" HOST_SIZE_T_PRINT_DEC ")",
             ASM_COMMENT_START,
             sect_name,
             program_name,
-            deconflictor);
+            (fmt_size_t)deconflictor);
     gg_insert_into_assembler(ach);
     }
 
   if( !suppress_nexting )
     {
     sprintf(ach,
-            "_proccall.%ld.%d:",
-            symbol_label_id(label),
+            "_proccall." HOST_SIZE_T_PRINT_DEC ".%d:",
+            (fmt_size_t)symbol_label_id(label),
             call_counter++);
     gg_insert_into_assembler( ach );
     }
@@ -3115,8 +3120,8 @@ parser_perform_times( cbl_label_t *proc_1, cbl_refer_t count )
   char ach[256];
   size_t our_pseudo_label = pseudo_label++;
   sprintf(ach,
-          "_proccallb.%ld:",
-          our_pseudo_label);
+          "_proccallb." HOST_SIZE_T_PRINT_DEC ":",
+          (fmt_size_t)our_pseudo_label);
   gg_insert_into_assembler( ach );
 
   tree counter       = gg_define_variable(LONG);
@@ -3137,8 +3142,8 @@ parser_perform_times( cbl_label_t *proc_1, cbl_refer_t count )
     WEND
 
   sprintf(ach,
-          "_procretb.%ld:",
-          our_pseudo_label);
+          "_procretb." HOST_SIZE_T_PRINT_DEC ":",
+          (fmt_size_t)our_pseudo_label);
   gg_insert_into_assembler(ach);
   }
 
@@ -3215,8 +3220,8 @@ internal_perform_through( cbl_label_t *proc_1,
     {
     char ach[256];
     sprintf(ach,
-            "_proccall.%ld.%d:",
-            symbol_label_id(proc_2),
+            "_proccall." HOST_SIZE_T_PRINT_DEC ".%d:",
+            (fmt_size_t)symbol_label_id(proc_2),
             call_counter++);
     gg_insert_into_assembler(ach);
     }
@@ -3265,8 +3270,8 @@ internal_perform_through_times(   cbl_label_t *proc_1,
 
   char ach[256];
   sprintf(ach,
-          "_proccallb.%ld:",
-          our_pseudo_label);
+          "_proccallb." HOST_SIZE_T_PRINT_DEC ":",
+          (fmt_size_t)our_pseudo_label);
   gg_insert_into_assembler( ach );
 
   tree counter       = gg_define_variable(LONG);
@@ -3282,8 +3287,8 @@ internal_perform_through_times(   cbl_label_t *proc_1,
     WEND
 
   sprintf(ach,
-          "_procretb.%ld:",
-          our_pseudo_label);
+          "_procretb." HOST_SIZE_T_PRINT_DEC ":",
+          (fmt_size_t)our_pseudo_label);
   gg_insert_into_assembler( ach );
   }
 
@@ -3594,7 +3599,8 @@ parser_enter_program( const char *funcname_,
   if( parent_index )
     {
     // This is a nested function.  Tack on the parent_index to the end of it.
-    sprintf(funcname, "%s.%ld", mangled_name, parent_index);
+    sprintf(funcname, "%s." HOST_SIZE_T_PRINT_DEC, mangled_name,
+            (fmt_size_t)parent_index);
     }
   else
     {
@@ -3760,8 +3766,8 @@ parser_init_list_size(int count_of_variables)
   vti_list_size = count_of_variables;
   char ach[48];
   sprintf(ach,
-          "..variables_to_init_%ld",
-          current_function->our_symbol_table_index);
+          "..variables_to_init_" HOST_SIZE_T_PRINT_DEC,
+          (fmt_size_t)current_function->our_symbol_table_index);
   tree array_of_variables_type = build_array_type_nelts(VOID_P,
                                                         count_of_variables+1);
   vti_array = gg_define_variable( array_of_variables_type,
@@ -3799,8 +3805,8 @@ parser_init_list()
 
   char ach[48];
   sprintf(ach,
-          "..variables_to_init_%ld",
-          current_function->our_symbol_table_index);
+          "..variables_to_init_" HOST_SIZE_T_PRINT_DEC,
+          (fmt_size_t)current_function->our_symbol_table_index);
   tree array = gg_trans_unit_var_decl(ach);
   gg_call(VOID,
           "__gg__variables_to_init",
@@ -3981,7 +3987,7 @@ psa_FldLiteralN(struct cbl_field_t *field )
 
   static size_t our_index = 0;
 
-  sprintf(id_string, ".%ld", ++our_index);
+  sprintf(id_string, "." HOST_SIZE_T_PRINT_DEC, (fmt_size_t)++our_index);
   strcpy(base_name, field->name);
   strcat(base_name, id_string);
 
@@ -4018,7 +4024,7 @@ psa_FldBlob(struct cbl_field_t *var )
 
   static size_t our_index = 0;
 
-  sprintf(id_string, ".%ld", ++our_index);
+  sprintf(id_string, "." HOST_SIZE_T_PRINT_DEC, (fmt_size_t)++our_index);
   strcpy(base_name, var->name);
   strcat(base_name, id_string);
 
@@ -5089,7 +5095,8 @@ parser_assign( size_t nC, cbl_num_result_t *C,
     {
     TRACE1_HEADER
     char ach[32];
-    sprintf(ach, "%ld target%s", nC, nC==1 ? "" : "s");
+    sprintf(ach, HOST_SIZE_T_PRINT_DEC " target%s",
+            (fmt_size_t)nC, nC==1 ? "" : "s");
     TRACE1_TEXT(ach);
     if( on_error )
       {
@@ -5108,7 +5115,8 @@ parser_assign( size_t nC, cbl_num_result_t *C,
     TRACE1
       {
       char ach[48];
-      sprintf(ach, "Processing target number %ld", i);
+      sprintf(ach, "Processing target number " HOST_SIZE_T_PRINT_DEC,
+              (fmt_size_t)i);
       TRACE1_INDENT
       TRACE1_TEXT(ach);
       }
@@ -6162,7 +6170,8 @@ parser_free( size_t n, cbl_refer_t refers[] )
     gcc_assert( ! p->is_refmod_reference() );
     if( !(p->field->type == FldPointer || p->addr_of || (p->field->attr & based_e)) )
       {
-      dbgmsg("Deallocating %s means it has to be FldPointer or addr_of or based_e");
+      dbgmsg("Deallocating %s means it has to be FldPointer or addr_of or based_e",
+             p->field->name);
       }
     gcc_assert( p->field->type == FldPointer || p->addr_of || (p->field->attr & based_e) );
 
@@ -6436,8 +6445,8 @@ parser_division(cbl_division_t division,
     // We need a pointer to the array of program names
     char ach[2*sizeof(cbl_name_t)];
     sprintf(ach,
-            "..accessible_program_list_%ld",
-            current_function->our_symbol_table_index);
+            "..accessible_program_list_" HOST_SIZE_T_PRINT_DEC,
+            (fmt_size_t)current_function->our_symbol_table_index);
     tree prog_list = gg_define_variable(build_pointer_type(CHAR_P),
                                         ach, vs_file_static);
 
@@ -6449,8 +6458,8 @@ parser_division(cbl_division_t division,
     tree pointer_type = build_pointer_type(function_type);
     tree constructed_array_type = build_array_type_nelts(pointer_type, 1);
     sprintf(ach,
-            "..accessible_program_pointers_%ld",
-            current_function->our_symbol_table_index);
+            "..accessible_program_pointers_" HOST_SIZE_T_PRINT_DEC,
+            (fmt_size_t)current_function->our_symbol_table_index);
     tree prog_pointers = gg_define_variable(
                                     build_pointer_type(constructed_array_type),
                                     ach,
@@ -7753,8 +7762,8 @@ perform_outofline_before_until(struct cbl_perform_tgt_t *tgt,
   char ach[256];
   size_t our_pseudo_label = pseudo_label++;
   sprintf(ach,
-          "_proccallb.%ld:",
-          our_pseudo_label);
+          "_proccallb." HOST_SIZE_T_PRINT_DEC ":",
+          (fmt_size_t)our_pseudo_label);
   gg_insert_into_assembler( ach );
 
   parser_if(varys[0].until);
@@ -7776,8 +7785,8 @@ perform_outofline_before_until(struct cbl_perform_tgt_t *tgt,
   // Label the bottom of the PERFORM
   gg_append_statement(  tgt->addresses.exit.label );
   sprintf(ach,
-          "_procretb.%ld:",
-          our_pseudo_label);
+          "_procretb." HOST_SIZE_T_PRINT_DEC ":",
+          (fmt_size_t)our_pseudo_label);
   gg_insert_into_assembler( ach );
   }
 
@@ -7808,8 +7817,8 @@ perform_outofline_after_until(struct cbl_perform_tgt_t *tgt,
   char ach[256];
   size_t our_pseudo_label = pseudo_label++;
   sprintf(ach,
-          "_proccallb.%ld:",
-          our_pseudo_label);
+          "_proccallb." HOST_SIZE_T_PRINT_DEC ":",
+          (fmt_size_t)our_pseudo_label);
   gg_insert_into_assembler( ach );
 
   create_iline_address_pairs(tgt);
@@ -7839,8 +7848,8 @@ perform_outofline_after_until(struct cbl_perform_tgt_t *tgt,
   // Label the bottom of the PERFORM
   gg_append_statement(  tgt->addresses.exit.label );
   sprintf(ach,
-          "_procretb.%ld:",
-          our_pseudo_label);
+          "_procretb." HOST_SIZE_T_PRINT_DEC ":",
+          (fmt_size_t)our_pseudo_label);
   gg_insert_into_assembler( ach );
   }
 
@@ -7904,8 +7913,8 @@ perform_outofline_testafter_varying(struct cbl_perform_tgt_t *tgt,
   char ach[256];
   size_t our_pseudo_label = pseudo_label++;
   sprintf(ach,
-          "_proccallb.%ld:",
-          our_pseudo_label);
+          "_proccallb." HOST_SIZE_T_PRINT_DEC ":",
+          (fmt_size_t)our_pseudo_label);
   gg_insert_into_assembler( ach );
 
   create_iline_address_pairs(tgt);
@@ -7959,8 +7968,8 @@ perform_outofline_testafter_varying(struct cbl_perform_tgt_t *tgt,
   // Arriving here means that we all of the conditions were
   // true.  So, we're done.
   sprintf(ach,
-          "_procretb.%ld:",
-          our_pseudo_label);
+          "_procretb." HOST_SIZE_T_PRINT_DEC ":",
+          (fmt_size_t)our_pseudo_label);
   gg_insert_into_assembler( ach );
   }
 
@@ -8021,8 +8030,8 @@ perform_outofline_before_varying(   struct cbl_perform_tgt_t *tgt,
   char ach[256];
   size_t our_pseudo_label = pseudo_label++;
   sprintf(ach,
-          "_proccallb.%ld:",
-          our_pseudo_label);
+          "_proccallb." HOST_SIZE_T_PRINT_DEC ":",
+          (fmt_size_t)our_pseudo_label);
   gg_insert_into_assembler( ach );
 
   // Initialize all varying:
@@ -8102,8 +8111,8 @@ perform_outofline_before_varying(   struct cbl_perform_tgt_t *tgt,
   // We have, you see, reached the egress:
   gg_append_statement(  tgt->addresses.exit.label );
   sprintf(ach,
-          "_procretb.%ld:",
-          our_pseudo_label);
+          "_procretb." HOST_SIZE_T_PRINT_DEC ":",
+          (fmt_size_t)our_pseudo_label);
   gg_insert_into_assembler( ach );
   }
 
@@ -8310,7 +8319,7 @@ perform_inline_testbefore_varying(  struct cbl_perform_tgt_t *tgt,
       {
       SHOW_PARSE_INDENT
       char ach[32];
-      sprintf(ach, "LABEL [%ld]:", i);
+      sprintf(ach, "LABEL [" HOST_SIZE_T_PRINT_DEC "]:", (fmt_size_t)i);
       SHOW_PARSE_TEXT(ach)
       SHOW_PARSE_END
       }
@@ -8321,7 +8330,8 @@ perform_inline_testbefore_varying(  struct cbl_perform_tgt_t *tgt,
       {
       SHOW_PARSE_INDENT
       char ach[32];
-      sprintf(ach, "LABEL CONDINTO[%ld]:", i);
+      sprintf(ach, "LABEL CONDINTO[" HOST_SIZE_T_PRINT_DEC "]:",
+              (fmt_size_t)i);
       SHOW_PARSE_TEXT(ach)
       SHOW_PARSE_END
       }
@@ -8332,7 +8342,8 @@ perform_inline_testbefore_varying(  struct cbl_perform_tgt_t *tgt,
       {
       SHOW_PARSE_INDENT
       char ach[32];
-      sprintf(ach, "LABEL CONDBACK[%ld]:", i);
+      sprintf(ach, "LABEL CONDBACK[" HOST_SIZE_T_PRINT_DEC "]:",
+              (fmt_size_t)i);
       SHOW_PARSE_TEXT(ach)
       SHOW_PARSE_END
       }
@@ -8367,7 +8378,8 @@ perform_inline_testbefore_varying(  struct cbl_perform_tgt_t *tgt,
         {
         SHOW_PARSE_INDENT
         char ach[32];
-        sprintf(ach, "GOTO [%ld]:", i-1);
+        sprintf(ach, "GOTO [" HOST_SIZE_T_PRINT_DEC "]:",
+                (fmt_size_t)(i-1));
         SHOW_PARSE_TEXT(ach)
         SHOW_PARSE_END
         }
@@ -8401,7 +8413,8 @@ perform_inline_testbefore_varying(  struct cbl_perform_tgt_t *tgt,
         {
         SHOW_PARSE_INDENT
         char ach[32];
-        sprintf(ach, "GOTO [%ld]:", N-1);
+        sprintf(ach, "GOTO [" HOST_SIZE_T_PRINT_DEC "]:",
+                (fmt_size_t)(N-1));
         SHOW_PARSE_TEXT(ach)
         SHOW_PARSE_END
         }
@@ -8418,7 +8431,8 @@ perform_inline_testbefore_varying(  struct cbl_perform_tgt_t *tgt,
         {
         SHOW_PARSE_INDENT
         char ach[32];
-        sprintf(ach, "GOTO [%ld]:", i-1);
+        sprintf(ach, "GOTO [" HOST_SIZE_T_PRINT_DEC "]:",
+                (fmt_size_t)(i-1));
         SHOW_PARSE_TEXT(ach)
         SHOW_PARSE_END
         }
@@ -9997,7 +10011,7 @@ inspect_replacing(int backward,
 void
 parser_inspect(cbl_refer_t identifier_1,
                bool backward,
-               unsigned long n_operations,
+               size_t n_operations,
                cbx_inspect_t<cbl_refer_t>* operations)
   {
   Analyze();
@@ -10218,7 +10232,8 @@ parser_intrinsic_callv( cbl_field_t *tgt,
     SHOW_PARSE_HEADER
     SHOW_PARSE_TEXT(" of ")
     SHOW_PARSE_TEXT(function_name)
-    fprintf(stderr, " with %zd parameters", nrefs);
+    fprintf(stderr, " with " HOST_SIZE_T_PRINT_DEC " parameters",
+            (fmt_size_t)nrefs);
     SHOW_PARSE_END
     }
 
@@ -12700,7 +12715,7 @@ parser_bitop( struct cbl_field_t *tgt,  // tgt has to be a FldConditional
     {
     SHOW_PARSE_HEADER
     SHOW_PARSE_FIELD( " switch: ", a)
-    fprintf(stderr, " mask: %lx", bitmask);
+    fprintf(stderr, " mask: " HOST_SIZE_T_PRINT_HEX_PURE, (fmt_size_t)bitmask);
     fprintf(stderr, " op: %s", ops[op]);
     SHOW_PARSE_FIELD( " target ", tgt)
     SHOW_PARSE_END
@@ -12784,7 +12799,7 @@ parser_bitwise_op(struct cbl_field_t *tgt,
     {
     SHOW_PARSE_HEADER
     SHOW_PARSE_FIELD( " switch: ", a)
-    fprintf(stderr, " mask: %lx", bitmask);
+    fprintf(stderr, " mask: " HOST_SIZE_T_PRINT_HEX_PURE, (fmt_size_t)bitmask);
     fprintf(stderr, " op: %s", ops[op]);
     SHOW_PARSE_FIELD( " target ", tgt)
     SHOW_PARSE_END
@@ -12988,11 +13003,11 @@ parser_program_hierarchy( const struct cbl_prog_hier_t& hier )
           }
         char ach[128];
         sprintf(ach,
-                "%ld %s%s parent:%ld",
-                hier.labels[i].ordinal,
+                HOST_SIZE_T_PRINT_DEC " %s%s parent:" HOST_SIZE_T_PRINT_DEC,
+                (fmt_size_t)hier.labels[i].ordinal,
                 hier.labels[i].label.name,
                 hier.labels[i].label.common ? " COMMON" : "",
-                hier.labels[i].label.parent);
+                (fmt_size_t)hier.labels[i].label.parent);
         SHOW_PARSE_TEXT(ach);
         }
       }
@@ -13121,12 +13136,14 @@ parser_program_hierarchy( const struct cbl_prog_hier_t& hier )
 
         char ach[2*sizeof(cbl_name_t)];
         tree names_table_type = build_array_type_nelts(CHAR_P, mol->second.size()+1);
-        sprintf(ach, "..our_accessible_functions_%ld", caller);
+        sprintf(ach, "..our_accessible_functions_" HOST_SIZE_T_PRINT_DEC,
+                (fmt_size_t)caller);
         tree the_names_table = gg_define_variable(names_table_type, ach, vs_file_static);
 
         // Here is where we build a table out of constructors:
         tree constructed_array_type   = build_array_type_nelts(pointer_type, mol->second.size());
-        sprintf(ach, "..our_constructed_table_%ld", caller);
+        sprintf(ach, "..our_constructed_table_" HOST_SIZE_T_PRINT_DEC,
+                (fmt_size_t)caller);
         tree the_constructed_table = gg_define_variable(constructed_array_type, ach, vs_file_static);
 
         tree constr_names = make_node(CONSTRUCTOR);
@@ -13144,7 +13161,8 @@ parser_program_hierarchy( const struct cbl_prog_hier_t& hier )
               callee != mol->second.end();
               callee++ )
           {
-          sprintf(ach, "%s.%ld", (*callee)->name, (*callee)->parent_node->our_index);
+          sprintf(ach, "%s." HOST_SIZE_T_PRINT_DEC, (*callee)->name,
+                  (fmt_size_t)(*callee)->parent_node->our_index);
 
           CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr_names),
                                   build_int_cst_type(SIZE_T, i),
@@ -13170,11 +13188,13 @@ parser_program_hierarchy( const struct cbl_prog_hier_t& hier )
 
         // And put a pointer to that table into the file-static variable set aside
         // for it:
-        sprintf(ach, "..accessible_program_list_%ld", caller);
+        sprintf(ach, "..accessible_program_list_" HOST_SIZE_T_PRINT_DEC,
+                (fmt_size_t)caller);
         tree accessible_list_var_decl = gg_trans_unit_var_decl(ach);
         gg_assign( accessible_list_var_decl, gg_get_address_of(the_names_table) );
 
-        sprintf(ach, "..accessible_program_pointers_%ld", caller);
+        sprintf(ach, "..accessible_program_pointers_" HOST_SIZE_T_PRINT_DEC,
+                (fmt_size_t)caller);
         tree accessible_programs_decl = gg_trans_unit_var_decl(ach);
         gg_assign( accessible_programs_decl, gg_get_address_of(the_constructed_table) );
         }
@@ -13192,7 +13212,8 @@ parser_set_handled(ec_type_t ec_handled)
     {
     SHOW_PARSE_HEADER
     char ach[64];
-    sprintf(ach, "ec_type_t: 0x%lx", size_t(ec_handled));
+    sprintf(ach, "ec_type_t: 0x" HOST_SIZE_T_PRINT_HEX_PURE,
+            (fmt_size_t)ec_handled);
     SHOW_PARSE_TEXT(ach);
     SHOW_PARSE_END
     }
@@ -13261,7 +13282,7 @@ parser_set_numeric(struct cbl_field_t *tgt, ssize_t value)
     SHOW_PARSE_TEXT(tgt->name)
     SHOW_PARSE_TEXT(" to ")
     char ach[32];
-    sprintf(ach, "%ld", value);
+    sprintf(ach, HOST_SIZE_T_PRINT_DEC, (fmt_size_t)value);
     SHOW_PARSE_TEXT(ach);
     SHOW_PARSE_END
     }
@@ -15983,12 +16004,14 @@ psa_new_var_decl(cbl_field_t *new_var, const char *external_record_base)
           && symbol_at(new_var->parent)->type == SymField )
         {
         // We have a parent that is a field
-        sprintf(id_string, ".%ld_%ld", our_index, new_var->parent);
+        sprintf(id_string, "." HOST_SIZE_T_PRINT_DEC "_" HOST_SIZE_T_PRINT_DEC,
+                (fmt_size_t)our_index, (fmt_size_t)new_var->parent);
         }
       else
         {
         // The parent is zero, so it'll be implied:
-        sprintf(id_string, ".%ld", our_index);
+        sprintf(id_string, "." HOST_SIZE_T_PRINT_DEC,
+                (fmt_size_t)our_index);
         }
 
       if(strcasecmp(new_var->name, "filler") == 0)
@@ -16229,29 +16252,30 @@ parser_symbol_add(struct cbl_field_t *new_var )
       }
     while(0);
 
-    fprintf(stderr, " %2.2d %s<%s> off:%zd "
-                    "msiz:%d cap:%d dig:%d rdig:%d attr:0x%lx loc:%p",
+    fprintf(stderr, " %2.2d %s<%s> off:" HOST_SIZE_T_PRINT_DEC " "
+                    "msiz:%d cap:%d dig:%d rdig:%d attr:0x" HOST_SIZE_T_PRINT_HEX_PURE " loc:%p",
             new_var->level,
             new_var->name,
             cbl_field_type_str(new_var->type),
-            new_var->offset,
+            (fmt_size_t)new_var->offset,
             new_var->data.memsize,
             new_var->data.capacity,
             new_var->data.digits,
             new_var->data.rdigits,
-            new_var->attr,
+            (fmt_size_t)new_var->attr,
             (void*)new_var);
 
     if( is_table(new_var) )
       {
-      fprintf(stderr," OCCURS:%zd", new_var->occurs.ntimes());
+      fprintf(stderr," OCCURS:" HOST_SIZE_T_PRINT_DEC,
+              (fmt_size_t)new_var->occurs.ntimes());
       }
     cbl_field_t *parent = parent_of(new_var);
     if( parent )
       {
       fprintf(stderr,
-              " parent:(%zd)%s",
-              new_var->parent,
+              " parent:(" HOST_SIZE_T_PRINT_DEC ")%s",
+              (fmt_size_t)new_var->parent,
               parent->name);
       }
     else
@@ -16264,8 +16288,8 @@ parser_symbol_add(struct cbl_field_t *new_var )
         if( e->type == SymFile )
           {
           fprintf(stderr,
-                  " parent_file:(%zd)%s",
-                  new_var->parent,
+                  " parent_file:(" HOST_SIZE_T_PRINT_DEC ")%s",
+                  (fmt_size_t)new_var->parent,
                   e->elem.file.name);
           if( e->elem.file.attr & external_e )
             {
@@ -16711,9 +16735,10 @@ parser_symbol_add(struct cbl_field_t *new_var )
         if( !bytes_to_allocate )
           {
           fprintf(stderr,
-                  "bytes_to_allocate is zero for %s (symbol number %ld)\n",
+                  "bytes_to_allocate is zero for %s (symbol number "
+                  HOST_SIZE_T_PRINT_DEC ")\n",
                   new_var->name,
-                  new_var->our_index);
+                  (fmt_size_t)new_var->our_index);
           gcc_assert(bytes_to_allocate);
           }
 
@@ -16747,16 +16772,16 @@ parser_symbol_add(struct cbl_field_t *new_var )
             {
             // Avoid doubling up on leading underscore
             sprintf(achDataName,
-                    "%s_data_%lu",
+                    "%s_data_" HOST_SIZE_T_PRINT_UNSIGNED,
                     new_var->name,
-                    sv_data_name_counter++);
+                    (fmt_size_t)sv_data_name_counter++);
             }
           else
             {
             sprintf(achDataName,
-                    "_%s_data_%lu",
+                    "_%s_data_" HOST_SIZE_T_PRINT_UNSIGNED,
                     new_var->name,
-                    sv_data_name_counter++);
+                    (fmt_size_t)sv_data_name_counter++);
             }
 
           if( new_var->attr & external_e )
