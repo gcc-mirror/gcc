@@ -8482,6 +8482,95 @@ oacc_is_loop (gfc_code *code)
 	 || code->op == EXEC_OACC_LOOP;
 }
 
+static bool
+oacc_reduction_defined_type_p (enum gfc_omp_reduction_op rop, gfc_typespec *ts,
+			       const char **rop_name = NULL)
+{
+  gcc_assert (rop != OMP_REDUCTION_USER && rop != OMP_REDUCTION_NONE);
+
+  if (rop_name)
+    switch (rop)
+      {
+      case OMP_REDUCTION_MAX:
+	*rop_name = "max";
+	break;
+      case OMP_REDUCTION_MIN:
+	*rop_name = "min";
+	break;
+      case OMP_REDUCTION_IAND:
+	*rop_name = "iand";
+	break;
+      case OMP_REDUCTION_IOR:
+	*rop_name = "ior";
+	break;
+      case OMP_REDUCTION_IEOR:
+	*rop_name = "ieor";
+	break;
+      default:
+	*rop_name = gfc_op2string ((gfc_intrinsic_op) rop);
+	break;
+      }
+
+  if (ts->type == BT_INTEGER)
+    switch (rop)
+      {
+      case OMP_REDUCTION_AND:
+      case OMP_REDUCTION_OR:
+      case OMP_REDUCTION_EQV:
+      case OMP_REDUCTION_NEQV:
+	return false;
+      default:
+	return true;
+      }
+
+  if (ts->type == BT_LOGICAL)
+    switch (rop)
+      {
+      case OMP_REDUCTION_AND:
+      case OMP_REDUCTION_OR:
+      case OMP_REDUCTION_EQV:
+      case OMP_REDUCTION_NEQV:
+	return true;
+      default:
+	return false;
+      }
+
+  if (ts->type == BT_REAL || ts->type == BT_COMPLEX)
+    switch (rop)
+      {
+      case OMP_REDUCTION_PLUS:
+      case OMP_REDUCTION_TIMES:
+      case OMP_REDUCTION_MINUS:
+	return true;
+
+      case OMP_REDUCTION_AND:
+      case OMP_REDUCTION_OR:
+      case OMP_REDUCTION_EQV:
+      case OMP_REDUCTION_NEQV:
+	return false;
+
+      case OMP_REDUCTION_MAX:
+      case OMP_REDUCTION_MIN:
+	return ts->type != BT_COMPLEX;
+      case OMP_REDUCTION_IAND:
+      case OMP_REDUCTION_IOR:
+      case OMP_REDUCTION_IEOR:
+	return false;
+      default:
+	gcc_unreachable ();
+      }
+
+  if (ts->type == BT_DERIVED)
+    {
+      for (gfc_component *p = ts->u.derived->components; p; p = p->next)
+	if (!oacc_reduction_defined_type_p (rop, &p->ts))
+	  return false;
+      return true;
+    }
+
+  return false;
+}
+
 static void
 resolve_scalar_int_expr (gfc_expr *expr, const char *clause)
 {
@@ -9917,8 +10006,10 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	  else
 	    n->sym->mark = 1;
 
-	  /* OpenACC does not support reductions on arrays.  */
-	  if (n->sym->as)
+	  /* OpenACC current only supports array reductions on explicit-shape
+	     arrays.  */
+	  if ((n->sym->as && n->sym->as->type != AS_EXPLICIT)
+	      || n->sym->attr.codimension)
 	    gfc_error ("Array %qs is not permitted in reduction at %L",
 		       n->sym->name, &n->where);
 	}
@@ -10001,6 +10092,10 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		  }
 	      }
 	    break;
+	  case OMP_LIST_REDUCTION:
+	    if (!openacc)
+	      goto default_case;
+	    gcc_fallthrough ();
 	  case OMP_LIST_AFFINITY:
 	  case OMP_LIST_DEPEND:
 	  case OMP_LIST_MAP:
@@ -10009,6 +10104,38 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	  case OMP_LIST_CACHE:
 	    for (; n != NULL; n = n->next)
 	      {
+		if (openacc && list == OMP_LIST_REDUCTION)
+		  {
+		    if (n->sym->attr.threadprivate)
+		      gfc_error ("THREADPRIVATE object %qs in %s clause at %L",
+				 n->sym->name, name, &n->where);
+		    if (n->sym->attr.cray_pointee)
+		      gfc_error ("Cray pointee %qs in %s clause at %L",
+				 n->sym->name, name, &n->where);
+		    if (n->sym->attr.associate_var)
+		      gfc_error ("Associate name %qs in %s clause at %L",
+				 n->sym->attr.select_type_temporary
+				 ? n->sym->assoc->target->symtree->n.sym->name
+				 : n->sym->name, name, &n->where);
+		    if (n->sym->attr.proc_pointer)
+		      gfc_error ("Procedure pointer %qs in %s clause at %L",
+				 n->sym->name, name, &n->where);
+		    if (n->sym->attr.pointer)
+		      gfc_error ("POINTER object %qs in %s clause at %L",
+				 n->sym->name, name, &n->where);
+		    if (n->sym->attr.cray_pointer)
+		      gfc_error ("Cray pointer %qs in %s clause at %L",
+				 n->sym->name, name, &n->where);
+
+		    const char *rop_name;
+		    if (!oacc_reduction_defined_type_p (n->u.reduction_op,
+							&n->sym->ts, &rop_name))
+		      {
+			gfc_error ("Reduction operator %s is not valid for %qs at %L",
+				   rop_name, n->sym->name, &n->where);
+			break;
+		      }
+		  }
 		if ((list == OMP_LIST_DEPEND || list == OMP_LIST_AFFINITY)
 		    && n->u2.ns && !n->u2.ns->resolved)
 		  {
@@ -10250,6 +10377,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	      break;
 	    }
 	  default:
+	  default_case:
 	    for (; n != NULL; n = n->next)
 	      {
 		if (n->sym == NULL)
@@ -10402,39 +10530,46 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		  case OMP_LIST_IN_REDUCTION:
 		  case OMP_LIST_TASK_REDUCTION:
 		  case OMP_LIST_REDUCTION_INSCAN:
-		    switch (n->u.reduction_op)
+		    if (openacc)
 		      {
-		      case OMP_REDUCTION_PLUS:
-		      case OMP_REDUCTION_TIMES:
-		      case OMP_REDUCTION_MINUS:
-			if (!gfc_numeric_ts (&n->sym->ts))
+			if (!oacc_reduction_defined_type_p (n->u.reduction_op,
+							    &n->sym->ts))
 			  bad = true;
-			break;
-		      case OMP_REDUCTION_AND:
-		      case OMP_REDUCTION_OR:
-		      case OMP_REDUCTION_EQV:
-		      case OMP_REDUCTION_NEQV:
-			if (n->sym->ts.type != BT_LOGICAL)
-			  bad = true;
-			break;
-		      case OMP_REDUCTION_MAX:
-		      case OMP_REDUCTION_MIN:
-			if (n->sym->ts.type != BT_INTEGER
-			    && n->sym->ts.type != BT_REAL)
-			  bad = true;
-			break;
-		      case OMP_REDUCTION_IAND:
-		      case OMP_REDUCTION_IOR:
-		      case OMP_REDUCTION_IEOR:
-			if (n->sym->ts.type != BT_INTEGER)
-			  bad = true;
-			break;
-		      case OMP_REDUCTION_USER:
-			bad = true;
-			break;
-		      default:
-			break;
 		      }
+		    else
+		      switch (n->u.reduction_op)
+			{
+			case OMP_REDUCTION_PLUS:
+			case OMP_REDUCTION_TIMES:
+			case OMP_REDUCTION_MINUS:
+			  if (!gfc_numeric_ts (&n->sym->ts))
+			    bad = true;
+			  break;
+			case OMP_REDUCTION_AND:
+			case OMP_REDUCTION_OR:
+			case OMP_REDUCTION_EQV:
+			case OMP_REDUCTION_NEQV:
+			  if (n->sym->ts.type != BT_LOGICAL)
+			    bad = true;
+			  break;
+			case OMP_REDUCTION_MAX:
+			case OMP_REDUCTION_MIN:
+			  if (n->sym->ts.type != BT_INTEGER
+			      && n->sym->ts.type != BT_REAL)
+			    bad = true;
+			  break;
+			case OMP_REDUCTION_IAND:
+			case OMP_REDUCTION_IOR:
+			case OMP_REDUCTION_IEOR:
+			  if (n->sym->ts.type != BT_INTEGER)
+			    bad = true;
+			  break;
+			case OMP_REDUCTION_USER:
+			  bad = true;
+			  break;
+			default:
+			  break;
+			}
 		    if (!bad)
 		      n->u2.udr = NULL;
 		    else

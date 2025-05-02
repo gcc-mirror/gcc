@@ -13749,6 +13749,20 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  omp_firstprivatize_variable (ctx, v);
 		  omp_notice_variable (ctx, v, true);
 		}
+	      if (TREE_CODE (TREE_OPERAND (decl, 0)) == COMPONENT_REF
+		  || CONVERT_EXPR_CODE_P (TREE_CODE (TREE_OPERAND (decl, 0))))
+		{
+		  gimplify_ctxp->into_ssa = false;
+		  if (gimplify_expr (&TREE_OPERAND (decl, 0), pre_p,
+				     NULL, is_gimple_val, fb_rvalue, false)
+		      == GS_ERROR)
+		    {
+		      gimplify_ctxp->into_ssa = saved_into_ssa;
+		      remove = true;
+		      break;
+		    }
+		  gimplify_ctxp->into_ssa = saved_into_ssa;
+		}
 	      decl = TREE_OPERAND (decl, 0);
 	      if (TREE_CODE (decl) == POINTER_PLUS_EXPR)
 		{
@@ -14326,7 +14340,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      remove = true;
 	      break;
 	    }
-	  if (DECL_NAME (decl) == NULL_TREE && (flags & GOVD_SHARED) == 0)
+	  if (DECL_P (decl) && DECL_NAME (decl) == NULL_TREE
+	      && (flags & GOVD_SHARED) == 0)
 	    {
 	      tree t = omp_member_access_dummy_var (decl);
 	      if (t)
@@ -15877,6 +15892,8 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	  else if ((OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
 		    || (OMP_CLAUSE_MAP_KIND (c)
 			== GOMP_MAP_FIRSTPRIVATE_REFERENCE)
+		    || (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
+			&& ctx->region_type != ORT_ACC_KERNELS)
 		    || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
 		   && TREE_CODE (OMP_CLAUSE_SIZE (c)) != INTEGER_CST)
 	    {
@@ -16065,6 +16082,15 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 			    OMP_CLAUSE_DECL (c));
 		  remove = true;
 		}
+
+	      if (TREE_CODE (*pd) == ARRAY_REF
+		  && DECL_P (TREE_OPERAND (*pd, 1))
+		  && (ctx->region_type & ORT_TARGET) != 0
+		  && (ctx->region_type & ORT_ACC) != 0
+		  && ctx->region_type != ORT_ACC_KERNELS)
+		omp_add_variable (ctx, TREE_OPERAND (*pd, 1),
+				  GOVD_FIRSTPRIVATE | GOVD_SEEN);
+
 	      gimplify_omp_ctxp = ctx;
 	      break;
 	    }
@@ -16263,10 +16289,20 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	  /* OpenACC reductions need a present_or_copy data clause.
 	     Add one if necessary.  Emit error when the reduction is
 	     private.  */
-	  if (DECL_P (decl) &&
-	      (ctx->region_type == ORT_ACC_PARALLEL
-	       || ctx->region_type == ORT_ACC_SERIAL))
+	  if (ctx->region_type == ORT_ACC_PARALLEL
+	      || ctx->region_type == ORT_ACC_SERIAL)
 	    {
+	      if (TREE_CODE (decl) == MEM_REF
+		  && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+		{
+		  tree addr = TREE_OPERAND (decl, 0);
+		  if (TREE_CODE (addr) == POINTER_PLUS_EXPR)
+		    addr = TREE_OPERAND (addr, 0);
+		  if (TREE_CODE (addr) == ADDR_EXPR
+		      && DECL_P (TREE_OPERAND (addr, 0)))
+		    decl = TREE_OPERAND (addr, 0);
+		}
+
 	      n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
 	      if (n->value & (GOVD_PRIVATE | GOVD_FIRSTPRIVATE))
 		{

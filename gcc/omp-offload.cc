@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "cfgloop.h"
+#include "cfghooks.h"
 #include "context.h"
 #include "convert.h"
 #include "opts.h"
@@ -2151,6 +2152,129 @@ default_goacc_fork_join (gcall *ARG_UNUSED (call),
     return targetm.have_oacc_join ();
 }
 
+void
+oacc_build_array_copy (tree dst, tree src, tree max_idx, gimple_seq *seq)
+{
+  push_gimplify_context (true);
+
+  tree len = fold_build2 (PLUS_EXPR, size_type_node, max_idx, size_int (1));
+  tree ptr_to_array = (TREE_TYPE (dst) == ptr_type_node ? src : dst);
+  tree elem_type;
+  if (TREE_CODE (TREE_TYPE (ptr_to_array)) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (TREE_TYPE (ptr_to_array))) == ARRAY_TYPE)
+    elem_type = TREE_TYPE (TREE_TYPE (TREE_TYPE (ptr_to_array)));
+  else
+    elem_type = TREE_TYPE (TREE_TYPE (ptr_to_array));
+  tree elem_size = TYPE_SIZE_UNIT (elem_type);
+  tree size = fold_build2 (MULT_EXPR, size_type_node, len, elem_size);
+
+  tree memcpy_decl = builtin_decl_implicit (BUILT_IN_MEMCPY);
+  tree call = build_call_expr (memcpy_decl, 3, dst, src, size);
+  gimplify_and_add (call, seq);
+  pop_gimplify_context (NULL);
+}
+
+void
+oacc_build_array_copy_loop (location_t loc, tree dst, tree src, tree max_idx,
+			    gimple_stmt_iterator *gsi)
+{
+  push_gimplify_context (true);
+
+  tree loop_index;
+  gimple_stmt_iterator loop_body_gsi;
+  oacc_build_indexed_ssa_loop (loc, max_idx, gsi,
+			       &loop_index, &loop_body_gsi);
+  gimple_seq copy_seq = NULL;
+
+  tree dst_array_type = TREE_TYPE (TREE_TYPE (dst));
+  tree dst_elem_type = build_qualified_type (TREE_TYPE (dst_array_type),
+					     TYPE_QUALS (dst_array_type));
+  tree dst_elem_ptr_type = build_pointer_type (dst_elem_type);
+  tree dst_ptr = fold_convert (dst_elem_ptr_type, dst);
+
+  tree src_array_type = TREE_TYPE (TREE_TYPE (src));
+  tree src_elem_type = build_qualified_type (TREE_TYPE (src_array_type),
+					     TYPE_QUALS (src_array_type));
+  tree src_elem_ptr_type = build_pointer_type (src_elem_type);
+  tree src_ptr = fold_convert (src_elem_ptr_type, src);
+
+  tree offset = build2 (MULT_EXPR, sizetype,
+			loop_index, TYPE_SIZE_UNIT (dst_elem_type));
+
+  dst_ptr = build2 (POINTER_PLUS_EXPR, dst_elem_ptr_type, dst_ptr, offset);
+  src_ptr = build2 (POINTER_PLUS_EXPR, src_elem_ptr_type, src_ptr, offset);
+
+  tree dst_mem_ref = build_simple_mem_ref (dst_ptr);
+  tree src_mem_ref = build_simple_mem_ref (src_ptr);
+
+  gimplify_assign (dst_mem_ref, src_mem_ref, &copy_seq);
+
+  gsi_insert_seq_before (&loop_body_gsi, copy_seq, GSI_SAME_STMT);
+  pop_gimplify_context (NULL);
+}
+
+void
+oacc_build_indexed_ssa_loop (location_t loc, tree max_index,
+			     gimple_stmt_iterator *gsi, tree *out_loop_index,
+			     gimple_stmt_iterator *out_loop_body_code_gsi)
+{
+  gimple *g;
+  gimple_seq seq = NULL;
+
+  tree init_index = make_ssa_name (TREE_TYPE (max_index));
+  tree loop_index = make_ssa_name (TREE_TYPE (max_index));
+  tree update_index = make_ssa_name (TREE_TYPE (max_index));
+
+  g = gimple_build_assign (init_index,
+			   build_int_cst (TREE_TYPE (init_index), 0));
+  gimple_seq_add_stmt (&seq, g);
+
+  gimple *init_end = gimple_seq_last (seq);
+  gsi_insert_seq_before (gsi, seq, GSI_SAME_STMT);
+
+  basic_block init_bb = gsi_bb (*gsi);
+  edge init_edge = split_block (init_bb, init_end);
+  basic_block loop_bb = init_edge->dest;
+  /* Reset the iterator.  */
+  *gsi = gsi_for_stmt (gsi_stmt (*gsi));
+
+  seq = NULL;
+  g = gimple_build_assign (update_index, PLUS_EXPR, loop_index,
+			   build_int_cst (TREE_TYPE (loop_index), 1));
+  gimple_seq_add_stmt (&seq, g);
+
+  g = gimple_build_cond (LE_EXPR, update_index, max_index, NULL, NULL);
+  gimple_seq_add_stmt (&seq, g);
+  gsi_insert_seq_before (gsi, seq, GSI_SAME_STMT);
+
+  edge post_edge = split_block (loop_bb, g);
+  basic_block post_bb = post_edge->dest;
+  loop_bb = post_edge->src;
+  /* Reset the iterator.  */
+  *gsi = gsi_for_stmt (gsi_stmt (*gsi));
+
+  /* Return place where we insert loop body code.  */
+  gimple_stmt_iterator loop_body_code_gsi = gsi_start_bb (loop_bb);
+
+  post_edge->flags ^= EDGE_FALSE_VALUE | EDGE_FALLTHRU;
+  post_edge->probability = profile_probability::even ();
+  edge loop_edge = make_edge (loop_bb, loop_bb, EDGE_TRUE_VALUE);
+  loop_edge->probability = profile_probability::even ();
+  set_immediate_dominator (CDI_DOMINATORS, loop_bb, init_bb);
+  set_immediate_dominator (CDI_DOMINATORS, post_bb, loop_bb);
+  class loop *new_loop = alloc_loop ();
+  new_loop->header = loop_bb;
+  new_loop->latch = loop_bb;
+  add_loop (new_loop, loop_bb->loop_father);
+
+  gphi *phi = create_phi_node (loop_index, loop_bb);
+  add_phi_arg (phi, init_index, init_edge, loc);
+  add_phi_arg (phi, update_index, loop_edge, loc);
+
+  *out_loop_index = loop_index;
+  *out_loop_body_code_gsi = loop_body_code_gsi;
+}
+
 /* Default goacc.reduction early expander.
 
    LHS-opt = IFN_REDUCTION (KIND, RES_PTR, VAR, LEVEL, OP, OFFSET)
@@ -2176,29 +2300,44 @@ default_goacc_reduction (gcall *call)
 	 if there is one.  */
       tree ref_to_res = gimple_call_arg (call, 1);
 
+      tree array_addr = gimple_call_arg (call, 6);
+      tree array_max_idx = gimple_call_arg (call, 7);
+
       if (!integer_zerop (ref_to_res))
 	{
-	  /* Dummy reduction vars that have GOMP_MAP_FIRSTPRIVATE_POINTER data
-	     mappings gets retyped to (void *).  Adjust the type of ref_to_res
-	     as appropriate.  */
-	  if (TREE_TYPE (TREE_TYPE (ref_to_res)) != TREE_TYPE (var))
+	  if (!integer_zerop (array_addr))
 	    {
-	      tree ptype = build_pointer_type (TREE_TYPE (var));
-	      tree t = make_ssa_name (ptype);
-	      tree expr = fold_build1 (NOP_EXPR, ptype, ref_to_res);
-	      gimple_seq_add_stmt (&seq, gimple_build_assign (t, expr));
-	      ref_to_res = t;
+	      tree dst, src;
+	      if (code == IFN_GOACC_REDUCTION_SETUP)
+		dst = array_addr, src = ref_to_res;
+	      else
+		src = array_addr, dst = ref_to_res;
+	      oacc_build_array_copy (dst, src, array_max_idx, &seq);
 	    }
-	  tree dst = build_simple_mem_ref (ref_to_res);
-	  tree src = var;
+	  else
+	    {
+	      /* Dummy reduction vars that have GOMP_MAP_FIRSTPRIVATE_POINTER data
+		 mappings gets retyped to (void *).  Adjust the type of ref_to_res
+		 as appropriate.  */
+	      if (TREE_TYPE (TREE_TYPE (ref_to_res)) != TREE_TYPE (var))
+		{
+		  tree ptype = build_pointer_type (TREE_TYPE (var));
+		  tree t = make_ssa_name (ptype);
+		  tree expr = fold_build1 (NOP_EXPR, ptype, ref_to_res);
+		  gimple_seq_add_stmt (&seq, gimple_build_assign (t, expr));
+		  ref_to_res = t;
+		}
+	      tree dst = build_simple_mem_ref (ref_to_res);
+	      tree src = var;
 
-	  if (code == IFN_GOACC_REDUCTION_SETUP)
-	    {
-	      src = dst;
-	      dst = lhs;
-	      lhs = NULL;
+	      if (code == IFN_GOACC_REDUCTION_SETUP)
+		{
+		  src = dst;
+		  dst = lhs;
+		  lhs = NULL;
+		}
+	      gimple_seq_add_stmt (&seq, gimple_build_assign (dst, src));
 	    }
-	  gimple_seq_add_stmt (&seq, gimple_build_assign (dst, src));
 	}
     }
 

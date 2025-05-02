@@ -7187,6 +7187,69 @@ cp_check_omp_declare_reduction (tree udr)
   return true;
 }
 
+
+static bool
+cp_oacc_reduction_defined_type_p (enum tree_code reduction_code, tree t)
+{
+  if (TREE_CODE (t) == INTEGER_TYPE)
+    return true;
+
+  if (FLOAT_TYPE_P (t) || TREE_CODE (t) == COMPLEX_TYPE)
+    switch (reduction_code)
+      {
+      case PLUS_EXPR:
+      case MULT_EXPR:
+      case MINUS_EXPR:
+      case TRUTH_ANDIF_EXPR:
+      case TRUTH_ORIF_EXPR:
+	return true;
+      case MIN_EXPR:
+      case MAX_EXPR:
+	return TREE_CODE (t) != COMPLEX_TYPE;
+      case BIT_AND_EXPR:
+      case BIT_XOR_EXPR:
+      case BIT_IOR_EXPR:
+	return false;
+      default:
+	gcc_unreachable ();
+      }
+
+  if (TREE_CODE (t) == ARRAY_TYPE)
+    return cp_oacc_reduction_defined_type_p (reduction_code, TREE_TYPE (t));
+
+  if (TREE_CODE (t) == RECORD_TYPE)
+    {
+      for (tree fld = TYPE_FIELDS (t); fld; fld = TREE_CHAIN (fld))
+	if (TREE_CODE (fld) == FIELD_DECL
+	    && !cp_oacc_reduction_defined_type_p (reduction_code,
+						  TREE_TYPE (fld)))
+	  return false;
+      return true;
+    }
+
+  return false;
+}
+
+static const char *
+cp_oacc_reduction_code_name (enum tree_code reduction_code)
+{
+  switch (reduction_code)
+    {
+    case PLUS_EXPR: return "+";
+    case MULT_EXPR: return "*";
+    case MINUS_EXPR: return "-";
+    case TRUTH_ANDIF_EXPR: return "&&";
+    case TRUTH_ORIF_EXPR: return "||";
+    case MIN_EXPR: return "min";
+    case MAX_EXPR: return "max";
+    case BIT_AND_EXPR: return "&";
+    case BIT_XOR_EXPR: return "^";
+    case BIT_IOR_EXPR: return "|";
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* Helper function of finish_omp_clauses.  Clone STMT as if we were making
    an inline call.  But, remap
    the OMP_DECL1 VAR_DECL (omp_out resp. omp_orig) to PLACEHOLDER
@@ -7330,6 +7393,20 @@ finish_omp_reduction_clause (tree c, enum c_omp_region_type ort,
     {
       if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) == error_mark_node)
 	return true;
+      return false;
+    }
+
+  if (ort == C_ORT_ACC)
+    {
+      enum tree_code r_code = OMP_CLAUSE_REDUCTION_CODE (c);
+      if (!cp_oacc_reduction_defined_type_p (r_code, TREE_TYPE (t)))
+	{
+	  const char *r_name = cp_oacc_reduction_code_name (r_code);
+	  error_at (OMP_CLAUSE_LOCATION (c),
+		    "%qE has invalid type for %<reduction(%s)%>",
+		    t, r_name);
+	  return true;
+	}
       return false;
     }
 

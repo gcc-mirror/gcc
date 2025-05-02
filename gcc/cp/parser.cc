@@ -39799,8 +39799,7 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	    case OMP_CLAUSE_HAS_DEVICE_ADDR:
 	      array_section_p = false;
 	      dims.truncate (0);
-	      while ((ort != C_ORT_ACC || kind != OMP_CLAUSE_REDUCTION)
-		     && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SQUARE))
+	      while (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SQUARE))
 		{
 		  location_t loc = UNKNOWN_LOCATION;
 		  tree low_bound = NULL_TREE, length = NULL_TREE;
@@ -41512,6 +41511,12 @@ cp_parser_omp_clause_reduction (cp_parser *parser, enum omp_clause_code kind,
 	    code = TRUTH_ANDIF_EXPR;
 	  else if (id == ovl_op_identifier (false, TRUTH_ORIF_EXPR))
 	    code = TRUTH_ORIF_EXPR;
+	  if (code == ERROR_MARK && ort == C_ORT_ACC)
+	    {
+	      cp_parser_error (parser, "expected %<+%>, %<*%>, %<-%>, %<&%>, "
+			       "%<^%>, %<|%>, %<&&%>, %<||%>, %<min%> or %<max%>");
+	      goto resync_fail;
+	    }
 	  id = omp_reduction_id (code, id, NULL_TREE);
 	  tree scope = parser->scope;
 	  if (scope)
@@ -41538,6 +41543,10 @@ cp_parser_omp_clause_reduction (cp_parser *parser, enum omp_clause_code kind,
   for (c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
     {
       OMP_CLAUSE_REDUCTION_CODE (c) = code;
+      /* OpenACC does not require anything below.  */
+      if (ort == C_ORT_ACC)
+	continue;
+
       if (task)
 	OMP_CLAUSE_REDUCTION_TASK (c) = 1;
       else if (inscan)

@@ -12,5 +12,5 @@ int main (void)
     r = a[8];
   }
 }
-/* { dg-final { scan-tree-dump-times "r\.\[_0-9\]+ = MEM\\\[\[^_\]+_\[0-9\]+\\(ptro\\)\\\]\\\[8\\\];" 2 "phiprop1" } } */
-/* { dg-final { scan-tree-dump-times "r\.\[_0-9\]+ = MEM\\\[\[^_\]+_\[0-9\]+\\(ptro\\)\\\]\\\[8\\\];" 1 "fre1" } } */
+/* { dg-final { scan-tree-dump-times "r\.\[_0-9\]+ = \\(\\*_\[0-9\]+\\(ptro\\)\\)\\\[8\\\];" 2 "phiprop1" } } */
+/* { dg-final { scan-tree-dump-times "r\.\[_0-9\]+ = \\(\\*_\[0-9\]+\\(ptro\\)\\)\\\[8\\\];" 1 "fre1" } } */

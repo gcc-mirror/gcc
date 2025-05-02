@@ -106,6 +106,11 @@ struct omp_context
      construct.  In the case of a parallel, this is in the child function.  */
   tree block_vars;
 
+  /* A hash map to track variables added through omp_copy_decl_*, to ensure
+     repeated calls of install_var_local on sam DECL do not get duplicated
+     local versions.  */
+  hash_map<tree, tree> *block_vars_map;
+
   /* Label to which GOMP_cancel{,llation_point} and explicit and implicit
      barriers should jump to during omplower pass.  */
   tree cancel_label;
@@ -596,12 +601,26 @@ use_pointer_for_field (tree decl, omp_context *shared_ctx)
 static tree
 omp_copy_decl_2 (tree var, tree name, tree type, omp_context *ctx)
 {
+  if (ctx)
+    {
+      if (!ctx->block_vars_map)
+	ctx->block_vars_map = new hash_map<tree, tree> ();
+      else
+	{
+	  tree *tp = ctx->block_vars_map->get (var);
+	  if (tp)
+	    return *tp;
+	}
+    }
+
   tree copy = copy_var_decl (var, name, type);
 
   DECL_CONTEXT (copy) = current_function_decl;
 
   if (ctx)
     {
+      ctx->block_vars_map->put (var, copy);
+
       DECL_CHAIN (copy) = ctx->block_vars;
       ctx->block_vars = copy;
     }
@@ -786,7 +805,7 @@ build_sender_ref (tree var, omp_context *ctx)
 
 static void
 install_var_field (tree var, bool by_ref, int mask, omp_context *ctx,
-		   tree key_expr = NULL_TREE)
+		   tree key_expr = NULL_TREE, bool field_may_exist = false)
 {
   tree field, type, sfield = NULL_TREE;
   splay_tree_key key = (splay_tree_key) var;
@@ -808,9 +827,9 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx,
 	}
     }
   gcc_assert ((mask & 1) == 0
-	      || !splay_tree_lookup (ctx->field_map, key));
+	      || !splay_tree_lookup (ctx->field_map, key) || field_may_exist);
   gcc_assert ((mask & 2) == 0 || !ctx->sfield_map
-	      || !splay_tree_lookup (ctx->sfield_map, key));
+	      || !splay_tree_lookup (ctx->sfield_map, key) || field_may_exist);
   gcc_assert ((mask & 3) == 3
 	      || !is_gimple_omp_oacc (ctx->stmt));
 
@@ -1206,6 +1225,7 @@ delete_omp_context (splay_tree_value value)
       delete ctx->task_reduction_map;
     }
 
+  delete ctx->block_vars_map;
   delete ctx->lastprivate_conditional_map;
   delete ctx->allocate_map;
 
@@ -2001,9 +2021,9 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 		      && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
 		      && !OMP_CLAUSE_MAP_ZERO_BIAS_ARRAY_SECTION (c)
 		      && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
-		    install_var_field (decl, true, 7, ctx, c);
+		    install_var_field (decl, true, 7, ctx, c, true);
 		  else
-		    install_var_field (decl, true, 3, ctx, c);
+		    install_var_field (decl, true, 3, ctx, c, true);
 		  if (is_gimple_omp_offloaded (ctx->stmt)
 		      && !(is_gimple_omp_oacc (ctx->stmt)
 			   && OMP_CLAUSE_MAP_IN_REDUCTION (c)))
@@ -2033,13 +2053,26 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 		    }
 		  gcc_assert (!splay_tree_lookup (ctx->field_map,
 						  (splay_tree_key) decl));
+		  tree ptr_type = ptr_type_node;
+		  if (TREE_CODE (decl) == ARRAY_REF)
+		    {
+		      tree array_type = TREE_TYPE (TREE_OPERAND (decl, 0));
+		      ptr_type = build_pointer_type (array_type);
+		    }
 		  tree field
 		    = build_decl (OMP_CLAUSE_LOCATION (c),
-				  FIELD_DECL, NULL_TREE, ptr_type_node);
-		  SET_DECL_ALIGN (field, TYPE_ALIGN (ptr_type_node));
+				  FIELD_DECL, NULL_TREE, ptr_type);
+		  SET_DECL_ALIGN (field, TYPE_ALIGN (ptr_type));
 		  insert_field_into_struct (ctx->record_type, field);
-		  splay_tree_insert (ctx->field_map, (splay_tree_key) c,
+		  splay_tree_insert (ctx->field_map, (splay_tree_key) /*decl,xxx*/ c,
 				     (splay_tree_value) field);
+
+		  if (TREE_CODE (decl) == ARRAY_REF
+		      && is_gimple_omp_offloaded (ctx->stmt)
+		      && !splay_tree_lookup (ctx->field_map,
+					     (splay_tree_key) base))
+		    splay_tree_insert (ctx->field_map, (splay_tree_key) base,
+				       (splay_tree_value) field);
 		}
 	    }
 	  break;
@@ -4907,6 +4940,33 @@ maybe_lookup_field_in_outer_ctx (tree decl, omp_context *ctx)
 tree
 omp_reduction_init_op (location_t loc, enum tree_code op, tree type)
 {
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    {
+      tree max = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+      if (TREE_CONSTANT (max))
+	{
+	  vec<constructor_elt, va_gc> *v = NULL;
+	  HOST_WIDE_INT max_val = tree_to_shwi (max);
+	  tree t = omp_reduction_init_op (loc, op, TREE_TYPE (type));
+	  for (HOST_WIDE_INT i = 0; i <= max_val; i++)
+	    CONSTRUCTOR_APPEND_ELT (v, size_int (i), t);
+	  return build_constructor (type, v);
+	}
+      else
+	gcc_unreachable ();
+    }
+  else if (TREE_CODE (type) == RECORD_TYPE)
+    {
+      vec<constructor_elt, va_gc> *v = NULL;
+      for (tree fld = TYPE_FIELDS (type); fld; fld = TREE_CHAIN (fld))
+	if (TREE_CODE (fld) == FIELD_DECL)
+	  {
+	    tree t = omp_reduction_init_op (loc, op, TREE_TYPE (fld));
+	    CONSTRUCTOR_APPEND_ELT (v, fld, t);
+	  }
+      return build_constructor (type, v);
+    }
+
   switch (op)
     {
     case PLUS_EXPR:
@@ -7856,6 +7916,76 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *body_p,
   gimple_seq_add_seq (stmt_list, post_stmt_list);
 }
 
+/* Give an array reduction clause, and the surrounding map clause that mapped
+   the array (section), calculate the actual bias for the reduction inside
+   the OpenACC region, generally just: reduction_bias - map_bias, but
+   encapsulate the hairy details.  */
+
+static tree
+oacc_array_reduction_bias (location_t loc, tree reduction_clause,
+			   omp_context *ctx, tree map_clause,
+			   omp_context *outer)
+{
+  tree bias = TREE_OPERAND (OMP_CLAUSE_DECL (reduction_clause), 1);
+  tree orig_var = TREE_OPERAND (OMP_CLAUSE_DECL (reduction_clause), 0);
+  if (TREE_CODE (orig_var) == POINTER_PLUS_EXPR)
+    {
+      tree b = TREE_OPERAND (orig_var, 1);
+      b = maybe_lookup_decl (b, ctx);
+      if (b == NULL)
+	{
+	  b = TREE_OPERAND (orig_var, 1);
+	  b = maybe_lookup_decl_in_outer_ctx (b, ctx);
+	}
+      if (integer_zerop (bias))
+	bias = b;
+      else
+	{
+	  bias = fold_convert_loc (loc, TREE_TYPE (b), bias);
+	  bias = fold_build2_loc (loc, PLUS_EXPR, TREE_TYPE (b), b, bias);
+	}
+      orig_var = TREE_OPERAND (orig_var, 0);
+    }
+
+  if (TREE_CODE (orig_var) == INDIRECT_REF
+      || TREE_CODE (orig_var) == ADDR_EXPR)
+    orig_var = TREE_OPERAND (orig_var, 0);
+
+  tree map_decl = OMP_CLAUSE_DECL (map_clause);
+  tree next = OMP_CLAUSE_CHAIN (map_clause);
+
+  tree orig_bias = integer_zero_node;
+  if (TREE_CODE (map_decl) == ARRAY_REF)
+    {
+      if (next && OMP_CLAUSE_CODE (next) == OMP_CLAUSE_MAP
+	  && OMP_CLAUSE_DECL (next) == orig_var
+	  && (OMP_CLAUSE_MAP_KIND (next) == GOMP_MAP_FIRSTPRIVATE_POINTER
+	      || OMP_CLAUSE_MAP_KIND (next) == GOMP_MAP_POINTER))
+	{
+	  orig_bias = OMP_CLAUSE_SIZE (next);
+	  if (DECL_P (orig_bias))
+	    orig_bias = lookup_decl (orig_bias, outer);
+	  orig_bias = fold_convert_loc (loc, pointer_sized_int_node,
+					orig_bias);
+	}
+      else
+	{
+	  tree idx = TREE_OPERAND (map_decl, 1);
+	  idx = lookup_decl (idx, outer);
+	  idx = fold_convert_loc (loc, pointer_sized_int_node, idx);
+	  orig_bias = fold_build2_loc (loc, MULT_EXPR,
+				       pointer_sized_int_node, idx,
+				       TYPE_SIZE_UNIT (TREE_TYPE (map_decl)));
+	}
+    }
+
+  bias = fold_convert_loc (loc, pointer_sized_int_node, bias);
+  tree adjusted_bias = fold_build2_loc (loc, MINUS_EXPR,
+					pointer_sized_int_node,
+					bias, orig_bias);
+  return adjusted_bias;
+}
+
 /* Lower the OpenACC reductions of CLAUSES for compute axis LEVEL
    (which might be a placeholder).  INNER is true if this is an inner
    axis of a multi-axis loop.  FORK and JOIN are (optional) fork and
@@ -7895,9 +8025,107 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 
 	tree orig = OMP_CLAUSE_DECL (c);
 	tree orig_clause;
+	tree array_type = NULL_TREE;
+	tree array_addr = NULL_TREE, array_max_idx = NULL_TREE;
+	tree array_bias = NULL_TREE;
 	tree var;
-	tree ref_to_res = NULL_TREE;
+	if (TREE_CODE (orig) == MEM_REF)
+	  {
+	    array_type = TREE_TYPE (orig);
+
+	    tree bias = TREE_OPERAND (OMP_CLAUSE_DECL (c), 1);
+	    tree orig_var = TREE_OPERAND (OMP_CLAUSE_DECL (c), 0);
+
+	    if (TREE_CODE (orig_var) == POINTER_PLUS_EXPR)
+	      {
+		tree b = TREE_OPERAND (orig_var, 1);
+		if (is_omp_target (ctx->stmt))
+		  b = NULL_TREE;
+		else
+		  b = maybe_lookup_decl (b, ctx);
+		if (b == NULL)
+		  {
+		    b = TREE_OPERAND (orig_var, 1);
+		    b = maybe_lookup_decl_in_outer_ctx (b, ctx);
+		  }
+		if (integer_zerop (bias))
+		  bias = b;
+		else
+		  {
+		    bias = fold_convert_loc (loc,
+					     TREE_TYPE (b), bias);
+		    bias = fold_build2_loc (loc, PLUS_EXPR,
+					    TREE_TYPE (b), b, bias);
+		  }
+		orig_var = TREE_OPERAND (orig_var, 0);
+	      }
+	    if (TREE_CODE (orig_var) == INDIRECT_REF
+		|| TREE_CODE (orig_var) == ADDR_EXPR)
+	      orig_var = TREE_OPERAND (orig_var, 0);
+
+	    gcc_assert (DECL_P (orig_var));
+
+	    tree local_orig_var = lookup_decl (orig_var, ctx);
+	    tree priv_addr = local_orig_var;
+	    if (TREE_CODE (TREE_TYPE (priv_addr)) == ARRAY_TYPE)
+	      priv_addr = build_fold_addr_expr (priv_addr);
+
+	    tree priv_addr_type = build_pointer_type (array_type);
+
+	    /* Peel away MEM_REF to get at base array VAR_DECL.  */
+	    tree addr = TREE_OPERAND (orig, 0);
+	    if (TREE_CODE (addr) == POINTER_PLUS_EXPR)
+	      addr = TREE_OPERAND (addr, 0);
+	    if (TREE_CODE (addr) == ADDR_EXPR)
+	      addr = TREE_OPERAND (addr, 0);
+	    else if (INDIRECT_REF_P (addr))
+	      addr = TREE_OPERAND (addr, 0);
+	    orig = addr;
+
+	    if (omp_privatize_by_reference (orig))
+	      {
+		gcc_assert (DECL_HAS_VALUE_EXPR_P (priv_addr)
+			    && (TREE_CODE (DECL_VALUE_EXPR (priv_addr))
+				== MEM_REF));
+		priv_addr = TREE_OPERAND (DECL_VALUE_EXPR (priv_addr), 0);
+	      }
+
+	    tree tmp = fold_build2 (POINTER_PLUS_EXPR, ptr_type_node,
+				    fold_convert (ptr_type_node, priv_addr),
+				    fold_convert (sizetype, bias));
+	    priv_addr = fold_convert (priv_addr_type, tmp);
+
+	    tree addr_var = create_tmp_var (priv_addr_type,
+					    ".array_reduction_addr");
+
+	    gimple_seq s = NULL;
+	    gimplify_assign (addr_var, priv_addr, &s);
+	    gimple_seq_add_seq (&before_fork, s);
+
+	    var = create_tmp_var (integer_type_node,
+				  ".array_reduction_data_dep");
+	    gimple_seq_add_stmt (&before_fork,
+				 gimple_build_assign (var, integer_zero_node));
+
+	    array_addr = addr_var;
+	    array_bias = bias;
+	    array_max_idx
+	      = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (OMP_CLAUSE_DECL (c))));
+	    tree t = maybe_lookup_decl (array_max_idx, ctx);
+	    if (t)
+	      array_max_idx = t;
+	  }
+	else
+	  {
+	    var = OMP_CLAUSE_REDUCTION_PRIVATE_DECL (c);
+	    if (!var)
+	      var = maybe_lookup_decl (orig, ctx);
+	    if (!var)
+	      var = orig;
+	  }
+
 	tree incoming, outgoing;
+	tree ref_to_res = NULL_TREE;
 	bool is_private = false;
 	bool is_fpp = false;
 
@@ -7909,12 +8137,6 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 	else if (rcode == TRUTH_ORIF_EXPR)
 	  rcode = BIT_IOR_EXPR;
 	tree op = build_int_cst (unsigned_type_node, rcode);
-
-	var = OMP_CLAUSE_REDUCTION_PRIVATE_DECL (c);
-	if (!var)
-	  var = maybe_lookup_decl (orig, ctx);
-	if (!var)
-	  var = orig;
 
 	incoming = outgoing = var;
 
@@ -7967,7 +8189,8 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 		  else if (OMP_CLAUSE_CODE (cls) == OMP_CLAUSE_MAP
 			   && (OMP_CLAUSE_MAP_KIND (cls)
 			       == GOMP_MAP_FIRSTPRIVATE_POINTER)
-			   && orig == OMP_CLAUSE_DECL (cls))
+			   && orig == OMP_CLAUSE_DECL (cls)
+			   && !array_addr)
 		    {
 		      is_fpp = true;
 		      goto do_lookup;
@@ -7988,21 +8211,65 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 		    orig_clause = cls;
 		    break;
 		  }
+	    if (gimple_code (outer->stmt) == GIMPLE_OMP_TARGET
+		&& !orig_clause
+		&& !is_private
+		&& maybe_lookup_field (orig, outer))
+	      orig_clause = orig;
 	    if ((orig_clause != NULL_TREE || is_fpp) && !is_private)
 	      {
 		tree type = TREE_TYPE (var);
 
-		if (is_fpp)
+		if (is_fpp && !array_addr)
 		  {
 		    tree x = create_tmp_var (type);
 		    gimplify_assign (x, lookup_decl (orig, outer), fork_seq);
 		    ref_to_res = x;
 		  }
-		else
+		else if (orig_clause)
 		  {
 		    ref_to_res = build_receiver_ref (orig_clause, false, outer);
 		    if (omp_privatize_by_reference (orig))
 		      ref_to_res = build_simple_mem_ref (ref_to_res);
+
+		    bool ptr_ptr_array = false;
+		    if (TREE_CODE (TREE_TYPE (orig)) == ARRAY_TYPE
+			&& TREE_CODE (TREE_TYPE (ref_to_res)) == POINTER_TYPE
+			&& (TREE_CODE (TREE_TYPE (TREE_TYPE (ref_to_res)))
+			    == POINTER_TYPE))
+		      {
+			ref_to_res = build_simple_mem_ref (ref_to_res);
+			ptr_ptr_array = true;
+		      }
+
+		    if (array_bias)
+		      {
+			tree map_bias = integer_zero_node;
+			if (ptr_ptr_array)
+			  map_bias = array_bias;
+			else
+			  {
+			    tree m = gimple_omp_target_clauses (outer->stmt);
+			    for (; m; m = OMP_CLAUSE_CHAIN (m))
+			      if (OMP_CLAUSE_CODE (m) == OMP_CLAUSE_MAP)
+				{
+				  tree md = OMP_CLAUSE_DECL (m);
+				  if (orig == md
+				      || (TREE_CODE (md) == ARRAY_REF
+					  && TREE_OPERAND (md, 0) == orig))
+				    {
+				      map_bias
+					= oacc_array_reduction_bias (loc, c, ctx,
+								     m, outer);
+				      break;
+				    }
+				}
+			  }
+			tree t = fold_convert (ptr_type_node, ref_to_res);
+			t = build2 (POINTER_PLUS_EXPR, ptr_type_node, t,
+				    fold_convert (sizetype, map_bias));
+			ref_to_res = fold_convert (TREE_TYPE (ref_to_res), t);
+		      }
 		  }
 
 		if (POINTER_TYPE_P (type))
@@ -8016,13 +8283,91 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 		/* Try to look at enclosing contexts for reduction var,
 		   use original if no mapping found.  */
 		tree t = NULL_TREE;
-		omp_context *c = ctx->outer;
-		while (c && !t)
+		omp_context *cp = ctx->outer;
+		while (cp)
 		  {
-		    t = maybe_lookup_decl (orig, c);
-		    c = c->outer;
+		    t = maybe_lookup_decl (orig, cp);
+		    if (t)
+		      break;
+
+		    cp = cp->outer;
 		  }
-		incoming = outgoing = (t ? t : orig);
+
+		if (array_addr)
+		  {
+		    if (t)
+		      {
+			if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+			  {
+			    if (!is_private)
+			      {
+				gcc_assert (DECL_SIZE (t)
+					    && (TREE_CODE (DECL_SIZE (t))
+						!= INTEGER_CST)
+					    && DECL_HAS_VALUE_EXPR_P (t));
+				t = DECL_VALUE_EXPR (t);
+			      }
+
+			    t = fold_convert (ptr_type_node,
+					      build_fold_addr_expr (t));
+			    if (array_bias)
+			      t = build2 (POINTER_PLUS_EXPR, ptr_type_node, t,
+					  fold_convert (sizetype, array_bias));
+			    ref_to_res
+			      = fold_convert (build_pointer_type
+					      (TREE_TYPE (orig)), t);
+			  }
+			else if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE)
+			  {
+			    if (array_bias)
+			      t = build2 (POINTER_PLUS_EXPR, ptr_type_node, t,
+					  fold_convert (sizetype, array_bias));
+			    ref_to_res
+			      = fold_convert (build_pointer_type
+					      (array_type), t);
+			  }
+			else
+			  gcc_unreachable ();
+		      }
+		    else
+		      {
+			gcc_assert (!cp && (gimple_code (ctx->stmt)
+					    == GIMPLE_OMP_TARGET));
+
+			tree mem_ref = NULL_TREE;
+			tree mem_ref_clause = NULL_TREE;
+			tree m = gimple_omp_target_clauses (ctx->stmt);
+			tree orig_val = (DECL_HAS_VALUE_EXPR_P (orig)
+					 ? DECL_VALUE_EXPR (orig) : orig);
+			for (; m; m = OMP_CLAUSE_CHAIN (m))
+			  if (OMP_CLAUSE_CODE (m) == OMP_CLAUSE_MAP)
+			    {
+			      tree md = OMP_CLAUSE_DECL (m);
+			      if (orig_val == md
+				  || (TREE_CODE (md) == MEM_REF
+				      && INDIRECT_REF_P (orig_val)
+				      && (TREE_OPERAND (md, 0)
+					  == TREE_OPERAND (orig_val, 0))))
+				{
+				  mem_ref = md;
+				  mem_ref_clause = m;
+				  break;
+				}
+			    }
+			gcc_assert (mem_ref);
+			mem_ref = build_receiver_ref (mem_ref_clause, false, ctx);
+
+			if (array_bias)
+			  mem_ref = build2 (POINTER_PLUS_EXPR, ptr_type_node,
+					    mem_ref, fold_convert (sizetype,
+								   array_bias));
+			ref_to_res
+			  = fold_convert (build_pointer_type (TREE_TYPE (orig)),
+					  mem_ref);
+		      }
+		  }
+		else
+		  incoming = outgoing = (t ? t : orig);
 	      }
 
 	  has_outer_reduction:;
@@ -8030,6 +8375,9 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 
 	if (!ref_to_res)
 	  ref_to_res = integer_zero_node;
+
+	if (!array_addr)
+	  array_addr = array_max_idx = integer_zero_node;
 
 	if (omp_privatize_by_reference (outgoing))
 	  {
@@ -8063,25 +8411,29 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 
 	tree setup_call
 	  = build_call_expr_internal_loc (loc, IFN_GOACC_REDUCTION,
-					  TREE_TYPE (var), 6, setup_code,
+					  TREE_TYPE (var), 8, setup_code,
 					  unshare_expr (ref_to_res),
 					  unshare_expr (incoming),
-					  level, op, off);
+					  level, op, off,
+					  array_addr, array_max_idx);
 	tree init_call
 	  = build_call_expr_internal_loc (loc, IFN_GOACC_REDUCTION,
-					  TREE_TYPE (var), 6, init_code,
+					  TREE_TYPE (var), 8, init_code,
 					  unshare_expr (ref_to_res),
-					  unshare_expr (var), level, op, off);
+					  unshare_expr (var), level, op, off,
+					  array_addr, array_max_idx);
 	tree fini_call
 	  = build_call_expr_internal_loc (loc, IFN_GOACC_REDUCTION,
-					  TREE_TYPE (var), 6, fini_code,
+					  TREE_TYPE (var), 8, fini_code,
 					  unshare_expr (ref_to_res),
-					  unshare_expr (var), level, op, off);
+					  unshare_expr (var), level, op, off,
+					  array_addr, array_max_idx);
 	tree teardown_call
 	  = build_call_expr_internal_loc (loc, IFN_GOACC_REDUCTION,
-					  TREE_TYPE (var), 6, teardown_code,
+					  TREE_TYPE (var), 8, teardown_code,
 					  ref_to_res, unshare_expr (var),
-					  level, op, off);
+					  level, op, off,
+					  array_addr, array_max_idx);
 
 	gimplify_assign (unshare_expr (var), setup_call, &before_fork);
 	gimplify_assign (unshare_expr (var), init_call, &after_fork);
@@ -14283,11 +14635,10 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 		    && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER
 		    && !OMP_CLAUSE_MAP_ZERO_BIAS_ARRAY_SECTION (c)
-		    && TREE_CODE (TREE_TYPE (ovar)) == ARRAY_TYPE)
+		    && TREE_CODE (TREE_TYPE (ovar)) == ARRAY_TYPE
+		    && offloaded)
 		  {
-		    gcc_assert (offloaded);
-		    tree avar
-		      = create_tmp_var (TREE_TYPE (TREE_TYPE (x)));
+		    tree avar = create_tmp_var (TREE_TYPE (TREE_TYPE (x)));
 		    mark_addressable (avar);
 		    gimplify_assign (avar, build_fold_addr_expr (var), &ilist);
 		    talign = DECL_ALIGN_UNIT (avar);
@@ -15279,8 +15630,29 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 					 gimple_build_assign (t, x));
 		    x = build_fold_addr_expr_loc (clause_loc, t);
 		  }
-		gimple_seq_add_stmt (&new_body,
-				     gimple_build_assign (new_var, x));
+		if (offloaded && is_gimple_omp_oacc (ctx->stmt)
+		    && OMP_CLAUSE_MAP_IN_REDUCTION (prev)
+		    && TREE_CODE (type) == POINTER_TYPE
+		    && TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE
+		    && !TREE_CONSTANT (TYPE_SIZE_UNIT (TREE_TYPE (type))))
+		  {
+		    tree array_type = TREE_TYPE (type);
+		    tree atmp
+		      = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
+		    tree al = size_int (TYPE_ALIGN (array_type));
+		    tree sz = TYPE_SIZE_UNIT (array_type);
+		    tree call = build_call_expr_loc (OMP_CLAUSE_LOCATION (c),
+						     atmp, 2, sz, al);
+		    gimplify_assign (x, call, &new_body);
+
+		    /* In some cases, we need to preserve the pointer to array
+		       type, as it will be passed into OpenACC reduction
+		       internal-fns, and we require the type for proper copy
+		       generation.  */
+		    TREE_TYPE (x) = TREE_TYPE (new_var);
+		  }
+		gimple *g = gimple_build_assign (new_var, x);
+		gimple_seq_add_stmt (&new_body, g);
 		prev = NULL_TREE;
 	      }
 	    else if (OMP_CLAUSE_CHAIN (c)
