@@ -156,6 +156,7 @@ tree cblc_field_p_type_node;
 tree cblc_field_pp_type_node;
 tree cblc_file_type_node;
 tree cblc_file_p_type_node;
+tree cbl_enabled_exception_type_node;
 tree cblc_goto_type_node;
 
 // The following functions return type_decl nodes for the various structures
@@ -285,6 +286,29 @@ typedef struct cblc_file_t
     return retval;
     }
 
+static tree
+create_cbl_enabled_exception_t()
+    {
+    /*
+    struct cbl_enabled_exception_t
+        {
+        bool enabled, location;
+        ec_type_t ec;
+        size_t file;
+        };
+    */
+    tree retval = NULL_TREE;
+    retval = gg_get_filelevel_struct_type_decl( "cbl_enabled_exception_t",
+                                            4,
+                                            BOOL,   "enabled",
+                                            BOOL,   "location",
+                                            UINT,   "ec",
+                                            SIZE_T, "file");
+    retval = TREE_TYPE(retval);
+
+    return retval;
+    }
+
 void
 create_our_type_nodes()
     {
@@ -297,6 +321,7 @@ create_our_type_nodes()
         cblc_field_pp_type_node           = build_pointer_type(cblc_field_p_type_node);
         cblc_file_type_node               = create_cblc_file_t();
         cblc_file_p_type_node             = build_pointer_type(cblc_file_type_node);
+        cbl_enabled_exception_type_node   = create_cbl_enabled_exception_t();
         }
     }
 

@@ -13301,24 +13301,29 @@ static void
 stash_exceptions( const cbl_enabled_exceptions_array_t *enabled )
   {
   // We need to create a static array of bytes
-  size_t narg = enabled->nbytes();
-  unsigned char *p = (unsigned char *)(enabled->ecs);
+  size_t nec = enabled->nec;
+  size_t sz = int_size_in_bytes(cbl_enabled_exception_type_node);
+  size_t narg = nec * sz;
+  cbl_enabled_exception_t *p = enabled->ecs;
 
-  static size_t prior_narg = 0;
-  static size_t max_narg   = 128;
-  static unsigned char *prior_p = (unsigned char *)xmalloc(max_narg);
+  static size_t prior_nec = 0;
+  static size_t max_nec   = 0;
+  static cbl_enabled_exception_t *prior_p;
 
   bool we_got_new_data = false;
-  if( prior_narg != narg )
+  if( prior_nec != nec )
     {
     we_got_new_data = true;
     }
   else
     {
-    // The narg counts are the same.
-    for(size_t i=0; i<narg; i++)
+    // The nec counts are the same.
+    for(size_t i=0; i<nec; i++)
       {
-      if( p[i] != prior_p[i] )
+      if( p[i].enabled != prior_p[i].enabled
+          || p[i].location != prior_p[i].location
+          || p[i].ec != prior_p[i].ec
+          || p[i].file != prior_p[i].file )
         {
         we_got_new_data = true;
         break;
@@ -13331,13 +13336,15 @@ stash_exceptions( const cbl_enabled_exceptions_array_t *enabled )
     return;
     }
 
-  if( narg > max_narg )
+  if( nec > max_nec )
     {
-    max_narg = narg;
-    prior_p = (unsigned char *)xrealloc(prior_p, max_narg);
+    max_nec = nec;
+    prior_p = (cbl_enabled_exception_t *)
+              xrealloc(prior_p, max_nec * sizeof(cbl_enabled_exception_t));
     }
 
-  memcpy(prior_p, p, narg);
+  memcpy((unsigned char *)prior_p, (unsigned char *)p,
+         nec * sizeof(cbl_enabled_exception_t));
 
   static int count = 1;
 
@@ -13355,12 +13362,33 @@ stash_exceptions( const cbl_enabled_exceptions_array_t *enabled )
     TREE_TYPE(constr) = array_of_chars_type;
     TREE_STATIC(constr)    = 1;
     TREE_CONSTANT(constr)  = 1;
+    unsigned char *q = XALLOCAVEC(unsigned char, sz);
 
-    for(size_t i=0; i<narg; i++)
+    for(size_t i=0; i<nec; i++)
       {
-      CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
-                              build_int_cst_type(SIZE_T, i),
-                              build_int_cst_type(UCHAR, p[i]));
+      memset(q, '\0', sz);
+      tree enabled = constant_boolean_node(p[i].enabled, BOOL);
+      tree location = constant_boolean_node(p[i].location, BOOL);
+      tree ec = build_int_cst(UINT, p[i].ec);
+      tree file = build_int_cst(SIZE_T, p[i].file);
+      tree fld = TYPE_FIELDS(cbl_enabled_exception_type_node);
+      native_encode_expr(enabled, q + tree_to_uhwi(byte_position(fld)),
+                         int_size_in_bytes(BOOL));
+      fld = TREE_CHAIN(fld);
+      native_encode_expr(location, q + tree_to_uhwi(byte_position(fld)),
+                         int_size_in_bytes(BOOL));
+      fld = TREE_CHAIN(fld);
+      native_encode_expr(ec, q + tree_to_uhwi(byte_position(fld)),
+                         int_size_in_bytes(UINT));
+      fld = TREE_CHAIN(fld);
+      native_encode_expr(file, q + tree_to_uhwi(byte_position(fld)),
+                         int_size_in_bytes(SIZE_T));
+      for(size_t j=0; j<sz; j++)
+        {
+        CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
+                                build_int_cst_type(SIZE_T, i*sz + j),
+                                build_int_cst_type(UCHAR, q[j]));
+        }
       }
     array_of_chars = gg_define_variable(array_of_chars_type, ach, vs_static);
     DECL_INITIAL(array_of_chars) = constr;
