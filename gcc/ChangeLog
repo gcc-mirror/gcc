@@ -1,3 +1,12 @@
+2025-05-01  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2025-03-12  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/116564
+	* df-problems.cc (df_simulate_defs): For partial defs, mark the
+	register live (treat it as a RMW operation).
+
 2025-04-30  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
