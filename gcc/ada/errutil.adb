@@ -208,7 +208,9 @@ package body Errutil is
             Line                => Get_Physical_Line_Number (Sptr),
             Col                 => Get_Column_Number (Sptr),
             Compile_Time_Pragma => Is_Compile_Time_Msg,
-            Warn_Err            => Warning_Mode = Treat_As_Error,
+            Warn_Err            => (if Warning_Mode = Treat_As_Error
+                                    then From_Warn_As_Err
+                                    else None),
             Warn_Chr            => Warning_Msg_Char,
             Uncond              => Is_Unconditional_Msg,
             Msg_Cont            => Continuation,

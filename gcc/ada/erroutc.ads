@@ -82,14 +82,13 @@ package Erroutc is
    --  Set true to indicate that the current message originates from a
    --  Compile_Time_Warning or Compile_Time_Error pragma.
 
+   Is_Runtime_Raise_Msg : Boolean := False;
+   --  Set to True to indicate that the current message is a constraint error
+   --  that will be raised at runtime (contains [).
+
    Is_Unconditional_Msg : Boolean := False;
    --  Set True to indicate that the current message contains the insertion
    --  character ! and is thus to be treated as an unconditional message.
-
-   Is_Runtime_Raise : Boolean := False;
-   --  Set to True to indicate that the current message is a warning about a
-   --  constraint error that will be raised at runtime (contains [ and switch
-   --  -gnatwE was given)..
 
    Error_Msg_Kind : Error_Msg_Type := Error;
 
@@ -261,6 +260,17 @@ package Erroutc is
      Table_Increment      => 200,
      Table_Name           => "Fix");
 
+   type Warning_As_Error_Kind is
+     (None, From_Pragma, From_Warn_As_Err, From_Run_Time_As_Err);
+   --  The reason for a warning to be converted as an error:
+   --  * None - Regular warning. Default value for non-warning messages.
+   --  * From_Pragma - Warning converted to an error due to a pragma
+   --    Warning_As_Error.
+   --  * From_Warn_As_Err - Warning converted to an error because the
+   --    Warning_Mode was set to Treat_As_Errors by -gnatwe.
+   --  * From_Run_Time_As_Err - Warning converted to an error because the
+   --    Warning_Mode was set to Treat_Run_Time_Warnings_As_Errors by -gnatwE.
+
    type Error_Msg_Object is record
       Text : String_Ptr;
       --  Text of error message, fully expanded with all insertions
@@ -308,9 +318,11 @@ package Erroutc is
       --  True if the message originates from a Compile_Time_Warning or
       --  Compile_Time_Error pragma
 
-      Warn_Err : Boolean;
-      --  True if this is a warning message which is to be treated as an error
-      --  as a result of a match with a Warning_As_Error pragma.
+      Warn_Err : Warning_As_Error_Kind;
+      --  By default this is None. If the warning was converted by some reason
+      --  to an error then it has a different value. Depending on the value
+      --  the warning will be printed in a different way due to historical
+      --  reasons.
 
       Warn_Chr : String (1 .. 2);
       --  See Warning_Msg_Char
@@ -381,7 +393,7 @@ package Erroutc is
    --  Update E to point to the next continuation message
 
    function Kind_To_String (E : Error_Msg_Object) return String is
-     (if E.Warn_Err then "error"
+     (if E.Warn_Err in From_Pragma | From_Run_Time_As_Err then "error"
       else
         (case E.Kind is
            when Error | Non_Serious_Error => "error",
@@ -578,7 +590,7 @@ package Erroutc is
      (SGR_Seq (Color_Bold));
 
    function Get_SGR_Code (E_Msg : Error_Msg_Object) return String is
-     (if E_Msg.Warn_Err then SGR_Error
+     (if E_Msg.Warn_Err /= None then SGR_Error
       else
         (case E_Msg.Kind is
            when Warning | Style => SGR_Warning,
@@ -606,8 +618,8 @@ package Erroutc is
    --  buffer, and preceded by a space.
 
    function Compilation_Errors return Boolean;
-   --  Returns true if errors have been detected, or warnings in -gnatwe
-   --  (treat warnings as errors) mode.
+   --  Returns true if errors have been detected, or warnings that are treated
+   --  as errors.
 
    procedure dmsg (Id : Error_Msg_Id);
    --  Debugging routine to dump an error message
@@ -717,6 +729,10 @@ package Erroutc is
    Medium_Prefix : constant String := "medium: ";
    High_Prefix   : constant String := "high: ";
    Style_Prefix  : constant String := "(style) ";
+
+   Warn_As_Err_Tag : constant String := "[warning-as-error]";
+   --  Tag used at the end of warning messages that were converted by
+   --  pragma Warning_As_Error.
 
    procedure Purge_Messages (From : Source_Ptr; To : Source_Ptr);
    --  All error messages whose location is in the range From .. To (not

@@ -1400,7 +1400,7 @@ package body Errout is
           Line                => Get_Physical_Line_Number (Sptr),
           Col                 => Get_Column_Number (Sptr),
           Compile_Time_Pragma => Is_Compile_Time_Msg,
-          Warn_Err            => False, -- reset below
+          Warn_Err            => None, -- reset below
           Warn_Chr            => Warning_Msg_Char,
           Uncond              => Is_Unconditional_Msg,
           Msg_Cont            => Continuation,
@@ -1413,12 +1413,25 @@ package body Errout is
           Fixes               => First_Fix));
       Cur_Msg := Errors.Last;
 
-      --  Test if warning to be treated as error
+      --  Test if a warning is to be treated as error:
+      --  * It is marked by a pragma Warning_As_Error
+      --  * Warning_Mode is Treat_Run_Time_Warnings_As_Errors and we are
+      --    dealing with a runtime warning.
+      --  * Warning_Mode is Warnings_As_Errors and it is not a compile time
+      --    message.
 
-      Errors.Table (Cur_Msg).Warn_Err :=
-        Error_Msg_Kind in Warning | Style
-        and then (Warning_Treated_As_Error (Errors.Table (Cur_Msg))
-                  or else Is_Runtime_Raise);
+      if Error_Msg_Kind in Warning | Style then
+         if Warning_Treated_As_Error (Errors.Table (Cur_Msg)) then
+            Errors.Table (Cur_Msg).Warn_Err := From_Pragma;
+         elsif Warning_Mode = Treat_Run_Time_Warnings_As_Errors
+           and then Is_Runtime_Raise_Msg
+         then
+            Errors.Table (Cur_Msg).Warn_Err := From_Run_Time_As_Err;
+         elsif Warning_Mode = Treat_As_Error and then not Is_Compile_Time_Msg
+         then
+            Errors.Table (Cur_Msg).Warn_Err := From_Warn_As_Err;
+         end if;
+      end if;
 
       --  If immediate errors mode set, output error message now. Also output
       --  now if the -d1 debug flag is set (so node number message comes out
@@ -2119,7 +2132,6 @@ package body Errout is
       Warnings_Treated_As_Errors := 0;
       Warnings_Detected := 0;
       Warnings_As_Errors_Count := 0;
-      Compile_Time_Pragma_Warnings := 0;
 
       --  Initialize warnings tables
 
@@ -2627,7 +2639,8 @@ package body Errout is
 
       Write_Str ("{""kind"":");
 
-      if Errors.Table (E).Kind = Warning and then not Errors.Table (E).Warn_Err
+      if Errors.Table (E).Kind = Warning
+        and then Errors.Table (E).Warn_Err = None
       then
          Write_Str ("""warning""");
       elsif Errors.Table (E).Kind in
@@ -3126,11 +3139,10 @@ package body Errout is
       end if;
 
       if Warning_Mode = Treat_As_Error then
+         pragma Assert (Warnings_Detected >= Warnings_Treated_As_Errors);
          Total_Errors_Detected :=
-           Total_Errors_Detected
-           + Warnings_Detected
-           - Compile_Time_Pragma_Warnings;
-         Warnings_Detected := Compile_Time_Pragma_Warnings;
+           Total_Errors_Detected + Warnings_Treated_As_Errors;
+         Warnings_Detected := Warnings_Detected - Warnings_Treated_As_Errors;
       end if;
    end Output_Messages;
 
@@ -4075,15 +4087,7 @@ package body Errout is
                   Set_Msg_Insertion_Code;
 
                else
-                  --  Switch the message from a warning to an error if the flag
-                  --  -gnatwE is specified to treat run-time exception warnings
-                  --  as non-serious errors.
-
-                  if Error_Msg_Kind = Warning
-                    and then Warning_Mode = Treat_Run_Time_Warnings_As_Errors
-                  then
-                     Is_Runtime_Raise := True;
-                  end if;
+                  Is_Runtime_Raise_Msg := True;
 
                   if Error_Msg_Kind = Warning then
                      Set_Msg_Str ("will be raised at run time");
