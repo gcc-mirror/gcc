@@ -76,33 +76,37 @@ void labels_dump();
 cbl_dialect_t cbl_dialect;
 size_t cbl_gcobol_features;
 
+static enum cbl_division_t current_division;
 static size_t nparse_error = 0;
 
-size_t parse_error_inc() { return ++nparse_error; }
+size_t parse_error_inc() {
+  mode_syntax_only(current_division);
+  return ++nparse_error;
+}
 size_t parse_error_count() { return nparse_error; }
 void input_file_status_notify();
 
-#define YYLLOC_DEFAULT(Current, Rhs, N)					\
-  do {									\
-      if (N)								\
-        {								\
-          (Current).first_line   = YYRHSLOC (Rhs, 1).first_line;	\
-          (Current).first_column = YYRHSLOC (Rhs, 1).first_column;	\
-          (Current).last_line    = YYRHSLOC (Rhs, N).last_line;		\
-          (Current).last_column  = YYRHSLOC (Rhs, N).last_column;	\
-          location_dump("parse.c", N,					\
-                        "rhs N  ", YYRHSLOC (Rhs, N));			\
-        }								\
-      else								\
-        {								\
-          (Current).first_line   =					\
-          (Current).last_line    = YYRHSLOC (Rhs, 0).last_line;		\
-          (Current).first_column =					\
-          (Current).last_column  = YYRHSLOC (Rhs, 0).last_column;	\
-        }								\
-      location_dump("parse.c", __LINE__, "current", (Current));		\
-      gcc_location_set( location_set(Current) );			\
-      input_file_status_notify();					\
+#define YYLLOC_DEFAULT(Current, Rhs, N)                                 \
+  do {                                                                  \
+      if (N)                                                            \
+        {                                                               \
+          (Current).first_line   = YYRHSLOC (Rhs, 1).first_line;        \
+          (Current).first_column = YYRHSLOC (Rhs, 1).first_column;      \
+          (Current).last_line    = YYRHSLOC (Rhs, N).last_line;         \
+          (Current).last_column  = YYRHSLOC (Rhs, N).last_column;       \
+          location_dump("parse.c", N,                                   \
+                        "rhs N  ", YYRHSLOC (Rhs, N));                  \
+        }                                                               \
+      else                                                              \
+        {                                                               \
+          (Current).first_line   =                                      \
+          (Current).last_line    = YYRHSLOC (Rhs, 0).last_line;         \
+          (Current).first_column =                                      \
+          (Current).last_column  = YYRHSLOC (Rhs, 0).last_column;       \
+        }                                                               \
+      location_dump("parse.c", __LINE__, "current", (Current));         \
+      gcc_location_set( location_set(Current) );                        \
+      input_file_status_notify();                                       \
   } while (0)
 
 int yylex(void);
@@ -130,8 +134,6 @@ const char * original_picture();
       char * original_number( char input[] = NULL );
 
 static const relop_t invalid_relop = static_cast<relop_t>(-1);
-
-static enum cbl_division_t current_division;
 
 static cbl_refer_t null_reference;
 static cbl_field_t *literally_one, *literally_zero;
@@ -181,21 +183,23 @@ has_clause( int data_clauses, data_clause_t clause ) {
   return clause == (data_clauses & clause);
 }
 
+
 static bool
-is_cobol_word( const char name[] ) {
+is_cobol_charset( const char name[] ) {
   auto eoname = name + strlen(name);
-  auto p = std::find_if( name, eoname,
+  auto ok = std::all_of( name, eoname,
                          []( char ch ) {
                            switch(ch) {
                            case '-':
                            case '_':
-                             return false;
+                             return true;
                            case '$': // maybe one day (IBM allows)
+                             return false;
                              break;
                            }
-                           return !ISALNUM(ch);
+                           return 0 != ISALNUM(ch);
                          } );
-  return p == eoname;
+  return ok;
 }
 
 bool
@@ -239,7 +243,7 @@ new_reference_like( const cbl_field_t& skel ) {
 
 static void reject_refmod( YYLTYPE loc, cbl_refer_t );
 static bool require_pointer( YYLTYPE loc, cbl_refer_t );
-static bool require_numeric( YYLTYPE loc, cbl_refer_t );
+static bool require_integer( YYLTYPE loc, cbl_refer_t );
 
 struct cbl_field_t * constant_of( size_t isym );
 
@@ -459,11 +463,12 @@ static class file_start_args_t {
   cbl_file_t *file;
 public:
   file_start_args_t() : file(NULL) {}
-  void init( YYLTYPE loc, cbl_file_t *file ) {
+  cbl_file_t * init( YYLTYPE loc, cbl_file_t *file ) {
     this->file = file;
     if( is_sequential(file) ) {
       error_msg(loc, "START invalid with sequential file %s", file->name);
     }
+    return file;
   }
   bool ready() const { return file != NULL; }
   void call_parser_file_start() {
@@ -932,6 +937,12 @@ class tokenset_t {
     cbl_name_t lname;
     std::transform(name, name + strlen(name) + 1, lname, ftolower);
     return lname;
+  }
+  static std::string
+  uppercase( const cbl_name_t name ) {
+    cbl_name_t uname;
+    std::transform(name, name + strlen(name) + 1, uname, ftoupper);
+    return uname;
   }
 
  public:
@@ -1711,18 +1722,11 @@ static class current_t {
   int first_statement;
   bool in_declaratives;
   // from command line or early TURN
-  std::list<cbl_exception_files_t> cobol_exceptions;
+  std::list<exception_turn_t> exception_turns;
 
   error_labels_t error_labels;
 
   static void declarative_execute( cbl_label_t *eval ) {
-    if( !eval ) {
-      if( !enabled_exceptions.empty() ) {
-        auto index = new_temporary(FldNumericBin5);
-        parser_match_exception(index, NULL);
-      }
-      return;
-    }
     assert(eval);
     auto iprog = symbol_elem_of(eval)->program;
     if( iprog  == current_program_index() ) {
@@ -1825,6 +1829,11 @@ static class current_t {
     };
     std::set<file_exception_t> file_exceptions;
    public:
+    // current compiled data for enabled ECs and Declaratives, used by library.
+    struct runtime_t {
+      tree ena, dcl;
+    } runtime;
+    
     bool empty() const {
       return declaratives_list_t::empty();
     }
@@ -1854,14 +1863,44 @@ static class current_t {
       declaratives_list_t::push_back(declarative);
       return true;
     }
+
+    uint32_t status() const {
+      uint32_t status_word = 0;
+      for( auto dcl : *this ) {
+        status_word |= (EC_ALL_E & dcl.type );
+      }
+      return status_word;
+    }
+
+    bool has_format_1() const {
+      return std::any_of( begin(), end(),
+                          []( const cbl_declarative_t& dcl ) {
+                            return dcl.is_format_1();
+                          } );
+    }
+
+    std::vector<uint64_t> 
+    encode() const {
+      std::vector<uint64_t> encoded;
+      auto p = std::back_inserter(encoded);
+      for( const auto& dcl : *this ) {
+        *p++ = dcl.section;
+        *p++ = dcl.global;
+        *p++ = dcl.type;
+        *p++ = dcl.nfile;
+        p = std::copy(dcl.files, std::end(dcl.files), p);
+        *p++ = dcl.mode;
+      }
+      return encoded;
+    }
+
   } declaratives;
 
   void exception_add( ec_type_t ec,  bool enabled = true) {
-    std::set<size_t> files;
-    enabled_exceptions.turn_on_off(enabled,
-                                   false,  // for now
-                                   ec, files);
-    if( yydebug) enabled_exceptions.dump();
+    exception_turns.push_back(exception_turn_t(ec, enabled));
+  }
+  std::list<exception_turn_t>& pending_exceptions() {
+    return exception_turns;
   }
 
   bool typedef_add( const cbl_field_t *field ) {
@@ -2066,7 +2105,7 @@ static class current_t {
    */
   std::set<std::string>  end_program() {
     if( enabled_exceptions.size() ) {
-      declaratives_evaluate(ec_none_e);
+      declaratives_evaluate();
     }
 
     assert(!programs.empty());
@@ -2128,7 +2167,7 @@ static class current_t {
     return symbol_index(symbol_elem_of(section));
   }
 
-  cbl_label_t *doing_declaratives( bool begin ) {
+  cbl_label_t * doing_declaratives( bool begin ) {
     if( begin ) {
       in_declaratives = true;
       return NULL;
@@ -2137,6 +2176,8 @@ static class current_t {
     in_declaratives = false;
     if( declaratives.empty() ) return NULL;
     assert(!declaratives.empty());
+
+    declaratives.runtime.dcl = parser_compile_dcls(declaratives.encode());
 
     size_t idcl = symbol_declaratives_add(program_index(), declaratives.as_list());
     programs.top().declaratives_index = idcl;
@@ -2163,6 +2204,25 @@ static class current_t {
     std::swap( programs.top().section, section );
     return section;
   }
+  
+  ec_type_t ec_type_of( file_status_t status ) {
+    static std::vector<ec_type_t> ec_by_status {
+      /* 0 */ ec_none_e, // ec_io_warning_e if low byte is nonzero
+      /* 1 */ ec_io_at_end_e, 
+      /* 2 */ ec_io_invalid_key_e,
+      /* 3 */ ec_io_permanent_error_e,
+      /* 4 */ ec_io_logic_error_e,
+      /* 5 */ ec_io_record_operation_e,
+      /* 6 */ ec_io_file_sharing_e,
+      /* 7 */ ec_io_record_content_e,
+      /* 8 */ ec_io_imp_e, // unused, not defined by ISO
+      /* 9 */ ec_io_imp_e,
+    };
+    int status10 = static_cast<unsigned int>(status) / 10;
+    gcc_assert(ec_by_status.size() == 10);
+    gcc_assert(0 <= status10 && status10 < 10 && status10 != 8);
+    return ec_by_status[status10];
+  }
 
   /*
    * END DECLARATIVES causes:
@@ -2180,18 +2240,8 @@ static class current_t {
    * alternative entry point (TODO).
    */
   void
-  declaratives_evaluate( cbl_file_t *file,
-                         file_status_t status = FsSuccess ) {
-    // The exception file number is assumed to be zero at all times unless
-    // it has been set to non-zero, at which point whoever picks it up and takes
-    // action on it is charged with setting it back to zero.
-    if( file )
-      {
-      parser_set_file_number((int)symbol_index(symbol_elem_of(file)));
-      }
-    // parser_set_file_number(file ? (int)symbol_index(symbol_elem_of(file)) : 0);
-    parser_set_handled((ec_type_t)status);
-
+  declaratives_evaluate( cbl_file_t *file ) {
+    gcc_assert(file);
     parser_file_stash(file);
 
     cbl_label_t *eval = programs.first_declarative();
@@ -2219,7 +2269,7 @@ static class current_t {
    * To indicate to the runtime-match function that we want to evaluate
    * only the exception condition, unrelated to a file, we set the
    * file register to 0 and the handled-exception register to the
-   * handled exception condition (not file status).
+   * handled exception condition. 
    *
    * declaratives_execute performs the "declarative ladder" produced
    * by declaratives_runtime_match.  That section CALLs the
@@ -2230,16 +2280,9 @@ static class current_t {
    * index, per usual.
    */
   void
-  declaratives_evaluate( ec_type_t handled = ec_none_e ) {
-    // The exception file number  is assumed to be zero unless it has been
-    // changed to a non-zero value.  The program picking it up and referencing
-    // it is charged with setting it back to zero.
-    // parser_set_file_number(0);
-
-    parser_set_handled(handled);
-
+  declaratives_evaluate() {
     cbl_label_t *eval = programs.first_declarative();
-    declarative_execute(eval);
+    if( eval ) declarative_execute(eval);
   }
 
   cbl_label_t * new_paragraph( cbl_label_t *para ) {
@@ -2282,6 +2325,10 @@ static class current_t {
   cbl_label_t * compute_not_error() { return error_labels.not_error; }
   cbl_label_t * compute_label() { return error_labels.compute_error; }
 } current;
+
+void current_enabled_ecs( tree ena ) {
+  current.declaratives.runtime.ena = ena;
+}
 
 #define PROGRAM current.program_index()
 
@@ -2382,11 +2429,27 @@ literal_refmod_valid( YYLTYPE loc, const cbl_refer_t& r );
 
 static bool
 is_integer_literal( const cbl_field_t *field ) {
-  if( is_literal(field) ) {
-    int v, n;
+  if( field->type == FldLiteralN ) {
     const char *initial = field->data.initial;
 
-    return 1 == sscanf(initial, "%d%n", &v, &n) && n == (int)strlen(initial);
+    switch( *initial ) {
+    case '-': case '+': ++initial;
+    }
+
+    const char *eos = initial + strlen(initial);
+    auto p = std::find_if_not( initial, eos, fisdigit );
+    if( p == eos ) return true;
+    
+    if( *p++ == symbol_decimal_point() ) {
+      switch( *p++ ) {
+      case 'E': case 'e':
+	switch( *p++ ) {
+	case '+': case '-':
+	  return std::all_of(p, eos, []( char ch ) { return ch == '0'; } );
+	  break;
+	}
+      }
+    }
   }
   return false;
 }
@@ -3312,6 +3375,13 @@ procedure_division_ready( YYLTYPE loc, cbl_field_t *returning, ffi_args_t *ffi_a
     }
   }
 
+  // Apply ECs from the command line
+  std::list<exception_turn_t>& exception_turns = current.pending_exceptions();
+  for( const auto& exception_turn : exception_turns) {
+    apply_cdf_turn(exception_turn);
+  }
+  exception_turns.clear();
+  
   // Start the Procedure Division.
   size_t narg = ffi_args? ffi_args->elems.size() : 0;
   std::vector <cbl_ffi_arg_t> args(narg);
@@ -3544,6 +3614,11 @@ goodnight_gracie() {
   return true;
 }
 
+// false after USE statement, to enter Declarative with EC intact. 
+static bool statement_cleanup = true;
+
+static void statement_epilog( int token );
+
 const char * keyword_str( int token );
 
 static YYLTYPE current_location;
@@ -3555,9 +3630,7 @@ location_set( const YYLTYPE& loc ) {
   return current_location = loc;
 }
 
-static int prior_statement;
-
-static size_t statement_begin( const YYLTYPE& loc, int token );
+static void statement_begin( const YYLTYPE& loc, int token );
 
 static void ast_first_statement( const YYLTYPE& loc ) {
   if( current.is_first_statement( loc ) ) {

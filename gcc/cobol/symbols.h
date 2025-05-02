@@ -513,7 +513,6 @@ struct cbl_field_t {
   tree data_decl_node;  // Reference to the run-time data of the COBOL variable
   //                    // For linkage_e variables, data_decl_node is a pointer
   //                    // to the data, rather than the actual data
-  tree literal_decl_node; // This is a FLOAT128 version of data.value
 
   void set_linkage( cbl_ffi_crv_t crv, bool optional ) {
     linkage.optional = optional;
@@ -2401,5 +2400,7 @@ void gcc_location_set( const LOC& loc );
 // It's the only entry point in the module, and so it seemed to me wasteful to
 //  create an entire .h module.  So, I stuck it here.
 size_t count_characters(const char *in, size_t length);
+
+void current_enabled_ecs( tree ena );
 
 #endif

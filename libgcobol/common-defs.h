@@ -30,6 +30,7 @@
 #ifndef COMMON_DEFS_H_
 #define COMMON_DEFS_H_
 
+#include <stdio.h>
 #include <stdint.h>
 #include <list>
 
@@ -235,6 +236,7 @@ enum cbl_file_mode_t {
   file_mode_output_e = 'w',
   file_mode_extend_e = 'a',
   file_mode_io_e     = '+',
+  file_mode_any_e, 
 };
 
 enum cbl_round_t {
@@ -284,6 +286,16 @@ enum bitop_t {
   bit_xor_op,
 };
 
+enum file_stmt_t {
+  file_stmt_delete_e, 
+  file_stmt_merge_e, 
+  file_stmt_read_e, 
+  file_stmt_rewrite_e, 
+  file_stmt_sort_e, 
+  file_stmt_start_e, 
+  file_stmt_write_e, 
+};
+  
 enum file_close_how_t {
   file_close_no_how_e     = 0x00,
   file_close_removal_e    = 0x01,
@@ -376,6 +388,7 @@ cbl_file_mode_str( cbl_file_mode_t mode ) {
   case file_mode_output_e: return "file_mode_output_e: 'w'";
   case file_mode_io_e:     return "file_mode_io_e: '+'";
   case file_mode_extend_e: return "file_mode_extend_e: 'a'";
+  case file_mode_any_e:    return "file_mode_any_e";
   }
   return "???";
 };
@@ -388,58 +401,165 @@ enum module_type_t {
   module_toplevel_e,
 };
 
-
-static inline bool
-ec_cmp( ec_type_t raised, ec_type_t mask )
+/*
+ * Compare a "raised" EC to an enabled EC or of a declarative.  "raised" may in
+ * fact not be raised; in the compiler this function is used to compare a TURN
+ * directive to the list of enabled ECs.
+ */
+static bool
+ec_cmp( ec_type_t raised, ec_type_t ec )
 {
-  if( raised == mask ) return true;
+  if( getenv("match_declarative") )
+    {
+    fprintf(stderr, "          ec_cmp %x %x\n", raised, ec);
+    }
 
-  // Do not match on only the low byte.
-  if( 0 < (~EC_ALL_E & static_cast<uint32_t>(mask)) ) return false;
+  if( raised == ec ) return true;
 
-  return  0 != ( static_cast<uint32_t>(raised)
-                 &
-                 static_cast<uint32_t>(mask) );
+  // If both low bytes are nonzero, we had to match exactly, above. 
+  if( (~EC_ALL_E & static_cast<uint32_t>(raised))
+      &&
+      (~EC_ALL_E & static_cast<uint32_t>(ec)) ) {
+    return false;
+  }
+
+  // Level 1 and 2 have low byte of zero. 
+  // If one low byte is zero, see if they're the same kind.
+  return 0xFF < ( static_cast<uint32_t>(raised)
+		  &
+		  static_cast<uint32_t>(ec) );
 }
 
 struct cbl_enabled_exception_t {
-  bool enabled, location;
+  bool location;
   ec_type_t ec;
   size_t file;
 
   cbl_enabled_exception_t()
-    : enabled(false)
-    , location(false)
+    : location(false)
     , ec(ec_none_e)
     , file(0)
   {}
 
-  cbl_enabled_exception_t( bool enabled, bool location,
-                           ec_type_t ec, size_t file = 0 )
-    : enabled(enabled)
-    , location(location)
+  cbl_enabled_exception_t( bool location, ec_type_t ec, size_t file = 0 )
+    : location(location)
     , ec(ec)
     , file(file)
   {}
 
-  // sort by  ec and file, not enablement
+  // sort by  ec and file
   bool operator<( const cbl_enabled_exception_t& that ) const {
     if( ec == that.ec ) return file < that.file;
     return ec < that.ec;
   }
-  // match on ec and file, not enablement
+  // match on ec and file
   bool operator==( const cbl_enabled_exception_t& that ) const {
     return ec == that.ec && file == that.file;
   }
+
+  void dump( int i ) const;
 };
 
+struct cbl_declarative_t {
+  enum { files_max = 16 };
+  size_t section; // implies program
+  bool global;
+  ec_type_t type;
+  uint32_t nfile, files[files_max];
+  cbl_file_mode_t mode;
 
-class cbl_enabled_exceptions_array_t;
+  cbl_declarative_t( cbl_file_mode_t mode = file_mode_none_e )
+    : section(0), global(false)
+    , type(ec_none_e)
+    , nfile(0)
+    , mode(mode)
+  {
+    std::fill(files, files + COUNT_OF(files), 0);
+  }
+  cbl_declarative_t( ec_type_t type )
+    : section(0), global(false)
+    , type(type)
+    , nfile(0)
+    , mode(file_mode_none_e)
+  {
+    std::fill(files, files + COUNT_OF(files), 0);
+  }
+
+  cbl_declarative_t( size_t section, ec_type_t type,
+                     const std::list<size_t>& files,
+                     cbl_file_mode_t mode,
+		     bool global = false )
+    : section(section), global(global)
+    , type(type)
+    , nfile(files.size())
+    , mode(mode)
+  {
+    assert( files.size() <= COUNT_OF(this->files) );
+    std::fill(this->files, this->files + COUNT_OF(this->files), 0);
+    if( nfile > 0 ) {
+      std::copy( files.begin(), files.end(), this->files );
+    }
+  }
+  cbl_declarative_t( const cbl_declarative_t& that )
+    : section(that.section)
+    , global(that.global)
+    , type(that.type)
+    , nfile(that.nfile)
+    , mode(that.mode)
+  {
+    std::fill(files, files + COUNT_OF(files), 0);
+    if( nfile > 0 ) {
+      std::copy( that.files, that.files + nfile, this->files );
+    }
+  }
+  constexpr cbl_declarative_t& operator=(const cbl_declarative_t&) = default;
+
+  std::vector<uint64_t> encode() const;
+  void decode( const std::vector<uint64_t>& encoded );
+
+  /*
+   * Sort file names before file modes, and file modes before non-IO.
+   */
+  bool operator<( const cbl_declarative_t& that ) const {
+    // file name declaratives first, in section order
+    if( nfile != 0 ) {
+      if( that.nfile != 0 ) return section < that.section;
+      return true;
+    }
+    // file mode declaratives between file name declaratives and non-IO
+    if( mode != file_mode_none_e ) {
+      if( that.nfile != 0 ) return false;
+      if( that.mode == file_mode_none_e ) return true;
+      return section < that.section;
+    }
+    // all others by section, after names and modes
+    if( that.nfile != 0 ) return false;
+    if( that.mode != file_mode_none_e ) return false;
+    return section < that.section;
+  }
+
+  // TRUE if there are no files to match, or the provided file is in the list.
+  bool match_file( size_t file ) const {
+    static const auto pend = files + nfile;
+
+    return nfile == 0 || pend != std::find(files, files + nfile, file);
+  }
+
+  // USE Format 1 names a file mode, or at least one file, and not an EC.
+  bool is_format_1() const {
+    return mode != file_mode_none_e;
+  }
+};
+
+typedef std::vector<cbl_declarative_t> cbl_declaratives_t;
 
 class cbl_enabled_exceptions_t : protected std::set<cbl_enabled_exception_t>
 {
-  friend cbl_enabled_exceptions_array_t;
-  void apply( const cbl_enabled_exception_t& elem ) {
+  void apply( bool enabled, const cbl_enabled_exception_t& elem ) {
+    if( ! enabled ) {
+      erase(elem);
+      return;
+    }
     auto inserted = insert( elem );
     if( ! inserted.second ) {
       erase(inserted.first);
@@ -448,57 +568,35 @@ class cbl_enabled_exceptions_t : protected std::set<cbl_enabled_exception_t>
   }
 
  public:
-  bool turn_on_off( bool enabled, bool location, ec_type_t type,
+  cbl_enabled_exceptions_t() {}
+  cbl_enabled_exceptions_t( size_t nec, const cbl_enabled_exception_t *ecs ) 
+    : std::set<cbl_enabled_exception_t>(ecs, ecs + nec)
+  {}
+  void turn_on_off( bool enabled, bool location, ec_type_t type,
                     std::set<size_t> files );
 
-  const cbl_enabled_exception_t * match( ec_type_t type, size_t file = 0 );
+  const cbl_enabled_exception_t * match( ec_type_t ec, size_t file = 0 ) const;
 
   void dump() const;
+  void dump( const char tag[] ) const;
+  uint32_t status() const;
 
   void clear() { std::set<cbl_enabled_exception_t>::clear(); }
 
   bool   empty() const { return std::set<cbl_enabled_exception_t>::empty(); }
   size_t  size() const { return std::set<cbl_enabled_exception_t>::size(); }
 
+  std::vector<uint64_t> encode() const;
+  cbl_enabled_exceptions_t& decode( const std::vector<uint64_t>& encoded );
+
   cbl_enabled_exceptions_t& operator=( const cbl_enabled_exceptions_t& ) = default;
 };
 
 extern cbl_enabled_exceptions_t enabled_exceptions;
 
-/*
- * This class is passed to the runtime function evaluating the raised exception.
- * It is constructed in genapi.cc from the compile-time table.
- */
-struct cbl_enabled_exceptions_array_t {
-  size_t nec;
-  cbl_enabled_exception_t *ecs;
-
-  cbl_enabled_exceptions_array_t( size_t nec, cbl_enabled_exception_t *ecs )
-    : nec(nec), ecs(ecs) {}
-
-  cbl_enabled_exceptions_array_t( const cbl_enabled_exceptions_t& input =
-                                  cbl_enabled_exceptions_t() )
-    : nec(input.size())
-    , ecs(NULL)
-  {
-    if( ! input.empty() ) {
-      ecs = new cbl_enabled_exception_t[nec];
-      std::copy(input.begin(), input.end(), ecs);
-    }
-  }
-
-  cbl_enabled_exceptions_array_t&
-  operator=( const cbl_enabled_exceptions_array_t& input);
-
-
-  bool match( ec_type_t ec, size_t file = 0 ) const;
-
-  size_t nbytes() const { return nec * sizeof(ecs[0]); }
-};
-
 template <typename T>
 T enabled_exception_match( T beg, T end, ec_type_t type, size_t file ) {
-  cbl_enabled_exception_t input( true, true, // don't matter
+  cbl_enabled_exception_t input( true, // doesn't matter
                                  type, file );
   auto output = std::find(beg, end, input);
   if( output == end ) {
@@ -507,6 +605,9 @@ T enabled_exception_match( T beg, T end, ec_type_t type, size_t file ) {
                              return
                                elem.file == 0 &&
                                ec_cmp(ec, elem.ec); } );
+  } else {
+    if( getenv("match_declarative") )
+      fprintf(stderr, "          enabled_exception_match found %x in input\n", type);
   }
   return output;
 }

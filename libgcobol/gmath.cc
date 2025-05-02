@@ -38,6 +38,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <algorithm>
+#include <vector>
 
 #include "config.h"
 #include "libgcobol-fp.h"
@@ -47,7 +48,6 @@
 #include "io.h"
 #include "gcobolio.h"
 #include "libgcobol.h"
-#include "common-defs.h"
 #include "gmath.h"
 #include "gcobolio.h"
 

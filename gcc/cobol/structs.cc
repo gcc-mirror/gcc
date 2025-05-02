@@ -217,6 +217,7 @@ create_cblc_file_t()
 typedef struct cblc_file_t
     {
     char                *name;             // This is the name of the structure; might be the name of an environment variable
+    size_t               symbol_index;     // The symbol table index of the related cbl_file_t structure
     char                *filename;         // The name of the file to be opened
     FILE                *file_pointer;     // The FILE *pointer
     cblc_field_t        *default_record;   // The record_area
@@ -251,8 +252,9 @@ typedef struct cblc_file_t
 
     tree retval = NULL_TREE;
     retval = gg_get_filelevel_struct_type_decl( "cblc_file_t",
-                                            30,
+                                            31,
                                             CHAR_P,    "name",
+                                            SIZE_T,    "symbol_table_index",
                                             CHAR_P,    "filename",
                                             FILE_P,    "file_pointer",
                                             cblc_field_p_type_node, "default_record",

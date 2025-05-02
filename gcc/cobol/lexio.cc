@@ -406,6 +406,22 @@ valid_sequence_area( const char *p, const char *eodata ) {
   return true; // characters either digits or blanks
 }
 
+// Inspect the 2nd line for telltale signs of a NIST file.
+// If true, caller sets right margin to 73, indicating Reference Format
+static bool
+likely_nist_file( const char *p, const char *eodata ) {
+  if( (p = std::find(p, eodata, '\n')) == eodata ) return false;
+  if ( eodata < ++p + 80 ) return false;
+  p += 72;
+
+  return
+    ISALPHA(p[0]) && ISALPHA(p[1]) && 
+    ISDIGIT(p[2]) && ISDIGIT(p[3]) && ISDIGIT(p[4]) &&
+    p[5] == '4' &&
+    p[6] == '.' &&
+    p[7] == '2';
+}
+
 const char * esc( size_t len, const char input[] );
 
 static bool
@@ -1638,9 +1654,11 @@ cdftext::free_form_reference_format( int input ) {
       if( p < mfile.eodata) p++;
     }
     if( valid_sequence_area(p, mfile.eodata) ) indicator.column = 7;
+    if( likely_nist_file(p, mfile.eodata) )    indicator.right_margin = 73;
 
-    dbgmsg("%s:%d: %s format detected", __func__, __LINE__,
-           indicator.column == 7? "FIXED" : "FREE");
+    dbgmsg("%s:%d: %s%s format detected", __func__, __LINE__,
+           indicator.column == 7? "FIXED" : "FREE",
+           indicator.right_margin == 73? "" : "-extended");
   }
 
   while( mfile.next_line() ) {

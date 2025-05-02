@@ -40,6 +40,7 @@ void cbl_errx(const char *format_string, ...);
 bool fisdigit(int c);
 bool fisspace(int c);
 int  ftolower(int c);
+int  ftoupper(int c);
 bool fisprint(int c);
 
 const char * cobol_filename_restore();

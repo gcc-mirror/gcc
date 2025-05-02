@@ -1530,6 +1530,23 @@ field_str( const cbl_field_t *field ) {
       auto n = asprintf(&s, "'%s'", data);
       gcc_assert(n);
       auto eodata = data + field->data.capacity;
+      // It is possible for data.initial to be shorter than capacity.
+      
+      // This whole thing needs to be reexamined.  There is an assumption for
+      // FldAlphanumeric values that the valid data in data.initial be the same
+      // length as data.capacity.  But that does not hold true for other types.
+      // For example, a PIC 9V9 has a capacity of two, but the initial
+      // string provided by the COBOL programmer might be "1.2".  Likewise, a
+      // PIC 999999 (capacity 5) might have a value of "1".
+      
+      for(size_t i = 0; i<field->data.capacity; i++)
+        {
+        if( data[i] == '\0' )
+          {
+          eodata = data + i;
+          break;
+          }
+        }
       if( eodata != std::find_if_not(data, eodata, fisprint) ) {
         char *p = reinterpret_cast<char*>(xrealloc(s, n + 8 + 2 * field->data.capacity));
         if( is_elementary(field->type) &&

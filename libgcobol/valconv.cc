@@ -34,6 +34,7 @@
 #include <string.h>
 #include <algorithm>
 #include <unordered_map>
+#include <vector>
 
 #include "ec.h"
 #include "common-defs.h"

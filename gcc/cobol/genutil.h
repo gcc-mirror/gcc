@@ -45,8 +45,6 @@ extern bool suppress_dest_depends;
 extern std::vector<std::string>current_filename;
 
 extern tree var_decl_exception_code;         // int         __gg__exception_code;
-extern tree var_decl_exception_handled;      // int         __gg__exception_handled;
-extern tree var_decl_exception_file_number;  // int         __gg__exception_file_number;
 extern tree var_decl_exception_file_status;  // int         __gg__exception_file_status;
 extern tree var_decl_exception_file_name;    // const char *__gg__exception_file_name;
 extern tree var_decl_exception_statement;    // const char *__gg__exception_statement;
@@ -143,10 +141,9 @@ char     *get_literal_string(cbl_field_t *field);
 
 bool      refer_is_clean(cbl_refer_t &refer);
 
-tree      refer_offset_source(cbl_refer_t &refer,
-                              int *pflags=NULL);
+tree      refer_offset(cbl_refer_t &refer,
+                       int *pflags=NULL);
 tree      refer_size_source(cbl_refer_t &refer);
-tree      refer_offset_dest(cbl_refer_t &refer);
 tree      refer_size_dest(cbl_refer_t &refer);
 
 void     REFER_CHECK( const char *func,
@@ -155,9 +152,7 @@ void     REFER_CHECK( const char *func,
                       );
 #define refer_check(a) REFER_CHECK(__func__, __LINE__, a)
 
-tree      qualified_data_source(cbl_refer_t &refer);
-
-tree      qualified_data_dest(cbl_refer_t &refer);
+tree      qualified_data_location(cbl_refer_t &refer);
 
 void      build_array_of_treeplets( int ngroup,
                                     size_t N,
