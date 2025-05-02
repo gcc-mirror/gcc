@@ -1,3 +1,31 @@
+2025-05-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-04-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120023
+	* g++.dg/modules/dguide-7_a.C: New test.
+	* g++.dg/modules/dguide-7_b.C: New test.
+	* g++.dg/modules/dguide-7_c.C: New test.
+
+2025-05-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-04-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119938
+	* g++.dg/modules/tpl-nttp-2_a.H: New test.
+	* g++.dg/modules/tpl-nttp-2_b.C: New test.
+
+2025-05-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-04-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119551
+	PR c++/119996
+	* g++.dg/modules/internal-13.C: New test.
+
 2025-04-30  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/119712
