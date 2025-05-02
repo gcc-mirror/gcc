@@ -374,24 +374,32 @@ void
 TopLevel::visit (AST::EnumItem &variant)
 {
   insert_enum_variant_or_error_out (variant.get_identifier (), variant);
+
+  DefaultResolver::visit (variant);
 }
 
 void
 TopLevel::visit (AST::EnumItemTuple &variant)
 {
   insert_enum_variant_or_error_out (variant.get_identifier (), variant);
+
+  DefaultResolver::visit (variant);
 }
 
 void
 TopLevel::visit (AST::EnumItemStruct &variant)
 {
   insert_enum_variant_or_error_out (variant.get_identifier (), variant);
+
+  DefaultResolver::visit (variant);
 }
 
 void
 TopLevel::visit (AST::EnumItemDiscriminant &variant)
 {
   insert_or_error_out (variant.get_identifier (), variant, Namespace::Types);
+
+  DefaultResolver::visit (variant);
 }
 
 void
