@@ -391,6 +391,15 @@ i386_pe_strip_name_encoding_full (const char *str)
   return name;
 }
 
+section *
+mingw_pe_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
+{
+  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))
+    return get_named_section (decl, ".tls$", reloc);
+  else
+    return default_select_section (decl, reloc, align);
+}
+
 void
 mingw_pe_unique_section (tree decl, int reloc)
 {
@@ -415,6 +424,8 @@ mingw_pe_unique_section (tree decl, int reloc)
     prefix = ".text$";
   else if (decl_readonly_section (decl, reloc))
     prefix = ".rdata$";
+  else if (DECL_THREAD_LOCAL_P (decl))
+    prefix = ".tls$";
   else
     prefix = ".data$";
   len = strlen (name) + strlen (prefix);
@@ -488,6 +499,9 @@ mingw_pe_asm_named_section (const char *name, unsigned int flags,
   if ((flags & SECTION_EXCLUDE) != 0)
     *f++ = 'e';
 #endif
+
+  if (strcmp (name, ".tls$") == 0)
+    *f++ = 'd';
 
   if ((flags & (SECTION_CODE | SECTION_WRITE)) == 0)
     /* readonly data */

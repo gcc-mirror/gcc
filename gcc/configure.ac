@@ -4207,6 +4207,35 @@ else
   [$tls_as_opt], [$conftest_s],,
   [set_have_as_tls=yes])
 fi
+case $target_os in
+  win32 | pe | cygwin* | mingw32*)
+    if test $set_have_as_tls = yes; then
+      # Hack to check whether ld breaks on @secrel32 for Windows
+      if test $in_tree_ld = yes; then
+	if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 44 -o "$gcc_cv_gld_major_version" -gt 2; then
+	  : # ld support for @secrel32 was fixed in this version
+	else
+	  AC_MSG_ERROR([ld version is known to have broken secrel32 relocations, configure without --enable-tls or with --disable-tls to remove this error. See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80881 for more information.])
+	fi
+      elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x; then
+	echo '.text'          > conftest.s
+	echo 'foo: nop'      >> conftest.s
+	echo '.data'         >> conftest.s
+	echo '.secrel32 foo' >> conftest.s
+	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 && $gcc_cv_ld -o conftest.exe conftest.o > /dev/null; then
+	  if $gcc_cv_objdump -h conftest.exe | grep '\.reloc\>' > /dev/null; then
+	    AC_MSG_ERROR([ld has broken secrel32 relocations, configure without --enable-tls or with --disable-tls to remove this error. See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80881 for more information.])
+	  fi
+	else
+	  AC_MSG_ERROR([Error occurred while checking for broken secrel32 relocations. See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80881 for more information.])
+	fi
+	rm -f conftest.s conftest.o conftest.exe
+      else
+	AC_MSG_ERROR([Cannot check for broken secrel32 relocations to determine --enable-tls support. See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80881 for more information.])
+      fi
+    fi
+    ;;
+esac
 if test $set_have_as_tls = yes ; then
   AC_DEFINE(HAVE_AS_TLS, 1,
 	    [Define if your assembler and linker support thread-local storage.])

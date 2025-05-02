@@ -531,6 +531,7 @@ extern unsigned char ix86_prefetch_sse;
 #define TARGET_GNU2_TLS		(ix86_tls_dialect == TLS_DIALECT_GNU2)
 #define TARGET_ANY_GNU_TLS	(TARGET_GNU_TLS || TARGET_GNU2_TLS)
 #define TARGET_SUN_TLS		0
+#define TARGET_WIN32_TLS	0
 
 #ifndef TARGET_64BIT_DEFAULT
 #define TARGET_64BIT_DEFAULT 0
