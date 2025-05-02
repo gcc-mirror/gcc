@@ -6362,6 +6362,11 @@ ipcp_store_vr_results (void)
 						     TYPE_PRECISION (type),
 						     TYPE_SIGN (type)));
 		  tmp.update_bitmask (bm);
+		  // Reflecting the bitmask on the ranges can sometime
+		  // produce an UNDEFINED value if the the bitmask update
+		  // was previously deferred.  See PR 120048.
+		  if (tmp.undefined_p ())
+		    tmp.set_varying (type);
 		  ipa_vr vr (tmp);
 		  ts->m_vr->quick_push (vr);
 		}
@@ -6383,6 +6388,11 @@ ipcp_store_vr_results (void)
 						 TYPE_PRECISION (type),
 						 TYPE_SIGN (type)));
 	      tmp.update_bitmask (bm);
+	      // Reflecting the bitmask on the ranges can sometime
+	      // produce an UNDEFINED value if the the bitmask update
+	      // was previously deferred.  See PR 120048.
+	      if (tmp.undefined_p ())
+		tmp.set_varying (type);
 	      ipa_vr vr (tmp);
 	      ts->m_vr->quick_push (vr);
 	    }
