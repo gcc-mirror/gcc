@@ -20978,7 +20978,11 @@ ix86_can_change_mode_class (machine_mode from, machine_mode to,
     return true;
 
   /* x87 registers can't do subreg at all, as all values are reformatted
-     to extended precision.  */
+     to extended precision.
+
+     ??? middle-end queries mode changes for ALL_REGS and this makes
+     vec_series_lowpart_p to always return false.  We probably should
+     restrict this to modes supported by i387 and check if it is enabled.  */
   if (MAYBE_FLOAT_CLASS_P (regclass))
     return false;
 
@@ -22756,13 +22760,41 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	}
       return false;
 
-    case VEC_SELECT:
     case VEC_CONCAT:
       /* ??? Assume all of these vector manipulation patterns are
 	 recognizable.  In which case they all pretty much have the
-	 same cost.  */
+	 same cost.
+	 ??? We should still recruse when computing cost.  */
      *total = cost->sse_op;
      return true;
+
+    case VEC_SELECT:
+     /* Special case extracting lower part from the vector.
+	This by itself needs to code and most of SSE/AVX instructions have
+	packed and single forms where the single form may be represented
+	by such VEC_SELECT.
+
+	Use cost 1 (despite the fact that functionally equivalent SUBREG has
+	cost 0).  Making VEC_SELECT completely free, for example instructs CSE
+	to forward propagate VEC_SELECT into
+
+	   (set (reg eax) (reg src))
+
+	which then prevents fwprop and combining. See i.e.
+	gcc.target/i386/pr91103-1.c.
+
+	??? rtvec_series_p test should be, for valid patterns, equivalent to
+	vec_series_lowpart_p but is not, since the latter calls
+	can_cange_mode_class on ALL_REGS and this return false since x87 does
+	not support subregs at all.  */
+     if (rtvec_series_p (XVEC (XEXP (x, 1), 0), 0))
+       *total = rtx_cost (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
+			  outer_code, opno, speed) + 1;
+     else
+       /* ??? We should still recruse when computing cost.  */
+       *total = cost->sse_op;
+     return true;
+
     case VEC_DUPLICATE:
       *total = rtx_cost (XEXP (x, 0),
 			 GET_MODE (XEXP (x, 0)),
@@ -22780,6 +22812,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       if (TARGET_AVX512F && register_operand (mask, GET_MODE (mask)))
 	*total = rtx_cost (XEXP (x, 0), mode, outer_code, opno, speed);
       else
+	/* ??? We should still recruse when computing cost.  */
 	*total = cost->sse_op;
       return true;
 
