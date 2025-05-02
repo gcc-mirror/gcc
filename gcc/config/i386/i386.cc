@@ -22025,6 +22025,15 @@ vec_fp_conversion_cost (const struct processor_costs *cost, int size)
     return cost->vcvtps2pd512;
 }
 
+/* Return true of X is UNSPEC with UNSPEC_PCMP or UNSPEC_UNSIGNED_PCMP.  */
+
+static bool
+unspec_pcmp_p (rtx x)
+{
+  return GET_CODE (x) == UNSPEC
+	 && (XINT (x, 1) == UNSPEC_PCMP || XINT (x, 1) == UNSPEC_UNSIGNED_PCMP);
+}
+
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  */
@@ -22807,14 +22816,77 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 
     case VEC_MERGE:
       mask = XEXP (x, 2);
+      /* Scalar versions of SSE instructions may be represented as:
+
+	 (vec_merge (vec_duplicate (operation ....))
+		     (register or memory)
+		     (const_int 1))
+
+	 In this case vec_merge and vec_duplicate is for free.
+	 Just recurse into operation and second operand.  */
+      if (mask == const1_rtx
+	  && GET_CODE (XEXP (x, 0)) == VEC_DUPLICATE)
+	{
+	  *total = rtx_cost (XEXP (XEXP (x, 0), 0), mode,
+			     outer_code, opno, speed)
+		   + rtx_cost (XEXP (x, 1), mode, outer_code, opno, speed);
+	  return true;
+	}
       /* This is masked instruction, assume the same cost,
 	 as nonmasked variant.  */
-      if (TARGET_AVX512F && register_operand (mask, GET_MODE (mask)))
-	*total = rtx_cost (XEXP (x, 0), mode, outer_code, opno, speed);
+      else if (TARGET_AVX512F && register_operand (mask, GET_MODE (mask)))
+	{
+	  *total = rtx_cost (XEXP (x, 0), mode, outer_code, opno, speed)
+		   + rtx_cost (XEXP (x, 1), mode, outer_code, opno, speed);
+	  return true;
+	}
+      /* Combination of the two above:
+
+	 (vec_merge (vec_merge (vec_duplicate (operation ...))
+		       (register or memory)
+		       (reg:QI mask))
+		    (register or memory)
+		    (const_int 1))
+
+	 i.e. avx512fp16_vcvtss2sh_mask.  */
+      else if (TARGET_AVX512F
+	       && mask == const1_rtx
+	       && GET_CODE (XEXP (x, 0)) == VEC_MERGE
+	       && GET_CODE (XEXP (XEXP (x, 0), 0)) == VEC_DUPLICATE
+	       && register_operand (XEXP (XEXP (x, 0), 2),
+				    GET_MODE (XEXP (XEXP (x, 0), 2))))
+	{
+	  *total = rtx_cost (XEXP (XEXP (XEXP (x, 0), 0), 0),
+			     mode, outer_code, opno, speed)
+		   + rtx_cost (XEXP (XEXP (x, 0), 1),
+			       mode, outer_code, opno, speed)
+		   + rtx_cost (XEXP (x, 1), mode, outer_code, opno, speed);
+	  return true;
+	}
+      /* vcmp.  */
+      else if (unspec_pcmp_p (mask)
+	       || (GET_CODE (mask) == NOT
+		   && unspec_pcmp_p (XEXP (mask, 0))))
+	{
+	  rtx uns = GET_CODE (mask) == NOT ? XEXP (mask, 0) : mask;
+	  rtx unsop0 = XVECEXP (uns, 0, 0);
+	  /* Make (subreg:V4SI (not:V16QI (reg:V16QI ..)) 0)
+	     cost the same as register.
+	     This is used by avx_cmp<mode>3_ltint_not.  */
+	  if (GET_CODE (unsop0) == SUBREG)
+	    unsop0 = XEXP (unsop0, 0);
+	  if (GET_CODE (unsop0) == NOT)
+	    unsop0 = XEXP (unsop0, 0);
+	  *total = rtx_cost (XEXP (x, 0), mode, outer_code, opno, speed)
+		   + rtx_cost (XEXP (x, 1), mode, outer_code, opno, speed)
+		   + rtx_cost (unsop0, mode, UNSPEC, opno, speed)
+		   + rtx_cost (XVECEXP (uns, 0, 1), mode, UNSPEC, opno, speed)
+		   + cost->sse_op;
+	  return true;
+	}
       else
-	/* ??? We should still recruse when computing cost.  */
 	*total = cost->sse_op;
-      return true;
+      return false;
 
     case MEM:
       /* CONST_VECTOR_DUPLICATE_P in constant_pool is just broadcast.
@@ -22831,7 +22903,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	}
 
       /* An insn that accesses memory is slightly more expensive
-         than one that does not.  */
+	 than one that does not.  */
       if (speed)
 	{
 	  *total += 1;
