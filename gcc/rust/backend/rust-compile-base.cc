@@ -687,11 +687,6 @@ HIRCompileBase::compile_function (
     }
   std::string asm_name = fn_name;
 
-  auto &mappings = Analysis::Mappings::get ();
-
-  if (flag_name_resolution_2_0)
-    ir_symbol_name = mappings.get_current_crate_name () + "::" + ir_symbol_name;
-
   unsigned int flags = 0;
   tree fndecl = Backend::function (compiled_fn_type, ir_symbol_name,
 				   "" /* asm_name */, flags, locus);

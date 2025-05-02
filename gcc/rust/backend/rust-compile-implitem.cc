@@ -33,8 +33,8 @@ CompileTraitItem::visit (HIR::TraitItemConst &constant)
       auto &nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-      canonical_path = nr_ctx.values.to_canonical_path (
-	constant.get_mappings ().get_nodeid ());
+      canonical_path
+	= nr_ctx.to_canonical_path (constant.get_mappings ().get_nodeid ());
     }
   else
     {
@@ -103,7 +103,7 @@ CompileTraitItem::visit (HIR::TraitItemFunc &func)
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
       canonical_path
-	= nr_ctx.values.to_canonical_path (func.get_mappings ().get_nodeid ());
+	= nr_ctx.to_canonical_path (func.get_mappings ().get_nodeid ());
     }
   else
     {

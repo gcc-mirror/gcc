@@ -58,7 +58,7 @@ CompileItem::visit (HIR::StaticItem &var)
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
       canonical_path
-	= nr_ctx.values.to_canonical_path (var.get_mappings ().get_nodeid ());
+	= nr_ctx.to_canonical_path (var.get_mappings ().get_nodeid ());
     }
   else
     {
@@ -124,8 +124,7 @@ CompileItem::visit (HIR::ConstantItem &constant)
       auto &nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-      canonical_path
-	= nr_ctx.values.to_canonical_path (mappings.get_nodeid ()).value ();
+      canonical_path = nr_ctx.to_canonical_path (mappings.get_nodeid ());
     }
   else
     {
@@ -218,10 +217,8 @@ CompileItem::visit (HIR::Function &function)
       auto &nr_ctx
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
-      auto path = nr_ctx.values.to_canonical_path (
-	function.get_mappings ().get_nodeid ());
-
-      canonical_path = path.value ();
+      canonical_path
+	= nr_ctx.to_canonical_path (function.get_mappings ().get_nodeid ());
     }
   else
     {

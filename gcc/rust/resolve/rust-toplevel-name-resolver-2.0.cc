@@ -95,8 +95,7 @@ TopLevel::go (AST::Crate &crate)
   // times in a row in a fixed-point fashion, so it would make the code
   // responsible for this ugly and perfom a lot of error checking.
 
-  for (auto &item : crate.items)
-    item->accept_vis (*this);
+  visit (crate);
 }
 
 void
@@ -194,7 +193,7 @@ TopLevel::visit (AST::ExternCrate &crate)
 
   auto derive_macros = mappings.lookup_derive_proc_macros (num);
 
-  auto sub_visitor = [&] () {
+  auto sub_visitor_1 = [&] () {
     // TODO: Find a way to keep this part clean without the double dispatch.
     if (derive_macros.has_value ())
       {
@@ -216,11 +215,17 @@ TopLevel::visit (AST::ExternCrate &crate)
       }
   };
 
+  auto sub_visitor_2 = [&] () {
+    ctx.canonical_ctx.scope_crate (crate.get_node_id (),
+				   crate.get_referenced_crate (),
+				   std::move (sub_visitor_1));
+  };
+
   if (crate.has_as_clause ())
-    ctx.scoped (Rib::Kind::Module, crate.get_node_id (), sub_visitor,
+    ctx.scoped (Rib::Kind::Module, crate.get_node_id (), sub_visitor_2,
 		crate.get_as_clause ());
   else
-    ctx.scoped (Rib::Kind::Module, crate.get_node_id (), sub_visitor,
+    ctx.scoped (Rib::Kind::Module, crate.get_node_id (), sub_visitor_2,
 		crate.get_referenced_crate ());
 }
 
@@ -298,14 +303,7 @@ TopLevel::visit (AST::ExternalStaticItem &static_item)
 void
 TopLevel::visit (AST::StructStruct &struct_item)
 {
-  auto generic_vis = [this, &struct_item] () {
-    for (auto &g : struct_item.get_generic_params ())
-      {
-	g->accept_vis (*this);
-      }
-  };
-
-  ctx.scoped (Rib::Kind::Item, struct_item.get_node_id (), generic_vis);
+  DefaultResolver::visit (struct_item);
 
   insert_or_error_out (struct_item.get_struct_name (), struct_item,
 		       Namespace::Types);

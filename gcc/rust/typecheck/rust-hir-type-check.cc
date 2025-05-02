@@ -284,7 +284,7 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 	= Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
 
       canonical_path
-	= nr_ctx.values.to_canonical_path (fn.get_mappings ().get_nodeid ());
+	= nr_ctx.to_canonical_path (fn.get_mappings ().get_nodeid ());
     }
   else
     {

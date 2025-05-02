@@ -62,8 +62,9 @@ Early::go (AST::Crate &crate)
   // We now proceed with resolving macros, which can be nested in almost any
   // items
   textual_scope.push ();
-  for (auto &item : crate.items)
-    item->accept_vis (*this);
+
+  visit (crate);
+
   textual_scope.pop ();
 }
 

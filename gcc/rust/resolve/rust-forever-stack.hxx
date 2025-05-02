@@ -774,67 +774,6 @@ ForeverStack<N>::dfs (const ForeverStack<N>::Node &starting_point,
 }
 
 template <Namespace N>
-tl::optional<Resolver::CanonicalPath>
-ForeverStack<N>::to_canonical_path (NodeId id) const
-{
-  // find the id in the current forever stack, starting from the root,
-  // performing either a BFS or DFS once the Node containing the ID is found, go
-  // back up to the root (parent().parent().parent()...) accumulate link
-  // segments reverse them that's your canonical path
-
-  return dfs (root, id).map ([this, id] (ConstDfsResult tuple) {
-    auto containing_node = tuple.first;
-    auto name = tuple.second;
-
-    auto segments = std::vector<Resolver::CanonicalPath> ();
-
-    reverse_iter (containing_node, [&segments] (const Node &current) {
-      if (current.is_root ())
-	return KeepGoing::No;
-
-      auto children = current.parent.value ().children;
-      const Link *outer_link = nullptr;
-
-      for (auto &kv : children)
-	{
-	  auto &link = kv.first;
-	  auto &child = kv.second;
-
-	  if (current.id == child.id)
-	    {
-	      outer_link = &link;
-	      break;
-	    }
-	}
-
-      rust_assert (outer_link);
-
-      outer_link->path.map ([&segments, outer_link] (Identifier path) {
-	segments.emplace (segments.begin (),
-			  Resolver::CanonicalPath::new_seg (outer_link->id,
-							    path.as_string ()));
-      });
-
-      return KeepGoing::Yes;
-    });
-
-    auto &mappings = Analysis::Mappings::get ();
-    CrateNum crate_num = mappings.lookup_crate_num (root.id).value ();
-    auto path = Resolver::CanonicalPath::new_seg (
-      root.id, mappings.get_crate_name (crate_num).value ());
-    path.set_crate_num (crate_num);
-
-    for (const auto &segment : segments)
-      path = path.append (segment);
-
-    // Finally, append the name
-    path = path.append (Resolver::CanonicalPath::new_seg (id, name));
-
-    return path;
-  });
-}
-
-template <Namespace N>
 tl::optional<Rib &>
 ForeverStack<N>::dfs_rib (ForeverStack<N>::Node &starting_point, NodeId to_find)
 {

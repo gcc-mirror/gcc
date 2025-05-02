@@ -116,8 +116,7 @@ Late::go (AST::Crate &crate)
 {
   setup_builtin_types ();
 
-  for (auto &item : crate.items)
-    item->accept_vis (*this);
+  visit (crate);
 }
 
 void

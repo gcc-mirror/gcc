@@ -39,6 +39,7 @@ public:
 
   virtual ~DefaultResolver () {}
 
+  void visit (AST::Crate &) override;
   // First, our lexical scope expressions - these visit their sub nodes, always
   // these nodes create new scopes and ribs - they are often used to declare new
   // variables, such as a for loop's iterator, or a function's arguments
@@ -60,6 +61,10 @@ public:
   // type dec nodes, which visit their fields or variants by default
   void visit (AST::StructStruct &) override;
   void visit (AST::TupleStruct &) override;
+  void visit (AST::EnumItem &) override;
+  void visit (AST::EnumItemTuple &) override;
+  void visit (AST::EnumItemStruct &) override;
+  void visit (AST::EnumItemDiscriminant &) override;
   void visit (AST::Enum &) override;
   void visit (AST::Union &) override;
   void visit (AST::TypeAlias &) override;

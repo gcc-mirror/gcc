@@ -684,9 +684,6 @@ public:
     std::vector<Error> &collect_errors);
 
   // FIXME: Documentation
-  tl::optional<Resolver::CanonicalPath> to_canonical_path (NodeId id) const;
-
-  // FIXME: Documentation
   tl::optional<Rib &> to_rib (NodeId rib_id);
   tl::optional<const Rib &> to_rib (NodeId rib_id) const;
 

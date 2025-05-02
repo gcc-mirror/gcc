@@ -57,10 +57,11 @@ public:
     return *this;
   }
 
-  static CanonicalPath new_seg (NodeId id, const std::string &path)
+  static CanonicalPath new_seg (NodeId id, std::string path)
   {
     rust_assert (!path.empty ());
-    return CanonicalPath ({std::pair<NodeId, std::string> (id, path)},
+    return CanonicalPath ({std::pair<NodeId, std::string> (id,
+							   std::move (path))},
 			  UNKNOWN_CRATENUM);
   }
 
