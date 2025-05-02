@@ -54,11 +54,20 @@ extern bool cursor_at_sol;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
+/*
+ * In syntax-only mode, return immediately.  By using these macros, the parser
+ * can call code-generation functions unconditionally because it does not rely
+ * on the results.
+ */
 #define RETURN_IF_PARSE_ONLY                    \
   do { if(  mode_syntax_only() ) return; } while(0)
 
-#define SHOW_PARSE1                      if(bSHOW_PARSE)
-#define SHOW_PARSE RETURN_IF_PARSE_ONLY; if(bSHOW_PARSE)
+#define RETURN_XX_PARSE_ONLY(XX)			\
+  do { if(  mode_syntax_only() ) return XX; } while(0)
+
+#define SHOW_PARSE1                                   if(bSHOW_PARSE)
+#define SHOW_PARSE        RETURN_IF_PARSE_ONLY;       if(bSHOW_PARSE)
+#define SHOW_IF_PARSE(XX) RETURN_XX_PARSE_ONLY((XX)); if(bSHOW_PARSE)
 
 // _HEADER and _END are generally the first and last things inside the
 // SHOW_PARSE statement.  They don't have to be; SHOW_PARSE can be used

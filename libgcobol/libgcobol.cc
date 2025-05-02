@@ -27,27 +27,29 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <ctype.h>
-#include <err.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <math.h>
-#include <fenv.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <unistd.h>
-#include <vector>
 #include <algorithm>
-#include <unordered_map>
+#include <cctype>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
 #include <set>
+#include <stack>
 #include <string>
+#include <unordered_map>
+#include <vector>
+
+#include <dirent.h>
+#include <dlfcn.h>
+#include <err.h>
+#include <fcntl.h>
+#include <fenv.h>
+#include <math.h> // required for fpclassify(3)
 #include <setjmp.h>
 #include <signal.h>
-#include <dlfcn.h>
-#include <dirent.h>
-#include <sys/resource.h>
+#include <syslog.h>
+#include <unistd.h>
 
 #include "config.h"
 #include "libgcobol-fp.h"
@@ -62,6 +64,7 @@
 #include "valconv.h"
 
 #include <sys/mman.h>
+#include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -93,6 +96,14 @@ strfromf64 (char *s, size_t n, const char *f, double v)
 # endif
 #endif
 
+// Enable Declarative tracing via "match_declarative" environment variable.
+#if defined(MATCH_DECLARATIVE) || true
+# undef  MATCH_DECLARATIVE
+# define MATCH_DECLARATIVE getenv("match_declarative")
+#else
+# define MATCH_DECLARATIVE (nullptr)
+#endif
+
 // This couldn't be defined in symbols.h because it conflicts with a LEVEL66
 // in parse.h
 #define LEVEL66 (66)
@@ -107,8 +118,6 @@ strfromf64 (char *s, size_t n, const char *f, double v)
 
 // These global values are established as the COBOL program executes
 int         __gg__exception_code              = 0    ;
-int         __gg__exception_handled           = 0    ;
-int         __gg__exception_file_number       = 0    ;
 int         __gg__exception_file_status       = 0    ;
 const char *__gg__exception_file_name         = NULL ;
 const char *__gg__exception_program_id        = NULL ;
@@ -122,6 +131,11 @@ int         __gg__rdigits                     = 0    ;
 int         __gg__odo_violation               = 0    ;
 int         __gg__nop                         = 0    ;
 int         __gg__main_called                 = 0    ;
+
+// During SORT operations, we don't want the end-of-file condition, which
+// happens as a matter of course, from setting the EOF exception condition.
+// Setting this variable to 'true' suppresses the error condition.
+static bool sv_suppress_eof_ec = false;
 
 // What follows are arrays that are used by features like INSPECT, STRING,
 // UNSTRING, and, particularly, arithmetic_operation.  These features are
@@ -171,18 +185,23 @@ size_t       *  __gg__treeplet_4s              = NULL  ;
 // used to keep track of local variables.
 size_t      __gg__unique_prog_id              = 0    ;
 
-// These values are the persistent stashed versions of the global values
-static int         stashed_exception_code;
-static int         stashed_exception_handled;
-static int         stashed_exception_file_number;
-static int         stashed_exception_file_status;
-static const char *stashed_exception_file_name;
-static const char *stashed_exception_program_id;
-static const char *stashed_exception_section;
-static const char *stashed_exception_paragraph;
-static const char *stashed_exception_source_file;
-static int         stashed_exception_line_number;
-static const char *stashed_exception_statement;
+// Whenever an exception status is set, a snapshot of the current statement
+// location information are established in the "last_exception..." variables.
+// This is in accordance with the ISO requirements of "14.6.13.1.1 General" that
+// describe how a "last exception status" is maintained.
+// other "location" information 
+static int         last_exception_code;
+static const char *last_exception_program_id;
+static const char *last_exception_section;
+static const char *last_exception_paragraph;
+static const char *last_exception_source_file;
+static int         last_exception_line_number;
+static const char *last_exception_statement;
+// These variables are similar, and are established when an exception is
+// raised for a file I-O operation.
+static cblc_file_prior_op_t last_exception_file_operation;
+static file_status_t        last_exception_file_status;
+static const char          *last_exception_file_name;
 
 static int sv_from_raise_statement = 0;
 
@@ -205,17 +224,147 @@ void       *__gg__entry_location = NULL;
 // nested PERFORM PROC statements.
 void       *__gg__exit_address = NULL;
 
+/*
+ * ec_status_t represents the runtime exception condition status for
+ * any statement.  There are 4 states:
+ *   1.  initial, all zeros
+ *   2.  updated, copy global EC state for by Declarative and/or default
+ *   3.  matched, Declarative found, isection nonzero
+ *   4.  handled, where handled == type
+ *
+ * If the statement includes some kind of ON ERROR
+ * clause that covers it, the generated code does not raise an EC. 
+ *
+ * The status is updated by __gg_match_exception if it runs, else
+ * __gg__check_fatal_exception. 
+ *
+ * If a Declarative is matched, its section number is passed to handled_by(),
+ * which does two things:
+ *  1. sets isection to record the declarative
+ *  2. for a nonfatal EC, sets handled, indication no further action is needed
+ *
+ * A Declarative may use RESUME, which clears ec_status, which is a "handled" state. 
+ * 
+ * Default processing ensures return to initial state. 
+ */
+class ec_status_t {
+ public:
+  struct file_status_t {
+    size_t ifile; 
+    cblc_file_prior_op_t operation; 
+    cbl_file_mode_t mode; 
+    cblc_field_t *user_status;
+    const char * filename;
+    file_status_t() : ifile(0) , operation(file_op_none), mode(file_mode_none_e) {}
+    file_status_t( cblc_file_t *file )
+      : ifile(file->symbol_table_index)
+      , operation(file->prior_op)
+      , mode(cbl_file_mode_t(file->mode_char))
+      , user_status(file->user_status)
+      , filename(file->filename)
+    {}
+    const char * op_str() const {
+      switch( operation ) {
+      case file_op_none: return "none";
+      case file_op_open: return "open";
+      case file_op_close: return "close";
+      case file_op_start: return "start";
+      case file_op_read: return "read";
+      case file_op_write: return "write";
+      case file_op_rewrite: return "rewrite";
+      case file_op_delete: return "delete";
+      }
+      return "???";
+    }
+  };
+ private:  
+  char msg[132];
+  ec_type_t type, handled;
+  size_t isection;
+  cbl_enabled_exceptions_t enabled;
+  cbl_declaratives_t declaratives;
+  struct file_status_t file;
+ public:
+  size_t lineno;
+  const char *source_file;
+  cbl_name_t statement; // e.g., "ADD"
+
+  ec_status_t()
+    : type(ec_none_e)
+    , handled(ec_none_e)
+    , isection(0)
+    , lineno(0)
+    , source_file(NULL)
+  {
+    msg[0] = statement[0] = '\0';
+  }
+
+  bool is_fatal() const;
+  ec_status_t& update();
+  
+  bool is_enabled() const { return enabled.match(type); }
+  bool is_enabled( ec_type_t ec) const { return enabled.match(ec); }
+  ec_status_t& handled_by( size_t declarative_section ) {
+    isection = declarative_section;
+    // A fatal exception remains unhandled unless RESUME clears it. 
+    if( ! is_fatal() ) { 
+      handled = type;
+    }
+    return *this;
+  }
+  ec_status_t& clear() {
+    handled = type = ec_none_e;
+    isection = lineno = 0;
+    msg[0] = statement[0] = '\0';
+    return *this;
+  }
+  bool unset() const { return isection == 0 && lineno == 0; }
+  
+  void reset_environment() const;
+  ec_status_t& copy_environment();
+  
+  // Return the EC's type if it is *not* handled.
+  ec_type_t unhandled() const {
+    bool was_handled = ec_cmp(type, handled);
+    return was_handled? ec_none_e : type;
+  }
+
+  bool done() const { return unhandled() == ec_none_e; }
+
+  const file_status_t& file_status() const { return file; }
+
+  const char * exception_location() {
+    snprintf(msg, sizeof(msg), "%s:%zu: '%s'", source_file, lineno, statement);
+    return msg;
+  }
+};
+
+/*
+ * Capture the global EC status at the beginning of Declarative matching. While
+ * executing the Declarative, push the current status on a stack. When the
+ * Declarative returns, restore EC status from the stack.
+ *
+ * If the Declarative includes a RESUME statement, it clears the on-stack
+ * status, thus avoiding any default handling.
+ */
 static ec_status_t ec_status;
+static std::stack<ec_status_t> ec_stack;
+
+static cbl_enabled_exceptions_t enabled_ECs;
+static cbl_declaratives_t declaratives;
 
 static const ec_descr_t *
 local_ec_type_descr( ec_type_t type ) {
   auto p = std::find( __gg__exception_table, __gg__exception_table_end, type );
   if( p == __gg__exception_table_end )
     {
+      warnx("%s:%d: no such EC value %08x", __func__, __LINE__, type);
     __gg__abort("Fell off the end of the __gg__exception_table");
     }
   return p;
 }
+
+cblc_file_t * __gg__file_stashed();
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -228,17 +377,48 @@ local_ec_type_str( ec_type_t type ) {
 }
 #pragma GCC diagnostic pop
 
-ec_status_t& ec_status_t::update() {
-  handled =   ec_type_t(__gg__exception_handled);
-  type    =   ec_type_t(__gg__exception_code);
-  __gg__exception_code = ec_none_e;
-  source_file = __gg__exception_source_file;
-  lineno = __gg__exception_line_number;
+bool
+ec_status_t::is_fatal() const {
+  auto descr = local_ec_type_descr(type);
+  return descr->disposition == ec_category_fatal_e;
+}
+
+ec_status_t&
+ec_status_t::update() {
+  handled =   ec_none_e;
+  type =      ec_type_t(__gg__exception_code);
+  source_file =         __gg__exception_source_file;
+  lineno =              __gg__exception_line_number;
   if( __gg__exception_statement ) {
     snprintf(statement, sizeof(statement), "%s", __gg__exception_statement);
   }
+  cblc_file_t *stashed = __gg__file_stashed();
+  this->file = stashed? file_status_t(stashed) : file_status_t();
+
+  if( type != ec_none_e && MATCH_DECLARATIVE ) {
+    warnx( "ec_status_t::update:%d: EC %s by %s (handled %s) " , __LINE__,
+           local_ec_type_str(type),
+           __gg__exception_statement? statement : "<none>",
+           local_ec_type_str(handled) );
+  }
+
+  this->enabled = ::enabled_ECs;
+  this->declaratives = ::declaratives;
 
   return *this;
+}
+
+ec_status_t&
+ec_status_t::copy_environment() {
+  this->enabled = ::enabled_ECs;
+  this->declaratives = ::declaratives;
+  return *this;
+}
+
+void
+ec_status_t::reset_environment() const {
+  ::enabled_ECs = enabled;
+  ::declaratives = declaratives;
 }
 
 static cbl_truncation_mode truncation_mode = trunc_std_e;
@@ -4310,7 +4490,7 @@ __gg__compare_2(cblc_field_t *left_side,
       // The right side is numeric.  Sometimes people write code where they
       // take the refmod of a numeric displays.  If somebody did that here,
       // just do a complete straight-up character by character comparison:
-      
+
       if( right_refmod )
         {
         retval = compare_strings(   (char *)left_location,
@@ -6181,6 +6361,7 @@ __gg__file_sort_ff_input(   cblc_file_t *workfile,
   // We are going to read records from input and write them to workfile.  These
   // files are already open.
 
+  sv_suppress_eof_ec = true;
   for(;;)
     {
     // Read the data from the input file into its record_area
@@ -6213,6 +6394,7 @@ __gg__file_sort_ff_input(   cblc_file_t *workfile,
                         before_advancing,
                         0); // non-random
     }
+  sv_suppress_eof_ec = false;
   }
 
 extern "C"
@@ -6227,6 +6409,7 @@ __gg__file_sort_ff_output(  cblc_file_t *output,
   // Make sure workfile is positioned at the beginning
   __gg__file_reopen(workfile, 'r');
 
+  sv_suppress_eof_ec = true;
   for(;;)
     {
     __gg__file_read(  workfile,
@@ -6248,6 +6431,7 @@ __gg__file_sort_ff_output(  cblc_file_t *output,
                         advancing,
                         0); // 1 would be is_random
     }
+  sv_suppress_eof_ec = false;
   }
 
 extern "C"
@@ -6272,6 +6456,7 @@ __gg__sort_workfile(cblc_file_t    *workfile,
   size_t bytes_read;
   size_t bytes_to_write;
 
+  sv_suppress_eof_ec = true;
   for(;;)
     {
     __gg__file_read(workfile,
@@ -6307,6 +6492,7 @@ __gg__sort_workfile(cblc_file_t    *workfile,
     memcpy(contents+offset, workfile->default_record->data, bytes_read);
     offset += bytes_read;
     }
+  sv_suppress_eof_ec = false;
 
   sort_contents(contents,
                 offsets,
@@ -8776,7 +8962,7 @@ __gg__display(    cblc_field_t *field,
   {
   display_both( field,
                 field->data + offset,
-                size ? size : field->capacity,
+                size,
                 0,
                 file_descriptor,
                 advance);
@@ -8829,8 +9015,6 @@ __gg__display_string( int     file_descriptor,
            1);
     }
   }
-
-#pragma GCC diagnostic push
 
 static
 char *
@@ -10900,57 +11084,29 @@ int __gg__is_canceled(size_t function_pointer)
 static inline ec_type_t
 local_ec_type_of( file_status_t status )
   {
-  ec_type_t retval;
   int status10 = (int)status / 10;
-  if( !(status10 < 10 && status10 >= 0) )
+  assert( 0 <= status10 ); // was enum, can't be negative. 
+  if( 10 < status10 ) 
     {
     __gg__abort("local_ec_type_of(): status10 out of range");
     }
-  switch(status10)
-    {
-    case 0:
-      // This actually should be ec_io_warning_e, but that's new for ISO 1989:2013
-      retval = ec_none_e;
-      break;
-    case 1:
-      retval = ec_io_at_end_e;
-      break;
-    case 2:
-      retval = ec_io_invalid_key_e;
-      break;
-    case 3:
-      retval = ec_io_permanent_error_e;
-      break;
-    case 4:
-      retval = ec_io_logic_error_e;
-      break;
-    case 5:
-      retval = ec_io_record_operation_e;
-      break;
-    case 6:
-      retval = ec_io_file_sharing_e;
-      break;
-    case 7:
-      retval = ec_io_record_content_e;
-      break;
-    case 9:
-      retval = ec_io_imp_e;
-      break;
+  
+  static const std::vector<ec_type_t> ec_by_status {
+    /* 0 */ ec_none_e, // ec_io_warning_e if low byte is nonzero
+    /* 1 */ ec_io_at_end_e, 
+    /* 2 */ ec_io_invalid_key_e,
+    /* 3 */ ec_io_permanent_error_e,
+    /* 4 */ ec_io_logic_error_e,
+    /* 5 */ ec_io_record_operation_e,
+    /* 6 */ ec_io_file_sharing_e,
+    /* 7 */ ec_io_record_content_e,
+    /* 8 */ ec_none_e, // unused, not defined by ISO
+    /* 9 */ ec_io_imp_e,
+  };
+  assert(ec_by_status.size() == 10);
 
-    default:
-      retval = ec_none_e;
-      break;
-    }
-  return retval;
+  return ec_by_status[status10];
   }
-
-bool
-cbl_enabled_exceptions_array_t::match( ec_type_t ec, size_t file ) const {
-  auto output = enabled_exception_match( ecs, ecs + nec, ec, file );
-  return output < ecs + nec? output->enabled : false;
-}
-
-static cbl_enabled_exceptions_array_t enabled_ECs;
 
 /*
  * Store and report the enabled exceptions.
@@ -10962,158 +11118,305 @@ struct exception_descr_t {
   std::set<size_t> files;
 };
 
-/*
- * Compare the raised exception, cbl_exception_t, to the USE critera
- * of a declarative, cbl_declarative_t.  Return FALSE if the exception
- * raised was already handled by the statement that provoked the
- * exception, as indicated by the "handled" file status.
- *
- * This copes with I/O exceptions: ec_io_e and friends.
- */
-
-class match_file_declarative {
-  const cbl_exception_t& oops;
-  const ec_type_t handled_type;
- protected:
-  bool handled() const {
-    return oops.type == handled_type || oops.type == ec_none_e;
-  }
- public:
-  match_file_declarative( const cbl_exception_t& oops, file_status_t handled )
-    : oops(oops), handled_type( local_ec_type_of(handled) )
-  {}
-
-  bool operator()( const cbl_declarative_t& dcl ) {
-
-    // Declarative is for the raised exception and not handled by the statement.
-    if( handled() ) return false;
-    bool matches = enabled_ECs.match(dcl.type);
-
-    // I/O declaratives match by file or mode, not EC.
-    if( dcl.is_format_1() ) { // declarative is for particular files or mode
-      if( dcl.nfile > 0 ) {
-        matches = dcl.match_file(oops.file);
-      } else {
-        matches = oops.mode == dcl.mode;
-      }
-    }
-
-    return matches;
-  }
+struct cbl_exception_t {
+  size_t program, file;
+  ec_type_t type;
+  cbl_file_mode_t mode;
 };
 
-cblc_file_t * __gg__file_stashed();
-static ec_type_t ec_raised_and_handled;
-
-static void
-default_exception_handler( ec_type_t ec)
+/*
+ * Compare the raised exception, cbl_exception_t, to the USE critera
+ * of a declarative, cbl_declarative_t.
+ */
+static bool
+match_declarative( bool enabled,
+                   const cbl_exception_t& raised,
+                   const cbl_declarative_t& dcl )
 {
+  if( MATCH_DECLARATIVE && raised.type) {
+    warnx("match_declarative: checking:    ec %s vs. dcl %s (%s enabled and %s format_1)",
+          local_ec_type_str(raised.type),
+          local_ec_type_str(dcl.type),
+          enabled? "is" : "not",
+          dcl.is_format_1()? "is" : "not");
+  }
+  if( ! (enabled || dcl.is_format_1()) ) return false;
+
+  bool matches = ec_cmp(raised.type, (dcl.type));
+
+  if( matches && dcl.nfile > 0 ) {
+    matches = dcl.match_file(raised.file);
+  }
+
+  // Having matched, the EC must either be enabled, or
+  // the Declarative must be USE Format 1.
+  if( matches ) {
+    // I/O declaratives match by file or mode, not EC.
+    if( dcl.is_format_1() ) { // declarative is for particular files or mode
+      if( dcl.nfile == 0 ) {
+        matches = raised.mode == dcl.mode;
+      }
+    } else {
+      matches = enabled;
+    }
+
+    if( matches && MATCH_DECLARATIVE ) {
+      warnx("                   matches exception      %s (file %zu mode %s)",
+            local_ec_type_str(raised.type),
+            raised.file,
+            cbl_file_mode_str(raised.mode));
+    }
+  }
+  return matches;
+}
+
+/*
+ * The default exception handler is called if:
+ *   1.  The EC is enabled and was not handled by a Declarative, or
+ *   2.  The EC is EC-I-O and was not handled by a Format-1 Declarative, or
+ *   3.  The EC is EC-I-O, associated with a file, and is not OPEN or CLOSE.
+ */
+static void
+default_exception_handler( ec_type_t ec )
+{
+  extern char *program_invocation_short_name;
+  static bool first_time = true;
+  static int priority = LOG_INFO, option = LOG_PERROR, facility = LOG_USER;
+  const char *ident = program_invocation_short_name;
+  ec_disposition_t disposition = ec_category_fatal_e;
+
+  if( first_time ) {
+    // TODO: Program to set option in library via command-line and/or environment.
+    //       Library listens to program, not to the environment.
+    openlog(ident, option, facility);
+    first_time = false;
+  }
+
   if( ec != ec_none_e ) {
-    auto p = std::find_if( __gg__exception_table, __gg__exception_table_end,
+    auto pec = std::find_if( __gg__exception_table, __gg__exception_table_end,
                            [ec](const ec_descr_t& descr) {
                              return descr.type == ec;
                            } );
-    if( p == __gg__exception_table_end ) {
-      err(EXIT_FAILURE,
-          "logic error: %s:%zu: %s unknown exception %x",
-           ec_status.source_file,
-           ec_status.lineno,
-           ec_status.statement,
-           ec );
+    if( pec != __gg__exception_table_end ) {
+      disposition = pec->disposition;
+    } else {
+      warnx("logic error: unknown exception %x", ec );
+    }
+    /*
+     * An enabled, unhandled fatal EC normally results in termination. But
+     * EC-I-O is a special case:
+     *   OPEN and CLOSE never result in termination.
+     *   A SELECT statement with FILE STATUS indicates the user will handle the error.
+     *   Only I/O statements are considered.
+     * Declaratives are handled first.  We are in the default handler here,
+     * which is reached only if no Declarative was matched.
+     */
+    auto file = ec_status.file_status();
+    const char *filename = nullptr;
+
+    if( file.ifile ) {
+      filename = file.filename;
+      switch( last_exception_file_operation ) {
+      case file_op_none:   // not an I/O statement
+        assert(false);
+        abort();
+      case file_op_open:
+      case file_op_close:  // No OPEN/CLOSE results in a fatal error.
+        disposition = ec_category_none_e;
+        break;
+      default:
+        if( file.user_status ) {
+          // Not fatal if FILE STATUS is part of the file's SELECT statement.
+          disposition = ec_category_none_e;
+        }
+        break;
+      }
+    } else {
+      assert( ec_status.is_enabled() );
+      assert( ec_status.is_enabled(ec) );
     }
 
-    const char *disposition = NULL;
-
-    switch( p->disposition ) {
+    switch( disposition ) {
+    case ec_category_none_e:
+    case uc_category_none_e:
+      break;
     case ec_category_fatal_e:
-      warnx("fatal exception at %s:%zu:%s %s (%s)",
-            ec_status.source_file,
-            ec_status.lineno,
-            ec_status.statement,
-            p->name,
-            p->description );
+    case uc_category_fatal_e:
+      if( filename ) {
+        syslog(priority, "fatal exception: %s:%zu: %s %s: %s (%s)",
+               program_name,
+               ec_status.lineno,
+               ec_status.statement,
+               filename, // show affected file before EC name
+               pec->name,
+               pec->description);
+      } else {
+        syslog(priority, "fatal exception: %s:%zu: %s: %s (%s)",
+               program_name,
+               ec_status.lineno,
+               ec_status.statement,
+               pec->name,
+               pec->description);
+      }
       abort();
       break;
-    case ec_category_none_e:
-      disposition = "category none?";
-      break;
     case ec_category_nonfatal_e:
-      disposition = "nonfatal";
+    case uc_category_nonfatal_e:
+      syslog(priority, "%s:%zu: %s: %s (%s)",
+             program_name,
+             ec_status.lineno,
+             ec_status.statement,
+             pec->name,
+             pec->description);
       break;
     case ec_category_implementor_e:
-      disposition = "implementor";
-      break;
-    case uc_category_none_e:
-      disposition = "uc_category_none_e";
-      break;
-    case uc_category_fatal_e:
-      disposition = "uc_category_fatal_e";
-      break;
-    case uc_category_nonfatal_e:
-      disposition = "uc_category_nonfatal_e";
-      break;
     case uc_category_implementor_e:
-      disposition = "uc_category_implementor_e";
       break;
     }
 
-    // If the EC was handled by a declarative, keep mum.
-    if( ec == ec_raised_and_handled ) {
-      ec_raised_and_handled = ec_none_e;
-      return;
-    }
-
-    warnx("%s exception at %s:%zu:%s %s (%s)",
-          disposition,
-          ec_status.source_file,
-          ec_status.lineno,
-          ec_status.statement,
-          p->name,
-          p->description );
+    ec_status.clear();
   }
 }
 
+/*
+ * To reach the default handler, an EC must have effect and not have been
+ * handled by program logic.  To have effect, it must have been enabled
+ * explictly, or be of type EC-I-O.  An EC may be handled by the statement or
+ * by a Declarative.
+ *
+ * Any EC handled by statement's conditional clause (e.g. ON SIZE ERROR)
+ * prevents an EC from being raised.  Because it is not raised, it is handled
+ * neither by a Declarative, nor by the the default handler.
+ *
+ * A nonfatal EC matched to a Declarative is considered handled.  A fatal EC is
+ * considered handled if the Declarative uses RESUME.  For any EC that is
+ * handled (with RESUME for fatal), program control passes to the next
+ * statement. Else control passes here first.
+ *
+ * Any EC explicitly enabled (with >>TURN) must be explicitly handled.  Only
+ * explicitly enabled ECs appear in enabled_ECs.  when EC-I-O is raised as a
+ * byproduct of error status on a file operation, we say it is "implicitly
+ * enabled".  It need not be explicitly handled.
+ *
+ * Implicit EC-I-O not handled by the statement or a Declarative is considered
+ * handled if the statement includes the FILE STATUS phrase.  OPEN and CLOSE
+ * never cause program termination with EC-I-O; for those two statements the
+ * fatal status is ignored.  These conditions are screened out by
+ * __gg__check_fatal_exception(), so that the default handler is not called.
+ *
+ * An unhandled EC reaches the default handler for any of 3 reasons:
+ *   1.  It is EC-I-O (enabled does not matter).
+ *   2.  It is enabled.
+ *   3.  It is fatal and was matched to a Declarative that did not use RESUME.
+ * The default handler, default_exception_handler(), logs the EC.  For a fatal
+ * EC, the process terminated with abort(3).
+ *
+ * Except for OPEN and CLOSE, I/O statements that raise an unhandled fatal EC
+ * cause program termination, consistent with IBM documentation.  See
+ * Enterprise COBOL for z/OS: Enterprise COBOL for z/OS 6.4 Programming Guide,
+ * page 244, "Handling errors in input and output operations".
+ */
 extern "C"
 void
 __gg__check_fatal_exception()
 {
-  if( ec_raised_and_handled == ec_none_e ) return;
-  /*
-   * "... if checking for EC-I-O exception conditions is not enabled,
-   * there is no link between EC-I-O exception conditions and I-O
-   * status values."
-   */
-  if( ec_cmp(ec_raised_and_handled, ec_io_e) ) return;
+  if( MATCH_DECLARATIVE )
+    warnx("%s: ec_status is %s", __func__, ec_status.unset()? "unset" : "set");
 
-  default_exception_handler(ec_raised_and_handled);
-  ec_raised_and_handled = ec_none_e;
+  if( ec_status.copy_environment().unset() )
+    ec_status.update();  // __gg__match_exception was not called first
+
+  if( ec_status.done() ) { // false for part-handled fatal
+    if( MATCH_DECLARATIVE )
+      warnx("%s: clearing ec_status", __func__);
+    ec_status.clear();
+    return; // already handled
+  }
+
+  auto ec = ec_status.unhandled();
+
+  if( MATCH_DECLARATIVE )
+    warnx("%s: %s was not handled %s enabled", __func__,
+          local_ec_type_str(ec), ec_status.is_enabled(ec)? "is" : "is not");
+
+  // Look for ways I/O statement might have dealt with EC.
+  auto file = ec_status.file_status();
+  if( file.ifile && ec_cmp(ec, ec_io_e) ) {
+    if( MATCH_DECLARATIVE )
+      warnx("%s: %s with %sFILE STATUS", __func__,
+            file.op_str(), file.user_status? "" : "no ");
+    if( file.user_status ) {
+      ec_status.clear();
+      return; // has FILE STATUS, ok
+    }
+    switch( file.operation ) {
+    case file_op_none:
+      assert(false);
+      abort();
+    case file_op_open: // implicit, no Declarative, no FILE STATUS, but ok
+    case file_op_close:
+      ec_status.clear();
+      return;
+    case file_op_start:
+    case file_op_read:
+    case file_op_write:
+    case file_op_rewrite:
+    case file_op_delete:
+      break;
+    }
+  } else {
+    if( ! ec_status.is_enabled() ) {
+      if( MATCH_DECLARATIVE )
+        warnx("%s: %s is not enabled", __func__, local_ec_type_str(ec));
+      ec_status.clear();
+      return;
+    }
+    if( MATCH_DECLARATIVE )
+      warnx("%s: %s is enabled", __func__, local_ec_type_str(ec));
+  }
+
+  if( MATCH_DECLARATIVE )
+    warnx("%s: calling default_exception_handler(%s)", __func__,
+          local_ec_type_str(ec));
+
+  default_exception_handler(ec);
 }
 
+/*
+ * Preserve the state of the raised EC during Declarative execution.
+ */
+extern "C"
+void
+__gg__exception_push()
+{
+  ec_stack.push(ec_status);
+  if( MATCH_DECLARATIVE )
+    warnx("%s: %s: %zu ECs, %zu declaratives", __func__,
+          __gg__exception_statement, enabled_ECs.size(), declaratives.size());
+}
+
+/*
+ * Restore the state of the raised EC after Declarative execution.
+ */
+extern "C"
+void
+__gg__exception_pop()
+{
+  ec_status = ec_stack.top();
+  ec_stack.pop();
+  ec_status.reset_environment();
+  if( MATCH_DECLARATIVE )
+    warnx("%s: %s: %zu ECs, %zu declaratives", __func__,
+          __gg__exception_statement, enabled_ECs.size(), declaratives.size());
+  __gg__check_fatal_exception();
+}
+
+// Called for RESUME in a Declarative to indicate a fatal EC was handled.
 extern "C"
 void
 __gg__clear_exception()
 {
-  ec_raised_and_handled = ec_none_e;
-}
-
-
-cbl_enabled_exceptions_array_t&
-cbl_enabled_exceptions_array_t::operator=( const cbl_enabled_exceptions_array_t& input )
-{
-  if( nec == input.nec ) {
-    if( nec == 0 || 0 == memcmp(ecs, input.ecs, nbytes()) ) return *this;
-  }
-
-  if( nec < input.nec ) {
-    if( nec > 0 ) delete[] ecs;
-    ecs = new cbl_enabled_exception_t[1 + input.nec];
-  }
-  if( input.nec > 0 ) {
-    auto pend = std::copy( input.ecs, input.ecs + input.nec, ecs );
-    std::fill(pend, ecs + input.nec, cbl_enabled_exception_t());
-  }
-  nec = input.nec;
-  return *this;
+  ec_stack.top().clear();
 }
 
 // Update the list of compiler-maintained enabled exceptions.
@@ -11121,99 +11424,91 @@ extern "C"
 void
 __gg__stash_exceptions( size_t nec, cbl_enabled_exception_t *ecs )
 {
-  enabled_ECs = cbl_enabled_exceptions_array_t(nec, ecs);
+  enabled_ECs = cbl_enabled_exceptions_t(nec, ecs);
 
-  if( false && getenv("match_declarative") )
+  if( false && MATCH_DECLARATIVE )
     warnx("%s: %zu exceptions enabled", __func__, nec);
 }
 
+void
+cbl_enabled_exception_t::dump( int i ) const {
+  warnx("cbl_enabled_exception_t: %2d  {%s, %s, %zu}",
+        i,
+        location? "location" : "    none",
+        local_ec_type_str(ec),
+        file );
+}
 
 /*
- * Match the raised exception against a declarative handler
+ * Match the raised exception against a Declarative.
  *
- * ECs unrelated to I/O are not matched to a Declarative unless
- * enabled.  Declaratives for I/O errors, on the other hand, match
- * regardless of whether or not any EC is enabled.
- *
- * Declaratives handle I-O errors with USE Format 1. They don't name a
- * specific EC.  They're matched based on the file's status,
- * irrespective of whether or not EC-I-O is enabled.  If EC-I-O is
- * enabled, and mentioned in a Declarative USE statement, then it is
- * matched just like any other Format 3 USE statement.
+ * A Declarative that handles I/O errors with USE Format 1 doesn't name a
+ * specific EC.  It's matched based on the file's status, irrespective of
+ * whether or not EC-I-O is enabled.  USE Format 1 Declaratives are honored
+ * regardless of any >>TURN directive.
+ * 
+ * An EC is enabled by the >>TURN directive.  The only ECs that can be disabled
+ * are those that were explicitly enabled.  If EC-I-O is enabled, and mentioned
+ * in a Declarative with USE Format 3, then it is matched just like any other.
  */
 extern "C"
 void
-__gg__match_exception( cblc_field_t *index,
-                       const cbl_declarative_t *dcls )
+__gg__match_exception( cblc_field_t *index )
 {
-  static const cbl_declarative_t no_declaratives[1] = {};
+  size_t isection = 0;
 
-  size_t ifile = __gg__exception_file_number;
-  // The exception file number is assumed to always be zero, unless it's
-  // been set to a non-zero value.  Having picked up that value it is our job
-  // to immediately set it back to zero:
-  __gg__exception_file_number = 0;
-
-  int  handled = __gg__exception_handled;
-  cblc_file_t *stashed = __gg__file_stashed();
-
-  if( dcls == NULL ) dcls = no_declaratives;
-  size_t ndcl = dcls[0].section;
-  auto eodcls  = dcls + 1 + ndcl, p = eodcls;
+  if( MATCH_DECLARATIVE ) enabled_ECs.dump("match_exception begin");
 
   auto ec = ec_status.update().unhandled();
 
-  // We need to set exception handled back to 0.  We do it here because
-  // ec_status.update() looks at it
-  __gg__exception_handled = 0;
+  if( ec != ec_none_e ) { 
+    /*
+     * An EC was raised and was not handled by the statement. 
+     * We know the EC and, for I/O, the current file and its mode. 
+     * Scan declaratives for a match: 
+     *   - EC is enabled or program has a Format 1 Declarative
+     *   - EC matches the Declarative's USE statement
+     * Format 1 declaratives apply only to EC-I-O, whether or not enabled. 
+     * Format 1 may be restricted to a particular mode (for all files).
+     * Format 1 and 3 may be restricted to a set of files. 
+     */
+    auto f = ec_status.file_status();
+    cbl_exception_t raised = { 0, f.ifile, ec, f.mode };
+    bool enabled = enabled_ECs.match(ec);
 
-  if(__gg__exception_code != ec_none_e) // cleared by ec_status_t::update
-    {
-    __gg__abort("__gg__match_exception(): __gg__exception_code should be ec_none_e");
+    if( MATCH_DECLARATIVE ) enabled_ECs.dump("match_exception enabled");
+
+    auto p = std::find_if( declaratives.begin(), declaratives.end(),
+                           [enabled, raised]( const cbl_declarative_t& dcl ) {
+                             return match_declarative(enabled, raised, dcl);
+                           } );
+
+    if( p == declaratives.end() ) {
+      if( MATCH_DECLARATIVE ) {
+        warnx("__gg__match_exception:%d: raised exception "
+              "%s not matched (%zu enabled)", __LINE__,
+              local_ec_type_str(ec), enabled_ECs.size());
+      }
+    } else {
+      isection = p->section;
+      ec_status.handled_by(isection);
+
+      if( MATCH_DECLARATIVE ) {
+        warnx("__gg__match_exception:%d: matched "
+              "%s against mask %s for section #%zu",
+              __LINE__,
+              local_ec_type_str(ec),
+              local_ec_type_str(p->type),
+              p->section);
+      }
     }
-  if( ec == ec_none_e ) {
-    if( ifile == 0) goto set_exception_section;
-
-    if( stashed == nullptr )
-      {
-      __gg__abort("__gg__match_exception(): stashed is null");
-      }
-    ec = local_ec_type_of( stashed->io_status );
-  }
-
-  if( ifile > 0 ) { // an I/O exception is raised
-    if( stashed == nullptr )
-      {
-      __gg__abort("__gg__match_exception(): stashed is null (2)");
-      }
-    auto mode = cbl_file_mode_t(stashed->mode_char);
-    cbl_exception_t oops = {0, ifile, ec, mode };
-    p = std::find_if( dcls + 1, eodcls,
-                      match_file_declarative(oops, file_status_t(handled)) );
-
-  } else {  // non-I/O exception
-    auto enabled = enabled_ECs.match(ec);
-    if( enabled ) {
-      p = std::find_if( dcls + 1, eodcls, [ec] (const cbl_declarative_t& dcl) {
-                          if( ! enabled_ECs.match(dcl.type) ) return false;
-                          if( ! ec_cmp(ec, dcl.type) ) return false;
-                          return true;
-                        } );
-      if( p == eodcls ) {
-        default_exception_handler(ec);
-      }
-    } else { // not enabled
-    }
-  }
-
- set_exception_section:
-  size_t retval = p == eodcls? 0 : p->section;
-  ec_raised_and_handled = retval? ec : ec_none_e;
+    assert(ec != ec_none_e); 
+  } // end EC match logic 
 
   // If a declarative matches the raised exception, return its
   // symbol_table index.
   __gg__int128_to_field(index,
-                        (__int128)retval,
+                        (__int128)isection,
                         0,
                         truncation_e,
                         NULL);
@@ -11342,41 +11637,41 @@ void
 __gg__func_exception_location(cblc_field_t *dest)
   {
   char ach[512] = " ";
-  if( stashed_exception_code )
+  if( last_exception_code )
     {
     ach[0] = '\0';
-    if( stashed_exception_program_id )
+    if( last_exception_program_id )
       {
-      strcat(ach, stashed_exception_program_id);
+      strcat(ach, last_exception_program_id);
       strcat(ach, "; ");
       }
 
-    if( stashed_exception_paragraph )
+    if( last_exception_paragraph )
       {
-      strcat(ach, stashed_exception_paragraph );
-      if( stashed_exception_section )
+      strcat(ach, last_exception_paragraph );
+      if( last_exception_section )
         {
         strcat(ach, " OF ");
-        strcat(ach, stashed_exception_section);
+        strcat(ach, last_exception_section);
         }
       }
     else
       {
-      if( stashed_exception_section )
+      if( last_exception_section )
         {
-        strcat(ach, stashed_exception_section);
+        strcat(ach, last_exception_section);
         }
       }
     strcat(ach, "; ");
 
-    if( stashed_exception_source_file )
+    if( last_exception_source_file )
       {
       char achSource[128] = "";
       snprintf( achSource,
                 sizeof(achSource),
                 "%s:%d ",
-                stashed_exception_source_file,
-                stashed_exception_line_number);
+                last_exception_source_file,
+                last_exception_line_number);
       strcat(ach, achSource);
       }
     else
@@ -11393,9 +11688,9 @@ void
 __gg__func_exception_statement(cblc_field_t *dest)
   {
   char ach[128] = " ";
-  if(stashed_exception_statement)
+  if(last_exception_statement)
     {
-    snprintf(ach, sizeof(ach), "%s", stashed_exception_statement);
+    snprintf(ach, sizeof(ach), "%s", last_exception_statement);
     ach[sizeof(ach)-1] = '\0';
     }
   __gg__adjust_dest_size(dest, strlen(ach));
@@ -11407,12 +11702,12 @@ void
 __gg__func_exception_status(cblc_field_t *dest)
   {
   char ach[128] = "<not in table?>";
-  if(stashed_exception_code)
+  if(last_exception_code)
     {
     ec_descr_t *p = __gg__exception_table;
     while(p < __gg__exception_table_end )
       {
-      if( p->type == (ec_type_t)stashed_exception_code )
+      if( p->type == (ec_type_t)last_exception_code )
         {
         snprintf(ach, sizeof(ach), "%s", p->name);
         break;
@@ -11428,20 +11723,24 @@ __gg__func_exception_status(cblc_field_t *dest)
   memcpy(dest->data, ach, strlen(ach));
   }
 
-static cblc_file_t *recent_file = NULL;
-
 extern "C"
 void
 __gg__set_exception_file(cblc_file_t *file)
   {
-  recent_file = file;
   ec_type_t ec = local_ec_type_of( file->io_status );
   if( ec )
     {
-    exception_raise(ec);
+    // During SORT operations, which routinely read files until they end, we
+    // need to suppress them.
+    if( ec != ec_io_at_end_e || !sv_suppress_eof_ec )
+      {
+      last_exception_file_operation = file->prior_op;
+      last_exception_file_status    = file->io_status;
+      last_exception_file_name      = file->name;
+      exception_raise(ec);
+      }
     }
   }
-
 
 extern "C"
 void
@@ -11451,20 +11750,24 @@ __gg__func_exception_file(cblc_field_t *dest, cblc_file_t *file)
   if( !file )
     {
     // This is where we process FUNCTION EXCEPTION-FILE <no parameter>
-    if( !(stashed_exception_code & ec_io_e) || !recent_file)
+    if( !(last_exception_code & ec_io_e) )
       {
-      // There is no EC-I-O exception code, so we return two spaces
+      // There is no EC-I-O exception code, so we return two alphanumeric zeros.
       strcpy(ach, "00");
       }
     else
       {
+      // The last exception code is an EC-I-O
       if( sv_from_raise_statement )
         {
         strcpy(ach, "  ");
         }
       else
         {
-        snprintf(ach, sizeof(ach), "%2.2d%s", recent_file->io_status, recent_file->name);
+        snprintf( ach,
+                  sizeof(ach), "%2.2d%s",
+                  last_exception_file_status,
+                  last_exception_file_name);
         }
       }
     }
@@ -11490,36 +11793,50 @@ extern "C"
 void
 __gg__set_exception_code(ec_type_t ec, int from_raise_statement)
   {
+  if( MATCH_DECLARATIVE )
+    {
+    warnx("%s: %s:%u: %s: %s",
+          __func__,
+          __gg__exception_source_file,
+          __gg__exception_line_number,
+          __gg__exception_statement,
+          local_ec_type_str(ec));
+    }
   sv_from_raise_statement = from_raise_statement;
 
   __gg__exception_code = ec;
   if( ec == ec_none_e)
     {
-    stashed_exception_code          = 0    ;
-    stashed_exception_handled       = 0    ;
-    stashed_exception_file_number   = 0    ;
-    stashed_exception_file_status   = 0    ;
-    stashed_exception_file_name     = NULL ;
-    stashed_exception_program_id    = NULL ;
-    stashed_exception_section       = NULL ;
-    stashed_exception_paragraph     = NULL ;
-    stashed_exception_source_file   = NULL ;
-    stashed_exception_line_number   = 0    ;
-    stashed_exception_statement     = NULL ;
+    last_exception_code           = 0            ;
+    last_exception_program_id     = NULL         ;
+    last_exception_section        = NULL         ;
+    last_exception_paragraph      = NULL         ;
+    last_exception_source_file    = NULL         ;
+    last_exception_line_number    = 0            ;
+    last_exception_statement      = NULL         ;
+    last_exception_file_operation = file_op_none ;
+    last_exception_file_status    = FsSuccess    ;
+    last_exception_file_name      = NULL         ;
     }
   else
     {
-    stashed_exception_code          = __gg__exception_code         ;
-    stashed_exception_handled       = __gg__exception_handled      ;
-    stashed_exception_file_number   = __gg__exception_file_number  ;
-    stashed_exception_file_status   = __gg__exception_file_status  ;
-    stashed_exception_file_name     = __gg__exception_file_name    ;
-    stashed_exception_program_id    = __gg__exception_program_id   ;
-    stashed_exception_section       = __gg__exception_section      ;
-    stashed_exception_paragraph     = __gg__exception_paragraph    ;
-    stashed_exception_source_file   = __gg__exception_source_file  ;
-    stashed_exception_line_number   = __gg__exception_line_number  ;
-    stashed_exception_statement     = __gg__exception_statement    ;
+    last_exception_code           = __gg__exception_code         ;
+    last_exception_program_id     = __gg__exception_program_id   ;
+    last_exception_section        = __gg__exception_section      ;
+    last_exception_paragraph      = __gg__exception_paragraph    ;
+    last_exception_source_file    = __gg__exception_source_file  ;
+    last_exception_line_number    = __gg__exception_line_number  ;
+    last_exception_statement      = __gg__exception_statement    ;
+
+    // These are set in __gg__set_exception_file just before this routine is
+    // called.  In cases where the ec is not a file-i-o operation, we clear 
+    // them here:
+    if( !(ec & ec_io_e) )
+      {
+      last_exception_file_operation = file_op_none ;
+      last_exception_file_status    = FsSuccess  ;
+      last_exception_file_name      = NULL    ;
+      }
     }
   }
 
@@ -12655,5 +12972,124 @@ __gg__module_name(cblc_field_t *dest, module_type_t type)
 
   __gg__adjust_dest_size(dest, strlen(result));
   memcpy(dest->data, result, strlen(result)+1);
+  }
+
+/*
+ * Runtime functions defined for cbl_enabled_exceptions_t
+ */
+cbl_enabled_exceptions_t&
+cbl_enabled_exceptions_t::decode( const std::vector<uint64_t>& encoded ) {
+  auto p = encoded.begin();
+  while( p != encoded.end() ) {
+    auto location = static_cast<bool>(*p++);
+    auto ec = static_cast<ec_type_t>(*p++);
+    auto file = *p++;
+    cbl_enabled_exception_t enabled(location, ec, file);
+    insert(enabled);
+  }
+  return *this;
+}
+const cbl_enabled_exception_t *
+cbl_enabled_exceptions_t::match( ec_type_t type, size_t file ) const {
+  auto output = enabled_exception_match( begin(), end(), type, file );
+
+  if( output != end() ) {
+    if( MATCH_DECLARATIVE )
+      warnx("          enabled_exception_match found %x in input\n", type);
+    return &*output;
+  }
+  return nullptr;
+}
+
+void
+cbl_enabled_exceptions_t::dump( const char tag[] ) const {
+  if( empty() ) {
+    warnx("%s:  no enabled exceptions", tag );
+    return;
+  }
+  int i = 1;
+  for( auto& elem : *this ) {
+    warnx("%s: %2d  {%s, %04x %s, %ld}", tag,
+    i++,
+    elem.location? "with location" : "  no location",
+    elem.ec,
+    local_ec_type_str(elem.ec),
+    elem.file );
+  }
+}
+
+
+static std::vector<cbl_declarative_t>&
+decode( std::vector<cbl_declarative_t>& dcls,
+        const std::vector<uint64_t>& encoded ) {
+  auto p = encoded.begin();
+  while( p != encoded.end() ) {
+    auto section = static_cast<size_t>(*p++);
+    auto global = static_cast<bool>(*p++);
+    auto type = static_cast<ec_type_t>(*p++);
+    auto nfile = static_cast<uint32_t>(*p++);
+    std::list<size_t> files;
+    assert(nfile <= cbl_declarative_t::files_max);
+    auto pend = p + nfile;
+    std::copy(p, pend, std::back_inserter(files));
+    p += cbl_declarative_t::files_max;
+    auto mode = cbl_file_mode_t(*p++);
+    cbl_declarative_t dcl( section, type, files, mode, global );
+    dcls.push_back(dcl);
+  }
+  return dcls;
+}
+
+static std::vector<cbl_declarative_t>&
+operator<<( std::vector<cbl_declarative_t>& dcls,
+            const std::vector<uint64_t>& encoded ) {
+  return decode( dcls, encoded );
+}
+
+// The first element of each array is the number of elements that follow
+extern "C"
+void
+__gg__set_exception_environment( uint64_t *ecs, uint64_t *dcls )
+  {
+  static struct prior_t {
+    uint64_t *ecs = nullptr, *dcls = nullptr;
+  } prior;
+
+  if( MATCH_DECLARATIVE )
+    if( prior.ecs != ecs || prior.dcls != dcls )
+      warnx("set_exception_environment: %s: %p, %p",
+            __gg__exception_statement, ecs, dcls);
+
+  if( ecs ) {
+    if( prior.ecs != ecs ) {
+      uint64_t *ecs_begin = ecs + 1, *ecs_end = ecs_begin + ecs[0];
+      if( MATCH_DECLARATIVE ) {
+        warnx("%zu elements implies %zu ECs", ecs[0], ecs[0] / 3);
+      }
+      cbl_enabled_exceptions_t enabled;
+      enabled_ECs = enabled.decode( std::vector<uint64_t>(ecs_begin, ecs_end) );
+      if( MATCH_DECLARATIVE ) enabled_ECs.dump("set_exception_environment");
+    }
+  } else {
+    enabled_ECs.clear();
+  }
+
+  if( dcls ) {
+    if( prior.dcls != dcls ) {
+      uint64_t *dcls_begin = dcls + 1, *dcls_end = dcls_begin + dcls[0];
+      if( MATCH_DECLARATIVE ) {
+        warnx("%zu elements implies %zu declaratives", dcls[0], dcls[0] / 21);
+      }
+      declaratives.clear();
+      declaratives << std::vector<uint64_t>( dcls_begin, dcls_end );
+    }
+  } else {
+    declaratives.clear();
+  }
+
+  __gg__exception_code = ec_none_e;
+
+  prior.ecs = ecs;
+  prior.dcls = dcls;
   }
 

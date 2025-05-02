@@ -43,6 +43,7 @@
 #include <cctype>
 #include <langinfo.h>
 #include <string.h>
+#include <vector>
 
 #include "config.h"
 #include "libgcobol-fp.h"

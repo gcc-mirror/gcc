@@ -155,75 +155,14 @@ void input_file_status_notify();
 static char *display_msg;
 const char * keyword_str( int token );
 
-static class exception_turns_t {
-  typedef std::list<size_t> filelist_t;
-  typedef std::map<ec_type_t, filelist_t> ec_filemap_t;
-  ec_filemap_t exceptions;
- public:
-  bool enabled, location;
-
-  exception_turns_t() : enabled(false), location(false) {};
-
-  const ec_filemap_t& exception_files() const { return exceptions; }
-
-  struct args_t {
-    size_t nexception;
-    cbl_exception_files_t *exceptions;
-  };
-
-  bool add_exception( ec_type_t type, const filelist_t files = filelist_t() ) {
-    ec_disposition_t disposition = ec_type_disposition(type);
-    if( disposition != ec_implemented(disposition) ) {
-	cbl_unimplementedw("CDF: exception '%s'", ec_type_str(type));
-    }
-    auto elem = exceptions.find(type);
-    if( elem != exceptions.end() ) return false; // cannot add twice
-
-    exceptions[type] = files;
-    return true;
-  }
-
-  args_t args() const {
-    args_t args;
-    args.nexception = exceptions.size();
-    args.exceptions = NULL;
-    if( args.nexception ) {
-      args.exceptions = new cbl_exception_files_t[args.nexception];
-    }
-    std::transform( exceptions.begin(), exceptions.end(), args.exceptions,
-                    []( auto& input ) {
-                      cbl_exception_files_t output;
-                      output.type = input.first;
-                      output.nfile = input.second.size();
-                      output.files = NULL;
-                      if( output.nfile ) {
-                        output.files = new size_t[output.nfile];
-                        std::copy(input.second.begin(),
-                                       input.second.end(),
-                                       output.files );
-                      }
-                      return output;
-                    } );
-    return args;
-  }
-
-  void clear() {
-    for( auto& ex : exceptions ) {
-      ex.second.clear();
-    }
-    exceptions.clear();
-    enabled = location = false;
-  }
-
-} exception_turns;
-
-
-static bool
-apply_cdf_turn( exception_turns_t& turns ) {
-  for( auto elem : turns.exception_files() ) {
+exception_turn_t exception_turn;
+			
+bool
+apply_cdf_turn( const exception_turn_t& turn ) {
+  for( auto elem : turn.exception_files() ) {
     std::set<size_t> files(elem.second.begin(), elem.second.end());
-    enabled_exceptions.turn_on_off(turns.enabled,
-                                   turns.location,
+    enabled_exceptions.turn_on_off(turn.enabled,
+                                   turn.location,
                                    elem.first, files);
   }
   if( getenv("GCOBOL_SHOW") ) enabled_exceptions.dump();
@@ -241,6 +180,7 @@ apply_cdf_turn( exception_turns_t& turns ) {
     std::set<size_t> *files;
 }
 
+%printer { fprintf(yyo, "'%s'", $$? "true" : "false" ); } <boolean>
 %printer { fprintf(yyo, "'%s'", $$ ); } <string>
 %printer { fprintf(yyo, "%s '%s'",
 		   keyword_str($$.token),
@@ -258,7 +198,7 @@ apply_cdf_turn( exception_turns_t& turns ) {
 %type	<cdfval>	cdf_expr
 %type	<cdfval>	cdf_relexpr cdf_reloper cdf_and cdf_bool_expr
 %type	<cdfval>	cdf_factor
-%type	<boolean>	cdf_cond_expr override
+%type	<boolean>	cdf_cond_expr override except_check
 
 %type   <file>		filename
 %type   <files>         filenames
@@ -443,8 +383,8 @@ override:	%empty   { $$ = false; }
 
 cdf_turn:	TURN except_names except_check
 		{
-		  apply_cdf_turn(exception_turns);
-		  exception_turns.clear();
+		  apply_cdf_turn(exception_turn);
+		  exception_turn.clear();
 		}
 		;
 
@@ -463,22 +403,20 @@ except_names: 	except_name
 		;
 except_name:	EXCEPTION_NAME[ec] {
 		  assert($ec != ec_none_e);
-		  exception_turns.add_exception(ec_type_t($ec));
+		  exception_turn.add_exception(ec_type_t($ec));
 		}
 	|	EXCEPTION_NAME[ec] filenames {
 		  assert($ec != ec_none_e);
-		  std::list<size_t> files;
-		  std::copy( $filenames->begin(), $filenames->end(),
-		                  std::back_inserter(files) );
-		  exception_turns.add_exception(ec_type_t($ec), files);
+		  std::list<size_t> files($filenames->begin(), $filenames->end());
+		  exception_turn.add_exception(ec_type_t($ec), files);
 		}
 		;
 
-except_check:	CHECKING on  { exception_turns.enabled = true; }
-	|	CHECKING OFF { exception_turns.enabled = false; }
+except_check:	CHECKING on  { $$ = exception_turn.enable(true); }
+	|	CHECKING OFF { $$ = exception_turn.enable(false); }
 	|	CHECKING on with LOCATION
 		{
-		  exception_turns.enabled = exception_turns.location = true;
+		  $$ = exception_turn.enable(true, true);
 		}
 		;
 

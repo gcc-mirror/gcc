@@ -39,6 +39,7 @@
 #include <unistd.h>
 #include <algorithm>
 #include <unordered_map>
+#include <vector>
 
 #include "ec.h"
 #include "io.h"

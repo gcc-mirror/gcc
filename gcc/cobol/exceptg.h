@@ -44,18 +44,62 @@ ec_implemented( ec_disposition_t disposition ) {
   return ec_disposition_t( size_t(disposition) & ~0x80 );
 }
 
-
 // >>TURN arguments
-struct cbl_exception_files_t {
-  ec_type_t type;
-  size_t nfile;
-  size_t *files;
-  bool operator<( const cbl_exception_files_t& that ) {
-    return type < that.type;
+class exception_turn_t;
+bool apply_cdf_turn( const exception_turn_t& turn );
+
+class exception_turn_t {
+  friend bool apply_cdf_turn( const exception_turn_t& turn );
+  typedef std::list<size_t> filelist_t;
+  typedef std::map<ec_type_t, filelist_t> ec_filemap_t;
+  ec_filemap_t exceptions;
+  bool enabled, location;
+ public:
+
+  exception_turn_t() : enabled(false), location(false) {};
+
+  exception_turn_t( ec_type_t ec, bool enabled = true )
+    : enabled(enabled)
+  {
+    add_exception(ec);
+  } 
+
+  bool enable( bool enabled ) {
+    return this->enabled = enabled;
+  } 
+  bool enable( bool enabled, bool location ) {
+    this->location = location;
+    return this->enabled = enabled;
+  } 
+
+  const ec_filemap_t& exception_files() const { return exceptions; }
+
+  bool add_exception( ec_type_t type, const filelist_t files = filelist_t() ) {
+    ec_disposition_t disposition = ec_type_disposition(type);
+    if( disposition != ec_implemented(disposition) ) {
+	cbl_unimplementedw("CDF: exception '%s'", ec_type_str(type));
+    }
+    auto elem = exceptions.find(type);
+    if( elem != exceptions.end() ) return false; // cannot add twice
+
+    exceptions[type] = files;
+    return true;
   }
+
+  void clear() {
+    for( auto& ex : exceptions ) {
+      ex.second.clear();
+    }
+    exceptions.clear();
+    enabled = location = false;
+  }
+
 };
 
 size_t symbol_declaratives_add( size_t program,
                                 const std::list<cbl_declarative_t>& dcls );
 
 #endif
+
+
+

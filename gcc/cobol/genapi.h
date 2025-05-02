@@ -518,13 +518,7 @@ void parser_return_atend( cbl_file_t *file );
 void parser_return_notatend( cbl_file_t *file );
 void parser_return_finish( cbl_file_t *file );
 
-void parser_exception_prepare( const cbl_name_t statement_name,
-                               const cbl_enabled_exceptions_array_t *enabled );
-
-//void parser_exception_condition( cbl_field_t *ec );
-
 struct cbl_exception_file;
-struct cbl_exception_files_t;
 
 void parser_exception_raise(ec_type_t ec);
 
@@ -533,10 +527,11 @@ void parser_call_exception_end( cbl_label_t *name );
 
 //void parser_stash_exceptions(const cbl_enabled_exceptions_array_t *enabled);
 
-void parser_match_exception(cbl_field_t *index,
-                            cbl_field_t *blob);
+void parser_match_exception(cbl_field_t *index);
 void parser_check_fatal_exception();
 void parser_clear_exception();
+void parser_push_exception();
+void parser_pop_exception();
 
 void parser_call_targets_dump();
 size_t parser_call_target_update( size_t caller,
@@ -569,8 +564,6 @@ void parser_print_long(const char *fmt, long N); // fmt needs to have a %ls in i
 void parser_print_string(const char *ach);
 void parser_print_string(const char *fmt, const char *ach); // fmt needs to have a %s in it
 void parser_set_statement(const char *statement);
-void parser_set_handled(ec_type_t ec_handled);
-void parser_set_file_number(int file_number);
 void parser_exception_clear();
 
 void parser_init_list_size(int count_of_variables);
@@ -579,6 +572,9 @@ void parser_init_list();
 
 tree file_static_variable(tree type, const char *name);
 
-void parser_statement_begin();
+void parser_statement_begin( const cbl_name_t name, tree ecs, tree dcls );
+
+tree parser_compile_ecs( const std::vector<uint64_t>& ecs );
+tree parser_compile_dcls( const std::vector<uint64_t>& dcls );
 
 #endif

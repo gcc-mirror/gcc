@@ -2214,6 +2214,7 @@ cbl_message(int fd, const char *format_string, ...)
   char *ostring = xvasprintf(format_string, ap);
   va_end(ap);
   write(fd, ostring, strlen(ostring));
+  write(fd, "\n", 1);
   free(ostring);
   }
 
@@ -2319,7 +2320,548 @@ int  ftolower(int c)
   {
   return TOLOWER(c);
   }
+int  ftoupper(int c)
+  {
+  return TOUPPER(c);
+  }
 bool fisprint(int c)
   {
   return ISPRINT(c);
   };
+
+// 8.9 Reserved words
+static const std::set<std::string> reserved_words = {
+  "ACCEPT",
+  "ACCESS",
+  "ACTIVE-CLASS",
+  "ADD",
+  "ADDRESS",
+  "ADVANCING",
+  "AFTER",
+  "ALIGNED",
+  "ALL",
+  "ALLOCATE",
+  "ALPHABET",
+  "ALPHABETIC",
+  "ALPHABETIC-LOWER",
+  "ALPHABETIC-UPPER",
+  "ALPHANUMERIC",
+  "ALPHANUMERIC-EDITED",
+  "ALSO",
+  "ALTERNATE",
+  "AND",
+  "ANY",
+  "ANYCASE",
+  "ARE",
+  "AREA",
+  "AREAS",
+  "AS",
+  "ASCENDING",
+  "ASSIGN",
+  "AT",
+  "B-AND",
+  "B-NOT",
+  "B-OR",
+  "B-SHIFT-L",
+  "B-SHIFT-LC",
+  "B-SHIFT-R",
+  "B-SHIFT-RC",
+  "B-XOR",
+  "BASED",
+  "BEFORE",
+  "BINARY",
+  "BINARY-CHAR",
+  "BINARY-DOUBLE",
+  "BINARY-LONG",
+  "BINARY-SHORT",
+  "BIT",
+  "BLANK",
+  "BLOCK",
+  "BOOLEAN",
+  "BOTTOM",
+  "BY",
+  "CALL",
+  "CANCEL",
+  "CF",
+  "CH",
+  "CHARACTER",
+  "CHARACTERS",
+  "CLASS",
+  "CLASS-ID",
+  "CLOSE",
+  "CODE",
+  "CODE-SET",
+  "COL",
+  "COLLATING",
+  "COLS",
+  "COLUMN",
+  "COLUMNS",
+  "COMMA",
+  "COMMIT",
+  "COMMON",
+  "COMP",
+  "COMPUTATIONAL",
+  "COMPUTE",
+  "CONDITION",
+  "CONFIGURATION",
+  "CONSTANT",
+  "CONTAINS",
+  "CONTENT",
+  "CONTINUE",
+  "CONTROL",
+  "CONTROLS",
+  "CONVERTING",
+  "COPY",
+  "CORR",
+  "CORRESPONDING",
+  "COUNT",
+  "CRT",
+  "CURRENCY",
+  "CURSOR",
+  "DATA",
+  "DATA-POINTER",
+  "DATE",
+  "DAY",
+  "DAY-OF-WEEK",
+  "DE",
+  "DECIMAL-POINT",
+  "DECLARATIVES",
+  "DEFAULT",
+  "DELETE",
+  "DELIMITED",
+  "DELIMITER",
+  "DEPENDING",
+  "DESCENDING",
+  "DESTINATION",
+  "DETAIL",
+  "DISPLAY",
+  "DIVIDE",
+  "DIVISION",
+  "DOWN",
+  "DUPLICATES",
+  "DYNAMIC",
+  "EC",
+  "EDITING",
+  "ELSE",
+  "EMD-START",
+  "END",
+  "END-ACCEPT",
+  "END-ADD",
+  "END-CALL",
+  "END-COMPUTE",
+  "END-DELETE",
+  "END-DISPLAY",
+  "END-DIVIDE",
+  "END-EVALUATE",
+  "END-IF",
+  "END-MULTIPLY",
+  "END-OF-PAGE",
+  "END-PERFORM",
+  "END-READ",
+  "END-RECEIVE",
+  "END-RETURN",
+  "END-REWRITE",
+  "END-SEARCH",
+  "END-SEND",
+  "END-STRING",
+  "END-SUBTRACT",
+  "END-UNSTRING",
+  "END-WRITE",
+  "ENVIRONMENT",
+  "EO",
+  "EOP",
+  "EQUAL",
+  "ERROR",
+  "EVALUATE",
+  "EXCEPTION",
+  "EXCEPTION-OBJECT",
+  "EXCLUSIVE-OR",
+  "EXIT",
+  "EXTEND",
+  "EXTERNAL",
+  "FACTORY",
+  "FALSE",
+  "FARTHEST-FROM-ZERO",
+  "FD",
+  "FILE",
+  "FILE-CONTROL",
+  "FILLER",
+  "FINAL",
+  "FINALLY",
+  "FIRST",
+  "FLOAT-BINARY-128",
+  "FLOAT-BINARY-32",
+  "FLOAT-BINARY-64",
+  "FLOAT-DECIMAL-16",
+  "FLOAT-DECIMAL-34",
+  "FLOAT-EXTENDED",
+  "FLOAT-INFINITY",
+  "FLOAT-LONG",
+  "FLOAT-NOT-A-NUMBER",
+  "FLOAT-NOT-A-NUMBER-",
+  "FLOAT-NOT-A-NUMBER-",
+  "FLOAT-SHORT",
+  "FOOTING",
+  "FOR",
+  "FORMAT",
+  "FREE",
+  "FROM",
+  "FUNCTION",
+  "FUNCTION-ID",
+  "FUNCTION-POINTER",
+  "GENERATE",
+  "GET",
+  "GIVING",
+  "GLOBAL",
+  "GO",
+  "GOBACK",
+  "GREATER",
+  "GROUP",
+  "GROUP-USAGE",
+  "HEADING",
+  "HIGH-VALUE",
+  "HIGH-VALUES",
+  "I-O",
+  "I-OICONTROL",
+  "IDENTIFICATION",
+  "IF",
+  "IN",
+  "IN-ARITHMETIC-RANGE",
+  "INDEX",
+  "INDEXED",
+  "INDICATE",
+  "INHERITS",
+  "INITIAL",
+  "INITIALIZE",
+  "INITIATE",
+  "INPUT",
+  "INPUT-OUTPUT",
+  "INSPECT",
+  "INTERFACE",
+  "INTERFACE-ID",
+  "INTO",
+  "INVALID",
+  "INVOKE",
+  "IS",
+  "JUST",
+  "JUSTIFIED",
+  "KEY",
+  "LAST",
+  "LEADING",
+  "LEFT",
+  "LENGTH",
+  "LESS",
+  "LIMIT",
+  "LIMITS",
+  "LINAGE",
+  "LINAGE-COUNTER",
+  "LINE",
+  "LINE-COUNTER",
+  "LINES",
+  "LINKAGE",
+  "LOCAL-STORAGE",
+  "LOCALE",
+  "LOCATION",
+  "LOCK",
+  "LOW-VALUE",
+  "LOW-VALUES",
+  "MERGE",
+  "MESSAGE-TAG",
+  "METHOD-ID",
+  "MINUS",
+  "MODE",
+  "MOVE",
+  "MULTIPLY",
+  "NATIONAL",
+  "NATIONAL-EDITED",
+  "NATIVE",
+  "NEAREST-TO-ZERO",
+  "NEGATIVE",
+  "NESTED",
+  "NEXT",
+  "NO",
+  "NOT",
+  "NULL",
+  "NUMBER",
+  "NUMERIC",
+  "NUMERIC-EDITED",
+  "OBJECT",
+  "OBJECT-COMPUTER",
+  "OBJECT-REFERENCE",
+  "OCCURS",
+  "OF",
+  "OFF",
+  "OMITTED",
+  "ON",
+  "OPEN",
+  "OPTIONAL",
+  "OPTIONS",
+  "OR",
+  "ORDER",
+  "ORGANIZATION",
+  "OTHER",
+  "OUTPUT",
+  "OVERFLOW",
+  "OVERRIDE",
+  "PACKED-DECIMAL",
+  "PAGE",
+  "PAGE-COUNTER",
+  "PERFORM",
+  "PF",
+  "PH",
+  "PIC",
+  "PICTURE",
+  "PLUS",
+  "POINTER",
+  "POSITIVE",
+  "PRESENT",
+  "PRINTING",
+  "PROCEDURE",
+  "PROGRAM",
+  "PROGRAM-ID",
+  "PROGRAM-POINTER",
+  "PROPERTY",
+  "PROTOTYPE",
+  "QUIET",
+  "QUOTE",
+  "QUOTES",
+  "RAISE",
+  "RAISING",
+  "RANDOM",
+  "RD",
+  "READ",
+  "RECEIVE",
+  "RECORD",
+  "RECORDS",
+  "REDEFINES",
+  "REEL",
+  "REFERENCE",
+  "RELATIVE",
+  "RELEASE",
+  "REMAINDER",
+  "REMOVAL",
+  "RENAMES",
+  "REPLACE",
+  "REPLACING",
+  "REPORT",
+  "REPORTING",
+  "REPORTS",
+  "REPOSITORY",
+  "RESERVE",
+  "RESET",
+  "RESUME",
+  "RETRY",
+  "RETURN",
+  "RETURNING",
+  "REWIND",
+  "REWRITE",
+  "RF",
+  "RH",
+  "RIGHT",
+  "ROLLBACK",
+  "ROUNDED",
+  "RUN",
+  "SAME",
+  "SCREEN",
+  "SD",
+  "SEARCH",
+  "SECTION",
+  "SELECT",
+  "SELF",
+  "SEND",
+  "SENTENCE",
+  "SEPARATE",
+  "SEQUENCE",
+  "SEQUENTIAL",
+  "SET",
+  "SHARING",
+  "SIGN",
+  "SIGNALING",
+  "SIZE",
+  "SORT",
+  "SORT-MERGE",
+  "SOURCE",
+  "SOURCE-COMPUTER",
+  "SOURCES",
+  "SPACE",
+  "SPACES",
+  "SPECIAL-NAMES",
+  "STANDARD",
+  "STANDARD-1",
+  "STANDARD-2",
+  "START",
+  "STATUS",
+  "STOP",
+  "STRING",
+  "SUBTRACT",
+  "SUM",
+  "SUPER",
+  "SUPPRESS",
+  "SYMBOLIC",
+  "SYNC",
+  "SYNCHRONIZED",
+  "SYSTEM-DEFAULT",
+  "TABLE",
+  "TALLYING",
+  "TERMINATE",
+  "TEST",
+  "THAN",
+  "THEN",
+  "THROUGH",
+  "THRU",
+  "TIME",
+  "TIMES",
+  "TO",
+  "TOP",
+  "TRAILING",
+  "TRUE",
+  "TYPE",
+  "TYPEDEF",
+  "UNIT",
+  "UNIVERSAL",
+  "UNLOCK",
+  "UNSTRING",
+  "UNTIL",
+  "UP",
+  "UPON",
+  "USAGE",
+  "USE",
+  "USER-DEFAULT",
+  "USING",
+  "VAL-STATUS",
+  "VALID",
+  "VALIDATE",
+  "VALIDATE-STATUS",
+  "VALUE",
+  "VALUES",
+  "VARYING",
+  "WHEN",
+  "WITH",
+  "WORKING-STORAGE",
+  "WRITE",
+  "XOR",
+  "ZERO",
+  "ZEROES",
+  "ZEROS",
+  "+",
+  "-",
+  "*",
+  "/",
+  "**",
+  "<",
+  "<=",
+  "<>",
+  "=",
+  ">",
+  ">=",
+  "&",
+  "*>",
+  "::",
+  ">>",
+};
+
+// 8.10 Context-sensitive words
+static const std::set<std::string> context_sensitive_words = {
+  "ACTIVATING",              // MODULE-NAME intrinsic function
+  "ANUM",                    // CONVERT intrinsic function
+  "APPLY",                   // I-O-CONTROL paragraph
+  "ARITHMETIC",              // OPTIONS paragraph
+  "ATTRIBUTE",               // SET statement
+  "AUTO",                    // screen description entry
+  "AUTOMATIC",               // LOCK MODE clause
+  "AWAY-FROM-ZERO",          // ROUNDED phrase
+  "BACKGROUND-COLOR",        // screen description entry
+  "BACKWARD",                // INSPECT statement
+  "BELL",                    // screen description entry and SET attribute statement
+  "BINARY-ENCODING",         // USAGE clause and FLOAT-DECIMAL clause
+  "BLINK",                   // screen description entry and SET attribute statement
+  "BYTE",                    // CONVERT intrinsic function
+  "BYTES",                   // RECORD clause
+  "BYTE-LENGTH",             // constant entry
+  "CAPACITY",                // OCCURS clause
+  "CENTER",                  // COLUMN clause
+  "CLASSIFICATION",          // OBJECT-COMPUTER paragraph
+  "CURRENT",                 // MODULE-NAME intrinsic function
+  "CYCLE",                   // EXIT statement
+  "DECIMAL-ENCODING",        // USAGE clause and FLOAT-DECIMAL clause
+  "EOL",                     // ERASE clause in a screen description entry
+  "EOS",                     // ERASE clause in a screen description entry
+  "ENTRY-CONVENTION",        // OPTIONS paragraph
+  "ERASE",                   // screen description entry
+  "EXPANDS",                 // class-specifier and interface-specifier of the REPOSITORY paragraph
+  "FLOAT-BINARY",            // OPTIONS paragraph
+  "FLOAT-DECIMAL",           // OPTIONS paragraph
+  "FOREGROUND-COLOR",        // screen description entry
+  "FOREVER",                 // RETRY phrase
+  "FULL",                    // screen description entry
+  "HEX",                     // CONVERT intrinsic function
+  "HIGH-ORDER-LEFT",         // FLOAT-BINARY clause, FLOAT-DECIMAL clause, and USAGE clause
+  "HIGH-ORDER-RIGHT",        // FLOAT-BINARY clause, FLOAT-DECIMAL clause, and USAGE clause
+  "HIGHLIGHT",               // screen description entry and SET attribute statement
+  "IGNORING",                // READ statement
+  "IMPLEMENTS",              // FACTORY paragraph and OBJECT paragraph
+  "INITIALIZED",             // ALLOCATE statement and OCCURS clause
+  "INTERMEDIATE",            // OPTIONS paragraph
+  "INTRINSIC",               // function-specifier of the REPOSITORY paragraph
+  "LC_ALL",                  // SET statement
+  "LC_COLLATE",              // SET statement
+  "LC_CTYPE",                // SET statement
+  "LC_MESSAGES",             // SET statement
+  "LC_MONETARY",             // SET statement
+  "LC_NUMERIC",              // SET statement
+  "LC_TIME",                 // SET statement
+  "LOWLIGHT",                // screen description entry and SET attribute statement
+  "MANUAL",                  // LOCK MODE clause
+  "MULTIPLE",                // LOCK ON phrase
+  "NAT",                     // CONVERT intrinsic function
+  "NEAREST-AWAY-FROM-ZERO",  // INTERMEDIATE ROUNDING clause and ROUNDED phrase
+  "NEAREST-EVEN",            // INTERMEDIATE ROUNDING clause and ROUNDED phrase
+  "NEAREST-TOWARD-ZERO",     // INTERMEDIATE ROUNDING clause and ROUNDED phrase
+  "NONE",                    // DEFAULT clause
+  "NORMAL",                  // STOP statement
+  "NUMBERS",                 // COLUMN clause and LINE clause
+  "ONLY",                    // Object-view, SHARING clause, SHARING phrase, and USAGE clause
+  "PARAGRAPH",               // EXIT statement
+  "PREFIXED",                // DYNAMIC LENGTH STRUCTURE clause
+  "PREVIOUS",                // READ statement
+  "PROHIBITED",              // INTERMEDIATE ROUNDING clause and ROUNDED phrase
+  "RECURSIVE",               // PROGRAM-ID paragraph
+  "RELATION",                // VALIDATE-STATUS clause
+  "REQUIRED",                // screen description entry
+  "REVERSE-VIDEO",           // screen description entry and SET attribute statement
+  "ROUNDING",                // OPTIONS paragraph
+  "SECONDS",                 // RETRY phrase, CONTINUE statement
+  "SECURE",                  // screen description entry
+  "SHORT",                   // DYNAMIC LENGTH STRUCTURE clause
+  "SIGNED",                  // DYNAMIC LENGTH STRUCTURE clause and USAGE clause
+  "STACK",                   // MODULE-NAME intrinsic function
+  "STANDARD-BINARY",         // ARITHMETIC clause
+  "STANDARD-DECIMAL",        // ARITHMETIC clause
+  "STATEMENT",               // RESUME statement
+  "STEP",                    // OCCURS clause
+  "STRONG",                  // TYPEDEF clause
+  "STRUCTURE",               // DYNAMIC LENGTH STRUCTURE clause
+  "SYMBOL",                  // CURRENCY clause
+  "TOP-LEVEL",               // MODULE-NAME intrinsic function
+  "TOWARD-GREATER",          // ROUNDED phrase
+  "TOWARD-LESSER",           // ROUNDED phrase
+  "TRUNCATION",              // INTERMEDIATE ROUNDING clause and ROUNDED phrase
+  "UCS-4",                   // ALPHABET clause
+  "UNDERLINE",               // screen description entry and SET attribute statement
+  "UNSIGNED",                // USAGE clause
+  "UTF-8",                   // ALPHABET clause
+  "UTF-16",                  // ALPHABET clause
+  "YYYYDDD",                 // ACCEPT statement
+  "YYYYMMDD",                // ACCEPT statement
+};
+
+// Is the input a COBOL word, per ISO/IEC 1989:2023 (E) ?
+bool
+iso_cobol_word( const std::string& name, bool include_intrinsics ) {
+  auto ok = 1 == reserved_words.count(name);
+  if( include_intrinsics && !ok ) {
+    ok = 1 == context_sensitive_words.count(name);
+  }
+  return ok;
+}
+

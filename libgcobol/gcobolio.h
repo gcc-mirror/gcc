@@ -96,6 +96,7 @@ typedef struct cblc_file_t
     {
     // This structure must match the code in structs.cc
     char                *name;             // This is the name of the structure; might be the name of an environment variable
+    size_t               symbol_table_index;  // of the related cbl_field_t structure
     char                *filename;         // The name of the file to be opened
     FILE                *file_pointer;     // The FILE *pointer
     cblc_field_t        *default_record;   // The record_area

@@ -701,6 +701,7 @@
                         relative_key_clause reserve_clause sharing_clause
 
 %type   <file>          filename read_body write_body delete_body
+%type   <file>		start_impl start_cond start_body
 %type   <rewrite_t>     rewrite_body
 %type   <min_max>       record_vary rec_contains from_to record_desc
 %type   <file_op>       read_file rewrite1 write_file
@@ -714,7 +715,7 @@
 %type   <refer>         move_tgt selected_name read_key read_into vary_by
 %type   <refer>         accept_refer num_operand envar search_expr any_arg
 %type   <accept_func>	accept_body
-%type   <refers>        expr_list subscripts arg_list free_tgts
+%type   <refers>        subscript_exprs subscripts arg_list free_tgts
 %type   <targets>       move_tgts set_tgts
 %type   <field>         search_varying
 %type   <field>         search_term search_terms
@@ -1338,10 +1339,55 @@
       return strlen(lit.data) == lit.len? lit.data : NULL;
   }
 
+  static inline void strip_trailing_zeroes(char * const psz)
+    {
+    if( yydebug) return;
+    // The idea here is to take the output of real_to_decimal and make it
+    // more integer friendly.  Any integer value that can be expressed in 1
+    // to MAX_FIXED_POINT_DIGITS digits is converted to a string without a
+    // decimal point and no exponent.
+    char *pdot = strchr(psz, '.');
+    char *pe = strchr(psz, 'e');
+    char *pnz = pe-1;
+    while(*pnz == '0')
+      {
+      pnz--;
+      }
+    // pdot points to the decimal point.
+    // pe points to the 'e'.
+    // pnz points to the rightmost non-zero significand digit.
+
+    // Put the exponent on top of the trailing zeroes:
+    memmove(pnz+1, pe, strlen(pe)+1);
+    pe = pnz+1;
+    int exp = atoi(pe+1);
+    // Compute the number digits to the right of the decimal point:
+    int non_zero_digits = pe - (pdot+1);
+    if( exp >= 1 && exp <= MAX_FIXED_POINT_DIGITS && non_zero_digits <= exp)
+      {
+      // Further simplification is possible, because the value does not actually
+      // need a decimal point.  That's because we are dealing with something
+      // like 1.e+0, or 1.23e2 or 1.23e3
+
+      // Terminate the value where the 'e' is now:
+      *pe = '\0';
+      // Figure out where the extra zeroes will go:
+      pe -= 1;
+      // Get rid of the decimal place:
+      memmove(pdot, pdot+1, strlen(pdot)+1);
+      // Tack on the additional zeroes:
+      for(int i=0; i<exp - non_zero_digits; i++)
+        {
+        *pe++ = '0';
+        }
+      *pe++ = '\0';
+      }
+    }
+
   static inline char * string_of( const REAL_VALUE_TYPE &cce ) {
       char output[64];
       real_to_decimal( output, &cce, sizeof(output), 32, 0 );
-
+      strip_trailing_zeroes(output);
       char decimal = symbol_decimal_point();
       std::replace(output, output + strlen(output), '.', decimal);
       return xstrdup(output);
@@ -1662,9 +1708,9 @@ namestr:        ctx_name {
                               $$.prefix);
                     YYERROR;
                   }
-                  if( !is_cobol_word($$.data) ) {
+		  if( !is_cobol_charset($$.data) ) {
 		    error_msg(@1, "literal '%s' must be a COBOL or C identifier",
-                              $$.data);
+			      $$.data);
                   }
                 }
                 ;
@@ -5259,7 +5305,7 @@ allocate:       ALLOCATE expr[size] CHARACTERS initialized RETURNING scalar[retu
                   statement_begin(@1, ALLOCATE);
                   if( $size->field->type == FldLiteralN ) {
 		    auto size = TREE_REAL_CST_PTR ($size->field->data.value_of());
-                    if( real_isneg(size) || real_iszero(size) ) { 
+                    if( real_isneg(size) || real_iszero(size) ) {
                       error_msg(@size, "size must be greater than 0");
                       YYERROR;
                     }
@@ -5299,7 +5345,7 @@ compute_impl:   COMPUTE compute_body[body]
                 {
                   parser_assign( $body.ntgt, $body.tgts, *$body.expr,
                                  NULL, NULL, current.compute_label() );
-                  current.declaratives_evaluate(ec_none_e);
+                  current.declaratives_evaluate();
                 }
                 ;
 compute_cond:   COMPUTE compute_body[body] arith_errs[err]
@@ -5307,7 +5353,7 @@ compute_cond:   COMPUTE compute_body[body] arith_errs[err]
                   parser_assign( $body.ntgt, $body.tgts, *$body.expr,
                                  $err.on_error, $err.not_error,
                                  current.compute_label() );
-                  current.declaratives_evaluate(ec_size_e);
+                  current.declaratives_evaluate();
                 }
                 ;
 end_compute:    %empty %prec COMPUTE
@@ -5353,7 +5399,7 @@ display:        disp_body end_display
 				   args.empty()? NULL : args.data(), args.size(),
 				   DISPLAY_ADVANCE);
 		  }
-		  current.declaratives_evaluate(ec_none_e);
+		  current.declaratives_evaluate();
                 }
         |       disp_body NO ADVANCING end_display
                 {
@@ -5369,10 +5415,10 @@ display:        disp_body end_display
 		    parser_move( dst, src );
 		  } else {
 		    parser_display($1.special,
-				   args.empty()? NULL : args.data(), args.size(), 
+				   args.empty()? NULL : args.data(), args.size(),
 				   DISPLAY_NO_ADVANCE);
 		  }
-		  current.declaratives_evaluate(ec_none_e);
+		  current.declaratives_evaluate();
                 }
                 ;
 end_display:    %empty
@@ -6348,14 +6394,14 @@ tableish:	name subscripts[subs] refmod[ref]  %prec NAME
 
 refmod:         LPAREN expr[from] ':' expr[len] ')' %prec NAME
                 {
-		  if( ! require_numeric(@from, *$from) ) YYERROR;
-		  if( ! require_numeric(@len, *$len) ) YYERROR;
+		  if( ! require_integer(@from, *$from) ) YYERROR;
+		  if( ! require_integer(@len, *$len) ) YYERROR;
                   $$.from = $from;
                   $$.len = $len;
                 }
         |       LPAREN expr[from] ':'           ')' %prec NAME
                 {
-		  if( ! require_numeric(@from, *$from) ) YYERROR;
+		  if( ! require_integer(@from, *$from) ) YYERROR;
                   $$.from = $from;
                   $$.len = nullptr;
                 }
@@ -7016,7 +7062,7 @@ stop_status:    status         { $$ = NULL; }
                 }
                 ;
 
-subscripts:     LPAREN expr_list ')' {
+subscripts:     LPAREN subscript_exprs ')' {
 		  $$ = $2;
 		  const auto& exprs( $$->refers );
 		  bool ok = std::all_of( exprs.begin(), exprs.end(),
@@ -7036,18 +7082,18 @@ subscripts:     LPAREN expr_list ')' {
 		  }
 		}
                 ;
-expr_list:	expr
+subscript_exprs:	expr
 		{
-		  if( ! require_numeric(@expr, *$expr) ) YYERROR;
+		  if( ! require_integer(@expr, *$expr) ) YYERROR;
 		  $$ = new refer_list_t($expr);
 		}
-        |       expr_list expr {
+        |       subscript_exprs expr {
                   if( $1->size() == MAXIMUM_TABLE_DIMENSIONS ) {
                     error_msg(@1, "table dimensions limited to %d",
                              MAXIMUM_TABLE_DIMENSIONS);
                     YYERROR;
                   }
-		  if( ! require_numeric(@expr, *$expr) ) YYERROR;
+		  if( ! require_integer(@expr, *$expr) ) YYERROR;
                   $1->push_back($2); $$ = $1;
                 }
         |       ALL {
@@ -7718,7 +7764,7 @@ raise:          RAISE EXCEPTION NAME
 
 read:           read_file
                 {
-                  current.declaratives_evaluate($1.file, $1.handled);
+                  current.declaratives_evaluate($1.file);
                 }
                 ;
 
@@ -7905,7 +7951,7 @@ read_key:       %empty      { $$ = new cbl_refer_t();  }
 
 write:          write_file
                 {
-                  current.declaratives_evaluate( $1.file, $1.handled );
+                  current.declaratives_evaluate($1.file );
                 }
                 ;
 
@@ -8121,7 +8167,7 @@ end_delete:     %empty %prec DELETE
 
 rewrite:        rewrite1
                 {
-                  current.declaratives_evaluate($1.file, $1.handled);
+                  current.declaratives_evaluate($1.file);
                 }
                 ;
 
@@ -8162,12 +8208,21 @@ end_rewrite:    %empty %prec REWRITE
                 ;
 
 start:          start_impl end_start
+                {
+                  current.declaratives_evaluate($1);
+                }
         |       start_cond end_start
+                {
+                  current.declaratives_evaluate($1);
+                }
                 ;
-start_impl:     START start_body
+start_impl:     START start_body {
+		  $$ = $2;
+		}
                 ;
 start_cond:     START start_body io_invalids {
                   parser_fi();
+		  $$ = $2;
                 }
                 ;
 end_start:      %empty %prec START
@@ -8177,7 +8232,7 @@ end_start:      %empty %prec START
 start_body:     filename[file]
                 {
                   statement_begin(@$, START);
-                  file_start_args.init(@file, $file);
+                  $$ = file_start_args.init(@file, $file);
                   parser_file_start( $file, lt_op, 0 );
                 }
         |       filename[file] KEY relop name[key]
@@ -8191,26 +8246,26 @@ start_body:     filename[file]
                     yywarn("START: key #%d '%s' has size %d",
                           key, $key->name, size);
                   }
-                  file_start_args.init(@file, $file);
+                  $$ = file_start_args.init(@file, $file);
                   parser_file_start( $file, relop_of($relop), key, ksize );
                 }
         |       filename[file] KEY relop name[key] with LENGTH expr
                 { // lexer swallows IS, although relop allows it.
                   statement_begin(@$, START);
                   int key = $file->key_one($key);
-                  file_start_args.init(@file, $file);
+                  $$ = file_start_args.init(@file, $file);
                   parser_file_start( $file, relop_of($relop), key, *$expr );
                 }
         |       filename[file] FIRST
                 {
                   statement_begin(@$, START);
-                  file_start_args.init(@file, $file);
+                  $$ = file_start_args.init(@file, $file);
                   parser_file_start( $file, lt_op, -1 );
                 }
         |       filename[file] LAST
                 {
                   statement_begin(@$, START);
-                  file_start_args.init(@file, $file);
+                  $$ = file_start_args.init(@file, $file);
                   parser_file_start( $file, gt_op, -2 );
                 }
                 ;
@@ -9270,7 +9325,7 @@ call_impl:      CALL call_body[body]
 		  cbl_ffi_arg_t *pargs = NULL;
                   if( narg > 0 ) {
 		    std::copy( params->elems.begin(),
-			       params->elems.end(), args.begin() );	 
+			       params->elems.end(), args.begin() );
                     pargs = args.data();
                   }
                   ast_call( $body.loc, *$body.ffi_name,
@@ -9287,15 +9342,13 @@ call_cond:      CALL call_body[body] call_excepts[except]
 		  cbl_ffi_arg_t *pargs = NULL;
                   if( narg > 0 ) {
 		    std::copy( params->elems.begin(),
-			       params->elems.end(), args.begin() );	 
+			       params->elems.end(), args.begin() );
                     pargs = args.data();
                   }
                   ast_call( $body.loc, *$body.ffi_name,
                                *$body.ffi_returning, narg, pargs,
                                $except.on_error, $except.not_error, false );
-                  auto handled = ec_type_t( static_cast<size_t>(ec_program_e) |
-                                            static_cast<size_t>(ec_external_e));
-                  current.declaratives_evaluate(handled);
+                  current.declaratives_evaluate();
                 }
                 ;
 end_call:       %empty %prec CALL
@@ -9635,14 +9688,14 @@ string:         string_impl end_string
 string_impl:    STRING_kw string_body[body]
                 {
                   stringify($body.inputs, *$body.into.first, *$body.into.second);
-                  current.declaratives_evaluate(ec_none_e);
+                  current.declaratives_evaluate();
                 }
                 ;
 string_cond:    STRING_kw string_body[body] on_overflows[over]
                 {
                   stringify($body.inputs, *$body.into.first, *$body.into.second,
                             $over.on_error, $over.not_error);
-                  current.declaratives_evaluate(ec_overflow_e);
+                  current.declaratives_evaluate();
                 }
                 ;
 end_string:     %empty %prec LITERAL
@@ -9781,14 +9834,14 @@ end_unstring:   %empty %prec UNSTRING
 unstring_impl:  UNSTRING unstring_body[body]
                 {
                   unstringify( *$body.input, $body.delimited, $body.into );
-                  current.declaratives_evaluate(ec_none_e);
+                  current.declaratives_evaluate();
                 }
                 ;
 unstring_cond:  UNSTRING unstring_body[body] on_overflows[over]
                 {
                   unstringify( *$body.input, $body.delimited, $body.into,
                                $over.on_error, $over.not_error );
-                  current.declaratives_evaluate(ec_overflow_e);
+                  current.declaratives_evaluate();
                 }
                 ;
 
@@ -9963,7 +10016,6 @@ function_udf:   FUNCTION_UDF '(' arg_list[args] ')' {
                  *  var: [ALL] LITERAL, NUMSTR, instrinsic, or scalar
                  *  num_operand: signed NUMSTR/ZERO, instrinsic, or scalar
                  *  alpahaval: LITERAL, reserved_value, instrinsic, or scalar
-                 * Probably any numeric argument could be an expression.
                  */
 intrinsic:      function_udf
         |       intrinsic0
@@ -9989,7 +10041,7 @@ intrinsic:      function_udf
 					  args.size(), args.data() );
                 }
 
-        |       PRESENT_VALUE '(' expr_list[args] ')'
+        |       PRESENT_VALUE '(' arg_list[args] ')'
                 {
                   static char s[] = "__gg__present_value";
                   location_set(@1);
@@ -9997,11 +10049,15 @@ intrinsic:      function_udf
                   size_t n = $args->size();
                   assert(n > 0);
                   if( n < 2 ) {
-                    error_msg(@args, "PRESENT VALUE requires 2 parameters");
+                    error_msg(@args, "PRESENT-VALUE requires 2 parameters");
                     YYERROR;
                   }
                   std::vector <cbl_refer_t> args(n);
 		  std::copy( $args->begin(), $args->end(), args.begin() );
+		  bool ok = std::all_of( args.begin(),
+					 args.end(), [loc = @1]( auto r ) {
+					     return require_numeric(loc, r); } );
+		  if( ! ok ) YYERROR;
                   parser_intrinsic_callv( $$, s, args.size(), args.data() );
                 }
 
@@ -10910,7 +10966,12 @@ cdf_basis:      BASIS NAME /* BASIS is never passed to the parser.  */
         |       BASIS LITERAL
                 ;
 
-cdf_use:        USE DEBUGGING on labels
+cdf_use:        cdf_use_when {
+		  statement_cleanup = false;
+		}
+		;
+
+cdf_use_when:	USE DEBUGGING on labels
                 {
                   if( ! current.declarative_section_name() ) {
                     error_msg(@1, "USE valid only in DECLARATIVES");
@@ -10928,12 +10989,11 @@ cdf_use:        USE DEBUGGING on labels
                   }
                   static const cbl_label_t all = {
 		    LblNone, 0, 0,0,0, false, false, false, 0,0, ":all:" };
-		      ////.name = { ':', 'a', 'l', 'l', ':',  } // workaround for gcc < 11.3
                   add_debugging_declarative(&all);
                  }
 
         |       USE globally mistake procedure on filenames
-		{
+		{ // Format 1
                   if( ! current.declarative_section_name() ) {
 		    error_msg(@1, "USE valid only in DECLARATIVES");
                     YYERROR;
@@ -10945,8 +11005,8 @@ cdf_use:        USE DEBUGGING on labels
                                     std::back_inserter(files),
                                     file_list_t::symbol_index );
                   cbl_declarative_t declarative(current.declarative_section(),
-                                                ec_all_e, files,
-                                                file_mode_none_e, global);
+                                                ec_io_e, files,
+                                                file_mode_any_e, global);
                   current.declaratives.add(declarative);
 		}
 
@@ -10959,12 +11019,12 @@ cdf_use:        USE DEBUGGING on labels
                   bool global = $globally == GLOBAL;
                   std::list<size_t> files;
                   cbl_declarative_t declarative(current.declarative_section(),
-                                                ec_all_e, files,
+                                                ec_io_e, files,
                                                 $io_mode, global);
                   current.declaratives.add(declarative);
                 }
-        |       USE cdf_use_excepts // Format 3: AFTER swallowed by lexer
-                {
+        |       USE cdf_use_excepts
+                { // Format 3 (AFTER swallowed by lexer)
                   if( ! current.declarative_section_name() ) {
                     error_msg(@1, "USE valid only in DECLARATIVES");
                     YYERROR;
@@ -11079,23 +11139,71 @@ void ast_call( const YYLTYPE& loc, cbl_refer_t name, cbl_refer_t returning,
   parser_call( name, returning, narg, args, except, not_except, is_function );
 }
 
-static size_t
-statement_begin( const YYLTYPE& loc, int token ) {
-  // The following statement generates a message at run-time
-  // parser_print_string("statement_begin()\n");
-  location_set(loc);
-  prior_statement = token;
+/*
+ * Check if any EC *could* be raised that would be handled by a declarative. If
+ * so, the generated statement epilog will ask the runtime library to attempt
+ * to match any raised EC with a declarative.  If not, the statement epilog
+ * will be limited to calling the default EC handler, which logs unhandled ECs
+ * [todo] and calls abort(3) for fatal ECs.
+ */
+static bool
+possible_ec() {
+  bool format_1 = current.declaratives.has_format_1();
+      
+  bool enabled = 0xFF < (current.declaratives.status()
+			 &
+			 enabled_exceptions.status());
+  bool epilog = enabled || format_1;
+  
+  dbgmsg("%sEC handling for DCL %08x && EC %08x with %s Format 1",
+	 epilog? "" : "no ", 
+	 current.declaratives.status(),
+	 enabled_exceptions.status(), format_1? "a" : "no");
+  
+  return epilog;
+}
 
-  parser_statement_begin();
-
-  if( token != CONTINUE ) {
+/*
+ * If there's potential overlap between enabled ECs and Declaratives, generate
+ * a PERFORM of the _DECLARATIVES_EVAL "ladder" that matches a section number
+ * to its name, and executes the Declarative.
+ */
+static void
+statement_epilog( int token ) {
+  if( possible_ec() && token != CONTINUE ) { 
     if( enabled_exceptions.size() ) {
-      current.declaratives_evaluate(ec_none_e);
-      cbl_enabled_exceptions_array_t enabled(enabled_exceptions);
-      parser_exception_prepare( keyword_str(token), &enabled );
+      current.declaratives_evaluate();
     }
   }
-  return 0;
+  parser_check_fatal_exception();
+}
+
+static inline void
+statement_prolog( int token ) {
+  parser_statement_begin( keyword_str(token),
+			  current.declaratives.runtime.ena,
+			  current.declaratives.runtime.dcl );
+}
+
+/*
+ * We check the EC against the Declarative status prior to parsing the
+ * statement because a TURN directive can be embedded in the statement.  An
+ * embedded directive applies to the following statement, not the one being
+ * parsed.
+ */
+static void
+statement_begin( const YYLTYPE& loc, int token ) {
+  static int prior_token = 0;
+
+  if( statement_cleanup )  {
+    statement_epilog(prior_token);
+  } else {
+    statement_cleanup = true;
+  }
+  location_set(loc);
+  statement_prolog(token);
+
+  prior_token = token;
 }
 
 #include "parse_util.h"
@@ -11137,6 +11245,8 @@ tokenset_t::tokenset_t() {
 #include "token_names.h"
 }
 
+bool iso_cobol_word( const std::string& name, bool include_intrinsics );
+
 // Look up the lowercase form of a keyword, excluding some CDF names.
 int
 tokenset_t::find( const cbl_name_t name, bool include_intrinsics ) {
@@ -11166,8 +11276,10 @@ tokenset_t::find( const cbl_name_t name, bool include_intrinsics ) {
       }
   }
 
+  //// if( ! iso_cobol_word(uppercase(name), include_intrinsics) ) return 0;
+
   cbl_name_t lname;
-  std::transform(name, name + strlen(name) + 1, lname, tolower);
+  std::transform(name, name + strlen(name) + 1, lname, ftolower);
   auto p = tokens.find(lname);
   if( p == tokens.end() ) return 0;
   int token = p->second;
@@ -11645,8 +11757,7 @@ ast_add( arith_t *arith ) {
 
   parser_add( nC, pC, nA, pA, arith->format, arith->on_error, arith->not_error );
 
-  ec_type_t handled = arith->on_error || arith->not_error ? ec_size_e : ec_none_e;
-  current.declaratives_evaluate(handled);
+  current.declaratives_evaluate();
 }
 
 static bool
@@ -11662,8 +11773,7 @@ ast_subtract( arith_t *arith ) {
 
   parser_subtract( nC, pC, nA, pA, nB, pB, arith->format, arith->on_error, arith->not_error );
 
-  ec_type_t handled = arith->on_error || arith->not_error ? ec_size_e : ec_none_e;
-  current.declaratives_evaluate(handled);
+  current.declaratives_evaluate();
   return true;
 }
 
@@ -11680,8 +11790,7 @@ ast_multiply( arith_t *arith ) {
 
   parser_multiply( nC, pC, nA, pA, nB, pB, arith->on_error, arith->not_error );
 
-  ec_type_t handled = arith->on_error || arith->not_error ? ec_size_e : ec_none_e;
-  current.declaratives_evaluate(handled);
+  current.declaratives_evaluate();
   return true;
 }
 
@@ -11699,8 +11808,7 @@ ast_divide( arith_t *arith ) {
   parser_divide( nC, pC, nA, pA, nB, pB,
                  arith->remainder, arith->on_error, arith->not_error );
 
-  ec_type_t handled = arith->on_error || arith->not_error ? ec_size_e : ec_none_e;
-  current.declaratives_evaluate(handled);
+  current.declaratives_evaluate();
   return true;
 }
 
@@ -12686,7 +12794,7 @@ mode_syntax_only( cbl_division_t division ) {
 bool
 mode_syntax_only() {
   return cbl_syntax_only != not_syntax_only
-    && cbl_syntax_only <= current_division;
+      && cbl_syntax_only <= current_division;
 }
 
 void
@@ -12845,6 +12953,17 @@ require_numeric( YYLTYPE loc, cbl_refer_t scalar ) {
   return true;
 }
 
+static bool
+require_integer( YYLTYPE loc, cbl_refer_t scalar ) {
+  if( is_literal(scalar.field) ) {
+    if( ! is_integer_literal(scalar.field) ) {
+      error_msg(loc, "numeric literal '%s' must be an integer",
+		scalar.field->pretty_name());
+      return false;
+    }
+  }
+  return require_numeric(loc, scalar);
+}
 /* eval methods */
 
 eval_subject_t::eval_subject_t()
