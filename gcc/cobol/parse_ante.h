@@ -142,7 +142,8 @@ literal_of( size_t value ) {
     case 0: return literally_zero;
     case 1: return literally_one;
   }
-  cbl_err("logic error: %s: %zu not supported", __func__, value);
+  cbl_err("logic error: %s: " HOST_SIZE_T_PRINT_UNSIGNED " not supported",
+          __func__, (fmt_size_t)value);
   return NULL;
 }
 
@@ -312,7 +313,9 @@ struct evaluate_elem_t {
   case_iter pcase;
 
   void dump() const {
-    dbgmsg( "nother=%zu label '%s', %zu cases", nother, label.name, cases.size() );
+    dbgmsg( "nother=" HOST_SIZE_T_PRINT_UNSIGNED " label '%s', "
+            HOST_SIZE_T_PRINT_UNSIGNED " cases",
+            (fmt_size_t)nother, label.name, (fmt_size_t)cases.size() );
     std::for_each( cases.begin(), cases.end(), case_t::Dump );
   }
 
@@ -542,8 +545,10 @@ struct arith_t {
     res.refer.field = cbl_field_of(symbol_at(tgt));
     tgts.push_back( res );
 
-    dbgmsg("%s:%d: SRC: %3zu %s", __func__, __LINE__, src, a.str());
-    dbgmsg("%s:%d:   to %3zu %s", __func__, __LINE__, tgt, res.refer.str());
+    dbgmsg("%s:%d: SRC: %3" GCC_PRISZ "u %s",
+           __func__, __LINE__, (fmt_size_t)src, a.str());
+    dbgmsg("%s:%d:   to %3" GCC_PRISZ "u %s",
+           __func__, __LINE__, (fmt_size_t)tgt, res.refer.str());
   }
   void operator()( const corresponding_fields_t::const_reference elem ) {
     another_pair( elem.first, elem.second );
@@ -2089,8 +2094,10 @@ static class current_t {
           size_t n =
             parser_call_target_update(caller, called->name, mangled_name);
           // Zero is not an error
-          dbgmsg("updated %zu calls from #%-3zu (%s) s/%s/%s/",
-                 n, caller, caller_name, called->name, mangled_name);
+          dbgmsg("updated " HOST_SIZE_T_PRINT_UNSIGNED
+                 " calls from #%-3" GCC_PRISZ "u (%s) s/%s/%s/",
+                 (fmt_size_t)n, (fmt_size_t)caller, caller_name,
+                 called->name, mangled_name);
         }
       }
       if( yydebug ) parser_call_targets_dump();
@@ -3006,8 +3013,8 @@ file_add( YYLTYPE loc, cbl_file_t *file ) {
   }
   file = cbl_file_of(e);
   snprintf(field->name, sizeof(field->name),
-           "%s%zu_%s",
-           record_area_name_stem, symbol_index(e), file->name);
+           "%s" HOST_SIZE_T_PRINT_UNSIGNED "_%s",
+           record_area_name_stem, (fmt_size_t)symbol_index(e), file->name);
   if( file->attr & external_e ) {
     snprintf(field->name, sizeof(field->name),
              "%s%s", record_area_name_stem, file->name);
@@ -3153,7 +3160,8 @@ static cbl_label_t *
 implicit_paragraph()
 {
   cbl_name_t name;
-  sprintf(name, "_implicit_paragraph_%zu", symbol_index());
+  sprintf(name, "_implicit_paragraph_" HOST_SIZE_T_PRINT_UNSIGNED,
+          (fmt_size_t)symbol_index());
   // Programs have to start with an implicit paragraph
   return label_add(LblParagraph, name, yylineno);
 }
@@ -3161,7 +3169,8 @@ static cbl_label_t *
 implicit_section()
 {
   cbl_name_t name;
-  sprintf(name, "_implicit_section_%zu", symbol_index());
+  sprintf(name, "_implicit_section_" HOST_SIZE_T_PRINT_UNSIGNED,
+          (fmt_size_t)symbol_index());
   // Programs have to start with an implicit section
   return label_add(LblSection, name, yylineno);
 }
@@ -3236,7 +3245,8 @@ data_division_ready() {
   }
 
   if( nsymbol == 0 || nparse_error > 0 ) {
-    dbgmsg( "%d errors in DATA DIVISION, compilation ceases", nparse_error );
+    dbgmsg( HOST_SIZE_T_PRINT_DEC " errors in DATA DIVISION, compilation ceases",
+            (fmt_size_t)nparse_error );
     return false;
   }
 

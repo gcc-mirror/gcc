@@ -725,7 +725,7 @@ parser_add( size_t nC, cbl_num_result_t *C,
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
-    fprintf(stderr, " A[%ld]:", nA);
+    fprintf(stderr, " A[" HOST_SIZE_T_PRINT_DEC "]:", (fmt_size_t)nA);
     for(size_t i=0; i<nA; i++)
       {
       if(i > 0)
@@ -737,7 +737,7 @@ parser_add( size_t nC, cbl_num_result_t *C,
 
     fprintf(stderr, "%s", format==giving_e? " GIVING" : "");
 
-    fprintf(stderr, " C[%ld]:", nC);
+    fprintf(stderr, " C[" HOST_SIZE_T_PRINT_DEC "]:", (fmt_size_t)nC);
     for(size_t i=0; i<nC; i++)
       {
       if(i > 0)
@@ -1412,7 +1412,7 @@ parser_subtract(size_t nC, cbl_num_result_t *C, // C = B - A
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
-    fprintf(stderr, " A[%ld]:", nA);
+    fprintf(stderr, " A[" HOST_SIZE_T_PRINT_DEC "]:", (fmt_size_t)nA);
     for(size_t i=0; i<nA; i++)
       {
       if(i > 0)
@@ -1422,7 +1422,7 @@ parser_subtract(size_t nC, cbl_num_result_t *C, // C = B - A
       fprintf(stderr, "%s", A[i].field->name);
       }
 
-    fprintf(stderr, " B[%ld]:", nB);
+    fprintf(stderr, " B[" HOST_SIZE_T_PRINT_DEC "]:", (fmt_size_t)nB);
     for(size_t i=0; i<nB; i++)
       {
       if(i > 0)
@@ -1432,7 +1432,7 @@ parser_subtract(size_t nC, cbl_num_result_t *C, // C = B - A
       fprintf(stderr, "%s", B[i].field->name);
       }
 
-    fprintf(stderr, " C[%ld]:", nC);
+    fprintf(stderr, " C[" HOST_SIZE_T_PRINT_DEC "]:", (fmt_size_t)nC);
     for(size_t i=0; i<nC; i++)
       {
       if(i > 0)

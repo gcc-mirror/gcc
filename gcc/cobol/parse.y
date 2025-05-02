@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 %code requires {
+  #include "config.h"
   #include <fstream>  // Before cobol-system because it uses poisoned functions
   #include "cobol-system.h"
   #include "coretypes.h"
@@ -279,6 +280,7 @@
 }
 
 %{
+#include "config.h"
 #include <fstream>  // Before cobol-system because it uses poisoned functions
 #include "cobol-system.h"
 #include "coretypes.h"
@@ -945,18 +947,20 @@
 
 %printer { fprintf(yyo, "%s (token %d)", keyword_str($$), $$ ); } relop
 %printer { fprintf(yyo, "'%s'", $$? $$ : "" ); } NAME <string>
-%printer { fprintf(yyo, "%s'%.*s'{%zu} %s", $$.prefix, int($$.len), $$.data, $$.len,
+%printer { fprintf(yyo, "%s'%.*s'{" HOST_SIZE_T_PRINT_UNSIGNED "} %s",
+                        $$.prefix, int($$.len), $$.data, (fmt_size_t)$$.len,
                         $$.symbol_name()); } <literal>
-%printer { fprintf(yyo, "%s (1st of %zu)",
+%printer { fprintf(yyo, "%s (1st of " HOST_SIZE_T_PRINT_UNSIGNED ")",
                         $$->targets.empty()? "" : $$->targets.front().refer.field->name,
-                        $$->targets.size() ); } <targets>
-%printer { fprintf(yyo, "#%zu: %s",
-                        is_temporary($$)? 0 : field_index($$),
+                        (fmt_size_t)$$->targets.size() ); } <targets>
+%printer { fprintf(yyo, "#" HOST_SIZE_T_PRINT_UNSIGNED ": %s",
+                        is_temporary($$)? 0 : (fmt_size_t)field_index($$),
                         $$? name_of($$) : "<nil>" ); } name
-%printer { fprintf(yyo, "{%zu-%zu}", $$.min, $$.max ); } <min_max>
+%printer { fprintf(yyo, "{" HOST_SIZE_T_PRINT_UNSIGNED "-" HOST_SIZE_T_PRINT_UNSIGNED "}",
+                        (fmt_size_t)$$.min, (fmt_size_t)$$.max ); } <min_max>
 %printer { fprintf(yyo, "{%s}", $$? "+/-" : "" ); } signed
-%printer { fprintf(yyo, "{%s of %zu}",
-		         teed_up_names().front(), teed_up_names().size() ); } qname
+%printer { fprintf(yyo, "{%s of " HOST_SIZE_T_PRINT_UNSIGNED "}",
+		         teed_up_names().front(), (fmt_size_t) teed_up_names().size() ); } qname
 %printer { fprintf(yyo, "{%d}", $$ ); } <number>
 %printer { fprintf(yyo, "'%s'", $$.string ); } <numstr>
 %printer { const char *s = string_of($$);
@@ -968,9 +972,9 @@
                         $$.low?  (const char*) $$.low : "",
                         $$.high? (const char*) $$.high : "",
                         $$.also? "+" : "" ); } <colseq>
-%printer { fprintf(yyo, "{%s, %zu parameters}",
+%printer { fprintf(yyo, "{%s, " HOST_SIZE_T_PRINT_UNSIGNED " parameters}",
                         name_of($$.ffi_name->field), !$$.using_params? 0 :
-                        $$.using_params->elems.size()); } call_body
+                        (fmt_size_t)$$.using_params->elems.size()); } call_body
 %printer { fprintf(yyo, "%s <- %s", data_category_str($$.category),
                                     name_of($$.replacement->field)); } init_by
 
@@ -3616,12 +3620,12 @@ data_descr1:    level_name
 
                   // SIGN clause valid only with "S" in picture
                   if( $field->type == FldNumericDisplay && !is_signable($field) ) {
-                    static const size_t sign_attrs = leading_e | separate_e;
+                    static const uint64_t sign_attrs = leading_e | separate_e;
                     static_assert(sizeof(sign_attrs) == sizeof($field->attr),
                                   "size matters");
 
                     // remove inapplicable inherited sign attributes
-                    size_t group_sign = group_attr($field) & sign_attrs;
+                    uint64_t group_sign = group_attr($field) & sign_attrs;
                     $field->attr &= ~group_sign;
 
                     if( $field->attr & sign_attrs ) {
@@ -3777,7 +3781,7 @@ data_clauses:   data_clause
 
                   // If any implied TYPE bits are on in addition to
                   // type_clause_e, they're in conflict.
-                  static const size_t type_implies =
+                  static const uint64_t type_implies =
                     // ALIGNED clause not implemented
                     blank_zero_clause_e | justified_clause_e | picture_clause_e
                     | sign_clause_e | synched_clause_e | usage_clause_e;
@@ -4278,8 +4282,9 @@ usage_clause1:  usage COMPUTATIONAL[comp]   native
                       is_numeric(redefined->type) && redefined->size() == 4) {
                     // For now, we allow POINTER to expand a 32-bit item to 64 bits.
                     field->data.capacity = int_size_in_bytes(ptr_type_node);
-                    dbgmsg("%s: expanding #%zu %s capacity %u => %u", __func__,
-                          field_index(redefined), redefined->name,
+                    dbgmsg("%s: expanding #" HOST_SIZE_T_PRINT_UNSIGNED
+                          " %s capacity %u => %u", __func__,
+                          (fmt_size_t)field_index(redefined), redefined->name,
                           redefined->data.capacity, field->data.capacity);
 
                     redefined->embiggen();
@@ -4533,7 +4538,7 @@ sign_clause:    sign_is sign_leading sign_separate
                   if( $sign_leading ) {
                     field->attr |= leading_e;
                   } else {
-                    field->attr &= ~size_t(leading_e); // turn off in case inherited
+                    field->attr &= ~uint64_t(leading_e); // turn off in case inherited
                     field->attr |= signable_e;
                   }
                   if( $sign_separate ) field->attr |= separate_e;
@@ -11399,7 +11404,7 @@ perform_t::ec_labels_t::new_label( cbl_label_type_t type,
 {
   size_t n = 1 + symbols_end() - symbols_begin();
   cbl_name_t name;
-  sprintf(name, "_perf_%s_%zu", role, n);
+  sprintf(name, "_perf_%s_" HOST_SIZE_T_PRINT_UNSIGNED, role, (fmt_size_t)n);
   return label_add( type, name, yylineno );
 }
 
@@ -11714,8 +11719,8 @@ struct stringify_src_t : public cbl_string_src_t {
   }
 
   static void dump( const cbl_string_src_t& src ) {
-    dbgmsg( "%s:%d:, %zu inputs delimited by %s:", __func__, __LINE__,
-           src.ninput,
+    dbgmsg( "%s:%d:, " HOST_SIZE_T_PRINT_UNSIGNED " inputs delimited by %s:",
+           __func__, __LINE__, (fmt_size_t)src.ninput,
            src.delimited_by.field? field_str(src.delimited_by.field) : "SIZE" );
     std::for_each(src.inputs, src.inputs + src.ninput, dump_input);
   }
@@ -11864,8 +11869,8 @@ lang_check_failed (const char* file, int line, const char* function) {}
 
 void ast_inspect( cbl_refer_t& input, bool backward, ast_inspect_list_t& inspects ) {
   if( yydebug ) {
-    dbgmsg("%s:%d: INSPECT %zu operations on %s, line %d", __func__, __LINE__,
-          inspects.size(), input.field->name, yylineno);
+    dbgmsg("%s:%d: INSPECT " HOST_SIZE_T_PRINT_UNSIGNED " operations on %s, line %d",
+          __func__, __LINE__, (fmt_size_t)inspects.size(), input.field->name, yylineno);
   }
   std::for_each(inspects.begin(), inspects.end(), dump_inspect);
   auto array = inspects.as_array();
@@ -12006,6 +12011,7 @@ static REAL_VALUE_TYPE
 numstr2i( const char input[], radix_t radix ) {
   REAL_VALUE_TYPE output;
   size_t integer = 0;
+  fmt_size_t integerf = 0;
   int erc=0;
 
   switch( radix ) {
@@ -12017,7 +12023,8 @@ numstr2i( const char input[], radix_t radix ) {
     }
     break;
   case hexadecimal_e:
-    erc = sscanf(input, "%zx", &integer);
+    erc = sscanf(input, "%" GCC_PRISZ "x", &integerf);
+    integer = integer;
     real_from_integer (&output, VOIDmode, integer, UNSIGNED);
     break;
   case boolean_e:
@@ -12445,9 +12452,11 @@ initialize_statement( std::list<cbl_num_result_t>& tgts, bool with_filler,
 
 static void
 dump_inspect_oper( const cbl_inspect_oper_t& op ) {
-  dbgmsg("\t%s: %zu \"matches\", %zu \"replaces\"",
+  dbgmsg("\t%s: " HOST_SIZE_T_PRINT_UNSIGNED
+         " \"matches\", " HOST_SIZE_T_PRINT_UNSIGNED " \"replaces\"",
         bound_str(op.bound),
-        op.matches? op.n_identifier_3 : 0, op.replaces? op.n_identifier_3 : 0);
+        op.matches? (fmt_size_t)op.n_identifier_3 : 0,
+        op.replaces? (fmt_size_t)op.n_identifier_3 : 0);
   if( op.matches )
     std::for_each(op.matches, op.matches + op.n_identifier_3, dump_inspect_match);
   if( op.replaces )
@@ -12535,10 +12544,11 @@ cbl_field_t *
 new_literal( const literal_t& lit, enum cbl_field_attr_t attr ) {
   bool zstring = lit.prefix[0] == 'Z';
   if( !zstring && lit.data[lit.len] != '\0' ) {
-    dbgmsg("%s:%d: line %d, no NUL terminator '%-*.*s'{%zu/%zu}",
+    dbgmsg("%s:%d: line %d, no NUL terminator '%-*.*s'{"
+          HOST_SIZE_T_PRINT_UNSIGNED "/" HOST_SIZE_T_PRINT_UNSIGNED "}",
           __func__, __LINE__, yylineno,
           int(lit.len), int(lit.len),
-          lit.data, strlen(lit.data), lit.len);
+          lit.data, (fmt_size_t)strlen(lit.data), (fmt_size_t)lit.len);
   }
   assert(zstring || lit.data[lit.len] == '\0');
 
@@ -12781,7 +12791,8 @@ literal_subscripts_valid( YYLTYPE loc, const cbl_refer_t& name ) {
     const char *upper_phrase = "";
     if( ! oob->occurs.bounds.fixed_size() ) {
       static char ub[32] = "boo";
-      sprintf(ub, " to %lu", oob->occurs.bounds.upper);
+      sprintf(ub, " to " HOST_SIZE_T_PRINT_UNSIGNED,
+              (fmt_size_t)oob->occurs.bounds.upper);
       upper_phrase = ub;
     }
 
@@ -12851,7 +12862,8 @@ eval_subject_t::label( const char skel[] ) {
   cbl_label_t label = protolabel;
   label.line = yylineno;
   size_t n = 1 + symbols_end() - symbols_begin();
-  snprintf(label.name, sizeof(label.name), "_eval_%s_%zu", skel, n);
+  snprintf(label.name, sizeof(label.name),
+           "_eval_%s_" HOST_SIZE_T_PRINT_UNSIGNED, skel, (fmt_size_t)n);
   auto output = symbol_label_add( PROGRAM, &label );
   return output;
 }

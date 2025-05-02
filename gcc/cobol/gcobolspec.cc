@@ -541,13 +541,14 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 #endif
   if( verbose && new_options != original_options )
     {
-    fprintf(stderr, _("Driving: (%ld)\n"), new_option_count);
+    fprintf(stderr, _("Driving: (" HOST_SIZE_T_PRINT_DEC ")\n"),
+            (fmt_size_t)new_option_count);
     for(size_t i=0; i<new_option_count; i++)
       {
       fprintf(stderr,
-              "   [%2ld] %4ld %s\n",
-              i,
-              new_options[i].opt_index,
+              "   [%2" GCC_PRISZ "d] %4" GCC_PRISZ "d %s\n",
+              (fmt_size_t)i,
+              (fmt_size_t)new_options[i].opt_index,
               new_options[i].orig_option_with_args_text);
       }
     fprintf (stderr, "\n");

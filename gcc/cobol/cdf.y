@@ -245,8 +245,8 @@ apply_cdf_turn( exception_turns_t& turns ) {
 %printer { fprintf(yyo, "%s '%s'",
 		   keyword_str($$.token),
 		   $$.string? $$.string : "<nil>" ); } <cdfarg>
-%printer { fprintf(yyo, "%ld '%s'",
-		   $$.number, $$.string? $$.string : "" ); } <cdfval>
+%printer { fprintf(yyo, HOST_SIZE_T_PRINT_DEC " '%s'",
+		   (fmt_size_t)$$.number, $$.string? $$.string : "" ); } <cdfval>
 
 %type	<string>	NAME NUMSTR LITERAL PSEUDOTEXT
 %type	<string>	LSUB RSUB SUBSCRIPT
@@ -828,7 +828,8 @@ defined_cmd( const char arg[] )
 
   if( yydebug ) {
     if( cdf_name->second.is_numeric() ) {
-      dbgmsg("%s: added -D %s = %ld", __func__, name, cdf_name->second.as_number());
+      dbgmsg("%s: added -D %s = " HOST_SIZE_T_PRINT_DEC,
+             __func__, name, (fmt_size_t)cdf_name->second.as_number());
     } else {
       dbgmsg("%s: added -D %s = \"%s\"", __func__, name, cdf_name->second.string);
     }

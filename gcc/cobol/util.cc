@@ -324,8 +324,9 @@ is_numeric_edited( const char picture[] ) {
       break;
     default:
       numed_message = xasprintf("invalid PICTURE character "
-                                "'%c' at offset %zu in '%s'",
-                                *p, p - picture, picture);
+                                "'%c' at offset " HOST_SIZE_T_PRINT_UNSIGNED
+                                " in '%s'",
+                                *p, (fmt_size_t)(p - picture), picture);
       break;
     }
 
@@ -370,10 +371,12 @@ normalize_picture( char picture[] )
         assert(pmatch[2].rm_so == pmatch[1].rm_eo + 1); // character paren number
         p = picture + pmatch[2].rm_so;
         len = 0;
-        if( 1 != sscanf(p, "%zu", &len) ) {
+        fmt_size_t lenf = 0;
+        if( 1 != sscanf(p, "%" GCC_PRISZ "u", &lenf) ) {
             dbgmsg("%s:%d: no number found in '%s'", __func__, __LINE__, p);
             goto irregular;
         }
+        len = lenf;
         if( len == 0 ) {
             dbgmsg("%s:%d: ZERO length found in '%s'", __func__, __LINE__, p);
             goto irregular;
@@ -985,7 +988,8 @@ cbl_refer_t::subscripts_set( const std::list<cbl_refer_t>& subs ) {
 const char *
 cbl_refer_t::str() const {
   static char subscripts[64];
-  sprintf(subscripts, "(%u of %zu dimensions)", nsubscript, dimensions(field));
+  sprintf(subscripts, "(%u of " HOST_SIZE_T_PRINT_UNSIGNED " dimensions)",
+          nsubscript, (fmt_size_t)dimensions(field));
   char *output = xasprintf("%s %s %s",
                            field? field_str(field) : "(none)",
                            0 < dimensions(field)? subscripts : "",
@@ -1031,10 +1035,10 @@ struct move_corresponding_field {
     tgt.field = cbl_field_of(symbol_at(elem.second));
 
     if( yydebug ) {
-      dbgmsg("move_corresponding:%d: SRC: %3zu %s", __LINE__,
-            elem.first, src.str());
-      dbgmsg("move_corresponding:%d:   to %3zu %s", __LINE__,
-            elem.second, tgt.str());
+      dbgmsg("move_corresponding:%d: SRC: %3" GCC_PRISZ "u %s", __LINE__,
+            (fmt_size_t)elem.first, src.str());
+      dbgmsg("move_corresponding:%d:   to %3" GCC_PRISZ "u %s", __LINE__,
+            (fmt_size_t)elem.second, tgt.str());
     }
 
     parser_move(tgt, src);
@@ -1138,8 +1142,9 @@ valid_move( const struct cbl_field_t *tgt, const struct cbl_field_t *src )
         if( yydebug && ! retval ) {
           auto bad = std::find_if( p, pend,
                                    []( char ch ) { return ! ISDIGIT(ch); } );
-          dbgmsg("%s:%d: offending character '%c' at position %zu",
-                __func__, __LINE__, *bad, bad - p);
+          dbgmsg("%s:%d: offending character '%c' at position "
+                 HOST_SIZE_T_PRINT_UNSIGNED,
+                 __func__, __LINE__, *bad, (fmt_size_t)(bad - p));
         }
       }
       break;
@@ -1498,9 +1503,10 @@ ambiguous_reference( size_t program ) {
                                is_unique(program, proc.first) );
     if( proc.second.end() != ambiguous ) {
       if( yydebug ) {
-        dbgmsg("%s: %s of '%s' has %zu potential matches", __func__,
+        dbgmsg("%s: %s of '%s' has " HOST_SIZE_T_PRINT_UNSIGNED
+              "potential matches", __func__,
               ambiguous->paragraph(), ambiguous->section(),
-              procedures.count(*ambiguous));
+              (fmt_size_t)procedures.count(*ambiguous));
       }
       return new procref_t(*ambiguous);
     }
@@ -1543,9 +1549,9 @@ parent_names( const symbol_elem_t *elem,
 
   if( is_filler(cbl_field_of(elem)) ) return;
 
-  // dbgmsg("%s: asked about %s of %s (%zu away)", __func__,
+  // dbgmsg("%s: asked about %s of %s (" HOST_SIZE_T_PRINT_UNSIGNED " away)", __func__,
   //       cbl_field_of(elem)->name,
-  //       cbl_field_of(group)->name, elem - group);
+  //       cbl_field_of(group)->name, (fmt_size_t)(elem - group));
 
   for( const symbol_elem_t *e=elem; e && group < e; e = symbol_parent(e) ) {
     names.push_front( cbl_field_of(e)->name );
@@ -1564,9 +1570,11 @@ public:
                       symbol_elem_t *rgroup, type_t type )
     : lgroup(lgroup), rgroup(rgroup), type(type)
   {
-    dbgmsg( "%s:%d: for #%zu %s and #%zu %s on line %d", __func__, __LINE__,
-             symbol_index(lgroup), cbl_field_of(lgroup)->name,
-             symbol_index(rgroup), cbl_field_of(rgroup)->name, yylineno );
+    dbgmsg( "%s:%d: for #" HOST_SIZE_T_PRINT_UNSIGNED
+            " %s and #" HOST_SIZE_T_PRINT_UNSIGNED " %s on line %d",
+            __func__, __LINE__,
+            (fmt_size_t)symbol_index(lgroup), cbl_field_of(lgroup)->name,
+            (fmt_size_t)symbol_index(rgroup), cbl_field_of(rgroup)->name, yylineno );
   }
 
   static bool
@@ -1643,8 +1651,9 @@ corresponding_fields( cbl_field_t *lhs, cbl_field_t *rhs,
   lhsg.a = symbols_begin(field_index(lhs));
   lhsg.z = std::find_if( lhsg.a, symbols_end(), next_group(lhsg.a) );
 
-  dbgmsg("%s:%d: examining %zu symbols after %s", __func__, __LINE__,
-          lhsg.z - lhsg.a, lhs->name);
+  dbgmsg("%s:%d: examining " HOST_SIZE_T_PRINT_UNSIGNED " symbols after %s",
+          __func__, __LINE__,
+          (fmt_size_t)(lhsg.z - lhsg.a), lhs->name);
 
   find_corresponding finder( symbol_at(field_index(lhs)),
                              symbol_at(field_index(rhs)), type );
@@ -1652,8 +1661,9 @@ corresponding_fields( cbl_field_t *lhs, cbl_field_t *rhs,
 
   output.erase(0);
 
-  dbgmsg( "%s:%d: %s and %s have %zu corresponding fields",
-          __func__, __LINE__, lhs->name, rhs->name, output.size() );
+  dbgmsg( "%s:%d: %s and %s have " HOST_SIZE_T_PRINT_UNSIGNED
+          " corresponding fields",
+          __func__, __LINE__, lhs->name, rhs->name, (fmt_size_t)output.size() );
 
   return output;
 }
@@ -1772,7 +1782,8 @@ class unique_stack : public std::stack<input_file_t>
                 "----- ---- --------"
                 "----------------------------------------");
         for( const auto& v : c ) {
-          dbgmsg( " %4zu %4d %s", c.size() - --n, v.lineno, no_wd(wd, v.name) );
+          dbgmsg( " %4" GCC_PRISZ "u %4d %s",
+                  (fmt_size_t)(c.size() - --n), v.lineno, no_wd(wd, v.name) );
         }
       } else {
         dbgmsg("unable to get current working directory: %m");
@@ -1810,7 +1821,8 @@ bool cobol_filename( const char *name, ino_t inode ) {
     auto p = old_filenames.find(name);
     if( p == old_filenames.end() ) {
       for( auto& elem : old_filenames ) {
-        dbgmsg("%6zu %-30s", elem.second, elem.first.c_str());
+        dbgmsg("%6" GCC_PRISZ "u %-30s",
+               (fmt_size_t)elem.second, elem.first.c_str());
       }
       cbl_errx( "logic error: missing inode for %s", name);
     }

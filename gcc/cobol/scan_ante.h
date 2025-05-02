@@ -438,11 +438,12 @@ trim_location( int nkeep) {
   } rescan = { yytext + nkeep, yytext + yyleng };
 
   auto nline = std::count(rescan.p, rescan.pend, '\n');
-  dbgmsg("%s:%d: yyless(%d), rescan '%.*s' (%zu lines, %d bytes)",
+  dbgmsg("%s:%d: yyless(%d), rescan '%.*s' (" HOST_SIZE_T_PRINT_UNSIGNED
+         " lines, " HOST_SIZE_T_PRINT_UNSIGNED " bytes)",
          __func__, __LINE__,
          nkeep,
          int(rescan.size()), rescan.p,
-         nline, rescan.size());
+         (fmt_size_t)nline, (fmt_size_t)rescan.size());
   if( nline ) {
     gcc_assert( yylloc.first_line + nline <= yylloc.last_line );
     yylloc.last_line =- int(nline);

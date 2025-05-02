@@ -147,13 +147,14 @@ dump_symbol_map2( const field_key_t& key, const std::list<size_t>& candidates ) 
 
   for( auto candidate : candidates ) {
     char *tmp = fields;
-    fields = xasprintf("%s%s %3zu", tmp? tmp : "", sep, candidate);
+    fields = xasprintf("%s%s %3" GCC_PRISZ "u",
+                       tmp? tmp : "", sep, (fmt_size_t)candidate);
     sep[0] = ',';
     free(tmp);
   }
 
-  dbgmsg( "%s:%d: %3zu %s {%s}", __func__, __LINE__,
-          key.program, key.name, fields );
+  dbgmsg( "%s:%d: %3" GCC_PRISZ "u %s {%s}", __func__, __LINE__,
+          (fmt_size_t)key.program, key.name, fields );
   free(fields);
 }
 
@@ -179,7 +180,8 @@ dump_symbol_map_value( const char name[], const symbol_map_t::value_type& value 
 
   for( ; p != value.second.end(); p++ ) {
     char *tmp = ancestry;
-    ancestry = xasprintf("%s%s %3zu", tmp? tmp : "", sep, *p);
+    ancestry = xasprintf("%s%s %3" GCC_PRISZ "u",
+                         tmp? tmp : "", sep, (fmt_size_t)*p);
     sep[0] = ',';
     free(tmp);
   }
@@ -256,8 +258,11 @@ build_symbol_map() {
   symbol_map.erase(sym_name_t(""));
 
   if( yydebug ) {
-    dbgmsg( "%s:%d: %zu of %zu symbols inserted into %zu in symbol_map",
-           __func__, __LINE__, nsym, end, symbol_map.size() );
+    dbgmsg( "%s:%d: " HOST_SIZE_T_PRINT_UNSIGNED " of "
+            HOST_SIZE_T_PRINT_UNSIGNED " symbols inserted into "
+            HOST_SIZE_T_PRINT_UNSIGNED " in symbol_map",
+            __func__, __LINE__, (fmt_size_t)nsym, (fmt_size_t)end,
+            (fmt_size_t)symbol_map.size() );
   }
 }
 
@@ -277,8 +282,8 @@ public:
   }
   protected:
     void dump_key( const char tag[], const symbol_map_t::key_type& key ) const {
-      dbgmsg( "symbol_map key: %s { %3zu %3zu %s }",
-             tag, key.program, key.parent, key.name );
+      dbgmsg( "symbol_map key: %s { %3" GCC_PRISZ "u %3" GCC_PRISZ "u %s }",
+             tag, (fmt_size_t)key.program, (fmt_size_t)key.parent, key.name );
   }
 };
 
@@ -459,14 +464,16 @@ symbol_match2( size_t program,
       sep = "";
       for( auto field : fields ) {
         char *partial = fieldstr;
-        int asret = asprintf(&fieldstr, "%s%s%zu", partial? partial : "", sep, field);
+        int asret = asprintf(&fieldstr, "%s%s" HOST_SIZE_T_PRINT_UNSIGNED,
+                             partial? partial : "", sep, (fmt_size_t)field);
         assert(asret);
         sep = ", ";
         assert(fieldstr);
         free(partial);
       }
 
-      dbgmsg("%s: '%s' matches %zu fields: {%s}", __func__, ancestry, fields.size(), fieldstr);
+      dbgmsg("%s: '%s' matches " HOST_SIZE_T_PRINT_UNSIGNED " fields: {%s}",
+             __func__, ancestry, (fmt_size_t)fields.size(), fieldstr);
       free(fieldstr);
     }
     free(ancestry);
@@ -537,8 +544,8 @@ symbol_find( size_t program, std::list<const char *> names ) {
       return std::pair<symbol_elem_t *, bool>(NULL, false);
     }
     if( yydebug ) {
-      dbgmsg( "%s:%d: '%s' has %zu possible matches",
-             __func__, __LINE__, names.back(), items.size() );
+      dbgmsg( "%s:%d: '%s' has " HOST_SIZE_T_PRINT_UNSIGNED " possible matches",
+             __func__, __LINE__, names.back(), (fmt_size_t)items.size() );
       std::for_each( items.begin(), items.end(), dump_symbol_map_value1 );
     }
   }
@@ -577,8 +584,8 @@ symbol_find_of( size_t program, std::list<const char *> names, size_t group ) {
   }
 
   if( yydebug ) {
-    dbgmsg( "%s:%d: '%s' has %zu possible matches",
-           __func__, __LINE__, names.back(), input.size() );
+    dbgmsg( "%s:%d: '%s' has " HOST_SIZE_T_PRINT_UNSIGNED " possible matches",
+           __func__, __LINE__, names.back(), (fmt_size_t)input.size() );
     std::for_each( input.begin(), input.end(), dump_symbol_map_value1 );
   }
 
