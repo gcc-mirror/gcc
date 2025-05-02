@@ -1,3 +1,7 @@
+2025-05-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* config-list.mk: Update FreeBSD targets to version 13.
+
 2025-04-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* config-list.mk: Add m32c*-*-* to the list of obsoleted targets.

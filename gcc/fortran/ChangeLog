@@ -1,3 +1,10 @@
+2025-05-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/119948
+	* resolve.cc (gfc_impure_variable): The result of a module
+	procedure with an interface declaration is not impure even if
+	the current namespace is not the same as the symbol's.
+
 2025-04-25  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/102900

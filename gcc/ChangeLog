@@ -1,3 +1,43 @@
+2025-05-01  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: Add -fabi-version detail.
+	* common.opt: Likewise.
+
+2025-05-01  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	* tree-ssa-phiopt.cc (phiopt_early_allow): Only allow a sequence
+	with one statement for MIN/MAX and the op was MIN/MAX.
+
+2025-05-01  Ayan Shafqat  <ayan.x.shafqat@gmail.com>
+
+	* config/aarch64/arm_acle.h (__sqrt, __sqrtf): New function.
+
+2025-05-01  Ayan Shafqat  <ayan.x.shafqat@gmail.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Change
+	BUILTIN_VHSDF_DF to BUILTIN_VHSDF_HSDF.
+
+2025-05-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119162
+	* fold-const.cc (maybe_nonzero_address): Return 1 for non-symtab
+	vars if folding_cxx_constexpr.
+
+2025-05-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_conversion): Remove non-SLP
+	paths.
+
+2025-05-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_remove_slp_scalar_calls): Look
+	at the original stmt.
+
+2025-05-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* combine.cc (try_combine): Sets which satisfy set_noop_p can go
+	to i2 unless i3 is a jump and the other set is not.
+
 2025-04-30  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR target/120042

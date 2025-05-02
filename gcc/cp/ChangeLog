@@ -1,3 +1,30 @@
+2025-05-01  Patrick Palka  <ppalka@redhat.com>
+
+	* constexpr.cc (explain_invalid_constexpr_fn): In the
+	DECL_CONSTRUCTOR_P branch pass the non-genericized body to
+	require_potential_constant_expression.
+
+2025-05-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/119034
+	PR c++/68942
+	* pt.cc (tsubst_expr) <case CALL_EXPR>: Revert PR68942 fix.
+	* semantics.cc (finish_call_expr): Ensure the callee of an
+	ADL-enabled call is wrapped in an OVERLOAD.
+
+2025-05-01  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in: Don't pass the full path to gperf.
+	* std-name-hint.h: Regenerate.
+
+2025-05-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119162
+	* constexpr.cc (find_deleted_heap_var): Remove.
+	(cxx_eval_call_expression): Don't call it.  Don't set TREE_STATIC on
+	heap vars.
+	(cxx_eval_outermost_constant_expr): Don't mess with varpool.
+
 2025-04-30  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/120023

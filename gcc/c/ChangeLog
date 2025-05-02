@@ -1,3 +1,17 @@
+2025-05-01  Christopher Bazley  <chris.bazley@arm.com>
+
+	PR c/119317
+	* c-decl.cc (c_get_loop_names): Do not prematurely
+	end the search for a label that names a loop or
+	switch statement upon encountering a DEBUG_BEGIN_STMT.
+	Instead, ignore any instances of DEBUG_BEGIN_STMT.
+
+2025-05-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/119950
+	* c-typeck.cc (convert_arguments): Check for built-in
+	function declaration before warning.
+
 2025-04-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-decl.cc: Drop include of "make-unique.h".
