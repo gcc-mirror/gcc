@@ -4747,7 +4747,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 	 itself.  But that breaks when gimplify_target_expr adds a clobber
 	 cleanup that runs before the build_vec_init cleanup.  */
       if (cleanup_flags)
-	vec_safe_push (*cleanup_flags, build_tree_list (iterator, maxindex));
+	vec_safe_push (*cleanup_flags,
+		       build_tree_list (rval, build_zero_cst (ptype)));
     }
 
   /* Should we try to create a constant initializer?  */
