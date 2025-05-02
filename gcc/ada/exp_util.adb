@@ -167,6 +167,9 @@ package body Exp_Util is
    --  Force evaluation of bounds of a slice, which may be given by a range
    --  or by a subtype indication with or without a constraint.
 
+   function Is_Expression_Of_Func_Return (N : Node_Id) return Boolean;
+   --  Return True if N is the expression of a function return
+
    function Is_Uninitialized_Aggregate
      (Exp : Node_Id;
       T   : Entity_Id) return Boolean;
@@ -8852,6 +8855,20 @@ package body Exp_Util is
         and then Nkind (Name (N)) = N_Explicit_Dereference;
    end Is_Expanded_Class_Wide_Interface_Object_Decl;
 
+   ----------------------------------
+   -- Is_Expression_Of_Func_Return --
+   ----------------------------------
+
+   function Is_Expression_Of_Func_Return (N : Node_Id) return Boolean is
+      Par : constant Node_Id := Parent (N);
+
+   begin
+      return Nkind (Par) = N_Simple_Return_Statement
+        or else (Nkind (Par) in N_Object_Declaration
+                              | N_Object_Renaming_Declaration
+                  and then Is_Return_Object (Defining_Entity (Par)));
+   end Is_Expression_Of_Func_Return;
+
    ------------------------------
    -- Is_Finalizable_Transient --
    ------------------------------
@@ -9758,21 +9775,16 @@ package body Exp_Util is
 
    function Is_Related_To_Func_Return (Id : Entity_Id) return Boolean is
       Expr : constant Node_Id := Related_Expression (Id);
+
    begin
       --  In the case of a function with a class-wide result that returns
       --  a call to a function with a specific result, we introduce a
       --  type conversion for the return expression. We do not want that
       --  type conversion to influence the result of this function.
 
-      return
-        Present (Expr)
-          and then Nkind (Unqual_Conv (Expr)) = N_Explicit_Dereference
-          and then (Nkind (Parent (Expr)) = N_Simple_Return_Statement
-                     or else
-                       (Nkind (Parent (Expr)) in N_Object_Declaration
-                                               | N_Object_Renaming_Declaration
-                         and then
-                        Is_Return_Object (Defining_Entity (Parent (Expr)))));
+      return Present (Expr)
+        and then Nkind (Unqual_Conv (Expr)) = N_Explicit_Dereference
+        and then Is_Expression_Of_Func_Return (Expr);
    end Is_Related_To_Func_Return;
 
    --------------------------------
@@ -12949,18 +12961,25 @@ package body Exp_Util is
       --  Otherwise we generate a reference to the expression
 
       else
-         --  Special processing for function calls that return a limited type.
-         --  We need to build a declaration that will enable build-in-place
-         --  expansion of the call. This is not done if the context is already
-         --  an object declaration, to prevent infinite recursion.
+         --  Special processing for function calls with a result type that is
+         --  either BIP or a constrained array with controlled component and
+         --  an unconstrained first subtype, when the context is neither an
+         --  object declaration (to prevent infinite recursion) nor a function
+         --  return (to propagate the anonymous return object).
 
-         --  This is relevant only in Ada 2005 mode. In Ada 95 programs we have
-         --  to accommodate functions returning limited objects by reference.
+         --  We need to build an object declaration to trigger build-in-place
+         --  expansion of the call in the former case, and addition of bounds
+         --  to the object in the latter case.
 
-         if Ada_Version >= Ada_2005
-           and then Nkind (Exp) = N_Function_Call
-           and then Is_Inherently_Limited_Type (Etype (Exp))
+         if Nkind (Exp) = N_Function_Call
+           and then (Is_Build_In_Place_Result_Type (Exp_Type)
+                      or else (Is_Array_Type (Exp_Type)
+                                and then Has_Controlled_Component (Exp_Type)
+                                and then Is_Constrained (Exp_Type)
+                                and then not
+                                  Is_Constrained (First_Subtype (Exp_Type))))
            and then Nkind (Parent (Exp)) /= N_Object_Declaration
+           and then not Is_Expression_Of_Func_Return (Exp)
          then
             declare
                Obj  : constant Entity_Id := Make_Temporary (Loc, 'F', Exp);
