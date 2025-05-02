@@ -109,5 +109,29 @@ CollectLangItems::visit (AST::EnumItem &item)
   DefaultASTVisitor::visit (item);
 }
 
+void
+CollectLangItems::visit (AST::EnumItemTuple &item)
+{
+  maybe_add_lang_item (item);
+
+  DefaultASTVisitor::visit (item);
+}
+
+void
+CollectLangItems::visit (AST::EnumItemStruct &item)
+{
+  maybe_add_lang_item (item);
+
+  DefaultASTVisitor::visit (item);
+}
+
+void
+CollectLangItems::visit (AST::EnumItemDiscriminant &item)
+{
+  maybe_add_lang_item (item);
+
+  DefaultASTVisitor::visit (item);
+}
+
 } // namespace AST
 } // namespace Rust
