@@ -6516,15 +6516,15 @@ nvptx_expand_shared_addr (tree exp, rtx target,
   if (TREE_CONSTANT (size_expr))
     size = TREE_INT_CST_LOW (size_expr);
 
+  /* Default size for unknown size expression.  */
+  if (size == 0)
+    size = 256;
+
   if (vector)
     {
       offload_attrs oa;
 
       populate_offload_attrs (&oa);
-
-      /* Default size for unknown size expression.  */
-      if (size == 0)
-	size = 256;
 
       unsigned int psize = ROUND_UP (size + offset, align);
       unsigned int pnum = nvptx_mach_max_workers ();
@@ -6621,6 +6621,7 @@ enum nvptx_builtins
   NVPTX_BUILTIN_BAR_RED_AND,
   NVPTX_BUILTIN_BAR_RED_OR,
   NVPTX_BUILTIN_BAR_RED_POPC,
+  NVPTX_BUILTIN_BAR_WARPSYNC,
   NVPTX_BUILTIN_BREV,
   NVPTX_BUILTIN_BREVLL,
   NVPTX_BUILTIN_COND_UNI,
@@ -6753,6 +6754,8 @@ nvptx_init_builtins (void)
   DEF (BAR_RED_POPC, "bar_red_popc",
        (UINT, UINT, UINT, UINT, UINT, NULL_TREE));
 
+  DEF (BAR_WARPSYNC, "bar_warpsync", (VOID, VOID, NULL_TREE));
+
   DEF (BREV, "brev", (UINT, UINT, NULL_TREE));
   DEF (BREVLL, "brevll", (LLUINT, LLUINT, NULL_TREE));
 
@@ -6802,6 +6805,10 @@ nvptx_expand_builtin (tree exp, rtx target, rtx ARG_UNUSED (subtarget),
     case NVPTX_BUILTIN_BAR_RED_OR:
     case NVPTX_BUILTIN_BAR_RED_POPC:
       return nvptx_expand_bar_red (exp, target, mode, ignore);
+
+    case NVPTX_BUILTIN_BAR_WARPSYNC:
+      emit_insn (gen_nvptx_warpsync ());
+      return NULL_RTX;
 
     case NVPTX_BUILTIN_BREV:
     case NVPTX_BUILTIN_BREVLL:
@@ -7774,11 +7781,11 @@ nvptx_goacc_reduction_setup (gcall *call, offload_attrs *oa)
 
   push_gimplify_context (true);
 
+  /* Copy the receiver object.  */
+  tree ref_to_res = gimple_call_arg (call, 1);
+
   if (level != GOMP_DIM_GANG)
     {
-      /* Copy the receiver object.  */
-      tree ref_to_res = gimple_call_arg (call, 1);
-
       if (!integer_zerop (ref_to_res) && !array_p)
 	{
 	  ref_to_res = nvptx_adjust_reduction_type (ref_to_res,
@@ -7798,13 +7805,14 @@ nvptx_goacc_reduction_setup (gcall *call, offload_attrs *oa)
       tree call, ptr;
       if (array_p)
 	{
+	  tree copy_src = !integer_zerop (ref_to_res) ? ref_to_res : array_addr;
 	  tree array_elem_type = TREE_TYPE (array_type);
 	  call = nvptx_get_shared_red_addr (array_elem_type, array_max_idx,
 					    offset, level == GOMP_DIM_VECTOR);
 	  ptr = make_ssa_name (TREE_TYPE (call));
 	  gimplify_assign (ptr, call, &seq);
 	  oacc_build_array_copy (fold_convert (TREE_TYPE (array_addr), ptr),
-				 array_addr, array_max_idx, &seq);
+				 copy_src, array_max_idx, &seq);
 	}
       else
 	{
@@ -8038,6 +8046,14 @@ nvptx_goacc_reduction_fini (gcall *call, offload_attrs *oa)
 	  else
 	    r = nvptx_reduction_update (gimple_location (call), &gsi,
 					accum, var, op, level);
+
+	  if (TARGET_SM70 && level == GOMP_DIM_VECTOR)
+	    {
+	      /* After SM70, with Independent Thread Scheduling introduced,
+		 place a warpsync after vector-mode update of accum buffer.  */
+	      tree fn = nvptx_builtin_decl (NVPTX_BUILTIN_BAR_WARPSYNC, true);
+	      gimple_seq_add_stmt (&seq, gimple_build_call (fn, 0));
+	    }
 	}
     }
 

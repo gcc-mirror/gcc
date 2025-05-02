@@ -31,6 +31,14 @@ int main (void)
     if (a[i] != o[i])
       __builtin_abort ();
 
+  #pragma acc parallel
+  #pragma acc loop gang reduction(+:a[one:two])
+  ARRAY_BODY (a, one, two)
+  ARRAY_BODY (o, one, two)
+  for (int i = 0; i < sizeof (a) / sizeof (int); i++)
+    if (a[i] != o[i])
+      __builtin_abort ();
+
   #pragma acc parallel copy(a[three:two])
   #pragma acc loop reduction(+:a[three:two])
   ARRAY_BODY (a, three, two)
@@ -39,8 +47,24 @@ int main (void)
     if (a[i] != o[i])
       __builtin_abort ();
 
+  #pragma acc parallel copy(a[three:two])
+  #pragma acc loop worker reduction(+:a[three:two])
+  ARRAY_BODY (a, three, two)
+  ARRAY_BODY (o, three, two)
+  for (int i = 0; i < sizeof (a) / sizeof (int); i++)
+    if (a[i] != o[i])
+      __builtin_abort ();
+
   #pragma acc parallel copy(a)
   #pragma acc loop reduction(+:a[zero:five])
+  ARRAY_BODY (a, zero, five)
+  ARRAY_BODY (o, zero, five)
+  for (int i = 0; i < sizeof (a) / sizeof (int); i++)
+    if (a[i] != o[i])
+      __builtin_abort ();
+
+  #pragma acc parallel copy(a)
+  #pragma acc loop vector reduction(+:a[zero:five])
   ARRAY_BODY (a, zero, five)
   ARRAY_BODY (o, zero, five)
   for (int i = 0; i < sizeof (a) / sizeof (int); i++)

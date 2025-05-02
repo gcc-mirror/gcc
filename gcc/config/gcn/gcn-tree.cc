@@ -750,13 +750,14 @@ gcn_goacc_reduction_setup (gcall *call)
       tree offset = gimple_call_arg (call, 5);
       if (array_p)
 	{
+	  tree copy_src = !integer_zerop (ref_to_res) ? ref_to_res : array_addr;
 	  tree decl = gcn_goacc_get_worker_array_reduction_buffer
 	    (array_type, array_max_idx, &seq);
 	  tree ptr = make_ssa_name (TREE_TYPE (array_addr));
 	  gimplify_assign (ptr, build_fold_addr_expr (decl), &seq);
 
 	  /* Store incoming value to worker reduction buffer.  */
-	  oacc_build_array_copy (ptr, array_addr, array_max_idx, &seq);
+	  oacc_build_array_copy (ptr, copy_src, array_max_idx, &seq);
 	}
       else
 	{
