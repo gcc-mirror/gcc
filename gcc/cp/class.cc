@@ -5724,6 +5724,47 @@ type_has_user_provided_constructor (tree t)
   return false;
 }
 
+/* Returns true iff class T has a constructor that accepts a single argument
+   and does not have a single parameter of type reference to T.
+
+   This does not exclude explicit constructors because they are still
+   considered for conversions within { } even though choosing one is
+   ill-formed.  */
+
+bool
+type_has_converting_constructor (tree t)
+{
+  if (!CLASS_TYPE_P (t))
+    return false;
+
+  if (!TYPE_HAS_USER_CONSTRUCTOR (t))
+    return false;
+
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+    {
+      tree fn = *iter;
+      tree parm = FUNCTION_FIRST_USER_PARMTYPE (fn);
+      if (parm == void_list_node
+	  || !sufficient_parms_p (TREE_CHAIN (parm)))
+	/* Can't accept a single argument, so won't be considered for
+	   conversion.  */
+	continue;
+      if (TREE_CODE (fn) == TEMPLATE_DECL
+	  || TREE_CHAIN (parm) != void_list_node)
+	/* Not a simple single parameter.  */
+	return true;
+      if (TYPE_MAIN_VARIANT (non_reference (TREE_VALUE (parm)))
+	  != DECL_CONTEXT (fn))
+	/* The single parameter has the wrong type.  */
+	return true;
+      if (get_constraints (fn))
+	/* Constrained.  */
+	return true;
+    }
+
+  return false;
+}
+
 /* Returns true iff class T has a user-provided or explicit constructor.  */
 
 bool

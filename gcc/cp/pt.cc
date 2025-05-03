@@ -23501,9 +23501,13 @@ maybe_adjust_types_for_deduction (tree tparms,
   return result;
 }
 
-/* Return true if computing a conversion from FROM to TO might induce template
-   instantiation.  Conversely, if this predicate returns false then computing
-   the conversion definitely won't induce template instantiation.  */
+/* Return true if computing a conversion from FROM to TO might consider
+   user-defined conversions, which could lead to arbitrary template
+   instantiations (e.g. g++.dg/cpp2a/concepts-nondep1.C).  If this predicate
+   returns false then computing the conversion definitely won't try UDCs.
+
+   Note that this restriction parallels LOOKUP_DEFAULTED for CWG1092, but in
+   this case we want the early filter to pass instead of fail.  */
 
 static bool
 conversion_may_instantiate_p (tree to, tree from)
@@ -23511,36 +23515,14 @@ conversion_may_instantiate_p (tree to, tree from)
   to = non_reference (to);
   from = non_reference (from);
 
-  bool ptr_conv_p = false;
-  if (TYPE_PTR_P (to)
-      && TYPE_PTR_P (from))
-    {
-      to = TREE_TYPE (to);
-      from = TREE_TYPE (from);
-      ptr_conv_p = true;
-    }
-
-  /* If one of the types is a not-yet-instantiated class template
-     specialization, then computing the conversion might instantiate
-     it in order to inspect bases, conversion functions and/or
-     converting constructors.  */
-  if ((CLASS_TYPE_P (to)
-       && !COMPLETE_TYPE_P (to)
-       && CLASSTYPE_TEMPLATE_INSTANTIATION (to))
-      || (CLASS_TYPE_P (from)
-	  && !COMPLETE_TYPE_P (from)
-	  && CLASSTYPE_TEMPLATE_INSTANTIATION (from)))
-    return true;
-
-  /* Converting from one pointer type to another, or between
-     reference-related types, always yields a standard conversion.  */
-  if (ptr_conv_p || reference_related_p (to, from))
+  /* Converting between reference-related types is a standard conversion.  */
+  if (reference_related_p (to, from))
     return false;
 
   /* Converting to a non-aggregate class type will consider its
      user-declared constructors, which might induce instantiation.  */
   if (CLASS_TYPE_P (to)
-      && CLASSTYPE_NON_AGGREGATE (to))
+      && type_has_converting_constructor (to))
     return true;
 
   /* Similarly, converting from a class type will consider its conversion
@@ -23549,7 +23531,7 @@ conversion_may_instantiate_p (tree to, tree from)
       && TYPE_HAS_CONVERSION (from))
     return true;
 
-  /* Otherwise, computing this conversion definitely won't induce
+  /* Otherwise, computing this conversion won't risk arbitrary
      template instantiation.  */
   return false;
 }
