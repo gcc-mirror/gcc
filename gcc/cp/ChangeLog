@@ -1,3 +1,22 @@
+2025-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115207
+	* decl.cc (cp_finish_decl): Call layout_decl after CTAD.
+
+2025-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120012
+	* cp-tree.h (struct lang_type): Add non_aggregate_pod.
+	(CLASSTYPE_NON_AGGREGATE_POD): New.
+	* class.cc (check_bases_and_members): Set it.
+	(check_non_pod_aggregate): Diagnose it.
+
+2025-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/117827
+	* init.cc (build_vec_init): Push to *cleanup_flags clearing of rval
+	instead of setting of iterator to maxindex.
+
 2025-05-01  Patrick Palka  <ppalka@redhat.com>
 
 	* constexpr.cc (explain_invalid_constexpr_fn): In the

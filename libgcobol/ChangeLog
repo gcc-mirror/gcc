@@ -1,3 +1,13 @@
+2025-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR cobol/119364
+	* valconv.cc (__gg__realloc_if_necessary): Use (new_size>>16)>>16;
+	instead of new_size>>32; to avoid warnings on 32-bit hosts.
+	* common-defs.h (enum cbl_field_attr_t): Use uint64_t
+	as underlying type rather than size_t.
+	* gcobolio.h (cblc_field_t): Change attr member type from size_t
+	to unsigned long long.
+
 2025-04-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac: Check for struct tm.tm_zone.

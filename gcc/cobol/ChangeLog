@@ -1,3 +1,182 @@
+2025-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR cobol/119364
+	* structs.h (cbl_enabled_exception_type_node): New variable
+	declaration.
+	* structs.cc (cbl_enabled_exception_type_node): New variable.
+	(create_cbl_enabled_exception_t): New function.
+	(create_our_type_nodes): Initialize cbl_enabled_exception_type_node
+	using it.
+	* genapi.cc (stash_exceptions): Don't compare padding bits to
+	determine if the exceptions are the same as last time.  Use
+	cbl_enabled_exception_type_node for target size and field offsets
+	and native_encode_expr to write each field into byte sequence.
+
+2025-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR cobol/119364
+	* util.cc (is_numeric_edited): Use HOST_SIZE_T_PRINT_UNSIGNED
+	instead of "%zu" and cast corresponding argument to fmt_size_t.
+	(normalize_picture): Use GCC_PRISZ instead of "z" and pass address
+	of fmt_size_t var to sscanf and copy afterwards.
+	(cbl_refer_t::str): Use HOST_SIZE_T_PRINT_UNSIGNED instead of
+	"%zu" or GCC_PRISZ instead of "z" and cast corresponding argument
+	to fmt_size_t.
+	(struct move_corresponding_field): Likewise.
+	(valid_move): Likewise.
+	(ambiguous_reference): Likewise.
+	(parent_names): Likewise.
+	(find_corresponding::find_corresponding): Likewise.
+	(corresponding_fields): Likewise.
+	(unique_stack::push): Likewise.
+	(cobol_filename): Likewise.
+	* lexio.cc: Include config.h first.
+	(recognize_replacements): Use HOST_SIZE_T_PRINT_UNSIGNED instead of
+	"%zu" or GCC_PRISZ instead of "z" and cast corresponding argument
+	to fmt_size_t.
+	(check_source_format_directive): Likewise.
+	(parse_replacing_pair): Use size_t(0) instead of 0UL in span_t
+	construction.
+	(parse_replace_pairs): Use HOST_SIZE_T_PRINT_UNSIGNED instead of
+	"%zu" or GCC_PRISZ instead of "z" or HOST_SIZE_T_PRINT_DEC instead
+	of "%zd" and cast corresponding argument to fmt_size_t.
+	(parse_copy_directive): Likewise.
+	(parse_replace_last_off): Likewise.
+	(parse_replace_text): Likewise.
+	(bytespan_t::append): Likewise.
+	(cdftext::map_file): Likewise.
+	(cdftext::process_file): Likewise.
+	* symfind.cc (dump_symbol_map2): Likewise.
+	(dump_symbol_map_value): Likewise.
+	(build_symbol_map): Likewise.
+	(is_name::dump_key): Likewise.
+	(symbol_match2): Likewise.
+	(symbol_find): Likewise.
+	(symbol_find_of): Likewise.
+	* cdf.y: Likewise.
+	* symbols.cc: Include config.h first.
+	(cbl_field_t::set_attr): Return uint64_t rather than size_t
+	and replace size_t(attr) with uint64_t(attr).
+	(cbl_field_t::clear_attr): Likewise.
+	(symbol_field_capacity): Use HOST_SIZE_T_PRINT_UNSIGNED instead of
+	"%zu" or GCC_PRISZ instead of "z" or HOST_SIZE_T_PRINT_DEC instead
+	of "%zd" and cast corresponding argument to fmt_size_t.
+	(symbol_find_odo_debug): Likewise.
+	(symbols_dump): Likewise.
+	(calculate_capacity): Likewise.
+	(field_str): Likewise.
+	(symbols_update): Likewise.
+	(symbol_field_forward): Likewise.
+	(numeric_group_attrs): Return uint64_t rather than size_t and
+	change inherit variable to from size_t to uint64_t.
+	(new_literal_add): Use HOST_SIZE_T_PRINT_UNSIGNED instead of
+	"%zu" or GCC_PRISZ instead of "z" or HOST_SIZE_T_PRINT_DEC instead
+	of "%zd" and cast corresponding argument to fmt_size_t.
+	(temporaries_t::dump): Likewise.
+	(cbl_label_t::str): Likewise.
+	(symbol_label_add): Likewise.
+	(symbol_program_add): Likewise.
+	(symbol_forward_names): Likewise.
+	(symbol_forward_to): Likewise.
+	(cbl_file_key_t::deforward): Likewise.
+	(cbl_file_key_t::str): Likewise.
+	* gengen.cc (show_type): Use PRId64 instead of "ld".
+	(gg_unique_in_function): Use HOST_SIZE_T_PRINT_DEC instead of
+	%ld and cast corresponding argument to fmt_size_t.
+	* scan.l: Add %top section with #include "config.h".
+	* genmath.cc (parser_add): Use HOST_SIZE_T_PRINT_DEC instead of
+	%ld and cast corresponding argument to fmt_size_t.
+	(parser_subtract): Likewise.
+	* parse.y: Include "config.h" before <fstream>.  Use
+	HOST_SIZE_T_PRINT_UNSIGNED instead of "%zu" and cast corresponding
+	argument to fmt_size_t.  Change type of sign_attrs, group_sign and
+	type_implies from size_t to uint64_t.
+	(perform_t::ec_labels_t::new_label): Use HOST_SIZE_T_PRINT_UNSIGNED
+	instead of "%zu" or GCC_PRISZ instead of "z" or HOST_SIZE_T_PRINT_DEC
+	instead of "%zd" and cast corresponding argument to fmt_size_t.
+	(stringify_src_t::dump): Likewise.
+	(lang_check_failed): Likewise.
+	(numstr2i): Use GCC_PRISZ instead of "z" and pass address of temporary
+	with fmt_size_t type to sscanf and then copy it over.
+	(initialize_statement): Use HOST_SIZE_T_PRINT_UNSIGNED instead of
+	"%zu" or GCC_PRISZ instead of "z" or HOST_SIZE_T_PRINT_DEC instead
+	of "%zd" and cast corresponding argument to fmt_size_t.
+	(dump_inspect_oper): Likewise.
+	(new_literal): Likewise.
+	(literal_subscripts_valid): Likewise.
+	(eval_subject_t::label): Likewise.
+	* genapi.cc (level_88_helper): Likewise.
+	(parser_call_targets_dump): Likewise.
+	(combined_name): Use HOST_SIZE_T_PRINT_DEC instead of "%ld"
+	and cast corresponding argument to fmt_size_t.
+	(section_label): Likewise.
+	(paragraph_label): Likewise.
+	(leave_procedure): Likewise.
+	(parser_perform): Likewise.
+	(parser_perform_times): Likewise.
+	(internal_perform_through): Likewise.
+	(internal_perform_through_times): Likewise.
+	(parser_enter_program): Likewise.
+	(parser_init_list_size): Likewise.
+	(parser_init_list): Likewise.
+	(psa_FldLiteralN): Likewise.
+	(psa_FldBlob): Likewise.
+	(parser_assign): Likewise.
+	(parser_free): Pass p->field->name to dbgmsg.
+	(parser_division): Use HOST_SIZE_T_PRINT_DEC instead of "%ld"
+	and cast corresponding argument to fmt_size_t.
+	(perform_outofline_before_until): Likewise.
+	(perform_outofline_after_until): Likewise.
+	(perform_outofline_testafter_varying): Likewise.
+	(perform_outofline_before_varying): Likewise.
+	(perform_inline_testbefore_varying): Likewise.
+	(parser_inspect): Change n_operations parameter type from
+	unsigned long to size_t.
+	(parser_intrinsic_callv): Use HOST_SIZE_T_PRINT_DEC instead
+	of "%zd" and cast corresponding argument to fmt_size_t.
+	(parser_bitop): Use HOST_SIZE_T_PRINT_HEX_PURE instead of
+	"%lx" and cast corresponding argument to fmt_size_t.
+	(parser_bitwise_op): Likewise.
+	(parser_program_hierarchy): Use HOST_SIZE_T_PRINT_DEC instead of "%ld"
+	and cast corresponding argument to fmt_size_t.
+	(parser_set_handled): Use HOST_SIZE_T_PRINT_HEX_PURE instead of
+	"%lx" and cast corresponding argument to fmt_size_t.
+	(parser_set_numeric): Use HOST_SIZE_T_PRINT_DEC instead of "%ld"
+	and cast corresponding argument to fmt_size_t.
+	(psa_new_var_decl): Use HOST_SIZE_T_PRINT_DEC instead of "%ld"
+	and cast corresponding argument to fmt_size_t.
+	(parser_symbol_add): Use HOST_SIZE_T_PRINT_DEC instead of "%zd"
+	or HOST_SIZE_T_PRINT_HEX_PURE instead of "%lx" and cast corresponding
+	argument to fmt_size_t.
+	* cdf-copy.cc: Include "config.h" first.
+	* scan_ante.h (trim_location): Use HOST_SIZE_T_PRINT_UNSIGNED instead
+	of "%zu" or "%d" and cast corresponding argument to fmt_size_t.
+	* structs.cc (create_cblc_field_t): Use ULONGLONG instead of SIZE
+	for "attr".
+	* cbldiag.h (dbgmsg): Add ATTRIBUTE_PRINTF_1.
+	* gcobolspec.cc (lang_specific_driver): Use HOST_SIZE_T_PRINT_DEC
+	instead of "%ld" and cast corresponding argument to fmt_size_t.
+	* parse_ante.h (literal_of): Use HOST_SIZE_T_PRINT_UNSIGNED instead of
+	"%zu" or GCC_PRISZ instead of "z" or HOST_SIZE_T_PRINT_DEC instead
+	of "%zd" and cast corresponding argument to fmt_size_t.
+	(evaluate_elem_t::dump): Likewise.
+	(arith_t::another_pair): Likewise.
+	(current_t::end_program): Likewise.
+	(file_add): Likewise.
+	(implicit_paragraph): Likewise.
+	(implicit_section): Likewise.
+	(data_division_ready): Use HOST_SIZE_T_PRINT_DEC instead of "%d"
+	and cast corresponding argument to fmt_size_t.
+	* symbols.h (struct cbl_field_t): Change attr member type from size_t
+	to uint64_t.
+	(cbl_field_t::set_attr): Change return type from size_t to uint64_t.
+	(cbl_field_t::clear_attr): Likewise.
+	(function_descr_t::init): Use HOST_SIZE_T_PRINT_UNSIGNED instead of
+	"%zu" or GCC_PRISZ instead of "z" or HOST_SIZE_T_PRINT_DEC instead
+	of "%zd" and cast corresponding argument to fmt_size_t.
+	(cbl_perform_tgt_t::dump): Likewise.
+	(numeric_group_attrs): Change return type from size_t to uint64_t.
+
 2025-04-24  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.cc: (initialize_variable_internal): Change TRACE1 formatting.

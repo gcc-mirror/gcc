@@ -1,3 +1,113 @@
+2025-05-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/120059
+	* simplify-rtx.cc (simplify_with_subreg_not): Check the result
+	of simplify_gen_subreg.
+
+2025-05-02  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew MacLeod  <amacleod@redhat.com>
+
+	PR c/117023
+	* gimple-range-infer.cc (gimple_infer_range::gimple_infer_range):
+	For nonnull_if_nonzero attribute check also arg2 range if it doesn't
+	include zero and in that case call add_nonzero too.
+
+2025-05-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2025-04-21  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* config/mips/mips.cc (mips_option_override): Error out for
+	-mmicromips -mmsa.
+
+2025-05-02  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/119900
+	* config/i386/i386.cc (ix86_can_change_mode_class): Add TODO
+	comment.
+	(ix86_rtx_costs): Make VEC_SELECT equivalent to SUBREG cost 1.
+
+2025-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120012
+	* doc/invoke.texi: Document C++20 aggregate fix.
+	* common.opt: Likewise.
+
+2025-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60336
+	* config/i386/i386.cc (ix86_warn_parameter_passing_abi):
+	If no target, check the current TU.
+
+2025-05-02  Richard Biener  <rguenther@suse.de>
+
+	* config/arc/arc.cc (TARGET_LRA_P): Remove define.
+	* config/gcn/gcn.cc (TARGET_LRA_P): Likewise.
+
+2025-05-02  Filip Kastl  <fkastl@suse.cz>
+
+	PR middle-end/117091
+	* tree-switch-conversion.cc (switch_decision_tree::analyze_switch_statement):
+	Remove warning about using different algorithms.
+
+2025-05-02  Filip Kastl  <fkastl@suse.cz>
+
+	* tree-switch-conversion.cc (bit_test_cluster::find_bit_tests):
+	Modify the dynamic programming algorithm to take is_beneficial()
+	into account earlier.  To do this efficiently, copy some logic
+	from is_beneficial() here.  Add detailed comments about how the
+	DP algorithm works.
+	(bit_test_cluster::can_be_handled): Check that the cluster range
+	is >, not >= BITS_IN_WORD.  Remove the
+	"vec<cluster *> &, unsigned, unsigned" overloaded variant since
+	we no longer need it.
+	(bit_test_cluster::is_beneficial): Add a comment that this
+	function is closely tied to m_max_case_bit_tests.  Remove the
+	"vec<cluster *> &, unsigned, unsigned" overloaded variant since
+	we no longer need it.
+	* tree-switch-conversion.h: Remove the vec overloaded variants
+	of bit_test_cluster::is_beneficial and
+	bit_test_cluster::can_be_handled.
+
+2025-05-02  Filip Kastl  <fkastl@suse.cz>
+
+	PR middle-end/117091
+	* tree-switch-conversion.cc (bit_test_cluster::find_bit_tests_fast):
+	Remove function.
+	(bit_test_cluster::find_bit_tests_slow): Remove function.
+	(bit_test_cluster::find_bit_tests): We don't need to decide
+	between slow and fast so just put the modified (no longer) slow
+	algorithm here.
+
+2025-05-02  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64-sve.md (vec_extract<mode><Vel>):
+	Prevent the emission of pfalse+lastb for VLS.
+
+2025-05-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118617
+	* tree-vect-generic.cc (expand_vector_conversion): Have 2 elements
+	as internal storage for converts.
+	* tree-vect-stmts.cc (vectorizable_conversion): Likewise.
+
+2025-05-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR tree-optimization/118659
+	* tree-ssanames.cc (get_known_nonzero_bits_1): Use
+	wi::bit_and_not instead of `a & ~b`.
+
+2025-05-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/118090
+	* ccmp.cc (get_compare_parts): Remove the up argument.
+	(expand_ccmp_next): Update call to get_compare_parts.
+	(expand_ccmp_expr_1): Likewise.
+
+2025-05-02  Richard Biener  <rguenther@suse.de>
+
+	* common.opt.urls: Regenerate.
+
 2025-05-01  Jason Merrill  <jason@redhat.com>
 
 	* doc/invoke.texi: Add -fabi-version detail.

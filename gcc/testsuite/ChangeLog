@@ -1,3 +1,59 @@
+2025-05-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR rtl-optimization/120059
+	* gcc.dg/torture/pr120059-1.c: New test.
+
+2025-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/120057
+	* gcc.dg/cpp/embed-18.c: New test.
+	* gcc.dg/pr120057-1.c: New test.
+	* gcc.dg/pr120057-2.c: New test.
+
+2025-05-02  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew MacLeod  <amacleod@redhat.com>
+
+	PR c/117023
+	* gcc.dg/tree-ssa/pr78154-2.c: New test.
+
+2025-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115207
+	* g++.dg/cpp1z/class-deduction118.C: New test.
+
+2025-05-02  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp1y/constexpr-89285.C: Always diagnose reinterpret_cast.
+	* g++.dg/cpp23/constexpr-nonlit19.C: Remove ~A body.
+
+2025-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120012
+	* g++.dg/abi/base-defaulted1.C: New test.
+	* g++.dg/abi/base-defaulted1a.C: New test.
+
+2025-05-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/60336
+	* g++.dg/abi/pr60336-8a.C: New test.
+
+2025-05-02  Filip Kastl  <fkastl@suse.cz>
+
+	* gcc.dg/tree-ssa/switch-5.c: New test.
+	* gcc.dg/tree-ssa/switch-6.c: New test.
+
+2025-05-02  Florian Weimer  <fweimer@redhat.com>
+
+	* gcc.dg/Wdeprecated-non-prototype-6.c: New test.
+
+2025-05-02  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* gcc.target/aarch64/sve/extract_last_128.c: New test.
+	* gcc.target/aarch64/sve/extract_1.c: Adjust expected outcome.
+	* gcc.target/aarch64/sve/extract_2.c: Likewise.
+	* gcc.target/aarch64/sve/extract_3.c: Likewise.
+	* gcc.target/aarch64/sve/extract_4.c: Likewise.
+
 2025-05-01  Christopher Bazley  <chris.bazley@arm.com>
 
 	PR c/119317

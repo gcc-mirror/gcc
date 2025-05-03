@@ -1,3 +1,11 @@
+2025-05-02  Florian Weimer  <fweimer@redhat.com>
+	    Tom Stellard  <tstellar@redhat.com>
+
+	* sanitizer_common/sanitizer_common_interceptors_ioctl.inc: Cherry
+	picked from LLVM commit 59978b21ad9c65276ee8e14f26759691b8a65763.
+	* sanitizer_common/sanitizer_platform_limits_posix.cpp: Likewise.
+	* sanitizer_common/sanitizer_platform_limits_posix.h: Likewise.
+
 2025-01-06  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	PR sanitizer/117725

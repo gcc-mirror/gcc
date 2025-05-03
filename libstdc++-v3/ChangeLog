@@ -1,3 +1,28 @@
+2025-05-02  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* include/std/memory: Define __glibcxx_want_addressof_constexpr.
+	* testsuite/20_util/headers/memory/version.cc: Test for macro
+	value.
+
+2025-05-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/vector/allocator/default_init.cc:
+	Add a check using constant evaluation.
+	* testsuite/23_containers/vector/bool/allocator/default_init.cc:
+	Likewise.
+	* testsuite/util/testsuite_allocator.h (default_init_allocator):
+	Make all member functions and equality ops constexpr.
+
+2025-05-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/Makefile.am: Simplify existing prerequisites for wchar and
+	dual-abi targets that are built from other sources. Add similar
+	prerequisites for more wchar and dual-abi files.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++17/Makefile.am [ENABLE_DUAL_ABI]: Add prerequisites for
+	dual-abi targets that are built from other sources.
+	* src/c++17/Makefile.in: Regenerate.
+
 2025-04-30  François Dumont  <frs.dumont@gmail.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

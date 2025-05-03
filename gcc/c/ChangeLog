@@ -1,3 +1,14 @@
+2025-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/120057
+	* c-typeck.cc (check_constexpr_init): Handle RAW_DATA_CST.
+
+2025-05-02  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/120055
+	* c-typeck.cc (convert_arguments): Check if fundecl is null
+	before checking for builtin function declaration.
+
 2025-05-01  Christopher Bazley  <chris.bazley@arm.com>
 
 	PR c/119317
