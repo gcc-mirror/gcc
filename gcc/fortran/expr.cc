@@ -1168,6 +1168,7 @@ is_subref_array (gfc_expr * e)
 	 what follows cannot be a subreference array, unless there is a
 	 substring reference.  */
       if (!seen_array && ref->type == REF_COMPONENT
+	  && ref->next == NULL
 	  && ref->u.c.component->ts.type != BT_CHARACTER
 	  && ref->u.c.component->ts.type != BT_CLASS
 	  && !gfc_bt_struct (ref->u.c.component->ts.type))

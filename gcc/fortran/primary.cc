@@ -2765,6 +2765,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
   gfc_symbol *sym;
   gfc_component *comp;
   bool has_inquiry_part;
+  bool has_substring_ref = false;
 
   if (expr->expr_type != EXPR_VARIABLE
       && expr->expr_type != EXPR_FUNCTION
@@ -2827,7 +2828,12 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 
   has_inquiry_part = false;
   for (ref = expr->ref; ref; ref = ref->next)
-    if (ref->type == REF_INQUIRY)
+    if (ref->type == REF_SUBSTRING)
+      {
+	has_substring_ref = true;
+	optional = false;
+      }
+    else if (ref->type == REF_INQUIRY)
       {
 	has_inquiry_part = true;
 	optional = false;
@@ -2875,9 +2881,8 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	    *ts = comp->ts;
 	    /* Don't set the string length if a substring reference
 	       follows.  */
-	    if (ts->type == BT_CHARACTER
-		&& ref->next && ref->next->type == REF_SUBSTRING)
-		ts->u.cl = NULL;
+	    if (ts->type == BT_CHARACTER && has_substring_ref)
+	      ts->u.cl = NULL;
 	  }
 
 	if (comp->ts.type == BT_CLASS)
