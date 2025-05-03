@@ -1,3 +1,13 @@
+2025-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/120057
+	* gcc.dg/cpp/embed-18.c: New test.
+	* gcc.dg/pr120057-1.c: New test.
+	* gcc.dg/pr120057-2.c: New test.
+
 2025-05-01  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Backported from master:
