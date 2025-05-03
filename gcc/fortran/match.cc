@@ -5920,8 +5920,8 @@ gfc_free_omp_namelist (gfc_omp_namelist *name, int list)
 	      free (name->u2.init_interop);
 	    }
 	}
-      else if (free_mapper && name->u2.udm)
-	free (name->u2.udm);
+      else if (free_mapper && name->u3.udm)
+	free (name->u3.udm);
       else if (!free_mapper && name->u2.udr)
 	{
 	  if (name->u2.udr->combiner)

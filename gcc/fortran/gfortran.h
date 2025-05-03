@@ -1437,13 +1437,16 @@ typedef struct gfc_omp_namelist
   union
     {
       struct gfc_omp_namelist_udr *udr;
-      struct gfc_omp_namelist_udm *udm;
       gfc_namespace *ns;
       gfc_expr *allocator;
       struct gfc_symbol *traits_sym;
       struct gfc_omp_namelist *duplicate_of;
       char *init_interop;
     } u2;
+  union
+    {
+      struct gfc_omp_namelist_udm *udm;
+    } u3;
   struct gfc_omp_namelist *next;
   locus where;
 }

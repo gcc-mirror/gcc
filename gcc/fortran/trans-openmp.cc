@@ -5579,7 +5579,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 				}
 			      if (drop_mapping)
 				continue;
-			      if (n->u2.udm && n->u2.udm->multiple_elems_p)
+			      if (n->u3.udm && n->u3.udm->multiple_elems_p)
 
 				{
 				  gfc_error ("cannot map non-unit size array "
@@ -5663,15 +5663,15 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  else
 		    container = cl;
 
-		  if (n->u2.udm
-		      && n->u2.udm->udm->mapper_id
-		      && n->u2.udm->udm->mapper_id[0] != '\0')
+		  if (n->u3.udm
+		      && n->u3.udm->udm->mapper_id
+		      && n->u3.udm->udm->mapper_id[0] != '\0')
 		    {
 		      tree push = build_omp_clause (input_location,
 						    OMP_CLAUSE_MAP);
 		      OMP_CLAUSE_SET_MAP_KIND (push, GOMP_MAP_PUSH_MAPPER_NAME);
 		      OMP_CLAUSE_DECL (push)
-			= get_identifier (n->u2.udm->udm->mapper_id);
+			= get_identifier (n->u3.udm->udm->mapper_id);
 		      tree pop = build_omp_clause (input_location,
 						   OMP_CLAUSE_MAP);
 		      OMP_CLAUSE_SET_MAP_KIND (pop, GOMP_MAP_POP_MAPPER_NAME);
@@ -9772,9 +9772,9 @@ gfc_find_nested_mappers (omp_mapper_list<gfc_typespec *> *mlist,
 
   for (; ns; ns = ns->next)
     {
-      if (ns->u2.udm && ns->u2.udm->udm != udm)
+      if (ns->u3.udm && ns->u3.udm->udm != udm)
 	{
-	  gfc_omp_udm *nested_udm = ns->u2.udm->udm;
+	  gfc_omp_udm *nested_udm = ns->u3.udm->udm;
 	  tree mapper_id
 	    = (nested_udm->mapper_id ? get_identifier (nested_udm->mapper_id)
 				     : NULL_TREE);

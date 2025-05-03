@@ -1484,8 +1484,8 @@ gfc_match_motion_var_list (const char *str, gfc_omp_namelist **list,
 
       if (mapper_id[0] != '\0')
 	{
-	  n->u2.udm = gfc_get_omp_namelist_udm ();
-	  n->u2.udm->mapper_id = gfc_get_string ("%s", mapper_id);
+	  n->u3.udm = gfc_get_omp_namelist_udm ();
+	  n->u3.udm->mapper_id = gfc_get_string ("%s", mapper_id);
 	}
     }
   return MATCH_YES;
@@ -3780,8 +3780,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		      n->u.map.op = map_op;
 		      if (mapper_id[0] != '\0')
 			{
-			  n->u2.udm = gfc_get_omp_namelist_udm ();
-			  n->u2.udm->mapper_id
+			  n->u3.udm = gfc_get_omp_namelist_udm ();
+			  n->u3.udm->mapper_id
 			    = gfc_get_string ("%s", mapper_id);
 			}
 		    }
@@ -10234,7 +10234,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		      ts = &n->sym->ts;
 
 		    const char *mapper_id
-		      = n->u2.udm ? n->u2.udm->mapper_id : "";
+		      = n->u3.udm ? n->u3.udm->mapper_id : "";
 
 		    gfc_omp_udm *udm = gfc_find_omp_udm (gfc_current_ns,
 							 mapper_id, ts);
@@ -10243,13 +10243,13 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 				 mapper_id, &n->where);
 		    else if (udm)
 		      {
-			if (!n->u2.udm)
+			if (!n->u3.udm)
 			  {
-			    n->u2.udm = gfc_get_omp_namelist_udm ();
+			    n->u3.udm = gfc_get_omp_namelist_udm ();
 			    gcc_assert (mapper_id[0] == '\0');
-			    n->u2.udm->mapper_id = mapper_id;
+			    n->u3.udm->mapper_id = mapper_id;
 			  }
-			n->u2.udm->udm = udm;
+			n->u3.udm->udm = udm;
 		      }
 		  }
 	      }
@@ -14097,9 +14097,9 @@ gfc_omp_instantiate_mapper (gfc_code *code, gfc_omp_namelist **outlistp,
 	  else
 	    multiple_elems_p = true;
 
-	  if (multiple_elems_p && clause->u2.udm)
+	  if (multiple_elems_p && clause->u3.udm)
 	    {
-	      clause->u2.udm->multiple_elems_p = true;
+	      clause->u3.udm->multiple_elems_p = true;
 	      *outlistp = clause;
 	      return &(*outlistp)->next;
 	    }
@@ -14181,10 +14181,10 @@ gfc_omp_instantiate_mapper (gfc_code *code, gfc_omp_namelist **outlistp,
 
       new_clause->where = clause->where;
 
-      if (mapper_clause->u2.udm
-	  && mapper_clause->u2.udm->udm != udm)
+      if (mapper_clause->u3.udm
+	  && mapper_clause->u3.udm->udm != udm)
 	{
-	  gfc_omp_udm *inner_udm = mapper_clause->u2.udm->udm;
+	  gfc_omp_udm *inner_udm = mapper_clause->u3.udm->udm;
 	  outlistp = gfc_omp_instantiate_mapper (code, outlistp, new_clause,
 						 outer_map_op, inner_udm, cd,
 						 list);
@@ -14214,7 +14214,7 @@ gfc_omp_instantiate_mappers (gfc_code *code, gfc_omp_clauses *clauses,
 
   for (; clause; clause = *clausep)
     {
-      if (clause->u2.udm)
+      if (clause->u3.udm)
 	{
 	  gfc_omp_map_op outer_map_op;
 
@@ -14236,7 +14236,7 @@ gfc_omp_instantiate_mappers (gfc_code *code, gfc_omp_clauses *clauses,
 	    }
 	  clausep = gfc_omp_instantiate_mapper (code, clausep, clause,
 						outer_map_op,
-						clause->u2.udm->udm, cd, list);
+						clause->u3.udm->udm, cd, list);
 	  *clausep = clause->next;
 	  invoked_mappers = true;
 	}
