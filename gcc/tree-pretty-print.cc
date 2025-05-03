@@ -1884,7 +1884,9 @@ dump_block_node (pretty_printer *pp, tree block, int spc, dump_flags_t flags)
       newline_and_indent (pp, spc + 2);
     }
 
-  if (BLOCK_SUBBLOCKS (block))
+  if (BLOCK_SUBBLOCKS (block)
+      && (!lang_GNU_Fortran ()
+	  || TREE_CODE (BLOCK_SUBBLOCKS (block)) != STATEMENT_LIST))
     {
       pp_string (pp, "SUBBLOCKS: ");
       for (t = BLOCK_SUBBLOCKS (block); t; t = BLOCK_CHAIN (t))

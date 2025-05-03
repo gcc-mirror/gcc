@@ -72,6 +72,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-nested.h"
 #include "gcc-urlifier.h"
 #include "dwarf2out.h"
+#include "tree-ssa-loop-niter.h" /* For simplify_replace_tree.  */
 
 /* Identifier for a basic condition, mapping it to other basic conditions of
    its Boolean expression.  Basic conditions given the same uid (in the same
@@ -9762,10 +9763,17 @@ compute_omp_iterator_count (tree it, gimple_seq *pre_p)
 	endmbegin = fold_build2_loc (loc, POINTER_DIFF_EXPR, stype, end, begin);
       else
 	endmbegin = fold_build2_loc (loc, MINUS_EXPR, type, end, begin);
-      tree stepm1 = fold_build2_loc (loc, MINUS_EXPR, stype, step,
-				     build_int_cst (stype, 1));
-      tree stepp1 = fold_build2_loc (loc, PLUS_EXPR, stype, step,
-				     build_int_cst (stype, 1));
+      /* Account for iteration stopping on the end value in Fortran rather
+	 than before it.  */
+      tree stepm1 = step;
+      tree stepp1 = step;
+      if (!lang_GNU_Fortran ())
+	{
+	  stepm1 = fold_build2_loc (loc, MINUS_EXPR, stype, step,
+				    build_int_cst (stype, 1));
+	  stepp1 = fold_build2_loc (loc, PLUS_EXPR, stype, step,
+				    build_int_cst (stype, 1));
+	}
       tree pos = fold_build2_loc (loc, PLUS_EXPR, stype,
 				  unshare_expr (endmbegin), stepm1);
       pos = fold_build2_loc (loc, TRUNC_DIV_EXPR, stype, pos, step);
@@ -9777,10 +9785,11 @@ compute_omp_iterator_count (tree it, gimple_seq *pre_p)
 	}
       neg = fold_build2_loc (loc, TRUNC_DIV_EXPR, stype, neg, step);
       step = NULL_TREE;
-      tree cond = fold_build2_loc (loc, LT_EXPR, boolean_type_node, begin, end);
+      tree_code cmp_op = lang_GNU_Fortran () ? LE_EXPR : LT_EXPR;
+      tree cond = fold_build2_loc (loc, cmp_op, boolean_type_node, begin, end);
       pos = fold_build3_loc (loc, COND_EXPR, stype, cond, pos,
 			     build_int_cst (stype, 0));
-      cond = fold_build2_loc (loc, LT_EXPR, boolean_type_node, end, begin);
+      cond = fold_build2_loc (loc, cmp_op, boolean_type_node, end, begin);
       neg = fold_build3_loc (loc, COND_EXPR, stype, cond, neg,
 			     build_int_cst (stype, 0));
       tree osteptype = TREE_TYPE (orig_step);
@@ -9809,6 +9818,7 @@ build_omp_iterator_loop (tree it, gimple_seq *pre_p, tree *last_bind)
   if (*last_bind)
     gimplify_and_add (*last_bind, pre_p);
   tree block = TREE_VEC_ELT (it, 5);
+  tree block_stmts = lang_GNU_Fortran () ? BLOCK_SUBBLOCKS (block) : NULL_TREE;
   *last_bind = build3 (BIND_EXPR, void_type_node,
 		       BLOCK_VARS (block), NULL, block);
   TREE_SIDE_EFFECTS (*last_bind) = 1;
@@ -9820,6 +9830,7 @@ build_omp_iterator_loop (tree it, gimple_seq *pre_p, tree *last_bind)
       tree end = TREE_VEC_ELT (it, 2);
       tree step = TREE_VEC_ELT (it, 3);
       tree orig_step = TREE_VEC_ELT (it, 4);
+      block = TREE_VEC_ELT (it, 5);
       tree type = TREE_TYPE (var);
       location_t loc = DECL_SOURCE_LOCATION (var);
       /* Emit:
@@ -9830,9 +9841,9 @@ build_omp_iterator_loop (tree it, gimple_seq *pre_p, tree *last_bind)
 	 var = var + step;
 	 cond_label:
 	 if (orig_step > 0) {
-	   if (var < end) goto beg_label;
+	   if (var < end) goto beg_label;  // <= for Fortran
 	 } else {
-	   if (var > end) goto beg_label;
+	   if (var > end) goto beg_label;  // >= for Fortran
 	 }
 	 for each iterator, with inner iterators added to
 	 the ... above.  */
@@ -9858,10 +9869,12 @@ build_omp_iterator_loop (tree it, gimple_seq *pre_p, tree *last_bind)
       append_to_statement_list_force (tem, p);
       tem = build1 (LABEL_EXPR, void_type_node, cond_label);
       append_to_statement_list (tem, p);
-      tree cond = fold_build2_loc (loc, LT_EXPR, boolean_type_node, var, end);
+      tree cond = fold_build2_loc (loc, lang_GNU_Fortran () ? LE_EXPR : LT_EXPR,
+				   boolean_type_node, var, end);
       tree pos = fold_build3_loc (loc, COND_EXPR, void_type_node, cond,
 				  build_and_jump (&beg_label), void_node);
-      cond = fold_build2_loc (loc, GT_EXPR, boolean_type_node, var, end);
+      cond = fold_build2_loc (loc, lang_GNU_Fortran () ? GE_EXPR : GT_EXPR,
+			      boolean_type_node, var, end);
       tree neg = fold_build3_loc (loc, COND_EXPR, void_type_node, cond,
 				  build_and_jump (&beg_label), void_node);
       tree osteptype = TREE_TYPE (orig_step);
@@ -9870,6 +9883,11 @@ build_omp_iterator_loop (tree it, gimple_seq *pre_p, tree *last_bind)
       tem = fold_build3_loc (loc, COND_EXPR, void_type_node, cond, pos, neg);
       append_to_statement_list_force (tem, p);
       p = &BIND_EXPR_BODY (bind);
+      /* The Fortran front-end stashes statements into the BLOCK_SUBBLOCKS
+	 of the last element of the first iterator.  These should go into the
+	 body of the innermost loop.  */
+      if (!TREE_CHAIN (it))
+	append_to_statement_list_force (block_stmts, p);
     }
 
   return p;
@@ -10010,8 +10028,14 @@ remove_unused_omp_iterator_vars (tree *list_p)
 		  i++;
 		}
 	    }
+	  tree old_block = TREE_VEC_ELT (OMP_CLAUSE_ITERATORS (c), 5);
 	  tree new_block = make_node (BLOCK);
 	  BLOCK_VARS (new_block) = new_vars;
+	  if (BLOCK_SUBBLOCKS (old_block))
+	    {
+	      BLOCK_SUBBLOCKS (new_block) = BLOCK_SUBBLOCKS (old_block);
+	      BLOCK_SUBBLOCKS (old_block) = NULL_TREE;
+	    }
 	  TREE_VEC_ELT (new_iters, 5) = new_block;
 	  new_iterators.safe_push (new_iters);
 	  iter_vars.safe_push (vars.copy ());
@@ -10702,6 +10726,27 @@ build_omp_struct_comp_nodes (enum tree_code code, tree grp_start, tree grp_end,
   return c2;
 }
 
+/* Callback for walk_tree.  Return any VAR_DECLS found.  */
+
+static tree
+contains_vars_1 (tree* tp, int *, void *)
+{
+  tree t = *tp;
+
+  if (TREE_CODE (t) != VAR_DECL)
+    return NULL_TREE;
+
+  return t;
+}
+
+/* Return true if there are any variables present in EXPR.  */
+
+static bool
+contains_vars (tree expr)
+{
+  return walk_tree (&expr, contains_vars_1, NULL, NULL);
+}
+
 /* Strip ARRAY_REFS or an indirect ref off BASE, find the containing object,
    and set *BITPOSP and *POFFSETP to the bit offset of the access.
    If BASE_REF is non-NULL and the containing object is a reference, set
@@ -10712,7 +10757,8 @@ build_omp_struct_comp_nodes (enum tree_code code, tree grp_start, tree grp_end,
 static tree
 extract_base_bit_offset (tree base, poly_int64 *bitposp,
 			 poly_offset_int *poffsetp,
-			 bool *variable_offset)
+			 bool *variable_offset,
+			 tree iterator)
 {
   tree offset;
   poly_int64 bitsize, bitpos;
@@ -10721,6 +10767,19 @@ extract_base_bit_offset (tree base, poly_int64 *bitposp,
   poly_offset_int poffset;
 
   STRIP_NOPS (base);
+
+  if (iterator)
+    {
+      /* Replace any iterator variables with constant zero.  This will give us
+	 the nominal offset and bit position of the first element, which is
+	 all we should need to lay out the mappings.  The actual locations
+	 of the iterated mappings are elsewhere.
+	 E.g. "array[i].field" gives "16" (say), not "i * 32 + 16".  */
+      tree it;
+      for (it = iterator; it; it = TREE_CHAIN (it))
+	base = simplify_replace_tree (base, TREE_VEC_ELT (it, 0),
+				      TREE_VEC_ELT (it, 1));
+    }
 
   base = get_inner_reference (base, &bitsize, &bitpos, &offset, &mode,
 			      &unsignedp, &reversep, &volatilep);
@@ -10736,6 +10795,8 @@ extract_base_bit_offset (tree base, poly_int64 *bitposp,
     {
       poffset = 0;
       *variable_offset = (offset != NULL_TREE);
+      if (iterator && *variable_offset)
+	*variable_offset = contains_vars (offset);
     }
 
   if (maybe_ne (bitpos, 0))
@@ -12527,8 +12588,11 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
     }
 
   bool variable_offset;
+  tree iterators = OMP_CLAUSE_HAS_ITERATORS (grp_end)
+		     ? OMP_CLAUSE_ITERATORS (grp_end) : NULL_TREE;
   tree base
-    = extract_base_bit_offset (ocd, &cbitpos, &coffset, &variable_offset);
+    = extract_base_bit_offset (ocd, &cbitpos, &coffset, &variable_offset,
+			       iterators);
 
   int base_token;
   for (base_token = addr_tokens.length () - 1; base_token >= 0; base_token--)
@@ -12861,8 +12925,12 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 	      sc_decl = TREE_OPERAND (sc_decl, 0);
 
 	    bool variable_offset2;
+	    tree iterators2 = OMP_CLAUSE_HAS_ITERATORS (*sc)
+				? OMP_CLAUSE_ITERATORS (*sc) : NULL_TREE;
+
 	    tree base2 = extract_base_bit_offset (sc_decl, &bitpos, &offset,
-						  &variable_offset2);
+						  &variable_offset2,
+						  iterators2);
 	    if (!base2 || !operand_equal_p (base2, base, 0))
 	      break;
 	    if (scp)

@@ -1463,7 +1463,8 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
   for (; n; n = n->next)
     {
       gfc_current_ns = ns_curr;
-      if (list_type == OMP_LIST_AFFINITY || list_type == OMP_LIST_DEPEND)
+      if (list_type == OMP_LIST_AFFINITY || list_type == OMP_LIST_DEPEND
+	  || list_type == OMP_LIST_MAP)
 	{
 	  gfc_current_ns = n->u2.ns ? n->u2.ns : ns_curr;
 	  if (n->u2.ns != ns_iter)
@@ -1475,8 +1476,12 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 		    fputs ("AFFINITY (", dumpfile);
 		  else if (n->u.depend_doacross_op == OMP_DOACROSS_SINK_FIRST)
 		    fputs ("DOACROSS (", dumpfile);
-		  else
+		  else if (list_type == OMP_LIST_DEPEND)
 		    fputs ("DEPEND (", dumpfile);
+		  else if (list_type == OMP_LIST_MAP)
+		    fputs ("MAP (", dumpfile);
+		  else
+		    gcc_unreachable ();
 		}
 	      if (n->u2.ns)
 		{

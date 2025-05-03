@@ -3671,10 +3671,13 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      int close_modifier = 0;
 	      int present_modifier = 0;
 	      int mapper_modifier = 0;
+	      int iterator_modifier = 0;
+	      gfc_namespace *ns_iter = NULL, *ns_curr = gfc_current_ns;
 	      locus second_always_locus = old_loc2;
 	      locus second_close_locus = old_loc2;
 	      locus second_mapper_locus = old_loc2;
 	      locus second_present_locus = old_loc2;
+	      locus second_iterator_locus = old_loc2;
 	      char mapper_id[GFC_MAX_SYMBOL_LEN + 1] = { '\0' };
 
 	      for (;;)
@@ -3704,6 +3707,11 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 			goto error;
 		      if (strcmp (mapper_id, "default") == 0)
 			mapper_id[0] = '\0';
+		    }
+		  else if (gfc_match_iterator (&ns_iter, true) == MATCH_YES)
+		    {
+		      if (iterator_modifier++ == 1)
+		      second_iterator_locus = current_locus;
 		    }
 		  else
 		    break;
@@ -3768,11 +3776,20 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 			     &second_mapper_locus);
 		  break;
 		}
+	      if (iterator_modifier > 1)
+		{
+		  gfc_error ("too many %<iterator%> modifiers at %L",
+			     &second_iterator_locus);
+		  break;
+		}
 
 	      head = NULL;
-	      if (gfc_match_omp_variable_list ("", &c->lists[OMP_LIST_MAP],
-					       false, NULL, &head,
-					       true, true) == MATCH_YES)
+	      if (ns_iter)
+		gfc_current_ns = ns_iter;
+	      m = gfc_match_omp_variable_list ("", &c->lists[OMP_LIST_MAP],
+					       false, NULL, &head, true, true);
+	      gfc_current_ns = ns_curr;
+	      if (m == MATCH_YES)
 		{
 		  gfc_omp_namelist *n;
 		  for (n = *head; n; n = n->next)
@@ -3784,6 +3801,9 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 			  n->u3.udm->mapper_id
 			    = gfc_get_string ("%s", mapper_id);
 			}
+		      n->u2.ns = ns_iter;
+		      if (ns_iter)
+			ns_iter->refs++;
 		    }
 		  continue;
 		}
@@ -10136,7 +10156,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			break;
 		      }
 		  }
-		if ((list == OMP_LIST_DEPEND || list == OMP_LIST_AFFINITY)
+		if ((list == OMP_LIST_DEPEND || list == OMP_LIST_AFFINITY
+		     || list == OMP_LIST_MAP)
 		    && n->u2.ns && !n->u2.ns->resolved)
 		  {
 		    n->u2.ns->resolved = 1;

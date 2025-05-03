@@ -5881,7 +5881,8 @@ gfc_free_namelist (gfc_namelist *name)
 void
 gfc_free_omp_namelist (gfc_omp_namelist *name, int list)
 {
-  bool free_ns = (list == OMP_LIST_AFFINITY || list == OMP_LIST_DEPEND);
+  bool free_ns = (list == OMP_LIST_AFFINITY || list == OMP_LIST_DEPEND
+		  || list == OMP_LIST_MAP);
   bool free_mapper = (list == OMP_LIST_MAP
 		      || list == OMP_LIST_TO
 		      || list == OMP_LIST_FROM);
