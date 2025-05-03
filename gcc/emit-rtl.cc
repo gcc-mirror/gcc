@@ -969,10 +969,10 @@ validate_subreg (machine_mode omode, machine_mode imode,
     }
 
   /* Paradoxical subregs must have offset zero.  */
-  if (maybe_gt (osize, isize))
-    return known_eq (offset, 0U);
+  if (maybe_gt (osize, isize) && !known_eq (offset, 0U))
+    return false;
 
-  /* This is a normal subreg.  Verify that the offset is representable.  */
+  /* Verify that the offset is representable.  */
 
   /* For hard registers, we already have most of these rules collected in
      subreg_offset_representable_p.  */
@@ -988,9 +988,13 @@ validate_subreg (machine_mode omode, machine_mode imode,
 
       return subreg_offset_representable_p (regno, imode, offset, omode);
     }
-  /* Do not allow SUBREG with stricter alignment than the inner MEM.  */
+  /* Do not allow normal SUBREG with stricter alignment than the inner MEM.
+
+     PR120329: Combine can create paradoxical mem subregs even for
+     strict-alignment targets.  Allow it until combine is fixed.  */
   else if (reg && MEM_P (reg) && STRICT_ALIGNMENT
-	   && MEM_ALIGN (reg) < GET_MODE_ALIGNMENT (omode))
+	   && MEM_ALIGN (reg) < GET_MODE_ALIGNMENT (omode)
+	   && known_le (osize, isize))
     return false;
 
   /* The outer size must be ordered wrt the register size, otherwise
@@ -999,7 +1003,7 @@ validate_subreg (machine_mode omode, machine_mode imode,
   if (!ordered_p (osize, regsize))
     return false;
 
-  /* For pseudo registers, we want most of the same checks.  Namely:
+  /* For normal pseudo registers, we want most of the same checks.  Namely:
 
      Assume that the pseudo register will be allocated to hard registers
      that can hold REGSIZE bytes each.  If OSIZE is not a multiple of REGSIZE,
@@ -1008,8 +1012,15 @@ validate_subreg (machine_mode omode, machine_mode imode,
      otherwise it is at the lowest offset.
 
      Given that we've already checked the mode and offset alignment,
-     we only have to check subblock subregs here.  */
+     we only have to check subblock subregs here.
+
+     For paradoxical little-endian registers, this check is redundant.  The
+     offset has already been validated to be zero.
+
+     For paradoxical big-endian registers, this check is not valid
+     because the offset is zero.  */
   if (maybe_lt (osize, regsize)
+      && known_le (osize, isize)
       && ! (lra_in_progress && (FLOAT_MODE_P (imode) || FLOAT_MODE_P (omode))))
     {
       /* It is invalid for the target to pick a register size for a mode
