@@ -9875,6 +9875,367 @@ build_omp_iterator_loop (tree it, gimple_seq *pre_p, tree *last_bind)
   return p;
 }
 
+
+/* Callback for walk_tree to find a VAR_DECL (stored in DATA) in the
+   tree TP.  */
+
+static tree
+find_var_decl (tree *tp, int *, void *data)
+{
+  if (*tp == (tree) data)
+    return *tp;
+
+  return NULL_TREE;
+}
+
+/* Returns an element-by-element copy of OMP iterator tree IT.  */
+
+static tree
+copy_omp_iterator (tree it, int elem_count = -1)
+{
+  if (elem_count < 0)
+    elem_count = TREE_VEC_LENGTH (it);
+  tree new_it = make_tree_vec (elem_count);
+  for (int i = 0; i < TREE_VEC_LENGTH (it); i++)
+    TREE_VEC_ELT (new_it, i) = TREE_VEC_ELT (it, i);
+
+  return new_it;
+}
+
+/* Helper function for walk_tree in remap_omp_iterator_var.  */
+
+static tree
+remap_omp_iterator_var_1 (tree *tp, int *, void *data)
+{
+  tree old_var = ((tree *) data)[0];
+  tree new_var = ((tree *) data)[1];
+
+  if (*tp == old_var)
+    *tp = new_var;
+  return NULL_TREE;
+}
+
+/* Replace instances of OLD_VAR in TP with NEW_VAR.  */
+
+static void
+remap_omp_iterator_var (tree *tp, tree old_var, tree new_var)
+{
+  tree vars[2] = { old_var, new_var };
+  walk_tree (tp, remap_omp_iterator_var_1, vars, NULL);
+}
+
+/* Scan through all clauses using OpenMP iterators in LIST_P.  If any
+   clauses have iterators with variables that are not used by the clause
+   decl or size, issue a warning and replace the iterator with a copy with
+   the unused variables removed.  */
+
+static void
+remove_unused_omp_iterator_vars (tree *list_p)
+{
+  auto_vec< vec<tree> > iter_vars;
+  auto_vec<tree> new_iterators;
+
+  for (tree c = *list_p; c; c = OMP_CLAUSE_CHAIN (c))
+    {
+      if (!OMP_CLAUSE_HAS_ITERATORS (c))
+	continue;
+      auto_vec<tree> vars;
+      bool need_new_iterators = false;
+      for (tree it = OMP_CLAUSE_ITERATORS (c); it; it = TREE_CHAIN (it))
+	{
+	  tree var = TREE_VEC_ELT (it, 0);
+	  tree t = walk_tree (&OMP_CLAUSE_DECL (c), find_var_decl, var, NULL);
+	  if (t == NULL_TREE)
+	    t = walk_tree (&OMP_CLAUSE_SIZE (c), find_var_decl, var, NULL);
+	  if (t == NULL_TREE)
+	    {
+	      need_new_iterators = true;
+	      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP
+		  || OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH_DETACH)
+		warning_at (OMP_CLAUSE_LOCATION (c), 0,
+			    "iterator variable %qE not used in clause "
+			    "expression", DECL_NAME (var));
+	    }
+	  else
+	    vars.safe_push (var);
+	}
+      if (!need_new_iterators)
+	continue;
+      if (need_new_iterators && vars.is_empty ())
+	{
+	  /* No iteration variables are used in the clause - remove the
+	     iterator from the clause.  */
+	  OMP_CLAUSE_ITERATORS (c) = NULL_TREE;
+	  continue;
+	}
+
+      /* If a new iterator has been created for the current set of used
+	 iterator variables, then use that as the iterator.  Otherwise,
+	 create a new iterator for the current iterator variable set. */
+      unsigned i;
+      for (i = 0; i < iter_vars.length (); i++)
+	{
+	  if (vars.length () != iter_vars[i].length ())
+	    continue;
+	  bool identical_p = true;
+	  for (unsigned j = 0; j < vars.length () && identical_p; j++)
+	    identical_p = vars[j] == iter_vars[i][j];
+
+	  if (identical_p)
+	    break;
+	}
+      if (i < iter_vars.length ())
+	OMP_CLAUSE_ITERATORS (c) = new_iterators[i];
+      else
+	{
+	  tree new_iters = NULL_TREE;
+	  tree *new_iters_p = &new_iters;
+	  tree new_vars = NULL_TREE;
+	  tree *new_vars_p = &new_vars;
+	  i = 0;
+	  for (tree it = OMP_CLAUSE_ITERATORS (c); it && i < vars.length();
+	       it = TREE_CHAIN (it))
+	    {
+	      tree var = TREE_VEC_ELT (it, 0);
+	      if (var == vars[i])
+		{
+		  *new_iters_p = copy_omp_iterator (it);
+		  *new_vars_p = build_decl (OMP_CLAUSE_LOCATION (c), VAR_DECL,
+					    DECL_NAME (var), TREE_TYPE (var));
+		  DECL_ARTIFICIAL (*new_vars_p) = 1;
+		  DECL_CONTEXT (*new_vars_p) = DECL_CONTEXT (var);
+		  TREE_VEC_ELT (*new_iters_p, 0) = *new_vars_p;
+		  new_iters_p = &TREE_CHAIN (*new_iters_p);
+		  new_vars_p = &DECL_CHAIN (*new_vars_p);
+		  i++;
+		}
+	    }
+	  tree new_block = make_node (BLOCK);
+	  BLOCK_VARS (new_block) = new_vars;
+	  TREE_VEC_ELT (new_iters, 5) = new_block;
+	  new_iterators.safe_push (new_iters);
+	  iter_vars.safe_push (vars.copy ());
+	  OMP_CLAUSE_ITERATORS (c) = new_iters;
+	}
+
+      /* Remap clause to use the new variables.  */
+      i = 0;
+      for (tree it = OMP_CLAUSE_ITERATORS (c); it; it = TREE_CHAIN (it))
+	{
+	  tree old_var = vars[i++];
+	  tree new_var = TREE_VEC_ELT (it, 0);
+	  remap_omp_iterator_var (&OMP_CLAUSE_DECL (c), old_var, new_var);
+	  remap_omp_iterator_var (&OMP_CLAUSE_SIZE (c), old_var, new_var);
+	}
+    }
+
+  for (unsigned i = 0; i < iter_vars.length (); i++)
+    iter_vars[i].release ();
+}
+
+struct iterator_loop_info_t
+{
+  tree bind;
+  tree count;
+  tree index;
+  tree body_label;
+  auto_vec<tree> clauses;
+};
+
+typedef hash_map<tree, iterator_loop_info_t> iterator_loop_info_map_t;
+
+/* Builds a loop to expand any OpenMP iterators in the clauses in LIST_P,
+   reusing any previously built loops if they use the same set of iterators.
+   Generated Gimple statements are placed into LOOPS_SEQ_P.  The clause
+   iterators are updated with information on how and where to insert code into
+   the loop body.  */
+
+static void
+build_omp_iterators_loops (tree *list_p, gimple_seq *loops_seq_p)
+{
+  iterator_loop_info_map_t loops;
+
+  for (tree c = *list_p; c; c = OMP_CLAUSE_CHAIN (c))
+    {
+      if (!OMP_CLAUSE_HAS_ITERATORS (c))
+	continue;
+
+      bool built_p;
+      iterator_loop_info_t &loop
+	= loops.get_or_insert (OMP_CLAUSE_ITERATORS (c), &built_p);
+
+      if (!built_p)
+	{
+	  loop.count = compute_omp_iterator_count (OMP_CLAUSE_ITERATORS (c),
+						   loops_seq_p);
+	  if (!loop.count)
+	    continue;
+
+	  loop.bind = NULL_TREE;
+	  tree *body = build_omp_iterator_loop (OMP_CLAUSE_ITERATORS (c),
+						loops_seq_p, &loop.bind);
+
+	  loop.index = create_tmp_var (sizetype);
+	  SET_EXPR_LOCATION (loop.bind, OMP_CLAUSE_LOCATION (c));
+
+	  /* BEFORE LOOP:  */
+	  /* idx = -1;  */
+	  /* This should be initialized to before the individual elements,
+	     as idx is pre-incremented in the loop body.  */
+	  gimple *assign = gimple_build_assign (loop.index, size_int (-1));
+	  gimple_seq_add_stmt (loops_seq_p, assign);
+
+	  /* IN LOOP BODY:  */
+	  /* Create a label so we can find this point later.  */
+	  loop.body_label = create_artificial_label (OMP_CLAUSE_LOCATION (c));
+	  tree tem = build1 (LABEL_EXPR, void_type_node, loop.body_label);
+	  append_to_statement_list_force (tem, body);
+
+	  /* idx += 2;  */
+	  tem = build2_loc (OMP_CLAUSE_LOCATION (c), MODIFY_EXPR,
+			    void_type_node, loop.index,
+			    size_binop (PLUS_EXPR, loop.index, size_int (2)));
+	  append_to_statement_list_force (tem, body);
+	}
+
+      /* Create array to hold expanded values.  */
+      tree last_count_2 = size_binop (MULT_EXPR, loop.count, size_int (2));
+      tree arr_length = size_binop (PLUS_EXPR, last_count_2, size_int (1));
+      tree elems = NULL_TREE;
+      if (TREE_CONSTANT (arr_length))
+	{
+	  tree type = build_array_type (ptr_type_node,
+					build_index_type (arr_length));
+	  elems = create_tmp_var_raw (type, "omp_iter_data");
+	  TREE_ADDRESSABLE (elems) = 1;
+	  gimple_add_tmp_var (elems);
+	}
+      else
+	{
+	  /* Handle dynamic sizes.  */
+	  sorry ("dynamic iterator sizes not implemented yet");
+	}
+
+      /* BEFORE LOOP:  */
+      /* elems[0] = count;  */
+      tree lhs = build4 (ARRAY_REF, ptr_type_node, elems, size_int (0),
+			 NULL_TREE, NULL_TREE);
+      tree tem = build2_loc (OMP_CLAUSE_LOCATION (c), MODIFY_EXPR,
+			     void_type_node, lhs, loop.count);
+      gimplify_and_add (tem, loops_seq_p);
+
+      /* Make a copy of the iterator with extra info at the end.  */
+      int elem_count = TREE_VEC_LENGTH (OMP_CLAUSE_ITERATORS (c));
+      tree new_iterator = copy_omp_iterator (OMP_CLAUSE_ITERATORS (c),
+					     elem_count + 3);
+      TREE_VEC_ELT (new_iterator, elem_count) = loop.body_label;
+      TREE_VEC_ELT (new_iterator, elem_count + 1) = elems;
+      TREE_VEC_ELT (new_iterator, elem_count + 2) = loop.index;
+      TREE_CHAIN (new_iterator) = TREE_CHAIN (OMP_CLAUSE_ITERATORS (c));
+      OMP_CLAUSE_ITERATORS (c) = new_iterator;
+
+      loop.clauses.safe_push (c);
+    }
+
+  /* Now gimplify and add all the loops that were built.  */
+  for (hash_map<tree, iterator_loop_info_t>::iterator it = loops.begin ();
+       it != loops.end (); ++it)
+    gimplify_and_add ((*it).second.bind, loops_seq_p);
+}
+
+/* Helper function for enter_omp_iterator_loop_context.  */
+
+static gimple_seq *
+enter_omp_iterator_loop_context_1 (tree iterator, gimple_seq *loops_seq_p)
+{
+  /* Drill into the nested bind expressions to get to the loop body.  */
+  for (gimple_stmt_iterator gsi = gsi_start (*loops_seq_p);
+       !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+
+      switch (gimple_code (stmt))
+	{
+	case GIMPLE_BIND:
+	  {
+	    gbind *bind_stmt = as_a<gbind *> (stmt);
+	    gimple_push_bind_expr (bind_stmt);
+	    gimple_seq *bind_body_p = gimple_bind_body_ptr (bind_stmt);
+	    gimple_seq *seq =
+	      enter_omp_iterator_loop_context_1 (iterator, bind_body_p);
+	    if (seq)
+	      return seq;
+	    gimple_pop_bind_expr ();
+	  }
+	  break;
+	case GIMPLE_TRY:
+	  {
+	    gimple_seq *try_eval_p = gimple_try_eval_ptr (stmt);
+	    gimple_seq *seq =
+	      enter_omp_iterator_loop_context_1 (iterator, try_eval_p);
+	    if (seq)
+	      return seq;
+	  }
+	  break;
+	case GIMPLE_LABEL:
+	  {
+	    glabel *label_stmt = as_a<glabel *> (stmt);
+	    tree label = gimple_label_label (label_stmt);
+	    if (label == TREE_VEC_ELT (iterator, 6))
+	      return loops_seq_p;
+	  }
+	  break;
+	default:
+	  break;
+	}
+    }
+
+  return NULL;
+}
+
+/* Enter the Gimplification context in LOOPS_SEQ_P for the iterator loop
+   associated with OpenMP clause C.  Returns the gimple_seq for the loop body
+   if C has OpenMP iterators, or ALT_SEQ_P if not.  */
+
+static gimple_seq *
+enter_omp_iterator_loop_context (tree c, gimple_seq *loops_seq_p,
+				 gimple_seq *alt_seq_p)
+{
+  if (!OMP_CLAUSE_HAS_ITERATORS (c))
+    return alt_seq_p;
+
+  push_gimplify_context ();
+
+  gimple_seq *seq = enter_omp_iterator_loop_context_1 (OMP_CLAUSE_ITERATORS (c),
+						       loops_seq_p);
+  gcc_assert (seq);
+  return seq;
+}
+
+/* Enter the Gimplification context in STMT for the iterator loop associated
+   with OpenMP clause C.  Returns the gimple_seq for the loop body if C has
+   OpenMP iterators, or ALT_SEQ_P if not.  */
+
+gimple_seq *
+enter_omp_iterator_loop_context (tree c, gomp_target *stmt,
+				 gimple_seq *alt_seq_p)
+{
+  gimple_seq *loops_seq_p = gimple_omp_target_iterator_loops_ptr (stmt);
+  return enter_omp_iterator_loop_context (c, loops_seq_p, alt_seq_p);
+}
+
+/* Exit the Gimplification context for the OpenMP clause C.  */
+
+void
+exit_omp_iterator_loop_context (tree c)
+{
+  if (!OMP_CLAUSE_HAS_ITERATORS (c))
+    return;
+  while (!gimplify_ctxp->bind_expr_stack.is_empty ())
+    gimple_pop_bind_expr ();
+  pop_gimplify_context (NULL);
+}
+
 /* If *LIST_P contains any OpenMP depend clauses with iterators,
    lower all the depend clauses by populating corresponding depend
    array.  Returns 0 if there are no such depend clauses, or
@@ -15491,7 +15852,8 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 
 static void
 gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
-			     enum tree_code code)
+			     enum tree_code code,
+			     gimple_seq *loops_seq_p = NULL)
 {
   struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
   tree *prev_list_p = NULL, *orig_list_p = list_p;
@@ -15867,6 +16229,8 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 				    : TYPE_SIZE_UNIT (TREE_TYPE (decl));
 	    }
 	  gimplify_omp_ctxp = ctx->outer_context;
+	  gimple_seq *seq_p;
+	  seq_p = enter_omp_iterator_loop_context (c, loops_seq_p, pre_p);
 	  if (GOMP_MAP_NONCONTIG_ARRAY_P (OMP_CLAUSE_MAP_KIND (c)))
 	    {
 	      gcc_assert (OMP_CLAUSE_SIZE (c)
@@ -15875,12 +16239,12 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		 of the individual array dimensions, which gimplify_expr doesn't
 		 handle, so skip the call to gimplify_expr here.  */
 	    }
-	  else if (gimplify_expr (&OMP_CLAUSE_SIZE (c), pre_p, NULL,
+	  else if (gimplify_expr (&OMP_CLAUSE_SIZE (c), seq_p, NULL,
 				  is_gimple_val, fb_rvalue) == GS_ERROR)
 	    {
 	      gimplify_omp_ctxp = ctx;
 	      remove = true;
-	      break;
+	      goto end_adjust_omp_map_clause;
 	    }
 	  else if ((OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
 		    || (OMP_CLAUSE_MAP_KIND (c)
@@ -15891,7 +16255,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		   && TREE_CODE (OMP_CLAUSE_SIZE (c)) != INTEGER_CST)
 	    {
 	      OMP_CLAUSE_SIZE (c)
-		= get_initialized_tmp_var (OMP_CLAUSE_SIZE (c), pre_p, NULL,
+		= get_initialized_tmp_var (OMP_CLAUSE_SIZE (c), seq_p, NULL,
 					   false);
 	      if ((ctx->region_type & ORT_TARGET) != 0)
 		omp_add_variable (ctx, OMP_CLAUSE_SIZE (c),
@@ -15932,7 +16296,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	      && (code == OMP_TARGET_EXIT_DATA || code == OACC_EXIT_DATA))
 	    {
 	      remove = true;
-	      break;
+	      goto end_adjust_omp_map_clause;
 	    }
 	  /* If we have a DECL_VALUE_EXPR (e.g. this is a class member and/or
 	     a variable captured in a lambda closure), look through that now
@@ -15948,7 +16312,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	    decl = OMP_CLAUSE_DECL (c) = DECL_VALUE_EXPR (decl);
 	  if (TREE_CODE (decl) == TARGET_EXPR)
 	    {
-	      if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p, NULL,
+	      if (gimplify_expr (&OMP_CLAUSE_DECL (c), seq_p, NULL,
 				 is_gimple_lvalue, fb_lvalue) == GS_ERROR)
 		remove = true;
 	    }
@@ -15958,7 +16322,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	      /* The OMP_CLAUSE_DECL for GRID_DIM/GRID_STRIDE isn't necessarily
 		 an lvalue -- e.g. it might be a constant.  So handle it
 		 specially here.  */
-	      if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p, NULL,
+	      if (gimplify_expr (&OMP_CLAUSE_DECL (c), seq_p, NULL,
 				 is_gimple_val, fb_rvalue) == GS_ERROR)
 		{
 		  gimplify_omp_ctxp = ctx;
@@ -16049,7 +16413,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	      /* If we have e.g. map(struct: *var), don't gimplify the
 		 argument since omp-low.cc wants to see the decl itself.  */
 	      if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT)
-		break;
+		goto end_adjust_omp_map_clause;
 
 	      /* If we have a non-contiguous (strided/rectangular) update
 		 operation with a VIEW_CONVERT_EXPR, we need to be careful not
@@ -16064,10 +16428,10 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	      /* We've already partly gimplified this in
 		 gimplify_scan_omp_clauses.  Don't do any more.  */
 	      if (code == OMP_TARGET && OMP_CLAUSE_MAP_IN_REDUCTION (c))
-		break;
+		goto end_adjust_omp_map_clause;
 
 	      gimplify_omp_ctxp = ctx->outer_context;
-	      if (gimplify_expr (pd, pre_p, NULL, is_gimple_lvalue,
+	      if (gimplify_expr (pd, seq_p, NULL, is_gimple_lvalue,
 				 fb_lvalue | fb_mayfail) == GS_ERROR)
 		{
 		  sorry_at (OMP_CLAUSE_LOCATION (c),
@@ -16085,7 +16449,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 				  GOVD_FIRSTPRIVATE | GOVD_SEEN);
 
 	      gimplify_omp_ctxp = ctx;
-	      break;
+	      goto end_adjust_omp_map_clause;
 	    }
 
 	 if ((code == OMP_TARGET
@@ -16231,6 +16595,8 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		      == GOMP_MAP_TO_PSET)))
 	    prev_list_p = list_p;
 
+end_adjust_omp_map_clause:
+	  exit_omp_iterator_loop_context (c);
 	  break;
 
 	case OMP_CLAUSE_TO:
@@ -19018,6 +19384,13 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
       gcc_unreachable ();
     }
 
+  gimple_seq iterator_loops_seq = NULL;
+  if (TREE_CODE (expr) == OMP_TARGET)
+    {
+      remove_unused_omp_iterator_vars (&OMP_CLAUSES (expr));
+      build_omp_iterators_loops (&OMP_CLAUSES (expr), &iterator_loops_seq);
+    }
+
   bool save_in_omp_construct = in_omp_construct;
   if ((ort & ORT_ACC) == 0)
     in_omp_construct = false;
@@ -19152,7 +19525,7 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
   else
     gimplify_and_add (OMP_BODY (expr), &body);
   gimplify_adjust_omp_clauses (pre_p, body, &OMP_CLAUSES (expr),
-			       TREE_CODE (expr));
+			       TREE_CODE (expr), &iterator_loops_seq);
   in_omp_construct = save_in_omp_construct;
 
   switch (TREE_CODE (expr))
@@ -19195,7 +19568,7 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
       break;
     case OMP_TARGET:
       stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_REGION,
-				      OMP_CLAUSES (expr));
+				      OMP_CLAUSES (expr), iterator_loops_seq);
       break;
     case OMP_TARGET_DATA:
       /* Put use_device_{ptr,addr} clauses last, as map clauses are supposed

@@ -682,11 +682,14 @@ struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
 };
 
 /* GIMPLE_OMP_TARGET */
-struct GTY((tag("GSS_OMP_PARALLEL_LAYOUT")))
+struct GTY((tag("GSS_OMP_TARGET")))
   gomp_target : public gimple_statement_omp_parallel_layout
 {
-    /* No extra fields; adds invariant:
-         stmt->code == GIMPLE_OMP_TARGET.  */
+  /* [ WORD 1-10 ] : base class */
+
+  /* [ WORD 11 ]
+     Iterator loops.  */
+  gimple_seq iterator_loops;
 };
 
 /* GIMPLE_OMP_TASK */
@@ -1607,7 +1610,7 @@ gomp_scan *gimple_build_omp_scan (gimple_seq, tree);
 gomp_sections *gimple_build_omp_sections (gimple_seq, tree);
 gimple *gimple_build_omp_sections_switch (void);
 gomp_single *gimple_build_omp_single (gimple_seq, tree);
-gomp_target *gimple_build_omp_target (gimple_seq, int, tree);
+gomp_target *gimple_build_omp_target (gimple_seq, int, tree, gimple_seq = NULL);
 gomp_teams *gimple_build_omp_teams (gimple_seq, tree);
 gomp_atomic_load *gimple_build_omp_atomic_load (tree, tree,
 						enum omp_memory_order);
@@ -6345,6 +6348,37 @@ gimple_omp_target_set_data_arg (gomp_target *omp_target_stmt,
 				tree data_arg)
 {
   omp_target_stmt->data_arg = data_arg;
+}
+
+
+/* Return the Gimple sequence used to store loops for OpenMP iterators used
+   by OMP_TARGET_STMT.  */
+
+inline gimple_seq
+gimple_omp_target_iterator_loops (const gomp_target *omp_target_stmt)
+{
+  return omp_target_stmt->iterator_loops;
+}
+
+
+/* Return a pointer to the Gimple sequence used to store loops for OpenMP
+   iterators used by OMP_TARGET_STMT.  */
+
+inline gimple_seq *
+gimple_omp_target_iterator_loops_ptr (gomp_target *omp_target_stmt)
+{
+  return &omp_target_stmt->iterator_loops;
+}
+
+
+/* Set ITERATOR_LOOPS to be the Gimple sequence used to store loops
+   constructed for OpenMP iterators in OMP_TARGET_STMT.  */
+
+inline void
+gimple_omp_target_set_iterator_loops (gomp_target *omp_target_stmt,
+				      gimple_seq iterator_loops)
+{
+  omp_target_stmt->iterator_loops = iterator_loops;
 }
 
 

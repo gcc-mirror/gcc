@@ -1837,6 +1837,12 @@ dump_gimple_omp_target (pretty_printer *pp, const gomp_target *gs,
     default:
       gcc_unreachable ();
     }
+  if (gimple_omp_target_iterator_loops (gs))
+    {
+      pp_string (pp, "// Expanded iterator loops for #pragma omp target\n");
+      dump_gimple_seq (pp, gimple_omp_target_iterator_loops (gs), spc, flags);
+      pp_newline (pp);
+    }
   if (flags & TDF_RAW)
     {
       dump_gimple_fmt (pp, spc, flags, "%G%s <%+BODY <%S>%nCLAUSES <", gs,
