@@ -14110,6 +14110,7 @@ static gfc_omp_namelist **
 gfc_omp_instantiate_mapper (gfc_code *code, gfc_omp_namelist **outlistp,
 			    gfc_omp_namelist *clause,
 			    gfc_omp_map_op outer_map_op, gfc_omp_udm *udm,
+			    gfc_namespace *ns,
 			    toc_directive cd, int list)
 {
   /* Here "sym" and "expr" describe the clause as written, to be substituted
@@ -14227,14 +14228,15 @@ gfc_omp_instantiate_mapper (gfc_code *code, gfc_omp_namelist **outlistp,
 	new_clause->u.map.op = new_kind;
 
       new_clause->where = clause->where;
+      new_clause->u2.ns = ns;
 
       if (mapper_clause->u3.udm
 	  && mapper_clause->u3.udm->udm != udm)
 	{
 	  gfc_omp_udm *inner_udm = mapper_clause->u3.udm->udm;
 	  outlistp = gfc_omp_instantiate_mapper (code, outlistp, new_clause,
-						 outer_map_op, inner_udm, cd,
-						 list);
+						 outer_map_op, inner_udm, ns,
+						 cd, list);
 	}
       else
 	{
@@ -14283,7 +14285,8 @@ gfc_omp_instantiate_mappers (gfc_code *code, gfc_omp_clauses *clauses,
 	    }
 	  clausep = gfc_omp_instantiate_mapper (code, clausep, clause,
 						outer_map_op,
-						clause->u3.udm->udm, cd, list);
+						clause->u3.udm->udm,
+						clause->u2.ns, cd, list);
 	  *clausep = clause->next;
 	  invoked_mappers = true;
 	}
