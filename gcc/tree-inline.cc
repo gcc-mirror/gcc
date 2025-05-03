@@ -1469,8 +1469,8 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	      for (int i = 0; i <= 4; i++)
 		walk_tree (&TREE_VEC_ELT (TREE_PURPOSE (t), i),
 			   copy_tree_body_r, id, NULL);
-	      if (TREE_VEC_ELT (TREE_PURPOSE (t), 5))
-		remap_block (&TREE_VEC_ELT (TREE_PURPOSE (t), 5), id);
+	      if (OMP_ITERATORS_BLOCK (TREE_PURPOSE (t)))
+		remap_block (&OMP_ITERATORS_BLOCK (TREE_PURPOSE (t)), id);
 	      walk_tree (&TREE_VALUE (t), copy_tree_body_r, id, NULL);
 	    }
 	}
