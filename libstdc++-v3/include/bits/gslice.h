@@ -58,7 +58,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  to begin at an array element described by the previous dimension.  The
    *  size array and stride array must be the same size.
    *
-   *  For example, if you have offset==3, stride[0]==11, size[1]==3,
+   *  For example, if we have offset==3, size[0]==2, stride[0]==11, size[1]==3,
    *  stride[1]==3, then slice[0,0]==array[3], slice[0,1]==array[6],
    *  slice[0,2]==array[9], slice[1,0]==array[14], slice[1,1]==array[17],
    *  slice[1,2]==array[20].
