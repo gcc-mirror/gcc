@@ -10219,6 +10219,16 @@ enter_omp_iterator_loop_context_1 (tree iterator, gimple_seq *loops_seq_p)
   return NULL;
 }
 
+gimple_seq *
+enter_omp_iterator_loop_context (tree iterator, gimple_seq *loops_seq_p)
+{
+  push_gimplify_context ();
+
+  gimple_seq *seq = enter_omp_iterator_loop_context_1 (iterator, loops_seq_p);
+  gcc_assert (seq);
+  return seq;
+}
+
 /* Enter the Gimplification context in LOOPS_SEQ_P for the iterator loop
    associated with OpenMP clause C.  Returns the gimple_seq for the loop body
    if C has OpenMP iterators, or ALT_SEQ_P if not.  */
@@ -10230,12 +10240,8 @@ enter_omp_iterator_loop_context (tree c, gimple_seq *loops_seq_p,
   if (!OMP_CLAUSE_HAS_ITERATORS (c))
     return alt_seq_p;
 
-  push_gimplify_context ();
-
-  gimple_seq *seq = enter_omp_iterator_loop_context_1 (OMP_CLAUSE_ITERATORS (c),
-						       loops_seq_p);
-  gcc_assert (seq);
-  return seq;
+  return enter_omp_iterator_loop_context (OMP_CLAUSE_ITERATORS (c),
+					  loops_seq_p);
 }
 
 /* Enter the Gimplification context in STMT for the iterator loop associated
@@ -10250,6 +10256,14 @@ enter_omp_iterator_loop_context (tree c, gomp_target *stmt,
   return enter_omp_iterator_loop_context (c, loops_seq_p, alt_seq_p);
 }
 
+void
+exit_omp_iterator_loop_context (void)
+{
+  while (!gimplify_ctxp->bind_expr_stack.is_empty ())
+    gimple_pop_bind_expr ();
+  pop_gimplify_context (NULL);
+}
+
 /* Exit the Gimplification context for the OpenMP clause C.  */
 
 void
@@ -10257,23 +10271,39 @@ exit_omp_iterator_loop_context (tree c)
 {
   if (!OMP_CLAUSE_HAS_ITERATORS (c))
     return;
-  while (!gimplify_ctxp->bind_expr_stack.is_empty ())
-    gimple_pop_bind_expr ();
-  pop_gimplify_context (NULL);
+  exit_omp_iterator_loop_context ();
 }
 
-/* Insert new OpenMP clause C into pre-existing iterator loop LOOPS_SEQ_P.
-   If the clause has an iterator, then that iterator is assumed to be in
-   the expanded form (i.e. it has info regarding the loop, expanded elements
-   etc.).  */
-
 void
-add_new_omp_iterators_clause (tree c, gimple_seq *loops_seq_p)
+assign_to_iterator_elems_array (tree t, tree iterator, gomp_target *stmt,
+				int index_offset)
+{
+  tree index = OMP_ITERATORS_INDEX (iterator);
+  if (index_offset)
+    index = size_binop (PLUS_EXPR, index, size_int (index_offset));
+  tree elems = OMP_ITERATORS_ELEMS (iterator);
+  gimple_seq *loop_body_p = gimple_omp_target_iterator_loops_ptr (stmt);
+  loop_body_p = enter_omp_iterator_loop_context (iterator, loop_body_p);
+
+   /* IN LOOP BODY:  */
+   /* elems[index+index_offset] = t;  */
+  tree lhs;
+  if (TREE_CODE (TREE_TYPE (elems)) == ARRAY_TYPE)
+    lhs = build4 (ARRAY_REF, ptr_type_node, elems, index, NULL_TREE, NULL_TREE);
+  else
+    {
+      tree tmp = size_binop (MULT_EXPR, index, TYPE_SIZE_UNIT (ptr_type_node));
+      tmp = size_binop (POINTER_PLUS_EXPR, elems, tmp);
+      lhs = build1 (INDIRECT_REF, ptr_type_node, tmp);
+    }
+  gimplify_assign (lhs, t, loop_body_p);
+  exit_omp_iterator_loop_context ();
+}
+
+tree
+add_new_omp_iterators_entry (tree iters, gimple_seq *loops_seq_p)
 {
   gimple_stmt_iterator gsi;
-  tree iters = OMP_CLAUSE_ITERATORS (c);
-  if (!iters)
-    return;
   gcc_assert (OMP_ITERATORS_EXPANDED_P (iters));
 
   /* Search for <index> = -1.  */
@@ -10310,10 +10340,25 @@ add_new_omp_iterators_clause (tree c, gimple_seq *loops_seq_p)
   gsi_insert_seq_after (&gsi, assign_seq, GSI_SAME_STMT);
 
   /* Update iterator information.  */
-  tree new_iterator = copy_omp_iterator (OMP_CLAUSE_ITERATORS (c));
+  tree new_iterator = copy_omp_iterator (iters);
   OMP_ITERATORS_ELEMS (new_iterator) = elems;
-  TREE_CHAIN (new_iterator) = TREE_CHAIN (OMP_CLAUSE_ITERATORS (c));
-  OMP_CLAUSE_ITERATORS (c) = new_iterator;
+  TREE_CHAIN (new_iterator) = TREE_CHAIN (iters);
+
+  return new_iterator;
+}
+
+/* Insert new OpenMP clause C into pre-existing iterator loop LOOPS_SEQ_P.
+   If the clause has an iterator, then that iterator is assumed to be in
+   the expanded form (i.e. it has info regarding the loop, expanded elements
+   etc.).  */
+
+void
+add_new_omp_iterators_clause (tree c, gimple_seq *loops_seq_p)
+{
+  tree iters = OMP_CLAUSE_ITERATORS (c);
+  if (!iters)
+    return;
+  OMP_CLAUSE_ITERATORS (c) = add_new_omp_iterators_entry (iters, loops_seq_p);
 }
 
 /* If *LIST_P contains any OpenMP depend clauses with iterators,

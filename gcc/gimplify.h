@@ -80,9 +80,13 @@ extern tree omp_get_construct_context (void);
 int omp_has_novariants (void);
 
 extern tree omp_iterator_elems_length (tree count);
+extern gimple_seq *enter_omp_iterator_loop_context (tree, gimple_seq *);
 extern gimple_seq *enter_omp_iterator_loop_context (tree, gomp_target *,
-						    gimple_seq * = NULL);
-extern void exit_omp_iterator_loop_context (tree);
+						    gimple_seq *);
+extern void exit_omp_iterator_loop_context (void);
+extern void assign_to_iterator_elems_array (tree, tree, gomp_target *, int = 0);
+extern tree add_new_omp_iterators_entry (tree, gimple_seq *);
+extern void add_new_omp_iterators_clause (tree c, gimple_seq *);
 
 extern void gimplify_type_sizes (tree, gimple_seq *);
 extern void gimplify_one_sizepos (tree *, gimple_seq *);

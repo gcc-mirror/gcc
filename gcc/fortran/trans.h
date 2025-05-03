@@ -843,8 +843,8 @@ tree gfc_omp_finish_mapper_clauses (tree);
 tree gfc_omp_extract_mapper_directive (tree);
 tree gfc_omp_map_array_section (location_t, tree);
 bool gfc_omp_deep_mapping_p (const gimple *, tree);
-tree gfc_omp_deep_mapping_cnt (const gimple *, tree, gimple_seq *);
-void gfc_omp_deep_mapping (const gimple *, tree, unsigned HOST_WIDE_INT, tree,
+tree gfc_omp_deep_mapping_cnt (gimple *, tree, gimple_seq *);
+void gfc_omp_deep_mapping (gimple *, tree, unsigned HOST_WIDE_INT, tree,
 			   tree, tree, tree, tree, gimple_seq *);
 bool gfc_omp_allocatable_p (tree);
 bool gfc_omp_scalar_p (tree, bool);

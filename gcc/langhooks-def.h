@@ -87,8 +87,8 @@ extern tree lhd_omp_assignment (tree, tree, tree);
 extern void lhd_omp_finish_clause (tree, gimple_seq *, bool);
 extern tree lhd_omp_array_size (tree, gimple_seq *);
 extern bool lhd_omp_deep_mapping_p (const gimple *, tree);
-extern tree lhd_omp_deep_mapping_cnt (const gimple *, tree, gimple_seq *);
-extern void lhd_omp_deep_mapping (const gimple *, tree, unsigned HOST_WIDE_INT,
+extern tree lhd_omp_deep_mapping_cnt (gimple *, tree, gimple_seq *);
+extern void lhd_omp_deep_mapping (gimple *, tree, unsigned HOST_WIDE_INT,
 				  tree, tree, tree, tree, tree, gimple_seq *);
 extern tree lhd_omp_finish_mapper_clauses (tree);
 extern tree lhd_omp_mapper_lookup (tree, tree);
