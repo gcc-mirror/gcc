@@ -1880,7 +1880,8 @@ gfc_omp_deep_mapping_map (tree data, tree size, unsigned HOST_WIDE_INT tkind,
 			  location_t loc, tree data_array, tree sizes_array,
 			  tree kinds_array, tree offset_data, tree offset,
 			  gimple_seq *seq, gimple *ctx,
-			  tree iterators, gimple_seq loops_pre_seq)
+			  tree iterators, gimple_seq loops_pre_seq,
+			  vec<tree> *new_iterators)
 {
   tree one = build_int_cst (size_type_node, 1);
 
@@ -1907,6 +1908,7 @@ gfc_omp_deep_mapping_map (tree data, tree size, unsigned HOST_WIDE_INT tkind,
   if (iterators)
     {
       data_iter = add_new_omp_iterators_entry (iterators, loops_seq_p);
+      new_iterators->safe_push (data_iter);
       assign_to_iterator_elems_array (data_expr, data_iter, target_stmt);
       data_expr = OMP_ITERATORS_ELEMS (data_iter);
       if (TREE_CODE (TREE_TYPE (data_expr)) == ARRAY_TYPE)
@@ -1927,6 +1929,7 @@ gfc_omp_deep_mapping_map (tree data, tree size, unsigned HOST_WIDE_INT tkind,
   if (iterators)
     {
       data_addr_iter = add_new_omp_iterators_entry (iterators, loops_seq_p);
+      new_iterators->safe_push (data_addr_iter);
       assign_to_iterator_elems_array (data_addr_expr, data_addr_iter,
 				      target_stmt);
       data_addr_expr = OMP_ITERATORS_ELEMS (data_addr_iter);
@@ -2018,7 +2021,7 @@ static void gfc_omp_deep_mapping_item (bool, bool, bool, location_t, tree,
 				       tree *, unsigned HOST_WIDE_INT, tree,
 				       tree, tree, tree, tree, tree,
 				       gimple_seq *, gimple *, bool *,
-				       tree);
+				       tree, vec <tree> *);
 
 /* Map allocatable components.  */
 static void
@@ -2027,7 +2030,8 @@ gfc_omp_deep_mapping_comps (bool is_cnt, location_t loc, tree decl,
 			    tree data_array, tree sizes_array, tree kinds_array,
 			    tree offset_data, tree offset, tree num,
 			    gimple_seq *seq, gimple *ctx,
-			    bool *poly_warned, tree iterators)
+			    bool *poly_warned, tree iterators,
+			    vec <tree> *new_iterators)
 {
   tree type = TREE_TYPE (decl);
   if (TREE_CODE (type) != RECORD_TYPE)
@@ -2045,7 +2049,8 @@ gfc_omp_deep_mapping_comps (bool is_cnt, location_t loc, tree decl,
 	  gfc_omp_deep_mapping_item (is_cnt, true, true, loc, tmp, token,
 				     tkind, data_array, sizes_array,
 				     kinds_array, offset_data, offset, num,
-				     seq, ctx, poly_warned, iterators);
+				     seq, ctx, poly_warned, iterators,
+				     new_iterators);
 	}
       else if (GFC_DECL_GET_SCALAR_POINTER (field)
 	       || GFC_DESCRIPTOR_TYPE_P (type))
@@ -2058,12 +2063,13 @@ gfc_omp_deep_mapping_comps (bool is_cnt, location_t loc, tree decl,
 	    gfc_omp_deep_mapping_item (is_cnt, false, false, loc, tmp,
 				       token, tkind, data_array, sizes_array,
 				       kinds_array, offset_data, offset, num,
-				       seq, ctx, poly_warned, iterators);
+				       seq, ctx, poly_warned, iterators,
+				       new_iterators);
 	  else
 	    gfc_omp_deep_mapping_comps (is_cnt, loc, tmp, token, tkind,
 					data_array, sizes_array, kinds_array,
 					offset_data, offset, num, seq, ctx,
-					poly_warned, iterators);
+					poly_warned, iterators, new_iterators);
 	}
     }
 }
@@ -2207,7 +2213,7 @@ gfc_omp_deep_mapping_item (bool is_cnt, bool do_copy, bool do_alloc_check,
 			   tree sizes_array, tree kinds_array, tree offset_data,
 			   tree offset, tree num, gimple_seq *seq,
 			   gimple *ctx, bool *poly_warned,
-			   tree iterators)
+			   tree iterators, vec<tree> *new_iterators)
 {
   tree tmp;
   tree type = TREE_TYPE (decl);
@@ -2314,7 +2320,8 @@ gfc_omp_deep_mapping_item (bool is_cnt, bool do_copy, bool do_alloc_check,
 
       gfc_omp_deep_mapping_map (tmp, bytesize, tkind2, loc, data_array,
 				sizes_array, kinds_array, offset_data,
-				offset, seq, ctx, iterators, loops_pre_seq);
+				offset, seq, ctx, iterators, loops_pre_seq,
+				new_iterators);
     }
 
   tmp = decl;
@@ -2354,7 +2361,7 @@ gfc_omp_deep_mapping_item (bool is_cnt, bool do_copy, bool do_alloc_check,
       gfc_omp_deep_mapping_comps (is_cnt, loc, decl, token, tkind,
 				  data_array, sizes_array, kinds_array,
 				  offset_data, offset, num, seq, ctx,
-				  poly_warned, iterators);
+				  poly_warned, iterators, new_iterators);
       gimple_seq_add_seq (seq, seq2);
     }
   if (end_label)
@@ -2506,7 +2513,7 @@ static tree
 gfc_omp_deep_mapping_do (bool is_cnt, gimple *ctx, tree clause,
 			 unsigned HOST_WIDE_INT tkind, tree data, tree sizes,
 			 tree kinds, tree offset_data, tree offset,
-			 gimple_seq *seq)
+			 gimple_seq *seq, vec<tree> *new_iterators)
 {
   tree num = NULL_TREE;
   location_t loc = OMP_CLAUSE_LOCATION (clause);
@@ -2602,14 +2609,15 @@ gfc_omp_deep_mapping_do (bool is_cnt, gimple *ctx, tree clause,
 				 &token, tkind, data, sizes, kinds,
 				 offset_data, offset, num, seq, ctx,
 				 &poly_warned,
-				 OMP_CLAUSE_ITERATORS (clause));
+				 OMP_CLAUSE_ITERATORS (clause),
+				 new_iterators);
       gimple_seq_add_stmt (seq, gimple_build_label (end_label));
     }
   else
     gfc_omp_deep_mapping_item (is_cnt, do_copy, do_alloc_check, loc, decl,
 			       &token, tkind, data, sizes, kinds, offset_data,
 			       offset, num, seq, ctx, &poly_warned,
-			       OMP_CLAUSE_ITERATORS (clause));
+			       OMP_CLAUSE_ITERATORS (clause), new_iterators);
   /* Multiply by 2 as there are two mappings: data + pointer assign.  */
   if (is_cnt)
     gimplify_assign (num,
@@ -2625,7 +2633,7 @@ tree
 gfc_omp_deep_mapping_cnt (gimple *ctx, tree clause, gimple_seq *seq)
 {
   return gfc_omp_deep_mapping_do (true, ctx, clause, 0, NULL_TREE, NULL_TREE,
-				  NULL_TREE, NULL_TREE, NULL_TREE, seq);
+				  NULL_TREE, NULL_TREE, NULL_TREE, seq, NULL);
 }
 
 /* Does the actual deep mapping. */
@@ -2633,10 +2641,10 @@ void
 gfc_omp_deep_mapping (gimple *ctx, tree clause,
 		      unsigned HOST_WIDE_INT tkind, tree data,
 		      tree sizes, tree kinds, tree offset_data, tree offset,
-		      gimple_seq *seq)
+		      gimple_seq *seq, vec<tree> *new_iterators)
 {
   (void) gfc_omp_deep_mapping_do (false, ctx, clause, tkind, data, sizes, kinds,
-				  offset_data, offset, seq);
+				  offset_data, offset, seq, new_iterators);
 }
 
 /* Return true if DECL is a scalar variable (for the purpose of

@@ -845,7 +845,8 @@ tree gfc_omp_map_array_section (location_t, tree);
 bool gfc_omp_deep_mapping_p (const gimple *, tree);
 tree gfc_omp_deep_mapping_cnt (gimple *, tree, gimple_seq *);
 void gfc_omp_deep_mapping (gimple *, tree, unsigned HOST_WIDE_INT, tree,
-			   tree, tree, tree, tree, gimple_seq *);
+			   tree, tree, tree, tree, gimple_seq *,
+			   vec<tree> *);
 bool gfc_omp_allocatable_p (tree);
 bool gfc_omp_scalar_p (tree, bool);
 bool gfc_omp_scalar_target_p (tree);

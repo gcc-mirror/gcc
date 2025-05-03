@@ -5,6 +5,7 @@ type t
 end type t
 type(t) :: x(N), y(N), z(N)
 integer :: i, j
+integer :: lo = 3, hi = N
 
 !$omp target map(iterator (it=1:N), to: x(it))
   do i = 1, N
@@ -50,7 +51,7 @@ end do
   end do
 !$omp end target
 
-!$omp target map(iterator (it=3:N), always, tofrom: z(it))
+!$omp target map(iterator (it=lo:hi), always, tofrom: z(it))
   do i = 3, N
     if (.not.allocated(z(i)%b)) stop 12
     if (any (z(i)%b /= 99)) stop 13
