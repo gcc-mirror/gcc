@@ -130,6 +130,8 @@ foreach op $AUTOVEC_TEST_OPTS {
     "$op" ""
   dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/sat/*.\[cS\]]] \
     "$op" ""
+  dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/autovec/vx_vf/*.\[cS\]]] \
+    "$op" ""
 }
 
 # All done.
