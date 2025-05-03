@@ -68,14 +68,18 @@ public:
   trait_impl_projection_seg (NodeId id, const CanonicalPath &trait_seg,
 			     const CanonicalPath &impl_type_seg)
   {
-    return CanonicalPath::new_seg (id, "<" + impl_type_seg.get () + " as "
+    // https://doc.rust-lang.org/reference/paths.html#canonical-paths
+    // should be "<X>"?
+    return CanonicalPath::new_seg (id, "<impl " + impl_type_seg.get () + " as "
 					 + trait_seg.get () + ">");
   }
 
   static CanonicalPath inherent_impl_seg (NodeId id,
 					  const CanonicalPath &impl_type_seg)
   {
-    return CanonicalPath::new_seg (id, "<" + impl_type_seg.get () + ">");
+    // https://doc.rust-lang.org/reference/paths.html#canonical-paths
+    // should be "<X as Y>"?
+    return CanonicalPath::new_seg (id, "<impl " + impl_type_seg.get () + ">");
   }
 
   std::string get () const

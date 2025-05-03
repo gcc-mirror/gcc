@@ -608,10 +608,7 @@ ResolveItem::visit (AST::InherentImpl &impl_block)
     }
   else
     {
-      std::string seg_buf = "<impl " + self_cpath.get () + ">";
-      CanonicalPath seg
-	= CanonicalPath::new_seg (impl_block.get_node_id (), seg_buf);
-      cpath = canonical_prefix.append (seg);
+      cpath = canonical_prefix.append (impl_type_seg);
     }
 
   // done setup paths
@@ -732,13 +729,7 @@ ResolveItem::visit (AST::TraitImpl &impl_block)
     }
   else
     {
-      std::string projection_str = canonical_projection.get ();
-      std::string seg_buf
-	= "<impl " + projection_str.substr (1, projection_str.size () - 2)
-	  + ">";
-      CanonicalPath seg
-	= CanonicalPath::new_seg (impl_block.get_node_id (), seg_buf);
-      cpath = canonical_prefix.append (seg);
+      cpath = canonical_prefix.append (canonical_projection);
     }
 
   // DONE setup canonical-path
