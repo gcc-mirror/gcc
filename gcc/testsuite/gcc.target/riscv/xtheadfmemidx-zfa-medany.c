@@ -35,6 +35,4 @@ double foo (int i, int j)
   return z;
 }
 
-/* { dg-final { scan-assembler-not {\mth\.flrd\M} } } */
-/* { dg-final { scan-assembler-times {\mlw\M} 2 } } */
-/* { dg-final { scan-assembler-times {\mfmvp\.d\.x\M} 3 } } */
+/* { dg-final { scan-assembler-times {\mth\.flrd\M} 1 } } */

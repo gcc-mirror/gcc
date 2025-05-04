@@ -9659,17 +9659,17 @@ riscv_register_move_cost (machine_mode mode,
 
   if (from == V_REGS)
     {
-      if (to == GR_REGS)
+      if (to_is_gpr)
 	return get_vector_costs ()->regmove->VR2GR;
-      else if (to == FP_REGS)
+      else if (to_is_fpr)
 	return get_vector_costs ()->regmove->VR2FR;
     }
 
   if (to == V_REGS)
     {
-      if (from == GR_REGS)
+      if (from_is_gpr)
 	return get_vector_costs ()->regmove->GR2VR;
-      else if (from == FP_REGS)
+      else if (from_is_fpr)
 	return get_vector_costs ()->regmove->FR2VR;
     }
 

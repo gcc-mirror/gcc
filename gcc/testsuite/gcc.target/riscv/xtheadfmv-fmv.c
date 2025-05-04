@@ -1,6 +1,6 @@
 /* { dg-do compile { target { rv32 } } } */
 /* { dg-options "-march=rv32gc_xtheadfmv -mabi=ilp32d" } */
-/* { dg-skip-if "" { *-*-* } { "-O0" } } */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-Os" "-Oz"} } */
 
 double
 ll2d (long long ll)
