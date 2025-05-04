@@ -1,3 +1,8 @@
+2025-05-03  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386.cc (unspec_pcmp_p): New function.
+	(ix86_rtx_costs): Cost VEC_MERGE more realistically.
+
 2025-05-02  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR rtl-optimization/120059

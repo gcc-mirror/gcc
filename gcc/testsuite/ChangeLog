@@ -1,3 +1,8 @@
+2025-05-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/85944
+	* g++.dg/cpp0x/constexpr-temp3.C: New test.
+
 2025-05-02  Andrew Pinski  <quic_apinski@quicinc.com>
 
 	PR rtl-optimization/120059
