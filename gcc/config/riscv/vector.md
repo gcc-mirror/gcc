@@ -1115,19 +1115,6 @@
    (set_attr "mode" "SI")]
  )
 
-;; The volatile fsrmsi restore is used for the exit point for the
-;; dynamic mode switching. It will generate one volatile fsrm a5
-;; which won't be eliminated.
-(define_insn "fsrmsi_restore_volatile"
-  [(set (reg:SI FRM_REGNUM)
-	(unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")]
-			    UNSPECV_FRM_RESTORE_EXIT))]
-  "TARGET_VECTOR"
-  "fsrm\t%0"
-  [(set_attr "type" "wrfrm")
-   (set_attr "mode" "SI")]
-)
-
 ;; Read FRM
 (define_insn "frrmsi"
   [(set (match_operand:SI 0 "register_operand" "=r")

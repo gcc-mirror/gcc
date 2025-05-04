@@ -12047,27 +12047,30 @@ riscv_emit_frm_mode_set (int mode, int prev_mode)
   if (prev_mode == riscv_vector::FRM_DYN_CALL)
     emit_insn (gen_frrmsi (backup_reg)); /* Backup frm when DYN_CALL.  */
 
-  if (mode != prev_mode)
-    {
-      rtx frm = gen_int_mode (mode, SImode);
+  if (mode == prev_mode)
+    return;
 
-      if (mode == riscv_vector::FRM_DYN_CALL
-	&& prev_mode != riscv_vector::FRM_DYN && STATIC_FRM_P (cfun))
-	/* No need to emit when prev mode is DYN already.  */
-	emit_insn (gen_fsrmsi_restore_volatile (backup_reg));
-      else if (mode == riscv_vector::FRM_DYN_EXIT && STATIC_FRM_P (cfun)
-	&& prev_mode != riscv_vector::FRM_DYN
-	&& prev_mode != riscv_vector::FRM_DYN_CALL)
-	/* No need to emit when prev mode is DYN or DYN_CALL already.  */
-	emit_insn (gen_fsrmsi_restore_volatile (backup_reg));
-      else if (mode == riscv_vector::FRM_DYN
-	&& prev_mode != riscv_vector::FRM_DYN_CALL)
-	/* Restore frm value from backup when switch to DYN mode.  */
-	emit_insn (gen_fsrmsi_restore (backup_reg));
-      else if (riscv_static_frm_mode_p (mode))
-	/* Set frm value when switch to static mode.  */
-	emit_insn (gen_fsrmsi_restore (frm));
+  if (riscv_static_frm_mode_p (mode))
+    {
+      /* Set frm value when switch to static mode.  */
+      emit_insn (gen_fsrmsi_restore (gen_int_mode (mode, SImode)));
+      return;
     }
+
+  bool restore_p
+    = /* No need to emit when prev mode is DYN.  */
+      (STATIC_FRM_P (cfun) && mode == riscv_vector::FRM_DYN_CALL
+       && prev_mode != riscv_vector::FRM_DYN)
+      /* No need to emit if prev mode is DYN or DYN_CALL.  */
+      || (STATIC_FRM_P (cfun) && mode == riscv_vector::FRM_DYN_EXIT
+	  && prev_mode != riscv_vector::FRM_DYN
+	  && prev_mode != riscv_vector::FRM_DYN_CALL)
+      /* Restore frm value when switch to DYN mode.  */
+      || (mode == riscv_vector::FRM_DYN
+	  && prev_mode != riscv_vector::FRM_DYN_CALL);
+
+  if (restore_p)
+    emit_insn (gen_fsrmsi_restore (backup_reg));
 }
 
 /* Implement Mode switching.  */

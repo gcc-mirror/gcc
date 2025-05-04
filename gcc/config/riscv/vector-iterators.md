@@ -124,7 +124,6 @@
 ])
 
 (define_c_enum "unspecv" [
-  UNSPECV_FRM_RESTORE_EXIT
   UNSPECV_SF_CV
 ])
 
