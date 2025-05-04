@@ -1241,12 +1241,24 @@ compute_invariantness (basic_block bb)
 		   lim_data->cost);
 	}
 
-      if (lim_data->cost >= LIM_EXPENSIVE
-	  /* When we run before PRE and PRE is active hoist all expressions
-	     since PRE would do so anyway and we can preserve range info
-	     but PRE cannot.  */
-	  || (flag_tree_pre && !in_loop_pipeline))
+      if (lim_data->cost >= LIM_EXPENSIVE)
 	set_profitable_level (stmt);
+      /* When we run before PRE and PRE is active hoist all expressions
+	 to the always executed loop since PRE would do so anyway
+	 and we can preserve range info while PRE cannot.  */
+      else if (flag_tree_pre && !in_loop_pipeline
+	       && outermost)
+	{
+	  class loop *mloop = lim_data->max_loop;
+	  if (loop_depth (outermost) > loop_depth (mloop))
+	    {
+	      mloop = outermost;
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file, "  constraining to loop depth %d\n\n\n",
+			 loop_depth (mloop));
+	    }
+	  set_level (stmt, bb->loop_father, mloop);
+	}
     }
 }
 
