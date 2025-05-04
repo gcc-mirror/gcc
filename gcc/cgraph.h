@@ -1872,8 +1872,13 @@ public:
   /* Return true when the edge represents a direct recursion.  */
   bool recursive_p (void);
 
-  /* Return true if the edge may be considered hot.  */
-  bool maybe_hot_p (void);
+  /* Return true if the edge may be considered hot after scalling its count.  */
+  bool maybe_hot_p ();
+
+  /* Return true if the edge may be considered hot after scalling its count
+     (i.e. assume that optimization would reduce runtime for callee,
+      possibly significantly).  */
+  bool maybe_hot_p (sreal scale);
 
   /* Get unique identifier of the edge.  */
   inline int get_uid ()

@@ -931,6 +931,18 @@ inlining_speedup (struct cgraph_edge *edge,
   return speedup;
 }
 
+/* Return expected speedup of the callee function alone
+   (i.e. not estimate of call overhead and also no scalling
+    by call frequency.  */
+
+static sreal
+callee_speedup (struct cgraph_edge *e)
+{
+  sreal unspec_time;
+  sreal spec_time = estimate_edge_time (e, &unspec_time);
+  return unspec_time - spec_time;
+}
+
 /* Return true if the speedup for inlining E is bigger than
    param_inline_min_speedup.  */
 
@@ -968,28 +980,39 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
   if (cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR)
     want_inline = false;
   else if (DECL_DISREGARD_INLINE_LIMITS (callee->decl))
-    ;
+    return true;
   else if (!DECL_DECLARED_INLINE_P (callee->decl)
 	   && !opt_for_fn (e->caller->decl, flag_inline_small_functions))
     {
       e->inline_failed = CIF_FUNCTION_NOT_INLINE_CANDIDATE;
       want_inline = false;
     }
+
+  /* Early return before lookup of summaries.  */
+  if (!want_inline)
+    {
+      if (report)
+	report_inline_failed_reason (e);
+      return false;
+    }
+
+  ipa_fn_summary *callee_info = ipa_fn_summaries->get (callee);
+  ipa_call_summary *call_info = ipa_call_summaries->get (e);
+
   /* Do fast and conservative check if the function can be good
      inline candidate.  */
-  else if ((!DECL_DECLARED_INLINE_P (callee->decl)
-	   && (!e->count.ipa ().initialized_p () || !e->maybe_hot_p ()))
-	   && ipa_fn_summaries->get (callee)->min_size
-		- ipa_call_summaries->get (e)->call_stmt_size
-	      > inline_insns_auto (e->caller, true, true))
+  if ((!DECL_DECLARED_INLINE_P (callee->decl)
+      && (!e->count.ipa ().initialized_p ()
+	  || !e->maybe_hot_p (callee_info->time)))
+      && callee_info->min_size - call_info->call_stmt_size
+	 > inline_insns_auto (e->caller, true, true))
     {
       e->inline_failed = CIF_MAX_INLINE_INSNS_AUTO_LIMIT;
       want_inline = false;
     }
   else if ((DECL_DECLARED_INLINE_P (callee->decl)
 	    || e->count.ipa ().nonzero_p ())
-	   && ipa_fn_summaries->get (callee)->min_size
-		- ipa_call_summaries->get (e)->call_stmt_size
+	   && callee_info->min_size - call_info->call_stmt_size
 	      > inline_insns_single (e->caller, true, true))
     {
       e->inline_failed = (DECL_DECLARED_INLINE_P (callee->decl)
@@ -1060,7 +1083,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
  	    }
 	}
       /* If call is cold, do not inline when function body would grow. */
-      else if (!e->maybe_hot_p ()
+      else if (!e->maybe_hot_p (callee_speedup (e))
 	       && (growth >= inline_insns_single (e->caller, false, false)
 		   || growth_positive_p (callee, e, growth)))
 	{
