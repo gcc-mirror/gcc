@@ -1,3 +1,19 @@
+2025-05-03  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-04-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102900
+	* trans-decl.cc (gfc_generate_function_code): Use sym->result
+	when generating fake result decl for functions returning
+	allocatable or pointer results.
+	* trans-expr.cc (gfc_conv_procedure_call): When checking the
+	pointer status of an actual argument passed to a non-allocatable,
+	non-pointer dummy which is of type CLASS, do not check the
+	class container of the actual if it is just a procedure pointer.
+	(gfc_trans_pointer_assignment): Fix treatment of assignment to
+	NULL of a procedure pointer.
+
 2025-04-25  Release Manager
 
 	* GCC 15.1.0 released.
