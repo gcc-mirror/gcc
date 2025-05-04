@@ -6879,6 +6879,7 @@ riscv_asm_output_opcode (FILE *asm_out_file, const char *p)
    'T'	Print shift-index of inverted single-bit mask OP.
    '~'	Print w if TARGET_64BIT is true; otherwise not print anything.
    'N'  Print register encoding as integer (0-31).
+   'H'  Print the name of the next register for integer.
 
    Note please keep this list and the list in riscv.md in sync.  */
 
@@ -7172,6 +7173,27 @@ riscv_print_operand (FILE *file, rtx op, int letter)
 	  output_operand_lossage ("invalid register number for 'N' modifier");
 
 	asm_fprintf (file, "%u", (regno - offset));
+	break;
+      }
+    case 'H':
+      {
+	if (!REG_P (op))
+	  {
+	    output_operand_lossage ("modifier 'H' require register operand");
+	    break;
+	  }
+	if (REGNO (op) > 31)
+	  {
+	    output_operand_lossage ("modifier 'H' is for integer registers only");
+	    break;
+	  }
+	if (REGNO (op) == 31)
+	  {
+	    output_operand_lossage ("modifier 'H' cannot be applied to R31");
+	    break;
+	  }
+
+	fputs (reg_names[REGNO (op) + 1], file);
 	break;
       }
     default:
