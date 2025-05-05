@@ -1,5 +1,6 @@
 /* { dg-lto-do run } */
 /* { dg-lto-options {"-O2 -flto-partition=max -flto -fno-ipa-sra"}  } */
+/* { dg-extra-ld-options { -lm } } */
 __attribute__ ((noinline))
 void
 test (char *a)
