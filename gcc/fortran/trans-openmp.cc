@@ -11156,8 +11156,14 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns, gfc_namespace *parent_ns)
 	      if (omp_context_selector_matches (set_selectors,
 						NULL_TREE, false))
 		{
-		  tree need_device_ptr_list = NULL_TREE;
-		  tree need_device_addr_list = NULL_TREE;
+		  tree adjust_args_tree_list = NULL_TREE;
+		  auto add_adjust_args
+		    = [chain = &adjust_args_tree_list] (tree n) mutable
+		      {
+			gcc_assert (chain && *chain == NULL_TREE);
+			*chain = n;
+			chain = &TREE_CHAIN (n);
+		      };
 		  tree append_args_tree = NULL_TREE;
 		  tree id = get_identifier ("omp declare variant base");
 		  tree variant = gfc_get_symbol_decl (variant_proc_sym);
@@ -11376,29 +11382,30 @@ gfc_trans_omp_declare_variant (gfc_namespace *ns, gfc_namespace *parent_ns)
 			  if (arg_list->u.adj_args.need_ptr
 			      || arg_list->u.adj_args.need_addr)
 			    {
+			      tree modifier
+				= arg_list->u.adj_args.need_ptr
+				    ? get_identifier ("need_device_ptr")
+				    : get_identifier ("need_device_addr");
+			      gcc_checking_assert
+				(!arg_list->u.adj_args.need_addr
+				 || modifier
+				    == get_identifier ("need_device_addr"));
 			      // Store 0-based argument index,
 			      // as in gimplify_call_expr
-			      tree t
+			      tree item
 				= build_tree_list (
 				    NULL_TREE,
 				    build_int_cst (integer_type_node,
 						   idx + arg_idx_offset));
-			      if (arg_list->u.adj_args.need_ptr)
-				need_device_ptr_list
-				  = chainon (need_device_ptr_list, t);
-			      else
-				need_device_addr_list
-				  = chainon (need_device_addr_list, t);
+			      add_adjust_args (build_tree_list (modifier,
+								item));
 			    }
 			}
 		    }
 		  tree t = NULL_TREE;
-		  if (need_device_ptr_list
-		      || need_device_addr_list
-		      || append_args_tree)
+		  if (adjust_args_tree_list || append_args_tree)
 		    {
-		      t = build_tree_list (need_device_ptr_list,
-					   need_device_addr_list),
+		      t = build_tree_list (NULL_TREE, adjust_args_tree_list),
 		      TREE_CHAIN (t) = append_args_tree;
 		      DECL_ATTRIBUTES (variant) = tree_cons (
 			get_identifier ("omp declare variant variant args"), t,

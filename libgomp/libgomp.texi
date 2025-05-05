@@ -484,7 +484,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item Support for pure directives in Fortran's @code{do concurrent} @tab N @tab
 @item All inarguable clauses take now an optional Boolean argument @tab N @tab
 @item The @code{adjust_args} clause was extended to specify the argument by position
-      and supports variadic arguments @tab N @tab
+      and supports variadic arguments @tab Y @tab
 @item For Fortran, @emph{locator list} can be also function reference with
       data pointer result @tab N @tab
 @item Concept of @emph{assumed-size arrays} in C and C++

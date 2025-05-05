@@ -2705,7 +2705,7 @@ static cp_ref_qualifier cp_parser_ref_qualifier_opt
 static tree cp_parser_tx_qualifier_opt
   (cp_parser *);
 static tree cp_parser_late_return_type_opt
-  (cp_parser *, cp_declarator *, tree &, tree);
+  (cp_parser *, cp_declarator *, tree &);
 static tree cp_parser_declarator_id
   (cp_parser *, bool);
 static tree cp_parser_type_id
@@ -2740,7 +2740,7 @@ static void cp_parser_ctor_initializer_opt_and_function_body
   (cp_parser *, bool);
 
 static tree cp_parser_late_parsing_omp_declare_simd
-  (cp_parser *, tree, tree);
+  (cp_parser *, tree);
 
 static tree cp_parser_late_parsing_oacc_routine
   (cp_parser *, tree);
@@ -25066,7 +25066,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  tree requires_clause = NULL_TREE;
 		  late_return
 		    = cp_parser_late_return_type_opt (parser, declarator,
-						      requires_clause, params);
+						      requires_clause);
 
 		  cp_finalize_omp_declare_simd (parser, &odsd);
 
@@ -25932,7 +25932,7 @@ parsing_function_declarator ()
 
 static tree
 cp_parser_late_return_type_opt (cp_parser *parser, cp_declarator *declarator,
-				tree &requires_clause, tree parms)
+				tree &requires_clause)
 {
   cp_token *token;
   tree type = NULL_TREE;
@@ -25988,8 +25988,8 @@ cp_parser_late_return_type_opt (cp_parser *parser, cp_declarator *declarator,
 
   if (declare_simd_p)
     declarator->attributes
-      = cp_parser_late_parsing_omp_declare_simd (parser, declarator->attributes,
-						 parms);
+      = cp_parser_late_parsing_omp_declare_simd (parser,
+						 declarator->attributes);
   if (oacc_routine_p)
     declarator->attributes
       = cp_parser_late_parsing_oacc_routine (parser,
@@ -39975,6 +39975,417 @@ cp_parser_omp_var_list (cp_parser *parser, enum omp_clause_code kind, tree list,
   return list;
 }
 
+/* Parse an OpenMP parameter-list.
+   parameter-list:
+     parameter-list-item[, parameter-list-item [, ...]]
+
+   parameter-list-item:
+     named parameter list item
+     parameter index (1 based)
+     numeric-range
+
+   numeric-range:
+     [bound]:[bound]
+
+   bound:
+     index-expr
+     omp_num_args[±logical_offset]
+
+   A named parameter list item is the name of a parameter.  A parameter index
+   is a positive integer literal that is the 1 based index of a parameter.
+   A numeric-range is a pair of bounds of the form lb:ub, the values of each
+   bound form a closed interval of parameter indices.  Bounds can be literal or
+   relative.  An index-expr is a non-negative integer constant-expression that
+   is the value of a literal bound.  The special identifier omp_num_args is
+   equal to the number of arguments passed to the function at the call site,
+   including the number of varargs.  Optionally, a plus or minus with a
+   logical_offset may follow omp_num_args, logical_offset is a non-negative
+   integer constant-expression.  A bound formed with omp_num_args is a relative
+   bound.  If a bound is omitted, a default value is used.  The default value
+   of lb is as if 1 were specified, the default value of ub is as if
+   omp_num_args were specified.
+
+   Each parameter-list-item is stored in a TREE_LIST.  The PURPOSE is for
+   general use and left NULL_TREE here, and the item is stored in the VALUE.
+   An item is a TREE_LIST, the PURPOSE is an expression with the location of
+   the list item, and the VALUE is a representation of the item.
+   Each parameter-list-item is stored in a TREE_LIST node VALUE.  The PURPOSE
+   is unused, and the VALUE is the item-repr.
+
+   Node - PUPOSE: NULL_TREE
+	- VALUE: item-with-location
+   item-with-location - PURPOSE: expr-with-location
+		      - VALUE: item-repr
+
+   An item-repr is a PARM_DECL, a NOP_EXPR, or a TREE_LIST.  A PARM_DECL is a
+   named parameter list item.  A NOP_EXPR is the unadjusted 1-based parameter
+   index.  A TREE_LIST is a numeric-range where its PURPOSE is a TREE_LIST
+   representing the lb, and its VALUE is a TREE_LIST representing the ub.
+
+   item-repr
+     PARM_DECL - parameter name
+     NOP_EXPR - parameter index (1 based)
+     TREE_LIST - PURPOSE: TREE_LIST (lb)
+	       - VALUE:   TREE_LIST (ub)
+
+   lb and ub are a TREE_LIST of the following form;
+   TREE_LIST - PURPOSE: relative bound marker (NULL_TREE if literal)
+	     - VALUE: expr-value
+
+   This function strictly handles a parameter-list, it does not parse clause
+   modifiers, or parenthesis other than in the expr of a numeric range.
+
+   If a diagnostic is issued for a list item, it is not appened to the list and
+   parsing continues.  Returns NULL_TREE if no valid list items are parsed.  */
+
+static tree
+cp_parser_omp_parm_list (cp_parser *parser)
+{
+  tree list = NULL_TREE;
+  auto append_to_list = [chain = &list] (tree arg, location_t loc) mutable
+    {
+      gcc_assert (*chain == NULL_TREE);
+      *chain = build_tree_list (NULL_TREE,
+				build_tree_list (build_empty_stmt (loc), arg));
+      chain = &TREE_CHAIN (*chain);
+    };
+
+  auto tok_terminates_item_p = [] (const cp_token *tok)
+    {
+      return tok->type == CPP_COMMA
+	     || tok->type == CPP_CLOSE_PAREN;
+    };
+  /* The first list item is (obviously) not preceded by a comma.  */
+  goto first_element;
+  do
+    {
+      /* Consume the comma.  */
+      cp_lexer_consume_token (parser->lexer);
+      first_element:
+
+      cp_token *const tok = cp_lexer_peek_token (parser->lexer);
+
+      /* OpenMP 6.0 (162:29-34)
+	 A parameter list item can be one of the following:
+	   • A named parameter list item;
+	   • The position of a parameter in a parameter specification specified
+	     by a positive integer, where 1 represents the first parameter; or
+	   • A parameter range specified by lb : ub where both lb and ub must
+	     be an expression of integer OpenMP type with the constant property
+	     and the positive property.
+
+	 The spec does not support arbitrary expression outside of a numeric
+	 range.  In theory they could be supported as a parameter index, but
+	 for now we do not support that case.  */
+
+      /* If we don't see a comma or close paren this can't be a named parameter
+	 list item or a parameter index, it can only be a numeric range.  */
+      if (!tok_terminates_item_p (cp_lexer_peek_nth_token (parser->lexer, 2))
+	  /* Or this edge case, there is a default lower bound.  */
+	  || tok->type == CPP_COLON)
+	/* Early exit, numeric range case handled below.  */;
+      else if (tok->type == CPP_NAME)
+	{
+	  if (strcmp (IDENTIFIER_POINTER (tok->u.value), "omp_num_args") == 0)
+	    {
+	      error_at (tok->location, "%<omp_num_args%> may only be used at "
+				       "the start of a numeric range bound");
+	      cp_lexer_consume_token (parser->lexer);
+	      continue;
+	    }
+	  /* This might not be the right way to do this, we might want to use
+	     cp_parser_lookup_name_simple instead.  */
+	  tree parm = lookup_name (tok->u.value,
+				   LOOK_where::BLOCK,
+				   LOOK_want::NORMAL);
+	  if (parm && TREE_CODE (parm) == PARM_DECL)
+	    {
+	      if (DECL_PACK_P (parm))
+		{
+		  /* In theory we could just consider every element of the pack
+		     as being specified, the spec does not say what to do
+		     though.  */
+		  sorry_at (tok->location,
+			    "parameter packs are not supported as an OpenMP "
+			    "named parameter list item");
+		  inform (DECL_SOURCE_LOCATION (parm),
+			  "declared as a pack here");
+		}
+	      else
+		append_to_list (parm, tok->location);
+	    }
+	  else
+	    {
+	      /* FIXME: Nice diagnostic, potentially using
+		 cp_parser_name_lookup_error.  */
+	      error_at (tok->location,
+			"%qs is not a function parameter",
+			IDENTIFIER_POINTER (tok->u.value));
+	    }
+	  cp_lexer_consume_token (parser->lexer);
+	  continue;
+	}
+      else if (tok->type == CPP_NUMBER)
+	{
+	  if (wi::to_widest (tok->u.value) <= 0)
+	    {
+	      error_at (tok->location,
+			"parameter indices in an OpenMP "
+			"parameter list must be positive");
+	    }
+	  else if (wi::to_widest (tok->u.value) > INT_MAX)
+	    error_at (tok->location, "parameter index is too big");
+	  else
+	    {
+	      /* Don't adjust here, we can't finalize these until we know if we
+		 are in a member function or not.  We can probably hack this to
+		 find out in here, but it belongs in finish_omp_parm_list, not
+		 here.
+		 FIXME: We have to come up with a better way of transporting
+		 these and marking them as unfinalized.  Wrapping in a NOP is
+		 really quite bad.  */
+	      tree cst = build_int_cst (integer_type_node,
+					tree_to_shwi (tok->u.value));
+	      append_to_list (build_nop (integer_type_node, cst),
+			      tok->location);
+	    }
+	  cp_lexer_consume_token (parser->lexer);
+	  continue;
+	}
+      else
+	{
+	  gcc_checking_assert (tok_terminates_item_p
+				 (cp_lexer_peek_nth_token (parser->lexer, 2)));
+	  cp_parser_error (parser, "expected unqualified-id, "
+				   "integer, or expression");
+	  cp_lexer_consume_token (parser->lexer);
+	  continue;
+	}
+      /* We have a numeric range or something ill formed now, this can be
+	 an arbitrary expression.  */
+
+      /* Empty bounds are delimited differently for lower and upper bounds,
+	 handle them without calling parse_bound.  */
+      auto parse_bound = [&] () -> tree
+	{
+	  location_t bound_start
+	    = cp_lexer_peek_token (parser->lexer)->location;
+	  enum omp_num_args
+	    {
+	      num_args_none,
+	      num_args_plus,
+	      num_args_minus,
+	      num_args_no_offset
+	    };
+	  /* (OpenMP 6.0, 162:35-37)
+	     In both lb and ub, an expression using omp_num_args, that enables
+	     identification of parameters relative to the last argument of the
+	     call, can be used with the form:
+			     omp_num_args [± logical_offset]  */
+	  const omp_num_args parsed_omp_num_args = [&] ()
+	    {
+	      cp_token *tok = cp_lexer_peek_token (parser->lexer);
+	      if (tok->type == CPP_NAME
+		  && strcmp (IDENTIFIER_POINTER (tok->u.value), "omp_num_args")
+		     == 0)
+		{
+		  /* Consume omp_num_args.  */
+		  cp_lexer_consume_token (parser->lexer);
+		  cp_token *op_tok = cp_lexer_peek_token (parser->lexer);
+		  if (op_tok->type == CPP_PLUS)
+		    {
+		      cp_lexer_consume_token (parser->lexer);
+		      return num_args_plus;
+		    }
+		  else if (op_tok->type == CPP_MINUS)
+		    {
+		      cp_lexer_consume_token (parser->lexer);
+		      return num_args_minus;
+		    }
+		  return num_args_no_offset;
+		}
+	      else
+		return num_args_none;
+	    } (); /* IILE.  */
+	  /* If there was omp_num_args but no operator an expr is not
+	     permitted, we are finished with this bound.  */
+	  if (parsed_omp_num_args == num_args_no_offset)
+	    {
+	      tree cst = build_zero_cst (integer_type_node);
+	      /* I hate this hack.  We don't know if we are parsing a lb or ub,
+		 so even though we know it's value we have to wait until later
+		 to finalize it.  */
+	      return build_tree_list (get_identifier ("omp num args plus"),
+				      build1_loc (bound_start,
+						  NOP_EXPR,
+						  integer_type_node,
+						  cst));
+	    }
+	  const bool saved_flag = parser->colon_corrects_to_scope_p;
+	  /* Disable this diagnostic to parse id:id cases such as
+	     'V:omp_num_args' where V is a constant expression variable.  */
+	  parser->colon_corrects_to_scope_p = false;
+	  /* Function arguments are considered an assignment-expression by the
+	     C++ standard, it seems to me that those semantics match what we
+	     want from an expr in lb or ub.  */
+	  cp_expr expr = cp_parser_assignment_expression (parser);
+	  parser->colon_corrects_to_scope_p = saved_flag;
+
+	  if (!expr || expr == error_mark_node)
+	    return error_mark_node;
+
+	  auto finish_bound_expr = [&parsed_omp_num_args] (cp_expr expr_in)
+	    {
+	      const location_t loc = expr_in.get_location ();
+	      tree expr = expr_in.get_value ();
+	      /* Try to fold early if expr is not dependent.  I'm pretty sure
+		 this should be manifestly constant-evaluated.  We require a
+		 constant here, let fold_non_dependent_expr complain, but
+		 handle everything else in finish_omp_parm_list.  */
+	      if (!value_dependent_expression_p (expr))
+		{
+		  expr = fold_non_dependent_expr (expr,
+						  tf_warning_or_error,
+						  true);
+		  if (!expr || error_operand_p (expr))
+		    {
+		      if (parsed_omp_num_args != num_args_none)
+			error_at (loc, "logical offset of a bound must "
+				       "be a constant expression");
+		      else
+			error_at (loc, "expression of a bound must be a "
+				       "constant expression");
+		      return error_mark_node;
+		    }
+		}
+	      /* We need a way to signal that an expr has not been adjusted,
+		 the best way I came up with is checking if it is an
+		 INTEGER_CST, but if we already have an INTEGER_CST at this
+		 point, what now?  Wrap it in a nop, that's what.  */
+	      if (TREE_CODE (expr) == INTEGER_CST)
+		return build1_loc (loc, NOP_EXPR, TREE_TYPE (expr), expr);
+	      /* We still need this for things like template parameters.  */
+	      auto maybe_force_wrap_with_location = [&] ()
+		{
+		  if (!expr
+		      || error_operand_p (expr)
+		      || CAN_HAVE_LOCATION_P (expr))
+		    return expr;
+		  /* Pulled from maybe_wrap_with_location.  */
+		  const tree_code code
+		    = ((CONSTANT_CLASS_P (expr)
+			&& TREE_CODE (expr) != STRING_CST)
+		       || (TREE_CODE (expr) == CONST_DECL
+			   && !TREE_STATIC (expr)))
+		      ? NON_LVALUE_EXPR : VIEW_CONVERT_EXPR;
+		  tree wrap = build1_loc (loc, code, TREE_TYPE (expr), expr);
+		  EXPR_LOCATION_WRAPPER_P (wrap) = 1;
+		  return wrap;
+		};
+	      return maybe_force_wrap_with_location ();
+	    };
+
+	  gcc_assert (parsed_omp_num_args < num_args_no_offset);
+	  switch (parsed_omp_num_args)
+	    {
+	      case num_args_none:
+		/* NULL_TREE represents literal.  */
+		return build_tree_list (NULL_TREE,
+					finish_bound_expr (expr));
+	      case num_args_plus:
+		return build_tree_list (get_identifier ("omp num args plus"),
+					finish_bound_expr (expr));
+	      case num_args_minus:
+		return build_tree_list (get_identifier ("omp num args minus"),
+					finish_bound_expr (expr));
+	      case num_args_no_offset:
+		/* Handled above.  */
+	      default:
+		gcc_unreachable ();
+	    }
+	  gcc_unreachable ();
+	};
+      /* I'm not happy with the state of diagnostics here, but I'm not sure how
+	 to fix it so it's best to wait to see which cases end up giving really
+	 unclear errors.  */
+      location_t num_range_loc_begin
+	= cp_lexer_peek_token (parser->lexer)->location;
+      /* As stated above, empty bounds are handled here.  */
+      tree lower_bound = cp_lexer_next_token_is (parser->lexer, CPP_COLON)
+			 ? NULL_TREE : parse_bound ();
+      /* I wish we could error here saying that we expect an unqualified-id,
+	 an integer, or an expression.  Parsing the expression emits the error
+	 right away though.  Maybe we can do some tentative parsing?  */
+      if (lower_bound && error_operand_p (lower_bound))
+	{
+	  cp_parser_skip_to_closing_parenthesis (parser,
+						 /*recovering=*/true,
+						 /*or_comma=*/true,
+						 /*consume_paren=*/false);
+	  continue;
+	}
+      /* Tokens get consumed by parse_bound.  */
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COLON))
+	{
+	  /* lower_bound can only be null if the next token was a colon.  */
+	  gcc_assert (lower_bound && !error_operand_p (lower_bound));
+	  const cp_token *const next_tok = cp_lexer_peek_token (parser->lexer);
+
+	  cp_parser_error (parser, "expected %<:%>");
+	  if (tok_terminates_item_p (next_tok))
+	    {
+	      const location_t loc = make_location (num_range_loc_begin,
+						    num_range_loc_begin,
+						    input_location);
+	      inform (loc, "an expression is only allowed in a numeric range");
+	    }
+	  /* Do not consume the close paren, this function does not handle
+	     that part of the clause.  */
+	  cp_parser_skip_to_closing_parenthesis (parser,
+						 /*recovering=*/true,
+						 /*or_comma=*/true,
+						 /*consume_paren=*/false);
+	  continue;
+	}
+      location_t colon_loc = cp_lexer_consume_token (parser->lexer)->location;
+      tree upper_bound = tok_terminates_item_p
+			   (cp_lexer_peek_token (parser->lexer))
+			 ? NULL_TREE : parse_bound ();
+
+      /* I think we are supposed to have some sort of diagnostic here, I'm just
+	 not sure what it should be.  */
+      if (error_operand_p (lower_bound) || error_operand_p (upper_bound))
+	continue;
+
+      location_t num_range_loc_end
+	= upper_bound ? EXPR_LOCATION (TREE_VALUE (upper_bound)) : colon_loc;
+
+      auto build_default_bound = [] (tree num_args_marker, int val)
+	{
+	  /* Unfortunately, we can't assume what the final value will be
+	     because we don't know if we are in a member function or not.  */
+	  tree value = build_nop (integer_type_node,
+				  build_int_cst (integer_type_node, val));
+	  return build_tree_list (num_args_marker, value);
+	};
+      static constexpr int lb_default = 1;
+      /* Internally, 0 + omp_num_args refers to the last arg.  */
+      static constexpr int ub_default = 0;
+      if (!lower_bound)
+	lower_bound = build_default_bound (NULL_TREE, lb_default);
+      if (!upper_bound)
+	upper_bound
+	  = build_default_bound (get_identifier ("omp num args plus"),
+				 ub_default);
+
+      append_to_list (build_tree_list (lower_bound, upper_bound),
+		      make_location (num_range_loc_begin,
+				     num_range_loc_begin,
+				     num_range_loc_end));
+    } while (cp_lexer_next_token_is (parser->lexer, CPP_COMMA));
+  return list;
+}
+
 /* OpenACC 2.0:
    copy ( variable-list )
    copyin ( variable-list )
@@ -51803,7 +52214,7 @@ cp_parser_omp_dispatch (cp_parser *parser, cp_token *pragma_tok)
 
 static tree
 cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
-			       tree attrs, tree parms)
+			       tree attrs)
 {
   matching_parens parens;
   if (!parens.require_open (parser))
@@ -51863,12 +52274,26 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
 
   tree append_args_tree = NULL_TREE;
   tree append_args_last = NULL_TREE;
-  vec<tree> adjust_args_list = vNULL;
   bool has_match = false, has_adjust_args = false;
   location_t adjust_args_loc = UNKNOWN_LOCATION;
   location_t append_args_loc = UNKNOWN_LOCATION;
-  tree need_device_ptr_list = NULL_TREE;
+
   tree ctx = NULL_TREE;
+
+  tree adjust_args_list = NULL_TREE;
+  auto append_adjust_args
+    = [chain = &adjust_args_list] (tree list, tree clause_modifier) mutable
+	{
+	  gcc_assert (chain && *chain == NULL_TREE);
+	  *chain = list;
+	  /* Just stick them all together in one list and process them all
+	     at once later.  */
+	  for (tree node = list; node; node = TREE_CHAIN (node))
+	    {
+	      TREE_PURPOSE (node) = clause_modifier;
+	      chain = &TREE_CHAIN (node);
+	    }
+	};
 
   do
     {
@@ -51964,78 +52389,48 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
 	    {
 	      const char *p = IDENTIFIER_POINTER (adjust_op_tok->u.value);
 	      if (strcmp (p, "need_device_ptr") == 0
+		  || strcmp (p, "need_device_addr") == 0
 		  || strcmp (p, "nothing") == 0)
 		{
 		  cp_lexer_consume_token (parser->lexer); // need_device_ptr
 		  cp_lexer_consume_token (parser->lexer); // :
 
-		  tree arg;
-		  tree list
-		    = cp_parser_omp_var_list_no_open (parser, OMP_CLAUSE_ERROR,
-						      NULL_TREE, NULL);
-
-		  for (tree c = list; c != NULL_TREE; c = TREE_CHAIN (c))
+		  tree list = cp_parser_omp_parm_list (parser);
+		  if (list && list != error_mark_node)
+		    /* It should be fine to just use the identifier node.  */
+		    append_adjust_args (list, adjust_op_tok->u.value);
+		  else
 		    {
-		      tree decl = TREE_PURPOSE (c);
-		      location_t arg_loc = EXPR_LOCATION (TREE_VALUE (c));
-		      int idx;
-		      for (arg = parms, idx = 0; arg != NULL;
-			   arg = TREE_CHAIN (arg), idx++)
-			if (TREE_VALUE (arg) == decl)
-			  break;
-		      if (arg == NULL_TREE)
-			{
-			  error_at (arg_loc, "%qD is not a function argument",
-				    decl);
-			  continue;
-			}
-		      arg = TREE_VALUE (arg);
-		      if (adjust_args_list.contains (arg))
-			{
-			  error_at (arg_loc, "%qD is specified more than once",
-				    decl);
-			  continue;
-			}
-		      if (strcmp (p, "need_device_ptr") == 0)
-			{
-			  bool is_ptr_or_template
-			    = TEMPLATE_PARM_P (TREE_TYPE (arg))
-			      || POINTER_TYPE_P (TREE_TYPE (arg));
-			  if (!is_ptr_or_template)
-			    {
-			      error_at (arg_loc, "%qD is not a C pointer",
-					decl);
-			      continue;
-			    }
-			}
-		      adjust_args_list.safe_push (arg);
-		      if (strcmp (p, "need_device_ptr") == 0)
-			{
-			  need_device_ptr_list = chainon (
-			    need_device_ptr_list,
-			    build_tree_list (
-			      NULL_TREE,
-			      build_int_cst (
-				integer_type_node,
-				idx))); // Store 0-based argument index,
-					// as in gimplify_call_expr
-			}
+		      /* Do we need a specific diagnostic here?
+			 I don't like failing here, we should be skipping to
+			 a close paren and continuing.  */
+		      goto fail;
 		    }
 		}
 	      else
 		{
 		  error_at (adjust_op_tok->location,
 			    "expected %<nothing%> or %<need_device_ptr%>");
+		  /* We should be trying to recover here instead of immediately
+		     failing, skipping to close paren and continuing.  */
 		  goto fail;
 		}
 	    }
 	  else
 	    {
+	      /* We should be trying to recover here instead of immediately
+		 failing, skipping to close paren and continuing.  */
 	      error_at (adjust_op_tok->location,
 			"expected %<nothing%> or %<need_device_ptr%> followed "
 			"by %<:%>");
 	      goto fail;
 	    }
+	  /* cp_parser_omp_var_list_no_open used to handle this, we don't use
+	     it anymore though.  */
+	  if (!parens.require_close (parser))
+	    /* We should be trying to recover here instead of immediately
+	       failing, I'm not sure what we skip to though.  */
+	    goto fail;
 	}
       else if (ccode == append_args)
 	{
@@ -52099,14 +52494,12 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
 	      cp_lexer_consume_token (parser->lexer); // ','
 	    }
 	  while (true);
-	  int nbase_args = 0;
-	  for (tree t = parms;
-	       t && TREE_VALUE (t) != void_type_node; t = TREE_CHAIN (t))
-	    nbase_args++;
-	  /* Store as purpose = arg number after which to append
-	     and value = list of interop items.  */
-	  append_args_tree = build_tree_list (build_int_cst (integer_type_node,
-							     nbase_args),
+	  /* This is where the number of args used to be inserted, it still
+	     gets put here by omp_declare_variant_finalize_one once we know how
+	     many parameters there are.  Ideally we should refactor the way we
+	     pass this data around, once we do that we can remove this bit from
+	     here.  Until then, leave it be.  */
+	  append_args_tree = build_tree_list (NULL_TREE,
 					      append_args_tree);
 	}
   } while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL));
@@ -52136,11 +52529,17 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
 	  // We might not have a DECL for the variant yet. So we store the
 	  // need_device_ptr list in the base function attribute, after loc
 	  // nodes.
-	  tree t = build_tree_list (need_device_ptr_list,
-				    NULL_TREE /* need_device_addr */);
+	  tree debug_idxs_node
+	    = CHECKING_P ? get_identifier ("omp adjust args idxs")
+			 : NULL_TREE;
+	  tree t = build_tree_list (debug_idxs_node,
+				    adjust_args_list);
 	  TREE_CHAIN (t) = append_args_tree;
+	  tree debug_tail_node
+	    = CHECKING_P ? get_identifier ("omp variant clauses temp")
+			 : NULL_TREE;
 	  TREE_VALUE (attrs) = chainon (TREE_VALUE (attrs),
-					build_tree_list ( NULL_TREE, t));
+					build_tree_list (debug_tail_node, t));
 	}
     }
 
@@ -52153,8 +52552,7 @@ cp_finish_omp_declare_variant (cp_parser *parser, cp_token *pragma_tok,
    been parsed, and put that into "omp declare simd" attribute.  */
 
 static tree
-cp_parser_late_parsing_omp_declare_simd (cp_parser *parser, tree attrs,
-					 tree parms)
+cp_parser_late_parsing_omp_declare_simd (cp_parser *parser, tree attrs)
 {
   struct cp_token_cache *ce;
   cp_omp_declare_simd_data *data = parser->omp_declare_simd;
@@ -52198,7 +52596,7 @@ cp_parser_late_parsing_omp_declare_simd (cp_parser *parser, tree attrs,
 	{
 	  gcc_assert (strcmp (kind, "variant") == 0);
 	  attrs
-	    = cp_finish_omp_declare_variant (parser, pragma_tok, attrs, parms);
+	    = cp_finish_omp_declare_variant (parser, pragma_tok, attrs);
 	}
       cp_parser_pop_lexer (parser);
     }
@@ -52330,7 +52728,7 @@ cp_parser_late_parsing_omp_declare_simd (cp_parser *parser, tree attrs,
 		  {
 		    gcc_assert (strcmp (kind, "variant") == 0);
 		    attrs = cp_finish_omp_declare_variant (parser, pragma_tok,
-							   attrs, parms);
+							   attrs);
 		  }
 		gcc_assert (parser->lexer != lexer);
 		vec_safe_truncate (lexer->buffer, 0);

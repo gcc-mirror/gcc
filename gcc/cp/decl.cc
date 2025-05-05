@@ -8482,15 +8482,29 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
     parm = DECL_CHAIN (parm);
   for (; parm; parm = DECL_CHAIN (parm))
     vec_safe_push (args, forward_parm (parm));
-
+  /* The layout of these nodes are a mess, this function is generally very hard
+     to reason about because of it, this needs to be fixed.  */
+  const tree adjust_args_idxs = [&] ()
+    {
+      const tree omp_variant_clauses_temp = TREE_CHAIN (TREE_CHAIN (chain));
+      gcc_checking_assert (!omp_variant_clauses_temp
+			   || TREE_PURPOSE (omp_variant_clauses_temp)
+			      == get_identifier ("omp variant clauses temp"));
+      const tree adjust_args_idxs = omp_variant_clauses_temp
+				    ? TREE_VALUE (omp_variant_clauses_temp)
+				    : NULL_TREE;
+      gcc_checking_assert (!adjust_args_idxs
+			   || TREE_PURPOSE (adjust_args_idxs)
+			      == get_identifier ("omp adjust args idxs"));
+      return adjust_args_idxs;
+    } (); /* IILE.  */
   unsigned nappend_args = 0;
-  tree append_args_list = TREE_CHAIN (TREE_CHAIN (chain));
+  const tree append_args_list
+    = adjust_args_idxs && TREE_CHAIN (adjust_args_idxs)
+      ? TREE_VALUE (TREE_CHAIN (adjust_args_idxs))
+      : NULL_TREE;;
   if (append_args_list)
     {
-      append_args_list = TREE_VALUE (append_args_list);
-      append_args_list = (append_args_list && TREE_CHAIN (append_args_list)
-			  ? TREE_VALUE (TREE_CHAIN (append_args_list))
-			  : NULL_TREE);
       for (tree t = append_args_list; t; t = TREE_CHAIN (t))
 	nappend_args++;
       if (nappend_args)
@@ -8521,6 +8535,55 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	    vec_safe_push (args, build_stub_object (TREE_TYPE (type)));
 	}
     }
+  /* We assume the this parameter is included in the declaration, if it isn't
+     our parm count will be wrong.  */
+  gcc_assert (!DECL_IOBJ_MEMBER_FUNCTION_P (decl)
+	      || is_this_parameter (DECL_ARGUMENTS (decl)));
+  struct bundled_parm_info
+    {
+      int count;
+      bool unexpanded_pack;
+      bool variadic;
+    };
+  const bundled_parm_info parm_info = [&] ()
+    {
+      bool pack = false;
+      int cnt = 0;
+      tree parm_t = TYPE_ARG_TYPES (TREE_TYPE (decl));
+      while (parm_t && parm_t != void_list_node)
+	{
+	  /* We can't tell how many parameters there are until all parameter
+	     packs have been expanded.  */
+	  if (PACK_EXPANSION_P (TREE_VALUE (parm_t)))
+	    pack = true;
+	  parm_t = TREE_CHAIN (parm_t);
+	  ++cnt;
+	}
+      return bundled_parm_info{!pack ? cnt : 0, pack, parm_t == NULL_TREE};
+    } (); /* IILE.  */
+  tree adjust_args_list = adjust_args_idxs ? TREE_VALUE (adjust_args_idxs)
+					   : NULL_TREE;
+  if (adjust_args_list)
+    {
+      /* We currently treat a parm count of 0 as variadic.  */
+      adjust_args_list
+	= finish_omp_parm_list (adjust_args_list,
+				decl,
+				parm_info.variadic ? 0 : parm_info.count);
+      if (adjust_args_list != error_mark_node)
+	adjust_args_list
+	  = finish_omp_adjust_args (adjust_args_list,
+				    decl,
+				    parm_info.variadic ? 0 : parm_info.count);
+      if (adjust_args_list == error_mark_node)
+	adjust_args_list = NULL_TREE;
+    }
+  /* This will also clear the adjust_args_list if there was an error.  */
+  if (adjust_args_idxs)
+    TREE_VALUE (adjust_args_idxs) = adjust_args_list;
+
+  /* Maybe we should just return at this point if an unexpanded pack was
+     encountered, there isn't much else that we can do if there is.  */
 
   bool koenig_p = false;
   if (idk == CP_ID_KIND_UNQUALIFIED || idk == CP_ID_KIND_TEMPLATE_ID)
@@ -8587,118 +8650,117 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
   variant = cp_get_callee_fndecl_nofold (STRIP_REFERENCE_REF (variant));
   input_location = save_loc;
 
-  if (variant)
+  if (!variant)
     {
-      bool fail;
-      const char *varname = IDENTIFIER_POINTER (DECL_NAME (variant));
-      if (!nappend_args)
-	fail = !comptypes (TREE_TYPE (decl), TREE_TYPE (variant),
-			   COMPARE_STRICT);
-      else
-	{
-	  unsigned nbase_args = 0;
-	  for (tree t = TYPE_ARG_TYPES (TREE_TYPE (decl));
-	       t && TREE_VALUE (t) != void_type_node; t = TREE_CHAIN (t))
-	    nbase_args++;
-	  tree vargs, varg;
-	  vargs = varg = TYPE_ARG_TYPES (TREE_TYPE (variant));
-	  for (unsigned i = 0; i < nbase_args && varg;
-	       i++, varg = TREE_CHAIN (varg))
-	    vargs = varg;
-	  for (unsigned i = 0; i < nappend_args && varg; i++)
-	    varg = TREE_CHAIN (varg);
-	  tree saved_vargs;
-	  if (nbase_args)
-	    {
-	      saved_vargs = TREE_CHAIN (vargs);
-	      TREE_CHAIN (vargs) = varg;
-	    }
-	  else
-	    {
-	      saved_vargs = vargs;
-	      TYPE_ARG_TYPES (TREE_TYPE (variant)) = varg;
-	    }
-	  /* Skip assert check that TYPE_CANONICAL is the same.  */
-	  fail = !comptypes (TREE_TYPE (decl), TREE_TYPE (variant),
-			     COMPARE_STRUCTURAL);
-	  if (nbase_args)
-	    TREE_CHAIN (vargs) = saved_vargs;
-	  else
-	    TYPE_ARG_TYPES (TREE_TYPE (variant)) = saved_vargs;
-	  varg = saved_vargs;
-	  if (!fail && !processing_template_decl)
-	    for (unsigned i = 0; i < nappend_args;
-		 i++, varg = TREE_CHAIN (varg))
-	      if (!varg || !c_omp_interop_t_p (TREE_VALUE (varg)))
-		{
-		  error_at (DECL_SOURCE_LOCATION (variant),
-			    "argument %d of %qD must be of %<omp_interop_t%>",
-			    nbase_args + i + 1, variant);
-		  inform (EXPR_LOCATION (TREE_PURPOSE (append_args_list)),
-			  "%<append_args%> specified here");
-		  break;
-		}
-	}
-      if (fail)
-	{
-	  error_at (varid_loc, "variant %qD and base %qD have incompatible "
-			       "types", variant, decl);
-	  return true;
-	}
-      if (fndecl_built_in_p (variant)
-	  && (startswith (varname, "__builtin_")
-	      || startswith (varname, "__sync_")
-	      || startswith (varname, "__atomic_")))
-	{
-	  error_at (varid_loc, "variant %qD is a built-in", variant);
-	  return true;
-	}
-      else
-	{
-	  tree construct
-	    = omp_get_context_selector_list (ctx, OMP_TRAIT_SET_CONSTRUCT);
-	  omp_mark_declare_variant (match_loc, variant, construct);
-	  if (!omp_context_selector_matches (ctx, NULL_TREE, false))
-	    return true;
-	  TREE_PURPOSE (TREE_VALUE (attr)) = variant;
-
-	  // Prepend adjust_args list to variant attributes
-	  tree adjust_args_list = TREE_CHAIN (TREE_CHAIN (chain));
-	  if (adjust_args_list != NULL_TREE)
-	    {
-	      if (DECL_NONSTATIC_MEMBER_P (variant)
-		  && TREE_VALUE (adjust_args_list))
-		{
-		  /* Shift arg position for the added 'this' pointer.  */
-		  /* Handle need_device_ptr  */
-		  for (tree t = TREE_PURPOSE (TREE_VALUE (adjust_args_list));
-		       t; t = TREE_CHAIN (t))
-		    TREE_VALUE (t)
-		      = build_int_cst (TREE_TYPE (t),
-				       tree_to_uhwi (TREE_VALUE (t)) + 1);
-		}
-	      if (DECL_NONSTATIC_MEMBER_P (variant) && append_args_list)
-		{
-		  /* Shift likewise the number of args after which the
-		     interop object should be added.  */
-		  tree nargs = TREE_CHAIN (TREE_VALUE (adjust_args_list));
-		  TREE_PURPOSE (nargs)
-		    = build_int_cst (TREE_TYPE (nargs),
-				     tree_to_uhwi (TREE_PURPOSE (nargs)) + 1);
-		}
-	      for (tree t = append_args_list; t; t = TREE_CHAIN (t))
-		TREE_VALUE (t)
-		  = cp_finish_omp_init_prefer_type (TREE_VALUE (t));
-	      DECL_ATTRIBUTES (variant) = tree_cons (
-		get_identifier ("omp declare variant variant args"),
-		TREE_VALUE (adjust_args_list), DECL_ATTRIBUTES (variant));
-	    }
-	}
-    }
-  else if (!processing_template_decl)
-    {
+      /* Don't error unless we are fully instantiated.  */
+      if (processing_template_decl)
+	return false;
       error_at (varid_loc, "could not find variant declaration");
       return true;
+    }
+
+  /* We should probably just error and return here if the two functions are not
+     both member functions or both free functions, but I don't want to move
+     the later error that checks for builtins ip right now.  */
+  auto emit_variant_type_error = [&] ()
+    {
+      error_at (varid_loc, "variant %qD and base %qD have incompatible "
+			   "types", variant, decl);
+    };
+  /* Unlike below, COMPARE_STRICT is fine here.  */
+  if (!nappend_args
+      && !comptypes (TREE_TYPE (decl), TREE_TYPE (variant), COMPARE_STRICT))
+    {
+      error_at (varid_loc, "variant %qD and base %qD have incompatible "
+			   "types", variant, decl);
+      return true;
+    }
+  if (nappend_args)
+    {
+      const unsigned nbase_parms = parm_info.count;
+      {
+	tree t = TREE_CHAIN (TREE_CHAIN (chain));
+	tree append_args_node = TREE_CHAIN (TREE_VALUE (t));
+	/* Add the number of parameters once we know how many there are, for
+	   now just wait until we are fully instantiated to keep it simple.  */
+	if (append_args_node && !processing_template_decl)
+	  TREE_PURPOSE (append_args_node)
+	    = build_int_cst (integer_type_node, nbase_parms);
+      }
+      /* This is where appended interop parms start, we need to remove them
+	 temporarily to compare the function types.  */
+      tree *const last_regular_parm_chain = [&] ()
+	{
+	  if (!nbase_parms)
+	    return &TYPE_ARG_TYPES (TREE_TYPE (variant));
+	  /* Return a pointer to the last regular parm's chain, subtract 1 from
+	     nbase_parms so we don't iterate past it.  */
+	  tree last_regular_parm
+	    = chain_index (nbase_parms - 1,
+			   TYPE_ARG_TYPES (TREE_TYPE (variant)));
+	  return &TREE_CHAIN (last_regular_parm);
+	} (); /* IILE.  */
+
+      /* Go past the added interop parms to find the first hidden parm, or the
+	 end of the list of parms, this can be NULL_TREE or void_list_node.  */
+      tree first_hidden_parm = chain_index (nappend_args,
+					    *last_regular_parm_chain);
+      tree interop_parms_start = *last_regular_parm_chain;
+      *last_regular_parm_chain = first_hidden_parm;
+      /* Skip assert check that TYPE_CANONICAL is the same, use
+	 COMPARE_STRUCTURAL, not COMPARE_STRICT.  */
+      const bool fail = !comptypes (TREE_TYPE (decl), TREE_TYPE (variant),
+				    COMPARE_STRUCTURAL);
+      /* Return the variant back to normal, even if the comparison failed.  */
+      *last_regular_parm_chain = interop_parms_start;
+
+      if (fail)
+	{
+	  emit_variant_type_error ();
+	  return true;
+	}
+      tree interop_parm = interop_parms_start;
+      if (!processing_template_decl)
+	for (unsigned i = 0; i < nappend_args; i++)
+	  {
+	    if (!interop_parm
+		|| !c_omp_interop_t_p (TREE_VALUE (interop_parm)))
+	      {
+		error_at (DECL_SOURCE_LOCATION (variant),
+			  "argument %d of %qD must be of %<omp_interop_t%>",
+			nbase_parms + i + 1, variant);
+		inform (EXPR_LOCATION (TREE_PURPOSE (append_args_list)),
+		      "%<append_args%> specified here");
+		break;
+	      }
+	    interop_parm = TREE_CHAIN (interop_parm);
+	  }
+    }
+  const char *varname = IDENTIFIER_POINTER (DECL_NAME (variant));
+  if (fndecl_built_in_p (variant)
+      && (startswith (varname, "__builtin_")
+	  || startswith (varname, "__sync_")
+	  || startswith (varname, "__atomic_")))
+    {
+      error_at (varid_loc, "variant %qD is a built-in", variant);
+      return true;
+    }
+
+  tree construct
+    = omp_get_context_selector_list (ctx, OMP_TRAIT_SET_CONSTRUCT);
+  omp_mark_declare_variant (match_loc, variant, construct);
+  if (!omp_context_selector_matches (ctx, NULL_TREE, false))
+    return true;
+  TREE_PURPOSE (TREE_VALUE (attr)) = variant;
+
+  // Prepend adjust_args list to variant attributes
+  if (adjust_args_idxs != NULL_TREE)
+    {
+      for (tree t = append_args_list; t; t = TREE_CHAIN (t))
+	TREE_VALUE (t) = cp_finish_omp_init_prefer_type (TREE_VALUE (t));
+      DECL_ATTRIBUTES (variant)
+	= tree_cons (get_identifier ("omp declare variant variant args"),
+		     adjust_args_idxs, DECL_ATTRIBUTES (variant));
     }
 
   return false;

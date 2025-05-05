@@ -7922,6 +7922,731 @@ cp_finish_omp_init_prefer_type (tree pref_type)
     }
   return t;
 }
+/* LIST is a TREE_LIST, its TREE_PURPOSE is not used here, but its (possibly
+   NULL_TREE) value is propegated to any new nodes derived from the node.
+   Its TREE_VALUE is a TREE_LIST representing an OpenMP parameter-list-item.
+   Its TREE_PURPOSE contains an expr storing the location of the item and
+   TREE_VALUE contains the representation of the item.  It is a NOP_EXPR,
+   INTEGER_CST, PARM_DECL, or TREE_LIST, this function possibly mutates it, it
+   is not preserved.  DECL is the function the clause/clauses that LIST is
+   specified in is applied to.  PARM_COUNT is the number of parameters, unless
+   the function has a parameter pack, or if the function is variadic, then
+   PARM_COUNT is 0.  Functions with an empty parameter list are not handled
+   here.
+
+   Finalize each element in LIST, diagnose non-unique elements, and mutate
+   the original element appending them to a new list.  The finalized parameter
+   indices are 0 based in contrast to OpenMP specifying 1 based parameter
+   indices, that adjustment is done here.  NOP_EXPR elements require adjustment
+   from a 1 based index to a 0 based index.  INTEGER_CST elements are finalized
+   parameter indices, but are still used for diagnosing duplicate elements.
+   PARM_DECL elements are switched out for their corresponding 0 based index,
+   provided it can be determined.  TREE_LIST represents a numeric range.  If
+   the number of parameters is known and DECL is non-variadic, relative bounds
+   are folded into literal bounds.  If both bounds are non-relative the numeric
+   range is expanded, replacing the TREE_LIST with N INTEGER_CST nodes for each
+   index in the numeric range.  If DECL is variadic, numeric ranges with
+   a relative bound are represented the same as in c_parser_omp_parm_list
+   so gimplify.cc:modify_call_for_omp_dispatch can handle them the same way.
+
+   Returns TREE_LIST or error_mark_node if each elt was invalid.  */
+
+tree
+finish_omp_parm_list (tree list, const_tree decl, const int parm_count)
+{
+  gcc_assert (list && decl);
+  const tree parms = DECL_ARGUMENTS (decl);
+  /* We assume that the this parameter is included in parms, make sure this is
+     still true.  */
+  gcc_assert (!DECL_IOBJ_MEMBER_FUNCTION_P (decl)
+	      || is_this_parameter (parms));
+  /* We expect at least one argument, unless the function is variadic, in which
+     case parm_count will be 0.  */
+  gcc_assert (parm_count >= 0 && (parms || parm_count == 0));
+
+  hash_map<int_hash<int, -1, -2>, tree> specified_idxs;
+  /* If there are any nodes that were not able to be finalized and/or expanded
+     this gets set to true, this can occur even if we are fully instantiated
+     if the function is a variadic function.  */
+  bool dependent = false;
+  tree new_list = NULL_TREE;
+  auto append_to_list = [chain = &new_list] (tree node) mutable
+    {
+      gcc_assert (*chain == NULL_TREE);
+      *chain = node;
+      chain = &TREE_CHAIN (*chain);
+    };
+
+  const int iobj_parm_adjustment = DECL_IOBJ_MEMBER_FUNCTION_P (decl) ? 1 : 0;
+
+  for (tree next, node = list; node; node = next)
+    {
+      /* Nodes are mutated and appended to new_list, retrieve its chain early
+	 and remember it.  */
+      next = TREE_CHAIN (node);
+      TREE_CHAIN (node) = NULL_TREE;
+      tree parm_list_item = TREE_VALUE (node);
+      switch (TREE_CODE (TREE_VALUE (parm_list_item)))
+	{
+	  case NOP_EXPR:
+	    {
+	      /* cp_parser_omp_parm_list stores parameter index items in a
+		 NOP so we know to modify them here.  This solution is
+		 imperfect, but there isn't time to do it differently.  */
+	      tree cst = TREE_OPERAND (TREE_VALUE (parm_list_item), 0);
+	      /* Adjust the 1 based index to 0 based, potentially adjust for
+		 the 'this' parameter.  */
+	      const int idx = tree_to_shwi (cst) - 1 + iobj_parm_adjustment;
+	      TREE_VALUE (parm_list_item)
+		= build_int_cst (integer_type_node, idx);
+	      gcc_fallthrough ();
+	    }
+	  case INTEGER_CST:
+	    {
+	      /* These are finished, just check for errors and append
+		 them to the list.
+		 Check everything, we might have new errors if we didn't know
+		 how many parameters we had the first time around.  */
+	      const int idx = tree_to_shwi (TREE_VALUE (parm_list_item));
+	      tree *first = specified_idxs.get (idx);
+	      if (first)
+		{
+		  error_at (EXPR_LOCATION (TREE_PURPOSE (parm_list_item)),
+			    "OpenMP parameter list items must specify a "
+			    "unique parameter");
+		  inform (EXPR_LOCATION (TREE_PURPOSE (*first)),
+			  "parameter previously specified here");
+		}
+	      else if (parm_count != 0 && idx >= parm_count)
+		{
+		  error_at (EXPR_LOCATION (TREE_PURPOSE (parm_list_item)),
+			    "parameter list item index is out of range");
+		}
+	      else
+		{
+		  append_to_list (node);
+		  if (specified_idxs.put (idx, parm_list_item))
+		    gcc_unreachable ();
+		}
+	      break;
+	    }
+	  case PARM_DECL:
+	    {
+	      const const_tree parm_to_find = TREE_VALUE (parm_list_item);
+	      /* Indices are stored as 0 based, don't adjust for iobj func,
+		 the this parameter is present in parms.  */
+	      int idx = 0;
+	      const_tree parm = parms;
+	      while (true)
+		{
+		  /* We already confirmed that the parameter exists
+		     in cp_parser_omp_parm_list, we should never be reaching
+		     the end of this list.  */
+		  gcc_assert (parm);
+		  /* Expansion of a parameter pack will change the index of
+		     parameters that come after it, we will have to defer this
+		     lookup until the fndecl has been substituted.  */
+		  if (DECL_PACK_P (parm))
+		    {
+		      gcc_assert (processing_template_decl);
+		      /* As explained above, this only happens with a parameter
+			 pack in the middle of a function, this slower lookup
+			 is fine for such an edge case.  */
+		      const tree first = [&] ()
+			{
+			  for (tree n = new_list; n; n = TREE_CHAIN (n))
+			    {
+			      tree item = TREE_VALUE (n);
+			      if (TREE_CODE (TREE_VALUE (item)) == PARM_DECL
+				  /* This comparison works because we make sure
+				     to store the original node.  */
+				  && TREE_VALUE (item) == parm_to_find)
+			      return item;
+			    }
+			  return NULL_TREE;
+			} (); /* IILE.  */
+		      if (first)
+			{
+			  location_t loc
+			    = EXPR_LOCATION (TREE_PURPOSE (parm_list_item));
+			  error_at (loc,
+				    "OpenMP parameter list items must specify "
+				    "a unique parameter");
+			  inform (EXPR_LOCATION (TREE_PURPOSE (first)),
+				  "parameter previously specified here");
+			}
+		      else
+			{
+			  /* We need to process this again once the pack
+			     blocking us has been expanded.  */
+			  dependent = true;
+			  /* Make sure we use the original so the above
+			     comparison works when we return here later.
+			     This may no longer be required since we are
+			     comparing the DECL_NAME of each below, but
+			     regardless, use the original.  */
+			  append_to_list (node);
+			}
+		      break;
+		    }
+		  /* Compare the identifier nodes to so the comparison works
+		     even after the node has been substituted.  */
+		  if (DECL_NAME (parm) == DECL_NAME (parm_to_find))
+		    {
+		      tree *first = specified_idxs.get (idx);
+		      if (first)
+			{
+			  location_t loc
+			    = EXPR_LOCATION (TREE_PURPOSE (parm_list_item));
+			  error_at (loc,
+				    "OpenMP parameter list items must specify "
+				    "a unique parameter");
+			  inform (EXPR_LOCATION (TREE_PURPOSE (*first)),
+				  "parameter previously specified here");
+			}
+		      else
+			{
+			  TREE_VALUE (parm_list_item)
+			    = build_int_cst (integer_type_node, idx);
+			  append_to_list (node);
+			  if (specified_idxs.put (idx, parm_list_item))
+			    gcc_unreachable ();
+			}
+		      break;
+		    }
+		  ++idx;
+		  parm = DECL_CHAIN (parm);
+		}
+	      break;
+	    }
+	  case TREE_LIST:
+	    {
+	      /* Mutates bound.
+		 This is the final point where indices and ranges are adjusted
+		 from OpenMP spec representation (1 based indices, inclusive
+		 intervals [lb, ub]) to GCC's internal representation (0 based
+		 indices, inclusive lb, exclusive ub [lb, ub)), this is
+		 intended to match C++ semantics.
+		 Care must be taken to ensure we do not make these adjustments
+		 multiple times.  */
+	      auto do_bound = [&] (tree bound, const int correction)
+		{
+		  gcc_assert (-1 <= correction && correction <= 1);
+		  if (bound == error_mark_node)
+		    return bound;
+
+		  tree expr = TREE_VALUE (bound);
+		  /* If we already have an integer_cst, the bound has already
+		     been converted to a 0 based index.  Do not strip location
+		     wrappers, they might be a template parameter that got
+		     substituted to an INTEGER_CST, but not been finalized
+		     yet.  */
+		  if (TREE_CODE (expr) == INTEGER_CST)
+		    return bound;
+
+		  const location_t expr_loc = EXPR_LOCATION (expr);
+
+		  if (type_dependent_expression_p (expr))
+		    {
+		      ATTR_IS_DEPENDENT (bound) = true;
+		      return bound;
+		    }
+		  else if (!INTEGRAL_TYPE_P (TREE_TYPE (expr)))
+		    {
+		      if (TREE_PURPOSE (bound))
+			error_at (expr_loc, "logical offset of a bound must "
+					    "be of type %<int%>");
+		      else
+			error_at (expr_loc, "expression of a bound must be "
+					    "of type %<int%>");
+		      return error_mark_node;
+		    }
+		  else if (value_dependent_expression_p (expr))
+		    {
+		      ATTR_IS_DEPENDENT (bound) = true;
+		      return bound;
+		    }
+		  /* EXPR is not dependent, get rid of any leftover location
+		     wrappers.  */
+		  expr = tree_strip_any_location_wrapper (expr);
+		  /* Unless we want some really good diagnostics, we don't need
+		     to wrap expr with a location anymore.  Additionally, if we
+		     do that we need a new way of differentiating adjusted and
+		     unadjusted expressions.  */
+
+		  /* Do we need to mark this as an rvalue use with
+		     mark_rvalue_use as well?
+		     We either need to strictly only accept expressions of type
+		     int, or warn for conversions.
+		     I'm pretty sure this should be manifestly
+		     constant-evaluated.  We require a constant here,
+		     let fold_non_dependent_expr complain.  */
+		  expr = fold_non_dependent_expr (expr,
+						  tf_warning_or_error,
+						  true);
+		  if (!TREE_CONSTANT (expr))
+		    {
+		      if (TREE_PURPOSE (bound))
+			error_at (expr_loc, "logical offset of a bound must "
+					    "be a constant expression");
+		      else
+			error_at (expr_loc, "expression of a bound must be a "
+					    "constant expression");
+		      return error_mark_node;
+		    }
+
+		  const int sgn = tree_int_cst_sgn (expr);
+		  const int val = tree_to_shwi (expr);
+		  /* Technically this can work with omp_num_args+expr but the
+		     spec forbids it, we can support it later if we like.  */
+		  if (sgn < 0)
+		    {
+		      if (TREE_PURPOSE (bound))
+			error_at (expr_loc, "logical offset of a bound must "
+					    "be non negative");
+		      else
+			error_at (expr_loc, "expression of a bound must be "
+					    "positive");
+		      return error_mark_node;
+		    }
+
+		  const const_tree num_args_marker = TREE_PURPOSE (bound);
+		  if (num_args_marker == NULL_TREE)
+		    {
+		      if (sgn != 1)
+			{
+			  error_at (expr_loc, "expression of bound must be "
+					      "positive");
+			  return error_mark_node;
+			}
+		      if (parm_count > 0 && val > parm_count)
+			{
+			  /* FIXME: output omp_num_args and parm_count.  */
+			  error_at (expr_loc, "expression of bound is out "
+					      "of range");
+			  return error_mark_node;
+			}
+		      TREE_VALUE (bound) = build_int_cst (integer_type_node,
+							  val + correction);
+		      return bound;
+		    }
+		  else if (num_args_marker
+			   == get_identifier ("omp num args plus"))
+		    {
+		      if (sgn != 0)
+			{
+			  error_at (expr_loc,
+				    "logical offset must be equal to 0 in a "
+				    "bound of the form "
+				    "%<omp_num_args+logical-offset%>");
+			  return error_mark_node;
+			}
+		      TREE_PURPOSE (bound)
+			= get_identifier ("omp relative bound");
+		      /* This expresses
+			 omp_num_args + correction + logical offset,
+			 the only valid value for logical offset is 0.  */
+		      TREE_VALUE (bound) = build_int_cst (integer_type_node,
+							  correction + 0);
+		      return bound;
+		    }
+		  else if (num_args_marker
+			   == get_identifier ("omp num args minus"))
+		    {
+		      gcc_assert (sgn != -1);
+		      TREE_PURPOSE (bound)
+			= get_identifier ("omp relative bound");
+		      /* Don't invert correction, we are expressing
+			 omp_num_args + correction - logical offset.  */
+		      TREE_VALUE (bound) = build_int_cst (integer_type_node,
+							  correction + (-val));
+		      return bound;
+		    }
+		  gcc_unreachable ();
+		};
+	      /* Convert both to 0 based indices, upper bound
+		 is stored one past the end.  */
+	      static constexpr int lb_adjustment = -1;
+	      static constexpr int ub_adjustment = -1 + 1;
+
+	      tree range = TREE_VALUE (parm_list_item);
+	      tree lb = do_bound (TREE_PURPOSE (range),
+				  lb_adjustment + iobj_parm_adjustment);
+	      tree ub = do_bound (TREE_VALUE (range),
+				  ub_adjustment + iobj_parm_adjustment);
+	      gcc_assert (lb && ub);
+	      /* If we know how many params there are for sure we can
+		 change this bound to a literal.  */
+	      auto maybe_fold_relative_bound = [&] (tree bound)
+		{
+		  if (bound == error_mark_node
+		      || parm_count == 0
+		      || !TREE_PURPOSE (bound))
+		    return bound;
+		  gcc_assert (TREE_PURPOSE (bound)
+			      == get_identifier ("omp relative bound"));
+		  const int value = tree_to_shwi (TREE_VALUE (bound));
+		  gcc_assert (value <= 0 && parm_count >= 1);
+		  /* Overflow is impossible.  */
+		  const int diff = parm_count + value;
+		  if (diff < 0)
+		    {
+		      /* FIXME: output value of omp_num_args.  */
+		      error_at (EXPR_LOCATION (TREE_CHAIN (bound)),
+				"bound with logical offset evaluates to an "
+				"out of range index");
+		      return error_mark_node;
+		    }
+		  gcc_assert (diff < INT_MAX);
+		  TREE_PURPOSE (bound) = NULL_TREE;
+		  TREE_VALUE (bound) = build_int_cst (integer_type_node, diff);
+		  return bound;
+		};
+	      lb = maybe_fold_relative_bound (lb);
+	      ub = maybe_fold_relative_bound (ub);
+
+	      gcc_assert (lb && ub);
+	      const tree range_loc_wrapped = TREE_PURPOSE (parm_list_item);
+
+	      auto append_one_idx = [&] (tree purpose, tree loc_expr, int idx)
+		{
+		  tree *dupe = specified_idxs.get (idx);
+		  gcc_assert (!dupe || *dupe);
+		  if (dupe)
+		    return *dupe;
+		  tree cst = build_int_cst (integer_type_node, idx);
+		  tree new_item = build_tree_list (loc_expr, cst);
+		  append_to_list (build_tree_list (purpose, new_item));
+		  if (specified_idxs.put (idx, parm_list_item))
+		    gcc_unreachable ();
+		  return NULL_TREE;
+		};
+
+	      /* TODO: handle better lol.  */
+	      if (lb == error_mark_node || ub == error_mark_node)
+		continue;
+	      /* Wait until both lb and ub are substituted before trying to
+		 process any further, we are also done if both bounds are
+		 relative.  */
+	      if ((TREE_PURPOSE (lb) && TREE_PURPOSE (ub))
+		  || value_dependent_expression_p (TREE_VALUE (lb))
+		  || value_dependent_expression_p (TREE_VALUE (ub)))
+		{
+		  /* If we are instantiating and have unexpanded numeric ranges
+		     then this function must be variadic, and thus it doesn't
+		     make this parm list dependent.
+		     This doesn't really matter since we are high-jacking this
+		     flag but it doesn't hurt to be technically correct.  */
+		  /* Early escape...?  */
+		}
+	      /* If both bounds are non relative, we can fully expand them.  */
+	      else if (!TREE_PURPOSE (lb) && !TREE_PURPOSE (ub))
+		{
+		  const int lb_val = tree_to_shwi (TREE_VALUE (lb));
+		  const int ub_val = tree_to_shwi (TREE_VALUE (ub));
+		  /* Empty ranges are not allowed at this point.  */
+		  if (lb_val >= ub_val)
+		    {
+		      /* Note that the error message does not match the
+			 condition as we altered ub to be one past the end.  */
+		      error_at (EXPR_LOCATION (range_loc_wrapped),
+				"numeric range lower bound must be less than "
+				"or equal to upper bound");
+		      continue;
+		    }
+		  gcc_assert (lb_val >= 0 && ub_val > 0 && lb_val < ub_val);
+
+		  for (int idx = lb_val; idx < ub_val; ++idx)
+		    {
+		      /* There might be something in PURPOSE that we want to
+			 propogate when expanding.  */
+		      tree dupe = append_one_idx (TREE_PURPOSE (node),
+						  range_loc_wrapped,
+						  idx);
+		      if (dupe)
+			{
+			  const int omp_idx = idx + 1;
+			  error_at (EXPR_LOCATION (range_loc_wrapped),
+				    "expansion of numeric range specifies "
+				    "non-unique index %d",
+				    omp_idx);
+			  inform (EXPR_LOCATION (TREE_PURPOSE (dupe)),
+				  "parameter previously specified here");
+			}
+		    }
+		  /* The range is fully expanded, do not add it back to the
+		     list.  */
+		  TREE_CHAIN (node) = NULL_TREE;
+		  continue;
+		}
+	      else if (!processing_template_decl)
+		{
+		  /* Wait until we are fully instantiated to make this
+		     transformation, expanding a bound with omp_num_args after
+		     doing this will cause bugs.
+		     We also potentially cause bugs if one gets expanded, gets
+		     a partial expansion here, and then the other bound gets
+		     expanded later.  That case is probably fine but we should
+		     avoid it anyway.  */
+		  gcc_assert (!TREE_PURPOSE (lb)
+			      || TREE_PURPOSE (lb)
+				   == get_identifier ("omp relative bound"));
+		  gcc_assert (!TREE_PURPOSE (ub)
+			      || TREE_PURPOSE (ub)
+				   == get_identifier ("omp relative bound"));
+		  /* At least one of lb and ub are NULL_TREE, and the other
+		     is omp relative bound.  */
+		  gcc_assert (TREE_PURPOSE (lb) != TREE_PURPOSE (ub));
+		  /* This only adds slight quality of life to diagnostics, it
+		     isn't really worth it, but we need parity with the C front
+		     end.  Alternatively, handling empty numeric ranges could
+		     have been removed from modify_call_for_omp_dispatch but
+		     it's already there and it isn't that hard to add support
+		     here.  */
+		  if (TREE_PURPOSE (ub))
+		    {
+		      /* The C front end goes a little further adding all
+			 indices between lb and the last real parameter,
+			 we aren't going to those efforts here though.  */
+		      gcc_assert (!TREE_PURPOSE (lb));
+		      const int val = tree_to_shwi (TREE_VALUE (lb));
+		      gcc_assert (val < INT_MAX);
+		      /* We know the index in lb will always be specified.  */
+		      tree dupe = append_one_idx (TREE_PURPOSE (node),
+						  range_loc_wrapped,
+						  val);
+		      if (dupe)
+			{
+			  error_at (EXPR_LOCATION (range_loc_wrapped),
+				    "lower bound of numeric range specifies "
+				    "non-unique index %d",
+				    val);
+			  inform (EXPR_LOCATION (TREE_PURPOSE (dupe)),
+				  "parameter previously specified here");
+			}
+		      /* The value was added above, adjust lb to be ahead by
+			 one so it's not added again in
+			 modify_call_for_omp_dispatch.  */
+		      TREE_VALUE (lb) = build_int_cst (integer_type_node,
+						       val + 1);
+		    }
+		  else
+		    {
+		      gcc_assert (TREE_PURPOSE (lb));
+		      const int val = tree_to_shwi (TREE_VALUE (ub));
+		      gcc_assert (val > 0);
+		      /* We know the index in ub will always be specified.  */
+		      tree dupe = append_one_idx (TREE_PURPOSE (node),
+						  range_loc_wrapped,
+						  val);
+		      if (dupe)
+			{
+			  error_at (EXPR_LOCATION (range_loc_wrapped),
+				    "upper bound of numeric range specifies "
+				    "non-unique index %d", val);
+			  inform (EXPR_LOCATION (TREE_PURPOSE (dupe)),
+				  "parameter previously specified here");
+			}
+		      /* The value was added above, adjust ub to be behind by
+			 one so it's not added again in
+			 modify_call_for_omp_dispatch.  */
+		      TREE_VALUE (ub) = build_int_cst (integer_type_node,
+						       val - 1);
+		    }
+		  /* This is not a full expansion, just a partial, we still
+		     to add the numeric range to the final list.  */
+		}
+	      dependent = processing_template_decl;
+	      TREE_PURPOSE (range) = lb;
+	      TREE_VALUE (range) = ub;
+	      TREE_VALUE (parm_list_item) = range;
+	      append_to_list (node);
+	      break;
+	    }
+	  default:
+	    gcc_unreachable ();
+	}
+    }
+  if (!new_list)
+    return error_mark_node;
+  /* Kinda a hack, hopefully temporary.  */
+  ATTR_IS_DEPENDENT (new_list) = dependent;
+  return new_list;
+}
+
+/* LIST is a TREE_LIST representing an OpenMP parameter-list specified in an
+   adjust_args clause, or multiple concatanated parameter-lists each specified
+   in an adjust_args clause, each of which may have the same clause modifier,
+   or different clause modifiers.  The clause modifier of the adjust_args
+   clause the parameter-list-item was specified in is stored in the
+   TREE_PURPOSE of each elt of LIST.  DECL is the function decl the clauses
+   are applied to, PARM_COUNT is 0 if the number of parameters is unknown
+   or because the function is variadic, otherwise PARM_COUNT is the number of
+   parameters.
+
+   Check for and diagnose invalid parameter types for each item, remove them
+   from the list so errors are not diagnosed multiple times.  Remove items with
+   the "nothing" modifier once everything is done.
+
+   Returns TREE_LIST or NULL_TREE if no items have errors, returns TREE_LIST
+   or error_mark_node if there were errors diagnosed.  NULL_TREE is never
+   returned if an error was diagnosed.  */
+
+tree
+finish_omp_adjust_args (tree list, const_tree decl, const int parm_count)
+{
+  gcc_assert (list && decl);
+  /* We need to keep track of this so we know whether we can remove items with
+     the "nothing" modifier.  */
+  bool has_dependent_list_items = false;
+
+  const const_tree need_device_ptr_id = get_identifier ("need_device_ptr");
+  const const_tree need_device_addr_id = get_identifier ("need_device_addr");
+  const const_tree nothing_id = get_identifier ("nothing");
+  tree *prev_chain = &list;
+  auto keep_node = [&] (tree n) { prev_chain = &TREE_CHAIN (n); };
+  auto remove_node = [&] (tree n) { *prev_chain = TREE_CHAIN (n); };
+  for (tree n = list; n != NULL_TREE; n = TREE_CHAIN (n))
+    {
+      tree parm_list_item = TREE_VALUE (n);
+      if (TREE_CODE (TREE_VALUE (parm_list_item)) == PARM_DECL)
+	{
+	  /* We only encounter a PARM_DECL here if a parameter pack comes
+	     before it, it will have been replaced by an index by
+	     finish_omp_parm_list otherwise.  */
+	  gcc_assert (processing_template_decl);
+	  keep_node (n);
+	  has_dependent_list_items = true;
+	  continue;
+	}
+      /* Numeric range case.  */
+      if (TREE_CODE (TREE_VALUE (parm_list_item)) == TREE_LIST)
+	{
+	  /* These will have been expanded by finish_omp_parm_list unless we
+	     can't determine the number of parameters.  */
+	  gcc_assert (processing_template_decl || parm_count == 0);
+	  keep_node (n);
+	  has_dependent_list_items = true;
+	  continue;
+	}
+      gcc_assert (TREE_CODE (TREE_VALUE (parm_list_item)) == INTEGER_CST);
+
+      const const_tree n_modifier = TREE_PURPOSE (n);
+      gcc_assert (n_modifier == nothing_id
+		  || n_modifier == need_device_ptr_id
+		  || n_modifier == need_device_addr_id);
+      if (n_modifier == nothing_id)
+	{
+	  keep_node (n);
+	  continue;
+	}
+      const int idx = tree_to_shwi (TREE_VALUE (parm_list_item));
+
+      gcc_assert (idx >= 0 && (parm_count == 0 || idx < parm_count));
+      const const_tree parm_decl = [&] () -> const_tree
+	{
+	  const const_tree parms = DECL_ARGUMENTS (decl);
+	  gcc_assert (parms != NULL_TREE || parm_count == 0);
+	  if (parms == NULL_TREE
+	      || (parm_count != 0 && idx >= parm_count))
+	    return NULL_TREE;
+
+	  int cur_idx = 0;
+	  for (const_tree p = parms; p != NULL_TREE; p = DECL_CHAIN (p))
+	    {
+	      /* This kind of sucks, we really should be building a vec instead
+		 of traversing the list of parms each time.  */
+	      gcc_assert (parm_count == 0 || cur_idx < parm_count);
+	      if (DECL_PACK_P (p))
+		return NULL_TREE;
+	      if (cur_idx == idx)
+		return p;
+	      ++cur_idx;
+	    }
+	  return NULL_TREE;
+	} (); /* IILE.  */
+      /* cp_parser_omp_parm_list handles out of range indices.  */
+      gcc_assert (parm_count == 0 || parm_decl);
+
+      if (!parm_decl)
+	has_dependent_list_items = true;
+      else if (n_modifier == need_device_ptr_id)
+	{
+	  /* OpenMP 6.0 (332:28-30)
+	     If the need_device_ptr adjust-op modifier is present, each list
+	     item that appears in the clause that refers to a specific named
+	     argument in the declaration of the function variant must be of
+	     pointer type or reference to pointer type.  */
+	  tree parm_type = TREE_TYPE (parm_decl);
+	  if (WILDCARD_TYPE_P (parm_type))
+	    /* Do nothing for now, it might become a pointer.  */;
+	  else if (TYPE_REF_P (parm_type)
+	      && WILDCARD_TYPE_P (TREE_TYPE (parm_type)))
+	    /* It might become a reference to a pointer.  */;
+	  else if (!TYPE_PTR_P (parm_type))
+	    {
+	      if (TYPE_REF_P (parm_type)
+		  && TYPE_PTR_P (TREE_TYPE (parm_type)))
+		/* The semantics for this are unclear, instead of supporting
+		   it incorrectly, just sorry.  */
+		sorry_at (DECL_SOURCE_LOCATION (parm_decl),
+			  "parameter with type reference to pointer in an "
+			  "%<adjust_args%> with the %<need_device_ptr%> "
+			  "modifier is not currently supported");
+	      else
+		error_at (DECL_SOURCE_LOCATION (parm_decl),
+			  "parameter specified in an %<adjust_args%> clause "
+			  "with the %<need_device_ptr%> modifier must be of "
+			  "pointer type");
+	      inform (EXPR_LOCATION (TREE_PURPOSE (parm_list_item)),
+		      "parameter specified here");
+	      remove_node (n);
+	      continue;
+	    }
+	}
+      else if (n_modifier == need_device_addr_id)
+	{
+	  /* OpenMP 6.0 (332:31-33)
+	     If the need_device_addr adjust-op modifier is present, each list
+	     item that appears in the clause must refer to an argument in the
+	     declaration of the function variant that has a reference type.  */
+	  tree parm_type = TREE_TYPE (parm_decl);
+	  if (WILDCARD_TYPE_P (parm_type))
+	    /* Do nothing for now, it might become a ref.  */;
+	  else if (!TYPE_REF_P (parm_type))
+	    {
+	      error_at (DECL_SOURCE_LOCATION (parm_decl),
+			"parameter specified in an %<adjust_args%> clause "
+			"with the %<need_device_addr%> modifier must be of "
+			"reference type");
+	      inform (EXPR_LOCATION (TREE_PURPOSE (parm_list_item)),
+		      "parameter specified here");
+	      remove_node (n);
+	      continue;
+	    }
+	}
+      /* If we get here there were no errors.  */
+      keep_node (n);
+    }
+
+  /* All items were removed due to errors.  */
+  if (!list)
+    return error_mark_node;
+  if (has_dependent_list_items)
+    return list;
+  /* We no longer need to keep items with the "nothing" modifier.  */
+  prev_chain = &list;
+  for (tree n = list; n != NULL_TREE; n = TREE_CHAIN (n))
+    {
+      if (TREE_PURPOSE (n) == nothing_id)
+	remove_node (n);
+      else
+	keep_node (n);
+    }
+  /* If all items had the "nothing" modifier, we might have NULL_TREE here,
+     but that isn't a problem.  */
+  return list;
+}
 
 /* For all elements of CLAUSES, validate them vs OpenMP constraints.
    Remove any elements from the list that are invalid.  */

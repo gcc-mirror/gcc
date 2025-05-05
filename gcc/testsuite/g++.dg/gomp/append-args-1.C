@@ -51,9 +51,8 @@ void repl2(T, T2, T3, T3);
         append_args(interop(target, targetsync, prefer_type(1)), \
                     interop(target, prefer_type({fr(3), attr("ompx_nop")},{fr(2)},{attr("ompx_all")})))
 template<typename T, typename T2>
-void base2(T x, T2 y);
-
-
+void base2(T x, T2 y); /* { dg-error "parameter specified in an 'adjust_args' clause with the 'need_device_ptr' modifier must be of pointer type" }  */
+/* { dg-note "parameter specified here" "" { target *-*-* } .-5 }  */
 template<typename T,typename T3>
 void tooFewRepl(T, T, T3);
 #pragma omp declare variant(tooFewRepl) match(construct={dispatch}) \
