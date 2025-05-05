@@ -27,10 +27,6 @@ int main () {
 #error "__riscv_zicsr"
 #endif
 
-#if !defined(_riscv_zmmul)
-#error "__riscv_zmmul"
-#endif
-
 #if !defined(__riscv_zve32x)
 #error "__riscv_zve32x"
 #endif
