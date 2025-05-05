@@ -361,11 +361,16 @@ package body Erroutc is
    ------------------------
 
    function Get_Warning_Option (Id : Error_Msg_Id) return String is
-      Is_Style : constant Boolean         := Errors.Table (Id).Kind in Style;
-      Warn_Chr : constant String (1 .. 2) := Errors.Table (Id).Warn_Chr;
+   begin
+      return Get_Warning_Option (Errors.Table (Id));
+   end Get_Warning_Option;
+
+   function Get_Warning_Option (E : Error_Msg_Object) return String is
+      Is_Style : constant Boolean         := E.Kind in Style;
+      Warn_Chr : constant String (1 .. 2) := E.Warn_Chr;
 
    begin
-      if Has_Switch_Tag (Errors.Table (Id))
+      if Has_Switch_Tag (E)
         and then Warn_Chr (1) /= '?'
       then
          if Warn_Chr = "$ " then
@@ -387,11 +392,16 @@ package body Erroutc is
    ---------------------
 
    function Get_Warning_Tag (Id : Error_Msg_Id) return String is
-      Warn_Chr : constant String (1 .. 2) := Errors.Table (Id).Warn_Chr;
-      Option   : constant String          := Get_Warning_Option (Id);
+   begin
+      return Get_Warning_Tag (Errors.Table (Id));
+   end Get_Warning_Tag;
+
+   function Get_Warning_Tag (E : Error_Msg_Object) return String is
+      Warn_Chr : constant String (1 .. 2) := E.Warn_Chr;
+      Option   : constant String          := Get_Warning_Option (E);
 
    begin
-      if Has_Switch_Tag (Id) then
+      if Has_Switch_Tag (E) then
          if Warn_Chr = "? " then
             return "[enabled by default]";
          elsif Warn_Chr = "* " then
@@ -2115,6 +2125,14 @@ package body Erroutc is
       end loop;
 
       return False;
+   end Warning_Treated_As_Error;
+
+   function Warning_Treated_As_Error (E : Error_Msg_Object) return Boolean is
+
+   begin
+      return
+        Warning_Treated_As_Error (E.Text.all)
+        or else Warning_Treated_As_Error (Get_Warning_Tag (E));
    end Warning_Treated_As_Error;
 
    -------------------------

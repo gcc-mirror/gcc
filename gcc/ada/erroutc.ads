@@ -626,11 +626,13 @@ package Erroutc is
    --  are marked with the Deleted flag set to True.
 
    function Get_Warning_Option (Id : Error_Msg_Id) return String;
+   function Get_Warning_Option (E : Error_Msg_Object) return String;
    --  Returns the warning switch causing this warning message or an empty
    --  string is there is none..
 
    function Get_Warning_Tag (Id : Error_Msg_Id) return String;
-   --  Given an error message ID, return tag showing warning message class, or
+   function Get_Warning_Tag (E : Error_Msg_Object) return String;
+   --  Given an error message, return tag showing warning message class, or
    --  the null string if this option is not enabled or this is not a warning.
 
    procedure Increase_Error_Msg_Count (E : Error_Msg_Object);
@@ -871,6 +873,10 @@ package Erroutc is
    --  Returns True if the warning message Msg matches any of the strings
    --  given by Warning_As_Error pragmas, as stored in the Warnings_As_Errors
    --  table.
+
+   function Warning_Treated_As_Error (E : Error_Msg_Object) return Boolean;
+   --  Returns true if a Warning_As_Error pragma matches either the error text
+   --  or the warning tag of the message.
 
    procedure Write_Error_Summary;
    --  Write error summary

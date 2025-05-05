@@ -1417,8 +1417,7 @@ package body Errout is
 
       Errors.Table (Cur_Msg).Warn_Err :=
         Error_Msg_Kind in Warning | Style
-        and then (Warning_Treated_As_Error (Msg_Buffer (1 .. Msglen))
-                  or else Warning_Treated_As_Error (Get_Warning_Tag (Cur_Msg))
+        and then (Warning_Treated_As_Error (Errors.Table (Cur_Msg))
                   or else Is_Runtime_Raise);
 
       --  If immediate errors mode set, output error message now. Also output
