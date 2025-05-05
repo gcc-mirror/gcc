@@ -3144,6 +3144,10 @@ namespace __format
       auto
       _M_reserve(size_t __n) const
       { return _M_sink->_M_reserve(__n); }
+
+      bool
+      _M_discarding() const
+      { return _M_sink->_M_discarding(); }
     };
 
   // Abstract base class for type-erased character sinks.
@@ -3262,6 +3266,11 @@ namespace __format
       virtual void
       _M_bump(size_t __n)
       { _M_next += __n; }
+
+      // Returns true if the _Sink is discarding incoming characters.
+      virtual bool
+      _M_discarding() const
+      { return false; }
 
     public:
       _Sink(const _Sink&) = delete;
@@ -3488,6 +3497,14 @@ namespace __format
 	_M_count += __s.size();
       }
 
+      bool
+      _M_discarding() const override
+      {
+	// format_to_n return total number of characters, that would be written,
+	// see C++20 [format.functions] p20
+	return false;
+      }
+
     public:
       [[__gnu__::__always_inline__]]
       explicit
@@ -3548,6 +3565,14 @@ namespace __format
 	    // writing more characters to it.
 	    this->_M_reset({__s.data(), __s.size() + 1024}, __s.size());
 	  }
+      }
+
+      bool
+      _M_discarding() const override
+      {
+	// format_to_n return total number of characters, that would be written,
+	// see C++20 [format.functions] p20
+	return false;
       }
 
       typename _Sink<_CharT>::_Reservation
@@ -3636,17 +3661,15 @@ namespace __format
   template<typename _Out, typename _CharT>
     class _Padding_sink : public _Str_sink<_CharT>
     {
-      const size_t _M_padwidth;
-      const size_t _M_maxwidth;
+      size_t _M_padwidth;
+      size_t _M_maxwidth;
       _Out _M_out;
       size_t _M_printwidth;
 
       [[__gnu__::__always_inline__]]
       bool
       _M_ignoring() const
-      {
-	return _M_printwidth >= _M_maxwidth;
-      }
+      { return _M_printwidth >= _M_maxwidth; }
 
       [[__gnu__::__always_inline__]]
       bool
@@ -3660,11 +3683,20 @@ namespace __format
       }
 
       void
+      _M_sync_discarding()
+      {
+	if constexpr (is_same_v<_Out, _Sink_iter<_CharT>>)
+	  if (_M_out._M_discarding())
+	    _M_maxwidth = _M_printwidth;
+      }
+
+      void
       _M_flush()
       {
 	span<_CharT> __new = this->_M_used();
 	basic_string_view<_CharT> __str(__new.data(), __new.size());
 	_M_out = __format::__write(std::move(_M_out), __str);
+	_M_sync_discarding();
 	this->_M_rewind();
       }
 
@@ -3682,7 +3714,10 @@ namespace __format
 	// We have more characters than padidng, no padding is needed,
 	// write direclty to _M_out.
 	if (_M_printwidth >= _M_padwidth)
-	  _M_out = __format::__write(std::move(_M_out), __str);
+	  {
+	    _M_out = __format::__write(std::move(_M_out), __str);
+	    _M_sync_discarding();
+	  }
 	// We reached _M_maxwidth that is smaller than _M_padwidth.
 	// Store the prefix sequence in _M_seq, and free _M_buf.
 	else
@@ -3718,6 +3753,10 @@ namespace __format
 	  _Str_sink<_CharT>::_M_overflow();
       }
 
+      bool
+      _M_discarding() const override
+      { return _M_ignoring(); }
+
       typename _Sink<_CharT>::_Reservation
       _M_reserve(size_t __n) override
       {
@@ -3752,15 +3791,16 @@ namespace __format
 
     public:
       [[__gnu__::__always_inline__]]
-      explicit _Padding_sink(_Out __out, size_t __padwidth)
-      : _M_padwidth(__padwidth), _M_maxwidth(-1),
-	_M_out(std::move(__out)), _M_printwidth(0)
-      { }
-
-      [[__gnu__::__always_inline__]]
-      explicit _Padding_sink(_Out __out, size_t __padwidth, size_t __maxwidth)
+      explicit
+      _Padding_sink(_Out __out, size_t __padwidth, size_t __maxwidth)
       : _M_padwidth(__padwidth), _M_maxwidth(__maxwidth),
 	_M_out(std::move(__out)), _M_printwidth(0)
+      { _M_sync_discarding(); }
+
+      [[__gnu__::__always_inline__]]
+      explicit
+      _Padding_sink(_Out __out, size_t __padwidth)
+      : _Padding_sink(std::move(__out), __padwidth, (size_t)-1)
       { }
 
       _Out
