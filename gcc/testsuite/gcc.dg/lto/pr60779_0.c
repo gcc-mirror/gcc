@@ -1,4 +1,5 @@
 /* { dg-lto-do link } */
+/* { dg-require-linker-plugin "" } */
 /* { dg-lto-options { { -O -flto -fdump-tree-optimized } } } */
 
 _Complex double bar (_Complex double x, _Complex double y);
