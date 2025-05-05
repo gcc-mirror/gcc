@@ -1,3 +1,41 @@
+2025-05-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119986
+	* gfortran.dg/actual_array_subref.f90: New test.
+
+2025-05-04  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/vsetvl/avl_prop-2.c: Disable jump threading
+	and adjust number of expected vsetvls as needed.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-56.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-67.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-68.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/avl_single-71.c: Likewise.
+
+2025-05-04  Jin Ma  <jinma@linux.alibaba.com>
+	    Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.target/riscv/modifier-H-error-1.c: New test.
+	* gcc.target/riscv/modifier-H-error-2.c: New test.
+	* gcc.target/riscv/modifier-H.c: New test.
+
+2025-05-04  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/xtheadfmemidx-xtheadfmv-medany.c: Adjust expected
+	output.
+	* gcc.target/riscv/xtheadfmemidx-zfa-medany.c: Likewise.
+	* gcc.target/riscv/xtheadfmv-fmv.c: Skip for -Os and -Oz.
+	* gcc.target/riscv/zfa-fmovh-fmovp.c: Use sifive-p400 tuning.
+
+2025-05-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-49.c: Adjust
+	the asm dump check times.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-50.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-52.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-74.c: Ditto.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-75.c: Ditto.
+
 2025-05-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/85944

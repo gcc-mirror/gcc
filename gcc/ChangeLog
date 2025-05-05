@@ -1,3 +1,43 @@
+2025-05-04  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config.gcc (riscv): Add riscv-vect-permcost.o to extra_objs.
+	* config/riscv/riscv-passes.def (pass_vector_permcost): Add new pass.
+	* config/riscv/riscv-protos.h (make_pass_vector_permconst): Declare.
+	* config/riscv/riscv-vect-permconst.cc: New file.
+	* config/riscv/t-riscv: Add build rule for riscv-vect-permcost.o
+
+2025-05-04  Jin Ma  <jinma@linux.alibaba.com>
+	    Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/riscv/riscv.cc (riscv_print_operand): Add H.
+	* doc/extend.texi: Document for H.
+
+2025-05-04  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_register_move_cost): Handle
+	subclasses with vector registers as well.
+
+2025-05-04  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/119900
+	* cgraph.cc (cgraph_edge::maybe_hot_p): Add
+	a variant accepting a sreal scale; use reliability of
+	profile.
+	* cgraph.h (cgraph_edge::maybe_hot_p): Declare
+	a varaint accepting a sreal scale.
+	* ipa-inline.cc (callee_speedup): New function.
+	(want_inline_small_function_p): add early return
+	and avoid duplicated lookup of summaries; use scaled
+	maybe_hot predicate.
+
+2025-05-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv.cc (riscv_emit_frm_mode_set): Refactor
+	the frm mode set by removing fsrmsi_restore_volatile.
+	* config/riscv/vector-iterators.md (unspecv): Remove as
+	unnecessary.
+	* config/riscv/vector.md (fsrmsi_restore_volatile): Ditto.
+
 2025-05-03  Jan Hubicka  <hubicka@ucw.cz>
 
 	* config/i386/i386.cc (unspec_pcmp_p): New function.

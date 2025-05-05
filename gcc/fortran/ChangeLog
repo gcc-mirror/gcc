@@ -1,3 +1,13 @@
+2025-05-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119986
+	* expr.cc (is_subref_array): When searching for array references,
+	do not terminate early so that inquiry references to complex
+	components work.
+	* primary.cc (gfc_variable_attr): A substring reference can refer
+	to either a scalar or array character variable.  Adjust search
+	accordingly.
+
 2025-05-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/119948
