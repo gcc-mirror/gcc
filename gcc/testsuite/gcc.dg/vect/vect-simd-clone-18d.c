@@ -7,7 +7,7 @@
 
 /* Ensure the the in-branch simd clones are used on targets that support them.
    Some targets use another call for the epilogue loops.  */
-/* { dg-final { scan-tree-dump-times {[\n\r] [^\n]* = foo\.simdclone} 2 "vect" { target { !aarch64*-*-* } } } } */
+/* { dg-final { scan-tree-dump-times {[\n\r] [^\n]* = foo\.simdclone} 2 "vect" { target { ! aarch64*-*-* } } } } */
 /* { dg-final { scan-tree-dump-times {[\n\r] [^\n]* = foo\.simdclone} 3 "vect" { target { aarch64*-*-* } } } } */
 
 /* The LTO test produces two dump files and we scan the wrong one.  */
