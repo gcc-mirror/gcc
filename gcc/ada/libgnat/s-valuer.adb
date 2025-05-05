@@ -236,18 +236,17 @@ package body System.Value_R is
       Digit := As_Digit (Str (Index));
 
       loop
-         --  Check if base is correct. If the base is not specified, the digit
-         --  E or e cannot be considered as a base violation as it can be used
-         --  for exponentiation.
+         --  If the base is not explicitly specified, 'e' or 'E' marks the
+         --  beginning of the exponent part.
+
+         if not Base_Specified and then Digit = E_Digit then
+            return;
+         end if;
+
+         --  Check that Digit is a valid digit with respect to Base
 
          if Digit >= Base then
-            if Base_Specified then
-               Base_Violation := True;
-            elsif Digit = E_Digit then
-               return;
-            else
-               Base_Violation := True;
-            end if;
+            Base_Violation := True;
          end if;
 
          --  If precision limit has been reached, just ignore any remaining
@@ -426,18 +425,17 @@ package body System.Value_R is
       Digit := As_Digit (Str (Index));
 
       loop
-         --  Check if base is correct. If the base is not specified, the digit
-         --  E or e cannot be considered as a base violation as it can be used
-         --  for exponentiation.
+         --  If the base is not explicitly specified, 'e' or 'E' marks the
+         --  beginning of the exponent part.
+
+         if not Base_Specified and then Digit = E_Digit then
+            return;
+         end if;
+
+         --  Check that Digit is a valid digit with respect to Base
 
          if Digit >= Base then
-            if Base_Specified then
-               Base_Violation := True;
-            elsif Digit = E_Digit then
-               return;
-            else
-               Base_Violation := True;
-            end if;
+            Base_Violation := True;
          end if;
 
          --  If precision limit has been reached, just ignore any remaining
