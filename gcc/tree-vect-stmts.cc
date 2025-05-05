@@ -419,18 +419,21 @@ vect_stmt_relevant_p (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
 	}
     }
 
-  /* Check if it's an induction and multiple exits.  In this case there will be
-     a usage later on after peeling which is needed for the alternate exit.  */
+  /* Check if it's a not live PHI and multiple exits.  In this case
+     there will be a usage later on after peeling which is needed for the
+     alternate exit.  */
   if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
-      && STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def)
+      && is_a <gphi *> (stmt)
+      && ((! VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info))
+	  && ! *live_p)
+	  || STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def))
     {
       if (dump_enabled_p ())
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "vec_stmt_relevant_p: induction forced for "
-			   "early break.\n");
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "vec_stmt_relevant_p: PHI forced live for "
+			 "early break.\n");
       LOOP_VINFO_EARLY_BREAKS_LIVE_IVS (loop_vinfo).safe_push (stmt_info);
       *live_p = true;
-
     }
 
   if (*live_p && *relevant == vect_unused_in_scope
@@ -714,6 +717,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo, bool *fatal)
       bb = bbs[i];
       for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
 	{
+	  if (virtual_operand_p (gimple_phi_result (gsi_stmt (si))))
+	    continue;
 	  stmt_vec_info phi_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location, "init: phi relevant? %G",
