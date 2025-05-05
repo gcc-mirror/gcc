@@ -6321,19 +6321,27 @@ package body Exp_Ch3 is
             --  frozen inside.
 
             if Is_Controlled (Typ) then
-               Append_Freeze_Actions (Typ,
-                 Freeze_Entity
-                   (Find_Controlled_Prim_Op (Typ, Name_Initialize), Typ));
+               declare
+                  Prim : Entity_Id;
 
-               if not Is_Limited_Type (Typ) then
-                  Append_Freeze_Actions (Typ,
-                    Freeze_Entity
-                      (Find_Controlled_Prim_Op (Typ, Name_Adjust), Typ));
-               end if;
+               begin
+                  Prim := Find_Controlled_Prim_Op (Typ, Name_Initialize);
+                  if Present (Prim) then
+                     Append_Freeze_Actions (Typ, Freeze_Entity (Prim, Typ));
+                  end if;
 
-               Append_Freeze_Actions (Typ,
-                 Freeze_Entity
-                   (Find_Controlled_Prim_Op (Typ, Name_Finalize), Typ));
+                  if not Is_Limited_Type (Typ) then
+                     Prim := Find_Controlled_Prim_Op (Typ, Name_Adjust);
+                     if Present (Prim) then
+                        Append_Freeze_Actions (Typ, Freeze_Entity (Prim, Typ));
+                     end if;
+                  end if;
+
+                  Prim := Find_Controlled_Prim_Op (Typ, Name_Finalize);
+                  if Present (Prim) then
+                     Append_Freeze_Actions (Typ, Freeze_Entity (Prim, Typ));
+                  end if;
+               end;
             end if;
 
             --  Freeze rest of primitive operations. There is no need to handle
