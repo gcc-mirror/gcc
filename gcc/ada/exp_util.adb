@@ -6072,9 +6072,10 @@ package body Exp_Util is
       --  now known to be protected, the finalization routine is the one
       --  defined on the corresponding record of the ancestor (corresponding
       --  records do not automatically inherit operations, but maybe they
-      --  should???)
+      --  should???). This does not apply to array types, where every base
+      --  type has a finalization routine that depends on the first subtype.
 
-      if Is_Untagged_Derivation (Btyp) then
+      if Is_Untagged_Derivation (Btyp) and then not Is_Array_Type (Btyp) then
          if Is_Protected_Type (Btyp) then
             Utyp := Corresponding_Record_Type (Root_Type (Btyp));
 
