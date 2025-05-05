@@ -282,6 +282,7 @@ diagnostic_context::initialize (int n_opts)
   m_diagnostic_groups.m_group_nesting_depth = 0;
   m_diagnostic_groups.m_diagnostic_nesting_level = 0;
   m_diagnostic_groups.m_emission_count = 0;
+  m_diagnostic_groups.m_inhibiting_notes_from = 0;
   m_output_sinks.safe_push
     (new diagnostic_text_output_format (*this, nullptr, true));
   m_set_locations_cb = nullptr;
@@ -917,6 +918,7 @@ diagnostic_context::check_max_errors (bool flush)
 
 /* Take any action which is expected to happen after the diagnostic
    is written out.  This function does not always return.  */
+
 void
 diagnostic_context::action_after_output (diagnostic_t diag_kind)
 {
@@ -989,6 +991,50 @@ diagnostic_context::action_after_output (diagnostic_t diag_kind)
     default:
       gcc_unreachable ();
     }
+}
+
+/* State whether we should inhibit notes in the current diagnostic_group and
+   its future children if any.  */
+
+void
+diagnostic_context::inhibit_notes_in_group (bool inhibit)
+{
+  int curr_depth = (m_diagnostic_groups.m_group_nesting_depth
+		    + m_diagnostic_groups.m_diagnostic_nesting_level);
+
+  if (inhibit)
+    {
+      /* If we're already inhibiting, there's nothing to do.  */
+      if (m_diagnostic_groups.m_inhibiting_notes_from)
+	return;
+
+      /* Since we're called via warning/error/... that all have their own
+	 diagnostic_group, we must consider that we started inhibiting in their
+	 parent.  */
+      gcc_assert (m_diagnostic_groups.m_group_nesting_depth > 0);
+      m_diagnostic_groups.m_inhibiting_notes_from = curr_depth - 1;
+    }
+  else if (m_diagnostic_groups.m_inhibiting_notes_from)
+    {
+      /* Only cancel inhibition at the depth that set it up.  */
+      if (curr_depth >= m_diagnostic_groups.m_inhibiting_notes_from)
+	return;
+
+      m_diagnostic_groups.m_inhibiting_notes_from = 0;
+    }
+}
+
+/* Return whether notes must be inhibited in the current diagnostic_group.  */
+
+bool
+diagnostic_context::notes_inhibited_in_group () const
+{
+  if (m_diagnostic_groups.m_inhibiting_notes_from
+      && (m_diagnostic_groups.m_group_nesting_depth
+	  + m_diagnostic_groups.m_diagnostic_nesting_level
+	  >= m_diagnostic_groups.m_inhibiting_notes_from))
+    return true;
+  return false;
 }
 
 /* class logical_location.  */
@@ -1381,7 +1427,10 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
   bool was_warning = (diagnostic->kind == DK_WARNING
 		      || diagnostic->kind == DK_PEDWARN);
   if (was_warning && m_inhibit_warnings)
-    return false;
+    {
+      inhibit_notes_in_group ();
+      return false;
+    }
 
   if (m_adjust_diagnostic_info)
     m_adjust_diagnostic_info (this, diagnostic);
@@ -1411,7 +1460,10 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
      not disabled by #pragma GCC diagnostic anywhere along the inlining
      stack.  .  */
   if (!diagnostic_enabled (diagnostic))
-    return false;
+    {
+      inhibit_notes_in_group ();
+      return false;
+    }
 
   if ((was_warning || diagnostic->kind == DK_WARNING)
       && ((!m_warn_system_headers
@@ -1419,6 +1471,10 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
 	  || m_inhibit_warnings))
     /* Bail if the warning is not to be reported because all locations in the
        inlining stack (if there is one) are in system headers.  */
+    return false;
+
+  if (diagnostic->kind == DK_NOTE && notes_inhibited_in_group ())
+    /* Bail for all the notes in the diagnostic_group that started to inhibit notes.  */
     return false;
 
   if (diagnostic->kind != DK_NOTE && diagnostic->kind != DK_ICE)
@@ -1435,6 +1491,9 @@ diagnostic_context::report_diagnostic (diagnostic_info *diagnostic)
       else
 	error_recursion ();
     }
+
+  /* We are accepting the diagnostic, so should stop inhibiting notes.  */
+  inhibit_notes_in_group (/*inhibit=*/false);
 
   m_lock++;
 
@@ -1769,6 +1828,8 @@ diagnostic_context::end_group ()
 	  sink->on_end_group ();
       m_diagnostic_groups.m_emission_count = 0;
     }
+  /* We're popping one level, so might need to stop inhibiting notes.  */
+  inhibit_notes_in_group (/*inhibit=*/false);
 }
 
 void
@@ -1781,6 +1842,8 @@ void
 diagnostic_context::pop_nesting_level ()
 {
   --m_diagnostic_groups.m_diagnostic_nesting_level;
+  /* We're popping one level, so might need to stop inhibiting notes.  */
+  inhibit_notes_in_group (/*inhibit=*/false);
 }
 
 void

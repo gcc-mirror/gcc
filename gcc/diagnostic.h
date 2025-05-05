@@ -966,7 +966,13 @@ private:
     /* How many diagnostics have been emitted since the bottommost
        diagnostic_group was pushed.  */
     int m_emission_count;
+
+    /* The "group+diagnostic" nesting depth from which to inhibit notes.  */
+    int m_inhibiting_notes_from;
   } m_diagnostic_groups;
+
+  void inhibit_notes_in_group (bool inhibit = true);
+  bool notes_inhibited_in_group () const;
 
   /* The various sinks to which diagnostics are to be outputted
      (text vs structured formats such as SARIF).
