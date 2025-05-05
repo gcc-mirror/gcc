@@ -705,8 +705,14 @@ namespace __format
 	    if (__write_direct)
 	      return __out;
 
-	  auto __str = std::move(__sink).get();
-	  return __format::__write_padded_as_spec(__str, __str.size(),
+	  auto __span = __sink.view();
+	  __string_view __str(__span.data(), __span.size());
+	  size_t __width;
+	  if constexpr (__unicode::__literal_encoding_is_unicode<_CharT>())
+	    __width = __unicode::__field_width(__str);
+	  else
+	    __width = __str.size();
+	  return __format::__write_padded_as_spec(__str, __width,
 						  __fc, _M_spec);
 	}
 
