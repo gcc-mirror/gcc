@@ -13738,10 +13738,11 @@ print_reg (rtx x, int code, FILE *file)
    H -- print a memory address offset by 8; used for sse high-parts
    Y -- print condition for XOP pcom* instruction.
    V -- print naked full integer register name without %.
+   v -- print segment override prefix
    + -- print a branch hint as 'cs' or 'ds' prefix
    ; -- print a semicolon (after prefixes due to bug in older gas).
    ~ -- print "i" if TARGET_AVX2, "f" otherwise.
-   ^ -- print addr32 prefix if TARGET_64BIT and Pmode != word_mode
+   ^ -- print addr32 prefix if Pmode != word_mode
    M -- print addr32 prefix for TARGET_X32 with VSIB address.
    ! -- print NOTRACK prefix for jxx/call/ret instructions if required.
    N -- print maskz if it's constant 0 operand.
@@ -14241,6 +14242,28 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    fputs (", ", file);
 
+	  return;
+
+	case 'v':
+	  if (MEM_P (x))
+	    {
+	      switch (MEM_ADDR_SPACE (x))
+		{
+		case ADDR_SPACE_GENERIC:
+		  break;
+		case ADDR_SPACE_SEG_FS:
+		  fputs ("fs ", file);
+		  break;
+		case ADDR_SPACE_SEG_GS:
+		  fputs ("gs ", file);
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
+	    }
+	  else
+	    output_operand_lossage ("operand is not a memory reference, "
+				    "invalid operand code 'v'");
 	  return;
 
 	case '*':
