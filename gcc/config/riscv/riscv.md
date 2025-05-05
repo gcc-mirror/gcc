@@ -2937,7 +2937,7 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "DI")])
 
-(define_insn_and_split "*<optab><GPR:mode>3_mask_1"
+(define_insn "*<optab><GPR:mode>3_mask_1"
   [(set (match_operand:GPR     0 "register_operand" "= r")
 	(any_shift:GPR
 	    (match_operand:GPR 1 "register_operand" "  r")
@@ -2946,12 +2946,7 @@
 	       (match_operand:GPR2 2 "register_operand"  "r")
 	       (match_operand 3 "<GPR:shiftm1>"))])))]
   ""
-  "#"
-  "&& 1"
-  [(set (match_dup 0)
-	(any_shift:GPR (match_dup 1)
-		      (match_dup 2)))]
-  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  "<insn>\t%0,%1,%2"
   [(set_attr "type" "shift")
    (set_attr "mode" "<GPR:MODE>")])
 
@@ -2970,7 +2965,7 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
-(define_insn_and_split "*<optab>si3_extend_mask"
+(define_insn "*<optab>si3_extend_mask"
   [(set (match_operand:DI                   0 "register_operand" "= r")
 	(sign_extend:DI
 	    (any_shift:SI
@@ -2980,13 +2975,7 @@
 	        (match_operand:GPR 2 "register_operand" " r")
 	        (match_operand 3 "const_si_mask_operand"))]))))]
   "TARGET_64BIT"
-  "#"
-  "&& 1"
-  [(set (match_dup 0)
-	(sign_extend:DI
-	 (any_shift:SI (match_dup 1)
-		       (match_dup 2))))]
-  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  "<insn>w\t%0,%1,%2"
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
