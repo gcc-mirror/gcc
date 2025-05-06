@@ -1,3 +1,23 @@
+2025-05-05  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/120006
+	* gcc.dg/torture/pr120006.c: New testcase.
+
+2025-05-05  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/119973
+	* gcc.dg/torture/pr119973.c: New testcase.
+
+2025-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/finalizable1.ads: New test.
+
 2025-05-03  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

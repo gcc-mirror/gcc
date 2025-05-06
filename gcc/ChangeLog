@@ -1,3 +1,23 @@
+2025-05-05  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/120006
+	* tree-ssa-structalias.cc (find_func_clobbers): Handle
+	strdup, strndup, realloc, index, strchr, strrchr, memchr,
+	strstr, strpbrk builtins like find_func_aliases does.
+
+2025-05-05  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/119973
+	* tree-ssa-structalias.cc (create_variable_info_for):
+	Build constraints from DECL_INITIAL directly rather than
+	the IPA reference list which is incomplete.
+
 2025-04-30  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/119712
