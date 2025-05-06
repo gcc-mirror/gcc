@@ -1,0 +1,83 @@
+/* Adapted from the JSON example in SARIF v2.1.0, 3.33.7 "kind" property;
+   see https://github.com/oasis-tcs/sarif-spec/issues/670  */
+{
+    "version": "2.1.0",
+    "runs": [
+	{
+	    "tool": {
+		"driver": {
+		    "name": "example JSON scanner"
+		}
+	    },
+	    "results": [
+		{
+		    "message": {"text": "product ID is blank"},
+		    "locations": [
+			{
+			    "logicalLocations": [
+				{
+				    "fullyQualifiedName": "/orders/0/productIds/1",
+				    "index": 3
+				}
+			    ]
+			}
+		    ]
+		},
+		{
+		    "message": {"text": "value is negative"},
+		    "locations": [
+			{
+			    "logicalLocations": [
+				{
+				    "fullyQualifiedName": "/orders/0/total",
+				    "index": 4
+				}
+			    ]
+			}
+		    ]
+		}
+	    ],
+	    "logicalLocations": [
+		{
+		    "name": "orders",
+		    "fullyQualifiedName": "/orders",
+		    "kind": "array"
+		},
+		{
+		    "name": "0",
+		    "fullyQualifiedName": "/orders/0",
+		    "kind": "object",
+		    "parentIndex": 0
+		},
+		{
+		    "name": "productIds",
+		    "fullyQualifiedName": "/orders/0/productIds",
+		    "kind": "array",
+		    "parentIndex": 1
+		},
+		{
+		    "name": "1",
+		    "fullyQualifiedName": "/orders/0/productIds/1",
+		    "kind": "value",
+		    "parentIndex": 2
+		},
+		{
+		    "name": "total",
+		    "fullyQualifiedName": "/orders/0/total",
+		    "kind": "property",
+		    "parentIndex": 1
+		}
+	    ]
+	}
+    ]
+}
+
+/* { dg-begin-multiline-output "" }
+In JSON value '/orders/0/productIds/1':
+example JSON scanner: warning: product ID is blank
+   { dg-end-multiline-output "" } */
+
+/* { dg-begin-multiline-output "" }
+In JSON property '/orders/0/total':
+example JSON scanner: warning: value is negative
+   { dg-end-multiline-output "" } */

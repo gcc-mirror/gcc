@@ -305,6 +305,7 @@ public:
       {
       default:
 	gcc_unreachable ();
+
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_FUNCTION:
 	return LOGICAL_LOCATION_KIND_FUNCTION;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_MEMBER:
@@ -321,6 +322,30 @@ public:
 	return LOGICAL_LOCATION_KIND_PARAMETER;
       case DIAGNOSTIC_LOGICAL_LOCATION_KIND_VARIABLE:
 	return LOGICAL_LOCATION_KIND_VARIABLE;
+
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ELEMENT:
+	return LOGICAL_LOCATION_KIND_ELEMENT;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ATTRIBUTE:
+	return LOGICAL_LOCATION_KIND_ATTRIBUTE;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_TEXT:
+	return LOGICAL_LOCATION_KIND_TEXT;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_COMMENT:
+	return LOGICAL_LOCATION_KIND_COMMENT;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION:
+	return LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_DTD:
+	return LOGICAL_LOCATION_KIND_DTD;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_DECLARATION:
+	return LOGICAL_LOCATION_KIND_DECLARATION;
+
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_OBJECT:
+	  return LOGICAL_LOCATION_KIND_OBJECT;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ARRAY:
+	return LOGICAL_LOCATION_KIND_ARRAY;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROPERTY:
+	return LOGICAL_LOCATION_KIND_PROPERTY;
+      case DIAGNOSTIC_LOGICAL_LOCATION_KIND_VALUE:
+	return LOGICAL_LOCATION_KIND_VALUE;
       }
   }
 
@@ -1097,21 +1122,57 @@ diagnostic_text_sink::text_starter (diagnostic_text_output_format &text_output,
   if (diag_logical_loc && diag_logical_loc != mgr.get_prev_diag_logical_loc ())
     {
       pp_set_prefix (pp, nullptr);
+
+      /* This macro is used to ensure that all format strings are visible to gettext
+	 and checked at compile time.  */
+
+#define CASE(KIND, MSGID) \
+	case KIND:							\
+	  if (const char *name						\
+	      = diag_logical_loc->m_fully_qualified_name.get_str ())	\
+	    {								\
+	     pp_printf (pp, (MSGID), name);				\
+	     pp_character (pp, ':');					\
+	     pp_newline (pp);						\
+	    }								\
+	  break;
+
       switch (diag_logical_loc->m_kind)
 	{
 	default:
 	  break;
-	case DIAGNOSTIC_LOGICAL_LOCATION_KIND_FUNCTION:
-	  if (const char *name
-	      = diag_logical_loc->m_fully_qualified_name.get_str ())
-	    {
-	      pp_printf (pp, _("In function %qs"), name);
-	      pp_character (pp, ':');
-	      pp_newline (pp);
-	    }
-	  break;
-	  // TODO: handle other cases
+
+	/* Kinds within executable code.  */
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_FUNCTION, _("In function %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_MEMBER, _("In member %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_MODULE, _("In module %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_NAMESPACE, _("In namespace %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_TYPE, _("In type %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_RETURN_TYPE,
+	     _("In return type %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_PARAMETER, _("In parameter %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_VARIABLE, _("In variable %qs"))
+
+	/* Kinds within XML or HTML documents.  */
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_ELEMENT, _("In element %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_ATTRIBUTE, _("In attribute %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_TEXT, _("In text %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_COMMENT, _("In comment %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION,
+	     _("In processing instruction %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_DTD, _("In DTD %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_DECLARATION,
+	     _("In declaration %qs"))
+
+	/* Kinds within JSON documents.  */
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_OBJECT, _("In JSON object %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_ARRAY, _("In JSON array %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROPERTY,
+	     _("In JSON property %qs"))
+	CASE(DIAGNOSTIC_LOGICAL_LOCATION_KIND_VALUE, _("In JSON value %qs"))
 	}
+
+#undef CASE
     }
   pp_set_prefix (pp,
 		 text_output.build_prefix (*info));
@@ -1515,6 +1576,7 @@ diagnostic_manager_debug_dump_logical_location (const diagnostic_manager *diag_m
 	{
 	default:
 	  gcc_unreachable ();
+
 	case DIAGNOSTIC_LOGICAL_LOCATION_KIND_FUNCTION:
 	  fprintf (out, "function");
 	  break;
@@ -1538,6 +1600,41 @@ diagnostic_manager_debug_dump_logical_location (const diagnostic_manager *diag_m
 	  break;
 	case DIAGNOSTIC_LOGICAL_LOCATION_KIND_VARIABLE:
 	  fprintf (out, "variable");
+	  break;
+
+	case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ELEMENT:
+	  fprintf (out, "element");
+	  break;
+	case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ATTRIBUTE:
+	  fprintf (out, "attribute");
+	  break;
+	case DIAGNOSTIC_LOGICAL_LOCATION_KIND_TEXT:
+	  fprintf (out, "text");
+	  break;
+	case DIAGNOSTIC_LOGICAL_LOCATION_KIND_COMMENT:
+	  fprintf (out, "comment");
+	  break;
+	case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION:
+	  fprintf (out, "processing_instruction");
+	  break;
+	case DIAGNOSTIC_LOGICAL_LOCATION_KIND_DTD:
+	  fprintf (out, "dtd");
+	  break;
+	case DIAGNOSTIC_LOGICAL_LOCATION_KIND_DECLARATION:
+	  fprintf (out, "declaration");
+	  break;
+
+	case DIAGNOSTIC_LOGICAL_LOCATION_KIND_OBJECT:
+	  fprintf (out, "object");
+	  break;
+	case DIAGNOSTIC_LOGICAL_LOCATION_KIND_ARRAY:
+	  fprintf (out, "array");
+	  break;
+	case DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROPERTY:
+	  fprintf (out, "property");
+	  break;
+	case DIAGNOSTIC_LOGICAL_LOCATION_KIND_VALUE:
+	  fprintf (out, "value");
 	  break;
 	}
       if (auto parent = loc->m_parent)

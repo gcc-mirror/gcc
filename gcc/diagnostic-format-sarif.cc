@@ -2734,6 +2734,7 @@ maybe_get_sarif_kind (enum logical_location_kind kind)
     case LOGICAL_LOCATION_KIND_UNKNOWN:
       return nullptr;
 
+    /* Kinds within executable code.  */
     case LOGICAL_LOCATION_KIND_FUNCTION:
       return "function";
     case LOGICAL_LOCATION_KIND_MEMBER:
@@ -2750,6 +2751,32 @@ maybe_get_sarif_kind (enum logical_location_kind kind)
       return "parameter";
     case LOGICAL_LOCATION_KIND_VARIABLE:
       return "variable";
+
+    /* Kinds within XML or HTML documents.  */
+    case LOGICAL_LOCATION_KIND_ELEMENT:
+      return "element";
+    case LOGICAL_LOCATION_KIND_ATTRIBUTE:
+      return "attribute";
+    case LOGICAL_LOCATION_KIND_TEXT:
+      return "text";
+    case LOGICAL_LOCATION_KIND_COMMENT:
+      return "comment";
+    case LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION:
+      return "processingInstruction";
+    case LOGICAL_LOCATION_KIND_DTD:
+      return "dtd";
+    case LOGICAL_LOCATION_KIND_DECLARATION:
+      return "declaration";
+
+    /* Kinds within JSON documents.  */
+    case LOGICAL_LOCATION_KIND_OBJECT:
+      return "object";
+    case LOGICAL_LOCATION_KIND_ARRAY:
+      return "array";
+    case LOGICAL_LOCATION_KIND_PROPERTY:
+      return "property";
+    case LOGICAL_LOCATION_KIND_VALUE:
+      return "value";
     }
 }
 

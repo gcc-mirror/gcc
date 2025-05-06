@@ -1,0 +1,77 @@
+/* Adapted from the XML example in SARIF v2.1.0, 3.33.7 "kind" property;
+   see also https://github.com/oasis-tcs/sarif-spec/issues/669  */
+{
+    "version": "2.1.0",
+    "runs": [
+	{
+	    "tool": {
+		"driver": {
+		    "name": "example XML scanner"
+		}
+	    },
+	    "results": [
+		{
+		    "message": {"text": "empty value"},
+		    "locations": [
+			{
+			    "logicalLocations": [
+				{
+				    "fullyQualifiedName": "/orders/order[1]/@number",
+				    "index": 2
+				}
+			    ]
+			}
+		    ]
+		},
+		{
+		    "message": {"text": "total is negative"},
+		    "locations": [
+			{
+			    "logicalLocations": [
+				{
+				    "fullyQualifiedName": "/orders/order[1]/total/text()",
+				    "index": 3
+				}
+			    ]
+			}
+		    ]
+		}
+	    ],
+	    "logicalLocations": [
+		{
+		    "name": "orders",
+		    "fullyQualifiedName": "/orders",
+		    "kind": "element"
+		},
+		{
+		    "name": "order[1]",
+		    "fullyQualifiedName": "/orders/order[1]",
+		    "kind": "element",
+		    "parentIndex": 0
+		},
+		{
+		    "name": "number",
+		    "fullyQualifiedName": "/orders/order[1]/@number",
+		    "kind": "attribute",
+		    "parentIndex": 1
+		},
+		{
+		    "name": "text",
+		    "fullyQualifiedName": "/orders/order[1]/total/text()",
+		    "kind": "text",
+		    "parentIndex": 1
+		}
+	    ]
+	}
+    ]
+}
+
+/* { dg-begin-multiline-output "" }
+In attribute '/orders/order[1]/@number':
+example XML scanner: warning: empty value
+   { dg-end-multiline-output "" } */
+
+/* { dg-begin-multiline-output "" }
+In text '/orders/order[1]/total/text()':
+example XML scanner: warning: total is negative
+   { dg-end-multiline-output "" } */

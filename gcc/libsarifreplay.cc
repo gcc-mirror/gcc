@@ -2008,7 +2008,32 @@ handle_logical_location_object (const json::object &logical_loc_obj,
 	    { "parameter",
 	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_PARAMETER },
 	    { "variable",
-	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_VARIABLE } };
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_VARIABLE },
+
+	    { "element",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_ELEMENT },
+	    { "attribute",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_ATTRIBUTE },
+	    { "text",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_TEXT },
+	    { "comment",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_COMMENT },
+	    { "processingInstruction",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROCESSING_INSTRUCTION },
+	    { "dtd",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_DTD },
+	    { "declaration",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_DECLARATION },
+
+	    { "object",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_OBJECT },
+	    { "array",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_ARRAY },
+	    { "property",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_PROPERTY },
+	    { "value",
+	      DIAGNOSTIC_LOGICAL_LOCATION_KIND_VALUE },
+      };
       auto result
 	= get_value_from_json_string<enum diagnostic_logical_location_kind_t>
 	    (*kind_str, kind_prop, kind_values, ARRAY_SIZE (kind_values));
