@@ -12320,6 +12320,7 @@ get_thread_pointer (machine_mode tp_mode, bool to_reg)
 
 static GTY(()) rtx ix86_tls_index_symbol;
 
+#if TARGET_WIN32_TLS
 static rtx
 ix86_tls_index (void)
 {
@@ -12331,6 +12332,7 @@ ix86_tls_index (void)
   else
     return ix86_tls_index_symbol;
 }
+#endif
 
 /* Construct the SYMBOL_REF for the tls_get_addr function.  */
 
