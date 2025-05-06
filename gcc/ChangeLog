@@ -1,3 +1,7 @@
+2025-05-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-linux.h (NEED_INDICATE_EXEC_STACK): Define to 1.
+
 2025-05-01  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:
